@@ -150,6 +150,8 @@ fn bootstrap_workflow_collects_full_reference_families_without_ship_promotion() 
         "Stop isolated rootless Docker after Redis comparison",
         "Run bootstrap control-plane reference evidence",
         "Retain non-ship bootstrap sample",
+        "Prepare tmpfs reference evidence",
+        "Materialize tmpfs reference evidence",
         "group: release-067-performance-reference-v1",
     ] {
         assert!(
@@ -166,6 +168,15 @@ fn bootstrap_workflow_collects_full_reference_families_without_ship_promotion() 
         .unwrap();
     assert!(!bootstrap_job.contains("Check 0.67 performance budgets"));
     assert!(!bootstrap_job.contains("--require-ship"));
+    assert!(!bootstrap_job.contains("taskset --cpu-list 1-4 cargo run"));
+    let materialize = bootstrap_job
+        .find("Materialize tmpfs reference evidence")
+        .unwrap();
+    let retain = bootstrap_job
+        .find("Retain non-ship bootstrap sample")
+        .unwrap();
+    assert!(materialize < retain);
+    assert!(bootstrap_job.contains("scripts/perf/reference-evidence-tmpfs.sh materialize"));
 }
 #[test]
 fn sample_set_requires_five_unique_same_fingerprint_and_contract_receipts() {

@@ -5323,7 +5323,7 @@ HYDRACACHE_RUN_PERF_REFERENCE = "1"
 [[gate]]
 id = "env.hydracache-run-067-perf-core"
 kind = "external_tool"
-source = "crates/hydracache-loadgen/src/main.rs"
+source = "scripts/perf/run-reference-measurement.sh"
 package = "hydracache-loadgen"
 target = "suite-core"
 test = ""
@@ -5333,7 +5333,7 @@ reason = "The dedicated 0.67 core lane executes embedded-cache, in-process clien
 tier = "nightly"
 required_features = []
 required_env = ["HYDRACACHE_RUN_PERF_CORE", "HYDRACACHE_RUN_PERF_REFERENCE"]
-required_tools = ["git", "sha256", "hydracache-perf-v1"]
+required_tools = ["git", "sha256", "taskset", "ldd", "findmnt", "hydracache-perf-v1"]
 timeout_seconds = 5400
 owner_release = "0.67.0"
 ship_mandatory = false
@@ -5352,8 +5352,8 @@ job = "release-067-performance"
 step = "Run 0.67 core performance evidence"
 
 [gate.command]
-program = "target/release/hydracache-loadgen"
-args = ["suite", "core", "--profile", "reference-v1", "--output-dir", "target/test-evidence/0.67"]
+program = "scripts/perf/run-reference-measurement.sh"
+args = ["core"]
 cwd = "."
 platform = "linux"
 
@@ -5364,7 +5364,7 @@ HYDRACACHE_RUN_PERF_REFERENCE = "1"
 [[gate]]
 id = "env.hydracache-run-067-perf-resp"
 kind = "external_tool"
-source = "crates/hydracache-loadgen/src/main.rs"
+source = "scripts/perf/run-reference-measurement.sh"
 package = "hydracache-loadgen"
 target = "suite-resp"
 test = ""
@@ -5374,7 +5374,7 @@ reason = "The dedicated 0.67 RESP lane measures one real node-local endpoint, it
 tier = "nightly"
 required_features = []
 required_env = ["HYDRACACHE_RUN_PERF_REFERENCE", "HYDRACACHE_RUN_PERF_RESP"]
-required_tools = ["docker", "redis-benchmark", "git", "sha256", "hydracache-perf-v1"]
+required_tools = ["docker", "redis-benchmark", "git", "sha256", "taskset", "ldd", "findmnt", "hydracache-perf-v1"]
 timeout_seconds = 7200
 owner_release = "0.67.0"
 ship_mandatory = false
@@ -5395,8 +5395,8 @@ job = "release-067-performance"
 step = "Run 0.67 RESP performance evidence"
 
 [gate.command]
-program = "target/release/hydracache-loadgen"
-args = ["suite", "resp", "--profile", "reference-v1", "--output-dir", "target/test-evidence/0.67"]
+program = "scripts/perf/run-reference-measurement.sh"
+args = ["resp"]
 cwd = "."
 platform = "linux"
 
@@ -5407,7 +5407,7 @@ HYDRACACHE_RUN_PERF_RESP = "1"
 [[gate]]
 id = "env.hydracache-run-067-perf-control-plane"
 kind = "external_tool"
-source = "crates/hydracache-loadgen/src/main.rs"
+source = "scripts/perf/run-reference-measurement.sh"
 package = "hydracache-loadgen"
 target = "suite-control-plane"
 test = ""
@@ -5417,7 +5417,7 @@ reason = "The dedicated 0.67 control-plane lane characterizes real 3/5/7-daemon 
 tier = "nightly"
 required_features = []
 required_env = ["HYDRACACHE_RUN_PERF_CONTROL_PLANE", "HYDRACACHE_RUN_PERF_REFERENCE"]
-required_tools = ["git", "sha256", "hydracache-perf-v1"]
+required_tools = ["git", "sha256", "taskset", "ldd", "findmnt", "hydracache-perf-v1"]
 timeout_seconds = 7200
 owner_release = "0.67.0"
 ship_mandatory = false
@@ -5435,8 +5435,8 @@ job = "release-067-performance"
 step = "Run 0.67 control-plane performance evidence"
 
 [gate.command]
-program = "target/release/hydracache-loadgen"
-args = ["suite", "control-plane", "--profile", "reference-v1", "--output-dir", "target/test-evidence/0.67"]
+program = "scripts/perf/run-reference-measurement.sh"
+args = ["control-plane"]
 cwd = "."
 platform = "linux"
 
@@ -6446,7 +6446,7 @@ HYDRACACHE_RUN_PERF_0671_STAGE = "runner-provisioned"
 [[gate]]
 id = "tool.perf-attestation-v5-0671"
 kind = "external_tool"
-source = "crates/xtask/src/perf.rs"
+source = "scripts/perf/run-reference-measurement.sh"
 package = "xtask"
 target = "release_governance"
 test = "release_0671_governance_contract_is_fail_closed"
@@ -6456,7 +6456,7 @@ reason = "Release 0.67.1 requires machine attestation v5 and rejects VM, sibling
 tier = "manual"
 required_features = []
 required_env = ["HYDRACACHE_RUN_PERF_0671_STAGE"]
-required_tools = ["cargo", "findmnt", "lsblk", "systemd-detect-virt"]
+required_tools = ["findmnt", "lsblk", "systemd-detect-virt", "taskset", "ldd"]
 timeout_seconds = 300
 owner_release = "0.67.1"
 ship_mandatory = true
@@ -6468,8 +6468,8 @@ job = "release-0671-performance-qualification"
 step = "Attest and preflight the 0.67.1 host"
 
 [gate.command]
-program = "cargo"
-args = ["run", "-p", "xtask", "--locked", "--", "perf-runner-preflight", "--release", "0.67", "--profile", "reference-v1"]
+program = "scripts/perf/run-reference-measurement.sh"
+args = ["attestation"]
 cwd = "."
 platform = "any"
 

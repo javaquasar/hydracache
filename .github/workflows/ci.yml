@@ -751,20 +751,34 @@ jobs:
       - name: Validate 0.67 performance contract
         run: cargo run -p xtask --locked -- evidence-run --release 0.67 --gate fast.performance-contract-067
 
+      - name: Clear only prior performance evidence scratch
+        shell: bash
+        run: |
+          rm -rf -- \
+            target/test-evidence/0.67 \
+            target/test-evidence/0.67.1
+
+      - name: Prepare tmpfs reference evidence
+        run: scripts/perf/reference-evidence-tmpfs.sh prepare
+
       - name: Preflight 0.67 reference runner stability
-        run: taskset --cpu-list 1-4 cargo run -p xtask --locked -- perf-runner-preflight --release 0.67 --profile reference-v1
+        run: scripts/perf/run-reference-measurement.sh attestation
 
       - name: Prebuild 0.67 performance binaries
-        run: taskset --cpu-list 1-4 cargo run -p xtask --locked -- evidence-run --release 0.67 --gate tool.perf-prebuild-067
+        run: cargo run -p xtask --locked -- evidence-run --release 0.67 --gate tool.perf-prebuild-067
 
       - name: Run 0.67 core performance evidence
-        run: taskset --cpu-list 1-4 cargo run -p xtask --locked -- evidence-run --release 0.67 --gate env.hydracache-run-067-perf-core
+        run: cargo run -p xtask --locked -- evidence-run --release 0.67 --gate env.hydracache-run-067-perf-core
 
       - name: Run 0.67 RESP performance evidence
-        run: taskset --cpu-list 1-4 cargo run -p xtask --locked -- evidence-run --release 0.67 --gate env.hydracache-run-067-perf-resp
+        run: cargo run -p xtask --locked -- evidence-run --release 0.67 --gate env.hydracache-run-067-perf-resp
 
       - name: Run 0.67 control-plane performance evidence
-        run: taskset --cpu-list 1-4 cargo run -p xtask --locked -- evidence-run --release 0.67 --gate env.hydracache-run-067-perf-control-plane
+        run: cargo run -p xtask --locked -- evidence-run --release 0.67 --gate env.hydracache-run-067-perf-control-plane
+
+      - name: Materialize tmpfs reference evidence
+        if: always()
+        run: scripts/perf/reference-evidence-tmpfs.sh materialize
 
       - name: Check 0.67 performance budgets
         run: cargo run -p xtask --locked -- evidence-run --release 0.67 --gate tool.perf-budget-check-067
@@ -818,6 +832,9 @@ jobs:
             target/test-evidence/0.67.1 \
             target/release-evidence/receipts
 
+      - name: Prepare tmpfs reference evidence
+        run: scripts/perf/reference-evidence-tmpfs.sh prepare
+
       - name: Import offline runner provisioning proof
         run: cargo run -p xtask --locked -- evidence-run --release 0.67.1 --gate tool.perf-runner-provisioned-0671
 
@@ -840,21 +857,19 @@ jobs:
           echo "$tools_dir/redis-7.2.5/src" >> "$GITHUB_PATH"
 
       - name: Attest and preflight the 0.67.1 host
-        run: taskset --cpu-list 1-4 cargo run -p xtask --locked -- evidence-run --release 0.67.1 --gate tool.perf-attestation-v5-0671
+        run: cargo run -p xtask --locked -- evidence-run --release 0.67.1 --gate tool.perf-attestation-v5-0671
 
       - name: Prebuild exact 0.67 performance binaries
-        run: taskset --cpu-list 1-4 cargo run -p xtask --locked -- evidence-run --release 0.67 --gate tool.perf-prebuild-067
+        run: cargo run -p xtask --locked -- evidence-run --release 0.67 --gate tool.perf-prebuild-067
 
       - name: Run bounded non-ship diagnostics
-        shell: bash
         run: |
-          mkdir --parents target/test-evidence/0.67.1/qualification
-          taskset --cpu-list 1-4 target/release/hydracache-loadgen \
-            tier local --profile smoke-v1 \
-            --report target/test-evidence/0.67.1/qualification/local-smoke.json
-          taskset --cpu-list 1-4 target/release/hydracache-loadgen \
-            tier client-surface --profile smoke-v1 \
-            --report target/test-evidence/0.67.1/qualification/client-surface-smoke.json
+          scripts/perf/run-reference-measurement.sh qualification-local
+          scripts/perf/run-reference-measurement.sh qualification-client-surface
+
+      - name: Materialize tmpfs reference evidence
+        if: always()
+        run: scripts/perf/reference-evidence-tmpfs.sh materialize
 
       - name: Run 0.67.1 qualification gate
         run: cargo run -p xtask --locked -- evidence-run --release 0.67.1 --gate tool.perf-qualification-0671
@@ -907,6 +922,9 @@ jobs:
       - name: Import offline runner provisioning proof
         run: cargo run -p xtask --locked -- evidence-run --release 0.67.1 --gate tool.perf-runner-provisioned-0671
 
+      - name: Prepare tmpfs reference evidence
+        run: scripts/perf/reference-evidence-tmpfs.sh prepare
+
       - name: Build pinned redis-benchmark 7.2.5
         shell: bash
         run: |
@@ -926,26 +944,30 @@ jobs:
           echo "$tools_dir/redis-7.2.5/src" >> "$GITHUB_PATH"
 
       - name: Attest and preflight the 0.67.1 host
-        run: taskset --cpu-list 1-4 cargo run -p xtask --locked -- evidence-run --release 0.67.1 --gate tool.perf-attestation-v5-0671
+        run: cargo run -p xtask --locked -- evidence-run --release 0.67.1 --gate tool.perf-attestation-v5-0671
 
       - name: Prebuild exact 0.67 performance binaries
-        run: taskset --cpu-list 1-4 cargo run -p xtask --locked -- evidence-run --release 0.67 --gate tool.perf-prebuild-067
+        run: cargo run -p xtask --locked -- evidence-run --release 0.67 --gate tool.perf-prebuild-067
 
       - name: Run bootstrap core reference evidence
-        run: taskset --cpu-list 1-4 cargo run -p xtask --locked -- evidence-run --release 0.67 --gate env.hydracache-run-067-perf-core
+        run: cargo run -p xtask --locked -- evidence-run --release 0.67 --gate env.hydracache-run-067-perf-core
 
       - name: Start isolated rootless Docker for Redis comparison
         run: scripts/perf/rootless-docker.sh start
 
       - name: Run bootstrap RESP reference evidence
-        run: taskset --cpu-list 1-4 cargo run -p xtask --locked -- evidence-run --release 0.67 --gate env.hydracache-run-067-perf-resp
+        run: cargo run -p xtask --locked -- evidence-run --release 0.67 --gate env.hydracache-run-067-perf-resp
 
       - name: Stop isolated rootless Docker after Redis comparison
         if: always()
         run: scripts/perf/rootless-docker.sh stop
 
       - name: Run bootstrap control-plane reference evidence
-        run: taskset --cpu-list 1-4 cargo run -p xtask --locked -- evidence-run --release 0.67 --gate env.hydracache-run-067-perf-control-plane
+        run: cargo run -p xtask --locked -- evidence-run --release 0.67 --gate env.hydracache-run-067-perf-control-plane
+
+      - name: Materialize tmpfs reference evidence
+        if: always()
+        run: scripts/perf/reference-evidence-tmpfs.sh materialize
 
       - name: Retain non-ship bootstrap sample
         run: cargo run -p xtask --locked -- perf-bootstrap --release 0.67.1 --profile reference-v1 --phase sample

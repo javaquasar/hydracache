@@ -14,6 +14,9 @@ fn runner_runbook_and_helpers_are_fail_closed_and_secret_free() {
     let receipt_import = read("scripts/perf/import-provisioning-receipt.sh");
     let rootless_docker = read("scripts/perf/rootless-docker.sh");
     let isolation = read("scripts/perf/provision-reference-isolation.sh");
+    let runtime_irq_guard = read("scripts/perf/reference-runtime-irq-guard.sh");
+    let evidence_tmpfs = read("scripts/perf/reference-evidence-tmpfs.sh");
+    let measurement = read("scripts/perf/run-reference-measurement.sh");
 
     for script in [
         &audit,
@@ -22,6 +25,9 @@ fn runner_runbook_and_helpers_are_fail_closed_and_secret_free() {
         &receipt_import,
         &rootless_docker,
         &isolation,
+        &runtime_irq_guard,
+        &evidence_tmpfs,
+        &measurement,
     ] {
         assert!(script.starts_with("#!/usr/bin/env bash\nset -euo pipefail\n"));
         assert!(!script.contains('\r'));
@@ -106,6 +112,27 @@ fn runner_runbook_and_helpers_are_fail_closed_and_secret_free() {
     assert!(runbook.contains("systemctl start \"user@${runner_uid}.service\""));
     assert!(runbook.contains("rm --force /var/run/docker.sock"));
 
+    assert!(runtime_irq_guard.contains("dormant_unmapped_nvme_irq"));
+    assert!(runtime_irq_guard.contains("runtime IRQ guard failed phase=${phase}"));
+    assert!(runtime_irq_guard.contains("per_cpu_counts=${counts}"));
+    assert!(runtime_irq_guard.contains("measurement=1-4"));
+    assert!(evidence_tmpfs.contains("/dev/shm/hydracache-reference-evidence-v1"));
+    assert!(evidence_tmpfs.contains("findmnt --noheadings --output FSTYPE"));
+    assert!(evidence_tmpfs.contains("ln --symbolic"));
+    assert!(evidence_tmpfs.contains("source-commit"));
+    assert!(evidence_tmpfs.contains("materialize_one"));
+    assert!(measurement
+        .contains("reference measurement orchestration must remain on housekeeping CPUs 0,5-7"));
+    assert!(measurement.contains("scripts/perf/reference-evidence-tmpfs.sh verify"));
+    assert!(measurement.contains("reference-runtime-irq-guard.sh \"${mode}-pre\""));
+    assert!(measurement.contains("reference-runtime-irq-guard.sh \"${mode}-post\""));
+    assert!(measurement
+        .contains("HYDRACACHE_MEASUREMENT_IO_POLICY=\"tmpfs-housekeeping-orchestration-v1\""));
+    assert!(measurement.contains("taskset --cpu-list 1-4 \"${command_argv[@]}\""));
+    assert!(measurement.contains("docker pull --platform linux/amd64"));
+    assert!(measurement.contains("--cpuset-cpus 0"));
+    assert!(!measurement.contains("taskset --cpu-list 1-4 cargo"));
+    assert_eq!(measurement.matches("smoke-v1").count(), 2);
     for required in [
         "cloud-init",
         "github-runner",
@@ -116,6 +143,10 @@ fn runner_runbook_and_helpers_are_fail_closed_and_secret_free() {
         "scripts/perf/rootless-docker.sh",
         "scripts/perf/provision-reference-isolation.sh install",
         "Do **not** dispatch",
+        "scripts/perf/run-reference-measurement.sh",
+        "scripts/perf/reference-runtime-irq-guard.sh",
+        "scripts/perf/reference-evidence-tmpfs.sh",
+        "/dev/shm/hydracache-reference-evidence-v1",
     ] {
         assert!(
             runbook.contains(required),

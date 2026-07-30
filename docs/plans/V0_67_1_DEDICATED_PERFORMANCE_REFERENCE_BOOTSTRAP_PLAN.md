@@ -25,6 +25,37 @@ This is an evidence/bootstrap patch, not an optimization or product-surface rele
 branch; live qualification remains blocked on creation of the dedicated host. This does not advance
 the release manifest beyond `planned` or satisfy any runtime stage receipt.
 
+## Live bootstrap correction: isolate orchestration I/O from measurement CPUs
+
+The first v5 bootstrap acquisition on the qualified host was rejected without promotion by the
+unchanged `0.15` robust-spread gate. This is a host-execution correction, not a measurement-policy
+change.
+
+The retained diagnostics established all of the following:
+
+- core reference evidence and the sustained Redis benchmark were stable and zero-error;
+- all six low-duty RESP scheduled-send p99 points exceeded the frozen spread gate;
+- post-run host verification found active managed NVMe vectors on measurement CPU `1` (including
+  IRQs `96` and `121`) after prebuild/evidence file I/O;
+- the runner's pre-run v5 topology, SMT, idle-latency, quota, and housekeeping checks had passed.
+
+The deterministic cause was pinning Cargo, Git/input reads, and artifact writes together with the
+actual load process on CPUs `1-4`. Managed NVMe completion vectors selected by that I/O cannot be
+reassigned safely after activation and polluted the low-duty latency samples.
+
+The in-scope correction is therefore fail-closed:
+
+- runner and workflow orchestration inherit housekeeping affinity `0,5-7`;
+- measurement evidence is written under `/dev/shm/hydracache-reference-evidence-v1`;
+- the reviewed wrapper warms exact binaries, libraries, scenarios, and Redis inputs on housekeeping;
+- only the already-prewarmed measurement child is pinned to CPUs `1-4`;
+- pre/post runtime IRQ guards reject active or historically fired vectors on measurement CPUs;
+- materialization back to durable artifact paths happens after measurements on housekeeping.
+
+The rejected run is retained for diagnosis but is not eligible and does not count toward the
+five-sample set. SLOs, schedules, repetitions, zero-error rules, the `0.15` spread gate, affinity,
+quota, privacy, and all non-ship/bootstrap boundaries remain unchanged.
+
 ## Release Boundary
 
 `0.67.1` does not retroactively change what `0.67.0` shipped. The `0.67.0` release remains a
