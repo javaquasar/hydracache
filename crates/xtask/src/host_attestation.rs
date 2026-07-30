@@ -334,6 +334,7 @@ fn observe_root_storage() -> Result<(String, Vec<String>), String> {
         "lsblk",
         &[
             "--inverse",
+            "--raw",
             "--noheadings",
             "--paths",
             "--output",
@@ -342,6 +343,11 @@ fn observe_root_storage() -> Result<(String, Vec<String>), String> {
         ],
     )?;
     let text = stdout_trimmed(&lsblk, "lsblk")?;
+    let raw_identity = parse_root_storage_identity(text)?;
+    Ok((REFERENCE_STORAGE_CLASS.to_owned(), raw_identity))
+}
+
+fn parse_root_storage_identity(text: &str) -> Result<Vec<String>, String> {
     let mut raw_identity = Vec::new();
     let mut disk_count = 0_u32;
     for line in text.lines() {
@@ -356,12 +362,12 @@ fn observe_root_storage() -> Result<(String, Vec<String>), String> {
                 fields[..3].join(" ")
             ));
         }
-        raw_identity.push(line.trim().to_owned());
+        raw_identity.push(fields.join(" "));
     }
     if disk_count == 0 {
         return Err("root storage has no observable physical disk leaves".to_owned());
     }
-    Ok((REFERENCE_STORAGE_CLASS.to_owned(), raw_identity))
+    Ok(raw_identity)
 }
 
 fn observe_os_image() -> Result<String, String> {
@@ -632,5 +638,31 @@ mod tests {
         assert!(probe_command("lsblk", &[], Some("unreviewed-policy"))
             .unwrap_err()
             .contains("is not the reviewed reference I/O policy"));
+    }
+
+    #[test]
+    fn raw_lsblk_identity_captures_every_raid_leaf_independent_of_order() {
+        let first = "\
+/dev/md1 raid1
+/dev/nvme1n1p3 part nvme eui.0025388a01b7d24d
+/dev/nvme1n1 disk nvme SAMSUNG\\x20MZVLB1T0HALR-00000 S3W6NX0NA04607 eui.0025388a01b7d24d
+/dev/nvme0n1p4 part nvme eui.0025388a01b7d24b
+/dev/nvme0n1 disk nvme SAMSUNG\\x20MZVLB1T0HALR-00000 S3W6NX0NA04605 eui.0025388a01b7d24b";
+        let reversed = "\
+/dev/md1 raid1
+/dev/nvme0n1p4 part nvme eui.0025388a01b7d24b
+/dev/nvme0n1 disk nvme SAMSUNG\\x20MZVLB1T0HALR-00000 S3W6NX0NA04605 eui.0025388a01b7d24b
+/dev/nvme1n1p3 part nvme eui.0025388a01b7d24d
+/dev/nvme1n1 disk nvme SAMSUNG\\x20MZVLB1T0HALR-00000 S3W6NX0NA04607 eui.0025388a01b7d24d";
+
+        let first_identity = parse_root_storage_identity(first).unwrap();
+        let reversed_identity = parse_root_storage_identity(reversed).unwrap();
+        assert_eq!(first_identity.len(), 2);
+        assert!(first_identity.iter().any(|line| line.contains("nvme0n1")));
+        assert!(first_identity.iter().any(|line| line.contains("nvme1n1")));
+        assert_eq!(
+            privacy_digest("hydracache-storage-identity-v2", &first_identity).unwrap(),
+            privacy_digest("hydracache-storage-identity-v2", &reversed_identity).unwrap()
+        );
     }
 }

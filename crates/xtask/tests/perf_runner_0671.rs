@@ -153,6 +153,8 @@ fn runner_runbook_and_helpers_are_fail_closed_and_secret_free() {
     assert!(host_attestation
         .contains("let quiet = probe_output(\"systemd-detect-virt\", &[\"--quiet\"])?;"));
     assert!(!host_attestation.contains("Command::new(\"systemd-detect-virt\")"));
+    assert!(host_attestation.contains("\"--raw\","));
+    assert!(host_attestation.contains("parse_root_storage_identity(text)?"));
     assert!(measurement.contains("docker pull --platform linux/amd64"));
     assert!(measurement.contains("--cpuset-cpus 0"));
     assert!(!measurement.contains("taskset --cpu-list 1-4 cargo"));
