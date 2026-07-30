@@ -80,6 +80,15 @@ when the exact `qualify` or `bootstrap` mode, current housekeeping affinity, att
 set, and attested isolated set all agree. Any mode or cpuset drift still fails closed; the build is
 never moved onto a measurement CPU.
 
+Qualification `30580548936` passed the same v5 attestation and seven-probe preflight at
+`0.1259046089844615` spread, then exposed a deterministic publication mismatch: the committed
+tmpfs wrapper correctly made `target/test-evidence/0.67` a symlink, while the legacy atomic
+prebuild publisher rejected every symlink. The publisher still accepts ordinary outputs only at
+their canonical in-repository path; the sole exception is the exact `0.67` tmpfs target when the
+mode is `qualify` or `bootstrap`, GitHub Actions and `GITHUB_SHA` match the source snapshot, the
+link target and `source-commit` marker are exact, and `findmnt` independently reports `tmpfs`.
+Every other path, mode, commit, marker, link, or filesystem fails closed.
+
 This correction does **not** change the SLOs, request schedules, repetitions, zero-error rule,
 frozen `0.15` spread limit, affinity set, quota rule, or non-ship bootstrap boundary.
 

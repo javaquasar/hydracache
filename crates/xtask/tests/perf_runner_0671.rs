@@ -17,6 +17,7 @@ fn runner_runbook_and_helpers_are_fail_closed_and_secret_free() {
     let runtime_irq_guard = read("scripts/perf/reference-runtime-irq-guard.sh");
     let evidence_tmpfs = read("scripts/perf/reference-evidence-tmpfs.sh");
     let measurement = read("scripts/perf/run-reference-measurement.sh");
+    let prebuild = read("crates/xtask/src/perf.rs");
     let host_attestation = read("crates/xtask/src/host_attestation.rs");
 
     for script in [
@@ -122,6 +123,14 @@ fn runner_runbook_and_helpers_are_fail_closed_and_secret_free() {
     assert!(evidence_tmpfs.contains("ln --symbolic"));
     assert!(evidence_tmpfs.contains("source-commit"));
     assert!(evidence_tmpfs.contains("materialize_one"));
+    assert!(prebuild.contains("exact_tmpfs_publication_contract"));
+    assert!(prebuild.contains("REFERENCE_EVIDENCE_067_TMPFS"));
+    assert!(prebuild.contains("REFERENCE_EVIDENCE_SOURCE_COMMIT"));
+    assert!(prebuild.contains("/usr/bin/findmnt"));
+    assert!(prebuild.contains("GITHUB_ACTIONS"));
+    assert!(prebuild.contains("GITHUB_SHA"));
+    assert!(prebuild.contains("Some(\"qualify\" | \"bootstrap\")"));
+    assert!(prebuild.contains("filesystem_type == \"tmpfs\""));
     assert!(measurement
         .contains("reference measurement orchestration must remain on housekeeping CPUs 0,5-7"));
     assert!(measurement.contains("scripts/perf/reference-evidence-tmpfs.sh verify"));
