@@ -301,7 +301,8 @@ pub fn load_reference_context(
             repo_root.display()
         ))
     })?;
-    let manifest_path = repo_root.join(PREBUILD_MANIFEST_RELATIVE_PATH);
+    let manifest_path =
+        canonicalize_manifest_path(&repo_root.join(PREBUILD_MANIFEST_RELATIVE_PATH))?;
     let bytes = read_bounded_manifest(&manifest_path)?;
     let manifest = parse_prebuild_manifest(&bytes, &manifest_path)?;
     let facts = observe_live_facts(&repo_root)?;
@@ -313,6 +314,13 @@ pub fn load_reference_context(
         prerequisites,
         &facts,
     )
+}
+
+fn canonicalize_manifest_path(path: &Path) -> Result<PathBuf, RespReferenceError> {
+    fs::canonicalize(path).map_err(|source| RespReferenceError::ManifestRead {
+        path: path.to_path_buf(),
+        source,
+    })
 }
 
 pub fn parse_prebuild_manifest(
@@ -1570,6 +1578,37 @@ mod tests {
         assert_eq!(context.surface.state_scope, RESP_STATE_SCOPE);
         assert_eq!(context.surface.network_boundary, RESP_NETWORK_BOUNDARY);
         assert_eq!(context.surface.claim_scope, RESP_CLAIM_SCOPE);
+    }
+
+    #[test]
+    fn aliased_manifest_identity_is_canonical_before_w4b_and_w5c_consume_context() {
+        let fixture = ContractFixture::new("canonical-manifest");
+        fs::write(&fixture.manifest_path, b"fixture-manifest").unwrap();
+        #[cfg(windows)]
+        let aliased_path = PathBuf::from(
+            fixture
+                .manifest_path
+                .to_string_lossy()
+                .strip_prefix(r"\\?\")
+                .unwrap(),
+        );
+        #[cfg(not(windows))]
+        let aliased_path = PathBuf::from(format!(
+            "//{}",
+            fixture
+                .manifest_path
+                .to_string_lossy()
+                .trim_start_matches('/')
+        ));
+
+        assert_ne!(
+            aliased_path.to_string_lossy(),
+            fixture.manifest_path.to_string_lossy()
+        );
+        assert_eq!(
+            canonicalize_manifest_path(&aliased_path).unwrap(),
+            fs::canonicalize(&fixture.manifest_path).unwrap()
+        );
     }
 
     #[test]
