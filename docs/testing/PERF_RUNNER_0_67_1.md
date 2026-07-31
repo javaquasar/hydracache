@@ -103,6 +103,13 @@ and are never serialized.
 This correction does **not** change the SLOs, request schedules, repetitions, zero-error rule,
 frozen `0.15` spread limit, affinity set, quota rule, or non-ship bootstrap boundary.
 
+Bootstrap acquisition `30592637715` was rejected before measurement because its workflow imported
+the offline provisioning receipt before preparing tmpfs. The import correctly materialized
+`target/test-evidence/0.67.1`, while `reference-evidence-tmpfs.sh prepare` correctly requires both
+evidence paths to be absent before creating exact tmpfs links. Bootstrap now follows qualification
+by preparing tmpfs before importing the receipt, and a runner-contract regression fixes that order.
+The rejected run is not a bootstrap sample and no frozen contract changed.
+
 ## Placeholders
 
 Replace these values only where explicitly instructed:
