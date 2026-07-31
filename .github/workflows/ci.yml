@@ -919,11 +919,11 @@ jobs:
             target/test-evidence/0.67.1 \
             target/release-evidence/receipts
 
-      - name: Import offline runner provisioning proof
-        run: cargo run -p xtask --locked -- evidence-run --release 0.67.1 --gate tool.perf-runner-provisioned-0671
-
       - name: Prepare tmpfs reference evidence
         run: scripts/perf/reference-evidence-tmpfs.sh prepare
+
+      - name: Import offline runner provisioning proof
+        run: cargo run -p xtask --locked -- evidence-run --release 0.67.1 --gate tool.perf-runner-provisioned-0671
 
       - name: Build pinned redis-benchmark 7.2.5
         shell: bash

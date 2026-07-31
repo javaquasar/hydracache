@@ -19,6 +19,7 @@ fn runner_runbook_and_helpers_are_fail_closed_and_secret_free() {
     let measurement = read("scripts/perf/run-reference-measurement.sh");
     let prebuild = read("crates/xtask/src/perf.rs");
     let host_attestation = read("crates/xtask/src/host_attestation.rs");
+    let workflow = read(".github/workflows/ci.yml");
 
     for script in [
         &audit,
@@ -155,6 +156,23 @@ fn runner_runbook_and_helpers_are_fail_closed_and_secret_free() {
     assert!(!host_attestation.contains("Command::new(\"systemd-detect-virt\")"));
     assert!(host_attestation.contains("\"--raw\","));
     assert!(host_attestation.contains("parse_root_storage_identity(text)?"));
+    let bootstrap_job = workflow
+        .split_once("  release-0671-performance-bootstrap:\n")
+        .unwrap()
+        .1
+        .split_once("\n  msrv:\n")
+        .unwrap()
+        .0;
+    let bootstrap_tmpfs_prepare = bootstrap_job
+        .find("      - name: Prepare tmpfs reference evidence\n")
+        .unwrap();
+    let bootstrap_receipt_import = bootstrap_job
+        .find("      - name: Import offline runner provisioning proof\n")
+        .unwrap();
+    assert!(
+        bootstrap_tmpfs_prepare < bootstrap_receipt_import,
+        "bootstrap must prepare tmpfs before the receipt import materializes 0.67.1 evidence"
+    );
     assert!(measurement.contains("docker pull --platform linux/amd64"));
     assert!(measurement.contains("--cpuset-cpus 0"));
     assert!(!measurement.contains("taskset --cpu-list 1-4 cargo"));
