@@ -26,6 +26,8 @@ Options:
   --channel <name>    Browser channel: chromium, chrome, or msedge. Defaults to chromium.
   --url <url>         Editor URL. Defaults to https://medium.com/new-story
   --clipboard         Copy the article as rich HTML to the Windows clipboard and exit.
+  --clipboard-title   Copy only the article title as plain text to the Windows clipboard and exit.
+  --clipboard-body    Copy only the body as rich HTML, excluding title and leading cover image.
   --dry-run          Parse the article and print the title/body preview only.
   --help             Show this help.
 
@@ -42,6 +44,8 @@ function parseArgs(argv) {
     channel: "chromium",
     url: "https://medium.com/new-story",
     clipboard: false,
+    clipboardTitle: false,
+    clipboardBody: false,
     dryRun: false
   };
 
@@ -52,6 +56,10 @@ function parseArgs(argv) {
       options.help = true;
     } else if (arg === "--clipboard") {
       options.clipboard = true;
+    } else if (arg === "--clipboard-title") {
+      options.clipboardTitle = true;
+    } else if (arg === "--clipboard-body") {
+      options.clipboardBody = true;
     } else if (arg === "--dry-run") {
       options.dryRun = true;
     } else if (arg === "--article") {
@@ -73,6 +81,10 @@ function parseArgs(argv) {
 
   if (!["chromium", "chrome", "msedge"].includes(options.channel)) {
     throw new Error(`Unsupported browser channel: ${options.channel}`);
+  }
+  const clipboardModes = [options.clipboard, options.clipboardTitle, options.clipboardBody].filter(Boolean).length;
+  if (clipboardModes > 1) {
+    throw new Error("Use only one clipboard mode at a time.");
   }
 
   return options;
@@ -117,13 +129,16 @@ async function readArticle(articlePath) {
   const markdown = await readFile(absolutePath, "utf8");
   const { title, bodyMarkdown } = splitMarkdownArticle(markdown);
   const baseDir = path.dirname(absolutePath);
+  const bodyMarkdownWithoutCover = removeLeadingImages(bodyMarkdown);
 
   return {
     absolutePath,
     title,
     bodyMarkdown,
     bodyText: stripMarkdownComments(bodyMarkdown).trim(),
-    bodyHtml: await markdownToHtml(bodyMarkdown, baseDir)
+    bodyHtml: await markdownToHtml(bodyMarkdown, baseDir),
+    bodyTextWithoutCover: stripMarkdownComments(bodyMarkdownWithoutCover).trim(),
+    bodyHtmlWithoutCover: await markdownToHtml(bodyMarkdownWithoutCover, baseDir)
   };
 }
 
@@ -153,6 +168,23 @@ function splitMarkdownArticle(markdown) {
   ].join("\n");
 
   return { title, bodyMarkdown };
+}
+
+function removeLeadingImages(markdown) {
+  const lines = markdown.replace(/\r\n/g, "\n").split("\n");
+  let index = 0;
+  while (index < lines.length && lines[index].trim() === "") {
+    index += 1;
+  }
+
+  while (index < lines.length && /^!\[[^\]]*]\([^)]+\)\s*$/.test(lines[index].trim())) {
+    lines.splice(index, 1);
+    while (index < lines.length && lines[index].trim() === "") {
+      lines.splice(index, 1);
+    }
+  }
+
+  return lines.join("\n");
 }
 
 async function markdownToHtml(markdown, baseDir) {
@@ -355,6 +387,26 @@ async function copyArticleToClipboard(article) {
 
   const fragment = `<h1>${escapeHtml(article.title)}</h1>\n${article.bodyHtml}`;
   const plainText = `${article.title}\n\n${article.bodyText}`;
+  await copyRichHtmlToClipboard(fragment, plainText);
+}
+
+async function copyBodyToClipboard(article) {
+  if (process.platform !== "win32") {
+    throw new Error("--clipboard-body currently supports Windows only.");
+  }
+
+  await copyRichHtmlToClipboard(article.bodyHtmlWithoutCover, article.bodyTextWithoutCover);
+}
+
+async function copyTitleToClipboard(article) {
+  if (process.platform !== "win32") {
+    throw new Error("--clipboard-title currently supports Windows only.");
+  }
+
+  await copyRichHtmlToClipboard(escapeHtml(article.title), article.title);
+}
+
+async function copyRichHtmlToClipboard(fragment, plainText) {
   const clipboardHtml = toClipboardHtml(fragment);
   const tempDir = await mkdtemp(path.join(os.tmpdir(), "hydracache-article-"));
   const htmlPath = path.join(tempDir, "article.cfhtml");
@@ -519,6 +571,20 @@ async function main() {
     await copyArticleToClipboard(article);
     console.log("Article copied to the Windows clipboard as rich HTML.");
     console.log("Open the Medium editor in your signed-in browser, click the title field, and press Ctrl+V.");
+    return;
+  }
+
+  if (options.clipboardTitle) {
+    await copyTitleToClipboard(article);
+    console.log("Article title copied to the Windows clipboard.");
+    console.log("Click the Medium title field and press Ctrl+V.");
+    return;
+  }
+
+  if (options.clipboardBody) {
+    await copyBodyToClipboard(article);
+    console.log("Article body copied to the Windows clipboard as rich HTML, excluding title and cover image.");
+    console.log("Click the Medium body field and press Ctrl+V. Upload the cover image separately.");
     return;
   }
 

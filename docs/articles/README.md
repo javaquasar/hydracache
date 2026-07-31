@@ -29,6 +29,13 @@ If Medium blocks automated browsers with a security verification, copy the artic
 node scripts/medium-draft.mjs --clipboard --article docs/articles/001-why-rust-needs-cache-semantics.md
 ```
 
+For a more reliable Medium paste, copy the title and body separately. Upload the cover image manually:
+
+```powershell
+node scripts/medium-draft.mjs --clipboard-title --article docs/articles/001-why-rust-needs-cache-semantics.md
+node scripts/medium-draft.mjs --clipboard-body --article docs/articles/001-why-rust-needs-cache-semantics.md
+```
+
 Article drafts should include a short series/resources block near the top with the current part number, planned series entries, GitHub, and crates.io links. Bare `https://` links are converted to clickable links by the Medium draft script.
 
 Refresh the generated series block after changing the series manifest at [hydracache-runtime-series.json](hydracache-runtime-series.json):
