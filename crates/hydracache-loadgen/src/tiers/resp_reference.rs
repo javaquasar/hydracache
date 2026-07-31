@@ -1601,7 +1601,10 @@ mod tests {
                 .trim_start_matches('/')
         ));
 
-        assert_ne!(aliased_path, fixture.manifest_path);
+        assert_ne!(
+            aliased_path.to_string_lossy(),
+            fixture.manifest_path.to_string_lossy()
+        );
         assert_eq!(
             canonicalize_manifest_path(&aliased_path).unwrap(),
             fs::canonicalize(&fixture.manifest_path).unwrap()
