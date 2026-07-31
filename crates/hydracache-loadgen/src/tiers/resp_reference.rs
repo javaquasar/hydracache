@@ -1584,22 +1584,22 @@ mod tests {
     fn aliased_manifest_identity_is_canonical_before_w4b_and_w5c_consume_context() {
         let fixture = ContractFixture::new("canonical-manifest");
         fs::write(&fixture.manifest_path, b"fixture-manifest").unwrap();
-    #[cfg(windows)]
-    let aliased_path = PathBuf::from(
-        fixture
-            .manifest_path
-            .to_string_lossy()
-            .strip_prefix(r"\\?\")
-            .unwrap(),
-    );
-    #[cfg(not(windows))]
-    let aliased_path = PathBuf::from(format!(
-        "//{}",
-        fixture
-            .manifest_path
-            .to_string_lossy()
-            .trim_start_matches('/')
-    ));
+        #[cfg(windows)]
+        let aliased_path = PathBuf::from(
+            fixture
+                .manifest_path
+                .to_string_lossy()
+                .strip_prefix(r"\\?\")
+                .unwrap(),
+        );
+        #[cfg(not(windows))]
+        let aliased_path = PathBuf::from(format!(
+            "//{}",
+            fixture
+                .manifest_path
+                .to_string_lossy()
+                .trim_start_matches('/')
+        ));
 
         assert_ne!(aliased_path, fixture.manifest_path);
         assert_eq!(
