@@ -7,6 +7,10 @@ This directory contains external-facing article drafts for HydraCache.
 - [GitHub](https://github.com/javaquasar/hydracache)
 - [crates.io](https://crates.io/crates/hydracache)
 
+## Published Articles
+
+- 2026-07-31 - [001 - Why Rust Needs Cache Semantics, Not Just Another Cache Map](https://medium.com/@artur.buzov/why-rust-needs-cache-semantics-not-just-another-cache-map-ecf3c4e01191) - Medium
+
 ## Medium Drafting
 
 Create a Medium draft from the first article:
