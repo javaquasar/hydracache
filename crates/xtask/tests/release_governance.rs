@@ -617,6 +617,43 @@ fn canary_release_0671_governance_accepts_a_missing_stage_gate() {
 }
 
 #[test]
+fn release_0671_core_suite_reuses_one_validated_context_for_w4b_and_w5c() {
+    let root = xtask::doc_check::find_repo_root().unwrap();
+    let source =
+        std::fs::read_to_string(root.join("crates/hydracache-loadgen/src/main.rs")).unwrap();
+    let suite_start = source
+        .find("LoadgenCommand::SuiteCore { .. } => {")
+        .expect("SuiteCore dispatch must remain present");
+    let suite_end = source[suite_start..]
+        .find("LoadgenCommand::TierNodeResp { .. } => {")
+        .map(|offset| suite_start + offset)
+        .expect("SuiteCore dispatch must remain bounded by TierNodeResp");
+    let suite = &source[suite_start..suite_end];
+
+    assert_eq!(
+        suite
+            .matches("load_reference_context_for_run(&repo_root)?")
+            .count(),
+        1,
+        "SuiteCore must validate the W7 context exactly once"
+    );
+    assert!(
+        suite.contains("write_grid_model_report_with_context(")
+            && suite.contains("write_reference_brownout_with_context("),
+        "SuiteCore must use context-aware W4B and W5C entry points"
+    );
+    assert!(
+        suite.matches("reference_context.as_ref()").count() >= 4,
+        "the same SuiteCore context must flow through local, client, W4B, and W5C"
+    );
+    assert!(
+        !suite.contains("write_grid_model_report(command.profile(), &grid_model_path)")
+            && !suite.contains("write_reference_brownout(\n                    command.profile(),\n                    BrownoutTarget::GridModelReplica"),
+        "SuiteCore must not fall back to independently reloading W4B or W5C context"
+    );
+}
+
+#[test]
 fn release_compatibility_jobs_fetch_the_baseline_tag_and_ancestry() {
     let root = xtask::doc_check::find_repo_root().unwrap();
     let workflow = std::fs::read_to_string(root.join(".github/workflows/ci.yml")).unwrap();
