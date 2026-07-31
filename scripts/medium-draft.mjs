@@ -14,13 +14,14 @@ const defaultProfile = ".playwright/medium-profile";
 
 function printUsage() {
   console.log(`Usage:
-  node scripts/medium-draft.mjs [--article <path>] [--profile <path>] [--url <url>]
+  node scripts/medium-draft.mjs [--article <path>] [--profile <path>] [--channel <name>] [--url <url>]
 
 Creates a Medium draft from a Markdown article and stops before publishing.
 
 Options:
   --article <path>   Markdown article path. Defaults to ${defaultArticle}
   --profile <path>   Persistent browser profile. Defaults to ${defaultProfile}
+  --channel <name>    Browser channel: chromium, chrome, or msedge. Defaults to chromium.
   --url <url>         Editor URL. Defaults to https://medium.com/new-story
   --dry-run          Parse the article and print the title/body preview only.
   --help             Show this help.
@@ -35,6 +36,7 @@ function parseArgs(argv) {
   const options = {
     article: defaultArticle,
     profile: defaultProfile,
+    channel: "chromium",
     url: "https://medium.com/new-story",
     dryRun: false
   };
@@ -52,12 +54,19 @@ function parseArgs(argv) {
     } else if (arg === "--profile") {
       options.profile = requiredValue(argv, index, arg);
       index += 1;
+    } else if (arg === "--channel") {
+      options.channel = requiredValue(argv, index, arg);
+      index += 1;
     } else if (arg === "--url") {
       options.url = requiredValue(argv, index, arg);
       index += 1;
     } else {
       throw new Error(`Unknown argument: ${arg}`);
     }
+  }
+
+  if (!["chromium", "chrome", "msedge"].includes(options.channel)) {
+    throw new Error(`Unsupported browser channel: ${options.channel}`);
   }
 
   return options;
@@ -409,6 +418,7 @@ async function main() {
   await mkdir(profilePath, { recursive: true });
 
   const context = await chromium.launchPersistentContext(profilePath, {
+    ...(options.channel === "chromium" ? {} : { channel: options.channel }),
     headless: false,
     viewport: { width: 1440, height: 1000 }
   });
