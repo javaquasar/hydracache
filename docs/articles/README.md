@@ -23,6 +23,12 @@ If Medium login does not respond in the default Playwright Chromium window, retr
 node scripts/medium-draft.mjs --channel chrome --profile .playwright/medium-chrome-profile --article docs/articles/001-why-rust-needs-cache-semantics.md
 ```
 
+If Medium blocks automated browsers with a security verification, copy the article as rich HTML and paste it into a signed-in Firefox or Chrome editor:
+
+```powershell
+node scripts/medium-draft.mjs --clipboard --article docs/articles/001-why-rust-needs-cache-semantics.md
+```
+
 Article drafts should include a short series/resources block near the top with the current part number, planned series entries, GitHub, and crates.io links. Bare `https://` links are converted to clickable links by the Medium draft script.
 
 Refresh the generated series block after changing the series manifest at [hydracache-runtime-series.json](hydracache-runtime-series.json):
