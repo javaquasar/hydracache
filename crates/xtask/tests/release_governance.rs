@@ -434,6 +434,24 @@ fn performance_lane_requires_protected_self_hosted_labels_and_serial_concurrency
         xtask::release_governance::release_execution_wiring_problems(&workflow, "0.67").unwrap();
     assert!(problems.is_empty(), "{problems:#?}");
 
+    let wrong_prebuild_affinity = workflow.replacen(
+        "taskset --cpu-list 1-4 cargo run -p xtask --locked -- evidence-run --release 0.67 --gate tool.perf-prebuild-067",
+        "taskset --cpu-list 0-3 cargo run -p xtask --locked -- evidence-run --release 0.67 --gate tool.perf-prebuild-067",
+        1,
+    );
+    let problems = xtask::release_governance::release_execution_wiring_problems(
+        &wrong_prebuild_affinity,
+        "0.67",
+    )
+    .unwrap();
+    assert!(
+        problems.iter().any(|problem| {
+            problem.contains("Prebuild 0.67 performance binaries")
+                && problem.contains("taskset --cpu-list 1-4")
+        }),
+        "wrong prebuild affinity was accepted: {problems:#?}"
+    );
+
     let floating_image = workflow.replacen(
         "runs-on: [self-hosted, linux, x64, hydracache-perf-v1]",
         "runs-on: [self-hosted, linux, x64]",
