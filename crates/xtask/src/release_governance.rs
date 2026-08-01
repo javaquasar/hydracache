@@ -1240,7 +1240,7 @@ echo "$tools_dir/redis-7.2.5/src" >> "$GITHUB_PATH""#;
         ),
         (
             "Prebuild 0.67 performance binaries",
-            "cargo run -p xtask --locked -- evidence-run --release 0.67 --gate tool.perf-prebuild-067",
+            "taskset --cpu-list 1-4 cargo run -p xtask --locked -- evidence-run --release 0.67 --gate tool.perf-prebuild-067",
         ),
         (
             "Run 0.67 core performance evidence",
