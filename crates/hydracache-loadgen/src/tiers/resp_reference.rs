@@ -1544,9 +1544,11 @@ mod tests {
 
         fn validate(&self) -> Result<ValidatedRespReferenceContext, RespReferenceError> {
             let bytes = serde_json::to_vec_pretty(&self.manifest).unwrap();
+            fs::write(&self.manifest_path, &bytes).unwrap();
+            let canonical_manifest_path = canonicalize_manifest_path(&self.manifest_path).unwrap();
             validate_manifest(
                 &self.root,
-                self.manifest_path.clone(),
+                canonical_manifest_path,
                 &bytes,
                 self.manifest.clone(),
                 &self.prerequisites,
@@ -1583,7 +1585,7 @@ mod tests {
     #[test]
     fn aliased_manifest_identity_is_canonical_before_w4b_and_w5c_consume_context() {
         let fixture = ContractFixture::new("canonical-manifest");
-        fs::write(&fixture.manifest_path, b"fixture-manifest").unwrap();
+        let context = fixture.validate().unwrap();
         #[cfg(windows)]
         let aliased_path = PathBuf::from(
             fixture
@@ -1605,9 +1607,16 @@ mod tests {
             aliased_path.to_string_lossy(),
             fixture.manifest_path.to_string_lossy()
         );
+        // W4B receives `context.manifest_path`, while W5C canonicalizes its
+        // predecessor spelling before applying the unchanged equality gate.
+        // Both consumers must therefore observe one canonical identity.
         assert_eq!(
             canonicalize_manifest_path(&aliased_path).unwrap(),
-            fs::canonicalize(&fixture.manifest_path).unwrap()
+            context.manifest_path
+        );
+        assert_eq!(
+            context.manifest_path,
+            fs::canonicalize(&context.manifest_path).unwrap()
         );
     }
 
