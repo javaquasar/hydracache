@@ -1235,6 +1235,10 @@ echo "$tools_dir/redis-7.2.5/src" >> "$GITHUB_PATH""#;
             "scripts/perf/run-reference-measurement.sh attestation",
         ),
         (
+            "Prepare tmpfs reference evidence",
+            "scripts/perf/reference-evidence-tmpfs.sh prepare",
+        ),
+        (
             "Prebuild 0.67 performance binaries",
             "taskset --cpu-list 1-4 cargo run -p xtask --locked -- evidence-run --release 0.67 --gate tool.perf-prebuild-067",
         ),

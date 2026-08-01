@@ -713,6 +713,9 @@ jobs:
     env:
       HYDRACACHE_RUN_PERF_REFERENCE: 1
       HYDRACACHE_PERF_RUNNER_CLASS: self-hosted-bare-metal-v1
+      # The exploratory 0.67 lane uses the same commit-bound tmpfs publication
+      # contract as qualification, while the 0.67.1 jobs remain opt-in.
+      HYDRACACHE_PERFORMANCE_0671_MODE: qualify
 
     steps:
       - name: Checkout
@@ -757,6 +760,9 @@ jobs:
           rm -rf -- \
             target/test-evidence/0.67 \
             target/test-evidence/0.67.1
+
+      - name: Prepare tmpfs reference evidence
+        run: scripts/perf/reference-evidence-tmpfs.sh prepare
 
       - name: Preflight 0.67 reference runner stability
         run: scripts/perf/run-reference-measurement.sh attestation
