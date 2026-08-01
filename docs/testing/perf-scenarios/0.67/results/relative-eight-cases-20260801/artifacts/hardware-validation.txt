@@ -1,0 +1,13 @@
+reference evidence tmpfs verified: root=/dev/shm/hydracache-reference-evidence-v1
+reference runtime IRQ guard passed: phase=relative-eight-pre measurement=1-4 irq_files=113 dormant-unmapped-nvme=8
+host=hydracache-perf-v1
+source_commit=ebf1a53c667c065fce43eceb1f65555cbf250538
+source_status=
+kernel=Linux 6.8.0-136-generic x86_64 GNU/Linux
+cpu_model=AMD EPYC 7232P 8-Core Processor
+logical_cpus=4
+measurement_affinity=1-4
+runner_receipt_sha256=2374838fc80458e84a74d4b1869eda82526afac7b746370c2d037287fcac23bc
+runner_receipt=/var/lib/hydracache-perf/runner-provisioned.json
+hardware_validation=tmpfs-verify; reference-runtime-irq-guard; runner-provisioned-receipt-sha256
+reference runtime IRQ guard passed: phase=relative-eight-post measurement=1-4 irq_files=113 dormant-unmapped-nvme=8
