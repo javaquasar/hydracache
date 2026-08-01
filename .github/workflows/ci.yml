@@ -758,9 +758,6 @@ jobs:
             target/test-evidence/0.67 \
             target/test-evidence/0.67.1
 
-      - name: Prepare tmpfs reference evidence
-        run: scripts/perf/reference-evidence-tmpfs.sh prepare
-
       - name: Preflight 0.67 reference runner stability
         run: scripts/perf/run-reference-measurement.sh attestation
 
