@@ -261,3 +261,32 @@ stable for the full run, or use a storage/network configuration with no
 background IRQs on the measurement CPU. Verify the unchanged preflight and the
 baseline/delta guard before accepting a run. Only after both pass should the
 raw report be treated as a valid exploratory comparison.
+
+## Follow-up diagnostics and harness hardening
+
+After the first rejected run, the host was checked again while the runner
+service remained disabled. The boot contract still exposes CPUs `0-7`, with
+`1-4` isolated and housekeeping CPUs `0,5-7`; managed NVMe IRQs were observed
+on CPU 2 (`nvme0q3`/`nvme1q3`) and CPU 3 (`nvme0q4`/`nvme1q4`). Direct writes to
+their `smp_affinity_list` and blk-mq `cpu_list` were rejected by the kernel
+because these are managed IRQs. No guard was bypassed and no qualification
+contract was weakened.
+
+The exploratory guard was made affinity-parameterized through
+`MEASUREMENT_AFFINITY` while retaining the original `1-4` default. A 60-second
+idle delta check on CPU 2 passed, and a 180-second idle check on CPU 4 passed;
+the CPU 4 baseline monitored `nvme0q5` and `nvme1q5`, both at count zero.
+
+The first post-hardening smoke check found another reproducibility hazard:
+rootless Docker with host networking recorded an empty Docker cpuset and the
+container processes reported affinity `0-15` despite `--cpuset-cpus`. The
+harness now obtains each container init PID, applies `taskset` explicitly, and
+fails closed unless the effective affinity equals the requested affinity. A
+fixed smoke run confirmed `redis` and `hazelcast` both had effective affinity
+`2`, and its post-run IRQ delta guard passed.
+
+The subsequent full CPU-2 run correctly rejected itself when `nvme1q3` changed
+from baseline count `0` to `1`. Its workload and telemetry files are retained
+as diagnostic evidence only. A new full run on CPU 4 is being monitored with
+the hardened affinity check; it will be accepted only if its preflight,
+container affinity, and post-run delta guard all pass.
