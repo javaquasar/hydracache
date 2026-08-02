@@ -52,7 +52,7 @@ binary. A custom executable may be supplied with `REDIS_BENCHMARK`.
     python3 -m pip install --user 'hazelcast-python-client==5.5.0'
     docker buildx imagetools inspect hazelcast/hazelcast:5.7.0-slim-jdk21
     export HAZELCAST_IMAGE='hazelcast/hazelcast:5.7.0-slim-jdk21@sha256:<recorded-digest>'
-    export MEASUREMENT_AFFINITY='5-7'
+    export MEASUREMENT_AFFINITY='5'
     scripts/perf/run-relative-eight-cases-telemetry.sh \
       /var/lib/hydracache-perf/exploratory/relative-eight-cases-telemetry-$(date -u +%Y%m%dT%H%M%SZ)
 
