@@ -67,7 +67,15 @@ write_root_metadata() {
       echo "runner_receipt_sha256=$(sha256sum /var/lib/hydracache-perf/runner-provisioned.json | cut -d' ' -f1)"
     fi
   } >"$output_dir/reproduction-command.txt"
-  scripts/perf/reference-evidence-tmpfs.sh verify >"$output_dir/hardware-validation.txt"
+  # The reset server may have ordinary generated evidence directories. Remove
+  # only these known generated paths, then recreate the pinned tmpfs aliases.
+  for generated_evidence in target/test-evidence/0.67 target/test-evidence/0.67.1; do
+    if [[ -e "$generated_evidence" && ! -L "$generated_evidence" ]]; then rm -rf -- "$generated_evidence"; fi
+  done
+  if ! scripts/perf/reference-evidence-tmpfs.sh verify >"$output_dir/reference-evidence-validation.txt" 2>&1; then
+    scripts/perf/reference-evidence-tmpfs.sh prepare >"$output_dir/reference-evidence-preparation.txt" 2>&1
+  fi
+  cat "$output_dir/reference-evidence-validation.txt" "$output_dir/reference-evidence-preparation.txt" 2>/dev/null >>"$output_dir/hardware-validation.txt" || true
   scripts/perf/reference-runtime-irq-guard.sh memory-investigations-pre >>"$output_dir/hardware-validation.txt"
   docker version >"$output_dir/metadata/docker-version.txt" 2>&1 || true
 }

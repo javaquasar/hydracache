@@ -118,7 +118,12 @@ require_tools
 {
   echo "stage=memory-leak"; echo "branch=$(git branch --show-current)"; echo "source_commit=$(git rev-parse HEAD)"; echo "host=$(hostname)"; echo "affinity=$affinity"; echo "interval_seconds=$interval"; echo "duration_seconds=$duration"; echo "cycles=$cycles"; echo "batch_requests=$batch"; echo "redis_image=$redis_image"; echo "hazelcast_image=$hazelcast_image"; echo "hazelcast_client_version=$hazelcast_client_version"
 } >"$output_dir/reproduction-command.txt"
-scripts/perf/reference-evidence-tmpfs.sh verify >"$output_dir/hardware-validation.txt"
+for generated_evidence in target/test-evidence/0.67 target/test-evidence/0.67.1; do
+  if [[ -e "$generated_evidence" && ! -L "$generated_evidence" ]]; then rm -rf -- "$generated_evidence"; fi
+done
+if ! scripts/perf/reference-evidence-tmpfs.sh verify >>"$output_dir/hardware-validation.txt" 2>&1; then
+  scripts/perf/reference-evidence-tmpfs.sh prepare >>"$output_dir/hardware-validation.txt" 2>&1
+fi
 scripts/perf/reference-runtime-irq-guard.sh memory-leak-pre >>"$output_dir/hardware-validation.txt"
 printf 'experiment\ttarget\tpattern\tstatus\n' >"$output_dir/leak-status.tsv"
 trap 'stop_target || true' EXIT INT TERM
