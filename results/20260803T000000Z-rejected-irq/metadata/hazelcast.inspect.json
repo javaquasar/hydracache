@@ -1,0 +1,216 @@
+[
+    {
+        "Id": "a43c307cfab1cbb8064fdd4d00e076c8ae599eafa0d52840ee63f164b60e3022",
+        "Created": "2026-08-02T18:11:46.369764114Z",
+        "Path": "hz",
+        "Args": [
+            "start"
+        ],
+        "State": {
+            "Status": "running",
+            "Running": true,
+            "Paused": false,
+            "Restarting": false,
+            "OOMKilled": false,
+            "Dead": false,
+            "Pid": 2452,
+            "ExitCode": 0,
+            "Error": "",
+            "StartedAt": "2026-08-02T18:11:46.443950286Z",
+            "FinishedAt": "0001-01-01T00:00:00Z",
+            "Health": {
+                "Status": "starting",
+                "FailingStreak": 0,
+                "Log": []
+            }
+        },
+        "Image": "sha256:d9939853200b70cfd52115a9f1e905ef37cd3d98e1f966ce67c8d5e1c9e21e90",
+        "ResolvConfPath": "/home/github-runner/.local/share/docker/containers/a43c307cfab1cbb8064fdd4d00e076c8ae599eafa0d52840ee63f164b60e3022/resolv.conf",
+        "HostnamePath": "/home/github-runner/.local/share/docker/containers/a43c307cfab1cbb8064fdd4d00e076c8ae599eafa0d52840ee63f164b60e3022/hostname",
+        "HostsPath": "/home/github-runner/.local/share/docker/containers/a43c307cfab1cbb8064fdd4d00e076c8ae599eafa0d52840ee63f164b60e3022/hosts",
+        "LogPath": "/home/github-runner/.local/share/docker/containers/a43c307cfab1cbb8064fdd4d00e076c8ae599eafa0d52840ee63f164b60e3022/a43c307cfab1cbb8064fdd4d00e076c8ae599eafa0d52840ee63f164b60e3022-json.log",
+        "Name": "/hydracache-relative-hazelcast",
+        "RestartCount": 0,
+        "Driver": "overlayfs",
+        "Platform": "linux",
+        "MountLabel": "",
+        "ProcessLabel": "",
+        "AppArmorProfile": "",
+        "ExecIDs": null,
+        "HostConfig": {
+            "Binds": null,
+            "ContainerIDFile": "",
+            "LogConfig": {
+                "Type": "json-file",
+                "Config": {}
+            },
+            "NetworkMode": "host",
+            "PortBindings": {},
+            "RestartPolicy": {
+                "Name": "no",
+                "MaximumRetryCount": 0
+            },
+            "AutoRemove": false,
+            "VolumeDriver": "",
+            "VolumesFrom": null,
+            "ConsoleSize": [
+                0,
+                0
+            ],
+            "CapAdd": null,
+            "CapDrop": null,
+            "CgroupnsMode": "private",
+            "Dns": null,
+            "DnsOptions": [],
+            "DnsSearch": [],
+            "ExtraHosts": null,
+            "GroupAdd": null,
+            "IpcMode": "private",
+            "Cgroup": "",
+            "Links": null,
+            "OomScoreAdj": 200,
+            "PidMode": "",
+            "Privileged": false,
+            "PublishAllPorts": false,
+            "ReadonlyRootfs": false,
+            "SecurityOpt": null,
+            "UTSMode": "",
+            "UsernsMode": "",
+            "ShmSize": 67108864,
+            "Runtime": "runc",
+            "Isolation": "",
+            "CpuShares": 0,
+            "Memory": 0,
+            "NanoCpus": 0,
+            "CgroupParent": "",
+            "BlkioWeight": 0,
+            "BlkioWeightDevice": [],
+            "BlkioDeviceReadBps": [],
+            "BlkioDeviceWriteBps": [],
+            "BlkioDeviceReadIOps": [],
+            "BlkioDeviceWriteIOps": [],
+            "CpuPeriod": 0,
+            "CpuQuota": 0,
+            "CpuRealtimePeriod": 0,
+            "CpuRealtimeRuntime": 0,
+            "CpusetCpus": "",
+            "CpusetMems": "",
+            "Devices": [],
+            "DeviceCgroupRules": null,
+            "DeviceRequests": null,
+            "MemoryReservation": 0,
+            "MemorySwap": 0,
+            "MemorySwappiness": null,
+            "OomKillDisable": null,
+            "PidsLimit": null,
+            "Ulimits": [],
+            "CpuCount": 0,
+            "CpuPercent": 0,
+            "IOMaximumIOps": 0,
+            "IOMaximumBandwidth": 0,
+            "MaskedPaths": [
+                "/proc/acpi",
+                "/proc/asound",
+                "/proc/interrupts",
+                "/proc/kcore",
+                "/proc/keys",
+                "/proc/latency_stats",
+                "/proc/sched_debug",
+                "/proc/scsi",
+                "/proc/timer_list",
+                "/proc/timer_stats",
+                "/sys/devices/virtual/powercap",
+                "/sys/firmware"
+            ],
+            "ReadonlyPaths": [
+                "/proc/bus",
+                "/proc/fs",
+                "/proc/irq",
+                "/proc/sys",
+                "/proc/sysrq-trigger"
+            ]
+        },
+        "Storage": {
+            "RootFS": {
+                "Snapshot": {
+                    "Name": "overlayfs"
+                }
+            }
+        },
+        "Mounts": [],
+        "Config": {
+            "Hostname": "hydracache-perf-v1",
+            "Domainname": "",
+            "User": "hazelcast",
+            "AttachStdin": false,
+            "AttachStdout": false,
+            "AttachStderr": false,
+            "ExposedPorts": {
+                "5701/tcp": {}
+            },
+            "Tty": false,
+            "OpenStdin": false,
+            "StdinOnce": false,
+            "Env": [
+                "PATH=/opt/hazelcast/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
+                "HZ_HOME=/opt/hazelcast",
+                "CLASSPATH_DEFAULT=/opt/hazelcast/*",
+                "JAVA_OPTS_DEFAULT=-Djava.net.preferIPv4Stack=true -XX:MaxRAMPercentage=80.0",
+                "PROMETHEUS_PORT=",
+                "PROMETHEUS_CONFIG=/opt/hazelcast/config/jmx_agent_config.yaml",
+                "CLASSPATH=",
+                "JAVA_OPTS=",
+                "HAZELCAST_CONFIG=config/hazelcast-docker.xml",
+                "LANG=C.UTF-8"
+            ],
+            "Cmd": [
+                "hz",
+                "start"
+            ],
+            "Healthcheck": {
+                "Test": [
+                    "CMD",
+                    "hz-healthcheck"
+                ]
+            },
+            "Image": "hazelcast/hazelcast:5.7.0-slim-jdk21@sha256:d9939853200b70cfd52115a9f1e905ef37cd3d98e1f966ce67c8d5e1c9e21e90",
+            "Volumes": null,
+            "WorkingDir": "/opt/hazelcast",
+            "Entrypoint": null,
+            "Labels": {}
+        },
+        "NetworkSettings": {
+            "SandboxID": "d29acbe7a348bf2dc5c29c6dbfada506809e1951a8f09fadcf33b03f1272bbbc",
+            "SandboxKey": "/run/user/1001/docker/netns/default",
+            "Ports": {},
+            "Networks": {
+                "host": {
+                    "IPAMConfig": null,
+                    "Links": null,
+                    "Aliases": null,
+                    "DriverOpts": null,
+                    "GwPriority": 0,
+                    "NetworkID": "4afb2d077e87986a9fdc45b46dacde345dabaabbda7535d05730255b64e55d42",
+                    "EndpointID": "faaaf87ebfd25a7ece6d751020ea0318147b91c4df15425b8452d84a45c821ca",
+                    "Gateway": "",
+                    "IPAddress": "",
+                    "MacAddress": "",
+                    "IPPrefixLen": 0,
+                    "IPv6Gateway": "",
+                    "GlobalIPv6Address": "",
+                    "GlobalIPv6PrefixLen": 0,
+                    "DNSNames": null
+                }
+            }
+        },
+        "ImageManifestDescriptor": {
+            "mediaType": "application/vnd.oci.image.manifest.v1+json",
+            "digest": "sha256:c5f5c4ba93b59e9fa6321f7ffd527e4125bb13a86eebe1495f979fabab84c301",
+            "size": 1548,
+            "platform": {
+                "architecture": "amd64",
+                "os": "linux"
+            }
+        }
+    }
+]
