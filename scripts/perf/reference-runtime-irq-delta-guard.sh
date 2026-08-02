@@ -10,19 +10,21 @@ measurement="${MEASUREMENT_AFFINITY-1-4}"
 test -n "$baseline_file"
 
 cpu_list_intersects_measurement() {
-  local cpu_list="$1" segment first last
-  local old_ifs="$IFS"
-  IFS=','
-  for segment in $cpu_list; do
+  local cpu_list="$1" segment first last msegment mfirst mlast
+  local -a irq_segments measurement_segments
+  IFS=',' read -r -a irq_segments <<<"$cpu_list"
+  IFS=',' read -r -a measurement_segments <<<"$measurement"
+  for segment in "${irq_segments[@]}"; do
     first="${segment%%-*}"
     last="${segment##*-}"
     [[ "$first" =~ ^[0-9]+$ && "$last" =~ ^[0-9]+$ ]] || continue
-    if ((first <= 4 && last >= 1)); then
-      IFS="$old_ifs"
-      return 0
-    fi
+    for msegment in "${measurement_segments[@]}"; do
+      mfirst="${msegment%%-*}"
+      mlast="${msegment##*-}"
+      [[ "$mfirst" =~ ^[0-9]+$ && "$mlast" =~ ^[0-9]+$ ]] || continue
+      if ((first <= mlast && last >= mfirst)); then return 0; fi
+    done
   done
-  IFS="$old_ifs"
   return 1
 }
 
