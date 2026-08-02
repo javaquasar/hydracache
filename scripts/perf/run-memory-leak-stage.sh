@@ -71,7 +71,8 @@ run_workload() {
 record_checkpoint() { printf '%s\t%s\t%s\n' "$(date -u +%s.%N)" "$1" "$2" >>"$3/checkpoints.tsv"; }
 
 run_soak() {
-  local exp="$1" target="$2" mode="$3" pattern="$4" dir="$output_dir/leak-experiments/$exp/$target"
+  local exp="$1" target="$2" mode="$3" pattern="$4" dir
+  dir="$output_dir/leak-experiments/$exp/$target"
   mkdir -p "$dir/telemetry" "$dir/raw"; printf 'timestamp\tphase\tdetail\n' >"$dir/checkpoints.tsv"
   start_target "$target" "$dir" "$mode" || { echo failed >"$dir/status.txt"; printf '%s\t%s\t%s\tfailed\n' "$exp" "$target" "$pattern" >>"$output_dir/leak-status.tsv"; stop_target; return; }
   local pid collector=""; pid="$(pid_for "$target")"
@@ -96,7 +97,8 @@ run_soak() {
 }
 
 run_restart_soak() {
-  local exp=04-restart-soak target="$1" mode="$2" pattern=restart-soak dir="$output_dir/leak-experiments/$exp/$target"
+  local exp=04-restart-soak target="$1" mode="$2" pattern=restart-soak dir
+  dir="$output_dir/leak-experiments/$exp/$target"
   mkdir -p "$dir/telemetry" "$dir/raw"; printf 'timestamp\tphase\tdetail\n' >"$dir/checkpoints.tsv"
   local per_cycle=$((duration / cycles)); [[ "$per_cycle" -lt 20 ]] && per_cycle=20
   for cycle in $(seq 1 "$cycles"); do

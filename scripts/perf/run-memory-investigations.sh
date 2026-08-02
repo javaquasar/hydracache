@@ -229,7 +229,8 @@ run_case() {
 }
 
 run_ttl_case() {
-  local target="$1" exp=06-ttl case_id=ttl-10k dir="$output_dir/experiments/$exp/$target/$case_id"
+  local target="$1" exp=06-ttl case_id=ttl-10k dir
+  dir="$output_dir/experiments/$exp/$target/$case_id"
   mkdir -p "$dir/telemetry" "$dir/raw"
   if [[ "$target" == hazelcast ]]; then echo not_applicable >"$dir/status.txt"; record_status "$exp" "$target" "$case_id" not_applicable ttl_requires_native_expiry; return; fi
   start_target "$target" "$dir" default || { record_status "$exp" "$target" "$case_id" failed start_failed; stop_target "$target"; return; }
@@ -247,7 +248,8 @@ run_ttl_case() {
 }
 
 run_mix_case() {
-  local target="$1" exp=07-workload-mix case_id="mix-${2}set" pct="$2" dir="$output_dir/experiments/$exp/$target/$case_id"
+  local target="$1" exp=07-workload-mix case_id="mix-${2}set" pct="$2" dir
+  dir="$output_dir/experiments/$exp/$target/$case_id"
   mkdir -p "$dir/telemetry" "$dir/raw"
   start_target "$target" "$dir" default || { record_status "$exp" "$target" "$case_id" failed start_failed; stop_target "$target"; return; }
   local pid collector; pid="$(target_pid "$target")"
@@ -262,7 +264,8 @@ run_mix_case() {
 }
 
 run_restart_case() {
-  local target="$1" exp=09-restart case_id=restart-durability dir="$output_dir/experiments/$exp/$target/$case_id"
+  local target="$1" exp=09-restart case_id=restart-durability dir
+  dir="$output_dir/experiments/$exp/$target/$case_id"
   mkdir -p "$dir/telemetry" "$dir/raw"
   if [[ "$target" == hazelcast ]]; then echo not_applicable >"$dir/status.txt"; record_status "$exp" "$target" "$case_id" not_applicable restart_semantics_not_comparable; return; fi
   start_target "$target" "$dir" default || { record_status "$exp" "$target" "$case_id" failed start_failed; stop_target "$target"; return; }
