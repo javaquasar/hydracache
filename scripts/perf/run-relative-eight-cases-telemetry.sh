@@ -3,7 +3,7 @@ set -euo pipefail
 IFS=$'\n\t'
 repo_root="$(git rev-parse --show-toplevel)"
 output_dir="${1-/tmp/hydracache-relative-eight-cases-telemetry}"
-benchmark="${REDIS_BENCHMARK-/opt/actions-runner/_work/_temp/hydracache-perf-tools/redis-7.2.5/src/redis-benchmark}"
+benchmark="${REDIS_BENCHMARK-/usr/bin/redis-benchmark}"
 redis_image="${REDIS_IMAGE-redis@sha256:3aaec283e6e593bde528077d60280ac1589887067a39273348860837c9346d7e}"
 hazelcast_image="${HAZELCAST_IMAGE-}"
 hazelcast_client_python="${HAZELCAST_CLIENT_PYTHON-python3}"
@@ -14,7 +14,8 @@ repeats="${REPEATS-3}"
 interval="${TELEMETRY_INTERVAL_SECONDS-1}"
 hydra_binary="$repo_root/target/release/hydracache-server"
 test "$(id --user --name)" = github-runner
-test -x "$benchmark" && test -x "$hydra_binary"
+test -x "$benchmark" || { echo "redis-benchmark is unavailable: $benchmark (install redis-tools or set REDIS_BENCHMARK)" >&2; exit 2; }
+test -x "$hydra_binary"
 test -n "$hazelcast_image" && [[ "$hazelcast_image" =~ @sha256:[0-9a-fA-F]{64}$ ]] || { echo 'HAZELCAST_IMAGE must include a full sha256 digest' >&2; exit 2; }
 "$hazelcast_client_python" -c 'import hazelcast' || { echo 'hazelcast-python-client is unavailable; refusing a partial run' >&2; exit 2; }
 "$hazelcast_client_python" -c "import importlib.metadata as m; assert m.version('hazelcast-python-client') == '$hazelcast_client_version'" || { echo "hazelcast-python-client must be exactly $hazelcast_client_version" >&2; exit 2; }
@@ -35,7 +36,7 @@ cleanup() { set +e; test -f "$output_dir/hydra.pid" && kill "$(cat "$output_dir/
 trap cleanup EXIT
 scripts/perf/reference-evidence-tmpfs.sh verify >"$output_dir/hardware-validation.txt"
 scripts/perf/reference-runtime-irq-guard.sh relative-eight-telemetry-pre >>"$output_dir/hardware-validation.txt"
-{ echo "host=$(hostname)"; echo "source_commit=$(git rev-parse HEAD)"; echo "source_status=$(git status --porcelain=v1 --untracked-files=all | tr '\n' ';')"; echo "kernel=$(uname -srmo)"; echo "cpu_model=$(awk -F: '/model name/ {gsub(/^ /, "", $2); print $2; exit}' /proc/cpuinfo)"; echo "logical_cpus=$(nproc)"; echo "measurement_affinity=$affinity"; echo "targets=hydracache,redis,hazelcast-community"; echo "runner_receipt_sha256=$(sha256sum /var/lib/hydracache-perf/runner-provisioned.json | cut -d' ' -f1)"; echo "runner_receipt=/var/lib/hydracache-perf/runner-provisioned.json"; echo "telemetry_interval_seconds=$interval"; echo "hazelcast_image=$hazelcast_image"; echo "hazelcast_client=$hazelcast_client_version"; } >>"$output_dir/hardware-validation.txt"
+{ echo "host=$(hostname)"; echo "source_commit=$(git rev-parse HEAD)"; echo "source_status=$(git status --porcelain=v1 --untracked-files=all | tr '\n' ';')"; echo "kernel=$(uname -srmo)"; echo "cpu_model=$(awk -F: '/model name/ {gsub(/^ /, "", $2); print $2; exit}' /proc/cpuinfo)"; echo "logical_cpus=$(nproc)"; echo "measurement_affinity=$affinity"; echo "targets=hydracache,redis,hazelcast-community"; echo "runner_receipt_sha256=$(sha256sum /var/lib/hydracache-perf/runner-provisioned.json | cut -d' ' -f1)"; echo "runner_receipt=/var/lib/hydracache-perf/runner-provisioned.json"; echo "telemetry_interval_seconds=$interval"; echo "redis_benchmark=$benchmark"; echo "redis_benchmark_version=$($benchmark --version 2>&1 | head -n 1)"; echo "hazelcast_image=$hazelcast_image"; echo "hazelcast_client=$hazelcast_client_version"; } >>"$output_dir/hardware-validation.txt"
 docker run -d --name hydracache-relative-redis --network host --cpuset-cpus "$affinity" "$redis_image" redis-server --save "" --appendonly no >"$output_dir/metadata/redis.container-id" 2>"$output_dir/metadata/docker-warnings.txt"
 docker run -d --name hydracache-relative-hazelcast --network host --cpuset-cpus "$affinity" "$hazelcast_image" >"$output_dir/metadata/hazelcast.container-id" 2>>"$output_dir/metadata/docker-warnings.txt"
 docker inspect hydracache-relative-redis >"$output_dir/metadata/redis.inspect.json"

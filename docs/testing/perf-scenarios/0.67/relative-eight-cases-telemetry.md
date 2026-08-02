@@ -37,6 +37,11 @@ metric and its sample count.
 
 ## Reproduction on the dedicated host
 
+Install the pinned host benchmark dependency before running; the harness
+records the installed `redis-benchmark --version` and refuses a missing
+binary. A custom executable may be supplied with `REDIS_BENCHMARK`.
+
+    sudo apt-get install -y redis-tools
     python3 -m pip install --user 'hazelcast-python-client==5.5.0'
     docker buildx imagetools inspect hazelcast/hazelcast:5.7.0-slim-jdk21
     export HAZELCAST_IMAGE='hazelcast/hazelcast:5.7.0-slim-jdk21@sha256:<recorded-digest>'
