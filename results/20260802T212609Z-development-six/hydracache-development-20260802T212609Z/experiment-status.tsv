@@ -1,0 +1,7 @@
+experiment	status	notes
+cpu-telemetry	PASSED	process_cpu_percent plus RSS/cgroup telemetry
+soak-memory	PASSED	duration=60s batches=70
+ttl-eviction	PASSED	TTL expiry and 2000-key pressure recorded
+restart-recovery	PASSED	SIGSTOP availability and storage restart semantics recorded
+saturation	PASSED	clients=1,10,50,100 pipelines=1,10
+profile-jmx-perf	PASSED	Hydra perf stat captured; Hazelcast JVM/JMX availability recorded

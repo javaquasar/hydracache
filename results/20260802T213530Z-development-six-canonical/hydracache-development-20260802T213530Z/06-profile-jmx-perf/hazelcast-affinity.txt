@@ -1,0 +1,2 @@
+pid 50189's current affinity list: 0-7
+pid 50189's new affinity list: 4

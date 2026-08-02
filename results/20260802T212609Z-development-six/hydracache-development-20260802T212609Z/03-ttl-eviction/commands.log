@@ -1,0 +1,123 @@
+case=1 set_short_ttl
+OK
+immediate_pttl=295
+immediate_get=value-1
+expired_pttl=-2
+expired_get=
+case=2 set_short_ttl
+OK
+immediate_pttl=295
+immediate_get=value-2
+expired_pttl=-2
+expired_get=
+case=3 set_short_ttl
+OK
+immediate_pttl=296
+immediate_get=value-3
+expired_pttl=-2
+expired_get=
+case=4 set_short_ttl
+OK
+immediate_pttl=296
+immediate_get=value-4
+expired_pttl=-2
+expired_get=
+case=5 set_short_ttl
+OK
+immediate_pttl=295
+immediate_get=value-5
+expired_pttl=-2
+expired_get=
+case=6 set_short_ttl
+OK
+immediate_pttl=296
+immediate_get=value-6
+expired_pttl=-2
+expired_get=
+case=7 set_short_ttl
+OK
+immediate_pttl=295
+immediate_get=value-7
+expired_pttl=-2
+expired_get=
+case=8 set_short_ttl
+OK
+immediate_pttl=295
+immediate_get=value-8
+expired_pttl=-2
+expired_get=
+case=9 set_short_ttl
+OK
+immediate_pttl=295
+immediate_get=value-9
+expired_pttl=-2
+expired_get=
+case=10 set_short_ttl
+OK
+immediate_pttl=295
+immediate_get=value-10
+expired_pttl=-2
+expired_get=
+case=11 set_short_ttl
+OK
+immediate_pttl=295
+immediate_get=value-11
+expired_pttl=-2
+expired_get=
+case=12 set_short_ttl
+OK
+immediate_pttl=295
+immediate_get=value-12
+expired_pttl=-2
+expired_get=
+case=13 set_short_ttl
+OK
+immediate_pttl=295
+immediate_get=value-13
+expired_pttl=-2
+expired_get=
+case=14 set_short_ttl
+OK
+immediate_pttl=295
+immediate_get=value-14
+expired_pttl=-2
+expired_get=
+case=15 set_short_ttl
+OK
+immediate_pttl=296
+immediate_get=value-15
+expired_pttl=-2
+expired_get=
+case=16 set_short_ttl
+OK
+immediate_pttl=296
+immediate_get=value-16
+expired_pttl=-2
+expired_get=
+case=17 set_short_ttl
+OK
+immediate_pttl=295
+immediate_get=value-17
+expired_pttl=-2
+expired_get=
+case=18 set_short_ttl
+OK
+immediate_pttl=295
+immediate_get=value-18
+expired_pttl=-2
+expired_get=
+case=19 set_short_ttl
+OK
+immediate_pttl=296
+immediate_get=value-19
+expired_pttl=-2
+expired_get=
+case=20 set_short_ttl
+OK
+immediate_pttl=295
+immediate_get=value-20
+expired_pttl=-2
+expired_get=
+pressure_start
+dbsize=ERR unsupported command DBSIZE
+pressure_end

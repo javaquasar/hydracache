@@ -1,0 +1,2 @@
+pid 43496's current affinity list: 0-7
+pid 43496's new affinity list: 4

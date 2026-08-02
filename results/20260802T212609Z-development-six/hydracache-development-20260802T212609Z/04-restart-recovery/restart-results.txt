@@ -1,0 +1,7 @@
+before_restart=OK
+before_get=persisted-value
+before_pid=42682
+during_stop=timeout_or_error
+after_restart_pid=42701
+after_restart_get=
+after_restart_dbsize=ERR unsupported command DBSIZE

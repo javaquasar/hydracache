@@ -1,0 +1,7 @@
+openjdk version "21.0.10" 2026-01-20
+OpenJDK Runtime Environment (build 21.0.10+7-alpine-r0)
+OpenJDK 64-Bit Server VM (build 21.0.10+7-alpine-r0, mixed mode, sharing)
+jcmd=
+jmap=
+1 /usr/bin/java -cp /opt/hazelcast/*:/opt/hazelcast/lib:/opt/hazelcast/lib/*:/opt/hazelcast/bin/user-lib:/opt/hazelcast/bin/user-lib/* --add-modules java.se --add-exports java.base/jdk.internal.ref=ALL-UNNAMED --add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/sun.nio.ch=ALL-UNNAMED --add-opens java.management/sun.management=ALL-UNNAMED --add-opens jdk.management/com.sun.management.internal=ALL-UNNAMED -Dlog4j.shutdownHookEnabled=false -Dhazelcast.logging.shutdown=true -Dhazelcast.logging.type=log4j2 -Dlog4j.configurationFile=file:/opt/hazelcast/config/log4j2.properties -Dhazelcast.config=/opt/hazelcast/config/hazelcast-docker.xml -Djava.net.preferIPv4Stack=true -XX:MaxRAMPercentage=80.0 com.hazelcast.commandline.HazelcastServerCommandLine start
+52 sh -lc java -version; echo "jcmd=$(command -v jcmd || true)"; echo "jmap=$(command -v jmap || true)"; pgrep -af java || true

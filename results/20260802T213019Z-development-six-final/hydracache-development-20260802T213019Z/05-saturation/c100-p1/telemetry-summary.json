@@ -1,0 +1,40 @@
+{
+  "hydra": {
+    "cgroup_memory_current_bytes": {
+      "max": 142950400.0,
+      "p50": 126279680.0,
+      "p95": 140498944.0,
+      "samples": 4
+    },
+    "cgroup_memory_peak_bytes": {
+      "max": 380125184.0,
+      "p50": 380125184.0,
+      "p95": 380125184.0,
+      "samples": 4
+    },
+    "process_cpu_percent": {
+      "max": 50.9794,
+      "p50": 44.4843,
+      "p95": 50.079654999999995,
+      "samples": 4
+    },
+    "process_cpu_ticks": {
+      "max": 719.0,
+      "p50": 646.0,
+      "p95": 711.35,
+      "samples": 4
+    },
+    "vmhwm_bytes": {
+      "max": 75841536.0,
+      "p50": 67952640.0,
+      "p95": 74714112.0,
+      "samples": 4
+    },
+    "vmrss_bytes": {
+      "max": 75841536.0,
+      "p50": 67952640.0,
+      "p95": 74714112.0,
+      "samples": 4
+    }
+  }
+}

@@ -1,0 +1,12 @@
+host=hydracache-perf-v1
+source_commit=7505c160c8f0971eb1c55df4dd2e6d24b9d99f9d
+source_branch=explore/0.67-telemetry-hazelcast
+kernel=Linux 6.8.0-136-generic x86_64 GNU/Linux
+cpu_model=
+logical_cpus=4
+measurement_affinity=4
+telemetry_interval_seconds=1
+redis_benchmark=/usr/bin/redis-benchmark
+redis_benchmark_version=redis-benchmark 7.0.15
+runner_receipt_sha256=97a39b307c063872b5c249eda9cf8341d70e0c293932b75bc67ae596cb0b17ae
+runner_receipt=/var/lib/hydracache-perf/runner-provisioned.json

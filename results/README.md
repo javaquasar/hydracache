@@ -5,6 +5,32 @@ date-stamped directory contains the raw benchmark logs, one-second JSONL/CSV
 telemetry, container metadata, host receipt, summary, report, and SHA-256
 manifest.
 
+## 2026-08-02 canonical six-experiment run
+
+- Detailed report: [report.md](20260802T213530Z-development-six-canonical/report.md)
+- Status: `PASSED` for CPU, soak, TTL, restart and saturation; `DEGRADED` for
+  the optional JMX/perf profile (perf policy and slim-image tooling limits)
+- Source commit: `ac98b9792332fa056ac2fa7e49f239baa5d0eb4e`
+- Host/affinity: `hydracache-perf-v1`, CPU `4`; IRQ pre/post guards passed
+- Hazelcast image: `hazelcast/hazelcast:5.7.0-slim-jdk21@sha256:d9939853200b70cfd52115a9f1e905ef37cd3d98e1f966ce67c8d5e1c9e21e90`
+- Bundle SHA-256: `b183acc20175b34032cd628376b4c3012df4228a8f0e9070f05e90bcc784239a`
+- Raw extracted artifact: [hydracache-development-20260802T213530Z](20260802T213530Z-development-six-canonical/hydracache-development-20260802T213530Z/)
+
+The six scenarios were run separately and the complete raw artifact is kept in
+Git. The JMX/perf limitation is recorded as unavailable/degraded; RSS was not
+used as a heap substitute. No ranking, SLO, qualification, or bootstrap claim
+is made.
+
+## Diagnostic six-experiment attempts
+
+- [Initial attempt status](20260802T212609Z-development-six/status.md), bundle
+  SHA `cfd32c24b42daa1ad936178797c5568577e22811fd4328989286a651bef95594`.
+- [Intermediate attempt status](20260802T213019Z-development-six-final/status.md),
+  bundle SHA `c93f19a128a1c58401de525411ad96953582ba1ed4b845d64c977d019f463d78`.
+
+Both diagnostic attempts remain available with their extracted raw data and
+are explicitly excluded from comparative conclusions.
+
 ## 2026-08-03 rejected IRQ-delta run
 
 - Detailed report: [report.md](20260803T000000Z-rejected-irq/report.md)

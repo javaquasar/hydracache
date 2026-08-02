@@ -1,0 +1,6 @@
+output_root=/dev/shm/hydracache-development-20260802T213019Z
+measurement_affinity=4
+soak_seconds=60
+saturation_requests=30000
+telemetry_interval_seconds=1
+hazelcast_image=hazelcast/hazelcast:5.7.0-slim-jdk21@sha256:d9939853200b70cfd52115a9f1e905ef37cd3d98e1f966ce67c8d5e1c9e21e90

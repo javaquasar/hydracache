@@ -1,0 +1,9 @@
+clients	pipeline	status	seconds	log
+1	1	0	2.963682	/dev/shm/hydracache-development-20260802T213019Z/05-saturation/c1-p1/workload.log
+1	10	0	1.423853	/dev/shm/hydracache-development-20260802T213019Z/05-saturation/c1-p10/workload.log
+10	1	0	2.105629	/dev/shm/hydracache-development-20260802T213019Z/05-saturation/c10-p1/workload.log
+10	10	0	1.293126	/dev/shm/hydracache-development-20260802T213019Z/05-saturation/c10-p10/workload.log
+50	1	0	2.033992	/dev/shm/hydracache-development-20260802T213019Z/05-saturation/c50-p1/workload.log
+50	10	0	1.284443	/dev/shm/hydracache-development-20260802T213019Z/05-saturation/c50-p10/workload.log
+100	1	0	2.132236	/dev/shm/hydracache-development-20260802T213019Z/05-saturation/c100-p1/workload.log
+100	10	0	1.410463	/dev/shm/hydracache-development-20260802T213019Z/05-saturation/c100-p10/workload.log

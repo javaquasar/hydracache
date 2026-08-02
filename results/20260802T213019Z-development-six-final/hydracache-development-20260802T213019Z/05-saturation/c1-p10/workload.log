@@ -1,0 +1,4 @@
+WARNING: Could not fetch server CONFIG
+ SET: rps=0.0 (overall: inf) avg_msec=0.188 (overall: 0.188)                                                            SET: rps=41394.4 (overall: 41474.1) avg_msec=0.051 (overall: 0.051)                                                                    SET: rps=42040.0 (overall: 41756.5) avg_msec=0.049 (overall: 0.050)                                                                    SET: 41899.44 requests per second, p50=0.047 msec
+ GET: rps=5972.0 (overall: 42657.1) avg_msec=0.049 (overall: 0.049)                                                                   GET: rps=43196.0 (overall: 43129.8) avg_msec=0.046 (overall: 0.046)                                                                    GET: rps=43111.6 (overall: 43121.3) avg_msec=0.046 (overall: 0.046)                                                                    GET: 43165.47 requests per second, p50=0.047 msec
+

@@ -1,0 +1,1 @@
+reference runtime IRQ guard passed: phase=04-restart-recovery-pre measurement=4 irq_files=113 dormant-unmapped-nvme=2
