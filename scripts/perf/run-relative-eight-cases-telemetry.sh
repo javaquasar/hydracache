@@ -20,6 +20,7 @@ fi
 hydra_binary="$repo_root/target/release/hydracache-server"
 test "$(id --user --name)" = github-runner
 test -x "$benchmark" || { echo "redis-benchmark is unavailable: $benchmark (install redis-tools or set REDIS_BENCHMARK)" >&2; exit 2; }
+test -x "$(command -v taskset)"
 test -x "$hydra_binary"
 test -n "$hazelcast_image" && [[ "$hazelcast_image" =~ @sha256:[0-9a-fA-F]{64}$ ]] || { echo 'HAZELCAST_IMAGE must include a full sha256 digest' >&2; exit 2; }
 "$hazelcast_client_python" -c 'import hazelcast' || { echo 'hazelcast-python-client is unavailable; refusing a partial run' >&2; exit 2; }
@@ -46,6 +47,20 @@ docker run -d --name hydracache-relative-redis --network host --cpuset-cpus "$af
 docker run -d --name hydracache-relative-hazelcast --network host --cpuset-cpus "$affinity" "$hazelcast_image" >"$output_dir/metadata/hazelcast.container-id" 2>>"$output_dir/metadata/docker-warnings.txt"
 docker inspect hydracache-relative-redis >"$output_dir/metadata/redis.inspect.json"
 docker inspect hydracache-relative-hazelcast >"$output_dir/metadata/hazelcast.inspect.json"
+pin_container() {
+  local target="$1" container="hydracache-relative-$1" pid effective
+  pid="$(docker inspect --format '{{.State.Pid}}' "$container")"
+  [[ "$pid" =~ ^[1-9][0-9]*$ ]] || { echo "container PID unavailable: target=$target" >&2; return 1; }
+  taskset --cpu-list --pid "$affinity" "$pid" >/dev/null
+  effective="$(taskset --cpu-list --pid "$pid" | awk -F': ' '{print $2}')"
+  test "$effective" = "$affinity" || {
+    echo "container affinity mismatch: target=$target pid=$pid requested=$affinity effective=$effective" >&2
+    return 1
+  }
+  echo "container_affinity target=$target pid=$pid requested=$affinity effective=$effective" >>"$output_dir/hardware-validation.txt"
+}
+pin_container redis
+pin_container hazelcast
 rm -rf "$output_dir/hydra-data"; mkdir -p "$output_dir/hydra-data"
 nohup taskset --cpu-list "$affinity" env HYDRACACHE_ROLE=local HYDRACACHE_LISTEN_ADDR=127.0.0.1:0 HYDRACACHE_CLUSTER_ADDR=127.0.0.1:0 HYDRACACHE_STORAGE_DIR="$output_dir/hydra-data" HYDRACACHE_ADMIN_API_ENABLED=true HYDRACACHE_ADMIN_ADDR=127.0.0.1:6390 HYDRACACHE_REDIS_API_ENABLED=true HYDRACACHE_REDIS_ADDR=127.0.0.1:6380 "$hydra_binary" >"$output_dir/hydra.log" 2>&1 &
 echo $! >"$output_dir/hydra.pid"

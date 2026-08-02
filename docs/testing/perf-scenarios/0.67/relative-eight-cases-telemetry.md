@@ -44,6 +44,10 @@ mistaking container-startup NVMe counters for activity during the measured
 workload. This baseline/delta guard is exploratory-only and never changes the
 qualification/bootstrap guard.
 
+Rootless Docker may ignore `--cpuset-cpus` when host networking is used. The
+exploratory harness therefore pins each container init PID with `taskset` after
+startup, records the requested and effective affinity, and aborts if they differ.
+
 ## Reproduction on the dedicated host
 
 Install the pinned host benchmark dependency before running; the harness
