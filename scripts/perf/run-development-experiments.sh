@@ -253,6 +253,11 @@ test -x "$hydra_binary" || { echo "missing executable: $hydra_binary" >&2; exit 
 test -x "$benchmark" || { echo "missing benchmark: $benchmark" >&2; exit 2; }
 test "$(id --user --name)" = github-runner || { echo 'must run as github-runner' >&2; exit 2; }
 scripts/perf/reference-evidence-tmpfs.sh materialize >"$output_root/reference-evidence-materialize-before.txt" 2>&1 || true
+for generated_evidence in target/test-evidence/0.67 target/test-evidence/0.67.1; do
+  if test -d "$generated_evidence" && test ! -L "$generated_evidence"; then
+    rm --recursive --force -- "$generated_evidence"
+  fi
+done
 scripts/perf/reference-evidence-tmpfs.sh prepare >"$output_root/reference-evidence-prepare.txt" 2>&1 || {
   echo "reference evidence tmpfs preparation failed" >&2
   exit 2
