@@ -1,0 +1,2 @@
+target=hazelcast case=p256-c10-p1 operation=set repeat=3
+{"elapsed_seconds": 68.34058910199929, "operation": "set", "requests": 100000, "throughput_ops_per_second": 1463.25926237991}

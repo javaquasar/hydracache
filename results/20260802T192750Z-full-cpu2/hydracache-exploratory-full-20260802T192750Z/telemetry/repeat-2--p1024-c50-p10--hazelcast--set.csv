@@ -1,0 +1,6 @@
+timestamp_unix,target,pid,container_cpu_percent,process_cpu_ticks,vmrss_bytes,vmhwm_bytes,effective_cpu_affinity,cgroup_memory_current_bytes,cgroup_memory_peak_bytes,cgroup_memory_limit_bytes,jvm_heap_available,jvm_heap_used_bytes,jvm_heap_committed_bytes,jvm_heap_max_bytes
+1785699752.1364992,hazelcast,13674,0.0,6128,396496896,407392256,0-15,377442304,388710400,,False,,,
+1785699753.1373734,hazelcast,13674,1.2879,6149,396517376,407392256,0-15,377503744,388710400,,False,,,
+1785699754.1382527,hazelcast,13674,1.3916,6171,396517376,407392256,0-15,377761792,388710400,,False,,,
+1785699755.1391387,hazelcast,13674,1.3721,6194,396525568,407392256,0-15,377688064,388710400,,False,,,
+1785699756.140042,hazelcast,13674,1.268,6213,396525568,407392256,0-15,377499648,388710400,,False,,,

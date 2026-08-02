@@ -1,0 +1,3661 @@
+{
+  "files": [
+    {
+      "bytes": 1336,
+      "path": "hardware-validation.txt",
+      "sha256": "3c33b9f99e4b7b9342d7fc13ec6f9742304d07878178c5af0d2a82e5b4e4255f"
+    },
+    {
+      "bytes": 16,
+      "path": "hydra.log",
+      "sha256": "6489d6d7a33c5d40e18fc61eeb6c34c341279ee61816394dde5189aa4ad8fae5"
+    },
+    {
+      "bytes": 6,
+      "path": "hydra.pid",
+      "sha256": "ddfab98517f33b94577e8ea5ba3e9f6973bc4103e09e8cd88d39a2906280eade"
+    },
+    {
+      "bytes": 32,
+      "path": "irq-baseline.tsv",
+      "sha256": "ab8a998abf6c5504e41efd9e72d884fd7fa3814e28d94f73abb6e61ae3cc3656"
+    },
+    {
+      "bytes": 186,
+      "path": "metadata/docker-warnings.txt",
+      "sha256": "ba431352b1954a86c23115052875b8a5d045c4062a9d512bdf510acc7511e201"
+    },
+    {
+      "bytes": 65,
+      "path": "metadata/hazelcast.container-id",
+      "sha256": "a48e3c724759130a8b41d1124344992e2f8c45af3d0d4e7b5e6bcf6f615ba612"
+    },
+    {
+      "bytes": 7675,
+      "path": "metadata/hazelcast.inspect.json",
+      "sha256": "bec9f0be4580b89ab43373882c49bf93b1dd30bb065de5c873c0d3eeda10fa54"
+    },
+    {
+      "bytes": 65,
+      "path": "metadata/redis.container-id",
+      "sha256": "c430314e6e19af2646075aa8dd9e71b4dee1226e310a98ad06f968e5b4b50c55"
+    },
+    {
+      "bytes": 8670,
+      "path": "metadata/redis.inspect.json",
+      "sha256": "1336d56c1ff91850723fae1d764b66018685949dbb347928251cb1c09b7ddf92"
+    },
+    {
+      "bytes": 185,
+      "path": "raw/repeat-1--p1024-c50-p1--hazelcast--get.log",
+      "sha256": "9145a81c5ed0413596d89a0a1078a30326b551bdc18228e8c40a1eb43dc7ba8d"
+    },
+    {
+      "bytes": 0,
+      "path": "raw/repeat-1--p1024-c50-p1--hazelcast--get.log.telemetry.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 186,
+      "path": "raw/repeat-1--p1024-c50-p1--hazelcast--set.log",
+      "sha256": "9f5e8dd590f7eaae92648a0da2946b65319869f82af8248cc57bb625b2ff85f3"
+    },
+    {
+      "bytes": 0,
+      "path": "raw/repeat-1--p1024-c50-p1--hazelcast--set.log.telemetry.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 2044,
+      "path": "raw/repeat-1--p1024-c50-p1--hydra--get.log",
+      "sha256": "fed08f124df46c70687be067bdff10f5fc9407993fea65ec066ddba0870f704b"
+    },
+    {
+      "bytes": 0,
+      "path": "raw/repeat-1--p1024-c50-p1--hydra--get.log.telemetry.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 2046,
+      "path": "raw/repeat-1--p1024-c50-p1--hydra--set.log",
+      "sha256": "2f99250096ab61c4809d2524504479ce52fc91bb21d369b8381d5907751c5665"
+    },
+    {
+      "bytes": 0,
+      "path": "raw/repeat-1--p1024-c50-p1--hydra--set.log.telemetry.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 1868,
+      "path": "raw/repeat-1--p1024-c50-p1--redis--get.log",
+      "sha256": "fade3a71c080459fe0df68b4485d68e93dcfaeba7c463ccc6a600f736f1b0150"
+    },
+    {
+      "bytes": 0,
+      "path": "raw/repeat-1--p1024-c50-p1--redis--get.log.telemetry.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 1868,
+      "path": "raw/repeat-1--p1024-c50-p1--redis--set.log",
+      "sha256": "858988e2710e1f7537e68df2b3f74444a184081ae3785aa3274a1b2f7e592546"
+    },
+    {
+      "bytes": 0,
+      "path": "raw/repeat-1--p1024-c50-p1--redis--set.log.telemetry.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 187,
+      "path": "raw/repeat-1--p1024-c50-p10--hazelcast--get.log",
+      "sha256": "d0030c49da0996f758affdc5d4669e170079521ec1fe99d852afe453ae004ecf"
+    },
+    {
+      "bytes": 0,
+      "path": "raw/repeat-1--p1024-c50-p10--hazelcast--get.log.telemetry.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 186,
+      "path": "raw/repeat-1--p1024-c50-p10--hazelcast--set.log",
+      "sha256": "9d9b20556bcd9c2b01a1fe82411daaf8ab1e91978e3f20f4bd2790fb95ded0b1"
+    },
+    {
+      "bytes": 0,
+      "path": "raw/repeat-1--p1024-c50-p10--hazelcast--set.log.telemetry.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 1393,
+      "path": "raw/repeat-1--p1024-c50-p10--hydra--get.log",
+      "sha256": "d1d23c994c6f6139811ceb9508a4f36fed3091cf8971bfc4b8140f0c4c517794"
+    },
+    {
+      "bytes": 0,
+      "path": "raw/repeat-1--p1024-c50-p10--hydra--get.log.telemetry.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 1393,
+      "path": "raw/repeat-1--p1024-c50-p10--hydra--set.log",
+      "sha256": "16fccf7965a3e675692ebf401d6e6f2e69b7ffe3b0656bf5df126c0330f2501b"
+    },
+    {
+      "bytes": 0,
+      "path": "raw/repeat-1--p1024-c50-p10--hydra--set.log.telemetry.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 369,
+      "path": "raw/repeat-1--p1024-c50-p10--redis--get.log",
+      "sha256": "66e31009fba3c8bf675bc845cc11080cb24b8bc479d153f7cb520e7bfd59a286"
+    },
+    {
+      "bytes": 0,
+      "path": "raw/repeat-1--p1024-c50-p10--redis--get.log.telemetry.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 367,
+      "path": "raw/repeat-1--p1024-c50-p10--redis--set.log",
+      "sha256": "112d64892c9f0ca0122496a3baa45c20b6056a3a28807a885266264c95d3f67a"
+    },
+    {
+      "bytes": 0,
+      "path": "raw/repeat-1--p1024-c50-p10--redis--set.log.telemetry.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 184,
+      "path": "raw/repeat-1--p256-c1-p1--hazelcast--get.log",
+      "sha256": "bf665673fc77cc250765a8b58f3e606829e61756ead95eac66994d55bcf8e67e"
+    },
+    {
+      "bytes": 0,
+      "path": "raw/repeat-1--p256-c1-p1--hazelcast--get.log.telemetry.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 182,
+      "path": "raw/repeat-1--p256-c1-p1--hazelcast--set.log",
+      "sha256": "2b55954728e27702ba18cb19332cc9d51baca88e07097a3d52ea0ca39a3f94d5"
+    },
+    {
+      "bytes": 0,
+      "path": "raw/repeat-1--p256-c1-p1--hazelcast--set.log.telemetry.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 2868,
+      "path": "raw/repeat-1--p256-c1-p1--hydra--get.log",
+      "sha256": "addcf2532ec475c413b1d2830903399ce16119995a97bf56406ecd28d1b2a84e"
+    },
+    {
+      "bytes": 0,
+      "path": "raw/repeat-1--p256-c1-p1--hydra--get.log.telemetry.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 2874,
+      "path": "raw/repeat-1--p256-c1-p1--hydra--set.log",
+      "sha256": "2aac04db54f444d02dc6478392c4d57897179cef89796ac7972b3f0de75f3017"
+    },
+    {
+      "bytes": 0,
+      "path": "raw/repeat-1--p256-c1-p1--hydra--set.log.telemetry.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 2692,
+      "path": "raw/repeat-1--p256-c1-p1--redis--get.log",
+      "sha256": "b66b01933b98bc719d55d8c8364e1abed99771b657bbdc1366252f992cdde1f1"
+    },
+    {
+      "bytes": 0,
+      "path": "raw/repeat-1--p256-c1-p1--redis--get.log.telemetry.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 2698,
+      "path": "raw/repeat-1--p256-c1-p1--redis--set.log",
+      "sha256": "8941745682d6a9557bcba3c55d387e765441b2f123250cf733563bf457bb3fe8"
+    },
+    {
+      "bytes": 0,
+      "path": "raw/repeat-1--p256-c1-p1--redis--set.log.telemetry.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 185,
+      "path": "raw/repeat-1--p256-c10-p1--hazelcast--get.log",
+      "sha256": "07e3eeeda94c9b901e521736fb57ef5a47a1ca962351fdc29e813469880db7de"
+    },
+    {
+      "bytes": 0,
+      "path": "raw/repeat-1--p256-c10-p1--hazelcast--get.log.telemetry.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 184,
+      "path": "raw/repeat-1--p256-c10-p1--hazelcast--set.log",
+      "sha256": "fc84ac5726615120f9215cfc55dc83208af8ffb480613673889254a2e3d58f26"
+    },
+    {
+      "bytes": 0,
+      "path": "raw/repeat-1--p256-c10-p1--hazelcast--set.log.telemetry.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 2045,
+      "path": "raw/repeat-1--p256-c10-p1--hydra--get.log",
+      "sha256": "f31c46855a7e531723de62cfaf81951cc6158ccb5fa21312a434e7da5e24bfb8"
+    },
+    {
+      "bytes": 0,
+      "path": "raw/repeat-1--p256-c10-p1--hydra--get.log.telemetry.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 2043,
+      "path": "raw/repeat-1--p256-c10-p1--hydra--set.log",
+      "sha256": "e6af6281fc603e69796ba973a5668eac4699ec685dd111510925a6df7db600fe"
+    },
+    {
+      "bytes": 0,
+      "path": "raw/repeat-1--p256-c10-p1--hydra--set.log.telemetry.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 1869,
+      "path": "raw/repeat-1--p256-c10-p1--redis--get.log",
+      "sha256": "eb0eaef87aa41d29f01a0295fa9c8a6efc5eafbdcbb87bb73e8c850e61a20920"
+    },
+    {
+      "bytes": 0,
+      "path": "raw/repeat-1--p256-c10-p1--redis--get.log.telemetry.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 1869,
+      "path": "raw/repeat-1--p256-c10-p1--redis--set.log",
+      "sha256": "585c25e96e70907ba3f3ef216d9303633e111d1f82627ab9d4a313424ab3bf8c"
+    },
+    {
+      "bytes": 0,
+      "path": "raw/repeat-1--p256-c10-p1--redis--set.log.telemetry.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 186,
+      "path": "raw/repeat-1--p256-c10-p10--hazelcast--get.log",
+      "sha256": "4f8728e46b4732fe9b12dbc036dffcb85e63acd4ca5087a4980e9ccefd16554a"
+    },
+    {
+      "bytes": 0,
+      "path": "raw/repeat-1--p256-c10-p10--hazelcast--get.log.telemetry.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 186,
+      "path": "raw/repeat-1--p256-c10-p10--hazelcast--set.log",
+      "sha256": "6bf8e5edac88e3f376abe910b7d69bfd7193b1e4ffc862754840725869196cd9"
+    },
+    {
+      "bytes": 0,
+      "path": "raw/repeat-1--p256-c10-p10--hazelcast--set.log.telemetry.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 1359,
+      "path": "raw/repeat-1--p256-c10-p10--hydra--get.log",
+      "sha256": "2d90b0a79972e4698026a86b671d46cd50c815a4f0aa6922a9a58306293a9f86"
+    },
+    {
+      "bytes": 0,
+      "path": "raw/repeat-1--p256-c10-p10--hydra--get.log.telemetry.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 1359,
+      "path": "raw/repeat-1--p256-c10-p10--hydra--set.log",
+      "sha256": "f57a72d7cc3fd218e4b208c59e50535243efb2e87974a3207b0d74c1a9d21beb"
+    },
+    {
+      "bytes": 0,
+      "path": "raw/repeat-1--p256-c10-p10--hydra--set.log.telemetry.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 368,
+      "path": "raw/repeat-1--p256-c10-p10--redis--get.log",
+      "sha256": "644644fc4a47c67a0eb67c63195c1ae75af18febfefce258ff6811eae4664216"
+    },
+    {
+      "bytes": 0,
+      "path": "raw/repeat-1--p256-c10-p10--redis--get.log.telemetry.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 368,
+      "path": "raw/repeat-1--p256-c10-p10--redis--set.log",
+      "sha256": "bae79ff85fd484d023b6b19352ee7a5f6e6646fdc4cbf552ede57d8d51b2d794"
+    },
+    {
+      "bytes": 0,
+      "path": "raw/repeat-1--p256-c10-p10--redis--set.log.telemetry.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 186,
+      "path": "raw/repeat-1--p256-c100-p1--hazelcast--get.log",
+      "sha256": "919de0a83441f57fce79fda3c77b6e5b9103768418225027c21a221517b511b3"
+    },
+    {
+      "bytes": 0,
+      "path": "raw/repeat-1--p256-c100-p1--hazelcast--get.log.telemetry.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 185,
+      "path": "raw/repeat-1--p256-c100-p1--hazelcast--set.log",
+      "sha256": "9a488868a66a261f0b5ad87623d14d40366272ae3efdaaec1e959654d9cd9e2c"
+    },
+    {
+      "bytes": 0,
+      "path": "raw/repeat-1--p256-c100-p1--hazelcast--set.log.telemetry.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 2044,
+      "path": "raw/repeat-1--p256-c100-p1--hydra--get.log",
+      "sha256": "aa748a64b22272c82f48cc220bcdef53f3d2da211758b6c30ce474e97e0e5a61"
+    },
+    {
+      "bytes": 0,
+      "path": "raw/repeat-1--p256-c100-p1--hydra--get.log.telemetry.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 2044,
+      "path": "raw/repeat-1--p256-c100-p1--hydra--set.log",
+      "sha256": "1b9649933ebdc88b1b166001ee126c1a57c7f6c024b9bbed3553884aa152acf6"
+    },
+    {
+      "bytes": 0,
+      "path": "raw/repeat-1--p256-c100-p1--hydra--set.log.telemetry.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 1868,
+      "path": "raw/repeat-1--p256-c100-p1--redis--get.log",
+      "sha256": "da99910dd58838ac75efb703171afdadf755f3b1894d0617d6d70f80478240a4"
+    },
+    {
+      "bytes": 0,
+      "path": "raw/repeat-1--p256-c100-p1--redis--get.log.telemetry.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 1868,
+      "path": "raw/repeat-1--p256-c100-p1--redis--set.log",
+      "sha256": "4071068949705765aeaf0244f50cb478581db973b93d7f5b58680082244d0572"
+    },
+    {
+      "bytes": 0,
+      "path": "raw/repeat-1--p256-c100-p1--redis--set.log.telemetry.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 184,
+      "path": "raw/repeat-1--p64-c10-p1--hazelcast--get.log",
+      "sha256": "9490b2ea74c079d802aa73cdcc69d49fd865e1d7112a1cce74eebab407dcf2b6"
+    },
+    {
+      "bytes": 0,
+      "path": "raw/repeat-1--p64-c10-p1--hazelcast--get.log.telemetry.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 184,
+      "path": "raw/repeat-1--p64-c10-p1--hazelcast--set.log",
+      "sha256": "e030f609d8d6119d5a4b81964b7b35ca112dc0bf0f17f87007826c8fd0c8962b"
+    },
+    {
+      "bytes": 0,
+      "path": "raw/repeat-1--p64-c10-p1--hazelcast--set.log.telemetry.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 2042,
+      "path": "raw/repeat-1--p64-c10-p1--hydra--get.log",
+      "sha256": "be791da4054d07af701a6561662bf78bcd31b8b0a06c60367e35518c736e9977"
+    },
+    {
+      "bytes": 0,
+      "path": "raw/repeat-1--p64-c10-p1--hydra--get.log.telemetry.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 2044,
+      "path": "raw/repeat-1--p64-c10-p1--hydra--set.log",
+      "sha256": "e84f9f3094552179c3210d8e84e59dc01e6c1e8b95518c6a3246e558b1c0b62f"
+    },
+    {
+      "bytes": 0,
+      "path": "raw/repeat-1--p64-c10-p1--hydra--set.log.telemetry.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 1868,
+      "path": "raw/repeat-1--p64-c10-p1--redis--get.log",
+      "sha256": "0f0b6c03af5d527cf12094cf22a585ab11f4cb5e0e46160c72f15d86eb00ae56"
+    },
+    {
+      "bytes": 0,
+      "path": "raw/repeat-1--p64-c10-p1--redis--get.log.telemetry.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 1868,
+      "path": "raw/repeat-1--p64-c10-p1--redis--set.log",
+      "sha256": "7abedc8e6aee6c8ccc9252b223b094efe1ec8a5f70923737e481f8722a30454d"
+    },
+    {
+      "bytes": 0,
+      "path": "raw/repeat-1--p64-c10-p1--redis--set.log.telemetry.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 185,
+      "path": "raw/repeat-1--p64-c10-p10--hazelcast--get.log",
+      "sha256": "157835f2b9a585165387e07748d6bbac07c457ead1575c75bb212bda972c8c8f"
+    },
+    {
+      "bytes": 0,
+      "path": "raw/repeat-1--p64-c10-p10--hazelcast--get.log.telemetry.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 185,
+      "path": "raw/repeat-1--p64-c10-p10--hazelcast--set.log",
+      "sha256": "f955431e86acaf36273a7b0f315907aa58913868948530f85de91236db785526"
+    },
+    {
+      "bytes": 0,
+      "path": "raw/repeat-1--p64-c10-p10--hazelcast--set.log.telemetry.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 1360,
+      "path": "raw/repeat-1--p64-c10-p10--hydra--get.log",
+      "sha256": "09fa025a9139f1712f3d88b44f70c9ad2ade275c8032971de0e1f162d1553a3c"
+    },
+    {
+      "bytes": 0,
+      "path": "raw/repeat-1--p64-c10-p10--hydra--get.log.telemetry.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 1358,
+      "path": "raw/repeat-1--p64-c10-p10--hydra--set.log",
+      "sha256": "6132f2cc59f0bbfbd46cfb70392f34048ac12965f5829eca60c6acc20c77658a"
+    },
+    {
+      "bytes": 0,
+      "path": "raw/repeat-1--p64-c10-p10--hydra--set.log.telemetry.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 367,
+      "path": "raw/repeat-1--p64-c10-p10--redis--get.log",
+      "sha256": "8b99322d9c3d15e501b357a3c9c98b7ae4c65fd73c66361f02177c7c8e815e57"
+    },
+    {
+      "bytes": 0,
+      "path": "raw/repeat-1--p64-c10-p10--redis--get.log.telemetry.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 365,
+      "path": "raw/repeat-1--p64-c10-p10--redis--set.log",
+      "sha256": "e40ef5e230cc01d8860e3f7f54c50da5a20f43a886d83c125bb435f2d2709648"
+    },
+    {
+      "bytes": 0,
+      "path": "raw/repeat-1--p64-c10-p10--redis--set.log.telemetry.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 185,
+      "path": "raw/repeat-2--p1024-c50-p1--hazelcast--get.log",
+      "sha256": "7c7174d014204cc6488d101fa3c6c330b6f0d59f81376cd95c472c58d9add5d1"
+    },
+    {
+      "bytes": 0,
+      "path": "raw/repeat-2--p1024-c50-p1--hazelcast--get.log.telemetry.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 186,
+      "path": "raw/repeat-2--p1024-c50-p1--hazelcast--set.log",
+      "sha256": "67aa1465509e9eaf2b7330526c42ef03e43366bf43dbecebcae06a5f222f7630"
+    },
+    {
+      "bytes": 0,
+      "path": "raw/repeat-2--p1024-c50-p1--hazelcast--set.log.telemetry.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 2046,
+      "path": "raw/repeat-2--p1024-c50-p1--hydra--get.log",
+      "sha256": "fe08ddf5173fa1a90f116bece6f8eba9e2fa617349384eca6d0a7a598ffb9550"
+    },
+    {
+      "bytes": 0,
+      "path": "raw/repeat-2--p1024-c50-p1--hydra--get.log.telemetry.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 2044,
+      "path": "raw/repeat-2--p1024-c50-p1--hydra--set.log",
+      "sha256": "d418ac63dc5656b89328d4dbb18d67aadab81c0c64bcec43a074c34ed6d386b4"
+    },
+    {
+      "bytes": 0,
+      "path": "raw/repeat-2--p1024-c50-p1--hydra--set.log.telemetry.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 1868,
+      "path": "raw/repeat-2--p1024-c50-p1--redis--get.log",
+      "sha256": "534f65fc11d81f22b77520fc9deefc276461b8a47c3b1b3d11428954add6f483"
+    },
+    {
+      "bytes": 0,
+      "path": "raw/repeat-2--p1024-c50-p1--redis--get.log.telemetry.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 1868,
+      "path": "raw/repeat-2--p1024-c50-p1--redis--set.log",
+      "sha256": "c83dc35dae4d054d60c696c5027e7172ee8cd48d30ee5292fb41431897126a20"
+    },
+    {
+      "bytes": 0,
+      "path": "raw/repeat-2--p1024-c50-p1--redis--set.log.telemetry.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 186,
+      "path": "raw/repeat-2--p1024-c50-p10--hazelcast--get.log",
+      "sha256": "ea2594d9fe04c941eed67bd418ec02fa28e8aaf509237cfe404349ec82d25548"
+    },
+    {
+      "bytes": 0,
+      "path": "raw/repeat-2--p1024-c50-p10--hazelcast--get.log.telemetry.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 187,
+      "path": "raw/repeat-2--p1024-c50-p10--hazelcast--set.log",
+      "sha256": "1221bc379af9760206f91db03340d17004d8752a21fe5b110ac115381d11ca2f"
+    },
+    {
+      "bytes": 0,
+      "path": "raw/repeat-2--p1024-c50-p10--hazelcast--set.log.telemetry.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 1393,
+      "path": "raw/repeat-2--p1024-c50-p10--hydra--get.log",
+      "sha256": "4c5fbbb73ada1a0525569413b160a62977a3fe0d5092c29435d4d4d9af1974d9"
+    },
+    {
+      "bytes": 0,
+      "path": "raw/repeat-2--p1024-c50-p10--hydra--get.log.telemetry.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 1393,
+      "path": "raw/repeat-2--p1024-c50-p10--hydra--set.log",
+      "sha256": "de48507e2e7681d9fa48fc9f2d9e1d65ae9caf538e0fe0d0430421954e76af44"
+    },
+    {
+      "bytes": 0,
+      "path": "raw/repeat-2--p1024-c50-p10--hydra--set.log.telemetry.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 367,
+      "path": "raw/repeat-2--p1024-c50-p10--redis--get.log",
+      "sha256": "881e74af07f213545432cbfcdf0a93d7568cac7c4617c00c74b04b1a73cf6fa1"
+    },
+    {
+      "bytes": 0,
+      "path": "raw/repeat-2--p1024-c50-p10--redis--get.log.telemetry.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 508,
+      "path": "raw/repeat-2--p1024-c50-p10--redis--set.log",
+      "sha256": "79b3a6d1bc3286f1bc3c0c6458c020907bf1f2b6625ee8dd76302c42119bc1fb"
+    },
+    {
+      "bytes": 0,
+      "path": "raw/repeat-2--p1024-c50-p10--redis--set.log.telemetry.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 183,
+      "path": "raw/repeat-2--p256-c1-p1--hazelcast--get.log",
+      "sha256": "5c7e97593ccd60bec419e792e034e22ac3d85c2c05bc737208f01c6335baa255"
+    },
+    {
+      "bytes": 0,
+      "path": "raw/repeat-2--p256-c1-p1--hazelcast--get.log.telemetry.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 183,
+      "path": "raw/repeat-2--p256-c1-p1--hazelcast--set.log",
+      "sha256": "dd25743043e8c742436d3dfe5a11475432a8d65f3f4b88652e24d4940e315350"
+    },
+    {
+      "bytes": 0,
+      "path": "raw/repeat-2--p256-c1-p1--hazelcast--set.log.telemetry.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 2868,
+      "path": "raw/repeat-2--p256-c1-p1--hydra--get.log",
+      "sha256": "86ec8e3767e26e930a2ed1b0bba303695212a3be340c6990e8f60f715d8ed3ce"
+    },
+    {
+      "bytes": 0,
+      "path": "raw/repeat-2--p256-c1-p1--hydra--get.log.telemetry.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 2868,
+      "path": "raw/repeat-2--p256-c1-p1--hydra--set.log",
+      "sha256": "71d93316cb8ca7c9ba2e316f40ebb4543315ecf7f17dd1ab63826c4db95cffab"
+    },
+    {
+      "bytes": 0,
+      "path": "raw/repeat-2--p256-c1-p1--hydra--set.log.telemetry.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 2698,
+      "path": "raw/repeat-2--p256-c1-p1--redis--get.log",
+      "sha256": "5fe662467b0346f24ce9e4ec65e2790b4d1341bf992c034406c5a574caf2cb09"
+    },
+    {
+      "bytes": 0,
+      "path": "raw/repeat-2--p256-c1-p1--redis--get.log.telemetry.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 2692,
+      "path": "raw/repeat-2--p256-c1-p1--redis--set.log",
+      "sha256": "f51f9322948c8175e10f24e5b0149c45b1bc45404d81e9707163a1f506bea68a"
+    },
+    {
+      "bytes": 0,
+      "path": "raw/repeat-2--p256-c1-p1--redis--set.log.telemetry.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 185,
+      "path": "raw/repeat-2--p256-c10-p1--hazelcast--get.log",
+      "sha256": "1b1a483ad4d4878a316a020ed89bfb8e980228ea7d93070f4746c9d8136a74ff"
+    },
+    {
+      "bytes": 0,
+      "path": "raw/repeat-2--p256-c10-p1--hazelcast--get.log.telemetry.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 185,
+      "path": "raw/repeat-2--p256-c10-p1--hazelcast--set.log",
+      "sha256": "ef25687e2fb601e9d35a269e92117bae5db5a47b9729ccd67a37adfdc1b804ac"
+    },
+    {
+      "bytes": 0,
+      "path": "raw/repeat-2--p256-c10-p1--hazelcast--set.log.telemetry.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 2043,
+      "path": "raw/repeat-2--p256-c10-p1--hydra--get.log",
+      "sha256": "2523376942b00718fd69e5d9101fe16c39e6a97821dcb705bbc43a4c82097230"
+    },
+    {
+      "bytes": 0,
+      "path": "raw/repeat-2--p256-c10-p1--hydra--get.log.telemetry.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 2043,
+      "path": "raw/repeat-2--p256-c10-p1--hydra--set.log",
+      "sha256": "d474cb71fd87f743a713182bf5b802d298724f40955561028afd03e886ce9ebc"
+    },
+    {
+      "bytes": 0,
+      "path": "raw/repeat-2--p256-c10-p1--hydra--set.log.telemetry.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 1869,
+      "path": "raw/repeat-2--p256-c10-p1--redis--get.log",
+      "sha256": "ce102c721358c134e7e8e1faf0875d4ff6e61331fe95e1a884f0b6f61d899b17"
+    },
+    {
+      "bytes": 0,
+      "path": "raw/repeat-2--p256-c10-p1--redis--get.log.telemetry.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 1869,
+      "path": "raw/repeat-2--p256-c10-p1--redis--set.log",
+      "sha256": "317aecf634eace0caf270935b8fd59c4da0cb54951d76aec0a9b93addebd5056"
+    },
+    {
+      "bytes": 0,
+      "path": "raw/repeat-2--p256-c10-p1--redis--set.log.telemetry.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 185,
+      "path": "raw/repeat-2--p256-c10-p10--hazelcast--get.log",
+      "sha256": "a14b11892ad0723185ace8144d619cd131bd9721990786b4f987b318f8ea538a"
+    },
+    {
+      "bytes": 0,
+      "path": "raw/repeat-2--p256-c10-p10--hazelcast--get.log.telemetry.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 186,
+      "path": "raw/repeat-2--p256-c10-p10--hazelcast--set.log",
+      "sha256": "4d36b8d4c0d165fda302f49a4dbea71b7cdd35b99f27316df02c40ade510d923"
+    },
+    {
+      "bytes": 0,
+      "path": "raw/repeat-2--p256-c10-p10--hazelcast--set.log.telemetry.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 1359,
+      "path": "raw/repeat-2--p256-c10-p10--hydra--get.log",
+      "sha256": "b47cfb1b3c1aee0f90bd80b8be45031cb7b097b82cd66ccd2fae57ec9d4feb03"
+    },
+    {
+      "bytes": 0,
+      "path": "raw/repeat-2--p256-c10-p10--hydra--get.log.telemetry.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 1359,
+      "path": "raw/repeat-2--p256-c10-p10--hydra--set.log",
+      "sha256": "fa35599842f3157de82ba309f495b68a4668dfe4ece95cc5d215b71419e7ac7e"
+    },
+    {
+      "bytes": 0,
+      "path": "raw/repeat-2--p256-c10-p10--hydra--set.log.telemetry.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 368,
+      "path": "raw/repeat-2--p256-c10-p10--redis--get.log",
+      "sha256": "1f5855b212eb1a095fe21d368c0ae7a35e741067090d173a04661201932bf61b"
+    },
+    {
+      "bytes": 0,
+      "path": "raw/repeat-2--p256-c10-p10--redis--get.log.telemetry.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 368,
+      "path": "raw/repeat-2--p256-c10-p10--redis--set.log",
+      "sha256": "d96ce4cd6fb4f7d29a06b456a9b91fcb14437c231bf69f9397c1045351690127"
+    },
+    {
+      "bytes": 0,
+      "path": "raw/repeat-2--p256-c10-p10--redis--set.log.telemetry.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 186,
+      "path": "raw/repeat-2--p256-c100-p1--hazelcast--get.log",
+      "sha256": "e9003d5ab0b2be6f76c4653f147e8c55f5a649f06cdd4909980883e6765f682f"
+    },
+    {
+      "bytes": 0,
+      "path": "raw/repeat-2--p256-c100-p1--hazelcast--get.log.telemetry.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 186,
+      "path": "raw/repeat-2--p256-c100-p1--hazelcast--set.log",
+      "sha256": "b22f6cb47a5725cdd9d0244ff4c61da5f37181733f7cccf6b1eebe72798b6473"
+    },
+    {
+      "bytes": 0,
+      "path": "raw/repeat-2--p256-c100-p1--hazelcast--set.log.telemetry.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 2044,
+      "path": "raw/repeat-2--p256-c100-p1--hydra--get.log",
+      "sha256": "2f3d53890d306cc50527ad4841e4d23b032f332ce1daef33d0058e332d9f2a75"
+    },
+    {
+      "bytes": 0,
+      "path": "raw/repeat-2--p256-c100-p1--hydra--get.log.telemetry.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 2044,
+      "path": "raw/repeat-2--p256-c100-p1--hydra--set.log",
+      "sha256": "456c7a2623e99cf4ab6fad82ca5f3f4d839979d2eb28412c421e04f3dc6ee768"
+    },
+    {
+      "bytes": 0,
+      "path": "raw/repeat-2--p256-c100-p1--hydra--set.log.telemetry.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 1868,
+      "path": "raw/repeat-2--p256-c100-p1--redis--get.log",
+      "sha256": "863cfa7feb40e86aedee220034f16b10a45ee7f13384ca2eda12f4f56073aa36"
+    },
+    {
+      "bytes": 0,
+      "path": "raw/repeat-2--p256-c100-p1--redis--get.log.telemetry.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 1868,
+      "path": "raw/repeat-2--p256-c100-p1--redis--set.log",
+      "sha256": "69d6b4d202f98ee98176b105d272be67849ddab58ba454316b5d066dd39611c3"
+    },
+    {
+      "bytes": 0,
+      "path": "raw/repeat-2--p256-c100-p1--redis--set.log.telemetry.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 183,
+      "path": "raw/repeat-2--p64-c10-p1--hazelcast--get.log",
+      "sha256": "8bdd26b7ec455442dfce8906ef08447a47f851c3e983f0c1d88565c2fd90b4bc"
+    },
+    {
+      "bytes": 0,
+      "path": "raw/repeat-2--p64-c10-p1--hazelcast--get.log.telemetry.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 184,
+      "path": "raw/repeat-2--p64-c10-p1--hazelcast--set.log",
+      "sha256": "239b66aa7d70d9df29c66c6ed11ca4a39e3629f23588dae28aed659b39dfe590"
+    },
+    {
+      "bytes": 0,
+      "path": "raw/repeat-2--p64-c10-p1--hazelcast--set.log.telemetry.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 2042,
+      "path": "raw/repeat-2--p64-c10-p1--hydra--get.log",
+      "sha256": "5a538990393b1f46ea486cd465b246b4bc3775cc4b52435d2938efc3a7954dca"
+    },
+    {
+      "bytes": 0,
+      "path": "raw/repeat-2--p64-c10-p1--hydra--get.log.telemetry.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 2042,
+      "path": "raw/repeat-2--p64-c10-p1--hydra--set.log",
+      "sha256": "0c983adad0e9b609152694df98f17167fcc5bfd035d5d44efad38f7041f8bc35"
+    },
+    {
+      "bytes": 0,
+      "path": "raw/repeat-2--p64-c10-p1--hydra--set.log.telemetry.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 1868,
+      "path": "raw/repeat-2--p64-c10-p1--redis--get.log",
+      "sha256": "295e39b042c3256eb2acfa4bff6d00d6ccf1bed37cf121f6ecf56a412b18f157"
+    },
+    {
+      "bytes": 0,
+      "path": "raw/repeat-2--p64-c10-p1--redis--get.log.telemetry.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 1868,
+      "path": "raw/repeat-2--p64-c10-p1--redis--set.log",
+      "sha256": "9419d944fa0304d4535cf16d0ac3c3a137a451bd449674c261716cf4b23e1639"
+    },
+    {
+      "bytes": 0,
+      "path": "raw/repeat-2--p64-c10-p1--redis--set.log.telemetry.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 184,
+      "path": "raw/repeat-2--p64-c10-p10--hazelcast--get.log",
+      "sha256": "ae03830f4be6f370dec61ad2d76c066dab68a116e171ecf1df9c4d8cdc75d833"
+    },
+    {
+      "bytes": 0,
+      "path": "raw/repeat-2--p64-c10-p10--hazelcast--get.log.telemetry.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 186,
+      "path": "raw/repeat-2--p64-c10-p10--hazelcast--set.log",
+      "sha256": "b989d89c94ae26ddf141eb84c626eaa407f4102b39d36a86e6eb204ebacb4bd4"
+    },
+    {
+      "bytes": 0,
+      "path": "raw/repeat-2--p64-c10-p10--hazelcast--set.log.telemetry.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 1358,
+      "path": "raw/repeat-2--p64-c10-p10--hydra--get.log",
+      "sha256": "2ca3f7a00d8d7360cdcf34040f9e461a2bbef05303572fdf3596fcddf93e802b"
+    },
+    {
+      "bytes": 0,
+      "path": "raw/repeat-2--p64-c10-p10--hydra--get.log.telemetry.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 1358,
+      "path": "raw/repeat-2--p64-c10-p10--hydra--set.log",
+      "sha256": "847f939a0a8e6a627b0c5d4af5abd7fcfe452fa6e95a655da0e7fa03b525c090"
+    },
+    {
+      "bytes": 0,
+      "path": "raw/repeat-2--p64-c10-p10--hydra--set.log.telemetry.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 367,
+      "path": "raw/repeat-2--p64-c10-p10--redis--get.log",
+      "sha256": "206272ed715a56a0491197aad9ec8707a5184f654df4da4f2822ad24b3f393e2"
+    },
+    {
+      "bytes": 0,
+      "path": "raw/repeat-2--p64-c10-p10--redis--get.log.telemetry.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 365,
+      "path": "raw/repeat-2--p64-c10-p10--redis--set.log",
+      "sha256": "2cccd2fc46cb08e88c168ca7575b2ab48d8c1b8e9b5ad4e94e80713c08ad668b"
+    },
+    {
+      "bytes": 0,
+      "path": "raw/repeat-2--p64-c10-p10--redis--set.log.telemetry.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 186,
+      "path": "raw/repeat-3--p1024-c50-p1--hazelcast--get.log",
+      "sha256": "f8eba758be3e2f0f982b2985c1d62bd721b98029dae2385dafef980ea7cf924c"
+    },
+    {
+      "bytes": 0,
+      "path": "raw/repeat-3--p1024-c50-p1--hazelcast--get.log.telemetry.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 186,
+      "path": "raw/repeat-3--p1024-c50-p1--hazelcast--set.log",
+      "sha256": "ff0eb304d16f132474bee82695a2a45b93b9babc7d154a00fab905b4aefb2088"
+    },
+    {
+      "bytes": 0,
+      "path": "raw/repeat-3--p1024-c50-p1--hazelcast--set.log.telemetry.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 2046,
+      "path": "raw/repeat-3--p1024-c50-p1--hydra--get.log",
+      "sha256": "f503e7b776d82669edfa1e465d120719c2ec3f70dd88c2ce13e57c5fef77e6ef"
+    },
+    {
+      "bytes": 0,
+      "path": "raw/repeat-3--p1024-c50-p1--hydra--get.log.telemetry.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 2044,
+      "path": "raw/repeat-3--p1024-c50-p1--hydra--set.log",
+      "sha256": "5b6f990e4a7f51c6c4015f00f5ee062a1a5007ae9631bbf81a931121322bc724"
+    },
+    {
+      "bytes": 0,
+      "path": "raw/repeat-3--p1024-c50-p1--hydra--set.log.telemetry.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 1868,
+      "path": "raw/repeat-3--p1024-c50-p1--redis--get.log",
+      "sha256": "ae5d70ec304c709bf52467d78b9c56a69dc50ef42d5cbcc5ea5fe937da23d247"
+    },
+    {
+      "bytes": 0,
+      "path": "raw/repeat-3--p1024-c50-p1--redis--get.log.telemetry.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 1868,
+      "path": "raw/repeat-3--p1024-c50-p1--redis--set.log",
+      "sha256": "9a6790df7ce10a2776100cc2c81fd13fb282ccfee1b727f13aea8f82cf2835a4"
+    },
+    {
+      "bytes": 0,
+      "path": "raw/repeat-3--p1024-c50-p1--redis--set.log.telemetry.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 187,
+      "path": "raw/repeat-3--p1024-c50-p10--hazelcast--get.log",
+      "sha256": "1df1001862d78a628f03160bc9de2d1cc4b1dbfa20283f3ef7c938afa65f28d4"
+    },
+    {
+      "bytes": 0,
+      "path": "raw/repeat-3--p1024-c50-p10--hazelcast--get.log.telemetry.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 186,
+      "path": "raw/repeat-3--p1024-c50-p10--hazelcast--set.log",
+      "sha256": "8d4e652aa80817fd6bc845c7a37e7cebb2d614b839115f293610e81d541c8532"
+    },
+    {
+      "bytes": 0,
+      "path": "raw/repeat-3--p1024-c50-p10--hazelcast--set.log.telemetry.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 1395,
+      "path": "raw/repeat-3--p1024-c50-p10--hydra--get.log",
+      "sha256": "8ed932eaf4925b4d98e5b2c837ec4b73790f4019b398bdaf13b36fcc9837928f"
+    },
+    {
+      "bytes": 0,
+      "path": "raw/repeat-3--p1024-c50-p10--hydra--get.log.telemetry.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 1393,
+      "path": "raw/repeat-3--p1024-c50-p10--hydra--set.log",
+      "sha256": "6ce0915fee53b5a4b8b2f869582cfa92a99f64859502c5ccdaead6be066da321"
+    },
+    {
+      "bytes": 0,
+      "path": "raw/repeat-3--p1024-c50-p10--hydra--set.log.telemetry.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 367,
+      "path": "raw/repeat-3--p1024-c50-p10--redis--get.log",
+      "sha256": "5522fc3acacc4019b10bdfed1ae6a5e4257fdb3313a6a629e8b93fcf194b151c"
+    },
+    {
+      "bytes": 0,
+      "path": "raw/repeat-3--p1024-c50-p10--redis--get.log.telemetry.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 367,
+      "path": "raw/repeat-3--p1024-c50-p10--redis--set.log",
+      "sha256": "7fcd4d499ef9efd349c464d839f2a3a68699022540e8547eefb9689af7579e61"
+    },
+    {
+      "bytes": 0,
+      "path": "raw/repeat-3--p1024-c50-p10--redis--set.log.telemetry.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 183,
+      "path": "raw/repeat-3--p256-c1-p1--hazelcast--get.log",
+      "sha256": "3329a493b392358b1d688ca286b30dd8fa01a9a79b113808d0614308f206aa73"
+    },
+    {
+      "bytes": 0,
+      "path": "raw/repeat-3--p256-c1-p1--hazelcast--get.log.telemetry.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 183,
+      "path": "raw/repeat-3--p256-c1-p1--hazelcast--set.log",
+      "sha256": "3945c84494b348283184f690e177f1a8842a42b4aa7aa1dc1f87be1e329b1263"
+    },
+    {
+      "bytes": 0,
+      "path": "raw/repeat-3--p256-c1-p1--hazelcast--set.log.telemetry.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 2874,
+      "path": "raw/repeat-3--p256-c1-p1--hydra--get.log",
+      "sha256": "c88e4a23f2ecbf40ea22f61a86d61df82cc53a31e8bc296033a39a8facd2af1b"
+    },
+    {
+      "bytes": 0,
+      "path": "raw/repeat-3--p256-c1-p1--hydra--get.log.telemetry.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 2868,
+      "path": "raw/repeat-3--p256-c1-p1--hydra--set.log",
+      "sha256": "5f2c258df3c985fc65a3658d695e279535777c5df14fbcd692b9148f954143ee"
+    },
+    {
+      "bytes": 0,
+      "path": "raw/repeat-3--p256-c1-p1--hydra--set.log.telemetry.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 2692,
+      "path": "raw/repeat-3--p256-c1-p1--redis--get.log",
+      "sha256": "75a59dbbf4939aaa1b682ab29b6cfb3e5d847f095c1df8b1c89c4414babd80db"
+    },
+    {
+      "bytes": 0,
+      "path": "raw/repeat-3--p256-c1-p1--redis--get.log.telemetry.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 2698,
+      "path": "raw/repeat-3--p256-c1-p1--redis--set.log",
+      "sha256": "c76c09af44962ec360b4b4cde148193a1b1ada11f97958bdec1a374a7182bda8"
+    },
+    {
+      "bytes": 0,
+      "path": "raw/repeat-3--p256-c1-p1--redis--set.log.telemetry.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 185,
+      "path": "raw/repeat-3--p256-c10-p1--hazelcast--get.log",
+      "sha256": "d7caacede5016c01bd7b55e3fd5b3efe4738959ab19f2982dea4fe6ae7eab077"
+    },
+    {
+      "bytes": 0,
+      "path": "raw/repeat-3--p256-c10-p1--hazelcast--get.log.telemetry.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 185,
+      "path": "raw/repeat-3--p256-c10-p1--hazelcast--set.log",
+      "sha256": "47ae2dbaef724170d1331e076c4ad8accf069ea5fe66b577af1fa0bc208394bb"
+    },
+    {
+      "bytes": 0,
+      "path": "raw/repeat-3--p256-c10-p1--hazelcast--set.log.telemetry.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 2043,
+      "path": "raw/repeat-3--p256-c10-p1--hydra--get.log",
+      "sha256": "3d83ad8ffbaf843af12138cbd972eba806d9f7bf59718606837424f82c713c5a"
+    },
+    {
+      "bytes": 0,
+      "path": "raw/repeat-3--p256-c10-p1--hydra--get.log.telemetry.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 2045,
+      "path": "raw/repeat-3--p256-c10-p1--hydra--set.log",
+      "sha256": "282b4d22e9982f3499c646d55f9855028fdfd46d95ae5b3c9b62d9834db0466f"
+    },
+    {
+      "bytes": 0,
+      "path": "raw/repeat-3--p256-c10-p1--hydra--set.log.telemetry.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 1869,
+      "path": "raw/repeat-3--p256-c10-p1--redis--get.log",
+      "sha256": "f35c14d901b377c5fdf92e3375f8b409ad95bd10a6d7355c259759bbb2be626f"
+    },
+    {
+      "bytes": 0,
+      "path": "raw/repeat-3--p256-c10-p1--redis--get.log.telemetry.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 1869,
+      "path": "raw/repeat-3--p256-c10-p1--redis--set.log",
+      "sha256": "8c6fe19116a81ca0d814c5255dc4b261ae436614a61b6b595370aadbe71a9be3"
+    },
+    {
+      "bytes": 0,
+      "path": "raw/repeat-3--p256-c10-p1--redis--set.log.telemetry.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 186,
+      "path": "raw/repeat-3--p256-c10-p10--hazelcast--get.log",
+      "sha256": "3d69bbbb35f2669071d9a9d7a8b00044b39e844b18cef0f1bc580b06fb89a2ff"
+    },
+    {
+      "bytes": 0,
+      "path": "raw/repeat-3--p256-c10-p10--hazelcast--get.log.telemetry.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 186,
+      "path": "raw/repeat-3--p256-c10-p10--hazelcast--set.log",
+      "sha256": "0c4874f1118072b9af8d15d38cd681e164f9ab60da94e1627c1fb4dce75dbb12"
+    },
+    {
+      "bytes": 0,
+      "path": "raw/repeat-3--p256-c10-p10--hazelcast--set.log.telemetry.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 1359,
+      "path": "raw/repeat-3--p256-c10-p10--hydra--get.log",
+      "sha256": "67d733bc26c2c0e002e15c0e0570467f7f60e12b4d9cfa6b59ddd2c187bea63b"
+    },
+    {
+      "bytes": 0,
+      "path": "raw/repeat-3--p256-c10-p10--hydra--get.log.telemetry.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 1361,
+      "path": "raw/repeat-3--p256-c10-p10--hydra--set.log",
+      "sha256": "5802e6cdacde1740453f72191d03ed2dfe30fd6c2a4fb095594b194495e8d47a"
+    },
+    {
+      "bytes": 0,
+      "path": "raw/repeat-3--p256-c10-p10--hydra--set.log.telemetry.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 368,
+      "path": "raw/repeat-3--p256-c10-p10--redis--get.log",
+      "sha256": "eb2b40e427b5369ee94e0d14c0a0ea9d70c5f32d8b38112fa95cbd27a4571677"
+    },
+    {
+      "bytes": 0,
+      "path": "raw/repeat-3--p256-c10-p10--redis--get.log.telemetry.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 368,
+      "path": "raw/repeat-3--p256-c10-p10--redis--set.log",
+      "sha256": "1353c34057175854d12bbd1f7f8be2423fe3424bfa8910b357e2ffc943dbbff8"
+    },
+    {
+      "bytes": 0,
+      "path": "raw/repeat-3--p256-c10-p10--redis--set.log.telemetry.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 186,
+      "path": "raw/repeat-3--p256-c100-p1--hazelcast--get.log",
+      "sha256": "b20703447d1237c9bfededcad4c7364d433dce372f920bf5cf78e973d003c0fd"
+    },
+    {
+      "bytes": 0,
+      "path": "raw/repeat-3--p256-c100-p1--hazelcast--get.log.telemetry.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 186,
+      "path": "raw/repeat-3--p256-c100-p1--hazelcast--set.log",
+      "sha256": "81add41bec9243c6f7d86f16b10e5a1c7119850fb83336a3d48a8c672bacbca8"
+    },
+    {
+      "bytes": 0,
+      "path": "raw/repeat-3--p256-c100-p1--hazelcast--set.log.telemetry.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 2044,
+      "path": "raw/repeat-3--p256-c100-p1--hydra--get.log",
+      "sha256": "c081042e95b1c6c0103c6c5baf122c9d4f3caff629e3482e6b6905cd61134011"
+    },
+    {
+      "bytes": 0,
+      "path": "raw/repeat-3--p256-c100-p1--hydra--get.log.telemetry.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 2044,
+      "path": "raw/repeat-3--p256-c100-p1--hydra--set.log",
+      "sha256": "344ba64c083a7e47387c1dfe1d6aa89c33804911ed843a925500783439c37864"
+    },
+    {
+      "bytes": 0,
+      "path": "raw/repeat-3--p256-c100-p1--hydra--set.log.telemetry.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 1868,
+      "path": "raw/repeat-3--p256-c100-p1--redis--get.log",
+      "sha256": "8e63f7d604b0ea04468ab9896523e61943578ca19a598d3c63c6b6a13b95e6e8"
+    },
+    {
+      "bytes": 0,
+      "path": "raw/repeat-3--p256-c100-p1--redis--get.log.telemetry.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 1868,
+      "path": "raw/repeat-3--p256-c100-p1--redis--set.log",
+      "sha256": "b1f8805cc4a71022f1b608febf443344d7fdc99737917de6be3a5c6f09fbeedb"
+    },
+    {
+      "bytes": 0,
+      "path": "raw/repeat-3--p256-c100-p1--redis--set.log.telemetry.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 184,
+      "path": "raw/repeat-3--p64-c10-p1--hazelcast--get.log",
+      "sha256": "f06e46e664a5cc71ce74186d57ec0ef6ca769c56a7faae662a3b5101a44c5472"
+    },
+    {
+      "bytes": 0,
+      "path": "raw/repeat-3--p64-c10-p1--hazelcast--get.log.telemetry.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 184,
+      "path": "raw/repeat-3--p64-c10-p1--hazelcast--set.log",
+      "sha256": "24127bd397f88ed14349d02c5cb8c0ffd5c7347210ece257e313c4ef7c9370f3"
+    },
+    {
+      "bytes": 0,
+      "path": "raw/repeat-3--p64-c10-p1--hazelcast--set.log.telemetry.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 2042,
+      "path": "raw/repeat-3--p64-c10-p1--hydra--get.log",
+      "sha256": "c363b8119e0ac43fca1d780e290cfeece9e5b8b62bca32c6110b1bdebb556b3d"
+    },
+    {
+      "bytes": 0,
+      "path": "raw/repeat-3--p64-c10-p1--hydra--get.log.telemetry.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 2044,
+      "path": "raw/repeat-3--p64-c10-p1--hydra--set.log",
+      "sha256": "f11f3649e3b8a3fc3f146394490f893371709c607ef17428ff437674f94ec3ba"
+    },
+    {
+      "bytes": 0,
+      "path": "raw/repeat-3--p64-c10-p1--hydra--set.log.telemetry.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 1866,
+      "path": "raw/repeat-3--p64-c10-p1--redis--get.log",
+      "sha256": "d56cb87781f4f9594120d0132241d7cc18ab0556b77e01be3bf4ae0387331df4"
+    },
+    {
+      "bytes": 0,
+      "path": "raw/repeat-3--p64-c10-p1--redis--get.log.telemetry.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 1868,
+      "path": "raw/repeat-3--p64-c10-p1--redis--set.log",
+      "sha256": "67e5106e0f3be8b5a95950c5e9513efc799c9dd5bd13df8a135283b3da1da9f4"
+    },
+    {
+      "bytes": 0,
+      "path": "raw/repeat-3--p64-c10-p1--redis--set.log.telemetry.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 185,
+      "path": "raw/repeat-3--p64-c10-p10--hazelcast--get.log",
+      "sha256": "774981706e5432b9025c9a7a7edc8dd1d69d0eacc9874e6b5525e6acad0c5423"
+    },
+    {
+      "bytes": 0,
+      "path": "raw/repeat-3--p64-c10-p10--hazelcast--get.log.telemetry.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 183,
+      "path": "raw/repeat-3--p64-c10-p10--hazelcast--set.log",
+      "sha256": "26e8b13b185afa49b97be0692bda5da4f0c6d6c4c62ed1503e525948881d41af"
+    },
+    {
+      "bytes": 0,
+      "path": "raw/repeat-3--p64-c10-p10--hazelcast--set.log.telemetry.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 1360,
+      "path": "raw/repeat-3--p64-c10-p10--hydra--get.log",
+      "sha256": "ff4ecbcdb8c8a92694b0e8c8036f15bb53180b7f5d51d9a02529fa96a4727526"
+    },
+    {
+      "bytes": 0,
+      "path": "raw/repeat-3--p64-c10-p10--hydra--get.log.telemetry.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 1358,
+      "path": "raw/repeat-3--p64-c10-p10--hydra--set.log",
+      "sha256": "f787accd1fabbf3a370526e6d07af5d16be8c2010666c70882b06a986d921a89"
+    },
+    {
+      "bytes": 0,
+      "path": "raw/repeat-3--p64-c10-p10--hydra--set.log.telemetry.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 367,
+      "path": "raw/repeat-3--p64-c10-p10--redis--get.log",
+      "sha256": "9b1d7bc60d60e3c41716aa7938d7625c8d617984ddf9b530f9ce59b1f23f4d3d"
+    },
+    {
+      "bytes": 0,
+      "path": "raw/repeat-3--p64-c10-p10--redis--get.log.telemetry.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 367,
+      "path": "raw/repeat-3--p64-c10-p10--redis--set.log",
+      "sha256": "dcfdaad1464f6ed5210d507c11dcc4d3f8b3d5789b7904c3e16c94810db81749"
+    },
+    {
+      "bytes": 0,
+      "path": "raw/repeat-3--p64-c10-p10--redis--set.log.telemetry.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 496,
+      "path": "reproduction-command.txt",
+      "sha256": "4f0a4eeeaf754424f379704a25a3726126bc1f589719c8fba7167026f8897eb6"
+    },
+    {
+      "bytes": 1379,
+      "path": "telemetry/repeat-1--p1024-c50-p1--hazelcast--get.csv",
+      "sha256": "5524d3d01fcf44615e3b5e50c68b013736675e77e1b1e73b5f22447c6fdffd96"
+    },
+    {
+      "bytes": 5008,
+      "path": "telemetry/repeat-1--p1024-c50-p1--hazelcast--get.jsonl",
+      "sha256": "7edcf34a876ad9e2a4ab71d1163300d5ba9e379524b1f6d5c9c2d026a859eb2c"
+    },
+    {
+      "bytes": 8029,
+      "path": "telemetry/repeat-1--p1024-c50-p1--hazelcast--get.metadata.json",
+      "sha256": "bb7c4080e85d42c5e3f3db14788fc55918dc0b2400e6333bfe315147d5c94660"
+    },
+    {
+      "bytes": 1277,
+      "path": "telemetry/repeat-1--p1024-c50-p1--hazelcast--set.csv",
+      "sha256": "7e3c912ad7b917a4bcdab035dccc55c403f0523b9330353064ce2f5e9cdeccae"
+    },
+    {
+      "bytes": 4551,
+      "path": "telemetry/repeat-1--p1024-c50-p1--hazelcast--set.jsonl",
+      "sha256": "90e6937dbd79a873d1f4c8a11b51bee1fb1d3cacf8c9c25c630ce483cc4f75e5"
+    },
+    {
+      "bytes": 8029,
+      "path": "telemetry/repeat-1--p1024-c50-p1--hazelcast--set.metadata.json",
+      "sha256": "bb7c4080e85d42c5e3f3db14788fc55918dc0b2400e6333bfe315147d5c94660"
+    },
+    {
+      "bytes": 636,
+      "path": "telemetry/repeat-1--p1024-c50-p1--hydra--get.csv",
+      "sha256": "6effa0ee35298c251804f7aae75353123ff9742e403fe66d30c7a12efa514591"
+    },
+    {
+      "bytes": 1796,
+      "path": "telemetry/repeat-1--p1024-c50-p1--hydra--get.jsonl",
+      "sha256": "65a74d5a9e93e7351f2a08cc04601ebc52943fd8761431e610bd279612e608a2"
+    },
+    {
+      "bytes": 153,
+      "path": "telemetry/repeat-1--p1024-c50-p1--hydra--get.metadata.json",
+      "sha256": "f719d0a3a00d84a9a1c0f0193870f4d620e3f3f33b19948e5f568bad54dbc397"
+    },
+    {
+      "bytes": 634,
+      "path": "telemetry/repeat-1--p1024-c50-p1--hydra--set.csv",
+      "sha256": "9226615ba3653bc43d8b7de7af0b404f3f5476955ee1a7ce3260559575d44a1d"
+    },
+    {
+      "bytes": 1794,
+      "path": "telemetry/repeat-1--p1024-c50-p1--hydra--set.jsonl",
+      "sha256": "906643974e30c78138aa0510a8e523509f75f1b456107b4ae6cbbefebb066fb3"
+    },
+    {
+      "bytes": 153,
+      "path": "telemetry/repeat-1--p1024-c50-p1--hydra--set.metadata.json",
+      "sha256": "f719d0a3a00d84a9a1c0f0193870f4d620e3f3f33b19948e5f568bad54dbc397"
+    },
+    {
+      "bytes": 642,
+      "path": "telemetry/repeat-1--p1024-c50-p1--redis--get.csv",
+      "sha256": "55197d279f2961a5c617f6d0bccfac56f95ee8d2fe893ae2f2a40106bf5e3cd4"
+    },
+    {
+      "bytes": 1786,
+      "path": "telemetry/repeat-1--p1024-c50-p1--redis--get.jsonl",
+      "sha256": "4c967212da53a5579415366fe2ad786fd5cc2dcf38a04c8a3e23a020cb19547f"
+    },
+    {
+      "bytes": 7377,
+      "path": "telemetry/repeat-1--p1024-c50-p1--redis--get.metadata.json",
+      "sha256": "e450789ec9b4e6c2126a3afc54aeab38d96e4f128ac3426e97a3146d339ab779"
+    },
+    {
+      "bytes": 640,
+      "path": "telemetry/repeat-1--p1024-c50-p1--redis--set.csv",
+      "sha256": "898ebd5bf9b865ae35638bd069ef7b76053fc662dfc6ee0d1a60df124ceffcdd"
+    },
+    {
+      "bytes": 1784,
+      "path": "telemetry/repeat-1--p1024-c50-p1--redis--set.jsonl",
+      "sha256": "747e4d4f8fcafcd89a3ef1ac960432f263d89831c563b16475c00a88c442668e"
+    },
+    {
+      "bytes": 7377,
+      "path": "telemetry/repeat-1--p1024-c50-p1--redis--set.metadata.json",
+      "sha256": "e450789ec9b4e6c2126a3afc54aeab38d96e4f128ac3426e97a3146d339ab779"
+    },
+    {
+      "bytes": 876,
+      "path": "telemetry/repeat-1--p1024-c50-p10--hazelcast--get.csv",
+      "sha256": "8bce768486d4ddc09bed63f908e65a55f69c28f580dfc0a1ce0e23edd6533e55"
+    },
+    {
+      "bytes": 2730,
+      "path": "telemetry/repeat-1--p1024-c50-p10--hazelcast--get.jsonl",
+      "sha256": "13e280f07d8af83c2f0122e951f4d52e7917cf30957bc890a96be6f9e58ba038"
+    },
+    {
+      "bytes": 8029,
+      "path": "telemetry/repeat-1--p1024-c50-p10--hazelcast--get.metadata.json",
+      "sha256": "2626b6d5955c3fb7c35d701d0c7d2e867a0230e2adce6e7c7be0e1bfa12305ea"
+    },
+    {
+      "bytes": 773,
+      "path": "telemetry/repeat-1--p1024-c50-p10--hazelcast--set.csv",
+      "sha256": "79582310781914e64c9e095cbc8b39731e5867f2f1d374cc817982ca256da08c"
+    },
+    {
+      "bytes": 2272,
+      "path": "telemetry/repeat-1--p1024-c50-p10--hazelcast--set.jsonl",
+      "sha256": "b17e10cb8047d063d2109969042e319820bc04e2521b8a45cc6a2e83d7e49562"
+    },
+    {
+      "bytes": 8029,
+      "path": "telemetry/repeat-1--p1024-c50-p10--hazelcast--set.metadata.json",
+      "sha256": "2626b6d5955c3fb7c35d701d0c7d2e867a0230e2adce6e7c7be0e1bfa12305ea"
+    },
+    {
+      "bytes": 545,
+      "path": "telemetry/repeat-1--p1024-c50-p10--hydra--get.csv",
+      "sha256": "148a17d24a1f139183da974b3735b4cd22b92387747531ee5f5bd2f9e603f1a9"
+    },
+    {
+      "bytes": 1346,
+      "path": "telemetry/repeat-1--p1024-c50-p10--hydra--get.jsonl",
+      "sha256": "7db1e2af014573e66f01a38988584bbfc7e068cf6b2c0c37f53a7450a5d6c0ae"
+    },
+    {
+      "bytes": 153,
+      "path": "telemetry/repeat-1--p1024-c50-p10--hydra--get.metadata.json",
+      "sha256": "f719d0a3a00d84a9a1c0f0193870f4d620e3f3f33b19948e5f568bad54dbc397"
+    },
+    {
+      "bytes": 545,
+      "path": "telemetry/repeat-1--p1024-c50-p10--hydra--set.csv",
+      "sha256": "a0bf0907425e00b5aeb471d96070045d765b8f3aeba4a3fc63f8db92ea2f81bf"
+    },
+    {
+      "bytes": 1346,
+      "path": "telemetry/repeat-1--p1024-c50-p10--hydra--set.jsonl",
+      "sha256": "25d30d025b392730d20de28de5b5c3b479da357cb37843940cdb1e029c2fada0"
+    },
+    {
+      "bytes": 153,
+      "path": "telemetry/repeat-1--p1024-c50-p10--hydra--set.metadata.json",
+      "sha256": "f719d0a3a00d84a9a1c0f0193870f4d620e3f3f33b19948e5f568bad54dbc397"
+    },
+    {
+      "bytes": 364,
+      "path": "telemetry/repeat-1--p1024-c50-p10--redis--get.csv",
+      "sha256": "96bb400e36dae3653d39c47930d9cdf341f3fe90473a95ef6bc0d98bd84a3aba"
+    },
+    {
+      "bytes": 443,
+      "path": "telemetry/repeat-1--p1024-c50-p10--redis--get.jsonl",
+      "sha256": "3154cbddf27f5401c68ce9db59702a6255b2eb0beff5c532e693505dfe88ffea"
+    },
+    {
+      "bytes": 7377,
+      "path": "telemetry/repeat-1--p1024-c50-p10--redis--get.metadata.json",
+      "sha256": "e450789ec9b4e6c2126a3afc54aeab38d96e4f128ac3426e97a3146d339ab779"
+    },
+    {
+      "bytes": 364,
+      "path": "telemetry/repeat-1--p1024-c50-p10--redis--set.csv",
+      "sha256": "c4a1c445f0f435253275ec77201cd91632d35a366514ab3b59b129fa282a8e0b"
+    },
+    {
+      "bytes": 443,
+      "path": "telemetry/repeat-1--p1024-c50-p10--redis--set.jsonl",
+      "sha256": "45c41f0035578a86110f8f03bdcbcc841835328d998b04640065d1415e65188c"
+    },
+    {
+      "bytes": 7377,
+      "path": "telemetry/repeat-1--p1024-c50-p10--redis--set.metadata.json",
+      "sha256": "e450789ec9b4e6c2126a3afc54aeab38d96e4f128ac3426e97a3146d339ab779"
+    },
+    {
+      "bytes": 2085,
+      "path": "telemetry/repeat-1--p256-c1-p1--hazelcast--get.csv",
+      "sha256": "fa9732eb649e7c07f8ea6bfec8ecc4987b3705c8a6155e59aa170548a887d472"
+    },
+    {
+      "bytes": 8199,
+      "path": "telemetry/repeat-1--p256-c1-p1--hazelcast--get.jsonl",
+      "sha256": "e0e3b2152d6135507e63f2ed06b2805e579d9bca823e39576ceeb0b497c53a7a"
+    },
+    {
+      "bytes": 8029,
+      "path": "telemetry/repeat-1--p256-c1-p1--hazelcast--get.metadata.json",
+      "sha256": "ea77d935b557e26b725ec00a31dd7b15ddf3845d1bb0d1b40bb5b484c7381553"
+    },
+    {
+      "bytes": 1981,
+      "path": "telemetry/repeat-1--p256-c1-p1--hazelcast--set.csv",
+      "sha256": "28169e0f3598509dcc6c092cb4d0c7b7b660a7957ca160ec5d144bf7b3e84967"
+    },
+    {
+      "bytes": 7740,
+      "path": "telemetry/repeat-1--p256-c1-p1--hazelcast--set.jsonl",
+      "sha256": "c7d5e9adb7da9477f1bd292f829f9be8207e3e498b2ae2f58af853bf35573aea"
+    },
+    {
+      "bytes": 8029,
+      "path": "telemetry/repeat-1--p256-c1-p1--hazelcast--set.metadata.json",
+      "sha256": "2626b6d5955c3fb7c35d701d0c7d2e867a0230e2adce6e7c7be0e1bfa12305ea"
+    },
+    {
+      "bytes": 725,
+      "path": "telemetry/repeat-1--p256-c1-p1--hydra--get.csv",
+      "sha256": "ab813833e688ed13e585d2f9ccba7aea96ddb636de1064e0e1c19f988ce6cfdf"
+    },
+    {
+      "bytes": 2244,
+      "path": "telemetry/repeat-1--p256-c1-p1--hydra--get.jsonl",
+      "sha256": "ff088c71558a5b47492e8a1c36fac807889f8320f9ecb3aee864c697cc3f247a"
+    },
+    {
+      "bytes": 153,
+      "path": "telemetry/repeat-1--p256-c1-p1--hydra--get.metadata.json",
+      "sha256": "f719d0a3a00d84a9a1c0f0193870f4d620e3f3f33b19948e5f568bad54dbc397"
+    },
+    {
+      "bytes": 725,
+      "path": "telemetry/repeat-1--p256-c1-p1--hydra--set.csv",
+      "sha256": "ecf30c40f209d621d8d19ccfe38e4cdf1b7e47e12e4755440fd8792750edec7d"
+    },
+    {
+      "bytes": 2244,
+      "path": "telemetry/repeat-1--p256-c1-p1--hydra--set.jsonl",
+      "sha256": "cbb3180c347e651dfcf280ddc260bb0f9ac7ca48a698de35f58769414e00e50e"
+    },
+    {
+      "bytes": 153,
+      "path": "telemetry/repeat-1--p256-c1-p1--hydra--set.metadata.json",
+      "sha256": "f719d0a3a00d84a9a1c0f0193870f4d620e3f3f33b19948e5f568bad54dbc397"
+    },
+    {
+      "bytes": 733,
+      "path": "telemetry/repeat-1--p256-c1-p1--redis--get.csv",
+      "sha256": "100ad87104503c55127d9bf111cec34cf64378148f8fcafca0ce2e2e715054e8"
+    },
+    {
+      "bytes": 2232,
+      "path": "telemetry/repeat-1--p256-c1-p1--redis--get.jsonl",
+      "sha256": "9b8e450af9266e362dc70d13504a18f81bd19e3befbf7bf67099c07bd589db02"
+    },
+    {
+      "bytes": 7377,
+      "path": "telemetry/repeat-1--p256-c1-p1--redis--get.metadata.json",
+      "sha256": "e450789ec9b4e6c2126a3afc54aeab38d96e4f128ac3426e97a3146d339ab779"
+    },
+    {
+      "bytes": 740,
+      "path": "telemetry/repeat-1--p256-c1-p1--redis--set.csv",
+      "sha256": "2edcfd63fb270b5562d6e0bac4f55ca9b6aeae82e5702fa37cecf0e374b4ad1c"
+    },
+    {
+      "bytes": 2239,
+      "path": "telemetry/repeat-1--p256-c1-p1--redis--set.jsonl",
+      "sha256": "159c3c852ed10e9c78436504d8d07f677e388bd5fdc2e86ad2206a2d7645eda3"
+    },
+    {
+      "bytes": 7377,
+      "path": "telemetry/repeat-1--p256-c1-p1--redis--set.metadata.json",
+      "sha256": "e450789ec9b4e6c2126a3afc54aeab38d96e4f128ac3426e97a3146d339ab779"
+    },
+    {
+      "bytes": 8241,
+      "path": "telemetry/repeat-1--p256-c10-p1--hazelcast--get.csv",
+      "sha256": "494256c2c3129a31cac04a6e8175f127108f475f1d96fa3624ec9ed32b4519f5"
+    },
+    {
+      "bytes": 36365,
+      "path": "telemetry/repeat-1--p256-c10-p1--hazelcast--get.jsonl",
+      "sha256": "d877091af03915e476d463a9fb2ec8631d8093d3d1f27df96f53a1cc41bce006"
+    },
+    {
+      "bytes": 8027,
+      "path": "telemetry/repeat-1--p256-c10-p1--hazelcast--get.metadata.json",
+      "sha256": "e3cd21ec8c20f455b4febc5e42a3d0b024a53dbab996a4e91940f7f8bb5d9300"
+    },
+    {
+      "bytes": 7146,
+      "path": "telemetry/repeat-1--p256-c10-p1--hazelcast--set.csv",
+      "sha256": "2aa6af9586059a4fbe7801fe610125e96d2f577f42277be8eba8edaa5dc35a11"
+    },
+    {
+      "bytes": 31365,
+      "path": "telemetry/repeat-1--p256-c10-p1--hazelcast--set.jsonl",
+      "sha256": "a6b6ac9dc54c957b779dd34c45a1c043095cad299facd0a9cd1f59cca7c4539a"
+    },
+    {
+      "bytes": 8028,
+      "path": "telemetry/repeat-1--p256-c10-p1--hazelcast--set.metadata.json",
+      "sha256": "ed4a38055819cd37e602f6f90ee3f17e4adabd2d12ae89da1eccb524a1a067d6"
+    },
+    {
+      "bytes": 620,
+      "path": "telemetry/repeat-1--p256-c10-p1--hydra--get.csv",
+      "sha256": "87dd6eaa7a7da213509e3ce8e7b4b8d497d74008f3522cb9be8dfc7efec9a74b"
+    },
+    {
+      "bytes": 1780,
+      "path": "telemetry/repeat-1--p256-c10-p1--hydra--get.jsonl",
+      "sha256": "bfdefdcf7d8b1b751654ba105fc7aa38b58c6f550fa510745d83c0cbc33b65db"
+    },
+    {
+      "bytes": 153,
+      "path": "telemetry/repeat-1--p256-c10-p1--hydra--get.metadata.json",
+      "sha256": "f719d0a3a00d84a9a1c0f0193870f4d620e3f3f33b19948e5f568bad54dbc397"
+    },
+    {
+      "bytes": 615,
+      "path": "telemetry/repeat-1--p256-c10-p1--hydra--set.csv",
+      "sha256": "6262b8585f6734d22697d80b4e3a21a55bcdec19b07c1329acd1f07dd8556e8c"
+    },
+    {
+      "bytes": 1775,
+      "path": "telemetry/repeat-1--p256-c10-p1--hydra--set.jsonl",
+      "sha256": "92c25db74344c88ac4871e2a3ed1fa4b2831ead251a3e8306cbd81ce18db3834"
+    },
+    {
+      "bytes": 153,
+      "path": "telemetry/repeat-1--p256-c10-p1--hydra--set.metadata.json",
+      "sha256": "f719d0a3a00d84a9a1c0f0193870f4d620e3f3f33b19948e5f568bad54dbc397"
+    },
+    {
+      "bytes": 636,
+      "path": "telemetry/repeat-1--p256-c10-p1--redis--get.csv",
+      "sha256": "f29cd03a087e48861f0aca0ef884cbad47c02072b65b66a1bfd8a3bd15f39112"
+    },
+    {
+      "bytes": 1780,
+      "path": "telemetry/repeat-1--p256-c10-p1--redis--get.jsonl",
+      "sha256": "db9883d6dae224a88b14bfebcaa75f7f4049801af71239750e6d66953ff87fb2"
+    },
+    {
+      "bytes": 7377,
+      "path": "telemetry/repeat-1--p256-c10-p1--redis--get.metadata.json",
+      "sha256": "e450789ec9b4e6c2126a3afc54aeab38d96e4f128ac3426e97a3146d339ab779"
+    },
+    {
+      "bytes": 635,
+      "path": "telemetry/repeat-1--p256-c10-p1--redis--set.csv",
+      "sha256": "5dc3aabdc7ac5a6e703127adb759173f5f24d5ff52014936e38e8e2fb8e8925c"
+    },
+    {
+      "bytes": 1779,
+      "path": "telemetry/repeat-1--p256-c10-p1--redis--set.jsonl",
+      "sha256": "9498f20c08727c4942a84d8c5cad8228fe07fadfa3a59dc73e0628bed1acad22"
+    },
+    {
+      "bytes": 7377,
+      "path": "telemetry/repeat-1--p256-c10-p1--redis--set.metadata.json",
+      "sha256": "e450789ec9b4e6c2126a3afc54aeab38d96e4f128ac3426e97a3146d339ab779"
+    },
+    {
+      "bytes": 1375,
+      "path": "telemetry/repeat-1--p256-c10-p10--hazelcast--get.csv",
+      "sha256": "75d6e2f419e2604eb955b22d6c5105a9ad5d28c35ad6b93214ed90349cbefeb5"
+    },
+    {
+      "bytes": 5004,
+      "path": "telemetry/repeat-1--p256-c10-p10--hazelcast--get.jsonl",
+      "sha256": "a4a58656a7b56f5f0b6051c98da69ea279906583744a7568443671b0c18cdfe0"
+    },
+    {
+      "bytes": 8028,
+      "path": "telemetry/repeat-1--p256-c10-p10--hazelcast--get.metadata.json",
+      "sha256": "562ca83d282e98c310eb78d1ac29c136eb8736cbf5335372f0bfc5d94ad86ea3"
+    },
+    {
+      "bytes": 1174,
+      "path": "telemetry/repeat-1--p256-c10-p10--hazelcast--set.csv",
+      "sha256": "d0b56b2d44b1f8e21f58b1e886356ead618be8bf62bacbe927d89c3076e170f8"
+    },
+    {
+      "bytes": 4093,
+      "path": "telemetry/repeat-1--p256-c10-p10--hazelcast--set.jsonl",
+      "sha256": "ccd786bc889d66625d2bd985172a8051e9a85aef5fdea526149c04db69c827ea"
+    },
+    {
+      "bytes": 8029,
+      "path": "telemetry/repeat-1--p256-c10-p10--hazelcast--set.metadata.json",
+      "sha256": "7ba89bddf3ade388a2e4b0286b6a5a59ed3224580c0b39622aa5742906572365"
+    },
+    {
+      "bytes": 546,
+      "path": "telemetry/repeat-1--p256-c10-p10--hydra--get.csv",
+      "sha256": "85ce57b2bf556c179c0b8a49cc742421fc3c7acc0d649d56dde995cc7e4447d1"
+    },
+    {
+      "bytes": 1347,
+      "path": "telemetry/repeat-1--p256-c10-p10--hydra--get.jsonl",
+      "sha256": "15589e46c2630bfd117c96131b0c9166859f7418f66592fd2da6080b6e0153ee"
+    },
+    {
+      "bytes": 153,
+      "path": "telemetry/repeat-1--p256-c10-p10--hydra--get.metadata.json",
+      "sha256": "f719d0a3a00d84a9a1c0f0193870f4d620e3f3f33b19948e5f568bad54dbc397"
+    },
+    {
+      "bytes": 539,
+      "path": "telemetry/repeat-1--p256-c10-p10--hydra--set.csv",
+      "sha256": "104e7dc8877aa764ed1a33dffbc1dab2f764a4aff07f863080b5e65d4b7c97bb"
+    },
+    {
+      "bytes": 1340,
+      "path": "telemetry/repeat-1--p256-c10-p10--hydra--set.jsonl",
+      "sha256": "3f56d3272bd8b93eebb8c58841379ce463d0e41456da568b01c8a4eef8c1590b"
+    },
+    {
+      "bytes": 153,
+      "path": "telemetry/repeat-1--p256-c10-p10--hydra--set.metadata.json",
+      "sha256": "f719d0a3a00d84a9a1c0f0193870f4d620e3f3f33b19948e5f568bad54dbc397"
+    },
+    {
+      "bytes": 365,
+      "path": "telemetry/repeat-1--p256-c10-p10--redis--get.csv",
+      "sha256": "6b68c733f7c60a48421cf0b7088504f27ee939039e2b6beb9e90160ddfca8654"
+    },
+    {
+      "bytes": 444,
+      "path": "telemetry/repeat-1--p256-c10-p10--redis--get.jsonl",
+      "sha256": "2efdc048087d7865dc981f3c5b6d1d27efe645f5019236136f9754cfe5f78813"
+    },
+    {
+      "bytes": 7377,
+      "path": "telemetry/repeat-1--p256-c10-p10--redis--get.metadata.json",
+      "sha256": "e450789ec9b4e6c2126a3afc54aeab38d96e4f128ac3426e97a3146d339ab779"
+    },
+    {
+      "bytes": 366,
+      "path": "telemetry/repeat-1--p256-c10-p10--redis--set.csv",
+      "sha256": "8a1f87c2a32b0f0c9499e4bc2e70fff3986294f8e8ea7b294782d787218d5bd0"
+    },
+    {
+      "bytes": 445,
+      "path": "telemetry/repeat-1--p256-c10-p10--redis--set.jsonl",
+      "sha256": "fc1e9dded2d83174e1efe00296da37460905127a2af36932b607285c4aaf3fd0"
+    },
+    {
+      "bytes": 7377,
+      "path": "telemetry/repeat-1--p256-c10-p10--redis--set.metadata.json",
+      "sha256": "e450789ec9b4e6c2126a3afc54aeab38d96e4f128ac3426e97a3146d339ab779"
+    },
+    {
+      "bytes": 1078,
+      "path": "telemetry/repeat-1--p256-c100-p1--hazelcast--get.csv",
+      "sha256": "c7879e67637c1326c51669f6141966d370600c42aa4c188c06bf05557c239c68"
+    },
+    {
+      "bytes": 3642,
+      "path": "telemetry/repeat-1--p256-c100-p1--hazelcast--get.jsonl",
+      "sha256": "d374a8d1d8557644417e836859a148d994dc7f7f7e8ebb9590eea2cafe8de0d7"
+    },
+    {
+      "bytes": 8030,
+      "path": "telemetry/repeat-1--p256-c100-p1--hazelcast--get.metadata.json",
+      "sha256": "b9232c801bd89de9bf4b8f91c4dc3e8cf6f593eac0cfd58098f09da31468533e"
+    },
+    {
+      "bytes": 1077,
+      "path": "telemetry/repeat-1--p256-c100-p1--hazelcast--set.csv",
+      "sha256": "04821dea6d50ad29fd72c284f425f1c17486346d847e5fba52f9ddfb0a22a326"
+    },
+    {
+      "bytes": 3641,
+      "path": "telemetry/repeat-1--p256-c100-p1--hazelcast--set.jsonl",
+      "sha256": "906681e6e4be7c5d8e2efc688d67255cbd6197ce7a36c4b93a5434ae70d0e191"
+    },
+    {
+      "bytes": 8029,
+      "path": "telemetry/repeat-1--p256-c100-p1--hazelcast--set.metadata.json",
+      "sha256": "6849464da16db51a0d84d5358423a3718087ff8e13e1efdd7f9df05e711a5f30"
+    },
+    {
+      "bytes": 634,
+      "path": "telemetry/repeat-1--p256-c100-p1--hydra--get.csv",
+      "sha256": "7209cdb46f2cc06503ed9715de330b2ea96c7749eddb1a4cd853b34595e07650"
+    },
+    {
+      "bytes": 1794,
+      "path": "telemetry/repeat-1--p256-c100-p1--hydra--get.jsonl",
+      "sha256": "9cf73ed2a35857f7fb773767845ceae2953b3c7242d92961f2e8100c38b21d35"
+    },
+    {
+      "bytes": 153,
+      "path": "telemetry/repeat-1--p256-c100-p1--hydra--get.metadata.json",
+      "sha256": "f719d0a3a00d84a9a1c0f0193870f4d620e3f3f33b19948e5f568bad54dbc397"
+    },
+    {
+      "bytes": 636,
+      "path": "telemetry/repeat-1--p256-c100-p1--hydra--set.csv",
+      "sha256": "fe3a0ac20565f799434492bb226f277795a3310dccf5dc35ad6d1a02705c1d5d"
+    },
+    {
+      "bytes": 1796,
+      "path": "telemetry/repeat-1--p256-c100-p1--hydra--set.jsonl",
+      "sha256": "78a9dc41826487e9ed4a5d5bb6abb758487ad9dda1858e0fff2b906224d34b8f"
+    },
+    {
+      "bytes": 153,
+      "path": "telemetry/repeat-1--p256-c100-p1--hydra--set.metadata.json",
+      "sha256": "f719d0a3a00d84a9a1c0f0193870f4d620e3f3f33b19948e5f568bad54dbc397"
+    },
+    {
+      "bytes": 639,
+      "path": "telemetry/repeat-1--p256-c100-p1--redis--get.csv",
+      "sha256": "e0f02e288ed9338ede163e12bf27a732b814249ee88daa9710f239522d035ea9"
+    },
+    {
+      "bytes": 1783,
+      "path": "telemetry/repeat-1--p256-c100-p1--redis--get.jsonl",
+      "sha256": "ede3703943c32cd0fa21c55ae4fe59dc82680a9978774a604953120eb6163209"
+    },
+    {
+      "bytes": 7377,
+      "path": "telemetry/repeat-1--p256-c100-p1--redis--get.metadata.json",
+      "sha256": "e450789ec9b4e6c2126a3afc54aeab38d96e4f128ac3426e97a3146d339ab779"
+    },
+    {
+      "bytes": 638,
+      "path": "telemetry/repeat-1--p256-c100-p1--redis--set.csv",
+      "sha256": "c42c102ee6d17ee1c21f9c56763c83dbd227184d0fddc434805b60eef23f8b1d"
+    },
+    {
+      "bytes": 1782,
+      "path": "telemetry/repeat-1--p256-c100-p1--redis--set.jsonl",
+      "sha256": "6642996cca21922a0c1cd7491df570d4cc8ec085bcd3f836cab0449a46b5a9af"
+    },
+    {
+      "bytes": 7377,
+      "path": "telemetry/repeat-1--p256-c100-p1--redis--set.metadata.json",
+      "sha256": "e450789ec9b4e6c2126a3afc54aeab38d96e4f128ac3426e97a3146d339ab779"
+    },
+    {
+      "bytes": 8451,
+      "path": "telemetry/repeat-1--p64-c10-p1--hazelcast--get.csv",
+      "sha256": "d768b141c74be1465c28426d809697fdcf6cc315387693210bd40e89fa9f1de8"
+    },
+    {
+      "bytes": 37285,
+      "path": "telemetry/repeat-1--p64-c10-p1--hazelcast--get.jsonl",
+      "sha256": "7cb6f8c10614ec7c90aa57f452c5c8c675f09e8e14f83f238a322776b558705a"
+    },
+    {
+      "bytes": 7115,
+      "path": "telemetry/repeat-1--p64-c10-p1--hazelcast--get.metadata.json",
+      "sha256": "1913b0d634da61e57e977ceca79c1354f1a6617c02f5fd4c490a8dda86186277"
+    },
+    {
+      "bytes": 6357,
+      "path": "telemetry/repeat-1--p64-c10-p1--hazelcast--set.csv",
+      "sha256": "a87acf16ea9465289a3016827b0f3c8ef3b2cfc2698a7d03bc0a8b5702e66107"
+    },
+    {
+      "bytes": 27736,
+      "path": "telemetry/repeat-1--p64-c10-p1--hazelcast--set.jsonl",
+      "sha256": "2f73fc08daad0f7281709e327f0b83805dd3b7b7e3fa335d5c95ba29bd273523"
+    },
+    {
+      "bytes": 6498,
+      "path": "telemetry/repeat-1--p64-c10-p1--hazelcast--set.metadata.json",
+      "sha256": "36ed92be84048a11e8c7c83087658935e8971b9749551b6432de3180a0ae90fa"
+    },
+    {
+      "bytes": 616,
+      "path": "telemetry/repeat-1--p64-c10-p1--hydra--get.csv",
+      "sha256": "396270c22f934f9c46b664b994f4543c28eb1174c2b869794c165b021ce5dfb4"
+    },
+    {
+      "bytes": 1776,
+      "path": "telemetry/repeat-1--p64-c10-p1--hydra--get.jsonl",
+      "sha256": "c0177f956992c503bacd34309f6de747cf4c5d90d526b24552ea0ff9e8a6c306"
+    },
+    {
+      "bytes": 153,
+      "path": "telemetry/repeat-1--p64-c10-p1--hydra--get.metadata.json",
+      "sha256": "f719d0a3a00d84a9a1c0f0193870f4d620e3f3f33b19948e5f568bad54dbc397"
+    },
+    {
+      "bytes": 610,
+      "path": "telemetry/repeat-1--p64-c10-p1--hydra--set.csv",
+      "sha256": "39b1d2ade818e641c7091515b485f2e443cee6f6afe723a7024c6cd13339534b"
+    },
+    {
+      "bytes": 1770,
+      "path": "telemetry/repeat-1--p64-c10-p1--hydra--set.jsonl",
+      "sha256": "79d519801755b1d6b0dd991d19dd43c203c09eb475daa6af005951a696c80032"
+    },
+    {
+      "bytes": 153,
+      "path": "telemetry/repeat-1--p64-c10-p1--hydra--set.metadata.json",
+      "sha256": "f719d0a3a00d84a9a1c0f0193870f4d620e3f3f33b19948e5f568bad54dbc397"
+    },
+    {
+      "bytes": 636,
+      "path": "telemetry/repeat-1--p64-c10-p1--redis--get.csv",
+      "sha256": "dc324c8f209ee0d32fbfe68f5a06594b433a478654a69443fa9b05ca0a66218a"
+    },
+    {
+      "bytes": 1780,
+      "path": "telemetry/repeat-1--p64-c10-p1--redis--get.jsonl",
+      "sha256": "0507c85622819c802b291bdef2a39cc42c112a0f459eb0f7b2d8e4848c2b620f"
+    },
+    {
+      "bytes": 7377,
+      "path": "telemetry/repeat-1--p64-c10-p1--redis--get.metadata.json",
+      "sha256": "e450789ec9b4e6c2126a3afc54aeab38d96e4f128ac3426e97a3146d339ab779"
+    },
+    {
+      "bytes": 630,
+      "path": "telemetry/repeat-1--p64-c10-p1--redis--set.csv",
+      "sha256": "585b9968195784500ac25088782d42730a5f5ea3e319bcc7c012f7ff878b2f67"
+    },
+    {
+      "bytes": 1774,
+      "path": "telemetry/repeat-1--p64-c10-p1--redis--set.jsonl",
+      "sha256": "ec2b46d2b6902abcbabc3d6b0a10480249b589b2d83dd897dcee335e5a62b398"
+    },
+    {
+      "bytes": 7377,
+      "path": "telemetry/repeat-1--p64-c10-p1--redis--set.metadata.json",
+      "sha256": "e450789ec9b4e6c2126a3afc54aeab38d96e4f128ac3426e97a3146d339ab779"
+    },
+    {
+      "bytes": 1471,
+      "path": "telemetry/repeat-1--p64-c10-p10--hazelcast--get.csv",
+      "sha256": "fd41fce7807d1f86b960ddf124287a05544324a1bb38420c6d018cb3c59d2463"
+    },
+    {
+      "bytes": 5455,
+      "path": "telemetry/repeat-1--p64-c10-p10--hazelcast--get.jsonl",
+      "sha256": "48c487e0801c59d7a25711c8e5be7a780d568dc61187b8cc3915cdc434aa50ea"
+    },
+    {
+      "bytes": 8029,
+      "path": "telemetry/repeat-1--p64-c10-p10--hazelcast--get.metadata.json",
+      "sha256": "0746113d3a21e9318ee364d272c302bffad7632edfe0fe0d09241f75c4a76405"
+    },
+    {
+      "bytes": 777,
+      "path": "telemetry/repeat-1--p64-c10-p10--hazelcast--set.csv",
+      "sha256": "26fd6ae149caeb6495796f3f0dd7ac26614ecb18144a5328f788c0927453d344"
+    },
+    {
+      "bytes": 2276,
+      "path": "telemetry/repeat-1--p64-c10-p10--hazelcast--set.jsonl",
+      "sha256": "d5d6bbf754ef0514efc66e16754323361b28d50dfa2223a3c15984d7f8ee23fb"
+    },
+    {
+      "bytes": 8029,
+      "path": "telemetry/repeat-1--p64-c10-p10--hazelcast--set.metadata.json",
+      "sha256": "0746113d3a21e9318ee364d272c302bffad7632edfe0fe0d09241f75c4a76405"
+    },
+    {
+      "bytes": 531,
+      "path": "telemetry/repeat-1--p64-c10-p10--hydra--get.csv",
+      "sha256": "010fbe3b0ca3f87ea8077f4be4816487bd9c003b3aed021c3cda020fa2e450f5"
+    },
+    {
+      "bytes": 1332,
+      "path": "telemetry/repeat-1--p64-c10-p10--hydra--get.jsonl",
+      "sha256": "5e6ccc1cdcbdeeb6a2f231becf0b10f74b6778923a59b3b91c05a5086b9b1d68"
+    },
+    {
+      "bytes": 153,
+      "path": "telemetry/repeat-1--p64-c10-p10--hydra--get.metadata.json",
+      "sha256": "f719d0a3a00d84a9a1c0f0193870f4d620e3f3f33b19948e5f568bad54dbc397"
+    },
+    {
+      "bytes": 530,
+      "path": "telemetry/repeat-1--p64-c10-p10--hydra--set.csv",
+      "sha256": "7d4c1f045fde138808006d1f6d402dbe58ee9340e7f85d3391c151f812b3ba58"
+    },
+    {
+      "bytes": 1331,
+      "path": "telemetry/repeat-1--p64-c10-p10--hydra--set.jsonl",
+      "sha256": "34d3a7d96160cfa0007dc22ae486586d382f2b4c34df6cee76598e5e544310f2"
+    },
+    {
+      "bytes": 153,
+      "path": "telemetry/repeat-1--p64-c10-p10--hydra--set.metadata.json",
+      "sha256": "f719d0a3a00d84a9a1c0f0193870f4d620e3f3f33b19948e5f568bad54dbc397"
+    },
+    {
+      "bytes": 366,
+      "path": "telemetry/repeat-1--p64-c10-p10--redis--get.csv",
+      "sha256": "fc7260a49454801bfdcb6aa22195d54d9a2df192244a7df788e0cf7f9e13914a"
+    },
+    {
+      "bytes": 445,
+      "path": "telemetry/repeat-1--p64-c10-p10--redis--get.jsonl",
+      "sha256": "604e55f4de42c613ac4daef4bf10962ca3dafe24564cc423ab4e4a0749dc28d7"
+    },
+    {
+      "bytes": 7377,
+      "path": "telemetry/repeat-1--p64-c10-p10--redis--get.metadata.json",
+      "sha256": "e450789ec9b4e6c2126a3afc54aeab38d96e4f128ac3426e97a3146d339ab779"
+    },
+    {
+      "bytes": 365,
+      "path": "telemetry/repeat-1--p64-c10-p10--redis--set.csv",
+      "sha256": "cf47d4108ea102993a1b791bbdc3fc46ddc6c9554ea5657c743fe37950419459"
+    },
+    {
+      "bytes": 444,
+      "path": "telemetry/repeat-1--p64-c10-p10--redis--set.jsonl",
+      "sha256": "34f52d7be08cb55e7895bdacc0e078d711ef4726345c6a11ba8ea9e610f313a0"
+    },
+    {
+      "bytes": 7377,
+      "path": "telemetry/repeat-1--p64-c10-p10--redis--set.metadata.json",
+      "sha256": "e450789ec9b4e6c2126a3afc54aeab38d96e4f128ac3426e97a3146d339ab779"
+    },
+    {
+      "bytes": 1378,
+      "path": "telemetry/repeat-2--p1024-c50-p1--hazelcast--get.csv",
+      "sha256": "98fe3532af4aabc8c0c5a2649c7ca3044a8da0b473a5e367eba25a987ea3a12b"
+    },
+    {
+      "bytes": 5007,
+      "path": "telemetry/repeat-2--p1024-c50-p1--hazelcast--get.jsonl",
+      "sha256": "be42ecfaf0c1f303d224d62c8f6ed560e5fd2d803bf6a4ea3ebb565899919f55"
+    },
+    {
+      "bytes": 8029,
+      "path": "telemetry/repeat-2--p1024-c50-p1--hazelcast--get.metadata.json",
+      "sha256": "8988d54f3d9b47c02bb83ab37d91179e166778ebf38f777a8782ccff57564408"
+    },
+    {
+      "bytes": 1179,
+      "path": "telemetry/repeat-2--p1024-c50-p1--hazelcast--set.csv",
+      "sha256": "459cd8a0d78cb87097f03d09d2e9480ff559be54d4de759240f1c5a9b457cecd"
+    },
+    {
+      "bytes": 4098,
+      "path": "telemetry/repeat-2--p1024-c50-p1--hazelcast--set.jsonl",
+      "sha256": "108dc85936edd28e73eefa1ce32b8139a57e6145fe718941be3a5a4a636e2588"
+    },
+    {
+      "bytes": 8029,
+      "path": "telemetry/repeat-2--p1024-c50-p1--hazelcast--set.metadata.json",
+      "sha256": "73a73d942479a8f5e43c533fea32d71aa35cf34049efa4a519b6d04c9ea9f1f5"
+    },
+    {
+      "bytes": 635,
+      "path": "telemetry/repeat-2--p1024-c50-p1--hydra--get.csv",
+      "sha256": "93c7c1109e4303fec127c1e3372b0226e50b57e89aaea079c4213b077d96adcc"
+    },
+    {
+      "bytes": 1795,
+      "path": "telemetry/repeat-2--p1024-c50-p1--hydra--get.jsonl",
+      "sha256": "e0ce72ff61b3f621d41f76420cb829218af06f4a285c9881025411c44555c1d1"
+    },
+    {
+      "bytes": 153,
+      "path": "telemetry/repeat-2--p1024-c50-p1--hydra--get.metadata.json",
+      "sha256": "f719d0a3a00d84a9a1c0f0193870f4d620e3f3f33b19948e5f568bad54dbc397"
+    },
+    {
+      "bytes": 634,
+      "path": "telemetry/repeat-2--p1024-c50-p1--hydra--set.csv",
+      "sha256": "ea663098b6cbb85f190b09a8145b51dcfe12ae2285b3dee6e3824f8b520673b5"
+    },
+    {
+      "bytes": 1794,
+      "path": "telemetry/repeat-2--p1024-c50-p1--hydra--set.jsonl",
+      "sha256": "e96c75af86caed1327d4b5c970e12efe09a4919c3402baf770d3425190ff8d8a"
+    },
+    {
+      "bytes": 153,
+      "path": "telemetry/repeat-2--p1024-c50-p1--hydra--set.metadata.json",
+      "sha256": "f719d0a3a00d84a9a1c0f0193870f4d620e3f3f33b19948e5f568bad54dbc397"
+    },
+    {
+      "bytes": 648,
+      "path": "telemetry/repeat-2--p1024-c50-p1--redis--get.csv",
+      "sha256": "94d659e66db93b718d4acf56a51429371b7f0e28175b647144dafe9c4a3dfc43"
+    },
+    {
+      "bytes": 1792,
+      "path": "telemetry/repeat-2--p1024-c50-p1--redis--get.jsonl",
+      "sha256": "d2b14572e44e9464e46ce9171cf8bf2f8c56c1be580de94cf8ccc7edf7715caa"
+    },
+    {
+      "bytes": 7377,
+      "path": "telemetry/repeat-2--p1024-c50-p1--redis--get.metadata.json",
+      "sha256": "e450789ec9b4e6c2126a3afc54aeab38d96e4f128ac3426e97a3146d339ab779"
+    },
+    {
+      "bytes": 646,
+      "path": "telemetry/repeat-2--p1024-c50-p1--redis--set.csv",
+      "sha256": "01251fc1d8e7507d89d75ee06b14afceae651f4c24ca60e953b623871e7b7474"
+    },
+    {
+      "bytes": 1790,
+      "path": "telemetry/repeat-2--p1024-c50-p1--redis--set.jsonl",
+      "sha256": "7379873e0cf6e9ca3003b4defbe8ad7d6094f1e683757ea443c279ed0358471f"
+    },
+    {
+      "bytes": 7377,
+      "path": "telemetry/repeat-2--p1024-c50-p1--redis--set.metadata.json",
+      "sha256": "e450789ec9b4e6c2126a3afc54aeab38d96e4f128ac3426e97a3146d339ab779"
+    },
+    {
+      "bytes": 875,
+      "path": "telemetry/repeat-2--p1024-c50-p10--hazelcast--get.csv",
+      "sha256": "a3bc3c97c32cdcf9280764dafcc1bcfc1ef981b429121b8118df2b48f8eb84d9"
+    },
+    {
+      "bytes": 2729,
+      "path": "telemetry/repeat-2--p1024-c50-p10--hazelcast--get.jsonl",
+      "sha256": "c4942490ad84d37f61951477525d50ff91ef7b1133817624e75255f236da97d7"
+    },
+    {
+      "bytes": 8029,
+      "path": "telemetry/repeat-2--p1024-c50-p10--hazelcast--get.metadata.json",
+      "sha256": "e17b66b48d30b02c75baef344de24d8ba4bbbd41b15f4f5b3da2df26ad897d7d"
+    },
+    {
+      "bytes": 775,
+      "path": "telemetry/repeat-2--p1024-c50-p10--hazelcast--set.csv",
+      "sha256": "2d3eb91829434ee8e3870c2b15a7fc1a8837c70019fd1cf7b17688ed40bed6c7"
+    },
+    {
+      "bytes": 2274,
+      "path": "telemetry/repeat-2--p1024-c50-p10--hazelcast--set.jsonl",
+      "sha256": "6978bd96b61ff07ddb79ece43d068e63ccb6b6c0cb5f2b3aa7c74f8ca40d6a23"
+    },
+    {
+      "bytes": 8029,
+      "path": "telemetry/repeat-2--p1024-c50-p10--hazelcast--set.metadata.json",
+      "sha256": "8988d54f3d9b47c02bb83ab37d91179e166778ebf38f777a8782ccff57564408"
+    },
+    {
+      "bytes": 546,
+      "path": "telemetry/repeat-2--p1024-c50-p10--hydra--get.csv",
+      "sha256": "ffbbe3ee1f0b53cbbff1b5190e067237309a213b0ceb252daeac702ae14cda49"
+    },
+    {
+      "bytes": 1347,
+      "path": "telemetry/repeat-2--p1024-c50-p10--hydra--get.jsonl",
+      "sha256": "53108b1539ee060af05874016a3d7890af1e4d182d77efafc2ad5317d8b9a17b"
+    },
+    {
+      "bytes": 153,
+      "path": "telemetry/repeat-2--p1024-c50-p10--hydra--get.metadata.json",
+      "sha256": "f719d0a3a00d84a9a1c0f0193870f4d620e3f3f33b19948e5f568bad54dbc397"
+    },
+    {
+      "bytes": 546,
+      "path": "telemetry/repeat-2--p1024-c50-p10--hydra--set.csv",
+      "sha256": "f3bb91966f23389ecca3027354737a9f000b006212bcb4a3962bdefc48b22e34"
+    },
+    {
+      "bytes": 1347,
+      "path": "telemetry/repeat-2--p1024-c50-p10--hydra--set.jsonl",
+      "sha256": "e43137e77ee6f4e656c8715864f3775543af80a8fbe7b85af94c5ac3f6097d31"
+    },
+    {
+      "bytes": 153,
+      "path": "telemetry/repeat-2--p1024-c50-p10--hydra--set.metadata.json",
+      "sha256": "f719d0a3a00d84a9a1c0f0193870f4d620e3f3f33b19948e5f568bad54dbc397"
+    },
+    {
+      "bytes": 368,
+      "path": "telemetry/repeat-2--p1024-c50-p10--redis--get.csv",
+      "sha256": "d70986a89f332e4293686bab2bd0a0b878f1665e261ba804c4412ec04433d1b4"
+    },
+    {
+      "bytes": 447,
+      "path": "telemetry/repeat-2--p1024-c50-p10--redis--get.jsonl",
+      "sha256": "c2fb55bb6e432ae0853e4e4d51f8ca2ae8660cc9abfe1f0728a69a5f94a56bd3"
+    },
+    {
+      "bytes": 7377,
+      "path": "telemetry/repeat-2--p1024-c50-p10--redis--get.metadata.json",
+      "sha256": "e450789ec9b4e6c2126a3afc54aeab38d96e4f128ac3426e97a3146d339ab779"
+    },
+    {
+      "bytes": 365,
+      "path": "telemetry/repeat-2--p1024-c50-p10--redis--set.csv",
+      "sha256": "227bec9baf28011fa92b5cee2cd92b74f43d669b75ca1bbac5d775508a59ca60"
+    },
+    {
+      "bytes": 444,
+      "path": "telemetry/repeat-2--p1024-c50-p10--redis--set.jsonl",
+      "sha256": "ffca2bd863638cc92e27aae6747aeb01f06d8b61fbb41d8afd54ee3c892ae8ee"
+    },
+    {
+      "bytes": 7377,
+      "path": "telemetry/repeat-2--p1024-c50-p10--redis--set.metadata.json",
+      "sha256": "e450789ec9b4e6c2126a3afc54aeab38d96e4f128ac3426e97a3146d339ab779"
+    },
+    {
+      "bytes": 1986,
+      "path": "telemetry/repeat-2--p256-c1-p1--hazelcast--get.csv",
+      "sha256": "278e1f43a879c517fea0a470bf397eeeb8d1a104b2fc8aefe8b97d7c573ee101"
+    },
+    {
+      "bytes": 7745,
+      "path": "telemetry/repeat-2--p256-c1-p1--hazelcast--get.jsonl",
+      "sha256": "d49df0365687d42c8e0891e21f57edb7380a110a35d122d4c4d05744ee6f1022"
+    },
+    {
+      "bytes": 8028,
+      "path": "telemetry/repeat-2--p256-c1-p1--hazelcast--get.metadata.json",
+      "sha256": "867a8a40d348dc8c82697c09f82c425f49f199a52442eeb53fbc935dda91a8b8"
+    },
+    {
+      "bytes": 1983,
+      "path": "telemetry/repeat-2--p256-c1-p1--hazelcast--set.csv",
+      "sha256": "509892598d71e640f58208a273c6c3f24ecb90a347e8247562af154e2f857b82"
+    },
+    {
+      "bytes": 7742,
+      "path": "telemetry/repeat-2--p256-c1-p1--hazelcast--set.jsonl",
+      "sha256": "d5bfba308d555269194a824f4604c108dd8a9b327b00870fddab695f3b7ae06e"
+    },
+    {
+      "bytes": 8029,
+      "path": "telemetry/repeat-2--p256-c1-p1--hazelcast--set.metadata.json",
+      "sha256": "e17b66b48d30b02c75baef344de24d8ba4bbbd41b15f4f5b3da2df26ad897d7d"
+    },
+    {
+      "bytes": 726,
+      "path": "telemetry/repeat-2--p256-c1-p1--hydra--get.csv",
+      "sha256": "ade5a3a254c5da1d41a03743a94083fe991f7a34199155e41b7c660a7fa03d20"
+    },
+    {
+      "bytes": 2245,
+      "path": "telemetry/repeat-2--p256-c1-p1--hydra--get.jsonl",
+      "sha256": "f291b5177775c69bfaf3bc6dd9e6aaa1ec7d3b3240da4bc7978d9b5e8055c91b"
+    },
+    {
+      "bytes": 153,
+      "path": "telemetry/repeat-2--p256-c1-p1--hydra--get.metadata.json",
+      "sha256": "f719d0a3a00d84a9a1c0f0193870f4d620e3f3f33b19948e5f568bad54dbc397"
+    },
+    {
+      "bytes": 723,
+      "path": "telemetry/repeat-2--p256-c1-p1--hydra--set.csv",
+      "sha256": "8b4256d1a1a4863bb26d8e84fe2c406150ada8108ef8e9dbabb6b0e111289d25"
+    },
+    {
+      "bytes": 2242,
+      "path": "telemetry/repeat-2--p256-c1-p1--hydra--set.jsonl",
+      "sha256": "8e73e2ac60ddf3b7dd68ff533619bc25ace08a5c1a52293d2b9658b304205544"
+    },
+    {
+      "bytes": 153,
+      "path": "telemetry/repeat-2--p256-c1-p1--hydra--set.metadata.json",
+      "sha256": "f719d0a3a00d84a9a1c0f0193870f4d620e3f3f33b19948e5f568bad54dbc397"
+    },
+    {
+      "bytes": 733,
+      "path": "telemetry/repeat-2--p256-c1-p1--redis--get.csv",
+      "sha256": "b7555b213d567307b725314fc6b657e1ff9faf0f3c685b24b694a1207527406a"
+    },
+    {
+      "bytes": 2232,
+      "path": "telemetry/repeat-2--p256-c1-p1--redis--get.jsonl",
+      "sha256": "95d14b960c326d339d99402d96e85bae64e06c11e0691c0091d4571731c801a6"
+    },
+    {
+      "bytes": 7377,
+      "path": "telemetry/repeat-2--p256-c1-p1--redis--get.metadata.json",
+      "sha256": "e450789ec9b4e6c2126a3afc54aeab38d96e4f128ac3426e97a3146d339ab779"
+    },
+    {
+      "bytes": 740,
+      "path": "telemetry/repeat-2--p256-c1-p1--redis--set.csv",
+      "sha256": "f381e5d822494f631c30b3ca5391e27a783db1afbc0ff05f9453dd804f5bc56e"
+    },
+    {
+      "bytes": 2239,
+      "path": "telemetry/repeat-2--p256-c1-p1--redis--set.jsonl",
+      "sha256": "883ea22f992d12714ae7a917bfe96b0e21bb503e4c37811f8dc0bd44241600d3"
+    },
+    {
+      "bytes": 7377,
+      "path": "telemetry/repeat-2--p256-c1-p1--redis--set.metadata.json",
+      "sha256": "e450789ec9b4e6c2126a3afc54aeab38d96e4f128ac3426e97a3146d339ab779"
+    },
+    {
+      "bytes": 8335,
+      "path": "telemetry/repeat-2--p256-c10-p1--hazelcast--get.csv",
+      "sha256": "a7fcca2601e74435cdbb0edeec446d9623975d26b0b1cb464a8c9f06bebc2d67"
+    },
+    {
+      "bytes": 36814,
+      "path": "telemetry/repeat-2--p256-c10-p1--hazelcast--get.jsonl",
+      "sha256": "1fe0e84cbfef52fa70c44900c9a886b1bf5280f3321837f62bea1b9d9f2226dd"
+    },
+    {
+      "bytes": 8026,
+      "path": "telemetry/repeat-2--p256-c10-p1--hazelcast--get.metadata.json",
+      "sha256": "7c678f3eec095f6436539a2c036262c75a2aecc63b25e6ce5f04888ec19f0b1c"
+    },
+    {
+      "bytes": 7142,
+      "path": "telemetry/repeat-2--p256-c10-p1--hazelcast--set.csv",
+      "sha256": "cc5418752e765c1f4ace4c4b6c0719c588bea3e0a68c7d4e1374b5c5a2366e5e"
+    },
+    {
+      "bytes": 31361,
+      "path": "telemetry/repeat-2--p256-c10-p1--hazelcast--set.jsonl",
+      "sha256": "9419cf8d58f3a4f6a157812c81fe94ff09ddd69993665bbfbc791b4ad4ca0e95"
+    },
+    {
+      "bytes": 8026,
+      "path": "telemetry/repeat-2--p256-c10-p1--hazelcast--set.metadata.json",
+      "sha256": "e4aa7ecc4e42c1673bb7dcaa94681ee399cad728fbbb0f067da54c4d6f9a2ff1"
+    },
+    {
+      "bytes": 635,
+      "path": "telemetry/repeat-2--p256-c10-p1--hydra--get.csv",
+      "sha256": "cd9b37152058e4517f15092ae323addf073ca906f1d5475dce5d8bb8d54ab8ad"
+    },
+    {
+      "bytes": 1795,
+      "path": "telemetry/repeat-2--p256-c10-p1--hydra--get.jsonl",
+      "sha256": "98763d3b915b9042e4f9d6b53ca2bc0e701bb0c7da5ea0d0eac1a0f814bde158"
+    },
+    {
+      "bytes": 153,
+      "path": "telemetry/repeat-2--p256-c10-p1--hydra--get.metadata.json",
+      "sha256": "f719d0a3a00d84a9a1c0f0193870f4d620e3f3f33b19948e5f568bad54dbc397"
+    },
+    {
+      "bytes": 634,
+      "path": "telemetry/repeat-2--p256-c10-p1--hydra--set.csv",
+      "sha256": "762d8a9befbc6a6f4a39a775611c2742204f07160e4bf16e918a900ff1ed421f"
+    },
+    {
+      "bytes": 1794,
+      "path": "telemetry/repeat-2--p256-c10-p1--hydra--set.jsonl",
+      "sha256": "91700490471f148fd0e10e8482ea2068f561c82ab8d2e0a6666289d72b48b7da"
+    },
+    {
+      "bytes": 153,
+      "path": "telemetry/repeat-2--p256-c10-p1--hydra--set.metadata.json",
+      "sha256": "f719d0a3a00d84a9a1c0f0193870f4d620e3f3f33b19948e5f568bad54dbc397"
+    },
+    {
+      "bytes": 644,
+      "path": "telemetry/repeat-2--p256-c10-p1--redis--get.csv",
+      "sha256": "68e57cf54e2ab5ebeda290eb18fc0119e4be500625a3dcf1c4792bae2ebaae0e"
+    },
+    {
+      "bytes": 1788,
+      "path": "telemetry/repeat-2--p256-c10-p1--redis--get.jsonl",
+      "sha256": "deac9017bafb521d7115de896831f6530bda986133c8d6f59c156da70785f7ff"
+    },
+    {
+      "bytes": 7377,
+      "path": "telemetry/repeat-2--p256-c10-p1--redis--get.metadata.json",
+      "sha256": "e450789ec9b4e6c2126a3afc54aeab38d96e4f128ac3426e97a3146d339ab779"
+    },
+    {
+      "bytes": 640,
+      "path": "telemetry/repeat-2--p256-c10-p1--redis--set.csv",
+      "sha256": "b117f807fcba9434cb0e83df4d8d83e45a642484b6d6647444cc68ec9b4b76bc"
+    },
+    {
+      "bytes": 1784,
+      "path": "telemetry/repeat-2--p256-c10-p1--redis--set.jsonl",
+      "sha256": "ccd0f716d2d9c32356441c49a4ab38b790f9ee54d320342f4ed113254e66a31a"
+    },
+    {
+      "bytes": 7377,
+      "path": "telemetry/repeat-2--p256-c10-p1--redis--set.metadata.json",
+      "sha256": "e450789ec9b4e6c2126a3afc54aeab38d96e4f128ac3426e97a3146d339ab779"
+    },
+    {
+      "bytes": 1370,
+      "path": "telemetry/repeat-2--p256-c10-p10--hazelcast--get.csv",
+      "sha256": "20c9748c0ca19f7e1387ed7e58346a79f8f53c1b3ca020ff4530735960bf3479"
+    },
+    {
+      "bytes": 4999,
+      "path": "telemetry/repeat-2--p256-c10-p10--hazelcast--get.jsonl",
+      "sha256": "dd487914ae9b3d9413a24332dbec8af96d111c1682f451e9ecfe96e4fdd4fd33"
+    },
+    {
+      "bytes": 8029,
+      "path": "telemetry/repeat-2--p256-c10-p10--hazelcast--get.metadata.json",
+      "sha256": "73a73d942479a8f5e43c533fea32d71aa35cf34049efa4a519b6d04c9ea9f1f5"
+    },
+    {
+      "bytes": 1172,
+      "path": "telemetry/repeat-2--p256-c10-p10--hazelcast--set.csv",
+      "sha256": "81682e9a9054da6fdca0dbbe1c7be7e0d410eb9165a08631fbc11bde74c6b91d"
+    },
+    {
+      "bytes": 4091,
+      "path": "telemetry/repeat-2--p256-c10-p10--hazelcast--set.jsonl",
+      "sha256": "066b40a52e6c9dff2142c9a0e837c92826b1d14548b141e28358f9d10bb549bb"
+    },
+    {
+      "bytes": 8028,
+      "path": "telemetry/repeat-2--p256-c10-p10--hazelcast--set.metadata.json",
+      "sha256": "4f7b7666f56572bffaddf86d52acb2a542329352bb2ab46b1e549cb187e38eef"
+    },
+    {
+      "bytes": 546,
+      "path": "telemetry/repeat-2--p256-c10-p10--hydra--get.csv",
+      "sha256": "33b2788d406b5afdb38b446e4d412efc69a57fb281953dfdfa87d57076eaa1d9"
+    },
+    {
+      "bytes": 1347,
+      "path": "telemetry/repeat-2--p256-c10-p10--hydra--get.jsonl",
+      "sha256": "fca27f0392093e2fbda2e93b19335cd2900f527517b11406eb0e6b9cd008e015"
+    },
+    {
+      "bytes": 153,
+      "path": "telemetry/repeat-2--p256-c10-p10--hydra--get.metadata.json",
+      "sha256": "f719d0a3a00d84a9a1c0f0193870f4d620e3f3f33b19948e5f568bad54dbc397"
+    },
+    {
+      "bytes": 546,
+      "path": "telemetry/repeat-2--p256-c10-p10--hydra--set.csv",
+      "sha256": "afce546581fc38b9170d5c079e9cc8c381c13a997b747a389fb30da52455b1a2"
+    },
+    {
+      "bytes": 1347,
+      "path": "telemetry/repeat-2--p256-c10-p10--hydra--set.jsonl",
+      "sha256": "7fd5c12a6b689f7e4b9b82767db2632f5a473366de40f4980c70216705f2aff3"
+    },
+    {
+      "bytes": 153,
+      "path": "telemetry/repeat-2--p256-c10-p10--hydra--set.metadata.json",
+      "sha256": "f719d0a3a00d84a9a1c0f0193870f4d620e3f3f33b19948e5f568bad54dbc397"
+    },
+    {
+      "bytes": 368,
+      "path": "telemetry/repeat-2--p256-c10-p10--redis--get.csv",
+      "sha256": "e979b1f9af74495691fe7ba262609fda3a82e9437832708477e49d78872d9038"
+    },
+    {
+      "bytes": 447,
+      "path": "telemetry/repeat-2--p256-c10-p10--redis--get.jsonl",
+      "sha256": "65166caaa89331e879dbc7d2f07c4055c37f0c0ed5a9c6da191ce4e409e2eccc"
+    },
+    {
+      "bytes": 7377,
+      "path": "telemetry/repeat-2--p256-c10-p10--redis--get.metadata.json",
+      "sha256": "e450789ec9b4e6c2126a3afc54aeab38d96e4f128ac3426e97a3146d339ab779"
+    },
+    {
+      "bytes": 367,
+      "path": "telemetry/repeat-2--p256-c10-p10--redis--set.csv",
+      "sha256": "9a8a5fa2226e55eb3c6286a58cf8183b293e13ef6895b876df6ad5b05ee02309"
+    },
+    {
+      "bytes": 446,
+      "path": "telemetry/repeat-2--p256-c10-p10--redis--set.jsonl",
+      "sha256": "c7de0d31f47e53fb54dfede4e6823027464d196adaefe1e1355fd9960ab69a84"
+    },
+    {
+      "bytes": 7377,
+      "path": "telemetry/repeat-2--p256-c10-p10--redis--set.metadata.json",
+      "sha256": "e450789ec9b4e6c2126a3afc54aeab38d96e4f128ac3426e97a3146d339ab779"
+    },
+    {
+      "bytes": 1076,
+      "path": "telemetry/repeat-2--p256-c100-p1--hazelcast--get.csv",
+      "sha256": "64aa1f2debd8bdeb5cc193d51ebda8569db592a2074c8a4a9f293fbbd45a0e5c"
+    },
+    {
+      "bytes": 3640,
+      "path": "telemetry/repeat-2--p256-c100-p1--hazelcast--get.jsonl",
+      "sha256": "a8b81291f2b16c7ace45cc76b3f88b6179bdcea45db1da1dd898c2cd7e43498a"
+    },
+    {
+      "bytes": 8029,
+      "path": "telemetry/repeat-2--p256-c100-p1--hazelcast--get.metadata.json",
+      "sha256": "96af6fca3fb0b749ef7b4d01d8dd816c0e887e9dda94f7ad07610fd98d5f8e01"
+    },
+    {
+      "bytes": 1076,
+      "path": "telemetry/repeat-2--p256-c100-p1--hazelcast--set.csv",
+      "sha256": "2f2b98972a36c4a84860779009b682efc731be51ca20d7af57b12f862a67dac2"
+    },
+    {
+      "bytes": 3640,
+      "path": "telemetry/repeat-2--p256-c100-p1--hazelcast--set.jsonl",
+      "sha256": "29ece607b5e83aa347d0bdf168ff2722a9f3becffb226f46a808378633bdd27f"
+    },
+    {
+      "bytes": 8029,
+      "path": "telemetry/repeat-2--p256-c100-p1--hazelcast--set.metadata.json",
+      "sha256": "1478c847713dcb8afbca12c8f113a3f4923e943a62afb3cd07361be8335d405a"
+    },
+    {
+      "bytes": 635,
+      "path": "telemetry/repeat-2--p256-c100-p1--hydra--get.csv",
+      "sha256": "b87d29e3f77825bce8535e7843562df8d8cbf49f8455a6a8ca9440b485a744dd"
+    },
+    {
+      "bytes": 1795,
+      "path": "telemetry/repeat-2--p256-c100-p1--hydra--get.jsonl",
+      "sha256": "d5f474eee2d8e0b427bdfbb699e3f325c7c9686d22e8e5bd28046e6c7eb7513d"
+    },
+    {
+      "bytes": 153,
+      "path": "telemetry/repeat-2--p256-c100-p1--hydra--get.metadata.json",
+      "sha256": "f719d0a3a00d84a9a1c0f0193870f4d620e3f3f33b19948e5f568bad54dbc397"
+    },
+    {
+      "bytes": 635,
+      "path": "telemetry/repeat-2--p256-c100-p1--hydra--set.csv",
+      "sha256": "3b857934438f2fd9ef69d0c041e08de8fa7eb489c1a55750f445a805320f0a16"
+    },
+    {
+      "bytes": 1795,
+      "path": "telemetry/repeat-2--p256-c100-p1--hydra--set.jsonl",
+      "sha256": "06d94ed97b40dc5990962e776d2c213acb08e1f587668b6b3b3b9792cc0b88d3"
+    },
+    {
+      "bytes": 153,
+      "path": "telemetry/repeat-2--p256-c100-p1--hydra--set.metadata.json",
+      "sha256": "f719d0a3a00d84a9a1c0f0193870f4d620e3f3f33b19948e5f568bad54dbc397"
+    },
+    {
+      "bytes": 639,
+      "path": "telemetry/repeat-2--p256-c100-p1--redis--get.csv",
+      "sha256": "33b49f552efa0dff5d2f1b5921e3d9a5674ad1b6780cf391426b3e1d3160b2b2"
+    },
+    {
+      "bytes": 1783,
+      "path": "telemetry/repeat-2--p256-c100-p1--redis--get.jsonl",
+      "sha256": "7618a7b4f109112a0692bcb0907e23bed76075f43e875f83d6ee6ddd75321d9f"
+    },
+    {
+      "bytes": 7377,
+      "path": "telemetry/repeat-2--p256-c100-p1--redis--get.metadata.json",
+      "sha256": "e450789ec9b4e6c2126a3afc54aeab38d96e4f128ac3426e97a3146d339ab779"
+    },
+    {
+      "bytes": 640,
+      "path": "telemetry/repeat-2--p256-c100-p1--redis--set.csv",
+      "sha256": "b9f59bb8bf23380dc81d03be11baa90d975ebbdce5599a06535c32e819e8eca9"
+    },
+    {
+      "bytes": 1784,
+      "path": "telemetry/repeat-2--p256-c100-p1--redis--set.jsonl",
+      "sha256": "b69e42bbc5c5d8b4bbe20b3125e102b253a8711be27be3b5cec51181aa01432f"
+    },
+    {
+      "bytes": 7377,
+      "path": "telemetry/repeat-2--p256-c100-p1--redis--set.metadata.json",
+      "sha256": "e450789ec9b4e6c2126a3afc54aeab38d96e4f128ac3426e97a3146d339ab779"
+    },
+    {
+      "bytes": 8834,
+      "path": "telemetry/repeat-2--p64-c10-p1--hazelcast--get.csv",
+      "sha256": "4dd30fa9ab8464b70cfaad4b34d69a6ffb93e443af3c604d9321fadf6685b2dd"
+    },
+    {
+      "bytes": 39088,
+      "path": "telemetry/repeat-2--p64-c10-p1--hazelcast--get.jsonl",
+      "sha256": "cf05833ac454c832a2912005ba823a87d47948d0c14c7837fa5d0ce901f496dd"
+    },
+    {
+      "bytes": 8029,
+      "path": "telemetry/repeat-2--p64-c10-p1--hazelcast--get.metadata.json",
+      "sha256": "aa47d6d066017d105a06da33506fed886686849a7d1b338fde1420797a5995b0"
+    },
+    {
+      "bytes": 7148,
+      "path": "telemetry/repeat-2--p64-c10-p1--hazelcast--set.csv",
+      "sha256": "8cf6567acd02ce031c723ad9de7a6366a98613823d70c5293c9e0a44867a3b26"
+    },
+    {
+      "bytes": 31367,
+      "path": "telemetry/repeat-2--p64-c10-p1--hazelcast--set.jsonl",
+      "sha256": "894550a898d227b2c070b895866d83120e363fee570777160415d9c0ef33ad79"
+    },
+    {
+      "bytes": 8030,
+      "path": "telemetry/repeat-2--p64-c10-p1--hazelcast--set.metadata.json",
+      "sha256": "b9232c801bd89de9bf4b8f91c4dc3e8cf6f593eac0cfd58098f09da31468533e"
+    },
+    {
+      "bytes": 636,
+      "path": "telemetry/repeat-2--p64-c10-p1--hydra--get.csv",
+      "sha256": "04abd3028c3e1e876a8eb3de7263d1d9f54a7ccc3516143acc663b2d88b4292c"
+    },
+    {
+      "bytes": 1796,
+      "path": "telemetry/repeat-2--p64-c10-p1--hydra--get.jsonl",
+      "sha256": "51303d6c771a57fb3e3b0afcc454ebff8741d01e79be71f790e18061f5a48a0c"
+    },
+    {
+      "bytes": 153,
+      "path": "telemetry/repeat-2--p64-c10-p1--hydra--get.metadata.json",
+      "sha256": "f719d0a3a00d84a9a1c0f0193870f4d620e3f3f33b19948e5f568bad54dbc397"
+    },
+    {
+      "bytes": 636,
+      "path": "telemetry/repeat-2--p64-c10-p1--hydra--set.csv",
+      "sha256": "a9264313a5004bc74164f4d110eb32e5bf4b6ab975d13aba62d4605a0abaf534"
+    },
+    {
+      "bytes": 1796,
+      "path": "telemetry/repeat-2--p64-c10-p1--hydra--set.jsonl",
+      "sha256": "3c03c0b87de6dc137aa086d171ccf23d0498c54b522f960b9dbc8993771a37ec"
+    },
+    {
+      "bytes": 153,
+      "path": "telemetry/repeat-2--p64-c10-p1--hydra--set.metadata.json",
+      "sha256": "f719d0a3a00d84a9a1c0f0193870f4d620e3f3f33b19948e5f568bad54dbc397"
+    },
+    {
+      "bytes": 642,
+      "path": "telemetry/repeat-2--p64-c10-p1--redis--get.csv",
+      "sha256": "aeb79d6199c7b066b0eff253e01b32b83af9c73893372027d590c8b619e6baa7"
+    },
+    {
+      "bytes": 1786,
+      "path": "telemetry/repeat-2--p64-c10-p1--redis--get.jsonl",
+      "sha256": "7c54116ea0313b4d0e29c2759d99da44437d6449484818cf9ce0e59fbb586194"
+    },
+    {
+      "bytes": 7377,
+      "path": "telemetry/repeat-2--p64-c10-p1--redis--get.metadata.json",
+      "sha256": "e450789ec9b4e6c2126a3afc54aeab38d96e4f128ac3426e97a3146d339ab779"
+    },
+    {
+      "bytes": 640,
+      "path": "telemetry/repeat-2--p64-c10-p1--redis--set.csv",
+      "sha256": "47172dae2260477df0cb86ba749a93e7f6a1fa9d78dacbbb6aa75ee081da4bb6"
+    },
+    {
+      "bytes": 1784,
+      "path": "telemetry/repeat-2--p64-c10-p1--redis--set.jsonl",
+      "sha256": "b4b03d85a54b522fce13ee23999bc27695069264d61e6dd10950259f0b3726e0"
+    },
+    {
+      "bytes": 7377,
+      "path": "telemetry/repeat-2--p64-c10-p1--redis--set.metadata.json",
+      "sha256": "e450789ec9b4e6c2126a3afc54aeab38d96e4f128ac3426e97a3146d339ab779"
+    },
+    {
+      "bytes": 1372,
+      "path": "telemetry/repeat-2--p64-c10-p10--hazelcast--get.csv",
+      "sha256": "b62c280b1e4916d5f1cde3a8867fd83cb69be03ef89b39f6f4a9164f0dbbea62"
+    },
+    {
+      "bytes": 5001,
+      "path": "telemetry/repeat-2--p64-c10-p10--hazelcast--get.jsonl",
+      "sha256": "63aaa6667bf32f155de8715064bdc1634bb84ab6b94692a9bbc090a1228166cf"
+    },
+    {
+      "bytes": 8026,
+      "path": "telemetry/repeat-2--p64-c10-p10--hazelcast--get.metadata.json",
+      "sha256": "115594b5098f3b7971743e81faaa57cb2e19474366868378575629f4100156b7"
+    },
+    {
+      "bytes": 872,
+      "path": "telemetry/repeat-2--p64-c10-p10--hazelcast--set.csv",
+      "sha256": "375382fd492ed88331c2f276a7768ff123a3c32eb76e8b651bb63e6b8ce800ef"
+    },
+    {
+      "bytes": 2726,
+      "path": "telemetry/repeat-2--p64-c10-p10--hazelcast--set.jsonl",
+      "sha256": "089406ccadad60ffa4dea0359f42f0300d954be5bdb87637c3d9a42a4ec087bb"
+    },
+    {
+      "bytes": 8026,
+      "path": "telemetry/repeat-2--p64-c10-p10--hazelcast--set.metadata.json",
+      "sha256": "115594b5098f3b7971743e81faaa57cb2e19474366868378575629f4100156b7"
+    },
+    {
+      "bytes": 546,
+      "path": "telemetry/repeat-2--p64-c10-p10--hydra--get.csv",
+      "sha256": "d483d84df993cd1a708f07238059c2b039bdb78fa87dfb1c7f6e2a5adbd13b2d"
+    },
+    {
+      "bytes": 1347,
+      "path": "telemetry/repeat-2--p64-c10-p10--hydra--get.jsonl",
+      "sha256": "25a2c099b2ce49e9a3322b7beb223d69672d3c94f4af4a94f459dc9563e20432"
+    },
+    {
+      "bytes": 153,
+      "path": "telemetry/repeat-2--p64-c10-p10--hydra--get.metadata.json",
+      "sha256": "f719d0a3a00d84a9a1c0f0193870f4d620e3f3f33b19948e5f568bad54dbc397"
+    },
+    {
+      "bytes": 545,
+      "path": "telemetry/repeat-2--p64-c10-p10--hydra--set.csv",
+      "sha256": "dc0a09af0227988c2198b2557a7b7e03a233e3f7c4aff76ddfa5fa90fd3efd17"
+    },
+    {
+      "bytes": 1346,
+      "path": "telemetry/repeat-2--p64-c10-p10--hydra--set.jsonl",
+      "sha256": "210cf759ce1e668655f14307922d685b68ddc25904fbbbea66db39fb672a4033"
+    },
+    {
+      "bytes": 153,
+      "path": "telemetry/repeat-2--p64-c10-p10--hydra--set.metadata.json",
+      "sha256": "f719d0a3a00d84a9a1c0f0193870f4d620e3f3f33b19948e5f568bad54dbc397"
+    },
+    {
+      "bytes": 368,
+      "path": "telemetry/repeat-2--p64-c10-p10--redis--get.csv",
+      "sha256": "3179203ca9be5407ce54e9bd179a3d9baa0729d71ffb39b90f74b574073d9657"
+    },
+    {
+      "bytes": 447,
+      "path": "telemetry/repeat-2--p64-c10-p10--redis--get.jsonl",
+      "sha256": "c2248a62ced3f90bd756f5af903cffdb38d6ad7d4e9bf9c88d9383b0b5a82f76"
+    },
+    {
+      "bytes": 7377,
+      "path": "telemetry/repeat-2--p64-c10-p10--redis--get.metadata.json",
+      "sha256": "e450789ec9b4e6c2126a3afc54aeab38d96e4f128ac3426e97a3146d339ab779"
+    },
+    {
+      "bytes": 367,
+      "path": "telemetry/repeat-2--p64-c10-p10--redis--set.csv",
+      "sha256": "ee7a14fc3ac0d94910ea649bba3f4cef6c7eb174286138add9fd96739a290b42"
+    },
+    {
+      "bytes": 446,
+      "path": "telemetry/repeat-2--p64-c10-p10--redis--set.jsonl",
+      "sha256": "88cc36150d3d86fb1e79a576fb69585fe9c18606f2f2b196b9185925ddcc820a"
+    },
+    {
+      "bytes": 7377,
+      "path": "telemetry/repeat-2--p64-c10-p10--redis--set.metadata.json",
+      "sha256": "e450789ec9b4e6c2126a3afc54aeab38d96e4f128ac3426e97a3146d339ab779"
+    },
+    {
+      "bytes": 1381,
+      "path": "telemetry/repeat-3--p1024-c50-p1--hazelcast--get.csv",
+      "sha256": "66db3486bc6ae1983ce04d8653b1ffea4f7c246710ce1c1eecef65fdaa69db28"
+    },
+    {
+      "bytes": 5010,
+      "path": "telemetry/repeat-3--p1024-c50-p1--hazelcast--get.jsonl",
+      "sha256": "4f0c650f4b2ca0a56e8a4b74b4ce3f3c135347e9593f16a45f1967bd5ae82c0d"
+    },
+    {
+      "bytes": 8030,
+      "path": "telemetry/repeat-3--p1024-c50-p1--hazelcast--get.metadata.json",
+      "sha256": "383067d06485896ce4113b228777a76060a98f63fb62a1950fefdc778ea45bed"
+    },
+    {
+      "bytes": 1279,
+      "path": "telemetry/repeat-3--p1024-c50-p1--hazelcast--set.csv",
+      "sha256": "00e67b1edc9bb2b2d6f2a8eee59b5d551249b42f238fbb820f5b57193318d738"
+    },
+    {
+      "bytes": 4553,
+      "path": "telemetry/repeat-3--p1024-c50-p1--hazelcast--set.jsonl",
+      "sha256": "e04e72447488dabd4dba4ebfb40b46c3ff00511791b319dab170fc76c8b5e644"
+    },
+    {
+      "bytes": 8030,
+      "path": "telemetry/repeat-3--p1024-c50-p1--hazelcast--set.metadata.json",
+      "sha256": "383067d06485896ce4113b228777a76060a98f63fb62a1950fefdc778ea45bed"
+    },
+    {
+      "bytes": 635,
+      "path": "telemetry/repeat-3--p1024-c50-p1--hydra--get.csv",
+      "sha256": "b4176e63ac4dc057362c90b5f3664028a3a2265beb0616cac7ecad572d4b7a2c"
+    },
+    {
+      "bytes": 1795,
+      "path": "telemetry/repeat-3--p1024-c50-p1--hydra--get.jsonl",
+      "sha256": "dfdc8a83de4c0ecd81aeb8867f1cce6000056749906850a2cfc43568780ea5bd"
+    },
+    {
+      "bytes": 153,
+      "path": "telemetry/repeat-3--p1024-c50-p1--hydra--get.metadata.json",
+      "sha256": "f719d0a3a00d84a9a1c0f0193870f4d620e3f3f33b19948e5f568bad54dbc397"
+    },
+    {
+      "bytes": 635,
+      "path": "telemetry/repeat-3--p1024-c50-p1--hydra--set.csv",
+      "sha256": "474cbf0114751db5cfa00398b703d3e32ec1b208d3ab6cb02c2d3a2763a87c78"
+    },
+    {
+      "bytes": 1795,
+      "path": "telemetry/repeat-3--p1024-c50-p1--hydra--set.jsonl",
+      "sha256": "e726756b2291efa8fd6f1aa235572ea6ee7c6b03f6ee741df08a4beb4a2d0ad4"
+    },
+    {
+      "bytes": 153,
+      "path": "telemetry/repeat-3--p1024-c50-p1--hydra--set.metadata.json",
+      "sha256": "f719d0a3a00d84a9a1c0f0193870f4d620e3f3f33b19948e5f568bad54dbc397"
+    },
+    {
+      "bytes": 647,
+      "path": "telemetry/repeat-3--p1024-c50-p1--redis--get.csv",
+      "sha256": "11071c033c724f9c78f8a4fce229864874f1142c79f6cb439d3b96dd1a35bbe5"
+    },
+    {
+      "bytes": 1791,
+      "path": "telemetry/repeat-3--p1024-c50-p1--redis--get.jsonl",
+      "sha256": "001c2816f96745abe7b9747d762a7dcfc0b2778ba0c5ff21f11cb5a27d0f0293"
+    },
+    {
+      "bytes": 7377,
+      "path": "telemetry/repeat-3--p1024-c50-p1--redis--get.metadata.json",
+      "sha256": "e450789ec9b4e6c2126a3afc54aeab38d96e4f128ac3426e97a3146d339ab779"
+    },
+    {
+      "bytes": 646,
+      "path": "telemetry/repeat-3--p1024-c50-p1--redis--set.csv",
+      "sha256": "19c991920624ce956f271fe3c97ca5ed75b34278da8a246e2bd5f95a26709481"
+    },
+    {
+      "bytes": 1790,
+      "path": "telemetry/repeat-3--p1024-c50-p1--redis--set.jsonl",
+      "sha256": "563e512b318773de221ca25a6dfa436e63795f18da82fa3ac55a4fe286d3677d"
+    },
+    {
+      "bytes": 7377,
+      "path": "telemetry/repeat-3--p1024-c50-p1--redis--set.metadata.json",
+      "sha256": "e450789ec9b4e6c2126a3afc54aeab38d96e4f128ac3426e97a3146d339ab779"
+    },
+    {
+      "bytes": 878,
+      "path": "telemetry/repeat-3--p1024-c50-p10--hazelcast--get.csv",
+      "sha256": "3cbea228e0406a52345f06543c60ef1c4eb37615308c113395a6d0990d7b458b"
+    },
+    {
+      "bytes": 2732,
+      "path": "telemetry/repeat-3--p1024-c50-p10--hazelcast--get.jsonl",
+      "sha256": "1d1023bfbcd3458872bdc18b61365e358bc7fe2fe73861fa730d22d72256c640"
+    },
+    {
+      "bytes": 8029,
+      "path": "telemetry/repeat-3--p1024-c50-p10--hazelcast--get.metadata.json",
+      "sha256": "26dcc206fcf5abb6f0d3d7983a14fb2da32df4158fc1896f9223d42017efef39"
+    },
+    {
+      "bytes": 773,
+      "path": "telemetry/repeat-3--p1024-c50-p10--hazelcast--set.csv",
+      "sha256": "9d6864f9bfdb7c7280746e6e31e57a2d38d26cc012301e57212c576da7d67089"
+    },
+    {
+      "bytes": 2272,
+      "path": "telemetry/repeat-3--p1024-c50-p10--hazelcast--set.jsonl",
+      "sha256": "174e37612199b28d7b2e4c8123925577fe16bd07927457179c7f4b721c49364a"
+    },
+    {
+      "bytes": 8029,
+      "path": "telemetry/repeat-3--p1024-c50-p10--hazelcast--set.metadata.json",
+      "sha256": "26dcc206fcf5abb6f0d3d7983a14fb2da32df4158fc1896f9223d42017efef39"
+    },
+    {
+      "bytes": 546,
+      "path": "telemetry/repeat-3--p1024-c50-p10--hydra--get.csv",
+      "sha256": "a322b9130379feb60ba737127c60a27b0be1aa2d450693e6cf43c7b5d2ad665b"
+    },
+    {
+      "bytes": 1347,
+      "path": "telemetry/repeat-3--p1024-c50-p10--hydra--get.jsonl",
+      "sha256": "8225b3804ed08e863b718ec7d195692563729ee1332725df472464d1f0e9a875"
+    },
+    {
+      "bytes": 153,
+      "path": "telemetry/repeat-3--p1024-c50-p10--hydra--get.metadata.json",
+      "sha256": "f719d0a3a00d84a9a1c0f0193870f4d620e3f3f33b19948e5f568bad54dbc397"
+    },
+    {
+      "bytes": 545,
+      "path": "telemetry/repeat-3--p1024-c50-p10--hydra--set.csv",
+      "sha256": "16d7d00e5619892619a5eeb029c9db78d8e127f269261b25a0635cc9f71be547"
+    },
+    {
+      "bytes": 1346,
+      "path": "telemetry/repeat-3--p1024-c50-p10--hydra--set.jsonl",
+      "sha256": "45c1dc22212e02ddbb831aa3aa0a6d320a1320172fa9cd7877c97d8e5ad10fa7"
+    },
+    {
+      "bytes": 153,
+      "path": "telemetry/repeat-3--p1024-c50-p10--hydra--set.metadata.json",
+      "sha256": "f719d0a3a00d84a9a1c0f0193870f4d620e3f3f33b19948e5f568bad54dbc397"
+    },
+    {
+      "bytes": 369,
+      "path": "telemetry/repeat-3--p1024-c50-p10--redis--get.csv",
+      "sha256": "b248c5d4492dba37de24e766b35a80e07a046f693df310464b66871cd36710ee"
+    },
+    {
+      "bytes": 448,
+      "path": "telemetry/repeat-3--p1024-c50-p10--redis--get.jsonl",
+      "sha256": "78007981934a0accb679487e834e677f19807fd47552b232111aeb0725008034"
+    },
+    {
+      "bytes": 7377,
+      "path": "telemetry/repeat-3--p1024-c50-p10--redis--get.metadata.json",
+      "sha256": "e450789ec9b4e6c2126a3afc54aeab38d96e4f128ac3426e97a3146d339ab779"
+    },
+    {
+      "bytes": 368,
+      "path": "telemetry/repeat-3--p1024-c50-p10--redis--set.csv",
+      "sha256": "55478a0f173a3507cdc7a48d30771d55a55bf6f89365b66378e70cf46304785b"
+    },
+    {
+      "bytes": 447,
+      "path": "telemetry/repeat-3--p1024-c50-p10--redis--set.jsonl",
+      "sha256": "c7c482b0731e73d711d22ed1ecf2eb82e5dec306ef324ac529ffe35780589848"
+    },
+    {
+      "bytes": 7377,
+      "path": "telemetry/repeat-3--p1024-c50-p10--redis--set.metadata.json",
+      "sha256": "e450789ec9b4e6c2126a3afc54aeab38d96e4f128ac3426e97a3146d339ab779"
+    },
+    {
+      "bytes": 1982,
+      "path": "telemetry/repeat-3--p256-c1-p1--hazelcast--get.csv",
+      "sha256": "394e07c99ffb2e61d42a2c2aabed3220adba396acadc881d821e0bc02d67fe9f"
+    },
+    {
+      "bytes": 7741,
+      "path": "telemetry/repeat-3--p256-c1-p1--hazelcast--get.jsonl",
+      "sha256": "49f91d35e1ca8b34d063264e524cbeb150e32a7f6681a58cfb23cfe9ed86ee12"
+    },
+    {
+      "bytes": 8027,
+      "path": "telemetry/repeat-3--p256-c1-p1--hazelcast--get.metadata.json",
+      "sha256": "a720e9ebc78e97926eb7c18de0a6a0ce0b230a91b76e18051e7dc7806c9e30ae"
+    },
+    {
+      "bytes": 1984,
+      "path": "telemetry/repeat-3--p256-c1-p1--hazelcast--set.csv",
+      "sha256": "63d3fbfa1b1568e717fde0fa1a50a5ac86bb3e9c5fcac30c69ce490536b776bd"
+    },
+    {
+      "bytes": 7743,
+      "path": "telemetry/repeat-3--p256-c1-p1--hazelcast--set.jsonl",
+      "sha256": "7c75378bbe90a5f0d06a2756bd349d7d8baf2fb44eb2a70b50215e02d1e40d28"
+    },
+    {
+      "bytes": 8029,
+      "path": "telemetry/repeat-3--p256-c1-p1--hazelcast--set.metadata.json",
+      "sha256": "d4df0f066b1c9738bd683f37457e25aa9674f7c7367b555638a137609a51405b"
+    },
+    {
+      "bytes": 724,
+      "path": "telemetry/repeat-3--p256-c1-p1--hydra--get.csv",
+      "sha256": "71b89b3bfe308ea065e5b1d80de7367c0a65379f3c9175e1a5db2c501b9c52a8"
+    },
+    {
+      "bytes": 2243,
+      "path": "telemetry/repeat-3--p256-c1-p1--hydra--get.jsonl",
+      "sha256": "a8dfe01347e71b321f9fd4d5b3960323eb0a2b686d76b540a46e64f806cc29bf"
+    },
+    {
+      "bytes": 153,
+      "path": "telemetry/repeat-3--p256-c1-p1--hydra--get.metadata.json",
+      "sha256": "f719d0a3a00d84a9a1c0f0193870f4d620e3f3f33b19948e5f568bad54dbc397"
+    },
+    {
+      "bytes": 725,
+      "path": "telemetry/repeat-3--p256-c1-p1--hydra--set.csv",
+      "sha256": "6eb152cdfd2b42a44a57b5c26371c257b75ca1d4b253087a7b8688b817735bce"
+    },
+    {
+      "bytes": 2244,
+      "path": "telemetry/repeat-3--p256-c1-p1--hydra--set.jsonl",
+      "sha256": "0aa176c7265453eb39952e1c7516770100d4316c1255b3573864f74458cbca00"
+    },
+    {
+      "bytes": 153,
+      "path": "telemetry/repeat-3--p256-c1-p1--hydra--set.metadata.json",
+      "sha256": "f719d0a3a00d84a9a1c0f0193870f4d620e3f3f33b19948e5f568bad54dbc397"
+    },
+    {
+      "bytes": 732,
+      "path": "telemetry/repeat-3--p256-c1-p1--redis--get.csv",
+      "sha256": "87ba4eef4ada050dda110fbbd867ee8fe003089254ee0443e3f9042ee4b9928a"
+    },
+    {
+      "bytes": 2231,
+      "path": "telemetry/repeat-3--p256-c1-p1--redis--get.jsonl",
+      "sha256": "9d8838bbecbe1558e2bea9638b8c8c927e81bd51987d776c83ce47e9102a5c92"
+    },
+    {
+      "bytes": 7377,
+      "path": "telemetry/repeat-3--p256-c1-p1--redis--get.metadata.json",
+      "sha256": "e450789ec9b4e6c2126a3afc54aeab38d96e4f128ac3426e97a3146d339ab779"
+    },
+    {
+      "bytes": 741,
+      "path": "telemetry/repeat-3--p256-c1-p1--redis--set.csv",
+      "sha256": "18860761fd47ac896bd8d6911de5d01eb327d7b5a2101e6d5e7796e98bc2f439"
+    },
+    {
+      "bytes": 2240,
+      "path": "telemetry/repeat-3--p256-c1-p1--redis--set.jsonl",
+      "sha256": "447461a7febcf78db602bee1c7d6b6de0613e46529f6ac8947172841a9f215c1"
+    },
+    {
+      "bytes": 7377,
+      "path": "telemetry/repeat-3--p256-c1-p1--redis--set.metadata.json",
+      "sha256": "e450789ec9b4e6c2126a3afc54aeab38d96e4f128ac3426e97a3146d339ab779"
+    },
+    {
+      "bytes": 8036,
+      "path": "telemetry/repeat-3--p256-c10-p1--hazelcast--get.csv",
+      "sha256": "afbd6fa88c7d66da30e3995ccd4113c7d48fa8e18580b17225951e60e21a2c01"
+    },
+    {
+      "bytes": 35450,
+      "path": "telemetry/repeat-3--p256-c10-p1--hazelcast--get.jsonl",
+      "sha256": "ef9bae3099ad4e2b4bbd238bac94e0e6735b432b6f96d6d4ecec61ac83e3e970"
+    },
+    {
+      "bytes": 8030,
+      "path": "telemetry/repeat-3--p256-c10-p1--hazelcast--get.metadata.json",
+      "sha256": "0875bc76605dfc749c947e3543f2af5551805644dc743b4955025308db4dd38a"
+    },
+    {
+      "bytes": 6743,
+      "path": "telemetry/repeat-3--p256-c10-p1--hazelcast--set.csv",
+      "sha256": "af2b0160a17335826dc7d1178be8105686cb8248df4b852acf1a2b9a9a8f0059"
+    },
+    {
+      "bytes": 29542,
+      "path": "telemetry/repeat-3--p256-c10-p1--hazelcast--set.jsonl",
+      "sha256": "c4964fe56f992b74cd267d5e0b91f59e3ca33edb597562b686aaaf095aac8c1a"
+    },
+    {
+      "bytes": 8030,
+      "path": "telemetry/repeat-3--p256-c10-p1--hazelcast--set.metadata.json",
+      "sha256": "2ccec27cf61c51a190357f20dabbd7d4559449715cec678715b6699daab80f32"
+    },
+    {
+      "bytes": 635,
+      "path": "telemetry/repeat-3--p256-c10-p1--hydra--get.csv",
+      "sha256": "3999f10c060cecac379083e46d7534f0ff5427a3b561f1f587eb4cdf1886df4b"
+    },
+    {
+      "bytes": 1795,
+      "path": "telemetry/repeat-3--p256-c10-p1--hydra--get.jsonl",
+      "sha256": "e73b43baa3f7e751c72da828cbde5a9460268c78fee36bf7d12b4562615aed3c"
+    },
+    {
+      "bytes": 153,
+      "path": "telemetry/repeat-3--p256-c10-p1--hydra--get.metadata.json",
+      "sha256": "f719d0a3a00d84a9a1c0f0193870f4d620e3f3f33b19948e5f568bad54dbc397"
+    },
+    {
+      "bytes": 635,
+      "path": "telemetry/repeat-3--p256-c10-p1--hydra--set.csv",
+      "sha256": "5e8702e675a0a94f8d60e78a820c234ff7c2ef4d88c359bdbeee0fa06bc037da"
+    },
+    {
+      "bytes": 1795,
+      "path": "telemetry/repeat-3--p256-c10-p1--hydra--set.jsonl",
+      "sha256": "be183ab3857d4047865c3dba3481adcb94638b8273e1e0db180dd408b238458b"
+    },
+    {
+      "bytes": 153,
+      "path": "telemetry/repeat-3--p256-c10-p1--hydra--set.metadata.json",
+      "sha256": "f719d0a3a00d84a9a1c0f0193870f4d620e3f3f33b19948e5f568bad54dbc397"
+    },
+    {
+      "bytes": 643,
+      "path": "telemetry/repeat-3--p256-c10-p1--redis--get.csv",
+      "sha256": "395049b7cfd413a45023718bd82aa2b1219bd59502118434c18b2ab3b4ceb540"
+    },
+    {
+      "bytes": 1787,
+      "path": "telemetry/repeat-3--p256-c10-p1--redis--get.jsonl",
+      "sha256": "394e690f101281d823aa13dfa1b27b26efec5e084b50e3c07c0339b148ac3244"
+    },
+    {
+      "bytes": 7377,
+      "path": "telemetry/repeat-3--p256-c10-p1--redis--get.metadata.json",
+      "sha256": "e450789ec9b4e6c2126a3afc54aeab38d96e4f128ac3426e97a3146d339ab779"
+    },
+    {
+      "bytes": 643,
+      "path": "telemetry/repeat-3--p256-c10-p1--redis--set.csv",
+      "sha256": "95744cc9174bbe27e8a9d4ba20776bb1396e42815897bb8422e09ba1e21bfa2f"
+    },
+    {
+      "bytes": 1787,
+      "path": "telemetry/repeat-3--p256-c10-p1--redis--set.jsonl",
+      "sha256": "d30a99b0bd65493a61f785f98609c5de6757f62651bb70c7ed59dbd42a1d4979"
+    },
+    {
+      "bytes": 7377,
+      "path": "telemetry/repeat-3--p256-c10-p1--redis--set.metadata.json",
+      "sha256": "e450789ec9b4e6c2126a3afc54aeab38d96e4f128ac3426e97a3146d339ab779"
+    },
+    {
+      "bytes": 1465,
+      "path": "telemetry/repeat-3--p256-c10-p10--hazelcast--get.csv",
+      "sha256": "2842e8554572ab927edd488a1d9e97f9f2bfbcf77945435fc61f14d0dbc88ca8"
+    },
+    {
+      "bytes": 5449,
+      "path": "telemetry/repeat-3--p256-c10-p10--hazelcast--get.jsonl",
+      "sha256": "86610c03be13db1ff00b3f39af1903abed367efd1e2bdb45973f6f509e146ca7"
+    },
+    {
+      "bytes": 8030,
+      "path": "telemetry/repeat-3--p256-c10-p10--hazelcast--get.metadata.json",
+      "sha256": "63511efc0af4f8d63ba4d5d978e5c6c264f2b46e75ece05b2dfdb0faf729c46c"
+    },
+    {
+      "bytes": 775,
+      "path": "telemetry/repeat-3--p256-c10-p10--hazelcast--set.csv",
+      "sha256": "d9b086ae69c57d675681ce72e49e3283589a553649a9018e4e38cbcdc66c5ca9"
+    },
+    {
+      "bytes": 2274,
+      "path": "telemetry/repeat-3--p256-c10-p10--hazelcast--set.jsonl",
+      "sha256": "8a036a4d826b152c7f03b7ffc1ab8ad07118c2eec8fa00c0d6fc17d2f29c1559"
+    },
+    {
+      "bytes": 8030,
+      "path": "telemetry/repeat-3--p256-c10-p10--hazelcast--set.metadata.json",
+      "sha256": "63511efc0af4f8d63ba4d5d978e5c6c264f2b46e75ece05b2dfdb0faf729c46c"
+    },
+    {
+      "bytes": 546,
+      "path": "telemetry/repeat-3--p256-c10-p10--hydra--get.csv",
+      "sha256": "e57970184a0eaac0e47fd1432594cf82de3ac07266da86311d8e0913411f07ba"
+    },
+    {
+      "bytes": 1347,
+      "path": "telemetry/repeat-3--p256-c10-p10--hydra--get.jsonl",
+      "sha256": "607603847742864fec71c70f11645526f52bffb5f1544ab78fe990edb59cc599"
+    },
+    {
+      "bytes": 153,
+      "path": "telemetry/repeat-3--p256-c10-p10--hydra--get.metadata.json",
+      "sha256": "f719d0a3a00d84a9a1c0f0193870f4d620e3f3f33b19948e5f568bad54dbc397"
+    },
+    {
+      "bytes": 546,
+      "path": "telemetry/repeat-3--p256-c10-p10--hydra--set.csv",
+      "sha256": "1b59ae9608225192bdbfac6a129e012fddab0945b48b6450a443d1d4fbd2b9a8"
+    },
+    {
+      "bytes": 1347,
+      "path": "telemetry/repeat-3--p256-c10-p10--hydra--set.jsonl",
+      "sha256": "a5e26a1efe9e3557a9057978cca1bff4d68245029c2a1b74147f0fbbfc16ef31"
+    },
+    {
+      "bytes": 153,
+      "path": "telemetry/repeat-3--p256-c10-p10--hydra--set.metadata.json",
+      "sha256": "f719d0a3a00d84a9a1c0f0193870f4d620e3f3f33b19948e5f568bad54dbc397"
+    },
+    {
+      "bytes": 368,
+      "path": "telemetry/repeat-3--p256-c10-p10--redis--get.csv",
+      "sha256": "a254bc20b5cf2d03f5dff6b45a35f6cfa433e87695dbe36f389cbb9cd0b6f11f"
+    },
+    {
+      "bytes": 447,
+      "path": "telemetry/repeat-3--p256-c10-p10--redis--get.jsonl",
+      "sha256": "64d9f30582a184e26ec0ac1409ae202ef05901acaf1094e7a5b2bdae8852b07d"
+    },
+    {
+      "bytes": 7377,
+      "path": "telemetry/repeat-3--p256-c10-p10--redis--get.metadata.json",
+      "sha256": "e450789ec9b4e6c2126a3afc54aeab38d96e4f128ac3426e97a3146d339ab779"
+    },
+    {
+      "bytes": 367,
+      "path": "telemetry/repeat-3--p256-c10-p10--redis--set.csv",
+      "sha256": "509b5bdd3fee33140c587a0c29dcb7d2842e5329e7f3ec49bd3bef7d72d9f62e"
+    },
+    {
+      "bytes": 446,
+      "path": "telemetry/repeat-3--p256-c10-p10--redis--set.jsonl",
+      "sha256": "0829dc200fa6c7a9d6cfe21457e5f8139e94fad9b05a44b9dbc84ecd6a747c5d"
+    },
+    {
+      "bytes": 7377,
+      "path": "telemetry/repeat-3--p256-c10-p10--redis--set.metadata.json",
+      "sha256": "e450789ec9b4e6c2126a3afc54aeab38d96e4f128ac3426e97a3146d339ab779"
+    },
+    {
+      "bytes": 1076,
+      "path": "telemetry/repeat-3--p256-c100-p1--hazelcast--get.csv",
+      "sha256": "155085e4491a3326a28a28ecd8179c61620ba0b2ea68403783beaca233bb9c25"
+    },
+    {
+      "bytes": 3640,
+      "path": "telemetry/repeat-3--p256-c100-p1--hazelcast--get.jsonl",
+      "sha256": "f4b8f443900d3c6c2b41ede49f635488fa2e7d6e7e1bed800bc5560d1fdc6ac7"
+    },
+    {
+      "bytes": 8026,
+      "path": "telemetry/repeat-3--p256-c100-p1--hazelcast--get.metadata.json",
+      "sha256": "cd3d471f3cf6ae4f6ef19f4ecc946e7695a05ff098eb4e287136943ef39c3dbc"
+    },
+    {
+      "bytes": 1079,
+      "path": "telemetry/repeat-3--p256-c100-p1--hazelcast--set.csv",
+      "sha256": "53b92a64db54a47861a4a37805bd7c3d75fb8c7a9855a564d8f7a57b1579943e"
+    },
+    {
+      "bytes": 3643,
+      "path": "telemetry/repeat-3--p256-c100-p1--hazelcast--set.jsonl",
+      "sha256": "0c80d83b20fca44d729a83f715a474d6b6419f25890a5501fc61542f5bad661b"
+    },
+    {
+      "bytes": 8027,
+      "path": "telemetry/repeat-3--p256-c100-p1--hazelcast--set.metadata.json",
+      "sha256": "a720e9ebc78e97926eb7c18de0a6a0ce0b230a91b76e18051e7dc7806c9e30ae"
+    },
+    {
+      "bytes": 635,
+      "path": "telemetry/repeat-3--p256-c100-p1--hydra--get.csv",
+      "sha256": "8bf8f1af6da9e7cfc39ba6172566173a688889897b905989722766b4480ec31b"
+    },
+    {
+      "bytes": 1795,
+      "path": "telemetry/repeat-3--p256-c100-p1--hydra--get.jsonl",
+      "sha256": "f790bcbc9fa05a1b358ec5694bc56375d3f71257a357e54dd9cc8587f490f7cf"
+    },
+    {
+      "bytes": 153,
+      "path": "telemetry/repeat-3--p256-c100-p1--hydra--get.metadata.json",
+      "sha256": "f719d0a3a00d84a9a1c0f0193870f4d620e3f3f33b19948e5f568bad54dbc397"
+    },
+    {
+      "bytes": 635,
+      "path": "telemetry/repeat-3--p256-c100-p1--hydra--set.csv",
+      "sha256": "502c0df9bf215ce70cfdb2b7e5acb40dc7bf680d3bbe5cbf6231feca2d914d7c"
+    },
+    {
+      "bytes": 1795,
+      "path": "telemetry/repeat-3--p256-c100-p1--hydra--set.jsonl",
+      "sha256": "e5bfc1d649ea3b04fffb778233711dc3df2d055b0f8c98fd23a3ae70c875550d"
+    },
+    {
+      "bytes": 153,
+      "path": "telemetry/repeat-3--p256-c100-p1--hydra--set.metadata.json",
+      "sha256": "f719d0a3a00d84a9a1c0f0193870f4d620e3f3f33b19948e5f568bad54dbc397"
+    },
+    {
+      "bytes": 639,
+      "path": "telemetry/repeat-3--p256-c100-p1--redis--get.csv",
+      "sha256": "9bef781e684631a2db7b0c1fc4c8809c596a5e672bd99f20ff18d23edd4db722"
+    },
+    {
+      "bytes": 1783,
+      "path": "telemetry/repeat-3--p256-c100-p1--redis--get.jsonl",
+      "sha256": "3eb25b01752b64e0f508873e9e0dba7a8a3d157f6a0901004ca644fa667ba525"
+    },
+    {
+      "bytes": 7377,
+      "path": "telemetry/repeat-3--p256-c100-p1--redis--get.metadata.json",
+      "sha256": "e450789ec9b4e6c2126a3afc54aeab38d96e4f128ac3426e97a3146d339ab779"
+    },
+    {
+      "bytes": 639,
+      "path": "telemetry/repeat-3--p256-c100-p1--redis--set.csv",
+      "sha256": "8485b0b02cf61955ec84e143f3cbb204cec1722e05612ebb15c3a112e0f8f37b"
+    },
+    {
+      "bytes": 1783,
+      "path": "telemetry/repeat-3--p256-c100-p1--redis--set.jsonl",
+      "sha256": "0f9b2195f3f005e34d8c147f569ee485463908c6bff98a2a52ddbe8a6ad0aff4"
+    },
+    {
+      "bytes": 7377,
+      "path": "telemetry/repeat-3--p256-c100-p1--redis--set.metadata.json",
+      "sha256": "e450789ec9b4e6c2126a3afc54aeab38d96e4f128ac3426e97a3146d339ab779"
+    },
+    {
+      "bytes": 8542,
+      "path": "telemetry/repeat-3--p64-c10-p1--hazelcast--get.csv",
+      "sha256": "e85e0cb2bd13a43d3f6616c2a80fa12005fded7fe50e021312d87aefa255c0d8"
+    },
+    {
+      "bytes": 37731,
+      "path": "telemetry/repeat-3--p64-c10-p1--hazelcast--get.jsonl",
+      "sha256": "7dc544b2f8db0e7d36e95d0d272764093d4ea4ef1dd632959e30715f8672e331"
+    },
+    {
+      "bytes": 8030,
+      "path": "telemetry/repeat-3--p64-c10-p1--hazelcast--get.metadata.json",
+      "sha256": "21b0c4b35e0228fbf5486796fdef178bac442a24ed00bbabb27d2cea1c046256"
+    },
+    {
+      "bytes": 7250,
+      "path": "telemetry/repeat-3--p64-c10-p1--hazelcast--set.csv",
+      "sha256": "275a7776ba93d8f4717c20729194b5c0b8889fde9725667e903559734db2c003"
+    },
+    {
+      "bytes": 31824,
+      "path": "telemetry/repeat-3--p64-c10-p1--hazelcast--set.jsonl",
+      "sha256": "a013dbb3700c604702bdea5fb0f6eebeb8aa81c5932fce71a5f9e188b157fcec"
+    },
+    {
+      "bytes": 8029,
+      "path": "telemetry/repeat-3--p64-c10-p1--hazelcast--set.metadata.json",
+      "sha256": "96af6fca3fb0b749ef7b4d01d8dd816c0e887e9dda94f7ad07610fd98d5f8e01"
+    },
+    {
+      "bytes": 635,
+      "path": "telemetry/repeat-3--p64-c10-p1--hydra--get.csv",
+      "sha256": "70a53628997a2938b64466837c843e58c88167aee4e17ce99f44837b00e7f905"
+    },
+    {
+      "bytes": 1795,
+      "path": "telemetry/repeat-3--p64-c10-p1--hydra--get.jsonl",
+      "sha256": "bf642a992f1a1fb0e720c8232d528abc0645d47a3c15b386c716c69e7c0fc054"
+    },
+    {
+      "bytes": 153,
+      "path": "telemetry/repeat-3--p64-c10-p1--hydra--get.metadata.json",
+      "sha256": "f719d0a3a00d84a9a1c0f0193870f4d620e3f3f33b19948e5f568bad54dbc397"
+    },
+    {
+      "bytes": 635,
+      "path": "telemetry/repeat-3--p64-c10-p1--hydra--set.csv",
+      "sha256": "9d5da862a54affcfab1a591df86b6871835428a0aed7bba2579c1136875f9d72"
+    },
+    {
+      "bytes": 1795,
+      "path": "telemetry/repeat-3--p64-c10-p1--hydra--set.jsonl",
+      "sha256": "8d66507dd836e0f9783fe9b5fce2983394769c061e622961b6675773af76ab9c"
+    },
+    {
+      "bytes": 153,
+      "path": "telemetry/repeat-3--p64-c10-p1--hydra--set.metadata.json",
+      "sha256": "f719d0a3a00d84a9a1c0f0193870f4d620e3f3f33b19948e5f568bad54dbc397"
+    },
+    {
+      "bytes": 643,
+      "path": "telemetry/repeat-3--p64-c10-p1--redis--get.csv",
+      "sha256": "697de47cb018f51599c7b5907e6440c18643f9bc15736f8ccd93547230b2479a"
+    },
+    {
+      "bytes": 1787,
+      "path": "telemetry/repeat-3--p64-c10-p1--redis--get.jsonl",
+      "sha256": "291705246c45a0743b017c9c3f3c2f4d5d7905abb13da3bc18502e7606825727"
+    },
+    {
+      "bytes": 7377,
+      "path": "telemetry/repeat-3--p64-c10-p1--redis--get.metadata.json",
+      "sha256": "e450789ec9b4e6c2126a3afc54aeab38d96e4f128ac3426e97a3146d339ab779"
+    },
+    {
+      "bytes": 644,
+      "path": "telemetry/repeat-3--p64-c10-p1--redis--set.csv",
+      "sha256": "6fa870a57ee920bccbb61c4dfe8ffbbdbf5bf54c1847482bb9fe1742de14ebde"
+    },
+    {
+      "bytes": 1788,
+      "path": "telemetry/repeat-3--p64-c10-p1--redis--set.jsonl",
+      "sha256": "eb587bbe9b64bc5704773672529e4687a6b65b2219c950f35ec9ff698046f11e"
+    },
+    {
+      "bytes": 7377,
+      "path": "telemetry/repeat-3--p64-c10-p1--redis--set.metadata.json",
+      "sha256": "e450789ec9b4e6c2126a3afc54aeab38d96e4f128ac3426e97a3146d339ab779"
+    },
+    {
+      "bytes": 1369,
+      "path": "telemetry/repeat-3--p64-c10-p10--hazelcast--get.csv",
+      "sha256": "f67a29a8af72927a7dce20f142ed8ab246cabb7a1bac5d998e24328afd295712"
+    },
+    {
+      "bytes": 4998,
+      "path": "telemetry/repeat-3--p64-c10-p10--hazelcast--get.jsonl",
+      "sha256": "8e4b558371d035aa26e94ae6043d9fcd804c5a74b1543ca423371a9b1f005e62"
+    },
+    {
+      "bytes": 8030,
+      "path": "telemetry/repeat-3--p64-c10-p10--hazelcast--get.metadata.json",
+      "sha256": "d1b420217c7e5f9a131bfc09da71364c05f7310b54d7e274756bba138ecd55ed"
+    },
+    {
+      "bytes": 877,
+      "path": "telemetry/repeat-3--p64-c10-p10--hazelcast--set.csv",
+      "sha256": "980159400095eb79037cc5be6d0cd4f350bfdc70c150096994ba815c2ef9fcb2"
+    },
+    {
+      "bytes": 2731,
+      "path": "telemetry/repeat-3--p64-c10-p10--hazelcast--set.jsonl",
+      "sha256": "fcd879eacfc3774cda97db1653bb855bdb1856d6b4104a298d4919dea07dd9a1"
+    },
+    {
+      "bytes": 8030,
+      "path": "telemetry/repeat-3--p64-c10-p10--hazelcast--set.metadata.json",
+      "sha256": "d1b420217c7e5f9a131bfc09da71364c05f7310b54d7e274756bba138ecd55ed"
+    },
+    {
+      "bytes": 544,
+      "path": "telemetry/repeat-3--p64-c10-p10--hydra--get.csv",
+      "sha256": "7e3c994dbc25dc2338d1e5a7910f2e7d6d440d6c6650b771a2660a1b0a1280aa"
+    },
+    {
+      "bytes": 1345,
+      "path": "telemetry/repeat-3--p64-c10-p10--hydra--get.jsonl",
+      "sha256": "ada729021d53cb821d563218e29d0d2ebc7e3265ec3f4d817cb18e5c00781277"
+    },
+    {
+      "bytes": 153,
+      "path": "telemetry/repeat-3--p64-c10-p10--hydra--get.metadata.json",
+      "sha256": "f719d0a3a00d84a9a1c0f0193870f4d620e3f3f33b19948e5f568bad54dbc397"
+    },
+    {
+      "bytes": 546,
+      "path": "telemetry/repeat-3--p64-c10-p10--hydra--set.csv",
+      "sha256": "eba6ec012487b6ec28f783e2e5362ac35e7a5c729f621025cbbe0065d45307a7"
+    },
+    {
+      "bytes": 1347,
+      "path": "telemetry/repeat-3--p64-c10-p10--hydra--set.jsonl",
+      "sha256": "5e8ff7b2fb3de505635746994cc57a02b8d1b649da858b311b7803275efeb1e7"
+    },
+    {
+      "bytes": 153,
+      "path": "telemetry/repeat-3--p64-c10-p10--hydra--set.metadata.json",
+      "sha256": "f719d0a3a00d84a9a1c0f0193870f4d620e3f3f33b19948e5f568bad54dbc397"
+    },
+    {
+      "bytes": 368,
+      "path": "telemetry/repeat-3--p64-c10-p10--redis--get.csv",
+      "sha256": "943767523ae33bd839992944989637c161452baa9f4a037ded90df7ffde7683e"
+    },
+    {
+      "bytes": 447,
+      "path": "telemetry/repeat-3--p64-c10-p10--redis--get.jsonl",
+      "sha256": "e290a4995c3f14454bff6fcb4421778be7dded8c068a4f3444b8cb3b058a1bd9"
+    },
+    {
+      "bytes": 7377,
+      "path": "telemetry/repeat-3--p64-c10-p10--redis--get.metadata.json",
+      "sha256": "e450789ec9b4e6c2126a3afc54aeab38d96e4f128ac3426e97a3146d339ab779"
+    },
+    {
+      "bytes": 366,
+      "path": "telemetry/repeat-3--p64-c10-p10--redis--set.csv",
+      "sha256": "426d647867d5b001934023f6f1379752cdfe704d64793ce6956e62d88472ba1c"
+    },
+    {
+      "bytes": 445,
+      "path": "telemetry/repeat-3--p64-c10-p10--redis--set.jsonl",
+      "sha256": "e44554cd3cf7779613392650c3cb93458590a9cd291685975d836b80710887e6"
+    },
+    {
+      "bytes": 7377,
+      "path": "telemetry/repeat-3--p64-c10-p10--redis--set.metadata.json",
+      "sha256": "e450789ec9b4e6c2126a3afc54aeab38d96e4f128ac3426e97a3146d339ab779"
+    },
+    {
+      "bytes": 94537,
+      "path": "telemetry-summary.json",
+      "sha256": "3d28f9316ab2ce58667f713dcb1f6c79bac64b1b3886ba3be7644587b68bc76c"
+    }
+  ],
+  "generated_utc": "2026-08-02T20:48:45.057959+00:00",
+  "source_commit": "5530a28960aba2e21370d1d2d521c642afbc2c49"
+}

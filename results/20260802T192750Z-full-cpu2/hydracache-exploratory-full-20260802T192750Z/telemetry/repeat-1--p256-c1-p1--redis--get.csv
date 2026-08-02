@@ -1,0 +1,6 @@
+timestamp_unix,target,pid,container_cpu_percent,process_cpu_ticks,vmrss_bytes,vmhwm_bytes,effective_cpu_affinity,cgroup_memory_current_bytes,cgroup_memory_peak_bytes,cgroup_memory_limit_bytes,jvm_heap_available,jvm_heap_used_bytes,jvm_heap_committed_bytes,jvm_heap_max_bytes
+1785699295.145958,redis,13602,3.563,1667,14671872,27283456,0-15,7278592,20217856,,False,,,
+1785699296.1465669,redis,13602,3.1423,1718,14671872,27283456,0-15,7536640,20217856,,False,,,
+1785699297.1472285,redis,13602,3.1422,1767,14671872,27283456,0-15,7536640,20217856,,False,,,
+1785699298.14778,redis,13602,3.1352,1817,14671872,27283456,0-15,7536640,20217856,,False,,,
+1785699299.1483467,redis,13602,3.1278,1868,14671872,27283456,0-15,7536640,20217856,,False,,,

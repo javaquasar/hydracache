@@ -1,0 +1,4322 @@
+{
+  "repeat-1--p1024-c50-p1--hazelcast--get": {
+    "cgroup_memory_current_bytes": {
+      "max": 375451648.0,
+      "p50": 375156736.0,
+      "p95": 375443456.0,
+      "samples": 11
+    },
+    "cgroup_memory_peak_bytes": {
+      "max": 388710400.0,
+      "p50": 388710400.0,
+      "p95": 388710400.0,
+      "samples": 11
+    },
+    "container_cpu_percent": {
+      "max": 0.881,
+      "p50": 0.7433,
+      "p95": 0.8552,
+      "samples": 11
+    },
+    "vmhwm_bytes": {
+      "max": 407392256.0,
+      "p50": 407392256.0,
+      "p95": 407392256.0,
+      "samples": 11
+    },
+    "vmrss_bytes": {
+      "max": 394084352.0,
+      "p50": 394076160.0,
+      "p95": 394084352.0,
+      "samples": 11
+    }
+  },
+  "repeat-1--p1024-c50-p1--hazelcast--set": {
+    "cgroup_memory_current_bytes": {
+      "max": 375046144.0,
+      "p50": 374444032.0,
+      "p95": 375025868.8,
+      "samples": 10
+    },
+    "cgroup_memory_peak_bytes": {
+      "max": 388710400.0,
+      "p50": 388710400.0,
+      "p95": 388710400.0,
+      "samples": 10
+    },
+    "container_cpu_percent": {
+      "max": 1.0655,
+      "p50": 0.97195,
+      "p95": 1.063925,
+      "samples": 10
+    },
+    "vmhwm_bytes": {
+      "max": 407392256.0,
+      "p50": 407392256.0,
+      "p95": 407392256.0,
+      "samples": 10
+    },
+    "vmrss_bytes": {
+      "max": 393777152.0,
+      "p50": 393199616.0,
+      "p95": 393771622.4,
+      "samples": 10
+    }
+  },
+  "repeat-1--p1024-c50-p1--hydra--get": {
+    "cgroup_memory_current_bytes": {
+      "max": 157229056.0,
+      "p50": 157032448.0,
+      "p95": 157205094.4,
+      "samples": 4
+    },
+    "cgroup_memory_peak_bytes": {
+      "max": 178470912.0,
+      "p50": 178470912.0,
+      "p95": 178470912.0,
+      "samples": 4
+    },
+    "vmhwm_bytes": {
+      "max": 146317312.0,
+      "p50": 146317312.0,
+      "p95": 146317312.0,
+      "samples": 4
+    },
+    "vmrss_bytes": {
+      "max": 146317312.0,
+      "p50": 146317312.0,
+      "p95": 146317312.0,
+      "samples": 4
+    }
+  },
+  "repeat-1--p1024-c50-p1--hydra--set": {
+    "cgroup_memory_current_bytes": {
+      "max": 153772032.0,
+      "p50": 142888960.0,
+      "p95": 152709734.4,
+      "samples": 4
+    },
+    "cgroup_memory_peak_bytes": {
+      "max": 154062848.0,
+      "p50": 144095232.0,
+      "p95": 152956928.0,
+      "samples": 4
+    },
+    "vmhwm_bytes": {
+      "max": 143245312.0,
+      "p50": 132048896.0,
+      "p95": 142143692.8,
+      "samples": 4
+    },
+    "vmrss_bytes": {
+      "max": 143245312.0,
+      "p50": 132048896.0,
+      "p95": 142143692.8,
+      "samples": 4
+    }
+  },
+  "repeat-1--p1024-c50-p1--redis--get": {
+    "cgroup_memory_current_bytes": {
+      "max": 18976768.0,
+      "p50": 18935808.0,
+      "p95": 18972672.0,
+      "samples": 3
+    },
+    "cgroup_memory_peak_bytes": {
+      "max": 20217856.0,
+      "p50": 20217856.0,
+      "p95": 20217856.0,
+      "samples": 3
+    },
+    "container_cpu_percent": {
+      "max": 5.4182,
+      "p50": 5.414,
+      "p95": 5.41778,
+      "samples": 3
+    },
+    "vmhwm_bytes": {
+      "max": 27283456.0,
+      "p50": 27283456.0,
+      "p95": 27283456.0,
+      "samples": 3
+    },
+    "vmrss_bytes": {
+      "max": 25853952.0,
+      "p50": 25817088.0,
+      "p95": 25850265.6,
+      "samples": 3
+    }
+  },
+  "repeat-1--p1024-c50-p1--redis--set": {
+    "cgroup_memory_current_bytes": {
+      "max": 20217856.0,
+      "p50": 20217856.0,
+      "p95": 20217856.0,
+      "samples": 3
+    },
+    "cgroup_memory_peak_bytes": {
+      "max": 20217856.0,
+      "p50": 20217856.0,
+      "p95": 20217856.0,
+      "samples": 3
+    },
+    "container_cpu_percent": {
+      "max": 5.5907,
+      "p50": 5.4738,
+      "p95": 5.57901,
+      "samples": 3
+    },
+    "vmhwm_bytes": {
+      "max": 27287552.0,
+      "p50": 27250688.0,
+      "p95": 27283865.6,
+      "samples": 3
+    },
+    "vmrss_bytes": {
+      "max": 27287552.0,
+      "p50": 27250688.0,
+      "p95": 27283865.6,
+      "samples": 3
+    }
+  },
+  "repeat-1--p1024-c50-p10--hazelcast--get": {
+    "cgroup_memory_current_bytes": {
+      "max": 376053760.0,
+      "p50": 375750656.0,
+      "p95": 376048025.6,
+      "samples": 5
+    },
+    "cgroup_memory_peak_bytes": {
+      "max": 388710400.0,
+      "p50": 388710400.0,
+      "p95": 388710400.0,
+      "samples": 5
+    },
+    "container_cpu_percent": {
+      "max": 1.4002,
+      "p50": 1.0499,
+      "p95": 1.3305999999999998,
+      "samples": 5
+    },
+    "vmhwm_bytes": {
+      "max": 407392256.0,
+      "p50": 407392256.0,
+      "p95": 407392256.0,
+      "samples": 5
+    },
+    "vmrss_bytes": {
+      "max": 394534912.0,
+      "p50": 394534912.0,
+      "p95": 394534912.0,
+      "samples": 5
+    }
+  },
+  "repeat-1--p1024-c50-p10--hazelcast--set": {
+    "cgroup_memory_current_bytes": {
+      "max": 375648256.0,
+      "p50": 375357440.0,
+      "p95": 375591731.2,
+      "samples": 5
+    },
+    "cgroup_memory_peak_bytes": {
+      "max": 388710400.0,
+      "p50": 388710400.0,
+      "p95": 388710400.0,
+      "samples": 5
+    },
+    "container_cpu_percent": {
+      "max": 1.8347,
+      "p50": 1.5496,
+      "p95": 1.78488,
+      "samples": 5
+    },
+    "vmhwm_bytes": {
+      "max": 407392256.0,
+      "p50": 407392256.0,
+      "p95": 407392256.0,
+      "samples": 5
+    },
+    "vmrss_bytes": {
+      "max": 394235904.0,
+      "p50": 394223616.0,
+      "p95": 394235084.8,
+      "samples": 5
+    }
+  },
+  "repeat-1--p1024-c50-p10--hydra--get": {
+    "cgroup_memory_current_bytes": {
+      "max": 183345152.0,
+      "p50": 182992896.0,
+      "p95": 183309926.4,
+      "samples": 3
+    },
+    "cgroup_memory_peak_bytes": {
+      "max": 205910016.0,
+      "p50": 205910016.0,
+      "p95": 205910016.0,
+      "samples": 3
+    },
+    "vmhwm_bytes": {
+      "max": 171200512.0,
+      "p50": 171200512.0,
+      "p95": 171200512.0,
+      "samples": 3
+    },
+    "vmrss_bytes": {
+      "max": 171200512.0,
+      "p50": 171200512.0,
+      "p95": 171200512.0,
+      "samples": 3
+    }
+  },
+  "repeat-1--p1024-c50-p10--hydra--set": {
+    "cgroup_memory_current_bytes": {
+      "max": 181907456.0,
+      "p50": 170377216.0,
+      "p95": 180754432.0,
+      "samples": 3
+    },
+    "cgroup_memory_peak_bytes": {
+      "max": 181923840.0,
+      "p50": 178515968.0,
+      "p95": 181583052.8,
+      "samples": 3
+    },
+    "vmhwm_bytes": {
+      "max": 169480192.0,
+      "p50": 158015488.0,
+      "p95": 168333721.6,
+      "samples": 3
+    },
+    "vmrss_bytes": {
+      "max": 169480192.0,
+      "p50": 158015488.0,
+      "p95": 168333721.6,
+      "samples": 3
+    }
+  },
+  "repeat-1--p1024-c50-p10--redis--get": {
+    "cgroup_memory_current_bytes": {
+      "max": 18976768.0,
+      "p50": 18976768.0,
+      "p95": 18976768.0,
+      "samples": 1
+    },
+    "cgroup_memory_peak_bytes": {
+      "max": 20217856.0,
+      "p50": 20217856.0,
+      "p95": 20217856.0,
+      "samples": 1
+    },
+    "container_cpu_percent": {
+      "max": 16.533,
+      "p50": 16.533,
+      "p95": 16.533,
+      "samples": 1
+    },
+    "vmhwm_bytes": {
+      "max": 27283456.0,
+      "p50": 27283456.0,
+      "p95": 27283456.0,
+      "samples": 1
+    },
+    "vmrss_bytes": {
+      "max": 25702400.0,
+      "p50": 25702400.0,
+      "p95": 25702400.0,
+      "samples": 1
+    }
+  },
+  "repeat-1--p1024-c50-p10--redis--set": {
+    "cgroup_memory_current_bytes": {
+      "max": 18452480.0,
+      "p50": 18452480.0,
+      "p95": 18452480.0,
+      "samples": 1
+    },
+    "cgroup_memory_peak_bytes": {
+      "max": 20217856.0,
+      "p50": 20217856.0,
+      "p95": 20217856.0,
+      "samples": 1
+    },
+    "container_cpu_percent": {
+      "max": 0.0,
+      "p50": 0.0,
+      "p95": 0.0,
+      "samples": 1
+    },
+    "vmhwm_bytes": {
+      "max": 27283456.0,
+      "p50": 27283456.0,
+      "p95": 27283456.0,
+      "samples": 1
+    },
+    "vmrss_bytes": {
+      "max": 25300992.0,
+      "p50": 25300992.0,
+      "p95": 25300992.0,
+      "samples": 1
+    }
+  },
+  "repeat-1--p256-c1-p1--hazelcast--get": {
+    "cgroup_memory_current_bytes": {
+      "max": 376320000.0,
+      "p50": 375963648.0,
+      "p95": 376201625.6,
+      "samples": 18
+    },
+    "cgroup_memory_peak_bytes": {
+      "max": 388710400.0,
+      "p50": 388710400.0,
+      "p95": 388710400.0,
+      "samples": 18
+    },
+    "container_cpu_percent": {
+      "max": 1.6489,
+      "p50": 1.5484499999999999,
+      "p95": 1.62068,
+      "samples": 18
+    },
+    "vmhwm_bytes": {
+      "max": 407392256.0,
+      "p50": 407392256.0,
+      "p95": 407392256.0,
+      "samples": 18
+    },
+    "vmrss_bytes": {
+      "max": 394833920.0,
+      "p50": 394563584.0,
+      "p95": 394833920.0,
+      "samples": 18
+    }
+  },
+  "repeat-1--p256-c1-p1--hazelcast--set": {
+    "cgroup_memory_current_bytes": {
+      "max": 376180736.0,
+      "p50": 375996416.0,
+      "p95": 376174182.4,
+      "samples": 17
+    },
+    "cgroup_memory_peak_bytes": {
+      "max": 388710400.0,
+      "p50": 388710400.0,
+      "p95": 388710400.0,
+      "samples": 17
+    },
+    "container_cpu_percent": {
+      "max": 1.8329,
+      "p50": 1.6463,
+      "p95": 1.7569,
+      "samples": 17
+    },
+    "vmhwm_bytes": {
+      "max": 407392256.0,
+      "p50": 407392256.0,
+      "p95": 407392256.0,
+      "samples": 17
+    },
+    "vmrss_bytes": {
+      "max": 394657792.0,
+      "p50": 394579968.0,
+      "p95": 394657792.0,
+      "samples": 17
+    }
+  },
+  "repeat-1--p256-c1-p1--hydra--get": {
+    "cgroup_memory_current_bytes": {
+      "max": 197595136.0,
+      "p50": 197537792.0,
+      "p95": 197589401.6,
+      "samples": 5
+    },
+    "cgroup_memory_peak_bytes": {
+      "max": 215105536.0,
+      "p50": 215105536.0,
+      "p95": 215105536.0,
+      "samples": 5
+    },
+    "vmhwm_bytes": {
+      "max": 187281408.0,
+      "p50": 187281408.0,
+      "p95": 187281408.0,
+      "samples": 5
+    },
+    "vmrss_bytes": {
+      "max": 187281408.0,
+      "p50": 187281408.0,
+      "p95": 187281408.0,
+      "samples": 5
+    }
+  },
+  "repeat-1--p256-c1-p1--hydra--set": {
+    "cgroup_memory_current_bytes": {
+      "max": 193462272.0,
+      "p50": 186281984.0,
+      "p95": 192553779.2,
+      "samples": 5
+    },
+    "cgroup_memory_peak_bytes": {
+      "max": 206262272.0,
+      "p50": 206262272.0,
+      "p95": 206262272.0,
+      "samples": 5
+    },
+    "vmhwm_bytes": {
+      "max": 183218176.0,
+      "p50": 176193536.0,
+      "p95": 182314598.4,
+      "samples": 5
+    },
+    "vmrss_bytes": {
+      "max": 183218176.0,
+      "p50": 176193536.0,
+      "p95": 182314598.4,
+      "samples": 5
+    }
+  },
+  "repeat-1--p256-c1-p1--redis--get": {
+    "cgroup_memory_current_bytes": {
+      "max": 7536640.0,
+      "p50": 7536640.0,
+      "p95": 7536640.0,
+      "samples": 5
+    },
+    "cgroup_memory_peak_bytes": {
+      "max": 20217856.0,
+      "p50": 20217856.0,
+      "p95": 20217856.0,
+      "samples": 5
+    },
+    "container_cpu_percent": {
+      "max": 3.563,
+      "p50": 3.1422,
+      "p95": 3.47886,
+      "samples": 5
+    },
+    "vmhwm_bytes": {
+      "max": 27283456.0,
+      "p50": 27283456.0,
+      "p95": 27283456.0,
+      "samples": 5
+    },
+    "vmrss_bytes": {
+      "max": 14671872.0,
+      "p50": 14671872.0,
+      "p95": 14671872.0,
+      "samples": 5
+    }
+  },
+  "repeat-1--p256-c1-p1--redis--set": {
+    "cgroup_memory_current_bytes": {
+      "max": 19472384.0,
+      "p50": 19472384.0,
+      "p95": 19472384.0,
+      "samples": 5
+    },
+    "cgroup_memory_peak_bytes": {
+      "max": 20217856.0,
+      "p50": 20217856.0,
+      "p95": 20217856.0,
+      "samples": 5
+    },
+    "container_cpu_percent": {
+      "max": 3.2706,
+      "p50": 3.1286,
+      "p95": 3.2538,
+      "samples": 5
+    },
+    "vmhwm_bytes": {
+      "max": 27283456.0,
+      "p50": 27283456.0,
+      "p95": 27283456.0,
+      "samples": 5
+    },
+    "vmrss_bytes": {
+      "max": 26705920.0,
+      "p50": 26705920.0,
+      "p95": 26705920.0,
+      "samples": 5
+    }
+  },
+  "repeat-1--p256-c10-p1--hazelcast--get": {
+    "cgroup_memory_current_bytes": {
+      "max": 371453952.0,
+      "p50": 370991104.0,
+      "p95": 371352576.0,
+      "samples": 80
+    },
+    "cgroup_memory_peak_bytes": {
+      "max": 388710400.0,
+      "p50": 388710400.0,
+      "p95": 388710400.0,
+      "samples": 80
+    },
+    "container_cpu_percent": {
+      "max": 0.8188,
+      "p50": 0.16094999999999998,
+      "p95": 0.3108199999999998,
+      "samples": 80
+    },
+    "vmhwm_bytes": {
+      "max": 407392256.0,
+      "p50": 407392256.0,
+      "p95": 407392256.0,
+      "samples": 80
+    },
+    "vmrss_bytes": {
+      "max": 390283264.0,
+      "p50": 390232064.0,
+      "p95": 390283264.0,
+      "samples": 80
+    }
+  },
+  "repeat-1--p256-c10-p1--hazelcast--set": {
+    "cgroup_memory_current_bytes": {
+      "max": 370913280.0,
+      "p50": 370440192.0,
+      "p95": 370828288.0,
+      "samples": 48
+    },
+    "cgroup_memory_peak_bytes": {
+      "max": 388710400.0,
+      "p50": 388710400.0,
+      "p95": 388710400.0,
+      "samples": 48
+    },
+    "container_cpu_percent": {
+      "max": 0.9101,
+      "p50": 0.25025,
+      "p95": 0.7922549999999999,
+      "samples": 48
+    },
+    "vmhwm_bytes": {
+      "max": 407392256.0,
+      "p50": 407392256.0,
+      "p95": 407392256.0,
+      "samples": 48
+    },
+    "vmrss_bytes": {
+      "max": 389865472.0,
+      "p50": 389517312.0,
+      "p95": 389646745.6,
+      "samples": 48
+    }
+  },
+  "repeat-1--p256-c10-p1--hydra--get": {
+    "cgroup_memory_current_bytes": {
+      "max": 97656832.0,
+      "p50": 97640448.0,
+      "p95": 97656217.6,
+      "samples": 4
+    },
+    "cgroup_memory_peak_bytes": {
+      "max": 115675136.0,
+      "p50": 115675136.0,
+      "p95": 115675136.0,
+      "samples": 4
+    },
+    "vmhwm_bytes": {
+      "max": 87990272.0,
+      "p50": 87990272.0,
+      "p95": 87990272.0,
+      "samples": 4
+    },
+    "vmrss_bytes": {
+      "max": 87990272.0,
+      "p50": 87990272.0,
+      "p95": 87990272.0,
+      "samples": 4
+    }
+  },
+  "repeat-1--p256-c10-p1--hydra--set": {
+    "cgroup_memory_current_bytes": {
+      "max": 94273536.0,
+      "p50": 83402752.0,
+      "p95": 93179904.0,
+      "samples": 4
+    },
+    "cgroup_memory_peak_bytes": {
+      "max": 94273536.0,
+      "p50": 89194496.0,
+      "p95": 93511680.0,
+      "samples": 4
+    },
+    "vmhwm_bytes": {
+      "max": 84987904.0,
+      "p50": 74078208.0,
+      "p95": 83901644.8,
+      "samples": 4
+    },
+    "vmrss_bytes": {
+      "max": 84987904.0,
+      "p50": 74078208.0,
+      "p95": 83901644.8,
+      "samples": 4
+    }
+  },
+  "repeat-1--p256-c10-p1--redis--get": {
+    "cgroup_memory_current_bytes": {
+      "max": 7430144.0,
+      "p50": 7426048.0,
+      "p95": 7429734.4,
+      "samples": 3
+    },
+    "cgroup_memory_peak_bytes": {
+      "max": 8085504.0,
+      "p50": 8085504.0,
+      "p95": 8085504.0,
+      "samples": 3
+    },
+    "container_cpu_percent": {
+      "max": 6.8335,
+      "p50": 5.5384,
+      "p95": 6.70399,
+      "samples": 3
+    },
+    "vmhwm_bytes": {
+      "max": 15073280.0,
+      "p50": 15073280.0,
+      "p95": 15073280.0,
+      "samples": 3
+    },
+    "vmrss_bytes": {
+      "max": 14557184.0,
+      "p50": 14557184.0,
+      "p95": 14557184.0,
+      "samples": 3
+    }
+  },
+  "repeat-1--p256-c10-p1--redis--set": {
+    "cgroup_memory_current_bytes": {
+      "max": 7942144.0,
+      "p50": 7942144.0,
+      "p95": 7942144.0,
+      "samples": 3
+    },
+    "cgroup_memory_peak_bytes": {
+      "max": 7942144.0,
+      "p50": 7942144.0,
+      "p95": 7942144.0,
+      "samples": 3
+    },
+    "container_cpu_percent": {
+      "max": 5.6402,
+      "p50": 5.5532,
+      "p95": 5.6315,
+      "samples": 3
+    },
+    "vmhwm_bytes": {
+      "max": 15249408.0,
+      "p50": 15249408.0,
+      "p95": 15249408.0,
+      "samples": 3
+    },
+    "vmrss_bytes": {
+      "max": 15249408.0,
+      "p50": 15249408.0,
+      "p95": 15249408.0,
+      "samples": 3
+    }
+  },
+  "repeat-1--p256-c10-p10--hazelcast--get": {
+    "cgroup_memory_current_bytes": {
+      "max": 372477952.0,
+      "p50": 372029440.0,
+      "p95": 372354048.0,
+      "samples": 12
+    },
+    "cgroup_memory_peak_bytes": {
+      "max": 388710400.0,
+      "p50": 388710400.0,
+      "p95": 388710400.0,
+      "samples": 12
+    },
+    "container_cpu_percent": {
+      "max": 0.7465,
+      "p50": 0.5740000000000001,
+      "p95": 0.72901,
+      "samples": 12
+    },
+    "vmhwm_bytes": {
+      "max": 407392256.0,
+      "p50": 407392256.0,
+      "p95": 407392256.0,
+      "samples": 12
+    },
+    "vmrss_bytes": {
+      "max": 391155712.0,
+      "p50": 391131136.0,
+      "p95": 391155712.0,
+      "samples": 12
+    }
+  },
+  "repeat-1--p256-c10-p10--hazelcast--set": {
+    "cgroup_memory_current_bytes": {
+      "max": 371748864.0,
+      "p50": 371585024.0,
+      "p95": 371721830.4,
+      "samples": 5
+    },
+    "cgroup_memory_peak_bytes": {
+      "max": 388710400.0,
+      "p50": 388710400.0,
+      "p95": 388710400.0,
+      "samples": 5
+    },
+    "container_cpu_percent": {
+      "max": 1.7979,
+      "p50": 1.7034,
+      "p95": 1.79664,
+      "samples": 5
+    },
+    "vmhwm_bytes": {
+      "max": 407392256.0,
+      "p50": 407392256.0,
+      "p95": 407392256.0,
+      "samples": 5
+    },
+    "vmrss_bytes": {
+      "max": 390615040.0,
+      "p50": 390582272.0,
+      "p95": 390615040.0,
+      "samples": 5
+    }
+  },
+  "repeat-1--p256-c10-p10--hydra--get": {
+    "cgroup_memory_current_bytes": {
+      "max": 122814464.0,
+      "p50": 122748928.0,
+      "p95": 122807910.4,
+      "samples": 3
+    },
+    "cgroup_memory_peak_bytes": {
+      "max": 141336576.0,
+      "p50": 141336576.0,
+      "p95": 141336576.0,
+      "samples": 3
+    },
+    "vmhwm_bytes": {
+      "max": 112791552.0,
+      "p50": 112791552.0,
+      "p95": 112791552.0,
+      "samples": 3
+    },
+    "vmrss_bytes": {
+      "max": 112791552.0,
+      "p50": 112791552.0,
+      "p95": 112791552.0,
+      "samples": 3
+    }
+  },
+  "repeat-1--p256-c10-p10--hydra--set": {
+    "cgroup_memory_current_bytes": {
+      "max": 121585664.0,
+      "p50": 109912064.0,
+      "p95": 120418304.0,
+      "samples": 3
+    },
+    "cgroup_memory_peak_bytes": {
+      "max": 121606144.0,
+      "p50": 116289536.0,
+      "p95": 121074483.2,
+      "samples": 3
+    },
+    "vmhwm_bytes": {
+      "max": 111775744.0,
+      "p50": 100044800.0,
+      "p95": 110602649.6,
+      "samples": 3
+    },
+    "vmrss_bytes": {
+      "max": 111775744.0,
+      "p50": 100044800.0,
+      "p95": 110602649.6,
+      "samples": 3
+    }
+  },
+  "repeat-1--p256-c10-p10--redis--get": {
+    "cgroup_memory_current_bytes": {
+      "max": 7184384.0,
+      "p50": 7184384.0,
+      "p95": 7184384.0,
+      "samples": 1
+    },
+    "cgroup_memory_peak_bytes": {
+      "max": 8085504.0,
+      "p50": 8085504.0,
+      "p95": 8085504.0,
+      "samples": 1
+    },
+    "container_cpu_percent": {
+      "max": 7.4044,
+      "p50": 7.4044,
+      "p95": 7.4044,
+      "samples": 1
+    },
+    "vmhwm_bytes": {
+      "max": 15073280.0,
+      "p50": 15073280.0,
+      "p95": 15073280.0,
+      "samples": 1
+    },
+    "vmrss_bytes": {
+      "max": 14557184.0,
+      "p50": 14557184.0,
+      "p95": 14557184.0,
+      "samples": 1
+    }
+  },
+  "repeat-1--p256-c10-p10--redis--set": {
+    "cgroup_memory_current_bytes": {
+      "max": 7184384.0,
+      "p50": 7184384.0,
+      "p95": 7184384.0,
+      "samples": 1
+    },
+    "cgroup_memory_peak_bytes": {
+      "max": 8085504.0,
+      "p50": 8085504.0,
+      "p95": 8085504.0,
+      "samples": 1
+    },
+    "container_cpu_percent": {
+      "max": 0.0,
+      "p50": 0.0,
+      "p95": 0.0,
+      "samples": 1
+    },
+    "vmhwm_bytes": {
+      "max": 15073280.0,
+      "p50": 15073280.0,
+      "p95": 15073280.0,
+      "samples": 1
+    },
+    "vmrss_bytes": {
+      "max": 14557184.0,
+      "p50": 14557184.0,
+      "p95": 14557184.0,
+      "samples": 1
+    }
+  },
+  "repeat-1--p256-c100-p1--hazelcast--get": {
+    "cgroup_memory_current_bytes": {
+      "max": 375803904.0,
+      "p50": 375562240.0,
+      "p95": 375747993.6,
+      "samples": 8
+    },
+    "cgroup_memory_peak_bytes": {
+      "max": 388710400.0,
+      "p50": 388710400.0,
+      "p95": 388710400.0,
+      "samples": 8
+    },
+    "container_cpu_percent": {
+      "max": 0.9691,
+      "p50": 0.8249,
+      "p95": 0.9652149999999999,
+      "samples": 8
+    },
+    "vmhwm_bytes": {
+      "max": 407392256.0,
+      "p50": 407392256.0,
+      "p95": 407392256.0,
+      "samples": 8
+    },
+    "vmrss_bytes": {
+      "max": 394616832.0,
+      "p50": 394612736.0,
+      "p95": 394616832.0,
+      "samples": 8
+    }
+  },
+  "repeat-1--p256-c100-p1--hazelcast--set": {
+    "cgroup_memory_current_bytes": {
+      "max": 376233984.0,
+      "p50": 375740416.0,
+      "p95": 376201011.2,
+      "samples": 8
+    },
+    "cgroup_memory_peak_bytes": {
+      "max": 388710400.0,
+      "p50": 388710400.0,
+      "p95": 388710400.0,
+      "samples": 8
+    },
+    "container_cpu_percent": {
+      "max": 1.0363,
+      "p50": 0.9527,
+      "p95": 1.025415,
+      "samples": 8
+    },
+    "vmhwm_bytes": {
+      "max": 407392256.0,
+      "p50": 407392256.0,
+      "p95": 407392256.0,
+      "samples": 8
+    },
+    "vmrss_bytes": {
+      "max": 394600448.0,
+      "p50": 394596352.0,
+      "p95": 394599014.4,
+      "samples": 8
+    }
+  },
+  "repeat-1--p256-c100-p1--hydra--get": {
+    "cgroup_memory_current_bytes": {
+      "max": 226566144.0,
+      "p50": 226461696.0,
+      "p95": 226556928.0,
+      "samples": 4
+    },
+    "cgroup_memory_peak_bytes": {
+      "max": 249888768.0,
+      "p50": 249888768.0,
+      "p95": 249888768.0,
+      "samples": 4
+    },
+    "vmhwm_bytes": {
+      "max": 214425600.0,
+      "p50": 214425600.0,
+      "p95": 214425600.0,
+      "samples": 4
+    },
+    "vmrss_bytes": {
+      "max": 214425600.0,
+      "p50": 214425600.0,
+      "p95": 214425600.0,
+      "samples": 4
+    }
+  },
+  "repeat-1--p256-c100-p1--hydra--set": {
+    "cgroup_memory_current_bytes": {
+      "max": 223465472.0,
+      "p50": 212248576.0,
+      "p95": 222344806.4,
+      "samples": 4
+    },
+    "cgroup_memory_peak_bytes": {
+      "max": 223469568.0,
+      "p50": 215584768.0,
+      "p95": 222351974.4,
+      "samples": 4
+    },
+    "vmhwm_bytes": {
+      "max": 211390464.0,
+      "p50": 200093696.0,
+      "p95": 210260582.4,
+      "samples": 4
+    },
+    "vmrss_bytes": {
+      "max": 211390464.0,
+      "p50": 200093696.0,
+      "p95": 210260582.4,
+      "samples": 4
+    }
+  },
+  "repeat-1--p256-c100-p1--redis--get": {
+    "cgroup_memory_current_bytes": {
+      "max": 9203712.0,
+      "p50": 9195520.0,
+      "p95": 9202892.8,
+      "samples": 3
+    },
+    "cgroup_memory_peak_bytes": {
+      "max": 20217856.0,
+      "p50": 20217856.0,
+      "p95": 20217856.0,
+      "samples": 3
+    },
+    "container_cpu_percent": {
+      "max": 5.4494,
+      "p50": 5.4492,
+      "p95": 5.44938,
+      "samples": 3
+    },
+    "vmhwm_bytes": {
+      "max": 27283456.0,
+      "p50": 27283456.0,
+      "p95": 27283456.0,
+      "samples": 3
+    },
+    "vmrss_bytes": {
+      "max": 15798272.0,
+      "p50": 15798272.0,
+      "p95": 15798272.0,
+      "samples": 3
+    }
+  },
+  "repeat-1--p256-c100-p1--redis--set": {
+    "cgroup_memory_current_bytes": {
+      "max": 8962048.0,
+      "p50": 8781824.0,
+      "p95": 8944025.6,
+      "samples": 3
+    },
+    "cgroup_memory_peak_bytes": {
+      "max": 20217856.0,
+      "p50": 20217856.0,
+      "p95": 20217856.0,
+      "samples": 3
+    },
+    "container_cpu_percent": {
+      "max": 5.3125,
+      "p50": 5.1989,
+      "p95": 5.30114,
+      "samples": 3
+    },
+    "vmhwm_bytes": {
+      "max": 27283456.0,
+      "p50": 27283456.0,
+      "p95": 27283456.0,
+      "samples": 3
+    },
+    "vmrss_bytes": {
+      "max": 15618048.0,
+      "p50": 15548416.0,
+      "p95": 15611084.8,
+      "samples": 3
+    }
+  },
+  "repeat-1--p64-c10-p1--hazelcast--get": {
+    "cgroup_memory_current_bytes": {
+      "max": 373645312.0,
+      "p50": 367702016.0,
+      "p95": 368446668.8,
+      "samples": 78
+    },
+    "cgroup_memory_peak_bytes": {
+      "max": 388710400.0,
+      "p50": 388710400.0,
+      "p95": 388710400.0,
+      "samples": 78
+    },
+    "container_cpu_percent": {
+      "max": 11.7619,
+      "p50": 0.18905,
+      "p95": 0.6534549999999986,
+      "samples": 78
+    },
+    "vmhwm_bytes": {
+      "max": 407392256.0,
+      "p50": 407392256.0,
+      "p95": 407392256.0,
+      "samples": 78
+    },
+    "vmrss_bytes": {
+      "max": 392495104.0,
+      "p50": 386646016.0,
+      "p95": 387395174.4,
+      "samples": 78
+    }
+  },
+  "repeat-1--p64-c10-p1--hazelcast--set": {
+    "cgroup_memory_current_bytes": {
+      "max": 354754560.0,
+      "p50": 336969728.0,
+      "p95": 354195456.0,
+      "samples": 46
+    },
+    "cgroup_memory_peak_bytes": {
+      "max": 355024896.0,
+      "p50": 338874368.0,
+      "p95": 354995200.0,
+      "samples": 46
+    },
+    "container_cpu_percent": {
+      "max": 14.8317,
+      "p50": 0.3125,
+      "p95": 2.16615,
+      "samples": 46
+    },
+    "vmhwm_bytes": {
+      "max": 373211136.0,
+      "p50": 357470208.0,
+      "p95": 373146624.0,
+      "samples": 46
+    },
+    "vmrss_bytes": {
+      "max": 373211136.0,
+      "p50": 356001792.0,
+      "p95": 373146624.0,
+      "samples": 46
+    }
+  },
+  "repeat-1--p64-c10-p1--hydra--get": {
+    "cgroup_memory_current_bytes": {
+      "max": 45305856.0,
+      "p50": 45266944.0,
+      "p95": 45305241.6,
+      "samples": 4
+    },
+    "cgroup_memory_peak_bytes": {
+      "max": 63676416.0,
+      "p50": 63676416.0,
+      "p95": 63676416.0,
+      "samples": 4
+    },
+    "vmhwm_bytes": {
+      "max": 36270080.0,
+      "p50": 36270080.0,
+      "p95": 36270080.0,
+      "samples": 4
+    },
+    "vmrss_bytes": {
+      "max": 36270080.0,
+      "p50": 36270080.0,
+      "p95": 36270080.0,
+      "samples": 4
+    }
+  },
+  "repeat-1--p64-c10-p1--hydra--set": {
+    "cgroup_memory_current_bytes": {
+      "max": 41811968.0,
+      "p50": 30453760.0,
+      "p95": 40671027.199999996,
+      "samples": 4
+    },
+    "cgroup_memory_peak_bytes": {
+      "max": 41816064.0,
+      "p50": 31979520.0,
+      "p95": 40678809.599999994,
+      "samples": 4
+    },
+    "vmhwm_bytes": {
+      "max": 33329152.0,
+      "p50": 22351872.0,
+      "p95": 32239820.799999997,
+      "samples": 4
+    },
+    "vmrss_bytes": {
+      "max": 33329152.0,
+      "p50": 22351872.0,
+      "p95": 32239820.799999997,
+      "samples": 4
+    }
+  },
+  "repeat-1--p64-c10-p1--redis--get": {
+    "cgroup_memory_current_bytes": {
+      "max": 5500928.0,
+      "p50": 4739072.0,
+      "p95": 5424742.4,
+      "samples": 3
+    },
+    "cgroup_memory_peak_bytes": {
+      "max": 5505024.0,
+      "p50": 5505024.0,
+      "p95": 5505024.0,
+      "samples": 3
+    },
+    "container_cpu_percent": {
+      "max": 6.3459,
+      "p50": 5.4663,
+      "p95": 6.2579400000000005,
+      "samples": 3
+    },
+    "vmhwm_bytes": {
+      "max": 12115968.0,
+      "p50": 12115968.0,
+      "p95": 12115968.0,
+      "samples": 3
+    },
+    "vmrss_bytes": {
+      "max": 12115968.0,
+      "p50": 12115968.0,
+      "p95": 12115968.0,
+      "samples": 3
+    }
+  },
+  "repeat-1--p64-c10-p1--redis--set": {
+    "cgroup_memory_current_bytes": {
+      "max": 4956160.0,
+      "p50": 4706304.0,
+      "p95": 4931174.4,
+      "samples": 3
+    },
+    "cgroup_memory_peak_bytes": {
+      "max": 4972544.0,
+      "p50": 4968448.0,
+      "p95": 4972134.4,
+      "samples": 3
+    },
+    "container_cpu_percent": {
+      "max": 5.5708,
+      "p50": 5.5146,
+      "p95": 5.56518,
+      "samples": 3
+    },
+    "vmhwm_bytes": {
+      "max": 12095488.0,
+      "p50": 12083200.0,
+      "p95": 12094259.2,
+      "samples": 3
+    },
+    "vmrss_bytes": {
+      "max": 12095488.0,
+      "p50": 12083200.0,
+      "p95": 12094259.2,
+      "samples": 3
+    }
+  },
+  "repeat-1--p64-c10-p10--hazelcast--get": {
+    "cgroup_memory_current_bytes": {
+      "max": 370528256.0,
+      "p50": 370251776.0,
+      "p95": 370422374.4,
+      "samples": 12
+    },
+    "cgroup_memory_peak_bytes": {
+      "max": 388710400.0,
+      "p50": 388710400.0,
+      "p95": 388710400.0,
+      "samples": 12
+    },
+    "container_cpu_percent": {
+      "max": 0.7385,
+      "p50": 0.52615,
+      "p95": 0.6719499999999999,
+      "samples": 12
+    },
+    "vmhwm_bytes": {
+      "max": 407392256.0,
+      "p50": 407392256.0,
+      "p95": 407392256.0,
+      "samples": 12
+    },
+    "vmrss_bytes": {
+      "max": 389144576.0,
+      "p50": 389117952.0,
+      "p95": 389144576.0,
+      "samples": 12
+    }
+  },
+  "repeat-1--p64-c10-p10--hazelcast--set": {
+    "cgroup_memory_current_bytes": {
+      "max": 369594368.0,
+      "p50": 369524736.0,
+      "p95": 369593548.8,
+      "samples": 5
+    },
+    "cgroup_memory_peak_bytes": {
+      "max": 388710400.0,
+      "p50": 388710400.0,
+      "p95": 388710400.0,
+      "samples": 5
+    },
+    "container_cpu_percent": {
+      "max": 2.2207,
+      "p50": 1.8753,
+      "p95": 2.1637,
+      "samples": 5
+    },
+    "vmhwm_bytes": {
+      "max": 407392256.0,
+      "p50": 407392256.0,
+      "p95": 407392256.0,
+      "samples": 5
+    },
+    "vmrss_bytes": {
+      "max": 388599808.0,
+      "p50": 388444160.0,
+      "p95": 388568678.4,
+      "samples": 5
+    }
+  },
+  "repeat-1--p64-c10-p10--hydra--get": {
+    "cgroup_memory_current_bytes": {
+      "max": 70537216.0,
+      "p50": 70475776.0,
+      "p95": 70531072.0,
+      "samples": 3
+    },
+    "cgroup_memory_peak_bytes": {
+      "max": 89194496.0,
+      "p50": 89194496.0,
+      "p95": 89194496.0,
+      "samples": 3
+    },
+    "vmhwm_bytes": {
+      "max": 61095936.0,
+      "p50": 61095936.0,
+      "p95": 61095936.0,
+      "samples": 3
+    },
+    "vmrss_bytes": {
+      "max": 61095936.0,
+      "p50": 61095936.0,
+      "p95": 61095936.0,
+      "samples": 3
+    }
+  },
+  "repeat-1--p64-c10-p10--hydra--set": {
+    "cgroup_memory_current_bytes": {
+      "max": 70082560.0,
+      "p50": 57872384.0,
+      "p95": 68861542.4,
+      "samples": 3
+    },
+    "cgroup_memory_peak_bytes": {
+      "max": 70082560.0,
+      "p50": 63946752.0,
+      "p95": 69468979.2,
+      "samples": 3
+    },
+    "vmhwm_bytes": {
+      "max": 60624896.0,
+      "p50": 48611328.0,
+      "p95": 59423539.2,
+      "samples": 3
+    },
+    "vmrss_bytes": {
+      "max": 60624896.0,
+      "p50": 48611328.0,
+      "p95": 59423539.2,
+      "samples": 3
+    }
+  },
+  "repeat-1--p64-c10-p10--redis--get": {
+    "cgroup_memory_current_bytes": {
+      "max": 4739072.0,
+      "p50": 4739072.0,
+      "p95": 4739072.0,
+      "samples": 1
+    },
+    "cgroup_memory_peak_bytes": {
+      "max": 5505024.0,
+      "p50": 5505024.0,
+      "p95": 5505024.0,
+      "samples": 1
+    },
+    "container_cpu_percent": {
+      "max": 6.3371,
+      "p50": 6.3371,
+      "p95": 6.3371,
+      "samples": 1
+    },
+    "vmhwm_bytes": {
+      "max": 12115968.0,
+      "p50": 12115968.0,
+      "p95": 12115968.0,
+      "samples": 1
+    },
+    "vmrss_bytes": {
+      "max": 12115968.0,
+      "p50": 12115968.0,
+      "p95": 12115968.0,
+      "samples": 1
+    }
+  },
+  "repeat-1--p64-c10-p10--redis--set": {
+    "cgroup_memory_current_bytes": {
+      "max": 4984832.0,
+      "p50": 4984832.0,
+      "p95": 4984832.0,
+      "samples": 1
+    },
+    "cgroup_memory_peak_bytes": {
+      "max": 5505024.0,
+      "p50": 5505024.0,
+      "p95": 5505024.0,
+      "samples": 1
+    },
+    "container_cpu_percent": {
+      "max": 18.3868,
+      "p50": 18.3868,
+      "p95": 18.3868,
+      "samples": 1
+    },
+    "vmhwm_bytes": {
+      "max": 12115968.0,
+      "p50": 12115968.0,
+      "p95": 12115968.0,
+      "samples": 1
+    },
+    "vmrss_bytes": {
+      "max": 12115968.0,
+      "p50": 12115968.0,
+      "p95": 12115968.0,
+      "samples": 1
+    }
+  },
+  "repeat-2--p1024-c50-p1--hazelcast--get": {
+    "cgroup_memory_current_bytes": {
+      "max": 377753600.0,
+      "p50": 377503744.0,
+      "p95": 377685401.6,
+      "samples": 10
+    },
+    "cgroup_memory_peak_bytes": {
+      "max": 388710400.0,
+      "p50": 388710400.0,
+      "p95": 388710400.0,
+      "samples": 10
+    },
+    "container_cpu_percent": {
+      "max": 1.317,
+      "p50": 0.78145,
+      "p95": 1.2371249999999998,
+      "samples": 10
+    },
+    "vmhwm_bytes": {
+      "max": 407392256.0,
+      "p50": 407392256.0,
+      "p95": 407392256.0,
+      "samples": 10
+    },
+    "vmrss_bytes": {
+      "max": 396476416.0,
+      "p50": 396439552.0,
+      "p95": 396474572.8,
+      "samples": 10
+    }
+  },
+  "repeat-2--p1024-c50-p1--hazelcast--set": {
+    "cgroup_memory_current_bytes": {
+      "max": 377327616.0,
+      "p50": 377055232.0,
+      "p95": 377296281.6,
+      "samples": 10
+    },
+    "cgroup_memory_peak_bytes": {
+      "max": 388710400.0,
+      "p50": 388710400.0,
+      "p95": 388710400.0,
+      "samples": 10
+    },
+    "container_cpu_percent": {
+      "max": 1.0321,
+      "p50": 0.9365,
+      "p95": 1.01167,
+      "samples": 10
+    },
+    "vmhwm_bytes": {
+      "max": 407392256.0,
+      "p50": 407392256.0,
+      "p95": 407392256.0,
+      "samples": 10
+    },
+    "vmrss_bytes": {
+      "max": 396128256.0,
+      "p50": 396124160.0,
+      "p95": 396128256.0,
+      "samples": 10
+    }
+  },
+  "repeat-2--p1024-c50-p1--hydra--get": {
+    "cgroup_memory_current_bytes": {
+      "max": 358117376.0,
+      "p50": 358033408.0,
+      "p95": 358109388.8,
+      "samples": 4
+    },
+    "cgroup_memory_peak_bytes": {
+      "max": 379523072.0,
+      "p50": 379523072.0,
+      "p95": 379523072.0,
+      "samples": 4
+    },
+    "vmhwm_bytes": {
+      "max": 345333760.0,
+      "p50": 345333760.0,
+      "p95": 345333760.0,
+      "samples": 4
+    },
+    "vmrss_bytes": {
+      "max": 345333760.0,
+      "p50": 345333760.0,
+      "p95": 345333760.0,
+      "samples": 4
+    }
+  },
+  "repeat-2--p1024-c50-p1--hydra--set": {
+    "cgroup_memory_current_bytes": {
+      "max": 354455552.0,
+      "p50": 343455744.0,
+      "p95": 353379737.6,
+      "samples": 4
+    },
+    "cgroup_memory_peak_bytes": {
+      "max": 354484224.0,
+      "p50": 344805376.0,
+      "p95": 353404108.8,
+      "samples": 4
+    },
+    "vmhwm_bytes": {
+      "max": 342200320.0,
+      "p50": 331016192.0,
+      "p95": 341099929.6,
+      "samples": 4
+    },
+    "vmrss_bytes": {
+      "max": 342200320.0,
+      "p50": 331016192.0,
+      "p95": 341099929.6,
+      "samples": 4
+    }
+  },
+  "repeat-2--p1024-c50-p1--redis--get": {
+    "cgroup_memory_current_bytes": {
+      "max": 20365312.0,
+      "p50": 20365312.0,
+      "p95": 20365312.0,
+      "samples": 3
+    },
+    "cgroup_memory_peak_bytes": {
+      "max": 20623360.0,
+      "p50": 20611072.0,
+      "p95": 20622131.2,
+      "samples": 3
+    },
+    "container_cpu_percent": {
+      "max": 5.3854,
+      "p50": 5.3634,
+      "p95": 5.3831999999999995,
+      "samples": 3
+    },
+    "vmhwm_bytes": {
+      "max": 27283456.0,
+      "p50": 27283456.0,
+      "p95": 27283456.0,
+      "samples": 3
+    },
+    "vmrss_bytes": {
+      "max": 27234304.0,
+      "p50": 27234304.0,
+      "p95": 27234304.0,
+      "samples": 3
+    }
+  },
+  "repeat-2--p1024-c50-p1--redis--set": {
+    "cgroup_memory_current_bytes": {
+      "max": 20217856.0,
+      "p50": 20217856.0,
+      "p95": 20217856.0,
+      "samples": 3
+    },
+    "cgroup_memory_peak_bytes": {
+      "max": 20217856.0,
+      "p50": 20217856.0,
+      "p95": 20217856.0,
+      "samples": 3
+    },
+    "container_cpu_percent": {
+      "max": 7.1203,
+      "p50": 5.4615,
+      "p95": 6.95442,
+      "samples": 3
+    },
+    "vmhwm_bytes": {
+      "max": 27283456.0,
+      "p50": 27283456.0,
+      "p95": 27283456.0,
+      "samples": 3
+    },
+    "vmrss_bytes": {
+      "max": 27275264.0,
+      "p50": 27201536.0,
+      "p95": 27267891.2,
+      "samples": 3
+    }
+  },
+  "repeat-2--p1024-c50-p10--hazelcast--get": {
+    "cgroup_memory_current_bytes": {
+      "max": 377999360.0,
+      "p50": 377774080.0,
+      "p95": 377973145.6,
+      "samples": 5
+    },
+    "cgroup_memory_peak_bytes": {
+      "max": 388710400.0,
+      "p50": 388710400.0,
+      "p95": 388710400.0,
+      "samples": 5
+    },
+    "container_cpu_percent": {
+      "max": 1.0608,
+      "p50": 1.0266,
+      "p95": 1.05534,
+      "samples": 5
+    },
+    "vmhwm_bytes": {
+      "max": 407392256.0,
+      "p50": 407392256.0,
+      "p95": 407392256.0,
+      "samples": 5
+    },
+    "vmrss_bytes": {
+      "max": 396558336.0,
+      "p50": 396558336.0,
+      "p95": 396558336.0,
+      "samples": 5
+    }
+  },
+  "repeat-2--p1024-c50-p10--hazelcast--set": {
+    "cgroup_memory_current_bytes": {
+      "max": 377761792.0,
+      "p50": 377503744.0,
+      "p95": 377747046.4,
+      "samples": 5
+    },
+    "cgroup_memory_peak_bytes": {
+      "max": 388710400.0,
+      "p50": 388710400.0,
+      "p95": 388710400.0,
+      "samples": 5
+    },
+    "container_cpu_percent": {
+      "max": 1.3916,
+      "p50": 1.2879,
+      "p95": 1.3877,
+      "samples": 5
+    },
+    "vmhwm_bytes": {
+      "max": 407392256.0,
+      "p50": 407392256.0,
+      "p95": 407392256.0,
+      "samples": 5
+    },
+    "vmrss_bytes": {
+      "max": 396525568.0,
+      "p50": 396517376.0,
+      "p95": 396525568.0,
+      "samples": 5
+    }
+  },
+  "repeat-2--p1024-c50-p10--hydra--get": {
+    "cgroup_memory_current_bytes": {
+      "max": 384069632.0,
+      "p50": 383852544.0,
+      "p95": 384047923.2,
+      "samples": 3
+    },
+    "cgroup_memory_peak_bytes": {
+      "max": 407023616.0,
+      "p50": 407023616.0,
+      "p95": 407023616.0,
+      "samples": 3
+    },
+    "vmhwm_bytes": {
+      "max": 370171904.0,
+      "p50": 370171904.0,
+      "p95": 370171904.0,
+      "samples": 3
+    },
+    "vmrss_bytes": {
+      "max": 370171904.0,
+      "p50": 370171904.0,
+      "p95": 370171904.0,
+      "samples": 3
+    }
+  },
+  "repeat-2--p1024-c50-p10--hydra--set": {
+    "cgroup_memory_current_bytes": {
+      "max": 382693376.0,
+      "p50": 371195904.0,
+      "p95": 381543628.8,
+      "samples": 3
+    },
+    "cgroup_memory_peak_bytes": {
+      "max": 382697472.0,
+      "p50": 379523072.0,
+      "p95": 382380032.0,
+      "samples": 3
+    },
+    "vmhwm_bytes": {
+      "max": 368394240.0,
+      "p50": 356962304.0,
+      "p95": 367251046.4,
+      "samples": 3
+    },
+    "vmrss_bytes": {
+      "max": 368394240.0,
+      "p50": 356962304.0,
+      "p95": 367251046.4,
+      "samples": 3
+    }
+  },
+  "repeat-2--p1024-c50-p10--redis--get": {
+    "cgroup_memory_current_bytes": {
+      "max": 19046400.0,
+      "p50": 19046400.0,
+      "p95": 19046400.0,
+      "samples": 1
+    },
+    "cgroup_memory_peak_bytes": {
+      "max": 20623360.0,
+      "p50": 20623360.0,
+      "p95": 20623360.0,
+      "samples": 1
+    },
+    "container_cpu_percent": {
+      "max": 0.0,
+      "p50": 0.0,
+      "p95": 0.0,
+      "samples": 1
+    },
+    "vmhwm_bytes": {
+      "max": 27283456.0,
+      "p50": 27283456.0,
+      "p95": 27283456.0,
+      "samples": 1
+    },
+    "vmrss_bytes": {
+      "max": 25796608.0,
+      "p50": 25796608.0,
+      "p95": 25796608.0,
+      "samples": 1
+    }
+  },
+  "repeat-2--p1024-c50-p10--redis--set": {
+    "cgroup_memory_current_bytes": {
+      "max": 18681856.0,
+      "p50": 18681856.0,
+      "p95": 18681856.0,
+      "samples": 1
+    },
+    "cgroup_memory_peak_bytes": {
+      "max": 20623360.0,
+      "p50": 20623360.0,
+      "p95": 20623360.0,
+      "samples": 1
+    },
+    "container_cpu_percent": {
+      "max": 15.7705,
+      "p50": 15.7705,
+      "p95": 15.7705,
+      "samples": 1
+    },
+    "vmhwm_bytes": {
+      "max": 27283456.0,
+      "p50": 27283456.0,
+      "p95": 27283456.0,
+      "samples": 1
+    },
+    "vmrss_bytes": {
+      "max": 25395200.0,
+      "p50": 25395200.0,
+      "p95": 25395200.0,
+      "samples": 1
+    }
+  },
+  "repeat-2--p256-c1-p1--hazelcast--get": {
+    "cgroup_memory_current_bytes": {
+      "max": 378355712.0,
+      "p50": 377933824.0,
+      "p95": 378188595.2,
+      "samples": 18
+    },
+    "cgroup_memory_peak_bytes": {
+      "max": 388710400.0,
+      "p50": 388710400.0,
+      "p95": 388710400.0,
+      "samples": 18
+    },
+    "container_cpu_percent": {
+      "max": 2.1971,
+      "p50": 1.5796000000000001,
+      "p95": 1.7200799999999992,
+      "samples": 18
+    },
+    "vmhwm_bytes": {
+      "max": 407392256.0,
+      "p50": 407392256.0,
+      "p95": 407392256.0,
+      "samples": 18
+    },
+    "vmrss_bytes": {
+      "max": 396771328.0,
+      "p50": 396533760.0,
+      "p95": 396771328.0,
+      "samples": 18
+    }
+  },
+  "repeat-2--p256-c1-p1--hazelcast--set": {
+    "cgroup_memory_current_bytes": {
+      "max": 378339328.0,
+      "p50": 378142720.0,
+      "p95": 378326220.8,
+      "samples": 17
+    },
+    "cgroup_memory_peak_bytes": {
+      "max": 388710400.0,
+      "p50": 388710400.0,
+      "p95": 388710400.0,
+      "samples": 17
+    },
+    "container_cpu_percent": {
+      "max": 1.7339,
+      "p50": 1.5855,
+      "p95": 1.6698199999999999,
+      "samples": 17
+    },
+    "vmhwm_bytes": {
+      "max": 407392256.0,
+      "p50": 407392256.0,
+      "p95": 407392256.0,
+      "samples": 17
+    },
+    "vmrss_bytes": {
+      "max": 396824576.0,
+      "p50": 396738560.0,
+      "p95": 396824576.0,
+      "samples": 17
+    }
+  },
+  "repeat-2--p256-c1-p1--hydra--get": {
+    "cgroup_memory_current_bytes": {
+      "max": 398376960.0,
+      "p50": 398278656.0,
+      "p95": 398368768.0,
+      "samples": 5
+    },
+    "cgroup_memory_peak_bytes": {
+      "max": 415977472.0,
+      "p50": 415977472.0,
+      "p95": 415977472.0,
+      "samples": 5
+    },
+    "vmhwm_bytes": {
+      "max": 386224128.0,
+      "p50": 386224128.0,
+      "p95": 386224128.0,
+      "samples": 5
+    },
+    "vmrss_bytes": {
+      "max": 386224128.0,
+      "p50": 386224128.0,
+      "p95": 386224128.0,
+      "samples": 5
+    }
+  },
+  "repeat-2--p256-c1-p1--hydra--set": {
+    "cgroup_memory_current_bytes": {
+      "max": 394047488.0,
+      "p50": 387162112.0,
+      "p95": 393202073.6,
+      "samples": 5
+    },
+    "cgroup_memory_peak_bytes": {
+      "max": 407089152.0,
+      "p50": 407089152.0,
+      "p95": 407089152.0,
+      "samples": 5
+    },
+    "vmhwm_bytes": {
+      "max": 382164992.0,
+      "p50": 375169024.0,
+      "p95": 381266329.6,
+      "samples": 5
+    },
+    "vmrss_bytes": {
+      "max": 382164992.0,
+      "p50": 375169024.0,
+      "p95": 381266329.6,
+      "samples": 5
+    }
+  },
+  "repeat-2--p256-c1-p1--redis--get": {
+    "cgroup_memory_current_bytes": {
+      "max": 7544832.0,
+      "p50": 7544832.0,
+      "p95": 7544832.0,
+      "samples": 5
+    },
+    "cgroup_memory_peak_bytes": {
+      "max": 20623360.0,
+      "p50": 20623360.0,
+      "p95": 20623360.0,
+      "samples": 5
+    },
+    "container_cpu_percent": {
+      "max": 3.5173,
+      "p50": 3.1922,
+      "p95": 3.45316,
+      "samples": 5
+    },
+    "vmhwm_bytes": {
+      "max": 27283456.0,
+      "p50": 27283456.0,
+      "p95": 27283456.0,
+      "samples": 5
+    },
+    "vmrss_bytes": {
+      "max": 14696448.0,
+      "p50": 14696448.0,
+      "p95": 14696448.0,
+      "samples": 5
+    }
+  },
+  "repeat-2--p256-c1-p1--redis--set": {
+    "cgroup_memory_current_bytes": {
+      "max": 19587072.0,
+      "p50": 19587072.0,
+      "p95": 19587072.0,
+      "samples": 5
+    },
+    "cgroup_memory_peak_bytes": {
+      "max": 20623360.0,
+      "p50": 20623360.0,
+      "p95": 20623360.0,
+      "samples": 5
+    },
+    "container_cpu_percent": {
+      "max": 3.2241,
+      "p50": 3.1812,
+      "p95": 3.22078,
+      "samples": 5
+    },
+    "vmhwm_bytes": {
+      "max": 27283456.0,
+      "p50": 27283456.0,
+      "p95": 27283456.0,
+      "samples": 5
+    },
+    "vmrss_bytes": {
+      "max": 26722304.0,
+      "p50": 26722304.0,
+      "p95": 26722304.0,
+      "samples": 5
+    }
+  },
+  "repeat-2--p256-c10-p1--hazelcast--get": {
+    "cgroup_memory_current_bytes": {
+      "max": 376610816.0,
+      "p50": 376174592.0,
+      "p95": 376567603.2,
+      "samples": 82
+    },
+    "cgroup_memory_peak_bytes": {
+      "max": 388710400.0,
+      "p50": 388710400.0,
+      "p95": 388710400.0,
+      "samples": 82
+    },
+    "container_cpu_percent": {
+      "max": 0.3855,
+      "p50": 0.1486,
+      "p95": 0.21664000000000003,
+      "samples": 82
+    },
+    "vmhwm_bytes": {
+      "max": 407392256.0,
+      "p50": 407392256.0,
+      "p95": 407392256.0,
+      "samples": 82
+    },
+    "vmrss_bytes": {
+      "max": 395534336.0,
+      "p50": 395370496.0,
+      "p95": 395534336.0,
+      "samples": 82
+    }
+  },
+  "repeat-2--p256-c10-p1--hazelcast--set": {
+    "cgroup_memory_current_bytes": {
+      "max": 377462784.0,
+      "p50": 376832000.0,
+      "p95": 377026560.0,
+      "samples": 56
+    },
+    "cgroup_memory_peak_bytes": {
+      "max": 388710400.0,
+      "p50": 388710400.0,
+      "p95": 388710400.0,
+      "samples": 56
+    },
+    "container_cpu_percent": {
+      "max": 0.7926,
+      "p50": 0.1724,
+      "p95": 0.45375,
+      "samples": 56
+    },
+    "vmhwm_bytes": {
+      "max": 407392256.0,
+      "p50": 407392256.0,
+      "p95": 407392256.0,
+      "samples": 56
+    },
+    "vmrss_bytes": {
+      "max": 395948032.0,
+      "p50": 395931648.0,
+      "p95": 395948032.0,
+      "samples": 56
+    }
+  },
+  "repeat-2--p256-c10-p1--hydra--get": {
+    "cgroup_memory_current_bytes": {
+      "max": 298360832.0,
+      "p50": 298242048.0,
+      "p95": 298345472.0,
+      "samples": 4
+    },
+    "cgroup_memory_peak_bytes": {
+      "max": 316391424.0,
+      "p50": 316391424.0,
+      "p95": 316391424.0,
+      "samples": 4
+    },
+    "vmhwm_bytes": {
+      "max": 286973952.0,
+      "p50": 286973952.0,
+      "p95": 286973952.0,
+      "samples": 4
+    },
+    "vmrss_bytes": {
+      "max": 286973952.0,
+      "p50": 286973952.0,
+      "p95": 286973952.0,
+      "samples": 4
+    }
+  },
+  "repeat-2--p256-c10-p1--hydra--set": {
+    "cgroup_memory_current_bytes": {
+      "max": 294920192.0,
+      "p50": 283920384.0,
+      "p95": 293833932.8,
+      "samples": 4
+    },
+    "cgroup_memory_peak_bytes": {
+      "max": 294952960.0,
+      "p50": 290193408.0,
+      "p95": 294239027.2,
+      "samples": 4
+    },
+    "vmhwm_bytes": {
+      "max": 283934720.0,
+      "p50": 273037312.0,
+      "p95": 282849075.2,
+      "samples": 4
+    },
+    "vmrss_bytes": {
+      "max": 283934720.0,
+      "p50": 273037312.0,
+      "p95": 282849075.2,
+      "samples": 4
+    }
+  },
+  "repeat-2--p256-c10-p1--redis--get": {
+    "cgroup_memory_current_bytes": {
+      "max": 7692288.0,
+      "p50": 7688192.0,
+      "p95": 7691878.4,
+      "samples": 3
+    },
+    "cgroup_memory_peak_bytes": {
+      "max": 20217856.0,
+      "p50": 20217856.0,
+      "p95": 20217856.0,
+      "samples": 3
+    },
+    "container_cpu_percent": {
+      "max": 5.5185,
+      "p50": 5.4733,
+      "p95": 5.51398,
+      "samples": 3
+    },
+    "vmhwm_bytes": {
+      "max": 27283456.0,
+      "p50": 27283456.0,
+      "p95": 27283456.0,
+      "samples": 3
+    },
+    "vmrss_bytes": {
+      "max": 14782464.0,
+      "p50": 14782464.0,
+      "p95": 14782464.0,
+      "samples": 3
+    }
+  },
+  "repeat-2--p256-c10-p1--redis--set": {
+    "cgroup_memory_current_bytes": {
+      "max": 8392704.0,
+      "p50": 8392704.0,
+      "p95": 8392704.0,
+      "samples": 3
+    },
+    "cgroup_memory_peak_bytes": {
+      "max": 20217856.0,
+      "p50": 20217856.0,
+      "p95": 20217856.0,
+      "samples": 3
+    },
+    "container_cpu_percent": {
+      "max": 5.6767,
+      "p50": 5.5615,
+      "p95": 5.66518,
+      "samples": 3
+    },
+    "vmhwm_bytes": {
+      "max": 27283456.0,
+      "p50": 27283456.0,
+      "p95": 27283456.0,
+      "samples": 3
+    },
+    "vmrss_bytes": {
+      "max": 15507456.0,
+      "p50": 15491072.0,
+      "p95": 15505817.6,
+      "samples": 3
+    }
+  },
+  "repeat-2--p256-c10-p10--hazelcast--get": {
+    "cgroup_memory_current_bytes": {
+      "max": 377012224.0,
+      "p50": 376834048.0,
+      "p95": 377007718.4,
+      "samples": 12
+    },
+    "cgroup_memory_peak_bytes": {
+      "max": 388710400.0,
+      "p50": 388710400.0,
+      "p95": 388710400.0,
+      "samples": 12
+    },
+    "container_cpu_percent": {
+      "max": 0.5743,
+      "p50": 0.50135,
+      "p95": 0.563905,
+      "samples": 12
+    },
+    "vmhwm_bytes": {
+      "max": 407392256.0,
+      "p50": 407392256.0,
+      "p95": 407392256.0,
+      "samples": 12
+    },
+    "vmrss_bytes": {
+      "max": 395857920.0,
+      "p50": 395849728.0,
+      "p95": 395857920.0,
+      "samples": 12
+    }
+  },
+  "repeat-2--p256-c10-p10--hazelcast--set": {
+    "cgroup_memory_current_bytes": {
+      "max": 376762368.0,
+      "p50": 376524800.0,
+      "p95": 376719769.6,
+      "samples": 5
+    },
+    "cgroup_memory_peak_bytes": {
+      "max": 388710400.0,
+      "p50": 388710400.0,
+      "p95": 388710400.0,
+      "samples": 5
+    },
+    "container_cpu_percent": {
+      "max": 1.9163,
+      "p50": 1.7143,
+      "p95": 1.8910799999999999,
+      "samples": 5
+    },
+    "vmhwm_bytes": {
+      "max": 407392256.0,
+      "p50": 407392256.0,
+      "p95": 407392256.0,
+      "samples": 5
+    },
+    "vmrss_bytes": {
+      "max": 395567104.0,
+      "p50": 395554816.0,
+      "p95": 395567104.0,
+      "samples": 5
+    }
+  },
+  "repeat-2--p256-c10-p10--hydra--get": {
+    "cgroup_memory_current_bytes": {
+      "max": 323391488.0,
+      "p50": 323190784.0,
+      "p95": 323371417.6,
+      "samples": 3
+    },
+    "cgroup_memory_peak_bytes": {
+      "max": 342118400.0,
+      "p50": 342118400.0,
+      "p95": 342118400.0,
+      "samples": 3
+    },
+    "vmhwm_bytes": {
+      "max": 311771136.0,
+      "p50": 311771136.0,
+      "p95": 311771136.0,
+      "samples": 3
+    },
+    "vmrss_bytes": {
+      "max": 311771136.0,
+      "p50": 311771136.0,
+      "p95": 311771136.0,
+      "samples": 3
+    }
+  },
+  "repeat-2--p256-c10-p10--hydra--set": {
+    "cgroup_memory_current_bytes": {
+      "max": 322002944.0,
+      "p50": 310624256.0,
+      "p95": 320865075.2,
+      "samples": 3
+    },
+    "cgroup_memory_peak_bytes": {
+      "max": 322048000.0,
+      "p50": 317014016.0,
+      "p95": 321544601.6,
+      "samples": 3
+    },
+    "vmhwm_bytes": {
+      "max": 310755328.0,
+      "p50": 299020288.0,
+      "p95": 309581824.0,
+      "samples": 3
+    },
+    "vmrss_bytes": {
+      "max": 310755328.0,
+      "p50": 299020288.0,
+      "p95": 309581824.0,
+      "samples": 3
+    }
+  },
+  "repeat-2--p256-c10-p10--redis--get": {
+    "cgroup_memory_current_bytes": {
+      "max": 7438336.0,
+      "p50": 7438336.0,
+      "p95": 7438336.0,
+      "samples": 1
+    },
+    "cgroup_memory_peak_bytes": {
+      "max": 20217856.0,
+      "p50": 20217856.0,
+      "p95": 20217856.0,
+      "samples": 1
+    },
+    "container_cpu_percent": {
+      "max": 19.37,
+      "p50": 19.37,
+      "p95": 19.37,
+      "samples": 1
+    },
+    "vmhwm_bytes": {
+      "max": 27283456.0,
+      "p50": 27283456.0,
+      "p95": 27283456.0,
+      "samples": 1
+    },
+    "vmrss_bytes": {
+      "max": 14782464.0,
+      "p50": 14782464.0,
+      "p95": 14782464.0,
+      "samples": 1
+    }
+  },
+  "repeat-2--p256-c10-p10--redis--set": {
+    "cgroup_memory_current_bytes": {
+      "max": 7438336.0,
+      "p50": 7438336.0,
+      "p95": 7438336.0,
+      "samples": 1
+    },
+    "cgroup_memory_peak_bytes": {
+      "max": 20217856.0,
+      "p50": 20217856.0,
+      "p95": 20217856.0,
+      "samples": 1
+    },
+    "container_cpu_percent": {
+      "max": 0.0,
+      "p50": 0.0,
+      "p95": 0.0,
+      "samples": 1
+    },
+    "vmhwm_bytes": {
+      "max": 27283456.0,
+      "p50": 27283456.0,
+      "p95": 27283456.0,
+      "samples": 1
+    },
+    "vmrss_bytes": {
+      "max": 14782464.0,
+      "p50": 14782464.0,
+      "p95": 14782464.0,
+      "samples": 1
+    }
+  },
+  "repeat-2--p256-c100-p1--hazelcast--get": {
+    "cgroup_memory_current_bytes": {
+      "max": 377929728.0,
+      "p50": 377868288.0,
+      "p95": 377926860.8,
+      "samples": 8
+    },
+    "cgroup_memory_peak_bytes": {
+      "max": 388710400.0,
+      "p50": 388710400.0,
+      "p95": 388710400.0,
+      "samples": 8
+    },
+    "container_cpu_percent": {
+      "max": 1.1228,
+      "p50": 0.9297,
+      "p95": 1.0792599999999999,
+      "samples": 8
+    },
+    "vmhwm_bytes": {
+      "max": 407392256.0,
+      "p50": 407392256.0,
+      "p95": 407392256.0,
+      "samples": 8
+    },
+    "vmrss_bytes": {
+      "max": 396623872.0,
+      "p50": 396607488.0,
+      "p95": 396622438.4,
+      "samples": 8
+    }
+  },
+  "repeat-2--p256-c100-p1--hazelcast--set": {
+    "cgroup_memory_current_bytes": {
+      "max": 378548224.0,
+      "p50": 377804800.0,
+      "p95": 378404864.0,
+      "samples": 8
+    },
+    "cgroup_memory_peak_bytes": {
+      "max": 388710400.0,
+      "p50": 388710400.0,
+      "p95": 388710400.0,
+      "samples": 8
+    },
+    "container_cpu_percent": {
+      "max": 1.025,
+      "p50": 0.931,
+      "p95": 1.0226199999999999,
+      "samples": 8
+    },
+    "vmhwm_bytes": {
+      "max": 407392256.0,
+      "p50": 407392256.0,
+      "p95": 407392256.0,
+      "samples": 8
+    },
+    "vmrss_bytes": {
+      "max": 396627968.0,
+      "p50": 396584960.0,
+      "p95": 396627968.0,
+      "samples": 8
+    }
+  },
+  "repeat-2--p256-c100-p1--hydra--get": {
+    "cgroup_memory_current_bytes": {
+      "max": 427520000.0,
+      "p50": 426993664.0,
+      "p95": 427441356.8,
+      "samples": 4
+    },
+    "cgroup_memory_peak_bytes": {
+      "max": 450945024.0,
+      "p50": 450945024.0,
+      "p95": 450945024.0,
+      "samples": 4
+    },
+    "vmhwm_bytes": {
+      "max": 413339648.0,
+      "p50": 413339648.0,
+      "p95": 413339648.0,
+      "samples": 4
+    },
+    "vmrss_bytes": {
+      "max": 413339648.0,
+      "p50": 413339648.0,
+      "p95": 413339648.0,
+      "samples": 4
+    }
+  },
+  "repeat-2--p256-c100-p1--hydra--set": {
+    "cgroup_memory_current_bytes": {
+      "max": 424103936.0,
+      "p50": 412966912.0,
+      "p95": 422996172.8,
+      "samples": 4
+    },
+    "cgroup_memory_peak_bytes": {
+      "max": 424103936.0,
+      "p50": 416450560.0,
+      "p95": 423003545.6,
+      "samples": 4
+    },
+    "vmhwm_bytes": {
+      "max": 410230784.0,
+      "p50": 398987264.0,
+      "p95": 409106432.0,
+      "samples": 4
+    },
+    "vmrss_bytes": {
+      "max": 410230784.0,
+      "p50": 398987264.0,
+      "p95": 409106432.0,
+      "samples": 4
+    }
+  },
+  "repeat-2--p256-c100-p1--redis--get": {
+    "cgroup_memory_current_bytes": {
+      "max": 9023488.0,
+      "p50": 9023488.0,
+      "p95": 9023488.0,
+      "samples": 3
+    },
+    "cgroup_memory_peak_bytes": {
+      "max": 20623360.0,
+      "p50": 20623360.0,
+      "p95": 20623360.0,
+      "samples": 3
+    },
+    "container_cpu_percent": {
+      "max": 5.505,
+      "p50": 5.4972,
+      "p95": 5.50422,
+      "samples": 3
+    },
+    "vmhwm_bytes": {
+      "max": 27283456.0,
+      "p50": 27283456.0,
+      "p95": 27283456.0,
+      "samples": 3
+    },
+    "vmrss_bytes": {
+      "max": 15851520.0,
+      "p50": 15843328.0,
+      "p95": 15850700.8,
+      "samples": 3
+    }
+  },
+  "repeat-2--p256-c100-p1--redis--set": {
+    "cgroup_memory_current_bytes": {
+      "max": 8994816.0,
+      "p50": 8994816.0,
+      "p95": 8994816.0,
+      "samples": 3
+    },
+    "cgroup_memory_peak_bytes": {
+      "max": 20623360.0,
+      "p50": 20623360.0,
+      "p95": 20623360.0,
+      "samples": 3
+    },
+    "container_cpu_percent": {
+      "max": 5.5399,
+      "p50": 5.5028,
+      "p95": 5.53619,
+      "samples": 3
+    },
+    "vmhwm_bytes": {
+      "max": 27283456.0,
+      "p50": 27283456.0,
+      "p95": 27283456.0,
+      "samples": 3
+    },
+    "vmrss_bytes": {
+      "max": 15663104.0,
+      "p50": 15593472.0,
+      "p95": 15656140.8,
+      "samples": 3
+    }
+  },
+  "repeat-2--p64-c10-p1--hazelcast--get": {
+    "cgroup_memory_current_bytes": {
+      "max": 375922688.0,
+      "p50": 375201792.0,
+      "p95": 375662592.0,
+      "samples": 86
+    },
+    "cgroup_memory_peak_bytes": {
+      "max": 388710400.0,
+      "p50": 388710400.0,
+      "p95": 388710400.0,
+      "samples": 86
+    },
+    "container_cpu_percent": {
+      "max": 0.3752,
+      "p50": 0.14025,
+      "p95": 0.215175,
+      "samples": 86
+    },
+    "vmhwm_bytes": {
+      "max": 407392256.0,
+      "p50": 407392256.0,
+      "p95": 407392256.0,
+      "samples": 86
+    },
+    "vmrss_bytes": {
+      "max": 394457088.0,
+      "p50": 394424320.0,
+      "p95": 394448896.0,
+      "samples": 86
+    }
+  },
+  "repeat-2--p64-c10-p1--hazelcast--set": {
+    "cgroup_memory_current_bytes": {
+      "max": 376147968.0,
+      "p50": 375406592.0,
+      "p95": 375844864.0,
+      "samples": 61
+    },
+    "cgroup_memory_peak_bytes": {
+      "max": 388710400.0,
+      "p50": 388710400.0,
+      "p95": 388710400.0,
+      "samples": 61
+    },
+    "container_cpu_percent": {
+      "max": 0.8259,
+      "p50": 0.1757,
+      "p95": 0.3874,
+      "samples": 61
+    },
+    "vmhwm_bytes": {
+      "max": 407392256.0,
+      "p50": 407392256.0,
+      "p95": 407392256.0,
+      "samples": 61
+    },
+    "vmrss_bytes": {
+      "max": 394846208.0,
+      "p50": 394518528.0,
+      "p95": 394842112.0,
+      "samples": 61
+    }
+  },
+  "repeat-2--p64-c10-p1--hydra--get": {
+    "cgroup_memory_current_bytes": {
+      "max": 246247424.0,
+      "p50": 246097920.0,
+      "p95": 246234521.6,
+      "samples": 4
+    },
+    "cgroup_memory_peak_bytes": {
+      "max": 264228864.0,
+      "p50": 264228864.0,
+      "p95": 264228864.0,
+      "samples": 4
+    },
+    "vmhwm_bytes": {
+      "max": 235237376.0,
+      "p50": 235237376.0,
+      "p95": 235237376.0,
+      "samples": 4
+    },
+    "vmrss_bytes": {
+      "max": 235237376.0,
+      "p50": 235237376.0,
+      "p95": 235237376.0,
+      "samples": 4
+    }
+  },
+  "repeat-2--p64-c10-p1--hydra--set": {
+    "cgroup_memory_current_bytes": {
+      "max": 243036160.0,
+      "p50": 232552448.0,
+      "p95": 242007654.4,
+      "samples": 4
+    },
+    "cgroup_memory_peak_bytes": {
+      "max": 250306560.0,
+      "p50": 250306560.0,
+      "p95": 250306560.0,
+      "samples": 4
+    },
+    "vmhwm_bytes": {
+      "max": 232296448.0,
+      "p50": 221503488.0,
+      "p95": 231212032.0,
+      "samples": 4
+    },
+    "vmrss_bytes": {
+      "max": 232296448.0,
+      "p50": 221503488.0,
+      "p95": 231212032.0,
+      "samples": 4
+    }
+  },
+  "repeat-2--p64-c10-p1--redis--get": {
+    "cgroup_memory_current_bytes": {
+      "max": 5140480.0,
+      "p50": 5140480.0,
+      "p95": 5140480.0,
+      "samples": 3
+    },
+    "cgroup_memory_peak_bytes": {
+      "max": 20217856.0,
+      "p50": 20217856.0,
+      "p95": 20217856.0,
+      "samples": 3
+    },
+    "container_cpu_percent": {
+      "max": 5.6132,
+      "p50": 5.4648,
+      "p95": 5.59836,
+      "samples": 3
+    },
+    "vmhwm_bytes": {
+      "max": 27283456.0,
+      "p50": 27283456.0,
+      "p95": 27283456.0,
+      "samples": 3
+    },
+    "vmrss_bytes": {
+      "max": 12468224.0,
+      "p50": 12468224.0,
+      "p95": 12468224.0,
+      "samples": 3
+    }
+  },
+  "repeat-2--p64-c10-p1--redis--set": {
+    "cgroup_memory_current_bytes": {
+      "max": 8351744.0,
+      "p50": 8351744.0,
+      "p95": 8351744.0,
+      "samples": 3
+    },
+    "cgroup_memory_peak_bytes": {
+      "max": 20217856.0,
+      "p50": 20217856.0,
+      "p95": 20217856.0,
+      "samples": 3
+    },
+    "container_cpu_percent": {
+      "max": 6.2765,
+      "p50": 5.58,
+      "p95": 6.20685,
+      "samples": 3
+    },
+    "vmhwm_bytes": {
+      "max": 27283456.0,
+      "p50": 27283456.0,
+      "p95": 27283456.0,
+      "samples": 3
+    },
+    "vmrss_bytes": {
+      "max": 15532032.0,
+      "p50": 15532032.0,
+      "p95": 15532032.0,
+      "samples": 3
+    }
+  },
+  "repeat-2--p64-c10-p10--hazelcast--get": {
+    "cgroup_memory_current_bytes": {
+      "max": 377794560.0,
+      "p50": 376674304.0,
+      "p95": 377334988.8,
+      "samples": 12
+    },
+    "cgroup_memory_peak_bytes": {
+      "max": 388710400.0,
+      "p50": 388710400.0,
+      "p95": 388710400.0,
+      "samples": 12
+    },
+    "container_cpu_percent": {
+      "max": 0.7796,
+      "p50": 0.5043,
+      "p95": 0.73879,
+      "samples": 12
+    },
+    "vmhwm_bytes": {
+      "max": 407392256.0,
+      "p50": 407392256.0,
+      "p95": 407392256.0,
+      "samples": 12
+    },
+    "vmrss_bytes": {
+      "max": 396398592.0,
+      "p50": 395415552.0,
+      "p95": 395927756.8,
+      "samples": 12
+    }
+  },
+  "repeat-2--p64-c10-p10--hazelcast--set": {
+    "cgroup_memory_current_bytes": {
+      "max": 376246272.0,
+      "p50": 376000512.0,
+      "p95": 376209408.0,
+      "samples": 5
+    },
+    "cgroup_memory_peak_bytes": {
+      "max": 388710400.0,
+      "p50": 388710400.0,
+      "p95": 388710400.0,
+      "samples": 5
+    },
+    "container_cpu_percent": {
+      "max": 1.8594,
+      "p50": 1.7867,
+      "p95": 1.84562,
+      "samples": 5
+    },
+    "vmhwm_bytes": {
+      "max": 407392256.0,
+      "p50": 407392256.0,
+      "p95": 407392256.0,
+      "samples": 5
+    },
+    "vmrss_bytes": {
+      "max": 395038720.0,
+      "p50": 395030528.0,
+      "p95": 395037900.8,
+      "samples": 5
+    }
+  },
+  "repeat-2--p64-c10-p10--hydra--get": {
+    "cgroup_memory_current_bytes": {
+      "max": 271147008.0,
+      "p50": 271081472.0,
+      "p95": 271140454.4,
+      "samples": 3
+    },
+    "cgroup_memory_peak_bytes": {
+      "max": 290193408.0,
+      "p50": 290193408.0,
+      "p95": 290193408.0,
+      "samples": 3
+    },
+    "vmhwm_bytes": {
+      "max": 260050944.0,
+      "p50": 260050944.0,
+      "p95": 260050944.0,
+      "samples": 3
+    },
+    "vmrss_bytes": {
+      "max": 260050944.0,
+      "p50": 260050944.0,
+      "p95": 260050944.0,
+      "samples": 3
+    }
+  },
+  "repeat-2--p64-c10-p10--hydra--set": {
+    "cgroup_memory_current_bytes": {
+      "max": 270548992.0,
+      "p50": 258633728.0,
+      "p95": 269357465.6,
+      "samples": 3
+    },
+    "cgroup_memory_peak_bytes": {
+      "max": 270548992.0,
+      "p50": 264654848.0,
+      "p95": 269959577.6,
+      "samples": 3
+    },
+    "vmhwm_bytes": {
+      "max": 259465216.0,
+      "p50": 247504896.0,
+      "p95": 258269184.0,
+      "samples": 3
+    },
+    "vmrss_bytes": {
+      "max": 259465216.0,
+      "p50": 247504896.0,
+      "p95": 258269184.0,
+      "samples": 3
+    }
+  },
+  "repeat-2--p64-c10-p10--redis--get": {
+    "cgroup_memory_current_bytes": {
+      "max": 5062656.0,
+      "p50": 5062656.0,
+      "p95": 5062656.0,
+      "samples": 1
+    },
+    "cgroup_memory_peak_bytes": {
+      "max": 20217856.0,
+      "p50": 20217856.0,
+      "p95": 20217856.0,
+      "samples": 1
+    },
+    "container_cpu_percent": {
+      "max": 15.2627,
+      "p50": 15.2627,
+      "p95": 15.2627,
+      "samples": 1
+    },
+    "vmhwm_bytes": {
+      "max": 27283456.0,
+      "p50": 27283456.0,
+      "p95": 27283456.0,
+      "samples": 1
+    },
+    "vmrss_bytes": {
+      "max": 12406784.0,
+      "p50": 12406784.0,
+      "p95": 12406784.0,
+      "samples": 1
+    }
+  },
+  "repeat-2--p64-c10-p10--redis--set": {
+    "cgroup_memory_current_bytes": {
+      "max": 5292032.0,
+      "p50": 5292032.0,
+      "p95": 5292032.0,
+      "samples": 1
+    },
+    "cgroup_memory_peak_bytes": {
+      "max": 20217856.0,
+      "p50": 20217856.0,
+      "p95": 20217856.0,
+      "samples": 1
+    },
+    "container_cpu_percent": {
+      "max": 0.0,
+      "p50": 0.0,
+      "p95": 0.0,
+      "samples": 1
+    },
+    "vmhwm_bytes": {
+      "max": 27283456.0,
+      "p50": 27283456.0,
+      "p95": 27283456.0,
+      "samples": 1
+    },
+    "vmrss_bytes": {
+      "max": 12406784.0,
+      "p50": 12406784.0,
+      "p95": 12406784.0,
+      "samples": 1
+    }
+  },
+  "repeat-3--p1024-c50-p1--hazelcast--get": {
+    "cgroup_memory_current_bytes": {
+      "max": 379219968.0,
+      "p50": 378935296.0,
+      "p95": 379186790.4,
+      "samples": 10
+    },
+    "cgroup_memory_peak_bytes": {
+      "max": 388710400.0,
+      "p50": 388710400.0,
+      "p95": 388710400.0,
+      "samples": 10
+    },
+    "container_cpu_percent": {
+      "max": 1.1011,
+      "p50": 0.79095,
+      "p95": 1.058485,
+      "samples": 10
+    },
+    "vmhwm_bytes": {
+      "max": 407392256.0,
+      "p50": 407392256.0,
+      "p95": 407392256.0,
+      "samples": 10
+    },
+    "vmrss_bytes": {
+      "max": 397881344.0,
+      "p50": 397873152.0,
+      "p95": 397881344.0,
+      "samples": 10
+    }
+  },
+  "repeat-3--p1024-c50-p1--hazelcast--set": {
+    "cgroup_memory_current_bytes": {
+      "max": 379056128.0,
+      "p50": 378877952.0,
+      "p95": 379035852.8,
+      "samples": 10
+    },
+    "cgroup_memory_peak_bytes": {
+      "max": 388710400.0,
+      "p50": 388710400.0,
+      "p95": 388710400.0,
+      "samples": 10
+    },
+    "container_cpu_percent": {
+      "max": 1.0011,
+      "p50": 0.84175,
+      "p95": 0.9885,
+      "samples": 10
+    },
+    "vmhwm_bytes": {
+      "max": 407392256.0,
+      "p50": 407392256.0,
+      "p95": 407392256.0,
+      "samples": 10
+    },
+    "vmrss_bytes": {
+      "max": 397467648.0,
+      "p50": 397463552.0,
+      "p95": 397467648.0,
+      "samples": 10
+    }
+  },
+  "repeat-3--p1024-c50-p1--hydra--get": {
+    "cgroup_memory_current_bytes": {
+      "max": 558751744.0,
+      "p50": 558608384.0,
+      "p95": 558739456.0,
+      "samples": 4
+    },
+    "cgroup_memory_peak_bytes": {
+      "max": 579739648.0,
+      "p50": 579739648.0,
+      "p95": 579739648.0,
+      "samples": 4
+    },
+    "vmhwm_bytes": {
+      "max": 544296960.0,
+      "p50": 544296960.0,
+      "p95": 544296960.0,
+      "samples": 4
+    },
+    "vmrss_bytes": {
+      "max": 544296960.0,
+      "p50": 544296960.0,
+      "p95": 544296960.0,
+      "samples": 4
+    }
+  },
+  "repeat-3--p1024-c50-p1--hydra--set": {
+    "cgroup_memory_current_bytes": {
+      "max": 555425792.0,
+      "p50": 544178176.0,
+      "p95": 554317414.4,
+      "samples": 4
+    },
+    "cgroup_memory_peak_bytes": {
+      "max": 555425792.0,
+      "p50": 545642496.0,
+      "p95": 554317414.4,
+      "samples": 4
+    },
+    "vmhwm_bytes": {
+      "max": 540999680.0,
+      "p50": 529856512.0,
+      "p95": 539904819.2,
+      "samples": 4
+    },
+    "vmrss_bytes": {
+      "max": 540999680.0,
+      "p50": 529856512.0,
+      "p95": 539904819.2,
+      "samples": 4
+    }
+  },
+  "repeat-3--p1024-c50-p1--redis--get": {
+    "cgroup_memory_current_bytes": {
+      "max": 18714624.0,
+      "p50": 18714624.0,
+      "p95": 18714624.0,
+      "samples": 3
+    },
+    "cgroup_memory_peak_bytes": {
+      "max": 20623360.0,
+      "p50": 20623360.0,
+      "p95": 20623360.0,
+      "samples": 3
+    },
+    "container_cpu_percent": {
+      "max": 5.4243,
+      "p50": 5.4127,
+      "p95": 5.42314,
+      "samples": 3
+    },
+    "vmhwm_bytes": {
+      "max": 27283456.0,
+      "p50": 27283456.0,
+      "p95": 27283456.0,
+      "samples": 3
+    },
+    "vmrss_bytes": {
+      "max": 25346048.0,
+      "p50": 25346048.0,
+      "p95": 25346048.0,
+      "samples": 3
+    }
+  },
+  "repeat-3--p1024-c50-p1--redis--set": {
+    "cgroup_memory_current_bytes": {
+      "max": 20377600.0,
+      "p50": 20377600.0,
+      "p95": 20377600.0,
+      "samples": 3
+    },
+    "cgroup_memory_peak_bytes": {
+      "max": 20623360.0,
+      "p50": 20623360.0,
+      "p95": 20623360.0,
+      "samples": 3
+    },
+    "container_cpu_percent": {
+      "max": 5.5609,
+      "p50": 5.4797,
+      "p95": 5.55278,
+      "samples": 3
+    },
+    "vmhwm_bytes": {
+      "max": 27369472.0,
+      "p50": 27344896.0,
+      "p95": 27367014.4,
+      "samples": 3
+    },
+    "vmrss_bytes": {
+      "max": 27369472.0,
+      "p50": 27344896.0,
+      "p95": 27367014.4,
+      "samples": 3
+    }
+  },
+  "repeat-3--p1024-c50-p10--hazelcast--get": {
+    "cgroup_memory_current_bytes": {
+      "max": 379310080.0,
+      "p50": 379117568.0,
+      "p95": 379277312.0,
+      "samples": 5
+    },
+    "cgroup_memory_peak_bytes": {
+      "max": 388710400.0,
+      "p50": 388710400.0,
+      "p95": 388710400.0,
+      "samples": 5
+    },
+    "container_cpu_percent": {
+      "max": 1.0562,
+      "p50": 0.9086,
+      "p95": 1.04284,
+      "samples": 5
+    },
+    "vmhwm_bytes": {
+      "max": 407392256.0,
+      "p50": 407392256.0,
+      "p95": 407392256.0,
+      "samples": 5
+    },
+    "vmrss_bytes": {
+      "max": 398012416.0,
+      "p50": 397926400.0,
+      "p95": 397995212.8,
+      "samples": 5
+    }
+  },
+  "repeat-3--p1024-c50-p10--hazelcast--set": {
+    "cgroup_memory_current_bytes": {
+      "max": 379195392.0,
+      "p50": 379076608.0,
+      "p95": 379180646.4,
+      "samples": 5
+    },
+    "cgroup_memory_peak_bytes": {
+      "max": 388710400.0,
+      "p50": 388710400.0,
+      "p95": 388710400.0,
+      "samples": 5
+    },
+    "container_cpu_percent": {
+      "max": 1.3701,
+      "p50": 1.2651,
+      "p95": 1.36444,
+      "samples": 5
+    },
+    "vmhwm_bytes": {
+      "max": 407392256.0,
+      "p50": 407392256.0,
+      "p95": 407392256.0,
+      "samples": 5
+    },
+    "vmrss_bytes": {
+      "max": 397996032.0,
+      "p50": 397914112.0,
+      "p95": 397979648.0,
+      "samples": 5
+    }
+  },
+  "repeat-3--p1024-c50-p10--hydra--get": {
+    "cgroup_memory_current_bytes": {
+      "max": 584499200.0,
+      "p50": 584335360.0,
+      "p95": 584482816.0,
+      "samples": 3
+    },
+    "cgroup_memory_peak_bytes": {
+      "max": 607473664.0,
+      "p50": 607473664.0,
+      "p95": 607473664.0,
+      "samples": 3
+    },
+    "vmhwm_bytes": {
+      "max": 569094144.0,
+      "p50": 569094144.0,
+      "p95": 569094144.0,
+      "samples": 3
+    },
+    "vmrss_bytes": {
+      "max": 569094144.0,
+      "p50": 569094144.0,
+      "p95": 569094144.0,
+      "samples": 3
+    }
+  },
+  "repeat-3--p1024-c50-p10--hydra--set": {
+    "cgroup_memory_current_bytes": {
+      "max": 583512064.0,
+      "p50": 572112896.0,
+      "p95": 582372147.2,
+      "samples": 3
+    },
+    "cgroup_memory_peak_bytes": {
+      "max": 583516160.0,
+      "p50": 579985408.0,
+      "p95": 583163084.8,
+      "samples": 3
+    },
+    "vmhwm_bytes": {
+      "max": 567271424.0,
+      "p50": 555843584.0,
+      "p95": 566128640.0,
+      "samples": 3
+    },
+    "vmrss_bytes": {
+      "max": 567271424.0,
+      "p50": 555843584.0,
+      "p95": 566128640.0,
+      "samples": 3
+    }
+  },
+  "repeat-3--p1024-c50-p10--redis--get": {
+    "cgroup_memory_current_bytes": {
+      "max": 18649088.0,
+      "p50": 18649088.0,
+      "p95": 18649088.0,
+      "samples": 1
+    },
+    "cgroup_memory_peak_bytes": {
+      "max": 20623360.0,
+      "p50": 20623360.0,
+      "p95": 20623360.0,
+      "samples": 1
+    },
+    "container_cpu_percent": {
+      "max": 0.0,
+      "p50": 0.0,
+      "p95": 0.0,
+      "samples": 1
+    },
+    "vmhwm_bytes": {
+      "max": 27283456.0,
+      "p50": 27283456.0,
+      "p95": 27283456.0,
+      "samples": 1
+    },
+    "vmrss_bytes": {
+      "max": 25620480.0,
+      "p50": 25620480.0,
+      "p95": 25620480.0,
+      "samples": 1
+    }
+  },
+  "repeat-3--p1024-c50-p10--redis--set": {
+    "cgroup_memory_current_bytes": {
+      "max": 18378752.0,
+      "p50": 18378752.0,
+      "p95": 18378752.0,
+      "samples": 1
+    },
+    "cgroup_memory_peak_bytes": {
+      "max": 20623360.0,
+      "p50": 20623360.0,
+      "p95": 20623360.0,
+      "samples": 1
+    },
+    "container_cpu_percent": {
+      "max": 0.0,
+      "p50": 0.0,
+      "p95": 0.0,
+      "samples": 1
+    },
+    "vmhwm_bytes": {
+      "max": 27283456.0,
+      "p50": 27283456.0,
+      "p95": 27283456.0,
+      "samples": 1
+    },
+    "vmrss_bytes": {
+      "max": 25227264.0,
+      "p50": 25227264.0,
+      "p95": 25227264.0,
+      "samples": 1
+    }
+  },
+  "repeat-3--p256-c1-p1--hazelcast--get": {
+    "cgroup_memory_current_bytes": {
+      "max": 379334656.0,
+      "p50": 379000832.0,
+      "p95": 379160576.0,
+      "samples": 18
+    },
+    "cgroup_memory_peak_bytes": {
+      "max": 388710400.0,
+      "p50": 388710400.0,
+      "p95": 388710400.0,
+      "samples": 18
+    },
+    "container_cpu_percent": {
+      "max": 1.7374,
+      "p50": 1.46865,
+      "p95": 1.5425799999999996,
+      "samples": 18
+    },
+    "vmhwm_bytes": {
+      "max": 407392256.0,
+      "p50": 407392256.0,
+      "p95": 407392256.0,
+      "samples": 18
+    },
+    "vmrss_bytes": {
+      "max": 397869056.0,
+      "p50": 397615104.0,
+      "p95": 397869056.0,
+      "samples": 18
+    }
+  },
+  "repeat-3--p256-c1-p1--hazelcast--set": {
+    "cgroup_memory_current_bytes": {
+      "max": 379637760.0,
+      "p50": 379322368.0,
+      "p95": 379604992.0,
+      "samples": 17
+    },
+    "cgroup_memory_peak_bytes": {
+      "max": 388710400.0,
+      "p50": 388710400.0,
+      "p95": 388710400.0,
+      "samples": 17
+    },
+    "container_cpu_percent": {
+      "max": 1.6514,
+      "p50": 1.5547,
+      "p95": 1.62556,
+      "samples": 17
+    },
+    "vmhwm_bytes": {
+      "max": 407392256.0,
+      "p50": 407392256.0,
+      "p95": 407392256.0,
+      "samples": 17
+    },
+    "vmrss_bytes": {
+      "max": 398016512.0,
+      "p50": 397942784.0,
+      "p95": 398016512.0,
+      "samples": 17
+    }
+  },
+  "repeat-3--p256-c1-p1--hydra--get": {
+    "cgroup_memory_current_bytes": {
+      "max": 599171072.0,
+      "p50": 599097344.0,
+      "p95": 599164518.4,
+      "samples": 5
+    },
+    "cgroup_memory_peak_bytes": {
+      "max": 616787968.0,
+      "p50": 616787968.0,
+      "p95": 616787968.0,
+      "samples": 5
+    },
+    "vmhwm_bytes": {
+      "max": 585084928.0,
+      "p50": 585084928.0,
+      "p95": 585084928.0,
+      "samples": 5
+    },
+    "vmrss_bytes": {
+      "max": 585084928.0,
+      "p50": 585084928.0,
+      "p95": 585084928.0,
+      "samples": 5
+    }
+  },
+  "repeat-3--p256-c1-p1--hydra--set": {
+    "cgroup_memory_current_bytes": {
+      "max": 594743296.0,
+      "p50": 587763712.0,
+      "p95": 593885593.6,
+      "samples": 5
+    },
+    "cgroup_memory_peak_bytes": {
+      "max": 607830016.0,
+      "p50": 607830016.0,
+      "p95": 607830016.0,
+      "samples": 5
+    },
+    "vmhwm_bytes": {
+      "max": 581017600.0,
+      "p50": 574038016.0,
+      "p95": 580122214.4,
+      "samples": 5
+    },
+    "vmrss_bytes": {
+      "max": 581017600.0,
+      "p50": 574038016.0,
+      "p95": 580122214.4,
+      "samples": 5
+    }
+  },
+  "repeat-3--p256-c1-p1--redis--get": {
+    "cgroup_memory_current_bytes": {
+      "max": 7544832.0,
+      "p50": 7544832.0,
+      "p95": 7544832.0,
+      "samples": 5
+    },
+    "cgroup_memory_peak_bytes": {
+      "max": 20623360.0,
+      "p50": 20623360.0,
+      "p95": 20623360.0,
+      "samples": 5
+    },
+    "container_cpu_percent": {
+      "max": 3.7022,
+      "p50": 3.1896,
+      "p95": 3.60168,
+      "samples": 5
+    },
+    "vmhwm_bytes": {
+      "max": 27283456.0,
+      "p50": 27283456.0,
+      "p95": 27283456.0,
+      "samples": 5
+    },
+    "vmrss_bytes": {
+      "max": 14680064.0,
+      "p50": 14680064.0,
+      "p95": 14680064.0,
+      "samples": 5
+    }
+  },
+  "repeat-3--p256-c1-p1--redis--set": {
+    "cgroup_memory_current_bytes": {
+      "max": 19468288.0,
+      "p50": 19468288.0,
+      "p95": 19468288.0,
+      "samples": 5
+    },
+    "cgroup_memory_peak_bytes": {
+      "max": 20623360.0,
+      "p50": 20623360.0,
+      "p95": 20623360.0,
+      "samples": 5
+    },
+    "container_cpu_percent": {
+      "max": 3.2534,
+      "p50": 3.1401,
+      "p95": 3.2347200000000003,
+      "samples": 5
+    },
+    "vmhwm_bytes": {
+      "max": 27283456.0,
+      "p50": 27283456.0,
+      "p95": 27283456.0,
+      "samples": 5
+    },
+    "vmrss_bytes": {
+      "max": 26763264.0,
+      "p50": 26603520.0,
+      "p95": 26731315.2,
+      "samples": 5
+    }
+  },
+  "repeat-3--p256-c10-p1--hazelcast--get": {
+    "cgroup_memory_current_bytes": {
+      "max": 378089472.0,
+      "p50": 377554944.0,
+      "p95": 377941606.4,
+      "samples": 78
+    },
+    "cgroup_memory_peak_bytes": {
+      "max": 388710400.0,
+      "p50": 388710400.0,
+      "p95": 388710400.0,
+      "samples": 78
+    },
+    "container_cpu_percent": {
+      "max": 0.4914,
+      "p50": 0.15905,
+      "p95": 0.3023749999999999,
+      "samples": 78
+    },
+    "vmhwm_bytes": {
+      "max": 407392256.0,
+      "p50": 407392256.0,
+      "p95": 407392256.0,
+      "samples": 78
+    },
+    "vmrss_bytes": {
+      "max": 396840960.0,
+      "p50": 396619776.0,
+      "p95": 396840960.0,
+      "samples": 78
+    }
+  },
+  "repeat-3--p256-c10-p1--hazelcast--set": {
+    "cgroup_memory_current_bytes": {
+      "max": 378359808.0,
+      "p50": 377581568.0,
+      "p95": 378171392.0,
+      "samples": 69
+    },
+    "cgroup_memory_peak_bytes": {
+      "max": 388710400.0,
+      "p50": 388710400.0,
+      "p95": 388710400.0,
+      "samples": 69
+    },
+    "container_cpu_percent": {
+      "max": 0.5448,
+      "p50": 0.1404,
+      "p95": 0.44053999999999965,
+      "samples": 69
+    },
+    "vmhwm_bytes": {
+      "max": 407392256.0,
+      "p50": 407392256.0,
+      "p95": 407392256.0,
+      "samples": 69
+    },
+    "vmrss_bytes": {
+      "max": 397029376.0,
+      "p50": 396664832.0,
+      "p95": 397029376.0,
+      "samples": 69
+    }
+  },
+  "repeat-3--p256-c10-p1--hydra--get": {
+    "cgroup_memory_current_bytes": {
+      "max": 499007488.0,
+      "p50": 498944000.0,
+      "p95": 499001958.4,
+      "samples": 4
+    },
+    "cgroup_memory_peak_bytes": {
+      "max": 517136384.0,
+      "p50": 517136384.0,
+      "p95": 517136384.0,
+      "samples": 4
+    },
+    "vmhwm_bytes": {
+      "max": 485855232.0,
+      "p50": 485855232.0,
+      "p95": 485855232.0,
+      "samples": 4
+    },
+    "vmrss_bytes": {
+      "max": 485855232.0,
+      "p50": 485855232.0,
+      "p95": 485855232.0,
+      "samples": 4
+    }
+  },
+  "repeat-3--p256-c10-p1--hydra--set": {
+    "cgroup_memory_current_bytes": {
+      "max": 495902720.0,
+      "p50": 485025792.0,
+      "p95": 494809088.0,
+      "samples": 4
+    },
+    "cgroup_memory_peak_bytes": {
+      "max": 495902720.0,
+      "p50": 490774528.0,
+      "p95": 495133491.2,
+      "samples": 4
+    },
+    "vmhwm_bytes": {
+      "max": 482795520.0,
+      "p50": 471894016.0,
+      "p95": 481709875.2,
+      "samples": 4
+    },
+    "vmrss_bytes": {
+      "max": 482795520.0,
+      "p50": 471894016.0,
+      "p95": 481709875.2,
+      "samples": 4
+    }
+  },
+  "repeat-3--p256-c10-p1--redis--get": {
+    "cgroup_memory_current_bytes": {
+      "max": 7442432.0,
+      "p50": 7442432.0,
+      "p95": 7442432.0,
+      "samples": 3
+    },
+    "cgroup_memory_peak_bytes": {
+      "max": 20623360.0,
+      "p50": 20623360.0,
+      "p95": 20623360.0,
+      "samples": 3
+    },
+    "container_cpu_percent": {
+      "max": 5.9064,
+      "p50": 5.5313,
+      "p95": 5.8688899999999995,
+      "samples": 3
+    },
+    "vmhwm_bytes": {
+      "max": 27283456.0,
+      "p50": 27283456.0,
+      "p95": 27283456.0,
+      "samples": 3
+    },
+    "vmrss_bytes": {
+      "max": 14770176.0,
+      "p50": 14770176.0,
+      "p95": 14770176.0,
+      "samples": 3
+    }
+  },
+  "repeat-3--p256-c10-p1--redis--set": {
+    "cgroup_memory_current_bytes": {
+      "max": 8183808.0,
+      "p50": 8183808.0,
+      "p95": 8183808.0,
+      "samples": 3
+    },
+    "cgroup_memory_peak_bytes": {
+      "max": 20623360.0,
+      "p50": 20623360.0,
+      "p95": 20623360.0,
+      "samples": 3
+    },
+    "container_cpu_percent": {
+      "max": 6.356,
+      "p50": 5.6578,
+      "p95": 6.28618,
+      "samples": 3
+    },
+    "vmhwm_bytes": {
+      "max": 27283456.0,
+      "p50": 27283456.0,
+      "p95": 27283456.0,
+      "samples": 3
+    },
+    "vmrss_bytes": {
+      "max": 15482880.0,
+      "p50": 15482880.0,
+      "p95": 15482880.0,
+      "samples": 3
+    }
+  },
+  "repeat-3--p256-c10-p10--hazelcast--get": {
+    "cgroup_memory_current_bytes": {
+      "max": 378343424.0,
+      "p50": 378060800.0,
+      "p95": 378277888.0,
+      "samples": 11
+    },
+    "cgroup_memory_peak_bytes": {
+      "max": 388710400.0,
+      "p50": 388710400.0,
+      "p95": 388710400.0,
+      "samples": 11
+    },
+    "container_cpu_percent": {
+      "max": 0.9393,
+      "p50": 0.5816,
+      "p95": 0.8773500000000001,
+      "samples": 11
+    },
+    "vmhwm_bytes": {
+      "max": 407392256.0,
+      "p50": 407392256.0,
+      "p95": 407392256.0,
+      "samples": 11
+    },
+    "vmrss_bytes": {
+      "max": 397160448.0,
+      "p50": 397148160.0,
+      "p95": 397154304.0,
+      "samples": 11
+    }
+  },
+  "repeat-3--p256-c10-p10--hazelcast--set": {
+    "cgroup_memory_current_bytes": {
+      "max": 377954304.0,
+      "p50": 377761792.0,
+      "p95": 377920716.8,
+      "samples": 5
+    },
+    "cgroup_memory_peak_bytes": {
+      "max": 388710400.0,
+      "p50": 388710400.0,
+      "p95": 388710400.0,
+      "samples": 5
+    },
+    "container_cpu_percent": {
+      "max": 1.782,
+      "p50": 1.6599,
+      "p95": 1.76796,
+      "samples": 5
+    },
+    "vmhwm_bytes": {
+      "max": 407392256.0,
+      "p50": 407392256.0,
+      "p95": 407392256.0,
+      "samples": 5
+    },
+    "vmrss_bytes": {
+      "max": 396828672.0,
+      "p50": 396828672.0,
+      "p95": 396828672.0,
+      "samples": 5
+    }
+  },
+  "repeat-3--p256-c10-p10--hydra--get": {
+    "cgroup_memory_current_bytes": {
+      "max": 524443648.0,
+      "p50": 524365824.0,
+      "p95": 524435865.6,
+      "samples": 3
+    },
+    "cgroup_memory_peak_bytes": {
+      "max": 542687232.0,
+      "p50": 542687232.0,
+      "p95": 542687232.0,
+      "samples": 3
+    },
+    "vmhwm_bytes": {
+      "max": 510648320.0,
+      "p50": 510648320.0,
+      "p95": 510648320.0,
+      "samples": 3
+    },
+    "vmrss_bytes": {
+      "max": 510648320.0,
+      "p50": 510648320.0,
+      "p95": 510648320.0,
+      "samples": 3
+    }
+  },
+  "repeat-3--p256-c10-p10--hydra--set": {
+    "cgroup_memory_current_bytes": {
+      "max": 522698752.0,
+      "p50": 511012864.0,
+      "p95": 521530163.2,
+      "samples": 3
+    },
+    "cgroup_memory_peak_bytes": {
+      "max": 523001856.0,
+      "p50": 517726208.0,
+      "p95": 522474291.2,
+      "samples": 3
+    },
+    "vmhwm_bytes": {
+      "max": 509546496.0,
+      "p50": 497848320.0,
+      "p95": 508376678.4,
+      "samples": 3
+    },
+    "vmrss_bytes": {
+      "max": 509546496.0,
+      "p50": 497848320.0,
+      "p95": 508376678.4,
+      "samples": 3
+    }
+  },
+  "repeat-3--p256-c10-p10--redis--get": {
+    "cgroup_memory_current_bytes": {
+      "max": 7426048.0,
+      "p50": 7426048.0,
+      "p95": 7426048.0,
+      "samples": 1
+    },
+    "cgroup_memory_peak_bytes": {
+      "max": 20623360.0,
+      "p50": 20623360.0,
+      "p95": 20623360.0,
+      "samples": 1
+    },
+    "container_cpu_percent": {
+      "max": 0.0,
+      "p50": 0.0,
+      "p95": 0.0,
+      "samples": 1
+    },
+    "vmhwm_bytes": {
+      "max": 27283456.0,
+      "p50": 27283456.0,
+      "p95": 27283456.0,
+      "samples": 1
+    },
+    "vmrss_bytes": {
+      "max": 14770176.0,
+      "p50": 14770176.0,
+      "p95": 14770176.0,
+      "samples": 1
+    }
+  },
+  "repeat-3--p256-c10-p10--redis--set": {
+    "cgroup_memory_current_bytes": {
+      "max": 7426048.0,
+      "p50": 7426048.0,
+      "p95": 7426048.0,
+      "samples": 1
+    },
+    "cgroup_memory_peak_bytes": {
+      "max": 20623360.0,
+      "p50": 20623360.0,
+      "p95": 20623360.0,
+      "samples": 1
+    },
+    "container_cpu_percent": {
+      "max": 19.111,
+      "p50": 19.111,
+      "p95": 19.111,
+      "samples": 1
+    },
+    "vmhwm_bytes": {
+      "max": 27283456.0,
+      "p50": 27283456.0,
+      "p95": 27283456.0,
+      "samples": 1
+    },
+    "vmrss_bytes": {
+      "max": 14770176.0,
+      "p50": 14770176.0,
+      "p95": 14770176.0,
+      "samples": 1
+    }
+  },
+  "repeat-3--p256-c100-p1--hazelcast--get": {
+    "cgroup_memory_current_bytes": {
+      "max": 379338752.0,
+      "p50": 378892288.0,
+      "p95": 379264204.8,
+      "samples": 8
+    },
+    "cgroup_memory_peak_bytes": {
+      "max": 388710400.0,
+      "p50": 388710400.0,
+      "p95": 388710400.0,
+      "samples": 8
+    },
+    "container_cpu_percent": {
+      "max": 0.9332,
+      "p50": 0.8675999999999999,
+      "p95": 0.926235,
+      "samples": 8
+    },
+    "vmhwm_bytes": {
+      "max": 407392256.0,
+      "p50": 407392256.0,
+      "p95": 407392256.0,
+      "samples": 8
+    },
+    "vmrss_bytes": {
+      "max": 397639680.0,
+      "p50": 397635584.0,
+      "p95": 397638246.4,
+      "samples": 8
+    }
+  },
+  "repeat-3--p256-c100-p1--hazelcast--set": {
+    "cgroup_memory_current_bytes": {
+      "max": 378949632.0,
+      "p50": 378716160.0,
+      "p95": 378909491.2,
+      "samples": 8
+    },
+    "cgroup_memory_peak_bytes": {
+      "max": 388710400.0,
+      "p50": 388710400.0,
+      "p95": 388710400.0,
+      "samples": 8
+    },
+    "container_cpu_percent": {
+      "max": 1.1316,
+      "p50": 0.9757499999999999,
+      "p95": 1.10724,
+      "samples": 8
+    },
+    "vmhwm_bytes": {
+      "max": 407392256.0,
+      "p50": 407392256.0,
+      "p95": 407392256.0,
+      "samples": 8
+    },
+    "vmrss_bytes": {
+      "max": 397631488.0,
+      "p50": 397627392.0,
+      "p95": 397631488.0,
+      "samples": 8
+    }
+  },
+  "repeat-3--p256-c100-p1--hydra--get": {
+    "cgroup_memory_current_bytes": {
+      "max": 628215808.0,
+      "p50": 628103168.0,
+      "p95": 628209664.0,
+      "samples": 4
+    },
+    "cgroup_memory_peak_bytes": {
+      "max": 651489280.0,
+      "p50": 651489280.0,
+      "p95": 651489280.0,
+      "samples": 4
+    },
+    "vmhwm_bytes": {
+      "max": 612212736.0,
+      "p50": 612212736.0,
+      "p95": 612212736.0,
+      "samples": 4
+    },
+    "vmrss_bytes": {
+      "max": 612212736.0,
+      "p50": 612212736.0,
+      "p95": 612212736.0,
+      "samples": 4
+    }
+  },
+  "repeat-3--p256-c100-p1--hydra--set": {
+    "cgroup_memory_current_bytes": {
+      "max": 624873472.0,
+      "p50": 613791744.0,
+      "p95": 623739289.6,
+      "samples": 4
+    },
+    "cgroup_memory_peak_bytes": {
+      "max": 624914432.0,
+      "p50": 617447424.0,
+      "p95": 623814656.0,
+      "samples": 4
+    },
+    "vmhwm_bytes": {
+      "max": 609161216.0,
+      "p50": 597854208.0,
+      "p95": 608030105.6,
+      "samples": 4
+    },
+    "vmrss_bytes": {
+      "max": 609161216.0,
+      "p50": 597854208.0,
+      "p95": 608030105.6,
+      "samples": 4
+    }
+  },
+  "repeat-3--p256-c100-p1--redis--get": {
+    "cgroup_memory_current_bytes": {
+      "max": 9162752.0,
+      "p50": 9162752.0,
+      "p95": 9162752.0,
+      "samples": 3
+    },
+    "cgroup_memory_peak_bytes": {
+      "max": 20623360.0,
+      "p50": 20623360.0,
+      "p95": 20623360.0,
+      "samples": 3
+    },
+    "container_cpu_percent": {
+      "max": 5.4976,
+      "p50": 5.4761,
+      "p95": 5.49545,
+      "samples": 3
+    },
+    "vmhwm_bytes": {
+      "max": 27283456.0,
+      "p50": 27283456.0,
+      "p95": 27283456.0,
+      "samples": 3
+    },
+    "vmrss_bytes": {
+      "max": 15753216.0,
+      "p50": 15753216.0,
+      "p95": 15753216.0,
+      "samples": 3
+    }
+  },
+  "repeat-3--p256-c100-p1--redis--set": {
+    "cgroup_memory_current_bytes": {
+      "max": 8974336.0,
+      "p50": 8970240.0,
+      "p95": 8973926.4,
+      "samples": 3
+    },
+    "cgroup_memory_peak_bytes": {
+      "max": 20623360.0,
+      "p50": 20623360.0,
+      "p95": 20623360.0,
+      "samples": 3
+    },
+    "container_cpu_percent": {
+      "max": 5.5428,
+      "p50": 5.4725,
+      "p95": 5.535769999999999,
+      "samples": 3
+    },
+    "vmhwm_bytes": {
+      "max": 27283456.0,
+      "p50": 27283456.0,
+      "p95": 27283456.0,
+      "samples": 3
+    },
+    "vmrss_bytes": {
+      "max": 15630336.0,
+      "p50": 15560704.0,
+      "p95": 15623372.8,
+      "samples": 3
+    }
+  },
+  "repeat-3--p64-c10-p1--hazelcast--get": {
+    "cgroup_memory_current_bytes": {
+      "max": 378982400.0,
+      "p50": 377139200.0,
+      "p95": 377544294.4,
+      "samples": 84
+    },
+    "cgroup_memory_peak_bytes": {
+      "max": 388710400.0,
+      "p50": 388710400.0,
+      "p95": 388710400.0,
+      "samples": 84
+    },
+    "container_cpu_percent": {
+      "max": 0.4464,
+      "p50": 0.149,
+      "p95": 0.21237,
+      "samples": 84
+    },
+    "vmhwm_bytes": {
+      "max": 407392256.0,
+      "p50": 407392256.0,
+      "p95": 407392256.0,
+      "samples": 84
+    },
+    "vmrss_bytes": {
+      "max": 396316672.0,
+      "p50": 396234752.0,
+      "p95": 396312576.0,
+      "samples": 84
+    }
+  },
+  "repeat-3--p64-c10-p1--hazelcast--set": {
+    "cgroup_memory_current_bytes": {
+      "max": 379260928.0,
+      "p50": 377507840.0,
+      "p95": 377987891.2,
+      "samples": 65
+    },
+    "cgroup_memory_peak_bytes": {
+      "max": 388710400.0,
+      "p50": 388710400.0,
+      "p95": 388710400.0,
+      "samples": 65
+    },
+    "container_cpu_percent": {
+      "max": 0.7725,
+      "p50": 0.1648,
+      "p95": 0.4697399999999999,
+      "samples": 65
+    },
+    "vmhwm_bytes": {
+      "max": 407392256.0,
+      "p50": 407392256.0,
+      "p95": 407392256.0,
+      "samples": 65
+    },
+    "vmrss_bytes": {
+      "max": 397918208.0,
+      "p50": 396558336.0,
+      "p95": 396906496.0,
+      "samples": 65
+    }
+  },
+  "repeat-3--p64-c10-p1--hydra--get": {
+    "cgroup_memory_current_bytes": {
+      "max": 446836736.0,
+      "p50": 446806016.0,
+      "p95": 446836736.0,
+      "samples": 4
+    },
+    "cgroup_memory_peak_bytes": {
+      "max": 465874944.0,
+      "p50": 465874944.0,
+      "p95": 465874944.0,
+      "samples": 4
+    },
+    "vmhwm_bytes": {
+      "max": 434155520.0,
+      "p50": 434155520.0,
+      "p95": 434155520.0,
+      "samples": 4
+    },
+    "vmrss_bytes": {
+      "max": 434155520.0,
+      "p50": 434155520.0,
+      "p95": 434155520.0,
+      "samples": 4
+    }
+  },
+  "repeat-3--p64-c10-p1--hydra--set": {
+    "cgroup_memory_current_bytes": {
+      "max": 443904000.0,
+      "p50": 432992256.0,
+      "p95": 442810982.4,
+      "samples": 4
+    },
+    "cgroup_memory_peak_bytes": {
+      "max": 451133440.0,
+      "p50": 451133440.0,
+      "p95": 451133440.0,
+      "samples": 4
+    },
+    "vmhwm_bytes": {
+      "max": 431284224.0,
+      "p50": 420452352.0,
+      "p95": 430196121.6,
+      "samples": 4
+    },
+    "vmrss_bytes": {
+      "max": 431284224.0,
+      "p50": 420452352.0,
+      "p95": 430196121.6,
+      "samples": 4
+    }
+  },
+  "repeat-3--p64-c10-p1--redis--get": {
+    "cgroup_memory_current_bytes": {
+      "max": 5283840.0,
+      "p50": 5042176.0,
+      "p95": 5259673.6,
+      "samples": 3
+    },
+    "cgroup_memory_peak_bytes": {
+      "max": 20623360.0,
+      "p50": 20623360.0,
+      "p95": 20623360.0,
+      "samples": 3
+    },
+    "container_cpu_percent": {
+      "max": 5.5832,
+      "p50": 5.5644,
+      "p95": 5.58132,
+      "samples": 3
+    },
+    "vmhwm_bytes": {
+      "max": 27283456.0,
+      "p50": 27283456.0,
+      "p95": 27283456.0,
+      "samples": 3
+    },
+    "vmrss_bytes": {
+      "max": 12374016.0,
+      "p50": 12374016.0,
+      "p95": 12374016.0,
+      "samples": 3
+    }
+  },
+  "repeat-3--p64-c10-p1--redis--set": {
+    "cgroup_memory_current_bytes": {
+      "max": 8245248.0,
+      "p50": 8245248.0,
+      "p95": 8245248.0,
+      "samples": 3
+    },
+    "cgroup_memory_peak_bytes": {
+      "max": 20623360.0,
+      "p50": 20623360.0,
+      "p95": 20623360.0,
+      "samples": 3
+    },
+    "container_cpu_percent": {
+      "max": 7.4053,
+      "p50": 5.6309,
+      "p95": 7.22786,
+      "samples": 3
+    },
+    "vmhwm_bytes": {
+      "max": 27283456.0,
+      "p50": 27283456.0,
+      "p95": 27283456.0,
+      "samples": 3
+    },
+    "vmrss_bytes": {
+      "max": 15532032.0,
+      "p50": 15532032.0,
+      "p95": 15532032.0,
+      "samples": 3
+    }
+  },
+  "repeat-3--p64-c10-p10--hazelcast--get": {
+    "cgroup_memory_current_bytes": {
+      "max": 377843712.0,
+      "p50": 377597952.0,
+      "p95": 377815040.0,
+      "samples": 11
+    },
+    "cgroup_memory_peak_bytes": {
+      "max": 388710400.0,
+      "p50": 388710400.0,
+      "p95": 388710400.0,
+      "samples": 11
+    },
+    "container_cpu_percent": {
+      "max": 0.6002,
+      "p50": 0.5248,
+      "p95": 0.58985,
+      "samples": 11
+    },
+    "vmhwm_bytes": {
+      "max": 407392256.0,
+      "p50": 407392256.0,
+      "p95": 407392256.0,
+      "samples": 11
+    },
+    "vmrss_bytes": {
+      "max": 396697600.0,
+      "p50": 396693504.0,
+      "p95": 396697600.0,
+      "samples": 11
+    }
+  },
+  "repeat-3--p64-c10-p10--hazelcast--set": {
+    "cgroup_memory_current_bytes": {
+      "max": 377622528.0,
+      "p50": 377597952.0,
+      "p95": 377619251.2,
+      "samples": 5
+    },
+    "cgroup_memory_peak_bytes": {
+      "max": 388710400.0,
+      "p50": 388710400.0,
+      "p95": 388710400.0,
+      "samples": 5
+    },
+    "container_cpu_percent": {
+      "max": 1.8106,
+      "p50": 1.7512,
+      "p95": 1.80582,
+      "samples": 5
+    },
+    "vmhwm_bytes": {
+      "max": 407392256.0,
+      "p50": 407392256.0,
+      "p95": 407392256.0,
+      "samples": 5
+    },
+    "vmrss_bytes": {
+      "max": 396410880.0,
+      "p50": 396410880.0,
+      "p95": 396410880.0,
+      "samples": 5
+    }
+  },
+  "repeat-3--p64-c10-p10--hydra--get": {
+    "cgroup_memory_current_bytes": {
+      "max": 472113152.0,
+      "p50": 472002560.0,
+      "p95": 472102092.8,
+      "samples": 3
+    },
+    "cgroup_memory_peak_bytes": {
+      "max": 490504192.0,
+      "p50": 490504192.0,
+      "p95": 490504192.0,
+      "samples": 3
+    },
+    "vmhwm_bytes": {
+      "max": 458924032.0,
+      "p50": 458924032.0,
+      "p95": 458924032.0,
+      "samples": 3
+    },
+    "vmrss_bytes": {
+      "max": 458924032.0,
+      "p50": 458924032.0,
+      "p95": 458924032.0,
+      "samples": 3
+    }
+  },
+  "repeat-3--p64-c10-p10--hydra--set": {
+    "cgroup_memory_current_bytes": {
+      "max": 471359488.0,
+      "p50": 459448320.0,
+      "p95": 470168371.2,
+      "samples": 3
+    },
+    "cgroup_memory_peak_bytes": {
+      "max": 471379968.0,
+      "p50": 465874944.0,
+      "p95": 470829465.6,
+      "samples": 3
+    },
+    "vmhwm_bytes": {
+      "max": 458383360.0,
+      "p50": 446423040.0,
+      "p95": 457187328.0,
+      "samples": 3
+    },
+    "vmrss_bytes": {
+      "max": 458383360.0,
+      "p50": 446423040.0,
+      "p95": 457187328.0,
+      "samples": 3
+    }
+  },
+  "repeat-3--p64-c10-p10--redis--get": {
+    "cgroup_memory_current_bytes": {
+      "max": 5029888.0,
+      "p50": 5029888.0,
+      "p95": 5029888.0,
+      "samples": 1
+    },
+    "cgroup_memory_peak_bytes": {
+      "max": 20623360.0,
+      "p50": 20623360.0,
+      "p95": 20623360.0,
+      "samples": 1
+    },
+    "container_cpu_percent": {
+      "max": 0.0,
+      "p50": 0.0,
+      "p95": 0.0,
+      "samples": 1
+    },
+    "vmhwm_bytes": {
+      "max": 27283456.0,
+      "p50": 27283456.0,
+      "p95": 27283456.0,
+      "samples": 1
+    },
+    "vmrss_bytes": {
+      "max": 12374016.0,
+      "p50": 12374016.0,
+      "p95": 12374016.0,
+      "samples": 1
+    }
+  },
+  "repeat-3--p64-c10-p10--redis--set": {
+    "cgroup_memory_current_bytes": {
+      "max": 5271552.0,
+      "p50": 5271552.0,
+      "p95": 5271552.0,
+      "samples": 1
+    },
+    "cgroup_memory_peak_bytes": {
+      "max": 20623360.0,
+      "p50": 20623360.0,
+      "p95": 20623360.0,
+      "samples": 1
+    },
+    "container_cpu_percent": {
+      "max": 0.0,
+      "p50": 0.0,
+      "p95": 0.0,
+      "samples": 1
+    },
+    "vmhwm_bytes": {
+      "max": 27283456.0,
+      "p50": 27283456.0,
+      "p95": 27283456.0,
+      "samples": 1
+    },
+    "vmrss_bytes": {
+      "max": 12374016.0,
+      "p50": 12374016.0,
+      "p95": 12374016.0,
+      "samples": 1
+    }
+  }
+}

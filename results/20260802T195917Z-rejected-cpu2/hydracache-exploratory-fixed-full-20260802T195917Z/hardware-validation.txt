@@ -1,0 +1,21 @@
+reference evidence tmpfs verified: root=/dev/shm/hydracache-reference-evidence-v1
+reference runtime IRQ guard passed: phase=relative-eight-telemetry-pre measurement=2 irq_files=113 dormant-unmapped-nvme=2
+host=hydracache-perf-v1
+source_commit=5530a28960aba2e21370d1d2d521c642afbc2c49
+source_status=
+kernel=Linux 6.8.0-136-generic x86_64 GNU/Linux
+cpu_model=AMD EPYC 7232P 8-Core Processor
+logical_cpus=4
+measurement_affinity=2
+targets=hydracache,redis,hazelcast-community
+runner_receipt_sha256=97a39b307c063872b5c249eda9cf8341d70e0c293932b75bc67ae596cb0b17ae
+runner_receipt=/var/lib/hydracache-perf/runner-provisioned.json
+telemetry_interval_seconds=1
+redis_benchmark=/usr/bin/redis-benchmark
+redis_benchmark_version=redis-benchmark 7.0.15
+hazelcast_image=hazelcast/hazelcast:5.7.0-slim-jdk21@sha256:d9939853200b70cfd52115a9f1e905ef37cd3d98e1f966ce67c8d5e1c9e21e90
+hazelcast_client=5.5.0
+container_affinity target=redis pid=23382 requested=2 effective=2
+container_affinity target=hazelcast pid=23455 requested=2 effective=2
+reference runtime IRQ delta baseline captured: phase=baseline measurement=2 file=/dev/shm/hydracache-exploratory-fixed-full-20260802T195917Z/irq-baseline.tsv
+irq_guard_mode=preflight-plus-baseline-delta

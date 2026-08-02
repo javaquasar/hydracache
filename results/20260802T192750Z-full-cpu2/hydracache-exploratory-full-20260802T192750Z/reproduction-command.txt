@@ -1,0 +1,10 @@
+branch=detached@117e6b69f44a
+source_commit=117e6b69f44aca38cfa8681492c4630062e22249
+command=scripts/perf/run-relative-eight-cases-telemetry.sh /dev/shm/hydracache-exploratory-full-20260802T192750Z
+targets=hydracache,redis,hazelcast-community
+hazelcast_image=hazelcast/hazelcast:5.7.0-slim-jdk21@sha256:d9939853200b70cfd52115a9f1e905ef37cd3d98e1f966ce67c8d5e1c9e21e90
+hazelcast_client_version=5.5.0
+measurement_affinity=2
+requests_per_case=100000
+repeats=3
+telemetry_interval_seconds=1

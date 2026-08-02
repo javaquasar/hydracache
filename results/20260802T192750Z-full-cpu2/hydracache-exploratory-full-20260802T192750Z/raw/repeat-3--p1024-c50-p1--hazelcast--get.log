@@ -1,0 +1,2 @@
+target=hazelcast case=p1024-c50-p1 operation=get repeat=3
+{"elapsed_seconds": 9.687736066999605, "operation": "get", "requests": 100000, "throughput_ops_per_second": 10322.329108514934}

@@ -1,0 +1,3 @@
+target=redis case=p64-c10-p10 operation=set repeat=2
+ SET: rps=0.0 (overall: -nan) avg_msec=-nan (overall: -nan)                                                           SET: rps=239641.5 (overall: 239641.5) avg_msec=0.284 (overall: 0.284)                                                                      SET: 244498.77 requests per second, p50=0.287 msec
+

@@ -1,0 +1,3 @@
+target=redis case=p1024-c50-p10 operation=get repeat=2
+ GET: rps=0.0 (overall: 0.0) avg_msec=-nan (overall: -nan)                                                          GET: rps=334040.0 (overall: 332709.2) avg_msec=1.330 (overall: 1.330)                                                                      GET: 334448.16 requests per second, p50=1.263 msec
+

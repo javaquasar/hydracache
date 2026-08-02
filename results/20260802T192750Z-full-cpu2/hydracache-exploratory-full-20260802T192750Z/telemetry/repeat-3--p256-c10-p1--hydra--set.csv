@@ -1,0 +1,5 @@
+timestamp_unix,target,pid,container_cpu_percent,process_cpu_ticks,vmrss_bytes,vmhwm_bytes,effective_cpu_affinity,cgroup_memory_current_bytes,cgroup_memory_peak_bytes,cgroup_memory_limit_bytes,jvm_heap_available,jvm_heap_used_bytes,jvm_heap_committed_bytes,jvm_heap_max_bytes
+1785700040.1903374,hydra,13735,,5589,459300864,459300864,2,472268800,490774528,,False,,,
+1785700041.1909158,hydra,13735,,5636,468230144,468230144,2,481439744,490774528,,False,,,
+1785700042.1914835,hydra,13735,,5682,475557888,475557888,2,488611840,490774528,,False,,,
+1785700043.192337,hydra,13735,,5729,482795520,482795520,2,495902720,495902720,,False,,,

@@ -287,6 +287,17 @@ fixed smoke run confirmed `redis` and `hazelcast` both had effective affinity
 
 The subsequent full CPU-2 run correctly rejected itself when `nvme1q3` changed
 from baseline count `0` to `1`. Its workload and telemetry files are retained
-as diagnostic evidence only. A new full run on CPU 4 is being monitored with
-the hardened affinity check; it will be accepted only if its preflight,
-container affinity, and post-run delta guard all pass.
+as diagnostic evidence only. A full CPU-4 run then completed all 144 workloads
+with zero workload errors. Both Redis and Hazelcast container init processes
+reported effective affinity `4`, matching the requested affinity after the
+harness applied an explicit PID-level `taskset`. The CPU-4 preflight and
+post-run baseline/delta guard both passed, so this run is retained as
+`ACCEPTED_EXPLORATORY_GUARDS`.
+
+The accepted CPU-4 artifact contains 144 JSONL and 144 CSV telemetry files,
+raw logs, container metadata, the host receipt, the IRQ baseline, and the
+generated p50/p95/max summary. JVM heap telemetry is marked unavailable (no
+JVM heap command was configured); it is not inferred from RSS. These results
+are reproducibility and telemetry evidence only: they are not qualification,
+bootstrap evidence, an SLO result, or a performance ranking. The exact
+accepted artifact is linked from `results/README.md` in the exploratory branch.
