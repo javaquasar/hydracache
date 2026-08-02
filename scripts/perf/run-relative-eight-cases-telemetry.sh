@@ -64,7 +64,7 @@ run_target() {
   return "$workload_status"
 }
 cases=('p64-c10-p1 64 10 1' 'p64-c10-p10 64 10 10' 'p256-c10-p1 256 10 1' 'p256-c10-p10 256 10 10' 'p1024-c50-p1 1024 50 1' 'p1024-c50-p10 1024 50 10' 'p256-c1-p1 256 1 1' 'p256-c100-p1 256 100 1')
-for repeat in $(seq 1 "$repeats"); do for spec in "${cases[@]}"; do read -r case_id payload clients pipeline <<<"$spec"; for op in set get; do for target in hydra redis hazelcast; do run_target "$target" "$case_id" "$payload" "$clients" "$pipeline" "$op" "$repeat"; done; done; done; done
+for repeat in $(seq 1 "$repeats"); do for spec in "${cases[@]}"; do IFS=' ' read -r case_id payload clients pipeline <<<"$spec"; for op in set get; do for target in hydra redis hazelcast; do run_target "$target" "$case_id" "$payload" "$clients" "$pipeline" "$op" "$repeat"; done; done; done; done
 python3 scripts/perf/summarize-telemetry.py --input "$output_dir/telemetry" --output "$output_dir/telemetry-summary.json"
 scripts/perf/reference-runtime-irq-guard.sh relative-eight-telemetry-post >>"$output_dir/hardware-validation.txt"
 python3 scripts/perf/render-exploratory-report.py --input "$output_dir" --output "$output_dir/report.md" --source-root "$repo_root"
