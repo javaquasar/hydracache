@@ -79,12 +79,67 @@ def read_int(path: Path) -> int | None:
 
 def cgroup_memory(directory: Path | None) -> dict[str, int | None]:
     if directory is None:
-        return {"current_bytes": None, "peak_bytes": None, "limit_bytes": None}
-    return {
+        return {
+            "current_bytes": None,
+            "peak_bytes": None,
+            "limit_bytes": None,
+            "anon_bytes": None,
+            "file_bytes": None,
+            "slab_bytes": None,
+        }
+    values: dict[str, int | None] = {
         "current_bytes": read_int(directory / "memory.current"),
         "peak_bytes": read_int(directory / "memory.peak"),
         "limit_bytes": read_int(directory / "memory.max"),
+        "anon_bytes": None,
+        "file_bytes": None,
+        "slab_bytes": None,
     }
+    try:
+        for line in (directory / "memory.stat").read_text().splitlines():
+            key, value = line.split()[:2]
+            if key in {"anon", "file", "slab"}:
+                values[f"{key}_bytes"] = int(value)
+    except (OSError, ValueError):
+        pass
+    return values
+
+
+def smaps_rollup(pid: int | None) -> dict[str, int | None]:
+    values = {"rss_bytes": None, "pss_anon_bytes": None, "pss_file_bytes": None}
+    if pid is None:
+        return values
+    try:
+        for line in Path(f"/proc/{pid}/smaps_rollup").read_text().splitlines():
+            key, value = line.split(":", 1)
+            amount = int(value.strip().split()[0]) * 1024
+            if key == "Rss":
+                values["rss_bytes"] = amount
+            elif key == "Pss_Anon":
+                values["pss_anon_bytes"] = amount
+            elif key == "Pss_File":
+                values["pss_file_bytes"] = amount
+    except (OSError, ValueError, IndexError):
+        pass
+    return values
+
+
+def process_threads(pid: int | None) -> int | None:
+    if pid is None:
+        return None
+    try:
+        return len(list(Path(f"/proc/{pid}/task").iterdir()))
+    except OSError:
+        return None
+
+
+def process_fd_count(pid: int | None) -> int | None:
+    if pid is None:
+        return None
+    try:
+        return len(list(Path(f"/proc/{pid}/fd").iterdir()))
+    except OSError:
+        return None
 
 
 def cgroup_cpu_usec(directory: Path | None) -> int | None:
@@ -169,7 +224,10 @@ def main() -> int:
         "timestamp_unix", "target", "pid", "container_cpu_percent", "process_cpu_percent",
         "process_cpu_ticks",
         "vmrss_bytes", "vmhwm_bytes", "effective_cpu_affinity", "cgroup_memory_current_bytes",
-        "cgroup_memory_peak_bytes", "cgroup_memory_limit_bytes", "jvm_heap_available",
+        "cgroup_memory_peak_bytes", "cgroup_memory_limit_bytes", "cgroup_memory_anon_bytes",
+        "cgroup_memory_file_bytes", "cgroup_memory_slab_bytes", "smaps_rollup_rss_bytes",
+        "smaps_rollup_pss_anon_bytes", "smaps_rollup_pss_file_bytes", "process_threads",
+        "process_fd_count", "jvm_heap_available",
         "jvm_heap_used_bytes", "jvm_heap_committed_bytes", "jvm_heap_max_bytes",
     ]
     started = time.monotonic()
@@ -207,6 +265,7 @@ def main() -> int:
             if args.container and cpu_delta is not None:
                 cpu_percent = cpu_delta / 1_000_000 / elapsed / effective_cpus(affinity(status)) * 100
             memory = cgroup_memory(group)
+            smaps = smaps_rollup(pid)
             heap = jvm_heap(pid)
             rss = int(status["VmRSS"].split()[0]) * 1024 if "VmRSS" in status else None
             hwm = int(status["VmHWM"].split()[0]) * 1024 if "VmHWM" in status else None
@@ -225,6 +284,14 @@ def main() -> int:
                 "cgroup_memory_current_bytes": memory["current_bytes"],
                 "cgroup_memory_peak_bytes": memory["peak_bytes"],
                 "cgroup_memory_limit_bytes": memory["limit_bytes"],
+                "cgroup_memory_anon_bytes": memory["anon_bytes"],
+                "cgroup_memory_file_bytes": memory["file_bytes"],
+                "cgroup_memory_slab_bytes": memory["slab_bytes"],
+                "smaps_rollup_rss_bytes": smaps["rss_bytes"],
+                "smaps_rollup_pss_anon_bytes": smaps["pss_anon_bytes"],
+                "smaps_rollup_pss_file_bytes": smaps["pss_file_bytes"],
+                "process_threads": process_threads(pid),
+                "process_fd_count": process_fd_count(pid),
                 "jvm_heap_available": heap.get("available", False),
                 "jvm_heap_used_bytes": heap.get("used_bytes"),
                 "jvm_heap_committed_bytes": heap.get("committed_bytes"),

@@ -36,7 +36,10 @@ def main() -> int:
                 "container_cpu_percent", "process_cpu_percent", "process_cpu_ticks",
                 "vmrss_bytes", "vmhwm_bytes",
                 "cgroup_memory_current_bytes", "cgroup_memory_peak_bytes",
-                "jvm_heap_used_bytes", "jvm_heap_committed_bytes", "jvm_heap_max_bytes",
+                "cgroup_memory_anon_bytes", "cgroup_memory_file_bytes", "cgroup_memory_slab_bytes",
+                "smaps_rollup_rss_bytes", "smaps_rollup_pss_anon_bytes", "smaps_rollup_pss_file_bytes",
+                "process_threads", "process_fd_count", "jvm_heap_used_bytes",
+                "jvm_heap_committed_bytes", "jvm_heap_max_bytes",
             ):
                 value = row.get(metric)
                 if isinstance(value, (int, float)):
