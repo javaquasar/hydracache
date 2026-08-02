@@ -6,6 +6,11 @@ Every invocation writes a timestamped output directory containing the command
 configuration, source SHA, host receipt, preflight records, raw workload logs,
 JSONL/CSV telemetry, and a status TSV.
 
+The runner prepares and verifies the reference-evidence tmpfs before starting
+the first scenario and records that preparation receipt. A failed preparation
+stops the suite rather than producing artifacts with an unverified evidence
+root.
+
 ## Experiments
 
 1. **CPU telemetry** — a controlled SET/GET workload verifies the new

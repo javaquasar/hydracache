@@ -153,7 +153,7 @@ run_ttl_eviction() {
   done
   {
     echo 'pressure_start'
-    for i in $(seq 1 2000); do printf 'SET devpressure:key:%s %s\r\n' "$i" "$(printf 'x%.0s' $(seq 1 1024))"; done | redis-cli -h 127.0.0.1 -p 6380 --pipe
+    taskset --cpu-list "$affinity" "$benchmark" -h 127.0.0.1 -p 6380 -n 2000 -c 50 -P 10 -d 1024 -r 2000 -t set -q
     echo "dbsize=$(redis-cli -h 127.0.0.1 -p 6380 DBSIZE)"
     echo 'pressure_end'
   } >>"$out" 2>&1 || true
@@ -252,6 +252,10 @@ run_profile() {
 test -x "$hydra_binary" || { echo "missing executable: $hydra_binary" >&2; exit 2; }
 test -x "$benchmark" || { echo "missing benchmark: $benchmark" >&2; exit 2; }
 test "$(id --user --name)" = github-runner || { echo 'must run as github-runner' >&2; exit 2; }
+scripts/perf/reference-evidence-tmpfs.sh prepare >"$output_root/reference-evidence-prepare.txt" 2>&1 || {
+  echo "reference evidence tmpfs preparation failed" >&2
+  exit 2
+}
 {
   echo "output_root=$output_root"
   echo "measurement_affinity=$affinity"

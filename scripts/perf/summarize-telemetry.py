@@ -33,7 +33,8 @@ def main() -> int:
             row: dict[str, Any] = json.loads(line)
             bucket = path.stem
             for metric in (
-                "container_cpu_percent", "vmrss_bytes", "vmhwm_bytes",
+                "container_cpu_percent", "process_cpu_percent", "process_cpu_ticks",
+                "vmrss_bytes", "vmhwm_bytes",
                 "cgroup_memory_current_bytes", "cgroup_memory_peak_bytes",
                 "jvm_heap_used_bytes", "jvm_heap_committed_bytes", "jvm_heap_max_bytes",
             ):
