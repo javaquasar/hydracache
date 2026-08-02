@@ -52,8 +52,8 @@ if [[ "$phase" == baseline ]]; then
     irq="${affinity_path#/proc/irq/}"
     irq="${irq%%/*}"
     action="$(irq_action "$irq")"
-    [[ "$action" =~ ^nvme[0-9]+q[1-9][0-9]*$ ]] || {
-      echo "runtime IRQ delta guard refused non-NVMe IRQ baseline: phase=$phase irq=$irq action=$action effective_affinity=$affinity" >&2
+    [[ "$action" =~ ^nvme[0-9]+q[1-9][0-9]*$ || "$action" =~ ^ahci\[[^]]+\]$ ]] || {
+      echo "runtime IRQ delta guard refused unknown IRQ baseline: phase=$phase irq=$irq action=$action effective_affinity=$affinity" >&2
       exit 1
     }
     printf '%s\t%s\t%s\t%s\n' "$irq" "$affinity" "$action" "$(irq_count "$irq")" >>"$baseline_file"
