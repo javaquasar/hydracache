@@ -47,7 +47,7 @@ for _ in $(seq 1 100); do printf '*1\r\n$4\r\nping\r\n' | nc -w1 127.0.0.1 6380 
 printf '*1\r\n$4\r\nping\r\n' | nc -w1 127.0.0.1 6380 | grep -q PONG
 hazelcast_ready=false
 for _ in $(seq 1 120); do
-  if "$hazelcast_client_python" -c 'import hazelcast; c=hazelcast.HazelcastClient(cluster_members=["127.0.0.1:5701"]); c.cluster_service.get_members().result(); c.shutdown()'; then hazelcast_ready=true; break; fi
+  if "$hazelcast_client_python" -c 'import hazelcast; c=hazelcast.HazelcastClient(cluster_members=["127.0.0.1:5701"]); c.cluster_service.get_members(); c.shutdown()'; then hazelcast_ready=true; break; fi
   sleep 1
 done
 test "$hazelcast_ready" = true
