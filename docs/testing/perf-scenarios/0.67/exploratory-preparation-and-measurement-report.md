@@ -198,6 +198,9 @@ Recorded fields include:
 - Unix timestamp, target, PID, and host CPU count;
 - container CPU percentage (computed from cgroup CPU usage deltas and the
   effective cpuset);
+- process CPU percentage (computed from `/proc/<pid>/stat` ticks and the
+  effective affinity); this remains available for host HydraCache as well as
+  for containerized targets;
 - process CPU time in kernel/user ticks;
 - `/proc/<pid>/status` `VmRSS` and `VmHWM` in bytes;
 - cgroup v2 `memory.current`, `memory.peak`, and `memory.max`;

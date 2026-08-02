@@ -166,7 +166,8 @@ def main() -> int:
     )
 
     fields = [
-        "timestamp_unix", "target", "pid", "container_cpu_percent", "process_cpu_ticks",
+        "timestamp_unix", "target", "pid", "container_cpu_percent", "process_cpu_percent",
+        "process_cpu_ticks",
         "vmrss_bytes", "vmhwm_bytes", "effective_cpu_affinity", "cgroup_memory_current_bytes",
         "cgroup_memory_peak_bytes", "cgroup_memory_limit_bytes", "jvm_heap_available",
         "jvm_heap_used_bytes", "jvm_heap_committed_bytes", "jvm_heap_max_bytes",
@@ -174,7 +175,9 @@ def main() -> int:
     started = time.monotonic()
     previous_group = cgroup_dir(pid) if pid else None
     previous_cpu = cgroup_cpu_usec(previous_group)
+    previous_process_ticks = proc_cpu_ticks(pid) if pid else None
     previous_time = time.monotonic()
+    clock_ticks = float(os.sysconf("SC_CLK_TCK"))
     with args.output.open("w", encoding="utf-8") as json_file, args.output.with_suffix(".csv").open(
         "w", newline="", encoding="utf-8"
     ) as csv_file:
@@ -186,8 +189,20 @@ def main() -> int:
             current_cpu = cgroup_cpu_usec(group)
             elapsed = max(time.monotonic() - previous_time, 1e-6)
             cpu_delta = None if current_cpu is None or previous_cpu is None else current_cpu - previous_cpu
-            # This is a container metric. For host Hydra, leave it unavailable
-            # rather than exposing an unrelated cgroup aggregate as process CPU.
+            current_process_ticks = proc_cpu_ticks(pid) if pid else None
+            process_tick_delta = (
+                None
+                if current_process_ticks is None or previous_process_ticks is None
+                else max(current_process_ticks - previous_process_ticks, 0)
+            )
+            process_cpu_percent = (
+                None
+                if process_tick_delta is None
+                else process_tick_delta / clock_ticks / elapsed
+                / effective_cpus(affinity(status)) * 100
+            )
+            # This is a container metric. For host Hydra, leave container CPU
+            # unavailable rather than exposing an unrelated cgroup aggregate.
             cpu_percent = None
             if args.container and cpu_delta is not None:
                 cpu_percent = cpu_delta / 1_000_000 / elapsed / effective_cpus(affinity(status)) * 100
@@ -200,7 +215,10 @@ def main() -> int:
                 "target": args.target,
                 "pid": pid,
                 "container_cpu_percent": round(cpu_percent, 4) if cpu_percent is not None else None,
-                "process_cpu_ticks": proc_cpu_ticks(pid) if pid else None,
+                "process_cpu_percent": round(process_cpu_percent, 4)
+                if process_cpu_percent is not None
+                else None,
+                "process_cpu_ticks": current_process_ticks,
                 "vmrss_bytes": rss,
                 "vmhwm_bytes": hwm,
                 "effective_cpu_affinity": affinity(status),
@@ -216,7 +234,11 @@ def main() -> int:
             json_file.flush()
             writer.writerow(row)
             csv_file.flush()
-            previous_cpu, previous_time = current_cpu, time.monotonic()
+            previous_cpu, previous_process_ticks, previous_time = (
+                current_cpu,
+                current_process_ticks,
+                time.monotonic(),
+            )
             time.sleep(max(args.interval - (time.monotonic() - previous_time), 0.0))
     return 0
 
