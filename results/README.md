@@ -69,6 +69,7 @@ It is retained for harness debugging only and is not comparative evidence.
 ## 2026-08-02 accepted CPU4 exploratory run
 
 - Detailed report: [report.md](20260802T202216Z-accepted-cpu4/hydracache-exploratory-fixed-full-cpu4-20260802T202216Z/report.md)
+- Comparative memory/scenario table: [comparative-memory-report.md](20260802T202216Z-accepted-cpu4/comparative-memory-report.md)
 - Status: `ACCEPTED_EXPLORATORY_GUARDS` (exploratory only; not qualification/bootstrap evidence)
 - Source commit: `5530a28960aba2e21370d1d2d521c642afbc2c49`
 - Affinity: requested/effective container affinity `4`
