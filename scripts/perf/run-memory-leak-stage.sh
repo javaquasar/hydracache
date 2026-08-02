@@ -124,6 +124,8 @@ for generated_evidence in target/test-evidence/0.67 target/test-evidence/0.67.1;
   if [[ -e "$generated_evidence" && ! -L "$generated_evidence" ]]; then rm -rf -- "$generated_evidence"; fi
 done
 if ! scripts/perf/reference-evidence-tmpfs.sh verify >>"$output_dir/hardware-validation.txt" 2>&1; then
+  rm -f -- target/test-evidence/0.67 target/test-evidence/0.67.1
+  rm -rf -- /dev/shm/hydracache-reference-evidence-v1
   scripts/perf/reference-evidence-tmpfs.sh prepare >>"$output_dir/hardware-validation.txt" 2>&1
 fi
 scripts/perf/reference-runtime-irq-guard.sh memory-leak-pre >>"$output_dir/hardware-validation.txt"
