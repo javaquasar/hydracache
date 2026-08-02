@@ -35,7 +35,9 @@ return JSON with used_bytes, committed_bytes, and max_bytes; RSS is never used
 as a heap substitute. telemetry-summary.json contains p50/p95/max for each
 metric and its sample count.
 
-The host preflight IRQ guard remains unchanged. After the containers and Hydra
+The host preflight IRQ guard remains strict and fail-closed. Its exploratory
+measurement set is selected with `MEASUREMENT_AFFINITY` (default `1-4`); the
+qualification invocation still uses its unchanged default and contract. After the containers and Hydra
 are ready, the exploratory harness captures an IRQ baseline and the post-run
 guard fails closed on any new IRQ activity, new mapping, or affinity change; this avoids
 mistaking container-startup NVMe counters for activity during the measured

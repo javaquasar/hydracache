@@ -4,6 +4,7 @@ IFS=$'\n\t'
 export LC_ALL=C
 
 phase="${1:-}"
+measurement="${MEASUREMENT_AFFINITY-1-4}"
 [[ "$phase" =~ ^[a-z0-9][a-z0-9-]*$ ]] || {
   echo "usage: scripts/perf/reference-runtime-irq-guard.sh <phase>" >&2
   exit 2
@@ -11,20 +12,22 @@ phase="${1:-}"
 
 cpu_list_intersects_measurement() {
   local cpu_list="$1"
-  local segment first last
-  local old_ifs="$IFS"
-  IFS=','
-  for segment in $cpu_list; do
+  local segment first last msegment mfirst mlast
+  local -a irq_segments measurement_segments
+  IFS=',' read -r -a irq_segments <<<"$cpu_list"
+  IFS=',' read -r -a measurement_segments <<<"$measurement"
+  for segment in "${irq_segments[@]}"; do
     first="${segment%%-*}"
     last="${segment##*-}"
     [[ "$first" =~ ^[0-9]+$ ]]
     [[ "$last" =~ ^[0-9]+$ ]]
-    if ((first <= 4 && last >= 1)); then
-      IFS="$old_ifs"
-      return 0
-    fi
+    for msegment in "${measurement_segments[@]}"; do
+      mfirst="${msegment%%-*}"
+      mlast="${msegment##*-}"
+      [[ "$mfirst" =~ ^[0-9]+$ && "$mlast" =~ ^[0-9]+$ ]] || continue
+      if ((first <= mlast && last >= mfirst)); then return 0; fi
+    done
   done
-  IFS="$old_ifs"
   return 1
 }
 
@@ -104,4 +107,4 @@ for affinity_path in /proc/irq/[0-9]*/effective_affinity_list; do
 done
 test "$irq_files" -gt 0
 
-echo "reference runtime IRQ guard passed: phase=${phase} measurement=1-4 irq_files=${irq_files} dormant-unmapped-nvme=${dormant_nvme_irqs}"
+echo "reference runtime IRQ guard passed: phase=${phase} measurement=${measurement} irq_files=${irq_files} dormant-unmapped-nvme=${dormant_nvme_irqs}"
