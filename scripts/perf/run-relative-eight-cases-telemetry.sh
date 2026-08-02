@@ -13,6 +13,10 @@ export MEASUREMENT_AFFINITY="$affinity"
 requests="${REQUESTS_PER_CASE-100000}"
 repeats="${REPEATS-3}"
 interval="${TELEMETRY_INTERVAL_SECONDS-1}"
+branch_name="$(git branch --show-current)"
+if [[ -z "$branch_name" ]]; then
+  branch_name="detached@$(git rev-parse --short=12 HEAD)"
+fi
 hydra_binary="$repo_root/target/release/hydracache-server"
 test "$(id --user --name)" = github-runner
 test -x "$benchmark" || { echo "redis-benchmark is unavailable: $benchmark (install redis-tools or set REDIS_BENCHMARK)" >&2; exit 2; }
@@ -22,7 +26,7 @@ test -n "$hazelcast_image" && [[ "$hazelcast_image" =~ @sha256:[0-9a-fA-F]{64}$ 
 "$hazelcast_client_python" -c "import importlib.metadata as m; assert m.version('hazelcast-python-client') == '$hazelcast_client_version'" || { echo "hazelcast-python-client must be exactly $hazelcast_client_version" >&2; exit 2; }
 mkdir -p "$output_dir/raw" "$output_dir/telemetry" "$output_dir/metadata"
 {
-  echo "branch=$(git branch --show-current)"
+  echo "branch=$branch_name"
   echo "source_commit=$(git rev-parse HEAD)"
   echo "command=scripts/perf/run-relative-eight-cases-telemetry.sh $output_dir"
   echo "targets=hydracache,redis,hazelcast-community"
