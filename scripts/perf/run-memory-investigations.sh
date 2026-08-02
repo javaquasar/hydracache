@@ -254,7 +254,9 @@ run_mix_case() {
   start_target "$target" "$dir" default || { record_status "$exp" "$target" "$case_id" failed start_failed; stop_target "$target"; return; }
   local pid collector; pid="$(target_pid "$target")"
   python3 scripts/perf/collect-target-telemetry.py --target "$target" --output "$dir/telemetry/telemetry.jsonl" --pid "$pid" --interval "$interval" --duration 90 >"$dir/collector.log" 2>&1 & collector=$!
-  local set_count=$((requests * pct / 100)) get_count=$((requests - set_count))
+  local set_count get_count
+  set_count=$((requests * pct / 100))
+  get_count=$((requests - set_count))
   set +e
   run_workload "$target" set 256 10 1 "$set_count" 10000 >"$dir/raw/set.log" 2>&1
   run_workload "$target" get 256 10 1 "$get_count" 10000 >"$dir/raw/get.log" 2>&1
