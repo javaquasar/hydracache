@@ -1,0 +1,49 @@
+# Relative eight-case telemetry campaign
+
+This branch (explore/0.67-telemetry-hazelcast) prepares a separate
+exploratory study. It is not release evidence, qualification evidence, or a
+bootstrap sample, and it never writes target/test-evidence.
+
+## Targets and workload
+
+The existing eight cases, SET/GET operations, payloads, key range, requests,
+pipeline depth, client counts, fixed affinity, repeats, and target order are
+preserved. Every case includes all three targets: our HydraCache library/server,
+Redis, and Hazelcast Community. Each operation runs in this fixed order:
+HydraCache, Redis, Hazelcast Community. Hazelcast uses the official
+hazelcast/hazelcast image; the runner
+refuses an unpinned tag and requires
+hazelcast/hazelcast:5.7.0-slim-jdk21@sha256:<full-digest> through
+HAZELCAST_IMAGE. Resolve and record the digest before execution. The Python
+client must be pinned separately (default: hazelcast-python-client 5.5.0) and
+is checked at startup; a missing or mismatched client aborts rather than
+producing a partial comparison.
+
+Hazelcast does not expose the RESP protocol, so its matched workload uses the
+checked-in scripts/perf/hazelcast-workload.py against an IMap. It preserves
+the same operation/key/payload/client/pipeline parameters but is reported as a
+separate protocol path, not silently labeled as RESP.
+
+## One-second telemetry
+
+collect-target-telemetry.py samples every second and writes JSONL and CSV per
+target/case/operation/repeat. It records container CPU%, process CPU ticks,
+VmRSS/VmHWM, cgroup memory current/peak/limit, effective affinity, PID,
+container inspect metadata, image ID/digest, and host receipt context. JVM
+heap fields remain explicitly unavailable unless JVM_HEAP_CMD is configured to
+return JSON with used_bytes, committed_bytes, and max_bytes; RSS is never used
+as a heap substitute. telemetry-summary.json contains p50/p95/max for each
+metric and its sample count.
+
+## Reproduction on the dedicated host
+
+    python3 -m pip install --user 'hazelcast-python-client==5.5.0'
+    docker buildx imagetools inspect hazelcast/hazelcast:5.7.0-slim-jdk21
+    export HAZELCAST_IMAGE='hazelcast/hazelcast:5.7.0-slim-jdk21@sha256:<recorded-digest>'
+    scripts/perf/run-relative-eight-cases-telemetry.sh \
+      /var/lib/hydracache-perf/exploratory/relative-eight-cases-telemetry-$(date -u +%Y%m%dT%H%M%SZ)
+
+The output directory must be copied unchanged into a date-stamped exploratory
+results directory together with the branch commit, image metadata, raw logs,
+hardware-validation.txt, and telemetry-summary.json. Do not copy these files
+into the qualification artifact tree.
