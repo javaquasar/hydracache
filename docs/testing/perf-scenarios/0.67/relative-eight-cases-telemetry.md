@@ -37,7 +37,7 @@ metric and its sample count.
 
 The host preflight IRQ guard remains unchanged. After the containers and Hydra
 are ready, the exploratory harness captures an IRQ baseline and the post-run
-guard fails closed on any new IRQ activity or affinity mapping; this avoids
+guard fails closed on any new IRQ activity, new mapping, or affinity change; this avoids
 mistaking container-startup NVMe counters for activity during the measured
 workload. This baseline/delta guard is exploratory-only and never changes the
 qualification/bootstrap guard.
