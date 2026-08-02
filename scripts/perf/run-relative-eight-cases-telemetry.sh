@@ -19,6 +19,18 @@ test -n "$hazelcast_image" && [[ "$hazelcast_image" =~ @sha256:[0-9a-fA-F]{64}$ 
 "$hazelcast_client_python" -c 'import hazelcast' || { echo 'hazelcast-python-client is unavailable; refusing a partial run' >&2; exit 2; }
 "$hazelcast_client_python" -c "import importlib.metadata as m; assert m.version('hazelcast-python-client') == '$hazelcast_client_version'" || { echo "hazelcast-python-client must be exactly $hazelcast_client_version" >&2; exit 2; }
 mkdir -p "$output_dir/raw" "$output_dir/telemetry" "$output_dir/metadata"
+{
+  echo "branch=$(git branch --show-current)"
+  echo "source_commit=$(git rev-parse HEAD)"
+  echo "command=scripts/perf/run-relative-eight-cases-telemetry.sh $output_dir"
+  echo "targets=hydracache,redis,hazelcast-community"
+  echo "hazelcast_image=$hazelcast_image"
+  echo "hazelcast_client_version=$hazelcast_client_version"
+  echo "measurement_affinity=$affinity"
+  echo "requests_per_case=$requests"
+  echo "repeats=$repeats"
+  echo "telemetry_interval_seconds=$interval"
+} >"$output_dir/reproduction-command.txt"
 cleanup() { set +e; test -f "$output_dir/hydra.pid" && kill "$(cat "$output_dir/hydra.pid")" 2>/dev/null || true; docker rm -f hydracache-relative-redis hydracache-relative-hazelcast >/dev/null 2>&1 || true; }
 trap cleanup EXIT
 scripts/perf/reference-evidence-tmpfs.sh verify >"$output_dir/hardware-validation.txt"
@@ -55,4 +67,5 @@ cases=('p64-c10-p1 64 10 1' 'p64-c10-p10 64 10 10' 'p256-c10-p1 256 10 1' 'p256-
 for repeat in $(seq 1 "$repeats"); do for spec in "${cases[@]}"; do read -r case_id payload clients pipeline <<<"$spec"; for op in set get; do for target in hydra redis hazelcast; do run_target "$target" "$case_id" "$payload" "$clients" "$pipeline" "$op" "$repeat"; done; done; done; done
 python3 scripts/perf/summarize-telemetry.py --input "$output_dir/telemetry" --output "$output_dir/telemetry-summary.json"
 scripts/perf/reference-runtime-irq-guard.sh relative-eight-telemetry-post >>"$output_dir/hardware-validation.txt"
+python3 scripts/perf/render-exploratory-report.py --input "$output_dir" --output "$output_dir/report.md" --source-root "$repo_root"
 echo "output=$output_dir"

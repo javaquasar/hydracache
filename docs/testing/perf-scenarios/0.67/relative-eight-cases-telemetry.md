@@ -47,3 +47,14 @@ The output directory must be copied unchanged into a date-stamped exploratory
 results directory together with the branch commit, image metadata, raw logs,
 hardware-validation.txt, and telemetry-summary.json. Do not copy these files
 into the qualification artifact tree.
+
+At the end of the run the script also writes:
+
+- report.md — a readable report containing the exact source/environment,
+  validation receipt, telemetry summary, and artifact index;
+- artifact-manifest.json — every raw file's byte length and SHA-256;
+- reproduction-command.txt — the exact branch, commit, image, client, affinity,
+  workload, and sampling parameters.
+
+These files are the review entry point. The raw JSONL/CSV and benchmark logs
+remain beside the report so another reader can audit every aggregate.
