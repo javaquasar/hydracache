@@ -30,7 +30,7 @@ write_common_metadata() {
     echo "source_commit=$(git rev-parse HEAD)"
     echo "source_branch=$(git branch --show-current || true)"
     echo "kernel=$(uname -srmo)"
-    echo "cpu_model=$(awk -F: '/model name/ {gsub(/^ /, \"\", $2); print $2; exit}' /proc/cpuinfo)"
+    echo "cpu_model=$(awk -F: '/model name/ {gsub(/^ /, "", $2); print $2; exit}' /proc/cpuinfo)"
     echo "logical_cpus=$(nproc)"
     echo "measurement_affinity=$affinity"
     echo "telemetry_interval_seconds=$telemetry_interval"
@@ -204,6 +204,7 @@ run_saturation() {
       local rc=$?
       end=$(date +%s%N)
       wait "$collector" 2>/dev/null || true
+      summarize "$case_dir"
       printf '%s\t%s\t%s\t%.6f\t%s\n' "$clients" "$pipeline" "$rc" \
         "$((end-start))e-9" "$case_dir/workload.log" >>"$dir/cases.tsv"
     done
@@ -239,7 +240,13 @@ run_profile() {
     echo "Hazelcast profiling skipped: HAZELCAST_IMAGE not supplied or Docker unavailable" >"$dir/hazelcast-jvm-tools.txt"
   fi
   finish_dir "$dir"
-  record_status profile-jmx-perf PASSED "Hydra perf stat captured; Hazelcast JVM/JMX availability recorded"
+  local profile_status=PASSED
+  local profile_notes="Hydra perf stat captured; Hazelcast JVM/JMX availability recorded"
+  if [[ ! -s "$dir/hydra-perf-stat.csv" ]]; then
+    profile_status=DEGRADED
+    profile_notes="perf stat unavailable; security policy and Hazelcast JVM/JMX availability recorded"
+  fi
+  record_status profile-jmx-perf "$profile_status" "$profile_notes"
 }
 
 test -x "$hydra_binary" || { echo "missing executable: $hydra_binary" >&2; exit 2; }
