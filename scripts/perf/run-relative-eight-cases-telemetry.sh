@@ -52,6 +52,8 @@ for _ in $(seq 1 120); do
   sleep 1
 done
 test "$hazelcast_ready" = true
+scripts/perf/reference-runtime-irq-delta-guard.sh baseline "$output_dir/irq-baseline.tsv" >>"$output_dir/hardware-validation.txt"
+echo "irq_guard_mode=preflight-plus-baseline-delta" >>"$output_dir/hardware-validation.txt"
 run_target() {
   local target="$1" case_id="$2" payload="$3" clients="$4" pipeline="$5" op="$6" repeat="$7" stem="repeat-$7--$2--$1--$6" raw="$output_dir/raw/repeat-$7--$2--$1--$6.log" telemetry="$output_dir/telemetry/repeat-$7--$2--$1--$6.jsonl" pid="" container=""
   if [[ "$target" == hydra ]]; then pid="$(cat "$output_dir/hydra.pid")"; else container="hydracache-relative-$target"; fi
@@ -67,6 +69,6 @@ run_target() {
 cases=('p64-c10-p1 64 10 1' 'p64-c10-p10 64 10 10' 'p256-c10-p1 256 10 1' 'p256-c10-p10 256 10 10' 'p1024-c50-p1 1024 50 1' 'p1024-c50-p10 1024 50 10' 'p256-c1-p1 256 1 1' 'p256-c100-p1 256 100 1')
 for repeat in $(seq 1 "$repeats"); do for spec in "${cases[@]}"; do IFS=' ' read -r case_id payload clients pipeline <<<"$spec"; for op in set get; do for target in hydra redis hazelcast; do run_target "$target" "$case_id" "$payload" "$clients" "$pipeline" "$op" "$repeat"; done; done; done; done
 python3 scripts/perf/summarize-telemetry.py --input "$output_dir/telemetry" --output "$output_dir/telemetry-summary.json"
-scripts/perf/reference-runtime-irq-guard.sh relative-eight-telemetry-post >>"$output_dir/hardware-validation.txt"
+scripts/perf/reference-runtime-irq-delta-guard.sh post-relative-eight-telemetry "$output_dir/irq-baseline.tsv" >>"$output_dir/hardware-validation.txt"
 python3 scripts/perf/render-exploratory-report.py --input "$output_dir" --output "$output_dir/report.md" --source-root "$repo_root"
 echo "output=$output_dir"
