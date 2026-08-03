@@ -1,0 +1,12 @@
+experiment=01-cold-start
+target=hazelcast
+case=cold-idle
+payload_bytes=256
+clients=1
+pipeline=1
+requests=1
+key_range=100
+mode=default
+kind=idle
+affinity=4
+interval_seconds=1

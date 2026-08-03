@@ -1,0 +1,12 @@
+experiment=04-persistence
+target=hydra
+case=storage-on
+payload_bytes=256
+clients=10
+pipeline=1
+requests=10000
+key_range=10000
+mode=default
+kind=workload
+affinity=4
+interval_seconds=1

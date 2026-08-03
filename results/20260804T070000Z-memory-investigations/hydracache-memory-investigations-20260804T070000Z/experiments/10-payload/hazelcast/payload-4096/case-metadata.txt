@@ -1,0 +1,12 @@
+experiment=10-payload
+target=hazelcast
+case=payload-4096
+payload_bytes=4096
+clients=10
+pipeline=1
+requests=10000
+key_range=10000
+mode=default
+kind=workload
+affinity=4
+interval_seconds=1

@@ -1,0 +1,1 @@
+pid 151747's current affinity list: 4

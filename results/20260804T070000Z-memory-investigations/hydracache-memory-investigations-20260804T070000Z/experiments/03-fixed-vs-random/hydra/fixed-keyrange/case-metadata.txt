@@ -1,0 +1,12 @@
+experiment=03-fixed-vs-random
+target=hydra
+case=fixed-keyrange
+payload_bytes=256
+clients=10
+pipeline=1
+requests=10000
+key_range=100
+mode=default
+kind=workload
+affinity=4
+interval_seconds=1

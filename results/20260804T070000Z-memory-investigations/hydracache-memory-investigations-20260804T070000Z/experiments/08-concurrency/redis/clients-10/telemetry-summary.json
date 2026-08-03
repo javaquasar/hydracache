@@ -1,0 +1,88 @@
+{
+  "telemetry": {
+    "cgroup_memory_anon_bytes": {
+      "max": 5222400.0,
+      "p50": 5222400.0,
+      "p95": 5222400.0,
+      "samples": 1
+    },
+    "cgroup_memory_current_bytes": {
+      "max": 5718016.0,
+      "p50": 5718016.0,
+      "p95": 5718016.0,
+      "samples": 1
+    },
+    "cgroup_memory_file_bytes": {
+      "max": 0.0,
+      "p50": 0.0,
+      "p95": 0.0,
+      "samples": 1
+    },
+    "cgroup_memory_peak_bytes": {
+      "max": 6254592.0,
+      "p50": 6254592.0,
+      "p95": 6254592.0,
+      "samples": 1
+    },
+    "cgroup_memory_slab_bytes": {
+      "max": 233816.0,
+      "p50": 233816.0,
+      "p95": 233816.0,
+      "samples": 1
+    },
+    "container_cpu_percent": {
+      "max": 0.0,
+      "p50": 0.0,
+      "p95": 0.0,
+      "samples": 1
+    },
+    "process_cpu_percent": {
+      "max": 0.0,
+      "p50": 0.0,
+      "p95": 0.0,
+      "samples": 1
+    },
+    "process_cpu_ticks": {
+      "max": 8.0,
+      "p50": 8.0,
+      "p95": 8.0,
+      "samples": 1
+    },
+    "process_threads": {
+      "max": 5.0,
+      "p50": 5.0,
+      "p95": 5.0,
+      "samples": 1
+    },
+    "smaps_rollup_pss_anon_bytes": {
+      "max": 5222400.0,
+      "p50": 5222400.0,
+      "p95": 5222400.0,
+      "samples": 1
+    },
+    "smaps_rollup_pss_file_bytes": {
+      "max": 8548352.0,
+      "p50": 8548352.0,
+      "p95": 8548352.0,
+      "samples": 1
+    },
+    "smaps_rollup_rss_bytes": {
+      "max": 13774848.0,
+      "p50": 13774848.0,
+      "p95": 13774848.0,
+      "samples": 1
+    },
+    "vmhwm_bytes": {
+      "max": 13774848.0,
+      "p50": 13774848.0,
+      "p95": 13774848.0,
+      "samples": 1
+    },
+    "vmrss_bytes": {
+      "max": 13774848.0,
+      "p50": 13774848.0,
+      "p95": 13774848.0,
+      "samples": 1
+    }
+  }
+}

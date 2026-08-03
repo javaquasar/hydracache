@@ -1,0 +1,1 @@
+pid 151692's current affinity list: 4

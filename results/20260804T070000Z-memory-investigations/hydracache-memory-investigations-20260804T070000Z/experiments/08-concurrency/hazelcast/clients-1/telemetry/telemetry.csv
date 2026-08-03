@@ -1,0 +1,4 @@
+timestamp_unix,target,pid,container_cpu_percent,process_cpu_percent,process_cpu_ticks,vmrss_bytes,vmhwm_bytes,effective_cpu_affinity,cgroup_memory_current_bytes,cgroup_memory_peak_bytes,cgroup_memory_limit_bytes,cgroup_memory_anon_bytes,cgroup_memory_file_bytes,cgroup_memory_slab_bytes,smaps_rollup_rss_bytes,smaps_rollup_pss_anon_bytes,smaps_rollup_pss_file_bytes,process_threads,process_fd_count,jvm_heap_available,jvm_heap_used_bytes,jvm_heap_committed_bytes,jvm_heap_max_bytes
+1785715866.4542584,hazelcast,152439,0.656,0.0,687,246644736,265818112,0-15,227848192,247554048,,224071680,32768,1239184,246644736,224071680,22568960,79,,False,,,
+1785715867.4695697,hazelcast,152439,12.5129,12.5413,888,273281024,275845120,0-15,254844928,258064384,,250900480,32768,1313608,272285696,249712640,22568960,84,,False,,,
+1785715868.482919,hazelcast,152439,19.3253,19.3013,1197,298672128,301801472,0-15,280059904,283910144,,276090880,32768,1348392,298762240,276189184,22568960,87,,False,,,

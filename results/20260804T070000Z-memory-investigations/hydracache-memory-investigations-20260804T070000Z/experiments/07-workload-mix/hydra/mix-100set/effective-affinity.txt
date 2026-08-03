@@ -1,0 +1,1 @@
+pid 149904's current affinity list: 4
