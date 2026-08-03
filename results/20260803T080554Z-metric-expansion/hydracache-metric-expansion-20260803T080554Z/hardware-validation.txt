@@ -1,0 +1,3 @@
+reference evidence tmpfs prepared: root=/dev/shm/hydracache-reference-evidence-v1
+reference runtime IRQ guard passed: phase=metric-expansion-pre measurement=4 irq_files=113 dormant-unmapped-nvme=2
+runtime IRQ guard failed phase=metric-expansion-post: irq=115 action=nvme1q5 effective_affinity=4 per_cpu_counts=0,0,0,0,359,0,0,0

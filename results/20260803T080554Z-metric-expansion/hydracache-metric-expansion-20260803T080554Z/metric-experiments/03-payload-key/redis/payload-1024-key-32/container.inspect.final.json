@@ -1,0 +1,232 @@
+[
+    {
+        "Id": "fcb5b2c24a5a618426d1ee10151a8a614e47bef54fbb4d5ee7eff302d808bdfb",
+        "Created": "2026-08-03T08:25:02.244127956Z",
+        "Path": "docker-entrypoint.sh",
+        "Args": [
+            "redis-server",
+            "--save",
+            "",
+            "--appendonly",
+            "no"
+        ],
+        "State": {
+            "Status": "running",
+            "Running": true,
+            "Paused": false,
+            "Restarting": false,
+            "OOMKilled": false,
+            "Dead": false,
+            "Pid": 9309,
+            "ExitCode": 0,
+            "Error": "",
+            "StartedAt": "2026-08-03T08:25:02.308224498Z",
+            "FinishedAt": "0001-01-01T00:00:00Z"
+        },
+        "Image": "sha256:3aaec283e6e593bde528077d60280ac1589887067a39273348860837c9346d7e",
+        "ResolvConfPath": "/home/hydracache-admin/.local/share/docker/containers/fcb5b2c24a5a618426d1ee10151a8a614e47bef54fbb4d5ee7eff302d808bdfb/resolv.conf",
+        "HostnamePath": "/home/hydracache-admin/.local/share/docker/containers/fcb5b2c24a5a618426d1ee10151a8a614e47bef54fbb4d5ee7eff302d808bdfb/hostname",
+        "HostsPath": "/home/hydracache-admin/.local/share/docker/containers/fcb5b2c24a5a618426d1ee10151a8a614e47bef54fbb4d5ee7eff302d808bdfb/hosts",
+        "LogPath": "/home/hydracache-admin/.local/share/docker/containers/fcb5b2c24a5a618426d1ee10151a8a614e47bef54fbb4d5ee7eff302d808bdfb/fcb5b2c24a5a618426d1ee10151a8a614e47bef54fbb4d5ee7eff302d808bdfb-json.log",
+        "Name": "/metric-expansion-redis-2291",
+        "RestartCount": 0,
+        "Driver": "overlayfs",
+        "Platform": "linux",
+        "MountLabel": "",
+        "ProcessLabel": "",
+        "AppArmorProfile": "",
+        "ExecIDs": null,
+        "HostConfig": {
+            "Binds": [
+                "/dev/shm/hydracache-metric-expansion-20260803T080554Z/metric-experiments/03-payload-key/redis/payload-1024-key-32/redis-data:/data"
+            ],
+            "ContainerIDFile": "",
+            "LogConfig": {
+                "Type": "json-file",
+                "Config": {}
+            },
+            "NetworkMode": "host",
+            "PortBindings": {},
+            "RestartPolicy": {
+                "Name": "no",
+                "MaximumRetryCount": 0
+            },
+            "AutoRemove": false,
+            "VolumeDriver": "",
+            "VolumesFrom": null,
+            "ConsoleSize": [
+                0,
+                0
+            ],
+            "CapAdd": null,
+            "CapDrop": null,
+            "CgroupnsMode": "private",
+            "Dns": null,
+            "DnsOptions": [],
+            "DnsSearch": [],
+            "ExtraHosts": null,
+            "GroupAdd": null,
+            "IpcMode": "private",
+            "Cgroup": "",
+            "Links": null,
+            "OomScoreAdj": 0,
+            "PidMode": "",
+            "Privileged": false,
+            "PublishAllPorts": false,
+            "ReadonlyRootfs": false,
+            "SecurityOpt": null,
+            "UTSMode": "",
+            "UsernsMode": "",
+            "ShmSize": 67108864,
+            "Runtime": "runc",
+            "Isolation": "",
+            "CpuShares": 0,
+            "Memory": 0,
+            "NanoCpus": 0,
+            "CgroupParent": "",
+            "BlkioWeight": 0,
+            "BlkioWeightDevice": [],
+            "BlkioDeviceReadBps": [],
+            "BlkioDeviceWriteBps": [],
+            "BlkioDeviceReadIOps": [],
+            "BlkioDeviceWriteIOps": [],
+            "CpuPeriod": 0,
+            "CpuQuota": 0,
+            "CpuRealtimePeriod": 0,
+            "CpuRealtimeRuntime": 0,
+            "CpusetCpus": "",
+            "CpusetMems": "",
+            "Devices": [],
+            "DeviceCgroupRules": null,
+            "DeviceRequests": null,
+            "MemoryReservation": 0,
+            "MemorySwap": 0,
+            "MemorySwappiness": null,
+            "OomKillDisable": null,
+            "PidsLimit": null,
+            "Ulimits": [],
+            "CpuCount": 0,
+            "CpuPercent": 0,
+            "IOMaximumIOps": 0,
+            "IOMaximumBandwidth": 0,
+            "MaskedPaths": [
+                "/proc/acpi",
+                "/proc/asound",
+                "/proc/interrupts",
+                "/proc/kcore",
+                "/proc/keys",
+                "/proc/latency_stats",
+                "/proc/sched_debug",
+                "/proc/scsi",
+                "/proc/timer_list",
+                "/proc/timer_stats",
+                "/sys/devices/virtual/powercap",
+                "/sys/firmware"
+            ],
+            "ReadonlyPaths": [
+                "/proc/bus",
+                "/proc/fs",
+                "/proc/irq",
+                "/proc/sys",
+                "/proc/sysrq-trigger"
+            ]
+        },
+        "Storage": {
+            "RootFS": {
+                "Snapshot": {
+                    "Name": "overlayfs"
+                }
+            }
+        },
+        "Mounts": [
+            {
+                "Type": "bind",
+                "Source": "/dev/shm/hydracache-metric-expansion-20260803T080554Z/metric-experiments/03-payload-key/redis/payload-1024-key-32/redis-data",
+                "Destination": "/data",
+                "Mode": "",
+                "RW": true,
+                "Propagation": "rprivate"
+            }
+        ],
+        "Config": {
+            "Hostname": "hydracache-perf-v1",
+            "Domainname": "",
+            "User": "",
+            "AttachStdin": false,
+            "AttachStdout": false,
+            "AttachStderr": false,
+            "ExposedPorts": {
+                "6379/tcp": {}
+            },
+            "Tty": false,
+            "OpenStdin": false,
+            "StdinOnce": false,
+            "Env": [
+                "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
+                "GOSU_VERSION=1.17",
+                "REDIS_VERSION=7.2.5",
+                "REDIS_DOWNLOAD_URL=http://download.redis.io/releases/redis-7.2.5.tar.gz",
+                "REDIS_DOWNLOAD_SHA=5981179706f8391f03be91d951acafaeda91af7fac56beffb2701963103e423d"
+            ],
+            "Cmd": [
+                "redis-server",
+                "--save",
+                "",
+                "--appendonly",
+                "no"
+            ],
+            "Image": "redis@sha256:3aaec283e6e593bde528077d60280ac1589887067a39273348860837c9346d7e",
+            "Volumes": {
+                "/data": {}
+            },
+            "WorkingDir": "/data",
+            "Entrypoint": [
+                "docker-entrypoint.sh"
+            ],
+            "Labels": {}
+        },
+        "NetworkSettings": {
+            "SandboxID": "15edf705125176dc4bb4b0e0618513d639e0598923252d6664dcba5ca8cf2d0b",
+            "SandboxKey": "/run/user/1002/docker/netns/default",
+            "Ports": {},
+            "Networks": {
+                "host": {
+                    "IPAMConfig": null,
+                    "Links": null,
+                    "Aliases": null,
+                    "DriverOpts": null,
+                    "GwPriority": 0,
+                    "NetworkID": "8a437a4cf1f642cac1ab926fac4c6adc2315600752b8004b560a956ab3551e9d",
+                    "EndpointID": "bc4daee5626c5da793e70c4ccdd3b27419cea95b0606e62709e61b49520e6c01",
+                    "Gateway": "",
+                    "IPAddress": "",
+                    "MacAddress": "",
+                    "IPPrefixLen": 0,
+                    "IPv6Gateway": "",
+                    "GlobalIPv6Address": "",
+                    "GlobalIPv6PrefixLen": 0,
+                    "DNSNames": null
+                }
+            }
+        },
+        "ImageManifestDescriptor": {
+            "mediaType": "application/vnd.oci.image.manifest.v1+json",
+            "digest": "sha256:301f993bbc91d0b50b0737a97962905657d9f595e9935282b7db16a563b53d1b",
+            "size": 2483,
+            "annotations": {
+                "com.docker.official-images.bashbrew.arch": "amd64",
+                "org.opencontainers.image.base.digest": "sha256:7095ea629c4563714b9655137db2eacd456eb3eea0eb8a2b0a4a6b0b187220a9",
+                "org.opencontainers.image.base.name": "debian:bookworm-slim",
+                "org.opencontainers.image.created": "2024-09-27T06:03:20Z",
+                "org.opencontainers.image.revision": "5f08363e6d64b97a0c2e651f4bdcec6e71a32ab4",
+                "org.opencontainers.image.source": "https://github.com/redis/docker-library-redis.git#5f08363e6d64b97a0c2e651f4bdcec6e71a32ab4:7.2/debian",
+                "org.opencontainers.image.url": "https://hub.docker.com/_/redis",
+                "org.opencontainers.image.version": "7.2.5"
+            },
+            "platform": {
+                "architecture": "amd64",
+                "os": "linux"
+            }
+        }
+    }
+]

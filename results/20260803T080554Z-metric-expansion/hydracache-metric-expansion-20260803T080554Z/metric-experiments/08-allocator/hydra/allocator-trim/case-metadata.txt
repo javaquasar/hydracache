@@ -1,0 +1,17 @@
+experiment=08-allocator
+target=hydra
+case=allocator-trim
+payload_bytes=256
+clients=10
+pipeline=1
+requests=20000
+key_range=10000
+key_length=16
+distribution=uniform
+ttl_ms=0
+mode=allocator-trim
+memory_limit=
+kind=allocator
+set_percent=0
+affinity=4
+duration_seconds=45

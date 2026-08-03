@@ -1,0 +1,2 @@
+pid 11102's current affinity list: 0-7
+pid 11102's new affinity list: 4

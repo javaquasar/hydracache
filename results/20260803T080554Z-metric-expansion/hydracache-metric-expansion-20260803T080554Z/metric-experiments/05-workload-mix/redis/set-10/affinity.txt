@@ -1,0 +1,2 @@
+pid 17027's current affinity list: 0-7
+pid 17027's new affinity list: 4

@@ -1,0 +1,17 @@
+experiment=02-ttl
+target=redis
+case=ttl-1000ms
+payload_bytes=256
+clients=10
+pipeline=1
+requests=1000
+key_range=10000
+key_length=16
+distribution=uniform
+ttl_ms=1000
+mode=default
+memory_limit=
+kind=ttl
+set_percent=0
+affinity=4
+duration_seconds=45

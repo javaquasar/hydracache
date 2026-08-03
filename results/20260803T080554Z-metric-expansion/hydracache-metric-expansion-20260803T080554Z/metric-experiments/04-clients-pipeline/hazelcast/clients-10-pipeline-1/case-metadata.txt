@@ -1,0 +1,17 @@
+experiment=04-clients-pipeline
+target=hazelcast
+case=clients-10-pipeline-1
+payload_bytes=256
+clients=10
+pipeline=1
+requests=20000
+key_range=10000
+key_length=16
+distribution=uniform
+ttl_ms=0
+mode=default
+memory_limit=
+kind=one
+set_percent=0
+affinity=4
+duration_seconds=45

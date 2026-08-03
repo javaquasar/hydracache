@@ -1,0 +1,2 @@
+pid 3636's current affinity list: 0-7
+pid 3636's new affinity list: 4

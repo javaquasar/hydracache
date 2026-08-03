@@ -1,0 +1,2 @@
+pid 7790's current affinity list: 0-7
+pid 7790's new affinity list: 4

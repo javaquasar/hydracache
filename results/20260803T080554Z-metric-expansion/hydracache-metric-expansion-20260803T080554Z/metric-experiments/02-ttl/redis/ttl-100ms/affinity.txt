@@ -1,0 +1,2 @@
+pid 7327's current affinity list: 0-7
+pid 7327's new affinity list: 4

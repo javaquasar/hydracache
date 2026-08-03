@@ -1,0 +1,8 @@
+{
+  "collector_interval_seconds": 1.0,
+  "container": null,
+  "host": "hydracache-perf-v1",
+  "host_cpu_count": 8,
+  "pid": 7078,
+  "target": "hydra"
+}

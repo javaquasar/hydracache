@@ -178,24 +178,26 @@ def write_report(root: Path, cases: list[dict[str, Any]], report_path: Path, ana
         "> Exploratory evidence only. This output is intentionally separate from qualification/bootstrap evidence.",
         "",
         f"- Output root: `{root}`",
-        f"- Cases: {len(cases)} total; {complete} complete; {failed} failed",
+        f"- Cases: {len(cases)} total; {complete} complete; {failed} failed; {len(cases) - complete - failed} not applicable/other",
         f"- Source commit: `{(root / 'reproduction-command.txt').read_text(encoding='utf-8', errors='replace').split('source_commit=', 1)[-1].splitlines()[0] if (root / 'reproduction-command.txt').exists() and 'source_commit=' in (root / 'reproduction-command.txt').read_text(encoding='utf-8', errors='replace') else 'unavailable'}`",
         "- Sampling interval: one second unless the run metadata says otherwise.",
         "",
         "## Case summary",
         "",
-        "| Experiment | Target | Case | Status | Telemetry | RSS p50/p95/max | Cgroup current p95/max | CPU p95/max | Latency p95 | Errors | RSS slope/min |",
-        "|---|---|---|---:|---:|---:|---:|---:|---:|---:|---:|",
+        "| Experiment | Target | Case | Status | Telemetry | RSS p50/p95/max | Cgroup current p95/max | Container CPU p95/max | Process CPU p95/max | Latency p95 | Errors | RSS slope/min |",
+        "|---|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|",
     ]
     for case in cases:
         rss = case["metrics"]["rss_bytes"]
         cg = case["metrics"]["cgroup_current_bytes"]
-        cpu = case["metrics"]["cpu_percent"]
+        container_cpu = case["metrics"]["cpu_percent"]
+        process_cpu = case["metrics"]["process_cpu_percent"]
         workload = case["workload"]
         lines.append(
             f"| {case['experiment']} | {case['target']} | {case['case']} | {case['status']} | {case['telemetry_samples']} "
             f"| {fmt(rss['p50'], 0)}/{fmt(rss['p95'], 0)}/{fmt(rss['max'], 0)} "
-            f"| {fmt(cg['p95'], 0)}/{fmt(cg['max'], 0)} | {fmt(cpu['p95'])}/{fmt(cpu['max'])} "
+            f"| {fmt(cg['p95'], 0)}/{fmt(cg['max'], 0)} | {fmt(container_cpu['p95'])}/{fmt(container_cpu['max'])} "
+            f"| {fmt(process_cpu['p95'])}/{fmt(process_cpu['max'])} "
             f"| {fmt(workload['p95_latency_ms'])} | {workload['errors']} | {fmt(case['rss_slope_bytes_per_minute'], 0)} |"
         )
     lines.extend([
@@ -214,8 +216,12 @@ def write_report(root: Path, cases: list[dict[str, Any]], report_path: Path, ana
             lines.append("")
             continue
         max_rss = max((number(case["metrics"]["rss_bytes"]["max"]) or 0 for case in valid), default=0)
-        max_cpu = max((number(case["metrics"]["cpu_percent"]["p95"]) or 0 for case in valid), default=0)
-        lines.append(f"- Complete cases: {len(valid)}; largest sampled RSS: {fmt(max_rss, 0)} bytes; highest sampled CPU p95: {fmt(max_cpu)}%.")
+        max_container_cpu = max((number(case["metrics"]["cpu_percent"]["p95"]) or 0 for case in valid), default=0)
+        max_process_cpu = max((number(case["metrics"]["process_cpu_percent"]["p95"]) or 0 for case in valid), default=0)
+        lines.append(
+            f"- Complete cases: {len(valid)}; largest sampled RSS: {fmt(max_rss, 0)} bytes; "
+            f"highest container CPU p95: {fmt(max_container_cpu)}%; highest process CPU p95: {fmt(max_process_cpu)}%."
+        )
         lines.append("- JVM heap is reported independently; `N/A` means the probe was unavailable, not zero heap.")
         lines.append("")
     lines.extend([

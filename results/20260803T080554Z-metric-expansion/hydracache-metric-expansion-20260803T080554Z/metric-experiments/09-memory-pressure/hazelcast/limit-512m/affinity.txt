@@ -1,0 +1,2 @@
+pid 23555's current affinity list: 0-7
+pid 23555's new affinity list: 4

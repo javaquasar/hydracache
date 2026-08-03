@@ -1,0 +1,208 @@
+{
+  "telemetry": {
+    "cgroup_memory_anon_bytes": {
+      "max": 6606848.0,
+      "p50": 6598656.0,
+      "p95": 6606848.0,
+      "samples": 47
+    },
+    "cgroup_memory_current_bytes": {
+      "max": 7311360.0,
+      "p50": 7303168.0,
+      "p95": 7311360.0,
+      "samples": 47
+    },
+    "cgroup_memory_file_bytes": {
+      "max": 0.0,
+      "p50": 0.0,
+      "p95": 0.0,
+      "samples": 47
+    },
+    "cgroup_memory_oom_events": {
+      "max": 0.0,
+      "p50": 0.0,
+      "p95": 0.0,
+      "samples": 47
+    },
+    "cgroup_memory_oom_kill_events": {
+      "max": 0.0,
+      "p50": 0.0,
+      "p95": 0.0,
+      "samples": 47
+    },
+    "cgroup_memory_peak_bytes": {
+      "max": 7344128.0,
+      "p50": 7344128.0,
+      "p95": 7344128.0,
+      "samples": 47
+    },
+    "cgroup_memory_slab_bytes": {
+      "max": 232304.0,
+      "p50": 216944.0,
+      "p95": 217144.0,
+      "samples": 47
+    },
+    "container_cpu_percent": {
+      "max": 9.7343,
+      "p50": 0.0414,
+      "p95": 2.324789999999986,
+      "samples": 47
+    },
+    "host_net_rx_bytes": {
+      "max": 4078779734.0,
+      "p50": 4078778712.0,
+      "p95": 4078779556.0,
+      "samples": 47
+    },
+    "host_net_tx_bytes": {
+      "max": 4078912626.0,
+      "p50": 4078911726.0,
+      "p95": 4078912446.0,
+      "samples": 47
+    },
+    "nonvoluntary_context_switches": {
+      "max": 25.0,
+      "p50": 25.0,
+      "p95": 25.0,
+      "samples": 47
+    },
+    "process_cpu_percent": {
+      "max": 4.9983,
+      "p50": 0.0,
+      "p95": 0.6997199999999958,
+      "samples": 47
+    },
+    "process_cpu_ticks": {
+      "max": 12.0,
+      "p50": 12.0,
+      "p95": 12.0,
+      "samples": 47
+    },
+    "process_major_faults": {
+      "max": 0.0,
+      "p50": 0.0,
+      "p95": 0.0,
+      "samples": 47
+    },
+    "process_minor_faults": {
+      "max": 3248.0,
+      "p50": 3248.0,
+      "p95": 3248.0,
+      "samples": 47
+    },
+    "process_threads": {
+      "max": 5.0,
+      "p50": 5.0,
+      "p95": 5.0,
+      "samples": 47
+    },
+    "psi_cpu_some_avg10": {
+      "max": 5.39,
+      "p50": 0.73,
+      "p95": 4.41,
+      "samples": 47
+    },
+    "psi_cpu_some_avg300": {
+      "max": 1.96,
+      "p50": 1.82,
+      "p95": 1.95,
+      "samples": 47
+    },
+    "psi_cpu_some_avg60": {
+      "max": 1.87,
+      "p50": 1.29,
+      "p95": 1.8,
+      "samples": 47
+    },
+    "psi_cpu_some_total": {
+      "max": 202392348.0,
+      "p50": 202387750.0,
+      "p95": 202392108.5,
+      "samples": 47
+    },
+    "psi_io_some_avg10": {
+      "max": 0.0,
+      "p50": 0.0,
+      "p95": 0.0,
+      "samples": 47
+    },
+    "psi_io_some_avg300": {
+      "max": 0.0,
+      "p50": 0.0,
+      "p95": 0.0,
+      "samples": 47
+    },
+    "psi_io_some_avg60": {
+      "max": 0.0,
+      "p50": 0.0,
+      "p95": 0.0,
+      "samples": 47
+    },
+    "psi_io_some_total": {
+      "max": 3230757.0,
+      "p50": 3221424.0,
+      "p95": 3226719.0,
+      "samples": 47
+    },
+    "psi_memory_some_avg10": {
+      "max": 0.0,
+      "p50": 0.0,
+      "p95": 0.0,
+      "samples": 47
+    },
+    "psi_memory_some_avg300": {
+      "max": 0.0,
+      "p50": 0.0,
+      "p95": 0.0,
+      "samples": 47
+    },
+    "psi_memory_some_avg60": {
+      "max": 0.0,
+      "p50": 0.0,
+      "p95": 0.0,
+      "samples": 47
+    },
+    "psi_memory_some_total": {
+      "max": 1300.0,
+      "p50": 1300.0,
+      "p95": 1300.0,
+      "samples": 47
+    },
+    "smaps_rollup_pss_anon_bytes": {
+      "max": 6606848.0,
+      "p50": 6598656.0,
+      "p95": 6606848.0,
+      "samples": 47
+    },
+    "smaps_rollup_pss_file_bytes": {
+      "max": 7815168.0,
+      "p50": 7815168.0,
+      "p95": 7815168.0,
+      "samples": 47
+    },
+    "smaps_rollup_rss_bytes": {
+      "max": 14426112.0,
+      "p50": 14417920.0,
+      "p95": 14426112.0,
+      "samples": 47
+    },
+    "vmhwm_bytes": {
+      "max": 14426112.0,
+      "p50": 14417920.0,
+      "p95": 14426112.0,
+      "samples": 47
+    },
+    "vmrss_bytes": {
+      "max": 14426112.0,
+      "p50": 14417920.0,
+      "p95": 14426112.0,
+      "samples": 47
+    },
+    "voluntary_context_switches": {
+      "max": 2482.0,
+      "p50": 2252.0,
+      "p95": 2459.0,
+      "samples": 47
+    }
+  }
+}

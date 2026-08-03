@@ -1,0 +1,2 @@
+pid 17232's current affinity list: 0-7
+pid 17232's new affinity list: 4

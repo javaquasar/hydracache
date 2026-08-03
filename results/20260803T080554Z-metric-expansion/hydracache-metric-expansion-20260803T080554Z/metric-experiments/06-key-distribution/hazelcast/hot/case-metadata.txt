@@ -1,0 +1,17 @@
+experiment=06-key-distribution
+target=hazelcast
+case=hot
+payload_bytes=256
+clients=10
+pipeline=10
+requests=20000
+key_range=10000
+key_length=16
+distribution=hot
+ttl_ms=0
+mode=default
+memory_limit=
+kind=one
+set_percent=0
+affinity=4
+duration_seconds=45

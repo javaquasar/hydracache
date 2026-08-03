@@ -1,0 +1,2 @@
+pid 9723's current affinity list: 0-7
+pid 9723's new affinity list: 4

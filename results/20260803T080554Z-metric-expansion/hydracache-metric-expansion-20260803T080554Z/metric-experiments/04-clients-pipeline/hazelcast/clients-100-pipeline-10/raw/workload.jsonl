@@ -1,0 +1,2 @@
+{"elapsed_seconds": 1.5067955710001115, "operation": "set", "requests": 20000, "throughput_ops_per_second": 13273.20068157973}
+{"elapsed_seconds": 1.506149061999622, "operation": "get", "requests": 20000, "throughput_ops_per_second": 13278.8981546403}

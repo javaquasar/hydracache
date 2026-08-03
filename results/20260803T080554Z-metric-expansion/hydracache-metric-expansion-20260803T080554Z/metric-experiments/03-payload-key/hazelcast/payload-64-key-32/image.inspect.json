@@ -1,0 +1,71 @@
+[
+    {
+        "Id": "sha256:d9939853200b70cfd52115a9f1e905ef37cd3d98e1f966ce67c8d5e1c9e21e90",
+        "RepoTags": [
+            "hazelcast/hazelcast@sha256:d9939853200b70cfd52115a9f1e905ef37cd3d98e1f966ce67c8d5e1c9e21e90"
+        ],
+        "RepoDigests": [
+            "hazelcast/hazelcast@sha256:d9939853200b70cfd52115a9f1e905ef37cd3d98e1f966ce67c8d5e1c9e21e90"
+        ],
+        "Comment": "buildkit.dockerfile.v0",
+        "Created": "1970-01-01T00:00:00Z",
+        "Config": {
+            "User": "hazelcast",
+            "ExposedPorts": {
+                "5701/tcp": {}
+            },
+            "Env": [
+                "PATH=/opt/hazelcast/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
+                "HZ_HOME=/opt/hazelcast",
+                "CLASSPATH_DEFAULT=/opt/hazelcast/*",
+                "JAVA_OPTS_DEFAULT=-Djava.net.preferIPv4Stack=true -XX:MaxRAMPercentage=80.0",
+                "PROMETHEUS_PORT=",
+                "PROMETHEUS_CONFIG=/opt/hazelcast/config/jmx_agent_config.yaml",
+                "CLASSPATH=",
+                "JAVA_OPTS=",
+                "HAZELCAST_CONFIG=config/hazelcast-docker.xml",
+                "LANG=C.UTF-8"
+            ],
+            "Cmd": [
+                "hz",
+                "start"
+            ],
+            "WorkingDir": "/opt/hazelcast",
+            "ArgsEscaped": true,
+            "Healthcheck": {
+                "Test": [
+                    "CMD",
+                    "hz-healthcheck"
+                ]
+            }
+        },
+        "Architecture": "amd64",
+        "Os": "linux",
+        "Size": 120370321,
+        "RootFS": {
+            "Type": "layers",
+            "Layers": [
+                "sha256:29df493baa13de438d6d2ece3a8333032e0b7b9b9d8cce4ee82194da255f61e1",
+                "sha256:619c6fc253c4f1dbefb7a4c31c4a8ba4c390b6cc56c4425a9cc37fdeed7acc6e",
+                "sha256:5e0f85b1c5261979d8bc296df3005b17451cf7b6a25db9b40174819410fedd8c",
+                "sha256:f3436bd774fc827971d7f6953f56ae898234099d1481bfb0dfc8455f0081bb0a",
+                "sha256:5f70bf18a086007016e948b04aed3b82103a36bea41755b6cddfaf10ace3c6ef"
+            ]
+        },
+        "Metadata": {
+            "LastTagTime": "2026-08-02T23:34:46.887526913Z"
+        },
+        "Descriptor": {
+            "mediaType": "application/vnd.oci.image.index.v1+json",
+            "digest": "sha256:d9939853200b70cfd52115a9f1e905ef37cd3d98e1f966ce67c8d5e1c9e21e90",
+            "size": 2362
+        },
+        "Identity": {
+            "Pull": [
+                {
+                    "Repository": "docker.io/hazelcast/hazelcast"
+                }
+            ]
+        }
+    }
+]

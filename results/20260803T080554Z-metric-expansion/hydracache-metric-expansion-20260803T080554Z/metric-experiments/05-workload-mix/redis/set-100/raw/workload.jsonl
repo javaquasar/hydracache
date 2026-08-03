@@ -1,0 +1,2 @@
+{"bytes_received": 100000, "bytes_sent": 6000000, "clients": 10, "distribution": "uniform", "elapsed_seconds": 1.8023705460000201, "errors": 0, "key_length": 16, "key_range": 10000, "operation": "set", "p50_latency_ms": 0.904507400014154, "p95_latency_ms": 1.1858860500001345, "p99_latency_ms": 1.3185859300110576, "payload_bytes": 256, "pipeline": 10, "requests": 20000, "seed": 6701, "throughput_ops_per_second": 11096.497356986756, "ttl_ms": null}
+{"skipped":"zero-count"}
