@@ -39,7 +39,7 @@ pin_container() {
   local container="$1" dir="$2" pid
   pid="$(docker inspect --format '{{.State.Pid}}' "$container")"
   test -n "$pid" && test "$pid" -gt 0
-  taskset --cpu-list "$affinity" --pid "$pid" >"$dir/affinity.txt" 2>&1
+  taskset --cpu-list -p "$affinity" "$pid" >"$dir/affinity.txt" 2>&1
   grep -q "Cpus_allowed_list:[[:space:]]*${affinity}" "/proc/$pid/status"
 }
 
