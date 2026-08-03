@@ -67,12 +67,12 @@ start_target() {
       local docker_args=(run -d --name "$name" --network host --cpuset-cpus "$affinity" --user "$(id -u):$(id -g)" -v "$dir/redis-data:/data")
       [[ -n "$memory_limit" ]] && docker_args+=(--memory "$memory_limit")
       docker "${docker_args[@]}" "$redis_image" "${args[@]}" >"$dir/container-id.txt" 2>"$dir/docker.log"
-      active_container="$name"; active_target=redis; docker inspect "$name" >"$dir/container.inspect.json"; pin_container "$name" "$dir"; wait_resp 6379;;
+      active_container="$name"; active_target=redis; docker inspect "$name" >"$dir/container.inspect.json"; if ! pin_container "$name" "$dir"; then return 1; fi; wait_resp 6379;;
     hazelcast)
       local docker_args=(run -d --name "$name" --network host --cpuset-cpus "$affinity")
       [[ -n "$memory_limit" ]] && docker_args+=(--memory "$memory_limit")
       docker "${docker_args[@]}" "$hazelcast_image" >"$dir/container-id.txt" 2>"$dir/docker.log"
-      active_container="$name"; active_target=hazelcast; docker inspect "$name" >"$dir/container.inspect.json"; pin_container "$name" "$dir"; wait_hz;;
+      active_container="$name"; active_target=hazelcast; docker inspect "$name" >"$dir/container.inspect.json"; if ! pin_container "$name" "$dir"; then return 1; fi; wait_hz;;
     *) return 1;;
   esac
 }
