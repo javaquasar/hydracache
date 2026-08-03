@@ -49,7 +49,7 @@ start_target() {
       mkdir -p "$dir/redis-data"; local args=(redis-server --save "" --appendonly no)
       [[ "$mode" == rdb ]] && args=(redis-server --save '1 1' --appendonly no --dir /data --dbfilename dump.rdb)
       [[ "$mode" == aof ]] && args=(redis-server --save "" --appendonly yes --appendfsync everysec --dir /data)
-      docker run -d --name "$name" --network host --cpuset-cpus "$affinity" -v "$dir/redis-data:/data" "$redis_image" "${args[@]}" >"$dir/container-id.txt" 2>"$dir/docker.log"
+      docker run -d --name "$name" --network host --cpuset-cpus "$affinity" --user "$(id -u):$(id -g)" -v "$dir/redis-data:/data" "$redis_image" "${args[@]}" >"$dir/container-id.txt" 2>"$dir/docker.log"
       active_container="$name"; active_target=redis; docker inspect "$name" >"$dir/container.inspect.json"; wait_resp 6379;;
     hazelcast)
       docker run -d --name "$name" --network host --cpuset-cpus "$affinity" "$hazelcast_image" >"$dir/container-id.txt" 2>"$dir/docker.log"

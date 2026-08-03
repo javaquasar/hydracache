@@ -137,7 +137,7 @@ start_redis() {
     aof) args=(redis-server --save "" --appendonly yes --appendfsync everysec --dir /data) ;;
   esac
   docker run -d --name "$name" --network host --cpuset-cpus "$affinity" \
-    -v "$dir/redis-data:/data" "$redis_image" "${args[@]}" >"$dir/container-id.txt" 2>"$dir/docker.log"
+    --user "$(id -u):$(id -g)" -v "$dir/redis-data:/data" "$redis_image" "${args[@]}" >"$dir/container-id.txt" 2>"$dir/docker.log"
   active_container="$name"; active_target=redis
   docker inspect "$name" >"$dir/container.inspect.json"
   wait_for_resp 6379
