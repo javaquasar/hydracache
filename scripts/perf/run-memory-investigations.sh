@@ -260,8 +260,8 @@ run_mix_case() {
   set_count=$((requests * pct / 100))
   get_count=$((requests - set_count))
   set +e
-  run_workload "$target" set 256 10 1 "$set_count" 10000 >"$dir/raw/set.log" 2>&1
-  run_workload "$target" get 256 10 1 "$get_count" 10000 >"$dir/raw/get.log" 2>&1
+  if [[ "$set_count" -gt 0 ]]; then run_workload "$target" set 256 10 1 "$set_count" 10000 >"$dir/raw/set.log" 2>&1; else echo skipped-zero-count >"$dir/raw/set.log"; fi
+  if [[ "$get_count" -gt 0 ]]; then run_workload "$target" get 256 10 1 "$get_count" 10000 >"$dir/raw/get.log" 2>&1; else echo skipped-zero-count >"$dir/raw/get.log"; fi
   set -e
   kill -TERM "$collector" 2>/dev/null || true; wait "$collector" 2>/dev/null || true
   summarize_case "$dir"; stop_target "$target"; echo complete >"$dir/status.txt"; record_status "$exp" "$target" "$case_id" complete "set_percent=$pct"
