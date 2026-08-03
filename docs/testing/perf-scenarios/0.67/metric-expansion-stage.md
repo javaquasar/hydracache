@@ -5,6 +5,9 @@ work. It is deliberately separate from qualification and bootstrap evidence.
 No row from this stage may be used to qualify a release or to satisfy the
 five-sample bootstrap requirement.
 
+The follow-up plan for real multi-member behavior, quorum and failure recovery
+is documented in [Stage 4 cluster and resilience testing plan](cluster-resilience-testing-plan.md).
+
 ## Targets and controls
 
 The runner compares the HydraCache server, Redis and Hazelcast Community using
