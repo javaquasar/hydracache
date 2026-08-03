@@ -5,6 +5,11 @@ qualification and reference bootstrap. It is written for the provisional
 `EM-B220E-NVMe` host (AMD EPYC 7232P, 8C/16T, 64 GiB RAM, local NVMe) but the checks are
 provider-neutral.
 
+For the next rental, use this runbook together with the profile-driven
+[next-rental automation playbook](PERF_RUNNER_NEXT_RENTAL_PLAYBOOK.md). The new
+playbook captures the lessons from the completed qualification/exploratory work
+and adds allowlisted service tuning, exact environment freeze, drift detection,
+and reversible pre-state receipts.
 The commands are intentionally split into local Windows PowerShell, remote root, remote
 administrator, and GitHub runner-user sections. Do not paste an entire section blindly. Run one
 block at a time, inspect its output, and stop on any failed assertion.

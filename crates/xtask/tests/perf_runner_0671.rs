@@ -19,7 +19,7 @@ fn runner_runbook_and_helpers_are_fail_closed_and_secret_free() {
     let measurement = read("scripts/perf/run-reference-measurement.sh");
     let prebuild = read("crates/xtask/src/perf.rs");
     let host_attestation = read("crates/xtask/src/host_attestation.rs");
-    let workflow = read(".github/workflows/ci.yml");
+    let workflow = read(".github/workflows/ci.yml").replace("\r\n", "\n");
 
     for script in [
         &audit,
@@ -118,7 +118,8 @@ fn runner_runbook_and_helpers_are_fail_closed_and_secret_free() {
     assert!(runtime_irq_guard.contains("dormant_unmapped_nvme_irq"));
     assert!(runtime_irq_guard.contains("runtime IRQ guard failed phase=${phase}"));
     assert!(runtime_irq_guard.contains("per_cpu_counts=${counts}"));
-    assert!(runtime_irq_guard.contains("measurement=1-4"));
+    assert!(runtime_irq_guard.contains("measurement=\"${MEASUREMENT_AFFINITY-1-4}\""));
+    assert!(runtime_irq_guard.contains("measurement=${measurement}"));
     assert!(evidence_tmpfs.contains("/dev/shm/hydracache-reference-evidence-v1"));
     assert!(evidence_tmpfs.contains("findmnt --noheadings --output FSTYPE"));
     assert!(evidence_tmpfs.contains("ln --symbolic"));
