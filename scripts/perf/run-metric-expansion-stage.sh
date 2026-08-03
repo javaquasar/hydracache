@@ -35,6 +35,13 @@ require_tools() {
 
 wait_resp() { local port="$1"; for _ in $(seq 1 100); do printf '*1\r\n$4\r\nping\r\n' | nc -w1 127.0.0.1 "$port" 2>/dev/null | grep -q PONG && return 0; sleep .2; done; return 1; }
 wait_hz() { for _ in $(seq 1 120); do "$hazelcast_client_python" -c 'import hazelcast; c=hazelcast.HazelcastClient(cluster_members=["127.0.0.1:5701"]); c.cluster_service.get_members(); c.shutdown()' >/dev/null 2>&1 && return 0; sleep 1; done; return 1; }
+pin_container() {
+  local container="$1" dir="$2" pid
+  pid="$(docker inspect --format '{{.State.Pid}}' "$container")"
+  test -n "$pid" && test "$pid" -gt 0
+  taskset --cpu-list "$affinity" --pid "$pid" >"$dir/affinity.txt" 2>&1
+  grep -q "Cpus_allowed_list:[[:space:]]*${affinity}" "/proc/$pid/status"
+}
 
 stop_target() {
   set +e
@@ -60,12 +67,12 @@ start_target() {
       local docker_args=(run -d --name "$name" --network host --cpuset-cpus "$affinity" --user "$(id -u):$(id -g)" -v "$dir/redis-data:/data")
       [[ -n "$memory_limit" ]] && docker_args+=(--memory "$memory_limit")
       docker "${docker_args[@]}" "$redis_image" "${args[@]}" >"$dir/container-id.txt" 2>"$dir/docker.log"
-      active_container="$name"; active_target=redis; docker inspect "$name" >"$dir/container.inspect.json"; wait_resp 6379;;
+      active_container="$name"; active_target=redis; docker inspect "$name" >"$dir/container.inspect.json"; pin_container "$name" "$dir"; wait_resp 6379;;
     hazelcast)
       local docker_args=(run -d --name "$name" --network host --cpuset-cpus "$affinity")
       [[ -n "$memory_limit" ]] && docker_args+=(--memory "$memory_limit")
       docker "${docker_args[@]}" "$hazelcast_image" >"$dir/container-id.txt" 2>"$dir/docker.log"
-      active_container="$name"; active_target=hazelcast; docker inspect "$name" >"$dir/container.inspect.json"; wait_hz;;
+      active_container="$name"; active_target=hazelcast; docker inspect "$name" >"$dir/container.inspect.json"; pin_container "$name" "$dir"; wait_hz;;
     *) return 1;;
   esac
 }
