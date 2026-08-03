@@ -1,0 +1,3 @@
+reference evidence tmpfs prepared: root=/dev/shm/hydracache-reference-evidence-v1
+reference runtime IRQ guard passed: phase=memory-leak-pre measurement=4 irq_files=113 dormant-unmapped-nvme=2
+reference runtime IRQ guard passed: phase=memory-leak-post measurement=4 irq_files=113 dormant-unmapped-nvme=2

@@ -57,7 +57,8 @@ On the pinned runner, after checking out this branch and building the release
 binary:
 
 ```bash
-export DOCKER_HOST=unix:///run/user/1001/docker.sock
+export XDG_RUNTIME_DIR="/run/user/$(id -u)"
+export DOCKER_HOST="unix://${XDG_RUNTIME_DIR}/docker.sock"
 export HAZELCAST_IMAGE='hazelcast/hazelcast:5.7.0-slim-jdk21@sha256:d9939853200b70cfd52115a9f1e905ef37cd3d98e1f966ce67c8d5e1c9e21e90'
 export MEASUREMENT_AFFINITY=4
 scripts/perf/run-memory-investigations.sh /dev/shm/hydracache-memory-investigations-UTC

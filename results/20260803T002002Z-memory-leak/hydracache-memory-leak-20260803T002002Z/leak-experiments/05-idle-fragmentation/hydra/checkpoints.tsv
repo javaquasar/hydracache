@@ -1,0 +1,4 @@
+timestamp	phase	detail
+1785718945.058306922	start	idle-fragmentation
+1785718945.060349748	load	10000
+1785718945.431067055	idle-start	180

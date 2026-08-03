@@ -1,0 +1,953 @@
+[
+  [
+    {
+      "experiment": "01-fixed-keyspace",
+      "target": "hydra",
+      "pattern": "fixed-keyspace",
+      "status": "complete"
+    },
+    {
+      "samples": 180
+    },
+    {
+      "vmrss_bytes": {
+        "samples": 180,
+        "slope_bytes_per_minute": 5550767.029872324,
+        "first": 8609792.0,
+        "last": 28659712.0,
+        "delta": 20049920.0,
+        "duration_seconds": 179.23778653144836
+      },
+      "smaps_rollup_pss_anon_bytes": {
+        "samples": 180,
+        "slope_bytes_per_minute": 5550556.697623567,
+        "first": 1679360.0,
+        "last": 21712896.0,
+        "delta": 20033536.0,
+        "duration_seconds": 179.23778653144836
+      },
+      "cgroup_memory_current_bytes": {
+        "samples": 180,
+        "slope_bytes_per_minute": 5576097.1760048615,
+        "first": 13381632.0,
+        "last": 31666176.0,
+        "delta": 18284544.0,
+        "duration_seconds": 179.23778653144836
+      },
+      "cgroup_memory_anon_bytes": {
+        "samples": 180,
+        "slope_bytes_per_minute": 5541992.151816139,
+        "first": 11792384.0,
+        "last": 30388224.0,
+        "delta": 18595840.0,
+        "duration_seconds": 179.23778653144836
+      },
+      "cgroup_memory_file_bytes": {
+        "samples": 180,
+        "slope_bytes_per_minute": 68039.32686811883,
+        "first": 45056.0,
+        "last": 249856.0,
+        "delta": 204800.0,
+        "duration_seconds": 179.23778653144836
+      },
+      "process_threads": {
+        "samples": 180,
+        "slope_bytes_per_minute": 0.0,
+        "first": 2.0,
+        "last": 2.0,
+        "delta": 0.0,
+        "duration_seconds": 179.23778653144836
+      },
+      "process_fd_count": {
+        "samples": 180,
+        "slope_bytes_per_minute": -0.09555076039085632,
+        "first": 21.0,
+        "last": 11.0,
+        "delta": -10.0,
+        "duration_seconds": 179.23778653144836
+      }
+    }
+  ],
+  [
+    {
+      "experiment": "01-fixed-keyspace",
+      "target": "redis",
+      "pattern": "fixed-keyspace",
+      "status": "complete"
+    },
+    {
+      "samples": 180
+    },
+    {
+      "vmrss_bytes": {
+        "samples": 180,
+        "slope_bytes_per_minute": 525145.7221863712,
+        "first": 11710464.0,
+        "last": 14942208.0,
+        "delta": 3231744.0,
+        "duration_seconds": 179.22158455848694
+      },
+      "smaps_rollup_pss_anon_bytes": {
+        "samples": 180,
+        "slope_bytes_per_minute": 525055.3159739871,
+        "first": 3432448.0,
+        "last": 6656000.0,
+        "delta": 3223552.0,
+        "duration_seconds": 179.22158455848694
+      },
+      "cgroup_memory_current_bytes": {
+        "samples": 180,
+        "slope_bytes_per_minute": 510209.72226230014,
+        "first": 4087808.0,
+        "last": 7344128.0,
+        "delta": 3256320.0,
+        "duration_seconds": 179.22158455848694
+      },
+      "cgroup_memory_anon_bytes": {
+        "samples": 180,
+        "slope_bytes_per_minute": 525100.519080179,
+        "first": 3428352.0,
+        "last": 6656000.0,
+        "delta": 3227648.0,
+        "duration_seconds": 179.22158455848694
+      },
+      "cgroup_memory_file_bytes": {
+        "samples": 180,
+        "slope_bytes_per_minute": 0.0,
+        "first": 0.0,
+        "last": 0.0,
+        "delta": 0.0,
+        "duration_seconds": 179.22158455848694
+      },
+      "process_threads": {
+        "samples": 180,
+        "slope_bytes_per_minute": 0.0,
+        "first": 5.0,
+        "last": 5.0,
+        "delta": 0.0,
+        "duration_seconds": 179.22158455848694
+      },
+      "process_fd_count": {
+        "samples": 0,
+        "slope_bytes_per_minute": null,
+        "first": null,
+        "last": null,
+        "delta": null
+      }
+    }
+  ],
+  [
+    {
+      "experiment": "01-fixed-keyspace",
+      "target": "hazelcast",
+      "pattern": "fixed-keyspace",
+      "status": "complete"
+    },
+    {
+      "samples": 178
+    },
+    {
+      "vmrss_bytes": {
+        "samples": 178,
+        "slope_bytes_per_minute": 30923956.805603117,
+        "first": 264630272.0,
+        "last": 377597952.0,
+        "delta": 112967680.0,
+        "duration_seconds": 179.4265513420105
+      },
+      "smaps_rollup_pss_anon_bytes": {
+        "samples": 178,
+        "slope_bytes_per_minute": 30847262.86135259,
+        "first": 242610176.0,
+        "last": 353865728.0,
+        "delta": 111255552.0,
+        "duration_seconds": 179.4265513420105
+      },
+      "cgroup_memory_current_bytes": {
+        "samples": 178,
+        "slope_bytes_per_minute": 30795029.332080353,
+        "first": 246108160.0,
+        "last": 357756928.0,
+        "delta": 111648768.0,
+        "duration_seconds": 179.4265513420105
+      },
+      "cgroup_memory_anon_bytes": {
+        "samples": 178,
+        "slope_bytes_per_minute": 30841949.564192567,
+        "first": 242208768.0,
+        "last": 353865728.0,
+        "delta": 111656960.0,
+        "duration_seconds": 179.4265513420105
+      },
+      "cgroup_memory_file_bytes": {
+        "samples": 178,
+        "slope_bytes_per_minute": 0.0,
+        "first": 32768.0,
+        "last": 32768.0,
+        "delta": 0.0,
+        "duration_seconds": 179.4265513420105
+      },
+      "process_threads": {
+        "samples": 178,
+        "slope_bytes_per_minute": -0.10822682333248419,
+        "first": 79.0,
+        "last": 83.0,
+        "delta": 4.0,
+        "duration_seconds": 179.4265513420105
+      },
+      "process_fd_count": {
+        "samples": 0,
+        "slope_bytes_per_minute": null,
+        "first": null,
+        "last": null,
+        "delta": null
+      }
+    }
+  ],
+  [
+    {
+      "experiment": "02-expiry-reclamation",
+      "target": "hazelcast",
+      "pattern": "expiry-reclamation",
+      "status": "not_applicable"
+    },
+    {
+      "samples": 0
+    },
+    {
+      "vmrss_bytes": {
+        "samples": 0,
+        "slope_bytes_per_minute": null,
+        "first": null,
+        "last": null,
+        "delta": null
+      },
+      "smaps_rollup_pss_anon_bytes": {
+        "samples": 0,
+        "slope_bytes_per_minute": null,
+        "first": null,
+        "last": null,
+        "delta": null
+      },
+      "cgroup_memory_current_bytes": {
+        "samples": 0,
+        "slope_bytes_per_minute": null,
+        "first": null,
+        "last": null,
+        "delta": null
+      },
+      "cgroup_memory_anon_bytes": {
+        "samples": 0,
+        "slope_bytes_per_minute": null,
+        "first": null,
+        "last": null,
+        "delta": null
+      },
+      "cgroup_memory_file_bytes": {
+        "samples": 0,
+        "slope_bytes_per_minute": null,
+        "first": null,
+        "last": null,
+        "delta": null
+      },
+      "process_threads": {
+        "samples": 0,
+        "slope_bytes_per_minute": null,
+        "first": null,
+        "last": null,
+        "delta": null
+      },
+      "process_fd_count": {
+        "samples": 0,
+        "slope_bytes_per_minute": null,
+        "first": null,
+        "last": null,
+        "delta": null
+      }
+    }
+  ],
+  [
+    {
+      "experiment": "02-expiry-reclamation",
+      "target": "hydra",
+      "pattern": "expiry-reclamation",
+      "status": "complete"
+    },
+    {
+      "samples": 180
+    },
+    {
+      "vmrss_bytes": {
+        "samples": 180,
+        "slope_bytes_per_minute": 2698113.4976857575,
+        "first": 7872512.0,
+        "last": 17756160.0,
+        "delta": 9883648.0,
+        "duration_seconds": 179.27651000022888
+      },
+      "smaps_rollup_pss_anon_bytes": {
+        "samples": 180,
+        "slope_bytes_per_minute": 2698089.7660885598,
+        "first": 880640.0,
+        "last": 10764288.0,
+        "delta": 9883648.0,
+        "duration_seconds": 179.27651000022888
+      },
+      "cgroup_memory_current_bytes": {
+        "samples": 180,
+        "slope_bytes_per_minute": 2945487.750355862,
+        "first": 14036992.0,
+        "last": 25415680.0,
+        "delta": 11378688.0,
+        "duration_seconds": 179.27651000022888
+      },
+      "cgroup_memory_anon_bytes": {
+        "samples": 180,
+        "slope_bytes_per_minute": 2658173.9718340044,
+        "first": 11763712.0,
+        "last": 20922368.0,
+        "delta": 9158656.0,
+        "duration_seconds": 179.27651000022888
+      },
+      "cgroup_memory_file_bytes": {
+        "samples": 180,
+        "slope_bytes_per_minute": 53499.938870496386,
+        "first": 774144.0,
+        "last": 937984.0,
+        "delta": 163840.0,
+        "duration_seconds": 179.27651000022888
+      },
+      "process_threads": {
+        "samples": 180,
+        "slope_bytes_per_minute": 0.0,
+        "first": 2.0,
+        "last": 2.0,
+        "delta": 0.0,
+        "duration_seconds": 179.27651000022888
+      },
+      "process_fd_count": {
+        "samples": 180,
+        "slope_bytes_per_minute": -0.0573846586053492,
+        "first": 12.0,
+        "last": 11.0,
+        "delta": -1.0,
+        "duration_seconds": 179.27651000022888
+      }
+    }
+  ],
+  [
+    {
+      "experiment": "02-expiry-reclamation",
+      "target": "redis",
+      "pattern": "expiry-reclamation",
+      "status": "complete"
+    },
+    {
+      "samples": 180
+    },
+    {
+      "vmrss_bytes": {
+        "samples": 180,
+        "slope_bytes_per_minute": 270.53242778137314,
+        "first": 10891264.0,
+        "last": 10919936.0,
+        "delta": 28672.0,
+        "duration_seconds": 179.26551270484924
+      },
+      "smaps_rollup_pss_anon_bytes": {
+        "samples": 180,
+        "slope_bytes_per_minute": 270.53242778137314,
+        "first": 2527232.0,
+        "last": 2555904.0,
+        "delta": 28672.0,
+        "duration_seconds": 179.26551270484924
+      },
+      "cgroup_memory_current_bytes": {
+        "samples": 180,
+        "slope_bytes_per_minute": 47335.94572970317,
+        "first": 2953216.0,
+        "last": 2981888.0,
+        "delta": 28672.0,
+        "duration_seconds": 179.26551270484924
+      },
+      "cgroup_memory_anon_bytes": {
+        "samples": 180,
+        "slope_bytes_per_minute": 270.53242778137314,
+        "first": 2527232.0,
+        "last": 2555904.0,
+        "delta": 28672.0,
+        "duration_seconds": 179.26551270484924
+      },
+      "cgroup_memory_file_bytes": {
+        "samples": 180,
+        "slope_bytes_per_minute": 0.0,
+        "first": 0.0,
+        "last": 0.0,
+        "delta": 0.0,
+        "duration_seconds": 179.26551270484924
+      },
+      "process_threads": {
+        "samples": 180,
+        "slope_bytes_per_minute": 0.0,
+        "first": 5.0,
+        "last": 5.0,
+        "delta": 0.0,
+        "duration_seconds": 179.26551270484924
+      },
+      "process_fd_count": {
+        "samples": 0,
+        "slope_bytes_per_minute": null,
+        "first": null,
+        "last": null,
+        "delta": null
+      }
+    }
+  ],
+  [
+    {
+      "experiment": "03-cycle-reset",
+      "target": "hydra",
+      "pattern": "cycle-reset",
+      "status": "complete"
+    },
+    {
+      "samples": 180
+    },
+    {
+      "vmrss_bytes": {
+        "samples": 180,
+        "slope_bytes_per_minute": 10013364.043738883,
+        "first": 8716288.0,
+        "last": 41340928.0,
+        "delta": 32624640.0,
+        "duration_seconds": 179.25890970230103
+      },
+      "smaps_rollup_pss_anon_bytes": {
+        "samples": 180,
+        "slope_bytes_per_minute": 10013367.330900768,
+        "first": 1642496.0,
+        "last": 34263040.0,
+        "delta": 32620544.0,
+        "duration_seconds": 179.25890970230103
+      },
+      "cgroup_memory_current_bytes": {
+        "samples": 180,
+        "slope_bytes_per_minute": 9843687.263778454,
+        "first": 17907712.0,
+        "last": 47071232.0,
+        "delta": 29163520.0,
+        "duration_seconds": 179.25890970230103
+      },
+      "cgroup_memory_anon_bytes": {
+        "samples": 180,
+        "slope_bytes_per_minute": 10018682.739055209,
+        "first": 13213696.0,
+        "last": 44384256.0,
+        "delta": 31170560.0,
+        "duration_seconds": 179.25890970230103
+      },
+      "cgroup_memory_file_bytes": {
+        "samples": 180,
+        "slope_bytes_per_minute": 60837.59045925577,
+        "first": 1163264.0,
+        "last": 1347584.0,
+        "delta": 184320.0,
+        "duration_seconds": 179.25890970230103
+      },
+      "process_threads": {
+        "samples": 180,
+        "slope_bytes_per_minute": 0.0,
+        "first": 2.0,
+        "last": 2.0,
+        "delta": 0.0,
+        "duration_seconds": 179.25890970230103
+      },
+      "process_fd_count": {
+        "samples": 180,
+        "slope_bytes_per_minute": -0.05115111154255737,
+        "first": 21.0,
+        "last": 11.0,
+        "delta": -10.0,
+        "duration_seconds": 179.25890970230103
+      }
+    }
+  ],
+  [
+    {
+      "experiment": "03-cycle-reset",
+      "target": "redis",
+      "pattern": "cycle-reset",
+      "status": "complete"
+    },
+    {
+      "samples": 180
+    },
+    {
+      "vmrss_bytes": {
+        "samples": 180,
+        "slope_bytes_per_minute": 36688.982963990406,
+        "first": 11894784.0,
+        "last": 12763136.0,
+        "delta": 868352.0,
+        "duration_seconds": 179.2178657054901
+      },
+      "smaps_rollup_pss_anon_bytes": {
+        "samples": 180,
+        "slope_bytes_per_minute": 36553.36761028304,
+        "first": 3551232.0,
+        "last": 4407296.0,
+        "delta": 856064.0,
+        "duration_seconds": 179.2178657054901
+      },
+      "cgroup_memory_current_bytes": {
+        "samples": 180,
+        "slope_bytes_per_minute": -11526.127700227966,
+        "first": 4243456.0,
+        "last": 4841472.0,
+        "delta": 598016.0,
+        "duration_seconds": 179.2178657054901
+      },
+      "cgroup_memory_anon_bytes": {
+        "samples": 180,
+        "slope_bytes_per_minute": 36688.982963990406,
+        "first": 3538944.0,
+        "last": 4407296.0,
+        "delta": 868352.0,
+        "duration_seconds": 179.2178657054901
+      },
+      "cgroup_memory_file_bytes": {
+        "samples": 180,
+        "slope_bytes_per_minute": 0.0,
+        "first": 0.0,
+        "last": 0.0,
+        "delta": 0.0,
+        "duration_seconds": 179.2178657054901
+      },
+      "process_threads": {
+        "samples": 180,
+        "slope_bytes_per_minute": 0.0,
+        "first": 5.0,
+        "last": 5.0,
+        "delta": 0.0,
+        "duration_seconds": 179.2178657054901
+      },
+      "process_fd_count": {
+        "samples": 0,
+        "slope_bytes_per_minute": null,
+        "first": null,
+        "last": null,
+        "delta": null
+      }
+    }
+  ],
+  [
+    {
+      "experiment": "03-cycle-reset",
+      "target": "hazelcast",
+      "pattern": "cycle-reset",
+      "status": "complete"
+    },
+    {
+      "samples": 178
+    },
+    {
+      "vmrss_bytes": {
+        "samples": 178,
+        "slope_bytes_per_minute": 36440943.95422051,
+        "first": 263897088.0,
+        "last": 371859456.0,
+        "delta": 107962368.0,
+        "duration_seconds": 179.3570523262024
+      },
+      "smaps_rollup_pss_anon_bytes": {
+        "samples": 178,
+        "slope_bytes_per_minute": 36334309.86795008,
+        "first": 241455104.0,
+        "last": 347910144.0,
+        "delta": 106455040.0,
+        "duration_seconds": 179.3570523262024
+      },
+      "cgroup_memory_current_bytes": {
+        "samples": 178,
+        "slope_bytes_per_minute": 36347745.107798405,
+        "first": 245108736.0,
+        "last": 352174080.0,
+        "delta": 107065344.0,
+        "duration_seconds": 179.3570523262024
+      },
+      "cgroup_memory_anon_bytes": {
+        "samples": 178,
+        "slope_bytes_per_minute": 36345696.919125885,
+        "first": 241455104.0,
+        "last": 347910144.0,
+        "delta": 106455040.0,
+        "duration_seconds": 179.3570523262024
+      },
+      "cgroup_memory_file_bytes": {
+        "samples": 178,
+        "slope_bytes_per_minute": 0.0,
+        "first": 32768.0,
+        "last": 32768.0,
+        "delta": 0.0,
+        "duration_seconds": 179.3570523262024
+      },
+      "process_threads": {
+        "samples": 178,
+        "slope_bytes_per_minute": 0.5700525190647769,
+        "first": 79.0,
+        "last": 87.0,
+        "delta": 8.0,
+        "duration_seconds": 179.3570523262024
+      },
+      "process_fd_count": {
+        "samples": 0,
+        "slope_bytes_per_minute": null,
+        "first": null,
+        "last": null,
+        "delta": null
+      }
+    }
+  ],
+  [
+    {
+      "experiment": "04-restart-soak",
+      "target": "hydra",
+      "pattern": "restart-soak",
+      "status": "complete"
+    },
+    {
+      "samples": 180
+    },
+    {
+      "vmrss_bytes": {
+        "samples": 180,
+        "slope_bytes_per_minute": 634650.5906842385,
+        "first": 8822784.0,
+        "last": 15839232.0,
+        "delta": 7016448.0,
+        "duration_seconds": 182.03017854690552
+      },
+      "smaps_rollup_pss_anon_bytes": {
+        "samples": 180,
+        "slope_bytes_per_minute": 645729.3350862897,
+        "first": 1748992.0,
+        "last": 8802304.0,
+        "delta": 7053312.0,
+        "duration_seconds": 182.03017854690552
+      },
+      "cgroup_memory_current_bytes": {
+        "samples": 180,
+        "slope_bytes_per_minute": 767255.4936816675,
+        "first": 17014784.0,
+        "last": 22421504.0,
+        "delta": 5406720.0,
+        "duration_seconds": 182.03017854690552
+      },
+      "cgroup_memory_anon_bytes": {
+        "samples": 180,
+        "slope_bytes_per_minute": 631994.8075315709,
+        "first": 13328384.0,
+        "last": 18907136.0,
+        "delta": 5578752.0,
+        "duration_seconds": 182.03017854690552
+      },
+      "cgroup_memory_file_bytes": {
+        "samples": 180,
+        "slope_bytes_per_minute": 79530.65514647796,
+        "first": 1826816.0,
+        "last": 2064384.0,
+        "delta": 237568.0,
+        "duration_seconds": 182.03017854690552
+      },
+      "process_threads": {
+        "samples": 180,
+        "slope_bytes_per_minute": 0.0,
+        "first": 2.0,
+        "last": 2.0,
+        "delta": 0.0,
+        "duration_seconds": 182.03017854690552
+      },
+      "process_fd_count": {
+        "samples": 180,
+        "slope_bytes_per_minute": -0.10347156097996757,
+        "first": 21.0,
+        "last": 11.0,
+        "delta": -10.0,
+        "duration_seconds": 182.03017854690552
+      }
+    }
+  ],
+  [
+    {
+      "experiment": "04-restart-soak",
+      "target": "redis",
+      "pattern": "restart-soak",
+      "status": "complete"
+    },
+    {
+      "samples": 180
+    },
+    {
+      "vmrss_bytes": {
+        "samples": 180,
+        "slope_bytes_per_minute": 413301.70079427306,
+        "first": 11821056.0,
+        "last": 14684160.0,
+        "delta": 2863104.0,
+        "duration_seconds": 182.45850539207458
+      },
+      "smaps_rollup_pss_anon_bytes": {
+        "samples": 180,
+        "slope_bytes_per_minute": 437625.7244950429,
+        "first": 3506176.0,
+        "last": 6385664.0,
+        "delta": 2879488.0,
+        "duration_seconds": 182.45850539207458
+      },
+      "cgroup_memory_current_bytes": {
+        "samples": 180,
+        "slope_bytes_per_minute": 464529.55086066696,
+        "first": 4214784.0,
+        "last": 7077888.0,
+        "delta": 2863104.0,
+        "duration_seconds": 182.45850539207458
+      },
+      "cgroup_memory_anon_bytes": {
+        "samples": 180,
+        "slope_bytes_per_minute": 438034.7597653227,
+        "first": 3469312.0,
+        "last": 6385664.0,
+        "delta": 2916352.0,
+        "duration_seconds": 182.45850539207458
+      },
+      "cgroup_memory_file_bytes": {
+        "samples": 180,
+        "slope_bytes_per_minute": 0.0,
+        "first": 0.0,
+        "last": 0.0,
+        "delta": 0.0,
+        "duration_seconds": 182.45850539207458
+      },
+      "process_threads": {
+        "samples": 180,
+        "slope_bytes_per_minute": 0.0,
+        "first": 5.0,
+        "last": 5.0,
+        "delta": 0.0,
+        "duration_seconds": 182.45850539207458
+      },
+      "process_fd_count": {
+        "samples": 0,
+        "slope_bytes_per_minute": null,
+        "first": null,
+        "last": null,
+        "delta": null
+      }
+    }
+  ],
+  [
+    {
+      "experiment": "05-idle-fragmentation",
+      "target": "hydra",
+      "pattern": "idle-fragmentation",
+      "status": "complete"
+    },
+    {
+      "samples": 180
+    },
+    {
+      "vmrss_bytes": {
+        "samples": 180,
+        "slope_bytes_per_minute": 60081.325739385466,
+        "first": 8650752.0,
+        "last": 14094336.0,
+        "delta": 5443584.0,
+        "duration_seconds": 179.20853281021118
+      },
+      "smaps_rollup_pss_anon_bytes": {
+        "samples": 180,
+        "slope_bytes_per_minute": 59945.70197925142,
+        "first": 1691648.0,
+        "last": 7122944.0,
+        "delta": 5431296.0,
+        "duration_seconds": 179.20853281021118
+      },
+      "cgroup_memory_current_bytes": {
+        "samples": 180,
+        "slope_bytes_per_minute": -33766.842183797475,
+        "first": 17248256.0,
+        "last": 20983808.0,
+        "delta": 3735552.0,
+        "duration_seconds": 179.20853281021118
+      },
+      "cgroup_memory_anon_bytes": {
+        "samples": 180,
+        "slope_bytes_per_minute": 50197.158461842926,
+        "first": 13258752.0,
+        "last": 17240064.0,
+        "delta": 3981312.0,
+        "duration_seconds": 179.20853281021118
+      },
+      "cgroup_memory_file_bytes": {
+        "samples": 180,
+        "slope_bytes_per_minute": 53213.34180837047,
+        "first": 2387968.0,
+        "last": 2551808.0,
+        "delta": 163840.0,
+        "duration_seconds": 179.20853281021118
+      },
+      "process_threads": {
+        "samples": 180,
+        "slope_bytes_per_minute": 0.0,
+        "first": 2.0,
+        "last": 2.0,
+        "delta": 0.0,
+        "duration_seconds": 179.20853281021118
+      },
+      "process_fd_count": {
+        "samples": 180,
+        "slope_bytes_per_minute": -0.11037089854659259,
+        "first": 21.0,
+        "last": 11.0,
+        "delta": -10.0,
+        "duration_seconds": 179.20853281021118
+      }
+    }
+  ],
+  [
+    {
+      "experiment": "05-idle-fragmentation",
+      "target": "redis",
+      "pattern": "idle-fragmentation",
+      "status": "complete"
+    },
+    {
+      "samples": 180
+    },
+    {
+      "vmrss_bytes": {
+        "samples": 180,
+        "slope_bytes_per_minute": 17797.360141206496,
+        "first": 11890688.0,
+        "last": 13647872.0,
+        "delta": 1757184.0,
+        "duration_seconds": 179.20759749412537
+      },
+      "smaps_rollup_pss_anon_bytes": {
+        "samples": 180,
+        "slope_bytes_per_minute": 17706.94771336025,
+        "first": 3440640.0,
+        "last": 5189632.0,
+        "delta": 1748992.0,
+        "duration_seconds": 179.20759749412537
+      },
+      "cgroup_memory_current_bytes": {
+        "samples": 180,
+        "slope_bytes_per_minute": -22952.81886097943,
+        "first": 3915776.0,
+        "last": 5877760.0,
+        "delta": 1961984.0,
+        "duration_seconds": 179.20759749412537
+      },
+      "cgroup_memory_anon_bytes": {
+        "samples": 180,
+        "slope_bytes_per_minute": 17797.360141206496,
+        "first": 3432448.0,
+        "last": 5189632.0,
+        "delta": 1757184.0,
+        "duration_seconds": 179.20759749412537
+      },
+      "cgroup_memory_file_bytes": {
+        "samples": 180,
+        "slope_bytes_per_minute": 0.0,
+        "first": 0.0,
+        "last": 0.0,
+        "delta": 0.0,
+        "duration_seconds": 179.20759749412537
+      },
+      "process_threads": {
+        "samples": 180,
+        "slope_bytes_per_minute": 0.0,
+        "first": 5.0,
+        "last": 5.0,
+        "delta": 0.0,
+        "duration_seconds": 179.20759749412537
+      },
+      "process_fd_count": {
+        "samples": 0,
+        "slope_bytes_per_minute": null,
+        "first": null,
+        "last": null,
+        "delta": null
+      }
+    }
+  ],
+  [
+    {
+      "experiment": "05-idle-fragmentation",
+      "target": "hazelcast",
+      "pattern": "idle-fragmentation",
+      "status": "complete"
+    },
+    {
+      "samples": 178
+    },
+    {
+      "vmrss_bytes": {
+        "samples": 178,
+        "slope_bytes_per_minute": 3098148.3402422154,
+        "first": 260304896.0,
+        "last": 297721856.0,
+        "delta": 37416960.0,
+        "duration_seconds": 178.99250173568726
+      },
+      "smaps_rollup_pss_anon_bytes": {
+        "samples": 178,
+        "slope_bytes_per_minute": 3007956.8477061084,
+        "first": 237948928.0,
+        "last": 273989632.0,
+        "delta": 36040704.0,
+        "duration_seconds": 178.99250173568726
+      },
+      "cgroup_memory_current_bytes": {
+        "samples": 178,
+        "slope_bytes_per_minute": 2947194.907825704,
+        "first": 241455104.0,
+        "last": 277803008.0,
+        "delta": 36347904.0,
+        "duration_seconds": 178.99250173568726
+      },
+      "cgroup_memory_anon_bytes": {
+        "samples": 178,
+        "slope_bytes_per_minute": 3008009.631885518,
+        "first": 237948928.0,
+        "last": 273989632.0,
+        "delta": 36040704.0,
+        "duration_seconds": 178.99250173568726
+      },
+      "cgroup_memory_file_bytes": {
+        "samples": 178,
+        "slope_bytes_per_minute": 0.0,
+        "first": 32768.0,
+        "last": 32768.0,
+        "delta": 0.0,
+        "duration_seconds": 178.99250173568726
+      },
+      "process_threads": {
+        "samples": 178,
+        "slope_bytes_per_minute": -2.5327327173696426,
+        "first": 79.0,
+        "last": 77.0,
+        "delta": -2.0,
+        "duration_seconds": 178.99250173568726
+      },
+      "process_fd_count": {
+        "samples": 0,
+        "slope_bytes_per_minute": null,
+        "first": null,
+        "last": null,
+        "delta": null
+      }
+    }
+  ]
+]

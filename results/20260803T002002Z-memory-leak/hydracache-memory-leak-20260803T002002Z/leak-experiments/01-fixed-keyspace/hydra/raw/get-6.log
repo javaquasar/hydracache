@@ -1,0 +1,3 @@
+WARNING: Could not fetch server CONFIG
+ GET: rps=0.0 (overall: 10000.0) avg_msec=0.618 (overall: 0.618)                                                                GET: rps=28744.0 (overall: 28669.3) avg_msec=0.272 (overall: 0.272)                                                                    GET: 28490.03 requests per second, p50=0.295 msec
+

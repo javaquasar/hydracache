@@ -1,0 +1,12 @@
+stage=memory-leak
+branch=explore/0.67-telemetry-hazelcast
+source_commit=af8366d7b7ea433b7ba57b18ab133af318a3a604
+host=hydracache-perf-v1
+affinity=4
+interval_seconds=1
+duration_seconds=180
+cycles=6
+batch_requests=10000
+redis_image=redis@sha256:3aaec283e6e593bde528077d60280ac1589887067a39273348860837c9346d7e
+hazelcast_image=hazelcast/hazelcast:5.7.0-slim-jdk21@sha256:d9939853200b70cfd52115a9f1e905ef37cd3d98e1f966ce67c8d5e1c9e21e90
+hazelcast_client_version=5.5.0
