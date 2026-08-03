@@ -150,7 +150,7 @@ require_tools
 } >"$output_dir/reproduction-command.txt"
 for generated_evidence in target/test-evidence/0.67 target/test-evidence/0.67.1; do [[ -e "$generated_evidence" && ! -L "$generated_evidence" ]] && rm -rf -- "$generated_evidence"; done
 if ! scripts/perf/reference-evidence-tmpfs.sh verify >>"$output_dir/hardware-validation.txt" 2>&1; then rm -f -- target/test-evidence/0.67 target/test-evidence/0.67.1; rm -rf -- /dev/shm/hydracache-reference-evidence-v1; scripts/perf/reference-evidence-tmpfs.sh prepare >>"$output_dir/hardware-validation.txt" 2>&1; fi
-scripts/perf/reference-runtime-irq-guard.sh metric-expansion-pre >>"$output_dir/hardware-validation.txt"
+scripts/perf/reference-runtime-irq-guard.sh metric-expansion-pre >>"$output_dir/hardware-validation.txt" 2>&1
 printf 'experiment\ttarget\tcase\tstatus\tdetail\n' >"$output_dir/case-status.tsv"
 trap 'stop_target || true' EXIT INT TERM
 
@@ -178,6 +178,6 @@ for target in redis hazelcast; do for limit in 256m 512m; do run_case 09-memory-
 # 10 Hazelcast JVM probe. If jcmd is unavailable, heap fields remain explicit N/A.
 run_case 10-hazelcast-jvm hazelcast jvm-probe 256 10 10 "$requests" 10000 16 uniform 0 default "" jvm 0 90 1
 
-scripts/perf/reference-runtime-irq-guard.sh metric-expansion-post >>"$output_dir/hardware-validation.txt" || true
+scripts/perf/reference-runtime-irq-guard.sh metric-expansion-post >>"$output_dir/hardware-validation.txt" 2>&1 || true
 python3 "$repo_root/scripts/perf/render-metric-expansion-report.py" --input "$output_dir" --output "$output_dir/report.md" --analysis "$output_dir/analysis.md"
 echo "output=$output_dir"
