@@ -20,28 +20,28 @@
       "url": "https://medium.com/@artur.buzov/why-rust-needs-cache-semantics-not-just-another-cache-map-ecf3c4e01191"
     },
     {
-      "part": 2,
+      "order": 2,
       "title": "Single-flight Is Not an Optimization",
       "file": "draft-single-flight-is-not-an-optimization.md",
       "status": "draft",
       "url": ""
     },
     {
-      "part": 3,
+      "order": 3,
       "title": "TTL is not enough.",
       "file": "004-ttl-is-not-enough.md",
       "status": "planned",
       "url": ""
     },
     {
-      "part": 4,
+      "order": 4,
       "title": "Local-first distributed invalidation.",
       "file": "005-local-first-distributed-invalidation.md",
       "status": "planned",
       "url": ""
     },
     {
-      "part": 5,
+      "order": 5,
       "title": "Typed query caching in Rust.",
       "file": "006-typed-query-caching-in-rust.md",
       "status": "planned",

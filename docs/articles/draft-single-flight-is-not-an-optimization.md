@@ -7,13 +7,13 @@
 
 This article is part of a practical series about building a Rust-native local-first cache runtime.
 
-You are reading: Part 2.
+You are reading: Draft.
 
 - [Part 1: Why Rust Needs Cache Semantics, Not Just Another Cache Map](https://medium.com/@artur.buzov/why-rust-needs-cache-semantics-not-just-another-cache-map-ecf3c4e01191)
-- Part 2: Single-flight Is Not an Optimization
-- Part 3: TTL is not enough. (planned)
-- Part 4: Local-first distributed invalidation. (planned)
-- Part 5: Typed query caching in Rust. (planned)
+- Draft: Single-flight Is Not an Optimization
+- Planned: TTL is not enough.
+- Planned: Local-first distributed invalidation.
+- Planned: Typed query caching in Rust.
 
 GitHub:
 

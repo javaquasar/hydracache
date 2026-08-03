@@ -40,7 +40,9 @@ node scripts/medium-draft.mjs --clipboard-title --article docs/articles/001-why-
 node scripts/medium-draft.mjs --clipboard-body --article docs/articles/001-why-rust-needs-cache-semantics.md
 ```
 
-Article drafts should include a short series/resources block near the top with the current part number, planned series entries, GitHub, and crates.io links. Bare `https://` links are converted to clickable links by the Medium draft script.
+Article drafts should include a short series/resources block near the top with the current publication state, planned series entries, GitHub, and crates.io links. Bare `https://` links are converted to clickable links by the Medium draft script.
+
+Draft and planned entries stay unnumbered in generated series blocks until they are published. Running `--set-url` records the public URL and promotes that draft to the next numbered series part.
 
 Refresh the generated series block after changing the series manifest at [hydracache-runtime-series.json](hydracache-runtime-series.json):
 
@@ -76,6 +78,6 @@ npx --prefix console playwright install chromium
 
 ## Planned Articles
 
-- Part 3 - TTL is not enough.
-- Part 4 - Local-first distributed invalidation.
-- Part 5 - Typed query caching in Rust.
+- Planned - TTL is not enough.
+- Planned - Local-first distributed invalidation.
+- Planned - Typed query caching in Rust.
