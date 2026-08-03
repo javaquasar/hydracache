@@ -17,6 +17,7 @@ duration="${METRIC_DURATION_SECONDS-45}"
 long_duration="${METRIC_LONG_DURATION_SECONDS-180}"
 requests="${METRIC_REQUESTS-20000}"
 cycles="${METRIC_CYCLES-3}"
+case_filter="${METRIC_CASE_FILTER-}"
 active_target=""; active_container=""; active_pid=""
 
 mkdir -p "$output_dir/metric-experiments" "$output_dir/metadata"
@@ -38,7 +39,7 @@ wait_hz() { for _ in $(seq 1 120); do "$hazelcast_client_python" -c 'import haze
 pin_container() {
   local container="$1" dir="$2" pid
   pid="$(docker inspect --format '{{.State.Pid}}' "$container")"
-  test -n "$pid" && test "$pid" -gt 0
+  [[ "$pid" =~ ^[1-9][0-9]*$ ]] || { echo "container PID unavailable: target=$container pid=$pid" >"$dir/affinity.txt"; return 1; }
   taskset --cpu-list -p "$affinity" "$pid" >"$dir/affinity.txt" 2>&1
   grep -q "Cpus_allowed_list:[[:space:]]*${affinity}" "/proc/$pid/status"
 }
@@ -64,15 +65,15 @@ start_target() {
       mkdir -p "$dir/redis-data"; local args=(redis-server --save "" --appendonly no)
       [[ "$mode" == rdb ]] && args=(redis-server --save '1 1' --appendonly no --dir /data --dbfilename dump.rdb)
       [[ "$mode" == aof ]] && args=(redis-server --save "" --appendonly yes --appendfsync everysec --dir /data)
-      local docker_args=(run -d --name "$name" --network host --cpuset-cpus "$affinity" --user "$(id -u):$(id -g)" -v "$dir/redis-data:/data")
+      local docker_args=(run -d --name "$name" --network host --cpuset-cpus "$affinity" -v "$dir/redis-data:/data")
       [[ -n "$memory_limit" ]] && docker_args+=(--memory "$memory_limit")
       docker "${docker_args[@]}" "$redis_image" "${args[@]}" >"$dir/container-id.txt" 2>"$dir/docker.log"
-      active_container="$name"; active_target=redis; docker inspect "$name" >"$dir/container.inspect.json"; docker image inspect "$redis_image" >"$dir/image.inspect.json"; if ! pin_container "$name" "$dir"; then return 1; fi; wait_resp 6379;;
+      active_container="$name"; active_target=redis; docker inspect "$name" >"$dir/container.inspect.json"; docker image inspect "$redis_image" >"$dir/image.inspect.json"; if [[ "$(docker inspect --format '{{.State.Running}}' "$name")" != true ]]; then docker logs "$name" >"$dir/startup.log" 2>&1 || true; return 1; fi; if ! pin_container "$name" "$dir"; then docker logs "$name" >"$dir/startup.log" 2>&1 || true; return 1; fi; wait_resp 6379;;
     hazelcast)
       local docker_args=(run -d --name "$name" --network host --cpuset-cpus "$affinity")
       [[ -n "$memory_limit" ]] && docker_args+=(--memory "$memory_limit")
       docker "${docker_args[@]}" "$hazelcast_image" >"$dir/container-id.txt" 2>"$dir/docker.log"
-      active_container="$name"; active_target=hazelcast; docker inspect "$name" >"$dir/container.inspect.json"; docker image inspect "$hazelcast_image" >"$dir/image.inspect.json"; if ! pin_container "$name" "$dir"; then return 1; fi; wait_hz;;
+      active_container="$name"; active_target=hazelcast; docker inspect "$name" >"$dir/container.inspect.json"; docker image inspect "$hazelcast_image" >"$dir/image.inspect.json"; if [[ "$(docker inspect --format '{{.State.Running}}' "$name")" != true ]]; then docker logs "$name" >"$dir/startup.log" 2>&1 || true; return 1; fi; if ! pin_container "$name" "$dir"; then docker logs "$name" >"$dir/startup.log" 2>&1 || true; return 1; fi; wait_hz;;
     *) return 1;;
   esac
 }
@@ -99,6 +100,7 @@ run_op() {
 
 run_case() {
   local exp="$1" target="$2" case_id="$3" payload="$4" clients="$5" pipeline="$6" count="$7" keyrange="$8" keylength="$9" distribution="${10}" ttl_ms="${11}" mode="${12}" memory_limit="${13}" kind="${14}" set_pct="${15}" case_duration="${16}" jvm_probe="${17-0}"
+  [[ -z "$case_filter" || "$case_filter" == "$exp/$target/$case_id" ]] || return 0
   local dir="$output_dir/metric-experiments/$exp/$target/$case_id"; mkdir -p "$dir/telemetry" "$dir/raw"
   {
     echo "experiment=$exp"; echo "target=$target"; echo "case=$case_id"; echo "payload_bytes=$payload"; echo "clients=$clients"; echo "pipeline=$pipeline"; echo "requests=$count"; echo "key_range=$keyrange"; echo "key_length=$keylength"; echo "distribution=$distribution"; echo "ttl_ms=$ttl_ms"; echo "mode=$mode"; echo "memory_limit=$memory_limit"; echo "kind=$kind"; echo "set_percent=$set_pct"; echo "affinity=$affinity"; echo "duration_seconds=$case_duration"
@@ -143,7 +145,7 @@ run_case() {
 
 require_tools
 {
-  echo "stage=metric-expansion"; echo "branch=$(git branch --show-current)"; echo "source_commit=$(git rev-parse HEAD)"; echo "host=$(hostname)"; echo "kernel=$(uname -srmo)"; echo "cpu_model=$(awk -F: '/model name/ {gsub(/^ /, "", $2); print $2; exit}' /proc/cpuinfo)"; echo "affinity=$affinity"; echo "interval_seconds=$interval"; echo "duration_seconds=$duration"; echo "long_duration_seconds=$long_duration"; echo "requests=$requests"; echo "cycles=$cycles"; echo "redis_image=$redis_image"; echo "hazelcast_image=$hazelcast_image"; echo "hazelcast_client_version=$hazelcast_client_version"; echo "metrics=RSS,HWM,smaps,cgroup,CPU,latency,errors,PSI,faults,IO,network,context_switches,JVM_heap"
+  echo "stage=metric-expansion"; echo "branch=$(git branch --show-current)"; echo "source_commit=$(git rev-parse HEAD)"; echo "host=$(hostname)"; echo "kernel=$(uname -srmo)"; echo "cpu_model=$(awk -F: '/model name/ {gsub(/^ /, "", $2); print $2; exit}' /proc/cpuinfo)"; echo "affinity=$affinity"; echo "interval_seconds=$interval"; echo "duration_seconds=$duration"; echo "long_duration_seconds=$long_duration"; echo "requests=$requests"; echo "cycles=$cycles"; echo "case_filter=$case_filter"; echo "redis_image=$redis_image"; echo "hazelcast_image=$hazelcast_image"; echo "hazelcast_client_version=$hazelcast_client_version"; echo "metrics=RSS,HWM,smaps,cgroup,CPU,latency,errors,PSI,faults,IO,network,context_switches,JVM_heap"
   echo "logical_cpus=$(nproc)"; echo "runner_receipt=/var/lib/hydracache-perf/runner-provisioned.json"; if [[ -r /var/lib/hydracache-perf/runner-provisioned.json ]]; then echo "runner_receipt_sha256=$(sha256sum /var/lib/hydracache-perf/runner-provisioned.json | cut -d' ' -f1)"; else echo "runner_receipt_sha256=unavailable"; fi; echo "docker_version=$(docker --version 2>&1 | head -n 1)"; echo "redis_benchmark_version=$($benchmark --version 2>&1 | head -n 1)"; echo "source_status=$(git status --porcelain=v1 --untracked-files=all | tr '\n' ';')"
 } >"$output_dir/reproduction-command.txt"
 for generated_evidence in target/test-evidence/0.67 target/test-evidence/0.67.1; do [[ -e "$generated_evidence" && ! -L "$generated_evidence" ]] && rm -rf -- "$generated_evidence"; done
