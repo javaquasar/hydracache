@@ -70,10 +70,12 @@ npx --prefix console playwright install chromium
   - Prompt: [001-why-rust-needs-cache-semantics-cover.prompt.md](001-why-rust-needs-cache-semantics-cover.prompt.md)
 - [002 - Raft Snapshot Bugs, AI Agents, and the Cost of Ignoring Contradictions](002-raft-snapshot-agent-bug.md)
   - Cover: [002-raft-snapshot-agent-bug-cover.jpg](002-raft-snapshot-agent-bug-cover.jpg)
+- [003 - Single-flight Is Not an Optimization](003-single-flight-is-not-an-optimization.md)
+  - Cover: [003-single-flight-is-not-an-optimization-cover.png](003-single-flight-is-not-an-optimization-cover.png)
+  - Prompt: [003-single-flight-is-not-an-optimization-cover.prompt.md](003-single-flight-is-not-an-optimization-cover.prompt.md)
 
 ## Planned Articles
 
-- 003 - Single-flight is not an optimization.
 - 004 - TTL is not enough.
 - 005 - Local-first distributed invalidation.
 - 006 - Typed query caching in Rust.
