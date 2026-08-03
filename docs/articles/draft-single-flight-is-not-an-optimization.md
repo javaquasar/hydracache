@@ -1,6 +1,6 @@
-# 003 - Single-flight Is Not an Optimization
+# Single-flight Is Not an Optimization
 
-![Medium article cover image](003-single-flight-is-not-an-optimization-cover.png)
+![Medium article cover image](draft-single-flight-is-not-an-optimization-cover.png)
 
 <!-- article-series:start hydracache-runtime -->
 ## HydraCache Runtime Series
@@ -220,4 +220,3 @@ That is why HydraCache treats single-flight as a first-class runtime concept.
 Not because it makes the cache a little faster.
 
 Because under load, it makes the cache behave.
-
