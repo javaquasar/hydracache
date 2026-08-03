@@ -113,11 +113,12 @@ def main() -> int:
         anon_slope = anon.get("slope_bytes_per_minute")
         cgroup_slope = cgroup.get("slope_bytes_per_minute")
         duration = rss.get("duration_seconds") or anon.get("duration_seconds") or cgroup.get("duration_seconds") or 0
+        classification = "not-applicable" if row["status"] == "not_applicable" else classify(rss)
         lines.append(
             f"| {row['experiment']} | {row['target']} | {row['pattern']} | {row['status']} | {meta['samples']} | "
             f"{'n/a' if slope is None else f'{slope / (1024*1024):.3f}'} | "
             f"{'n/a' if anon_slope is None else f'{anon_slope / (1024*1024):.3f}'} | "
-            f"{'n/a' if cgroup_slope is None else f'{cgroup_slope / (1024*1024):.3f}'} | {duration:.0f} | {classify(rss)} |"
+            f"{'n/a' if cgroup_slope is None else f'{cgroup_slope / (1024*1024):.3f}'} | {duration:.0f} | {classification} |"
         )
     lines += [
         "",
@@ -128,6 +129,7 @@ def main() -> int:
         "- Anon growth with rising thread/FD counts points to retained tasks, connections, or queues; anon growth with stable counts points to allocator/object retention.",
         "- A positive slope that flattens after a bounded keyspace is fragmentation/capacity behavior until disproven, not automatically a leak.",
         "- The expiry/reclamation and cycle-reset cases are specifically intended to reveal whether memory falls after logical data removal.",
+        "- Hazelcast expiry/reclamation is marked not-applicable because this harness exercises Redis-protocol TTL; Hazelcast native expiry requires a separate client/API workload and is not silently substituted.",
         "",
         "## Recommended next actions",
         "",

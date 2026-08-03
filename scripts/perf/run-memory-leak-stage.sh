@@ -132,7 +132,12 @@ scripts/perf/reference-runtime-irq-guard.sh memory-leak-pre >>"$output_dir/hardw
 printf 'experiment\ttarget\tpattern\tstatus\n' >"$output_dir/leak-status.tsv"
 trap 'stop_target || true' EXIT INT TERM
 for target in hydra redis hazelcast; do run_soak 01-fixed-keyspace "$target" default fixed-keyspace; done
-for target in hydra redis hazelcast; do run_soak 02-expiry-reclamation "$target" default expiry-reclamation; done
+# Hazelcast's native expiry path is intentionally not comparable to the Redis
+# protocol TTL path used here.  Keep that row explicitly out of the soak run
+# rather than recording a misleading zero-sample "complete" result; the report
+# labels it not-applicable with the rationale.
+printf '02-expiry-reclamation\thazelcast\texpiry-reclamation\tnot_applicable\n' >>"$output_dir/leak-status.tsv"
+for target in hydra redis; do run_soak 02-expiry-reclamation "$target" default expiry-reclamation; done
 for target in hydra redis hazelcast; do run_soak 03-cycle-reset "$target" default cycle-reset; done
 for target in hydra redis; do run_restart_soak "$target" default; done
 for target in hydra redis hazelcast; do run_soak 05-idle-fragmentation "$target" default idle-fragmentation; done
