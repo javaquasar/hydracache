@@ -19,7 +19,7 @@ fn runner_runbook_and_helpers_are_fail_closed_and_secret_free() {
     let measurement = read("scripts/perf/run-reference-measurement.sh");
     let prebuild = read("crates/xtask/src/perf.rs");
     let host_attestation = read("crates/xtask/src/host_attestation.rs");
-    let workflow = read(".github/workflows/ci.yml");
+    let workflow = read(".github/workflows/ci.yml").replace("\r\n", "\n");
 
     for script in [
         &audit,
