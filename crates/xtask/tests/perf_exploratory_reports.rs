@@ -2,7 +2,9 @@ use std::fs;
 
 fn read(path: &str) -> String {
     let root = xtask::doc_check::find_repo_root().unwrap();
-    fs::read_to_string(root.join(path)).unwrap().replace("\r\n", "\n")
+    fs::read_to_string(root.join(path))
+        .unwrap()
+        .replace("\r\n", "\n")
 }
 
 #[test]
@@ -57,9 +59,8 @@ fn curated_index_covers_every_retained_report() {
 
 #[test]
 fn preparation_report_preserves_failures_without_exposing_retired_address() {
-    let report = read(
-        "docs/testing/perf-scenarios/0.67/exploratory-preparation-and-measurement-report.md",
-    );
+    let report =
+        read("docs/testing/perf-scenarios/0.67/exploratory-preparation-and-measurement-report.md");
 
     assert!(report.contains("retired public address is intentionally omitted"));
     assert!(report.contains("The run is **rejected**"));
