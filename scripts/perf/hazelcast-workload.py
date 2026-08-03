@@ -5,9 +5,26 @@ from __future__ import annotations
 
 import argparse
 import json
+import random
 import sys
 import time
 from concurrent.futures import ThreadPoolExecutor
+
+
+def key_for(index: int, key_range: int, distribution: str, key_length: int, rng: random.Random) -> str:
+    key_range = max(key_range, 1)
+    if distribution == "hot":
+        bucket = index % max(1, key_range // 100)
+    elif distribution == "zipf":
+        bucket = min(key_range - 1, int((rng.random() ** 2) * key_range))
+    else:
+        bucket = index % key_range
+    value = f"key-{bucket}"
+    if key_length <= 0:
+        return value
+    if len(value) >= key_length:
+        return value[:key_length]
+    return value + "x" * (key_length - len(value))
 
 
 def main() -> int:
@@ -19,6 +36,8 @@ def main() -> int:
     parser.add_argument("--pipeline", type=int, required=True)
     parser.add_argument("--requests", type=int, required=True)
     parser.add_argument("--key-range", type=int, default=10000)
+    parser.add_argument("--key-length", type=int, default=0)
+    parser.add_argument("--distribution", choices=("uniform", "hot", "zipf"), default="uniform")
     parser.add_argument("--operation", choices=("set", "get"), required=True)
     args = parser.parse_args()
     try:
@@ -33,11 +52,12 @@ def main() -> int:
     value = b"x" * args.payload
 
     def worker(worker_id: int) -> int:
+        rng = random.Random(6701 + worker_id)
         count = args.requests // args.clients + (1 if worker_id < args.requests % args.clients else 0)
         for offset in range(0, count, args.pipeline):
             futures = []
             for index in range(offset, min(offset + args.pipeline, count)):
-                key = f"key-{(worker_id * count + index) % args.key_range}"
+                key = key_for(worker_id * count + index, args.key_range, args.distribution, args.key_length, rng)
                 futures.append(cache.set(key, value) if args.operation == "set" else cache.get(key))
             for future in futures:
                 future.result()

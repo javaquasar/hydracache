@@ -11,6 +11,7 @@ import argparse
 import csv
 import json
 import os
+import re
 import signal
 import subprocess
 import sys
@@ -52,6 +53,92 @@ def proc_cpu_ticks(pid: int) -> int | None:
         return int(fields[13]) + int(fields[14])
     except (OSError, IndexError, ValueError):
         return None
+
+
+def proc_stat_counters(pid: int | None) -> dict[str, int | None]:
+    values = {"minor_faults": None, "major_faults": None}
+    if pid is None:
+        return values
+    try:
+        fields = Path(f"/proc/{pid}/stat").read_text().split()
+        # proc(5) fields 10 and 12; split() indexes are 9 and 11.
+        values["minor_faults"] = int(fields[9])
+        values["major_faults"] = int(fields[11])
+    except (OSError, IndexError, ValueError):
+        pass
+    return values
+
+
+def proc_io(pid: int | None) -> dict[str, int | None]:
+    values = {"read_bytes": None, "write_bytes": None, "read_syscalls": None, "write_syscalls": None}
+    if pid is None:
+        return values
+    try:
+        for line in Path(f"/proc/{pid}/io").read_text().splitlines():
+            key, raw = line.split(":", 1)
+            destination = {
+                "read_bytes": "read_bytes", "write_bytes": "write_bytes",
+                "syscr": "read_syscalls", "syscw": "write_syscalls",
+            }.get(key.strip())
+            if destination:
+                values[destination] = int(raw)
+    except (OSError, ValueError):
+        pass
+    return values
+
+
+def proc_context_switches(pid: int | None) -> dict[str, int | None]:
+    values = {"voluntary_context_switches": None, "nonvoluntary_context_switches": None}
+    if pid is None:
+        return values
+    try:
+        for line in Path(f"/proc/{pid}/status").read_text().splitlines():
+            key, raw = line.split(":", 1)
+            destination = {
+                "voluntary_ctxt_switches": "voluntary_context_switches",
+                "nonvoluntary_ctxt_switches": "nonvoluntary_context_switches",
+            }.get(key)
+            if destination:
+                values[destination] = int(raw.strip())
+    except (OSError, ValueError):
+        pass
+    return values
+
+
+def host_network_bytes() -> dict[str, int | None]:
+    values = {"rx_bytes": 0, "tx_bytes": 0}
+    try:
+        for line in Path("/proc/net/dev").read_text().splitlines():
+            if ":" not in line:
+                continue
+            _interface, payload = line.split(":", 1)
+            fields = payload.split()
+            if len(fields) < 9:
+                continue
+            values["rx_bytes"] += int(fields[0])
+            values["tx_bytes"] += int(fields[8])
+    except (OSError, ValueError):
+        return {"rx_bytes": None, "tx_bytes": None}
+    return values
+
+
+def pressure(resource: str) -> dict[str, float | None]:
+    values = {"some_avg10": None, "some_avg60": None, "some_avg300": None, "some_total": None}
+    try:
+        for line in Path(f"/proc/pressure/{resource}").read_text().splitlines():
+            if not line.startswith("some "):
+                continue
+            for token in line.split()[1:]:
+                key, raw = token.split("=", 1)
+                destination = {
+                    "avg10": "some_avg10", "avg60": "some_avg60",
+                    "avg300": "some_avg300", "total": "some_total",
+                }.get(key)
+                if destination:
+                    values[destination] = float(raw)
+    except (OSError, ValueError):
+        pass
+    return values
 
 
 def cgroup_dir(pid: int) -> Path | None:
@@ -100,6 +187,42 @@ def cgroup_memory(directory: Path | None) -> dict[str, int | None]:
             key, value = line.split()[:2]
             if key in {"anon", "file", "slab"}:
                 values[f"{key}_bytes"] = int(value)
+    except (OSError, ValueError):
+        pass
+    return values
+
+
+def cgroup_events(directory: Path | None) -> dict[str, int | None]:
+    values = {"reclaim_events": None, "oom_events": None, "oom_kill_events": None}
+    if directory is None:
+        return values
+    try:
+        for line in (directory / "memory.events").read_text().splitlines():
+            key, raw = line.split()
+            destination = {"reclaim": "reclaim_events", "oom": "oom_events", "oom_kill": "oom_kill_events"}.get(key)
+            if destination:
+                values[destination] = int(raw)
+    except (OSError, ValueError):
+        pass
+    return values
+
+
+def cgroup_io(directory: Path | None) -> dict[str, int | None]:
+    values = {"read_bytes": None, "write_bytes": None}
+    if directory is None:
+        return values
+    try:
+        totals = {"read_bytes": 0, "write_bytes": 0}
+        found = False
+        for line in (directory / "io.stat").read_text().splitlines():
+            for token in line.split()[1:]:
+                key, raw = token.split("=", 1)
+                destination = {"rbytes": "read_bytes", "wbytes": "write_bytes"}.get(key)
+                if destination:
+                    totals[destination] += int(raw)
+                    found = True
+        if found:
+            values.update(totals)
     except (OSError, ValueError):
         pass
     return values
@@ -172,8 +295,28 @@ def effective_cpus(cpuset: str | None) -> float:
     return float(max(count, 1))
 
 
-def jvm_heap(pid: int | None) -> dict[str, Any]:
+def jvm_heap(pid: int | None, jvm_container: str | None = None) -> dict[str, Any]:
     """Optional heap telemetry; never treats RSS as heap."""
+    if jvm_container:
+        try:
+            output = subprocess.check_output(
+                ["docker", "exec", jvm_container, "jcmd", "1", "GC.heap_info"],
+                text=True,
+                stderr=subprocess.STDOUT,
+            )
+            used = re.search(r"used\s+([0-9]+)K", output)
+            committed = re.search(r"committed\s+([0-9]+)K", output)
+            maximum = re.search(r"max\s+([0-9]+)K", output)
+            if used or committed or maximum:
+                return {
+                    "available": True,
+                    "used_bytes": int(used.group(1)) * 1024 if used else None,
+                    "committed_bytes": int(committed.group(1)) * 1024 if committed else None,
+                    "max_bytes": int(maximum.group(1)) * 1024 if maximum else None,
+                    "source": "docker-exec-jcmd",
+                }
+        except (OSError, subprocess.CalledProcessError):
+            pass
     command = os.environ.get("JVM_HEAP_CMD")
     if not command or pid is None:
         return {"available": False, "reason": "no JVM_HEAP_CMD configured"}
@@ -196,6 +339,7 @@ def main() -> int:
     parser.add_argument("--container")
     parser.add_argument("--interval", type=float, default=1.0)
     parser.add_argument("--duration", type=float, default=0.0)
+    parser.add_argument("--jvm-container")
     args = parser.parse_args()
 
     signal.signal(signal.SIGTERM, stop)
@@ -229,6 +373,14 @@ def main() -> int:
         "smaps_rollup_pss_anon_bytes", "smaps_rollup_pss_file_bytes", "process_threads",
         "process_fd_count", "jvm_heap_available",
         "jvm_heap_used_bytes", "jvm_heap_committed_bytes", "jvm_heap_max_bytes",
+        "process_minor_faults", "process_major_faults", "process_read_bytes", "process_write_bytes",
+        "process_read_syscalls", "process_write_syscalls", "voluntary_context_switches",
+        "nonvoluntary_context_switches", "host_net_rx_bytes", "host_net_tx_bytes",
+        "cgroup_io_read_bytes", "cgroup_io_write_bytes", "cgroup_memory_reclaim_events",
+        "cgroup_memory_oom_events", "cgroup_memory_oom_kill_events", "psi_memory_some_avg10",
+        "psi_memory_some_avg60", "psi_memory_some_avg300", "psi_memory_some_total",
+        "psi_cpu_some_avg10", "psi_cpu_some_avg60", "psi_cpu_some_avg300", "psi_cpu_some_total",
+        "psi_io_some_avg10", "psi_io_some_avg60", "psi_io_some_avg300", "psi_io_some_total",
     ]
     started = time.monotonic()
     previous_group = cgroup_dir(pid) if pid else None
@@ -265,8 +417,17 @@ def main() -> int:
             if args.container and cpu_delta is not None:
                 cpu_percent = cpu_delta / 1_000_000 / elapsed / effective_cpus(affinity(status)) * 100
             memory = cgroup_memory(group)
+            events = cgroup_events(group)
+            cgroup_disk = cgroup_io(group)
             smaps = smaps_rollup(pid)
-            heap = jvm_heap(pid)
+            counters = proc_stat_counters(pid)
+            proc_disk = proc_io(pid)
+            switches = proc_context_switches(pid)
+            host_net = host_network_bytes()
+            psi_memory = pressure("memory")
+            psi_cpu = pressure("cpu")
+            psi_io = pressure("io")
+            heap = jvm_heap(pid, args.jvm_container)
             rss = int(status["VmRSS"].split()[0]) * 1024 if "VmRSS" in status else None
             hwm = int(status["VmHWM"].split()[0]) * 1024 if "VmHWM" in status else None
             row: dict[str, Any] = {
@@ -296,6 +457,33 @@ def main() -> int:
                 "jvm_heap_used_bytes": heap.get("used_bytes"),
                 "jvm_heap_committed_bytes": heap.get("committed_bytes"),
                 "jvm_heap_max_bytes": heap.get("max_bytes"),
+                "process_minor_faults": counters["minor_faults"],
+                "process_major_faults": counters["major_faults"],
+                "process_read_bytes": proc_disk["read_bytes"],
+                "process_write_bytes": proc_disk["write_bytes"],
+                "process_read_syscalls": proc_disk["read_syscalls"],
+                "process_write_syscalls": proc_disk["write_syscalls"],
+                "voluntary_context_switches": switches["voluntary_context_switches"],
+                "nonvoluntary_context_switches": switches["nonvoluntary_context_switches"],
+                "host_net_rx_bytes": host_net["rx_bytes"],
+                "host_net_tx_bytes": host_net["tx_bytes"],
+                "cgroup_io_read_bytes": cgroup_disk["read_bytes"],
+                "cgroup_io_write_bytes": cgroup_disk["write_bytes"],
+                "cgroup_memory_reclaim_events": events["reclaim_events"],
+                "cgroup_memory_oom_events": events["oom_events"],
+                "cgroup_memory_oom_kill_events": events["oom_kill_events"],
+                "psi_memory_some_avg10": psi_memory["some_avg10"],
+                "psi_memory_some_avg60": psi_memory["some_avg60"],
+                "psi_memory_some_avg300": psi_memory["some_avg300"],
+                "psi_memory_some_total": psi_memory["some_total"],
+                "psi_cpu_some_avg10": psi_cpu["some_avg10"],
+                "psi_cpu_some_avg60": psi_cpu["some_avg60"],
+                "psi_cpu_some_avg300": psi_cpu["some_avg300"],
+                "psi_cpu_some_total": psi_cpu["some_total"],
+                "psi_io_some_avg10": psi_io["some_avg10"],
+                "psi_io_some_avg60": psi_io["some_avg60"],
+                "psi_io_some_avg300": psi_io["some_avg300"],
+                "psi_io_some_total": psi_io["some_total"],
             }
             json_file.write(json.dumps(row, sort_keys=True) + "\n")
             json_file.flush()

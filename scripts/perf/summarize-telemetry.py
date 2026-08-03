@@ -40,6 +40,14 @@ def main() -> int:
                 "smaps_rollup_rss_bytes", "smaps_rollup_pss_anon_bytes", "smaps_rollup_pss_file_bytes",
                 "process_threads", "process_fd_count", "jvm_heap_used_bytes",
                 "jvm_heap_committed_bytes", "jvm_heap_max_bytes",
+                "process_minor_faults", "process_major_faults", "process_read_bytes", "process_write_bytes",
+                "process_read_syscalls", "process_write_syscalls", "voluntary_context_switches",
+                "nonvoluntary_context_switches", "host_net_rx_bytes", "host_net_tx_bytes",
+                "cgroup_io_read_bytes", "cgroup_io_write_bytes", "cgroup_memory_reclaim_events",
+                "cgroup_memory_oom_events", "cgroup_memory_oom_kill_events", "psi_memory_some_avg10",
+                "psi_memory_some_avg60", "psi_memory_some_avg300", "psi_memory_some_total",
+                "psi_cpu_some_avg10", "psi_cpu_some_avg60", "psi_cpu_some_avg300", "psi_cpu_some_total",
+                "psi_io_some_avg10", "psi_io_some_avg60", "psi_io_some_avg300", "psi_io_some_total",
             ):
                 value = row.get(metric)
                 if isinstance(value, (int, float)):
