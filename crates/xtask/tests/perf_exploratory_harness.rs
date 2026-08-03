@@ -2,7 +2,9 @@ use std::fs;
 
 fn read(path: &str) -> String {
     let root = xtask::doc_check::find_repo_root().unwrap();
-    fs::read_to_string(root.join(path)).unwrap().replace("\r\n", "\n")
+    fs::read_to_string(root.join(path))
+        .unwrap()
+        .replace("\r\n", "\n")
 }
 
 #[test]
