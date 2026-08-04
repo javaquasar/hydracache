@@ -75,6 +75,68 @@ caller C -> miss -> join A
 
 That difference is easy to miss in a benchmark that only measures average latency. It is harder to miss when the database is already under pressure and a hot cache entry expires.
 
+## A tiny load storm
+
+The easiest way to see the difference is to make many tasks ask for the same missing key at once.
+
+In HydraCache, that shape looks like ordinary cache code:
+
+```rust
+use std::sync::{
+    atomic::{AtomicUsize, Ordering},
+    Arc,
+};
+use std::time::Duration;
+
+use hydracache::{CacheOptions, HydraCache};
+use tokio::sync::Barrier;
+
+let cache = HydraCache::local().build();
+let loader_calls = Arc::new(AtomicUsize::new(0));
+let barrier = Arc::new(Barrier::new(64));
+let mut tasks = Vec::new();
+
+for _ in 0..64 {
+    let cache = cache.clone();
+    let loader_calls = loader_calls.clone();
+    let barrier = barrier.clone();
+
+    tasks.push(tokio::spawn(async move {
+        barrier.wait().await;
+
+        cache
+            .get_or_load(
+                "profile:42",
+                CacheOptions::new().tag("profiles"),
+                move || {
+                    let loader_calls = loader_calls.clone();
+
+                    async move {
+                        loader_calls.fetch_add(1, Ordering::SeqCst);
+                        tokio::time::sleep(Duration::from_millis(50)).await;
+                        Ok::<_, std::io::Error>("Ada".to_owned())
+                    }
+                },
+            )
+            .await
+    }));
+}
+
+for task in tasks {
+    let value = task.await.expect("task failed").expect("load failed");
+    assert_eq!(value, "Ada");
+}
+
+assert_eq!(loader_calls.load(Ordering::SeqCst), 1);
+assert!(cache.stats().single_flight_joins >= 63);
+```
+
+The important number is not the response value. Every caller receives the same value either way.
+
+The important number is the loader count.
+
+Without coordination, this is the shape that accidentally becomes 64 database reads. With single-flight, it is one loader execution and many waiters. HydraCache's current performance smoke tests exercise the same idea: a contended hot-key workload should use one loader, produce many hits, and record single-flight joins instead of duplicated backing-store work.
+
 ## Why this is more than faster code
 
 The word "optimization" implies that the system would be essentially the same without it, only slower.
@@ -127,18 +189,41 @@ This matters because error handling is part of the contract. If a failed loader 
 
 For HydraCache, this is why single-flight belongs inside the runtime instead of being copied into every adapter. SQLx, Diesel, SeaORM, HTTP loaders, and hand-written repository loaders should not each reinvent the same concurrency and error semantics.
 
+## What HydraCache does today
+
+HydraCache already treats local single-flight as part of the runtime contract, not as an adapter trick.
+
+The local cache API has several spellings for the same idea:
+
+- `get_or_load` for fallible async loaders;
+- `get_or_insert_with` for infallible async loaders;
+- `try_get_or_insert_with` as a familiar cache-map spelling;
+- `get_or_load_with_refresh` when refresh-ahead and stale reads are part of the policy.
+
+They all keep cache ownership in one place: key, tags, TTL, loader behavior, invalidation safety, stats, and diagnostics.
+
+That matters because single-flight is not useful if it is separate from the rest of the cache contract. If a tag is invalidated while a tagged loader is still running, the runtime must not store a value loaded against the old generation. If a value is present and fresh, the runtime should not touch the in-flight map at all. If a loader fails, waiters should observe that failure without turning it into a successful cached value.
+
+Those details are where a "simple" deduplication helper becomes cache runtime behavior.
+
 ## One key, one local load
 
-The first version of single-flight should be local and per-key.
+The core guarantee is local and per-key.
 
 That means:
 
 - callers in the same process share a load for the same key;
 - different keys do not block each other;
-- the runtime does not need cluster ownership to provide value;
-- distributed single-flight can wait until distributed ownership exists.
+- the local API does not pretend to be a cluster-wide lock;
+- cluster-aware loading can build on the same runtime contract instead of replacing it.
 
-This is deliberately smaller than a cross-node design. A cluster-aware version may be useful later, especially for owner-side loading or peer fetch behavior. But adding distributed coordination too early would make the first useful behavior harder to reason about.
+This boundary is important.
+
+In the current HydraCache line, the project also has cluster-oriented pieces such as peer fetch, encoded read-through, and named owner loaders. Those are useful for near-cache and owner-side flows. But they are not the same thing as saying every arbitrary closure in every process is globally deduplicated.
+
+That is a good separation.
+
+Local single-flight protects the common embedded-cache miss path. Owner-side or distributed loading can use explicit descriptors and transport boundaries. A distributed lock should not be smuggled into a local cache API just because both features reduce duplicated work.
 
 The local version already solves a real class of problems.
 
@@ -184,9 +269,9 @@ These signals help answer a simple production question:
 
 Is the cache reducing load, or is it just moving the load spike somewhere else?
 
-## What HydraCache should guarantee
+## What HydraCache guarantees locally
 
-The runtime contract I want is boring and explicit:
+The local runtime contract is boring and explicit:
 
 - concurrent misses for the same key share one local loader execution;
 - hits bypass single-flight;
@@ -195,6 +280,8 @@ The runtime contract I want is boring and explicit:
 - later calls can retry after failure;
 - different keys remain independent;
 - tags and invalidation still apply to the resulting cached value.
+- stale in-flight loads are not allowed to repopulate entries after a relevant invalidation;
+- stats expose whether the runtime joined existing loads through `single_flight_joins`.
 
 There are harder questions beyond that:
 
@@ -204,6 +291,8 @@ There are harder questions beyond that:
 - can an owner node perform a shared load for remote callers later?
 
 Those are real design questions, but they should build on the simple local contract rather than replace it.
+
+HydraCache has already moved some of that production shape into explicit APIs. `get_or_load_with_refresh` keeps the same single-flight and invalidation-safety semantics while allowing refresh-ahead and stale fallback policies. The load-breaker policy adds opt-in protection for poison keys on top of the single-flight loader path. Those features do not make single-flight less important. They make it more obvious that loader coordination is part of cache behavior under stress.
 
 ## The thesis
 
