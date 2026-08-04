@@ -43,28 +43,34 @@ function Assert-DockerFailure {
 function Remove-ExactContainer {
     param([string]$Name)
     if ([string]::IsNullOrWhiteSpace($Name)) { return }
-    & docker container inspect $Name *> $null
-    if ($LASTEXITCODE -eq 0) {
+    $previousPreference = $ErrorActionPreference
+    $ErrorActionPreference = "Continue"
+    try {
         & docker container rm --force $Name *> $null
     }
+    finally { $ErrorActionPreference = $previousPreference }
 }
 
 function Remove-ExactNetwork {
     param([string]$Name)
     if ([string]::IsNullOrWhiteSpace($Name)) { return }
-    & docker network inspect $Name *> $null
-    if ($LASTEXITCODE -eq 0) {
+    $previousPreference = $ErrorActionPreference
+    $ErrorActionPreference = "Continue"
+    try {
         & docker network rm $Name *> $null
     }
+    finally { $ErrorActionPreference = $previousPreference }
 }
 
 function Remove-ExactVolume {
     param([string]$Name)
     if ([string]::IsNullOrWhiteSpace($Name)) { return }
-    & docker volume inspect $Name *> $null
-    if ($LASTEXITCODE -eq 0) {
+    $previousPreference = $ErrorActionPreference
+    $ErrorActionPreference = "Continue"
+    try {
         & docker volume rm --force $Name *> $null
     }
+    finally { $ErrorActionPreference = $previousPreference }
 }
 
 $repoRoot = (git rev-parse --show-toplevel).Trim()
@@ -147,7 +153,7 @@ try {
         $RustImage
     )
     Invoke-Docker -Arguments ($cargoBase + @(
-        "bash", "-lc",
+        "bash", "-c",
         "git config --global --add safe.directory /repo && cargo test -p xtask --locked --test perf_local_orchestration_0671"
     ))
     $results.state_machine = "passed"
@@ -179,14 +185,14 @@ try {
         }
         Invoke-Docker -Arguments ($contextBase + @(
             "--env", "HYDRACACHE_PERFORMANCE_0671_MODE=$mode",
-            $RustImage, "bash", "-lc",
+            $RustImage, "bash", "-c",
             "git config --global --add safe.directory /repo && cargo run -p xtask --locked --offline -- $command --release 0.67.1 --profile reference-v1 --phase context"
         ))
     }
     Assert-DockerFailure -Label "foreign-checkout-identity" -Arguments ($contextBase + @(
         "--env", "HYDRACACHE_PERFORMANCE_0671_MODE=qualify",
         "--env", "GITHUB_SHA=0000000000000000000000000000000000000000",
-        $RustImage, "bash", "-lc",
+        $RustImage, "bash", "-c",
         "git config --global --add safe.directory /repo && cargo run -p xtask --locked --offline -- perf-qualification --release 0.67.1 --profile reference-v1 --phase context"
     ))
 
@@ -220,7 +226,7 @@ try {
         "--workdir", "/repo",
         "--env", "GIT_DIR=/git/worktrees/$worktreeName",
         "--env", "GIT_WORK_TREE=/repo",
-        $RustImage, "bash", "-lc",
+        $RustImage, "bash", "-c",
         "git config --global --add safe.directory /repo && cargo test -p xtask --locked --offline --test perf_local_orchestration_0671"
     ))
     Assert-DockerFailure -Label "offline-empty-cargo-cache" -Arguments @(
