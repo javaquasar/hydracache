@@ -28,13 +28,24 @@ function Invoke-DockerCapture {
     return $output
 }
 
+function Invoke-DockerExitCode {
+    param([Parameter(Mandatory)][string[]]$Arguments)
+    $previousPreference = $ErrorActionPreference
+    $ErrorActionPreference = "Continue"
+    try {
+        & docker @Arguments *> $null
+        return $LASTEXITCODE
+    }
+    finally { $ErrorActionPreference = $previousPreference }
+}
+
 function Assert-DockerFailure {
     param(
         [Parameter(Mandatory)][string]$Label,
         [Parameter(Mandatory)][string[]]$Arguments
     )
-    & docker @Arguments *> $null
-    if ($LASTEXITCODE -eq 0) {
+    $exitCode = Invoke-DockerExitCode -Arguments $Arguments
+    if ($exitCode -eq 0) {
         throw "negative Docker canary unexpectedly passed: $Label"
     }
     Write-Host "negative canary rejected: $Label"
@@ -43,34 +54,19 @@ function Assert-DockerFailure {
 function Remove-ExactContainer {
     param([string]$Name)
     if ([string]::IsNullOrWhiteSpace($Name)) { return }
-    $previousPreference = $ErrorActionPreference
-    $ErrorActionPreference = "Continue"
-    try {
-        & docker container rm --force $Name *> $null
-    }
-    finally { $ErrorActionPreference = $previousPreference }
+    $null = Invoke-DockerExitCode -Arguments @("container", "rm", "--force", $Name)
 }
 
 function Remove-ExactNetwork {
     param([string]$Name)
     if ([string]::IsNullOrWhiteSpace($Name)) { return }
-    $previousPreference = $ErrorActionPreference
-    $ErrorActionPreference = "Continue"
-    try {
-        & docker network rm $Name *> $null
-    }
-    finally { $ErrorActionPreference = $previousPreference }
+    $null = Invoke-DockerExitCode -Arguments @("network", "rm", $Name)
 }
 
 function Remove-ExactVolume {
     param([string]$Name)
     if ([string]::IsNullOrWhiteSpace($Name)) { return }
-    $previousPreference = $ErrorActionPreference
-    $ErrorActionPreference = "Continue"
-    try {
-        & docker volume rm --force $Name *> $null
-    }
-    finally { $ErrorActionPreference = $previousPreference }
+    $null = Invoke-DockerExitCode -Arguments @("volume", "rm", "--force", $Name)
 }
 
 $repoRoot = (git rev-parse --show-toplevel).Trim()
@@ -247,17 +243,21 @@ try {
     )
     $ready = $false
     for ($attempt = 1; $attempt -le 30; $attempt++) {
-        & docker exec $recoveryContainer redis-cli ping *> $null
-        if ($LASTEXITCODE -eq 0) { $ready = $true; break }
+        $probeExitCode = Invoke-DockerExitCode -Arguments @(
+            "exec", $recoveryContainer, "redis-cli", "ping"
+        )
+        if ($probeExitCode -eq 0) { $ready = $true; break }
         Start-Sleep -Milliseconds 250
     }
     if (-not $ready) { throw "Redis cleanup fixture did not become ready" }
     Remove-ExactContainer -Name $recoveryContainer
     Remove-ExactNetwork -Name $recoveryNetwork
-    & docker container inspect $recoveryContainer *> $null
-    if ($LASTEXITCODE -eq 0) { throw "cleanup left the exact recovery container behind" }
-    & docker network inspect $recoveryNetwork *> $null
-    if ($LASTEXITCODE -eq 0) { throw "cleanup left the exact recovery network behind" }
+    if ((Invoke-DockerExitCode -Arguments @("container", "inspect", $recoveryContainer)) -eq 0) {
+        throw "cleanup left the exact recovery container behind"
+    }
+    if ((Invoke-DockerExitCode -Arguments @("network", "inspect", $recoveryNetwork)) -eq 0) {
+        throw "cleanup left the exact recovery network behind"
+    }
     $results.cleanup_recovery = "passed"
 }
 catch {
