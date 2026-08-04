@@ -31,10 +31,20 @@ cleanup() {
 }
 trap cleanup EXIT
 
-systemctl is-system-running --wait >/dev/null 2>&1 || {
-  state="$(systemctl is-system-running 2>/dev/null || true)"
-  test "$state" = degraded || fail "systemd did not become usable: $state"
-}
+systemd_state=""
+for _attempt in $(seq 1 60); do
+  systemd_state="$(systemctl is-system-running 2>/dev/null || true)"
+  case "$systemd_state" in
+    running|degraded)
+      break
+      ;;
+  esac
+  sleep 1
+done
+case "$systemd_state" in
+  running|degraded) ;;
+  *) fail "systemd did not become usable after 60 seconds: $systemd_state" ;;
+esac
 
 rm --recursive --force -- /work/repo
 mkdir --parents /work/repo /work/shims
