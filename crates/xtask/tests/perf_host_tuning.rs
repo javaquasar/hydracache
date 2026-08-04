@@ -104,6 +104,8 @@ fn host_tuning_is_allowlisted_reversible_and_fail_closed() {
     }
     assert!(tuning.contains("exact_allowlist_only: true"));
     assert!(tuning.contains("service policy attempts to mutate protected unit"));
+    assert!(tuning.contains("sort | uniq -d | wc --lines"));
+    assert!(!tuning.contains("uniq --duplicates"));
     assert!(tuning.contains("systemctl disable --now \"$unit\""));
     assert!(tuning.contains("systemctl mask --now \"$unit\""));
     assert!(tuning.contains("restore requires plan.json and applied.json"));

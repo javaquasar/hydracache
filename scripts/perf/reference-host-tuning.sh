@@ -99,7 +99,7 @@ validate_profile() {
       .service_policy.require_inactive_if_present[]
     ' "$profile"
   )
-  test "$(printf '%s\n' "${mutable_units[@]}" | sort | uniq --duplicates | wc --lines)" -eq 0 || {
+  test "$(printf '%s\n' "${mutable_units[@]}" | sort | uniq -d | wc --lines)" -eq 0 || {
     echo "service policy contains duplicate mutable units" >&2
     exit 1
   }

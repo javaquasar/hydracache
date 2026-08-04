@@ -10,6 +10,11 @@ For the next rental, use this runbook together with the profile-driven
 playbook captures the lessons from the completed qualification/exploratory work
 and adds allowlisted service tuning, exact environment freeze, drift detection,
 and reversible pre-state receipts.
+Before renting another host, repeat or review the
+[local Docker orchestration preflight](PERF_RUNNER_0_67_1_LOCAL_DOCKER_PREFLIGHT.md).
+It verifies the containerizable context, shell, cgroup, affinity, pinned-tool,
+and fail-closed surfaces, while explicitly leaving physical IRQ and bare-metal
+qualification to the rented machine.
 The commands are intentionally split into local Windows PowerShell, remote root, remote
 administrator, and GitHub runner-user sections. Do not paste an entire section blindly. Run one
 block at a time, inspect its output, and stop on any failed assertion.
