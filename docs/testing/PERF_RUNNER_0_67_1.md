@@ -15,6 +15,10 @@ Before renting another host, repeat or review the
 It verifies the containerizable context, shell, cgroup, affinity, pinned-tool,
 and fail-closed surfaces, while explicitly leaving physical IRQ and bare-metal
 qualification to the rented machine.
+Also run the
+[six-scenario orchestration hardening suite](PERF_RUNNER_0_67_1_LOCAL_ORCHESTRATION_HARDENING.md).
+It exercises the complete receipt state machine, disposable systemd lifecycle,
+fault injection, offline replay, static analysis, and exact cleanup/recovery.
 The commands are intentionally split into local Windows PowerShell, remote root, remote
 administrator, and GitHub runner-user sections. Do not paste an entire section blindly. Run one
 block at a time, inspect its output, and stop on any failed assertion.
