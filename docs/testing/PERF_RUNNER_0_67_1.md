@@ -81,7 +81,7 @@ Qualification `30572949833` then passed the v5 attestation and seven-probe prefl
 spread, but the prebuild gate correctly rejected controller affinity `0,5-7` because the legacy
 runner observation still expected measurement affinity `1-4` on the Cargo process itself. The
 0.67.1 prebuild now keeps Cargo on housekeeping CPUs and reports measurement affinity `1-4` only
-when the exact `qualify` or `bootstrap` mode, current housekeeping affinity, attested housekeeping
+when the exact `qualify`, `full-dress`, or `bootstrap` mode, current housekeeping affinity, attested housekeeping
 set, and attested isolated set all agree. Any mode or cpuset drift still fails closed; the build is
 never moved onto a measurement CPU.
 
@@ -90,7 +90,7 @@ Qualification `30580548936` passed the same v5 attestation and seven-probe prefl
 tmpfs wrapper correctly made `target/test-evidence/0.67` a symlink, while the legacy atomic
 prebuild publisher rejected every symlink. The publisher still accepts ordinary outputs only at
 their canonical in-repository path; the sole exception is the exact `0.67` tmpfs target when the
-mode is `qualify` or `bootstrap`, GitHub Actions and `GITHUB_SHA` match the source snapshot, the
+mode is `qualify`, `full-dress`, or `bootstrap`, GitHub Actions and `GITHUB_SHA` match the source snapshot, the
 link target and `source-commit` marker are exact, and `findmnt` independently reports `tmpfs`.
 Every other path, mode, commit, marker, link, or filesystem fails closed.
 
@@ -923,10 +923,24 @@ Do **not** dispatch the currently shipped job with `candidate_release=0.67` as a
 0.67.1 qualification. Qualification does not count among the five W4 bootstrap samples, and a
 bootstrap sample is still `ship_evidence_eligible=false` until reviewed activation.
 
-After qualification is green, keep the exact same host and commit. Dispatch five serialized runs
-with `candidate_release=0.67.1` and `performance_0671_mode=bootstrap`. Do not select the old
-`run_reference_performance` input. Each successful run uploads a distinct
-`bootstrap-sample.json`; a failed or unstable run is retained for diagnosis but does not count.
+After qualification is green, keep the exact same host and commit. Before bootstrap, dispatch two
+independent complete runs with `candidate_release=0.67.1` and
+`performance_0671_mode=full-dress`. Leave `full_dress_predecessor_run_id` empty on the first run.
+After downloading and accepting its immutable receipt, set that first run id on the second run.
+Both execute the same core, rootless-Docker/RESP, and control-plane families as bootstrap, but both
+remain qualification-only and non-promotable. The second run publishes
+`performance-0671-full-dress-admission` only when source, host, immutable runner-provisioning
+receipt, prebuild, scenario, and run identity checks agree.
+
+Then dispatch exactly five serialized runs with `candidate_release=0.67.1`,
+`performance_0671_mode=bootstrap`, and `full_dress_admission_run_id` equal to the second full-dress
+run id. Set `bootstrap_sample_index=1..5`. Sample 1 must leave
+`bootstrap_predecessor_run_id` empty; each later sample must name the immediately prior accepted
+sample's run id. Do not pre-queue a successor and do not use an automatic retry as a successor:
+the prior immutable receipt must exist before the next dispatch. Do not select the old
+`run_reference_performance` input. Each successful run uploads a distinct `bootstrap-sample.json`;
+a failed or unstable run is retained for diagnosis but does not count and cannot authorize the
+next index.
 
 Download the five successful artifacts before stopping the server, copy only their original
 `bootstrap-sample.json` files under unique names, and validate the set locally:
@@ -939,8 +953,10 @@ cargo xtask perf-bootstrap --release 0.67.1 --profile reference-v1 \
 ```
 
 Do not delete the host until `bootstrap-sample-set.json` is produced successfully and all five
-artifact archives are independently retained. This check rejects mixed fingerprints, contracts,
-scenario sets, duplicate run ids, failed runs, and any sample marked as ship evidence.
+artifact archives are independently retained. This check requires exact indices `1..=5` and
+verifies every predecessor receipt digest. It rejects mixed fingerprints, source commits,
+admissions, contracts, scenario sets, duplicate run ids, broken/reordered chains, failed runs, and
+any sample marked as ship evidence.
 
 ## 13. Emergency stop
 

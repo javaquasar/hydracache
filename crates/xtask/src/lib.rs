@@ -16,6 +16,7 @@ pub mod mutants;
 pub mod perf;
 pub mod perf_bootstrap;
 pub mod perf_budget;
+pub mod perf_full_dress;
 pub mod perf_qualification;
 pub mod quarantine;
 pub mod raft_spec_check;

@@ -780,7 +780,7 @@ pub fn release_066_gate_contract_problems(gates: &[GateEntry]) -> Vec<String> {
 }
 
 pub fn release_0671_gate_contract_problems(gates: &[GateEntry]) -> Vec<String> {
-    const REQUIRED: [(&str, &str, &str, &str); 7] = [
+    const REQUIRED: [(&str, &str, &str, &str); 8] = [
         (
             "tool.perf-runner-provisioned-0671",
             "target/test-evidence/0.67.1/runner-provisioned.json",
@@ -798,6 +798,12 @@ pub fn release_0671_gate_contract_problems(gates: &[GateEntry]) -> Vec<String> {
             "target/test-evidence/0.67.1/qualification.json",
             "release-0671-performance-qualification",
             "Run 0.67.1 qualification gate",
+        ),
+        (
+            "tool.perf-full-dress-admission-0671",
+            "target/test-evidence/0.67.1/full-dress-admission.json",
+            "release-0671-performance-full-dress",
+            "Admit bootstrap after the second identical full-dress run",
         ),
         (
             "tool.perf-bootstrap-sample-set-0671",

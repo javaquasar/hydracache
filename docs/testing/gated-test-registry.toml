@@ -6512,6 +6512,40 @@ HYDRACACHE_RUN_PERF_0671_STAGE = "qualification"
 HYDRACACHE_PERFORMANCE_0671_MODE = "qualify"
 
 [[gate]]
+id = "tool.perf-full-dress-admission-0671"
+kind = "external_tool"
+source = "crates/xtask/src/perf_full_dress.rs"
+package = "xtask"
+target = "perf_full_dress_0671"
+test = "admission_requires_two_unique_identical_non_promotable_full_dress_runs"
+cfg = ""
+env = "HYDRACACHE_RUN_PERF_0671_STAGE"
+reason = "Two full-workload, non-promotable runs with identical source, runner, prebuild, and scenario identities must admit bootstrap"
+tier = "manual"
+required_features = []
+required_env = ["HYDRACACHE_RUN_PERF_0671_STAGE"]
+required_tools = ["cargo", "git", "docker"]
+timeout_seconds = 43200
+owner_release = "0.67.1"
+ship_mandatory = true
+artifacts = ["target/test-evidence/0.67.1/full-dress-admission.json"]
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "release-0671-performance-full-dress"
+step = "Admit bootstrap after the second identical full-dress run"
+
+[gate.command]
+program = "cargo"
+args = ["run", "-p", "xtask", "--locked", "--", "perf-full-dress", "--release", "0.67.1", "--profile", "reference-v1", "--phase", "admission", "--predecessor-receipt", "target/full-dress-predecessor.json"]
+cwd = "."
+platform = "any"
+
+[gate.command.env]
+HYDRACACHE_RUN_PERF_0671_STAGE = "full-dress-admission"
+HYDRACACHE_PERFORMANCE_0671_MODE = "full-dress"
+
+[[gate]]
 id = "tool.perf-bootstrap-sample-set-0671"
 kind = "external_tool"
 source = "crates/xtask/src/perf_bootstrap.rs"

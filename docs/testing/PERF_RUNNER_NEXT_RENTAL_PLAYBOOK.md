@@ -222,8 +222,8 @@ archive before and after transfer.
 
 ### 7. Gate every dispatch against drift
 
-Before qualification and before every serialized bootstrap dispatch, return the
-machine to its offline baseline and run:
+Before qualification, each full-dress run, and every serialized bootstrap
+dispatch, return the machine to its offline baseline and run:
 
 ```bash
 sudo scripts/perf/prepare-reference-host.sh check-frozen \
@@ -256,10 +256,26 @@ bootstrap sample. Accept it only after verifying:
 - SLO, repetitions, calibration, affinity, quota, privacy, zero-error, and
   fail-closed gates without weakening any threshold.
 
-Then acquire five **serialized successful** bootstrap samples with one unchanged
-environment fingerprint. Failed, cancelled, unstable, identity-mismatched, IRQ-
-contaminated, or drifted runs do not count. Keep their original downloads
-unchanged and build any analyses from copies.
+Next execute the exact full workload twice in `performance_0671_mode=full-dress`:
+
+1. Dispatch the first run with `full_dress_predecessor_run_id` empty. Archive its
+   `performance-0671-full-dress-receipt` artifact and verify that the receipt is
+   qualification-only and non-promotable.
+2. Only after accepting that artifact, dispatch the second run with
+   `full_dress_predecessor_run_id=<first-run-id>`. It downloads the first
+   byte-exact receipt and publishes `performance-0671-full-dress-admission` only
+   when source SHA, runner fingerprint, immutable runner-provisioning receipt,
+   prebuild contract, scenario contract, and distinct run identities all agree.
+
+Then acquire exactly five **serialized successful** bootstrap samples with one
+unchanged environment fingerprint. Every dispatch sets
+`full_dress_admission_run_id=<second-full-dress-run-id>` and its exact
+`bootstrap_sample_index`. Sample 1 leaves `bootstrap_predecessor_run_id` empty;
+sample N (2-5) names the run id that produced accepted sample N-1. Never queue
+the next run before the predecessor artifact exists. Failed, cancelled, unstable,
+identity-mismatched, IRQ-contaminated, or drifted runs do not count and
+cannot authorize a successor. Keep original downloads unchanged and build any
+analyses from copies.
 
 ## What previous experiments taught us
 
