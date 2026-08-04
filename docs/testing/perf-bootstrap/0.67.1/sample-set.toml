@@ -4,8 +4,11 @@ profile = "reference-v1"
 status = "awaiting-dedicated-host"
 minimum_samples = 5
 runner_fingerprint = ""
+runner_provisioning_sha256 = ""
 prebuild_contract_digest = ""
 scenario_contract_set_digest = ""
+full_dress_admission_sha256 = ""
+required_sample_indices = [1, 2, 3, 4, 5]
 sample_receipts = []
 bootstrap_eligible = false
 ship_evidence_eligible = false
@@ -16,4 +19,8 @@ ship_evidence_eligible = false
 # cargo xtask perf-bootstrap --release 0.67.1 --profile reference-v1 \
 #   --phase sample-set --samples-dir <downloaded-bootstrap-receipts>
 #
-# No manually copied performance number belongs in this file.
+# Bootstrap may start only from a two-run full-dress admission. Sample 1 is
+# the chain root; samples 2-5 each bind the exact receipt digest and GitHub run
+# id of the immediately prior accepted sample. Pre-queued or automatic retry
+# runs cannot satisfy that predecessor contract. No manually copied
+# performance number belongs in this file.

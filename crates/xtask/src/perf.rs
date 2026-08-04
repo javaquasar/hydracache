@@ -873,8 +873,10 @@ fn exact_tmpfs_publication_contract(
     source_commit: &str,
     observation: &TmpfsPublicationObservation<'_>,
 ) -> bool {
-    matches!(observation.performance_mode, Some("qualify" | "bootstrap"))
-        && observation.github_actions == Some("true")
+    matches!(
+        observation.performance_mode,
+        Some("qualify" | "full-dress" | "bootstrap")
+    ) && observation.github_actions == Some("true")
         && observation.github_sha == Some(source_commit)
         && observation.parent == root.join("target/test-evidence/0.67")
         && observation.canonical_parent == Path::new(REFERENCE_EVIDENCE_067_TMPFS)
@@ -1394,7 +1396,10 @@ fn resolve_reference_cpu_affinity(
         return Ok(process_cpu_affinity.to_owned());
     }
 
-    if matches!(performance_0671_mode, Some("qualify" | "bootstrap")) {
+    if matches!(
+        performance_0671_mode,
+        Some("qualify" | "full-dress" | "bootstrap")
+    ) {
         let isolation = &attestation.cpu_isolation;
         if process_cpu_affinity != REFERENCE_HOUSEKEEPING_AFFINITY
             || isolation.housekeeping_cpus != REFERENCE_HOUSEKEEPING_AFFINITY
@@ -1664,7 +1669,7 @@ mod preflight_tests {
             resolve_reference_cpu_affinity("1-4", &profile, &attestation, None).unwrap(),
             "1-4"
         );
-        for mode in ["qualify", "bootstrap"] {
+        for mode in ["qualify", "full-dress", "bootstrap"] {
             assert_eq!(
                 resolve_reference_cpu_affinity("0,5-7", &profile, &attestation, Some(mode))
                     .unwrap(),
@@ -1742,7 +1747,7 @@ mod preflight_tests {
             )
         };
 
-        for mode in ["qualify", "bootstrap"] {
+        for mode in ["qualify", "full-dress", "bootstrap"] {
             assert!(matches(
                 Some(mode),
                 Some("true"),

@@ -8,6 +8,7 @@ use hydracache_loadgen::profile::{
     REFERENCE_MEASUREMENT_CPUS, REFERENCE_OS_IMAGE, REFERENCE_RUNNER_CLASS,
     REFERENCE_STORAGE_CLASS,
 };
+use sha2::{Digest, Sha256};
 use xtask::perf_bootstrap::{
     bootstrap_context_problems, build_sample_set, BootstrapArtifactDigest, BootstrapSampleReceipt,
 };
@@ -46,9 +47,13 @@ fn temp_dir(label: &str) -> PathBuf {
     path
 }
 
-fn sample(run: u64, fingerprint: &str) -> BootstrapSampleReceipt {
+fn sample(
+    run: u64,
+    fingerprint: &str,
+    predecessor: Option<(String, String)>,
+) -> BootstrapSampleReceipt {
     BootstrapSampleReceipt {
-        schema_version: 1,
+        schema_version: 2,
         release: "0.67.1".to_owned(),
         profile: "reference-v1".to_owned(),
         source_commit: SHA.to_owned(),
@@ -90,8 +95,13 @@ fn sample(run: u64, fingerprint: &str) -> BootstrapSampleReceipt {
                 prebuild_contract_digest: "a".repeat(64),
             },
         },
+        runner_provisioning_sha256: "6".repeat(64),
         prebuild_contract_digest: "a".repeat(64),
         scenario_contract_set_digest: "b".repeat(64),
+        sample_index: run as u32,
+        admission_sha256: "8".repeat(64),
+        predecessor_github_run_id: predecessor.as_ref().map(|value| value.0.clone()),
+        predecessor_receipt_sha256: predecessor.map(|value| value.1),
         evidence_files: vec![BootstrapArtifactDigest {
             path: "target/test-evidence/0.67/local.json".to_owned(),
             sha256: "f".repeat(64),
@@ -103,12 +113,19 @@ fn sample(run: u64, fingerprint: &str) -> BootstrapSampleReceipt {
 }
 
 fn write_samples(directory: &Path, fingerprints: &[String]) {
+    let mut predecessor = None;
     for (index, fingerprint) in fingerprints.iter().enumerate() {
-        fs::write(
-            directory.join(format!("sample-{index}.json")),
-            serde_json::to_vec_pretty(&sample(index as u64 + 1, fingerprint)).unwrap(),
-        )
-        .unwrap();
+        let receipt = sample(index as u64 + 1, fingerprint, predecessor.clone());
+        let bytes = serde_json::to_vec_pretty(&receipt).unwrap();
+        fs::write(directory.join(format!("sample-{index}.json")), &bytes).unwrap();
+        let mut hasher = Sha256::new();
+        hasher.update(&bytes);
+        let digest = hasher
+            .finalize()
+            .iter()
+            .map(|byte| format!("{byte:02x}"))
+            .collect();
+        predecessor = Some((receipt.github_run_id, digest));
     }
 }
 
@@ -130,6 +147,17 @@ fn committed_acquisition_manifest_is_empty_and_non_promotable_before_collection(
     let value: toml::Value = toml::from_str(&manifest).unwrap();
     assert_eq!(value["status"].as_str(), Some("awaiting-dedicated-host"));
     assert_eq!(value["minimum_samples"].as_integer(), Some(5));
+    assert_eq!(value["runner_provisioning_sha256"].as_str(), Some(""));
+    assert_eq!(value["full_dress_admission_sha256"].as_str(), Some(""));
+    assert_eq!(
+        value["required_sample_indices"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .filter_map(toml::Value::as_integer)
+            .collect::<Vec<_>>(),
+        vec![1, 2, 3, 4, 5]
+    );
     assert_eq!(value["sample_receipts"].as_array().unwrap().len(), 0);
     assert_eq!(value["bootstrap_eligible"].as_bool(), Some(false));
     assert_eq!(value["ship_evidence_eligible"].as_bool(), Some(false));
@@ -150,6 +178,11 @@ fn bootstrap_workflow_collects_full_reference_families_without_ship_promotion() 
         "Stop isolated rootless Docker after Redis comparison",
         "Run bootstrap control-plane reference evidence",
         "Retain non-ship bootstrap sample",
+        "Authorize exact serialized bootstrap sample before measurement",
+        "performance-0671-full-dress-admission",
+        "performance-0671-bootstrap-receipt",
+        "inputs.bootstrap_sample_index",
+        "inputs.bootstrap_predecessor_run_id",
         "Prepare tmpfs reference evidence",
         "Materialize tmpfs reference evidence",
         "group: release-067-performance-reference-v1",
@@ -184,6 +217,9 @@ fn sample_set_requires_five_unique_same_fingerprint_and_contract_receipts() {
     write_samples(&valid, &vec!["c".repeat(64); 5]);
     let set = build_sample_set(&valid).unwrap();
     assert_eq!(set.samples.len(), 5);
+    assert_eq!(set.source_commit, SHA);
+    assert_eq!(set.full_dress_admission_sha256, "8".repeat(64));
+    assert_eq!(set.runner_provisioning_sha256, "6".repeat(64));
     assert!(set.bootstrap_eligible);
     assert!(!set.ship_evidence_eligible);
 
@@ -204,9 +240,19 @@ fn sample_set_requires_five_unique_same_fingerprint_and_contract_receipts() {
     );
     assert!(build_sample_set(&mixed).is_err());
 
+    let broken = temp_dir("broken-chain");
+    write_samples(&broken, &vec!["c".repeat(64); 5]);
+    let last_path = broken.join("sample-4.json");
+    let mut last: BootstrapSampleReceipt =
+        serde_json::from_slice(&fs::read(&last_path).unwrap()).unwrap();
+    last.predecessor_receipt_sha256 = Some("7".repeat(64));
+    fs::write(&last_path, serde_json::to_vec_pretty(&last).unwrap()).unwrap();
+    assert!(build_sample_set(&broken).is_err());
+
     fs::remove_dir_all(valid).unwrap();
     fs::remove_dir_all(short).unwrap();
     fs::remove_dir_all(mixed).unwrap();
+    fs::remove_dir_all(broken).unwrap();
 }
 
 #[test]

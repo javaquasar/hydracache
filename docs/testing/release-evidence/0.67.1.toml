@@ -67,17 +67,26 @@ function = "reference_attestation_v5_rejects_vm_siblings_non_nvme_and_missing_id
 id = "W3"
 required_sources = [
     ".github/workflows/ci.yml",
+    "crates/xtask/src/perf_full_dress.rs",
     "crates/xtask/src/perf_qualification.rs",
+    "crates/xtask/tests/perf_full_dress_0671.rs",
     "crates/xtask/tests/perf_qualification_0671.rs",
 ]
 required_artifacts = ["docs/plans/V0_67_1_DEDICATED_PERFORMANCE_REFERENCE_BOOTSTRAP_PLAN.md"]
 fast_gate_ids = ["fast.workspace-nextest"]
-gated_gate_ids = ["tool.perf-qualification-0671"]
+gated_gate_ids = [
+    "tool.perf-qualification-0671",
+    "tool.perf-full-dress-admission-0671",
+]
 ship_required = true
 
 [[work_item.required_tests]]
 source = "crates/xtask/tests/perf_qualification_0671.rs"
 function = "qualification_context_rejects_untrusted_events_refs_forks_dirty_and_mismatched_sha"
+
+[[work_item.required_tests]]
+source = "crates/xtask/tests/perf_full_dress_0671.rs"
+function = "admission_requires_two_unique_identical_non_promotable_full_dress_runs"
 
 [[work_item]]
 id = "W4"

@@ -1,9 +1,10 @@
 # HydraCache 0.67.1 Dedicated Performance Reference Bootstrap - Codex Execution Plan
 
 > **At a glance**
-> - **What:** qualify one protected non-shared bare-metal runner, retain at least five stable
->   `main` reference runs from one attested machine/contract family, independently review the
->   immutable anchor, rolling baseline, and budgets, then bootstrap `reference-v1`.
+> - **What:** qualify one protected non-shared bare-metal runner, pass two complete non-promotable
+>   full-dress runs, retain exactly five chained stable `main` reference runs from one attested
+>   machine/contract family, independently review the immutable anchor, rolling baseline, and
+>   budgets, then bootstrap `reference-v1`.
 > - **Why:** `0.67.0` shipped the measurement machinery honestly without numerical claims.
 >   [`TD-0013`](../technical-debt/TD-0013-dedicated-performance-runner-and-baseline-bootstrap.md)
 >   remains open because the reference workflow has never run on qualifying hardware.
@@ -70,6 +71,36 @@ the same fail-closed housekeeping dispatcher, with a regression assertion forbid
 The rejected run is retained for diagnosis but is not eligible and does not count toward the
 five-sample set. SLOs, schedules, repetitions, zero-error rules, the `0.15` spread gate, affinity,
 quota, privacy, and all non-ship/bootstrap boundaries remain unchanged.
+
+## Full-dress admission correction after repeated rejected attempts
+
+Hardware qualification alone did not predict success of the complete reference pipeline. The
+previous campaign produced many correctly rejected attempts after qualification: later stages
+exercised tmpfs publication, the full core family, rootless Docker/Redis comparison, RESP, the
+control plane, runtime IRQ guards, and cross-stage evidence identity that bounded qualification
+did not execute together. Repeating bootstrap after a rejection therefore spent server time
+without first proving that the causal failure had been removed.
+
+The strengthened admission sequence is now:
+
+1. `qualify` proves trusted dispatch, host attestation, preflight, prebuild, and bounded
+   diagnostics. It remains non-promotable.
+2. `full-dress` executes the exact ordered bootstrap workload families and final evidence
+   validation, but writes a `qualification_only=true`, `bootstrap_eligible=false`,
+   `ship_evidence_eligible=false` receipt.
+3. A second independently dispatched `full-dress` run must consume the first run's immutable
+   receipt. Admission is created only if both receipts have different GitHub run ids and identical
+   source SHA, runner fingerprint, immutable runner-provisioning receipt digest, prebuild contract,
+   and scenario-contract-set digest.
+4. Bootstrap sample 1 must consume that exact admission. Samples 2-5 must additionally consume the
+   immediately prior accepted sample receipt. Every sample records the admission digest,
+   predecessor run id, predecessor receipt digest, and its exact index.
+5. Aggregation requires exactly indices `1..=5` and verifies every link. A pre-queued run,
+   automatic retry without a predecessor artifact, reordered receipt, stale admission, changed
+   SHA, changed fingerprint, or changed contract fails before measurement or at finalization.
+
+This gate adds evidence and serialization; it changes no SLO, schedule, repetition, zero-error,
+spread, calibration, affinity, quota, privacy, IRQ, or fail-closed threshold.
 
 ## Release Boundary
 
@@ -268,7 +299,9 @@ cargo test -p hydracache-loadgen --test performance_contract_067 --locked
 Files:
 
 - `.github/workflows/ci.yml`
+- `crates/xtask/src/perf_full_dress.rs`
 - `crates/xtask/src/perf_qualification.rs`
+- `crates/xtask/tests/perf_full_dress_0671.rs`
 - `crates/xtask/tests/perf_qualification_0671.rs`
 - release registry/evidence contracts
 
@@ -283,9 +316,16 @@ Requirements:
 - refuse qualification from PR, push, schedule, tag, fork, dirty source, or a non-`main` ref;
 - keep the existing serialized concurrency group and six-hour hard timeout;
 - prove via canary that renaming a VM runner with `hydracache-perf-v1` cannot pass.
+- require two complete `full-dress` runs after bounded qualification and before bootstrap;
+- make full-dress execute the same core, rootless-Docker/RESP, and control-plane sequence as
+  bootstrap while remaining explicitly qualification-only and non-promotable;
+- admit bootstrap only from two distinct runs with the same exact SHA, runner fingerprint,
+  immutable runner-provisioning receipt digest, prebuild contract, and scenario-contract-set
+  digest.
 
-Qualification proves that a host is worth collecting on. It does not approve its fingerprint and
-does not count as one of the five retained baseline runs.
+Qualification proves that a host is worth exercising. Two full-dress runs prove that the complete
+pipeline is repeatable enough to begin collection. Neither mode approves the fingerprint or counts
+as one of the five retained baseline runs.
 
 ### W4. Collect and retain five bootstrap-eligible main runs
 
@@ -299,7 +339,7 @@ Files:
 
 Requirements:
 
-- collect at least five successful runs while keeping the same physical host, fingerprint v5,
+- collect exactly five successful runs while keeping the same physical host, fingerprint v5,
   kernel, governor/turbo policy, cpuset, toolchain, prebuild digest, scenario digest, and SLO
   contract;
 - run only clean, pre-activation `main` commits; no candidate may baseline itself;
@@ -309,6 +349,11 @@ Requirements:
 - reject failed, unstable, quarantined, stale, mixed-fingerprint, mixed-contract, manually edited,
   or missing-artifact samples;
 - require every scenario's original repeats, zero-error rule, SLO, and 15% spread bound.
+- bind every sample to the same two-run full-dress admission;
+- assign exact indices `1..=5`; require sample 1 to have no predecessor and each later sample to
+  bind the immediately prior sample's GitHub run id and byte-exact receipt SHA-256;
+- prohibit pre-queuing and automatic continuation: dispatch the next sample only after downloading
+  and validating the previous accepted receipt.
 
 The sample-set manifest contains digests and provenance, not copied headline numbers.
 
@@ -427,7 +472,7 @@ cargo run -p xtask --locked -- doc-check
 Dedicated gates:
 
 ```text
-qualification -> five bootstrap runs -> reviewed activation -> frozen-candidate full reference run
+qualification -> two admitted full-dress runs -> five chained bootstrap runs -> reviewed activation -> frozen-candidate full reference run
 ```
 
 Every dedicated stage is manual, serialized, trusted-`main` only, artifact-bound, and fail-closed.
@@ -438,7 +483,7 @@ Ship `0.67.1` only when:
 
 - W0-W7 are complete with exact receipts;
 - one true bare-metal fingerprint v5 is approved;
-- at least five stable pre-candidate `main` runs from that fingerprint are retained;
+- exactly five stable, admission-bound, chained pre-candidate `main` runs from that fingerprint are retained;
 - anchor, rolling baseline, and budgets are independently reviewed;
 - `reference-v1` is bootstrapped without candidate self-baselining;
 - the complete frozen-candidate reference pipeline is green;

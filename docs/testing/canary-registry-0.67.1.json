@@ -98,23 +98,23 @@
     {
       "w_item": "W3",
       "guard": {
-        "file": "crates/xtask/tests/perf_qualification_0671.rs",
-        "function": "qualification_context_rejects_untrusted_events_refs_forks_dirty_and_mismatched_sha"
+        "file": "crates/xtask/tests/perf_full_dress_0671.rs",
+        "function": "admission_requires_two_unique_identical_non_promotable_full_dress_runs"
       },
       "canary": {
-        "file": "crates/xtask/tests/perf_qualification_0671.rs",
-        "function": "canary_qualification_accepts_a_vm_with_the_custom_label"
+        "file": "crates/xtask/tests/perf_full_dress_0671.rs",
+        "function": "canary_full_dress_admits_mixed_runner_receipts"
       },
       "guard_command": {
         "program": "cargo",
-        "args": ["test", "-p", "xtask", "--test", "perf_qualification_0671", "--locked", "qualification_context_rejects_untrusted_events_refs_forks_dirty_and_mismatched_sha", "--", "--nocapture"],
+        "args": ["test", "-p", "xtask", "--test", "perf_full_dress_0671", "--locked", "admission_requires_two_unique_identical_non_promotable_full_dress_runs", "--", "--nocapture"],
         "env": {},
         "cwd": ".",
         "platform": "any"
       },
       "canary_command": {
         "program": "cargo",
-        "args": ["test", "-p", "xtask", "--test", "perf_qualification_0671", "--locked", "canary_qualification_accepts_a_vm_with_the_custom_label", "--", "--nocapture"],
+        "args": ["test", "-p", "xtask", "--test", "perf_full_dress_0671", "--locked", "canary_full_dress_admits_mixed_runner_receipts", "--", "--nocapture"],
         "env": {"HYDRACACHE_CANARY_DEFECT": "W3"},
         "cwd": ".",
         "platform": "any"
@@ -124,7 +124,7 @@
       "timeout_seconds": 300,
       "tier": "fast",
       "artifacts": ["target/release-evidence/canaries/0.67.1-W3.json"],
-      "red_evidence": "The W3 canary proves the custom GitHub label cannot make a virtualized host qualification-eligible."
+      "red_evidence": "The W3 canary proves two full-dress receipts with mixed runner identities cannot admit bootstrap."
     },
     {
       "w_item": "W4",
