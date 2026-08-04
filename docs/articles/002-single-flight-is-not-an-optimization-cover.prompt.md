@@ -1,4 +1,4 @@
-# Cover Prompt: 003 - Single-flight Is Not an Optimization
+# Cover Prompt: 002 - Single-flight Is Not an Optimization
 
 Create a 16:9 editorial technology cover image for an article titled "Single-flight Is Not an Optimization".
 

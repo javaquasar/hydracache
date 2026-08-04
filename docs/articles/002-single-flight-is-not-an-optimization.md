@@ -1,16 +1,16 @@
 # Single-flight Is Not an Optimization
 
-![Medium article cover image](draft-single-flight-is-not-an-optimization-cover.png)
+![Medium article cover image](002-single-flight-is-not-an-optimization-cover.png)
 
 <!-- article-series:start hydracache-runtime -->
 ## HydraCache Runtime Series
 
 This article is part of a practical series about building a Rust-native local-first cache runtime.
 
-You are reading: Draft.
+You are reading: Part 2.
 
 - [Part 1: Why Rust Needs Cache Semantics, Not Just Another Cache Map](https://medium.com/@artur.buzov/why-rust-needs-cache-semantics-not-just-another-cache-map-ecf3c4e01191)
-- Draft: Single-flight Is Not an Optimization
+- Part 2: Single-flight Is Not an Optimization
 - Planned: TTL is not enough.
 - Planned: Local-first distributed invalidation.
 - Planned: Typed query caching in Rust.

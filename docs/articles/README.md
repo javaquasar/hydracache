@@ -10,6 +10,7 @@ This directory contains external-facing article drafts for HydraCache.
 ## Published Articles
 
 - 2026-07-31 - [001 - Why Rust Needs Cache Semantics, Not Just Another Cache Map](https://medium.com/@artur.buzov/why-rust-needs-cache-semantics-not-just-another-cache-map-ecf3c4e01191) - Medium
+- 2026-08-05 - [002 - Single-flight Is Not an Optimization](https://medium.com/@artur.buzov/single-flight-is-not-an-optimization-85917bdbe77d) - Medium
 
 ## Medium Drafting
 
@@ -65,16 +66,16 @@ npm --prefix console install
 npx --prefix console playwright install chromium
 ```
 
-## Drafts
+## Article Sources
 
 - [001 - Why Rust Needs Cache Semantics, Not Just Another Cache Map](001-why-rust-needs-cache-semantics.md)
   - Cover: [001-why-rust-needs-cache-semantics-cover.png](001-why-rust-needs-cache-semantics-cover.png)
   - Prompt: [001-why-rust-needs-cache-semantics-cover.prompt.md](001-why-rust-needs-cache-semantics-cover.prompt.md)
-- [002 - Raft Snapshot Bugs, AI Agents, and the Cost of Ignoring Contradictions](002-raft-snapshot-agent-bug.md)
+- [002 - Single-flight Is Not an Optimization](002-single-flight-is-not-an-optimization.md)
+  - Cover: [002-single-flight-is-not-an-optimization-cover.png](002-single-flight-is-not-an-optimization-cover.png)
+  - Prompt: [002-single-flight-is-not-an-optimization-cover.prompt.md](002-single-flight-is-not-an-optimization-cover.prompt.md)
+- [Draft - Raft Snapshot Bugs, AI Agents, and the Cost of Ignoring Contradictions](002-raft-snapshot-agent-bug.md)
   - Cover: [002-raft-snapshot-agent-bug-cover.jpg](002-raft-snapshot-agent-bug-cover.jpg)
-- [Draft - Single-flight Is Not an Optimization](draft-single-flight-is-not-an-optimization.md)
-  - Cover: [draft-single-flight-is-not-an-optimization-cover.png](draft-single-flight-is-not-an-optimization-cover.png)
-  - Prompt: [draft-single-flight-is-not-an-optimization-cover.prompt.md](draft-single-flight-is-not-an-optimization-cover.prompt.md)
 
 ## Planned Articles
 
