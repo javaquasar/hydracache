@@ -57,12 +57,17 @@ actionlint \
 mkdir --parents /work/pycache
 mapfile -t python_files < <(find scripts/perf -maxdepth 1 -type f -name '*.py' -print | sort)
 PYTHONPYCACHEPREFIX=/work/pycache python3 -m py_compile "${python_files[@]}"
+PYTHONPATH=scripts/perf PYTHONPYCACHEPREFIX=/work/pycache \
+  python3 -m unittest scripts/perf/reference_campaign_test.py
 
 mkdir --parents /work/malformed-telemetry
 printf '{not-json}\n' >/work/malformed-telemetry/input.jsonl
 expect_failure malformed-telemetry \
   python3 scripts/perf/summarize-telemetry.py \
     --input /work/malformed-telemetry --output /work/summary.json
+expect_failure irq-burn-in-short-window \
+  scripts/perf/reference-host-irq-burn-in.sh \
+    --output-dir /work/invalid-short-burn-in --duration-seconds 599
 
 rm --recursive --force -- target/test-evidence "$tmpfs_root"
 scripts/perf/reference-evidence-tmpfs.sh prepare
@@ -144,5 +149,53 @@ expect_failure provisioning-source-commit scripts/perf/import-provisioning-recei
 printf '{"schema_version":4' >"$source_receipt"
 chmod 0444 "$source_receipt"
 expect_failure provisioning-truncated-json scripts/perf/import-provisioning-receipt.sh
+
+readonly campaign_source="/var/lib/hydracache-perf/reference-campaign-v1"
+readonly campaign_bundle="$campaign_source/reference-campaign-host-admission.tar.gz"
+readonly campaign_receipt="$campaign_source/reference-campaign-admission.json"
+mkdir --parents /work/import-shims "$campaign_source"
+cat >/work/import-shims/id <<'EOF'
+#!/usr/bin/env bash
+if test "$*" = "--user --name"; then
+  echo github-runner
+  exit 0
+fi
+exec /usr/bin/id "$@"
+EOF
+chmod 0755 /work/import-shims/id
+printf 'immutable host admission fixture\n' >"$campaign_bundle"
+campaign_bundle_sha256="$(sha256sum "$campaign_bundle" | awk '{print $1}')"
+profile_sha256="$(sha256sum docs/testing/perf-host-profiles/ubuntu-24.04-reference-v1.json | awk '{print $1}')"
+jq --null-input \
+  --arg campaign_id hc0671-local-fixture \
+  --arg source_commit "$fixture_commit" \
+  --arg profile_sha256 "$profile_sha256" \
+  --arg bundle_sha256 "$campaign_bundle_sha256" '
+    {
+      schema_version: 1,
+      release: "0.67.1",
+      stage: "reference-campaign-host-admission",
+      campaign_id: $campaign_id,
+      source_commit: $source_commit,
+      profile_sha256: $profile_sha256,
+      host_state_archive_sha256: ("1" * 64),
+      irq_burn_in_receipt_sha256: ("2" * 64),
+      irq_baseline_sha256: ("3" * 64),
+      host_admission_bundle_sha256: $bundle_sha256,
+      host_frozen: true,
+      irq_burn_in_passed: true,
+      passed: true,
+      qualification_evidence: false,
+      bootstrap_evidence: false,
+      ship_evidence_eligible: false
+    }
+  ' >"$campaign_receipt"
+chmod 0444 "$campaign_bundle" "$campaign_receipt"
+chmod 0555 "$campaign_source"
+PATH="/work/import-shims:$PATH" scripts/perf/import-reference-campaign-admission.sh
+test -f target/test-evidence/0.67.1/reference-campaign/reference-campaign-admission.json
+test -f target/test-evidence/0.67.1/reference-campaign/reference-campaign-host-admission.tar.gz
+expect_failure campaign-admission-overwrite \
+  env PATH="/work/import-shims:$PATH" scripts/perf/import-reference-campaign-admission.sh
 
 printf 'static, malformed-input, tmpfs recovery, and receipt import checks: OK\n'
