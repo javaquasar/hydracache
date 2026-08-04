@@ -239,7 +239,7 @@ try {
     Invoke-Docker -Arguments @("network", "create", $recoveryNetwork)
     Invoke-Docker -Arguments @(
         "run", "--detach", "--name", $recoveryContainer, "--network", $recoveryNetwork,
-        $RedisImage, "redis-server", "--save", "", "--appendonly", "no"
+        $RedisImage, "redis-server", "--appendonly", "no"
     )
     $ready = $false
     for ($attempt = 1; $attempt -le 30; $attempt++) {
