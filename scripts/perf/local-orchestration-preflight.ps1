@@ -118,7 +118,7 @@ $redisImageId = $null
 $repoMount = "type=bind,source=$repoRoot,target=/repo,readonly"
 $gitMount = "type=bind,source=$gitCommon,target=/git,readonly"
 $registryMount = "source=$cargoRegistryVolume,target=/usr/local/cargo/registry"
-$targetMount = "source=$cargoTargetVolume,target=/repo/target"
+$targetMount = "source=$cargoTargetVolume,target=/cargo-target"
 
 try {
     New-Item -ItemType Directory -Force -Path $outputPath | Out-Null
@@ -144,6 +144,7 @@ try {
         "--mount", $registryMount,
         "--mount", $targetMount,
         "--workdir", "/repo",
+        "--env", "CARGO_TARGET_DIR=/cargo-target",
         "--env", "GIT_DIR=/git/worktrees/$worktreeName",
         "--env", "GIT_WORK_TREE=/repo",
         $RustImage
@@ -161,6 +162,7 @@ try {
         "--mount", $registryMount,
         "--mount", $targetMount,
         "--workdir", "/repo",
+        "--env", "CARGO_TARGET_DIR=/cargo-target",
         "--env", "GIT_DIR=/git/worktrees/$worktreeName",
         "--env", "GIT_WORK_TREE=/repo",
         "--env", "GITHUB_ACTIONS=true",
@@ -220,6 +222,7 @@ try {
         "--mount", $registryMount,
         "--mount", $targetMount,
         "--workdir", "/repo",
+        "--env", "CARGO_TARGET_DIR=/cargo-target",
         "--env", "GIT_DIR=/git/worktrees/$worktreeName",
         "--env", "GIT_WORK_TREE=/repo",
         $RustImage, "bash", "-c",
@@ -229,8 +232,9 @@ try {
         "run", "--rm", "--network", "none",
         "--mount", $repoMount,
         "--mount", "source=$emptyCargoVolume,target=/usr/local/cargo/registry",
-        "--mount", "type=tmpfs,target=/repo/target",
+        "--mount", "type=tmpfs,target=/cargo-target",
         "--workdir", "/repo",
+        "--env", "CARGO_TARGET_DIR=/cargo-target",
         $RustImage, "cargo", "test", "-p", "xtask", "--locked", "--offline",
         "--test", "perf_local_orchestration_0671"
     )

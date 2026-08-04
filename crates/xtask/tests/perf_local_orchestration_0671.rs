@@ -270,4 +270,17 @@ fn local_harness_is_pinned_non_promotable_and_covers_all_six_scenarios() {
     }
     assert!(!harness.contains(":latest"));
     assert!(!dockerfile.contains(":latest"));
+    assert!(
+        harness.contains("source=$cargoTargetVolume,target=/cargo-target"),
+        "Cargo target volume must be mounted outside the read-only checkout"
+    );
+    assert_eq!(
+        harness.matches("CARGO_TARGET_DIR=/cargo-target").count(),
+        4,
+        "every Cargo execution path must use the external target mount"
+    );
+    assert!(
+        !harness.contains("target=/repo/target"),
+        "a clean read-only checkout has no target mountpoint"
+    );
 }

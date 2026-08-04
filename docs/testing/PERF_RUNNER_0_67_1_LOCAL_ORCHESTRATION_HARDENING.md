@@ -88,6 +88,9 @@ The initial online Rust run populates uniquely named Cargo cache volumes. The
 same state-machine test then runs with `--network none --offline`. An empty
 registry is separately required to fail, proving that the offline success used
 only the warmed immutable cache instead of silently reaching the network.
+The Cargo target volume is mounted at `/cargo-target`, outside the read-only
+`/repo` bind, so the harness also works from a pristine checkout where a host
+`target` directory has never been created.
 
 The source checkout is mounted read-only in every helper container. All tmpfs,
 receipt, service, and repository mutations occur in a disposable copy or an
