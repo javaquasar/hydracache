@@ -9,6 +9,11 @@ met. The previous server was deleted before a new exact-main qualification and
 five accepted bootstrap samples were completed. It records what was learned and
 turns the next rental into a profile-driven, auditable procedure.
 
+Before ordering hardware, require a green receipt from the
+[six-scenario local orchestration hardening suite](PERF_RUNNER_0_67_1_LOCAL_ORCHESTRATION_HARDENING.md).
+That receipt is a rental-readiness check only and is never qualification or
+bootstrap evidence.
+
 The detailed historical evidence remains in the immutable
 [`explore-0.67-telemetry-20260803`](https://github.com/javaquasar/hydracache/tree/explore-0.67-telemetry-20260803)
 archive tag, under:
