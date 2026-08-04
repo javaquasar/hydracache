@@ -1345,13 +1345,13 @@ fn validate_profile(profile: &ProfileContract, problems: &mut Vec<String>) {
     match profile.enforcement {
         Enforcement::Ship => {
             if profile.name != "reference-v1"
-                || profile.runner.required_runner_class != "github-hosted-reference-v1"
+                || profile.runner.required_runner_class != "self-hosted-bare-metal-v1"
                 || profile.runner.minimum_logical_cores != 4
-                || profile.runner.required_cpu_affinity != "github-managed-vm"
-                || profile.runner.required_cgroup_cpu_quota != "github-managed-vm"
+                || profile.runner.required_cpu_affinity != "1-4"
+                || profile.runner.required_cgroup_cpu_quota != "unlimited"
                 || !profile.runner.require_dedicated
                 || !approx_eq(profile.runner.maximum_calibration_score, 0.25)
-                || profile.noise.comparison_class != "same-github-hosted-image-class"
+                || profile.noise.comparison_class != "same-bare-metal-runner-fingerprint"
                 || profile.noise.absolute_numbers_are_ship_evidence
                 || !approx_eq(profile.noise.maximum_report_spread_ratio, 0.30)
             {

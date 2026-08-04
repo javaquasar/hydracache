@@ -24,7 +24,7 @@ max_rejection_ratio = 0.0
 key_count = 1
 payload_bytes = 128
 distribution = "single-key"
-worker_counts = [1, 2, 4, 8]
+worker_counts = [1, 2, 4]
 loader_delay_us = 1000
 
 [[local.operation_mix]]

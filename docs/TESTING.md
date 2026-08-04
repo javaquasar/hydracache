@@ -1312,105 +1312,34 @@ listeners.
 
 ## Release 0.67 performance characterization
 
-The canonical methodology and surface boundaries are documented in
-[`PERFORMANCE.md`](PERFORMANCE.md). Release 0.67 has implementation closure but
-is not shipped. In particular, an ordinary workspace test, a direct
-`hydracache-loadgen` invocation, or a shared GitHub-hosted result is not a
-capacity receipt.
+The canonical methodology and claim boundary are in [`PERFORMANCE.md`](PERFORMANCE.md). Release 0.67 ships the W0-W10 testing infrastructure, not official capacity, sizing, Redis-comparison, metrics-agreement, or numerical baseline results. The missing dedicated-runner evidence is explicit debt: [`TD-0013`](technical-debt/TD-0013-dedicated-performance-runner-and-baseline-bootstrap.md).
 
-`ci-shared` is a broad-tolerance, non-enforcing regression tripwire.
-`reference-v1` is the only ship-eligible profile and runs serially on the pinned
-GitHub-hosted `ubuntu-24.04` image. The runner-class fingerprint binds `ImageOS`
-and `ImageVersion`; every report separately retains the observed CPU, RAM, kernel,
-calibration, affinity, and quota facts. The sequence prebuilds once, then runs the
-exact binaries without putting Cargo compilation or image pulls inside a measurement
-window. Because the hardware class is GitHub-managed, this profile permits relative
-same-image regression claims only, never portable capacity floors or sizing guidance.
+`ci-shared` remains a broad-tolerance hosted regression tripwire. `reference-v1` remains reserved for the protected `hydracache-perf-v1` self-hosted bare-metal runner. Its preflight, fingerprint, SLO, repeat, zero-error, and 15% spread rules are unchanged, but its five execution gates are deferred evidence gates rather than 0.67 ship-mandatory receipts.
 
-Manual full hosted CI sets `run_nightly=true` and leaves
-`run_reference_performance=false`; this runs the non-ship `ci-shared` tripwire.
-The `reference-v1` lane starts only by an explicit manual dispatch with
-`run_reference_performance=true`. Runs serialize through
-`release-067-performance-reference-v1`; they do not require a self-hosted runner.
+The reference job starts only through an explicit trusted-`main` dispatch with `run_reference_performance=true`. Runs serialize through `release-067-performance-reference-v1`; the runner may remain offline while TD-0013 is open. Provisioning and bootstrap steps are in [`testing/PERF_RUNNER_0_67.md`](testing/PERF_RUNNER_0_67.md).
 
-PowerShell reproduction of the registered sequence:
-
-```powershell
-$env:HYDRACACHE_RUN_PERF_REFERENCE='1'
-$env:HYDRACACHE_RUN_PERF_CORE='1'
-$env:HYDRACACHE_RUN_PERF_RESP='1'
-$env:HYDRACACHE_RUN_PERF_CONTROL_PLANE='1'
-
-$fastGates = @(
-  'fast.performance-contract-067',
-  'fast.performance-resp-external-067',
-  'fast.workspace-nextest'
-)
-foreach ($gate in $fastGates) {
-  cargo run -p xtask --locked -- evidence-run --release 0.67 --gate $gate
-  if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-}
-
-cargo run -p xtask --locked -- evidence-run --release 0.67 --gate tool.perf-prebuild-067
-cargo run -p xtask --locked -- evidence-run --release 0.67 --gate env.hydracache-run-067-perf-core
-cargo run -p xtask --locked -- evidence-run --release 0.67 --gate env.hydracache-run-067-perf-resp
-cargo run -p xtask --locked -- evidence-run --release 0.67 --gate env.hydracache-run-067-perf-control-plane
-cargo run -p xtask --locked -- evidence-run --release 0.67 --gate tool.perf-budget-check-067
-cargo run -p xtask --locked -- canary-sweep --release 0.67 --tier all
-cargo run -p xtask --locked -- release-evidence --release 0.67 --receipts-dir target/release-evidence/receipts --require-ship
-
-Remove-Item Env:\HYDRACACHE_RUN_PERF_REFERENCE,Env:\HYDRACACHE_RUN_PERF_CORE,Env:\HYDRACACHE_RUN_PERF_RESP,Env:\HYDRACACHE_RUN_PERF_CONTROL_PLANE -ErrorAction SilentlyContinue
-```
-
-Bash reproduction:
+The eventual host-side sequence remains:
 
 ```bash
 export HYDRACACHE_RUN_PERF_REFERENCE=1
+export HYDRACACHE_PERF_RUNNER_CLASS=self-hosted-bare-metal-v1
 export HYDRACACHE_RUN_PERF_CORE=1
 export HYDRACACHE_RUN_PERF_RESP=1
 export HYDRACACHE_RUN_PERF_CONTROL_PLANE=1
 
-for gate in \
-  fast.performance-contract-067 \
-  fast.performance-resp-external-067 \
-  fast.workspace-nextest
-do
-  cargo run -p xtask --locked -- evidence-run --release 0.67 --gate "$gate" || exit $?
-done
-
-cargo run -p xtask --locked -- evidence-run --release 0.67 --gate tool.perf-prebuild-067
-cargo run -p xtask --locked -- evidence-run --release 0.67 --gate env.hydracache-run-067-perf-core
-cargo run -p xtask --locked -- evidence-run --release 0.67 --gate env.hydracache-run-067-perf-resp
-cargo run -p xtask --locked -- evidence-run --release 0.67 --gate env.hydracache-run-067-perf-control-plane
+taskset --cpu-list 1-4 cargo run -p xtask --locked -- perf-runner-preflight --release 0.67 --profile reference-v1
+taskset --cpu-list 1-4 cargo run -p xtask --locked -- evidence-run --release 0.67 --gate tool.perf-prebuild-067
+taskset --cpu-list 1-4 cargo run -p xtask --locked -- evidence-run --release 0.67 --gate env.hydracache-run-067-perf-core
+taskset --cpu-list 1-4 cargo run -p xtask --locked -- evidence-run --release 0.67 --gate env.hydracache-run-067-perf-resp
+taskset --cpu-list 1-4 cargo run -p xtask --locked -- evidence-run --release 0.67 --gate env.hydracache-run-067-perf-control-plane
 cargo run -p xtask --locked -- evidence-run --release 0.67 --gate tool.perf-budget-check-067
-cargo run -p xtask --locked -- canary-sweep --release 0.67 --tier all
-cargo run -p xtask --locked -- release-evidence --release 0.67 --receipts-dir target/release-evidence/receipts --require-ship
 
-unset HYDRACACHE_RUN_PERF_REFERENCE HYDRACACHE_RUN_PERF_CORE HYDRACACHE_RUN_PERF_RESP HYDRACACHE_RUN_PERF_CONTROL_PLANE
+unset HYDRACACHE_PERF_RUNNER_CLASS HYDRACACHE_RUN_PERF_REFERENCE HYDRACACHE_RUN_PERF_CORE HYDRACACHE_RUN_PERF_RESP HYDRACACHE_RUN_PERF_CONTROL_PLANE
 ```
 
-Those are the complete 0.67 fast-gate IDs: the performance contract owns
-W0-W10, workspace-nextest supplies implementation coverage, and the external
-RESP suite belongs only to W3. There are no standalone W4-W7 fast suites; the
-reconciled fast-suite registry aggregate budget is exactly 1560 seconds.
+These commands are deliberately fail-closed and are not expected to pass before bootstrap. Closing TD-0013 requires at least five eligible, stable, successful `main` runs from one fingerprint/contract family, independent review of the anchor, rolling window, and budget, activation of `reference-v1`, and a complete green frozen-candidate reference run. Candidate, failed, quarantined, unstable, stale, mixed-fingerprint, or self-baselining runs remain ineligible.
 
-These commands describe the release workflow; they are not currently expected
-to produce a ship receipt. The annotated `v0.66.0` predecessor is present and
-ancestral.
-The committed `reference-v1` baseline and budget are also intentionally
-`unbootstrapped`: bootstrap requires at least five eligible, stable, successful
-serialized GitHub-hosted `main` runs from one pinned image/contract family and an
-independent review binding the exact anchor, selected rolling window, and budget
-payload. Candidate, failed, quarantined, unstable, stale, mixed-fingerprint, or
-self-baselining runs are ineligible.
-
-The RESP gate owns one selected node-local endpoint, the sealed W3 artifacts,
-W8 same-box Redis comparison, and RESP metrics-honesty report. W8 uses the same
-pinned tool, host, workload, and alternating execution order for both systems;
-it is not a general Redis-replacement benchmark. The control-plane gate owns
-separate real 3/5/7-daemon metadata/admin artifacts. W9 compares only fields
-already exported by those daemons; absent fields remain `not_available`, and
-internal service-time metrics are never substituted for scheduled-send latency.
+The RESP gate describes one selected node-local endpoint and a method-scoped same-box Redis comparison. The control-plane gate describes real daemon metadata/admin behavior. Neither may be converted into a distributed value-plane or general Redis-replacement claim.
 
 ## Performance Smoke Tests
 

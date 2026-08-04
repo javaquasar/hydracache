@@ -504,6 +504,14 @@ pub async fn local_smoke_report(profile_name: &str) -> Result<PerfReport, LocalT
 pub async fn local_reference_report(
     context: &ValidatedRespReferenceContext,
 ) -> Result<PerfReport, LocalTierError> {
+    let (report, binding) = local_reference_report_unvalidated(context).await?;
+    validate_local_reference_report_binding(&report, &binding)?;
+    Ok(report)
+}
+
+async fn local_reference_report_unvalidated(
+    context: &ValidatedRespReferenceContext,
+) -> Result<(PerfReport, LocalReferenceRunBinding), LocalTierError> {
     let binding = LocalReferenceRunBinding::establish(context)?;
     let measurements = local_measurements(LocalRunShape::Reference, Some(&binding)).await?;
     context
@@ -531,13 +539,20 @@ pub async fn local_reference_report(
         measurements,
         Vec::new(),
     );
-    let validated = validate_local_reference_report(&report)?;
+    Ok((report, binding))
+}
+
+fn validate_local_reference_report_binding(
+    report: &PerfReport,
+    binding: &LocalReferenceRunBinding,
+) -> Result<(), LocalTierError> {
+    let validated = validate_local_reference_report(report)?;
     if validated.capability != binding.capability || validated.instance != binding.instance {
         return Err(LocalTierError::Report(
             "W1 report binding differs from the live in-process capability".to_owned(),
         ));
     }
-    Ok(report)
+    Ok(())
 }
 
 /// Recompute every security-sensitive W1 reference binding and the exact
@@ -707,8 +722,56 @@ pub async fn write_local_reference_report(
     context: &ValidatedRespReferenceContext,
     path: &Path,
 ) -> Result<(), LocalTierError> {
-    let report = local_reference_report(context).await?;
+    let (report, binding) = local_reference_report_unvalidated(context).await?;
+    if let Err(error) = validate_local_reference_report_binding(&report, &binding) {
+        write_failed_local_reference_evidence(&report, path, &error)?;
+        return Err(error);
+    }
     write_report(&report, path)
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+struct FailedLocalReferenceEvidence {
+    schema_version: u32,
+    status: String,
+    ship_evidence_eligible: bool,
+    canonical_output: String,
+    failure: String,
+    report: PerfReport,
+}
+
+fn failed_local_reference_path(path: &Path) -> Result<std::path::PathBuf, LocalTierError> {
+    let stem = path
+        .file_stem()
+        .and_then(|value| value.to_str())
+        .ok_or_else(|| {
+            LocalTierError::Report("W1 output path has no UTF-8 file stem".to_owned())
+        })?;
+    Ok(path.with_file_name(format!("{stem}.failed.json")))
+}
+
+fn write_failed_local_reference_evidence(
+    report: &PerfReport,
+    path: &Path,
+    error: &LocalTierError,
+) -> Result<(), LocalTierError> {
+    let failed_path = failed_local_reference_path(path)?;
+    let evidence = FailedLocalReferenceEvidence {
+        schema_version: 1,
+        status: "failed-canonical-validation".to_owned(),
+        ship_evidence_eligible: false,
+        canonical_output: path.display().to_string(),
+        failure: error.to_string(),
+        report: report.clone(),
+    };
+    let bytes = serde_json::to_vec_pretty(&evidence)
+        .map_err(|error| LocalTierError::Report(error.to_string()))?;
+    if let Some(parent) = failed_path.parent() {
+        std::fs::create_dir_all(parent)?;
+    }
+    std::fs::write(failed_path, bytes)?;
+    Ok(())
 }
 
 /// Context-aware dispatch used by the reference CLI. `reference-v1` has no
@@ -854,14 +917,16 @@ async fn local_scaling_measurements(
         operation_mix(&binding.local),
         binding.local.payload_bytes,
     );
+    let payload_bytes = usize::try_from(binding.local.payload_bytes)
+        .map_err(|_| LocalTierError::Runtime("payload size does not fit usize".to_owned()))?;
     let target_config = LocalTargetConfig {
+        max_capacity: resident_capacity_bytes(key_count, payload_bytes),
         preload_entries: match shape {
             LocalRunShape::Smoke => key_count.min(64),
             LocalRunShape::Reference => binding.scenario.preload_operations.min(key_count),
         },
         key_space: key_count,
-        payload_bytes: usize::try_from(binding.local.payload_bytes)
-            .map_err(|_| LocalTierError::Runtime("payload size does not fit usize".to_owned()))?,
+        payload_bytes,
         operation_mix: local_operation_mix(&binding.local)?,
         ..LocalTargetConfig::default()
     };
@@ -874,6 +939,7 @@ async fn local_scaling_measurements(
                     workers,
                     Arc::new(schedule.keys.clone()),
                     target_config.clone(),
+                    binding.scenario.warmup_operations,
                 )
                 .await?,
             );
@@ -897,11 +963,7 @@ async fn local_scaling_measurements(
     let efficiency_points = raw_by_workers
         .iter()
         .map(|(workers, samples)| {
-            let ratios = samples
-                .iter()
-                .zip(&baseline)
-                .map(|(sample, base)| sample / (base * *workers as f64))
-                .collect();
+            let ratios = scaling_efficiency_samples(samples, &baseline, *workers);
             scalar_point(
                 BTreeMap::from([(
                     "worker_threads".to_owned(),
@@ -920,6 +982,7 @@ async fn local_scaling_measurements(
             "worker_counts": raw_by_workers.iter().map(|(workers, _)| *workers).collect::<Vec<_>>(),
             "key_count": key_count,
             "preload_operations": target_config.preload_entries,
+            "warmup_operations": binding.scenario.warmup_operations,
         }),
     );
     let spread_limit = shape.spread_limit(binding.scenario.robust_spread_tolerance);
@@ -947,6 +1010,7 @@ async fn concurrent_throughput_sample(
     workers: usize,
     schedule: Arc<Vec<u64>>,
     target_config: LocalTargetConfig,
+    warmup_operations: u64,
 ) -> Result<f64, LocalTierError> {
     let operations = schedule.len() as u64;
     tokio::task::spawn_blocking(move || {
@@ -959,44 +1023,62 @@ async fn concurrent_throughput_sample(
             let target = Arc::new(LocalCacheTarget::new(target_config)?);
             target.reset().await?;
             target.preload().await?;
-            let next = Arc::new(AtomicU64::new(0));
-            let errors = Arc::new(AtomicU64::new(0));
+            run_concurrent_scaling_phase(
+                workers,
+                Arc::clone(&schedule),
+                Arc::clone(&target),
+                warmup_operations.min(operations),
+            )
+            .await?;
+            target.reset().await?;
+            target.preload().await?;
             let started = Instant::now();
-            let mut tasks = tokio::task::JoinSet::new();
-            for _ in 0..workers {
-                let target = Arc::clone(&target);
-                let next = Arc::clone(&next);
-                let errors = Arc::clone(&errors);
-                let schedule = Arc::clone(&schedule);
-                tasks.spawn(async move {
-                    loop {
-                        let sequence = next.fetch_add(1, Ordering::Relaxed);
-                        if sequence >= operations {
-                            break;
-                        }
-                        let logical_key = schedule[sequence as usize];
-                        let operation = target.operation_for(sequence);
-                        if target.execute_operation(operation, logical_key).await
-                            != TargetOutcome::Success
-                        {
-                            errors.fetch_add(1, Ordering::Relaxed);
-                        }
-                    }
-                });
-            }
-            while let Some(joined) = tasks.join_next().await {
-                joined.map_err(|error| LocalTierError::Runtime(error.to_string()))?;
-            }
-            if errors.load(Ordering::Relaxed) != 0 {
-                return Err(LocalTierError::Runtime(
-                    "real local target returned an unsuccessful scaling operation".to_owned(),
-                ));
-            }
+            run_concurrent_scaling_phase(workers, schedule, target, operations).await?;
             Ok(throughput(operations, started.elapsed()))
         })
     })
     .await
     .map_err(|error| LocalTierError::Runtime(error.to_string()))?
+}
+
+async fn run_concurrent_scaling_phase(
+    workers: usize,
+    schedule: Arc<Vec<u64>>,
+    target: Arc<LocalCacheTarget>,
+    operations: u64,
+) -> Result<(), LocalTierError> {
+    let next = Arc::new(AtomicU64::new(0));
+    let errors = Arc::new(AtomicU64::new(0));
+    let mut tasks = tokio::task::JoinSet::new();
+    for _ in 0..workers {
+        let target = Arc::clone(&target);
+        let next = Arc::clone(&next);
+        let errors = Arc::clone(&errors);
+        let schedule = Arc::clone(&schedule);
+        tasks.spawn(async move {
+            loop {
+                let sequence = next.fetch_add(1, Ordering::Relaxed);
+                if sequence >= operations {
+                    break;
+                }
+                let logical_key = schedule[sequence as usize];
+                let operation = target.operation_for(sequence);
+                if target.execute_operation(operation, logical_key).await != TargetOutcome::Success
+                {
+                    errors.fetch_add(1, Ordering::Relaxed);
+                }
+            }
+        });
+    }
+    while let Some(joined) = tasks.join_next().await {
+        joined.map_err(|error| LocalTierError::Runtime(error.to_string()))?;
+    }
+    if errors.load(Ordering::Relaxed) != 0 {
+        return Err(LocalTierError::Runtime(
+            "real local target returned an unsuccessful scaling operation".to_owned(),
+        ));
+    }
+    Ok(())
 }
 
 pub async fn local_hot_key_smoke_measurement() -> Result<MeasurementEvidence, LocalTierError> {
@@ -1332,6 +1414,17 @@ async fn local_capacity_measurement(
     }))
 }
 
+/// Size non-capacity W1 targets for three disjoint resident namespaces:
+/// preload hits, loader results, and reusable puts. The fourth raw-payload
+/// share covers codec framing without turning these paths into eviction tests.
+fn resident_capacity_bytes(key_count: u64, payload_bytes: usize) -> u64 {
+    let payload_bytes = u64::try_from(payload_bytes).unwrap_or(u64::MAX);
+    key_count
+        .saturating_mul(payload_bytes)
+        .saturating_mul(4)
+        .max(LocalTargetConfig::default().max_capacity)
+}
+
 fn capacity_target_config(
     capacity_bytes: u64,
     payload_bytes: usize,
@@ -1487,6 +1580,7 @@ async fn local_path_cost_measurement(
         let mut samples = Vec::with_capacity(repeats);
         for _ in 0..repeats {
             let target = LocalCacheTarget::new(LocalTargetConfig {
+                max_capacity: resident_capacity_bytes(key_count, payload_bytes),
                 preload_entries: key_count,
                 key_space: key_count,
                 payload_bytes,
@@ -1980,6 +2074,23 @@ fn matrix_workload(
     }
 }
 
+/// Normalize an unpaired worker series against the stable one-worker
+/// median. Repeats are executed sequentially by worker count, so zipping them
+/// would invent pairing and compound independent denominator noise.
+fn scaling_efficiency_samples(
+    samples: &[f64],
+    baseline_samples: &[f64],
+    workers: usize,
+) -> Vec<f64> {
+    let mut ordered_baseline = baseline_samples.to_vec();
+    ordered_baseline.sort_by(f64::total_cmp);
+    let baseline_median = ordered_baseline[ordered_baseline.len() / 2];
+    samples
+        .iter()
+        .map(|sample| sample / (baseline_median * workers as f64))
+        .collect()
+}
+
 fn scalar_point(
     dimensions: BTreeMap<String, DimensionValue>,
     unit: &str,
@@ -2052,8 +2163,8 @@ fn validate_local_reference_scalar_shapes(report: &PerfReport) -> Result<(), Loc
         )));
     }
     let scalar_contracts = [
-        ("local_cache_scaling_curve_1_to_n_threads", 4_usize),
-        ("local_cache_scaling_efficiency_vs_one_thread", 4),
+        ("local_cache_scaling_curve_1_to_n_threads", 3_usize),
+        ("local_cache_scaling_efficiency_vs_one_thread", 3),
         ("hot_key_single_flight_miss_stampede_cost", 1),
         ("throughput_at_full_capacity_vs_half_capacity", 4),
         ("hit_miss_and_loader_path_cost_breakdown", 3),
@@ -2083,6 +2194,7 @@ fn validate_local_reference_scalar_shapes(report: &PerfReport) -> Result<(), Loc
             "worker_counts": scaling.local.worker_counts,
             "key_count": scaling.local.key_count,
             "preload_operations": scaling.scenario.preload_operations,
+            "warmup_operations": scaling.scenario.warmup_operations,
         }),
     );
     let scaling_workers = scalar_measurement(report, "local_cache_scaling_curve_1_to_n_threads")?
@@ -2093,7 +2205,7 @@ fn validate_local_reference_scalar_shapes(report: &PerfReport) -> Result<(), Loc
             _ => None,
         })
         .collect::<BTreeSet<_>>();
-    if scaling_workers != BTreeSet::from([1, 2, 4, 8])
+    if scaling_workers != BTreeSet::from([1, 2, 4])
         || scalar_measurement(report, "local_cache_scaling_curve_1_to_n_threads")?.scenario_digest
             != scaling_digest
         || scalar_measurement(report, "local_cache_scaling_efficiency_vs_one_thread")?
@@ -2101,7 +2213,8 @@ fn validate_local_reference_scalar_shapes(report: &PerfReport) -> Result<(), Loc
             != scaling_digest
     {
         return Err(LocalTierError::Report(
-            "W1 reference scaling matrix differs from committed 1/2/4/8 by 100k shape".to_owned(),
+            "W1 reference scaling matrix differs from committed hosted 1/2/4 by ten-million-operation shape"
+                .to_owned(),
         ));
     }
 
@@ -2110,7 +2223,7 @@ fn validate_local_reference_scalar_shapes(report: &PerfReport) -> Result<(), Loc
         &hot,
         &serde_json::json!({
             "mode": "synchronized-cold-miss-burst",
-            "workers": 8,
+            "workers": 4,
             "loader_delay_us": hot.local.loader_delay_us.max(1),
             "repeats": hot.scenario.repeats,
         }),
@@ -2383,6 +2496,7 @@ fn smoke_fingerprint() -> RunnerFingerprint {
         turbo: "unclaimed".to_owned(),
         shared_hardware: true,
         calibration_score: 0.0,
+        attestation: Default::default(),
     }
 }
 
@@ -2419,6 +2533,7 @@ mod tests {
             turbo: "fixture".to_owned(),
             shared_hardware: false,
             calibration_score: 0.0,
+            attestation: Default::default(),
         };
         ValidatedRespReferenceContext {
             repo_root: Path::new(env!("CARGO_MANIFEST_DIR")).join("../.."),
@@ -2463,6 +2578,63 @@ mod tests {
                 canonical_path: missing,
                 sha256: "d".repeat(64),
             },
+        }
+    }
+
+    #[test]
+    fn committed_hosted_worker_shapes_fit_four_core_reference() {
+        let scaling = parse_local_scenario(SCALING_SCENARIO).unwrap();
+        let hot_key = parse_local_scenario(HOT_KEY_SCENARIO).unwrap();
+
+        assert_eq!(scaling.local.worker_counts, [1, 2, 4]);
+        assert_eq!(scaling.scenario.steady_operations, 10_000_000);
+        assert_eq!(scaling.scenario.warmup_operations, 1_000_000);
+        assert_eq!(scaling.scenario.repeats, 3);
+        assert_eq!(scaling.scenario.robust_spread_tolerance, 0.15);
+        assert_eq!(hot_key.local.worker_counts, [1, 2, 4]);
+    }
+
+    #[test]
+    fn scaling_efficiency_uses_unpaired_baseline_median_without_compounding_spread() {
+        let baseline = [100.0, 115.0, 105.0];
+        let workers_four = [420.0, 483.0, 441.0];
+        let ratios = scaling_efficiency_samples(&workers_four, &baseline, 4);
+
+        assert_eq!(ratios, [1.0, 1.15, 1.05]);
+        let raw_point = scalar_point(
+            BTreeMap::new(),
+            "operations_per_second",
+            workers_four.to_vec(),
+        );
+        let ratio_point = scalar_point(BTreeMap::new(), "ratio", ratios);
+        assert!(
+            (ratio_point.robust_spread_ratio - raw_point.robust_spread_ratio).abs() < f64::EPSILON
+        );
+    }
+
+    #[tokio::test]
+    async fn committed_scaling_preload_fits_the_resident_working_set() {
+        let binding = parse_local_scenario(SCALING_SCENARIO).unwrap();
+        let payload_bytes = usize::try_from(binding.local.payload_bytes).unwrap();
+        let target = LocalCacheTarget::new(LocalTargetConfig {
+            max_capacity: resident_capacity_bytes(binding.local.key_count, payload_bytes),
+            preload_entries: binding.scenario.preload_operations,
+            key_space: binding.local.key_count,
+            payload_bytes,
+            operation_mix: local_operation_mix(&binding.local).unwrap(),
+            ..LocalTargetConfig::default()
+        })
+        .unwrap();
+
+        target.reset().await.unwrap();
+        target.preload().await.unwrap();
+        for logical_key in 0..binding.scenario.preload_operations {
+            assert_eq!(
+                target
+                    .execute_operation(LocalOperation::Hit, logical_key)
+                    .await,
+                TargetOutcome::Success
+            );
         }
     }
 
@@ -2527,5 +2699,33 @@ mod tests {
     async fn strict_reference_validator_rejects_smoke_evidence() {
         let smoke = local_smoke_report("smoke-v1").await.unwrap();
         assert!(validate_local_reference_report(&smoke).is_err());
+    }
+
+    #[tokio::test]
+    async fn failed_reference_evidence_is_preserved_but_never_promotable() {
+        let smoke = local_smoke_report("smoke-v1").await.unwrap();
+        let directory = std::env::temp_dir().join(format!(
+            "hydracache-failed-local-reference-{}-{}",
+            std::process::id(),
+            SystemTime::now()
+                .duration_since(UNIX_EPOCH)
+                .unwrap()
+                .as_nanos()
+        ));
+        let canonical = directory.join("local.json");
+        let error = validate_local_reference_report(&smoke).unwrap_err();
+
+        write_failed_local_reference_evidence(&smoke, &canonical, &error).unwrap();
+
+        assert!(!canonical.exists());
+        let failed = failed_local_reference_path(&canonical).unwrap();
+        let evidence: FailedLocalReferenceEvidence =
+            serde_json::from_slice(&std::fs::read(failed).unwrap()).unwrap();
+        assert_eq!(evidence.schema_version, 1);
+        assert_eq!(evidence.status, "failed-canonical-validation");
+        assert!(!evidence.ship_evidence_eligible);
+        assert!(evidence.failure.contains("reference report"));
+        assert_eq!(evidence.report.report_id, smoke.report_id);
+        std::fs::remove_dir_all(directory).unwrap();
     }
 }

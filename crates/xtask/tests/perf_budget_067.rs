@@ -7,6 +7,11 @@ use std::fs;
 use std::path::{Path, PathBuf};
 use std::time::{SystemTime, UNIX_EPOCH};
 
+use hydracache_loadgen::profile::{
+    reference_cpu_isolation, MeasurementCore, RunnerAttestationV5,
+    REFERENCE_FINGERPRINT_SCHEMA_VERSION, REFERENCE_HOST_CONTRACT_VERSION,
+    REFERENCE_MEASUREMENT_CPUS, REFERENCE_OS_IMAGE, REFERENCE_STORAGE_CLASS,
+};
 use perf_budget::{
     AnchorMetric, BaselineChangeApproval, BaselineChangeProposal, BaselineMember,
     BaselineReportReceipt, BinaryDigest, BootstrapStatus, BudgetRuleStatus, CandidateReport,
@@ -185,6 +190,27 @@ fn observed_runner(bundle: &ContractBundle, fingerprint: &str) -> ObservedRunner
         turbo: "disabled".to_owned(),
         shared_hardware: false,
         calibration_score: 0.01,
+        attestation: RunnerAttestationV5 {
+            schema_version: REFERENCE_FINGERPRINT_SCHEMA_VERSION,
+            contract_version: REFERENCE_HOST_CONTRACT_VERSION.to_owned(),
+            virtualization: "none".to_owned(),
+            physical_cores: 8,
+            measurement_cores: REFERENCE_MEASUREMENT_CPUS
+                .into_iter()
+                .map(|logical_cpu| MeasurementCore {
+                    logical_cpu,
+                    package_id: 0,
+                    core_id: logical_cpu,
+                })
+                .collect(),
+            cpu_isolation: reference_cpu_isolation(),
+            host_digest: "a".repeat(64),
+            storage_class: REFERENCE_STORAGE_CLASS.to_owned(),
+            storage_identity_digest: "b".repeat(64),
+            os_image: REFERENCE_OS_IMAGE.to_owned(),
+            toolchain_identity: bundle.profile.prebuild.toolchain_identity.clone(),
+            prebuild_contract_digest: bundle.profile.prebuild.digest.clone(),
+        },
     }
 }
 
@@ -443,6 +469,10 @@ fn bootstrapped_fixture() -> (ContractBundle, Vec<CandidateReport>) {
 fn committed_w7_contract_is_explicitly_unbootstrapped_and_fail_closed() {
     let reference =
         perf_budget::load_bundle(&repo_root(), perf_budget::RELEASE, "reference-v1").unwrap();
+    assert_eq!(
+        reference.baseline.profile_sha256,
+        perf_budget::digest_json(&reference.profile)
+    );
     let reference_problems = perf_budget::validate_contract_bundle(&reference);
     assert!(reference_problems.is_empty(), "{reference_problems:#?}");
     assert_eq!(
@@ -452,7 +482,7 @@ fn committed_w7_contract_is_explicitly_unbootstrapped_and_fail_closed() {
     assert!(reference.profile.runner.allowed_fingerprints.is_empty());
     assert_eq!(
         reference.profile.runner.required_runner_class,
-        "github-hosted-reference-v1"
+        "self-hosted-bare-metal-v1"
     );
     assert!(!reference.profile.noise.absolute_numbers_are_ship_evidence);
     assert!(reference.baseline.members.is_empty());
@@ -918,7 +948,7 @@ fn baseline_eligibility_is_derived_from_receipts_not_caller_booleans() {
         .any(|problem| problem.contains("clean-checkout")));
 
     let (mut noisy, _) = bootstrapped_fixture();
-    noisy.baseline.members[0].reports[0].maximum_spread_ratio = 0.20;
+    noisy.baseline.members[0].reports[0].maximum_spread_ratio = 0.31;
     noisy.baseline.members[0].reports[0].stable = true;
     noisy.baseline.candidate_members = noisy.baseline.members.clone();
     approve_baseline_change(&mut noisy);

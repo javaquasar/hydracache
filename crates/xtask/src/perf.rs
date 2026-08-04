@@ -27,7 +27,7 @@ use hydracache_loadgen::tiers::resp_reference::{
     ReferencePrerequisites, LOADGEN_BINARY_ID, PREBUILD_MANIFEST_RELATIVE_PATH,
     PREBUILD_MANIFEST_SCHEMA_VERSION, REFERENCE_PROFILE, SERVER_BINARY_ID,
 };
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 
 use crate::perf_budget::{Enforcement, ProfileContract, RELEASE};
@@ -39,6 +39,16 @@ pub const REFERENCE_AUTHORIZATION_ENV: &str = "HYDRACACHE_RUN_PERF_REFERENCE";
 
 const RELEASE_ARGUMENT: &str = "0.67";
 const REQUIRED_PLATFORM: &str = "linux-x86_64";
+const PERFORMANCE_0671_MODE_ENV: &str = "HYDRACACHE_PERFORMANCE_0671_MODE";
+const REFERENCE_HOUSEKEEPING_AFFINITY: &str = "0,5-7";
+const REFERENCE_EVIDENCE_TMPFS_ROOT: &str = "/dev/shm/hydracache-reference-evidence-v1";
+const REFERENCE_EVIDENCE_067_TMPFS: &str = "/dev/shm/hydracache-reference-evidence-v1/0.67";
+const REFERENCE_EVIDENCE_SOURCE_COMMIT: &str =
+    "/dev/shm/hydracache-reference-evidence-v1/source-commit";
+pub const RUNNER_PREFLIGHT_RELATIVE_PATH: &str = "target/test-evidence/0.67/runner-preflight.json";
+pub const ATTESTATION_V5_RELATIVE_PATH: &str = "target/test-evidence/0.67.1/attestation-v5.json";
+pub const RUNNER_PREFLIGHT_REPEATS: usize = 7;
+pub const RUNNER_PREFLIGHT_MAX_SPREAD_RATIO: f64 = 0.15;
 const REDIS_PROVENANCE_ID: &str = "redis-benchmark-7.2.5-linux-x86_64-gnu-source-v1";
 const MAX_CONTRACT_BYTES: u64 = 1024 * 1024;
 const BUILD_ARGS: [&str; 7] = [
@@ -97,8 +107,12 @@ pub trait PrebuildHost {
 
     fn environment_variable_names(&self) -> Vec<String>;
 
-    fn observe_runner(&mut self, profile: &PerformanceProfile)
-        -> Result<RunnerFingerprint, String>;
+    fn observe_runner(
+        &mut self,
+        profile: &PerformanceProfile,
+        toolchain_identity: &str,
+        prebuild_contract_digest: &str,
+    ) -> Result<RunnerFingerprint, String>;
 
     fn observe_external_tool(&mut self, program: &str) -> Result<ObservedExternalTool, String>;
 }
@@ -138,8 +152,10 @@ impl PrebuildHost for SystemPrebuildHost {
     fn observe_runner(
         &mut self,
         profile: &PerformanceProfile,
+        toolchain_identity: &str,
+        prebuild_contract_digest: &str,
     ) -> Result<RunnerFingerprint, String> {
-        observe_linux_reference_runner(profile)
+        observe_linux_reference_runner(profile, toolchain_identity, prebuild_contract_digest)
     }
 
     fn observe_external_tool(&mut self, program: &str) -> Result<ObservedExternalTool, String> {
@@ -194,6 +210,129 @@ pub struct VerifiedPrebuildBundle {
     pub manifest: PerfPrebuildManifest,
     pub manifest_sha256: String,
     pub run_inputs: RespReferenceRunInputs,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct RunnerPreflightReport {
+    pub schema_version: u32,
+    pub release: String,
+    pub profile: String,
+    pub samples_nanos: Vec<u64>,
+    pub median_nanos: u64,
+    pub spread_ratio: f64,
+    pub maximum_spread_ratio: f64,
+    pub passed: bool,
+    pub observed_runner: RunnerFingerprint,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct MachineAttestationReceipt {
+    pub schema_version: u32,
+    pub release: String,
+    pub profile: String,
+    pub ship_evidence_eligible: bool,
+    pub passed: bool,
+    pub observed_runner: RunnerFingerprint,
+}
+pub fn evaluate_runner_preflight(
+    samples_nanos: Vec<u64>,
+    observed_runner: RunnerFingerprint,
+) -> RunnerPreflightReport {
+    let mut ordered = samples_nanos.clone();
+    ordered.sort_unstable();
+    let median_nanos = ordered.get(ordered.len() / 2).copied().unwrap_or(0);
+    let spread_ratio = match (ordered.first(), ordered.last(), median_nanos) {
+        (Some(minimum), Some(maximum), median) if median > 0 => {
+            (*maximum - *minimum) as f64 / median as f64
+        }
+        _ => f64::INFINITY,
+    };
+    RunnerPreflightReport {
+        schema_version: 1,
+        release: RELEASE.to_owned(),
+        profile: REFERENCE_PROFILE.to_owned(),
+        passed: samples_nanos.len() == RUNNER_PREFLIGHT_REPEATS
+            && spread_ratio <= RUNNER_PREFLIGHT_MAX_SPREAD_RATIO,
+        samples_nanos,
+        median_nanos,
+        spread_ratio,
+        maximum_spread_ratio: RUNNER_PREFLIGHT_MAX_SPREAD_RATIO,
+        observed_runner,
+    }
+}
+
+pub fn run_preflight(args: Vec<String>) -> Result<(), PerfPrebuildError> {
+    let (release, profile_name) = parse_args(args)?;
+    validate_request(&release, &profile_name)?;
+    if std::env::var(REFERENCE_AUTHORIZATION_ENV).as_deref() != Ok("1") {
+        return Err(PerfPrebuildError::new(format!(
+            "{REFERENCE_AUTHORIZATION_ENV}=1 is required; runner preflight is manual-lane only"
+        )));
+    }
+    let root = crate::doc_check::find_repo_root()
+        .map_err(|error| PerfPrebuildError::new(error.to_string()))?;
+    let profile = load_profile(&root)?;
+    let mut host = SystemPrebuildHost;
+    validate_profile_contract(&profile, &profile_name, &host.reference_platform_key())?;
+    let observed_runner = host
+        .observe_runner(
+            &profile.runner,
+            &profile.prebuild.toolchain_identity,
+            &profile.prebuild.digest,
+        )
+        .map_err(|error| PerfPrebuildError::new(format!("runner observation failed: {error}")))?;
+    let validation = profile.runner.validate(&observed_runner);
+    if !validation.eligible || !is_sha256(&observed_runner.fingerprint) {
+        return Err(PerfPrebuildError::new(format!(
+            "reference runner is ineligible before measurement: {:?}",
+            validation.reasons
+        )));
+    }
+
+    let attestation_receipt = MachineAttestationReceipt {
+        schema_version: 4,
+        release: "0.67.1".to_owned(),
+        profile: profile_name.clone(),
+        ship_evidence_eligible: false,
+        passed: true,
+        observed_runner: observed_runner.clone(),
+    };
+    let attestation_output = root.join(ATTESTATION_V5_RELATIVE_PATH);
+    if let Some(parent) = attestation_output.parent() {
+        fs::create_dir_all(parent).map_err(|error| {
+            PerfPrebuildError::new(format!("creating {}: {error}", parent.display()))
+        })?;
+    }
+    let attestation_bytes = json_bytes(&attestation_receipt, "machine attestation v4")?;
+    write_create_new(&attestation_output, &attestation_bytes)?;
+
+    let report = evaluate_runner_preflight(calibration_samples(), observed_runner);
+    let output = root.join(RUNNER_PREFLIGHT_RELATIVE_PATH);
+    if let Some(parent) = output.parent() {
+        fs::create_dir_all(parent).map_err(|error| {
+            PerfPrebuildError::new(format!("creating {}: {error}", parent.display()))
+        })?;
+    }
+    let bytes = json_bytes(&report, "runner preflight")?;
+    write_create_new(&output, &bytes)?;
+    if !report.passed {
+        return Err(PerfPrebuildError::new(format!(
+            "runner preflight spread {:.4} exceeds fixed {:.4}; all {} samples are retained in {}",
+            report.spread_ratio,
+            report.maximum_spread_ratio,
+            report.samples_nanos.len(),
+            output.display()
+        )));
+    }
+    println!(
+        "0.67 runner preflight passed: spread={:.4} samples={} output={}",
+        report.spread_ratio,
+        report.samples_nanos.len(),
+        output.display()
+    );
+    Ok(())
 }
 
 pub fn run(args: Vec<String>) -> Result<(), PerfPrebuildError> {
@@ -259,7 +398,11 @@ pub fn execute_prebuild_with<H: PrebuildHost>(
     let after_build = capture_source_snapshot(host, &root)?;
     ensure_unchanged_source(&before, &after_build, "during the release build")?;
     let runner = host
-        .observe_runner(&profile.runner)
+        .observe_runner(
+            &profile.runner,
+            &profile.prebuild.toolchain_identity,
+            &profile.prebuild.digest,
+        )
         .map_err(|error| PerfPrebuildError::new(format!("runner observation failed: {error}")))?;
     let validation = profile.runner.validate(&runner);
     if !validation.eligible || !is_sha256(&runner.fingerprint) {
@@ -349,6 +492,7 @@ pub fn execute_prebuild_with<H: PrebuildHost>(
     verify_binary_entries(&root, &manifest.binaries)?;
     publish_pair_commit_marker(
         &root,
+        &before.git_commit,
         &manifest_path,
         &manifest_bytes,
         &run_inputs_path,
@@ -519,10 +663,10 @@ fn validate_profile_contract(
         && profile.required_platform_key == REQUIRED_PLATFORM
         && platform == REQUIRED_PLATFORM
         && profile.runner.name == REFERENCE_PROFILE
-        && profile.runner.required_runner_class == "github-hosted-reference-v1"
+        && profile.runner.required_runner_class == "self-hosted-bare-metal-v1"
         && profile.runner.minimum_logical_cores == 4
-        && profile.runner.required_cpu_affinity == "github-managed-vm"
-        && profile.runner.required_cgroup_cpu_quota == "github-managed-vm"
+        && profile.runner.required_cpu_affinity == "1-4"
+        && profile.runner.required_cgroup_cpu_quota == "unlimited"
         && profile.runner.require_dedicated
         && (profile.runner.maximum_calibration_score - 0.25).abs() < f64::EPSILON
         && profile.prebuild.schema_version == 1
@@ -713,8 +857,124 @@ fn verify_binary_entries(
     Ok(())
 }
 
+struct TmpfsPublicationObservation<'a> {
+    performance_mode: Option<&'a str>,
+    github_actions: Option<&'a str>,
+    github_sha: Option<&'a str>,
+    parent: &'a Path,
+    canonical_parent: &'a Path,
+    link_target: &'a Path,
+    marker_commit: &'a str,
+    filesystem_type: &'a str,
+}
+
+fn exact_tmpfs_publication_contract(
+    root: &Path,
+    source_commit: &str,
+    observation: &TmpfsPublicationObservation<'_>,
+) -> bool {
+    matches!(
+        observation.performance_mode,
+        Some("qualify" | "full-dress" | "bootstrap")
+    ) && observation.github_actions == Some("true")
+        && observation.github_sha == Some(source_commit)
+        && observation.parent == root.join("target/test-evidence/0.67")
+        && observation.canonical_parent == Path::new(REFERENCE_EVIDENCE_067_TMPFS)
+        && observation.link_target == Path::new(REFERENCE_EVIDENCE_067_TMPFS)
+        && observation.marker_commit == source_commit
+        && observation.filesystem_type == "tmpfs"
+}
+
+fn validate_prebuild_publication_directory(
+    root: &Path,
+    source_commit: &str,
+    parent: &Path,
+    canonical_parent: &Path,
+) -> Result<(), PerfPrebuildError> {
+    if canonical_parent == parent && canonical_parent.starts_with(root) {
+        return Ok(());
+    }
+
+    let link_metadata = fs::symlink_metadata(parent).map_err(|error| {
+        PerfPrebuildError::new(format!("reading evidence link metadata failed: {error}"))
+    })?;
+    let link_target = fs::read_link(parent).map_err(|error| {
+        PerfPrebuildError::new(format!("reading evidence link target failed: {error}"))
+    })?;
+    let tmpfs_root_metadata = fs::metadata(REFERENCE_EVIDENCE_TMPFS_ROOT).map_err(|error| {
+        PerfPrebuildError::new(format!("reading tmpfs evidence root failed: {error}"))
+    })?;
+    let target_metadata = fs::metadata(canonical_parent).map_err(|error| {
+        PerfPrebuildError::new(format!("reading tmpfs evidence target failed: {error}"))
+    })?;
+    let marker_path = Path::new(REFERENCE_EVIDENCE_SOURCE_COMMIT);
+    let marker_metadata = fs::symlink_metadata(marker_path).map_err(|error| {
+        PerfPrebuildError::new(format!(
+            "reading tmpfs source marker metadata failed: {error}"
+        ))
+    })?;
+    if !link_metadata.file_type().is_symlink()
+        || !tmpfs_root_metadata.is_dir()
+        || !target_metadata.is_dir()
+        || !marker_metadata.is_file()
+        || marker_metadata.file_type().is_symlink()
+        || marker_metadata.len() == 0
+        || marker_metadata.len() > 128
+    {
+        return Err(PerfPrebuildError::new(
+            "prebuild tmpfs publication objects are not exact directories/link/marker",
+        ));
+    }
+    let marker_commit = fs::read_to_string(marker_path).map_err(|error| {
+        PerfPrebuildError::new(format!("reading tmpfs source marker failed: {error}"))
+    })?;
+    let findmnt_path = Path::new("/usr/bin/findmnt");
+    if fs::canonicalize(findmnt_path).ok().as_deref() != Some(findmnt_path)
+        || !fs::metadata(findmnt_path)
+            .map(|metadata| metadata.is_file())
+            .unwrap_or(false)
+    {
+        return Err(PerfPrebuildError::new(
+            "exact /usr/bin/findmnt is unavailable for tmpfs verification",
+        ));
+    }
+    let findmnt = Command::new(findmnt_path)
+        .arg("--noheadings")
+        .arg("--output")
+        .arg("FSTYPE")
+        .arg("--target")
+        .arg(canonical_parent)
+        .output()
+        .map_err(|error| PerfPrebuildError::new(format!("findmnt probe failed: {error}")))?;
+    let filesystem_type = String::from_utf8(findmnt.stdout)
+        .map_err(|error| PerfPrebuildError::new(format!("findmnt output is not UTF-8: {error}")))?;
+    let performance_mode = std::env::var(PERFORMANCE_0671_MODE_ENV).ok();
+    let github_actions = std::env::var("GITHUB_ACTIONS").ok();
+    let github_sha = std::env::var("GITHUB_SHA").ok();
+    let observation = TmpfsPublicationObservation {
+        performance_mode: performance_mode.as_deref(),
+        github_actions: github_actions.as_deref(),
+        github_sha: github_sha.as_deref(),
+        parent,
+        canonical_parent,
+        link_target: &link_target,
+        marker_commit: marker_commit.trim(),
+        filesystem_type: filesystem_type.trim(),
+    };
+    if !findmnt.status.success()
+        || !String::from_utf8_lossy(&findmnt.stderr).trim().is_empty()
+        || !exact_tmpfs_publication_contract(root, source_commit, &observation)
+    {
+        return Err(PerfPrebuildError::new(
+            "prebuild artifact directory is neither canonical in-repository nor exact commit-bound tmpfs publication",
+        ));
+    }
+    Ok(())
+}
+
 fn publish_pair_commit_marker(
     root: &Path,
+    source_commit: &str,
     manifest_path: &Path,
     manifest_bytes: &[u8],
     inputs_path: &Path,
@@ -737,11 +997,7 @@ fn publish_pair_commit_marker(
             "unable to canonicalize evidence directory: {error}"
         ))
     })?;
-    if canonical_parent != parent || !canonical_parent.starts_with(root) {
-        return Err(PerfPrebuildError::new(
-            "prebuild artifact directory is a symlink or escapes the canonical repository root",
-        ));
-    }
+    validate_prebuild_publication_directory(root, source_commit, parent, &canonical_parent)?;
     let nonce = SystemTime::now()
         .duration_since(UNIX_EPOCH)
         .map_err(|error| PerfPrebuildError::new(error.to_string()))?
@@ -992,6 +1248,8 @@ fn is_git_commit(value: &str) -> bool {
 
 fn observe_linux_reference_runner(
     profile: &PerformanceProfile,
+    toolchain_identity: &str,
+    prebuild_contract_digest: &str,
 ) -> Result<RunnerFingerprint, String> {
     if std::env::consts::OS != "linux" || std::env::consts::ARCH != "x86_64" {
         return Err("reference-v1 requires Linux x86_64".to_owned());
@@ -1002,23 +1260,23 @@ fn observe_linux_reference_runner(
     if std::env::var("GITHUB_ACTIONS").as_deref() != Ok("true")
         || std::env::var("RUNNER_OS").as_deref() != Ok("Linux")
         || std::env::var("RUNNER_ARCH").as_deref() != Ok("X64")
+        || std::env::var("RUNNER_ENVIRONMENT").as_deref() != Ok("self-hosted")
+        || std::env::var("HYDRACACHE_PERF_RUNNER_CLASS").as_deref()
+            != Ok(profile.required_runner_class.as_str())
     {
-        return Err("reference-v1 requires a GitHub-hosted Linux x64 job VM".to_owned());
-    }
-    let image_os = std::env::var("ImageOS")
-        .map_err(|_| "GitHub runner ImageOS identity is absent".to_owned())?;
-    let image_version = std::env::var("ImageVersion")
-        .map_err(|_| "GitHub runner ImageVersion identity is absent".to_owned())?;
-    if image_os != "ubuntu24" || image_version.trim().is_empty() {
-        return Err("reference-v1 requires the pinned ubuntu-24.04 runner image".to_owned());
+        return Err(
+            "reference-v1 requires the authorized self-hosted Linux x64 bare-metal lane".to_owned(),
+        );
     }
     let cpu_model = proc_value("/proc/cpuinfo", "model name")?;
-    let cpu_affinity_raw = proc_value("/proc/self/status", "Cpus_allowed_list")?;
-    let logical_cores = count_cpu_list(&cpu_affinity_raw)?;
-    if logical_cores < profile.minimum_logical_cores {
-        return Err("GitHub-hosted VM core count is below the profile minimum".to_owned());
+    let process_cpu_affinity = proc_value("/proc/self/status", "Cpus_allowed_list")?;
+    let cgroup_cpu_quota = cgroup_cpu_quota()?;
+    if cgroup_cpu_quota != profile.required_cgroup_cpu_quota {
+        return Err(format!(
+            "reference cgroup CPU quota {cgroup_cpu_quota:?} differs from required {:?}",
+            profile.required_cgroup_cpu_quota
+        ));
     }
-    let quota_raw = read_cpu_quota()?;
     let ram_kib = proc_value("/proc/meminfo", "MemTotal")?
         .split_whitespace()
         .next()
@@ -1032,25 +1290,82 @@ fn observe_linux_reference_runner(
         .map_err(|error| format!("kernel probe failed: {error}"))?
         .trim()
         .to_owned();
-    let governor = "github-managed".to_owned();
-    let turbo = "github-managed".to_owned();
+
+    let mut observed_governors = Vec::new();
+    for cpu in [1_u32, 2, 3, 4] {
+        let path = format!("/sys/devices/system/cpu/cpu{cpu}/cpufreq/scaling_governor");
+        observed_governors.push(
+            fs::read_to_string(&path)
+                .map_err(|error| format!("governor probe {path} failed: {error}"))?
+                .trim()
+                .to_owned(),
+        );
+    }
+    observed_governors.sort();
+    observed_governors.dedup();
+    if observed_governors.len() != 1 || observed_governors[0] != "performance" {
+        return Err(format!(
+            "measurement CPUs do not share exact performance governor: {observed_governors:?}"
+        ));
+    }
+    let governor = observed_governors.remove(0);
+
+    let turbo = if let Ok(value) = fs::read_to_string("/sys/devices/system/cpu/cpufreq/boost") {
+        match value.trim() {
+            "1" => "enabled".to_owned(),
+            "0" => "disabled".to_owned(),
+            other => return Err(format!("unknown cpufreq boost value {other:?}")),
+        }
+    } else {
+        let value = fs::read_to_string("/sys/devices/system/cpu/intel_pstate/no_turbo")
+            .map_err(|error| format!("turbo policy probe failed: {error}"))?;
+        match value.trim() {
+            "1" => "disabled".to_owned(),
+            "0" => "enabled".to_owned(),
+            other => return Err(format!("unknown intel_pstate no_turbo value {other:?}")),
+        }
+    };
+    let attestation = crate::host_attestation::observe_reference_attestation(
+        toolchain_identity,
+        prebuild_contract_digest,
+    )?;
+    let cpu_affinity = resolve_reference_cpu_affinity(
+        &process_cpu_affinity,
+        profile,
+        &attestation,
+        std::env::var(PERFORMANCE_0671_MODE_ENV).ok().as_deref(),
+    )?;
+    let logical_cores = count_cpu_list(&cpu_affinity)?;
+    if logical_cores < profile.minimum_logical_cores {
+        return Err("self-hosted runner core count is below the profile minimum".to_owned());
+    }
     let calibration_score = calibration_score();
     #[derive(Serialize)]
     struct StableFingerprint<'a> {
         schema_version: u32,
         runner_class: &'a str,
-        image_os: &'a str,
-        image_version: &'a str,
-        runner_os: &'a str,
-        runner_arch: &'a str,
+        cpu_model: &'a str,
+        logical_cores: u32,
+        ram_bytes: u64,
+        kernel: &'a str,
+        cpu_affinity: &'a str,
+        cgroup_cpu_quota: &'a str,
+        governor: &'a str,
+        turbo: &'a str,
+        attestation: &'a hydracache_loadgen::profile::RunnerAttestationV5,
     }
     let stable = StableFingerprint {
-        schema_version: 1,
+        schema_version: 4,
         runner_class: &profile.required_runner_class,
-        image_os: &image_os,
-        image_version: &image_version,
-        runner_os: "Linux",
-        runner_arch: "X64",
+        cpu_model: &cpu_model,
+        logical_cores,
+        ram_bytes,
+        kernel: &kernel,
+        cpu_affinity: &cpu_affinity,
+        cgroup_cpu_quota: &cgroup_cpu_quota,
+        governor: &governor,
+        turbo: &turbo,
+        attestation: &attestation,
     };
     let stable_bytes = serde_json::to_vec(&stable).map_err(|error| error.to_string())?;
     Ok(RunnerFingerprint {
@@ -1061,15 +1376,140 @@ fn observe_linux_reference_runner(
         ram_bytes,
         os: "linux".to_owned(),
         kernel,
-        cpu_affinity: profile.required_cpu_affinity.clone(),
-        cgroup_cpu_quota: profile.required_cgroup_cpu_quota.clone(),
+        cpu_affinity,
+        cgroup_cpu_quota,
         governor,
         turbo,
         shared_hardware: false,
         calibration_score,
+        attestation,
     })
 }
 
+fn resolve_reference_cpu_affinity(
+    process_cpu_affinity: &str,
+    profile: &PerformanceProfile,
+    attestation: &hydracache_loadgen::profile::RunnerAttestationV5,
+    performance_0671_mode: Option<&str>,
+) -> Result<String, String> {
+    if process_cpu_affinity == profile.required_cpu_affinity {
+        return Ok(process_cpu_affinity.to_owned());
+    }
+
+    if matches!(
+        performance_0671_mode,
+        Some("qualify" | "full-dress" | "bootstrap")
+    ) {
+        let isolation = &attestation.cpu_isolation;
+        if process_cpu_affinity != REFERENCE_HOUSEKEEPING_AFFINITY
+            || isolation.housekeeping_cpus != REFERENCE_HOUSEKEEPING_AFFINITY
+            || isolation.isolated_cpus != profile.required_cpu_affinity
+        {
+            return Err(format!(
+                "0.67.1 prebuild controller affinity is not bound to the attested measurement contract: process={process_cpu_affinity:?} housekeeping={:?} isolated={:?} required={:?}",
+                isolation.housekeeping_cpus,
+                isolation.isolated_cpus,
+                profile.required_cpu_affinity
+            ));
+        }
+        return Ok(profile.required_cpu_affinity.clone());
+    }
+
+    Err(format!(
+        "reference CPU affinity {process_cpu_affinity:?} differs from required {:?}",
+        profile.required_cpu_affinity
+    ))
+}
+
+fn cgroup_cpu_quota() -> Result<String, String> {
+    let membership = fs::read_to_string("/proc/self/cgroup")
+        .map_err(|error| format!("cgroup v2 membership probe failed: {error}"))?;
+    let relative = cgroup_v2_relative_path(&membership)?;
+    cgroup_cpu_quota_for_path(relative, |path| fs::read_to_string(path))
+}
+
+fn cgroup_cpu_quota_for_path(
+    relative: &str,
+    mut read_cpu_max: impl FnMut(&Path) -> std::io::Result<String>,
+) -> Result<String, String> {
+    let root = Path::new("/sys/fs/cgroup");
+    let mut current = root.join(relative.trim_start_matches('/'));
+    let mut observed_cpu_controller = false;
+
+    loop {
+        let path = current.join("cpu.max");
+        match read_cpu_max(&path) {
+            Ok(value) => {
+                observed_cpu_controller = true;
+                let quota = parse_cgroup_cpu_max(&value)?;
+                if quota != "unlimited" {
+                    return Ok(quota);
+                }
+            }
+            Err(error) if error.kind() == std::io::ErrorKind::NotFound => {}
+            Err(error) => {
+                return Err(format!(
+                    "cgroup v2 cpu.max probe at {} failed: {error}",
+                    path.display()
+                ));
+            }
+        }
+
+        if current == root {
+            break;
+        }
+        if !current.pop() || !current.starts_with(root) {
+            return Err("cgroup v2 process path escaped the unified hierarchy".to_owned());
+        }
+    }
+
+    if observed_cpu_controller {
+        Ok("unlimited".to_owned())
+    } else {
+        Err("cgroup v2 CPU controller is unavailable on the effective hierarchy".to_owned())
+    }
+}
+
+fn cgroup_v2_relative_path(membership: &str) -> Result<&str, String> {
+    let relative = membership
+        .lines()
+        .find_map(|line| {
+            let mut fields = line.splitn(3, ':');
+            match (fields.next(), fields.next(), fields.next()) {
+                (Some("0"), Some(""), Some(path)) => Some(path),
+                _ => None,
+            }
+        })
+        .filter(|path| !path.is_empty())
+        .ok_or_else(|| {
+            "unified cgroup v2 membership is absent from /proc/self/cgroup".to_owned()
+        })?;
+    if !relative.starts_with('/') || relative.split('/').any(|component| component == "..") {
+        return Err("cgroup v2 process path is not a safe absolute path".to_owned());
+    }
+    Ok(relative)
+}
+
+fn parse_cgroup_cpu_max(value: &str) -> Result<String, String> {
+    let mut fields = value.split_whitespace();
+    let quota = fields
+        .next()
+        .ok_or_else(|| "cgroup v2 cpu.max is empty".to_owned())?;
+    let period = fields
+        .next()
+        .ok_or_else(|| "cgroup v2 cpu.max period is absent".to_owned())?;
+    if fields.next().is_some() || period.parse::<u64>().is_err() {
+        return Err("cgroup v2 cpu.max is malformed".to_owned());
+    }
+    if quota == "max" {
+        Ok("unlimited".to_owned())
+    } else {
+        let quota = quota
+            .parse::<u64>()
+            .map_err(|error| format!("cgroup v2 cpu.max quota is malformed: {error}"))?;
+        Ok(format!("{quota}/{period}"))
+    }
+}
 fn proc_value(path: &str, key: &str) -> Result<String, String> {
     let text = fs::read_to_string(path).map_err(|error| format!("reading {path}: {error}"))?;
     text.lines()
@@ -1104,30 +1544,9 @@ fn count_cpu_list(value: &str) -> Result<u32, String> {
     Ok(count)
 }
 
-fn read_cpu_quota() -> Result<String, String> {
-    if let Ok(value) = fs::read_to_string("/sys/fs/cgroup/cpu.max") {
-        return value
-            .split_whitespace()
-            .next()
-            .map(str::to_owned)
-            .ok_or_else(|| "cgroup v2 cpu.max is empty".to_owned());
-    }
-    read_required_trimmed("/sys/fs/cgroup/cpu/cpu.cfs_quota_us", "cgroup v1 CPU quota")
-}
-
-fn read_required_trimmed(path: &str, label: &str) -> Result<String, String> {
-    let value = fs::read_to_string(path)
-        .map_err(|error| format!("{label} probe failed at {path}: {error}"))?;
-    let value = value.trim();
-    if value.is_empty() {
-        return Err(format!("{label} probe is empty"));
-    }
-    Ok(value.to_owned())
-}
-
-fn calibration_score() -> f64 {
-    let mut samples = Vec::with_capacity(7);
-    for repeat in 0_u64..7 {
+fn calibration_samples() -> Vec<u64> {
+    let mut samples = Vec::with_capacity(RUNNER_PREFLIGHT_REPEATS);
+    for repeat in 0_u64..RUNNER_PREFLIGHT_REPEATS as u64 {
         let started = Instant::now();
         let mut state = 0x9e37_79b9_7f4a_7c15_u64 ^ repeat;
         for index in 0_u64..1_000_000 {
@@ -1137,8 +1556,16 @@ fn calibration_score() -> f64 {
                 .wrapping_mul(0xe703_7ed1_a0b4_28db);
         }
         std::hint::black_box(state);
-        samples.push(started.elapsed().as_nanos() as f64);
+        samples.push(started.elapsed().as_nanos().try_into().unwrap_or(u64::MAX));
     }
+    samples
+}
+
+fn calibration_score() -> f64 {
+    let mut samples = calibration_samples()
+        .into_iter()
+        .map(|sample| sample as f64)
+        .collect::<Vec<_>>();
     samples.sort_by(f64::total_cmp);
     let median = samples[samples.len() / 2];
     let mut deviations = samples
@@ -1150,5 +1577,310 @@ fn calibration_score() -> f64 {
         f64::INFINITY
     } else {
         deviations[deviations.len() / 2] / median
+    }
+}
+#[cfg(test)]
+mod preflight_tests {
+    use super::*;
+
+    fn runner() -> RunnerFingerprint {
+        RunnerFingerprint {
+            runner_class: "fixture".to_owned(),
+            fingerprint: "a".repeat(64),
+            cpu_model: "fixture".to_owned(),
+            logical_cores: 8,
+            ram_bytes: 1,
+            os: "linux".to_owned(),
+            kernel: "fixture".to_owned(),
+            cpu_affinity: "1-4".to_owned(),
+            cgroup_cpu_quota: "unlimited".to_owned(),
+            governor: "performance".to_owned(),
+            turbo: "disabled".to_owned(),
+            shared_hardware: false,
+            calibration_score: 0.01,
+            attestation: Default::default(),
+        }
+    }
+
+    #[test]
+    fn preflight_retains_all_fixed_samples_and_accepts_stable_runner() {
+        let samples = vec![100, 102, 98, 101, 99, 103, 100];
+        let report = evaluate_runner_preflight(samples.clone(), runner());
+
+        assert!(report.passed);
+        assert_eq!(report.samples_nanos, samples);
+        assert_eq!(report.median_nanos, 100);
+        assert!((report.spread_ratio - 0.05).abs() < f64::EPSILON);
+        assert_eq!(report.maximum_spread_ratio, 0.15);
+    }
+
+    #[test]
+    fn preflight_rejects_noise_or_any_attempt_to_shorten_the_sample_set() {
+        let noisy = evaluate_runner_preflight(vec![100, 102, 98, 101, 99, 130, 100], runner());
+        assert!(!noisy.passed);
+        assert!((noisy.spread_ratio - 0.32).abs() < f64::EPSILON);
+
+        let shortened = evaluate_runner_preflight(vec![100, 101, 99, 100, 102, 98], runner());
+        assert!(!shortened.passed);
+        assert_eq!(shortened.samples_nanos.len(), 6);
+    }
+
+    #[test]
+    fn cgroup_quota_parser_uses_the_effective_v2_membership() {
+        assert_eq!(
+            cgroup_v2_relative_path("0::/system.slice/actions.runner.service\n").unwrap(),
+            "/system.slice/actions.runner.service"
+        );
+        assert_eq!(parse_cgroup_cpu_max("max 100000\n").unwrap(), "unlimited");
+        assert_eq!(
+            parse_cgroup_cpu_max("50000 100000\n").unwrap(),
+            "50000/100000"
+        );
+        assert!(cgroup_v2_relative_path("0::../../escape\n").is_err());
+        assert!(cgroup_v2_relative_path("1:cpu:/legacy\n").is_err());
+    }
+
+    fn profile() -> PerformanceProfile {
+        PerformanceProfile {
+            name: "reference-v1".to_owned(),
+            required_runner_class: "self-hosted-bare-metal-v1".to_owned(),
+            allowed_fingerprints: Vec::new(),
+            minimum_logical_cores: 4,
+            required_cpu_affinity: "1-4".to_owned(),
+            required_cgroup_cpu_quota: "unlimited".to_owned(),
+            require_dedicated: true,
+            maximum_calibration_score: 0.15,
+        }
+    }
+
+    fn isolated_attestation() -> hydracache_loadgen::profile::RunnerAttestationV5 {
+        let mut attestation = hydracache_loadgen::profile::RunnerAttestationV5::default();
+        attestation.cpu_isolation.housekeeping_cpus = "0,5-7".to_owned();
+        attestation.cpu_isolation.isolated_cpus = "1-4".to_owned();
+        attestation
+    }
+
+    #[test]
+    fn reference_affinity_accepts_measurement_child_and_exact_housekeeping_controller() {
+        let profile = profile();
+        let attestation = isolated_attestation();
+
+        assert_eq!(
+            resolve_reference_cpu_affinity("1-4", &profile, &attestation, None).unwrap(),
+            "1-4"
+        );
+        for mode in ["qualify", "full-dress", "bootstrap"] {
+            assert_eq!(
+                resolve_reference_cpu_affinity("0,5-7", &profile, &attestation, Some(mode))
+                    .unwrap(),
+                "1-4"
+            );
+        }
+    }
+
+    #[test]
+    fn reference_affinity_rejects_untrusted_mode_or_cpuset_drift() {
+        let profile = profile();
+        let attestation = isolated_attestation();
+
+        assert!(resolve_reference_cpu_affinity("0,5-7", &profile, &attestation, None).is_err());
+        assert!(resolve_reference_cpu_affinity(
+            "0,5-7",
+            &profile,
+            &attestation,
+            Some("sample-set")
+        )
+        .is_err());
+        assert!(
+            resolve_reference_cpu_affinity("0,5-6", &profile, &attestation, Some("qualify"))
+                .is_err()
+        );
+
+        let mut wrong_housekeeping = attestation.clone();
+        wrong_housekeeping.cpu_isolation.housekeeping_cpus = "0,6-7".to_owned();
+        assert!(resolve_reference_cpu_affinity(
+            "0,5-7",
+            &profile,
+            &wrong_housekeeping,
+            Some("qualify")
+        )
+        .is_err());
+
+        let mut wrong_isolation = attestation;
+        wrong_isolation.cpu_isolation.isolated_cpus = "1-3".to_owned();
+        assert!(resolve_reference_cpu_affinity(
+            "0,5-7",
+            &profile,
+            &wrong_isolation,
+            Some("bootstrap")
+        )
+        .is_err());
+    }
+
+    #[test]
+    fn tmpfs_prebuild_publication_requires_the_exact_commit_bound_contract() {
+        let root = Path::new("/repo");
+        let parent = root.join("target/test-evidence/0.67");
+        let canonical_parent = Path::new(REFERENCE_EVIDENCE_067_TMPFS);
+        let source_commit = "a".repeat(40);
+        let matches = |mode: Option<&str>,
+                       actions: Option<&str>,
+                       github_sha: Option<&str>,
+                       observed_parent: &Path,
+                       canonical: &Path,
+                       target: &Path,
+                       marker: &str,
+                       filesystem: &str| {
+            exact_tmpfs_publication_contract(
+                root,
+                &source_commit,
+                &TmpfsPublicationObservation {
+                    performance_mode: mode,
+                    github_actions: actions,
+                    github_sha,
+                    parent: observed_parent,
+                    canonical_parent: canonical,
+                    link_target: target,
+                    marker_commit: marker,
+                    filesystem_type: filesystem,
+                },
+            )
+        };
+
+        for mode in ["qualify", "full-dress", "bootstrap"] {
+            assert!(matches(
+                Some(mode),
+                Some("true"),
+                Some(&source_commit),
+                &parent,
+                canonical_parent,
+                canonical_parent,
+                &source_commit,
+                "tmpfs",
+            ));
+        }
+        assert!(!matches(
+            None,
+            Some("true"),
+            Some(&source_commit),
+            &parent,
+            canonical_parent,
+            canonical_parent,
+            &source_commit,
+            "tmpfs"
+        ));
+        assert!(!matches(
+            Some("sample-set"),
+            Some("true"),
+            Some(&source_commit),
+            &parent,
+            canonical_parent,
+            canonical_parent,
+            &source_commit,
+            "tmpfs"
+        ));
+        assert!(!matches(
+            Some("qualify"),
+            Some("false"),
+            Some(&source_commit),
+            &parent,
+            canonical_parent,
+            canonical_parent,
+            &source_commit,
+            "tmpfs"
+        ));
+        assert!(!matches(
+            Some("qualify"),
+            Some("true"),
+            Some("b"),
+            &parent,
+            canonical_parent,
+            canonical_parent,
+            &source_commit,
+            "tmpfs"
+        ));
+        assert!(!matches(
+            Some("qualify"),
+            Some("true"),
+            Some(&source_commit),
+            Path::new("/repo/target/test-evidence/0.67.1"),
+            canonical_parent,
+            canonical_parent,
+            &source_commit,
+            "tmpfs"
+        ));
+        assert!(!matches(
+            Some("qualify"),
+            Some("true"),
+            Some(&source_commit),
+            &parent,
+            Path::new("/dev/shm/other/0.67"),
+            canonical_parent,
+            &source_commit,
+            "tmpfs"
+        ));
+        assert!(!matches(
+            Some("qualify"),
+            Some("true"),
+            Some(&source_commit),
+            &parent,
+            canonical_parent,
+            Path::new("/dev/shm/other/0.67"),
+            &source_commit,
+            "tmpfs"
+        ));
+        assert!(!matches(
+            Some("qualify"),
+            Some("true"),
+            Some(&source_commit),
+            &parent,
+            canonical_parent,
+            canonical_parent,
+            "b",
+            "tmpfs"
+        ));
+        assert!(!matches(
+            Some("qualify"),
+            Some("true"),
+            Some(&source_commit),
+            &parent,
+            canonical_parent,
+            canonical_parent,
+            &source_commit,
+            "ext4"
+        ));
+    }
+
+    #[test]
+    fn cgroup_quota_walks_ancestors_when_the_leaf_controller_is_not_enabled() {
+        let unlimited = cgroup_cpu_quota_for_path("/system.slice/actions.runner.service", |path| {
+            match path.to_string_lossy().replace('\\', "/").as_str() {
+                "/sys/fs/cgroup/cpu.max" | "/sys/fs/cgroup/system.slice/cpu.max" => {
+                    Ok("max 100000\n".to_owned())
+                }
+                _ => Err(std::io::Error::from(std::io::ErrorKind::NotFound)),
+            }
+        })
+        .unwrap();
+        assert_eq!(unlimited, "unlimited");
+
+        let limited = cgroup_cpu_quota_for_path("/system.slice/actions.runner.service", |path| {
+            match path.to_string_lossy().replace('\\', "/").as_str() {
+                "/sys/fs/cgroup/cpu.max" => Ok("max 100000\n".to_owned()),
+                "/sys/fs/cgroup/system.slice/cpu.max" => Ok("50000 100000\n".to_owned()),
+                _ => Err(std::io::Error::from(std::io::ErrorKind::NotFound)),
+            }
+        })
+        .unwrap();
+        assert_eq!(limited, "50000/100000");
+    }
+
+    #[test]
+    fn cgroup_quota_rejects_a_hierarchy_without_the_cpu_controller() {
+        let error = cgroup_cpu_quota_for_path("/system.slice/actions.runner.service", |_| {
+            Err(std::io::Error::from(std::io::ErrorKind::NotFound))
+        })
+        .unwrap_err();
+        assert!(error.contains("CPU controller is unavailable"));
     }
 }

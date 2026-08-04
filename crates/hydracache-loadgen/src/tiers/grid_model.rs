@@ -12,7 +12,7 @@ use crate::targets::grid_model::{
 };
 
 use super::resp::RespReferenceRunInputs;
-use super::resp_reference::load_reference_context;
+use super::resp_reference::{load_reference_context, ValidatedRespReferenceContext};
 
 pub const GRID_MODEL_SCENARIO_PATH: &str =
     "docs/testing/perf-scenarios/0.67/grid-model-primitives-v1.toml";
@@ -41,12 +41,48 @@ pub async fn write_grid_model_report(
     report_path: &Path,
 ) -> Result<GridModelReport, GridModelTierError> {
     let repo_root = repository_root()?;
+    let reference_context = if profile_name == "reference-v1" {
+        let inputs = RespReferenceRunInputs::load(&repo_root)
+            .map_err(|error| GridModelTierError::Reference(error.to_string()))?;
+        Some(
+            load_reference_context(&repo_root, Some(&inputs.prerequisites))
+                .map_err(|error| GridModelTierError::Reference(error.to_string()))?,
+        )
+    } else {
+        None
+    };
+    write_grid_model_report_with_context(profile_name, report_path, reference_context.as_ref())
+        .await
+}
+
+/// Context-aware W4B dispatch used by the core suite. Reference execution must
+/// reuse the single W7 context validated before any suite measurement so W4B
+/// and its W5C consumer compare one observation rather than independent
+/// bounded calibration probes.
+pub async fn write_grid_model_report_with_context(
+    profile_name: &str,
+    report_path: &Path,
+    context: Option<&ValidatedRespReferenceContext>,
+) -> Result<GridModelReport, GridModelTierError> {
+    let repo_root = repository_root()?;
     let committed = GridModelScenario::load(&repo_root.join(GRID_MODEL_SCENARIO_PATH))?;
     let report = match profile_name {
-        "reference-v1" => run_reference(&repo_root, &committed).await?,
-        "smoke-v1" | "ci-shared" => {
+        "reference-v1" => {
+            let context = context.ok_or_else(|| {
+                GridModelTierError::Reference(
+                    "reference-v1 requires a validated W7 reference context".to_owned(),
+                )
+            })?;
+            run_reference(&committed, context).await?
+        }
+        "smoke-v1" | "ci-shared" if context.is_none() => {
             let smoke = reduced_smoke_scenario(committed);
             run_grid_model_smoke(&smoke).await?
+        }
+        "smoke-v1" | "ci-shared" => {
+            return Err(GridModelTierError::Reference(
+                "smoke execution must not consume a reference capability".to_owned(),
+            ));
         }
         other => {
             return Err(GridModelTierError::Reference(format!(
@@ -59,13 +95,9 @@ pub async fn write_grid_model_report(
 }
 
 async fn run_reference(
-    repo_root: &Path,
     scenario: &GridModelScenario,
+    context: &ValidatedRespReferenceContext,
 ) -> Result<GridModelReport, GridModelTierError> {
-    let inputs = RespReferenceRunInputs::load(repo_root)
-        .map_err(|error| GridModelTierError::Reference(error.to_string()))?;
-    let context = load_reference_context(repo_root, Some(&inputs.prerequisites))
-        .map_err(|error| GridModelTierError::Reference(error.to_string()))?;
     context
         .verify_binaries_unchanged()
         .map_err(|error| GridModelTierError::Reference(error.to_string()))?;

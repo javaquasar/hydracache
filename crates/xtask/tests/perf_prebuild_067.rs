@@ -2,7 +2,11 @@ use std::fs;
 use std::path::{Path, PathBuf};
 use std::time::{SystemTime, UNIX_EPOCH};
 
-use hydracache_loadgen::profile::{PerformanceProfile, RunnerFingerprint};
+use hydracache_loadgen::profile::{
+    reference_cpu_isolation, MeasurementCore, PerformanceProfile, RunnerAttestationV5,
+    RunnerFingerprint, REFERENCE_FINGERPRINT_SCHEMA_VERSION, REFERENCE_HOST_CONTRACT_VERSION,
+    REFERENCE_MEASUREMENT_CPUS, REFERENCE_OS_IMAGE, REFERENCE_STORAGE_CLASS,
+};
 use hydracache_loadgen::tiers::resp::RESP_REFERENCE_RUN_INPUTS_RELATIVE_PATH;
 use hydracache_loadgen::tiers::resp_reference::{
     LOADGEN_BINARY_ID, PREBUILD_MANIFEST_RELATIVE_PATH, SERVER_BINARY_ID,
@@ -168,6 +172,8 @@ impl PrebuildHost for FakeHost {
     fn observe_runner(
         &mut self,
         profile: &PerformanceProfile,
+        toolchain_identity: &str,
+        prebuild_contract_digest: &str,
     ) -> Result<RunnerFingerprint, String> {
         Ok(RunnerFingerprint {
             runner_class: profile.required_runner_class.clone(),
@@ -183,6 +189,27 @@ impl PrebuildHost for FakeHost {
             turbo: "intel-no-turbo:1".to_owned(),
             shared_hardware: false,
             calibration_score: 0.01,
+            attestation: RunnerAttestationV5 {
+                schema_version: REFERENCE_FINGERPRINT_SCHEMA_VERSION,
+                contract_version: REFERENCE_HOST_CONTRACT_VERSION.to_owned(),
+                virtualization: "none".to_owned(),
+                physical_cores: 8,
+                measurement_cores: REFERENCE_MEASUREMENT_CPUS
+                    .into_iter()
+                    .map(|logical_cpu| MeasurementCore {
+                        logical_cpu,
+                        package_id: 0,
+                        core_id: logical_cpu,
+                    })
+                    .collect(),
+                cpu_isolation: reference_cpu_isolation(),
+                host_digest: "a".repeat(64),
+                storage_class: REFERENCE_STORAGE_CLASS.to_owned(),
+                storage_identity_digest: "b".repeat(64),
+                os_image: REFERENCE_OS_IMAGE.to_owned(),
+                toolchain_identity: toolchain_identity.to_owned(),
+                prebuild_contract_digest: prebuild_contract_digest.to_owned(),
+            },
         })
     }
 
@@ -382,20 +409,22 @@ fn compile_time_is_excluded_from_measurement_window() {
         .args
         .iter()
         .any(|arg| arg == "perf-prebuild"));
-    for gate_id in [
-        "env.hydracache-run-067-perf-core",
-        "env.hydracache-run-067-perf-resp",
-        "env.hydracache-run-067-perf-control-plane",
+    for (gate_id, suite) in [
+        ("env.hydracache-run-067-perf-core", "core"),
+        ("env.hydracache-run-067-perf-resp", "resp"),
+        ("env.hydracache-run-067-perf-control-plane", "control-plane"),
     ] {
         let consumer = registry
             .gate
             .iter()
             .find(|gate| gate.id == gate_id)
             .unwrap();
+        assert_eq!(consumer.source, "scripts/perf/run-reference-measurement.sh");
         assert_eq!(
             consumer.command.program,
-            "target/release/hydracache-loadgen"
+            "scripts/perf/run-reference-measurement.sh"
         );
+        assert_eq!(consumer.command.args, [suite]);
         assert!(!consumer.command.args.iter().any(|arg| arg == "cargo"));
     }
 }

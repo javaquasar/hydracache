@@ -1,0 +1,254 @@
+{
+  "version": 2,
+  "release": "0.67.1",
+  "entries": [
+    {
+      "w_item": "W0",
+      "guard": {
+        "file": "crates/xtask/tests/release_governance.rs",
+        "function": "release_0671_governance_contract_is_fail_closed"
+      },
+      "canary": {
+        "file": "crates/xtask/tests/release_governance.rs",
+        "function": "canary_release_0671_governance_accepts_a_missing_stage_gate"
+      },
+      "guard_command": {
+        "program": "cargo",
+        "args": ["test", "-p", "xtask", "--test", "release_governance", "--locked", "release_0671_governance_contract_is_fail_closed", "--", "--nocapture"],
+        "env": {},
+        "cwd": ".",
+        "platform": "any"
+      },
+      "canary_command": {
+        "program": "cargo",
+        "args": ["test", "-p", "xtask", "--test", "release_governance", "--locked", "canary_release_0671_governance_accepts_a_missing_stage_gate", "--", "--nocapture"],
+        "env": {"HYDRACACHE_CANARY_DEFECT": "W0"},
+        "cwd": ".",
+        "platform": "any"
+      },
+      "defect_id": "hydracache-0.67.1-W0",
+      "expected_failure": "HC-CANARY-RED:W0",
+      "timeout_seconds": 300,
+      "tier": "fast",
+      "artifacts": ["target/release-evidence/canaries/0.67.1-W0.json"],
+      "red_evidence": "The W0 canary proves release governance rejects removal of any mandatory 0.67.1 stage gate."
+    },
+    {
+      "w_item": "W1",
+      "guard": {
+        "file": "crates/xtask/tests/release_governance.rs",
+        "function": "release_0671_governance_contract_is_fail_closed"
+      },
+      "canary": {
+        "file": "crates/xtask/tests/release_governance.rs",
+        "function": "canary_release_0671_governance_accepts_a_missing_stage_gate"
+      },
+      "guard_command": {
+        "program": "cargo",
+        "args": ["test", "-p", "xtask", "--test", "release_governance", "--locked", "release_0671_governance_contract_is_fail_closed", "--", "--nocapture"],
+        "env": {},
+        "cwd": ".",
+        "platform": "any"
+      },
+      "canary_command": {
+        "program": "cargo",
+        "args": ["test", "-p", "xtask", "--test", "release_governance", "--locked", "canary_release_0671_governance_accepts_a_missing_stage_gate", "--", "--nocapture"],
+        "env": {"HYDRACACHE_CANARY_DEFECT": "W1"},
+        "cwd": ".",
+        "platform": "any"
+      },
+      "defect_id": "hydracache-0.67.1-W1",
+      "expected_failure": "HC-CANARY-RED:W1",
+      "timeout_seconds": 300,
+      "tier": "fast",
+      "artifacts": ["target/release-evidence/canaries/0.67.1-W1.json"],
+      "red_evidence": "The W1 canary proves runner provisioning evidence remains mandatory before release."
+    },
+    {
+      "w_item": "W2",
+      "guard": {
+        "file": "crates/xtask/tests/perf_attestation_0671.rs",
+        "function": "reference_attestation_v5_rejects_vm_siblings_non_nvme_and_missing_identity"
+      },
+      "canary": {
+        "file": "crates/xtask/tests/perf_attestation_0671.rs",
+        "function": "canary_attestation_accepts_a_virtualized_reference_host"
+      },
+      "guard_command": {
+        "program": "cargo",
+        "args": ["test", "-p", "xtask", "--test", "perf_attestation_0671", "--locked", "reference_attestation_v5_rejects_vm_siblings_non_nvme_and_missing_identity", "--", "--nocapture"],
+        "env": {},
+        "cwd": ".",
+        "platform": "any"
+      },
+      "canary_command": {
+        "program": "cargo",
+        "args": ["test", "-p", "xtask", "--test", "perf_attestation_0671", "--locked", "canary_attestation_accepts_a_virtualized_reference_host", "--", "--nocapture"],
+        "env": {"HYDRACACHE_CANARY_DEFECT": "W2"},
+        "cwd": ".",
+        "platform": "any"
+      },
+      "defect_id": "hydracache-0.67.1-W2",
+      "expected_failure": "HC-CANARY-RED:W2",
+      "timeout_seconds": 300,
+      "tier": "fast",
+      "artifacts": ["target/release-evidence/canaries/0.67.1-W2.json"],
+      "red_evidence": "The W2 canary proves a virtualized host cannot spoof the bare-metal fingerprint-v2 attestation."
+    },
+    {
+      "w_item": "W3",
+      "guard": {
+        "file": "crates/xtask/tests/perf_full_dress_0671.rs",
+        "function": "admission_requires_two_unique_identical_non_promotable_full_dress_runs"
+      },
+      "canary": {
+        "file": "crates/xtask/tests/perf_full_dress_0671.rs",
+        "function": "canary_full_dress_admits_mixed_runner_receipts"
+      },
+      "guard_command": {
+        "program": "cargo",
+        "args": ["test", "-p", "xtask", "--test", "perf_full_dress_0671", "--locked", "admission_requires_two_unique_identical_non_promotable_full_dress_runs", "--", "--nocapture"],
+        "env": {},
+        "cwd": ".",
+        "platform": "any"
+      },
+      "canary_command": {
+        "program": "cargo",
+        "args": ["test", "-p", "xtask", "--test", "perf_full_dress_0671", "--locked", "canary_full_dress_admits_mixed_runner_receipts", "--", "--nocapture"],
+        "env": {"HYDRACACHE_CANARY_DEFECT": "W3"},
+        "cwd": ".",
+        "platform": "any"
+      },
+      "defect_id": "hydracache-0.67.1-W3",
+      "expected_failure": "HC-CANARY-RED:W3",
+      "timeout_seconds": 300,
+      "tier": "fast",
+      "artifacts": ["target/release-evidence/canaries/0.67.1-W3.json"],
+      "red_evidence": "The W3 canary proves two full-dress receipts with mixed runner identities cannot admit bootstrap."
+    },
+    {
+      "w_item": "W4",
+      "guard": {
+        "file": "crates/xtask/tests/perf_bootstrap_0671.rs",
+        "function": "sample_set_requires_five_unique_same_fingerprint_and_contract_receipts"
+      },
+      "canary": {
+        "file": "crates/xtask/tests/perf_bootstrap_0671.rs",
+        "function": "canary_bootstrap_accepts_a_mixed_fingerprint_sample_set"
+      },
+      "guard_command": {
+        "program": "cargo",
+        "args": ["test", "-p", "xtask", "--test", "perf_bootstrap_0671", "--locked", "sample_set_requires_five_unique_same_fingerprint_and_contract_receipts", "--", "--nocapture"],
+        "env": {},
+        "cwd": ".",
+        "platform": "any"
+      },
+      "canary_command": {
+        "program": "cargo",
+        "args": ["test", "-p", "xtask", "--test", "perf_bootstrap_0671", "--locked", "canary_bootstrap_accepts_a_mixed_fingerprint_sample_set", "--", "--nocapture"],
+        "env": {"HYDRACACHE_CANARY_DEFECT": "W4"},
+        "cwd": ".",
+        "platform": "any"
+      },
+      "defect_id": "hydracache-0.67.1-W4",
+      "expected_failure": "HC-CANARY-RED:W4",
+      "timeout_seconds": 300,
+      "tier": "fast",
+      "artifacts": ["target/release-evidence/canaries/0.67.1-W4.json"],
+      "red_evidence": "The W4 canary proves five samples from mixed runner fingerprints cannot form a bootstrap set."
+    },
+    {
+      "w_item": "W5",
+      "guard": {
+        "file": "crates/xtask/tests/release_governance.rs",
+        "function": "release_0671_governance_contract_is_fail_closed"
+      },
+      "canary": {
+        "file": "crates/xtask/tests/release_governance.rs",
+        "function": "canary_release_0671_governance_accepts_a_missing_stage_gate"
+      },
+      "guard_command": {
+        "program": "cargo",
+        "args": ["test", "-p", "xtask", "--test", "release_governance", "--locked", "release_0671_governance_contract_is_fail_closed", "--", "--nocapture"],
+        "env": {},
+        "cwd": ".",
+        "platform": "any"
+      },
+      "canary_command": {
+        "program": "cargo",
+        "args": ["test", "-p", "xtask", "--test", "release_governance", "--locked", "canary_release_0671_governance_accepts_a_missing_stage_gate", "--", "--nocapture"],
+        "env": {"HYDRACACHE_CANARY_DEFECT": "W5"},
+        "cwd": ".",
+        "platform": "any"
+      },
+      "defect_id": "hydracache-0.67.1-W5",
+      "expected_failure": "HC-CANARY-RED:W5",
+      "timeout_seconds": 300,
+      "tier": "fast",
+      "artifacts": ["target/release-evidence/canaries/0.67.1-W5.json"],
+      "red_evidence": "The W5 canary proves independent baseline review remains mandatory."
+    },
+    {
+      "w_item": "W6",
+      "guard": {
+        "file": "crates/xtask/tests/release_governance.rs",
+        "function": "release_0671_governance_contract_is_fail_closed"
+      },
+      "canary": {
+        "file": "crates/xtask/tests/release_governance.rs",
+        "function": "canary_release_0671_governance_accepts_a_missing_stage_gate"
+      },
+      "guard_command": {
+        "program": "cargo",
+        "args": ["test", "-p", "xtask", "--test", "release_governance", "--locked", "release_0671_governance_contract_is_fail_closed", "--", "--nocapture"],
+        "env": {},
+        "cwd": ".",
+        "platform": "any"
+      },
+      "canary_command": {
+        "program": "cargo",
+        "args": ["test", "-p", "xtask", "--test", "release_governance", "--locked", "canary_release_0671_governance_accepts_a_missing_stage_gate", "--", "--nocapture"],
+        "env": {"HYDRACACHE_CANARY_DEFECT": "W6"},
+        "cwd": ".",
+        "platform": "any"
+      },
+      "defect_id": "hydracache-0.67.1-W6",
+      "expected_failure": "HC-CANARY-RED:W6",
+      "timeout_seconds": 300,
+      "tier": "fast",
+      "artifacts": ["target/release-evidence/canaries/0.67.1-W6.json"],
+      "red_evidence": "The W6 canary proves reference activation and debt closure require a bound receipt."
+    },
+    {
+      "w_item": "W7",
+      "guard": {
+        "file": "crates/xtask/tests/release_governance.rs",
+        "function": "release_0671_governance_contract_is_fail_closed"
+      },
+      "canary": {
+        "file": "crates/xtask/tests/release_governance.rs",
+        "function": "canary_release_0671_governance_accepts_a_missing_stage_gate"
+      },
+      "guard_command": {
+        "program": "cargo",
+        "args": ["test", "-p", "xtask", "--test", "release_governance", "--locked", "release_0671_governance_contract_is_fail_closed", "--", "--nocapture"],
+        "env": {},
+        "cwd": ".",
+        "platform": "any"
+      },
+      "canary_command": {
+        "program": "cargo",
+        "args": ["test", "-p", "xtask", "--test", "release_governance", "--locked", "canary_release_0671_governance_accepts_a_missing_stage_gate", "--", "--nocapture"],
+        "env": {"HYDRACACHE_CANARY_DEFECT": "W7"},
+        "cwd": ".",
+        "platform": "any"
+      },
+      "defect_id": "hydracache-0.67.1-W7",
+      "expected_failure": "HC-CANARY-RED:W7",
+      "timeout_seconds": 300,
+      "tier": "fast",
+      "artifacts": ["target/release-evidence/canaries/0.67.1-W7.json"],
+      "red_evidence": "The W7 canary proves the frozen-candidate reference receipt remains mandatory."
+    }
+  ]
+}

@@ -41,7 +41,9 @@ use hydracache_loadgen::tiers::client_surface::{
 use hydracache_loadgen::tiers::control_plane::{
     run_control_plane_reference, run_control_plane_reference_with_metrics,
 };
-use hydracache_loadgen::tiers::grid_model::write_grid_model_report;
+use hydracache_loadgen::tiers::grid_model::{
+    write_grid_model_report, write_grid_model_report_with_context,
+};
 use hydracache_loadgen::tiers::local::{write_local_report, write_local_report_with_context};
 use hydracache_loadgen::tiers::resp::{
     resp_reference_report_on, run_resp_reference_suite_with_metrics, write_resp_report,
@@ -49,6 +51,7 @@ use hydracache_loadgen::tiers::resp::{
 };
 use hydracache_loadgen::tiers::resp_reference::{
     load_reference_context, start_reference_daemon, RespDaemonLaunch, RespReferencePorts,
+    ValidatedRespReferenceContext,
 };
 use sha2::{Digest, Sha256};
 
@@ -157,15 +160,22 @@ async fn run() -> Result<(), String> {
             let grid_model_path = command
                 .grid_model_report_path()
                 .ok_or_else(|| "core suite lost its grid-model report path".to_owned())?;
-            write_grid_model_report(command.profile(), &grid_model_path)
-                .await
-                .map_err(|error| error.to_string())?;
+            write_grid_model_report_with_context(
+                command.profile(),
+                &grid_model_path,
+                reference_context.as_ref(),
+            )
+            .await
+            .map_err(|error| error.to_string())?;
             if command.profile() == "reference-v1" {
                 let brownout_path = grid_model_path.with_file_name("brownout-grid-model.json");
-                write_reference_brownout(
+                write_reference_brownout_with_context(
                     command.profile(),
                     BrownoutTarget::GridModelReplica,
                     &brownout_path,
+                    reference_context.as_ref().ok_or_else(|| {
+                        "reference core suite lost its validated W7 context".to_owned()
+                    })?,
                 )
                 .await?;
                 let overload_local_path = local_path.with_file_name("overload-local.json");
@@ -541,6 +551,22 @@ async fn write_reference_brownout(
     }
     let repo_root = repository_root()?;
     let context = load_reference_context_for_run(&repo_root)?;
+    write_reference_brownout_with_context(profile, target, report_path, &context).await
+}
+
+async fn write_reference_brownout_with_context(
+    profile: &str,
+    target: BrownoutTarget,
+    report_path: &Path,
+    context: &ValidatedRespReferenceContext,
+) -> Result<(), String> {
+    if profile != "reference-v1" {
+        return Err(
+            "W5 brownout evidence has no fixture-capacity mode; use reference-v1 with the exact surface gate"
+                .to_owned(),
+        );
+    }
+    let repo_root = repository_root()?;
     let report_path = absolute_output_path(&repo_root, report_path);
     let output_dir = report_path
         .parent()
@@ -549,7 +575,7 @@ async fn write_reference_brownout(
         BrownoutTarget::ControlPlaneLeader => {
             produce_control_plane_brownout(
                 &repo_root,
-                &context,
+                context,
                 &repo_root.join(BROWNOUT_CONTROL_PLANE_SCENARIO),
                 &repo_root.join(CONTROL_PLANE_SCENARIO),
                 &output_dir.join("control-plane-3.json"),
@@ -562,7 +588,7 @@ async fn write_reference_brownout(
         BrownoutTarget::RespEndpointKill => {
             produce_resp_brownout(
                 &repo_root,
-                &context,
+                context,
                 &repo_root.join(BROWNOUT_RESP_SCENARIO),
                 &output_dir.join("node-resp-open-loop.json"),
                 &output_dir.join("node-resp-daemon-lifecycle.json"),
@@ -575,7 +601,7 @@ async fn write_reference_brownout(
         BrownoutTarget::GridModelReplica => {
             produce_grid_model_brownout(
                 &repo_root,
-                &context,
+                context,
                 &repo_root.join(BROWNOUT_GRID_MODEL_SCENARIO),
                 &repo_root.join(GRID_MODEL_SCENARIO),
                 &output_dir.join("grid-model.json"),

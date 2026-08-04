@@ -14,3 +14,11 @@ trybuild = { max-threads = 1 }
 filter = "test(cacheable_macro_compile_tests) | test(proc_macro_compile_tests)"
 test-group = "trybuild"
 slow-timeout = { period = "120s", terminate-after = 3 }
+
+[[profile.ci.overrides]]
+filter = """
+test(resp_open_loop_get_set_knee_at_slo_carries_raw_a_b_c_evidence)
+| test(resp_connection_and_pipeline_sweep_is_exact_and_scheduled_send_based)
+| test(w3_reports_preserve_open_loop_node_local_and_external_tool_boundaries)
+"""
+threads-required = "num-test-threads"

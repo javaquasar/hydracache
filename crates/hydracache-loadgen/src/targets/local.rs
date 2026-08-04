@@ -489,11 +489,7 @@ impl LocalCacheTarget {
         Ok(())
     }
 
-    async fn verified_state_digest(
-        &self,
-        phase: &str,
-        require_all_present: bool,
-    ) -> Result<String, String> {
+    async fn verified_state_digest(&self, require_all_present: bool) -> Result<String, String> {
         let expected = self
             .expected_values
             .lock()
@@ -503,7 +499,6 @@ impl LocalCacheTarget {
         let diagnostics = cache.diagnostics().await;
         let mut hasher = Sha256::new();
         update_digest_field(&mut hasher, STATE_DIGEST_VERSION.as_bytes());
-        update_digest_field(&mut hasher, phase.as_bytes());
         update_digest_field(&mut hasher, &self.config.max_capacity.to_le_bytes());
         update_digest_field(
             &mut hasher,
@@ -574,7 +569,7 @@ impl Target for LocalCacheTarget {
             .map_err(|_| TargetError::Reset("expected-value registry is poisoned".to_owned()))?
             .clear();
         self.counters.reset();
-        self.verified_state_digest("reset", true)
+        self.verified_state_digest(true)
             .await
             .map_err(TargetError::Reset)
     }
@@ -593,7 +588,7 @@ impl Target for LocalCacheTarget {
             })?;
         }
         let state_digest = self
-            .verified_state_digest("preload", true)
+            .verified_state_digest(true)
             .await
             .map_err(TargetError::Preload)?;
         Ok(PreloadOutcome {
@@ -603,7 +598,7 @@ impl Target for LocalCacheTarget {
     }
 
     async fn state_digest(&self) -> Result<String, TargetError> {
-        self.verified_state_digest("post-warmup", false)
+        self.verified_state_digest(false)
             .await
             .map_err(TargetError::Warmup)
     }
@@ -637,4 +632,33 @@ fn update_digest_field(hasher: &mut Sha256, value: &[u8]) {
 
 fn hex_digest(bytes: &[u8]) -> String {
     bytes.iter().map(|byte| format!("{byte:02x}")).collect()
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[tokio::test]
+    async fn zero_preload_lifecycle_uses_one_state_digest() {
+        let target = LocalCacheTarget::new(LocalTargetConfig {
+            preload_entries: 0,
+            operation_mix: LocalOperationMix {
+                hit_percent: 0,
+                miss_percent: 0,
+                loader_percent: 0,
+                put_percent: 0,
+                hot_key_percent: 100,
+            },
+            ..LocalTargetConfig::default()
+        })
+        .expect("W6 local target must construct");
+
+        let reset = target.reset().await.expect("reset must succeed");
+        assert_eq!(target.state_digest().await.unwrap(), reset);
+
+        let preload = target.preload().await.expect("preload must succeed");
+        assert_eq!(preload.operations, 0);
+        assert_eq!(preload.state_digest, reset);
+        assert_eq!(target.state_digest().await.unwrap(), reset);
+    }
 }

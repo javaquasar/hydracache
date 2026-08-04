@@ -301,7 +301,8 @@ pub fn load_reference_context(
             repo_root.display()
         ))
     })?;
-    let manifest_path = repo_root.join(PREBUILD_MANIFEST_RELATIVE_PATH);
+    let manifest_path =
+        canonicalize_manifest_path(&repo_root.join(PREBUILD_MANIFEST_RELATIVE_PATH))?;
     let bytes = read_bounded_manifest(&manifest_path)?;
     let manifest = parse_prebuild_manifest(&bytes, &manifest_path)?;
     let facts = observe_live_facts(&repo_root)?;
@@ -313,6 +314,13 @@ pub fn load_reference_context(
         prerequisites,
         &facts,
     )
+}
+
+fn canonicalize_manifest_path(path: &Path) -> Result<PathBuf, RespReferenceError> {
+    fs::canonicalize(path).map_err(|source| RespReferenceError::ManifestRead {
+        path: path.to_path_buf(),
+        source,
+    })
 }
 
 pub fn parse_prebuild_manifest(
@@ -1467,6 +1475,7 @@ mod tests {
                 turbo: "disabled".to_owned(),
                 shared_hardware: false,
                 calibration_score: 0.01,
+                attestation: Default::default(),
             };
             let profile = PerformanceProfile {
                 name: REFERENCE_PROFILE.to_owned(),
@@ -1535,9 +1544,11 @@ mod tests {
 
         fn validate(&self) -> Result<ValidatedRespReferenceContext, RespReferenceError> {
             let bytes = serde_json::to_vec_pretty(&self.manifest).unwrap();
+            fs::write(&self.manifest_path, &bytes).unwrap();
+            let canonical_manifest_path = canonicalize_manifest_path(&self.manifest_path).unwrap();
             validate_manifest(
                 &self.root,
-                self.manifest_path.clone(),
+                canonical_manifest_path,
                 &bytes,
                 self.manifest.clone(),
                 &self.prerequisites,
@@ -1569,6 +1580,44 @@ mod tests {
         assert_eq!(context.surface.state_scope, RESP_STATE_SCOPE);
         assert_eq!(context.surface.network_boundary, RESP_NETWORK_BOUNDARY);
         assert_eq!(context.surface.claim_scope, RESP_CLAIM_SCOPE);
+    }
+
+    #[test]
+    fn aliased_manifest_identity_is_canonical_before_w4b_and_w5c_consume_context() {
+        let fixture = ContractFixture::new("canonical-manifest");
+        let context = fixture.validate().unwrap();
+        #[cfg(windows)]
+        let aliased_path = PathBuf::from(
+            fixture
+                .manifest_path
+                .to_string_lossy()
+                .strip_prefix(r"\\?\")
+                .unwrap(),
+        );
+        #[cfg(not(windows))]
+        let aliased_path = PathBuf::from(format!(
+            "//{}",
+            fixture
+                .manifest_path
+                .to_string_lossy()
+                .trim_start_matches('/')
+        ));
+
+        assert_ne!(
+            aliased_path.to_string_lossy(),
+            fixture.manifest_path.to_string_lossy()
+        );
+        // W4B receives `context.manifest_path`, while W5C canonicalizes its
+        // predecessor spelling before applying the unchanged equality gate.
+        // Both consumers must therefore observe one canonical identity.
+        assert_eq!(
+            canonicalize_manifest_path(&aliased_path).unwrap(),
+            context.manifest_path
+        );
+        assert_eq!(
+            context.manifest_path,
+            fs::canonicalize(&context.manifest_path).unwrap()
+        );
     }
 
     #[test]

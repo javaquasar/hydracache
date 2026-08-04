@@ -145,13 +145,13 @@ fn ci_wires_fast_and_raft_corner_case_tiers_to_declared_commands() {
 
     for (current, stale, expected_problem) in [
         (
+            "default: \"0.67.1\"",
             "default: \"0.67\"",
-            "default: \"0.66\"",
             "workflow_dispatch input candidate_release",
         ),
         (
+            "${{ inputs.candidate_release || '0.67.1' }}",
             "${{ inputs.candidate_release || '0.67' }}",
-            "${{ inputs.candidate_release || '0.66' }}",
             "global HYDRACACHE_CANDIDATE_RELEASE",
         ),
         (
@@ -375,7 +375,7 @@ fn canary_release_governance_accepts_a_missing_mandatory_gate() {
 }
 
 #[test]
-fn release_067_registered_performance_gates_are_mandatory_and_fail_closed() {
+fn release_067_deferred_performance_gates_remain_registered_and_fail_closed() {
     let root = xtask::doc_check::find_repo_root().unwrap();
     let registry = xtask::gated_tests::load_registry(&root).unwrap();
     let problems = xtask::release_governance::release_067_gate_contract_problems(&registry.gate);
@@ -392,23 +392,24 @@ fn release_067_registered_performance_gates_are_mandatory_and_fail_closed() {
         missing.retain(|gate| gate.id != id);
         let problems = xtask::release_governance::release_067_gate_contract_problems(&missing);
         assert!(
-            problems
-                .iter()
-                .any(|problem| problem.contains("missing mandatory gate") && problem.contains(id)),
+            problems.iter().any(|problem| {
+                problem.contains("missing deferred reference gate") && problem.contains(id)
+            }),
             "missing gate {id} was accepted: {problems:#?}"
         );
     }
 
-    let mut optional = registry.gate.clone();
-    optional
+    let mut wrongly_mandatory = registry.gate.clone();
+    wrongly_mandatory
         .iter_mut()
         .find(|gate| gate.id == "env.hydracache-run-067-perf-resp")
         .unwrap()
-        .ship_mandatory = false;
-    let problems = xtask::release_governance::release_067_gate_contract_problems(&optional);
+        .ship_mandatory = true;
+    let problems =
+        xtask::release_governance::release_067_gate_contract_problems(&wrongly_mandatory);
     assert!(problems.iter().any(|problem| {
         problem.contains("env.hydracache-run-067-perf-resp")
-            && problem.contains("mandatory dedicated Linux")
+            && problem.contains("deferred, non-ship, dedicated Linux")
     }));
 
     let mut destructive_consumer = registry.gate.clone();
@@ -426,26 +427,42 @@ fn release_067_registered_performance_gates_are_mandatory_and_fail_closed() {
 }
 
 #[test]
-fn performance_lane_requires_pinned_github_image_and_serial_concurrency() {
+fn performance_lane_requires_protected_self_hosted_labels_and_serial_concurrency() {
     let root = xtask::doc_check::find_repo_root().unwrap();
     let workflow = std::fs::read_to_string(root.join(".github/workflows/ci.yml")).unwrap();
     let problems =
         xtask::release_governance::release_execution_wiring_problems(&workflow, "0.67").unwrap();
     assert!(problems.is_empty(), "{problems:#?}");
 
-    let floating_image = workflow.replacen(
-        "runs-on: ubuntu-24.04",
-        "runs-on: ubuntu-latest",
+    let wrong_prebuild_affinity = workflow.replacen(
+        "taskset --cpu-list 1-4 cargo run -p xtask --locked -- evidence-run --release 0.67 --gate tool.perf-prebuild-067",
+        "taskset --cpu-list 0-3 cargo run -p xtask --locked -- evidence-run --release 0.67 --gate tool.perf-prebuild-067",
         1,
     );
     let problems = xtask::release_governance::release_execution_wiring_problems(
-        &floating_image,
+        &wrong_prebuild_affinity,
         "0.67",
     )
     .unwrap();
+    assert!(
+        problems.iter().any(|problem| {
+            problem.contains("Prebuild 0.67 performance binaries")
+                && problem.contains("taskset --cpu-list 1-4")
+        }),
+        "wrong prebuild affinity was accepted: {problems:#?}"
+    );
+
+    let floating_image = workflow.replacen(
+        "runs-on: [self-hosted, linux, x64, hydracache-perf-v1]",
+        "runs-on: [self-hosted, linux, x64]",
+        1,
+    );
+    let problems =
+        xtask::release_governance::release_execution_wiring_problems(&floating_image, "0.67")
+            .unwrap();
     assert!(problems
         .iter()
-        .any(|problem| problem.contains("pinned GitHub-hosted ubuntu-24.04")));
+        .any(|problem| problem.contains("exact protected self-hosted bare-metal labels")));
 
     let parallel = workflow.replacen(
         "group: release-067-performance-reference-v1",
@@ -469,9 +486,21 @@ fn performance_lane_requires_pinned_github_image_and_serial_concurrency() {
         .iter()
         .any(|problem| problem.contains("exact rustc 1.94.0")));
 
+    let unpinned_redis = workflow.replacen(
+        "5981179706f8391f03be91d951acafaeda91af7fac56beffb2701963103e423d",
+        "unverified-source-archive",
+        1,
+    );
+    let problems =
+        xtask::release_governance::release_execution_wiring_problems(&unpinned_redis, "0.67")
+            .unwrap();
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("checksum-pinned source recipe")));
+
     let missing_opt_in = workflow.replacen(
-        "github.event_name == 'workflow_dispatch' && inputs.run_reference_performance && inputs.candidate_release == '0.67'",
-        "github.event_name == 'workflow_dispatch' && inputs.candidate_release == '0.67'",
+        "github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && inputs.run_reference_performance && inputs.candidate_release == '0.67'",
+        "github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && inputs.candidate_release == '0.67'",
         1,
     );
     let problems =
@@ -540,25 +569,105 @@ fn runtime_reports_are_gate_artifacts_not_committed_manifest_artifacts() {
 }
 
 #[test]
-fn canary_release_governance_accepts_a_missing_mandatory_performance_gate() {
+fn canary_release_governance_accepts_a_missing_deferred_performance_gate() {
     let root = xtask::doc_check::find_repo_root().unwrap();
     let registry = xtask::gated_tests::load_registry(&root).unwrap();
     let mut missing = registry.gate.clone();
     missing.retain(|gate| gate.id != "tool.perf-budget-check-067");
     let problems = xtask::release_governance::release_067_gate_contract_problems(&missing);
-    let rejected = problems
-        .iter()
-        .any(|problem| problem.contains("missing mandatory gate tool.perf-budget-check-067"));
+    let rejected = problems.iter().any(|problem| {
+        problem.contains("missing deferred reference gate tool.perf-budget-check-067")
+    });
 
     if std::env::var("HYDRACACHE_CANARY_DEFECT").as_deref() == Ok("W10") {
         assert!(
             !rejected,
-            "HC-CANARY-RED:W10 release governance accepted a missing mandatory performance gate"
+            "HC-CANARY-RED:W10 release governance accepted a missing deferred performance gate"
         );
     }
     assert!(
         rejected,
         "release 0.67 governance did not reject a missing performance gate: {problems:#?}"
+    );
+}
+
+#[test]
+fn release_0671_governance_contract_is_fail_closed() {
+    let root = xtask::doc_check::find_repo_root().unwrap();
+    let registry = xtask::gated_tests::load_registry(&root).unwrap();
+    let problems = xtask::release_governance::release_0671_gate_contract_problems(&registry.gate);
+    assert!(problems.is_empty(), "{problems:#?}");
+}
+
+#[test]
+fn canary_release_0671_governance_accepts_a_missing_stage_gate() {
+    let work_item = std::env::var("HYDRACACHE_CANARY_DEFECT").unwrap_or_else(|_| "W0".to_owned());
+    let gate_id = match work_item.as_str() {
+        "W0" | "W7" => "tool.perf-frozen-candidate-0671",
+        "W1" => "tool.perf-runner-provisioned-0671",
+        "W2" => "tool.perf-attestation-v5-0671",
+        "W3" => "tool.perf-full-dress-admission-0671",
+        "W4" => "tool.perf-bootstrap-sample-set-0671",
+        "W5" => "tool.perf-baseline-review-0671",
+        "W6" => "tool.perf-reference-activation-0671",
+        other => panic!("unexpected 0.67.1 canary work item {other}"),
+    };
+
+    let root = xtask::doc_check::find_repo_root().unwrap();
+    let registry = xtask::gated_tests::load_registry(&root).unwrap();
+    let mut missing = registry.gate;
+    missing.retain(|gate| gate.id != gate_id);
+    let problems = xtask::release_governance::release_0671_gate_contract_problems(&missing);
+    let rejected = problems
+        .iter()
+        .any(|problem| problem.contains("missing mandatory 0.67.1 stage gate"));
+
+    if std::env::var("HYDRACACHE_CANARY_DEFECT").is_ok() {
+        assert!(
+            !rejected,
+            "HC-CANARY-RED:{work_item} release governance accepted missing stage gate {gate_id}"
+        );
+    }
+    assert!(
+        rejected,
+        "release 0.67.1 governance did not reject missing stage gate {gate_id}: {problems:#?}"
+    );
+}
+
+#[test]
+fn release_0671_core_suite_reuses_one_validated_context_for_w4b_and_w5c() {
+    let root = xtask::doc_check::find_repo_root().unwrap();
+    let source =
+        std::fs::read_to_string(root.join("crates/hydracache-loadgen/src/main.rs")).unwrap();
+    let suite_start = source
+        .find("LoadgenCommand::SuiteCore { .. } => {")
+        .expect("SuiteCore dispatch must remain present");
+    let suite_end = source[suite_start..]
+        .find("LoadgenCommand::TierNodeResp { .. } => {")
+        .map(|offset| suite_start + offset)
+        .expect("SuiteCore dispatch must remain bounded by TierNodeResp");
+    let suite = &source[suite_start..suite_end];
+
+    assert_eq!(
+        suite
+            .matches("load_reference_context_for_run(&repo_root)?")
+            .count(),
+        1,
+        "SuiteCore must validate the W7 context exactly once"
+    );
+    assert!(
+        suite.contains("write_grid_model_report_with_context(")
+            && suite.contains("write_reference_brownout_with_context("),
+        "SuiteCore must use context-aware W4B and W5C entry points"
+    );
+    assert!(
+        suite.matches("reference_context.as_ref()").count() >= 4,
+        "the same SuiteCore context must flow through local, client, W4B, and W5C"
+    );
+    assert!(
+        !suite.contains("write_grid_model_report(command.profile(), &grid_model_path)")
+            && !suite.contains("write_reference_brownout(\n                    command.profile(),\n                    BrownoutTarget::GridModelReplica"),
+        "SuiteCore must not fall back to independently reloading W4B or W5C context"
     );
 }
 

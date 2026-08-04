@@ -1,4 +1,4 @@
-# HydraCache 0.67.0 Performance Characterization & Capacity Baselines - Codex Execution Plan
+# HydraCache 0.67.0 Performance Measurement Infrastructure - Codex Execution Plan
 
 > **At a glance**
 > - **What:** a **measurement-only** release that characterizes only surfaces that exist at the
@@ -20,12 +20,14 @@
 >   versus Redis on the RESP surface, and regression protection so `1.0` performance cannot silently
 >   erode. A native-daemon or distributed-value-plane capacity claim remains blocked until those
 >   product surfaces are implemented in a separate release.
-> - **Status:** in-progress, implementation closure reached (W0-W10 source, tests, scenarios,
->   governance, CI wiring, and documentation are present), but **not shipped**. The annotated
->   `v0.66.0` predecessor is present and ancestral; W7 remains deliberately unbootstrapped pending at least five
->   eligible serialized GitHub-hosted `main` runs plus independent anchor/budget review and a fresh frozen-candidate
->   receipt set.
+> - **Status:** shipped on 2026-07-27. The 0.67 scope is the W0-W10 measurement infrastructure,
+>   methodology, scenario contracts, fail-closed governance, and CI wiring.
+>   Official capacity, sizing, Redis-comparison, metrics-agreement, and numerical baseline evidence is
+>   explicitly deferred to [`TD-0013`](../technical-debt/TD-0013-dedicated-performance-runner-and-baseline-bootstrap.md).
+>   `reference-v1` remains unbootstrapped; the protected workflow remains fail-closed but its five
+>   reference execution gates are not ship-mandatory for this claim-free tooling release.
 >
+
 > Roadmap: [`INDEX.md`](INDEX.md) - rules: [`../RULES.md`](../RULES.md) -
 > gates: [`../GATES.md`](../GATES.md) - testing: [`../TESTING.md`](../TESTING.md) -
 > governance: release-scoped `0.65`/`0.66` evidence, canaries, receipts, and registries - prior perf
@@ -91,10 +93,16 @@ extrapolations.
   fingerprint family, toolchain/build/scenario digest, and its numerical output never produces a
   capacity claim or satisfies a performance ship gate. Hosted structural/unit-test receipts remain
   valid for their non-performance contracts.
-- `reference-v1` is the enforcing manual lane serialized on pinned `ubuntu-24.04`. Its stable
-  runner-class fingerprint binds `ImageOS` and `ImageVersion`, while each report retains observed
-  CPU/RAM/kernel/calibration facts. Image drift, calibration failure, or profile mismatch makes the
-  run non-evidence; the profile supports relative same-image regression claims, not portable floors.
+- `reference-v1` is the future enforcing manual lane, currently deferred by TD-0013, serialized on the protected
+  `hydracache-perf-v1` bare-metal runner. Its stable fingerprint binds observed
+  CPU/RAM/kernel/affinity/quota/governor/turbo facts. Fingerprint drift, preflight failure, or profile
+  mismatch makes the run non-evidence; the profile supports relative same-fingerprint regression
+  claims, not portable floors.
+- The workflow pins the reference process to CPUs `1-4`. The enforcing contract therefore measures
+  W1 scaling at `1/2/4`, uses four workers for the W1 hot-key shape, and admits W4B on the same
+  four-core runner policy. An `8`-worker or eight-core point is outside this profile: it requires a
+  separately reviewed larger-runner profile and baseline and may not be oversubscribed, inferred,
+  or merged into the reference series.
 - The enforcing decision is dual: the candidate must pass a reviewed immutable release anchor
   (prevents gradual ratcheting) and an eligible rolling `main` baseline (detects recent regressions).
   Candidate, failed, quarantined, mixed-fingerprint, stale, unstable, or current-commit reports are
@@ -218,12 +226,12 @@ Populate as W-items land (same discipline as `0.64`): item -> where implemented 
 | W4 | `crates/hydracache-loadgen::{targets::{control_plane,grid_model},tiers::{control_plane,grid_model},cli}`; `docs/testing/perf-scenarios/0.67/{control-plane-real-daemon-v1,grid-model-primitives-v1}.toml` | `cargo test -p hydracache-loadgen --test w4_split_067 --locked -j 2`; `cargo test -p hydracache-loadgen --lib --locked -j 2 w4` | W4A directly launches the exact prebuilt 3/5/7-daemon candidate and records separate selected leader/follower admin-wire knees plus receipt-bound Add/Drain convergence; W4B runs exported consistency/session/replication primitives in a labeled in-process model. Their artifacts and claim scopes cannot be merged, summed, or relabeled as distributed value-grid capacity. |
 | W5 | `crates/hydracache-loadgen::{targets::brownout,tiers::brownout,cli,main}`; `crates/hydracache-loadgen/tests/w5_brownout_067.rs`; `docs/testing/perf-scenarios/0.67/brownout-*-v1.toml` | `cargo test -p hydracache-loadgen --test w5_brownout_067 --locked -j 2` | Three non-combinable authorities: committed-metadata control-plane recovery, killed node-local RESP endpoint availability with no neighbor failover, and labeled in-process grid-model fault cost. |
 | W6 | `crates/hydracache-loadgen::{overload,cli,main}`; `crates/hydracache-loadgen/tests/w6_overload_067.rs`; `docs/testing/perf-scenarios/0.67/overload-capacity-v1.toml` | `cargo test -p hydracache-loadgen --test w6_overload_067 --locked -j 2` | Goodput/recovery at 1.2x/1.5x/2x is admitted only for local, in-process client-surface, and selected-endpoint RESP reports with valid predecessor knees. |
-| W7 | `crates/hydracache-loadgen::budget_receipt`; `crates/xtask::{perf_budget,main}`; `crates/xtask/tests/perf_budget_067.rs`; `docs/testing/{perf-profiles,perf-budgets/0.67,perf-baselines/0.67}` | `cargo test -p xtask --test perf_budget_067 --locked -j 2` | Dual immutable-anchor plus rolling-`main` policy is implemented and fail-closed, but the committed anchor/baseline is intentionally `unbootstrapped`; no ship budget exists before five eligible serialized GitHub-hosted `main` runs and independent review. |
+| W7 | `crates/hydracache-loadgen::budget_receipt`; `crates/xtask::{perf_budget,main}`; `crates/xtask/tests/perf_budget_067.rs`; `docs/testing/{perf-profiles,perf-budgets/0.67,perf-baselines/0.67}` | `cargo test -p xtask --test perf_budget_067 --locked -j 2` | Dual immutable-anchor plus rolling-`main` policy is implemented and fail-closed, but the committed anchor/baseline is intentionally `unbootstrapped`; no numerical release budget or claim exists before five eligible serialized self-hosted bare-metal `main` runs and independent review. |
 | W8 | `crates/hydracache-loadgen::{compare_redis,cli,main}`; `crates/hydracache-loadgen/tests/w8_redis_compare_067.rs`; `docs/testing/perf-scenarios/0.67/compare-redis-v1.toml` | `cargo test -p hydracache-loadgen --test w8_redis_compare_067 --locked -j 2`; `cargo test -p hydracache-loadgen --lib --locked -j 2 compare_redis` | Same host, pinned tool/image, alternating order, canonical sealed W3 predecessor, and one selected node-local RESP endpoint. It is a method-bound artifact, not a Redis-replacement or superiority claim. |
 | W9 | `crates/hydracache-loadgen::{metrics_honesty,tiers::{resp,control_plane}}`; `crates/hydracache-loadgen/tests/w9_metrics_067.rs`; `docs/testing/perf-scenarios/0.67/metrics-honesty-v1.toml` | `cargo test -p hydracache-loadgen --test w9_metrics_067 --locked -j 2` | Same-process observer windows cross-check only metrics already exported by real RESP/control-plane daemons; absent fields are `not_available`, and service time is never relabeled as scheduled-send latency. |
-| W10 | `.github/workflows/ci.yml`; `crates/xtask::{perf,release_governance,release_evidence,evidence_run}`; release-scoped manifests/registries; `docs/{PERFORMANCE,TESTING,GATES,POSITIONING}.md`; `docs/releases/0.67.0.md` | `cargo test -p xtask --test release_governance --locked -j 2`; registered `evidence-run` and `release-evidence --require-ship` commands below | Exact-candidate prebuild and receipt machinery plus automatic-tripwire/manual-reference separation are implemented. The predecessor tag is present and ancestral; release aggregation remains red until W7 bootstrap/review, serialized reference artifacts, canaries, and final receipts exist on one frozen candidate. |
+| W10 | `.github/workflows/ci.yml`; `crates/xtask::{perf,release_governance,release_evidence,evidence_run}`; release-scoped manifests/registries; `docs/{PERFORMANCE,TESTING,GATES,POSITIONING}.md`; `docs/releases/0.67.0.md` | `cargo test -p xtask --test release_governance --locked -j 2`; registered `evidence-run` and `release-evidence --require-ship` commands below | Exact-candidate prebuild and receipt machinery plus automatic-tripwire/manual-reference separation are implemented. The ordinary 0.67 aggregation proves tooling sources, tests, fast receipts, canaries, and docs; TD-0013 separately owns bootstrap and serialized reference artifacts. |
 
-Direct commands inside W0-W9 are developer reproduction commands. A ship-eligible invocation runs
+Direct commands inside W0-W9 are developer reproduction commands. A future claim-eligible reference invocation runs
 the registered command only through
 `cargo run -p xtask --locked -- evidence-run --release 0.67 --gate <id>` so its exact clean commit,
 command/registry/input digests, runner identity, and declared artifact hashes are receipt-bound.
@@ -390,7 +398,7 @@ $env:HYDRACACHE_RUN_PERF_RESP='1'
 & target\release\hydracache-loadgen.exe suite resp --profile reference-v1 --output-dir target/test-evidence/0.67
 Remove-Item Env:\HYDRACACHE_RUN_PERF_RESP -ErrorAction SilentlyContinue
 ```
-**CI.** Open-loop leg on the serialized GitHub-hosted reference runner. A local unclaimed external-tool run skips
+**CI.** Open-loop leg on the serialized self-hosted bare-metal reference runner. A local unclaimed external-tool run skips
 loud when the tool is absent; the scheduled/manual mandatory evidence gate fails closed on a missing
 tool, image, or capability. W3 depends on W0, not W2.
 
@@ -440,7 +448,7 @@ $env:HYDRACACHE_RUN_PERF_CONTROL_PLANE='1'
 & target\release\hydracache-loadgen.exe tier grid-model --profile reference-v1 --report target/test-evidence/0.67/grid-model.json
 Remove-Item Env:\HYDRACACHE_RUN_PERF_CONTROL_PLANE -ErrorAction SilentlyContinue
 ```
-**CI.** W4B fast smoke plus serialized GitHub-hosted reference run; W4A 3-node is scheduled and required 5/7-node
+**CI.** W4B fast smoke plus serialized self-hosted bare-metal reference run; W4A 3-node is scheduled and required 5/7-node
 points run manual on the same eligible profile, all with mandatory receipts. The kind variant is an
 optional informational observation unless governance is atomically widened to make it mandatory.
 
@@ -522,8 +530,8 @@ Remove-Item Env:\HYDRACACHE_RUN_PERF_RESP -ErrorAction SilentlyContinue
 **Goal.** Freeze the W1-W6 results as **macro budgets** (ops/s floors at SLO, p99 ceilings, brownout
 depth/recovery ceilings, overload goodput floors) without trusting shared-runner noise or allowing a
 slow rolling ratchet. `ci-shared` is a wide-tolerance tripwire; `reference-v1` is the enforcing
-serialized GitHub-hosted profile and must pass both its reviewed release anchor and an eligible
-same-image rolling `main` baseline. It gates relative regressions only; its raw rates are not portable
+serialized self-hosted bare-metal profile and must pass both its reviewed release anchor and an eligible
+same-fingerprint rolling `main` baseline. It gates relative regressions only; its raw rates are not portable
 capacity floors or sizing guidance. Budget rows preserve `claim_scope`: capacity, operational event, and library/model
 primitive costs are different types and cannot satisfy one another.
 
@@ -632,8 +640,8 @@ validator artifact; no hosted-runner ship claim).
 ## W10. Governance, CI Lanes, And Docs
 
 **Goal.** Build the exact-candidate release contract first, then freeze and aggregate every mandatory
-measurement on the final clean candidate. W10 has two phases; **Phase A is the first implementation
-work in the release**, before W0 feature code, while Phase B closes the release after W0-W9.
+measurement infrastructure on the final clean candidate. W10 has two phases; **Phase A is the first implementation
+work in the release**, before W0 feature code, while Phase B is deferred reference execution under TD-0013.
 
 **Phase A - fail-closed scaffold (lands first).**
 
@@ -647,8 +655,8 @@ work in the release**, before W0 feature code, while Phase B closes the release 
 - Before or with each W0-W9 implementation, atomically populate its non-empty committed
   `required_sources`, real Rust `#[test]` validators, fast/gated IDs and artifacts, add its id to the
   dynamic list, and add its real guard/canary entry. CLI measurements alone do not satisfy the AST
-  contract. Phase B requires the full ordered W0-W10 dynamic list and exact-commit sweep receipts;
-  `--require-ship` intentionally remains red until then.
+  contract. The 0.67 ship manifest requires the full ordered W0-W10 dynamic list and
+  exact-commit fast sweep receipts; deferred reference receipts are excluded while TD-0013 is open.
 - Register `fast.performance-contract-067` with the actual fast-suite schema and exact W0-W10
   ownership: `work_items`, timeout/budget, deterministic flag, artifacts/logical digest, baseline,
   and command. Existing `fast.workspace-nextest` supplies the implementation-wide receipt, while
@@ -659,23 +667,25 @@ work in the release**, before W0 feature code, while Phase B closes the release 
   `env.hydracache-run-067-perf-resp`, `env.hydracache-run-067-perf-control-plane`, and
   `tool.perf-budget-check-067` with exact command, tier/timeout/platform, required tools/env,
   CI workflow/job/step, artifact paths, `owner_release = "0.67.0"`, and
-  `ship_mandatory = true`. An optional kind row is `ship_mandatory = false` and cannot support a
-  release claim; promoting it to a claim requires a mandatory receipt. Every measurement W-item
-  references `tool.perf-prebuild-067` and its relevant execution/verdict gates in `gated_gate_ids`.
+  `ship_mandatory = false`. These five rows are deferred evidence gates under TD-0013: they remain
+  registered and fail-closed, but do not support a 0.67 numerical claim. Promoting any numerical claim requires reactivating reviewed mandatory receipts after bootstrap. Measurement W-items
+  retain their committed sources, tests, schemas, and fast receipts; deferred reference gate IDs are intentionally absent from the 0.67 ship manifest.
 - Put committed schemas/profiles/budgets in manifest `required_artifacts`; put every generated
   `PERF_REPORT`, raw tool output, prebuild/baseline/budget verdict, and process log at an exact
   `target/test-evidence/0.67/...` path in its gate `artifacts`. Globs, uploads without hashes, stale
   files, and post-command artifact creation are non-evidence.
 - Extend requested-release governance and CI binding to `0.67`; reject older-registry fallback,
-  missing work items/marker, raw commands in claimed CI steps, optional/missing mandatory gates,
+  missing work items/marker, raw commands in claimed CI steps, missing or wrongly mandatory deferred reference gates,
   shared/mismatched reference runners, wrong/dirty commits, and stale command/registry/input or
   artifact digests. The real `v0.66.0` compatibility baseline must be an ancestor of the candidate.
 
-**Phase B - execution and candidate freeze.**
+**Phase B - deferred reference execution (TD-0013).**
 
-- The manual reference job uses pinned `runs-on: ubuntu-24.04` with serialized `concurrency`.
-  GitHub provisions a fresh job VM, and the evidence binds the runner image identity rather than
-  pretending that the underlying physical host is stable. First run the mandatory
+- The manual reference job uses exact protected labels
+  `runs-on: [self-hosted, linux, x64, hydracache-perf-v1]` with serialized `concurrency` and a
+  trusted-`main` dispatch condition. The host is kept offline outside authorized runs; the evidence
+  binds its observed hardware/kernel/affinity/quota fingerprint. First run the independent fixed
+  seven-sample runner preflight, then the registered deferred
   `tool.perf-prebuild-067` through `evidence-run`; it builds the exact release server and loadgen
   binaries and creates `target/test-evidence/0.67/prebuild-manifest.json` with commit, Cargo.lock,
   toolchain/flags, stable build-contract digest, and binary hashes. Consumer perf gates do **not**
@@ -685,8 +695,9 @@ work in the release**, before W0 feature code, while Phase B closes the release 
   prebuild-gate receipt while comparing baseline eligibility only on the stable contract digest.
   Missing/mismatched manifests, changed binaries, or a Cargo rebuild during a measurement gate is red.
 - `ci-shared` hosted runs are non-ship tripwires. Serialized reference core, RESP/Redis, and control-plane gates
-  fail closed on missing capabilities and upload exact artifacts plus receipts. Fast canary sweep
-  runs on PRs; `canary-sweep --release 0.67 --tier all` is mandatory scheduled/dispatch evidence.
+  fail closed on missing capabilities and upload exact artifacts plus receipts. Fast canary sweep runs
+  on PRs. Reference execution stays fail-closed when explicitly dispatched; it is not part of the 0.67
+  ship receipt set while TD-0013 is open.
 - Finalize budgets and docs **before** the frozen run, then rerun every perf and canary gate on that
   exact clean commit. The final aggregator checks out the same full-history SHA, restores receipts,
   canary receipts, and declared artifacts to their exact paths, runs the receipt-bound budget gate,
@@ -697,7 +708,7 @@ work in the release**, before W0 feature code, while Phase B closes the release 
   status, `POSITIONING.md`, and the README release-note link. Numbers without surface/profile/
   methodology are not quotable.
 
-**Required governance tests.** `release_067_registered_performance_gates_are_mandatory_and_fail_closed`,
+**Required governance tests.** `release_067_deferred_performance_gates_remain_registered_and_fail_closed`,
 `performance_lane_requires_pinned_github_image_and_serial_concurrency`,
 `measurement_refuses_missing_or_mismatched_prebuild_manifest`,
 `prebuilt_binary_digest_is_bound_to_report`, `compile_time_is_excluded_from_measurement_window`,
@@ -706,7 +717,7 @@ work in the release**, before W0 feature code, while Phase B closes the release 
 `runtime_reports_are_gate_artifacts_not_committed_manifest_artifacts`, and
 `final_aggregator_requires_exact_candidate_receipts_and_artifact_hashes`.
 
-**Canary.** `canary_release_governance_accepts_a_missing_mandatory_performance_gate` must fail with
+**Canary.** `canary_release_governance_accepts_a_missing_deferred_performance_gate` must fail with
 `HC-CANARY-RED:W10`.
 
 **DoD.**
@@ -732,60 +743,22 @@ cargo run -p xtask --locked -- release-evidence --release 0.67 --receipts-dir ta
 
 ## Gates (Definition of Done for the release)
 
-Implementation closure and release closure are separate states:
+The release has two explicitly separated outcomes:
 
-| Layer | Implementation state | Ship state on 2026-07-18 |
+| Layer | 0.67 ship requirement | State |
 | --- | --- | --- |
-| W0-W6 measurement and operational contracts | Implemented in source, scenarios, tests, and CLI/suite wiring | Serialized GitHub-hosted exact-candidate measurement artifacts and receipts still required |
-| W7 budgets | Dual-anchor/rolling-baseline validation and no-silent-rebaseline governance implemented | **Blocked:** `reference-v1` anchor, budgets, and baseline are `unbootstrapped` pending at least five eligible serialized GitHub-hosted `main` runs and independent review |
-| W8 comparison | Pinned same-box Redis comparison and canonical W3 predecessor binding implemented | Final serialized reference W8 report absent; no marketing or shipped comparative claim |
-| W9 metrics honesty | Same-process RESP/control-plane windows and exported-only validation implemented | Final serialized reference metrics reports absent; unavailable fields remain non-claims |
-| W10 governance/docs | Release-scoped gates, canaries, exact-candidate prebuild/receipt contracts, CI separation, and docs implemented | The annotated `v0.66.0` tag is present and ancestral; **blocked:** final frozen-candidate gate/canary/artifact receipts have not made `--require-ship` green |
+| W0-W10 code and methodology | Sources, schemas, scenarios, structural tests, fast receipts, canaries, docs, and release governance are green on the frozen candidate | Implemented; must be rerun by the release PR |
+| Reference execution infrastructure | The five manual gates remain registered, protected, serialized, artifact-bound, and fail-closed | Implemented and retained |
+| Official numerical evidence | Dedicated runner, five-run baseline window, reviewed anchor/budgets, bootstrapped `reference-v1`, and green full reference pipeline | Deferred to TD-0013; not a 0.67 ship claim |
 
-The bullets below are target ship conditions, not a record that they have
-already passed:
+The 0.67 tooling release preserves open-loop scheduled-send latency, the complete throughput-at-SLO predicate, declared repeat counts, zero-error/error limits, 15% spread rejection, exact binary and commit identity, and strict surface labels. Shared hosted measurements remain tripwires only.
 
-- The W0 instrument is itself proven: missed ticks count as latency, percentiles match reference
-  distributions, the full sustainability predicate rejects dropped/queued work, and the closed-loop
-  canary demonstrably hides a stall the open-loop recorder reports.
-- Valid `reference-v1` knees exist only for the embedded cache, in-process client router, real
-  selected-endpoint RESP wire, and (if its complete predicate holds) the read-only admin surface.
-  W3's SLO result comes from the open-loop RESP target; `redis-benchmark` remains supplemental.
-- W4A real control-plane event/read results and W4B library/model primitive costs are separate
-  artifacts with separate claim scopes. No native-daemon, distributed value-grid, summed RESP,
-  consistency-level data capacity, or live-reshard performance claim appears anywhere.
-- Brownout evidence is split into committed-metadata control-plane recovery, selected node-local RESP
-  availability with `automatic_failover = false`, and labeled model fault cost. No-lost-value and
-  live-reshard claims are absent.
-- Overload curves at 1.2x/1.5x/2x a valid knee are recorded per eligible surface; the canary shows
-  collapse, proving the curve reflects the mechanism.
-- Serialized `reference-v1` budgets pass both immutable anchors and eligible same-image rolling-main
-  baselines; automatic shared hosted runs are tripwires only, and no hosted raw rate becomes a
-  portable capacity floor. Floor/ceiling breach, unstable environment/spread,
-  insufficient baseline, profile mismatch, or silent rebaseline is red.
-- The same-box Redis comparative artifact exists with methodology and versions; no prose claim
-  exceeds the artifact (`R-7`).
-- Real RESP/control-plane server metrics match comparable independent observations; in-process
-  metrics are not relabeled as exporter evidence.
-- All W0-W10 guards and exact `HC-CANARY-RED` defects are receipt-green; every mandatory performance
-  gate ran via `evidence-run`, and exact clean-candidate artifacts, canary receipts, and gate receipts
-  make `release-evidence --release 0.67 --receipts-dir ... --require-ship` green. Missing mandatory
-  tools/capabilities fail closed rather than skip.
-- No optimization work, no product surface change, loadgen never in a release graph; any fix driven
-  by a finding is narrow, separate, and regression-measured.
+No release document may publish a capacity floor, sizing recommendation, Redis comparative result, metrics-agreement number, portable baseline, native-daemon client claim, distributed RESP value-plane claim, aggregate cluster capacity, or live-reshard performance result. The `reference-v1` profile, anchor, budget, and baseline stay visibly `unbootstrapped`.
+
+The normal 0.67 ship aggregation proves the implementation and governance scope. The five deferred reference gates are absent from W0-W10 `gated_gate_ids`; governance still rejects deleting them, changing their exact commands/artifacts/CI ownership, marking them ship-mandatory prematurely, or weakening their fail-closed behavior.
 
 ## Final Release Decision
 
-**Current decision (2026-07-21): NO-SHIP.** The annotated `v0.66.0` predecessor is present and
-ancestral. Keep `0.67.0` `in-progress` until W7 is bootstrapped from at least five eligible serialized GitHub-hosted `main`
-runs with independent review, and one frozen clean candidate satisfies every condition below.
+**Final decision (2026-07-27): SHIPPED WITHOUT NUMERICAL CLAIMS.** W0-W10 ship as performance measurement infrastructure after the ordinary release gates passed on the exact release commit. The absence of a dedicated runner does not block this narrower release.
 
-Ship `0.67.0` only when artifacts answer the narrower questions the product can honestly support:
-embedded-cache capacity, in-process client-surface cost, single-endpoint node-local RESP capacity,
-real control-plane read/event cost, and explicitly labeled library/model primitive cost. Every
-report-local rate must pass the open-loop sustainability predicate on the serialized reference profile;
-every operational profile must name the authority it perturbs; overload must be tied to a valid knee;
-the same-box Redis comparison must preserve one tool/host/method; and dual budgets plus exact-candidate
-receipts must defend the results. Native-daemon and distributed-value-cluster capacity remain named
-deferrals, not zeroes and not estimates. The release adds measurement and evidence only - the fastest
-thing it is allowed to make faster is the feedback loop that tells the truth about performance.
+Official reference bootstrap and every numerical capacity, sizing, Redis-comparison, metrics-agreement, or baseline claim are deferred to TD-0013. Shipping 0.67 must leave `reference-v1` unbootstrapped, keep the protected workflow and its five gates fail-closed, and publish no number derived from shared or exploratory runs.

@@ -1,84 +1,43 @@
 # HydraCache Performance Evidence
 
-This document defines what HydraCache performance results mean, which execution
-surfaces release `0.67.0` actually measures, and when a result is eligible to
-support a release statement.
+This document defines the performance methodology delivered by release `0.67.0`, the surfaces it can measure, and the claim boundary while dedicated reference evidence is deferred.
 
-> **Current status (2026-07-21): implementation closure reached, release not shipped.**
-> The W0-W10 measurement and governance implementation is present, but no
-> `0.67.0` performance number is release-qualified yet. The annotated `v0.66.0`
-> predecessor is present and ancestral; the W7 `reference-v1` anchor and rolling
-> baseline remain `unbootstrapped`. Shipping requires at least five eligible serialized
-> GitHub-hosted `main` runs from the same pinned Ubuntu image family, an independently reviewed
-> anchor/budget payload, and a fresh exact-candidate receipt set.
+> **Current status (2026-07-26): tooling scope implemented; numerical evidence deferred.**
+> The W0-W10 measurement and governance implementation is present. The 0.67 code release may ship that infrastructure without capacity, sizing, Redis-comparison, metrics-agreement, or numerical baseline claims. Dedicated `reference-v1` bootstrap is tracked by [`TD-0013`](technical-debt/TD-0013-dedicated-performance-runner-and-baseline-bootstrap.md).
 
 ## Measured surfaces and claim boundaries
 
-| Surface | Execution boundary | Eligible statement | Explicitly not measured |
+| Surface | Execution boundary | A future reviewed report may describe | Explicitly not measured |
 | --- | --- | --- | --- |
-| Embedded local cache | Real process-local cache API | Sustainable throughput-at-SLO and overload behavior for the named embedded scenario | Network or daemon capacity |
-| Client surface | Real `AxumClientSurface` router via in-process dispatch | In-process router cost for the named workload | A mounted `/client/v1/*` daemon listener, socket cost, or native-wire capacity |
-| RESP | Real loopback TCP to one selected prebuilt daemon | Capacity and availability of that selected node-local RESP endpoint | Distributed RESP values, cross-node failover, or summed cluster throughput |
+| Embedded local cache | Real process-local cache API | Sustainable throughput-at-SLO and overload behavior for the named scenario | Network or daemon capacity |
+| Client surface | Real `AxumClientSurface` router via in-process dispatch | In-process router cost | A mounted `/client/v1/*` daemon listener, socket cost, or native-wire capacity |
+| RESP | Real loopback TCP to one selected prebuilt daemon | That selected node-local endpoint | Distributed RESP values, cross-node failover, or summed cluster throughput |
 | Control plane | Real 3/5/7-daemon admin/control-plane wire | Admin-read cost and committed-metadata event/convergence latency | Distributed value-grid capacity or live value reshard throughput |
-| Grid primitives | Exported library/model helpers in-process | Cost of the exact consistency/session/replication primitive named by the report | End-to-end daemon-grid or replicated-value performance |
-| Redis comparison (W8) | Same host, same pinned `redis-benchmark`, alternating order, pinned Redis image | A reproducible comparison of Redis and one HydraCache node-local RESP endpoint under that exact method | A general Redis replacement, universal superiority, or marketing benchmark claim |
-| Metrics honesty (W9) | Existing daemon `/metrics` output bracketed by an independent observer interval | Agreement only for fields the daemon already exports and whose semantics are comparable | Invented metrics, in-process metrics relabeled as exporter evidence, or server service time presented as queue-inclusive latency |
+| Grid primitives | Exported library/model helpers in-process | Cost of the exact named consistency/session/replication primitive | End-to-end daemon-grid performance |
+| Redis comparison | Same host and pinned method in alternating order | The exact paired observation | A Redis replacement or universal superiority claim |
+| Metrics honesty | Existing daemon `/metrics` bracketed by an independent observer | Agreement for already-exported comparable fields | Invented metrics or service time relabeled as queue-inclusive latency |
 
-W9 is deliberately **exported-only**. A missing metric is recorded as
-`not_available`; the characterization release does not add a product metric to
-make its own comparison pass.
+Missing exported metrics remain `not_available`; release 0.67 does not add product metrics to make its own evidence pass.
 
 ## Measurement contract
 
-- Capacity means the highest sustainable offered rate that satisfies the full
-  SLO predicate: latency, achieved/offered rate, errors, timeouts, rejections,
-  and bounded backlog drain. It is not peak burst throughput.
-- Capacity-bearing measurements use a fixed-rate open loop and measure latency
-  from scheduled send time. Closed-loop `redis-benchmark` output is supplemental
-  except for the explicitly paired W8 comparison.
-- Every report binds the scenario, source commit, prebuilt binary identities,
-  runner fingerprint, state scope, network boundary, warm-up, repeats, and raw
-  spread. Compilation and image pulls are outside the measurement window.
-- Unstable spread, a shared or mismatched runner, missing tools, stale artifacts,
-  or an incomplete predecessor receipt makes a run non-evidence. It is never
-  repaired by silently widening a budget or averaging incompatible hosts.
-- Results from different surface semantics are shown separately. They are not
-  divided into a protocol ratio or combined into an aggregate cluster number.
+- Capacity means the highest sustainable offered rate satisfying latency, achieved/offered rate, zero-error or declared error limits, timeouts, rejections, and bounded backlog drain. It is not peak burst throughput.
+- Capacity-bearing measurements use fixed-rate open loop and latency from scheduled send time. Closed-loop output is supplemental except for the explicitly paired comparison method.
+- Every report binds scenario, source commit, prebuilt binary identities, runner fingerprint, state scope, network boundary, warm-up, repeats, raw spread, and artifact digests.
+- The committed minimum repeats, SLOs, zero-error rules, and 15% spread limit are not weakened by this deferral.
+- Unstable spread, shared or mismatched hardware, missing tools, stale artifacts, or incomplete predecessor evidence remains fail-closed.
+- Results with different surface semantics remain separate and are never combined into a protocol ratio or aggregate cluster number.
 
-The committed scenarios live under
-[`docs/testing/perf-scenarios/0.67`](testing/perf-scenarios/0.67), while runner,
-budget, and baseline contracts live under `docs/testing/perf-profiles`,
-`docs/testing/perf-budgets/0.67`, and `docs/testing/perf-baselines/0.67`.
+Scenarios live under [`testing/perf-scenarios/0.67`](testing/perf-scenarios/0.67); profiles, budgets, and baseline contracts live under `docs/testing/perf-profiles`, `docs/testing/perf-budgets/0.67`, and `docs/testing/perf-baselines/0.67`.
 
-## Shared tripwire versus serialized reference evidence
+## Hosted tripwire versus deferred reference evidence
 
-| Lane | Purpose | May satisfy a performance ship gate? |
+| Lane | Purpose | 0.67 ship role |
 | --- | --- | --- |
-| `ci-shared` | Broad-tolerance regression tripwire on a declared hosted-runner class; structural/unit receipts remain useful | No |
-| `reference-v1` | Serialized manual execution on pinned `ubuntu-24.04`; the runner-class fingerprint binds `ImageOS` and `ImageVersion`, while reports retain observed CPU/RAM/kernel facts | Yes, after bootstrap and only as relative same-image regression evidence |
+| `ci-shared` | Broad-tolerance hosted regression tripwire plus structural/unit receipts | Non-numerical regression signal only |
+| `reference-v1` | Manual serialized execution on protected `hydracache-perf-v1` bare metal | Deferred by TD-0013; no 0.67 numerical claim |
 
-GitHub-hosted variability is expected. The automatic `ci-shared` lane may only warn
-about a regression. The manual `reference-v1` lane may create and enforce a reviewed
-same-image rolling anchor, but neither lane establishes a portable capacity floor or
-sizing guarantee.
-
-The enforcing W7 decision requires both:
-
-1. an immutable reviewed release anchor, preventing gradual ratcheting; and
-2. an eligible rolling `main` window from the same runner/contract family,
-   detecting recent regressions.
-
-The current committed `reference-v1` budget and baseline are intentionally
-`unbootstrapped`. Bootstrap is allowed only after at least five eligible,
-successful, stable, clean-commit GitHub-hosted `main` runs from one pinned image family are available. The exact
-anchor/window payload and budget change require an independent approver; the
-candidate cannot baseline or approve itself.
-
-## Reproduction and evidence
-
-Direct `hydracache-loadgen` commands are useful for development, but their JSON
-files are not ship receipts. Release evidence must run the registered commands
-through `evidence-run`, beginning with the exact-candidate prebuild:
+The protected workflow and these registered gates are retained unchanged in method:
 
 ```text
 tool.perf-prebuild-067
@@ -88,29 +47,10 @@ env.hydracache-run-067-perf-control-plane
 tool.perf-budget-check-067
 ```
 
-The RESP lane owns the sealed W3 reports, W8 same-box comparison, node-local
-brownout/overload reports, and `metrics-resp.json`. The control-plane lane owns
-the separate 3/5/7 reports, control-plane brownout report, and
-`metrics-control-plane.json`. Exact PowerShell and Bash commands are documented
-in [`TESTING.md`](TESTING.md); the gate-to-CI map is in [`GATES.md`](GATES.md).
+They remain fail-closed on missing capability, runner mismatch, unstable spread, stale/mixed evidence, or unbootstrapped budgets. They are not listed as 0.67 ship-mandatory receipts while TD-0013 is open.
 
-## Current no-ship decision
+The committed `reference-v1` profile, anchor, budgets, and baseline stay `unbootstrapped`. Closure requires the protected runner, at least five eligible stable successful `main` runs from one fingerprint/contract family, independent anchor/baseline/budget review, activation without candidate self-baselining, and one fully green frozen-candidate reference pipeline.
 
-Implementation closure is not release closure. As of 2026-07-21:
+## Quotation rule
 
-- the annotated `v0.66.0` predecessor is present and satisfies the ancestry
-  prerequisite;
-- the W7 anchor, rolling baseline, and all numerical budgets remain
-  unbootstrapped pending at least five eligible serialized GitHub-hosted `main` runs and
-  independent review;
-- final serialized reference core, RESP/Redis, and control-plane artifacts have not been
-  accepted as one frozen exact-candidate set; and
-- the complete canary/gate receipts have not made
-  `release-evidence --release 0.67 --require-ship` green.
-
-Therefore this repository makes no shipped `0.67.0` portable capacity floor, sizing,
-Redis-comparison, or metrics-agreement claim yet. Even after ship, raw throughput is
-report-local characterization; the enforcing hosted profile supports relative regression
-claims only. Any quoted number must identify its report,
-scenario, runner fingerprint, profile, source commit, method, and claim scope;
-otherwise it is an exploratory measurement, not a HydraCache release result.
+No numerical 0.67 release claim is currently permitted. Exploratory output must be labeled exploratory and must not appear as capacity floors, sizing advice, comparative claims, or release baselines. After TD-0013 closes, any quoted number must identify its report, scenario, fingerprint, profile, commit, method, and claim scope.

@@ -16,14 +16,50 @@ on:
         default: false
         type: boolean
       run_reference_performance:
-        description: "Run 0.67 reference evidence on a serialized GitHub-hosted Ubuntu 24.04 VM"
+        description: "Run 0.67 ship evidence on the authorized self-hosted bare-metal runner"
         required: false
         default: false
         type: boolean
+      performance_0671_mode:
+        description: "Explicit 0.67.1 dedicated-runner stage (qualification is never ship evidence)"
+        required: true
+        default: "off"
+        type: choice
+        options:
+          - "off"
+          - "qualify"
+          - "full-dress"
+          - "bootstrap"
+      full_dress_predecessor_run_id:
+        description: "Prior successful full-dress run id; empty for the first of exactly two runs"
+        required: false
+        default: ""
+        type: string
+      full_dress_admission_run_id:
+        description: "Run id that published the two-run full-dress admission required by bootstrap"
+        required: false
+        default: ""
+        type: string
+      bootstrap_sample_index:
+        description: "Serialized bootstrap sample index; samples 2..5 require the immediately prior run"
+        required: false
+        default: "1"
+        type: choice
+        options:
+          - "1"
+          - "2"
+          - "3"
+          - "4"
+          - "5"
+      bootstrap_predecessor_run_id:
+        description: "Immediately prior accepted bootstrap run id; empty only for sample 1"
+        required: false
+        default: ""
+        type: string
       candidate_release:
         description: "Release that owns candidate fast and manually dispatched gate receipts"
         required: false
-        default: "0.67"
+        default: "0.67.1"
         type: string
       gated_gate_id:
         description: "Exact gate id from docs/testing/gated-test-registry.toml"
@@ -34,13 +70,14 @@ on:
 
 permissions:
   contents: read
+  actions: read
 
 env:
   CARGO_BUILD_JOBS: 2
   CARGO_INCREMENTAL: 0
   CARGO_PROFILE_DEV_DEBUG: 0
   CARGO_PROFILE_TEST_DEBUG: 0
-  HYDRACACHE_CANDIDATE_RELEASE: ${{ inputs.candidate_release || '0.67' }}
+  HYDRACACHE_CANDIDATE_RELEASE: ${{ inputs.candidate_release || '0.67.1' }}
 
 jobs:
   rust:
@@ -111,6 +148,8 @@ jobs:
           cargo run -p xtask --locked -- canary-sweep --release 0.66 --tier fast
           cargo run -p xtask --locked -- canary-check --release 0.67
           cargo run -p xtask --locked -- canary-sweep --release 0.67 --tier fast
+          cargo run -p xtask --locked -- canary-check --release 0.67.1
+          cargo run -p xtask --locked -- canary-sweep --release 0.67.1 --tier fast
 
       - name: Upload fast canary evidence
         if: always()
@@ -692,15 +731,19 @@ jobs:
           if-no-files-found: error
 
   release-067-performance:
-    name: 0.67 GitHub-hosted Reference Evidence
-    runs-on: ubuntu-24.04
+    name: 0.67 Self-hosted Reference Evidence
+    runs-on: [self-hosted, linux, x64, hydracache-perf-v1]
     timeout-minutes: 360
-    if: github.event_name == 'workflow_dispatch' && inputs.run_reference_performance && inputs.candidate_release == '0.67'
+    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && inputs.run_reference_performance && inputs.candidate_release == '0.67'
     concurrency:
       group: release-067-performance-reference-v1
       cancel-in-progress: false
     env:
       HYDRACACHE_RUN_PERF_REFERENCE: 1
+      HYDRACACHE_PERF_RUNNER_CLASS: self-hosted-bare-metal-v1
+      # The exploratory 0.67 lane uses the same commit-bound tmpfs publication
+      # contract as qualification, while the 0.67.1 jobs remain opt-in.
+      HYDRACACHE_PERFORMANCE_0671_MODE: qualify
 
     steps:
       - name: Checkout
@@ -710,6 +753,23 @@ jobs:
 
       - name: Install pinned Rust 1.94.0
         uses: dtolnay/rust-toolchain@1.94.0
+
+      - name: Build pinned redis-benchmark 7.2.5
+        shell: bash
+        run: |
+          tools_dir="$RUNNER_TEMP/hydracache-perf-tools"
+          mkdir --parents "$tools_dir"
+          cd "$tools_dir"
+          curl --proto '=https' --tlsv1.2 --fail --location --silent --show-error \
+            --output redis-7.2.5.tar.gz \
+            https://download.redis.io/releases/redis-7.2.5.tar.gz
+          printf '%s  redis-7.2.5.tar.gz\n' '5981179706f8391f03be91d951acafaeda91af7fac56beffb2701963103e423d' \
+            | sha256sum --check --strict -
+          tar --extract --gzip --file redis-7.2.5.tar.gz
+          env -i PATH=/usr/bin:/bin HOME=/tmp CC=gcc MALLOC=libc BUILD_TLS=no \
+            make -C redis-7.2.5 -j1 redis-benchmark
+          test "$(redis-7.2.5/src/redis-benchmark --version)" = "redis-benchmark 7.2.5"
+          echo "$tools_dir/redis-7.2.5/src" >> "$GITHUB_PATH"
 
       - name: Verify shipped 0.66 provenance
         run: |
@@ -722,8 +782,24 @@ jobs:
       - name: Validate 0.67 performance contract
         run: cargo run -p xtask --locked -- evidence-run --release 0.67 --gate fast.performance-contract-067
 
+      - name: Clear only prior performance evidence scratch
+        shell: bash
+        run: |
+          rm -rf -- \
+            target/test-evidence/0.67 \
+            target/test-evidence/0.67.1
+
+      - name: Prepare tmpfs reference evidence
+        run: scripts/perf/reference-evidence-tmpfs.sh prepare
+
+      - name: Preflight 0.67 reference runner stability
+        run: scripts/perf/run-reference-measurement.sh attestation
+
       - name: Prebuild 0.67 performance binaries
-        run: cargo run -p xtask --locked -- evidence-run --release 0.67 --gate tool.perf-prebuild-067
+        # The runner service is intentionally pinned to housekeeping CPUs; the
+        # prebuild observation itself must run on the measurement CPUs expected
+        # by the reference-v1 contract.
+        run: taskset --cpu-list 1-4 cargo run -p xtask --locked -- evidence-run --release 0.67 --gate tool.perf-prebuild-067
 
       - name: Run 0.67 core performance evidence
         run: cargo run -p xtask --locked -- evidence-run --release 0.67 --gate env.hydracache-run-067-perf-core
@@ -733,6 +809,10 @@ jobs:
 
       - name: Run 0.67 control-plane performance evidence
         run: cargo run -p xtask --locked -- evidence-run --release 0.67 --gate env.hydracache-run-067-perf-control-plane
+
+      - name: Materialize tmpfs reference evidence
+        if: always()
+        run: scripts/perf/reference-evidence-tmpfs.sh materialize
 
       - name: Check 0.67 performance budgets
         run: cargo run -p xtask --locked -- evidence-run --release 0.67 --gate tool.perf-budget-check-067
@@ -751,6 +831,419 @@ jobs:
             target/release-evidence/receipts/**
           if-no-files-found: error
 
+  release-0671-performance-qualification:
+    name: 0.67.1 Dedicated Runner Qualification
+    runs-on: [self-hosted, linux, x64, hydracache-perf-v1]
+    timeout-minutes: 360
+    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && inputs.performance_0671_mode == 'qualify' && inputs.candidate_release == '0.67.1'
+    concurrency:
+      group: release-067-performance-reference-v1
+      cancel-in-progress: false
+    env:
+      HYDRACACHE_RUN_PERF_REFERENCE: 1
+      HYDRACACHE_PERF_RUNNER_CLASS: self-hosted-bare-metal-v1
+      HYDRACACHE_PERFORMANCE_0671_MODE: qualify
+
+    steps:
+      - name: Checkout trusted main
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+          clean: true
+
+      - name: Install pinned Rust 1.94.0
+        uses: dtolnay/rust-toolchain@1.94.0
+
+      - name: Verify trusted qualification context
+        run: cargo run -p xtask --locked -- perf-qualification --release 0.67.1 --profile reference-v1 --phase context
+
+      - name: Clear only prior performance evidence scratch
+        shell: bash
+        run: |
+          rm -rf -- \
+            target/test-evidence/0.67 \
+            target/test-evidence/0.67.1 \
+            target/release-evidence/receipts
+
+      - name: Prepare tmpfs reference evidence
+        run: scripts/perf/reference-evidence-tmpfs.sh prepare
+
+      - name: Import offline runner provisioning proof
+        run: cargo run -p xtask --locked -- evidence-run --release 0.67.1 --gate tool.perf-runner-provisioned-0671
+
+      - name: Build pinned redis-benchmark 7.2.5
+        shell: bash
+        run: |
+          tools_dir="$RUNNER_TEMP/hydracache-perf-tools"
+          mkdir --parents "$tools_dir"
+          cd "$tools_dir"
+          curl --proto '=https' --tlsv1.2 --fail --location --silent --show-error \
+            --output redis-7.2.5.tar.gz \
+            https://download.redis.io/releases/redis-7.2.5.tar.gz
+          printf '%s  redis-7.2.5.tar.gz\n' '5981179706f8391f03be91d951acafaeda91af7fac56beffb2701963103e423d' \
+            | sha256sum --check --strict -
+          rm -rf -- redis-7.2.5
+          tar --extract --gzip --file redis-7.2.5.tar.gz
+          env -i PATH=/usr/bin:/bin HOME=/tmp CC=gcc MALLOC=libc BUILD_TLS=no \
+            make -C redis-7.2.5 -j1 redis-benchmark
+          test "$(redis-7.2.5/src/redis-benchmark --version)" = "redis-benchmark 7.2.5"
+          echo "$tools_dir/redis-7.2.5/src" >> "$GITHUB_PATH"
+
+      - name: Attest and preflight the 0.67.1 host
+        run: cargo run -p xtask --locked -- evidence-run --release 0.67.1 --gate tool.perf-attestation-v5-0671
+
+      - name: Prebuild exact 0.67 performance binaries
+        run: cargo run -p xtask --locked -- evidence-run --release 0.67 --gate tool.perf-prebuild-067
+
+      - name: Run bounded non-ship diagnostics
+        run: |
+          scripts/perf/run-reference-measurement.sh qualification-local
+          scripts/perf/run-reference-measurement.sh qualification-client-surface
+
+      - name: Materialize tmpfs reference evidence
+        if: always()
+        run: scripts/perf/reference-evidence-tmpfs.sh materialize
+
+      - name: Run 0.67.1 qualification gate
+        run: cargo run -p xtask --locked -- evidence-run --release 0.67.1 --gate tool.perf-qualification-0671
+
+      - name: Upload 0.67.1 qualification diagnostics
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: "performance-0671-qualification-${{ github.sha }}-${{ github.run_id }}"
+          path: |
+            target/test-evidence/0.67/**
+            target/test-evidence/0.67.1/**
+            target/release-evidence/receipts/**
+          if-no-files-found: warn
+
+  release-0671-performance-full-dress:
+    name: 0.67.1 Full-Dress Bootstrap Admission
+    runs-on: [self-hosted, linux, x64, hydracache-perf-v1]
+    timeout-minutes: 360
+    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && inputs.performance_0671_mode == 'full-dress' && inputs.candidate_release == '0.67.1'
+    concurrency:
+      group: release-067-performance-reference-v1
+      cancel-in-progress: false
+    env:
+      HYDRACACHE_RUN_PERF_REFERENCE: 1
+      HYDRACACHE_PERF_RUNNER_CLASS: self-hosted-bare-metal-v1
+      HYDRACACHE_PERFORMANCE_0671_MODE: full-dress
+
+    steps:
+      - name: Checkout trusted main
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+          clean: true
+
+      - name: Install pinned Rust 1.94.0
+        uses: dtolnay/rust-toolchain@1.94.0
+
+      - name: Verify trusted full-dress context
+        run: cargo run -p xtask --locked -- perf-full-dress --release 0.67.1 --profile reference-v1 --phase context
+
+      - name: Validate full-dress dispatch inputs
+        shell: bash
+        run: |
+          predecessor='${{ inputs.full_dress_predecessor_run_id }}'
+          if [[ -n "$predecessor" && ! "$predecessor" =~ ^[1-9][0-9]*$ ]]; then
+            echo 'full_dress_predecessor_run_id must be empty or a positive integer' >&2
+            exit 1
+          fi
+
+      - name: Download prior full-dress receipt
+        if: inputs.full_dress_predecessor_run_id != ''
+        uses: actions/download-artifact@v5
+        with:
+          name: performance-0671-full-dress-receipt
+          path: ${{ runner.temp }}/hydracache-full-dress-predecessor
+          github-token: ${{ github.token }}
+          repository: ${{ github.repository }}
+          run-id: ${{ inputs.full_dress_predecessor_run_id }}
+
+      - name: Resolve prior full-dress receipt
+        if: inputs.full_dress_predecessor_run_id != ''
+        shell: bash
+        run: |
+          mapfile -t receipts < <(find "$RUNNER_TEMP/hydracache-full-dress-predecessor" \
+            -type f -name full-dress-receipt.json -print)
+          test "${#receipts[@]}" -eq 1
+          echo "HYDRACACHE_FULL_DRESS_PREDECESSOR=${receipts[0]}" >> "$GITHUB_ENV"
+
+      - name: Clear only prior performance evidence scratch
+        shell: bash
+        run: |
+          rm -rf -- \
+            target/test-evidence/0.67 \
+            target/test-evidence/0.67.1 \
+            target/release-evidence/receipts
+
+      - name: Prepare tmpfs reference evidence
+        run: scripts/perf/reference-evidence-tmpfs.sh prepare
+
+      - name: Import offline runner provisioning proof
+        run: cargo run -p xtask --locked -- evidence-run --release 0.67.1 --gate tool.perf-runner-provisioned-0671
+
+      - name: Build pinned redis-benchmark 7.2.5
+        shell: bash
+        run: |
+          tools_dir="$RUNNER_TEMP/hydracache-perf-tools"
+          mkdir --parents "$tools_dir"
+          cd "$tools_dir"
+          curl --proto '=https' --tlsv1.2 --fail --location --silent --show-error \
+            --output redis-7.2.5.tar.gz \
+            https://download.redis.io/releases/redis-7.2.5.tar.gz
+          printf '%s  redis-7.2.5.tar.gz\n' '5981179706f8391f03be91d951acafaeda91af7fac56beffb2701963103e423d' \
+            | sha256sum --check --strict -
+          rm -rf -- redis-7.2.5
+          tar --extract --gzip --file redis-7.2.5.tar.gz
+          env -i PATH=/usr/bin:/bin HOME=/tmp CC=gcc MALLOC=libc BUILD_TLS=no \
+            make -C redis-7.2.5 -j1 redis-benchmark
+          test "$(redis-7.2.5/src/redis-benchmark --version)" = "redis-benchmark 7.2.5"
+          echo "$tools_dir/redis-7.2.5/src" >> "$GITHUB_PATH"
+
+      - name: Attest and preflight the 0.67.1 host
+        run: cargo run -p xtask --locked -- evidence-run --release 0.67.1 --gate tool.perf-attestation-v5-0671
+
+      - name: Prebuild exact 0.67 performance binaries
+        run: cargo run -p xtask --locked -- evidence-run --release 0.67 --gate tool.perf-prebuild-067
+
+      - name: Run full-dress core reference evidence
+        run: cargo run -p xtask --locked -- evidence-run --release 0.67 --gate env.hydracache-run-067-perf-core
+
+      - name: Start isolated rootless Docker for full-dress Redis comparison
+        run: scripts/perf/rootless-docker.sh start
+
+      - name: Run full-dress RESP reference evidence
+        run: cargo run -p xtask --locked -- evidence-run --release 0.67 --gate env.hydracache-run-067-perf-resp
+
+      - name: Stop isolated rootless Docker after full-dress Redis comparison
+        if: always()
+        run: scripts/perf/rootless-docker.sh stop
+
+      - name: Run full-dress control-plane reference evidence
+        run: cargo run -p xtask --locked -- evidence-run --release 0.67 --gate env.hydracache-run-067-perf-control-plane
+
+      - name: Materialize tmpfs reference evidence
+        if: always()
+        run: scripts/perf/reference-evidence-tmpfs.sh materialize
+
+      - name: Retain non-promotable full-dress receipt
+        run: cargo run -p xtask --locked -- perf-full-dress --release 0.67.1 --profile reference-v1 --phase receipt
+
+      - name: Admit bootstrap after the second identical full-dress run
+        if: inputs.full_dress_predecessor_run_id != ''
+        run: cargo run -p xtask --locked -- perf-full-dress --release 0.67.1 --profile reference-v1 --phase admission --predecessor-receipt "$HYDRACACHE_FULL_DRESS_PREDECESSOR"
+
+      - name: Upload reusable full-dress receipt
+        uses: actions/upload-artifact@v6
+        with:
+          name: performance-0671-full-dress-receipt
+          path: target/test-evidence/0.67.1/full-dress-receipt.json
+          if-no-files-found: error
+
+      - name: Upload two-run full-dress admission
+        if: inputs.full_dress_predecessor_run_id != ''
+        uses: actions/upload-artifact@v6
+        with:
+          name: performance-0671-full-dress-admission
+          path: target/test-evidence/0.67.1/full-dress-admission.json
+          if-no-files-found: error
+
+      - name: Upload full-dress diagnostics
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: "performance-0671-full-dress-${{ github.sha }}-${{ github.run_id }}"
+          path: |
+            target/test-evidence/0.67/**
+            target/test-evidence/0.67.1/**
+            target/release-evidence/receipts/**
+          if-no-files-found: warn
+
+  release-0671-performance-bootstrap:
+    name: 0.67.1 Bootstrap Sample Acquisition
+    runs-on: [self-hosted, linux, x64, hydracache-perf-v1]
+    timeout-minutes: 360
+    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && inputs.performance_0671_mode == 'bootstrap' && inputs.candidate_release == '0.67.1'
+    concurrency:
+      group: release-067-performance-reference-v1
+      cancel-in-progress: false
+    env:
+      HYDRACACHE_RUN_PERF_REFERENCE: 1
+      HYDRACACHE_PERF_RUNNER_CLASS: self-hosted-bare-metal-v1
+      HYDRACACHE_PERFORMANCE_0671_MODE: bootstrap
+
+    steps:
+      - name: Checkout trusted main
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+          clean: true
+
+      - name: Install pinned Rust 1.94.0
+        uses: dtolnay/rust-toolchain@1.94.0
+
+      - name: Verify trusted bootstrap context
+        run: cargo run -p xtask --locked -- perf-bootstrap --release 0.67.1 --profile reference-v1 --phase context
+
+      - name: Validate serialized bootstrap dispatch inputs
+        shell: bash
+        run: |
+          sample_index='${{ inputs.bootstrap_sample_index }}'
+          admission_run='${{ inputs.full_dress_admission_run_id }}'
+          predecessor_run='${{ inputs.bootstrap_predecessor_run_id }}'
+          [[ "$sample_index" =~ ^[1-5]$ ]]
+          [[ "$admission_run" =~ ^[1-9][0-9]*$ ]]
+          if [[ "$sample_index" = 1 ]]; then
+            test -z "$predecessor_run"
+          else
+            [[ "$predecessor_run" =~ ^[1-9][0-9]*$ ]]
+          fi
+
+      - name: Download two-run full-dress admission
+        uses: actions/download-artifact@v5
+        with:
+          name: performance-0671-full-dress-admission
+          path: ${{ runner.temp }}/hydracache-full-dress-admission
+          github-token: ${{ github.token }}
+          repository: ${{ github.repository }}
+          run-id: ${{ inputs.full_dress_admission_run_id }}
+
+      - name: Download immediately prior bootstrap receipt
+        if: inputs.bootstrap_sample_index != '1'
+        uses: actions/download-artifact@v5
+        with:
+          name: performance-0671-bootstrap-receipt
+          path: ${{ runner.temp }}/hydracache-bootstrap-predecessor
+          github-token: ${{ github.token }}
+          repository: ${{ github.repository }}
+          run-id: ${{ inputs.bootstrap_predecessor_run_id }}
+
+      - name: Resolve bootstrap admission and predecessor
+        shell: bash
+        run: |
+          mapfile -t admissions < <(find "$RUNNER_TEMP/hydracache-full-dress-admission" \
+            -type f -name full-dress-admission.json -print)
+          test "${#admissions[@]}" -eq 1
+          echo "HYDRACACHE_FULL_DRESS_ADMISSION=${admissions[0]}" >> "$GITHUB_ENV"
+          if [[ '${{ inputs.bootstrap_sample_index }}' != 1 ]]; then
+            mapfile -t predecessors < <(find "$RUNNER_TEMP/hydracache-bootstrap-predecessor" \
+              -type f -name bootstrap-sample.json -print)
+            test "${#predecessors[@]}" -eq 1
+            echo "HYDRACACHE_BOOTSTRAP_PREDECESSOR=${predecessors[0]}" >> "$GITHUB_ENV"
+          fi
+
+      - name: Clear only prior performance evidence scratch
+        shell: bash
+        run: |
+          rm -rf -- \
+            target/test-evidence/0.67 \
+            target/test-evidence/0.67.1 \
+            target/release-evidence/receipts
+
+      - name: Prepare tmpfs reference evidence
+        run: scripts/perf/reference-evidence-tmpfs.sh prepare
+
+      - name: Import offline runner provisioning proof
+        run: cargo run -p xtask --locked -- evidence-run --release 0.67.1 --gate tool.perf-runner-provisioned-0671
+
+      - name: Build pinned redis-benchmark 7.2.5
+        shell: bash
+        run: |
+          tools_dir="$RUNNER_TEMP/hydracache-perf-tools"
+          mkdir --parents "$tools_dir"
+          cd "$tools_dir"
+          curl --proto '=https' --tlsv1.2 --fail --location --silent --show-error \
+            --output redis-7.2.5.tar.gz \
+            https://download.redis.io/releases/redis-7.2.5.tar.gz
+          printf '%s  redis-7.2.5.tar.gz\n' '5981179706f8391f03be91d951acafaeda91af7fac56beffb2701963103e423d' \
+            | sha256sum --check --strict -
+          rm -rf -- redis-7.2.5
+          tar --extract --gzip --file redis-7.2.5.tar.gz
+          env -i PATH=/usr/bin:/bin HOME=/tmp CC=gcc MALLOC=libc BUILD_TLS=no \
+            make -C redis-7.2.5 -j1 redis-benchmark
+          test "$(redis-7.2.5/src/redis-benchmark --version)" = "redis-benchmark 7.2.5"
+          echo "$tools_dir/redis-7.2.5/src" >> "$GITHUB_PATH"
+
+      - name: Attest and preflight the 0.67.1 host
+        run: cargo run -p xtask --locked -- evidence-run --release 0.67.1 --gate tool.perf-attestation-v5-0671
+
+      - name: Prebuild exact 0.67 performance binaries
+        run: cargo run -p xtask --locked -- evidence-run --release 0.67 --gate tool.perf-prebuild-067
+
+      - name: Authorize exact serialized bootstrap sample before measurement
+        shell: bash
+        run: |
+          args=(
+            --release 0.67.1
+            --profile reference-v1
+            --phase authorize
+            --sample-index '${{ inputs.bootstrap_sample_index }}'
+            --admission "$HYDRACACHE_FULL_DRESS_ADMISSION"
+          )
+          if [[ -n "${HYDRACACHE_BOOTSTRAP_PREDECESSOR:-}" ]]; then
+            args+=(--predecessor "$HYDRACACHE_BOOTSTRAP_PREDECESSOR")
+          fi
+          cargo run -p xtask --locked -- perf-bootstrap "${args[@]}"
+
+      - name: Run bootstrap core reference evidence
+        run: cargo run -p xtask --locked -- evidence-run --release 0.67 --gate env.hydracache-run-067-perf-core
+
+      - name: Start isolated rootless Docker for Redis comparison
+        run: scripts/perf/rootless-docker.sh start
+
+      - name: Run bootstrap RESP reference evidence
+        run: cargo run -p xtask --locked -- evidence-run --release 0.67 --gate env.hydracache-run-067-perf-resp
+
+      - name: Stop isolated rootless Docker after Redis comparison
+        if: always()
+        run: scripts/perf/rootless-docker.sh stop
+
+      - name: Run bootstrap control-plane reference evidence
+        run: cargo run -p xtask --locked -- evidence-run --release 0.67 --gate env.hydracache-run-067-perf-control-plane
+
+      - name: Materialize tmpfs reference evidence
+        if: always()
+        run: scripts/perf/reference-evidence-tmpfs.sh materialize
+
+      - name: Retain non-ship bootstrap sample
+        shell: bash
+        run: |
+          args=(
+            --release 0.67.1
+            --profile reference-v1
+            --phase sample
+            --sample-index '${{ inputs.bootstrap_sample_index }}'
+            --admission "$HYDRACACHE_FULL_DRESS_ADMISSION"
+          )
+          if [[ -n "${HYDRACACHE_BOOTSTRAP_PREDECESSOR:-}" ]]; then
+            args+=(--predecessor "$HYDRACACHE_BOOTSTRAP_PREDECESSOR")
+          fi
+          cargo run -p xtask --locked -- perf-bootstrap "${args[@]}"
+
+      - name: Upload reusable bootstrap receipt
+        uses: actions/upload-artifact@v6
+        with:
+          name: performance-0671-bootstrap-receipt
+          path: target/test-evidence/0.67.1/bootstrap-sample.json
+          if-no-files-found: error
+
+      - name: Upload 0.67.1 bootstrap sample
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: "performance-0671-bootstrap-${{ github.sha }}-${{ github.run_id }}"
+          path: |
+            target/test-evidence/0.67/**
+            target/test-evidence/0.67.1/**
+            target/release-evidence/receipts/**
+          if-no-files-found: warn
   raft-loom:
     name: Raft Loom
     runs-on: ubuntu-latest
@@ -1029,6 +1522,7 @@ jobs:
           cargo run -p xtask --locked -- canary-sweep --release 0.65 --tier all
           cargo run -p xtask --locked -- canary-sweep --release 0.66 --tier all
           cargo run -p xtask --locked -- canary-sweep --release 0.67 --tier all
+          cargo run -p xtask --locked -- canary-sweep --release 0.67.1 --tier all
 
       - name: Run deterministic suite sweep
         run: cargo run -p xtask --locked -- evidence-run --release 0.64 --gate tool.determinism-sweep

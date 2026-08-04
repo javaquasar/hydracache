@@ -131,11 +131,7 @@ required_artifacts = [
     "docs/testing/perf-scenarios/0.67/local-trace-replay-v1.toml",
 ]
 fast_gate_ids = ["fast.performance-contract-067", "fast.workspace-nextest"]
-gated_gate_ids = [
-    "tool.perf-prebuild-067",
-    "env.hydracache-run-067-perf-core",
-    "tool.perf-budget-check-067",
-]
+gated_gate_ids = []
 ship_required = true
 
 [[work_item.required_tests]]
@@ -209,11 +205,7 @@ required_artifacts = [
     "docs/testing/perf-scenarios/0.67/client-surface-payload-v1.toml",
 ]
 fast_gate_ids = ["fast.performance-contract-067", "fast.workspace-nextest"]
-gated_gate_ids = [
-    "tool.perf-prebuild-067",
-    "env.hydracache-run-067-perf-core",
-    "tool.perf-budget-check-067",
-]
+gated_gate_ids = []
 ship_required = true
 
 [[work_item.required_tests]]
@@ -283,11 +275,7 @@ fast_gate_ids = [
     "fast.performance-resp-external-067",
     "fast.workspace-nextest",
 ]
-gated_gate_ids = [
-    "tool.perf-prebuild-067",
-    "env.hydracache-run-067-perf-resp",
-    "tool.perf-budget-check-067",
-]
+gated_gate_ids = []
 ship_required = true
 
 [[work_item.required_tests]]
@@ -451,12 +439,7 @@ fast_gate_ids = [
     "fast.performance-contract-067",
     "fast.workspace-nextest",
 ]
-gated_gate_ids = [
-    "tool.perf-prebuild-067",
-    "env.hydracache-run-067-perf-core",
-    "env.hydracache-run-067-perf-control-plane",
-    "tool.perf-budget-check-067",
-]
+gated_gate_ids = []
 ship_required = true
 
 [[work_item.required_tests]]
@@ -541,13 +524,7 @@ fast_gate_ids = [
     "fast.performance-contract-067",
     "fast.workspace-nextest",
 ]
-gated_gate_ids = [
-    "tool.perf-prebuild-067",
-    "env.hydracache-run-067-perf-core",
-    "env.hydracache-run-067-perf-resp",
-    "env.hydracache-run-067-perf-control-plane",
-    "tool.perf-budget-check-067",
-]
+gated_gate_ids = []
 ship_required = true
 
 [[work_item.required_tests]]
@@ -608,12 +585,7 @@ fast_gate_ids = [
     "fast.performance-contract-067",
     "fast.workspace-nextest",
 ]
-gated_gate_ids = [
-    "tool.perf-prebuild-067",
-    "env.hydracache-run-067-perf-core",
-    "env.hydracache-run-067-perf-resp",
-    "tool.perf-budget-check-067",
-]
+gated_gate_ids = []
 ship_required = true
 
 [[work_item.required_tests]]
@@ -701,13 +673,7 @@ fast_gate_ids = [
     "fast.performance-contract-067",
     "fast.workspace-nextest",
 ]
-gated_gate_ids = [
-    "tool.perf-prebuild-067",
-    "env.hydracache-run-067-perf-core",
-    "env.hydracache-run-067-perf-resp",
-    "env.hydracache-run-067-perf-control-plane",
-    "tool.perf-budget-check-067",
-]
+gated_gate_ids = []
 ship_required = true
 
 [[work_item.required_tests]]
@@ -820,10 +786,7 @@ fast_gate_ids = [
     "fast.performance-contract-067",
     "fast.workspace-nextest",
 ]
-gated_gate_ids = [
-    "tool.perf-prebuild-067",
-    "env.hydracache-run-067-perf-resp",
-]
+gated_gate_ids = []
 ship_required = true
 
 [[work_item.required_tests]]
@@ -921,11 +884,7 @@ fast_gate_ids = [
     "fast.performance-contract-067",
     "fast.workspace-nextest",
 ]
-gated_gate_ids = [
-    "tool.perf-prebuild-067",
-    "env.hydracache-run-067-perf-resp",
-    "env.hydracache-run-067-perf-control-plane",
-]
+gated_gate_ids = []
 ship_required = true
 
 [[work_item.required_tests]]
@@ -995,6 +954,9 @@ required_sources = [
     "docs/plans/releases.toml",
     "docs/plans/V0_67_PERFORMANCE_CHARACTERIZATION_PLAN.md",
     "docs/releases/0.67.0.md",
+    "docs/technical-debt/README.md",
+    "docs/technical-debt/TD-0013-dedicated-performance-runner-and-baseline-bootstrap.md",
+    "docs/testing/PERF_RUNNER_0_67.md",
     "docs/testing/canary-registry-0.67.json",
     "docs/testing/fast-suite-registry.toml",
     "docs/testing/gated-test-registry.toml",
@@ -1015,22 +977,16 @@ fast_gate_ids = [
     "fast.performance-contract-067",
     "fast.workspace-nextest",
 ]
-gated_gate_ids = [
-    "tool.perf-prebuild-067",
-    "env.hydracache-run-067-perf-core",
-    "env.hydracache-run-067-perf-resp",
-    "env.hydracache-run-067-perf-control-plane",
-    "tool.perf-budget-check-067",
-]
+gated_gate_ids = []
 ship_required = true
 
 [[work_item.required_tests]]
 source = "crates/xtask/tests/release_governance.rs"
-function = "release_067_registered_performance_gates_are_mandatory_and_fail_closed"
+function = "release_067_deferred_performance_gates_remain_registered_and_fail_closed"
 
 [[work_item.required_tests]]
 source = "crates/xtask/tests/release_governance.rs"
-function = "performance_lane_requires_pinned_github_image_and_serial_concurrency"
+function = "performance_lane_requires_protected_self_hosted_labels_and_serial_concurrency"
 
 [[work_item.required_tests]]
 source = "crates/xtask/tests/perf_prebuild_067.rs"

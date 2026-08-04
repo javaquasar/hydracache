@@ -94,28 +94,20 @@ artifacts and locked test binaries from earlier verify runs cannot block the run
 
 ## Release 0.67 performance evidence
 
-Release 0.67's implementation is wired, but its performance release gate is not
-green and the release is not shipped. The annotated `v0.66.0` predecessor is
-present and ancestral; the `reference-v1` W7 anchor/baseline remains
-unbootstrapped pending at least five eligible serialized GitHub-hosted `main` runs plus
-independent review.
+Release 0.67 ships performance methodology and tooling without numerical performance claims. The ordinary fast implementation receipts remain ship-mandatory. Dedicated reference execution is deferred by [`TD-0013`](technical-debt/TD-0013-dedicated-performance-runner-and-baseline-bootstrap.md).
 
-| Gate | Command | Where | Guards |
+| Gate | Command | Where | 0.67 role |
 | --- | --- | --- | --- |
-| 0.67 fast contracts | `cargo run -p xtask --locked -- evidence-run --release 0.67 --gate fast.performance-contract-067`; `fast.workspace-nextest`; W3-only `fast.performance-resp-external-067` | PR/shared CI | The contract suite owns W0-W10, workspace-nextest covers implementation, and the external RESP suite belongs only to W3. No standalone W4-W7 fast rows exist; the reconciled registry aggregate budget is exactly 1560 seconds. These receipts are structural/regression evidence, not capacity evidence. |
-| Exact performance prebuild | `cargo run -p xtask --locked -- evidence-run --release 0.67 --gate tool.perf-prebuild-067` | Serialized manual `ubuntu-24.04` reference lane | Exact clean commit, toolchain/build contract, `Cargo.lock`, prebuilt server/loadgen identities, and external-tool receipt before measurement. |
-| Core reference | `cargo run -p xtask --locked -- evidence-run --release 0.67 --gate env.hydracache-run-067-perf-core` | Serialized GitHub-hosted reference lane | Embedded local cache, in-process Axum client surface, labeled grid/model primitives, their eligible brownout/overload reports; no daemon-client-wire claim. |
-| RESP/Redis reference | `cargo run -p xtask --locked -- evidence-run --release 0.67 --gate env.hydracache-run-067-perf-resp` | Serialized GitHub-hosted Linux lane with pinned Docker/Redis/tooling | One selected node-local RESP endpoint, sealed W3 evidence, W5B/W6, W8 same-box comparison, and W9 exported-only `metrics-resp.json`; no distributed RESP or marketing claim. |
-| Control-plane reference | `cargo run -p xtask --locked -- evidence-run --release 0.67 --gate env.hydracache-run-067-perf-control-plane` | Serialized GitHub-hosted Linux lane | Separate real 3/5/7-daemon admin/control-plane and W5A evidence plus exported-only `metrics-control-plane.json`; no value-grid capacity claim. |
-| W7 budget verdict | `cargo run -p xtask --locked -- evidence-run --release 0.67 --gate tool.perf-budget-check-067` | Serialized reference lane after all measurements | Immutable reviewed relative anchor plus eligible same-image rolling `main` baseline. Unbootstrapped, insufficient, unstable, stale, mixed, candidate-self, or silently rebaselined input is red. |
-| Exact-candidate aggregation | `cargo run -p xtask --locked -- canary-sweep --release 0.67 --tier all` then `cargo run -p xtask --locked -- release-evidence --release 0.67 --receipts-dir target/release-evidence/receipts --require-ship` | Final frozen-candidate job | Every mandatory gate, guard/canary signature, artifact hash, command/registry digest, and candidate commit agree. Any later code/docs/budget/registry change requires a complete rerun. |
+| 0.67 fast contracts | `evidence-run --release 0.67 --gate fast.performance-contract-067`; `fast.workspace-nextest`; W3-only `fast.performance-resp-external-067` | PR/shared CI | Mandatory structural and regression evidence for W0-W10 implementation; never capacity evidence. |
+| Runner stability preflight | `perf-runner-preflight --release 0.67 --profile reference-v1` | Protected manual bare-metal lane | Deferred evidence. Exactly seven probes; spread above 15% aborts before compilation. |
+| Exact performance prebuild | `evidence-run --release 0.67 --gate tool.perf-prebuild-067` | Serialized protected bare-metal lane | Deferred evidence. Binds the clean commit, build contract, lockfile, and binary identities. |
+| Core reference | `evidence-run --release 0.67 --gate env.hydracache-run-067-perf-core` | Serialized protected bare-metal lane | Deferred evidence for embedded, in-process client, and labeled model surfaces. |
+| RESP/Redis reference | `evidence-run --release 0.67 --gate env.hydracache-run-067-perf-resp` | Serialized protected Linux lane | Deferred node-local RESP, paired Redis, and exported-metrics evidence; no distributed or superiority claim. |
+| Control-plane reference | `evidence-run --release 0.67 --gate env.hydracache-run-067-perf-control-plane` | Serialized protected Linux lane | Deferred real 3/5/7-daemon admin/control-plane evidence; no value-plane capacity claim. |
+| W7 budget verdict | `evidence-run --release 0.67 --gate tool.perf-budget-check-067` | After all reference measurements | Deferred and currently red because `reference-v1` is unbootstrapped. |
+| 0.67 release aggregation | `canary-sweep --release 0.67 --tier all` plus `release-evidence --release 0.67 --receipts-dir ... --require-ship` | Frozen candidate | Requires implementation receipts and canaries. The five deferred reference receipts are deliberately outside the 0.67 ship manifest while TD-0013 is open. |
 
-Hosted `ci-shared` measurements are broad-tolerance tripwires only. They may
-detect a likely regression, but cannot establish a capacity number, bootstrap
-the W7 release anchor, or satisfy a performance ship gate. See
-[`PERFORMANCE.md`](PERFORMANCE.md) for the surface and quotation rules and
-[`TESTING.md`](TESTING.md#release-067-performance-characterization) for exact
-PowerShell and Bash reproduction.
+The deferred gates remain registered, protected, serialized, and fail-closed. Missing tools, unstable spread, wrong fingerprints, stale artifacts, insufficient baseline history, or candidate self-baselining stays red. GitHub-hosted `ci-shared` results remain tripwires only and cannot support any numerical release claim.
 
 ## Chaos / soak / Docker (nightly / pre-release)
 

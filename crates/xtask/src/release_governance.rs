@@ -106,7 +106,11 @@ pub fn check(root: &Path, release: &str) -> Result<GovernanceReport, Box<dyn Err
     report
         .problems
         .extend(ci_wiring_problems(root, &gates.gate)?);
-    if normalize_release(release) == "0.66" {
+    if release == "0.67.1" {
+        report
+            .problems
+            .extend(release_0671_gate_contract_problems(&gates.gate));
+    } else if normalize_release(release) == "0.66" {
         report
             .problems
             .extend(release_066_gate_contract_problems(&gates.gate));
@@ -140,6 +144,8 @@ pub fn check(root: &Path, release: &str) -> Result<GovernanceReport, Box<dyn Err
         "canary-sweep --release 0.65 --tier all",
         "canary-sweep --release 0.66 --tier all",
         "canary-sweep --release 0.67 --tier all",
+        "canary-sweep --release 0.67.1 --tier fast",
+        "canary-sweep --release 0.67.1 --tier all",
     ] {
         if !workflow.contains(required) {
             report
@@ -773,6 +779,109 @@ pub fn release_066_gate_contract_problems(gates: &[GateEntry]) -> Vec<String> {
     problems
 }
 
+pub fn release_0671_gate_contract_problems(gates: &[GateEntry]) -> Vec<String> {
+    const REQUIRED: [(&str, &str, &str, &str); 8] = [
+        (
+            "tool.perf-runner-provisioned-0671",
+            "target/test-evidence/0.67.1/runner-provisioned.json",
+            "release-0671-performance-qualification",
+            "Import offline runner provisioning proof",
+        ),
+        (
+            "tool.perf-attestation-v5-0671",
+            "target/test-evidence/0.67.1/attestation-v5.json",
+            "release-0671-performance-qualification",
+            "Attest and preflight the 0.67.1 host",
+        ),
+        (
+            "tool.perf-qualification-0671",
+            "target/test-evidence/0.67.1/qualification.json",
+            "release-0671-performance-qualification",
+            "Run 0.67.1 qualification gate",
+        ),
+        (
+            "tool.perf-full-dress-admission-0671",
+            "target/test-evidence/0.67.1/full-dress-admission.json",
+            "release-0671-performance-full-dress",
+            "Admit bootstrap after the second identical full-dress run",
+        ),
+        (
+            "tool.perf-bootstrap-sample-set-0671",
+            "target/test-evidence/0.67.1/bootstrap-sample-set.json",
+            "gated-proof-registry",
+            "Run registered gated proofs",
+        ),
+        (
+            "tool.perf-baseline-review-0671",
+            "target/test-evidence/0.67.1/baseline-review.json",
+            "gated-proof-registry",
+            "Run registered gated proofs",
+        ),
+        (
+            "tool.perf-reference-activation-0671",
+            "target/test-evidence/0.67.1/reference-activation.json",
+            "gated-proof-registry",
+            "Run registered gated proofs",
+        ),
+        (
+            "tool.perf-frozen-candidate-0671",
+            "target/test-evidence/0.67.1/frozen-candidate.json",
+            "gated-proof-registry",
+            "Run registered gated proofs",
+        ),
+    ];
+    let mut problems = Vec::new();
+    for (id, artifact, job, step) in REQUIRED {
+        let Some(gate) = gates.iter().find(|gate| gate.id == id) else {
+            problems.push(format!("missing mandatory 0.67.1 stage gate {id}"));
+            continue;
+        };
+        if gate.owner_release != "0.67.1" || !gate.ship_mandatory {
+            problems.push(format!(
+                "0.67.1 stage gate {id} must be owned by 0.67.1 and ship-mandatory"
+            ));
+        }
+        if gate.artifacts.as_slice() != [artifact] {
+            problems.push(format!(
+                "0.67.1 stage gate {id} must bind exact artifact {artifact}"
+            ));
+        }
+        if gate.ci.workflow != ".github/workflows/ci.yml"
+            || gate.ci.job != job
+            || gate.ci.step != step
+        {
+            problems.push(format!(
+                "0.67.1 stage gate {id} must bind CI job/step {job}/{step}"
+            ));
+        }
+        if gate.required_env.as_slice() != ["HYDRACACHE_RUN_PERF_0671_STAGE"]
+            || !gate
+                .command
+                .env
+                .contains_key("HYDRACACHE_RUN_PERF_0671_STAGE")
+        {
+            problems.push(format!(
+                "0.67.1 stage gate {id} must require an explicit stage capability"
+            ));
+        }
+    }
+    if let Some(attestation) = gates
+        .iter()
+        .find(|gate| gate.id == "tool.perf-attestation-v5-0671")
+    {
+        if attestation.source != "scripts/perf/run-reference-measurement.sh"
+            || attestation.command.program != "scripts/perf/run-reference-measurement.sh"
+            || attestation.command.args != ["attestation"]
+        {
+            problems.push(
+                "0.67.1 attestation must use the reviewed housekeeping/tmpfs measurement wrapper"
+                    .to_owned(),
+            );
+        }
+    }
+    problems
+}
+
 pub fn release_067_gate_contract_problems(gates: &[GateEntry]) -> Vec<String> {
     const JOB: &str = "release-067-performance";
     const PREBUILD_ID: &str = "tool.perf-prebuild-067";
@@ -831,13 +940,15 @@ pub fn release_067_gate_contract_problems(gates: &[GateEntry]) -> Vec<String> {
 
     for (id, step, expected_artifacts) in SPECS {
         let Some(gate) = gates.iter().find(|gate| gate.id == id) else {
-            problems.push(format!("release 0.67 is missing mandatory gate {id}"));
+            problems.push(format!(
+                "release 0.67 is missing deferred reference gate {id}"
+            ));
             continue;
         };
         let common = gate.kind == gated_tests::GateKind::ExternalTool
             && gate.tier == gated_tests::GateTier::Nightly
             && gate.owner_release == "0.67.0"
-            && gate.ship_mandatory
+            && !gate.ship_mandatory
             && gate.ci.workflow == ".github/workflows/ci.yml"
             && gate.ci.job == JOB
             && gate.ci.step == step
@@ -854,7 +965,7 @@ pub fn release_067_gate_contract_problems(gates: &[GateEntry]) -> Vec<String> {
                 .any(|(name, value)| name.ends_with("RUN_PERF_REFERENCE") && value == "1");
         if !common {
             problems.push(format!(
-                "release 0.67 gate {id} must be a mandatory dedicated Linux reference-v1 gate with exact CI ownership"
+                "release 0.67 gate {id} must remain a deferred, non-ship, dedicated Linux reference-v1 gate with exact CI ownership"
             ));
         }
         if !gate
@@ -899,19 +1010,12 @@ pub fn release_067_gate_contract_problems(gates: &[GateEntry]) -> Vec<String> {
         ("env.hydracache-run-067-perf-control-plane", "control-plane"),
     ] {
         if let Some(gate) = gates.iter().find(|gate| gate.id == id) {
-            let expected_args = [
-                "suite",
-                suite,
-                "--profile",
-                "reference-v1",
-                "--output-dir",
-                "target/test-evidence/0.67",
-            ];
-            if gate.command.program != "target/release/hydracache-loadgen"
-                || gate.command.args != expected_args
+            if gate.source != "scripts/perf/run-reference-measurement.sh"
+                || gate.command.program != "scripts/perf/run-reference-measurement.sh"
+                || gate.command.args != [suite]
             {
                 problems.push(format!(
-                    "release 0.67 consumer gate {id} must execute the exact prebuilt loadgen binary without Cargo"
+                    "release 0.67 consumer gate {id} must execute the exact prebuilt loadgen through the reviewed housekeeping/tmpfs measurement wrapper"
                 ));
             }
             if gate
@@ -966,6 +1070,19 @@ pub fn release_067_gate_contract_problems(gates: &[GateEntry]) -> Vec<String> {
 fn release_067_execution_wiring_problems(text: &str) -> Result<Vec<String>, Box<dyn Error>> {
     const JOB_ID: &str = "release-067-performance";
     const SHARED_JOB_ID: &str = "performance-067-shared-tripwire";
+    const PINNED_REDIS_BOOTSTRAP: &str = r#"tools_dir="$RUNNER_TEMP/hydracache-perf-tools"
+mkdir --parents "$tools_dir"
+cd "$tools_dir"
+curl --proto '=https' --tlsv1.2 --fail --location --silent --show-error \
+  --output redis-7.2.5.tar.gz \
+  https://download.redis.io/releases/redis-7.2.5.tar.gz
+printf '%s  redis-7.2.5.tar.gz\n' '5981179706f8391f03be91d951acafaeda91af7fac56beffb2701963103e423d' \
+  | sha256sum --check --strict -
+tar --extract --gzip --file redis-7.2.5.tar.gz
+env -i PATH=/usr/bin:/bin HOME=/tmp CC=gcc MALLOC=libc BUILD_TLS=no \
+  make -C redis-7.2.5 -j1 redis-benchmark
+test "$(redis-7.2.5/src/redis-benchmark --version)" = "redis-benchmark 7.2.5"
+echo "$tools_dir/redis-7.2.5/src" >> "$GITHUB_PATH""#;
     let workflow = parse_workflow(text)?;
     let root: Value = serde_yaml::from_str(text)?;
     let jobs = mapping_value(root.as_mapping(), "jobs")
@@ -995,10 +1112,24 @@ fn release_067_execution_wiring_problems(text: &str) -> Result<Vec<String>, Box<
         );
     }
 
-    let runner = mapping_value(job.as_mapping(), "runs-on").and_then(Value::as_str);
-    if runner != Some("ubuntu-24.04") {
+    let pinned_redis_bootstrap = workflow
+        .step_runs
+        .get(JOB_ID)
+        .and_then(|steps| steps.get("Build pinned redis-benchmark 7.2.5"))
+        .is_some_and(|run| run.trim() == PINNED_REDIS_BOOTSTRAP);
+    if !pinned_redis_bootstrap {
         problems.push(
-            "release 0.67 performance lane requires the pinned GitHub-hosted ubuntu-24.04 image"
+            "release 0.67 performance lane must build redis-benchmark 7.2.5 from the checksum-pinned source recipe"
+                .to_owned(),
+        );
+    }
+
+    let runner_labels = mapping_value(job.as_mapping(), "runs-on")
+        .and_then(Value::as_sequence)
+        .map(|labels| labels.iter().filter_map(Value::as_str).collect::<Vec<_>>());
+    if runner_labels != Some(vec!["self-hosted", "linux", "x64", "hydracache-perf-v1"]) {
+        problems.push(
+            "release 0.67 performance lane requires the exact protected self-hosted bare-metal labels"
                 .to_owned(),
         );
     }
@@ -1023,6 +1154,7 @@ fn release_067_execution_wiring_problems(text: &str) -> Result<Vec<String>, Box<
         .map(String::as_str)
         .unwrap_or_default();
     if !condition.contains("workflow_dispatch")
+        || !condition.contains("github.ref == 'refs/heads/main'")
         || !condition.contains("inputs.run_reference_performance")
         || !condition.contains("candidate_release == '0.67'")
         || condition.contains("schedule")
@@ -1105,8 +1237,16 @@ fn release_067_execution_wiring_problems(text: &str) -> Result<Vec<String>, Box<
             "cargo run -p xtask --locked -- evidence-run --release 0.67 --gate fast.performance-contract-067",
         ),
         (
+            "Preflight 0.67 reference runner stability",
+            "scripts/perf/run-reference-measurement.sh attestation",
+        ),
+        (
+            "Prepare tmpfs reference evidence",
+            "scripts/perf/reference-evidence-tmpfs.sh prepare",
+        ),
+        (
             "Prebuild 0.67 performance binaries",
-            "cargo run -p xtask --locked -- evidence-run --release 0.67 --gate tool.perf-prebuild-067",
+            "taskset --cpu-list 1-4 cargo run -p xtask --locked -- evidence-run --release 0.67 --gate tool.perf-prebuild-067",
         ),
         (
             "Run 0.67 core performance evidence",
@@ -1119,6 +1259,10 @@ fn release_067_execution_wiring_problems(text: &str) -> Result<Vec<String>, Box<
         (
             "Run 0.67 control-plane performance evidence",
             "cargo run -p xtask --locked -- evidence-run --release 0.67 --gate env.hydracache-run-067-perf-control-plane",
+        ),
+        (
+            "Materialize tmpfs reference evidence",
+            "scripts/perf/reference-evidence-tmpfs.sh materialize",
         ),
         (
             "Check 0.67 performance budgets",
@@ -1138,6 +1282,89 @@ fn release_067_execution_wiring_problems(text: &str) -> Result<Vec<String>, Box<
         if !exact {
             problems.push(format!(
                 "release 0.67 performance step {step:?} must run exactly `{command}`"
+            ));
+        }
+    }
+    let expected_0671_runs = [
+        (
+            "release-0671-performance-qualification",
+            vec![
+                (
+                    "Prepare tmpfs reference evidence",
+                    "scripts/perf/reference-evidence-tmpfs.sh prepare",
+                ),
+                (
+                    "Attest and preflight the 0.67.1 host",
+                    "cargo run -p xtask --locked -- evidence-run --release 0.67.1 --gate tool.perf-attestation-v5-0671",
+                ),
+                (
+                    "Prebuild exact 0.67 performance binaries",
+                    "cargo run -p xtask --locked -- evidence-run --release 0.67 --gate tool.perf-prebuild-067",
+                ),
+                (
+                    "Run bounded non-ship diagnostics",
+                    "scripts/perf/run-reference-measurement.sh qualification-local\nscripts/perf/run-reference-measurement.sh qualification-client-surface",
+                ),
+                (
+                    "Materialize tmpfs reference evidence",
+                    "scripts/perf/reference-evidence-tmpfs.sh materialize",
+                ),
+            ],
+        ),
+        (
+            "release-0671-performance-bootstrap",
+            vec![
+                (
+                    "Prepare tmpfs reference evidence",
+                    "scripts/perf/reference-evidence-tmpfs.sh prepare",
+                ),
+                (
+                    "Attest and preflight the 0.67.1 host",
+                    "cargo run -p xtask --locked -- evidence-run --release 0.67.1 --gate tool.perf-attestation-v5-0671",
+                ),
+                (
+                    "Prebuild exact 0.67 performance binaries",
+                    "cargo run -p xtask --locked -- evidence-run --release 0.67 --gate tool.perf-prebuild-067",
+                ),
+                (
+                    "Run bootstrap core reference evidence",
+                    "cargo run -p xtask --locked -- evidence-run --release 0.67 --gate env.hydracache-run-067-perf-core",
+                ),
+                (
+                    "Run bootstrap RESP reference evidence",
+                    "cargo run -p xtask --locked -- evidence-run --release 0.67 --gate env.hydracache-run-067-perf-resp",
+                ),
+                (
+                    "Run bootstrap control-plane reference evidence",
+                    "cargo run -p xtask --locked -- evidence-run --release 0.67 --gate env.hydracache-run-067-perf-control-plane",
+                ),
+                (
+                    "Materialize tmpfs reference evidence",
+                    "scripts/perf/reference-evidence-tmpfs.sh materialize",
+                ),
+            ],
+        ),
+    ];
+    for (job, expected) in expected_0671_runs {
+        for (step, command) in expected {
+            let exact = workflow
+                .step_runs
+                .get(job)
+                .and_then(|steps| steps.get(step))
+                .is_some_and(|run| run.trim() == command);
+            if !exact {
+                problems.push(format!(
+                    "release 0.67.1 performance step {job}/{step:?} must run exactly `{command}`"
+                ));
+            }
+        }
+        if workflow.step_runs.get(job).is_some_and(|steps| {
+            steps
+                .values()
+                .any(|run| run.contains("taskset --cpu-list 1-4 cargo run"))
+        }) {
+            problems.push(format!(
+                "release 0.67.1 performance job {job} must keep Cargo and orchestration on housekeeping CPUs"
             ));
         }
     }
@@ -1187,9 +1414,9 @@ fn candidate_receipt_wiring_problems(
     workflow: &WorkflowShape,
     requested_release: &str,
 ) -> Vec<String> {
-    const DEFAULT_RELEASE: &str = "0.67";
+    const DEFAULT_RELEASE: &str = "0.67.1";
     const RELEASE_ENV: &str = "HYDRACACHE_CANDIDATE_RELEASE";
-    const RELEASE_ENV_BINDING: &str = "${{ inputs.candidate_release || '0.67' }}";
+    const RELEASE_ENV_BINDING: &str = "${{ inputs.candidate_release || '0.67.1' }}";
     const FAST_RECEIPT: &str = "cargo run -p xtask --locked -- evidence-run --release \"$HYDRACACHE_CANDIDATE_RELEASE\" --gate fast.workspace-nextest";
     const GOVERNANCE: &str = "cargo run -p xtask --locked -- release-governance-check --release \"$HYDRACACHE_CANDIDATE_RELEASE\"";
     const MANUAL_RECEIPT: &str = r#"cargo run -p xtask --locked -- evidence-run --release "$HYDRACACHE_CANDIDATE_RELEASE" --gate "${{ inputs.gated_gate_id }}""#;

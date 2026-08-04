@@ -1,2 +1,3 @@
 # Release evidence hashes exact trace bytes; keep them stable across platforms.
 crates/hydracache-cache-sim/traces/*.trace text eol=lf
+*.sh text eol=lf

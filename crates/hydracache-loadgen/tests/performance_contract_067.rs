@@ -460,6 +460,7 @@ fn fingerprint(shared_hardware: bool, fingerprint: &str) -> RunnerFingerprint {
         turbo: "disabled".to_owned(),
         shared_hardware,
         calibration_score: 0.01,
+        attestation: Default::default(),
     }
 }
 
@@ -559,7 +560,18 @@ fn comparison_measurement(ratio: f64, same_box: bool) -> MeasurementEvidence {
 }
 
 fn fixture_report(measurements: Vec<MeasurementEvidence>) -> PerfReport {
-    let observed = fingerprint(false, "approved");
+    fixture_report_with_profile(
+        measurements,
+        reference_profile(),
+        fingerprint(false, "approved"),
+    )
+}
+
+fn fixture_report_with_profile(
+    measurements: Vec<MeasurementEvidence>,
+    profile: PerformanceProfile,
+    observed: RunnerFingerprint,
+) -> PerfReport {
     PerfReport::new(
         "foundation-fixture",
         "foundation",
@@ -572,7 +584,7 @@ fn fixture_report(measurements: Vec<MeasurementEvidence>) -> PerfReport {
             network_boundary: "none".to_owned(),
             claim_scope: "instrument-contract".to_owned(),
         },
-        reference_profile(),
+        profile,
         observed,
         SourceIdentity {
             git_commit: "0123456789012345678901234567890123456789".to_owned(),
@@ -589,6 +601,21 @@ fn fixture_report(measurements: Vec<MeasurementEvidence>) -> PerfReport {
         measurements,
         vec![],
     )
+}
+
+#[test]
+fn unbootstrapped_profile_records_eligible_runner_before_allowlist_freeze() {
+    let mut profile = reference_profile();
+    profile.allowed_fingerprints.clear();
+    let report = fixture_report_with_profile(
+        vec![foundation_measurement()],
+        profile,
+        fingerprint(false, "observed-hosted-runner"),
+    );
+
+    assert!(report.profile_validation.eligible);
+    assert!(report.validation_problems().is_empty());
+    assert!(report.to_pretty_json().is_ok());
 }
 
 #[test]
