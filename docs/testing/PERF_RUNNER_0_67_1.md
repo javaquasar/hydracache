@@ -10,6 +10,8 @@ For the next rental, use this runbook together with the profile-driven
 playbook captures the lessons from the completed qualification/exploratory work
 and adds allowlisted service tuning, exact environment freeze, drift detection,
 and reversible pre-state receipts.
+The executable, resumable sequence is documented in the
+[0.67.1 campaign automation guide](PERF_RUNNER_0_67_1_CAMPAIGN_AUTOMATION.md).
 Before renting another host, repeat or review the
 [local Docker orchestration preflight](PERF_RUNNER_0_67_1_LOCAL_DOCKER_PREFLIGHT.md).
 It verifies the containerizable context, shell, cgroup, affinity, pinned-tool,

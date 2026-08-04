@@ -1,5 +1,10 @@
 name: CI
 
+run-name: >-
+  ${{ github.event_name == 'workflow_dispatch'
+      && format('CI dispatch {0}', inputs.performance_0671_campaign || inputs.performance_0671_mode)
+      || '' }}
+
 on:
   push:
     branches:
@@ -30,6 +35,11 @@ on:
           - "qualify"
           - "full-dress"
           - "bootstrap"
+      performance_0671_campaign:
+        description: "Optional controller correlation in the exact form campaign-id:unique-step"
+        required: false
+        default: ""
+        type: string
       full_dress_predecessor_run_id:
         description: "Prior successful full-dress run id; empty for the first of exactly two runs"
         required: false
@@ -845,6 +855,15 @@ jobs:
       HYDRACACHE_PERFORMANCE_0671_MODE: qualify
 
     steps:
+      - name: Validate optional campaign correlation
+        shell: bash
+        env:
+          HYDRACACHE_CAMPAIGN: ${{ inputs.performance_0671_campaign }}
+        run: |
+          if [[ -n "$HYDRACACHE_CAMPAIGN" ]]; then
+            [[ "$HYDRACACHE_CAMPAIGN" =~ ^hc0671-[a-z0-9][a-z0-9-]{5,55}:qualification$ ]]
+          fi
+
       - name: Checkout trusted main
         uses: actions/checkout@v5
         with:
@@ -868,6 +887,9 @@ jobs:
 
       - name: Prepare tmpfs reference evidence
         run: scripts/perf/reference-evidence-tmpfs.sh prepare
+
+      - name: Import frozen campaign host admission
+        run: scripts/perf/import-reference-campaign-admission.sh
 
       - name: Import offline runner provisioning proof
         run: cargo run -p xtask --locked -- evidence-run --release 0.67.1 --gate tool.perf-runner-provisioned-0671
@@ -933,6 +955,15 @@ jobs:
       HYDRACACHE_PERFORMANCE_0671_MODE: full-dress
 
     steps:
+      - name: Validate optional campaign correlation
+        shell: bash
+        env:
+          HYDRACACHE_CAMPAIGN: ${{ inputs.performance_0671_campaign }}
+        run: |
+          if [[ -n "$HYDRACACHE_CAMPAIGN" ]]; then
+            [[ "$HYDRACACHE_CAMPAIGN" =~ ^hc0671-[a-z0-9][a-z0-9-]{5,55}:full-dress-[12]$ ]]
+          fi
+
       - name: Checkout trusted main
         uses: actions/checkout@v5
         with:
@@ -984,6 +1015,9 @@ jobs:
 
       - name: Prepare tmpfs reference evidence
         run: scripts/perf/reference-evidence-tmpfs.sh prepare
+
+      - name: Import frozen campaign host admission
+        run: scripts/perf/import-reference-campaign-admission.sh
 
       - name: Import offline runner provisioning proof
         run: cargo run -p xtask --locked -- evidence-run --release 0.67.1 --gate tool.perf-runner-provisioned-0671
@@ -1079,6 +1113,16 @@ jobs:
       HYDRACACHE_PERFORMANCE_0671_MODE: bootstrap
 
     steps:
+      - name: Validate optional campaign correlation
+        shell: bash
+        env:
+          HYDRACACHE_CAMPAIGN: ${{ inputs.performance_0671_campaign }}
+        run: |
+          if [[ -n "$HYDRACACHE_CAMPAIGN" ]]; then
+            [[ "$HYDRACACHE_CAMPAIGN" =~ ^hc0671-[a-z0-9][a-z0-9-]{5,55}:bootstrap-[1-5]$ ]]
+            test "${HYDRACACHE_CAMPAIGN##*-}" = '${{ inputs.bootstrap_sample_index }}'
+          fi
+
       - name: Checkout trusted main
         uses: actions/checkout@v5
         with:
@@ -1149,6 +1193,9 @@ jobs:
 
       - name: Prepare tmpfs reference evidence
         run: scripts/perf/reference-evidence-tmpfs.sh prepare
+
+      - name: Import frozen campaign host admission
+        run: scripts/perf/import-reference-campaign-admission.sh
 
       - name: Import offline runner provisioning proof
         run: cargo run -p xtask --locked -- evidence-run --release 0.67.1 --gate tool.perf-runner-provisioned-0671
