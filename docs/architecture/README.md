@@ -10,6 +10,12 @@ Use this directory for:
 - phase roadmaps
 - design reviews
 
+Current implementation snapshots:
+
+- [Listener implementation: current state](listener-current-state.md) — local
+  subscriptions, distributed invalidations, external entry-event protocol, and
+  the current server-push boundary.
+
 Canonical starting points currently live in the repository root:
 
 - [Unified architecture](../../HYDRACACHE_UNIFIED_ARCHITECTURE.md)
