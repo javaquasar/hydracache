@@ -45,7 +45,7 @@ Compatibility ownership is also explicit:
 
 - `0.64` W32 owns versioned byte fixtures and provenance.
 - `0.66` W6 consumes those fixtures and owns simultaneous old/new **daemon** execution.
-- `0.68` W3 owns live previous **client** executables against a current server.
+- `0.69` W3 owns live previous **client** executables against a current server.
 
 ## Release Governance Integration (must land before feature W-items)
 
@@ -267,7 +267,7 @@ catch-up. Byte compatibility remains owned by `0.64` W32.
   provenance. Development may use the pinned base commit, but ship evidence fails loud without the tag.
 - Consume `compat_matrix.rs`/W32 fixtures; do not duplicate their byte ownership.
 - Rolling replacement preserves committed metadata and snapshot catch-up across the mixed window.
-- Live old client executables remain `0.68` W3.
+- Live old client executables remain `0.69` W3.
 
 **Required tests.**
 

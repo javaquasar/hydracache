@@ -249,19 +249,24 @@ v0 foundations
                           baseline evidence is deferred to TD-0013; reference-v1 remains
                           unbootstrapped and its five manual gates remain fail-closed but
                           non-ship-mandatory for 0.67.)
-   0.67 ─┄ feeds ┄► 0.68 Migration Conformance & Borrowed Test Suites (prove the
-                          compatibility claims with evidence we did not author: W1 run a curated
-                          subset of Hazelcast's OWN IMap/FencedLock tests against the 0.52 Java
-                          facade (caffeine/guava compatibilityTest + scylla alternator pattern;
-                          exact-outcome manifest, unexpected pass = red, divergence ledger);
-                          W2 embedded-cache semantics set borrowed from moka/caffeine expectations;
-                          W3 LIVE previous-client binaries built from shipped tags v0.62.x/v0.63.0
-                          against the current server (extends 0.64 W32 beyond byte fixtures);
-                          W4 DB-track cached-vs-direct differential under seeded concurrent writes
-                          per consistency mode (readyset/noria discipline, retrofits falsifiability
-                          onto 0.37/0.38); W5 governance receipts + require-ship + divergence-ledger
-                          docs. No surface widened to satisfy a borrowed test; no Hazelcast
-                          wire-protocol claim; red = narrow fix, reasoned divergence, or named work)
+   0.67.1 ─┄ feeds ┄► 0.68 Generated Client Plane Foundation
+                          (select HC/2 transport by executable comparison; introduce one generated
+                          schema/codec source of truth; build bounded connection, invocation,
+                          retry, cancellation, server-push listener, topology, and CP-session
+                          machinery; then ship generated Java/Rust/Python SDKs and a bounded
+                          Hazelcast-shaped Java facade. Legacy HC/1 v1-v4 readers remain intact;
+                          no Hazelcast member/wire compatibility or smart-routing claim.)
+   0.68 ─┄ feeds ┄► 0.69 Migration Conformance & Borrowed Test Suites
+                          (run curated Hazelcast IMap/FencedLock expectations against the buildable
+                          Java facade; port embedded-cache semantics; execute live old HC/1 and new
+                          HC/2 clients; run the DB cached-vs-direct differential; preserve an
+                          exact-outcome divergence ledger and fail-closed release receipts.)
+   0.69 ─┄ feeds ┄► 0.70 Memory Footprint & Retention Efficiency
+                          (pin the full raw exploratory archive branch+commit; attribute logical,
+                          allocator, RSS and cgroup memory; fix under-accounted/unbounded retention;
+                          compact measured key/entry/tag representations; reduce copies; hard-bound
+                          HC/2 per-connection state; separate durable page cache; prove 24-hour
+                          recovery without weakening correctness, SLOs, workload or capacity.)
 ```
 
 ## Roadmap status (what / why / after / unblocks)
@@ -280,6 +285,9 @@ v0 foundations
 <!-- release-work-items:0.66.0=W0,W1,W2,W3,W4,W5,W6,W7,W8,W9,W10,W11,W12,W13 -->
 <!-- release-work-items:0.67.0=W0,W1,W2,W3,W4,W5,W6,W7,W8,W9,W10 -->
 <!-- release-work-items:0.67.1=W0,W1,W2,W3,W4,W5,W6,W7 -->
+<!-- release-work-items:0.68.0=W0,W1,W2,W3,W4,W5,W6,W7,W8,W9,W10,W11,W12 -->
+<!-- release-work-items:0.69.0=W1,W2,W3,W4,W5 -->
+<!-- release-work-items:0.70.0=W0,W1,W2,W3,W4,W5,W6,W7,W8,W9,W10,W11,W12,W13 -->
 
 | Version | Status | What | Why | After | Unblocks |
 | --- | --- | --- | --- | --- | --- |
@@ -323,7 +331,9 @@ v0 foundations
 
 | [0.67.1](V0_67_1_DEDICATED_PERFORMANCE_REFERENCE_BOOTSTRAP_PLAN.md) | planned | **Dedicated Performance Reference Bootstrap** - qualify a protected true bare-metal runner, harden physical-host/topology/NVMe/CPU-isolation/idle-policy attestation and fingerprint v5, collect five stable pre-candidate `main` runs from one machine/contract family, independently review anchor/baseline/budgets, activate `reference-v1`, close TD-0013, and run the complete frozen-candidate reference pipeline. No optimization or new product surface; `0.67.0` remains historically shipped without numerical claims. | Turn the deferred 0.67 measurement framework into honest narrowly-scoped evidence now that dedicated infrastructure can be rented, without allowing a VM label, noisy run, or candidate self-baseline to manufacture confidence. | 0.67.0 | 1.0 |
 
-| [0.68.0](V0_68_MIGRATION_CONFORMANCE_PLAN.md) | planned | **Migration Conformance & Borrowed Test Suites** - prove the compatibility claims with **evidence we did not author**. **W1** execute a curated subset of **Hazelcast's own IMap/FencedLock test suite** against the shipped `0.52` Java facade (the borrowed-conformance pattern verified in `caffeine/guava/src/compatibilityTest/` and `scylladb/test/alternator/`): pinned Hazelcast version as a reviewed input, **exact-outcome manifest** where an unexpected *pass* is as red as an unexpected failure (no silent claim widening), every divergence/unsupported row reasoned, and a swallow-canary proving the runner cannot hide outcomes. **W2** embedded-cache semantics conformance set ported from moka/caffeine expectations into a manifest-driven suite for the in-process API (each row cites its source test; intentionally-absent semantics are `unsupported-documented`). **W3** **live previous-client binaries**: build real `v0.62.x`/`v0.63.0` clients from the shipped tags and run them against the current server - surface completion, `v2`/`v3` clients never receive `v4` shapes, loud failure beyond their surface, unbuildable tag visibly non-green (extends `0.64` W32 beyond byte fixtures; Hazelcast old-client practice). **W4** DB-track **cached-vs-direct differential** under seeded concurrent writes per named consistency mode with exact post-quiescence equality and a dropped-invalidation canary (readyset/noria discipline - retrofits `0.64`-era falsifiability onto the `0.37`/`0.38` track). **W5** governance receipts (`release-evidence/0.68` + `--require-ship`), registry/canary rows for the JVM/legacy-tag/Postgres gated lanes, and the `hazelcast-migration-evidence.md` divergence ledger | The project's core positioning is Hazelcast migration, yet every compatibility proof so far was authored by us against our own understanding (mined rows, hand-built oracles). A predecessor's own suite encodes thousands of expectations nobody re-derives by hand; old **bytes** decoding (`0.64` W32) is not an old **binary** completing a session; and the oldest shipped surface (DB query cache) predates the canary/falsifiability discipline entirely. `0.68` closes all three with executed third-party expectations and live artifacts, divergences documented rather than hidden | 0.67.1 | 1.0 |
+| [0.68.0](V0_68_GENERATED_CLIENT_PLANE_FOUNDATION_PLAN.md) | planned | **Generated Client Plane Foundation** — use an executable transport bake-off to select HC/2, then establish a generated schema/codec source of truth, bounded connection and invocation managers, retry/idempotency/cancellation rules, real server-push listeners with repair, topology updates, CP-session handling for `FencedLock`, explicit value serialization, generated Java/Rust/Python SDKs, and a bounded Hazelcast-shaped Java facade. HC/1 v1-v4 remains readable and unchanged. | The current external surface has request/reply and an acknowledged-but-nonfunctional subscribe path, while Hazelcast-shaped Java is not a buildable artifact. A durable compatibility layer needs protocol machinery and generated clients before borrowing more API names. The design is derived from code inspection of Hazelcast, Redis, ScyllaDB, TigerBeetle, Caffeine, and Moka, but deliberately excludes Hazelcast member/wire compatibility and smart routing. | 0.67.1 | 0.69 |
+| [0.69.0](V0_69_MIGRATION_CONFORMANCE_PLAN.md) | planned | **Migration Conformance & Borrowed Test Suites** — execute curated Hazelcast IMap/FencedLock expectations against the buildable Java facade, port embedded-cache expectations, run live `v0.62.x`/`v0.63.0` HC/1 and `v0.68.0` HC/2 clients, run cached-vs-direct DB differentials, and bind every expected pass/failure/divergence to fail-closed evidence. | Once the client plane exists, prove compatibility with tests and binaries we did not author. This separates protocol construction from conformance evidence, prevents a test suite from silently widening claims, and extends old-byte fixtures into real end-to-end client sessions. | 0.68.0 | 0.70 |
+| [0.70.0](V0_70_MEMORY_FOOTPRINT_AND_RETENTION_EFFICIENCY_PLAN.md) | planned | **Memory Footprint & Retention Efficiency** — pin the full archived campaign (`explore/0.67-telemetry-hazelcast` at `dbc2f82f…`), build synchronized logical/allocator/process/cgroup accounting, correct value-only capacity weights, bound runtime histories and HC/2 connection state, prove expiry/reset reclamation, compact measured key/entry/tag structures, reduce copies, compare allocators and optional profiles, distinguish durable page cache, and pass fixed-cardinality 60-minute/six-hour/24-hour evidence. | Fresh-process HydraCache was small, but reused-process and short soak screens showed unexplained high-water after TTL/reset. The source audit found specific under-accounted or append-only structures. Optimize causally after the client plane stabilizes, without lowering capacity/workload or weakening correctness, SLO, zero-error, privacy, compatibility or fail-closed behavior. | 0.69.0 | 1.0 |
 
 
 `0.43` debt closure:

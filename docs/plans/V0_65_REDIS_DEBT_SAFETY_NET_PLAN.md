@@ -163,7 +163,7 @@ individual work items:
 5. **Compatibility means old bytes, not a current enum with an old version number.** W6 freezes real
    v2 bytes from `v0.62.0` and v3 bytes from commit `667b2e6`, records provenance/digests, and decodes /
    responds through a version-aware codec. Outer frame and inner envelope versions must match before
-   dispatch. Running historical client binaries remains 0.68 W3 scope.
+   dispatch. Running historical client binaries remains 0.69 W3 scope.
 6. **RESP3 attributes are input, not ignorable decoration.** Top-level or nested attributes and all
    unsupported aggregate argument forms are rejected before dispatch and counted by resource limits.
    The `HELLO 3` map is checked as normalized unordered metadata, not a byte-order golden.
