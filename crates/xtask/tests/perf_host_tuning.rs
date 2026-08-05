@@ -157,7 +157,11 @@ fn reference_campaign_controller_is_serial_resumable_and_provider_safe() {
 
     assert!(wrapper.starts_with("#!/usr/bin/env bash\nset -euo pipefail\n"));
     assert!(burn_in.starts_with("#!/usr/bin/env bash\nset -euo pipefail\n"));
-    assert!(controller.starts_with("#!/usr/bin/env python3\n"));
+    assert_eq!(
+        controller.lines().next(),
+        Some("#!/usr/bin/env python3"),
+        "campaign controller must be a Python 3 script"
+    );
     assert!(importer.starts_with("#!/usr/bin/env bash\nset -euo pipefail\n"));
     for required in [
         "reboot-required",
@@ -208,6 +212,7 @@ fn reference_campaign_controller_is_serial_resumable_and_provider_safe() {
         );
     }
     assert!(workflow.contains("performance_0671_campaign:"));
+    assert!(workflow.contains("0.67.1 Frozen Candidate Reference Evidence"));
     assert!(workflow.contains("CI dispatch {0}"));
     assert!(workflow.contains(":qualification$"));
     assert!(workflow.contains(":full-dress-[12]$"));
@@ -216,7 +221,7 @@ fn reference_campaign_controller_is_serial_resumable_and_provider_safe() {
         workflow
             .matches("run: scripts/perf/import-reference-campaign-admission.sh")
             .count(),
-        3
+        4
     );
     for required in [
         "не создаёт и не удаляет сервер",

@@ -17,6 +17,7 @@ import os
 from pathlib import Path
 import re
 import shutil
+import stat
 import subprocess
 import sys
 import time
@@ -34,7 +35,7 @@ CAMPAIGN_RE = re.compile(r"^hc0671-[a-z0-9][a-z0-9-]{5,55}$")
 COMMIT_RE = re.compile(r"^[0-9a-f]{40}$")
 RUN_ID_RE = re.compile(r"^[1-9][0-9]*$")
 ACTIVE_PERF_TITLE_RE = re.compile(
-    r"^CI dispatch (?:hc0671-[a-z0-9-]+:)?(?:qualification|qualify|full-dress(?:-[12])?|bootstrap(?:-[1-5])?)$"
+    r"^CI dispatch (?:hc0671-[a-z0-9-]+:)?(?:qualification|qualify|full-dress(?:-[12])?|bootstrap(?:-[1-5])?|frozen-candidate)$"
 )
 
 
@@ -896,6 +897,110 @@ def read_unique_member(archive_path: Path, basename: str) -> bytes:
         return archive.read(info)
 
 
+def read_evidence_member(archive_path: Path, relative: str, expected_sha256: str) -> bytes:
+    """Read one exact bounded evidence member without trusting ZIP paths."""
+    if (
+        not relative.startswith("target/test-evidence/0.67/")
+        or "\\" in relative
+        or relative.startswith("/")
+        or any(part in {"", ".", ".."} for part in relative.split("/"))
+        or not re.fullmatch(r"[0-9a-f]{64}", expected_sha256)
+    ):
+        raise CampaignError(f"unsafe bootstrap evidence identity: {relative}")
+    with zipfile.ZipFile(archive_path) as archive:
+        matches: list[zipfile.ZipInfo] = []
+        for info in archive.infolist():
+            name = info.filename.removeprefix("./")
+            if info.is_dir() or name.startswith("/") or "\\" in name or ".." in name.split("/"):
+                continue
+            if name == relative or name.endswith(f"/{relative}"):
+                matches.append(info)
+        if len(matches) != 1:
+            raise CampaignError(
+                f"expected one exact {relative} in {archive_path.name}, found {len(matches)}"
+            )
+        info = matches[0]
+        unix_mode = info.external_attr >> 16
+        if stat.S_ISLNK(unix_mode) or info.flag_bits & 0x1 or info.file_size > 64 * 1024 * 1024:
+            raise CampaignError(f"unsafe or oversized ZIP evidence member: {relative}")
+        data = archive.read(info)
+    if sha256_bytes(data) != expected_sha256:
+        raise CampaignError(f"bootstrap evidence digest mismatch: {relative}")
+    return data
+
+
+def materialize_bootstrap_input(
+    campaign_dir: Path,
+    index: int,
+    receipt_data: bytes,
+    diagnostic_archive: Path,
+) -> Path:
+    receipt = json_receipt(receipt_data, f"bootstrap sample {index}")
+    if receipt.get("sample_index") != index:
+        raise CampaignError(f"bootstrap input index mismatch: {index}")
+    evidence = receipt.get("evidence_files")
+    if not isinstance(evidence, list) or not evidence:
+        raise CampaignError(f"bootstrap sample {index} has no evidence manifest")
+    if len(evidence) > 256:
+        raise CampaignError(f"bootstrap sample {index} evidence manifest is oversized")
+    payloads: dict[str, bytes] = {"bootstrap-sample.json": receipt_data}
+    digests: dict[str, str] = {"bootstrap-sample.json": sha256_bytes(receipt_data)}
+    total_bytes = len(receipt_data)
+    for item in evidence:
+        if not isinstance(item, dict):
+            raise CampaignError(f"bootstrap sample {index} has malformed evidence identity")
+        relative = item.get("path")
+        digest = item.get("sha256")
+        if not isinstance(relative, str) or not isinstance(digest, str) or relative in payloads:
+            raise CampaignError(f"bootstrap sample {index} has duplicate/malformed evidence")
+        data = read_evidence_member(diagnostic_archive, relative, digest)
+        total_bytes += len(data)
+        if total_bytes > 512 * 1024 * 1024:
+            raise CampaignError(f"bootstrap sample {index} evidence exceeds 512 MiB")
+        payloads[relative] = data
+        digests[relative] = digest
+
+    output = campaign_dir / "reference-inputs" / f"sample-{index}"
+    if output.exists():
+        for relative, digest in digests.items():
+            path = output / relative
+            if not path.is_file() or path.is_symlink() or sha256_file(path) != digest:
+                raise CampaignError(f"materialized bootstrap input drift: sample-{index}/{relative}")
+        manifest = json.loads((output / "materialization.json").read_text(encoding="utf-8"))
+        if manifest.get("files") != digests:
+            raise CampaignError(f"materialized bootstrap manifest drift: sample-{index}")
+        return output
+
+    parent = output.parent
+    parent.mkdir(mode=0o700, exist_ok=True)
+    staging = parent / f".sample-{index}.partial"
+    if staging.exists():
+        shutil.rmtree(staging)
+    staging.mkdir(mode=0o700)
+    try:
+        for relative, data in payloads.items():
+            path = staging / relative
+            path.parent.mkdir(mode=0o700, parents=True, exist_ok=True)
+            with path.open("xb") as stream:
+                stream.write(data)
+            os.chmod(path, 0o444)
+        write_json_atomic(
+            staging / "materialization.json",
+            {
+                "schema_version": 1,
+                "sample_index": index,
+                "diagnostic_archive_sha256": sha256_file(diagnostic_archive),
+                "files": digests,
+            },
+            create=True,
+        )
+        os.replace(staging, output)
+    finally:
+        if staging.exists():
+            shutil.rmtree(staging)
+    return output
+
+
 def validate_host_admission_artifact(
     campaign_dir: Path,
     state: dict[str, Any],
@@ -974,6 +1079,46 @@ def validate_stage_artifacts(
     artifacts: dict[str, Path],
 ) -> dict[str, Any]:
     step = spec["name"]
+    if spec["mode"] == "frozen-candidate":
+        diagnostic = artifact_by_prefix(
+            artifacts,
+            f"performance-0671-frozen-candidate-{state['expected_sha']}-{run_id}",
+        )
+        validate_host_admission_artifact(campaign_dir, state, diagnostic)
+        data = read_unique_member(diagnostic, "frozen-candidate.json")
+        receipt = json_receipt(data, "frozen candidate receipt")
+        fingerprint = receipt.get("runner_fingerprint")
+        known_fingerprint = state["stages"].get("runner_fingerprint")
+        if (
+            receipt.get("release") != "0.67.1"
+            or receipt.get("profile") != "reference-v1"
+            or receipt.get("source_commit") != state["expected_sha"]
+            or receipt.get("github_run_id") != str(run_id)
+            or not isinstance(fingerprint, str)
+            or not re.fullmatch(r"[0-9a-f]{64}", fingerprint)
+            or (known_fingerprint is not None and fingerprint != known_fingerprint)
+            or receipt.get("passed") is not True
+            or receipt.get("ship_evidence_eligible") is not True
+            or not re.fullmatch(r"[0-9a-f]{64}", str(receipt.get("receipt_sha256", "")))
+        ):
+            raise CampaignError("frozen-candidate receipt identity/eligibility contract failed")
+        state["stages"]["runner_fingerprint"] = fingerprint
+        retained = retain_receipt(campaign_dir, "frozen-candidate.json", data)
+        aggregate = read_unique_member(diagnostic, "0.67.1.json")
+        aggregate_receipt = json_receipt(aggregate, "0.67.1 aggregate release evidence")
+        if (
+            aggregate_receipt.get("release") != "0.67.1"
+            or aggregate_receipt.get("source_commit") != state["expected_sha"]
+        ):
+            raise CampaignError("frozen-candidate aggregate evidence identity mismatch")
+        aggregate_path = retain_receipt(campaign_dir, "release-evidence-0.67.1.json", aggregate)
+        return {
+            "receipt": str(retained),
+            "receipt_sha256": sha256_bytes(data),
+            "aggregate": str(aggregate_path),
+            "aggregate_sha256": sha256_bytes(aggregate),
+        }
+
     if spec["mode"] == "qualify":
         diagnostic = artifact_by_prefix(artifacts, f"performance-0671-qualification-{state['expected_sha']}-{run_id}")
         validate_host_admission_artifact(campaign_dir, state, diagnostic)
@@ -1322,9 +1467,82 @@ def cargo_sample_set(campaign_dir: Path) -> Path:
     return retain_receipt(campaign_dir, "bootstrap-sample-set.json", data)
 
 
+def prepare_reference_inputs(campaign_dir: Path, state: dict[str, Any]) -> Path:
+    sample_set = Path(state["stages"].get("sample_set", ""))
+    expected_sample_set_sha = state["stages"].get("sample_set_sha256")
+    if (
+        not sample_set.is_file()
+        or not isinstance(expected_sample_set_sha, str)
+        or sha256_file(sample_set) != expected_sample_set_sha
+    ):
+        raise CampaignError("accepted bootstrap sample set is absent or changed")
+    inputs = campaign_dir / "reference-inputs"
+    inputs.mkdir(mode=0o700, exist_ok=True)
+    samples: list[dict[str, Any]] = []
+    for index in range(1, 6):
+        step = f"bootstrap-{index}"
+        stage = state["stages"].get(step, {})
+        run_id = stage.get("run_id")
+        receipt_path = Path(stage.get("receipt", ""))
+        if (
+            stage.get("status") != "completed"
+            or not isinstance(run_id, int)
+            or not receipt_path.is_file()
+            or sha256_file(receipt_path) != stage.get("receipt_sha256")
+        ):
+            raise CampaignError(f"accepted {step} receipt is absent or changed")
+        artifacts = download_artifacts(campaign_dir, state, run_id, step)
+        diagnostic = artifact_by_prefix(
+            artifacts,
+            f"performance-0671-bootstrap-{state['expected_sha']}-{run_id}",
+        )
+        sample_dir = materialize_bootstrap_input(
+            campaign_dir,
+            index,
+            receipt_path.read_bytes(),
+            diagnostic,
+        )
+        samples.append(
+            {
+                "sample_index": index,
+                "github_run_id": run_id,
+                "receipt_sha256": stage["receipt_sha256"],
+                "directory": str(sample_dir),
+                "diagnostic_archive_sha256": sha256_file(diagnostic),
+            }
+        )
+    sample_set_copy = inputs / "bootstrap-sample-set.json"
+    if sample_set_copy.exists():
+        if sample_set_copy.read_bytes() != sample_set.read_bytes():
+            raise CampaignError("materialized bootstrap sample set changed")
+    else:
+        with sample_set_copy.open("xb") as stream:
+            stream.write(sample_set.read_bytes())
+        os.chmod(sample_set_copy, 0o444)
+    manifest_path = inputs / "reference-inputs.json"
+    manifest = {
+        "schema_version": 1,
+        "release": "0.67.1",
+        "profile": "reference-v1",
+        "source_commit": state["expected_sha"],
+        "runner_fingerprint": state["stages"].get("runner_fingerprint"),
+        "sample_set_sha256": expected_sample_set_sha,
+        "samples": samples,
+    }
+    if manifest_path.exists():
+        if json.loads(manifest_path.read_text(encoding="utf-8")) != manifest:
+            raise CampaignError("materialized reference-input manifest changed")
+    else:
+        write_json_atomic(manifest_path, manifest, create=True)
+    return manifest_path
+
+
 def write_summary(campaign_dir: Path, state: dict[str, Any]) -> None:
     rows: list[str] = []
-    for name in ["qualification", "full-dress-1", "full-dress-2", *[f"bootstrap-{i}" for i in range(1, 6)]]:
+    names = ["qualification", "full-dress-1", "full-dress-2", *[f"bootstrap-{i}" for i in range(1, 6)]]
+    if "frozen-candidate" in state["stages"]:
+        names.append("frozen-candidate")
+    for name in names:
         stage = state["stages"].get(name, {})
         rows.append(
             f"| {name} | {stage.get('status', 'not-run')} | {stage.get('run_id', '')} | "
@@ -1367,9 +1585,11 @@ def write_summary(campaign_dir: Path, state: dict[str, Any]) -> None:
             "",
             "Original GitHub artifact ZIP files are retained under `runs/*/original-artifacts/`;",
             "their byte sizes and SHA-256 digests are recorded beside each run.",
+            "The exact W5 inputs are materialized without changing those ZIPs under",
+            "`reference-inputs/sample-{1..5}` and sealed by `reference-inputs/reference-inputs.json`.",
             "",
-            "This campaign is bootstrap evidence only after every repository gate and the final",
-            "sample-set validator pass. It never claims ship eligibility by itself.",
+            "Bootstrap campaigns remain non-ship inputs; only the separate post-activation",
+            "frozen-candidate campaign may produce ship-eligible evidence.",
             "",
         ]
     )
@@ -1404,11 +1624,60 @@ def command_run(args: argparse.Namespace) -> None:
     sample_set = cargo_sample_set(campaign_dir)
     state["stages"]["sample_set"] = str(sample_set)
     state["stages"]["sample_set_sha256"] = sha256_file(sample_set)
+    reference_inputs = prepare_reference_inputs(campaign_dir, state)
+    state["stages"]["reference_inputs"] = str(reference_inputs)
+    state["stages"]["reference_inputs_sha256"] = sha256_file(reference_inputs)
     state["phase"] = "complete"
     save_state(campaign_dir, state)
     append_event(campaign_dir, "campaign-completed")
     write_summary(campaign_dir, state)
     print(f"CAMPAIGN_COMPLETE=true campaign_dir={campaign_dir}")
+
+
+def command_prepare_review(args: argparse.Namespace) -> None:
+    campaign_dir = ensure_external_campaign_dir(Path(args.campaign_dir))
+    state = load_state(campaign_dir)
+    if state["phase"] not in {"complete", "closed"}:
+        raise CampaignError(f"prepare-review requires complete/closed state, found {state['phase']}")
+    require_tools(["gh", "git"])
+    ensure_checkout(state["expected_sha"])
+    manifest = prepare_reference_inputs(campaign_dir, state)
+    state["stages"]["reference_inputs"] = str(manifest)
+    state["stages"]["reference_inputs_sha256"] = sha256_file(manifest)
+    save_state(campaign_dir, state)
+    write_summary(campaign_dir, state)
+    print(f"REFERENCE_INPUTS_READY={manifest}")
+    print(
+        "NEXT=perf-reference --phase propose --sample-set "
+        f"{campaign_dir / 'reference-inputs/bootstrap-sample-set.json'} "
+        f"--samples-dir {campaign_dir / 'reference-inputs'}"
+    )
+
+
+def command_frozen(args: argparse.Namespace) -> None:
+    campaign_dir = ensure_external_campaign_dir(Path(args.campaign_dir))
+    state = load_state(campaign_dir)
+    if state["phase"] not in {"ready", "running"}:
+        raise CampaignError(f"frozen run requires a fresh ready/running campaign, found {state['phase']}")
+    require_tools(["gh", "git", "sudo", "systemctl"])
+    run_capture(["gh", "auth", "status"], cwd=repo_root())
+    ensure_checkout(state["expected_sha"])
+    validate_host_admission_state(campaign_dir, state)
+    pin_controller_to_housekeeping(state)
+    state["phase"] = "running"
+    save_state(campaign_dir, state)
+    execute_stage(
+        campaign_dir,
+        state,
+        {"name": "frozen-candidate", "mode": "frozen-candidate"},
+    )
+    ensure_runner_offline(campaign_dir)
+    run_host_action(campaign_dir, state, "check-frozen")
+    state["phase"] = "complete"
+    save_state(campaign_dir, state)
+    append_event(campaign_dir, "frozen-candidate-completed")
+    write_summary(campaign_dir, state)
+    print(f"FROZEN_CANDIDATE_COMPLETE=true campaign_dir={campaign_dir}")
 
 
 def command_status(args: argparse.Namespace) -> None:
@@ -1459,6 +1728,20 @@ def parser() -> argparse.ArgumentParser:
     run = subparsers.add_parser("run", help="execute qualification, full-dress, and bootstrap chain")
     run.add_argument("--campaign-dir", required=True)
     run.set_defaults(handler=command_run)
+
+    prepare_review = subparsers.add_parser(
+        "prepare-review",
+        help="materialize digest-verified W5 inputs from retained immutable artifact ZIPs",
+    )
+    prepare_review.add_argument("--campaign-dir", required=True)
+    prepare_review.set_defaults(handler=command_prepare_review)
+
+    frozen = subparsers.add_parser(
+        "run-frozen",
+        help="execute the separate post-activation frozen-candidate campaign",
+    )
+    frozen.add_argument("--campaign-dir", required=True)
+    frozen.set_defaults(handler=command_frozen)
 
     status = subparsers.add_parser("status", help="show the durable campaign state")
     status.add_argument("--campaign-dir", required=True)

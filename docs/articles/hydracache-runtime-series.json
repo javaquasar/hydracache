@@ -17,32 +17,29 @@
       "part": 1,
       "title": "Why Rust Needs Cache Semantics, Not Just Another Cache Map",
       "file": "001-why-rust-needs-cache-semantics.md",
-      "url": ""
+      "url": "https://medium.com/@artur.buzov/why-rust-needs-cache-semantics-not-just-another-cache-map-ecf3c4e01191"
     },
     {
       "part": 2,
-      "title": "Single-flight is not an optimization.",
-      "file": "003-single-flight-is-not-an-optimization.md",
-      "status": "planned",
-      "url": ""
+      "title": "Single-flight Is Not an Optimization",
+      "file": "002-single-flight-is-not-an-optimization.md",
+      "url": "https://medium.com/@artur.buzov/single-flight-is-not-an-optimization-85917bdbe77d"
     },
     {
       "part": 3,
-      "title": "TTL is not enough.",
-      "file": "004-ttl-is-not-enough.md",
-      "status": "planned",
-      "url": ""
+      "title": "TTL Is Not Enough",
+      "file": "003-ttl-is-not-enough.md",
+      "url": "https://medium.com/@artur.buzov/ttl-is-not-enough-ec4e96d89546"
     },
     {
       "part": 4,
-      "title": "Local-first distributed invalidation.",
-      "file": "005-local-first-distributed-invalidation.md",
-      "status": "planned",
-      "url": ""
+      "title": "Local-first Distributed Invalidation",
+      "file": "004-local-first-distributed-invalidation.md",
+      "url": "https://medium.com/@artur.buzov/local-first-distributed-invalidation-87bf0249e935"
     },
     {
-      "part": 5,
-      "title": "Typed query caching in Rust.",
+      "order": 5,
+      "title": "Typed Query Caching in Rust",
       "file": "006-typed-query-caching-in-rust.md",
       "status": "planned",
       "url": ""

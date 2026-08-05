@@ -11,6 +11,8 @@ use hydracache_loadgen::profile::{
 };
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
+use time::format_description::well_known::Rfc3339;
+use time::OffsetDateTime;
 
 use crate::perf::{
     sha256_file, verify_published_bundle, MachineAttestationReceipt, RunnerPreflightReport,
@@ -51,6 +53,7 @@ pub struct BootstrapSampleReceipt {
     pub profile: String,
     pub source_commit: String,
     pub github_run_id: String,
+    pub observed_at: String,
     pub runner_fingerprint: String,
     pub observed_runner: RunnerFingerprint,
     pub runner_provisioning_sha256: String,
@@ -205,6 +208,7 @@ fn build_sample(
         profile: PROFILE.to_owned(),
         source_commit: evidence.source_commit,
         github_run_id: evidence.github_run_id,
+        observed_at: OffsetDateTime::now_utc().format(&Rfc3339)?,
         runner_fingerprint: evidence.runner_fingerprint,
         observed_runner: evidence.observed_runner,
         runner_provisioning_sha256: evidence.runner_provisioning_sha256,
@@ -565,7 +569,7 @@ pub fn build_sample_set(samples_dir: &Path) -> Result<BootstrapSampleSetReceipt,
     })
 }
 
-fn validate_sample_receipt(sample: &BootstrapSampleReceipt) -> Result<(), Box<dyn Error>> {
+pub fn validate_sample_receipt(sample: &BootstrapSampleReceipt) -> Result<(), Box<dyn Error>> {
     let attestation_problems = reference_attestation_problems(&sample.observed_runner.attestation);
     let evidence_paths = sample
         .evidence_files
@@ -577,6 +581,7 @@ fn validate_sample_receipt(sample: &BootstrapSampleReceipt) -> Result<(), Box<dy
         || sample.profile != PROFILE
         || !is_git_commit(&sample.source_commit)
         || sample.github_run_id.parse::<u64>().is_err()
+        || OffsetDateTime::parse(&sample.observed_at, &Rfc3339).is_err()
         || !is_sha256(&sample.runner_fingerprint)
         || sample.observed_runner.fingerprint != sample.runner_fingerprint
         || sample.observed_runner.runner_class != REFERENCE_RUNNER_CLASS
@@ -599,6 +604,7 @@ fn validate_sample_receipt(sample: &BootstrapSampleReceipt) -> Result<(), Box<dy
             .is_some_and(|digest| !is_sha256(digest))
         || sample.predecessor_github_run_id.is_some() != sample.predecessor_receipt_sha256.is_some()
         || sample.evidence_files.is_empty()
+        || sample.evidence_files.len() > 256
         || evidence_paths.len() != sample.evidence_files.len()
         || sample
             .evidence_files

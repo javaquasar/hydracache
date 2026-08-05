@@ -70,6 +70,17 @@ class ReferenceCampaignTests(unittest.TestCase):
         self.assertIn("performance_0671_campaign=hc0671-rental-a1b2c3:bootstrap-3", joined)
         self.assertIn("full_dress_admission_run_id=200", joined)
         self.assertIn("bootstrap_predecessor_run_id=202", joined)
+        frozen = "\n".join(
+            campaign.dispatch_fields(
+                state,
+                {"name": "frozen-candidate", "mode": "frozen-candidate"},
+            )
+        )
+        self.assertIn("performance_0671_mode=frozen-candidate", frozen)
+        self.assertIn(
+            "performance_0671_campaign=hc0671-rental-a1b2c3:frozen-candidate",
+            frozen,
+        )
 
     def test_receipt_retention_is_immutable_and_sample_directory_is_exact(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
@@ -91,6 +102,52 @@ class ReferenceCampaignTests(unittest.TestCase):
                 output.writestr("b/bootstrap-sample.json", "{}")
             with self.assertRaises(campaign.CampaignError):
                 campaign.read_unique_member(archive, "bootstrap-sample.json")
+
+    def test_bootstrap_materialization_is_digest_bound_and_resumable(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            evidence = b'{"stable":true}\n'
+            relative = "target/test-evidence/0.67/report.json"
+            receipt = {
+                "sample_index": 1,
+                "evidence_files": [
+                    {"path": relative, "sha256": campaign.sha256_bytes(evidence)}
+                ],
+            }
+            receipt_data = (json.dumps(receipt) + "\n").encode()
+            archive = root / "diagnostic.zip"
+            with zipfile.ZipFile(archive, "w") as output:
+                output.writestr(relative, evidence)
+            materialized = campaign.materialize_bootstrap_input(
+                root, 1, receipt_data, archive
+            )
+            self.assertEqual((materialized / relative).read_bytes(), evidence)
+            self.assertEqual(
+                campaign.materialize_bootstrap_input(root, 1, receipt_data, archive),
+                materialized,
+            )
+            evidence_path = materialized / relative
+            evidence_path.chmod(0o600)
+            evidence_path.write_bytes(b"drift")
+            with self.assertRaises(campaign.CampaignError):
+                campaign.materialize_bootstrap_input(root, 1, receipt_data, archive)
+
+    def test_bootstrap_materialization_rejects_unsafe_or_ambiguous_members(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            archive = Path(temporary) / "artifact.zip"
+            evidence = b"value"
+            relative = "target/test-evidence/0.67/report.json"
+            with zipfile.ZipFile(archive, "w") as output:
+                output.writestr(relative, evidence)
+                output.writestr(f"duplicate/{relative}", evidence)
+            with self.assertRaises(campaign.CampaignError):
+                campaign.read_evidence_member(
+                    archive, relative, campaign.sha256_bytes(evidence)
+                )
+            with self.assertRaises(campaign.CampaignError):
+                campaign.read_evidence_member(
+                    archive, "../escape", campaign.sha256_bytes(evidence)
+                )
 
     def test_common_receipt_rejects_fingerprint_drift(self) -> None:
         state = base_state()

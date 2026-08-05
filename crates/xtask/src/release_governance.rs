@@ -814,20 +814,20 @@ pub fn release_0671_gate_contract_problems(gates: &[GateEntry]) -> Vec<String> {
         (
             "tool.perf-baseline-review-0671",
             "target/test-evidence/0.67.1/baseline-review.json",
-            "gated-proof-registry",
-            "Run registered gated proofs",
+            "release-0671-frozen-candidate",
+            "Revalidate committed five-sample independent review",
         ),
         (
             "tool.perf-reference-activation-0671",
             "target/test-evidence/0.67.1/reference-activation.json",
-            "gated-proof-registry",
-            "Run registered gated proofs",
+            "release-0671-frozen-candidate",
+            "Validate exact reference activation and TD closure",
         ),
         (
             "tool.perf-frozen-candidate-0671",
             "target/test-evidence/0.67.1/frozen-candidate.json",
-            "gated-proof-registry",
-            "Run registered gated proofs",
+            "release-0671-frozen-candidate",
+            "Seal exact frozen-candidate reference receipt",
         ),
     ];
     let mut problems = Vec::new();
@@ -876,6 +876,50 @@ pub fn release_0671_gate_contract_problems(gates: &[GateEntry]) -> Vec<String> {
             problems.push(
                 "0.67.1 attestation must use the reviewed housekeeping/tmpfs measurement wrapper"
                     .to_owned(),
+            );
+        }
+    }
+    for (id, phase) in [
+        ("tool.perf-baseline-review-0671", "reviewed"),
+        ("tool.perf-reference-activation-0671", "activate"),
+        ("tool.perf-frozen-candidate-0671", "frozen-candidate"),
+    ] {
+        let Some(gate) = gates.iter().find(|gate| gate.id == id) else {
+            continue;
+        };
+        let expected = [
+            "run",
+            "-p",
+            "xtask",
+            "--locked",
+            "--",
+            "perf-reference",
+            "--release",
+            "0.67.1",
+            "--profile",
+            "reference-v1",
+            "--phase",
+            phase,
+        ];
+        if gate.command.program != "cargo" || gate.command.args != expected {
+            problems.push(format!(
+                "0.67.1 stage gate {id} must execute the exact perf-reference {phase} phase"
+            ));
+        }
+    }
+    if let Some(frozen) = gates
+        .iter()
+        .find(|gate| gate.id == "tool.perf-frozen-candidate-0671")
+    {
+        if frozen
+            .command
+            .env
+            .get("HYDRACACHE_PERFORMANCE_0671_MODE")
+            .map(String::as_str)
+            != Some("frozen-candidate")
+        {
+            problems.push(
+                "0.67.1 frozen-candidate gate must require the exact trusted mode".to_owned(),
             );
         }
     }

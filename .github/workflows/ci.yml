@@ -35,6 +35,7 @@ on:
           - "qualify"
           - "full-dress"
           - "bootstrap"
+          - "frozen-candidate"
       performance_0671_campaign:
         description: "Optional controller correlation in the exact form campaign-id:unique-step"
         required: false
@@ -1291,6 +1292,133 @@ jobs:
             target/test-evidence/0.67.1/**
             target/release-evidence/receipts/**
           if-no-files-found: warn
+
+  release-0671-frozen-candidate:
+    name: 0.67.1 Frozen Candidate Reference Evidence
+    runs-on: [self-hosted, linux, x64, hydracache-perf-v1]
+    timeout-minutes: 360
+    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && inputs.performance_0671_mode == 'frozen-candidate' && inputs.candidate_release == '0.67.1'
+    concurrency:
+      group: release-067-performance-reference-v1
+      cancel-in-progress: false
+    env:
+      HYDRACACHE_RUN_PERF_REFERENCE: 1
+      HYDRACACHE_PERF_RUNNER_CLASS: self-hosted-bare-metal-v1
+      HYDRACACHE_PERFORMANCE_0671_MODE: frozen-candidate
+
+    steps:
+      - name: Validate optional frozen-candidate campaign correlation
+        shell: bash
+        env:
+          HYDRACACHE_CAMPAIGN: ${{ inputs.performance_0671_campaign }}
+        run: |
+          if [[ -n "$HYDRACACHE_CAMPAIGN" ]]; then
+            [[ "$HYDRACACHE_CAMPAIGN" =~ ^hc0671-[a-z0-9][a-z0-9-]{5,55}:frozen-candidate$ ]]
+          fi
+
+      - name: Checkout trusted frozen main
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+          clean: true
+
+      - name: Install pinned Rust 1.94.0
+        uses: dtolnay/rust-toolchain@1.94.0
+
+      - name: Clear only prior frozen-candidate evidence scratch
+        shell: bash
+        run: |
+          rm -rf -- \
+            target/test-evidence/0.67 \
+            target/test-evidence/0.67.1 \
+            target/release-evidence/receipts \
+            target/release-evidence/canaries
+
+      - name: Prepare tmpfs reference evidence
+        run: scripts/perf/reference-evidence-tmpfs.sh prepare
+
+      - name: Import frozen campaign host admission
+        run: scripts/perf/import-reference-campaign-admission.sh
+
+      - name: Revalidate committed five-sample independent review
+        run: cargo run -p xtask --locked -- evidence-run --release 0.67.1 --gate tool.perf-baseline-review-0671
+
+      - name: Validate exact reference activation and TD closure
+        run: cargo run -p xtask --locked -- evidence-run --release 0.67.1 --gate tool.perf-reference-activation-0671
+
+      - name: Build pinned redis-benchmark 7.2.5
+        shell: bash
+        run: |
+          tools_dir="$RUNNER_TEMP/hydracache-perf-tools"
+          mkdir --parents "$tools_dir"
+          cd "$tools_dir"
+          curl --proto '=https' --tlsv1.2 --fail --location --silent --show-error \
+            --output redis-7.2.5.tar.gz \
+            https://download.redis.io/releases/redis-7.2.5.tar.gz
+          printf '%s  redis-7.2.5.tar.gz\n' '5981179706f8391f03be91d951acafaeda91af7fac56beffb2701963103e423d' \
+            | sha256sum --check --strict -
+          rm -rf -- redis-7.2.5
+          tar --extract --gzip --file redis-7.2.5.tar.gz
+          env -i PATH=/usr/bin:/bin HOME=/tmp CC=gcc MALLOC=libc BUILD_TLS=no \
+            make -C redis-7.2.5 -j1 redis-benchmark
+          test "$(redis-7.2.5/src/redis-benchmark --version)" = "redis-benchmark 7.2.5"
+          echo "$tools_dir/redis-7.2.5/src" >> "$GITHUB_PATH"
+
+      - name: Import offline runner provisioning proof
+        run: cargo run -p xtask --locked -- evidence-run --release 0.67.1 --gate tool.perf-runner-provisioned-0671
+
+      - name: Attest and preflight the 0.67.1 host
+        run: cargo run -p xtask --locked -- evidence-run --release 0.67.1 --gate tool.perf-attestation-v5-0671
+
+      - name: Prebuild exact frozen performance binaries
+        run: cargo run -p xtask --locked -- evidence-run --release 0.67 --gate tool.perf-prebuild-067
+
+      - name: Run frozen-candidate core reference evidence
+        run: cargo run -p xtask --locked -- evidence-run --release 0.67 --gate env.hydracache-run-067-perf-core
+
+      - name: Start isolated rootless Docker for frozen Redis comparison
+        run: scripts/perf/rootless-docker.sh start
+
+      - name: Run frozen-candidate RESP and Redis reference evidence
+        run: cargo run -p xtask --locked -- evidence-run --release 0.67 --gate env.hydracache-run-067-perf-resp
+
+      - name: Stop isolated rootless Docker after frozen Redis comparison
+        if: always()
+        run: scripts/perf/rootless-docker.sh stop
+
+      - name: Run frozen-candidate real 3/5/7 daemon control-plane evidence
+        run: cargo run -p xtask --locked -- evidence-run --release 0.67 --gate env.hydracache-run-067-perf-control-plane
+
+      - name: Materialize tmpfs reference evidence
+        if: always()
+        run: scripts/perf/reference-evidence-tmpfs.sh materialize
+
+      - name: Check activated 0.67.1 reference budgets and rolling baseline
+        run: cargo run -p xtask --locked -- perf-budget-check --release 0.67.1 --profile reference-v1
+
+      - name: Execute complete 0.67.1 expected-red canary sweep
+        run: cargo run -p xtask --locked -- canary-sweep --release 0.67.1 --tier all
+
+      - name: Seal exact frozen-candidate reference receipt
+        run: cargo run -p xtask --locked -- evidence-run --release 0.67.1 --gate tool.perf-frozen-candidate-0671
+
+      - name: Aggregate exact 0.67.1 ship evidence
+        run: cargo run -p xtask --locked -- release-evidence --release 0.67.1 --receipts-dir target/release-evidence/receipts --require-ship
+
+      - name: Upload immutable frozen-candidate evidence
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: "performance-0671-frozen-candidate-${{ github.sha }}-${{ github.run_id }}"
+          path: |
+            target/test-evidence/0.67/**
+            target/test-evidence/0.67.1/**
+            target/release-evidence/canaries/0.67.1-*.json
+            target/release-evidence/receipts/**
+            target/release-evidence/0.67.1.json
+          if-no-files-found: error
+
   raft-loom:
     name: Raft Loom
     runs-on: ubuntu-latest

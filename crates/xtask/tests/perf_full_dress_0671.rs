@@ -201,7 +201,7 @@ fn full_dress_and_bootstrap_execute_the_same_reference_families_in_order() {
         .split("  release-0671-performance-bootstrap:")
         .nth(1)
         .unwrap()
-        .split("  raft-loom:")
+        .split("  release-0671-frozen-candidate:")
         .next()
         .unwrap();
     let commands = [

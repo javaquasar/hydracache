@@ -1,7 +1,9 @@
 #!/usr/bin/env node
 
 import { createRequire } from "node:module";
-import { mkdir, readFile } from "node:fs/promises";
+import { spawn } from "node:child_process";
+import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
+import os from "node:os";
 import path from "node:path";
 import process from "node:process";
 import { fileURLToPath } from "node:url";
@@ -14,14 +16,18 @@ const defaultProfile = ".playwright/medium-profile";
 
 function printUsage() {
   console.log(`Usage:
-  node scripts/medium-draft.mjs [--article <path>] [--profile <path>] [--url <url>]
+  node scripts/medium-draft.mjs [--article <path>] [--profile <path>] [--channel <name>] [--url <url>]
 
 Creates a Medium draft from a Markdown article and stops before publishing.
 
 Options:
   --article <path>   Markdown article path. Defaults to ${defaultArticle}
   --profile <path>   Persistent browser profile. Defaults to ${defaultProfile}
+  --channel <name>    Browser channel: chromium, chrome, or msedge. Defaults to chromium.
   --url <url>         Editor URL. Defaults to https://medium.com/new-story
+  --clipboard         Copy the article as rich HTML to the Windows clipboard and exit.
+  --clipboard-title   Copy only the article title as plain text to the Windows clipboard and exit.
+  --clipboard-body    Copy only the body as rich HTML, excluding title and leading cover image.
   --dry-run          Parse the article and print the title/body preview only.
   --help             Show this help.
 
@@ -35,7 +41,11 @@ function parseArgs(argv) {
   const options = {
     article: defaultArticle,
     profile: defaultProfile,
+    channel: "chromium",
     url: "https://medium.com/new-story",
+    clipboard: false,
+    clipboardTitle: false,
+    clipboardBody: false,
     dryRun: false
   };
 
@@ -44,6 +54,12 @@ function parseArgs(argv) {
 
     if (arg === "--help" || arg === "-h") {
       options.help = true;
+    } else if (arg === "--clipboard") {
+      options.clipboard = true;
+    } else if (arg === "--clipboard-title") {
+      options.clipboardTitle = true;
+    } else if (arg === "--clipboard-body") {
+      options.clipboardBody = true;
     } else if (arg === "--dry-run") {
       options.dryRun = true;
     } else if (arg === "--article") {
@@ -52,12 +68,23 @@ function parseArgs(argv) {
     } else if (arg === "--profile") {
       options.profile = requiredValue(argv, index, arg);
       index += 1;
+    } else if (arg === "--channel") {
+      options.channel = requiredValue(argv, index, arg);
+      index += 1;
     } else if (arg === "--url") {
       options.url = requiredValue(argv, index, arg);
       index += 1;
     } else {
       throw new Error(`Unknown argument: ${arg}`);
     }
+  }
+
+  if (!["chromium", "chrome", "msedge"].includes(options.channel)) {
+    throw new Error(`Unsupported browser channel: ${options.channel}`);
+  }
+  const clipboardModes = [options.clipboard, options.clipboardTitle, options.clipboardBody].filter(Boolean).length;
+  if (clipboardModes > 1) {
+    throw new Error("Use only one clipboard mode at a time.");
   }
 
   return options;
@@ -102,13 +129,16 @@ async function readArticle(articlePath) {
   const markdown = await readFile(absolutePath, "utf8");
   const { title, bodyMarkdown } = splitMarkdownArticle(markdown);
   const baseDir = path.dirname(absolutePath);
+  const bodyMarkdownWithoutCover = removeLeadingImages(bodyMarkdown);
 
   return {
     absolutePath,
     title,
     bodyMarkdown,
     bodyText: stripMarkdownComments(bodyMarkdown).trim(),
-    bodyHtml: await markdownToHtml(bodyMarkdown, baseDir)
+    bodyHtml: await markdownToHtml(bodyMarkdown, baseDir),
+    bodyTextWithoutCover: stripMarkdownComments(bodyMarkdownWithoutCover).trim(),
+    bodyHtmlWithoutCover: await markdownToHtml(bodyMarkdownWithoutCover, baseDir)
   };
 }
 
@@ -138,6 +168,23 @@ function splitMarkdownArticle(markdown) {
   ].join("\n");
 
   return { title, bodyMarkdown };
+}
+
+function removeLeadingImages(markdown) {
+  const lines = markdown.replace(/\r\n/g, "\n").split("\n");
+  let index = 0;
+  while (index < lines.length && lines[index].trim() === "") {
+    index += 1;
+  }
+
+  while (index < lines.length && /^!\[[^\]]*]\([^)]+\)\s*$/.test(lines[index].trim())) {
+    lines.splice(index, 1);
+    while (index < lines.length && lines[index].trim() === "") {
+      lines.splice(index, 1);
+    }
+  }
+
+  return lines.join("\n");
 }
 
 async function markdownToHtml(markdown, baseDir) {
@@ -333,6 +380,122 @@ function escapeAttribute(value) {
   return escapeHtml(value).replaceAll("'", "&#39;");
 }
 
+async function copyArticleToClipboard(article) {
+  if (process.platform !== "win32") {
+    throw new Error("--clipboard currently supports Windows only.");
+  }
+
+  const fragment = `<h1>${escapeHtml(article.title)}</h1>\n${article.bodyHtml}`;
+  const plainText = `${article.title}\n\n${article.bodyText}`;
+  await copyRichHtmlToClipboard(fragment, plainText);
+}
+
+async function copyBodyToClipboard(article) {
+  if (process.platform !== "win32") {
+    throw new Error("--clipboard-body currently supports Windows only.");
+  }
+
+  await copyRichHtmlToClipboard(article.bodyHtmlWithoutCover, article.bodyTextWithoutCover);
+}
+
+async function copyTitleToClipboard(article) {
+  if (process.platform !== "win32") {
+    throw new Error("--clipboard-title currently supports Windows only.");
+  }
+
+  await copyRichHtmlToClipboard(escapeHtml(article.title), article.title);
+}
+
+async function copyRichHtmlToClipboard(fragment, plainText) {
+  const clipboardHtml = toClipboardHtml(fragment);
+  const tempDir = await mkdtemp(path.join(os.tmpdir(), "hydracache-article-"));
+  const htmlPath = path.join(tempDir, "article.cfhtml");
+  const textPath = path.join(tempDir, "article.txt");
+
+  try {
+    await writeFile(htmlPath, clipboardHtml, "utf8");
+    await writeFile(textPath, plainText, "utf8");
+    await setWindowsClipboard(htmlPath, textPath);
+  } finally {
+    await rm(tempDir, { recursive: true, force: true });
+  }
+}
+
+function toClipboardHtml(fragment) {
+  const htmlPrefix = "<html><body><!--StartFragment-->";
+  const htmlSuffix = "<!--EndFragment--></body></html>";
+  const html = `${htmlPrefix}${fragment}${htmlSuffix}`;
+  const headerTemplate = [
+    "Version:0.9",
+    "StartHTML:0000000000",
+    "EndHTML:0000000000",
+    "StartFragment:0000000000",
+    "EndFragment:0000000000",
+    ""
+  ].join("\r\n");
+
+  const startHtml = Buffer.byteLength(headerTemplate, "utf8");
+  const startFragment = startHtml + Buffer.byteLength(htmlPrefix, "utf8");
+  const endFragment = startFragment + Buffer.byteLength(fragment, "utf8");
+  const endHtml = startHtml + Buffer.byteLength(html, "utf8");
+
+  const header = [
+    "Version:0.9",
+    `StartHTML:${padClipboardOffset(startHtml)}`,
+    `EndHTML:${padClipboardOffset(endHtml)}`,
+    `StartFragment:${padClipboardOffset(startFragment)}`,
+    `EndFragment:${padClipboardOffset(endFragment)}`,
+    ""
+  ].join("\r\n");
+
+  return `${header}${html}`;
+}
+
+function padClipboardOffset(value) {
+  return String(value).padStart(10, "0");
+}
+
+async function setWindowsClipboard(htmlPath, textPath) {
+  const command = `
+Add-Type -AssemblyName System.Windows.Forms
+$html = Get-Content -LiteralPath $env:HYDRACACHE_CLIPBOARD_HTML -Raw
+$text = Get-Content -LiteralPath $env:HYDRACACHE_CLIPBOARD_TEXT -Raw
+$data = New-Object System.Windows.Forms.DataObject
+$data.SetData([System.Windows.Forms.DataFormats]::Html, $html)
+$data.SetData([System.Windows.Forms.DataFormats]::UnicodeText, $text)
+[System.Windows.Forms.Clipboard]::SetDataObject($data, $true)
+`;
+
+  await runProcess("powershell.exe", ["-NoProfile", "-Sta", "-Command", command], {
+    ...process.env,
+    HYDRACACHE_CLIPBOARD_HTML: htmlPath,
+    HYDRACACHE_CLIPBOARD_TEXT: textPath
+  });
+}
+
+async function runProcess(command, args, env) {
+  await new Promise((resolve, reject) => {
+    const child = spawn(command, args, {
+      env,
+      stdio: ["ignore", "pipe", "pipe"],
+      windowsHide: true
+    });
+
+    let stderr = "";
+    child.stderr.on("data", (chunk) => {
+      stderr += chunk.toString();
+    });
+    child.on("error", reject);
+    child.on("close", (code) => {
+      if (code === 0) {
+        resolve();
+        return;
+      }
+      reject(new Error(stderr.trim() || `${command} exited with code ${code}`));
+    });
+  });
+}
+
 async function waitForMediumEditor(page) {
   console.log("Waiting for the Medium editor. Log in in the browser if Medium asks for it.");
 
@@ -404,11 +567,33 @@ async function main() {
     return;
   }
 
+  if (options.clipboard) {
+    await copyArticleToClipboard(article);
+    console.log("Article copied to the Windows clipboard as rich HTML.");
+    console.log("Open the Medium editor in your signed-in browser, click the title field, and press Ctrl+V.");
+    return;
+  }
+
+  if (options.clipboardTitle) {
+    await copyTitleToClipboard(article);
+    console.log("Article title copied to the Windows clipboard.");
+    console.log("Click the Medium title field and press Ctrl+V.");
+    return;
+  }
+
+  if (options.clipboardBody) {
+    await copyBodyToClipboard(article);
+    console.log("Article body copied to the Windows clipboard as rich HTML, excluding title and cover image.");
+    console.log("Click the Medium body field and press Ctrl+V. Upload the cover image separately.");
+    return;
+  }
+
   const { chromium } = await loadPlaywright();
   const profilePath = path.resolve(repoRoot, options.profile);
   await mkdir(profilePath, { recursive: true });
 
   const context = await chromium.launchPersistentContext(profilePath, {
+    ...(options.channel === "chromium" ? {} : { channel: options.channel }),
     headless: false,
     viewport: { width: 1440, height: 1000 }
   });

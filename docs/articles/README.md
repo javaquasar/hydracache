@@ -7,6 +7,13 @@ This directory contains external-facing article drafts for HydraCache.
 - [GitHub](https://github.com/javaquasar/hydracache)
 - [crates.io](https://crates.io/crates/hydracache)
 
+## Published Articles
+
+- 2026-07-31 - [001 - Why Rust Needs Cache Semantics, Not Just Another Cache Map](https://medium.com/@artur.buzov/why-rust-needs-cache-semantics-not-just-another-cache-map-ecf3c4e01191) - Medium
+- 2026-08-05 - [002 - Single-flight Is Not an Optimization](https://medium.com/@artur.buzov/single-flight-is-not-an-optimization-85917bdbe77d) - Medium
+- 2026-08-05 - [003 - TTL Is Not Enough](https://medium.com/@artur.buzov/ttl-is-not-enough-ec4e96d89546) - Medium
+- 2026-08-06 - [004 - Local-first Distributed Invalidation](https://medium.com/@artur.buzov/local-first-distributed-invalidation-87bf0249e935) - Medium
+
 ## Medium Drafting
 
 Create a Medium draft from the first article:
@@ -17,7 +24,28 @@ node scripts/medium-draft.mjs --article docs/articles/001-why-rust-needs-cache-s
 
 The script opens Medium in a persistent local browser profile, waits while you log in if needed, fills the draft, and stops before publishing.
 
-Article drafts should include a short series/resources block near the top with the current part number, planned series entries, GitHub, and crates.io links. Bare `https://` links are converted to clickable links by the Medium draft script.
+If Medium login does not respond in the default Playwright Chromium window, retry with the installed Chrome channel:
+
+```powershell
+node scripts/medium-draft.mjs --channel chrome --profile .playwright/medium-chrome-profile --article docs/articles/001-why-rust-needs-cache-semantics.md
+```
+
+If Medium blocks automated browsers with a security verification, copy the article as rich HTML and paste it into a signed-in Firefox or Chrome editor:
+
+```powershell
+node scripts/medium-draft.mjs --clipboard --article docs/articles/001-why-rust-needs-cache-semantics.md
+```
+
+For a more reliable Medium paste, copy the title and body separately. Upload the cover image manually:
+
+```powershell
+node scripts/medium-draft.mjs --clipboard-title --article docs/articles/001-why-rust-needs-cache-semantics.md
+node scripts/medium-draft.mjs --clipboard-body --article docs/articles/001-why-rust-needs-cache-semantics.md
+```
+
+Article drafts should include a short series/resources block near the top with the current publication state, planned series entries, GitHub, and crates.io links. Bare `https://` links are converted to clickable links by the Medium draft script.
+
+Draft and planned entries stay unnumbered in generated series blocks until they are published. Running `--set-url` records the public URL and promotes that draft to the next numbered series part.
 
 Refresh the generated series block after changing the series manifest at [hydracache-runtime-series.json](hydracache-runtime-series.json):
 
@@ -40,17 +68,23 @@ npm --prefix console install
 npx --prefix console playwright install chromium
 ```
 
-## Drafts
+## Article Sources
 
 - [001 - Why Rust Needs Cache Semantics, Not Just Another Cache Map](001-why-rust-needs-cache-semantics.md)
   - Cover: [001-why-rust-needs-cache-semantics-cover.png](001-why-rust-needs-cache-semantics-cover.png)
   - Prompt: [001-why-rust-needs-cache-semantics-cover.prompt.md](001-why-rust-needs-cache-semantics-cover.prompt.md)
-- [002 - Raft Snapshot Bugs, AI Agents, and the Cost of Ignoring Contradictions](002-raft-snapshot-agent-bug.md)
+- [002 - Single-flight Is Not an Optimization](002-single-flight-is-not-an-optimization.md)
+  - Cover: [002-single-flight-is-not-an-optimization-cover.png](002-single-flight-is-not-an-optimization-cover.png)
+  - Prompt: [002-single-flight-is-not-an-optimization-cover.prompt.md](002-single-flight-is-not-an-optimization-cover.prompt.md)
+- [003 - TTL Is Not Enough](003-ttl-is-not-enough.md)
+  - Cover: [003-ttl-is-not-enough-cover.png](003-ttl-is-not-enough-cover.png)
+  - Prompt: [003-ttl-is-not-enough-cover.prompt.md](003-ttl-is-not-enough-cover.prompt.md)
+- [004 - Local-first Distributed Invalidation](004-local-first-distributed-invalidation.md)
+  - Cover: [004-local-first-distributed-invalidation-cover.png](004-local-first-distributed-invalidation-cover.png)
+  - Prompt: [004-local-first-distributed-invalidation-cover.prompt.md](004-local-first-distributed-invalidation-cover.prompt.md)
+- [Draft - Raft Snapshot Bugs, AI Agents, and the Cost of Ignoring Contradictions](002-raft-snapshot-agent-bug.md)
   - Cover: [002-raft-snapshot-agent-bug-cover.jpg](002-raft-snapshot-agent-bug-cover.jpg)
 
 ## Planned Articles
 
-- 003 - Single-flight is not an optimization.
-- 004 - TTL is not enough.
-- 005 - Local-first distributed invalidation.
-- 006 - Typed query caching in Rust.
+- Planned - Typed Query Caching in Rust

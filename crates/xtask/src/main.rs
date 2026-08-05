@@ -26,6 +26,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         Some("perf-bootstrap") => xtask::perf_bootstrap::run(args.collect())?,
         Some("perf-full-dress") => xtask::perf_full_dress::run(args.collect())?,
         Some("perf-qualification") => xtask::perf_qualification::run(args.collect())?,
+        Some("perf-reference") => xtask::perf_reference::run(args.collect())?,
         Some("perf-runner-preflight") => xtask::perf::run_preflight(args.collect())?,
         Some("perf-budget-check") => xtask::perf_budget::run(args.collect())?,
         Some("quarantine-check") => xtask::quarantine::run(args.collect())?,
@@ -63,7 +64,8 @@ fn print_usage() {
          cargo xtask perf-bootstrap --release 0.67.1 --profile reference-v1 --phase <context|authorize|sample|sample-set>  # retain an admitted, chained non-ship bootstrap sample\n  \
          cargo xtask perf-full-dress --release 0.67.1 --profile reference-v1 --phase <context|receipt|admission>  # prove the complete workload twice before bootstrap\n  \
          cargo xtask perf-qualification --release 0.67.1 --profile reference-v1 --phase <context|finalize>  # validate a non-promotable dedicated host\n  \
-         cargo xtask perf-budget-check --release 0.67 --profile <reference-v1|ci-shared>  # validate receipt-bound macro budgets\n  \
+         cargo xtask perf-reference --release 0.67.1 --profile reference-v1 --phase <propose|review|reviewed|activate|frozen-candidate>  # derive, review, activate, and prove the reference contract\n  \
+         cargo xtask perf-budget-check --release <0.67|0.67.1> --profile <reference-v1|ci-shared>  # validate receipt-bound macro budgets\n  \
          cargo xtask quarantine-check --release 0.64  # validate temporary test quarantines\n  \
          cargo xtask raft-spec-check --structural|--scope <fast|canary|nightly>  # validate/run the pinned TLA+ model\n  \
          cargo xtask release-evidence --release 0.64  # derive the per-W release evidence matrix\n  \
