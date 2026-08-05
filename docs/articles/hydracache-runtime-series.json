@@ -32,11 +32,10 @@
       "url": "https://medium.com/@artur.buzov/ttl-is-not-enough-ec4e96d89546"
     },
     {
-      "order": 4,
+      "part": 4,
       "title": "Local-first Distributed Invalidation",
-      "file": "draft-local-first-distributed-invalidation.md",
-      "status": "draft",
-      "url": ""
+      "file": "004-local-first-distributed-invalidation.md",
+      "url": "https://medium.com/@artur.buzov/local-first-distributed-invalidation-87bf0249e935"
     },
     {
       "order": 5,

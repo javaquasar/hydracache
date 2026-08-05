@@ -12,7 +12,7 @@ You are reading: Part 1.
 - Part 1: Why Rust Needs Cache Semantics, Not Just Another Cache Map
 - [Part 2: Single-flight Is Not an Optimization](https://medium.com/@artur.buzov/single-flight-is-not-an-optimization-85917bdbe77d)
 - [Part 3: TTL Is Not Enough](https://medium.com/@artur.buzov/ttl-is-not-enough-ec4e96d89546)
-- Draft: Local-first Distributed Invalidation
+- [Part 4: Local-first Distributed Invalidation](https://medium.com/@artur.buzov/local-first-distributed-invalidation-87bf0249e935)
 - Planned: Typed Query Caching in Rust
 
 GitHub:

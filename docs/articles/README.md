@@ -12,6 +12,7 @@ This directory contains external-facing article drafts for HydraCache.
 - 2026-07-31 - [001 - Why Rust Needs Cache Semantics, Not Just Another Cache Map](https://medium.com/@artur.buzov/why-rust-needs-cache-semantics-not-just-another-cache-map-ecf3c4e01191) - Medium
 - 2026-08-05 - [002 - Single-flight Is Not an Optimization](https://medium.com/@artur.buzov/single-flight-is-not-an-optimization-85917bdbe77d) - Medium
 - 2026-08-05 - [003 - TTL Is Not Enough](https://medium.com/@artur.buzov/ttl-is-not-enough-ec4e96d89546) - Medium
+- 2026-08-06 - [004 - Local-first Distributed Invalidation](https://medium.com/@artur.buzov/local-first-distributed-invalidation-87bf0249e935) - Medium
 
 ## Medium Drafting
 
@@ -78,9 +79,9 @@ npx --prefix console playwright install chromium
 - [003 - TTL Is Not Enough](003-ttl-is-not-enough.md)
   - Cover: [003-ttl-is-not-enough-cover.png](003-ttl-is-not-enough-cover.png)
   - Prompt: [003-ttl-is-not-enough-cover.prompt.md](003-ttl-is-not-enough-cover.prompt.md)
-- [Draft - Local-first Distributed Invalidation](draft-local-first-distributed-invalidation.md)
-  - Cover: [draft-local-first-distributed-invalidation-cover.png](draft-local-first-distributed-invalidation-cover.png)
-  - Prompt: [draft-local-first-distributed-invalidation-cover.prompt.md](draft-local-first-distributed-invalidation-cover.prompt.md)
+- [004 - Local-first Distributed Invalidation](004-local-first-distributed-invalidation.md)
+  - Cover: [004-local-first-distributed-invalidation-cover.png](004-local-first-distributed-invalidation-cover.png)
+  - Prompt: [004-local-first-distributed-invalidation-cover.prompt.md](004-local-first-distributed-invalidation-cover.prompt.md)
 - [Draft - Raft Snapshot Bugs, AI Agents, and the Cost of Ignoring Contradictions](002-raft-snapshot-agent-bug.md)
   - Cover: [002-raft-snapshot-agent-bug-cover.jpg](002-raft-snapshot-agent-bug-cover.jpg)
 

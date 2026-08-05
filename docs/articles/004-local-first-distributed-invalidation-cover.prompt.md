@@ -1,4 +1,4 @@
-# Cover Prompt: Draft - Local-first Distributed Invalidation
+# Cover Prompt: 004 - Local-first Distributed Invalidation
 
 Create a 16:9 editorial technology cover image for an article titled "Local-first Distributed Invalidation".
 
