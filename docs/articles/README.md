@@ -11,6 +11,7 @@ This directory contains external-facing article drafts for HydraCache.
 
 - 2026-07-31 - [001 - Why Rust Needs Cache Semantics, Not Just Another Cache Map](https://medium.com/@artur.buzov/why-rust-needs-cache-semantics-not-just-another-cache-map-ecf3c4e01191) - Medium
 - 2026-08-05 - [002 - Single-flight Is Not an Optimization](https://medium.com/@artur.buzov/single-flight-is-not-an-optimization-85917bdbe77d) - Medium
+- 2026-08-05 - [003 - TTL Is Not Enough](https://medium.com/@artur.buzov/ttl-is-not-enough-ec4e96d89546) - Medium
 
 ## Medium Drafting
 
@@ -74,9 +75,9 @@ npx --prefix console playwright install chromium
 - [002 - Single-flight Is Not an Optimization](002-single-flight-is-not-an-optimization.md)
   - Cover: [002-single-flight-is-not-an-optimization-cover.png](002-single-flight-is-not-an-optimization-cover.png)
   - Prompt: [002-single-flight-is-not-an-optimization-cover.prompt.md](002-single-flight-is-not-an-optimization-cover.prompt.md)
-- [Draft - TTL Is Not Enough](draft-ttl-is-not-enough.md)
-  - Cover: [draft-ttl-is-not-enough-cover.png](draft-ttl-is-not-enough-cover.png)
-  - Prompt: [draft-ttl-is-not-enough-cover.prompt.md](draft-ttl-is-not-enough-cover.prompt.md)
+- [003 - TTL Is Not Enough](003-ttl-is-not-enough.md)
+  - Cover: [003-ttl-is-not-enough-cover.png](003-ttl-is-not-enough-cover.png)
+  - Prompt: [003-ttl-is-not-enough-cover.prompt.md](003-ttl-is-not-enough-cover.prompt.md)
 - [Draft - Raft Snapshot Bugs, AI Agents, and the Cost of Ignoring Contradictions](002-raft-snapshot-agent-bug.md)
   - Cover: [002-raft-snapshot-agent-bug-cover.jpg](002-raft-snapshot-agent-bug-cover.jpg)
 

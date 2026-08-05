@@ -26,11 +26,10 @@
       "url": "https://medium.com/@artur.buzov/single-flight-is-not-an-optimization-85917bdbe77d"
     },
     {
-      "order": 3,
+      "part": 3,
       "title": "TTL Is Not Enough",
-      "file": "draft-ttl-is-not-enough.md",
-      "status": "draft",
-      "url": ""
+      "file": "003-ttl-is-not-enough.md",
+      "url": "https://medium.com/@artur.buzov/ttl-is-not-enough-ec4e96d89546"
     },
     {
       "order": 4,

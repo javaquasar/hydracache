@@ -1,4 +1,4 @@
-# Cover Prompt: Draft - TTL Is Not Enough
+# Cover Prompt: 003 - TTL Is Not Enough
 
 Create a 16:9 editorial technology cover image for an article titled "TTL Is Not Enough".
 
