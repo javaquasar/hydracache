@@ -14,6 +14,14 @@ Before ordering hardware, require a green receipt from the
 That receipt is a rental-readiness check only and is never qualification or
 bootstrap evidence.
 
+The safe in-host portion of the next campaign can now be driven by the
+fail-closed controller documented in
+[`PERF_RUNNER_0_67_1_CAMPAIGN_AUTOMATION.md`](PERF_RUNNER_0_67_1_CAMPAIGN_AUTOMATION.md).
+It automates preparation, post-reboot freeze and IRQ burn-in, unique dispatch
+correlation, two full-dress runs, five serialized samples, original artifact
+retention, resume, and the final deletion handoff. Provider creation/deletion,
+credential entry/revocation, and the explicit reboot remain human boundaries.
+
 The detailed historical evidence remains in the immutable
 [`explore-0.67-telemetry-20260803`](https://github.com/javaquasar/hydracache/tree/explore-0.67-telemetry-20260803)
 archive tag, under:

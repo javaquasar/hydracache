@@ -145,3 +145,89 @@ fn host_tuning_is_allowlisted_reversible_and_fail_closed() {
         );
     }
 }
+
+#[test]
+fn reference_campaign_controller_is_serial_resumable_and_provider_safe() {
+    let controller = read("scripts/perf/reference_campaign.py");
+    let wrapper = read("scripts/perf/reference-campaign.sh");
+    let burn_in = read("scripts/perf/reference-host-irq-burn-in.sh");
+    let importer = read("scripts/perf/import-reference-campaign-admission.sh");
+    let workflow = read(".github/workflows/ci.yml");
+    let guide = read("docs/testing/PERF_RUNNER_0_67_1_CAMPAIGN_AUTOMATION.md");
+
+    assert!(wrapper.starts_with("#!/usr/bin/env bash\nset -euo pipefail\n"));
+    assert!(burn_in.starts_with("#!/usr/bin/env bash\nset -euo pipefail\n"));
+    assert!(controller.starts_with("#!/usr/bin/env python3\n"));
+    assert!(importer.starts_with("#!/usr/bin/env bash\nset -euo pipefail\n"));
+    for required in [
+        "reboot-required",
+        "host-admission-failed",
+        "assert_no_foreign_reference_runs",
+        "arm_runner_watchdog",
+        "check-frozen",
+        "reference-runtime-irq-guard.sh",
+        "original-artifacts",
+        "archive_sha256",
+        "bootstrap-samples/sample-",
+        "perf-bootstrap",
+        "sample-set",
+        "SAFE_TO_DELETE_SERVER=true",
+        "publish_host_admission",
+        "validate_host_admission_artifact",
+    ] {
+        assert!(
+            controller.contains(required),
+            "campaign controller lacks {required}"
+        );
+    }
+    for required in [
+        "duration_seconds=900",
+        "test \"$duration_seconds\" -ge 600",
+        "dd if=\"$device\" of=/dev/null",
+        "taskset --cpu-list \"$cpu\"",
+        "post-stimulus",
+        "post-idle",
+        "qualification_evidence: false",
+        "ship_evidence_eligible: false",
+    ] {
+        assert!(burn_in.contains(required), "IRQ burn-in lacks {required}");
+    }
+    assert!(!controller.contains("provider delete"));
+    assert!(!controller.contains("server delete"));
+    for required in [
+        "reference-campaign-host-admission.tar.gz",
+        "reference-campaign-admission.json",
+        "source_commit == $source_commit",
+        "host_admission_bundle_sha256 == $bundle_sha256",
+        "ship_evidence_eligible == false",
+        "cp --update=none --preserve=mode,timestamps",
+    ] {
+        assert!(
+            importer.contains(required),
+            "campaign admission importer lacks {required}"
+        );
+    }
+    assert!(workflow.contains("performance_0671_campaign:"));
+    assert!(workflow.contains("CI dispatch {0}"));
+    assert!(workflow.contains(":qualification$"));
+    assert!(workflow.contains(":full-dress-[12]$"));
+    assert!(workflow.contains(":bootstrap-[1-5]$"));
+    assert_eq!(
+        workflow
+            .matches("run: scripts/perf/import-reference-campaign-admission.sh")
+            .count(),
+        3
+    );
+    for required in [
+        "не создаёт и не удаляет сервер",
+        "qualification → full-dress-1 → full-dress-2",
+        "исходных ZIP",
+        "после первого отказа",
+        "SAFE_TO_DELETE_SERVER=true",
+    ] {
+        assert!(
+            guide.contains(required),
+            "campaign automation guide lacks {required}"
+        );
+    }
+}
