@@ -1,9 +1,10 @@
-# HydraCache 0.68.0 Migration Conformance & Borrowed Test Suites - Codex Execution Plan
+# HydraCache 0.69.0 Migration Conformance & Borrowed Test Suites - Codex Execution Plan
 
 > **At a glance**
 > - **What:** prove HydraCache's migration and compatibility claims with **other projects' own
 >   evidence**: (W1) execute a curated subset of **Hazelcast's own IMap/FencedLock test suite**
->   against the shipped `0.52` Java facade - the borrowed-conformance pattern Caffeine uses to run
+>   against the buildable `0.68` Java facade implementing the `0.52` surface contract - the
+>   borrowed-conformance pattern Caffeine uses to run
 >   Guava's cache testlib against itself and Scylla uses for DynamoDB (alternator); (W2) an
 >   embedded-cache semantics conformance set borrowed from the moka/caffeine expectations for the
 >   in-process API; (W3) run **real previously published HydraCache client binaries** (built from
@@ -16,10 +17,12 @@
 >   possible migration evidence, and each failure is either a real gap or a documented divergence.
 >   Likewise `0.64` W32 proves old **bytes** decode, but never runs an old **client binary**; and
 >   the `0.37`/`0.38` DB track predates the canary/falsifiability discipline entirely.
-> - **After (depends on):** `0.67.0` (release chain); consumes `0.52` (Java facade), `0.49`
->   (client protocol/SDK), `0.37`/`0.38` (DB track), and the `0.64` governance machinery.
+> - **After (depends on):** `0.68.0` (generated client plane, live remote subscriptions, and the
+>   first buildable Java SDK/facade); also consumes `0.52` (surface contract), `0.49` (legacy
+>   client protocol/SDK), `0.37`/`0.38` (DB track), and the `0.64` governance machinery.
 > - **Unblocks:** a defensible "Hazelcast-migration ready for the claimed subset" statement backed
->   by Hazelcast's own tests, and client-upgrade guidance backed by executed old binaries.
+>   by Hazelcast's own tests, client-upgrade guidance backed by executed old binaries, and the
+>   stable post-HC/2 surface required by the `0.70` memory-efficiency release.
 > - **Status:** planned.
 >
 > Roadmap: [`INDEX.md`](INDEX.md) - rules: [`../RULES.md`](../RULES.md) -
@@ -65,7 +68,8 @@ item - never a silent skip and never a quiet feature addition (`R-11`).
 
 Re-grep before implementing:
 
-- `0.52` Java facade: the `hydracache-java`/facade artifacts, lock lease/session/reentrancy tests,
+- `0.68` Java SDK/facade: the buildable `hydracache-java-client` and Hazelcast-shaped facade
+  artifacts, live connection/listener/session tests, lock lease/session/reentrancy tests,
   IMap CAS (`replace(k,old,new)`, `remove(k,val)`), entry-listener bus wiring, and the reversed
   unsupported-manifest lock subset rows.
 - `0.49` client protocol/SDK conformance harness (Rust/Python SDK conformance), the published tags
@@ -99,8 +103,8 @@ Populate as W-items land: item -> where implemented -> required command -> bound
 source of thousands of expectations. Every red result is signal: a real gap, a divergence to
 document, or future work to name.
 
-**Files to change.** New JVM module (e.g., `java/hazelcast-compat-suite/` or alongside the `0.52`
-facade module) with a pinned Hazelcast source/test-jar version; a **borrowed-suite manifest**
+**Files to change.** New JVM module (e.g., `java/hazelcast-compat-suite/` alongside the `0.68`
+generated SDK/facade modules) with a pinned Hazelcast source/test-jar version; a **borrowed-suite manifest**
 `docs/integrations/hazelcast_borrowed_suite.json` in the `0.63` conformance style: every borrowed
 test class/method -> `expected: pass | divergence-documented | unsupported-documented | skipped(reason)`;
 a runner that executes the curated subset against the facade and diffs actual vs manifest.
@@ -163,20 +167,22 @@ completes a session. Handshake negotiation, retry behavior, and error mapping on
 real artifact.
 
 **Files to change.** `crates/hydracache-server/tests/legacy_client_matrix.rs` + an xtask helper that
-builds pinned client artifacts from the shipped tags (`v0.62.x`, `v0.63.0`) into a cache directory
+builds pinned client artifacts from the shipped tags (`v0.62.x`, `v0.63.0`, and `v0.68.0`) into a cache directory
 (recorded commit + toolchain, `0.64` W32 provenance discipline); a matrix manifest
 `docs/testing/compat/legacy-clients.toml` (tag -> surface -> expected outcome).
 
 **Design.**
 - Each legacy client runs its supported subset (handshake, get/put, TTL where its protocol version
-  allows, lock ops for `v0.63`) against a current daemon; per the protocol contract, `v2`/`v3`
-  clients must succeed on their surface and **never** receive `v4` shapes.
+  allows, lock ops for `v0.63`) against a current daemon; the `v0.68.0` generated client additionally
+  proves the first production client-plane generation, live subscription, reconnect, and lock-session
+  surface. Per the protocol contract, `v2`/`v3` clients must succeed on their surface and **never**
+  receive `v4` or generation-2 shapes.
 - A legacy client offered an unsupported operation fails loud with the documented error, not a hang.
 - Skip-loud when a tag cannot be built reproducibly; the row stays visibly non-green (`R-11`), the
   same rule as W32's baseline decision.
 
 **Required tests:**
-- `v062_and_v063_client_binaries_complete_their_supported_surface_against_current_server`;
+- `v062_v063_and_v068_client_binaries_complete_their_supported_surface_against_current_server`;
 - `legacy_clients_never_receive_v4_shapes_and_fail_loud_beyond_their_surface`.
 
 **Canary.** `canary_legacy_matrix_marks_an_unbuilt_tag_green`.
@@ -220,46 +226,48 @@ cargo test -p hydracache-db --test cached_vs_direct_differential --locked -j 2
 
 ## W5. Governance, CI, And Docs
 
-- `docs/testing/release-evidence/0.68.toml` work items for W1-W4 with receipts;
-  `release-evidence --release 0.68 --require-ship` is the ship gate. Register every gated lane
+- `docs/testing/release-evidence/0.69.toml` work items for W1-W4 with receipts;
+  `release-evidence --release 0.69 --require-ship` is the ship gate. Register every gated lane
   (JVM, legacy-tag builds, Postgres) in the gated-test registry with tier/timeout/owner; canary
   pairs in the canary registry; quarantine rules unchanged.
-- Extend `release-governance-check --release 0.68` coverage (structural manifest checks for the
+- Extend `release-governance-check --release 0.69` coverage (structural manifest checks for the
   three new manifests: borrowed-suite, cache-semantics, legacy-clients).
 - Docs: `docs/integrations/hazelcast-migration-evidence.md` - what the borrowed suite proves, the
   divergence ledger, and the standing rule that the migration claim never exceeds the manifest;
   reconcile `GATES.md`/`TESTING.md`/`COMPAT.md`/`releases.toml`/`INDEX.md`/plan header/
-  `docs/releases/0.68.0.md`; `doc-check` green.
+  `docs/releases/0.69.0.md`; `doc-check` green.
 
 **DoD.**
 ```powershell
-cargo run --manifest-path crates\xtask\Cargo.toml -- release-governance-check --release 0.68
-cargo run --manifest-path crates\xtask\Cargo.toml -- release-evidence --release 0.68
+cargo run --manifest-path crates\xtask\Cargo.toml -- release-governance-check --release 0.69
+cargo run --manifest-path crates\xtask\Cargo.toml -- release-evidence --release 0.69
 cargo run --manifest-path crates\xtask\Cargo.toml -- doc-check
 ```
 
 ## Gates (Definition of Done for the release)
 
-- The borrowed Hazelcast subset executes against the `0.52` Java facade with **every** outcome
+- The borrowed Hazelcast subset executes against the buildable `0.68` Java facade implementing
+  the `0.52` surface contract with **every** outcome
   matching the versioned manifest - unexpected passes are as red as unexpected failures; every
   divergence/unsupported row carries a reason; the pinned Hazelcast version is a reviewed input;
   the swallow-canary is caught.
 - The embedded cache semantics set executes every manifest row (count-checked) and matches; rows
   our API intentionally lacks are `unsupported-documented`, never silently green.
-- Real `v0.62.x`/`v0.63.0` client binaries complete their supported surface against the current
-  server, never receive `v4` shapes, fail loud beyond their surface, and an unbuildable tag is
-  visibly non-green rather than substituted.
+- Real `v0.62.x`/`v0.63.0` HC/1 and `v0.68.0` HC/2 client binaries complete their supported
+  surface against the current server; legacy clients never receive `v4` or HC/2-only shapes,
+  all clients fail loud beyond their surface, and an unbuildable tag is visibly non-green rather
+  than substituted.
 - The DB differential holds per declared consistency mode under seeded concurrent writes, is exact
   after quiescence, and the dropped-invalidation canary is detected.
 - Every suite/canary/gated lane is registered in the `0.64` governance machinery; a green
-  `release-evidence --release 0.68 --require-ship` on the candidate commit is the ship gate; all
+  `release-evidence --release 0.69 --require-ship` on the candidate commit is the ship gate; all
   lanes run locally and in GitHub CI with skip-loud discipline.
 - No product surface was widened to satisfy a borrowed test; every red result became a narrow fix
   with regression, a reasoned divergence row, or named future work (`R-11`).
 
 ## Final Release Decision
 
-Ship `0.68.0` only when the compatibility story is proven by evidence we did not author: Hazelcast's
+Ship `0.69.0` only when the compatibility story is proven by evidence we did not author: Hazelcast's
 own tests pass (or are reasoned) against the Java facade under an exact-outcome manifest; borrowed
 embedded-cache expectations execute completely; real previously shipped client binaries talk to the
 current server within their protocol contract; and the oldest shipped surface - the DB query cache -

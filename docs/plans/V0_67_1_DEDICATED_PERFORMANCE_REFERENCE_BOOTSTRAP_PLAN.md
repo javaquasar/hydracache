@@ -9,7 +9,8 @@
 >   [`TD-0013`](../technical-debt/TD-0013-dedicated-performance-runner-and-baseline-bootstrap.md)
 >   remains open because the reference workflow has never run on qualifying hardware.
 > - **Depends on:** shipped `0.67.0`.
-> - **Unblocks:** official, narrowly scoped reference evidence and the planned `0.68.0` migration
+> - **Unblocks:** official, narrowly scoped reference evidence, the planned `0.68.0` generated
+>   client plane, and the subsequent `0.69.0` migration
 >   conformance release.
 > - **Status:** planned.
 >
