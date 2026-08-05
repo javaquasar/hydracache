@@ -134,13 +134,14 @@ async function fileExists(filePath) {
 }
 
 function buildSeriesBlock(manifest, currentArticle) {
+  const currentLabel = readingLabel(currentArticle);
   const lines = [
     `<!-- article-series:start ${manifest.id} -->`,
     `## ${manifest.title}`,
     "",
     manifest.description,
     "",
-    `You are reading: Part ${currentArticle.part}.`,
+    `You are reading: ${currentLabel}.`,
     ""
   ];
 
@@ -159,18 +160,35 @@ function buildSeriesBlock(manifest, currentArticle) {
   return `${lines.join("\n")}\n`;
 }
 
+function readingLabel(article) {
+  if (article.status === "draft") {
+    return "Draft";
+  }
+  if (article.status === "planned") {
+    return "Planned article";
+  }
+  return `Part ${article.part}`;
+}
+
 function articleLine(article, currentArticle) {
-  const label = `Part ${article.part}: ${article.title}`;
-  if (article.part === currentArticle.part) {
+  const label = articleLabel(article);
+  if (article === currentArticle) {
     return `- ${label}`;
   }
   if (article.url) {
     return `- [${label}](${article.url})`;
   }
-  if (article.status === "planned") {
-    return `- ${label} (planned)`;
-  }
   return `- ${label}`;
+}
+
+function articleLabel(article) {
+  if (article.status === "draft") {
+    return `Draft: ${article.title}`;
+  }
+  if (article.status === "planned") {
+    return `Planned: ${article.title}`;
+  }
+  return `Part ${article.part}: ${article.title}`;
 }
 
 function replaceOrInsertSeriesBlock(markdown, manifest, currentArticle) {
@@ -261,6 +279,10 @@ async function main() {
     const articleEntry = findArticleEntry(manifestContext.manifest, manifestContext.dir, options.article);
     if (options.setUrl) {
       articleEntry.entry.url = options.setUrl;
+      delete articleEntry.entry.status;
+      if (!Number.isInteger(articleEntry.entry.part)) {
+        articleEntry.entry.part = nextPublishedPart(manifestContext.manifest, articleEntry.entry);
+      }
       if (!options.dryRun) {
         await writeFile(manifestContext.absolutePath, `${JSON.stringify(manifestContext.manifest, null, 2)}\n`, "utf8");
         console.log(`Updated ${path.relative(repoRoot, manifestContext.absolutePath)}`);
@@ -280,3 +302,12 @@ main().catch((error) => {
   console.error(error instanceof Error ? error.message : String(error));
   process.exitCode = 1;
 });
+
+function nextPublishedPart(manifest, currentArticle) {
+  return manifest.articles.reduce((nextPart, article) => {
+    if (article === currentArticle || !Number.isInteger(article.part)) {
+      return nextPart;
+    }
+    return Math.max(nextPart, article.part + 1);
+  }, 1);
+}
