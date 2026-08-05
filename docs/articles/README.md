@@ -74,11 +74,13 @@ npx --prefix console playwright install chromium
 - [002 - Single-flight Is Not an Optimization](002-single-flight-is-not-an-optimization.md)
   - Cover: [002-single-flight-is-not-an-optimization-cover.png](002-single-flight-is-not-an-optimization-cover.png)
   - Prompt: [002-single-flight-is-not-an-optimization-cover.prompt.md](002-single-flight-is-not-an-optimization-cover.prompt.md)
+- [Draft - TTL Is Not Enough](draft-ttl-is-not-enough.md)
+  - Cover: [draft-ttl-is-not-enough-cover.png](draft-ttl-is-not-enough-cover.png)
+  - Prompt: [draft-ttl-is-not-enough-cover.prompt.md](draft-ttl-is-not-enough-cover.prompt.md)
 - [Draft - Raft Snapshot Bugs, AI Agents, and the Cost of Ignoring Contradictions](002-raft-snapshot-agent-bug.md)
   - Cover: [002-raft-snapshot-agent-bug-cover.jpg](002-raft-snapshot-agent-bug-cover.jpg)
 
 ## Planned Articles
 
-- Planned - TTL is not enough.
 - Planned - Local-first distributed invalidation.
 - Planned - Typed query caching in Rust.

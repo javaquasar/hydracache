@@ -27,9 +27,9 @@
     },
     {
       "order": 3,
-      "title": "TTL is not enough.",
-      "file": "004-ttl-is-not-enough.md",
-      "status": "planned",
+      "title": "TTL Is Not Enough",
+      "file": "draft-ttl-is-not-enough.md",
+      "status": "draft",
       "url": ""
     },
     {
