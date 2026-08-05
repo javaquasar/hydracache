@@ -33,14 +33,14 @@
     },
     {
       "order": 4,
-      "title": "Local-first distributed invalidation.",
-      "file": "005-local-first-distributed-invalidation.md",
-      "status": "planned",
+      "title": "Local-first Distributed Invalidation",
+      "file": "draft-local-first-distributed-invalidation.md",
+      "status": "draft",
       "url": ""
     },
     {
       "order": 5,
-      "title": "Typed query caching in Rust.",
+      "title": "Typed Query Caching in Rust",
       "file": "006-typed-query-caching-in-rust.md",
       "status": "planned",
       "url": ""

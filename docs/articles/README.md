@@ -78,10 +78,12 @@ npx --prefix console playwright install chromium
 - [003 - TTL Is Not Enough](003-ttl-is-not-enough.md)
   - Cover: [003-ttl-is-not-enough-cover.png](003-ttl-is-not-enough-cover.png)
   - Prompt: [003-ttl-is-not-enough-cover.prompt.md](003-ttl-is-not-enough-cover.prompt.md)
+- [Draft - Local-first Distributed Invalidation](draft-local-first-distributed-invalidation.md)
+  - Cover: [draft-local-first-distributed-invalidation-cover.png](draft-local-first-distributed-invalidation-cover.png)
+  - Prompt: [draft-local-first-distributed-invalidation-cover.prompt.md](draft-local-first-distributed-invalidation-cover.prompt.md)
 - [Draft - Raft Snapshot Bugs, AI Agents, and the Cost of Ignoring Contradictions](002-raft-snapshot-agent-bug.md)
   - Cover: [002-raft-snapshot-agent-bug-cover.jpg](002-raft-snapshot-agent-bug-cover.jpg)
 
 ## Planned Articles
 
-- Planned - Local-first distributed invalidation.
-- Planned - Typed query caching in Rust.
+- Planned - Typed Query Caching in Rust
