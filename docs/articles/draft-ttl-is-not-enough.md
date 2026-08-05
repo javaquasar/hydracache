@@ -189,6 +189,72 @@ A 30 second TTL and a five minute TTL are just numbers. A `negative_cache()` pol
 
 That makes the cache reviewable.
 
+## A few practical policies
+
+This is the kind of review I want cache code to make possible.
+
+Not just:
+
+```text
+TTL = 60 seconds
+```
+
+But:
+
+```text
+User profile
+key: user:42
+tags: user:42, users
+ttl: 5 minutes
+invalidate when the profile write commits
+stale-on-loader-error: optional, only if the UI can tolerate an older profile
+```
+
+That policy says what the value is, what write should remove it, and when stale data is allowed.
+
+A search result has a different shape:
+
+```text
+Search results
+key: tenant:7:search:q:rust:page:1:sort:recent
+tags: tenant:7, users
+ttl: 30 seconds
+invalidate when searchable user data changes, if the product needs that precision
+stale behavior: usually strict, unless approximate search is acceptable
+```
+
+The key must include the dimensions that change the result: tenant, query, page, sort, permission scope, locale, or whatever else affects visibility. TTL cannot repair a key that forgot an authorization dimension.
+
+Tenant settings are different again:
+
+```text
+Tenant settings
+key: tenant:7:settings
+tags: tenant:7, tenant:7:settings
+ttl: none or long
+invalidate explicitly when settings are updated
+stale behavior: usually strict
+```
+
+For settings, the write path is often the best freshness signal. A short TTL may hide missing invalidation in testing, then still produce confusing behavior in production.
+
+Negative lookups deserve their own policy too:
+
+```text
+Missing entity
+key: user:404
+tags: users
+ttl: 30 seconds
+invalidate when the collection changes
+stale behavior: no
+```
+
+Caching absence can be useful when repeated misses are expensive, but absence can become false as soon as the entity is created. That is why negative caching should usually be short-lived and explicitly named.
+
+None of these examples are universal. That is the point.
+
+The useful thing is not the exact TTL. The useful thing is writing down the relationship between lookup identity, invalidation ownership, expiration, and stale tolerance.
+
 ## Freshness and availability are different knobs
 
 TTL is often used to answer two different questions:
