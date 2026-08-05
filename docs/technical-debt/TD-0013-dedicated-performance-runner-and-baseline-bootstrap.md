@@ -46,7 +46,9 @@ Close this debt only when all of the following are independently verified:
 
 - `docs/plans/V0_67_PERFORMANCE_CHARACTERIZATION_PLAN.md`
 - `docs/PERFORMANCE.md`
-- `docs/testing/PERF_RUNNER_0_67.md`
+- `docs/testing/PERF_RUNNER_0_67_1.md`
+- `docs/testing/PERF_REFERENCE_0_67_1_REVIEW_AND_ACTIVATION.md`
 - `docs/testing/perf-profiles/reference-v1.toml`
 - `docs/testing/perf-budgets/0.67/reference-v1.toml`
 - `docs/testing/perf-baselines/0.67/reference-v1.toml`
+- future reviewed activation paths: `docs/testing/perf-{anchors,baselines,budgets,reviews}/0.67.1/`

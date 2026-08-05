@@ -160,23 +160,23 @@
     {
       "w_item": "W5",
       "guard": {
-        "file": "crates/xtask/tests/release_governance.rs",
-        "function": "release_0671_governance_contract_is_fail_closed"
+        "file": "crates/xtask/tests/perf_reference_0671.rs",
+        "function": "reference_proposal_uses_all_five_samples_and_median_not_fastest"
       },
       "canary": {
-        "file": "crates/xtask/tests/release_governance.rs",
-        "function": "canary_release_0671_governance_accepts_a_missing_stage_gate"
+        "file": "crates/xtask/tests/perf_reference_0671.rs",
+        "function": "canary_reference_review_accepts_silent_numerical_rebaseline"
       },
       "guard_command": {
         "program": "cargo",
-        "args": ["test", "-p", "xtask", "--test", "release_governance", "--locked", "release_0671_governance_contract_is_fail_closed", "--", "--nocapture"],
+        "args": ["test", "-p", "xtask", "--test", "perf_reference_0671", "--locked", "reference_proposal_uses_all_five_samples_and_median_not_fastest", "--", "--nocapture"],
         "env": {},
         "cwd": ".",
         "platform": "any"
       },
       "canary_command": {
         "program": "cargo",
-        "args": ["test", "-p", "xtask", "--test", "release_governance", "--locked", "canary_release_0671_governance_accepts_a_missing_stage_gate", "--", "--nocapture"],
+        "args": ["test", "-p", "xtask", "--test", "perf_reference_0671", "--locked", "canary_reference_review_accepts_silent_numerical_rebaseline", "--", "--nocapture"],
         "env": {"HYDRACACHE_CANARY_DEFECT": "W5"},
         "cwd": ".",
         "platform": "any"
@@ -191,23 +191,23 @@
     {
       "w_item": "W6",
       "guard": {
-        "file": "crates/xtask/tests/release_governance.rs",
-        "function": "release_0671_governance_contract_is_fail_closed"
+        "file": "crates/xtask/tests/perf_reference_0671.rs",
+        "function": "activation_is_fail_closed_against_self_baseline_and_unreviewed_drift"
       },
       "canary": {
-        "file": "crates/xtask/tests/release_governance.rs",
-        "function": "canary_release_0671_governance_accepts_a_missing_stage_gate"
+        "file": "crates/xtask/tests/perf_reference_0671.rs",
+        "function": "canary_reference_activation_accepts_candidate_self_baseline"
       },
       "guard_command": {
         "program": "cargo",
-        "args": ["test", "-p", "xtask", "--test", "release_governance", "--locked", "release_0671_governance_contract_is_fail_closed", "--", "--nocapture"],
+        "args": ["test", "-p", "xtask", "--test", "perf_reference_0671", "--locked", "activation_is_fail_closed_against_self_baseline_and_unreviewed_drift", "--", "--nocapture"],
         "env": {},
         "cwd": ".",
         "platform": "any"
       },
       "canary_command": {
         "program": "cargo",
-        "args": ["test", "-p", "xtask", "--test", "release_governance", "--locked", "canary_release_0671_governance_accepts_a_missing_stage_gate", "--", "--nocapture"],
+        "args": ["test", "-p", "xtask", "--test", "perf_reference_0671", "--locked", "canary_reference_activation_accepts_candidate_self_baseline", "--", "--nocapture"],
         "env": {"HYDRACACHE_CANARY_DEFECT": "W6"},
         "cwd": ".",
         "platform": "any"
@@ -222,23 +222,23 @@
     {
       "w_item": "W7",
       "guard": {
-        "file": "crates/xtask/tests/release_governance.rs",
-        "function": "release_0671_governance_contract_is_fail_closed"
+        "file": "crates/xtask/tests/perf_reference_0671.rs",
+        "function": "frozen_candidate_gate_is_wired_to_full_pipeline"
       },
       "canary": {
-        "file": "crates/xtask/tests/release_governance.rs",
-        "function": "canary_release_0671_governance_accepts_a_missing_stage_gate"
+        "file": "crates/xtask/tests/perf_reference_0671.rs",
+        "function": "canary_frozen_candidate_accepts_stale_activation_identity"
       },
       "guard_command": {
         "program": "cargo",
-        "args": ["test", "-p", "xtask", "--test", "release_governance", "--locked", "release_0671_governance_contract_is_fail_closed", "--", "--nocapture"],
+        "args": ["test", "-p", "xtask", "--test", "perf_reference_0671", "--locked", "frozen_candidate_gate_is_wired_to_full_pipeline", "--", "--nocapture"],
         "env": {},
         "cwd": ".",
         "platform": "any"
       },
       "canary_command": {
         "program": "cargo",
-        "args": ["test", "-p", "xtask", "--test", "release_governance", "--locked", "canary_release_0671_governance_accepts_a_missing_stage_gate", "--", "--nocapture"],
+        "args": ["test", "-p", "xtask", "--test", "perf_reference_0671", "--locked", "canary_frozen_candidate_accepts_stale_activation_identity", "--", "--nocapture"],
         "env": {"HYDRACACHE_CANARY_DEFECT": "W7"},
         "cwd": ".",
         "platform": "any"

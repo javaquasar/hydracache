@@ -109,6 +109,21 @@ Release 0.67 ships performance methodology and tooling without numerical perform
 
 The deferred gates remain registered, protected, serialized, and fail-closed. Missing tools, unstable spread, wrong fingerprints, stale artifacts, insufficient baseline history, or candidate self-baselining stays red. GitHub-hosted `ci-shared` results remain tripwires only and cannot support any numerical release claim.
 
+### Release 0.67.1 activation stages
+
+Release 0.67.1 adds explicit W5-W7 gates without changing the historical 0.67 measurement
+commands:
+
+| Gate | Command | Required result |
+|---|---|---|
+| Reviewed five-sample contract | `perf-reference --release 0.67.1 --profile reference-v1 --phase reviewed` | Rehashes the independently approved committed profile, budget, baseline, and anchor; retains transitive sample-set, five-sample, provisioning, and full-dress digests. |
+| Reference activation | `perf-reference --release 0.67.1 --profile reference-v1 --phase activate` | Exactly one reviewed fingerprint, bootstrapped contracts, no candidate self-baseline, TD-0013 resolved, and scoped release notes. |
+| Frozen candidate | `perf-reference --release 0.67.1 --profile reference-v1 --phase frozen-candidate` | Current-SHA activation, complete core/RESP/control evidence, passed 0.67.1 budget verdict, and every expected-red canary. |
+
+The three gates run in the trusted manual `release-0671-frozen-candidate` job. Bootstrap and frozen
+candidate are separate serialized campaigns. See
+[`testing/PERF_REFERENCE_0_67_1_REVIEW_AND_ACTIVATION.md`](testing/PERF_REFERENCE_0_67_1_REVIEW_AND_ACTIVATION.md).
+
 ## Chaos / soak / Docker (nightly / pre-release)
 
 Per RULES R-5 these run behind `#[ignore]` and are not in `verify`:

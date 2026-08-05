@@ -18,14 +18,17 @@
 > [`V0_67_PERFORMANCE_CHARACTERIZATION_PLAN.md`](V0_67_PERFORMANCE_CHARACTERIZATION_PLAN.md)
 > - runner runbook: [`../testing/PERF_RUNNER_0_67_1.md`](../testing/PERF_RUNNER_0_67_1.md)
 > - gates: [`../GATES.md`](../GATES.md) - testing: [`../TESTING.md`](../TESTING.md)
+> - W5-W7 runbook:
+>   [`../testing/PERF_REFERENCE_0_67_1_REVIEW_AND_ACTIVATION.md`](../testing/PERF_REFERENCE_0_67_1_REVIEW_AND_ACTIVATION.md)
 
 Read [`CLAUDE.md`](../../CLAUDE.md), [`docs/RULES.md`](../RULES.md),
 [`docs/PERFORMANCE.md`](../PERFORMANCE.md), and [`docs/GATES.md`](../GATES.md) first.
 This is an evidence/bootstrap patch, not an optimization or product-surface release.
 
-**Preparation state:** W0-W3 and W4 acquisition/aggregation machinery are prepared on the release
-branch; live qualification remains blocked on creation of the dedicated host. This does not advance
-the release manifest beyond `planned` or satisfy any runtime stage receipt.
+**Preparation state:** W0-W4 acquisition/aggregation and W5-W7 deterministic
+proposal/review/activation/frozen-candidate machinery are prepared. Live evidence is still required;
+this does not advance the release manifest beyond `planned`, resolve TD-0013, or satisfy any runtime
+stage receipt.
 
 ## Live bootstrap correction: isolate orchestration I/O from measurement CPUs
 

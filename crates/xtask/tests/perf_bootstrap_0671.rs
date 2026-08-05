@@ -58,6 +58,7 @@ fn sample(
         profile: "reference-v1".to_owned(),
         source_commit: SHA.to_owned(),
         github_run_id: run.to_string(),
+        observed_at: format!("2026-08-{:02}T12:00:00Z", run),
         runner_fingerprint: fingerprint.to_owned(),
         observed_runner: RunnerFingerprint {
             runner_class: REFERENCE_RUNNER_CLASS.to_owned(),
@@ -196,7 +197,7 @@ fn bootstrap_workflow_collects_full_reference_families_without_ship_promotion() 
         .split("  release-0671-performance-bootstrap:")
         .nth(1)
         .unwrap()
-        .split("  raft-loom:")
+        .split("  release-0671-frozen-candidate:")
         .next()
         .unwrap();
     assert!(!bootstrap_job.contains("Check 0.67 performance budgets"));

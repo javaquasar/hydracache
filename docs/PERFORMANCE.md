@@ -51,6 +51,15 @@ They remain fail-closed on missing capability, runner mismatch, unstable spread,
 
 The committed `reference-v1` profile, anchor, budgets, and baseline stay `unbootstrapped`. Closure requires the protected runner, at least five eligible stable successful `main` runs from one fingerprint/contract family, independent anchor/baseline/budget review, activation without candidate self-baselining, and one fully green frozen-candidate reference pipeline.
 
+Release 0.67.1 prepares that closure as an explicit two-campaign protocol. The pre-activation
+bootstrap SHA contributes exactly five non-ship samples; deterministic W5 automation derives a
+median-based contract from all five and a separate identity reviews the exact bytes. Only after
+those bytes are committed may a new exact `main` SHA run the full frozen-candidate ship gate. The
+canonical activated budget/baseline paths are under `0.67.1`; the underlying report and scenario
+schema remains the 0.67 measurement contract. Preparation alone does not activate a numerical
+claim or resolve TD-0013. Operational details are in
+[`testing/PERF_REFERENCE_0_67_1_REVIEW_AND_ACTIVATION.md`](testing/PERF_REFERENCE_0_67_1_REVIEW_AND_ACTIVATION.md).
+
 ## Quotation rule
 
 No numerical 0.67 release claim is currently permitted. Exploratory output must be labeled exploratory and must not appear as capacity floors, sizing advice, comparative claims, or release baselines. After TD-0013 closes, any quoted number must identify its report, scenario, fingerprint, profile, commit, method, and claim scope.

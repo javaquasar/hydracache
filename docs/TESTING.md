@@ -1316,7 +1316,13 @@ The canonical methodology and claim boundary are in [`PERFORMANCE.md`](PERFORMAN
 
 `ci-shared` remains a broad-tolerance hosted regression tripwire. `reference-v1` remains reserved for the protected `hydracache-perf-v1` self-hosted bare-metal runner. Its preflight, fingerprint, SLO, repeat, zero-error, and 15% spread rules are unchanged, but its five execution gates are deferred evidence gates rather than 0.67 ship-mandatory receipts.
 
-The reference job starts only through an explicit trusted-`main` dispatch with `run_reference_performance=true`. Runs serialize through `release-067-performance-reference-v1`; the runner may remain offline while TD-0013 is open. Provisioning and bootstrap steps are in [`testing/PERF_RUNNER_0_67.md`](testing/PERF_RUNNER_0_67.md).
+The reference jobs start only through an explicit trusted-`main` workflow dispatch with
+`performance_0671_mode` set to `qualify`, `full-dress`, `bootstrap`, or `frozen-candidate`. Runs
+serialize through `release-067-performance-reference-v1`; the runner may remain offline while
+TD-0013 is open. Provisioning/bootstrap steps are in
+[`testing/PERF_RUNNER_0_67_1.md`](testing/PERF_RUNNER_0_67_1.md), and deterministic review,
+activation, and the separate frozen campaign are in
+[`testing/PERF_REFERENCE_0_67_1_REVIEW_AND_ACTIVATION.md`](testing/PERF_REFERENCE_0_67_1_REVIEW_AND_ACTIVATION.md).
 
 The eventual host-side sequence remains:
 
@@ -1338,6 +1344,11 @@ unset HYDRACACHE_PERF_RUNNER_CLASS HYDRACACHE_RUN_PERF_REFERENCE HYDRACACHE_RUN_
 ```
 
 These commands are deliberately fail-closed and are not expected to pass before bootstrap. Closing TD-0013 requires at least five eligible, stable, successful `main` runs from one fingerprint/contract family, independent review of the anchor, rolling window, and budget, activation of `reference-v1`, and a complete green frozen-candidate reference run. Candidate, failed, quarantined, unstable, stale, mixed-fingerprint, or self-baselining runs remain ineligible.
+
+The campaign controller retains every original GitHub ZIP and also materializes a digest-verified
+W5 input tree. `prepare-review` can reconstruct that tree from retained ZIPs; `run-frozen` controls
+the separate post-activation dispatch and leaves the runner offline afterward. Neither command
+creates, deletes, or powers off provider resources.
 
 The RESP gate describes one selected node-local endpoint and a method-scoped same-box Redis comparison. The control-plane gate describes real daemon metadata/admin behavior. Neither may be converted into a distributed value-plane or general Redis-replacement claim.
 

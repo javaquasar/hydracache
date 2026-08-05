@@ -126,6 +126,7 @@ fn sample(
         profile: "reference-v1".to_owned(),
         source_commit: SHA.to_owned(),
         github_run_id: run_id.to_string(),
+        observed_at: format!("2026-08-{index:02}T12:00:00Z"),
         runner_fingerprint: FINGERPRINT.to_owned(),
         observed_runner: runner(FINGERPRINT),
         runner_provisioning_sha256: "6".repeat(64),

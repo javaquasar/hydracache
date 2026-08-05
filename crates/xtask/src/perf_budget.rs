@@ -41,8 +41,11 @@ pub const RELEASE: &str = "0.67.0";
 pub const PROFILE_ROOT: &str = "docs/testing/perf-profiles";
 pub const BUDGET_ROOT: &str = "docs/testing/perf-budgets/0.67";
 pub const BASELINE_ROOT: &str = "docs/testing/perf-baselines/0.67";
+pub const BUDGET_ROOT_0671: &str = "docs/testing/perf-budgets/0.67.1";
+pub const BASELINE_ROOT_0671: &str = "docs/testing/perf-baselines/0.67.1";
 pub const PREBUILD_MANIFEST_PATH: &str = "target/test-evidence/0.67/prebuild-manifest.json";
 pub const VERDICT_PATH: &str = "target/test-evidence/0.67/perf-budget-verdict.json";
+pub const VERDICT_PATH_0671: &str = "target/test-evidence/0.67.1/perf-budget-verdict.json";
 pub const DEFAULT_MINIMUM_MEMBERS: usize = 5;
 pub const DEFAULT_MAXIMUM_MEMBERS: usize = 10;
 pub const DEFAULT_MAXIMUM_AGE_DAYS: i64 = 30;
@@ -841,9 +844,12 @@ impl BudgetVerdict {
 }
 
 pub fn run(args: Vec<String>) -> Result<(), PerfBudgetError> {
-    let options = Options::parse(args)?;
-    let root = options.root;
-    let bundle = load_bundle(&root, &options.release, &options.profile)?;
+    let Options {
+        root,
+        release,
+        profile,
+    } = Options::parse(args)?;
+    let bundle = load_bundle(&root, &release, &profile)?;
     let mut problems = validate_contract_bundle(&bundle);
     let reports = match load_candidate_reports(&root, &bundle.budget) {
         Ok(reports) => reports,
@@ -855,6 +861,9 @@ pub fn run(args: Vec<String>) -> Result<(), PerfBudgetError> {
     problems.extend(validate_checkout_receipt(&root, &bundle, &reports));
     let now = OffsetDateTime::now_utc();
     let mut verdict = evaluate(&bundle, &reports, now);
+    if release == "0.67.1" {
+        verdict.payload.release = release.clone();
+    }
     verdict.payload.problems.extend(problems);
     verdict.payload.problems.sort();
     verdict.payload.problems.dedup();
@@ -865,7 +874,7 @@ pub fn run(args: Vec<String>) -> Result<(), PerfBudgetError> {
         };
     }
     verdict = BudgetVerdict::new(verdict.payload);
-    write_verdict(&root, &verdict)?;
+    write_verdict_for_release(&root, &release, &verdict)?;
     match verdict.payload.status {
         VerdictStatus::Passed => {
             println!("perf-budget-check: reference budgets passed");
@@ -915,8 +924,10 @@ impl Options {
             }
         }
         let release = release.ok_or_else(|| PerfBudgetError::new("--release is required"))?;
-        if release != "0.67" && release != RELEASE {
-            return Err(PerfBudgetError::new("only release 0.67 is supported"));
+        if release != "0.67" && release != RELEASE && release != "0.67.1" {
+            return Err(PerfBudgetError::new(
+                "only releases 0.67 and 0.67.1 are supported",
+            ));
         }
         let profile = profile.ok_or_else(|| PerfBudgetError::new("--profile is required"))?;
         if profile != "reference-v1" && profile != "ci-shared" {
@@ -924,9 +935,14 @@ impl Options {
                 "unknown performance profile {profile:?}"
             )));
         }
+        if release == "0.67.1" && profile != "reference-v1" {
+            return Err(PerfBudgetError::new(
+                "release 0.67.1 supports only reference-v1",
+            ));
+        }
         Ok(Self {
             root,
-            release: RELEASE.to_owned(),
+            release,
             profile,
         })
     }
@@ -952,14 +968,19 @@ pub fn load_bundle(
     release: &str,
     profile: &str,
 ) -> Result<ContractBundle, PerfBudgetError> {
-    if release != RELEASE {
+    if release != RELEASE && release != "0.67" && release != "0.67.1" {
         return Err(PerfBudgetError::new(format!(
             "unsupported performance release {release:?}"
         )));
     }
     let profile_path = root.join(PROFILE_ROOT).join(format!("{profile}.toml"));
-    let budget_path = root.join(BUDGET_ROOT).join(format!("{profile}.toml"));
-    let baseline_path = root.join(BASELINE_ROOT).join(format!("{profile}.toml"));
+    let (budget_root, baseline_root) = if release == "0.67.1" {
+        (BUDGET_ROOT_0671, BASELINE_ROOT_0671)
+    } else {
+        (BUDGET_ROOT, BASELINE_ROOT)
+    };
+    let budget_path = root.join(budget_root).join(format!("{profile}.toml"));
+    let baseline_path = root.join(baseline_root).join(format!("{profile}.toml"));
     let profile_bytes = read_bounded(&profile_path)?;
     let budget_bytes = read_bounded(&budget_path)?;
     let baseline_bytes = read_bounded(&baseline_path)?;
@@ -6302,7 +6323,28 @@ pub fn rolling_summaries(
 }
 
 pub fn write_verdict(root: &Path, verdict: &BudgetVerdict) -> Result<(), PerfBudgetError> {
-    let path = root.join(VERDICT_PATH);
+    write_verdict_at(root, VERDICT_PATH, verdict)
+}
+
+pub fn write_verdict_for_release(
+    root: &Path,
+    release: &str,
+    verdict: &BudgetVerdict,
+) -> Result<(), PerfBudgetError> {
+    let relative = if release == "0.67.1" {
+        VERDICT_PATH_0671
+    } else {
+        VERDICT_PATH
+    };
+    write_verdict_at(root, relative, verdict)
+}
+
+fn write_verdict_at(
+    root: &Path,
+    relative: &str,
+    verdict: &BudgetVerdict,
+) -> Result<(), PerfBudgetError> {
+    let path = root.join(relative);
     let parent = path
         .parent()
         .ok_or_else(|| PerfBudgetError::new("verdict path has no parent"))?;
