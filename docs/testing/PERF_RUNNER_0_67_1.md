@@ -25,6 +25,18 @@ The commands are intentionally split into local Windows PowerShell, remote root,
 administrator, and GitHub runner-user sections. Do not paste an entire section blindly. Run one
 block at a time, inspect its output, and stop on any failed assertion.
 
+Before creating a billed host, record the named spend/deletion owners with
+`scripts/perf/reference-rental-readiness.py` as described in the
+[next-rental playbook](PERF_RUNNER_NEXT_RENTAL_PLAYBOOK.md). After installing
+the reviewed CPU/IRQ isolation and rebooting, run
+`prepare-reference-host.sh irq-layout-preflight` before entering a runner
+registration token or completing runner registration. These receipts reduce
+wasted rental time but remain non-evidence and do not replace W2/W3.
+
+Separate indicative reports are defined in
+[`PERF_INDICATIVE_0_67_1.md`](PERF_INDICATIVE_0_67_1.md). Their numbers may be
+used for optimization hypotheses only and never satisfy this runbook.
+
 > **Evidence boundary**
 >
 > Provisioning and runner registration do not approve the machine. Until W2 machine attestation

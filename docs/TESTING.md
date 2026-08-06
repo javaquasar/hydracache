@@ -1324,6 +1324,13 @@ TD-0013 is open. Provisioning/bootstrap steps are in
 activation, and the separate frozen campaign are in
 [`testing/PERF_REFERENCE_0_67_1_REVIEW_AND_ACTIVATION.md`](testing/PERF_REFERENCE_0_67_1_REVIEW_AND_ACTIVATION.md).
 
+Developer-facing numerical characterization may be published separately under
+the machine-readable `indicative-exploratory-v1` boundary documented in
+[`testing/PERF_INDICATIVE_0_67_1.md`](testing/PERF_INDICATIVE_0_67_1.md). That
+tier is always non-authoritative, non-capacity-bearing, and ineligible for
+qualification, bootstrap, or ship evidence. Its optional RAM-only storage mode
+is diagnostic only and does not change the protected reference contract.
+
 The eventual host-side sequence remains:
 
 ```bash

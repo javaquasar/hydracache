@@ -1,0 +1,30 @@
+{
+  "schema_version": 1,
+  "policy_id": "reference-rental-procurement-0.67.1-v1",
+  "release": "0.67.1",
+  "required_resource_kind": "hourly-bare-metal",
+  "required_operating_system": "Ubuntu 24.04 LTS x86_64",
+  "maximum_authorized_hours": 72,
+  "required_owner_fields": [
+    "rental_operator",
+    "billing_owner",
+    "deletion_owner"
+  ],
+  "required_decision_fields": [
+    "decision_reference",
+    "main_ci_run_url",
+    "main_sha"
+  ],
+  "forbidden_record_fields": [
+    "api_key",
+    "billing_identifier",
+    "project_id",
+    "public_ip",
+    "runner_token",
+    "ssh_private_key"
+  ],
+  "provider_resource_must_be_deleted_to_stop_billing": true,
+  "qualification_evidence": false,
+  "bootstrap_evidence": false,
+  "ship_evidence_eligible": false
+}

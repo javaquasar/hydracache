@@ -4,6 +4,12 @@ This branch (explore/0.67-telemetry-hazelcast) prepares a separate
 exploratory study. It is not release evidence, qualification evidence, or a
 bootstrap sample, and it never writes target/test-evidence.
 
+Current runs bind the machine-readable
+`indicative-exploratory-v1` policy documented in
+[`../../PERF_INDICATIVE_0_67_1.md`](../../PERF_INDICATIVE_0_67_1.md).
+The generated receipt and manifest explicitly prohibit capacity, sizing,
+portable-ranking, qualification, bootstrap, and ship claims.
+
 ## Targets and workload
 
 The existing eight cases, SET/GET operations, payloads, key range, requests,
@@ -66,6 +72,12 @@ The output directory must be copied unchanged into a date-stamped exploratory
 results directory together with the branch commit, image metadata, raw logs,
 hardware-validation.txt, and telemetry-summary.json. Do not copy these files
 into the qualification artifact tree.
+
+For the optional RAM-only diagnostic, set
+`EXPLORATORY_STORAGE_MODE=ram-only` and choose an output path below `/dev/shm`.
+The harness verifies that the resolved output filesystem is `tmpfs` and records
+the mode. This isolates output and Hydra diagnostic data I/O only; it neither
+changes the workload nor relaxes IRQ validation.
 
 At the end of the run the script also writes:
 

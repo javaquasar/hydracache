@@ -30,6 +30,15 @@ proposal/review/activation/frozen-candidate machinery are prepared. Live evidenc
 this does not advance the release manifest beyond `planned`, resolve TD-0013, or satisfy any runtime
 stage receipt.
 
+**Non-ship readiness additions:** a separate `indicative-exploratory-v1` tier
+provides reproducible same-host characterization without capacity or sizing
+claims; a procurement admission names spend/deletion owners before rental; a
+RAM-only exploratory mode helps isolate I/O hypotheses; and an early read-only
+IRQ layout probe can reject an unsuitable rental before runner registration.
+None of these additions changes or satisfies W1-W7, and none weakens the
+reference workload, SLO, repetitions, zero-error, spread, calibration,
+affinity, quota, privacy, identity, or fail-closed checks.
+
 ## Live bootstrap correction: isolate orchestration I/O from measurement CPUs
 
 The first v5 bootstrap acquisition on the qualified host was rejected without promotion by the
