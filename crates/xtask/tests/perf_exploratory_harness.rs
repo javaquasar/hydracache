@@ -1,4 +1,8 @@
 use std::fs;
+use std::process::Command;
+use std::time::{SystemTime, UNIX_EPOCH};
+
+use serde_json::Value;
 
 fn read(path: &str) -> String {
     let root = xtask::doc_check::find_repo_root().unwrap();
@@ -25,6 +29,97 @@ fn relative_eight_runner_keeps_targets_workloads_and_provenance_explicit() {
     assert!(runner.contains("source_commit=$(git rev-parse HEAD)"));
     assert!(runner.contains("runner_receipt_sha256="));
     assert!(runner.contains("reference-runtime-irq-delta-guard.sh"));
+    assert!(runner.contains("EXPLORATORY_STORAGE_MODE-filesystem"));
+    assert!(runner.contains("ram-only diagnostics require output below /dev/shm"));
+    assert!(runner.contains("findmnt --noheadings --output FSTYPE"));
+    assert!(runner.contains("evidence_class=indicative-exploratory-v1"));
+    assert!(runner.contains("capacity_bearing=false"));
+    assert!(runner.contains("ship_evidence_eligible=false"));
+    assert!(runner.contains("perf-policies/indicative-exploratory-v1.json"));
+}
+
+#[test]
+fn indicative_policy_and_report_are_non_authoritative_and_non_promotable() {
+    let policy: Value = serde_json::from_str(&read(
+        "docs/testing/perf-policies/indicative-exploratory-v1.json",
+    ))
+    .unwrap();
+    let renderer = read("scripts/perf/render-exploratory-report.py");
+    let documentation = read("docs/testing/PERF_INDICATIVE_0_67_1.md");
+
+    assert_eq!(policy["policy_id"], "indicative-exploratory-v1");
+    assert_eq!(policy["evidence_class"], "indicative-exploratory-v1");
+    for field in [
+        "authoritative",
+        "capacity_bearing",
+        "qualification_evidence",
+        "bootstrap_evidence",
+        "ship_evidence_eligible",
+    ] {
+        assert_eq!(policy[field], false, "indicative policy changed {field}");
+        assert!(renderer.contains(&format!("\"{field}\": False")));
+    }
+    assert_eq!(policy["allowed_storage_modes"][0], "filesystem");
+    assert_eq!(policy["allowed_storage_modes"][1], "ram-only");
+    assert!(renderer.contains("indicative-receipt.json"));
+    assert!(renderer.contains("production sizing guidance"));
+    assert!(documentation.contains("never a substitute for"));
+    assert!(documentation.contains("It does not"));
+    assert!(documentation.contains("relax either IRQ guard"));
+}
+
+#[test]
+fn indicative_renderer_emits_a_sealed_negative_claim_receipt() {
+    let repo = xtask::doc_check::find_repo_root().unwrap();
+    let nonce = SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .unwrap()
+        .as_nanos();
+    let root = std::env::temp_dir().join(format!(
+        "hydracache-indicative-render-{}-{nonce}",
+        std::process::id()
+    ));
+    fs::create_dir_all(&root).unwrap();
+    fs::write(
+        root.join("reproduction-command.txt"),
+        "targets=hydracache,redis,hazelcast-community\nexploratory_storage_mode=filesystem\n",
+    )
+    .unwrap();
+    fs::write(root.join("hardware-validation.txt"), "guard=passed\n").unwrap();
+    fs::write(root.join("telemetry-summary.json"), "{}\n").unwrap();
+
+    let python = if cfg!(windows) { "python" } else { "python3" };
+    let status = Command::new(python)
+        .current_dir(&repo)
+        .arg("scripts/perf/render-exploratory-report.py")
+        .arg("--input")
+        .arg(&root)
+        .arg("--output")
+        .arg(root.join("report.md"))
+        .arg("--source-root")
+        .arg(&repo)
+        .arg("--policy")
+        .arg("docs/testing/perf-policies/indicative-exploratory-v1.json")
+        .status()
+        .unwrap();
+    assert!(status.success());
+
+    let receipt: Value =
+        serde_json::from_str(&fs::read_to_string(root.join("indicative-receipt.json")).unwrap())
+            .unwrap();
+    assert_eq!(receipt["authoritative"], false);
+    assert_eq!(receipt["capacity_bearing"], false);
+    assert_eq!(receipt["ship_evidence_eligible"], false);
+    assert_eq!(receipt["storage_mode"], "filesystem");
+    assert!(receipt["input_sha256"]["hardware_validation"].is_string());
+    assert!(receipt["input_sha256"]["reproduction_command"].is_string());
+    assert!(receipt["input_sha256"]["telemetry_summary"].is_string());
+    let manifest = fs::read_to_string(root.join("artifact-manifest.json")).unwrap();
+    assert!(manifest.contains("indicative-receipt.json"));
+    let report = fs::read_to_string(root.join("report.md")).unwrap();
+    assert!(report.contains("not authoritative"));
+
+    fs::remove_dir_all(root).unwrap();
 }
 
 #[test]

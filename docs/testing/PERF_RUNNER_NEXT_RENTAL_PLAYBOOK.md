@@ -14,6 +14,33 @@ Before ordering hardware, require a green receipt from the
 That receipt is a rental-readiness check only and is never qualification or
 bootstrap evidence.
 
+Also create a local procurement admission from the reviewed
+[`perf-procurement/0.67.1.json`](perf-procurement/0.67.1.json) policy. The
+receipt names the rental operator, billing owner, deletion owner, approved
+hourly/time ceiling, exact green `main` SHA, CI run, provider, and SKU. It must
+contain no provider identifiers, IP addresses, credentials, SSH private
+material, or runner tokens:
+
+```bash
+python3 scripts/perf/reference-rental-readiness.py \
+  --output /var/lib/hydracache-perf/procurement-admission.json \
+  --rental-operator '<operator>' \
+  --billing-owner '<billing-owner>' \
+  --deletion-owner '<deletion-owner>' \
+  --provider '<provider>' --sku '<bare-metal-sku>' \
+  --hourly-rate-eur '<rate>' --authorized-hours '<hours>' \
+  --main-sha '<green-origin-main-sha>' \
+  --main-ci-run-url 'https://github.com/javaquasar/hydracache/actions/runs/<id>' \
+  --decision-reference '<durable-operator-decision>' \
+  --approve
+```
+
+Run the command from a clean checkout whose `HEAD` equals the locally fetched
+`origin/main`, with authenticated `gh`. The script queries the named Actions
+run and requires `completed/success` for that exact SHA. This admission
+authorizes spend and ownership only. It is explicitly non-promotable and is not
+performance evidence.
+
 The safe in-host portion of the next campaign can now be driven by the
 fail-closed controller documented in
 [`PERF_RUNNER_0_67_1_CAMPAIGN_AUTOMATION.md`](PERF_RUNNER_0_67_1_CAMPAIGN_AUTOMATION.md).
@@ -145,7 +172,8 @@ following before freeze:
 - filesystem/firmware maintenance;
 - creation of the unprivileged `github-runner` account;
 - installation, but not continuous activation, of rootless Docker;
-- registration of exactly one runner labelled `hydracache-perf-v1`.
+- preparation of the runner package and service instructions without entering
+  a registration token or registering the service yet.
 
 The runner account must not belong to `sudo`, `docker`, or `lxd`. Rootful Docker
 must be stopped and disabled. Credentials never enter Git, shell history, logs,
@@ -204,6 +232,23 @@ The reviewed contract is:
 - runner and rootless Docker orchestration confined to housekeeping CPUs;
 - no active IRQ affinity into measurement CPUs, except the narrowly reviewed
   dormant/unmapped NVMe case that must still have zero interrupts.
+
+Before entering a GitHub registration token or completing the remaining runner
+setup, execute the early IRQ layout probe:
+
+```bash
+sudo scripts/perf/prepare-reference-host.sh irq-layout-preflight \
+  --profile "$HC_PROFILE" --state-dir "$HC_STATE"
+```
+
+It inventories effective IRQ affinity after the reviewed isolation reboot and
+applies the unchanged absolute IRQ guard. A rejection means this rental
+candidate is unsuitable under the current contract; do not attempt post-hoc
+affinity writes or weaken the guard. Keep the non-evidence receipt, then decide
+whether to release the server before spending time on runner registration.
+
+Only after this probe passes, complete registration of exactly one runner with
+the `hydracache-perf-v1` label. Keep the new service offline.
 
 ### 6. Verify, audit, and freeze
 

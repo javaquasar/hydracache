@@ -92,6 +92,7 @@ fn host_tuning_is_allowlisted_reversible_and_fail_closed() {
     let checker = read("scripts/perf/check-reference-host-freeze.sh");
     let wrapper = read("scripts/perf/prepare-reference-host.sh");
     let playbook = read("docs/testing/PERF_RUNNER_NEXT_RENTAL_PLAYBOOK.md");
+    let early_irq = read("scripts/perf/reference-host-irq-layout-preflight.sh");
     for script in [&tuning, &checker, &wrapper] {
         assert!(script.starts_with("#!/usr/bin/env bash\nset -euo pipefail\n"));
         assert!(!script.contains('\r'));
@@ -131,6 +132,15 @@ fn host_tuning_is_allowlisted_reversible_and_fail_closed() {
     assert!(wrapper.contains("SAMPLE_FAMILY_FROZEN=true"));
     assert!(wrapper.contains("check-reference-host-freeze.sh"));
     assert!(wrapper.contains("deliberately does not reboot"));
+    assert!(wrapper.contains("irq-layout-preflight"));
+    assert!(wrapper.contains("EARLY_IRQ_LAYOUT_ELIGIBLE=true"));
+    assert!(early_irq.starts_with("#!/usr/bin/env bash\nset -euo pipefail\n"));
+    assert!(early_irq.contains("reference-runtime-irq-guard.sh\" early-layout"));
+    assert!(early_irq.contains("mutates_irq_affinity: false"));
+    assert!(early_irq.contains("qualification_evidence: false"));
+    assert!(early_irq.contains("ship_evidence_eligible: false"));
+    assert!(!early_irq.contains("smp_affinity_list"));
+    assert!(!early_irq.contains("irqbalance --banirq"));
     for required in [
         "Ubuntu Server 24.04 LTS",
         "check-frozen",
@@ -138,11 +148,58 @@ fn host_tuning_is_allowlisted_reversible_and_fail_closed() {
         "five **serialized successful** bootstrap samples",
         "Failed, cancelled, unstable",
         "Do not run `restore` between qualification and bootstrap samples",
+        "reference-rental-readiness.py",
+        "irq-layout-preflight",
     ] {
         assert!(
             playbook.contains(required),
             "next-rental playbook is missing {required}"
         );
+    }
+}
+
+#[test]
+fn rental_procurement_gate_names_owners_and_remains_non_evidence() {
+    let policy: Value =
+        serde_json::from_str(&read("docs/testing/perf-procurement/0.67.1.json")).unwrap();
+    let admission = read("scripts/perf/reference-rental-readiness.py");
+
+    assert_eq!(policy["release"], "0.67.1");
+    assert_eq!(policy["required_resource_kind"], "hourly-bare-metal");
+    assert_eq!(
+        policy["provider_resource_must_be_deleted_to_stop_billing"],
+        true
+    );
+    assert_eq!(policy["qualification_evidence"], false);
+    assert_eq!(policy["bootstrap_evidence"], false);
+    assert_eq!(policy["ship_evidence_eligible"], false);
+    for owner in ["rental_operator", "billing_owner", "deletion_owner"] {
+        assert!(policy["required_owner_fields"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|value| value == owner));
+    }
+    for required in [
+        "--approve",
+        "main SHA differs from the locally fetched origin/main",
+        "rental admission must be created from exact origin/main",
+        "rental admission requires a clean exact-main checkout",
+        "main CI run is not a successful exact-main run",
+        "\"gh\"",
+        "\"run\"",
+        "\"view\"",
+        "refusing to overwrite rental admission",
+        "contains_provider_credentials",
+        "ship_evidence_eligible",
+    ] {
+        assert!(
+            admission.contains(required),
+            "rental admission lacks {required}"
+        );
+    }
+    for forbidden in ["api_key", "project_id", "public_ip", "runner_token"] {
+        assert!(!admission.contains(&format!("\"{forbidden}\":")));
     }
 }
 

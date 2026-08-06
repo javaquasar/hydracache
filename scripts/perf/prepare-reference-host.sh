@@ -5,7 +5,7 @@ IFS=$'\n\t'
 usage() {
   cat >&2 <<'EOF'
 usage: scripts/perf/prepare-reference-host.sh \
-  <preflight|apply-services|install-isolation|verify|freeze|check-frozen> \
+  <irq-layout-preflight|preflight|apply-services|install-isolation|verify|freeze|check-frozen> \
   [--profile PATH] [--state-dir PATH]
 
 This wrapper deliberately does not reboot, register/enable the GitHub runner, or
@@ -16,7 +16,7 @@ EOF
 
 action="${1:-}"
 case "$action" in
-  preflight|apply-services|install-isolation|verify|freeze|check-frozen) shift ;;
+  irq-layout-preflight|preflight|apply-services|install-isolation|verify|freeze|check-frozen) shift ;;
   *) usage ;;
 esac
 
@@ -53,6 +53,12 @@ common=(
   --state-dir "$state_dir"
 )
 case "$action" in
+  irq-layout-preflight)
+    "$repo_root/scripts/perf/reference-host-irq-layout-preflight.sh" \
+      --profile "$profile" \
+      --output-dir "$state_dir/irq-layout-preflight"
+    echo "EARLY_IRQ_LAYOUT_ELIGIBLE=true"
+    ;;
   preflight)
     "${tuning[@]}" plan "${common[@]}"
     echo "PRE_FLIGHT_ONLY=true"

@@ -13,6 +13,7 @@ export MEASUREMENT_AFFINITY="$affinity"
 requests="${REQUESTS_PER_CASE-100000}"
 repeats="${REPEATS-3}"
 interval="${TELEMETRY_INTERVAL_SECONDS-1}"
+storage_mode="${EXPLORATORY_STORAGE_MODE-filesystem}"
 branch_name="$(git branch --show-current)"
 if [[ -z "$branch_name" ]]; then
   branch_name="detached@$(git rev-parse --short=12 HEAD)"
@@ -22,10 +23,25 @@ test "$(id --user --name)" = github-runner
 test -x "$benchmark" || { echo "redis-benchmark is unavailable: $benchmark (install redis-tools or set REDIS_BENCHMARK)" >&2; exit 2; }
 test -x "$(command -v taskset)"
 test -x "$hydra_binary"
+case "$storage_mode" in
+  filesystem|ram-only) ;;
+  *) echo "EXPLORATORY_STORAGE_MODE must be filesystem or ram-only" >&2; exit 2 ;;
+esac
 test -n "$hazelcast_image" && [[ "$hazelcast_image" =~ @sha256:[0-9a-fA-F]{64}$ ]] || { echo 'HAZELCAST_IMAGE must include a full sha256 digest' >&2; exit 2; }
 "$hazelcast_client_python" -c 'import hazelcast' || { echo 'hazelcast-python-client is unavailable; refusing a partial run' >&2; exit 2; }
 "$hazelcast_client_python" -c "import importlib.metadata as m; assert m.version('hazelcast-python-client') == '$hazelcast_client_version'" || { echo "hazelcast-python-client must be exactly $hazelcast_client_version" >&2; exit 2; }
 mkdir -p "$output_dir/raw" "$output_dir/telemetry" "$output_dir/metadata"
+if [[ "$storage_mode" == ram-only ]]; then
+  output_real="$(readlink -f "$output_dir")"
+  case "$output_real" in
+    /dev/shm/*) ;;
+    *) echo "ram-only diagnostics require output below /dev/shm" >&2; exit 2 ;;
+  esac
+  test "$(findmnt --noheadings --output FSTYPE --target "$output_real" | xargs)" = tmpfs || {
+    echo "ram-only diagnostics require a tmpfs output filesystem" >&2
+    exit 2
+  }
+fi
 {
   echo "branch=$branch_name"
   echo "source_commit=$(git rev-parse HEAD)"
@@ -37,12 +53,16 @@ mkdir -p "$output_dir/raw" "$output_dir/telemetry" "$output_dir/metadata"
   echo "requests_per_case=$requests"
   echo "repeats=$repeats"
   echo "telemetry_interval_seconds=$interval"
+  echo "evidence_class=indicative-exploratory-v1"
+  echo "exploratory_storage_mode=$storage_mode"
+  echo "capacity_bearing=false"
+  echo "ship_evidence_eligible=false"
 } >"$output_dir/reproduction-command.txt"
 cleanup() { set +e; test -f "$output_dir/hydra.pid" && kill "$(cat "$output_dir/hydra.pid")" 2>/dev/null || true; docker rm -f hydracache-relative-redis hydracache-relative-hazelcast >/dev/null 2>&1 || true; }
 trap cleanup EXIT
 scripts/perf/reference-evidence-tmpfs.sh verify >"$output_dir/hardware-validation.txt"
 scripts/perf/reference-runtime-irq-guard.sh relative-eight-telemetry-pre >>"$output_dir/hardware-validation.txt"
-{ echo "host=$(hostname)"; echo "source_commit=$(git rev-parse HEAD)"; echo "source_status=$(git status --porcelain=v1 --untracked-files=all | tr '\n' ';')"; echo "kernel=$(uname -srmo)"; echo "cpu_model=$(awk -F: '/model name/ {gsub(/^ /, "", $2); print $2; exit}' /proc/cpuinfo)"; echo "logical_cpus=$(nproc)"; echo "measurement_affinity=$affinity"; echo "targets=hydracache,redis,hazelcast-community"; echo "runner_receipt_sha256=$(sha256sum /var/lib/hydracache-perf/runner-provisioned.json | cut -d' ' -f1)"; echo "runner_receipt=/var/lib/hydracache-perf/runner-provisioned.json"; echo "telemetry_interval_seconds=$interval"; echo "redis_benchmark=$benchmark"; echo "redis_benchmark_version=$($benchmark --version 2>&1 | head -n 1)"; echo "hazelcast_image=$hazelcast_image"; echo "hazelcast_client=$hazelcast_client_version"; } >>"$output_dir/hardware-validation.txt"
+{ echo "host=$(hostname)"; echo "source_commit=$(git rev-parse HEAD)"; echo "source_status=$(git status --porcelain=v1 --untracked-files=all | tr '\n' ';')"; echo "kernel=$(uname -srmo)"; echo "cpu_model=$(awk -F: '/model name/ {gsub(/^ /, "", $2); print $2; exit}' /proc/cpuinfo)"; echo "logical_cpus=$(nproc)"; echo "measurement_affinity=$affinity"; echo "targets=hydracache,redis,hazelcast-community"; echo "runner_receipt_sha256=$(sha256sum /var/lib/hydracache-perf/runner-provisioned.json | cut -d' ' -f1)"; echo "runner_receipt=/var/lib/hydracache-perf/runner-provisioned.json"; echo "telemetry_interval_seconds=$interval"; echo "exploratory_storage_mode=$storage_mode"; echo "redis_benchmark=$benchmark"; echo "redis_benchmark_version=$($benchmark --version 2>&1 | head -n 1)"; echo "hazelcast_image=$hazelcast_image"; echo "hazelcast_client=$hazelcast_client_version"; } >>"$output_dir/hardware-validation.txt"
 docker run -d --name hydracache-relative-redis --network host --cpuset-cpus "$affinity" "$redis_image" redis-server --save "" --appendonly no >"$output_dir/metadata/redis.container-id" 2>"$output_dir/metadata/docker-warnings.txt"
 docker run -d --name hydracache-relative-hazelcast --network host --cpuset-cpus "$affinity" "$hazelcast_image" >"$output_dir/metadata/hazelcast.container-id" 2>>"$output_dir/metadata/docker-warnings.txt"
 docker inspect hydracache-relative-redis >"$output_dir/metadata/redis.inspect.json"
@@ -90,5 +110,9 @@ cases=('p64-c10-p1 64 10 1' 'p64-c10-p10 64 10 10' 'p256-c10-p1 256 10 1' 'p256-
 for repeat in $(seq 1 "$repeats"); do for spec in "${cases[@]}"; do IFS=' ' read -r case_id payload clients pipeline <<<"$spec"; for op in set get; do for target in hydra redis hazelcast; do run_target "$target" "$case_id" "$payload" "$clients" "$pipeline" "$op" "$repeat"; done; done; done; done
 python3 scripts/perf/summarize-telemetry.py --input "$output_dir/telemetry" --output "$output_dir/telemetry-summary.json"
 scripts/perf/reference-runtime-irq-delta-guard.sh post-relative-eight-telemetry "$output_dir/irq-baseline.tsv" >>"$output_dir/hardware-validation.txt"
-python3 scripts/perf/render-exploratory-report.py --input "$output_dir" --output "$output_dir/report.md" --source-root "$repo_root"
+python3 scripts/perf/render-exploratory-report.py \
+  --input "$output_dir" \
+  --output "$output_dir/report.md" \
+  --source-root "$repo_root" \
+  --policy "$repo_root/docs/testing/perf-policies/indicative-exploratory-v1.json"
 echo "output=$output_dir"

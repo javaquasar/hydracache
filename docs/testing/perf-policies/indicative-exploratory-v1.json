@@ -1,0 +1,37 @@
+{
+  "schema_version": 1,
+  "policy_id": "indicative-exploratory-v1",
+  "release": "0.67.1",
+  "evidence_class": "indicative-exploratory-v1",
+  "claim_scope": "same-host exploratory characterization only",
+  "authoritative": false,
+  "capacity_bearing": false,
+  "qualification_evidence": false,
+  "bootstrap_evidence": false,
+  "ship_evidence_eligible": false,
+  "allowed_storage_modes": [
+    "filesystem",
+    "ram-only"
+  ],
+  "required_targets": [
+    "hydracache",
+    "redis",
+    "hazelcast-community"
+  ],
+  "required_artifacts": [
+    "artifact-manifest.json",
+    "hardware-validation.txt",
+    "indicative-receipt.json",
+    "report.md",
+    "reproduction-command.txt",
+    "telemetry-summary.json"
+  ],
+  "prohibited_claims": [
+    "capacity floor",
+    "production sizing",
+    "portable ranking",
+    "release qualification",
+    "bootstrap membership",
+    "ship eligibility"
+  ]
+}
