@@ -157,7 +157,7 @@ validate_host_compatibility() {
     echo "reference host has $physical_cores physical cores; need $minimum_physical_cores" >&2
     exit 1
   }
-  memory_bytes="$(awk '/^MemTotal:/ { printf "%.0f\\n", $2 * 1024 }' /proc/meminfo)"
+  memory_bytes="$(awk '/^MemTotal:/ { printf "%.0f\n", $2 * 1024 }' /proc/meminfo)"
   minimum_memory_bytes="$(profile_value '.hardware.minimum_memory_bytes')"
   test "$memory_bytes" -ge "$minimum_memory_bytes" || {
     echo "reference host has $memory_bytes bytes of RAM; need $minimum_memory_bytes" >&2

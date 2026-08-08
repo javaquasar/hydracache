@@ -119,6 +119,8 @@ fn host_tuning_is_allowlisted_reversible_and_fail_closed() {
     assert!(tuning.contains("systemd-active-state.tsv"));
     assert!(tuning.contains("sysctls.tsv"));
     assert!(tuning.contains("sample_family_frozen: true"));
+    assert!(tuning.contains(r#"printf "%.0f\n", $2 * 1024"#));
+    assert!(!tuning.contains(r#"printf "%.0f\\n", $2 * 1024"#));
     assert!(!tuning.contains("systemctl disable --now --all"));
     assert!(!tuning.contains("systemctl mask --now '*'"));
 
