@@ -403,6 +403,41 @@ verify_full_contract() {
   "$repo_root/scripts/perf/provision-reference-isolation.sh" verify
 }
 
+read_frozen_kernel_tunable() {
+  local key="$1"
+  local backend locator value kernel_config
+  if value="$(sysctl --values "$key" 2>/dev/null)"; then
+    backend="sysctl"
+    locator="$key"
+  else
+    case "$key" in
+      kernel.sched_migration_cost_ns)
+        backend="debugfs"
+        locator="/sys/kernel/debug/sched/migration_cost_ns"
+        kernel_config="/boot/config-$(uname -r)"
+        test -f "$kernel_config"
+        grep --quiet --fixed-strings --line-regexp 'CONFIG_SCHED_DEBUG=y' "$kernel_config"
+        test "$(stat --file-system --format=%T /sys/kernel/debug)" = debugfs
+        test -f "$locator"
+        test "$(stat --format=%U:%G "$locator")" = root:root
+        value="$(cat "$locator")"
+        [[ "$value" =~ ^[0-9]+$ ]]
+        ;;
+      *)
+        echo "required frozen kernel tunable is unavailable: $key" >&2
+        exit 1
+        ;;
+    esac
+  fi
+  case "$value" in
+    *$'\t'*|*$'\n'*)
+      echo "frozen kernel tunable has an unsafe value: $key" >&2
+      exit 1
+      ;;
+  esac
+  printf '%s\t%s\t%s\t%s\n' "$key" "$backend" "$locator" "$value"
+}
+
 freeze_host() {
   require_root
   test -z "$(git -C "$repo_root" status --porcelain=v1 --untracked-files=normal)" || {
@@ -437,8 +472,7 @@ freeze_host() {
       echo "missing reference host freeze tool: sysctl" >&2
       exit 1
     }
-    value="$(sysctl --values "$key")"
-    printf '%s\t%s\n' "$key" "$value" >>"$state_dir/freeze/sysctls.tsv"
+    read_frozen_kernel_tunable "$key" >>"$state_dir/freeze/sysctls.tsv"
   done < <(jq --raw-output '.freeze_contract.selected_sysctls[]' "$profile")
   lscpu --json >"$state_dir/freeze/lscpu.json"
   lsblk --json --bytes --output NAME,KNAME,PATH,TYPE,TRAN,SIZE,ROTA,MOUNTPOINTS \

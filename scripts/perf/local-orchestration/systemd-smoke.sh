@@ -46,6 +46,9 @@ case "$systemd_state" in
   *) fail "systemd did not become usable after 60 seconds: $systemd_state" ;;
 esac
 
+mountpoint --quiet /sys/kernel/debug || mount --type debugfs none /sys/kernel/debug
+test -f /sys/kernel/debug/sched/migration_cost_ns
+
 rm --recursive --force -- /work/repo
 mkdir --parents /work/repo /work/shims
 (cd "$source_root" && tar --exclude=.git --exclude=target --create --file=- .) |
@@ -104,6 +107,9 @@ EOF
 cat >/work/shims/sysctl <<'EOF'
 #!/usr/bin/env bash
 if test "${1:-}" = --values && test "$#" -eq 2; then
+  if test "$2" = kernel.sched_migration_cost_ns; then
+    exit 1
+  fi
   echo 1
   exit 0
 fi
@@ -111,6 +117,7 @@ exec /usr/sbin/sysctl "$@"
 EOF
 chmod 0755 /work/shims/*
 export PATH="/work/shims:$PATH"
+printf '%s\n' 'CONFIG_SCHED_DEBUG=y' >"/boot/config-$(uname -r)"
 cd "$work_root"
 
 cat >scripts/perf/provision-reference-isolation.sh <<'EOF'
@@ -216,6 +223,8 @@ jq --null-input --arg commit "$fixture_commit" \
   >target/test-evidence/0.67.1/runner-provisioned.json
 chmod 0444 target/test-evidence/0.67.1/runner-provisioned.json
 scripts/perf/reference-host-tuning.sh freeze --profile "$profile" --state-dir "$state_dir"
+grep --quiet --fixed-strings $'kernel.sched_migration_cost_ns\tdebugfs\t/sys/kernel/debug/sched/migration_cost_ns\t500000' \
+  "$state_dir/freeze/sysctls.tsv"
 scripts/perf/check-reference-host-freeze.sh --profile "$profile" --state-dir "$state_dir"
 
 systemctl start hc-disable.service

@@ -93,6 +93,7 @@ fn host_tuning_is_allowlisted_reversible_and_fail_closed() {
     let wrapper = read("scripts/perf/prepare-reference-host.sh");
     let playbook = read("docs/testing/PERF_RUNNER_NEXT_RENTAL_PLAYBOOK.md");
     let early_irq = read("scripts/perf/reference-host-irq-layout-preflight.sh");
+    let systemd_smoke = read("scripts/perf/local-orchestration/systemd-smoke.sh");
     for script in [&tuning, &checker, &wrapper] {
         assert!(script.starts_with("#!/usr/bin/env bash\nset -euo pipefail\n"));
         assert!(!script.contains('\r'));
@@ -118,6 +119,9 @@ fn host_tuning_is_allowlisted_reversible_and_fail_closed() {
     assert!(tuning.contains("systemd-unit-files.tsv"));
     assert!(tuning.contains("systemd-active-state.tsv"));
     assert!(tuning.contains("sysctls.tsv"));
+    assert!(tuning.contains("read_frozen_kernel_tunable"));
+    assert!(tuning.contains("/sys/kernel/debug/sched/migration_cost_ns"));
+    assert!(tuning.contains("CONFIG_SCHED_DEBUG=y"));
     assert!(tuning.contains("sample_family_frozen: true"));
     assert!(tuning.contains(r#"printf "%.0f\n", $2 * 1024"#));
     assert!(!tuning.contains(r#"printf "%.0f\\n", $2 * 1024"#));
@@ -130,6 +134,9 @@ fn host_tuning_is_allowlisted_reversible_and_fail_closed() {
     assert!(checker.contains("systemd_unit_files_sha256"));
     assert!(checker.contains("systemd_active_state_sha256"));
     assert!(checker.contains("sysctl_manifest_sha256"));
+    assert!(checker.contains("read_frozen_kernel_tunable"));
+    assert!(checker.contains("/sys/kernel/debug/sched/migration_cost_ns"));
+    assert!(checker.contains("CONFIG_SCHED_DEBUG=y"));
     assert!(wrapper.contains("REBOOT_REQUIRED=true"));
     assert!(wrapper.contains("SAMPLE_FAMILY_FROZEN=true"));
     assert!(wrapper.contains("check-reference-host-freeze.sh"));
@@ -143,6 +150,9 @@ fn host_tuning_is_allowlisted_reversible_and_fail_closed() {
     assert!(early_irq.contains("ship_evidence_eligible: false"));
     assert!(!early_irq.contains("smp_affinity_list"));
     assert!(!early_irq.contains("irqbalance --banirq"));
+    assert!(systemd_smoke.contains("kernel.sched_migration_cost_ns"));
+    assert!(systemd_smoke.contains("/sys/kernel/debug/sched/migration_cost_ns"));
+    assert!(systemd_smoke.contains("CONFIG_SCHED_DEBUG=y"));
     for required in [
         "Ubuntu Server 24.04 LTS",
         "check-frozen",
