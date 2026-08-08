@@ -30,12 +30,47 @@ test "$(id --user)" -eq 0 || {
   echo "frozen host check requires root" >&2
   exit 1
 }
-for tool in dpkg-query git jq sha256sum sort sysctl systemctl; do
+for tool in dpkg-query git grep jq sha256sum sort stat sysctl systemctl uname; do
   command -v "$tool" >/dev/null || {
     echo "missing frozen host check tool: $tool" >&2
     exit 1
   }
 done
+
+read_frozen_kernel_tunable() {
+  local key="$1"
+  local backend locator value kernel_config
+  if value="$(sysctl --values "$key" 2>/dev/null)"; then
+    backend="sysctl"
+    locator="$key"
+  else
+    case "$key" in
+      kernel.sched_migration_cost_ns)
+        backend="debugfs"
+        locator="/sys/kernel/debug/sched/migration_cost_ns"
+        kernel_config="/boot/config-$(uname -r)"
+        test -f "$kernel_config"
+        grep --quiet --fixed-strings --line-regexp 'CONFIG_SCHED_DEBUG=y' "$kernel_config"
+        test "$(stat --file-system --format=%T /sys/kernel/debug)" = debugfs
+        test -f "$locator"
+        test "$(stat --format=%U:%G "$locator")" = root:root
+        value="$(cat "$locator")"
+        [[ "$value" =~ ^[0-9]+$ ]]
+        ;;
+      *)
+        echo "required frozen kernel tunable is unavailable: $key" >&2
+        exit 1
+        ;;
+    esac
+  fi
+  case "$value" in
+    *$'\t'*|*$'\n'*)
+      echo "frozen kernel tunable has an unsafe value: $key" >&2
+      exit 1
+      ;;
+  esac
+  printf '%s\t%s\t%s\t%s\n' "$key" "$backend" "$locator" "$value"
+}
 receipt="$state_dir/freeze/host-freeze.json"
 test -f "$profile" || {
   echo "missing host profile: $profile" >&2
@@ -98,7 +133,7 @@ LC_ALL=C systemctl list-units --all --type=service --type=timer --no-legend --no
   sort >"$comparison_dir/systemd-active-state.tsv"
 : >"$comparison_dir/sysctls.tsv"
 while IFS= read -r key; do
-  printf '%s\t%s\n' "$key" "$(sysctl --values "$key")" >>"$comparison_dir/sysctls.tsv"
+  read_frozen_kernel_tunable "$key" >>"$comparison_dir/sysctls.tsv"
 done < <(jq --raw-output '.freeze_contract.selected_sysctls[]' "$profile")
 
 compare_file_digest package_manifest_sha256 "$comparison_dir/packages.tsv"

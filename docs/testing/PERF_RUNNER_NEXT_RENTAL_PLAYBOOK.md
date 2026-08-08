@@ -274,6 +274,14 @@ provisioned-host audit and produces:
   command line, and apt holds;
 - the existing privacy-preserving runner provisioning receipt.
 
+Ubuntu 24.04 generic kernels can expose `kernel.sched_migration_cost_ns` through
+the `CONFIG_SCHED_DEBUG` debugfs interface instead of `/proc/sys`. The freeze
+collector keeps this tunable mandatory: it accepts only the root-owned
+`/sys/kernel/debug/sched/migration_cost_ns` file on a real debugfs mount when
+`CONFIG_SCHED_DEBUG=y`, and records the backend plus canonical locator in
+`sysctls.tsv`. A missing source, a non-numeric value, or any backend/value drift
+rejects the sample family.
+
 Copy this root-owned directory unchanged into the qualification artifact. Keep
 the original mode/owner metadata in the archived receipt. Hash the exported
 archive before and after transfer.
