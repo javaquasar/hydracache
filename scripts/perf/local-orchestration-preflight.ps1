@@ -119,6 +119,7 @@ $repoMount = "type=bind,source=$repoRoot,target=/repo,readonly"
 $gitMount = "type=bind,source=$gitCommon,target=/git,readonly"
 $registryMount = "source=$cargoRegistryVolume,target=/usr/local/cargo/registry"
 $targetMount = "source=$cargoTargetVolume,target=/cargo-target"
+$targetReadonlyMount = "source=$cargoTargetVolume,target=/cargo-target,readonly"
 
 try {
     New-Item -ItemType Directory -Force -Path $outputPath | Out-Null
@@ -151,7 +152,7 @@ try {
     )
     Invoke-Docker -Arguments ($cargoBase + @(
         "bash", "-c",
-        "git config --global --add safe.directory /repo && cargo test -p xtask --locked --test perf_local_orchestration_0671"
+        "git config --global --add safe.directory /repo && cargo test -p xtask --locked --test perf_local_orchestration_0671 && cargo build --locked -p hydracache-loadgen -p hydracache-server"
     ))
     $results.state_machine = "passed"
 
@@ -198,6 +199,12 @@ try {
         "run", "--rm", "--network", "none",
         "--mount", $repoMount,
         $helperImage, "bash", "/repo/scripts/perf/local-orchestration/static-and-fault-smoke.sh"
+    )
+    Invoke-Docker -Arguments @(
+        "run", "--rm", "--network", "none",
+        "--mount", $repoMount,
+        "--mount", $targetReadonlyMount,
+        $helperImage, "bash", "/repo/scripts/perf/local-orchestration/actual-memory-only-smoke.sh"
     )
     $results.static_analysis = "passed"
     $results.fault_injection = "passed"

@@ -46,6 +46,7 @@ mapfile -t shell_files < <(find scripts/perf -maxdepth 1 -type f -name '*.sh' -p
 test "${#shell_files[@]}" -gt 0
 shellcheck --external-sources --severity=error "${shell_files[@]}"
 shellcheck --external-sources \
+  scripts/perf/local-orchestration/actual-memory-only-smoke.sh \
   scripts/perf/local-orchestration/static-and-fault-smoke.sh \
   scripts/perf/local-orchestration/systemd-smoke.sh
 actionlint \
@@ -59,6 +60,122 @@ mapfile -t python_files < <(find scripts/perf -maxdepth 1 -type f -name '*.py' -
 PYTHONPYCACHEPREFIX=/work/pycache python3 -m py_compile "${python_files[@]}"
 PYTHONPATH=scripts/perf PYTHONPYCACHEPREFIX=/work/pycache \
   python3 -m unittest scripts/perf/reference_campaign_test.py
+PYTHONPYCACHEPREFIX=/work/pycache \
+  python3 -m unittest scripts/perf/reference_memory_only_window_test.py
+
+readonly memory_fixture=/work/memory-only-fixture
+readonly memory_runtime=/work/memory-only-runtime
+readonly memory_profile=/work/memory-only-profile.json
+mkdir --parents \
+  "$memory_fixture/proc/self" "$memory_fixture/proc/sys/kernel/random" \
+  "$memory_fixture/cgroup/test" \
+  "$memory_runtime/bin" "$memory_runtime/results"
+jq '.profile_id = "ubuntu-24.04-memory-only-local-test" | .cpu_contract.measurement_cpus = "0"' \
+  docs/testing/perf-host-profiles/ubuntu-24.04-memory-only-v1.json >"$memory_profile"
+printf 'Filename Type Size Used Priority\n' >"$memory_fixture/proc/swaps"
+printf '0::/test\n' >"$memory_fixture/proc/self/cgroup"
+printf '11111111-2222-3333-4444-555555555555\n' \
+  >"$memory_fixture/proc/sys/kernel/random/boot_id"
+printf '259 0 nvme0n1 1 0 2 0 3 0 4 0 0 0 0 0 0 0 0\n' \
+  >"$memory_fixture/proc/diskstats"
+printf '       CPU0\n 24: 0 PCI-MSI 0-edge nvme0q0\n' \
+  >"$memory_fixture/proc/interrupts"
+printf '259:0 rbytes=0 wbytes=0 rios=0 wios=0 dbytes=0 dios=0\n' \
+  >"$memory_fixture/cgroup/test/io.stat"
+cp /usr/bin/true "$memory_runtime/bin/workload"
+chmod 0755 "$memory_runtime/bin/workload"
+for _ in 1 2 3; do "$memory_runtime/bin/workload"; done
+HC_LOCAL_ORCHESTRATION_TESTING=1 \
+HC_MEMORY_ONLY_PROC_ROOT="$memory_fixture/proc" \
+HC_MEMORY_ONLY_CGROUP_ROOT="$memory_fixture/cgroup" \
+  scripts/perf/reference-memory-only-window.py \
+    --profile "$memory_profile" \
+    --runtime-root "$memory_runtime" \
+    --output-dir "$memory_runtime/results/accepted" \
+    -- "$memory_runtime/bin/workload"
+jq --exit-status '
+  .stage == "reference-memory-only-window" and
+  (.source_commit | test("^[0-9a-f]{40}$")) and
+  (.runtime_root_digest | test("^[0-9a-f]{64}$")) and
+  .passed == true and
+  .major_faults == 0 and
+  .qualification_evidence == false and
+  .bootstrap_evidence == false and
+  .ship_evidence_eligible == false
+' "$memory_runtime/results/accepted/memory-only-window.json" >/dev/null
+
+cp /usr/bin/python3 "$memory_runtime/bin/mutate-diskstats"
+chmod 0755 "$memory_runtime/bin/mutate-diskstats"
+expect_failure memory-only-disk-activity \
+  env HC_LOCAL_ORCHESTRATION_TESTING=1 \
+    HC_MEMORY_ONLY_PROC_ROOT="$memory_fixture/proc" \
+    HC_MEMORY_ONLY_CGROUP_ROOT="$memory_fixture/cgroup" \
+    "$work_root/scripts/perf/reference-memory-only-window.py" \
+      --profile "$memory_profile" \
+      --runtime-root "$memory_runtime" \
+      --output-dir "$memory_runtime/results/rejected-disk" \
+      -- "$memory_runtime/bin/mutate-diskstats" -c \
+        'from pathlib import Path; p=Path("/work/memory-only-fixture/proc/diskstats"); p.write_text(p.read_text().replace("1 0 2", "2 0 2"))'
+jq --exit-status '
+  .passed == false and
+  (.violations.nvme_counters | length) > 0 and
+  .ship_evidence_eligible == false
+' "$memory_runtime/results/rejected-disk/memory-only-window.json" >/dev/null
+
+expect_failure memory-only-cgroup-io \
+  env HC_LOCAL_ORCHESTRATION_TESTING=1 \
+    HC_MEMORY_ONLY_PROC_ROOT="$memory_fixture/proc" \
+    HC_MEMORY_ONLY_CGROUP_ROOT="$memory_fixture/cgroup" \
+    "$work_root/scripts/perf/reference-memory-only-window.py" \
+      --profile "$memory_profile" \
+      --runtime-root "$memory_runtime" \
+      --output-dir "$memory_runtime/results/rejected-cgroup" \
+      -- "$memory_runtime/bin/mutate-diskstats" -c \
+        'from pathlib import Path; p=Path("/work/memory-only-fixture/cgroup/test/io.stat"); p.write_text(p.read_text().replace("rbytes=0", "rbytes=4096"))'
+jq --exit-status '
+  .passed == false and
+  (.violations.cgroup_io | length) > 0
+' "$memory_runtime/results/rejected-cgroup/memory-only-window.json" >/dev/null
+
+expect_failure memory-only-nvme-irq \
+  env HC_LOCAL_ORCHESTRATION_TESTING=1 \
+    HC_MEMORY_ONLY_PROC_ROOT="$memory_fixture/proc" \
+    HC_MEMORY_ONLY_CGROUP_ROOT="$memory_fixture/cgroup" \
+    "$work_root/scripts/perf/reference-memory-only-window.py" \
+      --profile "$memory_profile" \
+      --runtime-root "$memory_runtime" \
+      --output-dir "$memory_runtime/results/rejected-irq" \
+      -- "$memory_runtime/bin/mutate-diskstats" -c \
+        'from pathlib import Path; p=Path("/work/memory-only-fixture/proc/interrupts"); p.write_text(p.read_text().replace("24: 0", "24: 1"))'
+jq --exit-status '
+  .passed == false and
+  (.violations.measurement_cpu_nvme_irqs | length) > 0
+' "$memory_runtime/results/rejected-irq/memory-only-window.json" >/dev/null
+
+expect_failure memory-only-runtime-drift \
+  env HC_LOCAL_ORCHESTRATION_TESTING=1 \
+    HC_MEMORY_ONLY_PROC_ROOT="$memory_fixture/proc" \
+    HC_MEMORY_ONLY_CGROUP_ROOT="$memory_fixture/cgroup" \
+    "$work_root/scripts/perf/reference-memory-only-window.py" \
+      --profile "$memory_profile" \
+      --runtime-root "$memory_runtime" \
+      --output-dir "$memory_runtime/results/rejected-runtime" \
+      -- "$memory_runtime/bin/mutate-diskstats" -c \
+        'from pathlib import Path; Path("/work/memory-only-runtime/unexpected.txt").write_text("drift")'
+jq --exit-status '
+  .passed == false and
+  (.violations.runtime_tree | length) > 0
+' "$memory_runtime/results/rejected-runtime/memory-only-window.json" >/dev/null
+
+expect_failure memory-only-executable-escape \
+  env HC_LOCAL_ORCHESTRATION_TESTING=1 \
+    HC_MEMORY_ONLY_PROC_ROOT="$memory_fixture/proc" \
+    HC_MEMORY_ONLY_CGROUP_ROOT="$memory_fixture/cgroup" \
+    "$work_root/scripts/perf/reference-memory-only-window.py" \
+      --profile "$memory_profile" \
+      --runtime-root "$memory_runtime" \
+      --output-dir "$memory_runtime/results/rejected-escape" \
+      -- /usr/bin/true
 
 mkdir --parents /work/malformed-telemetry
 printf '{not-json}\n' >/work/malformed-telemetry/input.jsonl

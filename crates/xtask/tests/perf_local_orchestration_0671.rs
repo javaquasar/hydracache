@@ -255,6 +255,8 @@ fn local_harness_is_pinned_non_promotable_and_covers_all_six_scenarios() {
         "--network\", \"none",
         "foreign-checkout-identity",
         "offline-empty-cargo-cache",
+        "actual-memory-only-smoke.sh",
+        "cargo build --locked -p hydracache-loadgen -p hydracache-server",
     ] {
         assert!(harness.contains(required), "local harness lost {required}");
     }
@@ -283,5 +285,9 @@ fn local_harness_is_pinned_non_promotable_and_covers_all_six_scenarios() {
     assert!(
         !harness.contains("target=/repo/target"),
         "a clean read-only checkout has no target mountpoint"
+    );
+    assert!(
+        harness.contains("source=$cargoTargetVolume,target=/cargo-target,readonly"),
+        "the actual-binary smoke must consume the prebuilt target read-only"
     );
 }
