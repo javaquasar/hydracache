@@ -99,6 +99,7 @@ The preparation flow is now split into four reviewed components:
 | Component | Responsibility |
 | --- | --- |
 | `ubuntu-24.04-reference-v1.json` | Machine-readable OS, hardware, CPU, service, and freeze contract |
+| `ubuntu-24.04-memory-only-v1.json` | Additive non-ship profile for guarded diskless measurement windows; see [`PERF_MEMORY_ONLY_HOST_PROFILE.md`](PERF_MEMORY_ONLY_HOST_PROFILE.md) |
 | `reference-host-tuning.sh` | `plan`, allowlisted `apply`, `verify`, `freeze`, and recorded-state `restore` |
 | `check-reference-host-freeze.sh` | Pre-dispatch drift check against the frozen exact environment |
 | `prepare-reference-host.sh` | Small stage wrapper that keeps reboot, runner registration, and Docker startup explicit |
@@ -143,6 +144,11 @@ Use a fresh state directory for every physical rental, for example:
 export HC_PROFILE="$PWD/docs/testing/perf-host-profiles/ubuntu-24.04-reference-v1.json"
 export HC_STATE="/var/lib/hydracache-perf/host-tuning-rental-2026-XX-XX"
 ```
+
+The strict reference profile remains the default and the only profile used by
+the 0.67.1 qualification/bootstrap campaign. Selecting the memory-only profile
+is explicit, produces non-ship receipts, and must use its separate guarded
+window launcher. Never pool its results with strict-profile evidence.
 
 Do not reuse a state directory from another server. It contains the reversible
 pre-state and the sample-family fingerprint.

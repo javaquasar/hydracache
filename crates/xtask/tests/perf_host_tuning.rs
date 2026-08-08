@@ -87,6 +87,65 @@ fn ubuntu_reference_profile_is_explicit_versioned_and_safe() {
 }
 
 #[test]
+fn ubuntu_memory_only_profile_is_additive_explicit_and_non_ship() {
+    let strict: Value = serde_json::from_str(&read(
+        "docs/testing/perf-host-profiles/ubuntu-24.04-reference-v1.json",
+    ))
+    .unwrap();
+    let profile: Value = serde_json::from_str(&read(
+        "docs/testing/perf-host-profiles/ubuntu-24.04-memory-only-v1.json",
+    ))
+    .unwrap();
+
+    assert_eq!(strict["profile_id"], "ubuntu-24.04-reference-v1");
+    assert!(strict.get("measurement_window_contract").is_none());
+    assert_eq!(profile["schema_version"], 1);
+    assert_eq!(profile["profile_id"], "ubuntu-24.04-memory-only-v1");
+    assert_eq!(profile["cpu_contract"], strict["cpu_contract"]);
+    assert_eq!(profile["service_policy"], strict["service_policy"]);
+    assert_eq!(
+        profile["measurement_window_contract"]["mode"],
+        "memory-only-v1"
+    );
+    for field in [
+        "qualification_evidence",
+        "bootstrap_evidence",
+        "ship_evidence_eligible",
+    ] {
+        assert_eq!(profile["measurement_window_contract"][field], false);
+    }
+    for field in [
+        "maximum_major_faults",
+        "maximum_nvme_counter_delta",
+        "maximum_cgroup_io_counter_delta",
+        "maximum_measurement_cpu_nvme_irq_delta",
+    ] {
+        assert_eq!(profile["measurement_window_contract"][field], 0);
+    }
+
+    let guard = read("scripts/perf/reference-memory-only-window.py");
+    let guide = read("docs/testing/PERF_MEMORY_ONLY_HOST_PROFILE.md");
+    for required in [
+        "os.sched_setaffinity",
+        "os.wait4",
+        "read_diskstats",
+        "read_io_stat",
+        "read_nvme_irqs",
+        "runtime_root_digest",
+        "source_commit",
+        "ship_evidence_eligible\": False",
+        "refusing to overwrite output directory",
+    ] {
+        assert!(
+            guard.contains(required),
+            "memory-only guard lacks {required}"
+        );
+    }
+    assert!(guide.contains("not replace `ubuntu-24.04-reference-v1`"));
+    assert!(guide.contains("must not be pooled"));
+}
+
+#[test]
 fn host_tuning_is_allowlisted_reversible_and_fail_closed() {
     let tuning = read("scripts/perf/reference-host-tuning.sh");
     let checker = read("scripts/perf/check-reference-host-freeze.sh");

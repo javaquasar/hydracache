@@ -1,0 +1,128 @@
+{
+  "schema_version": 1,
+  "profile_id": "ubuntu-24.04-memory-only-v1",
+  "purpose": "Non-ship HydraCache memory-only performance characterization on reviewed Ubuntu 24.04 bare metal",
+  "operating_system": {
+    "id": "ubuntu",
+    "version_id": "24.04",
+    "architecture": "x86_64",
+    "kernel_release_regex": "^6\\.8\\.0-[0-9]+-generic$"
+  },
+  "hardware": {
+    "require_bare_metal": true,
+    "minimum_physical_cores": 6,
+    "minimum_memory_bytes": 17179869184,
+    "require_nvme": true,
+    "require_cgroup_v2": true,
+    "require_unlimited_cpu_quota": true
+  },
+  "cpu_contract": {
+    "measurement_cpus": "1-4",
+    "housekeeping_cpus": "0,5-7",
+    "expected_online_cpus": "0-7",
+    "smt": "off",
+    "governor": "performance",
+    "measurement_max_idle_latency_us": 1,
+    "housekeeping_max_idle_latency_us": 1
+  },
+  "measurement_window_contract": {
+    "mode": "memory-only-v1",
+    "runtime_filesystem": "tmpfs",
+    "require_command_below_runtime_root": true,
+    "require_working_directory_below_runtime_root": true,
+    "require_swap_disabled": true,
+    "require_nvme_devices": true,
+    "maximum_major_faults": 0,
+    "maximum_nvme_counter_delta": 0,
+    "maximum_cgroup_io_counter_delta": 0,
+    "maximum_measurement_cpu_nvme_irq_delta": 0,
+    "qualification_evidence": false,
+    "bootstrap_evidence": false,
+    "ship_evidence_eligible": false
+  },
+  "service_policy": {
+    "protected_units": [
+      "ssh.service",
+      "sshd.service",
+      "systemd-timesyncd.service",
+      "chrony.service",
+      "chronyd.service",
+      "systemd-journald.service",
+      "systemd-logind.service",
+      "systemd-udevd.service"
+    ],
+    "required_active_groups": [
+      {
+        "id": "remote-access",
+        "one_of": ["ssh.service", "sshd.service"]
+      },
+      {
+        "id": "time-synchronization",
+        "one_of": [
+          "systemd-timesyncd.service",
+          "chrony.service",
+          "chronyd.service"
+        ]
+      }
+    ],
+    "disable_if_present": [
+      "apt-daily.timer",
+      "apt-daily-upgrade.timer",
+      "e2scrub_all.timer",
+      "fstrim.timer",
+      "fwupd-refresh.timer",
+      "man-db.timer",
+      "motd-news.timer",
+      "snapd.refresh.timer",
+      "snapd.service",
+      "snapd.socket"
+    ],
+    "mask_if_present": [
+      "apt-daily.service",
+      "apt-daily-upgrade.service",
+      "irqbalance.service",
+      "packagekit-offline-update.service",
+      "packagekit.service",
+      "unattended-upgrades.service"
+    ],
+    "require_inactive_if_present": [
+      "containerd.service",
+      "docker.service",
+      "docker.socket"
+    ],
+    "report_only_candidates": [
+      "ModemManager.service",
+      "avahi-daemon.service",
+      "bluetooth.service",
+      "cups.service",
+      "multipathd.service"
+    ]
+  },
+  "freeze_contract": {
+    "selected_sysctls": [
+      "kernel.numa_balancing",
+      "kernel.sched_autogroup_enabled",
+      "kernel.sched_migration_cost_ns",
+      "kernel.watchdog",
+      "vm.dirty_background_ratio",
+      "vm.dirty_ratio",
+      "vm.swappiness"
+    ],
+    "invalidate_sample_family_on_change": [
+      "source_commit",
+      "profile_sha256",
+      "os_release",
+      "kernel_release",
+      "kernel_command_line",
+      "package_manifest_sha256",
+      "systemd_unit_files_sha256",
+      "systemd_active_state_sha256",
+      "sysctl_manifest_sha256",
+      "cpu_isolation",
+      "runner_contract",
+      "container_image_digests",
+      "runtime_root_digest",
+      "measurement_window_guard_version"
+    ]
+  }
+}
