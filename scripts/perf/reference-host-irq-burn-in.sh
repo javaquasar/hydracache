@@ -244,7 +244,7 @@ failure_step=network-stimulus
 stimulus_pids=()
 for cpu in "${measurement_cpus[@]}"; do
   taskset --cpu-list "$cpu" \
-    ping -4 --numeric --quiet --count 32 --interval 0.02 --wait 10 "$network_target" &
+    ping -4 -n -q -c 32 -i 0.02 -w 10 "$network_target" &
   stimulus_pids+=("$!")
 done
 for stimulus_pid in "${stimulus_pids[@]}"; do

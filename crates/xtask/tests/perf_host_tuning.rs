@@ -305,3 +305,19 @@ fn reference_campaign_controller_is_serial_resumable_and_provider_safe() {
         );
     }
 }
+
+#[test]
+fn reference_irq_burn_in_uses_ubuntu_iputils_supported_ping_options() {
+    let burn_in = read("scripts/perf/reference-host-irq-burn-in.sh");
+
+    assert!(
+        burn_in.contains("ping -4 -n -q -c 32 -i 0.02 -w 10 \"$network_target\""),
+        "IRQ burn-in must use the short options supported by Ubuntu 24.04 iputils ping"
+    );
+    for unsupported in ["--numeric", "--quiet", "--count", "--interval", "--wait"] {
+        assert!(
+            !burn_in.contains(unsupported),
+            "IRQ burn-in must not use unsupported ping option {unsupported}"
+        );
+    }
+}
