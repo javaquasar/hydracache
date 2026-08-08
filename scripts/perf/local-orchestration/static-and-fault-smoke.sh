@@ -46,6 +46,7 @@ mapfile -t shell_files < <(find scripts/perf -maxdepth 1 -type f -name '*.sh' -p
 test "${#shell_files[@]}" -gt 0
 shellcheck --external-sources --severity=error "${shell_files[@]}"
 shellcheck --external-sources \
+  scripts/perf/local-orchestration/actual-memory-only-smoke.sh \
   scripts/perf/local-orchestration/static-and-fault-smoke.sh \
   scripts/perf/local-orchestration/systemd-smoke.sh
 actionlint \

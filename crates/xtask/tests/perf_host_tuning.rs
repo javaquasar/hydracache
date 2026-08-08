@@ -124,6 +124,7 @@ fn ubuntu_memory_only_profile_is_additive_explicit_and_non_ship() {
     }
 
     let guard = read("scripts/perf/reference-memory-only-window.py");
+    let orchestrator = read("scripts/perf/run-memory-only-measurement.sh");
     let guide = read("docs/testing/PERF_MEMORY_ONLY_HOST_PROFILE.md");
     for required in [
         "os.sched_setaffinity",
@@ -143,6 +144,20 @@ fn ubuntu_memory_only_profile_is_additive_explicit_and_non_ship() {
     }
     assert!(guide.contains("not replace `ubuntu-24.04-reference-v1`"));
     assert!(guide.contains("must not be pooled"));
+    for required in [
+        "hydracache-loadgen",
+        "hydracache-server",
+        "taskset --cpu-list",
+        "reference-memory-only-window.py",
+        "memory-only-run.json",
+        "ship_evidence_eligible: false",
+        ".materializing",
+    ] {
+        assert!(
+            orchestrator.contains(required),
+            "memory-only orchestrator lacks {required}"
+        );
+    }
 }
 
 #[test]

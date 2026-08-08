@@ -42,6 +42,18 @@ class MemoryOnlyWindowTests(unittest.TestCase):
             )
             self.assertEqual(set(guard.read_diskstats(path)), {"nvme0n1"})
 
+    def test_absolute_command_arguments_must_stay_below_runtime(self) -> None:
+        import tempfile
+
+        with tempfile.TemporaryDirectory() as temporary:
+            runtime = Path(temporary).resolve()
+            self.assertTrue(
+                guard.is_below_lexical(runtime / "reports" / "future.json", runtime)
+            )
+            self.assertFalse(
+                guard.is_below_lexical(runtime.parent / "escaped.json", runtime)
+            )
+
 
 if __name__ == "__main__":
     unittest.main()

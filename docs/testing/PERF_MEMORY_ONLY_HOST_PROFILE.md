@@ -43,6 +43,20 @@ directory from `tmpfs` to durable evidence storage. A missing counter source,
 non-`tmpfs` runtime, enabled swap, changed device/IRQ mapping, or unknown profile
 fails closed.
 
+For the automated real-binary smoke sequence, build the release loadgen and
+server first, then run:
+
+```bash
+taskset --cpu-list 0,5-7 scripts/perf/run-memory-only-measurement.sh \
+  --run-id rental-2026-xx-xx-a --mode all
+```
+
+The orchestrator stages both exact binaries, performs `local` and
+`client-surface` warm-ups, runs each measured window through the guard, creates
+`memory-only-run.json`, and atomically materializes immutable results under
+`target/test-evidence/0.67.1/memory-only/<run-id>`. Failed windows remain in
+`tmpfs` for diagnosis and are never materialized as successful runs.
+
 ## Local Docker scope
 
 Docker tests validate parsing, path containment, immutable receipt generation,

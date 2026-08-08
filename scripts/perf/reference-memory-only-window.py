@@ -78,6 +78,14 @@ def is_below(path: Path, root: Path) -> bool:
         return False
 
 
+def is_below_lexical(path: Path, root: Path) -> bool:
+    try:
+        path.resolve(strict=False).relative_to(root.resolve(strict=True))
+        return True
+    except ValueError:
+        return False
+
+
 def mount_type(path: Path, mountinfo: Path) -> str | None:
     resolved = path.resolve(strict=True)
     selected: tuple[int, str] | None = None
@@ -263,8 +271,8 @@ def main() -> int:
         raise GuardError("working directory must be below the runtime root")
     for argument in args.command[1:]:
         candidate_text = argument.partition("=")[2] if "=" in argument else argument
-        if candidate_text.startswith("/") and Path(candidate_text).exists():
-            if not is_below(Path(candidate_text), runtime_root):
+        if candidate_text.startswith("/"):
+            if not is_below_lexical(Path(candidate_text), runtime_root):
                 raise GuardError(f"command input escapes the runtime root: {candidate_text}")
     if not testing and mount_type(runtime_root, proc_root / "self/mountinfo") != "tmpfs":
         raise GuardError("runtime root must be on tmpfs")
