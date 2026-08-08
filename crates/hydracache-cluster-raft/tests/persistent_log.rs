@@ -249,11 +249,21 @@ fn sled_runtime_replay_matches_live_apply_for_stale_committed_generation() {
     store.save_hard_state(&hard_state).unwrap();
     drop(store);
 
-    let runtime = RaftMetadataRuntime::sled_with_config(
-        RaftMetadataRuntimeConfig::single_node("restart", 1),
-        &path,
-    )
-    .unwrap();
+    let config = RaftMetadataRuntimeConfig::single_node("restart", 1);
+    let mut runtime = None;
+    for attempt in 0..100 {
+        match RaftMetadataRuntime::sled_with_config(config.clone(), &path) {
+            Ok(reopened) => {
+                runtime = Some(reopened);
+                break;
+            }
+            Err(error) if is_sled_lock_contention(&error) && attempt + 1 < 100 => {
+                std::thread::sleep(std::time::Duration::from_millis(10));
+            }
+            Err(error) => panic!("reopening sled runtime failed: {error}"),
+        }
+    }
+    let runtime = runtime.expect("sled runtime lock was not released within one second");
     let member = runtime
         .members()
         .into_iter()
