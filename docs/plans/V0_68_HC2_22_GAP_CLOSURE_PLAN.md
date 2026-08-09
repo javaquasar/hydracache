@@ -16,7 +16,7 @@
 | ID | Gap | Status | Completion commit | Primary evidence |
 | --- | --- | --- | --- | --- |
 | H01 | Spike is not production-integrated | open | — | server config + real daemon/socket proof |
-| H02 | HC/2 schema is only a minimal envelope | open | — | registry, full schema, breaking-change gate |
+| H02 | HC/2 schema is only a minimal envelope | complete | `feat(client-plane): establish authoritative HC2 schema registry` | generated descriptor, stable IDs, breaking canaries, Rust/Java golden and unknown-field proofs |
 | H03 | Transport ADR remains Proposed | open | — | all ADR-0019 boolean gates |
 | H04 | Authenticated discovery is represented by a boolean | complete | `feat(client-plane): authenticate discovery by type` | opaque proof token, cluster binding, compile-fail tests |
 | H05 | Authenticated-unsupported fallback is caller-asserted | open | — | verified attempt provenance |
@@ -89,7 +89,9 @@ metadata rather than duplicating retry/version rules in SDKs.
 
 **Evidence.** Descriptor/golden corpus, schema lint, duplicate/reserved ID
 refusal, unknown-field round trip, additive-change acceptance, and breaking-
-change canaries across Rust/Java/Python.
+change canaries across generated Rust and Java. H15 independently gates clean,
+hermetic Python generation from this same registry before the overall
+cross-language gate can close.
 
 **Dependencies.** W0 transport envelope. **Risk/rollback.** Premature surface
 freezes debt; keep schema `v2alpha` until H03 and cross-language gates pass.

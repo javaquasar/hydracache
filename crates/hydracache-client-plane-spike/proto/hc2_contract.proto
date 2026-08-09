@@ -1,0 +1,201 @@
+syntax = "proto3";
+
+package hydracache.client.v2alpha;
+
+option java_package = "io.hydracache.client.v2alpha";
+option java_multiple_files = true;
+
+// HC/2 alpha contract. Removed numbers and names stay reserved permanently.
+enum Capability {
+  CAPABILITY_UNSPECIFIED = 0;
+  CAPABILITY_DATA = 1;
+  CAPABILITY_BATCH = 2;
+  CAPABILITY_SUBSCRIPTIONS = 3;
+  CAPABILITY_TOPOLOGY = 4;
+  CAPABILITY_FENCED_SESSIONS = 5;
+  CAPABILITY_DIAGNOSTICS = 6;
+  reserved 7 to 15;
+}
+
+enum StableErrorCode {
+  STABLE_ERROR_UNSPECIFIED = 0;
+  STABLE_ERROR_INVALID_REQUEST = 1;
+  STABLE_ERROR_UNAUTHENTICATED = 2;
+  STABLE_ERROR_UNAUTHORIZED = 3;
+  STABLE_ERROR_NOT_FOUND = 4;
+  STABLE_ERROR_CONFLICT = 5;
+  STABLE_ERROR_QUOTA_EXCEEDED = 6;
+  STABLE_ERROR_DEADLINE_EXCEEDED = 7;
+  STABLE_ERROR_UNAVAILABLE = 8;
+  STABLE_ERROR_UNSUPPORTED = 9;
+  STABLE_ERROR_GAP_REPAIR_REQUIRED = 10;
+  STABLE_ERROR_SESSION_LOST = 11;
+  STABLE_ERROR_INTERNAL = 12;
+  reserved 13 to 31;
+}
+
+enum RetryDirective {
+  RETRY_DIRECTIVE_UNSPECIFIED = 0;
+  RETRY_DIRECTIVE_NEVER = 1;
+  RETRY_DIRECTIVE_SAME_CONNECTION = 2;
+  RETRY_DIRECTIVE_RECONNECT_IDEMPOTENT = 3;
+  RETRY_DIRECTIVE_REPAIR_REQUIRED = 4;
+  reserved 5 to 15;
+}
+
+message RequestMeta {
+  uint64 deadline_unix_ms = 1;
+  bytes idempotency_key = 2;
+  string tenant = 3;
+  uint64 topology_epoch = 4;
+  reserved 5 to 15;
+  reserved "timeout_ms";
+}
+
+message ResponseMeta {
+  StableErrorCode error = 1;
+  RetryDirective retry = 2;
+  string safe_detail = 3;
+  uint64 topology_epoch = 4;
+  reserved 5 to 15;
+}
+
+message Handshake {
+  uint32 generation = 1;
+  string client_id = 2;
+  repeated Capability requested = 3;
+  uint64 connection_generation = 4;
+  reserved 5 to 15;
+}
+
+message HandshakeAck {
+  uint32 generation = 1;
+  string cluster_id = 2;
+  repeated Capability accepted = 3;
+  uint64 topology_epoch = 4;
+  uint64 connection_generation = 5;
+  reserved 6 to 15;
+}
+
+message GetRequest { bytes key = 1; }
+message PutRequest { bytes key = 1; bytes value = 2; uint64 ttl_ms = 3; }
+message DeleteRequest { bytes key = 1; }
+message CompareAndSetRequest {
+  bytes key = 1;
+  bytes expected = 2;
+  bytes replacement = 3;
+  uint64 ttl_ms = 4;
+}
+
+message BatchItem {
+  uint32 item_id = 1;
+  oneof operation {
+    GetRequest get = 101;
+    PutRequest put = 102;
+    DeleteRequest delete = 103;
+    CompareAndSetRequest compare_and_set = 104;
+  }
+  reserved 105 to 119;
+}
+
+message BatchRequest { repeated BatchItem items = 1; }
+
+message InvocationRequest {
+  RequestMeta meta = 1;
+  oneof operation {
+    GetRequest get = 101;
+    PutRequest put = 102;
+    DeleteRequest delete = 103;
+    CompareAndSetRequest compare_and_set = 104;
+    BatchRequest batch = 105;
+  }
+  reserved 106 to 119;
+  reserved "legacy_operation";
+}
+
+message ValueResult { bool found = 1; bytes value = 2; uint64 expires_at_unix_ms = 3; }
+message MutationResult { bool applied = 1; }
+message BatchResult { repeated InvocationResponse items = 1; }
+
+message InvocationResponse {
+  ResponseMeta meta = 1;
+  oneof result {
+    ValueResult value = 101;
+    MutationResult mutation = 102;
+    BatchResult batch = 103;
+  }
+  reserved 104 to 119;
+}
+
+message Cancel { uint64 correlation_id = 1; string safe_reason = 2; }
+message Subscribe { uint64 subscription_id = 1; bytes key_prefix = 2; uint64 resume_watermark = 3; }
+message SubscriptionAck { uint64 subscription_id = 1; uint64 watermark = 2; }
+message CacheEvent {
+  uint64 subscription_id = 1;
+  uint64 watermark = 2;
+  bytes key = 3;
+  bytes value = 4;
+  bool removed = 5;
+}
+message EventGap { uint64 subscription_id = 1; uint64 after_watermark = 2; }
+
+message NodeEndpoint {
+  string node_id = 1;
+  uint64 node_epoch = 2;
+  string endpoint_uri = 3;
+  string server_name = 4;
+  reserved 5 to 15;
+}
+message TopologyUpdate { uint64 epoch = 1; repeated NodeEndpoint nodes = 2; }
+
+message SessionOpen { uint64 requested_ttl_ms = 1; }
+message SessionHeartbeat { bytes session_id = 1; uint64 fence = 2; }
+message SessionLost { bytes session_id = 1; uint64 last_fence = 2; }
+
+message Diagnostics {
+  uint64 pending_invocations = 1;
+  uint64 queued_reply_bytes = 2;
+  uint64 queued_event_bytes = 3;
+  uint64 active_subscriptions = 4;
+  uint64 rejected_frames = 5;
+  reserved 6 to 31;
+}
+
+message ClientEnvelope {
+  uint32 generation = 1;
+  uint64 connection_generation = 2;
+  uint64 correlation_id = 3;
+  oneof message {
+    Handshake handshake = 16;
+    InvocationRequest invocation = 17;
+    Cancel cancel = 18;
+    Subscribe subscribe = 19;
+    SessionOpen session_open = 20;
+    SessionHeartbeat session_heartbeat = 21;
+  }
+  reserved 4 to 15;
+  reserved 22 to 31;
+}
+
+message ServerEnvelope {
+  uint32 generation = 1;
+  uint64 connection_generation = 2;
+  uint64 correlation_id = 3;
+  oneof message {
+    HandshakeAck handshake = 16;
+    InvocationResponse invocation = 17;
+    SubscriptionAck subscribed = 18;
+    CacheEvent event = 19;
+    EventGap gap = 20;
+    TopologyUpdate topology = 21;
+    SessionHeartbeat session_heartbeat = 22;
+    SessionLost session_lost = 23;
+    Diagnostics diagnostics = 24;
+  }
+  reserved 4 to 15;
+  reserved 25 to 31;
+}
+
+service ClientPlaneAlpha {
+  rpc Open(stream ClientEnvelope) returns (stream ServerEnvelope);
+}

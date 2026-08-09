@@ -2067,6 +2067,7 @@ dependencies = [
  "h2",
  "http",
  "prost",
+ "prost-types",
  "protoc-bin-vendored",
  "rcgen",
  "rustls",

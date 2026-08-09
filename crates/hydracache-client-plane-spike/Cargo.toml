@@ -13,6 +13,7 @@ description = "Non-production HC/2 transport-selection semantic spikes."
 publish = false
 
 [dependencies]
+prost.workspace = true
 thiserror.workspace = true
 
 [dev-dependencies]
@@ -20,7 +21,8 @@ bytes.workspace = true
 futures-util.workspace = true
 h2.workspace = true
 http.workspace = true
-prost.workspace = true
+prost-types.workspace = true
+protoc-bin-vendored = "3.2.0"
 rcgen.workspace = true
 rustls.workspace = true
 tokio.workspace = true

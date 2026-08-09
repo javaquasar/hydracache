@@ -10,6 +10,7 @@ use std::marker::PhantomData;
 
 use thiserror::Error;
 
+pub mod contract;
 pub mod endpoint;
 pub mod policy;
 
