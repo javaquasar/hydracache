@@ -1,0 +1,19 @@
+[package]
+name = "hydracache-ci-instruction-harness"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.94"
+publish = false
+
+[workspace]
+
+[dependencies]
+hydracache = { path = "../subject/crates/hydracache" }
+tokio = { version = "1.49.0", features = ["rt"] }
+
+[dev-dependencies]
+gungraun = "=0.19.4"
+
+[[bench]]
+name = "cache_work"
+harness = false

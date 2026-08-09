@@ -1,0 +1,32 @@
+{
+  "schema_version": 1,
+  "profile": "ci-instruction-v1",
+  "purpose": "paired deterministic work-regression tripwire for GitHub-hosted CI",
+  "claim_boundary": {
+    "relative_work_regression": true,
+    "qualification_evidence": false,
+    "bootstrap_evidence": false,
+    "ship_evidence_eligible": false,
+    "latency_claim": false,
+    "throughput_claim": false,
+    "capacity_claim": false
+  },
+  "measurement": {
+    "harness": "gungraun",
+    "harness_version": "0.19.4",
+    "toolchain": "rust-1.94.0",
+    "engine": "valgrind-callgrind",
+    "blocking_metric": "Ir",
+    "blocking_regression_percent": 5.0,
+    "aslr": "enabled-identically-for-base-and-head",
+    "operations_per_sample": 64,
+    "benchmarks": ["cache_get_hit", "cache_get_miss"]
+  },
+  "comparison": {
+    "strategy": "paired-base-head-same-job",
+    "base_baseline_name": "base",
+    "parallelism": 1,
+    "rolling_baseline": false,
+    "cross_runner_comparison": false
+  }
+}
