@@ -184,7 +184,7 @@ Populate exact files and commands as work lands. The planned ownership is:
 
 | Item | Planned implementation | Required proof | Boundary |
 | --- | --- | --- | --- |
-| W0 | `docs/adr/0019-hc2-client-transport.md`; `docs/architecture/client-plane-transport-analysis.md`; `crates/hydracache-client-plane-spike`; `cargo xtask client-plane-spike-check` | common semantics and three real loopback transports green; gRPC mTLS/256-invocation/generated Rust-Java proof green; remaining negative/parity evidence recorded red | gRPC is provisional leader; no primary accepted until the remaining W0 proof is green |
+| W0 | `docs/adr/0019-hc2-client-transport.md`; `docs/architecture/client-plane-transport-analysis.md`; `crates/hydracache-client-plane-spike`; `cargo xtask client-plane-spike-check` | common semantics, CA-signed mTLS, negative identity rejection, 256 correlated invocations, reply/heartbeat/event interleaving, and generated Rust-Java proof green on three real loopback transports; fault/socket/Python/dirty-generation evidence remains red | gRPC is provisional leader; no primary accepted until the remaining W0 proof is green |
 | W1 | schema + generator + golden corpus | Rust/Java/Python byte equality | schema is source of truth |
 | W2 | server/client connection runtimes | real TLS socket lifecycle | no modeled-only connection |
 | W3 | invocation service | retry/cancel/idempotency fault matrix | no unsafe replay |

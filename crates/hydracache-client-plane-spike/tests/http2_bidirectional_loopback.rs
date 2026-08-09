@@ -5,8 +5,12 @@ use hydracache_client_plane_spike::{
     FrameKind, PeerIdentity, ResourceSnapshot, SpikeConnection, SpikeFrame, SpikeLimits,
     TransportCandidate, HC2_GENERATION,
 };
+use rustls::pki_types::ServerName;
+use std::collections::BTreeSet;
 use tokio::net::{TcpListener, TcpStream};
 use tokio::sync::oneshot;
+
+mod support;
 
 fn ready_connection() -> SpikeConnection {
     let mut connection = SpikeConnection::new(
@@ -25,50 +29,75 @@ async fn http2_candidate_interleaves_reply_and_event_on_a_real_stream() {
     let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
     let address = listener.local_addr().unwrap();
     let (closed_tx, closed_rx) = oneshot::channel();
+    let pki = support::TestPki::generate();
+    let acceptor = pki.server_acceptor();
+    let connector = pki.client_connector();
 
     let server_task = tokio::spawn(async move {
         let (socket, _) = listener.accept().await.unwrap();
+        let socket = acceptor.accept(socket).await.expect("mTLS handshake");
         let mut h2 = server::handshake(socket).await.unwrap();
         let (request, mut respond) = h2.accept().await.expect("request stream").unwrap();
         let mut inbound = request.into_body();
-        let request_bytes = inbound.data().await.expect("request DATA").unwrap();
-        inbound
-            .flow_control()
-            .release_capacity(request_bytes.len())
-            .unwrap();
+        let mut request_bytes = Vec::new();
+        while let Some(chunk) = inbound.data().await {
+            let chunk = chunk.unwrap();
+            inbound
+                .flow_control()
+                .release_capacity(chunk.len())
+                .unwrap();
+            request_bytes.extend_from_slice(&chunk);
+        }
 
         let mut connection = ready_connection();
-        let invocation = connection.receive(&request_bytes).unwrap();
-        connection
-            .begin_invocation(invocation.correlation_id)
-            .unwrap();
+        let codec = ready_connection();
+        let mut cursor = request_bytes.as_slice();
+        for expected in 1..=256 {
+            let frame_len = 8 + u32::from_be_bytes(cursor[4..8].try_into().unwrap()) as usize;
+            let invocation = connection.receive(&cursor[..frame_len]).unwrap();
+            assert_eq!(invocation.correlation_id, expected);
+            connection
+                .begin_invocation(invocation.correlation_id)
+                .unwrap();
+            cursor = &cursor[frame_len..];
+        }
+        assert!(cursor.is_empty(), "no trailing request bytes");
         connection.register_subscription(44).unwrap();
-        connection
-            .complete_invocation(invocation.correlation_id, b"h2-value".to_vec())
-            .unwrap();
+        for correlation_id in 1..=256 {
+            connection
+                .complete_invocation(correlation_id, b"h2-value".to_vec())
+                .unwrap();
+        }
+        connection.heartbeat().unwrap();
         connection
             .push_event(44, b"h2-entry-event".to_vec())
             .unwrap();
 
         let response = Response::builder().status(200).body(()).unwrap();
         let mut outbound = respond.send_response(response, false).unwrap();
-        let reply = connection.drain_next().expect("reply frame");
+        let mut response_bytes = Vec::new();
+        while let Some(frame) = connection.drain_next() {
+            response_bytes.extend_from_slice(&codec.encode(&frame).unwrap());
+        }
         outbound
-            .send_data(Bytes::from(connection.encode(&reply).unwrap()), false)
+            .send_data(Bytes::from(response_bytes), true)
             .unwrap();
-        let event = connection.drain_next().expect("event frame");
-        outbound
-            .send_data(Bytes::from(connection.encode(&event).unwrap()), true)
-            .unwrap();
+        drop(outbound);
+        drop(respond);
+        drop(inbound);
 
+        closed_tx.send(connection.disconnect()).unwrap();
         h2.graceful_shutdown();
         while h2.accept().await.is_some() {}
-        closed_tx.send(connection.disconnect()).unwrap();
     });
 
     let socket = TcpStream::connect(address).await.unwrap();
+    let socket = connector
+        .connect(ServerName::try_from("localhost").unwrap(), socket)
+        .await
+        .expect("verified server and client certificates");
     let (mut client, h2_connection) = client::handshake(socket).await.unwrap();
-    let driver = tokio::spawn(async move { h2_connection.await.unwrap() });
+    let driver = tokio::spawn(h2_connection);
     let request = Request::builder()
         .method("POST")
         .uri("https://localhost/client/v2/stream")
@@ -76,38 +105,63 @@ async fn http2_candidate_interleaves_reply_and_event_on_a_real_stream() {
         .unwrap();
     let (response, mut request_body) = client.send_request(request, false).unwrap();
     let codec = ready_connection();
-    let invocation = codec
-        .encode(&SpikeFrame::current(
-            FrameKind::Invocation,
-            91,
-            b"get:key".to_vec(),
-        ))
-        .unwrap();
+    let mut invocations = Vec::new();
+    for correlation_id in 1..=256 {
+        invocations.extend_from_slice(
+            &codec
+                .encode(&SpikeFrame::current(
+                    FrameKind::Invocation,
+                    correlation_id,
+                    b"get:key".to_vec(),
+                ))
+                .unwrap(),
+        );
+    }
     request_body
-        .send_data(Bytes::from(invocation), true)
+        .send_data(Bytes::from(invocations), true)
         .unwrap();
 
     let response = response.await.unwrap();
     assert_eq!(response.status(), 200);
     let mut body = response.into_body();
-    let reply_bytes = body.data().await.expect("reply DATA").unwrap();
-    body.flow_control()
-        .release_capacity(reply_bytes.len())
-        .unwrap();
-    let event_bytes = body.data().await.expect("event DATA").unwrap();
-    body.flow_control()
-        .release_capacity(event_bytes.len())
-        .unwrap();
+    let mut response_bytes = Vec::new();
+    while let Some(chunk) = body.data().await {
+        let chunk = chunk.unwrap();
+        body.flow_control().release_capacity(chunk.len()).unwrap();
+        response_bytes.extend_from_slice(&chunk);
+    }
 
     let mut decoder = ready_connection();
-    let reply = decoder.receive(&reply_bytes).unwrap();
-    let event = decoder.receive(&event_bytes).unwrap();
-    assert_eq!(reply.kind, FrameKind::Reply);
-    assert_eq!(reply.correlation_id, 91);
-    assert_eq!(event.kind, FrameKind::Event);
-    assert_eq!(event.correlation_id, 44);
+    let mut replies = BTreeSet::new();
+    let mut saw_heartbeat = false;
+    let mut saw_event = false;
+    let mut cursor = response_bytes.as_slice();
+    while !cursor.is_empty() {
+        let frame_len = 8 + u32::from_be_bytes(cursor[4..8].try_into().unwrap()) as usize;
+        let frame = decoder.receive(&cursor[..frame_len]).unwrap();
+        cursor = &cursor[frame_len..];
+        match frame.kind {
+            FrameKind::Reply => {
+                replies.insert(frame.correlation_id);
+            }
+            FrameKind::Heartbeat => saw_heartbeat = true,
+            FrameKind::Event => {
+                assert_eq!(frame.correlation_id, 44);
+                saw_event = true;
+            }
+            other => panic!("unexpected server frame: {other:?}"),
+        }
+    }
+    assert_eq!(replies, (1..=256).collect());
+    assert!(saw_heartbeat);
+    assert!(saw_event);
 
-    server_task.await.unwrap();
-    driver.await.unwrap();
+    drop(request_body);
+    drop(body);
+    drop(client);
     assert_eq!(closed_rx.await.unwrap(), ResourceSnapshot::default());
+    server_task.abort();
+    driver.abort();
+    let _ = server_task.await;
+    let _ = driver.await;
 }

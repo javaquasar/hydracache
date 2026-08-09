@@ -8,12 +8,13 @@ use hydracache_client_plane_spike::{
     TransportCandidate, HC2_GENERATION,
 };
 use prost::Message;
-use rcgen::{BasicConstraints, CertificateParams, CertifiedIssuer, IsCa, KeyPair};
 use tokio::net::TcpListener;
 use tokio::sync::{mpsc, oneshot};
 use tokio_stream::wrappers::{ReceiverStream, TcpListenerStream};
 use tonic::transport::{Certificate, Channel, ClientTlsConfig, Identity, Server, ServerTlsConfig};
-use tonic::{Request, Response, Status, Streaming};
+use tonic::{Code, Request, Response, Status, Streaming};
+
+mod support;
 
 mod proto {
     tonic::include_proto!("hydracache.client.v2");
@@ -131,24 +132,13 @@ async fn grpc_candidate_interleaves_reply_and_event_on_a_generated_real_stream()
     let incoming = TcpListenerStream::new(listener);
     let (shutdown_tx, shutdown_rx) = oneshot::channel();
     let (closed_tx, closed_rx) = oneshot::channel();
-    let mut ca_params = CertificateParams::new(Vec::<String>::new()).unwrap();
-    ca_params.is_ca = IsCa::Ca(BasicConstraints::Unconstrained);
-    let ca = CertifiedIssuer::self_signed(ca_params, KeyPair::generate().unwrap()).unwrap();
-    let server_key = KeyPair::generate().unwrap();
-    let server_cert = CertificateParams::new(vec!["localhost".to_owned()])
-        .unwrap()
-        .signed_by(&server_key, &ca)
-        .unwrap();
-    let client_key = KeyPair::generate().unwrap();
-    let client_cert = CertificateParams::new(vec!["hc2-client".to_owned()])
-        .unwrap()
-        .signed_by(&client_key, &ca)
-        .unwrap();
-    let ca_pem = ca.pem();
+    let pki = support::TestPki::generate();
     let service = SpikeService {
         closed: Arc::new(Mutex::new(Some(closed_tx))),
     };
-    let server_identity = Identity::from_pem(server_cert.pem(), server_key.serialize_pem());
+    let server_identity =
+        Identity::from_pem(pki.server_cert_pem.clone(), pki.server_key_pem.clone());
+    let ca_pem = pki.ca_pem.clone();
     let server = tokio::spawn(async move {
         Server::builder()
             .tls_config(
@@ -170,11 +160,8 @@ async fn grpc_candidate_interleaves_reply_and_event_on_a_generated_real_stream()
         .unwrap()
         .tls_config(
             ClientTlsConfig::new()
-                .ca_certificate(Certificate::from_pem(ca.pem()))
-                .identity(Identity::from_pem(
-                    client_cert.pem(),
-                    client_key.serialize_pem(),
-                ))
+                .ca_certificate(Certificate::from_pem(pki.ca_pem))
+                .identity(Identity::from_pem(pki.client_cert_pem, pki.client_key_pem))
                 .domain_name("localhost"),
         )
         .unwrap()
@@ -224,6 +211,100 @@ async fn grpc_candidate_interleaves_reply_and_event_on_a_generated_real_stream()
 
     assert_eq!(closed_rx.await.unwrap(), ResourceSnapshot::default());
     shutdown_tx.send(()).unwrap();
+    server.await.unwrap();
+}
+
+async fn serve_rejection_probe(
+    pki: &support::TestPki,
+) -> (u16, oneshot::Sender<()>, tokio::task::JoinHandle<()>) {
+    let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
+    let port = listener.local_addr().unwrap().port();
+    let incoming = TcpListenerStream::new(listener);
+    let (shutdown_tx, shutdown_rx) = oneshot::channel();
+    let service = SpikeService {
+        closed: Arc::new(Mutex::new(None)),
+    };
+    let identity = Identity::from_pem(pki.server_cert_pem.clone(), pki.server_key_pem.clone());
+    let ca = Certificate::from_pem(pki.ca_pem.clone());
+    let server = tokio::spawn(async move {
+        Server::builder()
+            .tls_config(ServerTlsConfig::new().identity(identity).client_ca_root(ca))
+            .unwrap()
+            .add_service(ClientPlaneSpikeServer::new(service))
+            .serve_with_incoming_shutdown(incoming, async {
+                let _ = shutdown_rx.await;
+            })
+            .await
+            .unwrap();
+    });
+    (port, shutdown_tx, server)
+}
+
+async fn assert_tls_rejected(port: u16, tls: ClientTlsConfig) {
+    let endpoint = format!("https://localhost:{port}");
+    match Channel::from_shared(endpoint)
+        .unwrap()
+        .tls_config(tls)
+        .unwrap()
+        .connect()
+        .await
+    {
+        Err(_) => {}
+        Ok(channel) => {
+            let mut client = ClientPlaneSpikeClient::new(channel);
+            let (tx, rx) = mpsc::channel(1);
+            tx.send(to_proto(SpikeFrame::current(
+                FrameKind::Invocation,
+                1,
+                b"probe".to_vec(),
+            )))
+            .await
+            .unwrap();
+            drop(tx);
+            let status = client.open(ReceiverStream::new(rx)).await.unwrap_err();
+            assert!(
+                matches!(
+                    status.code(),
+                    Code::Unavailable | Code::Unknown | Code::Internal
+                ),
+                "request reached the application instead of failing TLS: {status}"
+            );
+        }
+    }
+}
+
+#[tokio::test]
+async fn grpc_candidate_rejects_an_untrusted_server_ca_before_dispatch() {
+    let server_pki = support::TestPki::generate();
+    let untrusted_pki = support::TestPki::generate();
+    let (port, shutdown, server) = serve_rejection_probe(&server_pki).await;
+    assert_tls_rejected(
+        port,
+        ClientTlsConfig::new()
+            .ca_certificate(Certificate::from_pem(untrusted_pki.ca_pem))
+            .identity(Identity::from_pem(
+                untrusted_pki.client_cert_pem,
+                untrusted_pki.client_key_pem,
+            ))
+            .domain_name("localhost"),
+    )
+    .await;
+    shutdown.send(()).unwrap();
+    server.await.unwrap();
+}
+
+#[tokio::test]
+async fn grpc_candidate_rejects_a_missing_client_certificate_before_dispatch() {
+    let pki = support::TestPki::generate();
+    let (port, shutdown, server) = serve_rejection_probe(&pki).await;
+    assert_tls_rejected(
+        port,
+        ClientTlsConfig::new()
+            .ca_certificate(Certificate::from_pem(pki.ca_pem.clone()))
+            .domain_name("localhost"),
+    )
+    .await;
+    shutdown.send(()).unwrap();
     server.await.unwrap();
 }
 
