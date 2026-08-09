@@ -25,6 +25,7 @@ wire compatibility, or long-term product direction.
 | [ADR-0016](0016-raft-in-wasm-lab.md) | Accepted for 0.53.1 | Server lab uses real raft election; wasm remains a labelled validated sim-model. |
 | [ADR-0017](0017-operator-tooling.md) | Accepted for 0.56 | Use kube-rs for the Kubernetes operator. |
 | [ADR-0018](0018-hazelcast-compatibility-surface-boundaries.md) | Accepted | Hazelcast surface boundaries: embedded facade + client-protocol facade + migration bridge supported; member co-clustering will NOT be supported. |
+| [ADR-0019](0019-hc2-client-transport.md) | Proposed for 0.68 | Prefer gRPC/protobuf for HC/2, subject to real TLS, Java, cancellation, and slow-consumer W0 evidence. |
 
 ## Naming
 

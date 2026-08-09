@@ -7,6 +7,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         Some("bench-budget") => xtask::bench_budget::run(args.collect())?,
         Some("canary-check") => xtask::canary_check::run(args.collect())?,
         Some("canary-sweep") => xtask::canary_sweep::run(args.collect())?,
+        Some("client-plane-spike-check") => xtask::client_plane_spike::run(args.collect())?,
         Some("compat-check") => xtask::compat_check::run(args.collect())?,
         Some("coverage-ratchet-check") => xtask::coverage_ratchet::run(args.collect())?,
         Some("determinism-sweep") => xtask::determinism_sweep::run(args.collect())?,
@@ -49,6 +50,7 @@ fn print_usage() {
          cargo xtask verify-no-test-features  # ensure test-only features/deps are absent from release graphs\n  \
          cargo xtask canary-check  # validate the 0.64 Raft canary registry\n  \
          cargo xtask canary-sweep --release 0.64 --tier <fast|all>  # execute expected-red canary proofs\n  \
+         cargo xtask client-plane-spike-check  # run non-production 0.68 W0 Rust/Java transport evidence\n  \
          cargo xtask compat-check [--preflight-only|--manifest-only]  # validate previous-release compatibility\n  \
          cargo xtask coverage-ratchet-check [--structural|--run]  # validate or execute the pinned coverage floor\n  \
          cargo xtask determinism-sweep --release 0.64  # compare canonical logical evidence across repeated/serial runs\n  \
