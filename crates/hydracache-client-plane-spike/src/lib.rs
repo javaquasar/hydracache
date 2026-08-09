@@ -9,6 +9,7 @@ use std::collections::{BTreeSet, VecDeque};
 
 use thiserror::Error;
 
+pub mod endpoint;
 pub mod policy;
 
 /// First proposed HC/2 wire generation. It is isolated from HC/1 v1-v4.

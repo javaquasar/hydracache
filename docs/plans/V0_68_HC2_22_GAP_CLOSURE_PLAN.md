@@ -20,7 +20,7 @@
 | H03 | Transport ADR remains Proposed | open | — | all ADR-0019 boolean gates |
 | H04 | Authenticated discovery is represented by a boolean | complete | `feat(client-plane): authenticate discovery by type` | opaque proof token, cluster binding, compile-fail tests |
 | H05 | Authenticated-unsupported fallback is caller-asserted | open | — | verified attempt provenance |
-| H06 | Endpoint authority is an unparsed string | open | — | strict scheme/host/port/SNI type |
+| H06 | Endpoint authority is an unparsed string | complete | `feat(client-plane): parse canonical endpoint identities` | strict URI corpus + adapter/SNI/origin policy |
 | H07 | Discovery rollback is not prevented | open | — | cluster binding + monotonic epoch |
 | H08 | Advertisement cannot represent multi-node endpoints | open | — | node-scoped endpoint identities |
 | H09 | Lifecycle checks are runtime-only, not typestate | open | — | compile-fail + runtime transition proof |
@@ -173,6 +173,15 @@ hostname/SNI mismatch.
 canonical parsed fields and never compare raw strings for identity.
 
 **Done.** Networking APIs receive structured authority, not an arbitrary string.
+
+**Completion evidence (2026-08-09).** `TransportAuthority` retains only parsed,
+canonical fields: adapter-bound scheme, DNS/IPv4/IPv6 host, non-zero `u16` port,
+explicit TLS server name, and address origin. It rejects userinfo, path, query,
+fragment, unbracketed IPv6, IDN input, invalid labels, missing/zero/overflow
+ports, wrong schemes, and DNS/SNI mismatches. Authenticated discovery also
+rejects unspecified, multicast, and localhost advertisements, while explicit
+bootstrap configuration retains local-test access. Policy validation rechecks
+that a parsed authority belongs to its declared adapter.
 
 ## H07. Prevent discovery rollback and cross-cluster rebinding
 

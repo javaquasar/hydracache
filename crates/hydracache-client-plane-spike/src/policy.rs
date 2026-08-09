@@ -4,10 +4,10 @@ use std::collections::BTreeSet;
 
 use thiserror::Error;
 
+use crate::endpoint::{EndpointOrigin, EndpointParseError, TransportAuthority};
 use crate::{TransportCandidate, HC2_GENERATION};
 
 const MAX_CLUSTER_ID_BYTES: usize = 128;
-const MAX_AUTHORITY_BYTES: usize = 512;
 
 /// Evidence maturity of one independently gated transport adapter.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
@@ -34,30 +34,32 @@ impl TransportCandidate {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct TransportEndpoint {
     pub candidate: TransportCandidate,
-    pub authority: String,
+    pub authority: TransportAuthority,
     pub maturity: AdapterMaturity,
     pub require_mtls: bool,
     pub ready: bool,
 }
 
 impl TransportEndpoint {
-    pub fn new(
+    pub fn parse(
         candidate: TransportCandidate,
-        authority: impl Into<String>,
+        uri: &str,
+        server_name: &str,
         maturity: AdapterMaturity,
-    ) -> Self {
-        Self {
+        origin: EndpointOrigin,
+    ) -> Result<Self, EndpointParseError> {
+        Ok(Self {
             candidate,
-            authority: authority.into(),
+            authority: TransportAuthority::parse(candidate, uri, server_name, origin)?,
             maturity,
             require_mtls: true,
             ready: true,
-        }
+        })
     }
 
     fn validate(&self) -> Result<(), TransportPolicyError> {
-        if self.authority.trim().is_empty() || self.authority.len() > MAX_AUTHORITY_BYTES {
-            return Err(TransportPolicyError::InvalidAuthority);
+        if self.authority.candidate() != self.candidate {
+            return Err(TransportPolicyError::EndpointTransportMismatch);
         }
         if !self.require_mtls {
             return Err(TransportPolicyError::InsecureTransport(self.candidate));
@@ -348,8 +350,8 @@ pub enum TransportPolicyError {
     NoEnabledTransport,
     #[error("duplicate transport candidate {0:?}")]
     DuplicateTransport(TransportCandidate),
-    #[error("transport authority is empty or exceeds its bound")]
-    InvalidAuthority,
+    #[error("parsed endpoint transport does not match its policy entry")]
+    EndpointTransportMismatch,
     #[error("HC/2 transport {0:?} must require mTLS")]
     InsecureTransport(TransportCandidate),
     #[error("configured maturity exceeds evidence for {0:?}")]
@@ -381,7 +383,19 @@ mod tests {
         authority: &str,
         maturity: AdapterMaturity,
     ) -> TransportEndpoint {
-        TransportEndpoint::new(candidate, authority, maturity)
+        let scheme = match candidate {
+            TransportCandidate::GrpcBidirectional => "hc2+grpc",
+            TransportCandidate::Http2Bidirectional => "hc2+h2",
+            TransportCandidate::DedicatedTcpTls => "hc2+tls",
+        };
+        TransportEndpoint::parse(
+            candidate,
+            &format!("{scheme}://{authority}"),
+            "cache.example",
+            maturity,
+            EndpointOrigin::AuthenticatedDiscovery,
+        )
+        .unwrap()
     }
 
     fn raw_all_transports() -> DiscoveryAdvertisement {
@@ -484,6 +498,24 @@ mod tests {
             Err(TransportPolicyError::UnprovenMaturity(
                 TransportCandidate::Http2Bidirectional
             ))
+        );
+
+        let wrong_adapter = TransportEndpoint {
+            candidate: TransportCandidate::Http2Bidirectional,
+            authority: TransportAuthority::parse(
+                TransportCandidate::GrpcBidirectional,
+                "hc2+grpc://cache.example:7443",
+                "cache.example",
+                EndpointOrigin::AuthenticatedDiscovery,
+            )
+            .unwrap(),
+            maturity: AdapterMaturity::Experimental,
+            require_mtls: true,
+            ready: true,
+        };
+        assert_eq!(
+            ServerTransportPolicy::validate(HC2_GENERATION, vec![wrong_adapter]),
+            Err(TransportPolicyError::EndpointTransportMismatch)
         );
     }
 

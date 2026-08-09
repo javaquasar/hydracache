@@ -46,11 +46,16 @@ require_mtls = true
 ```
 
 Startup fails loud when no transport is enabled, a candidate is duplicated, an
-authority is empty or unbounded, HC/2 is configured without mTLS, or configured
-maturity exceeds the repository's proven maturity for that adapter. Nodes may
-have different addresses, but generation, security requirements, capabilities,
-limits, and semantic behavior are cluster policy. A node advertises only a
-listener that successfully bound and passed its readiness check.
+endpoint URI is malformed or does not match its adapter, HC/2 is configured
+without mTLS, or configured maturity exceeds the repository's proven maturity
+for that adapter. Endpoints are canonical parsed identities with an
+adapter-bound `hc2+grpc`, `hc2+h2`, or `hc2+tls` scheme, DNS/IPv4/IPv6 host,
+required non-zero port, explicit TLS server name, and bootstrap/discovery
+origin. Userinfo, paths, queries, fragments, ambiguous IPv6, IDN input, and
+DNS/SNI mismatches fail before connection. Nodes may have different addresses,
+but generation, security requirements, capabilities, limits, and semantic
+behavior are cluster policy. A node advertises only a listener that successfully
+bound and passed its readiness check.
 
 HC/1 remains a separate listener and compatibility identity. HC/2 discovery
 must never cause an HC/1 endpoint to decode HC/2 or vice versa.

@@ -21,8 +21,8 @@ Current implementation evidence:
 - generated Rust/Java protobuf golden frame: green; generated Python pending.
 - selectable server/client transport policy: executable in the W0 spike with
   maturity bounds, an unforgeable cluster-bound authenticated-discovery type,
-  pinned/ordered choice, and downgrade refusal after every security or protocol
-  failure;
+  canonical adapter-bound endpoint identities, pinned/ordered choice, and
+  downgrade refusal after every security or protocol failure;
 - explicit connection lifecycle: `Created -> TlsVerified -> Authenticated ->
   Ready -> Draining -> Closed`, with dispatch before `Ready` and new work while
   draining rejected.
