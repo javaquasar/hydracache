@@ -1316,6 +1316,12 @@ The canonical methodology and claim boundary are in [`PERFORMANCE.md`](PERFORMAN
 
 `ci-shared` remains a broad-tolerance hosted regression tripwire. `reference-v1` remains reserved for the protected `hydracache-perf-v1` self-hosted bare-metal runner. Its preflight, fingerprint, SLO, repeat, zero-error, and 15% spread rules are unchanged, but its five execution gates are deferred evidence gates rather than 0.67 ship-mandatory receipts.
 
+`ci-instruction-v1` adds a real paired base/head Callgrind lane on GitHub-hosted
+Linux. It gates deterministic instruction-count regressions only and cannot
+support latency, throughput, capacity, qualification, bootstrap, or ship claims.
+Its contract, workloads, raw artifacts, and local reproduction procedure are in
+[`testing/PERF_CI_INSTRUCTION_PROFILE.md`](testing/PERF_CI_INSTRUCTION_PROFILE.md).
+
 The reference jobs start only through an explicit trusted-`main` workflow dispatch with
 `performance_0671_mode` set to `qualify`, `full-dress`, `bootstrap`, or `frozen-candidate`. Runs
 serialize through `release-067-performance-reference-v1`; the runner may remain offline while

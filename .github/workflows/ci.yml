@@ -741,6 +741,60 @@ jobs:
           path: target/test-evidence/0.67/perf-budget-verdict.json
           if-no-files-found: error
 
+  performance-ci-instruction-v1:
+    name: CI Instruction Work Tripwire
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    if: github.event_name == 'pull_request' || (github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'))
+
+    steps:
+      - name: Checkout paired history
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - name: Install pinned Rust 1.94.0
+        uses: dtolnay/rust-toolchain@1.94.0
+
+      - name: Install Callgrind
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes --no-install-recommends valgrind
+          cargo install --locked gungraun-runner --version 0.19.4
+          gungraun-runner --version
+
+      - name: Resolve exact comparison commits
+        id: commits
+        env:
+          PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          PUSH_BEFORE_SHA: ${{ github.event.before }}
+        run: |
+          base_sha="${PR_BASE_SHA:-${PUSH_BEFORE_SHA:-}}"
+          if ! git cat-file -e "${base_sha}^{commit}" 2>/dev/null; then
+            base_sha="$(git rev-parse HEAD^)"
+          fi
+          echo "base_sha=$base_sha" >>"$GITHUB_OUTPUT"
+          echo "head_sha=$(git rev-parse HEAD)" >>"$GITHUB_OUTPUT"
+
+      - name: Validate non-ship instruction profile
+        run: cargo test -p xtask --test perf_ci_instruction --locked
+
+      - name: Run paired base/head instruction tripwire
+        run: |
+          scripts/perf/run-ci-instruction-pair.sh \
+            --base '${{ steps.commits.outputs.base_sha }}' \
+            --head '${{ steps.commits.outputs.head_sha }}' \
+            --output target/test-evidence/ci-instruction-v1
+
+      - name: Upload instruction profiles and receipt
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: "ci-instruction-v1-${{ steps.commits.outputs.head_sha }}"
+          path: target/test-evidence/ci-instruction-v1/**
+          if-no-files-found: error
+
   release-067-performance:
     name: 0.67 Self-hosted Reference Evidence
     runs-on: [self-hosted, linux, x64, hydracache-perf-v1]
