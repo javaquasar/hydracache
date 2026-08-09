@@ -35,6 +35,7 @@ where
 fn ready_connection() -> SpikeConnection {
     let mut connection =
         SpikeConnection::new(TransportCandidate::DedicatedTcpTls, SpikeLimits::default());
+    connection.mark_tls_verified(true).unwrap();
     connection
         .authenticate(PeerIdentity::verified("loopback-client", "loopback-tenant"))
         .unwrap();

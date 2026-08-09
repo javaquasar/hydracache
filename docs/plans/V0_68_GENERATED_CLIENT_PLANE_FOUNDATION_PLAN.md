@@ -126,6 +126,12 @@ legacy numeric operation versions 1-4. W0 chooses and records its first wire ver
 version (expected to be `5` if the existing number line is retained). No code may silently decode
 HC/2 bytes as HC/1 or replace the old payload under the same version.
 
+HC/2 has one generated semantic contract behind selectable, independently maturity-gated
+transport adapters. Server listener selection, client pin/ordered policy, and downgrade refusal
+are normative in [`../architecture/hc2-multi-transport-policy.md`](../architecture/hc2-multi-transport-policy.md).
+The same document records the twelve-point strengthening program applied across W0-W8. Enabling
+multiple listeners never permits per-transport operations, errors, limits, or security semantics.
+
 ## Protocol and transport decision boundary
 
 The design requires a full-duplex, multiplexed, TLS-capable connection and generated independent-
@@ -184,7 +190,7 @@ Populate exact files and commands as work lands. The planned ownership is:
 
 | Item | Planned implementation | Required proof | Boundary |
 | --- | --- | --- | --- |
-| W0 | `docs/adr/0019-hc2-client-transport.md`; `docs/architecture/client-plane-transport-analysis.md`; `crates/hydracache-client-plane-spike`; `cargo xtask client-plane-spike-check` | common semantics, CA-signed mTLS, negative identity rejection, 256 correlated invocations, reply/heartbeat/event interleaving, and generated Rust-Java proof green on three real loopback transports; fault/socket/Python/dirty-generation evidence remains red | gRPC is provisional leader; no primary accepted until the remaining W0 proof is green |
+| W0 | `docs/adr/0019-hc2-client-transport.md`; `docs/architecture/client-plane-transport-analysis.md`; `docs/architecture/hc2-multi-transport-policy.md`; `crates/hydracache-client-plane-spike`; `cargo xtask client-plane-spike-check` | common semantics, typed TLS/auth/negotiation/drain state, fail-closed selectable transport policy, CA-signed mTLS, negative identity rejection, 256 correlated invocations, reply/heartbeat/event interleaving, and generated Rust-Java proof green on three real loopback transports; fault/socket/Python/dirty-generation evidence remains red | gRPC is provisional leader; no primary accepted and no adapter marked stable until the remaining W0 proof is green |
 | W1 | schema + generator + golden corpus | Rust/Java/Python byte equality | schema is source of truth |
 | W2 | server/client connection runtimes | real TLS socket lifecycle | no modeled-only connection |
 | W3 | invocation service | retry/cancel/idempotency fault matrix | no unsafe replay |

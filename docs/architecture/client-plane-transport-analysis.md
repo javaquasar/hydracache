@@ -19,6 +19,12 @@ Current implementation evidence:
   wrong-CA and missing-client-certificate rejection is green both at the shared
   rustls boundary used by TCP/HTTP2 and at the generated gRPC boundary;
 - generated Rust/Java protobuf golden frame: green; generated Python pending.
+- selectable server/client transport policy: executable in the W0 spike with
+  maturity bounds, authenticated discovery, pinned/ordered choice, and
+  downgrade refusal after every security or protocol failure;
+- explicit connection lifecycle: `Created -> TlsVerified -> Authenticated ->
+  Ready -> Draining -> Closed`, with dispatch before `Ready` and new work while
+  draining rejected.
 
 Passing the current sans-I/O harness proves lifecycle invariants only. It does
 not prove a networking stack, TLS handshake, wire interoperability, daemon
@@ -151,6 +157,11 @@ failure, not a documentation exception.
 - strict about generation, candidate preface, declared lengths, message kinds,
   identity ordering, and bounded connection-owned resources;
 - explicit that an event gap is a cache repair signal, not a durable event log.
+
+The selectable-adapter contract and the complete twelve-point hardening program
+are recorded in
+[`hc2-multi-transport-policy.md`](hc2-multi-transport-policy.md). They preserve
+one HC/2 semantic contract; they do not make every experimental adapter stable.
 
 The next W0 slice must exercise real-stream cancellation, graceful half-close,
 reset, and slow-consumer faults, add the malformed/cross-candidate socket corpus,

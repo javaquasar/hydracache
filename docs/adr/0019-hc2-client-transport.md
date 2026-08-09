@@ -45,6 +45,15 @@ The generated schema remains the HydraCache contract. gRPC status codes do not
 replace stable HydraCache error envelopes, and HTTP/2 flow control does not
 replace HydraCache's explicit bounded reply/event queues or gap semantics.
 
+HC/2 nevertheless retains a selectable adapter boundary. Operators may enable
+one or more independently maturity-gated listeners, and SDKs may pin a
+transport or use a fail-closed ordered policy. This does not create multiple
+semantic protocols: every adapter uses the same generated HC/2 contract and
+shared connection/invocation/listener/topology/session runtime. Security,
+authentication, generation, and malformed-peer failures never trigger fallback.
+The normative policy is
+[`../architecture/hc2-multi-transport-policy.md`](../architecture/hc2-multi-transport-policy.md).
+
 ## Acceptance Conditions
 
 Before changing the status to Accepted:

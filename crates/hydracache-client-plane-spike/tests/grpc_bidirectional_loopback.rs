@@ -40,6 +40,7 @@ fn ready_connection() -> SpikeConnection {
         TransportCandidate::GrpcBidirectional,
         SpikeLimits::default(),
     );
+    connection.mark_tls_verified(true).unwrap();
     connection
         .authenticate(PeerIdentity::verified("grpc-client", "grpc-tenant"))
         .unwrap();

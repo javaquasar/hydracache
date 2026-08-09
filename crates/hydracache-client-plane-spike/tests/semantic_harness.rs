@@ -1,10 +1,11 @@
 use hydracache_client_plane_spike::{
-    FrameKind, PeerIdentity, ResourceSnapshot, SpikeConnection, SpikeError, SpikeFrame,
-    SpikeLimits, TransportCandidate, HC2_GENERATION,
+    ConnectionMetrics, ConnectionState, FrameKind, PeerIdentity, ResourceSnapshot, SpikeConnection,
+    SpikeError, SpikeFrame, SpikeLimits, TransportCandidate, HC2_GENERATION,
 };
 
 fn ready(candidate: TransportCandidate, limits: SpikeLimits) -> SpikeConnection {
     let mut connection = SpikeConnection::new(candidate, limits);
+    connection.mark_tls_verified(true).expect("verified TLS");
     connection
         .authenticate(PeerIdentity::verified("w0-client", "w0-tenant"))
         .expect("verified identity");
@@ -164,10 +165,18 @@ fn candidate_prefaces_cannot_cross_decode() {
 fn authentication_precedes_negotiation_and_dispatch() {
     for candidate in TransportCandidate::ALL {
         let mut connection = SpikeConnection::new(candidate, SpikeLimits::default());
-        assert_eq!(
+        assert!(matches!(
             connection.negotiate(HC2_GENERATION),
+            Err(SpikeError::InvalidState {
+                actual: ConnectionState::Created,
+                ..
+            })
+        ));
+        assert_eq!(
+            connection.mark_tls_verified(false),
             Err(SpikeError::UnverifiedIdentity)
         );
+        connection.mark_tls_verified(true).unwrap();
         assert_eq!(
             connection.authenticate(PeerIdentity {
                 client_id: "client".into(),
@@ -177,6 +186,66 @@ fn authentication_precedes_negotiation_and_dispatch() {
             Err(SpikeError::UnverifiedIdentity)
         );
         assert_eq!(connection.dispatch_count(), 0);
+    }
+}
+
+#[test]
+fn connection_state_machine_blocks_new_work_while_draining() {
+    for candidate in TransportCandidate::ALL {
+        let mut connection = ready(candidate, SpikeLimits::default());
+        assert_eq!(connection.state(), ConnectionState::Ready);
+        connection.begin_invocation(1).unwrap();
+        connection.begin_draining().unwrap();
+        assert_eq!(connection.state(), ConnectionState::Draining);
+        assert_eq!(connection.begin_invocation(2), Err(SpikeError::NotReady));
+        connection.complete_invocation(1, b"done".to_vec()).unwrap();
+        assert_eq!(
+            connection.drain_next().map(|frame| frame.correlation_id),
+            Some(1)
+        );
+        assert_eq!(connection.disconnect(), ResourceSnapshot::default());
+        assert_eq!(connection.state(), ConnectionState::Closed);
+        assert_eq!(connection.heartbeat(), Err(SpikeError::Closed));
+    }
+}
+
+#[test]
+fn bounded_failures_are_atomic_and_observable_without_payload_data() {
+    for candidate in TransportCandidate::ALL {
+        let limits = SpikeLimits {
+            max_pending_invocations: 2,
+            max_reply_frames: 1,
+            max_event_frames: 1,
+            max_subscriptions: 1,
+            ..SpikeLimits::default()
+        };
+        let mut connection = ready(candidate, limits);
+        connection.begin_invocation(1).unwrap();
+        connection.begin_invocation(2).unwrap();
+        assert_eq!(
+            connection.begin_invocation(3),
+            Err(SpikeError::ResourceLimit("pending_invocations"))
+        );
+        connection.complete_invocation(1, b"private-value").unwrap();
+        assert_eq!(
+            connection.complete_invocation(2, b"must-remain-pending"),
+            Err(SpikeError::ResourceLimit("reply_frames"))
+        );
+        assert_eq!(connection.resources().pending_invocations, 1);
+        assert!(connection.cancel_invocation(2).unwrap());
+
+        connection.register_subscription(7).unwrap();
+        connection.push_event(7, b"private-event-1").unwrap();
+        connection.push_event(7, b"private-event-2").unwrap();
+        assert_eq!(
+            connection.metrics(),
+            ConnectionMetrics {
+                resource_rejections: 2,
+                cancelled_invocations: 1,
+                event_gaps: 1,
+                ..ConnectionMetrics::default()
+            }
+        );
     }
 }
 

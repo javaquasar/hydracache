@@ -9,12 +9,14 @@ use std::collections::{BTreeSet, VecDeque};
 
 use thiserror::Error;
 
+pub mod policy;
+
 /// First proposed HC/2 wire generation. It is isolated from HC/1 v1-v4.
 pub const HC2_GENERATION: u16 = 5;
 const HEADER_BYTES: usize = 4 + 4 + 2 + 1 + 8 + 4;
 
 /// Transport candidates required by the 0.68 W0 bake-off.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub enum TransportCandidate {
     /// Dedicated TLS socket with HydraCache-owned framing.
     DedicatedTcpTls,
@@ -144,6 +146,17 @@ pub struct PeerIdentity {
     pub tls_verified: bool,
 }
 
+/// Explicit connection lifecycle. Dispatch is legal only in `Ready`.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum ConnectionState {
+    Created,
+    TlsVerified,
+    Authenticated,
+    Ready,
+    Draining,
+    Closed,
+}
+
 impl PeerIdentity {
     /// Build an identity for the semantic harness.
     pub fn verified(client_id: impl Into<String>, tenant: impl Into<String>) -> Self {
@@ -194,6 +207,12 @@ pub enum SpikeError {
     /// The connection was already closed.
     #[error("connection is closed")]
     Closed,
+    /// A lifecycle transition or operation was attempted from the wrong state.
+    #[error("connection state {actual:?} does not permit {operation}")]
+    InvalidState {
+        operation: &'static str,
+        actual: ConnectionState,
+    },
 }
 
 /// Strict candidate-specific spike codec.
@@ -287,6 +306,16 @@ pub struct ResourceSnapshot {
     pub control_frames: usize,
 }
 
+/// Privacy-safe monotonic counters; payloads, keys, and identities are absent.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+pub struct ConnectionMetrics {
+    pub dispatched_frames: u64,
+    pub rejected_frames: u64,
+    pub resource_rejections: u64,
+    pub cancelled_invocations: u64,
+    pub event_gaps: u64,
+}
+
 /// Connection-owned semantic runtime shared by all W0 candidates.
 #[derive(Debug)]
 pub struct SpikeConnection {
@@ -294,8 +323,7 @@ pub struct SpikeConnection {
     codec: SpikeCodec,
     limits: SpikeLimits,
     identity: Option<PeerIdentity>,
-    negotiated: bool,
-    closed: bool,
+    state: ConnectionState,
     dispatch_count: u64,
     pending: BTreeSet<u64>,
     subscriptions: BTreeSet<u64>,
@@ -303,6 +331,7 @@ pub struct SpikeConnection {
     events: VecDeque<SpikeFrame>,
     controls: VecDeque<SpikeFrame>,
     next_lane: u8,
+    metrics: ConnectionMetrics,
 }
 
 impl SpikeConnection {
@@ -313,8 +342,7 @@ impl SpikeConnection {
             codec: SpikeCodec::new(candidate, limits.max_frame_bytes),
             limits,
             identity: None,
-            negotiated: false,
-            closed: false,
+            state: ConnectionState::Created,
             dispatch_count: 0,
             pending: BTreeSet::new(),
             subscriptions: BTreeSet::new(),
@@ -322,6 +350,7 @@ impl SpikeConnection {
             events: VecDeque::new(),
             controls: VecDeque::new(),
             next_lane: 0,
+            metrics: ConnectionMetrics::default(),
         }
     }
 
@@ -330,9 +359,24 @@ impl SpikeConnection {
         self.candidate
     }
 
+    /// Current explicit lifecycle state.
+    pub fn state(&self) -> ConnectionState {
+        self.state
+    }
+
+    /// Record successful transport-level TLS verification before identity use.
+    pub fn mark_tls_verified(&mut self, verified: bool) -> Result<(), SpikeError> {
+        self.ensure_state(ConnectionState::Created, "TLS verification")?;
+        if !verified {
+            return Err(SpikeError::UnverifiedIdentity);
+        }
+        self.state = ConnectionState::TlsVerified;
+        Ok(())
+    }
+
     /// Install a TLS-authenticated peer identity before negotiation.
     pub fn authenticate(&mut self, identity: PeerIdentity) -> Result<(), SpikeError> {
-        self.ensure_open()?;
+        self.ensure_state(ConnectionState::TlsVerified, "authentication")?;
         if !identity.tls_verified
             || identity.client_id.trim().is_empty()
             || identity.tenant.trim().is_empty()
@@ -342,27 +386,42 @@ impl SpikeConnection {
             return Err(SpikeError::UnverifiedIdentity);
         }
         self.identity = Some(identity);
+        self.state = ConnectionState::Authenticated;
         Ok(())
     }
 
     /// Negotiate the isolated HC/2 generation after authentication.
     pub fn negotiate(&mut self, generation: u16) -> Result<(), SpikeError> {
-        self.ensure_open()?;
+        self.ensure_state(ConnectionState::Authenticated, "negotiation")?;
         if self.identity.is_none() {
             return Err(SpikeError::UnverifiedIdentity);
         }
         if generation != HC2_GENERATION {
             return Err(SpikeError::UnknownGeneration(generation));
         }
-        self.negotiated = true;
+        self.state = ConnectionState::Ready;
+        Ok(())
+    }
+
+    /// Stop accepting new work while allowing queued replies to drain.
+    pub fn begin_draining(&mut self) -> Result<(), SpikeError> {
+        self.ensure_state(ConnectionState::Ready, "draining")?;
+        self.state = ConnectionState::Draining;
         Ok(())
     }
 
     /// Decode a candidate frame. Invalid generations never increment dispatch.
     pub fn receive(&mut self, bytes: &[u8]) -> Result<SpikeFrame, SpikeError> {
         self.ensure_ready()?;
-        let frame = self.codec.decode(bytes)?;
+        let frame = match self.codec.decode(bytes) {
+            Ok(frame) => frame,
+            Err(error) => {
+                self.metrics.rejected_frames = self.metrics.rejected_frames.saturating_add(1);
+                return Err(error);
+            }
+        };
         self.dispatch_count = self.dispatch_count.saturating_add(1);
+        self.metrics.dispatched_frames = self.metrics.dispatched_frames.saturating_add(1);
         Ok(frame)
     }
 
@@ -373,6 +432,7 @@ impl SpikeConnection {
             return Err(SpikeError::InvalidCorrelation);
         }
         if self.pending.len() >= self.limits.max_pending_invocations {
+            self.metrics.resource_rejections = self.metrics.resource_rejections.saturating_add(1);
             return Err(SpikeError::ResourceLimit("pending_invocations"));
         }
         self.pending.insert(correlation_id);
@@ -385,13 +445,15 @@ impl SpikeConnection {
         correlation_id: u64,
         payload: impl Into<Vec<u8>>,
     ) -> Result<(), SpikeError> {
-        self.ensure_ready()?;
-        if !self.pending.remove(&correlation_id) {
+        self.ensure_ready_or_draining("invocation completion")?;
+        if !self.pending.contains(&correlation_id) {
             return Err(SpikeError::UnknownInvocation);
         }
         if self.replies.len() >= self.limits.max_reply_frames {
+            self.metrics.resource_rejections = self.metrics.resource_rejections.saturating_add(1);
             return Err(SpikeError::ResourceLimit("reply_frames"));
         }
+        self.pending.remove(&correlation_id);
         self.replies.push_back(SpikeFrame::current(
             FrameKind::Reply,
             correlation_id,
@@ -403,7 +465,12 @@ impl SpikeConnection {
     /// Cancel one invocation. Cancellation is idempotent for disconnect races.
     pub fn cancel_invocation(&mut self, correlation_id: u64) -> Result<bool, SpikeError> {
         self.ensure_open()?;
-        Ok(self.pending.remove(&correlation_id))
+        let removed = self.pending.remove(&correlation_id);
+        if removed {
+            self.metrics.cancelled_invocations =
+                self.metrics.cancelled_invocations.saturating_add(1);
+        }
+        Ok(removed)
     }
 
     /// Register a connection-owned subscription.
@@ -413,6 +480,7 @@ impl SpikeConnection {
             return Err(SpikeError::InvalidCorrelation);
         }
         if self.subscriptions.len() >= self.limits.max_subscriptions {
+            self.metrics.resource_rejections = self.metrics.resource_rejections.saturating_add(1);
             return Err(SpikeError::ResourceLimit("subscriptions"));
         }
         self.subscriptions.insert(subscription_id);
@@ -431,6 +499,7 @@ impl SpikeConnection {
             return Err(SpikeError::InvalidCorrelation);
         }
         if self.events.len() >= self.limits.max_event_frames {
+            self.metrics.event_gaps = self.metrics.event_gaps.saturating_add(1);
             self.events.clear();
             self.events.push_back(SpikeFrame::current(
                 FrameKind::Gap,
@@ -496,10 +565,14 @@ impl SpikeConnection {
         }
     }
 
+    /// Monotonic privacy-safe diagnostics for this connection generation.
+    pub fn metrics(&self) -> ConnectionMetrics {
+        self.metrics
+    }
+
     /// Close the connection and deterministically return every owned resource.
     pub fn disconnect(&mut self) -> ResourceSnapshot {
-        self.closed = true;
-        self.negotiated = false;
+        self.state = ConnectionState::Closed;
         self.identity = None;
         self.pending.clear();
         self.subscriptions.clear();
@@ -510,7 +583,7 @@ impl SpikeConnection {
     }
 
     fn ensure_open(&self) -> Result<(), SpikeError> {
-        if self.closed {
+        if self.state == ConnectionState::Closed {
             Err(SpikeError::Closed)
         } else {
             Ok(())
@@ -519,10 +592,40 @@ impl SpikeConnection {
 
     fn ensure_ready(&self) -> Result<(), SpikeError> {
         self.ensure_open()?;
-        if self.negotiated && self.identity.is_some() {
+        if self.state == ConnectionState::Ready && self.identity.is_some() {
             Ok(())
         } else {
             Err(SpikeError::NotReady)
+        }
+    }
+
+    fn ensure_state(
+        &self,
+        expected: ConnectionState,
+        operation: &'static str,
+    ) -> Result<(), SpikeError> {
+        if self.state == expected {
+            Ok(())
+        } else {
+            Err(SpikeError::InvalidState {
+                operation,
+                actual: self.state,
+            })
+        }
+    }
+
+    fn ensure_ready_or_draining(&self, operation: &'static str) -> Result<(), SpikeError> {
+        if matches!(
+            self.state,
+            ConnectionState::Ready | ConnectionState::Draining
+        ) && self.identity.is_some()
+        {
+            Ok(())
+        } else {
+            Err(SpikeError::InvalidState {
+                operation,
+                actual: self.state,
+            })
         }
     }
 }

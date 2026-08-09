@@ -17,6 +17,7 @@ fn ready_connection() -> SpikeConnection {
         TransportCandidate::Http2Bidirectional,
         SpikeLimits::default(),
     );
+    connection.mark_tls_verified(true).unwrap();
     connection
         .authenticate(PeerIdentity::verified("h2-client", "h2-tenant"))
         .unwrap();
