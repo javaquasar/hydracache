@@ -82,6 +82,13 @@ It is accepted only over an already authenticated channel (or a later signed
 artifact). Explicit configured endpoint URIs remain the initial production
 bootstrap mechanism.
 
+This rule is enforced by the API rather than by a caller-supplied flag. Decoded
+discovery is an untrusted `DiscoveryAdvertisement`; client selection accepts
+only `AuthenticatedAdvertisement`. The latter can be created only with an
+opaque, crate-constructed proof from a verified adapter boundary and must match
+that boundary's expected cluster identity. SDK callers cannot construct either
+the authenticated wrapper or the proof token directly.
+
 ## Shared adapter boundary
 
 ```text

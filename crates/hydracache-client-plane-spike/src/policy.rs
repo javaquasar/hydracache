@@ -117,7 +117,7 @@ impl ServerTransportPolicy {
                 .cloned()
                 .collect(),
         };
-        advertisement.validate(true)?;
+        advertisement.validate_payload()?;
         Ok(advertisement)
     }
 }
@@ -132,10 +132,7 @@ pub struct DiscoveryAdvertisement {
 }
 
 impl DiscoveryAdvertisement {
-    pub fn validate(&self, authenticated: bool) -> Result<(), TransportPolicyError> {
-        if !authenticated {
-            return Err(TransportPolicyError::UnauthenticatedDiscovery);
-        }
+    fn validate_payload(&self) -> Result<(), TransportPolicyError> {
         if self.cluster_id.trim().is_empty() || self.cluster_id.len() > MAX_CLUSTER_ID_BYTES {
             return Err(TransportPolicyError::InvalidClusterId);
         }
@@ -158,6 +155,82 @@ impl DiscoveryAdvertisement {
             }
         }
         Ok(())
+    }
+
+    pub fn authenticate(
+        self,
+        evidence: VerifiedDiscoveryEvidence,
+    ) -> Result<AuthenticatedAdvertisement, TransportPolicyError> {
+        self.validate_payload()?;
+        if self.cluster_id != evidence.cluster_id {
+            return Err(TransportPolicyError::ClusterIdentityMismatch);
+        }
+        Ok(AuthenticatedAdvertisement { inner: self })
+    }
+}
+
+/// Discovery that crossed a verified transport or signature boundary.
+///
+/// The wrapper has no public constructor. Raw decoded discovery therefore
+/// cannot be passed to client selection accidentally.
+///
+/// ```compile_fail
+/// use hydracache_client_plane_spike::policy::{
+///     AuthenticatedAdvertisement, DiscoveryAdvertisement,
+/// };
+/// let raw: DiscoveryAdvertisement = todo!();
+/// let forged = AuthenticatedAdvertisement { inner: raw };
+/// ```
+///
+/// ```compile_fail
+/// use hydracache_client_plane_spike::policy::VerifiedDiscoveryEvidence;
+/// let forged = VerifiedDiscoveryEvidence { cluster_id: "cluster-a".into() };
+/// ```
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct AuthenticatedAdvertisement {
+    inner: DiscoveryAdvertisement,
+}
+
+impl AuthenticatedAdvertisement {
+    pub fn cluster_id(&self) -> &str {
+        &self.inner.cluster_id
+    }
+
+    pub fn epoch(&self) -> u64 {
+        self.inner.epoch
+    }
+
+    pub fn generation(&self) -> u16 {
+        self.inner.generation
+    }
+
+    pub fn endpoints(&self) -> &[TransportEndpoint] {
+        &self.inner.endpoints
+    }
+}
+
+/// Opaque proof produced only by a verified adapter boundary in this crate.
+///
+/// The type is public so the checked conversion can appear in the API, while
+/// its representation and constructor remain crate-private. H01 will call the
+/// constructor only after its real channel/signature verification succeeds.
+#[derive(Debug, Clone)]
+pub struct VerifiedDiscoveryEvidence {
+    cluster_id: String,
+}
+
+impl VerifiedDiscoveryEvidence {
+    #[cfg_attr(
+        not(test),
+        expect(
+            dead_code,
+            reason = "reserved for the production verified adapter introduced by H01"
+        )
+    )]
+    pub(crate) fn verified_channel(cluster_id: impl Into<String>) -> Self {
+        Self {
+            cluster_id: cluster_id.into(),
+        }
     }
 }
 
@@ -202,9 +275,9 @@ pub struct TransportSelection {
 impl ClientTransportPolicy {
     pub fn begin(
         &self,
-        advertisement: &DiscoveryAdvertisement,
+        advertisement: &AuthenticatedAdvertisement,
     ) -> Result<(TransportEndpoint, TransportSelection), TransportPolicyError> {
-        advertisement.validate(true)?;
+        let endpoints = advertisement.endpoints();
         let (preference, minimum_maturity, allow_availability_fallback) = match self {
             Self::Pinned(candidate) => (vec![*candidate], AdapterMaturity::Experimental, false),
             Self::Ordered {
@@ -227,7 +300,7 @@ impl ClientTransportPolicy {
 
         let mut candidates = Vec::new();
         for preferred in preference {
-            if let Some(endpoint) = advertisement.endpoints.iter().find(|endpoint| {
+            if let Some(endpoint) = endpoints.iter().find(|endpoint| {
                 endpoint.candidate == preferred && endpoint.maturity >= minimum_maturity
             }) {
                 candidates.push(endpoint.clone());
@@ -285,8 +358,8 @@ pub enum TransportPolicyError {
     UnknownGeneration(u16),
     #[error("cluster id is empty or exceeds its bound")]
     InvalidClusterId,
-    #[error("discovery must arrive through an authenticated channel")]
-    UnauthenticatedDiscovery,
+    #[error("discovery cluster identity does not match the verified channel")]
+    ClusterIdentityMismatch,
     #[error("unready endpoint {0:?} was advertised")]
     UnreadyAdvertisement(TransportCandidate),
     #[error("client transport preference is empty or contains duplicates")]
@@ -297,4 +370,216 @@ pub enum TransportPolicyError {
     FallbackDisabled,
     #[error("fallback after {0:?} would be a downgrade")]
     DowngradeForbidden(TransportFailure),
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn endpoint(
+        candidate: TransportCandidate,
+        authority: &str,
+        maturity: AdapterMaturity,
+    ) -> TransportEndpoint {
+        TransportEndpoint::new(candidate, authority, maturity)
+    }
+
+    fn raw_all_transports() -> DiscoveryAdvertisement {
+        ServerTransportPolicy::validate(
+            HC2_GENERATION,
+            vec![
+                endpoint(
+                    TransportCandidate::GrpcBidirectional,
+                    "cache.example:7443",
+                    AdapterMaturity::Preview,
+                ),
+                endpoint(
+                    TransportCandidate::Http2Bidirectional,
+                    "cache.example:7444",
+                    AdapterMaturity::Experimental,
+                ),
+                endpoint(
+                    TransportCandidate::DedicatedTcpTls,
+                    "cache.example:7445",
+                    AdapterMaturity::Experimental,
+                ),
+            ],
+        )
+        .unwrap()
+        .advertise("cluster-a", 42)
+        .unwrap()
+    }
+
+    fn all_transports() -> AuthenticatedAdvertisement {
+        raw_all_transports()
+            .authenticate(VerifiedDiscoveryEvidence::verified_channel("cluster-a"))
+            .unwrap()
+    }
+
+    #[test]
+    fn server_advertises_only_ready_mtls_listeners_at_proven_maturity() {
+        let mut unready = endpoint(
+            TransportCandidate::DedicatedTcpTls,
+            "cache.example:7445",
+            AdapterMaturity::Experimental,
+        );
+        unready.ready = false;
+        let advertisement = ServerTransportPolicy::validate(
+            HC2_GENERATION,
+            vec![
+                endpoint(
+                    TransportCandidate::GrpcBidirectional,
+                    "cache.example:7443",
+                    AdapterMaturity::Preview,
+                ),
+                unready,
+            ],
+        )
+        .unwrap()
+        .advertise("cluster-a", 7)
+        .unwrap();
+        assert_eq!(advertisement.endpoints.len(), 1);
+        assert_eq!(
+            advertisement.endpoints[0].candidate,
+            TransportCandidate::GrpcBidirectional
+        );
+    }
+
+    #[test]
+    fn server_policy_rejects_insecure_duplicate_and_unproven_adapters() {
+        let mut insecure = endpoint(
+            TransportCandidate::GrpcBidirectional,
+            "cache.example:7443",
+            AdapterMaturity::Preview,
+        );
+        insecure.require_mtls = false;
+        assert_eq!(
+            ServerTransportPolicy::validate(HC2_GENERATION, vec![insecure]),
+            Err(TransportPolicyError::InsecureTransport(
+                TransportCandidate::GrpcBidirectional
+            ))
+        );
+
+        let tcp = endpoint(
+            TransportCandidate::DedicatedTcpTls,
+            "cache.example:7445",
+            AdapterMaturity::Experimental,
+        );
+        assert_eq!(
+            ServerTransportPolicy::validate(HC2_GENERATION, vec![tcp.clone(), tcp]),
+            Err(TransportPolicyError::DuplicateTransport(
+                TransportCandidate::DedicatedTcpTls
+            ))
+        );
+
+        assert_eq!(
+            ServerTransportPolicy::validate(
+                HC2_GENERATION,
+                vec![endpoint(
+                    TransportCandidate::Http2Bidirectional,
+                    "cache.example:7444",
+                    AdapterMaturity::Stable,
+                )],
+            ),
+            Err(TransportPolicyError::UnprovenMaturity(
+                TransportCandidate::Http2Bidirectional
+            ))
+        );
+    }
+
+    #[test]
+    fn pinned_transport_never_falls_back() {
+        let advertisement = all_transports();
+        let (first, mut selection) =
+            ClientTransportPolicy::Pinned(TransportCandidate::GrpcBidirectional)
+                .begin(&advertisement)
+                .unwrap();
+        assert_eq!(first.candidate, TransportCandidate::GrpcBidirectional);
+        assert_eq!(
+            selection.after_failure(TransportFailure::Availability),
+            Err(TransportPolicyError::FallbackDisabled)
+        );
+    }
+
+    #[test]
+    fn ordered_policy_falls_back_only_for_safe_failures() {
+        let advertisement = all_transports();
+        let policy = ClientTransportPolicy::Ordered {
+            preference: vec![
+                TransportCandidate::GrpcBidirectional,
+                TransportCandidate::Http2Bidirectional,
+                TransportCandidate::DedicatedTcpTls,
+            ],
+            minimum_maturity: AdapterMaturity::Experimental,
+            allow_availability_fallback: true,
+        };
+        let (first, mut selection) = policy.begin(&advertisement).unwrap();
+        assert_eq!(first.candidate, TransportCandidate::GrpcBidirectional);
+        assert_eq!(
+            selection
+                .after_failure(TransportFailure::Availability)
+                .unwrap()
+                .candidate,
+            TransportCandidate::Http2Bidirectional
+        );
+        assert_eq!(
+            selection
+                .after_failure(TransportFailure::AuthenticatedUnsupported)
+                .unwrap()
+                .candidate,
+            TransportCandidate::DedicatedTcpTls
+        );
+    }
+
+    #[test]
+    fn security_and_protocol_failures_cannot_trigger_downgrade() {
+        for failure in [
+            TransportFailure::TlsVerification,
+            TransportFailure::Authentication,
+            TransportFailure::Authorization,
+            TransportFailure::GenerationMismatch,
+            TransportFailure::CapabilityMismatch,
+            TransportFailure::MalformedPeer,
+        ] {
+            let (_, mut selection) = ClientTransportPolicy::Ordered {
+                preference: TransportCandidate::ALL.to_vec(),
+                minimum_maturity: AdapterMaturity::Experimental,
+                allow_availability_fallback: true,
+            }
+            .begin(&all_transports())
+            .unwrap();
+            assert_eq!(
+                selection.after_failure(failure),
+                Err(TransportPolicyError::DowngradeForbidden(failure))
+            );
+        }
+    }
+
+    #[test]
+    fn wrong_generation_cannot_be_authenticated() {
+        let mut advertisement = raw_all_transports();
+        advertisement.generation = HC2_GENERATION + 1;
+        assert_eq!(
+            advertisement.authenticate(VerifiedDiscoveryEvidence::verified_channel("cluster-a")),
+            Err(TransportPolicyError::UnknownGeneration(HC2_GENERATION + 1))
+        );
+    }
+
+    #[test]
+    fn discovery_for_another_cluster_cannot_be_authenticated() {
+        assert_eq!(
+            raw_all_transports()
+                .authenticate(VerifiedDiscoveryEvidence::verified_channel("cluster-b")),
+            Err(TransportPolicyError::ClusterIdentityMismatch)
+        );
+    }
+
+    #[test]
+    fn authenticated_wrapper_exposes_read_only_bounded_metadata() {
+        let advertisement = all_transports();
+        assert_eq!(advertisement.cluster_id(), "cluster-a");
+        assert_eq!(advertisement.epoch(), 42);
+        assert_eq!(advertisement.generation(), HC2_GENERATION);
+        assert_eq!(advertisement.endpoints().len(), 3);
+    }
 }

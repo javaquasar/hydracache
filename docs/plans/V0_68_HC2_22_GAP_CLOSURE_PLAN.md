@@ -18,7 +18,7 @@
 | H01 | Spike is not production-integrated | open | — | server config + real daemon/socket proof |
 | H02 | HC/2 schema is only a minimal envelope | open | — | registry, full schema, breaking-change gate |
 | H03 | Transport ADR remains Proposed | open | — | all ADR-0019 boolean gates |
-| H04 | Authenticated discovery is represented by a boolean | open | — | unforgeable authenticated wrapper |
+| H04 | Authenticated discovery is represented by a boolean | complete | `feat(client-plane): authenticate discovery by type` | opaque proof token, cluster binding, compile-fail tests |
 | H05 | Authenticated-unsupported fallback is caller-asserted | open | — | verified attempt provenance |
 | H06 | Endpoint authority is an unparsed string | open | — | strict scheme/host/port/SNI type |
 | H07 | Discovery rollback is not prevented | open | — | cluster binding + monotonic epoch |
@@ -131,6 +131,14 @@ runtime tests reject untrusted, wrong-cluster, and invalid-generation documents.
 narrow proof token so signed discovery can be added by H14.
 
 **Done.** No public boolean or unchecked conversion can reach selection.
+
+**Completion evidence (2026-08-09).** Selection now accepts only
+`AuthenticatedAdvertisement`. Conversion from decoded discovery requires the
+opaque `VerifiedDiscoveryEvidence` token, whose constructor and fields are not
+public outside the adapter crate. The proof is bound to the expected cluster
+identity; wrong-cluster and wrong-generation payloads fail closed. Two Rustdoc
+compile-fail tests prove that neither the wrapper nor the proof can be forged by
+an SDK caller, and runtime policy tests cover the accepted and rejected paths.
 
 ## H05. Bind fallback-safe unsupported responses to verified attempts
 

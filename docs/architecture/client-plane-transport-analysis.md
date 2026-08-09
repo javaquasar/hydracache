@@ -20,8 +20,9 @@ Current implementation evidence:
   rustls boundary used by TCP/HTTP2 and at the generated gRPC boundary;
 - generated Rust/Java protobuf golden frame: green; generated Python pending.
 - selectable server/client transport policy: executable in the W0 spike with
-  maturity bounds, authenticated discovery, pinned/ordered choice, and
-  downgrade refusal after every security or protocol failure;
+  maturity bounds, an unforgeable cluster-bound authenticated-discovery type,
+  pinned/ordered choice, and downgrade refusal after every security or protocol
+  failure;
 - explicit connection lifecycle: `Created -> TlsVerified -> Authenticated ->
   Ready -> Draining -> Closed`, with dispatch before `Ready` and new work while
   draining rejected.
