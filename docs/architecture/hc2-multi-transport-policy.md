@@ -87,9 +87,10 @@ bounded node ID, non-zero node epoch, and at most one ready endpoint per
 transport. Exact duplicate nodes, contradictory per-node transports, and one
 canonical authority assigned to multiple nodes are rejected. These records are
 connectivity hints only; they do not assert partition ownership or leadership.
-The document is accepted only over an already authenticated channel (or a later
-signed artifact). Explicit configured endpoint URIs remain the initial
-production bootstrap mechanism.
+The document is accepted only over an already authenticated channel or through
+the H14 canonical Ed25519 verification and replay gate described in
+[`HC2_SIGNED_DISCOVERY_POLICY.md`](HC2_SIGNED_DISCOVERY_POLICY.md). Explicit
+configured endpoint URIs remain the initial production bootstrap mechanism.
 
 This rule is enforced by the API rather than by a caller-supplied flag. Decoded
 discovery is an untrusted `DiscoveryAdvertisement`; client selection accepts

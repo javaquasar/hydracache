@@ -1,5 +1,7 @@
 //! Fail-closed server and client transport-selection policy for the HC/2 spike.
 
+pub mod signed_discovery;
+
 use std::collections::{BTreeMap, BTreeSet};
 use std::num::NonZeroU64;
 use std::sync::atomic::{AtomicU64, Ordering};

@@ -13,6 +13,7 @@ description = "Non-production HC/2 transport-selection semantic spikes."
 publish = false
 
 [dependencies]
+ed25519-dalek.workspace = true
 prost.workspace = true
 thiserror.workspace = true
 

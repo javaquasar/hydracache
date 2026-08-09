@@ -25,7 +25,11 @@ Current implementation evidence:
   maturity bounds, an unforgeable cluster-bound authenticated-discovery type,
   canonical adapter-bound endpoint identities, bounded multi-node records,
   monotonic rollback/equivocation protection across reconnects, pinned/ordered
-  choice, and downgrade refusal after every security or protocol failure;
+  choice, downgrade refusal after every security or protocol failure, and H14
+  canonical Ed25519 offline discovery with bounded trust rotation, validity,
+  replay, and explicit cluster-recovery gates; the signed-discovery contract is
+  recorded in
+  [`HC2_SIGNED_DISCOVERY_POLICY.md`](HC2_SIGNED_DISCOVERY_POLICY.md);
 - typestate-enforced bootstrap lifecycle: `Created -> TlsVerified ->
   Authenticated -> Authorized -> Ready`, followed by one bounded runtime for
   `Ready -> Draining -> Closed`; compile-fail tests make early

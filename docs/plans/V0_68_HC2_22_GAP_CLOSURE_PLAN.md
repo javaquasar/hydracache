@@ -28,7 +28,7 @@
 | H11 | Reconnect and subscription/session repair are absent | open | — | deterministic reconnect/repair matrix |
 | H12 | Resource bounds omit byte/retry/session/global budgets | complete | `feat(client-plane): bound all retained resource classes` | ownership ledger, byte/count boundaries, atomic admission, zero-close proof |
 | H13 | Negative TLS matrix is incomplete | complete | `test(client-plane): complete TLS authorization matrix` | real rustls/tonic hostname/time/EKU/CA/version matrix, bounded chain policy, authorization typestate, rotation and zero-dispatch proofs |
-| H14 | Discovery signing/replay protection is absent | open | — | signed canonical artifact + rotation |
+| H14 | Discovery signing/replay protection is absent | complete | `feat(client-plane): sign replay-safe discovery` | canonical Ed25519 bytes, bounded parser/trust/time policy, Rust/Java vector, replay/rotation/recovery matrix |
 | H15 | Hermetic Python generation is absent | open | — | pinned offline-capable generation/test |
 | H16 | Java is a codec fixture, not a production SDK | open | — | buildable SDK + process interoperability |
 | H17 | Rust production SDK still uses HC/1 HTTP | open | — | transport-neutral HC/2 runtime |
@@ -400,6 +400,20 @@ rotation overlap, removed key, and canonicalization vectors across languages.
 authenticated explicit endpoints remain the initial safe mode.
 
 **Done.** Offline discovery cannot be altered or replayed into accepted state.
+
+**Completion evidence (2026-08-10).** The non-production spike now signs a
+domain-separated canonical Ed25519 artifact that includes key ID, validity,
+cluster, discovery epoch, HC/2 generation, nodes, and every endpoint security
+and routing property. Decode is bounded and canonical; verification produces an
+opaque post-signature type. `OfflineDiscoveryState` composes strictly increasing
+issue time with the H07 cluster/document/node epoch gate. Tests cover tamper,
+unknown/duplicate/excess/removed keys, time bounds, replay, equivocation,
+rollback, rotation overlap, atomic cluster replacement, hostile framing, input
+ordering, and a Java 17 reconstruction/verification of the fixed Rust vector.
+The contract and rollback runbook are in
+`docs/architecture/HC2_SIGNED_DISCOVERY_POLICY.md`. Explicit endpoints and
+authenticated-channel discovery remain available, and this does not mark H01
+production integration complete.
 
 ## H15. Make Python generation hermetic and independently executable
 
