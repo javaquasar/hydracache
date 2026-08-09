@@ -1,0 +1,458 @@
+# HydraCache 0.68 HC/2 — 22-Gap Closure Execution Plan
+
+> **Purpose.** This companion plan turns the 22 known gaps between the current
+> non-production HC/2 spike and a defensible client plane into independently
+> auditable work packages. It is subordinate to
+> [`V0_68_GENERATED_CLIENT_PLANE_FOUNDATION_PLAN.md`](V0_68_GENERATED_CLIENT_PLANE_FOUNDATION_PLAN.md),
+> inherits R-1 through R-11, and does not change the `0.68` dependency on an
+> unfinished `0.67.1`.
+>
+> **Commit rule.** Each H-item receives its own implementation commit and push
+> only after its Definition of Done is green. Documentation-only progress,
+> mocks, or a sans-I/O proof cannot mark a production row complete.
+
+## Status ledger
+
+| ID | Gap | Status | Completion commit | Primary evidence |
+| --- | --- | --- | --- | --- |
+| H01 | Spike is not production-integrated | open | — | server config + real daemon/socket proof |
+| H02 | HC/2 schema is only a minimal envelope | open | — | registry, full schema, breaking-change gate |
+| H03 | Transport ADR remains Proposed | open | — | all ADR-0019 boolean gates |
+| H04 | Authenticated discovery is represented by a boolean | open | — | unforgeable authenticated wrapper |
+| H05 | Authenticated-unsupported fallback is caller-asserted | open | — | verified attempt provenance |
+| H06 | Endpoint authority is an unparsed string | open | — | strict scheme/host/port/SNI type |
+| H07 | Discovery rollback is not prevented | open | — | cluster binding + monotonic epoch |
+| H08 | Advertisement cannot represent multi-node endpoints | open | — | node-scoped endpoint identities |
+| H09 | Lifecycle checks are runtime-only, not typestate | open | — | compile-fail + runtime transition proof |
+| H10 | Connection generation/stale-message fencing is absent | open | — | late old-generation reply/event refusal |
+| H11 | Reconnect and subscription/session repair are absent | open | — | deterministic reconnect/repair matrix |
+| H12 | Resource bounds omit byte/retry/session/global budgets | open | — | every owner bounded and observable |
+| H13 | Negative TLS matrix is incomplete | open | — | hostname/time/EKU/rotation/policy cases |
+| H14 | Discovery signing/replay protection is absent | open | — | signed canonical artifact + rotation |
+| H15 | Hermetic Python generation is absent | open | — | pinned offline-capable generation/test |
+| H16 | Java is a codec fixture, not a production SDK | open | — | buildable SDK + process interoperability |
+| H17 | Rust production SDK still uses HC/1 HTTP | open | — | transport-neutral HC/2 runtime |
+| H18 | Real previous-artifact compatibility matrix is absent | open | — | HC/1/HC/2 rolling matrix artifacts |
+| H19 | Deterministic network fault proxy is absent | open | — | seeded replayable socket faults |
+| H20 | HTTP/2 graceful shutdown remains unresolved | open | — | drain/GOAWAY/deadline/reset proof |
+| H21 | Observability is local to the spike | open | — | stable bounded metrics/tracing/runbook |
+| H22 | Linux CI, interop, fuzz, and soak gates are absent | open | — | required workflow and retained artifacts |
+
+## Global execution rules
+
+- Complete work in dependency order, not numerical order. H02/H04/H06/H09 can
+  precede H01; production integration cannot precede schema and security gates.
+- Keep HC/1 v1-v4 separately identifiable and runnable until a later explicit
+  compatibility decision. No HC/2 decoder is mounted on an HC/1 route.
+- All transports share one generated semantic contract. Adapter selection never
+  creates per-transport operation, error, retry, bound, or security behavior.
+- A fallback after TLS, authentication, authorization, generation, capability,
+  or malformed-peer failure is always a downgrade error.
+- Tests must name the falsifiable property. Acknowledgement without effect,
+  skipped optional tooling, or checking a model instead of a socket is not green.
+- Each completed H-item updates this ledger with exact commit and evidence paths.
+- Every completion commit runs focused tests, `clippy -D warnings`, documentation
+  checks, and `git diff --check`; affected compatibility gates also run.
+
+## H01. Integrate the selected HC/2 adapter into production server seams
+
+**Current truth.** `hydracache-client-plane-spike` is `publish = false` and is
+not used by `hydracache-server`, `ClientDispatch`, daemon configuration, or an
+SDK. Loopback success proves transport libraries, not a deployable listener.
+
+**Implementation.** Introduce production crates only after H02/H03 prerequisites:
+a transport-neutral connection runtime, selected adapter, validated
+`client_plane` config, listener bind/readiness/drain, and existing identity,
+tenant, quota, audit, and `ClientDispatch` reuse. HC/2 stays off by default.
+
+**Evidence.** Start a real daemon process from config, reject plaintext and
+untrusted clients, negotiate HC/2, execute an operation through real dispatch,
+push an event, drain, and prove all accounting returns to zero. Prove HC/1 still
+works concurrently and that port conflicts fail before partial startup.
+
+**Dependencies.** H02, H03, H04, H06, H09, H12, H13. **Risk/rollback.** New
+listener expands attack surface; rollback is disabling the off-by-default HC/2
+config without changing core or HC/1.
+
+**Done.** Real-process evidence is mandatory; importing the spike crate is not.
+
+## H02. Replace the minimal envelope with the authoritative HC/2 schema
+
+**Current truth.** The W0 proto has only generation, kind, correlation id, and
+opaque payload. It cannot define independent-language operations or evolution.
+
+**Implementation.** Add a reviewed schema registry for handshake/capabilities,
+stable errors, deadlines, cancellation, idempotency, data/TTL/CAS/batch,
+subscriptions/watermarks/gaps, topology, sessions/fencing, and diagnostics.
+Reserve removed field numbers/names and stable operation IDs. Generate contract
+metadata rather than duplicating retry/version rules in SDKs.
+
+**Evidence.** Descriptor/golden corpus, schema lint, duplicate/reserved ID
+refusal, unknown-field round trip, additive-change acceptance, and breaking-
+change canaries across Rust/Java/Python.
+
+**Dependencies.** W0 transport envelope. **Risk/rollback.** Premature surface
+freezes debt; keep schema `v2alpha` until H03 and cross-language gates pass.
+
+**Done.** No SDK owns handwritten wire IDs or a second operation definition.
+
+## H03. Accept ADR-0019 only after the transport bake-off is complete
+
+**Current truth.** gRPC is provisional; all adapters remain experimental. TLS
+parity and 256 correlations are green, but fault, shutdown, Python, socket
+corpus, and clean-generation requirements remain red.
+
+**Implementation.** Complete the same boolean harness on all candidates,
+capture dependency/operational costs, select one primary adapter, and retain or
+remove losing spikes explicitly. Maturity cannot exceed evidence.
+
+**Evidence.** ADR acceptance table with exact commands/artifacts for TLS,
+identity, slow consumer, gap, cancellation, half-close, reset, disconnect,
+malformed corpus, generation, and language fixtures.
+
+**Dependencies.** H13, H15, H19, H20, H22 portions. **Risk/rollback.** Selecting
+on convenience hides lifecycle defects; fallback is keeping ADR Proposed.
+
+**Done.** ADR status changes in the same commit as the final green evidence.
+
+## H04. Make authenticated discovery unforgeable in the API
+
+**Current truth.** `DiscoveryAdvertisement::validate(bool)` lets callers assert
+authentication with `true` and `ClientTransportPolicy::begin` assumes it.
+
+**Implementation.** Separate decoded/untrusted discovery from an
+`AuthenticatedAdvertisement` wrapper constructible only by the verified
+channel/signature boundary. Selection accepts only the wrapper.
+
+**Evidence.** Compile-fail or visibility tests prevent direct construction;
+runtime tests reject untrusted, wrong-cluster, and invalid-generation documents.
+
+**Dependencies.** None. **Risk/rollback.** Over-coupling TLS to policy; use a
+narrow proof token so signed discovery can be added by H14.
+
+**Done.** No public boolean or unchecked conversion can reach selection.
+
+## H05. Bind fallback-safe unsupported responses to verified attempts
+
+**Current truth.** `AuthenticatedUnsupported` is a caller-selected enum variant.
+
+**Implementation.** A transport attempt receives an opaque ID and verified peer
+binding. Only a decoded response from that attempt can create a fallback-safe
+unsupported outcome. All local classification and unverified responses fail
+closed.
+
+**Evidence.** Wrong-attempt, stale-attempt, forged unsupported, and security-
+failure tests; only current verified availability/unsupported advances order.
+
+**Dependencies.** H04, H10. **Risk/rollback.** Excess state complexity; keep
+attempt records bounded to configured preference length.
+
+**Done.** Callers cannot manufacture a downgrade-permitting failure.
+
+## H06. Replace string authority with a strict endpoint type
+
+**Current truth.** Authority validation checks only empty/maximum length.
+
+**Implementation.** Parse transport-specific schemes, DNS/IPv4/IPv6, required
+port, SNI name, and prohibit userinfo/path/query/fragment. Bind scheme to
+adapter and separate configured bootstrap rules from discovered-address policy.
+
+**Evidence.** Table-driven valid/invalid URI corpus including IPv6 brackets,
+IDN policy, zero/out-of-range ports, embedded credentials, wrong scheme, and
+hostname/SNI mismatch.
+
+**Dependencies.** None. **Risk/rollback.** URI normalization ambiguity; retain
+canonical parsed fields and never compare raw strings for identity.
+
+**Done.** Networking APIs receive structured authority, not an arbitrary string.
+
+## H07. Prevent discovery rollback and cross-cluster rebinding
+
+**Current truth.** A valid but old document can replace a newer view.
+
+**Implementation.** Bind client state to cluster ID and highest authenticated
+epoch; reject lower epochs, unexpected cluster changes, contradictory same-
+epoch documents, and stale endpoint generations. Persist binding where SDK
+policy requires it.
+
+**Evidence.** Replay, same-epoch equivocation, cluster swap, reconnect, and
+rolling-forward tests.
+
+**Dependencies.** H04, H08, H14 for signed mode. **Risk/rollback.** Recovery
+after intentional cluster replacement needs explicit operator reset, never
+automatic downgrade.
+
+**Done.** Authenticated replay cannot change routing or transport selection.
+
+## H08. Model multi-node transport endpoints explicitly
+
+**Current truth.** Duplicate candidates are rejected, so one cluster document
+cannot represent the same adapter on several nodes.
+
+**Implementation.** Keep one candidate listener per node policy, but advertise
+bounded `(node_id, candidate, endpoint, readiness, epoch)` entries. Detect exact
+duplicates and contradictions, not legitimate same-candidate nodes.
+
+**Evidence.** Three-node advertisements, partial listener readiness, node
+replacement, duplicate node IDs, conflicting authorities, and bounded-size
+tests.
+
+**Dependencies.** H06, H07. **Risk/rollback.** Client smart-routing overclaim;
+first release remains honest single-selected-endpoint mode.
+
+**Done.** Discovery represents multiple nodes without creating ownership truth.
+
+## H09. Strengthen lifecycle with typestate at bootstrap boundaries
+
+**Current truth.** Runtime enum checks are explicit but every method remains
+callable from every state.
+
+**Implementation.** Use `Connection<Created> -> Connection<TlsVerified> ->
+Connection<Authenticated> -> Connection<Ready>` for bootstrap, then a bounded
+runtime handle for ready/draining/closed concurrency. Keep one cleanup owner.
+
+**Evidence.** Compile-fail tests for dispatch-before-ready plus runtime tests for
+drain, concurrent cancellation, idempotent close, and zero accounting.
+
+**Dependencies.** H04 security proof seam. **Risk/rollback.** Generic explosion;
+limit typestate to bootstrap and expose object-safe ready runtime.
+
+**Done.** Invalid bootstrap sequencing is unrepresentable in production code.
+
+## H10. Fence every connection generation and stale message
+
+**Current truth.** Correlation IDs are not bound to a connection generation.
+
+**Implementation.** Add monotonic client connection generation to pending
+calls, subscriptions, events, sessions, attempts, and completions. Late old-
+generation data is counted and refused before state mutation.
+
+**Evidence.** Late reply/event/cancel/heartbeat after reconnect, reused
+correlation ID, and exactly-one completion tests.
+
+**Dependencies.** H02 schema, H09 runtime. **Risk/rollback.** Counter wrap or
+restart reuse; use explicit client/session identity plus checked generation.
+
+**Done.** Old connections cannot complete or repair new-generation work.
+
+## H11. Implement bounded reconnect, subscription repair, and session loss
+
+**Current truth.** No production reconnect, backoff, listener re-registration,
+watermark resume, conservative gap repair, or fenced-lock session behavior.
+
+**Implementation.** Separate reconnect policy from invocation retry; bounded
+backoff/jitter/attempts, endpoint selection, re-registration, watermark resume,
+gap-triggered conservative repair, event dedupe, and fail-loud lock session loss.
+
+**Evidence.** Seeded disconnect at every lifecycle point, server restart,
+leader hint change, gap, duplicate event, exhausted retry, and lock ownership
+loss matrix.
+
+**Dependencies.** H05, H07, H08, H10, H12, H19. **Risk/rollback.** Retry storm
+or false lock ownership; default to bounded failure, never silent continuation.
+
+**Done.** Reconnect yields one completion and conservative cache/lock state.
+
+## H12. Bound every byte and connection-owned resource
+
+**Current truth.** Frame-count bounds exist, but byte, batch, retry, deadline,
+topology, session, tenant, and global budgets are incomplete.
+
+**Implementation.** Define per-frame/message/batch/inbound/outbound byte budgets;
+pending/reply/event/control/retry/reconnect/deadline/subscription/topology/session
+count and byte budgets; per-identity/tenant/global admission; stable overload
+errors; atomic accounting.
+
+**Evidence.** Boundary and one-over tests, slow consumer, adversarial declared
+length, cancellation races, no lost pending work on queue rejection, and zero
+accounting after close.
+
+**Dependencies.** H02 schema, H09 runtime. **Risk/rollback.** Limits too low;
+make them validated configuration with safe defaults, never unbounded zero.
+
+**Done.** The ownership ledger names and tests every retained allocation class.
+
+## H13. Complete the TLS and authorization negative matrix
+
+**Current truth.** Unknown CA and missing client certificate are green.
+
+**Implementation.** Test wrong hostname/SNI, expired/not-yet-valid certs,
+wrong-client CA, EKU, chain depth/size, TLS version/cipher policy, identity and CA
+rotation, authenticated authorization denial, and adapter fallback refusal.
+
+**Evidence.** Same falsifiable matrix for all production-capable adapters;
+dispatch counter stays zero on every pre-dispatch failure.
+
+**Dependencies.** H06 endpoint/SNI, H05 failure provenance. **Risk/rollback.**
+Synthetic PKI can miss operational rotation; add real-process rotation proof.
+
+**Done.** Every security failure is classified, observable, and non-fallback.
+
+## H14. Add signed discovery with replay-safe key rotation
+
+**Current truth.** Only authenticated-channel discovery is modeled.
+
+**Implementation.** Define canonical bytes, signature algorithm, key ID,
+issued/expiry times, cluster ID, epoch, generation, bounded endpoints, trust root,
+rotation overlap, and explicit reset/recovery workflow.
+
+**Evidence.** Tamper, unknown key, expired/not-yet-valid, replay, equivocation,
+rotation overlap, removed key, and canonicalization vectors across languages.
+
+**Dependencies.** H02, H04, H06-H08. **Risk/rollback.** A second PKI; channel-
+authenticated explicit endpoints remain the initial safe mode.
+
+**Done.** Offline discovery cannot be altered or replayed into accepted state.
+
+## H15. Make Python generation hermetic and independently executable
+
+**Current truth.** Python 3 exists locally but protobuf/grpc tools are absent;
+the gate must not hide a network `pip install`.
+
+**Implementation.** Pin generator/runtime versions and hashes, use the vendored
+protoc path, support an offline cache/wheelhouse, generate messages/stubs and
+contract metadata, and add a clean-generation comparison.
+
+**Evidence.** Clean checkout generation, offline-capable install, golden bytes,
+unknown fields, streaming loopback, and package import on supported Python.
+
+**Dependencies.** H02. **Risk/rollback.** Platform wheel drift; explicitly list
+supported Python/OS matrix and fail required CI when missing.
+
+**Done.** Python is generated/tested by the main HC/2 gate without internet.
+
+## H16. Build a production Java HC/2 SDK
+
+**Current truth.** Maven builds a generated codec golden test only.
+
+**Implementation.** Publishable module with connection, invocation, listener,
+topology, session, deadline/cancellation, transport policy, metrics, and stable
+errors. Keep generated wire code internal and expose an idiomatic API.
+
+**Evidence.** Real daemon interoperability, reconnect/repair, TLS matrix,
+thread/leak checks, package metadata, examples, and previous-artifact tests.
+
+**Dependencies.** H01-H15 relevant foundations. **Risk/rollback.** Premature API
+promise; publish preview coordinates until compatibility gates pass.
+
+**Done.** A consumer project builds and runs without repository internals.
+
+## H17. Build the transport-neutral production Rust HC/2 SDK
+
+**Current truth.** Existing production client is HC/1 HTTP request/reply.
+
+**Implementation.** Reuse generated schema and shared policy; connection,
+invocation, listener, topology, session, retry/deadline, and observability
+services behind adapter traits. Preserve HC/1 as a separate client identity.
+
+**Evidence.** Real daemon tests for each enabled adapter, cancellation/reconnect,
+no stale completion, boundedness, and HC/1 regression.
+
+**Dependencies.** H01-H13. **Risk/rollback.** Accidental HC/1 behavior change;
+separate modules/features and golden compatibility tests.
+
+**Done.** Native HC/2 operations use no spike type or handwritten wire codec.
+
+## H18. Prove compatibility with retained real artifacts
+
+**Current truth.** No previous HC/2 binaries exist and HC/1 coexistence lacks a
+new-server real-artifact matrix.
+
+**Implementation.** Retain exact previous client/server artifacts once HC/2
+preview exists; test old/new both ways, HC/1+HC/2 concurrent listeners, rolling
+upgrade, capability negotiation, unknown fields, and planned deprecation.
+
+**Evidence.** Checksummed artifacts and machine-readable matrix; unsupported
+rows fail loud rather than skip.
+
+**Dependencies.** H01, H02, H16, H17. **Risk/rollback.** Self-comparison; use
+immutable artifacts from prior release commits.
+
+**Done.** Compatibility claims point to retained binaries, not source models.
+
+## H19. Add a deterministic replayable network fault proxy
+
+**Current truth.** Loopbacks cannot inject all byte/stream timing failures.
+
+**Implementation.** Seeded proxy actions for fragment, coalesce, delay, reorder
+where legal, duplicate, drop, one-way block, half-open, reset, late delivery,
+bandwidth/window pressure, and close after byte N. Persist seed and action trace.
+
+**Evidence.** Same semantic fault scenarios for candidates; failing seed replay
+locally and in CI; bounded trace/artifact size.
+
+**Dependencies.** W0 adapters. **Risk/rollback.** Proxy tests itself; unit-test
+its byte schedule and retain direct loopbacks as controls.
+
+**Done.** Every lifecycle failure used by H03/H11/H20 has a deterministic trace.
+
+## H20. Resolve HTTP/2 graceful drain and forced termination
+
+**Current truth.** Application accounting reaches zero, then fixture transport
+tasks are aborted because the h2 connection can remain alive.
+
+**Implementation.** Define drain initiator, GOAWAY sequence, active-stream
+completion, no-new-stream rule, deadline, reset/forced close, TLS close-notify,
+and reason metrics. Never wait forever for peer cooperation.
+
+**Evidence.** Clean drain, active request, client half-close, server GOAWAY,
+uncooperative peer timeout, reset, and zero-accounting process/socket tests.
+
+**Dependencies.** H09, H12, H19. **Risk/rollback.** Data loss on premature
+forced close; only force after bounded deadline and explicit outcomes.
+
+**Done.** No task abort is needed in the happy-path H2 test.
+
+## H21. Export stable privacy-safe observability
+
+**Current truth.** Spike counters are local and unnamed outside the object.
+
+**Implementation.** Stable bounded-cardinality metrics/tracing for transport,
+state, connection generation, pending/queue bytes, retry, cancellation, gap,
+repair, TLS/auth reason, deadline, session heartbeat/loss, and drain reason.
+Never emit keys, values, credentials, certificates, or raw tenant IDs.
+
+**Evidence.** Metric snapshots, cardinality/privacy tests, reconnect and failure
+increments, zero gauges after close, diagnostics schema and operator runbook.
+
+**Dependencies.** H09-H13. **Risk/rollback.** Cardinality/memory growth; enums
+and hashed/bounded labels only.
+
+**Done.** Operators can explain connection outcomes without sensitive data.
+
+## H22. Install required Linux CI, interop, fuzz, and soak gates
+
+**Current truth.** Main spike gates are green on local Windows; no required
+Ubuntu workflow proves all languages, Docker interop, fuzz corpus, or soak.
+
+**Implementation.** Fast required Linux job for format/clippy/schema/clean-
+generation/Rust-Java-Python golden/lifecycle; Docker process interop; scheduled
+fuzz and fixed-host soak with retained metadata. Shared CI is correctness and
+regression evidence, never an absolute capacity claim.
+
+**Evidence.** Required branch checks, intentional canary failures, artifact
+retention, pinned actions/toolchains/images, timeout/concurrency policy, and
+documented self-hosted tier.
+
+**Dependencies.** All gates as they land. **Risk/rollback.** Flaky required job;
+deterministic seeds, bounded retries only for infrastructure, never test failure.
+
+**Done.** Release automation refuses an HC/2 claim when any required row is red.
+
+## Dependency-oriented execution order
+
+```text
+H04 -> H05
+H06 -> H08 -> H07 -> H14
+H02 -> H10 -> H11
+H09 -> H12 -> H20
+H13 + H15 + H19 + H20 -> H03
+H02 + H03 + H04 + H06 + H09 + H12 + H13 -> H01
+H01 -> H16 + H17 -> H18
+H10 + H11 + H12 -> H21
+all applicable evidence -> H22
+```
+
+H01 production integration deliberately occurs after its prerequisites. This
+order prevents a real daemon listener from making an immature wire contract or
+downgrade policy externally reachable.

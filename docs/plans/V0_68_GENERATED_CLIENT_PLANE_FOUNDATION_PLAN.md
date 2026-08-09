@@ -22,6 +22,8 @@
 > gates: [`../GATES.md`](../GATES.md) - compatibility: [`../COMPAT.md`](../COMPAT.md) -
 > current listener truth: [`../architecture/listener-current-state.md`](../architecture/listener-current-state.md) -
 > Hazelcast boundary: [`../adr/0018-hazelcast-compatibility-surface-boundaries.md`](../adr/0018-hazelcast-compatibility-surface-boundaries.md).
+> Detailed gap closure ledger:
+> [`V0_68_HC2_22_GAP_CLOSURE_PLAN.md`](V0_68_HC2_22_GAP_CLOSURE_PLAN.md).
 
 Read [`CLAUDE.md`](../../CLAUDE.md), [`docs/RULES.md`](../RULES.md), and
 [`docs/GATES.md`](../GATES.md) first. This release inherits R-1 through R-11. In particular:
