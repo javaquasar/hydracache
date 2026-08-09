@@ -19,7 +19,7 @@
 | H02 | HC/2 schema is only a minimal envelope | complete | `feat(client-plane): establish authoritative HC2 schema registry` | generated descriptor, stable IDs, breaking canaries, Rust/Java golden and unknown-field proofs |
 | H03 | Transport ADR remains Proposed | open | — | all ADR-0019 boolean gates |
 | H04 | Authenticated discovery is represented by a boolean | complete | `feat(client-plane): authenticate discovery by type` | opaque proof token, cluster binding, compile-fail tests |
-| H05 | Authenticated-unsupported fallback is caller-asserted | open | — | verified attempt provenance |
+| H05 | Authenticated-unsupported fallback is caller-asserted | complete | `feat(client-plane): bind fallback to verified attempts` | opaque attempt IDs, peer/endpoint/generation binding, stale/forgery matrix |
 | H06 | Endpoint authority is an unparsed string | complete | `feat(client-plane): parse canonical endpoint identities` | strict URI corpus + adapter/SNI/origin policy |
 | H07 | Discovery rollback is not prevented | complete | `feat(client-plane): reject discovery rollback and equivocation` | stateful replay/cluster/node-epoch matrix |
 | H08 | Advertisement cannot represent multi-node endpoints | complete | `feat(client-plane): model bounded multi-node discovery` | three-node/duplicate/conflict/bound tests |
@@ -158,6 +158,18 @@ failure tests; only current verified availability/unsupported advances order.
 attempt records bounded to configured preference length.
 
 **Done.** Callers cannot manufacture a downgrade-permitting failure.
+
+**Completion evidence (2026-08-09).** Selection now returns an opaque
+`TransportAttempt` with a process-unique nonzero ID bound to connection
+generation, authenticated cluster/epoch, canonical endpoint, adapter, and
+bounded preference sequence. `after_outcome` accepts only an opaque outcome for
+the exact current attempt. Availability is attempt-bound; unsupported additionally
+requires `VerifiedAttemptEvidence` created by the authenticated peer seam.
+Security/protocol outcomes remain terminal. Compile-fail proof prevents SDK
+callers from constructing an outcome, while runtime tests reject wrong attempt,
+same-generation parallel attempt, stale attempt, previous connection generation,
+foreign peer evidence, and local unsupported classification. Only current
+verified availability/unsupported advances the bounded order.
 
 ## H06. Replace string authority with a strict endpoint type
 

@@ -1,16 +1,29 @@
 //! Fail-closed server and client transport-selection policy for the HC/2 spike.
 
 use std::collections::{BTreeMap, BTreeSet};
+use std::num::NonZeroU64;
+use std::sync::atomic::{AtomicU64, Ordering};
 
 use thiserror::Error;
 
 use crate::endpoint::{EndpointOrigin, EndpointParseError, TransportAuthority};
-use crate::{TransportCandidate, HC2_GENERATION};
+use crate::{ConnectionGeneration, TransportCandidate, HC2_GENERATION};
 
 const MAX_CLUSTER_ID_BYTES: usize = 128;
 const MAX_NODE_ID_BYTES: usize = 128;
 const MAX_DISCOVERY_NODES: usize = 256;
 const MAX_NODE_ENDPOINTS: usize = TransportCandidate::ALL.len();
+static NEXT_ATTEMPT_ID: AtomicU64 = AtomicU64::new(1);
+
+fn allocate_attempt_id() -> Result<NonZeroU64, TransportPolicyError> {
+    NEXT_ATTEMPT_ID
+        .fetch_update(Ordering::Relaxed, Ordering::Relaxed, |current| {
+            current.checked_add(1).filter(|next| *next != 0)
+        })
+        .ok()
+        .and_then(NonZeroU64::new)
+        .ok_or(TransportPolicyError::AttemptSequenceExhausted)
+}
 
 /// Evidence maturity of one independently gated transport adapter.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
@@ -429,13 +442,114 @@ pub struct TransportSelection {
     candidates: Vec<TransportEndpoint>,
     next: usize,
     allow_availability_fallback: bool,
+    current: AttemptBinding,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+struct AttemptBinding {
+    attempt_id: NonZeroU64,
+    sequence: u8,
+    connection_generation: ConnectionGeneration,
+    cluster_id: String,
+    discovery_epoch: u64,
+    endpoint: TransportEndpoint,
+}
+
+/// Current transport attempt. Its provenance is opaque to SDK consumers.
+///
+/// ```compile_fail
+/// use hydracache_client_plane_spike::policy::{AttemptOutcome, TransportFailure};
+/// let forged = AttemptOutcome { failure: TransportFailure::AuthenticatedUnsupported };
+/// ```
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct TransportAttempt {
+    binding: AttemptBinding,
+}
+
+impl TransportAttempt {
+    /// Endpoint that the adapter must actually attempt.
+    pub fn endpoint(&self) -> &TransportEndpoint {
+        &self.binding.endpoint
+    }
+
+    #[cfg_attr(
+        not(test),
+        expect(dead_code, reason = "reserved for the H01 production adapter")
+    )]
+    pub(crate) fn availability_failure(&self) -> AttemptOutcome {
+        AttemptOutcome {
+            binding: self.binding.clone(),
+            failure: TransportFailure::Availability,
+        }
+    }
+
+    #[cfg_attr(
+        not(test),
+        expect(dead_code, reason = "reserved for the H01 production adapter")
+    )]
+    pub(crate) fn authenticated_unsupported(
+        &self,
+        evidence: VerifiedAttemptEvidence,
+    ) -> Result<AttemptOutcome, TransportPolicyError> {
+        if evidence.binding != self.binding {
+            return Err(TransportPolicyError::UnverifiedAttemptOutcome);
+        }
+        Ok(AttemptOutcome {
+            binding: self.binding.clone(),
+            failure: TransportFailure::AuthenticatedUnsupported,
+        })
+    }
+
+    #[cfg_attr(
+        not(test),
+        expect(dead_code, reason = "reserved for the H01 production adapter")
+    )]
+    pub(crate) fn terminal_failure(
+        &self,
+        failure: TransportFailure,
+    ) -> Result<AttemptOutcome, TransportPolicyError> {
+        if failure.permits_fallback() {
+            return Err(TransportPolicyError::UnverifiedAttemptOutcome);
+        }
+        Ok(AttemptOutcome {
+            binding: self.binding.clone(),
+            failure,
+        })
+    }
+}
+
+/// Opaque result accepted by the fallback state machine.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct AttemptOutcome {
+    binding: AttemptBinding,
+    failure: TransportFailure,
+}
+
+/// Proof that an unsupported response was decoded after authenticating the
+/// exact peer and endpoint of an active attempt.
+#[derive(Debug, Clone)]
+pub struct VerifiedAttemptEvidence {
+    binding: AttemptBinding,
+}
+
+impl VerifiedAttemptEvidence {
+    #[cfg_attr(
+        not(test),
+        expect(dead_code, reason = "reserved for the H01 production adapter")
+    )]
+    pub(crate) fn verified_peer(attempt: &TransportAttempt) -> Self {
+        Self {
+            binding: attempt.binding.clone(),
+        }
+    }
 }
 
 impl ClientTransportPolicy {
     pub fn begin(
         &self,
         advertisement: &AuthenticatedAdvertisement,
-    ) -> Result<(TransportEndpoint, TransportSelection), TransportPolicyError> {
+        connection_generation: ConnectionGeneration,
+    ) -> Result<(TransportAttempt, TransportSelection), TransportPolicyError> {
         let (preference, minimum_maturity, allow_availability_fallback) = match self {
             Self::Pinned(candidate) => (vec![*candidate], AdapterMaturity::Experimental, false),
             Self::Ordered {
@@ -466,28 +580,42 @@ impl ClientTransportPolicy {
                 candidates.push(endpoint.clone());
             }
         }
-        let first = candidates
+        let first_endpoint = candidates
             .first()
             .cloned()
             .ok_or(TransportPolicyError::NoCompatibleTransport)?;
+        let first = AttemptBinding {
+            attempt_id: allocate_attempt_id()?,
+            sequence: 1,
+            connection_generation,
+            cluster_id: advertisement.cluster_id().to_owned(),
+            discovery_epoch: advertisement.epoch(),
+            endpoint: first_endpoint,
+        };
         Ok((
-            first,
+            TransportAttempt {
+                binding: first.clone(),
+            },
             TransportSelection {
                 candidates,
                 next: 1,
                 allow_availability_fallback,
+                current: first,
             },
         ))
     }
 }
 
 impl TransportSelection {
-    pub fn after_failure(
+    pub fn after_outcome(
         &mut self,
-        failure: TransportFailure,
-    ) -> Result<TransportEndpoint, TransportPolicyError> {
-        if !failure.permits_fallback() {
-            return Err(TransportPolicyError::DowngradeForbidden(failure));
+        outcome: AttemptOutcome,
+    ) -> Result<TransportAttempt, TransportPolicyError> {
+        if outcome.binding != self.current {
+            return Err(TransportPolicyError::WrongOrStaleAttempt);
+        }
+        if !outcome.failure.permits_fallback() {
+            return Err(TransportPolicyError::DowngradeForbidden(outcome.failure));
         }
         if !self.allow_availability_fallback {
             return Err(TransportPolicyError::FallbackDisabled);
@@ -497,8 +625,23 @@ impl TransportSelection {
             .get(self.next)
             .cloned()
             .ok_or(TransportPolicyError::NoCompatibleTransport)?;
+        let sequence = self
+            .current
+            .sequence
+            .checked_add(1)
+            .ok_or(TransportPolicyError::AttemptSequenceExhausted)?;
         self.next += 1;
-        Ok(endpoint)
+        self.current = AttemptBinding {
+            attempt_id: allocate_attempt_id()?,
+            sequence,
+            connection_generation: self.current.connection_generation,
+            cluster_id: self.current.cluster_id.clone(),
+            discovery_epoch: self.current.discovery_epoch,
+            endpoint,
+        };
+        Ok(TransportAttempt {
+            binding: self.current.clone(),
+        })
     }
 }
 
@@ -552,6 +695,12 @@ pub enum TransportPolicyError {
     FallbackDisabled,
     #[error("fallback after {0:?} would be a downgrade")]
     DowngradeForbidden(TransportFailure),
+    #[error("fallback outcome belongs to the wrong or a stale attempt")]
+    WrongOrStaleAttempt,
+    #[error("unsupported outcome was not proven by the attempt's authenticated peer")]
+    UnverifiedAttemptOutcome,
+    #[error("bounded transport attempt sequence exhausted")]
+    AttemptSequenceExhausted,
 }
 
 #[cfg(test)]
@@ -705,11 +854,14 @@ mod tests {
         let advertisement = all_transports();
         let (first, mut selection) =
             ClientTransportPolicy::Pinned(TransportCandidate::GrpcBidirectional)
-                .begin(&advertisement)
+                .begin(&advertisement, ConnectionGeneration::FIRST)
                 .unwrap();
-        assert_eq!(first.candidate, TransportCandidate::GrpcBidirectional);
         assert_eq!(
-            selection.after_failure(TransportFailure::Availability),
+            first.endpoint().candidate,
+            TransportCandidate::GrpcBidirectional
+        );
+        assert_eq!(
+            selection.after_outcome(first.availability_failure()),
             Err(TransportPolicyError::FallbackDisabled)
         );
     }
@@ -726,20 +878,26 @@ mod tests {
             minimum_maturity: AdapterMaturity::Experimental,
             allow_availability_fallback: true,
         };
-        let (first, mut selection) = policy.begin(&advertisement).unwrap();
-        assert_eq!(first.candidate, TransportCandidate::GrpcBidirectional);
+        let (first, mut selection) = policy
+            .begin(&advertisement, ConnectionGeneration::FIRST)
+            .unwrap();
         assert_eq!(
-            selection
-                .after_failure(TransportFailure::Availability)
-                .unwrap()
-                .candidate,
+            first.endpoint().candidate,
+            TransportCandidate::GrpcBidirectional
+        );
+        let second = selection
+            .after_outcome(first.availability_failure())
+            .unwrap();
+        assert_eq!(
+            second.endpoint().candidate,
             TransportCandidate::Http2Bidirectional
         );
+        let verified = VerifiedAttemptEvidence::verified_peer(&second);
+        let third = selection
+            .after_outcome(second.authenticated_unsupported(verified).unwrap())
+            .unwrap();
         assert_eq!(
-            selection
-                .after_failure(TransportFailure::AuthenticatedUnsupported)
-                .unwrap()
-                .candidate,
+            third.endpoint().candidate,
             TransportCandidate::DedicatedTcpTls
         );
     }
@@ -754,18 +912,72 @@ mod tests {
             TransportFailure::CapabilityMismatch,
             TransportFailure::MalformedPeer,
         ] {
-            let (_, mut selection) = ClientTransportPolicy::Ordered {
+            let (attempt, mut selection) = ClientTransportPolicy::Ordered {
                 preference: TransportCandidate::ALL.to_vec(),
                 minimum_maturity: AdapterMaturity::Experimental,
                 allow_availability_fallback: true,
             }
-            .begin(&all_transports())
+            .begin(&all_transports(), ConnectionGeneration::FIRST)
             .unwrap();
             assert_eq!(
-                selection.after_failure(failure),
+                selection.after_outcome(attempt.terminal_failure(failure).unwrap()),
                 Err(TransportPolicyError::DowngradeForbidden(failure))
             );
         }
+    }
+
+    #[test]
+    fn fallback_rejects_wrong_stale_and_unverified_attempt_provenance() {
+        let policy = ClientTransportPolicy::Ordered {
+            preference: TransportCandidate::ALL.to_vec(),
+            minimum_maturity: AdapterMaturity::Experimental,
+            allow_availability_fallback: true,
+        };
+        let advertisement = all_transports();
+        let generation = ConnectionGeneration::FIRST;
+        let (first, mut selection) = policy.begin(&advertisement, generation).unwrap();
+        let stale_outcome = first.availability_failure();
+        let second = selection
+            .after_outcome(first.availability_failure())
+            .unwrap();
+
+        assert_eq!(
+            selection.after_outcome(stale_outcome),
+            Err(TransportPolicyError::WrongOrStaleAttempt)
+        );
+        assert_eq!(
+            first.authenticated_unsupported(VerifiedAttemptEvidence::verified_peer(&second)),
+            Err(TransportPolicyError::UnverifiedAttemptOutcome)
+        );
+        assert_eq!(
+            first.terminal_failure(TransportFailure::AuthenticatedUnsupported),
+            Err(TransportPolicyError::UnverifiedAttemptOutcome)
+        );
+
+        let (same_generation_other_attempt, _) = policy.begin(&advertisement, generation).unwrap();
+        assert_eq!(
+            selection.after_outcome(same_generation_other_attempt.availability_failure()),
+            Err(TransportPolicyError::WrongOrStaleAttempt)
+        );
+
+        let next_generation = generation.checked_next().unwrap();
+        let (other_generation_attempt, _) = policy.begin(&advertisement, next_generation).unwrap();
+        assert_eq!(
+            selection.after_outcome(other_generation_attempt.availability_failure()),
+            Err(TransportPolicyError::WrongOrStaleAttempt)
+        );
+
+        let valid_unsupported = second
+            .authenticated_unsupported(VerifiedAttemptEvidence::verified_peer(&second))
+            .unwrap();
+        assert_eq!(
+            selection
+                .after_outcome(valid_unsupported)
+                .unwrap()
+                .endpoint()
+                .candidate,
+            TransportCandidate::GrpcBidirectional
+        );
     }
 
     #[test]
