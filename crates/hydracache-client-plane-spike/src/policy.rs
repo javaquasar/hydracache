@@ -8,6 +8,9 @@ use crate::endpoint::{EndpointOrigin, EndpointParseError, TransportAuthority};
 use crate::{TransportCandidate, HC2_GENERATION};
 
 const MAX_CLUSTER_ID_BYTES: usize = 128;
+const MAX_NODE_ID_BYTES: usize = 128;
+const MAX_DISCOVERY_NODES: usize = 256;
+const MAX_NODE_ENDPOINTS: usize = TransportCandidate::ALL.len();
 
 /// Evidence maturity of one independently gated transport adapter.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
@@ -74,7 +77,6 @@ impl TransportEndpoint {
 /// Validated cluster-side listener policy.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ServerTransportPolicy {
-    generation: u16,
     endpoints: Vec<TransportEndpoint>,
 }
 
@@ -96,22 +98,18 @@ impl ServerTransportPolicy {
                 return Err(TransportPolicyError::DuplicateTransport(endpoint.candidate));
             }
         }
-        Ok(Self {
-            generation,
-            endpoints,
-        })
+        Ok(Self { endpoints })
     }
 
-    /// Advertise only listeners that have successfully bound and become ready.
-    pub fn advertise(
+    /// Build one node record from listeners that successfully bound and became ready.
+    pub fn advertise_node(
         &self,
-        cluster_id: impl Into<String>,
-        epoch: u64,
-    ) -> Result<DiscoveryAdvertisement, TransportPolicyError> {
-        let advertisement = DiscoveryAdvertisement {
-            cluster_id: cluster_id.into(),
-            epoch,
-            generation: self.generation,
+        node_id: impl Into<String>,
+        node_epoch: u64,
+    ) -> Result<NodeAdvertisement, TransportPolicyError> {
+        let node = NodeAdvertisement {
+            node_id: NodeId::parse(node_id.into())?,
+            epoch: node_epoch,
             endpoints: self
                 .endpoints
                 .iter()
@@ -119,30 +117,62 @@ impl ServerTransportPolicy {
                 .cloned()
                 .collect(),
         };
-        advertisement.validate_payload()?;
-        Ok(advertisement)
+        node.validate()?;
+        Ok(node)
     }
 }
 
-/// Authenticated discovery payload consumed by an HC/2 client.
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct DiscoveryAdvertisement {
-    pub cluster_id: String,
-    pub epoch: u64,
-    pub generation: u16,
-    pub endpoints: Vec<TransportEndpoint>,
+/// Stable node identity scoped to one authenticated cluster.
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
+pub struct NodeId(String);
+
+impl NodeId {
+    pub fn parse(value: impl Into<String>) -> Result<Self, TransportPolicyError> {
+        let value = value.into();
+        if value.is_empty()
+            || value.len() > MAX_NODE_ID_BYTES
+            || !value.is_ascii()
+            || !value
+                .bytes()
+                .all(|byte| byte.is_ascii_alphanumeric() || matches!(byte, b'-' | b'_'))
+        {
+            return Err(TransportPolicyError::InvalidNodeId);
+        }
+        Ok(Self(value))
+    }
+
+    pub fn as_str(&self) -> &str {
+        &self.0
+    }
 }
 
-impl DiscoveryAdvertisement {
-    fn validate_payload(&self) -> Result<(), TransportPolicyError> {
-        if self.cluster_id.trim().is_empty() || self.cluster_id.len() > MAX_CLUSTER_ID_BYTES {
-            return Err(TransportPolicyError::InvalidClusterId);
+/// One node's bounded, ready client-plane listeners.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct NodeAdvertisement {
+    node_id: NodeId,
+    epoch: u64,
+    endpoints: Vec<TransportEndpoint>,
+}
+
+impl NodeAdvertisement {
+    pub fn node_id(&self) -> &NodeId {
+        &self.node_id
+    }
+
+    pub fn epoch(&self) -> u64 {
+        self.epoch
+    }
+
+    pub fn endpoints(&self) -> &[TransportEndpoint] {
+        &self.endpoints
+    }
+
+    fn validate(&self) -> Result<(), TransportPolicyError> {
+        if self.epoch == 0 {
+            return Err(TransportPolicyError::InvalidNodeEpoch);
         }
-        if self.generation != HC2_GENERATION {
-            return Err(TransportPolicyError::UnknownGeneration(self.generation));
-        }
-        if self.endpoints.is_empty() {
-            return Err(TransportPolicyError::NoEnabledTransport);
+        if self.endpoints.is_empty() || self.endpoints.len() > MAX_NODE_ENDPOINTS {
+            return Err(TransportPolicyError::InvalidNodeEndpointCount);
         }
         let mut candidates = BTreeSet::new();
         for endpoint in &self.endpoints {
@@ -153,7 +183,63 @@ impl DiscoveryAdvertisement {
                 ));
             }
             if !candidates.insert(endpoint.candidate) {
-                return Err(TransportPolicyError::DuplicateTransport(endpoint.candidate));
+                return Err(TransportPolicyError::ContradictoryNodeTransport(
+                    self.node_id.clone(),
+                    endpoint.candidate,
+                ));
+            }
+        }
+        Ok(())
+    }
+}
+
+/// Authenticated discovery payload consumed by an HC/2 client.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct DiscoveryAdvertisement {
+    pub cluster_id: String,
+    pub epoch: u64,
+    pub generation: u16,
+    nodes: Vec<NodeAdvertisement>,
+}
+
+impl DiscoveryAdvertisement {
+    pub fn assemble(
+        cluster_id: impl Into<String>,
+        epoch: u64,
+        generation: u16,
+        nodes: Vec<NodeAdvertisement>,
+    ) -> Result<Self, TransportPolicyError> {
+        let advertisement = Self {
+            cluster_id: cluster_id.into(),
+            epoch,
+            generation,
+            nodes,
+        };
+        advertisement.validate_payload()?;
+        Ok(advertisement)
+    }
+
+    fn validate_payload(&self) -> Result<(), TransportPolicyError> {
+        if self.cluster_id.trim().is_empty() || self.cluster_id.len() > MAX_CLUSTER_ID_BYTES {
+            return Err(TransportPolicyError::InvalidClusterId);
+        }
+        if self.generation != HC2_GENERATION {
+            return Err(TransportPolicyError::UnknownGeneration(self.generation));
+        }
+        if self.nodes.is_empty() || self.nodes.len() > MAX_DISCOVERY_NODES {
+            return Err(TransportPolicyError::NoEnabledTransport);
+        }
+        let mut node_ids = BTreeSet::new();
+        let mut authorities = BTreeSet::new();
+        for node in &self.nodes {
+            node.validate()?;
+            if !node_ids.insert(node.node_id.clone()) {
+                return Err(TransportPolicyError::DuplicateNode(node.node_id.clone()));
+            }
+            for endpoint in &node.endpoints {
+                if !authorities.insert(endpoint.authority.canonical_uri()) {
+                    return Err(TransportPolicyError::ConflictingAuthority);
+                }
             }
         }
         Ok(())
@@ -206,8 +292,8 @@ impl AuthenticatedAdvertisement {
         self.inner.generation
     }
 
-    pub fn endpoints(&self) -> &[TransportEndpoint] {
-        &self.inner.endpoints
+    pub fn nodes(&self) -> &[NodeAdvertisement] {
+        &self.inner.nodes
     }
 }
 
@@ -279,7 +365,6 @@ impl ClientTransportPolicy {
         &self,
         advertisement: &AuthenticatedAdvertisement,
     ) -> Result<(TransportEndpoint, TransportSelection), TransportPolicyError> {
-        let endpoints = advertisement.endpoints();
         let (preference, minimum_maturity, allow_availability_fallback) = match self {
             Self::Pinned(candidate) => (vec![*candidate], AdapterMaturity::Experimental, false),
             Self::Ordered {
@@ -302,8 +387,10 @@ impl ClientTransportPolicy {
 
         let mut candidates = Vec::new();
         for preferred in preference {
-            if let Some(endpoint) = endpoints.iter().find(|endpoint| {
-                endpoint.candidate == preferred && endpoint.maturity >= minimum_maturity
+            if let Some(endpoint) = advertisement.nodes().iter().find_map(|node| {
+                node.endpoints().iter().find(|endpoint| {
+                    endpoint.candidate == preferred && endpoint.maturity >= minimum_maturity
+                })
             }) {
                 candidates.push(endpoint.clone());
             }
@@ -360,6 +447,18 @@ pub enum TransportPolicyError {
     UnknownGeneration(u16),
     #[error("cluster id is empty or exceeds its bound")]
     InvalidClusterId,
+    #[error("node id is empty, oversized, non-ASCII, or contains invalid characters")]
+    InvalidNodeId,
+    #[error("node epoch must be non-zero")]
+    InvalidNodeEpoch,
+    #[error("node must advertise one bounded unique endpoint per transport")]
+    InvalidNodeEndpointCount,
+    #[error("duplicate node id {0:?}")]
+    DuplicateNode(NodeId),
+    #[error("node {0:?} has contradictory entries for {1:?}")]
+    ContradictoryNodeTransport(NodeId, TransportCandidate),
+    #[error("one canonical endpoint authority is assigned to multiple nodes")]
+    ConflictingAuthority,
     #[error("discovery cluster identity does not match the verified channel")]
     ClusterIdentityMismatch,
     #[error("unready endpoint {0:?} was advertised")]
@@ -399,7 +498,7 @@ mod tests {
     }
 
     fn raw_all_transports() -> DiscoveryAdvertisement {
-        ServerTransportPolicy::validate(
+        let node = ServerTransportPolicy::validate(
             HC2_GENERATION,
             vec![
                 endpoint(
@@ -420,8 +519,9 @@ mod tests {
             ],
         )
         .unwrap()
-        .advertise("cluster-a", 42)
-        .unwrap()
+        .advertise_node("node-a", 1)
+        .unwrap();
+        DiscoveryAdvertisement::assemble("cluster-a", 42, HC2_GENERATION, vec![node]).unwrap()
     }
 
     fn all_transports() -> AuthenticatedAdvertisement {
@@ -438,7 +538,7 @@ mod tests {
             AdapterMaturity::Experimental,
         );
         unready.ready = false;
-        let advertisement = ServerTransportPolicy::validate(
+        let node = ServerTransportPolicy::validate(
             HC2_GENERATION,
             vec![
                 endpoint(
@@ -450,11 +550,11 @@ mod tests {
             ],
         )
         .unwrap()
-        .advertise("cluster-a", 7)
+        .advertise_node("node-a", 7)
         .unwrap();
-        assert_eq!(advertisement.endpoints.len(), 1);
+        assert_eq!(node.endpoints().len(), 1);
         assert_eq!(
-            advertisement.endpoints[0].candidate,
+            node.endpoints()[0].candidate,
             TransportCandidate::GrpcBidirectional
         );
     }
@@ -612,6 +712,109 @@ mod tests {
         assert_eq!(advertisement.cluster_id(), "cluster-a");
         assert_eq!(advertisement.epoch(), 42);
         assert_eq!(advertisement.generation(), HC2_GENERATION);
-        assert_eq!(advertisement.endpoints().len(), 3);
+        assert_eq!(advertisement.nodes().len(), 1);
+        assert_eq!(advertisement.nodes()[0].node_id().as_str(), "node-a");
+        assert_eq!(advertisement.nodes()[0].endpoints().len(), 3);
+    }
+
+    #[test]
+    fn three_nodes_may_advertise_the_same_transport() {
+        let mut nodes = Vec::new();
+        for (node_id, port, epoch) in [
+            ("node-a", 7443, 1),
+            ("node-b", 7543, 1),
+            ("node-c", 7643, 2),
+        ] {
+            nodes.push(
+                ServerTransportPolicy::validate(
+                    HC2_GENERATION,
+                    vec![endpoint(
+                        TransportCandidate::GrpcBidirectional,
+                        &format!("cache.example:{port}"),
+                        AdapterMaturity::Preview,
+                    )],
+                )
+                .unwrap()
+                .advertise_node(node_id, epoch)
+                .unwrap(),
+            );
+        }
+        let advertisement =
+            DiscoveryAdvertisement::assemble("cluster-a", 9, HC2_GENERATION, nodes).unwrap();
+        assert_eq!(advertisement.nodes.len(), 3);
+        assert_eq!(advertisement.nodes[2].epoch(), 2);
+    }
+
+    #[test]
+    fn duplicate_nodes_conflicting_authorities_and_oversized_documents_fail() {
+        let node = ServerTransportPolicy::validate(
+            HC2_GENERATION,
+            vec![endpoint(
+                TransportCandidate::GrpcBidirectional,
+                "cache.example:7443",
+                AdapterMaturity::Preview,
+            )],
+        )
+        .unwrap()
+        .advertise_node("node-a", 1)
+        .unwrap();
+
+        assert_eq!(
+            DiscoveryAdvertisement::assemble(
+                "cluster-a",
+                1,
+                HC2_GENERATION,
+                vec![node.clone(), node.clone()],
+            ),
+            Err(TransportPolicyError::DuplicateNode(
+                NodeId::parse("node-a").unwrap()
+            ))
+        );
+
+        let mut other = node.clone();
+        other.node_id = NodeId::parse("node-b").unwrap();
+        assert_eq!(
+            DiscoveryAdvertisement::assemble(
+                "cluster-a",
+                1,
+                HC2_GENERATION,
+                vec![node.clone(), other],
+            ),
+            Err(TransportPolicyError::ConflictingAuthority)
+        );
+
+        assert_eq!(
+            DiscoveryAdvertisement::assemble(
+                "cluster-a",
+                1,
+                HC2_GENERATION,
+                vec![node; MAX_DISCOVERY_NODES + 1],
+            ),
+            Err(TransportPolicyError::NoEnabledTransport)
+        );
+
+        let contradictory = NodeAdvertisement {
+            node_id: NodeId::parse("node-z").unwrap(),
+            epoch: 1,
+            endpoints: vec![
+                endpoint(
+                    TransportCandidate::GrpcBidirectional,
+                    "cache.example:7443",
+                    AdapterMaturity::Preview,
+                ),
+                endpoint(
+                    TransportCandidate::GrpcBidirectional,
+                    "cache.example:7543",
+                    AdapterMaturity::Preview,
+                ),
+            ],
+        };
+        assert_eq!(
+            contradictory.validate(),
+            Err(TransportPolicyError::ContradictoryNodeTransport(
+                NodeId::parse("node-z").unwrap(),
+                TransportCandidate::GrpcBidirectional,
+            ))
+        );
     }
 }

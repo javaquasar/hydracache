@@ -22,7 +22,7 @@
 | H05 | Authenticated-unsupported fallback is caller-asserted | open | — | verified attempt provenance |
 | H06 | Endpoint authority is an unparsed string | complete | `feat(client-plane): parse canonical endpoint identities` | strict URI corpus + adapter/SNI/origin policy |
 | H07 | Discovery rollback is not prevented | open | — | cluster binding + monotonic epoch |
-| H08 | Advertisement cannot represent multi-node endpoints | open | — | node-scoped endpoint identities |
+| H08 | Advertisement cannot represent multi-node endpoints | complete | `feat(client-plane): model bounded multi-node discovery` | three-node/duplicate/conflict/bound tests |
 | H09 | Lifecycle checks are runtime-only, not typestate | complete | `feat(client-plane): make bootstrap sequencing typestate-safe` | compile-fail bootstrap + runtime race/cleanup tests |
 | H10 | Connection generation/stale-message fencing is absent | open | — | late old-generation reply/event refusal |
 | H11 | Reconnect and subscription/session repair are absent | open | — | deterministic reconnect/repair matrix |
@@ -214,10 +214,20 @@ duplicates and contradictions, not legitimate same-candidate nodes.
 replacement, duplicate node IDs, conflicting authorities, and bounded-size
 tests.
 
-**Dependencies.** H06, H07. **Risk/rollback.** Client smart-routing overclaim;
+**Dependencies.** H06. **Risk/rollback.** Client smart-routing overclaim;
 first release remains honest single-selected-endpoint mode.
 
 **Done.** Discovery represents multiple nodes without creating ownership truth.
+
+**Completion evidence (2026-08-09).** A discovery document now owns up to 256
+unique `NodeAdvertisement` records. Each record has a bounded stable node ID,
+non-zero node epoch, and at most one ready endpoint per transport. The same
+transport may legitimately appear on three nodes. Exact duplicate node IDs,
+per-node contradictory transports, cross-node authority reuse, invalid epochs,
+empty/oversized records, and oversized documents fail closed. Selection remains
+deliberately first-compatible-endpoint; node records carry connectivity, not
+partition, leader, or ownership authority. The former cyclic H07 dependency was
+corrected: H07 consumes this model, while H08 depends only on H06.
 
 ## H09. Strengthen lifecycle with typestate at bootstrap boundaries
 

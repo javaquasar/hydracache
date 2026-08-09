@@ -82,10 +82,14 @@ Those outcomes terminate selection as a downgrade-protection error. The client
 does not learn a weaker transport by probing unauthenticated endpoints.
 
 An optional discovery document contains bounded `cluster_id`, monotonic epoch,
-HC/2 generation, endpoint authority, transport, maturity, and mTLS requirement.
-It is accepted only over an already authenticated channel (or a later signed
-artifact). Explicit configured endpoint URIs remain the initial production
-bootstrap mechanism.
+HC/2 generation, and up to 256 unique node records. Each node record contains a
+bounded node ID, non-zero node epoch, and at most one ready endpoint per
+transport. Exact duplicate nodes, contradictory per-node transports, and one
+canonical authority assigned to multiple nodes are rejected. These records are
+connectivity hints only; they do not assert partition ownership or leadership.
+The document is accepted only over an already authenticated channel (or a later
+signed artifact). Explicit configured endpoint URIs remain the initial
+production bootstrap mechanism.
 
 This rule is enforced by the API rather than by a caller-supplied flag. Decoded
 discovery is an untrusted `DiscoveryAdvertisement`; client selection accepts
