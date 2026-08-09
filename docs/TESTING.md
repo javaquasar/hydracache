@@ -1314,6 +1314,12 @@ listeners.
 
 The canonical methodology and claim boundary are in [`PERFORMANCE.md`](PERFORMANCE.md). Release 0.67 ships the W0-W10 testing infrastructure, not official capacity, sizing, Redis-comparison, metrics-agreement, or numerical baseline results. The missing dedicated-runner evidence is explicit debt: [`TD-0013`](technical-debt/TD-0013-dedicated-performance-runner-and-baseline-bootstrap.md).
 
+The profile-selection rules, evidence hierarchy, and prohibition on promoting a
+weaker result into a stronger claim are defined in
+[`testing/PERFORMANCE_EVIDENCE_STRATEGY.md`](testing/PERFORMANCE_EVIDENCE_STRATEGY.md).
+Use that decision record before selecting an instruction, indicative,
+memory-only, or authoritative reference profile.
+
 `ci-shared` remains a broad-tolerance hosted regression tripwire. `reference-v1` remains reserved for the protected `hydracache-perf-v1` self-hosted bare-metal runner. Its preflight, fingerprint, SLO, repeat, zero-error, and 15% spread rules are unchanged, but its five execution gates are deferred evidence gates rather than 0.67 ship-mandatory receipts.
 
 `ci-instruction-v1` adds a real paired base/head Callgrind lane on GitHub-hosted
