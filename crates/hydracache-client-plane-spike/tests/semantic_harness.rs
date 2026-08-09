@@ -1,8 +1,8 @@
 use hydracache_client_plane_spike::{
     AdmissionController, AdmissionLimits, AdmissionSnapshot, BootstrapConnection,
-    ConnectionGeneration, ConnectionMetrics, ConnectionState, FrameKind, PeerIdentity,
-    ResourceSnapshot, SpikeConnection, SpikeError, SpikeFrame, SpikeLimits, TransportCandidate,
-    HC2_GENERATION,
+    ClientAuthorizationPolicy, ConnectionGeneration, ConnectionMetrics, ConnectionState, FrameKind,
+    PeerIdentity, ResourceSnapshot, SpikeConnection, SpikeError, SpikeFrame, SpikeLimits,
+    TransportCandidate, HC2_GENERATION,
 };
 
 const CONNECTION_GENERATION: ConnectionGeneration = ConnectionGeneration::FIRST;
@@ -21,6 +21,8 @@ fn ready_at(
         .expect("verified TLS")
         .authenticate(PeerIdentity::verified("w0-client", "w0-tenant"))
         .expect("verified identity")
+        .authorize(&ClientAuthorizationPolicy::exact("w0-client", "w0-tenant").unwrap())
+        .expect("authorized identity")
         .negotiate(HC2_GENERATION)
         .expect("current generation")
 }
@@ -322,6 +324,34 @@ fn bootstrap_rejects_unverified_tls_and_identity() {
 }
 
 #[test]
+fn authenticated_but_unauthorized_identity_cannot_reach_dispatch() {
+    assert!(ClientAuthorizationPolicy::new(std::iter::empty::<(&str, &str)>()).is_ok());
+    assert_eq!(
+        ClientAuthorizationPolicy::new([(String::from("x").repeat(129), "tenant".to_owned())]),
+        Err(SpikeError::InvalidAuthorizationPolicy)
+    );
+    assert_eq!(
+        ClientAuthorizationPolicy::new(
+            (0..257).map(|index| { (format!("client-{index}"), "tenant-a".to_owned()) })
+        ),
+        Err(SpikeError::InvalidAuthorizationPolicy)
+    );
+    for candidate in TransportCandidate::ALL {
+        let authenticated =
+            BootstrapConnection::new(candidate, CONNECTION_GENERATION, SpikeLimits::default())
+                .verify_tls(true)
+                .unwrap()
+                .authenticate(PeerIdentity::verified("denied-client", "tenant-a"))
+                .unwrap();
+        let policy = ClientAuthorizationPolicy::exact("allowed-client", "tenant-a").unwrap();
+        assert!(matches!(
+            authenticated.authorize(&policy),
+            Err(SpikeError::UnauthorizedIdentity)
+        ));
+    }
+}
+
+#[test]
 fn connection_state_machine_blocks_new_work_while_draining() {
     for candidate in TransportCandidate::ALL {
         let mut connection = ready(candidate, SpikeLimits::default());
@@ -574,6 +604,8 @@ fn invalid_zero_limits_fail_before_ready() {
         .verify_tls(true)
         .unwrap()
         .authenticate(PeerIdentity::verified("w0-client", "w0-tenant"))
+        .unwrap()
+        .authorize(&ClientAuthorizationPolicy::exact("w0-client", "w0-tenant").unwrap())
         .unwrap();
         assert!(matches!(
             bootstrap.negotiate(HC2_GENERATION),

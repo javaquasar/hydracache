@@ -27,7 +27,7 @@
 | H10 | Connection generation/stale-message fencing is absent | complete | `feat(client-plane): fence stale connection generations` | nonzero checked epoch, wire/runtime fencing, reconnect/reused-ID matrix |
 | H11 | Reconnect and subscription/session repair are absent | open | — | deterministic reconnect/repair matrix |
 | H12 | Resource bounds omit byte/retry/session/global budgets | complete | `feat(client-plane): bound all retained resource classes` | ownership ledger, byte/count boundaries, atomic admission, zero-close proof |
-| H13 | Negative TLS matrix is incomplete | open | — | hostname/time/EKU/rotation/policy cases |
+| H13 | Negative TLS matrix is incomplete | complete | `test(client-plane): complete TLS authorization matrix` | real rustls/tonic hostname/time/EKU/CA/version matrix, bounded chain policy, authorization typestate, rotation and zero-dispatch proofs |
 | H14 | Discovery signing/replay protection is absent | open | — | signed canonical artifact + rotation |
 | H15 | Hermetic Python generation is absent | open | — | pinned offline-capable generation/test |
 | H16 | Java is a codec fixture, not a production SDK | open | — | buildable SDK + process interoperability |
@@ -270,14 +270,16 @@ limit typestate to bootstrap and expose object-safe ready runtime.
 
 **Done.** Invalid bootstrap sequencing is unrepresentable in production code.
 
-**Completion evidence (2026-08-09).** `BootstrapConnection<State>` owns the
-linear `Created -> TlsVerified -> Authenticated -> Ready` transition. Each
-successful method consumes the previous state, and only negotiation yields the
-bounded `SpikeConnection` runtime used for dispatch, drain, and close. The old
-public runtime bootstrap methods are private. Rustdoc compile-fail tests prove
-that created connections expose neither dispatch nor negotiation. Runtime tests
-retain negative TLS/identity checks, prove drain behavior, cancellation versus
-completion has exactly one winner, idempotent close, and zero accounting.
+**Completion evidence (2026-08-09; authorization gate extended by H13 on
+2026-08-10).** `BootstrapConnection<State>` owns the linear `Created ->
+TlsVerified -> Authenticated -> Authorized -> Ready` transition. Each successful
+method consumes the previous state, and only negotiation yields the bounded
+`SpikeConnection` runtime used for dispatch, drain, and close. The old public
+runtime bootstrap methods are private. Rustdoc compile-fail tests prove that
+created or merely authenticated connections expose neither dispatch nor
+negotiation. Runtime tests retain negative TLS/identity/authorization checks,
+prove drain behavior, cancellation versus completion has exactly one winner,
+idempotent close, and zero accounting.
 
 ## H10. Fence every connection generation and stale message
 
@@ -369,6 +371,19 @@ dispatch counter stays zero on every pre-dispatch failure.
 Synthetic PKI can miss operational rotation; add real-process rotation proof.
 
 **Done.** Every security failure is classified, observable, and non-fallback.
+
+**Completion evidence (2026-08-10).** `SecurityRejection` defines stable,
+privacy-safe labels and maps every TLS/authentication/authorization failure to a
+terminal H05 outcome. Real rustls and tonic loopbacks reject hostname/SNI,
+expired/not-yet-valid server and client certificates, wrong client CA, wrong
+server/client EKU, missing identity, unknown CA, and incompatible TLS versions
+before any protocol byte or generated gRPC service open. A bounded common chain
+policy proves exact/one-over depth and byte behavior. Bootstrap typestate now
+requires `Authenticated -> Authorized -> Ready`; authenticated denial cannot
+produce a dispatch-capable value. Rotation tests accept an old client CA during
+explicit overlap and reject it after removal. The complete contract, production
+integration boundary, and evidence commands are recorded in
+`docs/architecture/HC2_TLS_AUTHORIZATION_POLICY.md`.
 
 ## H14. Add signed discovery with replay-safe key rotation
 

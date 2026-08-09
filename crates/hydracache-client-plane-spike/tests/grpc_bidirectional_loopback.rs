@@ -1,11 +1,12 @@
 use std::collections::BTreeSet;
 use std::pin::Pin;
+use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::{Arc, Mutex};
 
 use futures_util::Stream;
 use hydracache_client_plane_spike::{
-    BootstrapConnection, ConnectionGeneration, FrameKind, PeerIdentity, ResourceSnapshot,
-    SpikeConnection, SpikeFrame, SpikeLimits, TransportCandidate, HC2_GENERATION,
+    BootstrapConnection, ClientAuthorizationPolicy, ConnectionGeneration, FrameKind, PeerIdentity,
+    ResourceSnapshot, SpikeConnection, SpikeFrame, SpikeLimits, TransportCandidate, HC2_GENERATION,
 };
 use prost::Message;
 use tokio::net::TcpListener;
@@ -34,6 +35,7 @@ const CONNECTION_GENERATION: ConnectionGeneration = ConnectionGeneration::FIRST;
 #[derive(Clone)]
 struct SpikeService {
     closed: Arc<Mutex<Option<oneshot::Sender<ResourceSnapshot>>>>,
+    opens: Arc<AtomicU64>,
 }
 
 fn ready_connection() -> SpikeConnection {
@@ -45,6 +47,8 @@ fn ready_connection() -> SpikeConnection {
     .verify_tls(true)
     .unwrap()
     .authenticate(PeerIdentity::verified("grpc-client", "grpc-tenant"))
+    .unwrap()
+    .authorize(&ClientAuthorizationPolicy::exact("grpc-client", "grpc-tenant").unwrap())
     .unwrap()
     .negotiate(HC2_GENERATION)
     .unwrap()
@@ -83,6 +87,7 @@ impl ClientPlaneSpike for SpikeService {
         &self,
         request: Request<Streaming<SpikeEnvelope>>,
     ) -> Result<Response<Self::OpenStream>, Status> {
+        self.opens.fetch_add(1, Ordering::SeqCst);
         let mut inbound = request.into_inner();
         let mut connection = ready_connection();
         connection
@@ -143,6 +148,7 @@ async fn grpc_candidate_interleaves_reply_and_event_on_a_generated_real_stream()
     let pki = support::TestPki::generate();
     let service = SpikeService {
         closed: Arc::new(Mutex::new(Some(closed_tx))),
+        opens: Arc::new(AtomicU64::new(0)),
     };
     let server_identity =
         Identity::from_pem(pki.server_cert_pem.clone(), pki.server_key_pem.clone());
@@ -225,13 +231,20 @@ async fn grpc_candidate_interleaves_reply_and_event_on_a_generated_real_stream()
 
 async fn serve_rejection_probe(
     pki: &support::TestPki,
-) -> (u16, oneshot::Sender<()>, tokio::task::JoinHandle<()>) {
+) -> (
+    u16,
+    Arc<AtomicU64>,
+    oneshot::Sender<()>,
+    tokio::task::JoinHandle<()>,
+) {
     let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
     let port = listener.local_addr().unwrap().port();
     let incoming = TcpListenerStream::new(listener);
     let (shutdown_tx, shutdown_rx) = oneshot::channel();
+    let opens = Arc::new(AtomicU64::new(0));
     let service = SpikeService {
         closed: Arc::new(Mutex::new(None)),
+        opens: Arc::clone(&opens),
     };
     let identity = Identity::from_pem(pki.server_cert_pem.clone(), pki.server_key_pem.clone());
     let ca = Certificate::from_pem(pki.ca_pem.clone());
@@ -246,7 +259,7 @@ async fn serve_rejection_probe(
             .await
             .unwrap();
     });
-    (port, shutdown_tx, server)
+    (port, opens, shutdown_tx, server)
 }
 
 async fn assert_tls_rejected(port: u16, tls: ClientTlsConfig) {
@@ -287,7 +300,7 @@ async fn assert_tls_rejected(port: u16, tls: ClientTlsConfig) {
 async fn grpc_candidate_rejects_an_untrusted_server_ca_before_dispatch() {
     let server_pki = support::TestPki::generate();
     let untrusted_pki = support::TestPki::generate();
-    let (port, shutdown, server) = serve_rejection_probe(&server_pki).await;
+    let (port, opens, shutdown, server) = serve_rejection_probe(&server_pki).await;
     assert_tls_rejected(
         port,
         ClientTlsConfig::new()
@@ -299,6 +312,7 @@ async fn grpc_candidate_rejects_an_untrusted_server_ca_before_dispatch() {
             .domain_name("localhost"),
     )
     .await;
+    assert_eq!(opens.load(Ordering::SeqCst), 0);
     shutdown.send(()).unwrap();
     server.await.unwrap();
 }
@@ -306,7 +320,7 @@ async fn grpc_candidate_rejects_an_untrusted_server_ca_before_dispatch() {
 #[tokio::test]
 async fn grpc_candidate_rejects_a_missing_client_certificate_before_dispatch() {
     let pki = support::TestPki::generate();
-    let (port, shutdown, server) = serve_rejection_probe(&pki).await;
+    let (port, opens, shutdown, server) = serve_rejection_probe(&pki).await;
     assert_tls_rejected(
         port,
         ClientTlsConfig::new()
@@ -314,8 +328,84 @@ async fn grpc_candidate_rejects_a_missing_client_certificate_before_dispatch() {
             .domain_name("localhost"),
     )
     .await;
+    assert_eq!(opens.load(Ordering::SeqCst), 0);
     shutdown.send(()).unwrap();
     server.await.unwrap();
+}
+
+async fn assert_grpc_profile_rejected(pki: support::TestPki, tls: ClientTlsConfig) {
+    let (port, opens, shutdown, server) = serve_rejection_probe(&pki).await;
+    assert_tls_rejected(port, tls).await;
+    assert_eq!(
+        opens.load(Ordering::SeqCst),
+        0,
+        "gRPC security rejection reached the generated service"
+    );
+    shutdown.send(()).unwrap();
+    server.await.unwrap();
+}
+
+#[tokio::test]
+async fn grpc_candidate_rejects_hostname_time_eku_and_wrong_client_ca_before_dispatch() {
+    use support::{LeafPurpose, LeafValidity, PkiProfile, TestPki};
+
+    let wrong_name = TestPki::generate();
+    let wrong_name_tls = ClientTlsConfig::new()
+        .ca_certificate(Certificate::from_pem(wrong_name.ca_pem.clone()))
+        .identity(Identity::from_pem(
+            wrong_name.client_cert_pem.clone(),
+            wrong_name.client_key_pem.clone(),
+        ))
+        .domain_name("wrong.example");
+    assert_grpc_profile_rejected(wrong_name, wrong_name_tls).await;
+
+    for profile in [
+        PkiProfile {
+            server_validity: LeafValidity::Expired,
+            ..PkiProfile::default()
+        },
+        PkiProfile {
+            server_validity: LeafValidity::NotYetValid,
+            ..PkiProfile::default()
+        },
+        PkiProfile {
+            client_validity: LeafValidity::Expired,
+            ..PkiProfile::default()
+        },
+        PkiProfile {
+            client_validity: LeafValidity::NotYetValid,
+            ..PkiProfile::default()
+        },
+        PkiProfile {
+            server_purpose: LeafPurpose::Wrong,
+            ..PkiProfile::default()
+        },
+        PkiProfile {
+            client_purpose: LeafPurpose::Wrong,
+            ..PkiProfile::default()
+        },
+    ] {
+        let pki = TestPki::generate_with(profile);
+        let tls = ClientTlsConfig::new()
+            .ca_certificate(Certificate::from_pem(pki.ca_pem.clone()))
+            .identity(Identity::from_pem(
+                pki.client_cert_pem.clone(),
+                pki.client_key_pem.clone(),
+            ))
+            .domain_name("localhost");
+        assert_grpc_profile_rejected(pki, tls).await;
+    }
+
+    let server_pki = TestPki::generate();
+    let foreign = TestPki::generate();
+    let tls = ClientTlsConfig::new()
+        .ca_certificate(Certificate::from_pem(server_pki.ca_pem.clone()))
+        .identity(Identity::from_pem(
+            foreign.client_cert_pem,
+            foreign.client_key_pem,
+        ))
+        .domain_name("localhost");
+    assert_grpc_profile_rejected(server_pki, tls).await;
 }
 
 #[test]

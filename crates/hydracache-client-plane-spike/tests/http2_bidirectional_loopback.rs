@@ -2,8 +2,8 @@ use bytes::Bytes;
 use h2::{client, server};
 use http::{Request, Response};
 use hydracache_client_plane_spike::{
-    BootstrapConnection, ConnectionGeneration, FrameKind, PeerIdentity, ResourceSnapshot,
-    SpikeConnection, SpikeFrame, SpikeLimits, TransportCandidate, HC2_GENERATION,
+    BootstrapConnection, ClientAuthorizationPolicy, ConnectionGeneration, FrameKind, PeerIdentity,
+    ResourceSnapshot, SpikeConnection, SpikeFrame, SpikeLimits, TransportCandidate, HC2_GENERATION,
 };
 use rustls::pki_types::ServerName;
 use std::collections::BTreeSet;
@@ -23,6 +23,8 @@ fn ready_connection() -> SpikeConnection {
     .verify_tls(true)
     .unwrap()
     .authenticate(PeerIdentity::verified("h2-client", "h2-tenant"))
+    .unwrap()
+    .authorize(&ClientAuthorizationPolicy::exact("h2-client", "h2-tenant").unwrap())
     .unwrap()
     .negotiate(HC2_GENERATION)
     .unwrap()

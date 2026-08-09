@@ -1,9 +1,11 @@
 use std::collections::BTreeSet;
+use std::sync::atomic::{AtomicU64, Ordering};
+use std::sync::Arc;
 use std::time::Duration;
 
 use hydracache_client_plane_spike::{
-    BootstrapConnection, ConnectionGeneration, FrameKind, PeerIdentity, ResourceSnapshot,
-    SpikeConnection, SpikeFrame, SpikeLimits, TransportCandidate, HC2_GENERATION,
+    BootstrapConnection, ClientAuthorizationPolicy, ConnectionGeneration, FrameKind, PeerIdentity,
+    ResourceSnapshot, SpikeConnection, SpikeFrame, SpikeLimits, TransportCandidate, HC2_GENERATION,
 };
 use rustls::pki_types::ServerName;
 use tokio::io::{AsyncRead, AsyncReadExt, AsyncWriteExt};
@@ -42,6 +44,8 @@ fn ready_connection() -> SpikeConnection {
     .verify_tls(true)
     .unwrap()
     .authenticate(PeerIdentity::verified("loopback-client", "loopback-tenant"))
+    .unwrap()
+    .authorize(&ClientAuthorizationPolicy::exact("loopback-client", "loopback-tenant").unwrap())
     .unwrap()
     .negotiate(HC2_GENERATION)
     .unwrap()
@@ -182,22 +186,28 @@ async fn dedicated_tcp_candidate_round_trips_on_a_real_loopback_socket() {
 async fn assert_rustls_handshake_rejected(
     acceptor: tokio_rustls::TlsAcceptor,
     connector: tokio_rustls::TlsConnector,
+    server_name: &'static str,
 ) {
     let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
     let address = listener.local_addr().unwrap();
+    let dispatch_count = Arc::new(AtomicU64::new(0));
+    let server_dispatch_count = Arc::clone(&dispatch_count);
     let server = tokio::spawn(async move {
         let (socket, _) = listener.accept().await.unwrap();
-        acceptor.accept(socket).await
+        if let Ok(mut stream) = acceptor.accept(socket).await {
+            let mut byte = [0_u8; 1];
+            if matches!(
+                tokio::time::timeout(Duration::from_secs(1), stream.read(&mut byte)).await,
+                Ok(Ok(1))
+            ) {
+                server_dispatch_count.fetch_add(1, Ordering::SeqCst);
+            }
+        }
     });
     let socket = TcpStream::connect(address).await.unwrap();
     let client = connector
-        .connect(ServerName::try_from("localhost").unwrap(), socket)
+        .connect(ServerName::try_from(server_name).unwrap(), socket)
         .await;
-    let server = server.await.unwrap();
-    assert!(
-        server.is_err(),
-        "server unexpectedly accepted invalid TLS identity"
-    );
     let client_rejected = match client {
         Err(_) => true,
         Ok(mut stream) => {
@@ -210,6 +220,34 @@ async fn assert_rustls_handshake_rejected(
         }
     };
     assert!(client_rejected, "client did not observe the TLS rejection");
+    server.await.unwrap();
+    assert_eq!(
+        dispatch_count.load(Ordering::SeqCst),
+        0,
+        "invalid TLS attempt reached protocol dispatch"
+    );
+}
+
+async fn assert_rustls_handshake_accepted(
+    acceptor: tokio_rustls::TlsAcceptor,
+    connector: tokio_rustls::TlsConnector,
+) {
+    let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
+    let address = listener.local_addr().unwrap();
+    let server = tokio::spawn(async move {
+        let (socket, _) = listener.accept().await.unwrap();
+        let mut stream = acceptor.accept(socket).await.unwrap();
+        let mut byte = [0_u8; 1];
+        stream.read_exact(&mut byte).await.unwrap();
+        byte
+    });
+    let socket = TcpStream::connect(address).await.unwrap();
+    let mut client = connector
+        .connect(ServerName::try_from("localhost").unwrap(), socket)
+        .await
+        .unwrap();
+    client.write_all(b"R").await.unwrap();
+    assert_eq!(server.await.unwrap(), [b'R']);
 }
 
 #[tokio::test]
@@ -219,6 +257,7 @@ async fn rustls_candidates_reject_an_untrusted_ca_before_protocol_dispatch() {
     assert_rustls_handshake_rejected(
         server_pki.server_acceptor(),
         untrusted_pki.client_connector(),
+        "localhost",
     )
     .await;
 }
@@ -229,6 +268,98 @@ async fn rustls_candidates_reject_a_missing_client_certificate_before_protocol_d
     assert_rustls_handshake_rejected(
         pki.server_acceptor(),
         pki.client_connector_without_identity(),
+        "localhost",
+    )
+    .await;
+}
+
+#[tokio::test]
+async fn rustls_candidates_reject_hostname_time_eku_ca_and_protocol_policy_failures() {
+    use support::{LeafPurpose, LeafValidity, PkiProfile, TestPki};
+
+    let valid = TestPki::generate();
+    assert_rustls_handshake_rejected(
+        valid.server_acceptor(),
+        valid.client_connector(),
+        "wrong.example",
+    )
+    .await;
+
+    for profile in [
+        PkiProfile {
+            server_validity: LeafValidity::Expired,
+            ..PkiProfile::default()
+        },
+        PkiProfile {
+            server_validity: LeafValidity::NotYetValid,
+            ..PkiProfile::default()
+        },
+        PkiProfile {
+            client_validity: LeafValidity::Expired,
+            ..PkiProfile::default()
+        },
+        PkiProfile {
+            client_validity: LeafValidity::NotYetValid,
+            ..PkiProfile::default()
+        },
+        PkiProfile {
+            server_purpose: LeafPurpose::Wrong,
+            ..PkiProfile::default()
+        },
+        PkiProfile {
+            client_purpose: LeafPurpose::Wrong,
+            ..PkiProfile::default()
+        },
+    ] {
+        let pki = TestPki::generate_with(profile);
+        assert_rustls_handshake_rejected(
+            pki.server_acceptor(),
+            pki.client_connector(),
+            "localhost",
+        )
+        .await;
+    }
+
+    let server_pki = TestPki::generate();
+    let foreign_client = TestPki::generate();
+    assert_rustls_handshake_rejected(
+        server_pki.server_acceptor(),
+        server_pki.client_connector_with_identity(&foreign_client),
+        "localhost",
+    )
+    .await;
+
+    let version_pki = TestPki::generate();
+    assert_rustls_handshake_rejected(
+        version_pki.server_acceptor_tls13_only(),
+        version_pki.client_connector_tls12_only(),
+        "localhost",
+    )
+    .await;
+
+    let cipher_pki = TestPki::generate();
+    assert_rustls_handshake_rejected(
+        cipher_pki.server_acceptor_aes256_only(),
+        cipher_pki.client_connector_aes128_only(),
+        "localhost",
+    )
+    .await;
+}
+
+#[tokio::test]
+async fn rustls_candidates_accept_ca_overlap_then_reject_retired_client_identity() {
+    let old = support::TestPki::generate();
+    let current = support::TestPki::generate();
+
+    assert_rustls_handshake_accepted(
+        current.server_acceptor_trusting(&[&old, &current]),
+        current.client_connector_with_identity(&old),
+    )
+    .await;
+    assert_rustls_handshake_rejected(
+        current.server_acceptor(),
+        current.client_connector_with_identity(&old),
+        "localhost",
     )
     .await;
 }

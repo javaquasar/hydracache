@@ -16,8 +16,10 @@ Current implementation evidence:
 - real loopback socket evidence: dedicated TCP, HTTP/2, and gRPC green with
   256 correlated invocations plus interleaved reply, heartbeat, and event;
 - CA-signed TLS plus required client certificate: all three candidates green;
-  wrong-CA and missing-client-certificate rejection is green both at the shared
-  rustls boundary used by TCP/HTTP2 and at the generated gRPC boundary;
+  the H13 hostname/time/EKU/CA/version/authorization matrix fails before
+  dispatch at the shared rustls boundary used by TCP/HTTP2 and the generated
+  gRPC boundary; chain bounds and rotation are recorded in
+  [`HC2_TLS_AUTHORIZATION_POLICY.md`](HC2_TLS_AUTHORIZATION_POLICY.md);
 - generated Rust/Java protobuf golden frame: green; generated Python pending.
 - selectable server/client transport policy: executable in the W0 spike with
   maturity bounds, an unforgeable cluster-bound authenticated-discovery type,
@@ -25,9 +27,10 @@ Current implementation evidence:
   monotonic rollback/equivocation protection across reconnects, pinned/ordered
   choice, and downgrade refusal after every security or protocol failure;
 - typestate-enforced bootstrap lifecycle: `Created -> TlsVerified ->
-  Authenticated -> Ready`, followed by one bounded runtime for `Ready ->
-  Draining -> Closed`; compile-fail tests make early dispatch/negotiation
-  unavailable, while runtime tests reject new work during drain.
+  Authenticated -> Authorized -> Ready`, followed by one bounded runtime for
+  `Ready -> Draining -> Closed`; compile-fail tests make early
+  dispatch/negotiation unavailable, while runtime tests reject new work during
+  drain.
 
 Passing the current sans-I/O harness proves lifecycle invariants only. It does
 not prove a networking stack, TLS handshake, wire interoperability, daemon

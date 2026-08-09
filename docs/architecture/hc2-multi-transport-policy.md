@@ -133,10 +133,10 @@ and deterministic cleanup.
 
 Bootstrap ordering is enforced with linear typestate:
 `BootstrapConnection<Created> -> <TlsVerified> -> <Authenticated> ->
-SpikeConnection(Ready)`. Each transition consumes the previous owner; dispatch
-and negotiation methods do not exist on earlier states. Generics stop at the
-ready boundary, where one runtime owns ready/draining/closed concurrency and
-idempotent cleanup.
+<Authorized> -> SpikeConnection(Ready)`. Each transition consumes the previous
+owner; dispatch and negotiation methods do not exist on earlier states.
+Generics stop at the ready boundary, where one runtime owns
+ready/draining/closed concurrency and idempotent cleanup.
 
 ## Twelve-point strengthening program
 

@@ -15,6 +15,7 @@ use thiserror::Error;
 pub mod contract;
 pub mod endpoint;
 pub mod policy;
+pub mod security;
 
 /// First proposed HC/2 wire generation. It is isolated from HC/1 v1-v4.
 pub const HC2_GENERATION: u16 = 5;
@@ -283,6 +284,73 @@ pub struct TlsVerified;
 #[derive(Debug)]
 pub struct Authenticated;
 
+/// The authenticated peer passed the configured application authorization policy.
+///
+/// ```compile_fail
+/// use hydracache_client_plane_spike::{
+///     BootstrapConnection, ConnectionGeneration, PeerIdentity, SpikeLimits,
+///     TransportCandidate, HC2_GENERATION,
+/// };
+/// let authenticated = BootstrapConnection::new(
+///     TransportCandidate::GrpcBidirectional,
+///     ConnectionGeneration::FIRST,
+///     SpikeLimits::default(),
+/// )
+/// .verify_tls(true).unwrap()
+/// .authenticate(PeerIdentity::verified("client", "tenant")).unwrap();
+/// let _ = authenticated.negotiate(HC2_GENERATION);
+/// ```
+#[derive(Debug)]
+pub struct Authorized;
+
+/// Bounded exact-match authorization policy for authenticated client identities.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ClientAuthorizationPolicy {
+    allowed: BTreeSet<(String, String)>,
+}
+
+impl ClientAuthorizationPolicy {
+    /// Build a bounded allow-list. Empty policies are valid and deny every peer.
+    pub fn new<I, C, T>(rules: I) -> Result<Self, SpikeError>
+    where
+        I: IntoIterator<Item = (C, T)>,
+        C: Into<String>,
+        T: Into<String>,
+    {
+        let mut allowed = BTreeSet::new();
+        for (client_id, tenant) in rules {
+            let client_id = client_id.into();
+            let tenant = tenant.into();
+            if client_id.trim().is_empty()
+                || tenant.trim().is_empty()
+                || client_id.len() > 128
+                || tenant.len() > 128
+            {
+                return Err(SpikeError::InvalidAuthorizationPolicy);
+            }
+            allowed.insert((client_id, tenant));
+            if allowed.len() > 256 {
+                return Err(SpikeError::InvalidAuthorizationPolicy);
+            }
+        }
+        Ok(Self { allowed })
+    }
+
+    /// Build the narrow policy used by one adapter test identity.
+    pub fn exact(
+        client_id: impl Into<String>,
+        tenant: impl Into<String>,
+    ) -> Result<Self, SpikeError> {
+        Self::new([(client_id, tenant)])
+    }
+
+    fn permits(&self, identity: &PeerIdentity) -> bool {
+        self.allowed.iter().any(|(client_id, tenant)| {
+            client_id == &identity.client_id && tenant == &identity.tenant
+        })
+    }
+}
+
 /// Linear bootstrap owner. Only methods valid for `State` are available.
 ///
 /// ```compile_fail
@@ -357,6 +425,27 @@ impl BootstrapConnection<TlsVerified> {
 }
 
 impl BootstrapConnection<Authenticated> {
+    /// Consume the authenticated state only when the application policy permits it.
+    pub fn authorize(
+        self,
+        policy: &ClientAuthorizationPolicy,
+    ) -> Result<BootstrapConnection<Authorized>, SpikeError> {
+        let identity = self
+            .inner
+            .identity
+            .as_ref()
+            .ok_or(SpikeError::UnverifiedIdentity)?;
+        if !policy.permits(identity) {
+            return Err(SpikeError::UnauthorizedIdentity);
+        }
+        Ok(BootstrapConnection {
+            inner: self.inner,
+            state: PhantomData,
+        })
+    }
+}
+
+impl BootstrapConnection<Authorized> {
     /// Negotiate HC/2 and return the object-safe ready/draining runtime.
     pub fn negotiate(mut self, generation: u16) -> Result<SpikeConnection, SpikeError> {
         self.inner.negotiate(generation)?;
@@ -534,6 +623,12 @@ pub enum SpikeError {
     /// The peer identity is absent, unverified, or unbounded.
     #[error("peer identity was not verified before negotiation")]
     UnverifiedIdentity,
+    /// The authenticated peer is not allowed by the application policy.
+    #[error("authenticated peer is not authorized")]
+    UnauthorizedIdentity,
+    /// The authorization policy contains an empty, oversized, or excessive rule.
+    #[error("authorization policy is invalid or exceeds its bound")]
+    InvalidAuthorizationPolicy,
     /// A connection-owned resource bound was reached.
     #[error("connection resource limit reached: {0}")]
     ResourceLimit(&'static str),
