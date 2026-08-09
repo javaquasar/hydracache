@@ -120,6 +120,13 @@ identity state, negotiation, correlation, deadlines, bounded queues,
 subscription repair, cancellation, session heartbeat, stable errors, metrics,
 and deterministic cleanup.
 
+Bootstrap ordering is enforced with linear typestate:
+`BootstrapConnection<Created> -> <TlsVerified> -> <Authenticated> ->
+SpikeConnection(Ready)`. Each transition consumes the previous owner; dispatch
+and negotiation methods do not exist on earlier states. Generics stop at the
+ready boundary, where one runtime owns ready/draining/closed concurrency and
+idempotent cleanup.
+
 ## Twelve-point strengthening program
 
 The following program is normative for the 0.68 work packages. A row is not

@@ -23,7 +23,7 @@
 | H06 | Endpoint authority is an unparsed string | complete | `feat(client-plane): parse canonical endpoint identities` | strict URI corpus + adapter/SNI/origin policy |
 | H07 | Discovery rollback is not prevented | open | — | cluster binding + monotonic epoch |
 | H08 | Advertisement cannot represent multi-node endpoints | open | — | node-scoped endpoint identities |
-| H09 | Lifecycle checks are runtime-only, not typestate | open | — | compile-fail + runtime transition proof |
+| H09 | Lifecycle checks are runtime-only, not typestate | complete | `feat(client-plane): make bootstrap sequencing typestate-safe` | compile-fail bootstrap + runtime race/cleanup tests |
 | H10 | Connection generation/stale-message fencing is absent | open | — | late old-generation reply/event refusal |
 | H11 | Reconnect and subscription/session repair are absent | open | — | deterministic reconnect/repair matrix |
 | H12 | Resource bounds omit byte/retry/session/global budgets | open | — | every owner bounded and observable |
@@ -235,6 +235,15 @@ drain, concurrent cancellation, idempotent close, and zero accounting.
 limit typestate to bootstrap and expose object-safe ready runtime.
 
 **Done.** Invalid bootstrap sequencing is unrepresentable in production code.
+
+**Completion evidence (2026-08-09).** `BootstrapConnection<State>` owns the
+linear `Created -> TlsVerified -> Authenticated -> Ready` transition. Each
+successful method consumes the previous state, and only negotiation yields the
+bounded `SpikeConnection` runtime used for dispatch, drain, and close. The old
+public runtime bootstrap methods are private. Rustdoc compile-fail tests prove
+that created connections expose neither dispatch nor negotiation. Runtime tests
+retain negative TLS/identity checks, prove drain behavior, cancellation versus
+completion has exactly one winner, idempotent close, and zero accounting.
 
 ## H10. Fence every connection generation and stale message
 

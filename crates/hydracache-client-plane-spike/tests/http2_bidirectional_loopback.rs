@@ -2,8 +2,8 @@ use bytes::Bytes;
 use h2::{client, server};
 use http::{Request, Response};
 use hydracache_client_plane_spike::{
-    FrameKind, PeerIdentity, ResourceSnapshot, SpikeConnection, SpikeFrame, SpikeLimits,
-    TransportCandidate, HC2_GENERATION,
+    BootstrapConnection, FrameKind, PeerIdentity, ResourceSnapshot, SpikeConnection, SpikeFrame,
+    SpikeLimits, TransportCandidate, HC2_GENERATION,
 };
 use rustls::pki_types::ServerName;
 use std::collections::BTreeSet;
@@ -13,16 +13,16 @@ use tokio::sync::oneshot;
 mod support;
 
 fn ready_connection() -> SpikeConnection {
-    let mut connection = SpikeConnection::new(
+    BootstrapConnection::new(
         TransportCandidate::Http2Bidirectional,
         SpikeLimits::default(),
-    );
-    connection.mark_tls_verified(true).unwrap();
-    connection
-        .authenticate(PeerIdentity::verified("h2-client", "h2-tenant"))
-        .unwrap();
-    connection.negotiate(HC2_GENERATION).unwrap();
-    connection
+    )
+    .verify_tls(true)
+    .unwrap()
+    .authenticate(PeerIdentity::verified("h2-client", "h2-tenant"))
+    .unwrap()
+    .negotiate(HC2_GENERATION)
+    .unwrap()
 }
 
 #[tokio::test]

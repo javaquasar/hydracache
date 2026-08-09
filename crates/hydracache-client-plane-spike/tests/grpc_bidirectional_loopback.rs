@@ -4,8 +4,8 @@ use std::sync::{Arc, Mutex};
 
 use futures_util::Stream;
 use hydracache_client_plane_spike::{
-    FrameKind, PeerIdentity, ResourceSnapshot, SpikeConnection, SpikeFrame, SpikeLimits,
-    TransportCandidate, HC2_GENERATION,
+    BootstrapConnection, FrameKind, PeerIdentity, ResourceSnapshot, SpikeConnection, SpikeFrame,
+    SpikeLimits, TransportCandidate, HC2_GENERATION,
 };
 use prost::Message;
 use tokio::net::TcpListener;
@@ -36,16 +36,16 @@ struct SpikeService {
 }
 
 fn ready_connection() -> SpikeConnection {
-    let mut connection = SpikeConnection::new(
+    BootstrapConnection::new(
         TransportCandidate::GrpcBidirectional,
         SpikeLimits::default(),
-    );
-    connection.mark_tls_verified(true).unwrap();
-    connection
-        .authenticate(PeerIdentity::verified("grpc-client", "grpc-tenant"))
-        .unwrap();
-    connection.negotiate(HC2_GENERATION).unwrap();
-    connection
+    )
+    .verify_tls(true)
+    .unwrap()
+    .authenticate(PeerIdentity::verified("grpc-client", "grpc-tenant"))
+    .unwrap()
+    .negotiate(HC2_GENERATION)
+    .unwrap()
 }
 
 fn to_proto(frame: SpikeFrame) -> SpikeEnvelope {

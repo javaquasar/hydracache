@@ -6,6 +6,7 @@
 //! HTTP/2, gRPC, cross-language generation, or daemon interoperability.
 
 use std::collections::{BTreeSet, VecDeque};
+use std::marker::PhantomData;
 
 use thiserror::Error;
 
@@ -156,6 +157,87 @@ pub enum ConnectionState {
     Ready,
     Draining,
     Closed,
+}
+
+/// Initial HC/2 bootstrap state.
+#[derive(Debug)]
+pub struct Created;
+
+/// Transport authentication completed successfully.
+#[derive(Debug)]
+pub struct TlsVerified;
+
+/// Peer identity was derived and validated from the authenticated channel.
+#[derive(Debug)]
+pub struct Authenticated;
+
+/// Linear bootstrap owner. Only methods valid for `State` are available.
+///
+/// ```compile_fail
+/// use hydracache_client_plane_spike::{
+///     BootstrapConnection, Created, SpikeFrame, SpikeLimits, TransportCandidate,
+/// };
+/// let mut connection: BootstrapConnection<Created> =
+///     BootstrapConnection::new(TransportCandidate::GrpcBidirectional, SpikeLimits::default());
+/// let _ = connection.receive(&[]);
+/// ```
+///
+/// ```compile_fail
+/// use hydracache_client_plane_spike::{
+///     BootstrapConnection, Created, SpikeLimits, TransportCandidate, HC2_GENERATION,
+/// };
+/// let connection: BootstrapConnection<Created> =
+///     BootstrapConnection::new(TransportCandidate::GrpcBidirectional, SpikeLimits::default());
+/// let _ = connection.negotiate(HC2_GENERATION);
+/// ```
+#[derive(Debug)]
+pub struct BootstrapConnection<State> {
+    inner: SpikeConnection,
+    state: PhantomData<State>,
+}
+
+impl BootstrapConnection<Created> {
+    /// Allocate a disconnected bootstrap owner with bounded resources.
+    pub fn new(candidate: TransportCandidate, limits: SpikeLimits) -> Self {
+        Self {
+            inner: SpikeConnection::new(candidate, limits),
+            state: PhantomData,
+        }
+    }
+
+    /// Consume the created state after the adapter's TLS verifier completes.
+    pub fn verify_tls(
+        mut self,
+        verified: bool,
+    ) -> Result<BootstrapConnection<TlsVerified>, SpikeError> {
+        self.inner.mark_tls_verified(verified)?;
+        Ok(BootstrapConnection {
+            inner: self.inner,
+            state: PhantomData,
+        })
+    }
+}
+
+impl BootstrapConnection<TlsVerified> {
+    /// Consume the TLS state after deriving a bounded peer identity.
+    pub fn authenticate(
+        mut self,
+        identity: PeerIdentity,
+    ) -> Result<BootstrapConnection<Authenticated>, SpikeError> {
+        self.inner.authenticate(identity)?;
+        Ok(BootstrapConnection {
+            inner: self.inner,
+            state: PhantomData,
+        })
+    }
+}
+
+impl BootstrapConnection<Authenticated> {
+    /// Negotiate HC/2 and return the object-safe ready/draining runtime.
+    pub fn negotiate(mut self, generation: u16) -> Result<SpikeConnection, SpikeError> {
+        self.inner.negotiate(generation)?;
+        Ok(self.inner)
+    }
 }
 
 impl PeerIdentity {
@@ -337,7 +419,7 @@ pub struct SpikeConnection {
 
 impl SpikeConnection {
     /// Create one disconnected candidate spike runtime.
-    pub fn new(candidate: TransportCandidate, limits: SpikeLimits) -> Self {
+    fn new(candidate: TransportCandidate, limits: SpikeLimits) -> Self {
         Self {
             candidate,
             codec: SpikeCodec::new(candidate, limits.max_frame_bytes),
@@ -366,7 +448,7 @@ impl SpikeConnection {
     }
 
     /// Record successful transport-level TLS verification before identity use.
-    pub fn mark_tls_verified(&mut self, verified: bool) -> Result<(), SpikeError> {
+    fn mark_tls_verified(&mut self, verified: bool) -> Result<(), SpikeError> {
         self.ensure_state(ConnectionState::Created, "TLS verification")?;
         if !verified {
             return Err(SpikeError::UnverifiedIdentity);
@@ -376,7 +458,7 @@ impl SpikeConnection {
     }
 
     /// Install a TLS-authenticated peer identity before negotiation.
-    pub fn authenticate(&mut self, identity: PeerIdentity) -> Result<(), SpikeError> {
+    fn authenticate(&mut self, identity: PeerIdentity) -> Result<(), SpikeError> {
         self.ensure_state(ConnectionState::TlsVerified, "authentication")?;
         if !identity.tls_verified
             || identity.client_id.trim().is_empty()
@@ -392,7 +474,7 @@ impl SpikeConnection {
     }
 
     /// Negotiate the isolated HC/2 generation after authentication.
-    pub fn negotiate(&mut self, generation: u16) -> Result<(), SpikeError> {
+    fn negotiate(&mut self, generation: u16) -> Result<(), SpikeError> {
         self.ensure_state(ConnectionState::Authenticated, "negotiation")?;
         if self.identity.is_none() {
             return Err(SpikeError::UnverifiedIdentity);

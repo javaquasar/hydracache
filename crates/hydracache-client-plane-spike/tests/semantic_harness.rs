@@ -1,18 +1,17 @@
 use hydracache_client_plane_spike::{
-    ConnectionMetrics, ConnectionState, FrameKind, PeerIdentity, ResourceSnapshot, SpikeConnection,
-    SpikeError, SpikeFrame, SpikeLimits, TransportCandidate, HC2_GENERATION,
+    BootstrapConnection, ConnectionMetrics, ConnectionState, FrameKind, PeerIdentity,
+    ResourceSnapshot, SpikeConnection, SpikeError, SpikeFrame, SpikeLimits, TransportCandidate,
+    HC2_GENERATION,
 };
 
 fn ready(candidate: TransportCandidate, limits: SpikeLimits) -> SpikeConnection {
-    let mut connection = SpikeConnection::new(candidate, limits);
-    connection.mark_tls_verified(true).expect("verified TLS");
-    connection
+    BootstrapConnection::new(candidate, limits)
+        .verify_tls(true)
+        .expect("verified TLS")
         .authenticate(PeerIdentity::verified("w0-client", "w0-tenant"))
-        .expect("verified identity");
-    connection
+        .expect("verified identity")
         .negotiate(HC2_GENERATION)
-        .expect("current generation");
-    connection
+        .expect("current generation")
 }
 
 fn exercise_common_semantics(candidate: TransportCandidate) {
@@ -115,7 +114,27 @@ fn disconnect_cancels_every_pending_invocation_and_registration() {
         connection.heartbeat().unwrap();
 
         assert_eq!(connection.disconnect(), ResourceSnapshot::default());
+        assert_eq!(connection.disconnect(), ResourceSnapshot::default());
         assert_eq!(connection.begin_invocation(999), Err(SpikeError::Closed));
+    }
+}
+
+#[test]
+fn cancellation_and_completion_races_have_exactly_one_winner() {
+    for candidate in TransportCandidate::ALL {
+        let mut connection = ready(candidate, SpikeLimits::default());
+        connection.begin_invocation(1).unwrap();
+        assert!(connection.cancel_invocation(1).unwrap());
+        assert_eq!(
+            connection.complete_invocation(1, b"late".to_vec()),
+            Err(SpikeError::UnknownInvocation)
+        );
+        assert!(!connection.cancel_invocation(1).unwrap());
+
+        connection.begin_invocation(2).unwrap();
+        connection.complete_invocation(2, b"done".to_vec()).unwrap();
+        assert!(!connection.cancel_invocation(2).unwrap());
+        assert_eq!(connection.resources().pending_invocations, 0);
     }
 }
 
@@ -162,30 +181,23 @@ fn candidate_prefaces_cannot_cross_decode() {
 }
 
 #[test]
-fn authentication_precedes_negotiation_and_dispatch() {
+fn bootstrap_rejects_unverified_tls_and_identity() {
     for candidate in TransportCandidate::ALL {
-        let mut connection = SpikeConnection::new(candidate, SpikeLimits::default());
         assert!(matches!(
-            connection.negotiate(HC2_GENERATION),
-            Err(SpikeError::InvalidState {
-                actual: ConnectionState::Created,
-                ..
-            })
+            BootstrapConnection::new(candidate, SpikeLimits::default()).verify_tls(false),
+            Err(SpikeError::UnverifiedIdentity)
         ));
-        assert_eq!(
-            connection.mark_tls_verified(false),
+        assert!(matches!(
+            BootstrapConnection::new(candidate, SpikeLimits::default())
+                .verify_tls(true)
+                .unwrap()
+                .authenticate(PeerIdentity {
+                    client_id: "client".into(),
+                    tenant: "tenant".into(),
+                    tls_verified: false,
+                }),
             Err(SpikeError::UnverifiedIdentity)
-        );
-        connection.mark_tls_verified(true).unwrap();
-        assert_eq!(
-            connection.authenticate(PeerIdentity {
-                client_id: "client".into(),
-                tenant: "tenant".into(),
-                tls_verified: false,
-            }),
-            Err(SpikeError::UnverifiedIdentity)
-        );
-        assert_eq!(connection.dispatch_count(), 0);
+        ));
     }
 }
 

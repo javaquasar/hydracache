@@ -23,9 +23,10 @@ Current implementation evidence:
   maturity bounds, an unforgeable cluster-bound authenticated-discovery type,
   canonical adapter-bound endpoint identities, pinned/ordered choice, and
   downgrade refusal after every security or protocol failure;
-- explicit connection lifecycle: `Created -> TlsVerified -> Authenticated ->
-  Ready -> Draining -> Closed`, with dispatch before `Ready` and new work while
-  draining rejected.
+- typestate-enforced bootstrap lifecycle: `Created -> TlsVerified ->
+  Authenticated -> Ready`, followed by one bounded runtime for `Ready ->
+  Draining -> Closed`; compile-fail tests make early dispatch/negotiation
+  unavailable, while runtime tests reject new work during drain.
 
 Passing the current sans-I/O harness proves lifecycle invariants only. It does
 not prove a networking stack, TLS handshake, wire interoperability, daemon

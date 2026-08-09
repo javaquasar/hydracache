@@ -2,8 +2,8 @@ use std::collections::BTreeSet;
 use std::time::Duration;
 
 use hydracache_client_plane_spike::{
-    FrameKind, PeerIdentity, ResourceSnapshot, SpikeConnection, SpikeFrame, SpikeLimits,
-    TransportCandidate, HC2_GENERATION,
+    BootstrapConnection, FrameKind, PeerIdentity, ResourceSnapshot, SpikeConnection, SpikeFrame,
+    SpikeLimits, TransportCandidate, HC2_GENERATION,
 };
 use rustls::pki_types::ServerName;
 use tokio::io::{AsyncRead, AsyncReadExt, AsyncWriteExt};
@@ -33,14 +33,13 @@ where
 }
 
 fn ready_connection() -> SpikeConnection {
-    let mut connection =
-        SpikeConnection::new(TransportCandidate::DedicatedTcpTls, SpikeLimits::default());
-    connection.mark_tls_verified(true).unwrap();
-    connection
+    BootstrapConnection::new(TransportCandidate::DedicatedTcpTls, SpikeLimits::default())
+        .verify_tls(true)
+        .unwrap()
         .authenticate(PeerIdentity::verified("loopback-client", "loopback-tenant"))
-        .unwrap();
-    connection.negotiate(HC2_GENERATION).unwrap();
-    connection
+        .unwrap()
+        .negotiate(HC2_GENERATION)
+        .unwrap()
 }
 
 #[tokio::test]
