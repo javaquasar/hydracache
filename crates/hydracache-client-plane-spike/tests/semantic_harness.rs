@@ -1,17 +1,112 @@
 use hydracache_client_plane_spike::{
-    BootstrapConnection, ConnectionMetrics, ConnectionState, FrameKind, PeerIdentity,
-    ResourceSnapshot, SpikeConnection, SpikeError, SpikeFrame, SpikeLimits, TransportCandidate,
-    HC2_GENERATION,
+    BootstrapConnection, ConnectionGeneration, ConnectionMetrics, ConnectionState, FrameKind,
+    PeerIdentity, ResourceSnapshot, SpikeConnection, SpikeError, SpikeFrame, SpikeLimits,
+    TransportCandidate, HC2_GENERATION,
 };
 
+const CONNECTION_GENERATION: ConnectionGeneration = ConnectionGeneration::FIRST;
+
 fn ready(candidate: TransportCandidate, limits: SpikeLimits) -> SpikeConnection {
-    BootstrapConnection::new(candidate, limits)
+    ready_at(candidate, CONNECTION_GENERATION, limits)
+}
+
+fn ready_at(
+    candidate: TransportCandidate,
+    generation: ConnectionGeneration,
+    limits: SpikeLimits,
+) -> SpikeConnection {
+    BootstrapConnection::new(candidate, generation, limits)
         .verify_tls(true)
         .expect("verified TLS")
         .authenticate(PeerIdentity::verified("w0-client", "w0-tenant"))
         .expect("verified identity")
         .negotiate(HC2_GENERATION)
         .expect("current generation")
+}
+
+#[test]
+fn stale_connection_generation_cannot_mutate_reused_ids_after_reconnect() {
+    let old = ConnectionGeneration::FIRST;
+    let current = old.checked_next().unwrap();
+
+    for candidate in TransportCandidate::ALL {
+        let mut connection = ready_at(candidate, current, SpikeLimits::default());
+        connection.begin_invocation(1).unwrap();
+        connection.register_subscription(7).unwrap();
+        let before = connection.resources();
+
+        assert_eq!(
+            connection.complete_invocation(old, 1, b"late-reply"),
+            Err(SpikeError::StaleConnectionGeneration {
+                expected: current.get(),
+                actual: old.get(),
+            })
+        );
+        assert_eq!(
+            connection.cancel_invocation(old, 1),
+            Err(SpikeError::StaleConnectionGeneration {
+                expected: current.get(),
+                actual: old.get(),
+            })
+        );
+        assert_eq!(
+            connection.push_event(old, 7, b"late-event"),
+            Err(SpikeError::StaleConnectionGeneration {
+                expected: current.get(),
+                actual: old.get(),
+            })
+        );
+        assert_eq!(
+            connection.heartbeat(old),
+            Err(SpikeError::StaleConnectionGeneration {
+                expected: current.get(),
+                actual: old.get(),
+            })
+        );
+
+        let stale_wire = connection
+            .encode(&SpikeFrame::current(
+                old,
+                FrameKind::Invocation,
+                1,
+                b"late-wire",
+            ))
+            .unwrap();
+        assert_eq!(
+            connection.receive(&stale_wire),
+            Err(SpikeError::StaleConnectionGeneration {
+                expected: current.get(),
+                actual: old.get(),
+            })
+        );
+        assert_eq!(connection.resources(), before);
+        assert_eq!(connection.dispatch_count(), 0);
+        assert_eq!(connection.metrics().stale_generation_frames, 5);
+
+        connection
+            .complete_invocation(current, 1, b"current-reply")
+            .unwrap();
+        assert!(!connection.cancel_invocation(current, 1).unwrap());
+        connection.push_event(current, 7, b"current-event").unwrap();
+        connection.heartbeat(current).unwrap();
+        while let Some(frame) = connection.drain_next() {
+            assert_eq!(frame.connection_generation, current);
+        }
+        assert_eq!(connection.resources().pending_invocations, 0);
+    }
+}
+
+#[test]
+fn connection_generation_is_nonzero_monotonic_and_never_wraps() {
+    assert_eq!(
+        ConnectionGeneration::new(0),
+        Err(SpikeError::InvalidConnectionGeneration)
+    );
+    let maximum = ConnectionGeneration::new(u64::MAX).unwrap();
+    assert_eq!(
+        maximum.checked_next(),
+        Err(SpikeError::ConnectionGenerationExhausted)
+    );
 }
 
 fn exercise_common_semantics(candidate: TransportCandidate) {
@@ -38,11 +133,13 @@ fn exercise_common_semantics(candidate: TransportCandidate) {
         .register_subscription(9001)
         .expect("subscription registered");
     connection
-        .complete_invocation(1, b"ok".to_vec())
+        .complete_invocation(CONNECTION_GENERATION, 1, b"ok".to_vec())
         .expect("reply queued");
-    connection.heartbeat().expect("heartbeat queued");
     connection
-        .push_event(9001, b"entry-upserted".to_vec())
+        .heartbeat(CONNECTION_GENERATION)
+        .expect("heartbeat queued");
+    connection
+        .push_event(CONNECTION_GENERATION, 9001, b"entry-upserted".to_vec())
         .expect("event pushed");
 
     let first = connection.drain_next().expect("reply lane");
@@ -53,6 +150,7 @@ fn exercise_common_semantics(candidate: TransportCandidate) {
     assert_eq!(third.kind, FrameKind::Event);
 
     let encoded = connection.encode(&SpikeFrame::current(
+        CONNECTION_GENERATION,
         FrameKind::Invocation,
         700,
         b"get".to_vec(),
@@ -84,9 +182,15 @@ fn slow_event_consumer_is_bounded_and_reports_a_gap() {
         connection
             .register_subscription(41)
             .expect("subscription registered");
-        connection.push_event(41, b"one".to_vec()).unwrap();
-        connection.push_event(41, b"two".to_vec()).unwrap();
-        connection.push_event(41, b"three".to_vec()).unwrap();
+        connection
+            .push_event(CONNECTION_GENERATION, 41, b"one".to_vec())
+            .unwrap();
+        connection
+            .push_event(CONNECTION_GENERATION, 41, b"two".to_vec())
+            .unwrap();
+        connection
+            .push_event(CONNECTION_GENERATION, 41, b"three".to_vec())
+            .unwrap();
 
         assert_eq!(connection.resources().event_frames, 1);
         let gap = connection.drain_next().expect("explicit gap");
@@ -105,13 +209,13 @@ fn disconnect_cancels_every_pending_invocation_and_registration() {
         for subscription_id in 100..108 {
             connection.register_subscription(subscription_id).unwrap();
             connection
-                .push_event(subscription_id, b"queued".to_vec())
+                .push_event(CONNECTION_GENERATION, subscription_id, b"queued".to_vec())
                 .unwrap();
         }
         connection
-            .complete_invocation(1, b"queued".to_vec())
+            .complete_invocation(CONNECTION_GENERATION, 1, b"queued".to_vec())
             .unwrap();
-        connection.heartbeat().unwrap();
+        connection.heartbeat(CONNECTION_GENERATION).unwrap();
 
         assert_eq!(connection.disconnect(), ResourceSnapshot::default());
         assert_eq!(connection.disconnect(), ResourceSnapshot::default());
@@ -124,16 +228,24 @@ fn cancellation_and_completion_races_have_exactly_one_winner() {
     for candidate in TransportCandidate::ALL {
         let mut connection = ready(candidate, SpikeLimits::default());
         connection.begin_invocation(1).unwrap();
-        assert!(connection.cancel_invocation(1).unwrap());
+        assert!(connection
+            .cancel_invocation(CONNECTION_GENERATION, 1)
+            .unwrap());
         assert_eq!(
-            connection.complete_invocation(1, b"late".to_vec()),
+            connection.complete_invocation(CONNECTION_GENERATION, 1, b"late".to_vec()),
             Err(SpikeError::UnknownInvocation)
         );
-        assert!(!connection.cancel_invocation(1).unwrap());
+        assert!(!connection
+            .cancel_invocation(CONNECTION_GENERATION, 1)
+            .unwrap());
 
         connection.begin_invocation(2).unwrap();
-        connection.complete_invocation(2, b"done".to_vec()).unwrap();
-        assert!(!connection.cancel_invocation(2).unwrap());
+        connection
+            .complete_invocation(CONNECTION_GENERATION, 2, b"done".to_vec())
+            .unwrap();
+        assert!(!connection
+            .cancel_invocation(CONNECTION_GENERATION, 2)
+            .unwrap());
         assert_eq!(connection.resources().pending_invocations, 0);
     }
 }
@@ -144,6 +256,7 @@ fn unknown_generation_never_reaches_dispatch() {
         let mut connection = ready(candidate, SpikeLimits::default());
         let valid = connection
             .encode(&SpikeFrame::current(
+                CONNECTION_GENERATION,
                 FrameKind::Invocation,
                 1,
                 b"get".to_vec(),
@@ -174,7 +287,12 @@ fn candidate_prefaces_cannot_cross_decode() {
         SpikeLimits::default(),
     );
     let bytes = source
-        .encode(&SpikeFrame::current(FrameKind::Invocation, 1, Vec::new()))
+        .encode(&SpikeFrame::current(
+            CONNECTION_GENERATION,
+            FrameKind::Invocation,
+            1,
+            Vec::new(),
+        ))
         .unwrap();
     assert_eq!(target.receive(&bytes), Err(SpikeError::CandidateMismatch));
     assert_eq!(target.dispatch_count(), 0);
@@ -184,11 +302,12 @@ fn candidate_prefaces_cannot_cross_decode() {
 fn bootstrap_rejects_unverified_tls_and_identity() {
     for candidate in TransportCandidate::ALL {
         assert!(matches!(
-            BootstrapConnection::new(candidate, SpikeLimits::default()).verify_tls(false),
+            BootstrapConnection::new(candidate, CONNECTION_GENERATION, SpikeLimits::default())
+                .verify_tls(false),
             Err(SpikeError::UnverifiedIdentity)
         ));
         assert!(matches!(
-            BootstrapConnection::new(candidate, SpikeLimits::default())
+            BootstrapConnection::new(candidate, CONNECTION_GENERATION, SpikeLimits::default())
                 .verify_tls(true)
                 .unwrap()
                 .authenticate(PeerIdentity {
@@ -210,14 +329,19 @@ fn connection_state_machine_blocks_new_work_while_draining() {
         connection.begin_draining().unwrap();
         assert_eq!(connection.state(), ConnectionState::Draining);
         assert_eq!(connection.begin_invocation(2), Err(SpikeError::NotReady));
-        connection.complete_invocation(1, b"done".to_vec()).unwrap();
+        connection
+            .complete_invocation(CONNECTION_GENERATION, 1, b"done".to_vec())
+            .unwrap();
         assert_eq!(
             connection.drain_next().map(|frame| frame.correlation_id),
             Some(1)
         );
         assert_eq!(connection.disconnect(), ResourceSnapshot::default());
         assert_eq!(connection.state(), ConnectionState::Closed);
-        assert_eq!(connection.heartbeat(), Err(SpikeError::Closed));
+        assert_eq!(
+            connection.heartbeat(CONNECTION_GENERATION),
+            Err(SpikeError::Closed)
+        );
     }
 }
 
@@ -238,17 +362,25 @@ fn bounded_failures_are_atomic_and_observable_without_payload_data() {
             connection.begin_invocation(3),
             Err(SpikeError::ResourceLimit("pending_invocations"))
         );
-        connection.complete_invocation(1, b"private-value").unwrap();
+        connection
+            .complete_invocation(CONNECTION_GENERATION, 1, b"private-value")
+            .unwrap();
         assert_eq!(
-            connection.complete_invocation(2, b"must-remain-pending"),
+            connection.complete_invocation(CONNECTION_GENERATION, 2, b"must-remain-pending",),
             Err(SpikeError::ResourceLimit("reply_frames"))
         );
         assert_eq!(connection.resources().pending_invocations, 1);
-        assert!(connection.cancel_invocation(2).unwrap());
+        assert!(connection
+            .cancel_invocation(CONNECTION_GENERATION, 2)
+            .unwrap());
 
         connection.register_subscription(7).unwrap();
-        connection.push_event(7, b"private-event-1").unwrap();
-        connection.push_event(7, b"private-event-2").unwrap();
+        connection
+            .push_event(CONNECTION_GENERATION, 7, b"private-event-1")
+            .unwrap();
+        connection
+            .push_event(CONNECTION_GENERATION, 7, b"private-event-2")
+            .unwrap();
         assert_eq!(
             connection.metrics(),
             ConnectionMetrics {
@@ -274,7 +406,7 @@ fn subscription_ack_without_push_fails_the_common_harness_canary() {
             "an acknowledgement alone must not be mistaken for event delivery"
         );
         connection
-            .push_event(77, b"injected-event".to_vec())
+            .push_event(CONNECTION_GENERATION, 77, b"injected-event".to_vec())
             .expect("event injected");
         assert_eq!(
             connection.drain_next().map(|frame| frame.kind),
@@ -294,6 +426,7 @@ fn malformed_oversized_truncated_and_unknown_messages_fail_before_dispatch() {
         let mut connection = ready(candidate, limits);
         let valid = connection
             .encode(&SpikeFrame::current(
+                CONNECTION_GENERATION,
                 FrameKind::Invocation,
                 1,
                 b"get".to_vec(),
@@ -308,7 +441,7 @@ fn malformed_oversized_truncated_and_unknown_messages_fail_before_dispatch() {
             Err(SpikeError::LengthMismatch)
         );
         let mut unknown = valid.clone();
-        unknown[10] = 0xff;
+        unknown[18] = 0xff;
         assert_eq!(
             connection.receive(&unknown),
             Err(SpikeError::UnknownMessageKind(0xff))

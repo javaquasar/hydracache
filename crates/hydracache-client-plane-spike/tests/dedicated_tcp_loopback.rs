@@ -2,8 +2,8 @@ use std::collections::BTreeSet;
 use std::time::Duration;
 
 use hydracache_client_plane_spike::{
-    BootstrapConnection, FrameKind, PeerIdentity, ResourceSnapshot, SpikeConnection, SpikeFrame,
-    SpikeLimits, TransportCandidate, HC2_GENERATION,
+    BootstrapConnection, ConnectionGeneration, FrameKind, PeerIdentity, ResourceSnapshot,
+    SpikeConnection, SpikeFrame, SpikeLimits, TransportCandidate, HC2_GENERATION,
 };
 use rustls::pki_types::ServerName;
 use tokio::io::{AsyncRead, AsyncReadExt, AsyncWriteExt};
@@ -13,6 +13,7 @@ use tokio::sync::oneshot;
 mod support;
 
 const PREFIX_BYTES: usize = 8;
+const CONNECTION_GENERATION: ConnectionGeneration = ConnectionGeneration::FIRST;
 
 async fn read_exact_frame<S>(stream: &mut S, max: usize) -> Vec<u8>
 where
@@ -33,13 +34,17 @@ where
 }
 
 fn ready_connection() -> SpikeConnection {
-    BootstrapConnection::new(TransportCandidate::DedicatedTcpTls, SpikeLimits::default())
-        .verify_tls(true)
-        .unwrap()
-        .authenticate(PeerIdentity::verified("loopback-client", "loopback-tenant"))
-        .unwrap()
-        .negotiate(HC2_GENERATION)
-        .unwrap()
+    BootstrapConnection::new(
+        TransportCandidate::DedicatedTcpTls,
+        CONNECTION_GENERATION,
+        SpikeLimits::default(),
+    )
+    .verify_tls(true)
+    .unwrap()
+    .authenticate(PeerIdentity::verified("loopback-client", "loopback-tenant"))
+    .unwrap()
+    .negotiate(HC2_GENERATION)
+    .unwrap()
 }
 
 #[tokio::test]
@@ -75,12 +80,12 @@ async fn dedicated_tcp_candidate_round_trips_on_a_real_loopback_socket() {
         }
         for correlation_id in 1..=256 {
             connection
-                .complete_invocation(correlation_id, b"value".to_vec())
+                .complete_invocation(CONNECTION_GENERATION, correlation_id, b"value".to_vec())
                 .expect("completion");
         }
-        connection.heartbeat().unwrap();
+        connection.heartbeat(CONNECTION_GENERATION).unwrap();
         connection
-            .push_event(44, b"tcp-entry-event".to_vec())
+            .push_event(CONNECTION_GENERATION, 44, b"tcp-entry-event".to_vec())
             .unwrap();
         while let Some(frame) = connection.drain_next() {
             let encoded = connection.encode(&frame).expect("encoded frame");
@@ -114,6 +119,7 @@ async fn dedicated_tcp_candidate_round_trips_on_a_real_loopback_socket() {
     for correlation_id in 1..=256 {
         let request = client_codec
             .encode(&SpikeFrame::current(
+                CONNECTION_GENERATION,
                 FrameKind::Invocation,
                 correlation_id,
                 b"get:key".to_vec(),

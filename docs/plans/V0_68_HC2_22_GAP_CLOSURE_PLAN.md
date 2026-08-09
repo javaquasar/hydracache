@@ -24,7 +24,7 @@
 | H07 | Discovery rollback is not prevented | complete | `feat(client-plane): reject discovery rollback and equivocation` | stateful replay/cluster/node-epoch matrix |
 | H08 | Advertisement cannot represent multi-node endpoints | complete | `feat(client-plane): model bounded multi-node discovery` | three-node/duplicate/conflict/bound tests |
 | H09 | Lifecycle checks are runtime-only, not typestate | complete | `feat(client-plane): make bootstrap sequencing typestate-safe` | compile-fail bootstrap + runtime race/cleanup tests |
-| H10 | Connection generation/stale-message fencing is absent | open | — | late old-generation reply/event refusal |
+| H10 | Connection generation/stale-message fencing is absent | complete | `feat(client-plane): fence stale connection generations` | nonzero checked epoch, wire/runtime fencing, reconnect/reused-ID matrix |
 | H11 | Reconnect and subscription/session repair are absent | open | — | deterministic reconnect/repair matrix |
 | H12 | Resource bounds omit byte/retry/session/global budgets | open | — | every owner bounded and observable |
 | H13 | Negative TLS matrix is incomplete | open | — | hostname/time/EKU/rotation/policy cases |
@@ -282,6 +282,18 @@ correlation ID, and exactly-one completion tests.
 restart reuse; use explicit client/session identity plus checked generation.
 
 **Done.** Old connections cannot complete or repair new-generation work.
+
+**Completion evidence (2026-08-09).** `ConnectionGeneration` is nonzero,
+monotonic, explicit at bootstrap, encoded in every spike frame, and refuses
+counter wrap. The ready runtime validates it before dispatch or mutation for
+replies, cancellation, events, and heartbeats; queued output carries the owning
+generation. A three-adapter reconnect matrix reuses correlation and
+subscription IDs, injects late old-generation wire and API actions, proves
+unchanged accounting and zero dispatch, then proves exactly one current-
+generation completion. Refusals increment a privacy-safe stale-generation
+counter. The authoritative H02 envelopes carry the same generation for
+invocations, subscriptions, and session traffic; H05/H11 must use this seam
+when they add attempts and repair state.
 
 ## H11. Implement bounded reconnect, subscription repair, and session loss
 

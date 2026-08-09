@@ -4,8 +4,8 @@ use std::sync::{Arc, Mutex};
 
 use futures_util::Stream;
 use hydracache_client_plane_spike::{
-    BootstrapConnection, FrameKind, PeerIdentity, ResourceSnapshot, SpikeConnection, SpikeFrame,
-    SpikeLimits, TransportCandidate, HC2_GENERATION,
+    BootstrapConnection, ConnectionGeneration, FrameKind, PeerIdentity, ResourceSnapshot,
+    SpikeConnection, SpikeFrame, SpikeLimits, TransportCandidate, HC2_GENERATION,
 };
 use prost::Message;
 use tokio::net::TcpListener;
@@ -29,6 +29,7 @@ type ResponseStream = Pin<Box<dyn Stream<Item = Result<SpikeEnvelope, Status>> +
 const GOLDEN_ENVELOPE: &[u8] = &[
     0x08, 0x05, 0x10, 0x02, 0x18, 0x13, 0x22, 0x03, 0x67, 0x65, 0x74,
 ];
+const CONNECTION_GENERATION: ConnectionGeneration = ConnectionGeneration::FIRST;
 
 #[derive(Clone)]
 struct SpikeService {
@@ -38,6 +39,7 @@ struct SpikeService {
 fn ready_connection() -> SpikeConnection {
     BootstrapConnection::new(
         TransportCandidate::GrpcBidirectional,
+        CONNECTION_GENERATION,
         SpikeLimits::default(),
     )
     .verify_tls(true)
@@ -66,6 +68,7 @@ fn from_proto(frame: SpikeEnvelope) -> Result<SpikeFrame, Status> {
         .map_err(|_| Status::invalid_argument("unknown message kind"))?;
     Ok(SpikeFrame {
         generation,
+        connection_generation: CONNECTION_GENERATION,
         kind,
         correlation_id: frame.correlation_id,
         payload: frame.payload,
@@ -104,14 +107,18 @@ impl ClientPlaneSpike for SpikeService {
         }
         for correlation_id in correlations.iter().copied() {
             connection
-                .complete_invocation(correlation_id, b"grpc-value".to_vec())
+                .complete_invocation(
+                    CONNECTION_GENERATION,
+                    correlation_id,
+                    b"grpc-value".to_vec(),
+                )
                 .map_err(|error| Status::internal(error.to_string()))?;
         }
         connection
-            .heartbeat()
+            .heartbeat(CONNECTION_GENERATION)
             .map_err(|error| Status::internal(error.to_string()))?;
         connection
-            .push_event(55, b"grpc-entry-event".to_vec())
+            .push_event(CONNECTION_GENERATION, 55, b"grpc-entry-event".to_vec())
             .map_err(|error| Status::internal(error.to_string()))?;
 
         let (tx, rx) = mpsc::channel(correlations.len() + 2);
@@ -174,6 +181,7 @@ async fn grpc_candidate_interleaves_reply_and_event_on_a_generated_real_stream()
     let sender = tokio::spawn(async move {
         for correlation_id in 1..=256 {
             tx.send(to_proto(SpikeFrame::current(
+                CONNECTION_GENERATION,
                 FrameKind::Invocation,
                 correlation_id,
                 b"get:key".to_vec(),
@@ -255,6 +263,7 @@ async fn assert_tls_rejected(port: u16, tls: ClientTlsConfig) {
             let mut client = ClientPlaneSpikeClient::new(channel);
             let (tx, rx) = mpsc::channel(1);
             tx.send(to_proto(SpikeFrame::current(
+                CONNECTION_GENERATION,
                 FrameKind::Invocation,
                 1,
                 b"probe".to_vec(),

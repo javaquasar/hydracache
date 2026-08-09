@@ -7,6 +7,7 @@
 
 use std::collections::{BTreeSet, VecDeque};
 use std::marker::PhantomData;
+use std::num::NonZeroU64;
 
 use thiserror::Error;
 
@@ -16,7 +17,38 @@ pub mod policy;
 
 /// First proposed HC/2 wire generation. It is isolated from HC/1 v1-v4.
 pub const HC2_GENERATION: u16 = 5;
-const HEADER_BYTES: usize = 4 + 4 + 2 + 1 + 8 + 4;
+const HEADER_BYTES: usize = 4 + 4 + 2 + 8 + 1 + 8 + 4;
+
+/// Monotonic connection generation within one authenticated client identity.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub struct ConnectionGeneration(NonZeroU64);
+
+impl ConnectionGeneration {
+    /// First generation for a newly created, unique client identity.
+    pub const FIRST: Self = Self(NonZeroU64::MIN);
+
+    /// Restore a persisted nonzero generation for a stable client identity.
+    pub fn new(value: u64) -> Result<Self, SpikeError> {
+        NonZeroU64::new(value)
+            .map(Self)
+            .ok_or(SpikeError::InvalidConnectionGeneration)
+    }
+
+    /// Return the wire value.
+    pub const fn get(self) -> u64 {
+        self.0.get()
+    }
+
+    /// Advance for reconnect. Exhaustion is fail-closed instead of wrapping.
+    pub fn checked_next(self) -> Result<Self, SpikeError> {
+        let next = self
+            .get()
+            .checked_add(1)
+            .and_then(NonZeroU64::new)
+            .ok_or(SpikeError::ConnectionGenerationExhausted)?;
+        Ok(Self(next))
+    }
+}
 
 /// Transport candidates required by the 0.68 W0 bake-off.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
@@ -91,6 +123,8 @@ impl TryFrom<u8> for FrameKind {
 pub struct SpikeFrame {
     /// Protocol generation, distinct from HC/1 operation versions.
     pub generation: u16,
+    /// Connection generation fencing correlation and subscription ownership.
+    pub connection_generation: ConnectionGeneration,
     /// Message class.
     pub kind: FrameKind,
     /// Invocation or subscription correlation id; zero for connection control.
@@ -101,9 +135,15 @@ pub struct SpikeFrame {
 
 impl SpikeFrame {
     /// Construct a current-generation frame.
-    pub fn current(kind: FrameKind, correlation_id: u64, payload: impl Into<Vec<u8>>) -> Self {
+    pub fn current(
+        connection_generation: ConnectionGeneration,
+        kind: FrameKind,
+        correlation_id: u64,
+        payload: impl Into<Vec<u8>>,
+    ) -> Self {
         Self {
             generation: HC2_GENERATION,
+            connection_generation,
             kind,
             correlation_id,
             payload: payload.into(),
@@ -179,7 +219,11 @@ pub struct Authenticated;
 ///     BootstrapConnection, Created, SpikeFrame, SpikeLimits, TransportCandidate,
 /// };
 /// let mut connection: BootstrapConnection<Created> =
-///     BootstrapConnection::new(TransportCandidate::GrpcBidirectional, SpikeLimits::default());
+///     BootstrapConnection::new(
+///         TransportCandidate::GrpcBidirectional,
+///         ConnectionGeneration::FIRST,
+///         SpikeLimits::default(),
+///     );
 /// let _ = connection.receive(&[]);
 /// ```
 ///
@@ -188,7 +232,11 @@ pub struct Authenticated;
 ///     BootstrapConnection, Created, SpikeLimits, TransportCandidate, HC2_GENERATION,
 /// };
 /// let connection: BootstrapConnection<Created> =
-///     BootstrapConnection::new(TransportCandidate::GrpcBidirectional, SpikeLimits::default());
+///     BootstrapConnection::new(
+///         TransportCandidate::GrpcBidirectional,
+///         ConnectionGeneration::FIRST,
+///         SpikeLimits::default(),
+///     );
 /// let _ = connection.negotiate(HC2_GENERATION);
 /// ```
 #[derive(Debug)]
@@ -199,9 +247,13 @@ pub struct BootstrapConnection<State> {
 
 impl BootstrapConnection<Created> {
     /// Allocate a disconnected bootstrap owner with bounded resources.
-    pub fn new(candidate: TransportCandidate, limits: SpikeLimits) -> Self {
+    pub fn new(
+        candidate: TransportCandidate,
+        connection_generation: ConnectionGeneration,
+        limits: SpikeLimits,
+    ) -> Self {
         Self {
-            inner: SpikeConnection::new(candidate, limits),
+            inner: SpikeConnection::new(candidate, connection_generation, limits),
             state: PhantomData,
         }
     }
@@ -288,6 +340,15 @@ pub enum SpikeError {
     /// A completion referred to no active invocation.
     #[error("unknown pending invocation")]
     UnknownInvocation,
+    /// A message from another connection generation reached this runtime.
+    #[error("stale connection generation {actual}; expected {expected}")]
+    StaleConnectionGeneration { expected: u64, actual: u64 },
+    /// A connection generation counter would wrap and become ambiguous.
+    #[error("connection generation exhausted")]
+    ConnectionGenerationExhausted,
+    /// Zero cannot identify an owned connection generation.
+    #[error("connection generation must be nonzero")]
+    InvalidConnectionGeneration,
     /// The connection was already closed.
     #[error("connection is closed")]
     Closed,
@@ -332,6 +393,7 @@ impl SpikeCodec {
         bytes.extend_from_slice(&self.candidate.magic());
         bytes.extend_from_slice(&(body_len as u32).to_be_bytes());
         bytes.extend_from_slice(&frame.generation.to_be_bytes());
+        bytes.extend_from_slice(&frame.connection_generation.get().to_be_bytes());
         bytes.push(frame.kind as u8);
         bytes.extend_from_slice(&frame.correlation_id.to_be_bytes());
         bytes.extend_from_slice(&payload_len.to_be_bytes());
@@ -359,15 +421,24 @@ impl SpikeCodec {
         if generation != HC2_GENERATION {
             return Err(SpikeError::UnknownGeneration(generation));
         }
-        let kind = FrameKind::try_from(bytes[10])?;
-        let correlation_id = u64::from_be_bytes(bytes[11..19].try_into().expect("fixed slice"));
+        let connection_generation = NonZeroU64::new(u64::from_be_bytes(
+            bytes[10..18].try_into().expect("fixed slice"),
+        ))
+        .map(ConnectionGeneration)
+        .ok_or(SpikeError::StaleConnectionGeneration {
+            expected: 1,
+            actual: 0,
+        })?;
+        let kind = FrameKind::try_from(bytes[18])?;
+        let correlation_id = u64::from_be_bytes(bytes[19..27].try_into().expect("fixed slice"));
         let payload_len =
-            u32::from_be_bytes(bytes[19..23].try_into().expect("fixed slice")) as usize;
+            u32::from_be_bytes(bytes[27..31].try_into().expect("fixed slice")) as usize;
         if HEADER_BYTES.checked_add(payload_len) != Some(bytes.len()) {
             return Err(SpikeError::LengthMismatch);
         }
         Ok(SpikeFrame {
             generation,
+            connection_generation,
             kind,
             correlation_id,
             payload: bytes[HEADER_BYTES..].to_vec(),
@@ -398,12 +469,15 @@ pub struct ConnectionMetrics {
     pub resource_rejections: u64,
     pub cancelled_invocations: u64,
     pub event_gaps: u64,
+    /// Frames refused because they belong to another connection generation.
+    pub stale_generation_frames: u64,
 }
 
 /// Connection-owned semantic runtime shared by all W0 candidates.
 #[derive(Debug)]
 pub struct SpikeConnection {
     candidate: TransportCandidate,
+    connection_generation: ConnectionGeneration,
     codec: SpikeCodec,
     limits: SpikeLimits,
     identity: Option<PeerIdentity>,
@@ -420,9 +494,14 @@ pub struct SpikeConnection {
 
 impl SpikeConnection {
     /// Create one disconnected candidate spike runtime.
-    fn new(candidate: TransportCandidate, limits: SpikeLimits) -> Self {
+    fn new(
+        candidate: TransportCandidate,
+        connection_generation: ConnectionGeneration,
+        limits: SpikeLimits,
+    ) -> Self {
         Self {
             candidate,
+            connection_generation,
             codec: SpikeCodec::new(candidate, limits.max_frame_bytes),
             limits,
             identity: None,
@@ -446,6 +525,11 @@ impl SpikeConnection {
     /// Current explicit lifecycle state.
     pub fn state(&self) -> ConnectionState {
         self.state
+    }
+
+    /// Generation that owns every call, subscription, session, and frame.
+    pub fn connection_generation(&self) -> ConnectionGeneration {
+        self.connection_generation
     }
 
     /// Record successful transport-level TLS verification before identity use.
@@ -504,6 +588,7 @@ impl SpikeConnection {
                 return Err(error);
             }
         };
+        self.ensure_connection_generation(frame.connection_generation)?;
         self.dispatch_count = self.dispatch_count.saturating_add(1);
         self.metrics.dispatched_frames = self.metrics.dispatched_frames.saturating_add(1);
         Ok(frame)
@@ -526,10 +611,12 @@ impl SpikeConnection {
     /// Complete one invocation exactly once and queue its reply.
     pub fn complete_invocation(
         &mut self,
+        connection_generation: ConnectionGeneration,
         correlation_id: u64,
         payload: impl Into<Vec<u8>>,
     ) -> Result<(), SpikeError> {
         self.ensure_ready_or_draining("invocation completion")?;
+        self.ensure_connection_generation(connection_generation)?;
         if !self.pending.contains(&correlation_id) {
             return Err(SpikeError::UnknownInvocation);
         }
@@ -539,6 +626,7 @@ impl SpikeConnection {
         }
         self.pending.remove(&correlation_id);
         self.replies.push_back(SpikeFrame::current(
+            self.connection_generation,
             FrameKind::Reply,
             correlation_id,
             payload,
@@ -547,8 +635,13 @@ impl SpikeConnection {
     }
 
     /// Cancel one invocation. Cancellation is idempotent for disconnect races.
-    pub fn cancel_invocation(&mut self, correlation_id: u64) -> Result<bool, SpikeError> {
+    pub fn cancel_invocation(
+        &mut self,
+        connection_generation: ConnectionGeneration,
+        correlation_id: u64,
+    ) -> Result<bool, SpikeError> {
         self.ensure_open()?;
+        self.ensure_connection_generation(connection_generation)?;
         let removed = self.pending.remove(&correlation_id);
         if removed {
             self.metrics.cancelled_invocations =
@@ -575,10 +668,12 @@ impl SpikeConnection {
     /// replaced by one explicit gap requiring conservative repair.
     pub fn push_event(
         &mut self,
+        connection_generation: ConnectionGeneration,
         subscription_id: u64,
         payload: impl Into<Vec<u8>>,
     ) -> Result<(), SpikeError> {
         self.ensure_ready()?;
+        self.ensure_connection_generation(connection_generation)?;
         if !self.subscriptions.contains(&subscription_id) {
             return Err(SpikeError::InvalidCorrelation);
         }
@@ -586,6 +681,7 @@ impl SpikeConnection {
             self.metrics.event_gaps = self.metrics.event_gaps.saturating_add(1);
             self.events.clear();
             self.events.push_back(SpikeFrame::current(
+                self.connection_generation,
                 FrameKind::Gap,
                 subscription_id,
                 b"event_queue_overflow".to_vec(),
@@ -593,6 +689,7 @@ impl SpikeConnection {
             return Ok(());
         }
         self.events.push_back(SpikeFrame::current(
+            self.connection_generation,
             FrameKind::Event,
             subscription_id,
             payload,
@@ -601,11 +698,19 @@ impl SpikeConnection {
     }
 
     /// Queue a connection heartbeat independently from replies and events.
-    pub fn heartbeat(&mut self) -> Result<(), SpikeError> {
+    pub fn heartbeat(
+        &mut self,
+        connection_generation: ConnectionGeneration,
+    ) -> Result<(), SpikeError> {
         self.ensure_ready()?;
+        self.ensure_connection_generation(connection_generation)?;
         if self.controls.is_empty() {
-            self.controls
-                .push_back(SpikeFrame::current(FrameKind::Heartbeat, 0, Vec::new()));
+            self.controls.push_back(SpikeFrame::current(
+                self.connection_generation,
+                FrameKind::Heartbeat,
+                0,
+                Vec::new(),
+            ));
         }
         Ok(())
     }
@@ -671,6 +776,22 @@ impl SpikeConnection {
             Err(SpikeError::Closed)
         } else {
             Ok(())
+        }
+    }
+
+    fn ensure_connection_generation(
+        &mut self,
+        actual: ConnectionGeneration,
+    ) -> Result<(), SpikeError> {
+        if actual == self.connection_generation {
+            Ok(())
+        } else {
+            self.metrics.stale_generation_frames =
+                self.metrics.stale_generation_frames.saturating_add(1);
+            Err(SpikeError::StaleConnectionGeneration {
+                expected: self.connection_generation.get(),
+                actual: actual.get(),
+            })
         }
     }
 

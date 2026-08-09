@@ -2,8 +2,8 @@ use bytes::Bytes;
 use h2::{client, server};
 use http::{Request, Response};
 use hydracache_client_plane_spike::{
-    BootstrapConnection, FrameKind, PeerIdentity, ResourceSnapshot, SpikeConnection, SpikeFrame,
-    SpikeLimits, TransportCandidate, HC2_GENERATION,
+    BootstrapConnection, ConnectionGeneration, FrameKind, PeerIdentity, ResourceSnapshot,
+    SpikeConnection, SpikeFrame, SpikeLimits, TransportCandidate, HC2_GENERATION,
 };
 use rustls::pki_types::ServerName;
 use std::collections::BTreeSet;
@@ -12,9 +12,12 @@ use tokio::sync::oneshot;
 
 mod support;
 
+const CONNECTION_GENERATION: ConnectionGeneration = ConnectionGeneration::FIRST;
+
 fn ready_connection() -> SpikeConnection {
     BootstrapConnection::new(
         TransportCandidate::Http2Bidirectional,
+        CONNECTION_GENERATION,
         SpikeLimits::default(),
     )
     .verify_tls(true)
@@ -66,12 +69,12 @@ async fn http2_candidate_interleaves_reply_and_event_on_a_real_stream() {
         connection.register_subscription(44).unwrap();
         for correlation_id in 1..=256 {
             connection
-                .complete_invocation(correlation_id, b"h2-value".to_vec())
+                .complete_invocation(CONNECTION_GENERATION, correlation_id, b"h2-value".to_vec())
                 .unwrap();
         }
-        connection.heartbeat().unwrap();
+        connection.heartbeat(CONNECTION_GENERATION).unwrap();
         connection
-            .push_event(44, b"h2-entry-event".to_vec())
+            .push_event(CONNECTION_GENERATION, 44, b"h2-entry-event".to_vec())
             .unwrap();
 
         let response = Response::builder().status(200).body(()).unwrap();
@@ -111,6 +114,7 @@ async fn http2_candidate_interleaves_reply_and_event_on_a_real_stream() {
         invocations.extend_from_slice(
             &codec
                 .encode(&SpikeFrame::current(
+                    CONNECTION_GENERATION,
                     FrameKind::Invocation,
                     correlation_id,
                     b"get:key".to_vec(),
