@@ -5,9 +5,10 @@
 //! Passing these checks is necessary, but it is not evidence of real TLS,
 //! HTTP/2, gRPC, cross-language generation, or daemon interoperability.
 
-use std::collections::{BTreeSet, VecDeque};
+use std::collections::{BTreeMap, BTreeSet, VecDeque};
 use std::marker::PhantomData;
 use std::num::NonZeroU64;
+use std::sync::{Arc, Mutex};
 
 use thiserror::Error;
 
@@ -149,6 +150,11 @@ impl SpikeFrame {
             payload: payload.into(),
         }
     }
+
+    /// Bytes retained by the bounded spike codec for this frame.
+    pub fn retained_bytes(&self) -> usize {
+        HEADER_BYTES + self.payload.len()
+    }
 }
 
 /// Bounded connection resources used by the common harness.
@@ -160,10 +166,30 @@ pub struct SpikeLimits {
     pub max_pending_invocations: usize,
     /// Maximum queued ordinary replies.
     pub max_reply_frames: usize,
+    /// Maximum retained bytes across queued ordinary replies.
+    pub max_reply_bytes: usize,
     /// Maximum queued event frames before an explicit gap replaces them.
     pub max_event_frames: usize,
+    /// Maximum retained bytes across queued events or the explicit gap.
+    pub max_event_bytes: usize,
+    /// Maximum retained bytes in the control lane.
+    pub max_control_bytes: usize,
     /// Maximum connection-owned subscriptions.
     pub max_subscriptions: usize,
+    /// Maximum items accepted in one decoded batch.
+    pub max_batch_items: usize,
+    /// Maximum retained retry records.
+    pub max_retry_slots: usize,
+    /// Maximum retained reconnect records.
+    pub max_reconnect_slots: usize,
+    /// Maximum retained deadline registrations.
+    pub max_deadlines: usize,
+    /// Maximum retained topology nodes and their encoded metadata bytes.
+    pub max_topology_nodes: usize,
+    pub max_topology_bytes: usize,
+    /// Maximum retained sessions and their opaque state bytes.
+    pub max_sessions: usize,
+    pub max_session_bytes: usize,
 }
 
 impl Default for SpikeLimits {
@@ -172,9 +198,54 @@ impl Default for SpikeLimits {
             max_frame_bytes: 64 * 1024,
             max_pending_invocations: 256,
             max_reply_frames: 256,
+            max_reply_bytes: 4 * 1024 * 1024,
             max_event_frames: 32,
+            max_event_bytes: 512 * 1024,
+            max_control_bytes: 64 * 1024,
             max_subscriptions: 32,
+            max_batch_items: 256,
+            max_retry_slots: 64,
+            max_reconnect_slots: 8,
+            max_deadlines: 256,
+            max_topology_nodes: 256,
+            max_topology_bytes: 1024 * 1024,
+            max_sessions: 32,
+            max_session_bytes: 256 * 1024,
         }
+    }
+}
+
+impl SpikeLimits {
+    fn validate(self) -> Result<(), SpikeError> {
+        let nonzero = [
+            ("max_frame_bytes", self.max_frame_bytes),
+            ("max_pending_invocations", self.max_pending_invocations),
+            ("max_reply_frames", self.max_reply_frames),
+            ("max_reply_bytes", self.max_reply_bytes),
+            ("max_event_frames", self.max_event_frames),
+            ("max_event_bytes", self.max_event_bytes),
+            ("max_control_bytes", self.max_control_bytes),
+            ("max_subscriptions", self.max_subscriptions),
+            ("max_batch_items", self.max_batch_items),
+            ("max_retry_slots", self.max_retry_slots),
+            ("max_reconnect_slots", self.max_reconnect_slots),
+            ("max_deadlines", self.max_deadlines),
+            ("max_topology_nodes", self.max_topology_nodes),
+            ("max_topology_bytes", self.max_topology_bytes),
+            ("max_sessions", self.max_sessions),
+            ("max_session_bytes", self.max_session_bytes),
+        ];
+        if let Some((name, _)) = nonzero.into_iter().find(|(_, value)| *value == 0) {
+            return Err(SpikeError::InvalidLimit(name));
+        }
+        if self.max_frame_bytes < HEADER_BYTES
+            || self.max_reply_bytes < HEADER_BYTES
+            || self.max_event_bytes < HEADER_BYTES + b"event_queue_overflow".len()
+            || self.max_control_bytes < HEADER_BYTES
+        {
+            return Err(SpikeError::InvalidLimit("byte_budget_below_frame_floor"));
+        }
+        Ok(())
     }
 }
 
@@ -304,6 +375,138 @@ impl PeerIdentity {
     }
 }
 
+/// Validated per-identity, per-tenant, and process-global connection admission.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct AdmissionLimits {
+    pub max_per_identity: usize,
+    pub max_per_tenant: usize,
+    pub max_global: usize,
+}
+
+impl Default for AdmissionLimits {
+    fn default() -> Self {
+        Self {
+            max_per_identity: 4,
+            max_per_tenant: 64,
+            max_global: 1024,
+        }
+    }
+}
+
+#[derive(Debug, Default)]
+struct AdmissionState {
+    global: usize,
+    identities: BTreeMap<String, usize>,
+    tenants: BTreeMap<String, usize>,
+}
+
+/// Shared atomic admission ledger. A returned permit owns exactly one slot.
+#[derive(Debug, Clone)]
+pub struct AdmissionController {
+    limits: AdmissionLimits,
+    state: Arc<Mutex<AdmissionState>>,
+}
+
+impl AdmissionController {
+    /// Reject zero or internally contradictory admission limits.
+    pub fn new(limits: AdmissionLimits) -> Result<Self, SpikeError> {
+        if limits.max_per_identity == 0
+            || limits.max_per_tenant == 0
+            || limits.max_global == 0
+            || limits.max_per_identity > limits.max_per_tenant
+            || limits.max_per_tenant > limits.max_global
+        {
+            return Err(SpikeError::InvalidLimit("admission"));
+        }
+        Ok(Self {
+            limits,
+            state: Arc::new(Mutex::new(AdmissionState::default())),
+        })
+    }
+
+    /// Atomically acquire all three scopes or mutate none of them.
+    pub fn admit(&self, identity: &PeerIdentity) -> Result<AdmissionPermit, SpikeError> {
+        if !identity.tls_verified || identity.client_id.is_empty() || identity.tenant.is_empty() {
+            return Err(SpikeError::UnverifiedIdentity);
+        }
+        let mut state = self.state.lock().expect("admission ledger poisoned");
+        let identity_count = state
+            .identities
+            .get(&identity.client_id)
+            .copied()
+            .unwrap_or_default();
+        let tenant_count = state
+            .tenants
+            .get(&identity.tenant)
+            .copied()
+            .unwrap_or_default();
+        if identity_count >= self.limits.max_per_identity {
+            return Err(SpikeError::ResourceLimit("identity_connections"));
+        }
+        if tenant_count >= self.limits.max_per_tenant {
+            return Err(SpikeError::ResourceLimit("tenant_connections"));
+        }
+        if state.global >= self.limits.max_global {
+            return Err(SpikeError::ResourceLimit("global_connections"));
+        }
+        state.global += 1;
+        *state
+            .identities
+            .entry(identity.client_id.clone())
+            .or_default() += 1;
+        *state.tenants.entry(identity.tenant.clone()).or_default() += 1;
+        Ok(AdmissionPermit {
+            state: Arc::clone(&self.state),
+            client_id: identity.client_id.clone(),
+            tenant: identity.tenant.clone(),
+        })
+    }
+
+    /// Privacy-safe totals; identity and tenant names are not exposed.
+    pub fn snapshot(&self) -> AdmissionSnapshot {
+        let state = self.state.lock().expect("admission ledger poisoned");
+        AdmissionSnapshot {
+            global_connections: state.global,
+            active_identities: state.identities.len(),
+            active_tenants: state.tenants.len(),
+        }
+    }
+}
+
+/// Privacy-safe admission totals.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+pub struct AdmissionSnapshot {
+    pub global_connections: usize,
+    pub active_identities: usize,
+    pub active_tenants: usize,
+}
+
+/// RAII ownership of one admitted connection.
+#[derive(Debug)]
+pub struct AdmissionPermit {
+    state: Arc<Mutex<AdmissionState>>,
+    client_id: String,
+    tenant: String,
+}
+
+impl Drop for AdmissionPermit {
+    fn drop(&mut self) {
+        let mut state = self.state.lock().expect("admission ledger poisoned");
+        state.global -= 1;
+        decrement_or_remove(&mut state.identities, &self.client_id);
+        decrement_or_remove(&mut state.tenants, &self.tenant);
+    }
+}
+
+fn decrement_or_remove(counts: &mut BTreeMap<String, usize>, key: &str) {
+    if let Some(count) = counts.get_mut(key) {
+        *count -= 1;
+        if *count == 0 {
+            counts.remove(key);
+        }
+    }
+}
+
 /// Fail-loud W0 spike errors.
 #[derive(Debug, Error, Clone, PartialEq, Eq)]
 pub enum SpikeError {
@@ -334,6 +537,9 @@ pub enum SpikeError {
     /// A connection-owned resource bound was reached.
     #[error("connection resource limit reached: {0}")]
     ResourceLimit(&'static str),
+    /// A configured limit is zero or cannot hold its minimum control record.
+    #[error("invalid nonzero resource limit: {0}")]
+    InvalidLimit(&'static str),
     /// A correlation or subscription id is invalid or already active.
     #[error("duplicate or invalid correlation id")]
     InvalidCorrelation,
@@ -455,10 +661,27 @@ pub struct ResourceSnapshot {
     pub subscriptions: usize,
     /// Queued ordinary replies.
     pub reply_frames: usize,
+    /// Retained encoded reply bytes.
+    pub reply_bytes: usize,
     /// Queued event or explicit-gap frames.
     pub event_frames: usize,
+    /// Retained encoded event/gap bytes.
+    pub event_bytes: usize,
     /// Queued connection control frames.
     pub control_frames: usize,
+    /// Retained encoded control bytes.
+    pub control_bytes: usize,
+    /// Retained retry and reconnect state.
+    pub retry_slots: usize,
+    pub reconnect_slots: usize,
+    /// Retained deadlines.
+    pub deadlines: usize,
+    /// Retained topology state.
+    pub topology_nodes: usize,
+    pub topology_bytes: usize,
+    /// Retained session state.
+    pub sessions: usize,
+    pub session_bytes: usize,
 }
 
 /// Privacy-safe monotonic counters; payloads, keys, and identities are absent.
@@ -488,6 +711,16 @@ pub struct SpikeConnection {
     replies: VecDeque<SpikeFrame>,
     events: VecDeque<SpikeFrame>,
     controls: VecDeque<SpikeFrame>,
+    reply_bytes: usize,
+    event_bytes: usize,
+    control_bytes: usize,
+    retry_slots: usize,
+    reconnect_slots: usize,
+    deadlines: BTreeSet<u64>,
+    topology_nodes: usize,
+    topology_bytes: usize,
+    sessions: BTreeMap<u64, usize>,
+    session_bytes: usize,
     next_lane: u8,
     metrics: ConnectionMetrics,
 }
@@ -512,6 +745,16 @@ impl SpikeConnection {
             replies: VecDeque::new(),
             events: VecDeque::new(),
             controls: VecDeque::new(),
+            reply_bytes: 0,
+            event_bytes: 0,
+            control_bytes: 0,
+            retry_slots: 0,
+            reconnect_slots: 0,
+            deadlines: BTreeSet::new(),
+            topology_nodes: 0,
+            topology_bytes: 0,
+            sessions: BTreeMap::new(),
+            session_bytes: 0,
             next_lane: 0,
             metrics: ConnectionMetrics::default(),
         }
@@ -561,6 +804,7 @@ impl SpikeConnection {
     /// Negotiate the isolated HC/2 generation after authentication.
     fn negotiate(&mut self, generation: u16) -> Result<(), SpikeError> {
         self.ensure_state(ConnectionState::Authenticated, "negotiation")?;
+        self.limits.validate()?;
         if self.identity.is_none() {
             return Err(SpikeError::UnverifiedIdentity);
         }
@@ -620,11 +864,22 @@ impl SpikeConnection {
         if !self.pending.contains(&correlation_id) {
             return Err(SpikeError::UnknownInvocation);
         }
-        if self.replies.len() >= self.limits.max_reply_frames {
+        let payload = payload.into();
+        let retained = HEADER_BYTES
+            .checked_add(payload.len())
+            .ok_or(SpikeError::ResourceLimit("reply_bytes"))?;
+        if self.replies.len() >= self.limits.max_reply_frames
+            || retained > self.limits.max_frame_bytes
+            || self
+                .reply_bytes
+                .checked_add(retained)
+                .is_none_or(|bytes| bytes > self.limits.max_reply_bytes)
+        {
             self.metrics.resource_rejections = self.metrics.resource_rejections.saturating_add(1);
-            return Err(SpikeError::ResourceLimit("reply_frames"));
+            return Err(SpikeError::ResourceLimit("reply_queue"));
         }
         self.pending.remove(&correlation_id);
+        self.reply_bytes += retained;
         self.replies.push_back(SpikeFrame::current(
             self.connection_generation,
             FrameKind::Reply,
@@ -677,9 +932,20 @@ impl SpikeConnection {
         if !self.subscriptions.contains(&subscription_id) {
             return Err(SpikeError::InvalidCorrelation);
         }
-        if self.events.len() >= self.limits.max_event_frames {
+        let payload = payload.into();
+        let retained = HEADER_BYTES
+            .checked_add(payload.len())
+            .ok_or(SpikeError::ResourceLimit("event_bytes"))?;
+        if self.events.len() >= self.limits.max_event_frames
+            || retained > self.limits.max_frame_bytes
+            || self
+                .event_bytes
+                .checked_add(retained)
+                .is_none_or(|bytes| bytes > self.limits.max_event_bytes)
+        {
             self.metrics.event_gaps = self.metrics.event_gaps.saturating_add(1);
             self.events.clear();
+            self.event_bytes = HEADER_BYTES + b"event_queue_overflow".len();
             self.events.push_back(SpikeFrame::current(
                 self.connection_generation,
                 FrameKind::Gap,
@@ -688,6 +954,7 @@ impl SpikeConnection {
             ));
             return Ok(());
         }
+        self.event_bytes += retained;
         self.events.push_back(SpikeFrame::current(
             self.connection_generation,
             FrameKind::Event,
@@ -705,6 +972,12 @@ impl SpikeConnection {
         self.ensure_ready()?;
         self.ensure_connection_generation(connection_generation)?;
         if self.controls.is_empty() {
+            if HEADER_BYTES > self.limits.max_control_bytes {
+                self.metrics.resource_rejections =
+                    self.metrics.resource_rejections.saturating_add(1);
+                return Err(SpikeError::ResourceLimit("control_bytes"));
+            }
+            self.control_bytes = HEADER_BYTES;
             self.controls.push_back(SpikeFrame::current(
                 self.connection_generation,
                 FrameKind::Heartbeat,
@@ -715,6 +988,138 @@ impl SpikeConnection {
         Ok(())
     }
 
+    /// Refuse an oversized decoded batch before retaining any item state.
+    pub fn check_batch_items(&mut self, items: usize) -> Result<(), SpikeError> {
+        self.ensure_ready()?;
+        if items == 0 || items > self.limits.max_batch_items {
+            self.metrics.resource_rejections = self.metrics.resource_rejections.saturating_add(1);
+            return Err(SpikeError::ResourceLimit("batch_items"));
+        }
+        Ok(())
+    }
+
+    /// Reserve one bounded invocation retry record.
+    pub fn reserve_retry(&mut self) -> Result<(), SpikeError> {
+        self.ensure_open()?;
+        if self.retry_slots >= self.limits.max_retry_slots {
+            self.metrics.resource_rejections = self.metrics.resource_rejections.saturating_add(1);
+            return Err(SpikeError::ResourceLimit("retry_slots"));
+        }
+        self.retry_slots += 1;
+        Ok(())
+    }
+
+    /// Release one retry record; false means no record was owned.
+    pub fn release_retry(&mut self) -> bool {
+        if self.retry_slots == 0 {
+            false
+        } else {
+            self.retry_slots -= 1;
+            true
+        }
+    }
+
+    /// Reserve one bounded reconnect record.
+    pub fn reserve_reconnect(&mut self) -> Result<(), SpikeError> {
+        self.ensure_open()?;
+        if self.reconnect_slots >= self.limits.max_reconnect_slots {
+            self.metrics.resource_rejections = self.metrics.resource_rejections.saturating_add(1);
+            return Err(SpikeError::ResourceLimit("reconnect_slots"));
+        }
+        self.reconnect_slots += 1;
+        Ok(())
+    }
+
+    /// Release one reconnect record; false means no record was owned.
+    pub fn release_reconnect(&mut self) -> bool {
+        if self.reconnect_slots == 0 {
+            false
+        } else {
+            self.reconnect_slots -= 1;
+            true
+        }
+    }
+
+    /// Retain a bounded deadline registration keyed by correlation ID.
+    pub fn register_deadline(&mut self, correlation_id: u64) -> Result<(), SpikeError> {
+        self.ensure_open()?;
+        if correlation_id == 0 || self.deadlines.contains(&correlation_id) {
+            return Err(SpikeError::InvalidCorrelation);
+        }
+        if self.deadlines.len() >= self.limits.max_deadlines {
+            self.metrics.resource_rejections = self.metrics.resource_rejections.saturating_add(1);
+            return Err(SpikeError::ResourceLimit("deadlines"));
+        }
+        self.deadlines.insert(correlation_id);
+        Ok(())
+    }
+
+    /// Release a deadline registration.
+    pub fn remove_deadline(&mut self, correlation_id: u64) -> bool {
+        self.deadlines.remove(&correlation_id)
+    }
+
+    /// Atomically replace retained topology metadata after both bounds pass.
+    pub fn install_topology(
+        &mut self,
+        nodes: usize,
+        encoded_bytes: usize,
+    ) -> Result<(), SpikeError> {
+        self.ensure_ready()?;
+        if nodes == 0
+            || nodes > self.limits.max_topology_nodes
+            || encoded_bytes > self.limits.max_topology_bytes
+        {
+            self.metrics.resource_rejections = self.metrics.resource_rejections.saturating_add(1);
+            return Err(SpikeError::ResourceLimit("topology"));
+        }
+        self.topology_nodes = nodes;
+        self.topology_bytes = encoded_bytes;
+        Ok(())
+    }
+
+    /// Retain one generation-fenced session and its bounded opaque state.
+    pub fn open_session(
+        &mut self,
+        connection_generation: ConnectionGeneration,
+        session_id: u64,
+        state_bytes: usize,
+    ) -> Result<(), SpikeError> {
+        self.ensure_ready()?;
+        self.ensure_connection_generation(connection_generation)?;
+        if session_id == 0 || self.sessions.contains_key(&session_id) {
+            return Err(SpikeError::InvalidCorrelation);
+        }
+        if self.sessions.len() >= self.limits.max_sessions
+            || self
+                .session_bytes
+                .checked_add(state_bytes)
+                .is_none_or(|bytes| bytes > self.limits.max_session_bytes)
+        {
+            self.metrics.resource_rejections = self.metrics.resource_rejections.saturating_add(1);
+            return Err(SpikeError::ResourceLimit("sessions"));
+        }
+        self.sessions.insert(session_id, state_bytes);
+        self.session_bytes += state_bytes;
+        Ok(())
+    }
+
+    /// Release one session only from its owning connection generation.
+    pub fn close_session(
+        &mut self,
+        connection_generation: ConnectionGeneration,
+        session_id: u64,
+    ) -> Result<bool, SpikeError> {
+        self.ensure_open()?;
+        self.ensure_connection_generation(connection_generation)?;
+        if let Some(bytes) = self.sessions.remove(&session_id) {
+            self.session_bytes -= bytes;
+            Ok(true)
+        } else {
+            Ok(false)
+        }
+    }
+
     /// Drain one frame with deterministic round-robin fairness across reply,
     /// control, and event lanes.
     pub fn drain_next(&mut self) -> Option<SpikeFrame> {
@@ -722,9 +1127,15 @@ impl SpikeConnection {
             let lane = self.next_lane;
             self.next_lane = (self.next_lane + 1) % 3;
             let frame = match lane {
-                0 => self.replies.pop_front(),
-                1 => self.controls.pop_front(),
-                _ => self.events.pop_front(),
+                0 => self.replies.pop_front().inspect(|frame| {
+                    self.reply_bytes -= HEADER_BYTES + frame.payload.len();
+                }),
+                1 => self.controls.pop_front().inspect(|frame| {
+                    self.control_bytes -= HEADER_BYTES + frame.payload.len();
+                }),
+                _ => self.events.pop_front().inspect(|frame| {
+                    self.event_bytes -= HEADER_BYTES + frame.payload.len();
+                }),
             };
             if frame.is_some() {
                 return frame;
@@ -749,8 +1160,18 @@ impl SpikeConnection {
             pending_invocations: self.pending.len(),
             subscriptions: self.subscriptions.len(),
             reply_frames: self.replies.len(),
+            reply_bytes: self.reply_bytes,
             event_frames: self.events.len(),
+            event_bytes: self.event_bytes,
             control_frames: self.controls.len(),
+            control_bytes: self.control_bytes,
+            retry_slots: self.retry_slots,
+            reconnect_slots: self.reconnect_slots,
+            deadlines: self.deadlines.len(),
+            topology_nodes: self.topology_nodes,
+            topology_bytes: self.topology_bytes,
+            sessions: self.sessions.len(),
+            session_bytes: self.session_bytes,
         }
     }
 
@@ -768,6 +1189,16 @@ impl SpikeConnection {
         self.replies.clear();
         self.events.clear();
         self.controls.clear();
+        self.reply_bytes = 0;
+        self.event_bytes = 0;
+        self.control_bytes = 0;
+        self.retry_slots = 0;
+        self.reconnect_slots = 0;
+        self.deadlines.clear();
+        self.topology_nodes = 0;
+        self.topology_bytes = 0;
+        self.sessions.clear();
+        self.session_bytes = 0;
         self.resources()
     }
 

@@ -1,7 +1,8 @@
 use hydracache_client_plane_spike::{
-    BootstrapConnection, ConnectionGeneration, ConnectionMetrics, ConnectionState, FrameKind,
-    PeerIdentity, ResourceSnapshot, SpikeConnection, SpikeError, SpikeFrame, SpikeLimits,
-    TransportCandidate, HC2_GENERATION,
+    AdmissionController, AdmissionLimits, AdmissionSnapshot, BootstrapConnection,
+    ConnectionGeneration, ConnectionMetrics, ConnectionState, FrameKind, PeerIdentity,
+    ResourceSnapshot, SpikeConnection, SpikeError, SpikeFrame, SpikeLimits, TransportCandidate,
+    HC2_GENERATION,
 };
 
 const CONNECTION_GENERATION: ConnectionGeneration = ConnectionGeneration::FIRST;
@@ -367,7 +368,7 @@ fn bounded_failures_are_atomic_and_observable_without_payload_data() {
             .unwrap();
         assert_eq!(
             connection.complete_invocation(CONNECTION_GENERATION, 2, b"must-remain-pending",),
-            Err(SpikeError::ResourceLimit("reply_frames"))
+            Err(SpikeError::ResourceLimit("reply_queue"))
         );
         assert_eq!(connection.resources().pending_invocations, 1);
         assert!(connection
@@ -452,4 +453,174 @@ fn malformed_oversized_truncated_and_unknown_messages_fail_before_dispatch() {
         );
         assert_eq!(connection.dispatch_count(), 0);
     }
+}
+
+#[test]
+fn every_retained_resource_class_is_bounded_atomically_and_cleared_on_close() {
+    for candidate in TransportCandidate::ALL {
+        let reply_floor = SpikeFrame::current(CONNECTION_GENERATION, FrameKind::Reply, 1, b"abc")
+            .retained_bytes();
+        let gap_floor = SpikeFrame::current(
+            CONNECTION_GENERATION,
+            FrameKind::Gap,
+            7,
+            b"event_queue_overflow",
+        )
+        .retained_bytes();
+        let limits = SpikeLimits {
+            max_pending_invocations: 2,
+            max_reply_frames: 2,
+            max_reply_bytes: reply_floor,
+            max_event_frames: 2,
+            max_event_bytes: gap_floor,
+            max_retry_slots: 1,
+            max_reconnect_slots: 1,
+            max_deadlines: 1,
+            max_topology_nodes: 1,
+            max_topology_bytes: 4,
+            max_sessions: 1,
+            max_session_bytes: 4,
+            max_batch_items: 1,
+            ..SpikeLimits::default()
+        };
+        let mut connection = ready(candidate, limits);
+        connection.begin_invocation(1).unwrap();
+        connection.begin_invocation(2).unwrap();
+        connection
+            .complete_invocation(CONNECTION_GENERATION, 1, b"abc")
+            .unwrap();
+        let reply_full = connection.resources();
+        assert_eq!(reply_full.reply_bytes, reply_floor);
+        assert_eq!(
+            connection.complete_invocation(CONNECTION_GENERATION, 2, b"x"),
+            Err(SpikeError::ResourceLimit("reply_queue"))
+        );
+        assert_eq!(connection.resources(), reply_full);
+        assert!(connection
+            .cancel_invocation(CONNECTION_GENERATION, 2)
+            .unwrap());
+
+        connection.check_batch_items(1).unwrap();
+        assert_eq!(
+            connection.check_batch_items(2),
+            Err(SpikeError::ResourceLimit("batch_items"))
+        );
+        connection.reserve_retry().unwrap();
+        assert_eq!(
+            connection.reserve_retry(),
+            Err(SpikeError::ResourceLimit("retry_slots"))
+        );
+        connection.reserve_reconnect().unwrap();
+        assert_eq!(
+            connection.reserve_reconnect(),
+            Err(SpikeError::ResourceLimit("reconnect_slots"))
+        );
+        connection.register_deadline(41).unwrap();
+        assert_eq!(
+            connection.register_deadline(42),
+            Err(SpikeError::ResourceLimit("deadlines"))
+        );
+        connection.install_topology(1, 4).unwrap();
+        assert_eq!(
+            connection.install_topology(2, 1),
+            Err(SpikeError::ResourceLimit("topology"))
+        );
+        assert_eq!(connection.resources().topology_bytes, 4);
+        connection
+            .open_session(CONNECTION_GENERATION, 51, 4)
+            .unwrap();
+        assert_eq!(
+            connection.open_session(CONNECTION_GENERATION, 52, 1),
+            Err(SpikeError::ResourceLimit("sessions"))
+        );
+        assert_eq!(connection.resources().session_bytes, 4);
+
+        connection.register_subscription(7).unwrap();
+        connection
+            .push_event(CONNECTION_GENERATION, 7, b"event_queue_overflow")
+            .unwrap();
+        assert_eq!(connection.resources().event_bytes, gap_floor);
+        connection
+            .push_event(CONNECTION_GENERATION, 7, b"x")
+            .unwrap();
+        assert_eq!(connection.resources().event_frames, 1);
+        assert_eq!(connection.resources().event_bytes, gap_floor);
+        assert_eq!(connection.metrics().event_gaps, 1);
+        connection.heartbeat(CONNECTION_GENERATION).unwrap();
+        assert!(connection.resources().control_bytes > 0);
+
+        assert!(connection.release_retry());
+        assert!(!connection.release_retry());
+        assert!(connection.release_reconnect());
+        assert!(!connection.release_reconnect());
+        assert!(connection.remove_deadline(41));
+        assert!(connection.close_session(CONNECTION_GENERATION, 51).unwrap());
+        let _ = connection.drain_next();
+        assert_eq!(connection.disconnect(), ResourceSnapshot::default());
+    }
+}
+
+#[test]
+fn invalid_zero_limits_fail_before_ready() {
+    for candidate in TransportCandidate::ALL {
+        let bootstrap = BootstrapConnection::new(
+            candidate,
+            CONNECTION_GENERATION,
+            SpikeLimits {
+                max_retry_slots: 0,
+                ..SpikeLimits::default()
+            },
+        )
+        .verify_tls(true)
+        .unwrap()
+        .authenticate(PeerIdentity::verified("w0-client", "w0-tenant"))
+        .unwrap();
+        assert!(matches!(
+            bootstrap.negotiate(HC2_GENERATION),
+            Err(SpikeError::InvalidLimit("max_retry_slots"))
+        ));
+    }
+}
+
+#[test]
+fn identity_tenant_and_global_admission_is_atomic_and_raii_released() {
+    let controller = AdmissionController::new(AdmissionLimits {
+        max_per_identity: 1,
+        max_per_tenant: 2,
+        max_global: 3,
+    })
+    .unwrap();
+    let first_identity = PeerIdentity::verified("client-a", "tenant-a");
+    let second_identity = PeerIdentity::verified("client-b", "tenant-a");
+    let third_identity = PeerIdentity::verified("client-c", "tenant-b");
+    let same_tenant = PeerIdentity::verified("client-d", "tenant-a");
+    let global_overflow = PeerIdentity::verified("client-e", "tenant-c");
+
+    let first = controller.admit(&first_identity).unwrap();
+    assert_eq!(
+        controller.admit(&first_identity).unwrap_err(),
+        SpikeError::ResourceLimit("identity_connections")
+    );
+    let second = controller.admit(&second_identity).unwrap();
+    assert_eq!(
+        controller.admit(&same_tenant).unwrap_err(),
+        SpikeError::ResourceLimit("tenant_connections")
+    );
+    let third = controller.admit(&third_identity).unwrap();
+    assert_eq!(
+        controller.admit(&global_overflow).unwrap_err(),
+        SpikeError::ResourceLimit("global_connections")
+    );
+    assert_eq!(
+        controller.snapshot(),
+        AdmissionSnapshot {
+            global_connections: 3,
+            active_identities: 3,
+            active_tenants: 2,
+        }
+    );
+    drop(first);
+    drop(second);
+    drop(third);
+    assert_eq!(controller.snapshot(), AdmissionSnapshot::default());
 }

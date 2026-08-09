@@ -26,7 +26,7 @@
 | H09 | Lifecycle checks are runtime-only, not typestate | complete | `feat(client-plane): make bootstrap sequencing typestate-safe` | compile-fail bootstrap + runtime race/cleanup tests |
 | H10 | Connection generation/stale-message fencing is absent | complete | `feat(client-plane): fence stale connection generations` | nonzero checked epoch, wire/runtime fencing, reconnect/reused-ID matrix |
 | H11 | Reconnect and subscription/session repair are absent | open | — | deterministic reconnect/repair matrix |
-| H12 | Resource bounds omit byte/retry/session/global budgets | open | — | every owner bounded and observable |
+| H12 | Resource bounds omit byte/retry/session/global budgets | complete | `feat(client-plane): bound all retained resource classes` | ownership ledger, byte/count boundaries, atomic admission, zero-close proof |
 | H13 | Negative TLS matrix is incomplete | open | — | hostname/time/EKU/rotation/policy cases |
 | H14 | Discovery signing/replay protection is absent | open | — | signed canonical artifact + rotation |
 | H15 | Hermetic Python generation is absent | open | — | pinned offline-capable generation/test |
@@ -343,6 +343,16 @@ accounting after close.
 make them validated configuration with safe defaults, never unbounded zero.
 
 **Done.** The ownership ledger names and tests every retained allocation class.
+
+**Completion evidence (2026-08-09).** Validated nonzero configuration now
+bounds frame/message bytes, batch items, pending calls, reply/event/control
+frame bytes and counts, retries, reconnects, deadlines, subscriptions, topology
+nodes/bytes, and generation-fenced sessions/bytes. Reply rejection preserves
+pending work; topology/session changes and identity/tenant/global admission are
+atomic. Admission permits release by RAII. Boundary/one-over, event byte overflow
+to one gap, adversarial length, cancellation, and disconnect tests cover all
+owners named in `docs/architecture/HC2_RESOURCE_OWNERSHIP.md`; close returns the
+expanded accounting snapshot to zero.
 
 ## H13. Complete the TLS and authorization negative matrix
 
