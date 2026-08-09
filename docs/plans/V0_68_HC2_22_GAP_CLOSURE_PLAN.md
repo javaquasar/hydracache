@@ -21,7 +21,7 @@
 | H04 | Authenticated discovery is represented by a boolean | complete | `feat(client-plane): authenticate discovery by type` | opaque proof token, cluster binding, compile-fail tests |
 | H05 | Authenticated-unsupported fallback is caller-asserted | open | — | verified attempt provenance |
 | H06 | Endpoint authority is an unparsed string | complete | `feat(client-plane): parse canonical endpoint identities` | strict URI corpus + adapter/SNI/origin policy |
-| H07 | Discovery rollback is not prevented | open | — | cluster binding + monotonic epoch |
+| H07 | Discovery rollback is not prevented | complete | `feat(client-plane): reject discovery rollback and equivocation` | stateful replay/cluster/node-epoch matrix |
 | H08 | Advertisement cannot represent multi-node endpoints | complete | `feat(client-plane): model bounded multi-node discovery` | three-node/duplicate/conflict/bound tests |
 | H09 | Lifecycle checks are runtime-only, not typestate | complete | `feat(client-plane): make bootstrap sequencing typestate-safe` | compile-fail bootstrap + runtime race/cleanup tests |
 | H10 | Connection generation/stale-message fencing is absent | open | — | late old-generation reply/event refusal |
@@ -200,6 +200,16 @@ after intentional cluster replacement needs explicit operator reset, never
 automatic downgrade.
 
 **Done.** Authenticated replay cannot change routing or transport selection.
+
+**Completion evidence (2026-08-09).** `DiscoveryState` survives reconnects and
+binds itself on first acceptance to one cluster ID, highest authenticated
+document epoch, accepted document, and highest epoch for every observed node.
+Lower document epochs, contradictory same-epoch documents, automatic cluster
+changes, and node-epoch rollback inside a newer document are rejected before
+state mutation. Exact replay is idempotent, forward epochs advance, and an
+intentional cluster replacement requires the named operator-reset method.
+Runtime tests cover replay, equivocation, cross-cluster rebinding, reconnect,
+node rollback, rolling forward, and explicit reset.
 
 ## H08. Model multi-node transport endpoints explicitly
 

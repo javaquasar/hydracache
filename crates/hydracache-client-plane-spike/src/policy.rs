@@ -1,6 +1,6 @@
 //! Fail-closed server and client transport-selection policy for the HC/2 spike.
 
-use std::collections::BTreeSet;
+use std::collections::{BTreeMap, BTreeSet};
 
 use thiserror::Error;
 
@@ -226,6 +226,9 @@ impl DiscoveryAdvertisement {
         if self.generation != HC2_GENERATION {
             return Err(TransportPolicyError::UnknownGeneration(self.generation));
         }
+        if self.epoch == 0 {
+            return Err(TransportPolicyError::InvalidDiscoveryEpoch);
+        }
         if self.nodes.is_empty() || self.nodes.len() > MAX_DISCOVERY_NODES {
             return Err(TransportPolicyError::NoEnabledTransport);
         }
@@ -294,6 +297,74 @@ impl AuthenticatedAdvertisement {
 
     pub fn nodes(&self) -> &[NodeAdvertisement] {
         &self.inner.nodes
+    }
+}
+
+/// Result of applying authenticated discovery to the client's monotonic view.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum DiscoveryUpdate {
+    Advanced,
+    Unchanged,
+}
+
+/// Stateful rollback/equivocation gate retained across reconnects.
+#[derive(Debug, Default)]
+pub struct DiscoveryState {
+    cluster_id: Option<String>,
+    highest_epoch: u64,
+    node_epochs: BTreeMap<NodeId, u64>,
+    accepted: Option<AuthenticatedAdvertisement>,
+}
+
+impl DiscoveryState {
+    pub fn accept(
+        &mut self,
+        advertisement: AuthenticatedAdvertisement,
+    ) -> Result<DiscoveryUpdate, TransportPolicyError> {
+        if let Some(cluster_id) = &self.cluster_id {
+            if cluster_id != advertisement.cluster_id() {
+                return Err(TransportPolicyError::UnexpectedClusterChange);
+            }
+        }
+        if advertisement.epoch() < self.highest_epoch {
+            return Err(TransportPolicyError::DiscoveryRollback);
+        }
+        if advertisement.epoch() == self.highest_epoch && self.highest_epoch != 0 {
+            return if self.accepted.as_ref() == Some(&advertisement) {
+                Ok(DiscoveryUpdate::Unchanged)
+            } else {
+                Err(TransportPolicyError::DiscoveryEquivocation)
+            };
+        }
+        for node in advertisement.nodes() {
+            if self
+                .node_epochs
+                .get(node.node_id())
+                .is_some_and(|epoch| node.epoch() < *epoch)
+            {
+                return Err(TransportPolicyError::NodeEpochRollback(
+                    node.node_id().clone(),
+                ));
+            }
+        }
+
+        self.cluster_id = Some(advertisement.cluster_id().to_owned());
+        self.highest_epoch = advertisement.epoch();
+        for node in advertisement.nodes() {
+            self.node_epochs
+                .insert(node.node_id().clone(), node.epoch());
+        }
+        self.accepted = Some(advertisement);
+        Ok(DiscoveryUpdate::Advanced)
+    }
+
+    pub fn accepted(&self) -> Option<&AuthenticatedAdvertisement> {
+        self.accepted.as_ref()
+    }
+
+    /// Explicit operator action for intentional cluster replacement.
+    pub fn reset_for_cluster_replacement(&mut self) {
+        *self = Self::default();
     }
 }
 
@@ -447,6 +518,8 @@ pub enum TransportPolicyError {
     UnknownGeneration(u16),
     #[error("cluster id is empty or exceeds its bound")]
     InvalidClusterId,
+    #[error("discovery epoch must be non-zero")]
+    InvalidDiscoveryEpoch,
     #[error("node id is empty, oversized, non-ASCII, or contains invalid characters")]
     InvalidNodeId,
     #[error("node epoch must be non-zero")]
@@ -461,6 +534,14 @@ pub enum TransportPolicyError {
     ConflictingAuthority,
     #[error("discovery cluster identity does not match the verified channel")]
     ClusterIdentityMismatch,
+    #[error("authenticated discovery attempted to change the bound cluster")]
+    UnexpectedClusterChange,
+    #[error("authenticated discovery epoch rolled back")]
+    DiscoveryRollback,
+    #[error("authenticated discovery contradicted the accepted same-epoch document")]
+    DiscoveryEquivocation,
+    #[error("node {0:?} epoch rolled back in a newer discovery document")]
+    NodeEpochRollback(NodeId),
     #[error("unready endpoint {0:?} was advertised")]
     UnreadyAdvertisement(TransportCandidate),
     #[error("client transport preference is empty or contains duplicates")]
@@ -814,6 +895,75 @@ mod tests {
             Err(TransportPolicyError::ContradictoryNodeTransport(
                 NodeId::parse("node-z").unwrap(),
                 TransportCandidate::GrpcBidirectional,
+            ))
+        );
+    }
+
+    #[test]
+    fn discovery_state_rejects_replay_equivocation_and_cluster_swap() {
+        let first = all_transports();
+        let mut state = DiscoveryState::default();
+        assert_eq!(state.accept(first.clone()), Ok(DiscoveryUpdate::Advanced));
+        assert_eq!(state.accept(first), Ok(DiscoveryUpdate::Unchanged));
+
+        let mut replay = raw_all_transports();
+        replay.epoch = 41;
+        let replay = replay
+            .authenticate(VerifiedDiscoveryEvidence::verified_channel("cluster-a"))
+            .unwrap();
+        assert_eq!(
+            state.accept(replay),
+            Err(TransportPolicyError::DiscoveryRollback)
+        );
+
+        let mut equivocation = raw_all_transports();
+        equivocation.nodes[0].epoch = 2;
+        let equivocation = equivocation
+            .authenticate(VerifiedDiscoveryEvidence::verified_channel("cluster-a"))
+            .unwrap();
+        assert_eq!(
+            state.accept(equivocation),
+            Err(TransportPolicyError::DiscoveryEquivocation)
+        );
+
+        let mut other = raw_all_transports();
+        other.cluster_id = "cluster-b".into();
+        other.epoch = 43;
+        let other = other
+            .authenticate(VerifiedDiscoveryEvidence::verified_channel("cluster-b"))
+            .unwrap();
+        assert_eq!(
+            state.accept(other.clone()),
+            Err(TransportPolicyError::UnexpectedClusterChange)
+        );
+        state.reset_for_cluster_replacement();
+        assert_eq!(state.accept(other), Ok(DiscoveryUpdate::Advanced));
+    }
+
+    #[test]
+    fn reconnect_rolls_forward_but_never_rolls_back_a_known_node() {
+        let mut state = DiscoveryState::default();
+        state.accept(all_transports()).unwrap();
+
+        let mut next = raw_all_transports();
+        next.epoch = 43;
+        next.nodes[0].epoch = 2;
+        let next = next
+            .authenticate(VerifiedDiscoveryEvidence::verified_channel("cluster-a"))
+            .unwrap();
+        assert_eq!(state.accept(next), Ok(DiscoveryUpdate::Advanced));
+        assert_eq!(state.accepted().unwrap().epoch(), 43);
+
+        let mut stale_node = raw_all_transports();
+        stale_node.epoch = 44;
+        stale_node.nodes[0].epoch = 1;
+        let stale_node = stale_node
+            .authenticate(VerifiedDiscoveryEvidence::verified_channel("cluster-a"))
+            .unwrap();
+        assert_eq!(
+            state.accept(stale_node),
+            Err(TransportPolicyError::NodeEpochRollback(
+                NodeId::parse("node-a").unwrap()
             ))
         );
     }

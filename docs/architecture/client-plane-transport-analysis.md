@@ -22,8 +22,8 @@ Current implementation evidence:
 - selectable server/client transport policy: executable in the W0 spike with
   maturity bounds, an unforgeable cluster-bound authenticated-discovery type,
   canonical adapter-bound endpoint identities, bounded multi-node records,
-  pinned/ordered choice, and downgrade refusal after every security or protocol
-  failure;
+  monotonic rollback/equivocation protection across reconnects, pinned/ordered
+  choice, and downgrade refusal after every security or protocol failure;
 - typestate-enforced bootstrap lifecycle: `Created -> TlsVerified ->
   Authenticated -> Ready`, followed by one bounded runtime for `Ready ->
   Draining -> Closed`; compile-fail tests make early dispatch/negotiation

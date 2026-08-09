@@ -98,6 +98,13 @@ opaque, crate-constructed proof from a verified adapter boundary and must match
 that boundary's expected cluster identity. SDK callers cannot construct either
 the authenticated wrapper or the proof token directly.
 
+An SDK retains a `DiscoveryState` across reconnects. First acceptance binds the
+cluster ID; subsequent documents must advance monotonically or exactly equal
+the accepted same-epoch view. A contradictory same-epoch document, lower
+document epoch, cluster swap, or rollback of any known node epoch fails before
+routing state changes. Intentional cluster replacement uses a separately named
+operator reset and is never inferred from connection failure.
+
 ## Shared adapter boundary
 
 ```text
