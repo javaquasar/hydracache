@@ -33,7 +33,7 @@
 | H16 | Java is a codec fixture, not a production SDK | in progress | `feat(client-plane): add preview Java HC/2 SDK` | Maven SDK/external consumer and Java↔Rust process proof green; Rust recovery contract is complete, while Java recovery, real daemon, and previous artifact wait on H11 language parity/H01/H18 |
 | H17 | Rust production SDK still uses HC/1 HTTP | in progress | `feat(client-plane): add transport-neutral Rust HC/2 SDK` | native SDK/process/package/HC/1 and H11 reconnect/repair gates green; real daemon waits on H01 |
 | H18 | Real previous-artifact compatibility matrix is absent | in progress | `test(client-plane): retain HC/2 compatibility baseline` | immutable H17 Rust/Java clients and executable baseline matrix green; production daemon, HC/1+HC/2, reverse direction, rolling upgrade, and deprecation remain blocked on H01/H02 and a later preview |
-| H19 | Deterministic network fault proxy is absent | in progress | `test(client-plane): add deterministic fault proxy` | all bounded actions, same-candidate semantics, real async stream, retained seed and exact replay are green; H11/H20 lifecycle bindings are retained, while H03 remains |
+| H19 | Deterministic network fault proxy is absent | complete | `test(client-plane): complete deterministic fault bindings` | all bounded actions, real async stream, exact replay, eight H11 and three H20 lifecycle traces, plus four plans applied unchanged to every H03 candidate codec |
 | H20 | HTTP/2 graceful shutdown remains unresolved | complete | `fix(client-plane): bound HTTP2 graceful drain` | two-GOAWAY controller, deadline/reset reasons, retained fault traces, real TLS/H2 zero-accounting task joins without abort |
 | H21 | Observability is local to the spike | complete | `feat(client-plane): export bounded privacy-safe diagnostics` | v1 typed metric/trace export, 64 salted tenant buckets, bounded trace ring, privacy/cardinality/reconnect/close evidence, operator runbook |
 | H22 | Linux CI, interop, fuzz, and soak gates are absent | in progress | `ci(client-plane): install Linux interop fuzz and soak gates` | four-lane fail-closed contract, pinned workflow/container, receipts/admission canaries, Docker proof, and runbook implemented; first GitHub/fixed-host receipts and branch-protection activation remain operational evidence |
@@ -100,9 +100,10 @@ freezes debt; keep schema `v2alpha` until H03 and cross-language gates pass.
 
 ## H03. Accept ADR-0019 only after the transport bake-off is complete
 
-**Current truth.** gRPC is provisional; all adapters remain experimental. TLS
-parity and 256 correlations are green, but fault, shutdown, Python, socket
-corpus, and clean-generation requirements remain red.
+**Current truth.** gRPC is provisional; all adapters remain experimental. TLS,
+256 correlations, deterministic faults, shutdown, and Python generation are
+green, but the hostile socket corpus, equivalent Rust/Java clean-generation
+proof, and the final operational-cost decision remain red.
 
 **Implementation.** Complete the same boolean harness on all candidates,
 capture dependency/operational costs, select one primary adapter, and retain or
@@ -576,12 +577,15 @@ its byte schedule and retain direct loopbacks as controls.
 
 **Done.** Every lifecycle failure used by H03/H11/H20 has a deterministic trace.
 
-H19 is `in progress`. The bounded transport-neutral scheduler, all declared
-actions, real async-stream delivery, same semantic candidate cases, exact
-retained seed replay, tamper refusal, and payload-free artifact gate are green.
-H20 and H11 now bind their concrete lifecycle failures to retained traces. H03
-still needs to bind its final selected-candidate lifecycle corpus before H19 can
-be marked complete. See
+**Completion evidence (2026-08-10).** The bounded transport-neutral scheduler,
+all declared actions, real async-stream delivery, exact retained replay, tamper
+refusal, and payload-free artifact gate are green. Eight H11 traces bind the
+reconnect/repair lifecycle and three H20 traces bind bounded drain termination.
+Four additional retained plans are applied unchanged to the encoded semantic
+frame of gRPC, bidirectional HTTP/2, and dedicated TLS/TCP: fragmentation,
+coalescing, delay, and window pressure preserve decoding; close-after-byte,
+duplicate, and reset fail closed. Sixteen checked-in artifacts are replayed by
+`cargo xtask client-plane-fault-check`; direct loopbacks remain controls. See
 `docs/architecture/HC2_DETERMINISTIC_FAULT_PROXY.md`.
 
 ## H20. Resolve HTTP/2 graceful drain and forced termination

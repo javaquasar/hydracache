@@ -1,0 +1,60 @@
+{
+  "schema": "hydracache.hc2.fault-replay.v1",
+  "plan": {
+    "schema": "hydracache.hc2.fault-plan.v1",
+    "case_id": "h03-candidate-close",
+    "seed": 1592590366,
+    "direction": "client_to_server",
+    "max_buffered_bytes": 1048576,
+    "max_trace_events": 512,
+    "actions": [
+      {
+        "kind": "close_after_bytes",
+        "bytes": 1
+      }
+    ]
+  },
+  "synthetic_input": {
+    "chunk_sizes": [
+      17,
+      31,
+      47,
+      71
+    ]
+  },
+  "trace": {
+    "schema": "hydracache.hc2.fault-trace.v1",
+    "case_id": "h03-candidate-close",
+    "seed": 1592590366,
+    "direction": "client_to_server",
+    "input_chunks": 4,
+    "input_bytes": 166,
+    "input_sha256": "8ee3b43f08be53e7cc0b8dda75a7946f6d2358113b81804354a0afd4c6e5fed6",
+    "actions": [
+      {
+        "index": 0,
+        "action": {
+          "kind": "close_after_bytes",
+          "bytes": 1
+        },
+        "chunks_before": 4,
+        "chunks_after": 1,
+        "bytes_before": 166,
+        "bytes_after": 1,
+        "max_delivery_tick": 0,
+        "terminal": "closed_after_bytes"
+      }
+    ],
+    "deliveries": [
+      {
+        "sequence": 0,
+        "tick": 0,
+        "len": 1,
+        "sha256": "04d6c0c946716aac894fc1653383543a91faab601302cf011607c82f06304651"
+      }
+    ],
+    "output_bytes": 1,
+    "output_sha256": "04d6c0c946716aac894fc1653383543a91faab601302cf011607c82f06304651",
+    "terminal": "closed_after_bytes"
+  }
+}

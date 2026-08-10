@@ -4,10 +4,11 @@
 
 Proposed for 0.68. The current implementation establishes the common sans-I/O
 semantic harness, CA-signed mTLS on all three real transports, negative
-certificate rejection, 256 correlated real-stream invocations, and a generated
-Rust/Java round trip. This ADR must not become Accepted until the remaining
-real-stream fault, shutdown, socket-corpus, Python-generation, and clean-
-generation conditions pass. ADR-0007 remains authoritative for HC/1 v1-v4.
+certificate rejection, 256 correlated real-stream invocations, generated
+Rust/Java/Python proof, bounded shutdown, and retained deterministic fault
+bindings. This ADR must not become Accepted until the remaining hostile socket
+corpus, complete clean-generation, and operational-cost conditions pass.
+ADR-0007 remains authoritative for HC/1 v1-v4.
 
 ## Context
 

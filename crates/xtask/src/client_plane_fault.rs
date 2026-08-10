@@ -7,7 +7,7 @@ use hydracache_client_plane_spike::fault_proxy::{
     FaultAction, FaultPlan, FaultReplayArtifact, ProxyDirection,
 };
 
-const RETAINED_ARTIFACTS: [&str; 12] = [
+const RETAINED_ARTIFACTS: [&str; 16] = [
     "docs/testing/hc2-fault-proxy/h19-seed-1592590353.json",
     "docs/testing/hc2-fault-proxy/h20-client-half-close-seed-1592590354.json",
     "docs/testing/hc2-fault-proxy/h20-uncooperative-timeout-seed-1592590355.json",
@@ -20,6 +20,10 @@ const RETAINED_ARTIFACTS: [&str; 12] = [
     "docs/testing/hc2-fault-proxy/h11-session-loss-seed-1592590362.json",
     "docs/testing/hc2-fault-proxy/h11-duplicate-event-seed-1592590363.json",
     "docs/testing/hc2-fault-proxy/h11-reconnect-exhausted-seed-1592590364.json",
+    "docs/testing/hc2-fault-proxy/h03-candidate-preservation-seed-1592590365.json",
+    "docs/testing/hc2-fault-proxy/h03-candidate-close-seed-1592590366.json",
+    "docs/testing/hc2-fault-proxy/h03-candidate-duplicate-seed-1592590367.json",
+    "docs/testing/hc2-fault-proxy/h03-candidate-reset-seed-1592590368.json",
 ];
 const TARGET_DIR: &str = "target/hc2-fault-check";
 
@@ -41,7 +45,7 @@ pub fn run(args: Vec<String>) -> Result<(), Box<dyn Error>> {
             write_artifact(&root, case_id, seed, Path::new(output))
         }
         _ => Err(
-            "usage: client-plane-fault-check [--replay <path>|[--case <h19|h20-*|h11-handshake-reset|h11-server-restart|h11-leader-hint-reset|h11-subscription-gap|h11-invocation-reset|h11-session-loss|h11-duplicate-event|h11-reconnect-exhausted> --seed <u64> --output <path>]".into(),
+            "usage: client-plane-fault-check [--replay <path>|[--case <h19|h20-*|h11-*|h03-candidate-preservation|h03-candidate-close|h03-candidate-duplicate|h03-candidate-reset> --seed <u64> --output <path>]".into(),
         ),
     }
 }
@@ -70,7 +74,7 @@ pub fn check_at_root(root: &Path, run_test: bool) -> Result<(), Box<dyn Error>> 
             );
         }
     }
-    println!("client-plane-fault-check: OK (H11/H19/H20 retained seeds replayed exactly; raw payload absent)");
+    println!("client-plane-fault-check: OK (H03/H11/H19/H20 retained seeds replayed exactly; raw payload absent)");
     Ok(())
 }
 
@@ -214,6 +218,38 @@ fn retained_plan(case_id: &str, seed: u64) -> Result<FaultPlan, Box<dyn Error>> 
             ProxyDirection::ServerToClient,
             vec![FaultAction::BlockDirection],
         ),
+        "h03-candidate-preservation" => FaultPlan::new(
+            "h03-candidate-preservation",
+            seed,
+            ProxyDirection::ClientToServer,
+            vec![
+                FaultAction::Fragment { max_chunk_bytes: 5 },
+                FaultAction::Coalesce { max_chunks: 3 },
+                FaultAction::Delay { ticks: 2 },
+                FaultAction::BandwidthPressure {
+                    bytes_per_tick: 7,
+                    window_bytes: 21,
+                },
+            ],
+        ),
+        "h03-candidate-close" => FaultPlan::new(
+            "h03-candidate-close",
+            seed,
+            ProxyDirection::ClientToServer,
+            vec![FaultAction::CloseAfterBytes { bytes: 1 }],
+        ),
+        "h03-candidate-duplicate" => FaultPlan::new(
+            "h03-candidate-duplicate",
+            seed,
+            ProxyDirection::ClientToServer,
+            vec![FaultAction::Duplicate { copies: 1 }],
+        ),
+        "h03-candidate-reset" => FaultPlan::new(
+            "h03-candidate-reset",
+            seed,
+            ProxyDirection::ClientToServer,
+            vec![FaultAction::Reset],
+        ),
         other => return Err(format!("unsupported retained fault case: {other}").into()),
     };
     Ok(plan)
@@ -307,6 +343,38 @@ mod tests {
                 1_592_590_364,
                 FaultAction::BlockDirection,
             ),
+        ] {
+            let plan = retained_plan(case_id, seed).unwrap();
+            assert_eq!(plan.actions.last(), Some(&terminal), "{case_id}");
+            plan.validate().unwrap();
+            let artifact = FaultReplayArtifact::create(plan, vec![17, 31, 47, 71]).unwrap();
+            artifact.verify().unwrap();
+            assert!(serde_json::to_vec(&artifact).unwrap().len() < 64 * 1024);
+        }
+    }
+
+    #[test]
+    fn h03_candidate_plans_are_retained_and_bounded() {
+        for (case_id, seed, terminal) in [
+            (
+                "h03-candidate-preservation",
+                1_592_590_365,
+                FaultAction::BandwidthPressure {
+                    bytes_per_tick: 7,
+                    window_bytes: 21,
+                },
+            ),
+            (
+                "h03-candidate-close",
+                1_592_590_366,
+                FaultAction::CloseAfterBytes { bytes: 1 },
+            ),
+            (
+                "h03-candidate-duplicate",
+                1_592_590_367,
+                FaultAction::Duplicate { copies: 1 },
+            ),
+            ("h03-candidate-reset", 1_592_590_368, FaultAction::Reset),
         ] {
             let plan = retained_plan(case_id, seed).unwrap();
             assert_eq!(plan.actions.last(), Some(&terminal), "{case_id}");

@@ -152,7 +152,7 @@ green from documentation or a sans-I/O model alone.
 | 4 | Separated runtime services | independent connection, invocation, listener, topology, session, retry, and codec tests |
 | 5 | Protocol boundedness | explicit limits/outcomes/metrics for every queue, batch, frame, pending call, subscription, retry, and session |
 | 6 | Reconnect and repair | stale-generation refusal, one completion, re-registration, resume/gap repair, lock-session loss |
-| 7 | Deterministic fault testing | H19 scheduler/replay gate green for seeded split/coalesce/delay/reorder/duplicate/drop/block/half-open/reset/late/bandwidth/close; H20 half-close/timeout/reset bindings retained, while H03/H11 remain required |
+| 7 | Deterministic fault testing | H19 complete: bounded scheduler/replay plus retained H03 candidate, H11 recovery, and H20 drain lifecycle bindings |
 | 8 | Real compatibility | previous client/server binaries, HC/1+HC/2 coexistence, rolling upgrade, unknown fields/capabilities |
 | 9 | One-source SDK generation | Rust/Java/Python codecs and contract metadata generated from the reviewed schema |
 | 10 | Facade separation | Hazelcast-shaped Java facade maps to the native SDK and cannot define wire semantics |

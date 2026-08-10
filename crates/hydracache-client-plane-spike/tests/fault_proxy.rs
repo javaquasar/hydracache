@@ -1,3 +1,4 @@
+use std::fs;
 use std::time::Duration;
 
 use hydracache_client_plane_spike::fault_proxy::{
@@ -11,6 +12,18 @@ use tokio::io::{AsyncReadExt, AsyncWriteExt};
 
 fn plan(case_id: &str, seed: u64, actions: Vec<FaultAction>) -> FaultPlan {
     FaultPlan::new(case_id, seed, ProxyDirection::ClientToServer, actions)
+}
+
+fn retained(case: &str) -> FaultReplayArtifact {
+    let path = format!(
+        "{}/../../docs/testing/hc2-fault-proxy/{case}.json",
+        env!("CARGO_MANIFEST_DIR")
+    );
+    let artifact: FaultReplayArtifact =
+        serde_json::from_slice(&fs::read(path).expect("read retained H03 trace"))
+            .expect("decode retained H03 trace");
+    artifact.verify().expect("replay retained H03 trace");
+    artifact
 }
 
 #[test]
@@ -141,6 +154,10 @@ fn half_open_can_retain_then_late_deliver_bytes() {
 
 #[test]
 fn semantic_preservation_and_fail_closed_faults_match_all_candidates() {
+    let preservation = retained("h03-candidate-preservation-seed-1592590365");
+    let close = retained("h03-candidate-close-seed-1592590366");
+    let duplicate = retained("h03-candidate-duplicate-seed-1592590367");
+    let reset = retained("h03-candidate-reset-seed-1592590368");
     for candidate in TransportCandidate::ALL {
         let codec = SpikeCodec::new(candidate, 64 * 1024);
         let frame = SpikeFrame::current(
@@ -151,49 +168,19 @@ fn semantic_preservation_and_fail_closed_faults_match_all_candidates() {
         );
         let encoded = codec.encode(&frame).unwrap();
         let split = vec![encoded[..5].to_vec(), encoded[5..].to_vec()];
-        let preserved = execute(
-            &plan(
-                "candidate-preservation",
-                0x1919,
-                vec![
-                    FaultAction::Fragment { max_chunk_bytes: 5 },
-                    FaultAction::Coalesce { max_chunks: 3 },
-                    FaultAction::Delay { ticks: 2 },
-                    FaultAction::BandwidthPressure {
-                        bytes_per_tick: 7,
-                        window_bytes: 21,
-                    },
-                ],
-            ),
-            split.clone(),
-        )
-        .unwrap();
+        let preserved = execute(&preservation.plan, split.clone()).unwrap();
         assert_eq!(codec.decode(&preserved.output_bytes()).unwrap(), frame);
 
-        let truncated = execute(
-            &plan(
-                "candidate-close",
-                0x1919,
-                vec![FaultAction::CloseAfterBytes {
-                    bytes: encoded.len() - 1,
-                }],
-            ),
-            split.clone(),
-        )
-        .unwrap();
+        let truncated = execute(&close.plan, split.clone()).unwrap();
         assert!(codec.decode(&truncated.output_bytes()).is_err());
         assert_eq!(truncated.trace.terminal, ProxyTerminal::ClosedAfterBytes);
 
-        let duplicated = execute(
-            &plan(
-                "candidate-duplicate",
-                0x1919,
-                vec![FaultAction::Duplicate { copies: 1 }],
-            ),
-            split,
-        )
-        .unwrap();
+        let duplicated = execute(&duplicate.plan, split.clone()).unwrap();
         assert!(codec.decode(&duplicated.output_bytes()).is_err());
+
+        let reset = execute(&reset.plan, split).unwrap();
+        assert!(codec.decode(&reset.output_bytes()).is_err());
+        assert_eq!(reset.trace.terminal, ProxyTerminal::Reset);
     }
 }
 

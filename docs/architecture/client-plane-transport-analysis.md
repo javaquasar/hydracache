@@ -202,10 +202,11 @@ one HC/2 semantic contract; they do not make every experimental adapter stable.
 
 H21 now supplies the stable, bounded, privacy-safe
 `hydracache.hc2.client_plane.v1` diagnostics schema and operator runbook. It
-does not install a production endpoint while H01 remains open. The next W0
-slice must bind the now-green deterministic scheduler to H03/H11
-reconnect and repair outcomes, add the malformed/cross-candidate socket corpus,
-and extend the dirty-generation gate beyond the now-green Python package. H20
+does not install a production endpoint while H01 remains open. H19 now binds
+retained deterministic plans to all H03 candidate codecs, the H11 reconnect and
+repair matrix, and the H20 drain lifecycle. The next W0 slice must add the
+malformed/cross-candidate socket corpus and extend the dirty-generation gate
+beyond the now-green Python package. H20
 now distinguishes zero HydraCache application accounting from transport-task
 termination with a two-GOAWAY state machine, absolute deadline, reset reason,
 and final bounded transport-owner drop. The real TLS/H2 fixture joins both
