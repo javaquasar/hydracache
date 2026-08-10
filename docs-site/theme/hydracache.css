@@ -24,6 +24,11 @@
   height: 96px;
 }
 
+.mermaid {
+  margin: 1.25rem 0;
+  overflow-x: auto;
+}
+
 @media (max-width: 700px) {
   html,
   body {

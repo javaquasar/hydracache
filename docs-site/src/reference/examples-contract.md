@@ -24,6 +24,8 @@ Compile the documentation examples:
 cargo check --manifest-path docs-site/examples/Cargo.toml --all-targets
 ```
 
+For a complete docs publishing workflow, see [Publishing Docs](publishing-docs.md).
+
 ## Rules
 
 - Runnable examples belong in `docs-site/examples`.

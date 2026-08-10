@@ -1,6 +1,6 @@
 # Local Cache API
 
-This page summarizes the main local cache methods. Use it as a map, not as a replacement for Rustdoc.
+This page summarizes the main local cache methods. Use it as a map, not as a replacement for [Rustdoc](api-links.md).
 
 ## Reads And Writes
 
@@ -53,3 +53,5 @@ It keeps shared storage, stats, single-flight, tags, and invalidation behavior, 
 | callback listeners | Register callback-style mutation/access listeners while the returned handle is alive. |
 
 Use diagnostics to prove basic cache behavior locally: the first call should miss and load, and the second same-key call should hit.
+
+For exact signatures, see [API Links](api-links.md).

@@ -27,14 +27,29 @@ HydraCache is useful when a service needs more than `HashMap`-style reuse:
 
 The core idea is simple: a cache key identifies one value, and tags describe which writes can invalidate groups of values. Everything else builds on that contract.
 
+## Choose Your Path
+
+| Goal | Start here |
+| --- | --- |
+| Cache one local value or loader | [Local Cache](guides/local-cache.md) |
+| Reuse one typed namespace across call sites | [Typed Cache](guides/typed-cache.md) |
+| Cache ordinary async functions | [Cacheable Functions](guides/cacheable-functions.md) |
+| Cache repository or query results | [Database Query Caching](guides/database-query-caching.md) |
+| Pick SQLx, Diesel, or SeaORM integration | [SQLx](guides/sqlx-adapter.md), [Diesel](guides/diesel-adapter.md), [SeaORM](guides/seaorm-adapter.md) |
+| Review production readiness | [Production Checklist](production-checklist.md) |
+| Avoid common cache mistakes | [Anti-patterns](anti-patterns.md) |
+
 ## First Path
 
 If you are new to HydraCache, read these pages in order:
 
 1. [Getting Started](getting-started.md)
-2. [Keys and Tags](concepts/keys-and-tags.md)
-3. [Local Cache](guides/local-cache.md)
-4. [Database Query Caching](guides/database-query-caching.md)
+2. [Architecture](architecture.md)
+3. [Decision Guide](decision-guide.md)
+4. [Production Checklist](production-checklist.md)
+5. [Keys and Tags](concepts/keys-and-tags.md)
+6. [Local Cache](guides/local-cache.md)
+7. [Database Query Caching](guides/database-query-caching.md)
 
 ## Concepts vs Guides
 
@@ -46,6 +61,8 @@ The documentation is split deliberately:
 
 If you need to make a design decision, start with concepts. If you already know what you want to build, start with guides.
 
+Use [Use Cases](use-cases.md) for concrete scenarios and [API Links](reference/api-links.md) when you need exact Rust signatures on docs.rs.
+
 ## Documentation Shape
 
 This site is intentionally separate from the longer Quarto book draft under `docs/book/`. The docs site is the practical public surface. The book can remain a deeper narrative track for design history and long-form explanation.
@@ -56,6 +73,7 @@ The public docs should be self-contained. The article series below is linked as 
 
 - [GitHub repository](https://github.com/javaquasar/hydracache)
 - [crates.io package](https://crates.io/crates/hydracache)
+- [docs.rs API](https://docs.rs/hydracache/latest/hydracache/)
 
 ## Article Series
 

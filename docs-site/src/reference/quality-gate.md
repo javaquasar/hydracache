@@ -17,6 +17,8 @@ For the public docs site specifically:
 cargo fmt --manifest-path docs-site/examples/Cargo.toml --check
 cargo check --manifest-path docs-site/examples/Cargo.toml --all-targets --locked
 mdbook build docs-site
+node scripts/docs-link-check.mjs
+node scripts/docs-visual-smoke.mjs
 ```
 
 Cluster load stability checks live in a separate integration target. The small smoke test runs in the normal suite, and the heavier manual workload is ignored by default.
