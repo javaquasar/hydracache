@@ -4,8 +4,8 @@
 
 H19 adds a replayable, bounded byte-stream fault scheduler to the
 non-production `hydracache-client-plane-spike` crate. It is test infrastructure,
-not a production listener or a network emulator. H20 now consumes retained
-fault traces, but this document is not evidence that H03 or H11 is complete.
+not a production listener or a network emulator. H11 and H20 now consume
+retained fault traces, but this document is not evidence that H03 is complete.
 Direct dedicated-TCP, HTTP/2, and gRPC loopbacks remain the control group.
 
 The proxy addresses a specific evidence gap: ordinary loopbacks cannot
@@ -75,6 +75,10 @@ raw frames from users.
   candidate;
 - delivery through real Tokio async byte streams, not only a pure model;
 - replay tamper detection.
+- exact replay of all eight H11 recovery traces before the recovering-client
+  lifecycle matrix exercises handshake fallback, restart, leader movement,
+  subscription repair, invocation replay, session loss, duplicate suppression,
+  and reconnect exhaustion.
 
 The retained seed and reproduction policy are documented in
 [`../testing/hc2-fault-proxy/README.md`](../testing/hc2-fault-proxy/README.md).
@@ -85,6 +89,7 @@ The retained seed and reproduction policy are documented in
 cargo xtask client-plane-fault-check
 cargo xtask client-plane-fault-check --replay docs/testing/hc2-fault-proxy/h19-seed-1592590353.json
 cargo xtask client-plane-fault-check --seed 1592590353 --output target/hc2-fault-traces/replay.json
+cargo test -p hydracache-client-hc2 --test reconnect_repair --locked
 cargo xtask client-plane-spike-check
 ```
 
@@ -94,8 +99,8 @@ crate test run keeps the three direct loopbacks as controls.
 
 ## Remaining integration boundary
 
-H19 is `in progress`, not complete. H20 now binds client half-close,
+H19 is `in progress`, not complete. H20 binds client half-close,
 uncooperative-peer deadline, reset, and forced-close behavior to retained fault
-plans. H03/H11 still need to bind their concrete reconnect and repair failures.
-H19 reaches `complete` only when every lifecycle failure those packages
-actually use has a deterministic trace.
+plans. H11 now binds its complete reconnect and repair matrix. H03 still needs
+to bind every concrete transport-candidate lifecycle failure before H19 can
+reach `complete`.

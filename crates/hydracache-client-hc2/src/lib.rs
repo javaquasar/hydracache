@@ -5,6 +5,7 @@
 
 mod client;
 mod grpc;
+mod reconnect;
 mod types;
 
 /// Adapter boundary for independently gated HC/2 transports.
@@ -19,6 +20,10 @@ pub mod wire {
 
 pub use client::{FencedSession, Hc2Client, Subscription};
 pub use grpc::{GrpcMtlsAdapter, GrpcMtlsConfig};
+pub use reconnect::{
+    InvocationRetryPolicy, ReconnectEndpoint, ReconnectPolicy, RecoveringFencedSession,
+    RecoveringHc2Client, RecoveringSubscription, RecoveryMetricsSnapshot,
+};
 pub use types::{
     BatchItemResult, BatchOperation, CacheEvent, CacheValue, Capability, ClientConfig, ClientError,
     ClientLimits, ClientMetricsSnapshot, ErrorCode, MutationResult, NodeEndpoint, RequestOptions,

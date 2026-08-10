@@ -1,0 +1,102 @@
+{
+  "schema": "hydracache.hc2.fault-replay.v1",
+  "plan": {
+    "schema": "hydracache.hc2.fault-plan.v1",
+    "case_id": "h11-duplicate-event",
+    "seed": 1592590363,
+    "direction": "server_to_client",
+    "max_buffered_bytes": 1048576,
+    "max_trace_events": 512,
+    "actions": [
+      {
+        "kind": "duplicate",
+        "copies": 1
+      }
+    ]
+  },
+  "synthetic_input": {
+    "chunk_sizes": [
+      17,
+      31,
+      47,
+      71
+    ]
+  },
+  "trace": {
+    "schema": "hydracache.hc2.fault-trace.v1",
+    "case_id": "h11-duplicate-event",
+    "seed": 1592590363,
+    "direction": "server_to_client",
+    "input_chunks": 4,
+    "input_bytes": 166,
+    "input_sha256": "eec06efa4a5c223d0bfadeceefb6bade042a607f8e8d73094be659b0905f147d",
+    "actions": [
+      {
+        "index": 0,
+        "action": {
+          "kind": "duplicate",
+          "copies": 1
+        },
+        "chunks_before": 4,
+        "chunks_after": 8,
+        "bytes_before": 166,
+        "bytes_after": 332,
+        "max_delivery_tick": 0,
+        "terminal": "open"
+      }
+    ],
+    "deliveries": [
+      {
+        "sequence": 0,
+        "tick": 0,
+        "len": 17,
+        "sha256": "172e1c2f7510b1d033995497610364efd92dd80ed9a2843be07a5a7b6f53a77b"
+      },
+      {
+        "sequence": 1,
+        "tick": 0,
+        "len": 17,
+        "sha256": "172e1c2f7510b1d033995497610364efd92dd80ed9a2843be07a5a7b6f53a77b"
+      },
+      {
+        "sequence": 2,
+        "tick": 0,
+        "len": 31,
+        "sha256": "1b8ac37c1772dc46e5176e7242d629150f2d8fc1a7874f9866210cd2d04ece55"
+      },
+      {
+        "sequence": 3,
+        "tick": 0,
+        "len": 31,
+        "sha256": "1b8ac37c1772dc46e5176e7242d629150f2d8fc1a7874f9866210cd2d04ece55"
+      },
+      {
+        "sequence": 4,
+        "tick": 0,
+        "len": 47,
+        "sha256": "daf4614e1d17defcd34dce0621ba68805900d5601fa024a48f31feecaa765449"
+      },
+      {
+        "sequence": 5,
+        "tick": 0,
+        "len": 47,
+        "sha256": "daf4614e1d17defcd34dce0621ba68805900d5601fa024a48f31feecaa765449"
+      },
+      {
+        "sequence": 6,
+        "tick": 0,
+        "len": 71,
+        "sha256": "337567323d6cccef8cc9fc311f629eef47b15ceee9f30eb9c1ddf03f6a1e9dd2"
+      },
+      {
+        "sequence": 7,
+        "tick": 0,
+        "len": 71,
+        "sha256": "337567323d6cccef8cc9fc311f629eef47b15ceee9f30eb9c1ddf03f6a1e9dd2"
+      }
+    ],
+    "output_bytes": 332,
+    "output_sha256": "0c6c3a362341715fad3992d197ead697d1964eccabe0e76be0e21155e485b2ad",
+    "terminal": "open"
+  }
+}

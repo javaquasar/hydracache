@@ -7,11 +7,19 @@ use hydracache_client_plane_spike::fault_proxy::{
     FaultAction, FaultPlan, FaultReplayArtifact, ProxyDirection,
 };
 
-const RETAINED_ARTIFACTS: [&str; 4] = [
+const RETAINED_ARTIFACTS: [&str; 12] = [
     "docs/testing/hc2-fault-proxy/h19-seed-1592590353.json",
     "docs/testing/hc2-fault-proxy/h20-client-half-close-seed-1592590354.json",
     "docs/testing/hc2-fault-proxy/h20-uncooperative-timeout-seed-1592590355.json",
     "docs/testing/hc2-fault-proxy/h20-peer-reset-seed-1592590356.json",
+    "docs/testing/hc2-fault-proxy/h11-handshake-reset-seed-1592590357.json",
+    "docs/testing/hc2-fault-proxy/h11-server-restart-seed-1592590358.json",
+    "docs/testing/hc2-fault-proxy/h11-leader-hint-reset-seed-1592590359.json",
+    "docs/testing/hc2-fault-proxy/h11-subscription-gap-seed-1592590360.json",
+    "docs/testing/hc2-fault-proxy/h11-invocation-reset-seed-1592590361.json",
+    "docs/testing/hc2-fault-proxy/h11-session-loss-seed-1592590362.json",
+    "docs/testing/hc2-fault-proxy/h11-duplicate-event-seed-1592590363.json",
+    "docs/testing/hc2-fault-proxy/h11-reconnect-exhausted-seed-1592590364.json",
 ];
 const TARGET_DIR: &str = "target/hc2-fault-check";
 
@@ -33,7 +41,7 @@ pub fn run(args: Vec<String>) -> Result<(), Box<dyn Error>> {
             write_artifact(&root, case_id, seed, Path::new(output))
         }
         _ => Err(
-            "usage: client-plane-fault-check [--replay <path>|[--case <h19|h20-client-half-close|h20-uncooperative-timeout|h20-peer-reset>] --seed <u64> --output <path>]".into(),
+            "usage: client-plane-fault-check [--replay <path>|[--case <h19|h20-*|h11-handshake-reset|h11-server-restart|h11-leader-hint-reset|h11-subscription-gap|h11-invocation-reset|h11-session-loss|h11-duplicate-event|h11-reconnect-exhausted> --seed <u64> --output <path>]".into(),
         ),
     }
 }
@@ -62,7 +70,7 @@ pub fn check_at_root(root: &Path, run_test: bool) -> Result<(), Box<dyn Error>> 
             );
         }
     }
-    println!("client-plane-fault-check: OK (H19/H20 retained seeds replayed exactly; raw payload absent)");
+    println!("client-plane-fault-check: OK (H11/H19/H20 retained seeds replayed exactly; raw payload absent)");
     Ok(())
 }
 
@@ -146,6 +154,66 @@ fn retained_plan(case_id: &str, seed: u64) -> Result<FaultPlan, Box<dyn Error>> 
                 FaultAction::Reset,
             ],
         ),
+        "h11-handshake-reset" => FaultPlan::new(
+            "h11-handshake-reset",
+            seed,
+            ProxyDirection::ServerToClient,
+            vec![
+                FaultAction::Fragment { max_chunk_bytes: 3 },
+                FaultAction::Reset,
+            ],
+        ),
+        "h11-server-restart" => FaultPlan::new(
+            "h11-server-restart",
+            seed,
+            ProxyDirection::ServerToClient,
+            vec![FaultAction::CloseAfterBytes { bytes: 37 }],
+        ),
+        "h11-leader-hint-reset" => FaultPlan::new(
+            "h11-leader-hint-reset",
+            seed,
+            ProxyDirection::ServerToClient,
+            vec![
+                FaultAction::Delay { ticks: 3 },
+                FaultAction::CloseAfterBytes { bytes: 71 },
+            ],
+        ),
+        "h11-subscription-gap" => FaultPlan::new(
+            "h11-subscription-gap",
+            seed,
+            ProxyDirection::ServerToClient,
+            vec![
+                FaultAction::Fragment { max_chunk_bytes: 5 },
+                FaultAction::Drop { every_nth: 2 },
+            ],
+        ),
+        "h11-invocation-reset" => FaultPlan::new(
+            "h11-invocation-reset",
+            seed,
+            ProxyDirection::ServerToClient,
+            vec![FaultAction::Delay { ticks: 1 }, FaultAction::Reset],
+        ),
+        "h11-session-loss" => FaultPlan::new(
+            "h11-session-loss",
+            seed,
+            ProxyDirection::ClientToServer,
+            vec![
+                FaultAction::HalfOpen,
+                FaultAction::LateDelivery { ticks: 9 },
+            ],
+        ),
+        "h11-duplicate-event" => FaultPlan::new(
+            "h11-duplicate-event",
+            seed,
+            ProxyDirection::ServerToClient,
+            vec![FaultAction::Duplicate { copies: 1 }],
+        ),
+        "h11-reconnect-exhausted" => FaultPlan::new(
+            "h11-reconnect-exhausted",
+            seed,
+            ProxyDirection::ServerToClient,
+            vec![FaultAction::BlockDirection],
+        ),
         other => return Err(format!("unsupported retained fault case: {other}").into()),
     };
     Ok(plan)
@@ -201,6 +269,51 @@ mod tests {
             let plan = retained_plan(case_id, 7).unwrap();
             assert_eq!(plan.actions.last(), Some(&expected));
             plan.validate().unwrap();
+        }
+    }
+
+    #[test]
+    fn h11_reconnect_and_repair_plans_are_distinct_and_bounded() {
+        for (case_id, seed, terminal) in [
+            ("h11-handshake-reset", 1_592_590_357, FaultAction::Reset),
+            (
+                "h11-server-restart",
+                1_592_590_358,
+                FaultAction::CloseAfterBytes { bytes: 37 },
+            ),
+            (
+                "h11-leader-hint-reset",
+                1_592_590_359,
+                FaultAction::CloseAfterBytes { bytes: 71 },
+            ),
+            (
+                "h11-subscription-gap",
+                1_592_590_360,
+                FaultAction::Drop { every_nth: 2 },
+            ),
+            ("h11-invocation-reset", 1_592_590_361, FaultAction::Reset),
+            (
+                "h11-session-loss",
+                1_592_590_362,
+                FaultAction::LateDelivery { ticks: 9 },
+            ),
+            (
+                "h11-duplicate-event",
+                1_592_590_363,
+                FaultAction::Duplicate { copies: 1 },
+            ),
+            (
+                "h11-reconnect-exhausted",
+                1_592_590_364,
+                FaultAction::BlockDirection,
+            ),
+        ] {
+            let plan = retained_plan(case_id, seed).unwrap();
+            assert_eq!(plan.actions.last(), Some(&terminal), "{case_id}");
+            plan.validate().unwrap();
+            let artifact = FaultReplayArtifact::create(plan, vec![17, 31, 47, 71]).unwrap();
+            artifact.verify().unwrap();
+            assert!(serde_json::to_vec(&artifact).unwrap().len() < 64 * 1024);
         }
     }
 }

@@ -1,0 +1,89 @@
+{
+  "schema": "hydracache.hc2.fault-replay.v1",
+  "plan": {
+    "schema": "hydracache.hc2.fault-plan.v1",
+    "case_id": "h11-leader-hint-reset",
+    "seed": 1592590359,
+    "direction": "server_to_client",
+    "max_buffered_bytes": 1048576,
+    "max_trace_events": 512,
+    "actions": [
+      {
+        "kind": "delay",
+        "ticks": 3
+      },
+      {
+        "kind": "close_after_bytes",
+        "bytes": 71
+      }
+    ]
+  },
+  "synthetic_input": {
+    "chunk_sizes": [
+      17,
+      31,
+      47,
+      71
+    ]
+  },
+  "trace": {
+    "schema": "hydracache.hc2.fault-trace.v1",
+    "case_id": "h11-leader-hint-reset",
+    "seed": 1592590359,
+    "direction": "server_to_client",
+    "input_chunks": 4,
+    "input_bytes": 166,
+    "input_sha256": "42c37edbfe746408a06f57c253f7bc2c84892b738d14c28d627658039cee5442",
+    "actions": [
+      {
+        "index": 0,
+        "action": {
+          "kind": "delay",
+          "ticks": 3
+        },
+        "chunks_before": 4,
+        "chunks_after": 4,
+        "bytes_before": 166,
+        "bytes_after": 166,
+        "max_delivery_tick": 3,
+        "terminal": "open"
+      },
+      {
+        "index": 1,
+        "action": {
+          "kind": "close_after_bytes",
+          "bytes": 71
+        },
+        "chunks_before": 4,
+        "chunks_after": 3,
+        "bytes_before": 166,
+        "bytes_after": 71,
+        "max_delivery_tick": 3,
+        "terminal": "closed_after_bytes"
+      }
+    ],
+    "deliveries": [
+      {
+        "sequence": 0,
+        "tick": 3,
+        "len": 17,
+        "sha256": "a5da6fd282afcd71ac78cd230bbb4fa4da3af9399d62ce5c7df0cdb6296c7195"
+      },
+      {
+        "sequence": 1,
+        "tick": 3,
+        "len": 31,
+        "sha256": "591f81f755e8fe43344cac06a4cb9f55fae8be6e4ebc28a58d5d728fd248ef4b"
+      },
+      {
+        "sequence": 2,
+        "tick": 3,
+        "len": 23,
+        "sha256": "9e0219cc64b038392d3643c980c4be375ba4d44563b56781369062ccd8a559b2"
+      }
+    ],
+    "output_bytes": 71,
+    "output_sha256": "fe30485fe44d335f2126c678cf031e5a830b9a9ab3fb1f0e3d5c54b7b3f05c2c",
+    "terminal": "closed_after_bytes"
+  }
+}

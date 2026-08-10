@@ -25,15 +25,15 @@
 | H08 | Advertisement cannot represent multi-node endpoints | complete | `feat(client-plane): model bounded multi-node discovery` | three-node/duplicate/conflict/bound tests |
 | H09 | Lifecycle checks are runtime-only, not typestate | complete | `feat(client-plane): make bootstrap sequencing typestate-safe` | compile-fail bootstrap + runtime race/cleanup tests |
 | H10 | Connection generation/stale-message fencing is absent | complete | `feat(client-plane): fence stale connection generations` | nonzero checked epoch, wire/runtime fencing, reconnect/reused-ID matrix |
-| H11 | Reconnect and subscription/session repair are absent | open | — | deterministic reconnect/repair matrix |
+| H11 | Reconnect and subscription/session repair are absent | complete | `feat(client-plane): add bounded reconnect and repair` | separate bounded reconnect/retry policies, generation replacement, endpoint preference, conservative subscription repair/dedupe, permanent session loss, and eight retained deterministic lifecycle traces |
 | H12 | Resource bounds omit byte/retry/session/global budgets | complete | `feat(client-plane): bound all retained resource classes` | ownership ledger, byte/count boundaries, atomic admission, zero-close proof |
 | H13 | Negative TLS matrix is incomplete | complete | `test(client-plane): complete TLS authorization matrix` | real rustls/tonic hostname/time/EKU/CA/version matrix, bounded chain policy, authorization typestate, rotation and zero-dispatch proofs |
 | H14 | Discovery signing/replay protection is absent | complete | `feat(client-plane): sign replay-safe discovery` | canonical Ed25519 bytes, bounded parser/trust/time policy, Rust/Java vector, replay/rotation/recovery matrix |
 | H15 | Hermetic Python generation is absent | complete | `feat(client-plane): make Python generation hermetic` | vendored protoc, descriptor-derived stubs/metadata, hash-bound two-platform wheelhouse, clean generation, golden/unknown-field/bidi/import proof |
-| H16 | Java is a codec fixture, not a production SDK | in progress | `feat(client-plane): add preview Java HC/2 SDK` | Maven SDK/external consumer and Java↔Rust process proof green; real daemon, reconnect/repair, and previous artifact wait on H01/H11/H18 |
-| H17 | Rust production SDK still uses HC/1 HTTP | in progress | `feat(client-plane): add transport-neutral Rust HC/2 SDK` | native SDK/process/package/HC/1 gates green; real daemon and reconnect/repair wait on H01/H11 |
+| H16 | Java is a codec fixture, not a production SDK | in progress | `feat(client-plane): add preview Java HC/2 SDK` | Maven SDK/external consumer and Java↔Rust process proof green; Rust recovery contract is complete, while Java recovery, real daemon, and previous artifact wait on H11 language parity/H01/H18 |
+| H17 | Rust production SDK still uses HC/1 HTTP | in progress | `feat(client-plane): add transport-neutral Rust HC/2 SDK` | native SDK/process/package/HC/1 and H11 reconnect/repair gates green; real daemon waits on H01 |
 | H18 | Real previous-artifact compatibility matrix is absent | in progress | `test(client-plane): retain HC/2 compatibility baseline` | immutable H17 Rust/Java clients and executable baseline matrix green; production daemon, HC/1+HC/2, reverse direction, rolling upgrade, and deprecation remain blocked on H01/H02 and a later preview |
-| H19 | Deterministic network fault proxy is absent | in progress | `test(client-plane): add deterministic fault proxy` | all bounded actions, same-candidate semantics, real async stream, retained seed and exact replay are green; H20 lifecycle bindings are retained, while H03/H11 remain |
+| H19 | Deterministic network fault proxy is absent | in progress | `test(client-plane): add deterministic fault proxy` | all bounded actions, same-candidate semantics, real async stream, retained seed and exact replay are green; H11/H20 lifecycle bindings are retained, while H03 remains |
 | H20 | HTTP/2 graceful shutdown remains unresolved | complete | `fix(client-plane): bound HTTP2 graceful drain` | two-GOAWAY controller, deadline/reset reasons, retained fault traces, real TLS/H2 zero-accounting task joins without abort |
 | H21 | Observability is local to the spike | complete | `feat(client-plane): export bounded privacy-safe diagnostics` | v1 typed metric/trace export, 64 salted tenant buckets, bounded trace ring, privacy/cardinality/reconnect/close evidence, operator runbook |
 | H22 | Linux CI, interop, fuzz, and soak gates are absent | in progress | `ci(client-plane): install Linux interop fuzz and soak gates` | four-lane fail-closed contract, pinned workflow/container, receipts/admission canaries, Docker proof, and runbook implemented; first GitHub/fixed-host receipts and branch-protection activation remain operational evidence |
@@ -327,6 +327,23 @@ or false lock ownership; default to bounded failure, never silent continuation.
 
 **Done.** Reconnect yields one completion and conservative cache/lock state.
 
+**Completion evidence (2026-08-10).** The preview Rust SDK now wraps each
+terminal single-generation `Hc2Client` in a transport-neutral recovery owner.
+Reconnect attempts, exponential backoff, deterministic jitter, endpoints, and
+overall deadlines are bounded; invocation retry has a separate policy and
+replays only reads/read-only batches or idempotency-key-bound mutations.
+Concurrent failures install exactly one incremented generation, verified leader
+hints can select only configured same-transport endpoints, and cluster identity
+cannot change. Logical subscriptions survive registration replacement, wake a
+blocked reader with an out-of-band gap, require explicit conservative repair,
+resume from the confirmed watermark, and discard duplicates. Every old-
+generation fenced session is permanently lost and never silently reacquired.
+Tests cover initial handshake selection, one safe completion, unsafe mutation
+non-replay, retry exhaustion, blocked-reader repair, duplicate events, leader
+change, and session loss. Eight payload-free H19 artifacts retain the exact
+lifecycle plans. The contract and H01/language integration boundary are in
+`docs/architecture/HC2_RECONNECT_REPAIR_POLICY.md`.
+
 ## H12. Bound every byte and connection-owned resource
 
 **Current truth.** Frame-count bounds exist, but byte, batch, retry, deadline,
@@ -503,9 +520,9 @@ pending/listener bounds, requires zero subscription/session retention, packages
 and verifies the crate, and separately runs the unchanged HC/1 conformance
 suite. Exact scope and reproduction are documented in
 `docs/architecture/HC2_RUST_SDK.md`. H17 remains `in progress`: H01 has not
-mounted HC/2 on the production daemon and H11 has not defined reconnect and
-repair. The process peer and explicit retry advice do not substitute for those
-open dependencies.
+mounted HC/2 on the production daemon. H11 reconnect and repair are now green,
+but the process peer and recovery proof do not substitute for the missing
+production daemon integration.
 
 ## H18. Prove compatibility with retained real artifacts
 
@@ -562,9 +579,9 @@ its byte schedule and retain direct loopbacks as controls.
 H19 is `in progress`. The bounded transport-neutral scheduler, all declared
 actions, real async-stream delivery, same semantic candidate cases, exact
 retained seed replay, tamper refusal, and payload-free artifact gate are green.
-H20 now binds its concrete lifecycle failures to retained traces. H03/H11 are
-still open, so their eventual reconnect/repair failures have not yet all been
-assigned retained traces. See
+H20 and H11 now bind their concrete lifecycle failures to retained traces. H03
+still needs to bind its final selected-candidate lifecycle corpus before H19 can
+be marked complete. See
 `docs/architecture/HC2_DETERMINISTIC_FAULT_PROXY.md`.
 
 ## H20. Resolve HTTP/2 graceful drain and forced termination
