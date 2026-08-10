@@ -2,7 +2,7 @@ use std::collections::{BTreeMap, BTreeSet};
 use std::error::Error;
 use std::fs;
 use std::io::Write;
-use std::path::{Component, Path, PathBuf};
+use std::path::{Path, PathBuf};
 use std::process::Command;
 
 use flate2::read::GzDecoder;
@@ -428,9 +428,11 @@ fn artifact_path<'a>(
 fn validate_relative_path(value: &str) -> Result<(), Box<dyn Error>> {
     let path = Path::new(value);
     if path.is_absolute()
-        || path
-            .components()
-            .any(|component| !matches!(component, Component::Normal(_)))
+        || value.is_empty()
+        || value.contains(['\\', ':'])
+        || value
+            .split('/')
+            .any(|component| component.is_empty() || matches!(component, "." | ".."))
     {
         return Err(format!("artifact path must be a normalized relative path: {value}").into());
     }
