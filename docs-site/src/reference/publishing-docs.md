@@ -60,7 +60,7 @@ With `mdbook serve` running:
 node scripts/docs-visual-smoke.mjs
 ```
 
-The smoke test opens the home page, architecture page, production checklist, database guide, and API links page on desktop and mobile viewports. It checks that content is present, the home logo is visible, and pages do not introduce horizontal overflow.
+The smoke test opens the home page, architecture page, production checklist, database guide, and API links page on desktop and mobile viewports. It checks that content is present, the home logo is visible, static architecture diagrams render, and pages do not introduce horizontal overflow.
 
 ## Assets
 
@@ -75,3 +75,5 @@ Use the `*-256.png` asset in pages and README content. Keep the original PNG as 
 ## Publishing Target
 
 The intended production target is GitHub Pages, optionally behind a custom domain later. The `book.toml` `site-url` is set to `/hydracache/`, which matches the repository GitHub Pages path.
+
+The `Documentation Site` workflow builds `docs-site/book`, runs checks, and uploads that directory as the GitHub Pages artifact on `main` pushes that touch docs content. Treat `docs-site` as the production Pages source; other browser demos should be linked from the docs or published under their own path without replacing the docs artifact.

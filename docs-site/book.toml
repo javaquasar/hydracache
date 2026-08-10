@@ -16,7 +16,6 @@ site-url = "/hydracache/"
 default-theme = "rust"
 preferred-dark-theme = "ayu"
 additional-css = ["theme/hydracache.css"]
-additional-js = ["theme/mermaid-init.js"]
 
 [output.html.search]
 enable = true

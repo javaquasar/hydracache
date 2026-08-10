@@ -34,6 +34,12 @@ try {
         logoVisible:
           document.querySelector(".brand-mark img")?.getBoundingClientRect().width > 0 ||
           !location.pathname.endsWith("/"),
+        architectureDiagramCount:
+          location.pathname.endsWith("/architecture.html") || location.pathname.endsWith("architecture.html")
+            ? Array.from(document.querySelectorAll(".architecture-diagram img")).filter(
+                (image) => image.getBoundingClientRect().width > 0 && image.complete,
+              ).length
+            : null,
       }));
 
       if (!title.includes("HydraCache")) {
@@ -49,6 +55,11 @@ try {
       }
       if (!metrics.logoVisible) {
         failures.push(`${viewport.name} ${route}: logo is not visible on home page`);
+      }
+      if (metrics.architectureDiagramCount !== null && metrics.architectureDiagramCount < 3) {
+        failures.push(
+          `${viewport.name} ${route}: expected 3 rendered architecture diagrams, got ${metrics.architectureDiagramCount}`,
+        );
       }
     }
     await page.close();

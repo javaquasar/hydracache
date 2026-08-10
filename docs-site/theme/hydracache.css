@@ -24,9 +24,17 @@
   height: 96px;
 }
 
-.mermaid {
+.architecture-diagram {
   margin: 1.25rem 0;
-  overflow-x: auto;
+}
+
+.architecture-diagram img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  border: 1px solid var(--table-border-color);
+  border-radius: 6px;
+  background: var(--bg);
 }
 
 @media (max-width: 700px) {

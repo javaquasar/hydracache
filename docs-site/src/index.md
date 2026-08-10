@@ -63,6 +63,8 @@ If you need to make a design decision, start with concepts. If you already know 
 
 Use [Use Cases](use-cases.md) for concrete scenarios and [API Links](reference/api-links.md) when you need exact Rust signatures on docs.rs.
 
+Common search terms for this site include memoization, function caching, repository cache, query result cache, near cache, read-through cache, stale-if-error, stale while revalidate, single-flight, and distributed invalidation.
+
 ## Documentation Shape
 
 This site is intentionally separate from the longer Quarto book draft under `docs/book/`. The docs site is the practical public surface. The book can remain a deeper narrative track for design history and long-form explanation.

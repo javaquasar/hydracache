@@ -43,4 +43,7 @@
 - [API Links](reference/api-links.md)
 - [Publishing Docs](reference/publishing-docs.md)
 - [Versioning](reference/versioning.md)
+- [Docs Ownership](reference/docs-ownership.md)
+- [Docs Release Checklist](reference/docs-release-checklist.md)
+- [Legacy README Map](reference/legacy-doc-map.md)
 - [Examples Contract](reference/examples-contract.md)
