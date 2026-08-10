@@ -1,0 +1,101 @@
+{
+  "schema_version": 1,
+  "baseline": {
+    "id": "h17-preview-d1d1d44",
+    "protocol_generation": 5,
+    "producer_commit": "d1d1d44cf5c046b8bad97292b9a9a97210fda134",
+    "producer_tree": "bced6acf45b8065e9e8e8d5af1308a2234607649",
+    "contract_blob": "6e5887b7ae6fb2b74a781e0ef85a676349968587"
+  },
+  "artifacts": [
+    {
+      "id": "rust-h17-preview",
+      "kind": "rust-crate",
+      "path": "docs/testing/hc2-compat/artifacts/h17-preview-d1d1d44/hydracache-client-hc2-0.67.0.crate",
+      "sha256": "4e683ae52c82a2ebbb6ef74a4d450627fc7b2fad07254a78e3759efc7aa78610",
+      "size_bytes": 28158,
+      "producer_commit": "d1d1d44cf5c046b8bad97292b9a9a97210fda134"
+    },
+    {
+      "id": "java-h17-preview-jar",
+      "kind": "java-jar",
+      "path": "docs/testing/hc2-compat/artifacts/h17-preview-d1d1d44/hydracache-client-hc2-0.68.0-alpha.1-SNAPSHOT.jar",
+      "sha256": "93703474c18a5d30cd9e61f92b5476dc41c20e8caac4447830f840bb82740d25",
+      "size_bytes": 427450,
+      "producer_commit": "d1d1d44cf5c046b8bad97292b9a9a97210fda134"
+    },
+    {
+      "id": "java-h17-preview-pom",
+      "kind": "maven-pom",
+      "path": "docs/testing/hc2-compat/artifacts/h17-preview-d1d1d44/hydracache-client-hc2-0.68.0-alpha.1-SNAPSHOT.pom",
+      "sha256": "ce14e50e5508a9783ce41f742f5d7c7b5b19dcd08ef45e7390a31dadcbad74a7",
+      "size_bytes": 6557,
+      "producer_commit": "d1d1d44cf5c046b8bad97292b9a9a97210fda134"
+    }
+  ],
+  "rows": [
+    {
+      "id": "rust-retained-to-current-peer",
+      "scenario": "retained-rust-client-current-peer",
+      "status": "baseline-smoke",
+      "evidence": ["retained rust crate tests against separately built mTLS conformance peer"],
+      "blockers": []
+    },
+    {
+      "id": "java-retained-to-current-peer",
+      "scenario": "retained-java-client-current-peer",
+      "status": "baseline-smoke",
+      "evidence": ["retained Java jar external-consumer tests against separately built mTLS conformance peer"],
+      "blockers": []
+    },
+    {
+      "id": "retained-clients-to-production-daemon",
+      "scenario": "old-client-new-daemon",
+      "status": "blocked",
+      "evidence": [],
+      "blockers": ["H01 production daemon HC/2 listener is not implemented"]
+    },
+    {
+      "id": "current-clients-to-retained-daemon",
+      "scenario": "current-client-old-daemon",
+      "status": "blocked",
+      "evidence": [],
+      "blockers": ["no previous production HC/2 daemon artifact exists"]
+    },
+    {
+      "id": "hc1-and-hc2-concurrent-listeners",
+      "scenario": "hc1-hc2-concurrent-listeners",
+      "status": "blocked",
+      "evidence": [],
+      "blockers": ["H01 production daemon HC/2 listener is not implemented", "H02 listener ownership is open"]
+    },
+    {
+      "id": "rolling-production-upgrade",
+      "scenario": "rolling-upgrade",
+      "status": "blocked",
+      "evidence": [],
+      "blockers": ["old and new production HC/2 daemon artifacts do not yet coexist"]
+    },
+    {
+      "id": "retained-client-capability-negotiation",
+      "scenario": "capability-negotiation",
+      "status": "baseline-smoke",
+      "evidence": ["both retained clients complete generation-5 handshake before invoking cache operations"],
+      "blockers": []
+    },
+    {
+      "id": "retained-client-unknown-fields",
+      "scenario": "unknown-fields",
+      "status": "baseline-smoke",
+      "evidence": ["retained Rust generated decoder accepts additive fields", "retained Java generated message preserves additive fields byte-for-byte"],
+      "blockers": []
+    },
+    {
+      "id": "planned-deprecation-window",
+      "scenario": "planned-deprecation",
+      "status": "blocked",
+      "evidence": [],
+      "blockers": ["no successor HC/2 preview and deprecation window exist yet"]
+    }
+  ]
+}

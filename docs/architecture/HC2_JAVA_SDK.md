@@ -83,5 +83,8 @@ the existing Rust transport and Java/Python generation evidence.
 
 After H01 and H11, replace the conformance peer row with a real-daemon matrix,
 prove reconnect and deterministic listener/session repair, and retain the first
-published preview for H18 old/new compatibility. Only then may H16 move from
+published preview for H18 old/new compatibility. H18 now retains the first H17
+JAR/POM and runs it from an isolated Maven repository as a `baseline-smoke`;
+the production old/new rows remain blocked in `HC2_COMPATIBILITY_ARTIFACTS.md`.
+Only then may H16 move from
 `in progress` to `complete`.

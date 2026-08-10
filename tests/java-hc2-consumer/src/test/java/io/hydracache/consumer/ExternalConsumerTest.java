@@ -8,6 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import io.hydracache.client.hc2.HydraCacheClient;
 import io.hydracache.client.hc2.HydraCacheClientConfig;
 import io.hydracache.client.hc2.RequestOptions;
+import io.hydracache.client.hc2.internal.wire.ClientEnvelope;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.URI;
@@ -21,6 +22,14 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 final class ExternalConsumerTest {
+  @Test
+  void retainedGeneratedMessagePreservesUnknownFields() throws Exception {
+    byte[] futureEnvelope = new byte[] {(byte) 0xfa, 0x03, 0x03, 'n', 'e', 'w'};
+    ClientEnvelope decoded = ClientEnvelope.parseFrom(futureEnvelope);
+    assertTrue(decoded.getUnknownFields().asMap().containsKey(63));
+    assertArrayEquals(futureEnvelope, decoded.toByteArray());
+  }
+
   @Test
   void installedSdkBuildsAndRunsWithoutRepositorySources(@TempDir Path temp) throws Exception {
     String binary = System.getenv("HC2_JAVA_INTEROP_SERVER");

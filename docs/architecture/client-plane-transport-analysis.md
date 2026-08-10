@@ -101,6 +101,7 @@ The common automated command is:
 
 ```powershell
 cargo xtask client-plane-spike-check
+cargo xtask client-plane-compat-check
 ```
 
 The mandatory canary is semantic: a candidate that acknowledges a registration

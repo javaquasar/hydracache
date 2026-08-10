@@ -1,0 +1,14 @@
+[package]
+name = "rust-hc2-compat-consumer"
+version = "0.0.0"
+edition = "2021"
+publish = false
+
+[workspace]
+
+[dependencies]
+hydracache-client-hc2 = { path = "../../target/hc2-compat/retained-rust/hydracache-client-hc2-0.67.0" }
+prost = "0.14.1"
+
+[lints.rust]
+unsafe_code = "forbid"

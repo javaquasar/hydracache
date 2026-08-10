@@ -32,7 +32,7 @@
 | H15 | Hermetic Python generation is absent | complete | `feat(client-plane): make Python generation hermetic` | vendored protoc, descriptor-derived stubs/metadata, hash-bound two-platform wheelhouse, clean generation, golden/unknown-field/bidi/import proof |
 | H16 | Java is a codec fixture, not a production SDK | in progress | `feat(client-plane): add preview Java HC/2 SDK` | Maven SDK/external consumer and Java↔Rust process proof green; real daemon, reconnect/repair, and previous artifact wait on H01/H11/H18 |
 | H17 | Rust production SDK still uses HC/1 HTTP | in progress | `feat(client-plane): add transport-neutral Rust HC/2 SDK` | native SDK/process/package/HC/1 gates green; real daemon and reconnect/repair wait on H01/H11 |
-| H18 | Real previous-artifact compatibility matrix is absent | open | — | HC/1/HC/2 rolling matrix artifacts |
+| H18 | Real previous-artifact compatibility matrix is absent | in progress | `test(client-plane): retain HC/2 compatibility baseline` | immutable H17 Rust/Java clients and executable baseline matrix green; production daemon, HC/1+HC/2, reverse direction, rolling upgrade, and deprecation remain blocked on H01/H02 and a later preview |
 | H19 | Deterministic network fault proxy is absent | open | — | seeded replayable socket faults |
 | H20 | HTTP/2 graceful shutdown remains unresolved | open | — | drain/GOAWAY/deadline/reset proof |
 | H21 | Observability is local to the spike | open | — | stable bounded metrics/tracing/runbook |
@@ -523,6 +523,25 @@ rows fail loud rather than skip.
 immutable artifacts from prior release commits.
 
 **Done.** Compatibility claims point to retained binaries, not source models.
+
+**Implementation progress.** The first immutable baseline is retained under
+`docs/testing/hc2-compat/artifacts/h17-preview-d1d1d44`. Its manifest binds the
+Rust `.crate`, Java JAR/POM, byte lengths, SHA-256 digests, producer commit/tree,
+and exact contract blob. `cargo xtask client-plane-compat-check` verifies those
+identities, extracts and executes the saved Rust package, installs the saved
+Java artifact into an isolated Maven repository, runs an external consumer,
+and proves capability handshake plus additive-field behavior. The matrix has
+no skip state: unavailable production rows print `BLOCKED`, while
+`--require-complete` fails on every `baseline-smoke` or `blocked` row.
+
+H18 remains `in progress`. The retained clients and current checkout share the
+same H17 contract blob, so the four executable rows are labelled
+`baseline-smoke`, never `pass`. H01/H02 must provide production HC/2 and
+concurrent HC/1 listeners; a later preview must retain an old daemon and a
+meaningfully newer client/contract before old/new reverse-direction, rolling
+upgrade, and deprecation rows can become compatibility claims. See
+`docs/architecture/HC2_COMPATIBILITY_ARTIFACTS.md` for the policy and exact
+reproduction commands.
 
 ## H19. Add a deterministic replayable network fault proxy
 

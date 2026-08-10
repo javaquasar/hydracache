@@ -82,6 +82,8 @@ the Java and Python SDK/generation evidence.
 
 After H01, replace the conformance peer row with the real daemon for every
 enabled adapter. After H11, add reconnect, retry, topology migration, and
-deterministic listener/session repair matrices. H18 must then retain a real
-preview artifact for old/new compatibility. Only those results can move H17
-from `in progress` to `complete`.
+deterministic listener/session repair matrices. H18 now retains the first
+immutable H17 `.crate` as a `baseline-smoke`; production old/new compatibility
+remains blocked as described in `HC2_COMPATIBILITY_ARTIFACTS.md`.
+Only real-daemon and later-preview results can move H17 from `in progress` to
+`complete`.
