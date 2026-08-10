@@ -1,5 +1,9 @@
 # HydraCache
 
+<p class="brand-mark">
+  <img src="assets/brand/hydracache-emblem-orange-256.png" alt="HydraCache emblem">
+</p>
+
 HydraCache is a Rust-native cache runtime for applications that need cache behavior to be explicit: keys, tags, TTL, single-flight loading, invalidation, query-result caching, and local-first distributed coordination.
 
 The goal is not to hide caching behind a magical map. The goal is to make cache semantics visible enough for production code review. A cache entry should answer three questions:
