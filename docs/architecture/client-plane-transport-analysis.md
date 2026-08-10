@@ -200,7 +200,10 @@ are recorded in
 [`hc2-multi-transport-policy.md`](hc2-multi-transport-policy.md). They preserve
 one HC/2 semantic contract; they do not make every experimental adapter stable.
 
-The next W0 slice must bind the now-green deterministic scheduler to H03/H11
+H21 now supplies the stable, bounded, privacy-safe
+`hydracache.hc2.client_plane.v1` diagnostics schema and operator runbook. It
+does not install a production endpoint while H01 remains open. The next W0
+slice must bind the now-green deterministic scheduler to H03/H11
 reconnect and repair outcomes, add the malformed/cross-candidate socket corpus,
 and extend the dirty-generation gate beyond the now-green Python package. H20
 now distinguishes zero HydraCache application accounting from transport-task

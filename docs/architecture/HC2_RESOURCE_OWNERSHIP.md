@@ -28,5 +28,6 @@ incrementing any scope. `disconnect` clears every connection-owned class and
 must return the all-zero `ResourceSnapshot`.
 
 The current spike deliberately exposes stable static overload class names rather
-than payload, key, identity, or tenant values. H21 will map these classes to the
-generated diagnostics and production metrics without increasing cardinality.
+than payload, key, identity, or tenant values. H21 maps these classes into the
+bounded `hydracache.hc2.client_plane.v1` diagnostic contract. H01 still owns
+connecting that contract to the selected production listener and exporter.

@@ -16,6 +16,7 @@ pub mod contract;
 pub mod endpoint;
 pub mod fault_proxy;
 pub mod http2_drain;
+pub mod observability;
 pub mod policy;
 pub mod security;
 

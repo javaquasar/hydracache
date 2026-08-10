@@ -35,7 +35,7 @@
 | H18 | Real previous-artifact compatibility matrix is absent | in progress | `test(client-plane): retain HC/2 compatibility baseline` | immutable H17 Rust/Java clients and executable baseline matrix green; production daemon, HC/1+HC/2, reverse direction, rolling upgrade, and deprecation remain blocked on H01/H02 and a later preview |
 | H19 | Deterministic network fault proxy is absent | in progress | `test(client-plane): add deterministic fault proxy` | all bounded actions, same-candidate semantics, real async stream, retained seed and exact replay are green; H20 lifecycle bindings are retained, while H03/H11 remain |
 | H20 | HTTP/2 graceful shutdown remains unresolved | complete | `fix(client-plane): bound HTTP2 graceful drain` | two-GOAWAY controller, deadline/reset reasons, retained fault traces, real TLS/H2 zero-accounting task joins without abort |
-| H21 | Observability is local to the spike | open | — | stable bounded metrics/tracing/runbook |
+| H21 | Observability is local to the spike | complete | `feat(client-plane): export bounded privacy-safe diagnostics` | v1 typed metric/trace export, 64 salted tenant buckets, bounded trace ring, privacy/cardinality/reconnect/close evidence, operator runbook |
 | H22 | Linux CI, interop, fuzz, and soak gates are absent | open | — | required workflow and retained artifacts |
 
 ## Global execution rules
@@ -609,6 +609,19 @@ increments, zero gauges after close, diagnostics schema and operator runbook.
 and hashed/bounded labels only.
 
 **Done.** Operators can explain connection outcomes without sensitive data.
+
+H21 is `complete` for the non-production client-plane contract.
+`ClientPlaneDiagnostics` exports the versioned
+`hydracache.hc2.client_plane.v1` schema through a telemetry-neutral sink. Its
+transport/state/reason labels are closed enums, tenant correlation is limited
+to 64 deployment-local salted buckets, generation is a gauge rather than a
+label, and retained trace history is capped at 128 records. Contract tests
+prove named series, bounded cardinality, JSON privacy, reconnect/failure
+increments, and zero resource gauges after close. The catalog and incident
+procedure are retained in
+`docs/operations/HC2_CLIENT_PLANE_OBSERVABILITY.md`. H01 still owns mounting
+this contract on the selected production listener/exporter; H21 does not
+promote an adapter.
 
 ## H22. Install required Linux CI, interop, fuzz, and soak gates
 

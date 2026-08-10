@@ -91,8 +91,8 @@ dispatch-capable connection.
 
 Production adapters must derive `PeerIdentity` from the verified TLS channel;
 they must never accept client-supplied identity strings as proof. H01 owns that
-real listener integration. H21 owns exporting the stable labels and counters to
-the production observability surface.
+real listener integration. H21 defines the stable bounded labels and counters;
+H01 owns mounting them on the production observability surface.
 
 ## Rotation rules
 
@@ -107,7 +107,8 @@ CA and client-identity rotation is an explicit overlap operation:
 There is no fail-open grace period, hostname bypass, certificate-time bypass,
 or fallback to a less secure adapter during rotation. Operational automation
 must retain the exact trust bundle fingerprints and rotation timestamps; the
-real-process receipt belongs to H01/H21 rather than this spike.
+real-process receipt belongs to H01 rather than this spike. H21 diagnostics
+retain only fixed rejection reasons, never certificate material.
 
 ## Evidence commands
 

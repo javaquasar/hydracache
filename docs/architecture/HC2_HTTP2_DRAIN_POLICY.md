@@ -83,7 +83,8 @@ cargo xtask client-plane-spike-check
 ## Remaining boundary
 
 This is production-shaped lifecycle evidence, not production integration.
-H01 must install the selected adapter in the daemon, H03 must accept a
-transport, H11 must define reconnect/repair, and H21 must promote reviewed
-metrics. Those items may reuse this state machine but cannot weaken its
+H21 now maps the reviewed drain reasons into the bounded v1 diagnostics
+contract. H01 must install the selected adapter and observability adapter in
+the daemon, H03 must accept a transport, and H11 must define reconnect/repair.
+Those items may reuse this state machine but cannot weaken its
 deadline, no-new-stream, zero-accounting, or terminal-reason invariants.

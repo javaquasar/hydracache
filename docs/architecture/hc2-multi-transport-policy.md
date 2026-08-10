@@ -156,7 +156,7 @@ green from documentation or a sans-I/O model alone.
 | 8 | Real compatibility | previous client/server binaries, HC/1+HC/2 coexistence, rolling upgrade, unknown fields/capabilities |
 | 9 | One-source SDK generation | Rust/Java/Python codecs and contract metadata generated from the reviewed schema |
 | 10 | Facade separation | Hazelcast-shaped Java facade maps to the native SDK and cannot define wire semantics |
-| 11 | Observability | bounded/privacy-safe connection, queue, retry, gap, repair, TLS, cancellation, and session metrics |
+| 11 | Observability | H21 `hydracache.hc2.client_plane.v1` typed export green for bounded/privacy-safe connection, queue, retry, gap, repair, TLS/auth, deadline, cancellation, session, and drain metrics/traces; H01 production mounting remains required |
 | 12 | Release gates | Linux CI plus rare self-hosted soak; no performance or stability claim from a weaker tier |
 
 ## Rollout
