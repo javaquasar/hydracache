@@ -29,7 +29,7 @@
 | H12 | Resource bounds omit byte/retry/session/global budgets | complete | `feat(client-plane): bound all retained resource classes` | ownership ledger, byte/count boundaries, atomic admission, zero-close proof |
 | H13 | Negative TLS matrix is incomplete | complete | `test(client-plane): complete TLS authorization matrix` | real rustls/tonic hostname/time/EKU/CA/version matrix, bounded chain policy, authorization typestate, rotation and zero-dispatch proofs |
 | H14 | Discovery signing/replay protection is absent | complete | `feat(client-plane): sign replay-safe discovery` | canonical Ed25519 bytes, bounded parser/trust/time policy, Rust/Java vector, replay/rotation/recovery matrix |
-| H15 | Hermetic Python generation is absent | open | — | pinned offline-capable generation/test |
+| H15 | Hermetic Python generation is absent | complete | `feat(client-plane): make Python generation hermetic` | vendored protoc, descriptor-derived stubs/metadata, hash-bound two-platform wheelhouse, clean generation, golden/unknown-field/bidi/import proof |
 | H16 | Java is a codec fixture, not a production SDK | open | — | buildable SDK + process interoperability |
 | H17 | Rust production SDK still uses HC/1 HTTP | open | — | transport-neutral HC/2 runtime |
 | H18 | Real previous-artifact compatibility matrix is absent | open | — | HC/1/HC/2 rolling matrix artifacts |
@@ -431,6 +431,19 @@ unknown fields, streaming loopback, and package import on supported Python.
 supported Python/OS matrix and fail required CI when missing.
 
 **Done.** Python is generated/tested by the main HC/2 gate without internet.
+
+**Completion evidence (2026-08-10).** `xtask` now generates Python messages and
+type hints with `protoc-bin-vendored 3.2.0`, derives gRPC stubs and stable JSON
+contract metadata from the descriptor, and compares the complete checked-in
+package byte-for-byte. The main HC/2 gate verifies an exact SHA-256 wheelhouse,
+creates a fresh venv using `pip --no-index --require-hashes`, and tests import,
+the shared Rust/Java golden bytes, unknown-field retention, metadata, and a real
+bidirectional loopback. Required CI pins CPython 3.12/Linux x86-64; local
+evidence pins CPython 3.13/Windows x86-64. Other platforms fail loud instead of
+building from source or consulting an index. The supply-chain contract and
+extension/rollback rules are in `docs/architecture/HC2_PYTHON_GENERATION.md`.
+This remains a non-production fixture and does not complete H01 or publish an
+SDK.
 
 ## H16. Build a production Java HC/2 SDK
 

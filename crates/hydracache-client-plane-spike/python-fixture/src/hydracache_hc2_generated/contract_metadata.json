@@ -1,0 +1,1126 @@
+{
+  "schema_version": 1,
+  "generator": "hydracache-hc2-python-1",
+  "protoc": "libprotoc 31.1",
+  "files": [
+    {
+      "name": "hc2_contract.proto",
+      "package": "hydracache.client.v2alpha",
+      "messages": [
+        {
+          "name": "BatchItem",
+          "fields": [
+            {
+              "name": "item_id",
+              "number": 1,
+              "label": 1,
+              "kind": 13,
+              "type_name": "",
+              "oneof_index": null
+            },
+            {
+              "name": "get",
+              "number": 101,
+              "label": 1,
+              "kind": 11,
+              "type_name": ".hydracache.client.v2alpha.GetRequest",
+              "oneof_index": 0
+            },
+            {
+              "name": "put",
+              "number": 102,
+              "label": 1,
+              "kind": 11,
+              "type_name": ".hydracache.client.v2alpha.PutRequest",
+              "oneof_index": 0
+            },
+            {
+              "name": "delete",
+              "number": 103,
+              "label": 1,
+              "kind": 11,
+              "type_name": ".hydracache.client.v2alpha.DeleteRequest",
+              "oneof_index": 0
+            },
+            {
+              "name": "compare_and_set",
+              "number": 104,
+              "label": 1,
+              "kind": 11,
+              "type_name": ".hydracache.client.v2alpha.CompareAndSetRequest",
+              "oneof_index": 0
+            }
+          ]
+        },
+        {
+          "name": "BatchRequest",
+          "fields": [
+            {
+              "name": "items",
+              "number": 1,
+              "label": 3,
+              "kind": 11,
+              "type_name": ".hydracache.client.v2alpha.BatchItem",
+              "oneof_index": null
+            }
+          ]
+        },
+        {
+          "name": "BatchResult",
+          "fields": [
+            {
+              "name": "items",
+              "number": 1,
+              "label": 3,
+              "kind": 11,
+              "type_name": ".hydracache.client.v2alpha.InvocationResponse",
+              "oneof_index": null
+            }
+          ]
+        },
+        {
+          "name": "CacheEvent",
+          "fields": [
+            {
+              "name": "subscription_id",
+              "number": 1,
+              "label": 1,
+              "kind": 4,
+              "type_name": "",
+              "oneof_index": null
+            },
+            {
+              "name": "watermark",
+              "number": 2,
+              "label": 1,
+              "kind": 4,
+              "type_name": "",
+              "oneof_index": null
+            },
+            {
+              "name": "key",
+              "number": 3,
+              "label": 1,
+              "kind": 12,
+              "type_name": "",
+              "oneof_index": null
+            },
+            {
+              "name": "value",
+              "number": 4,
+              "label": 1,
+              "kind": 12,
+              "type_name": "",
+              "oneof_index": null
+            },
+            {
+              "name": "removed",
+              "number": 5,
+              "label": 1,
+              "kind": 8,
+              "type_name": "",
+              "oneof_index": null
+            }
+          ]
+        },
+        {
+          "name": "Cancel",
+          "fields": [
+            {
+              "name": "correlation_id",
+              "number": 1,
+              "label": 1,
+              "kind": 4,
+              "type_name": "",
+              "oneof_index": null
+            },
+            {
+              "name": "safe_reason",
+              "number": 2,
+              "label": 1,
+              "kind": 9,
+              "type_name": "",
+              "oneof_index": null
+            }
+          ]
+        },
+        {
+          "name": "ClientEnvelope",
+          "fields": [
+            {
+              "name": "generation",
+              "number": 1,
+              "label": 1,
+              "kind": 13,
+              "type_name": "",
+              "oneof_index": null
+            },
+            {
+              "name": "connection_generation",
+              "number": 2,
+              "label": 1,
+              "kind": 4,
+              "type_name": "",
+              "oneof_index": null
+            },
+            {
+              "name": "correlation_id",
+              "number": 3,
+              "label": 1,
+              "kind": 4,
+              "type_name": "",
+              "oneof_index": null
+            },
+            {
+              "name": "handshake",
+              "number": 16,
+              "label": 1,
+              "kind": 11,
+              "type_name": ".hydracache.client.v2alpha.Handshake",
+              "oneof_index": 0
+            },
+            {
+              "name": "invocation",
+              "number": 17,
+              "label": 1,
+              "kind": 11,
+              "type_name": ".hydracache.client.v2alpha.InvocationRequest",
+              "oneof_index": 0
+            },
+            {
+              "name": "cancel",
+              "number": 18,
+              "label": 1,
+              "kind": 11,
+              "type_name": ".hydracache.client.v2alpha.Cancel",
+              "oneof_index": 0
+            },
+            {
+              "name": "subscribe",
+              "number": 19,
+              "label": 1,
+              "kind": 11,
+              "type_name": ".hydracache.client.v2alpha.Subscribe",
+              "oneof_index": 0
+            },
+            {
+              "name": "session_open",
+              "number": 20,
+              "label": 1,
+              "kind": 11,
+              "type_name": ".hydracache.client.v2alpha.SessionOpen",
+              "oneof_index": 0
+            },
+            {
+              "name": "session_heartbeat",
+              "number": 21,
+              "label": 1,
+              "kind": 11,
+              "type_name": ".hydracache.client.v2alpha.SessionHeartbeat",
+              "oneof_index": 0
+            }
+          ]
+        },
+        {
+          "name": "CompareAndSetRequest",
+          "fields": [
+            {
+              "name": "key",
+              "number": 1,
+              "label": 1,
+              "kind": 12,
+              "type_name": "",
+              "oneof_index": null
+            },
+            {
+              "name": "expected",
+              "number": 2,
+              "label": 1,
+              "kind": 12,
+              "type_name": "",
+              "oneof_index": null
+            },
+            {
+              "name": "replacement",
+              "number": 3,
+              "label": 1,
+              "kind": 12,
+              "type_name": "",
+              "oneof_index": null
+            },
+            {
+              "name": "ttl_ms",
+              "number": 4,
+              "label": 1,
+              "kind": 4,
+              "type_name": "",
+              "oneof_index": null
+            }
+          ]
+        },
+        {
+          "name": "DeleteRequest",
+          "fields": [
+            {
+              "name": "key",
+              "number": 1,
+              "label": 1,
+              "kind": 12,
+              "type_name": "",
+              "oneof_index": null
+            }
+          ]
+        },
+        {
+          "name": "Diagnostics",
+          "fields": [
+            {
+              "name": "pending_invocations",
+              "number": 1,
+              "label": 1,
+              "kind": 4,
+              "type_name": "",
+              "oneof_index": null
+            },
+            {
+              "name": "queued_reply_bytes",
+              "number": 2,
+              "label": 1,
+              "kind": 4,
+              "type_name": "",
+              "oneof_index": null
+            },
+            {
+              "name": "queued_event_bytes",
+              "number": 3,
+              "label": 1,
+              "kind": 4,
+              "type_name": "",
+              "oneof_index": null
+            },
+            {
+              "name": "active_subscriptions",
+              "number": 4,
+              "label": 1,
+              "kind": 4,
+              "type_name": "",
+              "oneof_index": null
+            },
+            {
+              "name": "rejected_frames",
+              "number": 5,
+              "label": 1,
+              "kind": 4,
+              "type_name": "",
+              "oneof_index": null
+            }
+          ]
+        },
+        {
+          "name": "EventGap",
+          "fields": [
+            {
+              "name": "subscription_id",
+              "number": 1,
+              "label": 1,
+              "kind": 4,
+              "type_name": "",
+              "oneof_index": null
+            },
+            {
+              "name": "after_watermark",
+              "number": 2,
+              "label": 1,
+              "kind": 4,
+              "type_name": "",
+              "oneof_index": null
+            }
+          ]
+        },
+        {
+          "name": "GetRequest",
+          "fields": [
+            {
+              "name": "key",
+              "number": 1,
+              "label": 1,
+              "kind": 12,
+              "type_name": "",
+              "oneof_index": null
+            }
+          ]
+        },
+        {
+          "name": "Handshake",
+          "fields": [
+            {
+              "name": "generation",
+              "number": 1,
+              "label": 1,
+              "kind": 13,
+              "type_name": "",
+              "oneof_index": null
+            },
+            {
+              "name": "client_id",
+              "number": 2,
+              "label": 1,
+              "kind": 9,
+              "type_name": "",
+              "oneof_index": null
+            },
+            {
+              "name": "requested",
+              "number": 3,
+              "label": 3,
+              "kind": 14,
+              "type_name": ".hydracache.client.v2alpha.Capability",
+              "oneof_index": null
+            },
+            {
+              "name": "connection_generation",
+              "number": 4,
+              "label": 1,
+              "kind": 4,
+              "type_name": "",
+              "oneof_index": null
+            }
+          ]
+        },
+        {
+          "name": "HandshakeAck",
+          "fields": [
+            {
+              "name": "generation",
+              "number": 1,
+              "label": 1,
+              "kind": 13,
+              "type_name": "",
+              "oneof_index": null
+            },
+            {
+              "name": "cluster_id",
+              "number": 2,
+              "label": 1,
+              "kind": 9,
+              "type_name": "",
+              "oneof_index": null
+            },
+            {
+              "name": "accepted",
+              "number": 3,
+              "label": 3,
+              "kind": 14,
+              "type_name": ".hydracache.client.v2alpha.Capability",
+              "oneof_index": null
+            },
+            {
+              "name": "topology_epoch",
+              "number": 4,
+              "label": 1,
+              "kind": 4,
+              "type_name": "",
+              "oneof_index": null
+            },
+            {
+              "name": "connection_generation",
+              "number": 5,
+              "label": 1,
+              "kind": 4,
+              "type_name": "",
+              "oneof_index": null
+            }
+          ]
+        },
+        {
+          "name": "InvocationRequest",
+          "fields": [
+            {
+              "name": "meta",
+              "number": 1,
+              "label": 1,
+              "kind": 11,
+              "type_name": ".hydracache.client.v2alpha.RequestMeta",
+              "oneof_index": null
+            },
+            {
+              "name": "get",
+              "number": 101,
+              "label": 1,
+              "kind": 11,
+              "type_name": ".hydracache.client.v2alpha.GetRequest",
+              "oneof_index": 0
+            },
+            {
+              "name": "put",
+              "number": 102,
+              "label": 1,
+              "kind": 11,
+              "type_name": ".hydracache.client.v2alpha.PutRequest",
+              "oneof_index": 0
+            },
+            {
+              "name": "delete",
+              "number": 103,
+              "label": 1,
+              "kind": 11,
+              "type_name": ".hydracache.client.v2alpha.DeleteRequest",
+              "oneof_index": 0
+            },
+            {
+              "name": "compare_and_set",
+              "number": 104,
+              "label": 1,
+              "kind": 11,
+              "type_name": ".hydracache.client.v2alpha.CompareAndSetRequest",
+              "oneof_index": 0
+            },
+            {
+              "name": "batch",
+              "number": 105,
+              "label": 1,
+              "kind": 11,
+              "type_name": ".hydracache.client.v2alpha.BatchRequest",
+              "oneof_index": 0
+            }
+          ]
+        },
+        {
+          "name": "InvocationResponse",
+          "fields": [
+            {
+              "name": "meta",
+              "number": 1,
+              "label": 1,
+              "kind": 11,
+              "type_name": ".hydracache.client.v2alpha.ResponseMeta",
+              "oneof_index": null
+            },
+            {
+              "name": "value",
+              "number": 101,
+              "label": 1,
+              "kind": 11,
+              "type_name": ".hydracache.client.v2alpha.ValueResult",
+              "oneof_index": 0
+            },
+            {
+              "name": "mutation",
+              "number": 102,
+              "label": 1,
+              "kind": 11,
+              "type_name": ".hydracache.client.v2alpha.MutationResult",
+              "oneof_index": 0
+            },
+            {
+              "name": "batch",
+              "number": 103,
+              "label": 1,
+              "kind": 11,
+              "type_name": ".hydracache.client.v2alpha.BatchResult",
+              "oneof_index": 0
+            }
+          ]
+        },
+        {
+          "name": "MutationResult",
+          "fields": [
+            {
+              "name": "applied",
+              "number": 1,
+              "label": 1,
+              "kind": 8,
+              "type_name": "",
+              "oneof_index": null
+            }
+          ]
+        },
+        {
+          "name": "NodeEndpoint",
+          "fields": [
+            {
+              "name": "node_id",
+              "number": 1,
+              "label": 1,
+              "kind": 9,
+              "type_name": "",
+              "oneof_index": null
+            },
+            {
+              "name": "node_epoch",
+              "number": 2,
+              "label": 1,
+              "kind": 4,
+              "type_name": "",
+              "oneof_index": null
+            },
+            {
+              "name": "endpoint_uri",
+              "number": 3,
+              "label": 1,
+              "kind": 9,
+              "type_name": "",
+              "oneof_index": null
+            },
+            {
+              "name": "server_name",
+              "number": 4,
+              "label": 1,
+              "kind": 9,
+              "type_name": "",
+              "oneof_index": null
+            }
+          ]
+        },
+        {
+          "name": "PutRequest",
+          "fields": [
+            {
+              "name": "key",
+              "number": 1,
+              "label": 1,
+              "kind": 12,
+              "type_name": "",
+              "oneof_index": null
+            },
+            {
+              "name": "value",
+              "number": 2,
+              "label": 1,
+              "kind": 12,
+              "type_name": "",
+              "oneof_index": null
+            },
+            {
+              "name": "ttl_ms",
+              "number": 3,
+              "label": 1,
+              "kind": 4,
+              "type_name": "",
+              "oneof_index": null
+            }
+          ]
+        },
+        {
+          "name": "RequestMeta",
+          "fields": [
+            {
+              "name": "deadline_unix_ms",
+              "number": 1,
+              "label": 1,
+              "kind": 4,
+              "type_name": "",
+              "oneof_index": null
+            },
+            {
+              "name": "idempotency_key",
+              "number": 2,
+              "label": 1,
+              "kind": 12,
+              "type_name": "",
+              "oneof_index": null
+            },
+            {
+              "name": "tenant",
+              "number": 3,
+              "label": 1,
+              "kind": 9,
+              "type_name": "",
+              "oneof_index": null
+            },
+            {
+              "name": "topology_epoch",
+              "number": 4,
+              "label": 1,
+              "kind": 4,
+              "type_name": "",
+              "oneof_index": null
+            }
+          ]
+        },
+        {
+          "name": "ResponseMeta",
+          "fields": [
+            {
+              "name": "error",
+              "number": 1,
+              "label": 1,
+              "kind": 14,
+              "type_name": ".hydracache.client.v2alpha.StableErrorCode",
+              "oneof_index": null
+            },
+            {
+              "name": "retry",
+              "number": 2,
+              "label": 1,
+              "kind": 14,
+              "type_name": ".hydracache.client.v2alpha.RetryDirective",
+              "oneof_index": null
+            },
+            {
+              "name": "safe_detail",
+              "number": 3,
+              "label": 1,
+              "kind": 9,
+              "type_name": "",
+              "oneof_index": null
+            },
+            {
+              "name": "topology_epoch",
+              "number": 4,
+              "label": 1,
+              "kind": 4,
+              "type_name": "",
+              "oneof_index": null
+            }
+          ]
+        },
+        {
+          "name": "ServerEnvelope",
+          "fields": [
+            {
+              "name": "generation",
+              "number": 1,
+              "label": 1,
+              "kind": 13,
+              "type_name": "",
+              "oneof_index": null
+            },
+            {
+              "name": "connection_generation",
+              "number": 2,
+              "label": 1,
+              "kind": 4,
+              "type_name": "",
+              "oneof_index": null
+            },
+            {
+              "name": "correlation_id",
+              "number": 3,
+              "label": 1,
+              "kind": 4,
+              "type_name": "",
+              "oneof_index": null
+            },
+            {
+              "name": "handshake",
+              "number": 16,
+              "label": 1,
+              "kind": 11,
+              "type_name": ".hydracache.client.v2alpha.HandshakeAck",
+              "oneof_index": 0
+            },
+            {
+              "name": "invocation",
+              "number": 17,
+              "label": 1,
+              "kind": 11,
+              "type_name": ".hydracache.client.v2alpha.InvocationResponse",
+              "oneof_index": 0
+            },
+            {
+              "name": "subscribed",
+              "number": 18,
+              "label": 1,
+              "kind": 11,
+              "type_name": ".hydracache.client.v2alpha.SubscriptionAck",
+              "oneof_index": 0
+            },
+            {
+              "name": "event",
+              "number": 19,
+              "label": 1,
+              "kind": 11,
+              "type_name": ".hydracache.client.v2alpha.CacheEvent",
+              "oneof_index": 0
+            },
+            {
+              "name": "gap",
+              "number": 20,
+              "label": 1,
+              "kind": 11,
+              "type_name": ".hydracache.client.v2alpha.EventGap",
+              "oneof_index": 0
+            },
+            {
+              "name": "topology",
+              "number": 21,
+              "label": 1,
+              "kind": 11,
+              "type_name": ".hydracache.client.v2alpha.TopologyUpdate",
+              "oneof_index": 0
+            },
+            {
+              "name": "session_heartbeat",
+              "number": 22,
+              "label": 1,
+              "kind": 11,
+              "type_name": ".hydracache.client.v2alpha.SessionHeartbeat",
+              "oneof_index": 0
+            },
+            {
+              "name": "session_lost",
+              "number": 23,
+              "label": 1,
+              "kind": 11,
+              "type_name": ".hydracache.client.v2alpha.SessionLost",
+              "oneof_index": 0
+            },
+            {
+              "name": "diagnostics",
+              "number": 24,
+              "label": 1,
+              "kind": 11,
+              "type_name": ".hydracache.client.v2alpha.Diagnostics",
+              "oneof_index": 0
+            }
+          ]
+        },
+        {
+          "name": "SessionHeartbeat",
+          "fields": [
+            {
+              "name": "session_id",
+              "number": 1,
+              "label": 1,
+              "kind": 12,
+              "type_name": "",
+              "oneof_index": null
+            },
+            {
+              "name": "fence",
+              "number": 2,
+              "label": 1,
+              "kind": 4,
+              "type_name": "",
+              "oneof_index": null
+            }
+          ]
+        },
+        {
+          "name": "SessionLost",
+          "fields": [
+            {
+              "name": "session_id",
+              "number": 1,
+              "label": 1,
+              "kind": 12,
+              "type_name": "",
+              "oneof_index": null
+            },
+            {
+              "name": "last_fence",
+              "number": 2,
+              "label": 1,
+              "kind": 4,
+              "type_name": "",
+              "oneof_index": null
+            }
+          ]
+        },
+        {
+          "name": "SessionOpen",
+          "fields": [
+            {
+              "name": "requested_ttl_ms",
+              "number": 1,
+              "label": 1,
+              "kind": 4,
+              "type_name": "",
+              "oneof_index": null
+            }
+          ]
+        },
+        {
+          "name": "Subscribe",
+          "fields": [
+            {
+              "name": "subscription_id",
+              "number": 1,
+              "label": 1,
+              "kind": 4,
+              "type_name": "",
+              "oneof_index": null
+            },
+            {
+              "name": "key_prefix",
+              "number": 2,
+              "label": 1,
+              "kind": 12,
+              "type_name": "",
+              "oneof_index": null
+            },
+            {
+              "name": "resume_watermark",
+              "number": 3,
+              "label": 1,
+              "kind": 4,
+              "type_name": "",
+              "oneof_index": null
+            }
+          ]
+        },
+        {
+          "name": "SubscriptionAck",
+          "fields": [
+            {
+              "name": "subscription_id",
+              "number": 1,
+              "label": 1,
+              "kind": 4,
+              "type_name": "",
+              "oneof_index": null
+            },
+            {
+              "name": "watermark",
+              "number": 2,
+              "label": 1,
+              "kind": 4,
+              "type_name": "",
+              "oneof_index": null
+            }
+          ]
+        },
+        {
+          "name": "TopologyUpdate",
+          "fields": [
+            {
+              "name": "epoch",
+              "number": 1,
+              "label": 1,
+              "kind": 4,
+              "type_name": "",
+              "oneof_index": null
+            },
+            {
+              "name": "nodes",
+              "number": 2,
+              "label": 3,
+              "kind": 11,
+              "type_name": ".hydracache.client.v2alpha.NodeEndpoint",
+              "oneof_index": null
+            }
+          ]
+        },
+        {
+          "name": "ValueResult",
+          "fields": [
+            {
+              "name": "found",
+              "number": 1,
+              "label": 1,
+              "kind": 8,
+              "type_name": "",
+              "oneof_index": null
+            },
+            {
+              "name": "value",
+              "number": 2,
+              "label": 1,
+              "kind": 12,
+              "type_name": "",
+              "oneof_index": null
+            },
+            {
+              "name": "expires_at_unix_ms",
+              "number": 3,
+              "label": 1,
+              "kind": 4,
+              "type_name": "",
+              "oneof_index": null
+            }
+          ]
+        }
+      ],
+      "enums": [
+        {
+          "name": "Capability",
+          "values": [
+            {
+              "name": "CAPABILITY_UNSPECIFIED",
+              "number": 0
+            },
+            {
+              "name": "CAPABILITY_DATA",
+              "number": 1
+            },
+            {
+              "name": "CAPABILITY_BATCH",
+              "number": 2
+            },
+            {
+              "name": "CAPABILITY_SUBSCRIPTIONS",
+              "number": 3
+            },
+            {
+              "name": "CAPABILITY_TOPOLOGY",
+              "number": 4
+            },
+            {
+              "name": "CAPABILITY_FENCED_SESSIONS",
+              "number": 5
+            },
+            {
+              "name": "CAPABILITY_DIAGNOSTICS",
+              "number": 6
+            }
+          ]
+        },
+        {
+          "name": "RetryDirective",
+          "values": [
+            {
+              "name": "RETRY_DIRECTIVE_UNSPECIFIED",
+              "number": 0
+            },
+            {
+              "name": "RETRY_DIRECTIVE_NEVER",
+              "number": 1
+            },
+            {
+              "name": "RETRY_DIRECTIVE_SAME_CONNECTION",
+              "number": 2
+            },
+            {
+              "name": "RETRY_DIRECTIVE_RECONNECT_IDEMPOTENT",
+              "number": 3
+            },
+            {
+              "name": "RETRY_DIRECTIVE_REPAIR_REQUIRED",
+              "number": 4
+            }
+          ]
+        },
+        {
+          "name": "StableErrorCode",
+          "values": [
+            {
+              "name": "STABLE_ERROR_UNSPECIFIED",
+              "number": 0
+            },
+            {
+              "name": "STABLE_ERROR_INVALID_REQUEST",
+              "number": 1
+            },
+            {
+              "name": "STABLE_ERROR_UNAUTHENTICATED",
+              "number": 2
+            },
+            {
+              "name": "STABLE_ERROR_UNAUTHORIZED",
+              "number": 3
+            },
+            {
+              "name": "STABLE_ERROR_NOT_FOUND",
+              "number": 4
+            },
+            {
+              "name": "STABLE_ERROR_CONFLICT",
+              "number": 5
+            },
+            {
+              "name": "STABLE_ERROR_QUOTA_EXCEEDED",
+              "number": 6
+            },
+            {
+              "name": "STABLE_ERROR_DEADLINE_EXCEEDED",
+              "number": 7
+            },
+            {
+              "name": "STABLE_ERROR_UNAVAILABLE",
+              "number": 8
+            },
+            {
+              "name": "STABLE_ERROR_UNSUPPORTED",
+              "number": 9
+            },
+            {
+              "name": "STABLE_ERROR_GAP_REPAIR_REQUIRED",
+              "number": 10
+            },
+            {
+              "name": "STABLE_ERROR_SESSION_LOST",
+              "number": 11
+            },
+            {
+              "name": "STABLE_ERROR_INTERNAL",
+              "number": 12
+            }
+          ]
+        }
+      ],
+      "services": [
+        {
+          "name": "ClientPlaneAlpha",
+          "methods": [
+            {
+              "name": "Open",
+              "input_type": ".hydracache.client.v2alpha.ClientEnvelope",
+              "output_type": ".hydracache.client.v2alpha.ServerEnvelope",
+              "client_streaming": true,
+              "server_streaming": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "hc2_spike.proto",
+      "package": "hydracache.client.v2",
+      "messages": [
+        {
+          "name": "SpikeEnvelope",
+          "fields": [
+            {
+              "name": "generation",
+              "number": 1,
+              "label": 1,
+              "kind": 13,
+              "type_name": "",
+              "oneof_index": null
+            },
+            {
+              "name": "kind",
+              "number": 2,
+              "label": 1,
+              "kind": 13,
+              "type_name": "",
+              "oneof_index": null
+            },
+            {
+              "name": "correlation_id",
+              "number": 3,
+              "label": 1,
+              "kind": 4,
+              "type_name": "",
+              "oneof_index": null
+            },
+            {
+              "name": "payload",
+              "number": 4,
+              "label": 1,
+              "kind": 12,
+              "type_name": "",
+              "oneof_index": null
+            }
+          ]
+        }
+      ],
+      "enums": [],
+      "services": [
+        {
+          "name": "ClientPlaneSpike",
+          "methods": [
+            {
+              "name": "Open",
+              "input_type": ".hydracache.client.v2.SpikeEnvelope",
+              "output_type": ".hydracache.client.v2.SpikeEnvelope",
+              "client_streaming": true,
+              "server_streaming": true
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

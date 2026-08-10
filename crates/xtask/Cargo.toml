@@ -11,6 +11,9 @@ description = "HydraCache repository automation tasks."
 hydracache = { workspace = true, features = ["durable-value-store"] }
 hydracache-loadgen.workspace = true
 proc-macro2.workspace = true
+prost.workspace = true
+prost-types.workspace = true
+protoc-bin-vendored = "3.2.0"
 serde.workspace = true
 serde_json.workspace = true
 serde_yaml = "0.9.34"
