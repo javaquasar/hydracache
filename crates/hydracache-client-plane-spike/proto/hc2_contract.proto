@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package hydracache.client.v2alpha;
 
-option java_package = "io.hydracache.client.v2alpha";
+option java_package = "io.hydracache.client.hc2.internal.wire";
 option java_multiple_files = true;
 
 // HC/2 alpha contract. Removed numbers and names stay reserved permanently.
@@ -129,6 +129,7 @@ message InvocationResponse {
 
 message Cancel { uint64 correlation_id = 1; string safe_reason = 2; }
 message Subscribe { uint64 subscription_id = 1; bytes key_prefix = 2; uint64 resume_watermark = 3; }
+message Unsubscribe { uint64 subscription_id = 1; }
 message SubscriptionAck { uint64 subscription_id = 1; uint64 watermark = 2; }
 message CacheEvent {
   uint64 subscription_id = 1;
@@ -150,6 +151,7 @@ message TopologyUpdate { uint64 epoch = 1; repeated NodeEndpoint nodes = 2; }
 
 message SessionOpen { uint64 requested_ttl_ms = 1; }
 message SessionHeartbeat { bytes session_id = 1; uint64 fence = 2; }
+message SessionClose { bytes session_id = 1; uint64 fence = 2; }
 message SessionLost { bytes session_id = 1; uint64 last_fence = 2; }
 
 message Diagnostics {
@@ -172,9 +174,11 @@ message ClientEnvelope {
     Subscribe subscribe = 19;
     SessionOpen session_open = 20;
     SessionHeartbeat session_heartbeat = 21;
+    Unsubscribe unsubscribe = 22;
+    SessionClose session_close = 23;
   }
   reserved 4 to 15;
-  reserved 22 to 31;
+  reserved 24 to 31;
 }
 
 message ServerEnvelope {

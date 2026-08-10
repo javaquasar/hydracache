@@ -218,6 +218,22 @@
               "kind": 11,
               "type_name": ".hydracache.client.v2alpha.SessionHeartbeat",
               "oneof_index": 0
+            },
+            {
+              "name": "unsubscribe",
+              "number": 22,
+              "label": 1,
+              "kind": 11,
+              "type_name": ".hydracache.client.v2alpha.Unsubscribe",
+              "oneof_index": 0
+            },
+            {
+              "name": "session_close",
+              "number": 23,
+              "label": 1,
+              "kind": 11,
+              "type_name": ".hydracache.client.v2alpha.SessionClose",
+              "oneof_index": 0
             }
           ]
         },
@@ -777,6 +793,27 @@
           ]
         },
         {
+          "name": "SessionClose",
+          "fields": [
+            {
+              "name": "session_id",
+              "number": 1,
+              "label": 1,
+              "kind": 12,
+              "type_name": "",
+              "oneof_index": null
+            },
+            {
+              "name": "fence",
+              "number": 2,
+              "label": 1,
+              "kind": 4,
+              "type_name": "",
+              "oneof_index": null
+            }
+          ]
+        },
+        {
           "name": "SessionHeartbeat",
           "fields": [
             {
@@ -898,6 +935,19 @@
               "label": 3,
               "kind": 11,
               "type_name": ".hydracache.client.v2alpha.NodeEndpoint",
+              "oneof_index": null
+            }
+          ]
+        },
+        {
+          "name": "Unsubscribe",
+          "fields": [
+            {
+              "name": "subscription_id",
+              "number": 1,
+              "label": 1,
+              "kind": 4,
+              "type_name": "",
               "oneof_index": null
             }
           ]

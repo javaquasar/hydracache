@@ -1,0 +1,570 @@
+use std::collections::{BTreeMap, BTreeSet};
+use std::env;
+use std::error::Error;
+use std::path::{Path, PathBuf};
+use std::pin::Pin;
+use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
+use std::sync::{Arc, Mutex};
+
+use futures_util::Stream;
+use rcgen::{
+    date_time_ymd, BasicConstraints, CertificateParams, CertifiedIssuer, ExtendedKeyUsagePurpose,
+    IsCa, KeyPair,
+};
+use tokio::net::TcpListener;
+use tokio::sync::{mpsc, oneshot};
+use tokio_stream::wrappers::{ReceiverStream, TcpListenerStream};
+use tonic::transport::{Certificate, Identity, Server, ServerTlsConfig};
+use tonic::{Request, Response, Status, Streaming};
+
+mod wire {
+    tonic::include_proto!("hydracache.client.v2alpha");
+}
+
+use wire::batch_item;
+use wire::client_envelope;
+use wire::client_plane_alpha_server::{ClientPlaneAlpha, ClientPlaneAlphaServer};
+use wire::invocation_response;
+use wire::server_envelope;
+use wire::{
+    BatchResult, CacheEvent, ClientEnvelope, HandshakeAck, InvocationResponse, MutationResult,
+    NodeEndpoint, ResponseMeta, RetryDirective, ServerEnvelope, SessionHeartbeat, StableErrorCode,
+    SubscriptionAck, TopologyUpdate, ValueResult,
+};
+
+const GENERATION: u32 = 5;
+const CONNECTION_GENERATION: u64 = 1;
+
+type ResponseStream = Pin<Box<dyn Stream<Item = Result<ServerEnvelope, Status>> + Send>>;
+
+#[derive(Debug, Default)]
+struct Store {
+    values: BTreeMap<Vec<u8>, Vec<u8>>,
+}
+
+#[derive(Debug, Default)]
+struct ClosedReceipt {
+    invocations: u64,
+    events: u64,
+    active_subscriptions: usize,
+    active_sessions: usize,
+}
+
+#[derive(Clone)]
+struct InteropService {
+    accepted: Arc<AtomicBool>,
+    store: Arc<Mutex<Store>>,
+    invocations: Arc<AtomicU64>,
+    events: Arc<AtomicU64>,
+    closed: Arc<Mutex<Option<oneshot::Sender<ClosedReceipt>>>>,
+}
+
+#[tonic::async_trait]
+impl ClientPlaneAlpha for InteropService {
+    type OpenStream = ResponseStream;
+
+    async fn open(
+        &self,
+        request: Request<Streaming<ClientEnvelope>>,
+    ) -> Result<Response<Self::OpenStream>, Status> {
+        if self.accepted.swap(true, Ordering::SeqCst) {
+            return Err(Status::resource_exhausted(
+                "interop server accepts exactly one connection",
+            ));
+        }
+        let mut inbound = request.into_inner();
+        let (tx, rx) = mpsc::channel(256);
+        let service = self.clone();
+        tokio::spawn(async move {
+            let mut subscriptions = BTreeMap::<u64, (Vec<u8>, u64)>::new();
+            let mut sessions = BTreeSet::<Vec<u8>>::new();
+            let mut cancelled = BTreeSet::<u64>::new();
+            let mut handshaken = false;
+
+            loop {
+                let envelope = match inbound.message().await {
+                    Ok(Some(envelope)) => envelope,
+                    Ok(None) => break,
+                    Err(_) => break,
+                };
+                if envelope.generation != GENERATION
+                    || envelope.connection_generation != CONNECTION_GENERATION
+                {
+                    let _ = tx
+                        .send(Err(Status::failed_precondition(
+                            "generation identity mismatch",
+                        )))
+                        .await;
+                    break;
+                }
+                match envelope.message {
+                    Some(client_envelope::Message::Handshake(handshake)) if !handshaken => {
+                        handshaken = true;
+                        let accepted = handshake.requested;
+                        let ack = HandshakeAck {
+                            generation: GENERATION,
+                            cluster_id: "hc2-java-interop".to_owned(),
+                            accepted,
+                            topology_epoch: 1,
+                            connection_generation: CONNECTION_GENERATION,
+                        };
+                        if send(
+                            &tx,
+                            envelope.correlation_id,
+                            server_envelope::Message::Handshake(ack),
+                        )
+                        .await
+                        .is_err()
+                        {
+                            break;
+                        }
+                        let topology = TopologyUpdate {
+                            epoch: 1,
+                            nodes: vec![NodeEndpoint {
+                                node_id: "interop-node".to_owned(),
+                                node_epoch: 1,
+                                endpoint_uri: "hc2+grpc://localhost".to_owned(),
+                                server_name: "localhost".to_owned(),
+                            }],
+                        };
+                        let _ = send(&tx, 0, server_envelope::Message::Topology(topology)).await;
+                    }
+                    Some(client_envelope::Message::Handshake(_)) | None if !handshaken => {
+                        let _ = tx
+                            .send(Err(Status::failed_precondition("handshake must be first")))
+                            .await;
+                        break;
+                    }
+                    Some(client_envelope::Message::Invocation(invocation)) if handshaken => {
+                        service.invocations.fetch_add(1, Ordering::SeqCst);
+                        if is_delayed_probe(&invocation) {
+                            tokio::time::sleep(std::time::Duration::from_millis(500)).await;
+                        }
+                        let response = apply_invocation(&service.store, invocation);
+                        if send(
+                            &tx,
+                            envelope.correlation_id,
+                            server_envelope::Message::Invocation(response),
+                        )
+                        .await
+                        .is_err()
+                        {
+                            break;
+                        }
+                        emit_matching_events(&service, &tx, &mut subscriptions).await;
+                    }
+                    Some(client_envelope::Message::Cancel(cancel)) if handshaken => {
+                        cancelled.insert(cancel.correlation_id);
+                    }
+                    Some(client_envelope::Message::Subscribe(subscribe)) if handshaken => {
+                        subscriptions.insert(
+                            subscribe.subscription_id,
+                            (subscribe.key_prefix, subscribe.resume_watermark),
+                        );
+                        let ack = SubscriptionAck {
+                            subscription_id: subscribe.subscription_id,
+                            watermark: subscribe.resume_watermark,
+                        };
+                        let _ = send(
+                            &tx,
+                            envelope.correlation_id,
+                            server_envelope::Message::Subscribed(ack),
+                        )
+                        .await;
+                    }
+                    Some(client_envelope::Message::Unsubscribe(unsubscribe)) if handshaken => {
+                        subscriptions.remove(&unsubscribe.subscription_id);
+                    }
+                    Some(client_envelope::Message::SessionOpen(_)) if handshaken => {
+                        let session_id = envelope.correlation_id.to_be_bytes().to_vec();
+                        sessions.insert(session_id.clone());
+                        let heartbeat = SessionHeartbeat {
+                            session_id,
+                            fence: 1,
+                        };
+                        let _ = send(
+                            &tx,
+                            envelope.correlation_id,
+                            server_envelope::Message::SessionHeartbeat(heartbeat),
+                        )
+                        .await;
+                    }
+                    Some(client_envelope::Message::SessionHeartbeat(heartbeat)) if handshaken => {
+                        if sessions.contains(&heartbeat.session_id) {
+                            let _ = send(
+                                &tx,
+                                envelope.correlation_id,
+                                server_envelope::Message::SessionHeartbeat(heartbeat),
+                            )
+                            .await;
+                        }
+                    }
+                    Some(client_envelope::Message::SessionClose(close)) if handshaken => {
+                        sessions.remove(&close.session_id);
+                    }
+                    _ => {
+                        let _ = tx
+                            .send(Err(Status::failed_precondition(
+                                "unexpected or duplicate HC/2 message",
+                            )))
+                            .await;
+                        break;
+                    }
+                }
+            }
+            drop(tx);
+            if let Some(closed) = service.closed.lock().expect("closed receipt lock").take() {
+                let _ = closed.send(ClosedReceipt {
+                    invocations: service.invocations.load(Ordering::SeqCst),
+                    events: service.events.load(Ordering::SeqCst),
+                    active_subscriptions: subscriptions.len(),
+                    active_sessions: sessions.len(),
+                });
+            }
+            drop(cancelled);
+        });
+        Ok(Response::new(Box::pin(ReceiverStream::new(rx))))
+    }
+}
+
+fn is_delayed_probe(invocation: &wire::InvocationRequest) -> bool {
+    matches!(
+        invocation.operation.as_ref(),
+        Some(wire::invocation_request::Operation::Get(get))
+            if get.key == b"__hc2_delay__"
+    )
+}
+
+async fn send(
+    tx: &mpsc::Sender<Result<ServerEnvelope, Status>>,
+    correlation_id: u64,
+    message: server_envelope::Message,
+) -> Result<(), mpsc::error::SendError<Result<ServerEnvelope, Status>>> {
+    tx.send(Ok(ServerEnvelope {
+        generation: GENERATION,
+        connection_generation: CONNECTION_GENERATION,
+        correlation_id,
+        message: Some(message),
+    }))
+    .await
+}
+
+fn success_meta() -> ResponseMeta {
+    ResponseMeta {
+        error: StableErrorCode::StableErrorUnspecified as i32,
+        retry: RetryDirective::Never as i32,
+        safe_detail: String::new(),
+        topology_epoch: 1,
+    }
+}
+
+fn apply_invocation(
+    store: &Mutex<Store>,
+    invocation: wire::InvocationRequest,
+) -> InvocationResponse {
+    use wire::invocation_request::Operation;
+    let mut store = store.lock().expect("interop store lock");
+    match invocation.operation {
+        Some(Operation::Get(get)) => get_result(&store, &get.key),
+        Some(Operation::Put(put)) => {
+            store.values.insert(put.key, put.value);
+            mutation_result(true)
+        }
+        Some(Operation::Delete(delete)) => {
+            let applied = store.values.remove(&delete.key).is_some();
+            mutation_result(applied)
+        }
+        Some(Operation::CompareAndSet(compare)) => {
+            let applied = store
+                .values
+                .get(&compare.key)
+                .is_some_and(|current| current == &compare.expected);
+            if applied {
+                store.values.insert(compare.key, compare.replacement);
+            }
+            mutation_result(applied)
+        }
+        Some(Operation::Batch(batch)) => {
+            let items = batch
+                .items
+                .into_iter()
+                .map(|item| match item.operation {
+                    Some(batch_item::Operation::Get(get)) => get_result(&store, &get.key),
+                    Some(batch_item::Operation::Put(put)) => {
+                        store.values.insert(put.key, put.value);
+                        mutation_result(true)
+                    }
+                    Some(batch_item::Operation::Delete(delete)) => {
+                        mutation_result(store.values.remove(&delete.key).is_some())
+                    }
+                    Some(batch_item::Operation::CompareAndSet(compare)) => {
+                        let applied = store
+                            .values
+                            .get(&compare.key)
+                            .is_some_and(|current| current == &compare.expected);
+                        if applied {
+                            store.values.insert(compare.key, compare.replacement);
+                        }
+                        mutation_result(applied)
+                    }
+                    None => error_result(
+                        StableErrorCode::StableErrorInvalidRequest,
+                        "batch item omitted operation",
+                    ),
+                })
+                .collect();
+            InvocationResponse {
+                meta: Some(success_meta()),
+                result: Some(invocation_response::Result::Batch(BatchResult { items })),
+            }
+        }
+        None => error_result(
+            StableErrorCode::StableErrorInvalidRequest,
+            "invocation omitted operation",
+        ),
+    }
+}
+
+fn get_result(store: &Store, key: &[u8]) -> InvocationResponse {
+    let value = store.values.get(key);
+    InvocationResponse {
+        meta: Some(success_meta()),
+        result: Some(invocation_response::Result::Value(ValueResult {
+            found: value.is_some(),
+            value: value.cloned().unwrap_or_default(),
+            expires_at_unix_ms: 0,
+        })),
+    }
+}
+
+fn mutation_result(applied: bool) -> InvocationResponse {
+    InvocationResponse {
+        meta: Some(success_meta()),
+        result: Some(invocation_response::Result::Mutation(MutationResult {
+            applied,
+        })),
+    }
+}
+
+fn error_result(code: StableErrorCode, detail: &str) -> InvocationResponse {
+    InvocationResponse {
+        meta: Some(ResponseMeta {
+            error: code as i32,
+            retry: RetryDirective::Never as i32,
+            safe_detail: detail.to_owned(),
+            topology_epoch: 1,
+        }),
+        result: None,
+    }
+}
+
+async fn emit_matching_events(
+    service: &InteropService,
+    tx: &mpsc::Sender<Result<ServerEnvelope, Status>>,
+    subscriptions: &mut BTreeMap<u64, (Vec<u8>, u64)>,
+) {
+    let latest = service
+        .store
+        .lock()
+        .expect("interop store lock")
+        .values
+        .iter()
+        .next_back()
+        .map(|(key, value)| (key.clone(), value.clone()));
+    let Some((key, value)) = latest else { return };
+    for (subscription_id, (prefix, watermark)) in subscriptions.iter_mut() {
+        if !key.starts_with(prefix) {
+            continue;
+        }
+        *watermark = watermark.saturating_add(1);
+        let event = CacheEvent {
+            subscription_id: *subscription_id,
+            watermark: *watermark,
+            key: key.clone(),
+            value: value.clone(),
+            removed: false,
+        };
+        if send(tx, 0, server_envelope::Message::Event(event))
+            .await
+            .is_ok()
+        {
+            service.events.fetch_add(1, Ordering::SeqCst);
+        }
+    }
+}
+
+struct Pki {
+    ca_pem: String,
+    server_cert_pem: String,
+    server_key_pem: String,
+    client_cert_pem: String,
+    client_key_pem: String,
+}
+
+#[derive(Clone, Copy)]
+enum PkiProfile {
+    Normal,
+    ExpiredServer,
+    NotYetServer,
+    WrongServerEku,
+    ExpiredClient,
+    NotYetClient,
+    WrongClientEku,
+    UntrustedClient,
+}
+
+impl PkiProfile {
+    fn parse(value: &str) -> Result<Self, Box<dyn Error>> {
+        match value {
+            "normal" => Ok(Self::Normal),
+            "expired-server" => Ok(Self::ExpiredServer),
+            "not-yet-server" => Ok(Self::NotYetServer),
+            "wrong-server-eku" => Ok(Self::WrongServerEku),
+            "expired-client" => Ok(Self::ExpiredClient),
+            "not-yet-client" => Ok(Self::NotYetClient),
+            "wrong-client-eku" => Ok(Self::WrongClientEku),
+            "untrusted-client" => Ok(Self::UntrustedClient),
+            _ => Err(format!("unsupported PKI profile: {value}").into()),
+        }
+    }
+}
+
+fn generate_pki(profile: PkiProfile) -> Result<Pki, Box<dyn Error>> {
+    let mut ca_params = CertificateParams::new(Vec::<String>::new())?;
+    ca_params.is_ca = IsCa::Ca(BasicConstraints::Unconstrained);
+    let ca = CertifiedIssuer::self_signed(ca_params, KeyPair::generate()?)?;
+
+    let server_key = KeyPair::generate()?;
+    let mut server_params = CertificateParams::new(vec!["localhost".to_owned()])?;
+    if matches!(profile, PkiProfile::ExpiredServer) {
+        server_params.not_before = date_time_ymd(2000, 1, 1);
+        server_params.not_after = date_time_ymd(2001, 1, 1);
+    } else if matches!(profile, PkiProfile::NotYetServer) {
+        server_params.not_before = date_time_ymd(4090, 1, 1);
+        server_params.not_after = date_time_ymd(4091, 1, 1);
+    }
+    server_params.extended_key_usages = vec![if matches!(profile, PkiProfile::WrongServerEku) {
+        ExtendedKeyUsagePurpose::ClientAuth
+    } else {
+        ExtendedKeyUsagePurpose::ServerAuth
+    }];
+    let server_cert = server_params.signed_by(&server_key, &ca)?;
+
+    let client_key = KeyPair::generate()?;
+    let mut client_params = CertificateParams::new(vec!["hc2-java-client".to_owned()])?;
+    if matches!(profile, PkiProfile::ExpiredClient) {
+        client_params.not_before = date_time_ymd(2000, 1, 1);
+        client_params.not_after = date_time_ymd(2001, 1, 1);
+    } else if matches!(profile, PkiProfile::NotYetClient) {
+        client_params.not_before = date_time_ymd(4090, 1, 1);
+        client_params.not_after = date_time_ymd(4091, 1, 1);
+    }
+    client_params.extended_key_usages = vec![if matches!(profile, PkiProfile::WrongClientEku) {
+        ExtendedKeyUsagePurpose::ServerAuth
+    } else {
+        ExtendedKeyUsagePurpose::ClientAuth
+    }];
+    let client_cert = if matches!(profile, PkiProfile::UntrustedClient) {
+        let mut foreign_params = CertificateParams::new(Vec::<String>::new())?;
+        foreign_params.is_ca = IsCa::Ca(BasicConstraints::Unconstrained);
+        let foreign = CertifiedIssuer::self_signed(foreign_params, KeyPair::generate()?)?;
+        client_params.signed_by(&client_key, &foreign)?
+    } else {
+        client_params.signed_by(&client_key, &ca)?
+    };
+
+    Ok(Pki {
+        ca_pem: ca.pem(),
+        server_cert_pem: server_cert.pem(),
+        server_key_pem: server_key.serialize_pem(),
+        client_cert_pem: client_cert.pem(),
+        client_key_pem: client_key.serialize_pem(),
+    })
+}
+
+fn configuration() -> Result<(PathBuf, PkiProfile), Box<dyn Error>> {
+    let mut args = env::args().skip(1);
+    let mut credentials = None;
+    let mut profile = PkiProfile::Normal;
+    while let Some(argument) = args.next() {
+        match argument.as_str() {
+            "--credentials-dir" if credentials.is_none() => {
+                credentials = Some(PathBuf::from(
+                    args.next().ok_or("missing credentials directory")?,
+                ));
+            }
+            "--profile" => {
+                profile = PkiProfile::parse(&args.next().ok_or("missing PKI profile")?)?;
+            }
+            _ => return Err(format!("unsupported or duplicate argument: {argument}").into()),
+        }
+    }
+    let path = credentials.ok_or(
+        "usage: hc2_java_interop_server --credentials-dir <empty-directory> [--profile <name>]",
+    )?;
+    if !path.is_dir() || path.read_dir()?.next().is_some() {
+        return Err("credentials directory must exist and be empty".into());
+    }
+    Ok((path, profile))
+}
+
+fn write_credential(path: &Path, name: &str, contents: &str) -> Result<PathBuf, Box<dyn Error>> {
+    let target = path.join(name);
+    std::fs::write(&target, contents.as_bytes())?;
+    Ok(target)
+}
+
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn Error>> {
+    let (credentials, profile) = configuration()?;
+    let pki = generate_pki(profile)?;
+    let ca = write_credential(&credentials, "ca.pem", &pki.ca_pem)?;
+    let client_cert = write_credential(&credentials, "client.pem", &pki.client_cert_pem)?;
+    let client_key = write_credential(&credentials, "client.key", &pki.client_key_pem)?;
+
+    let listener = TcpListener::bind("127.0.0.1:0").await?;
+    let port = listener.local_addr()?.port();
+    let incoming = TcpListenerStream::new(listener);
+    let (shutdown_tx, shutdown_rx) = oneshot::channel();
+    let (closed_tx, closed_rx) = oneshot::channel();
+    let service = InteropService {
+        accepted: Arc::new(AtomicBool::new(false)),
+        store: Arc::new(Mutex::new(Store::default())),
+        invocations: Arc::new(AtomicU64::new(0)),
+        events: Arc::new(AtomicU64::new(0)),
+        closed: Arc::new(Mutex::new(Some(closed_tx))),
+    };
+    let identity = Identity::from_pem(pki.server_cert_pem, pki.server_key_pem);
+    let client_ca = Certificate::from_pem(pki.ca_pem);
+    let server = tokio::spawn(async move {
+        Server::builder()
+            .tls_config(
+                ServerTlsConfig::new()
+                    .identity(identity)
+                    .client_ca_root(client_ca),
+            )?
+            .add_service(ClientPlaneAlphaServer::new(service))
+            .serve_with_incoming_shutdown(incoming, async {
+                let _ = shutdown_rx.await;
+            })
+            .await
+    });
+
+    println!(
+        "READY\t{port}\t{}\t{}\t{}",
+        ca.display(),
+        client_cert.display(),
+        client_key.display()
+    );
+    let receipt = closed_rx.await?;
+    let _ = shutdown_tx.send(());
+    server.await??;
+    println!(
+        "CLOSED\tinvocations={}\tevents={}\tactive_subscriptions={}\tactive_sessions={}",
+        receipt.invocations, receipt.events, receipt.active_subscriptions, receipt.active_sessions
+    );
+    if receipt.active_subscriptions != 0 || receipt.active_sessions != 0 {
+        return Err("HC/2 interop server retained resources at shutdown".into());
+    }
+    Ok(())
+}

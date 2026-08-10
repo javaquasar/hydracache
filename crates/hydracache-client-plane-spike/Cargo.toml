@@ -14,23 +14,23 @@ publish = false
 
 [dependencies]
 ed25519-dalek.workspace = true
+futures-util.workspace = true
 prost.workspace = true
+rcgen.workspace = true
+tokio.workspace = true
+tokio-stream = { workspace = true, features = ["net"] }
+tonic.workspace = true
+tonic-prost.workspace = true
 thiserror.workspace = true
 
 [dev-dependencies]
 bytes.workspace = true
-futures-util.workspace = true
 h2.workspace = true
 http.workspace = true
 prost-types.workspace = true
 protoc-bin-vendored = "3.2.0"
-rcgen.workspace = true
 rustls.workspace = true
-tokio.workspace = true
-tokio-stream = { workspace = true, features = ["net"] }
 tokio-rustls.workspace = true
-tonic.workspace = true
-tonic-prost.workspace = true
 
 [build-dependencies]
 protoc-bin-vendored = "3.2.0"

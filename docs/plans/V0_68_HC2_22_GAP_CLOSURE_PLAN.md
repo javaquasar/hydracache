@@ -30,7 +30,7 @@
 | H13 | Negative TLS matrix is incomplete | complete | `test(client-plane): complete TLS authorization matrix` | real rustls/tonic hostname/time/EKU/CA/version matrix, bounded chain policy, authorization typestate, rotation and zero-dispatch proofs |
 | H14 | Discovery signing/replay protection is absent | complete | `feat(client-plane): sign replay-safe discovery` | canonical Ed25519 bytes, bounded parser/trust/time policy, Rust/Java vector, replay/rotation/recovery matrix |
 | H15 | Hermetic Python generation is absent | complete | `feat(client-plane): make Python generation hermetic` | vendored protoc, descriptor-derived stubs/metadata, hash-bound two-platform wheelhouse, clean generation, golden/unknown-field/bidi/import proof |
-| H16 | Java is a codec fixture, not a production SDK | open | — | buildable SDK + process interoperability |
+| H16 | Java is a codec fixture, not a production SDK | in progress | `feat(client-plane): add preview Java HC/2 SDK` | Maven SDK/external consumer and Java↔Rust process proof green; real daemon, reconnect/repair, and previous artifact wait on H01/H11/H18 |
 | H17 | Rust production SDK still uses HC/1 HTTP | open | — | transport-neutral HC/2 runtime |
 | H18 | Real previous-artifact compatibility matrix is absent | open | — | HC/1/HC/2 rolling matrix artifacts |
 | H19 | Deterministic network fault proxy is absent | open | — | seeded replayable socket faults |
@@ -460,6 +460,19 @@ thread/leak checks, package metadata, examples, and previous-artifact tests.
 promise; publish preview coordinates until compatibility gates pass.
 
 **Done.** A consumer project builds and runs without repository internals.
+
+**Implementation evidence (2026-08-10, completion blocked).** The Java 17
+preview module now exposes an idiomatic generated-wire-free API for data, CAS,
+batch, listeners, topology, fenced sessions, deadlines/cancellation, stable
+errors, transport policy, and metrics. `cargo xtask client-plane-java-sdk-check`
+builds a separate Rust mTLS conformance process, executes positive and negative
+PKI interop, requires zero-resource shutdown, installs the JAR/POM/source/Javadoc
+artifacts, and builds/runs `tests/java-hc2-consumer` using only the installed
+coordinate. The exact contract and limitations are documented in
+`docs/architecture/HC2_JAVA_SDK.md`. H16 stays `in progress`: the peer is not the
+production daemon while H01 is open, reconnect/repair belongs to open H11, and
+there is no immutable previous Java artifact until H18 can retain the first
+preview. None of those gaps are weakened or relabeled as passing.
 
 ## H17. Build the transport-neutral production Rust HC/2 SDK
 

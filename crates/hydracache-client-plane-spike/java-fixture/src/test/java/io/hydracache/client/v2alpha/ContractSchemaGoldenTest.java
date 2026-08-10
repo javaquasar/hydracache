@@ -4,6 +4,10 @@ import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.google.protobuf.UnknownFieldSet;
+import io.hydracache.client.hc2.internal.wire.Capability;
+import io.hydracache.client.hc2.internal.wire.ClientEnvelope;
+import io.hydracache.client.hc2.internal.wire.Handshake;
+import io.hydracache.client.hc2.internal.wire.InvocationRequest;
 import java.io.ByteArrayOutputStream;
 import org.junit.jupiter.api.Test;
 

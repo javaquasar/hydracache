@@ -2,7 +2,7 @@ use std::error::Error;
 use std::path::{Path, PathBuf};
 use std::process::Command;
 
-use crate::client_plane_python;
+use crate::{client_plane_java, client_plane_python};
 
 const CRATE: &str = "hydracache-client-plane-spike";
 const JAVA_FIXTURE: &str = "crates/hydracache-client-plane-spike/java-fixture/pom.xml";
@@ -31,9 +31,10 @@ pub fn run(args: Vec<String>) -> Result<(), Box<dyn Error>> {
         &["-B", "-ntp", "-f", JAVA_FIXTURE, "test"],
         "generated Java HC/2 golden fixture",
     )?;
+    client_plane_java::check_at_root(&root)?;
     client_plane_python::check_at_root(&root)?;
     println!(
-        "client-plane-spike-check: OK (Rust transport spikes + generated Java/Python fixtures)"
+        "client-plane-spike-check: OK (Rust transport spikes + Java SDK/consumer + generated Python fixture)"
     );
     Ok(())
 }

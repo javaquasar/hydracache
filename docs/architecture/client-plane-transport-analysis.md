@@ -159,6 +159,12 @@ This is only a provisional preference. The local machine does not have a system
 H15 now proves Python generation with a vendored compiler and a checksummed
 offline runtime, but production work must extend equivalent dirty-generation
 and supply-chain guarantees to every published Rust/Java/Python artifact.
+
+H16 adds a Java 17 preview SDK and an installed-artifact consumer proof. Its
+gRPC+mTLS runtime is exercised against a separate Rust process, including the
+negative certificate matrix and zero-resource receipt. This is process and
+language interoperability, but not yet real-daemon evidence: H01 and H11 remain
+explicit blockers for production listener and reconnect/repair claims.
 Failure to do so is an operability failure, not a documentation exception.
 
 ## Implementation boundary

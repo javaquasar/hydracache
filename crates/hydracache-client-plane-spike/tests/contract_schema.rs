@@ -60,6 +60,8 @@ fn descriptor_freezes_operation_and_envelope_ids() {
             ("subscribe", 19),
             ("session_open", 20),
             ("session_heartbeat", 21),
+            ("unsubscribe", 22),
+            ("session_close", 23),
         ])
     );
 }

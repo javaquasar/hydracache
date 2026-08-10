@@ -238,6 +238,12 @@ class Subscribe(_message.Message):
     resume_watermark: int
     def __init__(self, subscription_id: _Optional[int] = ..., key_prefix: _Optional[bytes] = ..., resume_watermark: _Optional[int] = ...) -> None: ...
 
+class Unsubscribe(_message.Message):
+    __slots__ = ("subscription_id",)
+    SUBSCRIPTION_ID_FIELD_NUMBER: _ClassVar[int]
+    subscription_id: int
+    def __init__(self, subscription_id: _Optional[int] = ...) -> None: ...
+
 class SubscriptionAck(_message.Message):
     __slots__ = ("subscription_id", "watermark")
     SUBSCRIPTION_ID_FIELD_NUMBER: _ClassVar[int]
@@ -302,6 +308,14 @@ class SessionHeartbeat(_message.Message):
     fence: int
     def __init__(self, session_id: _Optional[bytes] = ..., fence: _Optional[int] = ...) -> None: ...
 
+class SessionClose(_message.Message):
+    __slots__ = ("session_id", "fence")
+    SESSION_ID_FIELD_NUMBER: _ClassVar[int]
+    FENCE_FIELD_NUMBER: _ClassVar[int]
+    session_id: bytes
+    fence: int
+    def __init__(self, session_id: _Optional[bytes] = ..., fence: _Optional[int] = ...) -> None: ...
+
 class SessionLost(_message.Message):
     __slots__ = ("session_id", "last_fence")
     SESSION_ID_FIELD_NUMBER: _ClassVar[int]
@@ -325,7 +339,7 @@ class Diagnostics(_message.Message):
     def __init__(self, pending_invocations: _Optional[int] = ..., queued_reply_bytes: _Optional[int] = ..., queued_event_bytes: _Optional[int] = ..., active_subscriptions: _Optional[int] = ..., rejected_frames: _Optional[int] = ...) -> None: ...
 
 class ClientEnvelope(_message.Message):
-    __slots__ = ("generation", "connection_generation", "correlation_id", "handshake", "invocation", "cancel", "subscribe", "session_open", "session_heartbeat")
+    __slots__ = ("generation", "connection_generation", "correlation_id", "handshake", "invocation", "cancel", "subscribe", "session_open", "session_heartbeat", "unsubscribe", "session_close")
     GENERATION_FIELD_NUMBER: _ClassVar[int]
     CONNECTION_GENERATION_FIELD_NUMBER: _ClassVar[int]
     CORRELATION_ID_FIELD_NUMBER: _ClassVar[int]
@@ -335,6 +349,8 @@ class ClientEnvelope(_message.Message):
     SUBSCRIBE_FIELD_NUMBER: _ClassVar[int]
     SESSION_OPEN_FIELD_NUMBER: _ClassVar[int]
     SESSION_HEARTBEAT_FIELD_NUMBER: _ClassVar[int]
+    UNSUBSCRIBE_FIELD_NUMBER: _ClassVar[int]
+    SESSION_CLOSE_FIELD_NUMBER: _ClassVar[int]
     generation: int
     connection_generation: int
     correlation_id: int
@@ -344,7 +360,9 @@ class ClientEnvelope(_message.Message):
     subscribe: Subscribe
     session_open: SessionOpen
     session_heartbeat: SessionHeartbeat
-    def __init__(self, generation: _Optional[int] = ..., connection_generation: _Optional[int] = ..., correlation_id: _Optional[int] = ..., handshake: _Optional[_Union[Handshake, _Mapping]] = ..., invocation: _Optional[_Union[InvocationRequest, _Mapping]] = ..., cancel: _Optional[_Union[Cancel, _Mapping]] = ..., subscribe: _Optional[_Union[Subscribe, _Mapping]] = ..., session_open: _Optional[_Union[SessionOpen, _Mapping]] = ..., session_heartbeat: _Optional[_Union[SessionHeartbeat, _Mapping]] = ...) -> None: ...
+    unsubscribe: Unsubscribe
+    session_close: SessionClose
+    def __init__(self, generation: _Optional[int] = ..., connection_generation: _Optional[int] = ..., correlation_id: _Optional[int] = ..., handshake: _Optional[_Union[Handshake, _Mapping]] = ..., invocation: _Optional[_Union[InvocationRequest, _Mapping]] = ..., cancel: _Optional[_Union[Cancel, _Mapping]] = ..., subscribe: _Optional[_Union[Subscribe, _Mapping]] = ..., session_open: _Optional[_Union[SessionOpen, _Mapping]] = ..., session_heartbeat: _Optional[_Union[SessionHeartbeat, _Mapping]] = ..., unsubscribe: _Optional[_Union[Unsubscribe, _Mapping]] = ..., session_close: _Optional[_Union[SessionClose, _Mapping]] = ...) -> None: ...
 
 class ServerEnvelope(_message.Message):
     __slots__ = ("generation", "connection_generation", "correlation_id", "handshake", "invocation", "subscribed", "event", "gap", "topology", "session_heartbeat", "session_lost", "diagnostics")
