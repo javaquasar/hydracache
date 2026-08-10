@@ -2,6 +2,9 @@ use bytes::Bytes;
 use h2::{client, server};
 use http::{Request, Response};
 use hydracache_client_plane_spike::{
+    http2_drain::{
+        DrainInitiator, DrainPhase, DrainPolicy, DrainReason, DrainSnapshot, Http2DrainController,
+    },
     BootstrapConnection, ClientAuthorizationPolicy, ConnectionGeneration, FrameKind, PeerIdentity,
     ResourceSnapshot, SpikeConnection, SpikeFrame, SpikeLimits, TransportCandidate, HC2_GENERATION,
 };
@@ -34,7 +37,7 @@ fn ready_connection() -> SpikeConnection {
 async fn http2_candidate_interleaves_reply_and_event_on_a_real_stream() {
     let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
     let address = listener.local_addr().unwrap();
-    let (closed_tx, closed_rx) = oneshot::channel();
+    let (closed_tx, closed_rx) = oneshot::channel::<(ResourceSnapshot, DrainSnapshot)>();
     let pki = support::TestPki::generate();
     let acceptor = pki.server_acceptor();
     let connector = pki.client_connector();
@@ -44,6 +47,8 @@ async fn http2_candidate_interleaves_reply_and_event_on_a_real_stream() {
         let socket = acceptor.accept(socket).await.expect("mTLS handshake");
         let mut h2 = server::handshake(socket).await.unwrap();
         let (request, mut respond) = h2.accept().await.expect("request stream").unwrap();
+        let mut drain = Http2DrainController::new(DrainPolicy::new(10).unwrap());
+        drain.open_stream().unwrap();
         let mut inbound = request.into_body();
         let mut request_bytes = Vec::new();
         while let Some(chunk) = inbound.data().await {
@@ -92,9 +97,34 @@ async fn http2_candidate_interleaves_reply_and_event_on_a_real_stream() {
         drop(respond);
         drop(inbound);
 
-        closed_tx.send(connection.disconnect()).unwrap();
+        let resources = connection.disconnect();
+        drain.complete_stream().unwrap();
+        drain.begin(DrainInitiator::ServerShutdown, 0).unwrap();
+        drain.first_goaway_flushed().unwrap();
+        drain.final_goaway_flushed().unwrap();
         h2.graceful_shutdown();
-        while h2.accept().await.is_some() {}
+        let graceful = tokio::time::timeout(std::time::Duration::from_millis(250), async {
+            while h2.accept().await.is_some() {}
+        })
+        .await;
+        if graceful.is_ok() {
+            drain.tls_close_notify_completed().unwrap();
+        } else {
+            assert_eq!(
+                drain.advance_to(10).unwrap(),
+                Some(DrainReason::DeadlineExpired)
+            );
+            h2.abrupt_shutdown(h2::Reason::CANCEL);
+            let _ = tokio::time::timeout(std::time::Duration::from_millis(250), async {
+                while h2.accept().await.is_some() {}
+            })
+            .await;
+            // The peer is not entitled to extend the bounded drain. Dropping
+            // the sole transport owner after the reset flush budget is the
+            // final forced-close action; no spawned task is aborted.
+            drop(h2);
+        }
+        closed_tx.send((resources, drain.snapshot())).unwrap();
     });
 
     let socket = TcpStream::connect(address).await.unwrap();
@@ -166,9 +196,23 @@ async fn http2_candidate_interleaves_reply_and_event_on_a_real_stream() {
     drop(request_body);
     drop(body);
     drop(client);
-    assert_eq!(closed_rx.await.unwrap(), ResourceSnapshot::default());
-    server_task.abort();
-    driver.abort();
-    let _ = server_task.await;
-    let _ = driver.await;
+    let (resources, drain) = closed_rx.await.unwrap();
+    assert_eq!(resources, ResourceSnapshot::default());
+    assert_eq!(drain.phase, DrainPhase::Closed);
+    assert_eq!(drain.active_streams, 0);
+    assert!(matches!(
+        drain.terminal_reason,
+        Some(DrainReason::Graceful | DrainReason::DeadlineExpired)
+    ));
+    assert_eq!(drain.metrics.completed_streams, 1);
+    assert_eq!(drain.metrics.goaway_frames, 2);
+    tokio::time::timeout(std::time::Duration::from_secs(2), server_task)
+        .await
+        .expect("server graceful shutdown deadline")
+        .expect("server task");
+    tokio::time::timeout(std::time::Duration::from_secs(2), driver)
+        .await
+        .expect("client graceful shutdown deadline")
+        .expect("client driver")
+        .expect("client h2 connection");
 }

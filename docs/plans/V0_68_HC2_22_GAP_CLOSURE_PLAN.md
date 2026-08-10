@@ -33,8 +33,8 @@
 | H16 | Java is a codec fixture, not a production SDK | in progress | `feat(client-plane): add preview Java HC/2 SDK` | Maven SDK/external consumer and Java↔Rust process proof green; real daemon, reconnect/repair, and previous artifact wait on H01/H11/H18 |
 | H17 | Rust production SDK still uses HC/1 HTTP | in progress | `feat(client-plane): add transport-neutral Rust HC/2 SDK` | native SDK/process/package/HC/1 gates green; real daemon and reconnect/repair wait on H01/H11 |
 | H18 | Real previous-artifact compatibility matrix is absent | in progress | `test(client-plane): retain HC/2 compatibility baseline` | immutable H17 Rust/Java clients and executable baseline matrix green; production daemon, HC/1+HC/2, reverse direction, rolling upgrade, and deprecation remain blocked on H01/H02 and a later preview |
-| H19 | Deterministic network fault proxy is absent | in progress | `test(client-plane): add deterministic fault proxy` | all bounded actions, same-candidate semantics, real async stream, retained seed and exact replay are green; H03/H11/H20 lifecycle bindings remain |
-| H20 | HTTP/2 graceful shutdown remains unresolved | open | — | drain/GOAWAY/deadline/reset proof |
+| H19 | Deterministic network fault proxy is absent | in progress | `test(client-plane): add deterministic fault proxy` | all bounded actions, same-candidate semantics, real async stream, retained seed and exact replay are green; H20 lifecycle bindings are retained, while H03/H11 remain |
+| H20 | HTTP/2 graceful shutdown remains unresolved | complete | `fix(client-plane): bound HTTP2 graceful drain` | two-GOAWAY controller, deadline/reset reasons, retained fault traces, real TLS/H2 zero-accounting task joins without abort |
 | H21 | Observability is local to the spike | open | — | stable bounded metrics/tracing/runbook |
 | H22 | Linux CI, interop, fuzz, and soak gates are absent | open | — | required workflow and retained artifacts |
 
@@ -562,8 +562,9 @@ its byte schedule and retain direct loopbacks as controls.
 H19 is `in progress`. The bounded transport-neutral scheduler, all declared
 actions, real async-stream delivery, same semantic candidate cases, exact
 retained seed replay, tamper refusal, and payload-free artifact gate are green.
-H03/H11/H20 are still open, so their eventual concrete lifecycle failures have
-not yet all been assigned retained traces. See
+H20 now binds its concrete lifecycle failures to retained traces. H03/H11 are
+still open, so their eventual reconnect/repair failures have not yet all been
+assigned retained traces. See
 `docs/architecture/HC2_DETERMINISTIC_FAULT_PROXY.md`.
 
 ## H20. Resolve HTTP/2 graceful drain and forced termination
@@ -582,6 +583,15 @@ uncooperative peer timeout, reset, and zero-accounting process/socket tests.
 forced close; only force after bounded deadline and explicit outcomes.
 
 **Done.** No task abort is needed in the happy-path H2 test.
+
+H20 is `complete`. `Http2DrainController` defines the initiator, two-GOAWAY
+sequence, no-new-stream rule, active-stream boundary, TLS close-notify attempt,
+absolute deadline, reset, final transport-owner drop, and privacy-safe reason
+counters. The real mTLS/H2 loopback now joins both tasks without
+`JoinHandle::abort`; it accepts cooperative completion or the explicitly
+bounded deadline path and proves zero HydraCache accounting in either case.
+Client half-close, blocked-peer timeout, and peer reset have retained H19
+replay artifacts. See `docs/architecture/HC2_HTTP2_DRAIN_POLICY.md`.
 
 ## H21. Export stable privacy-safe observability
 

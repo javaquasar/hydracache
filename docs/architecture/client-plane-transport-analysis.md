@@ -200,17 +200,17 @@ are recorded in
 [`hc2-multi-transport-policy.md`](hc2-multi-transport-policy.md). They preserve
 one HC/2 semantic contract; they do not make every experimental adapter stable.
 
-The next W0 slice must bind the now-green deterministic scheduler to
-real-stream cancellation, graceful half-close, reset, and slow-consumer
-lifecycle outcomes, and add the malformed/cross-candidate socket corpus,
-and extend the dirty-generation gate beyond the now-green Python package. In
-particular, the
-HTTP/2 proof deliberately distinguishes zero HydraCache application accounting
-from transport-task termination: the current h2 graceful drain can retain the
-connection task after the only stream is complete, so the fixture cancels those
-tasks after recording zero accounting. This is an open lifecycle cost, not a
-green shutdown claim. Only after those gaps close can ADR-0019 become Accepted
-and W1 make the selected schema authoritative.
+The next W0 slice must bind the now-green deterministic scheduler to H03/H11
+reconnect and repair outcomes, add the malformed/cross-candidate socket corpus,
+and extend the dirty-generation gate beyond the now-green Python package. H20
+now distinguishes zero HydraCache application accounting from transport-task
+termination with a two-GOAWAY state machine, absolute deadline, reset reason,
+and final bounded transport-owner drop. The real TLS/H2 fixture joins both
+tasks without `JoinHandle::abort`, and its half-close/timeout/reset failures
+have retained deterministic traces. See
+[`HC2_HTTP2_DRAIN_POLICY.md`](HC2_HTTP2_DRAIN_POLICY.md). Only after the
+remaining gaps close can ADR-0019 become Accepted and W1 make the selected
+schema authoritative.
 
 ## Reproduction
 

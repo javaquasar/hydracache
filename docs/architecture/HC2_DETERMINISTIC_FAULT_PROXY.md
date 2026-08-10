@@ -4,9 +4,9 @@
 
 H19 adds a replayable, bounded byte-stream fault scheduler to the
 non-production `hydracache-client-plane-spike` crate. It is test infrastructure,
-not a production listener, a network emulator, or evidence that H03, H11, or
-H20 is complete. Direct dedicated-TCP, HTTP/2, and gRPC loopbacks remain the
-control group.
+not a production listener or a network emulator. H20 now consumes retained
+fault traces, but this document is not evidence that H03 or H11 is complete.
+Direct dedicated-TCP, HTTP/2, and gRPC loopbacks remain the control group.
 
 The proxy addresses a specific evidence gap: ordinary loopbacks cannot
 reliably reproduce fragmentation, delayed bytes, half-open directions, resets,
@@ -94,8 +94,8 @@ crate test run keeps the three direct loopbacks as controls.
 
 ## Remaining integration boundary
 
-H19 is `in progress`, not complete. The proxy vocabulary and replay gate are
-green, but H03/H11/H20 still need to bind their concrete reconnect, repair,
-GOAWAY, deadline, reset, and forced-close lifecycle failures to retained fault
-plans. H19 reaches `complete` only when every lifecycle failure those packages
+H19 is `in progress`, not complete. H20 now binds client half-close,
+uncooperative-peer deadline, reset, and forced-close behavior to retained fault
+plans. H03/H11 still need to bind their concrete reconnect and repair failures.
+H19 reaches `complete` only when every lifecycle failure those packages
 actually use has a deterministic trace.
