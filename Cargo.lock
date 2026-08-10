@@ -2349,12 +2349,15 @@ dependencies = [
 name = "hydracache-fuzz"
 version = "0.0.0"
 dependencies = [
+ "hydracache-client-hc2",
+ "hydracache-client-plane-spike",
  "hydracache-client-protocol",
  "hydracache-cluster-raft",
  "hydracache-cluster-transport-axum",
  "hydracache-redis-compat",
  "hydracache-server",
  "libfuzzer-sys",
+ "prost",
  "protobuf",
  "raft",
  "serde_json",

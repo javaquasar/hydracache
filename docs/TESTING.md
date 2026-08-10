@@ -1868,3 +1868,15 @@ cargo +nightly llvm-cov --workspace --doctests --locked --summary-only
 
 Do not block stable releases solely on `--doctests` coverage unless the release
 process explicitly requires nightly.
+
+## HC/2 H22 Evidence Lanes
+
+The generated HC/2 client-plane foundation has a separate four-lane
+correctness contract: required GitHub-hosted Linux and digest-pinned Docker
+interop jobs, a scheduled/tagged fuzz campaign, and a labelled fixed-host
+lifecycle soak. Release admission requires passing receipts from all four lanes
+for the same full candidate SHA; missing and red lanes are intentional tested
+failure cases. Commands, exact check names, host labels, retained metadata,
+pin-update policy, and the prohibition on turning shared-CI timing into a
+capacity claim are documented in
+[`HC2_CI_INTEROP_FUZZ_SOAK.md`](operations/HC2_CI_INTEROP_FUZZ_SOAK.md).

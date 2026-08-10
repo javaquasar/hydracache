@@ -1,6 +1,7 @@
 pub mod bench_budget;
 pub mod canary_check;
 pub mod canary_sweep;
+pub mod client_plane_ci;
 pub mod client_plane_compat;
 pub mod client_plane_fault;
 pub mod client_plane_java;

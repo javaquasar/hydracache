@@ -36,7 +36,7 @@
 | H19 | Deterministic network fault proxy is absent | in progress | `test(client-plane): add deterministic fault proxy` | all bounded actions, same-candidate semantics, real async stream, retained seed and exact replay are green; H20 lifecycle bindings are retained, while H03/H11 remain |
 | H20 | HTTP/2 graceful shutdown remains unresolved | complete | `fix(client-plane): bound HTTP2 graceful drain` | two-GOAWAY controller, deadline/reset reasons, retained fault traces, real TLS/H2 zero-accounting task joins without abort |
 | H21 | Observability is local to the spike | complete | `feat(client-plane): export bounded privacy-safe diagnostics` | v1 typed metric/trace export, 64 salted tenant buckets, bounded trace ring, privacy/cardinality/reconnect/close evidence, operator runbook |
-| H22 | Linux CI, interop, fuzz, and soak gates are absent | open | — | required workflow and retained artifacts |
+| H22 | Linux CI, interop, fuzz, and soak gates are absent | in progress | `ci(client-plane): install Linux interop fuzz and soak gates` | four-lane fail-closed contract, pinned workflow/container, receipts/admission canaries, Docker proof, and runbook implemented; first GitHub/fixed-host receipts and branch-protection activation remain operational evidence |
 
 ## Global execution rules
 
@@ -641,6 +641,26 @@ documented self-hosted tier.
 deterministic seeds, bounded retries only for infrastructure, never test failure.
 
 **Done.** Release automation refuses an HC/2 claim when any required row is red.
+
+**Implementation evidence (2026-08-10).**
+`.github/workflows/hc2-client-plane.yml` and
+`docs/testing/hc2-ci/h22-gates.json` define four exact, release-required lanes
+with pinned actions, language toolchains, image digests, timeouts, concurrency,
+and 30-day artifact retention. `client-plane-ci-check` rejects workflow/contract
+drift; versioned receipts bind lane-specific metadata to one full candidate
+SHA; `client-plane-ci-admission` rejects missing, duplicate, red, malformed, or
+mixed-candidate evidence. Integration tests retain intentional missing-lane,
+red-lane, and mixed-SHA canaries. The pinned Dockerfile proves Rust, Java 17,
+Maven 3.9.11, and offline Python process interoperability, while the bounded
+fuzz target and labelled fixed-host soak cover the scheduled tiers. Exact
+commands, branch-check names, fixed-host activation, pin rotation, and the
+non-capacity boundary are documented in
+`docs/operations/HC2_CI_INTEROP_FUZZ_SOAK.md`.
+
+H22 remains `in progress` until the new hosted jobs produce their first exact-
+candidate receipts, the two fast job names are installed as required branch
+checks, and a labelled fixed host produces a retained soak receipt. None of
+those operational steps may be replaced with local evidence or a skipped lane.
 
 ## Dependency-oriented execution order
 

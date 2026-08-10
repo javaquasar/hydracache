@@ -215,6 +215,12 @@ have retained deterministic traces. See
 remaining gaps close can ADR-0019 become Accepted and W1 make the selected
 schema authoritative.
 
+H22 installs the four-lane Linux, pinned-Docker interop, scheduled fuzz, and
+fixed-host soak evidence contract described in
+[`HC2_CI_INTEROP_FUZZ_SOAK.md`](../operations/HC2_CI_INTEROP_FUZZ_SOAK.md).
+Its same-SHA release admission is correctness evidence only; shared-CI timing
+must never be promoted into a capacity or latency claim.
+
 ## Reproduction
 
 ```powershell

@@ -8,6 +8,12 @@ fn main() -> Result<(), Box<dyn Error>> {
         Some("canary-check") => xtask::canary_check::run(args.collect())?,
         Some("canary-sweep") => xtask::canary_sweep::run(args.collect())?,
         Some("client-plane-java-sdk-check") => xtask::client_plane_java::run(args.collect())?,
+        Some("client-plane-ci-check") => xtask::client_plane_ci::run_check(args.collect())?,
+        Some("client-plane-ci-receipt") => xtask::client_plane_ci::run_receipt(args.collect())?,
+        Some("client-plane-ci-admission") => xtask::client_plane_ci::run_admission(args.collect())?,
+        Some("client-plane-docker-interop-check") => {
+            xtask::client_plane_spike::run_docker(args.collect())?
+        }
         Some("client-plane-compat-check") => xtask::client_plane_compat::run(args.collect())?,
         Some("client-plane-fault-check") => xtask::client_plane_fault::run(args.collect())?,
         Some("client-plane-spike-check") => xtask::client_plane_spike::run(args.collect())?,
@@ -59,6 +65,10 @@ fn print_usage() {
          cargo xtask canary-check  # validate the 0.64 Raft canary registry\n  \
          cargo xtask canary-sweep --release 0.64 --tier <fast|all>  # execute expected-red canary proofs\n  \
          cargo xtask client-plane-spike-check  # run 0.68 Rust/Java SDK/Python client-plane evidence\n  \
+         cargo xtask client-plane-ci-check  # validate the H22 Linux/Docker/fuzz/soak workflow contract\n  \
+         cargo xtask client-plane-ci-receipt --lane <lane> --output <path> [--seed <u64>] [--iterations <n>] [--image <digest>]  # retain one H22 lane result\n  \
+         cargo xtask client-plane-ci-admission --receipts <dir> --commit <sha>  # fail closed unless all H22 lanes pass on one commit\n  \
+         cargo xtask client-plane-docker-interop-check  # run the bounded H22 process-interoperability subset in the pinned container\n  \
          cargo xtask client-plane-java-sdk-check  # build/test/install Java SDK and external consumer\n  \
          cargo xtask client-plane-compat-check [--manifest-only|--require-complete]  # verify retained HC/2 artifacts and compatibility matrix\n  \
          cargo xtask client-plane-fault-check [--replay <path>|[--case <id>] --seed <u64> --output <path>]  # verify or generate deterministic HC/2 fault traces\n  \

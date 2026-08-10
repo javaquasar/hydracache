@@ -5,7 +5,7 @@ use std::process::Command;
 const CRATE: &str = "hydracache-client-plane-spike";
 const SDK_POM: &str = "sdks/java/hydracache-client-hc2/pom.xml";
 const CONSUMER_POM: &str = "tests/java-hc2-consumer/pom.xml";
-const TARGET_DIR: &str = "target/hc2-java-sdk-check";
+const DEFAULT_TARGET_DIR: &str = "target/hc2-java-sdk-check";
 
 pub fn run(args: Vec<String>) -> Result<(), Box<dyn Error>> {
     if !args.is_empty() {
@@ -15,6 +15,8 @@ pub fn run(args: Vec<String>) -> Result<(), Box<dyn Error>> {
 }
 
 pub fn check_at_root(root: &Path) -> Result<(), Box<dyn Error>> {
+    let target_dir =
+        std::env::var("HC2_SHARED_TARGET_DIR").unwrap_or_else(|_| DEFAULT_TARGET_DIR.to_owned());
     run_checked(
         root,
         "cargo",
@@ -26,12 +28,12 @@ pub fn check_at_root(root: &Path) -> Result<(), Box<dyn Error>> {
             "--bin",
             "hc2_java_interop_server",
             "--target-dir",
-            TARGET_DIR,
+            &target_dir,
         ],
         None,
         "separate Rust HC/2 Java interop server",
     )?;
-    let server = interop_server(root);
+    let server = interop_server(root, &target_dir);
     if !server.is_file() {
         return Err(format!("interop server binary is missing: {}", server.display()).into());
     }
@@ -56,13 +58,13 @@ pub fn check_at_root(root: &Path) -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
-fn interop_server(root: &Path) -> PathBuf {
+fn interop_server(root: &Path, target_dir: &str) -> PathBuf {
     let executable = if cfg!(windows) {
         "hc2_java_interop_server.exe"
     } else {
         "hc2_java_interop_server"
     };
-    root.join(TARGET_DIR).join("debug").join(executable)
+    root.join(target_dir).join("debug").join(executable)
 }
 
 fn maven_program() -> &'static str {

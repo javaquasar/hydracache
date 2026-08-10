@@ -15,25 +15,7 @@ pub fn run(args: Vec<String>) -> Result<(), Box<dyn Error>> {
         return Err("client-plane-spike-check does not accept arguments".into());
     }
     let root = workspace_root()?;
-    run_checked(
-        &root,
-        "cargo",
-        &[
-            "test",
-            "--locked",
-            "-p",
-            CRATE,
-            "--target-dir",
-            "target/hc2-spike-check",
-        ],
-        "Rust HC/2 spike tests",
-    )?;
-    run_checked(
-        &root,
-        maven_program(),
-        &["-B", "-ntp", "-f", JAVA_FIXTURE, "test"],
-        "generated Java HC/2 golden fixture",
-    )?;
+    check_rust_and_fixture(&root)?;
     client_plane_java::check_at_root(&root)?;
     client_plane_python::check_at_root(&root)?;
     client_plane_rust::check_at_root(&root)?;
@@ -42,6 +24,47 @@ pub fn run(args: Vec<String>) -> Result<(), Box<dyn Error>> {
     println!(
         "client-plane-spike-check: OK (transport spikes + deterministic fault replay + native Rust/Java/Python SDK + retained compatibility baseline)"
     );
+    Ok(())
+}
+
+pub fn run_docker(args: Vec<String>) -> Result<(), Box<dyn Error>> {
+    if !args.is_empty() {
+        return Err("client-plane-docker-interop-check does not accept arguments".into());
+    }
+    let root = workspace_root()?;
+    check_rust_and_fixture(&root)?;
+    client_plane_java::check_at_root(&root)?;
+    client_plane_python::check_at_root(&root)?;
+    client_plane_fault::check_at_root(&root, false)?;
+    println!(
+        "client-plane-docker-interop-check: OK (Rust tests + Java fixture/SDK consumer + offline Python + retained fault replay)"
+    );
+    Ok(())
+}
+
+fn check_rust_and_fixture(root: &Path) -> Result<(), Box<dyn Error>> {
+    let target_dir = std::env::var("HC2_SHARED_TARGET_DIR")
+        .unwrap_or_else(|_| "target/hc2-spike-check".to_owned());
+    run_checked(
+        root,
+        "cargo",
+        &[
+            "test",
+            "--locked",
+            "-p",
+            CRATE,
+            "--all-targets",
+            "--target-dir",
+            &target_dir,
+        ],
+        "Rust HC/2 spike tests",
+    )?;
+    run_checked(
+        root,
+        maven_program(),
+        &["-B", "-ntp", "-f", JAVA_FIXTURE, "test"],
+        "generated Java HC/2 golden fixture",
+    )?;
     Ok(())
 }
 
