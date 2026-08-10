@@ -82,9 +82,8 @@ npx --prefix console playwright install chromium
 - [004 - Local-first Distributed Invalidation](004-local-first-distributed-invalidation.md)
   - Cover: [004-local-first-distributed-invalidation-cover.png](004-local-first-distributed-invalidation-cover.png)
   - Prompt: [004-local-first-distributed-invalidation-cover.prompt.md](004-local-first-distributed-invalidation-cover.prompt.md)
+- [Draft - Typed Query Caching in Rust](draft-typed-query-caching-in-rust.md)
+  - Cover: [draft-typed-query-caching-in-rust-cover.png](draft-typed-query-caching-in-rust-cover.png)
+  - Prompt: [draft-typed-query-caching-in-rust-cover.prompt.md](draft-typed-query-caching-in-rust-cover.prompt.md)
 - [Draft - Raft Snapshot Bugs, AI Agents, and the Cost of Ignoring Contradictions](002-raft-snapshot-agent-bug.md)
   - Cover: [002-raft-snapshot-agent-bug-cover.jpg](002-raft-snapshot-agent-bug-cover.jpg)
-
-## Planned Articles
-
-- Planned - Typed Query Caching in Rust

@@ -40,8 +40,8 @@
     {
       "order": 5,
       "title": "Typed Query Caching in Rust",
-      "file": "006-typed-query-caching-in-rust.md",
-      "status": "planned",
+      "file": "draft-typed-query-caching-in-rust.md",
+      "status": "draft",
       "url": ""
     }
   ]
