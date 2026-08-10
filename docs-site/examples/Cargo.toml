@@ -1,0 +1,13 @@
+[package]
+name = "hydracache-docs-examples"
+version = "0.0.0"
+edition = "2021"
+publish = false
+
+[workspace]
+
+[dependencies]
+hydracache = { path = "../../crates/hydracache" }
+hydracache-db = { path = "../../crates/hydracache-db" }
+serde = { version = "1", features = ["derive"] }
+tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
