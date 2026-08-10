@@ -75,6 +75,7 @@ hydracache-actuator-axum = { path = "crates/hydracache-actuator-axum", version =
 hydracache-cdc-postgres = { path = "crates/hydracache-cdc-postgres", version = "0.67.0" }
 hydracache-client = { path = "crates/hydracache-client", version = "0.67.0" }
 hydracache-client-hc2 = { path = "crates/hydracache-client-hc2", version = "0.67.0" }
+hydracache-client-plane-spike = { path = "crates/hydracache-client-plane-spike", version = "0.67.0" }
 hydracache-client-protocol = { path = "crates/hydracache-client-protocol", version = "0.67.0" }
 hydracache-client-transport-axum = { path = "crates/hydracache-client-transport-axum", version = "0.67.0" }
 hydracache-cluster = { path = "crates/hydracache-cluster", version = "0.67.0" }

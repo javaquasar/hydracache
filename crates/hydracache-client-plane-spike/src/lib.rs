@@ -14,6 +14,7 @@ use thiserror::Error;
 
 pub mod contract;
 pub mod endpoint;
+pub mod fault_proxy;
 pub mod policy;
 pub mod security;
 

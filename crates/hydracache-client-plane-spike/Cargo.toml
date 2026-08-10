@@ -17,6 +17,8 @@ ed25519-dalek.workspace = true
 futures-util.workspace = true
 prost.workspace = true
 rcgen.workspace = true
+serde.workspace = true
+sha2.workspace = true
 tokio.workspace = true
 tokio-stream = { workspace = true, features = ["net"] }
 tonic.workspace = true
@@ -30,6 +32,7 @@ http.workspace = true
 prost-types.workspace = true
 protoc-bin-vendored = "3.2.0"
 rustls.workspace = true
+serde_json.workspace = true
 tokio-rustls.workspace = true
 
 [build-dependencies]

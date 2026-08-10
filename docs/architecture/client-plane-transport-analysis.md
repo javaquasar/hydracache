@@ -33,6 +33,12 @@ Current implementation evidence:
   replay, and explicit cluster-recovery gates; the signed-discovery contract is
   recorded in
   [`HC2_SIGNED_DISCOVERY_POLICY.md`](HC2_SIGNED_DISCOVERY_POLICY.md);
+- deterministic H19 byte-stream fault scheduling: all fragment, coalesce,
+  delay, legal packet reorder, duplicate, drop, one-way block, half-open,
+  reset, late-delivery, bandwidth/window-pressure, and close-after-byte actions
+  have bounded exact traces; the same preservation and fail-closed semantic
+  cases run for all three candidates, with a retained replay described in
+  [`HC2_DETERMINISTIC_FAULT_PROXY.md`](HC2_DETERMINISTIC_FAULT_PROXY.md);
 - typestate-enforced bootstrap lifecycle: `Created -> TlsVerified ->
   Authenticated -> Authorized -> Ready`, followed by one bounded runtime for
   `Ready -> Draining -> Closed`; compile-fail tests make early
@@ -194,8 +200,9 @@ are recorded in
 [`hc2-multi-transport-policy.md`](hc2-multi-transport-policy.md). They preserve
 one HC/2 semantic contract; they do not make every experimental adapter stable.
 
-The next W0 slice must exercise real-stream cancellation, graceful half-close,
-reset, and slow-consumer faults, add the malformed/cross-candidate socket corpus,
+The next W0 slice must bind the now-green deterministic scheduler to
+real-stream cancellation, graceful half-close, reset, and slow-consumer
+lifecycle outcomes, and add the malformed/cross-candidate socket corpus,
 and extend the dirty-generation gate beyond the now-green Python package. In
 particular, the
 HTTP/2 proof deliberately distinguishes zero HydraCache application accounting
@@ -210,6 +217,7 @@ and W1 make the selected schema authoritative.
 ```powershell
 cargo fmt -p hydracache-client-plane-spike -- --check
 cargo xtask client-plane-spike-check
+cargo xtask client-plane-fault-check
 cargo clippy -p hydracache-client-plane-spike --all-targets --locked -- -D warnings
 cargo run --manifest-path crates/xtask/Cargo.toml -- doc-check
 git diff --check

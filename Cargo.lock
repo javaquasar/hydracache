@@ -2179,6 +2179,9 @@ dependencies = [
  "protoc-bin-vendored",
  "rcgen",
  "rustls",
+ "serde",
+ "serde_json",
+ "sha2 0.11.0",
  "thiserror 2.0.18",
  "tokio",
  "tokio-rustls",
@@ -6886,6 +6889,7 @@ version = "0.67.0"
 dependencies = [
  "flate2",
  "hydracache",
+ "hydracache-client-plane-spike",
  "hydracache-loadgen",
  "proc-macro2",
  "prost",

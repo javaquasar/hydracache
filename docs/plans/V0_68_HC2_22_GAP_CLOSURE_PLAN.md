@@ -33,7 +33,7 @@
 | H16 | Java is a codec fixture, not a production SDK | in progress | `feat(client-plane): add preview Java HC/2 SDK` | Maven SDK/external consumer and Java↔Rust process proof green; real daemon, reconnect/repair, and previous artifact wait on H01/H11/H18 |
 | H17 | Rust production SDK still uses HC/1 HTTP | in progress | `feat(client-plane): add transport-neutral Rust HC/2 SDK` | native SDK/process/package/HC/1 gates green; real daemon and reconnect/repair wait on H01/H11 |
 | H18 | Real previous-artifact compatibility matrix is absent | in progress | `test(client-plane): retain HC/2 compatibility baseline` | immutable H17 Rust/Java clients and executable baseline matrix green; production daemon, HC/1+HC/2, reverse direction, rolling upgrade, and deprecation remain blocked on H01/H02 and a later preview |
-| H19 | Deterministic network fault proxy is absent | open | — | seeded replayable socket faults |
+| H19 | Deterministic network fault proxy is absent | in progress | `test(client-plane): add deterministic fault proxy` | all bounded actions, same-candidate semantics, real async stream, retained seed and exact replay are green; H03/H11/H20 lifecycle bindings remain |
 | H20 | HTTP/2 graceful shutdown remains unresolved | open | — | drain/GOAWAY/deadline/reset proof |
 | H21 | Observability is local to the spike | open | — | stable bounded metrics/tracing/runbook |
 | H22 | Linux CI, interop, fuzz, and soak gates are absent | open | — | required workflow and retained artifacts |
@@ -558,6 +558,13 @@ locally and in CI; bounded trace/artifact size.
 its byte schedule and retain direct loopbacks as controls.
 
 **Done.** Every lifecycle failure used by H03/H11/H20 has a deterministic trace.
+
+H19 is `in progress`. The bounded transport-neutral scheduler, all declared
+actions, real async-stream delivery, same semantic candidate cases, exact
+retained seed replay, tamper refusal, and payload-free artifact gate are green.
+H03/H11/H20 are still open, so their eventual concrete lifecycle failures have
+not yet all been assigned retained traces. See
+`docs/architecture/HC2_DETERMINISTIC_FAULT_PROXY.md`.
 
 ## H20. Resolve HTTP/2 graceful drain and forced termination
 
