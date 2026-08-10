@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="920" height="360" viewBox="0 0 920 360" role="img" aria-labelledby="title desc">
+  <title id="title">HydraCache runtime flow</title>
+  <desc id="desc">Application code passes key, tags, TTL, and refresh policy to HydraCache. The runtime returns a fresh value or runs a single-flight loader and stores the encoded result.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="#55606d"/>
+    </marker>
+  </defs>
+  <rect width="920" height="360" rx="10" fill="#fffaf6"/>
+  <g fill="#ffffff" stroke="#c9c0b8" stroke-width="2">
+    <rect x="36" y="58" width="170" height="74" rx="8"/>
+    <rect x="250" y="58" width="198" height="74" rx="8"/>
+    <rect x="492" y="58" width="182" height="74" rx="8"/>
+    <path d="M770 48 L858 95 L770 142 L682 95 z"/>
+    <rect x="682" y="218" width="176" height="74" rx="8"/>
+    <rect x="492" y="218" width="148" height="74" rx="8"/>
+    <rect x="250" y="218" width="198" height="74" rx="8"/>
+  </g>
+  <g font-family="Arial, sans-serif" fill="#252525" text-anchor="middle">
+    <text x="121" y="88" font-size="15" font-weight="700">Application</text>
+    <text x="121" y="110" font-size="14">call site</text>
+    <text x="349" y="84" font-size="15" font-weight="700">Key + tags</text>
+    <text x="349" y="106" font-size="14">TTL / refresh policy</text>
+    <text x="583" y="84" font-size="15" font-weight="700">HydraCache</text>
+    <text x="583" y="106" font-size="14">local runtime</text>
+    <text x="770" y="91" font-size="15" font-weight="700">Fresh</text>
+    <text x="770" y="113" font-size="14">entry?</text>
+    <text x="770" y="248" font-size="15" font-weight="700">Decode</text>
+    <text x="770" y="270" font-size="14">typed value</text>
+    <text x="566" y="248" font-size="15" font-weight="700">Store</text>
+    <text x="566" y="270" font-size="14">encoded value</text>
+    <text x="349" y="248" font-size="15" font-weight="700">Single-flight</text>
+    <text x="349" y="270" font-size="14">loader</text>
+  </g>
+  <g stroke="#55606d" stroke-width="2.2" fill="none" marker-end="url(#arrow)">
+    <path d="M206 95 H245"/>
+    <path d="M448 95 H487"/>
+    <path d="M674 95 H682"/>
+    <path d="M770 142 V213"/>
+    <path d="M682 95 C640 160 621 200 607 216"/>
+    <path d="M682 255 H645"/>
+    <path d="M492 255 H453"/>
+  </g>
+  <g font-family="Arial, sans-serif" fill="#6d4b37" font-size="13">
+    <text x="790" y="180">yes</text>
+    <text x="632" y="170">no</text>
+  </g>
+  <text x="583" y="154" font-family="Arial, sans-serif" font-size="13" fill="#6d4b37" text-anchor="middle">stats, diagnostics, events</text>
+</svg>
