@@ -1,4 +1,4 @@
-# Cover Prompt: Draft - Typed Query Caching in Rust
+# Cover Prompt: 005 - Typed Query Caching in Rust
 
 Create a 16:9 editorial technology cover image for an article titled "Typed Query Caching in Rust".
 

@@ -38,11 +38,10 @@
       "url": "https://medium.com/@artur.buzov/local-first-distributed-invalidation-87bf0249e935"
     },
     {
-      "order": 5,
+      "part": 5,
       "title": "Typed Query Caching in Rust",
-      "file": "draft-typed-query-caching-in-rust.md",
-      "status": "draft",
-      "url": ""
+      "file": "005-typed-query-caching-in-rust.md",
+      "url": "https://medium.com/@artur.buzov/typed-query-caching-in-rust-aac4352599f0"
     }
   ]
 }

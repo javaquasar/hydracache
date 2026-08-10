@@ -13,7 +13,7 @@ You are reading: Part 3.
 - [Part 2: Single-flight Is Not an Optimization](https://medium.com/@artur.buzov/single-flight-is-not-an-optimization-85917bdbe77d)
 - Part 3: TTL Is Not Enough
 - [Part 4: Local-first Distributed Invalidation](https://medium.com/@artur.buzov/local-first-distributed-invalidation-87bf0249e935)
-- Draft: Typed Query Caching in Rust
+- [Part 5: Typed Query Caching in Rust](https://medium.com/@artur.buzov/typed-query-caching-in-rust-aac4352599f0)
 
 GitHub:
 
