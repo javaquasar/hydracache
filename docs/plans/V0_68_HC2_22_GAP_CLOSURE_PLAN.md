@@ -31,7 +31,7 @@
 | H14 | Discovery signing/replay protection is absent | complete | `feat(client-plane): sign replay-safe discovery` | canonical Ed25519 bytes, bounded parser/trust/time policy, Rust/Java vector, replay/rotation/recovery matrix |
 | H15 | Hermetic Python generation is absent | complete | `feat(client-plane): make Python generation hermetic` | vendored protoc, descriptor-derived stubs/metadata, hash-bound two-platform wheelhouse, clean generation, golden/unknown-field/bidi/import proof |
 | H16 | Java is a codec fixture, not a production SDK | in progress | `feat(client-plane): add preview Java HC/2 SDK` | Maven SDK/external consumer and Java↔Rust process proof green; real daemon, reconnect/repair, and previous artifact wait on H01/H11/H18 |
-| H17 | Rust production SDK still uses HC/1 HTTP | open | — | transport-neutral HC/2 runtime |
+| H17 | Rust production SDK still uses HC/1 HTTP | in progress | `feat(client-plane): add transport-neutral Rust HC/2 SDK` | native SDK/process/package/HC/1 gates green; real daemon and reconnect/repair wait on H01/H11 |
 | H18 | Real previous-artifact compatibility matrix is absent | open | — | HC/1/HC/2 rolling matrix artifacts |
 | H19 | Deterministic network fault proxy is absent | open | — | seeded replayable socket faults |
 | H20 | HTTP/2 graceful shutdown remains unresolved | open | — | drain/GOAWAY/deadline/reset proof |
@@ -489,6 +489,23 @@ no stale completion, boundedness, and HC/1 regression.
 separate modules/features and golden compatibility tests.
 
 **Done.** Native HC/2 operations use no spike type or handwritten wire codec.
+
+**Implementation evidence (2026-08-10, completion blocked).** The distinct
+`hydracache-client-hc2` preview crate now owns the authoritative generated
+contract and exposes generated-wire-free native APIs for data/CAS/batch,
+bounded listeners with explicit gap repair, monotonic topology, fenced
+sessions, deadlines/cancellation, stable errors/retry advice, and pull-based
+metrics. The public adapter boundary has one enabled implementation:
+bidirectional gRPC over mandatory mTLS; it has no plaintext or HC/1 fallback.
+`cargo xtask client-plane-rust-sdk-check` runs the SDK against a separate mTLS
+process, proves cancellation cannot produce a stale completion, enforces
+pending/listener bounds, requires zero subscription/session retention, packages
+and verifies the crate, and separately runs the unchanged HC/1 conformance
+suite. Exact scope and reproduction are documented in
+`docs/architecture/HC2_RUST_SDK.md`. H17 remains `in progress`: H01 has not
+mounted HC/2 on the production daemon and H11 has not defined reconnect and
+repair. The process peer and explicit retry advice do not substitute for those
+open dependencies.
 
 ## H18. Prove compatibility with retained real artifacts
 

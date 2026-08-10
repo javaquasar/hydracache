@@ -3,6 +3,7 @@ pub mod canary_check;
 pub mod canary_sweep;
 pub mod client_plane_java;
 pub mod client_plane_python;
+pub mod client_plane_rust;
 pub mod client_plane_spike;
 pub mod compat_check;
 pub mod coverage_ratchet;

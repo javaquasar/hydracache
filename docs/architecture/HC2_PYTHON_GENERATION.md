@@ -5,7 +5,8 @@
 H15 adds independently executable Python message and gRPC fixture evidence to
 the non-production HC/2 spike. It does not publish a Python SDK, expose a stable
 API, enable the server, or complete H01/H16/H17. The authoritative schema
-remains the reviewed files under `crates/hydracache-client-plane-spike/proto`.
+remains the reviewed files under `crates/hydracache-client-hc2/proto` and the
+isolated W0 spike envelope under `crates/hydracache-client-plane-spike/proto`.
 
 ## Reproducible generation
 

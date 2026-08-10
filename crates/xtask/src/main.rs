@@ -13,6 +13,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         Some("client-plane-python-generate") => {
             xtask::client_plane_python::run_generate(args.collect())?
         }
+        Some("client-plane-rust-sdk-check") => xtask::client_plane_rust::run(args.collect())?,
         Some("compat-check") => xtask::compat_check::run(args.collect())?,
         Some("coverage-ratchet-check") => xtask::coverage_ratchet::run(args.collect())?,
         Some("determinism-sweep") => xtask::determinism_sweep::run(args.collect())?,
@@ -59,6 +60,7 @@ fn print_usage() {
          cargo xtask client-plane-java-sdk-check  # build/test/install Java SDK and external consumer\n  \
          cargo xtask client-plane-python-check  # verify generated Python and test it from the offline wheelhouse\n  \
          cargo xtask client-plane-python-generate --write  # regenerate checked-in Python messages/stubs/metadata\n  \
+         cargo xtask client-plane-rust-sdk-check  # prove the native HC/2 Rust SDK and unchanged HC/1 client\n  \
          cargo xtask compat-check [--preflight-only|--manifest-only]  # validate previous-release compatibility\n  \
          cargo xtask coverage-ratchet-check [--structural|--run]  # validate or execute the pinned coverage floor\n  \
          cargo xtask determinism-sweep --release 0.64  # compare canonical logical evidence across repeated/serial runs\n  \

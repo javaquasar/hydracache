@@ -165,6 +165,16 @@ gRPC+mTLS runtime is exercised against a separate Rust process, including the
 negative certificate matrix and zero-resource receipt. This is process and
 language interoperability, but not yet real-daemon evidence: H01 and H11 remain
 explicit blockers for production listener and reconnect/repair claims.
+
+H17 moves the authoritative HC/2 schema into the distinct production-shaped
+`hydracache-client-hc2` Rust crate. Its native API and adapter trait share the
+same generated messages as Java and Python while preserving the existing HC/1
+crate as a separate identity. The first enabled adapter is gRPC+mTLS; other
+transport candidates remain spikes until their own lifecycle evidence exists.
+The process gate proves cancellation, late-response rejection, bounded owners,
+gap signaling, zero-resource close, packaging, and HC/1 regression. It does not
+convert the conformance peer into the real daemon or invent reconnect policy
+while H01/H11 remain open.
 Failure to do so is an operability failure, not a documentation exception.
 
 ## Implementation boundary

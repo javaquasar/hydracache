@@ -1,7 +1,7 @@
 # HC/2 v2alpha Schema Registry
 
 The authoritative HC/2 client-plane contract is
-`crates/hydracache-client-plane-spike/proto/hc2_contract.proto`. Generated
+`crates/hydracache-client-hc2/proto/hc2_contract.proto`. Generated
 Rust, Java, and future SDK bindings consume that file; SDKs must not maintain a
 second operation table or handwritten protobuf field identifiers.
 

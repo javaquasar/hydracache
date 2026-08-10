@@ -11,6 +11,7 @@ use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 
 const CRATE: &str = "hydracache-client-plane-spike";
+const CONTRACT_CRATE: &str = "hydracache-client-hc2";
 const FIXTURE: &str = "crates/hydracache-client-plane-spike/python-fixture";
 const GENERATED_PACKAGE: &str = "src/hydracache_hc2_generated";
 const WHEEL_MANIFEST: &str = "wheelhouse.lock.json";
@@ -92,8 +93,14 @@ fn generate_to(root: &Path, output: &Path) -> Result<(), Box<dyn Error>> {
         fs::remove_dir_all(output)?;
     }
     fs::create_dir_all(output)?;
-    let proto_root = root.join("crates").join(CRATE).join("proto");
-    let mut protos = fs::read_dir(&proto_root)?
+    let spike_proto_root = root.join("crates").join(CRATE).join("proto");
+    let contract_proto_root = root.join("crates").join(CONTRACT_CRATE).join("proto");
+    let mut protos = [spike_proto_root.clone(), contract_proto_root.clone()]
+        .into_iter()
+        .map(fs::read_dir)
+        .collect::<Result<Vec<_>, _>>()?
+        .into_iter()
+        .flatten()
         .filter_map(Result::ok)
         .map(|entry| entry.path())
         .filter(|path| path.extension() == Some(OsStr::new("proto")))
@@ -107,7 +114,8 @@ fn generate_to(root: &Path, output: &Path) -> Result<(), Box<dyn Error>> {
     let protoc = protoc_bin_vendored::protoc_bin_path()?;
     let mut command = Command::new(&protoc);
     command
-        .arg(format!("--proto_path={}", proto_root.display()))
+        .arg(format!("--proto_path={}", spike_proto_root.display()))
+        .arg(format!("--proto_path={}", contract_proto_root.display()))
         .arg(format!("--python_out={}", output.display()))
         .arg(format!("--pyi_out={}", output.display()))
         .arg(format!(

@@ -32,7 +32,7 @@ The public `io.hydracache.client.hc2` package provides:
 Generated messages and stubs use
 `io.hydracache.client.hc2.internal.wire`. Reflection tests reject any public
 signature that leaks those types. The authoritative proto remains in
-`crates/hydracache-client-plane-spike/proto`; H16 added explicit unsubscribe and
+`crates/hydracache-client-hc2/proto`; H16 added explicit unsubscribe and
 session-close messages because listener/session ownership otherwise had no
 wire-level release operation.
 

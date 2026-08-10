@@ -5,6 +5,7 @@ members = [
     "crates/hydracache",
     "crates/hydracache-actuator-axum",
     "crates/hydracache-client",
+    "crates/hydracache-client-hc2",
     "crates/hydracache-client-plane-spike",
     "crates/hydracache-client-protocol",
     "crates/hydracache-client-transport-axum",
@@ -73,6 +74,7 @@ hydracache-cache-sim = { path = "crates/hydracache-cache-sim", version = "0.67.0
 hydracache-actuator-axum = { path = "crates/hydracache-actuator-axum", version = "0.67.0" }
 hydracache-cdc-postgres = { path = "crates/hydracache-cdc-postgres", version = "0.67.0" }
 hydracache-client = { path = "crates/hydracache-client", version = "0.67.0" }
+hydracache-client-hc2 = { path = "crates/hydracache-client-hc2", version = "0.67.0" }
 hydracache-client-protocol = { path = "crates/hydracache-client-protocol", version = "0.67.0" }
 hydracache-client-transport-axum = { path = "crates/hydracache-client-transport-axum", version = "0.67.0" }
 hydracache-cluster = { path = "crates/hydracache-cluster", version = "0.67.0" }

@@ -12,8 +12,11 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .file_descriptor_set_path(descriptor)
         .compile_with_config(
             prost,
-            &["proto/hc2_spike.proto", "proto/hc2_contract.proto"],
-            &["proto"],
+            &[
+                "proto/hc2_spike.proto",
+                "../hydracache-client-hc2/proto/hc2_contract.proto",
+            ],
+            &["proto", "../hydracache-client-hc2/proto"],
         )?;
     Ok(())
 }

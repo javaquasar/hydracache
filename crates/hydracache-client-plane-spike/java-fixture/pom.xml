@@ -44,15 +44,27 @@
         <artifactId>protobuf-maven-plugin</artifactId>
         <version>0.6.1</version>
         <configuration>
-          <protoSourceRoot>${project.basedir}/../proto</protoSourceRoot>
+          <clearOutputDirectory>false</clearOutputDirectory>
           <protocArtifact>com.google.protobuf:protoc:${protobuf.version}:exe:${os.detected.classifier}</protocArtifact>
         </configuration>
         <executions>
           <execution>
+            <id>compile-spike-schema</id>
             <goals>
               <goal>compile</goal>
-              <goal>test-compile</goal>
             </goals>
+            <configuration>
+              <protoSourceRoot>${project.basedir}/../proto</protoSourceRoot>
+            </configuration>
+          </execution>
+          <execution>
+            <id>compile-contract-schema</id>
+            <goals>
+              <goal>compile</goal>
+            </goals>
+            <configuration>
+              <protoSourceRoot>${project.basedir}/../../hydracache-client-hc2/proto</protoSourceRoot>
+            </configuration>
           </execution>
         </executions>
       </plugin>

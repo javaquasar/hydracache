@@ -101,7 +101,7 @@
         <artifactId>protobuf-maven-plugin</artifactId>
         <version>0.6.1</version>
         <configuration>
-          <protoSourceRoot>${project.basedir}/../../../crates/hydracache-client-plane-spike/proto</protoSourceRoot>
+          <protoSourceRoot>${project.basedir}/../../../crates/hydracache-client-hc2/proto</protoSourceRoot>
           <protocArtifact>com.google.protobuf:protoc:${protobuf.version}:exe:${os.detected.classifier}</protocArtifact>
           <pluginId>grpc-java</pluginId>
           <pluginArtifact>io.grpc:protoc-gen-grpc-java:${grpc.version}:exe:${os.detected.classifier}</pluginArtifact>
