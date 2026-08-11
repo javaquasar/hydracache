@@ -156,6 +156,48 @@ class CompareAndSetRequest(_message.Message):
     ttl_ms: int
     def __init__(self, key: _Optional[bytes] = ..., expected: _Optional[bytes] = ..., replacement: _Optional[bytes] = ..., ttl_ms: _Optional[int] = ...) -> None: ...
 
+class TryLockRequest(_message.Message):
+    __slots__ = ("key", "lease_ms", "wait_ms")
+    KEY_FIELD_NUMBER: _ClassVar[int]
+    LEASE_MS_FIELD_NUMBER: _ClassVar[int]
+    WAIT_MS_FIELD_NUMBER: _ClassVar[int]
+    key: bytes
+    lease_ms: int
+    wait_ms: int
+    def __init__(self, key: _Optional[bytes] = ..., lease_ms: _Optional[int] = ..., wait_ms: _Optional[int] = ...) -> None: ...
+
+class UnlockRequest(_message.Message):
+    __slots__ = ("key", "fence")
+    KEY_FIELD_NUMBER: _ClassVar[int]
+    FENCE_FIELD_NUMBER: _ClassVar[int]
+    key: bytes
+    fence: int
+    def __init__(self, key: _Optional[bytes] = ..., fence: _Optional[int] = ...) -> None: ...
+
+class RenewLockRequest(_message.Message):
+    __slots__ = ("key", "fence", "lease_ms")
+    KEY_FIELD_NUMBER: _ClassVar[int]
+    FENCE_FIELD_NUMBER: _ClassVar[int]
+    LEASE_MS_FIELD_NUMBER: _ClassVar[int]
+    key: bytes
+    fence: int
+    lease_ms: int
+    def __init__(self, key: _Optional[bytes] = ..., fence: _Optional[int] = ..., lease_ms: _Optional[int] = ...) -> None: ...
+
+class LockOwnershipRequest(_message.Message):
+    __slots__ = ("key",)
+    KEY_FIELD_NUMBER: _ClassVar[int]
+    key: bytes
+    def __init__(self, key: _Optional[bytes] = ...) -> None: ...
+
+class RemoveIfValueRequest(_message.Message):
+    __slots__ = ("key", "expected")
+    KEY_FIELD_NUMBER: _ClassVar[int]
+    EXPECTED_FIELD_NUMBER: _ClassVar[int]
+    key: bytes
+    expected: bytes
+    def __init__(self, key: _Optional[bytes] = ..., expected: _Optional[bytes] = ...) -> None: ...
+
 class BatchItem(_message.Message):
     __slots__ = ("item_id", "get", "put", "delete", "compare_and_set")
     ITEM_ID_FIELD_NUMBER: _ClassVar[int]
@@ -177,20 +219,30 @@ class BatchRequest(_message.Message):
     def __init__(self, items: _Optional[_Iterable[_Union[BatchItem, _Mapping]]] = ...) -> None: ...
 
 class InvocationRequest(_message.Message):
-    __slots__ = ("meta", "get", "put", "delete", "compare_and_set", "batch")
+    __slots__ = ("meta", "get", "put", "delete", "compare_and_set", "batch", "try_lock", "unlock", "renew_lock", "lock_ownership", "remove_if_value")
     META_FIELD_NUMBER: _ClassVar[int]
     GET_FIELD_NUMBER: _ClassVar[int]
     PUT_FIELD_NUMBER: _ClassVar[int]
     DELETE_FIELD_NUMBER: _ClassVar[int]
     COMPARE_AND_SET_FIELD_NUMBER: _ClassVar[int]
     BATCH_FIELD_NUMBER: _ClassVar[int]
+    TRY_LOCK_FIELD_NUMBER: _ClassVar[int]
+    UNLOCK_FIELD_NUMBER: _ClassVar[int]
+    RENEW_LOCK_FIELD_NUMBER: _ClassVar[int]
+    LOCK_OWNERSHIP_FIELD_NUMBER: _ClassVar[int]
+    REMOVE_IF_VALUE_FIELD_NUMBER: _ClassVar[int]
     meta: RequestMeta
     get: GetRequest
     put: PutRequest
     delete: DeleteRequest
     compare_and_set: CompareAndSetRequest
     batch: BatchRequest
-    def __init__(self, meta: _Optional[_Union[RequestMeta, _Mapping]] = ..., get: _Optional[_Union[GetRequest, _Mapping]] = ..., put: _Optional[_Union[PutRequest, _Mapping]] = ..., delete: _Optional[_Union[DeleteRequest, _Mapping]] = ..., compare_and_set: _Optional[_Union[CompareAndSetRequest, _Mapping]] = ..., batch: _Optional[_Union[BatchRequest, _Mapping]] = ...) -> None: ...
+    try_lock: TryLockRequest
+    unlock: UnlockRequest
+    renew_lock: RenewLockRequest
+    lock_ownership: LockOwnershipRequest
+    remove_if_value: RemoveIfValueRequest
+    def __init__(self, meta: _Optional[_Union[RequestMeta, _Mapping]] = ..., get: _Optional[_Union[GetRequest, _Mapping]] = ..., put: _Optional[_Union[PutRequest, _Mapping]] = ..., delete: _Optional[_Union[DeleteRequest, _Mapping]] = ..., compare_and_set: _Optional[_Union[CompareAndSetRequest, _Mapping]] = ..., batch: _Optional[_Union[BatchRequest, _Mapping]] = ..., try_lock: _Optional[_Union[TryLockRequest, _Mapping]] = ..., unlock: _Optional[_Union[UnlockRequest, _Mapping]] = ..., renew_lock: _Optional[_Union[RenewLockRequest, _Mapping]] = ..., lock_ownership: _Optional[_Union[LockOwnershipRequest, _Mapping]] = ..., remove_if_value: _Optional[_Union[RemoveIfValueRequest, _Mapping]] = ...) -> None: ...
 
 class ValueResult(_message.Message):
     __slots__ = ("found", "value", "expires_at_unix_ms")
@@ -208,6 +260,22 @@ class MutationResult(_message.Message):
     applied: bool
     def __init__(self, applied: bool = ...) -> None: ...
 
+class LockResult(_message.Message):
+    __slots__ = ("acquired", "fence")
+    ACQUIRED_FIELD_NUMBER: _ClassVar[int]
+    FENCE_FIELD_NUMBER: _ClassVar[int]
+    acquired: bool
+    fence: int
+    def __init__(self, acquired: bool = ..., fence: _Optional[int] = ...) -> None: ...
+
+class LockOwnershipResult(_message.Message):
+    __slots__ = ("locked", "fence")
+    LOCKED_FIELD_NUMBER: _ClassVar[int]
+    FENCE_FIELD_NUMBER: _ClassVar[int]
+    locked: bool
+    fence: int
+    def __init__(self, locked: bool = ..., fence: _Optional[int] = ...) -> None: ...
+
 class BatchResult(_message.Message):
     __slots__ = ("items",)
     ITEMS_FIELD_NUMBER: _ClassVar[int]
@@ -215,16 +283,20 @@ class BatchResult(_message.Message):
     def __init__(self, items: _Optional[_Iterable[_Union[InvocationResponse, _Mapping]]] = ...) -> None: ...
 
 class InvocationResponse(_message.Message):
-    __slots__ = ("meta", "value", "mutation", "batch")
+    __slots__ = ("meta", "value", "mutation", "batch", "lock", "lock_ownership")
     META_FIELD_NUMBER: _ClassVar[int]
     VALUE_FIELD_NUMBER: _ClassVar[int]
     MUTATION_FIELD_NUMBER: _ClassVar[int]
     BATCH_FIELD_NUMBER: _ClassVar[int]
+    LOCK_FIELD_NUMBER: _ClassVar[int]
+    LOCK_OWNERSHIP_FIELD_NUMBER: _ClassVar[int]
     meta: ResponseMeta
     value: ValueResult
     mutation: MutationResult
     batch: BatchResult
-    def __init__(self, meta: _Optional[_Union[ResponseMeta, _Mapping]] = ..., value: _Optional[_Union[ValueResult, _Mapping]] = ..., mutation: _Optional[_Union[MutationResult, _Mapping]] = ..., batch: _Optional[_Union[BatchResult, _Mapping]] = ...) -> None: ...
+    lock: LockResult
+    lock_ownership: LockOwnershipResult
+    def __init__(self, meta: _Optional[_Union[ResponseMeta, _Mapping]] = ..., value: _Optional[_Union[ValueResult, _Mapping]] = ..., mutation: _Optional[_Union[MutationResult, _Mapping]] = ..., batch: _Optional[_Union[BatchResult, _Mapping]] = ..., lock: _Optional[_Union[LockResult, _Mapping]] = ..., lock_ownership: _Optional[_Union[LockOwnershipResult, _Mapping]] = ...) -> None: ...
 
 class Cancel(_message.Message):
     __slots__ = ("correlation_id", "safe_reason")

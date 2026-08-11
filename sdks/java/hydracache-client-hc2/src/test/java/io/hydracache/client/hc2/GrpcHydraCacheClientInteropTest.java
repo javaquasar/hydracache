@@ -47,6 +47,13 @@ final class GrpcHydraCacheClientInteropTest {
       assertArrayEquals(bytes("value-1"), client.get(bytes("key-1"), DEFAULT).join().orElseThrow().value());
       assertTrue(client.compareAndSet(bytes("key-1"), bytes("value-1"), bytes("value-2"),
           Duration.ZERO, DEFAULT).join().applied());
+      assertFalse(client.removeIfValue(bytes("key-1"), bytes("stale"), DEFAULT).join().applied());
+      LockAcquireResult lock = client.tryLock(bytes("lock-1"), Duration.ofSeconds(5), DEFAULT).join();
+      assertTrue(lock.acquired());
+      assertEquals(lock.fence(), client.lockOwnership(bytes("lock-1"), DEFAULT).join().fence());
+      assertTrue(client.renewLock(bytes("lock-1"), lock.fence(), Duration.ofSeconds(5), DEFAULT)
+          .join().applied());
+      assertTrue(client.unlock(bytes("lock-1"), lock.fence(), DEFAULT).join().applied());
 
       List<BatchItemResult> batch = client.batch(List.of(
           new BatchOperation.Get(bytes("key-1")),
@@ -109,6 +116,10 @@ final class GrpcHydraCacheClientInteropTest {
       assertTrue(eventArrived.await(5, TimeUnit.SECONDS));
       assertArrayEquals(bytes("daemon-value"),
           client.get(bytes("daemon-key"), DEFAULT).join().orElseThrow().value());
+      LockAcquireResult lock = client.tryLock(
+          bytes("daemon-lock"), Duration.ofSeconds(3), DEFAULT).join();
+      assertTrue(lock.acquired());
+      assertTrue(client.unlock(bytes("daemon-lock"), lock.fence(), DEFAULT).join().applied());
       FencedSession session = client.openSession(Duration.ofSeconds(3)).join();
       assertTrue(session.fence() > 0);
       session.close();

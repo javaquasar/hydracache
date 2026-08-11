@@ -18,6 +18,8 @@ from .models import (
     ClientConfig,
     ClientMetrics,
     EventGap,
+    LockAcquireResult,
+    LockOwnership,
     MutationResult,
     RequestOptions,
 )
@@ -203,6 +205,120 @@ class AsyncHydraCacheClient:
         )
         return _mutation(response)
 
+    async def remove_if_value(
+        self,
+        key: bytes,
+        expected: bytes,
+        options: Optional[RequestOptions] = None,
+    ) -> MutationResult:
+        _bytes(key, "key", 1, 1024 * 1024)
+        _bytes(expected, "expected", 0, 16 * 1024 * 1024)
+        response = await self._invoke(
+            wire.InvocationRequest(
+                remove_if_value=wire.RemoveIfValueRequest(
+                    key=key, expected=expected
+                )
+            ),
+            options,
+        )
+        return _mutation(response)
+
+    async def try_lock(
+        self,
+        key: bytes,
+        lease_ms: int,
+        options: Optional[RequestOptions] = None,
+    ) -> LockAcquireResult:
+        _bytes(key, "key", 1, 1024 * 1024)
+        if not 0 < lease_ms <= 365 * 24 * 60 * 60 * 1000:
+            raise ValueError("lock lease is outside the supported range")
+        response = await self._invoke(
+            wire.InvocationRequest(
+                try_lock=wire.TryLockRequest(
+                    key=key, lease_ms=lease_ms, wait_ms=0
+                )
+            ),
+            options,
+        )
+        if not response.HasField("lock"):
+            raise HydraCacheError(
+                ErrorCode.INTERNAL, RetryAdvice.NEVER, "peer omitted lock result"
+            )
+        if response.lock.acquired and response.lock.fence == 0:
+            raise HydraCacheError(
+                ErrorCode.INTERNAL,
+                RetryAdvice.NEVER,
+                "peer returned a zero acquired fence",
+            )
+        return LockAcquireResult(
+            response.lock.acquired,
+            response.lock.fence if response.lock.acquired else None,
+        )
+
+    async def unlock(
+        self,
+        key: bytes,
+        fence: int,
+        options: Optional[RequestOptions] = None,
+    ) -> MutationResult:
+        _bytes(key, "key", 1, 1024 * 1024)
+        if fence <= 0:
+            raise ValueError("lock fence must be positive")
+        response = await self._invoke(
+            wire.InvocationRequest(
+                unlock=wire.UnlockRequest(key=key, fence=fence)
+            ),
+            options,
+        )
+        return _mutation(response)
+
+    async def renew_lock(
+        self,
+        key: bytes,
+        fence: int,
+        lease_ms: int,
+        options: Optional[RequestOptions] = None,
+    ) -> MutationResult:
+        _bytes(key, "key", 1, 1024 * 1024)
+        if fence <= 0 or not 0 < lease_ms <= 365 * 24 * 60 * 60 * 1000:
+            raise ValueError("lock fence and lease must be positive and bounded")
+        response = await self._invoke(
+            wire.InvocationRequest(
+                renew_lock=wire.RenewLockRequest(
+                    key=key, fence=fence, lease_ms=lease_ms
+                )
+            ),
+            options,
+        )
+        return _mutation(response)
+
+    async def lock_ownership(
+        self, key: bytes, options: Optional[RequestOptions] = None
+    ) -> LockOwnership:
+        _bytes(key, "key", 1, 1024 * 1024)
+        response = await self._invoke(
+            wire.InvocationRequest(
+                lock_ownership=wire.LockOwnershipRequest(key=key)
+            ),
+            options,
+        )
+        if not response.HasField("lock_ownership"):
+            raise HydraCacheError(
+                ErrorCode.INTERNAL,
+                RetryAdvice.NEVER,
+                "peer omitted lock ownership",
+            )
+        ownership = response.lock_ownership
+        if ownership.locked and ownership.fence == 0:
+            raise HydraCacheError(
+                ErrorCode.INTERNAL,
+                RetryAdvice.NEVER,
+                "peer returned a zero ownership fence",
+            )
+        return LockOwnership(
+            ownership.locked, ownership.fence if ownership.locked else None
+        )
+
     async def subscribe(
         self, key_prefix: bytes = b"", resume_watermark: int = 0
     ) -> Subscription:
@@ -354,11 +470,16 @@ class AsyncHydraCacheClient:
             await self._restore_subscriptions()
             await reader
         finally:
+            call.cancel()
             reader.cancel()
             with contextlib.suppress(asyncio.CancelledError):
                 await reader
+            with contextlib.suppress(asyncio.CancelledError):
+                await call.code()
             if self._outbound is outbound:
                 self._outbound = None
+            if self._channel is channel:
+                self._channel = None
             await channel.close()
 
     async def _read_stream(

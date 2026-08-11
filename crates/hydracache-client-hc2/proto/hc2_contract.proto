@@ -89,6 +89,11 @@ message CompareAndSetRequest {
   bytes replacement = 3;
   uint64 ttl_ms = 4;
 }
+message TryLockRequest { bytes key = 1; uint64 lease_ms = 2; uint64 wait_ms = 3; }
+message UnlockRequest { bytes key = 1; uint64 fence = 2; }
+message RenewLockRequest { bytes key = 1; uint64 fence = 2; uint64 lease_ms = 3; }
+message LockOwnershipRequest { bytes key = 1; }
+message RemoveIfValueRequest { bytes key = 1; bytes expected = 2; }
 
 message BatchItem {
   uint32 item_id = 1;
@@ -111,13 +116,20 @@ message InvocationRequest {
     DeleteRequest delete = 103;
     CompareAndSetRequest compare_and_set = 104;
     BatchRequest batch = 105;
+    TryLockRequest try_lock = 106;
+    UnlockRequest unlock = 107;
+    RenewLockRequest renew_lock = 108;
+    LockOwnershipRequest lock_ownership = 109;
+    RemoveIfValueRequest remove_if_value = 110;
   }
-  reserved 106 to 119;
+  reserved 111 to 119;
   reserved "legacy_operation";
 }
 
 message ValueResult { bool found = 1; bytes value = 2; uint64 expires_at_unix_ms = 3; }
 message MutationResult { bool applied = 1; }
+message LockResult { bool acquired = 1; uint64 fence = 2; }
+message LockOwnershipResult { bool locked = 1; uint64 fence = 2; }
 message BatchResult { repeated InvocationResponse items = 1; }
 
 message InvocationResponse {
@@ -126,8 +138,10 @@ message InvocationResponse {
     ValueResult value = 101;
     MutationResult mutation = 102;
     BatchResult batch = 103;
+    LockResult lock = 104;
+    LockOwnershipResult lock_ownership = 105;
   }
-  reserved 104 to 119;
+  reserved 106 to 119;
 }
 
 message Cancel { uint64 correlation_id = 1; string safe_reason = 2; }

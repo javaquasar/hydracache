@@ -17,6 +17,8 @@ import io.hydracache.client.hc2.FencedSession;
 import io.hydracache.client.hc2.HydraCacheClient;
 import io.hydracache.client.hc2.HydraCacheClientConfig;
 import io.hydracache.client.hc2.HydraCacheException;
+import io.hydracache.client.hc2.LockAcquireResult;
+import io.hydracache.client.hc2.LockOwnership;
 import io.hydracache.client.hc2.MutationResult;
 import io.hydracache.client.hc2.NodeEndpoint;
 import io.hydracache.client.hc2.RequestOptions;
@@ -37,7 +39,10 @@ import io.hydracache.client.hc2.internal.wire.Handshake;
 import io.hydracache.client.hc2.internal.wire.HandshakeAck;
 import io.hydracache.client.hc2.internal.wire.InvocationRequest;
 import io.hydracache.client.hc2.internal.wire.InvocationResponse;
+import io.hydracache.client.hc2.internal.wire.LockOwnershipRequest;
 import io.hydracache.client.hc2.internal.wire.PutRequest;
+import io.hydracache.client.hc2.internal.wire.RenewLockRequest;
+import io.hydracache.client.hc2.internal.wire.RemoveIfValueRequest;
 import io.hydracache.client.hc2.internal.wire.RequestMeta;
 import io.hydracache.client.hc2.internal.wire.ResponseMeta;
 import io.hydracache.client.hc2.internal.wire.ServerEnvelope;
@@ -47,7 +52,9 @@ import io.hydracache.client.hc2.internal.wire.SessionOpen;
 import io.hydracache.client.hc2.internal.wire.Subscribe;
 import io.hydracache.client.hc2.internal.wire.SubscriptionAck;
 import io.hydracache.client.hc2.internal.wire.TopologyUpdate;
+import io.hydracache.client.hc2.internal.wire.TryLockRequest;
 import io.hydracache.client.hc2.internal.wire.Unsubscribe;
+import io.hydracache.client.hc2.internal.wire.UnlockRequest;
 import java.net.InetSocketAddress;
 import java.net.InetAddress;
 import java.net.Socket;
@@ -242,6 +249,72 @@ public final class GrpcHydraCacheClient implements HydraCacheClient {
             .setKey(ByteString.copyFrom(key)).setExpected(ByteString.copyFrom(expected))
             .setReplacement(ByteString.copyFrom(replacement)).setTtlMs(ttlMillis(ttl)))
         .build(), options);
+  }
+
+  @Override
+  public CompletableFuture<MutationResult> removeIfValue(
+      byte[] key, byte[] expected, RequestOptions options) {
+    requireBytes(key, "key", 1, 1024 * 1024);
+    requireBytes(expected, "expected", 0, 16 * 1024 * 1024);
+    return mutation(InvocationRequest.newBuilder().setMeta(meta(options))
+        .setRemoveIfValue(RemoveIfValueRequest.newBuilder()
+            .setKey(ByteString.copyFrom(key)).setExpected(ByteString.copyFrom(expected)))
+        .build(), options);
+  }
+
+  @Override
+  public CompletableFuture<LockAcquireResult> tryLock(
+      byte[] key, Duration lease, RequestOptions options) {
+    requireBytes(key, "key", 1, 1024 * 1024);
+    long leaseMillis = ttlMillis(lease);
+    if (leaseMillis == 0) throw new IllegalArgumentException("lock lease must be positive");
+    return invoke(InvocationRequest.newBuilder().setMeta(meta(options))
+        .setTryLock(TryLockRequest.newBuilder().setKey(ByteString.copyFrom(key))
+            .setLeaseMs(leaseMillis).setWaitMs(0)).build(), options)
+        .thenApply(response -> {
+          requireSuccess(response.getMeta());
+          if (!response.hasLock()) throw local(ErrorCode.INTERNAL, "peer omitted the lock result");
+          return new LockAcquireResult(response.getLock().getAcquired(), response.getLock().getFence());
+        });
+  }
+
+  @Override
+  public CompletableFuture<MutationResult> unlock(
+      byte[] key, long fence, RequestOptions options) {
+    requireBytes(key, "key", 1, 1024 * 1024);
+    if (fence <= 0) throw new IllegalArgumentException("lock fence must be positive");
+    return mutation(InvocationRequest.newBuilder().setMeta(meta(options))
+        .setUnlock(UnlockRequest.newBuilder().setKey(ByteString.copyFrom(key)).setFence(fence))
+        .build(), options);
+  }
+
+  @Override
+  public CompletableFuture<MutationResult> renewLock(
+      byte[] key, long fence, Duration lease, RequestOptions options) {
+    requireBytes(key, "key", 1, 1024 * 1024);
+    long leaseMillis = ttlMillis(lease);
+    if (fence <= 0 || leaseMillis == 0) {
+      throw new IllegalArgumentException("lock fence and lease must be positive");
+    }
+    return mutation(InvocationRequest.newBuilder().setMeta(meta(options))
+        .setRenewLock(RenewLockRequest.newBuilder().setKey(ByteString.copyFrom(key))
+            .setFence(fence).setLeaseMs(leaseMillis)).build(), options);
+  }
+
+  @Override
+  public CompletableFuture<LockOwnership> lockOwnership(
+      byte[] key, RequestOptions options) {
+    requireBytes(key, "key", 1, 1024 * 1024);
+    return invoke(InvocationRequest.newBuilder().setMeta(meta(options))
+        .setLockOwnership(LockOwnershipRequest.newBuilder().setKey(ByteString.copyFrom(key)))
+        .build(), options).thenApply(response -> {
+          requireSuccess(response.getMeta());
+          if (!response.hasLockOwnership()) {
+            throw local(ErrorCode.INTERNAL, "peer omitted lock ownership");
+          }
+          return new LockOwnership(
+              response.getLockOwnership().getLocked(), response.getLockOwnership().getFence());
+        });
   }
 
   @Override

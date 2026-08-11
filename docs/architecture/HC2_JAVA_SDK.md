@@ -19,7 +19,8 @@ concerns rather than being implied by the preview SDK.
 The public `io.hydracache.client.hc2` package provides:
 
 - fail-closed gRPC+mTLS connection configuration;
-- asynchronous get, put, delete, compare-and-set, and ordered batch operations;
+- asynchronous get, put, delete, compare-and-set, conditional remove, fenced
+  lock acquire/release/renew/ownership, and ordered batch operations;
 - per-request deadlines, explicit cancellation, idempotency bytes, tenant and
   topology metadata;
 - subscriptions with watermark events/gaps and explicit unsubscribe;

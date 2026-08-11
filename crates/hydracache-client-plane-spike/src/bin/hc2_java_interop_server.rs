@@ -30,9 +30,9 @@ use wire::client_plane_alpha_server::{ClientPlaneAlpha, ClientPlaneAlphaServer};
 use wire::invocation_response;
 use wire::server_envelope;
 use wire::{
-    BatchResult, CacheEvent, ClientEnvelope, HandshakeAck, InvocationResponse, MutationResult,
-    NodeEndpoint, ResponseMeta, RetryDirective, ServerEnvelope, SessionHeartbeat, StableErrorCode,
-    SubscriptionAck, TopologyUpdate, ValueResult,
+    BatchResult, CacheEvent, ClientEnvelope, HandshakeAck, InvocationResponse, LockOwnershipResult,
+    LockResult, MutationResult, NodeEndpoint, ResponseMeta, RetryDirective, ServerEnvelope,
+    SessionHeartbeat, StableErrorCode, SubscriptionAck, TopologyUpdate, ValueResult,
 };
 
 const GENERATION: u32 = 6;
@@ -43,6 +43,8 @@ type ResponseStream = Pin<Box<dyn Stream<Item = Result<ServerEnvelope, Status>> 
 #[derive(Debug, Default)]
 struct Store {
     values: BTreeMap<Vec<u8>, Vec<u8>>,
+    locks: BTreeMap<Vec<u8>, u64>,
+    next_fence: u64,
 }
 
 #[derive(Debug, Default)]
@@ -320,6 +322,48 @@ fn apply_invocation(
             }
             mutation_result(applied)
         }
+        Some(Operation::RemoveIfValue(remove)) => {
+            let applied = store
+                .values
+                .get(&remove.key)
+                .is_some_and(|current| current == &remove.expected);
+            if applied {
+                store.values.remove(&remove.key);
+            }
+            mutation_result(applied)
+        }
+        Some(Operation::TryLock(lock)) => {
+            if store.locks.contains_key(&lock.key) {
+                lock_result(false, 0)
+            } else {
+                store.next_fence = store.next_fence.saturating_add(1).max(1);
+                let fence = store.next_fence;
+                store.locks.insert(lock.key, fence);
+                lock_result(true, fence)
+            }
+        }
+        Some(Operation::Unlock(unlock)) => {
+            let applied = store.locks.get(&unlock.key).copied() == Some(unlock.fence);
+            if applied {
+                store.locks.remove(&unlock.key);
+            }
+            mutation_result(applied)
+        }
+        Some(Operation::RenewLock(renew)) => {
+            mutation_result(store.locks.get(&renew.key).copied() == Some(renew.fence))
+        }
+        Some(Operation::LockOwnership(ownership)) => {
+            let fence = store.locks.get(&ownership.key).copied();
+            InvocationResponse {
+                meta: Some(success_meta()),
+                result: Some(invocation_response::Result::LockOwnership(
+                    LockOwnershipResult {
+                        locked: fence.is_some(),
+                        fence: fence.unwrap_or_default(),
+                    },
+                )),
+            }
+        }
         Some(Operation::Batch(batch)) => {
             let items = batch
                 .items
@@ -378,6 +422,16 @@ fn mutation_result(applied: bool) -> InvocationResponse {
         meta: Some(success_meta()),
         result: Some(invocation_response::Result::Mutation(MutationResult {
             applied,
+        })),
+    }
+}
+
+fn lock_result(acquired: bool, fence: u64) -> InvocationResponse {
+    InvocationResponse {
+        meta: Some(success_meta()),
+        result: Some(invocation_response::Result::Lock(LockResult {
+            acquired,
+            fence,
         })),
     }
 }

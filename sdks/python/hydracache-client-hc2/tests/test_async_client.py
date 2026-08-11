@@ -49,6 +49,16 @@ class TestService(wire_grpc.ClientPlaneAlphaServicer):
                     response = wire.InvocationResponse(
                         value=wire.ValueResult(found=True, value=b"value")
                     )
+                elif operation == "try_lock":
+                    response = wire.InvocationResponse(
+                        lock=wire.LockResult(acquired=True, fence=42)
+                    )
+                elif operation == "lock_ownership":
+                    response = wire.InvocationResponse(
+                        lock_ownership=wire.LockOwnershipResult(
+                            locked=True, fence=42
+                        )
+                    )
                 else:
                     response = wire.InvocationResponse(
                         mutation=wire.MutationResult(applied=True)
@@ -118,6 +128,11 @@ class AsyncClientTest(unittest.IsolatedAsyncioTestCase):
             session = await client.open_session(10_000)
             self.assertEqual(41, session.fence)
             await session.close()
+            acquired = await client.try_lock(b"lock", 10_000)
+            self.assertEqual(42, acquired.fence)
+            self.assertEqual(42, (await client.lock_ownership(b"lock")).fence)
+            self.assertTrue((await client.renew_lock(b"lock", 42, 10_000)).applied)
+            self.assertTrue((await client.unlock(b"lock", 42)).applied)
             self.assertEqual(0, client.metrics.pending_invocations)
             self.assertEqual(0, client.metrics.active_sessions)
         finally:

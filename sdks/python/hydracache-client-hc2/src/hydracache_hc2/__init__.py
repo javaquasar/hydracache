@@ -10,6 +10,8 @@ from .models import (
     ClientLimits,
     ClientMetrics,
     EventGap,
+    LockAcquireResult,
+    LockOwnership,
     MutationResult,
     RequestOptions,
 )
@@ -26,6 +28,8 @@ __all__ = [
     "EventGap",
     "FencedSession",
     "HydraCacheError",
+    "LockAcquireResult",
+    "LockOwnership",
     "MutationResult",
     "RequestOptions",
     "RetryAdvice",

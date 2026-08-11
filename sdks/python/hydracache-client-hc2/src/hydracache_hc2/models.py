@@ -105,6 +105,18 @@ class MutationResult:
 
 
 @dataclass(frozen=True)
+class LockAcquireResult:
+    acquired: bool
+    fence: Optional[int]
+
+
+@dataclass(frozen=True)
+class LockOwnership:
+    locked: bool
+    fence: Optional[int]
+
+
+@dataclass(frozen=True)
 class CacheEvent:
     subscription_id: int
     watermark: int

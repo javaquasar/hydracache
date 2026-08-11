@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>io.hydracache</groupId>
+    <artifactId>hydracache-java-sdks</artifactId>
+    <version>0.68.0-alpha.1-SNAPSHOT</version>
+  </parent>
+  <artifactId>hydracache-hazelcast-facade</artifactId>
+  <name>HydraCache Hazelcast-shaped Java Facade</name>
+  <description>A narrow source-level IMap and FencedLock migration facade over HC/2.</description>
+
+  <dependencies>
+    <dependency>
+      <groupId>io.hydracache</groupId>
+      <artifactId>hydracache-client-hc2</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter</artifactId>
+      <version>5.14.1</version>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>3.14.1</version>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <version>3.5.4</version>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jar-plugin</artifactId>
+        <version>3.4.2</version>
+        <configuration>
+          <archive>
+            <manifestEntries>
+              <Automatic-Module-Name>io.hydracache.hazelcast.facade</Automatic-Module-Name>
+              <HydraCache-Api-Stability>preview</HydraCache-Api-Stability>
+              <Hazelcast-Wire-Compatible>false</Hazelcast-Wire-Compatible>
+            </manifestEntries>
+          </archive>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-source-plugin</artifactId>
+        <version>3.4.0</version>
+        <executions><execution><id>sources</id><goals><goal>jar-no-fork</goal></goals></execution></executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-javadoc-plugin</artifactId>
+        <version>3.12.0</version>
+        <configuration><doclint>all,-missing</doclint></configuration>
+        <executions><execution><id>javadocs</id><goals><goal>jar</goal></goals></execution></executions>
+      </plugin>
+    </plugins>
+  </build>
+</project>

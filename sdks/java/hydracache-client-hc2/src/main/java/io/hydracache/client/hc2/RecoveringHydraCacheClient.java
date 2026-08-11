@@ -154,6 +154,47 @@ public final class RecoveringHydraCacheClient implements HydraCacheClient {
   }
 
   @Override
+  public CompletableFuture<MutationResult> removeIfValue(
+      byte[] key, byte[] expected, RequestOptions options) {
+    byte[] copiedKey = key.clone();
+    byte[] copiedExpected = expected.clone();
+    return withRetry(replaySafe(options), options,
+        (client, adjusted) -> client.removeIfValue(copiedKey, copiedExpected, adjusted));
+  }
+
+  @Override
+  public CompletableFuture<LockAcquireResult> tryLock(
+      byte[] key, Duration lease, RequestOptions options) {
+    byte[] copied = key.clone();
+    return withRetry(replaySafe(options), options,
+        (client, adjusted) -> client.tryLock(copied, lease, adjusted));
+  }
+
+  @Override
+  public CompletableFuture<MutationResult> unlock(
+      byte[] key, long fence, RequestOptions options) {
+    byte[] copied = key.clone();
+    return withRetry(replaySafe(options), options,
+        (client, adjusted) -> client.unlock(copied, fence, adjusted));
+  }
+
+  @Override
+  public CompletableFuture<MutationResult> renewLock(
+      byte[] key, long fence, Duration lease, RequestOptions options) {
+    byte[] copied = key.clone();
+    return withRetry(replaySafe(options), options,
+        (client, adjusted) -> client.renewLock(copied, fence, lease, adjusted));
+  }
+
+  @Override
+  public CompletableFuture<LockOwnership> lockOwnership(
+      byte[] key, RequestOptions options) {
+    byte[] copied = key.clone();
+    return withRetry(true, options,
+        (client, adjusted) -> client.lockOwnership(copied, adjusted));
+  }
+
+  @Override
   public CompletableFuture<List<BatchItemResult>> batch(
       List<BatchOperation> operations, RequestOptions options) {
     List<BatchOperation> copied = List.copyOf(operations);

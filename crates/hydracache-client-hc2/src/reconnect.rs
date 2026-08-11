@@ -18,8 +18,8 @@ use tokio::time::Instant;
 use crate::adapter::TransportAdapter;
 use crate::{
     BatchItemResult, BatchOperation, CacheEvent, CacheValue, ClientConfig, ClientError, ErrorCode,
-    FencedSession, Hc2Client, MutationResult, RequestOptions, RetryAdvice, Subscription,
-    SubscriptionEvent, TransportKind,
+    FencedSession, Hc2Client, LockAcquireResult, LockOwnership, MutationResult, RequestOptions,
+    RetryAdvice, Subscription, SubscriptionEvent, TransportKind,
 };
 
 /// One named endpoint and its already validated, security-owning adapter.
@@ -459,6 +459,88 @@ impl RecoveringHc2Client {
                     .compare_and_set(key, expected, replacement, ttl, options)
                     .await
             }
+        })
+        .await
+    }
+
+    /// Delete an exact value, replaying only when an idempotency key is present.
+    pub async fn remove_if_value(
+        &self,
+        key: Bytes,
+        expected: Bytes,
+        options: Option<RequestOptions>,
+    ) -> Result<MutationResult, ClientError> {
+        let retry_safe = has_idempotency_key(options.as_ref());
+        let timeout = request_timeout(&self.handle.runtime.config, options.as_ref());
+        self.with_retry(retry_safe, timeout, move |client, remaining| {
+            let key = key.clone();
+            let expected = expected.clone();
+            let options = adjusted_options(&options, remaining);
+            async move { client.remove_if_value(key, expected, options).await }
+        })
+        .await
+    }
+
+    /// Try once to acquire a fenced lock. An ambiguous result is never replayed.
+    pub async fn try_lock(
+        &self,
+        key: Bytes,
+        lease: Duration,
+        options: Option<RequestOptions>,
+    ) -> Result<LockAcquireResult, ClientError> {
+        let timeout = request_timeout(&self.handle.runtime.config, options.as_ref());
+        self.with_retry(false, timeout, move |client, remaining| {
+            let key = key.clone();
+            let options = adjusted_options(&options, remaining);
+            async move { client.try_lock(key, lease, options).await }
+        })
+        .await
+    }
+
+    /// Release once by fence. An ambiguous result is never replayed.
+    pub async fn unlock(
+        &self,
+        key: Bytes,
+        fence: u64,
+        options: Option<RequestOptions>,
+    ) -> Result<MutationResult, ClientError> {
+        let timeout = request_timeout(&self.handle.runtime.config, options.as_ref());
+        self.with_retry(false, timeout, move |client, remaining| {
+            let key = key.clone();
+            let options = adjusted_options(&options, remaining);
+            async move { client.unlock(key, fence, options).await }
+        })
+        .await
+    }
+
+    /// Renew once by fence. An ambiguous result is never replayed.
+    pub async fn renew_lock(
+        &self,
+        key: Bytes,
+        fence: u64,
+        lease: Duration,
+        options: Option<RequestOptions>,
+    ) -> Result<MutationResult, ClientError> {
+        let timeout = request_timeout(&self.handle.runtime.config, options.as_ref());
+        self.with_retry(false, timeout, move |client, remaining| {
+            let key = key.clone();
+            let options = adjusted_options(&options, remaining);
+            async move { client.renew_lock(key, fence, lease, options).await }
+        })
+        .await
+    }
+
+    /// Read lock ownership with a bounded safe replay.
+    pub async fn lock_ownership(
+        &self,
+        key: Bytes,
+        options: Option<RequestOptions>,
+    ) -> Result<LockOwnership, ClientError> {
+        let timeout = request_timeout(&self.handle.runtime.config, options.as_ref());
+        self.with_retry(true, timeout, move |client, remaining| {
+            let key = key.clone();
+            let options = adjusted_options(&options, remaining);
+            async move { client.lock_ownership(key, options).await }
         })
         .await
     }

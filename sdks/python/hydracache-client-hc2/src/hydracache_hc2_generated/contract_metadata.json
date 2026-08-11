@@ -522,6 +522,46 @@
               "kind": 11,
               "type_name": ".hydracache.client.v2alpha.BatchRequest",
               "oneof_index": 0
+            },
+            {
+              "name": "try_lock",
+              "number": 106,
+              "label": 1,
+              "kind": 11,
+              "type_name": ".hydracache.client.v2alpha.TryLockRequest",
+              "oneof_index": 0
+            },
+            {
+              "name": "unlock",
+              "number": 107,
+              "label": 1,
+              "kind": 11,
+              "type_name": ".hydracache.client.v2alpha.UnlockRequest",
+              "oneof_index": 0
+            },
+            {
+              "name": "renew_lock",
+              "number": 108,
+              "label": 1,
+              "kind": 11,
+              "type_name": ".hydracache.client.v2alpha.RenewLockRequest",
+              "oneof_index": 0
+            },
+            {
+              "name": "lock_ownership",
+              "number": 109,
+              "label": 1,
+              "kind": 11,
+              "type_name": ".hydracache.client.v2alpha.LockOwnershipRequest",
+              "oneof_index": 0
+            },
+            {
+              "name": "remove_if_value",
+              "number": 110,
+              "label": 1,
+              "kind": 11,
+              "type_name": ".hydracache.client.v2alpha.RemoveIfValueRequest",
+              "oneof_index": 0
             }
           ]
         },
@@ -559,6 +599,77 @@
               "kind": 11,
               "type_name": ".hydracache.client.v2alpha.BatchResult",
               "oneof_index": 0
+            },
+            {
+              "name": "lock",
+              "number": 104,
+              "label": 1,
+              "kind": 11,
+              "type_name": ".hydracache.client.v2alpha.LockResult",
+              "oneof_index": 0
+            },
+            {
+              "name": "lock_ownership",
+              "number": 105,
+              "label": 1,
+              "kind": 11,
+              "type_name": ".hydracache.client.v2alpha.LockOwnershipResult",
+              "oneof_index": 0
+            }
+          ]
+        },
+        {
+          "name": "LockOwnershipRequest",
+          "fields": [
+            {
+              "name": "key",
+              "number": 1,
+              "label": 1,
+              "kind": 12,
+              "type_name": "",
+              "oneof_index": null
+            }
+          ]
+        },
+        {
+          "name": "LockOwnershipResult",
+          "fields": [
+            {
+              "name": "locked",
+              "number": 1,
+              "label": 1,
+              "kind": 8,
+              "type_name": "",
+              "oneof_index": null
+            },
+            {
+              "name": "fence",
+              "number": 2,
+              "label": 1,
+              "kind": 4,
+              "type_name": "",
+              "oneof_index": null
+            }
+          ]
+        },
+        {
+          "name": "LockResult",
+          "fields": [
+            {
+              "name": "acquired",
+              "number": 1,
+              "label": 1,
+              "kind": 8,
+              "type_name": "",
+              "oneof_index": null
+            },
+            {
+              "name": "fence",
+              "number": 2,
+              "label": 1,
+              "kind": 4,
+              "type_name": "",
+              "oneof_index": null
             }
           ]
         },
@@ -633,6 +744,56 @@
             },
             {
               "name": "ttl_ms",
+              "number": 3,
+              "label": 1,
+              "kind": 4,
+              "type_name": "",
+              "oneof_index": null
+            }
+          ]
+        },
+        {
+          "name": "RemoveIfValueRequest",
+          "fields": [
+            {
+              "name": "key",
+              "number": 1,
+              "label": 1,
+              "kind": 12,
+              "type_name": "",
+              "oneof_index": null
+            },
+            {
+              "name": "expected",
+              "number": 2,
+              "label": 1,
+              "kind": 12,
+              "type_name": "",
+              "oneof_index": null
+            }
+          ]
+        },
+        {
+          "name": "RenewLockRequest",
+          "fields": [
+            {
+              "name": "key",
+              "number": 1,
+              "label": 1,
+              "kind": 12,
+              "type_name": "",
+              "oneof_index": null
+            },
+            {
+              "name": "fence",
+              "number": 2,
+              "label": 1,
+              "kind": 4,
+              "type_name": "",
+              "oneof_index": null
+            },
+            {
+              "name": "lease_ms",
               "number": 3,
               "label": 1,
               "kind": 4,
@@ -959,6 +1120,56 @@
               "label": 3,
               "kind": 11,
               "type_name": ".hydracache.client.v2alpha.NodeEndpoint",
+              "oneof_index": null
+            }
+          ]
+        },
+        {
+          "name": "TryLockRequest",
+          "fields": [
+            {
+              "name": "key",
+              "number": 1,
+              "label": 1,
+              "kind": 12,
+              "type_name": "",
+              "oneof_index": null
+            },
+            {
+              "name": "lease_ms",
+              "number": 2,
+              "label": 1,
+              "kind": 4,
+              "type_name": "",
+              "oneof_index": null
+            },
+            {
+              "name": "wait_ms",
+              "number": 3,
+              "label": 1,
+              "kind": 4,
+              "type_name": "",
+              "oneof_index": null
+            }
+          ]
+        },
+        {
+          "name": "UnlockRequest",
+          "fields": [
+            {
+              "name": "key",
+              "number": 1,
+              "label": 1,
+              "kind": 12,
+              "type_name": "",
+              "oneof_index": null
+            },
+            {
+              "name": "fence",
+              "number": 2,
+              "label": 1,
+              "kind": 4,
+              "type_name": "",
               "oneof_index": null
             }
           ]

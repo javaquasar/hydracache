@@ -16,8 +16,8 @@ use hydracache_client_hc2::wire::invocation_response;
 use hydracache_client_hc2::wire::server_envelope;
 use hydracache_client_hc2::wire::{
     BatchResult, CacheEvent, ClientEnvelope, EventGap, HandshakeAck, InvocationRequest,
-    InvocationResponse, MutationResult, ResponseMeta, ServerEnvelope, SessionHeartbeat,
-    SessionLost, StableErrorCode, SubscriptionAck, ValueResult,
+    InvocationResponse, LockOwnershipResult, LockResult, MutationResult, ResponseMeta,
+    ServerEnvelope, SessionHeartbeat, SessionLost, StableErrorCode, SubscriptionAck, ValueResult,
 };
 use hydracache_client_hc2::{is_supported_hc2_generation, HC2_GENERATION, HC2_MINIMUM_GENERATION};
 use hydracache_client_protocol::{
@@ -564,6 +564,34 @@ fn to_client_request(
             new_value: value.replacement.to_vec(),
             level: LockConsistency::Quorum,
         },
+        invocation_request::Operation::TryLock(value) => ClientRequest::TryLock {
+            ns,
+            key: structured_key(&value.key)?,
+            lease_ms: value.lease_ms,
+            wait_ms: value.wait_ms,
+            level: LockConsistency::Quorum,
+        },
+        invocation_request::Operation::Unlock(value) => ClientRequest::Unlock {
+            ns,
+            key: structured_key(&value.key)?,
+            fence: value.fence,
+        },
+        invocation_request::Operation::RenewLock(value) => ClientRequest::RenewLockLease {
+            ns,
+            key: structured_key(&value.key)?,
+            fence: value.fence,
+            lease_ms: value.lease_ms,
+        },
+        invocation_request::Operation::LockOwnership(value) => ClientRequest::GetLockOwnership {
+            ns,
+            key: structured_key(&value.key)?,
+        },
+        invocation_request::Operation::RemoveIfValue(value) => ClientRequest::RemoveIfValue {
+            ns,
+            key: structured_key(&value.key)?,
+            expected: value.expected.to_vec(),
+            level: LockConsistency::Quorum,
+        },
         invocation_request::Operation::Batch(_) => return Err("nested batch is not allowed"),
     })
 }
@@ -585,6 +613,27 @@ fn from_dispatch_response(response: ClientResponseEnvelope) -> InvocationRespons
         )),
         Ok(ClientResponse::CasMismatch { .. }) => wire_success(Some(
             invocation_response::Result::Mutation(MutationResult { applied: false }),
+        )),
+        Ok(ClientResponse::LockAcquired { fence }) => {
+            wire_success(Some(invocation_response::Result::Lock(LockResult {
+                acquired: true,
+                fence,
+            })))
+        }
+        Ok(ClientResponse::LockBusy) => {
+            wire_success(Some(invocation_response::Result::Lock(LockResult {
+                acquired: false,
+                fence: 0,
+            })))
+        }
+        Ok(ClientResponse::LockReleased | ClientResponse::LockLeaseRenewed) => wire_success(Some(
+            invocation_response::Result::Mutation(MutationResult { applied: true }),
+        )),
+        Ok(ClientResponse::LockOwnership { fence, locked }) => wire_success(Some(
+            invocation_response::Result::LockOwnership(LockOwnershipResult {
+                locked,
+                fence: fence.unwrap_or_default(),
+            }),
         )),
         Ok(_) => wire_error(
             StableErrorCode::StableErrorUnsupported,
@@ -696,6 +745,13 @@ fn mutation_event(invocation: &InvocationRequest) -> Option<(Bytes, Bytes, bool)
         invocation_request::Operation::CompareAndSet(value) => {
             Some((value.key.clone(), value.replacement.clone(), false))
         }
+        invocation_request::Operation::TryLock(_)
+        | invocation_request::Operation::Unlock(_)
+        | invocation_request::Operation::RenewLock(_)
+        | invocation_request::Operation::LockOwnership(_) => None,
+        invocation_request::Operation::RemoveIfValue(value) => {
+            Some((value.key.clone(), Bytes::new(), true))
+        }
         _ => None,
     }
 }
@@ -804,7 +860,10 @@ mod tests {
     use std::path::PathBuf;
     use std::time::Duration;
 
-    use hydracache_client_hc2::wire::{GetRequest, PutRequest, RequestMeta};
+    use hydracache_client_hc2::wire::{
+        GetRequest, LockOwnershipRequest, PutRequest, RemoveIfValueRequest, RequestMeta,
+        TryLockRequest, UnlockRequest,
+    };
     use hydracache_client_hc2::{
         ClientConfig, ErrorCode, GrpcMtlsAdapter, GrpcMtlsConfig, Hc2Client, SubscriptionEvent,
     };
@@ -871,6 +930,101 @@ mod tests {
         assert_eq!(service.state.dispatch_attempts(), 2);
         assert_eq!(service.state.state_mutations(), 1);
         assert_eq!(service.accounting(), Hc2AccountingSnapshot::default());
+    }
+
+    #[test]
+    fn conditional_remove_and_fenced_lock_use_the_shared_dispatch() {
+        let service = service();
+        let invoke = |correlation_id, operation| {
+            dispatch_invocation(
+                &service,
+                "verified-peer",
+                correlation_id,
+                InvocationRequest {
+                    meta: Some(meta()),
+                    operation: Some(operation),
+                },
+            )
+        };
+        invoke(
+            1,
+            invocation_request::Operation::Put(PutRequest {
+                key: Bytes::from_static(b"key"),
+                value: Bytes::from_static(b"value"),
+                ttl_ms: 0,
+            }),
+        );
+        let mismatch = invoke(
+            2,
+            invocation_request::Operation::RemoveIfValue(RemoveIfValueRequest {
+                key: Bytes::from_static(b"key"),
+                expected: Bytes::from_static(b"wrong"),
+            }),
+        );
+        assert!(matches!(
+            mismatch.result,
+            Some(invocation_response::Result::Mutation(MutationResult {
+                applied: false
+            }))
+        ));
+        let removed = invoke(
+            3,
+            invocation_request::Operation::RemoveIfValue(RemoveIfValueRequest {
+                key: Bytes::from_static(b"key"),
+                expected: Bytes::from_static(b"value"),
+            }),
+        );
+        assert!(matches!(
+            removed.result,
+            Some(invocation_response::Result::Mutation(MutationResult {
+                applied: true
+            }))
+        ));
+
+        let acquired = invoke(
+            4,
+            invocation_request::Operation::TryLock(TryLockRequest {
+                key: Bytes::from_static(b"lock"),
+                lease_ms: 10_000,
+                wait_ms: 0,
+            }),
+        );
+        let fence = match acquired.result {
+            Some(invocation_response::Result::Lock(LockResult {
+                acquired: true,
+                fence,
+            })) => fence,
+            other => panic!("expected acquired lock, got {other:?}"),
+        };
+        assert_ne!(fence, 0);
+        let ownership = invoke(
+            5,
+            invocation_request::Operation::LockOwnership(LockOwnershipRequest {
+                key: Bytes::from_static(b"lock"),
+            }),
+        );
+        assert!(matches!(
+            ownership.result,
+            Some(invocation_response::Result::LockOwnership(
+                LockOwnershipResult {
+                    locked: true,
+                    fence: observed,
+                }
+            )) if observed == fence
+        ));
+        let released = invoke(
+            6,
+            invocation_request::Operation::Unlock(UnlockRequest {
+                key: Bytes::from_static(b"lock"),
+                fence,
+            }),
+        );
+        assert!(matches!(
+            released.result,
+            Some(invocation_response::Result::Mutation(MutationResult {
+                applied: true
+            }))
+        ));
     }
 
     #[test]

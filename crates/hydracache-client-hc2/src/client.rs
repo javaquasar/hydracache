@@ -13,14 +13,15 @@ use crate::wire::client_envelope;
 use crate::wire::server_envelope;
 use crate::wire::{
     BatchItem, BatchRequest, Cancel, ClientEnvelope, CompareAndSetRequest, DeleteRequest,
-    GetRequest, Handshake, HandshakeAck, InvocationRequest, InvocationResponse, PutRequest,
-    RequestMeta, ServerEnvelope, SessionClose, SessionHeartbeat, SessionOpen, Subscribe,
-    SubscriptionAck, Unsubscribe,
+    GetRequest, Handshake, HandshakeAck, InvocationRequest, InvocationResponse,
+    LockOwnershipRequest, PutRequest, RemoveIfValueRequest, RenewLockRequest, RequestMeta,
+    ServerEnvelope, SessionClose, SessionHeartbeat, SessionOpen, Subscribe, SubscriptionAck,
+    TryLockRequest, UnlockRequest, Unsubscribe,
 };
 use crate::{
     BatchItemResult, BatchOperation, CacheEvent, CacheValue, Capability, ClientConfig, ClientError,
-    ClientMetricsSnapshot, ErrorCode, MutationResult, NodeEndpoint, RequestOptions, RetryAdvice,
-    SubscriptionEvent, TopologySnapshot, TransportKind,
+    ClientMetricsSnapshot, ErrorCode, LockAcquireResult, LockOwnership, MutationResult,
+    NodeEndpoint, RequestOptions, RetryAdvice, SubscriptionEvent, TopologySnapshot, TransportKind,
 };
 
 struct Metrics {
@@ -358,6 +359,144 @@ impl Hc2Client {
             options,
         )
         .await
+    }
+
+    /// Delete a value only when its current bytes match the expectation.
+    pub async fn remove_if_value(
+        &self,
+        key: Bytes,
+        expected: Bytes,
+        options: Option<RequestOptions>,
+    ) -> Result<MutationResult, ClientError> {
+        validate_key(&key)?;
+        validate_value(&expected)?;
+        self.mutation(
+            invocation(client_envelope_request_meta(
+                &self.handle.runtime,
+                options.as_ref(),
+            )?)
+            .remove_if_value(RemoveIfValueRequest { key, expected }),
+            options,
+        )
+        .await
+    }
+
+    /// Try to acquire one session-owned fenced lock without client-side waiting.
+    pub async fn try_lock(
+        &self,
+        key: Bytes,
+        lease: Duration,
+        options: Option<RequestOptions>,
+    ) -> Result<LockAcquireResult, ClientError> {
+        validate_key(&key)?;
+        let lease_ms = ttl_millis(Some(lease))?;
+        if lease_ms == 0 {
+            return Err(invalid("lock lease must be positive"));
+        }
+        let response = self
+            .invoke(
+                invocation(client_envelope_request_meta(
+                    &self.handle.runtime,
+                    options.as_ref(),
+                )?)
+                .try_lock(TryLockRequest {
+                    key,
+                    lease_ms,
+                    wait_ms: 0,
+                }),
+                options,
+            )
+            .await?;
+        let Some(crate::wire::invocation_response::Result::Lock(result)) = response.result else {
+            return Err(protocol_error("peer omitted the lock result"));
+        };
+        if result.acquired && result.fence == 0 {
+            return Err(protocol_error("peer returned a zero acquired fence"));
+        }
+        Ok(LockAcquireResult {
+            acquired: result.acquired,
+            fence: result.acquired.then_some(result.fence),
+        })
+    }
+
+    /// Release a lock only when the supplied fence still owns it.
+    pub async fn unlock(
+        &self,
+        key: Bytes,
+        fence: u64,
+        options: Option<RequestOptions>,
+    ) -> Result<MutationResult, ClientError> {
+        validate_key(&key)?;
+        if fence == 0 {
+            return Err(invalid("lock fence must be nonzero"));
+        }
+        self.mutation(
+            invocation(client_envelope_request_meta(
+                &self.handle.runtime,
+                options.as_ref(),
+            )?)
+            .unlock(UnlockRequest { key, fence }),
+            options,
+        )
+        .await
+    }
+
+    /// Renew a lock lease only when the supplied fence still owns it.
+    pub async fn renew_lock(
+        &self,
+        key: Bytes,
+        fence: u64,
+        lease: Duration,
+        options: Option<RequestOptions>,
+    ) -> Result<MutationResult, ClientError> {
+        validate_key(&key)?;
+        let lease_ms = ttl_millis(Some(lease))?;
+        if fence == 0 || lease_ms == 0 {
+            return Err(invalid("lock fence and lease must be nonzero"));
+        }
+        self.mutation(
+            invocation(client_envelope_request_meta(
+                &self.handle.runtime,
+                options.as_ref(),
+            )?)
+            .renew_lock(RenewLockRequest {
+                key,
+                fence,
+                lease_ms,
+            }),
+            options,
+        )
+        .await
+    }
+
+    /// Read current lock ownership without acquiring it.
+    pub async fn lock_ownership(
+        &self,
+        key: Bytes,
+        options: Option<RequestOptions>,
+    ) -> Result<LockOwnership, ClientError> {
+        validate_key(&key)?;
+        let response = self
+            .invoke(
+                invocation(client_envelope_request_meta(
+                    &self.handle.runtime,
+                    options.as_ref(),
+                )?)
+                .lock_ownership(LockOwnershipRequest { key }),
+                options,
+            )
+            .await?;
+        let Some(crate::wire::invocation_response::Result::LockOwnership(result)) = response.result
+        else {
+            return Err(protocol_error("peer omitted lock ownership"));
+        };
+        if result.locked && result.fence == 0 {
+            return Err(protocol_error("peer returned a zero ownership fence"));
+        }
+        Ok(LockOwnership {
+            locked: result.locked,
+            fence: result.locked.then_some(result.fence),
+        })
     }
 
     /// Execute an ordered bounded batch.
@@ -1283,6 +1422,30 @@ impl InvocationBuilder {
     }
     fn compare_and_set(mut self, value: CompareAndSetRequest) -> InvocationRequest {
         self.0.operation = Some(crate::wire::invocation_request::Operation::CompareAndSet(
+            value,
+        ));
+        self.0
+    }
+    fn remove_if_value(mut self, value: RemoveIfValueRequest) -> InvocationRequest {
+        self.0.operation = Some(crate::wire::invocation_request::Operation::RemoveIfValue(
+            value,
+        ));
+        self.0
+    }
+    fn try_lock(mut self, value: TryLockRequest) -> InvocationRequest {
+        self.0.operation = Some(crate::wire::invocation_request::Operation::TryLock(value));
+        self.0
+    }
+    fn unlock(mut self, value: UnlockRequest) -> InvocationRequest {
+        self.0.operation = Some(crate::wire::invocation_request::Operation::Unlock(value));
+        self.0
+    }
+    fn renew_lock(mut self, value: RenewLockRequest) -> InvocationRequest {
+        self.0.operation = Some(crate::wire::invocation_request::Operation::RenewLock(value));
+        self.0
+    }
+    fn lock_ownership(mut self, value: LockOwnershipRequest) -> InvocationRequest {
+        self.0.operation = Some(crate::wire::invocation_request::Operation::LockOwnership(
             value,
         ));
         self.0

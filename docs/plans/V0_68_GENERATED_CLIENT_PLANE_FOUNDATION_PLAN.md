@@ -413,6 +413,19 @@ remove, listener push/reconnect, lock session loss, TLS/auth, graceful close, bo
 and generated-code drift. Artifact publication remains gated until API compatibility tooling and
 license/provenance checks pass.
 
+**Implementation update (2026-08-11).** The reactor under `sdks/java` now
+contains the production-preview HC/2 client and a separate
+`hydracache-hazelcast-facade` artifact in HydraCache-owned packages. The facade
+provides the narrow get/put/exact-replace/conditional-remove/listener and
+single-key fenced-lock subset, uses explicit codecs and versioned physical-key
+namespaces, rejects reentrancy, and ships a machine-readable unsupported
+surface. The authoritative HC/2 schema gained only the missing conditional
+remove and lock operations; the daemon maps them to the existing quorum/fence
+`ClientDispatch` instead of implementing a second lock service. Exact scope,
+failure semantics, and reproduction commands are recorded in
+`docs/architecture/HC2_HAZELCAST_FACADE.md`. Clean package consumers and the
+Java 17/21 matrix remain the stage-4 closure item.
+
 ## W9. Rust and Python production HC/2 SDKs
 
 Migrate the Rust reference client to the shared connection/invocation model. Implement a real

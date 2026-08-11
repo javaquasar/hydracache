@@ -248,6 +248,20 @@ pub struct MutationResult {
     pub applied: bool,
 }
 
+/// Result of a single-key fenced-lock acquisition attempt.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct LockAcquireResult {
+    pub acquired: bool,
+    pub fence: Option<u64>,
+}
+
+/// Current single-key fenced-lock ownership metadata.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct LockOwnership {
+    pub locked: bool,
+    pub fence: Option<u64>,
+}
+
 /// Typed batch operation.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum BatchOperation {
