@@ -12,7 +12,7 @@ use sha2::{Digest, Sha256};
 
 const CRATE: &str = "hydracache-client-plane-spike";
 const CONTRACT_CRATE: &str = "hydracache-client-hc2";
-const FIXTURE: &str = "crates/hydracache-client-plane-spike/python-fixture";
+const FIXTURE: &str = "sdks/python/hydracache-client-hc2";
 const GENERATED_PACKAGE: &str = "src/hydracache_hc2_generated";
 const WHEEL_MANIFEST: &str = "wheelhouse.lock.json";
 const REQUIREMENTS: &str = "requirements.lock";
@@ -470,7 +470,7 @@ fn package_init(descriptor: &FileDescriptorSet) -> Vec<u8> {
         .collect::<Vec<_>>();
     modules.sort_by(|left, right| left.0.cmp(&right.0));
     let mut source = format!(
-        "\"\"\"Generated non-production HC/2 Python contract.\"\"\"\n\nGENERATOR_VERSION = \"{GENERATOR_VERSION}\"\n\n"
+        "\"\"\"Generated internal wire types for the HydraCache HC/2 Python SDK.\"\"\"\n\nGENERATOR_VERSION = \"{GENERATOR_VERSION}\"\n\n"
     );
     for (module, has_service) in &modules {
         source.push_str(&format!("from . import {module}\n"));

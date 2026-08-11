@@ -1,4 +1,4 @@
-"""Generated non-production HC/2 Python contract."""
+"""Generated internal wire types for the HydraCache HC/2 Python SDK."""
 
 GENERATOR_VERSION = "hydracache-hc2-python-1"
 

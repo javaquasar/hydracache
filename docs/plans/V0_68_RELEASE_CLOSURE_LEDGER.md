@@ -21,7 +21,7 @@ SDK, facade, package, or exact-candidate receipt.
 | W8 production Java HC/2 SDK | H16 real Java 17 client and process interop | public API/package compatibility gate and clean JAR consumer | implemented, packaging pending |
 | W8 narrow Hazelcast-shaped Java facade | operation contract exists outside the production Java module | add a separate HydraCache-owned IMap/FencedLock-shaped facade with explicit unsupported surface and tests | missing |
 | W9 production Rust HC/2 SDK | H17 real client, reconnect, process, package and HC/1 coexistence gates | public API/package compatibility gate and clean `.crate` consumer | implemented, packaging pending |
-| W9 production Python HC/2 SDK | H15 hermetic generated Python fixture only | add installable asyncio network SDK, cancellation/reconnect/listener repair, tests, and wheel smoke | missing |
+| W9 production Python HC/2 SDK | H15 hermetic generated Python supply chain plus `hydracache_hc2` asyncio runtime | add clean wheel/install compatibility gate in stage 4 | implemented, packaging pending |
 | W10-W11 security, bounds, observability, faults and compatibility | H10-H14, H18-H22 hosted lanes | retain exact receipts; H22 fixed-host soak remains operationally outstanding | implemented except fixed-host receipt |
 | W12 release governance and documentation | generic governance and H22 CI contract exist | add `0.68.toml`, cross-SDK conformance commands, compatibility/release docs, and exact-candidate receipts | missing |
 

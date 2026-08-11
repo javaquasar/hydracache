@@ -1,0 +1,30 @@
+[build-system]
+requires = ["hatchling>=1.25"]
+build-backend = "hatchling.build"
+
+[project]
+name = "hydracache-client-hc2"
+version = "0.68.0a1"
+description = "Async Python client for the generated HydraCache HC/2 client plane."
+requires-python = ">=3.10"
+readme = "README.md"
+license = "Apache-2.0"
+authors = [{ name = "HydraCache Contributors" }]
+keywords = ["cache", "hydracache", "asyncio", "grpc"]
+dependencies = [
+  "grpcio>=1.76,<2",
+  "protobuf>=6.33.4,<7",
+  "typing-extensions>=4.15,<5; python_version < '3.11'",
+]
+
+[project.urls]
+Homepage = "https://github.com/javaquasar/hydracache"
+Repository = "https://github.com/javaquasar/hydracache"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/hydracache_hc2", "src/hydracache_hc2_generated"]
+
+[tool.hydracache]
+protocol = "HC/2"
+protocol-generation = 6
+api-stability = "preview"

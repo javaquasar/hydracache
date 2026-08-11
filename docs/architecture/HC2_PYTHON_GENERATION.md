@@ -2,11 +2,13 @@
 
 ## Status and scope
 
-H15 adds independently executable Python message and gRPC fixture evidence to
-the non-production HC/2 spike. It does not publish a Python SDK, expose a stable
-API, enable the server, or complete H01/H16/H17. The authoritative schema
-remains the reviewed files under `crates/hydracache-client-hc2/proto` and the
-isolated W0 spike envelope under `crates/hydracache-client-plane-spike/proto`.
+H15 originally added independently executable Python message and gRPC fixture
+evidence. The fixture has now been promoted, without changing its authoritative
+schema or offline wheelhouse, into the preview production SDK at
+`sdks/python/hydracache-client-hc2`. The generated package remains internal;
+`hydracache_hc2` supplies the bounded asyncio network API. The authoritative
+schema remains the reviewed files under `crates/hydracache-client-hc2/proto`
+and the isolated W0 spike envelope under `crates/hydracache-client-plane-spike/proto`.
 
 ## Reproducible generation
 
@@ -28,7 +30,7 @@ generated diff.
 
 ## Offline runtime supply chain
 
-The fixture does not invoke an index or perform a best-effort install. Its
+The SDK validation does not invoke an index or perform a best-effort install. Its
 wheelhouse contains exact unmodified wheels for:
 
 - `protobuf==6.33.4`;
@@ -71,6 +73,6 @@ itself is forcibly local and hash-bound.
 Dependency refreshes must be isolated and review PyPI release provenance,
 license, supported ABI wheels, digests, generated diffs, golden behavior, and
 both required platforms. Never replace a missing wheel with a source build or
-relax `--require-hashes`. Removing the Python fixture is safe for production
-because no daemon or published SDK depends on it; Rust/Java generation remains
-available independently.
+relax `--require-hashes`. The generated package may not be removed independently
+of the SDK. Runtime API changes require the cross-SDK conformance and package
+compatibility gates; Rust/Java generation remains available independently.
