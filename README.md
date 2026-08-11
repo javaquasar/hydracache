@@ -13,6 +13,7 @@ The library is intentionally application-facing. It does not try to parse SQL, i
 
 ## Start Here
 
+- Public documentation: <https://javaquasar.github.io/hydracache/index.html>
 - Public docs source: [`docs-site`](docs-site/)
 - Local preview: `mdbook serve docs-site --hostname 127.0.0.1 --port 3000`
 - GitHub repository: <https://github.com/javaquasar/hydracache>
@@ -21,11 +22,11 @@ The library is intentionally application-facing. It does not try to parse SQL, i
 
 Recommended reading path:
 
-1. [`Getting Started`](docs-site/src/getting-started.md)
-2. [`Architecture`](docs-site/src/architecture.md)
-3. [`Decision Guide`](docs-site/src/decision-guide.md)
-4. [`Local Cache`](docs-site/src/guides/local-cache.md)
-5. [`Database Query Caching`](docs-site/src/guides/database-query-caching.md)
+1. [`Getting Started`](https://javaquasar.github.io/hydracache/getting-started.html)
+2. [`Architecture`](https://javaquasar.github.io/hydracache/architecture.html)
+3. [`Decision Guide`](https://javaquasar.github.io/hydracache/decision-guide.html)
+4. [`Local Cache`](https://javaquasar.github.io/hydracache/guides/local-cache.html)
+5. [`Database Query Caching`](https://javaquasar.github.io/hydracache/guides/database-query-caching.html)
 
 ## Quick Example
 
@@ -80,7 +81,7 @@ async fn example() -> hydracache::CacheResult<()> {
 - In-process invalidation bus and embedded client/member cluster vocabulary.
 - Optional chitchat, raft, and Axum peer-fetch cluster adapter crates.
 
-For crate selection, see [`Crate Map`](docs-site/src/reference/crate-map.md).
+For crate selection, see [`Crate Map`](https://javaquasar.github.io/hydracache/reference/crate-map.html).
 
 ## Quality Gate
 
@@ -100,7 +101,7 @@ cargo check --manifest-path docs-site/examples/Cargo.toml --all-targets --locked
 mdbook build docs-site
 ```
 
-See [`Quality Gate`](docs-site/src/reference/quality-gate.md) and [`Publishing Docs`](docs-site/src/reference/publishing-docs.md).
+See [`Quality Gate`](https://javaquasar.github.io/hydracache/reference/quality-gate.html) and [`Publishing Docs`](https://javaquasar.github.io/hydracache/reference/publishing-docs.html).
 
 ## Project Notes
 
