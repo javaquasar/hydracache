@@ -1,36 +1,44 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="920" height="280" viewBox="0 0 920 280" role="img" aria-labelledby="title desc">
+<svg xmlns="http://www.w3.org/2000/svg" width="920" height="330" viewBox="0 0 920 330" role="img" aria-labelledby="title desc">
   <title id="title">HydraCache invalidation flow</title>
-  <desc id="desc">After a write commits, the application invalidates keys or tags locally and optionally publishes invalidation intent to peer local caches.</desc>
+  <desc id="desc">After a write commits, the application invalidates keys or tags locally. The same invalidation intent can optionally be published to peer local caches, but cached values are never sent over the bus.</desc>
   <defs>
     <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
       <path d="M0,0 L0,6 L9,3 z" fill="#55606d"/>
     </marker>
   </defs>
-  <rect width="920" height="280" rx="10" fill="#f8fff8"/>
+  <rect width="920" height="330" rx="10" fill="#f8fff8"/>
+
   <g fill="#ffffff" stroke="#b8cbb8" stroke-width="2">
-    <rect x="38" y="76" width="168" height="74" rx="8"/>
-    <rect x="252" y="76" width="188" height="74" rx="8"/>
-    <rect x="504" y="40" width="170" height="74" rx="8"/>
-    <rect x="504" y="156" width="170" height="74" rx="8"/>
-    <rect x="722" y="156" width="158" height="74" rx="8"/>
+    <rect x="38" y="128" width="164" height="74" rx="8"/>
+    <rect x="252" y="128" width="188" height="74" rx="8"/>
+    <rect x="536" y="58" width="180" height="74" rx="8"/>
+    <rect x="536" y="202" width="180" height="74" rx="8"/>
+    <rect x="754" y="202" width="132" height="74" rx="8"/>
   </g>
+
   <g font-family="Arial, sans-serif" fill="#252525" text-anchor="middle">
-    <text x="122" y="106" font-size="15" font-weight="700">Write path</text>
-    <text x="122" y="128" font-size="14">after commit</text>
-    <text x="346" y="102" font-size="15" font-weight="700">invalidate key,</text>
-    <text x="346" y="124" font-size="14">tag, or flush</text>
-    <text x="589" y="70" font-size="15" font-weight="700">Local tag</text>
-    <text x="589" y="92" font-size="14">index removes copies</text>
-    <text x="589" y="186" font-size="15" font-weight="700">Optional</text>
-    <text x="589" y="208" font-size="14">invalidation bus</text>
-    <text x="801" y="186" font-size="15" font-weight="700">Peer local</text>
-    <text x="801" y="208" font-size="14">cache removes copies</text>
+    <text x="120" y="158" font-size="15" font-weight="700">Write path</text>
+    <text x="120" y="180" font-size="14">after commit</text>
+
+    <text x="346" y="154" font-size="15" font-weight="700">Invalidate key,</text>
+    <text x="346" y="176" font-size="14">tag, or flush</text>
+
+    <text x="626" y="88" font-size="15" font-weight="700">Local tag index</text>
+    <text x="626" y="110" font-size="14">removes copies</text>
+
+    <text x="626" y="232" font-size="15" font-weight="700">Optional bus</text>
+    <text x="626" y="254" font-size="14">publishes intent</text>
+
+    <text x="820" y="232" font-size="15" font-weight="700">Peer local</text>
+    <text x="820" y="254" font-size="14">removes copies</text>
   </g>
+
   <g stroke="#55606d" stroke-width="2.2" fill="none" marker-end="url(#arrow)">
-    <path d="M206 113 H247"/>
-    <path d="M440 103 C468 88 482 80 499 76"/>
-    <path d="M440 124 C468 152 482 172 499 190"/>
-    <path d="M674 193 H717"/>
+    <path d="M202 165 H247"/>
+    <path d="M440 165 H486 V95 H531"/>
+    <path d="M486 165 V239 H531"/>
+    <path d="M716 239 H749"/>
   </g>
-  <text x="458" y="212" font-family="Arial, sans-serif" font-size="13" fill="#466b46">intent only, never values</text>
+
+  <text x="626" y="302" font-family="Arial, sans-serif" font-size="13" fill="#466b46" text-anchor="middle">intent only, never cached values</text>
 </svg>
