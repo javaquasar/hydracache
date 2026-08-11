@@ -22,7 +22,7 @@ pub fn run(args: Vec<String>) -> Result<(), Box<dyn Error>> {
     client_plane_compat::check_at_root(&root, false, false)?;
     client_plane_fault::check_at_root(&root, false)?;
     println!(
-        "client-plane-spike-check: OK (transport spikes + deterministic fault replay + native Rust/Java/Python SDK + retained compatibility baseline)"
+        "client-plane-spike-check: OK (production daemon + transport spikes + deterministic fault replay + native Rust/Java/Python SDK + retained compatibility baseline)"
     );
     Ok(())
 }
@@ -37,7 +37,7 @@ pub fn run_docker(args: Vec<String>) -> Result<(), Box<dyn Error>> {
     client_plane_python::check_at_root(&root)?;
     client_plane_fault::check_at_root(&root, false)?;
     println!(
-        "client-plane-docker-interop-check: OK (Rust tests + Java fixture/SDK consumer + offline Python + retained fault replay)"
+        "client-plane-docker-interop-check: OK (production daemon + Rust tests + Java fixture/SDK consumer + offline Python + retained fault replay)"
     );
     Ok(())
 }
@@ -58,6 +58,36 @@ fn check_rust_and_fixture(root: &Path) -> Result<(), Box<dyn Error>> {
             &target_dir,
         ],
         "Rust HC/2 spike tests",
+    )?;
+    run_checked(
+        root,
+        "cargo",
+        &[
+            "test",
+            "--locked",
+            "-p",
+            "hydracache-server",
+            "--lib",
+            "hc2::tests",
+            "--target-dir",
+            &target_dir,
+        ],
+        "production HC/2 listener unit/socket tests",
+    )?;
+    run_checked(
+        root,
+        "cargo",
+        &[
+            "test",
+            "--locked",
+            "-p",
+            "hydracache-server",
+            "--test",
+            "hc2_daemon_process",
+            "--target-dir",
+            &target_dir,
+        ],
+        "production HC/2 daemon process tests",
     )?;
     run_checked(
         root,

@@ -112,6 +112,29 @@ pub struct ClientApiConfig {
     pub limits: ClientSurfaceLimits,
 }
 
+/// Off-by-default production HC/2 gRPC client-plane policy.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct Hc2ClientPlaneConfig {
+    /// Whether the mandatory-mTLS HC/2 listener is enabled.
+    pub enabled: bool,
+    /// Dedicated HC/2 listen address.
+    pub listen_addr: SocketAddr,
+    /// Stable cluster identity returned by the HC/2 handshake.
+    pub cluster_id: String,
+}
+
+impl Default for Hc2ClientPlaneConfig {
+    fn default() -> Self {
+        Self {
+            enabled: false,
+            listen_addr: "127.0.0.1:9443"
+                .parse()
+                .expect("default HC/2 listen address is valid"),
+            cluster_id: "hydracache-local".to_owned(),
+        }
+    }
+}
+
 /// Internal operator/admin HTTP policy.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub struct AdminApiConfig {
@@ -196,6 +219,8 @@ pub struct ServerConfig {
     pub backup: BackupConfig,
     /// External client API policy.
     pub client_api: ClientApiConfig,
+    /// Optional production HC/2 gRPC client plane.
+    pub hc2_client_plane: Hc2ClientPlaneConfig,
     /// Internal operator/admin HTTP policy.
     pub admin_api: AdminApiConfig,
     /// Optional Redis RESP edge facade policy.
@@ -228,6 +253,7 @@ impl Default for ServerConfig {
             cluster_auth: ClusterAuthConfig::default(),
             backup: BackupConfig::default(),
             client_api: ClientApiConfig::default(),
+            hc2_client_plane: Hc2ClientPlaneConfig::default(),
             admin_api: AdminApiConfig::default(),
             redis_api: RedisApiConfig::default(),
             raft_compaction_enabled: false,
@@ -335,6 +361,17 @@ impl ServerConfig {
         if env::var("HYDRACACHE_CLIENT_API_ENABLED").as_deref() == Ok("true") {
             config.client_api.enabled = true;
         }
+        if env::var("HYDRACACHE_HC2_ENABLED").as_deref() == Ok("true") {
+            config.hc2_client_plane.enabled = true;
+        }
+        if let Ok(listen) = env::var("HYDRACACHE_HC2_ADDR") {
+            config.hc2_client_plane.listen_addr = listen
+                .parse()
+                .map_err(|_| ServerConfigError::InvalidAddress(listen))?;
+        }
+        if let Ok(cluster_id) = env::var("HYDRACACHE_HC2_CLUSTER_ID") {
+            config.hc2_client_plane.cluster_id = cluster_id;
+        }
         if let Ok(enabled) = env::var("HYDRACACHE_ADMIN_API_ENABLED") {
             config.admin_api.enabled = enabled != "false";
         }
@@ -433,6 +470,27 @@ impl ServerConfig {
                 .validate()
                 .map_err(|error| ServerConfigError::InvalidClientApi(error.to_string()))?;
         }
+        if self.hc2_client_plane.enabled {
+            if !self.tls.enabled {
+                return Err(ServerConfigError::Hc2RequiresMutualTls);
+            }
+            if self.hc2_client_plane.cluster_id.trim().is_empty() {
+                return Err(ServerConfigError::InvalidHc2ClusterId);
+            }
+            for (address, surface) in [
+                (self.listen_addr, "listen_addr"),
+                (self.cluster_addr, "cluster_addr"),
+                (self.admin_api.listen_addr, "admin_api.listen_addr"),
+                (self.redis_api.listen_addr, "redis_api.listen_addr"),
+            ] {
+                if self.hc2_client_plane.listen_addr == address
+                    && (surface != "admin_api.listen_addr" || self.admin_api.enabled)
+                    && (surface != "redis_api.listen_addr" || self.redis_api.enabled)
+                {
+                    return Err(ServerConfigError::Hc2AddressConflicts { surface });
+                }
+            }
+        }
         if self.admin_api.enabled && self.admin_api.listen_addr == self.listen_addr {
             return Err(ServerConfigError::AdminAddressConflicts);
         }
@@ -501,6 +559,8 @@ impl ServerConfig {
             || !is_loopback(self.cluster_addr.ip())
             || (self.admin_api.enabled && !is_loopback(self.admin_api.listen_addr.ip()))
             || (self.redis_api.enabled && !is_loopback(self.redis_api.listen_addr.ip()))
+            || (self.hc2_client_plane.enabled
+                && !is_loopback(self.hc2_client_plane.listen_addr.ip()))
     }
 }
 
@@ -631,6 +691,18 @@ pub enum ServerConfigError {
     /// Native rediss:// requires server TLS material.
     #[error("redis_api.rediss_enabled requires tls.enabled with certificate/key material")]
     RedisRedissRequiresTls,
+    /// HC/2 never exposes a plaintext production constructor/listener.
+    #[error("hc2_client_plane.enabled requires tls.enabled and mutual TLS material")]
+    Hc2RequiresMutualTls,
+    /// Cluster identity must be non-empty when HC/2 is enabled.
+    #[error("hc2_client_plane.cluster_id must be non-empty")]
+    InvalidHc2ClusterId,
+    /// HC/2 must own an independently bindable port.
+    #[error("hc2_client_plane.listen_addr must differ from {surface}")]
+    Hc2AddressConflicts {
+        /// Conflicting surface.
+        surface: &'static str,
+    },
 }
 
 fn parse_role(value: &str) -> Result<ServerRole, ServerConfigError> {

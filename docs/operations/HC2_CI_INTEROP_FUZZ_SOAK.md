@@ -1,9 +1,10 @@
 # HC/2 CI, Interoperability, Fuzz, and Soak Runbook
 
-Status: H22 implemented for the non-production HC/2 client-plane foundation.
+Status: H22 implemented for the HC/2 foundation and H01 production-listener candidate.
 This gate protects correctness and compatibility. It does **not** establish an
 absolute latency, throughput, capacity, availability, or production-readiness
-claim. H01 still owns production listener integration.
+claim. H01/H03 still own adapter acceptance and H01/H21 own the production
+exporter mount.
 
 ## Gate contract
 
@@ -16,7 +17,7 @@ toolchains, action commits, or image digests diverge.
 | Lane              | Trigger                                        | Runner                                   |  Limit | Purpose                                                                                                                                     |
 | ----------------- | ---------------------------------------------- | ---------------------------------------- | -----: | ------------------------------------------------------------------------------------------------------------------------------------------- |
 | `linux-required`  | pull request, main push, tag, schedule, manual | GitHub `ubuntu-24.04`                    | 30 min | format, schema/workflow contract, clean generation, Rust/Java/Python lifecycle and golden evidence, clippy                                  |
-| `docker-interop`  | pull request, main push, tag, schedule, manual | GitHub `ubuntu-24.04` + pinned container | 45 min | Rust tests plus real Java fixture/installed SDK consumer, offline Python, and retained fault replay in one reproducible process environment |
+| `docker-interop`  | pull request, main push, tag, schedule, manual | GitHub `ubuntu-24.04` + pinned container | 45 min | production daemon mTLS/coexistence/startup/drain tests plus Rust spike tests, real Java fixture/installed SDK consumer, offline Python, and retained fault replay in one reproducible process environment |
 | `fuzz`            | tag, schedule, opted-in manual                 | GitHub `ubuntu-24.04`                    | 20 min | deterministic-seed, time-boxed mutation of generated HC/2 envelopes, transport codecs, and fault receipts                                   |
 | `fixed-host-soak` | tag, enabled schedule, opted-in manual         | labelled self-hosted Linux host          | 90 min | twelve bounded lifecycle iterations with retained host/toolchain metadata                                                                   |
 
@@ -38,7 +39,7 @@ Run the required host-native proof:
 cargo fmt --all -- --check
 cargo run -p xtask --locked -- client-plane-ci-check
 cargo run -p xtask --locked -- client-plane-spike-check
-cargo clippy -p hydracache-client-plane-spike -p hydracache-client-hc2 -p xtask --all-targets --locked -- -D warnings
+cargo clippy -p hydracache-client-plane-spike -p hydracache-client-hc2 -p hydracache-server -p xtask --all-targets --locked -- -D warnings
 ```
 
 Run the digest-pinned Docker process-interoperability proof:

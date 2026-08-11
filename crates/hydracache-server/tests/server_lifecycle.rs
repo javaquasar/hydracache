@@ -13,8 +13,8 @@ use hydracache::CacheOptions;
 use hydracache_redis_compat::{RedisCommand, RespValue};
 use hydracache_server::{
     serve_redis_listener, AdminApiConfig, BackupConfig, ClientApiConfig, ClusterAuthConfig,
-    ClusterStartMode, RedisApiConfig, RedisTcpError, ServerConfig, ServerConfigError, ServerRole,
-    ServerRuntime, ServerState, TlsConfig,
+    ClusterStartMode, Hc2ClientPlaneConfig, RedisApiConfig, RedisTcpError, ServerConfig,
+    ServerConfigError, ServerRole, ServerRuntime, ServerState, TlsConfig,
 };
 use rustls::pki_types::{pem::PemObject, CertificateDer, ServerName};
 use rustls::RootCertStore;
@@ -85,6 +85,9 @@ const CONFIG_ENV_VARS: &[&str] = &[
     "HYDRACACHE_BACKUP_ENABLED",
     "HYDRACACHE_BACKUP_LOCATION",
     "HYDRACACHE_CLIENT_API_ENABLED",
+    "HYDRACACHE_HC2_ENABLED",
+    "HYDRACACHE_HC2_ADDR",
+    "HYDRACACHE_HC2_CLUSTER_ID",
     "HYDRACACHE_ADMIN_API_ENABLED",
     "HYDRACACHE_ADMIN_ADDR",
     "HYDRACACHE_REDIS_API_ENABLED",
@@ -527,6 +530,75 @@ fn redis_api_addr_conflicting_with_client_or_admin_is_rejected_loud() {
             surface: "admin_api.listen_addr"
         })
     ));
+}
+
+#[test]
+fn hc2_is_off_by_default_requires_mtls_and_rejects_every_port_conflict() {
+    assert!(!ServerConfig::default().hc2_client_plane.enabled);
+
+    let mut plaintext = member_config();
+    plaintext.hc2_client_plane.enabled = true;
+    assert!(matches!(
+        plaintext.validate(),
+        Err(ServerConfigError::Hc2RequiresMutualTls)
+    ));
+
+    let mut enabled = member_config();
+    enabled.tls = TlsConfig {
+        enabled: true,
+        cert_path: Some("server.pem".into()),
+        key_path: Some("server.key".into()),
+        ca_path: Some("clients.pem".into()),
+        acknowledge_insecure: false,
+    };
+    enabled.hc2_client_plane = Hc2ClientPlaneConfig {
+        enabled: true,
+        listen_addr: "127.0.0.1:19443".parse().unwrap(),
+        cluster_id: "cluster-a".to_owned(),
+    };
+    assert!(enabled.validate().is_ok());
+
+    for (address, surface) in [
+        (enabled.listen_addr, "listen_addr"),
+        (enabled.cluster_addr, "cluster_addr"),
+        (enabled.admin_api.listen_addr, "admin_api.listen_addr"),
+    ] {
+        let mut conflict = enabled.clone();
+        conflict.hc2_client_plane.listen_addr = address;
+        assert!(matches!(
+            conflict.validate(),
+            Err(ServerConfigError::Hc2AddressConflicts { surface: actual }) if actual == surface
+        ));
+    }
+    let mut redis_conflict = enabled;
+    redis_conflict.redis_api.enabled = true;
+    redis_conflict.hc2_client_plane.listen_addr = redis_conflict.redis_api.listen_addr;
+    assert!(matches!(
+        redis_conflict.validate(),
+        Err(ServerConfigError::Hc2AddressConflicts {
+            surface: "redis_api.listen_addr"
+        })
+    ));
+}
+
+#[test]
+fn hc2_environment_is_explicit_and_validated() {
+    let _guard = ConfigEnvGuard::new(&[
+        ("HYDRACACHE_HC2_ENABLED", "true"),
+        ("HYDRACACHE_HC2_ADDR", "127.0.0.1:19444"),
+        ("HYDRACACHE_HC2_CLUSTER_ID", "cluster-env"),
+        ("HYDRACACHE_TLS_ENABLED", "true"),
+        ("HYDRACACHE_TLS_CERT_PATH", "server.pem"),
+        ("HYDRACACHE_TLS_KEY_PATH", "server.key"),
+        ("HYDRACACHE_TLS_CA_PATH", "clients.pem"),
+    ]);
+    let config = ServerConfig::from_env().unwrap();
+    assert!(config.hc2_client_plane.enabled);
+    assert_eq!(
+        config.hc2_client_plane.listen_addr,
+        "127.0.0.1:19444".parse().unwrap()
+    );
+    assert_eq!(config.hc2_client_plane.cluster_id, "cluster-env");
 }
 
 #[test]

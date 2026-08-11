@@ -249,7 +249,7 @@ pub struct ServerRuntime {
     accepting: bool,
     flushed: bool,
     client_surface: Option<ClientSurfaceRuntime>,
-    redis_client_state: Option<Arc<hydracache_client_transport_axum::ClientSurfaceState>>,
+    client_dispatch_state: Option<Arc<hydracache_client_transport_axum::ClientSurfaceState>>,
     redis_listener_config: Option<RedisListenerConfig>,
     redis_surface: Option<RedisSurfaceRuntime>,
     cluster_status: Arc<dyn ClusterStatusProvider>,
@@ -291,7 +291,7 @@ impl ServerRuntime {
         } else {
             None
         };
-        let redis_client_state = if config.redis_api.enabled {
+        let client_dispatch_state = if config.redis_api.enabled || config.hc2_client_plane.enabled {
             Some(match &client_surface {
                 Some(surface) => surface.state(),
                 None => Arc::new(
@@ -324,7 +324,7 @@ impl ServerRuntime {
             accepting: false,
             flushed: false,
             client_surface,
-            redis_client_state,
+            client_dispatch_state,
             redis_listener_config,
             redis_surface,
             cluster_status,
@@ -491,7 +491,7 @@ impl ServerRuntime {
 
     /// Build a Redis RESP executor using this runtime's shared client-surface state.
     pub fn redis_resp_server(&self) -> Result<Option<RedisRespServer>, RedisServeError> {
-        let Some(state) = &self.redis_client_state else {
+        let Some(state) = &self.client_dispatch_state else {
             return Ok(None);
         };
         let Some(config) = &self.redis_listener_config else {
@@ -506,6 +506,16 @@ impl ServerRuntime {
             return Ok(None);
         }
         RedisTlsAcceptor::from_tls_config(&self.config.tls).map(Some)
+    }
+
+    /// Return the shared verified-dispatch state used by HC/1, RESP, and HC/2.
+    pub fn client_dispatch_state(
+        &self,
+    ) -> Option<Arc<hydracache_client_transport_axum::ClientSurfaceState>> {
+        self.client_surface
+            .as_ref()
+            .map(ClientSurfaceRuntime::state)
+            .or_else(|| self.client_dispatch_state.as_ref().map(Arc::clone))
     }
 
     /// Stop accepting new work and enter the draining state.

@@ -81,7 +81,7 @@ jobs:
           PIP_DISABLE_PIP_VERSION_CHECK: "1"
         run: cargo run -p xtask --locked -- client-plane-spike-check
       - name: Clippy the HC/2 evidence surface
-        run: cargo clippy -p hydracache-client-plane-spike -p hydracache-client-hc2 -p xtask --all-targets --locked -- -D warnings
+        run: cargo clippy -p hydracache-client-plane-spike -p hydracache-client-hc2 -p hydracache-server -p xtask --all-targets --locked -- -D warnings
       - name: Emit Linux receipt
         run: cargo run -p xtask --locked -- client-plane-ci-receipt --lane linux-required --output target/hc2-ci/linux-required.receipt.json
       - name: Upload Linux receipt
