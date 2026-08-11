@@ -34,8 +34,10 @@ The core idea is simple: a cache key identifies one value, and tags describe whi
 | Cache one local value or loader | [Local Cache](guides/local-cache.md) |
 | Reuse one typed namespace across call sites | [Typed Cache](guides/typed-cache.md) |
 | Cache ordinary async functions | [Cacheable Functions](guides/cacheable-functions.md) |
+| Use function and entity macros | [Macros](guides/macros.md) |
 | Cache repository or query results | [Database Query Caching](guides/database-query-caching.md) |
 | Pick SQLx, Diesel, or SeaORM integration | [SQLx](guides/sqlx-adapter.md), [Diesel](guides/diesel-adapter.md), [SeaORM](guides/seaorm-adapter.md) |
+| Expose a Redis-compatible RESP edge | [Redis API](guides/redis-api.md) |
 | Review production readiness | [Production Checklist](production-checklist.md) |
 | Avoid common cache mistakes | [Anti-patterns](anti-patterns.md) |
 
@@ -49,7 +51,8 @@ If you are new to HydraCache, read these pages in order:
 4. [Production Checklist](production-checklist.md)
 5. [Keys and Tags](concepts/keys-and-tags.md)
 6. [Local Cache](guides/local-cache.md)
-7. [Database Query Caching](guides/database-query-caching.md)
+7. [Macros](guides/macros.md)
+8. [Database Query Caching](guides/database-query-caching.md)
 
 ## Concepts vs Guides
 

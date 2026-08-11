@@ -25,6 +25,8 @@ HydraCache keeps adapters in separate crates so applications can opt into only t
 | `hydracache-sqlx` | SQLx adapter helpers. |
 | `hydracache-diesel` | Diesel adapter helpers. |
 | `hydracache-seaorm` | SeaORM adapter helpers. |
+| `hydracache-redis-compat` | Optional Redis RESP compatibility facade primitives. |
+| `hydracache-server` | Standalone server that can expose the optional Redis RESP listener. |
 
 ## Local Verification
 
