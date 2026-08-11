@@ -137,6 +137,17 @@ work on the host during a retained soak. Set repository variable
 available for scheduled work; a tag or explicit manual selection requests it
 regardless of that schedule variable.
 
+The reviewed machine contract is exact: Ubuntu 24.04 on x86_64, a non-root
+runner service, a safe bounded runner name, the `hc2-fixed-soak-v1` evidence
+profile, and the exact `GITHUB_SHA` in a clean tracked checkout. The workflow
+runs `scripts/hc2/verify-fixed-host.sh` before the first soak iteration and
+fails closed if the operating system, architecture, toolchain commands, runner
+environment, exact Rust/Cargo 1.94.0 toolchain, checkout identity, or tracked
+worktree differs. The script writes the same metadata file that is uploaded
+even when a later soak iteration fails. This preflight verifies the correctness
+host profile; it does not turn the host into a `0.67.1` reference-performance
+machine.
+
 The lane records `uname`, `lscpu`, exact Git SHA, verbose `rustc` identity,
 test output, iteration count, runner identity, and the receipt. It is a
 fixed-host correctness/stability trend, not the `0.67.1` reference performance

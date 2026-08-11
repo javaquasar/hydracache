@@ -36,7 +36,7 @@
 | H19 | Deterministic network fault proxy is absent | complete | `test(client-plane): complete deterministic fault bindings` | all bounded actions, real async stream, exact replay, eight H11 and three H20 lifecycle traces, plus four plans applied unchanged to every H03 candidate codec |
 | H20 | HTTP/2 graceful shutdown remains unresolved | complete | `fix(client-plane): bound HTTP2 graceful drain` | two-GOAWAY controller, deadline/reset reasons, retained fault traces, real TLS/H2 zero-accounting task joins without abort |
 | H21 | Observability is local to the spike | complete | `feat(client-plane): export bounded privacy-safe diagnostics` | v1 typed metric/trace export, 64 salted tenant buckets, bounded trace ring, privacy/cardinality/reconnect/close evidence, operator runbook |
-| H22 | Linux CI, interop, fuzz, and soak gates are absent | in progress | `ci(client-plane): install Linux interop fuzz and soak gates` | four-lane fail-closed contract, pinned workflow/container, receipts/admission canaries, Docker proof, and runbook implemented; exact hosted Linux/Docker/fuzz receipts and strict `main` protection are active; a labelled fixed-host receipt remains operational evidence |
+| H22 | Linux CI, interop, fuzz, and soak gates are absent | in progress | `ci(client-plane): install Linux interop fuzz and soak gates` | four-lane fail-closed contract, pinned workflow/container, receipts/admission canaries, Docker proof, runbook, and exact Ubuntu 24.04 fixed-host preflight implemented; exact hosted Linux/Docker/fuzz receipts and strict `main` protection are active; a labelled fixed-host receipt remains operational evidence |
 
 ## Global execution rules
 
@@ -734,6 +734,10 @@ H22 remains `in progress` only until a labelled fixed host produces a retained
 same-candidate soak receipt. Release admission correctly remains unavailable
 while that fourth lane is absent. This operational step may not be replaced
 with local evidence, a skipped lane, or the hosted correctness receipts above.
+The checked-in fixed-host contract now also fails before the soak unless the
+runner is non-root Ubuntu 24.04 x86_64, carries a bounded safe identity, exposes
+the required native tools, and has the exact clean candidate checkout. Its
+metadata is retained by the existing always-upload step.
 
 ## Dependency-oriented execution order
 

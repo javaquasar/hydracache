@@ -8,6 +8,14 @@
   "interop_image": "ubuntu:24.04@sha256:561618e2c15bf2397621dd04f96926663a3b5616c189cf7e38db7e82f5c538ea",
   "rust_image": "rust:1.94.0-bookworm@sha256:365468470075493dc4583f47387001854321c5a8583ea9604b297e67f01c5a4f",
   "maven_image": "maven:3.9.11-eclipse-temurin-17@sha256:e4a7ace3dc0d645ed97f8d9ad0b0d3f0b14fa8d150138f27f116d7105a639b82",
+  "fixed_host": {
+    "profile": "hc2-fixed-soak-v1",
+    "os_id": "ubuntu",
+    "os_version_id": "24.04",
+    "architecture": "x86_64",
+    "labels": ["self-hosted", "linux", "x64", "hydracache-hc2-soak-v1"],
+    "preflight_script": "scripts/hc2/verify-fixed-host.sh"
+  },
   "action_pins": {
     "checkout": "fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09",
     "download-artifact": "634f93cb2916e3fdff6788551b99b062d0335ce0",

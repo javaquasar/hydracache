@@ -30,8 +30,20 @@ struct GateContract {
     interop_image: String,
     rust_image: String,
     maven_image: String,
+    fixed_host: FixedHostContract,
     action_pins: BTreeMap<String, String>,
     lanes: Vec<GateLane>,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
+struct FixedHostContract {
+    profile: String,
+    os_id: String,
+    os_version_id: String,
+    architecture: String,
+    labels: Vec<String>,
+    preflight_script: String,
 }
 
 #[derive(Debug, Deserialize)]
@@ -129,6 +141,22 @@ fn check_contract_at(root: &Path) -> Result<(), Box<dyn Error>> {
     require_digest(&contract.interop_image, "H22 interop image")?;
     require_digest(&contract.rust_image, "H22 Rust image")?;
     require_digest(&contract.maven_image, "H22 Maven image")?;
+    let expected_labels = ["self-hosted", "linux", "x64", "hydracache-hc2-soak-v1"];
+    if contract.fixed_host.profile != "hc2-fixed-soak-v1"
+        || contract.fixed_host.os_id != "ubuntu"
+        || contract.fixed_host.os_version_id != "24.04"
+        || contract.fixed_host.architecture != "x86_64"
+        || contract
+            .fixed_host
+            .labels
+            .iter()
+            .map(String::as_str)
+            .collect::<Vec<_>>()
+            != expected_labels
+        || contract.fixed_host.preflight_script != "scripts/hc2/verify-fixed-host.sh"
+    {
+        return Err("H22 fixed-host contract differs from the reviewed profile".into());
+    }
     let expected_actions = [
         "checkout",
         "download-artifact",
@@ -169,10 +197,27 @@ fn check_contract_at(root: &Path) -> Result<(), Box<dyn Error>> {
         }
     }
     let workflow = fs::read_to_string(root.join(&contract.workflow))?;
+    let fixed_host_preflight =
+        fs::read_to_string(root.join(&contract.fixed_host.preflight_script))?;
     for action in contract.action_pins.values() {
         require_text(&workflow, action, "pinned action")?;
     }
     require_text(&workflow, &contract.interop_image, "pinned interop image")?;
+    require_text(
+        &workflow,
+        &contract.fixed_host.preflight_script,
+        "fixed-host preflight",
+    )?;
+    for required in [
+        "hc2-fixed-soak-v1",
+        "Ubuntu version must be 24.04",
+        "checkout does not match GITHUB_SHA",
+        "runner service must not execute as root",
+        "rustc must be pinned to 1.94.0",
+        "cargo must be pinned to 1.94.0",
+    ] {
+        require_text(&fixed_host_preflight, required, "fixed-host invariant")?;
+    }
     let dockerfile = fs::read_to_string(root.join("scripts/hc2/Dockerfile.interop"))?;
     for image in [
         &contract.interop_image,
