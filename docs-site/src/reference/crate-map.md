@@ -15,6 +15,8 @@ Use this page to choose the right crate for an application or integration.
 | `hydracache-cluster-chitchat` | You want real chitchat-backed cluster candidate discovery. |
 | `hydracache-cluster-raft` | You want the real raft-rs metadata control-plane runtime behind `ClusterControlPlane`. |
 | `hydracache-cluster-transport-axum` | Cluster members should expose HTTP peer-fetch over encoded cache bytes or use read-through near-cache hydration. |
+| `hydracache-redis-compat` | You need the optional Redis RESP compatibility facade, command translation, resource limits, or HydraCache Redis extension commands. |
+| `hydracache-server` | You want the standalone daemon with optional HTTP/admin/client surfaces and the optional Redis RESP listener. |
 | `hydracache-core` | You need shared core types without the user-facing runtime. |
 | `hydracache-macros` | Usually use this through re-exports from `hydracache`, `hydracache-db`, or adapter crates. |
 | `hydracache-sandbox` | You are running the non-published manual sandbox for actuator, Swagger, memory, SQLite, Postgres Docker, scenario labs, and cluster-adapter checks. |
