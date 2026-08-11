@@ -26,6 +26,7 @@
 
 .architecture-diagram {
   margin: 1.25rem 0;
+  overflow-x: auto;
 }
 
 .architecture-diagram img {
@@ -91,5 +92,10 @@
   .brand-mark img {
     width: 80px;
     height: 80px;
+  }
+
+  .architecture-diagram img {
+    max-width: none;
+    width: 760px;
   }
 }
