@@ -409,6 +409,7 @@ fn run_baseline_smoke(root: &Path, manifest: &CompatibilityManifest) -> Result<(
             &m2_arg,
             "-f",
             JAVA_CONSUMER,
+            "-Dhc2.compat.production.required=true",
             "clean",
             "verify",
         ],

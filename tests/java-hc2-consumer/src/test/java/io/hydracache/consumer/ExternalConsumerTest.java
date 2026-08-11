@@ -20,6 +20,7 @@ import java.nio.file.Path;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 import java.util.jar.JarFile;
+import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
@@ -76,6 +77,9 @@ final class ExternalConsumerTest {
 
   @Test
   void retainedSdkRunsAgainstCurrentProductionDaemon(@TempDir Path temp) throws Exception {
+    Assumptions.assumeTrue(
+        Boolean.getBoolean("hc2.compat.production.required"),
+        "production compatibility execution is owned by client-plane-compat-check");
     String fixture = System.getenv("HC2_COMPAT_INTEROP_SERVER");
     String daemon = System.getenv("HC2_COMPAT_PRODUCTION_DAEMON");
     assertNotNull(fixture, "HC2_COMPAT_INTEROP_SERVER is required");
