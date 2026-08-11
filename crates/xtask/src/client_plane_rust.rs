@@ -5,7 +5,7 @@ use std::process::Command;
 const SDK_CRATE: &str = "hydracache-client-hc2";
 const PEER_CRATE: &str = "hydracache-client-plane-spike";
 const SERVER_CRATE: &str = "hydracache-server";
-const TARGET_DIR: &str = "target/hc2-rust-sdk-check";
+const DEFAULT_TARGET_DIR: &str = "target/hc2-rust-sdk-check";
 
 pub fn run(args: Vec<String>) -> Result<(), Box<dyn Error>> {
     if !args.is_empty() {
@@ -15,6 +15,8 @@ pub fn run(args: Vec<String>) -> Result<(), Box<dyn Error>> {
 }
 
 pub fn check_at_root(root: &Path) -> Result<(), Box<dyn Error>> {
+    let target_dir =
+        std::env::var("HC2_SHARED_TARGET_DIR").unwrap_or_else(|_| DEFAULT_TARGET_DIR.to_owned());
     run_checked(
         root,
         &[
@@ -25,7 +27,7 @@ pub fn check_at_root(root: &Path) -> Result<(), Box<dyn Error>> {
             "--bin",
             "hc2_java_interop_server",
             "--target-dir",
-            TARGET_DIR,
+            &target_dir,
         ],
         &[],
         "separate HC/2 conformance peer",
@@ -40,17 +42,17 @@ pub fn check_at_root(root: &Path) -> Result<(), Box<dyn Error>> {
             "--bin",
             SERVER_CRATE,
             "--target-dir",
-            TARGET_DIR,
+            &target_dir,
         ],
         &[],
         "production HC/2 daemon for Rust interop",
     )?;
-    let peer = interop_server(root);
+    let peer = interop_server(root, &target_dir);
     if !peer.is_file() {
         return Err(format!("HC/2 conformance peer is missing: {}", peer.display()).into());
     }
     let peer = peer.to_string_lossy().into_owned();
-    let daemon = production_daemon(root);
+    let daemon = production_daemon(root, &target_dir);
     if !daemon.is_file() {
         return Err(format!("production daemon is missing: {}", daemon.display()).into());
     }
@@ -63,7 +65,7 @@ pub fn check_at_root(root: &Path) -> Result<(), Box<dyn Error>> {
             "-p",
             SDK_CRATE,
             "--target-dir",
-            TARGET_DIR,
+            &target_dir,
         ],
         &[
             ("HC2_RUST_INTEROP_SERVER", &peer),
@@ -81,7 +83,7 @@ pub fn check_at_root(root: &Path) -> Result<(), Box<dyn Error>> {
             "--test",
             "conformance",
             "--target-dir",
-            TARGET_DIR,
+            &target_dir,
         ],
         &[],
         "unchanged HC/1 client conformance",
@@ -98,22 +100,22 @@ pub fn check_at_root(root: &Path) -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
-fn interop_server(root: &Path) -> PathBuf {
+fn interop_server(root: &Path, target_dir: &str) -> PathBuf {
     let executable = if cfg!(windows) {
         "hc2_java_interop_server.exe"
     } else {
         "hc2_java_interop_server"
     };
-    root.join(TARGET_DIR).join("debug").join(executable)
+    root.join(target_dir).join("debug").join(executable)
 }
 
-fn production_daemon(root: &Path) -> PathBuf {
+fn production_daemon(root: &Path, target_dir: &str) -> PathBuf {
     let executable = if cfg!(windows) {
         "hydracache-server.exe"
     } else {
         "hydracache-server"
     };
-    root.join(TARGET_DIR).join("debug").join(executable)
+    root.join(target_dir).join("debug").join(executable)
 }
 
 fn run_checked(

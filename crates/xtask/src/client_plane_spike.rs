@@ -3,28 +3,32 @@ use std::path::{Path, PathBuf};
 use std::process::Command;
 
 use crate::{
-    client_plane_bakeoff, client_plane_compat, client_plane_fault, client_plane_generation,
-    client_plane_java, client_plane_python, client_plane_rust,
+    client_conformance, client_plane_bakeoff, client_plane_compat, client_plane_fault,
+    client_schema,
 };
 
 const CRATE: &str = "hydracache-client-plane-spike";
 const JAVA_FIXTURE: &str = "crates/hydracache-client-plane-spike/java-fixture/pom.xml";
 
 pub fn run(args: Vec<String>) -> Result<(), Box<dyn Error>> {
-    if !args.is_empty() {
-        return Err("client-plane-spike-check does not accept arguments".into());
-    }
+    let runtime_only = match args.as_slice() {
+        [] => false,
+        [flag] if flag == "--runtime-only" => true,
+        _ => return Err("client-plane-spike-check accepts only --runtime-only".into()),
+    };
     let root = workspace_root()?;
     client_plane_bakeoff::check_at_root(&root)?;
-    client_plane_generation::check_at_root(&root)?;
+    if !runtime_only {
+        client_schema::check_at_root(&root)?;
+    }
     check_rust_and_fixture(&root)?;
-    client_plane_java::check_at_root(&root)?;
-    client_plane_python::check_at_root(&root)?;
-    client_plane_rust::check_at_root(&root)?;
+    if !runtime_only {
+        client_conformance::check_at_root(&root, true)?;
+    }
     client_plane_compat::check_at_root(&root, false, true)?;
     client_plane_fault::check_at_root(&root, false)?;
     println!(
-        "client-plane-spike-check: OK (production daemon + transport spikes + deterministic fault replay + native Rust/Java/Python SDK + complete retained compatibility matrix)"
+        "client-plane-spike-check: OK (production daemon + transport spikes + deterministic fault replay + retained compatibility matrix; runtime_only={runtime_only})"
     );
     Ok(())
 }
@@ -35,10 +39,9 @@ pub fn run_docker(args: Vec<String>) -> Result<(), Box<dyn Error>> {
     }
     let root = workspace_root()?;
     client_plane_bakeoff::check_at_root(&root)?;
-    client_plane_generation::check_at_root(&root)?;
+    client_schema::check_at_root(&root)?;
     check_rust_and_fixture(&root)?;
-    client_plane_java::check_at_root(&root)?;
-    client_plane_python::check_at_root(&root)?;
+    client_conformance::check_at_root(&root, true)?;
     client_plane_fault::check_at_root(&root, false)?;
     println!(
         "client-plane-docker-interop-check: OK (production daemon + Rust tests + Java fixture/SDK consumer + offline Python + retained fault replay)"

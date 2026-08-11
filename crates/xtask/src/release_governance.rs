@@ -146,6 +146,8 @@ pub fn check(root: &Path, release: &str) -> Result<GovernanceReport, Box<dyn Err
         "canary-sweep --release 0.67 --tier all",
         "canary-sweep --release 0.67.1 --tier fast",
         "canary-sweep --release 0.67.1 --tier all",
+        "canary-sweep --release 0.68 --tier fast",
+        "canary-sweep --release 0.68 --tier all",
     ] {
         if !workflow.contains(required) {
             report

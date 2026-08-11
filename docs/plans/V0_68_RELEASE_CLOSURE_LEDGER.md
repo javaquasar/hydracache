@@ -23,7 +23,7 @@ SDK, facade, package, or exact-candidate receipt.
 | W9 production Rust HC/2 SDK | H17 real client, reconnect, process, HC/1 coexistence, packaged `.crate`, and clean extracted-package consumer | retain exact-candidate release receipt; align version at release cut | implemented, release evidence pending |
 | W9 production Python HC/2 SDK | H15 hermetic generation plus production asyncio runtime, deterministic wheel, offline hashed dependencies, and clean venv consumer | retain exact-candidate release receipt | implemented, release evidence pending |
 | W10-W11 security, bounds, observability, faults and compatibility | H10-H14, H18-H22 hosted lanes | retain exact receipts; H22 fixed-host soak remains operationally outstanding | implemented except fixed-host receipt |
-| W12 release governance and documentation | generic governance and H22 CI contract exist | add `0.68.toml`, cross-SDK conformance commands, compatibility/release docs, and exact-candidate receipts | missing |
+| W12 release governance and documentation | `0.68.toml`, W0-W12 dynamic canaries, source-bound cross-SDK conformance, explicit schema/package CI, and registered H22 exact-candidate admission | retain fast/canary/H22 exact-candidate receipts; H22 fixed-host soak remains operationally outstanding | implemented, release evidence pending |
 
 ## Current five-stage execution sequence
 
@@ -36,9 +36,10 @@ SDK, facade, package, or exact-candidate receipt.
    **Complete:** `client-package-check` binds the v1 API manifest to extracted
    `.crate`, external JAR, and deterministic wheel consumers; CI owns Java
    17/21 compatibility.
-5. Add 0.68 release-evidence and cross-SDK conformance governance. A manifest
-   may be committed before all external receipts exist, but `--require-ship`
-   must remain red until every required exact-candidate receipt is present.
+5. **Complete structurally:** 0.68 release-evidence and cross-SDK conformance
+   governance are executable. The manifest intentionally exists before all
+   external receipts; `--require-ship` remains red until every required
+   exact-candidate receipt is present.
 
 ## Release blockers outside these five stages
 
@@ -60,5 +61,6 @@ cargo run -p xtask --locked -- release-evidence --release 0.68 --require-ship
 cargo run -p xtask --locked -- doc-check
 ```
 
-The first two commands are closure deliverables, not documentation promises.
-Until they exist and pass, the original W9/W12 Definition of Done is open.
+The first two commands are executable closure deliverables, not documentation
+promises. Publication remains blocked by exact-candidate evidence, the H22
+fixed-host soak, the declared `0.67.1` dependency, and the final version cut.

@@ -10,6 +10,7 @@ use serde::{Deserialize, Serialize};
 const CONTRACT_PATH: &str = "docs/testing/hc2-ci/h22-gates.json";
 const WORKFLOW_PATH: &str = ".github/workflows/hc2-client-plane.yml";
 const RECEIPT_SCHEMA: &str = "hydracache.hc2.ci-receipt.v1";
+const ADMISSION_SCHEMA: &str = "hydracache.hc2.release-admission.v1";
 const CONTRACT_SCHEMA: &str = "hydracache.hc2.ci-gates.v1";
 const REQUIRED_LANES: [&str; 4] = [
     "linux-required",
@@ -75,6 +76,16 @@ pub struct CiReceipt {
     pub image: Option<String>,
 }
 
+#[derive(Debug, Serialize)]
+struct AdmissionReceipt {
+    schema_version: String,
+    release: String,
+    commit: String,
+    lanes: Vec<String>,
+    interop_image: String,
+    outcome: String,
+}
+
 pub fn run_check(args: Vec<String>) -> Result<(), Box<dyn Error>> {
     if !args.is_empty() {
         return Err("client-plane-ci-check does not accept arguments".into());
@@ -112,11 +123,31 @@ pub fn run_receipt(args: Vec<String>) -> Result<(), Box<dyn Error>> {
 pub fn run_admission(args: Vec<String>) -> Result<(), Box<dyn Error>> {
     let options = parse_options(args)?;
     let receipts = PathBuf::from(required(&options, "--receipts")?);
-    let expected_commit = options.get("--commit").map(String::as_str);
+    let expected_commit = match options.get("--commit") {
+        Some(commit) => commit.clone(),
+        None => env_or_git("GITHUB_SHA")?,
+    };
+    validate_commit(&expected_commit)?;
+    let output = options.get("--output").map(PathBuf::from);
     let root = workspace_root()?;
     check_contract_at(&root)?;
     let contract = load_contract_at(&root)?;
-    let admitted = admit_receipts(&receipts, expected_commit, &contract.interop_image)?;
+    let admitted = admit_receipts(
+        &receipts,
+        Some(expected_commit.as_str()),
+        &contract.interop_image,
+    )?;
+    if let Some(output) = output {
+        let receipt = AdmissionReceipt {
+            schema_version: ADMISSION_SCHEMA.to_owned(),
+            release: "0.68".to_owned(),
+            commit: admitted.clone(),
+            lanes: REQUIRED_LANES.iter().map(ToString::to_string).collect(),
+            interop_image: contract.interop_image,
+            outcome: "pass".to_owned(),
+        };
+        write_json(&output, &receipt)?;
+    }
     println!("client-plane-ci-admission: OK (commit {admitted})");
     Ok(())
 }
@@ -246,7 +277,7 @@ fn check_contract_at(root: &Path) -> Result<(), Box<dyn Error>> {
     for required in [
         "cancel-in-progress: true",
         "client-plane-ci-check",
-        "client-plane-ci-admission",
+        "evidence-run --release 0.68 --gate tool.hc2-release-admission-068",
         "fuzz_hc2_client_plane",
         "timeout --signal=INT --kill-after=10s 180s",
         "fuzz_status=${PIPESTATUS[0]}",
@@ -318,10 +349,14 @@ fn receipt_from_environment(
 
 fn write_receipt(path: &Path, receipt: &CiReceipt) -> Result<(), Box<dyn Error>> {
     validate_receipt(receipt)?;
+    write_json(path, receipt)
+}
+
+fn write_json(path: &Path, value: &impl Serialize) -> Result<(), Box<dyn Error>> {
     if let Some(parent) = path.parent() {
         fs::create_dir_all(parent)?;
     }
-    let mut bytes = serde_json::to_vec_pretty(receipt)?;
+    let mut bytes = serde_json::to_vec_pretty(value)?;
     bytes.push(b'\n');
     fs::write(path, bytes)?;
     Ok(())
@@ -610,5 +645,44 @@ mod tests {
         invalid = receipt("docker-interop", "pass", &sha);
         invalid.image = Some("ubuntu:latest".to_owned());
         assert!(validate_receipt(&invalid).is_err());
+    }
+
+    #[test]
+    fn admission_rejects_missing_or_mixed_lane_receipts() {
+        let directory =
+            env::temp_dir().join(format!("hydracache-hc2-admission-{}", std::process::id()));
+        let _ = fs::remove_dir_all(&directory);
+        fs::create_dir_all(&directory).unwrap();
+        let expected_image = format!("ubuntu:24.04@sha256:{}", "a".repeat(64));
+        assert!(admit_receipts(&directory, None, &expected_image).is_err());
+
+        let sha = "1".repeat(40);
+        for lane in REQUIRED_LANES {
+            let mut lane_receipt = receipt(lane, "pass", &sha);
+            if lane == "fixed-host-soak" {
+                lane_receipt.commit = "2".repeat(40);
+            }
+            write_receipt(
+                &directory.join(format!("{lane}.receipt.json")),
+                &lane_receipt,
+            )
+            .unwrap();
+        }
+        assert!(admit_receipts(&directory, None, &expected_image).is_err());
+
+        write_receipt(
+            &directory.join("fixed-host-soak.receipt.json"),
+            &receipt("fixed-host-soak", "pass", &sha),
+        )
+        .unwrap();
+        let mismatched_sha = "3".repeat(40);
+        assert!(
+            admit_receipts(&directory, Some(mismatched_sha.as_str()), &expected_image).is_err()
+        );
+        assert_eq!(
+            admit_receipts(&directory, Some(&sha), &expected_image).unwrap(),
+            sha
+        );
+        fs::remove_dir_all(directory).unwrap();
     }
 }

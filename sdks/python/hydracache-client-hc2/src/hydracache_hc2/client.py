@@ -394,10 +394,7 @@ class AsyncHydraCacheClient:
             _queue_terminal(queue, _END)
             self._subscription_slots.release()
         self._subscriptions.clear()
-        for session in self._sessions.values():
-            session.lost = True
-            self._session_slots.release()
-        self._sessions.clear()
+        self._lose_sessions()
 
     async def _connection_loop(self) -> None:
         attempts = 0
@@ -410,6 +407,7 @@ class AsyncHydraCacheClient:
             except BaseException:
                 self._ready.clear()
                 self._fail_pending(_unavailable("HC/2 connection was lost"))
+                self._lose_sessions()
                 if self._closed:
                     return
                 attempts += 1
@@ -470,7 +468,15 @@ class AsyncHydraCacheClient:
             await self._restore_subscriptions()
             await reader
         finally:
-            call.cancel()
+            # Let grpc.aio's internal request-poller consume the terminal
+            # sentinel before cancelling the RPC.  Without this hand-off a
+            # server-initiated reconnect can leave the poller blocked on
+            # queue.get() until the event loop is destroyed.
+            with contextlib.suppress(asyncio.QueueFull):
+                outbound.put_nowait(_END)
+            await asyncio.sleep(0)
+            if not call.done():
+                call.cancel()
             reader.cancel()
             with contextlib.suppress(asyncio.CancelledError):
                 await reader
@@ -841,6 +847,13 @@ class AsyncHydraCacheClient:
                 if not future.done():
                     future.set_exception(error)
             mapping.clear()
+
+    def _lose_sessions(self) -> None:
+        """Invalidate connection-scoped fencing sessions exactly once."""
+        for session in self._sessions.values():
+            session.lost = True
+            self._session_slots.release()
+        self._sessions.clear()
 
 
 def _mutation(response: wire.InvocationResponse) -> MutationResult:

@@ -1,6 +1,7 @@
 pub mod bench_budget;
 pub mod canary_check;
 pub mod canary_sweep;
+pub mod client_conformance;
 pub mod client_package;
 pub mod client_plane_bakeoff;
 pub mod client_plane_ci;
@@ -11,6 +12,7 @@ pub mod client_plane_java;
 pub mod client_plane_python;
 pub mod client_plane_rust;
 pub mod client_plane_spike;
+pub mod client_schema;
 pub mod compat_check;
 pub mod coverage_ratchet;
 pub mod determinism_sweep;

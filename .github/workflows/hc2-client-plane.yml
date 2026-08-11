@@ -169,11 +169,17 @@ jobs:
         run: |
           cargo fmt --all -- --check
           cargo run -p xtask --locked -- client-plane-ci-check
-      - name: Validate schema, languages, lifecycle, and retained replay
+          cargo run -p xtask --locked -- client-schema-check
+      - name: Validate cross-SDK semantics
         env:
           PIP_NO_INDEX: "1"
           PIP_DISABLE_PIP_VERSION_CHECK: "1"
-        run: cargo run -p xtask --locked -- client-plane-spike-check
+        run: cargo run -p xtask --locked -- client-conformance --all-sdks
+      - name: Validate lifecycle and retained replay
+        env:
+          PIP_NO_INDEX: "1"
+          PIP_DISABLE_PIP_VERSION_CHECK: "1"
+        run: cargo run -p xtask --locked -- client-plane-spike-check --runtime-only
       - name: Validate publishable SDK packages from clean consumers
         env:
           PIP_NO_INDEX: "1"
@@ -371,4 +377,14 @@ jobs:
           path: target/hc2-ci-admission
           merge-multiple: true
       - name: Refuse incomplete or red HC/2 claim
-        run: cargo run -p xtask --locked -- client-plane-ci-admission --receipts target/hc2-ci-admission --commit "${{ github.sha }}"
+        run: cargo run -p xtask --locked -- evidence-run --release 0.68 --gate tool.hc2-release-admission-068
+      - name: Upload release-admission evidence
+        if: always()
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+        with:
+          name: "hc2-release-admission-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}"
+          path: |
+            target/test-evidence/0.68/hc2-release-admission.json
+            target/release-evidence/**
+          if-no-files-found: error
+          retention-days: 30

@@ -450,7 +450,10 @@ and consumes the Java JARs from an external Maven project, builds the Python
 wheel twice with byte-identical SHA-256 output, and installs it with hashed
 offline dependencies in a clean virtual environment. The detailed contract is
 `docs/architecture/HC2_SDK_PACKAGING_AND_API_COMPATIBILITY.md`. Cross-SDK
-semantic scenario equality remains the stage-5 W12 closure item.
+semantic equality is now enforced by
+`docs/testing/hc2-client-conformance-v1.json` and
+`cargo xtask client-conformance --all-sdks`; reconnect also proves that
+connection-scoped Python fenced sessions are lost rather than replayed.
 
 ## W10. Security, resource bounds, and observability
 
@@ -488,6 +491,14 @@ that HC/1 v1-v4 remains within its registered reader window while HC/2 is enable
 may receive an HC/2 frame.
 
 ## W12. Compatibility cutover, governance, CI, and docs
+
+**Implementation update (2026-08-12).** The W0-W12 evidence manifest,
+release-scoped dynamic-canary registry, generation-6 schema gate, three-SDK
+conformance gate, clean-package gate, and H22 exact-candidate admission are
+registered and execute in CI. Structural release evidence reports all thirteen
+rows implemented while ordinary exact-commit receipts remain absent; this is
+not ship admission. The proof boundary and reproduction procedure are recorded
+in `docs/architecture/HC2_CROSS_SDK_CONFORMANCE_AND_RELEASE_EVIDENCE.md`.
 
 - Add `docs/testing/release-evidence/0.68.toml` with exact-candidate receipts for W0-W11 and
   `release-evidence --release 0.68 --require-ship`.

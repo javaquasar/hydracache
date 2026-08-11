@@ -40,7 +40,7 @@ pub fn run_check(args: Vec<String>) -> Result<(), Box<dyn Error>> {
 }
 
 pub(crate) fn check_at_root(root: &Path) -> Result<(), Box<dyn Error>> {
-    check_generated(root)?;
+    check_generated_at_root(root)?;
     let fixture = root.join(FIXTURE);
     let runtime = detect_python_runtime(&fixture)?;
     verify_supported_runtime(&fixture, &runtime)?;
@@ -54,7 +54,7 @@ pub(crate) fn check_at_root(root: &Path) -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
-fn check_generated(root: &Path) -> Result<(), Box<dyn Error>> {
+pub(crate) fn check_generated_at_root(root: &Path) -> Result<(), Box<dyn Error>> {
     let scratch = root.join("target/hc2-python-generation");
     generate_to(root, &scratch)?;
     let checked_in = root.join(FIXTURE).join(GENERATED_PACKAGE);
@@ -504,8 +504,11 @@ fn collect_files(
         let entry = entry?;
         let path = entry.path();
         if path.is_dir() {
+            if entry.file_name() == "__pycache__" {
+                continue;
+            }
             collect_files(root, &path, files)?;
-        } else {
+        } else if path.extension() != Some(OsStr::new("pyc")) {
             files.insert(path.strip_prefix(root)?.to_owned(), fs::read(path)?);
         }
     }
@@ -725,7 +728,7 @@ mod tests {
 
     #[test]
     fn checked_in_python_generation_is_clean() {
-        check_generated(&workspace_root().unwrap()).unwrap();
+        check_generated_at_root(&workspace_root().unwrap()).unwrap();
     }
 
     #[test]

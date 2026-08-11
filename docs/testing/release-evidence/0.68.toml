@@ -1,0 +1,148 @@
+schema_version = 1
+release = "0.68"
+plan = "docs/plans/V0_68_GENERATED_CLIENT_PLANE_FOUNDATION_PLAN.md"
+canary_policy = "dynamic_registry"
+dynamic_canary_work_items = ["W0", "W1", "W2", "W3", "W4", "W5", "W6", "W7", "W8", "W9", "W10", "W11", "W12"]
+
+[[work_item]]
+id = "W0"
+required_sources = ["docs/adr/0019-hc2-client-transport.md", "crates/xtask/src/client_plane_bakeoff.rs"]
+required_artifacts = ["docs/testing/hc2-transport-bakeoff.json"]
+fast_gate_ids = ["fast.workspace-nextest"]
+gated_gate_ids = []
+ship_required = true
+[[work_item.required_tests]]
+source = "crates/xtask/tests/client_release_068.rs"
+function = "release_068_client_plane_closure_is_fail_closed"
+
+[[work_item]]
+id = "W1"
+required_sources = ["crates/hydracache-client-hc2/proto/hc2_contract.proto", "crates/xtask/src/client_schema.rs"]
+required_artifacts = ["docs/testing/hc2-client-conformance-v1.json"]
+fast_gate_ids = ["fast.workspace-nextest"]
+gated_gate_ids = []
+ship_required = true
+[[work_item.required_tests]]
+source = "crates/xtask/tests/client_release_068.rs"
+function = "release_068_client_plane_closure_is_fail_closed"
+
+[[work_item]]
+id = "W2"
+required_sources = ["crates/hydracache-server/src/hc2.rs", "crates/hydracache-client-hc2/src/client.rs"]
+required_artifacts = ["docs/testing/hc2-client-conformance-v1.json"]
+fast_gate_ids = ["fast.workspace-nextest"]
+gated_gate_ids = []
+ship_required = true
+[[work_item.required_tests]]
+source = "crates/xtask/tests/client_release_068.rs"
+function = "release_068_client_plane_closure_is_fail_closed"
+
+[[work_item]]
+id = "W3"
+required_sources = ["crates/hydracache-client-hc2/src/client.rs", "crates/hydracache-client-hc2/tests/grpc_process.rs"]
+required_artifacts = ["docs/testing/hc2-client-conformance-v1.json"]
+fast_gate_ids = ["fast.workspace-nextest"]
+gated_gate_ids = []
+ship_required = true
+[[work_item.required_tests]]
+source = "crates/xtask/tests/client_release_068.rs"
+function = "release_068_client_plane_closure_is_fail_closed"
+
+[[work_item]]
+id = "W4"
+required_sources = ["crates/hydracache-client-hc2/src/client.rs", "crates/hydracache-client-hc2/tests/reconnect_repair.rs"]
+required_artifacts = ["docs/testing/hc2-client-conformance-v1.json"]
+fast_gate_ids = ["fast.workspace-nextest"]
+gated_gate_ids = []
+ship_required = true
+[[work_item.required_tests]]
+source = "crates/xtask/tests/client_release_068.rs"
+function = "release_068_client_plane_closure_is_fail_closed"
+
+[[work_item]]
+id = "W5"
+required_sources = ["crates/hydracache-client-hc2/src/types.rs", "crates/hydracache-client-hc2/src/reconnect.rs"]
+required_artifacts = ["docs/testing/hc2-client-conformance-v1.json"]
+fast_gate_ids = ["fast.workspace-nextest"]
+gated_gate_ids = []
+ship_required = true
+[[work_item.required_tests]]
+source = "crates/xtask/tests/client_release_068.rs"
+function = "release_068_client_plane_closure_is_fail_closed"
+
+[[work_item]]
+id = "W6"
+required_sources = ["crates/hydracache-client-hc2/src/client.rs", "sdks/python/hydracache-client-hc2/src/hydracache_hc2/client.py"]
+required_artifacts = ["docs/testing/hc2-client-conformance-v1.json"]
+fast_gate_ids = ["fast.workspace-nextest"]
+gated_gate_ids = []
+ship_required = true
+[[work_item.required_tests]]
+source = "crates/xtask/tests/client_release_068.rs"
+function = "release_068_client_plane_closure_is_fail_closed"
+
+[[work_item]]
+id = "W7"
+required_sources = ["crates/hydracache-client-hc2/src/types.rs", "crates/hydracache-client-plane-spike/tests/contract_schema.rs"]
+required_artifacts = ["docs/testing/hc2-client-conformance-v1.json"]
+fast_gate_ids = ["fast.workspace-nextest"]
+gated_gate_ids = []
+ship_required = true
+[[work_item.required_tests]]
+source = "crates/xtask/tests/client_release_068.rs"
+function = "release_068_client_plane_closure_is_fail_closed"
+
+[[work_item]]
+id = "W8"
+required_sources = ["sdks/java/hydracache-client-hc2/pom.xml", "sdks/java/hydracache-hazelcast-facade/pom.xml", "crates/xtask/src/client_plane_java.rs"]
+required_artifacts = ["docs/compatibility/hc2-sdk-api-v1.json"]
+fast_gate_ids = ["fast.workspace-nextest"]
+gated_gate_ids = []
+ship_required = true
+[[work_item.required_tests]]
+source = "crates/xtask/tests/client_release_068.rs"
+function = "release_068_client_plane_closure_is_fail_closed"
+
+[[work_item]]
+id = "W9"
+required_sources = ["crates/hydracache-client-hc2/src/lib.rs", "sdks/python/hydracache-client-hc2/pyproject.toml", "crates/xtask/src/client_conformance.rs"]
+required_artifacts = ["docs/compatibility/hc2-sdk-api-v1.json"]
+fast_gate_ids = ["fast.workspace-nextest"]
+gated_gate_ids = []
+ship_required = true
+[[work_item.required_tests]]
+source = "crates/xtask/tests/client_release_068.rs"
+function = "release_068_client_plane_closure_is_fail_closed"
+
+[[work_item]]
+id = "W10"
+required_sources = ["crates/hydracache-client-plane-spike/tests/observability_contract.rs", "crates/hydracache-client-plane-spike/tests/semantic_harness.rs"]
+required_artifacts = ["docs/testing/hc2-ci/h22-gates.json"]
+fast_gate_ids = ["fast.workspace-nextest"]
+gated_gate_ids = ["tool.hc2-release-admission-068"]
+ship_required = true
+[[work_item.required_tests]]
+source = "crates/xtask/tests/client_release_068.rs"
+function = "release_068_client_plane_closure_is_fail_closed"
+
+[[work_item]]
+id = "W11"
+required_sources = ["crates/hydracache-client-plane-spike/tests/fault_proxy.rs", "crates/xtask/src/client_plane_fault.rs", "crates/xtask/src/client_plane_compat.rs"]
+required_artifacts = ["docs/testing/hc2-compat/v0.68-preview.1.json"]
+fast_gate_ids = ["fast.workspace-nextest"]
+gated_gate_ids = ["tool.hc2-release-admission-068"]
+ship_required = true
+[[work_item.required_tests]]
+source = "crates/xtask/tests/client_release_068.rs"
+function = "release_068_client_plane_closure_is_fail_closed"
+
+[[work_item]]
+id = "W12"
+required_sources = [".github/workflows/hc2-client-plane.yml", "crates/xtask/src/client_plane_ci.rs", "crates/xtask/tests/client_release_068.rs"]
+required_artifacts = ["docs/testing/canary-registry-0.68.json", "docs/testing/release-evidence/0.68.toml", "docs/releases/0.68.0.md"]
+fast_gate_ids = ["fast.workspace-nextest"]
+gated_gate_ids = ["tool.hc2-release-admission-068"]
+ship_required = true
+[[work_item.required_tests]]
+source = "crates/xtask/tests/client_release_068.rs"
+function = "release_068_client_plane_closure_is_fail_closed"

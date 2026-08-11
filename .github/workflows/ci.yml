@@ -220,6 +220,8 @@ jobs:
           cargo run -p xtask --locked -- canary-sweep --release 0.67 --tier fast
           cargo run -p xtask --locked -- canary-check --release 0.67.1
           cargo run -p xtask --locked -- canary-sweep --release 0.67.1 --tier fast
+          cargo run -p xtask --locked -- canary-check --release 0.68
+          cargo run -p xtask --locked -- canary-sweep --release 0.68 --tier fast
 
       - name: Upload fast canary evidence
         if: always()
@@ -1849,6 +1851,7 @@ jobs:
           cargo run -p xtask --locked -- canary-sweep --release 0.66 --tier all
           cargo run -p xtask --locked -- canary-sweep --release 0.67 --tier all
           cargo run -p xtask --locked -- canary-sweep --release 0.67.1 --tier all
+          cargo run -p xtask --locked -- canary-sweep --release 0.68 --tier all
 
       - name: Run deterministic suite sweep
         run: cargo run -p xtask --locked -- evidence-run --release 0.64 --gate tool.determinism-sweep

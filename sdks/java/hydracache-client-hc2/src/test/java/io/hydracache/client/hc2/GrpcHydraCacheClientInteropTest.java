@@ -116,10 +116,12 @@ final class GrpcHydraCacheClientInteropTest {
       assertTrue(eventArrived.await(5, TimeUnit.SECONDS));
       assertArrayEquals(bytes("daemon-value"),
           client.get(bytes("daemon-key"), DEFAULT).join().orElseThrow().value());
-      LockAcquireResult lock = client.tryLock(
-          bytes("daemon-lock"), Duration.ofSeconds(3), DEFAULT).join();
-      assertTrue(lock.acquired());
-      assertTrue(client.unlock(bytes("daemon-lock"), lock.fence(), DEFAULT).join().applied());
+      if (client.protocolGeneration() > HydraCacheClientConfig.MINIMUM_PROTOCOL_GENERATION) {
+        LockAcquireResult lock = client.tryLock(
+            bytes("daemon-lock"), Duration.ofSeconds(3), DEFAULT).join();
+        assertTrue(lock.acquired());
+        assertTrue(client.unlock(bytes("daemon-lock"), lock.fence(), DEFAULT).join().applied());
+      }
       FencedSession session = client.openSession(Duration.ofSeconds(3)).join();
       assertTrue(session.fence() > 0);
       session.close();

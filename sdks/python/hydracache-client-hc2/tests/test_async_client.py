@@ -7,6 +7,8 @@ from hydracache_hc2 import (
     AsyncHydraCacheClient,
     CacheEvent,
     ClientConfig,
+    ErrorCode,
+    HydraCacheError,
     MutationResult,
 )
 from hydracache_hc2_generated import hc2_contract_pb2 as wire
@@ -123,8 +125,13 @@ class AsyncClientTest(unittest.IsolatedAsyncioTestCase):
         client = await AsyncHydraCacheClient.connect(self.config())
         try:
             self.assertEqual("python-test-cluster", client.cluster_id)
+            self.assertEqual(6, client.preferred_protocol_generation)
             self.assertEqual(MutationResult(True), await client.put(b"key", b"value"))
             self.assertEqual(b"value", (await client.get(b"key")).value)
+            self.assertTrue(
+                (await client.compare_and_set(b"key", b"value", b"next")).applied
+            )
+            self.assertTrue((await client.remove_if_value(b"key", b"next")).applied)
             session = await client.open_session(10_000)
             self.assertEqual(41, session.fence)
             await session.close()
@@ -164,6 +171,7 @@ class AsyncClientTest(unittest.IsolatedAsyncioTestCase):
         await self.server.start()
         client = await AsyncHydraCacheClient.connect(self.config())
         try:
+            session = await client.open_session(10_000)
             subscription = await client.subscribe(b"key")
             first = await asyncio.wait_for(anext(subscription), 2)
             second = await asyncio.wait_for(anext(subscription), 3)
@@ -172,6 +180,12 @@ class AsyncClientTest(unittest.IsolatedAsyncioTestCase):
             self.assertEqual((1, 2), (first.watermark, second.watermark))
             self.assertGreaterEqual(self.service.connections, 2)
             self.assertGreaterEqual(client.metrics.reconnects, 1)
+            self.assertTrue(session.lost)
+            with self.assertRaises(HydraCacheError) as lost:
+                await session.heartbeat()
+            self.assertEqual(ErrorCode.SESSION_LOST, lost.exception.code)
+            self.assertEqual(0, client.metrics.active_sessions)
+            await session.close()
             await subscription.close()
         finally:
             await client.close()

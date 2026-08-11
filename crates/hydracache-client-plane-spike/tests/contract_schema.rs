@@ -46,6 +46,11 @@ fn descriptor_freezes_operation_and_envelope_ids() {
             ("delete", 103),
             ("compare_and_set", 104),
             ("batch", 105),
+            ("try_lock", 106),
+            ("unlock", 107),
+            ("renew_lock", 108),
+            ("lock_ownership", 109),
+            ("remove_if_value", 110),
         ])
     );
     assert_eq!(

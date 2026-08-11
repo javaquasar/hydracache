@@ -315,13 +315,23 @@ fn execute_command(
     let stderr_path = directory.join(format!("{base}.stderr"));
     let stdout_file = File::create(&stdout_path)?;
     let stderr_file = File::create(&stderr_path)?;
-    let mut child = Command::new(&command.program)
+    let mut process = Command::new(&command.program);
+    process
         .args(&command.args)
         .envs(&command.env)
         .current_dir(root.join(&command.cwd))
         .stdout(Stdio::from(stdout_file))
-        .stderr(Stdio::from(stderr_file))
-        .spawn()?;
+        .stderr(Stdio::from(stderr_file));
+    if cfg!(windows) && is_cargo_program(&command.program) {
+        // A running xtask.exe cannot be replaced on Windows.  Canary guards
+        // invoke cargo recursively, so keep their shared build output away
+        // from the target directory that contains the parent executable.
+        process.env(
+            "CARGO_TARGET_DIR",
+            root.join("target/canary-sweep/cargo-target"),
+        );
+    }
+    let mut child = process.spawn()?;
     let deadline = Instant::now() + Duration::from_secs(timeout_seconds);
     let (exit_code, timed_out) = loop {
         if let Some(status) = child.try_wait()? {
@@ -454,6 +464,15 @@ fn git_identity(root: &Path) -> (String, bool) {
 
 fn platform_matches(platform: &str) -> bool {
     platform == "any" || platform == std::env::consts::OS
+}
+
+fn is_cargo_program(program: &str) -> bool {
+    Path::new(program)
+        .file_name()
+        .and_then(|name| name.to_str())
+        .is_some_and(|name| {
+            name.eq_ignore_ascii_case("cargo") || name.eq_ignore_ascii_case("cargo.exe")
+        })
 }
 
 fn sanitize(value: &str) -> String {
