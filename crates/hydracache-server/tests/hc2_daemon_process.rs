@@ -283,7 +283,11 @@ fn port_conflict_fails_before_any_listener_accepts() {
         .output()
         .unwrap();
     assert!(!output.status.success());
-    assert!(String::from_utf8_lossy(&output.stderr).contains("address"));
+    let stderr = String::from_utf8_lossy(&output.stderr).to_ascii_lowercase();
+    assert!(
+        stderr.contains("address"),
+        "unexpected bind failure: {stderr}"
+    );
     assert!(StdTcpListener::bind(client_addr).is_ok());
     assert!(StdTcpListener::bind(admin_addr).is_ok());
     drop(blocker);
