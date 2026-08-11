@@ -32,7 +32,7 @@
 | H15 | Hermetic Python generation is absent | complete | `feat(client-plane): make Python generation hermetic` | vendored protoc, descriptor-derived stubs/metadata, hash-bound two-platform wheelhouse, clean generation, golden/unknown-field/bidi/import proof |
 | H16 | Java is a codec fixture, not a production SDK | complete | `feat(client-plane): add Java reconnect and production interop` | publishable Java 17 SDK/external consumer, fail-closed PKI matrix, bounded reconnect/replay and repair, two-process Rust recovery, real production-daemon mTLS/drain, thread/resource checks, and retained H18 JAR/POM baseline green |
 | H17 | Rust production SDK still uses HC/1 HTTP | complete | `feat(client-plane): complete Rust HC2 production interop` | native SDK/process/package/HC/1 and H11 recovery gates plus real production-daemon mTLS/data/push/session/drain proof green |
-| H18 | Real previous-artifact compatibility matrix is absent | in progress | `test(client-plane): retain HC/2 compatibility baseline` | immutable H17 Rust/Java clients and executable baseline matrix green; production daemon, HC/1+HC/2, reverse direction, rolling upgrade, and deprecation remain blocked on H01/H02 and a later preview |
+| H18 | Real previous-artifact compatibility matrix is absent | in progress | `test(client-plane): run retained clients against production` | immutable H17 Rust/Java clients execute against the current peer and production daemon; reverse direction, rolling upgrade, and deprecation require a later distinct preview |
 | H19 | Deterministic network fault proxy is absent | complete | `test(client-plane): complete deterministic fault bindings` | all bounded actions, real async stream, exact replay, eight H11 and three H20 lifecycle traces, plus four plans applied unchanged to every H03 candidate codec |
 | H20 | HTTP/2 graceful shutdown remains unresolved | complete | `fix(client-plane): bound HTTP2 graceful drain` | two-GOAWAY controller, deadline/reset reasons, retained fault traces, real TLS/H2 zero-accounting task joins without abort |
 | H21 | Observability is local to the spike | complete | `feat(client-plane): export bounded privacy-safe diagnostics` | v1 typed metric/trace export, 64 salted tenant buckets, bounded trace ring, privacy/cardinality/reconnect/close evidence, operator runbook |
@@ -563,8 +563,9 @@ in `docs/architecture/HC2_RUST_SDK.md`.
 
 ## H18. Prove compatibility with retained real artifacts
 
-**Current truth.** No previous HC/2 binaries exist and HC/1 coexistence lacks a
-new-server real-artifact matrix.
+**Current truth.** The first retained HC/2 clients exist and execute against the
+current production daemon, but no retained older production daemon or later
+contract generation exists yet.
 
 **Implementation.** Retain exact previous client/server artifacts once HC/2
 preview exists; test old/new both ways, HC/1+HC/2 concurrent listeners, rolling
@@ -583,17 +584,20 @@ immutable artifacts from prior release commits.
 Rust `.crate`, Java JAR/POM, byte lengths, SHA-256 digests, producer commit/tree,
 and exact contract blob. `cargo xtask client-plane-compat-check` verifies those
 identities, extracts and executes the saved Rust package, installs the saved
-Java artifact into an isolated Maven repository, runs an external consumer,
-and proves capability handshake plus additive-field behavior. The matrix has
-no skip state: unavailable production rows print `BLOCKED`, while
+Java artifact into an isolated Maven repository, runs external consumers, and
+proves capability handshake plus additive-field behavior. Both retained
+clients also use their saved public APIs to establish mTLS to the current
+production `hydracache-server`, execute PUT/GET, request admin drain, and
+require successful daemon exit. The matrix has no skip state: unavailable
+production rows print `BLOCKED`, while
 `--require-complete` fails on every `baseline-smoke` or `blocked` row.
 
 H18 remains `in progress`. The retained clients and current checkout share the
-same H17 contract blob, so the four executable rows are labelled
-`baseline-smoke`, never `pass`. H01/H02 must provide production HC/2 and
-concurrent HC/1 listeners; a later preview must retain an old daemon and a
-meaningfully newer client/contract before old/new reverse-direction, rolling
-upgrade, and deprecation rows can become compatibility claims. See
+same H17 contract blob, so the six executable rows are labelled
+`baseline-smoke`, never `pass`. A later preview must retain the current daemon
+as an old artifact and provide a meaningfully newer client/contract before the
+reverse-direction, rolling-upgrade, and deprecation rows can become
+compatibility claims. See
 `docs/architecture/HC2_COMPATIBILITY_ARTIFACTS.md` for the policy and exact
 reproduction commands.
 

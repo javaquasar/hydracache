@@ -738,8 +738,10 @@ dependencies = [
 name = "rust-hc2-compat-consumer"
 version = "0.0.0"
 dependencies = [
+ "bytes",
  "hydracache-client-hc2",
  "prost",
+ "tokio",
 ]
 
 [[package]]

@@ -51,9 +51,9 @@
     {
       "id": "retained-clients-to-production-daemon",
       "scenario": "old-client-new-daemon",
-      "status": "blocked",
-      "evidence": [],
-      "blockers": ["H01 production daemon HC/2 listener is not implemented"]
+      "status": "baseline-smoke",
+      "evidence": ["checksummed retained Rust crate and Java jar execute PUT/GET over mTLS against the current production daemon and complete bounded admin drain"],
+      "blockers": []
     },
     {
       "id": "current-clients-to-retained-daemon",
@@ -65,9 +65,9 @@
     {
       "id": "hc1-and-hc2-concurrent-listeners",
       "scenario": "hc1-hc2-concurrent-listeners",
-      "status": "blocked",
-      "evidence": [],
-      "blockers": ["H01 production daemon HC/2 listener is not implemented", "H02 listener ownership is open"]
+      "status": "baseline-smoke",
+      "evidence": ["current real-daemon H01 gate proves bidirectional HC/1 and HC/2 visibility through shared dispatch while both listeners are active"],
+      "blockers": []
     },
     {
       "id": "rolling-production-upgrade",

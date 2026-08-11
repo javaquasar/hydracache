@@ -14,6 +14,7 @@ const DEFAULT_MANIFEST: &str = "docs/testing/hc2-compat/v0.68-preview.1.json";
 const TARGET_DIR: &str = "target/hc2-compat";
 const PEER_TARGET_DIR: &str = "target/hc2-compat/peer";
 const PEER_CRATE: &str = "hydracache-client-plane-spike";
+const SERVER_CRATE: &str = "hydracache-server";
 const RUST_ARTIFACT_ID: &str = "rust-h17-preview";
 const JAVA_JAR_ID: &str = "java-h17-preview-jar";
 const JAVA_POM_ID: &str = "java-h17-preview-pom";
@@ -275,6 +276,22 @@ fn run_baseline_smoke(root: &Path, manifest: &CompatibilityManifest) -> Result<(
         &[],
         "HC/2 compatibility conformance peer",
     )?;
+    run_checked(
+        root,
+        "cargo",
+        &[
+            "build",
+            "--locked",
+            "-p",
+            SERVER_CRATE,
+            "--bin",
+            SERVER_CRATE,
+            "--target-dir",
+            PEER_TARGET_DIR,
+        ],
+        &[],
+        "current production daemon for retained clients",
+    )?;
     let peer = peer_path(root);
     if !peer.is_file() {
         return Err(format!("HC/2 compatibility peer is absent: {}", peer.display()).into());
@@ -315,6 +332,11 @@ fn run_baseline_smoke(root: &Path, manifest: &CompatibilityManifest) -> Result<(
         .open(crate_root.join("Cargo.toml"))?
         .write_all(b"\n[workspace]\n")?;
     let peer_text = peer.to_string_lossy().into_owned();
+    let daemon = production_daemon_path(root);
+    if !daemon.is_file() {
+        return Err(format!("current production daemon is absent: {}", daemon.display()).into());
+    }
+    let daemon_text = daemon.to_string_lossy().into_owned();
     let crate_manifest = crate_root.join("Cargo.toml").to_string_lossy().into_owned();
     let rust_target = root
         .join(TARGET_DIR)
@@ -346,7 +368,10 @@ fn run_baseline_smoke(root: &Path, manifest: &CompatibilityManifest) -> Result<(
             "--target-dir",
             &rust_target,
         ],
-        &[],
+        &[
+            ("HC2_COMPAT_INTEROP_SERVER", &peer_text),
+            ("HC2_COMPAT_PRODUCTION_DAEMON", &daemon_text),
+        ],
         "retained Rust HC/2 additive-field consumer",
     )?;
 
@@ -387,7 +412,11 @@ fn run_baseline_smoke(root: &Path, manifest: &CompatibilityManifest) -> Result<(
             "clean",
             "verify",
         ],
-        &[("HC2_JAVA_INTEROP_SERVER", &peer_text)],
+        &[
+            ("HC2_JAVA_INTEROP_SERVER", &peer_text),
+            ("HC2_COMPAT_INTEROP_SERVER", &peer_text),
+            ("HC2_COMPAT_PRODUCTION_DAEMON", &daemon_text),
+        ],
         "retained Java HC/2 client artifact",
     )?;
     Ok(())
@@ -453,6 +482,16 @@ fn peer_path(root: &Path) -> PathBuf {
             "hc2_java_interop_server.exe"
         } else {
             "hc2_java_interop_server"
+        })
+}
+
+fn production_daemon_path(root: &Path) -> PathBuf {
+    root.join(PEER_TARGET_DIR)
+        .join("debug")
+        .join(if cfg!(windows) {
+            "hydracache-server.exe"
+        } else {
+            "hydracache-server"
         })
 }
 

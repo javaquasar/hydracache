@@ -17,9 +17,12 @@ cargo xtask client-plane-compat-check --require-complete
 ```
 
 The normal command verifies all retained bytes and runs executable baseline
-smoke tests against a separately built mTLS conformance peer. It succeeds while
-printing every production row that is still blocked. `--require-complete` is
-the release-grade fail-closed mode: it fails until every row is a genuine
+smoke tests against both a separately built mTLS conformance peer and the
+current production `hydracache-server`. The retained Rust crate and Java JAR
+each perform PUT/GET through the production listener, after which the harness
+drains the daemon and requires a successful zero-resource exit. It succeeds
+while printing every row that is still blocked. `--require-complete` is the
+release-grade fail-closed mode: it fails until every row is a genuine
 cross-version `pass`.
 
 `baseline-smoke` is not a compatibility pass. The H17 artifact and current

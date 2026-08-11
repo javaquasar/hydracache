@@ -11,6 +11,8 @@ import io.hydracache.client.hc2.RequestOptions;
 import io.hydracache.client.hc2.internal.wire.ClientEnvelope;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -65,6 +67,51 @@ final class ExternalConsumerTest {
       assertTrue(closed.startsWith("CLOSED\t"), closed);
       assertTrue(closed.contains("active_subscriptions=0"), closed);
       assertTrue(closed.contains("active_sessions=0"), closed);
+      assertTrue(server.waitFor(10, TimeUnit.SECONDS));
+      assertEquals(0, server.exitValue());
+    } finally {
+      if (server.isAlive()) server.destroyForcibly();
+    }
+  }
+
+  @Test
+  void retainedSdkRunsAgainstCurrentProductionDaemon(@TempDir Path temp) throws Exception {
+    String fixture = System.getenv("HC2_COMPAT_INTEROP_SERVER");
+    String daemon = System.getenv("HC2_COMPAT_PRODUCTION_DAEMON");
+    assertNotNull(fixture, "HC2_COMPAT_INTEROP_SERVER is required");
+    assertNotNull(daemon, "HC2_COMPAT_PRODUCTION_DAEMON is required");
+    Path credentials = Files.createDirectory(temp.resolve("production-credentials"));
+    Process server = new ProcessBuilder(
+        fixture, "--credentials-dir", credentials.toString(), "--daemon", daemon)
+        .redirectErrorStream(true).start();
+    try {
+      BufferedReader output = new BufferedReader(
+          new InputStreamReader(server.getInputStream(), StandardCharsets.UTF_8));
+      String[] ready = output.readLine().split("\\t", -1);
+      assertEquals("READY_DAEMON", ready[0]);
+      assertEquals(6, ready.length);
+
+      HydraCacheClientConfig config = HydraCacheClientConfig.builder()
+          .endpoint(URI.create("https://localhost:" + ready[1]))
+          .serverName("localhost")
+          .trustCertificate(Path.of(ready[3]))
+          .clientCertificate(Path.of(ready[4]))
+          .clientPrivateKey(Path.of(ready[5]))
+          .clientId("retained-java-client")
+          .tenant("compat-tenant")
+          .build();
+      try (HydraCacheClient client = HydraCacheClient.connect(config)) {
+        byte[] key = "retained-java/key".getBytes(StandardCharsets.UTF_8);
+        byte[] value = "retained-java-value".getBytes(StandardCharsets.UTF_8);
+        RequestOptions options = RequestOptions.withTimeout(Duration.ofSeconds(2));
+        assertTrue(client.put(key, value, Duration.ZERO, options).join().applied());
+        assertArrayEquals(value, client.get(key, options).join().orElseThrow().value());
+      }
+
+      PrintWriter input = new PrintWriter(
+          new OutputStreamWriter(server.getOutputStream(), StandardCharsets.UTF_8), true);
+      input.println("DRAIN");
+      assertEquals("CLOSED_DAEMON\tstatus=ok", output.readLine());
       assertTrue(server.waitFor(10, TimeUnit.SECONDS));
       assertEquals(0, server.exitValue());
     } finally {
