@@ -7,7 +7,9 @@ The root README used to carry most public documentation. It is now a short entry
 | Why HydraCache exists | [HydraCache](../index.md), [Cache Semantics](../concepts/cache-semantics.md) |
 | v0 scope and crate selection | [Crate Map](crate-map.md), [Workspace Layout](workspace-layout.md) |
 | Local cache quick start | [Getting Started](../getting-started.md), [Local Cache](../guides/local-cache.md) |
-| Cacheable function macros | [Cacheable Functions](../guides/cacheable-functions.md) |
+| Cacheable function macros | [Cacheable Functions](../guides/cacheable-functions.md), [Macros](../guides/macros.md) |
+| Entity and query policy macros | [Macros](../guides/macros.md), [Database Query Caching](../guides/database-query-caching.md) |
+| Redis compatibility surface | [Redis API](../guides/redis-api.md), [Crate Map](crate-map.md) |
 | API notes | [Local Cache API](local-cache-api.md), [API Links](api-links.md) |
 | Diagnostics and events | [Diagnostics and Events](../guides/diagnostics-and-events.md) |
 | Distributed invalidation bus | [Distributed Invalidation](../guides/distributed-invalidation.md) |
