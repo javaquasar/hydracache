@@ -30,7 +30,8 @@ fn demo_static_files_are_wired_to_real_wasm_snapshot() {
     let readme = fs::read_to_string(root.join("demo/README.md")).expect("demo README exists");
     let workflow =
         fs::read_to_string(root.join(".github/workflows/demo.yml")).expect("demo workflow exists");
-    let root_readme = fs::read_to_string(root.join("README.md")).expect("root README exists");
+    let docs_workflow = fs::read_to_string(root.join(".github/workflows/docs-site.yml"))
+        .expect("documentation workflow exists");
     let positioning =
         fs::read_to_string(root.join("docs/POSITIONING.md")).expect("positioning doc exists");
     let spec = fs::read_to_string(root.join("demo/tests/ui_smoke.spec.js"))
@@ -179,23 +180,25 @@ fn demo_static_files_are_wired_to_real_wasm_snapshot() {
     assert!(workflow.contains(
         "npx --prefix demo playwright test demo/tests/ui_smoke.spec.js demo/tests/seed_share.spec.js",
     ));
-    assert!(workflow.contains("rm -rf target/demo-pages"));
+    assert!(workflow.contains("Keep demo artifact local to this workflow"));
     assert!(workflow
-        .contains("cp demo/index.html demo/app.js demo/style.css demo/scenarios.js demo/share.js target/demo-pages/"));
-    assert!(workflow.contains("cp -R demo/pkg target/demo-pages/pkg"));
-    assert!(workflow.contains("touch target/demo-pages/.nojekyll"));
-    assert!(workflow.contains("actions/configure-pages"));
+        .contains("The public GitHub Pages root is owned by .github/workflows/docs-site.yml."));
     assert!(workflow.contains("branches:"));
     assert!(workflow.contains("- main"));
     assert!(!workflow.contains("name: Serve demo"));
     assert!(!workflow.contains("demo-server.pid"));
-    assert!(workflow.contains("actions/upload-pages-artifact"));
-    assert!(workflow.contains("path: target/demo-pages"));
-    assert!(workflow.contains("actions/deploy-pages"));
+    assert!(!workflow.contains("actions/configure-pages"));
+    assert!(!workflow.contains("actions/upload-pages-artifact"));
+    assert!(!workflow.contains("actions/deploy-pages"));
     assert!(!workflow.contains("pull_request:"));
 
-    assert!(root_readme.contains("demo/README.md"));
-    assert!(root_readme.contains("javaquasar.github.io/hydracache"));
+    assert!(docs_workflow.contains("name: Documentation Site"));
+    assert!(docs_workflow.contains("mdbook build docs-site"));
+    assert!(docs_workflow.contains("actions/configure-pages"));
+    assert!(docs_workflow.contains("actions/upload-pages-artifact"));
+    assert!(docs_workflow.contains("path: docs-site/book"));
+    assert!(docs_workflow.contains("actions/deploy-pages"));
+
     assert!(positioning.contains("../demo/README.md"));
     assert!(positioning.contains("javaquasar.github.io/hydracache"));
 }
