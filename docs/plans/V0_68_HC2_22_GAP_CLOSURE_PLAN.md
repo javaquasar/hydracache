@@ -17,7 +17,7 @@
 | --- | --- | --- | --- | --- |
 | H01 | Spike is not production-integrated | in progress | `feat(client-plane): integrate production HC2 daemon listener` | off-by-default config, eager mTLS/readiness, shared HC/1 dispatch, push, bounded ownership/drain, port-conflict and real-daemon gates green; completion waits on H03 selection and H21 exporter mount |
 | H02 | HC/2 schema is only a minimal envelope | complete | `feat(client-plane): establish authoritative HC2 schema registry` | generated descriptor, stable IDs, breaking canaries, Rust/Java golden and unknown-field proofs |
-| H03 | Transport ADR remains Proposed | open | — | all ADR-0019 boolean gates |
+| H03 | Transport ADR remains Proposed | complete | `test(client-plane): accept gRPC transport bakeoff` | all three real mTLS candidate gates, hostile corpus/gap, two-pass Rust/Java generation, machine-checked cost/evidence manifest, ADR-0019 accepted |
 | H04 | Authenticated discovery is represented by a boolean | complete | `feat(client-plane): authenticate discovery by type` | opaque proof token, cluster binding, compile-fail tests |
 | H05 | Authenticated-unsupported fallback is caller-asserted | complete | `feat(client-plane): bind fallback to verified attempts` | opaque attempt IDs, peer/endpoint/generation binding, stale/forgery matrix |
 | H06 | Endpoint authority is an unparsed string | complete | `feat(client-plane): parse canonical endpoint identities` | strict URI corpus + adapter/SNI/origin policy |
@@ -129,6 +129,17 @@ malformed corpus, generation, and language fixtures.
 on convenience hides lifecycle defects; fallback is keeping ADR Proposed.
 
 **Done.** ADR status changes in the same commit as the final green evidence.
+
+**Completion evidence (2026-08-11).** Every candidate now runs the malformed,
+truncated, oversized, cross-candidate, unknown-generation, and slow-consumer
+gap corpus across real mTLS sockets. Rust code generation is byte-identical
+across two isolated clean Cargo target directories; Java produces the same 65
+files byte-for-byte across two `mvn clean generate-sources` runs. The
+machine-checked `docs/testing/hc2-transport-bakeoff.json` retains the exact
+boolean set, evidence paths, commands, dependency count, generated-source
+sizes, debug test binary sizes, and operational tradeoffs. ADR-0019 accepts
+gRPC/protobuf as the production-primary generation-5 adapter while retaining
+dedicated TCP/TLS and HTTP/2 only as non-production comparison spikes.
 
 ## H04. Make authenticated discovery unforgeable in the API
 

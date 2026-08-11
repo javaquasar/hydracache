@@ -1,0 +1,98 @@
+{
+  "schema": 1,
+  "protocol_generation": 5,
+  "selected_primary": "grpc",
+  "measurement": {
+    "captured_at": "2026-08-11",
+    "platform": "Windows 11 x86_64, Rust 1.94.0, Java 17.0.12, Maven 3.9.11",
+    "dependency_command": "cargo tree -p hydracache-client-plane-spike --prefix none | sort -u",
+    "unique_dependency_lines": 192,
+    "binary_command": "cargo test --locked -p hydracache-client-plane-spike --all-targets --target-dir target/hc2-spike-check --no-run",
+    "generated_rust_bytes": 30551,
+    "generated_java_files": 65,
+    "generated_java_bytes": 997078
+  },
+  "candidates": [
+    {
+      "id": "dedicated-tcp",
+      "disposition": "retained-spike",
+      "debug_test_binary_bytes": 8058368,
+      "transport_runtime": "tokio + rustls; HydraCache owns framing and multiplexing",
+      "cross_language_cost": "new framing generators and runtimes would be HydraCache-owned",
+      "operational_cost": "custom protocol, port, diagnostics, proxy policy, and runbook",
+      "evidence": {
+        "tls_identity": true,
+        "correlation_256": true,
+        "interleaved_push": true,
+        "slow_consumer_gap": true,
+        "cancellation": true,
+        "half_close": true,
+        "reset": true,
+        "disconnect_zero": true,
+        "hostile_corpus": true,
+        "generation_isolation": true,
+        "language_fixture": true
+      },
+      "evidence_paths": [
+        "crates/hydracache-client-plane-spike/tests/dedicated_tcp_loopback.rs",
+        "crates/hydracache-client-plane-spike/tests/candidate_socket_corpus.rs",
+        "crates/hydracache-client-plane-spike/tests/semantic_harness.rs",
+        "crates/hydracache-client-plane-spike/tests/fault_proxy.rs"
+      ]
+    },
+    {
+      "id": "http2",
+      "disposition": "retained-spike",
+      "debug_test_binary_bytes": 9437184,
+      "transport_runtime": "h2 + rustls; HydraCache owns generated-message stream framing",
+      "cross_language_cost": "protobuf generation is reusable, but bidi HTTP/2 adapters remain HydraCache-owned",
+      "operational_cost": "standard HTTP/2 inspection with a non-standard application stream contract",
+      "evidence": {
+        "tls_identity": true,
+        "correlation_256": true,
+        "interleaved_push": true,
+        "slow_consumer_gap": true,
+        "cancellation": true,
+        "half_close": true,
+        "reset": true,
+        "disconnect_zero": true,
+        "hostile_corpus": true,
+        "generation_isolation": true,
+        "language_fixture": true
+      },
+      "evidence_paths": [
+        "crates/hydracache-client-plane-spike/tests/http2_bidirectional_loopback.rs",
+        "crates/hydracache-client-plane-spike/tests/http2_drain_faults.rs",
+        "crates/hydracache-client-plane-spike/tests/candidate_socket_corpus.rs",
+        "crates/hydracache-client-plane-spike/tests/fault_proxy.rs"
+      ]
+    },
+    {
+      "id": "grpc",
+      "disposition": "production-primary",
+      "debug_test_binary_bytes": 12350464,
+      "transport_runtime": "tonic/gRPC + HTTP/2 + rustls + protobuf code generation",
+      "cross_language_cost": "pinned Rust, Java, and Python gRPC/protobuf runtimes and generators",
+      "operational_cost": "largest dependency/binary footprint; standard gRPC TLS, health, status, proxy, and inspection tooling",
+      "evidence": {
+        "tls_identity": true,
+        "correlation_256": true,
+        "interleaved_push": true,
+        "slow_consumer_gap": true,
+        "cancellation": true,
+        "half_close": true,
+        "reset": true,
+        "disconnect_zero": true,
+        "hostile_corpus": true,
+        "generation_isolation": true,
+        "language_fixture": true
+      },
+      "evidence_paths": [
+        "crates/hydracache-client-plane-spike/tests/grpc_bidirectional_loopback.rs",
+        "crates/hydracache-client-plane-spike/tests/candidate_socket_corpus.rs",
+        "crates/hydracache-client-plane-spike/tests/contract_schema.rs",
+        "crates/xtask/src/client_plane_generation.rs"
+      ]
+    }
+  ]
+}

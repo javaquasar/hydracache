@@ -3,8 +3,8 @@ use std::path::{Path, PathBuf};
 use std::process::Command;
 
 use crate::{
-    client_plane_compat, client_plane_fault, client_plane_java, client_plane_python,
-    client_plane_rust,
+    client_plane_bakeoff, client_plane_compat, client_plane_fault, client_plane_generation,
+    client_plane_java, client_plane_python, client_plane_rust,
 };
 
 const CRATE: &str = "hydracache-client-plane-spike";
@@ -15,6 +15,8 @@ pub fn run(args: Vec<String>) -> Result<(), Box<dyn Error>> {
         return Err("client-plane-spike-check does not accept arguments".into());
     }
     let root = workspace_root()?;
+    client_plane_bakeoff::check_at_root(&root)?;
+    client_plane_generation::check_at_root(&root)?;
     check_rust_and_fixture(&root)?;
     client_plane_java::check_at_root(&root)?;
     client_plane_python::check_at_root(&root)?;
@@ -32,6 +34,8 @@ pub fn run_docker(args: Vec<String>) -> Result<(), Box<dyn Error>> {
         return Err("client-plane-docker-interop-check does not accept arguments".into());
     }
     let root = workspace_root()?;
+    client_plane_bakeoff::check_at_root(&root)?;
+    client_plane_generation::check_at_root(&root)?;
     check_rust_and_fixture(&root)?;
     client_plane_java::check_at_root(&root)?;
     client_plane_python::check_at_root(&root)?;

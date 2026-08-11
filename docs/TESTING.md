@@ -1869,7 +1869,7 @@ cargo +nightly llvm-cov --workspace --doctests --locked --summary-only
 Do not block stable releases solely on `--doctests` coverage unless the release
 process explicitly requires nightly.
 
-## HC/2 H01/H22 Evidence Lanes
+## HC/2 H01/H03/H22 Evidence Lanes
 
 The generated HC/2 client-plane foundation has a separate four-lane
 correctness contract: required GitHub-hosted Linux and digest-pinned Docker
@@ -1887,3 +1887,19 @@ mTLS, shared HC/1/HC/2 production dispatch, push/accounting cleanup, eager TLS
 readiness, drain, and fail-before-partial-startup behavior. See
 [`HC2_PRODUCTION_LISTENER.md`](architecture/HC2_PRODUCTION_LISTENER.md) for the
 exact configuration and acceptance boundary.
+
+The H03 transport decision is separately reproducible and machine checked:
+
+```powershell
+cargo xtask client-plane-bakeoff-check
+cargo xtask client-plane-generation-check
+cargo test -p hydracache-client-plane-spike --test candidate_socket_corpus
+```
+
+The first command validates the exact all-green boolean matrix, selected
+primary, retained comparison spikes, evidence paths, and measured operational
+costs in `docs/testing/hc2-transport-bakeoff.json`. The second compares two
+independent clean Rust generations and two clean Java generations byte for
+byte. The socket corpus verifies malformed/cross-candidate refusal and explicit
+slow-consumer gap delivery over mTLS for every candidate codec. These are
+correctness and reproducibility gates, not latency or capacity measurements.

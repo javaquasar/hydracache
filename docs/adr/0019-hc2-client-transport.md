@@ -2,13 +2,11 @@
 
 ## Status
 
-Proposed for 0.68. The current implementation establishes the common sans-I/O
-semantic harness, CA-signed mTLS on all three real transports, negative
-certificate rejection, 256 correlated real-stream invocations, generated
-Rust/Java/Python proof, bounded shutdown, and retained deterministic fault
-bindings. This ADR must not become Accepted until the remaining hostile socket
-corpus, complete clean-generation, and operational-cost conditions pass.
-ADR-0007 remains authoritative for HC/1 v1-v4.
+Accepted for HC/2 generation 5 on 2026-08-11. Bidirectional gRPC with protobuf
+is the production-primary adapter. Dedicated TCP/TLS and bidirectional HTTP/2
+remain non-production, explicitly retained comparison spikes. Acceptance of the
+transport does not make every HC/2 API or SDK stable and does not promote either
+losing adapter. ADR-0007 remains authoritative for HC/1 v1-v4.
 
 ## Context
 
@@ -30,10 +28,10 @@ bake-off rather than a paper-only choice.
 The full evidence table and source review live in
 [`../architecture/client-plane-transport-analysis.md`](../architecture/client-plane-transport-analysis.md).
 
-## Provisional Decision
+## Decision
 
-Prefer **bidirectional gRPC with protobuf** for the production HC/2 spike.
-This is provisional, not an accepted wire decision. It currently leads because:
+Use **bidirectional gRPC with protobuf** as the production-primary HC/2
+transport because:
 
 - Rust, Java, and Python have maintained code generation and streaming runtimes;
 - bidirectional streams preserve ordering independently in each direction;
@@ -55,9 +53,9 @@ authentication, generation, and malformed-peer failures never trigger fallback.
 The normative policy is
 [`../architecture/hc2-multi-transport-policy.md`](../architecture/hc2-multi-transport-policy.md).
 
-## Acceptance Conditions
+## Acceptance Evidence
 
-Before changing the status to Accepted:
+The following conditions are green for the accepted generation:
 
 - all three adapters pass the same semantic and real-socket harness;
 - TLS and mTLS identity reach dispatch only after verification;
@@ -68,27 +66,38 @@ Before changing the status to Accepted:
 - Rust and Java generated fixtures match byte-for-byte;
 - malformed, truncated, oversized, and unknown-generation messages fail before
   dispatch;
-- dependency, clean-build code generation, binary-size, and operational costs
-  are captured from exact commands.
+- dependency, two-pass clean Rust/Java generation, binary-size, and operational
+  costs are captured from exact commands.
 
-If gRPC fails any boolean condition, the decision falls back to the candidate
-that passes all conditions. Performance can break a tie only after correctness,
-operability, and generation pass.
+The machine-checked decision record is
+[`../testing/hc2-transport-bakeoff.json`](../testing/hc2-transport-bakeoff.json).
+`cargo xtask client-plane-bakeoff-check` rejects a missing candidate, a red or
+extra boolean, a missing evidence path, incomplete cost metadata, or a primary
+that differs from this decision. `cargo xtask client-plane-generation-check`
+independently generates Rust and Java twice and compares every output byte.
+`candidate_socket_corpus.rs` executes the hostile corpus and slow-consumer gap
+over real mTLS sockets for each candidate codec. The wider spike gate runs all
+of these checks.
+
+If gRPC later fails any boolean condition, this ADR must be reopened and only a
+candidate that passes every condition may replace it. Performance can break a
+tie only after correctness, operability, and generation pass.
 
 ## Consequences
 
-HC/2 has a likely implementation direction without falsely claiming a selected
-or shipped transport. The non-production spike crate can harden lifecycle
-semantics independently of networking libraries. The cost is an additional
-gRPC/protobuf dependency family and a reproducible compiler/toolchain problem
-that W0 must solve before acceptance.
+HC/2 has one selected transport without falsely claiming that the entire client
+plane is stable or that the comparison adapters are shipped. The
+non-production spike crate continues to preserve candidate-neutral lifecycle
+evidence. The accepted cost is the largest measured debug test binary and an
+additional gRPC/protobuf runtime and generator family; this is preferred over
+owning cross-language framing, multiplexing, proxy, and diagnostic machinery.
 
 HC/1 v1-v4 remains unchanged and independently identifiable. No HC/2 decoder is
 mounted on `/client/v1/*`, and no legacy client can receive an HC/2 frame.
 
 ## Revisit When
 
-Revisit if the real gRPC spike cannot expose required backpressure/cancellation
-semantics, makes Java/Python packaging non-reproducible, or materially exceeds
-the operational/dependency cost of the HTTP/2 candidate after both pass the
-same boolean gates.
+Revisit if production gRPC cannot preserve the accepted backpressure,
+cancellation, drain, generation, or packaging invariants. A future replacement
+must rerun the exact manifest boolean set; lower latency or binary size cannot
+override a failed correctness, security, lifecycle, or generation condition.
