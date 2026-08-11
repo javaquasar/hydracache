@@ -1,7 +1,7 @@
 # HC/2 Production Listener Integration
 
-Status: production integration candidate; off by default. The gRPC adapter is
-not a stable transport claim until ADR-0019/H03 is accepted.
+Status: H01 production integration complete and off by default. ADR-0019/H03
+accepts bidirectional gRPC over mandatory mTLS as the first HC/2 adapter.
 
 ## Scope
 
@@ -65,9 +65,14 @@ runtime, and fails loudly if HC/2 retains connection, subscription, session, or
 invocation ownership. Listener failures are returned to the process instead of
 being printed while an apparently healthy daemon continues running.
 
-The full H21 metric/trace catalog is still a separate integration step. The
-bounded listener snapshot is sufficient for lifecycle enforcement but is not
-yet the public Prometheus/OTLP contract.
+The existing internal `/metrics` endpoint appends aggregate production-listener
+gauges for connections, pending invocations, subscriptions, and sessions plus
+the pre-dispatch rejection counter. Every series has only the closed
+`transport="grpc_bidirectional"` label. Per-client identities, tenant IDs,
+authorities, certificate material, keys, and values are never exported. The
+larger per-connection H21 diagnostic schema remains available to SDK and
+telemetry adapters; it is not copied into the daemon or exposed on a public
+client port.
 
 ## Evidence
 
@@ -85,6 +90,8 @@ configuration and proves:
 
 - readiness follows successful bind and TLS preflight;
 - HC/1 writes are visible to HC/2 and HC/2 writes are visible to HC/1;
+- the internal metrics endpoint reports the active HC/2 connection and zero
+  pending work without exposing tenant, client, authority, or key material;
 - admin drain terminates the daemon successfully;
 - an HC/2 port conflict and unreadable TLS material fail before any listener
   or readiness signal is exposed.
@@ -102,9 +109,9 @@ cargo clippy -p hydracache-server --all-targets --locked -- -D warnings
 production listener tests as part of the HC/2 evidence workflow. These are
 correctness and lifecycle gates, not performance or release-readiness claims.
 
-## Remaining acceptance boundary
+## Remaining release boundary
 
-This integration does not by itself close H01. H03 must accept the selected
-transport after the final bake-off, and the H21 production exporter must be
-mounted without widening cardinality or exposing identifiers. H16-H18 must
-then bind Java/Rust recovery and compatibility evidence to this real daemon.
+H01 is complete. H16-H18 separately own Java/Rust recovery and retained
+old/new compatibility evidence. The production metric mount is operational
+correctness evidence, not a latency, throughput, capacity, or availability
+claim.

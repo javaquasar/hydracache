@@ -1,8 +1,8 @@
 # HC/2 Client-Plane Observability Contract and Runbook
 
-Status: H21 complete for the non-production client-plane spike. Production
-listener wiring remains owned by H01; this document does not promote an HC/2
-adapter or install a public metrics endpoint.
+Status: H21 diagnostic contract complete; H01 mounts its bounded aggregate
+production subset on the existing internal `/metrics` endpoint. No HC/2 metric
+is installed on a public client port.
 
 Schema: `hydracache.hc2.client_plane.v1`
 
@@ -23,8 +23,11 @@ The authoritative inputs are:
 - explicit retry, repair, session-heartbeat, and session-loss events from
   their owning services.
 
-H01 must connect the selected real adapter to this contract. It must not copy
-the spike into the daemon or claim that H21 alone proves a production listener.
+The selected production gRPC adapter exports aggregate connection, pending,
+subscription, session, and rejection accounting with only the closed
+`transport="grpc_bidirectional"` label. It does not copy spike state into the
+daemon or emit per-client identity. The richer per-connection schema remains
+the telemetry-neutral SDK/adapter contract.
 
 ## Cardinality and privacy invariants
 

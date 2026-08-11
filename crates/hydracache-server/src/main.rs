@@ -50,7 +50,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
     };
 
     let runtime = ServerRuntime::new(config)?.start();
-    let admin_surface = AdminHttpSurface::new(runtime);
+    let mut admin_surface = AdminHttpSurface::new(runtime);
     let shared_runtime = admin_surface.runtime();
     let dispatch_state = shared_runtime
         .lock()
@@ -92,6 +92,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
             .expect("HC/2 has shared dispatch state");
         let service = Hc2ClientPlaneService::new(state, hc2_cluster_id);
         hc2_observer = Some(service.clone());
+        admin_surface = admin_surface.with_hc2_metrics(service.clone());
         let shutdown = shutdown_rx.clone();
         let failure = failure_tx.clone();
         let tls = hc2_tls.expect("enabled HC/2 has eagerly validated TLS");

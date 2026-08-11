@@ -14,7 +14,7 @@ use hydracache_client_transport_axum::{
     CLIENT_DATA_PATH, HYDRACACHE_ADMIN_HEADER, HYDRACACHE_CLIENT_ID_HEADER,
     HYDRACACHE_TENANT_HEADER,
 };
-use hydracache_server::ADMIN_DRAIN_PATH;
+use hydracache_server::{ADMIN_DRAIN_PATH, ADMIN_METRICS_PATH};
 use rcgen::{
     BasicConstraints, CertificateParams, CertifiedIssuer, ExtendedKeyUsagePurpose, IsCa, KeyPair,
 };
@@ -235,6 +235,24 @@ async fn real_daemon_shares_hc1_hc2_dispatch_and_exits_on_drain() {
     )
     .await
     .unwrap();
+
+    let metrics = http
+        .get(format!("http://{admin_addr}{ADMIN_METRICS_PATH}"))
+        .send()
+        .await
+        .unwrap()
+        .text()
+        .await
+        .unwrap();
+    assert!(metrics.contains("hydracache_hc2_connections{transport=\"grpc_bidirectional\"} 1"));
+    assert!(
+        metrics.contains("hydracache_hc2_pending_invocations{transport=\"grpc_bidirectional\"} 0")
+    );
+    assert!(metrics
+        .contains("hydracache_hc2_rejected_frames_total{transport=\"grpc_bidirectional\"} 0"));
+    for forbidden in ["tenant-a", "hc2-client", "localhost", "hc2-key"] {
+        assert!(!metrics.contains(forbidden));
+    }
 
     let get = ClientRequestEnvelope::new(
         "hc1-get",

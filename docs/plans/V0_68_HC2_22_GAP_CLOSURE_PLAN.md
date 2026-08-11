@@ -15,7 +15,7 @@
 
 | ID | Gap | Status | Completion commit | Primary evidence |
 | --- | --- | --- | --- | --- |
-| H01 | Spike is not production-integrated | in progress | `feat(client-plane): integrate production HC2 daemon listener` | off-by-default config, eager mTLS/readiness, shared HC/1 dispatch, push, bounded ownership/drain, port-conflict and real-daemon gates green; completion waits on H03 selection and H21 exporter mount |
+| H01 | Spike is not production-integrated | complete | `feat(client-plane): complete production HC2 listener integration` | accepted gRPC adapter, off-by-default config, eager mTLS/readiness, shared HC/1 dispatch, push, bounded ownership/drain, internal privacy-safe metrics mount, port-conflict and real-daemon gates green |
 | H02 | HC/2 schema is only a minimal envelope | complete | `feat(client-plane): establish authoritative HC2 schema registry` | generated descriptor, stable IDs, breaking canaries, Rust/Java golden and unknown-field proofs |
 | H03 | Transport ADR remains Proposed | complete | `test(client-plane): accept gRPC transport bakeoff` | all three real mTLS candidate gates, hostile corpus/gap, two-pass Rust/Java generation, machine-checked cost/evidence manifest, ADR-0019 accepted |
 | H04 | Authenticated discovery is represented by a boolean | complete | `feat(client-plane): authenticate discovery by type` | opaque proof token, cluster binding, compile-fail tests |
@@ -85,8 +85,17 @@ fail-before-readiness behavior for port conflicts and unreadable TLS material;
 the in-process socket gate rejects plaintext and a foreign client CA and proves
 abrupt-close zero accounting. The same gates are wired into the Linux and
 Docker HC/2 workflow through `client-plane-spike-check`. See
-`docs/architecture/HC2_PRODUCTION_LISTENER.md`. H01 remains in progress until
-H03 accepts the adapter and the H21 exporter contract is mounted.
+`docs/architecture/HC2_PRODUCTION_LISTENER.md`.
+
+**Completion evidence (2026-08-11).** H03 accepted gRPC and the production
+service now appends its aggregate H21 resource gauges and rejection counter to
+the existing internal `/metrics` endpoint. The only label is the closed
+`transport="grpc_bidirectional"` value; client identities, tenant IDs,
+authorities, certificates, keys, and values are excluded. Unit tests prove the
+privacy/cardinality boundary, while the real daemon process proves the series
+are live during an authenticated mTLS HC/2 connection and remain absent from
+the public client surfaces. H01 is complete; SDK and retained-artifact claims
+remain independently owned by H16-H18.
 
 ## H02. Replace the minimal envelope with the authoritative HC/2 schema
 

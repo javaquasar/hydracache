@@ -121,6 +121,34 @@ impl Hc2ClientPlaneService {
             rejected_frames: self.accounting.rejected_frames.load(Ordering::Acquire),
         }
     }
+
+    /// Render the production listener's bounded aggregate accounting for the
+    /// existing internal Prometheus endpoint.
+    ///
+    /// The only label has a closed domain. Peer identities, tenant IDs,
+    /// authorities, certificate material, keys, and values are never exposed.
+    pub fn prometheus_metrics(&self) -> String {
+        let snapshot = self.accounting();
+        format!(
+            concat!(
+                "# TYPE hydracache_hc2_connections gauge\n",
+                "hydracache_hc2_connections{{transport=\"grpc_bidirectional\"}} {}\n",
+                "# TYPE hydracache_hc2_pending_invocations gauge\n",
+                "hydracache_hc2_pending_invocations{{transport=\"grpc_bidirectional\"}} {}\n",
+                "# TYPE hydracache_hc2_subscriptions gauge\n",
+                "hydracache_hc2_subscriptions{{transport=\"grpc_bidirectional\"}} {}\n",
+                "# TYPE hydracache_hc2_sessions gauge\n",
+                "hydracache_hc2_sessions{{transport=\"grpc_bidirectional\"}} {}\n",
+                "# TYPE hydracache_hc2_rejected_frames_total counter\n",
+                "hydracache_hc2_rejected_frames_total{{transport=\"grpc_bidirectional\"}} {}\n",
+            ),
+            snapshot.active_connections,
+            snapshot.pending_invocations,
+            snapshot.active_subscriptions,
+            snapshot.active_sessions,
+            snapshot.rejected_frames,
+        )
+    }
 }
 
 type ResponseStream = Pin<Box<dyn Stream<Item = Result<ServerEnvelope, Status>> + Send + 'static>>;
@@ -831,6 +859,48 @@ mod tests {
         assert_eq!(service.state.dispatch_attempts(), 2);
         assert_eq!(service.state.state_mutations(), 1);
         assert_eq!(service.accounting(), Hc2AccountingSnapshot::default());
+    }
+
+    #[test]
+    fn prometheus_accounting_has_only_bounded_privacy_safe_labels() {
+        let service = service();
+        service
+            .accounting
+            .active_connections
+            .store(2, Ordering::Release);
+        service
+            .accounting
+            .active_subscriptions
+            .store(3, Ordering::Release);
+        service
+            .accounting
+            .active_sessions
+            .store(4, Ordering::Release);
+        service
+            .accounting
+            .pending_invocations
+            .store(5, Ordering::Release);
+        service
+            .accounting
+            .rejected_frames
+            .store(6, Ordering::Release);
+
+        let metrics = service.prometheus_metrics();
+        assert!(metrics.contains("hydracache_hc2_connections{transport=\"grpc_bidirectional\"} 2"));
+        assert!(metrics
+            .contains("hydracache_hc2_pending_invocations{transport=\"grpc_bidirectional\"} 5"));
+        assert!(metrics
+            .contains("hydracache_hc2_rejected_frames_total{transport=\"grpc_bidirectional\"} 6"));
+        for forbidden in [
+            "tenant-a",
+            "verified-peer",
+            "test-cluster",
+            "endpoint",
+            "authority",
+            "certificate",
+        ] {
+            assert!(!metrics.contains(forbidden));
+        }
     }
 
     #[test]

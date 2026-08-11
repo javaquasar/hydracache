@@ -1,10 +1,10 @@
 # HC/2 CI, Interoperability, Fuzz, and Soak Runbook
 
-Status: H22 implemented for the HC/2 foundation and H01 production-listener candidate.
+Status: H22 implemented for the HC/2 foundation and completed H01 production listener.
 This gate protects correctness and compatibility. It does **not** establish an
 absolute latency, throughput, capacity, availability, or production-readiness
-claim. H01/H03 still own adapter acceptance and H01/H21 own the production
-exporter mount.
+claim. H03 owns adapter acceptance; H01/H21 now own and test the internal
+production metrics mount.
 
 ## Gate contract
 
