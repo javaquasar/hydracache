@@ -31,7 +31,7 @@
 | H14 | Discovery signing/replay protection is absent | complete | `feat(client-plane): sign replay-safe discovery` | canonical Ed25519 bytes, bounded parser/trust/time policy, Rust/Java vector, replay/rotation/recovery matrix |
 | H15 | Hermetic Python generation is absent | complete | `feat(client-plane): make Python generation hermetic` | vendored protoc, descriptor-derived stubs/metadata, hash-bound two-platform wheelhouse, clean generation, golden/unknown-field/bidi/import proof |
 | H16 | Java is a codec fixture, not a production SDK | complete | `feat(client-plane): add Java reconnect and production interop` | publishable Java 17 SDK/external consumer, fail-closed PKI matrix, bounded reconnect/replay and repair, two-process Rust recovery, real production-daemon mTLS/drain, thread/resource checks, and retained H18 JAR/POM baseline green |
-| H17 | Rust production SDK still uses HC/1 HTTP | in progress | `feat(client-plane): add transport-neutral Rust HC/2 SDK` | native SDK/process/package/HC/1 and H11 reconnect/repair gates green; real daemon waits on H01 |
+| H17 | Rust production SDK still uses HC/1 HTTP | complete | `feat(client-plane): complete Rust HC2 production interop` | native SDK/process/package/HC/1 and H11 recovery gates plus real production-daemon mTLS/data/push/session/drain proof green |
 | H18 | Real previous-artifact compatibility matrix is absent | in progress | `test(client-plane): retain HC/2 compatibility baseline` | immutable H17 Rust/Java clients and executable baseline matrix green; production daemon, HC/1+HC/2, reverse direction, rolling upgrade, and deprecation remain blocked on H01/H02 and a later preview |
 | H19 | Deterministic network fault proxy is absent | complete | `test(client-plane): complete deterministic fault bindings` | all bounded actions, real async stream, exact replay, eight H11 and three H20 lifecycle traces, plus four plans applied unchanged to every H03 candidate codec |
 | H20 | HTTP/2 graceful shutdown remains unresolved | complete | `fix(client-plane): bound HTTP2 graceful drain` | two-GOAWAY controller, deadline/reset reasons, retained fault traces, real TLS/H2 zero-accounting task joins without abort |
@@ -544,22 +544,22 @@ separate modules/features and golden compatibility tests.
 
 **Done.** Native HC/2 operations use no spike type or handwritten wire codec.
 
-**Implementation evidence (2026-08-10, completion blocked).** The distinct
+**Completion evidence (2026-08-11).** The distinct
 `hydracache-client-hc2` preview crate now owns the authoritative generated
 contract and exposes generated-wire-free native APIs for data/CAS/batch,
 bounded listeners with explicit gap repair, monotonic topology, fenced
 sessions, deadlines/cancellation, stable errors/retry advice, and pull-based
 metrics. The public adapter boundary has one enabled implementation:
 bidirectional gRPC over mandatory mTLS; it has no plaintext or HC/1 fallback.
-`cargo xtask client-plane-rust-sdk-check` runs the SDK against a separate mTLS
-process, proves cancellation cannot produce a stale completion, enforces
-pending/listener bounds, requires zero subscription/session retention, packages
-and verifies the crate, and separately runs the unchanged HC/1 conformance
-suite. Exact scope and reproduction are documented in
-`docs/architecture/HC2_RUST_SDK.md`. H17 remains `in progress`: H01 has not
-mounted HC/2 on the production daemon. H11 reconnect and repair are now green,
-but the process peer and recovery proof do not substitute for the missing
-production daemon integration.
+`cargo xtask client-plane-rust-sdk-check` runs the SDK against both a separate
+mTLS conformance process and the real `hydracache-server`, proves cancellation
+cannot produce a stale completion, enforces pending/listener bounds, replays
+the H11 reconnect/repair/session-loss matrix, requires zero retained owners,
+and separately runs the unchanged HC/1 conformance suite. The production row
+verifies cluster identity, PUT/GET, push subscription, fenced session, clean
+client close, admin drain, and successful process exit. The gate finally
+packages and verifies the crate. Exact scope and reproduction are documented
+in `docs/architecture/HC2_RUST_SDK.md`.
 
 ## H18. Prove compatibility with retained real artifacts
 

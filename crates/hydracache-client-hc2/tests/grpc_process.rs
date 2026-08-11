@@ -1,5 +1,5 @@
 use std::fs;
-use std::io::{BufRead, BufReader, Read};
+use std::io::{BufRead, BufReader, Read, Write};
 use std::path::PathBuf;
 use std::process::{Child, Command, Stdio};
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
@@ -12,6 +12,17 @@ use hydracache_client_hc2::{
 
 struct InteropProcess {
     child: Child,
+    stdout: BufReader<std::process::ChildStdout>,
+    credentials: PathBuf,
+    port: u16,
+    ca: PathBuf,
+    client_certificate: PathBuf,
+    client_key: PathBuf,
+}
+
+struct ProductionDaemonProcess {
+    child: Child,
+    stdin: Option<std::process::ChildStdin>,
     stdout: BufReader<std::process::ChildStdout>,
     credentials: PathBuf,
     port: u16,
@@ -92,6 +103,98 @@ impl InteropProcess {
             "unexpected CLOSED receipt: {receipt:?}"
         );
         fs::remove_dir_all(&self.credentials).expect("remove credentials directory");
+    }
+}
+
+impl ProductionDaemonProcess {
+    fn start() -> Self {
+        let fixture = std::env::var_os("HC2_RUST_INTEROP_SERVER")
+            .expect("HC2_RUST_INTEROP_SERVER must identify the credential fixture");
+        let daemon = std::env::var_os("HC2_RUST_PRODUCTION_DAEMON")
+            .expect("HC2_RUST_PRODUCTION_DAEMON must identify hydracache-server");
+        let unique = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .expect("system clock")
+            .as_nanos();
+        let credentials = std::env::temp_dir().join(format!(
+            "hydracache-hc2-rust-production-{}-{unique}",
+            std::process::id()
+        ));
+        fs::create_dir(&credentials).expect("create production credentials directory");
+        let mut child = Command::new(fixture)
+            .arg("--credentials-dir")
+            .arg(&credentials)
+            .arg("--daemon")
+            .arg(daemon)
+            .stdin(Stdio::piped())
+            .stdout(Stdio::piped())
+            .stderr(Stdio::piped())
+            .spawn()
+            .expect("start production daemon fixture");
+        let stdin = child.stdin.take().expect("fixture stdin");
+        let stdout = child.stdout.take().expect("fixture stdout");
+        let mut stdout = BufReader::new(stdout);
+        let mut ready = String::new();
+        stdout
+            .read_line(&mut ready)
+            .expect("read production READY receipt");
+        let fields: Vec<_> = ready.trim_end().split('\t').collect();
+        assert_eq!(
+            fields.len(),
+            6,
+            "malformed production READY receipt: {ready:?}"
+        );
+        assert_eq!(fields[0], "READY_DAEMON");
+        Self {
+            child,
+            stdin: Some(stdin),
+            stdout,
+            credentials,
+            port: fields[1].parse().expect("production READY port"),
+            ca: PathBuf::from(fields[3]),
+            client_certificate: PathBuf::from(fields[4]),
+            client_key: PathBuf::from(fields[5]),
+        }
+    }
+
+    fn adapter(&self) -> GrpcMtlsAdapter {
+        GrpcMtlsAdapter::new(
+            GrpcMtlsConfig::new(
+                format!("https://127.0.0.1:{}", self.port),
+                "localhost",
+                fs::read(&self.ca).expect("read production CA"),
+                fs::read(&self.client_certificate).expect("read production client certificate"),
+                fs::read(&self.client_key).expect("read production client key"),
+            )
+            .expect("valid production mTLS configuration"),
+        )
+    }
+
+    fn finish(mut self) {
+        let mut stdin = self.stdin.take().expect("fixture stdin remains owned");
+        writeln!(stdin, "DRAIN").expect("request production drain");
+        drop(stdin);
+        let mut receipt = String::new();
+        self.stdout
+            .read_to_string(&mut receipt)
+            .expect("read production CLOSED receipt");
+        let status = self
+            .child
+            .wait()
+            .expect("wait for production daemon fixture");
+        let mut stderr = String::new();
+        self.child
+            .stderr
+            .take()
+            .expect("fixture stderr")
+            .read_to_string(&mut stderr)
+            .expect("read production fixture stderr");
+        assert!(
+            status.success(),
+            "production fixture failed: {status}; stderr={stderr}"
+        );
+        assert_eq!(receipt.trim(), "CLOSED_DAEMON\tstatus=ok");
+        fs::remove_dir_all(&self.credentials).expect("remove production credentials directory");
     }
 }
 
@@ -196,6 +299,70 @@ async fn rust_sdk_is_bounded_cancel_safe_and_process_interoperable() {
     subscription.close();
     session.close();
     tokio::time::sleep(Duration::from_millis(150)).await;
+    client.close();
+    drop(client);
+    process.finish();
+}
+
+#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
+async fn rust_sdk_uses_the_real_production_daemon_and_drains_cleanly() {
+    if std::env::var_os("HC2_RUST_INTEROP_SERVER").is_none()
+        || std::env::var_os("HC2_RUST_PRODUCTION_DAEMON").is_none()
+    {
+        eprintln!("SKIP: run `cargo xtask client-plane-rust-sdk-check` for daemon evidence");
+        return;
+    }
+    let process = ProductionDaemonProcess::start();
+    let client = Hc2Client::connect(
+        &process.adapter(),
+        ClientConfig::new("rust-production-proof", "tenant-a"),
+    )
+    .await
+    .expect("connect Rust SDK to production daemon");
+    assert_eq!(client.cluster_id(), "daemon-proof");
+
+    client
+        .put(
+            Bytes::from_static(b"production/key"),
+            Bytes::from_static(b"production-value"),
+            None,
+            None,
+        )
+        .await
+        .expect("production put");
+    let value = client
+        .get(Bytes::from_static(b"production/key"), None)
+        .await
+        .expect("production get")
+        .expect("production value");
+    assert_eq!(value.value, Bytes::from_static(b"production-value"));
+
+    let mut subscription = client
+        .subscribe(Bytes::from_static(b"production/event/"), 0)
+        .await
+        .expect("production subscription");
+    client
+        .put(
+            Bytes::from_static(b"production/event/1"),
+            Bytes::from_static(b"event-value"),
+            None,
+            None,
+        )
+        .await
+        .expect("production event mutation");
+    assert!(matches!(
+        subscription.next().await,
+        Some(SubscriptionEvent::Event(_))
+    ));
+    let session = client
+        .open_session(Duration::from_secs(3))
+        .await
+        .expect("production fenced session");
+    assert_eq!(session.fence().expect("production fence"), 1);
+
+    subscription.close();
+    session.close();
+    tokio::time::sleep(Duration::from_millis(50)).await;
     client.close();
     drop(client);
     process.finish();

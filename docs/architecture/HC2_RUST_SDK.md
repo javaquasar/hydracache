@@ -6,10 +6,12 @@ H17 introduces the production-shaped `hydracache-client-hc2` crate. It is a
 distinct HC/2 identity; the existing `hydracache-client` crate remains the HC/1
 HTTP SDK and was not redirected, probed, or given an implicit fallback.
 
-H17 is still `in progress`. The production daemon does not expose HC/2 while
-H01 is open, and reconnect plus listener/session repair remain an H11 policy
-decision. The current separate process is a conformance peer, not the daemon,
-and the crate makes no production-listener or automatic-repair claim.
+H17 is complete. The gate runs the SDK against both an independent conformance
+peer and the real production daemon selected by H01. H11 recovery is owned by
+the transport-neutral wrapper: reconnect and operation replay have separate
+bounds, unsafe mutations require idempotency identity, subscriptions repair
+explicit gaps with watermark deduplication, and a lost fenced session remains
+terminal.
 
 ## Contract ownership and public API
 
@@ -26,7 +28,7 @@ The public surface provides:
 - bounded subscription streams with watermark events and explicit repair gaps;
 - monotonic topology snapshots;
 - fenced session open, heartbeat, loss detection, and close;
-- stable error codes and retry advice without automatic retry;
+- stable error codes and retry advice plus an explicit bounded recovery owner;
 - privacy-safe pull metrics for completions, cancellation, late responses,
   dropped events, and retained owners;
 - a transport adapter trait used by the shared runtime.
@@ -49,8 +51,9 @@ candidate spikes, not enabled production adapters.
   retains a bounded repair watermark and emits a gap once capacity returns.
 - Connection termination fails all retained owners, releases permits, closes
   listener streams, stops heartbeat ownership, and closes the adapter.
-- Retry advice is data, not an action. No reconnect or retry occurs implicitly
-  until H11 defines idempotency and repair behavior.
+- Retry advice never bypasses the H11 policy. Reads may replay within the
+  independent operation budget; mutations and mutating batches replay only
+  with a non-empty idempotency key. Security/protocol failures never fall back.
 - HC/1 remains a separate crate and protocol identity.
 
 ## Executable evidence
@@ -63,27 +66,28 @@ cargo xtask client-plane-rust-sdk-check
 
 The gate:
 
-1. builds a separate Rust HC/2 conformance process;
-2. connects through generated gRPC over ephemeral CA-signed mutual TLS;
-3. exercises data, batch, listener, topology, and fenced-session APIs;
-4. holds one delayed invocation to prove the pending limit fails closed;
-5. drops that invocation and proves exactly one cancellation, one discarded
+1. builds a separate Rust HC/2 conformance process and `hydracache-server`;
+2. connects to each through generated gRPC over ephemeral CA-signed mutual TLS;
+3. exercises data, batch, listener, topology, and fenced-session APIs on the
+   conformance peer;
+4. exercises production data, push, fenced session, cluster identity, clean
+   close, admin drain, and zero-resource process exit;
+5. holds one delayed invocation to prove the pending limit fails closed;
+6. drops that invocation and proves exactly one cancellation, one discarded
    late response, and no retained invocation;
-6. fills the listener queue and proves an explicit repair gap after capacity
+7. fills the listener queue and proves an explicit repair gap after capacity
    returns;
-7. requires a terminal receipt with zero subscriptions and sessions;
-8. runs the existing HC/1 conformance suite independently;
-9. packages and verifies the publishable Rust crate from its archive.
+8. replays the retained H11 reconnect/repair/session-loss matrix;
+9. requires terminal receipts with zero subscriptions and sessions;
+10. runs the existing HC/1 conformance suite independently;
+11. packages and verifies the publishable Rust crate from its archive.
 
 The combined `cargo xtask client-plane-spike-check` includes this gate alongside
 the Java and Python SDK/generation evidence.
 
-## Completion path
+## Remaining compatibility boundary
 
-After H01, replace the conformance peer row with the real daemon for every
-enabled adapter. After H11, add reconnect, retry, topology migration, and
-deterministic listener/session repair matrices. H18 now retains the first
-immutable H17 `.crate` as a `baseline-smoke`; production old/new compatibility
-remains blocked as described in `HC2_COMPATIBILITY_ARTIFACTS.md`.
-Only real-daemon and later-preview results can move H17 from `in progress` to
-`complete`.
+H17 is complete for the one enabled production adapter. H18 retains the first
+immutable H17 `.crate` as a `baseline-smoke`; genuinely old/new, reverse-
+direction, and rolling compatibility still require a later distinct preview,
+as described in `HC2_COMPATIBILITY_ARTIFACTS.md`.

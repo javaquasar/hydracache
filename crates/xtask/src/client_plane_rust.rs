@@ -4,6 +4,7 @@ use std::process::Command;
 
 const SDK_CRATE: &str = "hydracache-client-hc2";
 const PEER_CRATE: &str = "hydracache-client-plane-spike";
+const SERVER_CRATE: &str = "hydracache-server";
 const TARGET_DIR: &str = "target/hc2-rust-sdk-check";
 
 pub fn run(args: Vec<String>) -> Result<(), Box<dyn Error>> {
@@ -26,14 +27,34 @@ pub fn check_at_root(root: &Path) -> Result<(), Box<dyn Error>> {
             "--target-dir",
             TARGET_DIR,
         ],
-        None,
+        &[],
         "separate HC/2 conformance peer",
+    )?;
+    run_checked(
+        root,
+        &[
+            "build",
+            "--locked",
+            "-p",
+            SERVER_CRATE,
+            "--bin",
+            SERVER_CRATE,
+            "--target-dir",
+            TARGET_DIR,
+        ],
+        &[],
+        "production HC/2 daemon for Rust interop",
     )?;
     let peer = interop_server(root);
     if !peer.is_file() {
         return Err(format!("HC/2 conformance peer is missing: {}", peer.display()).into());
     }
     let peer = peer.to_string_lossy().into_owned();
+    let daemon = production_daemon(root);
+    if !daemon.is_file() {
+        return Err(format!("production daemon is missing: {}", daemon.display()).into());
+    }
+    let daemon = daemon.to_string_lossy().into_owned();
     run_checked(
         root,
         &[
@@ -44,7 +65,10 @@ pub fn check_at_root(root: &Path) -> Result<(), Box<dyn Error>> {
             "--target-dir",
             TARGET_DIR,
         ],
-        Some(("HC2_RUST_INTEROP_SERVER", &peer)),
+        &[
+            ("HC2_RUST_INTEROP_SERVER", &peer),
+            ("HC2_RUST_PRODUCTION_DAEMON", &daemon),
+        ],
         "native Rust HC/2 SDK",
     )?;
     run_checked(
@@ -59,17 +83,17 @@ pub fn check_at_root(root: &Path) -> Result<(), Box<dyn Error>> {
             "--target-dir",
             TARGET_DIR,
         ],
-        None,
+        &[],
         "unchanged HC/1 client conformance",
     )?;
     run_checked(
         root,
         &["package", "--locked", "-p", SDK_CRATE, "--allow-dirty"],
-        None,
+        &[],
         "publishable Rust HC/2 SDK package",
     )?;
     println!(
-        "client-plane-rust-sdk-check: OK (mTLS process proof + cancellation/bounds + HC/1 regression + package)"
+        "client-plane-rust-sdk-check: OK (conformance peer + production daemon mTLS/drain + recovery/bounds + HC/1 regression + package)"
     );
     Ok(())
 }
@@ -83,15 +107,24 @@ fn interop_server(root: &Path) -> PathBuf {
     root.join(TARGET_DIR).join("debug").join(executable)
 }
 
+fn production_daemon(root: &Path) -> PathBuf {
+    let executable = if cfg!(windows) {
+        "hydracache-server.exe"
+    } else {
+        "hydracache-server"
+    };
+    root.join(TARGET_DIR).join("debug").join(executable)
+}
+
 fn run_checked(
     root: &Path,
     args: &[&str],
-    environment: Option<(&str, &str)>,
+    environment: &[(&str, &str)],
     label: &str,
 ) -> Result<(), Box<dyn Error>> {
     let mut command = Command::new("cargo");
     command.args(args).current_dir(root);
-    if let Some((name, value)) = environment {
+    for (name, value) in environment {
         command.env(name, value);
     }
     let status = command
