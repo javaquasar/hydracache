@@ -4,7 +4,7 @@ use std::process::Command;
 
 const CRATE: &str = "hydracache-client-plane-spike";
 const SERVER_CRATE: &str = "hydracache-server";
-const SDK_POM: &str = "sdks/java/hydracache-client-hc2/pom.xml";
+const SDK_POM: &str = "sdks/java/pom.xml";
 const CONSUMER_POM: &str = "tests/java-hc2-consumer/pom.xml";
 const DEFAULT_TARGET_DIR: &str = "target/hc2-java-sdk-check";
 
@@ -68,7 +68,7 @@ pub fn check_at_root(root: &Path) -> Result<(), Box<dyn Error>> {
             ("HC2_JAVA_INTEROP_SERVER", &server),
             ("HC2_JAVA_DAEMON", &daemon),
         ],
-        "publishable Java HC/2 SDK",
+        "publishable Java HC/2 SDK and Hazelcast-shaped facade",
     )?;
     run_checked(
         root,
@@ -149,6 +149,7 @@ fn workspace_root() -> Result<PathBuf, Box<dyn Error>> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::fs;
 
     #[test]
     fn sdk_and_consumer_are_independent_maven_projects() {
@@ -159,5 +160,8 @@ mod tests {
             root.join(SDK_POM).parent(),
             root.join(CONSUMER_POM).parent()
         );
+        let aggregator = fs::read_to_string(root.join(SDK_POM)).unwrap();
+        assert!(aggregator.contains("<module>hydracache-client-hc2</module>"));
+        assert!(aggregator.contains("<module>hydracache-hazelcast-facade</module>"));
     }
 }
