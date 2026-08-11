@@ -16,7 +16,9 @@
 >   operation family, `0.63` edge-adapter separation, and `0.64` evidence/canary governance.
 > - **Unblocks:** `0.69` migration conformance against a real Java artifact and live previous-client
 >   binaries; later optional Hazelcast Open Binary Client Protocol and smart-routing edge tracks.
-> - **Status:** planned.
+> - **Status:** planned; implementation is in progress. H01-H21
+>   hardening is complete and H22 awaits a fixed-host receipt, but the original
+>   W8/W9/W12 deliverables are tracked separately in the release closure ledger.
 >
 > Roadmap: [`INDEX.md`](INDEX.md) - rules: [`../RULES.md`](../RULES.md) -
 > gates: [`../GATES.md`](../GATES.md) - compatibility: [`../COMPAT.md`](../COMPAT.md) -
@@ -24,6 +26,8 @@
 > Hazelcast boundary: [`../adr/0018-hazelcast-compatibility-surface-boundaries.md`](../adr/0018-hazelcast-compatibility-surface-boundaries.md).
 > Detailed gap closure ledger:
 > [`V0_68_HC2_22_GAP_CLOSURE_PLAN.md`](V0_68_HC2_22_GAP_CLOSURE_PLAN.md).
+> Original W0-W12 release reconciliation:
+> [`V0_68_RELEASE_CLOSURE_LEDGER.md`](V0_68_RELEASE_CLOSURE_LEDGER.md).
 
 Read [`CLAUDE.md`](../../CLAUDE.md), [`docs/RULES.md`](../RULES.md), and
 [`docs/GATES.md`](../GATES.md) first. This release inherits R-1 through R-11. In particular:

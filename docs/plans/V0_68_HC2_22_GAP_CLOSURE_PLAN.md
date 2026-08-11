@@ -10,6 +10,12 @@
 > **Commit rule.** Each H-item receives its own implementation commit and push
 > only after its Definition of Done is green. Documentation-only progress,
 > mocks, or a sans-I/O proof cannot mark a production row complete.
+>
+> **Release reconciliation.** Completion of this H-ledger does not replace the
+> original W0-W12 deliverables. In particular, H15 is generation evidence rather
+> than a production Python SDK, H16 does not include the Hazelcast-shaped facade,
+> and H22 is not the 0.68 release-evidence manifest. See
+> [`V0_68_RELEASE_CLOSURE_LEDGER.md`](V0_68_RELEASE_CLOSURE_LEDGER.md).
 
 ## Status ledger
 

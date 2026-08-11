@@ -1,0 +1,61 @@
+# HydraCache 0.68.0 Release Closure Ledger
+
+> **Purpose.** This ledger reconciles the original W0-W12 release Definition of
+> Done with the later H01-H22 hardening program. H-items prove properties of the
+> HC/2 implementation; they do not silently replace missing W-item deliverables.
+> The release remains `planned`, depends on `0.67.1`, and cannot ship from this
+> branch while any required row below is not complete.
+
+## Closure rule
+
+A row is complete only when its production artifact, clean-consumer proof, and
+registered gate exist together. Generated fixtures, in-process models, and
+source-level mappings are useful evidence but cannot stand in for a published
+SDK, facade, package, or exact-candidate receipt.
+
+## Reconciled status
+
+| Original requirement | H-item evidence already present | Remaining release work | Status |
+| --- | --- | --- | --- |
+| W0-W7 transport, schema, connection, invocation, push, topology, sessions, values | H01-H14, H19-H21 | keep existing gates green; no scope expansion | implemented, release evidence pending |
+| W8 production Java HC/2 SDK | H16 real Java 17 client and process interop | public API/package compatibility gate and clean JAR consumer | implemented, packaging pending |
+| W8 narrow Hazelcast-shaped Java facade | operation contract exists outside the production Java module | add a separate HydraCache-owned IMap/FencedLock-shaped facade with explicit unsupported surface and tests | missing |
+| W9 production Rust HC/2 SDK | H17 real client, reconnect, process, package and HC/1 coexistence gates | public API/package compatibility gate and clean `.crate` consumer | implemented, packaging pending |
+| W9 production Python HC/2 SDK | H15 hermetic generated Python fixture only | add installable asyncio network SDK, cancellation/reconnect/listener repair, tests, and wheel smoke | missing |
+| W10-W11 security, bounds, observability, faults and compatibility | H10-H14, H18-H22 hosted lanes | retain exact receipts; H22 fixed-host soak remains operationally outstanding | implemented except fixed-host receipt |
+| W12 release governance and documentation | generic governance and H22 CI contract exist | add `0.68.toml`, cross-SDK conformance commands, compatibility/release docs, and exact-candidate receipts | missing |
+
+## Current five-stage execution sequence
+
+1. Keep this reconciliation machine-checked so an H-item cannot overclaim an
+   original W-item.
+2. Ship the production Python HC/2 SDK from the authoritative protobuf schema.
+3. Ship the narrow Java facade over the native Java HC/2 client.
+4. Freeze and test the public Rust, Java, and Python package surfaces from clean
+   consumer environments; retain preview versions until the release cut.
+5. Add 0.68 release-evidence and cross-SDK conformance governance. A manifest
+   may be committed before all external receipts exist, but `--require-ship`
+   must remain red until every required exact-candidate receipt is present.
+
+## Release blockers outside these five stages
+
+- H22 still needs one retained fixed-host Ubuntu 24.04 x86-64 soak receipt. This
+  is a correctness/stability gate, not a performance or capacity claim.
+- `0.67.1` remains a declared release dependency. Development may continue,
+  but publishing `0.68.0` requires either completing that dependency or an
+  explicit roadmap scope-change review.
+- Workspace and SDK versions remain preview/pre-release values until the final
+  release-cut change; this ledger does not authorize an early version bump.
+
+## Required final commands
+
+```powershell
+cargo run -p xtask --locked -- client-schema-check
+cargo run -p xtask --locked -- client-conformance --all-sdks
+cargo run -p xtask --locked -- release-governance-check --release 0.68
+cargo run -p xtask --locked -- release-evidence --release 0.68 --require-ship
+cargo run -p xtask --locked -- doc-check
+```
+
+The first two commands are closure deliverables, not documentation promises.
+Until they exist and pass, the original W9/W12 Definition of Done is open.
