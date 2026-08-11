@@ -27,9 +27,32 @@ The exact required check names for branch protection are:
 - `HC/2 Docker Interop`.
 
 GitHub branch protection is repository administration, not a property of the
-workflow file. A maintainer must add these names after their first successful
-run. Tags and an opted-in release-admission dispatch additionally require all
-four same-commit receipts.
+workflow file. Both names were installed on `main` after their first successful
+run, with strict head-branch freshness, GitHub Actions app binding, and
+administrator enforcement. Force pushes and branch deletion remain disabled.
+Tags and an opted-in release-admission dispatch additionally require all four
+same-commit receipts.
+
+## Hosted activation evidence
+
+The first exact-candidate hosted activation completed on 2026-08-11 for commit
+`93f0de21568d60b77aa134fb44afcf8d6ceb586f` in manually dispatched workflow
+run [`31488636299`](https://github.com/javaquasar/hydracache/actions/runs/31488636299).
+It produced these immutable-at-upload artifacts:
+
+| Lane | Job | Artifact | GitHub artifact digest |
+| ---- | --- | -------- | ---------------------- |
+| `linux-required` | [`93769701789`](https://github.com/javaquasar/hydracache/actions/runs/31488636299/job/93769701789) | `9100457998` (`hc2-linux-93f0de21568d60b77aa134fb44afcf8d6ceb586f-31488636299-1`) | `sha256:49804be251de21faf994d4f4a538b5ac7c0f0a07dc9809ed6dcba76425ff0b2e` |
+| `docker-interop` | [`93769701852`](https://github.com/javaquasar/hydracache/actions/runs/31488636299/job/93769701852) | `9100297478` (`hc2-docker-93f0de21568d60b77aa134fb44afcf8d6ceb586f-31488636299-1`) | `sha256:84ceb68d32238a21207ea828570cd2a46e32bf9b9dafb601d8f0c5034a5faa94` |
+| `fuzz` | [`93769701773`](https://github.com/javaquasar/hydracache/actions/runs/31488636299/job/93769701773) | `9100362252` (`hc2-fuzz-93f0de21568d60b77aa134fb44afcf8d6ceb586f-31488636299-1`) | `sha256:be8612b8bfa13c2b8b505a5d16818261e4e2659e2f020d69d6e3e09d5d2d9add` |
+
+The same commit also passed the pull-request-required Linux and Docker jobs in
+run [`31488620419`](https://github.com/javaquasar/hydracache/actions/runs/31488620419).
+The manually requested fixed-host job was deliberately skipped because no
+labelled rented runner was online, so release admission was also skipped. This
+is a truthful partial activation receipt, not a four-lane release admission or
+a capacity claim. H22 remains open until a same-commit labelled fixed-host soak
+receipt exists.
 
 ## Local reproduction
 

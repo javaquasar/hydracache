@@ -36,7 +36,7 @@
 | H19 | Deterministic network fault proxy is absent | complete | `test(client-plane): complete deterministic fault bindings` | all bounded actions, real async stream, exact replay, eight H11 and three H20 lifecycle traces, plus four plans applied unchanged to every H03 candidate codec |
 | H20 | HTTP/2 graceful shutdown remains unresolved | complete | `fix(client-plane): bound HTTP2 graceful drain` | two-GOAWAY controller, deadline/reset reasons, retained fault traces, real TLS/H2 zero-accounting task joins without abort |
 | H21 | Observability is local to the spike | complete | `feat(client-plane): export bounded privacy-safe diagnostics` | v1 typed metric/trace export, 64 salted tenant buckets, bounded trace ring, privacy/cardinality/reconnect/close evidence, operator runbook |
-| H22 | Linux CI, interop, fuzz, and soak gates are absent | in progress | `ci(client-plane): install Linux interop fuzz and soak gates` | four-lane fail-closed contract, pinned workflow/container, receipts/admission canaries, Docker proof, and runbook implemented; first GitHub/fixed-host receipts and branch-protection activation remain operational evidence |
+| H22 | Linux CI, interop, fuzz, and soak gates are absent | in progress | `ci(client-plane): install Linux interop fuzz and soak gates` | four-lane fail-closed contract, pinned workflow/container, receipts/admission canaries, Docker proof, and runbook implemented; exact hosted Linux/Docker/fuzz receipts and strict `main` protection are active; a labelled fixed-host receipt remains operational evidence |
 
 ## Global execution rules
 
@@ -718,10 +718,22 @@ commands, branch-check names, fixed-host activation, pin rotation, and the
 non-capacity boundary are documented in
 `docs/operations/HC2_CI_INTEROP_FUZZ_SOAK.md`.
 
-H22 remains `in progress` until the new hosted jobs produce their first exact-
-candidate receipts, the two fast job names are installed as required branch
-checks, and a labelled fixed host produces a retained soak receipt. None of
-those operational steps may be replaced with local evidence or a skipped lane.
+**Hosted activation evidence (2026-08-11).** Exact candidate
+`93f0de21568d60b77aa134fb44afcf8d6ceb586f` passed the hosted Linux, pinned
+Docker interoperability, and bounded fail-closed fuzz lanes in workflow run
+[`31488636299`](https://github.com/javaquasar/hydracache/actions/runs/31488636299).
+Their job IDs, artifact IDs, and upload digests are retained in
+`docs/operations/HC2_CI_INTEROP_FUZZ_SOAK.md`. Pull-request run
+[`31488620419`](https://github.com/javaquasar/hydracache/actions/runs/31488620419)
+independently passed the two required lanes. Repository branch protection was
+then read back as strict on `main`, requiring `HC/2 Linux Required` and `HC/2
+Docker Interop` from GitHub Actions, enforcing the rule for administrators, and
+disallowing force pushes and deletion.
+
+H22 remains `in progress` only until a labelled fixed host produces a retained
+same-candidate soak receipt. Release admission correctly remains unavailable
+while that fourth lane is absent. This operational step may not be replaced
+with local evidence, a skipped lane, or the hosted correctness receipts above.
 
 ## Dependency-oriented execution order
 
