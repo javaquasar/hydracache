@@ -203,6 +203,13 @@ fn check_contract_at(root: &Path) -> Result<(), Box<dyn Error>> {
         "client-plane-ci-check",
         "client-plane-ci-admission",
         "fuzz_hc2_client_plane",
+        "timeout --signal=INT --kill-after=10s 180s",
+        "fuzz_status=${PIPESTATUS[0]}",
+        "\"$fuzz_status\" -ne 124",
+        "-timeout=5",
+        "-error_exitcode=77",
+        "-timeout_exitcode=70",
+        "find artifacts/fuzz_hc2_client_plane -type f",
         "hydracache-hc2-soak-v1",
         "retention-days:",
     ] {

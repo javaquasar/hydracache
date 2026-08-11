@@ -65,9 +65,20 @@ installed:
 
 ```bash
 cd fuzz
-cargo +nightly-2026-08-01 fuzz run fuzz_hc2_client_plane -- \
-  -seed=220068 -max_total_time=180
+cargo +nightly-2026-08-01 fuzz build fuzz_hc2_client_plane
+timeout --signal=INT --kill-after=10s 180s \
+  cargo +nightly-2026-08-01 fuzz run fuzz_hc2_client_plane -- \
+    -seed=220068 -timeout=5 -error_exitcode=77 -timeout_exitcode=70
 ```
+
+The workflow records the fuzz process status through Bash `PIPESTATUS` rather
+than the status of `tee`. Exit `124` is the reviewed successful end of the
+outer GNU `timeout` timebox; zero is also accepted when libFuzzer terminates
+cleanly first. A sanitizer/crash error (`77`), per-input timeout (`70`), any
+other early failure, or any file under the failure-artifact directory fails
+the lane and prevents a passing receipt. This avoids depending on
+toolchain-specific `-max_total_time` exit-code behavior without accepting a
+product failure as a scheduled stop.
 
 ## Receipts and release admission
 

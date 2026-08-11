@@ -152,7 +152,25 @@ jobs:
           cargo install cargo-fuzz --version 0.13.2 --locked
       - name: Run bounded HC/2 corpus fuzzing
         working-directory: fuzz
-        run: cargo +"$HC2_FUZZ_TOOLCHAIN" fuzz run fuzz_hc2_client_plane -- -seed="$HC2_FUZZ_SEED" -max_total_time=180 2>&1 | tee ../target/hc2-ci-fuzz.log
+        run: |
+          cargo +"$HC2_FUZZ_TOOLCHAIN" fuzz build fuzz_hc2_client_plane
+          set +e
+          timeout --signal=INT --kill-after=10s 180s \
+            cargo +"$HC2_FUZZ_TOOLCHAIN" fuzz run fuzz_hc2_client_plane -- \
+              -seed="$HC2_FUZZ_SEED" -timeout=5 \
+              -error_exitcode=77 -timeout_exitcode=70 \
+            2>&1 | tee ../target/hc2-ci-fuzz.log
+          fuzz_status=${PIPESTATUS[0]}
+          set -e
+          if [[ "$fuzz_status" -ne 0 && "$fuzz_status" -ne 124 ]]; then
+            echo "HC/2 fuzz target failed with status $fuzz_status" >&2
+            exit "$fuzz_status"
+          fi
+          if find artifacts/fuzz_hc2_client_plane -type f -print -quit | grep -q .; then
+            echo "HC/2 fuzz target produced a failure artifact" >&2
+            exit 1
+          fi
+          echo "HC/2 fuzz timebox completed without a failure artifact"
       - name: Emit fuzz receipt
         run: cargo +"$HC2_RUST_TOOLCHAIN" run -p xtask --locked -- client-plane-ci-receipt --lane fuzz --seed "$HC2_FUZZ_SEED" --output target/hc2-ci/fuzz.receipt.json
       - name: Upload fuzz corpus, failures, log, and receipt
