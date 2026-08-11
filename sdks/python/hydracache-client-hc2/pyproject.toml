@@ -1,6 +1,7 @@
 [build-system]
-requires = ["hatchling>=1.25"]
-build-backend = "hatchling.build"
+requires = []
+build-backend = "hydracache_build"
+backend-path = ["build_backend"]
 
 [project]
 name = "hydracache-client-hc2"
@@ -20,9 +21,6 @@ dependencies = [
 [project.urls]
 Homepage = "https://github.com/javaquasar/hydracache"
 Repository = "https://github.com/javaquasar/hydracache"
-
-[tool.hatch.build.targets.wheel]
-packages = ["src/hydracache_hc2", "src/hydracache_hc2_generated"]
 
 [tool.hydracache]
 protocol = "HC/2"

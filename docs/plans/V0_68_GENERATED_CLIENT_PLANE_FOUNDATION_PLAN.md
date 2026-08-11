@@ -423,8 +423,11 @@ surface. The authoritative HC/2 schema gained only the missing conditional
 remove and lock operations; the daemon maps them to the existing quorum/fence
 `ClientDispatch` instead of implementing a second lock service. Exact scope,
 failure semantics, and reproduction commands are recorded in
-`docs/architecture/HC2_HAZELCAST_FACADE.md`. Clean package consumers and the
-Java 17/21 matrix remain the stage-4 closure item.
+`docs/architecture/HC2_HAZELCAST_FACADE.md`. Stage 4 is now executable through
+`cargo xtask client-package-check`: the frozen preview manifest covers both
+Java artifacts, the external Maven consumer loads the facade from its JAR, and
+CI runs the Java reactor/consumer on Java 17 and 21. Full release admission is
+still owned by W12 rather than inferred from packaging.
 
 ## W9. Rust and Python production HC/2 SDKs
 
@@ -439,6 +442,15 @@ state; blocking adapters must not create an unbounded thread per request.
 **Required tests:** shared scenario count equality; Rust Tokio cancellation; Python asyncio
 cancellation; Java future cancellation; reconnect and listener restoration in all three; packaging
 smoke from produced crates/wheel/JAR.
+
+**Implementation update (2026-08-11).** Rust, Java, and Python now share the
+minimum preview API manifest at `docs/compatibility/hc2-sdk-api-v1.json`.
+`client-package-check` extracts and compiles the produced Rust crate, installs
+and consumes the Java JARs from an external Maven project, builds the Python
+wheel twice with byte-identical SHA-256 output, and installs it with hashed
+offline dependencies in a clean virtual environment. The detailed contract is
+`docs/architecture/HC2_SDK_PACKAGING_AND_API_COMPATIBILITY.md`. Cross-SDK
+semantic scenario equality remains the stage-5 W12 closure item.
 
 ## W10. Security, resource bounds, and observability
 

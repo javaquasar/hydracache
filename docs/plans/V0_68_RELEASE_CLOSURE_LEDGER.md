@@ -18,10 +18,10 @@ SDK, facade, package, or exact-candidate receipt.
 | Original requirement | H-item evidence already present | Remaining release work | Status |
 | --- | --- | --- | --- |
 | W0-W7 transport, schema, connection, invocation, push, topology, sessions, values | H01-H14, H19-H21 | keep existing gates green; no scope expansion | implemented, release evidence pending |
-| W8 production Java HC/2 SDK | H16 real Java 17 client and process interop | public API/package compatibility gate and clean JAR consumer | implemented, packaging pending |
-| W8 narrow Hazelcast-shaped Java facade | native Java HC/2 data/listener/fence operations plus the migration operation contract | public API/package compatibility gate and clean JAR consumer in stage 4 | implemented, packaging pending |
-| W9 production Rust HC/2 SDK | H17 real client, reconnect, process, package and HC/1 coexistence gates | public API/package compatibility gate and clean `.crate` consumer | implemented, packaging pending |
-| W9 production Python HC/2 SDK | H15 hermetic generated Python supply chain plus `hydracache_hc2` asyncio runtime | add clean wheel/install compatibility gate in stage 4 | implemented, packaging pending |
+| W8 production Java HC/2 SDK | H16 real Java 17 client and process interop; frozen preview surface and clean external JAR consumer | retain Java 17/21 CI evidence and exact-candidate release receipt | implemented, release evidence pending |
+| W8 narrow Hazelcast-shaped Java facade | native Java HC/2 data/listener/fence operations plus frozen facade surface, explicit non-wire claim, and clean external JAR consumer | retain Java 17/21 CI evidence and exact-candidate release receipt | implemented, release evidence pending |
+| W9 production Rust HC/2 SDK | H17 real client, reconnect, process, HC/1 coexistence, packaged `.crate`, and clean extracted-package consumer | retain exact-candidate release receipt; align version at release cut | implemented, release evidence pending |
+| W9 production Python HC/2 SDK | H15 hermetic generation plus production asyncio runtime, deterministic wheel, offline hashed dependencies, and clean venv consumer | retain exact-candidate release receipt | implemented, release evidence pending |
 | W10-W11 security, bounds, observability, faults and compatibility | H10-H14, H18-H22 hosted lanes | retain exact receipts; H22 fixed-host soak remains operationally outstanding | implemented except fixed-host receipt |
 | W12 release governance and documentation | generic governance and H22 CI contract exist | add `0.68.toml`, cross-SDK conformance commands, compatibility/release docs, and exact-candidate receipts | missing |
 
@@ -33,6 +33,9 @@ SDK, facade, package, or exact-candidate receipt.
 3. Ship the narrow Java facade over the native Java HC/2 client.
 4. Freeze and test the public Rust, Java, and Python package surfaces from clean
    consumer environments; retain preview versions until the release cut.
+   **Complete:** `client-package-check` binds the v1 API manifest to extracted
+   `.crate`, external JAR, and deterministic wheel consumers; CI owns Java
+   17/21 compatibility.
 5. Add 0.68 release-evidence and cross-SDK conformance governance. A manifest
    may be committed before all external receipts exist, but `--require-ship`
    must remain red until every required exact-candidate receipt is present.

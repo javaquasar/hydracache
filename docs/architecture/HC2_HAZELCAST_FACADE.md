@@ -82,5 +82,6 @@ mvn -B -ntp -f sdks/java/pom.xml `
 The facade tests prove codec and map namespace isolation, get/put/CAS/remove,
 listener decoding/watermarks, server-fence propagation, lease renewal,
 non-reentrancy, unlock, and loud unsupported behavior. The full native SDK
-process/PKI suite remains owned by `client-plane-java-sdk-check`. Stage 4 adds
-clean JAR-consumer and Java 17/21 compatibility evidence before publication.
+process/PKI suite remains owned by `client-plane-java-sdk-check`.
+`client-package-check` adds the clean external JAR consumer, and the HC/2 CI
+workflow runs the reactor and consumer on Java 17/21 before publication.

@@ -1,0 +1,49 @@
+{
+  "schema_version": 1,
+  "stability": "preview-frozen",
+  "protocol_generation": 6,
+  "packages": [
+    {
+      "ecosystem": "rust",
+      "coordinate": "hydracache-client-hc2",
+      "version": "0.67.0",
+      "public_symbols": [
+        "Hc2Client", "RecoveringHc2Client", "GrpcMtlsAdapter", "GrpcMtlsConfig",
+        "ClientConfig", "ClientLimits", "RequestOptions", "ClientError", "ErrorCode",
+        "RetryAdvice", "CacheValue", "MutationResult", "LockAcquireResult", "LockOwnership",
+        "BatchOperation", "BatchItemResult", "Subscription", "RecoveringSubscription",
+        "FencedSession", "RecoveringFencedSession", "TopologySnapshot", "ClientMetricsSnapshot"
+      ]
+    },
+    {
+      "ecosystem": "java",
+      "coordinate": "io.hydracache:hydracache-client-hc2",
+      "version": "0.68.0-alpha.1-SNAPSHOT",
+      "public_symbols": [
+        "HydraCacheClient", "RecoveringHydraCacheClient", "HydraCacheClientConfig",
+        "RequestOptions", "HydraCacheException", "ErrorCode", "RetryAdvice", "CacheValue",
+        "MutationResult", "LockAcquireResult", "LockOwnership", "Subscription", "FencedSession"
+      ]
+    },
+    {
+      "ecosystem": "java",
+      "coordinate": "io.hydracache:hydracache-hazelcast-facade",
+      "version": "0.68.0-alpha.1-SNAPSHOT",
+      "public_symbols": [
+        "HydraCacheInstance", "HydraMap", "HydraFencedLock", "HydraCodec",
+        "EntryEvent", "EntryListener", "MapListenerRegistration", "HydraCacheFacadeException"
+      ]
+    },
+    {
+      "ecosystem": "python",
+      "coordinate": "hydracache-client-hc2",
+      "version": "0.68.0a1",
+      "public_symbols": [
+        "AsyncHydraCacheClient", "CacheEvent", "CacheValue", "Capability", "ClientConfig",
+        "ClientLimits", "ClientMetrics", "ErrorCode", "EventGap", "FencedSession",
+        "HydraCacheError", "LockAcquireResult", "LockOwnership", "MutationResult",
+        "RequestOptions", "RetryAdvice", "Subscription"
+      ]
+    }
+  ]
+}
