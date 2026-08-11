@@ -3,6 +3,7 @@ use std::path::{Path, PathBuf};
 use std::process::Command;
 
 const CRATE: &str = "hydracache-client-plane-spike";
+const SERVER_CRATE: &str = "hydracache-server";
 const SDK_POM: &str = "sdks/java/hydracache-client-hc2/pom.xml";
 const CONSUMER_POM: &str = "tests/java-hc2-consumer/pom.xml";
 const DEFAULT_TARGET_DIR: &str = "target/hc2-java-sdk-check";
@@ -30,32 +31,68 @@ pub fn check_at_root(root: &Path) -> Result<(), Box<dyn Error>> {
             "--target-dir",
             &target_dir,
         ],
-        None,
+        &[],
         "separate Rust HC/2 Java interop server",
+    )?;
+    run_checked(
+        root,
+        "cargo",
+        &[
+            "build",
+            "--locked",
+            "-p",
+            SERVER_CRATE,
+            "--bin",
+            SERVER_CRATE,
+            "--target-dir",
+            &target_dir,
+        ],
+        &[],
+        "production HC/2 daemon for Java interop",
     )?;
     let server = interop_server(root, &target_dir);
     if !server.is_file() {
         return Err(format!("interop server binary is missing: {}", server.display()).into());
     }
     let server = server.to_string_lossy().into_owned();
+    let daemon = production_daemon(root, &target_dir);
+    if !daemon.is_file() {
+        return Err(format!("production daemon binary is missing: {}", daemon.display()).into());
+    }
+    let daemon = daemon.to_string_lossy().into_owned();
     run_checked(
         root,
         maven_program(),
         &["-B", "-ntp", "-f", SDK_POM, "install"],
-        Some(("HC2_JAVA_INTEROP_SERVER", &server)),
+        &[
+            ("HC2_JAVA_INTEROP_SERVER", &server),
+            ("HC2_JAVA_DAEMON", &daemon),
+        ],
         "publishable Java HC/2 SDK",
     )?;
     run_checked(
         root,
         maven_program(),
         &["-B", "-ntp", "-f", CONSUMER_POM, "verify"],
-        Some(("HC2_JAVA_INTEROP_SERVER", &server)),
+        &[
+            ("HC2_JAVA_INTEROP_SERVER", &server),
+            ("HC2_JAVA_DAEMON", &daemon),
+        ],
         "external Java HC/2 consumer",
     )?;
     println!(
-        "client-plane-java-sdk-check: OK (SDK package + separate Rust process + installed consumer)"
+        "client-plane-java-sdk-check: OK (SDK package + conformance process + production daemon + installed consumer)"
     );
     Ok(())
+}
+
+fn production_daemon(root: &Path, target_dir: &str) -> PathBuf {
+    let executable = if cfg!(windows) {
+        "hydracache-server.exe"
+    } else {
+        "hydracache-server"
+    };
+    root.join(target_dir).join("debug").join(executable)
 }
 
 fn interop_server(root: &Path, target_dir: &str) -> PathBuf {
@@ -79,12 +116,12 @@ fn run_checked(
     root: &Path,
     program: &str,
     args: &[&str],
-    environment: Option<(&str, &str)>,
+    environment: &[(&str, &str)],
     label: &str,
 ) -> Result<(), Box<dyn Error>> {
     let mut command = Command::new(program);
     command.args(args).current_dir(root);
-    if let Some((name, value)) = environment {
+    for (name, value) in environment {
         command.env(name, value);
     }
     let status = command

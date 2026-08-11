@@ -5,16 +5,14 @@
 H16 now has a publishable-shape Java 17 SDK at
 `sdks/java/hydracache-client-hc2`, preview coordinates
 `io.hydracache:hydracache-client-hc2:0.68.0-alpha.1-SNAPSHOT`, and a consumer
-project that resolves only the installed JAR and POM. H16 is not complete:
+project that resolves only the installed JAR and POM. H16 is complete for the
+preview contract. The executable gate covers both an independent Rust
+conformance peer and the production daemon, Java owns the H11 reconnect/repair
+policy, and H18 retains an immutable first-preview JAR/POM baseline.
 
-- H01 has not mounted HC/2 on the production daemon, so the current independent
-  Rust process is a conformance peer, not the daemon;
-- H11 has not specified reconnect and subscription/session repair;
-- H18 cannot retain a previous Java HC/2 artifact before the first preview is
-  released.
-
-The SDK therefore makes no stable-API, Maven Central, production-listener, or
-automatic-repair claim.
+This completion does not make a stable-API, Maven Central, or full old/new
+rolling-compatibility claim. Those promotion decisions remain release and H18
+concerns rather than being implied by the preview SDK.
 
 ## Public boundary
 
@@ -27,6 +25,12 @@ The public `io.hydracache.client.hc2` package provides:
 - subscriptions with watermark events/gaps and explicit unsubscribe;
 - immutable topology snapshots;
 - fenced session open, heartbeat, loss handling, and explicit close;
+- ordered bounded reconnect endpoints, explicit endpoint preference, and a
+  monotonic logical connection generation;
+- separate reconnect and invocation-replay policies: reads may replay, while
+  mutations and mutating batches require a nonempty idempotency key;
+- explicit subscription gap/repair ownership with watermark deduplication and
+  permanent fail-loud fenced-session loss on reconnect;
 - stable error/retry enums and bounded pull-based metrics.
 
 Generated messages and stubs use
@@ -50,8 +54,15 @@ wire-level release operation.
 - Listener exceptions and executor rejection are counted without terminating
   the transport callback.
 - Connection failure completes every pending owner, releases permits, stops
-  heartbeat/deadline work, and shuts down the channel. It never retries
-  implicitly while H11 remains open.
+  heartbeat/deadline work, and shuts down the channel.
+- TCP refusal/reset is reconnectable, but certificate, TLS identity,
+  authentication, protocol-generation, capability, and cluster-identity
+  failures are terminal and cannot fall through to another endpoint.
+- Reconnect is serialized and bounded. A stale completion from a replaced
+  logical generation is rejected; only replay-safe work may be submitted again.
+- Every reconnect emits one explicit repair boundary for each subscription.
+  Events are suppressed until caller repair, and duplicate watermarks are
+  counted and discarded. Fenced sessions are never silently reacquired.
 
 ## Packaging
 
@@ -72,19 +83,26 @@ manifest rather than reading repository classes or proto files.
    untrusted-client profiles before application dispatch;
 4. exercises data/CAS/batch, event delivery, topology, fenced session lifecycle,
    deadline cancellation, stable metrics, and public API isolation;
-5. requires a terminal server receipt with zero subscriptions and sessions;
-6. installs SDK/POM/source/Javadoc artifacts locally;
-7. builds and runs the external consumer against the installed coordinate.
+5. replaces a killed Rust process through an ordered endpoint list, proves
+   bounded fallback, cluster pinning, explicit listener repair, duplicate
+   suppression, safe replay rules, and permanent fenced-session loss;
+6. starts the actual `hydracache-server` binary with off-by-default HC/2 enabled,
+   executes Java data/listener/session operations, requests production admin
+   drain, and requires a successful zero-resource process exit;
+7. requires terminal conformance-server receipts with zero subscriptions and
+   sessions and rejects retained non-daemon SDK threads;
+8. installs SDK/POM/source/Javadoc artifacts locally;
+9. builds and runs the external consumer against the installed coordinate.
 
 The combined `cargo xtask client-plane-spike-check` includes this gate alongside
 the existing Rust transport and Java/Python generation evidence.
 
-## Completion path
+## Compatibility boundary
 
-After H01 and H11, replace the conformance peer row with a real-daemon matrix,
-prove reconnect and deterministic listener/session repair, and retain the first
-published preview for H18 old/new compatibility. H18 now retains the first H17
-JAR/POM and runs it from an isolated Maven repository as a `baseline-smoke`;
-the production old/new rows remain blocked in `HC2_COMPATIBILITY_ARTIFACTS.md`.
-Only then may H16 move from
-`in progress` to `complete`.
+H18 retains the first Java JAR/POM and runs it from an isolated Maven repository
+as `baseline-smoke`. That proves artifact independence and prevents the first
+preview from being silently replaced. The production old-client/new-daemon,
+new-client/old-daemon, and rolling-upgrade rows remain explicitly blocked in
+`HC2_COMPATIBILITY_ARTIFACTS.md` until a genuinely later preview exists. H16 is
+therefore complete without misrepresenting same-contract smoke evidence as a
+future rolling-compatibility result.

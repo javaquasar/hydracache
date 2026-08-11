@@ -16,6 +16,7 @@ import java.util.Set;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -39,6 +40,7 @@ final class GrpcHydraCacheClientInteropTest {
       };
 
       HydraCacheClient client = HydraCacheClient.connect(server.config("localhost"));
+      assertEquals("hc2-java-interop", client.clusterId());
       Subscription subscription = client.subscribe(bytes("key"), 0, listener).join();
       assertTrue(client.put(bytes("key-1"), bytes("value-1"), Duration.ZERO, DEFAULT).join().applied());
       assertTrue(eventArrived.await(5, TimeUnit.SECONDS));
@@ -80,12 +82,114 @@ final class GrpcHydraCacheClientInteropTest {
   }
 
   @Test
+  void javaSdkExecutesAgainstTheProductionDaemonAndDrainsCleanly(@TempDir Path temp)
+      throws Exception {
+    Path credentials = Files.createDirectory(temp.resolve("daemon-credentials"));
+    try (DaemonProcess daemon = DaemonProcess.start(credentials)) {
+      CountDownLatch eventArrived = new CountDownLatch(1);
+      HydraCacheClient client = HydraCacheClient.connect(daemon.config());
+      assertEquals("daemon-proof", client.clusterId());
+      Subscription subscription = client.subscribe(bytes("daemon"), 0, new CacheEventListener() {
+        @Override public void onEvent(CacheEvent event) { eventArrived.countDown(); }
+        @Override public void onGap(long subscriptionId, long afterWatermark) {
+          throw new AssertionError("unexpected production-daemon gap");
+        }
+      }).join();
+      assertTrue(client.put(bytes("daemon-key"), bytes("daemon-value"), Duration.ZERO, DEFAULT)
+          .join().applied());
+      assertTrue(eventArrived.await(5, TimeUnit.SECONDS));
+      assertArrayEquals(bytes("daemon-value"),
+          client.get(bytes("daemon-key"), DEFAULT).join().orElseThrow().value());
+      FencedSession session = client.openSession(Duration.ofSeconds(3)).join();
+      assertTrue(session.fence() > 0);
+      session.close();
+      subscription.close();
+      client.close();
+      assertTrue(daemon.drain().contains("status=ok"));
+      assertFalse(hasLiveNonDaemonSdkThread(), "SDK retained a non-daemon lifecycle thread");
+    }
+  }
+
+  @Test
+  void javaRecoveryReplacesADeadRustProcessRepairsSubscriptionAndLosesSession(@TempDir Path temp)
+      throws Exception {
+    Path firstCredentials = Files.createDirectory(temp.resolve("first"));
+    Path secondCredentials = Files.createDirectory(temp.resolve("second"));
+    InteropProcess first = InteropProcess.start(firstCredentials);
+    try (InteropProcess second = InteropProcess.start(secondCredentials)) {
+      AtomicInteger gaps = new AtomicInteger();
+      CountDownLatch gapArrived = new CountDownLatch(1);
+      RecoveringHydraCacheClient client = RecoveringHydraCacheClient.connect(
+          List.of(
+              new ReconnectEndpoint("first", first.config("localhost")),
+              new ReconnectEndpoint("second", second.config("localhost"))),
+          new ReconnectPolicy(3, Duration.ofMillis(10), Duration.ofMillis(10), Duration.ZERO, 11),
+          InvocationRetryPolicy.defaults());
+      Subscription subscription = client.subscribe(bytes("repair"), 0, new CacheEventListener() {
+        @Override public void onEvent(CacheEvent event) { }
+        @Override public void onGap(long subscriptionId, long afterWatermark) {
+          gaps.incrementAndGet();
+          gapArrived.countDown();
+        }
+      }).join();
+      FencedSession session = client.openSession(Duration.ofSeconds(3)).join();
+
+      first.close();
+      client.reconnectNow().join();
+      assertEquals("second", client.currentEndpoint());
+      assertEquals("hc2-java-interop", client.clusterId());
+      assertTrue(gapArrived.await(5, TimeUnit.SECONDS));
+      assertEquals(1, gaps.get());
+      HydraCacheException lost = assertThrows(HydraCacheException.class, session::fence);
+      assertEquals(ErrorCode.SESSION_LOST, lost.code());
+      subscription.repair(0).join();
+      assertTrue(client.put(bytes("repair-key"), bytes("repair-value"), Duration.ZERO,
+          new RequestOptions(Duration.ofSeconds(2), bytes("repair-put"))).join().applied());
+      subscription.close();
+      client.close();
+
+      RecoveryMetricsSnapshot metrics = client.recoveryMetrics();
+      assertEquals(2, metrics.reconnectAttempts());
+      assertEquals(1, metrics.reconnectSuccesses());
+      assertEquals(2, metrics.subscriptionRepairs());
+      assertEquals(1, metrics.sessionLosses());
+      String receipt = second.awaitClosed();
+      assertTrue(receipt.contains("active_subscriptions=0"), receipt);
+      assertTrue(receipt.contains("active_sessions=0"), receipt);
+      assertFalse(hasLiveNonDaemonSdkThread(), "SDK retained a non-daemon lifecycle thread");
+    } finally {
+      first.close();
+    }
+  }
+
+  @Test
+  void javaSdkRotatesBetweenIndependentRustMtlsProcesses(@TempDir Path temp) throws Exception {
+    Path firstCredentials = Files.createDirectory(temp.resolve("first"));
+    Path secondCredentials = Files.createDirectory(temp.resolve("second"));
+    InteropProcess first = InteropProcess.start(firstCredentials);
+    try (InteropProcess second = InteropProcess.start(secondCredentials)) {
+      HydraCacheClient firstClient = HydraCacheClient.connect(first.config("localhost"));
+      assertEquals("hc2-java-interop", firstClient.clusterId());
+      firstClient.close();
+      first.awaitClosed();
+
+      HydraCacheClient secondClient = HydraCacheClient.connect(second.config("localhost"));
+      assertEquals("hc2-java-interop", secondClient.clusterId());
+      secondClient.close();
+      second.awaitClosed();
+    } finally {
+      first.close();
+    }
+  }
+
+  @Test
   void wrongServerIdentityFailsBeforeTheRustServiceAcceptsAStream(@TempDir Path temp) throws Exception {
     Path credentials = Files.createDirectory(temp.resolve("credentials"));
     try (InteropProcess server = InteropProcess.start(credentials)) {
       HydraCacheException error = assertThrows(HydraCacheException.class,
           () -> HydraCacheClient.connect(server.config("wrong.example")));
       assertEquals(ErrorCode.UNAVAILABLE, error.code());
+      assertEquals(RetryAdvice.NEVER, error.retryAdvice());
     }
   }
 
@@ -99,6 +203,7 @@ final class GrpcHydraCacheClientInteropTest {
       HydraCacheException error = assertThrows(HydraCacheException.class,
           () -> HydraCacheClient.connect(server.config("localhost")));
       assertEquals(ErrorCode.UNAVAILABLE, error.code());
+      assertEquals(RetryAdvice.NEVER, error.retryAdvice());
     }
   }
 

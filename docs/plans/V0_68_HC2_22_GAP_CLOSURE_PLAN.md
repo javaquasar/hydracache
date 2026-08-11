@@ -30,7 +30,7 @@
 | H13 | Negative TLS matrix is incomplete | complete | `test(client-plane): complete TLS authorization matrix` | real rustls/tonic hostname/time/EKU/CA/version matrix, bounded chain policy, authorization typestate, rotation and zero-dispatch proofs |
 | H14 | Discovery signing/replay protection is absent | complete | `feat(client-plane): sign replay-safe discovery` | canonical Ed25519 bytes, bounded parser/trust/time policy, Rust/Java vector, replay/rotation/recovery matrix |
 | H15 | Hermetic Python generation is absent | complete | `feat(client-plane): make Python generation hermetic` | vendored protoc, descriptor-derived stubs/metadata, hash-bound two-platform wheelhouse, clean generation, golden/unknown-field/bidi/import proof |
-| H16 | Java is a codec fixture, not a production SDK | in progress | `feat(client-plane): add preview Java HC/2 SDK` | Maven SDK/external consumer and Java↔Rust process proof green; Rust recovery contract is complete, while Java recovery, real daemon, and previous artifact wait on H11 language parity/H01/H18 |
+| H16 | Java is a codec fixture, not a production SDK | complete | `feat(client-plane): add Java reconnect and production interop` | publishable Java 17 SDK/external consumer, fail-closed PKI matrix, bounded reconnect/replay and repair, two-process Rust recovery, real production-daemon mTLS/drain, thread/resource checks, and retained H18 JAR/POM baseline green |
 | H17 | Rust production SDK still uses HC/1 HTTP | in progress | `feat(client-plane): add transport-neutral Rust HC/2 SDK` | native SDK/process/package/HC/1 and H11 reconnect/repair gates green; real daemon waits on H01 |
 | H18 | Real previous-artifact compatibility matrix is absent | in progress | `test(client-plane): retain HC/2 compatibility baseline` | immutable H17 Rust/Java clients and executable baseline matrix green; production daemon, HC/1+HC/2, reverse direction, rolling upgrade, and deprecation remain blocked on H01/H02 and a later preview |
 | H19 | Deterministic network fault proxy is absent | complete | `test(client-plane): complete deterministic fault bindings` | all bounded actions, real async stream, exact replay, eight H11 and three H20 lifecycle traces, plus four plans applied unchanged to every H03 candidate codec |
@@ -502,18 +502,22 @@ promise; publish preview coordinates until compatibility gates pass.
 
 **Done.** A consumer project builds and runs without repository internals.
 
-**Implementation evidence (2026-08-10, completion blocked).** The Java 17
+**Completion evidence (2026-08-11).** The Java 17
 preview module now exposes an idiomatic generated-wire-free API for data, CAS,
 batch, listeners, topology, fenced sessions, deadlines/cancellation, stable
 errors, transport policy, and metrics. `cargo xtask client-plane-java-sdk-check`
 builds a separate Rust mTLS conformance process, executes positive and negative
-PKI interop, requires zero-resource shutdown, installs the JAR/POM/source/Javadoc
-artifacts, and builds/runs `tests/java-hc2-consumer` using only the installed
-coordinate. The exact contract and limitations are documented in
-`docs/architecture/HC2_JAVA_SDK.md`. H16 stays `in progress`: the peer is not the
-production daemon while H01 is open, reconnect/repair belongs to open H11, and
-there is no immutable previous Java artifact until H18 can retain the first
-preview. None of those gaps are weakened or relabeled as passing.
+PKI interop, kills and replaces a real Rust process through the Java H11
+recovery owner, proves conservative replay, explicit subscription repair,
+cluster pinning, and permanent fenced-session loss, then starts the actual
+`hydracache-server` binary for mTLS operation/listener/session and clean admin
+drain evidence. It requires zero-resource shutdown, installs the
+JAR/POM/source/Javadoc artifacts, and builds/runs `tests/java-hc2-consumer`
+using only the installed coordinate. H18 separately retains the first immutable
+Java JAR/POM and executes it from an isolated Maven repository. Future
+production old/new and rolling rows remain H18 work; they are not prerequisites
+for completing the first preview SDK. The exact contract and limitations are
+documented in `docs/architecture/HC2_JAVA_SDK.md`.
 
 ## H17. Build the transport-neutral production Rust HC/2 SDK
 

@@ -1,8 +1,11 @@
 use std::collections::{BTreeMap, BTreeSet};
 use std::env;
 use std::error::Error;
+use std::io::{BufRead, BufReader, Read, Write};
+use std::net::{SocketAddr, TcpListener as StdTcpListener, TcpStream};
 use std::path::{Path, PathBuf};
 use std::pin::Pin;
+use std::process::{Command, Stdio};
 use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
 use std::sync::{Arc, Mutex};
 
@@ -482,10 +485,11 @@ fn generate_pki(profile: PkiProfile) -> Result<Pki, Box<dyn Error>> {
     })
 }
 
-fn configuration() -> Result<(PathBuf, PkiProfile), Box<dyn Error>> {
+fn configuration() -> Result<(PathBuf, PkiProfile, Option<PathBuf>), Box<dyn Error>> {
     let mut args = env::args().skip(1);
     let mut credentials = None;
     let mut profile = PkiProfile::Normal;
+    let mut daemon = None;
     while let Some(argument) = args.next() {
         match argument.as_str() {
             "--credentials-dir" if credentials.is_none() => {
@@ -496,16 +500,22 @@ fn configuration() -> Result<(PathBuf, PkiProfile), Box<dyn Error>> {
             "--profile" => {
                 profile = PkiProfile::parse(&args.next().ok_or("missing PKI profile")?)?;
             }
+            "--daemon" if daemon.is_none() => {
+                daemon = Some(PathBuf::from(args.next().ok_or("missing daemon path")?));
+            }
             _ => return Err(format!("unsupported or duplicate argument: {argument}").into()),
         }
     }
     let path = credentials.ok_or(
-        "usage: hc2_java_interop_server --credentials-dir <empty-directory> [--profile <name>]",
+        "usage: hc2_java_interop_server --credentials-dir <empty-directory> [--profile <name>] [--daemon <path>]",
     )?;
     if !path.is_dir() || path.read_dir()?.next().is_some() {
         return Err("credentials directory must exist and be empty".into());
     }
-    Ok((path, profile))
+    if daemon.is_some() && !matches!(profile, PkiProfile::Normal) {
+        return Err("production daemon fixture accepts only the normal PKI profile".into());
+    }
+    Ok((path, profile, daemon))
 }
 
 fn write_credential(path: &Path, name: &str, contents: &str) -> Result<PathBuf, Box<dyn Error>> {
@@ -514,13 +524,110 @@ fn write_credential(path: &Path, name: &str, contents: &str) -> Result<PathBuf, 
     Ok(target)
 }
 
+fn free_addr() -> Result<SocketAddr, Box<dyn Error>> {
+    let listener = StdTcpListener::bind("127.0.0.1:0")?;
+    Ok(listener.local_addr()?)
+}
+
+fn request_daemon_drain(admin: SocketAddr) -> Result<(), Box<dyn Error>> {
+    let mut stream = TcpStream::connect_timeout(&admin, std::time::Duration::from_secs(5))?;
+    stream.set_read_timeout(Some(std::time::Duration::from_secs(5)))?;
+    write!(
+        stream,
+        "POST /admin/drain HTTP/1.1\r\nHost: {admin}\r\nx-hydracache-client-id: java-daemon-fixture\r\nx-hydracache-tenant: system\r\nx-hydracache-admin: true\r\nContent-Length: 0\r\nConnection: close\r\n\r\n"
+    )?;
+    stream.flush()?;
+    let mut response = String::new();
+    stream.read_to_string(&mut response)?;
+    let status = response.lines().next().unwrap_or_default();
+    if !status.contains(" 200 ") {
+        return Err(format!("production daemon drain failed: {status}").into());
+    }
+    Ok(())
+}
+
+fn run_daemon_fixture(
+    daemon: &Path,
+    credentials: &Path,
+    pki: &Pki,
+    ca: &Path,
+    client_cert: &Path,
+    client_key: &Path,
+) -> Result<(), Box<dyn Error>> {
+    if !daemon.is_file() {
+        return Err(format!("production daemon binary is missing: {}", daemon.display()).into());
+    }
+    let server_cert = write_credential(credentials, "server.pem", &pki.server_cert_pem)?;
+    let server_key = write_credential(credentials, "server.key", &pki.server_key_pem)?;
+    let client_ca = write_credential(credentials, "clients.pem", &pki.ca_pem)?;
+    let client_addr = free_addr()?;
+    let hc2_addr = free_addr()?;
+    let admin_addr = free_addr()?;
+    let mut child = Command::new(daemon)
+        .env("HYDRACACHE_CLIENT_API_ENABLED", "true")
+        .env("HYDRACACHE_LISTEN_ADDR", client_addr.to_string())
+        .env("HYDRACACHE_ADMIN_API_ENABLED", "true")
+        .env("HYDRACACHE_ADMIN_ADDR", admin_addr.to_string())
+        .env("HYDRACACHE_HC2_ENABLED", "true")
+        .env("HYDRACACHE_HC2_ADDR", hc2_addr.to_string())
+        .env("HYDRACACHE_HC2_CLUSTER_ID", "daemon-proof")
+        .env("HYDRACACHE_TLS_ENABLED", "true")
+        .env("HYDRACACHE_TLS_CERT_PATH", &server_cert)
+        .env("HYDRACACHE_TLS_KEY_PATH", &server_key)
+        .env("HYDRACACHE_TLS_CA_PATH", &client_ca)
+        .stdout(Stdio::piped())
+        .stderr(Stdio::null())
+        .spawn()?;
+    let result = (|| -> Result<(), Box<dyn Error>> {
+        let stdout = child
+            .stdout
+            .take()
+            .ok_or("production daemon stdout is unavailable")?;
+        let mut stdout = BufReader::new(stdout);
+        let mut ready = String::new();
+        stdout.read_line(&mut ready)?;
+        if ready.trim() != r#"{"status":"ok"}"# {
+            return Err(format!("production daemon failed readiness: {}", ready.trim()).into());
+        }
+        println!(
+            "READY_DAEMON\t{}\t{}\t{}\t{}\t{}",
+            hc2_addr.port(),
+            admin_addr.port(),
+            ca.display(),
+            client_cert.display(),
+            client_key.display()
+        );
+        let mut command = String::new();
+        std::io::stdin().lock().read_line(&mut command)?;
+        if command.trim() != "DRAIN" {
+            return Err("production daemon fixture expected DRAIN".into());
+        }
+        request_daemon_drain(admin_addr)?;
+        let status = child.wait()?;
+        if !status.success() {
+            return Err(format!("production daemon failed after drain: {status}").into());
+        }
+        println!("CLOSED_DAEMON\tstatus=ok");
+        Ok(())
+    })();
+    if result.is_err() && child.try_wait()?.is_none() {
+        let _ = child.kill();
+        let _ = child.wait();
+    }
+    result
+}
+
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
-    let (credentials, profile) = configuration()?;
+    let (credentials, profile, daemon) = configuration()?;
     let pki = generate_pki(profile)?;
     let ca = write_credential(&credentials, "ca.pem", &pki.ca_pem)?;
     let client_cert = write_credential(&credentials, "client.pem", &pki.client_cert_pem)?;
     let client_key = write_credential(&credentials, "client.key", &pki.client_key_pem)?;
+
+    if let Some(daemon) = daemon {
+        return run_daemon_fixture(&daemon, &credentials, &pki, &ca, &client_cert, &client_key);
+    }
 
     let listener = TcpListener::bind("127.0.0.1:0").await?;
     let port = listener.local_addr()?.port();

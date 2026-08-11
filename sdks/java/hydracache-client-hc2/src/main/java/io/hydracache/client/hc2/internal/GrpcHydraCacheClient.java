@@ -48,6 +48,9 @@ import io.hydracache.client.hc2.internal.wire.Subscribe;
 import io.hydracache.client.hc2.internal.wire.SubscriptionAck;
 import io.hydracache.client.hc2.internal.wire.TopologyUpdate;
 import io.hydracache.client.hc2.internal.wire.Unsubscribe;
+import java.net.InetSocketAddress;
+import java.net.InetAddress;
+import java.net.Socket;
 import java.net.URI;
 import java.time.Duration;
 import java.time.Instant;
@@ -93,6 +96,7 @@ public final class GrpcHydraCacheClient implements HydraCacheClient {
   private final Map<Long, PendingSession> pendingSessions = new ConcurrentHashMap<>();
   private final Map<ByteString, SessionHandle> sessions = new ConcurrentHashMap<>();
   private volatile TopologySnapshot topology = TopologySnapshot.empty();
+  private volatile String clusterId;
   private final LongAdder submitted = new LongAdder();
   private final LongAdder completed = new LongAdder();
   private final LongAdder failed = new LongAdder();
@@ -111,11 +115,13 @@ public final class GrpcHydraCacheClient implements HydraCacheClient {
     this.subscriptionPermits = new Semaphore(config.maxSubscriptions());
     this.sessionPermits = new Semaphore(config.maxSessions());
     URI endpoint = config.endpoint();
+    InetAddress reachableAddress = preflightReachable(endpoint, config.connectTimeout());
     var sslContext = GrpcSslContexts.forClient()
         .trustManager(config.trustCertificate().toFile())
         .keyManager(config.clientCertificate().toFile(), config.clientPrivateKey().toFile())
         .build();
-    this.channel = NettyChannelBuilder.forAddress(endpoint.getHost(), endpoint.getPort())
+    this.channel = NettyChannelBuilder.forAddress(
+            new InetSocketAddress(reachableAddress, endpoint.getPort()))
         .sslContext(sslContext)
         .overrideAuthority(config.serverName())
         .maxInboundMessageSize(config.maxInboundMessageBytes())
@@ -152,14 +158,24 @@ public final class GrpcHydraCacheClient implements HydraCacheClient {
       if (!accepted.containsAll(config.requestedCapabilities())) {
         throw local(ErrorCode.UNSUPPORTED, "peer omitted a required HC/2 capability");
       }
+      if (ack.getClusterId().isBlank() || ack.getClusterId().length() > 128
+          || ack.getClusterId().chars().anyMatch(Character::isISOControl)) {
+        throw local(ErrorCode.UNSUPPORTED, "peer returned an invalid cluster identity");
+      }
+      client.clusterId = ack.getClusterId();
       return client;
     } catch (InterruptedException error) {
       Thread.currentThread().interrupt();
       if (client != null) client.close();
       throw new HydraCacheException(ErrorCode.UNAVAILABLE, RetryAdvice.NEVER, "HC/2 connect interrupted", error);
-    } catch (ExecutionException | TimeoutException error) {
+    } catch (ExecutionException error) {
       if (client != null) client.close();
-      throw new HydraCacheException(ErrorCode.UNAVAILABLE, RetryAdvice.NEVER, "HC/2 handshake failed", error);
+      throw new HydraCacheException(ErrorCode.UNAVAILABLE, connectionRetryAdvice(error),
+          "HC/2 handshake failed", error);
+    } catch (TimeoutException error) {
+      if (client != null) client.close();
+      throw new HydraCacheException(ErrorCode.UNAVAILABLE, RetryAdvice.NEVER,
+          "HC/2 handshake timed out", error);
     } catch (HydraCacheException error) {
       if (client != null) client.close();
       throw error;
@@ -331,6 +347,12 @@ public final class GrpcHydraCacheClient implements HydraCacheClient {
 
   @Override public TopologySnapshot topology() { return topology; }
 
+  @Override public String clusterId() {
+    String value = clusterId;
+    if (value == null) throw local(ErrorCode.UNAVAILABLE, "handshake is incomplete");
+    return value;
+  }
+
   @Override
   public ClientMetricsSnapshot metrics() {
     return new ClientMetricsSnapshot(submitted.sum(), completed.sum(), failed.sum(), cancelled.sum(),
@@ -441,7 +463,7 @@ public final class GrpcHydraCacheClient implements HydraCacheClient {
 
   private void failConnection(Throwable cause) {
     HydraCacheException error = cause instanceof HydraCacheException hc ? hc
-        : new HydraCacheException(ErrorCode.UNAVAILABLE, RetryAdvice.RECONNECT_IDEMPOTENT,
+        : new HydraCacheException(ErrorCode.UNAVAILABLE, connectionRetryAdvice(cause),
             "HC/2 connection failed", cause);
     if (!closed.compareAndSet(false, true)) return;
     failed.add(pendingInvocations.size());
@@ -683,6 +705,43 @@ public final class GrpcHydraCacheClient implements HydraCacheClient {
 
   private static HydraCacheException local(ErrorCode code, String detail) {
     return new HydraCacheException(code, RetryAdvice.NEVER, detail);
+  }
+
+  private static RetryAdvice connectionRetryAdvice(Throwable failure) {
+    for (Throwable current = failure; current != null; current = current.getCause()) {
+      if (current instanceof HydraCacheException hc && hc.retryAdvice() == RetryAdvice.NEVER) {
+        return RetryAdvice.NEVER;
+      }
+      String type = current.getClass().getName().toLowerCase(java.util.Locale.ROOT);
+      String message = String.valueOf(current.getMessage()).toLowerCase(java.util.Locale.ROOT);
+      if (type.contains("ssl") || type.contains("certificate") || type.contains("certpath")
+          || message.contains("certificate") || message.contains("certpath")
+          || message.contains("hostname verification") || message.contains("subject alternative")
+          || message.contains("handshake_failure") || message.contains("bad_certificate")
+          || message.contains("unknown_ca")) {
+        return RetryAdvice.NEVER;
+      }
+    }
+    return RetryAdvice.RECONNECT_IDEMPOTENT;
+  }
+
+  private static InetAddress preflightReachable(URI endpoint, Duration timeout) {
+    java.io.IOException last = null;
+    try {
+      for (InetAddress address : InetAddress.getAllByName(endpoint.getHost())) {
+        try (Socket socket = new Socket()) {
+          socket.connect(new InetSocketAddress(address, endpoint.getPort()),
+              Math.toIntExact(Math.max(1, timeout.toMillis())));
+          return address;
+        } catch (java.io.IOException unavailable) {
+          last = unavailable;
+        }
+      }
+    } catch (java.io.IOException resolutionFailure) {
+      last = resolutionFailure;
+    }
+    throw new HydraCacheException(ErrorCode.UNAVAILABLE, RetryAdvice.RECONNECT_IDEMPOTENT,
+        "HC/2 endpoint is unreachable before TLS", last);
   }
 
   private final class InboundObserver implements StreamObserver<ServerEnvelope> {

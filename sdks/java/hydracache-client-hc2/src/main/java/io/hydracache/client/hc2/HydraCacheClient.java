@@ -20,6 +20,8 @@ public interface HydraCacheClient extends AutoCloseable {
   CompletableFuture<List<BatchItemResult>> batch(List<BatchOperation> operations, RequestOptions options);
   CompletableFuture<Subscription> subscribe(byte[] keyPrefix, long resumeWatermark, CacheEventListener listener);
   CompletableFuture<FencedSession> openSession(Duration requestedTtl);
+  /** Authenticated cluster identity negotiated during the HC/2 handshake. */
+  String clusterId();
   TopologySnapshot topology();
   ClientMetricsSnapshot metrics();
   @Override void close();

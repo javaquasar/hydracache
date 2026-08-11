@@ -1,9 +1,8 @@
 # HydraCache HC/2 Java Client (preview)
 
 This Java 17 SDK is a preview artifact for the generated HC/2 client plane. It
-is buildable and consumable as a normal Maven dependency, but it is not yet
-published to Maven Central and it cannot connect to a production HydraCache
-daemon until H01 installs the HC/2 listener.
+is buildable and consumable as a normal Maven dependency and is tested against
+the production HydraCache daemon, but it is not yet published to Maven Central.
 
 ```xml
 <dependency>
@@ -46,6 +45,12 @@ root:
 cargo xtask client-plane-java-sdk-check
 ```
 
-There is deliberately no implicit reconnect. Until H11 defines deterministic
-repair, a lost connection fails outstanding work with stable `UNAVAILABLE` and
-`RECONNECT_IDEMPOTENT` advice; the application decides whether to retry.
+`HydraCacheClient.connect` remains a single-connection primitive. Applications
+that want SDK-owned recovery use `RecoveringHydraCacheClient.connect` with an
+ordered endpoint list plus separate bounded reconnect and invocation-replay
+policies. Reads may replay; mutations and mutating batches require a nonempty
+idempotency key. Reconnect emits an explicit subscription gap that the caller
+must repair, deduplicates watermarks, and permanently loses fenced sessions
+instead of silently reacquiring them. TLS/certificate, protocol, capability,
+and cluster-identity failures are terminal and never fall through to another
+endpoint.
