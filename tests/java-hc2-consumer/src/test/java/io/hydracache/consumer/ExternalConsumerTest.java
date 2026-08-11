@@ -130,7 +130,8 @@ final class ExternalConsumerTest {
     try (JarFile jar = new JarFile(location.toFile())) {
       var attributes = jar.getManifest().getMainAttributes();
       assertEquals("io.hydracache.client.hc2", attributes.getValue("Automatic-Module-Name"));
-      assertEquals("5", attributes.getValue("HydraCache-Protocol-Generation"));
+      assertEquals(System.getProperty("hc2.expected.protocol.generation"),
+          attributes.getValue("HydraCache-Protocol-Generation"));
       assertEquals("preview", attributes.getValue("HydraCache-Api-Stability"));
     }
   }

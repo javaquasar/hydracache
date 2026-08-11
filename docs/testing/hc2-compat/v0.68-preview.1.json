@@ -31,71 +31,131 @@
       "sha256": "ce14e50e5508a9783ce41f742f5d7c7b5b19dcd08ef45e7390a31dadcbad74a7",
       "size_bytes": 6557,
       "producer_commit": "d1d1d44cf5c046b8bad97292b9a9a97210fda134"
+    },
+    {
+      "id": "daemon-generation5-linux-x86_64",
+      "kind": "production-daemon-tar-gz",
+      "path": "docs/testing/hc2-compat/artifacts/h18-generation5-539d74e/hc2-retained-daemon-539d74e7-linux-x86_64.tar.gz",
+      "sha256": "9d3108993f2eeaba9084da7cd0074d9cd0847cc038586600a202ab1aa34f2ebd",
+      "size_bytes": 7914426,
+      "producer_commit": "539d74e7b5e01a555f3ebbe01d7820eb1df7fae1",
+      "producer_tree": "dac77aa31273073aa4ac8999e12a840950da14e7",
+      "contract_blob": "6e5887b7ae6fb2b74a781e0ef85a676349968587",
+      "protocol_generation": 5,
+      "platform": "linux-x86_64",
+      "executable_path": "hc2-retained-daemon-539d74e7-linux-x86_64/bin/hydracache-server",
+      "executable_sha256": "828243f843dbf6c4fd386b6ada037cf3ea7fec70212e1b678be359df312bc7b6",
+      "executable_size_bytes": 22319856
+    },
+    {
+      "id": "daemon-generation5-windows-x86_64",
+      "kind": "production-daemon-tar-gz",
+      "path": "docs/testing/hc2-compat/artifacts/h18-generation5-539d74e/hc2-retained-daemon-539d74e7-windows-x86_64.tar.gz",
+      "sha256": "9d5c192187b8652c0509845b76c9318dc70c891b1f80155b7fe3100403a2755f",
+      "size_bytes": 6170954,
+      "producer_commit": "539d74e7b5e01a555f3ebbe01d7820eb1df7fae1",
+      "producer_tree": "dac77aa31273073aa4ac8999e12a840950da14e7",
+      "contract_blob": "6e5887b7ae6fb2b74a781e0ef85a676349968587",
+      "protocol_generation": 5,
+      "platform": "windows-x86_64",
+      "executable_path": "hc2-retained-daemon-539d74e7-windows-x86_64/bin/hydracache-server.exe",
+      "executable_sha256": "af59d151c92a5a9c6f725ad6f9808d282dc24c7b30d14a1dec2c32fc34b2509e",
+      "executable_size_bytes": 15947776
+    },
+    {
+      "id": "daemon-generation6-linux-x86_64",
+      "kind": "production-daemon-tar-gz",
+      "path": "docs/testing/hc2-compat/artifacts/h18-generation6-00508c6/hc2-retained-daemon-00508c68-linux-x86_64.tar.gz",
+      "sha256": "00793cb202b08de42136aee3a1b00c681e7c0e804803c9a624f00c4253d49756",
+      "size_bytes": 7917330,
+      "producer_commit": "00508c688618658471785c9d8e73dcfa020ba39e",
+      "producer_tree": "8074b74fc4186eb9bcd1af254ad3d594eab12a6c",
+      "contract_blob": "64342892941cdc433885e17048499af459175106",
+      "protocol_generation": 6,
+      "platform": "linux-x86_64",
+      "executable_path": "hc2-retained-daemon-00508c68-linux-x86_64/bin/hydracache-server",
+      "executable_sha256": "918016cfdfbfe07c60d71fca023cc5f5ff3799188d861851bce42c924e92416b",
+      "executable_size_bytes": 22318336
+    },
+    {
+      "id": "daemon-generation6-windows-x86_64",
+      "kind": "production-daemon-tar-gz",
+      "path": "docs/testing/hc2-compat/artifacts/h18-generation6-00508c6/hc2-retained-daemon-00508c68-windows-x86_64.tar.gz",
+      "sha256": "bc06b4bbc2a5752f85a8913126fb679ba546b2a43db4690f3e02c1fb53d7b9dc",
+      "size_bytes": 6169786,
+      "producer_commit": "00508c688618658471785c9d8e73dcfa020ba39e",
+      "producer_tree": "8074b74fc4186eb9bcd1af254ad3d594eab12a6c",
+      "contract_blob": "64342892941cdc433885e17048499af459175106",
+      "protocol_generation": 6,
+      "platform": "windows-x86_64",
+      "executable_path": "hc2-retained-daemon-00508c68-windows-x86_64/bin/hydracache-server.exe",
+      "executable_sha256": "ded7a03f90e8a2997aaf71551eb8cc983dd4d9d3f4819c3e75add03f0cb6887b",
+      "executable_size_bytes": 15946240
     }
   ],
   "rows": [
     {
       "id": "rust-retained-to-current-peer",
       "scenario": "retained-rust-client-current-peer",
-      "status": "baseline-smoke",
-      "evidence": ["retained rust crate tests against separately built mTLS conformance peer"],
+      "status": "pass",
+      "evidence": ["generation-5 rust-h17-preview crate executes its locked process suite against the generation-6 mTLS conformance peer"],
       "blockers": []
     },
     {
       "id": "java-retained-to-current-peer",
       "scenario": "retained-java-client-current-peer",
-      "status": "baseline-smoke",
-      "evidence": ["retained Java jar external-consumer tests against separately built mTLS conformance peer"],
+      "status": "pass",
+      "evidence": ["generation-5 java-h17-preview JAR/POM executes through an isolated Maven repository against the generation-6 mTLS conformance peer"],
       "blockers": []
     },
     {
       "id": "retained-clients-to-production-daemon",
       "scenario": "old-client-new-daemon",
-      "status": "baseline-smoke",
-      "evidence": ["checksummed retained Rust crate and Java jar execute PUT/GET over mTLS against the current production daemon and complete bounded admin drain"],
+      "status": "pass",
+      "evidence": ["generation-5 retained Rust and Java clients execute PUT/GET over mTLS against checksummed daemon-generation6 artifacts from workflow run 31501497494 and require bounded admin drain"],
       "blockers": []
     },
     {
       "id": "current-clients-to-retained-daemon",
       "scenario": "current-client-old-daemon",
-      "status": "blocked",
-      "evidence": [],
-      "blockers": ["no previous production HC/2 daemon artifact exists"]
+      "status": "pass",
+      "evidence": ["current Rust and Java clients select protocol generation 5 and execute against checksummed daemon-generation5 artifacts from workflow run 31499408733"],
+      "blockers": []
     },
     {
       "id": "hc1-and-hc2-concurrent-listeners",
       "scenario": "hc1-hc2-concurrent-listeners",
-      "status": "baseline-smoke",
-      "evidence": ["current real-daemon H01 gate proves bidirectional HC/1 and HC/2 visibility through shared dispatch while both listeners are active"],
+      "status": "pass",
+      "evidence": ["compatibility gate runs real_daemon_shares_hc1_hc2_dispatch_and_exits_on_drain and proves bidirectional visibility through shared dispatch"],
       "blockers": []
     },
     {
       "id": "rolling-production-upgrade",
       "scenario": "rolling-upgrade",
-      "status": "blocked",
-      "evidence": [],
-      "blockers": ["old and new production HC/2 daemon artifacts do not yet coexist"]
+      "status": "pass",
+      "evidence": ["RecoveringHc2Client generation-5 session replaces daemon-generation5 with daemon-generation6, advances connection generation, invokes the new daemon, and drains both processes"],
+      "blockers": []
     },
     {
       "id": "retained-client-capability-negotiation",
       "scenario": "capability-negotiation",
-      "status": "baseline-smoke",
-      "evidence": ["both retained clients complete generation-5 handshake before invoking cache operations"],
+      "status": "pass",
+      "evidence": ["generation-6 peer and daemon negotiate supported generation 5 with both retained clients before invoking cache operations"],
       "blockers": []
     },
     {
       "id": "retained-client-unknown-fields",
       "scenario": "unknown-fields",
-      "status": "baseline-smoke",
+      "status": "pass",
       "evidence": ["retained Rust generated decoder accepts additive fields", "retained Java generated message preserves additive fields byte-for-byte"],
       "blockers": []
     },
     {
       "id": "planned-deprecation-window",
       "scenario": "planned-deprecation",
-      "status": "blocked",
-      "evidence": [],
-      "blockers": ["no successor HC/2 preview and deprecation window exist yet"]
+      "status": "pass",
+      "evidence": ["generation-6 daemon accepts generation 5, advertises minimum=5 and preferred=6, marks the negotiated generation deprecated, and current Rust/Java clients expose that policy without weakening generation equality"],
+      "blockers": []
     }
   ]
 }

@@ -21,10 +21,10 @@ pub fn run(args: Vec<String>) -> Result<(), Box<dyn Error>> {
     client_plane_java::check_at_root(&root)?;
     client_plane_python::check_at_root(&root)?;
     client_plane_rust::check_at_root(&root)?;
-    client_plane_compat::check_at_root(&root, false, false)?;
+    client_plane_compat::check_at_root(&root, false, true)?;
     client_plane_fault::check_at_root(&root, false)?;
     println!(
-        "client-plane-spike-check: OK (production daemon + transport spikes + deterministic fault replay + native Rust/Java/Python SDK + retained compatibility baseline)"
+        "client-plane-spike-check: OK (production daemon + transport spikes + deterministic fault replay + native Rust/Java/Python SDK + complete retained compatibility matrix)"
     );
     Ok(())
 }

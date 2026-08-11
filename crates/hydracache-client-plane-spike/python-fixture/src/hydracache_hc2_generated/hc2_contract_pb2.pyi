@@ -103,18 +103,24 @@ class Handshake(_message.Message):
     def __init__(self, generation: _Optional[int] = ..., client_id: _Optional[str] = ..., requested: _Optional[_Iterable[_Union[Capability, str]]] = ..., connection_generation: _Optional[int] = ...) -> None: ...
 
 class HandshakeAck(_message.Message):
-    __slots__ = ("generation", "cluster_id", "accepted", "topology_epoch", "connection_generation")
+    __slots__ = ("generation", "cluster_id", "accepted", "topology_epoch", "connection_generation", "minimum_generation", "preferred_generation", "negotiated_generation_deprecated")
     GENERATION_FIELD_NUMBER: _ClassVar[int]
     CLUSTER_ID_FIELD_NUMBER: _ClassVar[int]
     ACCEPTED_FIELD_NUMBER: _ClassVar[int]
     TOPOLOGY_EPOCH_FIELD_NUMBER: _ClassVar[int]
     CONNECTION_GENERATION_FIELD_NUMBER: _ClassVar[int]
+    MINIMUM_GENERATION_FIELD_NUMBER: _ClassVar[int]
+    PREFERRED_GENERATION_FIELD_NUMBER: _ClassVar[int]
+    NEGOTIATED_GENERATION_DEPRECATED_FIELD_NUMBER: _ClassVar[int]
     generation: int
     cluster_id: str
     accepted: _containers.RepeatedScalarFieldContainer[Capability]
     topology_epoch: int
     connection_generation: int
-    def __init__(self, generation: _Optional[int] = ..., cluster_id: _Optional[str] = ..., accepted: _Optional[_Iterable[_Union[Capability, str]]] = ..., topology_epoch: _Optional[int] = ..., connection_generation: _Optional[int] = ...) -> None: ...
+    minimum_generation: int
+    preferred_generation: int
+    negotiated_generation_deprecated: bool
+    def __init__(self, generation: _Optional[int] = ..., cluster_id: _Optional[str] = ..., accepted: _Optional[_Iterable[_Union[Capability, str]]] = ..., topology_epoch: _Optional[int] = ..., connection_generation: _Optional[int] = ..., minimum_generation: _Optional[int] = ..., preferred_generation: _Optional[int] = ..., negotiated_generation_deprecated: bool = ...) -> None: ...
 
 class GetRequest(_message.Message):
     __slots__ = ("key",)

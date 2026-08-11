@@ -89,6 +89,15 @@ final class GrpcHydraCacheClientInteropTest {
       CountDownLatch eventArrived = new CountDownLatch(1);
       HydraCacheClient client = HydraCacheClient.connect(daemon.config());
       assertEquals("daemon-proof", client.clusterId());
+      if (client.protocolGeneration() == HydraCacheClientConfig.MINIMUM_PROTOCOL_GENERATION) {
+        int preferred = Integer.parseInt(System.getenv().getOrDefault(
+            "HC2_JAVA_EXPECTED_PREFERRED_GENERATION",
+            Integer.toString(HydraCacheClientConfig.MINIMUM_PROTOCOL_GENERATION)));
+        boolean deprecated = Boolean.parseBoolean(System.getenv().getOrDefault(
+            "HC2_JAVA_EXPECTED_DEPRECATED", "false"));
+        assertEquals(preferred, client.preferredProtocolGeneration());
+        assertEquals(deprecated, client.negotiatedGenerationDeprecated());
+      }
       Subscription subscription = client.subscribe(bytes("daemon"), 0, new CacheEventListener() {
         @Override public void onEvent(CacheEvent event) { eventArrived.countDown(); }
         @Override public void onGap(long subscriptionId, long afterWatermark) {

@@ -134,7 +134,7 @@
             <manifestEntries>
               <Automatic-Module-Name>io.hydracache.client.hc2</Automatic-Module-Name>
               <Implementation-Version>${project.version}</Implementation-Version>
-              <HydraCache-Protocol-Generation>5</HydraCache-Protocol-Generation>
+              <HydraCache-Protocol-Generation>6</HydraCache-Protocol-Generation>
               <HydraCache-Api-Stability>preview</HydraCache-Api-Stability>
             </manifestEntries>
           </archive>

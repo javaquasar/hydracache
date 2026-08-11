@@ -328,6 +328,39 @@ impl RecoveringHc2Client {
             .generation
     }
 
+    /// Negotiated HC/2 protocol generation for the current connection.
+    pub fn protocol_generation(&self) -> u32 {
+        self.handle
+            .runtime
+            .current
+            .read()
+            .expect("recovery current lock poisoned")
+            .client
+            .protocol_generation()
+    }
+
+    /// Server-preferred HC/2 generation advertised during the current handshake.
+    pub fn preferred_protocol_generation(&self) -> u32 {
+        self.handle
+            .runtime
+            .current
+            .read()
+            .expect("recovery current lock poisoned")
+            .client
+            .preferred_protocol_generation()
+    }
+
+    /// Whether the selected generation is inside a supported deprecation window.
+    pub fn negotiated_generation_deprecated(&self) -> bool {
+        self.handle
+            .runtime
+            .current
+            .read()
+            .expect("recovery current lock poisoned")
+            .client
+            .negotiated_generation_deprecated()
+    }
+
     /// Prefer a known endpoint for the next reconnect (for example, a verified leader hint).
     pub fn prefer_endpoint(&self, endpoint_id: &str) -> Result<(), ClientError> {
         let Some(index) = self

@@ -2,11 +2,13 @@ use std::fs;
 use std::io::{BufRead, BufReader, Read, Write};
 use std::path::PathBuf;
 use std::process::{Child, Command, Stdio};
+use std::sync::Arc;
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
 use bytes::Bytes;
 use hydracache_client_hc2::{
     BatchOperation, ClientConfig, ErrorCode, GrpcMtlsAdapter, GrpcMtlsConfig, Hc2Client,
+    InvocationRetryPolicy, ReconnectEndpoint, ReconnectPolicy, RecoveringHc2Client,
     SubscriptionEvent,
 };
 
@@ -108,10 +110,14 @@ impl InteropProcess {
 
 impl ProductionDaemonProcess {
     fn start() -> Self {
+        Self::start_from_env("HC2_RUST_PRODUCTION_DAEMON")
+    }
+
+    fn start_from_env(daemon_env: &str) -> Self {
         let fixture = std::env::var_os("HC2_RUST_INTEROP_SERVER")
             .expect("HC2_RUST_INTEROP_SERVER must identify the credential fixture");
-        let daemon = std::env::var_os("HC2_RUST_PRODUCTION_DAEMON")
-            .expect("HC2_RUST_PRODUCTION_DAEMON must identify hydracache-server");
+        let daemon = std::env::var_os(daemon_env)
+            .unwrap_or_else(|| panic!("{daemon_env} must identify hydracache-server"));
         let unique = SystemTime::now()
             .duration_since(UNIX_EPOCH)
             .expect("system clock")
@@ -196,6 +202,20 @@ impl ProductionDaemonProcess {
         assert_eq!(receipt.trim(), "CLOSED_DAEMON\tstatus=ok");
         fs::remove_dir_all(&self.credentials).expect("remove production credentials directory");
     }
+}
+
+fn rolling_policies() -> (ReconnectPolicy, InvocationRetryPolicy) {
+    (
+        ReconnectPolicy::new(
+            3,
+            Duration::from_millis(1),
+            Duration::from_millis(4),
+            Duration::ZERO,
+            0x68,
+        )
+        .expect("valid rolling reconnect policy"),
+        InvocationRetryPolicy::new(2).expect("valid rolling retry policy"),
+    )
 }
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
@@ -313,13 +333,21 @@ async fn rust_sdk_uses_the_real_production_daemon_and_drains_cleanly() {
         return;
     }
     let process = ProductionDaemonProcess::start();
-    let client = Hc2Client::connect(
-        &process.adapter(),
-        ClientConfig::new("rust-production-proof", "tenant-a"),
-    )
-    .await
-    .expect("connect Rust SDK to production daemon");
+    let mut config = ClientConfig::new("rust-production-proof", "tenant-a");
+    if let Some(generation) = std::env::var_os("HC2_RUST_PROTOCOL_GENERATION") {
+        config.protocol_generation = generation
+            .to_string_lossy()
+            .parse()
+            .expect("HC2_RUST_PROTOCOL_GENERATION must be an integer");
+    }
+    let client = Hc2Client::connect(&process.adapter(), config)
+        .await
+        .expect("connect Rust SDK to production daemon");
     assert_eq!(client.cluster_id(), "daemon-proof");
+    if client.protocol_generation() == 5 {
+        assert_eq!(client.preferred_protocol_generation(), 5);
+        assert!(!client.negotiated_generation_deprecated());
+    }
 
     client
         .put(
@@ -366,4 +394,78 @@ async fn rust_sdk_uses_the_real_production_daemon_and_drains_cleanly() {
     client.close();
     drop(client);
     process.finish();
+}
+
+#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
+async fn generation_five_client_rolls_from_retained_to_current_production_daemon() {
+    if std::env::var_os("HC2_RUST_INTEROP_SERVER").is_none()
+        || std::env::var_os("HC2_RUST_RETAINED_PRODUCTION_DAEMON").is_none()
+        || std::env::var_os("HC2_RUST_PRODUCTION_DAEMON").is_none()
+    {
+        eprintln!("SKIP: run the retained HC/2 compatibility harness for rolling evidence");
+        return;
+    }
+
+    let retained = ProductionDaemonProcess::start_from_env("HC2_RUST_RETAINED_PRODUCTION_DAEMON");
+    let current = ProductionDaemonProcess::start();
+    let endpoints = vec![
+        ReconnectEndpoint::new("retained-generation-5", Arc::new(retained.adapter()))
+            .expect("retained endpoint"),
+        ReconnectEndpoint::new("current-generation-6", Arc::new(current.adapter()))
+            .expect("current endpoint"),
+    ];
+    let mut config = ClientConfig::new("rust-rolling-generation-proof", "tenant-a");
+    config.protocol_generation = 5;
+    let (reconnect_policy, retry_policy) = rolling_policies();
+    let client = RecoveringHc2Client::connect(endpoints, config, reconnect_policy, retry_policy)
+        .await
+        .expect("connect to retained generation-5 daemon");
+    assert_eq!(client.current_endpoint(), "retained-generation-5");
+    assert_eq!(client.connection_generation(), 1);
+    assert_eq!(client.protocol_generation(), 5);
+    assert_eq!(client.preferred_protocol_generation(), 5);
+    assert!(!client.negotiated_generation_deprecated());
+
+    client
+        .put(
+            Bytes::from_static(b"rolling/retained"),
+            Bytes::from_static(b"retained-value"),
+            None,
+            None,
+        )
+        .await
+        .expect("invoke retained daemon before replacement");
+
+    client
+        .prefer_endpoint("current-generation-6")
+        .expect("select current daemon");
+    client
+        .reconnect_now()
+        .await
+        .expect("replace retained daemon connection with current daemon");
+    assert_eq!(client.current_endpoint(), "current-generation-6");
+    assert_eq!(client.connection_generation(), 2);
+    assert_eq!(client.protocol_generation(), 5);
+    assert_eq!(client.preferred_protocol_generation(), 6);
+    assert!(client.negotiated_generation_deprecated());
+    client
+        .put(
+            Bytes::from_static(b"rolling/current"),
+            Bytes::from_static(b"current-value"),
+            None,
+            None,
+        )
+        .await
+        .expect("invoke current daemon after replacement");
+    let current_value = client
+        .get(Bytes::from_static(b"rolling/current"), None)
+        .await
+        .expect("read current daemon after replacement")
+        .expect("current daemon value");
+    assert_eq!(current_value.value, Bytes::from_static(b"current-value"));
+
+    client.close();
+    drop(client);
+    retained.finish();
+    current.finish();
 }

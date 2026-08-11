@@ -445,6 +445,30 @@
               "kind": 4,
               "type_name": "",
               "oneof_index": null
+            },
+            {
+              "name": "minimum_generation",
+              "number": 6,
+              "label": 1,
+              "kind": 13,
+              "type_name": "",
+              "oneof_index": null
+            },
+            {
+              "name": "preferred_generation",
+              "number": 7,
+              "label": 1,
+              "kind": 13,
+              "type_name": "",
+              "oneof_index": null
+            },
+            {
+              "name": "negotiated_generation_deprecated",
+              "number": 8,
+              "label": 1,
+              "kind": 8,
+              "type_name": "",
+              "oneof_index": null
             }
           ]
         },

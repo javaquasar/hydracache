@@ -13,11 +13,16 @@ use tar::Archive;
 const DEFAULT_MANIFEST: &str = "docs/testing/hc2-compat/v0.68-preview.1.json";
 const TARGET_DIR: &str = "target/hc2-compat";
 const PEER_TARGET_DIR: &str = "target/hc2-compat/peer";
+const CURRENT_RUST_OLD_TARGET_DIR: &str = "target/hc2-compat/current-rust-old";
+const CURRENT_RUST_ROLLING_TARGET_DIR: &str = "target/hc2-compat/current-rust-rolling";
 const PEER_CRATE: &str = "hydracache-client-plane-spike";
-const SERVER_CRATE: &str = "hydracache-server";
 const RUST_ARTIFACT_ID: &str = "rust-h17-preview";
 const JAVA_JAR_ID: &str = "java-h17-preview-jar";
 const JAVA_POM_ID: &str = "java-h17-preview-pom";
+const OLD_DAEMON_LINUX_ID: &str = "daemon-generation5-linux-x86_64";
+const OLD_DAEMON_WINDOWS_ID: &str = "daemon-generation5-windows-x86_64";
+const NEW_DAEMON_LINUX_ID: &str = "daemon-generation6-linux-x86_64";
+const NEW_DAEMON_WINDOWS_ID: &str = "daemon-generation6-windows-x86_64";
 const JAVA_CONSUMER: &str = "tests/java-hc2-consumer/pom.xml";
 
 const REQUIRED_SCENARIOS: &[&str] = &[
@@ -60,6 +65,20 @@ struct Artifact {
     sha256: String,
     size_bytes: u64,
     producer_commit: String,
+    #[serde(default)]
+    producer_tree: Option<String>,
+    #[serde(default)]
+    contract_blob: Option<String>,
+    #[serde(default)]
+    protocol_generation: Option<u32>,
+    #[serde(default)]
+    platform: Option<String>,
+    #[serde(default)]
+    executable_path: Option<String>,
+    #[serde(default)]
+    executable_sha256: Option<String>,
+    #[serde(default)]
+    executable_size_bytes: Option<u64>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -117,13 +136,16 @@ pub fn check_at_root(
         }
     }
     let execution = if manifest_only {
-        "manifest-only; baseline smoke not executed"
+        "manifest-only; cross-version scenarios not executed"
     } else {
-        "baseline smoke executed"
+        "cross-version scenarios executed"
     };
-    println!(
-        "client-plane-compat-check: OK (retained artifacts verified; {execution}; incomplete rows reported)"
-    );
+    let matrix = if manifest.rows.iter().all(|row| row.status == "pass") {
+        "matrix complete"
+    } else {
+        "incomplete rows reported"
+    };
+    println!("client-plane-compat-check: OK (retained artifacts verified; {execution}; {matrix})");
     Ok(())
 }
 
@@ -182,12 +204,9 @@ fn validate_manifest(root: &Path, manifest: &CompatibilityManifest) -> Result<()
         if !artifact_ids.insert(artifact.id.as_str()) {
             return Err(format!("duplicate compatibility artifact id: {}", artifact.id).into());
         }
-        if artifact.producer_commit != manifest.baseline.producer_commit {
-            return Err(format!("artifact {} has a different producer commit", artifact.id).into());
-        }
         if !matches!(
             artifact.kind.as_str(),
-            "rust-crate" | "java-jar" | "maven-pom"
+            "rust-crate" | "java-jar" | "maven-pom" | "production-daemon-tar-gz"
         ) {
             return Err(format!(
                 "artifact {} has unsupported kind {}",
@@ -210,8 +229,21 @@ fn validate_manifest(root: &Path, manifest: &CompatibilityManifest) -> Result<()
         if actual != artifact.sha256 {
             return Err(format!("retained artifact {} digest mismatch", artifact.id).into());
         }
+        if artifact.kind == "production-daemon-tar-gz" {
+            validate_daemon_artifact(root, artifact, &bytes)?;
+        } else if artifact.producer_commit != manifest.baseline.producer_commit {
+            return Err(format!("artifact {} has a different producer commit", artifact.id).into());
+        }
     }
-    for required in [RUST_ARTIFACT_ID, JAVA_JAR_ID, JAVA_POM_ID] {
+    for required in [
+        RUST_ARTIFACT_ID,
+        JAVA_JAR_ID,
+        JAVA_POM_ID,
+        OLD_DAEMON_LINUX_ID,
+        OLD_DAEMON_WINDOWS_ID,
+        NEW_DAEMON_LINUX_ID,
+        NEW_DAEMON_WINDOWS_ID,
+    ] {
         if !artifact_ids.contains(required) {
             return Err(format!("required retained artifact is absent: {required}").into());
         }
@@ -259,6 +291,137 @@ fn validate_manifest(root: &Path, manifest: &CompatibilityManifest) -> Result<()
     Ok(())
 }
 
+fn validate_daemon_artifact(
+    root: &Path,
+    artifact: &Artifact,
+    archive_bytes: &[u8],
+) -> Result<(), Box<dyn Error>> {
+    let producer_tree = artifact
+        .producer_tree
+        .as_deref()
+        .ok_or("retained daemon lacks producer_tree")?;
+    let contract_blob = artifact
+        .contract_blob
+        .as_deref()
+        .ok_or("retained daemon lacks contract_blob")?;
+    let protocol_generation = artifact
+        .protocol_generation
+        .ok_or("retained daemon lacks protocol_generation")?;
+    let platform = artifact
+        .platform
+        .as_deref()
+        .ok_or("retained daemon lacks platform")?;
+    let executable_path = artifact
+        .executable_path
+        .as_deref()
+        .ok_or("retained daemon lacks executable_path")?;
+    let executable_sha256 = artifact
+        .executable_sha256
+        .as_deref()
+        .ok_or("retained daemon lacks executable_sha256")?;
+    let executable_size_bytes = artifact
+        .executable_size_bytes
+        .ok_or("retained daemon lacks executable_size_bytes")?;
+    validate_hex("daemon producer_commit", &artifact.producer_commit, 40)?;
+    validate_hex("daemon producer_tree", producer_tree, 40)?;
+    validate_hex("daemon contract_blob", contract_blob, 40)?;
+    validate_hex("daemon executable_sha256", executable_sha256, 64)?;
+    validate_relative_path(executable_path)?;
+    if !matches!(protocol_generation, 5 | 6)
+        || !matches!(platform, "linux-x86_64" | "windows-x86_64")
+    {
+        return Err(format!("retained daemon {} has an invalid identity", artifact.id).into());
+    }
+    run_git(
+        root,
+        &[
+            "cat-file",
+            "-e",
+            &format!("{}^{{commit}}", artifact.producer_commit),
+        ],
+        "retained daemon producer commit",
+    )?;
+    run_git(
+        root,
+        &[
+            "merge-base",
+            "--is-ancestor",
+            &artifact.producer_commit,
+            "HEAD",
+        ],
+        "retained daemon producer ancestry",
+    )?;
+    if git_output(
+        root,
+        &[
+            "rev-parse",
+            &format!("{}^{{tree}}", artifact.producer_commit),
+        ],
+    )? != producer_tree
+    {
+        return Err(format!("retained daemon {} producer tree mismatch", artifact.id).into());
+    }
+    if git_output(
+        root,
+        &[
+            "rev-parse",
+            &format!(
+                "{}:crates/hydracache-client-hc2/proto/hc2_contract.proto",
+                artifact.producer_commit
+            ),
+        ],
+    )? != contract_blob
+    {
+        return Err(format!("retained daemon {} contract blob mismatch", artifact.id).into());
+    }
+
+    let mut executable = None;
+    let mut receipt = None;
+    for entry in Archive::new(GzDecoder::new(archive_bytes)).entries()? {
+        let mut entry = entry?;
+        let path = entry.path()?.to_string_lossy().replace('\\', "/");
+        if path == executable_path {
+            if !entry.header().entry_type().is_file() {
+                return Err("retained daemon executable is not a regular file".into());
+            }
+            let mut bytes = Vec::new();
+            std::io::Read::read_to_end(&mut entry, &mut bytes)?;
+            executable = Some(bytes);
+        } else if path.ends_with("/receipt.txt") {
+            let mut text = String::new();
+            std::io::Read::read_to_string(&mut entry, &mut text)?;
+            receipt = Some(text);
+        }
+    }
+    let executable = executable.ok_or("retained daemon archive lacks its executable")?;
+    if executable.len() as u64 != executable_size_bytes
+        || sha256_hex(&executable) != executable_sha256
+    {
+        return Err(format!("retained daemon {} executable mismatch", artifact.id).into());
+    }
+    let receipt = receipt.ok_or("retained daemon archive lacks its receipt")?;
+    for expected in [
+        format!("producer_commit={}", artifact.producer_commit),
+        format!("producer_tree={producer_tree}"),
+        format!("contract_blob={contract_blob}"),
+        format!("platform={platform}"),
+        format!("executable_sha256={executable_sha256}"),
+        format!("executable_size_bytes={executable_size_bytes}"),
+    ] {
+        if !receipt.lines().any(|line| line == expected) {
+            return Err(format!("retained daemon {} receipt mismatch", artifact.id).into());
+        }
+    }
+    Ok(())
+}
+
+fn sha256_hex(bytes: &[u8]) -> String {
+    Sha256::digest(bytes)
+        .iter()
+        .map(|byte| format!("{byte:02x}"))
+        .collect()
+}
+
 fn run_baseline_smoke(root: &Path, manifest: &CompatibilityManifest) -> Result<(), Box<dyn Error>> {
     run_checked(
         root,
@@ -275,22 +438,6 @@ fn run_baseline_smoke(root: &Path, manifest: &CompatibilityManifest) -> Result<(
         ],
         &[],
         "HC/2 compatibility conformance peer",
-    )?;
-    run_checked(
-        root,
-        "cargo",
-        &[
-            "build",
-            "--locked",
-            "-p",
-            SERVER_CRATE,
-            "--bin",
-            SERVER_CRATE,
-            "--target-dir",
-            PEER_TARGET_DIR,
-        ],
-        &[],
-        "current production daemon for retained clients",
     )?;
     let peer = peer_path(root);
     if !peer.is_file() {
@@ -332,11 +479,20 @@ fn run_baseline_smoke(root: &Path, manifest: &CompatibilityManifest) -> Result<(
         .open(crate_root.join("Cargo.toml"))?
         .write_all(b"\n[workspace]\n")?;
     let peer_text = peer.to_string_lossy().into_owned();
-    let daemon = production_daemon_path(root);
-    if !daemon.is_file() {
-        return Err(format!("current production daemon is absent: {}", daemon.display()).into());
-    }
+    let daemon = extract_daemon(
+        root,
+        manifest,
+        platform_daemon_id(NEW_DAEMON_LINUX_ID, NEW_DAEMON_WINDOWS_ID),
+        "retained-daemon-generation6",
+    )?;
     let daemon_text = daemon.to_string_lossy().into_owned();
+    let retained_daemon = extract_daemon(
+        root,
+        manifest,
+        platform_daemon_id(OLD_DAEMON_LINUX_ID, OLD_DAEMON_WINDOWS_ID),
+        "retained-daemon-generation5",
+    )?;
+    let retained_daemon_text = retained_daemon.to_string_lossy().into_owned();
     let crate_manifest = crate_root.join("Cargo.toml").to_string_lossy().into_owned();
     let rust_target = root
         .join(TARGET_DIR)
@@ -374,6 +530,49 @@ fn run_baseline_smoke(root: &Path, manifest: &CompatibilityManifest) -> Result<(
         ],
         "retained Rust HC/2 additive-field consumer",
     )?;
+    run_checked(
+        root,
+        "cargo",
+        &[
+            "test",
+            "--locked",
+            "-p",
+            "hydracache-client-hc2",
+            "--test",
+            "grpc_process",
+            "--target-dir",
+            CURRENT_RUST_OLD_TARGET_DIR,
+        ],
+        &[
+            ("HC2_RUST_INTEROP_SERVER", &peer_text),
+            ("HC2_RUST_PRODUCTION_DAEMON", &retained_daemon_text),
+            ("HC2_RUST_PROTOCOL_GENERATION", "5"),
+        ],
+        "current Rust HC/2 client against retained generation-5 daemon",
+    )?;
+    run_checked(
+        root,
+        "cargo",
+        &[
+            "test",
+            "--locked",
+            "-p",
+            "hydracache-client-hc2",
+            "--test",
+            "grpc_process",
+            "generation_five_client_rolls_from_retained_to_current_production_daemon",
+            "--target-dir",
+            CURRENT_RUST_ROLLING_TARGET_DIR,
+            "--",
+            "--exact",
+        ],
+        &[
+            ("HC2_RUST_INTEROP_SERVER", &peer_text),
+            ("HC2_RUST_RETAINED_PRODUCTION_DAEMON", &retained_daemon_text),
+            ("HC2_RUST_PRODUCTION_DAEMON", &daemon_text),
+        ],
+        "rolling replacement from retained generation-5 to current generation-6 daemon",
+    )?;
 
     let m2 = root.join(TARGET_DIR).join("m2");
     fs::create_dir_all(&m2)?;
@@ -410,6 +609,7 @@ fn run_baseline_smoke(root: &Path, manifest: &CompatibilityManifest) -> Result<(
             "-f",
             JAVA_CONSUMER,
             "-Dhc2.compat.production.required=true",
+            "-Dhc2.expected.protocol.generation=5",
             "clean",
             "verify",
         ],
@@ -420,7 +620,105 @@ fn run_baseline_smoke(root: &Path, manifest: &CompatibilityManifest) -> Result<(
         ],
         "retained Java HC/2 client artifact",
     )?;
+    run_checked(
+        root,
+        maven_program(),
+        &[
+            "-B",
+            "-ntp",
+            "-f",
+            "sdks/java/hydracache-client-hc2/pom.xml",
+            "-Dtest=GrpcHydraCacheClientInteropTest",
+            "test",
+        ],
+        &[
+            ("HC2_JAVA_INTEROP_SERVER", &peer_text),
+            ("HC2_JAVA_DAEMON", &retained_daemon_text),
+            ("HC2_JAVA_PROTOCOL_GENERATION", "5"),
+        ],
+        "current Java HC/2 client against retained generation-5 daemon",
+    )?;
+    run_checked(
+        root,
+        maven_program(),
+        &[
+            "-B",
+            "-ntp",
+            "-f",
+            "sdks/java/hydracache-client-hc2/pom.xml",
+            "-Dtest=GrpcHydraCacheClientInteropTest#javaSdkExecutesAgainstTheProductionDaemonAndDrainsCleanly",
+            "test",
+        ],
+        &[
+            ("HC2_JAVA_INTEROP_SERVER", &peer_text),
+            ("HC2_JAVA_DAEMON", &daemon_text),
+            ("HC2_JAVA_PROTOCOL_GENERATION", "5"),
+            ("HC2_JAVA_EXPECTED_PREFERRED_GENERATION", "6"),
+            ("HC2_JAVA_EXPECTED_DEPRECATED", "true"),
+        ],
+        "current Java generation-5 client inside the generation-6 deprecation window",
+    )?;
+    run_checked(
+        root,
+        "cargo",
+        &[
+            "test",
+            "--locked",
+            "-p",
+            "hydracache-server",
+            "--test",
+            "hc2_daemon_process",
+            "real_daemon_shares_hc1_hc2_dispatch_and_exits_on_drain",
+            "--target-dir",
+            PEER_TARGET_DIR,
+            "--",
+            "--exact",
+        ],
+        &[],
+        "concurrent HC/1 and HC/2 production listeners",
+    )?;
     Ok(())
+}
+
+fn platform_daemon_id<'a>(linux: &'a str, windows: &'a str) -> &'a str {
+    if cfg!(windows) {
+        windows
+    } else {
+        linux
+    }
+}
+
+fn extract_daemon(
+    root: &Path,
+    manifest: &CompatibilityManifest,
+    id: &str,
+    unpack_directory: &str,
+) -> Result<PathBuf, Box<dyn Error>> {
+    let artifact = manifest
+        .artifacts
+        .iter()
+        .find(|artifact| artifact.id == id)
+        .ok_or_else(|| format!("retained daemon artifact is absent: {id}"))?;
+    let executable_path = artifact
+        .executable_path
+        .as_deref()
+        .ok_or("retained daemon lacks executable_path")?;
+    let unpack_root = root.join(TARGET_DIR).join(unpack_directory);
+    if unpack_root.exists() {
+        fs::remove_dir_all(&unpack_root)?;
+    }
+    fs::create_dir_all(&unpack_root)?;
+    Archive::new(GzDecoder::new(fs::File::open(root.join(&artifact.path))?))
+        .unpack(&unpack_root)?;
+    let executable = unpack_root.join(executable_path);
+    if !executable.is_file() {
+        return Err(format!(
+            "retained daemon executable is absent after extraction: {}",
+            executable.display()
+        )
+        .into());
+    }
+    Ok(executable)
 }
 
 fn report_matrix(manifest: &CompatibilityManifest) {
@@ -483,16 +781,6 @@ fn peer_path(root: &Path) -> PathBuf {
             "hc2_java_interop_server.exe"
         } else {
             "hc2_java_interop_server"
-        })
-}
-
-fn production_daemon_path(root: &Path) -> PathBuf {
-    root.join(PEER_TARGET_DIR)
-        .join("debug")
-        .join(if cfg!(windows) {
-            "hydracache-server.exe"
-        } else {
-            "hydracache-server"
         })
 }
 

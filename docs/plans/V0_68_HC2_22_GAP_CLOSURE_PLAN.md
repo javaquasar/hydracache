@@ -32,7 +32,7 @@
 | H15 | Hermetic Python generation is absent | complete | `feat(client-plane): make Python generation hermetic` | vendored protoc, descriptor-derived stubs/metadata, hash-bound two-platform wheelhouse, clean generation, golden/unknown-field/bidi/import proof |
 | H16 | Java is a codec fixture, not a production SDK | complete | `feat(client-plane): add Java reconnect and production interop` | publishable Java 17 SDK/external consumer, fail-closed PKI matrix, bounded reconnect/replay and repair, two-process Rust recovery, real production-daemon mTLS/drain, thread/resource checks, and retained H18 JAR/POM baseline green |
 | H17 | Rust production SDK still uses HC/1 HTTP | complete | `feat(client-plane): complete Rust HC2 production interop` | native SDK/process/package/HC/1 and H11 recovery gates plus real production-daemon mTLS/data/push/session/drain proof green |
-| H18 | Real previous-artifact compatibility matrix is absent | in progress | `test(client-plane): run retained clients against production` | immutable H17 Rust/Java clients execute against the current peer and production daemon; reverse direction, rolling upgrade, and deprecation require a later distinct preview |
+| H18 | Real previous-artifact compatibility matrix is absent | complete | `test(client-plane): prove generation 5-to-6 compatibility` | nine-row fail-closed matrix uses retained Rust/Java clients plus retained Linux/Windows generation-5 and generation-6 daemons; both directions, rolling replacement, negotiation, unknown fields, deprecation, coexistence, and clean drain are green |
 | H19 | Deterministic network fault proxy is absent | complete | `test(client-plane): complete deterministic fault bindings` | all bounded actions, real async stream, exact replay, eight H11 and three H20 lifecycle traces, plus four plans applied unchanged to every H03 candidate codec |
 | H20 | HTTP/2 graceful shutdown remains unresolved | complete | `fix(client-plane): bound HTTP2 graceful drain` | two-GOAWAY controller, deadline/reset reasons, retained fault traces, real TLS/H2 zero-accounting task joins without abort |
 | H21 | Observability is local to the spike | complete | `feat(client-plane): export bounded privacy-safe diagnostics` | v1 typed metric/trace export, 64 salted tenant buckets, bounded trace ring, privacy/cardinality/reconnect/close evidence, operator runbook |
@@ -579,25 +579,25 @@ immutable artifacts from prior release commits.
 
 **Done.** Compatibility claims point to retained binaries, not source models.
 
-**Implementation progress.** The first immutable baseline is retained under
+**Completion evidence (2026-08-11).** The first immutable client baseline is retained under
 `docs/testing/hc2-compat/artifacts/h17-preview-d1d1d44`. Its manifest binds the
 Rust `.crate`, Java JAR/POM, byte lengths, SHA-256 digests, producer commit/tree,
-and exact contract blob. `cargo xtask client-plane-compat-check` verifies those
-identities, extracts and executes the saved Rust package, installs the saved
-Java artifact into an isolated Maven repository, runs external consumers, and
-proves capability handshake plus additive-field behavior. Both retained
-clients also use their saved public APIs to establish mTLS to the current
-production `hydracache-server`, execute PUT/GET, request admin drain, and
-require successful daemon exit. The matrix has no skip state: unavailable
-production rows print `BLOCKED`, while
-`--require-complete` fails on every `baseline-smoke` or `blocked` row.
+and exact contract blob. H18 additionally retains Linux and Windows production
+daemon archives from generation-5 commit `539d74e7` and generation-6 commit
+`00508c68`, including internal executable receipts. Generation 6 accepts the
+bounded 5..=6 window, advertises minimum/preferred/deprecated policy, and keeps
+the exact selected-generation equality gate.
 
-H18 remains `in progress`. The retained clients and current checkout share the
-same H17 contract blob, so the six executable rows are labelled
-`baseline-smoke`, never `pass`. A later preview must retain the current daemon
-as an old artifact and provide a meaningfully newer client/contract before the
-reverse-direction, rolling-upgrade, and deprecation rows can become
-compatibility claims. See
+`cargo xtask client-plane-compat-check --require-complete` verifies every
+outer and inner identity and executes all nine rows: old Rust/Java clients to
+the new peer and daemon, current clients to the old daemon, HC/1+HC/2 shared
+dispatch, rolling connection replacement, capability negotiation, additive
+unknown fields, and planned deprecation. The rolling test starts both retained
+daemon binaries, advances the recovery connection generation, verifies
+post-replacement operations, and drains both. Its scope is protocol/lifecycle
+compatibility, not replicated state migration between independent fixtures.
+The matrix reports `pass=9`, `baseline-smoke=0`, and `blocked=0`; no skip state
+exists. See
 `docs/architecture/HC2_COMPATIBILITY_ARTIFACTS.md` for the policy and exact
 reproduction commands.
 

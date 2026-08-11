@@ -83,6 +83,7 @@ impl ClientPlaneAlpha for InteropService {
             let mut sessions = BTreeSet::<Vec<u8>>::new();
             let mut cancelled = BTreeSet::<u64>::new();
             let mut handshaken = false;
+            let mut negotiated_generation = None;
 
             loop {
                 let envelope = match inbound.message().await {
@@ -90,7 +91,9 @@ impl ClientPlaneAlpha for InteropService {
                     Ok(None) => break,
                     Err(_) => break,
                 };
-                if envelope.generation != GENERATION
+                if !(5..=GENERATION).contains(&envelope.generation)
+                    || negotiated_generation
+                        .is_some_and(|generation| generation != envelope.generation)
                     || envelope.connection_generation != CONNECTION_GENERATION
                 {
                     let _ = tx
@@ -102,20 +105,30 @@ impl ClientPlaneAlpha for InteropService {
                 }
                 match envelope.message {
                     Some(client_envelope::Message::Handshake(handshake)) if !handshaken => {
+                        if handshake.generation != envelope.generation {
+                            let _ = tx
+                                .send(Err(Status::failed_precondition(
+                                    "handshake generation mismatch",
+                                )))
+                                .await;
+                            break;
+                        }
                         handshaken = true;
+                        negotiated_generation = Some(envelope.generation);
                         let accepted = handshake.requested;
                         let ack = HandshakeAck {
-                            generation: GENERATION,
+                            generation: envelope.generation,
                             cluster_id: "hc2-java-interop".to_owned(),
                             accepted,
                             topology_epoch: 1,
                             connection_generation: CONNECTION_GENERATION,
                             minimum_generation: 5,
                             preferred_generation: GENERATION,
-                            negotiated_generation_deprecated: false,
+                            negotiated_generation_deprecated: envelope.generation < GENERATION,
                         };
                         if send(
                             &tx,
+                            envelope.generation,
                             envelope.correlation_id,
                             server_envelope::Message::Handshake(ack),
                         )
@@ -133,7 +146,13 @@ impl ClientPlaneAlpha for InteropService {
                                 server_name: "localhost".to_owned(),
                             }],
                         };
-                        let _ = send(&tx, 0, server_envelope::Message::Topology(topology)).await;
+                        let _ = send(
+                            &tx,
+                            envelope.generation,
+                            0,
+                            server_envelope::Message::Topology(topology),
+                        )
+                        .await;
                     }
                     Some(client_envelope::Message::Handshake(_)) | None if !handshaken => {
                         let _ = tx
@@ -149,6 +168,7 @@ impl ClientPlaneAlpha for InteropService {
                         let response = apply_invocation(&service.store, invocation);
                         if send(
                             &tx,
+                            envelope.generation,
                             envelope.correlation_id,
                             server_envelope::Message::Invocation(response),
                         )
@@ -157,7 +177,13 @@ impl ClientPlaneAlpha for InteropService {
                         {
                             break;
                         }
-                        emit_matching_events(&service, &tx, &mut subscriptions).await;
+                        emit_matching_events(
+                            &service,
+                            &tx,
+                            envelope.generation,
+                            &mut subscriptions,
+                        )
+                        .await;
                     }
                     Some(client_envelope::Message::Cancel(cancel)) if handshaken => {
                         cancelled.insert(cancel.correlation_id);
@@ -173,6 +199,7 @@ impl ClientPlaneAlpha for InteropService {
                         };
                         let _ = send(
                             &tx,
+                            envelope.generation,
                             envelope.correlation_id,
                             server_envelope::Message::Subscribed(ack),
                         )
@@ -190,6 +217,7 @@ impl ClientPlaneAlpha for InteropService {
                         };
                         let _ = send(
                             &tx,
+                            envelope.generation,
                             envelope.correlation_id,
                             server_envelope::Message::SessionHeartbeat(heartbeat),
                         )
@@ -199,6 +227,7 @@ impl ClientPlaneAlpha for InteropService {
                         if sessions.contains(&heartbeat.session_id) {
                             let _ = send(
                                 &tx,
+                                envelope.generation,
                                 envelope.correlation_id,
                                 server_envelope::Message::SessionHeartbeat(heartbeat),
                             )
@@ -243,11 +272,12 @@ fn is_delayed_probe(invocation: &wire::InvocationRequest) -> bool {
 
 async fn send(
     tx: &mpsc::Sender<Result<ServerEnvelope, Status>>,
+    generation: u32,
     correlation_id: u64,
     message: server_envelope::Message,
 ) -> Result<(), mpsc::error::SendError<Result<ServerEnvelope, Status>>> {
     tx.send(Ok(ServerEnvelope {
-        generation: GENERATION,
+        generation,
         connection_generation: CONNECTION_GENERATION,
         correlation_id,
         message: Some(message),
@@ -367,6 +397,7 @@ fn error_result(code: StableErrorCode, detail: &str) -> InvocationResponse {
 async fn emit_matching_events(
     service: &InteropService,
     tx: &mpsc::Sender<Result<ServerEnvelope, Status>>,
+    generation: u32,
     subscriptions: &mut BTreeMap<u64, (Vec<u8>, u64)>,
 ) {
     let latest = service
@@ -390,7 +421,7 @@ async fn emit_matching_events(
             value: value.clone(),
             removed: false,
         };
-        if send(tx, 0, server_envelope::Message::Event(event))
+        if send(tx, generation, 0, server_envelope::Message::Event(event))
             .await
             .is_ok()
         {

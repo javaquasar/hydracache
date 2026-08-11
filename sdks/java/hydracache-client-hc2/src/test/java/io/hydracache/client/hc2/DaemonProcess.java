@@ -64,7 +64,7 @@ final class DaemonProcess implements AutoCloseable {
   }
 
   HydraCacheClientConfig config() {
-    return HydraCacheClientConfig.builder()
+    HydraCacheClientConfig.Builder builder = HydraCacheClientConfig.builder()
         .endpoint(java.net.URI.create("https://localhost:" + port))
         .serverName("localhost")
         .trustCertificate(ca)
@@ -73,8 +73,10 @@ final class DaemonProcess implements AutoCloseable {
         .clientId("external-java-daemon-consumer")
         .tenant("daemon-interop")
         .connectTimeout(Duration.ofSeconds(5))
-        .defaultRequestTimeout(Duration.ofSeconds(2))
-        .build();
+        .defaultRequestTimeout(Duration.ofSeconds(2));
+    String generation = System.getenv("HC2_JAVA_PROTOCOL_GENERATION");
+    if (generation != null) builder.protocolGeneration(Integer.parseInt(generation));
+    return builder.build();
   }
 
   String drain() throws Exception {

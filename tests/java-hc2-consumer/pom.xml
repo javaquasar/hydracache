@@ -11,6 +11,7 @@
   <properties>
     <maven.compiler.release>17</maven.compiler.release>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <hc2.expected.protocol.generation>6</hc2.expected.protocol.generation>
   </properties>
 
   <dependencies>
@@ -38,6 +39,11 @@
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
         <version>3.5.4</version>
+        <configuration>
+          <systemPropertyVariables>
+            <hc2.expected.protocol.generation>${hc2.expected.protocol.generation}</hc2.expected.protocol.generation>
+          </systemPropertyVariables>
+        </configuration>
       </plugin>
     </plugins>
   </build>
