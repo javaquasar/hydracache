@@ -221,6 +221,9 @@ async fn real_daemon_shares_hc1_hc2_dispatch_and_exits_on_drain() {
             }
         }
     };
+    assert_eq!(hc2.protocol_generation(), 6);
+    assert_eq!(hc2.preferred_protocol_generation(), 6);
+    assert!(!hc2.negotiated_generation_deprecated());
     let value = hc2
         .get(Bytes::from_static(b"hc1-key"), None)
         .await
@@ -253,6 +256,20 @@ async fn real_daemon_shares_hc1_hc2_dispatch_and_exits_on_drain() {
     for forbidden in ["tenant-a", "hc2-client", "localhost", "hc2-key"] {
         assert!(!metrics.contains(forbidden));
     }
+
+    let mut legacy_config = ClientConfig::new("hc2-generation-5-client", "tenant-a");
+    legacy_config.protocol_generation = 5;
+    let generation_5 = Hc2Client::connect(&adapter, legacy_config).await.unwrap();
+    assert_eq!(generation_5.protocol_generation(), 5);
+    assert_eq!(generation_5.preferred_protocol_generation(), 6);
+    assert!(generation_5.negotiated_generation_deprecated());
+    let legacy_value = generation_5
+        .get(Bytes::from_static(b"hc2-key"), None)
+        .await
+        .unwrap()
+        .expect("generation-5 client must read generation-6 daemon state");
+    assert_eq!(legacy_value.value, Bytes::from_static(b"from-hc2"));
+    generation_5.close();
 
     let get = ClientRequestEnvelope::new(
         "hc1-get",

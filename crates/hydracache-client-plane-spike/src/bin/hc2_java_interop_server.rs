@@ -35,7 +35,7 @@ use wire::{
     SubscriptionAck, TopologyUpdate, ValueResult,
 };
 
-const GENERATION: u32 = 5;
+const GENERATION: u32 = 6;
 const CONNECTION_GENERATION: u64 = 1;
 
 type ResponseStream = Pin<Box<dyn Stream<Item = Result<ServerEnvelope, Status>> + Send>>;
@@ -110,6 +110,9 @@ impl ClientPlaneAlpha for InteropService {
                             accepted,
                             topology_epoch: 1,
                             connection_generation: CONNECTION_GENERATION,
+                            minimum_generation: 5,
+                            preferred_generation: GENERATION,
+                            negotiated_generation_deprecated: false,
                         };
                         if send(
                             &tx,

@@ -22,6 +22,14 @@ public interface HydraCacheClient extends AutoCloseable {
   CompletableFuture<FencedSession> openSession(Duration requestedTtl);
   /** Authenticated cluster identity negotiated during the HC/2 handshake. */
   String clusterId();
+  /** Exact HC/2 wire generation selected for this connection. */
+  default int protocolGeneration() {
+    return HydraCacheClientConfig.CURRENT_PROTOCOL_GENERATION;
+  }
+  /** Preferred generation advertised by the peer, or the selected generation for a legacy peer. */
+  default int preferredProtocolGeneration() { return protocolGeneration(); }
+  /** Whether this connection is using a generation inside its deprecation window. */
+  default boolean negotiatedGenerationDeprecated() { return false; }
   TopologySnapshot topology();
   ClientMetricsSnapshot metrics();
   @Override void close();

@@ -19,7 +19,7 @@ use hydracache_client_hc2::wire::{
     InvocationResponse, MutationResult, ResponseMeta, ServerEnvelope, SessionHeartbeat,
     SessionLost, StableErrorCode, SubscriptionAck, ValueResult,
 };
-use hydracache_client_hc2::HC2_GENERATION;
+use hydracache_client_hc2::{is_supported_hc2_generation, HC2_GENERATION, HC2_MINIMUM_GENERATION};
 use hydracache_client_protocol::{
     CasExpectation, ClientErrorCode, ClientRequest, ClientRequestEnvelope, ClientResponse,
     ClientResponseEnvelope, LockConsistency, Namespace, StructuredKey,
@@ -251,6 +251,12 @@ impl Drop for ConnectionGuard {
     }
 }
 
+#[derive(Clone, Copy)]
+struct SessionIdentity {
+    protocol_generation: u32,
+    connection_generation: u64,
+}
+
 async fn serve_connection(
     service: &Hc2ClientPlaneService,
     peer_id: &str,
@@ -265,25 +271,31 @@ async fn serve_connection(
         reject(&service.accounting);
         return Err(Status::failed_precondition("HC/2 handshake must be first"));
     };
-    if first.generation != HC2_GENERATION
-        || handshake.generation != HC2_GENERATION
+    if !is_supported_hc2_generation(first.generation)
+        || handshake.generation != first.generation
         || first.connection_generation == 0
         || first.connection_generation != handshake.connection_generation
     {
         reject(&service.accounting);
         return Err(Status::failed_precondition("unsupported HC/2 generation"));
     }
-    let generation = first.connection_generation;
+    let identity = SessionIdentity {
+        protocol_generation: first.generation,
+        connection_generation: first.connection_generation,
+    };
     outbound
         .send(Ok(server_envelope(
-            generation,
+            identity,
             first.correlation_id,
             server_envelope::Message::Handshake(HandshakeAck {
-                generation: HC2_GENERATION,
+                generation: identity.protocol_generation,
                 cluster_id: service.cluster_id.to_string(),
                 accepted: handshake.requested,
                 topology_epoch: 1,
-                connection_generation: generation,
+                connection_generation: identity.connection_generation,
+                minimum_generation: HC2_MINIMUM_GENERATION,
+                preferred_generation: HC2_GENERATION,
+                negotiated_generation_deprecated: identity.protocol_generation < HC2_GENERATION,
             }),
         )))
         .await
@@ -293,8 +305,8 @@ async fn serve_connection(
     let mut sessions = BTreeMap::<Bytes, u64>::new();
     let mut resources = StreamResourceGuard::new(Arc::clone(&service.accounting));
     while let Some(envelope) = inbound.message().await? {
-        if envelope.generation != HC2_GENERATION
-            || envelope.connection_generation != generation
+        if envelope.generation != identity.protocol_generation
+            || envelope.connection_generation != identity.connection_generation
             || envelope.correlation_id == 0
         {
             reject(&service.accounting);
@@ -315,7 +327,7 @@ async fn serve_connection(
                 );
                 outbound
                     .send(Ok(server_envelope(
-                        generation,
+                        identity,
                         envelope.correlation_id,
                         server_envelope::Message::Invocation(response),
                     )))
@@ -324,7 +336,7 @@ async fn serve_connection(
                 if let Some((key, value, removed)) = event.filter(|_| mutation_applied) {
                     emit_matching_events(
                         service,
-                        generation,
+                        identity,
                         &key,
                         &value,
                         removed,
@@ -350,7 +362,7 @@ async fn serve_connection(
                 resources.add_subscription();
                 outbound
                     .send(Ok(server_envelope(
-                        generation,
+                        identity,
                         envelope.correlation_id,
                         server_envelope::Message::Subscribed(SubscriptionAck {
                             subscription_id: subscribe.subscription_id,
@@ -376,7 +388,7 @@ async fn serve_connection(
                 resources.add_session();
                 outbound
                     .send(Ok(server_envelope(
-                        generation,
+                        identity,
                         envelope.correlation_id,
                         server_envelope::Message::SessionHeartbeat(SessionHeartbeat {
                             session_id,
@@ -397,7 +409,7 @@ async fn serve_connection(
                 };
                 outbound
                     .send(Ok(server_envelope(
-                        generation,
+                        identity,
                         envelope.correlation_id,
                         message,
                     )))
@@ -626,7 +638,7 @@ fn wire_error(code: StableErrorCode, detail: &'static str) -> InvocationResponse
 
 async fn emit_matching_events(
     service: &Hc2ClientPlaneService,
-    generation: u64,
+    identity: SessionIdentity,
     key: &[u8],
     value: &[u8],
     removed: bool,
@@ -643,7 +655,7 @@ async fn emit_matching_events(
             if *watermark != 0 && next > watermark.saturating_add(1) {
                 outbound
                     .send(Ok(server_envelope(
-                        generation,
+                        identity,
                         0,
                         server_envelope::Message::Gap(EventGap {
                             subscription_id: *subscription_id,
@@ -656,7 +668,7 @@ async fn emit_matching_events(
             *watermark = next;
             outbound
                 .send(Ok(server_envelope(
-                    generation,
+                    identity,
                     0,
                     server_envelope::Message::Event(CacheEvent {
                         subscription_id: *subscription_id,
@@ -696,13 +708,13 @@ fn structured_key(value: &[u8]) -> Result<StructuredKey, &'static str> {
 }
 
 fn server_envelope(
-    connection_generation: u64,
+    identity: SessionIdentity,
     correlation_id: u64,
     message: server_envelope::Message,
 ) -> ServerEnvelope {
     ServerEnvelope {
-        generation: HC2_GENERATION,
-        connection_generation,
+        generation: identity.protocol_generation,
+        connection_generation: identity.connection_generation,
         correlation_id,
         message: Some(message),
     }

@@ -74,7 +74,10 @@ message HandshakeAck {
   repeated Capability accepted = 3;
   uint64 topology_epoch = 4;
   uint64 connection_generation = 5;
-  reserved 6 to 15;
+  uint32 minimum_generation = 6;
+  uint32 preferred_generation = 7;
+  bool negotiated_generation_deprecated = 8;
+  reserved 9 to 15;
 }
 
 message GetRequest { bytes key = 1; }

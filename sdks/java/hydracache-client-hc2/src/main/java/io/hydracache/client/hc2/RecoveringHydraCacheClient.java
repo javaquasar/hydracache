@@ -201,6 +201,18 @@ public final class RecoveringHydraCacheClient implements HydraCacheClient {
 
   @Override public String clusterId() { return clusterId; }
 
+  @Override public int protocolGeneration() {
+    return current.get().client().protocolGeneration();
+  }
+
+  @Override public int preferredProtocolGeneration() {
+    return current.get().client().preferredProtocolGeneration();
+  }
+
+  @Override public boolean negotiatedGenerationDeprecated() {
+    return current.get().client().negotiatedGenerationDeprecated();
+  }
+
   @Override public ClientMetricsSnapshot metrics() { return current.get().client().metrics(); }
 
   @Override

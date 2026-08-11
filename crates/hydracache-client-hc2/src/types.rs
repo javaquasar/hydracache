@@ -146,6 +146,8 @@ impl ClientLimits {
 pub struct ClientConfig {
     pub client_id: String,
     pub tenant: String,
+    /// Exact HC/2 generation to request. Defaults to the current preferred generation.
+    pub protocol_generation: u32,
     pub connection_generation: u64,
     pub connect_timeout: Duration,
     pub default_request_timeout: Duration,
@@ -159,6 +161,7 @@ impl ClientConfig {
         Self {
             client_id: client_id.into(),
             tenant: tenant.into(),
+            protocol_generation: crate::HC2_GENERATION,
             connection_generation: 1,
             connect_timeout: Duration::from_secs(10),
             default_request_timeout: Duration::from_secs(5),
@@ -182,6 +185,9 @@ impl ClientConfig {
         }
         if self.connection_generation == 0 {
             return Err(invalid("connection generation must be nonzero"));
+        }
+        if !crate::is_supported_hc2_generation(self.protocol_generation) {
+            return Err(invalid("unsupported HC/2 protocol generation"));
         }
         if !valid_duration(self.connect_timeout) || !valid_duration(self.default_request_timeout) {
             return Err(invalid(

@@ -20,7 +20,7 @@ use crate::wire::{
 use crate::{
     BatchItemResult, BatchOperation, CacheEvent, CacheValue, Capability, ClientConfig, ClientError,
     ClientMetricsSnapshot, ErrorCode, MutationResult, NodeEndpoint, RequestOptions, RetryAdvice,
-    SubscriptionEvent, TopologySnapshot, TransportKind, HC2_GENERATION,
+    SubscriptionEvent, TopologySnapshot, TransportKind,
 };
 
 struct Metrics {
@@ -115,6 +115,8 @@ pub struct Hc2Client {
     handle: Arc<ClientHandle>,
     cluster_id: Arc<str>,
     transport: TransportKind,
+    negotiated_generation_deprecated: bool,
+    preferred_protocol_generation: u32,
 }
 
 impl std::fmt::Debug for Hc2Client {
@@ -175,11 +177,11 @@ impl Hc2Client {
         *runtime.handshake.lock().expect("handshake mutex poisoned") = Some((correlation, reply));
         if let Err(error) = runtime
             .send(ClientEnvelope {
-                generation: HC2_GENERATION,
+                generation: runtime.config.protocol_generation,
                 connection_generation: runtime.config.connection_generation,
                 correlation_id: correlation,
                 message: Some(client_envelope::Message::Handshake(Handshake {
-                    generation: HC2_GENERATION,
+                    generation: runtime.config.protocol_generation,
                     client_id: runtime.config.client_id.clone(),
                     requested: runtime
                         .config
@@ -216,10 +218,17 @@ impl Hc2Client {
             runtime.terminate(protocol_error("peer returned an invalid cluster identity"));
             return Err(protocol_error("peer returned an invalid cluster identity"));
         }
+        let preferred_protocol_generation = if ack.preferred_generation == 0 {
+            runtime.config.protocol_generation
+        } else {
+            ack.preferred_generation
+        };
         Ok(Self {
             handle: Arc::new(ClientHandle { runtime }),
             cluster_id,
             transport,
+            negotiated_generation_deprecated: ack.negotiated_generation_deprecated,
+            preferred_protocol_generation,
         })
     }
 
@@ -231,6 +240,21 @@ impl Hc2Client {
     /// Explicit selected transport. HC/1 fallback is impossible.
     pub const fn transport(&self) -> TransportKind {
         self.transport
+    }
+
+    /// Exact wire generation selected for this connection.
+    pub fn protocol_generation(&self) -> u32 {
+        self.handle.runtime.config.protocol_generation
+    }
+
+    /// Preferred generation advertised by the peer, or the selected generation for legacy peers.
+    pub const fn preferred_protocol_generation(&self) -> u32 {
+        self.preferred_protocol_generation
+    }
+
+    /// Whether the peer accepted this generation only inside a deprecation window.
+    pub const fn negotiated_generation_deprecated(&self) -> bool {
+        self.negotiated_generation_deprecated
     }
 
     /// Read a value.
@@ -450,7 +474,7 @@ impl Hc2Client {
         let mut guard = PendingGuard::subscription(runtime, correlation, subscription_id);
         runtime
             .send(ClientEnvelope {
-                generation: HC2_GENERATION,
+                generation: runtime.config.protocol_generation,
                 connection_generation: runtime.config.connection_generation,
                 correlation_id: correlation,
                 message: Some(client_envelope::Message::Subscribe(Subscribe {
@@ -495,7 +519,7 @@ impl Hc2Client {
         let mut guard = PendingGuard::session(runtime, correlation);
         runtime
             .send(ClientEnvelope {
-                generation: HC2_GENERATION,
+                generation: runtime.config.protocol_generation,
                 connection_generation: runtime.config.connection_generation,
                 correlation_id: correlation,
                 message: Some(client_envelope::Message::SessionOpen(SessionOpen {
@@ -588,7 +612,7 @@ impl Hc2Client {
         let mut guard = PendingGuard::invocation(runtime, correlation);
         runtime
             .send(ClientEnvelope {
-                generation: HC2_GENERATION,
+                generation: runtime.config.protocol_generation,
                 connection_generation: runtime.config.connection_generation,
                 correlation_id: correlation,
                 message: Some(client_envelope::Message::Invocation(request)),
@@ -785,7 +809,7 @@ impl Runtime {
     }
 
     fn accept(self: &Arc<Self>, envelope: ServerEnvelope) {
-        if envelope.generation != HC2_GENERATION
+        if envelope.generation != self.config.protocol_generation
             || envelope.connection_generation != self.config.connection_generation
         {
             self.terminate(protocol_error("stale or incompatible server envelope"));
@@ -1038,7 +1062,7 @@ impl Runtime {
                         return;
                     };
                     runtime.try_send(ClientEnvelope {
-                        generation: HC2_GENERATION,
+                        generation: runtime.config.protocol_generation,
                         connection_generation: runtime.config.connection_generation,
                         correlation_id: correlation,
                         message: Some(client_envelope::Message::SessionHeartbeat(
@@ -1091,7 +1115,7 @@ impl Runtime {
                 return;
             };
             self.try_send(ClientEnvelope {
-                generation: HC2_GENERATION,
+                generation: self.config.protocol_generation,
                 connection_generation: self.config.connection_generation,
                 correlation_id: control_correlation,
                 message: Some(client_envelope::Message::Cancel(Cancel {
@@ -1105,7 +1129,7 @@ impl Runtime {
                 return;
             };
             self.try_send(ClientEnvelope {
-                generation: HC2_GENERATION,
+                generation: self.config.protocol_generation,
                 connection_generation: self.config.connection_generation,
                 correlation_id: control_correlation,
                 message: Some(client_envelope::Message::Unsubscribe(Unsubscribe {
@@ -1128,7 +1152,7 @@ impl Runtime {
                 return;
             };
             self.try_send(ClientEnvelope {
-                generation: HC2_GENERATION,
+                generation: self.config.protocol_generation,
                 connection_generation: self.config.connection_generation,
                 correlation_id: control_correlation,
                 message: Some(client_envelope::Message::Unsubscribe(Unsubscribe {
@@ -1151,7 +1175,7 @@ impl Runtime {
                 return;
             };
             self.try_send(ClientEnvelope {
-                generation: HC2_GENERATION,
+                generation: self.config.protocol_generation,
                 connection_generation: self.config.connection_generation,
                 correlation_id: control_correlation,
                 message: Some(client_envelope::Message::SessionClose(SessionClose {
@@ -1350,10 +1374,21 @@ fn response_success(response: &InvocationResponse) -> Result<(), ClientError> {
 }
 
 fn validate_handshake(config: &ClientConfig, ack: &HandshakeAck) -> Result<(), ClientError> {
-    if ack.generation != HC2_GENERATION || ack.connection_generation != config.connection_generation
+    if ack.generation != config.protocol_generation
+        || ack.connection_generation != config.connection_generation
     {
         return Err(protocol_error(
             "peer negotiated an unexpected HC/2 generation",
+        ));
+    }
+    if (ack.minimum_generation != 0 && ack.generation < ack.minimum_generation)
+        || (ack.preferred_generation != 0 && ack.generation > ack.preferred_generation)
+        || (ack.negotiated_generation_deprecated
+            && ack.preferred_generation != 0
+            && ack.generation >= ack.preferred_generation)
+    {
+        return Err(protocol_error(
+            "peer returned inconsistent HC/2 generation policy",
         ));
     }
     let accepted = ack

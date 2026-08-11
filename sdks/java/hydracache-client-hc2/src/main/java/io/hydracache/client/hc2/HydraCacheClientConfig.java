@@ -12,6 +12,9 @@ import java.util.concurrent.ForkJoinPool;
 
 /** Immutable fail-closed connection configuration. */
 public final class HydraCacheClientConfig {
+  public static final int MINIMUM_PROTOCOL_GENERATION = 5;
+  public static final int CURRENT_PROTOCOL_GENERATION = 6;
+
   private final URI endpoint;
   private final String serverName;
   private final Path trustCertificate;
@@ -19,6 +22,7 @@ public final class HydraCacheClientConfig {
   private final Path clientPrivateKey;
   private final String clientId;
   private final String tenant;
+  private final int protocolGeneration;
   private final Duration connectTimeout;
   private final Duration defaultRequestTimeout;
   private final Set<Capability> requestedCapabilities;
@@ -38,6 +42,8 @@ public final class HydraCacheClientConfig {
     clientPrivateKey = requireReadable(builder.clientPrivateKey, "clientPrivateKey");
     clientId = requireBoundedText(builder.clientId, "clientId", 128);
     tenant = requireBoundedText(builder.tenant, "tenant", 128);
+    protocolGeneration = requireRange(builder.protocolGeneration, "protocolGeneration",
+        MINIMUM_PROTOCOL_GENERATION, CURRENT_PROTOCOL_GENERATION);
     connectTimeout = requirePositive(builder.connectTimeout, "connectTimeout");
     defaultRequestTimeout = requirePositive(builder.defaultRequestTimeout, "defaultRequestTimeout");
     requestedCapabilities = Set.copyOf(builder.requestedCapabilities);
@@ -64,6 +70,7 @@ public final class HydraCacheClientConfig {
   public Path clientPrivateKey() { return clientPrivateKey; }
   public String clientId() { return clientId; }
   public String tenant() { return tenant; }
+  public int protocolGeneration() { return protocolGeneration; }
   public Duration connectTimeout() { return connectTimeout; }
   public Duration defaultRequestTimeout() { return defaultRequestTimeout; }
   public Set<Capability> requestedCapabilities() { return requestedCapabilities; }
@@ -130,6 +137,7 @@ public final class HydraCacheClientConfig {
     private Path clientPrivateKey;
     private String clientId = "hydracache-java-preview";
     private String tenant = "default";
+    private int protocolGeneration = CURRENT_PROTOCOL_GENERATION;
     private Duration connectTimeout = Duration.ofSeconds(10);
     private Duration defaultRequestTimeout = Duration.ofSeconds(5);
     private Set<Capability> requestedCapabilities = EnumSet.allOf(Capability.class);
@@ -149,6 +157,7 @@ public final class HydraCacheClientConfig {
     public Builder clientPrivateKey(Path value) { clientPrivateKey = value; return this; }
     public Builder clientId(String value) { clientId = value; return this; }
     public Builder tenant(String value) { tenant = value; return this; }
+    public Builder protocolGeneration(int value) { protocolGeneration = value; return this; }
     public Builder connectTimeout(Duration value) { connectTimeout = value; return this; }
     public Builder defaultRequestTimeout(Duration value) { defaultRequestTimeout = value; return this; }
     public Builder requestedCapabilities(Set<Capability> value) {

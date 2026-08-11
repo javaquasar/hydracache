@@ -74,7 +74,6 @@ import java.util.concurrent.atomic.LongAdder;
 
 /** gRPC implementation hidden behind the stable preview API. */
 public final class GrpcHydraCacheClient implements HydraCacheClient {
-  private static final int GENERATION = 5;
   private static final long CONNECTION_GENERATION = 1;
 
   private final HydraCacheClientConfig config;
@@ -97,6 +96,8 @@ public final class GrpcHydraCacheClient implements HydraCacheClient {
   private final Map<ByteString, SessionHandle> sessions = new ConcurrentHashMap<>();
   private volatile TopologySnapshot topology = TopologySnapshot.empty();
   private volatile String clusterId;
+  private volatile int preferredProtocolGeneration;
+  private volatile boolean negotiatedGenerationDeprecated;
   private final LongAdder submitted = new LongAdder();
   private final LongAdder completed = new LongAdder();
   private final LongAdder failed = new LongAdder();
@@ -137,11 +138,11 @@ public final class GrpcHydraCacheClient implements HydraCacheClient {
       long correlation = client.nextCorrelation();
       client.handshakeCorrelation = correlation;
       client.send(ClientEnvelope.newBuilder()
-          .setGeneration(GENERATION)
+          .setGeneration(config.protocolGeneration())
           .setConnectionGeneration(CONNECTION_GENERATION)
           .setCorrelationId(correlation)
           .setHandshake(Handshake.newBuilder()
-              .setGeneration(GENERATION)
+              .setGeneration(config.protocolGeneration())
               .setConnectionGeneration(CONNECTION_GENERATION)
               .setClientId(config.clientId())
               .addAllRequested(config.requestedCapabilities().stream()
@@ -149,8 +150,15 @@ public final class GrpcHydraCacheClient implements HydraCacheClient {
                   .toList()))
           .build());
       HandshakeAck ack = client.handshake.get(config.connectTimeout().toMillis(), TimeUnit.MILLISECONDS);
-      if (ack.getGeneration() != GENERATION || ack.getConnectionGeneration() != CONNECTION_GENERATION) {
+      if (ack.getGeneration() != config.protocolGeneration()
+          || ack.getConnectionGeneration() != CONNECTION_GENERATION) {
         throw local(ErrorCode.UNSUPPORTED, "peer negotiated an unexpected HC/2 generation");
+      }
+      if ((ack.getMinimumGeneration() != 0 && ack.getGeneration() < ack.getMinimumGeneration())
+          || (ack.getPreferredGeneration() != 0 && ack.getGeneration() > ack.getPreferredGeneration())
+          || (ack.getNegotiatedGenerationDeprecated() && ack.getPreferredGeneration() != 0
+              && ack.getGeneration() >= ack.getPreferredGeneration())) {
+        throw local(ErrorCode.UNSUPPORTED, "peer returned inconsistent HC/2 generation policy");
       }
       Set<Capability> accepted = ack.getAcceptedList().stream()
           .map(GrpcHydraCacheClient::fromWireCapability)
@@ -163,6 +171,9 @@ public final class GrpcHydraCacheClient implements HydraCacheClient {
         throw local(ErrorCode.UNSUPPORTED, "peer returned an invalid cluster identity");
       }
       client.clusterId = ack.getClusterId();
+      client.preferredProtocolGeneration = ack.getPreferredGeneration() == 0
+          ? config.protocolGeneration() : ack.getPreferredGeneration();
+      client.negotiatedGenerationDeprecated = ack.getNegotiatedGenerationDeprecated();
       return client;
     } catch (InterruptedException error) {
       Thread.currentThread().interrupt();
@@ -286,7 +297,7 @@ public final class GrpcHydraCacheClient implements HydraCacheClient {
         pending.cancelTimeout();
         pending.release();
         try {
-          send(ClientEnvelope.newBuilder().setGeneration(GENERATION)
+          send(ClientEnvelope.newBuilder().setGeneration(config.protocolGeneration())
               .setConnectionGeneration(CONNECTION_GENERATION).setCorrelationId(nextCorrelation())
               .setUnsubscribe(Unsubscribe.newBuilder().setSubscriptionId(id)).build());
         } catch (RuntimeException ignoredSend) { }
@@ -298,7 +309,7 @@ public final class GrpcHydraCacheClient implements HydraCacheClient {
           pending.fail(local(ErrorCode.DEADLINE_EXCEEDED, "subscription acknowledgement timed out"));
         }
       }, config.defaultRequestTimeout().toNanos(), TimeUnit.NANOSECONDS);
-      send(ClientEnvelope.newBuilder().setGeneration(GENERATION)
+      send(ClientEnvelope.newBuilder().setGeneration(config.protocolGeneration())
           .setConnectionGeneration(CONNECTION_GENERATION).setCorrelationId(correlation)
           .setSubscribe(Subscribe.newBuilder().setSubscriptionId(id)
               .setKeyPrefix(ByteString.copyFrom(keyPrefix)).setResumeWatermark(resumeWatermark))
@@ -336,7 +347,7 @@ public final class GrpcHydraCacheClient implements HydraCacheClient {
           pending.fail(local(ErrorCode.DEADLINE_EXCEEDED, "session acknowledgement timed out"));
         }
       }, config.defaultRequestTimeout().toNanos(), TimeUnit.NANOSECONDS);
-      send(ClientEnvelope.newBuilder().setGeneration(GENERATION)
+      send(ClientEnvelope.newBuilder().setGeneration(config.protocolGeneration())
           .setConnectionGeneration(CONNECTION_GENERATION).setCorrelationId(correlation)
           .setSessionOpen(SessionOpen.newBuilder().setRequestedTtlMs(ttl)).build());
     } catch (RuntimeException error) {
@@ -351,6 +362,14 @@ public final class GrpcHydraCacheClient implements HydraCacheClient {
     String value = clusterId;
     if (value == null) throw local(ErrorCode.UNAVAILABLE, "handshake is incomplete");
     return value;
+  }
+
+  @Override public int protocolGeneration() { return config.protocolGeneration(); }
+
+  @Override public int preferredProtocolGeneration() { return preferredProtocolGeneration; }
+
+  @Override public boolean negotiatedGenerationDeprecated() {
+    return negotiatedGenerationDeprecated;
   }
 
   @Override
@@ -413,7 +432,7 @@ public final class GrpcHydraCacheClient implements HydraCacheClient {
     try {
       pending.timeout = scheduler.schedule(
           () -> timeout(pending), options.timeout().toNanos(), TimeUnit.NANOSECONDS);
-      send(ClientEnvelope.newBuilder().setGeneration(GENERATION)
+      send(ClientEnvelope.newBuilder().setGeneration(config.protocolGeneration())
           .setConnectionGeneration(CONNECTION_GENERATION).setCorrelationId(correlation)
           .setInvocation(request).build());
     } catch (RuntimeException error) {
@@ -442,7 +461,7 @@ public final class GrpcHydraCacheClient implements HydraCacheClient {
   private void sendCancel(long correlation, String reason) {
     if (closed.get()) return;
     try {
-      send(ClientEnvelope.newBuilder().setGeneration(GENERATION)
+      send(ClientEnvelope.newBuilder().setGeneration(config.protocolGeneration())
           .setConnectionGeneration(CONNECTION_GENERATION).setCorrelationId(nextCorrelation())
           .setCancel(Cancel.newBuilder().setCorrelationId(correlation).setSafeReason(reason)).build());
     } catch (RuntimeException ignored) { }
@@ -487,7 +506,7 @@ public final class GrpcHydraCacheClient implements HydraCacheClient {
   }
 
   private void accept(ServerEnvelope envelope) {
-    if (envelope.getGeneration() != GENERATION
+    if (envelope.getGeneration() != config.protocolGeneration()
         || envelope.getConnectionGeneration() != CONNECTION_GENERATION) {
       failConnection(local(ErrorCode.UNSUPPORTED, "stale or incompatible server envelope"));
       return;
@@ -811,7 +830,7 @@ public final class GrpcHydraCacheClient implements HydraCacheClient {
       if (!stopped.compareAndSet(false, true) || !subscriptions.remove(id, this)) return;
       subscriptionPermits.release();
       if (!closed.get()) {
-        send(ClientEnvelope.newBuilder().setGeneration(GENERATION)
+        send(ClientEnvelope.newBuilder().setGeneration(config.protocolGeneration())
             .setConnectionGeneration(CONNECTION_GENERATION).setCorrelationId(nextCorrelation())
             .setUnsubscribe(Unsubscribe.newBuilder().setSubscriptionId(id)).build());
       }
@@ -835,7 +854,7 @@ public final class GrpcHydraCacheClient implements HydraCacheClient {
       heartbeatTask = scheduler.scheduleAtFixedRate(() -> {
         if (stopped.get() || closed.get()) return;
         try {
-          send(ClientEnvelope.newBuilder().setGeneration(GENERATION)
+          send(ClientEnvelope.newBuilder().setGeneration(config.protocolGeneration())
               .setConnectionGeneration(CONNECTION_GENERATION).setCorrelationId(nextCorrelation())
               .setSessionHeartbeat(SessionHeartbeat.newBuilder()
                   .setSessionId(id).setFence(fence.get())).build());
@@ -854,7 +873,7 @@ public final class GrpcHydraCacheClient implements HydraCacheClient {
       if (!stopped.compareAndSet(false, true) || !sessions.remove(id, this)) return;
       sessionPermits.release();
       if (heartbeatTask != null) heartbeatTask.cancel(false);
-      if (!closed.get()) send(ClientEnvelope.newBuilder().setGeneration(GENERATION)
+      if (!closed.get()) send(ClientEnvelope.newBuilder().setGeneration(config.protocolGeneration())
           .setConnectionGeneration(CONNECTION_GENERATION).setCorrelationId(nextCorrelation())
           .setSessionClose(SessionClose.newBuilder().setSessionId(id).setFence(fence.get())).build());
     }

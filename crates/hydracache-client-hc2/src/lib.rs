@@ -30,5 +30,13 @@ pub use types::{
     RetryAdvice, SubscriptionEvent, TopologySnapshot, TransportKind,
 };
 
-/// Current HC/2 generation. It is intentionally disjoint from HC/1 versions.
-pub const HC2_GENERATION: u32 = 5;
+/// Oldest HC/2 generation accepted during the 0.68 preview compatibility window.
+pub const HC2_MINIMUM_GENERATION: u32 = 5;
+
+/// Current preferred HC/2 generation. It is intentionally disjoint from HC/1 versions.
+pub const HC2_GENERATION: u32 = 6;
+
+/// Return whether a generation belongs to the explicit preview compatibility window.
+pub const fn is_supported_hc2_generation(generation: u32) -> bool {
+    generation >= HC2_MINIMUM_GENERATION && generation <= HC2_GENERATION
+}

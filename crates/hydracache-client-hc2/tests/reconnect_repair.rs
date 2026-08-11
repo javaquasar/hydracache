@@ -110,6 +110,7 @@ impl TransportAdapter for ScriptedAdapter {
                                         accepted: handshake.requested,
                                         topology_epoch: 1,
                                         connection_generation: generation,
+                                        ..HandshakeAck::default()
                                     }),
                                 );
                                 if inbound_tx.send(Ok(response)).await.is_err() { return; }
