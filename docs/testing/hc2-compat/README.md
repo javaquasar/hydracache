@@ -33,3 +33,12 @@ that scenario.
 
 Do not replace an artifact in place. Add a new versioned directory and manifest
 record. Any byte change under an existing record fails the gate.
+
+Production daemons are retained by manually dispatching
+`.github/workflows/hc2-client-plane.yml` with
+`retain_hc2_daemon_commit=<exact-lowercase-40-hex-SHA>`. The opt-in job builds
+the real `hydracache-server` release binary on `ubuntu-24.04` and
+`windows-2025`, refuses checkout drift, records the producer commit/tree and
+HC/2 contract blob, and publishes checksummed archives for 90 days. This job is
+artifact production only: it does not replace or weaken any of the four H22
+release-admission lanes.
