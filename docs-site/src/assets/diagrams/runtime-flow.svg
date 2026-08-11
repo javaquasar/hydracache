@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="920" height="390" viewBox="0 0 920 390" role="img" aria-labelledby="title desc">
+  <title id="title">HydraCache runtime flow</title>
+  <desc id="desc">Application code passes key, tags, TTL, and refresh policy to HydraCache. A fresh entry is decoded immediately. A miss runs a single-flight loader, stores the encoded value, and then returns the typed value.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="#55606d"/>
+    </marker>
+  </defs>
+  <rect width="920" height="390" rx="10" fill="#fffaf6"/>
+
+  <g fill="#ffffff" stroke="#c9c0b8" stroke-width="2">
+    <rect x="36" y="64" width="150" height="74" rx="8"/>
+    <rect x="226" y="64" width="168" height="74" rx="8"/>
+    <rect x="434" y="64" width="146" height="74" rx="8"/>
+    <path d="M704 52 L786 101 L704 150 L622 101 z"/>
+    <rect x="824" y="64" width="76" height="74" rx="8"/>
+    <rect x="496" y="244" width="176" height="74" rx="8"/>
+    <rect x="738" y="244" width="150" height="74" rx="8"/>
+  </g>
+
+  <g font-family="Arial, sans-serif" fill="#252525" text-anchor="middle">
+    <text x="111" y="94" font-size="15" font-weight="700">Application</text>
+    <text x="111" y="116" font-size="14">call site</text>
+
+    <text x="310" y="90" font-size="15" font-weight="700">Key + tags</text>
+    <text x="310" y="112" font-size="14">TTL / refresh policy</text>
+
+    <text x="507" y="90" font-size="15" font-weight="700">HydraCache</text>
+    <text x="507" y="112" font-size="14">local runtime</text>
+
+    <text x="704" y="97" font-size="15" font-weight="700">Fresh</text>
+    <text x="704" y="119" font-size="14">entry?</text>
+
+    <text x="862" y="94" font-size="15" font-weight="700">Decode</text>
+    <text x="862" y="116" font-size="14">typed value</text>
+
+    <text x="584" y="274" font-size="15" font-weight="700">Single-flight</text>
+    <text x="584" y="296" font-size="14">loader</text>
+
+    <text x="813" y="274" font-size="15" font-weight="700">Store</text>
+    <text x="813" y="296" font-size="14">encoded value</text>
+  </g>
+
+  <g stroke="#55606d" stroke-width="2.2" fill="none" marker-end="url(#arrow)">
+    <path d="M186 101 H220"/>
+    <path d="M394 101 H428"/>
+    <path d="M580 101 H616"/>
+    <path d="M786 101 H818"/>
+    <path d="M704 150 V205 H584 V238"/>
+    <path d="M672 281 H732"/>
+    <path d="M813 244 V190 H862 V144"/>
+  </g>
+
+  <g font-family="Arial, sans-serif" fill="#6d4b37" font-size="13" text-anchor="middle">
+    <text x="812" y="88">yes</text>
+    <text x="648" y="190">no: load once</text>
+    <text x="507" y="162">stats, diagnostics, events</text>
+  </g>
+</svg>

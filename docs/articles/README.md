@@ -13,6 +13,7 @@ This directory contains external-facing article drafts for HydraCache.
 - 2026-08-05 - [002 - Single-flight Is Not an Optimization](https://medium.com/@artur.buzov/single-flight-is-not-an-optimization-85917bdbe77d) - Medium
 - 2026-08-05 - [003 - TTL Is Not Enough](https://medium.com/@artur.buzov/ttl-is-not-enough-ec4e96d89546) - Medium
 - 2026-08-06 - [004 - Local-first Distributed Invalidation](https://medium.com/@artur.buzov/local-first-distributed-invalidation-87bf0249e935) - Medium
+- 2026-08-10 - [005 - Typed Query Caching in Rust](https://medium.com/@artur.buzov/typed-query-caching-in-rust-aac4352599f0) - Medium
 
 ## Medium Drafting
 
@@ -82,9 +83,8 @@ npx --prefix console playwright install chromium
 - [004 - Local-first Distributed Invalidation](004-local-first-distributed-invalidation.md)
   - Cover: [004-local-first-distributed-invalidation-cover.png](004-local-first-distributed-invalidation-cover.png)
   - Prompt: [004-local-first-distributed-invalidation-cover.prompt.md](004-local-first-distributed-invalidation-cover.prompt.md)
+- [005 - Typed Query Caching in Rust](005-typed-query-caching-in-rust.md)
+  - Cover: [005-typed-query-caching-in-rust-cover.png](005-typed-query-caching-in-rust-cover.png)
+  - Prompt: [005-typed-query-caching-in-rust-cover.prompt.md](005-typed-query-caching-in-rust-cover.prompt.md)
 - [Draft - Raft Snapshot Bugs, AI Agents, and the Cost of Ignoring Contradictions](002-raft-snapshot-agent-bug.md)
   - Cover: [002-raft-snapshot-agent-bug-cover.jpg](002-raft-snapshot-agent-bug-cover.jpg)
-
-## Planned Articles
-
-- Planned - Typed Query Caching in Rust

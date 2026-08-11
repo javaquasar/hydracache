@@ -1,0 +1,61 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="920" height="360" viewBox="0 0 920 360" role="img" aria-labelledby="title desc">
+  <title id="title">HydraCache query-result cache flow</title>
+  <desc id="desc">Repository code builds a DbCache namespace and query policy. HydraCache checks the local runtime. A cache hit returns a result immediately. A miss runs the database loader and stores the result with tags.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="#55606d"/>
+    </marker>
+  </defs>
+  <rect width="920" height="360" rx="10" fill="#fbfcff"/>
+
+  <g fill="#ffffff" stroke="#bdc6d2" stroke-width="2">
+    <rect x="34" y="58" width="150" height="74" rx="8"/>
+    <rect x="222" y="58" width="150" height="74" rx="8"/>
+    <rect x="410" y="58" width="170" height="74" rx="8"/>
+    <rect x="618" y="58" width="150" height="74" rx="8"/>
+    <path d="M688 174 L774 222 L688 270 L602 222 z"/>
+    <rect x="814" y="185" width="76" height="74" rx="8"/>
+    <rect x="386" y="204" width="170" height="74" rx="8"/>
+    <rect x="196" y="204" width="150" height="74" rx="8"/>
+  </g>
+
+  <g font-family="Arial, sans-serif" fill="#252525" text-anchor="middle">
+    <text x="109" y="88" font-size="15" font-weight="700">Repository</text>
+    <text x="109" y="110" font-size="14">method</text>
+
+    <text x="297" y="88" font-size="15" font-weight="700">DbCache</text>
+    <text x="297" y="110" font-size="14">namespace</text>
+
+    <text x="495" y="84" font-size="15" font-weight="700">Query policy</text>
+    <text x="495" y="106" font-size="14">key, tags, TTL</text>
+
+    <text x="693" y="84" font-size="15" font-weight="700">HydraCache</text>
+    <text x="693" y="106" font-size="14">runtime</text>
+
+    <text x="688" y="218" font-size="15" font-weight="700">Cache hit?</text>
+
+    <text x="852" y="215" font-size="15" font-weight="700">Return</text>
+    <text x="852" y="237" font-size="14">result</text>
+
+    <text x="471" y="232" font-size="15" font-weight="700">Run loader</text>
+    <text x="471" y="254" font-size="14">SQLx, Diesel, SeaORM</text>
+
+    <text x="271" y="232" font-size="15" font-weight="700">Store result</text>
+    <text x="271" y="254" font-size="14">with tags</text>
+  </g>
+
+  <g stroke="#55606d" stroke-width="2.2" fill="none" marker-end="url(#arrow)">
+    <path d="M184 95 H216"/>
+    <path d="M372 95 H404"/>
+    <path d="M580 95 H612"/>
+    <path d="M693 132 V168"/>
+    <path d="M774 222 H808"/>
+    <path d="M602 222 H562"/>
+    <path d="M386 241 H352"/>
+  </g>
+
+  <g font-family="Arial, sans-serif" fill="#475b75" font-size="13" text-anchor="middle">
+    <text x="794" y="209">yes</text>
+    <text x="582" y="209">no</text>
+  </g>
+</svg>

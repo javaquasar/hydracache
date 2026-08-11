@@ -1,0 +1,105 @@
+name: Documentation Site
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "README.md"
+      - "docs-site/**"
+      - "scripts/docs-*.mjs"
+      - ".github/workflows/docs-site.yml"
+  pull_request:
+    paths:
+      - "README.md"
+      - "docs-site/**"
+      - "scripts/docs-*.mjs"
+      - ".github/workflows/docs-site.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: docs-site-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build and verify docs
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt
+
+      - name: Install Node
+        uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: console/package-lock.json
+
+      - name: Cache Rust dependencies
+        uses: Swatinem/rust-cache@v2
+        with:
+          prefix-key: v1-docs-site
+          cache-targets: true
+
+      - name: Install mdBook
+        uses: taiki-e/install-action@v2
+        with:
+          tool: mdbook@0.5.2
+
+      - name: Check docs examples formatting
+        run: cargo fmt --manifest-path docs-site/examples/Cargo.toml --check
+
+      - name: Check docs examples
+        run: cargo check --manifest-path docs-site/examples/Cargo.toml --all-targets --locked
+
+      - name: Build docs site
+        run: mdbook build docs-site
+
+      - name: Check documentation links
+        run: node scripts/docs-link-check.mjs
+
+      - name: Install browser dependencies
+        run: |
+          npm --prefix console ci
+          npx --prefix console playwright install --with-deps chromium
+
+      - name: Run visual smoke
+        run: |
+          python3 -m http.server 3000 --directory docs-site/book &
+          node scripts/docs-visual-smoke.mjs
+
+      - name: Configure Pages
+        if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
+        uses: actions/configure-pages@v6
+
+      - name: Upload Pages artifact
+        if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
+        uses: actions/upload-pages-artifact@v5
+        with:
+          path: docs-site/book
+
+  deploy:
+    name: Publish docs
+    if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v5

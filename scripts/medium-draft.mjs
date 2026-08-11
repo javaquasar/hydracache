@@ -224,8 +224,7 @@ async function markdownToHtml(markdown, baseDir) {
     }
 
     if (fence && inCode) {
-      const langClass = codeLang ? ` class="language-${escapeAttribute(codeLang)}"` : "";
-      html.push(`<pre><code${langClass}>${escapeHtml(codeLines.join("\n"))}</code></pre>`);
+      html.push(codeBlockToHtml(codeLines, codeLang));
       inCode = false;
       codeLang = "";
       codeLines = [];
@@ -293,13 +292,18 @@ async function markdownToHtml(markdown, baseDir) {
   }
 
   if (inCode) {
-    const langClass = codeLang ? ` class="language-${escapeAttribute(codeLang)}"` : "";
-    html.push(`<pre><code${langClass}>${escapeHtml(codeLines.join("\n"))}</code></pre>`);
+    html.push(codeBlockToHtml(codeLines, codeLang));
   }
   flushParagraph();
   flushList();
 
   return html.join("\n");
+}
+
+function codeBlockToHtml(codeLines, codeLang) {
+  const langClass = codeLang ? ` class="language-${escapeAttribute(codeLang)}"` : "";
+  const codeHtml = escapeHtml(codeLines.join("\n")).replaceAll("\n", "<br>");
+  return `<pre><code${langClass}>${codeHtml}</code></pre>`;
 }
 
 async function imageToHtml(reference, alt, baseDir) {

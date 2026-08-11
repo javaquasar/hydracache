@@ -1,0 +1,25 @@
+[book]
+title = "HydraCache Documentation"
+description = "Rust-native cache semantics, local-first caching, and distributed invalidation."
+authors = ["HydraCache Contributors"]
+language = "en"
+src = "src"
+
+[build]
+build-dir = "book"
+create-missing = false
+
+[output.html]
+git-repository-url = "https://github.com/javaquasar/hydracache"
+edit-url-template = "https://github.com/javaquasar/hydracache/edit/main/docs-site/{path}"
+site-url = "/hydracache/"
+default-theme = "rust"
+preferred-dark-theme = "ayu"
+additional-css = ["theme/hydracache.css"]
+
+[output.html.search]
+enable = true
+
+[output.html.playground]
+runnable = false
+copyable = true

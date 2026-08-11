@@ -1,0 +1,17 @@
+[package]
+name = "hydracache-docs-examples"
+version = "0.0.0"
+edition = "2021"
+publish = false
+
+[workspace]
+
+[dependencies]
+async-trait = "0.1"
+hydracache = { path = "../../crates/hydracache" }
+hydracache-db = { path = "../../crates/hydracache-db" }
+hydracache-diesel = { path = "../../crates/hydracache-diesel" }
+hydracache-seaorm = { path = "../../crates/hydracache-seaorm" }
+hydracache-sqlx = { path = "../../crates/hydracache-sqlx" }
+serde = { version = "1", features = ["derive"] }
+tokio = { version = "1", features = ["macros", "rt-multi-thread"] }

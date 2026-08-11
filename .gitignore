@@ -30,6 +30,7 @@ console/node_modules/
 playwright-report/
 test-results/
 .playwright/
+docs-site/book/
 
 # RustRover
 #  JetBrains specific template is maintained in a separate JetBrains.gitignore that can

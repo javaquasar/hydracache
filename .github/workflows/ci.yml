@@ -91,6 +91,47 @@ env:
   HYDRACACHE_CANDIDATE_RELEASE: ${{ inputs.candidate_release || '0.67.1' }}
 
 jobs:
+  docs:
+    name: Docs
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt
+
+      - name: Install Node
+        uses: actions/setup-node@v5
+        with:
+          node-version: 22
+
+      - name: Cache Rust dependencies
+        uses: Swatinem/rust-cache@v2
+        with:
+          prefix-key: v1-docs-ci
+          cache-targets: true
+
+      - name: Install mdBook
+        uses: taiki-e/install-action@v2
+        with:
+          tool: mdbook@0.5.2
+
+      - name: Check docs examples formatting
+        run: cargo fmt --manifest-path docs-site/examples/Cargo.toml --check
+
+      - name: Check docs examples
+        run: cargo check --manifest-path docs-site/examples/Cargo.toml --all-targets --locked
+
+      - name: Build docs site
+        run: mdbook build docs-site
+
+      - name: Check documentation links
+        run: node scripts/docs-link-check.mjs
+
   rust:
     name: Rust
     runs-on: ubuntu-latest
