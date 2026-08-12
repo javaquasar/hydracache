@@ -14,7 +14,7 @@ fn membership_history_is_epoch_monotone_under_partition_heal() -> TestResult {
 
     let mut cluster = DaemonCluster::start_bootstrap(3, "membership-epoch")?;
     let mut history = MembershipHistoryRecorder::default();
-    cluster.wait_for_shape(3, 3)?;
+    cluster.wait_for_responsive_shape(3, 3, 3)?;
     for overview in cluster.overviews() {
         history.record_cluster_overview(&overview);
     }
@@ -29,7 +29,7 @@ fn membership_history_is_epoch_monotone_under_partition_heal() -> TestResult {
     cluster.kill(leader_index)?;
     cluster.wait_for_leader_not(&old_leader, 3, 3)?;
     cluster.restart(leader_index)?;
-    cluster.wait_for_shape(3, 3)?;
+    cluster.wait_for_responsive_shape(3, 3, 3)?;
 
     for overview in cluster.overviews() {
         history.record_cluster_overview(&overview);

@@ -12,6 +12,9 @@ const WORKFLOW_PATH: &str = ".github/workflows/hc2-client-plane.yml";
 const RECEIPT_SCHEMA: &str = "hydracache.hc2.ci-receipt.v1";
 const ADMISSION_SCHEMA: &str = "hydracache.hc2.release-admission.v2";
 const CONTRACT_SCHEMA: &str = "hydracache.hc2.ci-gates.v2";
+const MAX_ADMISSION_ENTRIES: usize = 16_384;
+const MAX_ADMISSION_DEPTH: usize = 16;
+const MAX_RECEIPT_BYTES: u64 = 64 * 1024;
 const CLIENT_PROMOTION_LANES: [&str; 4] = [
     "linux-required",
     "docker-interop",
@@ -387,15 +390,7 @@ fn admit_receipts(
     required_lanes: &[&str],
 ) -> Result<String, Box<dyn Error>> {
     let mut by_lane = BTreeMap::new();
-    for entry in fs::read_dir(directory)? {
-        let path = entry?.path();
-        if !path
-            .file_name()
-            .and_then(|name| name.to_str())
-            .is_some_and(|name| name.ends_with(".receipt.json"))
-        {
-            continue;
-        }
+    for path in admission_receipt_paths(directory)? {
         let receipt: CiReceipt = serde_json::from_slice(&fs::read(&path)?)?;
         validate_receipt(&receipt)?;
         if by_lane.insert(receipt.lane.clone(), receipt).is_some() {
@@ -444,6 +439,61 @@ fn admit_receipts(
         return Err("HC/2 Docker receipt does not bind the reviewed image digest".into());
     }
     Ok(commit)
+}
+
+fn admission_receipt_paths(directory: &Path) -> Result<Vec<PathBuf>, Box<dyn Error>> {
+    if !directory.is_dir() {
+        return Err(format!(
+            "HC/2 admission receipt root is not a directory: {}",
+            directory.display()
+        )
+        .into());
+    }
+
+    let mut pending = vec![(directory.to_path_buf(), 0usize)];
+    let mut receipts = Vec::new();
+    let mut entries_seen = 0usize;
+    while let Some((current, depth)) = pending.pop() {
+        for entry in fs::read_dir(&current)? {
+            entries_seen = entries_seen.saturating_add(1);
+            if entries_seen > MAX_ADMISSION_ENTRIES {
+                return Err("HC/2 admission artifact tree exceeds the bounded entry limit".into());
+            }
+            let entry = entry?;
+            let path = entry.path();
+            let file_type = entry.file_type()?;
+            if file_type.is_symlink() {
+                return Err(format!(
+                    "HC/2 admission artifact tree contains a symlink: {}",
+                    path.display()
+                )
+                .into());
+            }
+            if file_type.is_dir() {
+                if depth >= MAX_ADMISSION_DEPTH {
+                    return Err(
+                        "HC/2 admission artifact tree exceeds the bounded depth limit".into(),
+                    );
+                }
+                pending.push((path, depth + 1));
+                continue;
+            }
+            if !file_type.is_file()
+                || !path
+                    .file_name()
+                    .and_then(|name| name.to_str())
+                    .is_some_and(|name| name.ends_with(".receipt.json"))
+            {
+                continue;
+            }
+            if entry.metadata()?.len() > MAX_RECEIPT_BYTES {
+                return Err(format!("HC/2 receipt exceeds 64 KiB: {}", path.display()).into());
+            }
+            receipts.push(path);
+        }
+    }
+    receipts.sort();
+    Ok(receipts)
 }
 
 fn validate_receipt(receipt: &CiReceipt) -> Result<(), Box<dyn Error>> {
@@ -717,6 +767,34 @@ mod tests {
                 &CLIENT_PROMOTION_LANES
             )
             .unwrap(),
+            sha
+        );
+        fs::remove_dir_all(directory).unwrap();
+    }
+
+    #[test]
+    fn admission_discovers_receipts_in_download_artifact_subtrees() {
+        let directory = env::temp_dir().join(format!(
+            "hydracache-hc2-nested-admission-{}",
+            std::process::id()
+        ));
+        let _ = fs::remove_dir_all(&directory);
+        let sha = "1".repeat(40);
+        let expected_image = format!("ubuntu:24.04@sha256:{}", "a".repeat(64));
+        for (lane, subtree) in [
+            ("linux-required", ""),
+            ("docker-interop", "hc2-ci"),
+            ("fuzz", "target/hc2-ci"),
+        ] {
+            write_receipt(
+                &directory.join(subtree).join(format!("{lane}.receipt.json")),
+                &receipt(lane, "pass", &sha),
+            )
+            .unwrap();
+        }
+
+        assert_eq!(
+            admit_receipts(&directory, Some(&sha), &expected_image, &CORE_RELEASE_LANES).unwrap(),
             sha
         );
         fs::remove_dir_all(directory).unwrap();
