@@ -813,7 +813,21 @@ fn run_checked(
 }
 
 fn run_git(root: &Path, args: &[&str], label: &str) -> Result<(), Box<dyn Error>> {
-    run_checked(root, "git", args, &[], label)
+    let output = Command::new("git").args(args).current_dir(root).output()?;
+    if output.status.success() {
+        return Ok(());
+    }
+    let head = git_output(root, &["rev-parse", "HEAD"])
+        .unwrap_or_else(|error| format!("unavailable ({error})"));
+    Err(format!(
+        "{label} failed with {} (cwd={}, head={head}, command=git {}, stdout={}, stderr={})",
+        output.status,
+        root.display(),
+        args.join(" "),
+        String::from_utf8_lossy(&output.stdout).trim(),
+        String::from_utf8_lossy(&output.stderr).trim(),
+    )
+    .into())
 }
 
 fn git_output(root: &Path, args: &[&str]) -> Result<String, Box<dyn Error>> {

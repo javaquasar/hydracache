@@ -56,6 +56,27 @@ fn nextest_serializes_trybuild_harnesses_with_a_bounded_compile_timeout() {
 }
 
 #[test]
+fn nextest_isolates_the_retained_hc2_manifest_proof() {
+    let root = xtask::doc_check::find_repo_root().unwrap();
+    let config = fs::read_to_string(root.join(".config/nextest.toml")).unwrap();
+    let config: toml::Value = toml::from_str(&config).unwrap();
+    let retained_manifest_override = config["profile"]["ci"]["overrides"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|entry| {
+            entry["filter"]
+                .as_str()
+                .is_some_and(|filter| filter.contains("retained_manifest_is_structurally_valid"))
+        })
+        .unwrap();
+    assert_eq!(
+        retained_manifest_override["threads-required"].as_str(),
+        Some("num-test-threads")
+    );
+}
+
+#[test]
 fn fast_suite_check_rejects_invented_baseline_and_aggregate_budget_overrun() {
     let root = xtask::doc_check::find_repo_root().unwrap();
     let mut registry = xtask::fast_suite::load_registry(&root).unwrap();

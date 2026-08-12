@@ -16,6 +16,10 @@ test-group = "trybuild"
 slow-timeout = { period = "120s", terminate-after = 3 }
 
 [[profile.ci.overrides]]
+filter = "test(client_plane_compat::tests::retained_manifest_is_structurally_valid)"
+threads-required = "num-test-threads"
+
+[[profile.ci.overrides]]
 filter = """
 test(resp_open_loop_get_set_knee_at_slo_carries_raw_a_b_c_evidence)
 | test(resp_connection_and_pipeline_sweep_is_exact_and_scheduled_send_based)

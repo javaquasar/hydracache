@@ -176,6 +176,31 @@ pub fn validate_registry(
         ));
     }
 
+    let retained_manifest_override = ci_profile
+        .and_then(|profile| profile.get("overrides"))
+        .and_then(toml::Value::as_array)
+        .and_then(|overrides| {
+            overrides.iter().find(|entry| {
+                entry
+                    .get("filter")
+                    .and_then(toml::Value::as_str)
+                    .is_some_and(|filter| {
+                        filter.contains(
+                            "client_plane_compat::tests::retained_manifest_is_structurally_valid",
+                        )
+                    })
+            })
+        });
+    if retained_manifest_override
+        .and_then(|entry| entry.get("threads-required"))
+        .and_then(toml::Value::as_str)
+        != Some("num-test-threads")
+    {
+        problems.push(format!(
+            "{NEXTTEST_CONFIG_PATH} must isolate the retained HC/2 manifest Git and artifact proof"
+        ));
+    }
+
     let mut ids = BTreeSet::new();
     let mut previous = None;
     for suite in &registry.suite {
