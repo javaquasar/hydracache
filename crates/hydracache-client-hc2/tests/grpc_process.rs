@@ -275,6 +275,13 @@ async fn rust_sdk_is_bounded_cancel_safe_and_process_interoperable() {
             .await
             .expect("put and emit event");
     }
+    tokio::time::timeout(Duration::from_secs(2), async {
+        while client.metrics().dropped_events < 2 {
+            tokio::time::sleep(Duration::from_millis(10)).await;
+        }
+    })
+    .await
+    .expect("three multiplexed event frames must reach the bounded client queue");
     assert!(matches!(
         subscription.next().await,
         Some(SubscriptionEvent::Event(_))
