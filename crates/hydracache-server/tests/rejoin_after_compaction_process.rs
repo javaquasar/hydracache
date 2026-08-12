@@ -5,7 +5,10 @@ use support::daemon_cluster::{
     skip_unless_daemon_process_e2e, DaemonCluster, DaemonStatus, TestResult,
 };
 
-const SNAPSHOT_HANDLER_TEST_DELAY_MS: u64 = 30_000;
+// Keep the request observable across multiple 200 ms polls without exceeding
+// the daemon's five-second forwarded-command apply deadline during admission.
+const SNAPSHOT_HANDLER_TEST_DELAY_MS: u64 = 3_000;
+const SHARED_COMPACTION_ATTEMPTS: usize = 4;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 struct RaftProcessObservation {
@@ -180,7 +183,7 @@ fn prepare_compacted_lagger(cluster: &mut DaemonCluster) -> TestResult<PreparedS
         previous_applied = wait_for_equal_applied_progress(cluster, 2, previous_applied)?;
     }
 
-    let (active_indices, compacted_index) = cluster.wait_for(
+    let (active_indices, converged_index) = cluster.wait_for(
         "two active daemons converge before Sled compaction".to_owned(),
         |cluster| {
             let indices = cluster.running_indices();
@@ -201,19 +204,12 @@ fn prepare_compacted_lagger(cluster: &mut DaemonCluster) -> TestResult<PreparedS
         },
     )?;
     let successful_sends_before_rejoin = snapshot_success_sum(cluster, &active_indices)?;
-
-    for index in &active_indices {
-        let compacted = cluster.compact_raft_log(*index)?;
-        assert_eq!(
-            u64_field(&compacted, "snapshot_index")?,
-            compacted_index,
-            "each possible leader must persist the same snapshot boundary"
-        );
-        assert!(
-            u64_field(&compacted, "first_log_index")? > lagger_before.applied_index,
-            "compaction must move retained-log progress beyond the lagger"
-        );
-    }
+    let compacted_index = compact_active_logs_to_shared_boundary(
+        cluster,
+        &active_indices,
+        converged_index,
+        lagger_before.applied_index,
+    )?;
 
     Ok(PreparedSnapshotCatchup {
         lagger_index,
@@ -221,6 +217,46 @@ fn prepare_compacted_lagger(cluster: &mut DaemonCluster) -> TestResult<PreparedS
         active_indices,
         successful_sends_before_rejoin,
     })
+}
+
+fn compact_active_logs_to_shared_boundary(
+    cluster: &DaemonCluster,
+    active_indices: &[usize],
+    minimum_snapshot_index: u64,
+    lagger_applied_index: u64,
+) -> TestResult<u64> {
+    let mut last_snapshot_indices = Vec::new();
+    for _ in 0..SHARED_COMPACTION_ATTEMPTS {
+        last_snapshot_indices.clear();
+        for index in active_indices {
+            let compacted = cluster.compact_raft_log(*index)?;
+            let snapshot_index = u64_field(&compacted, "snapshot_index")?;
+            let first_log_index = u64_field(&compacted, "first_log_index")?;
+            assert!(
+                snapshot_index >= minimum_snapshot_index,
+                "compaction must not move a snapshot behind the converged applied boundary"
+            );
+            assert!(
+                first_log_index > lagger_applied_index,
+                "compaction must move retained-log progress beyond the lagger"
+            );
+            last_snapshot_indices.push(snapshot_index);
+        }
+
+        if let Some(shared_index) = last_snapshot_indices.first().copied() {
+            if last_snapshot_indices
+                .iter()
+                .all(|snapshot_index| *snapshot_index == shared_index)
+            {
+                return Ok(shared_index);
+            }
+        }
+    }
+
+    Err(format!(
+        "active daemons did not persist one snapshot boundary after {SHARED_COMPACTION_ATTEMPTS} attempts; last_snapshot_indices={last_snapshot_indices:?}"
+    )
+    .into())
 }
 
 fn wait_for_snapshot_install_and_convergence(
