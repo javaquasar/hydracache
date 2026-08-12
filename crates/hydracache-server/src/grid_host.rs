@@ -2385,6 +2385,23 @@ impl GridControlPlaneHandle for NetworkedGridHandle {
         self.try_remove_local_voter_for_drain();
     }
 
+    fn wait_for_drain_ready(&self, timeout: Duration) -> bool {
+        let deadline = Instant::now() + timeout;
+        loop {
+            if self
+                .raft
+                .voter_ids()
+                .is_ok_and(|voters| local_voter_removal_applied(&voters, self.raft_node_id))
+            {
+                return true;
+            }
+            if Instant::now() >= deadline {
+                return false;
+            }
+            std::thread::sleep(Duration::from_millis(10));
+        }
+    }
+
     fn snapshot(&self) -> RaftMetadataSnapshot {
         self.raft.metadata_snapshot()
     }
@@ -2498,6 +2515,10 @@ impl GridControlPlaneHandle for NetworkedGridHandle {
             .map_err(|error| RaftCompactionError::Runtime(error.to_string()))?;
         raft_compaction_status(&self.raft, true, &self.drive_diagnostics)
     }
+}
+
+fn local_voter_removal_applied(voters: &[u64], local_raft_node_id: u64) -> bool {
+    voters.len() <= 1 || !voters.contains(&local_raft_node_id)
 }
 
 fn drain_leadership_transfer_target(
@@ -4308,6 +4329,13 @@ mod tests {
         let runtime = DedicatedGridRuntime::new(runtime);
 
         assert_eq!(runtime.block_on_from_any_thread(async { 17 }), 17);
+    }
+
+    #[test]
+    fn drain_readiness_requires_the_local_voter_to_be_absent() {
+        assert!(!local_voter_removal_applied(&[1, 2, 3], 2));
+        assert!(local_voter_removal_applied(&[1, 3], 2));
+        assert!(local_voter_removal_applied(&[2], 2));
     }
 
     #[test]
