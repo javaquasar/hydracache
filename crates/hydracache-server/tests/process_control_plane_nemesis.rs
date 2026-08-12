@@ -1141,7 +1141,7 @@ fn cleanup_process_replay(
             errors.push(format!("restart killed daemon {index}: {error}"));
         }
     }
-    let expected_statuses = cluster.node_ids().len();
+    let expected_statuses = state.expected_responders(cluster);
     let converged = match cluster.wait_for_non_draining_responsive_shape(
         "process nemesis cleanup convergence",
         expected_statuses,
