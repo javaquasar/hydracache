@@ -9,7 +9,6 @@ use hydracache_redis_compat::{RedisListenerConfig, RedisRespServer, RedisServeEr
 use serde::Serialize;
 use std::net::SocketAddr;
 use std::sync::Arc;
-use std::time::Instant;
 use thiserror::Error;
 
 use crate::cluster_status::{
@@ -537,12 +536,12 @@ impl ServerRuntime {
             });
         }
         self.begin_local_drain();
-        let drain_timeout = self.config.drain_timeout();
-        let started = Instant::now();
-        let control_plane_drained = self.prepare_cluster_drain(drain_timeout);
-        let mut outcome = GracefulShutdown::new(drain_timeout.saturating_sub(started.elapsed()))
-            .drain(&mut self.services);
-        outcome.timed_out |= !control_plane_drained;
+        // Commit the topology leave while this process is still a voter. The
+        // surviving leader then reconciles the voter set from that committed
+        // membership even if this process exits immediately after drain.
+        self.leave_cluster_for_shutdown();
+        self.cluster_status.begin_drain();
+        let outcome = GracefulShutdown::new(self.config.drain_timeout()).drain(&mut self.services);
         self.last_drain = Some(outcome);
         outcome
     }
@@ -581,12 +580,9 @@ impl ServerRuntime {
             });
         }
         self.begin_local_drain();
-        let drain_timeout = self.config.drain_timeout();
-        let started = Instant::now();
-        let control_plane_drained = self.prepare_cluster_drain(drain_timeout);
-        let mut outcome = GracefulShutdown::new(drain_timeout.saturating_sub(started.elapsed()))
-            .drain(&mut self.services);
-        outcome.timed_out |= !control_plane_drained;
+        self.leave_cluster_for_shutdown();
+        self.cluster_status.begin_drain();
+        let outcome = GracefulShutdown::new(self.config.drain_timeout()).drain(&mut self.services);
         self.flushed = true;
         self.storage_open = false;
         self.cluster_ready = false;
@@ -605,20 +601,6 @@ impl ServerRuntime {
         if matches!(self.config.role, ServerRole::Member | ServerRole::Client) {
             let _ = block_on_cluster_leave(&self.cache);
         }
-    }
-
-    fn prepare_cluster_drain(&self, timeout: std::time::Duration) -> bool {
-        // The Raft voter removal must be committed and applied before the
-        // topology leave is proposed. Delivery alone is insufficient: the
-        // topology command can otherwise terminate the draining process's
-        // only live peer and strand the old voter configuration without
-        // quorum. A timeout fails loud and deliberately skips topology leave.
-        self.cluster_status.begin_drain();
-        if !self.cluster_status.wait_for_drain_ready(timeout) {
-            return false;
-        }
-        self.leave_cluster_for_shutdown();
-        true
     }
 
     /// Return admin/operator status derived from the runtime model.

@@ -190,6 +190,14 @@ async fn networked_member_stack(config: &ServerConfig) -> CacheResult<NetworkedM
         raft.voter_ids()?.into_iter().collect::<BTreeSet<_>>(),
     ));
     let suppressed_raft_promotions = Arc::new(RwLock::new(BTreeSet::new()));
+    let last_materialized_member_voters = Arc::new(RwLock::new(
+        raft.members()
+            .into_iter()
+            .filter(|member| member.is_member())
+            .map(|member| crate::grid_host::raft_node_id(&member.node_id))
+            .collect::<BTreeSet<_>>(),
+    ));
+    let pending_voter_removals = Arc::new(RwLock::new(BTreeSet::new()));
     let use_network_sink =
         topology.multi_voter || matches!(start_mode, ResolvedClusterStartMode::Join);
     let drive_diagnostics = Arc::new(GridDriveDiagnostics::default());
@@ -218,6 +226,8 @@ async fn networked_member_stack(config: &ServerConfig) -> CacheResult<NetworkedM
             diagnostics: drive_diagnostics.clone(),
             last_voters,
             suppressed_raft_promotions,
+            last_materialized_member_voters,
+            pending_voter_removals,
             local_node_id: node_id.clone(),
             local_raft_node_id: raft_node_id,
             local_endpoint: config.cluster_advertise_endpoint(),
@@ -606,6 +616,8 @@ struct GridDriveHandles {
     diagnostics: Arc<GridDriveDiagnostics>,
     last_voters: SharedRaftVoterSet,
     suppressed_raft_promotions: SharedRaftVoterSet,
+    last_materialized_member_voters: SharedRaftVoterSet,
+    pending_voter_removals: SharedRaftVoterSet,
     local_node_id: ClusterNodeId,
     local_raft_node_id: u64,
     local_endpoint: String,
@@ -686,6 +698,12 @@ async fn drive_grid_once(
         &handles.raft.voter_ids()?,
         &handles.raft.members(),
     );
+    refresh_pending_voter_removals(
+        &handles.last_materialized_member_voters,
+        &handles.pending_voter_removals,
+        &handles.raft.voter_ids()?,
+        &handles.raft.members(),
+    );
     retry_local_voter_removal_for_drain(handles).await?;
     sync_raft_voters(
         &handles.raft,
@@ -693,6 +711,7 @@ async fn drive_grid_once(
         &handles.raft_peers,
         handles.diagnostics.as_ref(),
         &handles.suppressed_raft_promotions,
+        &handles.pending_voter_removals,
     )
     .await?;
     let _ = send_raft_messages_with_diagnostics(
@@ -861,12 +880,24 @@ async fn sync_raft_voters(
     raft_peers: &SharedRaftPeers,
     diagnostics: &GridDriveDiagnostics,
     suppressed_raft_promotions: &SharedRaftVoterSet,
+    pending_voter_removals: &SharedRaftVoterSet,
 ) -> CacheResult<()> {
     let snapshot = raft.snapshot();
     if raft.leader_id() != Some(snapshot.raft_node_id) {
         return Ok(());
     }
     let current_voters = raft.voter_ids()?;
+    let pending_removal = pending_voter_removals
+        .read()
+        .expect("pending voter removals poisoned")
+        .iter()
+        .copied()
+        .find(|raft_id| *raft_id != snapshot.raft_node_id && current_voters.contains(raft_id));
+    if let Some(raft_id) = pending_removal {
+        let outbound = raft.propose_remove_voter(raft_id)?;
+        send_raft_messages_with_diagnostics(message_sink, outbound, Some(diagnostics)).await?;
+        return Ok(());
+    }
     let suppressed = suppressed_raft_promotions
         .read()
         .expect("suppressed raft promotions poisoned")
@@ -894,6 +925,37 @@ async fn sync_raft_voters(
         break;
     }
     Ok(())
+}
+
+fn refresh_pending_voter_removals(
+    last_materialized_member_voters: &SharedRaftVoterSet,
+    pending_voter_removals: &SharedRaftVoterSet,
+    current_voters: &[u64],
+    members: &[ClusterMember],
+) {
+    let current_voters = current_voters.iter().copied().collect::<BTreeSet<_>>();
+    let materialized = members
+        .iter()
+        .filter(|member| member.is_member())
+        .map(|member| raft_node_id(&member.node_id))
+        .collect::<BTreeSet<_>>();
+    let mut last = last_materialized_member_voters
+        .write()
+        .expect("last materialized member voters poisoned");
+    let mut pending = pending_voter_removals
+        .write()
+        .expect("pending voter removals poisoned");
+
+    pending.retain(|raft_id| current_voters.contains(raft_id) && !materialized.contains(raft_id));
+    for removed in last.difference(&materialized) {
+        if current_voters.contains(removed) {
+            pending.insert(*removed);
+        }
+    }
+    for admitted in &materialized {
+        pending.remove(admitted);
+    }
+    *last = materialized;
 }
 
 async fn send_raft_messages_with_diagnostics(
@@ -2323,23 +2385,6 @@ impl GridControlPlaneHandle for NetworkedGridHandle {
         self.try_remove_local_voter_for_drain();
     }
 
-    fn wait_for_drain_ready(&self, timeout: Duration) -> bool {
-        let deadline = Instant::now() + timeout;
-        loop {
-            if self
-                .raft
-                .voter_ids()
-                .is_ok_and(|voters| local_voter_removal_applied(&voters, self.raft_node_id))
-            {
-                return true;
-            }
-            if Instant::now() >= deadline {
-                return false;
-            }
-            std::thread::sleep(Duration::from_millis(10));
-        }
-    }
-
     fn snapshot(&self) -> RaftMetadataSnapshot {
         self.raft.metadata_snapshot()
     }
@@ -2453,10 +2498,6 @@ impl GridControlPlaneHandle for NetworkedGridHandle {
             .map_err(|error| RaftCompactionError::Runtime(error.to_string()))?;
         raft_compaction_status(&self.raft, true, &self.drive_diagnostics)
     }
-}
-
-fn local_voter_removal_applied(voters: &[u64], local_raft_node_id: u64) -> bool {
-    voters.len() <= 1 || !voters.contains(&local_raft_node_id)
 }
 
 fn drain_leadership_transfer_target(
@@ -3073,6 +3114,8 @@ mod tests {
             diagnostics: Arc::new(diagnostics),
             last_voters: Arc::new(RwLock::new(BTreeSet::new())),
             suppressed_raft_promotions: Arc::new(RwLock::new(BTreeSet::new())),
+            last_materialized_member_voters: Arc::new(RwLock::new(BTreeSet::new())),
+            pending_voter_removals: Arc::new(RwLock::new(BTreeSet::new())),
             local_node_id: ClusterNodeId::from("local"),
             local_raft_node_id: 1,
             local_endpoint: "127.0.0.1:7000".to_owned(),
@@ -3355,12 +3398,14 @@ mod tests {
         .unwrap();
         let diagnostics = GridDriveDiagnostics::default();
         let suppressed_raft_promotions = Arc::new(RwLock::new(BTreeSet::new()));
+        let pending_voter_removals = Arc::new(RwLock::new(BTreeSet::new()));
         sync_raft_voters(
             &raft,
             &message_sink,
             &raft_peers,
             &diagnostics,
             &suppressed_raft_promotions,
+            &pending_voter_removals,
         )
         .await
         .unwrap();
@@ -3391,6 +3436,7 @@ mod tests {
         .await
         .unwrap();
         let suppressed_raft_promotions = Arc::new(RwLock::new(BTreeSet::from([member_raft_id])));
+        let pending_voter_removals = Arc::new(RwLock::new(BTreeSet::new()));
 
         sync_raft_voters(
             &raft,
@@ -3398,6 +3444,7 @@ mod tests {
             &raft_peers,
             &GridDriveDiagnostics::default(),
             &suppressed_raft_promotions,
+            &pending_voter_removals,
         )
         .await
         .unwrap();
@@ -3407,6 +3454,60 @@ mod tests {
             sink.messages().is_empty(),
             "recently removed voter must not receive a resurrecting AddNode"
         );
+    }
+
+    #[test]
+    fn committed_member_removal_is_retained_until_the_voter_is_pruned() {
+        let removed_node = ClusterNodeId::from("member-removed");
+        let removed_raft_id = raft_node_id(&removed_node);
+        let retained_node = ClusterNodeId::from("member-retained");
+        let retained_raft_id = raft_node_id(&retained_node);
+        let last_materialized = Arc::new(RwLock::new(BTreeSet::from([
+            removed_raft_id,
+            retained_raft_id,
+        ])));
+        let pending = Arc::new(RwLock::new(BTreeSet::new()));
+        let retained = ClusterMember {
+            node_id: retained_node,
+            generation: ClusterGeneration::new(1),
+            role: ClusterRole::Member,
+            epoch: ClusterEpoch::new(1),
+            endpoints: ClusterEndpoints::new(),
+            metadata: BTreeMap::new(),
+        };
+
+        refresh_pending_voter_removals(
+            &last_materialized,
+            &pending,
+            &[removed_raft_id, retained_raft_id],
+            std::slice::from_ref(&retained),
+        );
+        assert_eq!(
+            *pending.read().expect("pending voter removals poisoned"),
+            BTreeSet::from([removed_raft_id])
+        );
+
+        refresh_pending_voter_removals(
+            &last_materialized,
+            &pending,
+            &[removed_raft_id, retained_raft_id],
+            std::slice::from_ref(&retained),
+        );
+        assert!(pending
+            .read()
+            .expect("pending voter removals poisoned")
+            .contains(&removed_raft_id));
+
+        refresh_pending_voter_removals(
+            &last_materialized,
+            &pending,
+            &[retained_raft_id],
+            std::slice::from_ref(&retained),
+        );
+        assert!(!pending
+            .read()
+            .expect("pending voter removals poisoned")
+            .contains(&removed_raft_id));
     }
 
     #[tokio::test]
@@ -4207,13 +4308,6 @@ mod tests {
         let runtime = DedicatedGridRuntime::new(runtime);
 
         assert_eq!(runtime.block_on_from_any_thread(async { 17 }), 17);
-    }
-
-    #[test]
-    fn drain_readiness_requires_the_local_voter_to_be_absent() {
-        assert!(!local_voter_removal_applied(&[1, 2, 3], 2));
-        assert!(local_voter_removal_applied(&[1, 3], 2));
-        assert!(local_voter_removal_applied(&[2], 2));
     }
 
     #[test]
