@@ -326,6 +326,16 @@ jobs:
           npm --prefix console run build
           npm --prefix console test
 
+      - name: Restore and verify full release history
+        run: |
+          if [ "$(git rev-parse --is-shallow-repository)" = "true" ]; then
+            git fetch --prune --unshallow --tags origin "+refs/heads/*:refs/remotes/origin/*"
+          else
+            git fetch --prune --tags origin "+refs/heads/*:refs/remotes/origin/*"
+          fi
+          test "$(git rev-parse --is-shallow-repository)" = "false"
+          cargo run -p xtask --locked -- client-plane-compat-check --manifest-only
+
       - name: Test
         run: cargo run -p xtask --locked -- evidence-run --release "$HYDRACACHE_CANDIDATE_RELEASE" --gate fast.workspace-nextest
 

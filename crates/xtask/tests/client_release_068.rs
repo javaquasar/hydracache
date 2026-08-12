@@ -123,6 +123,28 @@ fn closure_problems(omitted: Option<&str>) -> Vec<String> {
     if !package_script.contains("\"hydracache-client-hc2\"") {
         problems.push("publishable Rust HC/2 client package validation is missing".to_owned());
     }
+    let ci = fs::read_to_string(root.join(".github/workflows/ci.yml")).unwrap_or_default();
+    let history_checkpoint = ci.find("- name: Restore and verify full release history");
+    let workspace_test = ci.find("- name: Test\n");
+    for command in [
+        "git rev-parse --is-shallow-repository",
+        "git fetch --prune --unshallow --tags origin",
+        "+refs/heads/*:refs/remotes/origin/*",
+        "client-plane-compat-check --manifest-only",
+    ] {
+        if !ci.contains(command) {
+            problems.push(format!(
+                "Rust CI history checkpoint omits required command {command:?}"
+            ));
+        }
+    }
+    if !matches!((history_checkpoint, workspace_test), (Some(checkpoint), Some(test)) if checkpoint < test)
+    {
+        problems.push(
+            "Rust CI must restore and verify full release history before workspace Nextest"
+                .to_owned(),
+        );
+    }
     let java = fs::read_to_string(root.join("sdks/java/pom.xml")).unwrap_or_default();
     if !java.contains("0.68.0-alpha.1-SNAPSHOT") {
         problems.push("Java HC/2 clients must retain preview SNAPSHOT coordinates".to_owned());
