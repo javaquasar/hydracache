@@ -45,7 +45,7 @@
 | H21 | Observability is local to the spike | complete | `feat(client-plane): export bounded privacy-safe diagnostics` | v1 typed metric/trace export, 64 salted tenant buckets, bounded trace ring, privacy/cardinality/reconnect/close evidence, operator runbook |
 | H22 | Linux CI, interop, fuzz, and soak gates are absent | in progress | `ci(client-plane): install Linux interop fuzz and soak gates` | four-lane fail-closed contract, pinned workflow/container, receipts/admission canaries, Docker proof, runbook, and exact Ubuntu 24.04 fixed-host preflight implemented; exact hosted Linux/Docker/fuzz receipts and strict `main` protection are active; a labelled fixed-host receipt remains operational evidence |
 | H23 | Redis API clients cannot consume mutation events | complete | `feat(redis): add bounded keyspace event listeners` | shared metadata-only mutation bus, RESP2 arrays/RESP3 pushes, exact/pattern subscriptions, auth and atomic count/retained-byte bounds, explicit lag disconnect, redis-rs and cross-protocol tests; exact implementation commit `2fef344` passed PR Rust, MSRV, Docs, docs-site, HC/2 Linux/Interop, Java 17/21, and both performance tripwires in runs `31551909019`, `31551909021`, and `31551909027` |
-| H24 | Ordinary native listener tests are internal-only | complete | `test(events): prove native listener public contract` | external-crate black-box coverage for raw and typed subscriptions, filters, callback unsubscribe, access opt-in, bounded lag, and resume; the gate remains distinct from Redis and remote HC/2 listener evidence |
+| H24 | Ordinary native listener tests are internal-only | complete | `test(events): prove native listener public contract` | external-crate black-box coverage for raw and typed subscriptions, filters, callback unsubscribe, access opt-in, bounded lag, and resume; exact implementation commit `20c7d86` passed PR Rust, MSRV, Docs, docs-site, HC/2 Linux/Interop, Java 17/21, and both performance tripwires in runs `31556527618`, `31556527634`, and `31556527643` |
 
 ## Global execution rules
 
@@ -818,6 +818,14 @@ the Redis keyspace-notification wire test and remote HC/2 server-push evidence.
 **Done.** `cargo test -p hydracache --test native_event_listeners --locked` and
 the existing in-crate event suite are green. No listener guarantee is inferred
 from protocol structs, acknowledgements, or documentation alone.
+
+The exact implementation commit `20c7d86` passed the full PR Rust and MSRV
+matrix in workflow run
+[`31556527618`](https://github.com/javaquasar/hydracache/actions/runs/31556527618),
+HC/2 Linux, Docker interoperability, and Java 17/21 in run
+[`31556527634`](https://github.com/javaquasar/hydracache/actions/runs/31556527634),
+and the documentation-site build in run
+[`31556527643`](https://github.com/javaquasar/hydracache/actions/runs/31556527643).
 
 ## Dependency-oriented execution order
 
