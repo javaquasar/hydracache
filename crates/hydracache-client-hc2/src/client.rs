@@ -740,13 +740,7 @@ impl Hc2Client {
             .invocations
             .lock()
             .expect("invocation mutex poisoned")
-            .insert(
-                correlation,
-                PendingInvocation {
-                    reply,
-                    permit,
-                },
-            );
+            .insert(correlation, PendingInvocation { reply, permit });
         runtime.metrics.submitted.fetch_add(1, Ordering::Relaxed);
         let mut guard = PendingGuard::invocation(runtime, correlation);
         runtime
