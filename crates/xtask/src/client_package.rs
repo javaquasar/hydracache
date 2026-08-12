@@ -11,7 +11,7 @@ use tar::Archive;
 const API_MANIFEST: &str = "docs/compatibility/hc2-sdk-api-v1.json";
 const SCRATCH: &str = "target/hc2-package-check";
 const RUST_CRATE: &str = "hydracache-client-hc2";
-const RUST_VERSION: &str = "0.67.0";
+const RUST_VERSION: &str = "0.68.0";
 const JAVA_REACTOR: &str = "sdks/java/pom.xml";
 const JAVA_CONSUMER: &str = "tests/java-hazelcast-facade-consumer/pom.xml";
 const PYTHON_PACKAGE: &str = "sdks/python/hydracache-client-hc2";

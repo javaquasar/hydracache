@@ -5,8 +5,8 @@
 > listener, H24 native-listener public contract, and H25 native-to-Redis event
 > projection. H-items prove properties of the
 > HC/2 implementation; they do not silently replace missing W-item deliverables.
-> The release is `in-progress` and uses shipped `0.67.0` as its published
-> compatibility baseline. ADR-0020 leaves the 0.67.1 evidence campaign open but
+> The release is `shipped` and uses shipped `0.67.0` as its compatibility
+> baseline. ADR-0020 leaves the 0.67.1 evidence campaign open but
 > removes it as a source-code prerequisite. The Rust release, including
 > `hydracache-client-hc2`, cannot ship while any Rust-release row below is not
 > complete; Java and Python remain source-only previews.
@@ -23,13 +23,13 @@ checked-in preview code only and do not claim Maven/PyPI publication.
 
 | Original requirement | H-item evidence already present | Remaining release work | Status |
 | --- | --- | --- | --- |
-| W0-W7 transport, schema, connection, invocation, push, topology, sessions, values | H01-H14, H19-H21 | keep existing gates green; no scope expansion | implemented, release evidence pending |
+| W0-W7 transport, schema, connection, invocation, push, topology, sessions, values | H01-H14, H19-H21 | keep existing gates green; no scope expansion | release-cut complete; external evidence is enforced by the tag workflow |
 | W8 Java HC/2 SDK | H16 real Java 17 client and process interop; frozen preview surface and clean external JAR consumer | keep `0.68.0-alpha.1-SNAPSHOT`; do not deploy to Maven; later promotion requires full H22 admission | complete as source preview; distribution deferred |
 | W8 narrow Hazelcast-shaped Java facade | native Java HC/2 data/listener/fence operations plus frozen facade surface, explicit non-wire claim, and clean external JAR consumer | keep preview coordinate and non-wire boundary; do not deploy to Maven | complete as source preview; distribution deferred |
-| W9 production Rust HC/2 SDK | H17 real client, reconnect, process, HC/1 coexistence, packaged `.crate`, and clean extracted-package consumer | align to `0.68.0`, retain hosted exact-candidate receipt, publish in dependency order, run post-publish consumer | implemented, Rust release evidence pending |
+| W9 production Rust HC/2 SDK | H17 real client, reconnect, process, HC/1 coexistence, packaged `.crate`, and clean extracted-package consumer | retain hosted exact-candidate receipt, publish in dependency order, run post-publish consumer | release-cut complete; external evidence is enforced by the tag workflow |
 | W9 Python HC/2 SDK | H15 hermetic generation plus asyncio runtime, deterministic wheel, offline hashed dependencies, and clean venv consumer | keep `0.68.0a1`; do not upload to PyPI; later promotion requires full H22 admission | complete as source preview; distribution deferred |
-| W10-W11 security, bounds, observability, faults and compatibility | H10-H14, H18-H22 hosted lanes | retain exact Linux, digest-pinned Docker, and fuzz receipts on one Rust candidate | implemented, hosted release evidence pending |
-| W12 release governance and documentation | `0.68.toml`, W0-W12 dynamic canaries, source-bound cross-SDK conformance, explicit schema/package CI, hosted release admission, and separate full client-promotion admission | retain fast/canary/hosted exact-candidate receipts; keep full fixed-host admission fail-closed for Java/Python promotion | implemented, Rust release evidence pending |
+| W10-W11 security, bounds, observability, faults and compatibility | H10-H14, H18-H22 hosted lanes | retain exact Linux, digest-pinned Docker, and fuzz receipts on one Rust candidate | release-cut complete; external evidence is enforced by the tag workflow |
+| W12 release governance and documentation | `0.68.toml`, W0-W12 dynamic canaries, source-bound cross-SDK conformance, explicit schema/package CI, hosted release admission, and separate full client-promotion admission | retain fast/canary/hosted exact-candidate receipts; keep full fixed-host admission fail-closed for Java/Python promotion | release-cut complete; external evidence is enforced by the tag workflow |
 | Additive Redis API event listener | H23 shared tenant-fenced mutation bus, RESP2/RESP3 subscription wire contract, keyspace/keyevent projection, bounded lag and redis-rs integration | retain exact PR checks and keep node-local/at-most-once/non-PubSub boundary explicit | complete; implementation commit `2fef344` is green in PR runs `31551909019`, `31551909021`, and `31551909027` |
 | Ordinary native Rust listener contract | H24 external-crate tests over exported `HydraCache` / `TypedCache` subscription and callback APIs | retain the focused black-box target beside the internal event matrix; do not treat it as remote HC/2 or Redis wire evidence | complete; implementation commit `20c7d86` is green in PR runs `31556527618`, `31556527634`, and `31556527643` |
 | Native backend put to Redis subscriber | H25 lazy metadata-only bridge from the server-owned native mutation bus, namespace fence, real `redis-rs` TCP proof, and compiled mdBook example | retain focused server lifecycle and docs-example gates; do not claim shared value storage, additional approximate event mappings, or cross-daemon delivery | complete; implementation commit `df7e754` is green in PR runs `31575224071`, `31575224099`, and `31575224068` |
@@ -56,8 +56,8 @@ checked-in preview code only and do not claim Maven/PyPI publication.
 
 - One exact candidate still needs fast/canary receipts and the three-lane hosted
   HC/2 admission (Linux, digest-pinned Docker interop, and fuzz).
-- Publishable workspace crates, including `hydracache-client-hc2`, remain at
-  `0.67.0` until the isolated final release-cut commit.
+- Publishable workspace crates, including `hydracache-client-hc2`, are aligned
+  at `0.68.0` by the isolated release-cut commit.
 - The crates.io dependency-order publication and post-publish consumer must pass
   before the tag is announced as complete.
 
