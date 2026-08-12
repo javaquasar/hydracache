@@ -854,6 +854,14 @@ normal PR Rust/MSRV/Docs checks are green. This item does not claim value-store
 unification, native-to-Redis reads, approximate mappings for other native event
 kinds, cross-daemon delivery, or durable replay.
 
+The exact implementation commit `df7e754` passed the full PR Rust and MSRV
+matrix in workflow run
+[`31575224071`](https://github.com/javaquasar/hydracache/actions/runs/31575224071),
+HC/2 Linux, Docker interoperability, and Java 17/21 in run
+[`31575224099`](https://github.com/javaquasar/hydracache/actions/runs/31575224099),
+and the documentation-site build in run
+[`31575224068`](https://github.com/javaquasar/hydracache/actions/runs/31575224068).
+
 ## Dependency-oriented execution order
 
 ```text
