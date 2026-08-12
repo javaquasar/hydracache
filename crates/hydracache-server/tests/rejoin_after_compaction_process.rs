@@ -8,8 +8,7 @@ use support::daemon_cluster::{
 
 // Keep ordinary in-flight requests observable across multiple 200 ms polls.
 const SNAPSHOT_HANDLER_TEST_DELAY_MS: u64 = 1_000;
-const SNAPSHOT_HANDLER_DELAY_STARTED_MARKER: &str =
-    "HYDRACACHE_TEST_RAFT_SNAPSHOT_HANDLER_DELAY_STARTED";
+const SNAPSHOT_HANDLER_DELAY_STARTED_MARKER: &str = "HC_TEST_RAFT_SNAPSHOT_HANDLER_DELAY_STARTED";
 const SHARED_COMPACTION_ATTEMPTS: usize = 4;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]

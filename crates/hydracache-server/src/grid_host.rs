@@ -2665,7 +2665,7 @@ impl ClusterMessageHandler for RaftClusterMessageHandler {
                 // and decoded the real HTTP body. Holding before raft.step/ack
                 // keeps the sender's real request and feedback reservation live.
                 eprintln!(
-                    "HYDRACACHE_TEST_RAFT_SNAPSHOT_HANDLER_DELAY_STARTED from={} to={} term={} delay_ms={}",
+                    "HC_TEST_RAFT_SNAPSHOT_HANDLER_DELAY_STARTED from={} to={} term={} delay_ms={}",
                     message.from,
                     self.node_id,
                     message.term,
