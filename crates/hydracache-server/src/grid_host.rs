@@ -721,6 +721,23 @@ async fn retry_local_voter_removal_for_drain(handles: &GridDriveHandles) -> Cach
         handles.drain_remove_proposed.store(true, Ordering::SeqCst);
         return Ok(());
     }
+    if handles.raft.leader_id() == Some(handles.local_raft_node_id) {
+        let transferee = {
+            let peers = handles.raft_peers.read().expect("raft peer map poisoned");
+            drain_leadership_transfer_target(&voters, handles.local_raft_node_id, &peers)
+        };
+        let Some(transferee) = transferee else {
+            return Ok(());
+        };
+        let messages = handles.raft.transfer_leadership(transferee)?;
+        send_raft_messages_with_diagnostics(
+            &handles.message_sink,
+            messages,
+            Some(handles.diagnostics.as_ref()),
+        )
+        .await?;
+        return Ok(());
+    }
     if handles.raft.leader_id().is_none() {
         return Ok(());
     }
@@ -2306,6 +2323,23 @@ impl GridControlPlaneHandle for NetworkedGridHandle {
         self.try_remove_local_voter_for_drain();
     }
 
+    fn wait_for_drain_ready(&self, timeout: Duration) -> bool {
+        let deadline = Instant::now() + timeout;
+        loop {
+            if self
+                .raft
+                .voter_ids()
+                .is_ok_and(|voters| local_voter_removal_applied(&voters, self.raft_node_id))
+            {
+                return true;
+            }
+            if Instant::now() >= deadline {
+                return false;
+            }
+            std::thread::sleep(Duration::from_millis(10));
+        }
+    }
+
     fn snapshot(&self) -> RaftMetadataSnapshot {
         self.raft.metadata_snapshot()
     }
@@ -2421,6 +2455,21 @@ impl GridControlPlaneHandle for NetworkedGridHandle {
     }
 }
 
+fn local_voter_removal_applied(voters: &[u64], local_raft_node_id: u64) -> bool {
+    voters.len() <= 1 || !voters.contains(&local_raft_node_id)
+}
+
+fn drain_leadership_transfer_target(
+    voters: &[u64],
+    local_raft_node_id: u64,
+    peers: &BTreeMap<u64, RaftPeer>,
+) -> Option<u64> {
+    voters
+        .iter()
+        .copied()
+        .find(|voter| *voter != local_raft_node_id && peers.contains_key(voter))
+}
+
 fn raft_compaction_status(
     raft: &NetworkedRaftRuntime,
     enabled: bool,
@@ -2473,6 +2522,26 @@ impl NetworkedGridHandle {
             return;
         };
         if voters.len() <= 1 || !voters.contains(&self.raft_node_id) {
+            return;
+        }
+        if self.raft.leader_id() == Some(self.raft_node_id) {
+            let peers = self.raft_peers.read().expect("raft peer map poisoned");
+            let Some(transferee) =
+                drain_leadership_transfer_target(&voters, self.raft_node_id, &peers)
+            else {
+                return;
+            };
+            drop(peers);
+            let Ok(messages) = self.raft.transfer_leadership(transferee) else {
+                return;
+            };
+            if let Some(runtime) = &self._runtime {
+                let _ = runtime.block_on_from_any_thread(send_raft_messages_with_diagnostics(
+                    &self._message_sink,
+                    messages,
+                    Some(self.drive_diagnostics.as_ref()),
+                ));
+            }
             return;
         }
         if self.raft.leader_id().is_none() {
@@ -4138,6 +4207,39 @@ mod tests {
         let runtime = DedicatedGridRuntime::new(runtime);
 
         assert_eq!(runtime.block_on_from_any_thread(async { 17 }), 17);
+    }
+
+    #[test]
+    fn drain_readiness_requires_the_local_voter_to_be_absent() {
+        assert!(!local_voter_removal_applied(&[1, 2, 3], 2));
+        assert!(local_voter_removal_applied(&[1, 3], 2));
+        assert!(local_voter_removal_applied(&[2], 2));
+    }
+
+    #[test]
+    fn drain_transfers_leadership_only_to_a_known_remote_voter() {
+        let peers = BTreeMap::from([
+            (
+                2,
+                RaftPeer {
+                    node_id: ClusterNodeId::from("member-2"),
+                    endpoint: "127.0.0.1:7002".to_owned(),
+                },
+            ),
+            (
+                4,
+                RaftPeer {
+                    node_id: ClusterNodeId::from("member-4"),
+                    endpoint: "127.0.0.1:7004".to_owned(),
+                },
+            ),
+        ]);
+
+        assert_eq!(
+            drain_leadership_transfer_target(&[1, 2, 3], 1, &peers),
+            Some(2)
+        );
+        assert_eq!(drain_leadership_transfer_target(&[1, 3], 1, &peers), None);
     }
 
     #[test]

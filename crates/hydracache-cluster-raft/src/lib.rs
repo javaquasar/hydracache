@@ -1070,6 +1070,38 @@ where
         state.drain_ready()
     }
 
+    /// Transfer leadership to another configured voter and return the
+    /// resulting outbound messages.
+    ///
+    /// Graceful member drain uses this before removing a local leader from the
+    /// voter set. The removal is then proposed by a leader that will survive
+    /// the draining process, so its committed configuration can continue to
+    /// propagate after the old process exits.
+    pub fn transfer_leadership(&self, transferee: u64) -> CacheResult<Vec<RaftWireMessage>> {
+        let mut state = self.raft.lock().expect("raft metadata state poisoned");
+        let voters = state
+            .raw_node
+            .raft
+            .raft_log
+            .store
+            .initial_state()
+            .map_err(to_cache_error)?
+            .conf_state
+            .voters;
+        if transferee == self.raft_node_id || !voters.contains(&transferee) {
+            return Err(CacheError::Backend(format!(
+                "raft leadership transferee {transferee} must be a configured remote voter"
+            )));
+        }
+        if known_leader_id(state.raw_node.raft.leader_id) != Some(self.raft_node_id) {
+            return Err(CacheError::Backend(
+                "only the current raft leader can transfer leadership".to_owned(),
+            ));
+        }
+        state.raw_node.transfer_leader(transferee);
+        state.drain_ready()
+    }
+
     /// Advance the raft logical clock and return outbound peer messages.
     pub fn tick(&self) -> CacheResult<Vec<RaftWireMessage>> {
         let mut state = self.raft.lock().expect("raft metadata state poisoned");
