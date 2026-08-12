@@ -289,6 +289,21 @@ async fn rediss_exchange(addr: std::net::SocketAddr, ca_path: &Path, input: &[u8
     output
 }
 
+async fn read_until_marker(stream: &mut (impl AsyncReadExt + Unpin), marker: &[u8]) -> Vec<u8> {
+    tokio::time::timeout(Duration::from_secs(2), async {
+        let mut output = Vec::new();
+        let mut chunk = [0_u8; 512];
+        while !output.windows(marker.len()).any(|window| window == marker) {
+            let read = stream.read(&mut chunk).await.unwrap();
+            assert_ne!(read, 0, "rediss stream closed before expected marker");
+            output.extend_from_slice(&chunk[..read]);
+        }
+        output
+    })
+    .await
+    .expect("rediss marker timeout")
+}
+
 #[test]
 fn server_lifecycle_server_starts_serves_health_ready_and_shuts_down_cleanly() {
     let mut runtime = ServerRuntime::new(member_config()).unwrap().start();
@@ -1059,6 +1074,56 @@ async fn redis_resp_listener_accepts_rediss_auth_and_cache_commands() {
     assert!(output.starts_with("+OK\r\n+PONG\r\n+OK\r\n+OK\r\n+OK\r\n:"));
     assert!(output.contains("\r\n$1\r\nv\r\n+OK\r\n"));
 
+    drop(shutdown_tx);
+    serving.await.unwrap().unwrap();
+}
+
+#[tokio::test]
+async fn authenticated_rediss_subscriber_receives_native_backend_put() {
+    let (mut config, material) = rediss_auth_config("rediss-native-events");
+    config.redis_api.keyspace_events_enabled = true;
+    let (runtime, addr, shutdown_tx, serving) = start_redis_listener(config).await;
+    let connector = rediss_connector(&material.ca_path);
+    let tcp = TcpStream::connect(addr).await.unwrap();
+    let server_name = ServerName::try_from("localhost").unwrap();
+    let mut stream = connector.connect(server_name, tcp).await.unwrap();
+
+    stream
+        .write_all(
+            b"*3\r\n$4\r\nAUTH\r\n$7\r\ndefault\r\n$6\r\nsecret\r\n\
+              *2\r\n$9\r\nSUBSCRIBE\r\n$18\r\n__keyevent@0__:set\r\n",
+        )
+        .await
+        .unwrap();
+    let subscribed = read_until_marker(
+        &mut stream,
+        b"*3\r\n$9\r\nsubscribe\r\n$18\r\n__keyevent@0__:set\r\n:1\r\n",
+    )
+    .await;
+    assert!(subscribed.starts_with(b"+OK\r\n"));
+
+    let cache = runtime
+        .lock()
+        .expect("server runtime mutex")
+        .cache()
+        .clone();
+    cache
+        .typed::<String>("redis")
+        .put("secure-native", "value".to_owned(), CacheOptions::new())
+        .await
+        .unwrap();
+    assert_eq!(
+        read_until_marker(
+            &mut stream,
+            b"*3\r\n$7\r\nmessage\r\n$18\r\n__keyevent@0__:set\r\n$13\r\nsecure-native\r\n",
+        )
+        .await,
+        b"*3\r\n$7\r\nmessage\r\n$18\r\n__keyevent@0__:set\r\n$13\r\nsecure-native\r\n"
+    );
+
+    stream.write_all(b"*1\r\n$4\r\nQUIT\r\n").await.unwrap();
+    assert_eq!(read_until_marker(&mut stream, b"+OK\r\n").await, b"+OK\r\n");
+    drop(stream);
     drop(shutdown_tx);
     serving.await.unwrap().unwrap();
 }

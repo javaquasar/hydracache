@@ -85,6 +85,19 @@ and native mutation kinds without an exact Redis name are not projected. The
 bridge is metadata-only and does not copy native values into the separate RESP
 client-surface store.
 
+The namespace comparison is an exact, case-sensitive `<namespace>:` prefix.
+For example, a `backend` listener accepts `backend:user:42` but rejects
+`backend-extra:user:42` and `redis:user:42`. Logical UTF-8 keys may contain
+additional colons. A notification is not evidence that Redis `GET` can read the
+native value: the event is projected, the value is not.
+
+The client-surface and native event buses are independent sources. HydraCache
+preserves each source's own publication order, but does not claim one global
+order across simultaneous RESP/HC2 and native mutations. A mutation emitted by
+one source produces one matching publication path; the mixed-source regression
+asserts that separate native and verified-surface writes are delivered once
+each without an accidental duplicate.
+
 ## Bounds, lag, and observability
 
 Publication is non-blocking. A process-local broadcast ring retains at most
@@ -93,6 +106,13 @@ number and byte length of exact plus pattern subscriptions. A slow socket cannot
 block a cache write. If its receiver falls behind the ring, HydraCache sends a
 stable lag error, increments `hydracache_lagged_event_subscribers`, and closes
 the connection so the client must reconnect and resubscribe.
+
+Unsubscribing the last exact or pattern subscription drops both internal
+receivers. Events produced with zero subscriptions are neither retained nor
+replayed after a later subscription. A native receiver lag uses the stable
+`ERR native cache event subscriber lagged; reconnect and resubscribe` error,
+closes the connection, and leaves cache writers non-blocking. A reconnect and
+new subscription observes only later events.
 
 `INFO` exposes only bounded counters:
 
@@ -135,6 +155,12 @@ Pub/Sub client. It proves exact and pattern delivery, RESP-to-RESP mutation,
 HC/2-shaped shared-surface mutation, disabled/auth behavior, unique-subscription
 bounds by count and retained bytes, unsubscribe lifecycle, RESP2 arrays, and
 RESP3 push encoding. The server lifecycle target additionally proves that a
-native typed-cache backend write is received by a real `redis-rs` subscriber.
+native typed-cache backend write is received by both a real `redis-rs`
+subscriber and an authenticated `rediss://` subscriber. Native-specific
+characterization covers exact subscription, a custom namespace and
+prefix-collision refusal, UTF-8 and colon-bearing keys, RESP3 push framing,
+metadata-only value-store separation, unsupported-remove suppression,
+unsubscribe/resubscribe without replay, bounded lag and recovery, and
+concurrent native/verified-source delivery.
 The command rows and test names are pinned by
 [`redis_compat_conformance.json`](redis_compat_conformance.json).

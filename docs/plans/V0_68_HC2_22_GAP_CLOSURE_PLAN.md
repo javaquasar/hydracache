@@ -46,6 +46,8 @@
 | H22 | Linux CI, interop, fuzz, and soak gates are absent | in progress | `ci(client-plane): install Linux interop fuzz and soak gates` | four-lane fail-closed contract, pinned workflow/container, receipts/admission canaries, Docker proof, runbook, and exact Ubuntu 24.04 fixed-host preflight implemented; exact hosted Linux/Docker/fuzz receipts and strict `main` protection are active; a labelled fixed-host receipt remains operational evidence |
 | H23 | Redis API clients cannot consume mutation events | complete | `feat(redis): add bounded keyspace event listeners` | shared metadata-only mutation bus, RESP2 arrays/RESP3 pushes, exact/pattern subscriptions, auth and atomic count/retained-byte bounds, explicit lag disconnect, redis-rs and cross-protocol tests; exact implementation commit `2fef344` passed PR Rust, MSRV, Docs, docs-site, HC/2 Linux/Interop, Java 17/21, and both performance tripwires in runs `31551909019`, `31551909021`, and `31551909027` |
 | H24 | Ordinary native listener tests are internal-only | complete | `test(events): prove native listener public contract` | external-crate black-box coverage for raw and typed subscriptions, filters, callback unsubscribe, access opt-in, bounded lag, and resume; exact implementation commit `20c7d86` passed PR Rust, MSRV, Docs, docs-site, HC/2 Linux/Interop, Java 17/21, and both performance tripwires in runs `31556527618`, `31556527634`, and `31556527643` |
+| H25 | Native backend puts are invisible to Redis subscribers | complete | `feat(redis): bridge native puts to event subscribers` | lazy metadata-only native bridge, exact namespace fence, real Redis TCP client, generated documentation example; exact implementation commit `df7e754` passed PR Rust, MSRV, Docs, docs-site, HC/2 Linux/Interop, Java 17/21, and both performance tripwires in runs `31575224071`, `31575224099`, and `31575224068` |
+| H26 | Native-to-Redis event failure boundaries are not independently frozen | in progress | `test(redis): harden native event bridge boundaries` | exact/custom namespace, RESP3, metadata-only separation, receiver teardown/no replay, forced lag/non-blocking writer/recovery, mixed-source no-duplicate, AUTH, and authenticated rediss tests are green locally; hosted evidence pending |
 
 ## Global execution rules
 
@@ -862,6 +864,37 @@ HC/2 Linux, Docker interoperability, and Java 17/21 in run
 and the documentation-site build in run
 [`31575224068`](https://github.com/javaquasar/hydracache/actions/runs/31575224068).
 
+## H26. Harden native-to-Redis event failure boundaries
+
+**Current truth.** H25 proves the real default-namespace happy path and one
+negative out-of-namespace write. It does not independently bind the native
+source to exact subscriptions, RESP3, custom namespace collision behavior,
+receiver teardown, no-replay semantics, the forced lag path, simultaneous
+client/native sources, or authenticated TLS delivery.
+
+**Implementation.** Keep the H25 producer invariant unchanged and add
+black-box characterization at the existing public seams. Exercise an exact,
+case-sensitive custom namespace; preserve native/RESP value-store separation;
+refuse approximate remove-to-`del` projection; prove RESP3 push framing; drop
+both event receivers at zero subscriptions; and force native receiver lag with
+a one-entry event ring and a blocked socket. The forced-lag gate must show that
+writers remain bounded, the stable error is emitted, accounting returns to
+zero, and reconnect sees only future events. Run native and verified-surface
+puts concurrently without claiming a global cross-source order. Complete the
+security matrix with password AUTH and a real authenticated `rediss://`
+connection.
+
+**Evidence.** `redis_event_listeners` contains the native exact/custom
+namespace, RESP3, lifecycle/no replay, forced lag/recovery, mixed-source, and
+AUTH tests. `server_lifecycle` retains the default real-`redis-rs` proof and
+adds the real TLS subscription. The conformance manifest names every test and
+the focused H26 command uses the `native_backend` server-test filter.
+
+**Done.** Focused listener and server lifecycle tests, conformance/doc checks,
+formatting, workspace checks, and normal hosted PR gates are green. H26 does
+not add value replication, replay, a global cross-source order, approximate
+native event mappings, or cross-daemon delivery.
+
 ## Dependency-oriented execution order
 
 ```text
@@ -877,6 +910,7 @@ all applicable evidence -> H22
 H01 + H12 + Redis RESP facade -> H23
 native cache event API -> H24
 H23 + H24 + server-owned runtime -> H25
+H25 -> H26
 ```
 
 H01 production integration deliberately occurs after its prerequisites. This

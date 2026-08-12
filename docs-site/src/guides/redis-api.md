@@ -63,7 +63,15 @@ stream. Use the native typed namespace named `redis`: its physical
 `redis:<key>` prefix is stripped before the Redis channel is rendered. This
 explicit namespace fence prevents unrelated native cache entries from being
 exposed to Redis subscribers. Values never enter the event message or the RESP
-client-surface store.
+client-surface store, so a native-write notification does not make Redis `GET`
+return that native value.
+
+This stream is at-most-once. Removing the final subscription releases the
+native receiver, and writes made while no subscription exists are not replayed
+after resubscription. Slow subscribers are disconnected on a detectable gap;
+they must reconnect, resubscribe, and repair state with ordinary reads. RESP/HC2
+and native events retain their own source order, but no global order is claimed
+between those independent sources.
 
 The example below is compiled by the documentation build. It starts the real
 RESP TCP listener, subscribes with `redis-rs`, writes with the ordinary native
