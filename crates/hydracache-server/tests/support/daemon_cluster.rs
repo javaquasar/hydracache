@@ -3,7 +3,7 @@
 use std::collections::BTreeSet;
 use std::error::Error;
 use std::ffi::OsString;
-use std::fs::{self, File};
+use std::fs::{self, File, OpenOptions};
 use std::io::{Read, Write};
 use std::net::{SocketAddr, TcpListener, TcpStream, UdpSocket};
 use std::path::{Path, PathBuf};
@@ -12,6 +12,7 @@ use std::sync::atomic::AtomicU64;
 use std::sync::{Mutex, MutexGuard, OnceLock};
 use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
 
+use fs2::FileExt;
 use hydracache_sim::ResourceSample;
 use serde::Serialize;
 use serde_json::Value;
@@ -44,6 +45,7 @@ static PREVIOUS_DAEMON_CACHE: OnceLock<Result<Option<PreviousDaemonBinary>, Stri
 // Keep one cluster alive at a time so parallel integration tests cannot reuse
 // an address during that hand-off and accidentally join each other's clusters.
 static DAEMON_CLUSTER_PROCESS_LOCK: OnceLock<Mutex<()>> = OnceLock::new();
+const DAEMON_CLUSTER_CROSS_PROCESS_LOCK_FILE: &str = "hydracache-daemon-cluster-process-e2e.lock";
 
 pub type TestResult<T = ()> = Result<T, Box<dyn Error>>;
 
@@ -147,6 +149,7 @@ pub struct DaemonCluster {
     raft_compaction_enabled: bool,
     raft_fault_generation: u64,
     _process_lock: MutexGuard<'static, ()>,
+    _cross_process_lock: File,
 }
 
 #[derive(Debug, Clone)]
@@ -281,7 +284,10 @@ impl DaemonCluster {
         let process_lock = DAEMON_CLUSTER_PROCESS_LOCK
             .get_or_init(|| Mutex::new(()))
             .lock()
-            .map_err(|_| "daemon process cluster lock poisoned")?;
+            // A prior test failure must remain visible without cascading into
+            // unrelated scenarios that only inherit its poisoned guard.
+            .unwrap_or_else(|poisoned| poisoned.into_inner());
+        let cross_process_lock = acquire_daemon_cluster_cross_process_lock()?;
         let root = unique_root(name)?;
         fs::create_dir_all(&root)?;
 
@@ -332,6 +338,7 @@ impl DaemonCluster {
             raft_compaction_enabled,
             raft_fault_generation: 0,
             _process_lock: process_lock,
+            _cross_process_lock: cross_process_lock,
         };
         for index in 0..cluster.nodes.len() {
             cluster.spawn_node(index, &seed_addrs)?;
@@ -1498,6 +1505,28 @@ fn unique_root(name: &str) -> TestResult<PathBuf> {
         "target/test-hydracache-daemon-process/{name}-{}-{now}",
         std::process::id()
     )))
+}
+
+fn acquire_daemon_cluster_cross_process_lock() -> TestResult<File> {
+    let path = std::env::temp_dir().join(DAEMON_CLUSTER_CROSS_PROCESS_LOCK_FILE);
+    let file = OpenOptions::new()
+        .read(true)
+        .write(true)
+        .create(true)
+        .open(&path)
+        .map_err(|error| {
+            format!(
+                "failed to open daemon cluster lock {}: {error}",
+                path.display()
+            )
+        })?;
+    file.lock_exclusive().map_err(|error| {
+        format!(
+            "failed to acquire daemon cluster lock {}: {error}",
+            path.display()
+        )
+    })?;
+    Ok(file)
 }
 
 fn validate_test_snapshot_handler_delay_ms(delay_ms: Option<u64>) -> TestResult<Option<u64>> {

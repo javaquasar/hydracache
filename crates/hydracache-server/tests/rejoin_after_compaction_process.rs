@@ -7,7 +7,7 @@ use support::daemon_cluster::{
 
 // Keep the request observable across multiple 200 ms polls without exceeding
 // the daemon's five-second forwarded-command apply deadline during admission.
-const SNAPSHOT_HANDLER_TEST_DELAY_MS: u64 = 3_000;
+const SNAPSHOT_HANDLER_TEST_DELAY_MS: u64 = 1_000;
 const SHARED_COMPACTION_ATTEMPTS: usize = 4;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -51,11 +51,12 @@ fn lagging_daemon_rejoins_via_snapshot_after_real_sled_compaction() -> TestResul
         3,
     )?;
 
-    let successful_sends = snapshot_success_sum(&cluster, &prepared.active_indices)?;
-    assert!(
-        successful_sends > prepared.successful_sends_before_rejoin,
-        "rejoin must be observed as a successful real HTTP MsgSnapshot delivery"
-    );
+    wait_for_snapshot_success_sum(
+        &mut cluster,
+        &prepared.active_indices,
+        prepared.successful_sends_before_rejoin,
+        "rejoin is acknowledged as a successful real HTTP MsgSnapshot delivery",
+    )?;
     Ok(())
 }
 
@@ -72,7 +73,8 @@ fn leader_killed_mid_snapshot_delivery_still_converges() -> TestResult {
         prepared.lagger_index,
         Some(SNAPSHOT_HANDLER_TEST_DELAY_MS),
     )?;
-    let (old_leader_index, old_leader_status) = wait_for_snapshot_request_in_flight(&mut cluster)?;
+    let (old_leader_index, old_leader_status) =
+        wait_for_snapshot_request_in_flight(&mut cluster, true)?;
     let old_leader = cluster.node_ids()[old_leader_index].clone();
 
     cluster.kill(old_leader_index)?;
@@ -94,10 +96,14 @@ fn leader_killed_mid_snapshot_delivery_still_converges() -> TestResult {
         .copied()
         .filter(|index| *index != old_leader_index)
         .collect::<Vec<_>>();
-    assert!(
-        snapshot_success_sum(&cluster, &replacement_indices)? > 0,
-        "replacement leader must complete the snapshot retry; old leader observation={old_leader_status:?}"
-    );
+    wait_for_snapshot_success_sum(
+        &mut cluster,
+        &replacement_indices,
+        0,
+        &format!(
+            "replacement leader completes the snapshot retry; old leader observation={old_leader_status:?}"
+        ),
+    )?;
 
     cluster.restart(old_leader_index)?;
     cluster.wait_for_shape(3, 3)?;
@@ -120,7 +126,7 @@ fn receiver_killed_mid_snapshot_request_releases_sender_and_retry_converges() ->
         prepared.lagger_index,
         Some(SNAPSHOT_HANDLER_TEST_DELAY_MS),
     )?;
-    let (leader_index, in_flight) = wait_for_snapshot_request_in_flight(&mut cluster)?;
+    let (leader_index, in_flight) = wait_for_snapshot_request_in_flight(&mut cluster, false)?;
 
     cluster.kill(prepared.lagger_index)?;
     cluster.wait_for(
@@ -140,11 +146,12 @@ fn receiver_killed_mid_snapshot_request_releases_sender_and_retry_converges() ->
         prepared.compacted_index,
         3,
     )?;
-    let after = observation(&cluster, leader_index)?;
-    assert!(
-        after.snapshot_send_successes > in_flight.snapshot_send_successes,
-        "sender must retry successfully after receiver restart: before={in_flight:?} after={after:?}"
-    );
+    wait_for_snapshot_success_sum(
+        &mut cluster,
+        &[leader_index],
+        in_flight.snapshot_send_successes,
+        &format!("sender retries successfully after receiver restart; before={in_flight:?}"),
+    )?;
     Ok(())
 }
 
@@ -280,15 +287,22 @@ fn wait_for_snapshot_install_and_convergence(
 
 fn wait_for_snapshot_request_in_flight(
     cluster: &mut DaemonCluster,
+    require_current_leader: bool,
 ) -> TestResult<(usize, RaftProcessObservation)> {
     cluster.wait_for(
         "real HTTP MsgSnapshot request becomes in-flight".to_owned(),
         |cluster| {
-            let statuses = cluster.statuses();
-            let leader = leader_index(cluster, &statuses).ok()?;
-            let observation = observation(cluster, leader).ok()?;
-            (observation.snapshot_send_attempts > 0 && observation.snapshot_sends_in_flight > 0)
-                .then_some((leader, observation))
+            let candidates = if require_current_leader {
+                let statuses = cluster.statuses();
+                vec![leader_index(cluster, &statuses).ok()?]
+            } else {
+                cluster.running_indices()
+            };
+            candidates.into_iter().find_map(|index| {
+                let observation = observation(cluster, index).ok()?;
+                (observation.snapshot_send_attempts > 0 && observation.snapshot_sends_in_flight > 0)
+                    .then_some((index, observation))
+            })
         },
     )
 }
@@ -324,6 +338,19 @@ fn wait_for_equal_applied_progress(
 fn snapshot_success_sum(cluster: &DaemonCluster, indices: &[usize]) -> TestResult<u64> {
     indices.iter().try_fold(0_u64, |total, index| {
         Ok(total.saturating_add(observation(cluster, *index)?.snapshot_send_successes))
+    })
+}
+
+fn wait_for_snapshot_success_sum(
+    cluster: &mut DaemonCluster,
+    indices: &[usize],
+    minimum_exclusive: u64,
+    label: &str,
+) -> TestResult<u64> {
+    let indices = indices.to_vec();
+    cluster.wait_for(label.to_owned(), |cluster| {
+        let successful_sends = snapshot_success_sum(cluster, &indices).ok()?;
+        (successful_sends > minimum_exclusive).then_some(successful_sends)
     })
 }
 
