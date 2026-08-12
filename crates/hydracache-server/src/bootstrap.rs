@@ -497,7 +497,9 @@ impl ServerRuntime {
         let Some(config) = &self.redis_listener_config else {
             return Ok(None);
         };
-        RedisRespServer::new(Arc::clone(state), config.clone()).map(Some)
+        RedisRespServer::new(Arc::clone(state), config.clone())
+            .map(|server| server.with_native_cache_events(self.cache.clone()))
+            .map(Some)
     }
 
     /// Build the optional Redis TLS acceptor when rediss:// is enabled.

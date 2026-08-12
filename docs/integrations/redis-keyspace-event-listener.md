@@ -76,6 +76,15 @@ claim. It is not a cluster-wide event stream. Mutations on another daemon do
 not become Redis keyspace notifications unless a later distributed RESP/event
 contract explicitly implements and tests that behavior.
 
+The same runtime also projects a deliberately narrow native-backend contract:
+a successful `put` through `runtime.cache().typed::<T>("redis")` produces a
+Redis `set` notification for the logical typed key. Only physical keys under
+the configured `<redis namespace>:` prefix are eligible; the prefix is removed
+from the published Redis key. Native keys outside that prefix, non-key events,
+and native mutation kinds without an exact Redis name are not projected. The
+bridge is metadata-only and does not copy native values into the separate RESP
+client-surface store.
+
 ## Bounds, lag, and observability
 
 Publication is non-blocking. A process-local broadcast ring retains at most
@@ -117,6 +126,7 @@ cargo test -p hydracache-client-transport-axum --test mutation_events --locked
 cargo test -p hydracache-redis-compat --test redis_event_listeners --locked
 cargo test -p hydracache-redis-compat --locked
 cargo test -p hydracache-server --test server_lifecycle redis --locked
+cargo check --manifest-path docs-site/examples/Cargo.toml --all-targets --locked
 cargo test -p xtask --test doc_check redis_compat --locked
 ```
 
@@ -124,5 +134,7 @@ The integration target uses a real TCP listener and the mainstream `redis-rs`
 Pub/Sub client. It proves exact and pattern delivery, RESP-to-RESP mutation,
 HC/2-shaped shared-surface mutation, disabled/auth behavior, unique-subscription
 bounds by count and retained bytes, unsubscribe lifecycle, RESP2 arrays, and
-RESP3 push encoding. The command rows and test names are pinned by
+RESP3 push encoding. The server lifecycle target additionally proves that a
+native typed-cache backend write is received by a real `redis-rs` subscriber.
+The command rows and test names are pinned by
 [`redis_compat_conformance.json`](redis_compat_conformance.json).

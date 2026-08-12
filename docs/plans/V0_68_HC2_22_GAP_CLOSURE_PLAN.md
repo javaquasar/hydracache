@@ -827,6 +827,33 @@ HC/2 Linux, Docker interoperability, and Java 17/21 in run
 and the documentation-site build in run
 [`31556527643`](https://github.com/javaquasar/hydracache/actions/runs/31556527643).
 
+## H25. Project native backend puts to Redis keyspace subscribers
+
+**Current truth.** H23 proves RESP-originated and HC/2-shaped mutations on the
+shared verified client surface. H24 proves the ordinary embedded native event
+API. Neither item proves that an existing Redis subscriber observes a backend
+that writes through `ServerRuntime`'s ordinary `HydraCache` handle.
+
+**Implementation.** Give the server-owned RESP executor a metadata-only native
+cache subscription. Create it lazily after successful Redis subscription
+admission, multiplex it with the existing client-surface subscriber, and map
+only successful `Stored` events under the configured `<namespace>:` physical
+key prefix to Redis `set`. `cache.typed::<T>("redis")` is the default ergonomic
+producer. Strip the prefix for the Redis key; do not copy values or merge the
+native and RESP stores. Preserve the existing fail-loud lag disconnect.
+
+**Evidence.** A real TCP integration target uses `redis-rs` to subscribe,
+performs an out-of-namespace native put that must remain invisible, then writes
+through the native typed cache and verifies both keyspace and keyevent message
+shapes. The public mdBook includes the same compile-checked setup from
+`docs-site/examples`.
+
+**Done.** Production bridge, namespace-fence regression, conformance manifest,
+generated documentation example, focused Rust tests, docs example check, and
+normal PR Rust/MSRV/Docs checks are green. This item does not claim value-store
+unification, native-to-Redis reads, approximate mappings for other native event
+kinds, cross-daemon delivery, or durable replay.
+
 ## Dependency-oriented execution order
 
 ```text
@@ -841,6 +868,7 @@ H10 + H11 + H12 -> H21
 all applicable evidence -> H22
 H01 + H12 + Redis RESP facade -> H23
 native cache event API -> H24
+H23 + H24 + server-owned runtime -> H25
 ```
 
 H01 production integration deliberately occurs after its prerequisites. This

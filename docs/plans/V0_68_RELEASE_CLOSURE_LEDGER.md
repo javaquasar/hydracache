@@ -2,7 +2,8 @@
 
 > **Purpose.** This ledger reconciles the original W0-W12 release Definition of
 > Done with the later H01-H22 hardening program, additive H23 Redis event
-> listener, and H24 native-listener public contract. H-items prove properties of the
+> listener, H24 native-listener public contract, and H25 native-to-Redis event
+> projection. H-items prove properties of the
 > HC/2 implementation; they do not silently replace missing W-item deliverables.
 > The release remains `planned`, depends on `0.67.1`, and cannot ship from this
 > branch while any required row below is not complete.
@@ -27,6 +28,7 @@ SDK, facade, package, or exact-candidate receipt.
 | W12 release governance and documentation | `0.68.toml`, W0-W12 dynamic canaries, source-bound cross-SDK conformance, explicit schema/package CI, and registered H22 exact-candidate admission | retain fast/canary/H22 exact-candidate receipts; H22 fixed-host soak remains operationally outstanding | implemented, release evidence pending |
 | Additive Redis API event listener | H23 shared tenant-fenced mutation bus, RESP2/RESP3 subscription wire contract, keyspace/keyevent projection, bounded lag and redis-rs integration | retain exact PR checks and keep node-local/at-most-once/non-PubSub boundary explicit | complete; implementation commit `2fef344` is green in PR runs `31551909019`, `31551909021`, and `31551909027` |
 | Ordinary native Rust listener contract | H24 external-crate tests over exported `HydraCache` / `TypedCache` subscription and callback APIs | retain the focused black-box target beside the internal event matrix; do not treat it as remote HC/2 or Redis wire evidence | complete; implementation commit `20c7d86` is green in PR runs `31556527618`, `31556527634`, and `31556527643` |
+| Native backend put to Redis subscriber | H25 lazy metadata-only bridge from the server-owned native mutation bus, namespace fence, real `redis-rs` TCP proof, and compiled mdBook example | retain focused server lifecycle and docs-example gates; do not claim shared value storage, additional approximate event mappings, or cross-daemon delivery | implemented; PR evidence pending |
 
 ## Current five-stage execution sequence
 

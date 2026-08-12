@@ -8,10 +8,14 @@ publish = false
 
 [dependencies]
 async-trait = "0.1"
+futures-util = "0.3"
 hydracache = { path = "../../crates/hydracache" }
+hydracache-client-transport-axum = { path = "../../crates/hydracache-client-transport-axum" }
 hydracache-db = { path = "../../crates/hydracache-db" }
 hydracache-diesel = { path = "../../crates/hydracache-diesel" }
 hydracache-seaorm = { path = "../../crates/hydracache-seaorm" }
 hydracache-sqlx = { path = "../../crates/hydracache-sqlx" }
+hydracache-redis-compat = { path = "../../crates/hydracache-redis-compat" }
+redis = { version = "1.3.0", default-features = false, features = ["tokio-comp"] }
 serde = { version = "1", features = ["derive"] }
-tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
+tokio = { version = "1", features = ["macros", "net", "rt-multi-thread", "sync", "time"] }

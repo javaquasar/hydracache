@@ -10,6 +10,9 @@ use std::sync::{Arc, Mutex};
 use std::time::Duration;
 
 use bytes::{Bytes, BytesMut};
+use hydracache::{
+    CacheEvent, CacheEventKind, CacheEventRecvError, CacheEventSubscriber, HydraCache,
+};
 use hydracache_client_protocol::{
     BatchPutEntry, ClientErrorCode, ClientErrorEnvelope, ClientRequest, ClientRequestEnvelope,
     ClientResponse, ClientResponseEnvelope, CompareValueExpireMode, ConditionalPutCondition,
@@ -643,6 +646,7 @@ pub enum RedisServeError {
 #[derive(Debug)]
 pub struct RedisRespServer {
     state: Arc<ClientSurfaceState>,
+    native_cache_events: Option<HydraCache>,
     identity: ClientIdentity,
     config: RedisListenerConfig,
     tag_index: Mutex<RedisTagIndex>,
@@ -753,6 +757,7 @@ impl RedisRespServer {
             .map_err(|error| RedisServeError::Identity(error.to_string()))?;
         Ok(Self {
             state,
+            native_cache_events: None,
             identity,
             config,
             tag_index: Mutex::new(RedisTagIndex::default()),
@@ -765,6 +770,18 @@ impl RedisRespServer {
             event_messages: AtomicU64::new(0),
             lagged_event_subscribers: AtomicU64::new(0),
         })
+    }
+
+    /// Project key-scoped mutations from one native cache into this listener's
+    /// Redis keyspace notification stream.
+    ///
+    /// The bridge is metadata-only and namespace-fenced. A native physical key
+    /// must begin with `<redis namespace>:` (normally produced by
+    /// `cache.typed("redis")`) before it can be exposed as a Redis key. The
+    /// bridge does not copy values into the RESP client-surface store.
+    pub fn with_native_cache_events(mut self, cache: HydraCache) -> Self {
+        self.native_cache_events = Some(cache);
+        self
     }
 
     /// Return the shared client surface state.
@@ -792,6 +809,7 @@ impl RedisRespServer {
         self.accepted_connections.fetch_add(1, Ordering::SeqCst);
         let mut connection = RedisConnectionState::new(&self.identity, &self.config.auth);
         let mut mutation_subscriber: Option<ClientSurfaceMutationSubscriber> = None;
+        let mut native_mutation_subscriber: Option<CacheEventSubscriber> = None;
         let mut subscriber_count = EventSubscriberCountGuard::new(&self.active_event_subscribers);
         let mut buffer = Vec::with_capacity(self.config.read_buffer_bytes);
         let mut read_chunk = vec![0; self.config.read_buffer_bytes];
@@ -818,6 +836,24 @@ impl RedisRespServer {
                                 return Ok(());
                             }
                             Err(ClientSurfaceMutationRecvError::Closed) => return Ok(()),
+                        }
+                    }
+                    event = recv_native_mutation(&mut native_mutation_subscriber) => {
+                        match event {
+                            Ok(event) => {
+                                self.write_native_keyspace_event(&mut stream, &connection, &event).await?;
+                                continue;
+                            }
+                            Err(CacheEventRecvError::Lagged(_)) => {
+                                self.lagged_event_subscribers.fetch_add(1, Ordering::SeqCst);
+                                self.write_error(
+                                    &mut stream,
+                                    connection.dialect,
+                                    "ERR native cache event subscriber lagged; reconnect and resubscribe".to_owned(),
+                                ).await?;
+                                return Ok(());
+                            }
+                            Err(CacheEventRecvError::Closed) => return Ok(()),
                         }
                     }
                 }
@@ -856,12 +892,14 @@ impl RedisRespServer {
                         command.clone(),
                         &mut connection,
                         &mut mutation_subscriber,
+                        &mut native_mutation_subscriber,
                     )
                     .await?
                 {
                     subscriber_count.set_active(connection.is_subscribed());
                     if !connection.is_subscribed() {
                         mutation_subscriber = None;
+                        native_mutation_subscriber = None;
                     }
                 } else {
                     let response = if connection.is_subscribed()
@@ -904,6 +942,7 @@ impl RedisRespServer {
         command: RedisCommand,
         connection: &mut RedisConnectionState,
         mutation_subscriber: &mut Option<ClientSurfaceMutationSubscriber>,
+        native_mutation_subscriber: &mut Option<CacheEventSubscriber>,
     ) -> Result<bool, RedisServeError>
     where
         S: AsyncWrite + Unpin,
@@ -975,6 +1014,10 @@ impl RedisRespServer {
                         .subscribe_mutations(&connection.identity)
                         .map_err(|error| RedisServeError::Identity(error.to_string()))?,
                 );
+                *native_mutation_subscriber = self
+                    .native_cache_events
+                    .as_ref()
+                    .map(HydraCache::subscribe_mutations);
             }
             for value in values {
                 if pattern {
@@ -1041,6 +1084,23 @@ impl RedisRespServer {
         S: AsyncWrite + Unpin,
     {
         for message in redis_keyspace_messages(event, &self.config.namespace, connection) {
+            self.write_response(stream, connection.dialect, message)
+                .await?;
+            self.event_messages.fetch_add(1, Ordering::SeqCst);
+        }
+        Ok(())
+    }
+
+    async fn write_native_keyspace_event<S>(
+        &self,
+        stream: &mut S,
+        connection: &RedisConnectionState,
+        event: &CacheEvent,
+    ) -> Result<(), RedisServeError>
+    where
+        S: AsyncWrite + Unpin,
+    {
+        for message in native_redis_keyspace_messages(event, &self.config.namespace, connection) {
             self.write_response(stream, connection.dialect, message)
                 .await?;
             self.event_messages.fetch_add(1, Ordering::SeqCst);
@@ -1648,6 +1708,15 @@ fn subscription_ping(message: Option<Vec<u8>>) -> RespValue {
     ])
 }
 
+async fn recv_native_mutation(
+    subscriber: &mut Option<CacheEventSubscriber>,
+) -> Result<CacheEvent, CacheEventRecvError> {
+    match subscriber {
+        Some(subscriber) => subscriber.recv().await,
+        None => std::future::pending().await,
+    }
+}
+
 fn redis_keyspace_messages(
     event: &ClientSurfaceMutationEvent,
     namespace: &str,
@@ -1667,13 +1736,40 @@ fn redis_keyspace_messages(
         ClientSurfaceMutationKind::NamespaceEvicted => return Vec::new(),
     };
 
+    redis_keyspace_messages_for_key(&key, event_name, connection)
+}
+
+fn native_redis_keyspace_messages(
+    event: &CacheEvent,
+    namespace: &str,
+    connection: &RedisConnectionState,
+) -> Vec<RespValue> {
+    if event.kind() != CacheEventKind::Stored {
+        return Vec::new();
+    }
+    let Some(key) = event.key() else {
+        return Vec::new();
+    };
+    let namespace_prefix = format!("{namespace}:");
+    let Some(redis_key) = key.strip_prefix(&namespace_prefix) else {
+        return Vec::new();
+    };
+
+    redis_keyspace_messages_for_key(redis_key.as_bytes(), b"set", connection)
+}
+
+fn redis_keyspace_messages_for_key(
+    key: &[u8],
+    event_name: &[u8],
+    connection: &RedisConnectionState,
+) -> Vec<RespValue> {
     let mut keyspace_channel = b"__keyspace@0__:".to_vec();
-    keyspace_channel.extend_from_slice(&key);
+    keyspace_channel.extend_from_slice(key);
     let mut keyevent_channel = b"__keyevent@0__:".to_vec();
     keyevent_channel.extend_from_slice(event_name);
     let publications = [
         (keyspace_channel, event_name.to_vec()),
-        (keyevent_channel, key),
+        (keyevent_channel, key.to_vec()),
     ];
     let mut messages = Vec::new();
     for (channel, payload) in publications {

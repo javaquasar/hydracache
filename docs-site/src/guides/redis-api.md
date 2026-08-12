@@ -56,6 +56,23 @@ connection state. Admission is bounded by both unique subscription count and
 retained channel/pattern bytes. The event mode supports only cache-mutation
 notifications, not arbitrary Pub/Sub or `PUBLISH`.
 
+### Observe a native backend write from a Redis client
+
+The server also projects successful native writes into this notification
+stream. Use the native typed namespace named `redis`: its physical
+`redis:<key>` prefix is stripped before the Redis channel is rendered. This
+explicit namespace fence prevents unrelated native cache entries from being
+exposed to Redis subscribers. Values never enter the event message or the RESP
+client-surface store.
+
+The example below is compiled by the documentation build. It starts the real
+RESP TCP listener, subscribes with `redis-rs`, writes with the ordinary native
+`HydraCache` API, and verifies the received Redis key event.
+
+```rust
+{{#include ../../examples/src/bin/redis_native_put_events.rs:redis-native-put-events}}
+```
+
 ## Supported Shape
 
 The facade targets Redis string/cache-client interoperability:

@@ -7,8 +7,10 @@ use std::{
         atomic::{AtomicU64, Ordering},
         Arc, Mutex, MutexGuard,
     },
+    time::Duration,
 };
 
+use futures_util::StreamExt as _;
 use hydracache::CacheOptions;
 use hydracache_redis_compat::{RedisCommand, RespValue};
 use hydracache_server::{
@@ -922,6 +924,61 @@ fn redis_event_listener_uses_server_shared_client_dispatch_state() {
     let server = runtime.redis_resp_server().unwrap().unwrap();
 
     assert!(Arc::ptr_eq(&dispatch, &server.state()));
+}
+
+#[tokio::test]
+async fn redis_client_observes_native_backend_put_in_listener_namespace() {
+    let mut config = member_config_with_redis_surface();
+    config.redis_api.keyspace_events_enabled = true;
+    let (runtime, addr, shutdown_tx, serving) = start_redis_listener(config).await;
+    let client = redis::Client::open(format!("redis://{addr}/")).unwrap();
+    let mut pubsub = client.get_async_pubsub().await.unwrap();
+    pubsub.psubscribe("__key*__:*").await.unwrap();
+
+    let cache = runtime
+        .lock()
+        .expect("server runtime mutex")
+        .cache()
+        .clone();
+    cache
+        .put(
+            "private:backend:42",
+            "not-redis-visible".to_owned(),
+            CacheOptions::new(),
+        )
+        .await
+        .unwrap();
+    assert!(
+        tokio::time::timeout(Duration::from_millis(100), pubsub.on_message().next())
+            .await
+            .is_err()
+    );
+
+    cache
+        .typed::<String>("redis")
+        .put("backend:42", "native-value".to_owned(), CacheOptions::new())
+        .await
+        .unwrap();
+
+    let mut messages = pubsub.on_message();
+    let keyspace = tokio::time::timeout(Duration::from_secs(2), messages.next())
+        .await
+        .expect("native keyspace event timeout")
+        .expect("native keyspace event stream closed");
+    let keyevent = tokio::time::timeout(Duration::from_secs(2), messages.next())
+        .await
+        .expect("native keyevent timeout")
+        .expect("native keyevent stream closed");
+
+    assert_eq!(keyspace.get_channel_name(), "__keyspace@0__:backend:42");
+    assert_eq!(keyspace.get_payload::<String>().unwrap(), "set");
+    assert_eq!(keyevent.get_channel_name(), "__keyevent@0__:set");
+    assert_eq!(keyevent.get_payload::<String>().unwrap(), "backend:42");
+
+    drop(messages);
+    drop(pubsub);
+    drop(shutdown_tx);
+    serving.await.unwrap().unwrap();
 }
 
 #[tokio::test]

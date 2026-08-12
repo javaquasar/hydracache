@@ -2533,6 +2533,7 @@ dependencies = [
  "proptest",
  "raft",
  "rcgen",
+ "redis",
  "reqwest",
  "rustls",
  "serde",
