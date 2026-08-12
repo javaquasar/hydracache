@@ -205,6 +205,8 @@ async fn networked_member_stack(config: &ServerConfig) -> CacheResult<NetworkedM
     } else {
         Arc::new(NoopRaftMessageSink)
     };
+    let draining = Arc::new(AtomicBool::new(false));
+    let drain_remove_proposed = Arc::new(AtomicBool::new(false));
     let (shutdown, _) = watch::channel(false);
     spawn_grid_drive(
         GridDriveHandles {
@@ -215,8 +217,11 @@ async fn networked_member_stack(config: &ServerConfig) -> CacheResult<NetworkedM
             last_voters,
             suppressed_raft_promotions,
             local_node_id: node_id.clone(),
+            local_raft_node_id: raft_node_id,
             local_endpoint: config.cluster_advertise_endpoint(),
             local_generation: generation,
+            draining: draining.clone(),
+            drain_remove_proposed: drain_remove_proposed.clone(),
         },
         discovery.clone(),
         shutdown.subscribe(),
@@ -273,8 +278,8 @@ async fn networked_member_stack(config: &ServerConfig) -> CacheResult<NetworkedM
         bridge,
         message_sink,
         drive_diagnostics,
-        draining: Arc::new(AtomicBool::new(false)),
-        drain_remove_proposed: Arc::new(AtomicBool::new(false)),
+        draining,
+        drain_remove_proposed,
         raft_compaction_enabled: config.raft_compaction_enabled,
         shutdown,
     })
@@ -573,8 +578,11 @@ struct GridDriveHandles {
     last_voters: SharedRaftVoterSet,
     suppressed_raft_promotions: SharedRaftVoterSet,
     local_node_id: ClusterNodeId,
+    local_raft_node_id: u64,
     local_endpoint: String,
     local_generation: ClusterGeneration,
+    draining: Arc<AtomicBool>,
+    drain_remove_proposed: Arc<AtomicBool>,
 }
 
 fn spawn_grid_drive(
@@ -649,6 +657,7 @@ async fn drive_grid_once(
         &handles.raft.voter_ids()?,
         &handles.raft.members(),
     );
+    retry_local_voter_removal_for_drain(handles).await?;
     sync_raft_voters(
         &handles.raft,
         &handles.message_sink,
@@ -669,6 +678,51 @@ async fn drive_grid_once(
         Some(handles.diagnostics.as_ref()),
     )
     .await;
+    Ok(())
+}
+
+async fn retry_local_voter_removal_for_drain(handles: &GridDriveHandles) -> CacheResult<()> {
+    if !handles.draining.load(Ordering::SeqCst)
+        || handles.drain_remove_proposed.load(Ordering::SeqCst)
+    {
+        return Ok(());
+    }
+    let voters = handles.raft.voter_ids()?;
+    if voters.len() <= 1 || !voters.contains(&handles.local_raft_node_id) {
+        handles.drain_remove_proposed.store(true, Ordering::SeqCst);
+        return Ok(());
+    }
+    if handles.raft.leader_id().is_none() {
+        return Ok(());
+    }
+    if handles
+        .drain_remove_proposed
+        .compare_exchange(false, true, Ordering::SeqCst, Ordering::SeqCst)
+        .is_err()
+    {
+        return Ok(());
+    }
+
+    let messages = match handles
+        .raft
+        .request_remove_voter(handles.local_raft_node_id)
+    {
+        Ok(messages) => messages,
+        Err(error) => {
+            handles.drain_remove_proposed.store(false, Ordering::SeqCst);
+            return Err(error);
+        }
+    };
+    if let Err(error) = send_raft_messages_with_diagnostics(
+        &handles.message_sink,
+        messages,
+        Some(handles.diagnostics.as_ref()),
+    )
+    .await
+    {
+        handles.drain_remove_proposed.store(false, Ordering::SeqCst);
+        return Err(error);
+    }
     Ok(())
 }
 
@@ -2378,29 +2432,48 @@ impl NetworkedGridHandle {
         if self.raft.leader_id().is_none() {
             return;
         }
+        if self
+            .drain_remove_proposed
+            .compare_exchange(false, true, Ordering::SeqCst, Ordering::SeqCst)
+            .is_err()
+        {
+            return;
+        }
         let Ok(messages) = self.raft.request_remove_voter(self.raft_node_id) else {
+            self.drain_remove_proposed.store(false, Ordering::SeqCst);
             return;
         };
-        self.drain_remove_proposed.store(true, Ordering::SeqCst);
         if let Some(runtime) = &self._runtime {
             if tokio::runtime::Handle::try_current().is_ok() {
                 let message_sink = Arc::clone(&self._message_sink);
                 let diagnostics = Arc::clone(&self.drive_diagnostics);
+                let drain_remove_proposed = Arc::clone(&self.drain_remove_proposed);
                 runtime.spawn(async move {
-                    let _ = send_raft_messages_with_diagnostics(
+                    if send_raft_messages_with_diagnostics(
                         &message_sink,
                         messages,
                         Some(diagnostics.as_ref()),
                     )
-                    .await;
+                    .await
+                    .is_err()
+                    {
+                        drain_remove_proposed.store(false, Ordering::SeqCst);
+                    }
                 });
             } else {
-                let _ = runtime.block_on(send_raft_messages_with_diagnostics(
-                    &self._message_sink,
-                    messages,
-                    Some(self.drive_diagnostics.as_ref()),
-                ));
+                if runtime
+                    .block_on(send_raft_messages_with_diagnostics(
+                        &self._message_sink,
+                        messages,
+                        Some(self.drive_diagnostics.as_ref()),
+                    ))
+                    .is_err()
+                {
+                    self.drain_remove_proposed.store(false, Ordering::SeqCst);
+                }
             }
+        } else {
+            self.drain_remove_proposed.store(false, Ordering::SeqCst);
         }
     }
 }
@@ -2892,8 +2965,11 @@ mod tests {
             last_voters: Arc::new(RwLock::new(BTreeSet::new())),
             suppressed_raft_promotions: Arc::new(RwLock::new(BTreeSet::new())),
             local_node_id: ClusterNodeId::from("local"),
+            local_raft_node_id: 1,
             local_endpoint: "127.0.0.1:7000".to_owned(),
             local_generation: ClusterGeneration::new(1),
+            draining: Arc::new(AtomicBool::new(false)),
+            drain_remove_proposed: Arc::new(AtomicBool::new(false)),
         };
         drive_grid_once(&handles, &[]).await.unwrap();
 
