@@ -25,7 +25,7 @@ SDK, facade, package, or exact-candidate receipt.
 | W9 production Python HC/2 SDK | H15 hermetic generation plus production asyncio runtime, deterministic wheel, offline hashed dependencies, and clean venv consumer | retain exact-candidate release receipt | implemented, release evidence pending |
 | W10-W11 security, bounds, observability, faults and compatibility | H10-H14, H18-H22 hosted lanes | retain exact receipts; H22 fixed-host soak remains operationally outstanding | implemented except fixed-host receipt |
 | W12 release governance and documentation | `0.68.toml`, W0-W12 dynamic canaries, source-bound cross-SDK conformance, explicit schema/package CI, and registered H22 exact-candidate admission | retain fast/canary/H22 exact-candidate receipts; H22 fixed-host soak remains operationally outstanding | implemented, release evidence pending |
-| Additive Redis API event listener | H23 shared tenant-fenced mutation bus, RESP2/RESP3 subscription wire contract, keyspace/keyevent projection, bounded lag and redis-rs integration | retain exact PR checks and keep node-local/at-most-once/non-PubSub boundary explicit | implemented, hosted evidence pending |
+| Additive Redis API event listener | H23 shared tenant-fenced mutation bus, RESP2/RESP3 subscription wire contract, keyspace/keyevent projection, bounded lag and redis-rs integration | retain exact PR checks and keep node-local/at-most-once/non-PubSub boundary explicit | complete; implementation commit `2fef344` is green in PR runs `31551909019`, `31551909021`, and `31551909027` |
 
 ## Current five-stage execution sequence
 
