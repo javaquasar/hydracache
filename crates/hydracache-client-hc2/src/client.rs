@@ -50,7 +50,7 @@ impl Metrics {
 
 struct PendingInvocation {
     reply: oneshot::Sender<Result<InvocationResponse, ClientError>>,
-    _permit: OwnedSemaphorePermit,
+    permit: OwnedSemaphorePermit,
 }
 
 struct PendingSubscription {
@@ -744,7 +744,7 @@ impl Hc2Client {
                 correlation,
                 PendingInvocation {
                     reply,
-                    _permit: permit,
+                    permit,
                 },
             );
         runtime.metrics.submitted.fetch_add(1, Ordering::Relaxed);
@@ -1010,7 +1010,12 @@ impl Runtime {
             self.metrics.failed.fetch_add(1, Ordering::Relaxed);
         }
         let result = response_success(&response).map(|()| response);
-        let _ = pending.reply.send(result);
+        let PendingInvocation { reply, permit } = pending;
+        // Make bounded capacity visible before waking the caller. The caller
+        // may immediately issue its next sequential request on another runtime
+        // worker, so retaining the permit through `send` creates a quota race.
+        drop(permit);
+        let _ = reply.send(result);
     }
 
     fn accept_subscription(&self, correlation: u64, ack: SubscriptionAck) {
