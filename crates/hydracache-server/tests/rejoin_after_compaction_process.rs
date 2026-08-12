@@ -7,7 +7,9 @@ use support::daemon_cluster::{
 };
 
 // Keep ordinary in-flight requests observable across multiple 200 ms polls.
-const SNAPSHOT_HANDLER_TEST_DELAY_MS: u64 = 1_500;
+const SNAPSHOT_HANDLER_TEST_DELAY_MS: u64 = 1_000;
+const SNAPSHOT_HANDLER_DELAY_STARTED_MARKER: &str =
+    "HYDRACACHE_TEST_RAFT_SNAPSHOT_HANDLER_DELAY_STARTED";
 const SHARED_COMPACTION_ATTEMPTS: usize = 4;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -74,7 +76,7 @@ fn leader_killed_mid_snapshot_delivery_still_converges() -> TestResult {
         Some(SNAPSHOT_HANDLER_TEST_DELAY_MS),
     )?;
     let (old_leader_index, old_leader_status) =
-        wait_for_snapshot_request_in_flight(&mut cluster, prepared.lagger_index, true)?;
+        wait_for_snapshot_handler_delay_started(&mut cluster, prepared.lagger_index, true)?;
     let old_leader = cluster.node_ids()[old_leader_index].clone();
 
     // Stop both ends of the observed request together. This removes the race
@@ -127,7 +129,7 @@ fn receiver_killed_mid_snapshot_request_releases_sender_and_retry_converges() ->
         Some(SNAPSHOT_HANDLER_TEST_DELAY_MS),
     )?;
     let (leader_index, in_flight) =
-        wait_for_snapshot_request_in_flight(&mut cluster, prepared.lagger_index, false)?;
+        wait_for_snapshot_handler_delay_started(&mut cluster, prepared.lagger_index, false)?;
 
     cluster.kill(prepared.lagger_index)?;
     cluster.wait_for(
@@ -286,51 +288,73 @@ fn wait_for_snapshot_install_and_convergence(
     Ok(())
 }
 
-fn wait_for_snapshot_request_in_flight(
+fn wait_for_snapshot_handler_delay_started(
     cluster: &mut DaemonCluster,
     receiver_index: usize,
     require_current_leader: bool,
 ) -> TestResult<(usize, RaftProcessObservation)> {
-    let result = cluster.wait_for(
-        "real HTTP MsgSnapshot request becomes in-flight".to_owned(),
-        |cluster| {
-            let candidates = if require_current_leader {
-                let statuses = cluster.statuses();
-                vec![leader_index(cluster, &statuses).ok()?]
-            } else {
-                cluster.running_indices()
+    let log_suffix = format!("-{receiver_index}.stderr.log");
+    let receiver_log = fs::read_dir(cluster.root())?
+        .filter_map(Result::ok)
+        .find(|entry| {
+            entry
+                .file_name()
+                .to_str()
+                .is_some_and(|name| name.ends_with(&log_suffix))
+        })
+        .map(|entry| entry.path())
+        .ok_or_else(|| format!("receiver {receiver_index} stderr log is missing"))?;
+    let deadline = std::time::Instant::now() + std::time::Duration::from_secs(60);
+    while std::time::Instant::now() < deadline {
+        let stderr = fs::read_to_string(&receiver_log).unwrap_or_default();
+        if let Some(line) = stderr
+            .lines()
+            .rev()
+            .find(|line| line.contains(SNAPSHOT_HANDLER_DELAY_STARTED_MARKER))
+        {
+            let sender = line
+                .split_whitespace()
+                .find_map(|field| field.strip_prefix("from="))
+                .ok_or_else(|| format!("snapshot delay marker is missing sender: {line}"))?;
+            let sender_index = cluster
+                .node_ids()
+                .iter()
+                .position(|node_id| node_id == sender)
+                .ok_or_else(|| format!("snapshot sender {sender} is not a spawned daemon"))?;
+            if require_current_leader {
+                let sender_status = cluster.admin_status(sender_index).ok();
+                if sender_status
+                    .as_ref()
+                    .and_then(|status| status.leader.as_deref())
+                    != Some(sender)
+                {
+                    std::thread::sleep(std::time::Duration::from_millis(10));
+                    continue;
+                }
+            }
+            let Ok(sender_observation) = observation(cluster, sender_index) else {
+                std::thread::sleep(std::time::Duration::from_millis(10));
+                continue;
             };
-            candidates.into_iter().find_map(|index| {
-                let observation = observation(cluster, index).ok()?;
-                (observation.snapshot_send_attempts > 0 && observation.snapshot_sends_in_flight > 0)
-                    .then_some((index, observation))
-            })
-        },
-    );
-    if result.is_err() {
-        let observations = (0..cluster.node_ids().len())
-            .map(|index| (index, observation(cluster, index)))
-            .collect::<Vec<_>>();
-        let log_suffix = format!("-{receiver_index}.stderr.log");
-        let receiver_stderr = fs::read_dir(cluster.root())
-            .ok()
-            .into_iter()
-            .flatten()
-            .filter_map(Result::ok)
-            .find_map(|entry| {
-                entry
-                    .file_name()
-                    .to_str()
-                    .filter(|name| name.ends_with(&log_suffix))
-                    .and_then(|_| fs::read_to_string(entry.path()).ok())
-            })
-            .unwrap_or_else(|| "<receiver stderr unavailable>".to_owned());
-        return Err(format!(
-            "real HTTP MsgSnapshot request did not become observable; receiver_index={receiver_index} require_current_leader={require_current_leader} observations={observations:?} receiver_stderr={receiver_stderr:?}"
-        )
-        .into());
+            if sender_observation.snapshot_send_attempts == 0
+                || sender_observation.snapshot_sends_in_flight == 0
+            {
+                std::thread::sleep(std::time::Duration::from_millis(10));
+                continue;
+            }
+            return Ok((sender_index, sender_observation));
+        }
+        std::thread::sleep(std::time::Duration::from_millis(10));
     }
-    result
+    let observations = (0..cluster.node_ids().len())
+        .map(|index| (index, observation(cluster, index)))
+        .collect::<Vec<_>>();
+    let receiver_stderr = fs::read_to_string(receiver_log)
+        .unwrap_or_else(|_| "<receiver stderr unavailable>".to_owned());
+    Err(format!(
+        "real HTTP MsgSnapshot handler delay did not become observable; receiver_index={receiver_index} require_current_leader={require_current_leader} observations={observations:?} receiver_stderr={receiver_stderr:?}"
+    )
+    .into())
 }
 
 fn wait_for_equal_applied_progress(

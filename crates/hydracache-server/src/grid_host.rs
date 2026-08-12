@@ -46,6 +46,7 @@ const GRID_RAFT_AUTHORITY_FRESHNESS: Duration = Duration::from_millis(200);
 const GRID_LEADER_WAIT_TIMEOUT: Duration = Duration::from_secs(5);
 const GRID_RUNTIME_SHUTDOWN_TIMEOUT: Duration = Duration::from_secs(1);
 const FORWARDED_APPLY_TIMEOUT_MARKER: &str = "was forwarded but not applied locally before timeout";
+const ELECTION_IN_PROGRESS_MARKER: &str = "no raft leader; retry metadata proposal after election";
 const RAFT_HTTP_CONNECT_TIMEOUT: Duration = Duration::from_millis(500);
 const RAFT_HTTP_REQUEST_TIMEOUT: Duration = Duration::from_secs(2);
 const SNAPSHOT_AUTHORITY_POLL_INTERVAL: Duration = Duration::from_millis(10);
@@ -334,12 +335,16 @@ async fn networked_member_cache(
         }
         match builder.start().await {
             Ok(cache) => return Ok(cache),
-            Err(error) if is_forwarded_apply_timeout(&error) && Instant::now() < deadline => {
+            Err(error)
+                if is_retryable_member_admission_error(&error) && Instant::now() < deadline =>
+            {
                 // A durable follower can be behind the retained Raft log while
                 // its own id/generation upsert commits on the leader. Keep the
                 // already-running transport and drive alive so snapshot catch-up
-                // can materialize that exact command locally, then retry the
-                // idempotent admission within the configured join bound.
+                // can materialize that exact command locally. The same bounded
+                // retry also covers the explicit no-leader interval during a
+                // failover election. Both paths retry the idempotent admission
+                // only within the configured join bound.
                 tokio::time::sleep(GRID_DRIVE_INTERVAL).await;
             }
             Err(error) => {
@@ -352,10 +357,12 @@ async fn networked_member_cache(
     }
 }
 
-fn is_forwarded_apply_timeout(error: &CacheError) -> bool {
+fn is_retryable_member_admission_error(error: &CacheError) -> bool {
     matches!(
         error,
-        CacheError::Backend(message) if message.contains(FORWARDED_APPLY_TIMEOUT_MARKER)
+        CacheError::Backend(message)
+            if message.contains(FORWARDED_APPLY_TIMEOUT_MARKER)
+                || message.contains(ELECTION_IN_PROGRESS_MARKER)
     )
 }
 
@@ -2657,6 +2664,13 @@ impl ClusterMessageHandler for RaftClusterMessageHandler {
                 // This opt-in process-test seam runs only after Axum received
                 // and decoded the real HTTP body. Holding before raft.step/ack
                 // keeps the sender's real request and feedback reservation live.
+                eprintln!(
+                    "HYDRACACHE_TEST_RAFT_SNAPSHOT_HANDLER_DELAY_STARTED from={} to={} term={} delay_ms={}",
+                    message.from,
+                    self.node_id,
+                    message.term,
+                    delay.as_millis()
+                );
                 tokio::time::sleep(delay).await;
             }
         }
@@ -3811,14 +3825,17 @@ mod tests {
     }
 
     #[test]
-    fn only_forwarded_apply_timeouts_are_retryable_during_local_admission() {
-        let retryable = CacheError::Backend(format!(
+    fn only_explicit_transient_failures_are_retryable_during_local_admission() {
+        let forwarded_apply = CacheError::Backend(format!(
             "raft metadata command member-upsert:member-a:2 {FORWARDED_APPLY_TIMEOUT_MARKER}"
         ));
-        assert!(is_forwarded_apply_timeout(&retryable));
+        assert!(is_retryable_member_admission_error(&forwarded_apply));
+
+        let election = CacheError::Backend(ELECTION_IN_PROGRESS_MARKER.to_owned());
+        assert!(is_retryable_member_admission_error(&election));
 
         let permanent = CacheError::Backend("stale cluster generation".to_owned());
-        assert!(!is_forwarded_apply_timeout(&permanent));
+        assert!(!is_retryable_member_admission_error(&permanent));
     }
 
     #[test]
