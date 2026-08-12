@@ -9,10 +9,9 @@
 >   [`TD-0013`](../technical-debt/TD-0013-dedicated-performance-runner-and-baseline-bootstrap.md)
 >   remains open because the reference workflow has never run on qualifying hardware.
 > - **Depends on:** shipped `0.67.0`.
-> - **Unblocks:** official, narrowly scoped reference evidence, the planned `0.68.0` generated
->   client plane, and the subsequent `0.69.0` migration
->   conformance release.
-> - **Status:** planned.
+> - **Unblocks:** official, narrowly scoped reference evidence and future numerical capacity
+>   claims. It is no longer a source-code prerequisite for the `0.68.0` Rust release.
+> - **Status:** in-progress; implementation complete, authoritative qualification deferred.
 >
 > Roadmap: [`INDEX.md`](INDEX.md) - parent plan:
 > [`V0_67_PERFORMANCE_CHARACTERIZATION_PLAN.md`](V0_67_PERFORMANCE_CHARACTERIZATION_PLAN.md)
@@ -27,8 +26,9 @@ This is an evidence/bootstrap patch, not an optimization or product-surface rele
 
 **Preparation state:** W0-W4 acquisition/aggregation and W5-W7 deterministic
 proposal/review/activation/frozen-candidate machinery are prepared. Live evidence is still required;
-this does not advance the release manifest beyond `planned`, resolve TD-0013, or satisfy any runtime
-stage receipt.
+this does not mark 0.67.1 shipped, resolve TD-0013, satisfy any runtime stage receipt, or authorize a
+numerical claim. ADR-0020 permits the separately scoped 0.68 Rust release to proceed while this
+evidence-only campaign remains `in-progress`.
 
 **Non-ship readiness additions:** a separate `indicative-exploratory-v1` tier
 provides reproducible same-host characterization without capacity or sizing

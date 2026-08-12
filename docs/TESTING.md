@@ -171,6 +171,16 @@ existing live keys, and `HC.INVALIDATE_TAG` must invalidate through
 `ClientSurfaceState` without scanning the Redis keyspace or claiming
 cross-listener/global tag semantics.
 
+The additive 0.68 Redis event-listener row is also manifest-driven. It covers
+only off-by-default keyspace notifications through `SUBSCRIBE`, `UNSUBSCRIBE`,
+`PSUBSCRIBE`, and `PUNSUBSCRIBE`. The focused tests prove tenant-fenced,
+metadata-only publication, RESP2 array and RESP3 push encodings, binary pattern
+matching, auth-before-subscribe, unique-subscription count/retained-byte bounds,
+explicit lag failure, unsubscribe accounting, and visibility of compatible
+mutations sent through the shared HC/2 dispatch state. It does not turn
+HydraCache into an arbitrary Pub/Sub broker or establish replay/cross-daemon
+delivery.
+
 When adding or changing a RESP command:
 
 1. Update the conformance manifest first.
@@ -193,7 +203,8 @@ credential redaction, hardened password comparison, unsupported/admin-disabled m
 coalesced/partial frame boundaries, Redis Cluster negative coverage, `SELECT 0` single-database
 coverage, minimal `INFO`, cache-subset `TYPE`, edge-local `HC.NAMESPACE`/tag invalidation,
 disabled `CONFIG`/`FLUSHDB`/`FLUSHALL`
-non-mutation, decoder fuzz smoke, and oversized frame limits. The server
+non-mutation, keyspace-event subscriptions and unsubscribe lifecycle, decoder
+fuzz smoke, and oversized frame limits. The server
 lifecycle gate proves the
 listener config is off by default, address conflicts are rejected, Redis TLS material is validated,
 plaintext is rejected on TLS listeners before mutation, the real TCP/TLS RESP listener starts when
@@ -1297,18 +1308,27 @@ log-level downgrade cannot be the fix for a correctness contradiction.
 
 ## Cache Event Tests
 
-The cache event/listener API is covered by `crates/hydracache/src/tests/events.rs`.
-Run the focused library tests with:
+The cache event/listener API is covered at two boundaries:
+
+- `crates/hydracache/src/tests/events.rs` exercises the complete in-crate event
+  matrix and internal publication paths;
+- `crates/hydracache/tests/native_event_listeners.rs` is a black-box consumer
+  that can use only the exported ordinary `HydraCache` / `TypedCache` API.
+
+Run both focused targets with:
 
 ```powershell
 cargo test -p hydracache --lib --locked events::
+cargo test -p hydracache --test native_event_listeners --locked
 ```
 
 These tests cover mutation events, opt-in access events, subscriber filters,
 typed-cache delegation, single-flight join events, stale-load discard events,
 loader failure events, and bounded-buffer lag. The lag behavior is intentional:
 HydraCache uses a bounded event bus so cache operations never wait for slow
-listeners.
+listeners. The black-box target additionally freezes callback unsubscribe and
+post-lag resume behavior as an external-client contract; it must not import
+private modules or infer Redis/HC/2 wire compatibility from the local API.
 
 ## Release 0.67 performance characterization
 
@@ -1868,3 +1888,40 @@ cargo +nightly llvm-cov --workspace --doctests --locked --summary-only
 
 Do not block stable releases solely on `--doctests` coverage unless the release
 process explicitly requires nightly.
+
+## HC/2 H01/H03/H22 Evidence Lanes
+
+The generated HC/2 client-plane foundation has a four-lane correctness
+contract: required GitHub-hosted Linux and digest-pinned Docker interop jobs, a
+scheduled/tagged fuzz campaign, and a separately enabled labelled fixed-host
+lifecycle soak. The Rust 0.68 release admission, including the Rust HC/2 client
+crate, requires the three hosted receipts from one full candidate SHA. The full
+Java/Python promotion admission adds the fixed-host receipt. Missing and red
+lanes are intentional tested failure cases for their respective scope.
+Commands, exact check names, host labels, retained metadata,
+pin-update policy, and the prohibition on turning shared-CI timing into a
+capacity claim are documented in
+[`HC2_CI_INTEROP_FUZZ_SOAK.md`](operations/HC2_CI_INTEROP_FUZZ_SOAK.md).
+
+The Linux and Docker interop jobs also run the real `hydracache-server` HC/2
+socket and process gates from `client-plane-spike-check`. They verify mandatory
+mTLS, shared HC/1/HC/2 production dispatch, push/accounting cleanup, eager TLS
+readiness, drain, and fail-before-partial-startup behavior. See
+[`HC2_PRODUCTION_LISTENER.md`](architecture/HC2_PRODUCTION_LISTENER.md) for the
+exact configuration and acceptance boundary.
+
+The H03 transport decision is separately reproducible and machine checked:
+
+```powershell
+cargo xtask client-plane-bakeoff-check
+cargo xtask client-plane-generation-check
+cargo test -p hydracache-client-plane-spike --test candidate_socket_corpus
+```
+
+The first command validates the exact all-green boolean matrix, selected
+primary, retained comparison spikes, evidence paths, and measured operational
+costs in `docs/testing/hc2-transport-bakeoff.json`. The second compares two
+independent clean Rust generations and two clean Java generations byte for
+byte. The socket corpus verifies malformed/cross-candidate refusal and explicit
+slow-consumer gap delivery over mTLS for every candidate codec. These are
+correctness and reproducibility gates, not latency or capacity measurements.

@@ -63,6 +63,48 @@
         "cross_node_lock_release_is_node_local",
         "cross_node_lock_extend_is_node_local"
       ]
+    },
+    {
+      "id": "redis-keyspace-event-listener",
+      "kind": "characterization",
+      "description": "Live RESP2/RESP3 subscription, keyspace notification, cross-protocol mutation, auth, and unsubscribe assertions for the bounded event listener.",
+      "source": "crates/hydracache-redis-compat/tests/redis_event_listeners.rs",
+      "tests": [
+        "redis_rs_pattern_listener_receives_keyspace_and_keyevent_messages",
+        "redis_rs_listener_covers_supported_mutation_event_names",
+        "redis_listener_observes_hc2_style_mutation_on_shared_verified_surface",
+        "event_listener_is_disabled_by_default_and_auth_precedes_subscription",
+        "unsubscribe_acknowledges_and_leaves_resp2_subscribed_mode",
+        "pattern_unsubscribe_acknowledges_and_leaves_resp2_subscribed_mode",
+        "subscription_limit_is_atomic_and_counts_unique_channels",
+        "subscription_byte_limit_rejects_admission_atomically",
+        "resp2_subscribed_mode_rejects_ordinary_commands",
+        "resp3_push_mode_keeps_ordinary_commands_available"
+      ]
+    },
+    {
+      "id": "redis-native-backend-event-bridge",
+      "kind": "characterization",
+      "description": "Real redis-rs and authenticated rediss subscriptions observe an ordinary native HydraCache typed-cache put while transport authentication remains mandatory.",
+      "source": "crates/hydracache-server/tests/server_lifecycle.rs",
+      "tests": [
+        "redis_client_observes_native_backend_put_in_listener_namespace",
+        "authenticated_rediss_subscriber_receives_native_backend_put"
+      ]
+    },
+    {
+      "id": "redis-native-backend-event-hardening",
+      "kind": "characterization",
+      "description": "Native event projection is namespace-fenced and metadata-only, uses RESP3 push frames, releases receivers at zero subscriptions, fails loud on lag without blocking writers, recovers without replay, and does not duplicate concurrent verified-surface events.",
+      "source": "crates/hydracache-redis-compat/tests/redis_event_listeners.rs",
+      "tests": [
+        "native_bridge_exact_subscription_is_namespace_fenced_and_metadata_only",
+        "native_bridge_resp3_uses_push_frames",
+        "native_bridge_unsubscribe_drops_receiver_and_resubscribe_does_not_replay",
+        "native_bridge_lag_disconnects_without_blocking_writers_and_can_recover",
+        "native_and_verified_surface_events_are_delivered_once_without_global_order_claim",
+        "authenticated_redis_client_receives_native_event_only_after_auth"
+      ]
     }
   ],
   "commands": [
@@ -127,7 +169,7 @@
       "route": "transport",
       "case_ids": ["rediss-listener-tls"],
       "oracle": "normalized_error",
-      "tests": ["redis_api_rediss_env_reuses_server_tls_material", "redis_resp_listener_accepts_rediss_auth_and_cache_commands", "redis_resp_tls_listener_rejects_plaintext_before_mutation", "redis_resp_tls_client_rejects_wrong_ca", "redis_resp_tls_keeps_wrong_auth_as_wrongpass", "client_matrix_runs_rediss_required_connection_scenario"]
+      "tests": ["redis_api_rediss_env_reuses_server_tls_material", "redis_resp_listener_accepts_rediss_auth_and_cache_commands", "authenticated_rediss_subscriber_receives_native_backend_put", "redis_resp_tls_listener_rejects_plaintext_before_mutation", "redis_resp_tls_client_rejects_wrong_ca", "redis_resp_tls_keeps_wrong_auth_as_wrongpass", "client_matrix_runs_rediss_required_connection_scenario"]
     },
     {
       "name": "CLIENT SETNAME",
@@ -155,6 +197,42 @@
       "case_ids": ["command"],
       "oracle": "normalized_error",
       "tests": ["command_reply_advertises_only_supported_subset"]
+    },
+    {
+      "name": "SUBSCRIBE (keyspace notifications only)",
+      "status": "supported_with_caveat",
+      "kind": "redis_keyspace_notifications",
+      "route": "connection_state",
+      "case_ids": ["subscribe-keyspace"],
+      "oracle": "exact",
+      "tests": ["redis_listener_observes_hc2_style_mutation_on_shared_verified_surface", "redis_rs_listener_covers_supported_mutation_event_names", "redis_client_observes_native_backend_put_in_listener_namespace", "native_bridge_exact_subscription_is_namespace_fenced_and_metadata_only", "native_bridge_resp3_uses_push_frames", "native_bridge_lag_disconnects_without_blocking_writers_and_can_recover", "native_and_verified_surface_events_are_delivered_once_without_global_order_claim", "authenticated_redis_client_receives_native_event_only_after_auth", "authenticated_rediss_subscriber_receives_native_backend_put", "event_listener_is_disabled_by_default_and_auth_precedes_subscription", "unsubscribe_acknowledges_and_leaves_resp2_subscribed_mode", "subscription_limit_is_atomic_and_counts_unique_channels", "subscription_byte_limit_rejects_admission_atomically", "resp2_subscribed_mode_rejects_ordinary_commands", "resp3_push_mode_keeps_ordinary_commands_available", "redis_event_listener_uses_server_shared_client_dispatch_state"]
+    },
+    {
+      "name": "UNSUBSCRIBE (keyspace notifications only)",
+      "status": "supported_with_caveat",
+      "kind": "redis_keyspace_notifications",
+      "route": "connection_state",
+      "case_ids": ["unsubscribe-keyspace"],
+      "oracle": "exact",
+      "tests": ["unsubscribe_acknowledges_and_leaves_resp2_subscribed_mode", "native_bridge_unsubscribe_drops_receiver_and_resubscribe_does_not_replay", "resp2_subscribed_mode_rejects_ordinary_commands"]
+    },
+    {
+      "name": "PSUBSCRIBE (keyspace notifications only)",
+      "status": "supported_with_caveat",
+      "kind": "redis_keyspace_notifications",
+      "route": "connection_state",
+      "case_ids": ["psubscribe-keyspace"],
+      "oracle": "exact",
+      "tests": ["redis_rs_pattern_listener_receives_keyspace_and_keyevent_messages", "redis_rs_listener_covers_supported_mutation_event_names", "pattern_unsubscribe_acknowledges_and_leaves_resp2_subscribed_mode"]
+    },
+    {
+      "name": "PUNSUBSCRIBE (keyspace notifications only)",
+      "status": "supported_with_caveat",
+      "kind": "redis_keyspace_notifications",
+      "route": "connection_state",
+      "case_ids": ["punsubscribe-keyspace"],
+      "oracle": "exact",
+      "tests": ["pattern_unsubscribe_acknowledges_and_leaves_resp2_subscribed_mode"]
     },
     {
       "name": "GET",

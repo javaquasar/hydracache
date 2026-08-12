@@ -20,6 +20,7 @@ $publishOrder = @(
     "hydracache-observability",
     "hydracache-client-transport-axum",
     "hydracache-client",
+    "hydracache-client-hc2",
     "hydracache-cluster-chitchat",
     "hydracache-cluster-transport-axum",
     "hydracache-cluster-raft",

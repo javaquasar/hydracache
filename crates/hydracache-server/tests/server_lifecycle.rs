@@ -7,14 +7,16 @@ use std::{
         atomic::{AtomicU64, Ordering},
         Arc, Mutex, MutexGuard,
     },
+    time::Duration,
 };
 
+use futures_util::StreamExt as _;
 use hydracache::CacheOptions;
 use hydracache_redis_compat::{RedisCommand, RespValue};
 use hydracache_server::{
     serve_redis_listener, AdminApiConfig, BackupConfig, ClientApiConfig, ClusterAuthConfig,
-    ClusterStartMode, RedisApiConfig, RedisTcpError, ServerConfig, ServerConfigError, ServerRole,
-    ServerRuntime, ServerState, TlsConfig,
+    ClusterStartMode, Hc2ClientPlaneConfig, RedisApiConfig, RedisTcpError, ServerConfig,
+    ServerConfigError, ServerRole, ServerRuntime, ServerState, TlsConfig,
 };
 use rustls::pki_types::{pem::PemObject, CertificateDer, ServerName};
 use rustls::RootCertStore;
@@ -85,6 +87,9 @@ const CONFIG_ENV_VARS: &[&str] = &[
     "HYDRACACHE_BACKUP_ENABLED",
     "HYDRACACHE_BACKUP_LOCATION",
     "HYDRACACHE_CLIENT_API_ENABLED",
+    "HYDRACACHE_HC2_ENABLED",
+    "HYDRACACHE_HC2_ADDR",
+    "HYDRACACHE_HC2_CLUSTER_ID",
     "HYDRACACHE_ADMIN_API_ENABLED",
     "HYDRACACHE_ADMIN_ADDR",
     "HYDRACACHE_REDIS_API_ENABLED",
@@ -93,6 +98,9 @@ const CONFIG_ENV_VARS: &[&str] = &[
     "HYDRACACHE_REDIS_AUTH_USERNAME",
     "HYDRACACHE_REDIS_AUTH_TOKEN_FILE",
     "HYDRACACHE_REDIS_REDISS_ENABLED",
+    "HYDRACACHE_REDIS_KEYSPACE_EVENTS_ENABLED",
+    "HYDRACACHE_REDIS_MAX_EVENT_SUBSCRIPTIONS_PER_CONNECTION",
+    "HYDRACACHE_REDIS_MAX_EVENT_SUBSCRIPTION_BYTES_PER_CONNECTION",
     "HYDRACACHE_RAFT_COMPACTION",
     "HOSTNAME",
 ];
@@ -279,6 +287,21 @@ async fn rediss_exchange(addr: std::net::SocketAddr, ca_path: &Path, input: &[u8
         Err(error) => panic!("failed to read rediss response: {error}"),
     }
     output
+}
+
+async fn read_until_marker(stream: &mut (impl AsyncReadExt + Unpin), marker: &[u8]) -> Vec<u8> {
+    tokio::time::timeout(Duration::from_secs(2), async {
+        let mut output = Vec::new();
+        let mut chunk = [0_u8; 512];
+        while !output.windows(marker.len()).any(|window| window == marker) {
+            let read = stream.read(&mut chunk).await.unwrap();
+            assert_ne!(read, 0, "rediss stream closed before expected marker");
+            output.extend_from_slice(&chunk[..read]);
+        }
+        output
+    })
+    .await
+    .expect("rediss marker timeout")
 }
 
 #[test]
@@ -475,11 +498,28 @@ fn redis_api_is_off_by_default_and_env_gated() {
             default.redis_api.listen_addr,
             "127.0.0.1:6379".parse().unwrap()
         );
+        assert!(!default.redis_api.keyspace_events_enabled);
+        assert_eq!(default.redis_api.max_event_subscriptions_per_connection, 64);
+        assert_eq!(
+            default
+                .redis_api
+                .max_event_subscription_bytes_per_connection,
+            64 * 1024
+        );
     }
 
     let _guard = ConfigEnvGuard::new(&[
         ("HYDRACACHE_REDIS_API_ENABLED", "true"),
         ("HYDRACACHE_REDIS_ADDR", "127.0.0.1:6380"),
+        ("HYDRACACHE_REDIS_KEYSPACE_EVENTS_ENABLED", "true"),
+        (
+            "HYDRACACHE_REDIS_MAX_EVENT_SUBSCRIPTIONS_PER_CONNECTION",
+            "12",
+        ),
+        (
+            "HYDRACACHE_REDIS_MAX_EVENT_SUBSCRIPTION_BYTES_PER_CONNECTION",
+            "4096",
+        ),
     ]);
     let config = ServerConfig::from_env().unwrap();
     assert!(config.redis_api.enabled);
@@ -487,6 +527,68 @@ fn redis_api_is_off_by_default_and_env_gated() {
         config.redis_api.listen_addr,
         "127.0.0.1:6380".parse().unwrap()
     );
+    assert!(config.redis_api.keyspace_events_enabled);
+    assert_eq!(config.redis_api.max_event_subscriptions_per_connection, 12);
+    assert_eq!(
+        config.redis_api.max_event_subscription_bytes_per_connection,
+        4096
+    );
+    let listener = config.redis_listener_config().unwrap();
+    assert!(listener.keyspace_events.enabled);
+    assert_eq!(
+        listener.keyspace_events.max_subscriptions_per_connection,
+        12
+    );
+    assert_eq!(
+        listener
+            .keyspace_events
+            .max_subscription_bytes_per_connection,
+        4096
+    );
+}
+
+#[test]
+fn redis_event_subscription_limit_rejects_zero_and_invalid_env() {
+    let mut config = member_config_with_redis_surface();
+    config.redis_api.max_event_subscriptions_per_connection = 0;
+    assert!(matches!(
+        config.validate(),
+        Err(ServerConfigError::InvalidRedisEventSubscriptionLimit)
+    ));
+
+    let mut config = member_config_with_redis_surface();
+    config.redis_api.max_event_subscription_bytes_per_connection = 0;
+    assert!(matches!(
+        config.validate(),
+        Err(ServerConfigError::InvalidRedisEventSubscriptionByteLimit)
+    ));
+
+    {
+        let _guard = ConfigEnvGuard::new(&[
+            ("HYDRACACHE_REDIS_API_ENABLED", "true"),
+            (
+                "HYDRACACHE_REDIS_MAX_EVENT_SUBSCRIPTIONS_PER_CONNECTION",
+                "not-a-number",
+            ),
+        ]);
+        assert!(matches!(
+            ServerConfig::from_env(),
+            Err(ServerConfigError::InvalidRedisEventSubscriptionLimit)
+        ));
+    }
+    {
+        let _guard = ConfigEnvGuard::new(&[
+            ("HYDRACACHE_REDIS_API_ENABLED", "true"),
+            (
+                "HYDRACACHE_REDIS_MAX_EVENT_SUBSCRIPTION_BYTES_PER_CONNECTION",
+                "not-a-number",
+            ),
+        ]);
+        assert!(matches!(
+            ServerConfig::from_env(),
+            Err(ServerConfigError::InvalidRedisEventSubscriptionByteLimit)
+        ));
+    }
 }
 
 #[test]
@@ -527,6 +629,75 @@ fn redis_api_addr_conflicting_with_client_or_admin_is_rejected_loud() {
             surface: "admin_api.listen_addr"
         })
     ));
+}
+
+#[test]
+fn hc2_is_off_by_default_requires_mtls_and_rejects_every_port_conflict() {
+    assert!(!ServerConfig::default().hc2_client_plane.enabled);
+
+    let mut plaintext = member_config();
+    plaintext.hc2_client_plane.enabled = true;
+    assert!(matches!(
+        plaintext.validate(),
+        Err(ServerConfigError::Hc2RequiresMutualTls)
+    ));
+
+    let mut enabled = member_config();
+    enabled.tls = TlsConfig {
+        enabled: true,
+        cert_path: Some("server.pem".into()),
+        key_path: Some("server.key".into()),
+        ca_path: Some("clients.pem".into()),
+        acknowledge_insecure: false,
+    };
+    enabled.hc2_client_plane = Hc2ClientPlaneConfig {
+        enabled: true,
+        listen_addr: "127.0.0.1:19443".parse().unwrap(),
+        cluster_id: "cluster-a".to_owned(),
+    };
+    assert!(enabled.validate().is_ok());
+
+    for (address, surface) in [
+        (enabled.listen_addr, "listen_addr"),
+        (enabled.cluster_addr, "cluster_addr"),
+        (enabled.admin_api.listen_addr, "admin_api.listen_addr"),
+    ] {
+        let mut conflict = enabled.clone();
+        conflict.hc2_client_plane.listen_addr = address;
+        assert!(matches!(
+            conflict.validate(),
+            Err(ServerConfigError::Hc2AddressConflicts { surface: actual }) if actual == surface
+        ));
+    }
+    let mut redis_conflict = enabled;
+    redis_conflict.redis_api.enabled = true;
+    redis_conflict.hc2_client_plane.listen_addr = redis_conflict.redis_api.listen_addr;
+    assert!(matches!(
+        redis_conflict.validate(),
+        Err(ServerConfigError::Hc2AddressConflicts {
+            surface: "redis_api.listen_addr"
+        })
+    ));
+}
+
+#[test]
+fn hc2_environment_is_explicit_and_validated() {
+    let _guard = ConfigEnvGuard::new(&[
+        ("HYDRACACHE_HC2_ENABLED", "true"),
+        ("HYDRACACHE_HC2_ADDR", "127.0.0.1:19444"),
+        ("HYDRACACHE_HC2_CLUSTER_ID", "cluster-env"),
+        ("HYDRACACHE_TLS_ENABLED", "true"),
+        ("HYDRACACHE_TLS_CERT_PATH", "server.pem"),
+        ("HYDRACACHE_TLS_KEY_PATH", "server.key"),
+        ("HYDRACACHE_TLS_CA_PATH", "clients.pem"),
+    ]);
+    let config = ServerConfig::from_env().unwrap();
+    assert!(config.hc2_client_plane.enabled);
+    assert_eq!(
+        config.hc2_client_plane.listen_addr,
+        "127.0.0.1:19444".parse().unwrap()
+    );
+    assert_eq!(config.hc2_client_plane.cluster_id, "cluster-env");
 }
 
 #[test]
@@ -759,6 +930,72 @@ fn redis_resp_server_uses_client_surface_state_without_enabling_client_api_route
     );
 }
 
+#[test]
+fn redis_event_listener_uses_server_shared_client_dispatch_state() {
+    let mut config = member_config_with_redis_surface();
+    config.redis_api.keyspace_events_enabled = true;
+    let runtime = ServerRuntime::new(config).unwrap().start();
+    let dispatch = runtime.client_dispatch_state().unwrap();
+    let server = runtime.redis_resp_server().unwrap().unwrap();
+
+    assert!(Arc::ptr_eq(&dispatch, &server.state()));
+}
+
+#[tokio::test]
+async fn redis_client_observes_native_backend_put_in_listener_namespace() {
+    let mut config = member_config_with_redis_surface();
+    config.redis_api.keyspace_events_enabled = true;
+    let (runtime, addr, shutdown_tx, serving) = start_redis_listener(config).await;
+    let client = redis::Client::open(format!("redis://{addr}/")).unwrap();
+    let mut pubsub = client.get_async_pubsub().await.unwrap();
+    pubsub.psubscribe("__key*__:*").await.unwrap();
+
+    let cache = runtime
+        .lock()
+        .expect("server runtime mutex")
+        .cache()
+        .clone();
+    cache
+        .put(
+            "private:backend:42",
+            "not-redis-visible".to_owned(),
+            CacheOptions::new(),
+        )
+        .await
+        .unwrap();
+    assert!(
+        tokio::time::timeout(Duration::from_millis(100), pubsub.on_message().next())
+            .await
+            .is_err()
+    );
+
+    cache
+        .typed::<String>("redis")
+        .put("backend:42", "native-value".to_owned(), CacheOptions::new())
+        .await
+        .unwrap();
+
+    let mut messages = pubsub.on_message();
+    let keyspace = tokio::time::timeout(Duration::from_secs(2), messages.next())
+        .await
+        .expect("native keyspace event timeout")
+        .expect("native keyspace event stream closed");
+    let keyevent = tokio::time::timeout(Duration::from_secs(2), messages.next())
+        .await
+        .expect("native keyevent timeout")
+        .expect("native keyevent stream closed");
+
+    assert_eq!(keyspace.get_channel_name(), "__keyspace@0__:backend:42");
+    assert_eq!(keyspace.get_payload::<String>().unwrap(), "set");
+    assert_eq!(keyevent.get_channel_name(), "__keyevent@0__:set");
+    assert_eq!(keyevent.get_payload::<String>().unwrap(), "backend:42");
+
+    drop(messages);
+    drop(pubsub);
+    drop(shutdown_tx);
+    serving.await.unwrap().unwrap();
+}
+
 #[tokio::test]
 async fn redis_tcp_listener_accepts_real_socket_and_honors_drain_gate() {
     let runtime = Arc::new(Mutex::new(
@@ -837,6 +1074,56 @@ async fn redis_resp_listener_accepts_rediss_auth_and_cache_commands() {
     assert!(output.starts_with("+OK\r\n+PONG\r\n+OK\r\n+OK\r\n+OK\r\n:"));
     assert!(output.contains("\r\n$1\r\nv\r\n+OK\r\n"));
 
+    drop(shutdown_tx);
+    serving.await.unwrap().unwrap();
+}
+
+#[tokio::test]
+async fn authenticated_rediss_subscriber_receives_native_backend_put() {
+    let (mut config, material) = rediss_auth_config("rediss-native-events");
+    config.redis_api.keyspace_events_enabled = true;
+    let (runtime, addr, shutdown_tx, serving) = start_redis_listener(config).await;
+    let connector = rediss_connector(&material.ca_path);
+    let tcp = TcpStream::connect(addr).await.unwrap();
+    let server_name = ServerName::try_from("localhost").unwrap();
+    let mut stream = connector.connect(server_name, tcp).await.unwrap();
+
+    stream
+        .write_all(
+            b"*3\r\n$4\r\nAUTH\r\n$7\r\ndefault\r\n$6\r\nsecret\r\n\
+              *2\r\n$9\r\nSUBSCRIBE\r\n$18\r\n__keyevent@0__:set\r\n",
+        )
+        .await
+        .unwrap();
+    let subscribed = read_until_marker(
+        &mut stream,
+        b"*3\r\n$9\r\nsubscribe\r\n$18\r\n__keyevent@0__:set\r\n:1\r\n",
+    )
+    .await;
+    assert!(subscribed.starts_with(b"+OK\r\n"));
+
+    let cache = runtime
+        .lock()
+        .expect("server runtime mutex")
+        .cache()
+        .clone();
+    cache
+        .typed::<String>("redis")
+        .put("secure-native", "value".to_owned(), CacheOptions::new())
+        .await
+        .unwrap();
+    assert_eq!(
+        read_until_marker(
+            &mut stream,
+            b"*3\r\n$7\r\nmessage\r\n$18\r\n__keyevent@0__:set\r\n$13\r\nsecure-native\r\n",
+        )
+        .await,
+        b"*3\r\n$7\r\nmessage\r\n$18\r\n__keyevent@0__:set\r\n$13\r\nsecure-native\r\n"
+    );
+
+    stream.write_all(b"*1\r\n$4\r\nQUIT\r\n").await.unwrap();
+    assert_eq!(read_until_marker(&mut stream, b"+OK\r\n").await, b"+OK\r\n");
+    drop(stream);
     drop(shutdown_tx);
     serving.await.unwrap().unwrap();
 }

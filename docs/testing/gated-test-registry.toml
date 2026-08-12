@@ -6677,3 +6677,69 @@ platform = "any"
 [gate.command.env]
 HYDRACACHE_RUN_PERF_0671_STAGE = "frozen-candidate"
 HYDRACACHE_PERFORMANCE_0671_MODE = "frozen-candidate"
+
+[[gate]]
+id = "tool.hc2-hosted-admission-068"
+kind = "external_tool"
+source = "crates/xtask/src/client_plane_ci.rs"
+package = "xtask"
+target = "client_plane_ci"
+test = "hosted_scope_does_not_require_the_deferred_fixed_host"
+cfg = ""
+env = "HYDRACACHE_RUN_HC2_HOSTED_RELEASE_068"
+reason = "One exact 0.68 Rust-library candidate, including the Rust HC/2 client crate, must retain passing Linux, pinned Docker interop, and fuzz receipts; Java/Python promotion remains separately fixed-host gated"
+tier = "manual"
+required_features = []
+required_env = ["HYDRACACHE_RUN_HC2_HOSTED_RELEASE_068"]
+required_tools = ["cargo", "git"]
+timeout_seconds = 600
+owner_release = "0.68.0"
+ship_mandatory = true
+artifacts = ["target/test-evidence/0.68/hc2-hosted-admission.json"]
+
+[gate.ci]
+workflow = ".github/workflows/hc2-client-plane.yml"
+job = "hosted-release-admission"
+step = "Refuse incomplete or red hosted 0.68 claim"
+
+[gate.command]
+program = "cargo"
+args = ["run", "-p", "xtask", "--locked", "--", "client-plane-ci-admission", "--receipts", "target/hc2-ci-admission", "--scope", "hosted", "--output", "target/test-evidence/0.68/hc2-hosted-admission.json"]
+cwd = "."
+platform = "any"
+
+[gate.command.env]
+HYDRACACHE_RUN_HC2_HOSTED_RELEASE_068 = "1"
+
+[[gate]]
+id = "tool.hc2-release-admission-068"
+kind = "external_tool"
+source = "crates/xtask/src/client_plane_ci.rs"
+package = "xtask"
+target = "client_plane_ci"
+test = "admission_rejects_missing_or_mixed_lane_receipts"
+cfg = ""
+env = "HYDRACACHE_RUN_HC2_RELEASE_068"
+reason = "One exact Java/Python client-promotion candidate must retain passing Linux, pinned Docker interop, fuzz, and fixed-host soak receipts before external distribution"
+tier = "manual"
+required_features = []
+required_env = ["HYDRACACHE_RUN_HC2_RELEASE_068"]
+required_tools = ["cargo", "git"]
+timeout_seconds = 600
+owner_release = "0.68.0"
+ship_mandatory = false
+artifacts = ["target/test-evidence/0.68/hc2-release-admission.json"]
+
+[gate.ci]
+workflow = ".github/workflows/hc2-client-plane.yml"
+job = "release-admission"
+step = "Refuse incomplete or red HC/2 client promotion"
+
+[gate.command]
+program = "cargo"
+args = ["run", "-p", "xtask", "--locked", "--", "client-plane-ci-admission", "--receipts", "target/hc2-ci-admission", "--scope", "full", "--output", "target/test-evidence/0.68/hc2-release-admission.json"]
+cwd = "."
+platform = "any"
+
+[gate.command.env]
+HYDRACACHE_RUN_HC2_RELEASE_068 = "1"

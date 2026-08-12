@@ -63,6 +63,7 @@ jobs:
             packages=(
               hydracache-client-protocol hydracache-core hydracache-macros
               hydracache-sql-lint hydracache hydracache-client
+              hydracache-client-hc2
               hydracache-cluster-chitchat hydracache-cluster-raft
               hydracache-cluster-transport-axum hydracache-db
               hydracache-observability hydracache-transport-nats
@@ -89,6 +90,7 @@ jobs:
             packages=(
               hydracache-client-protocol hydracache-core hydracache-macros
               hydracache-sql-lint hydracache hydracache-client
+              hydracache-client-hc2
               hydracache-cluster-chitchat hydracache-cluster-raft
               hydracache-cluster-transport-axum hydracache-db
               hydracache-observability hydracache-transport-nats

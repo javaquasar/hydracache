@@ -1,0 +1,93 @@
+{
+  "schema": "hydracache.hc2.fault-replay.v1",
+  "plan": {
+    "schema": "hydracache.hc2.fault-plan.v1",
+    "case_id": "h11-session-loss",
+    "seed": 1592590362,
+    "direction": "client_to_server",
+    "max_buffered_bytes": 1048576,
+    "max_trace_events": 512,
+    "actions": [
+      {
+        "kind": "half_open"
+      },
+      {
+        "kind": "late_delivery",
+        "ticks": 9
+      }
+    ]
+  },
+  "synthetic_input": {
+    "chunk_sizes": [
+      17,
+      31,
+      47,
+      71
+    ]
+  },
+  "trace": {
+    "schema": "hydracache.hc2.fault-trace.v1",
+    "case_id": "h11-session-loss",
+    "seed": 1592590362,
+    "direction": "client_to_server",
+    "input_chunks": 4,
+    "input_bytes": 166,
+    "input_sha256": "38ca9912ae32bad69e7ff75aceab00eea57e3d8f29bfd1bb3d9932fdd3bb3888",
+    "actions": [
+      {
+        "index": 0,
+        "action": {
+          "kind": "half_open"
+        },
+        "chunks_before": 4,
+        "chunks_after": 4,
+        "bytes_before": 166,
+        "bytes_after": 166,
+        "max_delivery_tick": 0,
+        "terminal": "half_open"
+      },
+      {
+        "index": 1,
+        "action": {
+          "kind": "late_delivery",
+          "ticks": 9
+        },
+        "chunks_before": 4,
+        "chunks_after": 4,
+        "bytes_before": 166,
+        "bytes_after": 166,
+        "max_delivery_tick": 9,
+        "terminal": "half_open"
+      }
+    ],
+    "deliveries": [
+      {
+        "sequence": 0,
+        "tick": 9,
+        "len": 17,
+        "sha256": "afff04f8a0f072c27b69e2f31d7046639ed60b3122d3e3991fea2677e8aa4a8d"
+      },
+      {
+        "sequence": 1,
+        "tick": 9,
+        "len": 31,
+        "sha256": "4d0ce5053233dbdb85151889b66531cdf510431b00680ec73cbdb7bf596699f4"
+      },
+      {
+        "sequence": 2,
+        "tick": 9,
+        "len": 47,
+        "sha256": "90514e39c34cafacf0560a2684791b9eb21c51155719b4be3627693f782072de"
+      },
+      {
+        "sequence": 3,
+        "tick": 9,
+        "len": 71,
+        "sha256": "6fdc64a71b9d85c933fa091353003a809714eab07966e0705395019b104fb0e8"
+      }
+    ],
+    "output_bytes": 166,
+    "output_sha256": "38ca9912ae32bad69e7ff75aceab00eea57e3d8f29bfd1bb3d9932fdd3bb3888",
+    "terminal": "half_open"
+  }
+}

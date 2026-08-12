@@ -1,0 +1,110 @@
+{
+  "version": 2,
+  "release": "0.68",
+  "entries": [
+    {
+      "w_item": "W0",
+      "guard": {"file": "crates/xtask/tests/client_release_068.rs", "function": "release_068_client_plane_closure_is_fail_closed"},
+      "canary": {"file": "crates/xtask/tests/client_release_068.rs", "function": "canary_release_068_client_plane_accepts_missing_work_item_evidence"},
+      "guard_command": {"program": "cargo", "args": ["test", "-p", "xtask", "--test", "client_release_068", "--locked", "release_068_client_plane_closure_is_fail_closed", "--", "--nocapture"], "env": {}, "cwd": ".", "platform": "any"},
+      "canary_command": {"program": "cargo", "args": ["test", "-p", "xtask", "--test", "client_release_068", "--locked", "canary_release_068_client_plane_accepts_missing_work_item_evidence", "--", "--nocapture"], "env": {"HYDRACACHE_CANARY_DEFECT": "W0"}, "cwd": ".", "platform": "any"},
+      "defect_id": "hydracache-0.68-W0", "expected_failure": "HC-CANARY-RED:W0", "timeout_seconds": 300, "tier": "fast", "artifacts": ["target/release-evidence/canaries/0.68-W0.json"], "red_evidence": "The transport ADR and executable bake-off remain mandatory closure evidence."
+    },
+    {
+      "w_item": "W1",
+      "guard": {"file": "crates/xtask/tests/client_release_068.rs", "function": "release_068_client_plane_closure_is_fail_closed"},
+      "canary": {"file": "crates/xtask/tests/client_release_068.rs", "function": "canary_release_068_client_plane_accepts_missing_work_item_evidence"},
+      "guard_command": {"program": "cargo", "args": ["test", "-p", "xtask", "--test", "client_release_068", "--locked", "release_068_client_plane_closure_is_fail_closed", "--", "--nocapture"], "env": {}, "cwd": ".", "platform": "any"},
+      "canary_command": {"program": "cargo", "args": ["test", "-p", "xtask", "--test", "client_release_068", "--locked", "canary_release_068_client_plane_accepts_missing_work_item_evidence", "--", "--nocapture"], "env": {"HYDRACACHE_CANARY_DEFECT": "W1"}, "cwd": ".", "platform": "any"},
+      "defect_id": "hydracache-0.68-W1", "expected_failure": "HC-CANARY-RED:W1", "timeout_seconds": 300, "tier": "fast", "artifacts": ["target/release-evidence/canaries/0.68-W1.json"], "red_evidence": "The generation-6 declarative schema remains mandatory closure evidence."
+    },
+    {
+      "w_item": "W2",
+      "guard": {"file": "crates/xtask/tests/client_release_068.rs", "function": "release_068_client_plane_closure_is_fail_closed"},
+      "canary": {"file": "crates/xtask/tests/client_release_068.rs", "function": "canary_release_068_client_plane_accepts_missing_work_item_evidence"},
+      "guard_command": {"program": "cargo", "args": ["test", "-p", "xtask", "--test", "client_release_068", "--locked", "release_068_client_plane_closure_is_fail_closed", "--", "--nocapture"], "env": {}, "cwd": ".", "platform": "any"},
+      "canary_command": {"program": "cargo", "args": ["test", "-p", "xtask", "--test", "client_release_068", "--locked", "canary_release_068_client_plane_accepts_missing_work_item_evidence", "--", "--nocapture"], "env": {"HYDRACACHE_CANARY_DEFECT": "W2"}, "cwd": ".", "platform": "any"},
+      "defect_id": "hydracache-0.68-W2", "expected_failure": "HC-CANARY-RED:W2", "timeout_seconds": 300, "tier": "fast", "artifacts": ["target/release-evidence/canaries/0.68-W2.json"], "red_evidence": "The production listener and connection manager remain mandatory closure evidence."
+    },
+    {
+      "w_item": "W3",
+      "guard": {"file": "crates/xtask/tests/client_release_068.rs", "function": "release_068_client_plane_closure_is_fail_closed"},
+      "canary": {"file": "crates/xtask/tests/client_release_068.rs", "function": "canary_release_068_client_plane_accepts_missing_work_item_evidence"},
+      "guard_command": {"program": "cargo", "args": ["test", "-p", "xtask", "--test", "client_release_068", "--locked", "release_068_client_plane_closure_is_fail_closed", "--", "--nocapture"], "env": {}, "cwd": ".", "platform": "any"},
+      "canary_command": {"program": "cargo", "args": ["test", "-p", "xtask", "--test", "client_release_068", "--locked", "canary_release_068_client_plane_accepts_missing_work_item_evidence", "--", "--nocapture"], "env": {"HYDRACACHE_CANARY_DEFECT": "W3"}, "cwd": ".", "platform": "any"},
+      "defect_id": "hydracache-0.68-W3", "expected_failure": "HC-CANARY-RED:W3", "timeout_seconds": 300, "tier": "fast", "artifacts": ["target/release-evidence/canaries/0.68-W3.json"], "red_evidence": "Invocation idempotency and cancellation remain mandatory closure evidence."
+    },
+    {
+      "w_item": "W4",
+      "guard": {"file": "crates/xtask/tests/client_release_068.rs", "function": "release_068_client_plane_closure_is_fail_closed"},
+      "canary": {"file": "crates/xtask/tests/client_release_068.rs", "function": "canary_release_068_client_plane_accepts_missing_work_item_evidence"},
+      "guard_command": {"program": "cargo", "args": ["test", "-p", "xtask", "--test", "client_release_068", "--locked", "release_068_client_plane_closure_is_fail_closed", "--", "--nocapture"], "env": {}, "cwd": ".", "platform": "any"},
+      "canary_command": {"program": "cargo", "args": ["test", "-p", "xtask", "--test", "client_release_068", "--locked", "canary_release_068_client_plane_accepts_missing_work_item_evidence", "--", "--nocapture"], "env": {"HYDRACACHE_CANARY_DEFECT": "W4"}, "cwd": ".", "platform": "any"},
+      "defect_id": "hydracache-0.68-W4", "expected_failure": "HC-CANARY-RED:W4", "timeout_seconds": 300, "tier": "fast", "artifacts": ["target/release-evidence/canaries/0.68-W4.json"], "red_evidence": "Subscription push and watermark repair remain mandatory closure evidence."
+    },
+    {
+      "w_item": "W5",
+      "guard": {"file": "crates/xtask/tests/client_release_068.rs", "function": "release_068_client_plane_closure_is_fail_closed"},
+      "canary": {"file": "crates/xtask/tests/client_release_068.rs", "function": "canary_release_068_client_plane_accepts_missing_work_item_evidence"},
+      "guard_command": {"program": "cargo", "args": ["test", "-p", "xtask", "--test", "client_release_068", "--locked", "release_068_client_plane_closure_is_fail_closed", "--", "--nocapture"], "env": {}, "cwd": ".", "platform": "any"},
+      "canary_command": {"program": "cargo", "args": ["test", "-p", "xtask", "--test", "client_release_068", "--locked", "canary_release_068_client_plane_accepts_missing_work_item_evidence", "--", "--nocapture"], "env": {"HYDRACACHE_CANARY_DEFECT": "W5"}, "cwd": ".", "platform": "any"},
+      "defect_id": "hydracache-0.68-W5", "expected_failure": "HC-CANARY-RED:W5", "timeout_seconds": 300, "tier": "fast", "artifacts": ["target/release-evidence/canaries/0.68-W5.json"], "red_evidence": "The honest single-endpoint topology contract remains mandatory closure evidence."
+    },
+    {
+      "w_item": "W6",
+      "guard": {"file": "crates/xtask/tests/client_release_068.rs", "function": "release_068_client_plane_closure_is_fail_closed"},
+      "canary": {"file": "crates/xtask/tests/client_release_068.rs", "function": "canary_release_068_client_plane_accepts_missing_work_item_evidence"},
+      "guard_command": {"program": "cargo", "args": ["test", "-p", "xtask", "--test", "client_release_068", "--locked", "release_068_client_plane_closure_is_fail_closed", "--", "--nocapture"], "env": {}, "cwd": ".", "platform": "any"},
+      "canary_command": {"program": "cargo", "args": ["test", "-p", "xtask", "--test", "client_release_068", "--locked", "canary_release_068_client_plane_accepts_missing_work_item_evidence", "--", "--nocapture"], "env": {"HYDRACACHE_CANARY_DEFECT": "W6"}, "cwd": ".", "platform": "any"},
+      "defect_id": "hydracache-0.68-W6", "expected_failure": "HC-CANARY-RED:W6", "timeout_seconds": 300, "tier": "fast", "artifacts": ["target/release-evidence/canaries/0.68-W6.json"], "red_evidence": "Fenced-session loss and heartbeat behavior remain mandatory closure evidence."
+    },
+    {
+      "w_item": "W7",
+      "guard": {"file": "crates/xtask/tests/client_release_068.rs", "function": "release_068_client_plane_closure_is_fail_closed"},
+      "canary": {"file": "crates/xtask/tests/client_release_068.rs", "function": "canary_release_068_client_plane_accepts_missing_work_item_evidence"},
+      "guard_command": {"program": "cargo", "args": ["test", "-p", "xtask", "--test", "client_release_068", "--locked", "release_068_client_plane_closure_is_fail_closed", "--", "--nocapture"], "env": {}, "cwd": ".", "platform": "any"},
+      "canary_command": {"program": "cargo", "args": ["test", "-p", "xtask", "--test", "client_release_068", "--locked", "canary_release_068_client_plane_accepts_missing_work_item_evidence", "--", "--nocapture"], "env": {"HYDRACACHE_CANARY_DEFECT": "W7"}, "cwd": ".", "platform": "any"},
+      "defect_id": "hydracache-0.68-W7", "expected_failure": "HC-CANARY-RED:W7", "timeout_seconds": 300, "tier": "fast", "artifacts": ["target/release-evidence/canaries/0.68-W7.json"], "red_evidence": "Opaque key/value serialization remains mandatory closure evidence."
+    },
+    {
+      "w_item": "W8",
+      "guard": {"file": "crates/xtask/tests/client_release_068.rs", "function": "release_068_client_plane_closure_is_fail_closed"},
+      "canary": {"file": "crates/xtask/tests/client_release_068.rs", "function": "canary_release_068_client_plane_accepts_missing_work_item_evidence"},
+      "guard_command": {"program": "cargo", "args": ["test", "-p", "xtask", "--test", "client_release_068", "--locked", "release_068_client_plane_closure_is_fail_closed", "--", "--nocapture"], "env": {}, "cwd": ".", "platform": "any"},
+      "canary_command": {"program": "cargo", "args": ["test", "-p", "xtask", "--test", "client_release_068", "--locked", "canary_release_068_client_plane_accepts_missing_work_item_evidence", "--", "--nocapture"], "env": {"HYDRACACHE_CANARY_DEFECT": "W8"}, "cwd": ".", "platform": "any"},
+      "defect_id": "hydracache-0.68-W8", "expected_failure": "HC-CANARY-RED:W8", "timeout_seconds": 300, "tier": "fast", "artifacts": ["target/release-evidence/canaries/0.68-W8.json"], "red_evidence": "The independently consumable Java facade remains mandatory closure evidence."
+    },
+    {
+      "w_item": "W9",
+      "guard": {"file": "crates/xtask/tests/client_release_068.rs", "function": "release_068_client_plane_closure_is_fail_closed"},
+      "canary": {"file": "crates/xtask/tests/client_release_068.rs", "function": "canary_release_068_client_plane_accepts_missing_work_item_evidence"},
+      "guard_command": {"program": "cargo", "args": ["test", "-p", "xtask", "--test", "client_release_068", "--locked", "release_068_client_plane_closure_is_fail_closed", "--", "--nocapture"], "env": {}, "cwd": ".", "platform": "any"},
+      "canary_command": {"program": "cargo", "args": ["test", "-p", "xtask", "--test", "client_release_068", "--locked", "canary_release_068_client_plane_accepts_missing_work_item_evidence", "--", "--nocapture"], "env": {"HYDRACACHE_CANARY_DEFECT": "W9"}, "cwd": ".", "platform": "any"},
+      "defect_id": "hydracache-0.68-W9", "expected_failure": "HC-CANARY-RED:W9", "timeout_seconds": 300, "tier": "fast", "artifacts": ["target/release-evidence/canaries/0.68-W9.json"], "red_evidence": "The production Rust and Python SDK surfaces remain mandatory closure evidence."
+    },
+    {
+      "w_item": "W10",
+      "guard": {"file": "crates/xtask/tests/client_release_068.rs", "function": "release_068_client_plane_closure_is_fail_closed"},
+      "canary": {"file": "crates/xtask/tests/client_release_068.rs", "function": "canary_release_068_client_plane_accepts_missing_work_item_evidence"},
+      "guard_command": {"program": "cargo", "args": ["test", "-p", "xtask", "--test", "client_release_068", "--locked", "release_068_client_plane_closure_is_fail_closed", "--", "--nocapture"], "env": {}, "cwd": ".", "platform": "any"},
+      "canary_command": {"program": "cargo", "args": ["test", "-p", "xtask", "--test", "client_release_068", "--locked", "canary_release_068_client_plane_accepts_missing_work_item_evidence", "--", "--nocapture"], "env": {"HYDRACACHE_CANARY_DEFECT": "W10"}, "cwd": ".", "platform": "any"},
+      "defect_id": "hydracache-0.68-W10", "expected_failure": "HC-CANARY-RED:W10", "timeout_seconds": 300, "tier": "fast", "artifacts": ["target/release-evidence/canaries/0.68-W10.json"], "red_evidence": "Security, bounds, observability and privacy evidence remain mandatory."
+    },
+    {
+      "w_item": "W11",
+      "guard": {"file": "crates/xtask/tests/client_release_068.rs", "function": "release_068_client_plane_closure_is_fail_closed"},
+      "canary": {"file": "crates/xtask/tests/client_release_068.rs", "function": "canary_release_068_client_plane_accepts_missing_work_item_evidence"},
+      "guard_command": {"program": "cargo", "args": ["test", "-p", "xtask", "--test", "client_release_068", "--locked", "release_068_client_plane_closure_is_fail_closed", "--", "--nocapture"], "env": {}, "cwd": ".", "platform": "any"},
+      "canary_command": {"program": "cargo", "args": ["test", "-p", "xtask", "--test", "client_release_068", "--locked", "canary_release_068_client_plane_accepts_missing_work_item_evidence", "--", "--nocapture"], "env": {"HYDRACACHE_CANARY_DEFECT": "W11"}, "cwd": ".", "platform": "any"},
+      "defect_id": "hydracache-0.68-W11", "expected_failure": "HC-CANARY-RED:W11", "timeout_seconds": 300, "tier": "fast", "artifacts": ["target/release-evidence/canaries/0.68-W11.json"], "red_evidence": "Deterministic fault, real-process, retained compatibility and fuzz proof remain mandatory."
+    },
+    {
+      "w_item": "W12",
+      "guard": {"file": "crates/xtask/tests/client_release_068.rs", "function": "release_068_client_plane_closure_is_fail_closed"},
+      "canary": {"file": "crates/xtask/tests/client_release_068.rs", "function": "canary_release_068_client_plane_accepts_missing_work_item_evidence"},
+      "guard_command": {"program": "cargo", "args": ["test", "-p", "xtask", "--test", "client_release_068", "--locked", "release_068_client_plane_closure_is_fail_closed", "--", "--nocapture"], "env": {}, "cwd": ".", "platform": "any"},
+      "canary_command": {"program": "cargo", "args": ["test", "-p", "xtask", "--test", "client_release_068", "--locked", "canary_release_068_client_plane_accepts_missing_work_item_evidence", "--", "--nocapture"], "env": {"HYDRACACHE_CANARY_DEFECT": "W12"}, "cwd": ".", "platform": "any"},
+      "defect_id": "hydracache-0.68-W12", "expected_failure": "HC-CANARY-RED:W12", "timeout_seconds": 300, "tier": "fast", "artifacts": ["target/release-evidence/canaries/0.68-W12.json"], "red_evidence": "The exact-candidate admission gate remains mandatory and cannot be replaced by structural CI alone."
+    }
+  ]
+}

@@ -195,6 +195,9 @@ async fn slowloris_and_oversized_frames_fail_loud_without_mutation() {
             accepted_connections: 1,
             commands: 0,
             errors: 1,
+            active_event_subscribers: 0,
+            event_messages: 0,
+            lagged_event_subscribers: 0,
         }
     );
 }

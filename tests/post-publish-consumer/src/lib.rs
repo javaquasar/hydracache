@@ -3,6 +3,9 @@ mod tests {
     use hydracache::{CacheKeyBuilder, CacheOptions, HydraCache, TagSet};
     use hydracache::{ClusterCandidate, ClusterGeneration, InMemoryCluster};
     use hydracache_actuator_axum::HydraCacheActuator;
+    use hydracache_client_hc2::{
+        is_supported_hc2_generation, HC2_GENERATION, HC2_MINIMUM_GENERATION,
+    };
     use hydracache_cluster::HydraCluster;
     use hydracache_cluster_chitchat::{ChitchatDiscovery, ChitchatDiscoveryConfig};
     use hydracache_cluster_raft::RaftMetadataRuntime;
@@ -24,6 +27,14 @@ mod tests {
     struct User {
         id: u64,
         name: String,
+    }
+
+    #[test]
+    fn published_hc2_client_contract_smoke_test() {
+        assert!(is_supported_hc2_generation(HC2_MINIMUM_GENERATION));
+        assert!(is_supported_hc2_generation(HC2_GENERATION));
+        assert!(!is_supported_hc2_generation(HC2_MINIMUM_GENERATION - 1));
+        assert!(!is_supported_hc2_generation(HC2_GENERATION + 1));
     }
 
     #[tokio::test]

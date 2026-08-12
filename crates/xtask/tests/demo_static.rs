@@ -182,6 +182,8 @@ fn demo_static_files_are_wired_to_real_wasm_snapshot() {
         "npx --prefix demo playwright test demo/tests/ui_smoke.spec.js demo/tests/seed_share.spec.js",
     ));
     assert!(workflow.contains("Keep demo artifact local to this workflow"));
+    assert!(workflow
+        .contains("The public GitHub Pages root is owned by .github/workflows/docs-site.yml."));
     assert!(workflow.contains("does not deploy Pages"));
     assert!(workflow.contains("branches:"));
     assert!(workflow.contains("- main"));

@@ -3,7 +3,8 @@
 > **At a glance**
 > - **What:** prove HydraCache's migration and compatibility claims with **other projects' own
 >   evidence**: (W1) execute a curated subset of **Hazelcast's own IMap/FencedLock test suite**
->   against the buildable `0.68` Java facade implementing the `0.52` surface contract - the
+>   against the buildable `0.68` Java source-preview facade implementing the `0.52` surface
+>   contract - the
 >   borrowed-conformance pattern Caffeine uses to run
 >   Guava's cache testlib against itself and Scylla uses for DynamoDB (alternator); (W2) an
 >   embedded-cache semantics conformance set borrowed from the moka/caffeine expectations for the
@@ -17,8 +18,10 @@
 >   possible migration evidence, and each failure is either a real gap or a documented divergence.
 >   Likewise `0.64` W32 proves old **bytes** decode, but never runs an old **client binary**; and
 >   the `0.37`/`0.38` DB track predates the canary/falsifiability discipline entirely.
-> - **After (depends on):** `0.68.0` (generated client plane, live remote subscriptions, and the
->   first buildable Java SDK/facade); also consumes `0.52` (surface contract), `0.49` (legacy
+> - **After (depends on):** `0.68.0` (generated client plane, published Rust HC/2 client, live
+>   remote subscriptions, and the first buildable Java SDK/facade source preview); public Java
+>   migration claims additionally depend on full client-promotion admission and Maven publication.
+>   Also consumes `0.52` (surface contract), `0.49` (legacy
 >   client protocol/SDK), `0.37`/`0.38` (DB track), and the `0.64` governance machinery.
 > - **Unblocks:** a defensible "Hazelcast-migration ready for the claimed subset" statement backed
 >   by Hazelcast's own tests, client-upgrade guidance backed by executed old binaries, and the

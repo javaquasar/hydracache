@@ -1,0 +1,39 @@
+{
+  "schema_version": 1,
+  "supported_runtimes": [
+    {
+      "os": "linux",
+      "arch": "x86_64",
+      "major": 3,
+      "minor": 12
+    },
+    {
+      "os": "windows",
+      "arch": "x86_64",
+      "major": 3,
+      "minor": 13
+    }
+  ],
+  "files": [
+    {
+      "name": "grpcio-1.76.0-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.whl",
+      "bytes": 6573963,
+      "sha256": "980a846182ce88c4f2f7e2c22c56aefd515daeb36149d1c897f83cf57999e0b6"
+    },
+    {
+      "name": "grpcio-1.76.0-cp313-cp313-win_amd64.whl",
+      "bytes": 4702799,
+      "sha256": "f9f7bd5faab55f47231ad8dba7787866b69f5e93bc306e3915606779bbfb4ba8"
+    },
+    {
+      "name": "protobuf-6.33.4-py3-none-any.whl",
+      "bytes": 170532,
+      "sha256": "1fe3730068fcf2e595816a6c34fe66eeedd37d51d0400b72fabc848811fdc1bc"
+    },
+    {
+      "name": "typing_extensions-4.15.0-py3-none-any.whl",
+      "bytes": 44614,
+      "sha256": "f0fa19c6845758ab08074a0cfa8b7aecb71c999ca73d62883bc25cc018c4e548"
+    }
+  ]
+}

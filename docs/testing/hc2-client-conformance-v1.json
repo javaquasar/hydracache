@@ -1,0 +1,88 @@
+{
+  "schema_version": "hydracache.hc2.client-conformance.v1",
+  "protocol_generation": 6,
+  "required_sdks": ["java", "python", "rust"],
+  "scenarios": [
+    {
+      "id": "bounded-clean-close",
+      "semantics": "Clients bound in-flight work and drain owned process resources on close.",
+      "proofs": {
+        "java": {"source": "sdks/java/hydracache-client-hc2/src/test/java/io/hydracache/client/hc2/GrpcHydraCacheClientInteropTest.java", "function": "javaSdkExecutesAgainstTheProductionDaemonAndDrainsCleanly"},
+        "python": {"source": "sdks/python/hydracache-client-hc2/tests/test_async_client.py", "function": "test_data_session_and_clean_close"},
+        "rust": {"source": "crates/hydracache-client-hc2/tests/grpc_process.rs", "function": "rust_sdk_uses_the_real_production_daemon_and_drains_cleanly"}
+      }
+    },
+    {
+      "id": "conditional-mutations",
+      "semantics": "Compare-and-set and remove-if-value preserve the same conditional mutation contract.",
+      "proofs": {
+        "java": {"source": "sdks/java/hydracache-client-hc2/src/test/java/io/hydracache/client/hc2/GrpcHydraCacheClientInteropTest.java", "function": "javaSdkExecutesTheContractAgainstASeparateRustMtlsProcess"},
+        "python": {"source": "sdks/python/hydracache-client-hc2/tests/test_async_client.py", "function": "test_data_session_and_clean_close"},
+        "rust": {"source": "crates/hydracache-client-hc2/tests/grpc_process.rs", "function": "rust_sdk_is_bounded_cancel_safe_and_process_interoperable"}
+      }
+    },
+    {
+      "id": "fenced-lock-ownership",
+      "semantics": "Lock acquisition, renewal, ownership and unlock retain monotonic fencing semantics.",
+      "proofs": {
+        "java": {"source": "sdks/java/hydracache-client-hc2/src/test/java/io/hydracache/client/hc2/GrpcHydraCacheClientInteropTest.java", "function": "javaSdkExecutesTheContractAgainstASeparateRustMtlsProcess"},
+        "python": {"source": "sdks/python/hydracache-client-hc2/tests/test_async_client.py", "function": "test_data_session_and_clean_close"},
+        "rust": {"source": "crates/hydracache-client-hc2/tests/grpc_process.rs", "function": "rust_sdk_is_bounded_cancel_safe_and_process_interoperable"}
+      }
+    },
+    {
+      "id": "generation-handshake",
+      "semantics": "All SDKs negotiate protocol generation 6 over the same bidirectional HC/2 contract.",
+      "proofs": {
+        "java": {"source": "sdks/java/hydracache-client-hc2/src/test/java/io/hydracache/client/hc2/GrpcHydraCacheClientInteropTest.java", "function": "javaSdkExecutesTheContractAgainstASeparateRustMtlsProcess"},
+        "python": {"source": "sdks/python/hydracache-client-hc2/tests/test_async_client.py", "function": "test_data_session_and_clean_close"},
+        "rust": {"source": "crates/hydracache-client-hc2/tests/grpc_process.rs", "function": "rust_sdk_is_bounded_cancel_safe_and_process_interoperable"}
+      }
+    },
+    {
+      "id": "listener-watermark",
+      "semantics": "Subscriptions expose ordered watermarks and retain the resume position.",
+      "proofs": {
+        "java": {"source": "sdks/java/hydracache-client-hc2/src/test/java/io/hydracache/client/hc2/GrpcHydraCacheClientInteropTest.java", "function": "javaSdkExecutesTheContractAgainstASeparateRustMtlsProcess"},
+        "python": {"source": "sdks/python/hydracache-client-hc2/tests/test_async_client.py", "function": "test_reconnect_restores_subscription_from_last_watermark"},
+        "rust": {"source": "crates/hydracache-client-hc2/tests/grpc_process.rs", "function": "rust_sdk_is_bounded_cancel_safe_and_process_interoperable"}
+      }
+    },
+    {
+      "id": "opaque-data-round-trip",
+      "semantics": "Keys and values remain opaque bytes across SET/GET operations.",
+      "proofs": {
+        "java": {"source": "sdks/java/hydracache-client-hc2/src/test/java/io/hydracache/client/hc2/GrpcHydraCacheClientInteropTest.java", "function": "javaSdkExecutesTheContractAgainstASeparateRustMtlsProcess"},
+        "python": {"source": "sdks/python/hydracache-client-hc2/tests/test_async_client.py", "function": "test_data_session_and_clean_close"},
+        "rust": {"source": "crates/hydracache-client-hc2/tests/grpc_process.rs", "function": "rust_sdk_is_bounded_cancel_safe_and_process_interoperable"}
+      }
+    },
+    {
+      "id": "pending-cancellation",
+      "semantics": "Cancellation releases pending capacity and emits an HC/2 cancel frame.",
+      "proofs": {
+        "java": {"source": "sdks/java/hydracache-client-hc2/src/test/java/io/hydracache/client/hc2/GrpcHydraCacheClientInteropTest.java", "function": "javaSdkExecutesTheContractAgainstASeparateRustMtlsProcess"},
+        "python": {"source": "sdks/python/hydracache-client-hc2/tests/test_async_client.py", "function": "test_asyncio_cancellation_releases_pending_and_sends_cancel"},
+        "rust": {"source": "crates/hydracache-client-hc2/tests/grpc_process.rs", "function": "rust_sdk_is_bounded_cancel_safe_and_process_interoperable"}
+      }
+    },
+    {
+      "id": "reconnect-subscription-repair",
+      "semantics": "A reconnect resumes a subscription from the last delivered watermark without duplicate delivery.",
+      "proofs": {
+        "java": {"source": "sdks/java/hydracache-client-hc2/src/test/java/io/hydracache/client/hc2/GrpcHydraCacheClientInteropTest.java", "function": "javaRecoveryReplacesADeadRustProcessRepairsSubscriptionAndLosesSession"},
+        "python": {"source": "sdks/python/hydracache-client-hc2/tests/test_async_client.py", "function": "test_reconnect_restores_subscription_from_last_watermark"},
+        "rust": {"source": "crates/hydracache-client-hc2/tests/reconnect_repair.rs", "function": "reset_reconnects_once_repairs_subscription_dedupes_and_loses_session"}
+      }
+    },
+    {
+      "id": "session-loss-on-reconnect",
+      "semantics": "Connection-scoped fenced sessions are lost, not silently replayed, after reconnect.",
+      "proofs": {
+        "java": {"source": "sdks/java/hydracache-client-hc2/src/test/java/io/hydracache/client/hc2/GrpcHydraCacheClientInteropTest.java", "function": "javaRecoveryReplacesADeadRustProcessRepairsSubscriptionAndLosesSession"},
+        "python": {"source": "sdks/python/hydracache-client-hc2/tests/test_async_client.py", "function": "test_reconnect_restores_subscription_from_last_watermark"},
+        "rust": {"source": "crates/hydracache-client-hc2/tests/reconnect_repair.rs", "function": "reset_reconnects_once_repairs_subscription_dedupes_and_loses_session"}
+      }
+    }
+  ]
+}

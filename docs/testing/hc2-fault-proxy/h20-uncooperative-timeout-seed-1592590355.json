@@ -1,0 +1,68 @@
+{
+  "schema": "hydracache.hc2.fault-replay.v1",
+  "plan": {
+    "schema": "hydracache.hc2.fault-plan.v1",
+    "case_id": "h20-uncooperative-timeout",
+    "seed": 1592590355,
+    "direction": "server_to_client",
+    "max_buffered_bytes": 1048576,
+    "max_trace_events": 512,
+    "actions": [
+      {
+        "kind": "delay",
+        "ticks": 10
+      },
+      {
+        "kind": "block_direction"
+      }
+    ]
+  },
+  "synthetic_input": {
+    "chunk_sizes": [
+      17,
+      31,
+      47,
+      71
+    ]
+  },
+  "trace": {
+    "schema": "hydracache.hc2.fault-trace.v1",
+    "case_id": "h20-uncooperative-timeout",
+    "seed": 1592590355,
+    "direction": "server_to_client",
+    "input_chunks": 4,
+    "input_bytes": 166,
+    "input_sha256": "131d6fa6225008c10d695d442eacaebc9b5552194f5bfd7927ebec014eab3d7a",
+    "actions": [
+      {
+        "index": 0,
+        "action": {
+          "kind": "delay",
+          "ticks": 10
+        },
+        "chunks_before": 4,
+        "chunks_after": 4,
+        "bytes_before": 166,
+        "bytes_after": 166,
+        "max_delivery_tick": 10,
+        "terminal": "open"
+      },
+      {
+        "index": 1,
+        "action": {
+          "kind": "block_direction"
+        },
+        "chunks_before": 4,
+        "chunks_after": 0,
+        "bytes_before": 166,
+        "bytes_after": 0,
+        "max_delivery_tick": 0,
+        "terminal": "blocked"
+      }
+    ],
+    "deliveries": [],
+    "output_bytes": 0,
+    "output_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "terminal": "blocked"
+  }
+}

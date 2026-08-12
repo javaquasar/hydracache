@@ -1,0 +1,436 @@
+name: HC/2 Client Plane Evidence
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+      - master
+    tags:
+      - "v*.*.*"
+  schedule:
+    - cron: "17 4 * * 1"
+  workflow_dispatch:
+    inputs:
+      run_hc2_fuzz:
+        description: "Run the time-boxed HC/2 fuzz lane"
+        required: false
+        default: false
+        type: boolean
+      run_hc2_fixed_host_soak:
+        description: "Run the HC/2 soak lane on the labelled fixed host"
+        required: false
+        default: false
+        type: boolean
+      run_hc2_hosted_admission:
+        description: "Require same-SHA Linux, Docker, and fuzz receipts for the Rust 0.68 release"
+        required: false
+        default: false
+        type: boolean
+      run_hc2_release_admission:
+        description: "Require all four same-SHA receipts before promoting client SDK distributions"
+        required: false
+        default: false
+        type: boolean
+      retain_hc2_daemon_commit:
+        description: "Exact 40-hex commit whose production HC/2 daemon must be retained"
+        required: false
+        default: ""
+        type: string
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: "hc2-client-plane-${{ github.workflow }}-${{ github.ref }}"
+  cancel-in-progress: true
+
+env:
+  HC2_RUST_TOOLCHAIN: "1.94.0"
+  HC2_FUZZ_TOOLCHAIN: "nightly-2026-08-01"
+  HC2_FUZZ_SEED: "220068"
+  HC2_SOAK_ITERATIONS: "12"
+  HC2_INTEROP_IMAGE: "ubuntu:24.04@sha256:561618e2c15bf2397621dd04f96926663a3b5616c189cf7e38db7e82f5c538ea"
+  CARGO_INCREMENTAL: 0
+  CARGO_PROFILE_DEV_DEBUG: 0
+  CARGO_PROFILE_TEST_DEBUG: 0
+
+jobs:
+  retain-production-daemon:
+    name: HC/2 Retain Production Daemon (${{ matrix.platform }})
+    if: >-
+      github.event_name == 'workflow_dispatch'
+      && inputs.retain_hc2_daemon_commit != ''
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: linux-x86_64
+            runner: ubuntu-24.04
+            executable: hydracache-server
+          - platform: windows-x86_64
+            runner: windows-2025
+            executable: hydracache-server.exe
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 30
+    steps:
+      - name: Validate requested producer identity
+        shell: bash
+        env:
+          PRODUCER_COMMIT: ${{ inputs.retain_hc2_daemon_commit }}
+        run: |
+          if [[ ! "$PRODUCER_COMMIT" =~ ^[0-9a-f]{40}$ ]]; then
+            echo "retain_hc2_daemon_commit must be an exact lowercase 40-hex commit" >&2
+            exit 1
+          fi
+      - name: Checkout exact producer
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          ref: ${{ inputs.retain_hc2_daemon_commit }}
+          fetch-depth: 1
+      - name: Refuse checkout drift
+        shell: bash
+        env:
+          PRODUCER_COMMIT: ${{ inputs.retain_hc2_daemon_commit }}
+        run: test "$(git rev-parse HEAD)" = "$PRODUCER_COMMIT"
+      - name: Install pinned Rust
+        uses: dtolnay/rust-toolchain@4360b52568e2003a75bf9bc1d59f33a8e3fc893c
+        with:
+          toolchain: "1.94.0"
+      - name: Build production daemon
+        shell: bash
+        run: cargo build --release -p hydracache-server --bin hydracache-server --locked
+      - name: Create identity-bound archive and receipt
+        shell: bash
+        env:
+          EXECUTABLE: ${{ matrix.executable }}
+          PLATFORM: ${{ matrix.platform }}
+          PRODUCER_COMMIT: ${{ inputs.retain_hc2_daemon_commit }}
+        run: |
+          set -euo pipefail
+          short_commit="${PRODUCER_COMMIT:0:8}"
+          bundle="target/hc2-retained-daemon-${short_commit}-${PLATFORM}"
+          mkdir -p "$bundle/bin"
+          cp "target/release/$EXECUTABLE" "$bundle/bin/$EXECUTABLE"
+          executable_sha256="$(sha256sum "$bundle/bin/$EXECUTABLE" | cut -d' ' -f1)"
+          executable_size="$(wc -c < "$bundle/bin/$EXECUTABLE" | tr -d ' ')"
+          contract_blob="$(git rev-parse HEAD:crates/hydracache-client-hc2/proto/hc2_contract.proto)"
+          producer_tree="$(git rev-parse HEAD^{tree})"
+          printf '%s\n' \
+            "schema_version=hydracache.hc2.retained-daemon.v1" \
+            "producer_commit=$PRODUCER_COMMIT" \
+            "producer_tree=$producer_tree" \
+            "contract_blob=$contract_blob" \
+            "platform=$PLATFORM" \
+            "executable=bin/$EXECUTABLE" \
+            "executable_sha256=$executable_sha256" \
+            "executable_size_bytes=$executable_size" \
+            > "$bundle/receipt.txt"
+          archive="$bundle.tar.gz"
+          tar -czf "$archive" -C target "$(basename "$bundle")"
+          archive_sha256="$(sha256sum "$archive" | cut -d' ' -f1)"
+          archive_size="$(wc -c < "$archive" | tr -d ' ')"
+          printf '%s\n' \
+            "archive=$(basename "$archive")" \
+            "archive_sha256=$archive_sha256" \
+            "archive_size_bytes=$archive_size" \
+            > "$archive.sha256"
+      - name: Upload retained production daemon
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+        with:
+          name: "hc2-retained-daemon-${{ inputs.retain_hc2_daemon_commit }}-${{ matrix.platform }}"
+          path: |
+            target/hc2-retained-daemon-*.tar.gz
+            target/hc2-retained-daemon-*.tar.gz.sha256
+          if-no-files-found: error
+          retention-days: 90
+
+  linux-required:
+    name: HC/2 Linux Required
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - name: Checkout exact candidate
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          fetch-depth: 0
+      - name: Install pinned Rust
+        uses: dtolnay/rust-toolchain@4360b52568e2003a75bf9bc1d59f33a8e3fc893c
+        with:
+          toolchain: "1.94.0"
+          components: rustfmt, clippy
+      - name: Install pinned Java
+        uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961 # v5
+        with:
+          distribution: temurin
+          java-version: "17"
+          cache: maven
+      - name: Install pinned Python
+        uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: "3.12"
+      - name: Validate workflow and generation contract
+        run: |
+          cargo fmt --all -- --check
+          cargo run -p xtask --locked -- client-plane-ci-check
+          cargo run -p xtask --locked -- client-schema-check
+      - name: Validate cross-SDK semantics
+        env:
+          PIP_NO_INDEX: "1"
+          PIP_DISABLE_PIP_VERSION_CHECK: "1"
+        run: cargo run -p xtask --locked -- client-conformance --all-sdks
+      - name: Validate lifecycle and retained replay
+        env:
+          PIP_NO_INDEX: "1"
+          PIP_DISABLE_PIP_VERSION_CHECK: "1"
+        run: cargo run -p xtask --locked -- client-plane-spike-check --runtime-only
+      - name: Validate publishable SDK packages from clean consumers
+        env:
+          PIP_NO_INDEX: "1"
+          PIP_DISABLE_PIP_VERSION_CHECK: "1"
+        run: cargo run -p xtask --locked -- client-package-check
+      - name: Clippy the HC/2 evidence surface
+        run: cargo clippy -p hydracache-client-plane-spike -p hydracache-client-hc2 -p hydracache-server -p xtask --all-targets --locked -- -D warnings
+      - name: Emit Linux receipt
+        run: cargo run -p xtask --locked -- client-plane-ci-receipt --lane linux-required --output target/hc2-ci/linux-required.receipt.json
+      - name: Upload Linux receipt
+        if: always()
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+        with:
+          name: "hc2-linux-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}"
+          path: target/hc2-ci/*.receipt.json
+          if-no-files-found: warn
+          retention-days: 30
+
+  java-sdk-compatibility:
+    name: HC/2 Java SDK (Temurin ${{ matrix.java }})
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        java: ["17", "21"]
+    steps:
+      - name: Checkout exact candidate
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+      - name: Install pinned Java
+        uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961 # v5
+        with:
+          distribution: temurin
+          java-version: ${{ matrix.java }}
+          cache: maven
+      - name: Install pinned Rust for process interoperability
+        uses: dtolnay/rust-toolchain@4360b52568e2003a75bf9bc1d59f33a8e3fc893c
+        with:
+          toolchain: "1.94.0"
+      - name: Build Rust fixtures and verify the native SDK
+        run: cargo run -p xtask --locked -- client-plane-java-sdk-check
+      - name: Verify the external facade consumer
+        run: mvn -B -ntp -f tests/java-hazelcast-facade-consumer/pom.xml verify
+
+  docker-interop:
+    name: HC/2 Docker Interop
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - name: Checkout exact candidate
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          fetch-depth: 0
+      - name: Install pinned receipt toolchain
+        uses: dtolnay/rust-toolchain@4360b52568e2003a75bf9bc1d59f33a8e3fc893c
+        with:
+          toolchain: "1.94.0"
+      - name: Build digest-pinned interop environment
+        run: docker build --pull --file scripts/hc2/Dockerfile.interop --tag hydracache-hc2-interop:${{ github.sha }} .
+      - name: Run Rust, Java, and offline Python process interop in Docker
+        run: |
+          mkdir -p target/hc2-docker
+          docker run --rm \
+            --volume "$PWD:/workspace" \
+            --workdir /workspace \
+            --env CARGO_TARGET_DIR=/workspace/target/hc2-docker \
+            --env HC2_SHARED_TARGET_DIR=target/hc2-docker \
+            hydracache-hc2-interop:${{ github.sha }} \
+            run -p xtask --locked -- client-plane-docker-interop-check 2>&1 | tee target/hc2-ci-docker.log
+      - name: Emit Docker receipt
+        run: cargo run -p xtask --locked -- client-plane-ci-receipt --lane docker-interop --image "$HC2_INTEROP_IMAGE" --output target/hc2-ci/docker-interop.receipt.json
+      - name: Upload Docker receipt and log
+        if: always()
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+        with:
+          name: "hc2-docker-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}"
+          path: |
+            target/hc2-ci/*.receipt.json
+            target/hc2-ci-docker.log
+          if-no-files-found: warn
+          retention-days: 30
+
+  fuzz:
+    name: HC/2 Fuzz Scheduled
+    if: >-
+      github.event_name == 'schedule'
+      || startsWith(github.ref, 'refs/tags/v')
+      || (github.event_name == 'workflow_dispatch'
+          && (inputs.run_hc2_fuzz
+              || inputs.run_hc2_hosted_admission
+              || inputs.run_hc2_release_admission))
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - name: Checkout exact candidate
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+      - name: Install pinned stable Rust for receipts
+        uses: dtolnay/rust-toolchain@4360b52568e2003a75bf9bc1d59f33a8e3fc893c
+        with:
+          toolchain: "1.94.0"
+      - name: Install pinned fuzz toolchain and cargo-fuzz
+        run: |
+          rustup toolchain install "$HC2_FUZZ_TOOLCHAIN"
+          cargo install cargo-fuzz --version 0.13.2 --locked
+      - name: Run bounded HC/2 corpus fuzzing
+        working-directory: fuzz
+        run: |
+          cargo +"$HC2_FUZZ_TOOLCHAIN" fuzz build fuzz_hc2_client_plane
+          set +e
+          timeout --signal=INT --kill-after=10s 180s \
+            cargo +"$HC2_FUZZ_TOOLCHAIN" fuzz run fuzz_hc2_client_plane -- \
+              -seed="$HC2_FUZZ_SEED" -timeout=5 \
+              -error_exitcode=77 -timeout_exitcode=70 \
+            2>&1 | tee ../target/hc2-ci-fuzz.log
+          fuzz_status=${PIPESTATUS[0]}
+          set -e
+          if [[ "$fuzz_status" -ne 0 && "$fuzz_status" -ne 124 ]]; then
+            echo "HC/2 fuzz target failed with status $fuzz_status" >&2
+            exit "$fuzz_status"
+          fi
+          if find artifacts/fuzz_hc2_client_plane -type f -print -quit | grep -q .; then
+            echo "HC/2 fuzz target produced a failure artifact" >&2
+            exit 1
+          fi
+          echo "HC/2 fuzz timebox completed without a failure artifact"
+      - name: Emit fuzz receipt
+        run: cargo +"$HC2_RUST_TOOLCHAIN" run -p xtask --locked -- client-plane-ci-receipt --lane fuzz --seed "$HC2_FUZZ_SEED" --output target/hc2-ci/fuzz.receipt.json
+      - name: Upload fuzz corpus, failures, log, and receipt
+        if: always()
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+        with:
+          name: "hc2-fuzz-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}"
+          path: |
+            fuzz/corpus/fuzz_hc2_client_plane/**
+            fuzz/artifacts/fuzz_hc2_client_plane/**
+            target/hc2-ci-fuzz.log
+            target/hc2-ci/*.receipt.json
+          if-no-files-found: warn
+          retention-days: 30
+
+  fixed-host-soak:
+    name: HC/2 Fixed-host Soak
+    if: >-
+      (github.event_name == 'schedule' && vars.HC2_FIXED_HOST_SOAK_ENABLED == 'true')
+      || (github.event_name == 'workflow_dispatch'
+          && (inputs.run_hc2_fixed_host_soak || inputs.run_hc2_release_admission))
+    runs-on: [self-hosted, linux, x64, hydracache-hc2-soak-v1]
+    timeout-minutes: 90
+    steps:
+      - name: Checkout exact candidate
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          fetch-depth: 0
+      - name: Install pinned Rust
+        uses: dtolnay/rust-toolchain@4360b52568e2003a75bf9bc1d59f33a8e3fc893c
+        with:
+          toolchain: "1.94.0"
+      - name: Verify fixed-host contract and capture metadata
+        env:
+          HC2_FIXED_HOST_PROFILE: hc2-fixed-soak-v1
+        run: scripts/hc2/verify-fixed-host.sh --output target/hc2-ci/fixed-host-metadata.log
+      - name: Run bounded lifecycle soak
+        run: |
+          set -o pipefail
+          for iteration in $(seq 1 "$HC2_SOAK_ITERATIONS"); do
+            echo "hc2-soak-iteration=$iteration"
+            cargo test -p hydracache-client-plane-spike --locked --test grpc_bidirectional_loopback --test fault_proxy --test http2_drain_faults --test observability_contract
+          done 2>&1 | tee target/hc2-ci/fixed-host-soak.log
+      - name: Emit fixed-host receipt
+        run: cargo run -p xtask --locked -- client-plane-ci-receipt --lane fixed-host-soak --iterations "$HC2_SOAK_ITERATIONS" --output target/hc2-ci/fixed-host-soak.receipt.json
+      - name: Upload fixed-host metadata, log, and receipt
+        if: always()
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+        with:
+          name: "hc2-soak-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}"
+          path: target/hc2-ci/**
+          if-no-files-found: warn
+          retention-days: 30
+
+  hosted-release-admission:
+    name: HC/2 Hosted Release Admission
+    if: >-
+      always()
+      && (startsWith(github.ref, 'refs/tags/v')
+          || (github.event_name == 'workflow_dispatch'
+              && (inputs.run_hc2_hosted_admission || inputs.run_hc2_release_admission)))
+    needs: [linux-required, docker-interop, fuzz]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Checkout exact candidate
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+      - name: Install pinned Rust
+        uses: dtolnay/rust-toolchain@4360b52568e2003a75bf9bc1d59f33a8e3fc893c
+        with:
+          toolchain: "1.94.0"
+      - name: Download same-run HC/2 receipts
+        uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v5
+        with:
+          pattern: "hc2-*-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}"
+          path: target/hc2-ci-admission
+          merge-multiple: true
+      - name: Refuse incomplete or red hosted 0.68 claim
+        run: cargo run -p xtask --locked -- evidence-run --release 0.68 --gate tool.hc2-hosted-admission-068
+      - name: Upload hosted release-admission evidence
+        if: always()
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+        with:
+          name: "hc2-hosted-admission-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}"
+          path: |
+            target/test-evidence/0.68/hc2-hosted-admission.json
+            target/release-evidence/**
+          if-no-files-found: error
+          retention-days: 30
+
+  release-admission:
+    name: HC/2 Client Promotion Admission
+    if: >-
+      always()
+      && github.event_name == 'workflow_dispatch'
+      && inputs.run_hc2_release_admission
+    needs: [linux-required, docker-interop, fuzz, fixed-host-soak]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Checkout exact candidate
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+      - name: Install pinned Rust
+        uses: dtolnay/rust-toolchain@4360b52568e2003a75bf9bc1d59f33a8e3fc893c
+        with:
+          toolchain: "1.94.0"
+      - name: Download same-run HC/2 receipts
+        uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v5
+        with:
+          pattern: "hc2-*-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}"
+          path: target/hc2-ci-admission
+          merge-multiple: true
+      - name: Refuse incomplete or red HC/2 client promotion
+        run: cargo run -p xtask --locked -- evidence-run --release 0.68 --gate tool.hc2-release-admission-068
+      - name: Upload client-promotion evidence
+        if: always()
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+        with:
+          name: "hc2-client-promotion-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}"
+          path: |
+            target/test-evidence/0.68/hc2-release-admission.json
+            target/release-evidence/**
+          if-no-files-found: error
+          retention-days: 30

@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+package hydracache.client.v2;
+
+option java_package = "io.hydracache.client.v2.spike";
+option java_multiple_files = true;
+
+// Minimal W0 envelope only. W1 owns the production declarative schema.
+message SpikeEnvelope {
+  uint32 generation = 1;
+  uint32 kind = 2;
+  uint64 correlation_id = 3;
+  bytes payload = 4;
+}
+
+service ClientPlaneSpike {
+  rpc Open(stream SpikeEnvelope) returns (stream SpikeEnvelope);
+}

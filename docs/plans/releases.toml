@@ -286,20 +286,20 @@ depends_on = ["0.66.0"]
 [[release]]
 version = "0.67.1"
 file = "docs/plans/V0_67_1_DEDICATED_PERFORMANCE_REFERENCE_BOOTSTRAP_PLAN.md"
-status = "planned"
+status = "in-progress"
 networked_control_plane = true
 work_items = ["W0", "W1", "W2", "W3", "W4", "W5", "W6", "W7"]
-theme = "Dedicated Performance Reference Bootstrap - qualify one protected non-shared bare-metal runner, harden machine attestation and fingerprinting so a VM or SMT-sibling cpuset cannot impersonate the reference host, collect at least five stable pre-candidate main runs from one fingerprint/contract family, independently review immutable anchor/rolling baseline/budgets, activate reference-v1 without candidate self-baselining, close TD-0013, and pass the full frozen-candidate core/RESP-plus-Redis/control-plane/budget/aggregate reference pipeline. Evidence/bootstrap only: no product optimization or surface change; 0.67.0 remains historically shipped without numerical claims, and 0.67.1 numbers remain narrowly scoped to their runner/scenario/method."
+theme = "Dedicated Performance Reference Bootstrap - implementation and orchestration hardening are complete, while authoritative bare-metal qualification is explicitly deferred until suitable rented hardware is available. The unchanged evidence campaign must still qualify one protected non-shared bare-metal runner, collect at least five stable pre-candidate main runs from one fingerprint/contract family, independently review immutable anchor/rolling baseline/budgets, activate reference-v1 without candidate self-baselining, close TD-0013, and pass the full frozen-candidate pipeline. No failed run, numerical claim, product optimization, or surface change is promoted."
 depends_on = ["0.67.0"]
 
 [[release]]
 version = "0.68.0"
 file = "docs/plans/V0_68_GENERATED_CLIENT_PLANE_FOUNDATION_PLAN.md"
-status = "planned"
+status = "in-progress"
 networked_control_plane = true
 work_items = ["W0", "W1", "W2", "W3", "W4", "W5", "W6", "W7", "W8", "W9", "W10", "W11", "W12"]
-theme = "Generated Client Plane Foundation - replace the request/response-only external-client prototype with a real connection-oriented client plane before external adoption hardens compatibility debt. W0 compares dedicated TCP/TLS, bidirectional HTTP/2, and gRPC with one executable harness and records the selected HC/2 transport in an ADR. W1 adds a declarative schema and reproducible Rust/Java/Python codecs/golden corpus. W2-W3 implement authenticated connection ownership, multiplexed invocation, cancellation, retry, deadline, and idempotency. W4 turns modeled SubscribeEntryEvents acknowledgement into bounded live server push with gap detection, watermark repair, disconnect cleanup, and reconnect re-registration. W5 keeps an honest single-endpoint topology mode while reserving future epoch-validated routing. W6 adds explicit fenced-lock sessions/heartbeat/session-loss. W7 fixes opaque value/key serialization boundaries. W8-W9 ship buildable Java plus Hazelcast-shaped facade and production Rust/Python HC/2 SDKs. W10-W12 cover security/resource bounds, observability, DST/real-process/fuzz/canary proof, HC/1 v1-v4 coexistence, compatibility registration, and exact-candidate governance. Borrows Hazelcast connection/invocation/listener/topology/session separation and generated codecs, Redis push/slow-client discipline, Scylla connection-owned events, and TigerBeetle bounded client identity/inflight methods; does not implement Hazelcast member protocol, full CP, smart routing, or a Hazelcast wire claim."
-depends_on = ["0.67.1"]
+theme = "Generated Client Plane Foundation - release the Rust 0.68 library set, including the Rust HC/2 client crate, from one exact candidate after hosted Linux, digest-pinned Docker interop, fuzz, package, conformance, canary, and normal CI evidence. The generated Java and Python clients remain tested source previews and are not published to Maven or PyPI; their later external promotion retains the labelled Ubuntu 24.04 fixed-host soak. The accepted HC/2 design provides generated schemas, bounded connection/invocation/listener/topology/session machinery, Redis event integration, security/resource bounds, observability, compatibility fixtures, and fail-closed governance without Hazelcast wire/full-CP/smart-routing claims or numerical performance claims. The deferred 0.67.1 evidence campaign remains in-progress and is not a code dependency for this release."
+depends_on = ["0.67.0"]
 
 [[release]]
 version = "0.69.0"

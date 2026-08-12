@@ -5,6 +5,8 @@ members = [
     "crates/hydracache",
     "crates/hydracache-actuator-axum",
     "crates/hydracache-client",
+    "crates/hydracache-client-hc2",
+    "crates/hydracache-client-plane-spike",
     "crates/hydracache-client-protocol",
     "crates/hydracache-client-transport-axum",
     "crates/hydracache-cluster",
@@ -60,8 +62,10 @@ bytes = "1.11.1"
 chitchat = "0.11.0"
 criterion = { version = "0.8", features = ["async_tokio"] }
 diesel = { version = "2.3.10", default-features = false }
+ed25519-dalek = "2.2.0"
 futures-util = "0.3.32"
 hdrhistogram = { version = "7.5.4", default-features = false }
+h2 = "0.4.13"
 jsonschema = { version = "0.48.1", default-features = false }
 http = "1"
 hydracache-core = { path = "crates/hydracache-core", version = "0.67.0" }
@@ -70,6 +74,8 @@ hydracache-cache-sim = { path = "crates/hydracache-cache-sim", version = "0.67.0
 hydracache-actuator-axum = { path = "crates/hydracache-actuator-axum", version = "0.67.0" }
 hydracache-cdc-postgres = { path = "crates/hydracache-cdc-postgres", version = "0.67.0" }
 hydracache-client = { path = "crates/hydracache-client", version = "0.67.0" }
+hydracache-client-hc2 = { path = "crates/hydracache-client-hc2", version = "0.67.0" }
+hydracache-client-plane-spike = { path = "crates/hydracache-client-plane-spike", version = "0.67.0" }
 hydracache-client-protocol = { path = "crates/hydracache-client-protocol", version = "0.67.0" }
 hydracache-client-transport-axum = { path = "crates/hydracache-client-transport-axum", version = "0.67.0" }
 hydracache-cluster = { path = "crates/hydracache-cluster", version = "0.67.0" }
@@ -96,6 +102,8 @@ kube = { version = "4.0.0", default-features = false, features = ["client", "der
 loom = "0.7.2"
 moka = { version = "0.12.15", features = ["future"] }
 postcard = { version = "1.1.3", features = ["alloc"] }
+prost = "0.14.4"
+prost-types = "0.14.4"
 proc-macro-crate = "3"
 proc-macro2 = "1"
 protobuf = "2.28.0"
@@ -126,7 +134,10 @@ testcontainers-modules = { version = "0.15.0", features = ["postgres", "redis", 
 thiserror = "2.0.18"
 tokio = { version = "1.52.3", features = ["io-util", "macros", "net", "rt-multi-thread", "sync", "time"] }
 tokio-rustls = "0.26.4"
-tokio-stream = "0.1"
+tokio-stream = { version = "0.1", features = ["net"] }
+tonic = { version = "0.14.6", features = ["tls-ring"] }
+tonic-prost = "0.14.6"
+tonic-prost-build = "0.14.6"
 toml = "1"
 tower = { version = "0.5", features = ["util"] }
 trybuild = "1"

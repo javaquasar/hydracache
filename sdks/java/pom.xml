@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>io.hydracache</groupId>
+  <artifactId>hydracache-java-sdks</artifactId>
+  <version>0.68.0-alpha.1-SNAPSHOT</version>
+  <packaging>pom</packaging>
+  <name>HydraCache Java SDKs</name>
+
+  <modules>
+    <module>hydracache-client-hc2</module>
+    <module>hydracache-hazelcast-facade</module>
+  </modules>
+
+  <properties>
+    <maven.compiler.release>17</maven.compiler.release>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+  </properties>
+</project>

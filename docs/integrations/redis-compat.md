@@ -21,6 +21,11 @@ and expect Redis-style cross-endpoint key visibility or lock mutual exclusion.
 For implementation-level boundaries and translation notes, see
 [`redis-api-implementation-notes.md`](redis-api-implementation-notes.md).
 
+The 0.68 draft adds an off-by-default Redis keyspace-notification listener over
+the same verified dispatch state. Its exact at-most-once, node-local, bounded
+contract and non-goals are documented in
+[`redis-keyspace-event-listener.md`](redis-keyspace-event-listener.md).
+
 The executable contract is
 [`redis_compat_conformance.json`](redis_compat_conformance.json). That manifest is
 the source of truth for the docs matrix, translator tests, real Redis oracle
@@ -66,6 +71,7 @@ atomic ordering against a concurrent write.
 | `AUTH`, `HELLO 2 AUTH` | `supported_with_caveat` | normalized error | Supported for auth-required listeners with Redis-shaped `NOAUTH`/`WRONGPASS`/`OK`, credential redaction, hardened password comparison, and connection-local authenticated state. Redis ACL categories are not implemented by this row. |
 | `rediss://` listener TLS | `supported_with_caveat` | normalized error | Native Redis TLS is supported for the RESP listener when explicitly enabled and backed by server TLS certificate/key material. TLS protects transport; Redis `AUTH` remains the application-layer gate. |
 | `CLIENT SETNAME`, `CLIENT SETINFO` | `supported_with_caveat` | normalized error/metadata | Accepted only as bounded, side-effect-free connection metadata. |
+| `SUBSCRIBE`, `UNSUBSCRIBE`, `PSUBSCRIBE`, `PUNSUBSCRIBE` | `supported_with_caveat` | exact subscription/message shapes | Off-by-default keyspace notifications only: `__keyspace@0__:*` and `__keyevent@0__:*` for `set`, `del`, `expire`, and `persist`. Subscription state is bounded by unique count and retained bytes. Delivery is node-local and at-most-once; arbitrary Pub/Sub and `PUBLISH` are not implemented. |
 | `GET`, bare `SET`, `MGET`, `DEL`, `EXISTS` | `supported` | exact | Counts, nils, and ordering must match real Redis. Bare `SET` means no conditional, return-old-value, retention, or absolute-expiry options. |
 | `MSET` | `supported` | exact | Atomic batch write through `ClientSurfaceState`; duplicate keys use Redis last-value-wins ordering. |
 | `SET EX/PX`, `SETEX`, `PSETEX`, `EXPIRE`, `PEXPIRE`, `TTL`, `PTTL`, `PERSIST` | `supported` | bounded TTL tolerance | Backed by `hydracache-client-protocol` v3 TTL metadata and client-surface expiry enforcement. `SETEX`/`PSETEX` are normalized to the same `SET EX/PX` path used by mainstream clients such as Jedis. |
@@ -120,6 +126,15 @@ ecosystem/oracle proof is still pending.
 Redis Cluster is a documented non-goal rather than a partial implementation.
 `CLUSTER *` commands return a stable unsupported error, and the facade never
 returns topology, hash slot metadata, `MOVED`, or `ASK`.
+
+Redis keyspace notifications are also a deliberately narrow compatibility
+row. They are disabled unless
+`HYDRACACHE_REDIS_KEYSPACE_EVENTS_ENABLED=true`, require authentication before
+subscription on an auth-required listener, and retain a bounded combined count
+of exact channels and patterns per connection. A lagging receiver is
+disconnected loudly instead of blocking writers or silently pretending it has
+a complete history. `PUBLISH`, arbitrary application channels, durable replay,
+values in events, and cross-daemon delivery remain unsupported.
 
 ## Health And Probe Commands
 

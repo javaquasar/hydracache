@@ -1,0 +1,102 @@
+{
+  "schema": "hydracache.hc2.fault-replay.v1",
+  "plan": {
+    "schema": "hydracache.hc2.fault-plan.v1",
+    "case_id": "h03-candidate-duplicate",
+    "seed": 1592590367,
+    "direction": "client_to_server",
+    "max_buffered_bytes": 1048576,
+    "max_trace_events": 512,
+    "actions": [
+      {
+        "kind": "duplicate",
+        "copies": 1
+      }
+    ]
+  },
+  "synthetic_input": {
+    "chunk_sizes": [
+      17,
+      31,
+      47,
+      71
+    ]
+  },
+  "trace": {
+    "schema": "hydracache.hc2.fault-trace.v1",
+    "case_id": "h03-candidate-duplicate",
+    "seed": 1592590367,
+    "direction": "client_to_server",
+    "input_chunks": 4,
+    "input_bytes": 166,
+    "input_sha256": "53103ccf11d38495430c5d67ec78d120c582c9556b0139bb1d6d571e647b751c",
+    "actions": [
+      {
+        "index": 0,
+        "action": {
+          "kind": "duplicate",
+          "copies": 1
+        },
+        "chunks_before": 4,
+        "chunks_after": 8,
+        "bytes_before": 166,
+        "bytes_after": 332,
+        "max_delivery_tick": 0,
+        "terminal": "open"
+      }
+    ],
+    "deliveries": [
+      {
+        "sequence": 0,
+        "tick": 0,
+        "len": 17,
+        "sha256": "6efb5d7bf34748274aac4d89ee544d99e9a1685ca19edb5ca1ecc7bfc311f500"
+      },
+      {
+        "sequence": 1,
+        "tick": 0,
+        "len": 17,
+        "sha256": "6efb5d7bf34748274aac4d89ee544d99e9a1685ca19edb5ca1ecc7bfc311f500"
+      },
+      {
+        "sequence": 2,
+        "tick": 0,
+        "len": 31,
+        "sha256": "b44aca30ec56c1bcf633081339da2b97560f0aa779234c10f3ba26b2aed339e5"
+      },
+      {
+        "sequence": 3,
+        "tick": 0,
+        "len": 31,
+        "sha256": "b44aca30ec56c1bcf633081339da2b97560f0aa779234c10f3ba26b2aed339e5"
+      },
+      {
+        "sequence": 4,
+        "tick": 0,
+        "len": 47,
+        "sha256": "bba6984f6c596bf145dfe482e7a2733c73a1fe79bb1c0231bbee5cc9d8418d1e"
+      },
+      {
+        "sequence": 5,
+        "tick": 0,
+        "len": 47,
+        "sha256": "bba6984f6c596bf145dfe482e7a2733c73a1fe79bb1c0231bbee5cc9d8418d1e"
+      },
+      {
+        "sequence": 6,
+        "tick": 0,
+        "len": 71,
+        "sha256": "889558c45db30795e0dad0e46cd05eb2d39b90085b012cedf5ecd4697425ceef"
+      },
+      {
+        "sequence": 7,
+        "tick": 0,
+        "len": 71,
+        "sha256": "889558c45db30795e0dad0e46cd05eb2d39b90085b012cedf5ecd4697425ceef"
+      }
+    ],
+    "output_bytes": 332,
+    "output_sha256": "1d551efe4e786247e05c6f8451aa433d53875307cb2164ab4b4398660b82fa98",
+    "terminal": "open"
+  }
+}

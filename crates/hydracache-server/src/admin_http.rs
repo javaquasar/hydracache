@@ -5,7 +5,7 @@ use axum::http::header::CONTENT_TYPE;
 use axum::http::{HeaderMap, StatusCode};
 use axum::response::{IntoResponse, Response};
 use axum::routing::{get, post};
-use axum::{Json, Router};
+use axum::{Extension, Json, Router};
 use hydracache_actuator_axum::HydraCacheActuator;
 use hydracache_client_transport_axum::{
     HYDRACACHE_ADMIN_HEADER, HYDRACACHE_CLIENT_ID_HEADER, HYDRACACHE_TENANT_HEADER,
@@ -15,6 +15,7 @@ use thiserror::Error;
 
 use crate::bootstrap::{ServerAdminActionError, ServerRuntime};
 use crate::cluster_status::RaftCompactionError;
+use crate::hc2::Hc2ClientPlaneService;
 use crate::services::DrainOutcome;
 use hydracache_observability::PrometheusExporter;
 
@@ -48,6 +49,7 @@ pub type SharedServerRuntime = Arc<Mutex<ServerRuntime>>;
 #[derive(Debug, Clone)]
 pub struct AdminHttpSurface {
     runtime: SharedServerRuntime,
+    hc2_metrics: Option<Hc2ClientPlaneService>,
 }
 
 impl AdminHttpSurface {
@@ -55,12 +57,23 @@ impl AdminHttpSurface {
     pub fn new(runtime: ServerRuntime) -> Self {
         Self {
             runtime: Arc::new(Mutex::new(runtime)),
+            hc2_metrics: None,
         }
     }
 
     /// Create an admin surface from shared runtime state.
     pub fn from_shared(runtime: SharedServerRuntime) -> Self {
-        Self { runtime }
+        Self {
+            runtime,
+            hc2_metrics: None,
+        }
+    }
+
+    /// Attach the selected production HC/2 listener to the internal metrics
+    /// surface. This does not expose metrics on either public client port.
+    pub fn with_hc2_metrics(mut self, service: Hc2ClientPlaneService) -> Self {
+        self.hc2_metrics = Some(service);
+        self
     }
 
     /// Return shared runtime state for tests and embedding code.
@@ -75,7 +88,7 @@ impl AdminHttpSurface {
             .lock()
             .expect("server runtime mutex")
             .metrics_registry();
-        Router::new()
+        let routes = Router::new()
             .route(ADMIN_HEALTHZ_PATH, get(healthz))
             .route(ADMIN_READYZ_PATH, get(readyz))
             .route(ADMIN_METRICS_PATH, get(metrics))
@@ -97,7 +110,12 @@ impl AdminHttpSurface {
             .nest(
                 ADMIN_ACTUATOR_PATH,
                 HydraCacheActuator::routes_for(actuator_registry),
-            )
+            );
+        if let Some(service) = self.hc2_metrics.clone() {
+            routes.layer(Extension(service))
+        } else {
+            routes
+        }
     }
 }
 
@@ -116,12 +134,18 @@ async fn readyz(State(runtime): State<SharedServerRuntime>) -> Response {
     (status, Json(ready)).into_response()
 }
 
-async fn metrics(State(runtime): State<SharedServerRuntime>) -> Response {
+async fn metrics(
+    State(runtime): State<SharedServerRuntime>,
+    hc2: Option<Extension<Hc2ClientPlaneService>>,
+) -> Response {
     let registry = runtime
         .lock()
         .expect("server runtime mutex")
         .metrics_registry();
-    let text = PrometheusExporter::new(registry).render().await;
+    let mut text = PrometheusExporter::new(registry).render().await;
+    if let Some(Extension(service)) = hc2 {
+        text.push_str(&service.prometheus_metrics());
+    }
     ([(CONTENT_TYPE, "text/plain; version=0.0.4")], text).into_response()
 }
 

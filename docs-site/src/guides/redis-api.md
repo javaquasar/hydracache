@@ -42,6 +42,45 @@ $env:HYDRACACHE_REDIS_REDISS_ENABLED = "true"
 
 HydraCache rejects `rediss` startup without complete TLS material.
 
+Keyspace notifications are a separate off-by-default 0.68 capability:
+
+```powershell
+$env:HYDRACACHE_REDIS_KEYSPACE_EVENTS_ENABLED = "true"
+$env:HYDRACACHE_REDIS_MAX_EVENT_SUBSCRIPTIONS_PER_CONNECTION = "64"
+$env:HYDRACACHE_REDIS_MAX_EVENT_SUBSCRIPTION_BYTES_PER_CONNECTION = "65536"
+```
+
+Use `SUBSCRIBE`/`PSUBSCRIBE` for `__keyspace@0__:*` or
+`__keyevent@0__:*`; use the matching unsubscribe command to release the live
+connection state. Admission is bounded by both unique subscription count and
+retained channel/pattern bytes. The event mode supports only cache-mutation
+notifications, not arbitrary Pub/Sub or `PUBLISH`.
+
+### Observe a native backend write from a Redis client
+
+The server also projects successful native writes into this notification
+stream. Use the native typed namespace named `redis`: its physical
+`redis:<key>` prefix is stripped before the Redis channel is rendered. This
+explicit namespace fence prevents unrelated native cache entries from being
+exposed to Redis subscribers. Values never enter the event message or the RESP
+client-surface store, so a native-write notification does not make Redis `GET`
+return that native value.
+
+This stream is at-most-once. Removing the final subscription releases the
+native receiver, and writes made while no subscription exists are not replayed
+after resubscription. Slow subscribers are disconnected on a detectable gap;
+they must reconnect, resubscribe, and repair state with ordinary reads. RESP/HC2
+and native events retain their own source order, but no global order is claimed
+between those independent sources.
+
+The example below is compiled by the documentation build. It starts the real
+RESP TCP listener, subscribes with `redis-rs`, writes with the ordinary native
+`HydraCache` API, and verifies the received Redis key event.
+
+```rust
+{{#include ../../examples/src/bin/redis_native_put_events.rs:redis-native-put-events}}
+```
+
 ## Supported Shape
 
 The facade targets Redis string/cache-client interoperability:
@@ -50,6 +89,7 @@ The facade targets Redis string/cache-client interoperability:
 - string and key operations such as `GET`, `SET`, `MGET`, `MSET`, `DEL`, and `EXISTS`;
 - TTL operations such as `EXPIRE`, `PEXPIRE`, `PERSIST`, `TTL`, and `PTTL`;
 - lock-oriented `EVAL`, `EVALSHA`, `SCRIPT LOAD`, and `SCRIPT EXISTS` for the supported compare-value lock scripts;
+- bounded `SUBSCRIBE`, `UNSUBSCRIBE`, `PSUBSCRIBE`, and `PUNSUBSCRIBE` for off-by-default keyspace notifications; and
 - HydraCache extension commands such as `HC.STATS`, `HC.DIAGNOSTICS`, `HC.INVALIDATE`, `HC.NAMESPACE`, `HC.TAG`, `HC.SETTAGS`, and `HC.INVALIDATE_TAG`.
 
 Unsupported Redis data structures or broad server features should be treated as outside the facade. For example, hash commands are not the goal of this surface.
@@ -89,6 +129,9 @@ Review these boundaries before enabling the facade:
 - AUTH is optional but should be required for any shared environment.
 - The listener address must not conflict with HTTP, cluster, or admin addresses.
 - Redis keys map into the Redis namespace of the HydraCache client surface.
+- Keyspace notifications are node-local, metadata-only, at-most-once hints. A
+  lagging client is disconnected and must reconnect, resubscribe, and repair
+  state with ordinary reads.
 - Redis clients send bytes, not typed Rust values; typed decoding remains a native API concern.
 
 Use Redis compatibility to meet existing clients where they are. Use HydraCache semantics to decide what should be cached and invalidated.

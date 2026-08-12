@@ -10,6 +10,7 @@ pub mod bootstrap;
 pub mod cluster_status;
 pub mod config;
 mod grid_host;
+pub mod hc2;
 pub mod redis_tcp;
 pub mod services;
 pub mod upgrade;
@@ -31,8 +32,9 @@ pub use cluster_status::{
 };
 pub use config::{
     AdminApiConfig, BackupConfig, ClientApiConfig, ClusterAuthConfig, ClusterStartMode,
-    RedisApiConfig, ServerConfig, ServerConfigError, ServerRole, TlsConfig,
+    Hc2ClientPlaneConfig, RedisApiConfig, ServerConfig, ServerConfigError, ServerRole, TlsConfig,
 };
+pub use hc2::{serve_hc2_listener, Hc2ClientPlaneService, Hc2ListenerTls, Hc2ServeError};
 pub use redis_tcp::{serve_redis_listener, RedisTcpError, RedisTlsAcceptor, RedisTlsError};
 pub use services::{DrainOutcome, GracefulShutdown, ServiceSet};
 pub use upgrade::{

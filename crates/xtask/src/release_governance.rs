@@ -146,6 +146,8 @@ pub fn check(root: &Path, release: &str) -> Result<GovernanceReport, Box<dyn Err
         "canary-sweep --release 0.67 --tier all",
         "canary-sweep --release 0.67.1 --tier fast",
         "canary-sweep --release 0.67.1 --tier all",
+        "canary-sweep --release 0.68 --tier fast",
+        "canary-sweep --release 0.68 --tier all",
     ] {
         if !workflow.contains(required) {
             report
@@ -183,6 +185,10 @@ pub fn publish_workflow_problems(text: &str) -> Vec<String> {
         "status=\"$(crates_io_status \"$package\")\"",
         "429|5??)",
         "if dependency_id in publishable_ids:",
+        "actions/workflows/hc2-client-plane.yml/runs?head_sha=$source_sha",
+        "HC/2 Hosted Release Admission",
+        "for attempt in $(seq 1 30)",
+        "No successful HC/2 Hosted Release Admission exists for 0.68.0",
     ] {
         if !text.contains(required) {
             problems.push(format!(
@@ -204,6 +210,7 @@ pub fn post_publish_contract_problems(workflow: &str, fixture: &str) -> Vec<Stri
     for required in [
         "actions/checkout@v5",
         "tests/post-publish-consumer/src/lib.rs",
+        "hydracache-client-hc2",
     ] {
         if !workflow.contains(required) {
             problems.push(format!(
@@ -216,6 +223,7 @@ pub fn post_publish_contract_problems(workflow: &str, fixture: &str) -> Vec<Stri
         "ownership_diagnostics.resolutions",
         "ownership_diagnostics.no_owner",
         "Vec::from(\"encoded-user\").into()",
+        "is_supported_hc2_generation(HC2_GENERATION)",
         ".diesel_one(||",
         ".sea_one(|| async",
     ] {

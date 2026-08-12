@@ -10,12 +10,18 @@ use std::sync::{Arc, Mutex};
 use std::time::Duration;
 
 use bytes::{Bytes, BytesMut};
+use hydracache::{
+    CacheEvent, CacheEventKind, CacheEventRecvError, CacheEventSubscriber, HydraCache,
+};
 use hydracache_client_protocol::{
     BatchPutEntry, ClientErrorCode, ClientErrorEnvelope, ClientRequest, ClientRequestEnvelope,
     ClientResponse, ClientResponseEnvelope, CompareValueExpireMode, ConditionalPutCondition,
     Namespace, StructuredKey, TtlState,
 };
-use hydracache_client_transport_axum::{ClientIdentity, ClientSurfaceState};
+use hydracache_client_transport_axum::{
+    ClientIdentity, ClientSurfaceMutationEvent, ClientSurfaceMutationKind,
+    ClientSurfaceMutationRecvError, ClientSurfaceMutationSubscriber, ClientSurfaceState,
+};
 use redis_protocol::resp2::{
     decode::decode_bytes as decode_resp2_bytes, encode::extend_encode as extend_encode_resp2,
     types::BytesFrame as Resp2BytesFrame,
@@ -50,6 +56,12 @@ pub const DEFAULT_REDIS_READ_BUFFER_BYTES: usize = 8 * 1024;
 
 /// Default idle timeout for one RESP connection.
 pub const DEFAULT_REDIS_IDLE_TIMEOUT: Duration = Duration::from_secs(60);
+
+/// Default bound for exact plus pattern subscriptions on one RESP connection.
+pub const DEFAULT_REDIS_EVENT_SUBSCRIPTIONS_PER_CONNECTION: usize = 64;
+
+/// Default retained bytes for exact plus pattern subscriptions on one connection.
+pub const DEFAULT_REDIS_EVENT_SUBSCRIPTION_BYTES_PER_CONNECTION: usize = 64 * 1024;
 
 const DEFAULT_REDIS_AUTH_USERNAME: &str = "default";
 const REDIS_NOAUTH_MESSAGE: &str = "NOAUTH Authentication required.";
@@ -185,6 +197,28 @@ impl Default for RespDecodeLimits {
     }
 }
 
+/// Off-by-default Redis keyspace notification policy.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct RedisKeyspaceEventConfig {
+    /// Enable the supported metadata-only keyspace notification subset.
+    pub enabled: bool,
+    /// Maximum exact plus pattern subscriptions retained by one connection.
+    pub max_subscriptions_per_connection: usize,
+    /// Maximum total channel plus pattern bytes retained by one connection.
+    pub max_subscription_bytes_per_connection: usize,
+}
+
+impl Default for RedisKeyspaceEventConfig {
+    fn default() -> Self {
+        Self {
+            enabled: false,
+            max_subscriptions_per_connection: DEFAULT_REDIS_EVENT_SUBSCRIPTIONS_PER_CONNECTION,
+            max_subscription_bytes_per_connection:
+                DEFAULT_REDIS_EVENT_SUBSCRIPTION_BYTES_PER_CONNECTION,
+        }
+    }
+}
+
 /// Listener-level configuration for the Redis RESP edge.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct RedisListenerConfig {
@@ -202,6 +236,8 @@ pub struct RedisListenerConfig {
     pub idle_timeout: Duration,
     /// Optional Redis AUTH policy for this listener.
     pub auth: RedisAuthConfig,
+    /// Redis keyspace notification policy.
+    pub keyspace_events: RedisKeyspaceEventConfig,
 }
 
 impl Default for RedisListenerConfig {
@@ -214,6 +250,7 @@ impl Default for RedisListenerConfig {
             read_buffer_bytes: DEFAULT_REDIS_READ_BUFFER_BYTES,
             idle_timeout: DEFAULT_REDIS_IDLE_TIMEOUT,
             auth: RedisAuthConfig::default(),
+            keyspace_events: RedisKeyspaceEventConfig::default(),
         }
     }
 }
@@ -241,6 +278,16 @@ impl RedisListenerConfig {
         if self.decode_limits.max_bulk_string_bytes == 0 {
             return Err(RedisServeError::Config(
                 "decode_limits.max_bulk_string_bytes must be non-zero",
+            ));
+        }
+        if self.keyspace_events.max_subscriptions_per_connection == 0 {
+            return Err(RedisServeError::Config(
+                "keyspace_events.max_subscriptions_per_connection must be non-zero",
+            ));
+        }
+        if self.keyspace_events.max_subscription_bytes_per_connection == 0 {
+            return Err(RedisServeError::Config(
+                "keyspace_events.max_subscription_bytes_per_connection must be non-zero",
             ));
         }
         RedisTranslationContext::new(self.namespace.clone(), "redis-resp-config")
@@ -354,6 +401,12 @@ pub struct RedisListenerMetrics {
     pub commands: u64,
     /// Decode/translation/encode failures surfaced as RESP errors.
     pub errors: u64,
+    /// RESP connections currently holding at least one event subscription.
+    pub active_event_subscribers: u64,
+    /// Keyspace notification messages written to subscribers.
+    pub event_messages: u64,
+    /// Slow subscribers disconnected after bounded-bus lag.
+    pub lagged_event_subscribers: u64,
 }
 
 /// Parser-neutral Redis command subset.
@@ -385,6 +438,14 @@ pub enum RedisCommand {
     ClientSetInfo { args: Vec<Vec<u8>> },
     /// `COMMAND`.
     Command,
+    /// `SUBSCRIBE channel [channel ...]`.
+    Subscribe { channels: Vec<Vec<u8>> },
+    /// `UNSUBSCRIBE [channel ...]`.
+    Unsubscribe { channels: Vec<Vec<u8>> },
+    /// `PSUBSCRIBE pattern [pattern ...]`.
+    Psubscribe { patterns: Vec<Vec<u8>> },
+    /// `PUNSUBSCRIBE [pattern ...]`.
+    Punsubscribe { patterns: Vec<Vec<u8>> },
     /// `INFO [section]`.
     Info { section: Option<Vec<u8>> },
     /// `SELECT index`.
@@ -506,6 +567,8 @@ pub enum RespValue {
     Array(Vec<RespValue>),
     /// RESP3 map response.
     Map(Vec<(RespValue, RespValue)>),
+    /// Out-of-band push; encoded as an array for RESP2 and a push for RESP3.
+    Push(Vec<RespValue>),
     /// Null bulk response.
     Null,
     /// RESP error response with a stable, redacted message.
@@ -583,6 +646,7 @@ pub enum RedisServeError {
 #[derive(Debug)]
 pub struct RedisRespServer {
     state: Arc<ClientSurfaceState>,
+    native_cache_events: Option<HydraCache>,
     identity: ClientIdentity,
     config: RedisListenerConfig,
     tag_index: Mutex<RedisTagIndex>,
@@ -591,6 +655,9 @@ pub struct RedisRespServer {
     accepted_connections: AtomicU64,
     commands: AtomicU64,
     errors: AtomicU64,
+    active_event_subscribers: AtomicU64,
+    event_messages: AtomicU64,
+    lagged_event_subscribers: AtomicU64,
 }
 
 #[derive(Debug, Clone)]
@@ -598,6 +665,8 @@ struct RedisConnectionState {
     identity: ClientIdentity,
     authenticated: bool,
     dialect: RespDialect,
+    channels: BTreeSet<Vec<u8>>,
+    patterns: BTreeSet<Vec<u8>>,
 }
 
 impl RedisConnectionState {
@@ -606,6 +675,8 @@ impl RedisConnectionState {
             identity: identity.clone(),
             authenticated: !auth.required,
             dialect: RespDialect::Resp2,
+            channels: BTreeSet::new(),
+            patterns: BTreeSet::new(),
         }
     }
 
@@ -614,6 +685,57 @@ impl RedisConnectionState {
             identity: identity.clone(),
             authenticated: true,
             dialect: RespDialect::Resp2,
+            channels: BTreeSet::new(),
+            patterns: BTreeSet::new(),
+        }
+    }
+
+    fn subscription_count(&self) -> usize {
+        self.channels.len().saturating_add(self.patterns.len())
+    }
+
+    fn subscription_bytes(&self) -> usize {
+        self.channels
+            .iter()
+            .chain(&self.patterns)
+            .fold(0usize, |total, value| total.saturating_add(value.len()))
+    }
+
+    fn is_subscribed(&self) -> bool {
+        self.subscription_count() > 0
+    }
+}
+
+struct EventSubscriberCountGuard<'a> {
+    counter: &'a AtomicU64,
+    active: bool,
+}
+
+impl<'a> EventSubscriberCountGuard<'a> {
+    fn new(counter: &'a AtomicU64) -> Self {
+        Self {
+            counter,
+            active: false,
+        }
+    }
+
+    fn set_active(&mut self, active: bool) {
+        if active == self.active {
+            return;
+        }
+        if active {
+            self.counter.fetch_add(1, Ordering::SeqCst);
+        } else {
+            self.counter.fetch_sub(1, Ordering::SeqCst);
+        }
+        self.active = active;
+    }
+}
+
+impl Drop for EventSubscriberCountGuard<'_> {
+    fn drop(&mut self) {
+        if self.active {
+            self.counter.fetch_sub(1, Ordering::SeqCst);
         }
     }
 }
@@ -635,6 +757,7 @@ impl RedisRespServer {
             .map_err(|error| RedisServeError::Identity(error.to_string()))?;
         Ok(Self {
             state,
+            native_cache_events: None,
             identity,
             config,
             tag_index: Mutex::new(RedisTagIndex::default()),
@@ -643,7 +766,22 @@ impl RedisRespServer {
             accepted_connections: AtomicU64::new(0),
             commands: AtomicU64::new(0),
             errors: AtomicU64::new(0),
+            active_event_subscribers: AtomicU64::new(0),
+            event_messages: AtomicU64::new(0),
+            lagged_event_subscribers: AtomicU64::new(0),
         })
+    }
+
+    /// Project key-scoped mutations from one native cache into this listener's
+    /// Redis keyspace notification stream.
+    ///
+    /// The bridge is metadata-only and namespace-fenced. A native physical key
+    /// must begin with `<redis namespace>:` (normally produced by
+    /// `cache.typed("redis")`) before it can be exposed as a Redis key. The
+    /// bridge does not copy values into the RESP client-surface store.
+    pub fn with_native_cache_events(mut self, cache: HydraCache) -> Self {
+        self.native_cache_events = Some(cache);
+        self
     }
 
     /// Return the shared client surface state.
@@ -657,6 +795,9 @@ impl RedisRespServer {
             accepted_connections: self.accepted_connections.load(Ordering::SeqCst),
             commands: self.commands.load(Ordering::SeqCst),
             errors: self.errors.load(Ordering::SeqCst),
+            active_event_subscribers: self.active_event_subscribers.load(Ordering::SeqCst),
+            event_messages: self.event_messages.load(Ordering::SeqCst),
+            lagged_event_subscribers: self.lagged_event_subscribers.load(Ordering::SeqCst),
         }
     }
 
@@ -667,14 +808,61 @@ impl RedisRespServer {
     {
         self.accepted_connections.fetch_add(1, Ordering::SeqCst);
         let mut connection = RedisConnectionState::new(&self.identity, &self.config.auth);
+        let mut mutation_subscriber: Option<ClientSurfaceMutationSubscriber> = None;
+        let mut native_mutation_subscriber: Option<CacheEventSubscriber> = None;
+        let mut subscriber_count = EventSubscriberCountGuard::new(&self.active_event_subscribers);
         let mut buffer = Vec::with_capacity(self.config.read_buffer_bytes);
         let mut read_chunk = vec![0; self.config.read_buffer_bytes];
         loop {
-            let bytes_read =
+            let bytes_read = if connection.is_subscribed() {
+                let subscriber = mutation_subscriber
+                    .as_mut()
+                    .expect("active Redis subscriptions own a mutation receiver");
+                tokio::select! {
+                    result = stream.read(&mut read_chunk) => result?,
+                    event = subscriber.recv() => {
+                        match event {
+                            Ok(event) => {
+                                self.write_keyspace_event(&mut stream, &connection, &event).await?;
+                                continue;
+                            }
+                            Err(ClientSurfaceMutationRecvError::Lagged(_)) => {
+                                self.lagged_event_subscribers.fetch_add(1, Ordering::SeqCst);
+                                self.write_error(
+                                    &mut stream,
+                                    connection.dialect,
+                                    "ERR keyspace event subscriber lagged; reconnect and resubscribe".to_owned(),
+                                ).await?;
+                                return Ok(());
+                            }
+                            Err(ClientSurfaceMutationRecvError::Closed) => return Ok(()),
+                        }
+                    }
+                    event = recv_native_mutation(&mut native_mutation_subscriber) => {
+                        match event {
+                            Ok(event) => {
+                                self.write_native_keyspace_event(&mut stream, &connection, &event).await?;
+                                continue;
+                            }
+                            Err(CacheEventRecvError::Lagged(_)) => {
+                                self.lagged_event_subscribers.fetch_add(1, Ordering::SeqCst);
+                                self.write_error(
+                                    &mut stream,
+                                    connection.dialect,
+                                    "ERR native cache event subscriber lagged; reconnect and resubscribe".to_owned(),
+                                ).await?;
+                                return Ok(());
+                            }
+                            Err(CacheEventRecvError::Closed) => return Ok(()),
+                        }
+                    }
+                }
+            } else {
                 match time::timeout(self.config.idle_timeout, stream.read(&mut read_chunk)).await {
                     Ok(result) => result?,
                     Err(_) => return Ok(()),
-                };
+                }
+            };
             if bytes_read == 0 {
                 return Ok(());
             }
@@ -698,9 +886,42 @@ impl RedisRespServer {
                 buffer.drain(..consumed);
 
                 let should_close = matches!(command, RedisCommand::Quit);
-                let response = self.execute_connection_command(command, &mut connection);
-                self.write_response(&mut stream, connection.dialect, response)
-                    .await?;
+                if self
+                    .handle_subscription_command(
+                        &mut stream,
+                        command.clone(),
+                        &mut connection,
+                        &mut mutation_subscriber,
+                        &mut native_mutation_subscriber,
+                    )
+                    .await?
+                {
+                    subscriber_count.set_active(connection.is_subscribed());
+                    if !connection.is_subscribed() {
+                        mutation_subscriber = None;
+                        native_mutation_subscriber = None;
+                    }
+                } else {
+                    let response = if connection.is_subscribed()
+                        && connection.dialect == RespDialect::Resp2
+                        && !resp2_subscribed_command_allowed(&command)
+                    {
+                        RespValue::Error(
+                            "ERR only (P)SUBSCRIBE / (P)UNSUBSCRIBE / PING / QUIT are allowed in RESP2 subscribed mode"
+                                .to_owned(),
+                        )
+                    } else if connection.is_subscribed() && connection.dialect == RespDialect::Resp2
+                    {
+                        match command {
+                            RedisCommand::Ping { message } => subscription_ping(message),
+                            command => self.execute_connection_command(command, &mut connection),
+                        }
+                    } else {
+                        self.execute_connection_command(command, &mut connection)
+                    };
+                    self.write_response(&mut stream, connection.dialect, response)
+                        .await?;
+                }
                 self.commands.fetch_add(1, Ordering::SeqCst);
                 if should_close {
                     return Ok(());
@@ -713,6 +934,178 @@ impl RedisRespServer {
     pub fn execute_command(&self, command: RedisCommand) -> RespValue {
         let mut connection = RedisConnectionState::trusted(&self.identity);
         self.execute_connection_command(command, &mut connection)
+    }
+
+    async fn handle_subscription_command<S>(
+        &self,
+        stream: &mut S,
+        command: RedisCommand,
+        connection: &mut RedisConnectionState,
+        mutation_subscriber: &mut Option<ClientSurfaceMutationSubscriber>,
+        native_mutation_subscriber: &mut Option<CacheEventSubscriber>,
+    ) -> Result<bool, RedisServeError>
+    where
+        S: AsyncWrite + Unpin,
+    {
+        let (kind, values, subscribe, pattern) = match command {
+            RedisCommand::Subscribe { channels } => ("subscribe", channels, true, false),
+            RedisCommand::Unsubscribe { channels } => ("unsubscribe", channels, false, false),
+            RedisCommand::Psubscribe { patterns } => ("psubscribe", patterns, true, true),
+            RedisCommand::Punsubscribe { patterns } => ("punsubscribe", patterns, false, true),
+            _ => return Ok(false),
+        };
+
+        if self.config.auth.required && !connection.authenticated {
+            self.write_response(
+                stream,
+                connection.dialect,
+                RespValue::Error(REDIS_NOAUTH_MESSAGE.to_owned()),
+            )
+            .await?;
+            return Ok(true);
+        }
+        if !self.config.keyspace_events.enabled {
+            self.write_response(
+                stream,
+                connection.dialect,
+                RespValue::Error("ERR keyspace event listener is disabled".to_owned()),
+            )
+            .await?;
+            return Ok(true);
+        }
+
+        if subscribe {
+            let additions = values
+                .iter()
+                .filter(|value| {
+                    if pattern {
+                        !connection.patterns.contains(*value)
+                    } else {
+                        !connection.channels.contains(*value)
+                    }
+                })
+                .collect::<BTreeSet<_>>();
+            let additional_bytes = additions
+                .iter()
+                .fold(0usize, |total, value| total.saturating_add(value.len()));
+            if connection
+                .subscription_count()
+                .saturating_add(additions.len())
+                > self.config.keyspace_events.max_subscriptions_per_connection
+                || connection
+                    .subscription_bytes()
+                    .saturating_add(additional_bytes)
+                    > self
+                        .config
+                        .keyspace_events
+                        .max_subscription_bytes_per_connection
+            {
+                self.write_response(
+                    stream,
+                    connection.dialect,
+                    RespValue::Error("ERR maximum event subscriptions exceeded".to_owned()),
+                )
+                .await?;
+                return Ok(true);
+            }
+            if mutation_subscriber.is_none() {
+                *mutation_subscriber = Some(
+                    self.state
+                        .subscribe_mutations(&connection.identity)
+                        .map_err(|error| RedisServeError::Identity(error.to_string()))?,
+                );
+                *native_mutation_subscriber = self
+                    .native_cache_events
+                    .as_ref()
+                    .map(HydraCache::subscribe_mutations);
+            }
+            for value in values {
+                if pattern {
+                    connection.patterns.insert(value.clone());
+                } else {
+                    connection.channels.insert(value.clone());
+                }
+                self.write_response(
+                    stream,
+                    connection.dialect,
+                    subscription_ack(kind, Some(value), connection.subscription_count()),
+                )
+                .await?;
+            }
+        } else {
+            let removed = if values.is_empty() {
+                let removed = if pattern {
+                    connection.patterns.iter().cloned().collect::<Vec<_>>()
+                } else {
+                    connection.channels.iter().cloned().collect::<Vec<_>>()
+                };
+                if pattern {
+                    connection.patterns.clear();
+                } else {
+                    connection.channels.clear();
+                }
+                removed
+            } else {
+                values
+            };
+            if removed.is_empty() {
+                self.write_response(
+                    stream,
+                    connection.dialect,
+                    subscription_ack(kind, None, connection.subscription_count()),
+                )
+                .await?;
+            } else {
+                for value in removed {
+                    if pattern {
+                        connection.patterns.remove(&value);
+                    } else {
+                        connection.channels.remove(&value);
+                    }
+                    self.write_response(
+                        stream,
+                        connection.dialect,
+                        subscription_ack(kind, Some(value), connection.subscription_count()),
+                    )
+                    .await?;
+                }
+            }
+        }
+        Ok(true)
+    }
+
+    async fn write_keyspace_event<S>(
+        &self,
+        stream: &mut S,
+        connection: &RedisConnectionState,
+        event: &ClientSurfaceMutationEvent,
+    ) -> Result<(), RedisServeError>
+    where
+        S: AsyncWrite + Unpin,
+    {
+        for message in redis_keyspace_messages(event, &self.config.namespace, connection) {
+            self.write_response(stream, connection.dialect, message)
+                .await?;
+            self.event_messages.fetch_add(1, Ordering::SeqCst);
+        }
+        Ok(())
+    }
+
+    async fn write_native_keyspace_event<S>(
+        &self,
+        stream: &mut S,
+        connection: &RedisConnectionState,
+        event: &CacheEvent,
+    ) -> Result<(), RedisServeError>
+    where
+        S: AsyncWrite + Unpin,
+    {
+        for message in native_redis_keyspace_messages(event, &self.config.namespace, connection) {
+            self.write_response(stream, connection.dialect, message)
+                .await?;
+            self.event_messages.fetch_add(1, Ordering::SeqCst);
+        }
+        Ok(())
     }
 
     fn execute_connection_command(
@@ -1119,6 +1512,10 @@ impl RedisRespServer {
                     | RedisCommand::EvalSha { .. }
                     | RedisCommand::ScriptLoad { .. }
                     | RedisCommand::ScriptExists { .. }
+                    | RedisCommand::Subscribe { .. }
+                    | RedisCommand::Unsubscribe { .. }
+                    | RedisCommand::Psubscribe { .. }
+                    | RedisCommand::Punsubscribe { .. }
                     | RedisCommand::HcStats
                     | RedisCommand::HcDiagnostics
                     | RedisCommand::HcInvalidate { .. }
@@ -1280,6 +1677,232 @@ fn counter_value(value: u64) -> RespValue {
     RespValue::Integer(value.min(i64::MAX as u64) as i64)
 }
 
+fn subscription_ack(kind: &str, value: Option<Vec<u8>>, count: usize) -> RespValue {
+    RespValue::Push(vec![
+        RespValue::BulkString(kind.as_bytes().to_vec()),
+        value.map_or(RespValue::Null, RespValue::BulkString),
+        RespValue::Integer(count.min(i64::MAX as usize) as i64),
+    ])
+}
+
+fn resp2_subscribed_command_allowed(command: &RedisCommand) -> bool {
+    match command {
+        RedisCommand::Ping { .. }
+        | RedisCommand::Quit
+        | RedisCommand::Subscribe { .. }
+        | RedisCommand::Unsubscribe { .. }
+        | RedisCommand::Psubscribe { .. }
+        | RedisCommand::Punsubscribe { .. } => true,
+        RedisCommand::WrongArity { command, .. } => matches!(
+            command.as_str(),
+            "SUBSCRIBE" | "UNSUBSCRIBE" | "PSUBSCRIBE" | "PUNSUBSCRIBE"
+        ),
+        _ => false,
+    }
+}
+
+fn subscription_ping(message: Option<Vec<u8>>) -> RespValue {
+    RespValue::Push(vec![
+        RespValue::BulkString(b"pong".to_vec()),
+        RespValue::BulkString(message.unwrap_or_default()),
+    ])
+}
+
+async fn recv_native_mutation(
+    subscriber: &mut Option<CacheEventSubscriber>,
+) -> Result<CacheEvent, CacheEventRecvError> {
+    match subscriber {
+        Some(subscriber) => subscriber.recv().await,
+        None => std::future::pending().await,
+    }
+}
+
+fn redis_keyspace_messages(
+    event: &ClientSurfaceMutationEvent,
+    namespace: &str,
+    connection: &RedisConnectionState,
+) -> Vec<RespValue> {
+    if event.namespace().as_str() != namespace {
+        return Vec::new();
+    }
+    let Some(key) = event.key().and_then(redis_structured_key_to_bytes) else {
+        return Vec::new();
+    };
+    let event_name: &[u8] = match event.kind() {
+        ClientSurfaceMutationKind::Stored => b"set",
+        ClientSurfaceMutationKind::Removed | ClientSurfaceMutationKind::Invalidated => b"del",
+        ClientSurfaceMutationKind::Expire => b"expire",
+        ClientSurfaceMutationKind::Persist => b"persist",
+        ClientSurfaceMutationKind::NamespaceEvicted => return Vec::new(),
+    };
+
+    redis_keyspace_messages_for_key(&key, event_name, connection)
+}
+
+fn native_redis_keyspace_messages(
+    event: &CacheEvent,
+    namespace: &str,
+    connection: &RedisConnectionState,
+) -> Vec<RespValue> {
+    if event.kind() != CacheEventKind::Stored {
+        return Vec::new();
+    }
+    let Some(key) = event.key() else {
+        return Vec::new();
+    };
+    let namespace_prefix = format!("{namespace}:");
+    let Some(redis_key) = key.strip_prefix(&namespace_prefix) else {
+        return Vec::new();
+    };
+
+    redis_keyspace_messages_for_key(redis_key.as_bytes(), b"set", connection)
+}
+
+fn redis_keyspace_messages_for_key(
+    key: &[u8],
+    event_name: &[u8],
+    connection: &RedisConnectionState,
+) -> Vec<RespValue> {
+    let mut keyspace_channel = b"__keyspace@0__:".to_vec();
+    keyspace_channel.extend_from_slice(key);
+    let mut keyevent_channel = b"__keyevent@0__:".to_vec();
+    keyevent_channel.extend_from_slice(event_name);
+    let publications = [
+        (keyspace_channel, event_name.to_vec()),
+        (keyevent_channel, key.to_vec()),
+    ];
+    let mut messages = Vec::new();
+    for (channel, payload) in publications {
+        if connection.channels.contains(&channel) {
+            messages.push(RespValue::Push(vec![
+                RespValue::BulkString(b"message".to_vec()),
+                RespValue::BulkString(channel.clone()),
+                RespValue::BulkString(payload.clone()),
+            ]));
+        }
+        for pattern in &connection.patterns {
+            if redis_glob_matches(pattern, &channel) {
+                messages.push(RespValue::Push(vec![
+                    RespValue::BulkString(b"pmessage".to_vec()),
+                    RespValue::BulkString(pattern.clone()),
+                    RespValue::BulkString(channel.clone()),
+                    RespValue::BulkString(payload.clone()),
+                ]));
+            }
+        }
+    }
+    messages
+}
+
+fn redis_structured_key_to_bytes(key: &StructuredKey) -> Option<Vec<u8>> {
+    let [segment] = key.segments() else {
+        return None;
+    };
+    if segment == "redis-binary-v1-empty" {
+        return Some(Vec::new());
+    }
+    let encoded = segment.strip_prefix("redis-binary-v1-")?;
+    if encoded.len() % 2 != 0 {
+        return None;
+    }
+    encoded
+        .as_bytes()
+        .chunks_exact(2)
+        .map(|pair| {
+            let high = hex_nibble(pair[0])?;
+            let low = hex_nibble(pair[1])?;
+            Some((high << 4) | low)
+        })
+        .collect()
+}
+
+fn hex_nibble(byte: u8) -> Option<u8> {
+    match byte {
+        b'0'..=b'9' => Some(byte - b'0'),
+        b'a'..=b'f' => Some(byte - b'a' + 10),
+        b'A'..=b'F' => Some(byte - b'A' + 10),
+        _ => None,
+    }
+}
+
+fn redis_glob_matches(pattern: &[u8], value: &[u8]) -> bool {
+    let mut pattern_index = 0usize;
+    let mut value_index = 0usize;
+    let mut star_pattern_index = None;
+    let mut star_value_index = 0usize;
+
+    while value_index < value.len() {
+        let matched_next_pattern = match pattern.get(pattern_index).copied() {
+            Some(b'*') => {
+                star_pattern_index = Some(pattern_index);
+                pattern_index += 1;
+                star_value_index = value_index;
+                continue;
+            }
+            Some(b'?') => Some(pattern_index + 1),
+            Some(b'\\') if pattern_index + 1 < pattern.len() => {
+                (pattern[pattern_index + 1] == value[value_index]).then_some(pattern_index + 2)
+            }
+            Some(b'[') => match glob_class_match(pattern, pattern_index, value[value_index]) {
+                Some((next_pattern, true)) => Some(next_pattern),
+                Some((_, false)) => None,
+                None => (value[value_index] == b'[').then_some(pattern_index + 1),
+            },
+            Some(expected) if expected == value[value_index] => Some(pattern_index + 1),
+            _ => None,
+        };
+
+        if let Some(next_pattern) = matched_next_pattern {
+            pattern_index = next_pattern;
+            value_index += 1;
+            continue;
+        }
+
+        let Some(star) = star_pattern_index else {
+            return false;
+        };
+        star_value_index += 1;
+        value_index = star_value_index;
+        pattern_index = star + 1;
+    }
+
+    while pattern.get(pattern_index) == Some(&b'*') {
+        pattern_index += 1;
+    }
+    pattern_index == pattern.len()
+}
+
+fn glob_class_match(pattern: &[u8], open_index: usize, candidate: u8) -> Option<(usize, bool)> {
+    let mut index = open_index + 1;
+    let negated = matches!(pattern.get(index), Some(b'^' | b'!'));
+    if negated {
+        index += 1;
+    }
+    let mut matched = false;
+    let mut saw_item = false;
+    while index < pattern.len() {
+        if pattern[index] == b']' && saw_item {
+            return Some((index + 1, if negated { !matched } else { matched }));
+        }
+        let start = if pattern[index] == b'\\' && index + 1 < pattern.len() {
+            index += 1;
+            pattern[index]
+        } else {
+            pattern[index]
+        };
+        saw_item = true;
+        if index + 2 < pattern.len() && pattern[index + 1] == b'-' && pattern[index + 2] != b']' {
+            let end = pattern[index + 2];
+            matched |= start <= candidate && candidate <= end;
+            index += 3;
+        } else {
+            matched |= start == candidate;
+            index += 1;
+        }
+    }
+    None
+}
+
 /// Decode one RESP2 command frame.
 pub fn decode_resp2_command(
     input: &[u8],
@@ -1398,6 +2021,12 @@ fn resp_value_to_resp2_frame(value: RespValue) -> Resp2BytesFrame {
                 })
                 .collect::<Vec<_>>(),
         ),
+        RespValue::Push(values) => Resp2BytesFrame::Array(
+            values
+                .into_iter()
+                .map(resp_value_to_resp2_frame)
+                .collect::<Vec<_>>(),
+        ),
         RespValue::Null => Resp2BytesFrame::Null,
         RespValue::Error(value) => Resp2BytesFrame::Error(value.into()),
     }
@@ -1434,6 +2063,10 @@ fn resp_value_to_resp3_frame(value: RespValue) -> Resp3BytesFrame {
                 attributes: None,
             }
         }
+        RespValue::Push(values) => Resp3BytesFrame::Push {
+            data: values.into_iter().map(resp_value_to_resp3_frame).collect(),
+            attributes: None,
+        },
         RespValue::Null => Resp3BytesFrame::Null,
         RespValue::Error(value) => Resp3BytesFrame::SimpleError {
             data: value.into(),
@@ -1885,6 +2518,14 @@ pub fn translate_redis_command(
             RedisTranslatedCommand::Immediate(RespValue::SimpleString("OK"))
         }
         RedisCommand::Command => RedisTranslatedCommand::Immediate(command_metadata_response()),
+        RedisCommand::Subscribe { .. }
+        | RedisCommand::Unsubscribe { .. }
+        | RedisCommand::Psubscribe { .. }
+        | RedisCommand::Punsubscribe { .. } => {
+            return Err(RedisTranslationError::UnsupportedShape {
+                detail: "subscription commands require a live RESP connection",
+            });
+        }
         RedisCommand::Info { .. } => {
             RedisTranslatedCommand::Immediate(info_response(RedisListenerMetrics::default()))
         }
@@ -2860,6 +3501,10 @@ fn command_metadata_response() -> RespValue {
         command_metadata("auth", -2, &["fast"], 0, 0, 0),
         command_metadata("client", -2, &["fast"], 0, 0, 0),
         command_metadata("command", 1, &["readonly", "fast"], 0, 0, 0),
+        command_metadata("subscribe", -2, &["pubsub"], 0, 0, 0),
+        command_metadata("unsubscribe", -1, &["pubsub"], 0, 0, 0),
+        command_metadata("psubscribe", -2, &["pubsub"], 0, 0, 0),
+        command_metadata("punsubscribe", -1, &["pubsub"], 0, 0, 0),
         command_metadata("info", -1, &["readonly", "fast"], 0, 0, 0),
         command_metadata("select", 2, &["fast"], 0, 0, 0),
         command_metadata("type", 2, &["readonly", "fast"], 1, 1, 1),
@@ -2911,12 +3556,15 @@ fn bulk_static(value: &'static str) -> RespValue {
 fn info_response(metrics: RedisListenerMetrics) -> RespValue {
     RespValue::BulkString(
         format!(
-            "# Server\r\nredis_mode:standalone\r\nredis_scope:node-local\r\nrole:master\r\nhydracache_version:{}\r\nhydracache_resp:{}\r\n\r\n# Stats\r\ntotal_connections_received:{}\r\ntotal_commands_processed:{}\r\nhydracache_resp_errors:{}\r\n",
+            "# Server\r\nredis_mode:standalone\r\nredis_scope:node-local\r\nrole:master\r\nhydracache_version:{}\r\nhydracache_resp:{}\r\n\r\n# Stats\r\ntotal_connections_received:{}\r\ntotal_commands_processed:{}\r\nhydracache_resp_errors:{}\r\nhydracache_active_event_subscribers:{}\r\nhydracache_event_messages:{}\r\nhydracache_lagged_event_subscribers:{}\r\n",
             env!("CARGO_PKG_VERSION"),
             SUPPORTED_RESP_DIALECT,
             metrics.accepted_connections,
             metrics.commands,
-            metrics.errors
+            metrics.errors,
+            metrics.active_event_subscribers,
+            metrics.event_messages,
+            metrics.lagged_event_subscribers
         )
         .into_bytes(),
     )
@@ -3026,6 +3674,14 @@ fn command_from_args(mut args: Vec<Vec<u8>>) -> Result<RedisCommand, RedisCompat
         },
         "CLIENT" => parse_client_command(args),
         "COMMAND" => RedisCommand::Command,
+        "SUBSCRIBE" if !args.is_empty() => RedisCommand::Subscribe { channels: args },
+        "PSUBSCRIBE" if !args.is_empty() => RedisCommand::Psubscribe { patterns: args },
+        "UNSUBSCRIBE" => RedisCommand::Unsubscribe { channels: args },
+        "PUNSUBSCRIBE" => RedisCommand::Punsubscribe { patterns: args },
+        "SUBSCRIBE" | "PSUBSCRIBE" => RedisCommand::WrongArity {
+            command: normalized,
+            args,
+        },
         "INFO" if args.len() <= 1 => RedisCommand::Info {
             section: args.into_iter().next(),
         },
@@ -3351,6 +4007,75 @@ mod tests {
                 unit: RedisTtlUnit::Seconds
             }
         );
+    }
+
+    #[test]
+    fn subscription_commands_decode_to_connection_state_commands() {
+        let (subscribe, _) = decode_resp2_command(b"*2\r\n$9\r\nSUBSCRIBE\r\n$2\r\nch\r\n")
+            .unwrap()
+            .unwrap();
+        assert_eq!(
+            subscribe,
+            RedisCommand::Subscribe {
+                channels: vec![b"ch".to_vec()]
+            }
+        );
+
+        let (psubscribe, _) = decode_resp3_command(b"*2\r\n$10\r\nPSUBSCRIBE\r\n$3\r\nch*\r\n")
+            .unwrap()
+            .unwrap();
+        assert_eq!(
+            psubscribe,
+            RedisCommand::Psubscribe {
+                patterns: vec![b"ch*".to_vec()]
+            }
+        );
+
+        let (unsubscribe, _) = decode_resp2_command(b"*1\r\n$11\r\nUNSUBSCRIBE\r\n")
+            .unwrap()
+            .unwrap();
+        assert_eq!(
+            unsubscribe,
+            RedisCommand::Unsubscribe {
+                channels: Vec::new()
+            }
+        );
+
+        let (punsubscribe, _) = decode_resp3_command(b"*1\r\n$12\r\nPUNSUBSCRIBE\r\n")
+            .unwrap()
+            .unwrap();
+        assert_eq!(
+            punsubscribe,
+            RedisCommand::Punsubscribe {
+                patterns: Vec::new()
+            }
+        );
+    }
+
+    #[test]
+    fn subscription_ack_uses_resp2_array_and_resp3_push_frames() {
+        let response = subscription_ack("subscribe", Some(b"channel".to_vec()), 1);
+        assert_eq!(
+            encode_resp2_value(response.clone()).unwrap(),
+            b"*3\r\n$9\r\nsubscribe\r\n$7\r\nchannel\r\n:1\r\n"
+        );
+        assert_eq!(
+            encode_resp3_value(response).unwrap(),
+            b">3\r\n$9\r\nsubscribe\r\n$7\r\nchannel\r\n:1\r\n"
+        );
+    }
+
+    #[test]
+    fn redis_pattern_matching_covers_binary_glob_shapes() {
+        assert!(redis_glob_matches(b"__key*__:*", b"__keyevent@0__:set"));
+        assert!(redis_glob_matches(b"key:[a-c]?", b"key:b1"));
+        assert!(redis_glob_matches(b"key:[^a-c]", b"key:z"));
+        assert!(redis_glob_matches(b"literal\\*", b"literal*"));
+        assert!(redis_glob_matches(b"*a*b", b"xxaayb"));
+        assert!(redis_glob_matches(b"*", b""));
+        assert!(!redis_glob_matches(b"key:[a-c]", b"key:z"));
+        assert!(!redis_glob_matches(b"key:?", b"key:long"));
+        assert!(!redis_glob_matches(b"?", b""));
     }
 
     #[test]
@@ -3693,6 +4418,10 @@ mod tests {
         assert!(names.contains(&"get".to_owned()));
         assert!(names.contains(&"set".to_owned()));
         assert!(names.contains(&"auth".to_owned()));
+        assert!(names.contains(&"subscribe".to_owned()));
+        assert!(names.contains(&"unsubscribe".to_owned()));
+        assert!(names.contains(&"psubscribe".to_owned()));
+        assert!(names.contains(&"punsubscribe".to_owned()));
         assert!(names.contains(&"info".to_owned()));
         assert!(names.contains(&"select".to_owned()));
         assert!(names.contains(&"type".to_owned()));
@@ -5579,6 +6308,9 @@ mod tests {
                 accepted_connections: 1,
                 commands: 4,
                 errors: 0,
+                active_event_subscribers: 0,
+                event_messages: 0,
+                lagged_event_subscribers: 0,
             }
         );
     }
@@ -5609,6 +6341,9 @@ mod tests {
                 accepted_connections: 1,
                 commands: 5,
                 errors: 1,
+                active_event_subscribers: 0,
+                event_messages: 0,
+                lagged_event_subscribers: 0,
             }
         );
     }
@@ -5681,6 +6416,9 @@ mod tests {
                 accepted_connections: 1,
                 commands: 6,
                 errors: 3,
+                active_event_subscribers: 0,
+                event_messages: 0,
+                lagged_event_subscribers: 0,
             }
         );
     }
@@ -6104,6 +6842,10 @@ mod translation_contract {
         ("client-setname", RouteOwner::Translator),
         ("client-setinfo", RouteOwner::Translator),
         ("command", RouteOwner::Translator),
+        ("subscribe-keyspace", RouteOwner::ConnectionState),
+        ("unsubscribe-keyspace", RouteOwner::ConnectionState),
+        ("psubscribe-keyspace", RouteOwner::ConnectionState),
+        ("punsubscribe-keyspace", RouteOwner::ConnectionState),
         ("get", RouteOwner::Translator),
         ("set-bare", RouteOwner::Translator),
         ("mget", RouteOwner::Translator),
@@ -6268,9 +7010,13 @@ mod translation_contract {
 
     fn route_for_command(command: &RedisCommand) -> RouteOwner {
         match command {
-            RedisCommand::Quit | RedisCommand::Hello { .. } | RedisCommand::Auth { .. } => {
-                RouteOwner::ConnectionState
-            }
+            RedisCommand::Quit
+            | RedisCommand::Hello { .. }
+            | RedisCommand::Auth { .. }
+            | RedisCommand::Subscribe { .. }
+            | RedisCommand::Unsubscribe { .. }
+            | RedisCommand::Psubscribe { .. }
+            | RedisCommand::Punsubscribe { .. } => RouteOwner::ConnectionState,
             RedisCommand::ScriptLoad { .. } | RedisCommand::ScriptExists { .. } => {
                 RouteOwner::ListenerCache
             }

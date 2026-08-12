@@ -95,6 +95,38 @@ jobs:
             exit 1
           fi
 
+          if [[ "$version" == "0.68.0" ]]; then
+            hosted_admission=false
+            for attempt in $(seq 1 30); do
+              hc2_runs="$(gh api "repos/$GITHUB_REPOSITORY/actions/workflows/hc2-client-plane.yml/runs?head_sha=$source_sha&status=completed&per_page=100")"
+              mapfile -t hc2_run_ids < <(
+                printf '%s' "$hc2_runs" | jq -r --arg sha "$source_sha" \
+                  '.workflow_runs[] | select(.head_sha == $sha and .conclusion == "success") | .id'
+              )
+              for hc2_run_id in "${hc2_run_ids[@]}"; do
+                if gh api --paginate \
+                  "repos/$GITHUB_REPOSITORY/actions/runs/$hc2_run_id/jobs?per_page=100" \
+                  --jq '.jobs[] | select(.name == "HC/2 Hosted Release Admission" and .conclusion == "success") | .id' \
+                  | grep -q .; then
+                  hosted_admission=true
+                  break
+                fi
+              done
+              if [[ "$hosted_admission" == "true" ]]; then
+                break
+              fi
+              if [[ "$attempt" -lt 30 ]]; then
+                echo "Waiting for HC/2 hosted admission at $source_sha (attempt $attempt/30)."
+                sleep 60
+              fi
+            done
+            if [[ "$hosted_admission" != "true" ]]; then
+              echo "No successful HC/2 Hosted Release Admission exists for 0.68.0 at $source_sha." >&2
+              echo "Java/Python SDK promotion is separate and still requires the deferred fixed-host admission." >&2
+              exit 1
+            fi
+          fi
+
           python - "$version" "$release_tag" "$source_sha" <<'PY'
           import json
           import pathlib

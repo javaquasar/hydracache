@@ -8,14 +8,20 @@ publish = false
 description = "HydraCache repository automation tasks."
 
 [dependencies]
+flate2 = "1.1.2"
 hydracache = { workspace = true, features = ["durable-value-store"] }
+hydracache-client-plane-spike.workspace = true
 hydracache-loadgen.workspace = true
 proc-macro2.workspace = true
+prost.workspace = true
+prost-types.workspace = true
+protoc-bin-vendored = "3.2.0"
 serde.workspace = true
 serde_json.workspace = true
 serde_yaml = "0.9.34"
 sha2.workspace = true
 syn = { version = "2.0", features = ["full", "visit"] }
+tar = "0.4.44"
 time = { version = "0.3.36", features = ["formatting", "parsing"] }
 toml.workspace = true
 

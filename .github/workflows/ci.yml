@@ -149,6 +149,18 @@ jobs:
         with:
           components: rustfmt, clippy
 
+      - name: Install Java for HC/2 generated-language proof
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "17"
+          cache: maven
+
+      - name: Install Python for HC/2 offline generated-language proof
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
       - name: Install Node
         uses: actions/setup-node@v5
         with:
@@ -176,6 +188,12 @@ jobs:
       - name: Check
         run: cargo check --workspace --all-targets --locked
 
+      - name: HC/2 generated Rust, Java, and offline Python proof
+        env:
+          PIP_NO_INDEX: "1"
+          PIP_DISABLE_PIP_VERSION_CHECK: "1"
+        run: cargo run -p xtask --locked -- client-plane-spike-check
+
       - name: Dependency bans
         run: cargo deny check bans
 
@@ -202,6 +220,8 @@ jobs:
           cargo run -p xtask --locked -- canary-sweep --release 0.67 --tier fast
           cargo run -p xtask --locked -- canary-check --release 0.67.1
           cargo run -p xtask --locked -- canary-sweep --release 0.67.1 --tier fast
+          cargo run -p xtask --locked -- canary-check --release 0.68
+          cargo run -p xtask --locked -- canary-sweep --release 0.68 --tier fast
 
       - name: Upload fast canary evidence
         if: always()
@@ -1831,6 +1851,7 @@ jobs:
           cargo run -p xtask --locked -- canary-sweep --release 0.66 --tier all
           cargo run -p xtask --locked -- canary-sweep --release 0.67 --tier all
           cargo run -p xtask --locked -- canary-sweep --release 0.67.1 --tier all
+          cargo run -p xtask --locked -- canary-sweep --release 0.68 --tier all
 
       - name: Run deterministic suite sweep
         run: cargo run -p xtask --locked -- evidence-run --release 0.64 --gate tool.determinism-sweep
