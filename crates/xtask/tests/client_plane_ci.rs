@@ -33,14 +33,25 @@ impl Drop for Scratch {
 fn complete_same_commit_receipts_are_admitted() {
     let scratch = Scratch::new("pass");
     write_all(&scratch.0, COMMIT, None);
-    assert!(admission(&scratch.0, COMMIT).success());
+    assert!(admission(&scratch.0, COMMIT, "full").success());
+}
+
+#[test]
+fn hosted_scope_does_not_require_the_deferred_fixed_host() {
+    let scratch = Scratch::new("hosted-pass");
+    write_all(&scratch.0, COMMIT, Some("fixed-host-soak"));
+    assert!(admission(&scratch.0, COMMIT, "hosted").success());
+
+    let missing_fuzz = Scratch::new("hosted-missing");
+    write_all(&missing_fuzz.0, COMMIT, Some("fuzz"));
+    assert!(!admission(&missing_fuzz.0, COMMIT, "hosted").success());
 }
 
 #[test]
 fn intentional_missing_and_red_canaries_are_rejected() {
     let missing = Scratch::new("missing");
     write_all(&missing.0, COMMIT, Some("fixed-host-soak"));
-    assert!(!admission(&missing.0, COMMIT).success());
+    assert!(!admission(&missing.0, COMMIT, "full").success());
 
     let red = Scratch::new("red");
     write_all(&red.0, COMMIT, None);
@@ -48,7 +59,7 @@ fn intentional_missing_and_red_canaries_are_rejected() {
     let mut receipt: Value = serde_json::from_slice(&fs::read(&path).unwrap()).unwrap();
     receipt["outcome"] = json!("fail");
     fs::write(&path, serde_json::to_vec_pretty(&receipt).unwrap()).unwrap();
-    assert!(!admission(&red.0, COMMIT).success());
+    assert!(!admission(&red.0, COMMIT, "full").success());
 }
 
 #[test]
@@ -59,7 +70,7 @@ fn intentional_mixed_commit_canary_is_rejected() {
     let mut receipt: Value = serde_json::from_slice(&fs::read(&path).unwrap()).unwrap();
     receipt["commit"] = json!("2222222222222222222222222222222222222222");
     fs::write(&path, serde_json::to_vec_pretty(&receipt).unwrap()).unwrap();
-    assert!(!admission(&scratch.0, COMMIT).success());
+    assert!(!admission(&scratch.0, COMMIT, "full").success());
 }
 
 #[test]
@@ -70,7 +81,7 @@ fn intentional_wrong_interop_image_canary_is_rejected() {
     let mut receipt: Value = serde_json::from_slice(&fs::read(&path).unwrap()).unwrap();
     receipt["image"] = json!(format!("ubuntu:24.04@sha256:{}", "a".repeat(64)));
     fs::write(&path, serde_json::to_vec_pretty(&receipt).unwrap()).unwrap();
-    assert!(!admission(&scratch.0, COMMIT).success());
+    assert!(!admission(&scratch.0, COMMIT, "full").success());
 }
 
 fn write_all(directory: &Path, commit: &str, omit: Option<&str>) {
@@ -115,7 +126,7 @@ fn write_all(directory: &Path, commit: &str, omit: Option<&str>) {
     }
 }
 
-fn admission(directory: &Path, commit: &str) -> std::process::ExitStatus {
+fn admission(directory: &Path, commit: &str, scope: &str) -> std::process::ExitStatus {
     Command::new(env!("CARGO_BIN_EXE_xtask"))
         .args([
             "client-plane-ci-admission",
@@ -123,6 +134,8 @@ fn admission(directory: &Path, commit: &str) -> std::process::ExitStatus {
             directory.to_str().unwrap(),
             "--commit",
             commit,
+            "--scope",
+            scope,
         ])
         .current_dir(workspace_root())
         .status()

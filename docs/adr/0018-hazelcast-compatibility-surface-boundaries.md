@@ -131,16 +131,17 @@ implied to be a distributed Hazelcast cluster.
 
 ## The honest gap this ADR records
 
-As of this ADR, the outward Java-facing surface for D1/D2 is largely a
-**contract, not a shipped artifact**: `0.52` ships the migration *contract* +
-facade *surface* as a **Rust-side mapping**; there is **no Maven/Gradle/Java
-module** in the repo, and the Hibernate L2 Java `RegionFactory` is **planned**
-(TD-0005). Therefore:
+As of ADR-0020, the outward Java-facing surface for D1/D2 is a buildable
+**source preview, not a published artifact**. The `0.68` tree contains the Java
+HC/2 client and Hazelcast-shaped facade modules, but `0.68.0` intentionally
+does not publish them to Maven Central. The Hibernate L2 Java `RegionFactory`
+remains planned (TD-0005). Therefore:
 
-- D1 ("drop-in embedded facade") and any borrowed-Hazelcast-suite conformance
-  (e.g. `0.69` W1) are **blocked on shipping the real `0.68` Java artifact** and must not
-  claim a runnable Java facade until it exists. Until then, migration-conformance
-  work targets the Rust-side contract, or is recorded as blocked.
+- D1 ("drop-in embedded facade") distribution and any public
+  borrowed-Hazelcast-suite conformance claim (e.g. `0.69` W1) are **blocked on
+  promoting and publishing the Java artifact** through the full client gate.
+  Repository conformance work may run against the source preview, but it must
+  not claim that users can resolve a released Maven coordinate.
 - The highest-leverage migration enabler is therefore **shipping the Java client +
   facade artifact** (close TD-0005 / the `0.52` Java module), followed by a
   migration-assessment analyzer (scan an app's `com.hazelcast.*` usage against the

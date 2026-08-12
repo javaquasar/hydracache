@@ -64,18 +64,23 @@ replay, packaging, and clippy. The pinned Docker lane supplies an independent
 process/container boundary. Fuzz and labelled fixed-host soak remain distinct
 lanes because hosted correctness cannot impersonate sustained lifecycle proof.
 
-Each lane writes a `hydracache.hc2.ci-receipt.v1` receipt. Release admission
-accepts exactly one receipt for each of `linux-required`, `docker-interop`,
-`fuzz`, and `fixed-host-soak`; all must be green and bind the same full commit.
-The Docker receipt must bind the reviewed image digest. Admission writes
-`target/test-evidence/0.68/hc2-release-admission.json` through the registered
-`tool.hc2-release-admission-068` gate.
+Each lane writes a `hydracache.hc2.ci-receipt.v1` receipt. ADR-0020 defines two
+admission scopes. The Rust 0.68 release (including `hydracache-client-hc2`)
+requires `linux-required`, `docker-interop`, and `fuzz`; all must be green and
+bind the same full commit. It writes
+`target/test-evidence/0.68/hc2-hosted-admission.json` through
+`tool.hc2-hosted-admission-068`. Java/Python registry promotion additionally
+requires `fixed-host-soak` and writes `hc2-release-admission.json` through the
+non-ship-mandatory `tool.hc2-release-admission-068` promotion gate. The Docker
+receipt in either scope must bind the reviewed image digest.
 
 `docs/testing/release-evidence/0.68.toml` maps W0-W12 to implementation sources,
 tests, repository artifacts, fast gates, and the admission gate. Structural
 validation may report every row as implemented before external receipts exist.
 That is intentional. `release-evidence --release 0.68 --require-ship` must stay
-red until exact-commit fast, canary, and H22 admission receipts are present.
+red until exact-commit fast, canary, and hosted admission receipts are present.
+That result authorizes no Maven/PyPI publication; the full scope remains red
+without fixed-host evidence.
 
 ## Reproduction
 
@@ -88,7 +93,8 @@ cargo xtask release-governance-check --release 0.68
 cargo xtask release-evidence --release 0.68
 ```
 
-For a release candidate, execute the H22 workflow on that exact commit and then
-run the final command with its retained receipt directory and `--require-ship`.
-Missing tools, skipped scenarios, mixed commits, a green canary, or a missing
-fixed-host receipt are non-evidence, never a waiver.
+For a Rust release candidate, execute the hosted H22 workflow on that exact
+commit and then run the final command with its retained receipt directory and
+`--require-ship`. Missing tools, skipped hosted scenarios, mixed commits, or a
+green canary are non-evidence. For Java/Python promotion, a missing fixed-host
+receipt is likewise non-evidence and never a waiver.

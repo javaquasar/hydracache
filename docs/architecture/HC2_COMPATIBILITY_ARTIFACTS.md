@@ -29,7 +29,8 @@ The retained set contains:
 
 - the publishable Rust `.crate`, including its normalized manifest, lockfile,
   process test, contract, and Cargo VCS receipt;
-- the Java SDK JAR and its published POM;
+- the Java SDK JAR and packaged POM retained from the source-preview build
+  (this is not evidence of Maven Central publication);
 - Linux and Windows production-daemon archives for protocol generations 5 and
   6;
 - SHA-256, byte length, producer commit/tree, exact protobuf Git blob,

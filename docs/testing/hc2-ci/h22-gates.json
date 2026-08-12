@@ -1,5 +1,5 @@
 {
-  "schema_version": "hydracache.hc2.ci-gates.v1",
+  "schema_version": "hydracache.hc2.ci-gates.v2",
   "workflow": ".github/workflows/hc2-client-plane.yml",
   "artifact_retention_days": 30,
   "rust_toolchain": "1.94.0",
@@ -31,7 +31,8 @@
       "runner": "ubuntu-24.04",
       "trigger": "pull_request,push,tag,schedule,workflow_dispatch",
       "timeout_minutes": 30,
-      "release_required": true
+      "rust_release_required": true,
+      "java_python_promotion_required": true
     },
     {
       "id": "docker-interop",
@@ -39,7 +40,8 @@
       "runner": "ubuntu-24.04",
       "trigger": "pull_request,push,tag,schedule,workflow_dispatch",
       "timeout_minutes": 45,
-      "release_required": true
+      "rust_release_required": true,
+      "java_python_promotion_required": true
     },
     {
       "id": "fuzz",
@@ -47,15 +49,17 @@
       "runner": "ubuntu-24.04",
       "trigger": "tag,schedule,workflow_dispatch",
       "timeout_minutes": 20,
-      "release_required": true
+      "rust_release_required": true,
+      "java_python_promotion_required": true
     },
     {
       "id": "fixed-host-soak",
       "job_name": "HC/2 Fixed-host Soak",
       "runner": "self-hosted,linux,x64,hydracache-hc2-soak-v1",
-      "trigger": "tag,schedule-enabled,workflow_dispatch",
+      "trigger": "schedule-enabled,workflow_dispatch",
       "timeout_minutes": 90,
-      "release_required": true
+      "rust_release_required": false,
+      "java_python_promotion_required": true
     }
   ]
 }

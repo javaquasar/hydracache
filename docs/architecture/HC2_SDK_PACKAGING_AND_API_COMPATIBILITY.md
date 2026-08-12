@@ -2,10 +2,13 @@
 
 ## Purpose
 
-HydraCache 0.68 introduces independently consumable HC/2 SDK artifacts. A
-workspace build is not sufficient evidence that those artifacts can be
-published or consumed. This contract freezes the minimum preview API and
-requires every ecosystem to pass a clean-package consumer proof.
+HydraCache 0.68 introduces independently consumable HC/2 SDK artifacts. The
+Rust `hydracache-client-hc2` crate is part of the publishable `0.68.0` Rust
+distribution. The Java modules and Python wheel remain repository-built source
+previews and are not published to Maven Central or PyPI in this release. A
+workspace build is not sufficient evidence that any of these artifacts can be
+consumed. This contract freezes the minimum preview API and requires every
+ecosystem to pass a clean-package consumer proof.
 
 The authoritative manifest is
 [`../compatibility/hc2-sdk-api-v1.json`](../compatibility/hc2-sdk-api-v1.json).
@@ -43,9 +46,11 @@ performs the following proofs.
 4. `cargo check --offline` proves the packaged crate is sufficient to compile
    the consumer with the already locked dependency supply.
 
-The Rust package currently retains workspace version `0.67.0` because 0.68
-publishing still depends on the unfinished 0.67.1 release. The API manifest
-records that truth; the release-cut commit must update both together.
+The Rust package retains the current workspace version until the isolated
+`0.68.0` release-cut commit. The API manifest records the checkout's exact
+version; the release cut must update the workspace and manifest together. The
+deferred `0.67.1` dedicated qualification does not block this code release and
+does not authorize numerical performance claims.
 
 ### Java JARs
 
@@ -80,14 +85,19 @@ and exported symbol set in isolated Python mode.
 ## CI and release use
 
 The required Linux HC/2 lane runs the complete package gate. A dedicated Java
-matrix gives explicit Java 17/21 evidence. Neither lane publishes artifacts.
-Publication remains prohibited until:
+matrix gives explicit Java 17/21 evidence. Neither lane itself publishes
+artifacts. Publishing the Rust crate remains prohibited until:
 
 - the 0.68 release-evidence manifest accepts all required exact-candidate
   receipts;
 - cross-SDK conformance passes;
 - version and provenance review is complete; and
-- the declared 0.67.1 dependency is complete or formally rescheduled.
+- the exact commit passes the hosted Linux, digest-pinned Docker, and fuzz
+  admission scope.
+
+Publishing the Java or Python clients remains prohibited until the full
+four-lane client-promotion admission, including the fixed-host lane, is green
+and a later release decision changes their preview versions.
 
 Generated-code drift, semantic parity, real-process behavior, and fixed-host
 soak evidence are separate gates. A green package gate must never be presented

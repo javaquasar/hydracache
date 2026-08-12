@@ -12,13 +12,17 @@
 >   lowest-cost point to establish a production client architecture before compatibility debt
 >   hardens. The design borrows proven client-plane methods from Hazelcast, Redis, Scylla/Cassandra,
 >   and TigerBeetle without copying Hazelcast's member protocol or constraining HydraCache's core.
-> - **After (depends on):** `0.67.1`; consumes the `0.49` client contract, `0.52` IMap/FencedLock
+> - **After (depends on):** shipped `0.67.0`; consumes the merged 0.67.1 orchestration hardening
+>   without depending on completion of its deferred bare-metal evidence campaign, plus the `0.49`
+>   client contract, `0.52` IMap/FencedLock
 >   operation family, `0.63` edge-adapter separation, and `0.64` evidence/canary governance.
 > - **Unblocks:** `0.69` migration conformance against a real Java artifact and live previous-client
 >   binaries; later optional Hazelcast Open Binary Client Protocol and smart-routing edge tracks.
-> - **Status:** planned; implementation is in progress. H01-H21
->   hardening is complete and H22 awaits a fixed-host receipt, but the original
->   W8/W9/W12 deliverables are tracked separately in the release closure ledger.
+> - **Status:** in-progress; implementation is complete. The Rust library set, including
+>   `hydracache-client-hc2`, is eligible for the 0.68 version cut after exact-SHA hosted admission.
+>   Java and Python remain tested source previews with no Maven/PyPI publication. H01-H21
+>   hardening is complete; the H22 fixed-host receipt is retained for later Java/Python promotion,
+>   while hosted Linux/Docker/fuzz evidence owns the Rust release admission.
 >   Additive H23 introduces an off-by-default Redis keyspace-event listener over
 >   the same verified dispatch state without changing the HC/2 transport or
 >   broadening the Redis surface into arbitrary Pub/Sub. H24 separately freezes
@@ -33,6 +37,8 @@
 > [`V0_68_HC2_22_GAP_CLOSURE_PLAN.md`](V0_68_HC2_22_GAP_CLOSURE_PLAN.md).
 > Original W0-W12 release reconciliation:
 > [`V0_68_RELEASE_CLOSURE_LEDGER.md`](V0_68_RELEASE_CLOSURE_LEDGER.md).
+> Release-scope decision:
+> [`../adr/0020-deferred-qualification-and-source-only-client-distribution.md`](../adr/0020-deferred-qualification-and-source-only-client-distribution.md).
 
 Read [`CLAUDE.md`](../../CLAUDE.md), [`docs/RULES.md`](../RULES.md), and
 [`docs/GATES.md`](../GATES.md) first. This release inherits R-1 through R-11. In particular:
@@ -209,8 +215,8 @@ Populate exact files and commands as work lands. The planned ownership is:
 | W5 | client topology service | epoch/leader change tests | server authority wins |
 | W6 | lock session service | expiry/reconnect/zombie tests | single-key only |
 | W7 | value serialization contract | cross-language opaque bytes | no remote code execution |
-| W8 | Java SDK + facade | Maven integration against daemon | real artifact, not Rust mapping |
-| W9 | Rust/Python HC/2 SDKs | shared conformance manifest | no language-specific semantics |
+| W8 | Java SDK + facade source preview | Maven integration against daemon | buildable repository artifact, not a published Maven coordinate |
+| W9 | Published Rust HC/2 SDK + Python source preview | shared conformance manifest | only the Rust crate enters the `0.68.0` distribution set |
 | W10 | security/resource/observability | abuse/slow-client/metrics tests | bounded labels and queues |
 | W11 | DST/process/fuzz compatibility | seeded replay + socket corpus | exact candidate evidence |
 | W12 | governance/docs/cutover | require-ship receipt | claims match executable surface |
@@ -399,7 +405,7 @@ when later enabled, operate on canonical encoded key bytes with committed cross-
 codec, oversized declarations, zip/decompression bomb if compression is selected, and no class name
 or serialized object leakage in logs/metrics.
 
-## W8. Buildable Java SDK and Hazelcast-shaped facade
+## W8. Buildable Java SDK and Hazelcast-shaped facade source preview
 
 Add versioned Maven modules, expected names finalized in the ADR/plan implementation:
 
@@ -415,8 +421,9 @@ uses HydraCache-owned packages while preserving familiar operation shapes.
 
 **Required tests:** Maven build from clean cache, Java 17/21 matrix, get/put/TTL/CAS, conditional
 remove, listener push/reconnect, lock session loss, TLS/auth, graceful close, bounded thread count,
-and generated-code drift. Artifact publication remains gated until API compatibility tooling and
-license/provenance checks pass.
+and generated-code drift. `0.68.0` does not publish these modules to Maven Central. Artifact
+publication remains gated until the full four-lane client-promotion admission, API compatibility
+tooling, and license/provenance checks pass.
 
 **Implementation update (2026-08-11).** The reactor under `sdks/java` now
 contains the production-preview HC/2 client and a separate
@@ -431,14 +438,17 @@ failure semantics, and reproduction commands are recorded in
 `docs/architecture/HC2_HAZELCAST_FACADE.md`. Stage 4 is now executable through
 `cargo xtask client-package-check`: the frozen preview manifest covers both
 Java artifacts, the external Maven consumer loads the facade from its JAR, and
-CI runs the Java reactor/consumer on Java 17 and 21. Full release admission is
-still owned by W12 rather than inferred from packaging.
+CI runs the Java reactor/consumer on Java 17 and 21. These artifacts remain
+source-preview outputs in `0.68.0`; their later distribution admission is
+owned by the full W12 client-promotion gate rather than inferred from packaging.
 
-## W9. Rust and Python production HC/2 SDKs
+## W9. Published Rust HC/2 SDK and Python source preview
 
-Migrate the Rust reference client to the shared connection/invocation model. Implement a real
-Python network client over generated codecs rather than only protocol/conformance helpers. All SDKs
-consume one language-agnostic conformance manifest and expose equivalent lifecycle semantics.
+Migrate the Rust reference client to the shared connection/invocation model and publish
+`hydracache-client-hc2` with the other Rust `0.68.0` crates. Implement a real Python network client
+over generated codecs rather than only protocol/conformance helpers, but keep its `0.68.0a1` wheel
+as a repository-built source preview rather than a PyPI distribution. All SDKs consume one
+language-agnostic conformance manifest and expose equivalent lifecycle semantics.
 
 Language idioms may differ, but retry classification, errors, watermarks, session loss, and
 unsupported capability decisions cannot diverge. Async cancellation must release native pending
@@ -446,7 +456,8 @@ state; blocking adapters must not create an unbounded thread per request.
 
 **Required tests:** shared scenario count equality; Rust Tokio cancellation; Python asyncio
 cancellation; Java future cancellation; reconnect and listener restoration in all three; packaging
-smoke from produced crates/wheel/JAR.
+smoke from produced crates/wheel/JAR; post-publish consumption of `hydracache-client-hc2` from the
+registry. Only the Rust crate is a `0.68.0` publication artifact.
 
 **Implementation update (2026-08-11).** Rust, Java, and Python now share the
 minimum preview API manifest at `docs/compatibility/hc2-sdk-api-v1.json`.
@@ -499,8 +510,9 @@ may receive an HC/2 frame.
 
 **Implementation update (2026-08-12).** The W0-W12 evidence manifest,
 release-scoped dynamic-canary registry, generation-6 schema gate, three-SDK
-conformance gate, clean-package gate, and H22 exact-candidate admission are
-registered and execute in CI. Structural release evidence reports all thirteen
+conformance gate, clean-package gate, hosted exact-candidate Rust release
+admission, and full four-lane client-promotion admission are registered and
+execute in CI. Structural release evidence reports all thirteen
 rows implemented while ordinary exact-commit receipts remain absent; this is
 not ship admission. The proof boundary and reproduction procedure are recorded
 in `docs/architecture/HC2_CROSS_SDK_CONFORMANCE_AND_RELEASE_EVIDENCE.md`.
@@ -562,15 +574,19 @@ cargo run --manifest-path crates\xtask\Cargo.toml -- doc-check
   manifest; packaging artifacts install from clean environments.
 - HC/1 v1-v4 and HC/2 coexist without cross-decoding; RESP remains a separate optional edge and the
   HydraCache core/authority model is unchanged.
-- Security/resource/fuzz/process/canary lanes have exact-candidate receipts and
-  `release-evidence --release 0.68 --require-ship` is green.
+- Security/resource/fuzz/process/canary lanes required for Rust publication have exact-candidate
+  hosted receipts and `release-evidence --release 0.68 --require-ship` is green. The fixed-host
+  receipt remains mandatory for later Java/Python distribution promotion, not for publishing the
+  Rust `0.68.0` crate set.
 
 ## Final release decision
 
 Ship `0.68.0` only when HydraCache has a real client plane rather than an operation catalog behind
 independent HTTP calls: generated cross-language wire artifacts, a connection-owned runtime,
-bounded invocation and event delivery, reconnect/repair, session-backed locks, and installable
-Rust/Java/Python clients all run against a real daemon. Preserve HC/1 v1-v4 through its registered
-window, retain single-endpoint honesty, and defer Hazelcast wire compatibility and smart routing.
-If any live-stream, retry-safety, session-loss, resource-bound, security, or codegen gate is red,
-the release remains blocked and `0.69` migration conformance does not start.
+bounded invocation and event delivery, reconnect/repair, session-backed locks, an installable and
+publishable Rust HC/2 client, and buildable Java/Python source previews all run against a real
+daemon. Preserve HC/1 v1-v4 through its registered window, retain single-endpoint honesty, and
+defer Hazelcast wire compatibility, smart routing, and Java/Python registry publication. If any
+hosted Rust-release live-stream, retry-safety, session-loss, resource-bound, security, codegen, or
+fuzz gate is red, the release remains blocked. The fixed-host gate may remain pending only for the
+explicitly deferred Java/Python distribution promotion.

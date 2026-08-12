@@ -13,6 +13,12 @@ bounds, unsafe mutations require idempotency identity, subscriptions repair
 explicit gaps with watermark deduplication, and a lost fenced session remains
 terminal.
 
+ADR-0020 includes this crate in the dependency-ordered Rust `0.68.0` crates.io
+release. Its pre-1.0 API remains explicitly preview, but the package coordinate
+is real and immutable. The release candidate must pass clean archive consumption,
+the same-SHA hosted Linux/Docker/fuzz admission, and the repository's
+post-publication consumer before the release is complete.
+
 ## Contract ownership and public API
 
 The authoritative generated contract is

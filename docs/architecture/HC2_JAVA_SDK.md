@@ -14,6 +14,11 @@ This completion does not make a stable-API, Maven Central, or full old/new
 rolling-compatibility claim. Those promotion decisions remain release and H18
 concerns rather than being implied by the preview SDK.
 
+ADR-0020 keeps this exact SNAPSHOT coordinate in the repository for 0.68.0.
+CI still builds, installs, and consumes it from an isolated Maven repository,
+but no remote Maven deployment is authorized. External distribution requires
+the later full Linux/Docker/fuzz/fixed-host client-promotion admission.
+
 ## Public boundary
 
 The public `io.hydracache.client.hc2` package provides:

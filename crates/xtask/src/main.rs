@@ -75,7 +75,7 @@ fn print_usage() {
          cargo xtask client-plane-bakeoff-check  # validate the accepted HC/2 transport decision and evidence manifest\n  \
          cargo xtask client-plane-ci-check  # validate the H22 Linux/Docker/fuzz/soak workflow contract\n  \
          cargo xtask client-plane-ci-receipt --lane <lane> --output <path> [--seed <u64>] [--iterations <n>] [--image <digest>]  # retain one H22 lane result\n  \
-         cargo xtask client-plane-ci-admission --receipts <dir> [--commit <sha>] [--output <path>]  # require all H22 lanes on the current exact commit\n  \
+         cargo xtask client-plane-ci-admission --receipts <dir> [--scope <hosted|full>] [--commit <sha>] [--output <path>]  # require the selected exact-commit HC/2 evidence scope\n  \
          cargo xtask client-plane-docker-interop-check  # run the bounded H22 process-interoperability subset in the pinned container\n  \
          cargo xtask client-plane-java-sdk-check  # build/test/install Java SDK and external consumer\n  \
          cargo xtask client-plane-compat-check [--manifest-only|--require-complete]  # verify retained HC/2 artifacts and compatibility matrix\n  \

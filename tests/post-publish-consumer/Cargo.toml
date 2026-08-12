@@ -14,6 +14,7 @@ hydracache-cluster.workspace = true
 hydracache-cluster-chitchat.workspace = true
 hydracache-cluster-raft.workspace = true
 hydracache-cluster-transport-axum.workspace = true
+hydracache-client-hc2.workspace = true
 hydracache-db.workspace = true
 hydracache-diesel.workspace = true
 hydracache-observability.workspace = true

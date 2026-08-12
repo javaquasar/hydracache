@@ -119,7 +119,7 @@ id = "W10"
 required_sources = ["crates/hydracache-client-plane-spike/tests/observability_contract.rs", "crates/hydracache-client-plane-spike/tests/semantic_harness.rs"]
 required_artifacts = ["docs/testing/hc2-ci/h22-gates.json"]
 fast_gate_ids = ["fast.workspace-nextest"]
-gated_gate_ids = ["tool.hc2-release-admission-068"]
+gated_gate_ids = ["tool.hc2-hosted-admission-068"]
 ship_required = true
 [[work_item.required_tests]]
 source = "crates/xtask/tests/client_release_068.rs"
@@ -130,7 +130,7 @@ id = "W11"
 required_sources = ["crates/hydracache-client-plane-spike/tests/fault_proxy.rs", "crates/xtask/src/client_plane_fault.rs", "crates/xtask/src/client_plane_compat.rs"]
 required_artifacts = ["docs/testing/hc2-compat/v0.68-preview.1.json"]
 fast_gate_ids = ["fast.workspace-nextest"]
-gated_gate_ids = ["tool.hc2-release-admission-068"]
+gated_gate_ids = ["tool.hc2-hosted-admission-068"]
 ship_required = true
 [[work_item.required_tests]]
 source = "crates/xtask/tests/client_release_068.rs"
@@ -141,7 +141,7 @@ id = "W12"
 required_sources = [".github/workflows/hc2-client-plane.yml", "crates/xtask/src/client_plane_ci.rs", "crates/xtask/tests/client_release_068.rs"]
 required_artifacts = ["docs/testing/canary-registry-0.68.json", "docs/testing/release-evidence/0.68.toml", "docs/releases/0.68.0.md"]
 fast_gate_ids = ["fast.workspace-nextest"]
-gated_gate_ids = ["tool.hc2-release-admission-068"]
+gated_gate_ids = ["tool.hc2-hosted-admission-068"]
 ship_required = true
 [[work_item.required_tests]]
 source = "crates/xtask/tests/client_release_068.rs"

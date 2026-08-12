@@ -10,6 +10,12 @@ schema or offline wheelhouse, into the preview production SDK at
 schema remains the reviewed files under `crates/hydracache-client-hc2/proto`
 and the isolated W0 spike envelope under `crates/hydracache-client-plane-spike/proto`.
 
+ADR-0020 keeps version `0.68.0a1` as a repository source preview for the 0.68
+Rust release. CI continues to build and install its deterministic wheel in a
+clean virtual environment, but no PyPI upload is authorized. External Python
+distribution requires the later full Linux/Docker/fuzz/fixed-host promotion
+admission.
+
 ## Reproducible generation
 
 `cargo xtask client-plane-python-generate --write` performs generation without

@@ -4,8 +4,9 @@
 > non-production HC/2 spike and a defensible client plane into independently
 > auditable work packages. It is subordinate to
 > [`V0_68_GENERATED_CLIENT_PLANE_FOUNDATION_PLAN.md`](V0_68_GENERATED_CLIENT_PLANE_FOUNDATION_PLAN.md),
-> inherits R-1 through R-11, and does not change the `0.68` dependency on an
-> unfinished `0.67.1`.
+> inherits R-1 through R-11. ADR-0020 changes release sequencing: 0.67.1
+> bare-metal evidence remains in-progress, while the 0.68 Rust release depends
+> on shipped 0.67.0 plus the merged source hardening.
 >
 > **Commit rule.** Each H-item receives its own implementation commit and push
 > only after its Definition of Done is green. Documentation-only progress,
@@ -43,7 +44,7 @@
 | H19 | Deterministic network fault proxy is absent | complete | `test(client-plane): complete deterministic fault bindings` | all bounded actions, real async stream, exact replay, eight H11 and three H20 lifecycle traces, plus four plans applied unchanged to every H03 candidate codec |
 | H20 | HTTP/2 graceful shutdown remains unresolved | complete | `fix(client-plane): bound HTTP2 graceful drain` | two-GOAWAY controller, deadline/reset reasons, retained fault traces, real TLS/H2 zero-accounting task joins without abort |
 | H21 | Observability is local to the spike | complete | `feat(client-plane): export bounded privacy-safe diagnostics` | v1 typed metric/trace export, 64 salted tenant buckets, bounded trace ring, privacy/cardinality/reconnect/close evidence, operator runbook |
-| H22 | Linux CI, interop, fuzz, and soak gates are absent | in progress | `ci(client-plane): install Linux interop fuzz and soak gates` | four-lane fail-closed contract, pinned workflow/container, receipts/admission canaries, Docker proof, runbook, and exact Ubuntu 24.04 fixed-host preflight implemented; exact hosted Linux/Docker/fuzz receipts and strict `main` protection are active; a labelled fixed-host receipt remains operational evidence |
+| H22 | Linux CI, interop, fuzz, and soak gates are absent | in progress | `ci(client-plane): install Linux interop fuzz and soak gates` | three-lane hosted Rust-release admission and four-lane Java/Python promotion admission are fail-closed; pinned workflow/container, receipts/admission canaries, Docker proof, runbook, and exact Ubuntu 24.04 fixed-host preflight are implemented; hosted Linux/Docker/fuzz receipts and strict `main` protection are active; a labelled fixed-host receipt remains operational evidence |
 | H23 | Redis API clients cannot consume mutation events | complete | `feat(redis): add bounded keyspace event listeners` | shared metadata-only mutation bus, RESP2 arrays/RESP3 pushes, exact/pattern subscriptions, auth and atomic count/retained-byte bounds, explicit lag disconnect, redis-rs and cross-protocol tests; exact implementation commit `2fef344` passed PR Rust, MSRV, Docs, docs-site, HC/2 Linux/Interop, Java 17/21, and both performance tripwires in runs `31551909019`, `31551909021`, and `31551909027` |
 | H24 | Ordinary native listener tests are internal-only | complete | `test(events): prove native listener public contract` | external-crate black-box coverage for raw and typed subscriptions, filters, callback unsubscribe, access opt-in, bounded lag, and resume; exact implementation commit `20c7d86` passed PR Rust, MSRV, Docs, docs-site, HC/2 Linux/Interop, Java 17/21, and both performance tripwires in runs `31556527618`, `31556527634`, and `31556527643` |
 | H25 | Native backend puts are invisible to Redis subscribers | complete | `feat(redis): bridge native puts to event subscribers` | lazy metadata-only native bridge, exact namespace fence, real Redis TCP client, generated documentation example; exact implementation commit `df7e754` passed PR Rust, MSRV, Docs, docs-site, HC/2 Linux/Interop, Java 17/21, and both performance tripwires in runs `31575224071`, `31575224099`, and `31575224068` |
@@ -510,7 +511,7 @@ SDK.
 
 **Current truth.** Maven builds a generated codec golden test only.
 
-**Implementation.** Publishable module with connection, invocation, listener,
+**Implementation.** Buildable source-preview module with connection, invocation, listener,
 topology, session, deadline/cancellation, transport policy, metrics, and stable
 errors. Keep generated wire code internal and expose an idiomatic API.
 
@@ -518,7 +519,8 @@ errors. Keep generated wire code internal and expose an idiomatic API.
 thread/leak checks, package metadata, examples, and previous-artifact tests.
 
 **Dependencies.** H01-H15 relevant foundations. **Risk/rollback.** Premature API
-promise; publish preview coordinates until compatibility gates pass.
+promise; retain the preview SNAPSHOT coordinate in-repository and do not deploy
+it to Maven until the full fixed-host client-promotion admission passes.
 
 **Done.** A consumer project builds and runs without repository internals.
 
@@ -556,7 +558,7 @@ separate modules/features and golden compatibility tests.
 **Done.** Native HC/2 operations use no spike type or handwritten wire codec.
 
 **Completion evidence (2026-08-11).** The distinct
-`hydracache-client-hc2` preview crate now owns the authoritative generated
+`hydracache-client-hc2` crate now owns the authoritative generated
 contract and exposes generated-wire-free native APIs for data/CAS/batch,
 bounded listeners with explicit gap repair, monotonic topology, fenced
 sessions, deadlines/cancellation, stable errors/retry advice, and pull-based
@@ -566,7 +568,9 @@ bidirectional gRPC over mandatory mTLS; it has no plaintext or HC/1 fallback.
 mTLS conformance process and the real `hydracache-server`, proves cancellation
 cannot produce a stale completion, enforces pending/listener bounds, replays
 the H11 reconnect/repair/session-loss matrix, requires zero retained owners,
-and separately runs the unchanged HC/1 conformance suite. The production row
+and separately runs the unchanged HC/1 conformance suite. For 0.68 it is a
+normal publishable Rust crate covered by hosted exact-candidate admission and
+post-publication consumer checks. The production row
 verifies cluster identity, PUT/GET, push subscription, fenced session, clean
 client close, admin drain, and successful process exit. The gate finally
 packages and verifies the crate. Exact scope and reproduction are documented
@@ -716,7 +720,7 @@ deterministic seeds, bounded retries only for infrastructure, never test failure
 
 **Implementation evidence (2026-08-10).**
 `.github/workflows/hc2-client-plane.yml` and
-`docs/testing/hc2-ci/h22-gates.json` define four exact, release-required lanes
+`docs/testing/hc2-ci/h22-gates.json` define four exact client-promotion lanes
 with pinned actions, language toolchains, image digests, timeouts, concurrency,
 and 30-day artifact retention. `client-plane-ci-check` rejects workflow/contract
 drift; versioned receipts bind lane-specific metadata to one full candidate
@@ -742,9 +746,12 @@ Docker Interop` from GitHub Actions, enforcing the rule for administrators, and
 disallowing force pushes and deletion.
 
 H22 remains `in progress` only until a labelled fixed host produces a retained
-same-candidate soak receipt. Release admission correctly remains unavailable
-while that fourth lane is absent. This operational step may not be replaced
-with local evidence, a skipped lane, or the hosted correctness receipts above.
+same-candidate soak receipt. ADR-0020 now gives the Rust 0.68 release a separate
+three-lane hosted admission (Linux, Docker, fuzz), including the published Rust
+HC/2 client crate. The four-lane Java/Python promotion admission correctly
+remains unavailable while the fixed-host receipt is absent. This operational
+step may not be replaced with local evidence, a skipped lane, or the hosted
+correctness receipts above.
 The checked-in fixed-host contract now also fails before the soak unless the
 runner is non-root Ubuntu 24.04 x86_64, carries a bounded safe identity, exposes
 the required native tools, and has the exact clean candidate checkout. Its

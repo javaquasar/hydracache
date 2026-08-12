@@ -58,7 +58,7 @@ const WORK_ITEMS: [(&str, &str, &str); 13] = [
     (
         "W12",
         "docs/testing/gated-test-registry.toml",
-        "tool.hc2-release-admission-068",
+        "tool.hc2-hosted-admission-068",
     ),
 ];
 
@@ -99,11 +99,38 @@ fn closure_problems(omitted: Option<&str>) -> Vec<String> {
         "client-schema-check",
         "client-conformance --all-sdks",
         "client-package-check",
-        "evidence-run --release 0.68 --gate tool.hc2-release-admission-068",
+        "evidence-run --release 0.68 --gate tool.hc2-hosted-admission-068",
     ] {
         if !workflow.contains(command) {
             problems.push(format!("HC/2 workflow omits {command}"));
         }
+    }
+    let rust_manifest = fs::read_to_string(root.join("crates/hydracache-client-hc2/Cargo.toml"))
+        .unwrap_or_default();
+    if rust_manifest
+        .lines()
+        .any(|line| line.trim() == "publish = false")
+    {
+        problems.push("Rust HC/2 client must remain publishable for crates.io".to_owned());
+    }
+    let release_readiness =
+        fs::read_to_string(root.join("scripts/verify-release-readiness.ps1")).unwrap_or_default();
+    if !release_readiness.contains("hydracache-client-hc2") {
+        problems.push("Rust HC/2 client is missing from the crates.io release order".to_owned());
+    }
+    let package_script =
+        fs::read_to_string(root.join("scripts/package-publishable.ps1")).unwrap_or_default();
+    if !package_script.contains("\"hydracache-client-hc2\"") {
+        problems.push("publishable Rust HC/2 client package validation is missing".to_owned());
+    }
+    let java = fs::read_to_string(root.join("sdks/java/pom.xml")).unwrap_or_default();
+    if !java.contains("0.68.0-alpha.1-SNAPSHOT") {
+        problems.push("Java HC/2 clients must retain preview SNAPSHOT coordinates".to_owned());
+    }
+    let python = fs::read_to_string(root.join("sdks/python/hydracache-client-hc2/pyproject.toml"))
+        .unwrap_or_default();
+    if !python.contains("version = \"0.68.0a1\"") {
+        problems.push("Python HC/2 client must retain its source-only alpha version".to_owned());
     }
     problems
 }

@@ -19,7 +19,7 @@ toolchains, action commits, or image digests diverge.
 | `linux-required`  | pull request, main push, tag, schedule, manual | GitHub `ubuntu-24.04`                    | 30 min | format, schema/workflow contract, clean generation, Rust/Java/Python lifecycle and golden evidence, clippy                                  |
 | `docker-interop`  | pull request, main push, tag, schedule, manual | GitHub `ubuntu-24.04` + pinned container | 45 min | production daemon mTLS/coexistence/startup/drain tests plus Rust spike tests, real Java fixture/installed SDK consumer, offline Python, and retained fault replay in one reproducible process environment |
 | `fuzz`            | tag, schedule, opted-in manual                 | GitHub `ubuntu-24.04`                    | 20 min | deterministic-seed, time-boxed mutation of generated HC/2 envelopes, transport codecs, and fault receipts                                   |
-| `fixed-host-soak` | tag, enabled schedule, opted-in manual         | labelled self-hosted Linux host          | 90 min | twelve bounded lifecycle iterations with retained host/toolchain metadata                                                                   |
+| `fixed-host-soak` | enabled schedule or client-promotion manual    | labelled self-hosted Linux host          | 90 min | twelve bounded lifecycle iterations with retained host/toolchain metadata                                                                   |
 
 The exact required check names for branch protection are:
 
@@ -30,8 +30,9 @@ GitHub branch protection is repository administration, not a property of the
 workflow file. Both names were installed on `main` after their first successful
 run, with strict head-branch freshness, GitHub Actions app binding, and
 administrator enforcement. Force pushes and branch deletion remain disabled.
-Tags and an opted-in release-admission dispatch additionally require all four
-same-commit receipts.
+Tags and an opted-in hosted-admission dispatch require three same-commit
+receipts: Linux, Docker, and fuzz. A separately opted-in Java/Python promotion
+dispatch requires those three plus the fixed-host receipt.
 
 ## Hosted activation evidence
 
@@ -49,9 +50,10 @@ It produced these immutable-at-upload artifacts:
 The same commit also passed the pull-request-required Linux and Docker jobs in
 run [`31488620419`](https://github.com/javaquasar/hydracache/actions/runs/31488620419).
 The manually requested fixed-host job was deliberately skipped because no
-labelled rented runner was online, so release admission was also skipped. This
-is a truthful partial activation receipt, not a four-lane release admission or
-a capacity claim. H22 remains open until a same-commit labelled fixed-host soak
+labelled rented runner was online, so the four-lane client-promotion admission
+was also skipped. This is truthful hosted activation evidence, not an admission
+for the current 0.68 candidate, a Java/Python distribution promotion, or a
+capacity claim. H22 remains open until a same-commit labelled fixed-host soak
 receipt exists.
 
 ## Local reproduction
@@ -111,21 +113,31 @@ lane/outcome, run identity, bounded runner metadata, evidence profile, and the
 lane-specific image digest, seed, or iteration count. GitHub retains receipts
 and diagnostic logs for 30 days.
 
-Admission accepts exactly one passing receipt for each of the four lane IDs.
-All four must name the same full commit and, when supplied, the requested
-candidate SHA:
+The Rust-library admission accepts exactly one passing receipt for each hosted
+lane and binds all three to the requested full candidate SHA:
 
 ```bash
 cargo run -p xtask --locked -- client-plane-ci-admission \
   --receipts target/hc2-ci-admission \
+  --scope hosted \
+  --commit "$GITHUB_SHA"
+```
+
+The Java/Python distribution-promotion admission adds the fixed-host lane:
+
+```bash
+cargo run -p xtask --locked -- client-plane-ci-admission \
+  --receipts target/hc2-ci-admission \
+  --scope full \
   --commit "$GITHUB_SHA"
 ```
 
 Missing, duplicate, red, malformed, mixed-SHA, wrong-schema, wrong-image,
 unbounded, or lane-inconsistent receipts are rejected. The integration tests
 intentionally construct missing-lane, red-lane, mixed-SHA, and substituted-
-image canaries and require admission to fail. A skipped optional lane is
-therefore never silently converted into a release pass.
+image canaries and require admission to fail. The hosted scope deliberately
+does not read a fixed-host receipt; the full scope requires it and never turns a
+skip into Java/Python promotion evidence.
 
 ## Fixed-host soak tier
 
@@ -134,8 +146,9 @@ Register a clean Linux x64 runner with all labels
 Rust toolchain and ordinary native build prerequisites. Do not place unrelated
 work on the host during a retained soak. Set repository variable
 `HC2_FIXED_HOST_SOAK_ENABLED=true` only while the runner is intentionally
-available for scheduled work; a tag or explicit manual selection requests it
-regardless of that schedule variable.
+available for scheduled work. An explicit fixed-host or full client-promotion
+dispatch requests it regardless of that schedule variable; a Rust release tag
+does not consume an unavailable rented runner.
 
 The reviewed machine contract is exact: Ubuntu 24.04 on x86_64, a non-root
 runner service, a safe bounded runner name, the `hc2-fixed-soak-v1` evidence
@@ -179,4 +192,5 @@ retries must be explicit, bounded, and distinguishable from product results.
 | Docker-only failure             | hermetic dependency, Java/Python packaging, filesystem, or inter-process assumption differs | reproduce with the exact image digest and retain the Docker log                           |
 | fuzz crash/timeout artifact     | decoder, envelope, codec, or replay input found a failure                                   | retain the seed/artifact, add a deterministic corpus regression, then fix                 |
 | soak iteration failure          | lifecycle/resource behavior is not stable on the fixed host                                 | retain host metadata and first failing iteration; do not average or rerun it away         |
-| release admission failure       | evidence set is incomplete, red, duplicated, malformed, or cross-candidate                  | obtain new same-SHA evidence; never copy or relabel an older receipt                      |
+| hosted admission failure        | Linux/Docker/fuzz set is incomplete, red, duplicated, malformed, or cross-candidate         | obtain new same-SHA evidence; never copy or relabel an older receipt                      |
+| client-promotion failure        | full set lacks a valid same-SHA fixed-host receipt                                           | rent/register the reviewed host and rerun all four lanes; never waive or emulate the lane |

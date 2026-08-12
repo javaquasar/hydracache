@@ -1891,12 +1891,14 @@ process explicitly requires nightly.
 
 ## HC/2 H01/H03/H22 Evidence Lanes
 
-The generated HC/2 client-plane foundation has a separate four-lane
-correctness contract: required GitHub-hosted Linux and digest-pinned Docker
-interop jobs, a scheduled/tagged fuzz campaign, and a labelled fixed-host
-lifecycle soak. Release admission requires passing receipts from all four lanes
-for the same full candidate SHA; missing and red lanes are intentional tested
-failure cases. Commands, exact check names, host labels, retained metadata,
+The generated HC/2 client-plane foundation has a four-lane correctness
+contract: required GitHub-hosted Linux and digest-pinned Docker interop jobs, a
+scheduled/tagged fuzz campaign, and a separately enabled labelled fixed-host
+lifecycle soak. The Rust 0.68 release admission, including the Rust HC/2 client
+crate, requires the three hosted receipts from one full candidate SHA. The full
+Java/Python promotion admission adds the fixed-host receipt. Missing and red
+lanes are intentional tested failure cases for their respective scope.
+Commands, exact check names, host labels, retained metadata,
 pin-update policy, and the prohibition on turning shared-CI timing into a
 capacity claim are documented in
 [`HC2_CI_INTEROP_FUZZ_SOAK.md`](operations/HC2_CI_INTEROP_FUZZ_SOAK.md).
