@@ -44,6 +44,70 @@ export CARGO_TARGET_DIR="$scratch/target"
 export CARGO_TERM_COLOR=never
 cd "$scratch/harness"
 
+sync_subject_lock() {
+  local side="$1"
+  local subject_version
+  local before_lock="$scratch/${side}-lock.before"
+  local sync_log="$output/${side}-lock-sync.log"
+
+  subject_version="$(python3 - "$scratch/subject/Cargo.toml" <<'PY'
+import pathlib
+import sys
+import tomllib
+
+with pathlib.Path(sys.argv[1]).open("rb") as handle:
+    print(tomllib.load(handle)["workspace"]["package"]["version"])
+PY
+)"
+  cp Cargo.lock "$before_lock"
+  : >"$sync_log"
+  for package in hydracache-core hydracache-macros hydracache; do
+    cargo update --offline -p "$package" --precise "$subject_version" >>"$sync_log" 2>&1
+  done
+
+  python3 - "$before_lock" Cargo.lock "$subject_version" <<'PY'
+import pathlib
+import sys
+import tomllib
+
+before_path, after_path, subject_version = sys.argv[1:]
+
+def load(path):
+    with pathlib.Path(path).open("rb") as handle:
+        return tomllib.load(handle)
+
+def registry_packages(snapshot):
+    return sorted(
+        (
+            package["name"],
+            package["version"],
+            package.get("source"),
+            package.get("checksum"),
+            tuple(package.get("dependencies", [])),
+        )
+        for package in snapshot["package"]
+        if package.get("source") is not None
+    )
+
+before = load(before_path)
+after = load(after_path)
+if registry_packages(before) != registry_packages(after):
+    raise SystemExit("subject lock synchronization changed a registry package")
+
+expected = {"hydracache", "hydracache-core", "hydracache-macros"}
+actual = {
+    package["name"]: package["version"]
+    for package in after["package"]
+    if package["name"] in expected and package.get("source") is None
+}
+if set(actual) != expected or set(actual.values()) != {subject_version}:
+    raise SystemExit(
+        f"subject lock synchronization produced {actual}, expected {subject_version}"
+    )
+PY
+  cp Cargo.lock "$output/${side}-harness.lock"
+}
+
 rustc --version --verbose >"$output/rustc.txt"
 cargo --version --verbose >"$output/cargo.txt"
 valgrind --version >"$output/valgrind.txt"
@@ -56,6 +120,7 @@ sha256sum \
   "$repo_root/scripts/perf/ci-instruction-harness/benches/cache_work.rs" \
   >"$output/contract-sha256.txt"
 
+sync_subject_lock base
 cargo bench --locked --bench cache_work -- \
   --save-baseline=base \
   --output-format=json \
@@ -67,6 +132,7 @@ cargo bench --locked --bench cache_work -- \
 rm "$scratch/subject"
 ln -s "$scratch/head" "$scratch/subject"
 
+sync_subject_lock head
 set +e
 cargo bench --locked --bench cache_work -- \
   --baseline=base \

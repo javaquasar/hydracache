@@ -63,6 +63,10 @@ fn workflow_runs_real_callgrind_work_without_touching_reference_lanes() {
         "--callgrind-limits='ir=5.0%'",
         "--allow-aslr=yes",
         "--parallel=1",
+        "sync_subject_lock base",
+        "sync_subject_lock head",
+        "cargo update --offline",
+        "subject lock synchronization changed a registry package",
         "report.json",
         "contract-sha256.txt",
     ] {
