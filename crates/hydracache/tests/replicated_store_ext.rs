@@ -1,11 +1,13 @@
 #![cfg(feature = "durable-value-store")]
 
 use std::path::PathBuf;
+use std::thread;
+use std::time::Duration;
 use std::time::{SystemTime, UNIX_EPOCH};
 
 use hydracache::{
     ClusterEpoch, DurableValueStore, EffectiveReplicationMap, InMemoryReplicatedValueStore,
-    PartitionId, Replicas, ReplicatedValueRecord, ReplicatedValueStore,
+    PartitionId, Replicas, ReplicatedValueRecord, ReplicatedValueStore, ValueStoreError,
     DURABLE_VALUE_FORMAT_VERSION,
 };
 
@@ -114,11 +116,32 @@ fn unknown_future_format_still_refuses_to_open() {
     DurableValueStore::write_format_marker_for_test(&path, DURABLE_VALUE_FORMAT_VERSION + 1)
         .unwrap();
 
-    let error = DurableValueStore::open(&path).unwrap_err();
+    let error = open_after_marker_write(&path);
 
     assert!(error
         .to_string()
         .contains("unsupported durable value-store format"));
+}
+
+fn open_after_marker_write(path: &std::path::Path) -> ValueStoreError {
+    const MAX_ATTEMPTS: usize = 100;
+
+    for attempt in 0..MAX_ATTEMPTS {
+        match DurableValueStore::open(path) {
+            Ok(_) => panic!("future durable value-store format was accepted"),
+            Err(error) if error.to_string().contains("could not acquire lock") => {
+                if attempt + 1 < MAX_ATTEMPTS {
+                    thread::sleep(Duration::from_millis(10));
+                }
+            }
+            Err(error) => return error,
+        }
+    }
+
+    panic!(
+        "durable value-store lock was not released within one second: {}",
+        path.display()
+    );
 }
 
 fn assert_existing_semantics<S>(store: &mut S)

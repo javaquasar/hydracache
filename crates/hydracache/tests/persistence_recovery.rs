@@ -6,7 +6,7 @@ use std::time::{Duration, SystemTime, UNIX_EPOCH};
 use hydracache::{
     open_durable_value_store_for_recovery, recover_namespaces, ClusterEpoch, DurableValueStore,
     EffectiveReplicationMap, NamespacePersistenceRule, NamespacePersistenceSettings, PartitionId,
-    PersistencePolicy, PersistenceRegionPlacement, RecoveryErrorKind, RecoveryMode,
+    PersistencePolicy, PersistenceRegionPlacement, RecoveryError, RecoveryErrorKind, RecoveryMode,
     RecoveryNamespace, RecoveryPolicy, Replicas, ReplicatedValueRecord, ReplicatedValueStore,
     DURABLE_VALUE_FORMAT_VERSION,
 };
@@ -184,11 +184,35 @@ fn persistence_recovery_corrupt_or_future_format_refuses_recovery() {
     let future_path = temp_store_path("future");
     DurableValueStore::write_format_marker_for_test(&future_path, DURABLE_VALUE_FORMAT_VERSION + 1)
         .unwrap();
-    let future_error = open_durable_value_store_for_recovery(&future_path, 1024).unwrap_err();
+    let future_error = open_for_recovery_after_marker_write(&future_path);
     assert_eq!(future_error.kind(), RecoveryErrorKind::Store);
     assert!(future_error
         .to_string()
         .contains("unsupported durable value-store format"));
+}
+
+fn open_for_recovery_after_marker_write(path: &std::path::Path) -> RecoveryError {
+    const MAX_ATTEMPTS: usize = 100;
+
+    for attempt in 0..MAX_ATTEMPTS {
+        match open_durable_value_store_for_recovery(path, 1024) {
+            Ok(_) => panic!("future durable value-store format was accepted during recovery"),
+            Err(error)
+                if error.to_string().contains("could not acquire lock")
+                    || error.to_string().contains("WouldBlock") =>
+            {
+                if attempt + 1 < MAX_ATTEMPTS {
+                    std::thread::sleep(Duration::from_millis(10));
+                }
+            }
+            Err(error) => return error,
+        }
+    }
+
+    panic!(
+        "durable value-store lock was not released within one second: {}",
+        path.display()
+    );
 }
 
 fn record(partition: u32, version: u64, epoch: u64, bytes: &[u8]) -> ReplicatedValueRecord {
