@@ -1,13 +1,13 @@
 mod support;
 
 use serde_json::Value;
+use std::fs;
 use support::daemon_cluster::{
     skip_unless_daemon_process_e2e, DaemonCluster, DaemonStatus, TestResult,
 };
 
-// Keep the request observable across multiple 200 ms polls without exceeding
-// the daemon's five-second forwarded-command apply deadline during admission.
-const SNAPSHOT_HANDLER_TEST_DELAY_MS: u64 = 1_000;
+// Keep ordinary in-flight requests observable across multiple 200 ms polls.
+const SNAPSHOT_HANDLER_TEST_DELAY_MS: u64 = 1_500;
 const SHARED_COMPACTION_ATTEMPTS: usize = 4;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -74,13 +74,13 @@ fn leader_killed_mid_snapshot_delivery_still_converges() -> TestResult {
         Some(SNAPSHOT_HANDLER_TEST_DELAY_MS),
     )?;
     let (old_leader_index, old_leader_status) =
-        wait_for_snapshot_request_in_flight(&mut cluster, true)?;
+        wait_for_snapshot_request_in_flight(&mut cluster, prepared.lagger_index, true)?;
     let old_leader = cluster.node_ids()[old_leader_index].clone();
 
-    cluster.kill(old_leader_index)?;
-    // Closing the delayed receiver clears the dead leader's accepted socket,
-    // so the replacement leader must own the successful retry.
-    cluster.kill(prepared.lagger_index)?;
+    // Stop both ends of the observed request together. This removes the race
+    // where a slow process kill could leave the receiver enough time to apply
+    // the interrupted leader's snapshot before the receiver itself stopped.
+    cluster.kill_pair_concurrently(old_leader_index, prepared.lagger_index)?;
     cluster.restart_with_snapshot_handler_delay(prepared.lagger_index, None)?;
     cluster.wait_for_leader_not(&old_leader, 3, 3)?;
     wait_for_snapshot_install_and_convergence(
@@ -126,7 +126,8 @@ fn receiver_killed_mid_snapshot_request_releases_sender_and_retry_converges() ->
         prepared.lagger_index,
         Some(SNAPSHOT_HANDLER_TEST_DELAY_MS),
     )?;
-    let (leader_index, in_flight) = wait_for_snapshot_request_in_flight(&mut cluster, false)?;
+    let (leader_index, in_flight) =
+        wait_for_snapshot_request_in_flight(&mut cluster, prepared.lagger_index, false)?;
 
     cluster.kill(prepared.lagger_index)?;
     cluster.wait_for(
@@ -287,9 +288,10 @@ fn wait_for_snapshot_install_and_convergence(
 
 fn wait_for_snapshot_request_in_flight(
     cluster: &mut DaemonCluster,
+    receiver_index: usize,
     require_current_leader: bool,
 ) -> TestResult<(usize, RaftProcessObservation)> {
-    cluster.wait_for(
+    let result = cluster.wait_for(
         "real HTTP MsgSnapshot request becomes in-flight".to_owned(),
         |cluster| {
             let candidates = if require_current_leader {
@@ -304,7 +306,31 @@ fn wait_for_snapshot_request_in_flight(
                     .then_some((index, observation))
             })
         },
-    )
+    );
+    if result.is_err() {
+        let observations = (0..cluster.node_ids().len())
+            .map(|index| (index, observation(cluster, index)))
+            .collect::<Vec<_>>();
+        let log_suffix = format!("-{receiver_index}.stderr.log");
+        let receiver_stderr = fs::read_dir(cluster.root())
+            .ok()
+            .into_iter()
+            .flatten()
+            .filter_map(Result::ok)
+            .find_map(|entry| {
+                entry
+                    .file_name()
+                    .to_str()
+                    .filter(|name| name.ends_with(&log_suffix))
+                    .and_then(|_| fs::read_to_string(entry.path()).ok())
+            })
+            .unwrap_or_else(|| "<receiver stderr unavailable>".to_owned());
+        return Err(format!(
+            "real HTTP MsgSnapshot request did not become observable; receiver_index={receiver_index} require_current_leader={require_current_leader} observations={observations:?} receiver_stderr={receiver_stderr:?}"
+        )
+        .into());
+    }
+    result
 }
 
 fn wait_for_equal_applied_progress(
@@ -348,10 +374,21 @@ fn wait_for_snapshot_success_sum(
     label: &str,
 ) -> TestResult<u64> {
     let indices = indices.to_vec();
-    cluster.wait_for(label.to_owned(), |cluster| {
+    let result = cluster.wait_for(label.to_owned(), |cluster| {
         let successful_sends = snapshot_success_sum(cluster, &indices).ok()?;
         (successful_sends > minimum_exclusive).then_some(successful_sends)
-    })
+    });
+    if result.is_err() {
+        let observations = (0..cluster.node_ids().len())
+            .map(|index| (index, observation(cluster, index)))
+            .collect::<Vec<_>>();
+        return Err(format!(
+            "{label} did not expose the expected successful sender metric; indices={indices:?} minimum_exclusive={minimum_exclusive} observations={observations:?} root={}",
+            cluster.root().display()
+        )
+        .into());
+    }
+    result
 }
 
 fn leader_index(cluster: &DaemonCluster, statuses: &[DaemonStatus]) -> TestResult<usize> {

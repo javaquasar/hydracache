@@ -563,6 +563,30 @@ impl DaemonCluster {
         self.nodes[index].kill()
     }
 
+    pub fn kill_pair_concurrently(&mut self, first: usize, second: usize) -> TestResult {
+        if first == second {
+            return Err("concurrent daemon kill requires two distinct indices".into());
+        }
+        let (first_node, second_node) = if first < second {
+            let (left, right) = self.nodes.split_at_mut(second);
+            (&mut left[first], &mut right[0])
+        } else {
+            let (left, right) = self.nodes.split_at_mut(first);
+            (&mut right[0], &mut left[second])
+        };
+        std::thread::scope(|scope| {
+            let first_kill = scope.spawn(|| first_node.kill().map_err(|error| error.to_string()));
+            let second_kill = scope.spawn(|| second_node.kill().map_err(|error| error.to_string()));
+            first_kill
+                .join()
+                .map_err(|_| "first concurrent daemon kill panicked")??;
+            second_kill
+                .join()
+                .map_err(|_| "second concurrent daemon kill panicked")??;
+            Ok(())
+        })
+    }
+
     pub fn restart(&mut self, index: usize) -> TestResult {
         let seed_addrs = self.seed_addrs();
         self.spawn_node(index, &seed_addrs)

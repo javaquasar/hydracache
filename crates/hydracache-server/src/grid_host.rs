@@ -45,6 +45,7 @@ const GRID_DRIVE_INTERVAL: Duration = Duration::from_millis(50);
 const GRID_RAFT_AUTHORITY_FRESHNESS: Duration = Duration::from_millis(200);
 const GRID_LEADER_WAIT_TIMEOUT: Duration = Duration::from_secs(5);
 const GRID_RUNTIME_SHUTDOWN_TIMEOUT: Duration = Duration::from_secs(1);
+const FORWARDED_APPLY_TIMEOUT_MARKER: &str = "was forwarded but not applied locally before timeout";
 const RAFT_HTTP_CONNECT_TIMEOUT: Duration = Duration::from_millis(500);
 const RAFT_HTTP_REQUEST_TIMEOUT: Duration = Duration::from_secs(2);
 const SNAPSHOT_AUTHORITY_POLL_INTERVAL: Duration = Duration::from_millis(10);
@@ -318,23 +319,44 @@ async fn networked_member_cache(
     node_id: ClusterNodeId,
     generation: ClusterGeneration,
 ) -> CacheResult<HydraCache> {
-    let mut builder = HydraCache::member()
-        .cluster(DEFAULT_CLUSTER_NAME)
-        .control_plane(raft)
-        .discovery(discovery)
-        .node_id(node_id.clone())
-        .generation(generation)
-        .bind(config.cluster_addr.to_string())
-        .diagnostics_endpoint(format!("http://{}", config.admin_api.listen_addr));
-    for seed in &config.seeds {
-        builder = builder.bootstrap(seed.clone());
+    let deadline = Instant::now() + config.join_timeout();
+    loop {
+        let mut builder = HydraCache::member()
+            .cluster(DEFAULT_CLUSTER_NAME)
+            .control_plane(raft.clone())
+            .discovery(discovery.clone())
+            .node_id(node_id.clone())
+            .generation(generation)
+            .bind(config.cluster_addr.to_string())
+            .diagnostics_endpoint(format!("http://{}", config.admin_api.listen_addr));
+        for seed in &config.seeds {
+            builder = builder.bootstrap(seed.clone());
+        }
+        match builder.start().await {
+            Ok(cache) => return Ok(cache),
+            Err(error) if is_forwarded_apply_timeout(&error) && Instant::now() < deadline => {
+                // A durable follower can be behind the retained Raft log while
+                // its own id/generation upsert commits on the leader. Keep the
+                // already-running transport and drive alive so snapshot catch-up
+                // can materialize that exact command locally, then retry the
+                // idempotent admission within the configured join bound.
+                tokio::time::sleep(GRID_DRIVE_INTERVAL).await;
+            }
+            Err(error) => {
+                return Err(CacheError::Backend(format!(
+                    "failed to admit local member {node_id} at generation {}: {error}",
+                    generation.value()
+                )))
+            }
+        }
     }
-    builder.start().await.map_err(|error| {
-        CacheError::Backend(format!(
-            "failed to admit local member {node_id} at generation {}: {error}",
-            generation.value()
-        ))
-    })
+}
+
+fn is_forwarded_apply_timeout(error: &CacheError) -> bool {
+    matches!(
+        error,
+        CacheError::Backend(message) if message.contains(FORWARDED_APPLY_TIMEOUT_MARKER)
+    )
 }
 
 async fn inprocess_member_cache(
@@ -3786,6 +3808,17 @@ mod tests {
                 "unexpected process-E2E value {disabled:?} must stay inert"
             );
         }
+    }
+
+    #[test]
+    fn only_forwarded_apply_timeouts_are_retryable_during_local_admission() {
+        let retryable = CacheError::Backend(format!(
+            "raft metadata command member-upsert:member-a:2 {FORWARDED_APPLY_TIMEOUT_MARKER}"
+        ));
+        assert!(is_forwarded_apply_timeout(&retryable));
+
+        let permanent = CacheError::Backend("stale cluster generation".to_owned());
+        assert!(!is_forwarded_apply_timeout(&permanent));
     }
 
     #[test]
