@@ -45,6 +45,7 @@
 | H21 | Observability is local to the spike | complete | `feat(client-plane): export bounded privacy-safe diagnostics` | v1 typed metric/trace export, 64 salted tenant buckets, bounded trace ring, privacy/cardinality/reconnect/close evidence, operator runbook |
 | H22 | Linux CI, interop, fuzz, and soak gates are absent | in progress | `ci(client-plane): install Linux interop fuzz and soak gates` | four-lane fail-closed contract, pinned workflow/container, receipts/admission canaries, Docker proof, runbook, and exact Ubuntu 24.04 fixed-host preflight implemented; exact hosted Linux/Docker/fuzz receipts and strict `main` protection are active; a labelled fixed-host receipt remains operational evidence |
 | H23 | Redis API clients cannot consume mutation events | complete | `feat(redis): add bounded keyspace event listeners` | shared metadata-only mutation bus, RESP2 arrays/RESP3 pushes, exact/pattern subscriptions, auth and atomic count/retained-byte bounds, explicit lag disconnect, redis-rs and cross-protocol tests; exact implementation commit `2fef344` passed PR Rust, MSRV, Docs, docs-site, HC/2 Linux/Interop, Java 17/21, and both performance tripwires in runs `31551909019`, `31551909021`, and `31551909027` |
+| H24 | Ordinary native listener tests are internal-only | complete | `test(events): prove native listener public contract` | external-crate black-box coverage for raw and typed subscriptions, filters, callback unsubscribe, access opt-in, bounded lag, and resume; the gate remains distinct from Redis and remote HC/2 listener evidence |
 
 ## Global execution rules
 
@@ -794,6 +795,30 @@ continue unchanged.
 local tests, and exact GitHub PR checks are green. A model-only subscriber,
 unbounded queue, value-bearing message, or prose-only claim is not completion.
 
+## H24. Prove ordinary native API listeners as an external client
+
+**Current truth.** The native event implementation already has broad unit
+coverage, but those tests live under `src/tests` and compile inside the
+`hydracache` crate. That boundary does not by itself prove that an application
+can construct, filter, consume, and stop listeners using only the exported API.
+
+**Implementation.** Add a dedicated integration target compiled as an external
+crate. Exercise `HydraCache::subscribe`, the convenience subscriptions,
+`TypedCache` namespace helpers, and callback handles through successful public
+cache operations. Keep access events opt-in and retain the existing bounded,
+non-blocking broadcast semantics.
+
+**Evidence.** The target proves exact public metadata, kind/key-prefix/tag/origin
+filter composition, typed physical-key isolation, callback delivery and
+explicit unsubscribe, disabled-by-default and enabled access events, visible
+`CacheEventRecvError::Lagged`, the lag counter, and continuation with
+`next_event`. The test may not import private modules. It remains separate from
+the Redis keyspace-notification wire test and remote HC/2 server-push evidence.
+
+**Done.** `cargo test -p hydracache --test native_event_listeners --locked` and
+the existing in-crate event suite are green. No listener guarantee is inferred
+from protocol structs, acknowledgements, or documentation alone.
+
 ## Dependency-oriented execution order
 
 ```text
@@ -807,6 +832,7 @@ H01 -> H16 + H17 -> H18
 H10 + H11 + H12 -> H21
 all applicable evidence -> H22
 H01 + H12 + Redis RESP facade -> H23
+native cache event API -> H24
 ```
 
 H01 production integration deliberately occurs after its prerequisites. This

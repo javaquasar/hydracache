@@ -21,7 +21,9 @@
 >   W8/W9/W12 deliverables are tracked separately in the release closure ledger.
 >   Additive H23 introduces an off-by-default Redis keyspace-event listener over
 >   the same verified dispatch state without changing the HC/2 transport or
->   broadening the Redis surface into arbitrary Pub/Sub.
+>   broadening the Redis surface into arbitrary Pub/Sub. H24 separately freezes
+>   the ordinary native Rust listener API through an external-crate black-box
+>   target.
 >
 > Roadmap: [`INDEX.md`](INDEX.md) - rules: [`../RULES.md`](../RULES.md) -
 > gates: [`../GATES.md`](../GATES.md) - compatibility: [`../COMPAT.md`](../COMPAT.md) -

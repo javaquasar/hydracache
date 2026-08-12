@@ -271,6 +271,11 @@ The current behavior is covered by these focused tests:
   - latest-event continuation after lag;
   - callback delivery and unsubscribe;
   - key, prefix, tag, kind, and origin filtering.
+- `crates/hydracache/tests/native_event_listeners.rs`
+  - black-box compilation and execution through exported `HydraCache` and
+    `TypedCache` APIs only;
+  - filtered local mutation delivery and typed namespace isolation;
+  - callback unsubscribe, access-event opt-in, explicit lag, and resume.
 - `crates/hydracache/src/invalidation_bus.rs`
   - bounded in-memory receiver lag reporting.
 - `crates/hydracache-client-protocol/tests/protocol.rs`
@@ -286,6 +291,7 @@ Recommended focused commands:
 
 ```bash
 cargo test -p hydracache --locked events
+cargo test -p hydracache --test native_event_listeners --locked
 cargo test -p hydracache-client-protocol --test protocol --locked
 cargo test -p hydracache-client-protocol --test imap_entry_listener --locked
 cargo test -p hydracache-client-transport-axum --test client_surface --locked

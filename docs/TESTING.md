@@ -1308,18 +1308,27 @@ log-level downgrade cannot be the fix for a correctness contradiction.
 
 ## Cache Event Tests
 
-The cache event/listener API is covered by `crates/hydracache/src/tests/events.rs`.
-Run the focused library tests with:
+The cache event/listener API is covered at two boundaries:
+
+- `crates/hydracache/src/tests/events.rs` exercises the complete in-crate event
+  matrix and internal publication paths;
+- `crates/hydracache/tests/native_event_listeners.rs` is a black-box consumer
+  that can use only the exported ordinary `HydraCache` / `TypedCache` API.
+
+Run both focused targets with:
 
 ```powershell
 cargo test -p hydracache --lib --locked events::
+cargo test -p hydracache --test native_event_listeners --locked
 ```
 
 These tests cover mutation events, opt-in access events, subscriber filters,
 typed-cache delegation, single-flight join events, stale-load discard events,
 loader failure events, and bounded-buffer lag. The lag behavior is intentional:
 HydraCache uses a bounded event bus so cache operations never wait for slow
-listeners.
+listeners. The black-box target additionally freezes callback unsubscribe and
+post-lag resume behavior as an external-client contract; it must not import
+private modules or infer Redis/HC/2 wire compatibility from the local API.
 
 ## Release 0.67 performance characterization
 
