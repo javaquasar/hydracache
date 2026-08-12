@@ -47,7 +47,7 @@
 | H23 | Redis API clients cannot consume mutation events | complete | `feat(redis): add bounded keyspace event listeners` | shared metadata-only mutation bus, RESP2 arrays/RESP3 pushes, exact/pattern subscriptions, auth and atomic count/retained-byte bounds, explicit lag disconnect, redis-rs and cross-protocol tests; exact implementation commit `2fef344` passed PR Rust, MSRV, Docs, docs-site, HC/2 Linux/Interop, Java 17/21, and both performance tripwires in runs `31551909019`, `31551909021`, and `31551909027` |
 | H24 | Ordinary native listener tests are internal-only | complete | `test(events): prove native listener public contract` | external-crate black-box coverage for raw and typed subscriptions, filters, callback unsubscribe, access opt-in, bounded lag, and resume; exact implementation commit `20c7d86` passed PR Rust, MSRV, Docs, docs-site, HC/2 Linux/Interop, Java 17/21, and both performance tripwires in runs `31556527618`, `31556527634`, and `31556527643` |
 | H25 | Native backend puts are invisible to Redis subscribers | complete | `feat(redis): bridge native puts to event subscribers` | lazy metadata-only native bridge, exact namespace fence, real Redis TCP client, generated documentation example; exact implementation commit `df7e754` passed PR Rust, MSRV, Docs, docs-site, HC/2 Linux/Interop, Java 17/21, and both performance tripwires in runs `31575224071`, `31575224099`, and `31575224068` |
-| H26 | Native-to-Redis event failure boundaries are not independently frozen | in progress | `test(redis): harden native event bridge boundaries` | exact/custom namespace, RESP3, metadata-only separation, receiver teardown/no replay, forced lag/non-blocking writer/recovery, mixed-source no-duplicate, AUTH, and authenticated rediss tests are green locally; hosted evidence pending |
+| H26 | Native-to-Redis event failure boundaries are not independently frozen | complete | `test(redis): harden native event bridge boundaries` | exact/custom namespace, RESP3, metadata-only separation, receiver teardown/no replay, forced lag/non-blocking writer/recovery, mixed-source no-duplicate, AUTH, and authenticated rediss tests; exact implementation commit `94e3819` passed PR Rust, MSRV, Docs, docs-site, HC/2 Linux/Interop, Java 17/21, and both performance tripwires in runs `31581527459`, `31581527439`, and `31581527409` |
 
 ## Global execution rules
 
@@ -894,6 +894,14 @@ the focused H26 command uses the `native_backend` server-test filter.
 formatting, workspace checks, and normal hosted PR gates are green. H26 does
 not add value replication, replay, a global cross-source order, approximate
 native event mappings, or cross-daemon delivery.
+
+The exact implementation commit `94e3819` passed the full PR Rust and MSRV
+matrix in workflow run
+[`31581527459`](https://github.com/javaquasar/hydracache/actions/runs/31581527459),
+HC/2 Linux, Docker interoperability, and Java 17/21 in run
+[`31581527439`](https://github.com/javaquasar/hydracache/actions/runs/31581527439),
+and the documentation-site build in run
+[`31581527409`](https://github.com/javaquasar/hydracache/actions/runs/31581527409).
 
 ## Dependency-oriented execution order
 
