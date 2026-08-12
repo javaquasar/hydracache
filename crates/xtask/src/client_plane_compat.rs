@@ -165,14 +165,10 @@ fn validate_manifest(root: &Path, manifest: &CompatibilityManifest) -> Result<()
         ],
         "retained producer commit",
     )?;
-    run_git(
+    require_git_ancestor(
         root,
-        &[
-            "merge-base",
-            "--is-ancestor",
-            &manifest.baseline.producer_commit,
-            "HEAD",
-        ],
+        &manifest.baseline.producer_commit,
+        "HEAD",
         "retained producer ancestry",
     )?;
     let tree = git_output(
@@ -341,14 +337,10 @@ fn validate_daemon_artifact(
         ],
         "retained daemon producer commit",
     )?;
-    run_git(
+    require_git_ancestor(
         root,
-        &[
-            "merge-base",
-            "--is-ancestor",
-            &artifact.producer_commit,
-            "HEAD",
-        ],
+        &artifact.producer_commit,
+        "HEAD",
         "retained daemon producer ancestry",
     )?;
     if git_output(
@@ -813,7 +805,69 @@ fn run_checked(
 }
 
 fn run_git(root: &Path, args: &[&str], label: &str) -> Result<(), Box<dyn Error>> {
-    run_checked(root, "git", args, &[], label)
+    let output = Command::new("git").args(args).current_dir(root).output()?;
+    if output.status.success() {
+        return Ok(());
+    }
+    let head = git_output(root, &["rev-parse", "HEAD"])
+        .unwrap_or_else(|error| format!("unavailable ({error})"));
+    Err(format!(
+        "{label} failed with {} (cwd={}, head={head}, command=git {}, stdout={}, stderr={})",
+        output.status,
+        root.display(),
+        args.join(" "),
+        String::from_utf8_lossy(&output.stdout).trim(),
+        String::from_utf8_lossy(&output.stderr).trim(),
+    )
+    .into())
+}
+
+fn require_git_ancestor(
+    root: &Path,
+    ancestor: &str,
+    descendant: &str,
+    label: &str,
+) -> Result<(), Box<dyn Error>> {
+    let merge_base = Command::new("git")
+        .args(["merge-base", "--is-ancestor", ancestor, descendant])
+        .current_dir(root)
+        .output()?;
+    if merge_base.status.success() {
+        return Ok(());
+    }
+
+    let reachable = Command::new("git")
+        .args(["rev-list", descendant])
+        .current_dir(root)
+        .output()?;
+    if reachable.status.success() && reachable_commits_include(&reachable.stdout, ancestor) {
+        eprintln!(
+            "{label}: git merge-base returned {}; exact reachability via git rev-list succeeded",
+            merge_base.status
+        );
+        return Ok(());
+    }
+
+    let head = git_output(root, &["rev-parse", descendant])
+        .unwrap_or_else(|error| format!("unavailable ({error})"));
+    let shallow = git_output(root, &["rev-parse", "--is-shallow-repository"])
+        .unwrap_or_else(|error| format!("unavailable ({error})"));
+    Err(format!(
+        "{label} failed (cwd={}, descendant={head}, ancestor={ancestor}, shallow={shallow}, merge_base_status={}, merge_base_stdout={}, merge_base_stderr={}, rev_list_status={}, rev_list_stderr={})",
+        root.display(),
+        merge_base.status,
+        String::from_utf8_lossy(&merge_base.stdout).trim(),
+        String::from_utf8_lossy(&merge_base.stderr).trim(),
+        reachable.status,
+        String::from_utf8_lossy(&reachable.stderr).trim(),
+    )
+    .into())
+}
+
+fn reachable_commits_include(output: &[u8], expected: &str) -> bool {
+    String::from_utf8_lossy(output)
+        .lines()
+        .any(|commit| commit == expected)
 }
 
 fn git_output(root: &Path, args: &[&str]) -> Result<String, Box<dyn Error>> {
@@ -853,5 +907,18 @@ mod tests {
         assert!(validate_relative_path("../artifact.jar").is_err());
         assert!(validate_relative_path("C:/artifact.jar").is_err());
         assert!(!matches!("skip", "pass" | "baseline-smoke" | "blocked"));
+    }
+
+    #[test]
+    fn reachability_requires_an_exact_commit_line() {
+        let reachable = format!("{}\n{}\n", "a".repeat(40), "b".repeat(40));
+        assert!(reachable_commits_include(
+            reachable.as_bytes(),
+            &"a".repeat(40)
+        ));
+        assert!(!reachable_commits_include(
+            reachable.as_bytes(),
+            &"a".repeat(39)
+        ));
     }
 }

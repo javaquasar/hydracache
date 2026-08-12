@@ -1,4 +1,6 @@
 use std::fs;
+use std::process::Command;
+use std::time::{SystemTime, UNIX_EPOCH};
 
 use serde_json::Value;
 
@@ -43,6 +45,7 @@ fn ci_instruction_profile_is_paired_and_cannot_be_ship_evidence() {
 fn workflow_runs_real_callgrind_work_without_touching_reference_lanes() {
     let workflow = read(".github/workflows/ci.yml");
     let script = read("scripts/perf/run-ci-instruction-pair.sh");
+    let synchronizer = read("scripts/perf/sync-ci-instruction-lock.py");
     let harness = read("scripts/perf/ci-instruction-harness/benches/cache_work.rs");
     let guide = read("docs/testing/PERF_CI_INSTRUCTION_PROFILE.md");
 
@@ -63,10 +66,23 @@ fn workflow_runs_real_callgrind_work_without_touching_reference_lanes() {
         "--callgrind-limits='ir=5.0%'",
         "--allow-aslr=yes",
         "--parallel=1",
+        "sync_subject_lock base",
+        "sync_subject_lock head",
+        "sync-ci-instruction-lock.py",
         "report.json",
         "contract-sha256.txt",
     ] {
         assert!(script.contains(required), "runner lacks {required}");
+    }
+    for required in [
+        "LOCAL_PACKAGES",
+        "subject lock synchronization changed a registry package",
+        "refusing to rewrite registry package",
+    ] {
+        assert!(
+            synchronizer.contains(required),
+            "lock synchronizer lacks {required}"
+        );
     }
     for required in [
         "cache_get_hit",
@@ -83,4 +99,61 @@ fn workflow_runs_real_callgrind_work_without_touching_reference_lanes() {
     ] {
         assert!(guide.contains(required), "guide lacks {required}");
     }
+}
+
+#[test]
+fn instruction_lock_sync_handles_a_workspace_version_boundary_without_registry_drift() {
+    let root = xtask::doc_check::find_repo_root().unwrap();
+    let unique = SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .unwrap()
+        .as_nanos();
+    let scratch = std::env::temp_dir().join(format!(
+        "hydracache-ci-instruction-lock-{}-{unique}",
+        std::process::id()
+    ));
+    fs::create_dir_all(&scratch).unwrap();
+    let lock = scratch.join("Cargo.lock");
+    let manifest = scratch.join("Cargo.toml");
+    fs::copy(
+        root.join("scripts/perf/ci-instruction-harness/Cargo.lock"),
+        &lock,
+    )
+    .unwrap();
+
+    let python = if cfg!(windows) { "python" } else { "python3" };
+    for version in ["0.67.0", "0.68.0"] {
+        fs::write(
+            &manifest,
+            format!("[workspace]\n\n[workspace.package]\nversion = \"{version}\"\n"),
+        )
+        .unwrap();
+        let output = Command::new(python)
+            .arg(root.join("scripts/perf/sync-ci-instruction-lock.py"))
+            .arg("--lock")
+            .arg(&lock)
+            .arg("--subject-manifest")
+            .arg(&manifest)
+            .output()
+            .unwrap();
+        assert!(
+            output.status.success(),
+            "lock sync failed: {}",
+            String::from_utf8_lossy(&output.stderr)
+        );
+        let snapshot: toml::Value = toml::from_str(&fs::read_to_string(&lock).unwrap()).unwrap();
+        let packages = snapshot["package"].as_array().unwrap();
+        let actual = packages
+            .iter()
+            .filter_map(|package| {
+                let name = package["name"].as_str()?;
+                matches!(name, "hydracache" | "hydracache-core" | "hydracache-macros")
+                    .then(|| (name, package["version"].as_str().unwrap()))
+            })
+            .collect::<Vec<_>>();
+        assert_eq!(actual.len(), 3);
+        assert!(actual.iter().all(|(_, actual)| *actual == version));
+    }
+
+    fs::remove_dir_all(scratch).unwrap();
 }

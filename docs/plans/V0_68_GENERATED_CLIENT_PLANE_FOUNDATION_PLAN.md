@@ -18,8 +18,9 @@
 >   operation family, `0.63` edge-adapter separation, and `0.64` evidence/canary governance.
 > - **Unblocks:** `0.69` migration conformance against a real Java artifact and live previous-client
 >   binaries; later optional Hazelcast Open Binary Client Protocol and smart-routing edge tracks.
-> - **Status:** in-progress; implementation is complete. The Rust library set, including
->   `hydracache-client-hc2`, is eligible for the 0.68 version cut after exact-SHA hosted admission.
+> - **Status:** shipped; implementation and the isolated Rust `0.68.0` version cut are complete.
+>   The tag workflow admits the exact candidate only after hosted Linux/Docker/fuzz evidence and
+>   publishes the Rust library set, including `hydracache-client-hc2`, in dependency order.
 >   Java and Python remain tested source previews with no Maven/PyPI publication. H01-H21
 >   hardening is complete; the H22 fixed-host receipt is retained for later Java/Python promotion,
 >   while hosted Linux/Docker/fuzz evidence owns the Rust release admission.

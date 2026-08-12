@@ -6,7 +6,7 @@ use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
 use hydracache::{
     ClusterEpoch, DurableValueStore, PartitionId, ReplicatedValueRecord, ReplicatedValueStore,
-    DURABLE_VALUE_FORMAT_VERSION,
+    ValueStoreError, DURABLE_VALUE_FORMAT_VERSION,
 };
 
 #[test]
@@ -54,11 +54,32 @@ fn durable_value_store_unknown_future_format_refuses_to_open() {
     DurableValueStore::write_format_marker_for_test(&path, DURABLE_VALUE_FORMAT_VERSION + 1)
         .unwrap();
 
-    let error = DurableValueStore::open(&path).unwrap_err();
+    let error = open_after_marker_write(&path);
 
     assert!(error
         .to_string()
         .contains("unsupported durable value-store format"));
+}
+
+fn open_after_marker_write(path: &std::path::Path) -> ValueStoreError {
+    const MAX_ATTEMPTS: usize = 100;
+
+    for attempt in 0..MAX_ATTEMPTS {
+        match DurableValueStore::open(path) {
+            Ok(_) => panic!("future durable value-store format was accepted"),
+            Err(error) if error.to_string().contains("could not acquire lock") => {
+                if attempt + 1 < MAX_ATTEMPTS {
+                    thread::sleep(Duration::from_millis(10));
+                }
+            }
+            Err(error) => return error,
+        }
+    }
+
+    panic!(
+        "durable value-store lock was not released within one second: {}",
+        path.display()
+    );
 }
 
 #[test]

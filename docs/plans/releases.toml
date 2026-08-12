@@ -295,7 +295,7 @@ depends_on = ["0.67.0"]
 [[release]]
 version = "0.68.0"
 file = "docs/plans/V0_68_GENERATED_CLIENT_PLANE_FOUNDATION_PLAN.md"
-status = "in-progress"
+status = "shipped"
 networked_control_plane = true
 work_items = ["W0", "W1", "W2", "W3", "W4", "W5", "W6", "W7", "W8", "W9", "W10", "W11", "W12"]
 theme = "Generated Client Plane Foundation - release the Rust 0.68 library set, including the Rust HC/2 client crate, from one exact candidate after hosted Linux, digest-pinned Docker interop, fuzz, package, conformance, canary, and normal CI evidence. The generated Java and Python clients remain tested source previews and are not published to Maven or PyPI; their later external promotion retains the labelled Ubuntu 24.04 fixed-host soak. The accepted HC/2 design provides generated schemas, bounded connection/invocation/listener/topology/session machinery, Redis event integration, security/resource bounds, observability, compatibility fixtures, and fail-closed governance without Hazelcast wire/full-CP/smart-routing claims or numerical performance claims. The deferred 0.67.1 evidence campaign remains in-progress and is not a code dependency for this release."

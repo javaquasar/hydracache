@@ -44,6 +44,17 @@ export CARGO_TARGET_DIR="$scratch/target"
 export CARGO_TERM_COLOR=never
 cd "$scratch/harness"
 
+sync_subject_lock() {
+  local side="$1"
+  local sync_log="$output/${side}-lock-sync.log"
+
+  python3 "$repo_root/scripts/perf/sync-ci-instruction-lock.py" \
+    --lock Cargo.lock \
+    --subject-manifest "$scratch/subject/Cargo.toml" \
+    >"$sync_log" 2>&1
+  cp Cargo.lock "$output/${side}-harness.lock"
+}
+
 rustc --version --verbose >"$output/rustc.txt"
 cargo --version --verbose >"$output/cargo.txt"
 valgrind --version >"$output/valgrind.txt"
@@ -56,6 +67,7 @@ sha256sum \
   "$repo_root/scripts/perf/ci-instruction-harness/benches/cache_work.rs" \
   >"$output/contract-sha256.txt"
 
+sync_subject_lock base
 cargo bench --locked --bench cache_work -- \
   --save-baseline=base \
   --output-format=json \
@@ -67,6 +79,7 @@ cargo bench --locked --bench cache_work -- \
 rm "$scratch/subject"
 ln -s "$scratch/head" "$scratch/subject"
 
+sync_subject_lock head
 set +e
 cargo bench --locked --bench cache_work -- \
   --baseline=base \
