@@ -536,8 +536,12 @@ impl ServerRuntime {
             });
         }
         self.begin_local_drain();
-        self.leave_cluster_for_shutdown();
+        // The Raft voter removal must reach the current leader before the
+        // topology leave is proposed. Otherwise the topology command can
+        // remove the draining process first, terminate its only live peer,
+        // and strand the old three-voter configuration without quorum.
         self.cluster_status.begin_drain();
+        self.leave_cluster_for_shutdown();
         let outcome = GracefulShutdown::new(self.config.drain_timeout()).drain(&mut self.services);
         self.last_drain = Some(outcome);
         outcome
@@ -577,8 +581,11 @@ impl ServerRuntime {
             });
         }
         self.begin_local_drain();
-        self.leave_cluster_for_shutdown();
+        // Preserve the same voter-before-topology ordering as the online
+        // admin drain path. Both shutdown entry points share the fail-closed
+        // membership transition contract.
         self.cluster_status.begin_drain();
+        self.leave_cluster_for_shutdown();
         let outcome = GracefulShutdown::new(self.config.drain_timeout()).drain(&mut self.services);
         self.flushed = true;
         self.storage_open = false;

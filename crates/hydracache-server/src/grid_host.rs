@@ -2231,6 +2231,23 @@ impl DedicatedGridRuntime {
             .block_on(future)
     }
 
+    fn block_on_from_any_thread<F>(&self, future: F) -> F::Output
+    where
+        F: Future + Send,
+        F::Output: Send,
+    {
+        if tokio::runtime::Handle::try_current().is_ok() {
+            return std::thread::scope(|scope| {
+                scope
+                    .spawn(move || self.block_on(future))
+                    .join()
+                    .expect("dedicated grid runtime helper thread panicked")
+            });
+        }
+        self.block_on(future)
+    }
+
+    #[cfg(test)]
     fn spawn<F>(&self, future: F)
     where
         F: Future<Output = ()> + Send + 'static,
@@ -2473,33 +2490,20 @@ impl NetworkedGridHandle {
             return;
         };
         if let Some(runtime) = &self._runtime {
-            if tokio::runtime::Handle::try_current().is_ok() {
-                let message_sink = Arc::clone(&self._message_sink);
-                let diagnostics = Arc::clone(&self.drive_diagnostics);
-                let drain_remove_proposed = Arc::clone(&self.drain_remove_proposed);
-                runtime.spawn(async move {
-                    if send_raft_messages_with_diagnostics(
-                        &message_sink,
-                        messages,
-                        Some(diagnostics.as_ref()),
-                    )
-                    .await
-                    .is_err()
-                    {
-                        drain_remove_proposed.store(false, Ordering::SeqCst);
-                    }
-                });
-            } else {
-                if runtime
-                    .block_on(send_raft_messages_with_diagnostics(
-                        &self._message_sink,
-                        messages,
-                        Some(self.drive_diagnostics.as_ref()),
-                    ))
-                    .is_err()
-                {
-                    self.drain_remove_proposed.store(false, Ordering::SeqCst);
-                }
+            // Returning before delivery makes the subsequent topology leave
+            // race this ConfChange. Run the bounded send to completion even
+            // when begin_drain is called from the admin Tokio runtime; the
+            // dedicated grid runtime is entered from a helper OS thread so we
+            // never nest Tokio runtimes on one thread.
+            if runtime
+                .block_on_from_any_thread(send_raft_messages_with_diagnostics(
+                    &self._message_sink,
+                    messages,
+                    Some(self.drive_diagnostics.as_ref()),
+                ))
+                .is_err()
+            {
+                self.drain_remove_proposed.store(false, Ordering::SeqCst);
             }
         } else {
             self.drain_remove_proposed.store(false, Ordering::SeqCst);
@@ -4123,6 +4127,17 @@ mod tests {
             .build()
             .unwrap();
         drop(DedicatedGridRuntime::new(runtime));
+    }
+
+    #[tokio::test]
+    async fn dedicated_runtime_can_block_from_a_tokio_caller() {
+        let runtime = tokio::runtime::Builder::new_current_thread()
+            .enable_all()
+            .build()
+            .unwrap();
+        let runtime = DedicatedGridRuntime::new(runtime);
+
+        assert_eq!(runtime.block_on_from_any_thread(async { 17 }), 17);
     }
 
     #[test]
