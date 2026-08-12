@@ -53,6 +53,7 @@ pub type TestResult<T = ()> = Result<T, Box<dyn Error>>;
 pub struct DaemonStatus {
     pub leader: Option<String>,
     pub term: u64,
+    pub epoch: u64,
     pub members: u32,
     pub voters: u32,
     pub quorum_ok: bool,
@@ -70,6 +71,10 @@ impl DaemonStatus {
                 .get("term")
                 .and_then(Value::as_u64)
                 .ok_or("admin status missing term")?,
+            epoch: value
+                .get("epoch")
+                .and_then(Value::as_u64)
+                .ok_or("admin status missing epoch")?,
             members: u32_field(&value, "members")?,
             voters: u32_field(&value, "voters")?,
             quorum_ok: value

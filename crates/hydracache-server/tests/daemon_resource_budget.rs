@@ -416,6 +416,7 @@ fn leader_selection_accepts_a_lagging_first_observer() {
     let status = |leader: Option<&str>| DaemonStatus {
         leader: leader.map(ToOwned::to_owned),
         term: 7,
+        epoch: 3,
         members: 3,
         voters: 3,
         quorum_ok: true,
