@@ -171,6 +171,16 @@ existing live keys, and `HC.INVALIDATE_TAG` must invalidate through
 `ClientSurfaceState` without scanning the Redis keyspace or claiming
 cross-listener/global tag semantics.
 
+The additive 0.68 Redis event-listener row is also manifest-driven. It covers
+only off-by-default keyspace notifications through `SUBSCRIBE`, `UNSUBSCRIBE`,
+`PSUBSCRIBE`, and `PUNSUBSCRIBE`. The focused tests prove tenant-fenced,
+metadata-only publication, RESP2 array and RESP3 push encodings, binary pattern
+matching, auth-before-subscribe, unique-subscription count/retained-byte bounds,
+explicit lag failure, unsubscribe accounting, and visibility of compatible
+mutations sent through the shared HC/2 dispatch state. It does not turn
+HydraCache into an arbitrary Pub/Sub broker or establish replay/cross-daemon
+delivery.
+
 When adding or changing a RESP command:
 
 1. Update the conformance manifest first.
@@ -193,7 +203,8 @@ credential redaction, hardened password comparison, unsupported/admin-disabled m
 coalesced/partial frame boundaries, Redis Cluster negative coverage, `SELECT 0` single-database
 coverage, minimal `INFO`, cache-subset `TYPE`, edge-local `HC.NAMESPACE`/tag invalidation,
 disabled `CONFIG`/`FLUSHDB`/`FLUSHALL`
-non-mutation, decoder fuzz smoke, and oversized frame limits. The server
+non-mutation, keyspace-event subscriptions and unsubscribe lifecycle, decoder
+fuzz smoke, and oversized frame limits. The server
 lifecycle gate proves the
 listener config is off by default, address conflicts are rejected, Redis TLS material is validated,
 plaintext is rejected on TLS listeners before mutation, the real TCP/TLS RESP listener starts when

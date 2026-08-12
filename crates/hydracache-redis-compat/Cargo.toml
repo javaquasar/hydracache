@@ -21,6 +21,7 @@ thiserror.workspace = true
 tokio.workspace = true
 
 [dev-dependencies]
+futures-util.workspace = true
 hydracache.workspace = true
 proptest.workspace = true
 rcgen.workspace = true

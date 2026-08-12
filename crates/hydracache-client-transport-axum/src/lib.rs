@@ -30,6 +30,7 @@ use hydracache_client_protocol::{
 use hydracache_observability::{AuditEvent, AuditRecorder, InMemoryAuditSink, TenantStatus};
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
+use tokio::sync::broadcast;
 
 /// Stable external client API prefix.
 pub const CLIENT_API_PREFIX: &str = "/client/v1";
@@ -51,6 +52,101 @@ pub const HYDRACACHE_TENANT_HEADER: &str = "x-hydracache-tenant";
 
 /// Optional test/admin marker for privileged client operations.
 pub const HYDRACACHE_ADMIN_HEADER: &str = "x-hydracache-admin";
+
+/// Bounded capacity of the in-process client-surface mutation signal bus.
+pub const CLIENT_SURFACE_MUTATION_EVENT_CAPACITY: usize = 1024;
+
+/// Mutation kind emitted after a verified client-surface state transition.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum ClientSurfaceMutationKind {
+    /// A value was stored or replaced.
+    Stored,
+    /// A value was explicitly removed after a successful conditional check.
+    Removed,
+    /// A key was invalidated without a stronger transition reason.
+    Invalidated,
+    /// A key expiry was installed or changed.
+    Expire,
+    /// A key expiry was removed.
+    Persist,
+    /// A whole namespace was evicted.
+    NamespaceEvicted,
+}
+
+/// Metadata-only mutation signal shared by HC/1, HC/2, and compatibility edges.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ClientSurfaceMutationEvent {
+    tenant: String,
+    namespace: Namespace,
+    key: Option<StructuredKey>,
+    kind: ClientSurfaceMutationKind,
+    message_id: u64,
+}
+
+impl ClientSurfaceMutationEvent {
+    /// Return the verified tenant that owns the mutation.
+    pub fn tenant(&self) -> &str {
+        &self.tenant
+    }
+
+    /// Return the affected namespace.
+    pub fn namespace(&self) -> &Namespace {
+        &self.namespace
+    }
+
+    /// Return the affected key for key-scoped mutations.
+    pub fn key(&self) -> Option<&StructuredKey> {
+        self.key.as_ref()
+    }
+
+    /// Return the mutation kind.
+    pub fn kind(&self) -> ClientSurfaceMutationKind {
+        self.kind
+    }
+
+    /// Return the process-local monotonic message id.
+    pub fn message_id(&self) -> u64 {
+        self.message_id
+    }
+}
+
+/// Receive failure for the bounded client-surface mutation bus.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Error)]
+pub enum ClientSurfaceMutationRecvError {
+    /// The subscriber fell behind and one or more signals were overwritten.
+    #[error("client-surface mutation subscriber lagged by {0} events")]
+    Lagged(u64),
+    /// The mutation bus was closed.
+    #[error("client-surface mutation bus closed")]
+    Closed,
+}
+
+/// Tenant-fenced receiver for verified client-surface mutation signals.
+#[derive(Debug)]
+pub struct ClientSurfaceMutationSubscriber {
+    tenant: String,
+    receiver: broadcast::Receiver<ClientSurfaceMutationEvent>,
+}
+
+impl ClientSurfaceMutationSubscriber {
+    /// Receive the next mutation owned by this subscriber's verified tenant.
+    pub async fn recv(
+        &mut self,
+    ) -> Result<ClientSurfaceMutationEvent, ClientSurfaceMutationRecvError> {
+        loop {
+            match self.receiver.recv().await {
+                Ok(event) if event.tenant == self.tenant => return Ok(event),
+                Ok(_) => continue,
+                Err(broadcast::error::RecvError::Lagged(count)) => {
+                    return Err(ClientSurfaceMutationRecvError::Lagged(count));
+                }
+                Err(broadcast::error::RecvError::Closed) => {
+                    return Err(ClientSurfaceMutationRecvError::Closed);
+                }
+            }
+        }
+    }
+}
 
 /// External client route boundary helper.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -356,6 +452,7 @@ pub struct ClientSurfaceState {
     rejected_oversized: AtomicU64,
     active_subscriptions: AtomicU64,
     next_message_id: AtomicU64,
+    mutation_events: broadcast::Sender<ClientSurfaceMutationEvent>,
     store: Mutex<BTreeMap<StoreKey, StoredValue>>,
     cache_now_ms_for_tests: Mutex<Option<u64>>,
     cache_time_floor_ms: AtomicU64,
@@ -372,6 +469,7 @@ impl ClientSurfaceState {
     pub fn new(limits: ClientSurfaceLimits) -> Result<Self, ClientSurfaceError> {
         limits.validate()?;
         let audit_sink = Arc::new(InMemoryAuditSink::new());
+        let (mutation_events, _) = broadcast::channel(CLIENT_SURFACE_MUTATION_EVENT_CAPACITY);
         Ok(Self {
             limits,
             dispatch_attempts: AtomicU64::new(0),
@@ -380,6 +478,7 @@ impl ClientSurfaceState {
             rejected_oversized: AtomicU64::new(0),
             active_subscriptions: AtomicU64::new(0),
             next_message_id: AtomicU64::new(1),
+            mutation_events,
             store: Mutex::new(BTreeMap::new()),
             cache_now_ms_for_tests: Mutex::new(None),
             cache_time_floor_ms: AtomicU64::new(0),
@@ -399,6 +498,7 @@ impl ClientSurfaceState {
     ) -> Result<Self, ClientSurfaceError> {
         limits.validate()?;
         let audit_sink = Arc::new(InMemoryAuditSink::new());
+        let (mutation_events, _) = broadcast::channel(CLIENT_SURFACE_MUTATION_EVENT_CAPACITY);
         Ok(Self {
             limits,
             dispatch_attempts: AtomicU64::new(0),
@@ -407,6 +507,7 @@ impl ClientSurfaceState {
             rejected_oversized: AtomicU64::new(0),
             active_subscriptions: AtomicU64::new(0),
             next_message_id: AtomicU64::new(1),
+            mutation_events,
             store: Mutex::new(BTreeMap::new()),
             cache_now_ms_for_tests: Mutex::new(None),
             cache_time_floor_ms: AtomicU64::new(0),
@@ -447,6 +548,21 @@ impl ClientSurfaceState {
     /// Count of active subscription streams.
     pub fn active_subscriptions(&self) -> u64 {
         self.active_subscriptions.load(Ordering::SeqCst)
+    }
+
+    /// Subscribe to metadata-only mutations for one verified tenant.
+    ///
+    /// Publication is non-blocking and bounded. A slow receiver observes
+    /// [`ClientSurfaceMutationRecvError::Lagged`] instead of delaying writes.
+    pub fn subscribe_mutations(
+        &self,
+        identity: &ClientIdentity,
+    ) -> Result<ClientSurfaceMutationSubscriber, ClientSurfaceError> {
+        self.validate_tenant_identity(identity, CLIENT_SUBSCRIPTIONS_PATH, None)?;
+        Ok(ClientSurfaceMutationSubscriber {
+            tenant: identity.tenant().to_owned(),
+            receiver: self.mutation_events.subscribe(),
+        })
     }
 
     /// Configure the modeled lock leader for integration tests.
@@ -727,7 +843,12 @@ impl ClientSurfaceState {
                     Err(error) => ClientResponseEnvelope::error(envelope.request_id, error),
                     Ok(()) => {
                         self.state_mutations.fetch_add(1, Ordering::SeqCst);
-                        self.record_invalidation(ns, key);
+                        self.record_invalidation(
+                            identity,
+                            ns,
+                            key,
+                            ClientSurfaceMutationKind::Invalidated,
+                        );
                         ClientResponseEnvelope::ok(envelope.request_id, ClientResponse::Invalidated)
                     }
                 }
@@ -859,6 +980,14 @@ impl ClientSurfaceState {
                         Ok(_) => {
                             self.state_mutations
                                 .fetch_add(entries.len() as u64, Ordering::SeqCst);
+                            for entry in &entries {
+                                self.record_mutation(
+                                    identity,
+                                    ns.clone(),
+                                    Some(entry.key.clone()),
+                                    ClientSurfaceMutationKind::Stored,
+                                );
+                            }
                             let items = (0..entries.len())
                                 .map(|index| BatchItemStatus {
                                     index,
@@ -951,6 +1080,11 @@ impl ClientSurfaceState {
                     ClientResponseEnvelope::error(envelope.request_id, error)
                 } else {
                     self.state_mutations.fetch_add(1, Ordering::SeqCst);
+                    self.record_namespace_mutation(
+                        identity,
+                        ns,
+                        ClientSurfaceMutationKind::NamespaceEvicted,
+                    );
                     ClientResponseEnvelope::ok(envelope.request_id, ClientResponse::Evicted)
                 }
             }
@@ -1306,7 +1440,7 @@ impl ClientSurfaceState {
         let applied = matches!(&result, Ok(ClientResponse::CasApplied { .. }));
         if applied {
             self.state_mutations.fetch_add(1, Ordering::SeqCst);
-            self.record_invalidation(ns, key);
+            self.record_invalidation(identity, ns, key, ClientSurfaceMutationKind::Stored);
         }
         lock_response(request_id, result)
     }
@@ -1357,7 +1491,7 @@ impl ClientSurfaceState {
         let applied = matches!(&result, Ok(ClientResponse::CasApplied { .. }));
         if applied {
             self.state_mutations.fetch_add(1, Ordering::SeqCst);
-            self.record_invalidation(ns, key);
+            self.record_invalidation(identity, ns, key, ClientSurfaceMutationKind::Removed);
         }
         lock_response(request_id, result)
     }
@@ -1462,7 +1596,7 @@ impl ClientSurfaceState {
         }
         drop(idempotency_keys);
         self.state_mutations.fetch_add(1, Ordering::SeqCst);
-        self.record_invalidation(ns, key);
+        self.record_invalidation(identity, ns, key, ClientSurfaceMutationKind::Stored);
         ClientResponseEnvelope::ok(request_id, ClientResponse::Stored)
     }
 
@@ -1499,7 +1633,7 @@ impl ClientSurfaceState {
         };
         if applied {
             self.state_mutations.fetch_add(1, Ordering::SeqCst);
-            self.record_invalidation(ns, key);
+            self.record_invalidation(identity, ns, key, ClientSurfaceMutationKind::Expire);
         }
         ClientResponseEnvelope::ok(request_id, ClientResponse::Expiry { applied })
     }
@@ -1533,7 +1667,7 @@ impl ClientSurfaceState {
         };
         if applied {
             self.state_mutations.fetch_add(1, Ordering::SeqCst);
-            self.record_invalidation(ns, key);
+            self.record_invalidation(identity, ns, key, ClientSurfaceMutationKind::Persist);
         }
         ClientResponseEnvelope::ok(request_id, ClientResponse::Expiry { applied })
     }
@@ -1647,7 +1781,7 @@ impl ClientSurfaceState {
         };
         if stored {
             self.state_mutations.fetch_add(1, Ordering::SeqCst);
-            self.record_invalidation(ns, key);
+            self.record_invalidation(identity, ns, key, ClientSurfaceMutationKind::Stored);
         }
         ClientResponseEnvelope::ok(request_id, ClientResponse::ConditionalStored { stored })
     }
@@ -1694,7 +1828,7 @@ impl ClientSurfaceState {
         };
         if applied {
             self.state_mutations.fetch_add(1, Ordering::SeqCst);
-            self.record_invalidation(ns, key);
+            self.record_invalidation(identity, ns, key, ClientSurfaceMutationKind::Removed);
         }
         ClientResponseEnvelope::ok(request_id, ClientResponse::CompareValueApplied { applied })
     }
@@ -1772,7 +1906,7 @@ impl ClientSurfaceState {
         };
         if applied {
             self.state_mutations.fetch_add(1, Ordering::SeqCst);
-            self.record_invalidation(ns, key);
+            self.record_invalidation(identity, ns, key, ClientSurfaceMutationKind::Expire);
         }
         ClientResponseEnvelope::ok(request_id, ClientResponse::CompareValueApplied { applied })
     }
@@ -1810,12 +1944,66 @@ impl ClientSurfaceState {
         }
     }
 
-    fn record_invalidation(&self, ns: Namespace, key: StructuredKey) {
+    fn record_invalidation(
+        &self,
+        identity: &ClientIdentity,
+        ns: Namespace,
+        key: StructuredKey,
+        kind: ClientSurfaceMutationKind,
+    ) {
         let message_id = self.next_message_id.fetch_add(1, Ordering::SeqCst);
         self.events
             .lock()
             .expect("events mutex")
-            .push(InvalidationEvent::new(ns, key, 1, message_id));
+            .push(InvalidationEvent::new(
+                ns.clone(),
+                key.clone(),
+                1,
+                message_id,
+            ));
+        self.publish_mutation(identity, ns, Some(key), kind, message_id);
+    }
+
+    fn record_mutation(
+        &self,
+        identity: &ClientIdentity,
+        namespace: Namespace,
+        key: Option<StructuredKey>,
+        kind: ClientSurfaceMutationKind,
+    ) {
+        if self.mutation_events.receiver_count() == 0 {
+            return;
+        }
+        let message_id = self.next_message_id.fetch_add(1, Ordering::SeqCst);
+        self.publish_mutation(identity, namespace, key, kind, message_id);
+    }
+
+    fn publish_mutation(
+        &self,
+        identity: &ClientIdentity,
+        namespace: Namespace,
+        key: Option<StructuredKey>,
+        kind: ClientSurfaceMutationKind,
+        message_id: u64,
+    ) {
+        if self.mutation_events.receiver_count() > 0 {
+            let _ = self.mutation_events.send(ClientSurfaceMutationEvent {
+                tenant: identity.tenant().to_owned(),
+                namespace,
+                key,
+                kind,
+                message_id,
+            });
+        }
+    }
+
+    fn record_namespace_mutation(
+        &self,
+        identity: &ClientIdentity,
+        namespace: Namespace,
+        kind: ClientSurfaceMutationKind,
+    ) {
+        self.record_mutation(identity, namespace, None, kind);
     }
 }
 

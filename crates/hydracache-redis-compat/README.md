@@ -56,6 +56,21 @@ The facade supports only probe commands whose replies can be stated honestly:
 roles, exact keyspace sizes, or iterable keyspace state would either fabricate
 Redis server state or create unsafe/expensive tenant-visible behavior.
 
+## 0.68 Keyspace Event Listener
+
+The 0.68 draft supports off-by-default `SUBSCRIBE`, `UNSUBSCRIBE`,
+`PSUBSCRIBE`, and `PUNSUBSCRIBE` for Redis keyspace/keyevent notification
+channels. It emits metadata-only `set`, `del`, `expire`, and `persist` signals
+from the shared verified client surface using RESP2 arrays or RESP3 push frames.
+Exact plus pattern subscriptions are bounded per connection by both unique
+count and retained bytes; a lagging receiver is disconnected loudly instead of
+blocking mutation work.
+
+This is node-local, at-most-once keyspace notification compatibility. It is not
+arbitrary Pub/Sub: `PUBLISH`, durable replay, values in events, and cross-daemon
+delivery are not implemented. The detailed contract is
+`docs/integrations/redis-keyspace-event-listener.md`.
+
 ## Admin Commands
 
 `CONFIG`, `FLUSHDB`, and `FLUSHALL` are recognized but disabled by default:
@@ -129,6 +144,9 @@ The release plan and conformance manifest pin this contract to executable tests:
 - `resp_listener_type_reports_string_and_none`
 - `admin_commands_are_disabled_by_default_without_config_or_flush_mutation`
 - `resp_listener_admin_commands_are_disabled_before_mutation`
+- `redis_rs_pattern_listener_receives_keyspace_and_keyevent_messages`
+- `redis_listener_observes_hc2_style_mutation_on_shared_verified_surface`
+- `subscription_limit_is_atomic_and_counts_unique_channels`
 
 The lock-library compatibility claim is single-endpoint only and is not complete
 until the Docker/client matrix is run with both

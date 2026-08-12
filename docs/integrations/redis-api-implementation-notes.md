@@ -10,6 +10,12 @@ The command support table and release claim live in
 [`redis_compat_conformance.json`](redis_compat_conformance.json). This document
 explains the implementation choices behind that contract.
 
+The unreleased 0.68 event-listener extension is specified separately in
+[`redis-keyspace-event-listener.md`](redis-keyspace-event-listener.md). It adds
+connection-owned keyspace notification subscriptions over a bounded,
+metadata-only `ClientSurfaceState` mutation signal. It does not route arbitrary
+Pub/Sub, values, or durable event history through the RESP translator.
+
 ## High-Level Shape
 
 The Redis facade is implemented by `hydracache-redis-compat` and wired into the

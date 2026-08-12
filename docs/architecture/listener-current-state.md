@@ -3,11 +3,12 @@
 ## Snapshot
 
 - Status: current implementation snapshot, not a forward-looking compatibility claim.
-- Snapshot date: 2026-08-05.
+- Snapshot date: 2026-08-12 (0.68 Redis listener addendum).
 - Inspected worktree commit: `5388a406b99949e48dc56e45f736826e260053bf`.
 - Inspected `origin/main`: `5c1c7f29d3aa36a569b748a1c4996b149ea3d98b`.
 - Scope: cache event listeners, distributed invalidations, and the external
   `SubscribeInvalidations` / `SubscribeEntryEvents` surfaces.
+- Unreleased addendum branch: `feat/0.68-generated-client-plane-foundation`.
 
 The listener implementation has three distinct layers. Local Rust subscriptions
 and callbacks are executable. Distributed invalidations are executable and feed
@@ -41,6 +42,21 @@ subscription request does not by itself prove a live remote event stream.
 | Durable event replay | **Not provided** | Listeners are cache-coherency/diagnostic signals, not a durable log. |
 | Exactly-once delivery or global total order | **Not provided** | Consumers must tolerate gaps, duplicates, and concurrent/distributed reordering. |
 | Full Hazelcast `IMap.addEntryListener` compatibility | **Not claimed** | Server push, reconnect, re-registration, and wider Hazelcast listener semantics remain missing. |
+| Redis keyspace notification stream | Implemented for the 0.68 draft | Off-by-default exact/pattern RESP subscriptions consume a bounded metadata-only shared client-surface mutation bus. See `docs/integrations/redis-keyspace-event-listener.md`. |
+
+## 0.68 Redis keyspace notification addendum
+
+The Redis event listener is deliberately separate from the native cache-event
+bus and the HC/2 entry-listener API at the wire boundary, while all three reuse
+the same verified mutation state. Redis clients receive only Redis-representable
+key metadata on `__keyspace@0__:*` and `__keyevent@0__:*` channels. RESP2 uses
+subscription arrays; RESP3 uses push frames. A slow receiver is disconnected
+after bounded-bus lag, and no value bytes enter the event signal.
+
+The claim remains node-local and at-most-once. It excludes `PUBLISH`, durable
+replay, cross-daemon delivery, values in events, and a general message-broker
+surface. The complete operator and compatibility contract is
+[`redis-keyspace-event-listener.md`](../integrations/redis-keyspace-event-listener.md).
 
 ## Local event bus
 

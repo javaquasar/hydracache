@@ -19,6 +19,9 @@
 > - **Status:** planned; implementation is in progress. H01-H21
 >   hardening is complete and H22 awaits a fixed-host receipt, but the original
 >   W8/W9/W12 deliverables are tracked separately in the release closure ledger.
+>   Additive H23 introduces an off-by-default Redis keyspace-event listener over
+>   the same verified dispatch state without changing the HC/2 transport or
+>   broadening the Redis surface into arbitrary Pub/Sub.
 >
 > Roadmap: [`INDEX.md`](INDEX.md) - rules: [`../RULES.md`](../RULES.md) -
 > gates: [`../GATES.md`](../GATES.md) - compatibility: [`../COMPAT.md`](../COMPAT.md) -

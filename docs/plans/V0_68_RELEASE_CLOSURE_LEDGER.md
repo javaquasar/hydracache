@@ -1,7 +1,8 @@
 # HydraCache 0.68.0 Release Closure Ledger
 
 > **Purpose.** This ledger reconciles the original W0-W12 release Definition of
-> Done with the later H01-H22 hardening program. H-items prove properties of the
+> Done with the later H01-H22 hardening program and additive H23 Redis event
+> listener. H-items prove properties of the
 > HC/2 implementation; they do not silently replace missing W-item deliverables.
 > The release remains `planned`, depends on `0.67.1`, and cannot ship from this
 > branch while any required row below is not complete.
@@ -24,6 +25,7 @@ SDK, facade, package, or exact-candidate receipt.
 | W9 production Python HC/2 SDK | H15 hermetic generation plus production asyncio runtime, deterministic wheel, offline hashed dependencies, and clean venv consumer | retain exact-candidate release receipt | implemented, release evidence pending |
 | W10-W11 security, bounds, observability, faults and compatibility | H10-H14, H18-H22 hosted lanes | retain exact receipts; H22 fixed-host soak remains operationally outstanding | implemented except fixed-host receipt |
 | W12 release governance and documentation | `0.68.toml`, W0-W12 dynamic canaries, source-bound cross-SDK conformance, explicit schema/package CI, and registered H22 exact-candidate admission | retain fast/canary/H22 exact-candidate receipts; H22 fixed-host soak remains operationally outstanding | implemented, release evidence pending |
+| Additive Redis API event listener | H23 shared tenant-fenced mutation bus, RESP2/RESP3 subscription wire contract, keyspace/keyevent projection, bounded lag and redis-rs integration | retain exact PR checks and keep node-local/at-most-once/non-PubSub boundary explicit | implemented, hosted evidence pending |
 
 ## Current five-stage execution sequence
 

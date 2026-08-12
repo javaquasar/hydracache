@@ -19,6 +19,7 @@ hydracache-client-protocol.workspace = true
 hydracache-observability.workspace = true
 serde.workspace = true
 thiserror.workspace = true
+tokio.workspace = true
 
 [dev-dependencies]
 async-trait.workspace = true

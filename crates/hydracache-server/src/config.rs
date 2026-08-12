@@ -5,7 +5,11 @@ use std::path::{Path, PathBuf};
 use std::time::Duration;
 
 use hydracache_client_transport_axum::ClientSurfaceLimits;
-use hydracache_redis_compat::{RedisAuthConfig, RedisListenerConfig};
+use hydracache_redis_compat::{
+    RedisAuthConfig, RedisKeyspaceEventConfig, RedisListenerConfig,
+    DEFAULT_REDIS_EVENT_SUBSCRIPTIONS_PER_CONNECTION,
+    DEFAULT_REDIS_EVENT_SUBSCRIPTION_BYTES_PER_CONNECTION,
+};
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
 
@@ -170,6 +174,12 @@ pub struct RedisApiConfig {
     pub auth_token_file: Option<PathBuf>,
     /// Whether to request native rediss:// on this listener.
     pub rediss_enabled: bool,
+    /// Whether Redis keyspace notification subscriptions are enabled.
+    pub keyspace_events_enabled: bool,
+    /// Maximum exact plus pattern subscriptions retained per RESP connection.
+    pub max_event_subscriptions_per_connection: usize,
+    /// Maximum total channel plus pattern bytes retained per RESP connection.
+    pub max_event_subscription_bytes_per_connection: usize,
 }
 
 impl Default for RedisApiConfig {
@@ -183,6 +193,11 @@ impl Default for RedisApiConfig {
             auth_username: None,
             auth_token_file: None,
             rediss_enabled: false,
+            keyspace_events_enabled: false,
+            max_event_subscriptions_per_connection:
+                DEFAULT_REDIS_EVENT_SUBSCRIPTIONS_PER_CONNECTION,
+            max_event_subscription_bytes_per_connection:
+                DEFAULT_REDIS_EVENT_SUBSCRIPTION_BYTES_PER_CONNECTION,
         }
     }
 }
@@ -400,6 +415,20 @@ impl ServerConfig {
         if env::var("HYDRACACHE_REDIS_REDISS_ENABLED").as_deref() == Ok("true") {
             config.redis_api.rediss_enabled = true;
         }
+        if env::var("HYDRACACHE_REDIS_KEYSPACE_EVENTS_ENABLED").as_deref() == Ok("true") {
+            config.redis_api.keyspace_events_enabled = true;
+        }
+        if let Ok(limit) = env::var("HYDRACACHE_REDIS_MAX_EVENT_SUBSCRIPTIONS_PER_CONNECTION") {
+            config.redis_api.max_event_subscriptions_per_connection = limit
+                .parse()
+                .map_err(|_| ServerConfigError::InvalidRedisEventSubscriptionLimit)?;
+        }
+        if let Ok(limit) = env::var("HYDRACACHE_REDIS_MAX_EVENT_SUBSCRIPTION_BYTES_PER_CONNECTION")
+        {
+            config.redis_api.max_event_subscription_bytes_per_connection = limit
+                .parse()
+                .map_err(|_| ServerConfigError::InvalidRedisEventSubscriptionByteLimit)?;
+        }
         if env::var("HYDRACACHE_RAFT_COMPACTION").as_deref() == Ok("true") {
             config.raft_compaction_enabled = true;
         }
@@ -495,6 +524,12 @@ impl ServerConfig {
             return Err(ServerConfigError::AdminAddressConflicts);
         }
         if self.redis_api.enabled {
+            if self.redis_api.max_event_subscriptions_per_connection == 0 {
+                return Err(ServerConfigError::InvalidRedisEventSubscriptionLimit);
+            }
+            if self.redis_api.max_event_subscription_bytes_per_connection == 0 {
+                return Err(ServerConfigError::InvalidRedisEventSubscriptionByteLimit);
+            }
             if self.redis_api.rediss_enabled && !self.tls.enabled {
                 return Err(ServerConfigError::RedisRedissRequiresTls);
             }
@@ -520,7 +555,18 @@ impl ServerConfig {
 
     /// Build the Redis RESP listener config used by the optional edge server.
     pub fn redis_listener_config(&self) -> Result<RedisListenerConfig, ServerConfigError> {
-        let mut config = RedisListenerConfig::default();
+        let mut config = RedisListenerConfig {
+            keyspace_events: RedisKeyspaceEventConfig {
+                enabled: self.redis_api.keyspace_events_enabled,
+                max_subscriptions_per_connection: self
+                    .redis_api
+                    .max_event_subscriptions_per_connection,
+                max_subscription_bytes_per_connection: self
+                    .redis_api
+                    .max_event_subscription_bytes_per_connection,
+            },
+            ..RedisListenerConfig::default()
+        };
         if self.redis_api.auth_required {
             let path = self
                 .redis_api
@@ -691,6 +737,12 @@ pub enum ServerConfigError {
     /// Native rediss:// requires server TLS material.
     #[error("redis_api.rediss_enabled requires tls.enabled with certificate/key material")]
     RedisRedissRequiresTls,
+    /// Redis event listeners require a non-zero per-connection subscription bound.
+    #[error("redis_api.max_event_subscriptions_per_connection must be greater than zero")]
+    InvalidRedisEventSubscriptionLimit,
+    /// Redis event listeners require a non-zero retained subscription-byte bound.
+    #[error("redis_api.max_event_subscription_bytes_per_connection must be greater than zero")]
+    InvalidRedisEventSubscriptionByteLimit,
     /// HC/2 never exposes a plaintext production constructor/listener.
     #[error("hc2_client_plane.enabled requires tls.enabled and mutual TLS material")]
     Hc2RequiresMutualTls,

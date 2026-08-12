@@ -96,6 +96,9 @@ const CONFIG_ENV_VARS: &[&str] = &[
     "HYDRACACHE_REDIS_AUTH_USERNAME",
     "HYDRACACHE_REDIS_AUTH_TOKEN_FILE",
     "HYDRACACHE_REDIS_REDISS_ENABLED",
+    "HYDRACACHE_REDIS_KEYSPACE_EVENTS_ENABLED",
+    "HYDRACACHE_REDIS_MAX_EVENT_SUBSCRIPTIONS_PER_CONNECTION",
+    "HYDRACACHE_REDIS_MAX_EVENT_SUBSCRIPTION_BYTES_PER_CONNECTION",
     "HYDRACACHE_RAFT_COMPACTION",
     "HOSTNAME",
 ];
@@ -478,11 +481,28 @@ fn redis_api_is_off_by_default_and_env_gated() {
             default.redis_api.listen_addr,
             "127.0.0.1:6379".parse().unwrap()
         );
+        assert!(!default.redis_api.keyspace_events_enabled);
+        assert_eq!(default.redis_api.max_event_subscriptions_per_connection, 64);
+        assert_eq!(
+            default
+                .redis_api
+                .max_event_subscription_bytes_per_connection,
+            64 * 1024
+        );
     }
 
     let _guard = ConfigEnvGuard::new(&[
         ("HYDRACACHE_REDIS_API_ENABLED", "true"),
         ("HYDRACACHE_REDIS_ADDR", "127.0.0.1:6380"),
+        ("HYDRACACHE_REDIS_KEYSPACE_EVENTS_ENABLED", "true"),
+        (
+            "HYDRACACHE_REDIS_MAX_EVENT_SUBSCRIPTIONS_PER_CONNECTION",
+            "12",
+        ),
+        (
+            "HYDRACACHE_REDIS_MAX_EVENT_SUBSCRIPTION_BYTES_PER_CONNECTION",
+            "4096",
+        ),
     ]);
     let config = ServerConfig::from_env().unwrap();
     assert!(config.redis_api.enabled);
@@ -490,6 +510,68 @@ fn redis_api_is_off_by_default_and_env_gated() {
         config.redis_api.listen_addr,
         "127.0.0.1:6380".parse().unwrap()
     );
+    assert!(config.redis_api.keyspace_events_enabled);
+    assert_eq!(config.redis_api.max_event_subscriptions_per_connection, 12);
+    assert_eq!(
+        config.redis_api.max_event_subscription_bytes_per_connection,
+        4096
+    );
+    let listener = config.redis_listener_config().unwrap();
+    assert!(listener.keyspace_events.enabled);
+    assert_eq!(
+        listener.keyspace_events.max_subscriptions_per_connection,
+        12
+    );
+    assert_eq!(
+        listener
+            .keyspace_events
+            .max_subscription_bytes_per_connection,
+        4096
+    );
+}
+
+#[test]
+fn redis_event_subscription_limit_rejects_zero_and_invalid_env() {
+    let mut config = member_config_with_redis_surface();
+    config.redis_api.max_event_subscriptions_per_connection = 0;
+    assert!(matches!(
+        config.validate(),
+        Err(ServerConfigError::InvalidRedisEventSubscriptionLimit)
+    ));
+
+    let mut config = member_config_with_redis_surface();
+    config.redis_api.max_event_subscription_bytes_per_connection = 0;
+    assert!(matches!(
+        config.validate(),
+        Err(ServerConfigError::InvalidRedisEventSubscriptionByteLimit)
+    ));
+
+    {
+        let _guard = ConfigEnvGuard::new(&[
+            ("HYDRACACHE_REDIS_API_ENABLED", "true"),
+            (
+                "HYDRACACHE_REDIS_MAX_EVENT_SUBSCRIPTIONS_PER_CONNECTION",
+                "not-a-number",
+            ),
+        ]);
+        assert!(matches!(
+            ServerConfig::from_env(),
+            Err(ServerConfigError::InvalidRedisEventSubscriptionLimit)
+        ));
+    }
+    {
+        let _guard = ConfigEnvGuard::new(&[
+            ("HYDRACACHE_REDIS_API_ENABLED", "true"),
+            (
+                "HYDRACACHE_REDIS_MAX_EVENT_SUBSCRIPTION_BYTES_PER_CONNECTION",
+                "not-a-number",
+            ),
+        ]);
+        assert!(matches!(
+            ServerConfig::from_env(),
+            Err(ServerConfigError::InvalidRedisEventSubscriptionByteLimit)
+        ));
+    }
 }
 
 #[test]
@@ -829,6 +911,17 @@ fn redis_resp_server_uses_client_surface_state_without_enabling_client_api_route
         server.execute_command(RedisCommand::Get { key: b"k".to_vec() }),
         RespValue::BulkString(b"v".to_vec())
     );
+}
+
+#[test]
+fn redis_event_listener_uses_server_shared_client_dispatch_state() {
+    let mut config = member_config_with_redis_surface();
+    config.redis_api.keyspace_events_enabled = true;
+    let runtime = ServerRuntime::new(config).unwrap().start();
+    let dispatch = runtime.client_dispatch_state().unwrap();
+    let server = runtime.redis_resp_server().unwrap().unwrap();
+
+    assert!(Arc::ptr_eq(&dispatch, &server.state()));
 }
 
 #[tokio::test]

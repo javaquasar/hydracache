@@ -159,6 +159,9 @@ fn generated_server_configs_preserve_precedence_validation_and_secure_defaults()
                     auth_username: auth_required.then(|| "matrix-user".to_owned()),
                     auth_token_file: auth_material.then(|| token_path.clone()),
                     rediss_enabled,
+                    keyspace_events_enabled: false,
+                    max_event_subscriptions_per_connection: 64,
+                    max_event_subscription_bytes_per_connection: 64 * 1024,
                 };
 
                 let tls_material_valid = !tls_enabled || complete_tls_material;
@@ -234,6 +237,9 @@ async fn generated_config_errors_and_debug_output_never_expose_secret_bytes() {
                 auth_username: Some("matrix-user".to_owned()),
                 auth_token_file: Some(token_path),
                 rediss_enabled: false,
+                keyspace_events_enabled: false,
+                max_event_subscriptions_per_connection: 64,
+                max_event_subscription_bytes_per_connection: 64 * 1024,
             },
             ..Default::default()
         };
@@ -264,6 +270,9 @@ async fn generated_config_errors_and_debug_output_never_expose_secret_bytes() {
             auth_username: None,
             auth_token_file: Some(missing.to_path_buf()),
             rediss_enabled: false,
+            keyspace_events_enabled: false,
+            max_event_subscriptions_per_connection: 64,
+            max_event_subscription_bytes_per_connection: 64 * 1024,
         },
         ..Default::default()
     };

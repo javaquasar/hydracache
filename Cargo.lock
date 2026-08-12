@@ -2452,6 +2452,7 @@ name = "hydracache-redis-compat"
 version = "0.67.0"
 dependencies = [
  "bytes",
+ "futures-util",
  "hydracache",
  "hydracache-client-protocol",
  "hydracache-client-transport-axum",

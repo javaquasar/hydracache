@@ -1,4 +1,4 @@
-# HydraCache 0.68 HC/2 — 22-Gap Closure Execution Plan
+# HydraCache 0.68 HC/2 — 22-Gap Closure And Redis Listener Execution Plan
 
 > **Purpose.** This companion plan turns the 22 known gaps between the current
 > non-production HC/2 spike and a defensible client plane into independently
@@ -14,7 +14,8 @@
 > **Release reconciliation.** Completion of this H-ledger does not replace the
 > original W0-W12 deliverables. In particular, H15 is generation evidence rather
 > than a production Python SDK, H16 does not include the Hazelcast-shaped facade,
-> and H22 is not the 0.68 release-evidence manifest. See
+> H22 is not the 0.68 release-evidence manifest, and H23 is an additive Redis
+> compatibility deliverable rather than a twenty-third HC/2 gap. See
 > [`V0_68_RELEASE_CLOSURE_LEDGER.md`](V0_68_RELEASE_CLOSURE_LEDGER.md).
 
 ## Status ledger
@@ -43,6 +44,7 @@
 | H20 | HTTP/2 graceful shutdown remains unresolved | complete | `fix(client-plane): bound HTTP2 graceful drain` | two-GOAWAY controller, deadline/reset reasons, retained fault traces, real TLS/H2 zero-accounting task joins without abort |
 | H21 | Observability is local to the spike | complete | `feat(client-plane): export bounded privacy-safe diagnostics` | v1 typed metric/trace export, 64 salted tenant buckets, bounded trace ring, privacy/cardinality/reconnect/close evidence, operator runbook |
 | H22 | Linux CI, interop, fuzz, and soak gates are absent | in progress | `ci(client-plane): install Linux interop fuzz and soak gates` | four-lane fail-closed contract, pinned workflow/container, receipts/admission canaries, Docker proof, runbook, and exact Ubuntu 24.04 fixed-host preflight implemented; exact hosted Linux/Docker/fuzz receipts and strict `main` protection are active; a labelled fixed-host receipt remains operational evidence |
+| H23 | Redis API clients cannot consume mutation events | in progress | `feat(redis): add bounded keyspace event listeners` | shared metadata-only mutation bus, RESP2 arrays/RESP3 pushes, exact/pattern subscriptions, auth and atomic count/retained-byte bounds, explicit lag disconnect, redis-rs and cross-protocol tests implemented; exact PR CI pending |
 
 ## Global execution rules
 
@@ -745,6 +747,53 @@ runner is non-root Ubuntu 24.04 x86_64, carries a bounded safe identity, exposes
 the required native tools, and has the exact clean candidate checkout. Its
 metadata is retained by the existing always-upload step.
 
+## H23. Add Redis API keyspace event listeners
+
+**Current truth.** The RESP facade can mutate and read the shared client
+surface, but Redis clients have no live event-consumption path. The existing
+native and HC/2 listener contracts cannot be advertised as Redis Pub/Sub: wire
+shapes, RESP2 subscribed mode, RESP3 push frames, pattern matching, auth,
+backpressure, and the node-local deployment boundary are different contracts.
+
+**Implementation.** Add an off-by-default Redis keyspace-notification subset to
+the live RESP connection. Support `SUBSCRIBE`, `UNSUBSCRIBE`, `PSUBSCRIBE`, and
+`PUNSUBSCRIBE`; publish `__keyspace@0__:<key>` and
+`__keyevent@0__:<event>` for successful `set`, `del`, `expire`, and `persist`
+transitions. All protocols publish through one metadata-only, tenant-fenced,
+bounded `ClientSurfaceState` mutation bus. RESP2 uses arrays and its restricted
+subscribed-command mode; RESP3 uses push frames and retains ordinary command
+execution. Authentication precedes admission, unique exact plus pattern
+subscriptions have non-zero per-connection count and retained-byte bounds, and
+a lagged receiver is closed loudly without delaying the writer.
+
+**Compatibility boundary.** This is Redis keyspace-notification compatibility,
+not arbitrary Pub/Sub. `PUBLISH`, durable history, replay, acknowledgements,
+exactly-once delivery, values in messages, Redis multi-db, cross-daemon delivery,
+and `CONFIG SET notify-keyspace-events` remain out of scope. The existing
+`redis_scope:node-local` claim is unchanged. Consumers repair with ordinary
+reads after reconnect or any gap.
+
+**Evidence.** Pin the four command rows and their route owners in
+`redis_compat_conformance.json`. Unit tests prove parser-neutral commands,
+binary glob matching, RESP2/RESP3 encodings, tenant fencing, and bounded lag.
+A real TCP `redis-rs` integration proves exact and pattern messages,
+RESP-originated and HC/2-shaped shared-surface mutations, auth-before-subscribe,
+disabled-by-default behavior, atomic unique-subscription admission against count
+and retained-byte limits, unsubscribe, and zero active-subscriber accounting.
+Server config tests prove explicit enablement and invalid-limit startup
+rejection. The normal PR Rust/MSRV/Docs checks must be green on the
+implementation commit.
+
+**Dependencies.** Existing Redis RESP facade, H01 shared production dispatch,
+and H12 resource-bound principles. **Risk/rollback.** Slow clients, tenant data
+leakage, or an accidental queue claim are the primary risks. Rollback is
+`HYDRACACHE_REDIS_KEYSPACE_EVENTS_ENABLED=false`; ordinary RESP cache commands
+continue unchanged.
+
+**Done.** Implementation, conformance manifest, operator documentation, focused
+local tests, and exact GitHub PR checks are green. A model-only subscriber,
+unbounded queue, value-bearing message, or prose-only claim is not completion.
+
 ## Dependency-oriented execution order
 
 ```text
@@ -757,6 +806,7 @@ H02 + H03 + H04 + H06 + H09 + H12 + H13 -> H01
 H01 -> H16 + H17 -> H18
 H10 + H11 + H12 -> H21
 all applicable evidence -> H22
+H01 + H12 + Redis RESP facade -> H23
 ```
 
 H01 production integration deliberately occurs after its prerequisites. This
