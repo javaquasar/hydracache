@@ -1513,6 +1513,7 @@ fn acquire_daemon_cluster_cross_process_lock() -> TestResult<File> {
         .read(true)
         .write(true)
         .create(true)
+        .truncate(false)
         .open(&path)
         .map_err(|error| {
             format!(
