@@ -442,13 +442,20 @@ fn multi_node_members_form_a_cluster_and_elect_one_leader() {
         .collect::<Vec<_>>();
     let mut runtimes = runtimes.into_iter().map(Some).collect::<Vec<_>>();
 
+    let mut converged_statuses = Vec::new();
     let converged = wait_until(Duration::from_secs(10), || {
         let statuses = active_statuses(&runtimes);
         let leaders = leaders(&statuses);
-        leaders.len() == 1
+        let ready = statuses.len() == 3
+            && leaders.len() == 1
+            && statuses.iter().all(|status| status.leader.is_some())
             && statuses
                 .iter()
-                .all(|status| status.members == 3 && status.quorum_ok)
+                .all(|status| status.members == 3 && status.quorum_ok);
+        if ready {
+            converged_statuses = statuses;
+        }
+        ready
     });
     assert!(
         converged,
@@ -466,7 +473,7 @@ fn multi_node_members_form_a_cluster_and_elect_one_leader() {
         );
     }
 
-    let first_leader = active_statuses(&runtimes)[0]
+    let first_leader = converged_statuses[0]
         .leader
         .clone()
         .expect("leader after convergence");
