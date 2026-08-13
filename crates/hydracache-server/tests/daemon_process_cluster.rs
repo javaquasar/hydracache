@@ -154,7 +154,12 @@ fn randomized_topology_soak_preserves_invariants() -> TestResult {
 
     for step in 0..12 {
         for overview in cluster.overviews() {
-            history.record_cluster_overview(&overview);
+            // A follower can transiently expose a non-authoritative overview
+            // without a leader epoch while the topology is changing. Only a
+            // complete authoritative tuple belongs in the committed-history
+            // monotonicity proof; epoch zero remains unavailable, never a
+            // replacement for a committed epoch.
+            history.record_authoritative_cluster_overview(&overview);
         }
         let target = step % cluster.node_ids().len();
         if step % 4 == 1 && !stopped.contains(&target) {

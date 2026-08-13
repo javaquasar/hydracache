@@ -3320,6 +3320,60 @@ mod tests {
         assert!(error.to_string().contains("require a known leader"));
     }
 
+    fn three_voter_runtime_with_leader(local_node_id: u64, leader_id: u64) -> RaftMetadataRuntime {
+        let config =
+            RaftMetadataRuntimeConfig::multi_voter("leadership-transfer", local_node_id, [1, 2, 3]);
+        let runtime = RaftMetadataRuntime::with_config(config).unwrap();
+        runtime
+            .raft
+            .lock()
+            .expect("raft metadata state poisoned")
+            .raw_node
+            .raft
+            .leader_id = leader_id;
+        runtime
+    }
+
+    #[test]
+    fn leadership_transfer_rejects_the_local_voter() {
+        let runtime = three_voter_runtime_with_leader(1, 1);
+
+        let error = runtime.transfer_leadership(1).unwrap_err();
+
+        assert!(error
+            .to_string()
+            .contains("must be a configured remote voter"));
+    }
+
+    #[test]
+    fn leadership_transfer_rejects_an_unconfigured_remote_node() {
+        let runtime = three_voter_runtime_with_leader(1, 1);
+
+        let error = runtime.transfer_leadership(4).unwrap_err();
+
+        assert!(error
+            .to_string()
+            .contains("must be a configured remote voter"));
+    }
+
+    #[test]
+    fn leadership_transfer_accepts_a_configured_remote_voter_on_the_leader() {
+        let runtime = three_voter_runtime_with_leader(1, 1);
+
+        runtime.transfer_leadership(2).unwrap();
+    }
+
+    #[test]
+    fn leadership_transfer_rejects_a_configured_voter_on_a_follower() {
+        let runtime = three_voter_runtime_with_leader(1, 2);
+
+        let error = runtime.transfer_leadership(2).unwrap_err();
+
+        assert!(error
+            .to_string()
+            .contains("only the current raft leader can transfer leadership"));
+    }
+
     #[test]
     fn joining_config_requires_remote_voters_without_self() {
         let config = RaftMetadataRuntimeConfig::try_joining("orders", 4, [3, 1, 1, 2])
