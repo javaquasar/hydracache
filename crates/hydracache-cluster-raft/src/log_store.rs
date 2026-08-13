@@ -2170,8 +2170,7 @@ mod tests {
 
     #[cfg(feature = "sled-log-store")]
     fn sled_temp_path(label: &str) -> std::path::PathBuf {
-        static SEQUENCE: std::sync::atomic::AtomicU64 =
-            std::sync::atomic::AtomicU64::new(0);
+        static SEQUENCE: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
         let unique = std::time::SystemTime::now()
             .duration_since(std::time::UNIX_EPOCH)
             .unwrap()
