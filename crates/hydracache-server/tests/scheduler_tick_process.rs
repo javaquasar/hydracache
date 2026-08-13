@@ -375,7 +375,18 @@ fn run_resumed_demoted_process() -> TestResult {
         }
         evidence.record_authoritative_membership(peer_membership.clone());
 
-        if resumed_status.quorum_ok && resumed_status.leader.is_some() {
+        // The two endpoints are separate snapshots. After SIGCONT the former
+        // leader can regain a leader/quorum view before it applies the peer's
+        // committed membership epoch. Treat the sample as authoritative only
+        // once /admin/status itself proves that the membership transition has
+        // been applied; the bounded deadline below still fails closed if the
+        // node remains stale.
+        if resumed_status.quorum_ok
+            && resumed_status.leader.is_some()
+            && resumed_status.epoch == peer_membership.epoch
+            && resumed_status.members == 2
+            && resumed_status.voters == 2
+        {
             assert_eq!(
                 (resumed_status.term, resumed_status.leader.as_deref()),
                 (peer_status.term, peer_status.leader.as_deref()),
@@ -385,8 +396,6 @@ fn run_resumed_demoted_process() -> TestResult {
                 resumed_membership, peer_membership,
                 "resumed former leader reported an authoritative stale /cluster/overview membership view"
             );
-            assert_eq!(resumed_status.members, 2);
-            assert_eq!(resumed_status.voters, 2);
             evidence.record_authoritative_membership(resumed_membership);
             aligned_authoritative_sample = Some(resumed_status);
             break;
