@@ -118,49 +118,71 @@ impl ProductionDaemonProcess {
             .expect("HC2_RUST_INTEROP_SERVER must identify the credential fixture");
         let daemon = std::env::var_os(daemon_env)
             .unwrap_or_else(|| panic!("{daemon_env} must identify hydracache-server"));
-        let unique = SystemTime::now()
-            .duration_since(UNIX_EPOCH)
-            .expect("system clock")
-            .as_nanos();
-        let credentials = std::env::temp_dir().join(format!(
-            "hydracache-hc2-rust-production-{}-{unique}",
-            std::process::id()
-        ));
-        fs::create_dir(&credentials).expect("create production credentials directory");
-        let mut child = Command::new(fixture)
-            .arg("--credentials-dir")
-            .arg(&credentials)
-            .arg("--daemon")
-            .arg(daemon)
-            .stdin(Stdio::piped())
-            .stdout(Stdio::piped())
-            .stderr(Stdio::piped())
-            .spawn()
-            .expect("start production daemon fixture");
-        let stdin = child.stdin.take().expect("fixture stdin");
-        let stdout = child.stdout.take().expect("fixture stdout");
-        let mut stdout = BufReader::new(stdout);
-        let mut ready = String::new();
-        stdout
-            .read_line(&mut ready)
-            .expect("read production READY receipt");
-        let fields: Vec<_> = ready.trim_end().split('\t').collect();
-        assert_eq!(
-            fields.len(),
-            6,
-            "malformed production READY receipt: {ready:?}"
-        );
-        assert_eq!(fields[0], "READY_DAEMON");
-        Self {
-            child,
-            stdin: Some(stdin),
-            stdout,
-            credentials,
-            port: fields[1].parse().expect("production READY port"),
-            ca: PathBuf::from(fields[3]),
-            client_certificate: PathBuf::from(fields[4]),
-            client_key: PathBuf::from(fields[5]),
+        let mut failures = Vec::new();
+        for attempt in 1..=3 {
+            let unique = SystemTime::now()
+                .duration_since(UNIX_EPOCH)
+                .expect("system clock")
+                .as_nanos();
+            let credentials = std::env::temp_dir().join(format!(
+                "hydracache-hc2-rust-production-{}-{unique}-{attempt}",
+                std::process::id()
+            ));
+            fs::create_dir(&credentials).expect("create production credentials directory");
+            let mut child = Command::new(&fixture)
+                .arg("--credentials-dir")
+                .arg(&credentials)
+                .arg("--daemon")
+                .arg(&daemon)
+                .stdin(Stdio::piped())
+                .stdout(Stdio::piped())
+                .stderr(Stdio::piped())
+                .spawn()
+                .expect("start production daemon fixture");
+            let stdin = child.stdin.take().expect("fixture stdin");
+            let stdout = child.stdout.take().expect("fixture stdout");
+            let mut stdout = BufReader::new(stdout);
+            let mut ready = String::new();
+            stdout
+                .read_line(&mut ready)
+                .expect("read production READY receipt");
+            let fields = ready.trim_end().split('\t').collect::<Vec<_>>();
+            if fields.len() == 6 && fields[0] == "READY_DAEMON" {
+                return Self {
+                    child,
+                    stdin: Some(stdin),
+                    stdout,
+                    credentials,
+                    port: fields[1].parse().expect("production READY port"),
+                    ca: PathBuf::from(fields[3]),
+                    client_certificate: PathBuf::from(fields[4]),
+                    client_key: PathBuf::from(fields[5]),
+                };
+            }
+
+            drop(stdin);
+            let _ = child.kill();
+            let status = child.wait().expect("wait for failed production fixture");
+            let mut stderr = String::new();
+            child
+                .stderr
+                .take()
+                .expect("fixture stderr")
+                .read_to_string(&mut stderr)
+                .expect("read failed production fixture stderr");
+            let _ = fs::remove_dir_all(&credentials);
+            failures.push(format!(
+                "attempt {attempt}: status={status}, receipt={ready:?}, stderr={stderr:?}"
+            ));
+            if !ready.is_empty() {
+                break;
+            }
+            std::thread::sleep(Duration::from_millis(25));
         }
+        panic!(
+            "production daemon fixture did not become ready after bounded retries: {}",
+            failures.join("; ")
+        )
     }
 
     fn adapter(&self) -> GrpcMtlsAdapter {
