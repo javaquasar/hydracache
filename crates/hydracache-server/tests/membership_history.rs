@@ -14,7 +14,7 @@ fn membership_history_is_epoch_monotone_under_partition_heal() -> TestResult {
 
     let mut cluster = DaemonCluster::start_bootstrap(3, "membership-epoch")?;
     let mut history = MembershipHistoryRecorder::default();
-    cluster.wait_for_shape(3, 3)?;
+    cluster.wait_for_responsive_shape(3, 3, 3)?;
     for overview in cluster.overviews() {
         history.record_cluster_overview(&overview);
     }
@@ -29,7 +29,7 @@ fn membership_history_is_epoch_monotone_under_partition_heal() -> TestResult {
     cluster.kill(leader_index)?;
     cluster.wait_for_leader_not(&old_leader, 3, 3)?;
     cluster.restart(leader_index)?;
-    cluster.wait_for_shape(3, 3)?;
+    cluster.wait_for_responsive_shape(3, 3, 3)?;
 
     for overview in cluster.overviews() {
         history.record_cluster_overview(&overview);
@@ -73,6 +73,33 @@ fn membership_history_checker_rejects_synthetic_same_term_leaders() {
             .any(|violation| violation.name == "election_safety"),
         "same-term split leader history should be rejected: {report:?}"
     );
+}
+
+#[test]
+fn authoritative_history_ignores_incomplete_transitional_overviews() {
+    let mut history = MembershipHistoryRecorder::default();
+
+    assert!(
+        !history.record_authoritative_cluster_overview(&serde_json::json!({
+            "leader": null,
+            "members": [{"node_id": "node-a"}]
+        }))
+    );
+    assert!(
+        !history.record_authoritative_cluster_overview(&serde_json::json!({
+            "leader": {"node_id": "node-a", "term": 7},
+            "members": [{"node_id": "node-a"}]
+        }))
+    );
+    assert!(
+        history.record_authoritative_cluster_overview(&serde_json::json!({
+            "leader": {"node_id": "node-a", "term": 7, "epoch": 3},
+            "members": [{"node_id": "node-a"}]
+        }))
+    );
+
+    assert_eq!(history.observations().len(), 1);
+    assert_eq!(history.observations()[0].epoch, 3);
 }
 
 fn split_brain_history() -> MembershipHistoryRecorder {

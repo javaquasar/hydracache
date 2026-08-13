@@ -1,6 +1,8 @@
 mod support;
 
 use std::collections::BTreeSet;
+use std::thread;
+use std::time::{Duration, Instant};
 
 use support::daemon_cluster::{
     skip_unless_daemon_process_e2e, DaemonCluster, DaemonStatus, TestResult,
@@ -241,6 +243,37 @@ fn canary_external_checker_accepts_a_known_invalid_membership_history() {
     );
 }
 
+#[test]
+fn authoritative_public_surface_pair_requires_matching_epoch_and_leader() {
+    let status = DaemonStatus {
+        leader: Some("node-a".to_owned()),
+        term: 7,
+        epoch: 3,
+        members: 3,
+        voters: 3,
+        quorum_ok: true,
+        draining: false,
+    };
+    let matching = MembershipObservation {
+        epoch: 3,
+        term: 7,
+        leader: Some("node-a".to_owned()),
+        members: all_members(),
+    };
+    assert!(public_surface_pair_is_coherent(&status, &matching));
+
+    let transient_leaderless = MembershipObservation {
+        epoch: 0,
+        term: 0,
+        leader: None,
+        members: all_members(),
+    };
+    assert!(!public_surface_pair_is_coherent(
+        &status,
+        &transient_leaderless
+    ));
+}
+
 fn replay_process(schedule: &ExternalHistorySchedule) -> TestResult<ExternalHistoryRecorder> {
     let mut cluster =
         DaemonCluster::start_bootstrap_with_raft_compaction(3, "external-control-history")?;
@@ -306,7 +339,7 @@ fn replay_process(schedule: &ExternalHistorySchedule) -> TestResult<ExternalHist
                 return Err("W7 generator emitted a W2-only composed fault".into());
             }
         }
-        record_process_surfaces(action, &mut cluster, &mut recorder);
+        record_process_surfaces(action, &mut cluster, &mut recorder)?;
     }
     assert_eq!(scheduler.remaining(), 0);
     Ok(recorder)
@@ -334,14 +367,60 @@ fn record_process_surfaces(
     action: ExternalHistoryAction,
     cluster: &mut DaemonCluster,
     recorder: &mut ExternalHistoryRecorder,
-) {
-    let admin_statuses = cluster
-        .statuses()
-        .into_iter()
-        .map(external_admin_observation)
-        .collect();
-    let overviews = cluster.overviews();
-    recorder.record_public_surfaces(action, admin_statuses, &overviews);
+) -> TestResult {
+    let deadline = Instant::now() + Duration::from_secs(10);
+    while Instant::now() < deadline {
+        let running = cluster.running_indices();
+        let mut statuses = Vec::with_capacity(running.len());
+        let mut overviews = Vec::with_capacity(running.len());
+        let mut coherent = !running.is_empty();
+        for index in running {
+            let Ok(before) = cluster.admin_status(index) else {
+                coherent = false;
+                break;
+            };
+            let Ok(overview) = cluster.cluster_overview(index) else {
+                coherent = false;
+                break;
+            };
+            let Ok(after) = cluster.admin_status(index) else {
+                coherent = false;
+                break;
+            };
+            let observation = MembershipObservation::from_cluster_overview(&overview);
+            if before != after || !public_surface_pair_is_coherent(&before, &observation) {
+                coherent = false;
+                break;
+            }
+            statuses.push(before);
+            overviews.push(overview);
+        }
+        if coherent {
+            recorder.record_public_surfaces(
+                action,
+                statuses
+                    .into_iter()
+                    .map(external_admin_observation)
+                    .collect(),
+                &overviews,
+            );
+            return Ok(());
+        }
+        thread::sleep(Duration::from_millis(10));
+    }
+    Err(format!("timed out collecting coherent admin/overview evidence after {action:?}").into())
+}
+
+fn public_surface_pair_is_coherent(
+    status: &DaemonStatus,
+    observation: &MembershipObservation,
+) -> bool {
+    !status.quorum_ok
+        || status.draining
+        || (observation.leader == status.leader
+            && observation.term == status.term
+            && observation.epoch == status.epoch
+            && observation.members.len() == status.members as usize)
 }
 
 fn external_admin_observation(status: DaemonStatus) -> ExternalAdminObservation {

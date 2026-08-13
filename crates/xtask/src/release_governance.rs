@@ -1565,6 +1565,31 @@ pub fn release_history_checkout_problems(text: &str) -> Result<Vec<String>, Box<
         }
     }
 
+    let rust_history_restore = jobs
+        .get(Value::String("rust".to_owned()))
+        .and_then(Value::as_mapping)
+        .and_then(|job| mapping_value(Some(job), "steps"))
+        .and_then(Value::as_sequence)
+        .and_then(|steps| {
+            steps.iter().find(|step| {
+                mapping_value(step.as_mapping(), "name").and_then(Value::as_str)
+                    == Some("Restore and verify full release history")
+            })
+        })
+        .and_then(|step| mapping_value(step.as_mapping(), "run"))
+        .and_then(Value::as_str);
+    if !rust_history_restore.is_some_and(|run| {
+        run.contains("\"+refs/heads/*:refs/remotes/origin/*\"")
+            && run.contains("\"+refs/tags/*:refs/tags/*\"")
+            && !run.contains("git fetch --prune --tags")
+            && !run.contains("git fetch --prune --unshallow --tags")
+    }) {
+        problems.push(
+            "job rust must force-fetch remote heads and annotated tags in its full-history restore without the conflicting --tags shorthand"
+                .to_owned(),
+        );
+    }
+
     Ok(problems)
 }
 

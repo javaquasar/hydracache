@@ -3,7 +3,7 @@
 use std::collections::BTreeSet;
 use std::error::Error;
 use std::ffi::OsString;
-use std::fs::{self, File};
+use std::fs::{self, File, OpenOptions};
 use std::io::{Read, Write};
 use std::net::{SocketAddr, TcpListener, TcpStream, UdpSocket};
 use std::path::{Path, PathBuf};
@@ -12,6 +12,7 @@ use std::sync::atomic::AtomicU64;
 use std::sync::{Mutex, MutexGuard, OnceLock};
 use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
 
+use fs2::FileExt;
 use hydracache_sim::ResourceSample;
 use serde::Serialize;
 use serde_json::Value;
@@ -44,6 +45,7 @@ static PREVIOUS_DAEMON_CACHE: OnceLock<Result<Option<PreviousDaemonBinary>, Stri
 // Keep one cluster alive at a time so parallel integration tests cannot reuse
 // an address during that hand-off and accidentally join each other's clusters.
 static DAEMON_CLUSTER_PROCESS_LOCK: OnceLock<Mutex<()>> = OnceLock::new();
+const DAEMON_CLUSTER_CROSS_PROCESS_LOCK_FILE: &str = "hydracache-daemon-cluster-process-e2e.lock";
 
 pub type TestResult<T = ()> = Result<T, Box<dyn Error>>;
 
@@ -51,6 +53,7 @@ pub type TestResult<T = ()> = Result<T, Box<dyn Error>>;
 pub struct DaemonStatus {
     pub leader: Option<String>,
     pub term: u64,
+    pub epoch: u64,
     pub members: u32,
     pub voters: u32,
     pub quorum_ok: bool,
@@ -68,6 +71,15 @@ impl DaemonStatus {
                 .get("term")
                 .and_then(Value::as_u64)
                 .ok_or("admin status missing term")?,
+            // The shipped 0.65 daemon predates the additive `epoch` status
+            // field. Keep its otherwise complete status observable in mixed-
+            // version proofs while reserving zero as the explicit
+            // legacy/unavailable sentinel. Current-only history proofs reject
+            // zero when they require an authoritative epoch.
+            epoch: value
+                .get("epoch")
+                .and_then(Value::as_u64)
+                .unwrap_or_default(),
             members: u32_field(&value, "members")?,
             voters: u32_field(&value, "voters")?,
             quorum_ok: value
@@ -147,6 +159,7 @@ pub struct DaemonCluster {
     raft_compaction_enabled: bool,
     raft_fault_generation: u64,
     _process_lock: MutexGuard<'static, ()>,
+    _cross_process_lock: File,
 }
 
 #[derive(Debug, Clone)]
@@ -281,7 +294,10 @@ impl DaemonCluster {
         let process_lock = DAEMON_CLUSTER_PROCESS_LOCK
             .get_or_init(|| Mutex::new(()))
             .lock()
-            .map_err(|_| "daemon process cluster lock poisoned")?;
+            // A prior test failure must remain visible without cascading into
+            // unrelated scenarios that only inherit its poisoned guard.
+            .unwrap_or_else(|poisoned| poisoned.into_inner());
+        let cross_process_lock = acquire_daemon_cluster_cross_process_lock()?;
         let root = unique_root(name)?;
         fs::create_dir_all(&root)?;
 
@@ -332,6 +348,7 @@ impl DaemonCluster {
             raft_compaction_enabled,
             raft_fault_generation: 0,
             _process_lock: process_lock,
+            _cross_process_lock: cross_process_lock,
         };
         for index in 0..cluster.nodes.len() {
             cluster.spawn_node(index, &seed_addrs)?;
@@ -554,6 +571,30 @@ impl DaemonCluster {
 
     pub fn kill(&mut self, index: usize) -> TestResult {
         self.nodes[index].kill()
+    }
+
+    pub fn kill_pair_concurrently(&mut self, first: usize, second: usize) -> TestResult {
+        if first == second {
+            return Err("concurrent daemon kill requires two distinct indices".into());
+        }
+        let (first_node, second_node) = if first < second {
+            let (left, right) = self.nodes.split_at_mut(second);
+            (&mut left[first], &mut right[0])
+        } else {
+            let (left, right) = self.nodes.split_at_mut(first);
+            (&mut right[0], &mut left[second])
+        };
+        std::thread::scope(|scope| {
+            let first_kill = scope.spawn(|| first_node.kill().map_err(|error| error.to_string()));
+            let second_kill = scope.spawn(|| second_node.kill().map_err(|error| error.to_string()));
+            first_kill
+                .join()
+                .map_err(|_| "first concurrent daemon kill panicked")??;
+            second_kill
+                .join()
+                .map_err(|_| "second concurrent daemon kill panicked")??;
+            Ok(())
+        })
     }
 
     pub fn restart(&mut self, index: usize) -> TestResult {
@@ -1494,10 +1535,33 @@ pub fn resolve_server_binary(
 
 fn unique_root(name: &str) -> TestResult<PathBuf> {
     let now = SystemTime::now().duration_since(UNIX_EPOCH)?.as_millis();
-    Ok(PathBuf::from(format!(
+    Ok(workspace_root().join(format!(
         "target/test-hydracache-daemon-process/{name}-{}-{now}",
         std::process::id()
     )))
+}
+
+fn acquire_daemon_cluster_cross_process_lock() -> TestResult<File> {
+    let path = std::env::temp_dir().join(DAEMON_CLUSTER_CROSS_PROCESS_LOCK_FILE);
+    let file = OpenOptions::new()
+        .read(true)
+        .write(true)
+        .create(true)
+        .truncate(false)
+        .open(&path)
+        .map_err(|error| {
+            format!(
+                "failed to open daemon cluster lock {}: {error}",
+                path.display()
+            )
+        })?;
+    file.lock_exclusive().map_err(|error| {
+        format!(
+            "failed to acquire daemon cluster lock {}: {error}",
+            path.display()
+        )
+    })?;
+    Ok(file)
 }
 
 fn validate_test_snapshot_handler_delay_ms(delay_ms: Option<u64>) -> TestResult<Option<u64>> {
@@ -1653,9 +1717,43 @@ mod tests {
 
     use super::{
         complete_dual_protocol_reservation, ensure_distinct_daemon_binaries, reserve_node_addrs,
-        truthy_env_value, unique_root, validate_test_snapshot_handler_delay_ms,
-        ProcessResourceSample,
+        truthy_env_value, unique_root, validate_test_snapshot_handler_delay_ms, workspace_root,
+        DaemonStatus, ProcessResourceSample,
     };
+
+    #[test]
+    fn legacy_admin_status_without_epoch_remains_visible_to_mixed_version_proofs() {
+        let status = DaemonStatus::from_json(serde_json::json!({
+            "leader": "member-a",
+            "term": 7,
+            "quorum_ok": true,
+            "members": 3,
+            "voters": 3,
+            "draining": false
+        }))
+        .expect("the shipped 0.65 status shape must remain observable");
+
+        assert_eq!(status.epoch, 0);
+        assert_eq!(status.leader.as_deref(), Some("member-a"));
+        assert_eq!(status.term, 7);
+        assert_eq!(status.members, 3);
+        assert_eq!(status.voters, 3);
+        assert!(status.quorum_ok);
+        assert!(!status.draining);
+    }
+
+    #[test]
+    fn daemon_process_artifacts_are_rooted_under_the_workspace_target() {
+        let root = unique_root("artifact-root").expect("artifact root");
+        let expected = workspace_root().join("target/test-hydracache-daemon-process");
+
+        assert!(
+            root.starts_with(&expected),
+            "daemon artifact root {} must be under {}",
+            root.display(),
+            expected.display()
+        );
+    }
 
     #[test]
     fn process_resource_sample_parses_rss_and_process_lifetime_high_water() {

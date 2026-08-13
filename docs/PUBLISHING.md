@@ -36,6 +36,13 @@ contain all of the following:
 - `docs/releases/X.Y.Z.md` release notes;
 - a successful full CI run for the same commit.
 
+For `0.68.0`, the tagged commit must additionally have a successful
+`HC/2 Hosted Release Admission` job. That job binds the Rust HC/2 crate to
+same-SHA Linux, pinned-Docker, and fuzz receipts. The dependency-aware publish
+order includes `hydracache-client-hc2`, and post-publication verification adds
+the registry crate to a clean external consumer. This does not publish the
+Java or Python preview packages.
+
 The `shipped` check is intentional: it prevents an implementation still marked
 as in progress from becoming an immutable crates.io release. Set the status in
 the release commit, merge that commit to `main`, wait for full CI to pass, and
@@ -170,6 +177,11 @@ cargo publish -p hydracache-client-transport-axum
 
 cargo package -p hydracache-client
 cargo publish -p hydracache-client
+
+# The generated Rust HC/2 client is part of the 0.68.0 crates.io release.
+# Java and Python clients remain source-only previews for this release.
+cargo package -p hydracache-client-hc2
+cargo publish -p hydracache-client-hc2
 
 cargo package -p hydracache-cluster-chitchat
 cargo publish -p hydracache-cluster-chitchat

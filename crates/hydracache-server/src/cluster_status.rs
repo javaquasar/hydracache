@@ -2,6 +2,7 @@
 
 use std::fmt;
 use std::sync::Arc;
+use std::time::Duration;
 
 use hydracache::{ClusterMember, ClusterNodeId, ClusterRole, RaftMetadataSnapshot};
 use serde::Serialize;
@@ -202,6 +203,14 @@ pub trait ClusterStatusProvider: fmt::Debug + Send + Sync {
     /// Notify the provider that the server has started graceful drain.
     fn begin_drain(&self) {}
 
+    /// Wait until the control plane has durably removed the local voter.
+    ///
+    /// Modeled and non-voting providers are ready immediately. A networked
+    /// member overrides this seam after its topology leave has committed.
+    fn wait_for_drain_ready(&self, _timeout: Duration) -> bool {
+        true
+    }
+
     /// Return a cluster status snapshot, incorporating current runtime state.
     fn cluster_status(&self, runtime: ClusterStatusRuntime) -> ClusterStatus;
 }
@@ -231,6 +240,12 @@ impl ClusterStatusProvider for ModeledClusterStatus {
 pub trait GridControlPlaneHandle: fmt::Debug + Send + Sync {
     /// Notify the live grid that graceful drain started.
     fn begin_drain(&self);
+
+    /// Wait until any voting membership transition required by drain is
+    /// locally applied.
+    fn wait_for_drain_ready(&self, _timeout: Duration) -> bool {
+        true
+    }
 
     /// Return a point-in-time control-plane snapshot.
     fn snapshot(&self) -> RaftMetadataSnapshot;
@@ -288,6 +303,10 @@ impl LiveClusterStatus {
 impl ClusterStatusProvider for LiveClusterStatus {
     fn begin_drain(&self) {
         self.grid.begin_drain();
+    }
+
+    fn wait_for_drain_ready(&self, timeout: Duration) -> bool {
+        self.grid.wait_for_drain_ready(timeout)
     }
 
     fn cluster_status(&self, runtime: ClusterStatusRuntime) -> ClusterStatus {

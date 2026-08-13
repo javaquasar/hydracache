@@ -64,6 +64,7 @@ criterion = { version = "0.8", features = ["async_tokio"] }
 diesel = { version = "2.3.10", default-features = false }
 ed25519-dalek = "2.2.0"
 futures-util = "0.3.32"
+fs2 = "0.4.3"
 hdrhistogram = { version = "7.5.4", default-features = false }
 h2 = "0.4.13"
 jsonschema = { version = "0.48.1", default-features = false }

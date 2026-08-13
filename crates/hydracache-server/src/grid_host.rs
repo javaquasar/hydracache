@@ -45,6 +45,8 @@ const GRID_DRIVE_INTERVAL: Duration = Duration::from_millis(50);
 const GRID_RAFT_AUTHORITY_FRESHNESS: Duration = Duration::from_millis(200);
 const GRID_LEADER_WAIT_TIMEOUT: Duration = Duration::from_secs(5);
 const GRID_RUNTIME_SHUTDOWN_TIMEOUT: Duration = Duration::from_secs(1);
+const FORWARDED_APPLY_TIMEOUT_MARKER: &str = "was forwarded but not applied locally before timeout";
+const ELECTION_IN_PROGRESS_MARKER: &str = "no raft leader; retry metadata proposal after election";
 const RAFT_HTTP_CONNECT_TIMEOUT: Duration = Duration::from_millis(500);
 const RAFT_HTTP_REQUEST_TIMEOUT: Duration = Duration::from_secs(2);
 const SNAPSHOT_AUTHORITY_POLL_INTERVAL: Duration = Duration::from_millis(10);
@@ -188,6 +190,14 @@ async fn networked_member_stack(config: &ServerConfig) -> CacheResult<NetworkedM
         raft.voter_ids()?.into_iter().collect::<BTreeSet<_>>(),
     ));
     let suppressed_raft_promotions = Arc::new(RwLock::new(BTreeSet::new()));
+    let last_materialized_member_voters = Arc::new(RwLock::new(
+        raft.members()
+            .into_iter()
+            .filter(|member| member.is_member())
+            .map(|member| crate::grid_host::raft_node_id(&member.node_id))
+            .collect::<BTreeSet<_>>(),
+    ));
+    let pending_voter_removals = Arc::new(RwLock::new(BTreeSet::new()));
     let use_network_sink =
         topology.multi_voter || matches!(start_mode, ResolvedClusterStartMode::Join);
     let drive_diagnostics = Arc::new(GridDriveDiagnostics::default());
@@ -205,6 +215,8 @@ async fn networked_member_stack(config: &ServerConfig) -> CacheResult<NetworkedM
     } else {
         Arc::new(NoopRaftMessageSink)
     };
+    let draining = Arc::new(AtomicBool::new(false));
+    let drain_remove_proposed = Arc::new(AtomicBool::new(false));
     let (shutdown, _) = watch::channel(false);
     spawn_grid_drive(
         GridDriveHandles {
@@ -214,9 +226,14 @@ async fn networked_member_stack(config: &ServerConfig) -> CacheResult<NetworkedM
             diagnostics: drive_diagnostics.clone(),
             last_voters,
             suppressed_raft_promotions,
+            last_materialized_member_voters,
+            pending_voter_removals,
             local_node_id: node_id.clone(),
+            local_raft_node_id: raft_node_id,
             local_endpoint: config.cluster_advertise_endpoint(),
             local_generation: generation,
+            draining: draining.clone(),
+            drain_remove_proposed: drain_remove_proposed.clone(),
         },
         discovery.clone(),
         shutdown.subscribe(),
@@ -273,8 +290,8 @@ async fn networked_member_stack(config: &ServerConfig) -> CacheResult<NetworkedM
         bridge,
         message_sink,
         drive_diagnostics,
-        draining: Arc::new(AtomicBool::new(false)),
-        drain_remove_proposed: Arc::new(AtomicBool::new(false)),
+        draining,
+        drain_remove_proposed,
         raft_compaction_enabled: config.raft_compaction_enabled,
         shutdown,
     })
@@ -313,23 +330,50 @@ async fn networked_member_cache(
     node_id: ClusterNodeId,
     generation: ClusterGeneration,
 ) -> CacheResult<HydraCache> {
-    let mut builder = HydraCache::member()
-        .cluster(DEFAULT_CLUSTER_NAME)
-        .control_plane(raft)
-        .discovery(discovery)
-        .node_id(node_id.clone())
-        .generation(generation)
-        .bind(config.cluster_addr.to_string())
-        .diagnostics_endpoint(format!("http://{}", config.admin_api.listen_addr));
-    for seed in &config.seeds {
-        builder = builder.bootstrap(seed.clone());
+    let deadline = Instant::now() + config.join_timeout();
+    loop {
+        let mut builder = HydraCache::member()
+            .cluster(DEFAULT_CLUSTER_NAME)
+            .control_plane(raft.clone())
+            .discovery(discovery.clone())
+            .node_id(node_id.clone())
+            .generation(generation)
+            .bind(config.cluster_addr.to_string())
+            .diagnostics_endpoint(format!("http://{}", config.admin_api.listen_addr));
+        for seed in &config.seeds {
+            builder = builder.bootstrap(seed.clone());
+        }
+        match builder.start().await {
+            Ok(cache) => return Ok(cache),
+            Err(error)
+                if is_retryable_member_admission_error(&error) && Instant::now() < deadline =>
+            {
+                // A durable follower can be behind the retained Raft log while
+                // its own id/generation upsert commits on the leader. Keep the
+                // already-running transport and drive alive so snapshot catch-up
+                // can materialize that exact command locally. The same bounded
+                // retry also covers the explicit no-leader interval during a
+                // failover election. Both paths retry the idempotent admission
+                // only within the configured join bound.
+                tokio::time::sleep(GRID_DRIVE_INTERVAL).await;
+            }
+            Err(error) => {
+                return Err(CacheError::Backend(format!(
+                    "failed to admit local member {node_id} at generation {}: {error}",
+                    generation.value()
+                )))
+            }
+        }
     }
-    builder.start().await.map_err(|error| {
-        CacheError::Backend(format!(
-            "failed to admit local member {node_id} at generation {}: {error}",
-            generation.value()
-        ))
-    })
+}
+
+fn is_retryable_member_admission_error(error: &CacheError) -> bool {
+    matches!(
+        error,
+        CacheError::Backend(message)
+            if message.contains(FORWARDED_APPLY_TIMEOUT_MARKER)
+                || message.contains(ELECTION_IN_PROGRESS_MARKER)
+    )
 }
 
 async fn inprocess_member_cache(
@@ -572,9 +616,14 @@ struct GridDriveHandles {
     diagnostics: Arc<GridDriveDiagnostics>,
     last_voters: SharedRaftVoterSet,
     suppressed_raft_promotions: SharedRaftVoterSet,
+    last_materialized_member_voters: SharedRaftVoterSet,
+    pending_voter_removals: SharedRaftVoterSet,
     local_node_id: ClusterNodeId,
+    local_raft_node_id: u64,
     local_endpoint: String,
     local_generation: ClusterGeneration,
+    draining: Arc<AtomicBool>,
+    drain_remove_proposed: Arc<AtomicBool>,
 }
 
 fn spawn_grid_drive(
@@ -649,12 +698,20 @@ async fn drive_grid_once(
         &handles.raft.voter_ids()?,
         &handles.raft.members(),
     );
+    refresh_pending_voter_removals(
+        &handles.last_materialized_member_voters,
+        &handles.pending_voter_removals,
+        &handles.raft.voter_ids()?,
+        &handles.raft.members(),
+    );
+    retry_local_voter_removal_for_drain(handles).await?;
     sync_raft_voters(
         &handles.raft,
         &handles.message_sink,
         &handles.raft_peers,
         handles.diagnostics.as_ref(),
         &handles.suppressed_raft_promotions,
+        &handles.pending_voter_removals,
     )
     .await?;
     let _ = send_raft_messages_with_diagnostics(
@@ -669,6 +726,68 @@ async fn drive_grid_once(
         Some(handles.diagnostics.as_ref()),
     )
     .await;
+    Ok(())
+}
+
+async fn retry_local_voter_removal_for_drain(handles: &GridDriveHandles) -> CacheResult<()> {
+    if !handles.draining.load(Ordering::SeqCst)
+        || handles.drain_remove_proposed.load(Ordering::SeqCst)
+    {
+        return Ok(());
+    }
+    let voters = handles.raft.voter_ids()?;
+    if voters.len() <= 1 || !voters.contains(&handles.local_raft_node_id) {
+        handles.drain_remove_proposed.store(true, Ordering::SeqCst);
+        return Ok(());
+    }
+    if handles.raft.leader_id() == Some(handles.local_raft_node_id) {
+        let transferee = {
+            let peers = handles.raft_peers.read().expect("raft peer map poisoned");
+            drain_leadership_transfer_target(&voters, handles.local_raft_node_id, &peers)
+        };
+        let Some(transferee) = transferee else {
+            return Ok(());
+        };
+        let messages = handles.raft.transfer_leadership(transferee)?;
+        send_raft_messages_with_diagnostics(
+            &handles.message_sink,
+            messages,
+            Some(handles.diagnostics.as_ref()),
+        )
+        .await?;
+        return Ok(());
+    }
+    if handles.raft.leader_id().is_none() {
+        return Ok(());
+    }
+    if handles
+        .drain_remove_proposed
+        .compare_exchange(false, true, Ordering::SeqCst, Ordering::SeqCst)
+        .is_err()
+    {
+        return Ok(());
+    }
+
+    let messages = match handles
+        .raft
+        .request_remove_voter(handles.local_raft_node_id)
+    {
+        Ok(messages) => messages,
+        Err(error) => {
+            handles.drain_remove_proposed.store(false, Ordering::SeqCst);
+            return Err(error);
+        }
+    };
+    if let Err(error) = send_raft_messages_with_diagnostics(
+        &handles.message_sink,
+        messages,
+        Some(handles.diagnostics.as_ref()),
+    )
+    .await
+    {
+        handles.drain_remove_proposed.store(false, Ordering::SeqCst);
+        return Err(error);
+    }
     Ok(())
 }
 
@@ -761,12 +880,24 @@ async fn sync_raft_voters(
     raft_peers: &SharedRaftPeers,
     diagnostics: &GridDriveDiagnostics,
     suppressed_raft_promotions: &SharedRaftVoterSet,
+    pending_voter_removals: &SharedRaftVoterSet,
 ) -> CacheResult<()> {
     let snapshot = raft.snapshot();
     if raft.leader_id() != Some(snapshot.raft_node_id) {
         return Ok(());
     }
     let current_voters = raft.voter_ids()?;
+    let pending_removal = pending_voter_removals
+        .read()
+        .expect("pending voter removals poisoned")
+        .iter()
+        .copied()
+        .find(|raft_id| *raft_id != snapshot.raft_node_id && current_voters.contains(raft_id));
+    if let Some(raft_id) = pending_removal {
+        let outbound = raft.propose_remove_voter(raft_id)?;
+        send_raft_messages_with_diagnostics(message_sink, outbound, Some(diagnostics)).await?;
+        return Ok(());
+    }
     let suppressed = suppressed_raft_promotions
         .read()
         .expect("suppressed raft promotions poisoned")
@@ -794,6 +925,37 @@ async fn sync_raft_voters(
         break;
     }
     Ok(())
+}
+
+fn refresh_pending_voter_removals(
+    last_materialized_member_voters: &SharedRaftVoterSet,
+    pending_voter_removals: &SharedRaftVoterSet,
+    current_voters: &[u64],
+    members: &[ClusterMember],
+) {
+    let current_voters = current_voters.iter().copied().collect::<BTreeSet<_>>();
+    let materialized = members
+        .iter()
+        .filter(|member| member.is_member())
+        .map(|member| raft_node_id(&member.node_id))
+        .collect::<BTreeSet<_>>();
+    let mut last = last_materialized_member_voters
+        .write()
+        .expect("last materialized member voters poisoned");
+    let mut pending = pending_voter_removals
+        .write()
+        .expect("pending voter removals poisoned");
+
+    pending.retain(|raft_id| current_voters.contains(raft_id) && !materialized.contains(raft_id));
+    for removed in last.difference(&materialized) {
+        if current_voters.contains(removed) {
+            pending.insert(*removed);
+        }
+    }
+    for admitted in &materialized {
+        pending.remove(admitted);
+    }
+    *last = materialized;
 }
 
 async fn send_raft_messages_with_diagnostics(
@@ -2148,6 +2310,23 @@ impl DedicatedGridRuntime {
             .block_on(future)
     }
 
+    fn block_on_from_any_thread<F>(&self, future: F) -> F::Output
+    where
+        F: Future + Send,
+        F::Output: Send,
+    {
+        if tokio::runtime::Handle::try_current().is_ok() {
+            return std::thread::scope(|scope| {
+                scope
+                    .spawn(move || self.block_on(future))
+                    .join()
+                    .expect("dedicated grid runtime helper thread panicked")
+            });
+        }
+        self.block_on(future)
+    }
+
+    #[cfg(test)]
     fn spawn<F>(&self, future: F)
     where
         F: Future<Output = ()> + Send + 'static,
@@ -2204,6 +2383,23 @@ impl GridControlPlaneHandle for NetworkedGridHandle {
     fn begin_drain(&self) {
         self.draining.store(true, Ordering::SeqCst);
         self.try_remove_local_voter_for_drain();
+    }
+
+    fn wait_for_drain_ready(&self, timeout: Duration) -> bool {
+        let deadline = Instant::now() + timeout;
+        loop {
+            if self
+                .raft
+                .voter_ids()
+                .is_ok_and(|voters| local_voter_removal_applied(&voters, self.raft_node_id))
+            {
+                return true;
+            }
+            if Instant::now() >= deadline {
+                return false;
+            }
+            std::thread::sleep(Duration::from_millis(10));
+        }
     }
 
     fn snapshot(&self) -> RaftMetadataSnapshot {
@@ -2321,6 +2517,21 @@ impl GridControlPlaneHandle for NetworkedGridHandle {
     }
 }
 
+fn local_voter_removal_applied(voters: &[u64], local_raft_node_id: u64) -> bool {
+    voters.len() <= 1 || !voters.contains(&local_raft_node_id)
+}
+
+fn drain_leadership_transfer_target(
+    voters: &[u64],
+    local_raft_node_id: u64,
+    peers: &BTreeMap<u64, RaftPeer>,
+) -> Option<u64> {
+    voters
+        .iter()
+        .copied()
+        .find(|voter| *voter != local_raft_node_id && peers.contains_key(voter))
+}
+
 fn raft_compaction_status(
     raft: &NetworkedRaftRuntime,
     enabled: bool,
@@ -2375,32 +2586,58 @@ impl NetworkedGridHandle {
         if voters.len() <= 1 || !voters.contains(&self.raft_node_id) {
             return;
         }
-        if self.raft.leader_id().is_none() {
-            return;
-        }
-        let Ok(messages) = self.raft.request_remove_voter(self.raft_node_id) else {
-            return;
-        };
-        self.drain_remove_proposed.store(true, Ordering::SeqCst);
-        if let Some(runtime) = &self._runtime {
-            if tokio::runtime::Handle::try_current().is_ok() {
-                let message_sink = Arc::clone(&self._message_sink);
-                let diagnostics = Arc::clone(&self.drive_diagnostics);
-                runtime.spawn(async move {
-                    let _ = send_raft_messages_with_diagnostics(
-                        &message_sink,
-                        messages,
-                        Some(diagnostics.as_ref()),
-                    )
-                    .await;
-                });
-            } else {
-                let _ = runtime.block_on(send_raft_messages_with_diagnostics(
+        if self.raft.leader_id() == Some(self.raft_node_id) {
+            let peers = self.raft_peers.read().expect("raft peer map poisoned");
+            let Some(transferee) =
+                drain_leadership_transfer_target(&voters, self.raft_node_id, &peers)
+            else {
+                return;
+            };
+            drop(peers);
+            let Ok(messages) = self.raft.transfer_leadership(transferee) else {
+                return;
+            };
+            if let Some(runtime) = &self._runtime {
+                let _ = runtime.block_on_from_any_thread(send_raft_messages_with_diagnostics(
                     &self._message_sink,
                     messages,
                     Some(self.drive_diagnostics.as_ref()),
                 ));
             }
+            return;
+        }
+        if self.raft.leader_id().is_none() {
+            return;
+        }
+        if self
+            .drain_remove_proposed
+            .compare_exchange(false, true, Ordering::SeqCst, Ordering::SeqCst)
+            .is_err()
+        {
+            return;
+        }
+        let Ok(messages) = self.raft.request_remove_voter(self.raft_node_id) else {
+            self.drain_remove_proposed.store(false, Ordering::SeqCst);
+            return;
+        };
+        if let Some(runtime) = &self._runtime {
+            // Returning before delivery makes the subsequent topology leave
+            // race this ConfChange. Run the bounded send to completion even
+            // when begin_drain is called from the admin Tokio runtime; the
+            // dedicated grid runtime is entered from a helper OS thread so we
+            // never nest Tokio runtimes on one thread.
+            if runtime
+                .block_on_from_any_thread(send_raft_messages_with_diagnostics(
+                    &self._message_sink,
+                    messages,
+                    Some(self.drive_diagnostics.as_ref()),
+                ))
+                .is_err()
+            {
+                self.drain_remove_proposed.store(false, Ordering::SeqCst);
+            }
+        } else {
+            self.drain_remove_proposed.store(false, Ordering::SeqCst);
         }
     }
 }
@@ -2562,6 +2799,13 @@ impl ClusterMessageHandler for RaftClusterMessageHandler {
                 // This opt-in process-test seam runs only after Axum received
                 // and decoded the real HTTP body. Holding before raft.step/ack
                 // keeps the sender's real request and feedback reservation live.
+                eprintln!(
+                    "HC_TEST_RAFT_SNAPSHOT_HANDLER_DELAY_STARTED from={} to={} term={} delay_ms={}",
+                    message.from,
+                    self.node_id,
+                    message.term,
+                    delay.as_millis()
+                );
                 tokio::time::sleep(delay).await;
             }
         }
@@ -2891,9 +3135,14 @@ mod tests {
             diagnostics: Arc::new(diagnostics),
             last_voters: Arc::new(RwLock::new(BTreeSet::new())),
             suppressed_raft_promotions: Arc::new(RwLock::new(BTreeSet::new())),
+            last_materialized_member_voters: Arc::new(RwLock::new(BTreeSet::new())),
+            pending_voter_removals: Arc::new(RwLock::new(BTreeSet::new())),
             local_node_id: ClusterNodeId::from("local"),
+            local_raft_node_id: 1,
             local_endpoint: "127.0.0.1:7000".to_owned(),
             local_generation: ClusterGeneration::new(1),
+            draining: Arc::new(AtomicBool::new(false)),
+            drain_remove_proposed: Arc::new(AtomicBool::new(false)),
         };
         drive_grid_once(&handles, &[]).await.unwrap();
 
@@ -3170,12 +3419,14 @@ mod tests {
         .unwrap();
         let diagnostics = GridDriveDiagnostics::default();
         let suppressed_raft_promotions = Arc::new(RwLock::new(BTreeSet::new()));
+        let pending_voter_removals = Arc::new(RwLock::new(BTreeSet::new()));
         sync_raft_voters(
             &raft,
             &message_sink,
             &raft_peers,
             &diagnostics,
             &suppressed_raft_promotions,
+            &pending_voter_removals,
         )
         .await
         .unwrap();
@@ -3206,6 +3457,7 @@ mod tests {
         .await
         .unwrap();
         let suppressed_raft_promotions = Arc::new(RwLock::new(BTreeSet::from([member_raft_id])));
+        let pending_voter_removals = Arc::new(RwLock::new(BTreeSet::new()));
 
         sync_raft_voters(
             &raft,
@@ -3213,6 +3465,7 @@ mod tests {
             &raft_peers,
             &GridDriveDiagnostics::default(),
             &suppressed_raft_promotions,
+            &pending_voter_removals,
         )
         .await
         .unwrap();
@@ -3222,6 +3475,60 @@ mod tests {
             sink.messages().is_empty(),
             "recently removed voter must not receive a resurrecting AddNode"
         );
+    }
+
+    #[test]
+    fn committed_member_removal_is_retained_until_the_voter_is_pruned() {
+        let removed_node = ClusterNodeId::from("member-removed");
+        let removed_raft_id = raft_node_id(&removed_node);
+        let retained_node = ClusterNodeId::from("member-retained");
+        let retained_raft_id = raft_node_id(&retained_node);
+        let last_materialized = Arc::new(RwLock::new(BTreeSet::from([
+            removed_raft_id,
+            retained_raft_id,
+        ])));
+        let pending = Arc::new(RwLock::new(BTreeSet::new()));
+        let retained = ClusterMember {
+            node_id: retained_node,
+            generation: ClusterGeneration::new(1),
+            role: ClusterRole::Member,
+            epoch: ClusterEpoch::new(1),
+            endpoints: ClusterEndpoints::new(),
+            metadata: BTreeMap::new(),
+        };
+
+        refresh_pending_voter_removals(
+            &last_materialized,
+            &pending,
+            &[removed_raft_id, retained_raft_id],
+            std::slice::from_ref(&retained),
+        );
+        assert_eq!(
+            *pending.read().expect("pending voter removals poisoned"),
+            BTreeSet::from([removed_raft_id])
+        );
+
+        refresh_pending_voter_removals(
+            &last_materialized,
+            &pending,
+            &[removed_raft_id, retained_raft_id],
+            std::slice::from_ref(&retained),
+        );
+        assert!(pending
+            .read()
+            .expect("pending voter removals poisoned")
+            .contains(&removed_raft_id));
+
+        refresh_pending_voter_removals(
+            &last_materialized,
+            &pending,
+            &[retained_raft_id],
+            std::slice::from_ref(&retained),
+        );
+        assert!(!pending
+            .read()
+            .expect("pending voter removals poisoned")
+            .contains(&removed_raft_id));
     }
 
     #[tokio::test]
@@ -3713,6 +4020,20 @@ mod tests {
     }
 
     #[test]
+    fn only_explicit_transient_failures_are_retryable_during_local_admission() {
+        let forwarded_apply = CacheError::Backend(format!(
+            "raft metadata command member-upsert:member-a:2 {FORWARDED_APPLY_TIMEOUT_MARKER}"
+        ));
+        assert!(is_retryable_member_admission_error(&forwarded_apply));
+
+        let election = CacheError::Backend(ELECTION_IN_PROGRESS_MARKER.to_owned());
+        assert!(is_retryable_member_admission_error(&election));
+
+        let permanent = CacheError::Backend("stale cluster generation".to_owned());
+        assert!(!is_retryable_member_admission_error(&permanent));
+    }
+
+    #[test]
     fn snapshot_single_flight_reservation_is_clone_shared_and_releases_on_error_or_cancel() {
         let diagnostics = Arc::new(GridDriveDiagnostics::default());
         let feedback = SnapshotDeliveryFeedback::new(test_raft_runtime(), Arc::clone(&diagnostics));
@@ -3997,6 +4318,50 @@ mod tests {
             .build()
             .unwrap();
         drop(DedicatedGridRuntime::new(runtime));
+    }
+
+    #[tokio::test]
+    async fn dedicated_runtime_can_block_from_a_tokio_caller() {
+        let runtime = tokio::runtime::Builder::new_current_thread()
+            .enable_all()
+            .build()
+            .unwrap();
+        let runtime = DedicatedGridRuntime::new(runtime);
+
+        assert_eq!(runtime.block_on_from_any_thread(async { 17 }), 17);
+    }
+
+    #[test]
+    fn drain_readiness_requires_the_local_voter_to_be_absent() {
+        assert!(!local_voter_removal_applied(&[1, 2, 3], 2));
+        assert!(local_voter_removal_applied(&[1, 3], 2));
+        assert!(local_voter_removal_applied(&[2], 2));
+    }
+
+    #[test]
+    fn drain_transfers_leadership_only_to_a_known_remote_voter() {
+        let peers = BTreeMap::from([
+            (
+                2,
+                RaftPeer {
+                    node_id: ClusterNodeId::from("member-2"),
+                    endpoint: "127.0.0.1:7002".to_owned(),
+                },
+            ),
+            (
+                4,
+                RaftPeer {
+                    node_id: ClusterNodeId::from("member-4"),
+                    endpoint: "127.0.0.1:7004".to_owned(),
+                },
+            ),
+        ]);
+
+        assert_eq!(
+            drain_leadership_transfer_target(&[1, 2, 3], 1, &peers),
+            Some(2)
+        );
+        assert_eq!(drain_leadership_transfer_target(&[1, 3], 1, &peers), None);
     }
 
     #[test]

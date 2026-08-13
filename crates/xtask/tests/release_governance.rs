@@ -702,7 +702,7 @@ jobs:
       - uses: actions/checkout@v5
 "#;
     let problems = xtask::release_governance::release_history_checkout_problems(shallow).unwrap();
-    assert_eq!(problems.len(), 7, "{problems:#?}");
+    assert_eq!(problems.len(), 8, "{problems:#?}");
     assert!(problems.iter().any(|problem| problem.contains("job rust")));
     assert!(problems
         .iter()
@@ -720,6 +720,20 @@ jobs:
     assert!(problems
         .iter()
         .any(|problem| problem.contains("job release-067-performance")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("force-fetch remote heads and annotated tags")));
+
+    let conflicting_tag_fetch = workflow.replace(
+        "git fetch --prune origin \"+refs/heads/*:refs/remotes/origin/*\" \"+refs/tags/*:refs/tags/*\"",
+        "git fetch --prune --tags origin \"+refs/heads/*:refs/remotes/origin/*\"",
+    );
+    let problems =
+        xtask::release_governance::release_history_checkout_problems(&conflicting_tag_fetch)
+            .unwrap();
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("force-fetch remote heads and annotated tags")));
 }
 
 #[test]

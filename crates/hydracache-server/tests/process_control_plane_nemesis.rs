@@ -327,6 +327,19 @@ fn process_nemesis_same_seed_replays_same_schedule() {
 }
 
 #[test]
+fn process_nemesis_responder_count_tracks_committed_drain() {
+    let mut state = ProcessNemesisState::default();
+    assert_eq!(state.expected_responders_for(3), 3);
+
+    state.last_killed = Some(1);
+    assert_eq!(state.expected_responders_for(3), 2);
+    state.last_killed = None;
+
+    state.members = 2;
+    assert_eq!(state.expected_responders_for(3), 2);
+}
+
+#[test]
 fn process_nemesis_failure_shrinks_and_frozen_seeds_replay() {
     let original = ExternalNemesisGenerator::new(0x0660_3302).generate();
     let checker = ExternalNemesisChecker::default();
@@ -500,9 +513,12 @@ impl Default for ProcessNemesisState {
 
 impl ProcessNemesisState {
     fn expected_responders(&self, cluster: &DaemonCluster) -> usize {
-        cluster
-            .node_ids()
-            .len()
+        self.expected_responders_for(cluster.node_ids().len())
+    }
+
+    fn expected_responders_for(&self, spawned_nodes: usize) -> usize {
+        (self.members as usize)
+            .min(spawned_nodes)
             .saturating_sub(usize::from(self.last_killed.is_some()))
             .saturating_sub(usize::from(self.last_paused.is_some()))
     }
@@ -1125,7 +1141,7 @@ fn cleanup_process_replay(
             errors.push(format!("restart killed daemon {index}: {error}"));
         }
     }
-    let expected_statuses = cluster.node_ids().len();
+    let expected_statuses = state.expected_responders(cluster);
     let converged = match cluster.wait_for_non_draining_responsive_shape(
         "process nemesis cleanup convergence",
         expected_statuses,

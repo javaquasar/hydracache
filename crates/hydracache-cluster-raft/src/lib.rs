@@ -1070,6 +1070,38 @@ where
         state.drain_ready()
     }
 
+    /// Transfer leadership to another configured voter and return the
+    /// resulting outbound messages.
+    ///
+    /// Graceful member drain uses this before removing a local leader from the
+    /// voter set. The removal is then proposed by a leader that will survive
+    /// the draining process, so its committed configuration can continue to
+    /// propagate after the old process exits.
+    pub fn transfer_leadership(&self, transferee: u64) -> CacheResult<Vec<RaftWireMessage>> {
+        let mut state = self.raft.lock().expect("raft metadata state poisoned");
+        let voters = state
+            .raw_node
+            .raft
+            .raft_log
+            .store
+            .initial_state()
+            .map_err(to_cache_error)?
+            .conf_state
+            .voters;
+        if transferee == self.raft_node_id || !voters.contains(&transferee) {
+            return Err(CacheError::Backend(format!(
+                "raft leadership transferee {transferee} must be a configured remote voter"
+            )));
+        }
+        if known_leader_id(state.raw_node.raft.leader_id) != Some(self.raft_node_id) {
+            return Err(CacheError::Backend(
+                "only the current raft leader can transfer leadership".to_owned(),
+            ));
+        }
+        state.raw_node.transfer_leader(transferee);
+        state.drain_ready()
+    }
+
     /// Advance the raft logical clock and return outbound peer messages.
     pub fn tick(&self) -> CacheResult<Vec<RaftWireMessage>> {
         let mut state = self.raft.lock().expect("raft metadata state poisoned");
@@ -3286,6 +3318,60 @@ mod tests {
 
         let error = runtime.request_remove_voter(2).unwrap_err();
         assert!(error.to_string().contains("require a known leader"));
+    }
+
+    fn three_voter_runtime_with_leader(local_node_id: u64, leader_id: u64) -> RaftMetadataRuntime {
+        let config =
+            RaftMetadataRuntimeConfig::multi_voter("leadership-transfer", local_node_id, [1, 2, 3]);
+        let runtime = RaftMetadataRuntime::with_config(config).unwrap();
+        runtime
+            .raft
+            .lock()
+            .expect("raft metadata state poisoned")
+            .raw_node
+            .raft
+            .leader_id = leader_id;
+        runtime
+    }
+
+    #[test]
+    fn leadership_transfer_rejects_the_local_voter() {
+        let runtime = three_voter_runtime_with_leader(1, 1);
+
+        let error = runtime.transfer_leadership(1).unwrap_err();
+
+        assert!(error
+            .to_string()
+            .contains("must be a configured remote voter"));
+    }
+
+    #[test]
+    fn leadership_transfer_rejects_an_unconfigured_remote_node() {
+        let runtime = three_voter_runtime_with_leader(1, 1);
+
+        let error = runtime.transfer_leadership(4).unwrap_err();
+
+        assert!(error
+            .to_string()
+            .contains("must be a configured remote voter"));
+    }
+
+    #[test]
+    fn leadership_transfer_accepts_a_configured_remote_voter_on_the_leader() {
+        let runtime = three_voter_runtime_with_leader(1, 1);
+
+        runtime.transfer_leadership(2).unwrap();
+    }
+
+    #[test]
+    fn leadership_transfer_rejects_a_configured_voter_on_a_follower() {
+        let runtime = three_voter_runtime_with_leader(1, 2);
+
+        let error = runtime.transfer_leadership(2).unwrap_err();
+
+        assert!(error
+            .to_string()
+            .contains("only the current raft leader can transfer leadership"));
     }
 
     #[test]

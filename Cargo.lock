@@ -2518,6 +2518,7 @@ dependencies = [
  "axum",
  "axum-server",
  "bytes",
+ "fs2",
  "futures-util",
  "hydracache",
  "hydracache-actuator-axum",

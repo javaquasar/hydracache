@@ -128,8 +128,9 @@ fn closure_problems(omitted: Option<&str>) -> Vec<String> {
     let workspace_test = ci.find("- name: Test\n");
     for command in [
         "git rev-parse --is-shallow-repository",
-        "git fetch --prune --unshallow --tags origin",
+        "git fetch --prune --unshallow origin",
         "+refs/heads/*:refs/remotes/origin/*",
+        "+refs/tags/*:refs/tags/*",
         "client-plane-compat-check --manifest-only",
     ] {
         if !ci.contains(command) {

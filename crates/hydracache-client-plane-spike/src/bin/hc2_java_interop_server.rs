@@ -664,7 +664,7 @@ fn run_daemon_fixture(
         .env("HYDRACACHE_TLS_KEY_PATH", &server_key)
         .env("HYDRACACHE_TLS_CA_PATH", &client_ca)
         .stdout(Stdio::piped())
-        .stderr(Stdio::null())
+        .stderr(Stdio::piped())
         .spawn()?;
     let result = (|| -> Result<(), Box<dyn Error>> {
         let stdout = child
@@ -675,7 +675,19 @@ fn run_daemon_fixture(
         let mut ready = String::new();
         stdout.read_line(&mut ready)?;
         if ready.trim() != r#"{"status":"ok"}"# {
-            return Err(format!("production daemon failed readiness: {}", ready.trim()).into());
+            let _ = child.kill();
+            let status = child.wait()?;
+            let mut stderr = String::new();
+            child
+                .stderr
+                .take()
+                .ok_or("production daemon stderr is unavailable")?
+                .read_to_string(&mut stderr)?;
+            return Err(format!(
+                "production daemon failed readiness: status={status}, receipt={:?}, stderr={stderr:?}",
+                ready.trim()
+            )
+            .into());
         }
         println!(
             "READY_DAEMON\t{}\t{}\t{}\t{}\t{}",

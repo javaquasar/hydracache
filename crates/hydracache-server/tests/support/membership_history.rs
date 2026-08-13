@@ -62,6 +62,15 @@ impl MembershipHistoryRecorder {
         self.record(MembershipObservation::from_cluster_overview(overview));
     }
 
+    pub fn record_authoritative_cluster_overview(&mut self, overview: &Value) -> bool {
+        let observation = MembershipObservation::from_cluster_overview(overview);
+        if observation.epoch == 0 || observation.term == 0 || observation.leader.is_none() {
+            return false;
+        }
+        self.record(observation);
+        true
+    }
+
     pub fn observations(&self) -> &[MembershipObservation] {
         &self.observations
     }
