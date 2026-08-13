@@ -16,7 +16,7 @@ fn membership_history_is_epoch_monotone_under_partition_heal() -> TestResult {
     let mut history = MembershipHistoryRecorder::default();
     cluster.wait_for_responsive_shape(3, 3, 3)?;
     for overview in cluster.overviews() {
-        history.record_cluster_overview(&overview);
+        history.record_authoritative_cluster_overview(&overview);
     }
 
     let statuses = cluster.wait_for_shape(3, 3)?;
@@ -32,7 +32,7 @@ fn membership_history_is_epoch_monotone_under_partition_heal() -> TestResult {
     cluster.wait_for_responsive_shape(3, 3, 3)?;
 
     for overview in cluster.overviews() {
-        history.record_cluster_overview(&overview);
+        history.record_authoritative_cluster_overview(&overview);
     }
     let report = history.check();
     assert!(
