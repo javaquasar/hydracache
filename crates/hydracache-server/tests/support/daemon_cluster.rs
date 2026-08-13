@@ -4,7 +4,7 @@ use std::collections::BTreeSet;
 use std::error::Error;
 use std::ffi::OsString;
 use std::fs::{self, File, OpenOptions};
-use std::io::{Read, Write};
+use std::io::{self, Read, Write};
 use std::net::{SocketAddr, TcpListener, TcpStream, UdpSocket};
 use std::path::{Path, PathBuf};
 use std::process::{Child, Command, Stdio};
@@ -33,6 +33,8 @@ const SERVER_BIN_ENV: &str = "CARGO_BIN_EXE_hydracache-server";
 const WAIT_TIMEOUT: Duration = Duration::from_secs(60);
 pub const DAEMON_POLL_INTERVAL_MS: u64 = 200;
 const POLL_INTERVAL: Duration = Duration::from_millis(DAEMON_POLL_INTERVAL_MS);
+const DAEMON_SPAWN_ATTEMPTS: usize = 3;
+const DAEMON_SPAWN_RETRY_DELAY: Duration = Duration::from_millis(50);
 const MAX_TEST_RAFT_SNAPSHOT_HANDLER_DELAY_MS: u64 = 60_000;
 const TEST_RAFT_OUTBOUND_FAULT_SCHEMA_VERSION: u32 = 1;
 const MAX_TEST_RAFT_OUTBOUND_DELAY_MS: u64 = 1_000;
@@ -1009,7 +1011,7 @@ impl DaemonNode {
                 .env("HYDRACACHE_REDIS_API_ENABLED", "true")
                 .env("HYDRACACHE_REDIS_ADDR", redis_addr.to_string());
         }
-        let child = command.spawn()?;
+        let child = spawn_with_would_block_retry(|| command.spawn(), std::thread::sleep)?;
         self.child = Some(child);
         self.suspended = false;
         Ok(())
@@ -1072,6 +1074,24 @@ impl DaemonNode {
             Err(format!("kill -{signal} failed with {status}").into())
         }
     }
+}
+
+fn spawn_with_would_block_retry<T>(
+    mut spawn: impl FnMut() -> io::Result<T>,
+    mut sleep: impl FnMut(Duration),
+) -> io::Result<T> {
+    for attempt in 1..=DAEMON_SPAWN_ATTEMPTS {
+        match spawn() {
+            Ok(child) => return Ok(child),
+            Err(error)
+                if error.kind() == io::ErrorKind::WouldBlock && attempt < DAEMON_SPAWN_ATTEMPTS =>
+            {
+                sleep(DAEMON_SPAWN_RETRY_DELAY);
+            }
+            Err(error) => return Err(error),
+        }
+    }
+    unreachable!("daemon spawn retry loop always returns on its final attempt")
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -1712,14 +1732,80 @@ fn u32_field(value: &Value, field: &'static str) -> TestResult<u32> {
 
 #[cfg(test)]
 mod tests {
+    use std::cell::Cell;
     use std::fs;
+    use std::io;
     use std::net::{TcpListener, UdpSocket};
 
     use super::{
         complete_dual_protocol_reservation, ensure_distinct_daemon_binaries, reserve_node_addrs,
-        truthy_env_value, unique_root, validate_test_snapshot_handler_delay_ms, workspace_root,
-        DaemonStatus, ProcessResourceSample,
+        spawn_with_would_block_retry, truthy_env_value, unique_root,
+        validate_test_snapshot_handler_delay_ms, workspace_root, DaemonStatus,
+        ProcessResourceSample, DAEMON_SPAWN_ATTEMPTS, DAEMON_SPAWN_RETRY_DELAY,
     };
+
+    #[test]
+    fn daemon_spawn_retries_transient_would_block_errors() {
+        let attempts = Cell::new(0);
+        let sleeps = Cell::new(0);
+
+        let result = spawn_with_would_block_retry(
+            || {
+                let attempt = attempts.get() + 1;
+                attempts.set(attempt);
+                if attempt < DAEMON_SPAWN_ATTEMPTS {
+                    Err(io::Error::from(io::ErrorKind::WouldBlock))
+                } else {
+                    Ok("spawned")
+                }
+            },
+            |delay| {
+                assert_eq!(delay, DAEMON_SPAWN_RETRY_DELAY);
+                sleeps.set(sleeps.get() + 1);
+            },
+        )
+        .unwrap();
+
+        assert_eq!(result, "spawned");
+        assert_eq!(attempts.get(), DAEMON_SPAWN_ATTEMPTS);
+        assert_eq!(sleeps.get(), DAEMON_SPAWN_ATTEMPTS - 1);
+    }
+
+    #[test]
+    fn daemon_spawn_does_not_retry_non_transient_errors() {
+        let attempts = Cell::new(0);
+
+        let error = spawn_with_would_block_retry(
+            || {
+                attempts.set(attempts.get() + 1);
+                Err::<(), _>(io::Error::from(io::ErrorKind::PermissionDenied))
+            },
+            |_| panic!("non-transient spawn failures must not sleep"),
+        )
+        .unwrap_err();
+
+        assert_eq!(error.kind(), io::ErrorKind::PermissionDenied);
+        assert_eq!(attempts.get(), 1);
+    }
+
+    #[test]
+    fn daemon_spawn_returns_would_block_after_bounded_retries() {
+        let attempts = Cell::new(0);
+        let sleeps = Cell::new(0);
+
+        let error = spawn_with_would_block_retry(
+            || {
+                attempts.set(attempts.get() + 1);
+                Err::<(), _>(io::Error::from(io::ErrorKind::WouldBlock))
+            },
+            |_| sleeps.set(sleeps.get() + 1),
+        )
+        .unwrap_err();
+
+        assert_eq!(error.kind(), io::ErrorKind::WouldBlock);
+        assert_eq!(attempts.get(), DAEMON_SPAWN_ATTEMPTS);
+        assert_eq!(sleeps.get(), DAEMON_SPAWN_ATTEMPTS - 1);
+    }
 
     #[test]
     fn legacy_admin_status_without_epoch_remains_visible_to_mixed_version_proofs() {
