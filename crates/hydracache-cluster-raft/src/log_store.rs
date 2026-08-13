@@ -2170,11 +2170,16 @@ mod tests {
 
     #[cfg(feature = "sled-log-store")]
     fn sled_temp_path(label: &str) -> std::path::PathBuf {
+        static SEQUENCE: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
         let unique = std::time::SystemTime::now()
             .duration_since(std::time::UNIX_EPOCH)
             .unwrap()
             .as_nanos();
-        std::env::temp_dir().join(format!("hydracache-{label}-{unique}"))
+        let sequence = SEQUENCE.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+        std::env::temp_dir().join(format!(
+            "hydracache-{label}-{}-{unique}-{sequence}",
+            std::process::id()
+        ))
     }
 
     #[cfg(feature = "sled-log-store")]

@@ -263,7 +263,7 @@ fn assert_w32_compatibility_inputs_are_present() -> TestResult {
 
 fn record_overviews(cluster: &mut DaemonCluster, history: &mut MembershipHistoryRecorder) {
     for overview in cluster.overviews() {
-        history.record_cluster_overview(&overview);
+        history.record_authoritative_cluster_overview(&overview);
     }
 }
 
