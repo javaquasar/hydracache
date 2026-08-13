@@ -96,7 +96,14 @@ covered by tests and release evidence rather than treated as optional follow-up:
    moves the work item back to planned before Maven runs.
 6. **Reproducible and diagnosable CI.** The PostgreSQL service image is digest-pinned; Java/legacy
    and PostgreSQL jobs have explicit timeouts; Surefire reports, daemon close receipts, PostgreSQL
-   version, image, seed set, and full differential logs are retained with `if: always()`.
+   version, image, seed set, and full differential logs are retained with `if: always()`. The new
+   SQLx fast-suite has a reviewed 120-second budget, raising the aggregate PR ceiling from 1560 to
+   1680 seconds instead of borrowing evidence or budget from an unrelated suite. Java Surefire
+   reports are copied to canonical files under `target/test-evidence/0.69`, allowing the release
+   harness to digest them without accepting artifacts outside the repository target boundary.
+   CI runs fast SQLx, Java, legacy, and both PostgreSQL proofs through `evidence-run`, then the
+   `migration-conformance-admission-069` job downloads their exact-SHA receipts plus canary and
+   workspace receipts and enforces `release-evidence --require-ship`.
 7. **Commit-scoped invalidation waits.** `InvalidationOutbox::status_for_commit` is implemented by
    in-memory, SQLite, and PostgreSQL adapters. `InvalidationWait` uses it, and a later pending row in
    the same namespace is proven not to delay an already-published receipt.

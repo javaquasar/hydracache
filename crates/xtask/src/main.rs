@@ -46,6 +46,9 @@ fn main() -> Result<(), Box<dyn Error>> {
         Some("legacy-client-check") => xtask::migration_conformance::run_legacy(args.collect())?,
         Some("miri-check") => xtask::miri_check::run(args.collect())?,
         Some("migration-conformance-check") => xtask::migration_conformance::run(args.collect())?,
+        Some("postgres-conformance-check") => {
+            xtask::migration_conformance::run_postgres(args.collect())?
+        }
         Some("mutants") => xtask::mutants::run(args.collect())?,
         Some("perf-prebuild") => xtask::perf::run(args.collect())?,
         Some("perf-bootstrap") => xtask::perf_bootstrap::run(args.collect())?,
@@ -102,6 +105,7 @@ fn print_usage() {
          cargo xtask legacy-client-check --matrix hc1  # build shipped HC/1 libraries into consumers and run them against the current server\n  \
          cargo xtask miri-check  # run pinned Miri-safe snapshot proofs (skip loud when unavailable)\n  \
          cargo xtask migration-conformance-check --structural  # validate 0.69 source pins and exact-outcome manifests\n  \
+         cargo xtask postgres-conformance-check --mode <happy|canary>  # execute the real PostgreSQL differential or expected-red sentinel\n  \
          cargo xtask mutants       # validate the Raft mutation-testing baseline, optionally run cargo-mutants\n  \
          cargo xtask perf-runner-preflight --release 0.67 --profile reference-v1  # reject an unstable reference runner before build/measurement\n  \
          cargo xtask perf-prebuild --release 0.67 --profile reference-v1  # build and bind exact performance binaries\n  \

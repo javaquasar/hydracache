@@ -70,7 +70,7 @@ on:
       candidate_release:
         description: "Release that owns candidate fast and manually dispatched gate receipts"
         required: false
-        default: "0.67.1"
+        default: "0.69"
         type: string
       gated_gate_id:
         description: "Exact gate id from docs/testing/gated-test-registry.toml"
@@ -88,7 +88,7 @@ env:
   CARGO_INCREMENTAL: 0
   CARGO_PROFILE_DEV_DEBUG: 0
   CARGO_PROFILE_TEST_DEBUG: 0
-  HYDRACACHE_CANDIDATE_RELEASE: ${{ inputs.candidate_release || '0.67.1' }}
+  HYDRACACHE_CANDIDATE_RELEASE: ${{ inputs.candidate_release || '0.69' }}
 
 jobs:
   docs:
@@ -229,7 +229,7 @@ jobs:
         run: |
           cargo run -p xtask --locked -- migration-conformance-check --structural
           cargo test -p hydracache --test borrowed_cache_semantics --locked -j 2
-          cargo test -p hydracache-db --features sqlx-outbox --test cached_vs_direct_differential --locked -j 2
+          cargo run -p xtask --locked -- evidence-run --release 0.69 --gate fast.migration-conformance-db-069
 
       - name: Upload fast canary evidence
         if: always()
@@ -373,7 +373,7 @@ jobs:
   migration-conformance-069:
     name: Migration Conformance 0.69
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 60
 
     steps:
       - name: Checkout full tag history
@@ -398,14 +398,18 @@ jobs:
           cache-targets: true
 
       - name: Run adapted Hazelcast expectations
-        env:
-          HYDRACACHE_RUN_JVM_COMPAT: "1"
-        run: cargo run -p xtask --locked -- borrowed-suite-check --suite hazelcast
+        run: cargo run -p xtask --locked -- evidence-run --release 0.69 --gate tool.borrowed-hazelcast-069
 
       - name: Run shipped HC1 consumers against current daemon
-        env:
-          HYDRACACHE_RUN_LEGACY_CLIENTS: "1"
-        run: cargo run -p xtask --locked -- legacy-client-check --matrix hc1
+        run: cargo run -p xtask --locked -- evidence-run --release 0.69 --gate tool.legacy-hc1-clients-069
+
+      - name: Upload migration conformance receipts
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: "migration-conformance-069-receipts-${{ github.sha }}"
+          path: target/release-evidence/receipts/**
+          if-no-files-found: error
 
       - name: Upload Java and legacy diagnostics
         if: always()
@@ -414,13 +418,14 @@ jobs:
           name: "migration-conformance-069-${{ github.sha }}"
           path: |
             sdks/java/**/target/surefire-reports/**
+            target/test-evidence/0.69/**
             target/release-evidence/**
           if-no-files-found: warn
 
   migration-conformance-postgres-069:
     name: Migration Conformance PostgreSQL 0.69
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 35
     env:
       HYDRACACHE_TEST_POSTGRES_URL: postgres://hydracache:hydracache@127.0.0.1:5432/hydracache
     services:
@@ -452,43 +457,78 @@ jobs:
           cache-targets: true
 
       - name: Run PostgreSQL cached-vs-direct differential
-        shell: bash
-        run: |
-          set -o pipefail
-          mkdir -p target/test-evidence/0.69
-          printf '%s\n' 'postgres:16.4-alpine@sha256:5660c2cbfea50c7a9127d17dc4e48543eedd3d7a41a595a2dfa572471e37e64c' > target/test-evidence/0.69/postgres-image.txt
-          printf '%s\n' '0x69_2026 0x69_2027 0x69_2028' > target/test-evidence/0.69/postgres-seeds.txt
-          cargo test -p hydracache-db --features sqlx-outbox \
-            --test cached_vs_direct_postgres --locked \
-            postgres_cached_reads_match_direct_queries_through_the_real_outbox \
-            -- --ignored --exact --nocapture \
-            2>&1 | tee target/test-evidence/0.69/postgres-differential.log
+        run: cargo run -p xtask --locked -- evidence-run --release 0.69 --gate ignored.hydracache-db.cached-vs-direct-postgres-069
 
       - name: Prove PostgreSQL dropped-invalidation canary is red
-        shell: bash
-        env:
-          HYDRACACHE_CANARY_DEFECT: W4_PG_DROP
-        run: |
-          set +e
-          cargo test -p hydracache-db --features sqlx-outbox \
-            --test cached_vs_direct_postgres --locked \
-            canary_postgres_differential_rejects_a_dropped_invalidation \
-            -- --ignored --exact --nocapture \
-            2>&1 | tee target/test-evidence/0.69/postgres-canary.log
-          status=${PIPESTATUS[0]}
-          set -e
-          if [ "$status" -eq 0 ]; then
-            echo "PostgreSQL dropped-invalidation canary unexpectedly stayed green" >&2
-            exit 1
-          fi
-          grep -F "HC-CANARY-RED:W4-PG" target/test-evidence/0.69/postgres-canary.log
+        run: cargo run -p xtask --locked -- evidence-run --release 0.69 --gate ignored.hydracache-db.cached-vs-direct-postgres-canary-069
+
+      - name: Upload PostgreSQL conformance receipts
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: "migration-conformance-postgres-069-receipts-${{ github.sha }}"
+          path: target/release-evidence/receipts/**
+          if-no-files-found: error
 
       - name: Upload PostgreSQL conformance diagnostics
         if: always()
         uses: actions/upload-artifact@v6
         with:
           name: "migration-conformance-postgres-069-${{ github.sha }}"
-          path: target/test-evidence/0.69/**
+          path: |
+            target/test-evidence/0.69/**
+            target/release-evidence/receipts/**
+          if-no-files-found: error
+
+  migration-conformance-admission-069:
+    name: Migration Conformance Admission 0.69
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    needs:
+      - rust
+      - migration-conformance-069
+      - migration-conformance-postgres-069
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Download workspace receipt
+        uses: actions/download-artifact@v5
+        with:
+          name: "release-evidence-fast-${{ github.sha }}"
+          path: target/release-evidence/receipts
+
+      - name: Download fast canary receipts
+        uses: actions/download-artifact@v5
+        with:
+          name: "canary-fast-${{ github.sha }}"
+          path: target/release-evidence/canaries
+
+      - name: Download Java and legacy receipts
+        uses: actions/download-artifact@v5
+        with:
+          name: "migration-conformance-069-receipts-${{ github.sha }}"
+          path: target/release-evidence/receipts
+
+      - name: Download PostgreSQL receipts
+        uses: actions/download-artifact@v5
+        with:
+          name: "migration-conformance-postgres-069-receipts-${{ github.sha }}"
+          path: target/release-evidence/receipts
+
+      - name: Require exact-candidate migration conformance evidence
+        run: cargo run -p xtask --locked -- release-evidence --release 0.69 --receipts-dir target/release-evidence/receipts --require-ship
+
+      - name: Upload migration conformance admission
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: "migration-conformance-admission-069-${{ github.sha }}"
+          path: target/release-evidence/0.69.*
           if-no-files-found: error
 
   hc2-linux-required:
@@ -499,6 +539,7 @@ jobs:
       - rust
       - migration-conformance-069
       - migration-conformance-postgres-069
+      - migration-conformance-admission-069
       - msrv
     if: always()
 
@@ -509,12 +550,14 @@ jobs:
           RUST_RESULT: ${{ needs.rust.result }}
           MIGRATION_RESULT: ${{ needs.migration-conformance-069.result }}
           POSTGRES_MIGRATION_RESULT: ${{ needs.migration-conformance-postgres-069.result }}
+          MIGRATION_ADMISSION_RESULT: ${{ needs.migration-conformance-admission-069.result }}
           MSRV_RESULT: ${{ needs.msrv.result }}
         run: |
           test "$DOCS_RESULT" = "success"
           test "$RUST_RESULT" = "success"
           test "$MIGRATION_RESULT" = "success"
           test "$POSTGRES_MIGRATION_RESULT" = "success"
+          test "$MIGRATION_ADMISSION_RESULT" = "success"
           test "$MSRV_RESULT" = "success"
 
   hc2-docker-interop:

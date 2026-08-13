@@ -1,7 +1,7 @@
 schema_version = 1
 release = "0.64.0"
 nextest_version = "0.9.137"
-aggregate_budget_seconds = 1560
+aggregate_budget_seconds = 1680
 
 [[suite]]
 id = "fast.fuzz-corpus-regression"
@@ -22,6 +22,30 @@ noise_allowance_seconds = 0
 [suite.command]
 program = "cargo"
 args = ["test", "-p", "hydracache-fuzz", "--test", "fuzz_corpus_regression", "--locked", "-j", "2"]
+cwd = "."
+platform = "any"
+
+[suite.command.env]
+
+[[suite]]
+id = "fast.migration-conformance-db-069"
+work_items = ["W4"]
+timeout_seconds = 600
+budget_seconds = 120
+deterministic = false
+artifacts = []
+logical_digest_artifact = ""
+
+[suite.baseline]
+status = "unmeasured"
+commit = ""
+toolchain = ""
+linux_ci_median_seconds = 0
+noise_allowance_seconds = 0
+
+[suite.command]
+program = "cargo"
+args = ["test", "-p", "hydracache-db", "--features", "sqlx-outbox", "--test", "cached_vs_direct_differential", "--locked", "-j", "2"]
 cwd = "."
 platform = "any"
 

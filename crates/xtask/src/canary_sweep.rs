@@ -315,7 +315,7 @@ fn execute_command(
     let stderr_path = directory.join(format!("{base}.stderr"));
     let stdout_file = File::create(&stdout_path)?;
     let stderr_file = File::create(&stderr_path)?;
-    let mut process = Command::new(&command.program);
+    let mut process = Command::new(platform_program(&command.program, cfg!(windows)));
     process
         .args(&command.args)
         .envs(&command.env)
@@ -466,6 +466,14 @@ fn platform_matches(platform: &str) -> bool {
     platform == "any" || platform == std::env::consts::OS
 }
 
+fn platform_program(program: &str, windows: bool) -> &str {
+    if windows && program.eq_ignore_ascii_case("mvn") {
+        "mvn.cmd"
+    } else {
+        program
+    }
+}
+
 fn is_cargo_program(program: &str) -> bool {
     Path::new(program)
         .file_name()
@@ -527,5 +535,18 @@ impl Options {
             tier: tier.ok_or("canary-sweep requires --tier")?,
             w_item,
         })
+    }
+}
+
+#[cfg(test)]
+mod platform_program_tests {
+    use super::platform_program;
+
+    #[test]
+    fn maven_uses_its_windows_batch_shim_without_changing_other_platforms() {
+        assert_eq!(platform_program("mvn", true), "mvn.cmd");
+        assert_eq!(platform_program("MVN", true), "mvn.cmd");
+        assert_eq!(platform_program("mvn", false), "mvn");
+        assert_eq!(platform_program("cargo", true), "cargo");
     }
 }

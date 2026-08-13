@@ -1947,6 +1947,11 @@ the `HC-CANARY-RED:W4-PG` marker. `InvalidationWait` queries the receipt's exact
 that unrelated later work cannot manufacture a timeout, with the same assertion repeated against
 the SQLx SQLite adapter in `outbox_sqlite`.
 
+The 0.69 CI lanes execute the SQLx, Java, legacy, and PostgreSQL gates through `evidence-run`.
+`migration-conformance-admission-069` merges those receipts with the workspace and dynamic-canary
+artifacts for the same SHA and runs `release-evidence --release 0.69 --require-ship`; raw test
+success without its receipt cannot satisfy admission.
+
 The Hazelcast gate builds the Rust mTLS fixture and production daemon before Maven. The live facade
 test uses the real Java HC/2 client; the same command executes the production lease-expiry test and
 the Java recovery/session-loss contract, so the borrowed manifest is not accepted from a

@@ -14,8 +14,8 @@
       "w_item": "W1",
       "guard": {"file":"sdks/java/hydracache-hazelcast-facade/src/test/java/io/hydracache/hazelcast/BorrowedHazelcastExpectationsTest.java","function":"borrowedHazelcastSuiteOutcomesMatchTheManifestExactly"},
       "canary": {"file":"sdks/java/hydracache-hazelcast-facade/src/test/java/io/hydracache/hazelcast/BorrowedHazelcastExpectationsTest.java","function":"canaryBorrowedSuiteRunnerTreatsAnUnlistedFailureAsSkip"},
-      "guard_command": {"program":"mvn","args":["-q","-f","sdks/java/pom.xml","-pl","hydracache-hazelcast-facade","-Dtest=BorrowedHazelcastExpectationsTest#borrowedHazelcastSuiteOutcomesMatchTheManifestExactly","test"],"env":{},"cwd":".","platform":"linux"},
-      "canary_command": {"program":"mvn","args":["-q","-f","sdks/java/pom.xml","-pl","hydracache-hazelcast-facade","-Dtest=BorrowedHazelcastExpectationsTest#canaryBorrowedSuiteRunnerTreatsAnUnlistedFailureAsSkip","test"],"env":{"HYDRACACHE_CANARY_DEFECT":"W1_SWALLOW"},"cwd":".","platform":"linux"},
+      "guard_command": {"program":"mvn","args":["-q","-f","sdks/java/pom.xml","-pl","hydracache-hazelcast-facade","-Dtest=BorrowedHazelcastExpectationsTest#borrowedHazelcastSuiteOutcomesMatchTheManifestExactly","test"],"env":{},"cwd":".","platform":"any"},
+      "canary_command": {"program":"mvn","args":["-q","-f","sdks/java/pom.xml","-pl","hydracache-hazelcast-facade","-Dtest=BorrowedHazelcastExpectationsTest#canaryBorrowedSuiteRunnerTreatsAnUnlistedFailureAsSkip","test"],"env":{"HYDRACACHE_CANARY_DEFECT":"W1_SWALLOW"},"cwd":".","platform":"any"},
       "defect_id":"hydracache-0.69-W1-swallowed-row","expected_failure":"HC-CANARY-RED:W1","timeout_seconds":600,"tier":"fast","artifacts":["target/release-evidence/canaries/0.69-W1.json"],"red_evidence":"Removing an executable Hazelcast row while retaining the manifest must fail the exact-outcome runner."
     },
     {

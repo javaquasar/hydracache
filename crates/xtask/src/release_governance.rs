@@ -350,6 +350,8 @@ pub fn release_execution_wiring_problems(
         problems.extend(release_066_execution_wiring_problems(&workflow));
     } else if normalize_release(requested_release) == "0.67" {
         problems.extend(release_067_execution_wiring_problems(text)?);
+    } else if normalize_release(requested_release) == "0.69" {
+        problems.extend(release_069_execution_wiring_problems(&workflow));
     }
     const REDIS_MULTINODE_EVIDENCE: &str = "cargo run -p xtask --locked -- evidence-run --release 0.65 --gate env.hydracache-run-redis-resp-multinode-e2e";
     match workflow
@@ -1468,9 +1470,9 @@ fn candidate_receipt_wiring_problems(
     workflow: &WorkflowShape,
     requested_release: &str,
 ) -> Vec<String> {
-    const DEFAULT_RELEASE: &str = "0.67.1";
+    const DEFAULT_RELEASE: &str = "0.69";
     const RELEASE_ENV: &str = "HYDRACACHE_CANDIDATE_RELEASE";
-    const RELEASE_ENV_BINDING: &str = "${{ inputs.candidate_release || '0.67.1' }}";
+    const RELEASE_ENV_BINDING: &str = "${{ inputs.candidate_release || '0.69' }}";
     const FAST_RECEIPT: &str = "cargo run -p xtask --locked -- evidence-run --release \"$HYDRACACHE_CANDIDATE_RELEASE\" --gate fast.workspace-nextest";
     const GOVERNANCE: &str = "cargo run -p xtask --locked -- release-governance-check --release \"$HYDRACACHE_CANDIDATE_RELEASE\"";
     const MANUAL_RECEIPT: &str = r#"cargo run -p xtask --locked -- evidence-run --release "$HYDRACACHE_CANDIDATE_RELEASE" --gate "${{ inputs.gated_gate_id }}""#;
@@ -1593,6 +1595,53 @@ pub fn release_history_checkout_problems(text: &str) -> Result<Vec<String>, Box<
     }
 
     Ok(problems)
+}
+
+fn release_069_execution_wiring_problems(workflow: &WorkflowShape) -> Vec<String> {
+    let expected = [
+        (
+            "rust",
+            "0.69 migration conformance fast lanes",
+            "cargo run -p xtask --locked -- evidence-run --release 0.69 --gate fast.migration-conformance-db-069",
+        ),
+        (
+            "migration-conformance-069",
+            "Run adapted Hazelcast expectations",
+            "cargo run -p xtask --locked -- evidence-run --release 0.69 --gate tool.borrowed-hazelcast-069",
+        ),
+        (
+            "migration-conformance-069",
+            "Run shipped HC1 consumers against current daemon",
+            "cargo run -p xtask --locked -- evidence-run --release 0.69 --gate tool.legacy-hc1-clients-069",
+        ),
+        (
+            "migration-conformance-postgres-069",
+            "Run PostgreSQL cached-vs-direct differential",
+            "cargo run -p xtask --locked -- evidence-run --release 0.69 --gate ignored.hydracache-db.cached-vs-direct-postgres-069",
+        ),
+        (
+            "migration-conformance-postgres-069",
+            "Prove PostgreSQL dropped-invalidation canary is red",
+            "cargo run -p xtask --locked -- evidence-run --release 0.69 --gate ignored.hydracache-db.cached-vs-direct-postgres-canary-069",
+        ),
+        (
+            "migration-conformance-admission-069",
+            "Require exact-candidate migration conformance evidence",
+            "cargo run -p xtask --locked -- release-evidence --release 0.69 --receipts-dir target/release-evidence/receipts --require-ship",
+        ),
+    ];
+    expected
+        .into_iter()
+        .filter_map(|(job, step, command)| {
+            let present = workflow
+                .step_runs
+                .get(job)
+                .and_then(|steps| steps.get(step))
+                .is_some_and(|run| run.lines().any(|line| line.trim() == command));
+            (!present)
+                .then(|| format!("release 0.69 job {job} step {step:?} must execute `{command}`"))
+        })
+        .collect()
 }
 
 fn fuzz_nightly_wiring_problems(text: &str) -> Vec<String> {

@@ -129,16 +129,7 @@ pub fn run_borrowed(args: Vec<String>) -> Result<(), Box<dyn Error>> {
         }
     }
     let executable_suffix = if cfg!(windows) { ".exe" } else { "" };
-    let target_dir = std::env::var_os("CARGO_TARGET_DIR")
-        .map(PathBuf::from)
-        .map(|path| {
-            if path.is_absolute() {
-                path
-            } else {
-                root.join(path)
-            }
-        })
-        .unwrap_or_else(|| root.join("target"));
+    let target_dir = cargo_target_dir(&root);
     let fixture = target_dir
         .join("debug")
         .join(format!("hc2_java_interop_server{executable_suffix}"));
@@ -181,6 +172,16 @@ pub fn run_borrowed(args: Vec<String>) -> Result<(), Box<dyn Error>> {
     if !status.success() {
         return Err(format!("borrowed Hazelcast expectation suite failed with {status}").into());
     }
+    retain_report(
+        &root,
+        "sdks/java/hydracache-hazelcast-facade/target/surefire-reports/TEST-io.hydracache.hazelcast.BorrowedHazelcastExpectationsTest.xml",
+        "target/test-evidence/0.69/hazelcast-borrowed-expectations.xml",
+    )?;
+    retain_report(
+        &root,
+        "sdks/java/hydracache-hazelcast-facade/target/surefire-reports/TEST-io.hydracache.hazelcast.BorrowedHazelcastLiveInteropTest.xml",
+        "target/test-evidence/0.69/hazelcast-live-interop.xml",
+    )?;
     let session_status = Command::new(maven)
         .current_dir(&root)
         .env("HC2_JAVA_INTEROP_SERVER", &fixture)
@@ -197,7 +198,26 @@ pub fn run_borrowed(args: Vec<String>) -> Result<(), Box<dyn Error>> {
     if !session_status.success() {
         return Err(format!("HC/2 session-loss contract failed with {session_status}").into());
     }
+    retain_report(
+        &root,
+        "sdks/java/hydracache-client-hc2/target/surefire-reports/TEST-io.hydracache.client.hc2.GrpcHydraCacheClientInteropTest.xml",
+        "target/test-evidence/0.69/hc2-session-loss.xml",
+    )?;
     println!("borrowed Hazelcast expectation suite: PASS");
+    Ok(())
+}
+
+fn retain_report(root: &Path, source: &str, destination: &str) -> Result<(), Box<dyn Error>> {
+    let source = root.join(source);
+    if !source.is_file() {
+        return Err(format!("expected test report is missing: {}", source.display()).into());
+    }
+    let destination = root.join(destination);
+    let parent = destination
+        .parent()
+        .ok_or("retained test report has no parent directory")?;
+    fs::create_dir_all(parent)?;
+    fs::copy(&source, &destination)?;
     Ok(())
 }
 
@@ -229,11 +249,13 @@ pub fn run_legacy(args: Vec<String>) -> Result<(), Box<dyn Error>> {
         "build current server",
     )?;
     let address = reserve_loopback_address()?;
-    let server_exe = root.join("target/debug").join(if cfg!(windows) {
-        "hydracache-server.exe"
-    } else {
-        "hydracache-server"
-    });
+    let server_exe = cargo_target_dir(&root)
+        .join("debug")
+        .join(if cfg!(windows) {
+            "hydracache-server.exe"
+        } else {
+            "hydracache-server"
+        });
     let child = Command::new(server_exe)
         .current_dir(&root)
         .env("HYDRACACHE_LISTEN_ADDR", &address)
@@ -279,6 +301,93 @@ pub fn validate_legacy_execution(
         .into());
     }
     Ok(())
+}
+
+pub fn run_postgres(args: Vec<String>) -> Result<(), Box<dyn Error>> {
+    let mode = match args.as_slice() {
+        [flag, mode] if flag == "--mode" && matches!(mode.as_str(), "happy" | "canary") => {
+            mode.as_str()
+        }
+        _ => return Err("usage: postgres-conformance-check --mode <happy|canary>".into()),
+    };
+    if std::env::var("HYDRACACHE_TEST_POSTGRES_URL").is_err() {
+        return Err("SKIP-LOUD: HYDRACACHE_TEST_POSTGRES_URL is required".into());
+    }
+    let root = repository_root();
+    let evidence = root.join("target/test-evidence/0.69");
+    fs::create_dir_all(&evidence)?;
+    let (test, log) = if mode == "happy" {
+        fs::write(
+            evidence.join("postgres-image.txt"),
+            "postgres:16.4-alpine@sha256:5660c2cbfea50c7a9127d17dc4e48543eedd3d7a41a595a2dfa572471e37e64c\n",
+        )?;
+        fs::write(
+            evidence.join("postgres-seeds.txt"),
+            "0x69_2026 0x69_2027 0x69_2028\n",
+        )?;
+        (
+            "postgres_cached_reads_match_direct_queries_through_the_real_outbox",
+            evidence.join("postgres-differential.log"),
+        )
+    } else {
+        (
+            "canary_postgres_differential_rejects_a_dropped_invalidation",
+            evidence.join("postgres-canary.log"),
+        )
+    };
+    let mut command = Command::new("cargo");
+    command.current_dir(&root).args([
+        "test",
+        "-p",
+        "hydracache-db",
+        "--features",
+        "sqlx-outbox",
+        "--test",
+        "cached_vs_direct_postgres",
+        "--locked",
+        test,
+        "--",
+        "--ignored",
+        "--exact",
+        "--nocapture",
+    ]);
+    if mode == "canary" {
+        command.env("HYDRACACHE_CANARY_DEFECT", "W4_PG_DROP");
+    }
+    let output = command.output()?;
+    let combined = format!(
+        "{}{}",
+        String::from_utf8_lossy(&output.stdout),
+        String::from_utf8_lossy(&output.stderr)
+    );
+    fs::write(&log, combined.as_bytes())?;
+    print!("{combined}");
+    if mode == "happy" && !output.status.success() {
+        return Err(format!("PostgreSQL differential failed with {}", output.status).into());
+    }
+    if mode == "canary" && !postgres_canary_is_expected_red(output.status.success(), &combined) {
+        return Err(
+            "PostgreSQL dropped-invalidation canary did not fail with HC-CANARY-RED:W4-PG".into(),
+        );
+    }
+    Ok(())
+}
+
+fn postgres_canary_is_expected_red(success: bool, output: &str) -> bool {
+    !success && output.contains("HC-CANARY-RED:W4-PG")
+}
+
+fn cargo_target_dir(root: &Path) -> PathBuf {
+    std::env::var_os("CARGO_TARGET_DIR")
+        .map(PathBuf::from)
+        .map(|path| {
+            if path.is_absolute() {
+                path
+            } else {
+                root.join(path)
+            }
+        })
+        .unwrap_or_else(|| root.join("target"))
 }
 
 fn validate_git_tags(root: &Path, manifest: &LegacyManifest) -> Result<(), Box<dyn Error>> {
@@ -694,5 +803,18 @@ mod tests {
     fn unknown_outcome_fails_closed() {
         let error = validate_outcome("fixture", "row", "maybe", Some("fixture")).unwrap_err();
         assert!(error.to_string().contains("unknown outcome"));
+    }
+
+    #[test]
+    fn postgres_canary_requires_both_failure_and_the_semantic_marker() {
+        assert!(postgres_canary_is_expected_red(
+            false,
+            "HC-CANARY-RED:W4-PG divergence"
+        ));
+        assert!(!postgres_canary_is_expected_red(
+            true,
+            "HC-CANARY-RED:W4-PG divergence"
+        ));
+        assert!(!postgres_canary_is_expected_red(false, "unrelated failure"));
     }
 }

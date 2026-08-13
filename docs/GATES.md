@@ -248,8 +248,7 @@ The last two commands fail skip-loud when their opt-in environment variable is a
 workspace receipt covers the Rust structural/borrowed tests; SQLx uses
 `cfg.hydracache-db.cached-vs-direct-differential-069`. External evidence IDs are
 `tool.borrowed-hazelcast-069`, `tool.legacy-hc1-clients-069`,
-`ignored.hydracache-db.cached-vs-direct-postgres-069`, and
-`cfg.hydracache-db.cached-vs-direct-postgres-069`. The Java gate builds and starts the production
+`ignored.hydracache-db.cached-vs-direct-postgres-069`, and its expected-red canary gate. The Java gate builds and starts the production
 daemon, then supplements the facade run with exact lease-expiry and SDK session-loss contracts.
 Both DB differentials use transactional outbox enqueue, the real drain worker, and
 commit-scoped `InvalidationWait`; the PostgreSQL row is required by `hc2-linux-required`. Its

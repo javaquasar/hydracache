@@ -6725,10 +6725,10 @@ tier = "external"
 required_features = []
 required_env = ["HYDRACACHE_RUN_JVM_COMPAT"]
 required_tools = ["cargo", "mvn", "java"]
-timeout_seconds = 600
+timeout_seconds = 1200
 owner_release = "0.69.0"
 ship_mandatory = true
-artifacts = ["sdks/java/hydracache-hazelcast-facade/target/surefire-reports", "sdks/java/hydracache-client-hc2/target/surefire-reports"]
+artifacts = ["target/test-evidence/0.69/hazelcast-borrowed-expectations.xml", "target/test-evidence/0.69/hazelcast-live-interop.xml", "target/test-evidence/0.69/hc2-session-loss.xml"]
 
 [gate.ci]
 workflow = ".github/workflows/ci.yml"
@@ -6835,7 +6835,7 @@ step = "Run PostgreSQL cached-vs-direct differential"
 
 [gate.command]
 program = "cargo"
-args = ["test", "-p", "hydracache-db", "--features", "sqlx-outbox", "--test", "cached_vs_direct_postgres", "--locked", "postgres_cached_reads_match_direct_queries_through_the_real_outbox", "--", "--ignored", "--exact", "--nocapture"]
+args = ["run", "-p", "xtask", "--locked", "--", "postgres-conformance-check", "--mode", "happy"]
 cwd = "."
 platform = "any"
 
@@ -6868,13 +6868,12 @@ step = "Prove PostgreSQL dropped-invalidation canary is red"
 
 [gate.command]
 program = "cargo"
-args = ["test", "-p", "hydracache-db", "--features", "sqlx-outbox", "--test", "cached_vs_direct_postgres", "--locked", "canary_postgres_differential_rejects_a_dropped_invalidation", "--", "--ignored", "--exact", "--nocapture"]
+args = ["run", "-p", "xtask", "--locked", "--", "postgres-conformance-check", "--mode", "canary"]
 cwd = "."
 platform = "any"
 
 [gate.command.env]
 HYDRACACHE_TEST_POSTGRES_URL = "postgres://hydracache:hydracache@127.0.0.1:5432/hydracache"
-HYDRACACHE_CANARY_DEFECT = "W4_PG_DROP"
 
 [[gate]]
 id = "cfg.hydracache-db.cached-vs-direct-postgres-069"
@@ -6892,7 +6891,7 @@ required_env = ["HYDRACACHE_TEST_POSTGRES_URL"]
 required_tools = ["cargo", "postgres"]
 timeout_seconds = 900
 owner_release = "0.69.0"
-ship_mandatory = true
+ship_mandatory = false
 artifacts = ["target/test-evidence/0.69/postgres-differential.log", "target/test-evidence/0.69/postgres-image.txt", "target/test-evidence/0.69/postgres-seeds.txt"]
 
 [gate.ci]

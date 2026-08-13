@@ -63,8 +63,8 @@ function = "release_069_migration_conformance_closure_is_fail_closed"
 id = "W4"
 required_sources = ["crates/hydracache-db/src/outbox.rs", "crates/hydracache-db/src/sqlx_outbox.rs", "crates/hydracache-db/tests/outbox_barrier.rs", "crates/hydracache-db/tests/outbox_sqlite.rs", "crates/hydracache-db/tests/cached_vs_direct_differential.rs", "crates/hydracache-db/tests/cached_vs_direct_postgres.rs"]
 required_artifacts = []
-fast_gate_ids = []
-gated_gate_ids = ["cfg.hydracache-db.cached-vs-direct-differential-069", "ignored.hydracache-db.cached-vs-direct-postgres-069", "ignored.hydracache-db.cached-vs-direct-postgres-canary-069", "cfg.hydracache-db.cached-vs-direct-postgres-069"]
+fast_gate_ids = ["fast.migration-conformance-db-069"]
+gated_gate_ids = ["ignored.hydracache-db.cached-vs-direct-postgres-069", "ignored.hydracache-db.cached-vs-direct-postgres-canary-069"]
 ship_required = true
 [[work_item.required_tests]]
 source = "crates/hydracache-db/tests/cached_vs_direct_differential.rs"
@@ -90,7 +90,7 @@ id = "W5"
 required_sources = ["crates/xtask/tests/migration_conformance_069.rs", ".github/workflows/ci.yml"]
 required_artifacts = ["docs/testing/canary-registry-0.69.json", "docs/testing/release-evidence/0.69.toml", "docs/releases/0.69.0.md"]
 fast_gate_ids = ["fast.workspace-nextest"]
-gated_gate_ids = ["tool.borrowed-hazelcast-069", "tool.legacy-hc1-clients-069", "ignored.hydracache-db.cached-vs-direct-postgres-069", "ignored.hydracache-db.cached-vs-direct-postgres-canary-069", "cfg.hydracache-db.cached-vs-direct-postgres-069"]
+gated_gate_ids = ["tool.borrowed-hazelcast-069", "tool.legacy-hc1-clients-069", "ignored.hydracache-db.cached-vs-direct-postgres-069", "ignored.hydracache-db.cached-vs-direct-postgres-canary-069"]
 ship_required = true
 [[work_item.required_tests]]
 source = "crates/xtask/tests/migration_conformance_069.rs"
