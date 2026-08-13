@@ -2,14 +2,16 @@
 
 > **At a glance**
 > - **What:** prove HydraCache's migration and compatibility claims with **other projects' own
->   evidence**: (W1) execute a curated subset of **Hazelcast's own IMap/FencedLock test suite**
->   against the buildable `0.68` Java source-preview facade implementing the `0.52` surface
->   contract - the
+>   evidence**: (W1) execute a provenance-bound adaptation of curated
+>   **Hazelcast IMap/FencedLock expectations** against the buildable `0.68` Java source-preview
+>   facade implementing the `0.52` surface contract - the facade does not implement Hazelcast's
+>   Java interfaces and Hazelcast's cluster-owning tests therefore cannot run verbatim - the
 >   borrowed-conformance pattern Caffeine uses to run
 >   Guava's cache testlib against itself and Scylla uses for DynamoDB (alternator); (W2) an
 >   embedded-cache semantics conformance set borrowed from the moka/caffeine expectations for the
->   in-process API; (W3) run **real previously published HydraCache client binaries** (built from
->   the shipped tags) against the current server - live artifacts, not byte fixtures; (W4) a
+>   in-process API; (W3) run **real previously published HC/1 client consumers** (built from
+>   the shipped tags) against the current server - live artifacts, not byte fixtures, while the
+>   retained HC/2 generation matrix from `0.68` remains a prerequisite; (W4) a
 >   readyset/noria-style **cached-result vs direct-query differential** for the DB track under
 >   concurrent writes, retrofitting `0.64`-era proof discipline onto the oldest shipped surface.
 > - **Why:** the project's core positioning is Hazelcast migration, but every compatibility proof so
@@ -26,7 +28,7 @@
 > - **Unblocks:** a defensible "Hazelcast-migration ready for the claimed subset" statement backed
 >   by Hazelcast's own tests, client-upgrade guidance backed by executed old binaries, and the
 >   stable post-HC/2 surface required by the `0.70` memory-efficiency release.
-> - **Status:** planned.
+> - **Status:** in-progress.
 >
 > Roadmap: [`INDEX.md`](INDEX.md) - rules: [`../RULES.md`](../RULES.md) -
 > gates: [`../GATES.md`](../GATES.md) - testing: [`../TESTING.md`](../TESTING.md) -
@@ -63,9 +65,52 @@ item - never a silent skip and never a quiet feature addition (`R-11`).
   suites are explicitly out of scope with a named ledger.
 - **No wire-protocol compatibility with Hazelcast clients.** W1 drives the **Java facade API**,
   not Hazelcast's binary protocol.
-- **No DB feature work.** W4 measures/verifies the shipped `0.37`/`0.38` semantics; reconciliation
-  and outbox mechanics are not redesigned.
+- **No new DB integration surface.** W4 keeps the existing outbox API family, but the final
+  hardening pass makes `InvalidationWait` honor the receipt's exact commit position so unrelated
+  later rows cannot create false degraded outcomes. SQLite, PostgreSQL, in-memory, and SQLx
+  implementations must agree on that correction.
 - **No benchmark claims.** Conformance only; performance stays `0.67`.
+
+## Final Hardening Amendments
+
+The release-review pass adds seven mandatory improvements. They are part of plan 69 and must be
+covered by tests and release evidence rather than treated as optional follow-up:
+
+1. **Per-row proof layers.** Hazelcast manifest schema v2 records `adapted-unit`, `live-daemon`,
+   `server-state-machine`, and `recovery-interop` proofs with source, selector, and language.
+   Every expected-pass Hazelcast row requires at least one non-double proof. TTL proves expiry,
+   lock contention uses two independently signed client certificates, and lease-expiry/session-loss
+   are explicit rows rather than prose-only supplements.
+2. **Semantic canaries.** W0-W5 use distinct defects: abbreviated source commit, swallowed
+   Hazelcast row, skipped embedded-cache row, false-green legacy tag, dropped invalidation, and an
+   unwired PostgreSQL aggregate dependency. Generic work-item omission remains a closure test but
+   is no longer the release canary for every item.
+3. **PostgreSQL expected-red coverage.** The real PostgreSQL target contains a dropped-invalidation
+   sentinel in addition to its happy path, is registered as an ignored external test, and has a
+   dedicated CI step that only succeeds when the injected defect fails with `HC-CANARY-RED:W4-PG`.
+4. **Real concurrency and multiple seeds.** SQLite and PostgreSQL each execute 12 concurrent
+   transactional writers for seeds `0x69_2026`, `0x69_2027`, and `0x69_2028`, then require exact
+   cached/direct convergence through the production outbox worker.
+5. **Multi-language evidence selectors.** `release-evidence` validates Rust, JUnit Java, and Python
+   test selectors. W1 names its live facade and recovery tests directly, so deleting a Java test
+   moves the work item back to planned before Maven runs.
+6. **Reproducible and diagnosable CI.** The PostgreSQL service image is digest-pinned; Java/legacy
+   and PostgreSQL jobs have explicit timeouts; Surefire reports, daemon close receipts, PostgreSQL
+   version, image, seed set, and full differential logs are retained with `if: always()`.
+7. **Commit-scoped invalidation waits.** `InvalidationOutbox::status_for_commit` is implemented by
+   in-memory, SQLite, and PostgreSQL adapters. `InvalidationWait` uses it, and a later pending row in
+   the same namespace is proven not to delay an already-published receipt.
+
+**Hardening tests/gates:**
+
+```powershell
+cargo test -p hydracache-db --features sqlx-outbox --test outbox_barrier --locked
+cargo test -p hydracache-db --features sqlx-outbox --test cached_vs_direct_differential --locked
+cargo test -p xtask release_evidence::language_selector_tests --locked
+cargo run -p xtask --locked -- canary-check --release 0.69
+$env:HYDRACACHE_RUN_JVM_COMPAT='1'; cargo run -p xtask --locked -- borrowed-suite-check --suite hazelcast
+$env:HYDRACACHE_CANARY_DEFECT='W4_PG_DROP'; cargo test -p hydracache-db --features sqlx-outbox --test cached_vs_direct_postgres canary_postgres_differential_rejects_a_dropped_invalidation -- --ignored --exact --nocapture
+```
 
 ## Preflight
 
@@ -98,23 +143,47 @@ Populate as W-items land: item -> where implemented -> required command -> bound
 
 | Item | Implemented where | Required command | Boundary |
 | --- | --- | --- | --- |
-| _(populate during implementation; W1-W5 below define the targets)_ | | | |
+| W0 | `docs/integrations/*.json`, `docs/testing/compat/legacy-clients.toml`, `xtask migration-conformance-check` | `cargo run -p xtask -- migration-conformance-check --structural` | Provenance and outcome vocabulary before runners |
+| W1 | Java facade borrowed-expectation runner + Hazelcast manifest | `cargo run -p xtask -- borrowed-suite-check --suite hazelcast` | Source-level facade only; no Hazelcast wire/interface claim |
+| W2 | `crates/hydracache/tests/borrowed_cache_semantics.rs` | `cargo test -p hydracache --test borrowed_cache_semantics --locked -j 2` | Embedded cache surface only |
+| W3 | HC/1 legacy consumer matrix + current daemon harness | `cargo test -p hydracache-server --test legacy_client_matrix --locked -- --nocapture` | HC/1 tags only; HC/2 evidence is reused from 0.68 |
+| W4 | `crates/hydracache-db/tests/cached_vs_direct_{differential,postgres}.rs`, `outbox_{barrier,sqlite}.rs` | `cargo test -p hydracache-db --features sqlx-outbox --test cached_vs_direct_differential --locked -j 2` | Commit-position oracle; SQLite fast, PostgreSQL happy-path and expected-red gates |
+| W5 | release registries/evidence/docs/CI | `cargo run -p xtask -- release-governance-check --release 0.69` | Exact-candidate ship proof |
 
-## W1. Borrowed Hazelcast IMap/FencedLock Suite Against The Java Facade (blueprint: `caffeine/guava/src/compatibilityTest/`, `scylladb/test/alternator/`)
+## W0. Executable Manifest Contracts And Provenance
 
-**Principle.** Passing the predecessor's own tests is the strongest migration proof and the cheapest
-source of thousands of expectations. Every red result is signal: a real gap, a divergence to
-document, or future work to name.
+Define and validate the three manifests before implementing their runners. Every executable row has
+a stable ID, an exact upstream repository/version/commit and source test, an expected outcome, and a
+HydraCache test mapping. `divergence-documented`, `unsupported-documented`, and `skipped` rows require
+a non-empty reason; skips are never green. Duplicate IDs, missing sources, unknown outcomes, or a
+runner/manifest count mismatch fail closed. The pinned Hazelcast input is `v5.6.0` at
+`a9ce2a02ac17f88fcd38869ac698e56e613dc40c`.
 
-**Files to change.** New JVM module (e.g., `java/hazelcast-compat-suite/` alongside the `0.68`
-generated SDK/facade modules) with a pinned Hazelcast source/test-jar version; a **borrowed-suite manifest**
+**DoD.**
+```powershell
+cargo run --manifest-path crates\xtask\Cargo.toml -- migration-conformance-check --structural
+```
+
+## W1. Adapted Hazelcast IMap/FencedLock Expectations Against The Java Facade (blueprint: `caffeine/guava/src/compatibilityTest/`, `scylladb/test/alternator/`)
+
+**Principle.** The predecessor's tests are an independent source of behavioral expectations. This
+is an adaptation with per-row source provenance, not a claim that Hazelcast's cluster-owning test
+classes execute unchanged: those tests construct real Hazelcast members and depend on Hazelcast
+internals, while the shipped HydraCache facade deliberately implements neither `IMap` nor
+`FencedLock` and has no Hazelcast runtime dependency. Every red result is signal: a real gap, a
+divergence to document, or future work to name.
+
+**Files to change.** A test-only runner in the existing Java facade module; a **borrowed-suite manifest**
 `docs/integrations/hazelcast_borrowed_suite.json` in the `0.63` conformance style: every borrowed
 test class/method -> `expected: pass | divergence-documented | unsupported-documented | skipped(reason)`;
-a runner that executes the curated subset against the facade and diffs actual vs manifest.
+a runner that executes the adapted expectation against the facade and diffs actual vs manifest.
 
 **Design.**
-- Curate by shipped surface: IMap get/put/CAS (`replace(k,old,new)`, `remove(k,val)`),
-  entry listeners, FencedLock acquire/release/reentrancy/lease-expiry/session-loss.
+- Start with a 10-20-row feasibility slice, then expand only after the runner proves exact outcome
+  accounting. Curate by shipped surface: IMap get/put/CAS (`replace(k,old,new)`, `remove(k,val)`),
+  entry listeners, FencedLock acquire/release/lease-expiry/session-loss. Hazelcast reentrancy is an
+  explicit `divergence-documented` row because `HydraFencedLock` is intentionally non-reentrant;
+  this release does not widen that contract.
 - The runner fails on **any** unmanifested outcome: an unexpected pass (claim widened silently) is
   as red as an unexpected failure - the `0.63` no-silent-drift rule in both directions.
 - Divergence rows carry a reason and, where applicable, the `R-2`/`0.52` manifest reference.
@@ -163,29 +232,33 @@ cargo test -p hydracache --test borrowed_cache_semantics --locked -j 2
 ```
 **CI.** Fast `rust` job (pure in-process).
 
-## W3. Live Previous-Client Binaries Against The Current Server (blueprint: Hazelcast old-client/new-member practice; extends `0.64` W32 beyond byte fixtures)
+## W3. Live Previous HC/1 Client Consumers Against The Current Server (blueprint: Hazelcast old-client/new-member practice; extends `0.64` W32 beyond byte fixtures)
 
 **Principle.** `0.64` W32 proves old **bytes** decode; it never proves an old **client binary**
 completes a session. Handshake negotiation, retry behavior, and error mapping only surface with the
 real artifact.
 
 **Files to change.** `crates/hydracache-server/tests/legacy_client_matrix.rs` + an xtask helper that
-builds pinned client artifacts from the shipped tags (`v0.62.x`, `v0.63.0`, and `v0.68.0`) into a cache directory
+builds pinned HC/1 consumer fixtures against the library artifacts from shipped tags
+(`v0.62.0`, `v0.62.1`, `v0.63.0`) into a cache directory
 (recorded commit + toolchain, `0.64` W32 provenance discipline); a matrix manifest
 `docs/testing/compat/legacy-clients.toml` (tag -> surface -> expected outcome).
 
 **Design.**
-- Each legacy client runs its supported subset (handshake, get/put, TTL where its protocol version
-  allows, lock ops for `v0.63`) against a current daemon; the `v0.68.0` generated client additionally
-  proves the first production client-plane generation, live subscription, reconnect, and lock-session
-  surface. Per the protocol contract, `v2`/`v3` clients must succeed on their surface and **never**
+- Each legacy HC/1 consumer runs its supported subset (handshake, get/put, TTL where its protocol
+  version allows, lock ops for `v0.63`) against a current daemon. The tags publish a library rather
+  than a runnable binary, so the versioned consumer fixture is the executable artifact and records
+  the tag commit plus toolchain. Per the protocol contract, `v2`/`v3` clients must succeed on their surface and **never**
   receive `v4` or generation-2 shapes.
+- Do not duplicate `0.68` W9/W10: HC/2 generations 5/6 and the nine-row client-plane compatibility
+  artifact remain mandatory prerequisites and are revalidated with
+  `client-plane-compat-check --manifest-only`.
 - A legacy client offered an unsupported operation fails loud with the documented error, not a hang.
 - Skip-loud when a tag cannot be built reproducibly; the row stays visibly non-green (`R-11`), the
   same rule as W32's baseline decision.
 
 **Required tests:**
-- `v062_v063_and_v068_client_binaries_complete_their_supported_surface_against_current_server`;
+- `v062_and_v063_client_consumers_complete_their_supported_surface_against_current_server`;
 - `legacy_clients_never_receive_v4_shapes_and_fail_loud_beyond_their_surface`.
 
 **Canary.** `canary_legacy_matrix_marks_an_unbuilt_tag_green`.
@@ -208,9 +281,12 @@ predates canaries, seeds, and falsifiability entirely.
 
 **Files to change.** `crates/hydracache-db/tests/cached_vs_direct_differential.rs`: a seeded
 generator interleaves writes (insert/update/delete via the hooked paths) with reads through (a) the
-cache and (b) a direct DB query, then compares per the named consistency mode's contract
-(read-after-write barrier rows must match immediately; bounded modes must match within the
-documented bound; convergence must be exact after quiescence). SQLite runs fast; Postgres joins the
+cache and (b) a direct DB query. The oracle records a logical commit position for each write and
+compares both reads at that position; it never compares an older cached snapshot with a direct read
+that may already include a later commit. `NoWait` may be stale before the captured invalidation is
+drained; `Local` and `BestEffort` assertions are tied to the shipped outbox-wait contract rather
+than being relabelled as arbitrary read consistency. Convergence must be exact after quiescence.
+SQLite runs fast; Postgres joins the
 existing Docker gate (W35 adapter-corpus pattern).
 
 **Required tests:**
@@ -223,13 +299,16 @@ invalidation must produce a detected mismatch.
 
 **DoD.**
 ```powershell
-cargo test -p hydracache-db --test cached_vs_direct_differential --locked -j 2
+cargo test -p hydracache-db --features sqlx-outbox --test cached_vs_direct_differential --locked -j 2
+$env:HYDRACACHE_TEST_POSTGRES_URL='postgres://hydracache:hydracache@127.0.0.1:5432/hydracache'
+cargo test -p hydracache-db --features sqlx-outbox --test cached_vs_direct_postgres --locked -- --ignored --nocapture
 ```
-**CI.** SQLite row in the fast `rust` job; Postgres row in the existing Docker-gated lane.
+**CI.** SQLite row in the fast `rust` job; Postgres row in the dedicated
+`migration-conformance-postgres-069` service lane, required by `hc2-linux-required`.
 
 ## W5. Governance, CI, And Docs
 
-- `docs/testing/release-evidence/0.69.toml` work items for W1-W4 with receipts;
+- `docs/testing/release-evidence/0.69.toml` work items for W0-W4 with receipts;
   `release-evidence --release 0.69 --require-ship` is the ship gate. Register every gated lane
   (JVM, legacy-tag builds, Postgres) in the gated-test registry with tier/timeout/owner; canary
   pairs in the canary registry; quarantine rules unchanged.
@@ -256,8 +335,9 @@ cargo run --manifest-path crates\xtask\Cargo.toml -- doc-check
   the swallow-canary is caught.
 - The embedded cache semantics set executes every manifest row (count-checked) and matches; rows
   our API intentionally lacks are `unsupported-documented`, never silently green.
-- Real `v0.62.x`/`v0.63.0` HC/1 and `v0.68.0` HC/2 client binaries complete their supported
-  surface against the current server; legacy clients never receive `v4` or HC/2-only shapes,
+- Real `v0.62.x`/`v0.63.0` HC/1 consumer fixtures compiled against the shipped libraries complete
+  their supported surface against the current server; legacy clients never receive `v4` or HC/2-only shapes,
+  the retained `0.68` HC/2 compatibility matrix remains green,
   all clients fail loud beyond their surface, and an unbuildable tag is visibly non-green rather
   than substituted.
 - The DB differential holds per declared consistency mode under seeded concurrent writes, is exact
@@ -270,8 +350,8 @@ cargo run --manifest-path crates\xtask\Cargo.toml -- doc-check
 
 ## Final Release Decision
 
-Ship `0.69.0` only when the compatibility story is proven by evidence we did not author: Hazelcast's
-own tests pass (or are reasoned) against the Java facade under an exact-outcome manifest; borrowed
+Ship `0.69.0` only when the compatibility story is proven by evidence we did not author: adapted,
+source-pinned Hazelcast expectations pass (or are reasoned) against the Java facade under an exact-outcome manifest; borrowed
 embedded-cache expectations execute completely; real previously shipped client binaries talk to the
 current server within their protocol contract; and the oldest shipped surface - the DB query cache -
 differentially matches its source of truth under racing writes with a canary proving the check can

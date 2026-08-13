@@ -1,0 +1,34 @@
+schema_version = 1
+suite = "hc1-legacy-library-consumers"
+
+[[clients]]
+id = "hc1-v0.62.0"
+tag = "v0.62.0"
+commit = "bcf4b8b01448cc3b4a566bf4ed63444a2c90cbed"
+protocol = "HC/1"
+consumer_fixture = "tests/rust-hc1-legacy-consumer"
+surface = ["handshake", "get", "put", "invalidate"]
+expected = "pass"
+
+[[clients]]
+id = "hc1-v0.62.1"
+tag = "v0.62.1"
+commit = "6e46421756523092b61809ed750a504e933ca889"
+protocol = "HC/1"
+consumer_fixture = "tests/rust-hc1-legacy-consumer"
+surface = ["handshake", "get", "put", "invalidate"]
+expected = "pass"
+
+[[clients]]
+id = "hc1-v0.63.0"
+tag = "v0.63.0"
+commit = "e599bca35d2fb582b92d3a7717d0d651f6cc911b"
+protocol = "HC/1"
+consumer_fixture = "tests/rust-hc1-legacy-consumer"
+surface = ["handshake", "get", "put", "invalidate", "ttl", "lock"]
+expected = "pass"
+
+[hc2_prerequisite]
+manifest = "docs/testing/hc2-compat/v0.68-preview.1.json"
+command = "cargo run -p xtask --locked -- client-plane-compat-check --manifest-only"
+required_rows = 9

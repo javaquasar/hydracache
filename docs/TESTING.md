@@ -1925,3 +1925,33 @@ independent clean Rust generations and two clean Java generations byte for
 byte. The socket corpus verifies malformed/cross-candidate refusal and explicit
 slow-consumer gap delivery over mTLS for every candidate codec. These are
 correctness and reproducibility gates, not latency or capacity measurements.
+## Migration conformance (0.69)
+
+Borrowed expectations are data-driven. The Hazelcast and Moka manifests bind every executable row
+to an upstream repository commit and source symbol; non-pass rows require a reason. The structural
+checker rejects duplicate IDs, unknown outcomes, partial commit IDs, missing source symbols, and
+unreasoned divergence/unsupported/skip rows.
+
+The HC/1 compatibility lane compiles consumers from exact shipped commits rather than replaying old
+bytes. The DB differential coordinates reads at a logical commit position, so a current direct read
+cannot race ahead of the cached snapshot being compared. `NoWait` may be stale before its captured
+invalidation drains; exact equality is mandatory after drain and quiescence. SQLite runs on every
+PR; `cached_vs_direct_postgres` runs with `--ignored` selected explicitly in the
+`migration-conformance-postgres-069` service job, and fails loud if its URL is missing.
+
+Both backends additionally execute 12 concurrent transactional writers for three fixed seeds. The
+PostgreSQL target retains a normal green dropped-invalidation sentinel and is expected-red when
+`HYDRACACHE_CANARY_DEFECT=W4_PG_DROP`. Its dedicated CI step verifies both the non-zero exit and
+the `HC-CANARY-RED:W4-PG` marker. `InvalidationWait` queries the receipt's exact commit via
+`status_for_commit`; `outbox_barrier::receipt_wait_is_not_blocked_by_a_later_pending_commit` proves
+that unrelated later work cannot manufacture a timeout, with the same assertion repeated against
+the SQLx SQLite adapter in `outbox_sqlite`.
+
+The Hazelcast gate builds the Rust mTLS fixture and production daemon before Maven. The live facade
+test uses the real Java HC/2 client; the same command executes the production lease-expiry test and
+the Java recovery/session-loss contract, so the borrowed manifest is not accepted from a
+`FakeClient` run alone.
+
+The release canary registry now points W0-W5 at six distinct semantic defects. The release-evidence
+parser accepts `language = "rust" | "java" | "python"`; Java selectors require a nearby JUnit
+annotation, allowing W1 to name its live-daemon and recovery tests directly.

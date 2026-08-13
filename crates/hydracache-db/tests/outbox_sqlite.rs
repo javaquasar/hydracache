@@ -5,7 +5,7 @@ use std::{error::Error, time::Duration};
 use hydracache::{CacheOptions, HydraCache};
 use hydracache_db::{
     CommitPosition, InvalidationIntentBatch, InvalidationOutbox, InvalidationOutboxWorker,
-    OutboxState, SqlxInvalidationOutbox,
+    InvalidationReceipt, InvalidationWait, OutboxState, SqlxInvalidationOutbox,
 };
 use sqlx::sqlite::SqlitePoolOptions;
 use sqlx::{Row, SqlitePool};
@@ -216,6 +216,34 @@ async fn status_reports_pending_oldest_and_dead() -> TestResult {
     assert_eq!(status.failed_attempts, 1);
     assert!(rows.is_empty());
     assert_eq!(claimed[0].state, OutboxState::Pending);
+    Ok(())
+}
+
+#[tokio::test]
+async fn sqlx_receipt_wait_ignores_an_unrelated_later_commit() -> TestResult {
+    let (_pool, outbox) = setup().await?;
+    let completed = CommitPosition::new("sqlite:completed");
+    let later = CommitPosition::new("sqlite:later");
+    let batch = InvalidationIntentBatch::new("write").invalidate_tag("users");
+    outbox.enqueue("db", &completed, &batch).await?;
+    let completed_rows = outbox
+        .claim("db", "worker", 1, Duration::from_secs(30))
+        .await?;
+    outbox
+        .mark_published(&[completed_rows[0].id.clone()])
+        .await?;
+    outbox.enqueue("db", &later, &batch).await?;
+
+    let receipt = InvalidationReceipt::new("db", completed.clone());
+    let wait =
+        InvalidationWait::local(Duration::from_millis(20)).poll_interval(Duration::from_millis(1));
+    let outcome = wait.wait(&outbox, &receipt).await?;
+
+    assert!(outcome.satisfied);
+    assert!(!outcome.timed_out);
+    assert_eq!(outbox.status("db").await?.pending, 1);
+    assert_eq!(outbox.status_for_commit("db", &completed).await?.pending, 0);
+    assert_eq!(outbox.status_for_commit("db", &later).await?.pending, 1);
     Ok(())
 }
 

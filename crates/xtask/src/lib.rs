@@ -23,6 +23,7 @@ pub mod fast_suite;
 pub mod feature_leak;
 pub mod gated_tests;
 pub mod host_attestation;
+pub mod migration_conformance;
 pub mod miri_check;
 pub mod mutants;
 pub mod perf;

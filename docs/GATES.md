@@ -231,3 +231,31 @@ must point to that issue; silent retries do not turn a red gate green.
 
 Do not document a gate that is not wired into its stated enforcement surface; that
 is exactly the prose-only "enforcement" this file exists to prevent.
+## 0.69 migration conformance gates
+
+The 0.69 candidate adds three fast gates, two Java/tag-history gates, and a real PostgreSQL gate:
+
+```text
+cargo run -p xtask --locked -- migration-conformance-check --structural
+cargo test -p hydracache --test borrowed_cache_semantics --locked -j 2
+cargo test -p hydracache-db --features sqlx-outbox --test cached_vs_direct_differential --locked -j 2
+HYDRACACHE_RUN_JVM_COMPAT=1 cargo run -p xtask --locked -- borrowed-suite-check --suite hazelcast
+HYDRACACHE_RUN_LEGACY_CLIENTS=1 cargo run -p xtask --locked -- legacy-client-check --matrix hc1
+HYDRACACHE_TEST_POSTGRES_URL=postgres://... cargo test -p hydracache-db --features sqlx-outbox --test cached_vs_direct_postgres --locked -- --ignored --nocapture
+```
+
+The last two commands fail skip-loud when their opt-in environment variable is absent. The normal
+workspace receipt covers the Rust structural/borrowed tests; SQLx uses
+`cfg.hydracache-db.cached-vs-direct-differential-069`. External evidence IDs are
+`tool.borrowed-hazelcast-069`, `tool.legacy-hc1-clients-069`,
+`ignored.hydracache-db.cached-vs-direct-postgres-069`, and
+`cfg.hydracache-db.cached-vs-direct-postgres-069`. The Java gate builds and starts the production
+daemon, then supplements the facade run with exact lease-expiry and SDK session-loss contracts.
+Both DB differentials use transactional outbox enqueue, the real drain worker, and
+commit-scoped `InvalidationWait`; the PostgreSQL row is required by `hc2-linux-required`. Its
+service image is pinned to index digest
+`sha256:5660c2cbfea50c7a9127d17dc4e48543eedd3d7a41a595a2dfa572471e37e64c`, runs three fixed
+12-writer seeds, and retains version/image/seed/log evidence. W0-W5 use six distinct expected-red
+defects; the PostgreSQL target also has a real dropped-invalidation sentinel selected by
+`HYDRACACHE_CANARY_DEFECT=W4_PG_DROP`. CI runs that sentinel separately and accepts it only when
+the test exits non-zero and emits `HC-CANARY-RED:W4-PG`; an unexpectedly green canary fails the job.

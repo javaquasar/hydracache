@@ -79,3 +79,46 @@ async fn no_wait_preserves_backward_compatible_behavior() {
     assert_eq!(wait.diagnostics().waits, 1);
     assert_eq!(wait.diagnostics().satisfied, 1);
 }
+
+#[tokio::test]
+async fn receipt_wait_is_not_blocked_by_a_later_pending_commit() {
+    let outbox = InMemoryInvalidationOutbox::new();
+    let completed = CommitPosition::new("commit:completed");
+    let later = CommitPosition::new("commit:later");
+    let batch = InvalidationIntentBatch::new("write").invalidate_tag("users");
+    outbox.enqueue("db", &completed, &batch).await.unwrap();
+    let completed_rows = outbox
+        .claim("db", "worker", 1, Duration::from_secs(30))
+        .await
+        .unwrap();
+    outbox
+        .mark_published(&[completed_rows[0].id.clone()])
+        .await
+        .unwrap();
+    outbox.enqueue("db", &later, &batch).await.unwrap();
+
+    let receipt = InvalidationReceipt::new("db", completed.clone());
+    let wait =
+        InvalidationWait::local(Duration::from_millis(20)).poll_interval(Duration::from_millis(1));
+    let outcome = wait.wait(&outbox, &receipt).await.unwrap();
+
+    assert!(outcome.satisfied);
+    assert!(!outcome.timed_out);
+    assert_eq!(outbox.status("db").await.unwrap().pending, 1);
+    assert_eq!(
+        outbox
+            .status_for_commit("db", &completed)
+            .await
+            .unwrap()
+            .pending,
+        0
+    );
+    assert_eq!(
+        outbox
+            .status_for_commit("db", &later)
+            .await
+            .unwrap()
+            .pending,
+        1
+    );
+}

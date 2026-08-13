@@ -1,0 +1,54 @@
+{
+  "version": 2,
+  "release": "0.69",
+  "entries": [
+    {
+      "w_item": "W0",
+      "guard": {"file":"crates/xtask/tests/migration_conformance_069.rs","function":"release_069_migration_conformance_closure_is_fail_closed"},
+      "canary": {"file":"crates/xtask/tests/migration_conformance_069.rs","function":"canary_borrowed_manifest_accepts_an_unpinned_commit"},
+      "guard_command": {"program":"cargo","args":["test","-p","xtask","--test","migration_conformance_069","--locked","release_069_migration_conformance_closure_is_fail_closed","--","--nocapture"],"env":{},"cwd":".","platform":"any"},
+      "canary_command": {"program":"cargo","args":["test","-p","xtask","--test","migration_conformance_069","--locked","canary_borrowed_manifest_accepts_an_unpinned_commit","--","--nocapture"],"env":{"HYDRACACHE_CANARY_DEFECT":"W0_BAD_PIN"},"cwd":".","platform":"any"},
+      "defect_id":"hydracache-0.69-W0-unpinned-source","expected_failure":"HC-CANARY-RED:W0","timeout_seconds":300,"tier":"fast","artifacts":["target/release-evidence/canaries/0.69-W0.json"],"red_evidence":"A partial upstream commit must be rejected by the borrowed-suite validator."
+    },
+    {
+      "w_item": "W1",
+      "guard": {"file":"sdks/java/hydracache-hazelcast-facade/src/test/java/io/hydracache/hazelcast/BorrowedHazelcastExpectationsTest.java","function":"borrowedHazelcastSuiteOutcomesMatchTheManifestExactly"},
+      "canary": {"file":"sdks/java/hydracache-hazelcast-facade/src/test/java/io/hydracache/hazelcast/BorrowedHazelcastExpectationsTest.java","function":"canaryBorrowedSuiteRunnerTreatsAnUnlistedFailureAsSkip"},
+      "guard_command": {"program":"mvn","args":["-q","-f","sdks/java/pom.xml","-pl","hydracache-hazelcast-facade","-Dtest=BorrowedHazelcastExpectationsTest#borrowedHazelcastSuiteOutcomesMatchTheManifestExactly","test"],"env":{},"cwd":".","platform":"linux"},
+      "canary_command": {"program":"mvn","args":["-q","-f","sdks/java/pom.xml","-pl","hydracache-hazelcast-facade","-Dtest=BorrowedHazelcastExpectationsTest#canaryBorrowedSuiteRunnerTreatsAnUnlistedFailureAsSkip","test"],"env":{"HYDRACACHE_CANARY_DEFECT":"W1_SWALLOW"},"cwd":".","platform":"linux"},
+      "defect_id":"hydracache-0.69-W1-swallowed-row","expected_failure":"HC-CANARY-RED:W1","timeout_seconds":600,"tier":"fast","artifacts":["target/release-evidence/canaries/0.69-W1.json"],"red_evidence":"Removing an executable Hazelcast row while retaining the manifest must fail the exact-outcome runner."
+    },
+    {
+      "w_item": "W2",
+      "guard": {"file":"crates/hydracache/tests/borrowed_cache_semantics.rs","function":"borrowed_cache_semantics_rows_all_execute_and_match_manifest"},
+      "canary": {"file":"crates/hydracache/tests/borrowed_cache_semantics.rs","function":"canary_cache_semantics_runner_skips_a_listed_row"},
+      "guard_command": {"program":"cargo","args":["test","-p","hydracache","--test","borrowed_cache_semantics","--locked","borrowed_cache_semantics_rows_all_execute_and_match_manifest","--","--nocapture"],"env":{},"cwd":".","platform":"any"},
+      "canary_command": {"program":"cargo","args":["test","-p","hydracache","--test","borrowed_cache_semantics","--locked","canary_cache_semantics_runner_skips_a_listed_row","--","--nocapture"],"env":{"HYDRACACHE_CANARY_DEFECT":"W2_SKIP"},"cwd":".","platform":"any"},
+      "defect_id":"hydracache-0.69-W2-skipped-row","expected_failure":"HC-CANARY-RED:W2","timeout_seconds":300,"tier":"fast","artifacts":["target/release-evidence/canaries/0.69-W2.json"],"red_evidence":"Every listed embedded-cache expectation must execute."
+    },
+    {
+      "w_item": "W3",
+      "guard": {"file":"crates/xtask/tests/migration_conformance_069.rs","function":"release_069_migration_conformance_closure_is_fail_closed"},
+      "canary": {"file":"crates/xtask/tests/migration_conformance_069.rs","function":"canary_legacy_matrix_marks_an_unbuilt_tag_green"},
+      "guard_command": {"program":"cargo","args":["test","-p","xtask","--test","migration_conformance_069","--locked","release_069_migration_conformance_closure_is_fail_closed","--","--nocapture"],"env":{},"cwd":".","platform":"any"},
+      "canary_command": {"program":"cargo","args":["test","-p","xtask","--test","migration_conformance_069","--locked","canary_legacy_matrix_marks_an_unbuilt_tag_green","--","--nocapture"],"env":{"HYDRACACHE_CANARY_DEFECT":"W3_FALSE_GREEN"},"cwd":".","platform":"any"},
+      "defect_id":"hydracache-0.69-W3-false-green","expected_failure":"HC-CANARY-RED:W3","timeout_seconds":300,"tier":"fast","artifacts":["target/release-evidence/canaries/0.69-W3.json"],"red_evidence":"The legacy execution aggregator must reject a manifest tag that was not built and run."
+    },
+    {
+      "w_item": "W4",
+      "guard": {"file":"crates/hydracache-db/tests/cached_vs_direct_differential.rs","function":"cached_reads_match_direct_queries_per_consistency_mode_under_concurrent_writes"},
+      "canary": {"file":"crates/hydracache-db/tests/cached_vs_direct_differential.rs","function":"canary_db_differential_accepts_a_dropped_invalidation"},
+      "guard_command": {"program":"cargo","args":["test","-p","hydracache-db","--features","sqlx-outbox","--test","cached_vs_direct_differential","--locked","cached_reads_match_direct_queries_per_consistency_mode_under_concurrent_writes","--","--nocapture"],"env":{},"cwd":".","platform":"any"},
+      "canary_command": {"program":"cargo","args":["test","-p","hydracache-db","--features","sqlx-outbox","--test","cached_vs_direct_differential","--locked","canary_db_differential_accepts_a_dropped_invalidation","--","--nocapture"],"env":{"HYDRACACHE_CANARY_DEFECT":"W4_DROP"},"cwd":".","platform":"any"},
+      "defect_id":"hydracache-0.69-W4-dropped-invalidation","expected_failure":"HC-CANARY-RED:W4","timeout_seconds":600,"tier":"fast","artifacts":["target/release-evidence/canaries/0.69-W4.json"],"red_evidence":"A committed write without its durable invalidation must create a detected cached/direct mismatch."
+    },
+    {
+      "w_item": "W5",
+      "guard": {"file":"crates/xtask/tests/migration_conformance_069.rs","function":"release_069_migration_conformance_closure_is_fail_closed"},
+      "canary": {"file":"crates/xtask/tests/migration_conformance_069.rs","function":"canary_release_069_accepts_an_unwired_postgres_gate"},
+      "guard_command": {"program":"cargo","args":["test","-p","xtask","--test","migration_conformance_069","--locked","release_069_migration_conformance_closure_is_fail_closed","--","--nocapture"],"env":{},"cwd":".","platform":"any"},
+      "canary_command": {"program":"cargo","args":["test","-p","xtask","--test","migration_conformance_069","--locked","canary_release_069_accepts_an_unwired_postgres_gate","--","--nocapture"],"env":{"HYDRACACHE_CANARY_DEFECT":"W5_UNWIRE_POSTGRES"},"cwd":".","platform":"any"},
+      "defect_id":"hydracache-0.69-W5-unwired-postgres","expected_failure":"HC-CANARY-RED:W5","timeout_seconds":300,"tier":"fast","artifacts":["target/release-evidence/canaries/0.69-W5.json"],"red_evidence":"The required Linux aggregate must retain the PostgreSQL conformance dependency."
+    }
+  ]
+}

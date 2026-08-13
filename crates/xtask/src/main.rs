@@ -5,6 +5,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     let mut args = env::args().skip(1);
     match args.next().as_deref() {
         Some("bench-budget") => xtask::bench_budget::run(args.collect())?,
+        Some("borrowed-suite-check") => xtask::migration_conformance::run_borrowed(args.collect())?,
         Some("canary-check") => xtask::canary_check::run(args.collect())?,
         Some("canary-sweep") => xtask::canary_sweep::run(args.collect())?,
         Some("client-plane-java-sdk-check") => xtask::client_plane_java::run(args.collect())?,
@@ -42,7 +43,9 @@ fn main() -> Result<(), Box<dyn Error>> {
         }
         Some("fast-suite-check") => xtask::fast_suite::run(args.collect())?,
         Some("gated-test-check") => xtask::gated_tests::run(args.collect())?,
+        Some("legacy-client-check") => xtask::migration_conformance::run_legacy(args.collect())?,
         Some("miri-check") => xtask::miri_check::run(args.collect())?,
+        Some("migration-conformance-check") => xtask::migration_conformance::run(args.collect())?,
         Some("mutants") => xtask::mutants::run(args.collect())?,
         Some("perf-prebuild") => xtask::perf::run(args.collect())?,
         Some("perf-bootstrap") => xtask::perf_bootstrap::run(args.collect())?,
@@ -67,6 +70,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 fn print_usage() {
     println!(
         "Usage:\n  \
+         cargo xtask borrowed-suite-check --suite hazelcast  # execute the 0.69 adapted Hazelcast expectation manifest\n  \
          cargo xtask verify        # run the fast release gates (see docs/GATES.md)\n  \
          cargo xtask verify-no-test-features  # ensure test-only features/deps are absent from release graphs\n  \
          cargo xtask canary-check  # validate the 0.64 Raft canary registry\n  \
@@ -95,7 +99,9 @@ fn print_usage() {
          cargo xtask evidence-run --release 0.64 --gate <id>  # execute a registered gate and write a receipt\n  \
          cargo xtask fast-suite-check --release 0.64  # validate fast-suite budgets and receipts\n  \
          cargo xtask gated-test-check  # validate every ignored/cfg/env-gated test registration\n  \
+         cargo xtask legacy-client-check --matrix hc1  # build shipped HC/1 libraries into consumers and run them against the current server\n  \
          cargo xtask miri-check  # run pinned Miri-safe snapshot proofs (skip loud when unavailable)\n  \
+         cargo xtask migration-conformance-check --structural  # validate 0.69 source pins and exact-outcome manifests\n  \
          cargo xtask mutants       # validate the Raft mutation-testing baseline, optionally run cargo-mutants\n  \
          cargo xtask perf-runner-preflight --release 0.67 --profile reference-v1  # reject an unstable reference runner before build/measurement\n  \
          cargo xtask perf-prebuild --release 0.67 --profile reference-v1  # build and bind exact performance binaries\n  \

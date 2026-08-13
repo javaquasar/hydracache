@@ -406,6 +406,8 @@ fn function_exists(text: &str, function: &str) -> bool {
         format!("async fn {function}<"),
     ];
     patterns.iter().any(|pattern| text.contains(pattern))
+        || ((text.contains("@Test") || text.contains("@TestFactory"))
+            && text.contains(&format!(" {function}(")))
 }
 
 fn plan_canary_problems(

@@ -222,6 +222,14 @@ jobs:
           cargo run -p xtask --locked -- canary-sweep --release 0.67.1 --tier fast
           cargo run -p xtask --locked -- canary-check --release 0.68
           cargo run -p xtask --locked -- canary-sweep --release 0.68 --tier fast
+          cargo run -p xtask --locked -- canary-check --release 0.69
+          cargo run -p xtask --locked -- canary-sweep --release 0.69 --tier fast
+
+      - name: 0.69 migration conformance fast lanes
+        run: |
+          cargo run -p xtask --locked -- migration-conformance-check --structural
+          cargo test -p hydracache --test borrowed_cache_semantics --locked -j 2
+          cargo test -p hydracache-db --features sqlx-outbox --test cached_vs_direct_differential --locked -j 2
 
       - name: Upload fast canary evidence
         if: always()
@@ -362,12 +370,135 @@ jobs:
         if: always()
         run: rm -rf target/tests
 
+  migration-conformance-069:
+    name: Migration Conformance 0.69
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    steps:
+      - name: Checkout full tag history
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Install Java
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "17"
+          cache: maven
+
+      - name: Cache Rust dependencies
+        uses: Swatinem/rust-cache@v2
+        with:
+          prefix-key: v1-migration-conformance-069
+          cache-targets: true
+
+      - name: Run adapted Hazelcast expectations
+        env:
+          HYDRACACHE_RUN_JVM_COMPAT: "1"
+        run: cargo run -p xtask --locked -- borrowed-suite-check --suite hazelcast
+
+      - name: Run shipped HC1 consumers against current daemon
+        env:
+          HYDRACACHE_RUN_LEGACY_CLIENTS: "1"
+        run: cargo run -p xtask --locked -- legacy-client-check --matrix hc1
+
+      - name: Upload Java and legacy diagnostics
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: "migration-conformance-069-${{ github.sha }}"
+          path: |
+            sdks/java/**/target/surefire-reports/**
+            target/release-evidence/**
+          if-no-files-found: warn
+
+  migration-conformance-postgres-069:
+    name: Migration Conformance PostgreSQL 0.69
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      HYDRACACHE_TEST_POSTGRES_URL: postgres://hydracache:hydracache@127.0.0.1:5432/hydracache
+    services:
+      postgres:
+        image: postgres:16.4-alpine@sha256:5660c2cbfea50c7a9127d17dc4e48543eedd3d7a41a595a2dfa572471e37e64c
+        env:
+          POSTGRES_DB: hydracache
+          POSTGRES_PASSWORD: hydracache
+          POSTGRES_USER: hydracache
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U hydracache -d hydracache"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache Rust dependencies
+        uses: Swatinem/rust-cache@v2
+        with:
+          prefix-key: v1-migration-conformance-postgres-069
+          cache-targets: true
+
+      - name: Run PostgreSQL cached-vs-direct differential
+        shell: bash
+        run: |
+          set -o pipefail
+          mkdir -p target/test-evidence/0.69
+          printf '%s\n' 'postgres:16.4-alpine@sha256:5660c2cbfea50c7a9127d17dc4e48543eedd3d7a41a595a2dfa572471e37e64c' > target/test-evidence/0.69/postgres-image.txt
+          printf '%s\n' '0x69_2026 0x69_2027 0x69_2028' > target/test-evidence/0.69/postgres-seeds.txt
+          cargo test -p hydracache-db --features sqlx-outbox \
+            --test cached_vs_direct_postgres --locked \
+            postgres_cached_reads_match_direct_queries_through_the_real_outbox \
+            -- --ignored --exact --nocapture \
+            2>&1 | tee target/test-evidence/0.69/postgres-differential.log
+
+      - name: Prove PostgreSQL dropped-invalidation canary is red
+        shell: bash
+        env:
+          HYDRACACHE_CANARY_DEFECT: W4_PG_DROP
+        run: |
+          set +e
+          cargo test -p hydracache-db --features sqlx-outbox \
+            --test cached_vs_direct_postgres --locked \
+            canary_postgres_differential_rejects_a_dropped_invalidation \
+            -- --ignored --exact --nocapture \
+            2>&1 | tee target/test-evidence/0.69/postgres-canary.log
+          status=${PIPESTATUS[0]}
+          set -e
+          if [ "$status" -eq 0 ]; then
+            echo "PostgreSQL dropped-invalidation canary unexpectedly stayed green" >&2
+            exit 1
+          fi
+          grep -F "HC-CANARY-RED:W4-PG" target/test-evidence/0.69/postgres-canary.log
+
+      - name: Upload PostgreSQL conformance diagnostics
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: "migration-conformance-postgres-069-${{ github.sha }}"
+          path: target/test-evidence/0.69/**
+          if-no-files-found: error
+
   hc2-linux-required:
     name: HC/2 Linux Required
     runs-on: ubuntu-latest
     needs:
       - docs
       - rust
+      - migration-conformance-069
+      - migration-conformance-postgres-069
       - msrv
     if: always()
 
@@ -376,10 +507,14 @@ jobs:
         env:
           DOCS_RESULT: ${{ needs.docs.result }}
           RUST_RESULT: ${{ needs.rust.result }}
+          MIGRATION_RESULT: ${{ needs.migration-conformance-069.result }}
+          POSTGRES_MIGRATION_RESULT: ${{ needs.migration-conformance-postgres-069.result }}
           MSRV_RESULT: ${{ needs.msrv.result }}
         run: |
           test "$DOCS_RESULT" = "success"
           test "$RUST_RESULT" = "success"
+          test "$MIGRATION_RESULT" = "success"
+          test "$POSTGRES_MIGRATION_RESULT" = "success"
           test "$MSRV_RESULT" = "success"
 
   hc2-docker-interop:
@@ -1862,6 +1997,7 @@ jobs:
           cargo run -p xtask --locked -- canary-sweep --release 0.67 --tier all
           cargo run -p xtask --locked -- canary-sweep --release 0.67.1 --tier all
           cargo run -p xtask --locked -- canary-sweep --release 0.68 --tier all
+          cargo run -p xtask --locked -- canary-sweep --release 0.69 --tier all
 
       - name: Run deterministic suite sweep
         run: cargo run -p xtask --locked -- evidence-run --release 0.64 --gate tool.determinism-sweep
