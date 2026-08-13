@@ -71,10 +71,15 @@ impl DaemonStatus {
                 .get("term")
                 .and_then(Value::as_u64)
                 .ok_or("admin status missing term")?,
+            // The shipped 0.65 daemon predates the additive `epoch` status
+            // field. Keep its otherwise complete status observable in mixed-
+            // version proofs while reserving zero as the explicit
+            // legacy/unavailable sentinel. Current-only history proofs reject
+            // zero when they require an authoritative epoch.
             epoch: value
                 .get("epoch")
                 .and_then(Value::as_u64)
-                .ok_or("admin status missing epoch")?,
+                .unwrap_or_default(),
             members: u32_field(&value, "members")?,
             voters: u32_field(&value, "voters")?,
             quorum_ok: value
@@ -1530,7 +1535,7 @@ pub fn resolve_server_binary(
 
 fn unique_root(name: &str) -> TestResult<PathBuf> {
     let now = SystemTime::now().duration_since(UNIX_EPOCH)?.as_millis();
-    Ok(PathBuf::from(format!(
+    Ok(workspace_root().join(format!(
         "target/test-hydracache-daemon-process/{name}-{}-{now}",
         std::process::id()
     )))
@@ -1712,9 +1717,43 @@ mod tests {
 
     use super::{
         complete_dual_protocol_reservation, ensure_distinct_daemon_binaries, reserve_node_addrs,
-        truthy_env_value, unique_root, validate_test_snapshot_handler_delay_ms,
-        ProcessResourceSample,
+        truthy_env_value, unique_root, validate_test_snapshot_handler_delay_ms, workspace_root,
+        DaemonStatus, ProcessResourceSample,
     };
+
+    #[test]
+    fn legacy_admin_status_without_epoch_remains_visible_to_mixed_version_proofs() {
+        let status = DaemonStatus::from_json(serde_json::json!({
+            "leader": "member-a",
+            "term": 7,
+            "quorum_ok": true,
+            "members": 3,
+            "voters": 3,
+            "draining": false
+        }))
+        .expect("the shipped 0.65 status shape must remain observable");
+
+        assert_eq!(status.epoch, 0);
+        assert_eq!(status.leader.as_deref(), Some("member-a"));
+        assert_eq!(status.term, 7);
+        assert_eq!(status.members, 3);
+        assert_eq!(status.voters, 3);
+        assert!(status.quorum_ok);
+        assert!(!status.draining);
+    }
+
+    #[test]
+    fn daemon_process_artifacts_are_rooted_under_the_workspace_target() {
+        let root = unique_root("artifact-root").expect("artifact root");
+        let expected = workspace_root().join("target/test-hydracache-daemon-process");
+
+        assert!(
+            root.starts_with(&expected),
+            "daemon artifact root {} must be under {}",
+            root.display(),
+            expected.display()
+        );
+    }
 
     #[test]
     fn process_resource_sample_parses_rss_and_process_lifetime_high_water() {
