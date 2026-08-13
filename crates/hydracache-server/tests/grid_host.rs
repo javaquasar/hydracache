@@ -15,6 +15,7 @@ use hydracache_server::{
 use serde_json::json;
 
 static STORAGE_SEQUENCE: AtomicU64 = AtomicU64::new(0);
+const TEST_CLUSTER_DRAIN_TIMEOUT_MS: u64 = 10_000;
 
 fn member_config(name: &str) -> ServerConfig {
     let sequence = STORAGE_SEQUENCE.fetch_add(1, Ordering::Relaxed);
@@ -28,7 +29,11 @@ fn member_config(name: &str) -> ServerConfig {
             "target/test-hydracache-grid-host/{name}-{}-{sequence}",
             std::process::id()
         ))),
-        drain_timeout_ms: 1_000,
+        // Networked membership removal performs two ordered consensus
+        // transitions. Coverage instrumentation can make the valid path take
+        // longer than one second, so keep the test fail-closed while giving it
+        // the same bounded budget as the surrounding convergence assertions.
+        drain_timeout_ms: TEST_CLUSTER_DRAIN_TIMEOUT_MS,
         tls: TlsConfig::default(),
         cluster_auth: ClusterAuthConfig::default(),
         backup: BackupConfig::default(),
