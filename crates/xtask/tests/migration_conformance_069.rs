@@ -82,6 +82,8 @@ fn release_069_daemon_readiness_contract_is_versioned_across_consumers() {
         "crates/hydracache-client-plane-spike/src/fixture_receipt.rs",
         "sdks/java/hydracache-client-hc2/src/test/java/io/hydracache/client/hc2/DaemonProcess.java",
         "sdks/java/hydracache-hazelcast-facade/src/test/java/io/hydracache/hazelcast/FacadeDaemonProcess.java",
+        "tests/rust-hc2-compat-consumer/tests/production_daemon.rs",
+        "tests/java-hc2-consumer/src/test/java/io/hydracache/consumer/ExternalConsumerTest.java",
     ] {
         let text = fs::read_to_string(root.join(source)).unwrap();
         assert!(
@@ -98,6 +100,26 @@ fn release_069_daemon_readiness_contract_is_versioned_across_consumers() {
             .unwrap();
     assert!(rust_consumer.contains("ProductionDaemonReadyReceipt::parse"));
     assert!(!rust_consumer.contains("fields.len() == 6"));
+}
+
+#[test]
+fn release_069_w1_canary_builds_its_maven_reactor_dependencies() {
+    let registry =
+        fs::read_to_string(root().join("docs/testing/canary-registry-0.69.json")).unwrap();
+    let parsed: serde_json::Value = serde_json::from_str(&registry).unwrap();
+    let w1 = parsed["entries"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|entry| entry["w_item"] == "W1")
+        .unwrap();
+    for command in [&w1["guard_command"], &w1["canary_command"]] {
+        let args = command["args"].as_array().unwrap();
+        assert!(args.iter().any(|arg| arg == "-am"));
+        assert!(args
+            .iter()
+            .any(|arg| arg == "-Dsurefire.failIfNoSpecifiedTests=false"));
+    }
 }
 
 #[test]

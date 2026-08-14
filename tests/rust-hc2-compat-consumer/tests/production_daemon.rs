@@ -49,8 +49,8 @@ impl ProductionFixture {
         let mut ready = String::new();
         stdout.read_line(&mut ready).expect("read READY receipt");
         let fields: Vec<_> = ready.trim_end().split('\t').collect();
-        assert_eq!(fields.len(), 6, "malformed READY receipt: {ready:?}");
-        assert_eq!(fields[0], "READY_DAEMON");
+        assert_eq!(fields.len(), 8, "malformed READY receipt: {ready:?}");
+        assert_eq!(fields[0], "READY_DAEMON_V1");
         Self {
             child,
             stdin: Some(stdin),

@@ -508,7 +508,13 @@ public final class RecoveringHydraCacheClient implements HydraCacheClient {
     void markLost() {
       if (!lost.compareAndSet(false, true)) return;
       FencedSession previous = delegate.getAndSet(null);
-      if (previous != null) previous.close();
+      if (previous != null) {
+        try {
+          previous.close();
+        } catch (RuntimeException transportAlreadyClosed) {
+          // Session loss is already final. A dead transport must not abort reconnect.
+        }
+      }
       recoveryMetrics.sessionLosses.increment();
     }
 

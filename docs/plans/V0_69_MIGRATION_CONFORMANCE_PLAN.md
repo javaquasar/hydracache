@@ -126,8 +126,9 @@ diagnostic weakness: the producer added a second mTLS identity, but one Rust con
 the old field count; the resulting Rust failure caused the final 0.69 admission job to be skipped.
 The release therefore includes these additional mandatory controls:
 
-1. `READY_DAEMON_V1` is a versioned receipt. The Rust producer and consumer share a typed parser;
-   both Java process consumers assert the same exact version and eight-field shape.
+1. `READY_DAEMON_V1` is a versioned receipt. The Rust producer and current consumer share a typed
+   parser; both Java process consumers and the retained/external compatibility harnesses assert the
+   same exact version and eight-field shape.
 2. `migration-conformance-admission-069` uses `if: always()` and materializes a structured upstream
    status before downloading evidence. Failed or skipped dependencies are explicit red outcomes.
 3. Fast 0.69 canaries, SQLx evidence, and `fast.workspace-nextest` run in the independent
@@ -143,6 +144,15 @@ The release therefore includes these additional mandatory controls:
 7. A downstream-style `CustomInvalidationOutbox` integration fixture compiles the public trait and
    proves exact namespace+commit filtering. The PostgreSQL 16 lane additionally runs a bounded
    24-seed, 12-writer-per-seed soak with a 120-second in-test budget.
+
+The follow-up exact-candidate run also made the isolated W1 canary build its Maven reactor
+dependencies with `-am`, and made Java reconnect treat cleanup of a session on an already-dead
+transport as best effort. A cleanup exception can no longer abort endpoint replacement; the logical
+session remains permanently lost and the loss metric remains observable. If the gRPC stream closes
+before the handshake can be sent, that narrowly identified transport failure is classified as
+`RECONNECT_IDEMPOTENT`, allowing ordered endpoint fallback; authentication and protocol-policy
+failures remain terminal. Both decisions have deterministic Java regression tests in addition to
+the live Rust-process recovery proof.
 
 ## Preflight
 

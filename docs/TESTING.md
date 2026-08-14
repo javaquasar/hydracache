@@ -1958,8 +1958,14 @@ its receipt cannot satisfy admission. Receipts retain head, base, and tested SHA
 the tested SHA must equal the checked-out commit.
 
 The HC/2 daemon fixture announces `READY_DAEMON_V1`. Its shared Rust parser rejects legacy,
-truncated, and extended shapes; the Rust and Java process consumers must update atomically with the
-producer.
+truncated, and extended shapes; current, retained, and external Rust/Java process harnesses must
+update atomically with the producer. The isolated W1 canary uses the Maven reactor (`-am`) so its
+guard cannot depend on an artifact installed by another job. Java reconnect treats close failures
+from an already-dead session transport as best-effort cleanup while still marking the logical
+session lost. A stream that closes before its handshake can be sent is classified as
+`RECONNECT_IDEMPOTENT`, permitting ordered endpoint fallback; authentication and protocol-policy
+failures remain terminal. A deterministic internal unit test covers that boundary, while the live
+Rust-process recovery test covers the complete failover path.
 
 The Hazelcast gate builds the Rust mTLS fixture and production daemon before Maven. The live facade
 test uses the real Java HC/2 client; the same command executes the production lease-expiry test and

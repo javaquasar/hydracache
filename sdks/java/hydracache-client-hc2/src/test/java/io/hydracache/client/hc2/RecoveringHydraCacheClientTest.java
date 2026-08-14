@@ -69,6 +69,34 @@ final class RecoveringHydraCacheClientTest {
   }
 
   @Test
+  void reconnectIgnoresCleanupFailureFromAnAlreadyClosedSessionTransport(@TempDir Path temp)
+      throws Exception {
+    FakeClient first = new FakeClient(true) {
+      @Override public CompletableFuture<FencedSession> openSession(Duration requestedTtl) {
+        return CompletableFuture.completedFuture(new FencedSession() {
+          @Override public byte[] id() { return bytes("session"); }
+          @Override public long fence() { return 7; }
+          @Override public void close() {
+            throw new HydraCacheException(
+                ErrorCode.UNAVAILABLE, RetryAdvice.RECONNECT_IDEMPOTENT, "client is closed");
+          }
+        });
+      }
+    };
+    FakeClient second = new FakeClient(false);
+    RecoveringHydraCacheClient client = RecoveringHydraCacheClient.connect(
+        List.of(endpoint(config(temp))), RECONNECT, RETRY, new ScriptedConnector(first, second));
+    FencedSession session = client.openSession(Duration.ofSeconds(3)).join();
+
+    assertArrayEquals(bytes("second"), client.get(bytes("key"), READ).join()
+        .orElseThrow().value());
+    HydraCacheException lost = assertThrows(HydraCacheException.class, session::fence);
+    assertEquals(ErrorCode.SESSION_LOST, lost.code());
+    assertEquals(1, client.recoveryMetrics().sessionLosses());
+    client.close();
+  }
+
+  @Test
   void mutationReplayRequiresAnIdempotencyKey(@TempDir Path temp) throws Exception {
     FakeClient first = new FakeClient(true);
     FakeClient second = new FakeClient(false);

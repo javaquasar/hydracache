@@ -196,11 +196,24 @@ public final class GrpcHydraCacheClient implements HydraCacheClient {
           "HC/2 handshake timed out", error);
     } catch (HydraCacheException error) {
       if (client != null) client.close();
-      throw error;
+      throw classifyPreHandshakeFailure(error);
     } catch (Exception error) {
       if (client != null) client.close();
       throw new HydraCacheException(ErrorCode.UNAVAILABLE, RetryAdvice.NEVER, "HC/2 channel setup failed", error);
     }
+  }
+
+  static HydraCacheException classifyPreHandshakeFailure(HydraCacheException error) {
+    if (error.code() == ErrorCode.UNAVAILABLE
+        && error.retryAdvice() == RetryAdvice.NEVER
+        && "client is closed".equals(error.getMessage())) {
+      return new HydraCacheException(
+          ErrorCode.UNAVAILABLE,
+          RetryAdvice.RECONNECT_IDEMPOTENT,
+          "HC/2 stream closed before handshake",
+          error);
+    }
+    return error;
   }
 
   @Override
