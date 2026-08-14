@@ -159,7 +159,9 @@ processes after capturing it for the parent receipt. A nested-repository regress
 that a child cannot accidentally claim the outer candidate's SHA identity. Receipt bundles are
 self-contained and retain their `target/`-relative layout: admission receives the JUnit, Java, and
 PostgreSQL artifacts named by each receipt and re-hashes them instead of trusting receipt metadata
-alone.
+alone. The admission checkout also restores full history so the published `v0.68.0` compatibility
+baseline tag remains a fail-closed release prerequisite rather than appearing absent in a shallow
+checkout.
 
 ## Preflight
 

@@ -185,6 +185,17 @@ fn release_069_ci_admission_is_independent_fail_loud_and_sha_bound() {
         .unwrap();
     assert!(postgres_bundle.contains("target/test-evidence/0.69/**"));
     let admission = &workflow[admission_start..];
+    let admission_checkout = admission
+        .split("- name: Checkout")
+        .nth(1)
+        .unwrap()
+        .split("- name: Install pinned Rust")
+        .next()
+        .unwrap();
+    assert!(
+        admission_checkout.contains("fetch-depth: 0"),
+        "admission must restore the published compatibility baseline tags"
+    );
     assert!(
         admission.matches("          path: target\n").count() >= 3,
         "admission must restore self-contained bundles from their target-relative root"

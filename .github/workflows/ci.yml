@@ -608,6 +608,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
 
       - name: Install pinned Rust
         uses: dtolnay/rust-toolchain@1.94.0
