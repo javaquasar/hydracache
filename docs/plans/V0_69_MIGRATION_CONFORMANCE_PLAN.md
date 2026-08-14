@@ -28,7 +28,8 @@
 > - **Unblocks:** a defensible "Hazelcast-migration ready for the claimed subset" statement backed
 >   by Hazelcast's own tests, client-upgrade guidance backed by executed old binaries, and the
 >   stable post-HC/2 surface required by the `0.70` memory-efficiency release.
-> - **Status:** in-progress.
+> - **Status:** shipped; the exact-candidate migration, compatibility, database, canary, and
+>   fail-closed admission evidence is complete.
 >
 > Roadmap: [`INDEX.md`](INDEX.md) - rules: [`../RULES.md`](../RULES.md) -
 > gates: [`../GATES.md`](../GATES.md) - testing: [`../TESTING.md`](../TESTING.md) -
