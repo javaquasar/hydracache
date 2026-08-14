@@ -48,6 +48,49 @@ fn windows_nested_cargo_uses_an_unlocked_deterministic_target_dir() {
 }
 
 #[test]
+fn evidence_provenance_requires_valid_shas_and_the_tested_checkout() {
+    let source = "0123456789abcdef0123456789abcdef01234567";
+    let valid = BTreeMap::from([
+        ("HYDRACACHE_EVIDENCE_BASE_SHA".to_owned(), source.to_owned()),
+        ("HYDRACACHE_EVIDENCE_HEAD_SHA".to_owned(), source.to_owned()),
+        (
+            "HYDRACACHE_EVIDENCE_TESTED_SHA".to_owned(),
+            source.to_owned(),
+        ),
+    ]);
+    assert!(xtask::evidence_run::evidence_provenance_problem(source, &valid).is_none());
+
+    let partial = BTreeMap::from([(
+        "HYDRACACHE_EVIDENCE_TESTED_SHA".to_owned(),
+        source.to_owned(),
+    )]);
+    assert!(
+        xtask::evidence_run::evidence_provenance_problem(source, &partial)
+            .unwrap()
+            .contains("missing evidence provenance")
+    );
+
+    let mut wrong = valid.clone();
+    wrong.insert("HYDRACACHE_EVIDENCE_TESTED_SHA".to_owned(), "f".repeat(40));
+    assert!(
+        xtask::evidence_run::evidence_provenance_problem(source, &wrong)
+            .unwrap()
+            .contains("does not match checkout")
+    );
+
+    let mut malformed = valid;
+    malformed.insert(
+        "HYDRACACHE_EVIDENCE_HEAD_SHA".to_owned(),
+        "short".to_owned(),
+    );
+    assert!(
+        xtask::evidence_run::evidence_provenance_problem(source, &malformed)
+            .unwrap()
+            .contains("invalid evidence provenance")
+    );
+}
+
+#[test]
 fn evidence_child_helper() {
     match std::env::var(CHILD_ENV).as_deref() {
         Ok("pass") => println!("logical pass"),

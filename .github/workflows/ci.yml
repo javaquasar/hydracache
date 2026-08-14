@@ -89,6 +89,10 @@ env:
   CARGO_PROFILE_DEV_DEBUG: 0
   CARGO_PROFILE_TEST_DEBUG: 0
   HYDRACACHE_CANDIDATE_RELEASE: ${{ inputs.candidate_release || '0.69' }}
+  HYDRACACHE_EVIDENCE_ROOT: target/release-evidence
+  HYDRACACHE_EVIDENCE_HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+  HYDRACACHE_EVIDENCE_BASE_SHA: ${{ github.event.pull_request.base.sha || github.sha }}
+  HYDRACACHE_EVIDENCE_TESTED_SHA: ${{ github.sha }}
 
 jobs:
   docs:
@@ -222,22 +226,6 @@ jobs:
           cargo run -p xtask --locked -- canary-sweep --release 0.67.1 --tier fast
           cargo run -p xtask --locked -- canary-check --release 0.68
           cargo run -p xtask --locked -- canary-sweep --release 0.68 --tier fast
-          cargo run -p xtask --locked -- canary-check --release 0.69
-          cargo run -p xtask --locked -- canary-sweep --release 0.69 --tier fast
-
-      - name: 0.69 migration conformance fast lanes
-        run: |
-          cargo run -p xtask --locked -- migration-conformance-check --structural
-          cargo test -p hydracache --test borrowed_cache_semantics --locked -j 2
-          cargo run -p xtask --locked -- evidence-run --release 0.69 --gate fast.migration-conformance-db-069
-
-      - name: Upload fast canary evidence
-        if: always()
-        uses: actions/upload-artifact@v6
-        with:
-          name: "canary-fast-${{ github.sha }}"
-          path: target/release-evidence/canaries/*.json
-          if-no-files-found: error
 
       - name: Fuzz corpus regression
         run: cargo run -p xtask --locked -- evidence-run --release "$HYDRACACHE_CANDIDATE_RELEASE" --gate fast.fuzz-corpus-regression
@@ -344,17 +332,6 @@ jobs:
           test "$(git rev-parse --is-shallow-repository)" = "false"
           cargo run -p xtask --locked -- client-plane-compat-check --manifest-only
 
-      - name: Test
-        run: cargo run -p xtask --locked -- evidence-run --release "$HYDRACACHE_CANDIDATE_RELEASE" --gate fast.workspace-nextest
-
-      - name: Upload fast release evidence receipt
-        if: always()
-        uses: actions/upload-artifact@v6
-        with:
-          name: "release-evidence-fast-${{ github.sha }}"
-          path: target/release-evidence/receipts/**
-          if-no-files-found: error
-
       - name: Doctests
         run: cargo test --workspace --doc --locked
 
@@ -370,6 +347,64 @@ jobs:
         if: always()
         run: rm -rf target/tests
 
+  migration-conformance-fast-evidence-069:
+    name: Migration Conformance Fast Evidence 0.69
+    runs-on: ubuntu-latest
+    timeout-minutes: 50
+
+    steps:
+      - name: Checkout exact tested candidate
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Install pinned Rust
+        uses: dtolnay/rust-toolchain@1.94.0
+
+      - name: Install pinned cargo-nextest
+        uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-nextest@0.9.137
+
+      - name: Cache Rust dependencies
+        uses: Swatinem/rust-cache@v2
+        with:
+          prefix-key: v1-migration-conformance-fast-evidence-069
+          cache-targets: true
+
+      - name: Run exact-candidate fast evidence
+        id: fast_evidence
+        run: |
+          test "$(git rev-parse HEAD)" = "$HYDRACACHE_EVIDENCE_TESTED_SHA"
+          cargo run -p xtask --locked -- migration-conformance-check --structural
+          cargo run -p xtask --locked -- canary-check --release 0.69
+          cargo run -p xtask --locked -- canary-sweep --release 0.69 --tier fast
+          cargo test -p hydracache --test borrowed_cache_semantics --locked -j 2
+          cargo run -p xtask --locked -- evidence-run --release 0.69 --gate fast.migration-conformance-db-069
+          cargo run -p xtask --locked -- evidence-run --release "$HYDRACACHE_CANDIDATE_RELEASE" --gate fast.workspace-nextest
+
+      - name: Finalize fast evidence lane status
+        if: always()
+        run: >-
+          cargo run -p xtask --locked -- ci-admission-status
+          --release 0.69
+          --source "$HYDRACACHE_EVIDENCE_TESTED_SHA"
+          --head "$HYDRACACHE_EVIDENCE_HEAD_SHA"
+          --base "$HYDRACACHE_EVIDENCE_BASE_SHA"
+          --require "fast-evidence=${{ steps.fast_evidence.outcome }}"
+          --output target/release-evidence/lanes/fast-evidence.json
+
+      - name: Upload exact-candidate fast evidence
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: "migration-conformance-fast-evidence-069-${{ github.sha }}"
+          path: |
+            target/release-evidence/canaries/*.json
+            target/release-evidence/lanes/*.json
+            target/release-evidence/receipts/**
+          if-no-files-found: error
+
   migration-conformance-069:
     name: Migration Conformance 0.69
     runs-on: ubuntu-latest
@@ -381,8 +416,8 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Install Rust
-        uses: dtolnay/rust-toolchain@stable
+      - name: Install pinned Rust
+        uses: dtolnay/rust-toolchain@1.94.0
 
       - name: Install Java
         uses: actions/setup-java@v5
@@ -398,17 +433,33 @@ jobs:
           cache-targets: true
 
       - name: Run adapted Hazelcast expectations
+        id: borrowed_hazelcast
         run: cargo run -p xtask --locked -- evidence-run --release 0.69 --gate tool.borrowed-hazelcast-069
 
       - name: Run shipped HC1 consumers against current daemon
+        id: legacy_hc1
         run: cargo run -p xtask --locked -- evidence-run --release 0.69 --gate tool.legacy-hc1-clients-069
+
+      - name: Finalize Java and legacy evidence lane status
+        if: always()
+        run: >-
+          cargo run -p xtask --locked -- ci-admission-status
+          --release 0.69
+          --source "$HYDRACACHE_EVIDENCE_TESTED_SHA"
+          --head "$HYDRACACHE_EVIDENCE_HEAD_SHA"
+          --base "$HYDRACACHE_EVIDENCE_BASE_SHA"
+          --require "borrowed-hazelcast=${{ steps.borrowed_hazelcast.outcome }}"
+          --require "legacy-hc1=${{ steps.legacy_hc1.outcome }}"
+          --output target/release-evidence/lanes/java-legacy.json
 
       - name: Upload migration conformance receipts
         if: always()
         uses: actions/upload-artifact@v6
         with:
           name: "migration-conformance-069-receipts-${{ github.sha }}"
-          path: target/release-evidence/receipts/**
+          path: |
+            target/release-evidence/lanes/*.json
+            target/release-evidence/receipts/**
           if-no-files-found: error
 
       - name: Upload Java and legacy diagnostics
@@ -423,14 +474,28 @@ jobs:
           if-no-files-found: warn
 
   migration-conformance-postgres-069:
-    name: Migration Conformance PostgreSQL 0.69
+    name: Migration Conformance PostgreSQL 0.69 (${{ matrix.postgres.series }})
     runs-on: ubuntu-latest
-    timeout-minutes: 35
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        postgres:
+          - series: "16"
+            image: postgres:16.4-alpine@sha256:5660c2cbfea50c7a9127d17dc4e48543eedd3d7a41a595a2dfa572471e37e64c
+            happy_gate: ignored.hydracache-db.cached-vs-direct-postgres-069
+            run_canary_and_soak: true
+          - series: "18"
+            image: postgres:18-alpine@sha256:9a8afca54e7861fd90fab5fdf4c42477a6b1cb7d293595148e674e0a3181de15
+            happy_gate: ignored.hydracache-db.cached-vs-direct-postgres-18-069
+            run_canary_and_soak: false
     env:
       HYDRACACHE_TEST_POSTGRES_URL: postgres://hydracache:hydracache@127.0.0.1:5432/hydracache
+      HYDRACACHE_POSTGRES_SERIES: ${{ matrix.postgres.series }}
+      HYDRACACHE_POSTGRES_IMAGE_ID: ${{ matrix.postgres.image }}
     services:
       postgres:
-        image: postgres:16.4-alpine@sha256:5660c2cbfea50c7a9127d17dc4e48543eedd3d7a41a595a2dfa572471e37e64c
+        image: ${{ matrix.postgres.image }}
         env:
           POSTGRES_DB: hydracache
           POSTGRES_PASSWORD: hydracache
@@ -447,34 +512,68 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v5
 
-      - name: Install Rust
-        uses: dtolnay/rust-toolchain@stable
+      - name: Install pinned Rust
+        uses: dtolnay/rust-toolchain@1.94.0
 
       - name: Cache Rust dependencies
         uses: Swatinem/rust-cache@v2
         with:
-          prefix-key: v1-migration-conformance-postgres-069
+          prefix-key: v2-migration-conformance-postgres-${{ matrix.postgres.series }}-069
           cache-targets: true
 
       - name: Run PostgreSQL cached-vs-direct differential
-        run: cargo run -p xtask --locked -- evidence-run --release 0.69 --gate ignored.hydracache-db.cached-vs-direct-postgres-069
+        id: postgres_happy
+        run: cargo run -p xtask --locked -- evidence-run --release 0.69 --gate "${{ matrix.postgres.happy_gate }}"
 
       - name: Prove PostgreSQL dropped-invalidation canary is red
+        id: postgres_canary
+        if: matrix.postgres.run_canary_and_soak
         run: cargo run -p xtask --locked -- evidence-run --release 0.69 --gate ignored.hydracache-db.cached-vs-direct-postgres-canary-069
+
+      - name: Run bounded PostgreSQL commit-wait soak
+        id: postgres_soak
+        if: matrix.postgres.run_canary_and_soak
+        run: cargo run -p xtask --locked -- evidence-run --release 0.69 --gate ignored.hydracache-db.cached-vs-direct-postgres-soak-069
+
+      - name: Finalize PostgreSQL 16 evidence lane status
+        if: always() && matrix.postgres.run_canary_and_soak
+        run: >-
+          cargo run -p xtask --locked -- ci-admission-status
+          --release 0.69
+          --source "$HYDRACACHE_EVIDENCE_TESTED_SHA"
+          --head "$HYDRACACHE_EVIDENCE_HEAD_SHA"
+          --base "$HYDRACACHE_EVIDENCE_BASE_SHA"
+          --require "postgres-happy=${{ steps.postgres_happy.outcome }}"
+          --require "postgres-canary=${{ steps.postgres_canary.outcome }}"
+          --require "postgres-soak=${{ steps.postgres_soak.outcome }}"
+          --output target/release-evidence/lanes/postgres-16.json
+
+      - name: Finalize PostgreSQL 18 evidence lane status
+        if: always() && !matrix.postgres.run_canary_and_soak
+        run: >-
+          cargo run -p xtask --locked -- ci-admission-status
+          --release 0.69
+          --source "$HYDRACACHE_EVIDENCE_TESTED_SHA"
+          --head "$HYDRACACHE_EVIDENCE_HEAD_SHA"
+          --base "$HYDRACACHE_EVIDENCE_BASE_SHA"
+          --require "postgres-happy=${{ steps.postgres_happy.outcome }}"
+          --output target/release-evidence/lanes/postgres-18.json
 
       - name: Upload PostgreSQL conformance receipts
         if: always()
         uses: actions/upload-artifact@v6
         with:
-          name: "migration-conformance-postgres-069-receipts-${{ github.sha }}"
-          path: target/release-evidence/receipts/**
+          name: "migration-conformance-postgres-069-receipts-${{ matrix.postgres.series }}-${{ github.sha }}"
+          path: |
+            target/release-evidence/lanes/*.json
+            target/release-evidence/receipts/**
           if-no-files-found: error
 
       - name: Upload PostgreSQL conformance diagnostics
         if: always()
         uses: actions/upload-artifact@v6
         with:
-          name: "migration-conformance-postgres-069-${{ github.sha }}"
+          name: "migration-conformance-postgres-069-${{ matrix.postgres.series }}-${{ github.sha }}"
           path: |
             target/test-evidence/0.69/**
             target/release-evidence/receipts/**
@@ -484,8 +583,9 @@ jobs:
     name: Migration Conformance Admission 0.69
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    if: always()
     needs:
-      - rust
+      - migration-conformance-fast-evidence-069
       - migration-conformance-069
       - migration-conformance-postgres-069
 
@@ -493,32 +593,39 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v5
 
-      - name: Install Rust
-        uses: dtolnay/rust-toolchain@stable
+      - name: Install pinned Rust
+        uses: dtolnay/rust-toolchain@1.94.0
 
-      - name: Download workspace receipt
+      - name: Materialize fail-loud upstream admission status
+        run: >-
+          cargo run -p xtask --locked -- ci-admission-status
+          --release 0.69
+          --source "$HYDRACACHE_EVIDENCE_TESTED_SHA"
+          --head "$HYDRACACHE_EVIDENCE_HEAD_SHA"
+          --base "$HYDRACACHE_EVIDENCE_BASE_SHA"
+          --require "fast=${{ needs.migration-conformance-fast-evidence-069.result }}"
+          --require "java-legacy=${{ needs.migration-conformance-069.result }}"
+          --require "postgres-matrix=${{ needs.migration-conformance-postgres-069.result }}"
+          --output target/release-evidence/0.69.admission-lane.json
+
+      - name: Download fast evidence receipts and canaries
         uses: actions/download-artifact@v5
         with:
-          name: "release-evidence-fast-${{ github.sha }}"
-          path: target/release-evidence/receipts
-
-      - name: Download fast canary receipts
-        uses: actions/download-artifact@v5
-        with:
-          name: "canary-fast-${{ github.sha }}"
-          path: target/release-evidence/canaries
+          name: "migration-conformance-fast-evidence-069-${{ github.sha }}"
+          path: target/release-evidence
 
       - name: Download Java and legacy receipts
         uses: actions/download-artifact@v5
         with:
           name: "migration-conformance-069-receipts-${{ github.sha }}"
-          path: target/release-evidence/receipts
+          path: target/release-evidence
 
       - name: Download PostgreSQL receipts
         uses: actions/download-artifact@v5
         with:
-          name: "migration-conformance-postgres-069-receipts-${{ github.sha }}"
-          path: target/release-evidence/receipts
+          pattern: "migration-conformance-postgres-069-receipts-*-${{ github.sha }}"
+          path: target/release-evidence
+          merge-multiple: true
 
       - name: Require exact-candidate migration conformance evidence
         run: cargo run -p xtask --locked -- release-evidence --release 0.69 --receipts-dir target/release-evidence/receipts --require-ship

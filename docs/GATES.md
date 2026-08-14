@@ -233,7 +233,8 @@ Do not document a gate that is not wired into its stated enforcement surface; th
 is exactly the prose-only "enforcement" this file exists to prevent.
 ## 0.69 migration conformance gates
 
-The 0.69 candidate adds three fast gates, two Java/tag-history gates, and a real PostgreSQL gate:
+The 0.69 candidate adds three fast gates, two Java/tag-history gates, and a PostgreSQL support
+matrix with a bounded floor-version soak:
 
 ```text
 cargo run -p xtask --locked -- migration-conformance-check --structural
@@ -241,20 +242,25 @@ cargo test -p hydracache --test borrowed_cache_semantics --locked -j 2
 cargo test -p hydracache-db --features sqlx-outbox --test cached_vs_direct_differential --locked -j 2
 HYDRACACHE_RUN_JVM_COMPAT=1 cargo run -p xtask --locked -- borrowed-suite-check --suite hazelcast
 HYDRACACHE_RUN_LEGACY_CLIENTS=1 cargo run -p xtask --locked -- legacy-client-check --matrix hc1
-HYDRACACHE_TEST_POSTGRES_URL=postgres://... cargo test -p hydracache-db --features sqlx-outbox --test cached_vs_direct_postgres --locked -- --ignored --nocapture
+HYDRACACHE_TEST_POSTGRES_URL=postgres://... HYDRACACHE_POSTGRES_SERIES=16 HYDRACACHE_POSTGRES_IMAGE_ID=postgres:16.4-alpine@sha256:... cargo test -p hydracache-db --features sqlx-outbox --test cached_vs_direct_postgres --locked -- --ignored --nocapture
 ```
 
 The last two commands fail skip-loud when their opt-in environment variable is absent. The normal
 workspace receipt covers the Rust structural/borrowed tests; SQLx uses
 `cfg.hydracache-db.cached-vs-direct-differential-069`. External evidence IDs are
 `tool.borrowed-hazelcast-069`, `tool.legacy-hc1-clients-069`,
-`ignored.hydracache-db.cached-vs-direct-postgres-069`, and its expected-red canary gate. The Java gate builds and starts the production
+`ignored.hydracache-db.cached-vs-direct-postgres-069`,
+`ignored.hydracache-db.cached-vs-direct-postgres-18-069`, the floor-version soak, and the
+expected-red canary gate. The Java gate builds and starts the production
 daemon, then supplements the facade run with exact lease-expiry and SDK session-loss contracts.
 Both DB differentials use transactional outbox enqueue, the real drain worker, and
 commit-scoped `InvalidationWait`; the PostgreSQL row is required by `hc2-linux-required`. Its
-service image is pinned to index digest
-`sha256:5660c2cbfea50c7a9127d17dc4e48543eedd3d7a41a595a2dfa572471e37e64c`, runs three fixed
-12-writer seeds, and retains version/image/seed/log evidence. W0-W5 use six distinct expected-red
+service matrix pins both the 16.4 floor digest
+`sha256:5660c2cbfea50c7a9127d17dc4e48543eedd3d7a41a595a2dfa572471e37e64c` and major-18 digest
+`sha256:9a8afca54e7861fd90fab5fdf4c42477a6b1cb7d293595148e674e0a3181de15`, runs three fixed
+12-writer seeds on both plus 24 bounded soak seeds on the floor, and retains version/image/seed/log evidence. W0-W5 use six distinct expected-red
 defects; the PostgreSQL target also has a real dropped-invalidation sentinel selected by
 `HYDRACACHE_CANARY_DEFECT=W4_PG_DROP`. CI runs that sentinel separately and accepts it only when
 the test exits non-zero and emits `HC-CANARY-RED:W4-PG`; an unexpectedly green canary fails the job.
+The final admission is `if: always()` and consumes explicit lane-status JSON, so an upstream skip
+is visible red evidence rather than an absent check.

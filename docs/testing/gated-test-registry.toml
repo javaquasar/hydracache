@@ -6798,8 +6798,8 @@ artifacts = []
 
 [gate.ci]
 workflow = ".github/workflows/ci.yml"
-job = "rust"
-step = "0.69 migration conformance fast lanes"
+job = "migration-conformance-fast-evidence-069"
+step = "Run exact-candidate fast evidence"
 
 [gate.command]
 program = "cargo"
@@ -6821,12 +6821,12 @@ env = ""
 reason = "The PostgreSQL differential requires HYDRACACHE_TEST_POSTGRES_URL and a real PostgreSQL service"
 tier = "external"
 required_features = ["sqlx-outbox"]
-required_env = ["HYDRACACHE_TEST_POSTGRES_URL"]
+required_env = ["HYDRACACHE_TEST_POSTGRES_URL", "HYDRACACHE_POSTGRES_SERIES", "HYDRACACHE_POSTGRES_IMAGE_ID"]
 required_tools = ["cargo", "postgres"]
 timeout_seconds = 900
 owner_release = "0.69.0"
 ship_mandatory = true
-artifacts = ["target/test-evidence/0.69/postgres-differential.log", "target/test-evidence/0.69/postgres-image.txt", "target/test-evidence/0.69/postgres-seeds.txt"]
+artifacts = ["target/test-evidence/0.69/postgres-16-differential.log", "target/test-evidence/0.69/postgres-16-image.txt", "target/test-evidence/0.69/postgres-16-seeds.txt"]
 
 [gate.ci]
 workflow = ".github/workflows/ci.yml"
@@ -6840,6 +6840,43 @@ cwd = "."
 platform = "any"
 
 [gate.command.env]
+HYDRACACHE_POSTGRES_IMAGE_ID = "postgres:16.4-alpine@sha256:5660c2cbfea50c7a9127d17dc4e48543eedd3d7a41a595a2dfa572471e37e64c"
+HYDRACACHE_POSTGRES_SERIES = "16"
+HYDRACACHE_TEST_POSTGRES_URL = "postgres://hydracache:hydracache@127.0.0.1:5432/hydracache"
+
+[[gate]]
+id = "ignored.hydracache-db.cached-vs-direct-postgres-18-069"
+kind = "ignored_test"
+source = "crates/hydracache-db/tests/cached_vs_direct_postgres.rs"
+package = "hydracache-db"
+target = "cached_vs_direct_postgres"
+test = "postgres_18_cached_reads_match_direct_queries_through_the_real_outbox"
+cfg = ""
+env = ""
+reason = "The PostgreSQL 18 differential proves the upper supported release line against a digest-pinned service"
+tier = "external"
+required_features = ["sqlx-outbox"]
+required_env = ["HYDRACACHE_TEST_POSTGRES_URL", "HYDRACACHE_POSTGRES_SERIES", "HYDRACACHE_POSTGRES_IMAGE_ID"]
+required_tools = ["cargo", "postgres"]
+timeout_seconds = 900
+owner_release = "0.69.0"
+ship_mandatory = true
+artifacts = ["target/test-evidence/0.69/postgres-18-differential.log", "target/test-evidence/0.69/postgres-18-image.txt", "target/test-evidence/0.69/postgres-18-seeds.txt"]
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "migration-conformance-postgres-069"
+step = "Run PostgreSQL cached-vs-direct differential"
+
+[gate.command]
+program = "cargo"
+args = ["run", "-p", "xtask", "--locked", "--", "postgres-conformance-check", "--mode", "happy"]
+cwd = "."
+platform = "any"
+
+[gate.command.env]
+HYDRACACHE_POSTGRES_IMAGE_ID = "postgres:18-alpine@sha256:9a8afca54e7861fd90fab5fdf4c42477a6b1cb7d293595148e674e0a3181de15"
+HYDRACACHE_POSTGRES_SERIES = "18"
 HYDRACACHE_TEST_POSTGRES_URL = "postgres://hydracache:hydracache@127.0.0.1:5432/hydracache"
 
 [[gate]]
@@ -6854,12 +6891,12 @@ env = ""
 reason = "The PostgreSQL dropped-invalidation sentinel requires HYDRACACHE_TEST_POSTGRES_URL and a real PostgreSQL service"
 tier = "external"
 required_features = ["sqlx-outbox"]
-required_env = ["HYDRACACHE_TEST_POSTGRES_URL"]
+required_env = ["HYDRACACHE_TEST_POSTGRES_URL", "HYDRACACHE_POSTGRES_SERIES", "HYDRACACHE_POSTGRES_IMAGE_ID"]
 required_tools = ["cargo", "postgres"]
 timeout_seconds = 900
 owner_release = "0.69.0"
 ship_mandatory = true
-artifacts = ["target/test-evidence/0.69/postgres-canary.log"]
+artifacts = ["target/test-evidence/0.69/postgres-16-canary.log"]
 
 [gate.ci]
 workflow = ".github/workflows/ci.yml"
@@ -6874,6 +6911,43 @@ platform = "any"
 
 [gate.command.env]
 HYDRACACHE_TEST_POSTGRES_URL = "postgres://hydracache:hydracache@127.0.0.1:5432/hydracache"
+HYDRACACHE_POSTGRES_IMAGE_ID = "postgres:16.4-alpine@sha256:5660c2cbfea50c7a9127d17dc4e48543eedd3d7a41a595a2dfa572471e37e64c"
+HYDRACACHE_POSTGRES_SERIES = "16"
+
+[[gate]]
+id = "ignored.hydracache-db.cached-vs-direct-postgres-soak-069"
+kind = "ignored_test"
+source = "crates/hydracache-db/tests/cached_vs_direct_postgres.rs"
+package = "hydracache-db"
+target = "cached_vs_direct_postgres"
+test = "postgres_commit_scoped_wait_soak_stays_within_budget"
+cfg = ""
+env = ""
+reason = "The bounded PostgreSQL soak executes 24 deterministic 12-writer schedules against the digest-pinned release floor"
+tier = "external"
+required_features = ["sqlx-outbox"]
+required_env = ["HYDRACACHE_TEST_POSTGRES_URL", "HYDRACACHE_POSTGRES_SERIES", "HYDRACACHE_POSTGRES_IMAGE_ID"]
+required_tools = ["cargo", "postgres"]
+timeout_seconds = 180
+owner_release = "0.69.0"
+ship_mandatory = true
+artifacts = ["target/test-evidence/0.69/postgres-16-soak.log", "target/test-evidence/0.69/postgres-16-soak-seeds.txt"]
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "migration-conformance-postgres-069"
+step = "Run bounded PostgreSQL commit-wait soak"
+
+[gate.command]
+program = "cargo"
+args = ["run", "-p", "xtask", "--locked", "--", "postgres-conformance-check", "--mode", "soak"]
+cwd = "."
+platform = "any"
+
+[gate.command.env]
+HYDRACACHE_POSTGRES_IMAGE_ID = "postgres:16.4-alpine@sha256:5660c2cbfea50c7a9127d17dc4e48543eedd3d7a41a595a2dfa572471e37e64c"
+HYDRACACHE_POSTGRES_SERIES = "16"
+HYDRACACHE_TEST_POSTGRES_URL = "postgres://hydracache:hydracache@127.0.0.1:5432/hydracache"
 
 [[gate]]
 id = "cfg.hydracache-db.cached-vs-direct-postgres-069"
@@ -6887,12 +6961,12 @@ env = ""
 reason = "The PostgreSQL differential uses the optional production SQLx outbox integration"
 tier = "external"
 required_features = ["sqlx-outbox"]
-required_env = ["HYDRACACHE_TEST_POSTGRES_URL"]
+required_env = ["HYDRACACHE_TEST_POSTGRES_URL", "HYDRACACHE_POSTGRES_SERIES", "HYDRACACHE_POSTGRES_IMAGE_ID"]
 required_tools = ["cargo", "postgres"]
 timeout_seconds = 900
 owner_release = "0.69.0"
 ship_mandatory = false
-artifacts = ["target/test-evidence/0.69/postgres-differential.log", "target/test-evidence/0.69/postgres-image.txt", "target/test-evidence/0.69/postgres-seeds.txt"]
+artifacts = ["target/test-evidence/0.69/postgres-16-differential.log", "target/test-evidence/0.69/postgres-16-image.txt", "target/test-evidence/0.69/postgres-16-seeds.txt"]
 
 [gate.ci]
 workflow = ".github/workflows/ci.yml"
@@ -6907,6 +6981,8 @@ platform = "any"
 
 [gate.command.env]
 HYDRACACHE_TEST_POSTGRES_URL = "postgres://hydracache:hydracache@127.0.0.1:5432/hydracache"
+HYDRACACHE_POSTGRES_IMAGE_ID = "postgres:16.4-alpine@sha256:5660c2cbfea50c7a9127d17dc4e48543eedd3d7a41a595a2dfa572471e37e64c"
+HYDRACACHE_POSTGRES_SERIES = "16"
 
 [[gate]]
 id = "tool.hc2-release-admission-068"

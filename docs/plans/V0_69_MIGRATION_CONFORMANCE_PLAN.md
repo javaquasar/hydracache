@@ -119,6 +119,31 @@ $env:HYDRACACHE_RUN_JVM_COMPAT='1'; cargo run -p xtask --locked -- borrowed-suit
 $env:HYDRACACHE_CANARY_DEFECT='W4_PG_DROP'; cargo test -p hydracache-db --features sqlx-outbox --test cached_vs_direct_postgres canary_postgres_differential_rejects_a_dropped_invalidation -- --ignored --exact --nocapture
 ```
 
+### CI-derived release strengthening
+
+The first exact-candidate PR run exposed a deterministic process-fixture contract mismatch and a
+diagnostic weakness: the producer added a second mTLS identity, but one Rust consumer still parsed
+the old field count; the resulting Rust failure caused the final 0.69 admission job to be skipped.
+The release therefore includes these additional mandatory controls:
+
+1. `READY_DAEMON_V1` is a versioned receipt. The Rust producer and consumer share a typed parser;
+   both Java process consumers assert the same exact version and eight-field shape.
+2. `migration-conformance-admission-069` uses `if: always()` and materializes a structured upstream
+   status before downloading evidence. Failed or skipped dependencies are explicit red outcomes.
+3. Fast 0.69 canaries, SQLx evidence, and `fast.workspace-nextest` run in the independent
+   `migration-conformance-fast-evidence-069` job instead of depending on the monolithic Rust lane.
+4. Every 0.69 lane finalizes a JSON lane status under `target/release-evidence/lanes`; ordinary
+   `evidence-run` failures continue to write full gate receipts. Artifact upload therefore retains
+   the original outcome without relying on a later successful step.
+5. CI provenance records `HYDRACACHE_EVIDENCE_HEAD_SHA`, `HYDRACACHE_EVIDENCE_BASE_SHA`, and
+   `HYDRACACHE_EVIDENCE_TESTED_SHA`; the tested SHA must equal the checkout used by `evidence-run`.
+6. PostgreSQL happy-path evidence is a digest-pinned matrix covering the declared 16.4 floor and
+   current major 18. The test queries `server_version_num` and rejects a service that does not match
+   its declared matrix series.
+7. A downstream-style `CustomInvalidationOutbox` integration fixture compiles the public trait and
+   proves exact namespace+commit filtering. The PostgreSQL 16 lane additionally runs a bounded
+   24-seed, 12-writer-per-seed soak with a 120-second in-test budget.
+
 ## Preflight
 
 Re-grep before implementing:
@@ -293,8 +318,8 @@ compares both reads at that position; it never compares an older cached snapshot
 that may already include a later commit. `NoWait` may be stale before the captured invalidation is
 drained; `Local` and `BestEffort` assertions are tied to the shipped outbox-wait contract rather
 than being relabelled as arbitrary read consistency. Convergence must be exact after quiescence.
-SQLite runs fast; Postgres joins the
-existing Docker gate (W35 adapter-corpus pattern).
+SQLite runs fast; PostgreSQL joins the existing Docker gate (W35 adapter-corpus pattern) as a
+digest-pinned 16.4/18 support matrix. The 16.4 floor also executes a bounded 24-seed soak.
 
 **Required tests:**
 - `cached_reads_match_direct_queries_per_consistency_mode_under_concurrent_writes`;
@@ -309,9 +334,11 @@ invalidation must produce a detected mismatch.
 cargo test -p hydracache-db --features sqlx-outbox --test cached_vs_direct_differential --locked -j 2
 $env:HYDRACACHE_TEST_POSTGRES_URL='postgres://hydracache:hydracache@127.0.0.1:5432/hydracache'
 cargo test -p hydracache-db --features sqlx-outbox --test cached_vs_direct_postgres --locked -- --ignored --nocapture
+cargo test -p hydracache-db --test custom_outbox_contract --locked
 ```
-**CI.** SQLite row in the fast `rust` job; Postgres row in the dedicated
-`migration-conformance-postgres-069` service lane, required by `hc2-linux-required`.
+**CI.** SQLite and workspace receipts run in `migration-conformance-fast-evidence-069`; PostgreSQL
+16.4 and 18 rows run in the matrix-backed `migration-conformance-postgres-069` service lane. The
+final admission always runs, records upstream outcomes, and is required by `hc2-linux-required`.
 
 ## W5. Governance, CI, And Docs
 
@@ -347,8 +374,9 @@ cargo run --manifest-path crates\xtask\Cargo.toml -- doc-check
   the retained `0.68` HC/2 compatibility matrix remains green,
   all clients fail loud beyond their surface, and an unbuildable tag is visibly non-green rather
   than substituted.
-- The DB differential holds per declared consistency mode under seeded concurrent writes, is exact
-  after quiescence, and the dropped-invalidation canary is detected.
+- The DB differential holds per declared consistency mode under seeded concurrent writes on the
+  PostgreSQL 16.4/18 matrix, is exact after quiescence, detects the dropped-invalidation canary,
+  and completes the bounded 24-seed floor-version soak.
 - Every suite/canary/gated lane is registered in the `0.64` governance machinery; a green
   `release-evidence --release 0.69 --require-ship` on the candidate commit is the ship gate; all
   lanes run locally and in GitHub CI with skip-loud discipline.

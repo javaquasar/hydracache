@@ -76,6 +76,50 @@ fn release_069_migration_conformance_closure_is_fail_closed() {
 }
 
 #[test]
+fn release_069_daemon_readiness_contract_is_versioned_across_consumers() {
+    let root = root();
+    for source in [
+        "crates/hydracache-client-plane-spike/src/fixture_receipt.rs",
+        "sdks/java/hydracache-client-hc2/src/test/java/io/hydracache/client/hc2/DaemonProcess.java",
+        "sdks/java/hydracache-hazelcast-facade/src/test/java/io/hydracache/hazelcast/FacadeDaemonProcess.java",
+    ] {
+        let text = fs::read_to_string(root.join(source)).unwrap();
+        assert!(
+            text.contains("READY_DAEMON_V1"),
+            "{source} is not bound to the versioned daemon readiness contract"
+        );
+        assert!(
+            !text.contains("assertEquals(\"READY_DAEMON\""),
+            "{source} still accepts the unversioned readiness discriminator"
+        );
+    }
+    let rust_consumer =
+        fs::read_to_string(root.join("crates/hydracache-client-hc2/tests/grpc_process.rs"))
+            .unwrap();
+    assert!(rust_consumer.contains("ProductionDaemonReadyReceipt::parse"));
+    assert!(!rust_consumer.contains("fields.len() == 6"));
+}
+
+#[test]
+fn release_069_ci_admission_is_independent_fail_loud_and_sha_bound() {
+    let workflow = fs::read_to_string(root().join(".github/workflows/ci.yml")).unwrap();
+    for required in [
+        "migration-conformance-fast-evidence-069:",
+        "name: Migration Conformance Fast Evidence 0.69",
+        "migration-conformance-admission-069:",
+        "if: always()",
+        "ci-admission-status",
+        "HYDRACACHE_EVIDENCE_HEAD_SHA",
+        "HYDRACACHE_EVIDENCE_BASE_SHA",
+        "HYDRACACHE_EVIDENCE_TESTED_SHA",
+        "postgres:18-alpine@sha256:9a8afca54e7861fd90fab5fdf4c42477a6b1cb7d293595148e674e0a3181de15",
+        "ignored.hydracache-db.cached-vs-direct-postgres-soak-069",
+    ] {
+        assert!(workflow.contains(required), "CI lost {required}");
+    }
+}
+
+#[test]
 fn canary_release_069_accepts_missing_work_item_evidence() {
     let omitted = env::var("HYDRACACHE_CANARY_DEFECT").unwrap_or_default();
     if omitted.is_empty() {

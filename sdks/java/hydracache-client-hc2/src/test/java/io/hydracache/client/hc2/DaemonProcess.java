@@ -53,7 +53,7 @@ final class DaemonProcess implements AutoCloseable {
       String ready = output.readLine();
       assertNotNull(ready, "production daemon fixture exited before readiness");
       String[] fields = ready.split("\\t", -1);
-      assertEquals("READY_DAEMON", fields[0], "unexpected daemon readiness: " + ready);
+      assertEquals("READY_DAEMON_V1", fields[0], "unexpected daemon readiness: " + ready);
       assertEquals(8, fields.length, "malformed daemon readiness: " + ready);
       return new DaemonProcess(process, output, input, Integer.parseInt(fields[1]),
           Path.of(fields[3]), Path.of(fields[4]), Path.of(fields[5]));

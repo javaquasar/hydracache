@@ -17,7 +17,7 @@ function = "release_069_migration_conformance_closure_is_fail_closed"
 
 [[work_item]]
 id = "W1"
-required_sources = ["sdks/java/hydracache-hazelcast-facade/src/test/java/io/hydracache/hazelcast/BorrowedHazelcastExpectationsTest.java", "sdks/java/hydracache-hazelcast-facade/src/test/java/io/hydracache/hazelcast/BorrowedHazelcastLiveInteropTest.java", "sdks/java/hydracache-hazelcast-facade/src/test/java/io/hydracache/hazelcast/FacadeDaemonProcess.java", "crates/hydracache-server/tests/lock_endpoint.rs", "sdks/java/hydracache-client-hc2/src/test/java/io/hydracache/client/hc2/GrpcHydraCacheClientInteropTest.java"]
+required_sources = ["sdks/java/hydracache-hazelcast-facade/src/test/java/io/hydracache/hazelcast/BorrowedHazelcastExpectationsTest.java", "sdks/java/hydracache-hazelcast-facade/src/test/java/io/hydracache/hazelcast/BorrowedHazelcastLiveInteropTest.java", "sdks/java/hydracache-hazelcast-facade/src/test/java/io/hydracache/hazelcast/FacadeDaemonProcess.java", "crates/hydracache-client-plane-spike/src/fixture_receipt.rs", "crates/hydracache-client-hc2/tests/grpc_process.rs", "crates/hydracache-server/tests/lock_endpoint.rs", "sdks/java/hydracache-client-hc2/src/test/java/io/hydracache/client/hc2/GrpcHydraCacheClientInteropTest.java"]
 required_artifacts = ["docs/integrations/hazelcast_borrowed_suite.json"]
 fast_gate_ids = ["fast.workspace-nextest"]
 gated_gate_ids = ["tool.borrowed-hazelcast-069"]
@@ -36,6 +36,12 @@ language = "java"
 source = "sdks/java/hydracache-client-hc2/src/test/java/io/hydracache/client/hc2/GrpcHydraCacheClientInteropTest.java"
 function = "javaRecoveryReplacesADeadRustProcessRepairsSubscriptionAndLosesSession"
 language = "java"
+[[work_item.required_tests]]
+source = "crates/hydracache-client-plane-spike/src/fixture_receipt.rs"
+function = "production_daemon_v1_receipt_round_trips_exactly"
+[[work_item.required_tests]]
+source = "crates/xtask/tests/migration_conformance_069.rs"
+function = "release_069_daemon_readiness_contract_is_versioned_across_consumers"
 
 [[work_item]]
 id = "W2"
@@ -61,10 +67,10 @@ function = "release_069_migration_conformance_closure_is_fail_closed"
 
 [[work_item]]
 id = "W4"
-required_sources = ["crates/hydracache-db/src/outbox.rs", "crates/hydracache-db/src/sqlx_outbox.rs", "crates/hydracache-db/tests/outbox_barrier.rs", "crates/hydracache-db/tests/outbox_sqlite.rs", "crates/hydracache-db/tests/cached_vs_direct_differential.rs", "crates/hydracache-db/tests/cached_vs_direct_postgres.rs"]
+required_sources = ["crates/hydracache-db/src/outbox.rs", "crates/hydracache-db/src/sqlx_outbox.rs", "crates/hydracache-db/tests/outbox_barrier.rs", "crates/hydracache-db/tests/outbox_sqlite.rs", "crates/hydracache-db/tests/cached_vs_direct_differential.rs", "crates/hydracache-db/tests/cached_vs_direct_postgres.rs", "crates/hydracache-db/tests/custom_outbox_contract.rs"]
 required_artifacts = []
 fast_gate_ids = ["fast.migration-conformance-db-069"]
-gated_gate_ids = ["ignored.hydracache-db.cached-vs-direct-postgres-069", "ignored.hydracache-db.cached-vs-direct-postgres-canary-069"]
+gated_gate_ids = ["ignored.hydracache-db.cached-vs-direct-postgres-069", "ignored.hydracache-db.cached-vs-direct-postgres-18-069", "ignored.hydracache-db.cached-vs-direct-postgres-canary-069", "ignored.hydracache-db.cached-vs-direct-postgres-soak-069"]
 ship_required = true
 [[work_item.required_tests]]
 source = "crates/hydracache-db/tests/cached_vs_direct_differential.rs"
@@ -72,6 +78,9 @@ function = "cached_reads_match_direct_queries_per_consistency_mode_under_concurr
 [[work_item.required_tests]]
 source = "crates/hydracache-db/tests/cached_vs_direct_postgres.rs"
 function = "postgres_cached_reads_match_direct_queries_through_the_real_outbox"
+[[work_item.required_tests]]
+source = "crates/hydracache-db/tests/cached_vs_direct_postgres.rs"
+function = "postgres_18_cached_reads_match_direct_queries_through_the_real_outbox"
 [[work_item.required_tests]]
 source = "crates/hydracache-db/tests/cached_vs_direct_differential.rs"
 function = "multi_writer_seed_matrix_converges_through_the_outbox"
@@ -84,14 +93,26 @@ function = "sqlx_receipt_wait_ignores_an_unrelated_later_commit"
 [[work_item.required_tests]]
 source = "crates/hydracache-db/tests/cached_vs_direct_postgres.rs"
 function = "canary_postgres_differential_rejects_a_dropped_invalidation"
+[[work_item.required_tests]]
+source = "crates/hydracache-db/tests/cached_vs_direct_postgres.rs"
+function = "postgres_commit_scoped_wait_soak_stays_within_budget"
+[[work_item.required_tests]]
+source = "crates/hydracache-db/tests/custom_outbox_contract.rs"
+function = "external_adapter_compiles_and_waits_for_only_the_receipt_commit"
 
 [[work_item]]
 id = "W5"
-required_sources = ["crates/xtask/tests/migration_conformance_069.rs", ".github/workflows/ci.yml"]
+required_sources = ["crates/xtask/src/ci_admission.rs", "crates/xtask/tests/migration_conformance_069.rs", ".github/workflows/ci.yml"]
 required_artifacts = ["docs/testing/canary-registry-0.69.json", "docs/testing/release-evidence/0.69.toml", "docs/releases/0.69.0.md"]
 fast_gate_ids = ["fast.workspace-nextest"]
-gated_gate_ids = ["tool.borrowed-hazelcast-069", "tool.legacy-hc1-clients-069", "ignored.hydracache-db.cached-vs-direct-postgres-069", "ignored.hydracache-db.cached-vs-direct-postgres-canary-069"]
+gated_gate_ids = ["tool.borrowed-hazelcast-069", "tool.legacy-hc1-clients-069", "ignored.hydracache-db.cached-vs-direct-postgres-069", "ignored.hydracache-db.cached-vs-direct-postgres-18-069", "ignored.hydracache-db.cached-vs-direct-postgres-canary-069", "ignored.hydracache-db.cached-vs-direct-postgres-soak-069"]
 ship_required = true
 [[work_item.required_tests]]
 source = "crates/xtask/tests/migration_conformance_069.rs"
 function = "release_069_migration_conformance_closure_is_fail_closed"
+[[work_item.required_tests]]
+source = "crates/xtask/src/ci_admission.rs"
+function = "admission_status_is_fail_loud_for_failed_or_skipped_lanes"
+[[work_item.required_tests]]
+source = "crates/xtask/tests/migration_conformance_069.rs"
+function = "release_069_ci_admission_is_independent_fail_loud_and_sha_bound"

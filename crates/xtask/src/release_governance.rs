@@ -351,7 +351,7 @@ pub fn release_execution_wiring_problems(
     } else if normalize_release(requested_release) == "0.67" {
         problems.extend(release_067_execution_wiring_problems(text)?);
     } else if normalize_release(requested_release) == "0.69" {
-        problems.extend(release_069_execution_wiring_problems(&workflow));
+        problems.extend(release_069_execution_wiring_problems(&workflow, text));
     }
     const REDIS_MULTINODE_EVIDENCE: &str = "cargo run -p xtask --locked -- evidence-run --release 0.65 --gate env.hydracache-run-redis-resp-multinode-e2e";
     match workflow
@@ -386,6 +386,16 @@ fn release_scoped_fast_wiring_problems(
 ) -> Vec<String> {
     let release = normalize_release(requested_release);
     let mut problems = Vec::new();
+    let canary_job = if release == "0.69" {
+        "migration-conformance-fast-evidence-069"
+    } else {
+        "rust"
+    };
+    let canary_step = if release == "0.69" {
+        "Run exact-candidate fast evidence"
+    } else {
+        "Canary completeness"
+    };
     for (step, command) in [
         (
             "Canary completeness",
@@ -398,8 +408,8 @@ fn release_scoped_fast_wiring_problems(
     ] {
         let wired = workflow
             .step_runs
-            .get("rust")
-            .and_then(|steps| steps.get(step))
+            .get(canary_job)
+            .and_then(|steps| steps.get(canary_step))
             .is_some_and(|run| run.lines().any(|line| line.trim() == command));
         if !wired {
             problems.push(format!(
@@ -1488,8 +1498,17 @@ fn candidate_receipt_wiring_problems(
             "release {requested_release} candidate receipt wiring requires global {RELEASE_ENV} to equal `{RELEASE_ENV_BINDING}`"
         ));
     }
+    let fast_receipt = workflow
+        .step_runs
+        .get("migration-conformance-fast-evidence-069")
+        .and_then(|steps| steps.get("Run exact-candidate fast evidence"))
+        .is_some_and(|run| run.lines().any(|line| line.trim() == FAST_RECEIPT));
+    if !fast_receipt {
+        problems.push(format!(
+            "release {requested_release} fast workspace receipt must use exact candidate binding `{FAST_RECEIPT}`"
+        ));
+    }
     for (job, step, command, proof) in [
-        ("rust", "Test", FAST_RECEIPT, "fast workspace receipt"),
         (
             "rust",
             "Release governance",
@@ -1597,12 +1616,17 @@ pub fn release_history_checkout_problems(text: &str) -> Result<Vec<String>, Box<
     Ok(problems)
 }
 
-fn release_069_execution_wiring_problems(workflow: &WorkflowShape) -> Vec<String> {
+fn release_069_execution_wiring_problems(workflow: &WorkflowShape, text: &str) -> Vec<String> {
     let expected = [
         (
-            "rust",
-            "0.69 migration conformance fast lanes",
+            "migration-conformance-fast-evidence-069",
+            "Run exact-candidate fast evidence",
             "cargo run -p xtask --locked -- evidence-run --release 0.69 --gate fast.migration-conformance-db-069",
+        ),
+        (
+            "migration-conformance-fast-evidence-069",
+            "Run exact-candidate fast evidence",
+            "cargo run -p xtask --locked -- evidence-run --release \"$HYDRACACHE_CANDIDATE_RELEASE\" --gate fast.workspace-nextest",
         ),
         (
             "migration-conformance-069",
@@ -1617,7 +1641,7 @@ fn release_069_execution_wiring_problems(workflow: &WorkflowShape) -> Vec<String
         (
             "migration-conformance-postgres-069",
             "Run PostgreSQL cached-vs-direct differential",
-            "cargo run -p xtask --locked -- evidence-run --release 0.69 --gate ignored.hydracache-db.cached-vs-direct-postgres-069",
+            "cargo run -p xtask --locked -- evidence-run --release 0.69 --gate \"${{ matrix.postgres.happy_gate }}\"",
         ),
         (
             "migration-conformance-postgres-069",
@@ -1625,12 +1649,17 @@ fn release_069_execution_wiring_problems(workflow: &WorkflowShape) -> Vec<String
             "cargo run -p xtask --locked -- evidence-run --release 0.69 --gate ignored.hydracache-db.cached-vs-direct-postgres-canary-069",
         ),
         (
+            "migration-conformance-postgres-069",
+            "Run bounded PostgreSQL commit-wait soak",
+            "cargo run -p xtask --locked -- evidence-run --release 0.69 --gate ignored.hydracache-db.cached-vs-direct-postgres-soak-069",
+        ),
+        (
             "migration-conformance-admission-069",
             "Require exact-candidate migration conformance evidence",
             "cargo run -p xtask --locked -- release-evidence --release 0.69 --receipts-dir target/release-evidence/receipts --require-ship",
         ),
     ];
-    expected
+    let mut problems = expected
         .into_iter()
         .filter_map(|(job, step, command)| {
             let present = workflow
@@ -1641,7 +1670,32 @@ fn release_069_execution_wiring_problems(workflow: &WorkflowShape) -> Vec<String
             (!present)
                 .then(|| format!("release 0.69 job {job} step {step:?} must execute `{command}`"))
         })
-        .collect()
+        .collect::<Vec<_>>();
+    for required in [
+        "if: always()",
+        "ci-admission-status",
+        "HYDRACACHE_EVIDENCE_HEAD_SHA",
+        "HYDRACACHE_EVIDENCE_BASE_SHA",
+        "HYDRACACHE_EVIDENCE_TESTED_SHA",
+        "ignored.hydracache-db.cached-vs-direct-postgres-069",
+        "ignored.hydracache-db.cached-vs-direct-postgres-18-069",
+        "postgres:16.4-alpine@sha256:5660c2cbfea50c7a9127d17dc4e48543eedd3d7a41a595a2dfa572471e37e64c",
+        "postgres:18-alpine@sha256:9a8afca54e7861fd90fab5fdf4c42477a6b1cb7d293595148e674e0a3181de15",
+        "pattern: \"migration-conformance-postgres-069-receipts-*-${{ github.sha }}\"",
+    ] {
+        if !text.contains(required) {
+            problems.push(format!("release 0.69 CI hardening is missing `{required}`"));
+        }
+    }
+    if workflow
+        .conditions
+        .get("migration-conformance-admission-069")
+        .map(String::as_str)
+        != Some("always()")
+    {
+        problems.push("release 0.69 admission must run with if: always()".to_owned());
+    }
+    problems
 }
 
 fn fuzz_nightly_wiring_problems(text: &str) -> Vec<String> {

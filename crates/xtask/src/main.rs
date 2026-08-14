@@ -30,6 +30,12 @@ fn main() -> Result<(), Box<dyn Error>> {
         Some("client-conformance") => xtask::client_conformance::run(args.collect())?,
         Some("client-package-check") => xtask::client_package::run(args.collect())?,
         Some("client-schema-check") => xtask::client_schema::run(args.collect())?,
+        Some("ci-admission-status") => {
+            let code = xtask::ci_admission::run(args.collect())?;
+            if code != 0 {
+                std::process::exit(code);
+            }
+        }
         Some("compat-check") => xtask::compat_check::run(args.collect())?,
         Some("coverage-ratchet-check") => xtask::coverage_ratchet::run(args.collect())?,
         Some("determinism-sweep") => xtask::determinism_sweep::run(args.collect())?,
@@ -94,6 +100,7 @@ fn print_usage() {
          cargo xtask client-conformance --all-sdks  # validate and execute the shared Rust/Java/Python HC/2 semantics\n  \
          cargo xtask client-package-check  # freeze and consume Rust/Java/Python HC/2 packages\n  \
          cargo xtask client-schema-check  # prove generation-6 schema/API metadata and deterministic SDK generation\n  \
+         cargo xtask ci-admission-status --release <release> --source <sha> --head <sha> --base <sha> --require <lane=result> --output <path>  # retain a fail-loud CI admission status\n  \
          cargo xtask compat-check [--preflight-only|--manifest-only]  # validate previous-release compatibility\n  \
          cargo xtask coverage-ratchet-check [--structural|--run]  # validate or execute the pinned coverage floor\n  \
          cargo xtask determinism-sweep --release 0.64  # compare canonical logical evidence across repeated/serial runs\n  \

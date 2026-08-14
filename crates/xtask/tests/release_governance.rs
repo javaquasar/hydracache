@@ -737,6 +737,13 @@ jobs:
 }
 
 #[test]
+fn release_governance_check_accepts_release_069_independent_evidence_wiring() {
+    let root = xtask::doc_check::find_repo_root().unwrap();
+    let report = xtask::release_governance::check(&root, "0.69").unwrap();
+    assert!(report.problems.is_empty(), "{:#?}", report.problems);
+}
+
+#[test]
 fn release_069_receipt_and_admission_commands_are_fail_closed() {
     let root = xtask::doc_check::find_repo_root().unwrap();
     let workflow = std::fs::read_to_string(root.join(".github/workflows/ci.yml")).unwrap();
@@ -744,8 +751,9 @@ fn release_069_receipt_and_admission_commands_are_fail_closed() {
         "evidence-run --release 0.69 --gate fast.migration-conformance-db-069",
         "evidence-run --release 0.69 --gate tool.borrowed-hazelcast-069",
         "evidence-run --release 0.69 --gate tool.legacy-hc1-clients-069",
-        "evidence-run --release 0.69 --gate ignored.hydracache-db.cached-vs-direct-postgres-069",
+        "evidence-run --release 0.69 --gate \"${{ matrix.postgres.happy_gate }}\"",
         "evidence-run --release 0.69 --gate ignored.hydracache-db.cached-vs-direct-postgres-canary-069",
+        "evidence-run --release 0.69 --gate ignored.hydracache-db.cached-vs-direct-postgres-soak-069",
         "release-evidence --release 0.69 --receipts-dir target/release-evidence/receipts --require-ship",
     ] {
         let broken = workflow.replacen(command, "removed-0.69-release-proof", 1);

@@ -2155,6 +2155,7 @@ dependencies = [
  "async-trait",
  "bytes",
  "futures-util",
+ "hydracache-client-plane-spike",
  "prost",
  "protoc-bin-vendored",
  "serde_json",

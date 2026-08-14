@@ -184,8 +184,14 @@ pub fn execute_gate(
         }
     }
 
+    let identity = container_identity();
     let mut outcome = process.outcome;
     let mut stderr = process.stderr;
+    if let Some(problem) = evidence_provenance_problem(&source_commit, &identity) {
+        outcome = EvidenceOutcome::Fail;
+        stderr.push_str("\n");
+        stderr.push_str(&problem);
+    }
     if !missing_artifacts.is_empty() && outcome == EvidenceOutcome::Pass {
         outcome = EvidenceOutcome::Fail;
         stderr.push_str("\nmissing declared artifact(s)");
@@ -201,7 +207,7 @@ pub fn execute_gate(
         registry_digest: expected.registry,
         input_digest: expected.input,
         toolchain: command_output("rustc", &["--version"]).unwrap_or_else(|| "unknown".to_owned()),
-        container_identity: container_identity(),
+        container_identity: identity,
         platform: format!("{}-{}", std::env::consts::OS, std::env::consts::ARCH),
         started_at: started.format(&Rfc3339)?,
         ended_at: ended.format(&Rfc3339)?,
@@ -653,6 +659,9 @@ fn container_identity() -> BTreeMap<String, String> {
         "GITHUB_RUN_ID",
         "GITHUB_RUN_ATTEMPT",
         "GITHUB_SHA",
+        "HYDRACACHE_EVIDENCE_BASE_SHA",
+        "HYDRACACHE_EVIDENCE_HEAD_SHA",
+        "HYDRACACHE_EVIDENCE_TESTED_SHA",
         "HYDRACACHE_BUILD_IMAGE",
     ]
     .into_iter()
@@ -662,6 +671,41 @@ fn container_identity() -> BTreeMap<String, String> {
             .map(|value| (name.to_owned(), value))
     })
     .collect()
+}
+
+pub fn evidence_provenance_problem(
+    source_commit: &str,
+    identity: &BTreeMap<String, String>,
+) -> Option<String> {
+    let valid_sha =
+        |value: &str| value.len() == 40 && value.bytes().all(|byte| byte.is_ascii_hexdigit());
+    let provenance_names = [
+        "HYDRACACHE_EVIDENCE_BASE_SHA",
+        "HYDRACACHE_EVIDENCE_HEAD_SHA",
+        "HYDRACACHE_EVIDENCE_TESTED_SHA",
+    ];
+    let provenance_required = identity.contains_key("GITHUB_ACTIONS")
+        || provenance_names
+            .iter()
+            .any(|name| identity.contains_key(*name));
+    for name in provenance_names {
+        if provenance_required && !identity.contains_key(name) {
+            return Some(format!("missing evidence provenance {name}"));
+        }
+        if identity.get(name).is_some_and(|value| !valid_sha(value)) {
+            return Some(format!("invalid evidence provenance {name}"));
+        }
+    }
+    if identity
+        .get("HYDRACACHE_EVIDENCE_TESTED_SHA")
+        .is_some_and(|tested| tested != source_commit)
+    {
+        return Some(format!(
+            "tested commit provenance does not match checkout: source={source_commit} tested={}",
+            identity["HYDRACACHE_EVIDENCE_TESTED_SHA"]
+        ));
+    }
+    None
 }
 
 fn platform_matches(required: &str) -> bool {

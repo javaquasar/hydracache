@@ -1,7 +1,7 @@
 #![cfg(feature = "sqlx-outbox")]
 
 use std::error::Error;
-use std::time::{Duration, SystemTime, UNIX_EPOCH};
+use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
 
 use hydracache::{CacheOptions, HydraCache};
 use hydracache_db::{
@@ -23,13 +23,20 @@ struct UserRow {
 #[tokio::test(flavor = "multi_thread", worker_threads = 4)]
 #[ignore = "requires HYDRACACHE_TEST_POSTGRES_URL (provided by migration-conformance-postgres-069)"]
 async fn postgres_cached_reads_match_direct_queries_through_the_real_outbox() -> TestResult {
+    run_postgres_cached_reads_match_direct_queries().await
+}
+
+#[tokio::test(flavor = "multi_thread", worker_threads = 4)]
+#[ignore = "requires PostgreSQL 18 via migration-conformance-postgres-069"]
+async fn postgres_18_cached_reads_match_direct_queries_through_the_real_outbox() -> TestResult {
+    run_postgres_cached_reads_match_direct_queries().await
+}
+
+async fn run_postgres_cached_reads_match_direct_queries() -> TestResult {
     let url = std::env::var("HYDRACACHE_TEST_POSTGRES_URL")
         .expect("HYDRACACHE_TEST_POSTGRES_URL is mandatory when this gate is selected");
     let pool = PgPool::connect(&url).await?;
-    let version: String = sqlx::query_scalar("select version()")
-        .fetch_one(&pool)
-        .await?;
-    println!("HC69_POSTGRES_VERSION\t{version}");
+    assert_postgres_series(&pool).await?;
     let outbox = SqlxInvalidationOutbox::postgres(pool.clone());
     outbox.install_schema().await?;
     outbox.check_schema().await?;
@@ -53,10 +60,60 @@ async fn canary_postgres_differential_rejects_a_dropped_invalidation() -> TestRe
     let url = std::env::var("HYDRACACHE_TEST_POSTGRES_URL")
         .expect("HYDRACACHE_TEST_POSTGRES_URL is mandatory when this gate is selected");
     let pool = PgPool::connect(&url).await?;
+    assert_postgres_series(&pool).await?;
     let outbox = SqlxInvalidationOutbox::postgres(pool.clone());
     outbox.install_schema().await?;
     let inject = std::env::var("HYDRACACHE_CANARY_DEFECT").as_deref() == Ok("W4_PG_DROP");
     run_mode(&pool, &outbox, ConsistencyMode::Local, inject).await
+}
+
+#[tokio::test(flavor = "multi_thread", worker_threads = 4)]
+#[ignore = "requires HYDRACACHE_TEST_POSTGRES_URL (provided by migration-conformance-postgres-069)"]
+async fn postgres_commit_scoped_wait_soak_stays_within_budget() -> TestResult {
+    const SEEDS: u64 = 24;
+    const BUDGET: Duration = Duration::from_secs(120);
+    let url = std::env::var("HYDRACACHE_TEST_POSTGRES_URL")
+        .expect("HYDRACACHE_TEST_POSTGRES_URL is mandatory when this gate is selected");
+    let pool = PgPool::connect(&url).await?;
+    assert_postgres_series(&pool).await?;
+    let outbox = SqlxInvalidationOutbox::postgres(pool.clone());
+    outbox.install_schema().await?;
+    outbox.check_schema().await?;
+
+    let started = Instant::now();
+    tokio::time::timeout(BUDGET, async {
+        for index in 0..SEEDS {
+            run_concurrent_seed(&pool, &outbox, 0x69_5000_u64 + index).await?;
+        }
+        Ok::<(), Box<dyn Error + Send + Sync>>(())
+    })
+    .await
+    .map_err(|_| "HC69_POSTGRES_SOAK_BUDGET_EXCEEDED")??;
+    println!(
+        "HC69_POSTGRES_SOAK_OK\tseeds={SEEDS}\twriters_per_seed=12\tduration_ms={}",
+        started.elapsed().as_millis()
+    );
+    Ok(())
+}
+
+async fn assert_postgres_series(pool: &PgPool) -> TestResult {
+    let version: String = sqlx::query_scalar("select version()")
+        .fetch_one(pool)
+        .await?;
+    let server_version_num: String = sqlx::query_scalar("show server_version_num")
+        .fetch_one(pool)
+        .await?;
+    let actual_series = server_version_num
+        .get(..2)
+        .ok_or("PostgreSQL server_version_num is malformed")?;
+    let expected_series = std::env::var("HYDRACACHE_POSTGRES_SERIES")
+        .expect("HYDRACACHE_POSTGRES_SERIES is mandatory for release evidence");
+    assert_eq!(
+        actual_series, expected_series,
+        "PostgreSQL service does not match the declared evidence series"
+    );
+    println!("HC69_POSTGRES_VERSION\tseries={actual_series}\t{version}");
+    Ok(())
 }
 
 async fn run_mode(

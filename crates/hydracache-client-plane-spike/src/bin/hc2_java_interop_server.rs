@@ -20,6 +20,8 @@ use tokio_stream::wrappers::{ReceiverStream, TcpListenerStream};
 use tonic::transport::{Certificate, Identity, Server, ServerTlsConfig};
 use tonic::{Request, Response, Status, Streaming};
 
+use hydracache_client_plane_spike::fixture_receipt::ProductionDaemonReadyReceipt;
+
 mod wire {
     tonic::include_proto!("hydracache.client.v2alpha");
 }
@@ -704,16 +706,16 @@ fn run_daemon_fixture(
             )
             .into());
         }
-        println!(
-            "READY_DAEMON\t{}\t{}\t{}\t{}\t{}\t{}\t{}",
+        let ready_receipt = ProductionDaemonReadyReceipt::new(
             hc2_addr.port(),
             admin_addr.port(),
-            client_paths.ca.display(),
-            client_paths.first_cert.display(),
-            client_paths.first_key.display(),
-            client_paths.second_cert.display(),
-            client_paths.second_key.display()
-        );
+            &client_paths.ca,
+            &client_paths.first_cert,
+            &client_paths.first_key,
+            &client_paths.second_cert,
+            &client_paths.second_key,
+        )?;
+        println!("{}", ready_receipt.encode());
         let mut command = String::new();
         std::io::stdin().lock().read_line(&mut command)?;
         if command.trim() != "DRAIN" {

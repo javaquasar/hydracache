@@ -1940,7 +1940,9 @@ PR; `cached_vs_direct_postgres` runs with `--ignored` selected explicitly in the
 `migration-conformance-postgres-069` service job, and fails loud if its URL is missing.
 
 Both backends additionally execute 12 concurrent transactional writers for three fixed seeds. The
-PostgreSQL target retains a normal green dropped-invalidation sentinel and is expected-red when
+PostgreSQL happy path runs on digest-pinned 16.4 and major-18 services and verifies the real
+`server_version_num` against its matrix declaration. The 16.4 floor additionally runs 24 seeded
+12-writer schedules under a 120-second in-test budget. The PostgreSQL target retains a normal green dropped-invalidation sentinel and is expected-red when
 `HYDRACACHE_CANARY_DEFECT=W4_PG_DROP`. Its dedicated CI step verifies both the non-zero exit and
 the `HC-CANARY-RED:W4-PG` marker. `InvalidationWait` queries the receipt's exact commit via
 `status_for_commit`; `outbox_barrier::receipt_wait_is_not_blocked_by_a_later_pending_commit` proves
@@ -1948,9 +1950,16 @@ that unrelated later work cannot manufacture a timeout, with the same assertion 
 the SQLx SQLite adapter in `outbox_sqlite`.
 
 The 0.69 CI lanes execute the SQLx, Java, legacy, and PostgreSQL gates through `evidence-run`.
-`migration-conformance-admission-069` merges those receipts with the workspace and dynamic-canary
-artifacts for the same SHA and runs `release-evidence --release 0.69 --require-ship`; raw test
-success without its receipt cannot satisfy admission.
+Fast receipts and canaries are isolated in `migration-conformance-fast-evidence-069`. Every lane
+retains a JSON outcome even when a prerequisite step fails. `migration-conformance-admission-069`
+runs with `if: always()`, rejects failed or skipped upstream lanes, then merges receipts for the
+same tested SHA and runs `release-evidence --release 0.69 --require-ship`; raw test success without
+its receipt cannot satisfy admission. Receipts retain head, base, and tested SHA provenance, and
+the tested SHA must equal the checked-out commit.
+
+The HC/2 daemon fixture announces `READY_DAEMON_V1`. Its shared Rust parser rejects legacy,
+truncated, and extended shapes; the Rust and Java process consumers must update atomically with the
+producer.
 
 The Hazelcast gate builds the Rust mTLS fixture and production daemon before Maven. The live facade
 test uses the real Java HC/2 client; the same command executes the production lease-expiry test and

@@ -421,6 +421,11 @@ read-after-write guarantee.
 This is a source-level change for custom `InvalidationOutbox` implementors: 0.69 requires the new
 `status_for_commit` method. Returning namespace-wide status from that method violates the receipt
 contract even if it compiles; adapters must filter by both namespace and exact commit position.
+`crates/hydracache-db/tests/custom_outbox_contract.rs` is the compiling downstream-style migration
+fixture and can be copied as the adapter skeleton.
+
+The SQLx PostgreSQL claim is exercised against the digest-pinned 16.4 floor and current major 18.
+This matrix is the declared 0.69 evidence boundary; other PostgreSQL majors are not implied by it.
 
 HC/1 client compatibility is executed for the library commits behind `v0.62.0`, `v0.62.1`, and
 `v0.63.0`. HC/2 is not reimplemented in 0.69: the complete retained nine-row 0.68 compatibility

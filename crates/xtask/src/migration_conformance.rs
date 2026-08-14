@@ -305,10 +305,12 @@ pub fn validate_legacy_execution(
 
 pub fn run_postgres(args: Vec<String>) -> Result<(), Box<dyn Error>> {
     let mode = match args.as_slice() {
-        [flag, mode] if flag == "--mode" && matches!(mode.as_str(), "happy" | "canary") => {
+        [flag, mode]
+            if flag == "--mode" && matches!(mode.as_str(), "happy" | "canary" | "soak") =>
+        {
             mode.as_str()
         }
-        _ => return Err("usage: postgres-conformance-check --mode <happy|canary>".into()),
+        _ => return Err("usage: postgres-conformance-check --mode <happy|canary|soak>".into()),
     };
     if std::env::var("HYDRACACHE_TEST_POSTGRES_URL").is_err() {
         return Err("SKIP-LOUD: HYDRACACHE_TEST_POSTGRES_URL is required".into());
@@ -316,23 +318,46 @@ pub fn run_postgres(args: Vec<String>) -> Result<(), Box<dyn Error>> {
     let root = repository_root();
     let evidence = root.join("target/test-evidence/0.69");
     fs::create_dir_all(&evidence)?;
+    let series = std::env::var("HYDRACACHE_POSTGRES_SERIES")
+        .map_err(|_| "SKIP-LOUD: HYDRACACHE_POSTGRES_SERIES is required")?;
+    if !matches!(series.as_str(), "16" | "18") {
+        return Err("HYDRACACHE_POSTGRES_SERIES must be 16 or 18".into());
+    }
+    let image = std::env::var("HYDRACACHE_POSTGRES_IMAGE_ID")
+        .map_err(|_| "SKIP-LOUD: HYDRACACHE_POSTGRES_IMAGE_ID is required")?;
     let (test, log) = if mode == "happy" {
         fs::write(
-            evidence.join("postgres-image.txt"),
-            "postgres:16.4-alpine@sha256:5660c2cbfea50c7a9127d17dc4e48543eedd3d7a41a595a2dfa572471e37e64c\n",
+            evidence.join(format!("postgres-{series}-image.txt")),
+            format!("{image}\n"),
         )?;
         fs::write(
-            evidence.join("postgres-seeds.txt"),
+            evidence.join(format!("postgres-{series}-seeds.txt")),
             "0x69_2026 0x69_2027 0x69_2028\n",
         )?;
+        let test = if series == "18" {
+            "postgres_18_cached_reads_match_direct_queries_through_the_real_outbox"
+        } else {
+            "postgres_cached_reads_match_direct_queries_through_the_real_outbox"
+        };
         (
-            "postgres_cached_reads_match_direct_queries_through_the_real_outbox",
-            evidence.join("postgres-differential.log"),
+            test,
+            evidence.join(format!("postgres-{series}-differential.log")),
         )
-    } else {
+    } else if mode == "canary" {
         (
             "canary_postgres_differential_rejects_a_dropped_invalidation",
-            evidence.join("postgres-canary.log"),
+            evidence.join(format!("postgres-{series}-canary.log")),
+        )
+    } else {
+        fs::write(
+            evidence.join(format!("postgres-{series}-soak-seeds.txt")),
+            (0..24)
+                .map(|index| format!("{:#x}\n", 0x69_5000_u64 + index))
+                .collect::<String>(),
+        )?;
+        (
+            "postgres_commit_scoped_wait_soak_stays_within_budget",
+            evidence.join(format!("postgres-{series}-soak.log")),
         )
     };
     let mut command = Command::new("cargo");
@@ -369,6 +394,9 @@ pub fn run_postgres(args: Vec<String>) -> Result<(), Box<dyn Error>> {
         return Err(
             "PostgreSQL dropped-invalidation canary did not fail with HC-CANARY-RED:W4-PG".into(),
         );
+    }
+    if mode == "soak" && !output.status.success() {
+        return Err(format!("PostgreSQL bounded soak failed with {}", output.status).into());
     }
     Ok(())
 }

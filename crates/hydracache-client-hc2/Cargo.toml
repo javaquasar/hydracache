@@ -27,6 +27,7 @@ protoc-bin-vendored = "3.2.0"
 tonic-prost-build.workspace = true
 
 [dev-dependencies]
+hydracache-client-plane-spike = { path = "../hydracache-client-plane-spike" }
 serde_json.workspace = true
 tokio = { workspace = true, features = ["macros", "rt-multi-thread"] }
 
