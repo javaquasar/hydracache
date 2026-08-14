@@ -390,6 +390,7 @@ jobs:
         run: |
           test "$(git rev-parse HEAD)" = "$HYDRACACHE_EVIDENCE_TESTED_SHA"
           cargo run -p xtask --locked -- migration-conformance-check --structural
+          cargo run -p xtask --locked -- migration-conformance-check --upstream
           cargo run -p xtask --locked -- canary-check --release 0.69
           cargo run -p xtask --locked -- canary-sweep --release 0.69 --tier fast
           cargo test -p hydracache --test borrowed_cache_semantics --locked -j 2
@@ -644,6 +645,19 @@ jobs:
           pattern: "migration-conformance-postgres-069-receipts-*-${{ github.sha }}"
           path: target
           merge-multiple: true
+
+      - name: Validate exact-candidate lane status artifacts
+        run: >-
+          cargo run -p xtask --locked -- ci-admission-status
+          --release 0.69
+          --source "$HYDRACACHE_EVIDENCE_TESTED_SHA"
+          --head "$HYDRACACHE_EVIDENCE_HEAD_SHA"
+          --base "$HYDRACACHE_EVIDENCE_BASE_SHA"
+          --lane-status "fast=target/release-evidence/lanes/fast-evidence.json"
+          --lane-status "java-legacy=target/release-evidence/lanes/java-legacy.json"
+          --lane-status "postgres-16=target/release-evidence/lanes/postgres-16.json"
+          --lane-status "postgres-18=target/release-evidence/lanes/postgres-18.json"
+          --output target/release-evidence/0.69.admission-lanes.json
 
       - name: Require exact-candidate migration conformance evidence
         run: cargo run -p xtask --locked -- release-evidence --release 0.69 --receipts-dir target/release-evidence/receipts --require-ship

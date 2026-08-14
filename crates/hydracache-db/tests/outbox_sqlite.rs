@@ -248,6 +248,43 @@ async fn sqlx_receipt_wait_ignores_an_unrelated_later_commit() -> TestResult {
 }
 
 #[tokio::test]
+async fn sqlx_dead_lettered_receipt_is_degraded_never_satisfied() -> TestResult {
+    let (_pool, outbox) = setup().await?;
+    let position = CommitPosition::new("sqlite:dead");
+    outbox
+        .enqueue(
+            "db",
+            &position,
+            &InvalidationIntentBatch::new("write").invalidate_key("users"),
+        )
+        .await?;
+    let claimed = outbox
+        .claim("db", "worker", 1, Duration::from_secs(30))
+        .await?;
+    outbox
+        .mark_failed(&claimed[0].id, "permanent", Duration::ZERO, true)
+        .await?;
+
+    let wait = InvalidationWait::local(Duration::from_secs(1));
+    let outcome = wait
+        .wait(&outbox, &InvalidationReceipt::new("db", position.clone()))
+        .await?;
+
+    assert!(!outcome.satisfied);
+    assert!(outcome.degraded);
+    assert!(!outcome.timed_out);
+    assert_eq!(outcome.pending, 0);
+    assert_eq!(
+        outbox
+            .status_for_commit("db", &position)
+            .await?
+            .dead_lettered,
+        1
+    );
+    Ok(())
+}
+
+#[tokio::test]
 async fn claim_zero_limit_is_noop() -> TestResult {
     let (_pool, outbox) = setup().await?;
     outbox

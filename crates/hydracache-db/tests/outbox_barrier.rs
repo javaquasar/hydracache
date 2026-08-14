@@ -122,3 +122,46 @@ async fn receipt_wait_is_not_blocked_by_a_later_pending_commit() {
         1
     );
 }
+
+#[tokio::test]
+async fn dead_lettered_receipt_is_degraded_never_satisfied() {
+    let outbox = InMemoryInvalidationOutbox::new();
+    let position = CommitPosition::new("commit-dead");
+    outbox
+        .enqueue(
+            "db",
+            &position,
+            &InvalidationIntentBatch::new("write").invalidate_key("users"),
+        )
+        .await
+        .unwrap();
+    let claimed = outbox
+        .claim("db", "worker", 1, Duration::from_secs(30))
+        .await
+        .unwrap();
+    outbox
+        .mark_failed(&claimed[0].id, "permanent", Duration::ZERO, true)
+        .await
+        .unwrap();
+
+    let wait = InvalidationWait::local(Duration::from_secs(1));
+    let outcome = wait
+        .wait(&outbox, &InvalidationReceipt::new("db", position.clone()))
+        .await
+        .unwrap();
+
+    assert!(!outcome.satisfied);
+    assert!(outcome.degraded);
+    assert!(!outcome.timed_out);
+    assert_eq!(outcome.pending, 0);
+    assert_eq!(
+        outbox
+            .status_for_commit("db", &position)
+            .await
+            .unwrap()
+            .dead_lettered,
+        1
+    );
+    assert_eq!(wait.diagnostics().degraded, 1);
+    assert_eq!(wait.diagnostics().satisfied, 0);
+}

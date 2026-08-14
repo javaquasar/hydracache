@@ -1,4 +1,4 @@
-use std::collections::BTreeSet;
+use std::collections::{BTreeMap, BTreeSet};
 use std::error::Error;
 use std::fs;
 use std::path::{Path, PathBuf};
@@ -94,13 +94,20 @@ struct Hc2Prerequisite {
 }
 
 pub fn run(args: Vec<String>) -> Result<(), Box<dyn Error>> {
-    if args.as_slice() != ["--structural"] {
-        return Err("usage: migration-conformance-check --structural".into());
-    }
     let root = repository_root();
-    validate_at_root(&root)?;
-    println!("migration conformance structural check: PASS");
-    Ok(())
+    match args.as_slice() {
+        [mode] if mode == "--structural" => {
+            validate_at_root(&root)?;
+            println!("migration conformance structural check: PASS");
+            Ok(())
+        }
+        [mode] if mode == "--upstream" => {
+            validate_upstream_at_root(&root)?;
+            println!("migration conformance pinned upstream check: PASS");
+            Ok(())
+        }
+        _ => Err("usage: migration-conformance-check <--structural|--upstream>".into()),
+    }
 }
 
 pub fn run_borrowed(args: Vec<String>) -> Result<(), Box<dyn Error>> {
@@ -563,6 +570,118 @@ pub fn validate_at_root(root: &Path) -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
+fn validate_upstream_at_root(root: &Path) -> Result<(), Box<dyn Error>> {
+    validate_at_root(root)?;
+    for relative in BORROWED_MANIFESTS {
+        let manifest: BorrowedManifest =
+            serde_json::from_str(&fs::read_to_string(root.join(relative))?)?;
+        validate_borrowed_upstream(relative, &manifest, &mut fetch_pinned_source)?;
+    }
+    Ok(())
+}
+
+fn validate_borrowed_upstream<F>(
+    manifest_path: &str,
+    manifest: &BorrowedManifest,
+    fetch: &mut F,
+) -> Result<(), Box<dyn Error>>
+where
+    F: FnMut(&SourcePin, &str) -> Result<String, Box<dyn Error>>,
+{
+    let mut fetched = BTreeMap::new();
+    for row in &manifest.rows {
+        let (source_path, selector) = row.source_test.split_once('#').ok_or_else(|| {
+            format!(
+                "{manifest_path}: row {} source_test must contain path#selector",
+                row.id
+            )
+        })?;
+        validate_upstream_source_path(manifest_path, &row.id, source_path)?;
+        require(
+            !selector.trim().is_empty() && !selector.contains('#'),
+            manifest_path,
+            &format!("row {} has an invalid upstream selector", row.id),
+        )?;
+        if !fetched.contains_key(source_path) {
+            fetched.insert(
+                source_path.to_owned(),
+                fetch(&manifest.source, source_path)?,
+            );
+        }
+        let source = fetched
+            .get(source_path)
+            .expect("source is cached immediately after fetching");
+        require(
+            source.contains(selector),
+            manifest_path,
+            &format!(
+                "row {} selector {selector:?} is absent from {}@{}:{source_path}",
+                row.id, manifest.source.repository, manifest.source.commit
+            ),
+        )?;
+    }
+    Ok(())
+}
+
+fn validate_upstream_source_path(
+    manifest_path: &str,
+    row_id: &str,
+    source_path: &str,
+) -> Result<(), Box<dyn Error>> {
+    let valid = !source_path.is_empty()
+        && !source_path.starts_with('/')
+        && !source_path.contains('\\')
+        && !source_path.contains(['?', '#'])
+        && source_path
+            .split('/')
+            .all(|component| !component.is_empty() && component != "." && component != "..");
+    require(
+        valid,
+        manifest_path,
+        &format!("row {row_id} has an unsafe upstream source path"),
+    )
+}
+
+fn fetch_pinned_source(source: &SourcePin, source_path: &str) -> Result<String, Box<dyn Error>> {
+    let repository = source
+        .repository
+        .strip_prefix("https://github.com/")
+        .ok_or("pinned upstream validation supports only https://github.com repositories")?
+        .trim_end_matches('/')
+        .trim_end_matches(".git");
+    let coordinates = repository.split('/').collect::<Vec<_>>();
+    if coordinates.len() != 2 || coordinates.iter().any(|part| part.is_empty()) {
+        return Err(format!("invalid GitHub repository URL: {}", source.repository).into());
+    }
+    let url = format!(
+        "https://raw.githubusercontent.com/{repository}/{}/{source_path}",
+        source.commit
+    );
+    let output = Command::new("curl")
+        .args([
+            "--fail",
+            "--silent",
+            "--show-error",
+            "--location",
+            "--retry",
+            "3",
+            "--retry-all-errors",
+            "--max-time",
+            "30",
+            &url,
+        ])
+        .output()?;
+    if !output.status.success() {
+        return Err(format!(
+            "failed to fetch pinned upstream source {url} with {}: {}",
+            output.status,
+            String::from_utf8_lossy(&output.stderr).trim()
+        )
+        .into());
+    }
+    String::from_utf8(output.stdout).map_err(Into::into)
+}
+
 /// Validate one borrowed-suite document against repository-local proof sources.
 pub fn validate_borrowed_text_at_root(
     root: &Path,
@@ -831,6 +950,50 @@ mod tests {
     fn unknown_outcome_fails_closed() {
         let error = validate_outcome("fixture", "row", "maybe", Some("fixture")).unwrap_err();
         assert!(error.to_string().contains("unknown outcome"));
+    }
+
+    #[test]
+    fn pinned_upstream_selector_must_resolve_in_the_exact_source() {
+        let manifest: BorrowedManifest = serde_json::from_str(
+            r#"{
+                "schema_version": 1,
+                "suite": "fixture",
+                "source": {
+                    "project": "fixture",
+                    "repository": "https://github.com/example/project",
+                    "version": "1.0",
+                    "commit": "0123456789abcdef0123456789abcdef01234567"
+                },
+                "rows": [{
+                    "id": "row",
+                    "source_test": "src/cache.rs#resolved_contract",
+                    "expectation": "fixture",
+                    "expected": "pass",
+                    "hydracache_test": "fixture"
+                }]
+            }"#,
+        )
+        .expect("fixture manifest");
+        let mut fetch = |_source: &SourcePin, path: &str| {
+            assert_eq!(path, "src/cache.rs");
+            Ok("fn resolved_contract() {}".to_owned())
+        };
+        validate_borrowed_upstream("fixture", &manifest, &mut fetch)
+            .expect("selector should resolve");
+
+        let mut missing = |_source: &SourcePin, _path: &str| Ok("fn other() {}".to_owned());
+        let error = validate_borrowed_upstream("fixture", &manifest, &mut missing).unwrap_err();
+        assert!(error
+            .to_string()
+            .contains("selector \"resolved_contract\" is absent"));
+    }
+
+    #[test]
+    fn legacy_execution_must_cover_every_manifest_row() {
+        let expected = vec!["v0.62".to_owned(), "v0.63".to_owned()];
+        let executed = BTreeSet::from(["v0.62".to_owned()]);
+        let error = validate_legacy_execution(&expected, &executed).unwrap_err();
+        assert!(error.to_string().contains("legacy execution set mismatch"));
     }
 
     #[test]

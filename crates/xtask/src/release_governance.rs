@@ -1621,6 +1621,11 @@ fn release_069_execution_wiring_problems(workflow: &WorkflowShape, text: &str) -
         (
             "migration-conformance-fast-evidence-069",
             "Run exact-candidate fast evidence",
+            "cargo run -p xtask --locked -- migration-conformance-check --upstream",
+        ),
+        (
+            "migration-conformance-fast-evidence-069",
+            "Run exact-candidate fast evidence",
             "cargo run -p xtask --locked -- evidence-run --release 0.69 --gate fast.migration-conformance-db-069",
         ),
         (
@@ -1682,6 +1687,11 @@ fn release_069_execution_wiring_problems(workflow: &WorkflowShape, text: &str) -
         "postgres:16.4-alpine@sha256:5660c2cbfea50c7a9127d17dc4e48543eedd3d7a41a595a2dfa572471e37e64c",
         "postgres:18-alpine@sha256:9a8afca54e7861fd90fab5fdf4c42477a6b1cb7d293595148e674e0a3181de15",
         "pattern: \"migration-conformance-postgres-069-receipts-*-${{ github.sha }}\"",
+        "Validate exact-candidate lane status artifacts",
+        "--lane-status \"fast=target/release-evidence/lanes/fast-evidence.json\"",
+        "--lane-status \"java-legacy=target/release-evidence/lanes/java-legacy.json\"",
+        "--lane-status \"postgres-16=target/release-evidence/lanes/postgres-16.json\"",
+        "--lane-status \"postgres-18=target/release-evidence/lanes/postgres-18.json\"",
     ] {
         if !text.contains(required) {
             problems.push(format!("release 0.69 CI hardening is missing `{required}`"));

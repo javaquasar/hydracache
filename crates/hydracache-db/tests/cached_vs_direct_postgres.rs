@@ -40,6 +40,7 @@ async fn run_postgres_cached_reads_match_direct_queries() -> TestResult {
     let outbox = SqlxInvalidationOutbox::postgres(pool.clone());
     outbox.install_schema().await?;
     outbox.check_schema().await?;
+    assert_dead_lettered_commit_is_not_satisfied(&pool, &outbox).await?;
 
     for mode in [
         ConsistencyMode::NoWait,
@@ -51,6 +52,52 @@ async fn run_postgres_cached_reads_match_direct_queries() -> TestResult {
     for seed in [0x69_2026_u64, 0x69_2027, 0x69_2028] {
         run_concurrent_seed(&pool, &outbox, seed).await?;
     }
+    Ok(())
+}
+
+async fn assert_dead_lettered_commit_is_not_satisfied(
+    pool: &PgPool,
+    outbox: &SqlxInvalidationOutbox,
+) -> TestResult {
+    let namespace = format!("db-pg-dead-letter-{}", unique_suffix());
+    let mut tx = pool.begin().await?;
+    let position = outbox.postgres_commit_position(&mut tx).await?;
+    outbox
+        .enqueue_in_postgres_tx(
+            &mut tx,
+            &namespace,
+            &position,
+            &InvalidationIntentBatch::new("dead-letter-contract").invalidate_key("dead-key"),
+        )
+        .await?;
+    tx.commit().await?;
+    let claimed = outbox
+        .claim(&namespace, "dead-worker", 1, Duration::from_secs(30))
+        .await?;
+    outbox
+        .mark_failed(&claimed[0].id, "permanent", Duration::ZERO, true)
+        .await?;
+
+    let outcome = InvalidationWait::local(Duration::from_secs(1))
+        .wait(
+            outbox,
+            &InvalidationReceipt::new(namespace.clone(), position.clone()),
+        )
+        .await?;
+    assert!(!outcome.satisfied);
+    assert!(outcome.degraded);
+    assert!(!outcome.timed_out);
+    assert_eq!(
+        outbox
+            .status_for_commit(&namespace, &position)
+            .await?
+            .dead_lettered,
+        1
+    );
+    sqlx::query("DELETE FROM hydracache_invalidation_outbox WHERE namespace = $1")
+        .bind(&namespace)
+        .execute(pool)
+        .await?;
     Ok(())
 }
 

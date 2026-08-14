@@ -1929,8 +1929,10 @@ correctness and reproducibility gates, not latency or capacity measurements.
 
 Borrowed expectations are data-driven. The Hazelcast and Moka manifests bind every executable row
 to an upstream repository commit and source symbol; non-pass rows require a reason. The structural
-checker rejects duplicate IDs, unknown outcomes, partial commit IDs, missing source symbols, and
-unreasoned divergence/unsupported/skip rows.
+checker rejects duplicate IDs, unknown outcomes, partial commit IDs, unsafe source paths, and
+unreasoned divergence/unsupported/skip rows. The separate `migration-conformance-check --upstream`
+gate downloads source files from the exact GitHub commit and rejects missing commits, paths, or
+selectors.
 
 The HC/1 compatibility lane compiles consumers from exact shipped commits rather than replaying old
 bytes. The DB differential coordinates reads at a logical commit position, so a current direct read
@@ -1947,15 +1949,18 @@ PostgreSQL happy path runs on digest-pinned 16.4 and major-18 services and verif
 the `HC-CANARY-RED:W4-PG` marker. `InvalidationWait` queries the receipt's exact commit via
 `status_for_commit`; `outbox_barrier::receipt_wait_is_not_blocked_by_a_later_pending_commit` proves
 that unrelated later work cannot manufacture a timeout, with the same assertion repeated against
-the SQLx SQLite adapter in `outbox_sqlite`.
+the SQLx SQLite adapter in `outbox_sqlite`. A dead-lettered row at the receipt commit is terminal
+degraded evidence and can never be reported as a satisfied wait; in-memory, SQLite, and both
+PostgreSQL matrix rows exercise this fail-closed contract.
 
 The 0.69 CI lanes execute the SQLx, Java, legacy, and PostgreSQL gates through `evidence-run`.
 Fast receipts and canaries are isolated in `migration-conformance-fast-evidence-069`. Every lane
 retains a JSON outcome even when a prerequisite step fails. `migration-conformance-admission-069`
 runs with `if: always()`, rejects failed or skipped upstream lanes, then merges receipts for the
 same tested SHA and runs `release-evidence --release 0.69 --require-ship`; raw test success without
-its receipt cannot satisfy admission. Receipts retain head, base, and tested SHA provenance, and
-the tested SHA must equal the checked-out commit.
+its receipt cannot satisfy admission. It parses every downloaded lane-status JSON and requires a
+consistent pass with the exact release, head, base, and tested SHA before receipt admission.
+Receipts retain the same provenance, and the tested SHA must equal the checked-out commit.
 
 The HC/2 daemon fixture announces `READY_DAEMON_V1`. Its shared Rust parser rejects legacy,
 truncated, and extended shapes; current, retained, and external Rust/Java process harnesses must

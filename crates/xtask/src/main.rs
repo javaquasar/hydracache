@@ -100,7 +100,7 @@ fn print_usage() {
          cargo xtask client-conformance --all-sdks  # validate and execute the shared Rust/Java/Python HC/2 semantics\n  \
          cargo xtask client-package-check  # freeze and consume Rust/Java/Python HC/2 packages\n  \
          cargo xtask client-schema-check  # prove generation-6 schema/API metadata and deterministic SDK generation\n  \
-         cargo xtask ci-admission-status --release <release> --source <sha> --head <sha> --base <sha> --require <lane=result> --output <path>  # retain a fail-loud CI admission status\n  \
+         cargo xtask ci-admission-status --release <release> --source <sha> --head <sha> --base <sha> [--require <lane=result>|--lane-status <lane=path>] --output <path>  # retain and validate fail-loud CI admission status\n  \
          cargo xtask compat-check [--preflight-only|--manifest-only]  # validate previous-release compatibility\n  \
          cargo xtask coverage-ratchet-check [--structural|--run]  # validate or execute the pinned coverage floor\n  \
          cargo xtask determinism-sweep --release 0.64  # compare canonical logical evidence across repeated/serial runs\n  \
@@ -111,7 +111,7 @@ fn print_usage() {
          cargo xtask gated-test-check  # validate every ignored/cfg/env-gated test registration\n  \
          cargo xtask legacy-client-check --matrix hc1  # build shipped HC/1 libraries into consumers and run them against the current server\n  \
          cargo xtask miri-check  # run pinned Miri-safe snapshot proofs (skip loud when unavailable)\n  \
-         cargo xtask migration-conformance-check --structural  # validate 0.69 source pins and exact-outcome manifests\n  \
+         cargo xtask migration-conformance-check <--structural|--upstream>  # validate 0.69 manifests or resolve selectors at pinned upstream commits\n  \
          cargo xtask postgres-conformance-check --mode <happy|canary>  # execute the real PostgreSQL differential or expected-red sentinel\n  \
          cargo xtask mutants       # validate the Raft mutation-testing baseline, optionally run cargo-mutants\n  \
          cargo xtask perf-runner-preflight --release 0.67 --profile reference-v1  # reject an unstable reference runner before build/measurement\n  \

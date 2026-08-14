@@ -152,6 +152,7 @@ fn release_069_ci_admission_is_independent_fail_loud_and_sha_bound() {
         "Restore and verify full release history",
         "client-plane-compat-check --manifest-only",
         "Run exact-candidate fast evidence",
+        "migration-conformance-check --upstream",
         "target/nextest/ci/junit.xml",
     ] {
         assert!(
@@ -200,6 +201,18 @@ fn release_069_ci_admission_is_independent_fail_loud_and_sha_bound() {
         admission.matches("          path: target\n").count() >= 3,
         "admission must restore self-contained bundles from their target-relative root"
     );
+    for required in [
+        "Validate exact-candidate lane status artifacts",
+        "--lane-status \"fast=target/release-evidence/lanes/fast-evidence.json\"",
+        "--lane-status \"java-legacy=target/release-evidence/lanes/java-legacy.json\"",
+        "--lane-status \"postgres-16=target/release-evidence/lanes/postgres-16.json\"",
+        "--lane-status \"postgres-18=target/release-evidence/lanes/postgres-18.json\"",
+    ] {
+        assert!(
+            admission.contains(required),
+            "admission does not validate {required}"
+        );
+    }
 }
 
 #[test]

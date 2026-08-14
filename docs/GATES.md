@@ -262,5 +262,7 @@ service matrix pins both the 16.4 floor digest
 defects; the PostgreSQL target also has a real dropped-invalidation sentinel selected by
 `HYDRACACHE_CANARY_DEFECT=W4_PG_DROP`. CI runs that sentinel separately and accepts it only when
 the test exits non-zero and emits `HC-CANARY-RED:W4-PG`; an unexpectedly green canary fails the job.
-The final admission is `if: always()` and consumes explicit lane-status JSON, so an upstream skip
-is visible red evidence rather than an absent check.
+The final admission is `if: always()`, rejects non-successful `needs` results, and parses every
+downloaded lane-status JSON against the exact release/head/base/tested SHA. An upstream skip,
+tampered status, false-green outcome, or stale candidate is visible red evidence rather than an
+absent check.

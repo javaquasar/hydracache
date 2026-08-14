@@ -29,6 +29,15 @@ Run the structural check on every change:
 cargo run -p xtask --locked -- migration-conformance-check --structural
 ```
 
+Resolve every cited source path and selector from the exact immutable upstream commits:
+
+```text
+cargo run -p xtask --locked -- migration-conformance-check --upstream
+```
+
+The upstream check fails closed when a commit/path cannot be downloaded or a selector is absent;
+the fast exact-candidate CI lane executes it before accepting borrowed-suite evidence.
+
 Run the Java expectations with Java 17 and Maven available:
 
 ```text

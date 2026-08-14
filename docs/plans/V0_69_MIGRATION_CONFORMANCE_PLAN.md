@@ -163,6 +163,17 @@ alone. The admission checkout also restores full history so the published `v0.68
 baseline tag remains a fail-closed release prerequisite rather than appearing absent in a shallow
 checkout.
 
+The final review adds four release-blocking closures. First, a commit status containing any
+dead-lettered invalidation is terminal degraded evidence and `InvalidationWait` must never return
+`satisfied`; in-memory, SQLite, and PostgreSQL paths cover that contract. Second,
+`migration-conformance-check --upstream` downloads every unique borrowed source file from its exact
+40-character GitHub commit and resolves every `path#selector`; the two Hazelcast lock rows now cite
+real `FencedLock` symbols. Third, W3's only executable command is the implemented
+`legacy-client-check --matrix hc1` runner, with complete manifest-row execution enforced. Fourth,
+final admission parses the four downloaded lane-status JSON files and rejects an invalid schema,
+non-pass or internally inconsistent outcome, missing upstream results, or any release/head/base/
+tested-SHA mismatch before release receipts can satisfy shipping.
+
 ## Preflight
 
 Re-grep before implementing:
@@ -194,10 +205,10 @@ Populate as W-items land: item -> where implemented -> required command -> bound
 
 | Item | Implemented where | Required command | Boundary |
 | --- | --- | --- | --- |
-| W0 | `docs/integrations/*.json`, `docs/testing/compat/legacy-clients.toml`, `xtask migration-conformance-check` | `cargo run -p xtask -- migration-conformance-check --structural` | Provenance and outcome vocabulary before runners |
+| W0 | `docs/integrations/*.json`, `docs/testing/compat/legacy-clients.toml`, `xtask migration-conformance-check` | `cargo run -p xtask -- migration-conformance-check --upstream` | Structural validation plus exact pinned-commit source/selector resolution |
 | W1 | Java facade borrowed-expectation runner + Hazelcast manifest | `cargo run -p xtask -- borrowed-suite-check --suite hazelcast` | Source-level facade only; no Hazelcast wire/interface claim |
 | W2 | `crates/hydracache/tests/borrowed_cache_semantics.rs` | `cargo test -p hydracache --test borrowed_cache_semantics --locked -j 2` | Embedded cache surface only |
-| W3 | HC/1 legacy consumer matrix + current daemon harness | `cargo test -p hydracache-server --test legacy_client_matrix --locked -- --nocapture` | HC/1 tags only; HC/2 evidence is reused from 0.68 |
+| W3 | `xtask legacy-client-check` + HC/1 manifest/current daemon harness | `$env:HYDRACACHE_RUN_LEGACY_CLIENTS='1'; cargo run -p xtask --locked -- legacy-client-check --matrix hc1` | HC/1 tags only; HC/2 evidence is reused from 0.68 |
 | W4 | `crates/hydracache-db/tests/cached_vs_direct_{differential,postgres}.rs`, `outbox_{barrier,sqlite}.rs` | `cargo test -p hydracache-db --features sqlx-outbox --test cached_vs_direct_differential --locked -j 2` | Commit-position oracle; SQLite fast, PostgreSQL happy-path and expected-red gates |
 | W5 | release registries/evidence/docs/CI | `cargo run -p xtask -- release-governance-check --release 0.69` | Exact-candidate ship proof |
 
@@ -213,6 +224,7 @@ runner/manifest count mismatch fail closed. The pinned Hazelcast input is `v5.6.
 **DoD.**
 ```powershell
 cargo run --manifest-path crates\xtask\Cargo.toml -- migration-conformance-check --structural
+cargo run --manifest-path crates\xtask\Cargo.toml -- migration-conformance-check --upstream
 ```
 
 ## W1. Adapted Hazelcast IMap/FencedLock Expectations Against The Java Facade (blueprint: `caffeine/guava/src/compatibilityTest/`, `scylladb/test/alternator/`)
@@ -289,8 +301,8 @@ cargo test -p hydracache --test borrowed_cache_semantics --locked -j 2
 completes a session. Handshake negotiation, retry behavior, and error mapping only surface with the
 real artifact.
 
-**Files to change.** `crates/hydracache-server/tests/legacy_client_matrix.rs` + an xtask helper that
-builds pinned HC/1 consumer fixtures against the library artifacts from shipped tags
+**Files changed.** `crates/xtask/src/migration_conformance.rs` provides the executable matrix runner
+that builds pinned HC/1 consumer fixtures against the library artifacts from shipped tags
 (`v0.62.0`, `v0.62.1`, `v0.63.0`) into a cache directory
 (recorded commit + toolchain, `0.64` W32 provenance discipline); a matrix manifest
 `docs/testing/compat/legacy-clients.toml` (tag -> surface -> expected outcome).
@@ -309,15 +321,16 @@ builds pinned HC/1 consumer fixtures against the library artifacts from shipped 
   same rule as W32's baseline decision.
 
 **Required tests:**
-- `v062_and_v063_client_consumers_complete_their_supported_surface_against_current_server`;
-- `legacy_clients_never_receive_v4_shapes_and_fail_loud_beyond_their_surface`.
+- `legacy-client-check --matrix hc1` executes every manifest consumer against the current daemon;
+- `legacy_execution_must_cover_every_manifest_row` rejects a falsely green partial execution;
+- `client-plane-compat-check --manifest-only` retains the nine-row HC/2 prerequisite.
 
 **Canary.** `canary_legacy_matrix_marks_an_unbuilt_tag_green`.
 
 **DoD.**
 ```powershell
 $env:HYDRACACHE_RUN_LEGACY_CLIENTS='1'
-cargo test -p hydracache-server --test legacy_client_matrix --locked -- --nocapture
+cargo run -p xtask --locked -- legacy-client-check --matrix hc1
 Remove-Item Env:\HYDRACACHE_RUN_LEGACY_CLIENTS -ErrorAction SilentlyContinue
 ```
 **CI.** Gated lane in the compatibility job (tag builds are slow); registry rows + fast structural
