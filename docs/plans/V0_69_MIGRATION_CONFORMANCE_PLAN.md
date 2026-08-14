@@ -409,7 +409,8 @@ cargo run --manifest-path crates\xtask\Cargo.toml -- doc-check
   than substituted.
 - The retained HC/2 clean-package consumer derives the Rust archive version from
   `workspace.package.version`, requires the frozen API manifest to match it, and rejects a stale
-  release-cut archive name before admission.
+  release-cut archive name before admission; both the workspace and docs-example lock files bind
+  their local HydraCache packages to the same release version.
 - The DB differential holds per declared consistency mode under seeded concurrent writes on the
   PostgreSQL 16.4/18 matrix, is exact after quiescence, detects the dropped-invalidation canary,
   and completes the bounded 24-seed floor-version soak.

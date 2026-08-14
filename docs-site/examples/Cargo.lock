@@ -861,7 +861,7 @@ dependencies = [
 
 [[package]]
 name = "hydracache"
-version = "0.68.0"
+version = "0.69.0"
 dependencies = [
  "async-trait",
  "bytes",
@@ -876,7 +876,7 @@ dependencies = [
 
 [[package]]
 name = "hydracache-client-protocol"
-version = "0.68.0"
+version = "0.69.0"
 dependencies = [
  "bytes",
  "postcard",
@@ -886,7 +886,7 @@ dependencies = [
 
 [[package]]
 name = "hydracache-client-transport-axum"
-version = "0.68.0"
+version = "0.69.0"
 dependencies = [
  "axum",
  "bytes",
@@ -900,7 +900,7 @@ dependencies = [
 
 [[package]]
 name = "hydracache-core"
-version = "0.68.0"
+version = "0.69.0"
 dependencies = [
  "async-trait",
  "bytes",
@@ -911,7 +911,7 @@ dependencies = [
 
 [[package]]
 name = "hydracache-db"
-version = "0.68.0"
+version = "0.69.0"
 dependencies = [
  "async-trait",
  "hydracache",
@@ -926,7 +926,7 @@ dependencies = [
 
 [[package]]
 name = "hydracache-diesel"
-version = "0.68.0"
+version = "0.69.0"
 dependencies = [
  "async-trait",
  "diesel",
@@ -958,7 +958,7 @@ dependencies = [
 
 [[package]]
 name = "hydracache-macros"
-version = "0.68.0"
+version = "0.69.0"
 dependencies = [
  "proc-macro-crate",
  "proc-macro2",
@@ -968,7 +968,7 @@ dependencies = [
 
 [[package]]
 name = "hydracache-observability"
-version = "0.68.0"
+version = "0.69.0"
 dependencies = [
  "async-trait",
  "hydracache",
@@ -978,7 +978,7 @@ dependencies = [
 
 [[package]]
 name = "hydracache-redis-compat"
-version = "0.68.0"
+version = "0.69.0"
 dependencies = [
  "bytes",
  "hydracache",
@@ -992,7 +992,7 @@ dependencies = [
 
 [[package]]
 name = "hydracache-seaorm"
-version = "0.68.0"
+version = "0.69.0"
 dependencies = [
  "async-trait",
  "hydracache",
@@ -1005,7 +1005,7 @@ dependencies = [
 
 [[package]]
 name = "hydracache-sqlx"
-version = "0.68.0"
+version = "0.69.0"
 dependencies = [
  "async-trait",
  "hydracache",
