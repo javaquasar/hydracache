@@ -147,6 +147,17 @@ pub fn execute_gate(
     gate_id: &str,
     receipts_dir: &Path,
 ) -> Result<ExecutionResult, Box<dyn Error>> {
+    execute_gate_with_identity(root, release, gate_id, receipts_dir, container_identity())
+}
+
+#[doc(hidden)]
+pub fn execute_gate_with_identity(
+    root: &Path,
+    release: &str,
+    gate_id: &str,
+    receipts_dir: &Path,
+    identity: BTreeMap<String, String>,
+) -> Result<ExecutionResult, Box<dyn Error>> {
     validate_identifier(gate_id)?;
     let receipts_dir = resolve_receipts_dir(root, receipts_dir)?;
     let gate = resolve_registered_gate(root, release, gate_id)?;
@@ -189,7 +200,6 @@ pub fn execute_gate(
         }
     }
 
-    let identity = container_identity();
     let mut outcome = process.outcome;
     let mut stderr = process.stderr;
     if let Some(problem) = evidence_provenance_problem(&source_commit, &identity) {
