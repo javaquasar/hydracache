@@ -156,7 +156,10 @@ the live Rust-process recovery proof. The independently provisioned fast-evidenc
 tool exercised transitively by workspace Nextest, restores and verifies full tag/branch history
 before its exact-candidate evidence step, and strips outer receipt provenance from registered child
 processes after capturing it for the parent receipt. A nested-repository regression test proves
-that a child cannot accidentally claim the outer candidate's SHA identity.
+that a child cannot accidentally claim the outer candidate's SHA identity. Receipt bundles are
+self-contained and retain their `target/`-relative layout: admission receives the JUnit, Java, and
+PostgreSQL artifacts named by each receipt and re-hashes them instead of trusting receipt metadata
+alone.
 
 ## Preflight
 

@@ -152,12 +152,43 @@ fn release_069_ci_admission_is_independent_fail_loud_and_sha_bound() {
         "Restore and verify full release history",
         "client-plane-compat-check --manifest-only",
         "Run exact-candidate fast evidence",
+        "target/nextest/ci/junit.xml",
     ] {
         assert!(
             fast_job.contains(required),
             "fast evidence job lost {required}"
         );
     }
+    let java_start = workflow.find("  migration-conformance-069:").unwrap();
+    let postgres_start = workflow
+        .find("  migration-conformance-postgres-069:")
+        .unwrap();
+    let admission_start = workflow
+        .find("  migration-conformance-admission-069:")
+        .unwrap();
+    let java_receipts = &workflow[java_start..postgres_start];
+    let postgres_receipts = &workflow[postgres_start..admission_start];
+    let java_bundle = java_receipts
+        .split("name: Upload migration conformance receipts")
+        .nth(1)
+        .unwrap()
+        .split("name: Upload Java and legacy diagnostics")
+        .next()
+        .unwrap();
+    assert!(java_bundle.contains("target/test-evidence/0.69/**"));
+    let postgres_bundle = postgres_receipts
+        .split("name: Upload PostgreSQL conformance receipts")
+        .nth(1)
+        .unwrap()
+        .split("name: Upload PostgreSQL conformance diagnostics")
+        .next()
+        .unwrap();
+    assert!(postgres_bundle.contains("target/test-evidence/0.69/**"));
+    let admission = &workflow[admission_start..];
+    assert!(
+        admission.matches("          path: target\n").count() >= 3,
+        "admission must restore self-contained bundles from their target-relative root"
+    );
 }
 
 #[test]

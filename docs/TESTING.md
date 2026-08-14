@@ -1973,6 +1973,11 @@ exact-candidate evidence step. `evidence-run` records head/base/tested SHA prove
 those variables from the registered child process; nested fixture repositories therefore cannot
 inherit authority for the outer exact candidate.
 
+Every 0.69 receipt bundle includes the evidence files referenced by its receipts and preserves the
+repository-relative `target/nextest`, `target/test-evidence`, and `target/release-evidence` layout.
+Admission downloads bundles at `target/` and revalidates artifact presence and digests; a detached
+receipt JSON without its JUnit or differential log cannot satisfy `--require-ship`.
+
 The Hazelcast gate builds the Rust mTLS fixture and production daemon before Maven. The live facade
 test uses the real Java HC/2 client; the same command executes the production lease-expiry test and
 the Java recovery/session-loss contract, so the borrowed manifest is not accepted from a

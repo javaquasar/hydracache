@@ -416,6 +416,7 @@ jobs:
             target/release-evidence/canaries/*.json
             target/release-evidence/lanes/*.json
             target/release-evidence/receipts/**
+            target/nextest/ci/junit.xml
           if-no-files-found: error
 
   migration-conformance-069:
@@ -473,6 +474,7 @@ jobs:
           path: |
             target/release-evidence/lanes/*.json
             target/release-evidence/receipts/**
+            target/test-evidence/0.69/**
           if-no-files-found: error
 
       - name: Upload Java and legacy diagnostics
@@ -580,6 +582,7 @@ jobs:
           path: |
             target/release-evidence/lanes/*.json
             target/release-evidence/receipts/**
+            target/test-evidence/0.69/**
           if-no-files-found: error
 
       - name: Upload PostgreSQL conformance diagnostics
@@ -625,19 +628,19 @@ jobs:
         uses: actions/download-artifact@v5
         with:
           name: "migration-conformance-fast-evidence-069-${{ github.sha }}"
-          path: target/release-evidence
+          path: target
 
       - name: Download Java and legacy receipts
         uses: actions/download-artifact@v5
         with:
           name: "migration-conformance-069-receipts-${{ github.sha }}"
-          path: target/release-evidence
+          path: target
 
       - name: Download PostgreSQL receipts
         uses: actions/download-artifact@v5
         with:
           pattern: "migration-conformance-postgres-069-receipts-*-${{ github.sha }}"
-          path: target/release-evidence
+          path: target
           merge-multiple: true
 
       - name: Require exact-candidate migration conformance evidence
