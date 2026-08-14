@@ -204,7 +204,7 @@ pub fn execute_gate_with_identity(
     let mut stderr = process.stderr;
     if let Some(problem) = evidence_provenance_problem(&source_commit, &identity) {
         outcome = EvidenceOutcome::Fail;
-        stderr.push_str("\n");
+        stderr.push('\n');
         stderr.push_str(&problem);
     }
     if !missing_artifacts.is_empty() && outcome == EvidenceOutcome::Pass {
