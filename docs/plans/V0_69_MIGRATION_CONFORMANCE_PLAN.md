@@ -411,6 +411,8 @@ cargo run --manifest-path crates\xtask\Cargo.toml -- doc-check
   `workspace.package.version`, requires the frozen API manifest to match it, and rejects a stale
   release-cut archive name before admission; both the workspace and docs-example lock files bind
   their local HydraCache packages to the same release version.
+- The real-daemon HC/1+HC/2 harness reserves all loopback listeners simultaneously before spawn,
+  proving that independently requested ephemeral ports cannot collapse onto one config address.
 - The DB differential holds per declared consistency mode under seeded concurrent writes on the
   PostgreSQL 16.4/18 matrix, is exact after quiescence, detects the dropped-invalidation canary,
   and completes the bounded 24-seed floor-version soak.

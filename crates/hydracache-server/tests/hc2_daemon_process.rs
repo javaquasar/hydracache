@@ -48,11 +48,17 @@ fn pki() -> TestPki {
     }
 }
 
-fn free_addr() -> SocketAddr {
-    let listener = StdTcpListener::bind("127.0.0.1:0").unwrap();
-    let addr = listener.local_addr().unwrap();
-    drop(listener);
-    addr
+fn reserve_addrs<const N: usize>() -> ([SocketAddr; N], Vec<StdTcpListener>) {
+    let listeners = (0..N)
+        .map(|_| StdTcpListener::bind("127.0.0.1:0").unwrap())
+        .collect::<Vec<_>>();
+    let addrs = listeners
+        .iter()
+        .map(|listener| listener.local_addr().unwrap())
+        .collect::<Vec<_>>()
+        .try_into()
+        .expect("reservation count must match the requested address count");
+    (addrs, listeners)
 }
 
 fn test_root(label: &str) -> PathBuf {
@@ -160,9 +166,8 @@ async fn real_daemon_shares_hc1_hc2_dispatch_and_exits_on_drain() {
     let root = test_root("coexistence");
     let pki = pki();
     let (cert, key, ca) = write_pki(&root, &pki);
-    let client_addr = free_addr();
-    let admin_addr = free_addr();
-    let hc2_addr = free_addr();
+    let ([client_addr, admin_addr, hc2_addr], reservations) = reserve_addrs::<3>();
+    drop(reservations);
     let mut command = daemon_command(client_addr, admin_addr, hc2_addr, &cert, &key, &ca);
     command.stderr(Stdio::inherit());
     let child = command.spawn().unwrap();
@@ -310,10 +315,12 @@ fn port_conflict_fails_before_any_listener_accepts() {
     let root = test_root("conflict");
     let pki = pki();
     let (cert, key, ca) = write_pki(&root, &pki);
-    let client_addr = free_addr();
-    let admin_addr = free_addr();
-    let blocker = StdTcpListener::bind("127.0.0.1:0").unwrap();
-    let hc2_addr = blocker.local_addr().unwrap();
+    let ([client_addr, admin_addr, hc2_addr], mut reservations) = reserve_addrs::<3>();
+    let blocker = reservations
+        .pop()
+        .expect("the HC/2 address reservation must exist");
+    drop(reservations);
+    assert_eq!(blocker.local_addr().unwrap(), hc2_addr);
     let output = daemon_command(client_addr, admin_addr, hc2_addr, &cert, &key, &ca)
         .output()
         .unwrap();
@@ -333,9 +340,8 @@ fn port_conflict_fails_before_any_listener_accepts() {
 fn unreadable_hc2_tls_fails_before_readiness_or_listener_startup() {
     let root = test_root("missing-tls");
     std::fs::create_dir_all(&root).unwrap();
-    let client_addr = free_addr();
-    let admin_addr = free_addr();
-    let hc2_addr = free_addr();
+    let ([client_addr, admin_addr, hc2_addr], reservations) = reserve_addrs::<3>();
+    drop(reservations);
     let output = daemon_command(
         client_addr,
         admin_addr,
@@ -352,4 +358,22 @@ fn unreadable_hc2_tls_fails_before_readiness_or_listener_startup() {
     assert!(StdTcpListener::bind(admin_addr).is_ok());
     assert!(StdTcpListener::bind(hc2_addr).is_ok());
     std::fs::remove_dir_all(root).unwrap();
+}
+
+#[test]
+fn reserved_listener_addresses_are_distinct_and_held() {
+    let (addrs, reservations) = reserve_addrs::<8>();
+    for (index, addr) in addrs.iter().enumerate() {
+        assert!(
+            StdTcpListener::bind(addr).is_err(),
+            "reservation {index} was not held"
+        );
+        for other in &addrs[index + 1..] {
+            assert_ne!(addr, other, "reserved listener addresses must be unique");
+        }
+    }
+    drop(reservations);
+    for addr in addrs {
+        assert!(StdTcpListener::bind(addr).is_ok());
+    }
 }
