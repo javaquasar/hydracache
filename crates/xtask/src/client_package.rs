@@ -11,7 +11,6 @@ use tar::Archive;
 const API_MANIFEST: &str = "docs/compatibility/hc2-sdk-api-v1.json";
 const SCRATCH: &str = "target/hc2-package-check";
 const RUST_CRATE: &str = "hydracache-client-hc2";
-const RUST_VERSION: &str = "0.68.0";
 const JAVA_REACTOR: &str = "sdks/java/pom.xml";
 const JAVA_CONSUMER: &str = "tests/java-hazelcast-facade-consumer/pom.xml";
 const PYTHON_PACKAGE: &str = "sdks/python/hydracache-client-hc2";
@@ -44,7 +43,13 @@ pub fn check_at_root(root: &Path) -> Result<(), Box<dyn Error>> {
     validate_manifest(&manifest)?;
     let scratch = root.join(SCRATCH);
     reset_scratch(root, &scratch)?;
-    check_rust(root, &scratch, package(&manifest, "rust", RUST_CRATE)?)?;
+    let rust_version = workspace_version(root)?;
+    check_rust(
+        root,
+        &scratch,
+        package(&manifest, "rust", RUST_CRATE)?,
+        &rust_version,
+    )?;
     check_java(root, &manifest)?;
     check_python(root, &scratch, package(&manifest, "python", RUST_CRATE)?)?;
     println!(
@@ -90,8 +95,13 @@ fn package<'a>(
         .ok_or_else(|| format!("missing {ecosystem} API row for {coordinate}").into())
 }
 
-fn check_rust(root: &Path, scratch: &Path, api: &ApiPackage) -> Result<(), Box<dyn Error>> {
-    if api.version != RUST_VERSION {
+fn check_rust(
+    root: &Path,
+    scratch: &Path,
+    api: &ApiPackage,
+    rust_version: &str,
+) -> Result<(), Box<dyn Error>> {
+    if api.version != rust_version {
         return Err("Rust API manifest version drifted from the workspace package".into());
     }
     run_checked(
@@ -109,14 +119,14 @@ fn check_rust(root: &Path, scratch: &Path, api: &ApiPackage) -> Result<(), Box<d
     )?;
     let archive = root
         .join("target/package")
-        .join(format!("{RUST_CRATE}-{RUST_VERSION}.crate"));
+        .join(format!("{RUST_CRATE}-{rust_version}.crate"));
     if !archive.is_file() {
         return Err(format!("Rust package archive is missing: {}", archive.display()).into());
     }
     let unpacked = scratch.join("rust-package");
     fs::create_dir_all(&unpacked)?;
     Archive::new(GzDecoder::new(fs::File::open(&archive)?)).unpack(&unpacked)?;
-    let package_root = unpacked.join(format!("{RUST_CRATE}-{RUST_VERSION}"));
+    let package_root = unpacked.join(format!("{RUST_CRATE}-{rust_version}"));
     let consumer = scratch.join("rust-consumer");
     fs::create_dir_all(consumer.join("src"))?;
     let dependency_path = package_root.to_string_lossy().replace('\\', "/");
@@ -143,6 +153,17 @@ fn check_rust(root: &Path, scratch: &Path, api: &ApiPackage) -> Result<(), Box<d
         &["check", "--offline", "--manifest-path", &manifest],
         "clean Rust HC/2 package consumer",
     )
+}
+
+fn workspace_version(root: &Path) -> Result<String, Box<dyn Error>> {
+    let manifest: toml::Value = toml::from_str(&fs::read_to_string(root.join("Cargo.toml"))?)?;
+    manifest
+        .get("workspace")
+        .and_then(|workspace| workspace.get("package"))
+        .and_then(|package| package.get("version"))
+        .and_then(toml::Value::as_str)
+        .map(str::to_owned)
+        .ok_or_else(|| "workspace.package.version is missing from Cargo.toml".into())
 }
 
 fn check_java(root: &Path, manifest: &ApiManifest) -> Result<(), Box<dyn Error>> {
@@ -351,5 +372,14 @@ mod tests {
             serde_json::from_slice(&fs::read(root.join(API_MANIFEST)).unwrap()).unwrap();
         validate_manifest(&manifest).unwrap();
         assert_eq!(manifest.packages.len(), 4);
+    }
+
+    #[test]
+    fn rust_api_manifest_tracks_the_workspace_release_version() {
+        let root = workspace_root().unwrap();
+        let manifest: ApiManifest =
+            serde_json::from_slice(&fs::read(root.join(API_MANIFEST)).unwrap()).unwrap();
+        let rust = package(&manifest, "rust", RUST_CRATE).unwrap();
+        assert_eq!(rust.version, workspace_version(&root).unwrap());
     }
 }
