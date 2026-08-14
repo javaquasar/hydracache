@@ -20,6 +20,8 @@ use tokio_stream::wrappers::{ReceiverStream, TcpListenerStream};
 use tonic::transport::{Certificate, Identity, Server, ServerTlsConfig};
 use tonic::{Request, Response, Status, Streaming};
 
+use hydracache_client_plane_spike::fixture_receipt::ProductionDaemonReadyReceipt;
+
 mod wire {
     tonic::include_proto!("hydracache.client.v2alpha");
 }
@@ -490,6 +492,16 @@ struct Pki {
     server_key_pem: String,
     client_cert_pem: String,
     client_key_pem: String,
+    second_client_cert_pem: String,
+    second_client_key_pem: String,
+}
+
+struct ClientCredentialPaths {
+    ca: PathBuf,
+    first_cert: PathBuf,
+    first_key: PathBuf,
+    second_cert: PathBuf,
+    second_key: PathBuf,
 }
 
 #[derive(Clone, Copy)]
@@ -563,6 +575,11 @@ fn generate_pki(profile: PkiProfile) -> Result<Pki, Box<dyn Error>> {
     } else {
         client_params.signed_by(&client_key, &ca)?
     };
+    let second_client_key = KeyPair::generate()?;
+    let mut second_client_params =
+        CertificateParams::new(vec!["hc2-java-client-second".to_owned()])?;
+    second_client_params.extended_key_usages = vec![ExtendedKeyUsagePurpose::ClientAuth];
+    let second_client_cert = second_client_params.signed_by(&second_client_key, &ca)?;
 
     Ok(Pki {
         ca_pem: ca.pem(),
@@ -570,6 +587,8 @@ fn generate_pki(profile: PkiProfile) -> Result<Pki, Box<dyn Error>> {
         server_key_pem: server_key.serialize_pem(),
         client_cert_pem: client_cert.pem(),
         client_key_pem: client_key.serialize_pem(),
+        second_client_cert_pem: second_client_cert.pem(),
+        second_client_key_pem: second_client_key.serialize_pem(),
     })
 }
 
@@ -638,9 +657,7 @@ fn run_daemon_fixture(
     daemon: &Path,
     credentials: &Path,
     pki: &Pki,
-    ca: &Path,
-    client_cert: &Path,
-    client_key: &Path,
+    client_paths: &ClientCredentialPaths,
 ) -> Result<(), Box<dyn Error>> {
     if !daemon.is_file() {
         return Err(format!("production daemon binary is missing: {}", daemon.display()).into());
@@ -689,14 +706,16 @@ fn run_daemon_fixture(
             )
             .into());
         }
-        println!(
-            "READY_DAEMON\t{}\t{}\t{}\t{}\t{}",
+        let ready_receipt = ProductionDaemonReadyReceipt::new(
             hc2_addr.port(),
             admin_addr.port(),
-            ca.display(),
-            client_cert.display(),
-            client_key.display()
-        );
+            &client_paths.ca,
+            &client_paths.first_cert,
+            &client_paths.first_key,
+            &client_paths.second_cert,
+            &client_paths.second_key,
+        )?;
+        println!("{}", ready_receipt.encode());
         let mut command = String::new();
         std::io::stdin().lock().read_line(&mut command)?;
         if command.trim() != "DRAIN" {
@@ -724,9 +743,26 @@ async fn main() -> Result<(), Box<dyn Error>> {
     let ca = write_credential(&credentials, "ca.pem", &pki.ca_pem)?;
     let client_cert = write_credential(&credentials, "client.pem", &pki.client_cert_pem)?;
     let client_key = write_credential(&credentials, "client.key", &pki.client_key_pem)?;
+    let second_client_cert = write_credential(
+        &credentials,
+        "client-second.pem",
+        &pki.second_client_cert_pem,
+    )?;
+    let second_client_key = write_credential(
+        &credentials,
+        "client-second.key",
+        &pki.second_client_key_pem,
+    )?;
+    let client_paths = ClientCredentialPaths {
+        ca,
+        first_cert: client_cert,
+        first_key: client_key,
+        second_cert: second_client_cert,
+        second_key: second_client_key,
+    };
 
     if let Some(daemon) = daemon {
-        return run_daemon_fixture(&daemon, &credentials, &pki, &ca, &client_cert, &client_key);
+        return run_daemon_fixture(&daemon, &credentials, &pki, &client_paths);
     }
 
     let listener = TcpListener::bind("127.0.0.1:0").await?;
@@ -759,9 +795,9 @@ async fn main() -> Result<(), Box<dyn Error>> {
 
     println!(
         "READY\t{port}\t{}\t{}\t{}",
-        ca.display(),
-        client_cert.display(),
-        client_key.display()
+        client_paths.ca.display(),
+        client_paths.first_cert.display(),
+        client_paths.first_key.display()
     );
     let receipt = closed_rx.await?;
     let _ = shutdown_tx.send(());

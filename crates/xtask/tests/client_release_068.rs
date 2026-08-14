@@ -125,7 +125,9 @@ fn closure_problems(omitted: Option<&str>) -> Vec<String> {
     }
     let ci = fs::read_to_string(root.join(".github/workflows/ci.yml")).unwrap_or_default();
     let history_checkpoint = ci.find("- name: Restore and verify full release history");
-    let workspace_test = ci.find("- name: Test\n");
+    let workspace_test = ci
+        .find("- name: Test\n")
+        .or_else(|| ci.find("- name: Run exact-candidate fast evidence\n"));
     for command in [
         "git rev-parse --is-shallow-repository",
         "git fetch --prune --unshallow origin",

@@ -304,10 +304,10 @@ depends_on = ["0.67.0"]
 [[release]]
 version = "0.69.0"
 file = "docs/plans/V0_69_MIGRATION_CONFORMANCE_PLAN.md"
-status = "planned"
+status = "shipped"
 networked_control_plane = true
-work_items = ["W1", "W2", "W3", "W4", "W5"]
-theme = "Migration Conformance & Borrowed Test Suites - after the 0.68 generated client plane and buildable Java artifact exist, prove compatibility claims with evidence we did not author. W1 executes a curated subset of Hazelcast's OWN IMap/FencedLock test suite against the real Java facade with a pinned version, exact-outcome manifest, reasoned divergences, and swallow-canary. W2 ports moka/caffeine embedded-cache expectations into a manifest-driven Rust suite. W3 runs real previous HydraCache clients, including the first 0.68 HC/2 client, against the current server. W4 differentially compares cached and direct DB results under seeded concurrent writes with post-quiescence equality and a dropped-invalidation canary. W5 binds every lane to release-evidence/0.69 and require-ship governance. Conformance only: no surface is widened merely to satisfy borrowed tests; no Hazelcast wire/full-Hazelcast claim and no DB feature work."
+work_items = ["W0", "W1", "W2", "W3", "W4", "W5"]
+theme = "Migration Conformance & Borrowed Test Suites - after the 0.68 generated client plane and buildable Java artifact exist, prove compatibility claims with independently sourced expectations and live prior artifacts. W0 freezes executable schemas, exact source provenance, outcomes, and no-silent-skip rules. W1 executes provenance-bound adaptations of a curated Hazelcast IMap/FencedLock expectation set against the real Java facade; Hazelcast's cluster-owning test classes do not run verbatim, and non-reentrancy remains a documented divergence. W2 ports moka/caffeine embedded-cache expectations into a manifest-driven Rust suite. W3 runs HC/1 consumer fixtures compiled against v0.62.x/v0.63.0 libraries against the current server and reuses, rather than duplicates, the retained 0.68 HC/2 matrix. W4 differentially compares cached and direct DB results under deterministic commit-position schedules with post-quiescence equality and a dropped-invalidation canary. W5 binds every lane to release-evidence/0.69 and require-ship governance. Conformance only: no surface is widened merely to satisfy borrowed tests; no Hazelcast wire/full-Hazelcast claim and no DB feature work."
 depends_on = ["0.68.0"]
 
 [[release]]

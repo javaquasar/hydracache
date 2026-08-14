@@ -403,3 +403,30 @@ real Rust test references are checked by `cargo xtask doc-check`. A future
 backend refactor may change implementation ownership, but it must preserve the
 client-surface and RESP characterization layers and explicitly invert the
 deployment sentinels when it pays a documented debt.
+## 0.69 executable migration evidence
+
+The Java facade claim is bounded by
+`docs/integrations/hazelcast_borrowed_suite.json`: it is source-compatible for the listed adapted
+expectations only, not a Hazelcast interface, runtime, or wire implementation. Default Hazelcast
+lock reentrancy remains a documented divergence; server-side entry processing remains unsupported.
+The gated proof executes the facade through the real Java HC/2 client and production daemon. Lock
+leases expire in the production state machine; Java `FencedSession` loss is separately proved and
+does not imply that facade locks are session-bound.
+
+The DB conformance claim covers SQLite and PostgreSQL transactional outbox enqueue, worker drain,
+and commit-scoped `InvalidationWait` behavior. A receipt waits only for rows with its namespace and
+commit position; later pending rows do not block it. It does not promote `NoWait` into a
+read-after-write guarantee.
+
+This is a source-level change for custom `InvalidationOutbox` implementors: 0.69 requires the new
+`status_for_commit` method. Returning namespace-wide status from that method violates the receipt
+contract even if it compiles; adapters must filter by both namespace and exact commit position.
+`crates/hydracache-db/tests/custom_outbox_contract.rs` is the compiling downstream-style migration
+fixture and can be copied as the adapter skeleton.
+
+The SQLx PostgreSQL claim is exercised against the digest-pinned 16.4 floor and current major 18.
+This matrix is the declared 0.69 evidence boundary; other PostgreSQL majors are not implied by it.
+
+HC/1 client compatibility is executed for the library commits behind `v0.62.0`, `v0.62.1`, and
+`v0.63.0`. HC/2 is not reimplemented in 0.69: the complete retained nine-row 0.68 compatibility
+artifact remains a required prerequisite.

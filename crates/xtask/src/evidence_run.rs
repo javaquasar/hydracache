@@ -19,6 +19,11 @@ use crate::fast_suite;
 use crate::gated_tests::{self, CommandSpec, GateEntry};
 
 pub const DEFAULT_RECEIPTS_DIR: &str = "target/release-evidence/receipts";
+const EVIDENCE_PROVENANCE_ENV: [&str; 3] = [
+    "HYDRACACHE_EVIDENCE_BASE_SHA",
+    "HYDRACACHE_EVIDENCE_HEAD_SHA",
+    "HYDRACACHE_EVIDENCE_TESTED_SHA",
+];
 const MAX_DIAGNOSTIC_CHARS_PER_STREAM: usize = 32_000;
 
 #[derive(Debug, Clone, Copy, Deserialize, Serialize, PartialEq, Eq)]
@@ -142,6 +147,17 @@ pub fn execute_gate(
     gate_id: &str,
     receipts_dir: &Path,
 ) -> Result<ExecutionResult, Box<dyn Error>> {
+    execute_gate_with_identity(root, release, gate_id, receipts_dir, container_identity())
+}
+
+#[doc(hidden)]
+pub fn execute_gate_with_identity(
+    root: &Path,
+    release: &str,
+    gate_id: &str,
+    receipts_dir: &Path,
+    identity: BTreeMap<String, String>,
+) -> Result<ExecutionResult, Box<dyn Error>> {
     validate_identifier(gate_id)?;
     let receipts_dir = resolve_receipts_dir(root, receipts_dir)?;
     let gate = resolve_registered_gate(root, release, gate_id)?;
@@ -186,6 +202,11 @@ pub fn execute_gate(
 
     let mut outcome = process.outcome;
     let mut stderr = process.stderr;
+    if let Some(problem) = evidence_provenance_problem(&source_commit, &identity) {
+        outcome = EvidenceOutcome::Fail;
+        stderr.push('\n');
+        stderr.push_str(&problem);
+    }
     if !missing_artifacts.is_empty() && outcome == EvidenceOutcome::Pass {
         outcome = EvidenceOutcome::Fail;
         stderr.push_str("\nmissing declared artifact(s)");
@@ -201,7 +222,7 @@ pub fn execute_gate(
         registry_digest: expected.registry,
         input_digest: expected.input,
         toolchain: command_output("rustc", &["--version"]).unwrap_or_else(|| "unknown".to_owned()),
-        container_identity: container_identity(),
+        container_identity: identity,
         platform: format!("{}-{}", std::env::consts::OS, std::env::consts::ARCH),
         started_at: started.format(&Rfc3339)?,
         ended_at: ended.format(&Rfc3339)?,
@@ -281,6 +302,11 @@ fn execute_command(root: &Path, command_spec: &CommandSpec, timeout_seconds: u64
         .current_dir(cwd)
         .stdout(Stdio::piped())
         .stderr(Stdio::piped());
+    for name in EVIDENCE_PROVENANCE_ENV {
+        // Provenance identifies this evidence runner and its checkout. A registered test may
+        // create another repository, but it must not inherit authority for the outer receipt.
+        command.env_remove(name);
+    }
     if let Some(target_dir) = cargo_target_dir_override(root, command_spec, cfg!(windows)) {
         command.env("CARGO_TARGET_DIR", target_dir);
         if let Some(jobs) = cargo_build_jobs_override(command_spec, cfg!(windows)) {
@@ -653,6 +679,9 @@ fn container_identity() -> BTreeMap<String, String> {
         "GITHUB_RUN_ID",
         "GITHUB_RUN_ATTEMPT",
         "GITHUB_SHA",
+        "HYDRACACHE_EVIDENCE_BASE_SHA",
+        "HYDRACACHE_EVIDENCE_HEAD_SHA",
+        "HYDRACACHE_EVIDENCE_TESTED_SHA",
         "HYDRACACHE_BUILD_IMAGE",
     ]
     .into_iter()
@@ -662,6 +691,37 @@ fn container_identity() -> BTreeMap<String, String> {
             .map(|value| (name.to_owned(), value))
     })
     .collect()
+}
+
+pub fn evidence_provenance_problem(
+    source_commit: &str,
+    identity: &BTreeMap<String, String>,
+) -> Option<String> {
+    let valid_sha =
+        |value: &str| value.len() == 40 && value.bytes().all(|byte| byte.is_ascii_hexdigit());
+    let provenance_names = EVIDENCE_PROVENANCE_ENV;
+    let provenance_required = identity.contains_key("GITHUB_ACTIONS")
+        || provenance_names
+            .iter()
+            .any(|name| identity.contains_key(*name));
+    for name in provenance_names {
+        if provenance_required && !identity.contains_key(name) {
+            return Some(format!("missing evidence provenance {name}"));
+        }
+        if identity.get(name).is_some_and(|value| !valid_sha(value)) {
+            return Some(format!("invalid evidence provenance {name}"));
+        }
+    }
+    if identity
+        .get("HYDRACACHE_EVIDENCE_TESTED_SHA")
+        .is_some_and(|tested| tested != source_commit)
+    {
+        return Some(format!(
+            "tested commit provenance does not match checkout: source={source_commit} tested={}",
+            identity["HYDRACACHE_EVIDENCE_TESTED_SHA"]
+        ));
+    }
+    None
 }
 
 fn platform_matches(required: &str) -> bool {

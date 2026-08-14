@@ -661,7 +661,8 @@ work in the release**, before W0 feature code, while Phase B is deferred referen
   ownership: `work_items`, timeout/budget, deterministic flag, artifacts/logical digest, baseline,
   and command. Existing `fast.workspace-nextest` supplies the implementation-wide receipt, while
   `fast.performance-resp-external-067` remains W3-only. There are no standalone W4/W5/W6/W7 fast
-  rows; the reconciled registry aggregate budget is exactly 1560 seconds. Fast rows do not invent
+  rows; the 0.67 baseline aggregate budget was exactly 1560 seconds (raised to 1680 by plan 69 for
+  its dedicated SQLx conformance lane). Fast rows do not invent
   gated fields such as `owner_release` or `ship_mandatory`.
 - Register gated rows `tool.perf-prebuild-067`, `env.hydracache-run-067-perf-core`,
   `env.hydracache-run-067-perf-resp`, `env.hydracache-run-067-perf-control-plane`, and

@@ -6712,6 +6712,279 @@ platform = "any"
 HYDRACACHE_RUN_HC2_HOSTED_RELEASE_068 = "1"
 
 [[gate]]
+id = "tool.borrowed-hazelcast-069"
+kind = "env_gate"
+source = "crates/xtask/src/migration_conformance.rs"
+package = "xtask"
+target = "migration_conformance"
+test = "current_manifests_are_structurally_valid"
+cfg = ""
+env = "HYDRACACHE_RUN_JVM_COMPAT"
+reason = "The adapted source-pinned Hazelcast expectations require the Java 17/Maven facade runner"
+tier = "external"
+required_features = []
+required_env = ["HYDRACACHE_RUN_JVM_COMPAT"]
+required_tools = ["cargo", "mvn", "java"]
+timeout_seconds = 1200
+owner_release = "0.69.0"
+ship_mandatory = true
+artifacts = ["target/test-evidence/0.69/hazelcast-borrowed-expectations.xml", "target/test-evidence/0.69/hazelcast-live-interop.xml", "target/test-evidence/0.69/hc2-session-loss.xml"]
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "migration-conformance-069"
+step = "Run adapted Hazelcast expectations"
+
+[gate.command]
+program = "cargo"
+args = ["run", "-p", "xtask", "--locked", "--", "borrowed-suite-check", "--suite", "hazelcast"]
+cwd = "."
+platform = "any"
+
+[gate.command.env]
+HYDRACACHE_RUN_JVM_COMPAT = "1"
+
+[[gate]]
+id = "tool.legacy-hc1-clients-069"
+kind = "env_gate"
+source = "crates/xtask/src/migration_conformance.rs"
+package = "xtask"
+target = "migration_conformance"
+test = "current_manifests_are_structurally_valid"
+cfg = ""
+env = "HYDRACACHE_RUN_LEGACY_CLIENTS"
+reason = "Shipped HC/1 libraries must be compiled into real consumers and run against the current daemon"
+tier = "external"
+required_features = []
+required_env = ["HYDRACACHE_RUN_LEGACY_CLIENTS"]
+required_tools = ["cargo", "git"]
+timeout_seconds = 1800
+owner_release = "0.69.0"
+ship_mandatory = true
+artifacts = []
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "migration-conformance-069"
+step = "Run shipped HC1 consumers against current daemon"
+
+[gate.command]
+program = "cargo"
+args = ["run", "-p", "xtask", "--locked", "--", "legacy-client-check", "--matrix", "hc1"]
+cwd = "."
+platform = "any"
+
+[gate.command.env]
+HYDRACACHE_RUN_LEGACY_CLIENTS = "1"
+
+[[gate]]
+id = "cfg.hydracache-db.cached-vs-direct-differential-069"
+kind = "cfg_test_target"
+source = "crates/hydracache-db/tests/cached_vs_direct_differential.rs"
+package = "hydracache-db"
+target = "cached_vs_direct_differential"
+test = ""
+cfg = "feature = \"sqlx-outbox\""
+env = ""
+reason = "The DB differential uses the optional production SQLx outbox integration"
+tier = "fast"
+required_features = ["sqlx-outbox"]
+required_env = []
+required_tools = ["cargo"]
+timeout_seconds = 600
+owner_release = "0.69.0"
+ship_mandatory = true
+artifacts = []
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "migration-conformance-fast-evidence-069"
+step = "Run exact-candidate fast evidence"
+
+[gate.command]
+program = "cargo"
+args = ["test", "-p", "hydracache-db", "--features", "sqlx-outbox", "--test", "cached_vs_direct_differential", "--locked", "-j", "2"]
+cwd = "."
+platform = "any"
+
+[gate.command.env]
+
+[[gate]]
+id = "ignored.hydracache-db.cached-vs-direct-postgres-069"
+kind = "ignored_test"
+source = "crates/hydracache-db/tests/cached_vs_direct_postgres.rs"
+package = "hydracache-db"
+target = "cached_vs_direct_postgres"
+test = "postgres_cached_reads_match_direct_queries_through_the_real_outbox"
+cfg = ""
+env = ""
+reason = "The PostgreSQL differential requires HYDRACACHE_TEST_POSTGRES_URL and a real PostgreSQL service"
+tier = "external"
+required_features = ["sqlx-outbox"]
+required_env = ["HYDRACACHE_TEST_POSTGRES_URL", "HYDRACACHE_POSTGRES_SERIES", "HYDRACACHE_POSTGRES_IMAGE_ID"]
+required_tools = ["cargo", "postgres"]
+timeout_seconds = 900
+owner_release = "0.69.0"
+ship_mandatory = true
+artifacts = ["target/test-evidence/0.69/postgres-16-differential.log", "target/test-evidence/0.69/postgres-16-image.txt", "target/test-evidence/0.69/postgres-16-seeds.txt"]
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "migration-conformance-postgres-069"
+step = "Run PostgreSQL cached-vs-direct differential"
+
+[gate.command]
+program = "cargo"
+args = ["run", "-p", "xtask", "--locked", "--", "postgres-conformance-check", "--mode", "happy"]
+cwd = "."
+platform = "any"
+
+[gate.command.env]
+HYDRACACHE_POSTGRES_IMAGE_ID = "postgres:16.4-alpine@sha256:5660c2cbfea50c7a9127d17dc4e48543eedd3d7a41a595a2dfa572471e37e64c"
+HYDRACACHE_POSTGRES_SERIES = "16"
+HYDRACACHE_TEST_POSTGRES_URL = "postgres://hydracache:hydracache@127.0.0.1:5432/hydracache"
+
+[[gate]]
+id = "ignored.hydracache-db.cached-vs-direct-postgres-18-069"
+kind = "ignored_test"
+source = "crates/hydracache-db/tests/cached_vs_direct_postgres.rs"
+package = "hydracache-db"
+target = "cached_vs_direct_postgres"
+test = "postgres_18_cached_reads_match_direct_queries_through_the_real_outbox"
+cfg = ""
+env = ""
+reason = "The PostgreSQL 18 differential proves the upper supported release line against a digest-pinned service"
+tier = "external"
+required_features = ["sqlx-outbox"]
+required_env = ["HYDRACACHE_TEST_POSTGRES_URL", "HYDRACACHE_POSTGRES_SERIES", "HYDRACACHE_POSTGRES_IMAGE_ID"]
+required_tools = ["cargo", "postgres"]
+timeout_seconds = 900
+owner_release = "0.69.0"
+ship_mandatory = true
+artifacts = ["target/test-evidence/0.69/postgres-18-differential.log", "target/test-evidence/0.69/postgres-18-image.txt", "target/test-evidence/0.69/postgres-18-seeds.txt"]
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "migration-conformance-postgres-069"
+step = "Run PostgreSQL cached-vs-direct differential"
+
+[gate.command]
+program = "cargo"
+args = ["run", "-p", "xtask", "--locked", "--", "postgres-conformance-check", "--mode", "happy"]
+cwd = "."
+platform = "any"
+
+[gate.command.env]
+HYDRACACHE_POSTGRES_IMAGE_ID = "postgres:18-alpine@sha256:9a8afca54e7861fd90fab5fdf4c42477a6b1cb7d293595148e674e0a3181de15"
+HYDRACACHE_POSTGRES_SERIES = "18"
+HYDRACACHE_TEST_POSTGRES_URL = "postgres://hydracache:hydracache@127.0.0.1:5432/hydracache"
+
+[[gate]]
+id = "ignored.hydracache-db.cached-vs-direct-postgres-canary-069"
+kind = "ignored_test"
+source = "crates/hydracache-db/tests/cached_vs_direct_postgres.rs"
+package = "hydracache-db"
+target = "cached_vs_direct_postgres"
+test = "canary_postgres_differential_rejects_a_dropped_invalidation"
+cfg = ""
+env = ""
+reason = "The PostgreSQL dropped-invalidation sentinel requires HYDRACACHE_TEST_POSTGRES_URL and a real PostgreSQL service"
+tier = "external"
+required_features = ["sqlx-outbox"]
+required_env = ["HYDRACACHE_TEST_POSTGRES_URL", "HYDRACACHE_POSTGRES_SERIES", "HYDRACACHE_POSTGRES_IMAGE_ID"]
+required_tools = ["cargo", "postgres"]
+timeout_seconds = 900
+owner_release = "0.69.0"
+ship_mandatory = true
+artifacts = ["target/test-evidence/0.69/postgres-16-canary.log"]
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "migration-conformance-postgres-069"
+step = "Prove PostgreSQL dropped-invalidation canary is red"
+
+[gate.command]
+program = "cargo"
+args = ["run", "-p", "xtask", "--locked", "--", "postgres-conformance-check", "--mode", "canary"]
+cwd = "."
+platform = "any"
+
+[gate.command.env]
+HYDRACACHE_TEST_POSTGRES_URL = "postgres://hydracache:hydracache@127.0.0.1:5432/hydracache"
+HYDRACACHE_POSTGRES_IMAGE_ID = "postgres:16.4-alpine@sha256:5660c2cbfea50c7a9127d17dc4e48543eedd3d7a41a595a2dfa572471e37e64c"
+HYDRACACHE_POSTGRES_SERIES = "16"
+
+[[gate]]
+id = "ignored.hydracache-db.cached-vs-direct-postgres-soak-069"
+kind = "ignored_test"
+source = "crates/hydracache-db/tests/cached_vs_direct_postgres.rs"
+package = "hydracache-db"
+target = "cached_vs_direct_postgres"
+test = "postgres_commit_scoped_wait_soak_stays_within_budget"
+cfg = ""
+env = ""
+reason = "The bounded PostgreSQL soak executes 24 deterministic 12-writer schedules against the digest-pinned release floor"
+tier = "external"
+required_features = ["sqlx-outbox"]
+required_env = ["HYDRACACHE_TEST_POSTGRES_URL", "HYDRACACHE_POSTGRES_SERIES", "HYDRACACHE_POSTGRES_IMAGE_ID"]
+required_tools = ["cargo", "postgres"]
+timeout_seconds = 180
+owner_release = "0.69.0"
+ship_mandatory = true
+artifacts = ["target/test-evidence/0.69/postgres-16-soak.log", "target/test-evidence/0.69/postgres-16-soak-seeds.txt"]
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "migration-conformance-postgres-069"
+step = "Run bounded PostgreSQL commit-wait soak"
+
+[gate.command]
+program = "cargo"
+args = ["run", "-p", "xtask", "--locked", "--", "postgres-conformance-check", "--mode", "soak"]
+cwd = "."
+platform = "any"
+
+[gate.command.env]
+HYDRACACHE_POSTGRES_IMAGE_ID = "postgres:16.4-alpine@sha256:5660c2cbfea50c7a9127d17dc4e48543eedd3d7a41a595a2dfa572471e37e64c"
+HYDRACACHE_POSTGRES_SERIES = "16"
+HYDRACACHE_TEST_POSTGRES_URL = "postgres://hydracache:hydracache@127.0.0.1:5432/hydracache"
+
+[[gate]]
+id = "cfg.hydracache-db.cached-vs-direct-postgres-069"
+kind = "cfg_test_target"
+source = "crates/hydracache-db/tests/cached_vs_direct_postgres.rs"
+package = "hydracache-db"
+target = "cached_vs_direct_postgres"
+test = ""
+cfg = "feature = \"sqlx-outbox\""
+env = ""
+reason = "The PostgreSQL differential uses the optional production SQLx outbox integration"
+tier = "external"
+required_features = ["sqlx-outbox"]
+required_env = ["HYDRACACHE_TEST_POSTGRES_URL", "HYDRACACHE_POSTGRES_SERIES", "HYDRACACHE_POSTGRES_IMAGE_ID"]
+required_tools = ["cargo", "postgres"]
+timeout_seconds = 900
+owner_release = "0.69.0"
+ship_mandatory = false
+artifacts = ["target/test-evidence/0.69/postgres-16-differential.log", "target/test-evidence/0.69/postgres-16-image.txt", "target/test-evidence/0.69/postgres-16-seeds.txt"]
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "migration-conformance-postgres-069"
+step = "Run PostgreSQL cached-vs-direct differential"
+
+[gate.command]
+program = "cargo"
+args = ["test", "-p", "hydracache-db", "--features", "sqlx-outbox", "--test", "cached_vs_direct_postgres", "--locked", "--", "--ignored", "--nocapture"]
+cwd = "."
+platform = "any"
+
+[gate.command.env]
+HYDRACACHE_TEST_POSTGRES_URL = "postgres://hydracache:hydracache@127.0.0.1:5432/hydracache"
+HYDRACACHE_POSTGRES_IMAGE_ID = "postgres:16.4-alpine@sha256:5660c2cbfea50c7a9127d17dc4e48543eedd3d7a41a595a2dfa572471e37e64c"
+HYDRACACHE_POSTGRES_SERIES = "16"
+
+[[gate]]
 id = "tool.hc2-release-admission-068"
 kind = "external_tool"
 source = "crates/xtask/src/client_plane_ci.rs"

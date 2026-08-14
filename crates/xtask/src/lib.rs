@@ -1,6 +1,7 @@
 pub mod bench_budget;
 pub mod canary_check;
 pub mod canary_sweep;
+pub mod ci_admission;
 pub mod client_conformance;
 pub mod client_package;
 pub mod client_plane_bakeoff;
@@ -23,6 +24,7 @@ pub mod fast_suite;
 pub mod feature_leak;
 pub mod gated_tests;
 pub mod host_attestation;
+pub mod migration_conformance;
 pub mod miri_check;
 pub mod mutants;
 pub mod perf;

@@ -469,6 +469,21 @@ impl InvalidationOutbox for SqlxInvalidationOutbox {
             SqlxOutboxPool::Postgres(pool) => status_postgres(pool, namespace).await,
         }
     }
+
+    async fn status_for_commit(
+        &self,
+        namespace: &str,
+        commit_position: &CommitPosition,
+    ) -> Result<OutboxStatus> {
+        match &self.pool {
+            SqlxOutboxPool::Sqlite(pool) => {
+                status_sqlite_for_commit(pool, namespace, commit_position).await
+            }
+            SqlxOutboxPool::Postgres(pool) => {
+                status_postgres_for_commit(pool, namespace, commit_position).await
+            }
+        }
+    }
 }
 
 async fn claim_sqlite(
@@ -622,6 +637,54 @@ async fn status_postgres(pool: &PgPool, namespace: &str) -> Result<OutboxStatus>
          where namespace = $1",
     )
     .bind(namespace)
+    .fetch_one(pool)
+    .await
+    .map_err(sqlx_error)?;
+    status_from_postgres_row(row, now)
+}
+
+async fn status_sqlite_for_commit(
+    pool: &SqlitePool,
+    namespace: &str,
+    commit_position: &CommitPosition,
+) -> Result<OutboxStatus> {
+    let now = now_ms_i64();
+    let row = sqlx::query(
+        "select \
+           coalesce(sum(case when state = 'pending' then 1 else 0 end), 0) as pending, \
+           min(case when state = 'pending' then created_at_ms else null end) as oldest_pending, \
+           coalesce(sum(case when state = 'dead' then 1 else 0 end), 0) as dead_lettered, \
+           max(published_at_ms) as last_published_at_ms, \
+           coalesce(sum(attempts), 0) as failed_attempts \
+         from hydracache_invalidation_outbox \
+         where namespace = ? and commit_position = ?",
+    )
+    .bind(namespace)
+    .bind(commit_position.as_str())
+    .fetch_one(pool)
+    .await
+    .map_err(sqlx_error)?;
+    status_from_sqlite_row(row, now)
+}
+
+async fn status_postgres_for_commit(
+    pool: &PgPool,
+    namespace: &str,
+    commit_position: &CommitPosition,
+) -> Result<OutboxStatus> {
+    let now = now_ms_i64();
+    let row = sqlx::query(
+        "select \
+           coalesce(sum(case when state = 'pending' then 1 else 0 end), 0)::bigint as pending, \
+           min(case when state = 'pending' then created_at_ms else null end) as oldest_pending, \
+           coalesce(sum(case when state = 'dead' then 1 else 0 end), 0)::bigint as dead_lettered, \
+           max(published_at_ms) as last_published_at_ms, \
+           coalesce(sum(attempts), 0)::bigint as failed_attempts \
+         from hydracache_invalidation_outbox \
+         where namespace = $1 and commit_position = $2",
+    )
+    .bind(namespace)
+    .bind(commit_position.as_str())
     .fetch_one(pool)
     .await
     .map_err(sqlx_error)?;

@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "suite": "embedded-cache-adapted-expectations",
+  "source": {
+    "project": "moka",
+    "repository": "https://github.com/moka-rs/moka",
+    "version": "v0.12.15-3-g7006d8c",
+    "commit": "7006d8c91d964275eea73df5c79cf6ee28c2f016"
+  },
+  "rows": [
+    {"id":"cache-absent","source_test":"tests/entry_api_tokio.rs#test_get_with","expectation":"an absent key returns no value","expected":"pass","hydracache_test":"absent_get"},
+    {"id":"cache-put-get","source_test":"tests/entry_api_tokio.rs#test_get_with","expectation":"an inserted value is returned","expected":"pass","hydracache_test":"put_get"},
+    {"id":"cache-single-flight","source_test":"tests/entry_api_tokio.rs#test_get_with","expectation":"concurrent loaders for one key execute once","expected":"pass","hydracache_test":"single_flight"},
+    {"id":"cache-loader-error","source_test":"tests/entry_api_tokio.rs#test_try_get_with","expectation":"a loader error is not cached as a value","expected":"pass","hydracache_test":"loader_error_retry"},
+    {"id":"cache-invalidate","source_test":"tests/runtime_tokio.rs#main","expectation":"explicit invalidation removes the current value","expected":"pass","hydracache_test":"invalidate_key"},
+    {"id":"cache-expiry","source_test":"src/future/builder.rs#time_to_live","expectation":"a TTL entry becomes absent after expiry","expected":"pass","hydracache_test":"ttl_expiry"},
+    {"id":"cache-mutation-listener","source_test":"src/notification/notifier.rs#notify","expectation":"a mutation listener observes the committed mutation","expected":"pass","hydracache_test":"mutation_listener"},
+    {"id":"cache-namespaces","source_test":"tests/entry_api_tokio.rs#test_get_with","expectation":"logical namespaces do not alias each other","expected":"pass","hydracache_test":"namespace_isolation"},
+    {"id":"cache-weighted-eviction","source_test":"src/future/builder.rs#weigher","expectation":"weighted capacity drives eviction","expected":"unsupported-documented","hydracache_test":"weighted_eviction_unsupported","reason":"HydraCache exposes entry-count capacity rather than Moka's arbitrary per-entry weigher."},
+    {"id":"cache-idle-expiry","source_test":"src/future/builder.rs#time_to_idle","expectation":"time-to-idle extends on access","expected":"unsupported-documented","hydracache_test":"idle_expiry_unsupported","reason":"HydraCache's public cache options expose TTL, not a time-to-idle contract."}
+  ]
+}

@@ -94,10 +94,13 @@ final class HydraCacheFacadeTest {
     @Override public int hashCode() { return Arrays.hashCode(value); }
   }
 
-  private static final class FakeClient implements HydraCacheClient {
+  static final class FakeClient implements HydraCacheClient {
     private final Map<Key, byte[]> values = new ConcurrentHashMap<>();
+    private final Map<Key, Long> expirations = new ConcurrentHashMap<>();
     private final Map<Key, Long> locks = new ConcurrentHashMap<>();
+    private final Map<Key, Long> lockDeadlines = new ConcurrentHashMap<>();
     private final AtomicLong fences = new AtomicLong();
+    private final AtomicLong logicalNanos = new AtomicLong(1);
     private volatile byte[] listenerPrefix;
     private volatile CacheEventListener listener;
     private final AtomicLong watermarks = new AtomicLong();
@@ -105,6 +108,13 @@ final class HydraCacheFacadeTest {
     @Override public CompletableFuture<Optional<CacheValue>> get(
         byte[] key, RequestOptions options) {
       byte[] value = values.get(new Key(key));
+      Key wrapped = new Key(key);
+      Long expiresAt = expirations.get(wrapped);
+      if (expiresAt != null && expiresAt <= logicalNanos.get()) {
+        values.remove(wrapped);
+        expirations.remove(wrapped);
+        value = null;
+      }
       return completed(value == null ? Optional.empty()
           : Optional.of(new CacheValue(value, Optional.empty())));
     }
@@ -112,6 +122,9 @@ final class HydraCacheFacadeTest {
     @Override public CompletableFuture<MutationResult> put(
         byte[] key, byte[] value, Duration ttl, RequestOptions options) {
       values.put(new Key(key), value.clone());
+      Key wrapped = new Key(key);
+      if (ttl.isZero()) expirations.remove(wrapped);
+      else expirations.put(wrapped, logicalNanos.get() + ttl.toNanos());
       emit(key, value, false);
       return completed(new MutationResult(true));
     }
@@ -119,6 +132,7 @@ final class HydraCacheFacadeTest {
     @Override public CompletableFuture<MutationResult> delete(
         byte[] key, RequestOptions options) {
       boolean applied = values.remove(new Key(key)) != null;
+      expirations.remove(new Key(key));
       if (applied) emit(key, new byte[0], true);
       return completed(new MutationResult(applied));
     }
@@ -132,7 +146,11 @@ final class HydraCacheFacadeTest {
         applied.set(true);
         return replacement.clone();
       });
-      if (applied.get()) emit(key, replacement, false);
+      if (applied.get()) {
+        if (ttl.isZero()) expirations.remove(wrapped);
+        else expirations.put(wrapped, logicalNanos.get() + ttl.toNanos());
+        emit(key, replacement, false);
+      }
       return completed(new MutationResult(applied.get()));
     }
 
@@ -145,32 +163,47 @@ final class HydraCacheFacadeTest {
         applied.set(true);
         return null;
       });
-      if (applied.get()) emit(key, new byte[0], true);
+      if (applied.get()) {
+        expirations.remove(wrapped);
+        emit(key, new byte[0], true);
+      }
       return completed(new MutationResult(applied.get()));
     }
 
     @Override public CompletableFuture<LockAcquireResult> tryLock(
         byte[] key, Duration lease, RequestOptions options) {
       Key wrapped = new Key(key);
+      expireLock(wrapped);
       long fence = fences.incrementAndGet();
       Long prior = locks.putIfAbsent(wrapped, fence);
+      if (prior == null) lockDeadlines.put(wrapped, logicalNanos.get() + lease.toNanos());
       return completed(prior == null
           ? new LockAcquireResult(true, fence) : new LockAcquireResult(false, 0));
     }
 
     @Override public CompletableFuture<MutationResult> unlock(
         byte[] key, long fence, RequestOptions options) {
-      return completed(new MutationResult(locks.remove(new Key(key), fence)));
+      Key wrapped = new Key(key);
+      expireLock(wrapped);
+      boolean removed = locks.remove(wrapped, fence);
+      if (removed) lockDeadlines.remove(wrapped);
+      return completed(new MutationResult(removed));
     }
 
     @Override public CompletableFuture<MutationResult> renewLock(
         byte[] key, long fence, Duration lease, RequestOptions options) {
-      return completed(new MutationResult(Long.valueOf(fence).equals(locks.get(new Key(key)))));
+      Key wrapped = new Key(key);
+      expireLock(wrapped);
+      boolean applied = Long.valueOf(fence).equals(locks.get(wrapped));
+      if (applied) lockDeadlines.put(wrapped, logicalNanos.get() + lease.toNanos());
+      return completed(new MutationResult(applied));
     }
 
     @Override public CompletableFuture<LockOwnership> lockOwnership(
         byte[] key, RequestOptions options) {
-      Long fence = locks.get(new Key(key));
+      Key wrapped = new Key(key);
+      expireLock(wrapped);
+      Long fence = locks.get(wrapped);
       return completed(fence == null
           ? new LockOwnership(false, 0) : new LockOwnership(true, fence));
     }
@@ -200,6 +233,18 @@ final class HydraCacheFacadeTest {
       return new ClientMetricsSnapshot(0, 0, 0, 0, 0, 0, 0, 0, 0);
     }
     @Override public void close() { }
+
+    void advanceTime(Duration duration) {
+      logicalNanos.addAndGet(duration.toNanos());
+    }
+
+    private void expireLock(Key key) {
+      Long deadline = lockDeadlines.get(key);
+      if (deadline != null && deadline <= logicalNanos.get()) {
+        locks.remove(key);
+        lockDeadlines.remove(key);
+      }
+    }
 
     private void emit(byte[] key, byte[] value, boolean removed) {
       CacheEventListener current = listener;

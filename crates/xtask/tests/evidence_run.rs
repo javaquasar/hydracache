@@ -48,13 +48,115 @@ fn windows_nested_cargo_uses_an_unlocked_deterministic_target_dir() {
 }
 
 #[test]
+fn evidence_provenance_requires_valid_shas_and_the_tested_checkout() {
+    let source = "0123456789abcdef0123456789abcdef01234567";
+    let valid = BTreeMap::from([
+        ("HYDRACACHE_EVIDENCE_BASE_SHA".to_owned(), source.to_owned()),
+        ("HYDRACACHE_EVIDENCE_HEAD_SHA".to_owned(), source.to_owned()),
+        (
+            "HYDRACACHE_EVIDENCE_TESTED_SHA".to_owned(),
+            source.to_owned(),
+        ),
+    ]);
+    assert!(xtask::evidence_run::evidence_provenance_problem(source, &valid).is_none());
+
+    let partial = BTreeMap::from([(
+        "HYDRACACHE_EVIDENCE_TESTED_SHA".to_owned(),
+        source.to_owned(),
+    )]);
+    assert!(
+        xtask::evidence_run::evidence_provenance_problem(source, &partial)
+            .unwrap()
+            .contains("missing evidence provenance")
+    );
+
+    let github_without_provenance =
+        BTreeMap::from([("GITHUB_ACTIONS".to_owned(), "true".to_owned())]);
+    assert!(
+        xtask::evidence_run::evidence_provenance_problem(source, &github_without_provenance)
+            .unwrap()
+            .contains("missing evidence provenance")
+    );
+
+    let mut wrong = valid.clone();
+    wrong.insert("HYDRACACHE_EVIDENCE_TESTED_SHA".to_owned(), "f".repeat(40));
+    assert!(
+        xtask::evidence_run::evidence_provenance_problem(source, &wrong)
+            .unwrap()
+            .contains("does not match checkout")
+    );
+
+    let mut malformed = valid;
+    malformed.insert(
+        "HYDRACACHE_EVIDENCE_HEAD_SHA".to_owned(),
+        "short".to_owned(),
+    );
+    assert!(
+        xtask::evidence_run::evidence_provenance_problem(source, &malformed)
+            .unwrap()
+            .contains("invalid evidence provenance")
+    );
+}
+
+#[test]
 fn evidence_child_helper() {
     match std::env::var(CHILD_ENV).as_deref() {
         Ok("pass") => println!("logical pass"),
+        Ok("assert-no-provenance") => {
+            for name in [
+                "HYDRACACHE_EVIDENCE_BASE_SHA",
+                "HYDRACACHE_EVIDENCE_HEAD_SHA",
+                "HYDRACACHE_EVIDENCE_TESTED_SHA",
+            ] {
+                assert!(std::env::var_os(name).is_none(), "leaked {name} into gate");
+            }
+            println!("logical pass without outer provenance");
+        }
         Ok("fail") => panic!("intentional evidence failure"),
         Ok("timeout") => std::thread::sleep(Duration::from_secs(10)),
         _ => {}
     }
+}
+
+#[test]
+fn evidence_executor_does_not_leak_outer_provenance_into_gate_process() {
+    let root = temp_root("provenance-isolation");
+    write_registry(&root, "assert-no-provenance", 5, vec![]);
+    let registry_path = root.join(xtask::gated_tests::REGISTRY_PATH);
+    let mut registry: xtask::gated_tests::GatedTestRegistry =
+        toml::from_str(&fs::read_to_string(&registry_path).unwrap()).unwrap();
+    for name in [
+        "HYDRACACHE_EVIDENCE_BASE_SHA",
+        "HYDRACACHE_EVIDENCE_HEAD_SHA",
+        "HYDRACACHE_EVIDENCE_TESTED_SHA",
+    ] {
+        registry.gate[0]
+            .command
+            .env
+            .insert(name.to_owned(), "f".repeat(40));
+    }
+    fs::write(&registry_path, toml::to_string_pretty(&registry).unwrap()).unwrap();
+    run(&root, "git", &["add", "."]);
+    run(
+        &root,
+        "git",
+        &["commit", "-q", "-m", "add inherited provenance fixture"],
+    );
+
+    let result = execute_test_gate(
+        &root,
+        "0.64",
+        "test.assert-no-provenance",
+        Path::new("target/receipts"),
+    )
+    .unwrap();
+
+    assert_eq!(result.receipt.outcome, EvidenceOutcome::Pass);
+    assert!(result
+        .receipt
+        .stdout
+        .contains("logical pass without outer provenance"));
+    fs::remove_dir_all(root).unwrap();
 }
 
 fn temp_root(name: &str) -> PathBuf {
@@ -82,6 +184,21 @@ fn run(root: &Path, program: &str, args: &[&str]) {
         .status()
         .unwrap();
     assert!(status.success(), "{program} {args:?} failed");
+}
+
+fn execute_test_gate(
+    root: &Path,
+    release: &str,
+    gate_id: &str,
+    receipts_dir: &Path,
+) -> Result<xtask::evidence_run::ExecutionResult, Box<dyn std::error::Error>> {
+    xtask::evidence_run::execute_gate_with_identity(
+        root,
+        release,
+        gate_id,
+        receipts_dir,
+        BTreeMap::new(),
+    )
 }
 
 fn write_registry(root: &Path, mode: &str, timeout_seconds: u64, artifacts: Vec<String>) {
@@ -141,7 +258,7 @@ fn write_registry(root: &Path, mode: &str, timeout_seconds: u64, artifacts: Vec<
 fn execute(mode: &str, timeout_seconds: u64) -> (PathBuf, xtask::evidence_run::ExecutionResult) {
     let root = temp_root(mode);
     write_registry(&root, mode, timeout_seconds, vec![]);
-    let result = xtask::evidence_run::execute_gate(
+    let result = execute_test_gate(
         &root,
         "0.64",
         &format!("test.{mode}"),
@@ -156,8 +273,7 @@ fn evidence_registry_baseline_can_execute_a_later_release() {
     let root = temp_root("forward-release");
     write_registry(&root, "pass", 5, vec![]);
     let result =
-        xtask::evidence_run::execute_gate(&root, "0.65", "test.pass", Path::new("target/receipts"))
-            .unwrap();
+        execute_test_gate(&root, "0.65", "test.pass", Path::new("target/receipts")).unwrap();
     assert_eq!(result.receipt.release, "0.65.0");
     assert_eq!(result.receipt.outcome, EvidenceOutcome::Pass);
     fs::remove_dir_all(root).unwrap();
@@ -225,8 +341,7 @@ fn evidence_executor_rejects_a_stale_declared_artifact() {
     fs::write(&artifact_path, br#"{"stale":true}"#).unwrap();
 
     let result =
-        xtask::evidence_run::execute_gate(&root, "0.64", "test.pass", Path::new("target/receipts"))
-            .unwrap();
+        execute_test_gate(&root, "0.64", "test.pass", Path::new("target/receipts")).unwrap();
 
     assert_eq!(result.receipt.outcome, EvidenceOutcome::Fail);
     assert!(result.receipt.artifacts.is_empty());
@@ -241,13 +356,8 @@ fn evidence_executor_rejects_a_stale_declared_artifact() {
 fn evidence_executor_rejects_shells_path_traversal_and_artifacts_outside_target() {
     let root = temp_root("unsafe");
     write_registry(&root, "unsafe", 1, vec!["../secret".to_owned()]);
-    let error = xtask::evidence_run::execute_gate(
-        &root,
-        "0.64",
-        "test.unsafe",
-        Path::new("target/receipts"),
-    )
-    .unwrap_err();
+    let error =
+        execute_test_gate(&root, "0.64", "test.unsafe", Path::new("target/receipts")).unwrap_err();
     assert!(error.to_string().contains("path traversal"));
 
     let registry_path = root.join(xtask::gated_tests::REGISTRY_PATH);
@@ -255,25 +365,15 @@ fn evidence_executor_rejects_shells_path_traversal_and_artifacts_outside_target(
         toml::from_str(&fs::read_to_string(&registry_path).unwrap()).unwrap();
     registry.gate[0].artifacts = vec!["docs/not-an-artifact.json".to_owned()];
     fs::write(&registry_path, toml::to_string_pretty(&registry).unwrap()).unwrap();
-    let error = xtask::evidence_run::execute_gate(
-        &root,
-        "0.64",
-        "test.unsafe",
-        Path::new("target/receipts"),
-    )
-    .unwrap_err();
+    let error =
+        execute_test_gate(&root, "0.64", "test.unsafe", Path::new("target/receipts")).unwrap_err();
     assert!(error.to_string().contains("target directory"));
 
     registry.gate[0].artifacts.clear();
     registry.gate[0].command.program = "cmd.exe".to_owned();
     fs::write(&registry_path, toml::to_string_pretty(&registry).unwrap()).unwrap();
-    let error = xtask::evidence_run::execute_gate(
-        &root,
-        "0.64",
-        "test.unsafe",
-        Path::new("target/receipts"),
-    )
-    .unwrap_err();
+    let error =
+        execute_test_gate(&root, "0.64", "test.unsafe", Path::new("target/receipts")).unwrap_err();
     assert!(error.to_string().contains("shell program is forbidden"));
     fs::remove_dir_all(root).unwrap();
 }
@@ -337,13 +437,8 @@ fn evidence_executor_runs_a_registered_fast_suite_without_shell_indirection() {
     run(&root, "git", &["add", "."]);
     run(&root, "git", &["commit", "-q", "-m", "fast fixture"]);
 
-    let result = xtask::evidence_run::execute_gate(
-        &root,
-        "0.64",
-        "fast.fixture",
-        Path::new("target/receipts"),
-    )
-    .unwrap();
+    let result =
+        execute_test_gate(&root, "0.64", "fast.fixture", Path::new("target/receipts")).unwrap();
     assert_eq!(result.receipt.outcome, EvidenceOutcome::Pass);
     assert!(result.receipt.stdout.contains("logical pass"));
     fs::remove_dir_all(root).unwrap();

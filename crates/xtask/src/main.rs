@@ -5,6 +5,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     let mut args = env::args().skip(1);
     match args.next().as_deref() {
         Some("bench-budget") => xtask::bench_budget::run(args.collect())?,
+        Some("borrowed-suite-check") => xtask::migration_conformance::run_borrowed(args.collect())?,
         Some("canary-check") => xtask::canary_check::run(args.collect())?,
         Some("canary-sweep") => xtask::canary_sweep::run(args.collect())?,
         Some("client-plane-java-sdk-check") => xtask::client_plane_java::run(args.collect())?,
@@ -29,6 +30,12 @@ fn main() -> Result<(), Box<dyn Error>> {
         Some("client-conformance") => xtask::client_conformance::run(args.collect())?,
         Some("client-package-check") => xtask::client_package::run(args.collect())?,
         Some("client-schema-check") => xtask::client_schema::run(args.collect())?,
+        Some("ci-admission-status") => {
+            let code = xtask::ci_admission::run(args.collect())?;
+            if code != 0 {
+                std::process::exit(code);
+            }
+        }
         Some("compat-check") => xtask::compat_check::run(args.collect())?,
         Some("coverage-ratchet-check") => xtask::coverage_ratchet::run(args.collect())?,
         Some("determinism-sweep") => xtask::determinism_sweep::run(args.collect())?,
@@ -42,7 +49,12 @@ fn main() -> Result<(), Box<dyn Error>> {
         }
         Some("fast-suite-check") => xtask::fast_suite::run(args.collect())?,
         Some("gated-test-check") => xtask::gated_tests::run(args.collect())?,
+        Some("legacy-client-check") => xtask::migration_conformance::run_legacy(args.collect())?,
         Some("miri-check") => xtask::miri_check::run(args.collect())?,
+        Some("migration-conformance-check") => xtask::migration_conformance::run(args.collect())?,
+        Some("postgres-conformance-check") => {
+            xtask::migration_conformance::run_postgres(args.collect())?
+        }
         Some("mutants") => xtask::mutants::run(args.collect())?,
         Some("perf-prebuild") => xtask::perf::run(args.collect())?,
         Some("perf-bootstrap") => xtask::perf_bootstrap::run(args.collect())?,
@@ -67,6 +79,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 fn print_usage() {
     println!(
         "Usage:\n  \
+         cargo xtask borrowed-suite-check --suite hazelcast  # execute the 0.69 adapted Hazelcast expectation manifest\n  \
          cargo xtask verify        # run the fast release gates (see docs/GATES.md)\n  \
          cargo xtask verify-no-test-features  # ensure test-only features/deps are absent from release graphs\n  \
          cargo xtask canary-check  # validate the 0.64 Raft canary registry\n  \
@@ -87,6 +100,7 @@ fn print_usage() {
          cargo xtask client-conformance --all-sdks  # validate and execute the shared Rust/Java/Python HC/2 semantics\n  \
          cargo xtask client-package-check  # freeze and consume Rust/Java/Python HC/2 packages\n  \
          cargo xtask client-schema-check  # prove generation-6 schema/API metadata and deterministic SDK generation\n  \
+         cargo xtask ci-admission-status --release <release> --source <sha> --head <sha> --base <sha> [--require <lane=result>|--lane-status <lane=path>] --output <path>  # retain and validate fail-loud CI admission status\n  \
          cargo xtask compat-check [--preflight-only|--manifest-only]  # validate previous-release compatibility\n  \
          cargo xtask coverage-ratchet-check [--structural|--run]  # validate or execute the pinned coverage floor\n  \
          cargo xtask determinism-sweep --release 0.64  # compare canonical logical evidence across repeated/serial runs\n  \
@@ -95,7 +109,10 @@ fn print_usage() {
          cargo xtask evidence-run --release 0.64 --gate <id>  # execute a registered gate and write a receipt\n  \
          cargo xtask fast-suite-check --release 0.64  # validate fast-suite budgets and receipts\n  \
          cargo xtask gated-test-check  # validate every ignored/cfg/env-gated test registration\n  \
+         cargo xtask legacy-client-check --matrix hc1  # build shipped HC/1 libraries into consumers and run them against the current server\n  \
          cargo xtask miri-check  # run pinned Miri-safe snapshot proofs (skip loud when unavailable)\n  \
+         cargo xtask migration-conformance-check <--structural|--upstream>  # validate 0.69 manifests or resolve selectors at pinned upstream commits\n  \
+         cargo xtask postgres-conformance-check --mode <happy|canary>  # execute the real PostgreSQL differential or expected-red sentinel\n  \
          cargo xtask mutants       # validate the Raft mutation-testing baseline, optionally run cargo-mutants\n  \
          cargo xtask perf-runner-preflight --release 0.67 --profile reference-v1  # reject an unstable reference runner before build/measurement\n  \
          cargo xtask perf-prebuild --release 0.67 --profile reference-v1  # build and bind exact performance binaries\n  \

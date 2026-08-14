@@ -397,9 +397,9 @@ impl OutboxWorkerCounters {
 pub enum ConsistencyMode {
     /// Do not wait for local invalidation publishing.
     NoWait,
-    /// Wait for the local namespace outbox to drain.
+    /// Wait for the receipt's exact commit to publish locally.
     Local,
-    /// Wait locally until timeout, then report degraded instead of hiding it.
+    /// Wait locally until timeout, or report a terminal dead letter as degraded.
     BestEffort,
 }
 
@@ -555,8 +555,8 @@ impl InvalidationWait {
         self.counters.snapshot()
     }
 
-    /// Wait until the namespace outbox is drained, timeout is reached, or mode
-    /// is [`ConsistencyMode::NoWait`].
+    /// Wait until the receipt's exact commit is published, becomes dead-lettered,
+    /// timeout is reached, or mode is [`ConsistencyMode::NoWait`].
     pub async fn wait<O>(
         &self,
         outbox: &O,
@@ -581,7 +581,21 @@ impl InvalidationWait {
         }
 
         loop {
-            let status = outbox.status(receipt.namespace()).await?;
+            let status = outbox
+                .status_for_commit(receipt.namespace(), receipt.commit_position())
+                .await?;
+            if status.dead_lettered > 0 {
+                let outcome = InvalidationWaitOutcome {
+                    mode: self.mode,
+                    satisfied: false,
+                    degraded: true,
+                    timed_out: false,
+                    pending: status.pending,
+                    elapsed_ms: elapsed_ms(start),
+                };
+                self.counters.record(outcome);
+                return Ok(outcome);
+            }
             if status.pending == 0 {
                 let outcome = InvalidationWaitOutcome {
                     mode: self.mode,
@@ -647,6 +661,16 @@ pub trait InvalidationOutbox: fmt::Debug + Send + Sync + 'static {
 
     /// Read-only status snapshot for operators.
     async fn status(&self, namespace: &str) -> Result<OutboxStatus>;
+
+    /// Read-only status for the exact commit represented by an invalidation receipt.
+    ///
+    /// Later or unrelated pending rows in the same namespace must not delay a
+    /// read-after-write wait for this commit.
+    async fn status_for_commit(
+        &self,
+        namespace: &str,
+        commit_position: &CommitPosition,
+    ) -> Result<OutboxStatus>;
 }
 
 /// In-memory outbox adapter for tests, demos, and custom-adapter examples.
@@ -844,12 +868,33 @@ impl InvalidationOutbox for InMemoryInvalidationOutbox {
     }
 
     async fn status(&self, namespace: &str) -> Result<OutboxStatus> {
+        self.status_matching(namespace, None)
+    }
+
+    async fn status_for_commit(
+        &self,
+        namespace: &str,
+        commit_position: &CommitPosition,
+    ) -> Result<OutboxStatus> {
+        self.status_matching(namespace, Some(commit_position))
+    }
+}
+
+impl InMemoryInvalidationOutbox {
+    fn status_matching(
+        &self,
+        namespace: &str,
+        commit_position: Option<&CommitPosition>,
+    ) -> Result<OutboxStatus> {
         let inner = self.lock_inner()?;
         let now = now_ms();
         let mut status = OutboxStatus::default();
         let mut oldest_pending = None::<u64>;
 
-        for row in inner.rows.values().filter(|row| row.namespace == namespace) {
+        for row in inner.rows.values().filter(|row| {
+            row.namespace == namespace
+                && commit_position.is_none_or(|position| row.commit_position == *position)
+        }) {
             status.failed_attempts += u64::from(row.attempts);
             match row.state {
                 OutboxState::Pending => {

@@ -1925,3 +1925,71 @@ independent clean Rust generations and two clean Java generations byte for
 byte. The socket corpus verifies malformed/cross-candidate refusal and explicit
 slow-consumer gap delivery over mTLS for every candidate codec. These are
 correctness and reproducibility gates, not latency or capacity measurements.
+## Migration conformance (0.69)
+
+Borrowed expectations are data-driven. The Hazelcast and Moka manifests bind every executable row
+to an upstream repository commit and source symbol; non-pass rows require a reason. The structural
+checker rejects duplicate IDs, unknown outcomes, partial commit IDs, unsafe source paths, and
+unreasoned divergence/unsupported/skip rows. The separate `migration-conformance-check --upstream`
+gate downloads source files from the exact GitHub commit and rejects missing commits, paths, or
+selectors.
+
+The HC/1 compatibility lane compiles consumers from exact shipped commits rather than replaying old
+bytes. The DB differential coordinates reads at a logical commit position, so a current direct read
+cannot race ahead of the cached snapshot being compared. `NoWait` may be stale before its captured
+invalidation drains; exact equality is mandatory after drain and quiescence. SQLite runs on every
+PR; `cached_vs_direct_postgres` runs with `--ignored` selected explicitly in the
+`migration-conformance-postgres-069` service job, and fails loud if its URL is missing.
+
+Both backends additionally execute 12 concurrent transactional writers for three fixed seeds. The
+PostgreSQL happy path runs on digest-pinned 16.4 and major-18 services and verifies the real
+`server_version_num` against its matrix declaration. The 16.4 floor additionally runs 24 seeded
+12-writer schedules under a 120-second in-test budget. The PostgreSQL target retains a normal green dropped-invalidation sentinel and is expected-red when
+`HYDRACACHE_CANARY_DEFECT=W4_PG_DROP`. Its dedicated CI step verifies both the non-zero exit and
+the `HC-CANARY-RED:W4-PG` marker. `InvalidationWait` queries the receipt's exact commit via
+`status_for_commit`; `outbox_barrier::receipt_wait_is_not_blocked_by_a_later_pending_commit` proves
+that unrelated later work cannot manufacture a timeout, with the same assertion repeated against
+the SQLx SQLite adapter in `outbox_sqlite`. A dead-lettered row at the receipt commit is terminal
+degraded evidence and can never be reported as a satisfied wait; in-memory, SQLite, and both
+PostgreSQL matrix rows exercise this fail-closed contract.
+
+The 0.69 CI lanes execute the SQLx, Java, legacy, and PostgreSQL gates through `evidence-run`.
+Fast receipts and canaries are isolated in `migration-conformance-fast-evidence-069`. Every lane
+retains a JSON outcome even when a prerequisite step fails. `migration-conformance-admission-069`
+runs with `if: always()`, rejects failed or skipped upstream lanes, then merges receipts for the
+same tested SHA and runs `release-evidence --release 0.69 --require-ship`; raw test success without
+its receipt cannot satisfy admission. It parses every downloaded lane-status JSON and requires a
+consistent pass with the exact release, head, base, and tested SHA before receipt admission.
+Receipts retain the same provenance, and the tested SHA must equal the checked-out commit.
+
+The HC/2 daemon fixture announces `READY_DAEMON_V1`. Its shared Rust parser rejects legacy,
+truncated, and extended shapes; current, retained, and external Rust/Java process harnesses must
+update atomically with the producer. The isolated W1 canary uses the Maven reactor (`-am`) so its
+guard cannot depend on an artifact installed by another job. Java reconnect treats close failures
+from an already-dead session transport as best-effort cleanup while still marking the logical
+session lost. A stream that closes before its handshake can be sent is classified as
+`RECONNECT_IDEMPOTENT`, permitting ordered endpoint fallback; authentication and protocol-policy
+failures remain terminal. A deterministic internal unit test covers that boundary, while the live
+Rust-process recovery test covers the complete failover path.
+
+The independent fast-evidence job installs `cargo-deny` because workspace Nextest executes the
+runtime dependency-isolation test, and it restores full release history before the canonical
+exact-candidate evidence step. `evidence-run` records head/base/tested SHA provenance for its own receipt but removes
+those variables from the registered child process; nested fixture repositories therefore cannot
+inherit authority for the outer exact candidate.
+
+Every 0.69 receipt bundle includes the evidence files referenced by its receipts and preserves the
+repository-relative `target/nextest`, `target/test-evidence`, and `target/release-evidence` layout.
+Admission downloads bundles at `target/` and revalidates artifact presence and digests; a detached
+receipt JSON without its JUnit or differential log cannot satisfy `--require-ship`. Its checkout
+uses full history so the required published `v0.68.0` compatibility baseline tag is verified by the
+same final command.
+
+The Hazelcast gate builds the Rust mTLS fixture and production daemon before Maven. The live facade
+test uses the real Java HC/2 client; the same command executes the production lease-expiry test and
+the Java recovery/session-loss contract, so the borrowed manifest is not accepted from a
+`FakeClient` run alone.
+
+The release canary registry now points W0-W5 at six distinct semantic defects. The release-evidence
+parser accepts `language = "rust" | "java" | "python"`; Java selectors require a nearby JUnit
+annotation, allowing W1 to name its live-daemon and recovery tests directly.

@@ -92,8 +92,8 @@ final class ExternalConsumerTest {
       BufferedReader output = new BufferedReader(
           new InputStreamReader(server.getInputStream(), StandardCharsets.UTF_8));
       String[] ready = output.readLine().split("\\t", -1);
-      assertEquals("READY_DAEMON", ready[0]);
-      assertEquals(6, ready.length);
+      assertEquals("READY_DAEMON_V1", ready[0]);
+      assertEquals(8, ready.length);
 
       HydraCacheClientConfig config = HydraCacheClientConfig.builder()
           .endpoint(URI.create("https://localhost:" + ready[1]))

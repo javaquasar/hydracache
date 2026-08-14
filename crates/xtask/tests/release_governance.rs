@@ -145,12 +145,12 @@ fn ci_wires_fast_and_raft_corner_case_tiers_to_declared_commands() {
 
     for (current, stale, expected_problem) in [
         (
-            "default: \"0.67.1\"",
+            "default: \"0.69\"",
             "default: \"0.67\"",
             "workflow_dispatch input candidate_release",
         ),
         (
-            "${{ inputs.candidate_release || '0.67.1' }}",
+            "${{ inputs.candidate_release || '0.69' }}",
             "${{ inputs.candidate_release || '0.67' }}",
             "global HYDRACACHE_CANDIDATE_RELEASE",
         ),
@@ -734,6 +734,37 @@ jobs:
     assert!(problems
         .iter()
         .any(|problem| problem.contains("force-fetch remote heads and annotated tags")));
+}
+
+#[test]
+fn release_governance_check_accepts_release_069_independent_evidence_wiring() {
+    let root = xtask::doc_check::find_repo_root().unwrap();
+    let report = xtask::release_governance::check(&root, "0.69").unwrap();
+    assert!(report.problems.is_empty(), "{:#?}", report.problems);
+}
+
+#[test]
+fn release_069_receipt_and_admission_commands_are_fail_closed() {
+    let root = xtask::doc_check::find_repo_root().unwrap();
+    let workflow = std::fs::read_to_string(root.join(".github/workflows/ci.yml")).unwrap();
+    for command in [
+        "evidence-run --release 0.69 --gate fast.migration-conformance-db-069",
+        "evidence-run --release 0.69 --gate tool.borrowed-hazelcast-069",
+        "evidence-run --release 0.69 --gate tool.legacy-hc1-clients-069",
+        "evidence-run --release 0.69 --gate \"${{ matrix.postgres.happy_gate }}\"",
+        "evidence-run --release 0.69 --gate ignored.hydracache-db.cached-vs-direct-postgres-canary-069",
+        "evidence-run --release 0.69 --gate ignored.hydracache-db.cached-vs-direct-postgres-soak-069",
+        "release-evidence --release 0.69 --receipts-dir target/release-evidence/receipts --require-ship",
+    ] {
+        let broken = workflow.replacen(command, "removed-0.69-release-proof", 1);
+        let problems =
+            xtask::release_governance::release_execution_wiring_problems(&broken, "0.69")
+                .unwrap();
+        assert!(
+            problems.iter().any(|problem| problem.contains(command)),
+            "missing 0.69 proof command was accepted: {command}: {problems:#?}"
+        );
+    }
 }
 
 #[test]

@@ -59,6 +59,21 @@ pub struct EvidenceWorkItem {
 pub struct RequiredTest {
     pub source: String,
     pub function: String,
+    #[serde(default)]
+    pub language: TestLanguage,
+}
+
+/// Source language used to validate a release-evidence test selector.
+#[derive(Debug, Clone, Copy, Default, Deserialize, Serialize, PartialEq, Eq)]
+#[serde(rename_all = "snake_case")]
+pub enum TestLanguage {
+    /// Rust `#[test]`, `#[tokio::test]`, or registered proptest function.
+    #[default]
+    Rust,
+    /// JUnit method annotated with `@Test` or `@TestFactory`.
+    Java,
+    /// Python function whose name starts with `test_`.
+    Python,
 }
 
 #[derive(Debug, Clone, Copy, Deserialize, Serialize, PartialEq, Eq, PartialOrd, Ord)]
@@ -1013,6 +1028,7 @@ fn template_manifest(
                             .map(|guard| RequiredTest {
                                 source: guard.file.clone(),
                                 function: guard.function.clone(),
+                                language: TestLanguage::Rust,
                             })
                             .collect()
                     }),
@@ -1066,6 +1082,16 @@ pub fn dynamic_canary_release_problem(
 }
 
 fn function_exists(root: &Path, test: &RequiredTest) -> Result<bool, Box<dyn Error>> {
+    let path = safe_repo_path(root, &test.source)?;
+    let source = fs::read_to_string(path)?;
+    match test.language {
+        TestLanguage::Rust => rust_test_exists(&source, &test.function),
+        TestLanguage::Java => Ok(java_test_exists(&source, &test.function)),
+        TestLanguage::Python => Ok(python_test_exists(&source, &test.function)),
+    }
+}
+
+fn rust_test_exists(source: &str, wanted: &str) -> Result<bool, Box<dyn Error>> {
     struct Functions<'a> {
         wanted: &'a str,
         found: bool,
@@ -1100,14 +1126,28 @@ fn function_exists(root: &Path, test: &RequiredTest) -> Result<bool, Box<dyn Err
             syn::visit::visit_item_macro(self, item);
         }
     }
-    let path = safe_repo_path(root, &test.source)?;
-    let syntax = syn::parse_file(&fs::read_to_string(path)?)?;
+    let syntax = syn::parse_file(source)?;
     let mut functions = Functions {
-        wanted: &test.function,
+        wanted,
         found: false,
     };
     functions.visit_file(&syntax);
     Ok(functions.found)
+}
+
+fn java_test_exists(source: &str, wanted: &str) -> bool {
+    let signature = format!(" {wanted}(");
+    source.match_indices(&signature).any(|(index, _)| {
+        let prefix = &source[..index];
+        let annotation_window = &prefix[prefix.len().saturating_sub(512)..];
+        annotation_window.contains("@Test") || annotation_window.contains("@TestFactory")
+    })
+}
+
+fn python_test_exists(source: &str, wanted: &str) -> bool {
+    wanted.starts_with("test_")
+        && (source.contains(&format!("def {wanted}("))
+            || source.contains(&format!("async def {wanted}(")))
 }
 
 fn plan_has_work_item(plan: &str, id: &str) -> bool {
@@ -1273,5 +1313,32 @@ impl Options {
             require_ship,
             emit_template,
         })
+    }
+}
+
+#[cfg(test)]
+mod language_selector_tests {
+    use super::{java_test_exists, python_test_exists, rust_test_exists};
+
+    #[test]
+    fn java_selector_requires_a_junit_annotation() {
+        let junit = "@Test\nvoid liveContract() {}";
+        assert!(java_test_exists(junit, "liveContract"));
+        assert!(!java_test_exists("void liveContract() {}", "liveContract"));
+    }
+
+    #[test]
+    fn python_selector_requires_test_prefix_and_definition() {
+        assert!(python_test_exists(
+            "async def test_contract():\n    pass",
+            "test_contract"
+        ));
+        assert!(!python_test_exists("def contract():\n    pass", "contract"));
+    }
+
+    #[test]
+    fn rust_selector_still_requires_a_test_attribute() {
+        assert!(rust_test_exists("#[test]\nfn contract() {}", "contract").unwrap());
+        assert!(!rust_test_exists("fn contract() {}", "contract").unwrap());
     }
 }

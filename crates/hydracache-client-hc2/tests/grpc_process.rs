@@ -11,6 +11,7 @@ use hydracache_client_hc2::{
     InvocationRetryPolicy, ReconnectEndpoint, ReconnectPolicy, RecoveringHc2Client,
     SubscriptionEvent,
 };
+use hydracache_client_plane_spike::fixture_receipt::ProductionDaemonReadyReceipt;
 
 struct InteropProcess {
     child: Child,
@@ -146,17 +147,16 @@ impl ProductionDaemonProcess {
             stdout
                 .read_line(&mut ready)
                 .expect("read production READY receipt");
-            let fields = ready.trim_end().split('\t').collect::<Vec<_>>();
-            if fields.len() == 6 && fields[0] == "READY_DAEMON" {
+            if let Ok(receipt) = ProductionDaemonReadyReceipt::parse(&ready) {
                 return Self {
                     child,
                     stdin: Some(stdin),
                     stdout,
                     credentials,
-                    port: fields[1].parse().expect("production READY port"),
-                    ca: PathBuf::from(fields[3]),
-                    client_certificate: PathBuf::from(fields[4]),
-                    client_key: PathBuf::from(fields[5]),
+                    port: receipt.hc2_port,
+                    ca: receipt.ca,
+                    client_certificate: receipt.first_client_certificate,
+                    client_key: receipt.first_client_key,
                 };
             }
 
