@@ -152,7 +152,11 @@ session remains permanently lost and the loss metric remains observable. If the 
 before the handshake can be sent, that narrowly identified transport failure is classified as
 `RECONNECT_IDEMPOTENT`, allowing ordered endpoint fallback; authentication and protocol-policy
 failures remain terminal. Both decisions have deterministic Java regression tests in addition to
-the live Rust-process recovery proof.
+the live Rust-process recovery proof. The independently provisioned fast-evidence job installs every
+tool exercised transitively by workspace Nextest, restores and verifies full tag/branch history
+before its exact-candidate evidence step, and strips outer receipt provenance from registered child
+processes after capturing it for the parent receipt. A nested-repository regression test proves
+that a child cannot accidentally claim the outer candidate's SHA identity.
 
 ## Preflight
 

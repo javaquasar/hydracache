@@ -139,6 +139,25 @@ fn release_069_ci_admission_is_independent_fail_loud_and_sha_bound() {
     ] {
         assert!(workflow.contains(required), "CI lost {required}");
     }
+    let fast_start = workflow
+        .find("  migration-conformance-fast-evidence-069:")
+        .unwrap();
+    let fast_end = workflow[fast_start..]
+        .find("\n  migration-conformance-069:")
+        .map(|offset| fast_start + offset)
+        .unwrap();
+    let fast_job = &workflow[fast_start..fast_end];
+    for required in [
+        "Install cargo-deny",
+        "Restore and verify full release history",
+        "client-plane-compat-check --manifest-only",
+        "Run exact-candidate fast evidence",
+    ] {
+        assert!(
+            fast_job.contains(required),
+            "fast evidence job lost {required}"
+        );
+    }
 }
 
 #[test]

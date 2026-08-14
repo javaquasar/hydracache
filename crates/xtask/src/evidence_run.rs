@@ -19,6 +19,11 @@ use crate::fast_suite;
 use crate::gated_tests::{self, CommandSpec, GateEntry};
 
 pub const DEFAULT_RECEIPTS_DIR: &str = "target/release-evidence/receipts";
+const EVIDENCE_PROVENANCE_ENV: [&str; 3] = [
+    "HYDRACACHE_EVIDENCE_BASE_SHA",
+    "HYDRACACHE_EVIDENCE_HEAD_SHA",
+    "HYDRACACHE_EVIDENCE_TESTED_SHA",
+];
 const MAX_DIAGNOSTIC_CHARS_PER_STREAM: usize = 32_000;
 
 #[derive(Debug, Clone, Copy, Deserialize, Serialize, PartialEq, Eq)]
@@ -287,6 +292,11 @@ fn execute_command(root: &Path, command_spec: &CommandSpec, timeout_seconds: u64
         .current_dir(cwd)
         .stdout(Stdio::piped())
         .stderr(Stdio::piped());
+    for name in EVIDENCE_PROVENANCE_ENV {
+        // Provenance identifies this evidence runner and its checkout. A registered test may
+        // create another repository, but it must not inherit authority for the outer receipt.
+        command.env_remove(name);
+    }
     if let Some(target_dir) = cargo_target_dir_override(root, command_spec, cfg!(windows)) {
         command.env("CARGO_TARGET_DIR", target_dir);
         if let Some(jobs) = cargo_build_jobs_override(command_spec, cfg!(windows)) {
@@ -679,11 +689,7 @@ pub fn evidence_provenance_problem(
 ) -> Option<String> {
     let valid_sha =
         |value: &str| value.len() == 40 && value.bytes().all(|byte| byte.is_ascii_hexdigit());
-    let provenance_names = [
-        "HYDRACACHE_EVIDENCE_BASE_SHA",
-        "HYDRACACHE_EVIDENCE_HEAD_SHA",
-        "HYDRACACHE_EVIDENCE_TESTED_SHA",
-    ];
+    let provenance_names = EVIDENCE_PROVENANCE_ENV;
     let provenance_required = identity.contains_key("GITHUB_ACTIONS")
         || provenance_names
             .iter()

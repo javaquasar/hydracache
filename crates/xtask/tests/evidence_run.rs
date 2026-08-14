@@ -94,10 +94,61 @@ fn evidence_provenance_requires_valid_shas_and_the_tested_checkout() {
 fn evidence_child_helper() {
     match std::env::var(CHILD_ENV).as_deref() {
         Ok("pass") => println!("logical pass"),
+        Ok("assert-no-provenance") => {
+            for name in [
+                "HYDRACACHE_EVIDENCE_BASE_SHA",
+                "HYDRACACHE_EVIDENCE_HEAD_SHA",
+                "HYDRACACHE_EVIDENCE_TESTED_SHA",
+            ] {
+                assert!(std::env::var_os(name).is_none(), "leaked {name} into gate");
+            }
+            println!("logical pass without outer provenance");
+        }
         Ok("fail") => panic!("intentional evidence failure"),
         Ok("timeout") => std::thread::sleep(Duration::from_secs(10)),
         _ => {}
     }
+}
+
+#[test]
+fn evidence_executor_does_not_leak_outer_provenance_into_gate_process() {
+    let root = temp_root("provenance-isolation");
+    write_registry(&root, "assert-no-provenance", 5, vec![]);
+    let registry_path = root.join(xtask::gated_tests::REGISTRY_PATH);
+    let mut registry: xtask::gated_tests::GatedTestRegistry =
+        toml::from_str(&fs::read_to_string(&registry_path).unwrap()).unwrap();
+    for name in [
+        "HYDRACACHE_EVIDENCE_BASE_SHA",
+        "HYDRACACHE_EVIDENCE_HEAD_SHA",
+        "HYDRACACHE_EVIDENCE_TESTED_SHA",
+    ] {
+        registry.gate[0]
+            .command
+            .env
+            .insert(name.to_owned(), "f".repeat(40));
+    }
+    fs::write(&registry_path, toml::to_string_pretty(&registry).unwrap()).unwrap();
+    run(&root, "git", &["add", "."]);
+    run(
+        &root,
+        "git",
+        &["commit", "-q", "-m", "add inherited provenance fixture"],
+    );
+
+    let result = xtask::evidence_run::execute_gate(
+        &root,
+        "0.64",
+        "test.assert-no-provenance",
+        Path::new("target/receipts"),
+    )
+    .unwrap();
+
+    assert_eq!(result.receipt.outcome, EvidenceOutcome::Pass);
+    assert!(result
+        .receipt
+        .stdout
+        .contains("logical pass without outer provenance"));
+    fs::remove_dir_all(root).unwrap();
 }
 
 fn temp_root(name: &str) -> PathBuf {

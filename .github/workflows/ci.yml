@@ -366,11 +366,24 @@ jobs:
         with:
           tool: cargo-nextest@0.9.137
 
+      - name: Install cargo-deny
+        uses: taiki-e/install-action@cargo-deny
+
       - name: Cache Rust dependencies
         uses: Swatinem/rust-cache@v2
         with:
           prefix-key: v1-migration-conformance-fast-evidence-069
           cache-targets: true
+
+      - name: Restore and verify full release history
+        run: |
+          if [ "$(git rev-parse --is-shallow-repository)" = "true" ]; then
+            git fetch --prune --unshallow origin "+refs/heads/*:refs/remotes/origin/*" "+refs/tags/*:refs/tags/*"
+          else
+            git fetch --prune origin "+refs/heads/*:refs/remotes/origin/*" "+refs/tags/*:refs/tags/*"
+          fi
+          test "$(git rev-parse --is-shallow-repository)" = "false"
+          cargo run -p xtask --locked -- client-plane-compat-check --manifest-only
 
       - name: Run exact-candidate fast evidence
         id: fast_evidence

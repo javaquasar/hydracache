@@ -1967,6 +1967,12 @@ session lost. A stream that closes before its handshake can be sent is classifie
 failures remain terminal. A deterministic internal unit test covers that boundary, while the live
 Rust-process recovery test covers the complete failover path.
 
+The independent fast-evidence job installs `cargo-deny` because workspace Nextest executes the
+runtime dependency-isolation test, and it restores full release history before the canonical
+exact-candidate evidence step. `evidence-run` records head/base/tested SHA provenance for its own receipt but removes
+those variables from the registered child process; nested fixture repositories therefore cannot
+inherit authority for the outer exact candidate.
+
 The Hazelcast gate builds the Rust mTLS fixture and production daemon before Maven. The live facade
 test uses the real Java HC/2 client; the same command executes the production lease-expiry test and
 the Java recovery/session-loss contract, so the borrowed manifest is not accepted from a
