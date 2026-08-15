@@ -4,7 +4,9 @@ use std::collections::BTreeSet;
 use std::time::{Duration, Instant};
 
 use hydracache_sim::{BoundedGrowthChecker, InvariantReport, ResourceBudget};
-use support::daemon_cluster::{skip_unless_daemon_process_e2e, DaemonCluster, TestResult};
+use support::daemon_cluster::{
+    skip_unless_daemon_process_e2e, DaemonCluster, DaemonStatus, TestResult,
+};
 use support::membership_history::MembershipHistoryRecorder;
 
 #[test]
@@ -245,10 +247,7 @@ fn frozen_peer_send_failure_is_replayable() -> TestResult {
         "last admin statuses must be preserved in replay evidence"
     );
     assert!(
-        evidence
-            .last_statuses
-            .iter()
-            .all(|status| status.voters == 3 && status.quorum_ok),
+        statuses_preserve_authoritative_shape(&evidence.last_statuses, 3, 3),
         "known voter/quorum state must be preserved: {:?}",
         evidence.last_statuses
     );
@@ -260,6 +259,73 @@ fn frozen_peer_send_failure_is_replayable() -> TestResult {
         "bounded send error should be captured: {evidence:?}"
     );
     Ok(())
+}
+
+fn statuses_preserve_authoritative_shape(
+    statuses: &[DaemonStatus],
+    members: u32,
+    voters: u32,
+) -> bool {
+    let required = usize::try_from(voters / 2 + 1).expect("voter count fits usize");
+    if statuses.len() < required
+        || statuses
+            .iter()
+            .any(|status| status.members != members || status.voters != voters)
+    {
+        return false;
+    }
+    let authoritative = statuses
+        .iter()
+        .filter(|status| status.quorum_ok && status.leader.is_some())
+        .collect::<Vec<_>>();
+    authoritative.len() >= required
+        && authoritative
+            .iter()
+            .map(|status| (status.term, status.leader.as_deref().unwrap()))
+            .collect::<BTreeSet<_>>()
+            .len()
+            == 1
+}
+
+#[test]
+fn replay_shape_accepts_one_transient_non_authoritative_peer() {
+    let status = |leader: Option<&str>, quorum_ok| DaemonStatus {
+        leader: leader.map(ToOwned::to_owned),
+        term: 7,
+        epoch: 3,
+        members: 3,
+        voters: 3,
+        quorum_ok,
+        draining: false,
+    };
+    let healthy = [
+        status(Some("node-a"), true),
+        status(None, false),
+        status(Some("node-a"), true),
+    ];
+    assert!(statuses_preserve_authoritative_shape(&healthy, 3, 3));
+
+    let split = [
+        status(Some("node-a"), true),
+        status(None, false),
+        status(Some("node-b"), true),
+    ];
+    assert!(!statuses_preserve_authoritative_shape(&split, 3, 3));
+
+    let minority = [
+        status(Some("node-a"), true),
+        status(None, false),
+        status(None, false),
+    ];
+    assert!(!statuses_preserve_authoritative_shape(&minority, 3, 3));
+
+    let mut wrong_membership = healthy;
+    wrong_membership[1].voters = 2;
+    assert!(!statuses_preserve_authoritative_shape(
+        &wrong_membership,
+        3,
+        3
+    ));
 }
 
 #[test]
