@@ -262,11 +262,15 @@ v0 foundations
                           Java facade; port embedded-cache semantics; execute live old HC/1 and new
                           HC/2 clients; run the DB cached-vs-direct differential; preserve an
                           exact-outcome divergence ledger and fail-closed release receipts.)
-   0.69 ─┄ feeds ┄► 0.70 Memory Footprint & Retention Efficiency
-                          (pin the full raw exploratory archive branch+commit; attribute logical,
-                          allocator, RSS and cgroup memory; fix under-accounted/unbounded retention;
-                          compact measured key/entry/tag representations; reduce copies; hard-bound
-                          HC/2 per-connection state; separate durable page cache; prove 24-hour
+   0.69 ─┄ feeds ┄► 0.70 Allocation Path & Retention Audit
+                          (inventory every long-lived owner; add retained-state snapshots and
+                          phase-aware allocation tests; prove cleanup for tags, breakers, client
+                          histories, cache maintenance and HC/2 lifecycles; fix confirmed unbounded
+                          owners; add a local non-ship diagnostic runner with verified reset.)
+   0.70 ─┄ feeds ┄► 0.71 Memory Footprint & Retention Efficiency
+                          (consume causal owner evidence; attribute allocator, RSS and cgroup
+                          memory; compact measured representations; reduce copies; compare
+                          allocators/profiles; separate durable page cache; prove long-duration
                           recovery without weakening correctness, SLOs, workload or capacity.)
 ```
 
@@ -288,7 +292,8 @@ v0 foundations
 <!-- release-work-items:0.67.1=W0,W1,W2,W3,W4,W5,W6,W7 -->
 <!-- release-work-items:0.68.0=W0,W1,W2,W3,W4,W5,W6,W7,W8,W9,W10,W11,W12 -->
 <!-- release-work-items:0.69.0=W0,W1,W2,W3,W4,W5 -->
-<!-- release-work-items:0.70.0=W0,W1,W2,W3,W4,W5,W6,W7,W8,W9,W10,W11,W12,W13 -->
+<!-- release-work-items:0.70.0=W0,W1,W2,W3,W4,W5,W6,W7 -->
+<!-- release-work-items:0.71.0=W0,W1,W2,W3,W4,W5,W6,W7,W8,W9,W10,W11,W12,W13 -->
 
 | Version | Status | What | Why | After | Unblocks |
 | --- | --- | --- | --- | --- | --- |
@@ -334,7 +339,8 @@ v0 foundations
 
 | [0.68.0](V0_68_GENERATED_CLIENT_PLANE_FOUNDATION_PLAN.md) | shipped | **Generated Client Plane Foundation** — select and harden HC/2, publish the Rust library set including `hydracache-client-hc2` under same-SHA Linux/Docker/fuzz admission, and retain Java/Python clients plus the Hazelcast-shaped facade as tested source previews without Maven/PyPI publication. HC/1 v1-v4 remains readable and unchanged. | Deliver the reviewable client architecture and Rust distribution without manufacturing performance evidence or premature cross-language registry commitments. The full fixed-host gate remains mandatory for later Java/Python promotion. | 0.67.0 | 0.69 |
 | [0.69.0](V0_69_MIGRATION_CONFORMANCE_PLAN.md) | shipped | **Migration Conformance & Borrowed Test Suites** — W0 freezes provenance/outcome schemas; W1 executes source-pinned adaptations of curated Hazelcast IMap/FencedLock expectations against the buildable Java facade (not Hazelcast's cluster-owning classes verbatim); W2 ports embedded-cache expectations; W3 runs HC/1 consumers compiled against `v0.62.x`/`v0.63.0` libraries and reuses the retained `0.68` HC/2 matrix; W4 runs commit-position-aware cached-vs-direct DB differentials; W5 binds every outcome to fail-closed evidence. | Once the client plane exists, prove compatibility with independently sourced expectations and live prior libraries. This separates protocol construction from conformance evidence, prevents a suite from silently widening claims, and extends old-byte fixtures into executable HC/1 sessions without duplicating 0.68's HC/2 proof. | 0.68.0 | 0.70 |
-| [0.70.0](V0_70_MEMORY_FOOTPRINT_AND_RETENTION_EFFICIENCY_PLAN.md) | planned | **Memory Footprint & Retention Efficiency** — pin the full archived campaign (`explore/0.67-telemetry-hazelcast` at `dbc2f82f…`), build synchronized logical/allocator/process/cgroup accounting, correct value-only capacity weights, bound runtime histories and HC/2 connection state, prove expiry/reset reclamation, compact measured key/entry/tag structures, reduce copies, compare allocators and optional profiles, distinguish durable page cache, and pass fixed-cardinality 60-minute/six-hour/24-hour evidence. | Fresh-process HydraCache was small, but reused-process and short soak screens showed unexplained high-water after TTL/reset. The source audit found specific under-accounted or append-only structures. Optimize causally after the client plane stabilizes, without lowering capacity/workload or weakening correctness, SLO, zero-error, privacy, compatibility or fail-closed behavior. | 0.69.0 | 1.0 |
+| [0.70.0](V0_70_ALLOCATION_PATH_AND_RETENTION_AUDIT_PLAN.md) | in-progress | **Allocation Path & Retention Audit** — inventory every long-lived allocation owner, add deterministic retained-state snapshots and phase-aware allocation tests, prove cleanup for tag generations, load breakers, client histories, cache maintenance and HC/2 resources, fix confirmed unbounded owners, and provide a local non-ship Hydra/Redis runner with verified native reset. | RSS alone cannot distinguish live state, tombstones, queues, allocator high-water, page cache, or a cleanup command that never succeeded. Establish causal owner evidence before optimizing the process footprint. | 0.69.0 | 0.71 |
+| [0.71.0](V0_71_MEMORY_FOOTPRINT_AND_RETENTION_EFFICIENCY_PLAN.md) | planned | **Memory Footprint & Retention Efficiency** — consume the 0.70 owner inventory, then freeze synchronized logical/allocator/process/cgroup baselines, correct byte accounting, compact measured key/entry/tag structures, reduce copies, compare allocators and optional profiles, distinguish durable page cache, and pass fixed-cardinality 60-minute/six-hour/24-hour evidence. | Turn causally classified owners into measured optimizations without lowering capacity/workload or weakening correctness, SLO, zero-error, privacy, compatibility or fail-closed behavior. | 0.70.0 | 1.0 |
 
 
 `0.43` debt closure:

@@ -146,6 +146,8 @@ pub struct AdminApiConfig {
     pub enabled: bool,
     /// Internal admin listen address, intentionally separate from the client surface.
     pub listen_addr: SocketAddr,
+    /// Whether the local-only destructive diagnostic reset route is enabled.
+    pub diagnostic_reset_enabled: bool,
 }
 
 impl Default for AdminApiConfig {
@@ -155,6 +157,7 @@ impl Default for AdminApiConfig {
             listen_addr: "127.0.0.1:9091"
                 .parse()
                 .expect("default admin listen address is valid"),
+            diagnostic_reset_enabled: false,
         }
     }
 }
@@ -395,6 +398,9 @@ impl ServerConfig {
                 .parse()
                 .map_err(|_| ServerConfigError::InvalidAddress(listen))?;
         }
+        if env::var("HYDRACACHE_DIAGNOSTIC_RESET_ENABLED").as_deref() == Ok("true") {
+            config.admin_api.diagnostic_reset_enabled = true;
+        }
         if env::var("HYDRACACHE_REDIS_API_ENABLED").as_deref() == Ok("true") {
             config.redis_api.enabled = true;
         }
@@ -522,6 +528,13 @@ impl ServerConfig {
         }
         if self.admin_api.enabled && self.admin_api.listen_addr == self.listen_addr {
             return Err(ServerConfigError::AdminAddressConflicts);
+        }
+        if self.admin_api.diagnostic_reset_enabled
+            && (!self.admin_api.enabled
+                || self.role != ServerRole::Local
+                || !is_loopback(self.admin_api.listen_addr.ip()))
+        {
+            return Err(ServerConfigError::UnsafeDiagnosticReset);
         }
         if self.redis_api.enabled {
             if self.redis_api.max_event_subscriptions_per_connection == 0 {
@@ -711,6 +724,9 @@ pub enum ServerConfigError {
     /// Admin and client/listen surfaces must be independently bindable.
     #[error("admin_api.listen_addr must differ from listen_addr")]
     AdminAddressConflicts,
+    /// Destructive diagnostic reset is restricted to an enabled loopback admin surface in local mode.
+    #[error("diagnostic reset requires role=local and an enabled loopback admin API")]
+    UnsafeDiagnosticReset,
     /// Redis RESP and existing surfaces must be independently bindable.
     #[error("redis_api.listen_addr must differ from {surface}")]
     RedisAddressConflicts {

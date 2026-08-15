@@ -51,7 +51,7 @@ pub mod exporter;
 pub use audit::{
     AuditEnvelope, AuditError, AuditEvent, AuditHealth, AuditKey, AuditKeyPolicy, AuditOutcome,
     AuditRecorder, AuditRedactionPolicy, AuditSink, InMemoryAuditSink,
-    CONSUMER_AUDIT_EVENT_SCHEMA_VERSION,
+    CONSUMER_AUDIT_EVENT_SCHEMA_VERSION, IN_MEMORY_AUDIT_CAPACITY,
 };
 pub use consumer::{
     consumer_alert_metric_names, consumer_metric_names, ConsumerNearCacheStatus,
@@ -83,6 +83,8 @@ pub struct CacheStatsSnapshot {
     pub load_breaker_recovered_total: u64,
     /// Loader calls rejected because a breaker was open.
     pub load_breaker_rejected_total: u64,
+    /// Failed loads left untracked because the breaker registry was saturated by open entries.
+    pub load_breaker_saturated_total: u64,
     /// Entries removed by invalidation APIs.
     pub invalidations: u64,
     /// Entries observed as evicted by the backend.
@@ -139,6 +141,7 @@ impl CacheStatsSnapshot {
             load_breaker_half_open_total: stats.load_breaker_half_open_total,
             load_breaker_recovered_total: stats.load_breaker_recovered_total,
             load_breaker_rejected_total: stats.load_breaker_rejected_total,
+            load_breaker_saturated_total: stats.load_breaker_saturated_total,
             invalidations: stats.invalidations,
             evictions: stats.evictions,
             oversize_rejections: stats.oversize_rejections,
@@ -1341,6 +1344,7 @@ mod tests {
             load_breaker_half_open_total: 1,
             load_breaker_recovered_total: 1,
             load_breaker_rejected_total: 1,
+            load_breaker_saturated_total: 1,
             distributed_invalidations_received: 1,
             distributed_invalidation_lagged: 1,
             distributed_invalidation_decode_errors: 1,
@@ -1356,6 +1360,7 @@ mod tests {
         assert!(snapshot.single_flight_active);
         assert!(snapshot.stale_load_discards_seen);
         assert!(snapshot.load_breaker_active);
+        assert_eq!(snapshot.load_breaker_saturated_total, 1);
         assert!(!snapshot.event_subscriber_lag_seen);
         assert!(snapshot.distributed_invalidation_active);
         assert!(snapshot.distributed_invalidation_bus_issues);
@@ -1379,6 +1384,7 @@ mod tests {
             stale_load_discards: 1,
             load_breaker_open_total: 1,
             load_breaker_rejected_total: 1,
+            load_breaker_saturated_total: 1,
             invalidations: 1,
             events_published: 1,
             distributed_invalidation_publish_failures: 1,
@@ -1404,6 +1410,7 @@ mod tests {
                 "load_breaker_half_open_total",
                 "load_breaker_recovered_total",
                 "load_breaker_rejected_total",
+                "load_breaker_saturated_total",
                 "invalidations",
                 "evictions",
                 "oversize_rejections",

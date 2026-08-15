@@ -113,7 +113,13 @@ def main() -> int:
         anon_slope = anon.get("slope_bytes_per_minute")
         cgroup_slope = cgroup.get("slope_bytes_per_minute")
         duration = rss.get("duration_seconds") or anon.get("duration_seconds") or cgroup.get("duration_seconds") or 0
-        classification = "not-applicable" if row["status"] == "not_applicable" else classify(rss)
+        classification = (
+            "not-applicable"
+            if row["status"] == "not_applicable"
+            else "unsupported-reset"
+            if row["status"] == "unsupported_reset"
+            else classify(rss)
+        )
         lines.append(
             f"| {row['experiment']} | {row['target']} | {row['pattern']} | {row['status']} | {meta['samples']} | "
             f"{'n/a' if slope is None else f'{slope / (1024*1024):.3f}'} | "
@@ -130,6 +136,7 @@ def main() -> int:
         "- A positive slope that flattens after a bounded keyspace is fragmentation/capacity behavior until disproven, not automatically a leak.",
         "- The expiry/reclamation and cycle-reset cases are specifically intended to reveal whether memory falls after logical data removal.",
         "- Hazelcast expiry/reclamation is marked not-applicable because this harness exercises Redis-protocol TTL; Hazelcast native expiry requires a separate client/API workload and is not silently substituted.",
+        "- HydraCache cycle reset uses the off-by-default local admin diagnostic reset and requires logical-zero owner assertions; rejected RESP FLUSHALL is never treated as cleanup.",
         "",
         "## Recommended next actions",
         "",

@@ -1510,6 +1510,7 @@ where
     async fn flush_with_origin(&self, origin: CacheEventOrigin) -> Result<()> {
         let estimated_entries = self.inner.store.entry_count();
         self.inner.store.invalidate_all();
+        self.inner.store.run_pending_tasks().await;
         self.inner.tag_index.clear().await;
         self.publish_cache_event(CacheEventKind::Flushed, Some(estimated_entries), origin);
         Ok(())
@@ -2176,7 +2177,111 @@ mod tests {
 
     use hydracache_core::{CacheEventKind, CacheEventOrigin};
 
-    use super::HydraCache;
+    use super::{CacheOptions, HydraCache};
+
+    #[tokio::test]
+    async fn flush_completes_store_maintenance_and_releases_tag_index_state() {
+        let cache = HydraCache::local().build();
+        cache
+            .put(
+                "key",
+                42_u64,
+                CacheOptions::new().tags(["live-tag", "second-tag"]),
+            )
+            .await
+            .unwrap();
+        cache.invalidate_tag("orphan-tag").await.unwrap();
+        cache.invalidate_key("orphan-key").await.unwrap();
+        cache.inner.store.run_pending_tasks().await;
+
+        assert!(cache.inner.store.entry_count() > 0);
+        let retained = cache.inner.tag_index.retained_state().await;
+        assert!(retained.memberships > 0);
+        assert!(retained.tag_generations > 0);
+        assert!(retained.key_generations > 0);
+
+        cache.flush().await.unwrap();
+
+        assert_eq!(cache.inner.store.entry_count(), 0);
+        let retained = cache.inner.tag_index.retained_state().await;
+        assert_eq!(retained.tags, 0);
+        assert_eq!(retained.memberships, 0);
+        assert_eq!(retained.tag_generations, 0);
+        assert_eq!(retained.key_generations, 0);
+        assert_eq!(retained.string_capacity_bytes, 0);
+    }
+
+    #[tokio::test]
+    async fn geometric_put_remove_flush_cycles_return_retained_owners_to_baseline() {
+        for entries in [1_usize, 10, 100] {
+            let cache = HydraCache::local().max_capacity(1_000_000).build();
+            for index in 0..entries {
+                cache
+                    .put(
+                        &format!("cycle-{entries}-{index}"),
+                        index as u64,
+                        CacheOptions::new().tag(format!("tag-{}", index % 4)),
+                    )
+                    .await
+                    .unwrap();
+            }
+            cache.inner.store.run_pending_tasks().await;
+            assert_eq!(cache.inner.store.entry_count(), entries as u64);
+
+            for index in 0..entries {
+                assert!(cache
+                    .remove(&format!("cycle-{entries}-{index}"))
+                    .await
+                    .unwrap());
+            }
+            cache.inner.store.run_pending_tasks().await;
+            assert_eq!(cache.inner.store.entry_count(), 0);
+            let after_remove = cache.inner.tag_index.retained_state().await;
+            assert_eq!(after_remove.tags, 0);
+            assert_eq!(after_remove.memberships, 0);
+            assert_eq!(after_remove.key_generations, entries);
+
+            cache.flush().await.unwrap();
+            let after_flush = cache.inner.tag_index.retained_state().await;
+            assert_eq!(after_flush.tags, 0);
+            assert_eq!(after_flush.memberships, 0);
+            assert_eq!(after_flush.tag_generations, 0);
+            assert_eq!(after_flush.key_generations, 0);
+            assert_eq!(after_flush.string_capacity_bytes, 0);
+        }
+    }
+
+    #[tokio::test]
+    async fn geometric_ttl_expiry_releases_store_and_tag_memberships() {
+        for entries in [1_usize, 10, 100] {
+            let cache = HydraCache::local().max_capacity(1_000_000).build();
+            for index in 0..entries {
+                cache
+                    .put(
+                        &format!("ttl-{entries}-{index}"),
+                        index as u64,
+                        CacheOptions::new()
+                            .ttl(std::time::Duration::from_millis(1))
+                            .tag("expiring"),
+                    )
+                    .await
+                    .unwrap();
+            }
+            tokio::time::sleep(std::time::Duration::from_millis(5)).await;
+            for index in 0..entries {
+                assert!(!cache.contains_key(&format!("ttl-{entries}-{index}")).await);
+            }
+            cache.inner.store.run_pending_tasks().await;
+
+            assert_eq!(cache.inner.store.entry_count(), 0);
+            let retained = cache.inner.tag_index.retained_state().await;
+            assert_eq!(retained.tags, 0);
+            assert_eq!(retained.memberships, 0);
+            assert_eq!(retained.tag_generations, 0);
+            assert_eq!(retained.key_generations, 0);
+            assert_eq!(retained.string_capacity_bytes, 0);
+        }
+    }
 
     #[test]
     fn lazy_key_event_tags_are_not_built_without_subscribers() {

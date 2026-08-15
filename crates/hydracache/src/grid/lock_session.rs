@@ -17,6 +17,31 @@ impl SessionHeartbeats {
         self.last_seen.insert(session, now);
     }
 
+    /// Return the number of retained session heartbeat records.
+    pub fn len(&self) -> usize {
+        self.last_seen.len()
+    }
+
+    /// Return whether no session heartbeat records are retained.
+    pub fn is_empty(&self) -> bool {
+        self.last_seen.is_empty()
+    }
+
+    pub(crate) fn remove(&mut self, session: &SessionId) -> bool {
+        self.last_seen.remove(session).is_some()
+    }
+
+    pub(crate) fn clear(&mut self) {
+        self.last_seen.clear();
+    }
+
+    pub(crate) fn string_bytes(&self) -> usize {
+        self.last_seen
+            .keys()
+            .map(|session| session.as_str().len())
+            .sum()
+    }
+
     /// Return the last heartbeat for a session.
     pub fn last_seen(&self, session: &SessionId) -> Option<LogicalTime> {
         self.last_seen.get(session).copied()

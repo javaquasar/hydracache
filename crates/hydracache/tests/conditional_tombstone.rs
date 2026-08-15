@@ -32,6 +32,13 @@ fn remove_if_value_writes_tombstone_at_new_version() {
     assert_eq!(record.version, 2);
     assert_eq!(store.current_value("user:42"), None);
     assert_eq!(store.metrics().cas_applied_total, 2);
+    let retained = store.retained_state();
+    assert_eq!(retained.records, 1);
+    assert_eq!(retained.live_records, 0);
+    assert_eq!(retained.tombstones, 1);
+    assert_eq!(retained.locks, 0);
+    assert_eq!(retained.session_heartbeats, 0);
+    assert!(retained.identity_bytes >= "user:42".len());
 }
 
 #[test]

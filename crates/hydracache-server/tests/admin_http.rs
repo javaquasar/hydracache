@@ -5,15 +5,16 @@ use std::sync::{Arc, Mutex};
 use axum::body::{to_bytes, Body};
 use axum::http::header::CONTENT_TYPE;
 use axum::http::{Request, StatusCode};
+use hydracache_client_protocol::{ClientRequest, ClientRequestEnvelope, Namespace, StructuredKey};
 use hydracache_client_transport_axum::{
-    AxumClientSurface, ClientSurfaceLimits, HYDRACACHE_ADMIN_HEADER, HYDRACACHE_CLIENT_ID_HEADER,
-    HYDRACACHE_TENANT_HEADER,
+    AxumClientSurface, ClientIdentity, ClientSurfaceLimits, HYDRACACHE_ADMIN_HEADER,
+    HYDRACACHE_CLIENT_ID_HEADER, HYDRACACHE_TENANT_HEADER,
 };
 use hydracache_server::{
     AdminApiConfig, AdminHttpSurface, BackupConfig, ClientApiConfig, ClusterAuthConfig,
     ServerConfig, ServerRole, ServerRuntime, TlsConfig, ADMIN_BACKUP_PATH, ADMIN_CONSOLE_PATH,
-    ADMIN_DRAIN_PATH, ADMIN_METRICS_PATH, ADMIN_RAFT_COMPACTION_PATH, ADMIN_READYZ_PATH,
-    ADMIN_RESHARD_PATH, ADMIN_STATUS_PATH,
+    ADMIN_DIAGNOSTIC_RESET_PATH, ADMIN_DRAIN_PATH, ADMIN_METRICS_PATH, ADMIN_RAFT_COMPACTION_PATH,
+    ADMIN_READYZ_PATH, ADMIN_RESHARD_PATH, ADMIN_STATUS_PATH,
 };
 use serde_json::Value;
 use tower::ServiceExt;
@@ -473,5 +474,72 @@ mod admin_http {
             compacted["first_log_index"].as_u64().unwrap(),
             compacted["snapshot_index"].as_u64().unwrap() + 1
         );
+    }
+
+    #[tokio::test]
+    async fn diagnostic_reset_is_off_by_default_and_returns_verified_zero_counts() {
+        let disabled = AdminHttpSurface::new(ServerRuntime::new(local_config()).unwrap().start());
+        let response = disabled
+            .routes()
+            .oneshot(admin_request("POST", ADMIN_DIAGNOSTIC_RESET_PATH))
+            .await
+            .unwrap();
+        assert_eq!(response.status(), StatusCode::NOT_FOUND);
+
+        let mut config = local_config();
+        config.client_api.enabled = true;
+        config.admin_api.diagnostic_reset_enabled = true;
+        let runtime = ServerRuntime::new(config).unwrap().start();
+        let state = runtime
+            .client_dispatch_state()
+            .expect("shared client state");
+        let identity = ClientIdentity::new("diagnostic", "tenant").unwrap();
+        let put = state.dispatch_verified_request(
+            &identity,
+            ClientRequestEnvelope::new(
+                "put-before-reset",
+                ClientRequest::Put {
+                    ns: Namespace::new("diagnostic").unwrap(),
+                    key: StructuredKey::new(vec!["key".to_owned()]).unwrap(),
+                    value: b"value".to_vec(),
+                    ttl_ms: None,
+                    dimensions: Vec::new(),
+                },
+            )
+            .with_idempotency_key("diagnostic-idempotency"),
+        );
+        assert!(put.result.is_ok());
+        let surface = AdminHttpSurface::new(runtime);
+
+        let response = surface
+            .routes()
+            .oneshot(admin_request("POST", ADMIN_DIAGNOSTIC_RESET_PATH))
+            .await
+            .unwrap();
+
+        assert_eq!(response.status(), StatusCode::OK);
+        let body = json_response(response).await;
+        assert_eq!(body["action"], "diagnostic_reset");
+        assert_eq!(body["outcome"], "completed");
+        assert_eq!(body["embedded_after"], 0);
+        assert_eq!(body["client"]["before"]["store_entries"], 1);
+        assert_eq!(body["client"]["before"]["idempotency_outcomes"], 1);
+        assert_eq!(body["client"]["after"]["store_entries"], 0);
+        assert_eq!(body["client"]["after"]["idempotency_outcomes"], 0);
+        assert_eq!(body["client"]["after"]["conditional"]["records"], 0);
+        assert_eq!(state.retained_state_for_diagnostics().store_entries, 0);
+    }
+
+    #[test]
+    fn diagnostic_reset_config_rejects_member_or_exposed_admin_modes() {
+        let mut member = member_config();
+        member.admin_api.diagnostic_reset_enabled = true;
+        assert!(ServerRuntime::new(member).is_err());
+
+        let mut exposed = local_config();
+        exposed.admin_api.diagnostic_reset_enabled = true;
+        exposed.admin_api.listen_addr = "0.0.0.0:9091".parse().unwrap();
+        exposed.tls.acknowledge_insecure = true;
+        assert!(ServerRuntime::new(exposed).is_err());
     }
 }

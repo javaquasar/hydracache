@@ -16,10 +16,12 @@ use tokio::sync::{mpsc, Mutex as AsyncMutex, Notify};
 use tokio::time::Instant;
 
 use crate::adapter::TransportAdapter;
+use crate::client::SubscriptionControl;
 use crate::{
-    BatchItemResult, BatchOperation, CacheEvent, CacheValue, ClientConfig, ClientError, ErrorCode,
-    FencedSession, Hc2Client, LockAcquireResult, LockOwnership, MutationResult, RequestOptions,
-    RetryAdvice, Subscription, SubscriptionEvent, TransportKind,
+    BatchItemResult, BatchOperation, CacheEvent, CacheValue, ClientConfig, ClientError,
+    ClientRetainedStateSnapshot, ErrorCode, FencedSession, Hc2Client, LockAcquireResult,
+    LockOwnership, MutationResult, RequestOptions, RetryAdvice, Subscription, SubscriptionEvent,
+    TransportKind,
 };
 
 /// One named endpoint and its already validated, security-owning adapter.
@@ -172,6 +174,16 @@ pub struct RecoveryMetricsSnapshot {
     pub duplicate_events: u64,
     pub gap_repairs_required: u64,
     pub session_losses: u64,
+}
+
+/// Privacy-safe snapshot of allocation-owning recovery resources.
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
+pub struct RecoveryRetainedStateSnapshot {
+    pub logical_subscriptions: usize,
+    pub session_registrations: usize,
+    pub live_sessions: usize,
+    pub current_client: ClientRetainedStateSnapshot,
+    pub closed: bool,
 }
 
 struct RecoveryMetrics {
@@ -587,6 +599,7 @@ impl RecoveringHc2Client {
             events,
             notify: Notify::new(),
             binding: AtomicU64::new(0),
+            binding_control: Mutex::new(None),
             closed: AtomicBool::new(false),
             runtime: Arc::downgrade(&self.handle.runtime),
         });
@@ -634,6 +647,11 @@ impl RecoveringHc2Client {
     /// Pull bounded privacy-safe reconnect and repair counters.
     pub fn recovery_metrics(&self) -> RecoveryMetricsSnapshot {
         self.handle.runtime.metrics.snapshot()
+    }
+
+    /// Pull allocation-owning recovery maps together with the current client snapshot.
+    pub fn retained_state(&self) -> RecoveryRetainedStateSnapshot {
+        self.handle.runtime.retained_state()
     }
 
     /// Idempotently close every connection-owned recovery resource.
@@ -797,11 +815,26 @@ impl RecoveringRuntime {
             .client
             .subscribe(state.key_prefix.clone(), watermark)
             .await?;
+        let control = subscription.control();
         let binding = state
             .binding
             .fetch_add(1, Ordering::AcqRel)
             .checked_add(1)
             .ok_or_else(|| protocol_error("subscription binding exhausted"))?;
+        let previous = {
+            let mut binding_control = state
+                .binding_control
+                .lock()
+                .expect("subscription binding control mutex poisoned");
+            if state.closed.load(Ordering::Acquire) {
+                control.close();
+                return Err(connection_error("subscription is closed"));
+            }
+            binding_control.replace(control)
+        };
+        if let Some(previous) = previous {
+            previous.close();
+        }
         if reconnect {
             self.metrics
                 .subscription_repairs
@@ -891,6 +924,31 @@ impl RecoveringRuntime {
         self.fail_subscriptions(error);
         self.lose_sessions();
     }
+
+    fn retained_state(&self) -> RecoveryRetainedStateSnapshot {
+        let logical_subscriptions = self
+            .subscriptions
+            .lock()
+            .expect("recovery subscriptions mutex poisoned")
+            .len();
+        let sessions = self
+            .sessions
+            .lock()
+            .expect("recovery sessions mutex poisoned");
+        let session_registrations = sessions.len();
+        let live_sessions = sessions
+            .values()
+            .filter(|session| session.strong_count() > 0)
+            .count();
+        drop(sessions);
+        RecoveryRetainedStateSnapshot {
+            logical_subscriptions,
+            session_registrations,
+            live_sessions,
+            current_client: self.current_snapshot().client.retained_state(),
+            closed: self.closed.load(Ordering::Acquire),
+        }
+    }
 }
 
 struct SubscriptionState {
@@ -904,6 +962,7 @@ struct SubscriptionState {
     events: mpsc::Sender<CacheEvent>,
     notify: Notify,
     binding: AtomicU64,
+    binding_control: Mutex<Option<SubscriptionControl>>,
     closed: AtomicBool,
     runtime: Weak<RecoveringRuntime>,
 }
@@ -931,6 +990,14 @@ impl SubscriptionState {
             return;
         }
         self.binding.fetch_add(1, Ordering::AcqRel);
+        if let Some(control) = self
+            .binding_control
+            .lock()
+            .expect("subscription binding control mutex poisoned")
+            .take()
+        {
+            control.close();
+        }
         *self
             .terminal
             .lock()
@@ -1131,6 +1198,11 @@ fn spawn_subscription_forwarder(
                 return;
             }
             let Some(event) = subscription.next().await else {
+                if state.closed.load(Ordering::Acquire)
+                    || state.binding.load(Ordering::Acquire) != binding
+                {
+                    return;
+                }
                 if let Some(runtime) = runtime.upgrade() {
                     let _ = runtime.reconnect_if_generation(generation).await;
                 }

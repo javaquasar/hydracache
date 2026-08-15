@@ -1,4 +1,4 @@
-# HydraCache 0.70.0 Memory Footprint & Retention Efficiency - Codex Execution Plan
+# HydraCache 0.71.0 Memory Footprint & Retention Efficiency - Codex Execution Plan
 
 > **At a glance**
 > - **What:** turn the exploratory memory findings into causal, release-gated improvements across
@@ -16,8 +16,9 @@
 >   generation metadata, and append-only invalidation/idempotency/audit collections. The evidence
 >   does **not** yet prove a generic leak, so the release requires causal counters and allocator
 >   evidence before changing implementation or defaults.
-> - **After (depends on):** `0.69.0`; consumes the qualified `0.67.1` reference methodology, the
->   final `0.68` HC/2 connection/listener/session design, and the `0.69` executable client matrix.
+> - **After (depends on):** `0.70.0`; consumes its allocation-owner inventory, retained-state
+>   snapshots, bounded-lifecycle fixes and deterministic local diagnostic harness, plus the
+>   qualified `0.67.1` reference methodology and the `0.69` executable client matrix.
 > - **Unblocks:** defensible memory sizing, a bounded long-lived daemon claim, per-entry/per-client
 >   capacity guidance, and later data-structure tuning without repeating the attribution work.
 > - **Status:** planned.
@@ -68,7 +69,7 @@ branch update cannot silently change the input:
 
 The raw branch contains CSV/JSONL telemetry, logs, container metadata, host receipts, accepted and
 rejected attempts, and per-run checksums. The curated branch contains human-sized methodology and
-reports. `0.70` may consume both, but only the exact raw archive commit is the authoritative
+reports. `0.71` may consume both, but only the exact raw archive commit is the authoritative
 historical byte identity. Branch and tag names are lookup aids, not substitutes for the SHA.
 
 Before W0 imports or derives a baseline, the executor must run:
@@ -85,7 +86,7 @@ git -C ../hydracache-0.67-memory-archive status --short
 The checkout must be clean. Validate every available `SHA256SUMS` file before reading its bundle.
 Generate a machine-readable `historical-input-receipt.json` containing branch, tag, exact commit,
 relative source paths, file sizes and SHA-256 digests for every raw file used by an analysis. New
-derived reports go under the 0.70 candidate evidence tree; archived originals are never rewritten,
+derived reports go under the 0.71 candidate evidence tree; archived originals are never rewritten,
 normalized, deleted, or mixed into qualification/bootstrap samples. A missing archive path or
 checksum is `unavailable(reason)` and blocks any conclusion that depends on it.
 
@@ -111,8 +112,9 @@ client dispatch structures:
 | `crates/hydracache/src/entry.rs` | `Bytes` + `Vec<String>` + `Option<Instant>` | Tags and per-entry allocation/layout dominate small values; empty-tag capacity may be avoidable |
 | `crates/hydracache/src/tag_index.rs` | `HashMap<String, HashSet<String>>`, generation maps and cloned keys/tags | Key/tag strings are duplicated; invalidated-key generation tombstones may outlive entries |
 | `crates/hydracache-client-transport-axum/src/lib.rs` | `BTreeMap<(String,String,String), StoredValue<Vec<u8>>>` | Three independently allocated strings per record, tree-node overhead, cloned read values, and an edge-local store distinct from the embedded cache |
-| same client surface | `Vec<InvalidationEvent>`, `BTreeSet<(tenant,idempotency)>` | Append-only histories grow with mutations/unique request ids unless `0.68` replaces them with bounded protocol-owned state |
-| `crates/hydracache-observability/src/audit.rs` | test/small-adapter `InMemoryAuditSink` is append-only `Vec<AuditEvent>` | Accidentally using an in-memory test sink in a daemon retains every audit record |
+| same client surface | 0.70 removes the unread invalidation history and bounds idempotency outcomes | Measure the bounded map's per-record cost and TTL sweep amplification; do not reopen the append-only defect |
+| `crates/hydracache-observability/src/audit.rs` | 0.70 caps the test/small-adapter `InMemoryAuditSink` and fails mandatory writes closed at capacity | Measure the bounded event cost and add an operator sink without weakening fail-closed semantics |
+| `crates/hydracache/src/grid/conditional.rs` | conditional records retain delete tombstones; session heartbeats retain unique session ids | Design ordering-safe watermark GC before optimizing representation; never delete a tombstone solely to reduce RSS |
 | `crates/hydracache-redis-compat/src/lib.rs` | RESP conversion through `Vec<u8>`, `Bytes::copy_from_slice`; bidirectional tag maps with copied keys | Decode/encode copies and duplicate tag membership amplify pipeline and tag workloads |
 | HC/2 from `0.68` | connection-owned pending calls, outbound lanes, subscriptions and sessions | Per-connection floor, queued bytes, reconnect storms and slow consumers can dominate a mostly-empty cache |
 | durable store | process RSS plus cgroup file/page cache | File-backed growth can be mistaken for Rust live-object growth |
@@ -181,7 +183,7 @@ Populate the implementation column and exact command as W-items land.
 
 ## W0. Freeze a causal memory baseline before changing code
 
-Add `docs/testing/perf-scenarios/0.70/memory-efficiency-v1.toml`, a typed report schema, and a
+Add `docs/testing/perf-scenarios/0.71/memory-efficiency-v1.toml`, a typed report schema, and a
 `hydracache-loadgen memory-efficiency` orchestration entry. Every target/case must record:
 
 - source SHA, binary SHA, build profile/features, allocator, image digest, host fingerprint,
@@ -412,7 +414,7 @@ listeners and diagnostics. Produce cold, per-connection, per-mutation and steady
 If the evidence supports it, add named explicit profiles such as `embedded-minimal`,
 `server-minimal`, `server-client`, and `server-full`. Profiles expand into ordinary reviewed config;
 operators can inspect the effective configuration. Existing defaults do not silently change in
-0.70. A future default change requires its own ADR/migration notice.
+0.71. A future default change requires its own ADR/migration notice.
 
 Disabled services must allocate no listener, background task, channel, history or large dependency
 state. Feature flags must not split correctness semantics. Startup receipts record the profile and
@@ -497,8 +499,8 @@ versioned in the scenario contract. No hand-selected interval or last-sample com
 
 ## W13. Governance, documentation and release decision
 
-- Add `docs/testing/release-evidence/0.70.toml` with exact-candidate receipts for W0-W12 and
-  `release-evidence --release 0.70 --require-ship`.
+- Add `docs/testing/release-evidence/0.71.toml` with exact-candidate receipts for W0-W12 and
+  `release-evidence --release 0.71 --require-ship`.
 - Register profiler, allocator, long-soak, cgroup and cross-target lanes plus dynamic canaries in
   the gated/canary registries; skip-loud and quarantine-expiry rules remain unchanged.
 - Add `docs/performance/memory-accounting.md`: metric definitions, live/active/resident/retained,
@@ -515,9 +517,9 @@ versioned in the scenario contract. No hand-selected interval or last-sample com
 **DoD:**
 
 ```powershell
-cargo run --manifest-path crates\xtask\Cargo.toml -- memory-contract-check --release 0.70
-cargo run --manifest-path crates\xtask\Cargo.toml -- release-governance-check --release 0.70
-cargo run --manifest-path crates\xtask\Cargo.toml -- release-evidence --release 0.70 --require-ship
+cargo run --manifest-path crates\xtask\Cargo.toml -- memory-contract-check --release 0.71
+cargo run --manifest-path crates\xtask\Cargo.toml -- release-governance-check --release 0.71
+cargo run --manifest-path crates\xtask\Cargo.toml -- release-evidence --release 0.71 --require-ship
 cargo run --manifest-path crates\xtask\Cargo.toml -- doc-check
 ```
 
@@ -572,12 +574,12 @@ cargo run --manifest-path crates\xtask\Cargo.toml -- doc-check
 - Redis and Hazelcast are pinned controls with equivalent disclosed profiles; Hazelcast heap is
   measured by JMX or marked unavailable. Neither control defines Hydra correctness or a universal
   memory target.
-- `release-evidence --release 0.70 --require-ship`, all dynamic canaries, `doc-check`, workspace
+- `release-evidence --release 0.71 --require-ship`, all dynamic canaries, `doc-check`, workspace
   gates and compatibility windows are green on the exact candidate SHA.
 
 ## Final release decision
 
-Ship `0.70.0` only when memory improvements are causally tied to measured owners, every long-lived
+Ship `0.71.0` only when memory improvements are causally tied to measured owners, every long-lived
 collection and connection has an enforced budget, expiry/reset reclaim all logical state, and the
 same candidate preserves all existing correctness and performance contracts. A smaller RSS caused
 by reduced workload, disabled required semantics, missing evidence, unmeasured page cache, or a

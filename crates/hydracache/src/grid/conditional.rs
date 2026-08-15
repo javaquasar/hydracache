@@ -160,6 +160,23 @@ pub struct ConditionalMetrics {
     pub lock_reentrancy_limit_rejected_total: u64,
 }
 
+/// Aggregate retained-state snapshot for conditional values and fenced locks.
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize)]
+pub struct ConditionalRetainedState {
+    /// Versioned records, including live values and tombstones.
+    pub records: usize,
+    /// Records currently carrying live values.
+    pub live_records: usize,
+    /// Delete tombstones retained for ordering safety.
+    pub tombstones: usize,
+    /// Currently held fenced locks.
+    pub locks: usize,
+    /// Session heartbeat records retained by lock ownership.
+    pub session_heartbeats: usize,
+    /// Conservative bytes in retained map keys and session identifiers.
+    pub identity_bytes: usize,
+}
+
 /// Current state of one held fenced lock.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct LockHold {
@@ -218,6 +235,41 @@ impl SingleKeyConditionalStore {
     /// Return current metrics.
     pub fn metrics(&self) -> ConditionalMetrics {
         self.metrics
+    }
+
+    /// Return aggregate retained owner counts without exposing keys or sessions.
+    pub fn retained_state(&self) -> ConditionalRetainedState {
+        let live_records = self
+            .records
+            .values()
+            .filter(|record| matches!(&record.state, ReplicatedSlot::Value { .. }))
+            .count();
+        ConditionalRetainedState {
+            records: self.records.len(),
+            live_records,
+            tombstones: self.records.len().saturating_sub(live_records),
+            locks: self.locks.len(),
+            session_heartbeats: self.session_heartbeats.len(),
+            identity_bytes: self.records.keys().map(String::len).sum::<usize>()
+                + self.locks.keys().map(String::len).sum::<usize>()
+                + self.session_heartbeats.string_bytes(),
+        }
+    }
+
+    /// Clear all conditional values, tombstones, locks, and session records.
+    ///
+    /// This is intended only for an explicitly enabled administrative
+    /// diagnostic reset. Monotonic versions and fences advance instead of
+    /// restarting, so a token issued before the reset cannot become valid
+    /// again after new state is created.
+    pub fn clear_for_diagnostic_reset(&mut self) -> ConditionalRetainedState {
+        let before = self.retained_state();
+        self.records.clear();
+        self.locks.clear();
+        self.session_heartbeats.clear();
+        self.next_version = self.next_version.saturating_add(1);
+        self.next_fence = self.next_fence.saturating_add(1);
+        before
     }
 
     /// Return the record for a key.
@@ -363,6 +415,11 @@ impl SingleKeyConditionalStore {
         now: LogicalTime,
     ) -> Result<Option<FenceToken>, ConditionalError> {
         require_linearizable_level(level)?;
+        let replaced_session = self
+            .locks
+            .get(key)
+            .filter(|hold| hold.expired_at(now))
+            .map(|hold| hold.owner.session.clone());
         if self
             .locks
             .get(key)
@@ -398,6 +455,7 @@ impl SingleKeyConditionalStore {
         }
         let token = FenceToken::new(self.next_fence);
         self.next_fence = self.next_fence.saturating_add(1);
+        let new_session = owner.session.clone();
         self.session_heartbeats.record(owner.session.clone(), now);
         self.locks.insert(
             key.to_owned(),
@@ -408,6 +466,11 @@ impl SingleKeyConditionalStore {
                 lease_deadline: now.saturating_add(lease),
             },
         );
+        if let Some(replaced_session) = replaced_session {
+            if replaced_session != new_session {
+                self.remove_heartbeat_if_unused(&replaced_session);
+            }
+        }
         self.metrics.lock_acquired_total = self.metrics.lock_acquired_total.saturating_add(1);
         Ok(Some(token))
     }
@@ -422,8 +485,10 @@ impl SingleKeyConditionalStore {
         now: LogicalTime,
     ) -> Result<FenceToken, ConditionalError> {
         require_linearizable_level(level)?;
+        let replaced_session = self.locks.get(key).map(|hold| hold.owner.session.clone());
         let token = FenceToken::new(self.next_fence);
         self.next_fence = self.next_fence.saturating_add(1);
+        let new_session = owner.session.clone();
         self.session_heartbeats.record(owner.session.clone(), now);
         self.locks.insert(
             key.to_owned(),
@@ -434,6 +499,11 @@ impl SingleKeyConditionalStore {
                 lease_deadline: now.saturating_add(lease),
             },
         );
+        if let Some(replaced_session) = replaced_session {
+            if replaced_session != new_session {
+                self.remove_heartbeat_if_unused(&replaced_session);
+            }
+        }
         self.metrics.lock_acquired_total = self.metrics.lock_acquired_total.saturating_add(1);
         Ok(token)
     }
@@ -511,7 +581,11 @@ impl SingleKeyConditionalStore {
             .filter(|(_, hold)| lost.contains(&hold.owner.session))
             .map(|(key, _)| key.clone())
             .collect::<Vec<_>>();
-        self.expire_keys(expired)
+        let expired_count = self.expire_keys(expired);
+        for session in lost {
+            self.session_heartbeats.remove(&session);
+        }
+        expired_count
     }
 
     /// Release a fenced lock when the token is current.
@@ -559,14 +633,20 @@ impl SingleKeyConditionalStore {
             }
         };
         if remove {
-            self.locks.remove(key);
+            let released_session = self
+                .locks
+                .remove(key)
+                .map(|hold| hold.owner.session)
+                .expect("checked lock hold");
+            self.remove_heartbeat_if_unused(&released_session);
         }
         Ok(())
     }
 
     /// Privileged release that advances the fencing sequence without requiring ownership.
     pub fn force_unlock(&mut self, key: &str) -> Option<FenceToken> {
-        if self.locks.remove(key).is_some() {
+        if let Some(removed) = self.locks.remove(key) {
+            self.remove_heartbeat_if_unused(&removed.owner.session);
             let next = FenceToken::new(self.next_fence);
             self.next_fence = self.next_fence.saturating_add(1);
             Some(next)
@@ -598,15 +678,30 @@ impl SingleKeyConditionalStore {
 
     fn expire_keys(&mut self, keys: Vec<String>) -> usize {
         let mut expired = 0usize;
+        let mut released_sessions = Vec::new();
         for key in keys {
-            if self.locks.remove(&key).is_some() {
+            if let Some(removed) = self.locks.remove(&key) {
+                released_sessions.push(removed.owner.session);
                 self.next_fence = self.next_fence.saturating_add(1);
                 self.metrics.lock_lease_expired_total =
                     self.metrics.lock_lease_expired_total.saturating_add(1);
                 expired = expired.saturating_add(1);
             }
         }
+        for session in released_sessions {
+            self.remove_heartbeat_if_unused(&session);
+        }
         expired
+    }
+
+    fn remove_heartbeat_if_unused(&mut self, session: &SessionId) {
+        if !self
+            .locks
+            .values()
+            .any(|hold| &hold.owner.session == session)
+        {
+            self.session_heartbeats.remove(session);
+        }
     }
 }
 

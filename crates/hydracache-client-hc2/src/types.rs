@@ -344,6 +344,23 @@ pub struct ClientMetricsSnapshot {
     pub active_sessions: usize,
 }
 
+/// Privacy-safe snapshot of allocation-owning HC/2 client resources.
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
+pub struct ClientRetainedStateSnapshot {
+    pub handshake_pending: bool,
+    pub pending_invocations: usize,
+    pub pending_subscriptions: usize,
+    pub active_subscriptions: usize,
+    pub pending_sessions: usize,
+    pub active_sessions: usize,
+    pub topology_nodes: usize,
+    pub outbound_buffered_items: usize,
+    pub available_invocation_permits: usize,
+    pub available_subscription_permits: usize,
+    pub available_session_permits: usize,
+    pub closed: bool,
+}
+
 pub(crate) fn validate_key(key: &Bytes) -> Result<(), ClientError> {
     if key.is_empty() || key.len() > 1024 * 1024 {
         return Err(invalid("key length must be in [1, 1048576]"));

@@ -8,7 +8,8 @@ use axum::routing::{get, post};
 use axum::{Extension, Json, Router};
 use hydracache_actuator_axum::HydraCacheActuator;
 use hydracache_client_transport_axum::{
-    HYDRACACHE_ADMIN_HEADER, HYDRACACHE_CLIENT_ID_HEADER, HYDRACACHE_TENANT_HEADER,
+    ClientSurfaceDiagnosticReset, HYDRACACHE_ADMIN_HEADER, HYDRACACHE_CLIENT_ID_HEADER,
+    HYDRACACHE_TENANT_HEADER,
 };
 use serde::Serialize;
 use thiserror::Error;
@@ -41,6 +42,8 @@ pub const ADMIN_RESHARD_PATH: &str = "/admin/reshard";
 pub const ADMIN_BACKUP_PATH: &str = "/admin/backup";
 /// Explicit, off-by-default disk-backed Raft compaction control and status path.
 pub const ADMIN_RAFT_COMPACTION_PATH: &str = "/admin/raft/compaction";
+/// Off-by-default, local-only destructive diagnostic reset path.
+pub const ADMIN_DIAGNOSTIC_RESET_PATH: &str = "/admin/diagnostics/reset";
 
 /// Shared runtime state for the admin HTTP surface.
 pub type SharedServerRuntime = Arc<Mutex<ServerRuntime>>;
@@ -102,6 +105,7 @@ impl AdminHttpSurface {
             .route(ADMIN_DRAIN_PATH, get(admin_drain).post(admin_drain))
             .route(ADMIN_RESHARD_PATH, post(admin_reshard))
             .route(ADMIN_BACKUP_PATH, post(admin_backup))
+            .route(ADMIN_DIAGNOSTIC_RESET_PATH, post(admin_diagnostic_reset))
             .route(
                 ADMIN_RAFT_COMPACTION_PATH,
                 get(admin_raft_compaction_status).post(admin_raft_compaction),
@@ -245,6 +249,76 @@ async fn admin_backup(State(runtime): State<SharedServerRuntime>, headers: Heade
         .unwrap_or_else(|error| AdminHttpError::from(error).into_response())
 }
 
+async fn admin_diagnostic_reset(
+    State(runtime): State<SharedServerRuntime>,
+    hc2: Option<Extension<Hc2ClientPlaneService>>,
+    headers: HeaderMap,
+) -> Response {
+    if let Err(error) = require_admin(&headers) {
+        return error.into_response();
+    }
+    let (cache, client_state) = {
+        let runtime = runtime.lock().expect("server runtime mutex");
+        if !runtime.diagnostic_reset_enabled() {
+            return AdminHttpError::DiagnosticResetDisabled.into_response();
+        }
+        runtime.diagnostic_reset_targets()
+    };
+    if client_state
+        .as_ref()
+        .is_some_and(|state| state.active_subscriptions() != 0)
+        || hc2.as_ref().is_some_and(|Extension(service)| {
+            let accounting = service.accounting();
+            accounting.active_connections != 0
+                || accounting.pending_invocations != 0
+                || accounting.active_subscriptions != 0
+                || accounting.active_sessions != 0
+        })
+    {
+        return AdminHttpError::DiagnosticResetBusy.into_response();
+    }
+
+    let embedded_before = cache.diagnostics().await.estimated_entries;
+    if let Err(error) = cache.flush().await {
+        return AdminHttpError::DiagnosticResetFailed(error.to_string()).into_response();
+    }
+    let client = match client_state
+        .map(|state| state.reset_retained_state_for_diagnostics())
+        .transpose()
+    {
+        Ok(reset) => reset,
+        Err(error) => {
+            return AdminHttpError::DiagnosticResetFailed(error.to_string()).into_response();
+        }
+    };
+    let embedded_after = cache.diagnostics().await.estimated_entries;
+    let client_is_zero = client.as_ref().is_none_or(|reset| {
+        reset.after.store_entries == 0
+            && reset.after.idempotency_outcomes == 0
+            && reset.after.conditional.records == 0
+            && reset.after.conditional.locks == 0
+            && reset.after.conditional.session_heartbeats == 0
+    });
+    if embedded_after != 0 || !client_is_zero {
+        return AdminHttpError::DiagnosticResetFailed(
+            "owner counts remained non-zero after reset".to_owned(),
+        )
+        .into_response();
+    }
+
+    (
+        StatusCode::OK,
+        Json(AdminDiagnosticResetReply {
+            action: "diagnostic_reset",
+            outcome: "completed",
+            embedded_before,
+            embedded_after,
+            client,
+        }),
+    )
+        .into_response()
+}
+
 async fn admin_raft_compaction_status(
     State(runtime): State<SharedServerRuntime>,
     headers: HeaderMap,
@@ -328,6 +402,21 @@ pub struct AdminDrainReply {
     pub drain: DrainOutcome,
 }
 
+/// Verified owner counts returned by the local diagnostic reset.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+pub struct AdminDiagnosticResetReply {
+    /// Stable destructive action name.
+    pub action: &'static str,
+    /// Stable successful outcome.
+    pub outcome: &'static str,
+    /// Embedded cache entries observed before cleanup.
+    pub embedded_before: u64,
+    /// Embedded cache entries observed after cleanup.
+    pub embedded_after: u64,
+    /// Shared HC/1, HC/2 and RESP dispatch owner counts, when configured.
+    pub client: Option<ClientSurfaceDiagnosticReset>,
+}
+
 /// JSON reply for rejected admin calls.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 pub struct AdminErrorReply {
@@ -355,6 +444,15 @@ pub enum AdminHttpError {
     /// Caller identity is not privileged for admin actions.
     #[error("admin privileges are required")]
     Unauthorized,
+    /// Diagnostic reset is not explicitly enabled.
+    #[error("diagnostic reset is disabled")]
+    DiagnosticResetDisabled,
+    /// Active client resources make destructive reset unsafe.
+    #[error("diagnostic reset requires a quiescent client surface")]
+    DiagnosticResetBusy,
+    /// A reset owner failed cleanup or its zero assertion.
+    #[error("diagnostic reset failed: {0}")]
+    DiagnosticResetFailed(String),
     /// Runtime refused the requested admin action.
     #[error("{0}")]
     Action(#[from] ServerAdminActionError),
@@ -365,6 +463,9 @@ impl IntoResponse for AdminHttpError {
         let status = match self {
             Self::Unauthenticated => StatusCode::UNAUTHORIZED,
             Self::Unauthorized => StatusCode::FORBIDDEN,
+            Self::DiagnosticResetDisabled => StatusCode::NOT_FOUND,
+            Self::DiagnosticResetBusy => StatusCode::CONFLICT,
+            Self::DiagnosticResetFailed(_) => StatusCode::INTERNAL_SERVER_ERROR,
             Self::Action(ServerAdminActionError::NotReady(_)) => StatusCode::SERVICE_UNAVAILABLE,
             Self::Action(
                 ServerAdminActionError::RequiresMember(_) | ServerAdminActionError::BackupDisabled,

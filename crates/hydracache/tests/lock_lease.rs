@@ -48,6 +48,7 @@ fn expired_lease_can_be_stolen_and_fence_advances() {
 
     assert!(second > first);
     assert_eq!(store.metrics().lock_lease_expired_total, 1);
+    assert_eq!(store.retained_state().session_heartbeats, 1);
 }
 
 #[test]
@@ -65,6 +66,7 @@ fn stale_holder_release_after_expiry_is_rejected() {
         .unwrap()
         .expect("first owner acquires");
     assert_eq!(store.expire_due(at(10)), 1);
+    assert_eq!(store.retained_state().session_heartbeats, 0);
 
     let error = store
         .release_lock("lock:refresh", &first_owner, first)
@@ -135,6 +137,7 @@ fn session_loss_releases_all_its_locks_and_advances_fence() {
         .expect("second lock");
 
     assert_eq!(store.expire_lost_sessions(at(20), lease(10)), 2);
+    assert_eq!(store.retained_state().session_heartbeats, 0);
     assert!(matches!(
         store.validate_fence_token("lock:a", first),
         Err(ConditionalError::StaleFenceToken { .. })
@@ -152,6 +155,67 @@ fn session_loss_releases_all_its_locks_and_advances_fence() {
         .expect("new owner after session loss");
     assert!(second > first);
     assert_eq!(store.metrics().lock_lease_expired_total, 2);
+}
+
+#[test]
+fn unique_lock_sessions_release_all_heartbeat_ownership() {
+    let mut store = store();
+
+    for index in 0..10_000_u64 {
+        let lock_owner = owner(&format!("session-{index}"), index);
+        let token = store
+            .try_acquire_lock(
+                "shared-lock",
+                ConsistencyLevel::Quorum,
+                lock_owner.clone(),
+                lease(10),
+                at(index),
+            )
+            .unwrap()
+            .expect("lock must be available after prior release");
+        store
+            .release_lock("shared-lock", &lock_owner, token)
+            .unwrap();
+    }
+
+    let retained = store.retained_state();
+    assert_eq!(retained.locks, 0);
+    assert_eq!(retained.session_heartbeats, 0);
+    assert_eq!(retained.identity_bytes, 0);
+}
+
+#[test]
+fn diagnostic_reset_clears_owners_without_reusing_fence_tokens() {
+    let mut store = store();
+    let first_owner = owner("session-a", 1);
+    let first = store
+        .try_acquire_lock(
+            "lock:reset",
+            ConsistencyLevel::Quorum,
+            first_owner,
+            lease(100),
+            at(0),
+        )
+        .unwrap()
+        .expect("first lock");
+
+    let before = store.clear_for_diagnostic_reset();
+
+    assert_eq!(before.locks, 1);
+    assert_eq!(before.session_heartbeats, 1);
+    assert_eq!(store.retained_state().locks, 0);
+    assert_eq!(store.retained_state().session_heartbeats, 0);
+    let second = store
+        .try_acquire_lock(
+            "lock:reset",
+            ConsistencyLevel::Quorum,
+            owner("session-b", 1),
+            lease(100),
+            at(1),
+        )
+        .unwrap()
+        .expect("new lock after reset");
+    assert!(second > first);
 }
 
 #[test]

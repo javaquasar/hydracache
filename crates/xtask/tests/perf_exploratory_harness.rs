@@ -171,3 +171,30 @@ fn hazelcast_uses_one_named_distributed_map() {
     assert!(workload.contains("cache.get("));
     assert!(workload.contains("cluster_members=[f\"{args.host}:{args.port}\"]"));
 }
+
+#[test]
+fn memory_leak_runner_never_treats_rejected_hydra_flushall_as_reset() {
+    let runner = read("scripts/perf/run-memory-leak-stage.sh");
+    let renderer = read("scripts/perf/render-memory-leak-report.py");
+
+    assert!(runner.contains("reset_target()"));
+    assert!(runner.contains("HYDRACACHE_DIAGNOSTIC_RESET_ENABLED=true"));
+    assert!(runner.contains("/admin/diagnostics/reset"));
+    assert!(runner.contains(".embedded_after == 0"));
+    assert!(runner.contains(".client.after.store_entries // 0"));
+    assert!(runner.contains(".client.after.conditional.session_heartbeats // 0"));
+    assert!(runner.contains("' >/dev/null || return"));
+    assert!(runner.contains("response=\"$(redis-cli --raw"));
+    assert!(runner.contains("[[ \"$response\" == \"OK\" ]]"));
+    assert!(runner.contains("[[ \"$remaining\" == \"0\" ]]"));
+    assert!(runner.contains("reset-verified"));
+    assert!(runner.contains("MEMORY_DIAGNOSTIC_TARGETS-hydra redis hazelcast"));
+    assert!(runner.contains("ship_evidence_eligible=false"));
+    assert!(runner.contains("source_tree_clean=true"));
+    assert!(runner.contains("hydracache_binary_sha256=$(sha256sum"));
+    assert!(runner.contains("git status --porcelain"));
+    assert!(runner.contains("experiment_status"));
+    assert!(!runner.contains("FLUSHALL >/dev/null"));
+    assert!(renderer.contains("off-by-default local admin diagnostic reset"));
+    assert!(renderer.contains("rejected RESP FLUSHALL is never treated as cleanup"));
+}
