@@ -6,6 +6,7 @@ IFS=$'\n\t'
 # directories and keeps checkpoint metadata beside raw one-second telemetry.
 repo_root="$(git rev-parse --show-toplevel)"
 output_dir="${1-/dev/shm/hydracache-memory-leak-$(date -u +%Y%m%dT%H%M%SZ)}"
+diagnostic_environment="${MEMORY_DIAGNOSTIC_ENVIRONMENT-bare-metal}"
 benchmark="${REDIS_BENCHMARK-/usr/bin/redis-benchmark}"
 redis_image="${REDIS_IMAGE-redis@sha256:3aaec283e6e593bde528077d60280ac1589887067a39273348860837c9346d7e}"
 hazelcast_image="${HAZELCAST_IMAGE-}"
@@ -25,6 +26,10 @@ export MEASUREMENT_AFFINITY="$affinity"
 require_tools() {
   test -x "$benchmark"; test -x "$(command -v redis-cli)"; test -x "$(command -v curl)"; test -x "$(command -v jq)"; test -x "$repo_root/target/release/hydracache-server"; test -x "$(command -v taskset)"
   test "${#diagnostic_targets[@]}" -gt 0
+  case "$diagnostic_environment" in
+    bare-metal|github-hosted) ;;
+    *) echo "unsupported MEMORY_DIAGNOSTIC_ENVIRONMENT: $diagnostic_environment" >&2; return 1 ;;
+  esac
   local target
   for target in "${diagnostic_targets[@]}"; do
     case "$target" in
@@ -219,17 +224,31 @@ test -z "$(git status --porcelain)" || {
   exit 1
 }
 {
-  echo "stage=memory-leak"; echo "ship_evidence_eligible=false"; echo "branch=$(git branch --show-current)"; echo "source_commit=$(git rev-parse HEAD)"; echo "source_tree_clean=true"; echo "hydracache_binary_sha256=$(sha256sum "$repo_root/target/release/hydracache-server" | awk '{print $1}')"; echo "targets=$target_filter"; echo "host=$(hostname)"; echo "affinity=$affinity"; echo "interval_seconds=$interval"; echo "duration_seconds=$duration"; echo "cycles=$cycles"; echo "batch_requests=$batch"; echo "redis_image=$redis_image"; echo "hazelcast_image=$hazelcast_image"; echo "hazelcast_client_version=$hazelcast_client_version"
+  echo "stage=memory-leak"; echo "diagnostic_environment=$diagnostic_environment"; echo "ship_evidence_eligible=false"; echo "branch=$(git branch --show-current)"; echo "source_commit=$(git rev-parse HEAD)"; echo "source_tree_clean=true"; echo "hydracache_binary_sha256=$(sha256sum "$repo_root/target/release/hydracache-server" | awk '{print $1}')"; echo "targets=$target_filter"; echo "host=$(hostname)"; echo "affinity=$affinity"; echo "online_cpus=$(nproc)"; echo "kernel=$(uname -srmo)"; echo "interval_seconds=$interval"; echo "duration_seconds=$duration"; echo "cycles=$cycles"; echo "batch_requests=$batch"; echo "redis_image=$redis_image"; echo "hazelcast_image=$hazelcast_image"; echo "hazelcast_client_version=$hazelcast_client_version"
 } >"$output_dir/reproduction-command.txt"
 for generated_evidence in target/test-evidence/0.67 target/test-evidence/0.67.1; do
   if [[ -e "$generated_evidence" && ! -L "$generated_evidence" ]]; then rm -rf -- "$generated_evidence"; fi
 done
-if ! scripts/perf/reference-evidence-tmpfs.sh verify >>"$output_dir/hardware-validation.txt" 2>&1; then
-  rm -f -- target/test-evidence/0.67 target/test-evidence/0.67.1
-  rm -rf -- /dev/shm/hydracache-reference-evidence-v1
-  scripts/perf/reference-evidence-tmpfs.sh prepare >>"$output_dir/hardware-validation.txt" 2>&1
+if [[ "$diagnostic_environment" == github-hosted ]]; then
+  {
+    echo "environment=github-hosted"
+    echo "qualification_evidence=false"
+    echo "bootstrap_evidence=false"
+    echo "ship_evidence_eligible=false"
+    echo "bare_metal_checks=not_applicable"
+    echo "irq_isolation_checks=not_applicable"
+    lscpu
+    free -b
+    docker version
+  } >"$output_dir/hardware-validation.txt" 2>&1
+else
+  if ! scripts/perf/reference-evidence-tmpfs.sh verify >>"$output_dir/hardware-validation.txt" 2>&1; then
+    rm -f -- target/test-evidence/0.67 target/test-evidence/0.67.1
+    rm -rf -- /dev/shm/hydracache-reference-evidence-v1
+    scripts/perf/reference-evidence-tmpfs.sh prepare >>"$output_dir/hardware-validation.txt" 2>&1
+  fi
+  scripts/perf/reference-runtime-irq-guard.sh memory-leak-pre >>"$output_dir/hardware-validation.txt"
 fi
-scripts/perf/reference-runtime-irq-guard.sh memory-leak-pre >>"$output_dir/hardware-validation.txt"
 printf 'experiment\ttarget\tpattern\tstatus\n' >"$output_dir/leak-status.tsv"
 trap 'stop_target || true' EXIT INT TERM
 for target in "${diagnostic_targets[@]}"; do run_soak 01-fixed-keyspace "$target" default fixed-keyspace; done
@@ -242,6 +261,8 @@ for target in "${diagnostic_targets[@]}"; do [[ "$target" == hazelcast ]] || run
 for target in "${diagnostic_targets[@]}"; do run_soak 03-cycle-reset "$target" default cycle-reset; done
 for target in "${diagnostic_targets[@]}"; do [[ "$target" == hazelcast ]] || run_restart_soak "$target" default; done
 for target in "${diagnostic_targets[@]}"; do run_soak 05-idle-fragmentation "$target" default idle-fragmentation; done
-scripts/perf/reference-runtime-irq-guard.sh memory-leak-post >>"$output_dir/hardware-validation.txt" || true
+if [[ "$diagnostic_environment" == bare-metal ]]; then
+  scripts/perf/reference-runtime-irq-guard.sh memory-leak-post >>"$output_dir/hardware-validation.txt" || true
+fi
 python3 scripts/perf/render-memory-leak-report.py --input "$output_dir" --output "$output_dir/report.md"
 echo "output=$output_dir"

@@ -25,6 +25,20 @@ on:
         required: false
         default: false
         type: boolean
+      run_memory_diagnostic:
+        description: "Run non-promotable HydraCache/Redis memory diagnostics on a GitHub-hosted VM"
+        required: false
+        default: false
+        type: boolean
+      memory_diagnostic_duration_seconds:
+        description: "Per-case memory diagnostic observation window"
+        required: true
+        default: "180"
+        type: choice
+        options:
+          - "120"
+          - "180"
+          - "300"
       performance_0671_mode:
         description: "Explicit 0.67.1 dedicated-runner stage (qualification is never ship evidence)"
         required: true
@@ -95,6 +109,93 @@ env:
   HYDRACACHE_EVIDENCE_TESTED_SHA: ${{ github.sha }}
 
 jobs:
+  memory-diagnostic-hosted:
+    name: Memory Diagnostic (GitHub Hosted)
+    if: github.event_name == 'workflow_dispatch' && inputs.run_memory_diagnostic
+    runs-on: ubuntu-24.04
+    timeout-minutes: 240
+    env:
+      CARGO_BUILD_JOBS: 2
+      CARGO_INCREMENTAL: 0
+      CARGO_PROFILE_RELEASE_DEBUG: 0
+      LEAK_DURATION_SECONDS: ${{ inputs.memory_diagnostic_duration_seconds }}
+      LEAK_CYCLES: 3
+      LEAK_BATCH_REQUESTS: 10000
+      MEASUREMENT_AFFINITY: 0
+      MEMORY_DIAGNOSTIC_ENVIRONMENT: github-hosted
+      MEMORY_DIAGNOSTIC_TARGETS: hydra redis
+      REDIS_IMAGE: redis@sha256:3aaec283e6e593bde528077d60280ac1589887067a39273348860837c9346d7e
+      MEMORY_DIAGNOSTIC_OUTPUT: target/memory-diagnostic/github-hosted
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache Rust dependencies
+        uses: Swatinem/rust-cache@v2
+        with:
+          prefix-key: v1-memory-diagnostic-hosted
+          cache-targets: false
+
+      - name: Install diagnostic tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes build-essential jq netcat-openbsd redis-tools
+
+      - name: Build release daemon
+        run: cargo build --release -p hydracache-server --locked
+
+      - name: Build pinned redis-benchmark 7.2.5
+        shell: bash
+        run: |
+          set -euo pipefail
+          tools_dir="$RUNNER_TEMP/memory-diagnostic-tools"
+          mkdir --parents "$tools_dir"
+          cd "$tools_dir"
+          curl --fail --location --retry 3 \
+            --output redis-7.2.5.tar.gz \
+            https://download.redis.io/releases/redis-7.2.5.tar.gz
+          printf '%s  redis-7.2.5.tar.gz\n' \
+            '5981179706f8391f03be91d951acafaeda91af7fac56beffb2701963103e423d' \
+            | sha256sum --check --strict
+          tar --extract --gzip --file redis-7.2.5.tar.gz
+          make -C redis-7.2.5 -j1 redis-benchmark
+          test "$(redis-7.2.5/src/redis-benchmark --version)" = "redis-benchmark 7.2.5"
+          echo "REDIS_BENCHMARK=$tools_dir/redis-7.2.5/src/redis-benchmark" >> "$GITHUB_ENV"
+
+      - name: Pull pinned Redis image
+        run: |
+          docker pull "$REDIS_IMAGE"
+          docker image inspect "$REDIS_IMAGE" > target/redis-image-inspect.json
+
+      - name: Run HydraCache and Redis memory campaign
+        shell: bash
+        run: scripts/perf/run-memory-leak-stage.sh "$MEMORY_DIAGNOSTIC_OUTPUT"
+
+      - name: Publish report to job summary
+        if: always()
+        shell: bash
+        run: |
+          if [[ -f "$MEMORY_DIAGNOSTIC_OUTPUT/report.md" ]]; then
+            cat "$MEMORY_DIAGNOSTIC_OUTPUT/report.md" >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Upload raw memory evidence
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: memory-diagnostic-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            target/memory-diagnostic/github-hosted
+            target/redis-image-inspect.json
+          if-no-files-found: error
+          retention-days: 30
+
   docs:
     name: Docs
     runs-on: ubuntu-latest

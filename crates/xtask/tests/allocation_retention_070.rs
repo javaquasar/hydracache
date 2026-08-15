@@ -91,6 +91,35 @@ fn release_070_allocation_retention_closure_is_fail_closed() {
 }
 
 #[test]
+fn hosted_memory_diagnostic_is_explicitly_non_promotable() {
+    let root = root();
+    let workflow = fs::read_to_string(root.join(".github/workflows/ci.yml")).unwrap();
+    for marker in [
+        "run_memory_diagnostic:",
+        "memory-diagnostic-hosted:",
+        "runs-on: ubuntu-24.04",
+        "MEMORY_DIAGNOSTIC_ENVIRONMENT: github-hosted",
+        "MEMORY_DIAGNOSTIC_TARGETS: hydra redis",
+        "scripts/perf/run-memory-leak-stage.sh",
+        "Upload raw memory evidence",
+    ] {
+        assert!(workflow.contains(marker), "workflow is missing {marker:?}");
+    }
+
+    let runner = fs::read_to_string(root.join("scripts/perf/run-memory-leak-stage.sh")).unwrap();
+    for marker in [
+        "diagnostic_environment=\"${MEMORY_DIAGNOSTIC_ENVIRONMENT-bare-metal}\"",
+        "diagnostic_environment=$diagnostic_environment",
+        "ship_evidence_eligible=false",
+        "bare_metal_checks=not_applicable",
+        "irq_isolation_checks=not_applicable",
+        "if [[ \"$diagnostic_environment\" == bare-metal ]]",
+    ] {
+        assert!(runner.contains(marker), "runner is missing {marker:?}");
+    }
+}
+
+#[test]
 fn canary_release_070_accepts_missing_work_item_evidence() {
     let Ok(defect) = env::var("HYDRACACHE_CANARY_DEFECT") else {
         return;
