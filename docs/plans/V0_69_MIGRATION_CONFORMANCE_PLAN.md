@@ -174,6 +174,11 @@ them. Daemon replay evidence requires every observed node to retain the expected
 voter counts, plus a majority of authoritative statuses agreeing on one term and leader. A single
 transient follower status without a leader or local quorum is retained as diagnostic evidence and
 does not invalidate the live majority; split or minority-only authority remains release-blocking.
+Scheduler/demotion proof samples also bind the separately fetched `/admin/status` and
+`/cluster/overview` projections: both must expose non-zero epoch and term, the same leader, exact
+epoch/term/leader equality, and the expected member/voter shape before the overview enters
+authoritative history. Bootstrap sentinels and cross-snapshot stale views remain diagnostics until
+the endpoints align within the bounded convergence deadline.
 
 The final review adds four release-blocking closures. First, a commit status containing any
 dead-lettered invalidation is terminal degraded evidence and `InvalidationWait` must never return
