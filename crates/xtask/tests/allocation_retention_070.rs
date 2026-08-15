@@ -110,10 +110,12 @@ fn hosted_memory_diagnostic_is_explicitly_non_promotable() {
     for marker in [
         "diagnostic_environment=\"${MEMORY_DIAGNOSTIC_ENVIRONMENT-bare-metal}\"",
         "diagnostic_environment=$diagnostic_environment",
+        "output_dir=\"$(cd \"$output_dir\" && pwd -P)\"",
         "ship_evidence_eligible=false",
         "bare_metal_checks=not_applicable",
         "irq_isolation_checks=not_applicable",
         "if [[ \"$diagnostic_environment\" == bare-metal ]]",
+        "memory diagnostics contain incomplete cases",
     ] {
         assert!(runner.contains(marker), "runner is missing {marker:?}");
     }

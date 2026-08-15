@@ -20,6 +20,8 @@ batch="${LEAK_BATCH_REQUESTS-10000}"
 target_filter="${MEMORY_DIAGNOSTIC_TARGETS-hydra redis hazelcast}"
 IFS=' ' read -r -a diagnostic_targets <<<"$target_filter"
 active_target=""; active_container=""; active_pid=""
+mkdir -p "$output_dir"
+output_dir="$(cd "$output_dir" && pwd -P)"
 mkdir -p "$output_dir/leak-experiments" "$output_dir/metadata"
 export MEASUREMENT_AFFINITY="$affinity"
 
@@ -265,4 +267,11 @@ if [[ "$diagnostic_environment" == bare-metal ]]; then
   scripts/perf/reference-runtime-irq-guard.sh memory-leak-post >>"$output_dir/hardware-validation.txt" || true
 fi
 python3 scripts/perf/render-memory-leak-report.py --input "$output_dir" --output "$output_dir/report.md"
+if awk -F '\t' 'NR > 1 && $4 != "complete" && $4 != "not_applicable" { print; failed = 1 } END { exit !failed }' \
+  "$output_dir/leak-status.tsv" >"$output_dir/incomplete-cases.tsv"; then
+  echo "memory diagnostics contain incomplete cases" >&2
+  cat "$output_dir/incomplete-cases.tsv" >&2
+  exit 1
+fi
+rm -f -- "$output_dir/incomplete-cases.tsv"
 echo "output=$output_dir"
