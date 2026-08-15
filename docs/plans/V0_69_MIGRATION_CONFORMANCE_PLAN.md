@@ -139,6 +139,9 @@ The release therefore includes these additional mandatory controls:
    the original outcome without relying on a later successful step.
 5. CI provenance records `HYDRACACHE_EVIDENCE_HEAD_SHA`, `HYDRACACHE_EVIDENCE_BASE_SHA`, and
    `HYDRACACHE_EVIDENCE_TESTED_SHA`; the tested SHA must equal the checkout used by `evidence-run`.
+   The HC/2 client-plane workflow exports the same exact bindings for pull requests, branch and tag
+   pushes, schedules, and manual dispatches; `client-plane-ci-check` rejects any missing or weakened
+   binding before hosted or release admission can run.
 6. PostgreSQL happy-path evidence is a digest-pinned matrix covering the declared 16.4 floor and
    current major 18. The test queries `server_version_num` and rejects a service that does not match
    its declared matrix series.

@@ -248,6 +248,7 @@ fn check_contract_at(root: &Path) -> Result<(), Box<dyn Error>> {
         }
     }
     let workflow = fs::read_to_string(root.join(&contract.workflow))?;
+    require_evidence_provenance(&workflow)?;
     let fixed_host_preflight =
         fs::read_to_string(root.join(&contract.fixed_host.preflight_script))?;
     for action in contract.action_pins.values() {
@@ -311,6 +312,17 @@ fn check_contract_at(root: &Path) -> Result<(), Box<dyn Error>> {
         "retention-days:",
     ] {
         require_text(&workflow, required, "workflow invariant")?;
+    }
+    Ok(())
+}
+
+fn require_evidence_provenance(workflow: &str) -> Result<(), Box<dyn Error>> {
+    for binding in [
+        "HYDRACACHE_EVIDENCE_HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}",
+        "HYDRACACHE_EVIDENCE_BASE_SHA: ${{ github.event.pull_request.base.sha || github.sha }}",
+        "HYDRACACHE_EVIDENCE_TESTED_SHA: ${{ github.sha }}",
+    ] {
+        require_text(workflow, binding, "evidence provenance binding")?;
     }
     Ok(())
 }
@@ -703,6 +715,22 @@ mod tests {
     #[test]
     fn checked_in_contract_matches_workflow() {
         check_contract_at(&workspace_root().unwrap()).unwrap();
+    }
+
+    #[test]
+    fn workflow_provenance_bindings_are_fail_closed() {
+        let valid = [
+            "HYDRACACHE_EVIDENCE_HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}",
+            "HYDRACACHE_EVIDENCE_BASE_SHA: ${{ github.event.pull_request.base.sha || github.sha }}",
+            "HYDRACACHE_EVIDENCE_TESTED_SHA: ${{ github.sha }}",
+        ]
+        .join("\n");
+        require_evidence_provenance(&valid).unwrap();
+
+        for binding in valid.lines() {
+            let incomplete = valid.replace(binding, "");
+            assert!(require_evidence_provenance(&incomplete).is_err());
+        }
     }
 
     #[test]

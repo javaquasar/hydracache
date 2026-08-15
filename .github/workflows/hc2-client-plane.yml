@@ -47,6 +47,9 @@ concurrency:
   cancel-in-progress: true
 
 env:
+  HYDRACACHE_EVIDENCE_HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+  HYDRACACHE_EVIDENCE_BASE_SHA: ${{ github.event.pull_request.base.sha || github.sha }}
+  HYDRACACHE_EVIDENCE_TESTED_SHA: ${{ github.sha }}
   HC2_RUST_TOOLCHAIN: "1.94.0"
   HC2_FUZZ_TOOLCHAIN: "nightly-2026-08-01"
   HC2_FUZZ_SEED: "220068"
