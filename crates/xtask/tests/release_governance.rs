@@ -741,6 +741,18 @@ fn release_governance_check_accepts_the_explicit_0_70_fast_wiring() {
     let root = xtask::doc_check::find_repo_root().unwrap();
     let report = xtask::release_governance::check(&root, "0.70").unwrap();
     assert!(report.problems.is_empty(), "{:#?}", report.problems);
+
+    let workflow = std::fs::read_to_string(root.join(".github/workflows/ci.yml")).unwrap();
+    let broken = workflow.replacen(
+        "if: env.HYDRACACHE_CANDIDATE_RELEASE == '0.69'",
+        "if: always()",
+        1,
+    );
+    let problems =
+        xtask::release_governance::release_execution_wiring_problems(&broken, "0.70").unwrap();
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("must run only when candidate release is 0.69")));
 }
 
 #[test]

@@ -1,6 +1,8 @@
 use std::alloc::{GlobalAlloc, Layout, System};
+use std::cell::Cell;
 use std::hint::spin_loop;
 use std::sync::atomic::{AtomicU64, AtomicUsize, Ordering};
+use std::sync::Arc;
 
 use hydracache::{CacheOptions, HydraCache};
 use serde::{Deserialize, Serialize};
@@ -42,6 +44,10 @@ static TRACKING_OVERFLOWS: AtomicUsize = AtomicUsize::new(0);
 static TRACKED_ALLOCATIONS: [TrackedAllocation; TRACKED_ALLOCATION_SLOTS] =
     [const { TrackedAllocation::empty() }; TRACKED_ALLOCATION_SLOTS];
 static PROFILE_LOCK: Mutex<()> = Mutex::const_new(());
+
+thread_local! {
+    static COUNTING_EPOCH: Cell<u64> = const { Cell::new(0) };
+}
 
 #[global_allocator]
 static GLOBAL: CountingAllocator = CountingAllocator;
@@ -129,8 +135,12 @@ fn record_allocation(pointer: *mut u8, bytes: usize, zeroed: bool) {
 }
 
 fn enter_active_epoch() -> u64 {
+    let local_epoch = COUNTING_EPOCH.get();
+    if local_epoch == 0 {
+        return 0;
+    }
     let epoch = ACTIVE_EPOCH.load(Ordering::Acquire);
-    if epoch == 0 {
+    if epoch == 0 || epoch != local_epoch {
         return 0;
     }
     COUNTING_IN_FLIGHT.fetch_add(1, Ordering::AcqRel);
@@ -289,6 +299,7 @@ impl CountingScope {
         while COUNTING_IN_FLIGHT.load(Ordering::Acquire) != 0 {
             spin_loop();
         }
+        COUNTING_EPOCH.set(0);
         self.active = false;
     }
 }
@@ -318,6 +329,12 @@ fn start_counting() -> CountingScope {
     if epoch == 0 {
         epoch = NEXT_EPOCH.fetch_add(1, Ordering::Relaxed);
     }
+    assert_eq!(
+        COUNTING_EPOCH.get(),
+        0,
+        "allocation profiles must not nest on one thread"
+    );
+    COUNTING_EPOCH.set(epoch);
     ACTIVE_EPOCH.store(epoch, Ordering::Release);
     CountingScope {
         epoch,
@@ -386,6 +403,36 @@ async fn allocation_scope_reports_released_vector_as_not_live() {
 
     assert_eq!(snapshot.live_bytes, 0);
     assert!(snapshot.peak_live_bytes >= 8_192);
+    assert_eq!(snapshot.tracking_overflows, 0);
+}
+
+#[tokio::test(flavor = "current_thread")]
+async fn allocation_scope_ignores_unrelated_thread_allocations() {
+    let _profile_guard = PROFILE_LOCK.lock().await;
+    let start = Arc::new(AtomicUsize::new(0));
+    let worker_start = Arc::clone(&start);
+    let worker = std::thread::spawn(move || {
+        while worker_start.load(Ordering::Acquire) == 0 {
+            spin_loop();
+        }
+        let unrelated = vec![5_u8; 8_192];
+        std::hint::black_box(&unrelated);
+        drop(unrelated);
+        worker_start.store(2, Ordering::Release);
+    });
+
+    let scope = start_counting();
+    start.store(1, Ordering::Release);
+    while start.load(Ordering::Acquire) != 2 {
+        spin_loop();
+    }
+    let snapshot = scope.finish();
+    worker.join().unwrap();
+
+    assert_eq!(snapshot.allocations, 0);
+    assert_eq!(snapshot.deallocations, 0);
+    assert_eq!(snapshot.live_bytes, 0);
+    assert_eq!(snapshot.peak_live_bytes, 0);
     assert_eq!(snapshot.tracking_overflows, 0);
 }
 

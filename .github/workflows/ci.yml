@@ -662,6 +662,7 @@ jobs:
           --output target/release-evidence/0.69.admission-lanes.json
 
       - name: Require exact-candidate migration conformance evidence
+        if: env.HYDRACACHE_CANDIDATE_RELEASE == '0.69'
         run: cargo run -p xtask --locked -- release-evidence --release 0.69 --receipts-dir target/release-evidence/receipts --require-ship
 
       - name: Upload migration conformance admission
