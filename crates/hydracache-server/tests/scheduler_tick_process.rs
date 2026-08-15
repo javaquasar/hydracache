@@ -1,7 +1,8 @@
 mod support;
 
 #[cfg(target_os = "linux")]
-use std::collections::{BTreeMap, BTreeSet};
+use std::collections::BTreeMap;
+use std::collections::BTreeSet;
 #[cfg(target_os = "linux")]
 use std::fs;
 #[cfg(target_os = "linux")]
@@ -11,11 +12,12 @@ use std::time::{Duration, Instant};
 
 #[cfg(target_os = "linux")]
 use serde::Serialize;
-use support::daemon_cluster::{skip_unless_daemon_process_e2e, TestResult};
 #[cfg(target_os = "linux")]
-use support::daemon_cluster::{DaemonCluster, DaemonStatus};
+use support::daemon_cluster::DaemonCluster;
+use support::daemon_cluster::{skip_unless_daemon_process_e2e, DaemonStatus, TestResult};
 #[cfg(target_os = "linux")]
-use support::membership_history::{MembershipHistoryRecorder, MembershipObservation};
+use support::membership_history::MembershipHistoryRecorder;
+use support::membership_history::MembershipObservation;
 
 #[cfg(target_os = "linux")]
 #[derive(Debug, Clone, Serialize)]
@@ -369,7 +371,7 @@ fn run_resumed_demoted_process() -> TestResult {
         // bootstrap/uninitialized view, not an authoritative membership
         // regression, so wait for the majority peer's committed shape before
         // adding it to the monotonic history.
-        if peer_membership.epoch == 0 || peer_membership.members.len() != 2 {
+        if !public_membership_is_authoritative(&peer_status, &peer_membership, 2, 2) {
             std::thread::sleep(Duration::from_millis(20));
             continue;
         }
@@ -381,12 +383,7 @@ fn run_resumed_demoted_process() -> TestResult {
         // once /admin/status itself proves that the membership transition has
         // been applied; the bounded deadline below still fails closed if the
         // node remains stale.
-        if resumed_status.quorum_ok
-            && resumed_status.leader.is_some()
-            && resumed_status.epoch == peer_membership.epoch
-            && resumed_status.members == 2
-            && resumed_status.voters == 2
-        {
+        if public_membership_is_authoritative(&resumed_status, &resumed_membership, 2, 2) {
             assert_eq!(
                 (resumed_status.term, resumed_status.leader.as_deref()),
                 (peer_status.term, peer_status.leader.as_deref()),
@@ -419,14 +416,25 @@ fn run_resumed_demoted_process() -> TestResult {
     }
 
     cluster.wait_for_non_draining_shape("post-resume membership commit", 2, 2)?;
-    let (resumed_after_commit, resumed_membership) = evidence.capture_node(
-        &cluster,
-        old_leader_index,
-        "resumed-process-after-membership-commit",
-    )?;
+    let final_deadline = Instant::now() + Duration::from_secs(5);
+    let (resumed_after_commit, resumed_membership) = loop {
+        let sample = evidence.capture_node(
+            &cluster,
+            old_leader_index,
+            "resumed-process-after-membership-commit",
+        )?;
+        if public_membership_is_authoritative(&sample.0, &sample.1, 2, 2) {
+            break sample;
+        }
+        if Instant::now() >= final_deadline {
+            return Err(
+                "post-resume status and membership overview did not align before deadline".into(),
+            );
+        }
+        std::thread::sleep(Duration::from_millis(20));
+    };
     assert_eq!(resumed_after_commit.members, 2);
     assert_eq!(resumed_after_commit.voters, 2);
-    assert_eq!(resumed_membership.members.len(), 2);
     evidence.record_authoritative_membership(resumed_membership);
     evidence.capture_all(&mut cluster, "post-resume-committed-membership")?;
 
@@ -436,6 +444,76 @@ fn run_resumed_demoted_process() -> TestResult {
     assert!(artifact.is_file());
     assert_daemon_logs_preserved(&mut cluster);
     Ok(())
+}
+
+fn public_membership_is_authoritative(
+    status: &DaemonStatus,
+    membership: &MembershipObservation,
+    expected_members: u32,
+    expected_voters: u32,
+) -> bool {
+    status.quorum_ok
+        && status.leader.is_some()
+        && status.epoch != 0
+        && status.term != 0
+        && status.members == expected_members
+        && status.voters == expected_voters
+        && membership.epoch == status.epoch
+        && membership.term == status.term
+        && membership.leader == status.leader
+        && membership.members.len()
+            == usize::try_from(expected_members).expect("member count fits usize")
+}
+
+#[test]
+fn public_membership_requires_an_aligned_authoritative_status_and_overview() {
+    let members = ["node-a".to_owned(), "node-b".to_owned()]
+        .into_iter()
+        .collect::<BTreeSet<_>>();
+    let status = DaemonStatus {
+        leader: Some("node-a".to_owned()),
+        term: 11,
+        epoch: 4,
+        members: 2,
+        voters: 2,
+        quorum_ok: true,
+        draining: false,
+    };
+    let aligned = MembershipObservation {
+        epoch: 4,
+        term: 11,
+        leader: Some("node-a".to_owned()),
+        members: members.clone(),
+    };
+    assert!(public_membership_is_authoritative(&status, &aligned, 2, 2));
+
+    let bootstrap = MembershipObservation {
+        epoch: 0,
+        term: 0,
+        leader: None,
+        members: members.clone(),
+    };
+    assert!(!public_membership_is_authoritative(
+        &status, &bootstrap, 2, 2
+    ));
+
+    let mut stale_leader = aligned.clone();
+    stale_leader.leader = Some("node-b".to_owned());
+    assert!(!public_membership_is_authoritative(
+        &status,
+        &stale_leader,
+        2,
+        2
+    ));
+
+    let mut non_quorate = status;
+    non_quorate.quorum_ok = false;
+    assert!(!public_membership_is_authoritative(
+        &non_quorate,
+        &aligned,
+        2,
+        2
+    ));
 }
 
 #[cfg(target_os = "linux")]
