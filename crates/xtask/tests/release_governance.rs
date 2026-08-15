@@ -737,6 +737,13 @@ jobs:
 }
 
 #[test]
+fn release_governance_check_accepts_the_explicit_0_70_fast_wiring() {
+    let root = xtask::doc_check::find_repo_root().unwrap();
+    let report = xtask::release_governance::check(&root, "0.70").unwrap();
+    assert!(report.problems.is_empty(), "{:#?}", report.problems);
+}
+
+#[test]
 fn release_governance_check_accepts_release_069_independent_evidence_wiring() {
     let root = xtask::doc_check::find_repo_root().unwrap();
     let report = xtask::release_governance::check(&root, "0.69").unwrap();

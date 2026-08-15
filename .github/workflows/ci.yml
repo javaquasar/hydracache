@@ -226,6 +226,8 @@ jobs:
           cargo run -p xtask --locked -- canary-sweep --release 0.67.1 --tier fast
           cargo run -p xtask --locked -- canary-check --release 0.68
           cargo run -p xtask --locked -- canary-sweep --release 0.68 --tier fast
+          cargo run -p xtask --locked -- canary-check --release 0.70
+          cargo run -p xtask --locked -- canary-sweep --release 0.70 --tier fast
 
       - name: Fuzz corpus regression
         run: cargo run -p xtask --locked -- evidence-run --release "$HYDRACACHE_CANDIDATE_RELEASE" --gate fast.fuzz-corpus-regression

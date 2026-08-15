@@ -147,6 +147,7 @@ pub struct AdminApiConfig {
     /// Internal admin listen address, intentionally separate from the client surface.
     pub listen_addr: SocketAddr,
     /// Whether the local-only destructive diagnostic reset route is enabled.
+    #[serde(default)]
     pub diagnostic_reset_enabled: bool,
 }
 
