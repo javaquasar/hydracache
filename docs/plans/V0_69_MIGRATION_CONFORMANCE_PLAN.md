@@ -167,6 +167,14 @@ alone. The admission checkout also restores full history so the published `v0.68
 baseline tag remains a fail-closed release prerequisite rather than appearing absent in a shallow
 checkout.
 
+Tag qualification additionally treats ephemeral listener ownership and cluster status as concurrent
+observations. The listener-reservation regression proves addresses are distinct and held together;
+it does not attempt to reclaim released ports after another parallel test may legitimately acquire
+them. Daemon replay evidence requires every observed node to retain the expected membership and
+voter counts, plus a majority of authoritative statuses agreeing on one term and leader. A single
+transient follower status without a leader or local quorum is retained as diagnostic evidence and
+does not invalidate the live majority; split or minority-only authority remains release-blocking.
+
 The final review adds four release-blocking closures. First, a commit status containing any
 dead-lettered invalidation is terminal degraded evidence and `InvalidationWait` must never return
 `satisfied`; in-memory, SQLite, and PostgreSQL paths cover that contract. Second,

@@ -373,7 +373,4 @@ fn reserved_listener_addresses_are_distinct_and_held() {
         }
     }
     drop(reservations);
-    for addr in addrs {
-        assert!(StdTcpListener::bind(addr).is_ok());
-    }
 }
