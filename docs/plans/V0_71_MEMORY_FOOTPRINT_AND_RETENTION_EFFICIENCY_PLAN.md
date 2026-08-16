@@ -14,8 +14,10 @@
 >   accumulated workload footprint. Source audit found concrete amplification candidates:
 >   value-only Moka weights, cloned tenant/namespace/key strings, lazy expiry, duplicated tag and
 >   generation metadata, and append-only invalidation/idempotency/audit collections. The evidence
->   does **not** yet prove a generic leak, so the release requires causal counters and allocator
->   evidence before changing implementation or defaults.
+>   does **not** yet prove a generic leak. The `0.70` GitHub-hosted follow-up instead found exact
+>   logical-owner zero after reset, flat idle tails, and residual Hydra RSS consistent with an
+>   allocator/runtime high-water candidate. `0.71` therefore requires causal counters, corrected
+>   TTL coverage, and allocator evidence before changing implementation or defaults.
 > - **After (depends on):** `0.70.0`; consumes its allocation-owner inventory, retained-state
 >   snapshots, bounded-lifecycle fixes and deterministic local diagnostic harness, plus the
 >   qualified `0.67.1` reference methodology and the `0.69` executable client matrix.
@@ -25,7 +27,8 @@
 >
 > Roadmap: [`INDEX.md`](INDEX.md) - rules: [`../RULES.md`](../RULES.md) -
 > gates: [`../GATES.md`](../GATES.md) - performance: [`../PERFORMANCE.md`](../PERFORMANCE.md) -
-> source reports: [`../testing/perf-scenarios/0.67/results/memory-investigations-report-20260804.md`](../testing/perf-scenarios/0.67/results/memory-investigations-report-20260804.md),
+> source reports: [`../testing/perf-scenarios/0.70/results/github-hosted-memory-diagnostic-20260816.md`](../testing/perf-scenarios/0.70/results/github-hosted-memory-diagnostic-20260816.md),
+> [`../testing/perf-scenarios/0.67/results/memory-investigations-report-20260804.md`](../testing/perf-scenarios/0.67/results/memory-investigations-report-20260804.md),
 > [`../testing/perf-scenarios/0.67/results/memory-leak-analysis-20260803.md`](../testing/perf-scenarios/0.67/results/memory-leak-analysis-20260803.md),
 > [`../testing/perf-scenarios/0.67/results/comparative-memory-20260802.md`](../testing/perf-scenarios/0.67/results/comparative-memory-20260802.md).
 
@@ -46,10 +49,56 @@ An RSS reduction without proof that live data and mandatory records are preserve
 | Three-minute expiry soak | Hydra RSS slope `+2.57 MiB/min`; Redis approximately flat | Expiry cleanup and allocator recovery are the highest-priority follow-up | Expired values alone remain live |
 | Three-minute reset soak | Hydra RSS slope `+9.55 MiB/min`; immediate reset did not restore cold RSS | All maps/indexes/history plus allocator reuse must be checked together | `FLUSHALL` is semantically incorrect without logical counters |
 | Idle after load | Hydra `+0.057 MiB/min`, effectively plateau/noise | Continuous no-traffic growth was not observed | High-water memory is acceptable or fully reusable |
+| `0.70` GitHub-hosted reset/idle diagnostic | Hydra median RSS `11.77 MiB` versus Redis `17.34 MiB`; median PSS-anon `4.66 MiB` versus `9.30 MiB`; both idle-tail RSS slopes were zero; Hydra owner snapshots were exactly zero after every reset | No sustained process-level leak was observed in the fixed-cardinality/reset/idle windows; the remaining Hydra RSS is an allocator/runtime high-water candidate | Pages are proven reusable, TTL reclamation is proven, or a noisy hosted-runner RSS value is a release budget |
 
 The W0 baseline must repeat the positive screens for 30-60 minutes across at least three fresh
 processes and must synchronize application counters with process/cgroup/allocator samples. Until
 then, `possible-growth` remains a screening label, never `leak`.
+
+The `0.70` hosted artifact has one known evidence gap: its TTL workload checkpoint occurred after
+the original fixed collector window. The harness now extends collection through the final
+checkpoint and rejects incomplete rows, but `0.71` must repeat this case before treating TTL as
+reclamation evidence. The hosted result is a useful order-of-magnitude screen, not ship evidence.
+
+## Investigation hand-off from 0.70
+
+Resolve these questions in order so representation work is not used to mask allocator behavior:
+
+1. **Allocator high-water or live ownership:** after every reset, reconcile exact subsystem-owner
+   zero with allocator `allocated`, `active`, `resident`, `retained`/`mapped`, process PSS-anon and
+   cgroup anon at the same monotonic checkpoint. A non-zero RSS alone is not a leak verdict.
+2. **Reuse versus purge:** after the first high-water cycle, refill the same cardinality without
+   process restart and measure fresh OS allocation, allocator reuse and explicit/rate-limited purge
+   separately. Returning to cold RSS is not required when pages are demonstrably reusable.
+3. **Correct TTL tail:** repeat fill-expire-idle with telemetry covering the final workload
+   checkpoint, exact logical-owner zero, bounded cleanup backlog and a fixed post-expiry idle
+   window. Any uncovered checkpoint invalidates the row.
+4. **Cardinality and payload amplification:** run geometric key counts and 64/256/1,024/4,096-byte
+   values; report bytes per live entry, metadata/value amplification and post-reset residuals. Do
+   not infer a slope by concatenating separate fresh processes.
+5. **Allocator A/B:** compare the system allocator with opt-in Linux candidates on identical
+   binaries/workloads across at least three fresh processes. Include CPU, p99, context switches,
+   portability and licensing; a one-case RSS win is insufficient.
+6. **Service and storage attribution:** isolate Admin API, RESP, HC/2, persistence and connection
+   profiles one factor at a time, keeping process anon, mapped/file and cgroup file/slab separate.
+7. **Long-lived correctness owners:** continue to treat conditional tombstones and repair
+   watermarks as correctness state. Reclamation requires an ordering-safe proof, not a memory cap
+   or diagnostic reset.
+
+### CI detection tiers
+
+Memory regression detection is split by signal stability and cost:
+
+| Tier | Trigger | What may fail the tier | Evidence role |
+| --- | --- | --- | --- |
+| `Memory Regression Fast` | every pull request and protected-branch push | deterministic owner counts/bytes not returning to their declared bound, retained HC/2 state after close, allocation tracker defects, or telemetry coverage accepting an uncovered checkpoint | early structural tripwire; required PR check |
+| `Memory Diagnostic (GitHub Hosted)` | explicit workflow dispatch | incomplete Hydra/Redis rows, workload/collector failure, non-zero errors, or missing final-checkpoint coverage | non-promotable order-of-magnitude screen with raw artifact |
+| scheduled/dedicated 0.71 lanes | 60-minute weekly, six-hour candidate, 24-hour ship confirmation | frozen slope/recovery/bytes-per-owner budgets on an approved fingerprint | qualification and exact-candidate release evidence |
+
+The fast tier intentionally has no absolute RSS/PSS threshold: GitHub-hosted VM placement and
+shared-image drift make such a number too noisy for a PR gate. It fails on deterministic ownership
+and coverage contracts first; numerical memory budgets are frozen from repeated same-fingerprint
+W0 samples and enforced only in the matching scheduled/dedicated tier.
 
 ## Archived-run provenance (mandatory input)
 
@@ -472,7 +521,10 @@ the synchronized counter/reconciliation gate must fail.
 
 Run the frozen W0 workload on the exact candidate and independently reviewed baseline:
 
-- per-PR fast structural/unit/property tests;
+- per-PR `Memory Regression Fast` structural/unit/property tests, serialized where allocation or
+  retained-owner global state is observed. The lane covers allocation-scope isolation, exact
+  cache/tag/index cleanup, client-surface diagnostic reset, HC/2 close/session/subscription release,
+  and fail-closed final-checkpoint telemetry coverage;
 - scheduled 60-minute fixed-keyspace, TTL, reset and HC/2 connection churn;
 - six-hour multi-scenario soak for candidate iterations;
 - 24-hour same-fingerprint ship confirmation with five serialized successful samples where the
@@ -496,6 +548,8 @@ Primary gates are candidate-versus-frozen-Hydra baseline, not candidate-versus-R
 
 Statistical method, warm-up exclusion, confidence interval, slope window and recovery ratio are
 versioned in the scenario contract. No hand-selected interval or last-sample comparison.
+The fast lane detects structural regressions but cannot promote an RSS result or replace any
+duration/fingerprint requirement above.
 
 ## W13. Governance, documentation and release decision
 
