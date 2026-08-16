@@ -116,6 +116,7 @@ fn hosted_memory_diagnostic_is_explicitly_non_promotable() {
         "irq_isolation_checks=not_applicable",
         "if [[ \"$diagnostic_environment\" == bare-metal ]]",
         "memory diagnostics contain incomplete cases",
+        "verify-memory-telemetry-coverage.py",
     ] {
         assert!(runner.contains(marker), "runner is missing {marker:?}");
     }

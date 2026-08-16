@@ -133,9 +133,9 @@ run_soak() {
   dir="$output_dir/leak-experiments/$exp/$target"
   mkdir -p "$dir/telemetry" "$dir/raw"; printf 'timestamp\tphase\tdetail\n' >"$dir/checkpoints.tsv"
   start_target "$target" "$dir" "$mode" || { echo failed >"$dir/status.txt"; printf '%s\t%s\t%s\tfailed\n' "$exp" "$target" "$pattern" >>"$output_dir/leak-status.tsv"; stop_target; return; }
-  local pid collector=""; pid="$(pid_for "$target")"
-  local args=(--target "$target" --output "$dir/telemetry/telemetry.jsonl" --pid "$pid" --interval "$interval" --duration "$duration")
-  [[ "$target" == hydra ]] || args=(--target "$target" --output "$dir/telemetry/telemetry.jsonl" --container "$active_container" --interval "$interval" --duration "$duration")
+  local pid collector="" collector_duration=$((duration + 1800)); pid="$(pid_for "$target")"
+  local args=(--target "$target" --output "$dir/telemetry/telemetry.jsonl" --pid "$pid" --interval "$interval" --duration "$collector_duration")
+  [[ "$target" == hydra ]] || args=(--target "$target" --output "$dir/telemetry/telemetry.jsonl" --container "$active_container" --interval "$interval" --duration "$collector_duration")
   python3 scripts/perf/collect-target-telemetry.py "${args[@]}" >"$dir/collector.log" 2>&1 & collector=$!
   record_checkpoint start "$pattern" "$dir"
   local experiment_status=0
@@ -180,6 +180,10 @@ run_soak() {
   set -e
   kill -TERM "$collector" 2>/dev/null || true; wait "$collector" 2>/dev/null || true
   stop_target
+  if [[ "$experiment_status" -eq 0 ]] && ! python3 scripts/perf/verify-memory-telemetry-coverage.py \
+    --case-dir "$dir" --interval-seconds "$interval"; then
+    experiment_status=1
+  fi
   if [[ "$experiment_status" -ne 0 ]]; then
     echo failed >"$dir/status.txt"
     printf '%s\t%s\t%s\tfailed\n' "$exp" "$target" "$pattern" >>"$output_dir/leak-status.tsv"
@@ -197,8 +201,9 @@ run_restart_soak() {
   for cycle in $(seq 1 "$cycles"); do
     start_target "$target" "$dir" "$mode" || { stop_target; echo failed >"$dir/status.txt"; printf '%s\t%s\t%s\tfailed\n' "$exp" "$target" "$pattern" >>"$output_dir/leak-status.tsv"; return; }
     local pid collector; pid="$(pid_for "$target")"
-    local args=(--target "$target" --output "$dir/telemetry/restart-$cycle.jsonl" --pid "$pid" --interval "$interval" --duration "$per_cycle")
-    [[ "$target" == hydra ]] || args=(--target "$target" --output "$dir/telemetry/restart-$cycle.jsonl" --container "$active_container" --interval "$interval" --duration "$per_cycle")
+    local collector_duration=$((per_cycle + 300))
+    local args=(--target "$target" --output "$dir/telemetry/restart-$cycle.jsonl" --pid "$pid" --interval "$interval" --duration "$collector_duration")
+    [[ "$target" == hydra ]] || args=(--target "$target" --output "$dir/telemetry/restart-$cycle.jsonl" --container "$active_container" --interval "$interval" --duration "$collector_duration")
     python3 scripts/perf/collect-target-telemetry.py "${args[@]}" >"$dir/collector-$cycle.log" 2>&1 & collector=$!
     record_checkpoint cycle-start "$cycle" "$dir"
     set +e
@@ -213,6 +218,10 @@ run_restart_soak() {
     kill -TERM "$collector" 2>/dev/null || true; wait "$collector" 2>/dev/null || true
     record_checkpoint cycle-stop "$cycle" "$dir"; stop_target
   done
+  if [[ "$restart_status" -eq 0 ]] && ! python3 scripts/perf/verify-memory-telemetry-coverage.py \
+    --case-dir "$dir" --interval-seconds "$interval"; then
+    restart_status=1
+  fi
   if [[ "$restart_status" -ne 0 ]]; then
     echo failed >"$dir/status.txt"; printf '%s\t%s\t%s\tfailed\n' "$exp" "$target" "$pattern" >>"$output_dir/leak-status.tsv"
   else

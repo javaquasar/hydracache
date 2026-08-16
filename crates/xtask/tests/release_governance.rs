@@ -487,8 +487,8 @@ fn performance_lane_requires_protected_self_hosted_labels_and_serial_concurrency
         .any(|problem| problem.contains("exact rustc 1.94.0")));
 
     let unpinned_redis = workflow.replacen(
-        "5981179706f8391f03be91d951acafaeda91af7fac56beffb2701963103e423d",
-        "unverified-source-archive",
+        "printf '%s  redis-7.2.5.tar.gz\\n' '5981179706f8391f03be91d951acafaeda91af7fac56beffb2701963103e423d' \\",
+        "printf '%s  redis-7.2.5.tar.gz\\n' 'unverified-source-archive' \\",
         1,
     );
     let problems =
