@@ -377,13 +377,13 @@ jobs:
         uses: actions/download-artifact@v5
         with:
           name: "memory-regression-fast-070-${{ github.sha }}"
-          path: target
+          path: target/release-evidence
 
       - name: Download exact-candidate retention receipts
         uses: actions/download-artifact@v5
         with:
           name: "retention-soak-070-${{ github.sha }}"
-          path: target
+          path: target/release-evidence
 
       - name: Validate exact-candidate lane status artifacts
         run: >-

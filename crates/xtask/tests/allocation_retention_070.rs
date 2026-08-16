@@ -133,6 +133,7 @@ fn release_070_ci_hardening_is_fail_closed() {
         "tool.hydracache.retention-soak-070",
         "tool.hydracache-client-transport-axum.retention-soak-070",
         "name: Release 0.70 Admission",
+        "path: target/release-evidence",
         "release-evidence --release 0.70 --receipts-dir target/release-evidence/receipts --require-ship",
         "github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && inputs.run_memory_diagnostic)",
         "name: memory-summary-${{ github.run_id }}-${{ github.run_attempt }}",
