@@ -44,8 +44,8 @@ linux_ci_median_seconds = 0
 noise_allowance_seconds = 0
 
 [suite.command]
-program = "bash"
-args = ["scripts/ci/run-memory-regression-fast-070.sh"]
+program = "scripts/ci/run-memory-regression-fast-070.sh"
+args = []
 cwd = "."
 platform = "linux"
 
