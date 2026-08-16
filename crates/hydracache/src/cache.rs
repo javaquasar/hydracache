@@ -2283,6 +2283,75 @@ mod tests {
         }
     }
 
+    #[tokio::test]
+    #[ignore = "0.70 retention soak: exercised by the scheduled/release evidence lane"]
+    async fn retention_soak_100_cleanup_cycles_return_all_owners_to_zero() {
+        let cache = HydraCache::local().max_capacity(1_000_000).build();
+        let inject_missing_flush =
+            std::env::var("HYDRACACHE_CANARY_DEFECT").as_deref() == Ok("W4_SKIP_FLUSH");
+
+        for cycle in 0..100_usize {
+            for index in 0..16_usize {
+                cache
+                    .put(
+                        &format!("soak-{cycle}-{index}"),
+                        index as u64,
+                        CacheOptions::new().tag(format!("tag-{}", index % 4)),
+                    )
+                    .await
+                    .unwrap();
+            }
+            for index in 0..16_usize {
+                assert!(cache
+                    .remove(&format!("soak-{cycle}-{index}"))
+                    .await
+                    .unwrap());
+            }
+            cache.inner.store.run_pending_tasks().await;
+            assert_eq!(cache.inner.store.entry_count(), 0);
+
+            cache
+                .put(
+                    &format!("ttl-{cycle}"),
+                    cycle as u64,
+                    CacheOptions::new()
+                        .ttl(std::time::Duration::from_millis(1))
+                        .tag("expiring"),
+                )
+                .await
+                .unwrap();
+            tokio::time::sleep(std::time::Duration::from_millis(2)).await;
+            assert!(!cache.contains_key(&format!("ttl-{cycle}")).await);
+            cache.inner.store.run_pending_tasks().await;
+
+            if !(inject_missing_flush && cycle == 99) {
+                cache.flush().await.unwrap();
+            } else {
+                cache
+                    .invalidate_key("canary-retained-generation")
+                    .await
+                    .unwrap();
+            }
+            let retained = cache.inner.tag_index.retained_state().await;
+            assert_eq!(
+                retained.tags, 0,
+                "HC-CANARY-RED:W4: cleanup cycle retained tag owners"
+            );
+            assert_eq!(retained.memberships, 0);
+            assert_eq!(retained.tag_generations, 0);
+            assert_eq!(
+                retained.key_generations, 0,
+                "HC-CANARY-RED:W4: cleanup cycle retained key-generation owners"
+            );
+            assert_eq!(retained.string_capacity_bytes, 0);
+            assert_eq!(
+                cache.inner.store.entry_count(),
+                0,
+                "HC-CANARY-RED:W4: cleanup cycle retained store entries"
+            );
+        }
+    }
+
     #[test]
     fn lazy_key_event_tags_are_not_built_without_subscribers() {
         let cache = HydraCache::local().build();

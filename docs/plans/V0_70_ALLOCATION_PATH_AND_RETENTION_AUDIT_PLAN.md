@@ -180,6 +180,33 @@ tombstone watermark and the WSL2/Docker measurement campaign remain release bloc
 | W6 diagnostic runner | implemented; hosted campaign completed | An off-by-default native reset is accepted only for `role=local` on a loopback admin listener, refuses active HC/2 resources, preserves audit and monotonic tokens, and fails unless embedded/client owner counts are zero. The runner records the JSON owner snapshot, requires Redis exact `OK` plus `DBSIZE == 0`, verifies Hazelcast size zero, supports `MEMORY_DIAGNOSTIC_TARGETS="hydra redis"`, requires a clean source tree, records the binary SHA and marks `ship_evidence_eligible=false`. GitHub-hosted run `31915839965` completed all ten status rows: HydraCache measured 11.77 MiB median RSS / 4.66 MiB median PSS-anon versus Redis 17.34 / 9.30 MiB, with zero idle tail slope for both. The [durable analysis](../testing/perf-scenarios/0.70/results/github-hosted-memory-diagnostic-20260816.md) records the non-promotable boundary, reset attribution and a discovered TTL coverage limitation. The runner now outlives workload overhead and rejects a final checkpoint not covered by telemetry. The corrected TTL row and WSL2/Docker or dedicated-host campaign remain separate. |
 | W7 governance | implemented for fast CI | The release owns a fail-closed W0-W7 canary registry, a closure guard/canary test, registry-completeness coverage, and exact `canary-check`/fast-sweep wiring on the GitHub-hosted Rust job. Candidate-bound workspace receipts remain separate from the published 0.69 migration-conformance ship aggregation, so a 0.70 dispatch cannot be rejected as the wrong release or mislabeled as fresh 0.69 ship evidence. The local diagnostic campaign and unresolved conditional-tombstone watermark remain explicit release blockers. |
 
+## CI hardening checkpoint — 2026-08-17
+
+Six release protections are now part of the 0.70 contract:
+
+1. `Memory Regression Fast` runs the release-scoped behavioral canary sweep and the registered
+   `fast.memory-regression-070` suite, then publishes an exact-candidate receipt and lane status.
+   The GitHub branch-protection context is added only after that check succeeds on the pushed
+   candidate.
+2. `Retention Soak 0.70` runs 100 put/remove, TTL and flush cycles plus one million client-surface
+   mutations over a fixed 64-key space. Both profiles are ship-mandatory registered gates and run
+   weekly, on `v0.70.*`, or by explicit dispatch.
+3. W3–W6 canaries now inject real defects: append-only key growth, a missing final flush, leaked
+   HC/2 subscription/session owners, and acceptance of an uncovered telemetry checkpoint. The red
+   marker is verified by `canary-sweep`; W0–W2 and W7 retain structural release-closure sentinels.
+4. `Release 0.70 Admission` downloads fast/canary/soak receipts, checks lane/head/base/tested SHA
+   consistency, and runs `release-evidence --release 0.70 --require-ship`. It is deliberately
+   fail-closed and does not waive the conditional-tombstone watermark blocker.
+5. The GitHub-hosted diagnostic is scheduled weekly. It records a compact schema-v1 summary and a
+   comparison with the latest non-expired summary when the runner fingerprint is comparable.
+   Hosted RSS/PSS deltas are diagnostic only and never become absolute admission thresholds.
+6. Raw telemetry remains available for 30 days; compact source/binary/fingerprint/workload,
+   completeness and per-case metric summaries plus the trend comparison are retained for 90 days.
+
+The canonical release-evidence manifest is
+`docs/testing/release-evidence/0.70.toml`; the draft release note is
+`docs/releases/0.70.0.md`.
+
 The pre-change manual allocation profile completed `5/5` ignored scenarios. Those historical gross
 callback values remain observational only. The upgraded epoch harness prevents a free of a
 pre-scope allocation from being charged to a later scope and reports exact epoch-owned live/peak
@@ -211,6 +238,11 @@ cargo test -p hydracache --test allocation_profile --locked -- --test-threads=1
 cargo test -p hydracache-client-transport-axum --locked retention
 cargo test -p hydracache-client-hc2 --locked cleanup
 cargo test -p hydracache-server --locked hc2
+cargo test -p hydracache --lib cache::tests::retention_soak_100_cleanup_cycles_return_all_owners_to_zero --locked -- --ignored --exact --test-threads=1
+cargo test -p hydracache-client-transport-axum --lib retention_tests::retention_soak_million_fixed_keyspace_mutations_plateau_and_reset --locked -- --ignored --exact --test-threads=1
+python -m unittest scripts/perf/summarize_memory_diagnostic_test.py scripts/perf/compare_memory_summaries_test.py
+cargo run -p xtask --locked -- canary-sweep --release 0.70 --tier fast
+cargo run -p xtask --locked -- release-evidence --release 0.70
 cargo run -p xtask --locked -- doc-check
 ```
 

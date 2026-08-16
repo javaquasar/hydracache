@@ -123,6 +123,52 @@ fn hosted_memory_diagnostic_is_explicitly_non_promotable() {
 }
 
 #[test]
+fn release_070_ci_hardening_is_fail_closed() {
+    let root = root();
+    let workflow = fs::read_to_string(root.join(".github/workflows/ci.yml")).unwrap();
+    for marker in [
+        "name: Memory Regression Fast",
+        "evidence-run --release 0.70 --gate fast.memory-regression-070",
+        "name: Retention Soak 0.70",
+        "tool.hydracache.retention-soak-070",
+        "tool.hydracache-client-transport-axum.retention-soak-070",
+        "name: Release 0.70 Admission",
+        "release-evidence --release 0.70 --receipts-dir target/release-evidence/receipts --require-ship",
+        "github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && inputs.run_memory_diagnostic)",
+        "name: memory-summary-${{ github.run_id }}-${{ github.run_attempt }}",
+        "retention-days: 90",
+    ] {
+        assert!(workflow.contains(marker), "workflow is missing {marker:?}");
+    }
+
+    let canaries = fs::read_to_string(root.join("docs/testing/canary-registry-0.70.json")).unwrap();
+    for marker in [
+        "W3_APPEND_ONLY",
+        "W4_SKIP_FLUSH",
+        "W5_LEAK_HC2",
+        "W6_ACCEPT_UNCOVERED",
+    ] {
+        assert!(
+            canaries.contains(marker),
+            "canary registry is missing {marker:?}"
+        );
+    }
+
+    let evidence =
+        fs::read_to_string(root.join("docs/testing/release-evidence/0.70.toml")).unwrap();
+    for marker in [
+        "fast.memory-regression-070",
+        "tool.hydracache.retention-soak-070",
+        "tool.hydracache-client-transport-axum.retention-soak-070",
+    ] {
+        assert!(
+            evidence.contains(marker),
+            "release evidence is missing {marker:?}"
+        );
+    }
+}
+
+#[test]
 fn canary_release_070_accepts_missing_work_item_evidence() {
     let Ok(defect) = env::var("HYDRACACHE_CANARY_DEFECT") else {
         return;

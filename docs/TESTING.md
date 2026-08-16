@@ -29,6 +29,20 @@ cargo audit --ignore RUSTSEC-2024-0437
 cargo deny check
 ```
 
+Release 0.70 adds a two-tier allocation/retention surface. Ordinary pull requests run the named
+`Memory Regression Fast` check and publish an exact-SHA receipt. The scheduled/tag/manual slow
+lane is:
+
+```powershell
+cargo test -p hydracache --lib cache::tests::retention_soak_100_cleanup_cycles_return_all_owners_to_zero --locked -- --ignored --exact --test-threads=1
+cargo test -p hydracache-client-transport-axum --lib retention_tests::retention_soak_million_fixed_keyspace_mutations_plateau_and_reset --locked -- --ignored --exact --test-threads=1
+```
+
+The weekly GitHub-hosted memory diagnostic is characterization, not ship evidence. Raw telemetry
+is retained for 30 days; compact source/binary/fingerprint/workload summaries and non-gating
+RSS/PSS trends are retained for 90 days. Release admission still requires the slow receipts and
+the separate ordering-safe conditional-tombstone decision.
+
 For a full published-crate SemVer sweep, run:
 
 ```powershell

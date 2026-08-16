@@ -2693,11 +2693,27 @@ mod retention_tests {
         request_id: String,
         idempotency_key: Option<String>,
     ) -> ClientResponseEnvelope {
+        put_for_key(
+            state,
+            identity,
+            request_id,
+            "shared-key".to_owned(),
+            idempotency_key,
+        )
+    }
+
+    fn put_for_key(
+        state: &ClientSurfaceState,
+        identity: &ClientIdentity,
+        request_id: String,
+        key: String,
+        idempotency_key: Option<String>,
+    ) -> ClientResponseEnvelope {
         let mut request = ClientRequestEnvelope::new(
             request_id,
             ClientRequest::Put {
                 ns: Namespace::new("retention").unwrap(),
-                key: StructuredKey::new(vec!["shared-key".to_owned()]).unwrap(),
+                key: StructuredKey::new(vec![key]).unwrap(),
                 value: b"value".to_vec(),
                 ttl_ms: None,
                 dimensions: Vec::new(),
@@ -2869,5 +2885,53 @@ mod retention_tests {
         assert_eq!(reset.after.conditional, ConditionalRetainedState::default());
         assert_eq!(reset.after.audit_events, 1);
         assert_eq!(state.retained_state_for_diagnostics(), reset.after);
+    }
+
+    #[test]
+    #[ignore = "0.70 million-mutation retention soak: exercised by scheduled/release evidence"]
+    fn retention_soak_million_fixed_keyspace_mutations_plateau_and_reset() {
+        let state = ClientSurfaceState::new(ClientSurfaceLimits::default()).unwrap();
+        let identity = ClientIdentity::new("client", "tenant").unwrap();
+        let inject_append_only =
+            std::env::var("HYDRACACHE_CANARY_DEFECT").as_deref() == Ok("W3_APPEND_ONLY");
+        let mutations = if inject_append_only {
+            10_000
+        } else {
+            1_000_000
+        };
+        let keyspace = if inject_append_only { mutations } else { 64 };
+
+        for index in 0..mutations {
+            let response = put_for_key(
+                &state,
+                &identity,
+                format!("soak-{index}"),
+                format!("key-{}", index % keyspace),
+                None,
+            );
+            assert!(response.result.is_ok());
+            if index > 0 && index % 100_000 == 0 {
+                let retained = state.retained_state_for_diagnostics();
+                assert!(retained.store_entries <= 64);
+                assert_eq!(state.next_message_id.load(Ordering::SeqCst), 1);
+            }
+        }
+
+        let plateau = state.retained_state_for_diagnostics();
+        assert!(
+            plateau.store_entries <= 64,
+            "HC-CANARY-RED:W3: fixed-cardinality mutations retained {} store owners",
+            plateau.store_entries
+        );
+        assert_eq!(plateau.idempotency_outcomes, 0);
+        assert_eq!(plateau.audit_events, 0);
+        assert_eq!(state.next_message_id.load(Ordering::SeqCst), 1);
+
+        let reset = state.reset_retained_state_for_diagnostics().unwrap();
+        assert_eq!(reset.after.store_entries, 0);
+        assert_eq!(reset.after.value_bytes, 0);
+        assert_eq!(reset.after.store_identity_bytes, 0);
+        assert_eq!(reset.after.idempotency_outcomes, 0);
+        assert_eq!(reset.after.conditional, ConditionalRetainedState::default());
     }
 }

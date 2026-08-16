@@ -1,5 +1,6 @@
 import importlib.util
 import json
+import os
 import tempfile
 import unittest
 from pathlib import Path
@@ -36,6 +37,18 @@ class MemoryTelemetryCoverageTest(unittest.TestCase):
             self.write_case(root, 120.0, [9.0, 10.0, 11.0])
             problem = MODULE.coverage_problem(root, 1.0)
             self.assertIn("newer than the final telemetry sample", problem)
+
+    def test_canary_rejects_uncovered_final_checkpoint(self) -> None:
+        if os.environ.get("HYDRACACHE_CANARY_DEFECT") != "W6_ACCEPT_UNCOVERED":
+            self.skipTest("behavioral canary is activated only by canary-sweep")
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            self.write_case(root, 120.0, [9.0, 10.0, 11.0])
+            problem = MODULE.coverage_problem(root, 1.0)
+            self.assertIsNone(
+                problem,
+                f"HC-CANARY-RED:W6: uncovered diagnostic checkpoint was accepted: {problem}",
+            )
 
 
 if __name__ == "__main__":

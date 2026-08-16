@@ -443,11 +443,21 @@ async fn reset_reconnects_once_repairs_subscription_dedupes_and_loses_session() 
         .expect("generation mutex poisoned")
         .clone();
     assert_eq!(generations, vec![1, 2]);
-    subscription.close();
-    session.close();
+    let inject_cleanup_leak =
+        std::env::var("HYDRACACHE_CANARY_DEFECT").as_deref() == Ok("W5_LEAK_HC2");
+    if !inject_cleanup_leak {
+        subscription.close();
+        session.close();
+    }
     let released = client.retained_state();
-    assert_eq!(released.logical_subscriptions, 0);
-    assert_eq!(released.session_registrations, 0);
+    assert_eq!(
+        released.logical_subscriptions, 0,
+        "HC-CANARY-RED:W5: logical subscription owner survived cleanup"
+    );
+    assert_eq!(
+        released.session_registrations, 0,
+        "HC-CANARY-RED:W5: session registration owner survived cleanup"
+    );
     assert_eq!(released.live_sessions, 0);
     assert_eq!(released.current_client.pending_invocations, 0);
     assert_eq!(released.current_client.pending_subscriptions, 0);
