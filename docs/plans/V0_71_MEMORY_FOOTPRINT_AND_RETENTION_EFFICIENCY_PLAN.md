@@ -60,6 +60,12 @@ the original fixed collector window. The harness now extends collection through 
 checkpoint and rejects incomplete rows, but `0.71` must repeat this case before treating TTL as
 reclamation evidence. The hosted result is a useful order-of-magnitude screen, not ship evidence.
 
+The local WSL2/Docker measurement campaign that was originally listed as a 0.70 release blocker is
+an explicit 0.71 W0 input. Run the corrected TTL, fixed-keyspace, reset and post-idle cases from a
+clean checkout, bind source/binary/image identities, retain raw telemetry and record the WSL2,
+kernel, Docker and cgroup fingerprint. This local campaign is diagnostic and cannot replace the
+same-fingerprint dedicated-host qualification required for 0.71 ship evidence.
+
 ## Investigation hand-off from 0.70
 
 Resolve these questions in order so representation work is not used to mask allocator behavior:
@@ -215,7 +221,7 @@ Populate the implementation column and exact command as W-items land.
 
 | Item | Deliverable | Primary proof | Boundary |
 | --- | --- | --- | --- |
-| W0 | causal baseline + frozen comparison contract | repeated synchronized memory receipts | no optimization before attribution |
+| W0 | causal baseline + frozen comparison contract, including the transferred WSL2/Docker campaign | repeated synchronized memory receipts with corrected TTL coverage | no optimization before attribution; local VM results are non-promotable |
 | W1 | application/allocator memory observability | counters reconcile with live state | bounded labels; no secrets |
 | W2 | byte-accurate capacity/admission | synthetic and live object-weight corpus | no hidden capacity reduction |
 | W3 | bounded histories/queues | mutation/idempotency/audit/event churn | no silent loss |
@@ -262,6 +268,12 @@ Required baseline cases use fresh processes and the same workload contract for b
 7. listeners and HC/2 connections 1/10/100/1,000 including slow consumers;
 8. persistence off/on with anon/file separation;
 9. 60-minute and six-hour steady-state screens; 24-hour scheduled confirmation for ship.
+
+Before using these cases to authorize W2-W11 implementation, execute and archive the transferred
+WSL2/Docker campaign for fixed-keyspace, corrected TTL, reset and post-idle. A missing final TTL
+checkpoint, dirty checkout, unbound binary/image, incomplete logical-owner snapshot or absent host
+fingerprint invalidates the campaign. Its receipt must remain `ship_evidence_eligible=false`; the
+campaign closes the 0.70 investigation hand-off but does not satisfy 0.71 dedicated-host gates.
 
 At least three fresh-process repetitions are required for attribution; reference comparison uses the
 `0.67.1` five-sample same-fingerprint rule. W0 freezes baselines but sets no optimization target

@@ -164,7 +164,8 @@ outcome replay, expiry/delete owner release, audit pressure, and no secret-beari
 
 The locally executable unit-led audit and diagnostic-instrumentation pass is implemented on the
 post-`0.69` branch. This checkpoint is not a release-complete claim: the ordering-safe conditional
-tombstone watermark and the WSL2/Docker measurement campaign remain release blockers.
+tombstone watermark remains a release blocker. The corrected TTL row and WSL2/Docker measurement
+campaign are transferred to the 0.71 causal-baseline work and do not gate 0.70.
 
 | Work item | Result | Evidence / remaining work |
 | --- | --- | --- |
@@ -177,8 +178,8 @@ tombstone watermark and the WSL2/Docker measurement campaign remain release bloc
 | W3 conditional/lock state | cleanup implemented; tombstone watermark open | Aggregate retained-state counters cover live records, tombstones, locks, session heartbeats and identity bytes. Final unlock, forced unlock, expiry, replacement and lost-session paths prune orphaned heartbeat owners; a 10,000-unique-session test returns them to zero. Delete tombstones remain intentionally retained because ordinary safe GC still requires a replication/ordering watermark; the local diagnostic reset may clear them only while the daemon is quiescent and preserves monotonic version/fence counters. |
 | W4 Moka/store lifecycle | implemented | `flush_with_origin` awaits `run_pending_tasks()` after `invalidate_all`. Geometric `1/10/100` put/remove/flush and TTL-expiry tests prove store/tag owners return to baseline, and a weak-`Arc` assertion proves the invalidation listener cannot retain the final cache handle. |
 | W5 HC/2 | implemented locally | Client and recovery snapshots expose pending/active invocation, subscription and session maps, outbound buffered items, topology nodes and available permits without identity labels. The new assertions found and fixed a recovering-subscription forwarder that retained the native registration after logical close/rebind. Native/recovery close tests and the real mTLS server socket test prove maps/permits/accounting return to zero; the socket test includes a `1/10/100` fresh-client series. |
-| W6 diagnostic runner | implemented; hosted campaign completed | An off-by-default native reset is accepted only for `role=local` on a loopback admin listener, refuses active HC/2 resources, preserves audit and monotonic tokens, and fails unless embedded/client owner counts are zero. The runner records the JSON owner snapshot, requires Redis exact `OK` plus `DBSIZE == 0`, verifies Hazelcast size zero, supports `MEMORY_DIAGNOSTIC_TARGETS="hydra redis"`, requires a clean source tree, records the binary SHA and marks `ship_evidence_eligible=false`. GitHub-hosted run `31915839965` completed all ten status rows: HydraCache measured 11.77 MiB median RSS / 4.66 MiB median PSS-anon versus Redis 17.34 / 9.30 MiB, with zero idle tail slope for both. The [durable analysis](../testing/perf-scenarios/0.70/results/github-hosted-memory-diagnostic-20260816.md) records the non-promotable boundary, reset attribution and a discovered TTL coverage limitation. The runner now outlives workload overhead and rejects a final checkpoint not covered by telemetry. The corrected TTL row and WSL2/Docker or dedicated-host campaign remain separate. |
-| W7 governance | implemented for fast CI | The release owns a fail-closed W0-W7 canary registry, a closure guard/canary test, registry-completeness coverage, and exact `canary-check`/fast-sweep wiring on the GitHub-hosted Rust job. Candidate-bound workspace receipts remain separate from the published 0.69 migration-conformance ship aggregation, so a 0.70 dispatch cannot be rejected as the wrong release or mislabeled as fresh 0.69 ship evidence. The local diagnostic campaign and unresolved conditional-tombstone watermark remain explicit release blockers. |
+| W6 diagnostic runner | implemented; hosted campaign completed | An off-by-default native reset is accepted only for `role=local` on a loopback admin listener, refuses active HC/2 resources, preserves audit and monotonic tokens, and fails unless embedded/client owner counts are zero. The runner records the JSON owner snapshot, requires Redis exact `OK` plus `DBSIZE == 0`, verifies Hazelcast size zero, supports `MEMORY_DIAGNOSTIC_TARGETS="hydra redis"`, requires a clean source tree, records the binary SHA and marks `ship_evidence_eligible=false`. GitHub-hosted run `31915839965` completed all ten status rows: HydraCache measured 11.77 MiB median RSS / 4.66 MiB median PSS-anon versus Redis 17.34 / 9.30 MiB, with zero idle tail slope for both. The [durable analysis](../testing/perf-scenarios/0.70/results/github-hosted-memory-diagnostic-20260816.md) records the non-promotable boundary, reset attribution and a discovered TTL coverage limitation. The runner now outlives workload overhead and rejects a final checkpoint not covered by telemetry. The corrected TTL row and WSL2/Docker or dedicated-host campaign are an explicit 0.71 W0 hand-off, not 0.70 ship evidence. |
+| W7 governance | implemented for fast CI | The release owns a fail-closed W0-W7 canary registry, a closure guard/canary test, registry-completeness coverage, and exact `canary-check`/fast-sweep wiring on the GitHub-hosted Rust job. Candidate-bound workspace receipts remain separate from the published 0.69 migration-conformance ship aggregation, so a 0.70 dispatch cannot be rejected as the wrong release or mislabeled as fresh 0.69 ship evidence. The unresolved conditional-tombstone watermark remains the explicit 0.70 release blocker; the local diagnostic campaign is transferred to 0.71. |
 
 ## CI hardening checkpoint — 2026-08-17
 
@@ -211,7 +212,8 @@ The pre-change manual allocation profile completed `5/5` ignored scenarios. Thos
 callback values remain observational only. The upgraded epoch harness prevents a free of a
 pre-scope allocation from being charged to a later scope and reports exact epoch-owned live/peak
 bytes, but subsystem owner snapshots remain the primary causal evidence. No RSS or
-allocator-retention conclusion is drawn until the WSL2/Docker campaign is executed.
+allocator-retention conclusion is part of 0.70. The WSL2/Docker campaign required to draw that
+conclusion is owned by 0.71 W0.
 
 Focused verification completed at this checkpoint:
 
@@ -253,4 +255,5 @@ the geometric post-cleanup tests have no unexplained positive owner slope, cance
 returns HC/2 resources to baseline, the local runner cannot mistake rejected reset for cleanup, and
 all new code is covered by green focused and workspace gates. Host-level capacity, sizing,
 allocator selection and Redis/Hazelcast product-ranking claims remain outside 0.70 and move to
-0.71 only with causal evidence.
+0.71 only with causal evidence. The corrected TTL and WSL2/Docker measurement campaign are 0.71 W0
+inputs and are explicitly not 0.70 ship gates.
