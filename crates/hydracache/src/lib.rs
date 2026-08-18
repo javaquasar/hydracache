@@ -582,7 +582,8 @@ pub use grid::checkpoint::{
 #[cfg(not(target_arch = "wasm32"))]
 pub use grid::conditional::{
     CasResult, ConditionalError, ConditionalMetrics, ConditionalRetainedState, FenceToken,
-    LockHold, LockOwner, SingleKeyConditionalStore,
+    LockHold, LockOwner, ReplicaAppliedPrefix, ReplicatedRecordApply, SingleKeyConditionalStore,
+    TombstoneGcError, TombstoneGcWatermark,
 };
 #[cfg(not(target_arch = "wasm32"))]
 pub use grid::consistency_level::{

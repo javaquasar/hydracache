@@ -1,9 +1,11 @@
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, BTreeSet};
 use std::fmt;
 
 use serde::{Deserialize, Serialize};
 
-use crate::cluster::{partition_for_key, ClusterEpoch, LogicalDuration, LogicalTime};
+use crate::cluster::{
+    partition_for_key, ClusterEpoch, ClusterNodeId, LogicalDuration, LogicalTime, PartitionId,
+};
 use crate::grid::consistency_level::ConsistencyLevel;
 use crate::grid::hardening::{ReplicatedValueRecord, ValueVersion};
 use crate::grid::lock_session::SessionHeartbeats;
@@ -158,6 +160,12 @@ pub struct ConditionalMetrics {
     pub lock_lease_renewed_total: u64,
     /// Reentrant acquires rejected by the configured limit.
     pub lock_reentrancy_limit_rejected_total: u64,
+    /// Delete tombstones reclaimed after an all-replica applied-prefix proof.
+    #[serde(default)]
+    pub tombstone_gc_reclaimed_total: u64,
+    /// Replicated records rejected because their ordering point was already reclaimed.
+    #[serde(default)]
+    pub tombstone_gc_stale_record_rejected_total: u64,
 }
 
 /// Aggregate retained-state snapshot for conditional values and fenced locks.
@@ -173,9 +181,272 @@ pub struct ConditionalRetainedState {
     pub locks: usize,
     /// Session heartbeat records retained by lock ownership.
     pub session_heartbeats: usize,
+    /// Bounded per-partition tombstone GC watermarks.
+    #[serde(default)]
+    pub tombstone_gc_watermarks: usize,
     /// Conservative bytes in retained map keys and session identifiers.
     pub identity_bytes: usize,
 }
+
+/// Result of applying an explicitly versioned replicated conditional record.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+pub enum ReplicatedRecordApply {
+    /// The incoming record became the current record.
+    Applied,
+    /// A newer or tie-winning current record already existed.
+    IgnoredStale,
+    /// The record is at or below a reclaimed all-replica prefix.
+    RejectedBelowGcWatermark,
+}
+
+/// One replica's ordered applied prefix for a partition in an authority epoch.
+///
+/// This is deliberately distinct from a quorum write acknowledgement: tombstone reclamation needs
+/// proof that every earlier record in the partition stream has been applied, not merely that one
+/// write reached a quorum.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct ReplicaAppliedPrefix {
+    replica: ClusterNodeId,
+    partition: PartitionId,
+    version: ValueVersion,
+    epoch: ClusterEpoch,
+}
+
+impl ReplicaAppliedPrefix {
+    /// Record an ordered applied prefix reported by one replica.
+    pub fn new(
+        replica: impl Into<ClusterNodeId>,
+        partition: PartitionId,
+        version: ValueVersion,
+        epoch: ClusterEpoch,
+    ) -> Self {
+        Self {
+            replica: replica.into(),
+            partition,
+            version,
+            epoch,
+        }
+    }
+
+    /// Replica that reported this prefix.
+    pub fn replica(&self) -> &ClusterNodeId {
+        &self.replica
+    }
+}
+
+/// Ordering-safe, per-partition prefix through which tombstones may be reclaimed.
+///
+/// Construction requires progress from every effective replica in one authority epoch. The safe
+/// version is the minimum applied version, so a lagging or missing replica prevents advancement.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+pub struct TombstoneGcWatermark {
+    partition: PartitionId,
+    version: ValueVersion,
+    epoch: ClusterEpoch,
+    replica_count: usize,
+}
+
+impl TombstoneGcWatermark {
+    /// Build a safe prefix from the exact effective replica set and its ordered applied progress.
+    pub fn from_all_replicas(
+        partition: PartitionId,
+        epoch: ClusterEpoch,
+        replicas: impl IntoIterator<Item = ClusterNodeId>,
+        progress: impl IntoIterator<Item = ReplicaAppliedPrefix>,
+    ) -> Result<Self, TombstoneGcError> {
+        let replicas = replicas.into_iter().collect::<BTreeSet<_>>();
+        if replicas.is_empty() {
+            return Err(TombstoneGcError::EmptyReplicaSet);
+        }
+
+        let mut progress_by_replica = BTreeMap::new();
+        for applied_prefix in progress {
+            let replica = applied_prefix.replica.clone();
+            if !replicas.contains(&replica) {
+                return Err(TombstoneGcError::UnexpectedReplica { replica });
+            }
+            if progress_by_replica
+                .insert(replica.clone(), applied_prefix)
+                .is_some()
+            {
+                return Err(TombstoneGcError::DuplicateReplica { replica });
+            }
+        }
+
+        let mut safe_version = ValueVersion::MAX;
+        for replica in &replicas {
+            let applied_prefix = progress_by_replica.get(replica).ok_or_else(|| {
+                TombstoneGcError::MissingReplica {
+                    replica: replica.clone(),
+                }
+            })?;
+            if applied_prefix.partition != partition {
+                return Err(TombstoneGcError::ProgressPartitionMismatch {
+                    replica: replica.clone(),
+                    expected: partition,
+                    actual: applied_prefix.partition,
+                });
+            }
+            if applied_prefix.epoch != epoch {
+                return Err(TombstoneGcError::ProgressEpochMismatch {
+                    replica: replica.clone(),
+                    expected: epoch,
+                    actual: applied_prefix.epoch,
+                });
+            }
+            safe_version = safe_version.min(applied_prefix.version);
+        }
+
+        Ok(Self {
+            partition,
+            version: safe_version,
+            epoch,
+            replica_count: replicas.len(),
+        })
+    }
+
+    /// Partition covered by this prefix.
+    pub const fn partition(self) -> PartitionId {
+        self.partition
+    }
+
+    /// Minimum version applied by every effective replica.
+    pub const fn version(self) -> ValueVersion {
+        self.version
+    }
+
+    /// Authority epoch shared by every acknowledgement.
+    pub const fn epoch(self) -> ClusterEpoch {
+        self.epoch
+    }
+
+    /// Number of effective replicas included in the proof.
+    pub const fn replica_count(self) -> usize {
+        self.replica_count
+    }
+}
+
+/// Fail-closed errors for conditional tombstone watermark construction and application.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub enum TombstoneGcError {
+    /// An empty topology cannot prove that stale copies are absent.
+    EmptyReplicaSet,
+    /// One effective replica has no applied-prefix acknowledgement.
+    MissingReplica { replica: ClusterNodeId },
+    /// Progress was supplied for a node outside the effective replica set.
+    UnexpectedReplica { replica: ClusterNodeId },
+    /// More than one progress record was supplied for a replica.
+    DuplicateReplica { replica: ClusterNodeId },
+    /// A replica reported progress for another partition.
+    ProgressPartitionMismatch {
+        replica: ClusterNodeId,
+        expected: PartitionId,
+        actual: PartitionId,
+    },
+    /// A replica reported progress from another authority epoch.
+    ProgressEpochMismatch {
+        replica: ClusterNodeId,
+        expected: ClusterEpoch,
+        actual: ClusterEpoch,
+    },
+    /// The proof belongs to another authority epoch than the conditional store.
+    StoreEpochMismatch {
+        expected: ClusterEpoch,
+        actual: ClusterEpoch,
+    },
+    /// The proof names a partition outside the store's configured partition range.
+    PartitionOutOfRange {
+        partition: PartitionId,
+        partition_count: u32,
+    },
+    /// A watermark cannot move backwards.
+    WatermarkRegression {
+        partition: PartitionId,
+        current: ValueVersion,
+        proposed: ValueVersion,
+    },
+    /// The record's declared partition does not match its key.
+    RecordPartitionMismatch {
+        expected: PartitionId,
+        actual: PartitionId,
+    },
+}
+
+impl fmt::Display for TombstoneGcError {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::EmptyReplicaSet => {
+                formatter.write_str("tombstone GC requires at least one replica")
+            }
+            Self::MissingReplica { replica } => {
+                write!(
+                    formatter,
+                    "missing applied-prefix progress for replica {replica}"
+                )
+            }
+            Self::UnexpectedReplica { replica } => {
+                write!(formatter, "unexpected applied-prefix replica {replica}")
+            }
+            Self::DuplicateReplica { replica } => {
+                write!(
+                    formatter,
+                    "duplicate applied-prefix progress for replica {replica}"
+                )
+            }
+            Self::ProgressPartitionMismatch {
+                replica,
+                expected,
+                actual,
+            } => write!(
+                formatter,
+                "replica {replica} acknowledged partition {}, expected {}",
+                actual.value(),
+                expected.value()
+            ),
+            Self::ProgressEpochMismatch {
+                replica,
+                expected,
+                actual,
+            } => write!(
+                formatter,
+                "replica {replica} acknowledged epoch {}, expected {}",
+                actual.value(),
+                expected.value()
+            ),
+            Self::StoreEpochMismatch { expected, actual } => write!(
+                formatter,
+                "tombstone GC proof epoch {} does not match store epoch {}",
+                actual.value(),
+                expected.value()
+            ),
+            Self::PartitionOutOfRange {
+                partition,
+                partition_count,
+            } => write!(
+                formatter,
+                "tombstone GC partition {} is outside configured count {partition_count}",
+                partition.value()
+            ),
+            Self::WatermarkRegression {
+                partition,
+                current,
+                proposed,
+            } => write!(
+                formatter,
+                "tombstone GC partition {} cannot regress from {current} to {proposed}",
+                partition.value()
+            ),
+            Self::RecordPartitionMismatch { expected, actual } => write!(
+                formatter,
+                "replicated record partition {} does not match key partition {}",
+                actual.value(),
+                expected.value()
+            ),
+        }
+    }
+}
+
+impl std::error::Error for TombstoneGcError {}
 
 /// Current state of one held fenced lock.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -200,6 +471,8 @@ impl LockHold {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct SingleKeyConditionalStore {
     records: BTreeMap<String, ReplicatedValueRecord>,
+    #[serde(default)]
+    tombstone_gc_watermarks: BTreeMap<PartitionId, TombstoneGcWatermark>,
     locks: BTreeMap<String, LockHold>,
     session_heartbeats: SessionHeartbeats,
     next_version: ValueVersion,
@@ -215,6 +488,7 @@ impl SingleKeyConditionalStore {
     pub fn new(epoch: ClusterEpoch, partition_count: u32) -> Self {
         Self {
             records: BTreeMap::new(),
+            tombstone_gc_watermarks: BTreeMap::new(),
             locks: BTreeMap::new(),
             session_heartbeats: SessionHeartbeats::default(),
             next_version: 1,
@@ -250,6 +524,7 @@ impl SingleKeyConditionalStore {
             tombstones: self.records.len().saturating_sub(live_records),
             locks: self.locks.len(),
             session_heartbeats: self.session_heartbeats.len(),
+            tombstone_gc_watermarks: self.tombstone_gc_watermarks.len(),
             identity_bytes: self.records.keys().map(String::len).sum::<usize>()
                 + self.locks.keys().map(String::len).sum::<usize>()
                 + self.session_heartbeats.string_bytes(),
@@ -265,6 +540,7 @@ impl SingleKeyConditionalStore {
     pub fn clear_for_diagnostic_reset(&mut self) -> ConditionalRetainedState {
         let before = self.retained_state();
         self.records.clear();
+        self.tombstone_gc_watermarks.clear();
         self.locks.clear();
         self.session_heartbeats.clear();
         self.next_version = self.next_version.saturating_add(1);
@@ -302,6 +578,102 @@ impl SingleKeyConditionalStore {
         self.locks.get(key).map(|hold| hold.fence)
     }
 
+    /// Return the current tombstone GC prefix for a partition.
+    pub fn tombstone_gc_watermark(&self, partition: PartitionId) -> Option<TombstoneGcWatermark> {
+        self.tombstone_gc_watermarks.get(&partition).copied()
+    }
+
+    /// Advance an all-replica applied prefix and reclaim covered tombstones.
+    ///
+    /// The watermark must come from the store's current authority epoch and cannot regress.
+    /// Future replicated records at or below the retained prefix are rejected, preventing a stale
+    /// value from resurrecting a key after its tombstone has been physically removed.
+    pub fn advance_tombstone_gc_watermark(
+        &mut self,
+        watermark: TombstoneGcWatermark,
+    ) -> Result<usize, TombstoneGcError> {
+        if watermark.epoch != self.epoch {
+            return Err(TombstoneGcError::StoreEpochMismatch {
+                expected: self.epoch,
+                actual: watermark.epoch,
+            });
+        }
+        if watermark.partition.value() >= self.partition_count {
+            return Err(TombstoneGcError::PartitionOutOfRange {
+                partition: watermark.partition,
+                partition_count: self.partition_count,
+            });
+        }
+        if let Some(current) = self.tombstone_gc_watermarks.get(&watermark.partition) {
+            if watermark.version < current.version {
+                return Err(TombstoneGcError::WatermarkRegression {
+                    partition: watermark.partition,
+                    current: current.version,
+                    proposed: watermark.version,
+                });
+            }
+        }
+
+        self.next_version = self.next_version.max(watermark.version.saturating_add(1));
+        self.tombstone_gc_watermarks
+            .insert(watermark.partition, watermark);
+        let before = self.records.len();
+        self.records.retain(|_, record| {
+            record.partition != watermark.partition
+                || !record.is_tombstone()
+                || record_order(record) > (watermark.version, watermark.epoch)
+        });
+        let reclaimed = before.saturating_sub(self.records.len());
+        self.metrics.tombstone_gc_reclaimed_total = self
+            .metrics
+            .tombstone_gc_reclaimed_total
+            .saturating_add(u64::try_from(reclaimed).unwrap_or(u64::MAX));
+        Ok(reclaimed)
+    }
+
+    /// Apply a record received from an ordered replication or repair stream.
+    pub fn apply_replicated_record(
+        &mut self,
+        key: &str,
+        record: ReplicatedValueRecord,
+    ) -> Result<ReplicatedRecordApply, TombstoneGcError> {
+        let expected_partition = partition_for_key(key, self.partition_count);
+        if record.partition != expected_partition {
+            return Err(TombstoneGcError::RecordPartitionMismatch {
+                expected: expected_partition,
+                actual: record.partition,
+            });
+        }
+        if self
+            .tombstone_gc_watermarks
+            .get(&record.partition)
+            .is_some_and(|watermark| record_order(&record) <= (watermark.version, watermark.epoch))
+        {
+            self.metrics.tombstone_gc_stale_record_rejected_total = self
+                .metrics
+                .tombstone_gc_stale_record_rejected_total
+                .saturating_add(1);
+            return Ok(ReplicatedRecordApply::RejectedBelowGcWatermark);
+        }
+
+        self.next_version = self.next_version.max(record.version.saturating_add(1));
+        match self.records.get(key) {
+            Some(current) => {
+                let merged = current.clone().merge(record);
+                if &merged == current {
+                    Ok(ReplicatedRecordApply::IgnoredStale)
+                } else {
+                    self.records.insert(key.to_owned(), merged);
+                    Ok(ReplicatedRecordApply::Applied)
+                }
+            }
+            None => {
+                self.records.insert(key.to_owned(), record);
+                Ok(ReplicatedRecordApply::Applied)
+            }
+        }
+    }
+
     /// Apply a tombstone at an explicit version, preserving A5 delete semantics.
     pub fn apply_tombstone(&mut self, key: &str, version: ValueVersion) {
         let record = ReplicatedValueRecord::tombstone(
@@ -310,8 +682,7 @@ impl SingleKeyConditionalStore {
             self.epoch,
             None,
         );
-        self.next_version = self.next_version.max(version.saturating_add(1));
-        self.records.insert(key.to_owned(), record);
+        let _ = self.apply_replicated_record(key, record);
     }
 
     /// Compare and set one key at a linearizable-capable level.
@@ -718,4 +1089,8 @@ fn current_bytes(record: &ReplicatedValueRecord) -> Option<Vec<u8>> {
         ReplicatedSlot::Value { value, .. } => Some(value.clone()),
         ReplicatedSlot::Tombstone { .. } => None,
     }
+}
+
+fn record_order(record: &ReplicatedValueRecord) -> (ValueVersion, ClusterEpoch) {
+    (record.version, record.epoch)
 }

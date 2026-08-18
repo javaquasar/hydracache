@@ -46,13 +46,7 @@ fn fast_memory_regression_job_checks_stable_owners_not_host_rss() {
         "name: Memory Regression Fast",
         "runs-on: ubuntu-24.04",
         "timeout-minutes: 30",
-        "--test allocation_profile",
-        "--test lock_lease",
-        "--test conditional_tombstone",
-        "diagnostic_reset_reports_and_clears_every_mutable_data_owner",
-        "reset_reconnects_once_repairs_subscription_dedupes_and_loses_session",
-        "verify_memory_telemetry_coverage_test.py",
-        "--test-threads=1",
+        "evidence-run --release 0.70 --gate fast.memory-regression-070",
     ] {
         assert!(
             job.contains(marker),
@@ -64,6 +58,31 @@ fn fast_memory_regression_job_checks_stable_owners_not_host_rss() {
         assert!(
             !job.contains(unstable_gate),
             "fast memory job must not gate on {unstable_gate:?}"
+        );
+    }
+
+    let registry = fs::read_to_string(root().join("docs/testing/fast-suite-registry.toml"))
+        .expect("fast-suite registry");
+    assert!(
+        registry.contains("id = \"fast.memory-regression-070\"")
+            && registry.contains("program = \"scripts/ci/run-memory-regression-fast-070.sh\""),
+        "fast memory evidence gate must resolve to the reviewed runner"
+    );
+
+    let runner = fs::read_to_string(root().join("scripts/ci/run-memory-regression-fast-070.sh"))
+        .expect("fast memory runner");
+    for marker in [
+        "--test allocation_profile",
+        "--test lock_lease",
+        "--test conditional_tombstone",
+        "diagnostic_reset_reports_and_clears_every_mutable_data_owner",
+        "reset_reconnects_once_repairs_subscription_dedupes_and_loses_session",
+        "verify_memory_telemetry_coverage_test.py",
+        "--test-threads=1",
+    ] {
+        assert!(
+            runner.contains(marker),
+            "fast memory runner is missing {marker:?}"
         );
     }
 }

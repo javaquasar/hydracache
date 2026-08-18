@@ -162,10 +162,10 @@ outcome replay, expiry/delete owner release, audit pressure, and no secret-beari
 
 ## Implementation checkpoint — 2026-08-15
 
-The locally executable unit-led audit and diagnostic-instrumentation pass is implemented on the
-post-`0.69` branch. This checkpoint is not a release-complete claim: the ordering-safe conditional
-tombstone watermark remains a release blocker. The corrected TTL row and WSL2/Docker measurement
-campaign are transferred to the 0.71 causal-baseline work and do not gate 0.70.
+The locally executable unit-led audit, diagnostic-instrumentation and ordering-safe conditional
+tombstone reclamation pass is implemented on the post-`0.69` branch. The corrected TTL row and
+WSL2/Docker measurement campaign are transferred to the 0.71 causal-baseline work and do not gate
+0.70.
 
 | Work item | Result | Evidence / remaining work |
 | --- | --- | --- |
@@ -175,11 +175,11 @@ campaign are transferred to the 0.71 causal-baseline work and do not gate 0.70.
 | W3 mutation history | implemented | Removed the unread append-only `Vec<InvalidationEvent>`. With no subscribers, mutations no longer allocate or advance a message id; with subscribers, only the existing capacity-`1,024` broadcast channel remains and reports `Lagged`. |
 | W3 idempotency | implemented | Replaced the permanent set with a `4,096`-entry, 24-hour outcome map. Expired outcomes are removed deterministically; capacity pressure returns retryable `RateLimited` before mutation. Duplicate outcome replay remains tenant-scoped. |
 | W3 audit | implemented for current in-memory sink | `InMemoryAuditSink` is capped at `4,096` events and returns an error at capacity. Mandatory admin mutation is blocked before state change when the audit sink cannot record. Pressure, redaction and existing governance tests are green. A pluggable operator sink constructor remains desirable for production deployments. |
-| W3 conditional/lock state | cleanup implemented; tombstone watermark open | Aggregate retained-state counters cover live records, tombstones, locks, session heartbeats and identity bytes. Final unlock, forced unlock, expiry, replacement and lost-session paths prune orphaned heartbeat owners; a 10,000-unique-session test returns them to zero. Delete tombstones remain intentionally retained because ordinary safe GC still requires a replication/ordering watermark; the local diagnostic reset may clear them only while the daemon is quiescent and preserves monotonic version/fence counters. |
+| W3 conditional/lock state | implemented | Aggregate retained-state counters cover live records, tombstones, bounded per-partition GC watermarks, locks, session heartbeats and identity bytes. Final unlock, forced unlock, expiry, replacement and lost-session paths prune orphaned heartbeat owners; a 10,000-unique-session test returns them to zero. Tombstone GC now advances only from the minimum ordered applied prefix acknowledged by every effective replica in the current authority epoch. Missing, duplicate, foreign-partition, foreign-epoch and regressing progress fails closed; replicated records at or below a reclaimed prefix are rejected. A 10,000-unique-delete test reclaims every per-key tombstone while retaining at most one watermark per partition and proves a stale value cannot resurrect a deleted key. |
 | W4 Moka/store lifecycle | implemented | `flush_with_origin` awaits `run_pending_tasks()` after `invalidate_all`. Geometric `1/10/100` put/remove/flush and TTL-expiry tests prove store/tag owners return to baseline, and a weak-`Arc` assertion proves the invalidation listener cannot retain the final cache handle. |
 | W5 HC/2 | implemented locally | Client and recovery snapshots expose pending/active invocation, subscription and session maps, outbound buffered items, topology nodes and available permits without identity labels. The new assertions found and fixed a recovering-subscription forwarder that retained the native registration after logical close/rebind. Native/recovery close tests and the real mTLS server socket test prove maps/permits/accounting return to zero; the socket test includes a `1/10/100` fresh-client series. |
 | W6 diagnostic runner | implemented; hosted campaign completed | An off-by-default native reset is accepted only for `role=local` on a loopback admin listener, refuses active HC/2 resources, preserves audit and monotonic tokens, and fails unless embedded/client owner counts are zero. The runner records the JSON owner snapshot, requires Redis exact `OK` plus `DBSIZE == 0`, verifies Hazelcast size zero, supports `MEMORY_DIAGNOSTIC_TARGETS="hydra redis"`, requires a clean source tree, records the binary SHA and marks `ship_evidence_eligible=false`. GitHub-hosted run `31915839965` completed all ten status rows: HydraCache measured 11.77 MiB median RSS / 4.66 MiB median PSS-anon versus Redis 17.34 / 9.30 MiB, with zero idle tail slope for both. The [durable analysis](../testing/perf-scenarios/0.70/results/github-hosted-memory-diagnostic-20260816.md) records the non-promotable boundary, reset attribution and a discovered TTL coverage limitation. The runner now outlives workload overhead and rejects a final checkpoint not covered by telemetry. The corrected TTL row and WSL2/Docker or dedicated-host campaign are an explicit 0.71 W0 hand-off, not 0.70 ship evidence. |
-| W7 governance | implemented for fast CI | The release owns a fail-closed W0-W7 canary registry, a closure guard/canary test, registry-completeness coverage, and exact `canary-check`/fast-sweep wiring on the GitHub-hosted Rust job. Candidate-bound workspace receipts remain separate from the published 0.69 migration-conformance ship aggregation, so a 0.70 dispatch cannot be rejected as the wrong release or mislabeled as fresh 0.69 ship evidence. The unresolved conditional-tombstone watermark remains the explicit 0.70 release blocker; the local diagnostic campaign is transferred to 0.71. |
+| W7 governance | implemented for fast CI | The release owns a fail-closed W0-W7 canary registry, a closure guard/canary test, registry-completeness coverage, and exact `canary-check`/fast-sweep wiring on the GitHub-hosted Rust job. Candidate-bound workspace receipts remain separate from the published 0.69 migration-conformance ship aggregation, so a 0.70 dispatch cannot be rejected as the wrong release or mislabeled as fresh 0.69 ship evidence. The conditional-tombstone watermark proof is now part of W3 release evidence; the local diagnostic campaign is transferred to 0.71. |
 
 ## CI hardening checkpoint — 2026-08-17
 
@@ -197,7 +197,7 @@ Six release protections are now part of the 0.70 contract:
    marker is verified by `canary-sweep`; W0–W2 and W7 retain structural release-closure sentinels.
 4. `Release 0.70 Admission` downloads fast/canary/soak receipts, checks lane/head/base/tested SHA
    consistency, and runs `release-evidence --release 0.70 --require-ship`. It is deliberately
-   fail-closed and does not waive the conditional-tombstone watermark blocker.
+   fail-closed and requires the conditional-tombstone watermark proof.
 5. The GitHub-hosted diagnostic is scheduled weekly. It records a compact schema-v1 summary and a
    comparison with the latest non-expired summary when the runner fingerprint is comparable.
    Hosted RSS/PSS deltas are diagnostic only and never become absolute admission thresholds.
@@ -218,7 +218,7 @@ conclusion is owned by 0.71 W0.
 Focused verification completed at this checkpoint:
 
 - `hydracache` library: `206/206` passed; allocation harness `5/5` fast and `5/5` manual ignored
-  profiles passed; conditional tombstone `7/7` and lock lease `8/8` passed;
+  profiles passed; conditional tombstone `12/12` and lock lease `8/8` passed;
 - client surface: `55/55` passed across unit and integration suites;
 - observability: `42` fast tests/doc-tests passed (`1` network chaos case remains intentionally
   ignored);
