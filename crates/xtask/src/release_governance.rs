@@ -641,6 +641,17 @@ fn release_066_execution_wiring_problems(workflow: &WorkflowShape) -> Vec<String
                 .to_owned(),
         );
     }
+    let operator_timeout = workflow
+        .step_timeouts
+        .get("release-066-operator-kind")
+        .and_then(|timeouts| timeouts.get("Start current operator controller"))
+        .copied();
+    if operator_timeout != Some(120) {
+        problems.push(
+            "release-066 operator controller background step must set timeout-minutes to 120"
+                .to_owned(),
+        );
+    }
     let operator_cancel = workflow
         .cancel_targets
         .get("release-066-operator-kind")
@@ -1797,6 +1808,7 @@ struct WorkflowShape {
     conditions: BTreeMap<String, String>,
     step_runs: BTreeMap<String, BTreeMap<String, String>>,
     step_conditions: BTreeMap<String, BTreeMap<String, String>>,
+    step_timeouts: BTreeMap<String, BTreeMap<String, u64>>,
     background_step_ids: BTreeMap<String, BTreeSet<String>>,
     cancel_targets: BTreeMap<String, BTreeSet<String>>,
     candidate_release_default: Option<String>,
@@ -1834,6 +1846,7 @@ fn parse_workflow(text: &str) -> Result<WorkflowShape, Box<dyn Error>> {
         let mut steps = BTreeSet::new();
         let mut step_runs = BTreeMap::new();
         let mut step_conditions = BTreeMap::new();
+        let mut step_timeouts = BTreeMap::new();
         let mut background_step_ids = BTreeSet::new();
         let mut cancel_targets = BTreeSet::new();
         if let Some(sequence) =
@@ -1848,6 +1861,11 @@ fn parse_workflow(text: &str) -> Result<WorkflowShape, Box<dyn Error>> {
                     }
                     if let Some(condition) = mapping_value(mapping, "if").and_then(Value::as_str) {
                         step_conditions.insert(name.to_owned(), condition.to_owned());
+                    }
+                    if let Some(timeout) =
+                        mapping_value(mapping, "timeout-minutes").and_then(Value::as_u64)
+                    {
+                        step_timeouts.insert(name.to_owned(), timeout);
                     }
                 }
                 if mapping_value(mapping, "background").and_then(Value::as_bool) == Some(true) {
@@ -1865,6 +1883,7 @@ fn parse_workflow(text: &str) -> Result<WorkflowShape, Box<dyn Error>> {
         shape
             .step_conditions
             .insert(job_id.to_owned(), step_conditions);
+        shape.step_timeouts.insert(job_id.to_owned(), step_timeouts);
         shape
             .background_step_ids
             .insert(job_id.to_owned(), background_step_ids);

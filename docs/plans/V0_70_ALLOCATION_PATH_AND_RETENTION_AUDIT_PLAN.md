@@ -183,7 +183,7 @@ WSL2/Docker measurement campaign are transferred to the 0.71 causal-baseline wor
 
 ## CI hardening checkpoint — 2026-08-17
 
-Seven release protections are now part of the 0.70 contract:
+Eight release protections are now part of the 0.70 contract:
 
 1. `Memory Regression Fast` runs the release-scoped behavioral canary sweep and the registered
    `fast.memory-regression-070` suite, then publishes an exact-candidate receipt and lane status.
@@ -207,6 +207,9 @@ Seven release protections are now part of the 0.70 contract:
    digest mismatches failing by default), and the operator proof installs Helm through the Node
    24-based `azure/setup-helm@v5.0.1` action. The security-pinned HC/2 workflow references the
    reviewed `download-artifact` `v8.0.1` commit SHA directly.
+8. The long-running operator controller background step has an explicit 120-minute timeout before
+   its reviewed `cancel` lifecycle. Release governance rejects a missing or altered timeout so the
+   GitHub runner cannot interpret an implicit background timeout as zero minutes.
 
 The canonical release-evidence manifest is
 `docs/testing/release-evidence/0.70.toml`; the draft release note is

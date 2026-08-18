@@ -105,6 +105,11 @@ fn ci_wires_fast_and_raft_corner_case_tiers_to_declared_commands() {
             "background step id operator-controller",
         ),
         (
+            "timeout-minutes: 120",
+            "timeout-minutes: 0",
+            "background step must set timeout-minutes to 120",
+        ),
+        (
             "cancel: operator-controller",
             "cancel: unsupervised-operator-controller",
             "must be explicitly canceled",

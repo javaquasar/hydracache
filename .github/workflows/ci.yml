@@ -1391,6 +1391,7 @@ jobs:
         id: operator-controller
         shell: bash
         background: true
+        timeout-minutes: 120
         env:
           HYDRACACHE_OPERATOR_NAMESPACE: default
           HYDRACACHE_OPERATOR_IDENTITY: release-066-ci
