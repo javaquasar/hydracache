@@ -313,7 +313,7 @@ depends_on = ["0.68.0"]
 [[release]]
 version = "0.70.0"
 file = "docs/plans/V0_70_ALLOCATION_PATH_AND_RETENTION_AUDIT_PLAN.md"
-status = "in-progress"
+status = "shipped"
 networked_control_plane = true
 work_items = ["W0", "W1", "W2", "W3", "W4", "W5", "W6", "W7"]
 theme = "Allocation Path & Retention Audit - mechanically inventory long-lived owners, add deterministic retained-state snapshots and phase-aware allocation tests, prove tag/store/breaker/client/HC2 cleanup under geometric churn, fix confirmed unbounded histories and tombstones, and add a local non-ship Hydra/Redis diagnostic runner that cannot mistake rejected FLUSHALL for cleanup. Host-level optimization and numerical sizing remain deferred until causal owner evidence exists."
