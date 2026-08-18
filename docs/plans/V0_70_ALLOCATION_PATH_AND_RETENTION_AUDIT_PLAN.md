@@ -183,7 +183,7 @@ WSL2/Docker measurement campaign are transferred to the 0.71 causal-baseline wor
 
 ## CI hardening checkpoint — 2026-08-17
 
-Six release protections are now part of the 0.70 contract:
+Seven release protections are now part of the 0.70 contract:
 
 1. `Memory Regression Fast` runs the release-scoped behavioral canary sweep and the registered
    `fast.memory-regression-070` suite, then publishes an exact-candidate receipt and lane status.
@@ -203,6 +203,10 @@ Six release protections are now part of the 0.70 contract:
    Hosted RSS/PSS deltas are diagnostic only and never become absolute admission thresholds.
 6. Raw telemetry remains available for 30 days; compact source/binary/fingerprint/workload,
    completeness and per-case metric summaries plus the trend comparison are retained for 90 days.
+7. GitHub artifact downloads use the Node 24-based `actions/download-artifact@v8` runtime (with
+   digest mismatches failing by default), and the operator proof installs Helm through the Node
+   24-based `azure/setup-helm@v5.0.1` action. The security-pinned HC/2 workflow references the
+   reviewed `download-artifact` `v8.0.1` commit SHA directly.
 
 The canonical release-evidence manifest is
 `docs/testing/release-evidence/0.70.toml`; the draft release note is

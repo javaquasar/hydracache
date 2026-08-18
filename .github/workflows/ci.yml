@@ -374,13 +374,13 @@ jobs:
           --output target/release-evidence/0.70.admission-upstream.json
 
       - name: Download exact-candidate memory receipts and canaries
-        uses: actions/download-artifact@v5
+        uses: actions/download-artifact@v8
         with:
           name: "memory-regression-fast-070-${{ github.sha }}"
           path: target/release-evidence
 
       - name: Download exact-candidate retention receipts
-        uses: actions/download-artifact@v5
+        uses: actions/download-artifact@v8
         with:
           name: "retention-soak-070-${{ github.sha }}"
           path: target/release-evidence
@@ -942,19 +942,19 @@ jobs:
           --output target/release-evidence/0.69.admission-lane.json
 
       - name: Download fast evidence receipts and canaries
-        uses: actions/download-artifact@v5
+        uses: actions/download-artifact@v8
         with:
           name: "migration-conformance-fast-evidence-069-${{ github.sha }}"
           path: target
 
       - name: Download Java and legacy receipts
-        uses: actions/download-artifact@v5
+        uses: actions/download-artifact@v8
         with:
           name: "migration-conformance-069-receipts-${{ github.sha }}"
           path: target
 
       - name: Download PostgreSQL receipts
-        uses: actions/download-artifact@v5
+        uses: actions/download-artifact@v8
         with:
           pattern: "migration-conformance-postgres-069-receipts-*-${{ github.sha }}"
           path: target
@@ -1315,7 +1315,7 @@ jobs:
           version: v1.32.0
 
       - name: Install Helm
-        uses: azure/setup-helm@v4.3.1
+        uses: azure/setup-helm@v5.0.1
         with:
           version: v3.17.0
 
@@ -1784,7 +1784,7 @@ jobs:
 
       - name: Download prior full-dress receipt
         if: inputs.full_dress_predecessor_run_id != ''
-        uses: actions/download-artifact@v5
+        uses: actions/download-artifact@v8
         with:
           name: performance-0671-full-dress-receipt
           path: ${{ runner.temp }}/hydracache-full-dress-predecessor
@@ -1947,7 +1947,7 @@ jobs:
           fi
 
       - name: Download two-run full-dress admission
-        uses: actions/download-artifact@v5
+        uses: actions/download-artifact@v8
         with:
           name: performance-0671-full-dress-admission
           path: ${{ runner.temp }}/hydracache-full-dress-admission
@@ -1957,7 +1957,7 @@ jobs:
 
       - name: Download immediately prior bootstrap receipt
         if: inputs.bootstrap_sample_index != '1'
-        uses: actions/download-artifact@v5
+        uses: actions/download-artifact@v8
         with:
           name: performance-0671-bootstrap-receipt
           path: ${{ runner.temp }}/hydracache-bootstrap-predecessor

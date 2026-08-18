@@ -170,6 +170,47 @@ fn release_070_ci_hardening_is_fail_closed() {
 }
 
 #[test]
+fn release_070_workflows_use_node24_action_runtimes() {
+    let root = root();
+    let workflows = [
+        ".github/workflows/ci.yml",
+        ".github/workflows/hc2-client-plane.yml",
+        ".github/workflows/post-publish.yml",
+        ".github/workflows/publish-crates.yml",
+    ];
+    let mut combined = String::new();
+
+    for path in workflows {
+        let workflow = fs::read_to_string(root.join(path)).unwrap();
+        serde_yaml::from_str::<serde_yaml::Value>(&workflow)
+            .unwrap_or_else(|error| panic!("{path} is invalid YAML: {error}"));
+        combined.push_str(&workflow);
+    }
+
+    for deprecated in [
+        "actions/download-artifact@v5",
+        "actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0",
+        "azure/setup-helm@v4.3.1",
+    ] {
+        assert!(
+            !combined.contains(deprecated),
+            "release workflow still uses Node.js 20 action {deprecated:?}"
+        );
+    }
+
+    for node24_action in [
+        "actions/download-artifact@v8",
+        "actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1",
+        "azure/setup-helm@v5.0.1",
+    ] {
+        assert!(
+            combined.contains(node24_action),
+            "release workflow is missing Node.js 24 action {node24_action:?}"
+        );
+    }
+}
+
+#[test]
 fn canary_release_070_accepts_missing_work_item_evidence() {
     let Ok(defect) = env::var("HYDRACACHE_CANARY_DEFECT") else {
         return;
