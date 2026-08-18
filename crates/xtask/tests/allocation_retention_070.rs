@@ -187,6 +187,10 @@ fn release_070_workflows_use_node24_action_runtimes() {
         combined.push_str(&workflow);
     }
 
+    let hc2_gates = fs::read_to_string(root.join("docs/testing/hc2-ci/h22-gates.json")).unwrap();
+    let _: serde_json::Value = serde_json::from_str(&hc2_gates).unwrap();
+    combined.push_str(&hc2_gates);
+
     for deprecated in [
         "actions/download-artifact@v5",
         "actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0",
