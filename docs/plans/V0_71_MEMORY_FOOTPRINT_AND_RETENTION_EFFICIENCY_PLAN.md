@@ -155,6 +155,49 @@ checksum is `unavailable(reason)` and blocks any conclusion that depends on it.
 | ScyllaDB | reader concurrency semaphore and count+memory admission | Admit by bytes as well as count; queues consume the same budget as active work; fail loud before allocation-heavy work | No unbounded per-request accounting complexity on the cache fast path |
 | TigerBeetle | `src/static_allocator.zig`, bounded client/session pools | Bound long-lived pools and make peak capacity explicit; post-start allocation can be eliminated for selected control structures | HydraCache remains a general-purpose library; full static allocation is not a release goal |
 | Hazelcast | native/JVM memory separation, heap sizing, map/index/client resource categories | Report JVM heap separately from RSS/native memory and compare equivalent feature profiles | Hazelcast warm-up/JIT/heap behavior is not attributed to HydraCache and is not a release gate |
+| Rust standard library / `cargo-semver-checks` | Predrag Gruevski's 2026-08-15 case study, [Protecting the Rust standard library from accidental breakage](https://predr.ag/blog/protecting-the-rust-stdlib-from-breakage/), and the upstream CI integration | Humans do not reliably spot compatibility changes caused by trait methods, object safety, auto-traits or apparently-private representation edits; compare the effective supported API automatically against an immutable baseline and encode public/non-public status once so every lint benefits | HydraCache is a normal crates.io workspace: use ordinary stable-crate SemVer checks, not the experimental stdlib-only `--stability-aware` mode; Linux rustdoc evidence alone is not a cross-platform compatibility claim |
+
+## Public API breakage guardrail derived from the stdlib case study
+
+Memory optimization is unusually exposed to accidental source breakage. Replacing a private
+`String` with `Rc<str>`, changing a wrapper, adding a field, sealing a trait or altering a feature
+edge can change a public type's `Send`/`Sync`, object safety, constructibility or availability even
+when signatures look unchanged. Review and ordinary unit tests are insufficient controls.
+
+W0 and W13 therefore establish a release-scoped public API contract:
+
+1. After `0.70.0` is published, add `docs/testing/compat/v0.70.0.json` with the immutable tag,
+   resolved commit, complete publishable-library package set, feature profiles, target/toolchain
+   identity and the pinned `cargo-semver-checks` version. A branch name, moving registry result or
+   candidate-derived rustdoc is not an acceptable baseline.
+2. Bootstrap `cargo-semver-checks 0.49.0` against the current `0.48.0` evidence before changing the
+   pin. Record disagreements and accept the upgrade only after false positives are resolved. Use
+   ordinary stable-crate checking; the article's unstable `--stability-aware` mode models Rust
+   stdlib attributes and is out of scope here. Run the tool on a pinned analysis toolchain meeting
+   its Rust 1.91+ requirement; this does not raise HydraCache's MSRV, which remains independently
+   enforced by the MSRV downstream-consumer lane.
+3. Run blocking comparisons for default features, all features and every supported exported
+   feature profile defined by the canonical feature matrix. Use `cargo metadata`/the tool's feature
+   model rather than a second handwritten interpretation of `Cargo.toml`.
+4. Add compile-time downstream witnesses for public types affected by W5-W10: required
+   `Send`/`Sync`/`Unpin`, trait object construction where object safety is promised, public struct
+   construction, feature-selected imports and proc-macro expansion. A representation change may
+   land only when both the automated API diff and these consumers remain green.
+5. Treat declared preview or intentionally non-public surfaces separately: their changes are
+   review-visible but do not block as stable API breakage. Do not add `#[doc(hidden)]`, a private
+   feature, an allow-list entry or a baseline rewrite merely to silence a new violation.
+6. Preserve the tool's distinct outcomes in CI: a detected SemVer violation and an inability to
+   complete analysis are both red, but receive different machine-readable reasons. The receipt
+   includes stdout/stderr, tool version, rustc/rustdoc identity, package/feature/target matrix and
+   baseline/candidate SHAs.
+7. The primary rustdoc diff runs on pinned x86-64 Linux. Pair it with existing Windows, MSRV and
+   supported-target downstream consumer builds; do not claim that one host proves target-specific
+   APIs or auto-traits everywhere.
+
+The blocking PR lane runs for every change to a publishable crate or its feature/dependency graph,
+including private implementation files because private representation can alter public auto-traits.
+The full workspace matrix is ship-mandatory on the exact candidate SHA. Tool upgrades are first
+report-only against the same frozen fixtures, then become blocking through a reviewed pin change.
 
 ## Current code map and hypotheses to falsify
 
@@ -199,6 +242,9 @@ Permanent invariants:
 - `R-9`: no disk spill/event-log feature is introduced to disguise resident memory.
 - `R-10`: embedded defaults and hot path change only with equivalent-or-better measured evidence.
 - `R-11`: skipped/unavailable profilers and unstable runs remain visibly non-green.
+- Published Rust API and feature compatibility is checked against the immutable `v0.70.0`
+  baseline; an internal memory optimization cannot silently remove an auto-trait, break object
+  safety, alter a supported feature edge or make a public type unconstructible.
 
 ## Non-goals
 
@@ -234,7 +280,7 @@ Populate the implementation column and exact command as W-items land.
 | W10 | HC/2 per-connection efficiency | slow-client/reconnect/1k-connection soak | quotas and fairness retained |
 | W11 | durable/page-cache separation | anon/file/slab + recovery proof | durability unchanged |
 | W12 | long soak + cross-target regression | fixed-key/TTL/reset/connection matrix | same fingerprint and workload |
-| W13 | governance/docs/release decision | exact-candidate require-ship evidence | claims match receipts |
+| W13 | governance/docs/release decision + public API protection | exact-candidate require-ship and `v0.70.0` API-diff evidence | claims match receipts; private representation changes cannot break supported downstream code |
 
 ## W0. Freeze a causal memory baseline before changing code
 
@@ -403,6 +449,10 @@ Use W0/W1 retained-size evidence to select, not assume, representation changes:
 The selected design requires an ADR if it changes the canonical in-memory key representation or
 allocator. Wire keys and public serialization do not change. Hash collision behavior is adversarially
 tested; deterministic evidence records normalize ordering instead of depending on hash iteration.
+For every public type whose transitive private representation changes, freeze compile-time
+`Send`/`Sync`/`Unpin`, object-safety and construction witnesses before the rewrite. The ordinary and
+all-feature `cargo-semver-checks` comparisons against `v0.70.0` must remain clean; a smaller layout
+does not justify an accidental source-compatibility break.
 
 **Gate:** materially lower reviewed bytes-per-entry for small-value and tag-heavy matrices while
 meeting the frozen latency/CPU/error/hit-rate budgets. A statistically inconclusive variant is not
@@ -569,6 +619,13 @@ duration/fingerprint requirement above.
   `release-evidence --release 0.71 --require-ship`.
 - Register profiler, allocator, long-soak, cgroup and cross-target lanes plus dynamic canaries in
   the gated/canary registries; skip-loud and quarantine-expiry rules remain unchanged.
+- Add `docs/testing/compat/v0.70.0.json` and a blocking `Public API Compatibility 0.71` lane using
+  reviewed `cargo-semver-checks 0.49.0`. It covers the complete publishable-library package set,
+  default/all/supported feature profiles, immutable baseline/candidate SHAs and machine-readable
+  distinction between a compatibility violation and an analysis/tool failure.
+- Extend downstream compile witnesses for auto-traits, object-safe trait objects, public struct
+  construction, exported feature names/edges and proc-macro output. Keep Windows/MSRV/target
+  consumers mandatory because the primary rustdoc diff is x86-64 Linux-scoped.
 - Add `docs/performance/memory-accounting.md`: metric definitions, live/active/resident/retained,
   anon/file/slab, logical ownership, measurement pitfalls and reproduction commands.
 - Add `docs/performance/memory-sizing.md`: measured per-entry/per-connection/profile guidance with
@@ -584,6 +641,7 @@ duration/fingerprint requirement above.
 
 ```powershell
 cargo run --manifest-path crates\xtask\Cargo.toml -- memory-contract-check --release 0.71
+cargo run --manifest-path crates\xtask\Cargo.toml -- compat-check --release 0.71
 cargo run --manifest-path crates\xtask\Cargo.toml -- release-governance-check --release 0.71
 cargo run --manifest-path crates\xtask\Cargo.toml -- release-evidence --release 0.71 --require-ship
 cargo run --manifest-path crates\xtask\Cargo.toml -- doc-check
@@ -597,6 +655,7 @@ cargo run --manifest-path crates\xtask\Cargo.toml -- doc-check
 | Retention | million-mutation bounded-history test; TTL/reset/tag/idempotency/audit churn plateau; cleanup backlog bound |
 | Correctness | stale-load fencing, listener gap repair, idempotent retry outcome, mandatory audit fail-closed, lock/session fencing |
 | Representation | property/differential corpus over old/new key-entry-index forms; adversarial hash/collision and ABA tests |
+| Public API | pinned `v0.70.0` SemVer diff for every publishable library under default/all/supported feature profiles; `Send`/`Sync`/`Unpin`, object-safety, construction, feature and proc-macro downstream witnesses; Windows/MSRV consumers |
 | Allocation | allocations/op, bytes copied/op, Miri/sanitizer/fuzz/cancellation, buffer-pool secret isolation |
 | Connection | 1k idle, slow consumer, reconnect storm, oversized frame, TLS on/off, exact post-close zero |
 | Persistence | anon/file split, memory-limit admission, compaction/checkpoint release, crash/disk-full/backup/restore |
@@ -620,6 +679,7 @@ cargo run --manifest-path crates\xtask\Cargo.toml -- doc-check
 | Page cache misread as leak | Wrong code path optimized | anon/file/slab/allocator separation and durable counters |
 | HC/2 adds per-client amplification | Empty daemon is small but 1k clients exhaust memory | W10 per-connection byte budgets and reconnect/slow-client soak |
 | Historical reports overclaimed | Exploratory numbers become marketing claims | scope labels preserved; only W12/W13 evidence may support sizing |
+| Private memory rewrite breaks public Rust API | A compact field removes `Send`/`Sync`, breaks object safety/struct construction or changes a feature edge while unit tests remain green | immutable `v0.70.0` API baseline, pinned `cargo-semver-checks`, explicit downstream witnesses and cross-target/MSRV consumers |
 
 ## Gates: definition of done
 
@@ -640,6 +700,9 @@ cargo run --manifest-path crates\xtask\Cargo.toml -- doc-check
 - Redis and Hazelcast are pinned controls with equivalent disclosed profiles; Hazelcast heap is
   measured by JMX or marked unavailable. Neither control defines Hydra correctness or a universal
   memory target.
+- Every publishable Rust library passes the pinned `v0.70.0` API comparison for default, all and
+  supported feature profiles; required auto-trait/object-safety/construction consumers pass on the
+  primary target plus the declared Windows/MSRV matrix. A tool failure is red, not unavailable-green.
 - `release-evidence --release 0.71 --require-ship`, all dynamic canaries, `doc-check`, workspace
   gates and compatibility windows are green on the exact candidate SHA.
 
