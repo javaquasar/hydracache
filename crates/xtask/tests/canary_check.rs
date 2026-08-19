@@ -1,4 +1,4 @@
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, BTreeSet};
 use std::fs;
 use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicU64, Ordering};
@@ -24,6 +24,22 @@ fn every_w_item_has_a_registered_canary_that_references_real_functions() {
     let registry = xtask::canary_check::load_registry(&root).unwrap();
     let required = xtask::canary_check::required_work_items(&root, "0.64").unwrap();
     assert_eq!(registry.entries.len(), required.len());
+}
+
+#[test]
+fn release_070_canary_registry_covers_every_declared_work_item() {
+    let root = workspace_root();
+    let problems = check_canary_registry_for_release(&root, "0.70").unwrap();
+    assert!(problems.is_empty(), "registry problems: {problems:#?}");
+
+    let registry = xtask::canary_check::load_registry_for_release(&root, "0.70").unwrap();
+    let required = xtask::canary_check::required_work_items(&root, "0.70").unwrap();
+    let registered: BTreeSet<_> = registry
+        .entries
+        .into_iter()
+        .map(|entry| entry.w_item)
+        .collect();
+    assert_eq!(registered, required);
 }
 
 #[test]

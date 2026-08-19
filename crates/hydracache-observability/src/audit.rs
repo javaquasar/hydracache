@@ -294,19 +294,29 @@ where
     }
 }
 
-/// In-memory append-only audit sink for tests and small adapters.
-#[derive(Debug, Default)]
+/// In-memory bounded audit sink for tests and small adapters.
+#[derive(Debug)]
 pub struct InMemoryAuditSink {
     events: Mutex<Vec<AuditEvent>>,
     available: AtomicBool,
+    capacity: usize,
 }
+
+/// Default maximum number of audit events retained in memory.
+pub const IN_MEMORY_AUDIT_CAPACITY: usize = 4_096;
 
 impl InMemoryAuditSink {
     /// Create an available sink.
     pub fn new() -> Self {
+        Self::with_capacity(IN_MEMORY_AUDIT_CAPACITY)
+    }
+
+    /// Create an available sink with an explicit non-zero event budget.
+    pub fn with_capacity(capacity: usize) -> Self {
         Self {
-            events: Mutex::new(Vec::new()),
+            events: Mutex::new(Vec::with_capacity(capacity.clamp(1, 256))),
             available: AtomicBool::new(true),
+            capacity: capacity.max(1),
         }
     }
 
@@ -315,6 +325,7 @@ impl InMemoryAuditSink {
         Self {
             events: Mutex::new(Vec::new()),
             available: AtomicBool::new(false),
+            capacity: IN_MEMORY_AUDIT_CAPACITY,
         }
     }
 
@@ -323,9 +334,25 @@ impl InMemoryAuditSink {
         self.available.store(available, Ordering::SeqCst);
     }
 
-    /// Return an append-only snapshot.
+    /// Return the currently retained bounded snapshot.
     pub fn events(&self) -> Vec<AuditEvent> {
         self.events.lock().expect("audit mutex").clone()
+    }
+
+    /// Return the number of events currently retained by this bounded sink.
+    pub fn len(&self) -> usize {
+        self.events.lock().expect("audit mutex").len()
+    }
+
+    /// Return whether the bounded sink currently retains no events.
+    pub fn is_empty(&self) -> bool {
+        self.events.lock().expect("audit mutex").is_empty()
+    }
+}
+
+impl Default for InMemoryAuditSink {
+    fn default() -> Self {
+        Self::new()
     }
 }
 
@@ -334,7 +361,45 @@ impl AuditSink for InMemoryAuditSink {
         if !self.available.load(Ordering::SeqCst) {
             return Err(AuditError::new("audit sink unavailable"));
         }
-        self.events.lock().expect("audit mutex").push(event.clone());
+        let mut events = self.events.lock().expect("audit mutex");
+        if events.len() >= self.capacity {
+            return Err(AuditError::new("in-memory audit sink capacity exhausted"));
+        }
+        events.push(event.clone());
         Ok(())
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn mandatory_event(index: usize) -> AuditEvent {
+        AuditEvent::AuthFailure {
+            tenant: Some("tenant".to_owned()),
+            route: "/client/v1/data".to_owned(),
+            request_id: Some(format!("request-{index}")),
+        }
+    }
+
+    #[test]
+    fn bounded_sink_fails_mandatory_audit_closed_at_capacity() {
+        let sink = Arc::new(InMemoryAuditSink::with_capacity(2));
+        let mut recorder = AuditRecorder::new(Arc::clone(&sink));
+        assert_eq!(
+            recorder.record(&mandatory_event(1)).unwrap(),
+            AuditOutcome::Recorded
+        );
+        assert_eq!(
+            recorder.record(&mandatory_event(2)).unwrap(),
+            AuditOutcome::Recorded
+        );
+
+        let error = recorder.record(&mandatory_event(3)).unwrap_err();
+
+        assert_eq!(error.to_string(), "in-memory audit sink capacity exhausted");
+        assert_eq!(sink.events().len(), 2);
+        assert_eq!(recorder.health().audit_sink_failures_total, 1);
+        assert_eq!(recorder.health().audit_mandatory_fail_closed_total, 1);
     }
 }

@@ -23,12 +23,13 @@ pub use grpc::{GrpcMtlsAdapter, GrpcMtlsConfig};
 pub use reconnect::{
     InvocationRetryPolicy, ReconnectEndpoint, ReconnectPolicy, RecoveringFencedSession,
     RecoveringHc2Client, RecoveringSubscription, RecoveryMetricsSnapshot,
+    RecoveryRetainedStateSnapshot,
 };
 pub use types::{
     BatchItemResult, BatchOperation, CacheEvent, CacheValue, Capability, ClientConfig, ClientError,
-    ClientLimits, ClientMetricsSnapshot, ErrorCode, LockAcquireResult, LockOwnership,
-    MutationResult, NodeEndpoint, RequestOptions, RetryAdvice, SubscriptionEvent, TopologySnapshot,
-    TransportKind,
+    ClientLimits, ClientMetricsSnapshot, ClientRetainedStateSnapshot, ErrorCode, LockAcquireResult,
+    LockOwnership, MutationResult, NodeEndpoint, RequestOptions, RetryAdvice, SubscriptionEvent,
+    TopologySnapshot, TransportKind,
 };
 
 /// Oldest HC/2 generation accepted during the 0.68 preview compatibility window.

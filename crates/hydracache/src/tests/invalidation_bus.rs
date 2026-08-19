@@ -582,7 +582,12 @@ async fn listener_exits_when_cache_inner_is_dropped() {
     let (_shutdown, receiver) = watch::channel(false);
 
     cache.spawn_invalidation_listener(receiver);
+    let inner = Arc::downgrade(&cache.inner);
     drop(cache);
+    assert!(
+        inner.upgrade().is_none(),
+        "the listener must not keep the final cache Arc alive"
+    );
 
     bus.publish(CacheInvalidationMessage::new(
         "remote",

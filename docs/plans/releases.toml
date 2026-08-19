@@ -312,9 +312,18 @@ depends_on = ["0.68.0"]
 
 [[release]]
 version = "0.70.0"
-file = "docs/plans/V0_70_MEMORY_FOOTPRINT_AND_RETENTION_EFFICIENCY_PLAN.md"
+file = "docs/plans/V0_70_ALLOCATION_PATH_AND_RETENTION_AUDIT_PLAN.md"
+status = "shipped"
+networked_control_plane = true
+work_items = ["W0", "W1", "W2", "W3", "W4", "W5", "W6", "W7"]
+theme = "Allocation Path & Retention Audit - mechanically inventory long-lived owners, add deterministic retained-state snapshots and phase-aware allocation tests, prove tag/store/breaker/client/HC2 cleanup under geometric churn, fix confirmed unbounded histories and tombstones, and add a local non-ship Hydra/Redis diagnostic runner that cannot mistake rejected FLUSHALL for cleanup. Host-level optimization and numerical sizing remain deferred until causal owner evidence exists."
+depends_on = ["0.69.0"]
+
+[[release]]
+version = "0.71.0"
+file = "docs/plans/V0_71_MEMORY_FOOTPRINT_AND_RETENTION_EFFICIENCY_PLAN.md"
 status = "planned"
 networked_control_plane = true
 work_items = ["W0", "W1", "W2", "W3", "W4", "W5", "W6", "W7", "W8", "W9", "W10", "W11", "W12", "W13"]
-theme = "Memory Footprint & Retention Efficiency - turn the 0.67 exploratory memory screens into causal exact-candidate optimization after the HC/2 client plane and migration conformance are stable. W0 pins the raw archive branch explore/0.67-telemetry-hazelcast at exact commit dbc2f82f7f303528b3cca7842818730c82232b9c, validates checksums, freezes fresh-process/fixed-cardinality/reclamation/long-soak baselines and forbids pooling historical and new cohorts. W1 adds synchronized logical-entry/key/value/tag/index/history/queue/session plus allocator allocated/active/resident/retained counters. W2 fixes value-only weight and adds count+byte admission. W3 bounds invalidation, idempotency, audit, diagnostics and session histories without silent correctness loss. W4 proves expiry/delete/evict/tag/reset cleanup of every logical owner. W5-W7 compact keys/entries/tags/generations and reduce protocol/cache copies only where retained-size and allocation profiles prove a win. W8 compares system/jemalloc/mimalloc-style allocator candidates with portable fallback and unchanged p99/CPU. W9 quantifies optional services without silently changing defaults. W10 hard-bounds HC/2 per-connection pending/output/subscription/session memory. W11 separates durable-store anon memory from file/page cache. W12 requires frozen-baseline 60-minute, six-hour and 24-hour evidence with pinned Redis and JMX-instrumented Hazelcast controls while preserving all existing SLO, zero-error, affinity, spread, privacy and fail-closed gates. W13 binds results to release-evidence/0.70 and scoped sizing/accounting docs. No capacity/workload reduction, semantic weakening, Redis/Hazelcast ranking claim, or candidate self-baseline."
-depends_on = ["0.69.0"]
+theme = "Memory Footprint & Retention Efficiency - consume the 0.70 owner inventory and bounded-lifecycle proof, then turn the 0.67 exploratory memory screens into causal exact-candidate optimization. Freeze synchronized logical/allocator/process/cgroup baselines, correct byte accounting, compact measured representations, reduce copies, compare allocators and profiles, separate durable page cache, and pass fixed-cardinality long-duration evidence without weakening semantics, capacity, workload, SLOs or fail-closed behavior."
+depends_on = ["0.70.0"]

@@ -27,7 +27,8 @@
 >   client protocol/SDK), `0.37`/`0.38` (DB track), and the `0.64` governance machinery.
 > - **Unblocks:** a defensible "Hazelcast-migration ready for the claimed subset" statement backed
 >   by Hazelcast's own tests, client-upgrade guidance backed by executed old binaries, and the
->   stable post-HC/2 surface required by the `0.70` memory-efficiency release.
+>   stable post-HC/2 surface required by the `0.70` allocation/retention audit and the `0.71`
+>   memory-efficiency release.
 > - **Status:** shipped; the exact-candidate migration, compatibility, database, canary, and
 >   fail-closed admission evidence is complete.
 >

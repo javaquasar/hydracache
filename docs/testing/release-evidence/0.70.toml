@@ -1,0 +1,97 @@
+schema_version = 1
+release = "0.70"
+plan = "docs/plans/V0_70_ALLOCATION_PATH_AND_RETENTION_AUDIT_PLAN.md"
+canary_policy = "dynamic_registry"
+dynamic_canary_work_items = ["W0", "W1", "W2", "W3", "W4", "W5", "W6", "W7"]
+
+[[work_item]]
+id = "W0"
+required_sources = ["crates/hydracache/tests/allocation_profile.rs"]
+required_artifacts = []
+fast_gate_ids = ["fast.memory-regression-070"]
+gated_gate_ids = []
+ship_required = true
+[[work_item.required_tests]]
+source = "crates/xtask/tests/allocation_retention_070.rs"
+function = "release_070_allocation_retention_closure_is_fail_closed"
+
+[[work_item]]
+id = "W1"
+required_sources = ["crates/hydracache/src/tag_index.rs"]
+required_artifacts = []
+fast_gate_ids = ["fast.memory-regression-070"]
+gated_gate_ids = []
+ship_required = true
+[[work_item.required_tests]]
+source = "crates/hydracache/src/tag_index.rs"
+function = "unique_key_and_tag_tombstones_rotate_into_a_bounded_epoch"
+
+[[work_item]]
+id = "W2"
+required_sources = ["crates/hydracache/src/load_breaker.rs"]
+required_artifacts = []
+fast_gate_ids = ["fast.memory-regression-070"]
+gated_gate_ids = []
+ship_required = true
+[[work_item.required_tests]]
+source = "crates/hydracache/src/load_breaker.rs"
+function = "unique_one_shot_failures_stay_within_entry_budget"
+
+[[work_item]]
+id = "W3"
+required_sources = ["crates/hydracache-client-transport-axum/src/lib.rs"]
+required_artifacts = []
+fast_gate_ids = ["fast.memory-regression-070"]
+gated_gate_ids = ["tool.hydracache-client-transport-axum.retention-soak-070"]
+ship_required = true
+[[work_item.required_tests]]
+source = "crates/hydracache-client-transport-axum/src/lib.rs"
+function = "retention_soak_million_fixed_keyspace_mutations_plateau_and_reset"
+[[work_item.required_tests]]
+source = "crates/hydracache/tests/conditional_tombstone.rs"
+function = "ordering_safe_conditional_tombstone_watermark_reclaims_unique_deletes"
+
+[[work_item]]
+id = "W4"
+required_sources = ["crates/hydracache/src/cache.rs"]
+required_artifacts = []
+fast_gate_ids = ["fast.memory-regression-070"]
+gated_gate_ids = ["tool.hydracache.retention-soak-070"]
+ship_required = true
+[[work_item.required_tests]]
+source = "crates/hydracache/src/cache.rs"
+function = "retention_soak_100_cleanup_cycles_return_all_owners_to_zero"
+
+[[work_item]]
+id = "W5"
+required_sources = ["crates/hydracache-client-hc2/src/client.rs", "crates/hydracache-client-hc2/tests/reconnect_repair.rs"]
+required_artifacts = []
+fast_gate_ids = ["fast.memory-regression-070"]
+gated_gate_ids = []
+ship_required = true
+[[work_item.required_tests]]
+source = "crates/hydracache-client-hc2/tests/reconnect_repair.rs"
+function = "reset_reconnects_once_repairs_subscription_dedupes_and_loses_session"
+
+[[work_item]]
+id = "W6"
+required_sources = ["scripts/perf/run-memory-leak-stage.sh", "scripts/perf/summarize-memory-diagnostic.py", "scripts/perf/compare-memory-summaries.py"]
+required_artifacts = []
+fast_gate_ids = ["fast.memory-regression-070"]
+gated_gate_ids = []
+ship_required = true
+[[work_item.required_tests]]
+source = "scripts/perf/summarize_memory_diagnostic_test.py"
+function = "test_builds_compact_non_promotable_complete_summary"
+language = "python"
+
+[[work_item]]
+id = "W7"
+required_sources = [".github/workflows/ci.yml", "crates/xtask/tests/allocation_retention_070.rs"]
+required_artifacts = ["docs/testing/canary-registry-0.70.json", "docs/testing/release-evidence/0.70.toml", "docs/releases/0.70.0.md"]
+fast_gate_ids = ["fast.memory-regression-070"]
+gated_gate_ids = ["tool.hydracache.retention-soak-070", "tool.hydracache-client-transport-axum.retention-soak-070"]
+ship_required = true
+[[work_item.required_tests]]
+source = "crates/xtask/tests/allocation_retention_070.rs"
+function = "release_070_ci_hardening_is_fail_closed"

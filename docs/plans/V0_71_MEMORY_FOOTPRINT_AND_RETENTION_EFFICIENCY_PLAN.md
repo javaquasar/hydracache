@@ -1,4 +1,4 @@
-# HydraCache 0.70.0 Memory Footprint & Retention Efficiency - Codex Execution Plan
+# HydraCache 0.71.0 Memory Footprint & Retention Efficiency - Codex Execution Plan
 
 > **At a glance**
 > - **What:** turn the exploratory memory findings into causal, release-gated improvements across
@@ -14,17 +14,21 @@
 >   accumulated workload footprint. Source audit found concrete amplification candidates:
 >   value-only Moka weights, cloned tenant/namespace/key strings, lazy expiry, duplicated tag and
 >   generation metadata, and append-only invalidation/idempotency/audit collections. The evidence
->   does **not** yet prove a generic leak, so the release requires causal counters and allocator
->   evidence before changing implementation or defaults.
-> - **After (depends on):** `0.69.0`; consumes the qualified `0.67.1` reference methodology, the
->   final `0.68` HC/2 connection/listener/session design, and the `0.69` executable client matrix.
+>   does **not** yet prove a generic leak. The `0.70` GitHub-hosted follow-up instead found exact
+>   logical-owner zero after reset, flat idle tails, and residual Hydra RSS consistent with an
+>   allocator/runtime high-water candidate. `0.71` therefore requires causal counters, corrected
+>   TTL coverage, and allocator evidence before changing implementation or defaults.
+> - **After (depends on):** `0.70.0`; consumes its allocation-owner inventory, retained-state
+>   snapshots, bounded-lifecycle fixes and deterministic local diagnostic harness, plus the
+>   qualified `0.67.1` reference methodology and the `0.69` executable client matrix.
 > - **Unblocks:** defensible memory sizing, a bounded long-lived daemon claim, per-entry/per-client
 >   capacity guidance, and later data-structure tuning without repeating the attribution work.
 > - **Status:** planned.
 >
 > Roadmap: [`INDEX.md`](INDEX.md) - rules: [`../RULES.md`](../RULES.md) -
 > gates: [`../GATES.md`](../GATES.md) - performance: [`../PERFORMANCE.md`](../PERFORMANCE.md) -
-> source reports: [`../testing/perf-scenarios/0.67/results/memory-investigations-report-20260804.md`](../testing/perf-scenarios/0.67/results/memory-investigations-report-20260804.md),
+> source reports: [`../testing/perf-scenarios/0.70/results/github-hosted-memory-diagnostic-20260816.md`](../testing/perf-scenarios/0.70/results/github-hosted-memory-diagnostic-20260816.md),
+> [`../testing/perf-scenarios/0.67/results/memory-investigations-report-20260804.md`](../testing/perf-scenarios/0.67/results/memory-investigations-report-20260804.md),
 > [`../testing/perf-scenarios/0.67/results/memory-leak-analysis-20260803.md`](../testing/perf-scenarios/0.67/results/memory-leak-analysis-20260803.md),
 > [`../testing/perf-scenarios/0.67/results/comparative-memory-20260802.md`](../testing/perf-scenarios/0.67/results/comparative-memory-20260802.md).
 
@@ -45,10 +49,62 @@ An RSS reduction without proof that live data and mandatory records are preserve
 | Three-minute expiry soak | Hydra RSS slope `+2.57 MiB/min`; Redis approximately flat | Expiry cleanup and allocator recovery are the highest-priority follow-up | Expired values alone remain live |
 | Three-minute reset soak | Hydra RSS slope `+9.55 MiB/min`; immediate reset did not restore cold RSS | All maps/indexes/history plus allocator reuse must be checked together | `FLUSHALL` is semantically incorrect without logical counters |
 | Idle after load | Hydra `+0.057 MiB/min`, effectively plateau/noise | Continuous no-traffic growth was not observed | High-water memory is acceptable or fully reusable |
+| `0.70` GitHub-hosted reset/idle diagnostic | Hydra median RSS `11.77 MiB` versus Redis `17.34 MiB`; median PSS-anon `4.66 MiB` versus `9.30 MiB`; both idle-tail RSS slopes were zero; Hydra owner snapshots were exactly zero after every reset | No sustained process-level leak was observed in the fixed-cardinality/reset/idle windows; the remaining Hydra RSS is an allocator/runtime high-water candidate | Pages are proven reusable, TTL reclamation is proven, or a noisy hosted-runner RSS value is a release budget |
 
 The W0 baseline must repeat the positive screens for 30-60 minutes across at least three fresh
 processes and must synchronize application counters with process/cgroup/allocator samples. Until
 then, `possible-growth` remains a screening label, never `leak`.
+
+The `0.70` hosted artifact has one known evidence gap: its TTL workload checkpoint occurred after
+the original fixed collector window. The harness now extends collection through the final
+checkpoint and rejects incomplete rows, but `0.71` must repeat this case before treating TTL as
+reclamation evidence. The hosted result is a useful order-of-magnitude screen, not ship evidence.
+
+The local WSL2/Docker measurement campaign that was originally listed as a 0.70 release blocker is
+an explicit 0.71 W0 input. Run the corrected TTL, fixed-keyspace, reset and post-idle cases from a
+clean checkout, bind source/binary/image identities, retain raw telemetry and record the WSL2,
+kernel, Docker and cgroup fingerprint. This local campaign is diagnostic and cannot replace the
+same-fingerprint dedicated-host qualification required for 0.71 ship evidence.
+
+## Investigation hand-off from 0.70
+
+Resolve these questions in order so representation work is not used to mask allocator behavior:
+
+1. **Allocator high-water or live ownership:** after every reset, reconcile exact subsystem-owner
+   zero with allocator `allocated`, `active`, `resident`, `retained`/`mapped`, process PSS-anon and
+   cgroup anon at the same monotonic checkpoint. A non-zero RSS alone is not a leak verdict.
+2. **Reuse versus purge:** after the first high-water cycle, refill the same cardinality without
+   process restart and measure fresh OS allocation, allocator reuse and explicit/rate-limited purge
+   separately. Returning to cold RSS is not required when pages are demonstrably reusable.
+3. **Correct TTL tail:** repeat fill-expire-idle with telemetry covering the final workload
+   checkpoint, exact logical-owner zero, bounded cleanup backlog and a fixed post-expiry idle
+   window. Any uncovered checkpoint invalidates the row.
+4. **Cardinality and payload amplification:** run geometric key counts and 64/256/1,024/4,096-byte
+   values; report bytes per live entry, metadata/value amplification and post-reset residuals. Do
+   not infer a slope by concatenating separate fresh processes.
+5. **Allocator A/B:** compare the system allocator with opt-in Linux candidates on identical
+   binaries/workloads across at least three fresh processes. Include CPU, p99, context switches,
+   portability and licensing; a one-case RSS win is insufficient.
+6. **Service and storage attribution:** isolate Admin API, RESP, HC/2, persistence and connection
+   profiles one factor at a time, keeping process anon, mapped/file and cgroup file/slab separate.
+7. **Long-lived correctness owners:** continue to treat conditional tombstones and repair
+   watermarks as correctness state. Reclamation requires an ordering-safe proof, not a memory cap
+   or diagnostic reset.
+
+### CI detection tiers
+
+Memory regression detection is split by signal stability and cost:
+
+| Tier | Trigger | What may fail the tier | Evidence role |
+| --- | --- | --- | --- |
+| `Memory Regression Fast` | every pull request and protected-branch push | deterministic owner counts/bytes not returning to their declared bound, retained HC/2 state after close, allocation tracker defects, or telemetry coverage accepting an uncovered checkpoint | early structural tripwire; required PR check |
+| `Memory Diagnostic (GitHub Hosted)` | explicit workflow dispatch | incomplete Hydra/Redis rows, workload/collector failure, non-zero errors, or missing final-checkpoint coverage | non-promotable order-of-magnitude screen with raw artifact |
+| scheduled/dedicated 0.71 lanes | 60-minute weekly, six-hour candidate, 24-hour ship confirmation | frozen slope/recovery/bytes-per-owner budgets on an approved fingerprint | qualification and exact-candidate release evidence |
+
+The fast tier intentionally has no absolute RSS/PSS threshold: GitHub-hosted VM placement and
+shared-image drift make such a number too noisy for a PR gate. It fails on deterministic ownership
+and coverage contracts first; numerical memory budgets are frozen from repeated same-fingerprint
+W0 samples and enforced only in the matching scheduled/dedicated tier.
 
 ## Archived-run provenance (mandatory input)
 
@@ -68,7 +124,7 @@ branch update cannot silently change the input:
 
 The raw branch contains CSV/JSONL telemetry, logs, container metadata, host receipts, accepted and
 rejected attempts, and per-run checksums. The curated branch contains human-sized methodology and
-reports. `0.70` may consume both, but only the exact raw archive commit is the authoritative
+reports. `0.71` may consume both, but only the exact raw archive commit is the authoritative
 historical byte identity. Branch and tag names are lookup aids, not substitutes for the SHA.
 
 Before W0 imports or derives a baseline, the executor must run:
@@ -85,7 +141,7 @@ git -C ../hydracache-0.67-memory-archive status --short
 The checkout must be clean. Validate every available `SHA256SUMS` file before reading its bundle.
 Generate a machine-readable `historical-input-receipt.json` containing branch, tag, exact commit,
 relative source paths, file sizes and SHA-256 digests for every raw file used by an analysis. New
-derived reports go under the 0.70 candidate evidence tree; archived originals are never rewritten,
+derived reports go under the 0.71 candidate evidence tree; archived originals are never rewritten,
 normalized, deleted, or mixed into qualification/bootstrap samples. A missing archive path or
 checksum is `unavailable(reason)` and blocks any conclusion that depends on it.
 
@@ -99,6 +155,49 @@ checksum is `unavailable(reason)` and blocks any conclusion that depends on it.
 | ScyllaDB | reader concurrency semaphore and count+memory admission | Admit by bytes as well as count; queues consume the same budget as active work; fail loud before allocation-heavy work | No unbounded per-request accounting complexity on the cache fast path |
 | TigerBeetle | `src/static_allocator.zig`, bounded client/session pools | Bound long-lived pools and make peak capacity explicit; post-start allocation can be eliminated for selected control structures | HydraCache remains a general-purpose library; full static allocation is not a release goal |
 | Hazelcast | native/JVM memory separation, heap sizing, map/index/client resource categories | Report JVM heap separately from RSS/native memory and compare equivalent feature profiles | Hazelcast warm-up/JIT/heap behavior is not attributed to HydraCache and is not a release gate |
+| Rust standard library / `cargo-semver-checks` | Predrag Gruevski's 2026-08-15 case study, [Protecting the Rust standard library from accidental breakage](https://predr.ag/blog/protecting-the-rust-stdlib-from-breakage/), and the upstream CI integration | Humans do not reliably spot compatibility changes caused by trait methods, object safety, auto-traits or apparently-private representation edits; compare the effective supported API automatically against an immutable baseline and encode public/non-public status once so every lint benefits | HydraCache is a normal crates.io workspace: use ordinary stable-crate SemVer checks, not the experimental stdlib-only `--stability-aware` mode; Linux rustdoc evidence alone is not a cross-platform compatibility claim |
+
+## Public API breakage guardrail derived from the stdlib case study
+
+Memory optimization is unusually exposed to accidental source breakage. Replacing a private
+`String` with `Rc<str>`, changing a wrapper, adding a field, sealing a trait or altering a feature
+edge can change a public type's `Send`/`Sync`, object safety, constructibility or availability even
+when signatures look unchanged. Review and ordinary unit tests are insufficient controls.
+
+W0 and W13 therefore establish a release-scoped public API contract:
+
+1. After `0.70.0` is published, add `docs/testing/compat/v0.70.0.json` with the immutable tag,
+   resolved commit, complete publishable-library package set, feature profiles, target/toolchain
+   identity and the pinned `cargo-semver-checks` version. A branch name, moving registry result or
+   candidate-derived rustdoc is not an acceptable baseline.
+2. Bootstrap `cargo-semver-checks 0.49.0` against the current `0.48.0` evidence before changing the
+   pin. Record disagreements and accept the upgrade only after false positives are resolved. Use
+   ordinary stable-crate checking; the article's unstable `--stability-aware` mode models Rust
+   stdlib attributes and is out of scope here. Run the tool on a pinned analysis toolchain meeting
+   its Rust 1.91+ requirement; this does not raise HydraCache's MSRV, which remains independently
+   enforced by the MSRV downstream-consumer lane.
+3. Run blocking comparisons for default features, all features and every supported exported
+   feature profile defined by the canonical feature matrix. Use `cargo metadata`/the tool's feature
+   model rather than a second handwritten interpretation of `Cargo.toml`.
+4. Add compile-time downstream witnesses for public types affected by W5-W10: required
+   `Send`/`Sync`/`Unpin`, trait object construction where object safety is promised, public struct
+   construction, feature-selected imports and proc-macro expansion. A representation change may
+   land only when both the automated API diff and these consumers remain green.
+5. Treat declared preview or intentionally non-public surfaces separately: their changes are
+   review-visible but do not block as stable API breakage. Do not add `#[doc(hidden)]`, a private
+   feature, an allow-list entry or a baseline rewrite merely to silence a new violation.
+6. Preserve the tool's distinct outcomes in CI: a detected SemVer violation and an inability to
+   complete analysis are both red, but receive different machine-readable reasons. The receipt
+   includes stdout/stderr, tool version, rustc/rustdoc identity, package/feature/target matrix and
+   baseline/candidate SHAs.
+7. The primary rustdoc diff runs on pinned x86-64 Linux. Pair it with existing Windows, MSRV and
+   supported-target downstream consumer builds; do not claim that one host proves target-specific
+   APIs or auto-traits everywhere.
+
+The blocking PR lane runs for every change to a publishable crate or its feature/dependency graph,
+including private implementation files because private representation can alter public auto-traits.
+The full workspace matrix is ship-mandatory on the exact candidate SHA. Tool upgrades are first
+report-only against the same frozen fixtures, then become blocking through a reviewed pin change.
 
 ## Current code map and hypotheses to falsify
 
@@ -111,8 +210,9 @@ client dispatch structures:
 | `crates/hydracache/src/entry.rs` | `Bytes` + `Vec<String>` + `Option<Instant>` | Tags and per-entry allocation/layout dominate small values; empty-tag capacity may be avoidable |
 | `crates/hydracache/src/tag_index.rs` | `HashMap<String, HashSet<String>>`, generation maps and cloned keys/tags | Key/tag strings are duplicated; invalidated-key generation tombstones may outlive entries |
 | `crates/hydracache-client-transport-axum/src/lib.rs` | `BTreeMap<(String,String,String), StoredValue<Vec<u8>>>` | Three independently allocated strings per record, tree-node overhead, cloned read values, and an edge-local store distinct from the embedded cache |
-| same client surface | `Vec<InvalidationEvent>`, `BTreeSet<(tenant,idempotency)>` | Append-only histories grow with mutations/unique request ids unless `0.68` replaces them with bounded protocol-owned state |
-| `crates/hydracache-observability/src/audit.rs` | test/small-adapter `InMemoryAuditSink` is append-only `Vec<AuditEvent>` | Accidentally using an in-memory test sink in a daemon retains every audit record |
+| same client surface | 0.70 removes the unread invalidation history and bounds idempotency outcomes | Measure the bounded map's per-record cost and TTL sweep amplification; do not reopen the append-only defect |
+| `crates/hydracache-observability/src/audit.rs` | 0.70 caps the test/small-adapter `InMemoryAuditSink` and fails mandatory writes closed at capacity | Measure the bounded event cost and add an operator sink without weakening fail-closed semantics |
+| `crates/hydracache/src/grid/conditional.rs` | conditional records retain delete tombstones; session heartbeats retain unique session ids | Design ordering-safe watermark GC before optimizing representation; never delete a tombstone solely to reduce RSS |
 | `crates/hydracache-redis-compat/src/lib.rs` | RESP conversion through `Vec<u8>`, `Bytes::copy_from_slice`; bidirectional tag maps with copied keys | Decode/encode copies and duplicate tag membership amplify pipeline and tag workloads |
 | HC/2 from `0.68` | connection-owned pending calls, outbound lanes, subscriptions and sessions | Per-connection floor, queued bytes, reconnect storms and slow consumers can dominate a mostly-empty cache |
 | durable store | process RSS plus cgroup file/page cache | File-backed growth can be mistaken for Rust live-object growth |
@@ -142,6 +242,9 @@ Permanent invariants:
 - `R-9`: no disk spill/event-log feature is introduced to disguise resident memory.
 - `R-10`: embedded defaults and hot path change only with equivalent-or-better measured evidence.
 - `R-11`: skipped/unavailable profilers and unstable runs remain visibly non-green.
+- Published Rust API and feature compatibility is checked against the immutable `v0.70.0`
+  baseline; an internal memory optimization cannot silently remove an auto-trait, break object
+  safety, alter a supported feature edge or make a public type unconstructible.
 
 ## Non-goals
 
@@ -164,7 +267,7 @@ Populate the implementation column and exact command as W-items land.
 
 | Item | Deliverable | Primary proof | Boundary |
 | --- | --- | --- | --- |
-| W0 | causal baseline + frozen comparison contract | repeated synchronized memory receipts | no optimization before attribution |
+| W0 | causal baseline + frozen comparison contract, including the transferred WSL2/Docker campaign | repeated synchronized memory receipts with corrected TTL coverage | no optimization before attribution; local VM results are non-promotable |
 | W1 | application/allocator memory observability | counters reconcile with live state | bounded labels; no secrets |
 | W2 | byte-accurate capacity/admission | synthetic and live object-weight corpus | no hidden capacity reduction |
 | W3 | bounded histories/queues | mutation/idempotency/audit/event churn | no silent loss |
@@ -177,11 +280,11 @@ Populate the implementation column and exact command as W-items land.
 | W10 | HC/2 per-connection efficiency | slow-client/reconnect/1k-connection soak | quotas and fairness retained |
 | W11 | durable/page-cache separation | anon/file/slab + recovery proof | durability unchanged |
 | W12 | long soak + cross-target regression | fixed-key/TTL/reset/connection matrix | same fingerprint and workload |
-| W13 | governance/docs/release decision | exact-candidate require-ship evidence | claims match receipts |
+| W13 | governance/docs/release decision + public API protection | exact-candidate require-ship and `v0.70.0` API-diff evidence | claims match receipts; private representation changes cannot break supported downstream code |
 
 ## W0. Freeze a causal memory baseline before changing code
 
-Add `docs/testing/perf-scenarios/0.70/memory-efficiency-v1.toml`, a typed report schema, and a
+Add `docs/testing/perf-scenarios/0.71/memory-efficiency-v1.toml`, a typed report schema, and a
 `hydracache-loadgen memory-efficiency` orchestration entry. Every target/case must record:
 
 - source SHA, binary SHA, build profile/features, allocator, image digest, host fingerprint,
@@ -211,6 +314,12 @@ Required baseline cases use fresh processes and the same workload contract for b
 7. listeners and HC/2 connections 1/10/100/1,000 including slow consumers;
 8. persistence off/on with anon/file separation;
 9. 60-minute and six-hour steady-state screens; 24-hour scheduled confirmation for ship.
+
+Before using these cases to authorize W2-W11 implementation, execute and archive the transferred
+WSL2/Docker campaign for fixed-keyspace, corrected TTL, reset and post-idle. A missing final TTL
+checkpoint, dirty checkout, unbound binary/image, incomplete logical-owner snapshot or absent host
+fingerprint invalidates the campaign. Its receipt must remain `ship_evidence_eligible=false`; the
+campaign closes the 0.70 investigation hand-off but does not satisfy 0.71 dedicated-host gates.
 
 At least three fresh-process repetitions are required for attribution; reference comparison uses the
 `0.67.1` five-sample same-fingerprint rule. W0 freezes baselines but sets no optimization target
@@ -340,6 +449,10 @@ Use W0/W1 retained-size evidence to select, not assume, representation changes:
 The selected design requires an ADR if it changes the canonical in-memory key representation or
 allocator. Wire keys and public serialization do not change. Hash collision behavior is adversarially
 tested; deterministic evidence records normalize ordering instead of depending on hash iteration.
+For every public type whose transitive private representation changes, freeze compile-time
+`Send`/`Sync`/`Unpin`, object-safety and construction witnesses before the rewrite. The ordinary and
+all-feature `cargo-semver-checks` comparisons against `v0.70.0` must remain clean; a smaller layout
+does not justify an accidental source-compatibility break.
 
 **Gate:** materially lower reviewed bytes-per-entry for small-value and tag-heavy matrices while
 meeting the frozen latency/CPU/error/hit-rate budgets. A statistically inconclusive variant is not
@@ -412,7 +525,7 @@ listeners and diagnostics. Produce cold, per-connection, per-mutation and steady
 If the evidence supports it, add named explicit profiles such as `embedded-minimal`,
 `server-minimal`, `server-client`, and `server-full`. Profiles expand into ordinary reviewed config;
 operators can inspect the effective configuration. Existing defaults do not silently change in
-0.70. A future default change requires its own ADR/migration notice.
+0.71. A future default change requires its own ADR/migration notice.
 
 Disabled services must allocate no listener, background task, channel, history or large dependency
 state. Feature flags must not split correctness semantics. Startup receipts record the profile and
@@ -470,7 +583,10 @@ the synchronized counter/reconciliation gate must fail.
 
 Run the frozen W0 workload on the exact candidate and independently reviewed baseline:
 
-- per-PR fast structural/unit/property tests;
+- per-PR `Memory Regression Fast` structural/unit/property tests, serialized where allocation or
+  retained-owner global state is observed. The lane covers allocation-scope isolation, exact
+  cache/tag/index cleanup, client-surface diagnostic reset, HC/2 close/session/subscription release,
+  and fail-closed final-checkpoint telemetry coverage;
 - scheduled 60-minute fixed-keyspace, TTL, reset and HC/2 connection churn;
 - six-hour multi-scenario soak for candidate iterations;
 - 24-hour same-fingerprint ship confirmation with five serialized successful samples where the
@@ -494,13 +610,22 @@ Primary gates are candidate-versus-frozen-Hydra baseline, not candidate-versus-R
 
 Statistical method, warm-up exclusion, confidence interval, slope window and recovery ratio are
 versioned in the scenario contract. No hand-selected interval or last-sample comparison.
+The fast lane detects structural regressions but cannot promote an RSS result or replace any
+duration/fingerprint requirement above.
 
 ## W13. Governance, documentation and release decision
 
-- Add `docs/testing/release-evidence/0.70.toml` with exact-candidate receipts for W0-W12 and
-  `release-evidence --release 0.70 --require-ship`.
+- Add `docs/testing/release-evidence/0.71.toml` with exact-candidate receipts for W0-W12 and
+  `release-evidence --release 0.71 --require-ship`.
 - Register profiler, allocator, long-soak, cgroup and cross-target lanes plus dynamic canaries in
   the gated/canary registries; skip-loud and quarantine-expiry rules remain unchanged.
+- Add `docs/testing/compat/v0.70.0.json` and a blocking `Public API Compatibility 0.71` lane using
+  reviewed `cargo-semver-checks 0.49.0`. It covers the complete publishable-library package set,
+  default/all/supported feature profiles, immutable baseline/candidate SHAs and machine-readable
+  distinction between a compatibility violation and an analysis/tool failure.
+- Extend downstream compile witnesses for auto-traits, object-safe trait objects, public struct
+  construction, exported feature names/edges and proc-macro output. Keep Windows/MSRV/target
+  consumers mandatory because the primary rustdoc diff is x86-64 Linux-scoped.
 - Add `docs/performance/memory-accounting.md`: metric definitions, live/active/resident/retained,
   anon/file/slab, logical ownership, measurement pitfalls and reproduction commands.
 - Add `docs/performance/memory-sizing.md`: measured per-entry/per-connection/profile guidance with
@@ -515,9 +640,10 @@ versioned in the scenario contract. No hand-selected interval or last-sample com
 **DoD:**
 
 ```powershell
-cargo run --manifest-path crates\xtask\Cargo.toml -- memory-contract-check --release 0.70
-cargo run --manifest-path crates\xtask\Cargo.toml -- release-governance-check --release 0.70
-cargo run --manifest-path crates\xtask\Cargo.toml -- release-evidence --release 0.70 --require-ship
+cargo run --manifest-path crates\xtask\Cargo.toml -- memory-contract-check --release 0.71
+cargo run --manifest-path crates\xtask\Cargo.toml -- compat-check --release 0.71
+cargo run --manifest-path crates\xtask\Cargo.toml -- release-governance-check --release 0.71
+cargo run --manifest-path crates\xtask\Cargo.toml -- release-evidence --release 0.71 --require-ship
 cargo run --manifest-path crates\xtask\Cargo.toml -- doc-check
 ```
 
@@ -529,6 +655,7 @@ cargo run --manifest-path crates\xtask\Cargo.toml -- doc-check
 | Retention | million-mutation bounded-history test; TTL/reset/tag/idempotency/audit churn plateau; cleanup backlog bound |
 | Correctness | stale-load fencing, listener gap repair, idempotent retry outcome, mandatory audit fail-closed, lock/session fencing |
 | Representation | property/differential corpus over old/new key-entry-index forms; adversarial hash/collision and ABA tests |
+| Public API | pinned `v0.70.0` SemVer diff for every publishable library under default/all/supported feature profiles; `Send`/`Sync`/`Unpin`, object-safety, construction, feature and proc-macro downstream witnesses; Windows/MSRV consumers |
 | Allocation | allocations/op, bytes copied/op, Miri/sanitizer/fuzz/cancellation, buffer-pool secret isolation |
 | Connection | 1k idle, slow consumer, reconnect storm, oversized frame, TLS on/off, exact post-close zero |
 | Persistence | anon/file split, memory-limit admission, compaction/checkpoint release, crash/disk-full/backup/restore |
@@ -552,6 +679,7 @@ cargo run --manifest-path crates\xtask\Cargo.toml -- doc-check
 | Page cache misread as leak | Wrong code path optimized | anon/file/slab/allocator separation and durable counters |
 | HC/2 adds per-client amplification | Empty daemon is small but 1k clients exhaust memory | W10 per-connection byte budgets and reconnect/slow-client soak |
 | Historical reports overclaimed | Exploratory numbers become marketing claims | scope labels preserved; only W12/W13 evidence may support sizing |
+| Private memory rewrite breaks public Rust API | A compact field removes `Send`/`Sync`, breaks object safety/struct construction or changes a feature edge while unit tests remain green | immutable `v0.70.0` API baseline, pinned `cargo-semver-checks`, explicit downstream witnesses and cross-target/MSRV consumers |
 
 ## Gates: definition of done
 
@@ -572,12 +700,15 @@ cargo run --manifest-path crates\xtask\Cargo.toml -- doc-check
 - Redis and Hazelcast are pinned controls with equivalent disclosed profiles; Hazelcast heap is
   measured by JMX or marked unavailable. Neither control defines Hydra correctness or a universal
   memory target.
-- `release-evidence --release 0.70 --require-ship`, all dynamic canaries, `doc-check`, workspace
+- Every publishable Rust library passes the pinned `v0.70.0` API comparison for default, all and
+  supported feature profiles; required auto-trait/object-safety/construction consumers pass on the
+  primary target plus the declared Windows/MSRV matrix. A tool failure is red, not unavailable-green.
+- `release-evidence --release 0.71 --require-ship`, all dynamic canaries, `doc-check`, workspace
   gates and compatibility windows are green on the exact candidate SHA.
 
 ## Final release decision
 
-Ship `0.70.0` only when memory improvements are causally tied to measured owners, every long-lived
+Ship `0.71.0` only when memory improvements are causally tied to measured owners, every long-lived
 collection and connection has an enforced budget, expiry/reset reclaim all logical state, and the
 same candidate preserves all existing correctness and performance contracts. A smaller RSS caused
 by reduced workload, disabled required semantics, missing evidence, unmeasured page cache, or a

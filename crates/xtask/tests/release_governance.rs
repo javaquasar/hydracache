@@ -105,6 +105,11 @@ fn ci_wires_fast_and_raft_corner_case_tiers_to_declared_commands() {
             "background step id operator-controller",
         ),
         (
+            "timeout-minutes: 120",
+            "timeout-minutes: 0",
+            "background step must set timeout-minutes to 120",
+        ),
+        (
             "cancel: operator-controller",
             "cancel: unsupervised-operator-controller",
             "must be explicitly canceled",
@@ -487,8 +492,8 @@ fn performance_lane_requires_protected_self_hosted_labels_and_serial_concurrency
         .any(|problem| problem.contains("exact rustc 1.94.0")));
 
     let unpinned_redis = workflow.replacen(
-        "5981179706f8391f03be91d951acafaeda91af7fac56beffb2701963103e423d",
-        "unverified-source-archive",
+        "printf '%s  redis-7.2.5.tar.gz\\n' '5981179706f8391f03be91d951acafaeda91af7fac56beffb2701963103e423d' \\",
+        "printf '%s  redis-7.2.5.tar.gz\\n' 'unverified-source-archive' \\",
         1,
     );
     let problems =
@@ -734,6 +739,25 @@ jobs:
     assert!(problems
         .iter()
         .any(|problem| problem.contains("force-fetch remote heads and annotated tags")));
+}
+
+#[test]
+fn release_governance_check_accepts_the_explicit_0_70_fast_wiring() {
+    let root = xtask::doc_check::find_repo_root().unwrap();
+    let report = xtask::release_governance::check(&root, "0.70").unwrap();
+    assert!(report.problems.is_empty(), "{:#?}", report.problems);
+
+    let workflow = std::fs::read_to_string(root.join(".github/workflows/ci.yml")).unwrap();
+    let broken = workflow.replacen(
+        "if: env.HYDRACACHE_CANDIDATE_RELEASE == '0.69'",
+        "if: always()",
+        1,
+    );
+    let problems =
+        xtask::release_governance::release_execution_wiring_problems(&broken, "0.70").unwrap();
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("must run only when candidate release is 0.69")));
 }
 
 #[test]

@@ -244,7 +244,7 @@ jobs:
         uses: dtolnay/rust-toolchain@stable
 
       - name: Download release metadata
-        uses: actions/download-artifact@v5
+        uses: actions/download-artifact@v8
         with:
           name: ${{ needs.resolve.outputs.metadata_artifact }}
           path: target/release-publish

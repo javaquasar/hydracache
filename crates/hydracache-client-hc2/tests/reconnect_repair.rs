@@ -386,6 +386,12 @@ async fn reset_reconnects_once_repairs_subscription_dedupes_and_loses_session() 
         .await
         .expect("fenced session");
     assert_eq!(session.fence().unwrap(), 7);
+    let active = client.retained_state();
+    assert_eq!(active.logical_subscriptions, 1);
+    assert_eq!(active.session_registrations, 1);
+    assert_eq!(active.live_sessions, 1);
+    assert_eq!(active.current_client.active_subscriptions, 1);
+    assert_eq!(active.current_client.active_sessions, 1);
 
     let waiting_for_repair = tokio::spawn(async move {
         let event = subscription.next().await;
@@ -437,9 +443,29 @@ async fn reset_reconnects_once_repairs_subscription_dedupes_and_loses_session() 
         .expect("generation mutex poisoned")
         .clone();
     assert_eq!(generations, vec![1, 2]);
-    subscription.close();
-    session.close();
+    let inject_cleanup_leak =
+        std::env::var("HYDRACACHE_CANARY_DEFECT").as_deref() == Ok("W5_LEAK_HC2");
+    if !inject_cleanup_leak {
+        subscription.close();
+        session.close();
+    }
+    let released = client.retained_state();
+    assert_eq!(
+        released.logical_subscriptions, 0,
+        "HC-CANARY-RED:W5: logical subscription owner survived cleanup"
+    );
+    assert_eq!(
+        released.session_registrations, 0,
+        "HC-CANARY-RED:W5: session registration owner survived cleanup"
+    );
+    assert_eq!(released.live_sessions, 0);
+    assert_eq!(released.current_client.pending_invocations, 0);
+    assert_eq!(released.current_client.pending_subscriptions, 0);
+    assert_eq!(released.current_client.active_subscriptions, 0);
+    assert_eq!(released.current_client.pending_sessions, 0);
+    assert_eq!(released.current_client.active_sessions, 0);
     client.close();
+    assert!(client.retained_state().closed);
 }
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]

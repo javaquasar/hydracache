@@ -164,9 +164,12 @@ accepting `CONFIG SET` would be wrong-but-green.
 `FLUSHDB` and `FLUSHALL` are destructive commands. In Redis, `FLUSHDB` removes
 all keys in the selected database and `FLUSHALL` removes all keys in all
 databases. HydraCache exposes only `SELECT 0` as a compatibility no-op and does
-not expose Redis multi-db or Redis-global server keyspace semantics. A wipe
-operation, if added later, must be a HydraCache-native admin API with explicit
-tenant/namespace scope, authorization, audit, and rollout gates.
+not expose Redis multi-db or Redis-global server keyspace semantics. A production wipe operation,
+if added later, must be a HydraCache-native admin API with explicit tenant/namespace scope,
+authorization, audit, and rollout gates. The native `POST /admin/diagnostics/reset` route is
+deliberately not that API: it is an off-by-default, loopback-only, `role=local` measurement aid
+that refuses active clients and verifies aggregate logical-zero owner counts. It is never exposed
+through RESP and is invalid in member/client mode.
 
 The default RESP facade returns stable `NOPERM ... is disabled by the HydraCache
 Redis facade` errors for these commands before dispatch. Tests assert that

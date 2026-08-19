@@ -4,7 +4,7 @@
 //! separate from member-to-member cluster transport so public compatibility
 //! cannot accidentally inherit private cluster route semantics.
 
-use std::collections::{BTreeMap, BTreeSet};
+use std::collections::BTreeMap;
 use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::{Arc, Mutex};
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
@@ -16,16 +16,15 @@ use axum::response::{IntoResponse, Response};
 use axum::routing::{get, post};
 use axum::{Json, Router};
 use hydracache::{
-    AdmissionRejection, CasResult, ClusterEpoch, ConditionalError, ConsistencyLevel,
-    ConsumerIsolation, FenceToken, LockOwner, LogicalDuration, LogicalTime,
+    AdmissionRejection, CasResult, ClusterEpoch, ConditionalError, ConditionalRetainedState,
+    ConsistencyLevel, ConsumerIsolation, FenceToken, LockOwner, LogicalDuration, LogicalTime,
     SingleKeyConditionalStore, TenantId, TenantMetricsSnapshot,
 };
 use hydracache_client_protocol::{
     protocol_version_supported, BatchItemStatus, CasExpectation, ClientErrorCode,
     ClientErrorEnvelope, ClientFrame, ClientRequest, ClientRequestEnvelope, ClientResponse,
     ClientResponseEnvelope, ClientWireMessage, CompareValueExpireMode, ConditionalPutCondition,
-    InvalidationEvent, LockConsistency, Namespace, StructuredKey, TtlState, VersionHandshake,
-    PROTOCOL_VERSION,
+    LockConsistency, Namespace, StructuredKey, TtlState, VersionHandshake, PROTOCOL_VERSION,
 };
 use hydracache_observability::{AuditEvent, AuditRecorder, InMemoryAuditSink, TenantStatus};
 use serde::{Deserialize, Serialize};
@@ -55,6 +54,12 @@ pub const HYDRACACHE_ADMIN_HEADER: &str = "x-hydracache-admin";
 
 /// Bounded capacity of the in-process client-surface mutation signal bus.
 pub const CLIENT_SURFACE_MUTATION_EVENT_CAPACITY: usize = 1024;
+
+/// Maximum number of successful idempotent outcomes retained by one surface.
+pub const CLIENT_SURFACE_IDEMPOTENCY_CAPACITY: usize = 4_096;
+
+/// Retention window for a successful idempotent outcome.
+pub const CLIENT_SURFACE_IDEMPOTENCY_TTL_MS: u64 = 24 * 60 * 60 * 1_000;
 
 /// Mutation kind emitted after a verified client-surface state transition.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -387,6 +392,39 @@ impl ClientLockService {
 type StoreKey = (String, String, String);
 type IdempotencyKey = (String, String);
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+struct IdempotencyRecord {
+    expires_at_ms: u64,
+}
+
+/// Aggregate, secret-free retained-state snapshot for diagnostic memory runs.
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize)]
+pub struct ClientSurfaceRetainedState {
+    /// Live cache entries retained by the external dispatch surface.
+    pub store_entries: usize,
+    /// Value bytes retained by live cache entries.
+    pub value_bytes: usize,
+    /// Conservative tenant/namespace/key bytes retained by store keys.
+    pub store_identity_bytes: usize,
+    /// Successful idempotency outcomes retained for replay.
+    pub idempotency_outcomes: usize,
+    /// Conservative tenant/idempotency identity bytes.
+    pub idempotency_identity_bytes: usize,
+    /// Audit records retained by the bounded in-memory adapter.
+    pub audit_events: usize,
+    /// Conditional value, tombstone, lock and session owners.
+    pub conditional: ConditionalRetainedState,
+}
+
+/// Before/after owner counts from an explicit diagnostic reset.
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize)]
+pub struct ClientSurfaceDiagnosticReset {
+    /// Owner counts immediately before cleanup.
+    pub before: ClientSurfaceRetainedState,
+    /// Owner counts after synchronous cleanup.
+    pub after: ClientSurfaceRetainedState,
+}
+
 #[derive(Debug, Clone, PartialEq, Eq)]
 struct StoredValue {
     value: Vec<u8>,
@@ -456,8 +494,7 @@ pub struct ClientSurfaceState {
     store: Mutex<BTreeMap<StoreKey, StoredValue>>,
     cache_now_ms_for_tests: Mutex<Option<u64>>,
     cache_time_floor_ms: AtomicU64,
-    events: Mutex<Vec<InvalidationEvent>>,
-    idempotency_keys: Mutex<BTreeSet<IdempotencyKey>>,
+    idempotency_keys: Mutex<BTreeMap<IdempotencyKey, IdempotencyRecord>>,
     lock_service: Mutex<ClientLockService>,
     audit_sink: Arc<InMemoryAuditSink>,
     audit: Mutex<AuditRecorder<Arc<InMemoryAuditSink>>>,
@@ -482,8 +519,7 @@ impl ClientSurfaceState {
             store: Mutex::new(BTreeMap::new()),
             cache_now_ms_for_tests: Mutex::new(None),
             cache_time_floor_ms: AtomicU64::new(0),
-            events: Mutex::new(Vec::new()),
-            idempotency_keys: Mutex::new(BTreeSet::new()),
+            idempotency_keys: Mutex::new(BTreeMap::new()),
             lock_service: Mutex::new(ClientLockService::new()),
             audit: Mutex::new(AuditRecorder::new(Arc::clone(&audit_sink))),
             audit_sink,
@@ -511,8 +547,7 @@ impl ClientSurfaceState {
             store: Mutex::new(BTreeMap::new()),
             cache_now_ms_for_tests: Mutex::new(None),
             cache_time_floor_ms: AtomicU64::new(0),
-            events: Mutex::new(Vec::new()),
-            idempotency_keys: Mutex::new(BTreeSet::new()),
+            idempotency_keys: Mutex::new(BTreeMap::new()),
             lock_service: Mutex::new(ClientLockService::new()),
             audit: Mutex::new(AuditRecorder::new(Arc::clone(&audit_sink))),
             audit_sink,
@@ -606,6 +641,65 @@ impl ClientSurfaceState {
         self.audit_sink.events()
     }
 
+    /// Return aggregate owner counts for a quiescent diagnostic checkpoint.
+    ///
+    /// The snapshot never includes tenant ids, keys, request ids, values, or
+    /// metric labels. Concurrent mutations may make independently locked
+    /// fields momentarily non-atomic, so release evidence must quiesce clients
+    /// before calling this method.
+    pub fn retained_state_for_diagnostics(&self) -> ClientSurfaceRetainedState {
+        let idempotency = self.idempotency_keys.lock().expect("idempotency mutex");
+        let store = self.store.lock().expect("store mutex");
+        let lock_service = self.lock_service.lock().expect("lock service mutex");
+        self.retained_state_locked(&idempotency, &store, &lock_service)
+    }
+
+    /// Clear cache, idempotency, conditional, lock, and session owners for an
+    /// explicitly enabled, quiescent diagnostic run.
+    ///
+    /// Mandatory audit history and aggregate counters are deliberately not
+    /// erased. Tenant-isolated production state rejects this operation because
+    /// clearing entries without resetting its quota ledger would be unsafe.
+    pub fn reset_retained_state_for_diagnostics(
+        &self,
+    ) -> Result<ClientSurfaceDiagnosticReset, ClientSurfaceError> {
+        if self.isolation.is_some() {
+            return Err(ClientSurfaceError::DiagnosticResetUnavailable);
+        }
+        let mut idempotency = self.idempotency_keys.lock().expect("idempotency mutex");
+        let mut store = self.store.lock().expect("store mutex");
+        let mut lock_service = self.lock_service.lock().expect("lock service mutex");
+        let before = self.retained_state_locked(&idempotency, &store, &lock_service);
+        idempotency.clear();
+        store.clear();
+        lock_service.store.clear_for_diagnostic_reset();
+        let after = self.retained_state_locked(&idempotency, &store, &lock_service);
+        Ok(ClientSurfaceDiagnosticReset { before, after })
+    }
+
+    fn retained_state_locked(
+        &self,
+        idempotency: &BTreeMap<IdempotencyKey, IdempotencyRecord>,
+        store: &BTreeMap<StoreKey, StoredValue>,
+        lock_service: &ClientLockService,
+    ) -> ClientSurfaceRetainedState {
+        ClientSurfaceRetainedState {
+            store_entries: store.len(),
+            value_bytes: store.values().map(|entry| entry.value.len()).sum(),
+            store_identity_bytes: store
+                .keys()
+                .map(|(tenant, namespace, key)| tenant.len() + namespace.len() + key.len())
+                .sum(),
+            idempotency_outcomes: idempotency.len(),
+            idempotency_identity_bytes: idempotency
+                .keys()
+                .map(|(tenant, key)| tenant.len() + key.len())
+                .sum(),
+            audit_events: self.audit_sink.len(),
+            conditional: lock_service.store.retained_state(),
+        }
+    }
+
     /// Return a tenant-scoped consumer status.
     pub fn tenant_status(
         &self,
@@ -686,7 +780,7 @@ impl ClientSurfaceState {
                 .as_ref()
                 .is_ok_and(|tenant| tenant.as_str() == identity.tenant());
             if !authorized {
-                self.record_audit(AuditEvent::AuthFailure {
+                let _ = self.record_audit(AuditEvent::AuthFailure {
                     tenant: Some(identity.tenant().to_owned()),
                     route: route.to_owned(),
                     request_id: request_id.map(ToOwned::to_owned),
@@ -1263,7 +1357,7 @@ impl ClientSurfaceState {
         key: StructuredKey,
     ) -> ClientResponseEnvelope {
         if !identity.is_admin() {
-            self.record_audit(AuditEvent::AuthFailure {
+            let _ = self.record_audit(AuditEvent::AuthFailure {
                 tenant: Some(identity.tenant().to_owned()),
                 route: CLIENT_DATA_PATH.to_owned(),
                 request_id: Some(request_id.clone()),
@@ -1277,11 +1371,13 @@ impl ClientSurfaceState {
                 ),
             );
         }
-        self.record_audit(AuditEvent::PolicyChanged {
+        if let Err(error) = self.record_audit(AuditEvent::PolicyChanged {
             namespace: ns.as_str().to_owned(),
             policy_epoch: ClusterEpoch::new(1),
             summary: "force_unlock".to_owned(),
-        });
+        }) {
+            return ClientResponseEnvelope::error(request_id, error);
+        }
         let lock_key = lock_key(identity, &ns, &key);
         let result = self
             .lock_service
@@ -1496,8 +1592,19 @@ impl ClientSurfaceState {
         lock_response(request_id, result)
     }
 
-    fn record_audit(&self, event: AuditEvent) {
-        let _ = self.audit.lock().expect("audit mutex").record(&event);
+    fn record_audit(&self, event: AuditEvent) -> Result<(), ClientErrorEnvelope> {
+        self.audit
+            .lock()
+            .expect("audit mutex")
+            .record(&event)
+            .map(|_| ())
+            .map_err(|error| {
+                ClientErrorEnvelope::new(
+                    ClientErrorCode::BackendUnavailable,
+                    false,
+                    format!("mandatory audit unavailable: {error}"),
+                )
+            })
     }
 
     fn record_rejection_audit(
@@ -1513,14 +1620,14 @@ impl ClientSurfaceState {
         };
         match error.code {
             ClientErrorCode::TenantQuota | ClientErrorCode::RateLimited => {
-                self.record_audit(AuditEvent::QuotaRejected {
+                let _ = self.record_audit(AuditEvent::QuotaRejected {
                     tenant: identity.tenant().to_owned(),
                     namespace: namespace.to_owned(),
                     request_id: Some(request_id.to_owned()),
                 });
             }
             ClientErrorCode::Unauthorized if audit_auth_failure => {
-                self.record_audit(AuditEvent::AuthFailure {
+                let _ = self.record_audit(AuditEvent::AuthFailure {
                     tenant: Some(identity.tenant().to_owned()),
                     route: CLIENT_DATA_PATH.to_owned(),
                     request_id: Some(request_id.to_owned()),
@@ -1545,21 +1652,39 @@ impl ClientSurfaceState {
                 ClientErrorEnvelope::new(ClientErrorCode::TooLarge, false, "value too large"),
             );
         }
+        let now_ms = self.now_ms();
         let scoped_idempotency_key =
             idempotency_key.map(|idempotency_key| (identity.tenant().to_owned(), idempotency_key));
         let mut idempotency_keys = scoped_idempotency_key
             .as_ref()
             .map(|_| self.idempotency_keys.lock().expect("idempotency mutex"));
         if let (Some(idempotency_key), Some(keys)) =
-            (scoped_idempotency_key.as_ref(), idempotency_keys.as_ref())
+            (scoped_idempotency_key.as_ref(), idempotency_keys.as_mut())
         {
-            if keys.contains(idempotency_key) {
+            keys.retain(|_, record| record.expires_at_ms > now_ms);
+            if keys.contains_key(idempotency_key) {
                 return ClientResponseEnvelope::ok(request_id, ClientResponse::Stored);
+            }
+            if keys.len() >= CLIENT_SURFACE_IDEMPOTENCY_CAPACITY {
+                let retry_after_ms = keys
+                    .values()
+                    .map(|record| record.expires_at_ms.saturating_sub(now_ms).max(1))
+                    .min()
+                    .unwrap_or(1);
+                return ClientResponseEnvelope::error(
+                    request_id,
+                    ClientErrorEnvelope::new(
+                        ClientErrorCode::RateLimited,
+                        true,
+                        "idempotency outcome capacity exhausted",
+                    )
+                    .with_retry_after_ms(retry_after_ms),
+                );
             }
         }
         let value_bytes = value.len() as u64;
         let stored = match ttl_ms {
-            Some(ttl_ms) => StoredValue::with_ttl(value, self.now_ms(), ttl_ms),
+            Some(ttl_ms) => StoredValue::with_ttl(value, now_ms, ttl_ms),
             None => StoredValue::persistent(value),
         };
         let map_key = store_key(identity, &ns, &key);
@@ -1592,7 +1717,12 @@ impl ClientSurfaceState {
         if let (Some(idempotency_key), Some(keys)) =
             (scoped_idempotency_key, idempotency_keys.as_mut())
         {
-            keys.insert(idempotency_key);
+            keys.insert(
+                idempotency_key,
+                IdempotencyRecord {
+                    expires_at_ms: now_ms.saturating_add(CLIENT_SURFACE_IDEMPOTENCY_TTL_MS),
+                },
+            );
         }
         drop(idempotency_keys);
         self.state_mutations.fetch_add(1, Ordering::SeqCst);
@@ -1951,17 +2081,7 @@ impl ClientSurfaceState {
         key: StructuredKey,
         kind: ClientSurfaceMutationKind,
     ) {
-        let message_id = self.next_message_id.fetch_add(1, Ordering::SeqCst);
-        self.events
-            .lock()
-            .expect("events mutex")
-            .push(InvalidationEvent::new(
-                ns.clone(),
-                key.clone(),
-                1,
-                message_id,
-            ));
-        self.publish_mutation(identity, ns, Some(key), kind, message_id);
+        self.record_mutation(identity, ns, Some(key), kind);
     }
 
     fn record_mutation(
@@ -2533,6 +2653,9 @@ pub enum ClientSurfaceError {
     /// Surface is draining.
     #[error("client surface is draining")]
     Draining,
+    /// Diagnostic reset cannot safely clear tenant-isolated quota state.
+    #[error("diagnostic reset is unavailable for tenant-isolated state")]
+    DiagnosticResetUnavailable,
     /// Invalid zero limit.
     #[error("client surface limit {0} must be greater than zero")]
     InvalidLimit(&'static str),
@@ -2552,9 +2675,263 @@ impl IntoResponse for ClientSurfaceError {
             Self::FrameTooLarge { .. } => StatusCode::PAYLOAD_TOO_LARGE,
             Self::TooManyStreams => StatusCode::TOO_MANY_REQUESTS,
             Self::Draining => StatusCode::SERVICE_UNAVAILABLE,
+            Self::DiagnosticResetUnavailable => StatusCode::CONFLICT,
             Self::InvalidLimit(_) => StatusCode::INTERNAL_SERVER_ERROR,
             Self::Protocol(_) | Self::MalformedFrame(_) => StatusCode::BAD_REQUEST,
         };
         (status, Json(ClientSurfaceReply::rejected(self.to_string()))).into_response()
+    }
+}
+
+#[cfg(test)]
+mod retention_tests {
+    use super::*;
+
+    fn put(
+        state: &ClientSurfaceState,
+        identity: &ClientIdentity,
+        request_id: String,
+        idempotency_key: Option<String>,
+    ) -> ClientResponseEnvelope {
+        put_for_key(
+            state,
+            identity,
+            request_id,
+            "shared-key".to_owned(),
+            idempotency_key,
+        )
+    }
+
+    fn put_for_key(
+        state: &ClientSurfaceState,
+        identity: &ClientIdentity,
+        request_id: String,
+        key: String,
+        idempotency_key: Option<String>,
+    ) -> ClientResponseEnvelope {
+        let mut request = ClientRequestEnvelope::new(
+            request_id,
+            ClientRequest::Put {
+                ns: Namespace::new("retention").unwrap(),
+                key: StructuredKey::new(vec![key]).unwrap(),
+                value: b"value".to_vec(),
+                ttl_ms: None,
+                dimensions: Vec::new(),
+            },
+        );
+        request.idempotency_key = idempotency_key;
+        state.dispatch_verified_request(identity, request)
+    }
+
+    #[test]
+    fn mutations_without_subscribers_do_not_retain_or_number_events() {
+        let state = ClientSurfaceState::new(ClientSurfaceLimits::default()).unwrap();
+        let identity = ClientIdentity::new("client", "tenant").unwrap();
+
+        assert!(put(&state, &identity, "put".to_owned(), None)
+            .result
+            .is_ok());
+
+        assert_eq!(state.next_message_id.load(Ordering::SeqCst), 1);
+    }
+
+    #[test]
+    fn idempotency_outcomes_are_bounded_fail_loud_and_expire() {
+        let state = ClientSurfaceState::new(ClientSurfaceLimits::default()).unwrap();
+        let identity = ClientIdentity::new("client", "tenant").unwrap();
+        state.set_cache_time_for_tests(Some(1_000));
+
+        for index in 0..CLIENT_SURFACE_IDEMPOTENCY_CAPACITY {
+            let response = put(
+                &state,
+                &identity,
+                format!("put-{index}"),
+                Some(format!("idempotency-{index}")),
+            );
+            assert!(response.result.is_ok());
+        }
+        assert_eq!(
+            state
+                .idempotency_keys
+                .lock()
+                .expect("idempotency mutex")
+                .len(),
+            CLIENT_SURFACE_IDEMPOTENCY_CAPACITY
+        );
+
+        let saturated = put(
+            &state,
+            &identity,
+            "saturated".to_owned(),
+            Some("idempotency-overflow".to_owned()),
+        );
+        let error = saturated.result.unwrap_err();
+        assert_eq!(error.code, ClientErrorCode::RateLimited);
+        assert!(error.retryable);
+        assert!(error.retry_after_ms.is_some());
+        assert_eq!(
+            state.state_mutations(),
+            CLIENT_SURFACE_IDEMPOTENCY_CAPACITY as u64
+        );
+
+        state.advance_cache_time_for_tests(CLIENT_SURFACE_IDEMPOTENCY_TTL_MS + 1);
+        let after_expiry = put(
+            &state,
+            &identity,
+            "after-expiry".to_owned(),
+            Some("idempotency-after-expiry".to_owned()),
+        );
+        assert!(after_expiry.result.is_ok());
+        assert_eq!(
+            state
+                .idempotency_keys
+                .lock()
+                .expect("idempotency mutex")
+                .len(),
+            1
+        );
+    }
+
+    #[test]
+    fn audit_pressure_is_bounded_and_blocks_mandatory_admin_mutation() {
+        let state = ClientSurfaceState::new(ClientSurfaceLimits::default()).unwrap();
+        for index in 0..hydracache_observability::IN_MEMORY_AUDIT_CAPACITY {
+            state
+                .record_audit(AuditEvent::AuthFailure {
+                    tenant: Some("tenant".to_owned()),
+                    route: CLIENT_DATA_PATH.to_owned(),
+                    request_id: Some(format!("request-{index}")),
+                })
+                .unwrap();
+        }
+        assert_eq!(
+            state.audit_events_for_tests().len(),
+            hydracache_observability::IN_MEMORY_AUDIT_CAPACITY
+        );
+
+        let mut admin = ClientIdentity::new("admin", "tenant").unwrap();
+        admin.admin = true;
+        let response = state.handle_force_unlock(
+            &admin,
+            "force-unlock".to_owned(),
+            Namespace::new("retention").unwrap(),
+            StructuredKey::new(vec!["key".to_owned()]).unwrap(),
+        );
+
+        let error = response.result.unwrap_err();
+        assert_eq!(error.code, ClientErrorCode::BackendUnavailable);
+        assert!(!error.retryable);
+        assert_eq!(
+            state
+                .lock_service
+                .lock()
+                .expect("lock service mutex")
+                .applied_commands,
+            0
+        );
+        assert_eq!(
+            state.audit_events_for_tests().len(),
+            hydracache_observability::IN_MEMORY_AUDIT_CAPACITY
+        );
+    }
+
+    #[test]
+    fn diagnostic_reset_reports_and_clears_every_mutable_data_owner() {
+        let state = ClientSurfaceState::new(ClientSurfaceLimits::default()).unwrap();
+        let identity = ClientIdentity::new("client", "tenant").unwrap();
+        assert!(put(
+            &state,
+            &identity,
+            "put".to_owned(),
+            Some("idempotency".to_owned()),
+        )
+        .result
+        .is_ok());
+        {
+            let mut locks = state.lock_service.lock().expect("lock service mutex");
+            let owner = LockOwner::new("session", 1);
+            locks
+                .store
+                .try_acquire_lock(
+                    "lock",
+                    ConsistencyLevel::Quorum,
+                    owner,
+                    LogicalDuration::from_millis(100),
+                    LogicalTime::from_millis(0),
+                )
+                .unwrap()
+                .expect("lock acquired");
+        }
+        state
+            .record_audit(AuditEvent::AuthFailure {
+                tenant: Some("tenant".to_owned()),
+                route: CLIENT_DATA_PATH.to_owned(),
+                request_id: Some("audit".to_owned()),
+            })
+            .unwrap();
+
+        let reset = state.reset_retained_state_for_diagnostics().unwrap();
+
+        assert_eq!(reset.before.store_entries, 1);
+        assert_eq!(reset.before.idempotency_outcomes, 1);
+        assert_eq!(reset.before.conditional.locks, 1);
+        assert_eq!(reset.before.conditional.session_heartbeats, 1);
+        assert_eq!(reset.before.audit_events, 1);
+        assert_eq!(reset.after.store_entries, 0);
+        assert_eq!(reset.after.value_bytes, 0);
+        assert_eq!(reset.after.store_identity_bytes, 0);
+        assert_eq!(reset.after.idempotency_outcomes, 0);
+        assert_eq!(reset.after.idempotency_identity_bytes, 0);
+        assert_eq!(reset.after.conditional, ConditionalRetainedState::default());
+        assert_eq!(reset.after.audit_events, 1);
+        assert_eq!(state.retained_state_for_diagnostics(), reset.after);
+    }
+
+    #[test]
+    #[ignore = "0.70 million-mutation retention soak: exercised by scheduled/release evidence"]
+    fn retention_soak_million_fixed_keyspace_mutations_plateau_and_reset() {
+        let state = ClientSurfaceState::new(ClientSurfaceLimits::default()).unwrap();
+        let identity = ClientIdentity::new("client", "tenant").unwrap();
+        let inject_append_only =
+            std::env::var("HYDRACACHE_CANARY_DEFECT").as_deref() == Ok("W3_APPEND_ONLY");
+        let mutations = if inject_append_only {
+            10_000
+        } else {
+            1_000_000
+        };
+        let keyspace = if inject_append_only { mutations } else { 64 };
+
+        for index in 0..mutations {
+            let response = put_for_key(
+                &state,
+                &identity,
+                format!("soak-{index}"),
+                format!("key-{}", index % keyspace),
+                None,
+            );
+            assert!(response.result.is_ok());
+            if index > 0 && index % 100_000 == 0 {
+                let retained = state.retained_state_for_diagnostics();
+                assert!(retained.store_entries <= 64);
+                assert_eq!(state.next_message_id.load(Ordering::SeqCst), 1);
+            }
+        }
+
+        let plateau = state.retained_state_for_diagnostics();
+        assert!(
+            plateau.store_entries <= 64,
+            "HC-CANARY-RED:W3: fixed-cardinality mutations retained {} store owners",
+            plateau.store_entries
+        );
+        assert_eq!(plateau.idempotency_outcomes, 0);
+        assert_eq!(plateau.audit_events, 0);
+        assert_eq!(state.next_message_id.load(Ordering::SeqCst), 1);
+
+        let reset = state.reset_retained_state_for_diagnostics().unwrap();
+        assert_eq!(reset.after.store_entries, 0);
+        assert_eq!(reset.after.value_bytes, 0);
+        assert_eq!(reset.after.store_identity_bytes, 0);
+        assert_eq!(reset.after.idempotency_outcomes, 0);
+        assert_eq!(reset.after.conditional, ConditionalRetainedState::default());
     }
 }

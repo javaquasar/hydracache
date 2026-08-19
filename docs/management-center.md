@@ -15,6 +15,15 @@ write endpoints:
 - `POST /admin/backup` (request acceptance only; it does not create a durable
   backup artifact or restore point)
 
+The separate `POST /admin/diagnostics/reset` route is not an operator data API. It is disabled by
+default and configuration accepts `HYDRACACHE_DIAGNOSTIC_RESET_ENABLED=true` only for `role=local`
+with a loopback admin listener. The route refuses active HC/2 connections, pending invocations,
+subscriptions and sessions; after reset it returns aggregate before/after owner counts and fails
+unless embedded and shared client data owners are logically zero. It preserves audit history and
+monotonic fencing/version counters. This endpoint exists only to synchronize non-ship local memory
+measurements and must never be enabled in member/client deployments or exposed on a network
+interface.
+
 ## Trust Boundary
 
 The admin listener defaults to `127.0.0.1:9091` and is intended for local

@@ -521,6 +521,21 @@ impl ServerRuntime {
             .or_else(|| self.client_dispatch_state.as_ref().map(Arc::clone))
     }
 
+    /// Return whether the local-only destructive diagnostic reset is enabled.
+    pub fn diagnostic_reset_enabled(&self) -> bool {
+        self.config.admin_api.diagnostic_reset_enabled
+    }
+
+    /// Clone the owners cleared by the internal diagnostic reset route.
+    pub fn diagnostic_reset_targets(
+        &self,
+    ) -> (
+        HydraCache,
+        Option<Arc<hydracache_client_transport_axum::ClientSurfaceState>>,
+    ) {
+        (self.cache.clone(), self.client_dispatch_state())
+    }
+
     /// Stop accepting new work and enter the draining state.
     pub fn begin_drain(&mut self) {
         self.begin_local_drain();

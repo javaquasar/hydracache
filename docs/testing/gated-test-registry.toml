@@ -7016,3 +7016,67 @@ platform = "any"
 
 [gate.command.env]
 HYDRACACHE_RUN_HC2_RELEASE_068 = "1"
+
+[[gate]]
+id = "tool.hydracache.retention-soak-070"
+kind = "external_tool"
+source = "crates/hydracache/src/cache.rs"
+package = "hydracache"
+target = "hydracache"
+test = "retention_soak_100_cleanup_cycles_return_all_owners_to_zero"
+cfg = ""
+env = ""
+reason = "The 100-cycle put/remove, TTL and flush audit is intentionally kept out of the ordinary PR latency budget"
+tier = "nightly"
+required_features = []
+required_env = []
+required_tools = ["cargo"]
+timeout_seconds = 900
+owner_release = "0.70.0"
+ship_mandatory = true
+artifacts = []
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "retention-soak-070"
+step = "Run 100-cycle core retention soak"
+
+[gate.command]
+program = "cargo"
+args = ["test", "-p", "hydracache", "--lib", "cache::tests::retention_soak_100_cleanup_cycles_return_all_owners_to_zero", "--locked", "--", "--ignored", "--exact", "--test-threads=1"]
+cwd = "."
+platform = "any"
+
+[gate.command.env]
+
+[[gate]]
+id = "tool.hydracache-client-transport-axum.retention-soak-070"
+kind = "external_tool"
+source = "crates/hydracache-client-transport-axum/src/lib.rs"
+package = "hydracache-client-transport-axum"
+target = "hydracache_client_transport_axum"
+test = "retention_soak_million_fixed_keyspace_mutations_plateau_and_reset"
+cfg = ""
+env = ""
+reason = "The million-mutation fixed-keyspace plateau proof is intentionally scheduled outside the ordinary PR latency budget"
+tier = "nightly"
+required_features = []
+required_env = []
+required_tools = ["cargo"]
+timeout_seconds = 1800
+owner_release = "0.70.0"
+ship_mandatory = true
+artifacts = []
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "retention-soak-070"
+step = "Run million-mutation client-surface retention soak"
+
+[gate.command]
+program = "cargo"
+args = ["test", "-p", "hydracache-client-transport-axum", "--lib", "retention_tests::retention_soak_million_fixed_keyspace_mutations_plateau_and_reset", "--locked", "--", "--ignored", "--exact", "--test-threads=1"]
+cwd = "."
+platform = "any"
+
+[gate.command.env]

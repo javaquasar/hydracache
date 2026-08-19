@@ -41,6 +41,8 @@ pub struct CacheStats {
     pub load_breaker_recovered_total: u64,
     /// Loader calls rejected before invoking the loader because a breaker was open.
     pub load_breaker_rejected_total: u64,
+    /// Failed loads left untracked because the per-key breaker registry was full of open entries.
+    pub load_breaker_saturated_total: u64,
     /// Entries removed by invalidation APIs.
     pub invalidations: u64,
     /// Entries observed as evicted by the backend.
@@ -146,6 +148,7 @@ impl CacheStats {
             || self.load_breaker_half_open_total > 0
             || self.load_breaker_recovered_total > 0
             || self.load_breaker_rejected_total > 0
+            || self.load_breaker_saturated_total > 0
     }
 
     /// Return whether at least one encoded value was rejected before insertion.

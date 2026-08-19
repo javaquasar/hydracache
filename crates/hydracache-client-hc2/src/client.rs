@@ -20,8 +20,9 @@ use crate::wire::{
 };
 use crate::{
     BatchItemResult, BatchOperation, CacheEvent, CacheValue, Capability, ClientConfig, ClientError,
-    ClientMetricsSnapshot, ErrorCode, LockAcquireResult, LockOwnership, MutationResult,
-    NodeEndpoint, RequestOptions, RetryAdvice, SubscriptionEvent, TopologySnapshot, TransportKind,
+    ClientMetricsSnapshot, ClientRetainedStateSnapshot, ErrorCode, LockAcquireResult,
+    LockOwnership, MutationResult, NodeEndpoint, RequestOptions, RetryAdvice, SubscriptionEvent,
+    TopologySnapshot, TransportKind,
 };
 
 struct Metrics {
@@ -694,6 +695,11 @@ impl Hc2Client {
         self.handle.runtime.metrics()
     }
 
+    /// Pull a privacy-safe snapshot of allocation-owning maps, queues and permits.
+    pub fn retained_state(&self) -> ClientRetainedStateSnapshot {
+        self.handle.runtime.retained_state()
+    }
+
     /// Idempotently stop I/O and fail every retained owner.
     pub fn close(&self) {
         self.handle
@@ -770,6 +776,19 @@ pub struct Subscription {
     closed: bool,
 }
 
+pub(crate) struct SubscriptionControl {
+    runtime: Weak<Runtime>,
+    id: u64,
+}
+
+impl SubscriptionControl {
+    pub(crate) fn close(&self) {
+        if let Some(runtime) = self.runtime.upgrade() {
+            runtime.close_subscription(self.id);
+        }
+    }
+}
+
 impl Subscription {
     pub const fn id(&self) -> u64 {
         self.id
@@ -779,6 +798,12 @@ impl Subscription {
     }
     pub async fn next(&mut self) -> Option<SubscriptionEvent> {
         self.events.recv().await
+    }
+    pub(crate) fn control(&self) -> SubscriptionControl {
+        SubscriptionControl {
+            runtime: self.runtime.clone(),
+            id: self.id,
+        }
     }
     pub fn close(mut self) {
         self.close_inner();
@@ -1396,6 +1421,48 @@ impl Runtime {
             active_sessions: self.sessions.lock().expect("session mutex poisoned").len(),
         }
     }
+
+    fn retained_state(&self) -> ClientRetainedStateSnapshot {
+        ClientRetainedStateSnapshot {
+            handshake_pending: self
+                .handshake
+                .lock()
+                .expect("handshake mutex poisoned")
+                .is_some(),
+            pending_invocations: self
+                .invocations
+                .lock()
+                .expect("invocation mutex poisoned")
+                .len(),
+            pending_subscriptions: self
+                .pending_subscriptions
+                .lock()
+                .expect("pending subscription mutex poisoned")
+                .len(),
+            active_subscriptions: self
+                .subscriptions
+                .lock()
+                .expect("subscription mutex poisoned")
+                .len(),
+            pending_sessions: self
+                .pending_sessions
+                .lock()
+                .expect("pending session mutex poisoned")
+                .len(),
+            active_sessions: self.sessions.lock().expect("session mutex poisoned").len(),
+            topology_nodes: self
+                .topology
+                .read()
+                .expect("topology lock poisoned")
+                .nodes
+                .len(),
+            outbound_buffered_items: self.outbound.max_capacity() - self.outbound.capacity(),
+            available_invocation_permits: self.invocation_permits.available_permits(),
+            available_subscription_permits: self.subscription_permits.available_permits(),
+            available_session_permits: self.session_permits.available_permits(),
+            closed: self.closed.load(Ordering::Acquire),
+        }
+    }
 }
 
 fn invocation(meta: RequestMeta) -> InvocationBuilder {
@@ -1658,6 +1725,43 @@ const fn session_error(detail: &'static str) -> ClientError {
 mod tests {
     use super::*;
 
+    struct NoopControl;
+
+    impl ConnectionControl for NoopControl {
+        fn close(&self) {}
+    }
+
+    fn runtime_for_retained_state() -> (Arc<Runtime>, mpsc::Receiver<ClientEnvelope>) {
+        let mut config = ClientConfig::new("retained-state-test", "tenant-a");
+        config.limits.max_outbound_frames = 4;
+        config.limits.max_pending_invocations = 2;
+        config.limits.max_subscriptions = 2;
+        config.limits.max_sessions = 2;
+        let (outbound, receiver) = mpsc::channel(config.limits.max_outbound_frames);
+        (
+            Arc::new(Runtime {
+                invocation_permits: Arc::new(Semaphore::new(config.limits.max_pending_invocations)),
+                subscription_permits: Arc::new(Semaphore::new(config.limits.max_subscriptions)),
+                session_permits: Arc::new(Semaphore::new(config.limits.max_sessions)),
+                config,
+                outbound,
+                control: Arc::new(NoopControl),
+                closed: AtomicBool::new(false),
+                correlation: AtomicU64::new(0),
+                subscription_ids: AtomicU64::new(0),
+                handshake: Mutex::new(None),
+                invocations: Mutex::new(BTreeMap::new()),
+                pending_subscriptions: Mutex::new(BTreeMap::new()),
+                subscriptions: Mutex::new(BTreeMap::new()),
+                pending_sessions: Mutex::new(BTreeMap::new()),
+                sessions: Mutex::new(BTreeMap::new()),
+                topology: RwLock::new(TopologySnapshot::default()),
+                metrics: Metrics::new(),
+            }),
+            receiver,
+        )
+    }
+
     fn response(error: i32, retry: i32) -> InvocationResponse {
         InvocationResponse {
             meta: Some(crate::wire::ResponseMeta {
@@ -1678,5 +1782,74 @@ mod tests {
             i32::MAX,
         ))
         .is_err());
+    }
+
+    #[test]
+    fn retained_state_reports_every_map_queue_and_permit_then_close_releases_owners() {
+        let (runtime, _receiver) = runtime_for_retained_state();
+        let invocation_permit = Arc::clone(&runtime.invocation_permits)
+            .try_acquire_owned()
+            .unwrap();
+        let (invocation_reply, _) = oneshot::channel();
+        runtime.invocations.lock().unwrap().insert(
+            1,
+            PendingInvocation {
+                reply: invocation_reply,
+                permit: invocation_permit,
+            },
+        );
+
+        let subscription_permit = Arc::clone(&runtime.subscription_permits)
+            .try_acquire_owned()
+            .unwrap();
+        let (subscription_events, _) = mpsc::channel(1);
+        let (subscription_reply, _) = oneshot::channel();
+        runtime.pending_subscriptions.lock().unwrap().insert(
+            2,
+            PendingSubscription {
+                subscription_id: 9,
+                events: subscription_events,
+                reply: subscription_reply,
+                permit: subscription_permit,
+            },
+        );
+
+        let session_permit = Arc::clone(&runtime.session_permits)
+            .try_acquire_owned()
+            .unwrap();
+        let (session_reply, _) = oneshot::channel();
+        runtime.pending_sessions.lock().unwrap().insert(
+            3,
+            PendingSession {
+                ttl: Duration::from_secs(1),
+                reply: session_reply,
+                permit: session_permit,
+            },
+        );
+        runtime
+            .outbound
+            .try_send(ClientEnvelope::default())
+            .unwrap();
+
+        let retained = runtime.retained_state();
+        assert_eq!(retained.pending_invocations, 1);
+        assert_eq!(retained.pending_subscriptions, 1);
+        assert_eq!(retained.pending_sessions, 1);
+        assert_eq!(retained.outbound_buffered_items, 1);
+        assert_eq!(retained.available_invocation_permits, 1);
+        assert_eq!(retained.available_subscription_permits, 1);
+        assert_eq!(retained.available_session_permits, 1);
+
+        runtime.terminate(connection_error("retained-state test close"));
+        let closed = runtime.retained_state();
+        assert!(closed.closed);
+        assert_eq!(closed.pending_invocations, 0);
+        assert_eq!(closed.pending_subscriptions, 0);
+        assert_eq!(closed.active_subscriptions, 0);
+        assert_eq!(closed.pending_sessions, 0);
+        assert_eq!(closed.active_sessions, 0);
+        assert_eq!(closed.available_invocation_permits, 2);
+        assert_eq!(closed.available_subscription_permits, 2);
+        assert_eq!(closed.available_session_permits, 2);
     }
 }

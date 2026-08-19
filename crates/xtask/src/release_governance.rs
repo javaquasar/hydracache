@@ -641,6 +641,17 @@ fn release_066_execution_wiring_problems(workflow: &WorkflowShape) -> Vec<String
                 .to_owned(),
         );
     }
+    let operator_timeout = workflow
+        .step_timeouts
+        .get("release-066-operator-kind")
+        .and_then(|timeouts| timeouts.get("Start current operator controller"))
+        .copied();
+    if operator_timeout != Some(120) {
+        problems.push(
+            "release-066 operator controller background step must set timeout-minutes to 120"
+                .to_owned(),
+        );
+    }
     let operator_cancel = workflow
         .cancel_targets
         .get("release-066-operator-kind")
@@ -1486,6 +1497,9 @@ fn candidate_receipt_wiring_problems(
     const FAST_RECEIPT: &str = "cargo run -p xtask --locked -- evidence-run --release \"$HYDRACACHE_CANDIDATE_RELEASE\" --gate fast.workspace-nextest";
     const GOVERNANCE: &str = "cargo run -p xtask --locked -- release-governance-check --release \"$HYDRACACHE_CANDIDATE_RELEASE\"";
     const MANUAL_RECEIPT: &str = r#"cargo run -p xtask --locked -- evidence-run --release "$HYDRACACHE_CANDIDATE_RELEASE" --gate "${{ inputs.gated_gate_id }}""#;
+    const RELEASE_069_ADMISSION_STEP: &str =
+        "Require exact-candidate migration conformance evidence";
+    const RELEASE_069_ADMISSION_CONDITION: &str = "env.HYDRACACHE_CANDIDATE_RELEASE == '0.69'";
 
     let mut problems = Vec::new();
     if workflow.candidate_release_default.as_deref() != Some(DEFAULT_RELEASE) {
@@ -1506,6 +1520,16 @@ fn candidate_receipt_wiring_problems(
     if !fast_receipt {
         problems.push(format!(
             "release {requested_release} fast workspace receipt must use exact candidate binding `{FAST_RECEIPT}`"
+        ));
+    }
+    let release_069_admission_condition = workflow
+        .step_conditions
+        .get("migration-conformance-admission-069")
+        .and_then(|steps| steps.get(RELEASE_069_ADMISSION_STEP))
+        .map(String::as_str);
+    if release_069_admission_condition != Some(RELEASE_069_ADMISSION_CONDITION) {
+        problems.push(format!(
+            "release {requested_release} 0.69 ship aggregation must run only when candidate release is 0.69 via `{RELEASE_069_ADMISSION_CONDITION}`"
         ));
     }
     for (job, step, command, proof) in [
@@ -1783,6 +1807,8 @@ struct WorkflowShape {
     jobs: BTreeMap<String, BTreeSet<String>>,
     conditions: BTreeMap<String, String>,
     step_runs: BTreeMap<String, BTreeMap<String, String>>,
+    step_conditions: BTreeMap<String, BTreeMap<String, String>>,
+    step_timeouts: BTreeMap<String, BTreeMap<String, u64>>,
     background_step_ids: BTreeMap<String, BTreeSet<String>>,
     cancel_targets: BTreeMap<String, BTreeSet<String>>,
     candidate_release_default: Option<String>,
@@ -1819,6 +1845,8 @@ fn parse_workflow(text: &str) -> Result<WorkflowShape, Box<dyn Error>> {
         };
         let mut steps = BTreeSet::new();
         let mut step_runs = BTreeMap::new();
+        let mut step_conditions = BTreeMap::new();
+        let mut step_timeouts = BTreeMap::new();
         let mut background_step_ids = BTreeSet::new();
         let mut cancel_targets = BTreeSet::new();
         if let Some(sequence) =
@@ -1830,6 +1858,14 @@ fn parse_workflow(text: &str) -> Result<WorkflowShape, Box<dyn Error>> {
                     steps.insert(name.to_owned());
                     if let Some(run) = mapping_value(mapping, "run").and_then(Value::as_str) {
                         step_runs.insert(name.to_owned(), run.to_owned());
+                    }
+                    if let Some(condition) = mapping_value(mapping, "if").and_then(Value::as_str) {
+                        step_conditions.insert(name.to_owned(), condition.to_owned());
+                    }
+                    if let Some(timeout) =
+                        mapping_value(mapping, "timeout-minutes").and_then(Value::as_u64)
+                    {
+                        step_timeouts.insert(name.to_owned(), timeout);
                     }
                 }
                 if mapping_value(mapping, "background").and_then(Value::as_bool) == Some(true) {
@@ -1844,6 +1880,10 @@ fn parse_workflow(text: &str) -> Result<WorkflowShape, Box<dyn Error>> {
         }
         shape.jobs.insert(job_id.to_owned(), steps);
         shape.step_runs.insert(job_id.to_owned(), step_runs);
+        shape
+            .step_conditions
+            .insert(job_id.to_owned(), step_conditions);
+        shape.step_timeouts.insert(job_id.to_owned(), step_timeouts);
         shape
             .background_step_ids
             .insert(job_id.to_owned(), background_step_ids);

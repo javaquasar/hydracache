@@ -6,7 +6,7 @@
     {
       "ecosystem": "rust",
       "coordinate": "hydracache-client-hc2",
-      "version": "0.69.0",
+      "version": "0.70.0",
       "public_symbols": [
         "Hc2Client", "RecoveringHc2Client", "GrpcMtlsAdapter", "GrpcMtlsConfig",
         "ClientConfig", "ClientLimits", "RequestOptions", "ClientError", "ErrorCode",

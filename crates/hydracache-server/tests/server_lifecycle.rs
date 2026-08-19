@@ -1418,6 +1418,7 @@ listen_addr = "127.0.0.1:19091"
         Some("member-configured.hydracache:17000")
     );
     assert_eq!(config.node_id.as_deref(), Some("member-configured"));
+    assert!(!config.admin_api.diagnostic_reset_enabled);
     assert_eq!(config.drain_timeout().as_millis(), 1_000);
     assert_eq!(config.join_timeout().as_millis(), 2_500);
     assert_eq!(

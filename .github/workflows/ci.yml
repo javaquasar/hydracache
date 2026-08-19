@@ -25,6 +25,30 @@ on:
         required: false
         default: false
         type: boolean
+      run_memory_diagnostic:
+        description: "Run non-promotable HydraCache/Redis memory diagnostics on a GitHub-hosted VM"
+        required: false
+        default: false
+        type: boolean
+      run_retention_soak_070:
+        description: "Run the release 0.70 100-cycle and million-mutation retention proofs"
+        required: false
+        default: false
+        type: boolean
+      run_release_070_admission:
+        description: "Require exact-SHA fast, canary and retention receipts for release 0.70"
+        required: false
+        default: false
+        type: boolean
+      memory_diagnostic_duration_seconds:
+        description: "Per-case memory diagnostic observation window"
+        required: true
+        default: "180"
+        type: choice
+        options:
+          - "120"
+          - "180"
+          - "300"
       performance_0671_mode:
         description: "Explicit 0.67.1 dedicated-runner stage (qualification is never ship evidence)"
         required: true
@@ -95,6 +119,294 @@ env:
   HYDRACACHE_EVIDENCE_TESTED_SHA: ${{ github.sha }}
 
 jobs:
+  memory-regression-fast:
+    name: Memory Regression Fast
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache Rust dependencies
+        uses: Swatinem/rust-cache@v2
+        with:
+          prefix-key: v1-memory-regression-fast
+          cache-targets: true
+
+      - name: Prove behavioral memory canaries are red
+        run: |
+          cargo run -p xtask --locked -- canary-check --release 0.70
+          cargo run -p xtask --locked -- canary-sweep --release 0.70 --tier fast
+
+      - name: Run exact-candidate memory regression evidence
+        id: memory_fast
+        run: cargo run -p xtask --locked -- evidence-run --release 0.70 --gate fast.memory-regression-070
+
+      - name: Finalize memory regression lane status
+        if: always()
+        run: >-
+          cargo run -p xtask --locked -- ci-admission-status
+          --release 0.70
+          --source "$HYDRACACHE_EVIDENCE_TESTED_SHA"
+          --head "$HYDRACACHE_EVIDENCE_HEAD_SHA"
+          --base "$HYDRACACHE_EVIDENCE_BASE_SHA"
+          --require "memory-fast=${{ steps.memory_fast.outcome }}"
+          --output target/release-evidence/lanes/memory-fast-070.json
+
+      - name: Upload exact-candidate memory evidence
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: "memory-regression-fast-070-${{ github.sha }}"
+          path: |
+            target/release-evidence/canaries/*.json
+            target/release-evidence/lanes/memory-fast-070.json
+            target/release-evidence/receipts/**
+          if-no-files-found: error
+
+  memory-diagnostic-hosted:
+    name: Memory Diagnostic (GitHub Hosted)
+    if: github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && inputs.run_memory_diagnostic)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 240
+    env:
+      CARGO_BUILD_JOBS: 2
+      CARGO_INCREMENTAL: 0
+      CARGO_PROFILE_RELEASE_DEBUG: 0
+      LEAK_DURATION_SECONDS: ${{ inputs.memory_diagnostic_duration_seconds || '120' }}
+      LEAK_CYCLES: 3
+      LEAK_BATCH_REQUESTS: 10000
+      MEASUREMENT_AFFINITY: 0
+      MEMORY_DIAGNOSTIC_ENVIRONMENT: github-hosted
+      MEMORY_DIAGNOSTIC_TARGETS: hydra redis
+      REDIS_IMAGE: redis@sha256:3aaec283e6e593bde528077d60280ac1589887067a39273348860837c9346d7e
+      MEMORY_DIAGNOSTIC_OUTPUT: target/memory-diagnostic/github-hosted
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache Rust dependencies
+        uses: Swatinem/rust-cache@v2
+        with:
+          prefix-key: v1-memory-diagnostic-hosted
+          cache-targets: false
+
+      - name: Install diagnostic tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes build-essential jq netcat-openbsd redis-tools
+
+      - name: Build release daemon
+        run: cargo build --release -p hydracache-server --locked
+
+      - name: Build pinned redis-benchmark 7.2.5
+        shell: bash
+        run: |
+          set -euo pipefail
+          tools_dir="$RUNNER_TEMP/memory-diagnostic-tools"
+          mkdir --parents "$tools_dir"
+          cd "$tools_dir"
+          curl --fail --location --retry 3 \
+            --output redis-7.2.5.tar.gz \
+            https://download.redis.io/releases/redis-7.2.5.tar.gz
+          printf '%s  redis-7.2.5.tar.gz\n' \
+            '5981179706f8391f03be91d951acafaeda91af7fac56beffb2701963103e423d' \
+            | sha256sum --check --strict
+          tar --extract --gzip --file redis-7.2.5.tar.gz
+          make -C redis-7.2.5 -j1 redis-benchmark
+          test "$(redis-7.2.5/src/redis-benchmark --version)" = "redis-benchmark 7.2.5"
+          echo "REDIS_BENCHMARK=$tools_dir/redis-7.2.5/src/redis-benchmark" >> "$GITHUB_ENV"
+
+      - name: Pull pinned Redis image
+        run: |
+          docker pull "$REDIS_IMAGE"
+          docker image inspect "$REDIS_IMAGE" > target/redis-image-inspect.json
+
+      - name: Run HydraCache and Redis memory campaign
+        shell: bash
+        run: scripts/perf/run-memory-leak-stage.sh "$MEMORY_DIAGNOSTIC_OUTPUT"
+
+      - name: Publish report to job summary
+        if: always()
+        shell: bash
+        run: |
+          if [[ -f "$MEMORY_DIAGNOSTIC_OUTPUT/report.md" ]]; then
+            cat "$MEMORY_DIAGNOSTIC_OUTPUT/report.md" >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Build compact diagnostic summary and non-gating trend
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          summary_dir="target/memory-summary"
+          mkdir --parents "$summary_dir"
+          python3 scripts/perf/summarize-memory-diagnostic.py \
+            --input "$MEMORY_DIAGNOSTIC_OUTPUT" \
+            --output "$summary_dir/summary.json"
+          baseline_id="$(gh api --paginate "repos/$GITHUB_REPOSITORY/actions/artifacts?per_page=100" \
+            --jq '.artifacts[] | select(.expired == false and (.name | startswith("memory-summary-"))) | [.created_at, .id] | @tsv' \
+            | sort --reverse | head -n 1 | cut -f 2)"
+          if [[ -n "$baseline_id" ]]; then
+            baseline_dir="$RUNNER_TEMP/memory-summary-baseline"
+            mkdir --parents "$baseline_dir"
+            gh api "repos/$GITHUB_REPOSITORY/actions/artifacts/$baseline_id/zip" > "$baseline_dir/artifact.zip"
+            unzip -q "$baseline_dir/artifact.zip" -d "$baseline_dir"
+            baseline_summary="$(find "$baseline_dir" -name summary.json -type f -print -quit)"
+            python3 scripts/perf/compare-memory-summaries.py \
+              --baseline "$baseline_summary" \
+              --candidate "$summary_dir/summary.json" \
+              --output "$summary_dir/trend.json"
+          else
+            python3 scripts/perf/compare-memory-summaries.py \
+              --candidate "$summary_dir/summary.json" \
+              --output "$summary_dir/trend.json"
+          fi
+
+      - name: Upload raw memory evidence
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: memory-diagnostic-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            target/memory-diagnostic/github-hosted
+            target/redis-image-inspect.json
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Upload durable compact memory history
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: memory-summary-${{ github.run_id }}-${{ github.run_attempt }}
+          path: target/memory-summary
+          if-no-files-found: error
+          retention-days: 90
+
+  retention-soak-070:
+    name: Retention Soak 0.70
+    if: github.event_name == 'schedule' || startsWith(github.ref, 'refs/tags/v0.70.') || (github.event_name == 'workflow_dispatch' && (inputs.run_retention_soak_070 || inputs.run_release_070_admission))
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+
+    steps:
+      - name: Checkout exact tested candidate
+        uses: actions/checkout@v5
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache Rust dependencies
+        uses: Swatinem/rust-cache@v2
+        with:
+          prefix-key: v1-retention-soak-070
+          cache-targets: true
+
+      - name: Run 100-cycle core retention soak
+        id: core_soak
+        run: cargo run -p xtask --locked -- evidence-run --release 0.70 --gate tool.hydracache.retention-soak-070
+
+      - name: Run million-mutation client-surface retention soak
+        id: client_soak
+        run: cargo run -p xtask --locked -- evidence-run --release 0.70 --gate tool.hydracache-client-transport-axum.retention-soak-070
+
+      - name: Finalize retention soak lane status
+        if: always()
+        run: >-
+          cargo run -p xtask --locked -- ci-admission-status
+          --release 0.70
+          --source "$HYDRACACHE_EVIDENCE_TESTED_SHA"
+          --head "$HYDRACACHE_EVIDENCE_HEAD_SHA"
+          --base "$HYDRACACHE_EVIDENCE_BASE_SHA"
+          --require "core-soak=${{ steps.core_soak.outcome }}"
+          --require "client-soak=${{ steps.client_soak.outcome }}"
+          --output target/release-evidence/lanes/retention-soak-070.json
+
+      - name: Upload exact-candidate retention evidence
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: "retention-soak-070-${{ github.sha }}"
+          path: |
+            target/release-evidence/lanes/retention-soak-070.json
+            target/release-evidence/receipts/**
+          if-no-files-found: error
+
+  release-070-admission:
+    name: Release 0.70 Admission
+    if: always() && (startsWith(github.ref, 'refs/tags/v0.70.') || (github.event_name == 'workflow_dispatch' && inputs.run_release_070_admission))
+    needs:
+      - memory-regression-fast
+      - retention-soak-070
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout exact tested candidate
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Materialize fail-loud upstream admission status
+        run: >-
+          cargo run -p xtask --locked -- ci-admission-status
+          --release 0.70
+          --source "$HYDRACACHE_EVIDENCE_TESTED_SHA"
+          --head "$HYDRACACHE_EVIDENCE_HEAD_SHA"
+          --base "$HYDRACACHE_EVIDENCE_BASE_SHA"
+          --require "memory-fast=${{ needs.memory-regression-fast.result }}"
+          --require "retention-soak=${{ needs.retention-soak-070.result }}"
+          --output target/release-evidence/0.70.admission-upstream.json
+
+      - name: Download exact-candidate memory receipts and canaries
+        uses: actions/download-artifact@v8
+        with:
+          name: "memory-regression-fast-070-${{ github.sha }}"
+          path: target/release-evidence
+
+      - name: Download exact-candidate retention receipts
+        uses: actions/download-artifact@v8
+        with:
+          name: "retention-soak-070-${{ github.sha }}"
+          path: target/release-evidence
+
+      - name: Validate exact-candidate lane status artifacts
+        run: >-
+          cargo run -p xtask --locked -- ci-admission-status
+          --release 0.70
+          --source "$HYDRACACHE_EVIDENCE_TESTED_SHA"
+          --head "$HYDRACACHE_EVIDENCE_HEAD_SHA"
+          --base "$HYDRACACHE_EVIDENCE_BASE_SHA"
+          --lane-status "memory-fast=target/release-evidence/lanes/memory-fast-070.json"
+          --lane-status "retention-soak=target/release-evidence/lanes/retention-soak-070.json"
+          --output target/release-evidence/0.70.admission-lanes.json
+
+      - name: Require exact-candidate release 0.70 evidence
+        run: cargo run -p xtask --locked -- release-evidence --release 0.70 --receipts-dir target/release-evidence/receipts --require-ship
+
+      - name: Upload release 0.70 admission
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: "release-070-admission-${{ github.sha }}"
+          path: target/release-evidence/0.70.*
+          if-no-files-found: error
+
   docs:
     name: Docs
     runs-on: ubuntu-latest
@@ -226,6 +538,8 @@ jobs:
           cargo run -p xtask --locked -- canary-sweep --release 0.67.1 --tier fast
           cargo run -p xtask --locked -- canary-check --release 0.68
           cargo run -p xtask --locked -- canary-sweep --release 0.68 --tier fast
+          cargo run -p xtask --locked -- canary-check --release 0.70
+          cargo run -p xtask --locked -- canary-sweep --release 0.70 --tier fast
 
       - name: Fuzz corpus regression
         run: cargo run -p xtask --locked -- evidence-run --release "$HYDRACACHE_CANDIDATE_RELEASE" --gate fast.fuzz-corpus-regression
@@ -628,19 +942,19 @@ jobs:
           --output target/release-evidence/0.69.admission-lane.json
 
       - name: Download fast evidence receipts and canaries
-        uses: actions/download-artifact@v5
+        uses: actions/download-artifact@v8
         with:
           name: "migration-conformance-fast-evidence-069-${{ github.sha }}"
           path: target
 
       - name: Download Java and legacy receipts
-        uses: actions/download-artifact@v5
+        uses: actions/download-artifact@v8
         with:
           name: "migration-conformance-069-receipts-${{ github.sha }}"
           path: target
 
       - name: Download PostgreSQL receipts
-        uses: actions/download-artifact@v5
+        uses: actions/download-artifact@v8
         with:
           pattern: "migration-conformance-postgres-069-receipts-*-${{ github.sha }}"
           path: target
@@ -660,6 +974,7 @@ jobs:
           --output target/release-evidence/0.69.admission-lanes.json
 
       - name: Require exact-candidate migration conformance evidence
+        if: env.HYDRACACHE_CANDIDATE_RELEASE == '0.69'
         run: cargo run -p xtask --locked -- release-evidence --release 0.69 --receipts-dir target/release-evidence/receipts --require-ship
 
       - name: Upload migration conformance admission
@@ -1000,7 +1315,7 @@ jobs:
           version: v1.32.0
 
       - name: Install Helm
-        uses: azure/setup-helm@v4.3.1
+        uses: azure/setup-helm@v5.0.1
         with:
           version: v3.17.0
 
@@ -1076,6 +1391,7 @@ jobs:
         id: operator-controller
         shell: bash
         background: true
+        timeout-minutes: 120
         env:
           HYDRACACHE_OPERATOR_NAMESPACE: default
           HYDRACACHE_OPERATOR_IDENTITY: release-066-ci
@@ -1469,7 +1785,7 @@ jobs:
 
       - name: Download prior full-dress receipt
         if: inputs.full_dress_predecessor_run_id != ''
-        uses: actions/download-artifact@v5
+        uses: actions/download-artifact@v8
         with:
           name: performance-0671-full-dress-receipt
           path: ${{ runner.temp }}/hydracache-full-dress-predecessor
@@ -1632,7 +1948,7 @@ jobs:
           fi
 
       - name: Download two-run full-dress admission
-        uses: actions/download-artifact@v5
+        uses: actions/download-artifact@v8
         with:
           name: performance-0671-full-dress-admission
           path: ${{ runner.temp }}/hydracache-full-dress-admission
@@ -1642,7 +1958,7 @@ jobs:
 
       - name: Download immediately prior bootstrap receipt
         if: inputs.bootstrap_sample_index != '1'
-        uses: actions/download-artifact@v5
+        uses: actions/download-artifact@v8
         with:
           name: performance-0671-bootstrap-receipt
           path: ${{ runner.temp }}/hydracache-bootstrap-predecessor

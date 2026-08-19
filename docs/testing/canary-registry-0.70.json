@@ -1,0 +1,70 @@
+{
+  "version": 2,
+  "release": "0.70",
+  "entries": [
+    {
+      "w_item": "W0",
+      "guard": {"file": "crates/xtask/tests/allocation_retention_070.rs", "function": "release_070_allocation_retention_closure_is_fail_closed"},
+      "canary": {"file": "crates/xtask/tests/allocation_retention_070.rs", "function": "canary_release_070_accepts_missing_work_item_evidence"},
+      "guard_command": {"program": "cargo", "args": ["test", "-p", "xtask", "--test", "allocation_retention_070", "--locked", "release_070_allocation_retention_closure_is_fail_closed", "--", "--nocapture"], "env": {}, "cwd": ".", "platform": "any"},
+      "canary_command": {"program": "cargo", "args": ["test", "-p", "xtask", "--test", "allocation_retention_070", "--locked", "canary_release_070_accepts_missing_work_item_evidence", "--", "--nocapture"], "env": {"HYDRACACHE_CANARY_DEFECT": "W0"}, "cwd": ".", "platform": "any"},
+      "defect_id": "hydracache-0.70-W0-missing-owner-accounting", "expected_failure": "HC-CANARY-RED:W0", "timeout_seconds": 300, "tier": "fast", "artifacts": ["target/release-evidence/canaries/0.70-W0.json"], "red_evidence": "The phase-aware allocator and retained-owner snapshot contract must remain release evidence."
+    },
+    {
+      "w_item": "W1",
+      "guard": {"file": "crates/xtask/tests/allocation_retention_070.rs", "function": "release_070_allocation_retention_closure_is_fail_closed"},
+      "canary": {"file": "crates/xtask/tests/allocation_retention_070.rs", "function": "canary_release_070_accepts_missing_work_item_evidence"},
+      "guard_command": {"program": "cargo", "args": ["test", "-p", "xtask", "--test", "allocation_retention_070", "--locked", "release_070_allocation_retention_closure_is_fail_closed", "--", "--nocapture"], "env": {}, "cwd": ".", "platform": "any"},
+      "canary_command": {"program": "cargo", "args": ["test", "-p", "xtask", "--test", "allocation_retention_070", "--locked", "canary_release_070_accepts_missing_work_item_evidence", "--", "--nocapture"], "env": {"HYDRACACHE_CANARY_DEFECT": "W1"}, "cwd": ".", "platform": "any"},
+      "defect_id": "hydracache-0.70-W1-unbounded-tag-generations", "expected_failure": "HC-CANARY-RED:W1", "timeout_seconds": 300, "tier": "fast", "artifacts": ["target/release-evidence/canaries/0.70-W1.json"], "red_evidence": "Tag and key generation tombstones must retain an explicit bound and stale-load fence."
+    },
+    {
+      "w_item": "W2",
+      "guard": {"file": "crates/xtask/tests/allocation_retention_070.rs", "function": "release_070_allocation_retention_closure_is_fail_closed"},
+      "canary": {"file": "crates/xtask/tests/allocation_retention_070.rs", "function": "canary_release_070_accepts_missing_work_item_evidence"},
+      "guard_command": {"program": "cargo", "args": ["test", "-p", "xtask", "--test", "allocation_retention_070", "--locked", "release_070_allocation_retention_closure_is_fail_closed", "--", "--nocapture"], "env": {}, "cwd": ".", "platform": "any"},
+      "canary_command": {"program": "cargo", "args": ["test", "-p", "xtask", "--test", "allocation_retention_070", "--locked", "canary_release_070_accepts_missing_work_item_evidence", "--", "--nocapture"], "env": {"HYDRACACHE_CANARY_DEFECT": "W2"}, "cwd": ".", "platform": "any"},
+      "defect_id": "hydracache-0.70-W2-unbounded-breaker-records", "expected_failure": "HC-CANARY-RED:W2", "timeout_seconds": 300, "tier": "fast", "artifacts": ["target/release-evidence/canaries/0.70-W2.json"], "red_evidence": "Per-key load-breaker state must keep its reviewed capacity and inactive retention policy."
+    },
+    {
+      "w_item": "W3",
+      "guard": {"file": "crates/hydracache-client-transport-axum/src/lib.rs", "function": "mutations_without_subscribers_do_not_retain_or_number_events"},
+      "canary": {"file": "crates/hydracache-client-transport-axum/src/lib.rs", "function": "retention_soak_million_fixed_keyspace_mutations_plateau_and_reset"},
+      "guard_command": {"program": "cargo", "args": ["test", "-p", "hydracache-client-transport-axum", "--lib", "retention_tests::mutations_without_subscribers_do_not_retain_or_number_events", "--locked", "--", "--exact", "--test-threads=1"], "env": {}, "cwd": ".", "platform": "any"},
+      "canary_command": {"program": "cargo", "args": ["test", "-p", "hydracache-client-transport-axum", "--lib", "retention_tests::retention_soak_million_fixed_keyspace_mutations_plateau_and_reset", "--locked", "--", "--ignored", "--exact", "--test-threads=1"], "env": {"HYDRACACHE_CANARY_DEFECT": "W3_APPEND_ONLY"}, "cwd": ".", "platform": "any"},
+      "defect_id": "hydracache-0.70-W3-unbounded-client-surface", "expected_failure": "HC-CANARY-RED:W3", "timeout_seconds": 300, "tier": "fast", "artifacts": ["target/release-evidence/canaries/0.70-W3.json"], "red_evidence": "Client store, idempotency, audit, event and lock owners must remain bounded and diagnosable."
+    },
+    {
+      "w_item": "W4",
+      "guard": {"file": "crates/hydracache/src/cache.rs", "function": "flush_completes_store_maintenance_and_releases_tag_index_state"},
+      "canary": {"file": "crates/hydracache/src/cache.rs", "function": "retention_soak_100_cleanup_cycles_return_all_owners_to_zero"},
+      "guard_command": {"program": "cargo", "args": ["test", "-p", "hydracache", "--lib", "cache::tests::flush_completes_store_maintenance_and_releases_tag_index_state", "--locked", "--", "--exact", "--test-threads=1"], "env": {}, "cwd": ".", "platform": "any"},
+      "canary_command": {"program": "cargo", "args": ["test", "-p", "hydracache", "--lib", "cache::tests::retention_soak_100_cleanup_cycles_return_all_owners_to_zero", "--locked", "--", "--ignored", "--exact", "--test-threads=1"], "env": {"HYDRACACHE_CANARY_DEFECT": "W4_SKIP_FLUSH"}, "cwd": ".", "platform": "any"},
+      "defect_id": "hydracache-0.70-W4-store-cleanup-not-quiescent", "expected_failure": "HC-CANARY-RED:W4", "timeout_seconds": 300, "tier": "fast", "artifacts": ["target/release-evidence/canaries/0.70-W4.json"], "red_evidence": "Store invalidation and flush must await maintenance before claiming owner cleanup."
+    },
+    {
+      "w_item": "W5",
+      "guard": {"file": "crates/hydracache-client-hc2/src/client.rs", "function": "retained_state_reports_every_map_queue_and_permit_then_close_releases_owners"},
+      "canary": {"file": "crates/hydracache-client-hc2/tests/reconnect_repair.rs", "function": "reset_reconnects_once_repairs_subscription_dedupes_and_loses_session"},
+      "guard_command": {"program": "cargo", "args": ["test", "-p", "hydracache-client-hc2", "--lib", "client::tests::retained_state_reports_every_map_queue_and_permit_then_close_releases_owners", "--locked", "--", "--exact", "--test-threads=1"], "env": {}, "cwd": ".", "platform": "any"},
+      "canary_command": {"program": "cargo", "args": ["test", "-p", "hydracache-client-hc2", "--test", "reconnect_repair", "reset_reconnects_once_repairs_subscription_dedupes_and_loses_session", "--locked", "--", "--exact", "--test-threads=1"], "env": {"HYDRACACHE_CANARY_DEFECT": "W5_LEAK_HC2"}, "cwd": ".", "platform": "any"},
+      "defect_id": "hydracache-0.70-W5-hc2-owner-retention", "expected_failure": "HC-CANARY-RED:W5", "timeout_seconds": 300, "tier": "fast", "artifacts": ["target/release-evidence/canaries/0.70-W5.json"], "red_evidence": "HC/2 invocation, subscription, session, queue and permit accounting must remain observable through close and reconnect."
+    },
+    {
+      "w_item": "W6",
+      "guard": {"file": "crates/xtask/tests/allocation_retention_070.rs", "function": "release_070_allocation_retention_closure_is_fail_closed"},
+      "canary": {"file": "crates/xtask/tests/allocation_retention_070.rs", "function": "canary_release_070_accepts_missing_work_item_evidence"},
+      "guard_command": {"program": "python3", "args": ["-m", "unittest", "scripts.perf.verify_memory_telemetry_coverage_test.MemoryTelemetryCoverageTest.test_rejects_checkpoint_after_collector_expired"], "env": {}, "cwd": ".", "platform": "any"},
+      "canary_command": {"program": "python3", "args": ["-m", "unittest", "scripts.perf.verify_memory_telemetry_coverage_test.MemoryTelemetryCoverageTest.test_canary_rejects_uncovered_final_checkpoint"], "env": {"HYDRACACHE_CANARY_DEFECT": "W6_ACCEPT_UNCOVERED"}, "cwd": ".", "platform": "any"},
+      "defect_id": "hydracache-0.70-W6-diagnostic-evidence-mislabeled", "expected_failure": "HC-CANARY-RED:W6", "timeout_seconds": 300, "tier": "fast", "artifacts": ["target/release-evidence/canaries/0.70-W6.json"], "red_evidence": "Local VM diagnostics must retain explicit non-ship provenance and cannot masquerade as release evidence."
+    },
+    {
+      "w_item": "W7",
+      "guard": {"file": "crates/xtask/tests/allocation_retention_070.rs", "function": "release_070_allocation_retention_closure_is_fail_closed"},
+      "canary": {"file": "crates/xtask/tests/allocation_retention_070.rs", "function": "canary_release_070_accepts_missing_work_item_evidence"},
+      "guard_command": {"program": "cargo", "args": ["test", "-p", "xtask", "--test", "allocation_retention_070", "--locked", "release_070_allocation_retention_closure_is_fail_closed", "--", "--nocapture"], "env": {}, "cwd": ".", "platform": "any"},
+      "canary_command": {"program": "cargo", "args": ["test", "-p", "xtask", "--test", "allocation_retention_070", "--locked", "canary_release_070_accepts_missing_work_item_evidence", "--", "--nocapture"], "env": {"HYDRACACHE_CANARY_DEFECT": "W7"}, "cwd": ".", "platform": "any"},
+      "defect_id": "hydracache-0.70-W7-unwired-release-governance", "expected_failure": "HC-CANARY-RED:W7", "timeout_seconds": 300, "tier": "fast", "artifacts": ["target/release-evidence/canaries/0.70-W7.json"], "red_evidence": "The release-specific canary registry and hosted fast sweep must remain wired into ordinary CI."
+    }
+  ]
+}

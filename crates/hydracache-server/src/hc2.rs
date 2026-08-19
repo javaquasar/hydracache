@@ -1226,6 +1226,9 @@ mod tests {
             .unwrap();
         let session = client.open_session(Duration::from_secs(2)).await.unwrap();
         assert_eq!(session.fence().unwrap(), 1);
+        let active_client = client.retained_state();
+        assert_eq!(active_client.active_subscriptions, 1);
+        assert_eq!(active_client.active_sessions, 1);
         client
             .put(
                 Bytes::from_static(b"event/key"),
@@ -1253,6 +1256,29 @@ mod tests {
         client.close();
         drop(subscription);
         drop(session);
+        let closed_client = client.retained_state();
+        assert!(closed_client.closed);
+        assert_eq!(closed_client.pending_invocations, 0);
+        assert_eq!(closed_client.pending_subscriptions, 0);
+        assert_eq!(closed_client.active_subscriptions, 0);
+        assert_eq!(closed_client.pending_sessions, 0);
+        assert_eq!(closed_client.active_sessions, 0);
+        assert_eq!(
+            closed_client.available_invocation_permits,
+            ClientConfig::new("limits", "tenant-a")
+                .limits
+                .max_pending_invocations
+        );
+        assert_eq!(
+            closed_client.available_subscription_permits,
+            ClientConfig::new("limits", "tenant-a")
+                .limits
+                .max_subscriptions
+        );
+        assert_eq!(
+            closed_client.available_session_permits,
+            ClientConfig::new("limits", "tenant-a").limits.max_sessions
+        );
 
         for _ in 0..50 {
             if observed.accounting() == Hc2AccountingSnapshot::default() {
@@ -1261,6 +1287,52 @@ mod tests {
             tokio::time::sleep(Duration::from_millis(10)).await;
         }
         assert_eq!(observed.accounting(), Hc2AccountingSnapshot::default());
+
+        for cardinality in [1_usize, 10, 100] {
+            let mut clients = Vec::with_capacity(cardinality);
+            for index in 0..cardinality {
+                let client = Hc2Client::connect(
+                    &adapter(addr, &trusted, &trusted),
+                    ClientConfig::new(
+                        format!("retention-series-{cardinality}-{index}"),
+                        "tenant-a",
+                    ),
+                )
+                .await
+                .unwrap();
+                clients.push(client);
+            }
+            for _ in 0..100 {
+                if observed.accounting().active_connections == cardinality as u64 {
+                    break;
+                }
+                tokio::time::sleep(Duration::from_millis(10)).await;
+            }
+            assert_eq!(
+                observed.accounting(),
+                Hc2AccountingSnapshot {
+                    active_connections: cardinality as u64,
+                    ..Hc2AccountingSnapshot::default()
+                }
+            );
+            for client in &clients {
+                let retained = client.retained_state();
+                assert_eq!(retained.pending_invocations, 0);
+                assert_eq!(retained.pending_subscriptions, 0);
+                assert_eq!(retained.active_subscriptions, 0);
+                assert_eq!(retained.pending_sessions, 0);
+                assert_eq!(retained.active_sessions, 0);
+                client.close();
+            }
+            drop(clients);
+            for _ in 0..100 {
+                if observed.accounting() == Hc2AccountingSnapshot::default() {
+                    break;
+                }
+                tokio::time::sleep(Duration::from_millis(10)).await;
+            }
+            assert_eq!(observed.accounting(), Hc2AccountingSnapshot::default());
+        }
         shutdown_tx.send(true).unwrap();
         serving.await.unwrap().unwrap();
         std::fs::remove_dir_all(root).unwrap();
