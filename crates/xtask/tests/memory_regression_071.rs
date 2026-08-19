@@ -31,6 +31,42 @@ fn release_071_plan_records_the_hosted_handoff_and_ci_tiers() {
 }
 
 #[test]
+fn release_071_plan_records_all_mandatory_execution_controls() {
+    let plan = fs::read_to_string(
+        root().join("docs/plans/V0_71_MEMORY_FOOTPRINT_AND_RETENTION_EFFICIENCY_PLAN.md"),
+    )
+    .unwrap();
+
+    for marker in [
+        "S1. Machine-readable memory ownership registry",
+        "S2. Phase-correlated allocation-site and lifetime profiles",
+        "S3. Evidence-locked stop/go decision gates",
+        "S4. Pre-registered statistical and practical-significance contract",
+        "S5. Instrumentation overhead and snapshot-coherence budget",
+        "S6. Allocator fragmentation, arena and reuse diagnosis",
+        "S7. Dedicated-host stability and fingerprint protocol",
+        "S8. Upgrade, rollback and mixed-version memory compatibility",
+        "S9. CI reliability, deduplication and bounded execution",
+        "S10. Minimum releasable result and evidence-based deferral",
+        "Required implementation sequence and focused verification",
+        "memory-owner-inventory --release 0.71 --check",
+        "memory-ownership-check --release 0.71",
+        "memory-statistics-check --release 0.71",
+        "memory-decision-check --release 0.71",
+        "ci-topology-check --release 0.71",
+        "observed_non_atomic",
+        "measured-no-win",
+        "one designated admission",
+        "Ship is allowed with zero optional wins",
+    ] {
+        assert!(
+            plan.contains(marker),
+            "0.71 plan is missing mandatory control marker {marker:?}"
+        );
+    }
+}
+
+#[test]
 fn fast_memory_regression_job_checks_stable_owners_not_host_rss() {
     let workflow = fs::read_to_string(root().join(".github/workflows/ci.yml")).unwrap();
     let start = workflow
