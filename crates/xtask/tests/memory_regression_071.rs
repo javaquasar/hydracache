@@ -58,10 +58,54 @@ fn release_071_plan_records_all_mandatory_execution_controls() {
         "measured-no-win",
         "one designated admission",
         "Ship is allowed with zero optional wins",
+        "Baseline identities and comparison boundaries",
+        "`B0-release`",
+        "`B1-instrumented`",
+        "`C-candidate`",
+        "finite and one-factor",
+        "does **not** mean five separate 24-hour campaigns",
+        "W2a — mandatory estimator and reporting",
+        "W2b — evidence-conditional admission policy",
+        "memory-campaign-check --release 0.71 --require-ship",
+        "cargo xtask verify",
     ] {
         assert!(
             plan.contains(marker),
             "0.71 plan is missing mandatory control marker {marker:?}"
+        );
+    }
+}
+
+#[test]
+fn release_071_records_the_dedicated_reference_dependency_and_no_win_boundary() {
+    let releases = fs::read_to_string(root().join("docs/plans/releases.toml")).unwrap();
+    let release_start = releases
+        .find("version = \"0.71.0\"")
+        .expect("0.71 release entry");
+    let release = &releases[release_start..];
+    assert!(
+        release.contains("depends_on = [\"0.70.0\", \"0.67.1\"]"),
+        "0.71 must make the dedicated 0.67.1 bootstrap dependency explicit"
+    );
+    assert!(
+        release.contains("A fully evidenced no-win release may ship"),
+        "0.71 registry theme must preserve the no-win release boundary"
+    );
+
+    let index = fs::read_to_string(root().join("docs/plans/INDEX.md")).unwrap();
+    let row = index
+        .lines()
+        .find(|line| line.starts_with("| [0.71.0]"))
+        .expect("0.71 roadmap row");
+    for marker in [
+        "completed 0.67.1 dedicated-reference bootstrap",
+        "unmodified 0.70 release baseline",
+        "no-win result may ship",
+        "| 0.70.0, 0.67.1 |",
+    ] {
+        assert!(
+            row.contains(marker),
+            "0.71 roadmap row is missing {marker:?}"
         );
     }
 }

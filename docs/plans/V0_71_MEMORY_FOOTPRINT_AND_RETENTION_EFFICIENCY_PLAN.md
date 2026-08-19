@@ -18,9 +18,12 @@
 >   logical-owner zero after reset, flat idle tails, and residual Hydra RSS consistent with an
 >   allocator/runtime high-water candidate. `0.71` therefore requires causal counters, corrected
 >   TTL coverage, and allocator evidence before changing implementation or defaults.
-> - **After (depends on):** `0.70.0`; consumes its allocation-owner inventory, retained-state
->   snapshots, bounded-lifecycle fixes and deterministic local diagnostic harness, plus the
->   qualified `0.67.1` reference methodology and the `0.69` executable client matrix.
+> - **After (depends on):** `0.70.0` and completion of the `0.67.1` dedicated-reference
+>   bootstrap. Consumes the 0.70 allocation-owner inventory, retained-state snapshots,
+>   bounded-lifecycle fixes and deterministic local diagnostic harness, plus the qualified
+>   `0.67.1` reference methodology/evidence and the `0.69` executable client matrix. Source and
+>   deterministic test work may be prepared while the host is unavailable, but D0 numerical
+>   freeze, D4 qualification and ship admission require an admitted dedicated-host lease.
 > - **Unblocks:** defensible memory sizing, a bounded long-lived daemon claim, per-entry/per-client
 >   capacity guidance, and later data-structure tuning without repeating the attribution work.
 > - **Status:** planned.
@@ -106,6 +109,31 @@ shared-image drift make such a number too noisy for a PR gate. It fails on deter
 and coverage contracts first; numerical memory budgets are frozen from repeated same-fingerprint
 W0 samples and enforced only in the matching scheduled/dedicated tier.
 
+## Baseline identities and comparison boundaries
+
+The release uses three identities so new instrumentation is never retroactively attributed to the
+published 0.70 binary:
+
+| Identity | Exact contents | Permitted use | Forbidden use |
+| --- | --- | --- | --- |
+| `B0-release` | unmodified annotated `v0.70.0` commit and release build | external process/cgroup, compatibility, SLO and user-visible regression reference using only signals available without changing the binary | new W1/S5 counters, candidate-built snapshot fields, or causal attribution that 0.70 did not emit |
+| `B1-instrumented` | exact pre-optimization 0.71 SHA after S1/S2/W1/S5 instrumentation is green and before any W2b/W3-W11 product change | primary causal and numerical baseline for owner bytes, phase stacks, instrumentation modes and proposal acceptance | presentation as the published 0.70 binary or silent pooling with `B0-release` |
+| `C-candidate` | exact frozen 0.71 candidate SHA | D3/D4 and final release admission | changing the baseline, statistics contract, host profile or scenario after candidate results are visible |
+
+`B0-release` and `B1-instrumented` are separate cohorts even when their external RSS values look
+similar. `B1-instrumented` is frozen by a reviewed receipt containing its source/binary/config and
+instrumentation-contract digests. Every W2b-W11 numerical proposal compares `B1-instrumented` with
+`C-candidate` using the same instrumentation mode and build recipe. `B0-release` versus
+`C-candidate` is a secondary release-regression/compatibility comparison; it cannot supply exact
+W1 reconciliation fields. No report combines samples, confidence intervals or slopes across these
+identities.
+
+The dedicated host is an explicit entry gate, not an assumed resource. Before D0, S7 records the
+protected environment, lease owner, available measurement window and successful 0.67.1 bootstrap
+admission. If the host or lease is unavailable, deterministic/source work may continue and hosted
+diagnostics may run, but the release remains `planned`/not ship-eligible and no numerical target is
+frozen.
+
 ## Archived-run provenance (mandatory input)
 
 The original full server-campaign archive is intentionally not stored in ordinary clones. The
@@ -121,18 +149,22 @@ branch update cannot silently change the input:
 | Curated-report branch | `agent/exploratory-perf-reports` (`origin/agent/exploratory-perf-reports`) |
 | Curated-report branch tip at plan creation | `c203f361cd3e0cc7d1e1a8627f591055a3fe4bfa` |
 | In-repository archive index | [`../testing/perf-scenarios/0.67/EXPLORATORY_ARCHIVE.md`](../testing/perf-scenarios/0.67/EXPLORATORY_ARCHIVE.md) |
+| Protected immutable mirror | required before D0; receipt records provider/object id, archive SHA-256, byte length and retention deadline |
 
 The raw branch contains CSV/JSONL telemetry, logs, container metadata, host receipts, accepted and
 rejected attempts, and per-run checksums. The curated branch contains human-sized methodology and
-reports. `0.71` may consume both, but only the exact raw archive commit is the authoritative
-historical byte identity. Branch and tag names are lookup aids, not substitutes for the SHA.
+reports. `0.71` may consume both, but only the exact raw archive commit plus a content-addressed
+protected mirror is an admissible historical input. Branch and tag names are lookup aids, not
+substitutes for the SHA. A moved/deleted branch is diagnostic information, not proof that the
+pinned commit changed; a tag or branch alone is not a durable backup.
 
 Before W0 imports or derives a baseline, the executor must run:
 
 ```bash
-git fetch origin --tags
-test "$(git rev-parse origin/explore/0.67-telemetry-hazelcast)" = \
+git fetch origin tag explore-0.67-telemetry-20260803
+test "$(git rev-parse 'explore-0.67-telemetry-20260803^{commit}')" = \
   dbc2f82f7f303528b3cca7842818730c82232b9c
+git cat-file -e 'dbc2f82f7f303528b3cca7842818730c82232b9c^{commit}'
 git worktree add --detach ../hydracache-0.67-memory-archive \
   dbc2f82f7f303528b3cca7842818730c82232b9c
 git -C ../hydracache-0.67-memory-archive status --short
@@ -140,10 +172,14 @@ git -C ../hydracache-0.67-memory-archive status --short
 
 The checkout must be clean. Validate every available `SHA256SUMS` file before reading its bundle.
 Generate a machine-readable `historical-input-receipt.json` containing branch, tag, exact commit,
-relative source paths, file sizes and SHA-256 digests for every raw file used by an analysis. New
-derived reports go under the 0.71 candidate evidence tree; archived originals are never rewritten,
-normalized, deleted, or mixed into qualification/bootstrap samples. A missing archive path or
-checksum is `unavailable(reason)` and blocks any conclusion that depends on it.
+relative source paths, file sizes and SHA-256 digests for every raw file used by an analysis. The
+receipt also binds the protected mirror's provider/object id, total byte length, archive SHA-256,
+access verification time and retention deadline extending beyond the 0.71 evidence-retention
+window. Restore the mirror into a fresh temporary directory and verify its digest once before D0;
+the Git worktree and restored mirror must yield the same per-file manifest. New derived reports go
+under the 0.71 candidate evidence tree; archived originals are never rewritten, normalized,
+deleted, or mixed into qualification/bootstrap samples. A missing archive path, mirror, retention
+guarantee or checksum is `unavailable(reason)` and blocks any conclusion that depends on it.
 
 ## Source reflection: existing applications
 
@@ -201,8 +237,8 @@ report-only against the same frozen fixtures, then become blocking through a rev
 
 ## Current code map and hypotheses to falsify
 
-Re-grep these locations on the post-`0.69` base before implementation because `0.68` may move the
-client dispatch structures:
+Re-grep these locations on the post-`0.70` base before implementation because the 0.70 retention
+audit may have moved or bounded the client dispatch structures:
 
 | Current location | Observed shape | Memory risk to test |
 | --- | --- | --- |
@@ -263,13 +299,15 @@ Permanent invariants:
 
 ## Implementation map for audits
 
-Populate the implementation column and exact command as W-items land.
+This table fixes the scope and proof boundary. The exact planned targets are listed in the focused
+verification tables below; as implementation lands, W13 registers their source paths and receipt
+ids in `docs/testing/release-evidence/0.71.toml`.
 
 | Item | Deliverable | Primary proof | Boundary |
 | --- | --- | --- | --- |
 | W0 | causal baseline + frozen comparison contract, including the transferred WSL2/Docker campaign | repeated synchronized memory receipts with corrected TTL coverage | no optimization before attribution; local VM results are non-promotable |
 | W1 | application/allocator memory observability | counters reconcile with live state | bounded labels; no secrets |
-| W2 | byte-accurate capacity/admission | synthetic and live object-weight corpus | no hidden capacity reduction |
+| W2 | W2a byte estimator/reporting plus evidence-conditional W2b capacity/admission policy | synthetic and live object-weight corpus plus legacy-config behavior | no hidden capacity reduction or silent reinterpretation of the existing logical limit |
 | W3 | bounded histories/queues | mutation/idempotency/audit/event churn | no silent loss |
 | W4 | expiry/delete/reset reclamation | repeated TTL/reset with exact logical zero | no full-map pause on hot path |
 | W5 | compact entry/key/value representation | bytes-per-entry matrix + API corpus | wire and key semantics unchanged |
@@ -281,6 +319,38 @@ Populate the implementation column and exact command as W-items land.
 | W11 | durable/page-cache separation | anon/file/slab + recovery proof | durability unchanged |
 | W12 | long soak + cross-target regression | fixed-key/TTL/reset/connection matrix | same fingerprint and workload |
 | W13 | governance/docs/release decision + public API protection | exact-candidate require-ship and `v0.70.0` API-diff evidence | claims match receipts; private representation changes cannot break supported downstream code |
+
+### Work-item dependency graph
+
+Work-item numbers are stable release-ledger identities, not a claim that their numeric order is the
+execution order. In particular, W1/S5 instrumentation must exist before W0 can freeze
+`B1-instrumented`.
+
+```text
+S9 CI safety
+  -> S1/S3/S4/S6/S7/S8/S10 contracts
+  -> W1 + S5 snapshots and S2 providers
+  -> W0 freezes B0/B1 identities and D0
+  -> W2a estimator/reporting foundation
+  -> D1/D2 proposal branches:
+       W2b admission policy
+       W3/W4 confirmed safety or retention fixes
+       W5/W6/W7 representation and copy changes
+       W8 allocator experiment
+       W9 optional profile ablation
+       W10 connection-plane changes
+       W11 persistence/page-cache changes
+  -> S8 affected-surface compatibility matrix
+  -> W12 D4 exact-candidate campaigns
+  -> W13 governance, claims and ship admission
+```
+
+After D0, independent D2-authorized proposal branches may run in parallel only when they do not
+change the same owner, scenario contract, configuration semantic or shared baseline artifact. W2a
+precedes any W2b/W5-W11 proposal whose admission or target depends on retained-byte accounting.
+W3/W4 confirmed safety defects block all dependent efficiency work until their deterministic proof
+is green. S8 runs before the final 24-hour campaign for every proposal that touches runtime, wire or
+durable compatibility.
 
 ## Mandatory execution controls for W0-W13
 
@@ -302,7 +372,8 @@ The controls execute in this order:
 1. `S9` makes the CI topology bounded and observable before expensive campaigns begin.
 2. `S1`, `S2`, `S4`, `S5` and `S7` establish ownership, attribution, statistics, instrumentation
    overhead and the host contract.
-3. `S3` authorizes or rejects individual W2-W11 changes from frozen evidence.
+3. W2a establishes accounting without changing policy; `S3` authorizes or rejects individual
+   W2b-W11 product changes from frozen evidence.
 4. `S6` governs allocator experiments; `S8` governs upgrade, rollback and mixed-version behavior.
 5. `S10` determines the minimum releasable result and the exact claims allowed in W13.
 
@@ -329,15 +400,24 @@ security classification, focused tests, slow evidence ids and disposition. Dispo
 candidate cannot be suppressed by a path-only allow list; an exemption identifies the type/symbol,
 reviewer, reason and expiry release.
 
-**Implementation.** Implement an `xtask` source inventory pass using the Rust syntax tree rather
-than regular-expression counts. Seed candidates from fields and statics containing owning
-collections, channels, pools, `Arc`/`Weak`, task handles, semaphores, buffers and explicit allocator
-arenas in production crates. Follow type aliases within the workspace and record uncertainty
-instead of guessing across macros or external crates. Merge these candidates with the 0.70 retained
-snapshots and the runtime site profiles from S2. A registry entry closes a candidate only when its
-symbol still resolves and its declared snapshot/test ids exist. Reviewers then trace writers,
-clones and terminal transitions and populate the lifecycle fields. A generated coverage report
-lists registered, newly discovered, exempted, moved and stale records.
+**Discovery boundary and implementation.** The syntax-tree pass is a conservative discovery gate,
+not a proof that no runtime owner exists. Implement it in `xtask` rather than using
+regular-expression counts. Seed candidates from fields and statics containing owning collections,
+channels, pools, `Arc`/`Weak`, task handles, semaphores, buffers and explicit allocator arenas in
+production crates. Follow type aliases within the workspace. Where stable expanded/HIR or rustdoc
+metadata is available, use it to resolve generated and transitive workspace types; otherwise emit
+an explicit `opaque_macro`, `external_type` or `ffi_owner` uncertainty rather than guessing.
+
+An uncertainty closes only through a symbol-scoped reviewed record that names the generated or
+external owner boundary, runtime snapshot/profile evidence, terminal-transition test and expiry
+release. Dependencies are inventoried at the Hydra-owned wrapper/pool/channel boundary rather than
+claiming knowledge of all allocations inside the dependency. Merge syntactic candidates with the
+0.70 retained snapshots, W1 runtime reconciliation and S2 site profiles. A registry entry closes a
+candidate only when its symbol still resolves and its declared snapshot/test ids exist. Reviewers
+then trace writers, clones and terminal transitions and populate the lifecycle fields. A generated
+coverage report lists registered, newly discovered, uncertain, exempted, moved and stale records.
+Passing S1 therefore means every candidate and known uncertainty has a reviewed disposition; it
+does not mean syntax analysis alone proved whole-program heap completeness.
 
 The inventory is rerun for every PR that changes a production Rust file, dependency/feature graph,
 capacity setting or channel/pool construction. An optimization that introduces a new owner updates
@@ -345,17 +425,21 @@ the registry in the same commit. W1 counters use `owner_id` internally but never
 tenant ids, connection ids or other unbounded metric labels.
 
 **Tests and canaries.** Add `crates/xtask/tests/memory_ownership_071.rs` with fixture crates that
-contain a bounded map, hidden secondary map, `Arc` cycle, channel, detached task, type alias and
-macro-generated owner. Assert that unresolved and stale entries fail, a renamed symbol invalidates
-the record, expired exemptions fail, and a synthetic unregistered owner is detected. Focused
-product tests cited by each record exercise every terminal transition, including cancellation,
-unwind and last-handle drop. The S1 canary adds a secondary index without a registry record; both
-the inventory check and W1 reconciliation must turn red.
+contain a bounded map, hidden secondary map, `Arc` cycle, channel, detached task, type alias,
+macro-generated owner, external wrapper and FFI-like opaque handle. The source pass must find the
+syntactically visible owners and classify opaque/generated cases as uncertainties; the runtime
+fixture and reviewed record close the latter. Assert that unresolved and stale entries fail, a
+renamed symbol invalidates the record, expired exemptions fail, and a synthetic unregistered owner
+is detected. Focused product tests cited by each record exercise every terminal transition,
+including cancellation, unwind and last-handle drop. The S1 canary adds a secondary index without a
+registry record; both the inventory check and W1 reconciliation must turn red.
 
-**Gate.** `memory-ownership-check` passes only when every generated candidate has a current
-disposition, every `bounded` owner has count and byte limits plus overflow behavior, every cleanup
-path and snapshot field resolves, and every referenced test/evidence id is registered. Zero stale
-records and zero unreviewed candidates are required on the exact candidate SHA.
+**Gate.** `memory-ownership-check` passes only when every generated candidate and uncertainty has a
+current disposition, every `bounded` owner has count and byte limits plus overflow behavior, every
+cleanup path and snapshot field resolves, and every referenced test/evidence id is registered.
+Zero stale records, expired exemptions and unreviewed candidates/uncertainties are required on the
+exact candidate SHA. The gate reports syntactic, runtime and reviewed coverage separately and never
+labels the syntax-tree percentage as whole-program ownership completeness.
 
 ### S2. Phase-correlated allocation-site and lifetime profiles
 
@@ -396,10 +480,12 @@ live/gross classification, shutdown capture, provider failure propagation and se
 Synthetic missing markers, overlapping phases, a mismatched symbol file and an intentionally
 retained vector must fail normalization or produce the expected positive live-stack delta.
 
-**Gate.** W2-W11 implementation is authorized only when the relevant proposal references an S2
-phase/stack and an S1 owner id, or records why the bytes are allocator/file-backed rather than a
-Rust owner. Required dedicated-host runs reject missing final phases, excessive unattributed bytes,
-mixed build identities or a profiler that exits unsuccessfully.
+**Gate.** W2a estimator/reporting foundation requires S1/W1 owner reconciliation but does not need
+to manufacture an optimization delta. Every W2b-W11 product-behavior or representation change is
+authorized only when its proposal references an S2 phase/stack and an S1 owner id, or records why
+the bytes are allocator/file-backed rather than a Rust owner. Required dedicated-host runs reject
+missing final phases, excessive unattributed bytes, mixed build identities or a profiler that exits
+unsuccessfully.
 
 ### S3. Evidence-locked stop/go decision gates
 
@@ -415,21 +501,24 @@ authorized files/surfaces, decision state, reviewer identity and resulting PR/ca
 
 **Decision sequence.** The checker enforces five transitions:
 
-- `D0 baseline-ready`: S1 inventory, S4 statistics contract, S5 overhead, S7 host fingerprint and
-  corrected TTL coverage are complete.
+- `D0 baseline-ready`: S1 inventory, S4 statistics contract, S5 overhead, admitted S7 host and
+  completed 0.67.1 bootstrap, corrected TTL coverage, and separately frozen `B0-release` and
+  `B1-instrumented` receipts are complete.
 - `D1 classified`: the observed delta is classified as live ownership, allocation churn,
   allocator fragmentation/high-water, file/page cache, service overhead, or inconclusive, with
   evidence for rejected alternatives.
 - `D2 authorized`: an independent review freezes the baseline, target, workload and regression
-  budgets and authorizes only the named W2-W11 surface.
+  budgets and authorizes only the named W2b-W11 surface.
 - `D3 implementation-accepted`: focused correctness tests and the predeclared comparison pass. A
   no-win or inconclusive result becomes immutable negative evidence, not a rewritten target.
 - `D4 candidate-qualified`: W12 reproduces every accepted result on the exact candidate and W13
   confirms that release claims match accepted proposals.
 
-No W2-W11 representation, allocator, default or resource-policy change starts before its D2
-receipt. Safety fixes for a proven unbounded owner may start immediately only through a separate
-fail-loud defect receipt; they still cannot claim an efficiency win without D2-D4.
+W2a estimator/reporting may start after the S1/W1 contract is green because it establishes the
+mandatory accounting foundation and does not alter eviction/admission behavior. No W2b-W11
+representation, allocator, default or resource-policy change starts before its D2 receipt. Safety
+fixes for a proven unbounded owner may start immediately only through a separate fail-loud defect
+receipt; they still cannot claim an efficiency win without D2-D4.
 
 **Tests and canaries.** Unit tests exercise legal and illegal state transitions. Integration
 fixtures attempt to use a candidate-derived baseline, alter a scenario after D2, accept an
@@ -452,8 +541,9 @@ minimum repetitions, pairing order, confidence level, multiple-comparison contro
 policy, practical minimum effect and unchanged CPU/latency/throughput budgets. Values are derived
 from baseline-only samples; the candidate cannot write or amend this file.
 
-**Method.** Use independently started processes and alternating baseline/candidate order on one S7
-fingerprint. Analyze each scenario independently. Run-level rejection is permitted only for a
+**Method.** Use independently started processes and alternating B1/C order on one S7 fingerprint.
+Keep B0 in its separate external-regression cohort. Analyze each scenario independently. Run-level
+rejection is permitted only for a
 predeclared infrastructure fault such as identity mismatch, telemetry gap, runner instability or
 non-zero workload error; a numerically inconvenient sample remains included. Estimate phase slopes
 with the committed robust estimator and moving-block bootstrap sized from baseline autocorrelation.
@@ -568,9 +658,9 @@ memory, major faults, throttling and temperature before and after calibration.
 Run the existing stability calibration before compilation and before each long scenario. Pin the
 daemon, load generator and collectors to reviewed CPU/NUMA sets and ensure collectors do not share
 the daemon's reserved cores. Disable or pin swap/THP/turbo only through the reviewed host profile;
-never mutate the host opportunistically inside a measurement. Baseline and candidate run in
-alternating order within one admitted window. Re-read mutable probes after every case and include
-their digest in the receipt.
+never mutate the host opportunistically inside a measurement. B1 and candidate run in alternating
+order within one admitted window; B0 is a separately labeled release-regression cohort. Re-read
+mutable probes after every case and include their digest in the receipt.
 
 **Tests and canaries.** Test the fingerprint builder against committed `/proc`, `/sys`, cgroup and
 runtime fixtures for supported and missing capabilities. Verify canonical hashing is stable across
@@ -579,10 +669,13 @@ version drift. Integration canaries alter one mutable probe between cases, add s
 load, exceed the calibration spread and omit the post-run fingerprint; every attempt must become
 ineligible rather than retried silently.
 
-**Gate.** Only receipts with the reviewed profile id, exact fingerprint, green calibration,
-complete pre/post probes and serialized lease may satisfy S4/W12 numerical gates. WSL2, Docker
-Desktop and GitHub-hosted modes always retain `ship_evidence_eligible=false` even when their rows
-are complete.
+**Gate.** Only receipts with the completed 0.67.1 bootstrap admission, reviewed profile id, exact
+fingerprint, green calibration, complete pre/post probes, named protected environment and
+serialized lease may satisfy D0/S4/W12 numerical gates. The lease receipt records owner, start/end
+window and campaign-time budget. WSL2, Docker Desktop and GitHub-hosted modes always retain
+`ship_evidence_eligible=false` even when their rows are complete. Host unavailability is
+`blocked-host`, never `unavailable-green`; it permits deterministic/source work but leaves D0/D4 and
+ship admission red.
 
 ### S8. Upgrade, rollback and mixed-version memory compatibility
 
@@ -614,7 +707,7 @@ binaries. Canaries silently reinterpret an old key, write before discovering an 
 version, mix candidate-generated fixtures into the baseline, and claim rollback after only a fresh
 start; each must fail the compatibility receipt.
 
-**Gate.** Every accepted W5-W11 proposal declares `runtime_only` or cites its S8 matrix rows. All
+**Gate.** Every accepted W2b/W5-W11 proposal declares `runtime_only` or cites its S8 matrix rows. All
 mandatory rows must match their expected success or fail-loud outcome on the exact candidate.
 
 ### S9. CI reliability, deduplication and bounded execution
@@ -677,13 +770,15 @@ allocator candidate wins:
 1. S1 ownership registry and exact closure check;
 2. corrected TTL/fixed-key/reset/refill baseline with S4/S5/S7 receipts;
 3. coherent W1 production counters and instrumentation-overhead budget;
-4. W2 total retained-byte accounting and pre-allocation count+byte admission for shipped surfaces;
+4. W2a total retained-byte accounting/reporting on every shipped surface; W2b pre-allocation
+   count+byte admission is mandatory for a confirmed unbounded/fail-open surface, while other
+   admission-policy changes require D2 and the legacy-capacity compatibility contract;
 5. W3/W4 bounds and cleanup for every confirmed unbounded owner;
 6. per-PR structural memory regression gate plus bounded scheduled/dedicated orchestration;
 7. S8 compatibility classification, S9 reliable CI topology, W13 governance and scoped memory
    accounting/sizing documentation.
 
-W5-W11 efficiency proposals are evidence-conditional. Each receives exactly one disposition:
+W2b and W5-W11 efficiency proposals are evidence-conditional. Each receives exactly one disposition:
 `implemented-and-qualified`, `measured-no-win`, `not-applicable`, or
 `deferred(issue,reason,next_evidence)`. A `deferred` disposition is permitted only for an efficiency
 opportunity whose current owner is already bounded and correct. A proven unbounded collection,
@@ -714,7 +809,7 @@ never with a missing foundation receipt or unresolved safety/retention defect.
 | --- | --- | --- |
 | S1 ownership registry | D1 and W2-W7/W10-W11 changes | W12 reconciliation, W13 closure |
 | S2 phase/site profiles | D1/D2 authorization | W5-W8 acceptance and W12 reproduction |
-| S3 decision gates | any W2-W11 implementation | W13 claim generation |
+| S3 decision gates | any W2b-W11 product change; W2a requires accounting closure only | W13 claim generation |
 | S4 statistics contract | candidate measurement | W12 numerical verdicts |
 | S5 overhead/coherence | W1 completion | every exact-zero and sizing claim |
 | S6 allocator diagnosis | W8 implementation | allocator ADR and W12 |
@@ -736,12 +831,16 @@ The following sequence is mandatory:
    registries. Parser/schema fixture tests land before production instrumentation.
 3. **Observability commit:** implement S1 source inventory, W1/S5 coherent production snapshots and
    S2 phase/provider adapters. Reconcile against the existing 0.70 retained-state snapshot tests.
-4. **Baseline commit:** bind immutable 0.70 inputs, run WSL2/GitHub-hosted diagnostic validation,
-   qualify the dedicated host and freeze D0 artifacts. This commit changes evidence/contracts only;
-   it contains no W2-W11 optimization.
-5. **One proposal per change:** create a D1/D2 record, add its red canary/focused test, implement the
-   smallest W2-W11 change, record D3, and merge only when correctness and regression budgets are
-   green. Negative variants are retained in evidence but removed from production code.
+4. **Baseline commit:** bind immutable `B0-release`, freeze the observability commit as
+   `B1-instrumented`, run WSL2/GitHub-hosted diagnostic validation, verify the protected historical
+   mirror, require the completed 0.67.1 bootstrap, qualify the dedicated host and freeze D0
+   artifacts. This commit changes evidence/contracts only; it contains W1/S5 instrumentation but no
+   W2b-W11 optimization.
+5. **Accounting foundation, then one proposal per change:** complete W2a without changing legacy
+   eviction/admission behavior. For each W2b-W11 product change, create a D1/D2 record, add its red
+   canary/focused test, implement the smallest authorized surface, record D3, and merge only when
+   correctness and regression budgets are green. Negative variants are retained in evidence but
+   removed from production code.
 6. **Candidate commit:** freeze the exact candidate, execute S8/W12, resolve every S10 disposition,
    generate claims and run W13 admission. No baseline/statistics/host-contract edit is permitted in
    this commit.
@@ -762,6 +861,27 @@ the release-evidence registry in the same review.
 | S8 | `cargo test -p xtask --test memory_compat_071 --locked` | matrix validation, real-binary identities, upgrade, mixed version, rollback or pre-mutation refusal |
 | S9 | `cargo test -p xtask --test ci_reliability_071 --locked` | workflow graph, timeouts, watchdog descendants, heartbeat, artifact identity, one publish producer |
 | S10 | `cargo test -p xtask --test release_governance_071 --locked` | mandatory foundation, all dispositions, generated claims, no-win green and safety-defect red fixtures |
+
+Each work item also owns a concrete target. These names are part of the plan contract and are
+created with the implementation; renaming one updates this table and release-evidence registry in
+the same review.
+
+| Work item | Planned target / exact command | Named coverage |
+| --- | --- | --- |
+| W0 | `cargo test -p xtask --test memory_baseline_071 --locked` | `b0_b1_are_distinct_cohorts`, corrected TTL final checkpoint, dirty identity and archive/mirror mismatch rejection |
+| W1 | `cargo test -p hydracache --test memory_snapshot_071 --locked -- --test-threads=1` | `exact_snapshot_reconciles_every_registered_owner`, non-atomic rejection, counter overflow and redaction |
+| W2 | `cargo test -p hydracache --test memory_accounting_071 --locked` and `cargo test -p hydracache-client-transport-axum --test memory_admission_071 --locked` | W2a estimator corpus; W2b legacy-limit compatibility, aggregate request admission and fail-loud overflow |
+| W3 | `cargo test -p hydracache-client-transport-axum --test retention_bounds_071 --locked -- --test-threads=1` | million-operation plateau, idempotency outcome retention, replay repair and mandatory-audit pressure |
+| W4 | `cargo test -p hydracache --test reclamation_071 --locked -- --test-threads=1` | 100-cycle TTL/delete/reset exact-zero, bounded backlog and stale-load fencing |
+| W5 | `cargo test -p hydracache --test representation_071 --locked` | old/new differential model, bytes-per-entry corpus, collision and public auto-trait witnesses |
+| W6 | `cargo test -p hydracache --test tag_index_model_071 --locked` | arbitrary interleavings, fanout distributions, ABA and early-generation-retirement canaries |
+| W7 | `cargo test -p xtask --test allocation_copy_071 --locked` | allocation/copied-byte receipts, oversized-buffer release, pool isolation and secret redaction |
+| W8 | `cargo test -p xtask --test allocator_matrix_071 --locked` | capability/build matrix, identical-state reuse/purge sequence and RSS-only rejection |
+| W9 | `cargo test -p hydracache-server --test memory_profiles_071 --locked -- --test-threads=1` | one-factor service ablation, effective-config receipt and disabled-service zero-resource proof |
+| W10 | `cargo test -p hydracache-server --test hc2_memory_071 --locked -- --test-threads=1` | idle/slow/reconnect/oversized-frame cases and exact close/cancel/drain owner release |
+| W11 | `cargo test -p hydracache --test persistence_memory_071 --locked -- --test-threads=1` | anon/file classification, buffer bounds, memory-pressure admission and recovery/disk-full/checkpoint release |
+| W12 | `cargo test -p xtask --test memory_campaign_admission_071 --locked` and `cargo run --manifest-path crates\xtask\Cargo.toml --locked -- memory-campaign-check --release 0.71 --require-ship` | scenario/repetition identity, bounded attempt ledger, D4 reproduction and long-run admission |
+| W13 | `cargo test -p xtask --test release_governance_071 --locked` | mandatory foundation, conditional proposal targets, generated claims, no-win ship and safety-defect rejection |
 
 After every control commit run its focused target plus:
 
@@ -793,39 +913,57 @@ Add `docs/testing/perf-scenarios/0.71/memory-efficiency-v1.toml`, a typed report
 
 W0 owns the `D0 baseline-ready` transition. Before that transition it must also produce the S1
 ownership inventory, S2 provider qualification and phase timeline, frozen S4 statistics contract,
-S5 instrumentation-overhead receipt, admitted S7 host profile and green S9 bounded dry run. The
-scenario digest includes all six artifact digests, so changing one creates a new baseline cohort.
-The baseline binary is built from immutable `v0.70.0`; the candidate branch may implement tooling
-needed to read it, but candidate product behavior or candidate-derived thresholds cannot enter the
-baseline distribution.
+S5 instrumentation-overhead receipt, admitted S7 host profile, completed 0.67.1 bootstrap and green
+S9 bounded dry run. The scenario digest includes all of these artifact digests, so changing one
+creates a new baseline cohort. W0 freezes both the unmodified `B0-release` binary and the
+pre-optimization `B1-instrumented` SHA. New W1 fields are collected only from B1; B0 supplies only
+the external and compatibility signals it already supports. Candidate behavior or candidate-derived
+thresholds cannot enter either baseline distribution.
 
 W0 also creates and validates the `historical-input-receipt.json` described above. Historical raw
 rows may guide hypotheses and scenario design, but they are not silently pooled with new baseline
 samples: different source SHA, host fingerprint, instrumentation or workload contract remains a
 separate cohort.
 
-Required baseline cases use fresh processes and the same workload contract for baseline/candidate:
+The required matrix is finite and one-factor except for the deliberate cardinality/payload grid.
+Unless a row says otherwise, the canonical fixed point is 10k live keys, 256-byte values, no tags,
+TTL off, persistence off, one authenticated HC/2 connection and the reviewed server profile. A
+proposal may select a smaller subset of cells only before D2 and must record why those cells cover
+its affected owner. The rows are not multiplied into a full Cartesian product.
 
-1. cold idle 5 minutes;
-2. 1k/10k/50k/250k keys at 64/256/1,024/4,096-byte values;
-3. six and sixty fixed-keyspace rewrite cycles;
-4. sixty TTL fill-expire-idle cycles;
-5. sixty fill-delete/namespace-reset cycles;
-6. tags 0/1/4/16 per entry and repeated tag invalidation;
-7. listeners and HC/2 connections 1/10/100/1,000 including slow consumers;
-8. persistence off/on with anon/file separation;
-9. 60-minute and six-hour steady-state screens; 24-hour scheduled confirmation for ship.
+| ID | Varied factor and fixed boundary | Repetition / duration | Evidence role | Estimated admitted-host time cap |
+| --- | --- | --- | --- | --- |
+| `M0-cold` | empty daemon, canonical services, five-minute idle | three fresh B0 and B1 processes at D0; five alternating B1/C pairs only when a cold-footprint proposal exists | cold floor and instrumentation overhead | `<= 1 h` per D0 cohort; `<= 1 h` optional D4 pair set |
+| `M1-shape` | intentional 4x4 grid: 1k/10k/50k/250k keys x 64/256/1,024/4,096-byte values; other factors canonical | three fresh B1 processes per D0 cell; D4 repeats only proposal-selected cells with five alternating B1/C pairs | bytes/entry and payload amplification | `<= 8 h` D0 screen; `<= 5 h` per selected D4 proposal |
+| `M2-rewrite` | canonical fixed keyspace; six-cycle focused and sixty-cycle scheduled variants | three fresh D0 runs; five alternating B1/C focused pairs for affected proposals | allocation churn and reuse | `<= 4 h` |
+| `M3-ttl` | canonical fill-expire-idle with final checkpoint covered; sixty cycles | three fresh D0 runs and five alternating B1/C D4 pairs | TTL cleanup/recovery | `<= 6 h` |
+| `M4-reset` | canonical fill-delete and namespace-reset, sixty cycles each | three fresh D0 runs and five alternating B1/C D4 pairs | exact owner zero and allocator reuse | `<= 6 h` |
+| `M5-tags` | 0/1/4/16 tags per entry plus separately declared one-hot/high-fanout cases; other factors canonical | three D0 runs per distribution; D4 only for W5/W6 cells | tag/index amplification | `<= 4 h` D0; `<= 4 h` selected D4 |
+| `M6-connections` | 1/10/100/1,000 idle HC/2 connections, TLS off/on separated; 100 slow consumers is a distinct case | three D0 runs per scale; five B1/C pairs for W10-affected cells | per-connection floor/high-water | `<= 6 h` D0; `<= 6 h` selected D4 |
+| `M7-persistence` | persistence off and each supported mode; canonical dataset; anon/file/slab split | three fresh runs per mode; D4 only for W11 changes | durable/page-cache attribution | `<= 6 h` per cohort |
+| `M8-60m` | fixed-keyspace, TTL, reset and HC/2 churn as four serialized cases | one 60-minute B1 and C run per case after five shorter comparison pairs are green | weekly/scheduled boundedness | `<= 8 h` per candidate pair |
+| `M9-6h` | one preregistered multi-scenario sequence, fixed cardinality | one six-hour B1 and one six-hour C run per candidate iteration | candidate soak | `<= 12 h` per candidate pair |
+| `M10-24h` | one preregistered ship sequence on the same admitted fingerprint | one 24-hour B1 run and one 24-hour exact-C run, serialized | final long-tail confirmation | `<= 48 h` plus calibration/preflight |
 
-Before using these cases to authorize W2-W11 implementation, execute and archive the transferred
+The statistical sample unit for D3/D4 improvement decisions is one independently started process
+pair in alternating B1/C order. The `0.67.1` five-sample rule applies to the shorter numerical
+qualification rows selected for a proposal; it does **not** mean five separate 24-hour campaigns.
+`M10-24h` is a boundedness/recovery confirmation after those five pairs are green, not the sole
+estimator of an improvement. Three fresh processes are the minimum for D0 attribution screens and
+cannot by themselves support an improvement claim. S9 computes the exact runner-hour estimate from
+the selected rows before dispatch and rejects a campaign exceeding these caps unless the plan,
+statistics contract and protected-environment approval are reviewed before candidate data exists.
+
+Before using these cases to authorize W2b-W11 implementation, execute and archive the transferred
 WSL2/Docker campaign for fixed-keyspace, corrected TTL, reset and post-idle. A missing final TTL
 checkpoint, dirty checkout, unbound binary/image, incomplete logical-owner snapshot or absent host
 fingerprint invalidates the campaign. Its receipt must remain `ship_evidence_eligible=false`; the
 campaign closes the 0.70 investigation hand-off but does not satisfy 0.71 dedicated-host gates.
 
-At least three fresh-process repetitions are required for attribution; reference comparison uses the
-`0.67.1` five-sample same-fingerprint rule. W0 freezes baselines but sets no optimization target
-from the candidate. Budgets are proposed from the pre-change distribution, independently reviewed,
-and committed before W2-W11 results are visible.
+W0 freezes baselines but sets no optimization target from the candidate. Budgets are proposed from
+the pre-change B1 distribution, independently reviewed, and committed before W2b-W11 results are
+visible. B0 remains a separate external regression cohort and is never used to backfill missing B1
+owner fields.
 
 **Canaries:** lie about unique-key count; reuse a dirty process as fresh; swap allocator/build
 features; omit an unavailable field; resolve the archive branch to a commit other than
@@ -868,13 +1006,33 @@ exact reconciliation gate must detect it.
 
 ## W2. Make capacity and admission account for total retained bytes
 
-Replace the current value-only Moka weight with a reviewed estimator covering at least encoded key,
-value, `CacheEntry`, tag vector/string bytes, expiry metadata and measured index amplification. Keep
-the estimator deterministic, O(1) in already-known lengths, saturating to Moka's `u32` weight and
-consistent across insert/replace paths.
+Split W2 into an accounting foundation and a separately authorized policy change so the existing
+capacity setting is never silently reinterpreted.
 
-For server/client surfaces, enforce both count and byte budgets before allocation-heavy decode or
-mutation:
+**W2a — mandatory estimator and reporting, no eviction-semantic change.** Add a reviewed `u64`
+estimator covering at least encoded key, value, `CacheEntry`, tag vector/string bytes, expiry
+metadata and measured index amplification. Keep it deterministic, O(1) in already-known lengths,
+checked on insert/replace and reconciled against W1/S2 evidence. W2a feeds snapshots, sizing and
+proposal decisions but leaves the existing value-only Moka capacity and default eviction behavior
+unchanged. Overflow is a fail-loud accounting error; it is not silently saturated in the canonical
+estimator.
+
+Create a golden object-weight corpus for empty/small/large keys, 0/1/16 tags, TTL/no-TTL and maximum
+payload. Compare the estimator to heap-profiler retained deltas in W0 and document conservative
+error bounds. W2a ships even when no W2b policy proposal is authorized.
+
+**W2b — evidence-conditional admission policy.** Prefer a separate explicit
+`max_retained_bytes`/equivalent count+byte pressure budget while retaining the legacy logical-value
+limit. The legacy field continues to mean what it meant in 0.70 and produces the same eviction
+behavior when no new retained-byte limit is configured. If an implementation instead changes the
+Moka weigher to total retained bytes, it requires D2, an ADR, a versioned configuration semantic,
+migration guidance and an explicit opt-in; it cannot reuse the old numeric value under a new unit.
+The Moka `u32` adapter is used only after the per-entry maximum proves the estimate representable;
+an unrepresentable entry is rejected before mutation rather than underweighted.
+
+Where W0 proves an unbounded/fail-open surface, a compatible fail-loud count+byte budget is a safety
+fix and ship-mandatory. Other server/client admission changes require D2. Enforce budgets before
+allocation-heavy decode or mutation:
 
 - dataset live bytes and entries per tenant/namespace plus global reserve;
 - queued/inflight/output bytes separate from dataset bytes but charged to the same pressure model;
@@ -882,13 +1040,13 @@ mutation:
 - replacement charges only the positive delta while retaining rollback safety;
 - eviction/rejection policy remains explicitly configured; no silent semantic switch.
 
-Create a golden object-weight corpus for empty/small/large keys, 0/1/16 tags, TTL/no-TTL and maximum
-payload. Compare the estimator to heap-profiler retained deltas in W0; document conservative error
-bounds. A capacity configuration continues to represent an advertised logical budget, and migration
-guidance explains any change from legacy value-only units.
+The compatibility fixture runs identical legacy configurations against B0/B1/C and asserts that
+W2a alone changes only diagnostics. Every W2b fixture records both logical-value and retained-byte
+budgets, verifies pre-mutation rejection/rollback, and proves which budget triggered pressure.
 
-**Canaries:** remove key/tag metadata from the estimator; overflow `u32`; admit a batch whose
-aggregate exceeds the byte budget. All must turn the capacity gate red.
+**Canaries:** remove key/tag metadata from the estimator; overflow `u64` or the Moka `u32` adapter;
+reinterpret a legacy capacity value as retained bytes; admit a batch whose aggregate exceeds the
+new byte budget. All must turn the accounting/compatibility gate red.
 
 ## W3. Replace append-only runtime histories with bounded contracts
 
@@ -1094,7 +1252,8 @@ the synchronized counter/reconciliation gate must fail.
 
 ## W12. Long-duration proof and comparative regression matrix
 
-Run the frozen W0 workload on the exact candidate and independently reviewed baseline:
+Run the frozen W0 workload on the exact candidate and `B1-instrumented`; run the scoped external
+regression/compatibility subset against `B0-release` without requesting W1-only fields:
 
 - per-PR `Memory Regression Fast` structural/unit/property tests, serialized where allocation or
   retained-owner global state is observed. The lane covers allocation-scope isolation, exact
@@ -1102,8 +1261,9 @@ Run the frozen W0 workload on the exact candidate and independently reviewed bas
   and fail-closed final-checkpoint telemetry coverage;
 - scheduled 60-minute fixed-keyspace, TTL, reset and HC/2 connection churn;
 - six-hour multi-scenario soak for candidate iterations;
-- 24-hour same-fingerprint ship confirmation with five serialized successful samples where the
-  `0.67.1` reference contract requires them;
+- five serialized, independently started B1/C comparison pairs for every numerical proposal row
+  where the `0.67.1` reference contract applies, followed by one serialized 24-hour B1 run and one
+  24-hour exact-candidate run for ship confirmation;
 - pinned Redis comparison with equivalent persistence/service/cardinality settings;
 - Hazelcast comparison only with fixed `-Xms/-Xmx`, JMX heap used/committed/max, GC and native RSS;
   missing JVM telemetry remains unavailable, not inferred.
@@ -1115,14 +1275,18 @@ cancelled or superseded attempts remain in the ledger but cannot contribute samp
 rolling upgrade/rollback-or-refusal matrix before the final 24-hour campaign so incompatible bytes
 cannot invalidate an otherwise expensive ship run late.
 
-Primary gates are candidate-versus-frozen-Hydra baseline, not candidate-versus-Redis:
+Primary numerical gates are candidate-versus-frozen `B1-instrumented`, not candidate-versus-Redis
+or an instrumented/uninstrumented mixture. B0-versus-C remains a secondary compatibility/SLO
+regression gate:
 
 1. exact logical data/index/history counts and zero semantic errors;
 2. no positive post-warmup slope beyond the independently frozen confidence bound in two
    independent anon/resident signals;
 3. expiry/reset returns logical owners to zero and allocator active/resident memory to the reviewed
    recovery envelope after the fixed idle window;
-4. bytes-per-entry and per-connection targets frozen before candidate measurement are met;
+4. mandatory foundation bounds are met; proposal-specific bytes-per-entry/per-connection
+   improvement targets apply only to proposals marked `implemented-and-qualified`; a
+   `measured-no-win`, `not-applicable` or permitted `deferred` proposal has no fabricated target;
 5. existing SLO, p99, throughput floor, CPU, spread, calibration, affinity and quota gates remain
    unchanged and green;
 6. no OOM, unbounded queue, thread/FD growth, secret leakage or fail-open behavior;
@@ -1131,7 +1295,9 @@ Primary gates are candidate-versus-frozen-Hydra baseline, not candidate-versus-R
 Statistical method, warm-up exclusion, confidence interval, slope window and recovery ratio are
 versioned in the scenario contract. No hand-selected interval or last-sample comparison.
 The fast lane detects structural regressions but cannot promote an RSS result or replace any
-duration/fingerprint requirement above.
+duration/fingerprint requirement above. The two 24-hour runs prove bounded long-tail behavior and
+recovery; they are not counted as five independent comparison samples and do not replace the five
+shorter proposal pairs.
 
 ## W13. Governance, documentation and release decision
 
@@ -1158,7 +1324,7 @@ duration/fingerprint requirement above.
   findings remain in the evidence ledger.
 - Add S1-S10 artifacts and their executable checks to `docs/testing/release-evidence/0.71.toml`.
   Generate `release-claims.json` from D4 decisions rather than writing numerical release claims by
-  hand; verify every W5-W11 proposal has the S10 disposition permitted by its safety status.
+  hand; verify every W2b/W5-W11 proposal has the S10 disposition permitted by its safety status.
 - Register `ci-topology-check` and watchdog canaries before enabling long-duration workflows. The
   release admission consumes one designated tag-admission attempt and rejects duplicate/mixed
   workflow attempts even when their individual jobs are green.
@@ -1166,23 +1332,27 @@ duration/fingerprint requirement above.
 **DoD:**
 
 ```powershell
-cargo run --manifest-path crates\xtask\Cargo.toml -- memory-owner-inventory --release 0.71 --check
-cargo run --manifest-path crates\xtask\Cargo.toml -- memory-ownership-check --release 0.71
-cargo run --manifest-path crates\xtask\Cargo.toml -- memory-statistics-check --release 0.71
-cargo run --manifest-path crates\xtask\Cargo.toml -- memory-decision-check --release 0.71
-cargo run --manifest-path crates\xtask\Cargo.toml -- ci-topology-check --release 0.71
-cargo run --manifest-path crates\xtask\Cargo.toml -- memory-contract-check --release 0.71
-cargo run --manifest-path crates\xtask\Cargo.toml -- compat-check --release 0.71
-cargo run --manifest-path crates\xtask\Cargo.toml -- release-governance-check --release 0.71
-cargo run --manifest-path crates\xtask\Cargo.toml -- release-evidence --release 0.71 --require-ship
-cargo run --manifest-path crates\xtask\Cargo.toml -- doc-check
+cargo run --manifest-path crates\xtask\Cargo.toml --locked -- memory-owner-inventory --release 0.71 --check
+cargo run --manifest-path crates\xtask\Cargo.toml --locked -- memory-ownership-check --release 0.71
+cargo run --manifest-path crates\xtask\Cargo.toml --locked -- memory-statistics-check --release 0.71
+cargo run --manifest-path crates\xtask\Cargo.toml --locked -- memory-decision-check --release 0.71
+cargo run --manifest-path crates\xtask\Cargo.toml --locked -- ci-topology-check --release 0.71
+cargo run --manifest-path crates\xtask\Cargo.toml --locked -- memory-contract-check --release 0.71
+cargo run --manifest-path crates\xtask\Cargo.toml --locked -- perf-memory-preflight --release 0.71 --profile memory-reference-071-v1
+cargo run --manifest-path crates\xtask\Cargo.toml --locked -- memory-campaign-check --release 0.71 --require-ship
+cargo run --manifest-path crates\xtask\Cargo.toml --locked -- compat-check --release 0.71
+cargo run --manifest-path crates\xtask\Cargo.toml --locked -- canary-check --release 0.71
+cargo run --manifest-path crates\xtask\Cargo.toml --locked -- release-governance-check --release 0.71
+cargo run --manifest-path crates\xtask\Cargo.toml --locked -- release-evidence --release 0.71 --require-ship
+cargo run --manifest-path crates\xtask\Cargo.toml --locked -- doc-check
+cargo xtask verify
 ```
 
 ## Required test and experiment inventory
 
 | Category | Mandatory proof |
 | --- | --- |
-| Ownership registry | syntax-tree inventory covers every long-lived candidate; symbols/snapshots/tests resolve; hidden-owner, stale-record and expired-exemption canaries fail |
+| Ownership registry | conservative syntax-tree discovery plus explicit opaque/generated/external uncertainties, W1 reconciliation and S2 profiles cover every known long-lived candidate; symbols/snapshots/tests resolve; hidden-owner, stale-record and expired-exemption canaries fail; no whole-program completeness claim comes from syntax alone |
 | Phase attribution | cold/fill/steady/cleanup/refill/idle/shutdown markers align with logical, allocator and process samples; retained/freed fixture stacks and secret redaction pass |
 | Decision governance | legal D0-D4 transitions pass; candidate baseline, post-freeze scenario edit, mixed SHA/host and inconclusive-as-win canaries fail |
 | Statistics | flat/growth/plateau/change-point/autocorrelated/missing-row golden series; deterministic bootstrap and practical-significance verdict |
@@ -1200,7 +1370,7 @@ cargo run --manifest-path crates\xtask\Cargo.toml -- doc-check
 | Compatibility | real 0.70-to-0.71 upgrade, candidate restart, permitted rollback or pre-mutation refusal/restore, rolling mixed-version cluster and old checkpoint fixtures |
 | CI reliability | topology uniqueness, job/command timeouts, process-tree watchdog, heartbeat, SHA/run/attempt artifacts and single publication producer |
 | Minimum release | complete mandatory foundation; every optional proposal disposed; no-win release accepted; unbounded-owner and unsupported-claim fixtures rejected |
-| Performance | coordinated-omission-safe latency/RPS/CPU plus memory on frozen baseline/candidate, unchanged SLOs |
+| Performance | coordinated-omission-safe latency/RPS/CPU plus memory on frozen B1/C pairs, with separately labeled B0/C external regression and unchanged SLOs |
 | Long soak | 60-minute, six-hour and 24-hour tiers with fixed cardinality, slope/recovery statistics and immutable raw artifacts |
 
 ## Risk register
@@ -1231,6 +1401,9 @@ cargo run --manifest-path crates\xtask\Cargo.toml -- doc-check
 | HC/2 adds per-client amplification | Empty daemon is small but 1k clients exhaust memory | W10 per-connection byte budgets and reconnect/slow-client soak |
 | Historical reports overclaimed | Exploratory numbers become marketing claims | scope labels preserved; only W12/W13 evidence may support sizing |
 | Private memory rewrite breaks public Rust API | A compact field removes `Send`/`Sync`, breaks object safety/struct construction or changes a feature edge while unit tests remain green | immutable `v0.70.0` API baseline, pinned `cargo-semver-checks`, explicit downstream witnesses and cross-target/MSRV consumers |
+| Instrumented baseline is mislabeled as 0.70 | New counters or their overhead contaminate the published-release comparison | separate immutable B0/B1/C identities, no cross-cohort pooling and a mixed-identity canary |
+| Dedicated host remains unavailable | Source work completes but numerical D0/D4 evidence cannot be acquired | explicit 0.67.1 dependency and S7 lease entry gate; remain planned/no-ship without promotion of hosted results |
+| Scenario dimensions multiply accidentally | Full Cartesian execution consumes unbounded runner time or invites post-hoc cell selection | finite M0-M10 matrix, fixed canonical point, preregistered proposal cells and S9 host-time caps |
 
 ## Gates: definition of done
 
@@ -1240,8 +1413,10 @@ cargo run --manifest-path crates\xtask\Cargo.toml -- doc-check
 - Every accepted memory change has S2 phase/stack attribution and a legal S3 D0-D4 chain using the
   immutable S4 contract. Instrumentation remains inside S5 overhead limits and every exact snapshot
   is epoch-coherent.
-- Dataset capacity accounts for keys, values and material metadata with a reviewed conservative
-  error bound; queues/inflight work are admitted by bytes and count before expensive allocation.
+- W2a reports keys, values and material metadata with a reviewed conservative error bound without
+  changing the legacy logical-value capacity semantic. Every W2b surface required by a confirmed
+  safety defect, and every optional W2b proposal marked implemented, admits queues/inflight work by
+  bytes and count before expensive allocation under an explicit retained-byte budget.
 - Expiry/delete/evict/tag invalidation/reset clean every logical owner without stale resurrection;
   logical counters reconcile exactly after 100-cycle gates.
 - The selected representation/allocator changes beat the frozen baseline on the scoped memory
@@ -1255,8 +1430,9 @@ cargo run --manifest-path crates\xtask\Cargo.toml -- doc-check
   under cgroup pressure, recovery, disk-full, backup/restore and checkpoint tests.
 - S8 upgrade, mixed-version and rollback-or-loud-refusal evidence is green for every affected
   runtime/durable surface.
-- The 24-hour candidate evidence shows bounded post-warmup behavior under fixed cardinality and
-  recovery within the reviewed envelope; unstable/failed samples do not count.
+- The serialized 24-hour B1 and exact-candidate evidence shows bounded post-warmup behavior under
+  fixed cardinality and recovery within the reviewed envelope; the five shorter proposal pairs are
+  independently complete, and unstable/failed samples do not count.
 - Redis and Hazelcast are pinned controls with equivalent disclosed profiles; Hazelcast heap is
   measured by JMX or marked unavailable. Neither control defines Hydra correctness or a universal
   memory target.
@@ -1270,8 +1446,12 @@ cargo run --manifest-path crates\xtask\Cargo.toml -- doc-check
 
 ## Final release decision
 
-Ship `0.71.0` only when memory improvements are causally tied to measured owners, every long-lived
-collection and connection has an enforced budget, expiry/reset reclaim all logical state, and the
-same candidate preserves all existing correctness and performance contracts. A smaller RSS caused
-by reduced workload, disabled required semantics, missing evidence, unmeasured page cache, or a
+Ship `0.71.0` when the S10 mandatory foundation is complete on the admitted dedicated host, every
+long-lived collection and connection has its required enforced bound, expiry/reset reclaim all
+logical state, and the same candidate preserves all existing correctness, compatibility and
+performance contracts. The release may ship with zero optional numerical wins: in that case it
+claims improved accounting, bounds and diagnostic confidence only, and retains/defer the old
+representations according to the recorded dispositions. Any claimed memory improvement must be
+causally tied to measured owners and qualified through D4. A smaller RSS caused by reduced workload,
+disabled required semantics, missing evidence, unmeasured page cache, cross-cohort B0/B1 mixing or a
 candidate-derived baseline is an automatic no-ship.
