@@ -7,20 +7,19 @@ on:
   push:
     branches:
       - main
-    tags:
-      - "v*"
 
 permissions:
   contents: read
 
 concurrency:
-  group: simulator-demo
+  group: simulator-demo-${{ github.sha }}
   cancel-in-progress: false
 
 jobs:
   build:
     name: Build and smoke demo
     runs-on: ubuntu-latest
+    timeout-minutes: 30
 
     steps:
       - name: Checkout
@@ -50,15 +49,18 @@ jobs:
         run: cargo build -p hydracache-sim-wasm --target wasm32-unknown-unknown --locked
 
       - name: Build browser package
+        timeout-minutes: 10
         run: wasm-pack build crates/hydracache-sim-wasm --target web --out-dir ../../demo/pkg --release -- --locked
 
       - name: Install demo dependencies
+        timeout-minutes: 10
         run: npm --prefix demo ci
 
       - name: Check static demo package
         run: npm --prefix demo run build
 
       - name: Install Playwright browsers
+        timeout-minutes: 10
         run: |
           npx --prefix demo playwright install --with-deps chromium
 

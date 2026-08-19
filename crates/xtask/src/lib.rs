@@ -2,6 +2,7 @@ pub mod bench_budget;
 pub mod canary_check;
 pub mod canary_sweep;
 pub mod ci_admission;
+pub mod ci_topology;
 pub mod client_conformance;
 pub mod client_package;
 pub mod client_plane_bakeoff;

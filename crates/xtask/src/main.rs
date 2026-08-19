@@ -36,6 +36,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                 std::process::exit(code);
             }
         }
+        Some("ci-topology-check") => xtask::ci_topology::run(args.collect())?,
         Some("compat-check") => xtask::compat_check::run(args.collect())?,
         Some("coverage-ratchet-check") => xtask::coverage_ratchet::run(args.collect())?,
         Some("determinism-sweep") => xtask::determinism_sweep::run(args.collect())?,
@@ -101,6 +102,7 @@ fn print_usage() {
          cargo xtask client-package-check  # freeze and consume Rust/Java/Python HC/2 packages\n  \
          cargo xtask client-schema-check  # prove generation-6 schema/API metadata and deterministic SDK generation\n  \
          cargo xtask ci-admission-status --release <release> --source <sha> --head <sha> --base <sha> [--require <lane=result>|--lane-status <lane=path>] --output <path>  # retain and validate fail-loud CI admission status\n  \
+         cargo xtask ci-topology-check --release 0.71  # validate workflow topology, timeouts, artifacts, and publication ownership\n  \
          cargo xtask compat-check [--preflight-only|--manifest-only]  # validate previous-release compatibility\n  \
          cargo xtask coverage-ratchet-check [--structural|--run]  # validate or execute the pinned coverage floor\n  \
          cargo xtask determinism-sweep --release 0.64  # compare canonical logical evidence across repeated/serial runs\n  \
