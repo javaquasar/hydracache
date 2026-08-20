@@ -806,7 +806,7 @@ pub use memory_footprint::{
     AllocatorMemoryObservation, ExternalMemoryObservation, MemoryFootprintError,
     MemoryFootprintSnapshot, MemoryInstrumentationMode, MemoryOwnerObservation,
     MemoryReconciliationReport, MemorySnapshotBarrier, MemorySnapshotConsistency,
-    MemorySnapshotRequest, MemorySubsystemVersion,
+    MemorySnapshotRequest, MemorySubsystemVersion, RetainedByteEstimate, RetainedByteEstimateError,
 };
 #[cfg(not(target_arch = "wasm32"))]
 pub use multitenancy::{

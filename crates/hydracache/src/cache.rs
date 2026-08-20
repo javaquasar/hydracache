@@ -1637,26 +1637,14 @@ where
         self.inner.store.run_pending_tasks().await;
         let mut exact = EntryMemoryDelta::default();
         for (key, entry) in self.inner.store.iter() {
-            exact.entries = exact
-                .entries
-                .checked_add(1)
-                .ok_or(MemoryFootprintError::CounterFault)?;
-            exact.key_bytes = exact
-                .key_bytes
-                .checked_add(key.len() as u64)
-                .ok_or(MemoryFootprintError::CounterFault)?;
-            exact.value_bytes = exact
-                .value_bytes
-                .checked_add(entry.value.len() as u64)
-                .ok_or(MemoryFootprintError::CounterFault)?;
-            exact.tag_memberships = exact
-                .tag_memberships
-                .checked_add(entry.tags.len() as u64)
-                .ok_or(MemoryFootprintError::CounterFault)?;
-            exact.expiry_records = exact
-                .expiry_records
-                .checked_add(u64::from(entry.expires_at.is_some()))
-                .ok_or(MemoryFootprintError::CounterFault)?;
+            let delta = EntryMemoryDelta::new(
+                &key,
+                entry.value.len(),
+                &entry.tags,
+                entry.expires_at.is_some(),
+            )
+            .map_err(|_| MemoryFootprintError::CounterFault)?;
+            exact.checked_accumulate(delta)?;
         }
         self.inner.memory.reconcile(exact)
     }
@@ -1783,12 +1771,14 @@ where
         let ttl = options.ttl_value().unwrap_or(self.inner.default_ttl);
         let tags = options.tags_value().to_vec();
         let value_len = value.len();
+        let expires_at = Instant::now().checked_add(ttl);
+        let memory_delta = EntryMemoryDelta::new(key, value_len, &tags, expires_at.is_some())
+            .map_err(|error| CacheError::Backend(error.to_string()))?;
         let entry = CacheEntry {
             value,
             tags: tags.clone(),
-            expires_at: Instant::now().checked_add(ttl),
+            expires_at,
         };
-        let has_expiry = entry.expires_at.is_some();
 
         if let Some(old_entry) = self.inner.store.get(key).await {
             self.inner.tag_index.unregister(key, &old_entry.tags).await;
@@ -1796,12 +1786,7 @@ where
 
         self.inner.store.insert(key.to_owned(), entry).await;
         self.inner.tag_index.register(key, &tags).await;
-        self.inner.memory.insert(EntryMemoryDelta::new(
-            key,
-            value_len,
-            tags.len(),
-            has_expiry,
-        ));
+        self.inner.memory.insert(memory_delta);
         self.publish_key_event(CacheEventKind::Stored, key, origin, tags);
         Ok(())
     }

@@ -1,0 +1,42 @@
+{
+  "schema_version": 1,
+  "release": "0.71",
+  "estimator": "hydracache-retained-byte-estimate-v1",
+  "target": "64-bit",
+  "policy_effect": "reporting-only",
+  "legacy_moka_weigher": "encoded-value-bytes",
+  "constants": {
+    "cache_entry_bytes": 72,
+    "primary_index_metadata_bytes": 96,
+    "string_header_bytes": 24,
+    "tag_index_membership_metadata_bytes": 64,
+    "expiry_scheduler_metadata_bytes": 32
+  },
+  "error_bounds": {
+    "posture": "conservative-model",
+    "includes": [
+      "encoded key and value lengths",
+      "CacheEntry inline layout",
+      "primary index metadata allowance",
+      "tag vector headers and strings",
+      "duplicated tag-index key and tag strings",
+      "tag-index membership metadata allowance",
+      "expiry scheduler metadata allowance"
+    ],
+    "excludes": [
+      "allocator size-class rounding",
+      "Moka shard and global bookkeeping amortization",
+      "allocator arenas, fragmentation, retained pages and page cache"
+    ],
+    "validation": "W0 heap-profiler deltas freeze the numeric error envelope before sizing claims"
+  },
+  "cases": [
+    { "id": "empty", "key_length": 0, "value_bytes": 0, "tag_lengths": [], "expires": false, "expected_total_bytes": 168 },
+    { "id": "small", "key_length": 1, "value_bytes": 64, "tag_lengths": [], "expires": false, "expected_total_bytes": 233 },
+    { "id": "small-ttl", "key_length": 1, "value_bytes": 64, "tag_lengths": [], "expires": true, "expected_total_bytes": 265 },
+    { "id": "one-tag", "key_length": 1, "value_bytes": 64, "tag_lengths": [1], "expires": false, "expected_total_bytes": 324 },
+    { "id": "sixteen-tags", "key_length": 1, "value_bytes": 64, "tag_lengths": [16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16], "expires": true, "expected_total_bytes": 2201 },
+    { "id": "large-key-tag", "key_length": 4096, "value_bytes": 4096, "tag_lengths": [16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16], "expires": true, "expected_total_bytes": 75848 },
+    { "id": "maximum-payload", "key_length": 3, "value_bytes": 16777216, "tag_lengths": [], "expires": true, "expected_total_bytes": 16777419 }
+  ]
+}

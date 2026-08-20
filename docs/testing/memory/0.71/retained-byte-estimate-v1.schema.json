@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://hydracache.dev/schemas/0.71/retained-byte-estimate-v1.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "encoded_key_bytes", "value_bytes", "cache_entry_bytes", "primary_index_bytes", "tag_vector_bytes", "tag_string_bytes", "tag_index_bytes", "expiry_bytes", "total_bytes"],
+  "properties": {
+    "schema_version": { "const": "hydracache-retained-byte-estimate-v1" },
+    "encoded_key_bytes": { "$ref": "#/$defs/bytes" },
+    "value_bytes": { "$ref": "#/$defs/bytes" },
+    "cache_entry_bytes": { "$ref": "#/$defs/bytes" },
+    "primary_index_bytes": { "$ref": "#/$defs/bytes" },
+    "tag_vector_bytes": { "$ref": "#/$defs/bytes" },
+    "tag_string_bytes": { "$ref": "#/$defs/bytes" },
+    "tag_index_bytes": { "$ref": "#/$defs/bytes" },
+    "expiry_bytes": { "$ref": "#/$defs/bytes" },
+    "total_bytes": { "$ref": "#/$defs/bytes" }
+  },
+  "$defs": {
+    "bytes": { "type": "integer", "minimum": 0 }
+  }
+}

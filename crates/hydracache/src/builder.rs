@@ -364,12 +364,15 @@ where
                 Box::pin(async move {
                     let _mutation = memory.mutation();
                     tag_index.unregister(&key, &entry.tags).await;
-                    memory.remove(crate::memory_footprint::EntryMemoryDelta::new(
+                    match crate::memory_footprint::EntryMemoryDelta::new(
                         &key,
                         entry.value.len(),
-                        entry.tags.len(),
+                        &entry.tags,
                         entry.expires_at.is_some(),
-                    ));
+                    ) {
+                        Ok(delta) => memory.remove(delta),
+                        Err(_) => memory.mark_fault(),
+                    }
                 })
             })
             .build();

@@ -3,9 +3,154 @@ use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
 
 use serde::{Deserialize, Serialize};
 
-const ENTRY_METADATA_BYTES: u64 = 64;
-const TAG_MEMBERSHIP_METADATA_BYTES: u64 = 24;
-const EXPIRY_METADATA_BYTES: u64 = 16;
+const PRIMARY_INDEX_METADATA_BYTES: u64 = 96;
+const TAG_INDEX_MEMBERSHIP_METADATA_BYTES: u64 = 64;
+const EXPIRY_SCHEDULER_METADATA_BYTES: u64 = 32;
+
+/// Versioned, deterministic retained-byte estimate for one encoded entry.
+///
+/// The estimate is reporting-only in 0.71 W2a. It does not change the legacy
+/// value-byte Moka capacity or eviction policy.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
+pub struct RetainedByteEstimate {
+    pub schema_version: &'static str,
+    pub encoded_key_bytes: u64,
+    pub value_bytes: u64,
+    pub cache_entry_bytes: u64,
+    pub primary_index_bytes: u64,
+    pub tag_vector_bytes: u64,
+    pub tag_string_bytes: u64,
+    pub tag_index_bytes: u64,
+    pub expiry_bytes: u64,
+    pub total_bytes: u64,
+}
+
+impl RetainedByteEstimate {
+    /// Estimate retained bytes from lengths already known by the mutation.
+    pub fn for_entry(
+        key: &str,
+        value_bytes: usize,
+        tags: &[String],
+        expires: bool,
+    ) -> Result<Self, RetainedByteEstimateError> {
+        let encoded_key_bytes = usize_to_u64(key.len(), "encoded_key_bytes")?;
+        let value_bytes = usize_to_u64(value_bytes, "value_bytes")?;
+        let cache_entry_bytes = usize_to_u64(
+            std::mem::size_of::<crate::entry::CacheEntry>(),
+            "cache_entry_bytes",
+        )?;
+        let tag_count = usize_to_u64(tags.len(), "tag_count")?;
+        let string_header = usize_to_u64(std::mem::size_of::<String>(), "string_header")?;
+        let tag_vector_bytes = checked_mul(tag_count, string_header, "tag_vector_bytes")?;
+        let mut tag_string_bytes = 0_u64;
+        let mut tag_index_bytes = 0_u64;
+        for tag in tags {
+            let tag_bytes = usize_to_u64(tag.len(), "tag_string_bytes")?;
+            tag_string_bytes = checked_add(tag_string_bytes, tag_bytes, "tag_string_bytes")?;
+            let membership = checked_add(
+                TAG_INDEX_MEMBERSHIP_METADATA_BYTES,
+                encoded_key_bytes,
+                "tag_index_bytes",
+            )?;
+            let membership = checked_add(membership, tag_bytes, "tag_index_bytes")?;
+            tag_index_bytes = checked_add(tag_index_bytes, membership, "tag_index_bytes")?;
+        }
+        let expiry_bytes = u64::from(expires) * EXPIRY_SCHEDULER_METADATA_BYTES;
+        let components = [
+            encoded_key_bytes,
+            value_bytes,
+            cache_entry_bytes,
+            PRIMARY_INDEX_METADATA_BYTES,
+            tag_vector_bytes,
+            tag_string_bytes,
+            tag_index_bytes,
+            expiry_bytes,
+        ];
+        let total_bytes = components.into_iter().try_fold(0_u64, |total, component| {
+            checked_add(total, component, "total_bytes")
+        })?;
+        Ok(Self {
+            schema_version: "hydracache-retained-byte-estimate-v1",
+            encoded_key_bytes,
+            value_bytes,
+            cache_entry_bytes,
+            primary_index_bytes: PRIMARY_INDEX_METADATA_BYTES,
+            tag_vector_bytes,
+            tag_string_bytes,
+            tag_index_bytes,
+            expiry_bytes,
+            total_bytes,
+        })
+    }
+
+    /// Checked adapter for a future retained-byte Moka weigher.
+    ///
+    /// W2a exposes and tests the boundary but deliberately does not install it.
+    pub fn try_moka_weight(self) -> Result<u32, RetainedByteEstimateError> {
+        u32::try_from(self.total_bytes).map_err(|_| {
+            RetainedByteEstimateError::MokaWeightUnrepresentable {
+                total_bytes: self.total_bytes,
+            }
+        })
+    }
+
+    fn tag_retained_bytes(self) -> Result<u64, RetainedByteEstimateError> {
+        [
+            self.tag_vector_bytes,
+            self.tag_string_bytes,
+            self.tag_index_bytes,
+        ]
+        .into_iter()
+        .try_fold(0_u64, |total, component| {
+            checked_add(total, component, "tag_retained_bytes")
+        })
+    }
+}
+
+/// Fail-loud retained-byte estimator errors.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum RetainedByteEstimateError {
+    Overflow { component: &'static str },
+    MokaWeightUnrepresentable { total_bytes: u64 },
+}
+
+impl fmt::Display for RetainedByteEstimateError {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::Overflow { component } => {
+                write!(formatter, "retained-byte estimate overflow in {component}")
+            }
+            Self::MokaWeightUnrepresentable { total_bytes } => write!(
+                formatter,
+                "retained-byte estimate {total_bytes} exceeds the Moka u32 weight boundary"
+            ),
+        }
+    }
+}
+
+impl std::error::Error for RetainedByteEstimateError {}
+
+fn usize_to_u64(value: usize, component: &'static str) -> Result<u64, RetainedByteEstimateError> {
+    u64::try_from(value).map_err(|_| RetainedByteEstimateError::Overflow { component })
+}
+
+fn checked_add(
+    left: u64,
+    right: u64,
+    component: &'static str,
+) -> Result<u64, RetainedByteEstimateError> {
+    left.checked_add(right)
+        .ok_or(RetainedByteEstimateError::Overflow { component })
+}
+
+fn checked_mul(
+    left: u64,
+    right: u64,
+    component: &'static str,
+) -> Result<u64, RetainedByteEstimateError> {
+    left.checked_mul(right)
+        .ok_or(RetainedByteEstimateError::Overflow { component })
+}
 
 /// Runtime cost posture for bounded memory-footprint instrumentation.
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize)]
@@ -148,6 +293,8 @@ pub struct MemoryReconciliationReport {
     pub exact_value_bytes: u64,
     pub counter_tag_memberships: u64,
     pub exact_tag_memberships: u64,
+    pub counter_estimated_retained_bytes: u64,
+    pub exact_estimated_retained_bytes: u64,
 }
 
 /// Fail-loud instrumentation errors. No counter is silently wrapped.
@@ -186,7 +333,10 @@ pub(crate) struct EntryMemoryDelta {
     pub(crate) key_bytes: u64,
     pub(crate) value_bytes: u64,
     pub(crate) tag_memberships: u64,
+    pub(crate) tag_string_bytes: u64,
     pub(crate) expiry_records: u64,
+    pub(crate) estimated_retained_bytes: u64,
+    pub(crate) estimated_tag_retained_bytes: u64,
 }
 
 #[derive(Debug, Clone, Copy, Default)]
@@ -202,25 +352,59 @@ pub(crate) struct MemoryCaptureInput {
 }
 
 impl EntryMemoryDelta {
-    pub(crate) fn new(key: &str, value_bytes: usize, tags: usize, expires: bool) -> Self {
-        Self {
+    pub(crate) fn new(
+        key: &str,
+        value_bytes: usize,
+        tags: &[String],
+        expires: bool,
+    ) -> Result<Self, RetainedByteEstimateError> {
+        let estimate = RetainedByteEstimate::for_entry(key, value_bytes, tags, expires)?;
+        Ok(Self {
             entries: 1,
-            key_bytes: key.len() as u64,
-            value_bytes: value_bytes as u64,
-            tag_memberships: tags as u64,
+            key_bytes: estimate.encoded_key_bytes,
+            value_bytes: estimate.value_bytes,
+            tag_memberships: usize_to_u64(tags.len(), "tag_memberships")?,
+            tag_string_bytes: estimate.tag_string_bytes,
             expiry_records: u64::from(expires),
-        }
+            estimated_retained_bytes: estimate.total_bytes,
+            estimated_tag_retained_bytes: estimate.tag_retained_bytes()?,
+        })
     }
 
-    fn estimated_retained_bytes(self) -> u64 {
-        self.key_bytes
-            .saturating_add(self.value_bytes)
-            .saturating_add(self.entries.saturating_mul(ENTRY_METADATA_BYTES))
-            .saturating_add(
-                self.tag_memberships
-                    .saturating_mul(TAG_MEMBERSHIP_METADATA_BYTES),
-            )
-            .saturating_add(self.expiry_records.saturating_mul(EXPIRY_METADATA_BYTES))
+    pub(crate) fn checked_accumulate(&mut self, other: Self) -> Result<(), MemoryFootprintError> {
+        self.entries = self
+            .entries
+            .checked_add(other.entries)
+            .ok_or(MemoryFootprintError::CounterFault)?;
+        self.key_bytes = self
+            .key_bytes
+            .checked_add(other.key_bytes)
+            .ok_or(MemoryFootprintError::CounterFault)?;
+        self.value_bytes = self
+            .value_bytes
+            .checked_add(other.value_bytes)
+            .ok_or(MemoryFootprintError::CounterFault)?;
+        self.tag_memberships = self
+            .tag_memberships
+            .checked_add(other.tag_memberships)
+            .ok_or(MemoryFootprintError::CounterFault)?;
+        self.tag_string_bytes = self
+            .tag_string_bytes
+            .checked_add(other.tag_string_bytes)
+            .ok_or(MemoryFootprintError::CounterFault)?;
+        self.expiry_records = self
+            .expiry_records
+            .checked_add(other.expiry_records)
+            .ok_or(MemoryFootprintError::CounterFault)?;
+        self.estimated_retained_bytes = self
+            .estimated_retained_bytes
+            .checked_add(other.estimated_retained_bytes)
+            .ok_or(MemoryFootprintError::CounterFault)?;
+        self.estimated_tag_retained_bytes = self
+            .estimated_tag_retained_bytes
+            .checked_add(other.estimated_tag_retained_bytes)
+            .ok_or(MemoryFootprintError::CounterFault)?;
+        Ok(())
     }
 }
 
@@ -235,7 +419,10 @@ pub(crate) struct MemoryFootprintCounters {
     key_bytes: AtomicU64,
     value_bytes: AtomicU64,
     tag_memberships: AtomicU64,
+    tag_string_bytes: AtomicU64,
     expiry_records: AtomicU64,
+    estimated_retained_bytes: AtomicU64,
+    estimated_tag_retained_bytes: AtomicU64,
 }
 
 impl MemoryFootprintCounters {
@@ -250,7 +437,10 @@ impl MemoryFootprintCounters {
             key_bytes: AtomicU64::new(0),
             value_bytes: AtomicU64::new(0),
             tag_memberships: AtomicU64::new(0),
+            tag_string_bytes: AtomicU64::new(0),
             expiry_records: AtomicU64::new(0),
+            estimated_retained_bytes: AtomicU64::new(0),
+            estimated_tag_retained_bytes: AtomicU64::new(0),
         }
     }
 
@@ -281,12 +471,27 @@ impl MemoryFootprintCounters {
         }
     }
 
+    pub(crate) fn mark_fault(&self) {
+        if self.mode != MemoryInstrumentationMode::Off {
+            self.faulted.store(true, Ordering::Release);
+        }
+    }
+
     fn add(&self, delta: EntryMemoryDelta) {
         self.checked_add(&self.entries, delta.entries);
         self.checked_add(&self.key_bytes, delta.key_bytes);
         self.checked_add(&self.value_bytes, delta.value_bytes);
         self.checked_add(&self.tag_memberships, delta.tag_memberships);
+        self.checked_add(&self.tag_string_bytes, delta.tag_string_bytes);
         self.checked_add(&self.expiry_records, delta.expiry_records);
+        self.checked_add(
+            &self.estimated_retained_bytes,
+            delta.estimated_retained_bytes,
+        );
+        self.checked_add(
+            &self.estimated_tag_retained_bytes,
+            delta.estimated_tag_retained_bytes,
+        );
     }
 
     fn subtract(&self, delta: EntryMemoryDelta) {
@@ -294,7 +499,16 @@ impl MemoryFootprintCounters {
         self.checked_sub(&self.key_bytes, delta.key_bytes);
         self.checked_sub(&self.value_bytes, delta.value_bytes);
         self.checked_sub(&self.tag_memberships, delta.tag_memberships);
+        self.checked_sub(&self.tag_string_bytes, delta.tag_string_bytes);
         self.checked_sub(&self.expiry_records, delta.expiry_records);
+        self.checked_sub(
+            &self.estimated_retained_bytes,
+            delta.estimated_retained_bytes,
+        );
+        self.checked_sub(
+            &self.estimated_tag_retained_bytes,
+            delta.estimated_tag_retained_bytes,
+        );
     }
 
     fn checked_add(&self, counter: &AtomicU64, delta: u64) {
@@ -357,7 +571,10 @@ impl MemoryFootprintCounters {
             key_bytes: self.key_bytes.load(Ordering::Acquire),
             value_bytes: self.value_bytes.load(Ordering::Acquire),
             tag_memberships: self.tag_memberships.load(Ordering::Acquire),
+            tag_string_bytes: self.tag_string_bytes.load(Ordering::Acquire),
             expiry_records: self.expiry_records.load(Ordering::Acquire),
+            estimated_retained_bytes: self.estimated_retained_bytes.load(Ordering::Acquire),
+            estimated_tag_retained_bytes: self.estimated_tag_retained_bytes.load(Ordering::Acquire),
         };
         let active_after = self.active_mutations.load(Ordering::Acquire);
         let after = self.version.load(Ordering::Acquire);
@@ -383,25 +600,30 @@ impl MemoryFootprintCounters {
                 MemorySnapshotConsistency::Exact
             }
         };
-        let estimated_retained_bytes = delta.estimated_retained_bytes();
+        let estimated_retained_bytes = delta.estimated_retained_bytes;
+        let estimated_entry_retained_bytes = estimated_retained_bytes
+            .checked_sub(delta.estimated_tag_retained_bytes)
+            .ok_or(MemoryFootprintError::CounterFault)?;
         let owners = vec![
             MemoryOwnerObservation {
-                owner_id: "owner-85bde59bce494e82".to_owned(),
+                owner_id: "owner-179c497a43bde431".to_owned(),
                 records: delta.entries,
-                logical_bytes: delta.key_bytes.saturating_add(delta.value_bytes),
-                estimated_retained_bytes,
+                logical_bytes: delta
+                    .key_bytes
+                    .checked_add(delta.value_bytes)
+                    .ok_or(MemoryFootprintError::CounterFault)?,
+                estimated_retained_bytes: estimated_entry_retained_bytes,
                 available: self.mode != MemoryInstrumentationMode::Off,
             },
             MemoryOwnerObservation {
                 owner_id: "owner-f184fb44837b0512".to_owned(),
                 records: delta
                     .tag_memberships
-                    .saturating_add(tag_generation_records)
-                    .saturating_add(key_generation_records),
-                logical_bytes: 0,
-                estimated_retained_bytes: delta
-                    .tag_memberships
-                    .saturating_mul(TAG_MEMBERSHIP_METADATA_BYTES),
+                    .checked_add(tag_generation_records)
+                    .and_then(|value| value.checked_add(key_generation_records))
+                    .ok_or(MemoryFootprintError::CounterFault)?,
+                logical_bytes: delta.tag_string_bytes,
+                estimated_retained_bytes: delta.estimated_tag_retained_bytes,
                 available: self.mode != MemoryInstrumentationMode::Off,
             },
             MemoryOwnerObservation {
@@ -477,7 +699,9 @@ impl MemoryFootprintCounters {
             matched: self.entries.load(Ordering::Acquire) == exact.entries
                 && self.key_bytes.load(Ordering::Acquire) == exact.key_bytes
                 && self.value_bytes.load(Ordering::Acquire) == exact.value_bytes
-                && self.tag_memberships.load(Ordering::Acquire) == exact.tag_memberships,
+                && self.tag_memberships.load(Ordering::Acquire) == exact.tag_memberships
+                && self.estimated_retained_bytes.load(Ordering::Acquire)
+                    == exact.estimated_retained_bytes,
             counter_entries: self.entries.load(Ordering::Acquire),
             exact_entries: exact.entries,
             counter_key_bytes: self.key_bytes.load(Ordering::Acquire),
@@ -486,6 +710,8 @@ impl MemoryFootprintCounters {
             exact_value_bytes: exact.value_bytes,
             counter_tag_memberships: self.tag_memberships.load(Ordering::Acquire),
             exact_tag_memberships: exact.tag_memberships,
+            counter_estimated_retained_bytes: self.estimated_retained_bytes.load(Ordering::Acquire),
+            exact_estimated_retained_bytes: exact.estimated_retained_bytes,
         };
         if report.matched {
             Ok(report)
@@ -540,6 +766,22 @@ mod tests {
     use super::*;
 
     #[test]
+    fn retained_estimator_overflow_is_fail_loud() {
+        assert_eq!(
+            checked_add(u64::MAX, 1, "canary"),
+            Err(RetainedByteEstimateError::Overflow {
+                component: "canary"
+            })
+        );
+        assert_eq!(
+            checked_mul(u64::MAX, 2, "canary"),
+            Err(RetainedByteEstimateError::Overflow {
+                component: "canary"
+            })
+        );
+    }
+
+    #[test]
     fn concurrent_admin_read_is_marked_non_atomic() {
         let counters = MemoryFootprintCounters::new(MemoryInstrumentationMode::Production);
         let mutation = counters.mutation();
@@ -571,17 +813,13 @@ mod tests {
     #[test]
     fn hidden_secondary_index_mismatch_fails_loud() {
         let counters = MemoryFootprintCounters::new(MemoryInstrumentationMode::Production);
+        let tags = vec!["tag".to_owned()];
         {
             let _mutation = counters.mutation();
-            counters.insert(EntryMemoryDelta::new("key", 8, 1, true));
+            counters.insert(EntryMemoryDelta::new("key", 8, &tags, true).expect("estimate"));
         }
-        let hidden_membership = EntryMemoryDelta {
-            entries: 1,
-            key_bytes: 3,
-            value_bytes: 8,
-            tag_memberships: 2,
-            expiry_records: 1,
-        };
+        let mut hidden_membership = EntryMemoryDelta::new("key", 8, &tags, true).expect("estimate");
+        hidden_membership.tag_memberships += 1;
         assert_eq!(
             counters.reconcile(hidden_membership),
             Err(MemoryFootprintError::ReconciliationMismatch)

@@ -2089,6 +2089,7 @@ dependencies = [
  "futures-util",
  "hydracache-core",
  "hydracache-macros",
+ "jsonschema",
  "loom",
  "mimalloc",
  "moka",

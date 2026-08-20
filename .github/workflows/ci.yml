@@ -192,6 +192,7 @@ jobs:
       - name: Verify coherent snapshots and phase providers
         run: |
           cargo test -p hydracache --test memory_footprint_071 --locked
+          cargo test -p hydracache --test memory_accounting_071 --locked -- --test-threads=1
           cargo test -p hydracache memory_footprint::tests --locked
           cargo test -p hydracache-loadgen memory_efficiency --locked
           python scripts/perf/memory-providers/test_provider_contract.py
