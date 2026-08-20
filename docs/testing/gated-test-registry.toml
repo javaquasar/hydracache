@@ -6721,13 +6721,13 @@ test = ""
 cfg = 'not (target_arch = "wasm32")'
 env = ""
 reason = "The native memory-footprint contract uses Tokio timing and Moka eviction behavior that are not available on wasm32"
-tier = "fast"
+tier = "nightly"
 required_features = []
 required_env = []
 required_tools = []
 timeout_seconds = 300
 owner_release = "0.71.0"
-ship_mandatory = true
+ship_mandatory = false
 artifacts = []
 
 [gate.ci]

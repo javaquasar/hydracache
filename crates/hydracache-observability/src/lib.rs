@@ -1259,6 +1259,7 @@ mod tests {
 
     use hydracache::{
         CacheOptions, ClusterGeneration, ClusterHealthState, HydraCache, InMemoryCluster,
+        MemoryInstrumentationMode,
     };
     use serde_json::Value;
 
@@ -1269,7 +1270,9 @@ mod tests {
 
     #[tokio::test]
     async fn registry_reports_named_cache_diagnostics() {
-        let cache = HydraCache::local().build();
+        let cache = HydraCache::local()
+            .memory_instrumentation_mode(MemoryInstrumentationMode::Production)
+            .build();
         cache
             .get_or_insert_with("answer", CacheOptions::new(), || async { 42_u64 })
             .await
