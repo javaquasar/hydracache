@@ -800,7 +800,14 @@ jobs:
         run: cargo doc --workspace --no-deps --locked
 
       - name: Clippy
-        run: cargo clippy --workspace --all-targets --all-features --locked -- -D warnings
+        run: |
+          cargo clippy --workspace --all-targets --all-features --exclude hydracache --locked -- -D warnings
+          common_features="durable-value-store,durable-values,tiered-values,testing"
+          cargo clippy -p hydracache --all-targets --no-default-features --features "$common_features" --locked -- -D warnings
+          cargo clippy -p hydracache --all-targets --no-default-features --features "$common_features,allocator-system" --locked -- -D warnings
+          for allocator in allocator-jemalloc allocator-mimalloc; do
+            cargo clippy -p hydracache --lib --no-default-features --features "$common_features,$allocator" --locked -- -D warnings
+          done
 
       - name: Clean Rust test scratch links
         if: always()

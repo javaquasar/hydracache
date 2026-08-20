@@ -21,7 +21,8 @@ Run these before opening or publishing a release:
 cargo fmt --all -- --check
 cargo check --workspace --all-targets --locked
 cargo test --workspace --all-targets --locked
-cargo clippy --workspace --all-targets --all-features --locked -- -D warnings
+cargo clippy --workspace --all-targets --all-features --exclude hydracache --locked -- -D warnings
+cargo clippy -p hydracache --all-targets --locked -- -D warnings
 cargo test --doc --workspace --locked
 cargo doc --workspace --no-deps --locked
 cargo semver-checks -p hydracache --baseline-version 0.20.0 --release-type minor --all-features
@@ -1880,10 +1881,11 @@ workspace = true
 In this project `crates/hydracache/Cargo.toml` uses that entry because
 `crates/hydracache/src/cache.rs` contains the `#[cfg(coverage)]` hook. Without
 the opt-in, Cargo would not apply the workspace `unexpected_cfgs` configuration
-to that crate, and the current CI command
-`cargo clippy --workspace --all-targets --all-features --locked -- -D warnings`
-could fail with an `unexpected cfg condition name: coverage` warning promoted to
-an error.
+to that crate. CI lints the rest of the workspace with all features, excludes
+`hydracache` from that single invocation, and then lints `hydracache` separately
+with its portable default plus each valid explicit allocator selection. This
+keeps `-D warnings` coverage without combining the mutually exclusive jemalloc
+and mimalloc features.
 
 ## Doctest Coverage Caveat
 
