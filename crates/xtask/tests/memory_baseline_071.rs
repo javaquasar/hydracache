@@ -73,7 +73,7 @@ fn corrected_ttl_requires_final_checkpoint() {
 
 #[test]
 fn dirty_identity_and_reused_process_are_rejected() {
-    let expected = "3189d35c26b9c1eae3505f4ab3e32a2360fb8ada";
+    let expected = "795f9493bcbb7a56aa229c59e4a717f60c654cdb";
     let problems = xtask::memory_baseline::validate_worktree_identity(
         expected,
         "0000000000000000000000000000000000000000",

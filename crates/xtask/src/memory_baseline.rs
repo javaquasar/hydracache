@@ -12,6 +12,8 @@ const SCENARIO: &str = "docs/testing/perf-scenarios/0.71/memory-efficiency-v1.to
 const HISTORICAL_REQUIREMENTS: &str = "docs/testing/memory/0.71/historical-input-requirements.toml";
 const HISTORICAL_RECEIPT: &str = "target/memory-evidence/0.71/historical-input-receipt.json";
 const EXPECTED_ARCHIVE_COMMIT: &str = "dbc2f82f7f303528b3cca7842818730c82232b9c";
+const B0_SHA: &str = "75719b0bf5de2250cf4eb16a30073dd7429538e3";
+const B1_SHA: &str = "795f9493bcbb7a56aa229c59e4a717f60c654cdb";
 
 #[derive(Debug)]
 struct Options {
@@ -93,8 +95,8 @@ pub fn run_status(args: Vec<String>) -> Result<(), Box<dyn Error>> {
         schema_version: 1,
         release: options.release,
         source_sha,
-        b0_sha: "75719b0bf5de2250cf4eb16a30073dd7429538e3".to_owned(),
-        b1_sha: "3189d35c26b9c1eae3505f4ab3e32a2360fb8ada".to_owned(),
+        b0_sha: B0_SHA.to_owned(),
+        b1_sha: B1_SHA.to_owned(),
         scenario_sha256: sha256_file(&options.root.join(SCENARIO))?,
         platform: std::env::consts::OS.to_owned(),
         diagnostic_only: true,
@@ -204,8 +206,8 @@ fn check_identities(
         .and_then(toml::Value::as_array)
         .cloned()
         .unwrap_or_default();
-    if scenario_inputs.len() != 9 {
-        problems.push("scenario cohort must freeze exactly nine prerequisite inputs".to_owned());
+    if scenario_inputs.len() != 11 {
+        problems.push("scenario cohort must freeze exactly eleven prerequisite inputs".to_owned());
     }
     for input in scenario_inputs {
         let Some(path) = input.get("path").and_then(toml::Value::as_str) else {
@@ -457,8 +459,8 @@ pub fn validate_baseline_report(report: &JsonValue) -> Vec<String> {
     let cohort = report.get("cohort").and_then(JsonValue::as_str);
     let source_sha = report.get("source_sha").and_then(JsonValue::as_str);
     let expected_sha = match cohort {
-        Some("B0-release") => Some("75719b0bf5de2250cf4eb16a30073dd7429538e3"),
-        Some("B1-instrumented") => Some("3189d35c26b9c1eae3505f4ab3e32a2360fb8ada"),
+        Some("B0-release") => Some(B0_SHA),
+        Some("B1-instrumented") => Some(B1_SHA),
         _ => None,
     };
     if expected_sha.is_some_and(|expected| source_sha != Some(expected)) {
@@ -577,7 +579,7 @@ pub fn diagnostic_fixture_report() -> JsonValue {
         "schema_version": 1,
         "release": "0.71",
         "cohort": "B1-instrumented",
-        "source_sha": "3189d35c26b9c1eae3505f4ab3e32a2360fb8ada",
+        "source_sha": B1_SHA,
         "binary_sha256": format!("sha256:{}", "1".repeat(64)),
         "scenario_digest": format!("sha256:{}", "2".repeat(64)),
         "host_fingerprint": "diagnostic-fixture",

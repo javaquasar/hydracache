@@ -12,7 +12,7 @@ instrumentation = "external-signals-only"
 
 [b1_instrumented]
 identity = "B1-instrumented"
-source_sha = "3189d35c26b9c1eae3505f4ab3e32a2360fb8ada"
+source_sha = "795f9493bcbb7a56aa229c59e4a717f60c654cdb"
 instrumentation = "W1-S5-production-and-profile"
 forbidden_product_work = ["W2b", "W3", "W4", "W5", "W6", "W7", "W8", "W9", "W10", "W11"]
 
@@ -55,6 +55,14 @@ sha256 = "3fdff1886e8458f3b2df81583944015d056c0a84faebe7398b2e12de33a2778b"
 [[scenario.input]]
 path = "docs/testing/memory/0.71/memory-baseline-report-v1.schema.json"
 sha256 = "78d8fe47f941b1129aa090b59df8b3deac210c487770e9b11a1465bde10c117c"
+
+[[scenario.input]]
+path = "docs/testing/memory/0.71/historical-input-receipt-v1.schema.json"
+sha256 = "c06ef23ada025f85912d2cf983c3ed3f1432342f0eda715d933440bfdf42325a"
+
+[[scenario.input]]
+path = "docs/testing/memory/0.71/memory-baseline-status-v1.schema.json"
+sha256 = "d634c8ff1aff8e402008dc5c475e27b221bfb5454e6ffc0aa71d6a2d746c528f"
 
 [historical]
 branch = "explore/0.67-telemetry-hazelcast"

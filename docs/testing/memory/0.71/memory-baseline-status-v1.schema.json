@@ -9,7 +9,7 @@
     "release": { "const": "0.71" },
     "source_sha": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
     "b0_sha": { "const": "75719b0bf5de2250cf4eb16a30073dd7429538e3" },
-    "b1_sha": { "const": "3189d35c26b9c1eae3505f4ab3e32a2360fb8ada" },
+    "b1_sha": { "const": "795f9493bcbb7a56aa229c59e4a717f60c654cdb" },
     "scenario_sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
     "platform": { "type": "string", "minLength": 1 },
     "diagnostic_only": { "const": true },
