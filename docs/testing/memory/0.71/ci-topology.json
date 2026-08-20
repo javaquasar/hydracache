@@ -159,6 +159,25 @@
       }
     },
     {
+      "path": ".github/workflows/memory-reference-071.yml",
+      "purpose": "Serialized protected-host execution of one preregistered 0.71 memory row with resumable mirrored evidence",
+      "triggers": ["workflow_dispatch"],
+      "concurrency_markers": ["github.sha", "inputs.campaign_id"],
+      "classes": {
+        "core": [],
+        "release-only": [],
+        "scheduled-diagnostic": [],
+        "manual-protected": ["campaign"],
+        "publish": []
+      },
+      "artifact_budget": {
+        "max_retention_days": 90,
+        "max_uploads_per_job": 1,
+        "max_bytes_per_artifact": 1073741824
+      },
+      "watchdog_jobs": ["campaign"]
+    },
+    {
       "path": ".github/workflows/post-publish.yml",
       "purpose": "Verify published packages through a version- and SHA-scoped reusable workflow",
       "triggers": ["workflow_call", "workflow_dispatch"],

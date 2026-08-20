@@ -18,6 +18,7 @@ import platform
 import shutil
 import subprocess
 import sys
+import tarfile
 import time
 import tomllib
 from dataclasses import dataclass
@@ -321,6 +322,11 @@ def prepare_builds(root: Path, campaign_dir: Path, build_root: Path) -> None:
             if worktree.exists() or target_dir.exists():
                 raise CampaignError(f"refusing to reuse incomplete build paths for {cohort}")
             log_dir = campaign_dir / "builds" / cohort
+            if log_dir.exists():
+                failures = campaign_dir / "build-failures"
+                failures.mkdir(exist_ok=True)
+                retained_failure = failures / f"{slug}-{time.time_ns()}"
+                log_dir.rename(retained_failure)
             log_dir.mkdir(parents=True, exist_ok=False)
             build_log = log_dir / "build.log"
             try:
@@ -401,6 +407,112 @@ def prepare_builds(root: Path, campaign_dir: Path, build_root: Path) -> None:
                 shutil.rmtree(target_dir, ignore_errors=True)
 
 
+def validate_admission_receipts(receipts: dict[str, dict[str, Any]], state: dict[str, Any]) -> None:
+    host = receipts["host-preflight"]
+    if (
+        host.get("schema_version") != 1
+        or host.get("release") != RELEASE
+        or host.get("profile_id") != "memory-reference-071-v1"
+        or host.get("protected_environment") != "memory-reference-071"
+        or host.get("result") != "success"
+        or host.get("ship_evidence_eligible") is not True
+    ):
+        raise CampaignError("host preflight receipt is not an admitted 0.71 reference host")
+    bootstrap = receipts["reference-activation"]
+    if (
+        bootstrap.get("schema_version") != 1
+        or bootstrap.get("release") != "0.67.1"
+        or bootstrap.get("profile") != "reference-v1"
+        or bootstrap.get("passed") is not True
+        or bootstrap.get("ship_evidence_eligible") is not True
+    ):
+        raise CampaignError("0.67.1 reference activation receipt is invalid")
+    historical = receipts["historical-input-receipt"]
+    mirror = historical.get("mirror", {})
+    if (
+        historical.get("schema_version") != 1
+        or historical.get("release") != RELEASE
+        or historical.get("commit") != "dbc2f82f7f303528b3cca7842818730c82232b9c"
+        or historical.get("checkout_clean") is not True
+        or not historical.get("files")
+        or mirror.get("manifest_sha256") != mirror.get("restored_manifest_sha256")
+    ):
+        raise CampaignError("historical protected-mirror receipt is invalid")
+    overhead = receipts["instrumentation-overhead"]
+    if (
+        overhead.get("schema_version") != 1
+        or overhead.get("release") != RELEASE
+        or overhead.get("source_sha") != state["source_shas"].get("B1-instrumented")
+        or overhead.get("host_fingerprint") != host.get("host_fingerprint")
+        or overhead.get("passed") is not True
+        or overhead.get("ship_evidence_eligible") is not True
+    ):
+        raise CampaignError("S5 instrumentation overhead receipt is invalid or cross-host")
+
+
+def admit_campaign(
+    campaign_dir: Path,
+    host_preflight: Path,
+    bootstrap: Path,
+    historical: Path,
+    overhead: Path,
+) -> None:
+    state_path = campaign_dir / "state.json"
+    if not state_path.is_file():
+        raise CampaignError(f"campaign state is missing: {state_path}")
+    sources = {
+        "host-preflight": host_preflight,
+        "reference-activation": bootstrap,
+        "historical-input-receipt": historical,
+        "instrumentation-overhead": overhead,
+    }
+    documents: dict[str, dict[str, Any]] = {}
+    for name, source in sources.items():
+        if not source.is_file() or source.stat().st_size > 10 * 1024 * 1024:
+            raise CampaignError(f"admission input is missing or oversized: {source}")
+        documents[name] = json.loads(source.read_text(encoding="utf-8"))
+    with CampaignLock(campaign_dir / ".lock"):
+        state = json.loads(state_path.read_text(encoding="utf-8"))
+        if state["mode"] != "evidence":
+            raise CampaignError("admission receipts apply only to evidence campaigns")
+        validate_admission_receipts(documents, state)
+        admission_dir = campaign_dir / "admission"
+        if admission_dir.exists():
+            raise CampaignError("campaign admission is immutable and already exists")
+        admission_dir.mkdir()
+        manifest = []
+        for name, source in sources.items():
+            destination = admission_dir / f"{name}.json"
+            shutil.copy2(source, destination)
+            destination.chmod(0o444)
+            manifest.append(
+                {"id": name, "path": destination.name, "sha256": sha256(destination), "bytes": destination.stat().st_size}
+            )
+        atomic_json(admission_dir / "admission-manifest.json", {"schema_version": 1, "release": RELEASE, "receipts": manifest}, create=True)
+        state["admission"] = {
+            "manifest": "admission/admission-manifest.json",
+            "manifest_sha256": sha256(admission_dir / "admission-manifest.json"),
+            "admitted_at": utc_now(),
+        }
+        atomic_json(state_path, state)
+
+
+def verify_live_host(campaign_dir: Path, host_preflight: Path) -> None:
+    state = json.loads((campaign_dir / "state.json").read_text(encoding="utf-8"))
+    retained_path = campaign_dir / "admission" / "host-preflight.json"
+    if not retained_path.is_file() or not state.get("admission"):
+        raise CampaignError("campaign has no retained host admission")
+    retained = json.loads(retained_path.read_text(encoding="utf-8"))
+    observed = json.loads(host_preflight.read_text(encoding="utf-8"))
+    if (
+        observed.get("result") != "success"
+        or observed.get("ship_evidence_eligible") is not True
+        or observed.get("host_fingerprint") != retained.get("host_fingerprint")
+        or observed.get("profile_id") != retained.get("profile_id")
+    ):
+        raise CampaignError("live host fingerprint or eligibility drifted from campaign admission")
+
+
 def execute_rehearsal(root: Path, campaign_dir: Path, job: dict[str, Any]) -> tuple[str, list[str]]:
     output = campaign_dir / "jobs" / job["job_id"]
     command = [
@@ -465,6 +577,12 @@ def execute_evidence(root: Path, campaign_dir: Path, state: dict[str, Any], job:
         raise CampaignError(f"prepared build is missing for {job['cohort']}")
     build_manifest = campaign_dir / build["manifest"]
     host_preflight = campaign_dir / "admission" / "host-preflight.json"
+    admission = state.get("admission")
+    if not admission:
+        raise CampaignError("campaign has no immutable admission manifest")
+    admission_manifest = campaign_dir / admission["manifest"]
+    if not admission_manifest.is_file() or sha256(admission_manifest) != admission["manifest_sha256"]:
+        raise CampaignError("campaign admission manifest drifted")
     if not host_preflight.is_file():
         raise CampaignError(f"admitted host receipt is missing: {host_preflight}")
     host = json.loads(host_preflight.read_text(encoding="utf-8"))
@@ -519,6 +637,62 @@ def execute_evidence(root: Path, campaign_dir: Path, state: dict[str, Any], job:
     return ("success" if validation.returncode == 0 else "product-failure"), command
 
 
+def publish_job(campaign_dir: Path, state: dict[str, Any], job: dict[str, Any]) -> None:
+    mirror_value = state.get("mirror_root")
+    if not mirror_value:
+        if state["mode"] == "evidence":
+            raise CampaignError("evidence campaign has no protected mirror root")
+        return
+    mirror_root = Path(mirror_value)
+    destination_dir = mirror_root / state["campaign_id"] / "jobs"
+    destination_dir.mkdir(parents=True, exist_ok=True)
+    archive = destination_dir / f"{job['job_id']}.tar.gz"
+    receipt = destination_dir / f"{job['job_id']}.json"
+    retained = state.setdefault("published_jobs", {}).get(job["job_id"])
+    if retained:
+        if archive.is_file() and sha256(archive) == retained["archive_sha256"] and receipt.is_file():
+            return
+        raise CampaignError(f"protected mirror drift for {job['job_id']}")
+    if archive.is_file() and receipt.is_file():
+        recovered = json.loads(receipt.read_text(encoding="utf-8"))
+        if (
+            recovered.get("campaign_id") == state["campaign_id"]
+            and recovered.get("job_id") == job["job_id"]
+            and recovered.get("archive_sha256") == sha256(archive)
+        ):
+            state.setdefault("published_jobs", {})[job["job_id"]] = {
+                "archive": str(archive),
+                "archive_sha256": recovered["archive_sha256"],
+                "receipt": str(receipt),
+            }
+            return
+        raise CampaignError(f"protected mirror recovery receipt drift for {job['job_id']}")
+    if archive.exists() or receipt.exists():
+        raise CampaignError(f"refusing to overwrite unbound protected mirror object for {job['job_id']}")
+    source = campaign_dir / "jobs" / job["job_id"]
+    temporary = destination_dir / f".{job['job_id']}.{os.getpid()}.partial"
+    with tarfile.open(temporary, "w:gz") as bundle:
+        bundle.add(source, arcname=job["job_id"], recursive=True)
+    archive_digest = sha256(temporary)
+    os.replace(temporary, archive)
+    mirror_receipt = {
+        "schema_version": 1,
+        "release": RELEASE,
+        "campaign_id": state["campaign_id"],
+        "job_id": job["job_id"],
+        "archive": archive.name,
+        "archive_sha256": archive_digest,
+        "bytes": archive.stat().st_size,
+        "published_at": utc_now(),
+    }
+    atomic_json(receipt, mirror_receipt, create=True)
+    state["published_jobs"][job["job_id"]] = {
+        "archive": str(archive),
+        "archive_sha256": archive_digest,
+        "receipt": str(receipt),
+    }
+
+
 def run_campaign(root: Path, campaign_dir: Path) -> None:
     state_path = campaign_dir / "state.json"
     events_path = campaign_dir / "events.jsonl"
@@ -547,6 +721,8 @@ def run_campaign(root: Path, campaign_dir: Path) -> None:
                     "exact_command": command,
                 }
             )
+            if status == "success":
+                publish_job(campaign_dir, state, job)
             atomic_json(state_path, state)
             append_event(events_path, {"event": "job-finished", "job_id": job["job_id"], "attempt": attempt, "status": status})
             if status != "success":
@@ -621,9 +797,19 @@ def parse_args() -> argparse.Namespace:
     plan_parser.add_argument("--cohort", action="append", choices=["B0-release", "B1-instrumented", "C-candidate"])
     plan_parser.add_argument("--repetitions", type=int)
     plan_parser.add_argument("--rehearsal", action="store_true")
+    plan_parser.add_argument("--mirror-root", type=Path)
     prepare_parser = commands.add_parser("prepare")
     prepare_parser.add_argument("--campaign-id", required=True)
     prepare_parser.add_argument("--build-root", type=Path, required=True)
+    admit_parser = commands.add_parser("admit")
+    admit_parser.add_argument("--campaign-id", required=True)
+    admit_parser.add_argument("--host-preflight", type=Path, required=True)
+    admit_parser.add_argument("--bootstrap", type=Path, required=True)
+    admit_parser.add_argument("--historical", type=Path, required=True)
+    admit_parser.add_argument("--overhead", type=Path, required=True)
+    verify_host_parser = commands.add_parser("verify-host")
+    verify_host_parser.add_argument("--campaign-id", required=True)
+    verify_host_parser.add_argument("--host-preflight", type=Path, required=True)
     for name in ("run", "resume", "finalize"):
         command = commands.add_parser(name)
         command.add_argument("--campaign-id", required=True)
@@ -646,16 +832,33 @@ def main() -> int:
                 raise CampaignError(f"campaign already exists: {campaign_dir}")
             cohorts = args.cohort or ["B1-instrumented"]
             plan = build_plan(root, args.case, cohorts, args.repetitions, args.rehearsal)
+            plan["campaign_id"] = args.campaign_id
+            plan["mirror_root"] = str(args.mirror_root.resolve()) if args.mirror_root else None
             if not args.rehearsal:
                 resolved_output = campaign_path(root, args.output_root, "_").parent
                 if resolved_output == root or resolved_output.is_relative_to(root):
                     raise CampaignError("evidence campaign output must be outside the Git worktree")
+                if not args.mirror_root:
+                    raise CampaignError("evidence campaign requires --mirror-root")
+                mirror_root = args.mirror_root.resolve()
+                if mirror_root == root or mirror_root.is_relative_to(root):
+                    raise CampaignError("protected mirror root must be outside the Git worktree")
             campaign_dir.mkdir(parents=True)
             atomic_json(campaign_dir / "state.json", plan, create=True)
             append_event(campaign_dir / "events.jsonl", {"event": "campaign-planned", "job_count": plan["job_count"]})
             print(json.dumps({key: plan[key] for key in ("mode", "job_count", "admitted_host_cap_seconds")}, indent=2))
         elif args.command == "prepare":
             prepare_builds(root, campaign_dir, args.build_root)
+        elif args.command == "admit":
+            admit_campaign(
+                campaign_dir,
+                args.host_preflight,
+                args.bootstrap,
+                args.historical,
+                args.overhead,
+            )
+        elif args.command == "verify-host":
+            verify_live_host(campaign_dir, args.host_preflight)
         elif args.command in {"run", "resume"}:
             run_campaign(root, campaign_dir)
         elif args.command == "finalize":

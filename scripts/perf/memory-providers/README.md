@@ -38,6 +38,13 @@ specialized HC/2, persistence, tag-distribution, or long-sequence executor are
 rejected before the job begins; they can never fall back to a misleading RESP
 approximation.
 
+The protected workflow `.github/workflows/memory-reference-071.yml` imports
+the admitted host, 0.67.1 activation, S5 overhead, and historical-mirror
+receipts before building anything. It serializes a campaign through the
+`memory-reference-071` environment, rechecks the live host fingerprint on a
+rerun, wraps execution in the repository watchdog, and publishes every
+completed job atomically to the configured mirror mount before advancing.
+
 Example:
 
 ```text

@@ -106,6 +106,91 @@ class MemoryCampaign071Tests(unittest.TestCase):
             )
         )
 
+    def test_admission_rejects_cross_host_overhead(self) -> None:
+        state = {
+            "source_shas": {
+                "B1-instrumented": "795f9493bcbb7a56aa229c59e4a717f60c654cdb"
+            }
+        }
+        receipts = {
+            "host-preflight": {
+                "schema_version": 1,
+                "release": "0.71",
+                "profile_id": "memory-reference-071-v1",
+                "protected_environment": "memory-reference-071",
+                "result": "success",
+                "ship_evidence_eligible": True,
+                "host_fingerprint": "host-a",
+            },
+            "reference-activation": {
+                "schema_version": 1,
+                "release": "0.67.1",
+                "profile": "reference-v1",
+                "passed": True,
+                "ship_evidence_eligible": True,
+            },
+            "historical-input-receipt": {
+                "schema_version": 1,
+                "release": "0.71",
+                "commit": "dbc2f82f7f303528b3cca7842818730c82232b9c",
+                "checkout_clean": True,
+                "files": [{"path": "raw", "bytes": 1}],
+                "mirror": {"manifest_sha256": "same", "restored_manifest_sha256": "same"},
+            },
+            "instrumentation-overhead": {
+                "schema_version": 1,
+                "release": "0.71",
+                "source_sha": state["source_shas"]["B1-instrumented"],
+                "host_fingerprint": "host-b",
+                "passed": True,
+                "ship_evidence_eligible": True,
+            },
+        }
+        with self.assertRaises(campaign.CampaignError):
+            campaign.validate_admission_receipts(receipts, state)
+
+    def test_completed_job_is_published_once_and_drift_fails(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            campaign_dir = root / "campaign"
+            job_dir = campaign_dir / "jobs" / "job-1"
+            job_dir.mkdir(parents=True)
+            (job_dir / "report.json").write_text("{}", encoding="utf-8")
+            state = {
+                "mode": "evidence",
+                "campaign_id": "campaign-1",
+                "mirror_root": str(root / "mirror"),
+            }
+            job = {"job_id": "job-1"}
+            campaign.publish_job(campaign_dir, state, job)
+            campaign.publish_job(campaign_dir, state, job)
+            archive = Path(state["published_jobs"]["job-1"]["archive"])
+            archive.write_bytes(b"drift")
+            with self.assertRaises(campaign.CampaignError):
+                campaign.publish_job(campaign_dir, state, job)
+
+    def test_live_host_drift_blocks_resume(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            campaign_dir = Path(directory)
+            (campaign_dir / "admission").mkdir()
+            campaign.atomic_json(campaign_dir / "state.json", {"admission": {"manifest": "x"}})
+            campaign.atomic_json(
+                campaign_dir / "admission" / "host-preflight.json",
+                {"host_fingerprint": "host-a", "profile_id": "memory-reference-071-v1"},
+            )
+            observed = campaign_dir / "observed.json"
+            campaign.atomic_json(
+                observed,
+                {
+                    "result": "success",
+                    "ship_evidence_eligible": True,
+                    "host_fingerprint": "host-b",
+                    "profile_id": "memory-reference-071-v1",
+                },
+            )
+            with self.assertRaises(campaign.CampaignError):
+                campaign.verify_live_host(campaign_dir, observed)
+
 
 if __name__ == "__main__":
     unittest.main()
