@@ -116,7 +116,7 @@ class MemoryCampaign071Tests(unittest.TestCase):
                 {"case_id": "M10-24h", "dimensions": {}}
             )
         )
-        self.assertIsNotNone(
+        self.assertIsNone(
             campaign.unsupported_evidence_reason(
                 {"case_id": "M8-60m", "dimensions": {"sequence": "reset"}}
             )

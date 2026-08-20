@@ -108,6 +108,12 @@ id = "M8-60m"
 factor = "serialized fixed-keyspace TTL reset and HC/2 churn"
 d0_repetitions = 1
 duration_seconds = 3600
+iteration_seconds = 60
+heartbeat_seconds = 300
+hc2_churn_connections = 100
+rehearsal_duration_seconds = 2
+rehearsal_iteration_seconds = 0.25
+rehearsal_heartbeat_seconds = 0.5
 host_time_cap_seconds = 28800
 
 [[case]]

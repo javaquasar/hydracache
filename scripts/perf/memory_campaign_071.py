@@ -159,7 +159,19 @@ def expand_case(case: dict[str, Any]) -> list[Cell]:
         return [Cell(case_id, {"persistence": mode}) for mode in case["modes"]]
     if case_id == "M8-60m":
         return [
-            Cell(case_id, {"sequence": sequence})
+            Cell(
+                case_id,
+                {
+                    "sequence": sequence,
+                    "duration_seconds": int(case["duration_seconds"]),
+                    "iteration_seconds": int(case["iteration_seconds"]),
+                    "heartbeat_seconds": int(case["heartbeat_seconds"]),
+                    "hc2_churn_connections": int(case["hc2_churn_connections"]),
+                    "rehearsal_duration_seconds": float(case["rehearsal_duration_seconds"]),
+                    "rehearsal_iteration_seconds": float(case["rehearsal_iteration_seconds"]),
+                    "rehearsal_heartbeat_seconds": float(case["rehearsal_heartbeat_seconds"]),
+                },
+            )
             for sequence in ("fixed-keyspace", "ttl", "reset", "hc2-churn")
         ]
     return [Cell(case_id, {})]
@@ -651,8 +663,6 @@ def execute_rehearsal(root: Path, campaign_dir: Path, job: dict[str, Any]) -> tu
 def unsupported_evidence_reason(job: dict[str, Any]) -> str | None:
     case_id = job["case_id"]
     dimensions = job["dimensions"]
-    if case_id == "M8-60m":
-        return "M8 requires the duration-aware serialized 60-minute executor"
     if case_id in {"M9-6h", "M10-24h"}:
         return f"{case_id} requires its preregistered multi-scenario executor"
     return None
@@ -698,7 +708,9 @@ def execute_evidence(root: Path, campaign_dir: Path, state: dict[str, Any], job:
         "--host-preflight",
         str(host_preflight),
     ]
-    if job["case_id"] == "M6-connections":
+    if job["case_id"] == "M6-connections" or (
+        job["case_id"] == "M8-60m" and job["dimensions"].get("sequence") == "hc2-churn"
+    ):
         tools = state.get("controller_tools", {})
         helper_manifest = campaign_dir / tools.get("hc2_helper_manifest", "missing")
         if (

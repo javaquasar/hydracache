@@ -391,6 +391,97 @@ class Workload:
             }
         )
 
+    def run_m8_sequence(
+        self,
+        admin_port: int,
+        process_pid: int,
+        output: Path,
+        fleet: Hc2Fleet | None,
+    ) -> dict[str, Any]:
+        sequence = self.dimensions["sequence"]
+        duration = float(
+            self.dimensions["rehearsal_duration_seconds"]
+            if self.rehearsal
+            else self.dimensions["duration_seconds"]
+        )
+        interval = float(
+            self.dimensions["rehearsal_iteration_seconds"]
+            if self.rehearsal
+            else self.dimensions["iteration_seconds"]
+        )
+        heartbeat_interval = float(
+            self.dimensions["rehearsal_heartbeat_seconds"]
+            if self.rehearsal
+            else self.dimensions["heartbeat_seconds"]
+        )
+        started = time.monotonic()
+        deadline = started + duration
+        next_heartbeat = started
+        iteration = 0
+        heartbeats: list[dict[str, Any]] = []
+        churn: list[dict[str, Any]] = []
+        heartbeat_path = output / "m8-duration-heartbeats.jsonl"
+        while time.monotonic() < deadline:
+            iteration += 1
+            iteration_started = time.monotonic()
+            if sequence == "fixed-keyspace":
+                for index in range(self.keys):
+                    self.call(b"GET", self.key(index))
+            elif sequence == "ttl":
+                for index in range(self.keys):
+                    arguments = [b"SET", self.key(index), bytes([index % 251]) * self.value_bytes]
+                    arguments.extend([b"PX", b"100"] if self.rehearsal else [b"EX", b"30"])
+                    self.call(*arguments)
+                    self.live.add(index)
+            elif sequence == "reset":
+                self.run_phase("reset", admin_port)
+                self.run_phase("fill", admin_port)
+            elif sequence == "hc2-churn":
+                if fleet is None:
+                    raise ExecutionError("M8 HC/2 churn requires the retained HC/2 helper")
+                ready = fleet.start(int(self.dimensions["hc2_churn_connections"]), 0)
+                owner = wait_hc2_accounting(admin_port, int(ready["connections"]), 0)
+                churn.append({"iteration": iteration, **(owner.get("hc2") or {})})
+                fleet.stop()
+                wait_hc2_accounting(admin_port, 0, 0)
+            else:
+                raise ExecutionError(f"unsupported M8 sequence: {sequence}")
+            sleep_for = min(max(0.0, interval - (time.monotonic() - iteration_started)), max(0.0, deadline - time.monotonic()))
+            if sleep_for:
+                time.sleep(sleep_for)
+            if sequence == "ttl":
+                self.live.clear()
+            now = time.monotonic()
+            if now >= next_heartbeat or now >= deadline:
+                record = {
+                    "schema_version": 1,
+                    "release": "0.71",
+                    "sequence": sequence,
+                    "iteration": iteration,
+                    "elapsed_ns": int((now - started) * 1_000_000_000),
+                    "process": process_snapshot(process_pid),
+                    "cgroup": cgroup_snapshot(process_pid),
+                    "owner": http_json(admin_port, "/admin/memory-footprint"),
+                }
+                heartbeats.append(record)
+                with heartbeat_path.open("a", encoding="utf-8", newline="\n") as stream:
+                    stream.write(json.dumps(record, sort_keys=True) + "\n")
+                next_heartbeat = now + heartbeat_interval
+        observed_ns = time.monotonic_ns() - int(started * 1_000_000_000)
+        required_ns = int(duration * 1_000_000_000)
+        if observed_ns < required_ns:
+            raise ExecutionError("M8 duration executor ended before its preregistered duration")
+        return {
+            "schema_version": 1,
+            "release": "0.71",
+            "sequence": sequence,
+            "requested_duration_seconds": duration,
+            "observed_duration_ns": observed_ns,
+            "iterations": iteration,
+            "heartbeat_count": len(heartbeats),
+            "hc2_churn": churn,
+        }
+
     def run_phase(self, phase: str, admin_port: int) -> None:
         case_id = self.job["case_id"]
         if case_id == "M0-cold":
@@ -531,7 +622,10 @@ def execute(args: argparse.Namespace) -> None:
     helper: Path | None = None
     helper_sha256: str | None = None
     pki = output / "hc2-pki"
-    if job["case_id"] == "M6-connections":
+    uses_hc2 = job["case_id"] == "M6-connections" or (
+        job["case_id"] == "M8-60m" and job["dimensions"].get("sequence") == "hc2-churn"
+    )
+    if uses_hc2:
         if not args.hc2_helper_manifest:
             raise ExecutionError("M6 requires --hc2-helper-manifest")
         helper_manifest = json.loads(args.hc2_helper_manifest.read_text(encoding="utf-8"))
@@ -567,8 +661,8 @@ def execute(args: argparse.Namespace) -> None:
                 "HYDRACACHE_DIAGNOSTIC_RESET_ENABLED": "false",
             }
         )
-    if job["case_id"] == "M6-connections":
-        if job["dimensions"].get("tls") is not True:
+    if uses_hc2:
+        if job["case_id"] == "M6-connections" and job["dimensions"].get("tls") is not True:
             raise ExecutionError("HC/2 is contractually mandatory-mTLS; plaintext M6 cells are invalid")
         environment.update(
             {
@@ -598,6 +692,7 @@ def execute(args: argparse.Namespace) -> None:
     hc2_observations: list[dict[str, Any]] = []
     hc2_helper_receipts: list[dict[str, Any]] = []
     persistence_observations: list[dict[str, Any]] = []
+    duration_receipt: dict[str, Any] | None = None
     fleet = Hc2Fleet(helper, pki, hc2_port, output, args.rehearsal) if helper else None
     completed = False
     try:
@@ -620,22 +715,27 @@ def execute(args: argparse.Namespace) -> None:
             workload = Workload(stream, job, args.rehearsal)
             started = time.monotonic_ns()
             for sequence, phase in enumerate(PHASES, 1):
-                if fleet and phase in {"fill", "refill"}:
+                if job["case_id"] == "M6-connections" and fleet and phase in {"fill", "refill"}:
                     hc2_helper_receipts.append(
                         fleet.start(
                             int(job["dimensions"]["connections"]),
                             int(job["dimensions"]["slow_consumers"]),
                         )
                     )
-                if fleet and phase in {"expire_or_delete", "shutdown"}:
+                if job["case_id"] == "M6-connections" and fleet and phase in {"expire_or_delete", "shutdown"}:
                     fleet.stop()
-                workload.run_phase(phase, admin_port)
+                if job["case_id"] == "M8-60m" and phase == "steady":
+                    duration_receipt = workload.run_m8_sequence(
+                        admin_port, process.pid, output, fleet
+                    )
+                else:
+                    workload.run_phase(phase, admin_port)
                 workload.observe_distribution(phase)
                 provider_command(adapter, "mark", "--state", str(provider_state), "--phase", phase)
                 provider_command(adapter, "snapshot", "--state", str(provider_state), "--phase", phase)
                 monotonic_ns = time.monotonic_ns() - started
                 owner = http_json(admin_port, "/admin/memory-footprint")
-                if fleet:
+                if job["case_id"] == "M6-connections" and fleet:
                     expected_connections = (
                         min(int(job["dimensions"]["connections"]), 16)
                         if args.rehearsal
@@ -687,7 +787,7 @@ def execute(args: argparse.Namespace) -> None:
                         "observations": workload.distribution_observations,
                     },
                 )
-            if fleet:
+            if job["case_id"] == "M6-connections" and fleet:
                 write_json(
                     output / "m6-connections-receipt.json",
                     {
@@ -702,6 +802,8 @@ def execute(args: argparse.Namespace) -> None:
                         "observations": hc2_observations,
                     },
                 )
+            if duration_receipt:
+                write_json(output / "m8-duration-receipt.json", duration_receipt)
             if durable_store:
                 ready = http_json(admin_port, "/readyz") or {}
                 if ready.get("storage_open") is not True:

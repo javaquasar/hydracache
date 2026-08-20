@@ -132,6 +132,26 @@ def execute(args: argparse.Namespace) -> None:
             "repetition": 1,
         },
     ]
+    for sequence in ("fixed-keyspace", "ttl", "reset", "hc2-churn"):
+        jobs.append(
+            {
+                "job_id": f"docker-real-daemon-m8-{sequence}-r1",
+                "case_id": "M8-60m",
+                "cell_id": f"M8-60m__sequence-{sequence}",
+                "dimensions": {
+                    "sequence": sequence,
+                    "duration_seconds": 3600,
+                    "iteration_seconds": 60,
+                    "heartbeat_seconds": 300,
+                    "hc2_churn_connections": 100,
+                    "rehearsal_duration_seconds": 2.0,
+                    "rehearsal_iteration_seconds": 0.25,
+                    "rehearsal_heartbeat_seconds": 0.5,
+                },
+                "cohort": "B1-instrumented",
+                "repetition": 1,
+            }
+        )
     manifest_path = evidence / "real-daemon" / "build-manifest.json"
     write_json(manifest_path, manifest)
     helper = root / "target/release/memory-hc2-connections-071"
@@ -149,7 +169,12 @@ def execute(args: argparse.Namespace) -> None:
     scenario = root / "docs/testing/perf-scenarios/0.71/memory-efficiency-v1.toml"
     reports: list[Path] = []
     for job in jobs:
-        case_root = evidence / "real-daemon" / job["case_id"]
+        case_label = (
+            f"M8-60m-{job['dimensions']['sequence']}"
+            if job["case_id"] == "M8-60m"
+            else job["case_id"]
+        )
+        case_root = evidence / "real-daemon" / case_label
         job_path = case_root / "job.json"
         write_json(job_path, job)
         executor_command = [
@@ -167,7 +192,9 @@ def execute(args: argparse.Namespace) -> None:
                 "system",
                 "--rehearsal",
             ]
-        if job["case_id"] == "M6-connections":
+        if job["case_id"] == "M6-connections" or (
+            job["case_id"] == "M8-60m" and job["dimensions"]["sequence"] == "hc2-churn"
+        ):
             executor_command.extend(["--hc2-helper-manifest", str(helper_manifest_path)])
         run(executor_command, root)
         report = case_root / "run" / "memory-baseline-report.json"
@@ -198,6 +225,10 @@ def execute(args: argparse.Namespace) -> None:
     m7_receipt = evidence / "real-daemon" / "M7-persistence" / "run" / "m7-persistence-receipt.json"
     if not m7_receipt.is_file():
         raise RehearsalError("real M7 run did not produce its persistence receipt")
+    for sequence in ("fixed-keyspace", "ttl", "reset", "hc2-churn"):
+        receipt = evidence / "real-daemon" / f"M8-60m-{sequence}" / "run" / "m8-duration-receipt.json"
+        if not receipt.is_file():
+            raise RehearsalError(f"real M8 {sequence} run did not produce its duration receipt")
 
     campaign_id = "docker-full-matrix"
     campaign_root = evidence / "campaigns"
@@ -218,7 +249,7 @@ def execute(args: argparse.Namespace) -> None:
         "source_sha": manifest["source_sha"],
         "platform": platform.platform(),
         "cgroup_v2": Path("/sys/fs/cgroup/cgroup.controllers").is_file(),
-        "real_daemon_cases": [job["case_id"] for job in jobs],
+        "real_daemon_cells": [job["cell_id"] for job in jobs],
         "real_daemon_report_sha256": [sha256(report) for report in reports],
         "matrix_jobs": campaign_state["job_count"],
         "matrix_status": campaign_state["status"],

@@ -18,7 +18,7 @@ forbidden_product_work = ["W2b", "W3", "W4", "W5", "W6", "W7", "W8", "W9", "W10"
 
 [scenario]
 path = "docs/testing/perf-scenarios/0.71/memory-efficiency-v1.toml"
-sha256 = "7c45fef4924db8b4e918a68d3e210b45ce988e2a762ae8daa0c0de7869102c08"
+sha256 = "b3ee39b68eb3d6fcb3ff80d8bcc5e8d1998b739f7f7c1e1c17d7a0b89abad3f7"
 
 [[scenario.input]]
 path = "docs/testing/memory/0.71/ownership-registry.toml"
