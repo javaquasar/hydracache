@@ -157,9 +157,9 @@ fn checked_mul(
 #[serde(rename_all = "snake_case")]
 pub enum MemoryInstrumentationMode {
     /// Do not update memory counters. Snapshot shape remains available.
+    #[default]
     Off,
     /// Low-cost counters suitable for normal production binaries.
-    #[default]
     Production,
     /// Production counters plus phase/provider correlation in profiling builds.
     Profile,

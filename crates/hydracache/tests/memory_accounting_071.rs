@@ -1,6 +1,6 @@
 use hydracache::{
-    CacheOptions, HydraCache, MemorySnapshotRequest, RetainedByteEstimate,
-    RetainedByteEstimateError,
+    CacheOptions, HydraCache, MemoryInstrumentationMode, MemorySnapshotRequest,
+    RetainedByteEstimate, RetainedByteEstimateError,
 };
 use serde_json::Value;
 use std::path::{Path, PathBuf};
@@ -89,7 +89,10 @@ fn moka_adapter_rejects_unrepresentable_retained_weight() {
 
 #[tokio::test]
 async fn insert_replace_delete_and_flush_reconcile_retained_totals() {
-    let cache = HydraCache::local().max_capacity(1024 * 1024).build();
+    let cache = HydraCache::local()
+        .memory_instrumentation_mode(MemoryInstrumentationMode::Production)
+        .max_capacity(1024 * 1024)
+        .build();
     cache
         .put(
             "accounted",

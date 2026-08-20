@@ -20,7 +20,10 @@ async fn exact_snapshot(cache: &HydraCache) -> hydracache::MemoryFootprintSnapsh
 
 #[tokio::test]
 async fn insert_replace_delete_tag_expire_and_flush_update_bounded_aggregates() {
-    let cache = HydraCache::local().max_capacity(1024 * 1024).build();
+    let cache = HydraCache::local()
+        .memory_instrumentation_mode(MemoryInstrumentationMode::Production)
+        .max_capacity(1024 * 1024)
+        .build();
     cache
         .put(
             "secret-user-key",
@@ -106,7 +109,10 @@ async fn insert_replace_delete_tag_expire_and_flush_update_bounded_aggregates() 
 
 #[tokio::test]
 async fn snapshot_reports_subscriptions_and_off_mode_without_labels() {
-    let cache = HydraCache::local().event_buffer_capacity(8).build();
+    let cache = HydraCache::local()
+        .memory_instrumentation_mode(MemoryInstrumentationMode::Production)
+        .event_buffer_capacity(8)
+        .build();
     let subscriber = cache.subscribe_mutations();
     cache
         .put("redacted-key", 1_u64, CacheOptions::new())
@@ -129,9 +135,7 @@ async fn snapshot_reports_subscriptions_and_off_mode_without_labels() {
         0
     );
 
-    let off = HydraCache::local()
-        .memory_instrumentation_mode(MemoryInstrumentationMode::Off)
-        .build();
+    let off = HydraCache::local().build();
     off.put("invisible", 1_u64, CacheOptions::new())
         .await
         .expect("off put");
@@ -139,13 +143,16 @@ async fn snapshot_reports_subscriptions_and_off_mode_without_labels() {
         .memory_footprint_snapshot(MemorySnapshotRequest::Admin)
         .await
         .expect("off snapshot");
+    assert_eq!(off_snapshot.mode, MemoryInstrumentationMode::Off);
     assert_eq!(off_snapshot.live_entries, 0);
     assert!(!off_snapshot.owners[0].available);
 }
 
 #[tokio::test]
 async fn cancelled_load_releases_the_inflight_owner() {
-    let cache = HydraCache::local().build();
+    let cache = HydraCache::local()
+        .memory_instrumentation_mode(MemoryInstrumentationMode::Production)
+        .build();
     let (started_tx, started_rx) = tokio::sync::oneshot::channel();
     let (_release_tx, release_rx) = tokio::sync::oneshot::channel::<()>();
     let worker_cache = cache.clone();
@@ -193,7 +200,10 @@ async fn cancelled_load_releases_the_inflight_owner() {
 
 #[tokio::test]
 async fn capacity_eviction_is_accounted_by_the_removal_listener() {
-    let cache = HydraCache::local().max_capacity(16).build();
+    let cache = HydraCache::local()
+        .memory_instrumentation_mode(MemoryInstrumentationMode::Production)
+        .max_capacity(16)
+        .build();
     cache
         .put("first", vec![1_u8; 16], CacheOptions::new())
         .await

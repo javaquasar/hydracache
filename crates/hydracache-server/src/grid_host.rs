@@ -15,7 +15,7 @@ use axum_server::tls_rustls::RustlsConfig;
 use hydracache::{
     CacheError, CacheResult, ClusterAdmissionBridge, ClusterCandidate, ClusterDiscovery,
     ClusterDiscoveryLiveness, ClusterEndpoints, ClusterGeneration, ClusterMember, ClusterNodeId,
-    ClusterRole, HydraCache, RaftMetadataCommand, RaftMetadataSnapshot,
+    ClusterRole, HydraCache, MemoryInstrumentationMode, RaftMetadataCommand, RaftMetadataSnapshot,
     RaftStyleMetadataControlPlane,
 };
 use hydracache_cluster_chitchat::{ChitchatDiscovery, ChitchatDiscoveryConfig};
@@ -381,6 +381,7 @@ async fn inprocess_member_cache(
     control_plane: Arc<RaftStyleMetadataControlPlane>,
 ) -> hydracache::CacheResult<HydraCache> {
     let mut builder = HydraCache::member()
+        .memory_instrumentation_mode(MemoryInstrumentationMode::Production)
         .cluster(DEFAULT_CLUSTER_NAME)
         .control_plane(control_plane.clone())
         .node_id(member_node_id(config))

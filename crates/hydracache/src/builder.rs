@@ -353,29 +353,33 @@ where
         let tag_index = Arc::new(TagIndex::default());
         let eviction_memory = memory.clone();
         let eviction_tag_index = tag_index.clone();
-        let store = Cache::<String, CacheEntry>::builder()
+        let mut store_builder = Cache::<String, CacheEntry>::builder()
             .max_capacity(self.max_capacity)
             .weigher(move |_key, entry: &CacheEntry| {
                 entry.value.len().min(max_entry_bytes).max(1) as u32
-            })
-            .async_eviction_listener(move |key: Arc<String>, entry: CacheEntry, _cause| {
-                let memory = eviction_memory.clone();
-                let tag_index = eviction_tag_index.clone();
-                Box::pin(async move {
-                    let _mutation = memory.mutation();
-                    tag_index.unregister(&key, &entry.tags).await;
-                    match crate::memory_footprint::EntryMemoryDelta::new(
-                        &key,
-                        entry.value.len(),
-                        &entry.tags,
-                        entry.expires_at.is_some(),
-                    ) {
-                        Ok(delta) => memory.remove(delta),
-                        Err(_) => memory.mark_fault(),
-                    }
-                })
-            })
-            .build();
+            });
+        if self.memory_instrumentation_mode != MemoryInstrumentationMode::Off {
+            store_builder = store_builder.async_eviction_listener(
+                move |key: Arc<String>, entry: CacheEntry, _cause| {
+                    let memory = eviction_memory.clone();
+                    let tag_index = eviction_tag_index.clone();
+                    Box::pin(async move {
+                        let _mutation = memory.mutation();
+                        tag_index.unregister(&key, &entry.tags).await;
+                        match crate::memory_footprint::EntryMemoryDelta::new(
+                            &key,
+                            entry.value.len(),
+                            &entry.tags,
+                            entry.expires_at.is_some(),
+                        ) {
+                            Ok(delta) => memory.remove(delta),
+                            Err(_) => memory.mark_fault(),
+                        }
+                    })
+                },
+            );
+        }
+        let store = store_builder.build();
 
         let invalidation_node_id = self
             .invalidation_node_id
