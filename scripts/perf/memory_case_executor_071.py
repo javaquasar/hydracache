@@ -391,14 +391,21 @@ class Workload:
             }
         )
 
-    def run_m8_sequence(
+    def run_duration_sequence(
         self,
         admin_port: int,
         process_pid: int,
         output: Path,
         fleet: Hc2Fleet | None,
     ) -> dict[str, Any]:
-        sequence = self.dimensions["sequence"]
+        configured_sequence = self.dimensions["sequence"]
+        schedule = (
+            [configured_sequence]
+            if isinstance(configured_sequence, str)
+            else list(configured_sequence)
+        )
+        if not schedule:
+            raise ExecutionError("duration sequence cannot be empty")
         duration = float(
             self.dimensions["rehearsal_duration_seconds"]
             if self.rehearsal
@@ -414,16 +421,28 @@ class Workload:
             if self.rehearsal
             else self.dimensions["heartbeat_seconds"]
         )
+        block_seconds = float(
+            self.dimensions.get(
+                "rehearsal_block_seconds" if self.rehearsal else "block_seconds",
+                duration,
+            )
+        )
         started = time.monotonic()
         deadline = started + duration
         next_heartbeat = started
         iteration = 0
         heartbeats: list[dict[str, Any]] = []
         churn: list[dict[str, Any]] = []
-        heartbeat_path = output / "m8-duration-heartbeats.jsonl"
+        scenario_iterations = {name: 0 for name in schedule}
+        receipt_prefix = self.job["case_id"].split("-", 1)[0].lower()
+        heartbeat_path = output / f"{receipt_prefix}-duration-heartbeats.jsonl"
         while time.monotonic() < deadline:
             iteration += 1
             iteration_started = time.monotonic()
+            sequence = schedule[
+                int((iteration_started - started) // block_seconds) % len(schedule)
+            ]
+            scenario_iterations[sequence] += 1
             if sequence == "fixed-keyspace":
                 for index in range(self.keys):
                     self.call(b"GET", self.key(index))
@@ -445,7 +464,7 @@ class Workload:
                 fleet.stop()
                 wait_hc2_accounting(admin_port, 0, 0)
             else:
-                raise ExecutionError(f"unsupported M8 sequence: {sequence}")
+                raise ExecutionError(f"unsupported duration sequence: {sequence}")
             sleep_for = min(max(0.0, interval - (time.monotonic() - iteration_started)), max(0.0, deadline - time.monotonic()))
             if sleep_for:
                 time.sleep(sleep_for)
@@ -470,15 +489,17 @@ class Workload:
         observed_ns = time.monotonic_ns() - int(started * 1_000_000_000)
         required_ns = int(duration * 1_000_000_000)
         if observed_ns < required_ns:
-            raise ExecutionError("M8 duration executor ended before its preregistered duration")
+            raise ExecutionError("duration executor ended before its preregistered duration")
         return {
             "schema_version": 1,
             "release": "0.71",
-            "sequence": sequence,
+            "schedule": schedule,
+            "block_seconds": block_seconds,
             "requested_duration_seconds": duration,
             "observed_duration_ns": observed_ns,
             "iterations": iteration,
             "heartbeat_count": len(heartbeats),
+            "scenario_iterations": scenario_iterations,
             "hc2_churn": churn,
         }
 
@@ -624,7 +645,7 @@ def execute(args: argparse.Namespace) -> None:
     pki = output / "hc2-pki"
     uses_hc2 = job["case_id"] == "M6-connections" or (
         job["case_id"] == "M8-60m" and job["dimensions"].get("sequence") == "hc2-churn"
-    )
+    ) or job["case_id"] in {"M9-6h", "M10-24h"}
     if uses_hc2:
         if not args.hc2_helper_manifest:
             raise ExecutionError("M6 requires --hc2-helper-manifest")
@@ -724,8 +745,8 @@ def execute(args: argparse.Namespace) -> None:
                     )
                 if job["case_id"] == "M6-connections" and fleet and phase in {"expire_or_delete", "shutdown"}:
                     fleet.stop()
-                if job["case_id"] == "M8-60m" and phase == "steady":
-                    duration_receipt = workload.run_m8_sequence(
+                if job["case_id"] in {"M8-60m", "M9-6h", "M10-24h"} and phase == "steady":
+                    duration_receipt = workload.run_duration_sequence(
                         admin_port, process.pid, output, fleet
                     )
                 else:
@@ -803,7 +824,8 @@ def execute(args: argparse.Namespace) -> None:
                     },
                 )
             if duration_receipt:
-                write_json(output / "m8-duration-receipt.json", duration_receipt)
+                prefix = job["case_id"].split("-", 1)[0].lower()
+                write_json(output / f"{prefix}-duration-receipt.json", duration_receipt)
             if durable_store:
                 ready = http_json(admin_port, "/readyz") or {}
                 if ready.get("storage_open") is not True:

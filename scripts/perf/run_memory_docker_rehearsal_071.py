@@ -152,6 +152,28 @@ def execute(args: argparse.Namespace) -> None:
                 "repetition": 1,
             }
         )
+    for case_id, duration in (("M9-6h", 21_600), ("M10-24h", 86_400)):
+        jobs.append(
+            {
+                "job_id": f"docker-real-daemon-{case_id.lower()}-r1",
+                "case_id": case_id,
+                "cell_id": case_id,
+                "dimensions": {
+                    "sequence": ["fixed-keyspace", "ttl", "reset", "hc2-churn"],
+                    "duration_seconds": duration,
+                    "block_seconds": 900,
+                    "iteration_seconds": 60,
+                    "heartbeat_seconds": 300,
+                    "hc2_churn_connections": 100,
+                    "rehearsal_duration_seconds": 4.0,
+                    "rehearsal_block_seconds": 1.0,
+                    "rehearsal_iteration_seconds": 0.25,
+                    "rehearsal_heartbeat_seconds": 0.5,
+                },
+                "cohort": "B1-instrumented",
+                "repetition": 1,
+            }
+        )
     manifest_path = evidence / "real-daemon" / "build-manifest.json"
     write_json(manifest_path, manifest)
     helper = root / "target/release/memory-hc2-connections-071"
@@ -194,7 +216,7 @@ def execute(args: argparse.Namespace) -> None:
             ]
         if job["case_id"] == "M6-connections" or (
             job["case_id"] == "M8-60m" and job["dimensions"]["sequence"] == "hc2-churn"
-        ):
+        ) or job["case_id"] in {"M9-6h", "M10-24h"}:
             executor_command.extend(["--hc2-helper-manifest", str(helper_manifest_path)])
         run(executor_command, root)
         report = case_root / "run" / "memory-baseline-report.json"
@@ -229,6 +251,10 @@ def execute(args: argparse.Namespace) -> None:
         receipt = evidence / "real-daemon" / f"M8-60m-{sequence}" / "run" / "m8-duration-receipt.json"
         if not receipt.is_file():
             raise RehearsalError(f"real M8 {sequence} run did not produce its duration receipt")
+    for case_id, receipt_name in (("M9-6h", "m9-duration-receipt.json"), ("M10-24h", "m10-duration-receipt.json")):
+        receipt = evidence / "real-daemon" / case_id / "run" / receipt_name
+        if not receipt.is_file():
+            raise RehearsalError(f"real {case_id} run did not produce its duration receipt")
 
     campaign_id = "docker-full-matrix"
     campaign_root = evidence / "campaigns"
