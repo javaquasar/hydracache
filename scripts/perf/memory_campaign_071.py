@@ -114,13 +114,35 @@ def expand_case(case: dict[str, Any]) -> list[Cell]:
         return [Cell(case_id, {"cycles": cycles}) for cycles in case["cycles"]]
     if case_id == "M5-tags":
         cells = [
-            Cell(case_id, {"distribution": "uniform", "tags_per_entry": count})
+            Cell(
+                case_id,
+                {
+                    "distribution": "uniform",
+                    "tags_per_entry": count,
+                    "tag_pool": case["uniform_tag_pool"],
+                },
+            )
             for count in case["tags_per_entry"]
         ]
-        cells.extend(
-            Cell(case_id, {"distribution": distribution, "tags_per_entry": "canonical"})
-            for distribution in case["distributions"]
-            if distribution != "uniform"
+        cells.append(
+            Cell(
+                case_id,
+                {
+                    "distribution": "one-hot",
+                    "tags_per_entry": int(case["one_hot_tags_per_entry"]),
+                    "tag_pool": int(case["one_hot_tag_pool"]),
+                },
+            )
+        )
+        cells.append(
+            Cell(
+                case_id,
+                {
+                    "distribution": "high-fanout",
+                    "tags_per_entry": int(case["high_fanout_tags_per_entry"]),
+                    "tag_pool": int(case["high_fanout_tag_pool"]),
+                },
+            )
         )
         return cells
     if case_id == "M6-connections":
@@ -576,8 +598,6 @@ def unsupported_evidence_reason(job: dict[str, Any]) -> str | None:
         return "M8 requires the duration-aware serialized 60-minute executor"
     if case_id in {"M9-6h", "M10-24h"}:
         return f"{case_id} requires its preregistered multi-scenario executor"
-    if case_id == "M5-tags" and dimensions.get("distribution") != "uniform":
-        return "non-uniform tag cells require the distribution-aware tag executor"
     return None
 
 

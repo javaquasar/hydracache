@@ -84,55 +84,76 @@ def execute(args: argparse.Namespace) -> None:
         "features": [],
         "allocator": "system",
     }
-    job = {
-        "job_id": "docker-real-daemon-m3-ttl-r1",
-        "case_id": "M3-ttl",
-        "cell_id": "M3-ttl__cycles-60",
-        "dimensions": {"cycles": 60},
-        "cohort": "B1-instrumented",
-        "repetition": 1,
-    }
+    jobs = [
+        {
+            "job_id": "docker-real-daemon-m3-ttl-r1",
+            "case_id": "M3-ttl",
+            "cell_id": "M3-ttl__cycles-60",
+            "dimensions": {"cycles": 60},
+            "cohort": "B1-instrumented",
+            "repetition": 1,
+        },
+        {
+            "job_id": "docker-real-daemon-m5-high-fanout-r1",
+            "case_id": "M5-tags",
+            "cell_id": "M5-tags__distribution-high-fanout__tag_pool-16__tags_per_entry-16",
+            "dimensions": {
+                "distribution": "high-fanout",
+                "tag_pool": 16,
+                "tags_per_entry": 16,
+            },
+            "cohort": "B1-instrumented",
+            "repetition": 1,
+        },
+    ]
     manifest_path = evidence / "real-daemon" / "build-manifest.json"
-    job_path = evidence / "real-daemon" / "job.json"
     write_json(manifest_path, manifest)
-    write_json(job_path, job)
     scenario = root / "docs/testing/perf-scenarios/0.71/memory-efficiency-v1.toml"
-    run(
-        [
-            sys.executable,
-            "scripts/perf/memory_case_executor_071.py",
-            "--job",
-            str(job_path),
-            "--build-manifest",
-            str(manifest_path),
-            "--output",
-            str(evidence / "real-daemon" / "run"),
-            "--scenario-digest",
-            sha256(scenario),
-            "--provider",
-            "system",
-            "--rehearsal",
-        ],
-        root,
-    )
-    report = evidence / "real-daemon" / "run" / "memory-baseline-report.json"
-    run(
-        [
-            "cargo",
-            "run",
-            "-p",
-            "xtask",
-            "--locked",
-            "--",
-            "memory-baseline-report-check",
-            "--release",
-            "0.71",
-            "--report",
-            str(report),
-            "--allow-diagnostic-source",
-        ],
-        root,
-    )
+    reports: list[Path] = []
+    for job in jobs:
+        case_root = evidence / "real-daemon" / job["case_id"]
+        job_path = case_root / "job.json"
+        write_json(job_path, job)
+        run(
+            [
+                sys.executable,
+                "scripts/perf/memory_case_executor_071.py",
+                "--job",
+                str(job_path),
+                "--build-manifest",
+                str(manifest_path),
+                "--output",
+                str(case_root / "run"),
+                "--scenario-digest",
+                sha256(scenario),
+                "--provider",
+                "system",
+                "--rehearsal",
+            ],
+            root,
+        )
+        report = case_root / "run" / "memory-baseline-report.json"
+        reports.append(report)
+        run(
+            [
+                "cargo",
+                "run",
+                "-p",
+                "xtask",
+                "--locked",
+                "--",
+                "memory-baseline-report-check",
+                "--release",
+                "0.71",
+                "--report",
+                str(report),
+                "--allow-diagnostic-source",
+            ],
+            root,
+        )
+    m5_receipt = evidence / "real-daemon" / "M5-tags" / "run" / "m5-distribution-receipt.json"
+    if not m5_receipt.is_file():
+        raise RehearsalError("real M5 run did not produce its distribution receipt")
 
     campaign_id = "docker-full-matrix"
     campaign_root = evidence / "campaigns"
@@ -142,9 +163,10 @@ def execute(args: argparse.Namespace) -> None:
     run(controller + ["resume", "--campaign-id", campaign_id], root)
     run(controller + ["finalize", "--campaign-id", campaign_id], root)
     campaign_state = json.loads((campaign_root / campaign_id / "state.json").read_text(encoding="utf-8"))
-    typed_report = json.loads(report.read_text(encoding="utf-8"))
-    if typed_report.get("ship_evidence_eligible") is not False or typed_report.get("diagnostic_only") is not True:
-        raise RehearsalError("Docker typed report incorrectly became promotable")
+    for report in reports:
+        typed_report = json.loads(report.read_text(encoding="utf-8"))
+        if typed_report.get("ship_evidence_eligible") is not False or typed_report.get("diagnostic_only") is not True:
+            raise RehearsalError("Docker typed report incorrectly became promotable")
     receipt = {
         "schema_version": 1,
         "release": "0.71",
@@ -152,8 +174,8 @@ def execute(args: argparse.Namespace) -> None:
         "source_sha": manifest["source_sha"],
         "platform": platform.platform(),
         "cgroup_v2": Path("/sys/fs/cgroup/cgroup.controllers").is_file(),
-        "real_daemon_case": job["case_id"],
-        "real_daemon_report_sha256": sha256(report),
+        "real_daemon_cases": [job["case_id"] for job in jobs],
+        "real_daemon_report_sha256": [sha256(report) for report in reports],
         "matrix_jobs": campaign_state["job_count"],
         "matrix_status": campaign_state["status"],
         "completed_at": datetime.now(timezone.utc).isoformat(),

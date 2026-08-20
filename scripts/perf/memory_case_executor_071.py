@@ -199,6 +199,9 @@ class Workload:
         self.rehearsal = rehearsal
         self.dimensions = job["dimensions"]
         self.live: set[int] = set()
+        self.live_tags: dict[int, tuple[bytes, ...]] = {}
+        self.distribution_observations: list[dict[str, Any]] = []
+        self.verified_settags = 0
         self.latencies: list[int] = []
         self.requests = 0
         self.errors = 0
@@ -220,6 +223,61 @@ class Workload:
     def key(self, index: int) -> bytes:
         return f"memory:{index:016d}".encode()
 
+    def tags_for(self, index: int) -> tuple[bytes, ...]:
+        if self.job["case_id"] != "M5-tags":
+            return ()
+        count = int(self.dimensions["tags_per_entry"])
+        distribution = self.dimensions["distribution"]
+        if count == 0:
+            return ()
+        if distribution == "uniform":
+            return tuple(f"uniform:{index:016d}:{item:04d}".encode() for item in range(count))
+        pool = int(self.dimensions["tag_pool"])
+        if pool < count:
+            raise ExecutionError("M5 tag pool cannot be smaller than tags_per_entry")
+        if distribution == "one-hot":
+            return (f"one-hot:{index % pool:04d}".encode(),)
+        if distribution == "high-fanout":
+            return tuple(
+                f"high-fanout:{(index + item) % pool:04d}".encode()
+                for item in range(count)
+            )
+        raise ExecutionError(f"unsupported M5 tag distribution: {distribution}")
+
+    def apply_tags(self, index: int) -> None:
+        tags = self.tags_for(index)
+        if not tags:
+            self.live_tags.pop(index, None)
+            return
+        observed = self.call(b"HC.SETTAGS", self.key(index), *tags)
+        expected = len(set(tags))
+        if observed != expected:
+            raise ExecutionError(
+                f"HC.SETTAGS verification failed for key {index}: expected {expected}, got {observed!r}"
+            )
+        self.live_tags[index] = tags
+        self.verified_settags += 1
+
+    def tag_memberships(self) -> int:
+        return sum(len(tags) for tags in self.live_tags.values())
+
+    def tag_bytes(self) -> int:
+        return sum(len(tag) for tags in self.live_tags.values() for tag in tags)
+
+    def observe_distribution(self, phase: str) -> None:
+        if self.job["case_id"] != "M5-tags":
+            return
+        distinct = {tag for tags in self.live_tags.values() for tag in tags}
+        self.distribution_observations.append(
+            {
+                "phase": phase,
+                "live_entries": len(self.live),
+                "tag_memberships": self.tag_memberships(),
+                "distinct_tags": len(distinct),
+                "tag_bytes": self.tag_bytes(),
+            }
+        )
+
     def run_phase(self, phase: str, admin_port: int) -> None:
         case_id = self.job["case_id"]
         if case_id == "M0-cold":
@@ -229,12 +287,14 @@ class Workload:
             if case_id == "M3-ttl" and phase == "post_idle":
                 time.sleep(0.3 if self.rehearsal else 61)
                 self.live.clear()
+                self.live_tags.clear()
                 return
             if case_id == "M4-reset" and phase == "shutdown":
                 if http_json(admin_port, "/admin/diagnostics/reset", "POST") is None:
                     for index in list(self.live):
                         self.call(b"DEL", self.key(index))
                 self.live.clear()
+                self.live_tags.clear()
                 return
             delay = 0.01 if self.rehearsal else (300 if phase in {"cold", "post_idle"} else 0)
             time.sleep(delay)
@@ -246,9 +306,7 @@ class Workload:
                     args.extend([b"PX", b"250"] if self.rehearsal else [b"EX", b"60"])
                 self.call(*args)
                 self.live.add(index)
-                tags = self.dimensions.get("tags_per_entry", 0)
-                if isinstance(tags, int) and tags:
-                    self.call(b"HC.SETTAGS", self.key(index), *[f"tag-{item}".encode() for item in range(tags)])
+                self.apply_tags(index)
             return
         if phase == "steady":
             cycles = min(int(self.dimensions.get("cycles", 1)), 2) if self.rehearsal else int(self.dimensions.get("cycles", 1))
@@ -267,6 +325,7 @@ class Workload:
                     removed = range(index, min(self.keys, index + 64))
                     self.call(b"DEL", *[self.key(item) for item in removed])
             self.live.clear()
+            self.live_tags.clear()
             return
         if phase == "reset":
             reset = http_json(admin_port, "/admin/diagnostics/reset", "POST")
@@ -274,6 +333,7 @@ class Workload:
                 for index in list(self.live):
                     self.call(b"DEL", self.key(index))
             self.live.clear()
+            self.live_tags.clear()
             return
         if phase == "refill":
             for index in range(max(1, self.keys // 2)):
@@ -282,6 +342,7 @@ class Workload:
                     arguments.extend([b"PX", b"250"] if self.rehearsal else [b"EX", b"60"])
                 self.call(*arguments)
                 self.live.add(index)
+                self.apply_tags(index)
 
     def performance(self, elapsed_ns: int) -> dict[str, Any]:
         return {
@@ -306,8 +367,8 @@ def logical_snapshot(document: dict[str, Any] | None, workload: Workload) -> dic
         "entries": entries,
         "key_bytes": int(footprint.get("logical_key_bytes", sum(len(workload.key(item)) for item in workload.live))),
         "value_bytes": int(footprint.get("logical_value_bytes", entries * workload.value_bytes)),
-        "tag_records": int(footprint.get("tag_memberships", 0)),
-        "tag_bytes": 0,
+        "tag_records": workload.tag_memberships() if workload.job["case_id"] == "M5-tags" else int(footprint.get("tag_memberships", 0)),
+        "tag_bytes": workload.tag_bytes(),
         "generation_records": int(footprint.get("tag_generation_records", 0)) + int(footprint.get("key_generation_records", 0)),
         "generation_bytes": 0,
         "event_records": int(footprint.get("event_ring_occupancy", 0)),
@@ -400,6 +461,7 @@ def execute(args: argparse.Namespace) -> None:
             started = time.monotonic_ns()
             for sequence, phase in enumerate(PHASES, 1):
                 workload.run_phase(phase, admin_port)
+                workload.observe_distribution(phase)
                 provider_command(adapter, "mark", "--state", str(provider_state), "--phase", phase)
                 provider_command(adapter, "snapshot", "--state", str(provider_state), "--phase", phase)
                 monotonic_ns = time.monotonic_ns() - started
@@ -421,6 +483,21 @@ def execute(args: argparse.Namespace) -> None:
                 checkpoints.append(checkpoint)
                 with timeline_path.open("a", encoding="utf-8", newline="\n") as timeline:
                     timeline.write(json.dumps({"phase": phase, "sequence": sequence, "monotonic_ns": checkpoint["monotonic_ns"]}, sort_keys=True) + "\n")
+            if job["case_id"] == "M5-tags":
+                write_json(
+                    output / "m5-distribution-receipt.json",
+                    {
+                        "schema_version": 1,
+                        "release": "0.71",
+                        "job_id": job["job_id"],
+                        "distribution": workload.dimensions["distribution"],
+                        "tags_per_entry": int(workload.dimensions["tags_per_entry"]),
+                        "tag_pool": workload.dimensions["tag_pool"],
+                        "verification_method": "HC.SETTAGS-response-and-workload-ledger",
+                        "verified_settags": workload.verified_settags,
+                        "observations": workload.distribution_observations,
+                    },
+                )
         provider_command(adapter, "stop", "--state", str(provider_state))
         provider_command(
             adapter,

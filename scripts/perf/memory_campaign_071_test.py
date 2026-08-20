@@ -38,6 +38,15 @@ class MemoryCampaign071Tests(unittest.TestCase):
         self.assertEqual(counts["M6-connections"], 9)
         self.assertEqual(counts["M8-60m"], 4)
         self.assertEqual(plan["job_count"], 44)
+        m5 = [job["dimensions"] for job in plan["jobs"] if job["case_id"] == "M5-tags"]
+        self.assertIn(
+            {"distribution": "one-hot", "tags_per_entry": 1, "tag_pool": 1},
+            m5,
+        )
+        self.assertIn(
+            {"distribution": "high-fanout", "tags_per_entry": 16, "tag_pool": 16},
+            m5,
+        )
 
     def test_selected_rows_have_row_not_cell_caps(self) -> None:
         plan = campaign.build_plan(
@@ -108,6 +117,14 @@ class MemoryCampaign071Tests(unittest.TestCase):
         self.assertIsNone(
             campaign.unsupported_evidence_reason(
                 {"case_id": "M3-ttl", "dimensions": {"cycles": 60}}
+            )
+        )
+        self.assertIsNone(
+            campaign.unsupported_evidence_reason(
+                {
+                    "case_id": "M5-tags",
+                    "dimensions": {"distribution": "high-fanout"},
+                }
             )
         )
 

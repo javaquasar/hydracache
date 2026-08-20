@@ -79,6 +79,11 @@ factor = "tag/index amplification"
 d0_repetitions = 3
 tags_per_entry = [0, 1, 4, 16]
 distributions = ["uniform", "one-hot", "high-fanout"]
+uniform_tag_pool = "private-per-entry"
+one_hot_tags_per_entry = 1
+one_hot_tag_pool = 1
+high_fanout_tags_per_entry = 16
+high_fanout_tag_pool = 16
 host_time_cap_seconds = 14400
 
 [[case]]

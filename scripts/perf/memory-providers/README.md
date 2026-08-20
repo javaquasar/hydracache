@@ -21,8 +21,8 @@ python scripts/perf/memory_campaign_071.py finalize --campaign-id local-rehearsa
 Rehearsal receipts are always non-promotable. Evidence execution remains
 fail-closed until the dedicated daemon executor and admitted host are present.
 
-For a closer pre-rental check, run the controller and a real M3 TTL daemon in
-a cgroup-v2 Linux container. The output directory must be new and empty; the
+For a closer pre-rental check, run the controller plus real M3 TTL and M5
+high-fanout daemon cells in a cgroup-v2 Linux container. The output directory must be new and empty; the
 named volumes make later rehearsals reuse the Cargo download and build cache:
 
 ```powershell
@@ -56,7 +56,7 @@ Each admitted evidence job starts a fresh retained daemon binary, drives its
 RESP-compatible memory phases, invokes the selected provider at every phase,
 captures `/proc` and cgroup-v2 values, stops the daemon, and validates the
 result with `cargo xtask memory-baseline-report-check`. Cells that still need a
-specialized HC/2, persistence, tag-distribution, or long-sequence executor are
+specialized HC/2, persistence, or long-sequence executor are
 rejected before the job begins; they can never fall back to a misleading RESP
 approximation.
 
