@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://hydracache.dev/schemas/0.71/memory-phase-timeline-v1.schema.json",
+  "title": "HydraCache memory phase timeline record v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version", "sequence", "phase", "epoch", "monotonic_ns",
+    "owner_snapshot_digest", "telemetry_checkpoint", "provider_mark"
+  ],
+  "properties": {
+    "schema_version": { "const": "hydracache-memory-phase-v1" },
+    "sequence": { "type": "integer", "minimum": 1, "maximum": 8 },
+    "phase": { "enum": ["cold", "fill", "steady", "expire_or_delete", "reset", "refill", "post_idle", "shutdown"] },
+    "epoch": { "type": "integer", "minimum": 1 },
+    "monotonic_ns": { "type": "integer", "minimum": 1 },
+    "owner_snapshot_digest": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" },
+    "telemetry_checkpoint": { "type": "string", "minLength": 1, "maxLength": 128 },
+    "provider_mark": { "type": "string", "minLength": 1, "maxLength": 128 }
+  }
+}

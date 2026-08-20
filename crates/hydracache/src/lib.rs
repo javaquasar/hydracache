@@ -528,6 +528,7 @@ mod invalidation_bus;
 mod invalidation_transport;
 #[cfg(not(target_arch = "wasm32"))]
 mod load_breaker;
+mod memory_footprint;
 #[cfg(not(target_arch = "wasm32"))]
 mod multitenancy;
 #[cfg(not(target_arch = "wasm32"))]
@@ -801,6 +802,12 @@ pub use invalidation_transport::{
 };
 #[cfg(not(target_arch = "wasm32"))]
 pub use load_breaker::LoadBreakerPolicy;
+pub use memory_footprint::{
+    AllocatorMemoryObservation, ExternalMemoryObservation, MemoryFootprintError,
+    MemoryFootprintSnapshot, MemoryInstrumentationMode, MemoryOwnerObservation,
+    MemoryReconciliationReport, MemorySnapshotBarrier, MemorySnapshotConsistency,
+    MemorySnapshotRequest, MemorySubsystemVersion,
+};
 #[cfg(not(target_arch = "wasm32"))]
 pub use multitenancy::{
     AdmissionRejection, ConsumerIsolation, ConsumerIsolationConfig, MultitenancyError,

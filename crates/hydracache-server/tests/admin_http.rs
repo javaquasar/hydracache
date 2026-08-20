@@ -13,8 +13,8 @@ use hydracache_client_transport_axum::{
 use hydracache_server::{
     AdminApiConfig, AdminHttpSurface, BackupConfig, ClientApiConfig, ClusterAuthConfig,
     ServerConfig, ServerRole, ServerRuntime, TlsConfig, ADMIN_BACKUP_PATH, ADMIN_CONSOLE_PATH,
-    ADMIN_DIAGNOSTIC_RESET_PATH, ADMIN_DRAIN_PATH, ADMIN_METRICS_PATH, ADMIN_RAFT_COMPACTION_PATH,
-    ADMIN_READYZ_PATH, ADMIN_RESHARD_PATH, ADMIN_STATUS_PATH,
+    ADMIN_DIAGNOSTIC_RESET_PATH, ADMIN_DRAIN_PATH, ADMIN_MEMORY_FOOTPRINT_PATH, ADMIN_METRICS_PATH,
+    ADMIN_RAFT_COMPACTION_PATH, ADMIN_READYZ_PATH, ADMIN_RESHARD_PATH, ADMIN_STATUS_PATH,
 };
 use serde_json::Value;
 use tower::ServiceExt;
@@ -165,6 +165,45 @@ mod admin_http {
         assert_eq!(body["members"], 1);
         assert_eq!(body["reshard_phase"], "idle");
         assert_eq!(body["draining"], false);
+    }
+
+    #[tokio::test]
+    async fn memory_footprint_is_secret_free_and_admin_only() {
+        let runtime = ServerRuntime::new(local_config()).unwrap().start();
+        runtime
+            .cache()
+            .put(
+                "private-key",
+                "private-value",
+                hydracache::CacheOptions::new().tag("private-tag"),
+            )
+            .await
+            .unwrap();
+        let surface = AdminHttpSurface::new(runtime);
+
+        let rejected = surface
+            .routes()
+            .oneshot(non_admin_request("GET", ADMIN_MEMORY_FOOTPRINT_PATH))
+            .await
+            .unwrap();
+        assert_eq!(rejected.status(), StatusCode::FORBIDDEN);
+
+        let response = surface
+            .routes()
+            .oneshot(admin_request("GET", ADMIN_MEMORY_FOOTPRINT_PATH))
+            .await
+            .unwrap();
+        assert_eq!(response.status(), StatusCode::OK);
+        let body = json_response(response).await;
+        assert_eq!(
+            body["schema_version"],
+            "hydracache-admin-memory-footprint-v1"
+        );
+        assert_eq!(body["embedded_cache"]["live_entries"], 1);
+        let serialized = serde_json::to_string(&body).unwrap();
+        assert!(!serialized.contains("private-key"));
+        assert!(!serialized.contains("private-value"));
+        assert!(!serialized.contains("private-tag"));
     }
 
     #[tokio::test]

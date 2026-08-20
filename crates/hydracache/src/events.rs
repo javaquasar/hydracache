@@ -14,7 +14,19 @@ pub(crate) struct EventBus {
     access_events: bool,
 }
 
+#[derive(Debug, Clone, Copy)]
+pub(crate) struct EventBusRetainedState {
+    pub(crate) occupancy: usize,
+    pub(crate) subscribers: usize,
+}
+
 impl EventBus {
+    pub(crate) fn retained_state(&self) -> EventBusRetainedState {
+        EventBusRetainedState {
+            occupancy: self.sender.len(),
+            subscribers: self.sender.receiver_count(),
+        }
+    }
     pub(crate) fn new(capacity: usize, access_events: bool) -> Self {
         let (sender, _) = broadcast::channel(capacity.max(1));
         Self {

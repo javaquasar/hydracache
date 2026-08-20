@@ -1,4 +1,5 @@
 use std::collections::{HashMap, HashSet};
+use std::sync::atomic::{AtomicU64, Ordering};
 
 use tokio::sync::RwLock;
 
@@ -15,6 +16,16 @@ pub(crate) struct LoadGenerationSnapshot {
 #[derive(Debug, Default)]
 pub(crate) struct TagIndex {
     state: RwLock<TagIndexState>,
+    version: AtomicU64,
+    tag_generation_records: AtomicU64,
+    key_generation_records: AtomicU64,
+}
+
+#[derive(Debug, Clone, Copy)]
+pub(crate) struct TagIndexMemoryState {
+    pub(crate) version: u64,
+    pub(crate) tag_generation_records: u64,
+    pub(crate) key_generation_records: u64,
 }
 
 #[derive(Debug, Default)]
@@ -77,11 +88,13 @@ impl TagIndex {
         let generation = guard.generations.entry(tag.to_owned()).or_default();
         *generation = generation.wrapping_add(1);
 
-        guard
+        let keys = guard
             .keys_by_tag
             .remove(tag)
             .map(|keys| keys.into_iter().collect())
-            .unwrap_or_default()
+            .unwrap_or_default();
+        self.publish_generation_state(&guard);
+        keys
     }
 
     pub(crate) async fn snapshot(&self, key: &str, tags: &[String]) -> LoadGenerationSnapshot {
@@ -125,6 +138,7 @@ impl TagIndex {
         }
         let generation = guard.key_generations.entry(key.to_owned()).or_default();
         *generation = generation.wrapping_add(1);
+        self.publish_generation_state(&guard);
     }
 
     pub(crate) async fn clear(&self) {
@@ -133,6 +147,27 @@ impl TagIndex {
         guard.generations.clear();
         guard.key_generations.clear();
         guard.global_generation = guard.global_generation.wrapping_add(1);
+        self.publish_generation_state(&guard);
+    }
+
+    pub(crate) fn memory_state(&self) -> TagIndexMemoryState {
+        TagIndexMemoryState {
+            version: self.version.load(Ordering::Acquire),
+            tag_generation_records: self.tag_generation_records.load(Ordering::Acquire),
+            key_generation_records: self.key_generation_records.load(Ordering::Acquire),
+        }
+    }
+
+    fn publish_generation_state(&self, state: &TagIndexState) {
+        self.tag_generation_records
+            .store(state.generations.len() as u64, Ordering::Release);
+        self.key_generation_records
+            .store(state.key_generations.len() as u64, Ordering::Release);
+        self.version
+            .fetch_update(Ordering::AcqRel, Ordering::Acquire, |value| {
+                value.checked_add(1)
+            })
+            .expect("tag-index memory sequence overflow");
     }
 
     #[cfg(test)]

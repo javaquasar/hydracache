@@ -2009,7 +2009,7 @@ subsystem = "hydracache"
 owning_type = "Arc + Sender"
 source = "crates/hydracache/src/cache.rs"
 symbol = "HydraCacheInner"
-allocation_sites = ["in_flight", "stats", "invalidation_bus", "bus_shutdown"]
+allocation_sites = ["in_flight", "stats", "invalidation_bus", "bus_shutdown", "tag_index", "memory"]
 keying_dimension = "aggregate-only; runtime keys, tenants, sessions, and connections are forbidden metric labels"
 retained_unit = "logical elements and bytes owned by the listed fields"
 creation_transition = "construct or activate HydraCacheInner"
@@ -3453,6 +3453,29 @@ disposition = "bounded"
 disposition_reason = "Conservative AST discovery identified a lifecycle-bearing production aggregate; W1 reconciles its bounded aggregate counters."
 
 [[owner]]
+owner_id = "owner-ef32b93dd02f43ec"
+subsystem = "hydracache"
+owning_type = "Vec"
+source = "crates/hydracache/src/memory_footprint.rs"
+symbol = "MemoryFootprintSnapshot"
+allocation_sites = ["owners", "subsystem_versions"]
+keying_dimension = "aggregate-only; runtime keys, tenants, sessions, and connections are forbidden metric labels"
+retained_unit = "one bounded snapshot owner observation vector"
+creation_transition = "construct a diagnostic or evidence snapshot"
+terminal_transitions = ["snapshot serialization completes", "snapshot drop"]
+cleanup = "owned snapshot vector is released on Rust Drop"
+count_bound = "constant: at most 32 owner observations by schema"
+byte_bound = "constant owner observation fields plus bounded owner ids"
+age_bound = "scope: diagnostic request or evidence checkpoint lifetime"
+overflow_behavior = "snapshot creation fails before accepting an unbounded owner set"
+snapshot_fields = []
+security_classification = "aggregate-sensitive; no payloads or unbounded labels"
+focused_tests = ["memory_profile_071::loadgen_declares_the_exact_phase_order_and_epoch_fields"]
+slow_evidence_ids = []
+disposition = "ephemeral"
+disposition_reason = "The vector is the bounded serialized snapshot itself and is released after the diagnostic/artifact checkpoint."
+
+[[owner]]
 owner_id = "owner-f184fb44837b0512"
 subsystem = "hydracache"
 owning_type = "HashMap + HashSet"
@@ -3681,5 +3704,3 @@ focused_tests = ["memory_ownership_071::registry_entry_resolves"]
 slow_evidence_ids = []
 disposition = "bounded"
 disposition_reason = "Conservative AST discovery identified a lifecycle-bearing production aggregate; W1 reconciles its bounded aggregate counters."
-
-

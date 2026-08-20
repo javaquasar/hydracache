@@ -16,6 +16,7 @@ use crate::grid::{ReplicatedValueSecurityPosture, ReplicationConfig};
 use crate::inflight::InFlightMap;
 use crate::invalidation_bus::CacheInvalidationBus;
 use crate::load_breaker::{LoadBreakerPolicy, LoadBreakerRegistry};
+use crate::memory_footprint::{MemoryFootprintCounters, MemoryInstrumentationMode};
 use crate::stats::StatsCounters;
 use crate::tag_index::TagIndex;
 
@@ -63,6 +64,7 @@ where
     persistence_policy: Option<PersistencePolicy>,
     persistence_storage_dir: Option<PathBuf>,
     load_breaker_policy: LoadBreakerPolicy,
+    memory_instrumentation_mode: MemoryInstrumentationMode,
     codec: C,
 }
 
@@ -82,6 +84,12 @@ where
     /// Set the maximum accepted encoded entry size in bytes.
     pub fn max_entry_bytes(mut self, max_entry_bytes: usize) -> Self {
         self.max_entry_bytes = max_entry_bytes.max(1);
+        self
+    }
+
+    /// Select the bounded memory instrumentation posture.
+    pub fn memory_instrumentation_mode(mut self, mode: MemoryInstrumentationMode) -> Self {
+        self.memory_instrumentation_mode = mode;
         self
     }
 
@@ -187,6 +195,7 @@ where
             persistence_policy: self.persistence_policy,
             persistence_storage_dir: self.persistence_storage_dir,
             load_breaker_policy: self.load_breaker_policy,
+            memory_instrumentation_mode: self.memory_instrumentation_mode,
             codec,
         }
     }
@@ -338,10 +347,30 @@ where
     /// Build the local cache.
     pub fn build(self) -> HydraCache<C> {
         let max_entry_bytes = self.max_entry_bytes;
-        let store = Cache::builder()
+        let memory = Arc::new(MemoryFootprintCounters::new(
+            self.memory_instrumentation_mode,
+        ));
+        let tag_index = Arc::new(TagIndex::default());
+        let eviction_memory = memory.clone();
+        let eviction_tag_index = tag_index.clone();
+        let store = Cache::<String, CacheEntry>::builder()
             .max_capacity(self.max_capacity)
             .weigher(move |_key, entry: &CacheEntry| {
                 entry.value.len().min(max_entry_bytes).max(1) as u32
+            })
+            .async_eviction_listener(move |key: Arc<String>, entry: CacheEntry, _cause| {
+                let memory = eviction_memory.clone();
+                let tag_index = eviction_tag_index.clone();
+                Box::pin(async move {
+                    let _mutation = memory.mutation();
+                    tag_index.unregister(&key, &entry.tags).await;
+                    memory.remove(crate::memory_footprint::EntryMemoryDelta::new(
+                        &key,
+                        entry.value.len(),
+                        entry.tags.len(),
+                        entry.expires_at.is_some(),
+                    ));
+                })
             })
             .build();
 
@@ -359,7 +388,7 @@ where
         let cache = HydraCache {
             inner: Arc::new(HydraCacheInner {
                 store,
-                tag_index: TagIndex::default(),
+                tag_index,
                 in_flight: Arc::new(InFlightMap::default()),
                 codec: self.codec,
                 default_ttl: self.default_ttl,
@@ -377,6 +406,7 @@ where
                 replication_config: self.replication_config,
                 replicated_value_security: self.replicated_value_security,
                 load_breaker: LoadBreakerRegistry::new(self.load_breaker_policy),
+                memory,
             }),
         };
 
@@ -407,6 +437,7 @@ impl Default for HydraCacheBuilder<PostcardCodec> {
             persistence_policy: None,
             persistence_storage_dir: None,
             load_breaker_policy: LoadBreakerPolicy::default(),
+            memory_instrumentation_mode: MemoryInstrumentationMode::default(),
             codec: PostcardCodec,
         }
     }

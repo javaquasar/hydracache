@@ -185,13 +185,24 @@ jobs:
           cargo test -p xtask --test memory_ownership_071 --locked
           cargo test -p xtask --test memory_contracts_071 --locked
           cargo test -p xtask --test memory_statistics_071 --locked
+          cargo test -p xtask --test memory_profile_071 --locked
+
+      - name: Verify coherent snapshots and phase providers
+        run: |
+          cargo test -p hydracache --test memory_footprint_071 --locked
+          cargo test -p hydracache memory_footprint::tests --locked
+          cargo test -p hydracache-loadgen memory_efficiency --locked
+          python scripts/perf/memory-providers/test_provider_contract.py
+          cargo run -p hydracache-loadgen --locked -- memory-efficiency --provider system --output-dir target/memory-evidence/0.71/profiles/ci-smoke
 
       - name: Retain ownership inventory
         if: always()
         uses: actions/upload-artifact@v6
         with:
           name: "memory-ownership-071-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}"
-          path: target/memory-evidence/0.71/ownership-inventory.json
+          path: |
+            target/memory-evidence/0.71/ownership-inventory.json
+            target/memory-evidence/0.71/profiles/ci-smoke/**
           if-no-files-found: error
           retention-days: 30
 

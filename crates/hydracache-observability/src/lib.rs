@@ -915,6 +915,13 @@ pub trait CacheProbe: Send + Sync {
     /// Return a serializable diagnostic snapshot.
     async fn diagnostics(&self) -> CacheDiagnosticsSnapshot;
 
+    /// Return the bounded product memory snapshot used by privileged adapters.
+    async fn memory_footprint(
+        &self,
+    ) -> Result<Option<hydracache::MemoryFootprintSnapshot>, String> {
+        Ok(None)
+    }
+
     /// Return cluster staging health when this probe wraps a cluster cache.
     fn cluster_staging_health(&self) -> Option<ClusterStagingHealth>;
 
@@ -971,6 +978,16 @@ where
             self.name.clone(),
             self.cache.diagnostics().await,
         )
+    }
+
+    async fn memory_footprint(
+        &self,
+    ) -> Result<Option<hydracache::MemoryFootprintSnapshot>, String> {
+        self.cache
+            .memory_footprint_snapshot(hydracache::MemorySnapshotRequest::Admin)
+            .await
+            .map(Some)
+            .map_err(|error| error.to_string())
     }
 
     fn cluster_staging_health(&self) -> Option<ClusterStagingHealth> {
@@ -1080,6 +1097,17 @@ impl HydraCacheRegistry {
     pub async fn diagnostics(&self, name: &str) -> Option<CacheDiagnosticsSnapshot> {
         let probe = self.probes.get(name)?;
         Some(probe.diagnostics().await)
+    }
+
+    /// Return one secret-free memory snapshot for artifact/admin consumers.
+    pub async fn memory_footprint(
+        &self,
+        name: &str,
+    ) -> Result<Option<hydracache::MemoryFootprintSnapshot>, String> {
+        let Some(probe) = self.probes.get(name) else {
+            return Ok(None);
+        };
+        probe.memory_footprint().await
     }
 
     /// Return cluster staging health for one registered cache.
@@ -1262,6 +1290,17 @@ mod tests {
         assert_eq!(diagnostics.hit_ratio(), Some(0.5));
         assert!(!diagnostics.empty);
         assert!(registry.diagnostics("missing").await.is_none());
+        let memory = registry
+            .memory_footprint("main")
+            .await
+            .expect("memory snapshot")
+            .expect("registered probe");
+        assert_eq!(memory.live_entries, 1);
+        assert!(registry
+            .memory_footprint("missing")
+            .await
+            .expect("missing is not an error")
+            .is_none());
     }
 
     #[tokio::test]
