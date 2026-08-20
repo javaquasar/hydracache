@@ -572,8 +572,8 @@ def unsupported_evidence_reason(job: dict[str, Any]) -> str | None:
         return "M6 requires the dedicated HC/2 connection executor"
     if case_id == "M7-persistence" and dimensions.get("persistence") != "off":
         return "M7 supported persistence mode requires an admitted durable-store executor"
-    if case_id == "M8-60m" and dimensions.get("sequence") == "hc2-churn":
-        return "M8 HC/2 churn requires the dedicated HC/2 connection executor"
+    if case_id == "M8-60m":
+        return "M8 requires the duration-aware serialized 60-minute executor"
     if case_id in {"M9-6h", "M10-24h"}:
         return f"{case_id} requires its preregistered multi-scenario executor"
     if case_id == "M5-tags" and dimensions.get("distribution") != "uniform":
