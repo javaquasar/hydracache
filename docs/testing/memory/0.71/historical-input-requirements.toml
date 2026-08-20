@@ -1,0 +1,13 @@
+schema_version = 1
+release = "0.71"
+branch = "explore/0.67-telemetry-hazelcast"
+remote_branch = "origin/explore/0.67-telemetry-hazelcast"
+tag = "explore-0.67-telemetry-20260803"
+commit = "dbc2f82f7f303528b3cca7842818730c82232b9c"
+require_clean_detached_checkout = true
+require_sha256s_validation = true
+require_per_file_manifest = true
+require_restored_mirror_match = true
+required_mirror_fields = ["provider", "object_id", "archive_sha256", "byte_length", "verified_at", "retention_deadline"]
+ordinary_clone_is_protected_mirror = false
+missing_mirror_blocks_d0 = true

@@ -6946,6 +6946,7 @@ dependencies = [
  "hydracache",
  "hydracache-client-plane-spike",
  "hydracache-loadgen",
+ "jsonschema",
  "proc-macro2",
  "prost",
  "prost-types",

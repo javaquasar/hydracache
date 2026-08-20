@@ -186,6 +186,8 @@ jobs:
           cargo test -p xtask --test memory_contracts_071 --locked
           cargo test -p xtask --test memory_statistics_071 --locked
           cargo test -p xtask --test memory_profile_071 --locked
+          cargo test -p xtask --test memory_baseline_071 --locked
+          cargo run -p xtask --locked -- memory-baseline-check --release 0.71
 
       - name: Verify coherent snapshots and phase providers
         run: |
@@ -193,7 +195,9 @@ jobs:
           cargo test -p hydracache memory_footprint::tests --locked
           cargo test -p hydracache-loadgen memory_efficiency --locked
           python scripts/perf/memory-providers/test_provider_contract.py
-          cargo run -p hydracache-loadgen --locked -- memory-efficiency --provider system --output-dir target/memory-evidence/0.71/profiles/ci-smoke
+          for mode in off production profile; do
+            cargo run -p hydracache-loadgen --locked -- memory-efficiency --provider system --instrumentation-mode "$mode" --output-dir "target/memory-evidence/0.71/profiles/ci-smoke/$mode"
+          done
 
       - name: Retain ownership inventory
         if: always()

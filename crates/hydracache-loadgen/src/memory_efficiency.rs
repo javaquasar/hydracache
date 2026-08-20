@@ -64,7 +64,9 @@ pub struct MemoryEfficiencyReceipt {
     pub schema_version: String,
     pub profile: String,
     pub provider: String,
+    pub instrumentation_mode: MemoryInstrumentationMode,
     pub phase_count: usize,
+    pub elapsed_ns: u64,
     pub timeline: PathBuf,
     pub promotable: bool,
 }
@@ -72,6 +74,7 @@ pub struct MemoryEfficiencyReceipt {
 pub async fn run_and_write_memory_efficiency(
     profile: &str,
     provider: &str,
+    instrumentation_mode: &str,
     output_dir: &Path,
 ) -> Result<MemoryEfficiencyReceipt, String> {
     std::fs::create_dir_all(output_dir)
@@ -81,9 +84,10 @@ pub async fn run_and_write_memory_efficiency(
         .map_err(|error| format!("unable to create {}: {error}", snapshots_dir.display()))?;
 
     eprintln!("hydracache-loadgen: initializing memory profile cache");
+    let instrumentation_mode = parse_instrumentation_mode(instrumentation_mode)?;
     let cache = HydraCache::local()
         .max_capacity(8 * 1024 * 1024)
-        .memory_instrumentation_mode(MemoryInstrumentationMode::Profile)
+        .memory_instrumentation_mode(instrumentation_mode)
         .build();
     eprintln!("hydracache-loadgen: initialized memory profile cache");
     let run_started = std::time::Instant::now();
@@ -138,10 +142,12 @@ pub async fn run_and_write_memory_efficiency(
             "memory phase timeline",
         )?;
     }
-    cache
-        .reconcile_memory_footprint()
-        .await
-        .map_err(|error| format!("final exact reconciliation failed: {error}"))?;
+    if instrumentation_mode != MemoryInstrumentationMode::Off {
+        cache
+            .reconcile_memory_footprint()
+            .await
+            .map_err(|error| format!("final exact reconciliation failed: {error}"))?;
+    }
 
     let timeline_path = output_dir.join("phase-timeline.jsonl");
     let timeline_jsonl = timeline
@@ -156,7 +162,9 @@ pub async fn run_and_write_memory_efficiency(
         schema_version: "hydracache-memory-efficiency-receipt-v1".to_owned(),
         profile: profile.to_owned(),
         provider: provider.to_owned(),
+        instrumentation_mode,
         phase_count: timeline.len(),
+        elapsed_ns: u64::try_from(run_started.elapsed().as_nanos()).unwrap_or(u64::MAX),
         timeline: timeline_path,
         promotable: false,
     };
@@ -164,6 +172,15 @@ pub async fn run_and_write_memory_efficiency(
         .map_err(|error| format!("receipt serialization failed: {error}"))?;
     write_bytes(&output_dir.join("receipt.json"), &receipt_bytes)?;
     Ok(receipt)
+}
+
+fn parse_instrumentation_mode(value: &str) -> Result<MemoryInstrumentationMode, String> {
+    match value {
+        "off" => Ok(MemoryInstrumentationMode::Off),
+        "production" => Ok(MemoryInstrumentationMode::Production),
+        "profile" => Ok(MemoryInstrumentationMode::Profile),
+        _ => Err("instrumentation mode must be off, production, or profile".to_owned()),
+    }
 }
 
 async fn run_phase_workload(cache: &HydraCache, phase: MemoryPhase) -> Result<(), String> {

@@ -8,6 +8,7 @@ pub enum LoadgenCommand {
         profile: String,
         output_dir: PathBuf,
         provider: String,
+        instrumentation_mode: String,
     },
     TierLocal {
         profile: String,
@@ -76,13 +77,14 @@ pub enum OverloadTarget {
 }
 
 impl LoadgenCommand {
-    pub fn memory_efficiency_shape(&self) -> Option<(&PathBuf, &str)> {
+    pub fn memory_efficiency_shape(&self) -> Option<(&PathBuf, &str, &str)> {
         match self {
             Self::MemoryEfficiency {
                 output_dir,
                 provider,
+                instrumentation_mode,
                 ..
-            } => Some((output_dir, provider)),
+            } => Some((output_dir, provider, instrumentation_mode)),
             _ => None,
         }
     }
@@ -377,9 +379,11 @@ fn parse_memory_efficiency(mut arguments: VecDeque<String>) -> Result<LoadgenCom
     let mut profile = "memory-efficiency-v1".to_owned();
     let mut output_dir = PathBuf::from("target/test-evidence/0.71/memory-efficiency");
     let mut provider = "system".to_owned();
+    let mut instrumentation_mode = "profile".to_owned();
     let mut seen_profile = false;
     let mut seen_output = false;
     let mut seen_provider = false;
+    let mut seen_instrumentation_mode = false;
     while let Some(flag) = arguments.pop_front() {
         let value = arguments
             .pop_front()
@@ -403,6 +407,12 @@ fn parse_memory_efficiency(mut arguments: VecDeque<String>) -> Result<LoadgenCom
                 provider = value;
                 duplicate
             }
+            "--instrumentation-mode" => {
+                let duplicate = seen_instrumentation_mode;
+                seen_instrumentation_mode = true;
+                instrumentation_mode = value;
+                duplicate
+            }
             _ => return Err(format!("unknown memory-efficiency option: {flag}")),
         };
         if duplicate {
@@ -412,10 +422,14 @@ fn parse_memory_efficiency(mut arguments: VecDeque<String>) -> Result<LoadgenCom
     if !["system", "jemalloc", "mimalloc"].contains(&provider.as_str()) {
         return Err("--provider must be system, jemalloc, or mimalloc".to_owned());
     }
+    if !["off", "production", "profile"].contains(&instrumentation_mode.as_str()) {
+        return Err("--instrumentation-mode must be off, production, or profile".to_owned());
+    }
     Ok(LoadgenCommand::MemoryEfficiency {
         profile,
         output_dir,
         provider,
+        instrumentation_mode,
     })
 }
 
@@ -470,13 +484,20 @@ mod tests {
     fn memory_efficiency_has_safe_defaults_and_bounded_providers() {
         let command = parse(args(&["memory-efficiency"])).unwrap();
         assert_eq!(command.profile(), "memory-efficiency-v1");
-        let (output, provider) = command.memory_efficiency_shape().unwrap();
+        let (output, provider, instrumentation_mode) = command.memory_efficiency_shape().unwrap();
         assert_eq!(
             output,
             Path::new("target/test-evidence/0.71/memory-efficiency")
         );
         assert_eq!(provider, "system");
+        assert_eq!(instrumentation_mode, "profile");
         assert!(parse(args(&["memory-efficiency", "--provider", "unknown"])).is_err());
+        assert!(parse(args(&[
+            "memory-efficiency",
+            "--instrumentation-mode",
+            "unknown"
+        ]))
+        .is_err());
     }
 
     #[test]

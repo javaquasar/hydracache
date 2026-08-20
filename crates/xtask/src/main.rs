@@ -67,6 +67,8 @@ fn main() -> Result<(), Box<dyn Error>> {
         Some("memory-release-policy-check") => {
             xtask::memory_contracts::run_release_policy(args.collect())?
         }
+        Some("memory-baseline-check") => xtask::memory_baseline::run_check(args.collect())?,
+        Some("memory-baseline-status") => xtask::memory_baseline::run_status(args.collect())?,
         Some("postgres-conformance-check") => {
             xtask::migration_conformance::run_postgres(args.collect())?
         }
@@ -136,6 +138,8 @@ fn print_usage() {
          cargo xtask perf-memory-preflight --release 0.71 --profile memory-reference-071-v1  # fingerprint or block the numerical evidence host\n  \
          cargo xtask memory-compat-check --release 0.71  # validate the 0.70/0.71 runtime and durable compatibility matrix\n  \
          cargo xtask memory-release-policy-check --release 0.71  # validate mandatory/no-win/deferred release dispositions\n  \
+         cargo xtask memory-baseline-check --release 0.71 [--require-d0]  # validate B0/B1, scenario, archive, and D0 admission\n  \
+         cargo xtask memory-baseline-status --release 0.71 --output <path>  # emit a non-promotable local baseline status\n  \
          cargo xtask postgres-conformance-check --mode <happy|canary>  # execute the real PostgreSQL differential or expected-red sentinel\n  \
          cargo xtask mutants       # validate the Raft mutation-testing baseline, optionally run cargo-mutants\n  \
          cargo xtask perf-runner-preflight --release 0.67 --profile reference-v1  # reject an unstable reference runner before build/measurement\n  \

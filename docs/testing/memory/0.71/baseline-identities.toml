@@ -1,0 +1,69 @@
+schema_version = 1
+release = "0.71"
+state = "planned"
+cohort_pooling = false
+candidate_derived_thresholds = false
+
+[b0_release]
+identity = "B0-release"
+tag = "v0.70.0"
+source_sha = "75719b0bf5de2250cf4eb16a30073dd7429538e3"
+instrumentation = "external-signals-only"
+
+[b1_instrumented]
+identity = "B1-instrumented"
+source_sha = "3189d35c26b9c1eae3505f4ab3e32a2360fb8ada"
+instrumentation = "W1-S5-production-and-profile"
+forbidden_product_work = ["W2b", "W3", "W4", "W5", "W6", "W7", "W8", "W9", "W10", "W11"]
+
+[scenario]
+path = "docs/testing/perf-scenarios/0.71/memory-efficiency-v1.toml"
+sha256 = "a7769dd4858376b0aa4b3b4ae81a67b779874c5930ead4b9481aa73c44a97406"
+
+[[scenario.input]]
+path = "docs/testing/memory/0.71/ownership-registry.toml"
+sha256 = "b3ed8ee8d9aaf1976552f5079499fc1856838c2b29ec2181f2920a61c3c89157"
+
+[[scenario.input]]
+path = "docs/testing/memory/0.71/allocator-capabilities.toml"
+sha256 = "26ca9a7f3a47dc94046d468819490d9b2da6048ecd48f79ebddebc3bfef384a9"
+
+[[scenario.input]]
+path = "docs/testing/memory/0.71/memory-footprint-v1.schema.json"
+sha256 = "0e66b0540059cef1d93443dbab62f8b670c94fdc76b47b4539ad1df28380d2ec"
+
+[[scenario.input]]
+path = "docs/testing/memory/0.71/memory-phase-timeline-v1.schema.json"
+sha256 = "f000d1f4f7dc35ecea1a396a454f151e208cd549ca086559f23d8e07d2bf1b5a"
+
+[[scenario.input]]
+path = "docs/testing/memory/0.71/memory-statistics-v1.toml"
+sha256 = "9eec10e986383aebb2712360a74cf39a7b6a35c3f686643509aa3d5ac7ed5691"
+
+[[scenario.input]]
+path = "docs/testing/perf-host-profiles/memory-reference-071-v1.json"
+sha256 = "cb975242c95c17c7ab944d1e6a2f37a10456557436f85b92a9f656453639a128"
+
+[[scenario.input]]
+path = "docs/testing/memory/0.71/ci-topology.json"
+sha256 = "e6917030e7b5195ffc30ee7c547b98cdf6309b118c3980f9f484297e1299fc12"
+
+[[scenario.input]]
+path = "docs/testing/memory/0.71/historical-input-requirements.toml"
+sha256 = "3fdff1886e8458f3b2df81583944015d056c0a84faebe7398b2e12de33a2778b"
+
+[[scenario.input]]
+path = "docs/testing/memory/0.71/memory-baseline-report-v1.schema.json"
+sha256 = "78d8fe47f941b1129aa090b59df8b3deac210c487770e9b11a1465bde10c117c"
+
+[historical]
+branch = "explore/0.67-telemetry-hazelcast"
+remote_branch = "origin/explore/0.67-telemetry-hazelcast"
+tag = "explore-0.67-telemetry-20260803"
+commit = "dbc2f82f7f303528b3cca7842818730c82232b9c"
+requirements = "docs/testing/memory/0.71/historical-input-requirements.toml"
+
+[d0]
+ready = false
+required_receipts = ["ownership_inventory", "provider_qualification", "phase_timeline", "statistics_contract", "instrumentation_overhead", "admitted_host", "bootstrap_0_67_1", "ci_bounded_dry_run", "historical_mirror"]
+blockers = ["dedicated host receipt not checked in", "0.67.1 bootstrap evidence unavailable in this checkout", "protected historical mirror receipt unavailable"]

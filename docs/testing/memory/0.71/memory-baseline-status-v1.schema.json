@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://hydracache.dev/schemas/0.71/memory-baseline-status-v1.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "release", "source_sha", "b0_sha", "b1_sha", "scenario_sha256", "platform", "diagnostic_only", "ship_evidence_eligible", "d0_ready", "dirty_paths", "blockers"],
+  "properties": {
+    "schema_version": { "const": 1 },
+    "release": { "const": "0.71" },
+    "source_sha": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
+    "b0_sha": { "const": "75719b0bf5de2250cf4eb16a30073dd7429538e3" },
+    "b1_sha": { "const": "3189d35c26b9c1eae3505f4ab3e32a2360fb8ada" },
+    "scenario_sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "platform": { "type": "string", "minLength": 1 },
+    "diagnostic_only": { "const": true },
+    "ship_evidence_eligible": { "const": false },
+    "d0_ready": { "type": "boolean" },
+    "dirty_paths": { "type": "array", "items": { "type": "string" } },
+    "blockers": { "type": "array", "items": { "type": "string" } }
+  }
+}
