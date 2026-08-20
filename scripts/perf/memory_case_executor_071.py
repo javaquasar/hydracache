@@ -115,6 +115,100 @@ def wait_ready(process: subprocess.Popen[Any], port: int) -> None:
     raise ExecutionError("daemon did not become RESP-ready")
 
 
+class Hc2Fleet:
+    def __init__(self, helper: Path, pki: Path, port: int, output: Path, rehearsal: bool):
+        self.helper = helper
+        self.pki = pki
+        self.port = port
+        self.output = output
+        self.rehearsal = rehearsal
+        self.process: subprocess.Popen[Any] | None = None
+        self.log: Any = None
+        self.generation = 0
+
+    def start(self, connections: int, slow_consumers: int) -> dict[str, Any]:
+        if self.process is not None:
+            raise ExecutionError("HC/2 fleet is already running")
+        self.generation += 1
+        if self.rehearsal:
+            connections = min(connections, 16)
+            slow_consumers = min(slow_consumers, connections, 8)
+        ready = self.output / f"hc2-fleet-{self.generation}-ready.json"
+        self.log = (self.output / f"hc2-fleet-{self.generation}.log").open(
+            "w", encoding="utf-8", newline="\n"
+        )
+        command = [
+            str(self.helper),
+            "hold",
+            "--endpoint",
+            f"https://127.0.0.1:{self.port}",
+            "--ca",
+            str(self.pki / "ca.pem"),
+            "--cert",
+            str(self.pki / "client.pem"),
+            "--key",
+            str(self.pki / "client.key"),
+            "--connections",
+            str(connections),
+            "--slow-consumers",
+            str(slow_consumers),
+            "--ready",
+            str(ready),
+        ]
+        self.process = subprocess.Popen(
+            command,
+            stdin=subprocess.PIPE,
+            stdout=self.log,
+            stderr=subprocess.STDOUT,
+        )
+        deadline = time.monotonic() + 120
+        while time.monotonic() < deadline:
+            if ready.is_file():
+                receipt = json.loads(ready.read_text(encoding="utf-8"))
+                if receipt.get("connections") != connections or receipt.get("slow_consumers") != slow_consumers:
+                    raise ExecutionError("HC/2 helper ready receipt has the wrong cardinality")
+                return receipt
+            if self.process.poll() is not None:
+                raise ExecutionError(f"HC/2 helper exited during startup with {self.process.returncode}")
+            time.sleep(0.05)
+        raise ExecutionError("HC/2 helper did not become ready")
+
+    def stop(self) -> None:
+        if self.process is None:
+            return
+        if self.process.stdin:
+            self.process.stdin.write(b"x")
+            self.process.stdin.close()
+        try:
+            self.process.wait(timeout=30)
+        except subprocess.TimeoutExpired as error:
+            self.process.kill()
+            self.process.wait(timeout=5)
+            raise ExecutionError("HC/2 helper did not stop cleanly") from error
+        if self.process.returncode != 0:
+            raise ExecutionError(f"HC/2 helper failed with {self.process.returncode}")
+        self.process = None
+        if self.log:
+            self.log.close()
+            self.log = None
+
+
+def wait_hc2_accounting(admin_port: int, connections: int, subscriptions: int) -> dict[str, Any]:
+    deadline = time.monotonic() + 30
+    while time.monotonic() < deadline:
+        owner = http_json(admin_port, "/admin/memory-footprint") or {}
+        hc2 = owner.get("hc2") or {}
+        if (
+            hc2.get("active_connections") == connections
+            and hc2.get("active_subscriptions") == subscriptions
+        ):
+            return owner
+        time.sleep(0.05)
+    raise ExecutionError(
+        f"HC/2 accounting did not reach connections={connections}, subscriptions={subscriptions}"
+    )
+
+
 def kib_value(value: str | None) -> int:
     return 0 if not value else int(value.split()[0]) * 1024
 
@@ -413,7 +507,19 @@ def execute(args: argparse.Namespace) -> None:
         raise ExecutionError("retained daemon binary digest differs from its build manifest")
     output = args.output.resolve()
     output.mkdir(parents=True, exist_ok=False)
-    redis_port, admin_port = free_port(), free_port()
+    redis_port, admin_port, hc2_port = free_port(), free_port(), free_port()
+    helper: Path | None = None
+    helper_sha256: str | None = None
+    pki = output / "hc2-pki"
+    if job["case_id"] == "M6-connections":
+        if not args.hc2_helper_manifest:
+            raise ExecutionError("M6 requires --hc2-helper-manifest")
+        helper_manifest = json.loads(args.hc2_helper_manifest.read_text(encoding="utf-8"))
+        helper = Path(helper_manifest["binary"])
+        helper_sha256 = str(helper_manifest["binary_sha256"])
+        if not helper.is_file() or sha256(helper) != helper_manifest["binary_sha256"]:
+            raise ExecutionError("retained HC/2 helper is missing or drifted")
+        subprocess.run([str(helper), "pki", "--output", str(pki)], check=True)
     environment = os.environ.copy()
     environment.update(
         {
@@ -425,6 +531,20 @@ def execute(args: argparse.Namespace) -> None:
             "HYDRACACHE_DIAGNOSTIC_RESET_ENABLED": "true",
         }
     )
+    if job["case_id"] == "M6-connections":
+        if job["dimensions"].get("tls") is not True:
+            raise ExecutionError("HC/2 is contractually mandatory-mTLS; plaintext M6 cells are invalid")
+        environment.update(
+            {
+                "HYDRACACHE_HC2_ENABLED": "true",
+                "HYDRACACHE_HC2_ADDR": f"127.0.0.1:{hc2_port}",
+                "HYDRACACHE_HC2_CLUSTER_ID": "memory-campaign-071",
+                "HYDRACACHE_TLS_ENABLED": "true",
+                "HYDRACACHE_TLS_CERT_PATH": str(pki / "server.pem"),
+                "HYDRACACHE_TLS_KEY_PATH": str(pki / "server.key"),
+                "HYDRACACHE_TLS_CA_PATH": str(pki / "ca.pem"),
+            }
+        )
     daemon_log = (output / "daemon.log").open("w", encoding="utf-8", newline="\n")
     process = subprocess.Popen(
         [str(binary)],
@@ -439,6 +559,9 @@ def execute(args: argparse.Namespace) -> None:
     provider_raw = output / "provider-raw.jsonl"
     timeline_path = output / "phase-timeline.jsonl"
     checkpoints: list[dict[str, Any]] = []
+    hc2_observations: list[dict[str, Any]] = []
+    hc2_helper_receipts: list[dict[str, Any]] = []
+    fleet = Hc2Fleet(helper, pki, hc2_port, output, args.rehearsal) if helper else None
     completed = False
     try:
         wait_ready(process, redis_port)
@@ -460,12 +583,37 @@ def execute(args: argparse.Namespace) -> None:
             workload = Workload(stream, job, args.rehearsal)
             started = time.monotonic_ns()
             for sequence, phase in enumerate(PHASES, 1):
+                if fleet and phase in {"fill", "refill"}:
+                    hc2_helper_receipts.append(
+                        fleet.start(
+                            int(job["dimensions"]["connections"]),
+                            int(job["dimensions"]["slow_consumers"]),
+                        )
+                    )
+                if fleet and phase in {"expire_or_delete", "shutdown"}:
+                    fleet.stop()
                 workload.run_phase(phase, admin_port)
                 workload.observe_distribution(phase)
                 provider_command(adapter, "mark", "--state", str(provider_state), "--phase", phase)
                 provider_command(adapter, "snapshot", "--state", str(provider_state), "--phase", phase)
                 monotonic_ns = time.monotonic_ns() - started
                 owner = http_json(admin_port, "/admin/memory-footprint")
+                if fleet:
+                    expected_connections = (
+                        min(int(job["dimensions"]["connections"]), 16)
+                        if args.rehearsal
+                        else int(job["dimensions"]["connections"])
+                    ) if phase in {"fill", "steady", "refill", "post_idle"} else 0
+                    requested_slow = int(job["dimensions"]["slow_consumers"])
+                    expected_subscriptions = (
+                        min(requested_slow, expected_connections, 8)
+                        if args.rehearsal
+                        else requested_slow
+                    ) if expected_connections else 0
+                    owner = wait_hc2_accounting(
+                        admin_port, expected_connections, expected_subscriptions
+                    )
+                    hc2_observations.append({"phase": phase, **(owner.get("hc2") or {})})
                 write_json(output / "owner-snapshots" / f"{phase}.json", owner or {"unavailable": "B0 has no W1 admin footprint"})
                 checkpoint = {
                     "phase": phase,
@@ -498,6 +646,21 @@ def execute(args: argparse.Namespace) -> None:
                         "observations": workload.distribution_observations,
                     },
                 )
+            if fleet:
+                write_json(
+                    output / "m6-connections-receipt.json",
+                    {
+                        "schema_version": 1,
+                        "release": "0.71",
+                        "job_id": job["job_id"],
+                        "transport": "grpc-bidirectional-mtls",
+                        "requested_connections": int(job["dimensions"]["connections"]),
+                        "requested_slow_consumers": int(job["dimensions"]["slow_consumers"]),
+                        "rehearsal_cardinality_capped": args.rehearsal,
+                        "helper_receipts": hc2_helper_receipts,
+                        "observations": hc2_observations,
+                    },
+                )
         provider_command(adapter, "stop", "--state", str(provider_state))
         provider_command(
             adapter,
@@ -511,6 +674,25 @@ def execute(args: argparse.Namespace) -> None:
         )
         host = json.loads(args.host_preflight.read_text(encoding="utf-8")) if args.host_preflight else {}
         eligible = not args.rehearsal and host.get("ship_evidence_eligible") is True
+        exact_command = [
+            f"HYDRACACHE_ROLE={environment['HYDRACACHE_ROLE']}",
+            f"HYDRACACHE_REDIS_API_ENABLED={environment['HYDRACACHE_REDIS_API_ENABLED']}",
+            f"HYDRACACHE_REDIS_ADDR={environment['HYDRACACHE_REDIS_ADDR']}",
+            f"HYDRACACHE_ADMIN_API_ENABLED={environment['HYDRACACHE_ADMIN_API_ENABLED']}",
+            f"HYDRACACHE_ADMIN_ADDR={environment['HYDRACACHE_ADMIN_ADDR']}",
+            f"HYDRACACHE_DIAGNOSTIC_RESET_ENABLED={environment['HYDRACACHE_DIAGNOSTIC_RESET_ENABLED']}",
+        ]
+        if fleet:
+            exact_command.extend(
+                [
+                    f"HYDRACACHE_HC2_ENABLED={environment['HYDRACACHE_HC2_ENABLED']}",
+                    f"HYDRACACHE_HC2_ADDR={environment['HYDRACACHE_HC2_ADDR']}",
+                    f"HYDRACACHE_HC2_CLUSTER_ID={environment['HYDRACACHE_HC2_CLUSTER_ID']}",
+                    "HYDRACACHE_TLS_ENABLED=true",
+                    f"HC2_HELPER_SHA256={helper_sha256}",
+                ]
+            )
+        exact_command.append(str(binary))
         report = {
             "schema_version": 1,
             "release": "0.71",
@@ -530,21 +712,15 @@ def execute(args: argparse.Namespace) -> None:
                 "cgroup_limit": None,
             },
             "allocator": {"name": manifest["allocator"], "provider": args.provider, "provider_version": "provider-protocol-v1"},
-            "exact_command": [
-                f"HYDRACACHE_ROLE={environment['HYDRACACHE_ROLE']}",
-                f"HYDRACACHE_REDIS_API_ENABLED={environment['HYDRACACHE_REDIS_API_ENABLED']}",
-                f"HYDRACACHE_REDIS_ADDR={environment['HYDRACACHE_REDIS_ADDR']}",
-                f"HYDRACACHE_ADMIN_API_ENABLED={environment['HYDRACACHE_ADMIN_API_ENABLED']}",
-                f"HYDRACACHE_ADMIN_ADDR={environment['HYDRACACHE_ADMIN_ADDR']}",
-                f"HYDRACACHE_DIAGNOSTIC_RESET_ENABLED={environment['HYDRACACHE_DIAGNOSTIC_RESET_ENABLED']}",
-                str(binary),
-            ],
+            "exact_command": exact_command,
             "unique_keys": 0 if job["case_id"] == "M0-cold" else workload.keys,
             "unique_key_verification": {
                 "method": "workload-key-ledger",
                 "observed": 0 if job["case_id"] == "M0-cold" else workload.keys,
             },
-            "request_count": workload.requests,
+            "request_count": workload.requests + sum(
+                int(receipt.get("pressure_events", 0)) for receipt in hc2_helper_receipts
+            ),
             "diagnostic_only": not eligible,
             "ship_evidence_eligible": eligible,
             "checkpoints": checkpoints,
@@ -552,6 +728,8 @@ def execute(args: argparse.Namespace) -> None:
         write_json(output / "memory-baseline-report.json", report)
         completed = True
     finally:
+        if fleet:
+            fleet.stop()
         stop_process(process)
         daemon_log.close()
     if completed:
@@ -579,6 +757,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--scenario-digest", required=True)
     parser.add_argument("--provider", choices=["system", "jemalloc", "mimalloc"], default="system")
     parser.add_argument("--host-preflight", type=Path)
+    parser.add_argument("--hc2-helper-manifest", type=Path)
     parser.add_argument("--rehearsal", action="store_true")
     return parser.parse_args()
 

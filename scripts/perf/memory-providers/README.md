@@ -21,8 +21,9 @@ python scripts/perf/memory_campaign_071.py finalize --campaign-id local-rehearsa
 Rehearsal receipts are always non-promotable. Evidence execution remains
 fail-closed until the dedicated daemon executor and admitted host are present.
 
-For a closer pre-rental check, run the controller plus real M3 TTL and M5
-high-fanout daemon cells in a cgroup-v2 Linux container. The output directory must be new and empty; the
+For a closer pre-rental check, run the controller plus real M3 TTL, M5
+high-fanout, and M6 gRPC+mTLS slow-consumer daemon cells in a cgroup-v2 Linux
+container. The output directory must be new and empty; the
 named volumes make later rehearsals reuse the Cargo download and build cache:
 
 ```powershell
@@ -38,7 +39,7 @@ docker run --rm --init --memory 4g --cpus 4 `
 ```
 
 The container writes `docker-rehearsal-receipt.json`, a typed real-daemon
-report, and the finalized 44-job matrix. It uses a synthetic Git snapshot, so
+report, and the finalized 40-job matrix. It uses a synthetic Git snapshot, so
 the receipt is always diagnostic and cannot satisfy the frozen B0/B1 evidence
 gate.
 

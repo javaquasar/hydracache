@@ -68,6 +68,16 @@ def execute(args: argparse.Namespace) -> None:
             "b0_b1_are_distinct_cohorts",
         ],
         ["cargo", "build", "--release", "--locked", "-p", "hydracache-server"],
+        [
+            "cargo",
+            "build",
+            "--release",
+            "--locked",
+            "-p",
+            "hydracache-loadgen",
+            "--bin",
+            "memory-hc2-connections-071",
+        ],
     ]
     for command in commands:
         run(command, root)
@@ -105,17 +115,36 @@ def execute(args: argparse.Namespace) -> None:
             "cohort": "B1-instrumented",
             "repetition": 1,
         },
+        {
+            "job_id": "docker-real-daemon-m6-slow-consumers-r1",
+            "case_id": "M6-connections",
+            "cell_id": "M6-connections__connections-100__slow_consumers-100__tls-true",
+            "dimensions": {"connections": 100, "slow_consumers": 100, "tls": True},
+            "cohort": "B1-instrumented",
+            "repetition": 1,
+        },
     ]
     manifest_path = evidence / "real-daemon" / "build-manifest.json"
     write_json(manifest_path, manifest)
+    helper = root / "target/release/memory-hc2-connections-071"
+    helper_manifest_path = evidence / "real-daemon" / "hc2-helper-manifest.json"
+    write_json(
+        helper_manifest_path,
+        {
+            "schema_version": 1,
+            "release": "0.71",
+            "source_sha": manifest["source_sha"],
+            "binary": str(helper),
+            "binary_sha256": sha256(helper),
+        },
+    )
     scenario = root / "docs/testing/perf-scenarios/0.71/memory-efficiency-v1.toml"
     reports: list[Path] = []
     for job in jobs:
         case_root = evidence / "real-daemon" / job["case_id"]
         job_path = case_root / "job.json"
         write_json(job_path, job)
-        run(
-            [
+        executor_command = [
                 sys.executable,
                 "scripts/perf/memory_case_executor_071.py",
                 "--job",
@@ -129,9 +158,10 @@ def execute(args: argparse.Namespace) -> None:
                 "--provider",
                 "system",
                 "--rehearsal",
-            ],
-            root,
-        )
+            ]
+        if job["case_id"] == "M6-connections":
+            executor_command.extend(["--hc2-helper-manifest", str(helper_manifest_path)])
+        run(executor_command, root)
         report = case_root / "run" / "memory-baseline-report.json"
         reports.append(report)
         run(
@@ -154,6 +184,9 @@ def execute(args: argparse.Namespace) -> None:
     m5_receipt = evidence / "real-daemon" / "M5-tags" / "run" / "m5-distribution-receipt.json"
     if not m5_receipt.is_file():
         raise RehearsalError("real M5 run did not produce its distribution receipt")
+    m6_receipt = evidence / "real-daemon" / "M6-connections" / "run" / "m6-connections-receipt.json"
+    if not m6_receipt.is_file():
+        raise RehearsalError("real M6 run did not produce its connection receipt")
 
     campaign_id = "docker-full-matrix"
     campaign_root = evidence / "campaigns"

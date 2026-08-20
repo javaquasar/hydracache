@@ -91,7 +91,8 @@ id = "M6-connections"
 factor = "HC/2 idle and slow consumers"
 d0_repetitions = 3
 connections = [1, 10, 100, 1000]
-tls = [false, true]
+tls = [true]
+transport = "grpc-bidirectional-mtls"
 slow_consumers = [100]
 host_time_cap_seconds = 21600
 

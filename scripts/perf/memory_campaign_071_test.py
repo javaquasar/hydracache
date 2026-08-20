@@ -35,9 +35,9 @@ class MemoryCampaign071Tests(unittest.TestCase):
             counts[job["case_id"]] = counts.get(job["case_id"], 0) + 1
         self.assertEqual(counts["M1-shape"], 16)
         self.assertEqual(counts["M5-tags"], 6)
-        self.assertEqual(counts["M6-connections"], 9)
+        self.assertEqual(counts["M6-connections"], 5)
         self.assertEqual(counts["M8-60m"], 4)
-        self.assertEqual(plan["job_count"], 44)
+        self.assertEqual(plan["job_count"], 40)
         m5 = [job["dimensions"] for job in plan["jobs"] if job["case_id"] == "M5-tags"]
         self.assertIn(
             {"distribution": "one-hot", "tags_per_entry": 1, "tag_pool": 1},
@@ -47,6 +47,8 @@ class MemoryCampaign071Tests(unittest.TestCase):
             {"distribution": "high-fanout", "tags_per_entry": 16, "tag_pool": 16},
             m5,
         )
+        m6 = [job["dimensions"] for job in plan["jobs"] if job["case_id"] == "M6-connections"]
+        self.assertTrue(all(cell["tls"] is True for cell in m6))
 
     def test_selected_rows_have_row_not_cell_caps(self) -> None:
         plan = campaign.build_plan(
@@ -99,9 +101,9 @@ class MemoryCampaign071Tests(unittest.TestCase):
             campaign.ensure_external_build_root(self.root, self.root / "target" / "builds")
 
     def test_unsupported_evidence_cells_fail_closed(self) -> None:
-        self.assertIsNotNone(
+        self.assertIsNone(
             campaign.unsupported_evidence_reason(
-                {"case_id": "M6-connections", "dimensions": {"tls": False}}
+                {"case_id": "M6-connections", "dimensions": {"tls": True}}
             )
         )
         self.assertIsNotNone(

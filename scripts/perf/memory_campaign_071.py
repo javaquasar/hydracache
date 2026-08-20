@@ -151,7 +151,7 @@ def expand_case(case: dict[str, Any]) -> list[Cell]:
             for connections, tls in itertools.product(case["connections"], case["tls"])
         ]
         cells.extend(
-            Cell(case_id, {"connections": count, "tls": False, "slow_consumers": count})
+            Cell(case_id, {"connections": count, "tls": True, "slow_consumers": count})
             for count in case["slow_consumers"]
         )
         return cells
@@ -226,6 +226,7 @@ def build_plan(
         "created_at": utc_now(),
         "cohorts": cohorts,
         "source_shas": {cohort: source_shas[cohort] for cohort in cohorts},
+        "controller_sha": git(root, "rev-parse", "HEAD"),
         "row_time_caps_seconds": row_caps,
         "admitted_host_cap_seconds": sum(row_caps.values()),
         "job_count": len(jobs),
@@ -320,6 +321,10 @@ def executable_name() -> str:
     return "hydracache-server.exe" if os.name == "nt" else "hydracache-server"
 
 
+def hc2_helper_name() -> str:
+    return "memory-hc2-connections-071.exe" if os.name == "nt" else "memory-hc2-connections-071"
+
+
 def prepare_builds(root: Path, campaign_dir: Path, build_root: Path) -> None:
     state_path = campaign_dir / "state.json"
     if not state_path.is_file():
@@ -330,7 +335,61 @@ def prepare_builds(root: Path, campaign_dir: Path, build_root: Path) -> None:
             raise CampaignError("prepare is only required for evidence campaigns")
         if git(root, "status", "--porcelain=v1", "--untracked-files=all"):
             raise CampaignError("evidence builds require a clean controller worktree")
+        if git(root, "rev-parse", "HEAD") != state["controller_sha"]:
+            raise CampaignError("controller source drifted from the planned SHA")
         build_root = ensure_external_build_root(root, build_root)
+        if not state.get("controller_tools"):
+            tool_dir = campaign_dir / "builds" / "controller-tools"
+            target_dir = build_root / f"target-controller-{campaign_dir.name}"
+            if tool_dir.exists() or target_dir.exists():
+                raise CampaignError("refusing to reuse incomplete controller-tool build paths")
+            tool_dir.mkdir(parents=True)
+            command = [
+                "cargo",
+                "build",
+                "--release",
+                "--locked",
+                "-p",
+                "hydracache-loadgen",
+                "--bin",
+                "memory-hc2-connections-071",
+            ]
+            environment = os.environ.copy()
+            environment.update({"CARGO_INCREMENTAL": "0", "CARGO_TARGET_DIR": str(target_dir)})
+            try:
+                with (tool_dir / "build.log").open("w", encoding="utf-8", newline="\n") as log:
+                    completed = subprocess.run(
+                        command,
+                        cwd=root,
+                        env=environment,
+                        stdout=log,
+                        stderr=subprocess.STDOUT,
+                        timeout=BUILD_TIMEOUT_SECONDS,
+                        check=False,
+                    )
+                if completed.returncode != 0:
+                    raise CampaignError("controller HC/2 helper build failed")
+                built = target_dir / "release" / hc2_helper_name()
+                retained = tool_dir / hc2_helper_name()
+                shutil.copy2(built, retained)
+                retained.chmod(0o555)
+                manifest = {
+                    "schema_version": SCHEMA_VERSION,
+                    "release": RELEASE,
+                    "source_sha": state["controller_sha"],
+                    "binary": str(retained.resolve()),
+                    "binary_sha256": sha256(retained),
+                    "exact_command": command,
+                }
+                manifest_path = tool_dir / "hc2-helper-manifest.json"
+                atomic_json(manifest_path, manifest, create=True)
+                state["controller_tools"] = {
+                    "hc2_helper_manifest": str(manifest_path.relative_to(campaign_dir)).replace("\\", "/"),
+                    "hc2_helper_manifest_sha256": sha256(manifest_path),
+                }
+                atomic_json(state_path, state)
+            finally:
+                shutil.rmtree(target_dir, ignore_errors=True)
         manifests: dict[str, Any] = dict(state.get("builds", {}))
         for cohort, source_sha in state["source_shas"].items():
             if cohort in manifests:
@@ -555,6 +614,8 @@ def execute_rehearsal(root: Path, campaign_dir: Path, job: dict[str, Any]) -> tu
         "run",
         "-p",
         "hydracache-loadgen",
+        "--bin",
+        "hydracache-loadgen",
         "--locked",
         "--",
         "memory-efficiency",
@@ -590,8 +651,6 @@ def execute_rehearsal(root: Path, campaign_dir: Path, job: dict[str, Any]) -> tu
 def unsupported_evidence_reason(job: dict[str, Any]) -> str | None:
     case_id = job["case_id"]
     dimensions = job["dimensions"]
-    if case_id == "M6-connections":
-        return "M6 requires the dedicated HC/2 connection executor"
     if case_id == "M7-persistence" and dimensions.get("persistence") != "off":
         return "M7 supported persistence mode requires an admitted durable-store executor"
     if case_id == "M8-60m":
@@ -641,6 +700,15 @@ def execute_evidence(root: Path, campaign_dir: Path, state: dict[str, Any], job:
         "--host-preflight",
         str(host_preflight),
     ]
+    if job["case_id"] == "M6-connections":
+        tools = state.get("controller_tools", {})
+        helper_manifest = campaign_dir / tools.get("hc2_helper_manifest", "missing")
+        if (
+            not helper_manifest.is_file()
+            or sha256(helper_manifest) != tools.get("hc2_helper_manifest_sha256")
+        ):
+            raise CampaignError("retained HC/2 helper manifest is missing or drifted")
+        command.extend(["--hc2-helper-manifest", str(helper_manifest)])
     try:
         completed = subprocess.run(command, cwd=root, timeout=state["row_time_caps_seconds"][job["case_id"]], check=False)
     except subprocess.TimeoutExpired:
