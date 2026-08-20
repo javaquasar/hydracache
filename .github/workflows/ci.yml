@@ -196,9 +196,17 @@ jobs:
           cargo test -p hydracache memory_footprint::tests --locked
           cargo test -p hydracache-loadgen memory_efficiency --locked
           python scripts/perf/memory-providers/test_provider_contract.py
+          python scripts/perf/memory_campaign_071_test.py
           for mode in off production profile; do
             cargo run -p hydracache-loadgen --locked -- memory-efficiency --provider system --instrumentation-mode "$mode" --output-dir "target/memory-evidence/0.71/profiles/ci-smoke/$mode"
           done
+
+      - name: Prove bounded campaign resume and finalization
+        run: |
+          python scripts/perf/memory_campaign_071.py plan --campaign-id ci-bounded-${{ github.run_id }}-${{ github.run_attempt }} --case M0-cold --repetitions 1 --rehearsal
+          python scripts/perf/memory_campaign_071.py run --campaign-id ci-bounded-${{ github.run_id }}-${{ github.run_attempt }}
+          python scripts/perf/memory_campaign_071.py resume --campaign-id ci-bounded-${{ github.run_id }}-${{ github.run_attempt }}
+          python scripts/perf/memory_campaign_071.py finalize --campaign-id ci-bounded-${{ github.run_id }}-${{ github.run_attempt }}
 
       - name: Retain ownership inventory
         if: always()
@@ -208,6 +216,7 @@ jobs:
           path: |
             target/memory-evidence/0.71/ownership-inventory.json
             target/memory-evidence/0.71/profiles/ci-smoke/**
+            target/memory-evidence/0.71/campaigns/ci-bounded-*/**
           if-no-files-found: error
           retention-days: 30
 
