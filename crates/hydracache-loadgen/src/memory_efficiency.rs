@@ -244,9 +244,7 @@ pub fn validate_timeline(records: &[MemoryPhaseTimelineRecord]) -> Result<(), St
         ));
     }
     let mut previous_epoch = 0;
-    for (index, (record, expected_phase)) in
-        records.iter().zip(MEMORY_PHASES.into_iter()).enumerate()
-    {
+    for (index, (record, expected_phase)) in records.iter().zip(MEMORY_PHASES).enumerate() {
         let expected_sequence = (index + 1) as u64;
         if record.sequence != expected_sequence || record.phase != expected_phase {
             return Err(format!(

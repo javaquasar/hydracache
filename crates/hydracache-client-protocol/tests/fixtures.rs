@@ -43,7 +43,9 @@ fn decode_hex(input: &str) -> Vec<u8> {
 
     compact
         .as_bytes()
-        .chunks_exact(2)
+        .as_chunks::<2>()
+        .0
+        .iter()
         .map(|pair| {
             let high = from_hex(pair[0]);
             let low = from_hex(pair[1]);

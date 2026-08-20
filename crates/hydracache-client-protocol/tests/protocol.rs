@@ -409,7 +409,9 @@ fn decode_hex(input: &str) -> Vec<u8> {
 
     compact
         .as_bytes()
-        .chunks_exact(2)
+        .as_chunks::<2>()
+        .0
+        .iter()
         .map(|pair| (from_hex(pair[0]) << 4) | from_hex(pair[1]))
         .collect()
 }

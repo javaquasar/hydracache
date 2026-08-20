@@ -578,7 +578,7 @@ fn parse_options(args: Vec<String>) -> Result<BTreeMap<String, String>, Box<dyn 
         return Err("HC/2 CI options must be --name value pairs".into());
     }
     let mut options = BTreeMap::new();
-    for pair in args.chunks_exact(2) {
+    for pair in args.as_chunks::<2>().0 {
         if !pair[0].starts_with("--") || options.insert(pair[0].clone(), pair[1].clone()).is_some()
         {
             return Err(format!("invalid or duplicate HC/2 CI option: {}", pair[0]).into());
