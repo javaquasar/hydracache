@@ -6712,6 +6712,38 @@ platform = "any"
 HYDRACACHE_RUN_HC2_HOSTED_RELEASE_068 = "1"
 
 [[gate]]
+id = "cfg.hydracache.memory-footprint-071"
+kind = "cfg_test_target"
+source = "crates/hydracache/tests/memory_footprint_071.rs"
+package = "hydracache"
+target = "memory_footprint_071"
+test = ""
+cfg = 'not (target_arch = "wasm32")'
+env = ""
+reason = "The native memory-footprint contract uses Tokio timing and Moka eviction behavior that are not available on wasm32"
+tier = "fast"
+required_features = []
+required_env = []
+required_tools = []
+timeout_seconds = 300
+owner_release = "0.71.0"
+ship_mandatory = true
+artifacts = []
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "memory-contracts-071"
+step = "Verify coherent snapshots and phase providers"
+
+[gate.command]
+program = "cargo"
+args = ["test", "-p", "hydracache", "--test", "memory_footprint_071", "--locked"]
+cwd = "."
+platform = "any"
+
+[gate.command.env]
+
+[[gate]]
 id = "tool.borrowed-hazelcast-069"
 kind = "env_gate"
 source = "crates/xtask/src/migration_conformance.rs"
