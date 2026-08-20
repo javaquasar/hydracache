@@ -43,6 +43,17 @@ class HistoricalMirror071Tests(unittest.TestCase):
             with self.assertRaises(mirror.MirrorError):
                 mirror.manifest_from_archive(archive_path)
 
+    def test_path_traversal_is_rejected(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            archive_path = Path(directory) / "history.tar.gz"
+            with tarfile.open(archive_path, "w:gz") as archive:
+                content = b"escape\n"
+                member = tarfile.TarInfo("../outside.jsonl")
+                member.size = len(content)
+                archive.addfile(member, io.BytesIO(content))
+            with self.assertRaises(mirror.MirrorError):
+                mirror.restored_manifest(archive_path)
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -132,6 +132,21 @@ fn typed_report_rejects_identity_unique_key_allocator_and_unavailable_lies() {
 }
 
 #[test]
+fn diagnostic_source_override_cannot_promote_evidence() {
+    let mut report = xtask::memory_baseline::diagnostic_fixture_report();
+    report["source_sha"] = serde_json::json!("0123456789012345678901234567890123456789");
+    assert!(
+        xtask::memory_baseline::validate_diagnostic_baseline_report(&report).is_empty(),
+        "a non-promotable diagnostic report may use its synthetic source SHA"
+    );
+    report["ship_evidence_eligible"] = serde_json::json!(true);
+    let problems = xtask::memory_baseline::validate_diagnostic_baseline_report(&report);
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("diagnostic source override requires")));
+}
+
+#[test]
 fn d0_admission_fails_closed_without_external_receipts() {
     let problems = xtask::memory_baseline::check_contract(&root(), true).expect("D0 check");
     assert!(

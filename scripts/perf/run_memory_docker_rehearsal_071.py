@@ -1,0 +1,183 @@
+#!/usr/bin/env python3
+"""Run the complete non-promotable 0.71 Linux/Docker rehearsal."""
+
+from __future__ import annotations
+
+import argparse
+import hashlib
+import json
+import os
+import platform
+import shutil
+import subprocess
+import sys
+from datetime import datetime, timezone
+from pathlib import Path
+from typing import Any
+
+
+class RehearsalError(RuntimeError):
+    pass
+
+
+def run(command: list[str], root: Path) -> None:
+    completed = subprocess.run(command, cwd=root, check=False)
+    if completed.returncode != 0:
+        raise RehearsalError(f"command failed ({completed.returncode}): {' '.join(command)}")
+
+
+def output(command: list[str], root: Path) -> str:
+    return subprocess.run(command, cwd=root, check=True, capture_output=True, text=True).stdout.strip()
+
+
+def sha256(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as stream:
+        for block in iter(lambda: stream.read(1024 * 1024), b""):
+            digest.update(block)
+    return "sha256:" + digest.hexdigest()
+
+
+def write_json(path: Path, value: Any) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    temporary = path.with_name(f".{path.name}.{os.getpid()}.tmp")
+    temporary.write_text(json.dumps(value, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    os.replace(temporary, path)
+
+
+def execute(args: argparse.Namespace) -> None:
+    root = Path(output(["git", "rev-parse", "--show-toplevel"], Path.cwd())).resolve()
+    evidence = args.output.resolve()
+    if evidence.exists() and any(evidence.iterdir()):
+        raise RehearsalError(f"output directory must be empty: {evidence}")
+    evidence.mkdir(parents=True, exist_ok=True)
+    commands = [
+        [sys.executable, "scripts/perf/memory_campaign_071_test.py"],
+        [sys.executable, "scripts/perf/memory_case_executor_071_test.py"],
+        [sys.executable, "scripts/perf/memory_historical_mirror_071_test.py"],
+        [
+            "cargo",
+            "test",
+            "-p",
+            "xtask",
+            "--test",
+            "memory_baseline_071",
+            "--locked",
+            "--",
+            "--skip",
+            "b0_b1_are_distinct_cohorts",
+        ],
+        ["cargo", "build", "--release", "--locked", "-p", "hydracache-server"],
+    ]
+    for command in commands:
+        run(command, root)
+
+    binary = root / "target/release/hydracache-server"
+    manifest = {
+        "schema_version": 1,
+        "release": "0.71",
+        "cohort": "B1-instrumented",
+        "source_sha": output(["git", "rev-parse", "HEAD"], root),
+        "binary": str(binary),
+        "binary_sha256": sha256(binary),
+        "build_profile": "release",
+        "features": [],
+        "allocator": "system",
+    }
+    job = {
+        "job_id": "docker-real-daemon-m3-ttl-r1",
+        "case_id": "M3-ttl",
+        "cell_id": "M3-ttl__cycles-60",
+        "dimensions": {"cycles": 60},
+        "cohort": "B1-instrumented",
+        "repetition": 1,
+    }
+    manifest_path = evidence / "real-daemon" / "build-manifest.json"
+    job_path = evidence / "real-daemon" / "job.json"
+    write_json(manifest_path, manifest)
+    write_json(job_path, job)
+    scenario = root / "docs/testing/perf-scenarios/0.71/memory-efficiency-v1.toml"
+    run(
+        [
+            sys.executable,
+            "scripts/perf/memory_case_executor_071.py",
+            "--job",
+            str(job_path),
+            "--build-manifest",
+            str(manifest_path),
+            "--output",
+            str(evidence / "real-daemon" / "run"),
+            "--scenario-digest",
+            sha256(scenario),
+            "--provider",
+            "system",
+            "--rehearsal",
+        ],
+        root,
+    )
+    report = evidence / "real-daemon" / "run" / "memory-baseline-report.json"
+    run(
+        [
+            "cargo",
+            "run",
+            "-p",
+            "xtask",
+            "--locked",
+            "--",
+            "memory-baseline-report-check",
+            "--release",
+            "0.71",
+            "--report",
+            str(report),
+            "--allow-diagnostic-source",
+        ],
+        root,
+    )
+
+    campaign_id = "docker-full-matrix"
+    campaign_root = evidence / "campaigns"
+    controller = [sys.executable, "scripts/perf/memory_campaign_071.py", "--output-root", str(campaign_root)]
+    run(controller + ["plan", "--campaign-id", campaign_id, "--repetitions", "1", "--rehearsal"], root)
+    run(controller + ["run", "--campaign-id", campaign_id], root)
+    run(controller + ["resume", "--campaign-id", campaign_id], root)
+    run(controller + ["finalize", "--campaign-id", campaign_id], root)
+    campaign_state = json.loads((campaign_root / campaign_id / "state.json").read_text(encoding="utf-8"))
+    typed_report = json.loads(report.read_text(encoding="utf-8"))
+    if typed_report.get("ship_evidence_eligible") is not False or typed_report.get("diagnostic_only") is not True:
+        raise RehearsalError("Docker typed report incorrectly became promotable")
+    receipt = {
+        "schema_version": 1,
+        "release": "0.71",
+        "kind": "linux-docker-rehearsal",
+        "source_sha": manifest["source_sha"],
+        "platform": platform.platform(),
+        "cgroup_v2": Path("/sys/fs/cgroup/cgroup.controllers").is_file(),
+        "real_daemon_case": job["case_id"],
+        "real_daemon_report_sha256": sha256(report),
+        "matrix_jobs": campaign_state["job_count"],
+        "matrix_status": campaign_state["status"],
+        "completed_at": datetime.now(timezone.utc).isoformat(),
+        "diagnostic_only": True,
+        "ship_evidence_eligible": False,
+    }
+    write_json(evidence / "docker-rehearsal-receipt.json", receipt)
+    print(json.dumps(receipt, indent=2, sort_keys=True))
+
+
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--output", type=Path, required=True)
+    return parser.parse_args()
+
+
+def main() -> int:
+    try:
+        execute(parse_args())
+        return 0
+    except (RehearsalError, OSError, ValueError, KeyError, json.JSONDecodeError, subprocess.CalledProcessError) as error:
+        print(f"memory Docker rehearsal 0.71: {error}", file=sys.stderr)
+        return 2
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

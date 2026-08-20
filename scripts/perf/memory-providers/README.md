@@ -20,6 +20,28 @@ python scripts/perf/memory_campaign_071.py finalize --campaign-id local-rehearsa
 
 Rehearsal receipts are always non-promotable. Evidence execution remains
 fail-closed until the dedicated daemon executor and admitted host are present.
+
+For a closer pre-rental check, run the controller and a real M3 TTL daemon in
+a cgroup-v2 Linux container. The output directory must be new and empty; the
+named volumes make later rehearsals reuse the Cargo download and build cache:
+
+```powershell
+docker build -f scripts/perf/Dockerfile.memory-rehearsal-071 -t hydracache-memory-rehearsal:071 .
+$evidence = (New-Item -ItemType Directory target/docker-memory-rehearsal-071).FullName
+docker volume create hydracache-memory-rehearsal-target-071
+docker volume create hydracache-memory-rehearsal-cargo-071
+docker run --rm --init --memory 4g --cpus 4 `
+  --mount "type=bind,source=$evidence,target=/evidence" `
+  --mount type=volume,source=hydracache-memory-rehearsal-target-071,target=/workspace/target `
+  --mount type=volume,source=hydracache-memory-rehearsal-cargo-071,target=/usr/local/cargo/registry `
+  hydracache-memory-rehearsal:071
+```
+
+The container writes `docker-rehearsal-receipt.json`, a typed real-daemon
+report, and the finalized 44-job matrix. It uses a synthetic Git snapshot, so
+the receipt is always diagnostic and cannot satisfy the frozen B0/B1 evidence
+gate.
+
 An evidence campaign must keep both its output and temporary build trees
 outside the checkout. `prepare` creates detached clean worktrees for the exact
 frozen cohort SHAs, performs locked release builds, retains immutable binaries

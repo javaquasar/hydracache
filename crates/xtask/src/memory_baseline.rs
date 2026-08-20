@@ -134,11 +134,13 @@ pub fn run_status(args: Vec<String>) -> Result<(), Box<dyn Error>> {
 pub fn run_report_check(args: Vec<String>) -> Result<(), Box<dyn Error>> {
     let mut release = None;
     let mut report = None;
+    let mut allow_diagnostic_source = false;
     let mut arguments = args.into_iter();
     while let Some(argument) = arguments.next() {
         match argument.as_str() {
             "--release" => release = arguments.next(),
             "--report" => report = arguments.next().map(PathBuf::from),
+            "--allow-diagnostic-source" => allow_diagnostic_source = true,
             _ => {
                 return Err(
                     format!("unknown memory-baseline-report-check argument: {argument}").into(),
@@ -151,7 +153,11 @@ pub fn run_report_check(args: Vec<String>) -> Result<(), Box<dyn Error>> {
     }
     let report = report.ok_or("memory-baseline-report-check requires --report")?;
     let value: JsonValue = serde_json::from_slice(&fs::read(&report)?)?;
-    let problems = validate_baseline_report(&value);
+    let problems = if allow_diagnostic_source {
+        validate_diagnostic_baseline_report(&value)
+    } else {
+        validate_baseline_report(&value)
+    };
     if !problems.is_empty() {
         return Err(format!(
             "memory baseline report failed:\n- {}",
@@ -552,6 +558,26 @@ pub fn validate_baseline_report(report: &JsonValue) -> Vec<String> {
             }
             previous_ns = monotonic_ns;
         }
+    }
+    problems
+}
+
+pub fn validate_diagnostic_baseline_report(report: &JsonValue) -> Vec<String> {
+    let mut problems = validate_baseline_report(report);
+    if report.get("diagnostic_only").and_then(JsonValue::as_bool) == Some(true)
+        && report
+            .get("ship_evidence_eligible")
+            .and_then(JsonValue::as_bool)
+            == Some(false)
+    {
+        problems.retain(|problem| {
+            problem != "baseline report source SHA does not match its frozen cohort"
+        });
+    } else {
+        problems.push(
+            "diagnostic source override requires diagnostic_only=true and ship_evidence_eligible=false"
+                .to_owned(),
+        );
     }
     problems
 }

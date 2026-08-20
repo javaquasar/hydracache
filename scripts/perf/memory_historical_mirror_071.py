@@ -65,12 +65,27 @@ def manifest_digest(files: list[dict[str, Any]]) -> str:
 def restored_manifest(path: Path) -> list[dict[str, Any]]:
     with tempfile.TemporaryDirectory(prefix="hydracache-memory-history-") as directory:
         root = Path(directory)
+        root_resolved = root.resolve()
+        extracted: set[Path] = set()
         with tarfile.open(path, "r:gz") as archive:
             for member in archive.getmembers():
                 destination = (root / member.name).resolve()
-                if not destination.is_relative_to(root.resolve()):
+                if not destination.is_relative_to(root_resolved):
                     raise MirrorError(f"unsafe archive member: {member.name}")
-            archive.extractall(root, filter="data")
+                if member.isdir():
+                    destination.mkdir(parents=True, exist_ok=True)
+                    continue
+                if not member.isfile():
+                    raise MirrorError(f"unsupported archive member: {member.name}")
+                if destination in extracted:
+                    raise MirrorError(f"duplicate archive member: {member.name}")
+                stream = archive.extractfile(member)
+                if stream is None:
+                    raise MirrorError(f"archive member cannot be read: {member.name}")
+                destination.parent.mkdir(parents=True, exist_ok=True)
+                with destination.open("xb") as output:
+                    shutil.copyfileobj(stream, output)
+                extracted.add(destination)
         files = []
         for item in sorted(root.rglob("*")):
             if item.is_file():
