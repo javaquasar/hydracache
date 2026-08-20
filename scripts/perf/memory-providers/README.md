@@ -30,6 +30,14 @@ python scripts/perf/memory_campaign_071.py --output-root /var/lib/hydracache-mem
 python scripts/perf/memory_campaign_071.py --output-root /var/lib/hydracache-memory/campaigns prepare --campaign-id d0-001 --build-root /var/lib/hydracache-memory/build
 ```
 
+Each admitted evidence job starts a fresh retained daemon binary, drives its
+RESP-compatible memory phases, invokes the selected provider at every phase,
+captures `/proc` and cgroup-v2 values, stops the daemon, and validates the
+result with `cargo xtask memory-baseline-report-check`. Cells that still need a
+specialized HC/2, persistence, tag-distribution, or long-sequence executor are
+rejected before the job begins; they can never fall back to a misleading RESP
+approximation.
+
 Example:
 
 ```text

@@ -89,6 +89,23 @@ class MemoryCampaign071Tests(unittest.TestCase):
         with self.assertRaises(campaign.CampaignError):
             campaign.ensure_external_build_root(self.root, self.root / "target" / "builds")
 
+    def test_unsupported_evidence_cells_fail_closed(self) -> None:
+        self.assertIsNotNone(
+            campaign.unsupported_evidence_reason(
+                {"case_id": "M6-connections", "dimensions": {"tls": False}}
+            )
+        )
+        self.assertIsNotNone(
+            campaign.unsupported_evidence_reason(
+                {"case_id": "M10-24h", "dimensions": {}}
+            )
+        )
+        self.assertIsNone(
+            campaign.unsupported_evidence_reason(
+                {"case_id": "M3-ttl", "dimensions": {"cycles": 60}}
+            )
+        )
+
 
 if __name__ == "__main__":
     unittest.main()

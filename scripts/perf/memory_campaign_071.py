@@ -440,6 +440,85 @@ def execute_rehearsal(root: Path, campaign_dir: Path, job: dict[str, Any]) -> tu
     return ("success" if completed.returncode == 0 else "product-failure"), command
 
 
+def unsupported_evidence_reason(job: dict[str, Any]) -> str | None:
+    case_id = job["case_id"]
+    dimensions = job["dimensions"]
+    if case_id == "M6-connections":
+        return "M6 requires the dedicated HC/2 connection executor"
+    if case_id == "M7-persistence" and dimensions.get("persistence") != "off":
+        return "M7 supported persistence mode requires an admitted durable-store executor"
+    if case_id == "M8-60m" and dimensions.get("sequence") == "hc2-churn":
+        return "M8 HC/2 churn requires the dedicated HC/2 connection executor"
+    if case_id in {"M9-6h", "M10-24h"}:
+        return f"{case_id} requires its preregistered multi-scenario executor"
+    if case_id == "M5-tags" and dimensions.get("distribution") != "uniform":
+        return "non-uniform tag cells require the distribution-aware tag executor"
+    return None
+
+
+def execute_evidence(root: Path, campaign_dir: Path, state: dict[str, Any], job: dict[str, Any]) -> tuple[str, list[str]]:
+    unsupported = unsupported_evidence_reason(job)
+    if unsupported:
+        raise CampaignError(unsupported)
+    build = state.get("builds", {}).get(job["cohort"])
+    if not build:
+        raise CampaignError(f"prepared build is missing for {job['cohort']}")
+    build_manifest = campaign_dir / build["manifest"]
+    host_preflight = campaign_dir / "admission" / "host-preflight.json"
+    if not host_preflight.is_file():
+        raise CampaignError(f"admitted host receipt is missing: {host_preflight}")
+    host = json.loads(host_preflight.read_text(encoding="utf-8"))
+    if host.get("result") != "success" or host.get("ship_evidence_eligible") is not True:
+        raise CampaignError("host preflight is not eligible for evidence execution")
+    output = campaign_dir / "jobs" / job["job_id"]
+    job_path = campaign_dir / "job-specs" / f"{job['job_id']}.json"
+    atomic_json(job_path, job)
+    executor = root / "scripts/perf/memory_case_executor_071.py"
+    command = [
+        sys.executable,
+        str(executor),
+        "--job",
+        str(job_path),
+        "--build-manifest",
+        str(build_manifest),
+        "--output",
+        str(output),
+        "--scenario-digest",
+        state["scenario_digest"],
+        "--provider",
+        "system",
+        "--host-preflight",
+        str(host_preflight),
+    ]
+    try:
+        completed = subprocess.run(command, cwd=root, timeout=state["row_time_caps_seconds"][job["case_id"]], check=False)
+    except subprocess.TimeoutExpired:
+        return "timeout", command
+    except OSError:
+        return "tool-unavailable", command
+    if completed.returncode != 0:
+        return "product-failure", command
+    report = output / "memory-baseline-report.json"
+    validation = subprocess.run(
+        [
+            "cargo",
+            "run",
+            "-p",
+            "xtask",
+            "--locked",
+            "--",
+            "memory-baseline-report-check",
+            "--release",
+            RELEASE,
+            "--report",
+            str(report),
+        ],
+        cwd=root,
+        check=False,
+    )
+    return ("success" if validation.returncode == 0 else "product-failure"), command
+
+
 def run_campaign(root: Path, campaign_dir: Path) -> None:
     state_path = campaign_dir / "state.json"
     events_path = campaign_dir / "events.jsonl"
@@ -447,17 +526,17 @@ def run_campaign(root: Path, campaign_dir: Path) -> None:
         raise CampaignError(f"campaign state is missing: {state_path}")
     with CampaignLock(campaign_dir / ".lock"):
         state = json.loads(state_path.read_text(encoding="utf-8"))
-        if state["mode"] != "rehearsal":
-            raise CampaignError(
-                "evidence execution is fail-closed until the daemon executor is configured"
-            )
         for job in state["jobs"]:
             if job["status"] == "success":
                 continue
             attempt = len(job["attempts"]) + 1
             append_event(events_path, {"event": "job-started", "job_id": job["job_id"], "attempt": attempt})
             started = time.monotonic_ns()
-            status, command = execute_rehearsal(root, campaign_dir, job)
+            status, command = (
+                execute_rehearsal(root, campaign_dir, job)
+                if state["mode"] == "rehearsal"
+                else execute_evidence(root, campaign_dir, state, job)
+            )
             job["status"] = status
             job["attempts"].append(
                 {
@@ -484,6 +563,22 @@ def finalize(campaign_dir: Path) -> dict[str, Any]:
     incomplete = [job["job_id"] for job in state["jobs"] if job["status"] != "success"]
     if incomplete:
         raise CampaignError(f"campaign has {len(incomplete)} incomplete jobs")
+    process_ids: set[int] = set()
+    if state["mode"] == "evidence":
+        for job in state["jobs"]:
+            receipt_path = campaign_dir / "jobs" / job["job_id"] / "executor-receipt.json"
+            if not receipt_path.is_file():
+                raise CampaignError(f"executor receipt is missing for {job['job_id']}")
+            executor = json.loads(receipt_path.read_text(encoding="utf-8"))
+            pid = executor.get("pid")
+            if (
+                not isinstance(pid, int)
+                or pid in process_ids
+                or executor.get("fresh_process") is not True
+                or executor.get("stopped") is not True
+            ):
+                raise CampaignError(f"fresh stopped process proof is invalid for {job['job_id']}")
+            process_ids.add(pid)
     artifacts = []
     for path in sorted((campaign_dir / "jobs").rglob("*")):
         if path.is_file():

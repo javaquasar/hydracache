@@ -131,6 +131,38 @@ pub fn run_status(args: Vec<String>) -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
+pub fn run_report_check(args: Vec<String>) -> Result<(), Box<dyn Error>> {
+    let mut release = None;
+    let mut report = None;
+    let mut arguments = args.into_iter();
+    while let Some(argument) = arguments.next() {
+        match argument.as_str() {
+            "--release" => release = arguments.next(),
+            "--report" => report = arguments.next().map(PathBuf::from),
+            _ => {
+                return Err(
+                    format!("unknown memory-baseline-report-check argument: {argument}").into(),
+                )
+            }
+        }
+    }
+    if release.as_deref() != Some("0.71") {
+        return Err("memory-baseline-report-check requires --release 0.71".into());
+    }
+    let report = report.ok_or("memory-baseline-report-check requires --report")?;
+    let value: JsonValue = serde_json::from_slice(&fs::read(&report)?)?;
+    let problems = validate_baseline_report(&value);
+    if !problems.is_empty() {
+        return Err(format!(
+            "memory baseline report failed:\n- {}",
+            problems.join("\n- ")
+        )
+        .into());
+    }
+    println!("memory-baseline-report-check: OK ({})", report.display());
+    Ok(())
+}
+
 #[derive(Debug, Serialize)]
 struct BaselineStatus {
     schema_version: u32,
