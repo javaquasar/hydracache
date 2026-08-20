@@ -54,13 +54,21 @@ python scripts/perf/memory_campaign_071.py --output-root /var/lib/hydracache-mem
 python scripts/perf/memory_campaign_071.py --output-root /var/lib/hydracache-memory/campaigns prepare --campaign-id d0-001 --build-root /var/lib/hydracache-memory/build
 ```
 
+The protected workflow checks out the exact ref selected for the dispatch and
+records its `github.sha` as the immutable controller SHA. The controller and
+HC/2 helper therefore come from that exact commit; they do not silently fall
+back to the default branch. Measured daemon cohorts remain separate: `B0` and
+`B1` are built from the exact preregistered SHAs in
+`baseline-identities.toml`, and a later `C-candidate` uses its separately
+frozen candidate SHA.
+
 Each admitted evidence job starts a fresh retained daemon binary, drives its
 RESP-compatible memory phases, invokes the selected provider at every phase,
 captures `/proc` and cgroup-v2 values, stops the daemon, and validates the
-result with `cargo xtask memory-baseline-report-check`. Cells that still need a
-specialized HC/2, persistence, or long-sequence executor are
-rejected before the job begins; they can never fall back to a misleading RESP
-approximation.
+result with `cargo xtask memory-baseline-report-check`. The M5-M10 specialized
+tag-distribution, HC/2, persistence, and duration executors are mandatory for
+their cells; invalid or unknown dimensions fail closed and can never fall back
+to a misleading RESP approximation.
 
 The protected workflow `.github/workflows/memory-reference-071.yml` imports
 the admitted host, 0.67.1 activation, S5 overhead, and historical-mirror
