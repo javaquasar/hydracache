@@ -20,6 +20,15 @@ python scripts/perf/memory_campaign_071.py finalize --campaign-id local-rehearsa
 
 Rehearsal receipts are always non-promotable. Evidence execution remains
 fail-closed until the dedicated daemon executor and admitted host are present.
+An evidence campaign must keep both its output and temporary build trees
+outside the checkout. `prepare` creates detached clean worktrees for the exact
+frozen cohort SHAs, performs locked release builds, retains immutable binaries
+and manifests, then removes the temporary sources and Cargo targets:
+
+```text
+python scripts/perf/memory_campaign_071.py --output-root /var/lib/hydracache-memory/campaigns plan --campaign-id d0-001 --case M0-cold --cohort B0-release --cohort B1-instrumented
+python scripts/perf/memory_campaign_071.py --output-root /var/lib/hydracache-memory/campaigns prepare --campaign-id d0-001 --build-root /var/lib/hydracache-memory/build
+```
 
 Example:
 

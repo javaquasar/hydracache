@@ -32,7 +32,7 @@ SCENARIO_RELATIVE = Path("docs/testing/perf-scenarios/0.71/memory-efficiency-v1.
 IDENTITIES_RELATIVE = Path("docs/testing/memory/0.71/baseline-identities.toml")
 PROFILE_RELATIVE = Path("docs/testing/perf-host-profiles/memory-reference-071-v1.json")
 DEFAULT_OUTPUT = Path("target/memory-evidence/0.71/campaigns")
-TERMINAL_STATES = {"success", "product-failure", "timeout", "tool-unavailable", "cancelled"}
+BUILD_TIMEOUT_SECONDS = 3600
 
 
 class CampaignError(RuntimeError):
@@ -163,7 +163,15 @@ def build_plan(
 ) -> dict[str, Any]:
     scenario_path = root / SCENARIO_RELATIVE
     scenario = tomllib.loads(scenario_path.read_text(encoding="utf-8"))
+    identities = tomllib.loads((root / IDENTITIES_RELATIVE).read_text(encoding="utf-8"))
     selected = selected_cases(scenario, cases)
+    if "B0-release" in cohorts and any(case["id"] != "M0-cold" for case in selected):
+        raise CampaignError("B0-release is admitted only for the M0 D0 external-signal cohort")
+    source_shas = {
+        "B0-release": str(identities["b0_release"]["source_sha"]),
+        "B1-instrumented": str(identities["b1_instrumented"]["source_sha"]),
+        "C-candidate": git(root, "rev-parse", "HEAD"),
+    }
     jobs: list[dict[str, Any]] = []
     row_caps: dict[str, int] = {}
     for case in selected:
@@ -194,6 +202,7 @@ def build_plan(
         "mode": "rehearsal" if rehearsal else "evidence",
         "created_at": utc_now(),
         "cohorts": cohorts,
+        "source_shas": {cohort: source_shas[cohort] for cohort in cohorts},
         "row_time_caps_seconds": row_caps,
         "admitted_host_cap_seconds": sum(row_caps.values()),
         "job_count": len(jobs),
@@ -274,6 +283,122 @@ class CampaignLock:
         if self.fd is not None:
             os.close(self.fd)
         self.path.unlink(missing_ok=True)
+
+
+def ensure_external_build_root(root: Path, build_root: Path) -> Path:
+    resolved = build_root.resolve()
+    if resolved == root or resolved.is_relative_to(root):
+        raise CampaignError("evidence build root must be outside the Git worktree")
+    resolved.mkdir(parents=True, exist_ok=True)
+    return resolved
+
+
+def executable_name() -> str:
+    return "hydracache-server.exe" if os.name == "nt" else "hydracache-server"
+
+
+def prepare_builds(root: Path, campaign_dir: Path, build_root: Path) -> None:
+    state_path = campaign_dir / "state.json"
+    if not state_path.is_file():
+        raise CampaignError(f"campaign state is missing: {state_path}")
+    with CampaignLock(campaign_dir / ".lock"):
+        state = json.loads(state_path.read_text(encoding="utf-8"))
+        if state["mode"] != "evidence":
+            raise CampaignError("prepare is only required for evidence campaigns")
+        if git(root, "status", "--porcelain=v1", "--untracked-files=all"):
+            raise CampaignError("evidence builds require a clean controller worktree")
+        build_root = ensure_external_build_root(root, build_root)
+        manifests: dict[str, Any] = dict(state.get("builds", {}))
+        for cohort, source_sha in state["source_shas"].items():
+            if cohort in manifests:
+                manifest_path = campaign_dir / manifests[cohort]["manifest"]
+                if manifest_path.is_file() and sha256(manifest_path) == manifests[cohort]["manifest_sha256"]:
+                    continue
+                raise CampaignError(f"retained build manifest drift for {cohort}")
+            slug = cohort.lower().replace("-", "_")
+            worktree = build_root / f"source-{slug}"
+            target_dir = build_root / f"target-{slug}"
+            if worktree.exists() or target_dir.exists():
+                raise CampaignError(f"refusing to reuse incomplete build paths for {cohort}")
+            log_dir = campaign_dir / "builds" / cohort
+            log_dir.mkdir(parents=True, exist_ok=False)
+            build_log = log_dir / "build.log"
+            try:
+                subprocess.run(
+                    ["git", "worktree", "add", "--detach", str(worktree), source_sha],
+                    cwd=root,
+                    check=True,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.STDOUT,
+                    text=True,
+                )
+                if git(worktree, "rev-parse", "HEAD") != source_sha:
+                    raise CampaignError(f"worktree source mismatch for {cohort}")
+                if git(worktree, "status", "--porcelain=v1", "--untracked-files=all"):
+                    raise CampaignError(f"new build worktree is dirty for {cohort}")
+                command = ["cargo", "build", "--release", "--locked", "-p", "hydracache-server"]
+                environment = os.environ.copy()
+                environment.update(
+                    {
+                        "CARGO_INCREMENTAL": "0",
+                        "CARGO_TARGET_DIR": str(target_dir),
+                        "SOURCE_DATE_EPOCH": git(worktree, "show", "-s", "--format=%ct", source_sha),
+                    }
+                )
+                with build_log.open("w", encoding="utf-8", newline="\n") as log:
+                    completed = subprocess.run(
+                        command,
+                        cwd=worktree,
+                        env=environment,
+                        stdout=log,
+                        stderr=subprocess.STDOUT,
+                        timeout=BUILD_TIMEOUT_SECONDS,
+                        check=False,
+                    )
+                if completed.returncode != 0:
+                    raise CampaignError(f"build failed for {cohort}; see {build_log}")
+                built_binary = target_dir / "release" / executable_name()
+                if not built_binary.is_file():
+                    raise CampaignError(f"build did not produce {built_binary}")
+                retained_binary = log_dir / executable_name()
+                shutil.copy2(built_binary, retained_binary)
+                retained_binary.chmod(0o555)
+                manifest = {
+                    "schema_version": SCHEMA_VERSION,
+                    "release": RELEASE,
+                    "cohort": cohort,
+                    "source_sha": source_sha,
+                    "cargo_lock_sha256": sha256(worktree / "Cargo.lock"),
+                    "binary": str(retained_binary.resolve()),
+                    "binary_sha256": sha256(retained_binary),
+                    "build_profile": "release",
+                    "features": [],
+                    "allocator": "system",
+                    "exact_command": command,
+                    "environment": {
+                        "CARGO_INCREMENTAL": "0",
+                        "SOURCE_DATE_EPOCH": environment["SOURCE_DATE_EPOCH"],
+                    },
+                    "built_at": utc_now(),
+                }
+                manifest_path = log_dir / "build-manifest.json"
+                atomic_json(manifest_path, manifest, create=True)
+                manifests[cohort] = {
+                    "manifest": str(manifest_path.relative_to(campaign_dir)).replace("\\", "/"),
+                    "manifest_sha256": sha256(manifest_path),
+                }
+                state["builds"] = manifests
+                atomic_json(state_path, state)
+            finally:
+                if worktree.exists():
+                    subprocess.run(
+                        ["git", "worktree", "remove", "--force", str(worktree)],
+                        cwd=root,
+                        check=False,
+                        stdout=subprocess.DEVNULL,
+                        stderr=subprocess.DEVNULL,
+                    )
+                shutil.rmtree(target_dir, ignore_errors=True)
 
 
 def execute_rehearsal(root: Path, campaign_dir: Path, job: dict[str, Any]) -> tuple[str, list[str]]:
@@ -401,6 +526,9 @@ def parse_args() -> argparse.Namespace:
     plan_parser.add_argument("--cohort", action="append", choices=["B0-release", "B1-instrumented", "C-candidate"])
     plan_parser.add_argument("--repetitions", type=int)
     plan_parser.add_argument("--rehearsal", action="store_true")
+    prepare_parser = commands.add_parser("prepare")
+    prepare_parser.add_argument("--campaign-id", required=True)
+    prepare_parser.add_argument("--build-root", type=Path, required=True)
     for name in ("run", "resume", "finalize"):
         command = commands.add_parser(name)
         command.add_argument("--campaign-id", required=True)
@@ -423,10 +551,16 @@ def main() -> int:
                 raise CampaignError(f"campaign already exists: {campaign_dir}")
             cohorts = args.cohort or ["B1-instrumented"]
             plan = build_plan(root, args.case, cohorts, args.repetitions, args.rehearsal)
+            if not args.rehearsal:
+                resolved_output = campaign_path(root, args.output_root, "_").parent
+                if resolved_output == root or resolved_output.is_relative_to(root):
+                    raise CampaignError("evidence campaign output must be outside the Git worktree")
             campaign_dir.mkdir(parents=True)
             atomic_json(campaign_dir / "state.json", plan, create=True)
             append_event(campaign_dir / "events.jsonl", {"event": "campaign-planned", "job_count": plan["job_count"]})
             print(json.dumps({key: plan[key] for key in ("mode", "job_count", "admitted_host_cap_seconds")}, indent=2))
+        elif args.command == "prepare":
+            prepare_builds(root, campaign_dir, args.build_root)
         elif args.command in {"run", "resume"}:
             run_campaign(root, campaign_dir)
         elif args.command == "finalize":

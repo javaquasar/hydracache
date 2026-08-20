@@ -42,13 +42,27 @@ class MemoryCampaign071Tests(unittest.TestCase):
     def test_selected_rows_have_row_not_cell_caps(self) -> None:
         plan = campaign.build_plan(
             self.root,
-            ["M0-cold", "M1-shape"],
+            ["M0-cold"],
             ["B0-release", "B1-instrumented"],
             1,
             False,
         )
-        self.assertEqual(plan["job_count"], 34)
-        self.assertEqual(plan["admitted_host_cap_seconds"], 3_600 + 28_800)
+        self.assertEqual(plan["job_count"], 2)
+        self.assertEqual(plan["admitted_host_cap_seconds"], 3_600)
+        self.assertEqual(
+            plan["source_shas"]["B1-instrumented"],
+            "795f9493bcbb7a56aa229c59e4a717f60c654cdb",
+        )
+
+    def test_b0_cannot_be_pooled_into_instrumented_rows(self) -> None:
+        with self.assertRaises(campaign.CampaignError):
+            campaign.build_plan(
+                self.root,
+                ["M1-shape"],
+                ["B0-release"],
+                1,
+                False,
+            )
 
     def test_unknown_row_is_rejected(self) -> None:
         with self.assertRaises(campaign.CampaignError):
@@ -70,6 +84,10 @@ class MemoryCampaign071Tests(unittest.TestCase):
                     with campaign.CampaignLock(path):
                         pass
             self.assertFalse(path.exists())
+
+    def test_evidence_build_root_must_be_external(self) -> None:
+        with self.assertRaises(campaign.CampaignError):
+            campaign.ensure_external_build_root(self.root, self.root / "target" / "builds")
 
 
 if __name__ == "__main__":
