@@ -343,6 +343,8 @@ def prepare_builds(root: Path, campaign_dir: Path, build_root: Path) -> None:
                 if git(worktree, "status", "--porcelain=v1", "--untracked-files=all"):
                     raise CampaignError(f"new build worktree is dirty for {cohort}")
                 command = ["cargo", "build", "--release", "--locked", "-p", "hydracache-server"]
+                if cohort == "B1-instrumented":
+                    command.extend(["-p", "hydracache-loadgen"])
                 environment = os.environ.copy()
                 environment.update(
                     {
@@ -369,6 +371,15 @@ def prepare_builds(root: Path, campaign_dir: Path, build_root: Path) -> None:
                 retained_binary = log_dir / executable_name()
                 shutil.copy2(built_binary, retained_binary)
                 retained_binary.chmod(0o555)
+                retained_loadgen = None
+                if cohort == "B1-instrumented":
+                    loadgen_name = "hydracache-loadgen.exe" if os.name == "nt" else "hydracache-loadgen"
+                    built_loadgen = target_dir / "release" / loadgen_name
+                    if not built_loadgen.is_file():
+                        raise CampaignError(f"build did not produce {built_loadgen}")
+                    retained_loadgen = log_dir / loadgen_name
+                    shutil.copy2(built_loadgen, retained_loadgen)
+                    retained_loadgen.chmod(0o555)
                 manifest = {
                     "schema_version": SCHEMA_VERSION,
                     "release": RELEASE,
@@ -377,6 +388,8 @@ def prepare_builds(root: Path, campaign_dir: Path, build_root: Path) -> None:
                     "cargo_lock_sha256": sha256(worktree / "Cargo.lock"),
                     "binary": str(retained_binary.resolve()),
                     "binary_sha256": sha256(retained_binary),
+                    "loadgen_binary": str(retained_loadgen.resolve()) if retained_loadgen else None,
+                    "loadgen_binary_sha256": sha256(retained_loadgen) if retained_loadgen else None,
                     "build_profile": "release",
                     "features": [],
                     "allocator": "system",

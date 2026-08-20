@@ -45,6 +45,20 @@ receipts before building anything. It serializes a campaign through the
 rerun, wraps execution in the repository watchdog, and publishes every
 completed job atomically to the configured mirror mount before advancing.
 
+Create the historical input receipt before renting the measurement host. The
+command archives only the frozen historical `results` and scenario documents,
+writes to an explicitly approved protected mount, restores the object into a
+temporary directory, and refuses the receipt unless every byte matches:
+
+```text
+python scripts/perf/memory_historical_mirror_071.py \
+  --mirror-root /mnt/hydracache-protected-memory/history \
+  --provider encrypted-object-mount \
+  --retention-deadline 2027-08-20T00:00:00Z \
+  --output /var/lib/hydracache-memory/admission/historical-input-receipt.json \
+  --approve-protected-mirror
+```
+
 Example:
 
 ```text
