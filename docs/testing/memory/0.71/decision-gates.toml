@@ -1,0 +1,29 @@
+schema_version = 1
+release = "0.71"
+statistics_contract = "docs/testing/memory/0.71/memory-statistics-v1.toml"
+host_profile = "memory-reference-071-v1"
+required_states = ["D0", "D1", "D2", "D3", "D4"]
+
+[[proposal]]
+id = "w2a-retained-byte-accounting"
+work_item = "W2a"
+controls = ["S1", "S3", "S4", "S5", "S7", "S10"]
+owner_ids = []
+stack_ids = []
+hypothesis = "Complete retained-byte accounting can be added without changing eviction, admission, or compatibility semantics."
+alternative_explanations = ["allocator high-water", "file/page cache", "instrumentation overhead"]
+baseline_receipts = []
+baseline_digests = []
+primary_metrics = ["logical_retained_bytes", "unattributed_retained_bytes"]
+minimum_effect = "foundation-only; no efficiency claim"
+allowed_regressions = ["production instrumentation overhead must remain inside the frozen S5 envelope"]
+authorized_files = ["crates/hydracache/src", "crates/hydracache-observability/src", "crates/hydracache-server/src"]
+authorized_surfaces = ["internal accounting", "privileged aggregate diagnostics"]
+state = "planned"
+classification = "inconclusive"
+rejected_alternatives = []
+reviewer = "release-0.71-memory-review"
+candidate_derived_baseline = false
+resulting_receipts = []
+disposition = "pending-evidence"
+

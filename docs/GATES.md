@@ -94,7 +94,7 @@ artifacts and locked test binaries from earlier verify runs cannot block the run
 | Raft invariant catalog | `cargo test -p hydracache-cluster-testkit --test invariants --locked` | CI fast via workspace tests | W21 exposes `assert_cluster_invariants(&ClusterInvariantView)` and proves the shared catalog flags seeded multiple-leader, divergent-voter, divergent-member, and lost-committed-entry violations; nemesis and corpus convergence tests call the shared catalog |
 | Tests | `cargo test --workspace --locked` (Windows verify: split workspace excluding `xtask` + xtask lib/integration tests, serialized with `-j 1`) | CI + verify | unit + integration (RULES R-8) |
 | Docs | `RUSTDOCFLAGS=-D warnings cargo doc --workspace --no-deps` | CI + verify | rustdoc warnings |
-| Clippy | `cargo clippy --workspace --all-targets --all-features --locked -- -D warnings` | CI + verify | lints |
+| Clippy | workspace all-features excluding `hydracache`, then the valid `hydracache` allocator-feature matrix; always `-D warnings` | CI + verify | lints without combining mutually exclusive allocators |
 | MSRV | `cargo check` + `cargo test` on Rust 1.88.0 | CI (separate job, full-history checkout) | minimum supported Rust; workspace governance tests can resolve the pinned `v0.63.0` compatibility baseline and ancestry |
 
 ## Release 0.67 performance evidence

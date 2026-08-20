@@ -4,6 +4,12 @@ use std::path::PathBuf;
 /// Canonical command forms consumed by direct tier runs and aggregate evidence lanes.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum LoadgenCommand {
+    MemoryEfficiency {
+        profile: String,
+        output_dir: PathBuf,
+        provider: String,
+        instrumentation_mode: String,
+    },
     TierLocal {
         profile: String,
         report: PathBuf,
@@ -71,12 +77,25 @@ pub enum OverloadTarget {
 }
 
 impl LoadgenCommand {
+    pub fn memory_efficiency_shape(&self) -> Option<(&PathBuf, &str, &str)> {
+        match self {
+            Self::MemoryEfficiency {
+                output_dir,
+                provider,
+                instrumentation_mode,
+                ..
+            } => Some((output_dir, provider, instrumentation_mode)),
+            _ => None,
+        }
+    }
+
     /// The W1 local artifact path; both public command forms route to this exact file.
     pub fn local_report_path(&self) -> Option<PathBuf> {
         match self {
             Self::TierLocal { report, .. } => Some(report.clone()),
             Self::SuiteCore { output_dir, .. } => Some(output_dir.join("local.json")),
-            Self::TierClientSurface { .. }
+            Self::MemoryEfficiency { .. }
+            | Self::TierClientSurface { .. }
             | Self::TierNodeResp { .. }
             | Self::TierControlPlane { .. }
             | Self::TierGridModel { .. }
@@ -94,7 +113,8 @@ impl LoadgenCommand {
         match self {
             Self::TierClientSurface { report, .. } => Some(report.clone()),
             Self::SuiteCore { output_dir, .. } => Some(output_dir.join("client-surface.json")),
-            Self::TierLocal { .. }
+            Self::MemoryEfficiency { .. }
+            | Self::TierLocal { .. }
             | Self::TierNodeResp { .. }
             | Self::TierControlPlane { .. }
             | Self::TierGridModel { .. }
@@ -110,7 +130,8 @@ impl LoadgenCommand {
         match self {
             Self::TierNodeResp { report, .. } => Some(report.clone()),
             Self::SuiteResp { output_dir, .. } => Some(output_dir.join("node-resp-open-loop.json")),
-            Self::TierLocal { .. }
+            Self::MemoryEfficiency { .. }
+            | Self::TierLocal { .. }
             | Self::TierClientSurface { .. }
             | Self::TierControlPlane { .. }
             | Self::TierGridModel { .. }
@@ -127,7 +148,8 @@ impl LoadgenCommand {
             Self::SuiteResp { output_dir, .. } => {
                 Some(output_dir.join("node-resp-redis-benchmark.json"))
             }
-            Self::TierLocal { .. }
+            Self::MemoryEfficiency { .. }
+            | Self::TierLocal { .. }
             | Self::TierClientSurface { .. }
             | Self::TierNodeResp { .. }
             | Self::TierControlPlane { .. }
@@ -211,6 +233,7 @@ impl LoadgenCommand {
     pub fn profile(&self) -> &str {
         match self {
             Self::TierLocal { profile, .. }
+            | Self::MemoryEfficiency { profile, .. }
             | Self::TierClientSurface { profile, .. }
             | Self::TierNodeResp { profile, .. }
             | Self::TierControlPlane { profile, .. }
@@ -229,8 +252,12 @@ impl LoadgenCommand {
 pub fn parse(arguments: impl IntoIterator<Item = String>) -> Result<LoadgenCommand, String> {
     let mut arguments = arguments.into_iter().collect::<VecDeque<_>>();
     let family = arguments.pop_front().ok_or_else(|| {
-        "missing command family (tier, suite, compare, brownout, or overload)".to_owned()
+        "missing command family (memory-efficiency, tier, suite, compare, brownout, or overload)"
+            .to_owned()
     })?;
+    if family == "memory-efficiency" {
+        return parse_memory_efficiency(arguments);
+    }
     let name = arguments
         .pop_front()
         .ok_or_else(|| format!("missing {family} name"))?;
@@ -348,6 +375,64 @@ pub fn parse(arguments: impl IntoIterator<Item = String>) -> Result<LoadgenComma
     }
 }
 
+fn parse_memory_efficiency(mut arguments: VecDeque<String>) -> Result<LoadgenCommand, String> {
+    let mut profile = "memory-efficiency-v1".to_owned();
+    let mut output_dir = PathBuf::from("target/test-evidence/0.71/memory-efficiency");
+    let mut provider = "system".to_owned();
+    let mut instrumentation_mode = "profile".to_owned();
+    let mut seen_profile = false;
+    let mut seen_output = false;
+    let mut seen_provider = false;
+    let mut seen_instrumentation_mode = false;
+    while let Some(flag) = arguments.pop_front() {
+        let value = arguments
+            .pop_front()
+            .ok_or_else(|| format!("{flag} requires a value"))?;
+        let duplicate = match flag.as_str() {
+            "--profile" => {
+                let duplicate = seen_profile;
+                seen_profile = true;
+                profile = value;
+                duplicate
+            }
+            "--output-dir" => {
+                let duplicate = seen_output;
+                seen_output = true;
+                output_dir = PathBuf::from(value);
+                duplicate
+            }
+            "--provider" => {
+                let duplicate = seen_provider;
+                seen_provider = true;
+                provider = value;
+                duplicate
+            }
+            "--instrumentation-mode" => {
+                let duplicate = seen_instrumentation_mode;
+                seen_instrumentation_mode = true;
+                instrumentation_mode = value;
+                duplicate
+            }
+            _ => return Err(format!("unknown memory-efficiency option: {flag}")),
+        };
+        if duplicate {
+            return Err(format!("duplicate option: {flag}"));
+        }
+    }
+    if !["system", "jemalloc", "mimalloc"].contains(&provider.as_str()) {
+        return Err("--provider must be system, jemalloc, or mimalloc".to_owned());
+    }
+    if !["off", "production", "profile"].contains(&instrumentation_mode.as_str()) {
+        return Err("--instrumentation-mode must be off, production, or profile".to_owned());
+    }
+    Ok(LoadgenCommand::MemoryEfficiency {
+        profile,
+        output_dir,
+        provider,
+        instrumentation_mode,
+    })
+}
+
 fn parse_brownout_target(value: &str) -> Result<BrownoutTarget, String> {
     match value {
         "control-plane-leader" => Ok(BrownoutTarget::ControlPlaneLeader),
@@ -393,6 +478,26 @@ mod tests {
 
     fn args(values: &[&str]) -> Vec<String> {
         values.iter().map(|value| (*value).to_owned()).collect()
+    }
+
+    #[test]
+    fn memory_efficiency_has_safe_defaults_and_bounded_providers() {
+        let command = parse(args(&["memory-efficiency"])).unwrap();
+        assert_eq!(command.profile(), "memory-efficiency-v1");
+        let (output, provider, instrumentation_mode) = command.memory_efficiency_shape().unwrap();
+        assert_eq!(
+            output,
+            Path::new("target/test-evidence/0.71/memory-efficiency")
+        );
+        assert_eq!(provider, "system");
+        assert_eq!(instrumentation_mode, "profile");
+        assert!(parse(args(&["memory-efficiency", "--provider", "unknown"])).is_err());
+        assert!(parse(args(&[
+            "memory-efficiency",
+            "--instrumentation-mode",
+            "unknown"
+        ]))
+        .is_err());
     }
 
     #[test]

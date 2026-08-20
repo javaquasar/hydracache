@@ -1,0 +1,112 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://hydracache.dev/schemas/0.71/memory-footprint-v1.schema.json",
+  "title": "HydraCache bounded memory footprint snapshot v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version", "mode", "epoch", "consistency", "observed_non_atomic",
+    "workload_epoch_acknowledged", "subsystem_version_before", "subsystem_version_after",
+    "live_entries", "logical_key_bytes", "logical_value_bytes", "tag_memberships",
+    "tag_generation_records", "key_generation_records",
+    "expiry_records", "estimated_retained_bytes", "pending_loads", "event_ring_occupancy",
+    "event_ring_bytes", "event_subscribers", "event_dropped", "owners", "subsystem_versions",
+    "allocator", "external"
+  ],
+  "properties": {
+    "schema_version": { "const": "hydracache-memory-footprint-v1" },
+    "mode": { "enum": ["off", "production", "profile"] },
+    "epoch": { "type": "integer", "minimum": 0 },
+    "consistency": { "enum": ["exact", "observed_non_atomic"] },
+    "observed_non_atomic": { "type": "boolean" },
+    "workload_epoch_acknowledged": { "type": "boolean" },
+    "subsystem_version_before": { "type": "integer", "minimum": 0 },
+    "subsystem_version_after": { "type": "integer", "minimum": 0 },
+    "live_entries": { "type": "integer", "minimum": 0 },
+    "logical_key_bytes": { "type": "integer", "minimum": 0 },
+    "logical_value_bytes": { "type": "integer", "minimum": 0 },
+    "tag_memberships": { "type": "integer", "minimum": 0 },
+    "tag_generation_records": { "type": "integer", "minimum": 0 },
+    "key_generation_records": { "type": "integer", "minimum": 0 },
+    "expiry_records": { "type": "integer", "minimum": 0 },
+    "estimated_retained_bytes": { "type": "integer", "minimum": 0 },
+    "pending_loads": { "type": "integer", "minimum": 0 },
+    "event_ring_occupancy": { "type": "integer", "minimum": 0 },
+    "event_ring_bytes": { "type": ["integer", "null"], "minimum": 0 },
+    "event_subscribers": { "type": "integer", "minimum": 0 },
+    "event_dropped": { "type": "integer", "minimum": 0 },
+    "owners": {
+      "type": "array",
+      "maxItems": 32,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["owner_id", "records", "logical_bytes", "estimated_retained_bytes", "available"],
+        "properties": {
+          "owner_id": { "type": "string", "pattern": "^owner-[0-9a-f]{16}$" },
+          "records": { "type": "integer", "minimum": 0 },
+          "logical_bytes": { "type": "integer", "minimum": 0 },
+          "estimated_retained_bytes": { "type": "integer", "minimum": 0 },
+          "available": { "type": "boolean" }
+        }
+      }
+    },
+    "subsystem_versions": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 32,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["owner_id", "before", "after", "stable"],
+        "properties": {
+          "owner_id": { "type": "string", "pattern": "^owner-[0-9a-f]{16}$" },
+          "before": { "type": "integer", "minimum": 0 },
+          "after": { "type": "integer", "minimum": 0 },
+          "stable": { "type": "boolean" }
+        }
+      }
+    },
+    "allocator": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["provider", "resident_bytes", "allocated_bytes", "active_bytes", "retained_bytes", "fragmentation_ratio", "unavailable_reason"],
+      "properties": {
+        "provider": { "type": "string" },
+        "resident_bytes": { "type": ["integer", "null"], "minimum": 0 },
+        "allocated_bytes": { "type": ["integer", "null"], "minimum": 0 },
+        "active_bytes": { "type": ["integer", "null"], "minimum": 0 },
+        "retained_bytes": { "type": ["integer", "null"], "minimum": 0 },
+        "fragmentation_ratio": { "type": ["number", "null"], "minimum": 0 },
+        "unavailable_reason": { "type": ["string", "null"] }
+      }
+    },
+    "external": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "client_surface_entries", "client_surface_bytes", "idempotency_records",
+        "idempotency_bytes", "idempotency_oldest_age_seconds", "audit_records", "audit_bytes",
+        "audit_sink_failures", "outbound_queued_bytes", "subscriptions", "sessions", "connections",
+        "durable_logical_bytes", "file_backed_bytes", "unavailable_reason"
+      ],
+      "properties": {
+        "client_surface_entries": { "type": ["integer", "null"], "minimum": 0 },
+        "client_surface_bytes": { "type": ["integer", "null"], "minimum": 0 },
+        "idempotency_records": { "type": ["integer", "null"], "minimum": 0 },
+        "idempotency_bytes": { "type": ["integer", "null"], "minimum": 0 },
+        "idempotency_oldest_age_seconds": { "type": ["integer", "null"], "minimum": 0 },
+        "audit_records": { "type": ["integer", "null"], "minimum": 0 },
+        "audit_bytes": { "type": ["integer", "null"], "minimum": 0 },
+        "audit_sink_failures": { "type": ["integer", "null"], "minimum": 0 },
+        "outbound_queued_bytes": { "type": ["integer", "null"], "minimum": 0 },
+        "subscriptions": { "type": ["integer", "null"], "minimum": 0 },
+        "sessions": { "type": ["integer", "null"], "minimum": 0 },
+        "connections": { "type": ["integer", "null"], "minimum": 0 },
+        "durable_logical_bytes": { "type": ["integer", "null"], "minimum": 0 },
+        "file_backed_bytes": { "type": ["integer", "null"], "minimum": 0 },
+        "unavailable_reason": { "type": ["string", "null"] }
+      }
+    }
+  }
+}

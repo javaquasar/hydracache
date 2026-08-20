@@ -30,6 +30,11 @@ use crate::invalidation_bus::{
     CacheInvalidation, CacheInvalidationBus, CacheInvalidationMessage, CacheInvalidationReceive,
 };
 use crate::load_breaker::{LoadBreakerDecision, LoadBreakerRegistry};
+use crate::memory_footprint::{
+    EntryMemoryDelta, MemoryCaptureInput, MemoryFootprintCounters, MemoryFootprintError,
+    MemoryFootprintSnapshot, MemoryReconciliationReport, MemorySnapshotBarrier,
+    MemorySnapshotRequest,
+};
 use crate::refresh::RefreshOptions;
 use crate::stats::StatsCounters;
 use crate::tag_index::{LoadGenerationSnapshot, TagIndex};
@@ -77,7 +82,7 @@ where
     C: CacheCodec,
 {
     pub(crate) store: Cache<String, CacheEntry>,
-    pub(crate) tag_index: TagIndex,
+    pub(crate) tag_index: Arc<TagIndex>,
     pub(crate) in_flight: Arc<InFlightMap>,
     pub(crate) codec: C,
     pub(crate) default_ttl: std::time::Duration,
@@ -95,6 +100,7 @@ where
     pub(crate) replication_config: ReplicationConfig,
     pub(crate) replicated_value_security: ReplicatedValueSecurityPosture,
     pub(crate) load_breaker: LoadBreakerRegistry,
+    pub(crate) memory: Arc<MemoryFootprintCounters>,
 }
 
 impl<C> Drop for HydraCacheInner<C>
@@ -1479,6 +1485,7 @@ where
     }
 
     async fn invalidate_tag_with_origin(&self, tag: &str, origin: CacheEventOrigin) -> Result<u64> {
+        let _mutation = self.inner.memory.mutation();
         let keys = self.inner.tag_index.take_tag(tag).await;
         let mut removed = 0;
 
@@ -1508,6 +1515,7 @@ where
     }
 
     async fn flush_with_origin(&self, origin: CacheEventOrigin) -> Result<()> {
+        let _mutation = self.inner.memory.mutation();
         let estimated_entries = self.inner.store.entry_count();
         self.inner.store.invalidate_all();
         self.inner.store.run_pending_tasks().await;
@@ -1582,6 +1590,63 @@ where
             stats: self.stats(),
             estimated_entries: self.inner.store.entry_count(),
         }
+    }
+
+    /// Establish a quiescent epoch for an exact memory snapshot.
+    pub fn memory_snapshot_barrier(
+        &self,
+    ) -> std::result::Result<MemorySnapshotBarrier, MemoryFootprintError> {
+        self.inner.memory.barrier()
+    }
+
+    /// Return a bounded memory snapshot without walking cache maps.
+    pub async fn memory_footprint_snapshot(
+        &self,
+        request: MemorySnapshotRequest,
+    ) -> std::result::Result<MemoryFootprintSnapshot, MemoryFootprintError> {
+        let tag_before = self.inner.tag_index.memory_state();
+        let pending_loads = self.inner.in_flight.len().await as u64;
+        let event_state = self.inner.events.retained_state();
+        let tag_after = self.inner.tag_index.memory_state();
+        self.inner.memory.capture(
+            request,
+            MemoryCaptureInput {
+                pending_loads,
+                event_ring_occupancy: event_state.occupancy as u64,
+                event_subscribers: event_state.subscribers as u64,
+                event_dropped: self
+                    .inner
+                    .stats
+                    .event_subscriber_lagged
+                    .load(Ordering::Relaxed),
+                tag_version_before: tag_before.version,
+                tag_version_after: tag_after.version,
+                tag_generation_records: tag_after.tag_generation_records,
+                key_generation_records: tag_after.key_generation_records,
+            },
+        )
+    }
+
+    /// Walk local state and compare it with incremental counters.
+    ///
+    /// This intentionally expensive operation is for tests and scheduled
+    /// nightly verification, never for request-path diagnostics.
+    pub async fn reconcile_memory_footprint(
+        &self,
+    ) -> std::result::Result<MemoryReconciliationReport, MemoryFootprintError> {
+        self.inner.store.run_pending_tasks().await;
+        let mut exact = EntryMemoryDelta::default();
+        for (key, entry) in self.inner.store.iter() {
+            let delta = EntryMemoryDelta::new(
+                &key,
+                entry.value.len(),
+                &entry.tags,
+                entry.expires_at.is_some(),
+            )
+            .map_err(|_| MemoryFootprintError::CounterFault)?;
+            exact.checked_accumulate(delta)?;
+        }
+        self.inner.memory.reconcile(exact)
     }
 
     async fn decode_cached_hit<T>(&self, key: &str, entry: &CacheEntry) -> Result<T>
@@ -1702,12 +1767,17 @@ where
             return Err(self.oversize_rejection_error(value.len()));
         }
 
+        let _mutation = self.inner.memory.mutation();
         let ttl = options.ttl_value().unwrap_or(self.inner.default_ttl);
         let tags = options.tags_value().to_vec();
+        let value_len = value.len();
+        let expires_at = Instant::now().checked_add(ttl);
+        let memory_delta = EntryMemoryDelta::new(key, value_len, &tags, expires_at.is_some())
+            .map_err(|error| CacheError::Backend(error.to_string()))?;
         let entry = CacheEntry {
             value,
             tags: tags.clone(),
-            expires_at: Instant::now().checked_add(ttl),
+            expires_at,
         };
 
         if let Some(old_entry) = self.inner.store.get(key).await {
@@ -1716,6 +1786,7 @@ where
 
         self.inner.store.insert(key.to_owned(), entry).await;
         self.inner.tag_index.register(key, &tags).await;
+        self.inner.memory.insert(memory_delta);
         self.publish_key_event(CacheEventKind::Stored, key, origin, tags);
         Ok(())
     }
@@ -1920,6 +1991,7 @@ where
     }
 
     async fn remove_entry(&self, key: &str, entry: &CacheEntry) {
+        let _mutation = self.inner.memory.mutation();
         self.inner.store.invalidate(key).await;
         self.inner.tag_index.unregister(key, &entry.tags).await;
     }
@@ -1930,6 +2002,7 @@ where
         kind: CacheEventKind,
         origin: CacheEventOrigin,
     ) -> Result<bool> {
+        let _mutation = self.inner.memory.mutation();
         self.inner.tag_index.advance_key(key).await;
         let Some(entry) = self.inner.store.get(key).await else {
             return Ok(false);

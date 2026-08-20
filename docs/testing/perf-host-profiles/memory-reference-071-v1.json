@@ -1,0 +1,29 @@
+{
+  "schema_version": 1,
+  "profile_id": "memory-reference-071-v1",
+  "release": "0.71",
+  "protected_environment": "memory-reference-071",
+  "lease_required": true,
+  "calibration_max_relative_spread": 0.05,
+  "completed_bootstrap_admission": "0.67.1",
+  "ship_evidence_platforms": ["dedicated-bare-metal-linux"],
+  "ineligible_platforms": ["wsl2", "docker-desktop", "github-hosted"],
+  "immutable_probes": ["hardware_model", "sockets", "physical_cores", "smt", "numa_topology", "ram_bytes", "firmware", "microcode", "kernel", "distro", "page_size", "clock_source", "filesystem", "cgroup_version"],
+  "mutable_probes": ["cpu_governor", "turbo_policy", "thermal_state", "transparent_huge_pages", "swap", "overcommit", "ksm", "cgroup_limits", "competing_load", "available_memory", "major_faults", "throttling", "temperature"],
+  "required_tools": ["git", "cargo", "rustc", "python3", "perf", "numactl"],
+  "cpu_binding": {
+    "daemon": "reviewed-memory-daemon-cpuset",
+    "load_generator": "reviewed-memory-loadgen-cpuset",
+    "collectors": "reviewed-memory-collector-cpuset",
+    "collectors_must_not_overlap_daemon": true
+  },
+  "policies": {
+    "transparent_huge_pages": "record-and-hold",
+    "swap": "record-and-hold",
+    "turbo": "record-and-hold",
+    "numa": "single-reviewed-node-or-explicit-interleave",
+    "calibration": "before-build-and-before-each-long-scenario",
+    "case_order": "alternating-B1-C",
+    "drift": "new-cohort"
+  }
+}

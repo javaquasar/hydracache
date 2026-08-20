@@ -27,10 +27,15 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: post-publish-${{ inputs.version }}-${{ github.sha }}
+  cancel-in-progress: false
+
 jobs:
   verify:
     name: Verify published crates
     runs-on: ubuntu-latest
+    timeout-minutes: 60
 
     steps:
       - name: Checkout verification fixture
@@ -108,6 +113,7 @@ jobs:
           cargo add tokio --features macros,rt-multi-thread
 
       - name: Install smoke test fixture
+        timeout-minutes: 15
         working-directory: hydracache-consumer
         run: cp "$GITHUB_WORKSPACE/tests/post-publish-consumer/src/lib.rs" src/lib.rs
 

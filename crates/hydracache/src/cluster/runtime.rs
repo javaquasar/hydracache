@@ -1,4 +1,5 @@
 use super::*;
+use crate::memory_footprint::MemoryInstrumentationMode;
 
 static NEXT_CLUSTER_CLIENT_ID: AtomicU64 = AtomicU64::new(1);
 static NEXT_CLUSTER_MEMBER_ID: AtomicU64 = AtomicU64::new(1);
@@ -510,6 +511,12 @@ where
     /// Set maximum encoded entry size in bytes.
     pub fn max_entry_bytes(mut self, max_entry_bytes: usize) -> Self {
         self.cache_builder = self.cache_builder.max_entry_bytes(max_entry_bytes);
+        self
+    }
+
+    /// Select the bounded memory instrumentation posture for the member cache.
+    pub fn memory_instrumentation_mode(mut self, mode: MemoryInstrumentationMode) -> Self {
+        self.cache_builder = self.cache_builder.memory_instrumentation_mode(mode);
         self
     }
 

@@ -12,6 +12,7 @@ use hydracache_loadgen::compare_redis::{
     run_and_write_same_box_redis_comparison, RedisComparisonOutcome, RedisComparisonRunMode,
     W3ReferenceArtifactSet,
 };
+use hydracache_loadgen::memory_efficiency::run_and_write_memory_efficiency;
 use hydracache_loadgen::metrics_honesty::{
     publish_control_plane_metrics_report, publish_resp_metrics_report, MetricsHonestyScenario,
     MetricsWindowEvidence,
@@ -72,7 +73,9 @@ const W7_CONTROL_PLANE_3_RAW_REPORT: &str = "control-plane-3-reference-v1.raw.js
 
 #[tokio::main]
 async fn main() {
-    if let Err(error) = run().await {
+    // Keep the large multi-surface command state machine off the Windows main
+    // thread's comparatively small stack.
+    if let Err(error) = Box::pin(run()).await {
         eprintln!("hydracache-loadgen: {error}");
         std::process::exit(2);
     }
@@ -90,6 +93,23 @@ async fn run() -> Result<(), String> {
     }
     let command = cli::parse(arguments)?;
     match &command {
+        LoadgenCommand::MemoryEfficiency { .. } => {
+            let (output_dir, provider, instrumentation_mode) = command
+                .memory_efficiency_shape()
+                .ok_or_else(|| "memory-efficiency command lost its output shape".to_owned())?;
+            let receipt = Box::pin(run_and_write_memory_efficiency(
+                command.profile(),
+                provider,
+                instrumentation_mode,
+                output_dir,
+            ))
+            .await?;
+            eprintln!(
+                "hydracache-loadgen: wrote {} ordered memory phases to {}",
+                receipt.phase_count,
+                output_dir.display()
+            );
+        }
         LoadgenCommand::TierLocal { .. } => {
             let path = command
                 .local_report_path()
@@ -917,6 +937,6 @@ fn write_bytes(path: &Path, bytes: Vec<u8>) -> Result<(), String> {
 
 fn print_help() {
     println!(
-        "HydraCache release-0.67 development load generator\n\nUSAGE:\n    hydracache-loadgen tier local --profile <PROFILE> --report <PATH>\n    hydracache-loadgen tier client-surface --profile <PROFILE> --report <PATH>\n    hydracache-loadgen tier node-resp --profile <PROFILE> --report <PATH>\n    hydracache-loadgen tier control-plane --nodes <3|5|7> --target-roles leader,follower --profile reference-v1 --report <PATH>\n    hydracache-loadgen tier grid-model --profile <PROFILE> --report <PATH>\n    hydracache-loadgen suite core --profile <PROFILE> --output-dir <DIR>\n    hydracache-loadgen suite resp --profile <PROFILE> --output-dir <DIR>\n    hydracache-loadgen suite control-plane --profile reference-v1 --output-dir <DIR>\n    hydracache-loadgen compare redis --profile reference-v1 --report target/test-evidence/0.67/compare-redis.json\n    hydracache-loadgen brownout control-plane-leader --profile reference-v1 --report <PATH>\n    hydracache-loadgen brownout resp-endpoint-kill --profile reference-v1 --report <PATH>\n    hydracache-loadgen brownout grid-model-replica --profile reference-v1 --report <PATH>\n    hydracache-loadgen overload local --profile reference-v1 --report <PATH>\n    hydracache-loadgen overload client-surface --profile reference-v1 --report <PATH>\n    hydracache-loadgen overload node-resp --profile reference-v1 --report <PATH>\n\nSmoke output is explicitly plumbing-only. The client-surface tier is an in-process Router; RESP smoke uses a product-facade loopback fixture, not a daemon. W4A, W5, W6, and mandatory W8 have no promotable fixture-capacity mode and use only receipt-bound predecessors under their exact surface gates. W4B remains an explicitly in-process library/model artifact. reference-v1 fails closed until the W7 profile and receipt-bound prebuild context are present."
+        "HydraCache development load generator\n\nUSAGE:\n    hydracache-loadgen memory-efficiency [--profile memory-efficiency-v1] [--provider system|jemalloc|mimalloc] [--instrumentation-mode off|production|profile] [--output-dir <DIR>]\n    hydracache-loadgen tier local --profile <PROFILE> --report <PATH>\n    hydracache-loadgen tier client-surface --profile <PROFILE> --report <PATH>\n    hydracache-loadgen tier node-resp --profile <PROFILE> --report <PATH>\n    hydracache-loadgen tier control-plane --nodes <3|5|7> --target-roles leader,follower --profile reference-v1 --report <PATH>\n    hydracache-loadgen tier grid-model --profile <PROFILE> --report <PATH>\n    hydracache-loadgen suite core --profile <PROFILE> --output-dir <DIR>\n    hydracache-loadgen suite resp --profile <PROFILE> --output-dir <DIR>\n    hydracache-loadgen suite control-plane --profile reference-v1 --output-dir <DIR>\n    hydracache-loadgen compare redis --profile reference-v1 --report target/test-evidence/0.67/compare-redis.json\n    hydracache-loadgen brownout control-plane-leader --profile reference-v1 --report <PATH>\n    hydracache-loadgen brownout resp-endpoint-kill --profile reference-v1 --report <PATH>\n    hydracache-loadgen brownout grid-model-replica --profile reference-v1 --report <PATH>\n    hydracache-loadgen overload local --profile reference-v1 --report <PATH>\n    hydracache-loadgen overload client-surface --profile reference-v1 --report <PATH>\n    hydracache-loadgen overload node-resp --profile reference-v1 --report <PATH>\n\nMemory-efficiency emits an eight-phase, epoch-coherent JSONL timeline. Other smoke output is explicitly plumbing-only."
     );
 }

@@ -1807,7 +1807,9 @@ fn redis_structured_key_to_bytes(key: &StructuredKey) -> Option<Vec<u8>> {
     }
     encoded
         .as_bytes()
-        .chunks_exact(2)
+        .as_chunks::<2>()
+        .0
+        .iter()
         .map(|pair| {
             let high = hex_nibble(pair[0])?;
             let low = hex_nibble(pair[1])?;
@@ -3187,7 +3189,7 @@ fn sha1_hex(bytes: &[u8]) -> String {
     }
     message.extend_from_slice(&bit_len.to_be_bytes());
 
-    for chunk in message.chunks_exact(64) {
+    for chunk in message.as_chunks::<64>().0 {
         let mut words = [0u32; 80];
         for (index, word) in words.iter_mut().take(16).enumerate() {
             let start = index * 4;
@@ -3739,7 +3741,9 @@ fn command_from_args(mut args: Vec<Vec<u8>>) -> Result<RedisCommand, RedisCompat
         },
         "MSET" if !args.is_empty() && args.len().is_multiple_of(2) => RedisCommand::Mset {
             entries: args
-                .chunks_exact(2)
+                .as_chunks::<2>()
+                .0
+                .iter()
                 .map(|pair| (pair[0].clone(), pair[1].clone()))
                 .collect(),
         },

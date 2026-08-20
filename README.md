@@ -89,7 +89,8 @@ For crate selection, see [`Crate Map`](https://javaquasar.github.io/hydracache/r
 cargo fmt --all -- --check
 cargo check --workspace --all-targets --locked
 cargo test --workspace --all-targets --locked
-cargo clippy --workspace --all-targets --all-features --locked -- -D warnings
+cargo clippy --workspace --all-targets --all-features --exclude hydracache --locked -- -D warnings
+cargo clippy -p hydracache --all-targets --locked -- -D warnings
 cargo test --doc --workspace --locked
 ```
 

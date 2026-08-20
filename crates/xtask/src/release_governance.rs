@@ -56,6 +56,25 @@ pub fn check(root: &Path, release: &str) -> Result<GovernanceReport, Box<dyn Err
         .extend(prefix("doc-check", doc_check::check(root)?));
     report.completed_checks += 1;
 
+    if release == "0.71" {
+        report.problems.extend(prefix(
+            "ci-topology-check",
+            crate::ci_topology::check(root, release)
+                .err()
+                .map(|error| vec![error.to_string()])
+                .unwrap_or_default(),
+        ));
+        report.problems.extend(prefix(
+            "memory-ownership-check",
+            crate::memory_ownership::check(root, release)?,
+        ));
+        report.problems.extend(prefix(
+            "memory-contracts-check",
+            crate::memory_contracts::check_static_contracts(root, release, false)?,
+        ));
+        report.completed_checks += 3;
+    }
+
     report.problems.extend(prefix(
         "coverage-ratchet-check",
         coverage_ratchet::validate_contract(root, &coverage_ratchet::load_config(root)?)?,

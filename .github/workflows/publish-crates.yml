@@ -23,6 +23,7 @@ jobs:
   resolve:
     name: Resolve and validate release candidate
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     outputs:
       eligible: ${{ steps.resolve.outputs.eligible }}
       version: ${{ steps.resolve.outputs.version }}
@@ -43,6 +44,7 @@ jobs:
           EVENT_NAME: ${{ github.event_name }}
           WORKFLOW_RUN_CONCLUSION: ${{ github.event.workflow_run.conclusion || '' }}
           WORKFLOW_RUN_SHA: ${{ github.event.workflow_run.head_sha || '' }}
+          WORKFLOW_RUN_ID: ${{ github.event.workflow_run.id || '' }}
           INPUT_TAG: ${{ inputs.tag || '' }}
           GH_TOKEN: ${{ github.token }}
         shell: bash
@@ -89,6 +91,33 @@ jobs:
           fi
 
           version="${release_tag#v}"
+
+          if [[ "$version" == 0.71.* ]]; then
+            if [[ "$EVENT_NAME" == "workflow_run" ]]; then
+              candidate_run_ids=("$WORKFLOW_RUN_ID")
+            else
+              ci_runs="$(gh api --paginate "repos/$GITHUB_REPOSITORY/actions/workflows/ci.yml/runs?head_sha=$source_sha&status=completed&per_page=100")"
+              mapfile -t candidate_run_ids < <(
+                printf '%s' "$ci_runs" | jq -r --arg sha "$source_sha" \
+                  '.workflow_runs[] | select(.head_sha == $sha and .conclusion == "success") | .id'
+              )
+            fi
+            designated_admission=false
+            for run_id in "${candidate_run_ids[@]}"; do
+              if gh api --paginate \
+                "repos/$GITHUB_REPOSITORY/actions/runs/$run_id/jobs?per_page=100" \
+                --jq '.jobs[] | select(.name == "Release 0.71 CI Admission" and .conclusion == "success") | .id' \
+                | grep -q .; then
+                designated_admission=true
+                break
+              fi
+            done
+            if [[ "$designated_admission" != "true" ]]; then
+              echo "No designated Release 0.71 CI Admission exists for $release_tag at $source_sha." >&2
+              exit 1
+            fi
+          fi
+
           git fetch --force origin main
           if ! git merge-base --is-ancestor "$source_sha" origin/main; then
             echo "$release_tag does not point to a commit reachable from origin/main." >&2
@@ -223,12 +252,14 @@ jobs:
           name: ${{ steps.resolve.outputs.metadata_artifact }}
           path: target/release-publish
           if-no-files-found: error
+          retention-days: 30
 
   publish:
     name: Publish crates.io packages
     needs: resolve
     if: needs.resolve.outputs.eligible == 'true'
     runs-on: ubuntu-latest
+    timeout-minutes: 120
     environment: release
     env:
       CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
@@ -356,6 +387,7 @@ jobs:
           name: crates-publication-${{ needs.resolve.outputs.version }}
           path: target/release-publish/publication-results.tsv
           if-no-files-found: error
+          retention-days: 30
 
   consumer-verification:
     name: Verify published crates from crates.io
@@ -373,6 +405,7 @@ jobs:
     needs: [resolve, publish, consumer-verification]
     if: needs.resolve.outputs.eligible == 'true' && needs.publish.result == 'success' && needs.consumer-verification.result == 'success'
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     permissions:
       contents: write
       actions: read

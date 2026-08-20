@@ -44,6 +44,8 @@ pub const ADMIN_BACKUP_PATH: &str = "/admin/backup";
 pub const ADMIN_RAFT_COMPACTION_PATH: &str = "/admin/raft/compaction";
 /// Off-by-default, local-only destructive diagnostic reset path.
 pub const ADMIN_DIAGNOSTIC_RESET_PATH: &str = "/admin/diagnostics/reset";
+/// Privileged, read-only aggregate memory-footprint path.
+pub const ADMIN_MEMORY_FOOTPRINT_PATH: &str = "/admin/memory-footprint";
 
 /// Shared runtime state for the admin HTTP surface.
 pub type SharedServerRuntime = Arc<Mutex<ServerRuntime>>;
@@ -106,6 +108,7 @@ impl AdminHttpSurface {
             .route(ADMIN_RESHARD_PATH, post(admin_reshard))
             .route(ADMIN_BACKUP_PATH, post(admin_backup))
             .route(ADMIN_DIAGNOSTIC_RESET_PATH, post(admin_diagnostic_reset))
+            .route(ADMIN_MEMORY_FOOTPRINT_PATH, get(admin_memory_footprint))
             .route(
                 ADMIN_RAFT_COMPACTION_PATH,
                 get(admin_raft_compaction_status).post(admin_raft_compaction),
@@ -191,6 +194,78 @@ async fn admin_status(State(runtime): State<SharedServerRuntime>, headers: Heade
     }
     let status = runtime.lock().expect("server runtime mutex").admin_status();
     (StatusCode::OK, Json(status)).into_response()
+}
+
+#[derive(Debug, Serialize)]
+struct AdminMemoryFootprintReply {
+    schema_version: &'static str,
+    embedded_cache: hydracache::MemoryFootprintSnapshot,
+    client_surface: Option<hydracache_client_transport_axum::ClientSurfaceRetainedState>,
+    resp_active_connections: u64,
+    hc2: Option<crate::hc2::Hc2AccountingSnapshot>,
+}
+
+async fn admin_memory_footprint(
+    State(runtime): State<SharedServerRuntime>,
+    headers: HeaderMap,
+    hc2: Option<Extension<Hc2ClientPlaneService>>,
+) -> Response {
+    if let Err(error) = require_admin(&headers) {
+        return error.into_response();
+    }
+    let (cache, client_surface, resp_active_connections) = {
+        let runtime = runtime.lock().expect("server runtime mutex");
+        (
+            runtime.cache().clone(),
+            runtime.client_dispatch_state(),
+            runtime.redis_active_connections(),
+        )
+    };
+    match cache
+        .memory_footprint_snapshot(hydracache::MemorySnapshotRequest::Admin)
+        .await
+    {
+        Ok(mut embedded_cache) => {
+            let client_surface = client_surface.map(|state| state.retained_state_for_diagnostics());
+            let hc2 = hc2.map(|Extension(service)| service.accounting());
+            if let Some(client) = client_surface {
+                embedded_cache.external.client_surface_entries = Some(client.store_entries as u64);
+                embedded_cache.external.client_surface_bytes = Some(
+                    client
+                        .value_bytes
+                        .saturating_add(client.store_identity_bytes) as u64,
+                );
+                embedded_cache.external.idempotency_records =
+                    Some(client.idempotency_outcomes as u64);
+                embedded_cache.external.idempotency_bytes =
+                    Some(client.idempotency_identity_bytes as u64);
+                embedded_cache.external.audit_records = Some(client.audit_events as u64);
+                embedded_cache.external.sessions =
+                    Some(client.conditional.session_heartbeats as u64);
+            }
+            embedded_cache.external.connections = Some(
+                resp_active_connections
+                    .saturating_add(hc2.map_or(0, |value| value.active_connections)),
+            );
+            embedded_cache.external.subscriptions = hc2.map(|value| value.active_subscriptions);
+            embedded_cache.external.unavailable_reason = Some(
+                "age, audit byte/failure, outbound byte, durable, and file-backed counters unavailable"
+                    .to_owned(),
+            );
+            (
+                StatusCode::OK,
+                Json(AdminMemoryFootprintReply {
+                    schema_version: "hydracache-admin-memory-footprint-v1",
+                    embedded_cache,
+                    client_surface,
+                    resp_active_connections,
+                    hc2,
+                }),
+            )
+                .into_response()
+        }
+        Err(error) => AdminHttpError::MemorySnapshotFailed(error.to_string()).into_response(),
+    }
 }
 
 async fn admin_drain(State(runtime): State<SharedServerRuntime>, headers: HeaderMap) -> Response {
@@ -453,6 +528,9 @@ pub enum AdminHttpError {
     /// A reset owner failed cleanup or its zero assertion.
     #[error("diagnostic reset failed: {0}")]
     DiagnosticResetFailed(String),
+    /// Product counters rejected a corrupt or incoherent snapshot.
+    #[error("memory snapshot failed: {0}")]
+    MemorySnapshotFailed(String),
     /// Runtime refused the requested admin action.
     #[error("{0}")]
     Action(#[from] ServerAdminActionError),
@@ -466,6 +544,7 @@ impl IntoResponse for AdminHttpError {
             Self::DiagnosticResetDisabled => StatusCode::NOT_FOUND,
             Self::DiagnosticResetBusy => StatusCode::CONFLICT,
             Self::DiagnosticResetFailed(_) => StatusCode::INTERNAL_SERVER_ERROR,
+            Self::MemorySnapshotFailed(_) => StatusCode::INTERNAL_SERVER_ERROR,
             Self::Action(ServerAdminActionError::NotReady(_)) => StatusCode::SERVICE_UNAVAILABLE,
             Self::Action(
                 ServerAdminActionError::RequiresMember(_) | ServerAdminActionError::BackupDisabled,

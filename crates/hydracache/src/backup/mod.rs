@@ -76,7 +76,7 @@ fn decode_hex(text: &str) -> Result<Vec<u8>, BackupError> {
     }
     let mut bytes = Vec::with_capacity(text.len() / 2);
     let raw = text.as_bytes();
-    for chunk in raw.chunks_exact(2) {
+    for chunk in raw.as_chunks::<2>().0 {
         let high = decode_nibble(chunk[0])?;
         let low = decode_nibble(chunk[1])?;
         bytes.push((high << 4) | low);

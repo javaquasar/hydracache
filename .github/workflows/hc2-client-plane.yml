@@ -7,7 +7,7 @@ on:
       - main
       - master
     tags:
-      - "v*.*.*"
+      - "v0.68.*"
   schedule:
     - cron: "17 4 * * 1"
   workflow_dispatch:
@@ -147,7 +147,7 @@ jobs:
             target/hc2-retained-daemon-*.tar.gz
             target/hc2-retained-daemon-*.tar.gz.sha256
           if-no-files-found: error
-          retention-days: 90
+          retention-days: 30
 
   linux-required:
     name: HC/2 Linux Required
@@ -274,7 +274,7 @@ jobs:
     name: HC/2 Fuzz Scheduled
     if: >-
       github.event_name == 'schedule'
-      || startsWith(github.ref, 'refs/tags/v')
+      || startsWith(github.ref, 'refs/tags/v0.68.')
       || (github.event_name == 'workflow_dispatch'
           && (inputs.run_hc2_fuzz
               || inputs.run_hc2_hosted_admission
@@ -289,6 +289,7 @@ jobs:
         with:
           toolchain: "1.94.0"
       - name: Install pinned fuzz toolchain and cargo-fuzz
+        timeout-minutes: 10
         run: |
           rustup toolchain install "$HC2_FUZZ_TOOLCHAIN"
           cargo install cargo-fuzz --version 0.13.2 --locked
@@ -350,6 +351,7 @@ jobs:
           HC2_FIXED_HOST_PROFILE: hc2-fixed-soak-v1
         run: scripts/hc2/verify-fixed-host.sh --output target/hc2-ci/fixed-host-metadata.log
       - name: Run bounded lifecycle soak
+        timeout-minutes: 60
         run: |
           set -o pipefail
           for iteration in $(seq 1 "$HC2_SOAK_ITERATIONS"); do
@@ -371,7 +373,7 @@ jobs:
     name: HC/2 Hosted Release Admission
     if: >-
       always()
-      && (startsWith(github.ref, 'refs/tags/v')
+      && (startsWith(github.ref, 'refs/tags/v0.68.')
           || (github.event_name == 'workflow_dispatch'
               && (inputs.run_hc2_hosted_admission || inputs.run_hc2_release_admission)))
     needs: [linux-required, docker-interop, fuzz]

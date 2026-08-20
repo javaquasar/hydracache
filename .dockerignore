@@ -1,0 +1,11 @@
+target
+**/target
+.git
+test-results
+mutants.out
+.idea
+.playwright
+console/node_modules
+docs-site/node_modules
+**/__pycache__
+**/*.pyc

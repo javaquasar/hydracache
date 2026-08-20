@@ -1,0 +1,173 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://hydracache.dev/schemas/0.71/memory-baseline-report-v1.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "release", "cohort", "source_sha", "binary_sha256", "scenario_digest", "host_fingerprint", "build", "allocator", "exact_command", "unique_keys", "unique_key_verification", "request_count", "diagnostic_only", "ship_evidence_eligible", "checkpoints"],
+  "properties": {
+    "schema_version": { "const": 1 },
+    "release": { "const": "0.71" },
+    "cohort": { "enum": ["B0-release", "B1-instrumented", "C-candidate"] },
+    "source_sha": { "$ref": "#/$defs/source_sha" },
+    "binary_sha256": { "$ref": "#/$defs/digest" },
+    "scenario_digest": { "$ref": "#/$defs/digest" },
+    "host_fingerprint": { "type": "string", "minLength": 1 },
+    "build": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["profile", "features", "allocator", "image_digest", "kernel", "service_profile", "affinity", "cgroup_limit"],
+      "properties": {
+        "profile": { "type": "string", "minLength": 1 },
+        "features": { "type": "array", "uniqueItems": true, "items": { "type": "string" } },
+        "allocator": { "type": "string", "minLength": 1 },
+        "image_digest": { "oneOf": [{ "$ref": "#/$defs/digest" }, { "type": "null" }] },
+        "kernel": { "type": "string", "minLength": 1 },
+        "service_profile": { "type": "string", "minLength": 1 },
+        "affinity": { "type": "string", "minLength": 1 },
+        "cgroup_limit": { "type": ["integer", "null"], "minimum": 1 }
+      }
+    },
+    "allocator": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "provider", "provider_version"],
+      "properties": {
+        "name": { "type": "string", "minLength": 1 },
+        "provider": { "type": "string", "minLength": 1 },
+        "provider_version": { "type": "string", "minLength": 1 }
+      }
+    },
+    "exact_command": { "type": "array", "minItems": 1, "items": { "type": "string", "minLength": 1 } },
+    "unique_keys": { "type": "integer", "minimum": 0 },
+    "unique_key_verification": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["method", "observed"],
+      "properties": {
+        "method": { "type": "string", "minLength": 1 },
+        "observed": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "request_count": { "type": "integer", "minimum": 0 },
+    "diagnostic_only": { "type": "boolean" },
+    "ship_evidence_eligible": { "type": "boolean" },
+    "checkpoints": {
+      "type": "array",
+      "minItems": 8,
+      "maxItems": 8,
+      "items": { "$ref": "#/$defs/checkpoint" }
+    }
+  },
+  "$defs": {
+    "source_sha": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
+    "digest": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" },
+    "nonnegative": { "type": "integer", "minimum": 0 },
+    "available_or_reason": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["value", "unavailable_reason"],
+      "properties": {
+        "value": { "type": ["integer", "null"], "minimum": 0 },
+        "unavailable_reason": { "type": ["string", "null"] }
+      },
+      "oneOf": [
+        { "properties": { "value": { "type": "integer" }, "unavailable_reason": { "type": "null" } } },
+        { "properties": { "value": { "type": "null" }, "unavailable_reason": { "type": "string", "minLength": 1 } } }
+      ]
+    },
+    "checkpoint": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["phase", "sequence", "monotonic_ns", "logical", "process", "cgroup", "allocator", "performance"],
+      "properties": {
+        "phase": { "enum": ["cold", "fill", "steady", "expire_or_delete", "reset", "refill", "post_idle", "shutdown"] },
+        "sequence": { "type": "integer", "minimum": 1, "maximum": 8 },
+        "monotonic_ns": { "type": "integer", "minimum": 1 },
+        "logical": { "$ref": "#/$defs/logical" },
+        "process": { "$ref": "#/$defs/process" },
+        "cgroup": { "$ref": "#/$defs/cgroup" },
+        "allocator": { "$ref": "#/$defs/allocator_metrics" },
+        "performance": { "$ref": "#/$defs/performance" }
+      }
+    },
+    "logical": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["entries", "key_bytes", "value_bytes", "tag_records", "tag_bytes", "generation_records", "generation_bytes", "event_records", "event_bytes", "idempotency_records", "idempotency_bytes", "audit_records", "audit_bytes", "pending", "subscriptions", "sessions"],
+      "properties": {
+        "entries": { "$ref": "#/$defs/nonnegative" },
+        "key_bytes": { "$ref": "#/$defs/nonnegative" },
+        "value_bytes": { "$ref": "#/$defs/nonnegative" },
+        "tag_records": { "$ref": "#/$defs/nonnegative" },
+        "tag_bytes": { "$ref": "#/$defs/nonnegative" },
+        "generation_records": { "$ref": "#/$defs/nonnegative" },
+        "generation_bytes": { "$ref": "#/$defs/nonnegative" },
+        "event_records": { "$ref": "#/$defs/nonnegative" },
+        "event_bytes": { "$ref": "#/$defs/nonnegative" },
+        "idempotency_records": { "$ref": "#/$defs/nonnegative" },
+        "idempotency_bytes": { "$ref": "#/$defs/nonnegative" },
+        "audit_records": { "$ref": "#/$defs/nonnegative" },
+        "audit_bytes": { "$ref": "#/$defs/nonnegative" },
+        "pending": { "$ref": "#/$defs/nonnegative" },
+        "subscriptions": { "$ref": "#/$defs/nonnegative" },
+        "sessions": { "$ref": "#/$defs/nonnegative" }
+      }
+    },
+    "process": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["vm_rss_bytes", "vm_hwm_bytes", "smaps_rss_bytes", "smaps_pss_bytes", "smaps_anon_bytes", "smaps_file_bytes", "threads", "fds"],
+      "properties": {
+        "vm_rss_bytes": { "$ref": "#/$defs/nonnegative" },
+        "vm_hwm_bytes": { "$ref": "#/$defs/nonnegative" },
+        "smaps_rss_bytes": { "$ref": "#/$defs/nonnegative" },
+        "smaps_pss_bytes": { "$ref": "#/$defs/nonnegative" },
+        "smaps_anon_bytes": { "$ref": "#/$defs/nonnegative" },
+        "smaps_file_bytes": { "$ref": "#/$defs/nonnegative" },
+        "threads": { "$ref": "#/$defs/nonnegative" },
+        "fds": { "$ref": "#/$defs/nonnegative" }
+      }
+    },
+    "cgroup": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["memory_current_bytes", "memory_peak_bytes", "anon_bytes", "file_bytes", "slab_bytes"],
+      "properties": {
+        "memory_current_bytes": { "$ref": "#/$defs/available_or_reason" },
+        "memory_peak_bytes": { "$ref": "#/$defs/available_or_reason" },
+        "anon_bytes": { "$ref": "#/$defs/available_or_reason" },
+        "file_bytes": { "$ref": "#/$defs/available_or_reason" },
+        "slab_bytes": { "$ref": "#/$defs/available_or_reason" }
+      }
+    },
+    "allocator_metrics": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["allocated_bytes", "active_bytes", "resident_bytes", "retained_bytes", "mapped_bytes"],
+      "properties": {
+        "allocated_bytes": { "$ref": "#/$defs/available_or_reason" },
+        "active_bytes": { "$ref": "#/$defs/available_or_reason" },
+        "resident_bytes": { "$ref": "#/$defs/available_or_reason" },
+        "retained_bytes": { "$ref": "#/$defs/available_or_reason" },
+        "mapped_bytes": { "$ref": "#/$defs/available_or_reason" }
+      }
+    },
+    "performance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["rps", "p50_ns", "p95_ns", "p99_ns", "max_ns", "errors", "timeouts", "retries", "cpu_seconds", "context_switches"],
+      "properties": {
+        "rps": { "type": "number", "minimum": 0 },
+        "p50_ns": { "$ref": "#/$defs/nonnegative" },
+        "p95_ns": { "$ref": "#/$defs/nonnegative" },
+        "p99_ns": { "$ref": "#/$defs/nonnegative" },
+        "max_ns": { "$ref": "#/$defs/nonnegative" },
+        "errors": { "$ref": "#/$defs/nonnegative" },
+        "timeouts": { "$ref": "#/$defs/nonnegative" },
+        "retries": { "$ref": "#/$defs/nonnegative" },
+        "cpu_seconds": { "type": "number", "minimum": 0 },
+        "context_switches": { "$ref": "#/$defs/nonnegative" }
+      }
+    }
+  }
+}

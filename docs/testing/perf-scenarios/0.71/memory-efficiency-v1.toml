@@ -1,0 +1,149 @@
+schema_version = 1
+scenario_id = "memory-efficiency-v1"
+release = "0.71"
+profile = "memory-reference-071-v1"
+canonical_live_keys = 10000
+canonical_value_bytes = 256
+canonical_tags_per_entry = 0
+ttl = "off"
+persistence = "off"
+authenticated_hc2_connections = 1
+phases = ["cold", "fill", "steady", "expire_or_delete", "reset", "refill", "post_idle", "shutdown"]
+required_final_checkpoints = ["expire_or_delete", "reset", "post_idle", "shutdown"]
+instrumentation_modes = ["off", "production", "profile"]
+cohort_pooling = false
+candidate_derived_thresholds = false
+
+[identity]
+required = ["source_sha", "binary_sha256", "build_profile", "features", "allocator", "image_digest", "host_fingerprint", "affinity", "cgroup_limit", "kernel", "service_profile", "exact_command"]
+
+[logical]
+required = ["unique_keys", "key_bytes", "value_bytes", "tag_records", "generation_records", "event_records", "idempotency_records", "audit_records", "pending", "subscriptions", "sessions"]
+unique_keys_independent_from_requests = true
+
+[process]
+required = ["vm_rss_bytes", "vm_hwm_bytes", "smaps_rss_bytes", "smaps_pss_bytes", "smaps_anon_bytes", "smaps_file_bytes", "threads", "fds"]
+
+[cgroup]
+required = ["memory_current_bytes", "memory_peak_bytes", "anon_bytes", "file_bytes", "slab_bytes"]
+
+[allocator]
+required = ["allocated_bytes", "active_bytes", "resident_bytes", "retained_bytes", "mapped_bytes"]
+unavailable_requires_reason = true
+rss_substitution_forbidden = true
+
+[performance]
+required = ["rps", "p50_ns", "p95_ns", "p99_ns", "max_ns", "errors", "timeouts", "retries", "cpu_seconds", "context_switches"]
+
+[[case]]
+id = "M0-cold"
+factor = "empty daemon and five-minute idle"
+d0_repetitions = 3
+duration_seconds = 300
+host_time_cap_seconds = 3600
+
+[[case]]
+id = "M1-shape"
+factor = "4x4 cardinality/payload grid"
+d0_repetitions = 3
+keys = [1000, 10000, 50000, 250000]
+value_bytes = [64, 256, 1024, 4096]
+host_time_cap_seconds = 28800
+
+[[case]]
+id = "M2-rewrite"
+factor = "fixed-keyspace rewrite"
+d0_repetitions = 3
+cycles = [6, 60]
+host_time_cap_seconds = 14400
+
+[[case]]
+id = "M3-ttl"
+factor = "fill-expire-idle with mandatory final checkpoint"
+d0_repetitions = 3
+cycles = [60]
+final_checkpoint = "post_idle"
+host_time_cap_seconds = 21600
+
+[[case]]
+id = "M4-reset"
+factor = "fill-delete and namespace reset"
+d0_repetitions = 3
+cycles = [60]
+final_checkpoint = "shutdown"
+host_time_cap_seconds = 21600
+
+[[case]]
+id = "M5-tags"
+factor = "tag/index amplification"
+d0_repetitions = 3
+tags_per_entry = [0, 1, 4, 16]
+distributions = ["uniform", "one-hot", "high-fanout"]
+uniform_tag_pool = "private-per-entry"
+one_hot_tags_per_entry = 1
+one_hot_tag_pool = 1
+high_fanout_tags_per_entry = 16
+high_fanout_tag_pool = 16
+host_time_cap_seconds = 14400
+
+[[case]]
+id = "M6-connections"
+factor = "HC/2 idle and slow consumers"
+d0_repetitions = 3
+connections = [1, 10, 100, 1000]
+tls = [true]
+transport = "grpc-bidirectional-mtls"
+slow_consumers = [100]
+host_time_cap_seconds = 21600
+
+[[case]]
+id = "M7-persistence"
+factor = "anonymous/file/slab attribution"
+d0_repetitions = 3
+modes = ["off", "supported"]
+host_time_cap_seconds = 21600
+
+[[case]]
+id = "M8-60m"
+factor = "serialized fixed-keyspace TTL reset and HC/2 churn"
+d0_repetitions = 1
+duration_seconds = 3600
+iteration_seconds = 60
+heartbeat_seconds = 300
+hc2_churn_connections = 100
+rehearsal_duration_seconds = 2
+rehearsal_iteration_seconds = 0.25
+rehearsal_heartbeat_seconds = 0.5
+host_time_cap_seconds = 28800
+
+[[case]]
+id = "M9-6h"
+factor = "preregistered multi-scenario sequence"
+d0_repetitions = 1
+duration_seconds = 21600
+sequence = ["fixed-keyspace", "ttl", "reset", "hc2-churn"]
+block_seconds = 900
+iteration_seconds = 60
+heartbeat_seconds = 300
+hc2_churn_connections = 100
+rehearsal_duration_seconds = 4
+rehearsal_block_seconds = 1
+rehearsal_iteration_seconds = 0.25
+rehearsal_heartbeat_seconds = 0.5
+host_time_cap_seconds = 43200
+
+[[case]]
+id = "M10-24h"
+factor = "ship long-tail sequence"
+d0_repetitions = 1
+duration_seconds = 86400
+sequence = ["fixed-keyspace", "ttl", "reset", "hc2-churn"]
+block_seconds = 900
+iteration_seconds = 60
+heartbeat_seconds = 300
+hc2_churn_connections = 100
+rehearsal_duration_seconds = 4
+rehearsal_block_seconds = 1
+rehearsal_iteration_seconds = 0.25
+rehearsal_heartbeat_seconds = 0.5
+host_time_cap_seconds = 172800

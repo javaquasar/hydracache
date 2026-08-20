@@ -95,6 +95,10 @@ fn try_add_waiter(waiters: &AtomicUsize) -> bool {
 }
 
 impl InFlightMap {
+    pub(crate) async fn len(&self) -> usize {
+        self.loads.read().await.len()
+    }
+
     pub(crate) async fn get_current(
         self: &Arc<Self>,
         key: &str,

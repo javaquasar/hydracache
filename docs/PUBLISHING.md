@@ -343,7 +343,8 @@ cd C:\Workspace\prj\jq\cashe\hydracache
 cargo fmt --all -- --check
 cargo check --workspace --all-targets --locked
 cargo test --workspace --locked
-cargo clippy --workspace --all-targets --all-features --locked -- -D warnings
+cargo clippy --workspace --all-targets --all-features --exclude hydracache --locked -- -D warnings
+cargo clippy -p hydracache --all-targets --locked -- -D warnings
 cargo test --doc --workspace --locked
 Set-Item -Path Env:RUSTDOCFLAGS -Value '-D warnings'; cargo doc --workspace --no-deps --locked
 cargo llvm-cov --workspace --all-targets --locked --summary-only

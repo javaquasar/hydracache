@@ -30,6 +30,7 @@ jobs:
   build:
     name: Build and verify docs
     runs-on: ubuntu-latest
+    timeout-minutes: 30
 
     steps:
       - name: Checkout
@@ -71,6 +72,7 @@ jobs:
         run: node scripts/docs-link-check.mjs
 
       - name: Install browser dependencies
+        timeout-minutes: 10
         run: |
           npm --prefix console ci
           npx --prefix console playwright install --with-deps chromium
@@ -95,6 +97,7 @@ jobs:
     if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
     needs: build
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}

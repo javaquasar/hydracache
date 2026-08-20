@@ -68,7 +68,7 @@ impl Hc2ListenerTls {
 }
 
 /// Privacy-safe HC/2 listener accounting used by readiness/drain proofs.
-#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, serde::Serialize)]
 pub struct Hc2AccountingSnapshot {
     /// Currently open authenticated gRPC streams.
     pub active_connections: u64,

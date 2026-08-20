@@ -1,0 +1,152 @@
+name: Memory Reference 0.71
+
+run-name: Memory 0.71 ${{ inputs.case_id }} ${{ inputs.campaign_id }} at ${{ github.sha }}
+
+on:
+  workflow_dispatch:
+    inputs:
+      campaign_id:
+        description: "Immutable operator-approved campaign id"
+        required: true
+        type: string
+      case_id:
+        description: "One preregistered scenario row"
+        required: true
+        default: M0-cold
+        type: choice
+        options:
+          - M0-cold
+          - M1-shape
+          - M2-rewrite
+          - M3-ttl
+          - M4-reset
+          - M5-tags
+          - M6-connections
+          - M7-persistence
+          - M8-60m
+          - M9-6h
+          - M10-24h
+      lease_owner:
+        description: "Protected-host lease owner recorded by preflight"
+        required: true
+        type: string
+      lease_end:
+        description: "Approved lease end in RFC3339 form"
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: memory-reference-071-${{ github.sha }}-${{ inputs.campaign_id }}
+  cancel-in-progress: false
+
+jobs:
+  campaign:
+    name: Protected memory campaign
+    runs-on: [self-hosted, linux, x64, memory-reference-071]
+    environment: memory-reference-071
+    timeout-minutes: 4320
+    env:
+      CAMPAIGN_ROOT: /var/lib/hydracache-memory/campaigns
+      BUILD_ROOT: /var/lib/hydracache-memory/build
+      MIRROR_ROOT: /mnt/hydracache-protected-memory
+      HYDRACACHE_MEMORY_PROTECTED_ENV: memory-reference-071
+      HYDRACACHE_MEMORY_DEDICATED_BARE_METAL: "1"
+      HYDRACACHE_MEMORY_LEASE_OWNER: ${{ inputs.lease_owner }}
+      HYDRACACHE_MEMORY_LEASE_END: ${{ inputs.lease_end }}
+      BOOTSTRAP_RECEIPT: /var/lib/hydracache-memory/admission/reference-activation.json
+      HISTORICAL_RECEIPT: /var/lib/hydracache-memory/admission/historical-input-receipt.json
+      OVERHEAD_RECEIPT: /var/lib/hydracache-memory/admission/instrumentation-overhead.json
+
+    steps:
+      - name: Checkout exact requested source
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Admit host and freeze campaign plan
+        shell: bash
+        timeout-minutes: 15
+        run: |
+          set -euo pipefail
+          test -n "${{ inputs.campaign_id }}"
+          test -f "$BOOTSTRAP_RECEIPT"
+          test -f "$HISTORICAL_RECEIPT"
+          test -f "$OVERHEAD_RECEIPT"
+          python3 scripts/perf/memory_campaign_071.py doctor --evidence
+          cargo run -p xtask --locked -- perf-memory-preflight \
+            --release 0.71 \
+            --profile memory-reference-071-v1 \
+            --output "$RUNNER_TEMP/host-preflight.json"
+          campaign_dir="$CAMPAIGN_ROOT/${{ inputs.campaign_id }}"
+          if [[ ! -f "$campaign_dir/state.json" ]]; then
+            cohort_args=(--cohort B1-instrumented)
+            if [[ "${{ inputs.case_id }}" == "M0-cold" ]]; then
+              cohort_args=(--cohort B0-release --cohort B1-instrumented)
+            fi
+            python3 scripts/perf/memory_campaign_071.py --output-root "$CAMPAIGN_ROOT" plan \
+              --campaign-id "${{ inputs.campaign_id }}" \
+              --case "${{ inputs.case_id }}" \
+              --mirror-root "$MIRROR_ROOT" \
+              "${cohort_args[@]}"
+          fi
+          if [[ ! -f "$campaign_dir/admission/admission-manifest.json" ]]; then
+            python3 scripts/perf/memory_campaign_071.py --output-root "$CAMPAIGN_ROOT" admit \
+              --campaign-id "${{ inputs.campaign_id }}" \
+              --host-preflight "$RUNNER_TEMP/host-preflight.json" \
+              --bootstrap "$BOOTSTRAP_RECEIPT" \
+              --historical "$HISTORICAL_RECEIPT" \
+              --overhead "$OVERHEAD_RECEIPT"
+          else
+            python3 scripts/perf/memory_campaign_071.py --output-root "$CAMPAIGN_ROOT" verify-host \
+              --campaign-id "${{ inputs.campaign_id }}" \
+              --host-preflight "$RUNNER_TEMP/host-preflight.json"
+          fi
+
+      - name: Build immutable cohorts
+        shell: bash
+        timeout-minutes: 120
+        run: |
+          set -euo pipefail
+          python3 scripts/perf/memory_campaign_071.py --output-root "$CAMPAIGN_ROOT" prepare \
+            --campaign-id "${{ inputs.campaign_id }}" \
+            --build-root "$BUILD_ROOT"
+
+      - name: Run or resume bounded row
+        shell: bash
+        timeout-minutes: 4250
+        run: |
+          set -euo pipefail
+          python3 scripts/ci/run-with-heartbeat.py \
+            --timeout-seconds 252000 \
+            --heartbeat-seconds 30 \
+            --attempt-id "${{ github.run_attempt }}" \
+            --status-json "$CAMPAIGN_ROOT/${{ inputs.campaign_id }}/watchdog-status-${{ github.run_attempt }}.json" \
+            --log-file "$CAMPAIGN_ROOT/${{ inputs.campaign_id }}/watchdog-${{ github.run_attempt }}.log" \
+            -- \
+            python3 scripts/perf/memory_campaign_071.py --output-root "$CAMPAIGN_ROOT" resume \
+              --campaign-id "${{ inputs.campaign_id }}"
+
+      - name: Finalize immutable campaign manifest
+        shell: bash
+        timeout-minutes: 15
+        run: |
+          set -euo pipefail
+          python3 scripts/perf/memory_campaign_071.py --output-root "$CAMPAIGN_ROOT" finalize \
+            --campaign-id "${{ inputs.campaign_id }}"
+
+      - name: Retain compact attempt state
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: memory-reference-071-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            ${{ env.CAMPAIGN_ROOT }}/${{ inputs.campaign_id }}/state.json
+            ${{ env.CAMPAIGN_ROOT }}/${{ inputs.campaign_id }}/events.jsonl
+            ${{ env.CAMPAIGN_ROOT }}/${{ inputs.campaign_id }}/watchdog-*
+            ${{ env.CAMPAIGN_ROOT }}/${{ inputs.campaign_id }}/campaign-receipt.json
+            ${{ env.CAMPAIGN_ROOT }}/${{ inputs.campaign_id }}/admission/*.json
+          if-no-files-found: error
+          retention-days: 90
