@@ -651,8 +651,6 @@ def execute_rehearsal(root: Path, campaign_dir: Path, job: dict[str, Any]) -> tu
 def unsupported_evidence_reason(job: dict[str, Any]) -> str | None:
     case_id = job["case_id"]
     dimensions = job["dimensions"]
-    if case_id == "M7-persistence" and dimensions.get("persistence") != "off":
-        return "M7 supported persistence mode requires an admitted durable-store executor"
     if case_id == "M8-60m":
         return "M8 requires the duration-aware serialized 60-minute executor"
     if case_id in {"M9-6h", "M10-24h"}:

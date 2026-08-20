@@ -123,6 +123,14 @@ def execute(args: argparse.Namespace) -> None:
             "cohort": "B1-instrumented",
             "repetition": 1,
         },
+        {
+            "job_id": "docker-real-daemon-m7-supported-r1",
+            "case_id": "M7-persistence",
+            "cell_id": "M7-persistence__persistence-supported",
+            "dimensions": {"persistence": "supported"},
+            "cohort": "B1-instrumented",
+            "repetition": 1,
+        },
     ]
     manifest_path = evidence / "real-daemon" / "build-manifest.json"
     write_json(manifest_path, manifest)
@@ -187,6 +195,9 @@ def execute(args: argparse.Namespace) -> None:
     m6_receipt = evidence / "real-daemon" / "M6-connections" / "run" / "m6-connections-receipt.json"
     if not m6_receipt.is_file():
         raise RehearsalError("real M6 run did not produce its connection receipt")
+    m7_receipt = evidence / "real-daemon" / "M7-persistence" / "run" / "m7-persistence-receipt.json"
+    if not m7_receipt.is_file():
+        raise RehearsalError("real M7 run did not produce its persistence receipt")
 
     campaign_id = "docker-full-matrix"
     campaign_root = evidence / "campaigns"

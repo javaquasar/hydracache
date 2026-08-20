@@ -106,6 +106,11 @@ class MemoryCampaign071Tests(unittest.TestCase):
                 {"case_id": "M6-connections", "dimensions": {"tls": True}}
             )
         )
+        self.assertIsNone(
+            campaign.unsupported_evidence_reason(
+                {"case_id": "M7-persistence", "dimensions": {"persistence": "supported"}}
+            )
+        )
         self.assertIsNotNone(
             campaign.unsupported_evidence_reason(
                 {"case_id": "M10-24h", "dimensions": {}}

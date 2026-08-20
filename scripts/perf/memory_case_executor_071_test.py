@@ -93,6 +93,15 @@ class MemoryCaseExecutor071Tests(unittest.TestCase):
             self.assertEqual(executor.sha256(path), executor.sha256(path))
             self.assertRegex(executor.sha256(path), r"^sha256:[0-9a-f]{64}$")
 
+    def test_directory_snapshot_accounts_logical_files(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / "raft-log").mkdir()
+            (root / "raft-log" / "segment").write_bytes(b"durable")
+            snapshot = executor.directory_snapshot(root)
+            self.assertEqual(snapshot["logical_bytes"], 7)
+            self.assertEqual(snapshot["files"][0]["path"], "raft-log/segment")
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -279,6 +279,25 @@ def cgroup_snapshot(pid: int) -> dict[str, Any]:
     }
 
 
+def directory_snapshot(directory: Path) -> dict[str, Any]:
+    files: list[dict[str, Any]] = []
+    if directory.is_dir():
+        for path in sorted(item for item in directory.rglob("*") if item.is_file()):
+            stat = path.stat()
+            files.append(
+                {
+                    "path": str(path.relative_to(directory)).replace("\\", "/"),
+                    "logical_bytes": stat.st_size,
+                    "allocated_bytes": getattr(stat, "st_blocks", 0) * 512,
+                }
+            )
+    return {
+        "files": files,
+        "logical_bytes": sum(item["logical_bytes"] for item in files),
+        "allocated_bytes": sum(item["allocated_bytes"] for item in files),
+    }
+
+
 def percentile(values: list[int], fraction: float) -> int:
     if not values:
         return 0
@@ -508,6 +527,7 @@ def execute(args: argparse.Namespace) -> None:
     output = args.output.resolve()
     output.mkdir(parents=True, exist_ok=False)
     redis_port, admin_port, hc2_port = free_port(), free_port(), free_port()
+    client_port, cluster_port = free_port(), free_port()
     helper: Path | None = None
     helper_sha256: str | None = None
     pki = output / "hc2-pki"
@@ -531,6 +551,22 @@ def execute(args: argparse.Namespace) -> None:
             "HYDRACACHE_DIAGNOSTIC_RESET_ENABLED": "true",
         }
     )
+    durable_store: Path | None = None
+    if job["case_id"] == "M7-persistence" and job["dimensions"].get("persistence") == "supported":
+        durable_store = output / "durable-store"
+        environment.update(
+            {
+                "HYDRACACHE_ROLE": "member",
+                "HYDRACACHE_NODE_ID": "memory-m7-member-0",
+                "HYDRACACHE_LISTEN_ADDR": f"127.0.0.1:{client_port}",
+                "HYDRACACHE_CLUSTER_ADDR": f"127.0.0.1:{cluster_port}",
+                "HYDRACACHE_CLUSTER_ADVERTISE_ADDR": f"127.0.0.1:{cluster_port}",
+                "HYDRACACHE_CLUSTER_START": "bootstrap",
+                "HYDRACACHE_SEEDS": f"127.0.0.1:{cluster_port}",
+                "HYDRACACHE_STORAGE_DIR": str(durable_store),
+                "HYDRACACHE_DIAGNOSTIC_RESET_ENABLED": "false",
+            }
+        )
     if job["case_id"] == "M6-connections":
         if job["dimensions"].get("tls") is not True:
             raise ExecutionError("HC/2 is contractually mandatory-mTLS; plaintext M6 cells are invalid")
@@ -561,6 +597,7 @@ def execute(args: argparse.Namespace) -> None:
     checkpoints: list[dict[str, Any]] = []
     hc2_observations: list[dict[str, Any]] = []
     hc2_helper_receipts: list[dict[str, Any]] = []
+    persistence_observations: list[dict[str, Any]] = []
     fleet = Hc2Fleet(helper, pki, hc2_port, output, args.rehearsal) if helper else None
     completed = False
     try:
@@ -629,6 +666,10 @@ def execute(args: argparse.Namespace) -> None:
                     "performance": workload.performance(monotonic_ns),
                 }
                 checkpoints.append(checkpoint)
+                if durable_store:
+                    persistence_observations.append(
+                        {"phase": phase, **directory_snapshot(durable_store)}
+                    )
                 with timeline_path.open("a", encoding="utf-8", newline="\n") as timeline:
                     timeline.write(json.dumps({"phase": phase, "sequence": sequence, "monotonic_ns": checkpoint["monotonic_ns"]}, sort_keys=True) + "\n")
             if job["case_id"] == "M5-tags":
@@ -661,6 +702,24 @@ def execute(args: argparse.Namespace) -> None:
                         "observations": hc2_observations,
                     },
                 )
+            if durable_store:
+                ready = http_json(admin_port, "/readyz") or {}
+                if ready.get("storage_open") is not True:
+                    raise ExecutionError("M7 supported mode did not report storage_open=true")
+                if not (durable_store / "raft-log").is_dir():
+                    raise ExecutionError("M7 supported mode did not create the sled raft-log directory")
+                write_json(
+                    output / "m7-persistence-receipt.json",
+                    {
+                        "schema_version": 1,
+                        "release": "0.71",
+                        "job_id": job["job_id"],
+                        "backend": "member-sled-raft-log",
+                        "storage_open": True,
+                        "storage_root": "durable-store",
+                        "observations": persistence_observations,
+                    },
+                )
         provider_command(adapter, "stop", "--state", str(provider_state))
         provider_command(
             adapter,
@@ -690,6 +749,15 @@ def execute(args: argparse.Namespace) -> None:
                     f"HYDRACACHE_HC2_CLUSTER_ID={environment['HYDRACACHE_HC2_CLUSTER_ID']}",
                     "HYDRACACHE_TLS_ENABLED=true",
                     f"HC2_HELPER_SHA256={helper_sha256}",
+                ]
+            )
+        if durable_store:
+            exact_command.extend(
+                [
+                    "HYDRACACHE_ROLE=member",
+                    f"HYDRACACHE_CLUSTER_ADDR={environment['HYDRACACHE_CLUSTER_ADDR']}",
+                    f"HYDRACACHE_SEEDS={environment['HYDRACACHE_SEEDS']}",
+                    "HYDRACACHE_STORAGE_DIR=durable-store",
                 ]
             )
         exact_command.append(str(binary))
