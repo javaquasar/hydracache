@@ -202,7 +202,7 @@ jobs:
           python scripts/perf/memory_case_executor_071_test.py
           python scripts/perf/memory_historical_mirror_071_test.py
           for mode in off production profile; do
-            cargo run -p hydracache-loadgen --locked -- memory-efficiency --provider system --instrumentation-mode "$mode" --output-dir "target/memory-evidence/0.71/profiles/ci-smoke/$mode"
+            cargo run -p hydracache-loadgen --bin hydracache-loadgen --locked -- memory-efficiency --provider system --instrumentation-mode "$mode" --output-dir "target/memory-evidence/0.71/profiles/ci-smoke/$mode"
           done
 
       - name: Prove bounded campaign resume and finalization
