@@ -1,0 +1,55 @@
+schema_version = 1
+release = "0.71"
+baseline_tag = "v0.70.0"
+baseline_commit = "75719b0bf5de2250cf4eb16a30073dd7429538e3"
+candidate_ref = "HEAD"
+default_policy = "runtime_only_no_wire_or_durable_change"
+public_api_gate = "cargo-semver-checks-plus-downstream-witnesses"
+backup_required = true
+unknown_future_policy = "refuse-before-mutation"
+
+[[row]]
+id = "baseline-create-candidate-read-mutate-restart"
+source_binary = "v0.70.0"
+target_binary = "candidate"
+durable_format = "all-supported"
+wire_generations = ["HC/1", "HC/2"]
+profiles = ["default", "durable-value-store"]
+expected = "success"
+
+[[row]]
+id = "candidate-create-candidate-restart"
+source_binary = "candidate"
+target_binary = "candidate"
+durable_format = "all-supported"
+wire_generations = ["HC/1", "HC/2"]
+profiles = ["default", "durable-value-store"]
+expected = "success"
+
+[[row]]
+id = "candidate-to-baseline-compatible-rollback"
+source_binary = "candidate"
+target_binary = "v0.70.0"
+durable_format = "unchanged-by-runtime-only-proposal"
+wire_generations = ["HC/1", "HC/2"]
+profiles = ["default", "durable-value-store"]
+expected = "success-or-refuse-before-mutation-and-restore-v0.70-backup"
+
+[[row]]
+id = "rolling-baseline-candidate-all-role-orders"
+source_binary = "mixed-v0.70.0-candidate"
+target_binary = "candidate"
+durable_format = "all-supported"
+wire_generations = ["HC/1", "HC/2"]
+profiles = ["default", "durable-value-store"]
+expected = "success"
+
+[[row]]
+id = "snapshot-empty-max-record-crash-upgrade"
+source_binary = "v0.70.0"
+target_binary = "candidate"
+durable_format = "snapshot-checkpoint-and-value-store"
+wire_generations = ["HC/1", "HC/2"]
+profiles = ["empty", "maximum-record", "crash-during-upgrade"]
+expected = "success-or-refuse-before-mutation"
+

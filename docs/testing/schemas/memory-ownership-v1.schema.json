@@ -1,0 +1,60 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://hydracache.dev/schemas/memory-ownership-v1.schema.json",
+  "title": "HydraCache reviewed memory ownership registry",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "release", "discovery_scope", "owner"],
+  "properties": {
+    "schema_version": {"const": 1},
+    "release": {"const": "0.71"},
+    "discovery_scope": {"const": "publishable-workspace-production-rust-v1"},
+    "owner": {"type": "array", "items": {"$ref": "#/$defs/owner"}},
+    "exemption": {"type": "array", "items": {"$ref": "#/$defs/exemption"}}
+  },
+  "$defs": {
+    "owner": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["owner_id", "subsystem", "owning_type", "source", "symbol", "allocation_sites", "keying_dimension", "retained_unit", "creation_transition", "terminal_transitions", "cleanup", "count_bound", "byte_bound", "age_bound", "overflow_behavior", "snapshot_fields", "security_classification", "focused_tests", "slow_evidence_ids", "disposition", "disposition_reason"],
+      "properties": {
+        "owner_id": {"type": "string", "pattern": "^owner-[0-9a-f]{16}$"},
+        "subsystem": {"type": "string", "minLength": 1},
+        "owning_type": {"type": "string", "minLength": 1},
+        "source": {"type": "string", "pattern": "^crates/.+/src/.+\\.rs$"},
+        "symbol": {"type": "string", "minLength": 1},
+        "allocation_sites": {"type": "array", "items": {"type": "string"}},
+        "keying_dimension": {"type": "string", "minLength": 1},
+        "retained_unit": {"type": "string", "minLength": 1},
+        "creation_transition": {"type": "string", "minLength": 1},
+        "terminal_transitions": {"type": "array", "minItems": 1, "items": {"type": "string"}},
+        "cleanup": {"type": "string", "minLength": 1},
+        "count_bound": {"type": "string"},
+        "byte_bound": {"type": "string"},
+        "age_bound": {"type": "string"},
+        "overflow_behavior": {"type": "string"},
+        "snapshot_fields": {"type": "array", "items": {"type": "string"}},
+        "security_classification": {"type": "string", "minLength": 1},
+        "focused_tests": {"type": "array", "minItems": 1, "items": {"type": "string"}},
+        "slow_evidence_ids": {"type": "array", "items": {"type": "string"}},
+        "disposition": {"enum": ["bounded", "ephemeral", "external_allocator", "file_backed", "not_applicable"]},
+        "disposition_reason": {"type": "string", "minLength": 1}
+      }
+    },
+    "exemption": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["source", "symbol", "candidate_kind", "reviewer", "reason", "expires_after_release", "runtime_evidence", "terminal_transition_test"],
+      "properties": {
+        "source": {"type": "string"},
+        "symbol": {"type": "string"},
+        "candidate_kind": {"type": "string"},
+        "reviewer": {"type": "string", "minLength": 1},
+        "reason": {"type": "string", "minLength": 1},
+        "expires_after_release": {"type": "string", "minLength": 1},
+        "runtime_evidence": {"type": "array", "minItems": 1, "items": {"type": "string"}},
+        "terminal_transition_test": {"type": "string", "minLength": 1}
+      }
+    }
+  }
+}

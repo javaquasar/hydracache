@@ -1,0 +1,51 @@
+schema_version = 1
+release = "0.71"
+portable_default = "system"
+explicit_allocator_features = ["allocator-system", "allocator-jemalloc", "allocator-mimalloc"]
+explicit_selection_feature = "allocator-explicit"
+mutual_exclusion_required = true
+
+[[allocator]]
+id = "system"
+default = true
+targets = ["x86_64-unknown-linux-gnu", "aarch64-unknown-linux-gnu", "x86_64-pc-windows-msvc", "aarch64-apple-darwin"]
+build_feature = "allocator-system"
+crate_version = "not-applicable(system allocator)"
+native_version = "captured-by-S7-libc-runtime"
+license = "platform-runtime"
+statistics_api = "mallinfo2-or-unavailable(reason)"
+profiling_provider = "system-allocator-profiler-v1"
+purge_api = "unavailable(portable Rust has no system-allocator purge contract)"
+fields = ["allocated", "resident", "peak_resident", "page_faults"]
+unavailable_fields = ["arenas: unavailable(not portable)", "dirty_pages: unavailable(not portable)", "muzzy_pages: unavailable(not portable)", "thread_caches: unavailable(not portable)"]
+profile_adapter = "scripts/perf/memory-providers/system.py"
+
+[[allocator]]
+id = "jemalloc"
+default = false
+targets = ["x86_64-unknown-linux-gnu", "aarch64-unknown-linux-gnu"]
+build_feature = "allocator-jemalloc"
+crate_version = "tikv-jemallocator@0.6"
+native_version = "bound-by-crate-build"
+license = "MIT"
+statistics_api = "mallctl"
+profiling_provider = "jemalloc-prof-v1"
+purge_api = "mallctl arena purge with reviewed rate limit"
+fields = ["allocated", "active", "mapped", "resident", "retained", "arenas", "dirty_pages", "muzzy_pages", "thread_caches", "size_classes"]
+unavailable_fields = []
+profile_adapter = "scripts/perf/memory-providers/jemalloc.py"
+
+[[allocator]]
+id = "mimalloc"
+default = false
+targets = ["x86_64-unknown-linux-gnu", "aarch64-unknown-linux-gnu", "x86_64-pc-windows-msvc"]
+build_feature = "allocator-mimalloc"
+crate_version = "mimalloc@0.1"
+native_version = "bound-by-crate-build"
+license = "MIT"
+statistics_api = "mi_stats_merge/mi_stats_print"
+profiling_provider = "mimalloc-stats-v1"
+purge_api = "mi_collect with reviewed rate limit"
+fields = ["allocated", "committed", "reserved", "segments", "pages", "page_faults"]
+unavailable_fields = ["dirty_pages: unavailable(not exposed)", "muzzy_pages: unavailable(jemalloc-specific)", "arenas: unavailable(not exposed as comparable arenas)"]
+profile_adapter = "scripts/perf/memory-providers/mimalloc.py"

@@ -16,6 +16,7 @@
       "classes": {
         "core": [
           "ci-topology",
+          "memory-contracts-071",
           "memory-regression-fast",
           "docs",
           "rust",
@@ -59,7 +60,7 @@
         "publish": []
       },
       "dependencies": {
-        "release-071-ci-admission": ["ci-topology", "memory-regression-fast", "docs", "rust", "msrv"],
+        "release-071-ci-admission": ["ci-topology", "memory-contracts-071", "memory-regression-fast", "docs", "rust", "msrv"],
         "release-070-admission": ["memory-regression-fast", "retention-soak-070"],
         "migration-conformance-admission-069": ["migration-conformance-fast-evidence-069", "migration-conformance-069", "migration-conformance-postgres-069"],
         "hc2-linux-required": ["docs", "rust", "migration-conformance-069", "migration-conformance-postgres-069", "migration-conformance-admission-069", "msrv"],

@@ -97,6 +97,7 @@
 //! # Ok(())
 //! # }
 //! ```
+
 //!
 //! Use [`CacheKeyBuilder`] and [`TagSet`] when the key and invalidation tags are
 //! generated from the same domain metadata:
@@ -462,6 +463,43 @@
 //! # Ok(())
 //! # }
 //! ```
+
+#[cfg(all(
+    feature = "allocator-explicit",
+    not(any(
+        feature = "allocator-system",
+        feature = "allocator-jemalloc",
+        feature = "allocator-mimalloc"
+    ))
+))]
+compile_error!("allocator-explicit requires exactly one allocator-system, allocator-jemalloc, or allocator-mimalloc feature");
+
+#[cfg(any(
+    all(feature = "allocator-system", feature = "allocator-jemalloc"),
+    all(feature = "allocator-system", feature = "allocator-mimalloc"),
+    all(feature = "allocator-jemalloc", feature = "allocator-mimalloc")
+))]
+compile_error!("HydraCache allocator features are mutually exclusive");
+
+#[cfg(all(
+    feature = "allocator-jemalloc",
+    not(any(target_os = "linux", target_os = "macos"))
+))]
+compile_error!("allocator-jemalloc is supported only on reviewed Linux and macOS targets");
+
+#[cfg(all(
+    feature = "allocator-jemalloc",
+    any(target_os = "linux", target_os = "macos")
+))]
+#[global_allocator]
+static HYDRACACHE_JEMALLOC: tikv_jemallocator::Jemalloc = tikv_jemallocator::Jemalloc;
+
+#[cfg(all(feature = "allocator-mimalloc", target_arch = "wasm32"))]
+compile_error!("allocator-mimalloc is not supported on wasm32 targets");
+
+#[cfg(all(feature = "allocator-mimalloc", not(target_arch = "wasm32")))]
+#[global_allocator]
+static HYDRACACHE_MIMALLOC: mimalloc::MiMalloc = mimalloc::MiMalloc;
 
 extern crate self as hydracache;
 

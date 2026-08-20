@@ -155,11 +155,52 @@ jobs:
           if-no-files-found: error
           retention-days: 30
 
+  memory-contracts-071:
+    name: 0.71 Memory Contracts
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Generate and close the ownership inventory
+        run: |
+          cargo run -p xtask --locked -- memory-owner-inventory --release 0.71
+          cargo run -p xtask --locked -- memory-ownership-check --release 0.71
+
+      - name: Validate decision, statistics, allocator, compatibility, and release contracts
+        run: |
+          cargo run -p xtask --locked -- memory-decision-check --release 0.71
+          cargo run -p xtask --locked -- memory-statistics-check --release 0.71
+          cargo run -p xtask --locked -- allocator-capability-check --release 0.71
+          cargo run -p xtask --locked -- memory-compat-check --release 0.71
+          cargo run -p xtask --locked -- memory-release-policy-check --release 0.71
+
+      - name: Run 0.71 contract canaries
+        run: |
+          cargo test -p xtask --test memory_ownership_071 --locked
+          cargo test -p xtask --test memory_contracts_071 --locked
+          cargo test -p xtask --test memory_statistics_071 --locked
+
+      - name: Retain ownership inventory
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: "memory-ownership-071-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}"
+          path: target/memory-evidence/0.71/ownership-inventory.json
+          if-no-files-found: error
+          retention-days: 30
+
   release-071-ci-admission:
     name: Release 0.71 CI Admission
     if: always() && startsWith(github.ref, 'refs/tags/v0.71.')
     needs:
       - ci-topology
+      - memory-contracts-071
       - memory-regression-fast
       - docs
       - rust
@@ -171,6 +212,7 @@ jobs:
       - name: Require the designated exact-tag core result
         env:
           TOPOLOGY_RESULT: ${{ needs.ci-topology.result }}
+          CONTRACTS_RESULT: ${{ needs.memory-contracts-071.result }}
           MEMORY_RESULT: ${{ needs.memory-regression-fast.result }}
           DOCS_RESULT: ${{ needs.docs.result }}
           RUST_RESULT: ${{ needs.rust.result }}
@@ -178,7 +220,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          for result in "$TOPOLOGY_RESULT" "$MEMORY_RESULT" "$DOCS_RESULT" "$RUST_RESULT" "$MSRV_RESULT"; do
+          for result in "$TOPOLOGY_RESULT" "$CONTRACTS_RESULT" "$MEMORY_RESULT" "$DOCS_RESULT" "$RUST_RESULT" "$MSRV_RESULT"; do
             if [[ "$result" != "success" ]]; then
               echo "Release 0.71 core admission refused result=$result" >&2
               exit 1

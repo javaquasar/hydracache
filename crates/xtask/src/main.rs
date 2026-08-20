@@ -53,6 +53,20 @@ fn main() -> Result<(), Box<dyn Error>> {
         Some("legacy-client-check") => xtask::migration_conformance::run_legacy(args.collect())?,
         Some("miri-check") => xtask::miri_check::run(args.collect())?,
         Some("migration-conformance-check") => xtask::migration_conformance::run(args.collect())?,
+        Some("memory-owner-inventory") => xtask::memory_ownership::run_inventory(args.collect())?,
+        Some("memory-ownership-check") => xtask::memory_ownership::run_check(args.collect())?,
+        Some("memory-decision-check") => xtask::memory_contracts::run_decisions(args.collect())?,
+        Some("memory-statistics-check") => xtask::memory_contracts::run_statistics(args.collect())?,
+        Some("allocator-capability-check") => {
+            xtask::memory_contracts::run_allocator(args.collect())?
+        }
+        Some("perf-memory-preflight") => {
+            xtask::memory_contracts::run_host_preflight(args.collect())?
+        }
+        Some("memory-compat-check") => xtask::memory_contracts::run_compat(args.collect())?,
+        Some("memory-release-policy-check") => {
+            xtask::memory_contracts::run_release_policy(args.collect())?
+        }
         Some("postgres-conformance-check") => {
             xtask::migration_conformance::run_postgres(args.collect())?
         }
@@ -114,6 +128,14 @@ fn print_usage() {
          cargo xtask legacy-client-check --matrix hc1  # build shipped HC/1 libraries into consumers and run them against the current server\n  \
          cargo xtask miri-check  # run pinned Miri-safe snapshot proofs (skip loud when unavailable)\n  \
          cargo xtask migration-conformance-check <--structural|--upstream>  # validate 0.69 manifests or resolve selectors at pinned upstream commits\n  \
+         cargo xtask memory-owner-inventory --release 0.71  # generate conservative source ownership candidates\n  \
+         cargo xtask memory-ownership-check --release 0.71  # require reviewed closure for every ownership candidate\n  \
+         cargo xtask memory-decision-check --release 0.71  # validate immutable D0-D4 proposal transitions\n  \
+         cargo xtask memory-statistics-check --release 0.71  # validate the preregistered numerical decision contract\n  \
+         cargo xtask allocator-capability-check --release 0.71  # validate allocator capability and portability claims\n  \
+         cargo xtask perf-memory-preflight --release 0.71 --profile memory-reference-071-v1  # fingerprint or block the numerical evidence host\n  \
+         cargo xtask memory-compat-check --release 0.71  # validate the 0.70/0.71 runtime and durable compatibility matrix\n  \
+         cargo xtask memory-release-policy-check --release 0.71  # validate mandatory/no-win/deferred release dispositions\n  \
          cargo xtask postgres-conformance-check --mode <happy|canary>  # execute the real PostgreSQL differential or expected-red sentinel\n  \
          cargo xtask mutants       # validate the Raft mutation-testing baseline, optionally run cargo-mutants\n  \
          cargo xtask perf-runner-preflight --release 0.67 --profile reference-v1  # reject an unstable reference runner before build/measurement\n  \

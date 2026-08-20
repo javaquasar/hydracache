@@ -1,0 +1,43 @@
+schema_version = 1
+release = "0.71"
+claim_policy = "accepted-D4-evidence-only"
+zero_optional_wins_allowed = true
+negative_result_required_when_no_candidate_qualifies = true
+deferred_safety_defects_allowed = false
+
+mandatory_foundation = [
+  "S1-ownership-closure",
+  "corrected-baseline-S4-S5-S7",
+  "W1-coherent-production-counters",
+  "W2a-retained-byte-accounting",
+  "confirmed-unbounded-owner-fixes",
+  "per-pr-structural-memory-gate",
+  "S8-compatibility",
+  "S9-ci-reliability",
+  "W13-governance"
+]
+
+[[optional_work]]
+id = "W2b"
+disposition = "pending-evidence"
+reason = "Admission-policy work requires a confirmed fail-open surface or D2 authorization."
+next_evidence = "D1 classification and S1 owner"
+
+[[optional_work]]
+id = "W5-W7"
+disposition = "pending-evidence"
+reason = "Representation and copy changes require an S2 stack and D2 authorization."
+next_evidence = "S2 phase/stack attribution"
+
+[[optional_work]]
+id = "W8"
+disposition = "pending-evidence"
+reason = "Allocator work requires the S6 capability matrix and same-host W0 comparison."
+next_evidence = "W0 allocator reuse diagnosis"
+
+[[optional_work]]
+id = "W9-W11"
+disposition = "pending-evidence"
+reason = "Profile, connection, and persistence changes remain evidence-conditional."
+next_evidence = "D1 classification and D2 review"
+

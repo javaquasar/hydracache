@@ -1,0 +1,59 @@
+schema_version = 1
+release = "0.71"
+contract_id = "memory-statistics-071-v1"
+baseline_only_derivation = true
+candidate_may_amend = false
+process_model = "independently-started"
+pairing_order = ["B1", "C", "C", "B1"]
+b0_cohort = "separate-external-regression"
+sample_cadence_seconds = 5
+warmup_seconds = 120
+settle_seconds = 120
+idle_seconds = 300
+minimum_repetitions = 5
+confidence_level = 0.95
+multiple_comparison = "holm-bonferroni"
+missing_row_policy = "fail-preflight-no-interpolation"
+run_rejection_policy = "identity-mismatch,telemetry-gap,runner-instability,non-zero-workload-error-only"
+slope_estimator = "theil-sen-v1"
+paired_estimator = "hodges-lehmann-v1"
+bootstrap_method = "moving-block-v1"
+bootstrap_seed = 710071
+bootstrap_iterations = 10000
+bootstrap_block_samples = 12
+numeric_precision_decimals = 6
+host_eligibility = "dedicated-s7-only"
+
+[[metric]]
+id = "steady_rss_slope_bytes_per_second"
+kind = "primary"
+absolute_minimum_effect = 1048576
+relative_minimum_effect = 0.05
+direction = "lower"
+
+[[metric]]
+id = "bytes_per_logical_owner"
+kind = "primary"
+absolute_minimum_effect = 16
+relative_minimum_effect = 0.03
+direction = "lower"
+
+[[metric]]
+id = "unattributed_retained_bytes"
+kind = "diagnostic"
+absolute_minimum_effect = 0
+relative_minimum_effect = 0.0
+direction = "report-only"
+
+[[regression_budget]]
+metric = "throughput_ops_per_second"
+maximum_relative_regression = 0.02
+
+[[regression_budget]]
+metric = "cpu_seconds_per_operation"
+maximum_relative_regression = 0.03
+
+[[regression_budget]]
+metric = "p99_latency_seconds"
+maximum_relative_regression = 0.03
+
