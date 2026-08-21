@@ -27,6 +27,11 @@ pub struct RetainedByteEstimate {
 
 impl RetainedByteEstimate {
     /// Estimate retained bytes from lengths already known by the mutation.
+    ///
+    /// The cache entry and cache backend are not available on `wasm32`, so the
+    /// entry-layout estimate is exposed only on targets that can construct an
+    /// actual `CacheEntry`.
+    #[cfg(not(target_arch = "wasm32"))]
     pub fn for_entry(
         key: &str,
         value_bytes: usize,
@@ -352,6 +357,7 @@ pub(crate) struct MemoryCaptureInput {
 }
 
 impl EntryMemoryDelta {
+    #[cfg(not(target_arch = "wasm32"))]
     pub(crate) fn new(
         key: &str,
         value_bytes: usize,
