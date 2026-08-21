@@ -741,6 +741,30 @@ terminates the complete child process tree at the reviewed deadline and emits on
 automatic retries are forbidden. A manual rerun preserves the failed attempt and receives a new
 attempt id.
 
+**Trusted workflow and candidate source pinning.** Dedicated-host campaigns do not require the
+candidate to be merged into `main` before measurement. The protected manual workflow definition is
+dispatched from the repository's default `main` branch, while a required `source_sha` input selects
+the candidate under test. `source_sha` must be a full 40-character commit id that exists in the
+canonical remote; a branch or tag name is only a lookup aid and is never an evidence identity. The
+workflow records its own `workflow_sha` separately from `source_sha`/`tested_sha` and uses separate
+checkouts for the trusted harness and candidate source. Harness scripts execute from the reviewed
+`workflow_sha`; candidate compilation and tests execute from a detached checkout of `source_sha`.
+
+The first admitted attempt atomically binds `campaign_id`, `workflow_sha`, `source_sha`, scenario
+digest, baseline identities and host lease. Every later M0-M10 dispatch for that campaign must match
+all frozen identities before build or workload execution. Moving, deleting or force-updating a
+feature branch cannot alter an admitted campaign, while dispatching the same branch name after it
+moves must fail the identity check. Any candidate fix receives a new `source_sha`, candidate receipt
+and campaign id; rejected and superseded attempts remain immutable and non-promotable.
+
+Environment approval displays both SHAs and the estimated host time. The historical mirror is
+mounted read-only, candidate processes receive no storage or GitHub credentials, and writes are
+limited to the attempt-specific campaign directory. The designated release tag must point to the
+exact admitted `source_sha`. A squash, rebase, conflict resolution or integration change that
+produces a different release tree invalidates D4 evidence instead of inheriting it; merge into
+`main` may occur after the campaign only when the measured candidate remains the tagged release
+commit and an ancestor of the resulting history.
+
 Define artifact size/retention budgets by lane. Upload compact summaries plus immutable raw
 evidence needed for review; reject missing artifacts and expire non-promotable hosted diagnostics
 sooner than ship evidence. A preflight estimates runner-hours for the selected campaign and
@@ -825,8 +849,9 @@ optimization, and do not combine an allocator/default change with its statistics
 The following sequence is mandatory:
 
 1. **CI safety commit:** implement S9 topology validation, explicit timeouts, step splitting,
-   heartbeat/watchdog and duplicate-trigger controls. Run the sleeping/process-tree canaries before
-   enabling any new workflow.
+   heartbeat/watchdog, duplicate-trigger controls and the trusted-`main`/pinned-`source_sha`
+   campaign boundary. Run the sleeping/process-tree and mixed-SHA/moved-ref canaries before enabling
+   any new workflow.
 2. **Contract commit:** add S1/S3/S4/S6/S7/S8/S10 schemas, parsers and intentionally red incomplete
    registries. Parser/schema fixture tests land before production instrumentation.
 3. **Observability commit:** implement S1 source inventory, W1/S5 coherent production snapshots and
@@ -894,6 +919,9 @@ When product crates change, replace/add the affected packages in those two comma
 focused tests. At each D0-D4 milestone run `cargo xtask verify`. Before merge, candidate freeze and
 tagging, run the full W13 DoD block. Long/dedicated cases execute only through their registered
 workflow; a local ad-hoc run is diagnostic and cannot be copied into the ship receipt directory.
+The registered workflow must be dispatched from `main` with a full immutable `source_sha`; all rows
+under one `campaign_id` must retain the same `workflow_sha` and `source_sha`. A fix is validated as a
+new campaign, never by silently continuing the old campaign from a moved branch.
 
 ## W0. Freeze a causal memory baseline before changing code
 
@@ -1394,6 +1422,8 @@ cargo xtask verify
 | Host drift invalidates comparison | Governor, THP, NUMA, swap or competing load changes mid-run | S7 canonical pre/post fingerprint and serialized lease |
 | Internal compaction breaks rollback | Old binary misreads new durable state or mixed cluster diverges | S8 real-binary upgrade, fail-loud downgrade and rolling-version matrix |
 | CI hangs or duplicates release work | Six-hour default timeout or main/tag duplication wastes runners and produces mixed evidence | S9 bounded steps, watchdog, topology graph and one designated admission |
+| Mutable feature ref or changed harness contaminates a campaign | M0-M10 rows use different code, or trusted orchestration changes between attempts | dispatch the protected workflow from `main`; freeze separate `workflow_sha` and full `source_sha`; fail before build on any campaign mismatch; new SHA means a new campaign |
+| Post-campaign merge changes the measured candidate | Squash, rebase or conflict resolution produces release bits that were never measured | designate the exact admitted `source_sha` as the release tag; require it to remain in resulting history; rerun D4 for any different release tree |
 | Scope forces speculative rewrite | Release waits for or accepts an unproven optimization | S10 mandatory foundation plus evidence-based optional dispositions |
 | Buffer pooling leaks data | Next tenant observes stale bytes | zeroization/ownership tests and cross-tenant canary |
 | Active expiry pauses requests | Tail latency spikes during cleanup | time/count budget, fairness, p99 gate and backlog admission |

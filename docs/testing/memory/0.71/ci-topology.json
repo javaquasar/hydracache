@@ -160,9 +160,9 @@
     },
     {
       "path": ".github/workflows/memory-reference-071.yml",
-      "purpose": "Serialized protected-host execution of one preregistered 0.71 memory row with resumable mirrored evidence",
+      "purpose": "Serialized protected-host execution from a trusted main harness for one immutable source_sha and preregistered 0.71 memory row",
       "triggers": ["workflow_dispatch"],
-      "concurrency_markers": ["github.sha", "inputs.campaign_id"],
+      "concurrency_markers": ["inputs.source_sha", "inputs.campaign_id"],
       "classes": {
         "core": [],
         "release-only": [],

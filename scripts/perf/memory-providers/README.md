@@ -50,17 +50,32 @@ frozen cohort SHAs, performs locked release builds, retains immutable binaries
 and manifests, then removes the temporary sources and Cargo targets:
 
 ```text
-python scripts/perf/memory_campaign_071.py --output-root /var/lib/hydracache-memory/campaigns plan --campaign-id d0-001 --case M0-cold --cohort B0-release --cohort B1-instrumented
+python scripts/perf/memory_campaign_071.py --output-root /var/lib/hydracache-memory/campaigns plan \
+  --campaign-id d0-001 --case M0-cold --campaign-role baseline \
+  --workflow-sha <trusted-main-sha> --source-sha <frozen-b1-sha> \
+  --cohort B0-release --cohort B1-instrumented
 python scripts/perf/memory_campaign_071.py --output-root /var/lib/hydracache-memory/campaigns prepare --campaign-id d0-001 --build-root /var/lib/hydracache-memory/build
 ```
 
-The protected workflow checks out the exact ref selected for the dispatch and
-records its `github.sha` as the immutable controller SHA. The controller and
-HC/2 helper therefore come from that exact commit; they do not silently fall
-back to the default branch. Measured daemon cohorts remain separate: `B0` and
-`B1` are built from the exact preregistered SHAs in
-`baseline-identities.toml`, and a later `C-candidate` uses its separately
-frozen candidate SHA.
+The protected workflow must be dispatched from `main`. It records that exact
+`github.sha` as `workflow_sha`, disables persisted checkout credentials, and
+resolves the required full `source_sha` from the canonical repository without
+executing candidate automation. The trusted controller and HC/2 helper come from
+`workflow_sha`; the candidate daemon is built in a detached worktree at
+`source_sha`. Measured cohorts remain separate: baseline mode builds the
+preregistered B0/B1 identities, while candidate mode builds the frozen B1/C
+pair. The immutable campaign receipt rejects a moved source ref, a different
+workflow SHA, a role change, or a different case before build or execution.
+
+Dispatch the workflow explicitly from the trusted branch; do not select the
+candidate branch as the workflow ref:
+
+```text
+gh workflow run memory-reference-071.yml --ref main \
+  -f campaign_id=<immutable-row-id> -f source_sha=<candidate-sha> \
+  -f campaign_role=candidate -f case_id=M0-cold \
+  -f lease_owner=<operator> -f lease_end=<RFC3339>
+```
 
 Each admitted evidence job starts a fresh retained daemon binary, drives its
 RESP-compatible memory phases, invokes the selected provider at every phase,
