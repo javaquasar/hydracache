@@ -15,6 +15,7 @@ import itertools
 import json
 import os
 import platform
+import re
 import shutil
 import subprocess
 import sys
@@ -34,6 +35,8 @@ IDENTITIES_RELATIVE = Path("docs/testing/memory/0.71/baseline-identities.toml")
 PROFILE_RELATIVE = Path("docs/testing/perf-host-profiles/memory-reference-071-v1.json")
 DEFAULT_OUTPUT = Path("target/memory-evidence/0.71/campaigns")
 BUILD_TIMEOUT_SECONDS = 3600
+FULL_SHA = re.compile(r"^[0-9a-f]{40}$")
+CAMPAIGN_ROLES = {"baseline", "candidate"}
 
 
 class CampaignError(RuntimeError):
@@ -223,6 +226,9 @@ def build_plan(
     cohorts: list[str],
     repetition_override: int | None,
     rehearsal: bool,
+    workflow_sha: str | None = None,
+    source_sha: str | None = None,
+    campaign_role: str = "baseline",
 ) -> dict[str, Any]:
     scenario_path = root / SCENARIO_RELATIVE
     scenario = tomllib.loads(scenario_path.read_text(encoding="utf-8"))
@@ -230,10 +236,30 @@ def build_plan(
     selected = selected_cases(scenario, cases)
     if "B0-release" in cohorts and any(case["id"] != "M0-cold" for case in selected):
         raise CampaignError("B0-release is admitted only for the M0 D0 external-signal cohort")
+    if campaign_role not in CAMPAIGN_ROLES:
+        raise CampaignError(f"unsupported campaign role: {campaign_role}")
+    if not rehearsal:
+        cohort_set = set(cohorts)
+        if campaign_role == "candidate" and cohort_set != {"B1-instrumented", "C-candidate"}:
+            raise CampaignError("candidate campaign requires exactly the frozen B1/C cohorts")
+        if campaign_role == "baseline" and not cohort_set.issubset({"B0-release", "B1-instrumented"}):
+            raise CampaignError("baseline campaign admits only the frozen B0/B1 cohorts")
+    resolved_workflow_sha = resolve_commit(root, workflow_sha or git(root, "rev-parse", "HEAD"), "workflow")
+    if source_sha is None:
+        source_sha = git(root, "rev-parse", "HEAD") if rehearsal else str(
+            identities["b1_instrumented"]["source_sha"]
+        )
+    resolved_source_sha = resolve_commit(root, source_sha, "candidate source")
+    if (
+        not rehearsal
+        and campaign_role == "baseline"
+        and resolved_source_sha != str(identities["b1_instrumented"]["source_sha"])
+    ):
+        raise CampaignError("baseline campaign source_sha must equal the frozen B1-instrumented SHA")
     source_shas = {
         "B0-release": str(identities["b0_release"]["source_sha"]),
         "B1-instrumented": str(identities["b1_instrumented"]["source_sha"]),
-        "C-candidate": git(root, "rev-parse", "HEAD"),
+        "C-candidate": resolved_source_sha,
     }
     jobs: list[dict[str, Any]] = []
     row_caps: dict[str, int] = {}
@@ -266,7 +292,11 @@ def build_plan(
         "created_at": utc_now(),
         "cohorts": cohorts,
         "source_shas": {cohort: source_shas[cohort] for cohort in cohorts},
-        "controller_sha": git(root, "rev-parse", "HEAD"),
+        "workflow_sha": resolved_workflow_sha,
+        "source_sha": resolved_source_sha,
+        "campaign_role": campaign_role,
+        "controller_sha": resolved_workflow_sha,
+        "case_ids": sorted({str(case["id"]) for case in selected}),
         "row_time_caps_seconds": row_caps,
         "admitted_host_cap_seconds": sum(row_caps.values()),
         "job_count": len(jobs),
@@ -278,6 +308,92 @@ def git(root: Path, *arguments: str) -> str:
     return subprocess.run(
         ["git", *arguments], cwd=root, check=True, capture_output=True, text=True
     ).stdout.strip()
+
+
+def require_full_sha(value: str, label: str) -> str:
+    if not FULL_SHA.fullmatch(value):
+        raise CampaignError(f"{label} must be a lowercase 40-character commit SHA")
+    return value
+
+
+def resolve_commit(root: Path, value: str, label: str) -> str:
+    requested = require_full_sha(value, label)
+    try:
+        resolved = git(root, "rev-parse", f"{requested}^{{commit}}")
+    except subprocess.CalledProcessError as error:
+        raise CampaignError(f"{label} commit is unavailable in the canonical checkout: {requested}") from error
+    if resolved != requested:
+        raise CampaignError(f"{label} did not resolve to the exact requested commit")
+    return resolved
+
+
+def campaign_identity(plan: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "schema_version": SCHEMA_VERSION,
+        "release": RELEASE,
+        "campaign_id": plan["campaign_id"],
+        "workflow_sha": plan["workflow_sha"],
+        "source_sha": plan["source_sha"],
+        "campaign_role": plan["campaign_role"],
+        "controller_sha": plan["controller_sha"],
+        "scenario_digest": plan["scenario_digest"],
+        "case_ids": plan["case_ids"],
+        "source_shas": plan["source_shas"],
+    }
+
+
+def retained_campaign_identity(campaign_dir: Path, state: dict[str, Any]) -> dict[str, Any]:
+    reference = state.get("identity", {})
+    relative = reference.get("path")
+    expected_digest = reference.get("sha256")
+    if not isinstance(relative, str) or not isinstance(expected_digest, str):
+        raise CampaignError("campaign identity reference is missing")
+    path = campaign_dir / relative
+    if not path.is_file() or sha256(path) != expected_digest:
+        raise CampaignError("campaign identity receipt is missing or drifted")
+    identity = json.loads(path.read_text(encoding="utf-8"))
+    for field in (
+        "campaign_id",
+        "workflow_sha",
+        "source_sha",
+        "campaign_role",
+        "controller_sha",
+        "scenario_digest",
+        "case_ids",
+        "source_shas",
+    ):
+        if identity.get(field) != state.get(field):
+            raise CampaignError(f"campaign state disagrees with immutable identity field {field}")
+    return identity
+
+
+def verify_campaign_identity(
+    campaign_dir: Path,
+    workflow_sha: str,
+    source_sha: str,
+    campaign_role: str,
+    case_id: str,
+) -> dict[str, Any]:
+    require_full_sha(workflow_sha, "workflow_sha")
+    require_full_sha(source_sha, "source_sha")
+    if campaign_role not in CAMPAIGN_ROLES:
+        raise CampaignError(f"unsupported campaign role: {campaign_role}")
+    state_path = campaign_dir / "state.json"
+    if not state_path.is_file():
+        raise CampaignError(f"campaign state is missing: {state_path}")
+    state = json.loads(state_path.read_text(encoding="utf-8"))
+    identity = retained_campaign_identity(campaign_dir, state)
+    expected = {
+        "workflow_sha": workflow_sha,
+        "source_sha": source_sha,
+        "campaign_role": campaign_role,
+    }
+    for field, value in expected.items():
+        if identity.get(field) != value:
+            raise CampaignError(f"campaign identity mismatch for {field}")
+    if case_id not in identity.get("case_ids", []):
+        raise CampaignError(f"campaign identity does not contain requested case {case_id}")
+    return identity
 
 
 def doctor(root: Path, evidence: bool) -> dict[str, Any]:
@@ -371,6 +487,7 @@ def prepare_builds(root: Path, campaign_dir: Path, build_root: Path) -> None:
         raise CampaignError(f"campaign state is missing: {state_path}")
     with CampaignLock(campaign_dir / ".lock"):
         state = json.loads(state_path.read_text(encoding="utf-8"))
+        identity = retained_campaign_identity(campaign_dir, state)
         if state["mode"] != "evidence":
             raise CampaignError("prepare is only required for evidence campaigns")
         if git(root, "status", "--porcelain=v1", "--untracked-files=all"):
@@ -416,7 +533,7 @@ def prepare_builds(root: Path, campaign_dir: Path, build_root: Path) -> None:
                 manifest = {
                     "schema_version": SCHEMA_VERSION,
                     "release": RELEASE,
-                    "source_sha": state["controller_sha"],
+                    "source_sha": identity["workflow_sha"],
                     "binary": str(retained.resolve()),
                     "binary_sha256": sha256(retained),
                     "exact_command": command,
@@ -607,6 +724,7 @@ def admit_campaign(
         documents[name] = json.loads(source.read_text(encoding="utf-8"))
     with CampaignLock(campaign_dir / ".lock"):
         state = json.loads(state_path.read_text(encoding="utf-8"))
+        identity = retained_campaign_identity(campaign_dir, state)
         if state["mode"] != "evidence":
             raise CampaignError("admission receipts apply only to evidence campaigns")
         validate_admission_receipts(documents, state)
@@ -622,7 +740,19 @@ def admit_campaign(
             manifest.append(
                 {"id": name, "path": destination.name, "sha256": sha256(destination), "bytes": destination.stat().st_size}
             )
-        atomic_json(admission_dir / "admission-manifest.json", {"schema_version": 1, "release": RELEASE, "receipts": manifest}, create=True)
+        atomic_json(
+            admission_dir / "admission-manifest.json",
+            {
+                "schema_version": 1,
+                "release": RELEASE,
+                "campaign_identity": state["identity"],
+                "workflow_sha": identity["workflow_sha"],
+                "source_sha": identity["source_sha"],
+                "campaign_role": identity["campaign_role"],
+                "receipts": manifest,
+            },
+            create=True,
+        )
         state["admission"] = {
             "manifest": "admission/admission-manifest.json",
             "manifest_sha256": sha256(admission_dir / "admission-manifest.json"),
@@ -633,6 +763,7 @@ def admit_campaign(
 
 def verify_live_host(campaign_dir: Path, host_preflight: Path) -> None:
     state = json.loads((campaign_dir / "state.json").read_text(encoding="utf-8"))
+    retained_campaign_identity(campaign_dir, state)
     retained_path = campaign_dir / "admission" / "host-preflight.json"
     if not retained_path.is_file() or not state.get("admission"):
         raise CampaignError("campaign has no retained host admission")
@@ -816,6 +947,9 @@ def publish_job(campaign_dir: Path, state: dict[str, Any], job: dict[str, Any]) 
         "schema_version": 1,
         "release": RELEASE,
         "campaign_id": state["campaign_id"],
+        "workflow_sha": state["workflow_sha"],
+        "source_sha": state["source_sha"],
+        "campaign_role": state["campaign_role"],
         "job_id": job["job_id"],
         "archive": archive.name,
         "archive_sha256": archive_digest,
@@ -837,6 +971,7 @@ def run_campaign(root: Path, campaign_dir: Path) -> None:
         raise CampaignError(f"campaign state is missing: {state_path}")
     with CampaignLock(campaign_dir / ".lock"):
         state = json.loads(state_path.read_text(encoding="utf-8"))
+        retained_campaign_identity(campaign_dir, state)
         for job in state["jobs"]:
             if job["status"] == "success":
                 continue
@@ -873,6 +1008,7 @@ def run_campaign(root: Path, campaign_dir: Path) -> None:
 def finalize(campaign_dir: Path) -> dict[str, Any]:
     state_path = campaign_dir / "state.json"
     state = json.loads(state_path.read_text(encoding="utf-8"))
+    identity = retained_campaign_identity(campaign_dir, state)
     incomplete = [job["job_id"] for job in state["jobs"] if job["status"] != "success"]
     if incomplete:
         raise CampaignError(f"campaign has {len(incomplete)} incomplete jobs")
@@ -906,6 +1042,11 @@ def finalize(campaign_dir: Path) -> dict[str, Any]:
         "schema_version": SCHEMA_VERSION,
         "release": RELEASE,
         "mode": state["mode"],
+        "campaign_id": state["campaign_id"],
+        "workflow_sha": identity["workflow_sha"],
+        "source_sha": identity["source_sha"],
+        "campaign_role": identity["campaign_role"],
+        "campaign_identity_sha256": state["identity"]["sha256"],
         "scenario_digest": state["scenario_digest"],
         "job_count": state["job_count"],
         "completed_jobs": len(state["jobs"]),
@@ -935,6 +1076,15 @@ def parse_args() -> argparse.Namespace:
     plan_parser.add_argument("--repetitions", type=int)
     plan_parser.add_argument("--rehearsal", action="store_true")
     plan_parser.add_argument("--mirror-root", type=Path)
+    plan_parser.add_argument("--workflow-sha")
+    plan_parser.add_argument("--source-sha")
+    plan_parser.add_argument("--campaign-role", choices=sorted(CAMPAIGN_ROLES), default="baseline")
+    identity_parser = commands.add_parser("verify-identity")
+    identity_parser.add_argument("--campaign-id", required=True)
+    identity_parser.add_argument("--workflow-sha", required=True)
+    identity_parser.add_argument("--source-sha", required=True)
+    identity_parser.add_argument("--campaign-role", choices=sorted(CAMPAIGN_ROLES), required=True)
+    identity_parser.add_argument("--case", required=True)
     prepare_parser = commands.add_parser("prepare")
     prepare_parser.add_argument("--campaign-id", required=True)
     prepare_parser.add_argument("--build-root", type=Path, required=True)
@@ -967,8 +1117,19 @@ def main() -> int:
                 raise CampaignError("--repetitions must be positive")
             if campaign_dir.exists():
                 raise CampaignError(f"campaign already exists: {campaign_dir}")
+            if not args.rehearsal and (not args.workflow_sha or not args.source_sha):
+                raise CampaignError("evidence campaign requires --workflow-sha and --source-sha")
             cohorts = args.cohort or ["B1-instrumented"]
-            plan = build_plan(root, args.case, cohorts, args.repetitions, args.rehearsal)
+            plan = build_plan(
+                root,
+                args.case,
+                cohorts,
+                args.repetitions,
+                args.rehearsal,
+                args.workflow_sha,
+                args.source_sha,
+                args.campaign_role,
+            )
             plan["campaign_id"] = args.campaign_id
             plan["mirror_root"] = str(args.mirror_root.resolve()) if args.mirror_root else None
             if not args.rehearsal:
@@ -981,9 +1142,54 @@ def main() -> int:
                 if mirror_root == root or mirror_root.is_relative_to(root):
                     raise CampaignError("protected mirror root must be outside the Git worktree")
             campaign_dir.mkdir(parents=True)
+            identity_path = campaign_dir / "campaign-identity.json"
+            atomic_json(identity_path, campaign_identity(plan), create=True)
+            identity_path.chmod(0o444)
+            plan["identity"] = {
+                "path": identity_path.name,
+                "sha256": sha256(identity_path),
+            }
             atomic_json(campaign_dir / "state.json", plan, create=True)
-            append_event(campaign_dir / "events.jsonl", {"event": "campaign-planned", "job_count": plan["job_count"]})
-            print(json.dumps({key: plan[key] for key in ("mode", "job_count", "admitted_host_cap_seconds")}, indent=2))
+            append_event(
+                campaign_dir / "events.jsonl",
+                {
+                    "event": "campaign-planned",
+                    "job_count": plan["job_count"],
+                    "workflow_sha": plan["workflow_sha"],
+                    "source_sha": plan["source_sha"],
+                    "campaign_role": plan["campaign_role"],
+                },
+            )
+            print(
+                json.dumps(
+                    {
+                        key: plan[key]
+                        for key in (
+                            "mode",
+                            "campaign_role",
+                            "workflow_sha",
+                            "source_sha",
+                            "job_count",
+                            "admitted_host_cap_seconds",
+                        )
+                    },
+                    indent=2,
+                )
+            )
+        elif args.command == "verify-identity":
+            print(
+                json.dumps(
+                    verify_campaign_identity(
+                        campaign_dir,
+                        args.workflow_sha,
+                        args.source_sha,
+                        args.campaign_role,
+                        args.case,
+                    ),
+                    indent=2,
+                    sort_keys=True,
+                )
+            )
         elif args.command == "prepare":
             prepare_builds(root, campaign_dir, args.build_root)
         elif args.command == "admit":

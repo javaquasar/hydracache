@@ -1,6 +1,6 @@
 name: Memory Reference 0.71
 
-run-name: Memory 0.71 ${{ inputs.case_id }} ${{ inputs.campaign_id }} at ${{ github.sha }}
+run-name: Memory 0.71 ${{ inputs.case_id }} ${{ inputs.campaign_id }} source ${{ inputs.source_sha }}
 
 on:
   workflow_dispatch:
@@ -9,6 +9,18 @@ on:
         description: "Immutable operator-approved campaign id"
         required: true
         type: string
+      source_sha:
+        description: "Exact lowercase 40-character candidate commit from the canonical repository"
+        required: true
+        type: string
+      campaign_role:
+        description: "Baseline freezes B0/B1; candidate measures the frozen B1/C pair"
+        required: true
+        default: candidate
+        type: choice
+        options:
+          - candidate
+          - baseline
       case_id:
         description: "One preregistered scenario row"
         required: true
@@ -39,7 +51,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: memory-reference-071-${{ github.sha }}-${{ inputs.campaign_id }}
+  group: memory-reference-071-${{ inputs.source_sha }}-${{ inputs.campaign_id }}
   cancel-in-progress: false
 
 jobs:
@@ -48,6 +60,9 @@ jobs:
     runs-on: [self-hosted, linux, x64, memory-reference-071]
     environment: memory-reference-071
     timeout-minutes: 4320
+    defaults:
+      run:
+        working-directory: trusted-harness
     env:
       CAMPAIGN_ROOT: /var/lib/hydracache-memory/campaigns
       BUILD_ROOT: /var/lib/hydracache-memory/build
@@ -56,15 +71,60 @@ jobs:
       HYDRACACHE_MEMORY_DEDICATED_BARE_METAL: "1"
       HYDRACACHE_MEMORY_LEASE_OWNER: ${{ inputs.lease_owner }}
       HYDRACACHE_MEMORY_LEASE_END: ${{ inputs.lease_end }}
+      HYDRACACHE_MEMORY_WORKFLOW_SHA: ${{ github.sha }}
+      HYDRACACHE_MEMORY_SOURCE_SHA: ${{ inputs.source_sha }}
+      HYDRACACHE_MEMORY_CAMPAIGN_ROLE: ${{ inputs.campaign_role }}
       BOOTSTRAP_RECEIPT: /var/lib/hydracache-memory/admission/reference-activation.json
       HISTORICAL_RECEIPT: /var/lib/hydracache-memory/admission/historical-input-receipt.json
       OVERHEAD_RECEIPT: /var/lib/hydracache-memory/admission/instrumentation-overhead.json
 
     steps:
-      - name: Checkout exact requested source
+      - name: Checkout trusted campaign harness from main
         uses: actions/checkout@v5
         with:
           fetch-depth: 0
+          persist-credentials: false
+          path: trusted-harness
+
+      - name: Reject non-main workflow dispatch
+        shell: bash
+        timeout-minutes: 1
+        env:
+          SOURCE_SHA: ${{ inputs.source_sha }}
+          WORKFLOW_SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          if [[ "$GITHUB_REF" != "refs/heads/main" ]]; then
+            echo "Memory Reference 0.71 must be dispatched from main, observed $GITHUB_REF" >&2
+            exit 1
+          fi
+          if [[ ! "$SOURCE_SHA" =~ ^[0-9a-f]{40}$ ]]; then
+            echo "source_sha must be a lowercase 40-character commit SHA" >&2
+            exit 1
+          fi
+          test "$(git rev-parse HEAD)" = "$WORKFLOW_SHA"
+
+      - name: Checkout exact candidate source without persisted credentials
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 1
+          persist-credentials: false
+          path: candidate-source
+          ref: ${{ inputs.source_sha }}
+
+      - name: Resolve exact candidate source without executing it
+        shell: bash
+        timeout-minutes: 5
+        env:
+          SOURCE_SHA: ${{ inputs.source_sha }}
+          WORKFLOW_SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$WORKFLOW_SHA"
+          test "$(git -C "$GITHUB_WORKSPACE/candidate-source" rev-parse HEAD)" = "$SOURCE_SHA"
+          git fetch --no-tags "$GITHUB_WORKSPACE/candidate-source" "$SOURCE_SHA"
+          test "$(git rev-parse 'FETCH_HEAD^{commit}')" = "$SOURCE_SHA"
+          git cat-file -e "$SOURCE_SHA^{commit}"
 
       - name: Admit host and freeze campaign plan
         shell: bash
@@ -82,16 +142,29 @@ jobs:
             --output "$RUNNER_TEMP/host-preflight.json"
           campaign_dir="$CAMPAIGN_ROOT/${{ inputs.campaign_id }}"
           if [[ ! -f "$campaign_dir/state.json" ]]; then
-            cohort_args=(--cohort B1-instrumented)
-            if [[ "${{ inputs.case_id }}" == "M0-cold" ]]; then
-              cohort_args=(--cohort B0-release --cohort B1-instrumented)
+            if [[ "$HYDRACACHE_MEMORY_CAMPAIGN_ROLE" == "candidate" ]]; then
+              cohort_args=(--cohort B1-instrumented --cohort C-candidate)
+            else
+              cohort_args=(--cohort B1-instrumented)
+              if [[ "${{ inputs.case_id }}" == "M0-cold" ]]; then
+                cohort_args=(--cohort B0-release --cohort B1-instrumented)
+              fi
             fi
             python3 scripts/perf/memory_campaign_071.py --output-root "$CAMPAIGN_ROOT" plan \
               --campaign-id "${{ inputs.campaign_id }}" \
               --case "${{ inputs.case_id }}" \
+              --workflow-sha "$HYDRACACHE_MEMORY_WORKFLOW_SHA" \
+              --source-sha "$HYDRACACHE_MEMORY_SOURCE_SHA" \
+              --campaign-role "$HYDRACACHE_MEMORY_CAMPAIGN_ROLE" \
               --mirror-root "$MIRROR_ROOT" \
               "${cohort_args[@]}"
           fi
+          python3 scripts/perf/memory_campaign_071.py --output-root "$CAMPAIGN_ROOT" verify-identity \
+            --campaign-id "${{ inputs.campaign_id }}" \
+            --case "${{ inputs.case_id }}" \
+            --workflow-sha "$HYDRACACHE_MEMORY_WORKFLOW_SHA" \
+            --source-sha "$HYDRACACHE_MEMORY_SOURCE_SHA" \
+            --campaign-role "$HYDRACACHE_MEMORY_CAMPAIGN_ROLE"
           if [[ ! -f "$campaign_dir/admission/admission-manifest.json" ]]; then
             python3 scripts/perf/memory_campaign_071.py --output-root "$CAMPAIGN_ROOT" admit \
               --campaign-id "${{ inputs.campaign_id }}" \
@@ -141,8 +214,9 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v6
         with:
-          name: memory-reference-071-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          name: memory-reference-071-${{ inputs.source_sha }}-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
           path: |
+            ${{ env.CAMPAIGN_ROOT }}/${{ inputs.campaign_id }}/campaign-identity.json
             ${{ env.CAMPAIGN_ROOT }}/${{ inputs.campaign_id }}/state.json
             ${{ env.CAMPAIGN_ROOT }}/${{ inputs.campaign_id }}/events.jsonl
             ${{ env.CAMPAIGN_ROOT }}/${{ inputs.campaign_id }}/watchdog-*
