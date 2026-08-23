@@ -26,6 +26,11 @@ objects have unique names derived from the source SHA and process ID. Exact
 containers, network, and cache volumes are removed in `finally`; pass
 `-KeepDockerState` only for local diagnosis.
 
+The harness supports both the primary checkout (`GIT_DIR=/git` inside the
+container) and linked Git worktrees (`GIT_DIR=/git/worktrees/<name>`). Any Git
+directory outside those two reviewed layouts fails before the Docker scenarios
+start.
+
 ## The six scenarios
 
 | # | Scenario | Positive path | Fail-closed canaries |
@@ -47,8 +52,8 @@ The driver refuses floating tags. Current immutable inputs are:
   `rust@sha256:365468470075493dc4583f47387001854321c5a8583ea9604b297e67f01c5a4f`;
 - Redis fixture:
   `redis@sha256:3aaec283e6e593bde528077d60280ac1589887067a39273348860837c9346d7e`;
-- actionlint 1.7.7 Linux amd64 archive SHA-256:
-  `023070a287cd8cccd71515fedc843f1985bf96c436b7effaecce67290e7e0757`.
+- actionlint 1.7.12 Linux amd64 archive SHA-256:
+  `8aca8db96f1b94770f1b0d72b6dddcb1ebb8123cb3712530b08cc387b349a3d8`.
 
 The helper image is built before the offline phase. Its content-addressed image
 ID is recorded because Ubuntu package repositories are not a release-evidence

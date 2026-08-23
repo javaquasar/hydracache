@@ -119,7 +119,7 @@ jobs:
           executable_sha256="$(sha256sum "$bundle/bin/$EXECUTABLE" | cut -d' ' -f1)"
           executable_size="$(wc -c < "$bundle/bin/$EXECUTABLE" | tr -d ' ')"
           contract_blob="$(git rev-parse HEAD:crates/hydracache-client-hc2/proto/hc2_contract.proto)"
-          producer_tree="$(git rev-parse HEAD^{tree})"
+          producer_tree="$(git rev-parse 'HEAD^{tree}')"
           printf '%s\n' \
             "schema_version=hydracache.hc2.retained-daemon.v1" \
             "producer_commit=$PRODUCER_COMMIT" \

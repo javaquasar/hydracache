@@ -91,7 +91,25 @@ if ($LASTEXITCODE -ne 0) { throw "Docker is not available" }
 $commit = (git rev-parse HEAD).Trim()
 $gitCommon = [System.IO.Path]::GetFullPath((git rev-parse --git-common-dir).Trim())
 $gitDir = [System.IO.Path]::GetFullPath((git rev-parse --git-dir).Trim())
-$worktreeName = Split-Path -Leaf $gitDir
+$pathComparison = if ($IsWindows) {
+    [System.StringComparison]::OrdinalIgnoreCase
+}
+else {
+    [System.StringComparison]::Ordinal
+}
+if ($gitDir.Equals($gitCommon, $pathComparison)) {
+    $containerGitDir = "/git"
+}
+else {
+    $worktreesRoot = [System.IO.Path]::GetFullPath((Join-Path $gitCommon "worktrees"))
+    $worktreesPrefix = $worktreesRoot.TrimEnd([System.IO.Path]::DirectorySeparatorChar) +
+        [System.IO.Path]::DirectorySeparatorChar
+    if (-not $gitDir.StartsWith($worktreesPrefix, $pathComparison)) {
+        throw "Git directory is neither the primary worktree nor a linked worktree below $worktreesRoot"
+    }
+    $worktreeName = Split-Path -Leaf $gitDir
+    $containerGitDir = "/git/worktrees/$worktreeName"
+}
 $suffix = "$($commit.Substring(0, 10))-$PID"
 $helperImage = "hydracache-local-orchestration:$suffix"
 $systemdContainer = "hc-systemd-$suffix"
@@ -146,7 +164,7 @@ try {
         "--mount", $targetMount,
         "--workdir", "/repo",
         "--env", "CARGO_TARGET_DIR=/cargo-target",
-        "--env", "GIT_DIR=/git/worktrees/$worktreeName",
+        "--env", "GIT_DIR=$containerGitDir",
         "--env", "GIT_WORK_TREE=/repo",
         $RustImage
     )
@@ -164,7 +182,7 @@ try {
         "--mount", $targetMount,
         "--workdir", "/repo",
         "--env", "CARGO_TARGET_DIR=/cargo-target",
-        "--env", "GIT_DIR=/git/worktrees/$worktreeName",
+        "--env", "GIT_DIR=$containerGitDir",
         "--env", "GIT_WORK_TREE=/repo",
         "--env", "GITHUB_ACTIONS=true",
         "--env", "GITHUB_EVENT_NAME=workflow_dispatch",
@@ -230,7 +248,7 @@ try {
         "--mount", $targetMount,
         "--workdir", "/repo",
         "--env", "CARGO_TARGET_DIR=/cargo-target",
-        "--env", "GIT_DIR=/git/worktrees/$worktreeName",
+        "--env", "GIT_DIR=$containerGitDir",
         "--env", "GIT_WORK_TREE=/repo",
         $RustImage, "bash", "-c",
         "git config --global --add safe.directory /repo && cargo test -p xtask --locked --offline --test perf_local_orchestration_0671"
@@ -297,8 +315,8 @@ finally {
         rust_image_id = $rustImageId
         redis_image = $RedisImage
         redis_image_id = $redisImageId
-        actionlint_version = "1.7.7"
-        actionlint_archive_sha256 = "023070a287cd8cccd71515fedc843f1985bf96c436b7effaecce67290e7e0757"
+        actionlint_version = "1.7.12"
+        actionlint_archive_sha256 = "8aca8db96f1b94770f1b0d72b6dddcb1ebb8123cb3712530b08cc387b349a3d8"
         scenarios = $results
         failure = $failure
         local_fixture_boundaries = @(

@@ -257,6 +257,9 @@ fn local_harness_is_pinned_non_promotable_and_covers_all_six_scenarios() {
         "offline-empty-cargo-cache",
         "actual-memory-only-smoke.sh",
         "cargo build --locked -p hydracache-loadgen -p hydracache-server",
+        "$containerGitDir = \"/git\"",
+        "$containerGitDir = \"/git/worktrees/$worktreeName\"",
+        "Git directory is neither the primary worktree nor a linked worktree",
     ] {
         assert!(harness.contains(required), "local harness lost {required}");
     }
@@ -264,7 +267,7 @@ fn local_harness_is_pinned_non_promotable_and_covers_all_six_scenarios() {
         "561618e2c15bf2397621dd04f96926663a3b5616c189cf7e38db7e82f5c538ea",
         "365468470075493dc4583f47387001854321c5a8583ea9604b297e67f01c5a4f",
         "3aaec283e6e593bde528077d60280ac1589887067a39273348860837c9346d7e",
-        "023070a287cd8cccd71515fedc843f1985bf96c436b7effaecce67290e7e0757",
+        "8aca8db96f1b94770f1b0d72b6dddcb1ebb8123cb3712530b08cc387b349a3d8",
     ] {
         assert!(
             harness.contains(digest) || dockerfile.contains(digest),
