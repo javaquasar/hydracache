@@ -53,6 +53,8 @@ actionlint \
   -ignore 'unexpected key "(background|cancel)"' \
   -ignore 'step must run script with "run" section or run action with "uses" section' \
   -ignore 'label "hydracache-perf-v1" is unknown' \
+  -ignore 'label "hydracache-hc2-soak-v1" is unknown' \
+  -ignore 'label "memory-reference-071" is unknown' \
   -ignore 'SC2129:style' \
   .github/workflows/*.yml
 mkdir --parents /work/pycache
