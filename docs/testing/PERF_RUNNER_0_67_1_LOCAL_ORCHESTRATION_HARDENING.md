@@ -26,6 +26,11 @@ objects have unique names derived from the source SHA and process ID. Exact
 containers, network, and cache volumes are removed in `finally`; pass
 `-KeepDockerState` only for local diagnosis.
 
+The harness supports both the primary checkout (`GIT_DIR=/git` inside the
+container) and linked Git worktrees (`GIT_DIR=/git/worktrees/<name>`). Any Git
+directory outside those two reviewed layouts fails before the Docker scenarios
+start.
+
 ## The six scenarios
 
 | # | Scenario | Positive path | Fail-closed canaries |

@@ -257,6 +257,9 @@ fn local_harness_is_pinned_non_promotable_and_covers_all_six_scenarios() {
         "offline-empty-cargo-cache",
         "actual-memory-only-smoke.sh",
         "cargo build --locked -p hydracache-loadgen -p hydracache-server",
+        "$containerGitDir = \"/git\"",
+        "$containerGitDir = \"/git/worktrees/$worktreeName\"",
+        "Git directory is neither the primary worktree nor a linked worktree",
     ] {
         assert!(harness.contains(required), "local harness lost {required}");
     }
