@@ -41,6 +41,8 @@ checkout и причину обязательного prewarm до IRQ baseline.
   сохранение размеров и SHA-256;
 - импорт одного и того же root-owned host-admission receipt и byte-exact bundle
   во все qualification/full-dress/bootstrap diagnostic artifacts;
+- атомарная публикация актуального root-owned runner-provisioning receipt из
+  frozen exact-SHA audit; предыдущая версия переносится в каталог кампании;
 - внешняя повторная проверка receipt identity, eligibility, fingerprint,
   predecessor run/digest и full-dress admission;
 - Rust `sample-set` validator после ровно пяти принятых samples;

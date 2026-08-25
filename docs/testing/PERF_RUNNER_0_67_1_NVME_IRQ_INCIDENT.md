@@ -56,6 +56,11 @@ The unsafe change was merged by PR #109 at `04134905`, reverted by PR #110 at
    custom label, leaving the intended job queued indefinitely. Require one
    idle runner named `hydracache-perf-v1` with custom label
    `hydracache-perf-v1`; do not infer this from the local `.runner` file.
+10. The canonical `/var/lib/hydracache-perf/runner-provisioned.json` must be
+    republished from the exact-SHA provisioning audit before host admission is
+    declared ready. A stale receipt can describe the same machine correctly
+    but must still fail because its `source_commit` belongs to an older main.
+    Archive the previous root-owned receipt and install the new one atomically.
 
 ## Recognition checklist
 

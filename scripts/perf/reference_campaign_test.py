@@ -26,6 +26,26 @@ def base_state() -> dict:
 
 
 class ReferenceCampaignTests(unittest.TestCase):
+    def test_runner_provisioning_receipt_is_bound_to_frozen_source(self) -> None:
+        state = base_state()
+        receipt = {
+            "schema_version": 4,
+            "release": "0.67.1",
+            "stage": "runner-provisioned",
+            "source_commit": SHA,
+            "runner_name": campaign.EXPECTED_RUNNER_NAME,
+            "runner_online": False,
+            "ship_evidence_eligible": False,
+        }
+        with tempfile.TemporaryDirectory() as temporary:
+            path = Path(temporary) / "runner-provisioned.json"
+            path.write_text(json.dumps(receipt) + "\n", encoding="utf-8")
+            campaign.validate_runner_provisioning_receipt(path, state)
+            receipt["source_commit"] = "3" * 40
+            path.write_text(json.dumps(receipt) + "\n", encoding="utf-8")
+            with self.assertRaises(campaign.CampaignError):
+                campaign.validate_runner_provisioning_receipt(path, state)
+
     def test_github_runner_contract_requires_exact_custom_label_and_idle_runner(self) -> None:
         state = base_state()
         listing = {
