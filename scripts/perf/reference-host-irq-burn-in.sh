@@ -100,6 +100,8 @@ test "$storage_io" = "0,5-7" || {
 }
 test "$(jq --exit-status --raw-output '.interrupt_contract.measurement_cpu_storage_io' "$profile")" = forbidden
 test "$(jq --exit-status --raw-output '.interrupt_contract.maximum_measurement_cpu_irq_delta' "$profile")" = 0
+measurement_cpus=(1 2 3 4)
+storage_io_cpus=(0 5 6 7)
 
 if test -z "$network_target"; then
   network_target="$(ip -4 route show default | awk 'NR == 1 { print $3 }')"
@@ -225,6 +227,14 @@ write_receipt() {
 }
 trap write_receipt EXIT
 
+failure_step=network-prewarm
+# `taskset` applies the requested affinity before `execve(ping)`. A cold ping
+# binary or shared-library page fault would therefore submit root-filesystem I/O
+# from a measurement CPU and legitimately activate its dormant NVMe queue. Load
+# that executable surface on housekeeping CPU 0 before taking the IRQ baseline.
+taskset --cpu-list "${storage_io_cpus[0]}" \
+  ping -4 -n -q -c 1 -w 10 "$network_target" >/dev/null
+
 failure_step=preflight-absolute-irq-guard
 "$repo_root/scripts/perf/reference-runtime-irq-guard.sh" burn-in-preflight
 cp /proc/interrupts "$interrupts_before"
@@ -234,8 +244,6 @@ MEASUREMENT_AFFINITY="$measurement" \
   "$repo_root/scripts/perf/reference-runtime-irq-delta-guard.sh" baseline "$baseline"
 
 failure_step=nvme-stimulus
-measurement_cpus=(1 2 3 4)
-storage_io_cpus=(0 5 6 7)
 declare -a stimulus_pids=()
 for device in "${nvme_devices[@]}"; do
   cpu_index=0

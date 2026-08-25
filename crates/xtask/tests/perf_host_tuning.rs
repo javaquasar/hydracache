@@ -374,6 +374,17 @@ fn reference_campaign_controller_is_serial_resumable_and_provider_safe() {
     ] {
         assert!(burn_in.contains(required), "IRQ burn-in lacks {required}");
     }
+    let prewarm = burn_in
+        .find("failure_step=network-prewarm")
+        .expect("network prewarm must be explicit");
+    let baseline = burn_in
+        .find("failure_step=baseline")
+        .expect("IRQ baseline must be explicit");
+    assert!(
+        prewarm < baseline,
+        "network executable prewarm must precede the IRQ baseline"
+    );
+    assert!(burn_in.contains("taskset --cpu-list \"${storage_io_cpus[0]}\""));
     assert!(!controller.contains("provider delete"));
     assert!(!controller.contains("server delete"));
     for required in [
