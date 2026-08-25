@@ -123,6 +123,12 @@ Burn-in является диагностикой допуска, а не perfor
 фиксирован. Другой набор требует нового reviewed profile, связанных тестов и
 новой qualification.
 
+Профиль требует `pci=nomsi` и legacy INTx fallback. Это устраняет
+неизменяемые per-CPU managed MSI-X очереди NVMe, которые могут оставаться
+dormant до первого read и затем активироваться на measurement CPU. Любой
+MSI/MSI-X vector после reboot или IRQ affinity на CPU `1-4` отклоняет host;
+post-hoc запись в `/proc/irq/*/smp_affinity*` запрещена.
+
 ## 3. Полная последовательная кампания
 
 ```bash
