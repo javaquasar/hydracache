@@ -85,8 +85,6 @@ fn runner_runbook_and_helpers_are_fail_closed_and_secret_free() {
     assert!(isolation.contains("nohz_full=${measurement_cpus}"));
     assert!(isolation.contains("rcu_nocbs=${measurement_cpus}"));
     assert!(isolation.contains("irqaffinity=${housekeeping_cpus}"));
-    assert!(isolation.contains("pci_msi_argument=\"pci=nomsi\""));
-    assert!(isolation.contains("has_exact_kernel_argument \"$pci_msi_argument\""));
     assert!(isolation.contains("CPUAffinity=0 5 6 7"));
     assert!(isolation.contains("hydracache-perf-idle-policy.service"));
     assert!(isolation.contains("systemctl enable \"$idle_policy_unit\""));
@@ -105,10 +103,10 @@ fn runner_runbook_and_helpers_are_fail_closed_and_secret_free() {
     assert!(isolation.contains("normalize_cpu_list"));
     assert!(isolation.contains("expected_housekeeping_cpus"));
     assert!(isolation.contains("docker_cpu_affinity"));
-    assert!(!isolation.contains("dormant_unmapped_nvme_irq"));
-    assert!(isolation.contains("PCI MSI/MSI-X vectors remain active"));
-    assert!(isolation.contains("verify_nvme_intx_routes"));
-    assert!(isolation.contains("NVMe controller lacks a routed legacy INTx pin"));
+    assert!(isolation.contains("dormant_unmapped_nvme_irq"));
+    assert!(isolation.contains("test -z \"$(cat \"$cpu_list_path\")\""));
+    assert!(isolation.contains("test \"$interrupt_total\" = 0"));
+    assert!(isolation.contains("dormant-unmapped-nvme="));
     assert!(isolation.contains("test -n \"$affinity\" || continue"));
     assert!(isolation.contains("IRQ affinity reaches measurement CPUs"));
     assert!(rootless_docker.contains("rootless Docker lifecycle must run as github-runner"));
@@ -118,7 +116,7 @@ fn runner_runbook_and_helpers_are_fail_closed_and_secret_free() {
     assert!(runbook.contains("systemctl start \"user@${runner_uid}.service\""));
     assert!(runbook.contains("rm --force /var/run/docker.sock"));
 
-    assert!(!runtime_irq_guard.contains("dormant_unmapped_nvme_irq"));
+    assert!(runtime_irq_guard.contains("dormant_unmapped_nvme_irq"));
     assert!(runtime_irq_guard.contains("runtime IRQ guard failed phase=${phase}"));
     assert!(runtime_irq_guard.contains("per_cpu_counts=${counts}"));
     assert!(runtime_irq_guard.contains("measurement=\"${MEASUREMENT_AFFINITY-1-4}\""));

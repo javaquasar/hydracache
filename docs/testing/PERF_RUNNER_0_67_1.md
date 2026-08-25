@@ -68,9 +68,10 @@ The contract is:
 - `scripts/perf/reference-evidence-tmpfs.sh materialize` copies completed evidence back to durable
   storage on housekeeping CPUs after the final measurement stage.
 
-The runtime IRQ guard has no dormant-vector exception. The booted host must expose no PCI
-MSI/MSI-X vectors, and every effective IRQ affinity must exclude CPUs `1-4`. Any violation fails
-closed and requires a clean host recovery before another sample.
+The runtime IRQ guard retains the same narrow exception as host provisioning: a managed NVMe
+vector may point at a measurement CPU only while its queue is unmapped and its interrupt count is
+exactly zero. Any active, mapped, or historically fired vector fails closed and requires a clean
+host recovery before another sample.
 
 Run these helpers only through the reviewed `0.67`/`0.67.1` GitHub workflow. A direct
 `taskset --cpu-list 1-4 cargo ...` command is forbidden because compiler and artifact I/O can
@@ -682,11 +683,9 @@ The committed policy is intentionally host-specific and fail-closed:
   only idle states with exit latency at most `1` microsecond; the root-owned
   `hydracache-perf-idle-policy.service` disables every deeper state before the runner starts;
 - CPUs `0,5-7` are the only housekeeping set for the Actions service and rootless Docker daemon;
-- active IRQ work must not reach CPUs `1-4`; the reviewed boot policy uses
-  `pci=nomsi`, requires the platform's legacy INTx fallback, and rejects every
-  remaining MSI/MSI-X vector so `irqaffinity=0,5-7` can keep device IRQ work on
-  housekeeping CPUs; installation checks that every NVMe controller advertises
-  a routed INTx pin before changing the boot policy;
+- active IRQ work must not reach CPUs `1-4`; a managed NVMe vector whose immutable effective mask
+  intersects the measurement set is accepted only when every matching blk-mq `cpu_list` is empty
+  and its cumulative interrupt count is exactly zero;
 - the Redis container is explicitly pinned to CPUs `1-4`, while Docker control work stays on the
   housekeeping set.
 
