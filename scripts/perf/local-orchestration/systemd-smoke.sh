@@ -211,6 +211,8 @@ test "$(systemctl is-active hc-disable.service || true)" = inactive
 test "$(systemctl is-enabled hc-disable.service || true)" = disabled
 test "$(systemctl is-active hc-mask.service || true)" = inactive
 test "$(systemctl is-enabled hc-mask.service || true)" = masked
+expect_failure masked-explicit-reactivation systemctl start hc-mask.service
+test "$(systemctl is-active hc-mask.service || true)" = inactive
 test "$(systemctl is-active hc-inactive.service || true)" = inactive
 scripts/perf/reference-host-tuning.sh verify --profile "$profile" --state-dir "$state_dir"
 expect_failure repeated-apply \
