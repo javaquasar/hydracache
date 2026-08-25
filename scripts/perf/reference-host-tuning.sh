@@ -78,6 +78,8 @@ validate_profile() {
     .cpu_contract.expected_online_cpus == "0-7" and
     .cpu_contract.smt == "off" and
     .cpu_contract.governor == "performance" and
+    .interrupt_contract.pci_msi == "disabled" and
+    .interrupt_contract.measurement_cpu_irqs == "forbidden" and
     (.service_policy.protected_units | type == "array" and length > 0) and
     (.service_policy.required_active_groups | type == "array" and length == 2) and
     (.service_policy.disable_if_present | type == "array") and

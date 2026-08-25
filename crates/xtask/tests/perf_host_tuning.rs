@@ -42,6 +42,11 @@ fn ubuntu_reference_profile_is_explicit_versioned_and_safe() {
     assert_eq!(profile["cpu_contract"]["housekeeping_cpus"], "0,5-7");
     assert_eq!(profile["cpu_contract"]["smt"], "off");
     assert_eq!(profile["cpu_contract"]["governor"], "performance");
+    assert_eq!(profile["interrupt_contract"]["pci_msi"], "disabled");
+    assert_eq!(
+        profile["interrupt_contract"]["measurement_cpu_irqs"],
+        "forbidden"
+    );
 
     let protected = strings(&profile, "/service_policy/protected_units");
     let disabled = strings(&profile, "/service_policy/disable_if_present");
@@ -201,6 +206,7 @@ fn host_tuning_is_allowlisted_reversible_and_fail_closed() {
     assert!(isolation.contains("zz-hydracache-perf-isolation.cfg"));
     assert!(isolation.contains("legacy_grub_dropin"));
     assert!(isolation.contains("resolved_grub_cmdline"));
+    assert!(isolation.contains("pci_msi_argument=\"pci=nomsi\""));
 
     let audit = read("scripts/perf/audit-reference-host.sh");
     assert!(audit.contains("amd-pstate-active-max-frequency-v1"));

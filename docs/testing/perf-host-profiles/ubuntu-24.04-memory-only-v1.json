@@ -25,6 +25,10 @@
     "measurement_max_idle_latency_us": 1,
     "housekeeping_max_idle_latency_us": 1
   },
+  "interrupt_contract": {
+    "pci_msi": "disabled",
+    "measurement_cpu_irqs": "forbidden"
+  },
   "measurement_window_contract": {
     "mode": "memory-only-v1",
     "runtime_filesystem": "tmpfs",
