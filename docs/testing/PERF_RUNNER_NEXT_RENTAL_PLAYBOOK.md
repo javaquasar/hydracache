@@ -9,6 +9,11 @@ met. The previous server was deleted before a new exact-main qualification and
 five accepted bootstrap samples were completed. It records what was learned and
 turns the next rental into a profile-driven, auditable procedure.
 
+The 2026-08-25 AX42 boot and NVMe IRQ failures, their Rescue recovery, and the
+non-negotiable prevention rules are retained in the
+[NVMe IRQ incident runbook](PERF_RUNNER_0_67_1_NVME_IRQ_INCIDENT.md). Read it
+before changing GRUB, IRQ policy, burn-in placement, or a campaign helper.
+
 Before ordering hardware, require a green receipt from the
 [six-scenario local orchestration hardening suite](PERF_RUNNER_0_67_1_LOCAL_ORCHESTRATION_HARDENING.md).
 That receipt is a rental-readiness check only and is never qualification or

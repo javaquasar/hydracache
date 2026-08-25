@@ -4,6 +4,12 @@
 является свидетельством прохождения qualification или bootstrap на новом
 сервере.
 
+Перед изменением boot/IRQ policy или восстановлением недоступного хоста
+обязательно используйте
+[runbook инцидента NVMe IRQ](PERF_RUNNER_0_67_1_NVME_IRQ_INCIDENT.md). Он
+фиксирует запрет глобального `pci=nomsi`, Rescue-процедуру, опасность stale
+checkout и причину обязательного prewarm до IRQ baseline.
+
 ## Граница автоматизации
 
 `scripts/perf/reference-campaign.sh` управляет уже созданным bare-metal
