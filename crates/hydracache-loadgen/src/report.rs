@@ -1322,11 +1322,12 @@ impl MeasurementEvidence {
                         && point.robust_spread_ratio > value.max_robust_spread_ratio
                     {
                         problems.push(format!(
-                            "scalar measurement {} robust spread {} exceeds {} at {:?}",
+                            "scalar measurement {} robust spread {} exceeds {} at {:?}; samples={:?}",
                             value.id,
                             point.robust_spread_ratio,
                             value.max_robust_spread_ratio,
-                            point.dimensions
+                            point.dimensions,
+                            point.samples
                         ));
                     }
                 }

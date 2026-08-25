@@ -646,6 +646,24 @@ fn perf_report_schema_records_surface_profile_commit_workload_and_prebuild_diges
 }
 
 #[test]
+fn scalar_spread_rejection_preserves_repeat_samples_in_diagnostics() {
+    let mut scalar = scalar_measurement();
+    let MeasurementEvidence::Scalar(value) = &mut scalar else {
+        unreachable!("fixture is a scalar measurement");
+    };
+    value.points[0].samples = vec![90.0, 100.0, 110.0];
+    value.points[0].min = 90.0;
+    value.points[0].max = 110.0;
+    value.points[0].robust_spread_ratio = 0.2;
+
+    let problems = fixture_report(vec![foundation_measurement(), scalar]).validation_problems();
+    assert!(problems.iter().any(|problem| {
+        problem.contains("robust spread 0.2 exceeds 0.1")
+            && problem.contains("samples=[90.0, 100.0, 110.0]")
+    }));
+}
+
+#[test]
 fn multi_curve_report_binds_distinct_reproducible_steady_states() {
     let first = foundation_measurement();
     let mut second = foundation_measurement();
