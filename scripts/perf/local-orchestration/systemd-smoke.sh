@@ -189,10 +189,13 @@ Description=HydraCache local runner fixture
 [Service]
 User=github-runner
 ExecStart=/bin/sleep infinity
+[Install]
+WantedBy=multi-user.target
 EOF
 systemctl daemon-reload
 systemctl enable actions.runner.javaquasar-hydracache.hydracache-perf-v1.service >/dev/null
 
+scripts/perf/runner-service.sh offline
 scripts/perf/verify-runner-service.sh --expected-label hydracache-perf-v1
 scripts/perf/runner-service.sh online
 expect_failure tuning-while-runner-online \
@@ -211,6 +214,8 @@ test "$(systemctl is-active hc-disable.service || true)" = inactive
 test "$(systemctl is-enabled hc-disable.service || true)" = disabled
 test "$(systemctl is-active hc-mask.service || true)" = inactive
 test "$(systemctl is-enabled hc-mask.service || true)" = masked
+expect_failure masked-explicit-reactivation systemctl start hc-mask.service
+test "$(systemctl is-active hc-mask.service || true)" = inactive
 test "$(systemctl is-active hc-inactive.service || true)" = inactive
 scripts/perf/reference-host-tuning.sh verify --profile "$profile" --state-dir "$state_dir"
 expect_failure repeated-apply \

@@ -128,7 +128,7 @@ damage provider networking.
 | --- | --- | --- |
 | Package maintenance | `apt-daily*`, `unattended-upgrades`, `packagekit*` | Avoid package downloads, dpkg locks, CPU, and disk activity during samples |
 | Periodic storage work | `fstrim`, `e2scrub_all`, `fwupd-refresh`, `man-db` timers | Avoid large or bursty I/O after the sample baseline is taken |
-| Snap refresh | `snapd.service`, `snapd.socket`, `snapd.refresh.timer` | Avoid network, unpacking, mount, and metadata work not used by the harness |
+| Snap refresh | `snapd.service`, `snapd.socket`, `snapd.refresh.timer` | Mask every activation path so an explicit boot dependency cannot restart the disabled socket and introduce network, unpacking, mount, or metadata work |
 | IRQ policy | `irqbalance.service` | Prevent userspace from undoing the reviewed housekeeping-only IRQ layout |
 | Rootful containers | `docker.service`, `docker.socket`, `containerd.service` | Only the unprivileged rootless Docker lifecycle is allowed |
 
@@ -215,6 +215,10 @@ sudo scripts/perf/prepare-reference-host.sh apply-services \
 `offline` disables and stops the runner service. This is a persistent baseline:
 an unattended reboot must not reconnect the runner before a new frozen-state
 check and an authorized dispatch.
+
+The Snap service, socket, and refresh timer are masked rather than merely
+disabled. Ubuntu boot dependencies can explicitly start a disabled socket, so
+post-reboot verification requires the stronger persistent activation barrier.
 
 Review `plan.json` and `applied.json`. The latter binds the applied operation to
 the SHA-256 of the captured pre-state. If the policy needs amendment, make and

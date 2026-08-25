@@ -51,6 +51,12 @@ fn ubuntu_reference_profile_is_explicit_versioned_and_safe() {
     assert!(protected.contains("systemd-timesyncd.service"));
     assert!(protected.contains("systemd-journald.service"));
     assert!(masked.contains("irqbalance.service"));
+    assert!(masked.contains("snapd.refresh.timer"));
+    assert!(masked.contains("snapd.service"));
+    assert!(masked.contains("snapd.socket"));
+    assert!(!disabled.contains("snapd.refresh.timer"));
+    assert!(!disabled.contains("snapd.service"));
+    assert!(!disabled.contains("snapd.socket"));
     assert!(disabled.contains("apt-daily.timer"));
     assert!(inactive.contains("docker.service"));
     assert!(inactive.contains("containerd.service"));
