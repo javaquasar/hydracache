@@ -14,6 +14,7 @@ fn runner_runbook_and_helpers_are_fail_closed_and_secret_free() {
     let receipt_import = read("scripts/perf/import-provisioning-receipt.sh");
     let rootless_docker = read("scripts/perf/rootless-docker.sh");
     let isolation = read("scripts/perf/provision-reference-isolation.sh");
+    assert!(lifecycle.contains("systemctl disable --now"));
     let runtime_irq_guard = read("scripts/perf/reference-runtime-irq-guard.sh");
     let evidence_tmpfs = read("scripts/perf/reference-evidence-tmpfs.sh");
     let measurement = read("scripts/perf/run-reference-measurement.sh");
@@ -210,6 +211,7 @@ fn runner_contract_has_exact_offline_lifecycle_and_public_labels() {
     assert!(audit.contains(expected_labels));
     assert!(service.contains(".labels == [\"self-hosted\", \"linux\", \"x64\", $expected]"));
     assert!(audit.contains("runner_online: false"));
+    assert!(audit.contains("runner service must remain disabled between authorized dispatches"));
     assert!(!audit.contains("read -r cpu_quota cpu_period extra </sys/fs/cgroup/cpu.max"));
     assert!(audit.contains("cgroup_cursor=\"/sys/fs/cgroup${cgroup_path%/}\""));
     assert!(audit.contains("if test -f \"$cgroup_cursor/cpu.max\"; then"));

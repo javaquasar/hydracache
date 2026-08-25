@@ -165,18 +165,42 @@ governors="$(
 test "$governors" = "performance"
 
 turbo_policy="unavailable"
+turbo_policy_backend="unavailable"
 if test -r /sys/devices/system/cpu/cpufreq/boost; then
   case "$(cat /sys/devices/system/cpu/cpufreq/boost)" in
-    1) turbo_policy="enabled" ;;
-    0) turbo_policy="disabled" ;;
+    1) turbo_policy="enabled"; turbo_policy_backend="cpufreq-global-boost-v1" ;;
+    0) turbo_policy="disabled"; turbo_policy_backend="cpufreq-global-boost-v1" ;;
     *) echo "malformed cpufreq boost policy" >&2; exit 1 ;;
   esac
 elif test -r /sys/devices/system/cpu/intel_pstate/no_turbo; then
   case "$(cat /sys/devices/system/cpu/intel_pstate/no_turbo)" in
-    0) turbo_policy="enabled" ;;
-    1) turbo_policy="disabled" ;;
+    0) turbo_policy="enabled"; turbo_policy_backend="intel-pstate-no-turbo-v1" ;;
+    1) turbo_policy="disabled"; turbo_policy_backend="intel-pstate-no-turbo-v1" ;;
     *) echo "malformed intel_pstate turbo policy" >&2; exit 1 ;;
   esac
+elif test "$(cat /sys/devices/system/cpu/amd_pstate/status 2>/dev/null || true)" = active; then
+  # Linux documents that amd-pstate reports a lower cpuinfo maximum when
+  # boost is supported but inactive. Require the CPB capability and exact
+  # equality of the driver, cpuinfo, and policy maxima for every online
+  # policy before recording boost as enabled.
+  lscpu | awk -F: '/^Flags:/ { print $2 }' | tr ' ' '\n' |
+    grep --quiet --fixed-strings --line-regexp cpb
+  amd_policy_count=0
+  for policy_path in /sys/devices/system/cpu/cpufreq/policy*; do
+    test -d "$policy_path"
+    driver="$(cat "$policy_path/scaling_driver")"
+    test "$driver" = amd-pstate-epp
+    amd_max="$(cat "$policy_path/amd_pstate_max_freq")"
+    cpuinfo_max="$(cat "$policy_path/cpuinfo_max_freq")"
+    scaling_max="$(cat "$policy_path/scaling_max_freq")"
+    [[ "$amd_max" =~ ^[1-9][0-9]*$ ]]
+    test "$amd_max" = "$cpuinfo_max"
+    test "$amd_max" = "$scaling_max"
+    amd_policy_count=$((amd_policy_count + 1))
+  done
+  test "$amd_policy_count" -gt 0
+  turbo_policy="enabled"
+  turbo_policy_backend="amd-pstate-active-max-frequency-v1"
 fi
 test "$turbo_policy" != "unavailable"
 
@@ -229,6 +253,10 @@ if systemctl is-active --quiet "$runner_unit"; then
   echo "runner service must be offline during provisioned-state audit: $runner_unit" >&2
   exit 1
 fi
+test "$(systemctl is-enabled "$runner_unit" || true)" = disabled || {
+  echo "runner service must remain disabled between authorized dispatches: $runner_unit" >&2
+  exit 1
+}
 
 output="$repo_root/target/test-evidence/0.67.1/runner-provisioned.json"
 mkdir --parents "$(dirname "$output")"
@@ -252,6 +280,7 @@ jq --null-input \
   --arg os_image "$ID-$VERSION_ID" \
   --arg governor "$governors" \
   --arg turbo "$turbo_policy" \
+  --arg turbo_backend "$turbo_policy_backend" \
   --arg runner_unit "$runner_unit" \
   --arg host_identity_digest "$host_identity_digest" \
   --argjson physical_cores "$physical_cores" \
@@ -291,6 +320,7 @@ jq --null-input \
     cgroup_cpu_quota: "unlimited",
     governor: $governor,
     turbo_policy: $turbo,
+    turbo_policy_backend: $turbo_backend,
     runner_name: "hydracache-perf-v1",
     runner_service: $runner_unit,
     runner_online: false,
