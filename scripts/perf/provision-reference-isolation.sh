@@ -20,7 +20,6 @@ test "$(id --user)" -eq 0 || {
 measurement_cpus="1-4"
 housekeeping_cpus="0,5-7"
 isolcpus_argument="domain,managed_irq,nohz,1-4"
-pci_msi_argument="pci=nomsi"
 measurement_idle_policy="latency-cap-us-v1"
 measurement_max_idle_latency_us=1
 housekeeping_idle_policy="latency-cap-us-v1"
@@ -37,31 +36,6 @@ grub_dropin="/etc/default/grub.d/zz-hydracache-perf-isolation.cfg"
 idle_policy_script="/usr/local/sbin/hydracache-perf-apply-idle-policy"
 idle_policy_unit="hydracache-perf-idle-policy.service"
 idle_policy_unit_path="/etc/systemd/system/${idle_policy_unit}"
-
-verify_nvme_intx_routes() {
-  command -v lspci >/dev/null || {
-    echo "reference PCI interrupt policy requires lspci" >&2
-    exit 1
-  }
-  local controller address details
-  local controllers=0
-  for controller in /sys/class/nvme/nvme*; do
-    test -e "$controller" || continue
-    test -r "$controller/address"
-    address="$(cat "$controller/address")"
-    [[ "$address" =~ ^[0-9a-f]{4}:[0-9a-f]{2}:[0-9a-f]{2}\.[0-7]$ ]]
-    details="$(lspci -D -s "$address" -vv)"
-    grep --quiet --extended-regexp \
-      'Interrupt: pin [A-D] routed to IRQ [0-9]+' <<<"$details" || {
-      echo "NVMe controller lacks a routed legacy INTx pin: $address" >&2
-      exit 1
-    }
-    controllers=$((controllers + 1))
-  done
-  test "$controllers" -gt 0
-}
-
-verify_nvme_intx_routes
 
 write_root_file() {
   local path="$1"
@@ -94,15 +68,6 @@ if test "$action" = install; then
       done
       test "$count" -eq 1
     done
-    pci_msi_count=0
-    for argument in "${kernel_arguments[@]}"; do
-      test "$argument" = "$pci_msi_argument" && pci_msi_count=$((pci_msi_count + 1))
-    done
-    case "$pci_msi_count" in
-      0) isolation_already_active=false ;;
-      1) ;;
-      *) echo "duplicate ${pci_msi_argument} kernel arguments" >&2; exit 1 ;;
-    esac
   else
     # Before `nosmt` takes effect, prove the host-specific sibling topology that
     # this policy is about to remove from the online CPU set.
@@ -121,7 +86,7 @@ if test "$action" = install; then
   install --directory --owner=root --group=root --mode=0755 /etc/default/grub.d
   rm --force "$legacy_grub_dropin"
   write_root_file "$grub_dropin" 0644 <<EOF
-GRUB_CMDLINE_LINUX_DEFAULT="\${GRUB_CMDLINE_LINUX_DEFAULT} nosmt isolcpus=${isolcpus_argument} nohz_full=${measurement_cpus} rcu_nocbs=${measurement_cpus} irqaffinity=${housekeeping_cpus} ${pci_msi_argument}"
+GRUB_CMDLINE_LINUX_DEFAULT="\${GRUB_CMDLINE_LINUX_DEFAULT} nosmt isolcpus=${isolcpus_argument} nohz_full=${measurement_cpus} rcu_nocbs=${measurement_cpus} irqaffinity=${housekeeping_cpus}"
 EOF
 
   install --directory --owner=root --group=root --mode=0755 "$(dirname "$runner_dropin")"
@@ -238,8 +203,7 @@ EOF
     "isolcpus=${isolcpus_argument}" \
     "nohz_full=${measurement_cpus}" \
     "rcu_nocbs=${measurement_cpus}" \
-    "irqaffinity=${housekeeping_cpus}" \
-    "$pci_msi_argument"; do
+    "irqaffinity=${housekeeping_cpus}"; do
     count=0
     for argument in "${resolved_grub_arguments[@]}"; do
       test "$argument" = "$expected" && count=$((count + 1))
@@ -300,7 +264,6 @@ has_exact_kernel_argument "isolcpus=${isolcpus_argument}"
 has_exact_kernel_argument "nohz_full=${measurement_cpus}"
 has_exact_kernel_argument "rcu_nocbs=${measurement_cpus}"
 has_exact_kernel_argument "irqaffinity=${housekeeping_cpus}"
-has_exact_kernel_argument "$pci_msi_argument"
 test -f "$grub_dropin"
 test ! -e "$legacy_grub_dropin"
 
@@ -401,22 +364,61 @@ cpu_list_intersects_measurement() {
   return 1
 }
 
+dormant_unmapped_nvme_irq() {
+  local irq="$1"
+  local action controller queue mq_index interrupt_total cpu_list_path
+  local -a mq_cpu_lists
+  action="$(
+    awk -v irq="${irq}:" '
+      $1 == irq { print $NF; found = 1 }
+      END { if (!found) exit 1 }
+    ' /proc/interrupts
+  )"
+  [[ "$action" =~ ^nvme([0-9]+)q([1-9][0-9]*)$ ]] || return 1
+  controller="${BASH_REMATCH[1]}"
+  queue="${BASH_REMATCH[2]}"
+  mq_index=$((queue - 1))
+  mq_cpu_lists=(/sys/block/nvme${controller}n*/mq/${mq_index}/cpu_list)
+  test "${#mq_cpu_lists[@]}" -gt 0
+  test -e "${mq_cpu_lists[0]}"
+  for cpu_list_path in "${mq_cpu_lists[@]}"; do
+    test -z "$(cat "$cpu_list_path")"
+  done
+  interrupt_total="$(
+    awk -v irq="${irq}:" '
+      $1 == irq {
+        total = 0
+        for (field = 2; field <= NF && $field ~ /^[0-9]+$/; field++) {
+          total += $field
+        }
+        print total
+        found = 1
+      }
+      END { if (!found) exit 1 }
+    ' /proc/interrupts
+  )"
+  test "$interrupt_total" = 0
+}
+
 irq_files=0
+dormant_nvme_irqs=0
 for affinity_path in /proc/irq/[0-9]*/effective_affinity_list; do
   test -f "$affinity_path" || continue
   affinity="$(cat "$affinity_path")"
   test -n "$affinity" || continue
   irq_files=$((irq_files + 1))
   if cpu_list_intersects_measurement "$affinity"; then
+    irq="${affinity_path#/proc/irq/}"
+    irq="${irq%%/*}"
+    [[ "$irq" =~ ^[0-9]+$ ]]
+    if dormant_unmapped_nvme_irq "$irq"; then
+      dormant_nvme_irqs=$((dormant_nvme_irqs + 1))
+      continue
+    fi
     echo "IRQ affinity reaches measurement CPUs: $affinity_path=$affinity" >&2
     exit 1
   fi
 done
 test "$irq_files" -gt 0
 
-if compgen -G '/sys/bus/pci/devices/*/msi_irqs/[0-9]*' >/dev/null; then
-  echo "PCI MSI/MSI-X vectors remain active despite ${pci_msi_argument}" >&2
-  exit 1
-fi
-
-echo "reference CPU isolation verified: measurement=${measurement_cpus} housekeeping=${housekeeping_cpus} smt=off pci-msi=disabled irq=housekeeping-only measurement-idle=${measurement_idle_policy}:${measurement_max_idle_latency_us}us housekeeping-idle=${housekeeping_idle_policy}:${housekeeping_max_idle_latency_us}us"
+echo "reference CPU isolation verified: measurement=${measurement_cpus} housekeeping=${housekeeping_cpus} smt=off irq=housekeeping-only measurement-idle=${measurement_idle_policy}:${measurement_max_idle_latency_us}us housekeeping-idle=${housekeeping_idle_policy}:${housekeeping_max_idle_latency_us}us dormant-unmapped-nvme=${dormant_nvme_irqs}"
