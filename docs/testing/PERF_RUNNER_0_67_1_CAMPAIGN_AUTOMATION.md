@@ -59,6 +59,9 @@ qualification.
 - профиль остаётся
   `docs/testing/perf-host-profiles/ubuntu-24.04-reference-v1.json`;
 - runner `hydracache-perf-v1` уже зарегистрирован, но остановлен;
+- GitHub API показывает ровно один runner с именем `hydracache-perf-v1`,
+  custom label `hydracache-perf-v1` и `busy=false`; локальная регистрация сама
+  по себе недостаточна, потому что repository label мог остаться quarantined;
 - rootful Docker остановлен и отключён, rootless Docker принадлежит только
   `github-runner`;
 - оператор имеет `sudo`, а `gh auth status` проходит с правом запускать Actions

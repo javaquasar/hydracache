@@ -51,6 +51,11 @@ The unsafe change was merged by PR #109 at `04134905`, reverted by PR #110 at
    without changing host configuration. Exclude only rows whose unit-file
    state is exactly `transient`; keep permanent unit files and the separately
    captured active service/timer state fail-closed.
+9. Verify the repository-side runner registration before dispatch. The local
+   service can be healthy and online while GitHub still assigns a quarantine
+   custom label, leaving the intended job queued indefinitely. Require one
+   idle runner named `hydracache-perf-v1` with custom label
+   `hydracache-perf-v1`; do not infer this from the local `.runner` file.
 
 ## Recognition checklist
 

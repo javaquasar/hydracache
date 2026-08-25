@@ -29,6 +29,8 @@ SCHEMA_VERSION = 1
 EXPECTED_REPOSITORY = "javaquasar/hydracache"
 EXPECTED_BRANCH = "main"
 WORKFLOW = "ci.yml"
+EXPECTED_RUNNER_NAME = "hydracache-perf-v1"
+EXPECTED_RUNNER_LABEL = "hydracache-perf-v1"
 PROFILE_RELATIVE = Path("docs/testing/perf-host-profiles/ubuntu-24.04-reference-v1.json")
 STATE_FILE = "campaign-state.json"
 CAMPAIGN_RE = re.compile(r"^hc0671-[a-z0-9][a-z0-9-]{5,55}$")
@@ -640,6 +642,27 @@ def github_main_sha(state: dict[str, Any]) -> str:
         ],
         cwd=repo_root(),
     )
+
+
+def ensure_github_runner_contract(state: dict[str, Any]) -> None:
+    value = gh_json(["api", f"repos/{state['repository']}/actions/runners"])
+    if not isinstance(value, dict) or not isinstance(value.get("runners"), list):
+        raise CampaignError("GitHub runner listing is not an object with runners")
+    matches = [runner for runner in value["runners"] if runner.get("name") == EXPECTED_RUNNER_NAME]
+    if len(matches) != 1:
+        raise CampaignError(f"expected exactly one GitHub runner named {EXPECTED_RUNNER_NAME}")
+    runner = matches[0]
+    labels = {
+        label.get("name")
+        for label in runner.get("labels", [])
+        if isinstance(label, dict) and isinstance(label.get("name"), str)
+    }
+    if EXPECTED_RUNNER_LABEL not in labels:
+        raise CampaignError(
+            f"GitHub runner {EXPECTED_RUNNER_NAME} lacks required label {EXPECTED_RUNNER_LABEL}"
+        )
+    if runner.get("busy") is not False:
+        raise CampaignError(f"GitHub runner {EXPECTED_RUNNER_NAME} is already busy")
 
 
 def expected_title(state: dict[str, Any], step: str) -> str:
@@ -1279,6 +1302,7 @@ def check_pre_dispatch(campaign_dir: Path, state: dict[str, Any], step: str) -> 
     ensure_checkout(state["expected_sha"])
     if github_main_sha(state) != state["expected_sha"]:
         raise CampaignError("origin main no longer equals the qualified campaign SHA")
+    ensure_github_runner_contract(state)
     ensure_runner_offline(campaign_dir)
     run_host_action(campaign_dir, state, "check-frozen")
     guard = repo_root() / "scripts/perf/reference-runtime-irq-guard.sh"

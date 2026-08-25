@@ -26,6 +26,29 @@ def base_state() -> dict:
 
 
 class ReferenceCampaignTests(unittest.TestCase):
+    def test_github_runner_contract_requires_exact_custom_label_and_idle_runner(self) -> None:
+        state = base_state()
+        listing = {
+            "runners": [
+                {
+                    "name": campaign.EXPECTED_RUNNER_NAME,
+                    "busy": False,
+                    "labels": [
+                        {"name": "self-hosted"},
+                        {"name": campaign.EXPECTED_RUNNER_LABEL},
+                    ],
+                }
+            ]
+        }
+        with mock.patch.object(campaign, "gh_json", return_value=listing):
+            campaign.ensure_github_runner_contract(state)
+        listing["runners"][0]["labels"] = [{"name": "hydracache-perf-quarantined"}]
+        with (
+            mock.patch.object(campaign, "gh_json", return_value=listing),
+            self.assertRaises(campaign.CampaignError),
+        ):
+            campaign.ensure_github_runner_contract(state)
+
     def test_freeze_manifests_exclude_transient_systemd_units_symmetrically(self) -> None:
         root = Path(__file__).resolve().parents[2]
         expected_filter = "awk '$2 != \"transient\"'"
