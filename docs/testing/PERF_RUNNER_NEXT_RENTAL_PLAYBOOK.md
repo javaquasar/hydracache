@@ -226,6 +226,9 @@ sudo reboot
 
 The wrapper prints `REBOOT_REQUIRED=true` and intentionally does not reboot.
 After reconnecting, verify that no pending reboot/package operation remains.
+The installed root-owned CPU policy sets the exact `performance` governor,
+sets AMD P-State EPP to `performance` when the driver exposes it, and enforces
+the reviewed idle-latency cap before the runner can start.
 The reviewed contract is:
 
 - SMT off;
@@ -270,6 +273,12 @@ sudo scripts/perf/prepare-reference-host.sh freeze \
 `verify` composes the service policy with
 `provision-reference-isolation.sh verify`. `freeze` additionally runs the full
 provisioned-host audit and produces:
+
+On kernels where AMD P-State active mode does not expose the legacy global
+`cpufreq/boost` knob, the audit remains fail-closed: it records boost as enabled
+only when the CPU advertises CPB, every online policy uses `amd-pstate-epp`, and
+the driver, CPU-info, and scaling maximum frequencies are identical. The
+provisioning receipt records the selected turbo-policy backend.
 
 - `plan.json` and `applied.json`;
 - `freeze/host-freeze.json`;

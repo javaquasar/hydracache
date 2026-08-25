@@ -188,6 +188,15 @@ fn host_tuning_is_allowlisted_reversible_and_fail_closed() {
     assert!(tuning.contains("rootless Docker socket must be absent"));
     assert!(tuning.contains("runner service must be offline"));
     assert!(tuning.contains("provision-reference-isolation.sh\" verify"));
+    let isolation = read("scripts/perf/provision-reference-isolation.sh");
+    assert!(isolation.contains("required_governor=\"performance\""));
+    assert!(isolation.contains("required_energy_performance_preference=\"performance\""));
+    assert!(isolation.contains("scaling_governor"));
+
+    let audit = read("scripts/perf/audit-reference-host.sh");
+    assert!(audit.contains("amd-pstate-active-max-frequency-v1"));
+    assert!(audit.contains("amd_pstate_max_freq"));
+    assert!(audit.contains("turbo_policy_backend"));
     assert!(tuning.contains("audit-reference-host.sh\" --mode provisioned"));
     assert!(tuning.contains("dpkg-query --show"));
     assert!(tuning.contains("systemd-unit-files.tsv"));

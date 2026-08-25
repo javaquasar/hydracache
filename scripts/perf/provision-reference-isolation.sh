@@ -24,6 +24,8 @@ measurement_idle_policy="latency-cap-us-v1"
 measurement_max_idle_latency_us=1
 housekeeping_idle_policy="latency-cap-us-v1"
 housekeeping_max_idle_latency_us=1
+required_governor="performance"
+required_energy_performance_preference="performance"
 runner_unit="actions.runner.javaquasar-hydracache.hydracache-perf-v1.service"
 runner_dropin="/etc/systemd/system/${runner_unit}.d/20-hydracache-housekeeping.conf"
 runner_user="github-runner"
@@ -109,6 +111,26 @@ export LC_ALL=C
 
 measurement_max_idle_latency_us=${measurement_max_idle_latency_us}
 housekeeping_max_idle_latency_us=${housekeeping_max_idle_latency_us}
+required_governor=${required_governor}
+required_energy_performance_preference=${required_energy_performance_preference}
+
+governor_files=0
+for governor_path in /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor; do
+  test -f "\$governor_path"
+  test -w "\$governor_path"
+  printf '%s' "\$required_governor" >"\$governor_path"
+  governor_files=\$((governor_files + 1))
+done
+test "\$governor_files" -gt 0
+
+for preference_path in /sys/devices/system/cpu/cpu*/cpufreq/energy_performance_preference; do
+  test -f "\$preference_path" || continue
+  test -w "\$preference_path"
+  grep --quiet --word-regexp "\$required_energy_performance_preference" \
+    "\${preference_path%/*}/energy_performance_available_preferences"
+  printf '%s' "\$required_energy_performance_preference" >"\$preference_path"
+done
+
 enabled_shallow_states=0
 disabled_deep_states=0
 for cpu in 0 1 2 3 4 5 6 7; do
@@ -283,6 +305,16 @@ for cpu in 0 1 2 3 4 5 6 7; do
 done
 test "$enabled_shallow_states" -gt 0
 test "$disabled_deep_states" -gt 0
+
+governors="$(
+  grep --no-filename . /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor |
+    sort --unique
+)"
+test "$governors" = "$required_governor"
+for preference_path in /sys/devices/system/cpu/cpu*/cpufreq/energy_performance_preference; do
+  test -f "$preference_path" || continue
+  test "$(cat "$preference_path")" = "$required_energy_performance_preference"
+done
 
 cpu_list_intersects_measurement() {
   local cpu_list="$1"
