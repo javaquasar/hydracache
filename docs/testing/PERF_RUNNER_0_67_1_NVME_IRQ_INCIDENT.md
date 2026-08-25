@@ -128,6 +128,10 @@ problem rather than isolate it.
 
 - Rejected campaigns are immutable diagnostics. Each corrected run starts with
   the next unused campaign ID.
+- Before another campaign publishes host admission, close the prior campaign.
+  Close retires the canonical admission only when its campaign ID, source SHA,
+  receipt digest, and bundle digest match the closing campaign; a mismatch is
+  fail-closed and must never be removed blindly.
 - Never rerun a stale helper pinned to a reverted SHA. Revoke or rename it and
   stage a new helper with the exact admission SHA and admission-file SHA-256.
 - Generate procurement admission only from a clean checkout at exact

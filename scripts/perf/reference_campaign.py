@@ -484,6 +484,44 @@ def publish_host_admission(
     return bundle, receipt_path
 
 
+def canonical_admission_matches(canonical: Path, state: dict[str, Any]) -> bool:
+    host_admission = state.get("stages", {}).get("host_admission", {})
+    expected_receipt = host_admission.get("host_admission_receipt_sha256")
+    expected_bundle = host_admission.get("host_admission_bundle_sha256")
+    receipt_path = canonical / "reference-campaign-admission.json"
+    bundle_path = canonical / "reference-campaign-host-admission.tar.gz"
+    if not expected_receipt or not expected_bundle:
+        return False
+    try:
+        receipt = json.loads(receipt_path.read_text(encoding="utf-8"))
+        return (
+            receipt.get("campaign_id") == state["campaign_id"]
+            and receipt.get("source_commit") == state["expected_sha"]
+            and sha256_file(receipt_path) == expected_receipt
+            and sha256_file(bundle_path) == expected_bundle
+        )
+    except (OSError, json.JSONDecodeError):
+        return False
+
+
+def retire_canonical_host_admission(campaign_dir: Path, state: dict[str, Any]) -> Path | None:
+    canonical = Path("/var/lib/hydracache-perf/reference-campaign-v1")
+    if not canonical.exists():
+        return None
+    if not canonical_admission_matches(canonical, state):
+        raise CampaignError("canonical host admission belongs to another campaign or has drifted")
+    retired = campaign_dir / "retired-reference-campaign-v1"
+    if retired.exists():
+        raise CampaignError(f"retired canonical admission already exists: {retired}")
+    if run_visible(
+        sudo_command("mv", str(canonical), str(retired)),
+        cwd=repo_root(),
+        log_path=campaign_dir / "host-lifecycle.log",
+    ) != 0:
+        raise CampaignError("could not retire canonical host admission")
+    return retired
+
+
 def validate_burn_receipt(path: Path, state: dict[str, Any]) -> dict[str, Any]:
     try:
         receipt = json.loads(path.read_text(encoding="utf-8"))
@@ -1709,6 +1747,9 @@ def command_close(args: argparse.Namespace) -> None:
     archive = archive_host_state(campaign_dir, state, "host-state-final.tar.gz")
     state["stages"]["final_host_archive"] = str(archive)
     state["stages"]["final_host_archive_sha256"] = sha256_file(archive)
+    retired = retire_canonical_host_admission(campaign_dir, state)
+    if retired is not None:
+        state["stages"]["retired_canonical_host_admission"] = str(retired)
     state["phase"] = "closed"
     save_state(campaign_dir, state)
     append_event(campaign_dir, "campaign-closed")

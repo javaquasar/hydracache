@@ -38,6 +38,27 @@ class ReferenceCampaignTests(unittest.TestCase):
             ["gh", "auth", "status"], cwd=Path("/repo")
         )
 
+    def test_canonical_admission_owner_is_digest_and_campaign_bound(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            canonical = Path(temporary)
+            receipt = {
+                "campaign_id": "hc0671-rental-a1b2c3",
+                "source_commit": SHA,
+            }
+            receipt_path = canonical / "reference-campaign-admission.json"
+            bundle_path = canonical / "reference-campaign-host-admission.tar.gz"
+            receipt_path.write_text(json.dumps(receipt) + "\n", encoding="utf-8")
+            bundle_path.write_bytes(b"bundle")
+            state = base_state()
+            state["stages"]["host_admission"] = {
+                "host_admission_receipt_sha256": campaign.sha256_file(receipt_path),
+                "host_admission_bundle_sha256": campaign.sha256_file(bundle_path),
+            }
+            self.assertTrue(campaign.canonical_admission_matches(canonical, state))
+            receipt["campaign_id"] = "hc0671-rental-other"
+            receipt_path.write_text(json.dumps(receipt) + "\n", encoding="utf-8")
+            self.assertFalse(campaign.canonical_admission_matches(canonical, state))
+
     def test_campaign_and_artifact_names_are_strict(self) -> None:
         self.assertTrue(campaign.CAMPAIGN_RE.fullmatch("hc0671-rental-a1b2c3"))
         self.assertFalse(campaign.CAMPAIGN_RE.fullmatch("HC0671 bad; rm"))

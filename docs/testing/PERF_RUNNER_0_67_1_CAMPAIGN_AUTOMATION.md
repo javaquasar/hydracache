@@ -204,7 +204,9 @@ scripts/perf/reference-campaign.sh close \
 ```
 
 `close` останавливает runner/rootless Docker, проверяет отсутствие чужих
-reference jobs, создаёт финальный host-state archive и печатает
+reference jobs, создаёт финальный host-state archive и переносит canonical host
+admission в каталог закрываемой кампании только после проверки campaign ID,
+source SHA и обоих SHA-256. Затем он печатает
 `SAFE_TO_DELETE_SERVER=true`. После этого оператор отдельно:
 
 1. переносит каталог кампании в постоянное хранилище и сверяет hashes;
