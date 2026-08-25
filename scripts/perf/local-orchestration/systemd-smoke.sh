@@ -189,10 +189,13 @@ Description=HydraCache local runner fixture
 [Service]
 User=github-runner
 ExecStart=/bin/sleep infinity
+[Install]
+WantedBy=multi-user.target
 EOF
 systemctl daemon-reload
 systemctl enable actions.runner.javaquasar-hydracache.hydracache-perf-v1.service >/dev/null
 
+scripts/perf/runner-service.sh offline
 scripts/perf/verify-runner-service.sh --expected-label hydracache-perf-v1
 scripts/perf/runner-service.sh online
 expect_failure tuning-while-runner-online \
