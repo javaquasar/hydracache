@@ -186,6 +186,7 @@ fn host_tuning_is_allowlisted_reversible_and_fail_closed() {
     let checker = read("scripts/perf/check-reference-host-freeze.sh");
     let wrapper = read("scripts/perf/prepare-reference-host.sh");
     let playbook = read("docs/testing/PERF_RUNNER_NEXT_RENTAL_PLAYBOOK.md");
+    let irq_incident = read("docs/testing/PERF_RUNNER_0_67_1_NVME_IRQ_INCIDENT.md");
     let early_irq = read("scripts/perf/reference-host-irq-layout-preflight.sh");
     let systemd_smoke = read("scripts/perf/local-orchestration/systemd-smoke.sh");
     for script in [&tuning, &checker, &wrapper] {
@@ -233,6 +234,20 @@ fn host_tuning_is_allowlisted_reversible_and_fail_closed() {
     assert!(!tuning.contains(r#"printf "%.0f\\n", $2 * 1024"#));
     assert!(!tuning.contains("systemctl disable --now --all"));
     assert!(!tuning.contains("systemctl mask --now '*'"));
+
+    assert!(playbook.contains("PERF_RUNNER_0_67_1_NVME_IRQ_INCIDENT.md"));
+    for required in [
+        "Never add global `pci=nomsi`",
+        "taskset` changes affinity **before** `execve",
+        "dedicated temporary `known_hosts` file",
+        "Rejected campaigns are immutable diagnostics",
+        "trusted checkout SHA equals",
+    ] {
+        assert!(
+            irq_incident.contains(required),
+            "NVMe IRQ incident runbook lacks {required}"
+        );
+    }
 
     assert!(checker.contains("frozen host drift detected"));
     assert!(checker.contains("reference-host-tuning.sh\" verify"));

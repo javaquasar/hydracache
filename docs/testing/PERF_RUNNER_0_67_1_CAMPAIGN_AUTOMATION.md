@@ -4,6 +4,12 @@
 является свидетельством прохождения qualification или bootstrap на новом
 сервере.
 
+Перед изменением boot/IRQ policy или восстановлением недоступного хоста
+обязательно используйте
+[runbook инцидента NVMe IRQ](PERF_RUNNER_0_67_1_NVME_IRQ_INCIDENT.md). Он
+фиксирует запрет глобального `pci=nomsi`, Rescue-процедуру, опасность stale
+checkout и причину обязательного prewarm до IRQ baseline.
+
 ## Граница автоматизации
 
 `scripts/perf/reference-campaign.sh` управляет уже созданным bare-metal
@@ -62,6 +68,16 @@ qualification.
 
 Не передавайте token, IP, SSH key или DMI serial аргументами контроллера. Они не
 нужны и не должны попасть в логи/receipts.
+
+Все пакеты, включая GitHub CLI `gh`, должны быть установлены, а `gh auth status`
+должен успешно проходить **до `freeze`**. Freeze теперь проверяет это явно.
+Установка пакета после freeze изменяет frozen package manifest; такую кампанию
+нужно закрыть до первого dispatch и повторить под новым campaign ID.
+
+Frozen systemd unit-file manifest фиксирует постоянные unit files, но исключает
+объекты со state `transient` (например, `session-*.scope`). Их имена меняются
+при каждом SSH/logind-сеансе и не описывают конфигурацию хоста. Active-state
+manifest и все постоянные unit-file states по-прежнему проверяются byte-exact.
 
 ## 1. Подготовка до reboot
 
@@ -193,7 +209,9 @@ scripts/perf/reference-campaign.sh close \
 ```
 
 `close` останавливает runner/rootless Docker, проверяет отсутствие чужих
-reference jobs, создаёт финальный host-state archive и печатает
+reference jobs, создаёт финальный host-state archive и переносит canonical host
+admission в каталог закрываемой кампании только после проверки campaign ID,
+source SHA и обоих SHA-256. Затем он печатает
 `SAFE_TO_DELETE_SERVER=true`. После этого оператор отдельно:
 
 1. переносит каталог кампании в постоянное хранилище и сверяет hashes;

@@ -4,6 +4,7 @@ import json
 from pathlib import Path
 import tempfile
 import unittest
+from unittest import mock
 import zipfile
 
 import reference_campaign as campaign
@@ -25,6 +26,48 @@ def base_state() -> dict:
 
 
 class ReferenceCampaignTests(unittest.TestCase):
+    def test_freeze_manifests_exclude_transient_systemd_units_symmetrically(self) -> None:
+        root = Path(__file__).resolve().parents[2]
+        expected_filter = "awk '$2 != \"transient\"'"
+        for relative in (
+            "scripts/perf/reference-host-tuning.sh",
+            "scripts/perf/check-reference-host-freeze.sh",
+        ):
+            self.assertIn(expected_filter, (root / relative).read_text(encoding="utf-8"))
+
+    def test_github_readiness_requires_cli_and_authenticated_session(self) -> None:
+        with (
+            mock.patch.object(campaign, "require_tools") as require_tools,
+            mock.patch.object(campaign, "run_capture", return_value="") as run_capture,
+            mock.patch.object(campaign, "repo_root", return_value=Path("/repo")),
+        ):
+            campaign.require_github_dispatch_readiness()
+        require_tools.assert_called_once_with(["gh"])
+        run_capture.assert_called_once_with(
+            ["gh", "auth", "status"], cwd=Path("/repo")
+        )
+
+    def test_canonical_admission_owner_is_digest_and_campaign_bound(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            canonical = Path(temporary)
+            receipt = {
+                "campaign_id": "hc0671-rental-a1b2c3",
+                "source_commit": SHA,
+            }
+            receipt_path = canonical / "reference-campaign-admission.json"
+            bundle_path = canonical / "reference-campaign-host-admission.tar.gz"
+            receipt_path.write_text(json.dumps(receipt) + "\n", encoding="utf-8")
+            bundle_path.write_bytes(b"bundle")
+            state = base_state()
+            state["stages"]["host_admission"] = {
+                "host_admission_receipt_sha256": campaign.sha256_file(receipt_path),
+                "host_admission_bundle_sha256": campaign.sha256_file(bundle_path),
+            }
+            self.assertTrue(campaign.canonical_admission_matches(canonical, state))
+            receipt["campaign_id"] = "hc0671-rental-other"
+            receipt_path.write_text(json.dumps(receipt) + "\n", encoding="utf-8")
+            self.assertFalse(campaign.canonical_admission_matches(canonical, state))
+
     def test_campaign_and_artifact_names_are_strict(self) -> None:
         self.assertTrue(campaign.CAMPAIGN_RE.fullmatch("hc0671-rental-a1b2c3"))
         self.assertFalse(campaign.CAMPAIGN_RE.fullmatch("HC0671 bad; rm"))
