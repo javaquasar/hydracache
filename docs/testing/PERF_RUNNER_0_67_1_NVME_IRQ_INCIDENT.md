@@ -181,6 +181,23 @@ the changed fingerprint implementation.
   log, treat it as compromised and rotate it. Documentation must contain only
   placeholders and public-key material may be shown only when needed.
 
+## Preserve samples when stability rejects evidence
+
+The first full-dress run reached W2 but rejected the `concurrent_inflight=1000`
+point because its robust spread was just above the committed limit. The error
+reported the ratio and dimensions but omitted the underlying repeat samples.
+That made a valid fail-closed rejection unnecessarily hard to diagnose: the
+artifact could not distinguish one scheduler outlier from a measurement window
+that was systematically too short.
+
+Scalar spread failures must therefore include their finite repeat samples in
+the validation diagnostic. The report remains rejected and no invalid JSON is
+published as canonical evidence; the extra values are diagnostic only. Never
+raise a tolerance or retry inside the rejected campaign based only on the
+aggregate ratio. First retain the samples, explain the variance, change the
+committed scenario only if the data supports it, then start a new campaign at
+an exact green `main` SHA.
+
 ## Evidence retained from this incident
 
 The durable conclusions are encoded in three places:
