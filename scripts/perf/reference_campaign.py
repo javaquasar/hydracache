@@ -483,13 +483,17 @@ def validate_burn_receipt(path: Path, state: dict[str, Any]) -> dict[str, Any]:
         receipt = json.loads(path.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError) as error:
         raise CampaignError(f"invalid IRQ burn-in receipt: {error}") from error
-    if receipt.get("schema_version") != 1 or receipt.get("stage") != "reference-host-irq-burn-in":
+    if receipt.get("schema_version") != 2 or receipt.get("stage") != "reference-host-irq-burn-in":
         raise CampaignError("wrong IRQ burn-in receipt schema/stage")
     if receipt.get("source_commit") != state["expected_sha"]:
         raise CampaignError("IRQ burn-in source SHA mismatch")
     if receipt.get("profile_sha256") != state["profile_sha256"]:
         raise CampaignError("IRQ burn-in profile digest mismatch")
-    if receipt.get("measurement_cpus") != "1-4" or receipt.get("duration_seconds", 0) < 600:
+    if (
+        receipt.get("measurement_cpus") != "1-4"
+        or receipt.get("storage_io_cpus") != "0,5-7"
+        or receipt.get("duration_seconds", 0) < 600
+    ):
         raise CampaignError("IRQ burn-in measurement/duration contract mismatch")
     if receipt.get("passed") is not True or receipt.get("failure_step") is not None:
         raise CampaignError("IRQ burn-in did not pass")

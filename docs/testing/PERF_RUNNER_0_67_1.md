@@ -73,6 +73,11 @@ vector may point at a measurement CPU only while its queue is unmapped and its i
 exactly zero. Any active, mapped, or historically fired vector fails closed and requires a clean
 host recovery before another sample.
 
+The paired storage-submission contract confines read-only NVMe burn-in and all durable
+materialization to housekeeping CPUs `0,5-7`. CPUs `1-4` may exercise the network path but may not
+submit storage I/O: doing so selects their immutable managed NVMe queues. The delta guard monitors
+those dormant queues and rejects the allocation if any counter changes.
+
 Run these helpers only through the reviewed `0.67`/`0.67.1` GitHub workflow. A direct
 `taskset --cpu-list 1-4 cargo ...` command is forbidden because compiler and artifact I/O can
 activate immutable managed NVMe queues on a measurement CPU.

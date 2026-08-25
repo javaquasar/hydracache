@@ -11,10 +11,11 @@ usage: scripts/perf/reference-host-irq-burn-in.sh \
   [--network-target IPV4]
 
 This is a destructive-to-time but read-only-to-storage host admission probe. It
-runs outside measured evidence, deliberately stimulates NVMe and network queues
-from every reviewed measurement CPU, then requires zero IRQ activity or mapping
-change on those CPUs through the following idle window. It never writes to a
-block device and it never relaxes the release IRQ guards.
+runs outside measured evidence, deliberately stimulates NVMe queues only from
+the reviewed storage-I/O/housekeeping CPUs and network queues from every
+measurement CPU, then requires zero IRQ activity or mapping change on the
+measurement CPUs through the following idle window. It never writes to a block
+device and it never relaxes the release IRQ guards.
 EOF
   exit 2
 }
@@ -92,6 +93,13 @@ test "$measurement" = "1-4" || {
   echo "IRQ burn-in only supports the reviewed 1-4 measurement contract" >&2
   exit 1
 }
+storage_io="$(jq --exit-status --raw-output '.interrupt_contract.storage_io_cpus' "$profile")"
+test "$storage_io" = "0,5-7" || {
+  echo "IRQ burn-in only supports the reviewed 0,5-7 storage-I/O contract" >&2
+  exit 1
+}
+test "$(jq --exit-status --raw-output '.interrupt_contract.measurement_cpu_storage_io' "$profile")" = forbidden
+test "$(jq --exit-status --raw-output '.interrupt_contract.maximum_measurement_cpu_irq_delta' "$profile")" = 0
 
 if test -z "$network_target"; then
   network_target="$(ip -4 route show default | awk 'NR == 1 { print $3 }')"
@@ -174,6 +182,7 @@ write_receipt() {
     --arg source_commit "$source_commit" \
     --arg profile_sha256 "$profile_sha256" \
     --arg measurement_cpus "$measurement" \
+    --arg storage_io_cpus "$storage_io" \
     --arg network_target "$network_target" \
     --arg failure_step "$failure_step" \
     --arg baseline_sha256 "$baseline_sha256" \
@@ -184,13 +193,14 @@ write_receipt() {
     --argjson nvme_devices "$devices_json" \
     --argjson passed "$passed" '
       {
-        schema_version: 1,
+        schema_version: 2,
         stage: "reference-host-irq-burn-in",
         source_commit: $source_commit,
         profile_sha256: $profile_sha256,
         measurement_cpus: $measurement_cpus,
+        storage_io_cpus: $storage_io_cpus,
         duration_seconds: $duration_seconds,
-        read_mebibytes_per_cpu_device: $read_mebibytes,
+        read_mebibytes_per_storage_cpu_device: $read_mebibytes,
         network_target: $network_target,
         nvme_devices: $nvme_devices,
         started_at: $started_at,
@@ -224,11 +234,12 @@ MEASUREMENT_AFFINITY="$measurement" \
   "$repo_root/scripts/perf/reference-runtime-irq-delta-guard.sh" baseline "$baseline"
 
 failure_step=nvme-stimulus
-mapfile -t measurement_cpus < <(seq 1 4)
+measurement_cpus=(1 2 3 4)
+storage_io_cpus=(0 5 6 7)
 declare -a stimulus_pids=()
 for device in "${nvme_devices[@]}"; do
   cpu_index=0
-  for cpu in "${measurement_cpus[@]}"; do
+  for cpu in "${storage_io_cpus[@]}"; do
     taskset --cpu-list "$cpu" \
       dd if="$device" of=/dev/null bs=1M count="$read_mebibytes" \
         skip="$((cpu_index * read_mebibytes))" iflag=direct,fullblock status=none &

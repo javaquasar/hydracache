@@ -78,6 +78,10 @@ validate_profile() {
     .cpu_contract.expected_online_cpus == "0-7" and
     .cpu_contract.smt == "off" and
     .cpu_contract.governor == "performance" and
+    .interrupt_contract.managed_irq_policy == "dormant-measurement-queues-v1" and
+    .interrupt_contract.storage_io_cpus == .cpu_contract.housekeeping_cpus and
+    .interrupt_contract.measurement_cpu_storage_io == "forbidden" and
+    .interrupt_contract.maximum_measurement_cpu_irq_delta == 0 and
     (.service_policy.protected_units | type == "array" and length > 0) and
     (.service_policy.required_active_groups | type == "array" and length == 2) and
     (.service_policy.disable_if_present | type == "array") and

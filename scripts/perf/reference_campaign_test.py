@@ -168,11 +168,12 @@ class ReferenceCampaignTests(unittest.TestCase):
             state = base_state()
             state["profile_sha256"] = "3" * 64
             receipt = {
-                "schema_version": 1,
+                "schema_version": 2,
                 "stage": "reference-host-irq-burn-in",
                 "source_commit": SHA,
                 "profile_sha256": "3" * 64,
                 "measurement_cpus": "1-4",
+                "storage_io_cpus": "0,5-7",
                 "duration_seconds": 900,
                 "passed": True,
                 "failure_step": None,
