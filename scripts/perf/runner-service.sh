@@ -22,10 +22,12 @@ test "$(systemctl show "$unit" --property=User --value)" = "github-runner"
 case "$action" in
   online)
     sudo systemctl start "$unit"
+    test "$(systemctl is-enabled "$unit" || true)" = "disabled"
     systemctl is-active --quiet "$unit"
     ;;
   offline)
-    sudo systemctl stop "$unit"
+    sudo systemctl disable --now "$unit"
+    test "$(systemctl is-enabled "$unit" || true)" = "disabled"
     test "$(systemctl is-active "$unit" || true)" = "inactive"
     ;;
   status)

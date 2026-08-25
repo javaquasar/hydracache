@@ -212,6 +212,10 @@ sudo scripts/perf/prepare-reference-host.sh apply-services \
   --profile "$HC_PROFILE" --state-dir "$HC_STATE"
 ```
 
+`offline` disables and stops the runner service. This is a persistent baseline:
+an unattended reboot must not reconnect the runner before a new frozen-state
+check and an authorized dispatch.
+
 Review `plan.json` and `applied.json`. The latter binds the applied operation to
 the SHA-256 of the captured pre-state. If the policy needs amendment, make and
 review a new profile version rather than editing receipts on the server.
@@ -226,6 +230,9 @@ sudo reboot
 
 The wrapper prints `REBOOT_REQUIRED=true` and intentionally does not reboot.
 After reconnecting, verify that no pending reboot/package operation remains.
+The isolation drop-in is deliberately named to sort after provider-owned GRUB
+drop-ins, and installation fails unless the fully resolved command line contains
+every isolation argument exactly once.
 The installed root-owned CPU policy sets the exact `performance` governor,
 sets AMD P-State EPP to `performance` when the driver exposes it, and enforces
 the reviewed idle-latency cap before the runner can start.
@@ -317,7 +324,8 @@ or selected sysctl drift. Do not “fix” the receipt to match a changed host. 
 the cause; either restore the frozen state or start a new qualification/sample
 family.
 
-Only then bring the runner online, dispatch exactly one job, and avoid all other
+Only then bring the runner online (which starts the still-disabled service for
+this dispatch only), dispatch exactly one job, and avoid all other
 performance jobs. The job starts rootless Docker only for the required target
 phase and returns it to stopped state. After the job, take the runner offline,
 run the drift check again, and validate the IRQ post-guard before accepting the

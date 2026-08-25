@@ -253,6 +253,10 @@ if systemctl is-active --quiet "$runner_unit"; then
   echo "runner service must be offline during provisioned-state audit: $runner_unit" >&2
   exit 1
 fi
+test "$(systemctl is-enabled "$runner_unit" || true)" = disabled || {
+  echo "runner service must remain disabled between authorized dispatches: $runner_unit" >&2
+  exit 1
+}
 
 output="$repo_root/target/test-evidence/0.67.1/runner-provisioned.json"
 mkdir --parents "$(dirname "$output")"

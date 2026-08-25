@@ -192,6 +192,9 @@ fn host_tuning_is_allowlisted_reversible_and_fail_closed() {
     assert!(isolation.contains("required_governor=\"performance\""));
     assert!(isolation.contains("required_energy_performance_preference=\"performance\""));
     assert!(isolation.contains("scaling_governor"));
+    assert!(isolation.contains("zz-hydracache-perf-isolation.cfg"));
+    assert!(isolation.contains("legacy_grub_dropin"));
+    assert!(isolation.contains("resolved_grub_cmdline"));
 
     let audit = read("scripts/perf/audit-reference-host.sh");
     assert!(audit.contains("amd-pstate-active-max-frequency-v1"));

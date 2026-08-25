@@ -31,7 +31,8 @@ runner_dropin="/etc/systemd/system/${runner_unit}.d/20-hydracache-housekeeping.c
 runner_user="github-runner"
 runner_uid="$(id --user "$runner_user")"
 docker_dropin="/etc/systemd/user/docker.service.d/20-hydracache-housekeeping.conf"
-grub_dropin="/etc/default/grub.d/60-hydracache-perf-isolation.cfg"
+legacy_grub_dropin="/etc/default/grub.d/60-hydracache-perf-isolation.cfg"
+grub_dropin="/etc/default/grub.d/zz-hydracache-perf-isolation.cfg"
 idle_policy_script="/usr/local/sbin/hydracache-perf-apply-idle-policy"
 idle_policy_unit="hydracache-perf-idle-policy.service"
 idle_policy_unit_path="/etc/systemd/system/${idle_policy_unit}"
@@ -83,6 +84,7 @@ if test "$action" = install; then
     systemctl --user is-active docker.service || true)" = inactive
 
   install --directory --owner=root --group=root --mode=0755 /etc/default/grub.d
+  rm --force "$legacy_grub_dropin"
   write_root_file "$grub_dropin" 0644 <<EOF
 GRUB_CMDLINE_LINUX_DEFAULT="\${GRUB_CMDLINE_LINUX_DEFAULT} nosmt isolcpus=${isolcpus_argument} nohz_full=${measurement_cpus} rcu_nocbs=${measurement_cpus} irqaffinity=${housekeeping_cpus}"
 EOF
@@ -183,6 +185,31 @@ EOF
   systemctl enable "$idle_policy_unit"
   systemctl restart "$idle_policy_unit"
   update-grub
+  resolved_grub_cmdline="$(
+    sh -c '
+      . /etc/default/grub
+      for dropin in /etc/default/grub.d/*.cfg; do
+        test -e "$dropin" || continue
+        . "$dropin"
+      done
+      printf "%s\n" "$GRUB_CMDLINE_LINUX_DEFAULT"
+    '
+  )"
+  old_ifs="$IFS"
+  IFS=' ' read -r -a resolved_grub_arguments <<<"$resolved_grub_cmdline"
+  IFS="$old_ifs"
+  for expected in \
+    nosmt \
+    "isolcpus=${isolcpus_argument}" \
+    "nohz_full=${measurement_cpus}" \
+    "rcu_nocbs=${measurement_cpus}" \
+    "irqaffinity=${housekeeping_cpus}"; do
+    count=0
+    for argument in "${resolved_grub_arguments[@]}"; do
+      test "$argument" = "$expected" && count=$((count + 1))
+    done
+    test "$count" -eq 1
+  done
   if test "$isolation_already_active" = true; then
     echo "reference CPU isolation and idle policy installed; current kernel isolation is already active"
   else
@@ -237,6 +264,8 @@ has_exact_kernel_argument "isolcpus=${isolcpus_argument}"
 has_exact_kernel_argument "nohz_full=${measurement_cpus}"
 has_exact_kernel_argument "rcu_nocbs=${measurement_cpus}"
 has_exact_kernel_argument "irqaffinity=${housekeeping_cpus}"
+test -f "$grub_dropin"
+test ! -e "$legacy_grub_dropin"
 
 test "$(cat /sys/devices/system/cpu/smt/control)" = off
 test "$(cat /sys/devices/system/cpu/online)" = 0-7
