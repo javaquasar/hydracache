@@ -46,6 +46,11 @@ The unsafe change was merged by PR #109 at `04134905`, reverted by PR #110 at
    the package-manifest digest, so `check-frozen` must reject the campaign
    before dispatch. Close that campaign and restart with a new ID; do not
    rewrite its frozen receipt.
+8. Do not freeze transient logind unit names such as `session-*.scope` into the
+   persistent systemd unit-file manifest. A new SSH session changes that name
+   without changing host configuration. Exclude only rows whose unit-file
+   state is exactly `transient`; keep permanent unit files and the separately
+   captured active service/timer state fail-closed.
 
 ## Recognition checklist
 

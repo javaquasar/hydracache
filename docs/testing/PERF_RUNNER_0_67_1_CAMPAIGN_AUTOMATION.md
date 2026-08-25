@@ -74,6 +74,11 @@ qualification.
 Установка пакета после freeze изменяет frozen package manifest; такую кампанию
 нужно закрыть до первого dispatch и повторить под новым campaign ID.
 
+Frozen systemd unit-file manifest фиксирует постоянные unit files, но исключает
+объекты со state `transient` (например, `session-*.scope`). Их имена меняются
+при каждом SSH/logind-сеансе и не описывают конфигурацию хоста. Active-state
+manifest и все постоянные unit-file states по-прежнему проверяются byte-exact.
+
 ## 1. Подготовка до reboot
 
 Выберите уникальный идентификатор. Он должен соответствовать

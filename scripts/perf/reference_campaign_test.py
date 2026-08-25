@@ -26,6 +26,15 @@ def base_state() -> dict:
 
 
 class ReferenceCampaignTests(unittest.TestCase):
+    def test_freeze_manifests_exclude_transient_systemd_units_symmetrically(self) -> None:
+        root = Path(__file__).resolve().parents[2]
+        expected_filter = "awk '$2 != \"transient\"'"
+        for relative in (
+            "scripts/perf/reference-host-tuning.sh",
+            "scripts/perf/check-reference-host-freeze.sh",
+        ):
+            self.assertIn(expected_filter, (root / relative).read_text(encoding="utf-8"))
+
     def test_github_readiness_requires_cli_and_authenticated_session(self) -> None:
         with (
             mock.patch.object(campaign, "require_tools") as require_tools,
