@@ -60,10 +60,7 @@
       "fstrim.timer",
       "fwupd-refresh.timer",
       "man-db.timer",
-      "motd-news.timer",
-      "snapd.refresh.timer",
-      "snapd.service",
-      "snapd.socket"
+      "motd-news.timer"
     ],
     "mask_if_present": [
       "apt-daily.service",
@@ -71,6 +68,9 @@
       "irqbalance.service",
       "packagekit-offline-update.service",
       "packagekit.service",
+      "snapd.refresh.timer",
+      "snapd.service",
+      "snapd.socket",
       "unattended-upgrades.service"
     ],
     "require_inactive_if_present": [
