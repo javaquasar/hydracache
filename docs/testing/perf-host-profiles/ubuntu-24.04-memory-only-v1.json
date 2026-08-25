@@ -25,6 +25,12 @@
     "measurement_max_idle_latency_us": 1,
     "housekeeping_max_idle_latency_us": 1
   },
+  "interrupt_contract": {
+    "managed_irq_policy": "dormant-measurement-queues-v1",
+    "storage_io_cpus": "0,5-7",
+    "measurement_cpu_storage_io": "forbidden",
+    "maximum_measurement_cpu_irq_delta": 0
+  },
   "measurement_window_contract": {
     "mode": "memory-only-v1",
     "runtime_filesystem": "tmpfs",

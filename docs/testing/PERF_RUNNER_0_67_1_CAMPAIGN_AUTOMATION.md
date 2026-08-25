@@ -110,10 +110,13 @@ scripts/perf/reference-campaign.sh freeze \
 Burn-in является диагностикой допуска, а не performance evidence. Он:
 
 1. требует offline runner и отсутствующий rootful Docker socket;
-2. запускает неизменённый абсолютный IRQ guard;
-3. снимает baseline IRQ counters/affinity;
+2. предварительно загружает `ping` и его динамические зависимости на
+   housekeeping CPU;
+3. запускает неизменённый абсолютный IRQ guard и затем снимает baseline IRQ
+   counters/affinity;
 4. выполняет только чтение 64–1024 MiB с каждого NVMe namespace с каждого
-   measurement CPU и сетевой stimulus с тех же CPU;
+   разрешённого storage-I/O CPU `0,5-7`, а сетевой stimulus — с каждого
+   measurement CPU `1-4`;
 5. требует нулевой IRQ delta сразу после stimulus;
 6. ждёт 600–3600 секунд и повторяет абсолютный/delta guards;
 7. сохраняет raw `/proc/interrupts`, baseline, log и non-evidence JSON receipt.
@@ -122,6 +125,15 @@ Burn-in является диагностикой допуска, а не perfor
 длинных платных jobs. Автоматического поиска другого CPU-set нет: профиль `v1`
 фиксирован. Другой набор требует нового reviewed profile, связанных тестов и
 новой qualification.
+
+Prewarm до baseline обязателен: `taskset` устанавливает affinity до `execve`,
+поэтому cold page fault самого `ping` без prewarm был бы storage I/O с
+measurement CPU и корректно активировал бы его dormant NVMe queue.
+
+Это разделение обязательно для managed MSI-X: immutable per-CPU NVMe queue на
+measurement CPU может оставаться только dormant/unmapped. Любая storage I/O,
+запущенная с CPU `1-4`, активирует такую очередь и должна быть отклонена delta
+guard, а не маскироваться изменением affinity или ослаблением допуска.
 
 ## 3. Полная последовательная кампания
 

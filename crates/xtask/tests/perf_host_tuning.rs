@@ -42,6 +42,19 @@ fn ubuntu_reference_profile_is_explicit_versioned_and_safe() {
     assert_eq!(profile["cpu_contract"]["housekeeping_cpus"], "0,5-7");
     assert_eq!(profile["cpu_contract"]["smt"], "off");
     assert_eq!(profile["cpu_contract"]["governor"], "performance");
+    assert_eq!(
+        profile["interrupt_contract"]["managed_irq_policy"],
+        "dormant-measurement-queues-v1"
+    );
+    assert_eq!(profile["interrupt_contract"]["storage_io_cpus"], "0,5-7");
+    assert_eq!(
+        profile["interrupt_contract"]["measurement_cpu_storage_io"],
+        "forbidden"
+    );
+    assert_eq!(
+        profile["interrupt_contract"]["maximum_measurement_cpu_irq_delta"],
+        0
+    );
 
     let protected = strings(&profile, "/service_policy/protected_units");
     let disabled = strings(&profile, "/service_policy/disable_if_present");
@@ -108,6 +121,7 @@ fn ubuntu_memory_only_profile_is_additive_explicit_and_non_ship() {
     assert_eq!(profile["schema_version"], 1);
     assert_eq!(profile["profile_id"], "ubuntu-24.04-memory-only-v1");
     assert_eq!(profile["cpu_contract"], strict["cpu_contract"]);
+    assert_eq!(profile["interrupt_contract"], strict["interrupt_contract"]);
     assert_eq!(profile["service_policy"], strict["service_policy"]);
     assert_eq!(
         profile["measurement_window_contract"]["mode"],
@@ -350,6 +364,9 @@ fn reference_campaign_controller_is_serial_resumable_and_provider_safe() {
         "test \"$duration_seconds\" -ge 600",
         "dd if=\"$device\" of=/dev/null",
         "taskset --cpu-list \"$cpu\"",
+        "storage_io_cpus=(0 5 6 7)",
+        "for cpu in \"${storage_io_cpus[@]}\"",
+        "read_mebibytes_per_storage_cpu_device",
         "post-stimulus",
         "post-idle",
         "qualification_evidence: false",
@@ -357,6 +374,17 @@ fn reference_campaign_controller_is_serial_resumable_and_provider_safe() {
     ] {
         assert!(burn_in.contains(required), "IRQ burn-in lacks {required}");
     }
+    let prewarm = burn_in
+        .find("failure_step=network-prewarm")
+        .expect("network prewarm must be explicit");
+    let baseline = burn_in
+        .find("failure_step=baseline")
+        .expect("IRQ baseline must be explicit");
+    assert!(
+        prewarm < baseline,
+        "network executable prewarm must precede the IRQ baseline"
+    );
+    assert!(burn_in.contains("taskset --cpu-list \"${storage_io_cpus[0]}\""));
     assert!(!controller.contains("provider delete"));
     assert!(!controller.contains("server delete"));
     for required in [

@@ -253,6 +253,13 @@ The reviewed contract is:
 - no active IRQ affinity into measurement CPUs, except the narrowly reviewed
   dormant/unmapped NVMe case that must still have zero interrupts.
 
+The storage-submission side of that exception is explicit: read-only NVMe
+burn-in runs from housekeeping CPUs `0,5-7`, while CPUs `1-4` are forbidden to
+submit storage I/O. Managed NVMe vectors assigned solely to measurement CPUs
+must remain dormant with an unchanged zero counter before, during, and after
+the stimulus. The runtime delta guard rejects any later activation; the policy
+does not rewrite immutable managed affinity and never disables MSI/MSI-X.
+
 Before entering a GitHub registration token or completing the remaining runner
 setup, execute the early IRQ layout probe:
 
