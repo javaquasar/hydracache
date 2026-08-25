@@ -119,6 +119,12 @@ def require_tools(names: Iterable[str]) -> None:
         raise CampaignError(f"missing required tools: {', '.join(missing)}")
 
 
+def require_github_dispatch_readiness() -> None:
+    """Fail before freeze if installing/authenticating gh would drift the host later."""
+    require_tools(["gh"])
+    run_capture(["gh", "auth", "status"], cwd=repo_root())
+
+
 def sudo_prefix() -> list[str]:
     return [] if hasattr(os, "geteuid") and os.geteuid() == 0 else ["sudo"]
 
@@ -515,6 +521,7 @@ def command_freeze(args: argparse.Namespace) -> None:
     if current_boot_id() == state["boot_id_before_prepare"]:
         raise CampaignError("the required reboot has not occurred")
     ensure_checkout(state["expected_sha"])
+    require_github_dispatch_readiness()
     try:
         pin_controller_to_housekeeping(state)
         ensure_runner_offline(campaign_dir)
@@ -1606,7 +1613,7 @@ def command_run(args: argparse.Namespace) -> None:
     if state["phase"] not in {"ready", "running"}:
         raise CampaignError(f"run requires ready/running state, found {state['phase']}")
     require_tools(["gh", "git", "sudo", "systemctl"])
-    run_capture(["gh", "auth", "status"], cwd=repo_root())
+    require_github_dispatch_readiness()
     ensure_checkout(state["expected_sha"])
     validate_host_admission_state(campaign_dir, state)
     pin_controller_to_housekeeping(state)

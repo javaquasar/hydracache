@@ -4,6 +4,7 @@ import json
 from pathlib import Path
 import tempfile
 import unittest
+from unittest import mock
 import zipfile
 
 import reference_campaign as campaign
@@ -25,6 +26,18 @@ def base_state() -> dict:
 
 
 class ReferenceCampaignTests(unittest.TestCase):
+    def test_github_readiness_requires_cli_and_authenticated_session(self) -> None:
+        with (
+            mock.patch.object(campaign, "require_tools") as require_tools,
+            mock.patch.object(campaign, "run_capture", return_value="") as run_capture,
+            mock.patch.object(campaign, "repo_root", return_value=Path("/repo")),
+        ):
+            campaign.require_github_dispatch_readiness()
+        require_tools.assert_called_once_with(["gh"])
+        run_capture.assert_called_once_with(
+            ["gh", "auth", "status"], cwd=Path("/repo")
+        )
+
     def test_campaign_and_artifact_names_are_strict(self) -> None:
         self.assertTrue(campaign.CAMPAIGN_RE.fullmatch("hc0671-rental-a1b2c3"))
         self.assertFalse(campaign.CAMPAIGN_RE.fullmatch("HC0671 bad; rm"))

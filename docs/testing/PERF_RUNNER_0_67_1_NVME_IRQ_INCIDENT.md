@@ -41,6 +41,11 @@ The unsafe change was merged by PR #109 at `04134905`, reverted by PR #110 at
    the intended exact green `origin/main` SHA. A repaired kernel with a stale
    checkout can otherwise run an obsolete guard and produce a misleading
    diagnosis.
+7. Install every campaign dependency, including `gh`, and complete
+   `gh auth status` before `freeze`. Package installation after freeze changes
+   the package-manifest digest, so `check-frozen` must reject the campaign
+   before dispatch. Close that campaign and restart with a new ID; do not
+   rewrite its frozen receipt.
 
 ## Recognition checklist
 
@@ -121,8 +126,8 @@ problem rather than isolate it.
 
 ## Campaign and source recovery rules
 
-- Rejected campaigns are immutable diagnostics. Campaign A/B failures remain
-  retained; the corrected run starts as campaign C (or the next unused ID).
+- Rejected campaigns are immutable diagnostics. Each corrected run starts with
+  the next unused campaign ID.
 - Never rerun a stale helper pinned to a reverted SHA. Revoke or rename it and
   stage a new helper with the exact admission SHA and admission-file SHA-256.
 - Generate procurement admission only from a clean checkout at exact
@@ -144,4 +149,3 @@ The durable conclusions are encoded in three places:
   baseline and submits raw NVMe reads only from housekeeping CPUs;
 - this incident runbook records the boot failure, Rescue boundary, stale-source
   hazard, and the reason a one-interrupt delta remains fail-closed.
-
