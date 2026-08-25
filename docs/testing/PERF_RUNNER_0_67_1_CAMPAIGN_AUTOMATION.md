@@ -41,6 +41,8 @@ checkout и причину обязательного prewarm до IRQ baseline.
   сохранение размеров и SHA-256;
 - импорт одного и того же root-owned host-admission receipt и byte-exact bundle
   во все qualification/full-dress/bootstrap diagnostic artifacts;
+- атомарная публикация актуального root-owned runner-provisioning receipt из
+  frozen exact-SHA audit; предыдущая версия переносится в каталог кампании;
 - внешняя повторная проверка receipt identity, eligibility, fingerprint,
   predecessor run/digest и full-dress admission;
 - Rust `sample-set` validator после ровно пяти принятых samples;
@@ -59,6 +61,9 @@ qualification.
 - профиль остаётся
   `docs/testing/perf-host-profiles/ubuntu-24.04-reference-v1.json`;
 - runner `hydracache-perf-v1` уже зарегистрирован, но остановлен;
+- GitHub API показывает ровно один runner с именем `hydracache-perf-v1`,
+  custom label `hydracache-perf-v1` и `busy=false`; локальная регистрация сама
+  по себе недостаточна, потому что repository label мог остаться quarantined;
 - rootful Docker остановлен и отключён, rootless Docker принадлежит только
   `github-runner`;
 - оператор имеет `sudo`, а `gh auth status` проходит с правом запускать Actions

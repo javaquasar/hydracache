@@ -367,6 +367,7 @@ fn reference_campaign_controller_is_serial_resumable_and_provider_safe() {
         "sample-set",
         "SAFE_TO_DELETE_SERVER=true",
         "publish_host_admission",
+        "publish_runner_provisioning_receipt",
         "validate_host_admission_artifact",
     ] {
         assert!(

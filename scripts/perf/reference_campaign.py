@@ -29,6 +29,8 @@ SCHEMA_VERSION = 1
 EXPECTED_REPOSITORY = "javaquasar/hydracache"
 EXPECTED_BRANCH = "main"
 WORKFLOW = "ci.yml"
+EXPECTED_RUNNER_NAME = "hydracache-perf-v1"
+EXPECTED_RUNNER_LABEL = "hydracache-perf-v1"
 PROFILE_RELATIVE = Path("docs/testing/perf-host-profiles/ubuntu-24.04-reference-v1.json")
 STATE_FILE = "campaign-state.json"
 CAMPAIGN_RE = re.compile(r"^hc0671-[a-z0-9][a-z0-9-]{5,55}$")
@@ -522,6 +524,63 @@ def retire_canonical_host_admission(campaign_dir: Path, state: dict[str, Any]) -
     return retired
 
 
+def validate_runner_provisioning_receipt(path: Path, state: dict[str, Any]) -> dict[str, Any]:
+    try:
+        receipt = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as error:
+        raise CampaignError(f"invalid runner provisioning receipt: {error}") from error
+    if (
+        receipt.get("schema_version") != 4
+        or receipt.get("release") != "0.67.1"
+        or receipt.get("stage") != "runner-provisioned"
+        or receipt.get("source_commit") != state["expected_sha"]
+        or receipt.get("runner_name") != EXPECTED_RUNNER_NAME
+        or receipt.get("runner_online") is not False
+        or receipt.get("ship_evidence_eligible") is not False
+    ):
+        raise CampaignError("runner provisioning receipt does not match the frozen campaign")
+    return receipt
+
+
+def publish_runner_provisioning_receipt(
+    campaign_dir: Path, state: dict[str, Any]
+) -> tuple[Path, Path | None]:
+    source = repo_root() / "target/test-evidence/0.67.1/runner-provisioned.json"
+    validate_runner_provisioning_receipt(source, state)
+    canonical = Path("/var/lib/hydracache-perf/runner-provisioned.json")
+    if canonical.exists() and sha256_file(canonical) == sha256_file(source):
+        return canonical, None
+    previous = campaign_dir / "previous-runner-provisioned.json"
+    if canonical.exists():
+        if previous.exists():
+            raise CampaignError(f"previous runner receipt archive already exists: {previous}")
+        if run_visible(
+            sudo_command("mv", str(canonical), str(previous)),
+            cwd=repo_root(),
+            log_path=campaign_dir / "host-lifecycle.log",
+        ) != 0:
+            raise CampaignError("could not archive the previous runner provisioning receipt")
+    temporary = canonical.with_name(f".runner-provisioned-{state['campaign_id']}.tmp")
+    if subprocess.run(
+        sudo_command("test", "-e", str(temporary)),
+        cwd=repo_root(),
+        check=False,
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+    ).returncode == 0:
+        raise CampaignError(f"temporary runner receipt already exists: {temporary}")
+    commands = [
+        sudo_command(
+            "install", "--mode=0444", "--owner=root", "--group=root", str(source), str(temporary)
+        ),
+        sudo_command("mv", str(temporary), str(canonical)),
+    ]
+    for command in commands:
+        if run_visible(command, cwd=repo_root(), log_path=campaign_dir / "host-lifecycle.log") != 0:
+            raise CampaignError("could not publish the current runner provisioning receipt")
+    return canonical, previous if previous.exists() else None
+
+
 def validate_burn_receipt(path: Path, state: dict[str, Any]) -> dict[str, Any]:
     try:
         receipt = json.loads(path.read_text(encoding="utf-8"))
@@ -594,6 +653,9 @@ def command_freeze(args: argparse.Namespace) -> None:
         burn_receipt = burn_dir / "irq-burn-in.json"
         validate_burn_receipt(burn_receipt, state)
         run_host_action(campaign_dir, state, "check-frozen")
+        runner_receipt, previous_runner_receipt = publish_runner_provisioning_receipt(
+            campaign_dir, state
+        )
         admission_bundle, admission_receipt = publish_host_admission(
             campaign_dir, state, archive, burn_receipt
         )
@@ -609,6 +671,11 @@ def command_freeze(args: argparse.Namespace) -> None:
                 "host_admission_bundle_sha256": sha256_file(admission_bundle),
                 "host_admission_receipt": str(admission_receipt),
                 "host_admission_receipt_sha256": sha256_file(admission_receipt),
+                "runner_provisioning_receipt": str(runner_receipt),
+                "runner_provisioning_receipt_sha256": sha256_file(runner_receipt),
+                "previous_runner_provisioning_receipt": (
+                    str(previous_runner_receipt) if previous_runner_receipt is not None else None
+                ),
             }
         }
         save_state(campaign_dir, state)
@@ -640,6 +707,27 @@ def github_main_sha(state: dict[str, Any]) -> str:
         ],
         cwd=repo_root(),
     )
+
+
+def ensure_github_runner_contract(state: dict[str, Any]) -> None:
+    value = gh_json(["api", f"repos/{state['repository']}/actions/runners"])
+    if not isinstance(value, dict) or not isinstance(value.get("runners"), list):
+        raise CampaignError("GitHub runner listing is not an object with runners")
+    matches = [runner for runner in value["runners"] if runner.get("name") == EXPECTED_RUNNER_NAME]
+    if len(matches) != 1:
+        raise CampaignError(f"expected exactly one GitHub runner named {EXPECTED_RUNNER_NAME}")
+    runner = matches[0]
+    labels = {
+        label.get("name")
+        for label in runner.get("labels", [])
+        if isinstance(label, dict) and isinstance(label.get("name"), str)
+    }
+    if EXPECTED_RUNNER_LABEL not in labels:
+        raise CampaignError(
+            f"GitHub runner {EXPECTED_RUNNER_NAME} lacks required label {EXPECTED_RUNNER_LABEL}"
+        )
+    if runner.get("busy") is not False:
+        raise CampaignError(f"GitHub runner {EXPECTED_RUNNER_NAME} is already busy")
 
 
 def expected_title(state: dict[str, Any], step: str) -> str:
@@ -1279,6 +1367,7 @@ def check_pre_dispatch(campaign_dir: Path, state: dict[str, Any], step: str) -> 
     ensure_checkout(state["expected_sha"])
     if github_main_sha(state) != state["expected_sha"]:
         raise CampaignError("origin main no longer equals the qualified campaign SHA")
+    ensure_github_runner_contract(state)
     ensure_runner_offline(campaign_dir)
     run_host_action(campaign_dir, state, "check-frozen")
     guard = repo_root() / "scripts/perf/reference-runtime-irq-guard.sh"

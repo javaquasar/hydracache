@@ -51,6 +51,24 @@ The unsafe change was merged by PR #109 at `04134905`, reverted by PR #110 at
    without changing host configuration. Exclude only rows whose unit-file
    state is exactly `transient`; keep permanent unit files and the separately
    captured active service/timer state fail-closed.
+9. Verify the repository-side runner registration before dispatch. The local
+   service can be healthy and online while GitHub still assigns a quarantine
+   custom label, leaving the intended job queued indefinitely. Require one
+   idle runner named `hydracache-perf-v1` with custom label
+   `hydracache-perf-v1`; do not infer this from the local `.runner` file.
+10. The canonical `/var/lib/hydracache-perf/runner-provisioned.json` must be
+    republished from the exact-SHA provisioning audit before host admission is
+    declared ready. A stale receipt can describe the same machine correctly
+    but must still fail because its `source_commit` belongs to an older main.
+    Archive the previous root-owned receipt and install the new one atomically.
+11. The shell host audit and the Rust runner fingerprint must recognize the
+    same turbo-policy backends. On AMD `amd-pstate` active mode, a missing
+    global `cpufreq/boost` file is normal and must not fall through to Intel's
+    `intel_pstate/no_turbo`. Require the CPU `cpb` capability, driver
+    `amd-pstate-epp`, and equal positive `amd_pstate_max_freq`,
+    `cpuinfo_max_freq`, and `scaling_max_freq` values for every cpufreq policy.
+    Any missing policy, different maximum, or unsupported status remains a
+    fail-closed qualification rejection.
 
 ## Recognition checklist
 
@@ -128,6 +146,21 @@ The reviewed order is therefore:
 Do not "fix" this by allowing a small positive delta. A delta of one proved
 that the forbidden storage path was reachable; tolerance would hide the
 problem rather than isolate it.
+
+## AMD turbo-policy preflight mismatch
+
+One qualification passed the shell host audit but failed the Rust prebuild
+with `turbo policy probe failed: No such file or directory`. The machine used
+active `amd-pstate-epp`; it exposed neither the generic global boost file nor
+Intel's `no_turbo` file. The shell audit already had an AMD-specific proof, but
+the Rust fingerprint did not, so the two admission layers disagreed.
+
+The correction is a shared semantic contract, not a fallback that assumes
+turbo is enabled. For active AMD P-state, both layers must prove CPB support and
+exact equality of the driver, hardware, and configured maximum frequency for
+every policy. A new campaign and a new exact green `main` SHA are required
+after this code change; an earlier frozen campaign cannot be resumed against
+the changed fingerprint implementation.
 
 ## Campaign and source recovery rules
 

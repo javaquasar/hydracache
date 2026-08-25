@@ -1310,21 +1310,7 @@ fn observe_linux_reference_runner(
     }
     let governor = observed_governors.remove(0);
 
-    let turbo = if let Ok(value) = fs::read_to_string("/sys/devices/system/cpu/cpufreq/boost") {
-        match value.trim() {
-            "1" => "enabled".to_owned(),
-            "0" => "disabled".to_owned(),
-            other => return Err(format!("unknown cpufreq boost value {other:?}")),
-        }
-    } else {
-        let value = fs::read_to_string("/sys/devices/system/cpu/intel_pstate/no_turbo")
-            .map_err(|error| format!("turbo policy probe failed: {error}"))?;
-        match value.trim() {
-            "1" => "disabled".to_owned(),
-            "0" => "enabled".to_owned(),
-            other => return Err(format!("unknown intel_pstate no_turbo value {other:?}")),
-        }
-    };
+    let turbo = observe_turbo_policy()?;
     let attestation = crate::host_attestation::observe_reference_attestation(
         toolchain_identity,
         prebuild_contract_digest,
@@ -1384,6 +1370,127 @@ fn observe_linux_reference_runner(
         calibration_score,
         attestation,
     })
+}
+
+fn read_optional_sysfs(path: &Path, label: &str) -> Result<Option<String>, String> {
+    match fs::read_to_string(path) {
+        Ok(value) => Ok(Some(value)),
+        Err(error) if error.kind() == std::io::ErrorKind::NotFound => Ok(None),
+        Err(error) => Err(format!("{label} probe {} failed: {error}", path.display())),
+    }
+}
+
+fn binary_turbo_policy(value: &str, enabled_when: &str, label: &str) -> Result<String, String> {
+    match value.trim() {
+        observed if observed == enabled_when => Ok("enabled".to_owned()),
+        "0" | "1" => Ok("disabled".to_owned()),
+        other => Err(format!("unknown {label} value {other:?}")),
+    }
+}
+
+fn validate_amd_pstate_active_turbo(
+    status: &str,
+    cpuinfo: &str,
+    policies: &[(String, String, String, String)],
+) -> Result<Option<String>, String> {
+    if status.trim() != "active" {
+        return Ok(None);
+    }
+    if !cpuinfo.split_whitespace().any(|flag| flag == "cpb") {
+        return Err("amd-pstate active turbo probe lacks the CPB capability".to_owned());
+    }
+    if policies.is_empty() {
+        return Err("amd-pstate active turbo probe found no cpufreq policies".to_owned());
+    }
+    for (driver, amd_max, cpuinfo_max, scaling_max) in policies {
+        if driver.trim() != "amd-pstate-epp" {
+            return Err(format!(
+                "amd-pstate active turbo probe found unexpected driver {:?}",
+                driver.trim()
+            ));
+        }
+        let amd_max = amd_max
+            .trim()
+            .parse::<u64>()
+            .map_err(|error| format!("amd_pstate_max_freq is malformed: {error}"))?;
+        let cpuinfo_max = cpuinfo_max
+            .trim()
+            .parse::<u64>()
+            .map_err(|error| format!("cpuinfo_max_freq is malformed: {error}"))?;
+        let scaling_max = scaling_max
+            .trim()
+            .parse::<u64>()
+            .map_err(|error| format!("scaling_max_freq is malformed: {error}"))?;
+        if amd_max == 0 || amd_max != cpuinfo_max || amd_max != scaling_max {
+            return Err(format!(
+                "amd-pstate active turbo maxima differ: amd={amd_max} cpuinfo={cpuinfo_max} scaling={scaling_max}"
+            ));
+        }
+    }
+    Ok(Some("enabled".to_owned()))
+}
+
+fn observe_turbo_policy() -> Result<String, String> {
+    if let Some(value) = read_optional_sysfs(
+        Path::new("/sys/devices/system/cpu/cpufreq/boost"),
+        "cpufreq boost",
+    )? {
+        return binary_turbo_policy(&value, "1", "cpufreq boost");
+    }
+    if let Some(value) = read_optional_sysfs(
+        Path::new("/sys/devices/system/cpu/intel_pstate/no_turbo"),
+        "intel_pstate no_turbo",
+    )? {
+        return binary_turbo_policy(&value, "0", "intel_pstate no_turbo");
+    }
+
+    let status = read_optional_sysfs(
+        Path::new("/sys/devices/system/cpu/amd_pstate/status"),
+        "amd_pstate status",
+    )?
+    .ok_or_else(|| "turbo policy probe found no supported backend".to_owned())?;
+    let cpuinfo = fs::read_to_string("/proc/cpuinfo")
+        .map_err(|error| format!("amd-pstate CPU capability probe failed: {error}"))?;
+    let policy_entries = fs::read_dir("/sys/devices/system/cpu/cpufreq")
+        .map_err(|error| format!("amd-pstate policy enumeration failed: {error}"))?
+        .collect::<Result<Vec<_>, _>>()
+        .map_err(|error| format!("amd-pstate policy enumeration failed: {error}"))?;
+    let mut policy_paths = policy_entries
+        .into_iter()
+        .map(|entry| entry.path())
+        .filter(|path| {
+            path.file_name()
+                .and_then(|name| name.to_str())
+                .is_some_and(|name| {
+                    name.strip_prefix("policy").is_some_and(|suffix| {
+                        !suffix.is_empty() && suffix.chars().all(|c| c.is_ascii_digit())
+                    })
+                })
+        })
+        .collect::<Vec<_>>();
+    policy_paths.sort();
+    let policies = policy_paths
+        .iter()
+        .map(|path| {
+            let read = |name: &str| {
+                fs::read_to_string(path.join(name)).map_err(|error| {
+                    format!(
+                        "amd-pstate policy probe {}/{} failed: {error}",
+                        path.display(),
+                        name
+                    )
+                })
+            };
+            Ok((
+                read("scaling_driver")?,
+                read("amd_pstate_max_freq")?,
+                read("cpuinfo_max_freq")?,
+                read("scaling_max_freq")?,
+            ))
+        })
+        .collect::<Result<Vec<_>, String>>()?;
+    validate_amd_pstate_active_turbo(&status, &cpuinfo, &policies)?
+        .ok_or_else(|| format!("unsupported amd_pstate status {:?}", status.trim()))
 }
 
 fn resolve_reference_cpu_affinity(
@@ -1638,6 +1745,47 @@ mod preflight_tests {
         );
         assert!(cgroup_v2_relative_path("0::../../escape\n").is_err());
         assert!(cgroup_v2_relative_path("1:cpu:/legacy\n").is_err());
+    }
+
+    #[test]
+    fn turbo_policy_parsers_cover_generic_and_intel_backends() {
+        assert_eq!(
+            binary_turbo_policy("1\n", "1", "cpufreq boost").unwrap(),
+            "enabled"
+        );
+        assert_eq!(
+            binary_turbo_policy("0\n", "1", "cpufreq boost").unwrap(),
+            "disabled"
+        );
+        assert_eq!(
+            binary_turbo_policy("0\n", "0", "intel_pstate no_turbo").unwrap(),
+            "enabled"
+        );
+        assert!(binary_turbo_policy("unknown", "1", "cpufreq boost").is_err());
+    }
+
+    #[test]
+    fn amd_pstate_active_turbo_requires_cpb_and_equal_positive_maxima() {
+        let valid = vec![(
+            "amd-pstate-epp\n".to_owned(),
+            "5100000\n".to_owned(),
+            "5100000\n".to_owned(),
+            "5100000\n".to_owned(),
+        )];
+        assert_eq!(
+            validate_amd_pstate_active_turbo("active\n", "flags : svm cpb ssbd", &valid).unwrap(),
+            Some("enabled".to_owned())
+        );
+        assert_eq!(
+            validate_amd_pstate_active_turbo("passive\n", "flags : cpb", &valid).unwrap(),
+            None
+        );
+        assert!(validate_amd_pstate_active_turbo("active\n", "flags : svm", &valid).is_err());
+
+        let mut unequal = valid.clone();
+        unequal[0].3 = "4200000\n".to_owned();
+        assert!(validate_amd_pstate_active_turbo("active\n", "flags : cpb", &unequal).is_err());
+        assert!(validate_amd_pstate_active_turbo("active\n", "flags : cpb", &[]).is_err());
     }
 
     fn profile() -> PerformanceProfile {
