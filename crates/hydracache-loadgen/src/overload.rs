@@ -3854,8 +3854,7 @@ mod reference_identity_tests {
     #[test]
     fn w6_local_boundary_accepts_the_complete_committed_w1_hot_key_contract() {
         let (scenario, input) =
-            parse_adapter_scenario::<LocalAdapterInputs>(LOCAL_HOT_KEY_SCENARIO, "local")
-                .unwrap();
+            parse_adapter_scenario::<LocalAdapterInputs>(LOCAL_HOT_KEY_SCENARIO, "local").unwrap();
 
         assert_eq!(input.single_flight_bursts_per_repeat, 64);
         validate_local_adapter_input(&scenario, &input).unwrap();
