@@ -440,6 +440,7 @@ struct MatrixInput {
     schema_version: u32,
     id: String,
     seed: u64,
+    offered_rate_per_second: u64,
     operations_per_repeat: u64,
     repeats: usize,
     preload_entries: u64,
@@ -1162,9 +1163,16 @@ async fn resp_matrix_measurement(
 ) -> Result<MeasurementEvidence, RespTierError> {
     let input: MatrixInput = parse_toml(MATRIX_SCENARIO)?;
     validate_matrix(&input)?;
-    let (operations_per_repeat, repeats, preload_entries, key_count, spread_tolerance) = match shape
-    {
+    let (
+        offered_rate_per_second,
+        operations_per_repeat,
+        repeats,
+        preload_entries,
+        key_count,
+        spread_tolerance,
+    ) = match shape {
         RespRunShape::Smoke => (
+            1_000,
             60,
             SMOKE_REPEATS,
             SMOKE_PRELOAD,
@@ -1172,6 +1180,7 @@ async fn resp_matrix_measurement(
             SMOKE_SPREAD_LIMIT,
         ),
         RespRunShape::Reference => (
+            input.offered_rate_per_second,
             input.operations_per_repeat,
             u32::try_from(input.repeats).map_err(|_| {
                 RespTierError::Runtime("RESP matrix repeat count overflowed u32".to_owned())
@@ -1208,7 +1217,7 @@ async fn resp_matrix_measurement(
                 let observation = run_open_loop(
                     Arc::clone(&target),
                     &OpenLoopConfig {
-                        offered_rate_per_second: 1_000,
+                        offered_rate_per_second,
                         operations: operations_per_repeat,
                         highest_trackable_latency: Duration::from_secs(5),
                         significant_figures: 3,
@@ -1256,6 +1265,10 @@ async fn resp_matrix_measurement(
                     (
                         "methodology".to_owned(),
                         DimensionValue::Text("open-loop-scheduled-send".to_owned()),
+                    ),
+                    (
+                        "offered_rate_per_second".to_owned(),
+                        DimensionValue::U64(offered_rate_per_second),
                     ),
                     ("real_tcp".to_owned(), DimensionValue::Bool(true)),
                     (
@@ -1321,6 +1334,7 @@ async fn resp_matrix_measurement(
             MATRIX_SCENARIO,
             &serde_json::json!({
                 "operations_per_repeat": operations_per_repeat,
+                "offered_rate_per_second": offered_rate_per_second,
                 "repeats": repeats,
                 "preload_entries": preload_entries,
                 "key_count": key_count,
@@ -1681,6 +1695,7 @@ fn smoke_schedule(seed: u64) -> Result<GeneratedKeySchedule, RespTierError> {
 fn validate_matrix(input: &MatrixInput) -> Result<(), RespTierError> {
     if input.schema_version != 1
         || input.id.is_empty()
+        || input.offered_rate_per_second == 0
         || input.operations_per_repeat == 0
         || input.repeats < 3
         || input.preload_entries == 0
@@ -1978,6 +1993,20 @@ mod tests {
     fn hosted_resp_io_timeout_covers_the_committed_measurement_window() {
         assert_eq!(RESP_CONNECT_TIMEOUT, Duration::from_secs(2));
         assert_eq!(RESP_IO_TIMEOUT, Duration::from_secs(5));
+    }
+
+    #[test]
+    fn reference_matrix_has_enough_p99_tail_observations() {
+        let input: MatrixInput = parse_toml(MATRIX_SCENARIO).unwrap();
+        validate_matrix(&input).unwrap();
+        assert_eq!(input.offered_rate_per_second, 2_000);
+        assert_eq!(input.operations_per_repeat, 200_000);
+        assert_eq!(input.operations_per_repeat / 100, 2_000);
+        assert_eq!(
+            input.operations_per_repeat / input.offered_rate_per_second,
+            100
+        );
+        assert_eq!(input.robust_spread_tolerance, 0.15);
     }
 
     #[test]

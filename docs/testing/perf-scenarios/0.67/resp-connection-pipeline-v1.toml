@@ -1,7 +1,8 @@
 schema_version = 1
 id = "resp-open-loop-connection-pipeline-v1"
 seed = 670304
-operations_per_repeat = 10000
+offered_rate_per_second = 2000
+operations_per_repeat = 200000
 repeats = 5
 preload_entries = 10000
 key_count = 10000
