@@ -26,6 +26,30 @@ def base_state() -> dict:
 
 
 class ReferenceCampaignTests(unittest.TestCase):
+    def test_privileged_commands_are_non_interactive_after_sudo_lease(self) -> None:
+        with mock.patch.object(campaign.os, "geteuid", return_value=1000, create=True):
+            self.assertEqual(
+                campaign.sudo_command("systemctl", "stop", "example.service"),
+                ["sudo", "-n", "systemctl", "stop", "example.service"],
+            )
+
+    def test_sudo_lease_authenticates_before_starting_keeper(self) -> None:
+        keeper = mock.Mock()
+        with (
+            mock.patch.object(campaign.os, "geteuid", return_value=1000, create=True),
+            mock.patch.object(
+                campaign.subprocess,
+                "run",
+                return_value=mock.Mock(returncode=0),
+            ) as run,
+            mock.patch.object(campaign.threading, "Thread", return_value=keeper),
+        ):
+            with campaign.sudo_lease():
+                pass
+        run.assert_called_once_with(["sudo", "-v"], check=True)
+        keeper.start.assert_called_once_with()
+        keeper.join.assert_called_once_with(timeout=2)
+
     def test_runner_provisioning_receipt_is_bound_to_frozen_source(self) -> None:
         state = base_state()
         receipt = {
