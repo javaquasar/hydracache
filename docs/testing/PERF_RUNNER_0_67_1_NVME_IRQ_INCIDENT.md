@@ -181,6 +181,20 @@ the changed fingerprint implementation.
   log, treat it as compromised and rotate it. Documentation must contain only
   placeholders and public-key material may be shown only when needed.
 
+## Long-running controller sudo lease
+
+The AX42 campaign `hc0671-ax42-20260826-i` exposed a separate orchestration
+failure after its first full-dress job was rejected. The GitHub run had lasted
+longer than sudo's timestamp timeout, so the controller blocked indefinitely
+while taking the runner offline in its cleanup path.
+
+The controller now authenticates sudo once when a mutating command starts,
+refreshes that timestamp only while the controller remains alive, and invokes
+every privileged operation with `sudo -n`. An expired or lost credential must
+therefore reject the campaign instead of waiting for input in a detached SSH
+session. Do not remove `-n`, bypass the bounded lease, or replace it with a
+NOPASSWD rule for scripts from a mutable checkout.
+
 ## Preserve samples when stability rejects evidence
 
 The first full-dress run reached W2 but rejected the `concurrent_inflight=1000`

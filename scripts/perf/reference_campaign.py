@@ -20,7 +20,9 @@ import shutil
 import stat
 import subprocess
 import sys
+import threading
 import time
+from contextlib import contextmanager
 from typing import Any, Iterable
 import zipfile
 
@@ -128,11 +130,48 @@ def require_github_dispatch_readiness() -> None:
 
 
 def sudo_prefix() -> list[str]:
-    return [] if hasattr(os, "geteuid") and os.geteuid() == 0 else ["sudo"]
+    return [] if hasattr(os, "geteuid") and os.geteuid() == 0 else ["sudo", "-n"]
 
 
 def sudo_command(*args: str) -> list[str]:
     return [*sudo_prefix(), *args]
+
+
+@contextmanager
+def sudo_lease() -> Iterable[None]:
+    """Keep one explicitly authenticated sudo timestamp alive for a command.
+
+    Reference runs can outlive sudo's default timestamp timeout. Every actual
+    privileged operation remains non-interactive so an expired credential
+    fails closed instead of blocking a detached campaign indefinitely.
+    """
+    if not sudo_prefix():
+        yield
+        return
+    try:
+        subprocess.run(["sudo", "-v"], check=True)
+    except subprocess.CalledProcessError as error:
+        raise CampaignError("sudo authentication failed before campaign action") from error
+
+    stop = threading.Event()
+
+    def refresh() -> None:
+        while not stop.wait(60):
+            if subprocess.run(
+                ["sudo", "-n", "-v"],
+                check=False,
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+            ).returncode != 0:
+                return
+
+    keeper = threading.Thread(target=refresh, name="hydracache-sudo-lease", daemon=True)
+    keeper.start()
+    try:
+        yield
+    finally:
+        stop.set()
+        keeper.join(timeout=2)
 
 
 def runner_command(*args: str) -> list[str]:
@@ -1897,7 +1936,11 @@ def parser() -> argparse.ArgumentParser:
 def main() -> int:
     args = parser().parse_args()
     try:
-        args.handler(args)
+        if args.command == "status":
+            args.handler(args)
+        else:
+            with sudo_lease():
+                args.handler(args)
     except (CampaignError, OSError, subprocess.SubprocessError) as error:
         print(f"reference campaign rejected: {error}", file=sys.stderr)
         return 1
