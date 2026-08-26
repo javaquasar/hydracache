@@ -1383,6 +1383,10 @@ async fn concurrent_inflight_scaling_curve_1_10_100_1000_smoke() {
                     "framed-request-lifetime-at-router-oneshot".to_owned()
                 ))
             );
+            assert_eq!(
+                point.dimensions.get("measurement_window_operations"),
+                Some(&DimensionValue::U64(1_000))
+            );
             declared.expect("declared in-flight")
         })
         .collect::<Vec<_>>();
