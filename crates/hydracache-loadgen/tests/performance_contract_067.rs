@@ -944,6 +944,10 @@ async fn hot_key_contention_throughput_floor_smoke() {
     };
     assert_eq!(single_flight.id, "hot_key_single_flight_miss_stampede_cost");
     assert_eq!(
+        single_flight.points[0].dimensions.get("bursts_per_repeat"),
+        Some(&DimensionValue::U64(1))
+    );
+    assert_eq!(
         single_flight.points[0].dimensions.get("loader_executions"),
         Some(&DimensionValue::U64(1))
     );
