@@ -39,7 +39,7 @@ while test "$#" -gt 0; do
   esac
 done
 
-for tool in awk date findmnt git grep jq lsblk lscpu sha256sum sort stat systemctl \
+for tool in awk date findmnt git grep jq lsblk lscpu sha256sum sleep sort stat systemctl \
   systemd-detect-virt uname uniq wc; do
   command -v "$tool" >/dev/null || {
     echo "missing reference host tuning tool: $tool" >&2
@@ -442,6 +442,25 @@ read_frozen_kernel_tunable() {
   printf '%s\t%s\t%s\t%s\n' "$key" "$backend" "$locator" "$value"
 }
 
+wait_for_boot_transients() {
+  local unit attempt
+  for unit in systemd-fsckd.service; do
+    for attempt in {1..120}; do
+      if ! systemctl is-active --quiet "$unit"; then
+        break
+      fi
+      if test "$attempt" -eq 1; then
+        echo "waiting for boot transient to quiesce before host freeze: $unit"
+      fi
+      sleep 1
+    done
+    if systemctl is-active --quiet "$unit"; then
+      echo "boot transient remained active after 120 seconds: $unit" >&2
+      exit 1
+    fi
+  done
+}
+
 freeze_host() {
   require_root
   test -z "$(git -C "$repo_root" status --porcelain=v1 --untracked-files=normal)" || {
@@ -462,6 +481,7 @@ freeze_host() {
     exit 1
   }
   "$repo_root/scripts/perf/audit-reference-host.sh" --mode provisioned
+  wait_for_boot_transients
   mkdir -p "$state_dir/freeze"
   chmod 0700 "$state_dir/freeze"
   LC_ALL=C dpkg-query --show --showformat='${binary:Package}\t${Version}\n' |
