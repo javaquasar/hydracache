@@ -212,6 +212,17 @@ aggregate ratio. First retain the samples, explain the variance, change the
 committed scenario only if the data supports it, then start a new campaign at
 an exact green `main` SHA.
 
+Campaign `hc0671-ax42-20260826-i` subsequently proved that the RESP connection
+and pipeline matrix used only 10,000 observations per repeat. Its p99 therefore
+represented roughly 100 tail observations, and all six matrix points failed
+the unchanged 15% repeat-stability contract even though the much longer A/B/C
+capacity knees were stable and every IRQ guard passed. The reviewed correction
+keeps the 15% limit, raises the matrix to 200,000 observations at 2,000 offered
+pipeline exchanges per second, and records that offered rate in both the
+scenario digest and point dimensions. This supplies roughly 2,000 p99-tail
+observations while keeping the pipeline-10 logical rate at 20,000 operations
+per second, below the accepted 50,000 operations-per-second A/B/C knee.
+
 ## Evidence retained from this incident
 
 The durable conclusions are encoded in three places:

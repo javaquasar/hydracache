@@ -1666,6 +1666,10 @@ async fn resp_connection_and_pipeline_sweep_is_exact_and_scheduled_send_based() 
             };
             assert_eq!(point.quantity.unit, "scheduled_send_p99_microseconds");
             assert_eq!(point.dimensions["real_tcp"], DimensionValue::Bool(true));
+            assert_eq!(
+                point.dimensions["offered_rate_per_second"],
+                DimensionValue::U64(1_000)
+            );
             (connections, pipeline)
         })
         .collect::<std::collections::BTreeSet<_>>();
