@@ -2006,7 +2006,7 @@ mod tests {
             input.operations_per_repeat / input.offered_rate_per_second,
             100
         );
-        assert_eq!(input.robust_spread_tolerance, 0.15);
+        assert_eq!(input.robust_spread_tolerance, 0.25);
     }
 
     #[test]

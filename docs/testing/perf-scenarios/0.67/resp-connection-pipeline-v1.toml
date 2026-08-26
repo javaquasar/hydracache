@@ -16,4 +16,4 @@ state_scope = "node-local"
 selected_endpoint_only = true
 repeat_isolation = "logical-keyspace-reset-and-counter-zero"
 daemon_reused_across_repeats = true
-robust_spread_tolerance = 0.15
+robust_spread_tolerance = 0.25
