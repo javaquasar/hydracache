@@ -2290,6 +2290,7 @@ struct LocalAdapterInputs {
     distribution: String,
     worker_counts: Vec<usize>,
     loader_delay_us: u64,
+    single_flight_bursts_per_repeat: usize,
     operation_mix: Vec<AdapterOperationInput>,
 }
 
@@ -2349,6 +2350,7 @@ fn validate_local_adapter_input(
         || input.distribution != "single-key"
         || input.worker_counts.as_slice() != [1, 2, 4].as_slice()
         || input.loader_delay_us != 1_000
+        || input.single_flight_bursts_per_repeat != 64
         || input.operation_mix.len() != 1
         || input.operation_mix[0].operation != "hot-key-get-or-insert"
         || input.operation_mix[0].weight != 1.0
@@ -3847,6 +3849,16 @@ mod reference_identity_tests {
             spread < 0.02,
             "integer-millisecond quantization reappeared: {spread}"
         );
+    }
+
+    #[test]
+    fn w6_local_boundary_accepts_the_complete_committed_w1_hot_key_contract() {
+        let (scenario, input) =
+            parse_adapter_scenario::<LocalAdapterInputs>(LOCAL_HOT_KEY_SCENARIO, "local")
+                .unwrap();
+
+        assert_eq!(input.single_flight_bursts_per_repeat, 64);
+        validate_local_adapter_input(&scenario, &input).unwrap();
     }
 
     #[test]
