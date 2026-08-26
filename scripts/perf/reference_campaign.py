@@ -1460,9 +1460,19 @@ def execute_stage(campaign_dir: Path, state: dict[str, Any], spec: dict[str, Any
         assert_no_foreign_reference_runs(state)
         matches = matching_runs(state, step)
         if stage.get("status") == "dispatching":
-            if len(matches) != 1:
+            if len(matches) > 1:
                 raise CampaignError(f"cannot recover uniquely from interrupted dispatch for {step}")
-            run = matches[0]
+            if matches:
+                run = matches[0]
+            else:
+                arm_runner_watchdog(campaign_dir, state, step)
+                runner_online(campaign_dir)
+                try:
+                    run = discover_run(state, step)
+                except Exception:
+                    ensure_runner_offline(campaign_dir)
+                    disarm_runner_watchdog(campaign_dir, state, step)
+                    raise
         else:
             if matches:
                 raise CampaignError(f"campaign id/step was already used: {step}")
@@ -1470,6 +1480,8 @@ def execute_stage(campaign_dir: Path, state: dict[str, Any], spec: dict[str, Any
             stage["dispatch_started_at"] = utc_now()
             save_state(campaign_dir, state)
             append_event(campaign_dir, "stage-dispatch-started", step=step)
+            arm_runner_watchdog(campaign_dir, state, step)
+            runner_online(campaign_dir)
             command = [
                 "gh",
                 "workflow",
@@ -1481,10 +1493,15 @@ def execute_stage(campaign_dir: Path, state: dict[str, Any], spec: dict[str, Any
                 state["branch"],
                 *dispatch_fields(state, spec),
             ]
-            result = run_visible(command, cwd=repo_root(), log_path=campaign_dir / f"{step}.log")
-            if result != 0:
-                raise CampaignError(f"workflow dispatch failed for {step}")
-            run = discover_run(state, step)
+            try:
+                result = run_visible(command, cwd=repo_root(), log_path=campaign_dir / f"{step}.log")
+                if result != 0:
+                    raise CampaignError(f"workflow dispatch failed for {step}")
+                run = discover_run(state, step)
+            except Exception:
+                ensure_runner_offline(campaign_dir)
+                disarm_runner_watchdog(campaign_dir, state, step)
+                raise
         run_id = int(run["databaseId"])
         stage.update({"run_id": run_id, "run_url": run.get("url"), "status": "queued"})
         save_state(campaign_dir, state)
