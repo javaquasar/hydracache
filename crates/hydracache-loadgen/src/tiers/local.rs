@@ -64,6 +64,13 @@ impl LocalRunShape {
         }
     }
 
+    fn single_flight_bursts(self, committed: usize) -> usize {
+        match self {
+            Self::Smoke => 1,
+            Self::Reference => committed,
+        }
+    }
+
     fn effective_digest(
         self,
         binding: &BoundLocalScenario,
@@ -246,6 +253,8 @@ struct LocalScenarioInputs {
     worker_counts: Vec<usize>,
     #[serde(default)]
     loader_delay_us: u64,
+    #[serde(default)]
+    single_flight_bursts_per_repeat: usize,
     #[serde(default)]
     full_capacity_bytes: Option<u64>,
     #[serde(default)]
@@ -1181,6 +1190,13 @@ async fn local_hot_key_single_flight_measurement(
         .unwrap_or(2)
         .min(32);
     let repeats = shape.repeats(binding.scenario.repeats as usize);
+    let bursts_per_repeat =
+        shape.single_flight_bursts(binding.local.single_flight_bursts_per_repeat);
+    if bursts_per_repeat == 0 {
+        return Err(LocalTierError::Runtime(
+            "single-flight reference window must contain at least one burst".to_owned(),
+        ));
+    }
     let mut samples = Vec::with_capacity(repeats);
     for _ in 0..repeats {
         let target = Arc::new(LocalCacheTarget::new(LocalTargetConfig {
@@ -1200,37 +1216,44 @@ async fn local_hot_key_single_flight_measurement(
             hot_key_expected_miss_waiters: Some(workers as u64),
             ..LocalTargetConfig::default()
         })?);
-        target.reset().await?;
-        let barrier = Arc::new(tokio::sync::Barrier::new(workers + 1));
-        let mut tasks = tokio::task::JoinSet::new();
-        for sequence in 0..workers {
-            let target = Arc::clone(&target);
-            let barrier = Arc::clone(&barrier);
-            tasks.spawn(async move {
-                barrier.wait().await;
-                target
-                    .execute_operation(LocalOperation::HotKeyLoader, sequence as u64)
-                    .await
-            });
+        let mut measured = Duration::ZERO;
+        for _ in 0..bursts_per_repeat {
+            target.reset().await?;
+            let barrier = Arc::new(tokio::sync::Barrier::new(workers + 1));
+            let mut tasks = tokio::task::JoinSet::new();
+            for sequence in 0..workers {
+                let target = Arc::clone(&target);
+                let barrier = Arc::clone(&barrier);
+                tasks.spawn(async move {
+                    barrier.wait().await;
+                    target
+                        .execute_operation(LocalOperation::HotKeyLoader, sequence as u64)
+                        .await
+                });
+            }
+            let started = Instant::now();
+            barrier.wait().await;
+            while let Some(joined) = tasks.join_next().await {
+                let outcome = joined.map_err(|error| LocalTierError::Runtime(error.to_string()))?;
+                ensure_success(outcome, "single-flight hot-key miss")?;
+            }
+            measured += started.elapsed();
+            let snapshot = target.snapshot().await;
+            if snapshot.operations.loader_executions != 1
+                || snapshot.operations.hot_key_loaders != workers as u64
+                || snapshot.diagnostics.stats.misses != workers as u64
+                || snapshot.diagnostics.stats.hits != 0
+                || snapshot.diagnostics.stats.loads != 1
+            {
+                return Err(LocalTierError::Runtime(format!(
+                    "single-flight proof expected {workers} concurrent misses, zero hits, and one load per burst; got {snapshot:?}"
+                )));
+            }
         }
-        let started = Instant::now();
-        barrier.wait().await;
-        while let Some(joined) = tasks.join_next().await {
-            let outcome = joined.map_err(|error| LocalTierError::Runtime(error.to_string()))?;
-            ensure_success(outcome, "single-flight hot-key miss")?;
-        }
-        let snapshot = target.snapshot().await;
-        if snapshot.operations.loader_executions != 1
-            || snapshot.operations.hot_key_loaders != workers as u64
-            || snapshot.diagnostics.stats.misses != workers as u64
-            || snapshot.diagnostics.stats.hits != 0
-            || snapshot.diagnostics.stats.loads != 1
-        {
-            return Err(LocalTierError::Runtime(format!(
-                "single-flight proof expected {workers} concurrent misses, zero hits, and one load; got {snapshot:?}"
-            )));
-        }
-        samples.push(throughput(workers as u64, started.elapsed()));
+        samples.push(throughput(
+            workers as u64 * bursts_per_repeat as u64,
+            measured,
+        ));
     }
     let schedule = KeyScheduleSpec::uniform(binding.scenario.seed, 1, workers as u64)
         .generate()
@@ -1244,6 +1267,7 @@ async fn local_hot_key_single_flight_measurement(
                 "workers": workers,
                 "loader_delay_us": binding.local.loader_delay_us.max(1),
                 "repeats": repeats,
+                "bursts_per_repeat": bursts_per_repeat,
             }),
         ),
         workload: workload_from_schedule(
@@ -1257,12 +1281,19 @@ async fn local_hot_key_single_flight_measurement(
                     "concurrent_requests".to_owned(),
                     DimensionValue::U64(workers as u64),
                 ),
-                ("loader_executions".to_owned(), DimensionValue::U64(1)),
+                (
+                    "loader_executions".to_owned(),
+                    DimensionValue::U64(bursts_per_repeat as u64),
+                ),
                 (
                     "cache_misses_before_loader_release".to_owned(),
-                    DimensionValue::U64(workers as u64),
+                    DimensionValue::U64(workers as u64 * bursts_per_repeat as u64),
                 ),
                 ("cache_hits".to_owned(), DimensionValue::U64(0)),
+                (
+                    "bursts_per_repeat".to_owned(),
+                    DimensionValue::U64(bursts_per_repeat as u64),
+                ),
             ]),
             "operations_per_second",
             samples,
@@ -2226,6 +2257,7 @@ fn validate_local_reference_scalar_shapes(report: &PerfReport) -> Result<(), Loc
             "workers": 4,
             "loader_delay_us": hot.local.loader_delay_us.max(1),
             "repeats": hot.scenario.repeats,
+            "bursts_per_repeat": hot.local.single_flight_bursts_per_repeat,
         }),
     );
     if scalar_measurement(report, "hot_key_single_flight_miss_stampede_cost")?.scenario_digest
@@ -2592,6 +2624,39 @@ mod tests {
         assert_eq!(scaling.scenario.repeats, 3);
         assert_eq!(scaling.scenario.robust_spread_tolerance, 0.15);
         assert_eq!(hot_key.local.worker_counts, [1, 2, 4]);
+        assert_eq!(hot_key.local.single_flight_bursts_per_repeat, 64);
+    }
+
+    #[tokio::test]
+    async fn reference_single_flight_aggregates_independent_bursts() {
+        let measurement = local_hot_key_single_flight_measurement(LocalRunShape::Reference)
+            .await
+            .unwrap();
+        let MeasurementEvidence::Scalar(measurement) = measurement else {
+            panic!("single-flight reference measurement must be scalar");
+        };
+        let point = &measurement.points[0];
+        assert_eq!(point.sample_count, 3);
+        assert_eq!(point.samples.len(), 3);
+        assert_eq!(
+            point.dimensions.get("bursts_per_repeat"),
+            Some(&DimensionValue::U64(64))
+        );
+        assert_eq!(
+            point.dimensions.get("loader_executions"),
+            Some(&DimensionValue::U64(64))
+        );
+        assert_eq!(
+            point.dimensions.get("cache_misses_before_loader_release"),
+            Some(&DimensionValue::U64(256))
+        );
+        assert!(
+            point.robust_spread_ratio <= measurement.max_robust_spread_ratio,
+            "aggregated samples {:?} produced spread {} above {}",
+            point.samples,
+            point.robust_spread_ratio,
+            measurement.max_robust_spread_ratio
+        );
     }
 
     #[test]

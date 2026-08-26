@@ -26,6 +26,7 @@ payload_bytes = 128
 distribution = "single-key"
 worker_counts = [1, 2, 4]
 loader_delay_us = 1000
+single_flight_bursts_per_repeat = 64
 
 [[local.operation_mix]]
 operation = "hot-key-get-or-insert"

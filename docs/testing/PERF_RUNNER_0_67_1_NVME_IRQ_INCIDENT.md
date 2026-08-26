@@ -223,6 +223,24 @@ scenario digest and point dimensions. This supplies roughly 2,000 p99-tail
 observations while keeping the pipeline-10 logical rate at 20,000 operations
 per second, below the accepted 50,000 operations-per-second A/B/C knee.
 
+## Aggregate synchronized single-flight bursts
+
+Campaign `hc0671-ax42-20260826-j` passed host admission and qualification but
+rejected W1 before reaching the corrected RESP matrix. The
+`hot_key_single_flight_miss_stampede_cost` repeat measured one synchronized
+four-request cold-miss burst whose useful interval was only a few
+milliseconds. The observed samples (`1875.73`, `727.70`, and `1903.18`
+operations per second) showed a single scheduler delay dominating one repeat,
+while every burst still proved four misses, zero hits, and exactly one loader.
+
+The correction keeps three independently validated samples and the unchanged
+15% robust-spread limit. Each reference sample now aggregates 64 separately
+reset cold-miss bursts, checks the single-flight invariant after every burst,
+and records the burst count and total loader/miss counts in the point
+dimensions. Reset and target setup remain outside the timed interval. Smoke
+coverage still uses one burst so routine CI stays fast. A rejected campaign is
+not retried; the new window requires a new exact green `main` SHA and campaign.
+
 ## Evidence retained from this incident
 
 The durable conclusions are encoded in three places:
