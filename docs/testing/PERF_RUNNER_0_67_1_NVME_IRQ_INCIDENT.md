@@ -241,6 +241,16 @@ dimensions. Reset and target setup remain outside the timed interval. Smoke
 coverage still uses one burst so routine CI stays fast. A rejected campaign is
 not retried; the new window requires a new exact green `main` SHA and campaign.
 
+Campaign `hc0671-ax42-20260826-k` proved that correction: W1 passed and the
+core gate advanced to W2. W2 then rejected only the
+`concurrent_inflight=1000` point with samples `104370.12`, `103239.14`, and
+`122627.57` operations per second (18.58% spread versus the unchanged 15%
+limit). The committed 4,000-operation window supplied only four request waves
+at that concurrency, so one wave could dominate a repeat. The reviewed W2
+correction raises the fixed reference window to 100,000 operations, providing
+100 waves at `inflight=1000`, and records the window in every point dimension.
+It does not relax the spread limit or retry the rejected campaign.
+
 ## Evidence retained from this incident
 
 The durable conclusions are encoded in three places:
