@@ -192,6 +192,26 @@ class ReferenceCampaignTests(unittest.TestCase):
             frozen,
         )
 
+    def test_runner_is_online_before_dispatch_discovery(self) -> None:
+        source = Path(campaign.__file__).read_text(encoding="utf-8")
+        execute_stage = source[
+            source.index("def execute_stage(") : source.index("def validate_host_admission_state(")
+        ]
+        dispatch_branch = execute_stage[execute_stage.index('stage["status"] = "dispatching"') :]
+        self.assertLess(
+            dispatch_branch.index("runner_online(campaign_dir)"),
+            dispatch_branch.index('"workflow",'),
+        )
+        self.assertLess(
+            dispatch_branch.index('"workflow",'),
+            dispatch_branch.index("run = discover_run(state, step)"),
+        )
+        recovery_branch = execute_stage.split(
+            'if stage.get("status") == "dispatching":', 1
+        )[1].split("\n        else:\n            if matches:", 1)[0]
+        self.assertIn("runner_online(campaign_dir)", recovery_branch)
+        self.assertIn("run = discover_run(state, step)", recovery_branch)
+
     def test_receipt_retention_is_immutable_and_sample_directory_is_exact(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
