@@ -17,6 +17,7 @@ fn runner_runbook_and_helpers_are_fail_closed_and_secret_free() {
     assert!(lifecycle.contains("systemctl disable --now"));
     let runtime_irq_guard = read("scripts/perf/reference-runtime-irq-guard.sh");
     let resp_external = read("crates/hydracache-loadgen/src/resp_external.rs");
+    let compare_redis = read("crates/hydracache-loadgen/src/compare_redis.rs");
     let evidence_tmpfs = read("scripts/perf/reference-evidence-tmpfs.sh");
     let measurement = read("scripts/perf/run-reference-measurement.sh");
     let prebuild = read("crates/xtask/src/perf.rs");
@@ -126,6 +127,9 @@ fn runner_runbook_and_helpers_are_fail_closed_and_secret_free() {
     assert!(resp_external.contains("HYDRACACHE_MEASUREMENT_IO_POLICY"));
     assert!(resp_external.contains("HOUSEKEEPING_CPU_LIST"));
     assert!(resp_external.contains(".arg(&tool.canonical_path)"));
+    assert!(compare_redis.contains("external_contract.endpoint = RedisBenchmarkEndpoint"));
+    assert!(compare_redis.contains("host: capability.config.redis_addr.ip().to_string()"));
+    assert!(compare_redis.contains("port: capability.config.redis_addr.port()"));
     assert!(evidence_tmpfs.contains("/dev/shm/hydracache-reference-evidence-v1"));
     assert!(evidence_tmpfs.contains("findmnt --noheadings --output FSTYPE"));
     assert!(evidence_tmpfs.contains("ln --symbolic"));
