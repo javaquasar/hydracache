@@ -25,8 +25,8 @@ use crate::report::{
 use crate::resp_external::{
     current_platform_key, parse_redis_benchmark_csv, ExternalToolExecutor,
     ExternalToolPrebuildReceipt, ExternalToolProvenanceRegistry, LaunchErrorKind, ProcessLimits,
-    RedisBenchmarkContract, RedisBenchmarkCsvRow, RedisBenchmarkEvidence, ResolvedExternalTool,
-    SystemToolExecutor, REDIS_BENCHMARK_PROVENANCE_REGISTRY_PATH,
+    RedisBenchmarkContract, RedisBenchmarkCsvRow, RedisBenchmarkEndpoint, RedisBenchmarkEvidence,
+    ResolvedExternalTool, SystemToolExecutor, REDIS_BENCHMARK_PROVENANCE_REGISTRY_PATH,
 };
 use crate::targets::resp::{
     encode_resp2_command, parse_resp2, Resp2Limits, Resp2ParseStatus, Resp2Value,
@@ -444,9 +444,17 @@ impl W3ReferenceBinding {
             &loaded.external.bytes,
             &loaded.lifecycle.bytes,
         )?;
-        let external_contract =
+        let mut external_contract =
             RedisBenchmarkContract::load(&repo_root.join(W3_EXTERNAL_SCENARIO_RELATIVE_PATH))
                 .map_err(|error| RedisComparisonError::W3(error.to_string()))?;
+        // The committed contract carries only a development default port. Reference W3
+        // launches a fresh receipt-bound daemon on an ephemeral loopback port, so archived
+        // revalidation must reconstruct the effective contract from the signed endpoint
+        // capability rather than trusting either the default or the external report.
+        external_contract.endpoint = RedisBenchmarkEndpoint {
+            host: capability.config.redis_addr.ip().to_string(),
+            port: capability.config.redis_addr.port(),
+        };
         let provenance_registry = ExternalToolProvenanceRegistry::load(
             &repo_root.join(REDIS_BENCHMARK_PROVENANCE_REGISTRY_PATH),
         )
