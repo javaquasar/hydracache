@@ -2624,7 +2624,7 @@ mod tests {
         assert_eq!(scaling.scenario.repeats, 3);
         assert_eq!(scaling.scenario.robust_spread_tolerance, 0.15);
         assert_eq!(hot_key.local.worker_counts, [1, 2, 4]);
-        assert_eq!(hot_key.local.single_flight_bursts_per_repeat, 64);
+        assert_eq!(hot_key.local.single_flight_bursts_per_repeat, 256);
     }
 
     #[tokio::test]
@@ -2640,15 +2640,15 @@ mod tests {
         assert_eq!(point.samples.len(), 3);
         assert_eq!(
             point.dimensions.get("bursts_per_repeat"),
-            Some(&DimensionValue::U64(64))
+            Some(&DimensionValue::U64(256))
         );
         assert_eq!(
             point.dimensions.get("loader_executions"),
-            Some(&DimensionValue::U64(64))
+            Some(&DimensionValue::U64(256))
         );
         assert_eq!(
             point.dimensions.get("cache_misses_before_loader_release"),
-            Some(&DimensionValue::U64(256))
+            Some(&DimensionValue::U64(1024))
         );
         assert!(
             point.robust_spread_ratio <= measurement.max_robust_spread_ratio,
