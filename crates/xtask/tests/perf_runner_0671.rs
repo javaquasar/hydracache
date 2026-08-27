@@ -16,6 +16,7 @@ fn runner_runbook_and_helpers_are_fail_closed_and_secret_free() {
     let isolation = read("scripts/perf/provision-reference-isolation.sh");
     assert!(lifecycle.contains("systemctl disable --now"));
     let runtime_irq_guard = read("scripts/perf/reference-runtime-irq-guard.sh");
+    let resp_external = read("crates/hydracache-loadgen/src/resp_external.rs");
     let evidence_tmpfs = read("scripts/perf/reference-evidence-tmpfs.sh");
     let measurement = read("scripts/perf/run-reference-measurement.sh");
     let prebuild = read("crates/xtask/src/perf.rs");
@@ -121,6 +122,10 @@ fn runner_runbook_and_helpers_are_fail_closed_and_secret_free() {
     assert!(runtime_irq_guard.contains("per_cpu_counts=${counts}"));
     assert!(runtime_irq_guard.contains("measurement=\"${MEASUREMENT_AFFINITY-1-4}\""));
     assert!(runtime_irq_guard.contains("measurement=${measurement}"));
+    assert!(resp_external.contains("tool.requested_program == \"docker\""));
+    assert!(resp_external.contains("HYDRACACHE_MEASUREMENT_IO_POLICY"));
+    assert!(resp_external.contains("HOUSEKEEPING_CPU_LIST"));
+    assert!(resp_external.contains(".arg(&tool.canonical_path)"));
     assert!(evidence_tmpfs.contains("/dev/shm/hydracache-reference-evidence-v1"));
     assert!(evidence_tmpfs.contains("findmnt --noheadings --output FSTYPE"));
     assert!(evidence_tmpfs.contains("ln --symbolic"));

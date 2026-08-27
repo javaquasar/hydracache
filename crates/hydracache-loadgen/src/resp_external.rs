@@ -34,6 +34,9 @@ pub const CLOSED_LOOP_METHODOLOGY: &str = "closed-loop";
 pub const SUPPLEMENTAL_CLAIM_SCOPE: &str = "supplemental-interop-throughput-no-slo-knee";
 pub const NODE_LOCAL_STATE_SCOPE: &str = "node-local";
 pub const SELECTED_RESP_BOUNDARY: &str = "selected-daemon-resp-tcp";
+const REFERENCE_MEASUREMENT_IO_POLICY: &str = "tmpfs-housekeeping-orchestration-v1";
+#[cfg(target_os = "linux")]
+const HOUSEKEEPING_CPU_LIST: &str = "0,5-7";
 pub const PINNED_TOOL_IDENTITY_POLICY: &str = "canonical-path-sha256-pinned-per-run";
 pub const EXTERNAL_PROVENANCE_REGISTRY_VERSION: u32 = 1;
 pub const EXTERNAL_PREBUILD_RECEIPT_VERSION: u32 = 1;
@@ -992,8 +995,8 @@ impl ExternalToolExecutor for SystemToolExecutor {
         argv: &[String],
         limits: ProcessLimits,
     ) -> Result<ProcessCapture, LaunchError> {
-        let mut child = Command::new(&tool.canonical_path)
-            .args(argv)
+        let mut command = external_tool_command(tool, argv)?;
+        let mut child = command
             .env_clear()
             .env("LANG", "C")
             .env("LC_ALL", "C")
@@ -1059,6 +1062,40 @@ impl ExternalToolExecutor for SystemToolExecutor {
         prepare_system_repeat_state(endpoint, case)
             .map_err(|error| LaunchError::other(error.to_string()))
     }
+}
+
+fn external_tool_command(
+    tool: &ResolvedExternalTool,
+    argv: &[String],
+) -> Result<Command, LaunchError> {
+    if tool.requested_program == "docker"
+        && std::env::var("HYDRACACHE_MEASUREMENT_IO_POLICY").as_deref()
+            == Ok(REFERENCE_MEASUREMENT_IO_POLICY)
+    {
+        #[cfg(target_os = "linux")]
+        {
+            let taskset = resolve_executable("taskset").map_err(|error| {
+                LaunchError::other(format!(
+                    "unable to resolve taskset for reference Docker orchestration: {error}"
+                ))
+            })?;
+            let mut command = Command::new(taskset);
+            command
+                .arg("--cpu-list")
+                .arg(HOUSEKEEPING_CPU_LIST)
+                .arg(&tool.canonical_path)
+                .args(argv);
+            return Ok(command);
+        }
+        #[cfg(not(target_os = "linux"))]
+        return Err(LaunchError::other(
+            "reference Docker orchestration affinity is supported only on Linux",
+        ));
+    }
+
+    let mut command = Command::new(&tool.canonical_path);
+    command.args(argv);
+    Ok(command)
 }
 
 #[derive(Debug, Error, Clone, PartialEq, Eq)]
