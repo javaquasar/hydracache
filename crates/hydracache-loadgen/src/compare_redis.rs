@@ -1363,7 +1363,7 @@ fn validate_repeats(
                     || case.endpoint != endpoint
                     || !case.initial_state.validate(scenario, endpoint)
                     || !raw_command_matches(&case.process, tool, &argv)
-                    || !case.process.stderr.is_empty()
+                    || !redis_benchmark_stderr_is_allowed(&case.process.stderr)
                     || parsed.as_ref().ok() != Some(&case.rows)
                 {
                     problems.push(format!(

@@ -126,6 +126,23 @@ fn w8_requires_the_canonical_four_artifact_w3_predecessor() {
 }
 
 #[test]
+fn w8_applies_the_same_exact_stderr_policy_live_and_when_revalidating_evidence() {
+    let source = include_str!("../src/compare_redis.rs");
+    assert_eq!(
+        source
+            .matches("redis_benchmark_stderr_is_allowed(&process.stderr)")
+            .count(),
+        1
+    );
+    assert_eq!(
+        source
+            .matches("redis_benchmark_stderr_is_allowed(&case.process.stderr)")
+            .count(),
+        1
+    );
+}
+
+#[test]
 fn docker_cleanup_is_armed_before_run_and_report_publication_is_atomic_last() {
     let source = include_str!("../src/compare_redis.rs");
     let start = source.split_once("fn start_redis_container(").unwrap().1;
