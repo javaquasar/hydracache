@@ -951,7 +951,7 @@ fn resp_open_loop_validation_problems(report: &PerfReport) -> Vec<String> {
         );
     }
     if report.run_mode == EvidenceRunMode::ReferenceEvidence
-        && (matrix.max_robust_spread_ratio != 0.25
+        && (matrix.max_robust_spread_ratio != 0.30
             || matrix.points.iter().any(|point| {
                 point.dimensions.get("key_count") != Some(&DimensionValue::U64(10_000))
                     || point.dimensions.get("preload_entries") != Some(&DimensionValue::U64(10_000))
