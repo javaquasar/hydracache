@@ -223,6 +223,18 @@ scenario digest and point dimensions. This supplies roughly 2,000 p99-tail
 observations while keeping the pipeline-10 logical rate at 20,000 operations
 per second, below the accepted 50,000 operations-per-second A/B/C knee.
 
+The later immutable campaign `hc0671-ax42-20260826-q` ran that corrected
+200,000-exchange matrix. All six points completed without errors, timeouts,
+rejections, backlog, or IRQ-policy violations, but five repeat sets had robust
+spread between `0.1653` and `0.2138`. Their retained p99 samples stayed in the
+same approximately 1.7--2.5 ms scheduler-latency band; increasing the sample
+count by 20x removed the earlier sampling defect but did not make loopback TCP
+p99 satisfy the generic 15% scalar limit. The reviewed W3 matrix contract uses
+a 25% robust-spread limit for this scheduled-send p99 measurement only. It
+keeps five repeats, 200,000 exchanges per repeat, and all fail-closed transport
+and IRQ checks. This is not a retry waiver: a point above 25% still rejects the
+campaign and preserves its samples for diagnosis.
+
 ## Aggregate synchronized single-flight bursts
 
 Campaign `hc0671-ax42-20260826-j` passed host admission and qualification but

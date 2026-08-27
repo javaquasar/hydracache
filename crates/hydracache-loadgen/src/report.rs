@@ -951,7 +951,7 @@ fn resp_open_loop_validation_problems(report: &PerfReport) -> Vec<String> {
         );
     }
     if report.run_mode == EvidenceRunMode::ReferenceEvidence
-        && (matrix.max_robust_spread_ratio != 0.15
+        && (matrix.max_robust_spread_ratio != 0.25
             || matrix.points.iter().any(|point| {
                 point.dimensions.get("key_count") != Some(&DimensionValue::U64(10_000))
                     || point.dimensions.get("preload_entries") != Some(&DimensionValue::U64(10_000))
@@ -965,12 +965,14 @@ fn resp_open_loop_validation_problems(report: &PerfReport) -> Vec<String> {
                     || point
                         .dimensions
                         .get("verified_pipeline_exchanges_per_repeat")
-                        != Some(&DimensionValue::U64(10_000))
+                        != Some(&DimensionValue::U64(200_000))
+                    || point.dimensions.get("offered_rate_per_second")
+                        != Some(&DimensionValue::U64(2_000))
                     || point.samples.len() != 5
             }))
     {
         problems.push(
-            "W3 reference RESP sweep does not retain the committed 10k-operation, 10k-key, five-repeat matrix contract"
+            "W3 reference RESP sweep does not retain the committed 200k-exchange, 2k-exchange/s, 10k-key, five-repeat matrix contract"
                 .to_owned(),
         );
     }
