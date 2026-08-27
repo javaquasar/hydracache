@@ -253,6 +253,14 @@ dimensions. Reset and target setup remain outside the timed interval. Smoke
 coverage still uses one burst so routine CI stays fast. A rejected campaign is
 not retried; the new window requires a new exact green `main` SHA and campaign.
 
+Campaign `hc0671-ax42-20260827-s` retained three 64-burst samples
+(`1376.97`, `1169.62`, and `1305.53` operations per second). Their robust
+spread was `0.1588`, narrowly outside the unchanged 15% contract even though
+all 192 bursts proved the single-flight invariant and the host IRQ guards
+passed. The reference window therefore aggregates 256 independent bursts per
+repeat. This keeps the limit and three-repeat independence unchanged while
+reducing the influence of one scheduler delay; smoke remains one burst.
+
 Campaign `hc0671-ax42-20260826-k` proved that correction: W1 passed and the
 core gate advanced to W2. W2 then rejected only the
 `concurrent_inflight=1000` point with samples `104370.12`, `103239.14`, and
