@@ -27,7 +27,7 @@ use crate::targets::resp::{
 
 pub const REDIS_BENCHMARK_CONTRACT_VERSION: u32 = 1;
 pub const PINNED_REDIS_BENCHMARK_VERSION: &str = "redis-benchmark 7.2.5";
-const UNSUPPORTED_CONFIG_WARNING: &str = "WARNING: Could not fetch server CONFIG\n";
+pub(crate) const UNSUPPORTED_CONFIG_WARNING: &str = "WARNING: Could not fetch server CONFIG\n";
 pub const REDIS_BENCHMARK_MEASUREMENT_ID: &str =
     "redis_benchmark_get_set_mset_throughput_and_interop";
 pub const CLOSED_LOOP_METHODOLOGY: &str = "closed-loop";

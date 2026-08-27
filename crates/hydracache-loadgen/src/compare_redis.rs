@@ -27,6 +27,7 @@ use crate::resp_external::{
     ExternalToolPrebuildReceipt, ExternalToolProvenanceRegistry, LaunchErrorKind, ProcessLimits,
     RedisBenchmarkContract, RedisBenchmarkCsvRow, RedisBenchmarkEndpoint, RedisBenchmarkEvidence,
     ResolvedExternalTool, SystemToolExecutor, REDIS_BENCHMARK_PROVENANCE_REGISTRY_PATH,
+    UNSUPPORTED_CONFIG_WARNING,
 };
 use crate::targets::resp::{
     encode_resp2_command, parse_resp2, Resp2Limits, Resp2ParseStatus, Resp2Value,
@@ -2207,7 +2208,7 @@ fn run_blocking_comparison(
                     &format!("benchmark-repeat-{repeat}-pipeline-{pipeline}-{system:?}"),
                 )?;
                 verify_tool_unchanged(&tools.redis_benchmark)?;
-                if !process.stderr.is_empty() {
+                if !redis_benchmark_stderr_is_allowed(&process.stderr) {
                     return Err(RedisComparisonError::Process {
                         phase: format!("benchmark-repeat-{repeat}-pipeline-{pipeline}-{system:?}"),
                         detail: format!("unexpected stderr: {:?}", process.stderr),
@@ -2237,6 +2238,10 @@ fn run_blocking_comparison(
     verify_tool_unchanged(&tools.redis_benchmark)?;
     let docker = redis.stop()?;
     Ok(BlockingComparison { docker, repeats })
+}
+
+fn redis_benchmark_stderr_is_allowed(stderr: &str) -> bool {
+    stderr.is_empty() || stderr == UNSUPPORTED_CONFIG_WARNING
 }
 
 fn start_redis_container(
@@ -2916,6 +2921,20 @@ mod tests {
     use crate::report::RespDaemonConfigIdentity;
     use crate::tiers::resp::RespReferenceSuiteReceiptPayload;
     use crate::tiers::resp_reference::RespPingEvidence;
+
+    #[test]
+    fn redis_benchmark_stderr_allows_only_the_exact_pinned_config_warning() {
+        assert!(redis_benchmark_stderr_is_allowed(""));
+        assert!(redis_benchmark_stderr_is_allowed(
+            UNSUPPORTED_CONFIG_WARNING
+        ));
+        assert!(!redis_benchmark_stderr_is_allowed(
+            "WARNING: Could not fetch server CONFIG"
+        ));
+        assert!(!redis_benchmark_stderr_is_allowed(
+            "WARNING: Could not fetch server CONFIG\nextra\n"
+        ));
+    }
 
     struct LifecycleFixture {
         root: PathBuf,
