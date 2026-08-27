@@ -4,6 +4,8 @@ use std::fs;
 use std::io::Write;
 use std::path::{Path, PathBuf};
 use std::process::Command;
+use std::thread;
+use std::time::Duration;
 
 use flate2::read::GzDecoder;
 use serde::Deserialize;
@@ -24,6 +26,8 @@ const OLD_DAEMON_WINDOWS_ID: &str = "daemon-generation5-windows-x86_64";
 const NEW_DAEMON_LINUX_ID: &str = "daemon-generation6-linux-x86_64";
 const NEW_DAEMON_WINDOWS_ID: &str = "daemon-generation6-windows-x86_64";
 const JAVA_CONSUMER: &str = "tests/java-hc2-consumer/pom.xml";
+const MAVEN_MAX_ATTEMPTS: u8 = 3;
+const MAVEN_RETRY_DELAY_SECONDS: u64 = 5;
 
 const REQUIRED_SCENARIOS: &[&str] = &[
     "retained-rust-client-current-peer",
@@ -791,17 +795,40 @@ fn run_checked(
     environment: &[(&str, &str)],
     label: &str,
 ) -> Result<(), Box<dyn Error>> {
-    let status = Command::new(program)
-        .args(args)
-        .envs(environment.iter().copied())
-        .current_dir(root)
-        .status()
-        .map_err(|error| format!("starting {label}: {error}"))?;
-    if status.success() {
-        Ok(())
+    let max_attempts = if is_maven_program(program) {
+        MAVEN_MAX_ATTEMPTS
     } else {
-        Err(format!("{label} failed with {status}").into())
+        1
+    };
+    for attempt in 1..=max_attempts {
+        let status = Command::new(program)
+            .args(args)
+            .envs(environment.iter().copied())
+            .current_dir(root)
+            .status()
+            .map_err(|error| format!("starting {label}: {error}"))?;
+        if status.success() {
+            return Ok(());
+        }
+        if attempt == max_attempts {
+            return Err(format!("{label} failed with {status} after {attempt} attempt(s)").into());
+        }
+        eprintln!(
+            "{label} failed with {status}; retrying bounded Maven execution ({}/{max_attempts})",
+            attempt + 1
+        );
+        thread::sleep(Duration::from_secs(MAVEN_RETRY_DELAY_SECONDS));
     }
+    unreachable!("bounded attempt range is non-empty")
+}
+
+fn is_maven_program(program: &str) -> bool {
+    Path::new(program)
+        .file_name()
+        .and_then(|name| name.to_str())
+        .is_some_and(|name| {
+            name.eq_ignore_ascii_case("mvn") || name.eq_ignore_ascii_case("mvn.cmd")
+        })
 }
 
 fn run_git(root: &Path, args: &[&str], label: &str) -> Result<(), Box<dyn Error>> {
@@ -920,5 +947,17 @@ mod tests {
             reachable.as_bytes(),
             &"a".repeat(39)
         ));
+    }
+
+    #[test]
+    fn bounded_retry_is_scoped_only_to_maven_executables() {
+        assert!(is_maven_program("mvn"));
+        assert!(is_maven_program("mvn.cmd"));
+        assert!(is_maven_program("/opt/apache-maven/bin/mvn"));
+        #[cfg(windows)]
+        assert!(is_maven_program(r"C:\tools\maven\mvn.cmd"));
+        assert!(!is_maven_program("cargo"));
+        assert!(!is_maven_program("java"));
+        assert!(!is_maven_program("mvn-wrapper"));
     }
 }
