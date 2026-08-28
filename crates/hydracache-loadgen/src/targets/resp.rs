@@ -17,7 +17,6 @@ use tokio::sync::{Mutex, RwLock};
 use crate::target::{PreloadOutcome, Target, TargetError, TargetOutcome, TargetRequest};
 
 const STATE_DIGEST_VERSION: &str = "hydracache-resp-node-local-logical-state-v2";
-const KEY_PREFIX: &[u8] = b"hc:perf:w3:";
 
 /// Bounds applied by the incremental RESP2 parser.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -1228,7 +1227,7 @@ mod tests {
                 mset_percent: 0,
             },
             key_schedule: Arc::new(vec![0]),
-            key_prefix: Arc::new(KEY_PREFIX.to_vec()),
+            key_prefix: Arc::new(b"hc:perf:w3:".to_vec()),
             connect_timeout: Duration::from_secs(1),
             io_timeout: Duration::from_millis(10),
             parser_limits: Resp2Limits::default(),
@@ -1301,7 +1300,7 @@ mod tests {
                     mset_percent: 0,
                 },
                 key_schedule: Arc::new(vec![0]),
-                key_prefix: Arc::new(KEY_PREFIX.to_vec()),
+                key_prefix: Arc::new(b"hc:perf:w3:".to_vec()),
                 connect_timeout: Duration::from_secs(1),
                 io_timeout: Duration::from_secs(1),
                 parser_limits: Resp2Limits::default(),
@@ -1387,7 +1386,7 @@ mod tests {
                 mset_percent: 0,
             },
             key_schedule: Arc::new(vec![0]),
-            key_prefix: Arc::new(KEY_PREFIX.to_vec()),
+            key_prefix: Arc::new(b"hc:perf:w3:".to_vec()),
             connect_timeout: Duration::from_secs(1),
             io_timeout: Duration::from_secs(1),
             parser_limits: Resp2Limits::default(),
