@@ -6,6 +6,7 @@
 
 use std::collections::{BTreeMap, BTreeSet};
 use std::fs::{self, OpenOptions};
+use std::future::Future;
 use std::io::Write;
 use std::net::{Ipv4Addr, SocketAddr};
 use std::path::{Path, PathBuf};
@@ -52,6 +53,7 @@ use crate::tiers::resp_reference::{
 const MAX_INPUT_BYTES: u64 = 128 * 1024 * 1024;
 const CONTROL_PROBE_TIMEOUT: Duration = Duration::from_secs(2);
 const CONTROL_TRANSITION_POLL: Duration = Duration::from_millis(50);
+const CONTROL_WINDOW_READY_TIMEOUT: Duration = Duration::from_secs(5);
 const RESP_STARTUP_TIMEOUT: Duration = Duration::from_secs(20);
 const RESP_POLL_INTERVAL: Duration = Duration::from_millis(25);
 const RESP_PING_FRAME: &[u8] = b"*1\r\n$4\r\nPING\r\n";
@@ -844,16 +846,51 @@ async fn run_control_window(
         endpoint,
         timeout: CONTROL_PROBE_TIMEOUT,
     });
-    target
-        .state_digest()
-        .await
-        .map_err(|error| BrownoutError::Driver(error.to_string()))?;
+    wait_for_control_window_ready(Arc::clone(&target)).await?;
     run_open_loop(
         target,
         &open_loop_config(plan.offered_rate_per_second, plan.observation_window_millis)?,
     )
     .await
     .map_err(BrownoutError::Driver)
+}
+
+async fn wait_for_control_window_ready(
+    target: Arc<LiveMetadataTarget>,
+) -> Result<String, BrownoutError> {
+    retry_transient_probe(
+        CONTROL_WINDOW_READY_TIMEOUT,
+        CONTROL_TRANSITION_POLL,
+        || {
+            let target = Arc::clone(&target);
+            async move { target.state_digest().await.map_err(|error| error.to_string()) }
+        },
+    )
+    .await
+    .map_err(|latest| {
+        BrownoutError::Driver(format!(
+            "control-plane window did not become probe-ready in {CONTROL_WINDOW_READY_TIMEOUT:?}: {latest}"
+        ))
+    })
+}
+
+async fn retry_transient_probe<T, F, Fut>(
+    timeout: Duration,
+    poll: Duration,
+    mut probe: F,
+) -> Result<T, String>
+where
+    F: FnMut() -> Fut,
+    Fut: Future<Output = Result<T, String>>,
+{
+    let deadline = Instant::now() + timeout;
+    loop {
+        match probe().await {
+            Ok(value) => return Ok(value),
+            Err(latest) if Instant::now() >= deadline => return Err(latest),
+            Err(_) => tokio::time::sleep(poll).await,
+        }
+    }
 }
 
 async fn join_window(
@@ -1746,6 +1783,42 @@ mod tests {
         let config = open_loop_config(600, 10_000).expect("valid exact window");
         assert_eq!(config.offered_rate_per_second, 600);
         assert_eq!(config.operations, 6_000);
+    }
+
+    #[tokio::test]
+    async fn transient_control_probe_is_retried_before_window() {
+        let attempts = Arc::new(AtomicU64::new(0));
+        let observed = Arc::clone(&attempts);
+        let value = retry_transient_probe(
+            Duration::from_secs(1),
+            Duration::from_millis(1),
+            move || {
+                let attempt = observed.fetch_add(1, Ordering::SeqCst);
+                async move {
+                    if attempt < 2 {
+                        Err("connection reset by peer".to_owned())
+                    } else {
+                        Ok("sha256:ready".to_owned())
+                    }
+                }
+            },
+        )
+        .await
+        .expect("transient failures should be retried");
+        assert_eq!(value, "sha256:ready");
+        assert_eq!(attempts.load(Ordering::SeqCst), 3);
+    }
+
+    #[tokio::test]
+    async fn persistent_control_probe_failure_remains_bounded() {
+        let error = retry_transient_probe(
+            Duration::from_millis(5),
+            Duration::from_millis(1),
+            || async { Err::<(), _>("still unavailable".to_owned()) },
+        )
+        .await
+        .expect_err("persistent failure must remain fatal");
+        assert_eq!(error, "still unavailable");
     }
 
     #[test]
