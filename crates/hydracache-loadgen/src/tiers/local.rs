@@ -2651,12 +2651,10 @@ mod tests {
             Some(&DimensionValue::U64(1024))
         );
         assert_eq!(measurement.max_robust_spread_ratio, 0.15);
-        assert!(
-            point
-                .samples
-                .iter()
-                .all(|sample| sample.is_finite() && *sample > 0.0)
-        );
+        assert!(point
+            .samples
+            .iter()
+            .all(|sample| sample.is_finite() && *sample > 0.0));
         // Reference eligibility is decided only on the isolated reference host.
         // This unit test runs on arbitrary CI/developer machines, so scheduler
         // jitter must not turn the structural aggregation proof into a timing
