@@ -1,3 +1,9 @@
+fn read_ci_workflow(root: &std::path::Path) -> String {
+    std::fs::read_to_string(root.join(".github/workflows/ci.yml"))
+        .unwrap()
+        .replace("\r\n", "\n")
+}
+
 #[test]
 fn release_governance_check_accepts_current_structural_meta_gates() {
     let root = xtask::doc_check::find_repo_root().unwrap();
@@ -54,7 +60,7 @@ fn release_governance_check_rejects_an_unwired_or_missing_meta_gate() {
 #[test]
 fn ci_wires_fast_and_raft_corner_case_tiers_to_declared_commands() {
     let root = xtask::doc_check::find_repo_root().unwrap();
-    let workflow = std::fs::read_to_string(root.join(".github/workflows/ci.yml")).unwrap();
+    let workflow = read_ci_workflow(&root);
     let problems =
         xtask::release_governance::release_execution_wiring_problems(&workflow, "0.66").unwrap();
     assert!(problems.is_empty(), "{problems:#?}");
@@ -434,7 +440,7 @@ fn release_067_deferred_performance_gates_remain_registered_and_fail_closed() {
 #[test]
 fn performance_lane_requires_protected_self_hosted_labels_and_serial_concurrency() {
     let root = xtask::doc_check::find_repo_root().unwrap();
-    let workflow = std::fs::read_to_string(root.join(".github/workflows/ci.yml")).unwrap();
+    let workflow = read_ci_workflow(&root);
     let problems =
         xtask::release_governance::release_execution_wiring_problems(&workflow, "0.67").unwrap();
     assert!(problems.is_empty(), "{problems:#?}");
@@ -679,7 +685,7 @@ fn release_0671_core_suite_reuses_one_validated_context_for_w4b_and_w5c() {
 #[test]
 fn release_compatibility_jobs_fetch_the_baseline_tag_and_ancestry() {
     let root = xtask::doc_check::find_repo_root().unwrap();
-    let workflow = std::fs::read_to_string(root.join(".github/workflows/ci.yml")).unwrap();
+    let workflow = read_ci_workflow(&root);
     let problems = xtask::release_governance::release_history_checkout_problems(&workflow).unwrap();
     assert!(problems.is_empty(), "{problems:#?}");
 
@@ -747,7 +753,7 @@ fn release_governance_check_accepts_the_explicit_0_70_fast_wiring() {
     let report = xtask::release_governance::check(&root, "0.70").unwrap();
     assert!(report.problems.is_empty(), "{:#?}", report.problems);
 
-    let workflow = std::fs::read_to_string(root.join(".github/workflows/ci.yml")).unwrap();
+    let workflow = read_ci_workflow(&root);
     let broken = workflow.replacen(
         "if: env.HYDRACACHE_CANDIDATE_RELEASE == '0.69'",
         "if: always()",
@@ -770,7 +776,7 @@ fn release_governance_check_accepts_release_069_independent_evidence_wiring() {
 #[test]
 fn release_069_receipt_and_admission_commands_are_fail_closed() {
     let root = xtask::doc_check::find_repo_root().unwrap();
-    let workflow = std::fs::read_to_string(root.join(".github/workflows/ci.yml")).unwrap();
+    let workflow = read_ci_workflow(&root);
     for command in [
         "evidence-run --release 0.69 --gate fast.migration-conformance-db-069",
         "evidence-run --release 0.69 --gate tool.borrowed-hazelcast-069",
