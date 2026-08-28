@@ -135,6 +135,17 @@ class ReferenceCampaignTests(unittest.TestCase):
             receipt_path.write_text(json.dumps(receipt) + "\n", encoding="utf-8")
             self.assertFalse(campaign.canonical_admission_matches(canonical, state))
 
+    def test_prepare_preflight_rejects_stale_canonical_admission(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            canonical = Path(temporary) / "reference-campaign-v1"
+            campaign.require_canonical_host_admission_absent(canonical)
+            canonical.mkdir()
+            with self.assertRaisesRegex(
+                campaign.CampaignError,
+                "previous campaign to close and retire",
+            ):
+                campaign.require_canonical_host_admission_absent(canonical)
+
     def test_campaign_and_artifact_names_are_strict(self) -> None:
         self.assertTrue(campaign.CAMPAIGN_RE.fullmatch("hc0671-rental-a1b2c3"))
         self.assertFalse(campaign.CAMPAIGN_RE.fullmatch("HC0671 bad; rm"))

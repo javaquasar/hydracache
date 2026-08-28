@@ -354,6 +354,16 @@ def current_boot_id() -> str:
     return Path("/proc/sys/kernel/random/boot_id").read_text(encoding="ascii").strip()
 
 
+def require_canonical_host_admission_absent(
+    canonical: Path = Path("/var/lib/hydracache-perf/reference-campaign-v1"),
+) -> None:
+    if canonical.exists():
+        raise CampaignError(
+            "prepare requires the previous campaign to close and retire its canonical host "
+            f"admission first: {canonical}"
+        )
+
+
 def command_prepare(args: argparse.Namespace) -> None:
     if not args.confirm_host_mutation:
         raise CampaignError("prepare requires --confirm-host-mutation")
@@ -366,6 +376,7 @@ def command_prepare(args: argparse.Namespace) -> None:
         raise CampaignError(f"prepare refuses to reuse campaign directory: {campaign_dir}")
     host_state_dir = validate_host_state_dir(args.host_state_dir)
     ensure_checkout(args.expected_sha)
+    require_canonical_host_admission_absent()
     campaign_dir.mkdir(parents=True, mode=0o700)
     profile = repo_root() / PROFILE_RELATIVE
     state: dict[str, Any] = {
