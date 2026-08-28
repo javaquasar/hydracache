@@ -31,17 +31,18 @@ use crate::targets::control_plane::{
     ControlPlaneError, ControlPlaneLifecycleReceipt, ControlPlaneLifecycleReceiptPayload,
     ControlPlaneReport, ControlPlaneScenario, ControlPlaneTarget, DaemonAddActionPayload,
     DaemonAddInvocationReceipt, DaemonNodeConfigReceipt, DaemonNodeLaunchConfig,
-    DaemonNodeLifecycleEvidence, DaemonNodeProcessReceipt, DaemonReceiptSource, NodeRole,
-    PrebuiltServerBinaryReceipt, ProbedControlPlaneCapability, ProcessLogReceipt,
-    ReferenceCapabilityPolicy, CONTROL_PLANE_EVIDENCE_CLASS, CONTROL_PLANE_EXECUTION_MODE,
-    DAEMON_CAPABILITY_RECEIPT_KIND, DAEMON_CLUSTER_PROVISIONER, NODE_CONFIG_RECEIPT_KIND,
+    DaemonNodeLifecycleEvidence, DaemonNodeProcessReceipt, DaemonReceiptSource,
+    DaemonTerminationKind, NodeRole, PrebuiltServerBinaryReceipt, ProbedControlPlaneCapability,
+    ProcessLogReceipt, ReferenceCapabilityPolicy, CONTROL_PLANE_EVIDENCE_CLASS,
+    CONTROL_PLANE_EXECUTION_MODE, DAEMON_CAPABILITY_RECEIPT_KIND, DAEMON_CLUSTER_PROVISIONER,
+    NODE_CONFIG_RECEIPT_KIND,
 };
 use crate::tiers::resp_reference::ValidatedRespReferenceContext;
 
 const STARTUP_TIMEOUT: Duration = Duration::from_secs(90);
 const PER_PROBE_TIMEOUT: Duration = Duration::from_secs(3);
 const POLL_INTERVAL: Duration = Duration::from_millis(100);
-const LIFECYCLE_RECEIPT_KIND: &str = "hydracache-daemon-cluster-lifecycle-v1";
+const LIFECYCLE_RECEIPT_KIND: &str = "hydracache-daemon-cluster-lifecycle-v2";
 const ADD_ACTION_RECEIPT_KIND: &str = "hydracache-daemon-add-action-v1";
 
 static RUN_SEQUENCE: AtomicU64 = AtomicU64::new(0);
@@ -209,7 +210,7 @@ async fn run_control_plane_reference_inner(
     )
     .await?;
 
-    let lifecycle = cluster.stop_all(context, probed.receipt_sha256())?;
+    let lifecycle = cluster.stop_all(context, probed.receipt_sha256(), &drain_target)?;
     let report = ControlPlaneReport {
         schema_version: 1,
         scenario_id: scenario.scenario_id.clone(),
@@ -424,7 +425,7 @@ impl LiveControlPlaneProcessHarness {
     pub fn shutdown(
         mut self,
     ) -> Result<Vec<DaemonNodeLifecycleEvidence>, ControlPlaneReferenceError> {
-        self.cluster.stop_all_unsealed(&self.context)
+        self.cluster.stop_all_unsealed(&self.context, None)
     }
 }
 
@@ -698,6 +699,7 @@ impl ReferenceNode {
     fn stop(
         &mut self,
         context: &ValidatedRespReferenceContext,
+        graceful_drain_expected: bool,
     ) -> Result<DaemonNodeLifecycleEvidence, String> {
         let pid = self.pid.ok_or_else(|| "node has no PID".to_owned())?;
         let mut child = self
@@ -705,38 +707,53 @@ impl ReferenceNode {
             .take()
             .ok_or_else(|| format!("node {pid} has no owned child"))?;
         let mut problems = Vec::new();
-        let was_running = match child.try_wait() {
-            Ok(None) => true,
-            Ok(Some(status)) => {
-                problems.push(format!(
-                    "daemon exited before lifecycle kill: {}",
-                    exit_status_text(&status)
-                ));
-                false
-            }
+        let already_exited = match child.try_wait() {
+            Ok(None) => None,
+            Ok(Some(status)) => Some(status),
             Err(error) => {
-                problems.push(format!("pre-kill status failed: {error}"));
-                true
+                problems.push(format!("pre-termination status failed: {error}"));
+                None
             }
         };
-        let kill_requested = true;
-        if let Err(error) = child.kill() {
-            problems.push(format!("kill failed: {error}"));
-        }
-        let status = match child.wait() {
-            Ok(status) => Some(status),
-            Err(error) => {
-                problems.push(format!("wait/reap failed: {error}"));
-                None
+        let (termination_kind, kill_requested, status) = match already_exited {
+            Some(status) if graceful_drain_expected && status.success() => {
+                (DaemonTerminationKind::GracefulDrain, false, Some(status))
+            }
+            Some(status) => {
+                problems.push(format!(
+                    "daemon exited unexpectedly before lifecycle termination: {}",
+                    exit_status_text(&status)
+                ));
+                (DaemonTerminationKind::ExplicitKill, false, Some(status))
+            }
+            None => {
+                if graceful_drain_expected {
+                    problems.push(
+                        "drain target remained running at lifecycle cleanup boundary".to_owned(),
+                    );
+                }
+                if let Err(error) = child.kill() {
+                    problems.push(format!("kill failed: {error}"));
+                }
+                let status = match child.wait() {
+                    Ok(status) => Some(status),
+                    Err(error) => {
+                        problems.push(format!("wait/reap failed: {error}"));
+                        None
+                    }
+                };
+                (DaemonTerminationKind::ExplicitKill, true, status)
             }
         };
         let wait_completed = status.is_some();
         let evidence = DaemonNodeLifecycleEvidence {
             node_id: self.config.launch_config.node_id.clone(),
             pid,
+            termination_kind,
             kill_requested,
             wait_completed,
             process_no_longer_running: wait_completed,
+            exit_success: status.as_ref().is_some_and(ExitStatus::success),
             exit_status: status
                 .as_ref()
                 .map(exit_status_text)
@@ -752,9 +769,6 @@ impl ReferenceNode {
             node_config_sha256_after: sha256_file(&self.config.canonical_path)
                 .map_err(|error| error.to_string())?,
         };
-        if !was_running {
-            problems.push("daemon was not running at cleanup boundary".to_owned());
-        }
         if problems.is_empty() {
             Ok(evidence)
         } else {
@@ -1017,6 +1031,7 @@ impl ReferenceControlPlaneCluster {
     fn stop_all_unsealed(
         &mut self,
         context: &ValidatedRespReferenceContext,
+        graceful_drain_node_id: Option<&str>,
     ) -> Result<Vec<DaemonNodeLifecycleEvidence>, ControlPlaneReferenceError> {
         let mut evidence = Vec::with_capacity(self.nodes.len());
         let mut problems = Vec::new();
@@ -1026,7 +1041,9 @@ impl ReferenceControlPlaneCluster {
                 // status for this node. W4 never takes this branch.
                 continue;
             }
-            match node.stop(context) {
+            let graceful_drain_expected = graceful_drain_node_id
+                .is_some_and(|node_id| node_id == node.config.launch_config.node_id);
+            match node.stop(context, graceful_drain_expected) {
                 Ok(node_evidence) => evidence.push(node_evidence),
                 Err(error) => problems.push(error),
             }
@@ -1083,8 +1100,9 @@ impl ReferenceControlPlaneCluster {
         &mut self,
         context: &ValidatedRespReferenceContext,
         capability_receipt_sha256: &str,
+        graceful_drain_node_id: &str,
     ) -> Result<ControlPlaneLifecycleReceipt, ControlPlaneReferenceError> {
-        let evidence = self.stop_all_unsealed(context)?;
+        let evidence = self.stop_all_unsealed(context, Some(graceful_drain_node_id))?;
         ControlPlaneLifecycleReceipt::seal(ControlPlaneLifecycleReceiptPayload {
             receipt_kind: LIFECYCLE_RECEIPT_KIND.to_owned(),
             receipt_source: DaemonReceiptSource::ObservedProcessHarness,

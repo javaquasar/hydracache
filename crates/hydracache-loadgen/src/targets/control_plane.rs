@@ -1127,14 +1127,24 @@ pub struct ProcessLogReceipt {
     pub bytes: u64,
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+#[serde(rename_all = "snake_case")]
+pub enum DaemonTerminationKind {
+    ExplicitKill,
+    GracefulDrain,
+}
+
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct DaemonNodeLifecycleEvidence {
     pub node_id: String,
     pub pid: u32,
+    pub termination_kind: DaemonTerminationKind,
     pub kill_requested: bool,
     pub wait_completed: bool,
     pub process_no_longer_running: bool,
+    pub exit_success: bool,
     pub exit_status: String,
     pub stdout_log: ProcessLogReceipt,
     pub stderr_log: ProcessLogReceipt,
@@ -1256,7 +1266,17 @@ impl ControlPlaneReport {
         for event in &self.membership_events {
             validate_membership_event(event, scenario, capability)?;
         }
-        validate_lifecycle_receipt(&self.lifecycle, capability)?;
+        let drain_target = self
+            .membership_events
+            .iter()
+            .find(|event| event.action == MembershipAction::Drain)
+            .map(|event| event.target_node_id.as_str())
+            .ok_or_else(|| {
+                ControlPlaneError::Evidence(
+                    "W4A lifecycle validation requires the exact drain target".to_owned(),
+                )
+            })?;
+        validate_lifecycle_receipt(&self.lifecycle, capability, drain_target)?;
         Ok(())
     }
 
@@ -1691,9 +1711,10 @@ fn validate_action_receipt(
 fn validate_lifecycle_receipt(
     lifecycle: &ControlPlaneLifecycleReceipt,
     capability: &ProbedControlPlaneCapability,
+    drain_target: &str,
 ) -> Result<(), ControlPlaneError> {
     if lifecycle.receipt_sha256 != canonical_digest(&lifecycle.payload)?
-        || lifecycle.payload.receipt_kind != "hydracache-daemon-cluster-lifecycle-v1"
+        || lifecycle.payload.receipt_kind != "hydracache-daemon-cluster-lifecycle-v2"
         || lifecycle.payload.receipt_source != DaemonReceiptSource::ObservedProcessHarness
         || lifecycle.payload.capability_receipt_sha256 != capability.receipt_sha256()
         || lifecycle.payload.nodes.len() != capability.attestation.nodes.len()
@@ -1714,9 +1735,16 @@ fn validate_lifecycle_receipt(
                     "lifecycle receipt contains a node absent from the launch receipt".to_owned(),
                 )
             })?;
+        let valid_termination = valid_lifecycle_termination(
+            node.termination_kind,
+            node.kill_requested,
+            &node.node_id,
+            drain_target,
+            node.exit_success,
+        );
         if !ids.insert(node.node_id.as_str())
             || node.pid != launch.pid
-            || !node.kill_requested
+            || !valid_termination
             || !node.wait_completed
             || !node.process_no_longer_running
             || node.exit_status.trim().is_empty()
@@ -1729,7 +1757,7 @@ fn validate_lifecycle_receipt(
             || sha256_file(&node.node_config_path_after)? != node.node_config_sha256_after
         {
             return Err(ControlPlaneError::Evidence(
-                "W4A lifecycle must prove kill+wait, PID exit, and post-run binary/config identity for every daemon"
+                "W4A lifecycle must prove explicit kill or the exact successful graceful-drain exit, wait/reap, PID exit, and post-run binary/config identity for every daemon"
                     .to_owned(),
             ));
         }
@@ -1742,6 +1770,21 @@ fn validate_lifecycle_receipt(
         }
     }
     Ok(())
+}
+
+fn valid_lifecycle_termination(
+    termination_kind: DaemonTerminationKind,
+    kill_requested: bool,
+    node_id: &str,
+    drain_target: &str,
+    exit_success: bool,
+) -> bool {
+    match termination_kind {
+        DaemonTerminationKind::ExplicitKill => kill_requested,
+        DaemonTerminationKind::GracefulDrain => {
+            !kill_requested && node_id == drain_target && exit_success
+        }
+    }
 }
 
 fn validate_log_receipt(receipt: &ProcessLogReceipt) -> Result<(), ControlPlaneError> {
@@ -3208,6 +3251,56 @@ mod tests {
             .sustainability_criteria()
             .knee_validation_problems(&knee)
             .is_empty());
+    }
+
+    #[test]
+    fn lifecycle_accepts_only_the_exact_successful_graceful_drain() {
+        assert!(valid_lifecycle_termination(
+            DaemonTerminationKind::GracefulDrain,
+            false,
+            "joiner",
+            "joiner",
+            true,
+        ));
+        assert!(!valid_lifecycle_termination(
+            DaemonTerminationKind::GracefulDrain,
+            false,
+            "leader",
+            "joiner",
+            true,
+        ));
+        assert!(!valid_lifecycle_termination(
+            DaemonTerminationKind::GracefulDrain,
+            false,
+            "joiner",
+            "joiner",
+            false,
+        ));
+        assert!(!valid_lifecycle_termination(
+            DaemonTerminationKind::GracefulDrain,
+            true,
+            "joiner",
+            "joiner",
+            true,
+        ));
+    }
+
+    #[test]
+    fn lifecycle_explicit_kill_remains_fail_closed() {
+        assert!(valid_lifecycle_termination(
+            DaemonTerminationKind::ExplicitKill,
+            true,
+            "leader",
+            "joiner",
+            false,
+        ));
+        assert!(!valid_lifecycle_termination(
+            DaemonTerminationKind::ExplicitKill,
+            false,
+            "leader",
+            "joiner",
+            true,
+        ));
     }
 
     fn placeholder_snapshot(endpoint: ControlPlaneEndpoint) -> PublicControlPlaneSnapshot {
