@@ -29,7 +29,7 @@ use crate::report::{
 use crate::resp_external::RedisBenchmarkEvidence;
 use crate::targets::control_plane::{
     ControlPlaneEndpoint, ControlPlaneReport, ControlPlaneScenario, ControlPlaneSource,
-    PublicControlPlaneSnapshot, ValidatedControlPlaneCapability,
+    DaemonTerminationKind, PublicControlPlaneSnapshot, ValidatedControlPlaneCapability,
 };
 use crate::tiers::resp::{RespReferenceSuiteEvidence, RespReferenceSuiteReceipt};
 use crate::tiers::resp_reference::RespDaemonEvidence;
@@ -2130,8 +2130,10 @@ impl MetricsPredecessorReceipt {
                 admin_endpoint: node.config.launch_config.admin_addr,
                 server_binary_sha256: node.observed_executable_sha256.clone(),
                 loadgen_binary_sha256: None,
-                killed_and_waited: lifecycle.kill_requested
-                    && lifecycle.wait_completed
+                killed_and_waited: matches!(
+                    lifecycle.termination_kind,
+                    DaemonTerminationKind::ExplicitKill | DaemonTerminationKind::GracefulDrain
+                ) && lifecycle.wait_completed
                     && lifecycle.process_no_longer_running,
             });
         }

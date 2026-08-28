@@ -99,9 +99,11 @@ struct FixtureArchivedLog {
 struct FixtureArchivedNode {
     node_id: String,
     pid: u32,
+    termination_kind: hydracache_loadgen::targets::control_plane::DaemonTerminationKind,
     kill_requested: bool,
     wait_completed: bool,
     process_no_longer_running: bool,
+    exit_success: bool,
     exit_status: String,
     stdout_log: FixtureArchivedLog,
     stderr_log: FixtureArchivedLog,
@@ -130,9 +132,12 @@ fn fixture_final_cleanup() -> FixtureFinalCleanup {
         .map(|index| FixtureArchivedNode {
             node_id: format!("node-{index}"),
             pid: 9_100 + index,
+            termination_kind:
+                hydracache_loadgen::targets::control_plane::DaemonTerminationKind::ExplicitKill,
             kill_requested: true,
             wait_completed: true,
             process_no_longer_running: true,
+            exit_success: false,
             exit_status: "fixture-exit".to_owned(),
             stdout_log: FixtureArchivedLog {
                 canonical_path: path.clone(),

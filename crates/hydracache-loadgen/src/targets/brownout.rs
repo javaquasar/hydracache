@@ -1945,6 +1945,8 @@ impl ControlPlaneFinalCleanupReceipt {
             if !portable_identifier(&node.node_id)
                 || node.pid == 0
                 || !pids.insert(node.pid)
+                || node.termination_kind
+                    != crate::targets::control_plane::DaemonTerminationKind::ExplicitKill
                 || !node.kill_requested
                 || !node.wait_completed
                 || !node.process_no_longer_running

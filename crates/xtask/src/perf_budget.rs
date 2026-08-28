@@ -25,7 +25,9 @@ use hydracache_loadgen::overload::{
     ReferenceExecutionKind,
 };
 use hydracache_loadgen::report::WorkloadIdentity;
-use hydracache_loadgen::targets::control_plane::ControlPlaneReport;
+use hydracache_loadgen::targets::control_plane::{
+    ControlPlaneReport, DaemonTerminationKind, MembershipAction,
+};
 use hydracache_loadgen::targets::grid_model::GridModelReport;
 
 pub use hydracache_loadgen::budget_receipt::{
@@ -644,9 +646,11 @@ struct ArchivedProcessLogReceipt {
 struct ArchivedDaemonLifecycleEvidence {
     node_id: String,
     pid: u32,
+    termination_kind: DaemonTerminationKind,
     kill_requested: bool,
     wait_completed: bool,
     process_no_longer_running: bool,
+    exit_success: bool,
     exit_status: String,
     stdout_log: ArchivedProcessLogReceipt,
     stderr_log: ArchivedProcessLogReceipt,
@@ -3296,8 +3300,14 @@ fn validate_w4_archived_lifecycle(
         .as_ref()
         .ok_or_else(|| PerfBudgetError::new("W4A lifecycle has no capability payload"))?;
     let lifecycle = &report.lifecycle;
+    let drain_target = report
+        .membership_events
+        .iter()
+        .find(|event| event.action == MembershipAction::Drain)
+        .map(|event| event.target_node_id.as_str())
+        .ok_or_else(|| PerfBudgetError::new("W4A lifecycle has no exact drain target"))?;
     if lifecycle.receipt_sha256 != digest_json(&lifecycle.payload)
-        || lifecycle.payload.receipt_kind != "hydracache-daemon-cluster-lifecycle-v1"
+        || lifecycle.payload.receipt_kind != "hydracache-daemon-cluster-lifecycle-v2"
         || lifecycle.payload.receipt_source != capability.receipt_source
         || lifecycle.payload.capability_receipt_sha256 != report.capability_receipt_sha256
         || lifecycle.payload.nodes.len() != capability.nodes.len()
@@ -3322,10 +3332,16 @@ fn validate_w4_archived_lifecycle(
         let capability_node = capability_nodes.get(node.node_id.as_str()).ok_or_else(|| {
             PerfBudgetError::new("W4A lifecycle contains a node absent from its capability")
         })?;
+        let valid_termination = match node.termination_kind {
+            DaemonTerminationKind::ExplicitKill => node.kill_requested,
+            DaemonTerminationKind::GracefulDrain => {
+                !node.kill_requested && node.node_id == drain_target && node.exit_success
+            }
+        };
         if node.pid == 0
             || !pids.insert(node.pid)
             || node.pid != capability_node.pid
-            || !node.kill_requested
+            || !valid_termination
             || !node.wait_completed
             || !node.process_no_longer_running
             || node.exit_status.trim().is_empty()
@@ -3336,7 +3352,7 @@ fn validate_w4_archived_lifecycle(
             || node.node_config_sha256_after != capability_node.config.sha256
         {
             return Err(PerfBudgetError::new(
-                "W4A lifecycle node is not the killed-and-waited capability process",
+                "W4A lifecycle node is neither explicitly killed nor the exact successful graceful-drain process",
             ));
         }
         validate_archived_log(
@@ -3482,6 +3498,7 @@ fn validate_w5_final_cleanup(
         if node.node_id.trim().is_empty()
             || node.pid == 0
             || !pids.insert(node.pid)
+            || node.termination_kind != DaemonTerminationKind::ExplicitKill
             || !node.kill_requested
             || !node.wait_completed
             || !node.process_no_longer_running
