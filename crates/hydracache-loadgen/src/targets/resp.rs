@@ -17,7 +17,6 @@ use tokio::sync::{Mutex, RwLock};
 use crate::target::{PreloadOutcome, Target, TargetError, TargetOutcome, TargetRequest};
 
 const STATE_DIGEST_VERSION: &str = "hydracache-resp-node-local-logical-state-v2";
-const KEY_PREFIX: &[u8] = b"hc:perf:w3:";
 
 /// Bounds applied by the incremental RESP2 parser.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -371,6 +370,9 @@ pub struct RespTargetConfig {
     pub reset_batch_entries: usize,
     pub operation_mix: RespOperationMix,
     pub key_schedule: Arc<Vec<u64>>,
+    /// Binary key prefix owned by this target instance. Concurrent lifecycle
+    /// phases on the same endpoint must use disjoint prefixes.
+    pub key_prefix: Arc<Vec<u8>>,
     pub connect_timeout: Duration,
     pub io_timeout: Duration,
     pub parser_limits: Resp2Limits,
@@ -400,6 +402,7 @@ impl RespTargetConfig {
             || self.preload_entries > self.key_space
             || self.operation_mix.total_percent() != 100
             || self.key_schedule.is_empty()
+            || self.key_prefix.is_empty()
             || self.key_schedule.iter().any(|key| *key >= self.key_space)
             || self.connect_timeout.is_zero()
             || self.io_timeout.is_zero()
@@ -627,6 +630,12 @@ impl RespTcpTarget {
         self.counters.snapshot()
     }
 
+    fn key(&self, logical_key: u64) -> Vec<u8> {
+        let mut key = self.config.key_prefix.as_ref().clone();
+        key.extend_from_slice(logical_key.to_string().as_bytes());
+        key
+    }
+
     pub async fn tcp_evidence(&self) -> Result<RespTcpEvidence, RespTargetError> {
         let connections = self.connections.read().await;
         if connections.is_empty() {
@@ -842,13 +851,13 @@ impl RespTcpTarget {
             self.config.key_schedule[sequence as usize % self.config.key_schedule.len()];
         match operation {
             RespOperation::Get => (
-                encode_resp2_command([b"GET".as_slice(), key(logical_key).as_slice()]),
+                encode_resp2_command([b"GET".as_slice(), self.key(logical_key).as_slice()]),
                 ReplyShape::Bulk,
             ),
             RespOperation::Set => (
                 encode_resp2_command([
                     b"SET".as_slice(),
-                    key(logical_key).as_slice(),
+                    self.key(logical_key).as_slice(),
                     payload(sequence, self.config.payload_bytes).as_slice(),
                 ]),
                 ReplyShape::Ok,
@@ -856,9 +865,9 @@ impl RespTcpTarget {
             RespOperation::MGet => {
                 let mut arguments = vec![b"MGET".to_vec()];
                 for offset in 0..self.config.batch_size {
-                    arguments.push(key(
-                        logical_key.saturating_add(offset as u64) % self.config.key_space
-                    ));
+                    arguments.push(
+                        self.key(logical_key.saturating_add(offset as u64) % self.config.key_space),
+                    );
                 }
                 (
                     encode_resp2_command(arguments),
@@ -868,9 +877,9 @@ impl RespTcpTarget {
             RespOperation::MSet => {
                 let mut arguments = vec![b"MSET".to_vec()];
                 for offset in 0..self.config.batch_size {
-                    arguments.push(key(
-                        logical_key.saturating_add(offset as u64) % self.config.key_space
-                    ));
+                    arguments.push(
+                        self.key(logical_key.saturating_add(offset as u64) % self.config.key_space),
+                    );
                     arguments.push(payload(
                         sequence.saturating_add(offset as u64),
                         self.config.payload_bytes,
@@ -891,7 +900,7 @@ impl RespTcpTarget {
             let mut arguments = Vec::with_capacity((end - start) as usize + 1);
             arguments.push(b"DEL".to_vec());
             for logical_key in start..end {
-                arguments.push(key(logical_key));
+                arguments.push(self.key(logical_key));
             }
             let replies = connection
                 .exchange(&encode_resp2_command(arguments), 1)
@@ -910,7 +919,7 @@ impl RespTcpTarget {
         for logical_key in 0..self.config.key_space {
             request.extend_from_slice(&encode_resp2_command([
                 b"GET".as_slice(),
-                key(logical_key).as_slice(),
+                self.key(logical_key).as_slice(),
             ]));
         }
         let connection = self.connection(0).await?;
@@ -975,7 +984,7 @@ impl Target for RespTcpTarget {
             for logical_key in start..end {
                 request.extend_from_slice(&encode_resp2_command([
                     b"SET".as_slice(),
-                    key(logical_key).as_slice(),
+                    self.key(logical_key).as_slice(),
                     payload(logical_key, self.config.payload_bytes).as_slice(),
                 ]));
             }
@@ -1070,12 +1079,6 @@ fn classify_replies(replies: &[Resp2Value], expected: &[ReplyShape]) -> TargetOu
     }
 }
 
-fn key(logical_key: u64) -> Vec<u8> {
-    let mut key = KEY_PREFIX.to_vec();
-    key.extend_from_slice(logical_key.to_string().as_bytes());
-    key
-}
-
 fn payload(sequence: u64, bytes: usize) -> Vec<u8> {
     let mut value = vec![(sequence % 251) as u8; bytes];
     if bytes >= 4 {
@@ -1093,6 +1096,38 @@ fn hex_digest(bytes: &[u8]) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn target_owned_prefixes_isolate_concurrent_lifecycle_phases() {
+        let config = |prefix: &[u8]| RespTargetConfig {
+            endpoint: RespEndpointIdentity {
+                address: "127.0.0.1:6379".parse().unwrap(),
+                selected_endpoint: "prefix-test".to_owned(),
+                endpoint_kind: "loopback-test".to_owned(),
+                state_scope: "test-local".to_owned(),
+            },
+            require_loopback: true,
+            connections: 1,
+            pipeline_depth: 1,
+            preload_entries: 1,
+            key_space: 1,
+            payload_bytes: 8,
+            batch_size: 1,
+            reset_batch_entries: 1,
+            operation_mix: RespOperationMix::WORKLOAD_A,
+            key_schedule: Arc::new(vec![0]),
+            key_prefix: Arc::new(prefix.to_vec()),
+            connect_timeout: Duration::from_secs(1),
+            io_timeout: Duration::from_secs(1),
+            parser_limits: Resp2Limits::default(),
+            injected_dispatch_delay: Duration::ZERO,
+        };
+        let disruption = RespTcpTarget::new(config(b"hc:w5b:disruption:")).unwrap();
+        let recovery = RespTcpTarget::new(config(b"hc:w5b:recovery:")).unwrap();
+
+        assert_ne!(disruption.key(0), recovery.key(0));
+        assert!(RespTcpTarget::new(config(b"")).is_err());
+    }
 
     #[test]
     fn binary_safe_command_round_trips_incrementally() {
@@ -1192,6 +1227,7 @@ mod tests {
                 mset_percent: 0,
             },
             key_schedule: Arc::new(vec![0]),
+            key_prefix: Arc::new(b"hc:perf:w3:".to_vec()),
             connect_timeout: Duration::from_secs(1),
             io_timeout: Duration::from_millis(10),
             parser_limits: Resp2Limits::default(),
@@ -1264,6 +1300,7 @@ mod tests {
                     mset_percent: 0,
                 },
                 key_schedule: Arc::new(vec![0]),
+                key_prefix: Arc::new(b"hc:perf:w3:".to_vec()),
                 connect_timeout: Duration::from_secs(1),
                 io_timeout: Duration::from_secs(1),
                 parser_limits: Resp2Limits::default(),
@@ -1349,6 +1386,7 @@ mod tests {
                 mset_percent: 0,
             },
             key_schedule: Arc::new(vec![0]),
+            key_prefix: Arc::new(b"hc:perf:w3:".to_vec()),
             connect_timeout: Duration::from_secs(1),
             io_timeout: Duration::from_secs(1),
             parser_limits: Resp2Limits::default(),
