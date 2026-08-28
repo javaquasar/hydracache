@@ -43,6 +43,12 @@ fn root() -> PathBuf {
         .to_path_buf()
 }
 
+fn read_ci_workflow() -> String {
+    fs::read_to_string(root().join(".github/workflows/ci.yml"))
+        .unwrap()
+        .replace("\r\n", "\n")
+}
+
 fn closure_problems(omitted: Option<&str>) -> Vec<String> {
     let root = root();
     let mut problems = Vec::new();
@@ -124,12 +130,11 @@ fn release_069_w1_canary_builds_its_maven_reactor_dependencies() {
 
 #[test]
 fn release_069_ci_admission_is_independent_fail_loud_and_sha_bound() {
-    let workflow = fs::read_to_string(root().join(".github/workflows/ci.yml")).unwrap();
+    let workflow = read_ci_workflow();
     for required in [
         "migration-conformance-fast-evidence-069:",
         "name: Migration Conformance Fast Evidence 0.69",
         "migration-conformance-admission-069:",
-        "if: always()",
         "ci-admission-status",
         "HYDRACACHE_EVIDENCE_HEAD_SHA",
         "HYDRACACHE_EVIDENCE_BASE_SHA",
@@ -139,6 +144,20 @@ fn release_069_ci_admission_is_independent_fail_loud_and_sha_bound() {
     ] {
         assert!(workflow.contains(required), "CI lost {required}");
     }
+    let admission_start = workflow
+        .find("  migration-conformance-admission-069:")
+        .unwrap();
+    let admission_end = workflow[admission_start..]
+        .find("\n  hc2-linux-required:")
+        .map(|offset| admission_start + offset)
+        .unwrap_or(workflow.len());
+    let admission_job = &workflow[admission_start..admission_end];
+    assert!(
+        admission_job.contains(
+            "if: always() && (github.event_name != 'workflow_dispatch' || inputs.performance_0671_mode == '')"
+        ),
+        "release 0.69 admission must aggregate every normal CI outcome without running during a performance dispatch"
+    );
     let fast_start = workflow
         .find("  migration-conformance-fast-evidence-069:")
         .unwrap();
@@ -198,7 +217,11 @@ fn release_069_ci_admission_is_independent_fail_loud_and_sha_bound() {
         "admission must restore the published compatibility baseline tags"
     );
     assert!(
-        admission.matches("          path: target\n").count() >= 3,
+        admission
+            .lines()
+            .filter(|line| line.trim() == "path: target")
+            .count()
+            >= 3,
         "admission must restore self-contained bundles from their target-relative root"
     );
     for required in [
@@ -263,9 +286,7 @@ fn canary_release_069_accepts_an_unwired_postgres_gate() {
     if env::var("HYDRACACHE_CANARY_DEFECT").as_deref() != Ok("W5_UNWIRE_POSTGRES") {
         return;
     }
-    let workflow = fs::read_to_string(root().join(".github/workflows/ci.yml"))
-        .unwrap()
-        .replace("      - migration-conformance-postgres-069\n", "");
+    let workflow = read_ci_workflow().replace("      - migration-conformance-postgres-069\n", "");
     assert!(
         workflow.contains("      - migration-conformance-postgres-069\n"),
         "HC-CANARY-RED:W5 hc2-linux-required accepted a missing PostgreSQL dependency"

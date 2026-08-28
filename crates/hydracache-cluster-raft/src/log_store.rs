@@ -1675,6 +1675,23 @@ fn snapshot_payload_checksum(bytes: &[u8]) -> u64 {
 mod tests {
     use super::*;
 
+    #[cfg(feature = "sled-log-store")]
+    fn reopen_sled_store(path: &Path) -> SledRaftLogStore {
+        let deadline = std::time::Instant::now() + std::time::Duration::from_secs(2);
+        loop {
+            match SledRaftLogStore::open(path) {
+                Ok(store) => return store,
+                Err(error)
+                    if error.to_string().contains("could not acquire lock")
+                        && std::time::Instant::now() < deadline =>
+                {
+                    std::thread::sleep(std::time::Duration::from_millis(10));
+                }
+                Err(error) => panic!("reopening sled raft log store failed: {error}"),
+            }
+        }
+    }
+
     #[cfg(feature = "test-failpoints")]
     fn wait_for_fault_active(controller: &RaftStorageFaultController) {
         let deadline = std::time::Instant::now() + std::time::Duration::from_secs(1);
@@ -2199,7 +2216,7 @@ mod tests {
         store.compact_to(2).unwrap();
         drop(store);
 
-        let reopened = SledRaftLogStore::open(&path).unwrap();
+        let reopened = reopen_sled_store(&path);
         assert_eq!(reopened.inner.applied_index(), 3);
         assert_eq!(indexes(&reopened.retained_entries().unwrap()), vec![2, 3]);
         drop(reopened);
@@ -2224,7 +2241,7 @@ mod tests {
         assert_eq!(indexes(&store.retained_entries().unwrap()), vec![1, 2]);
         drop(store);
 
-        let reopened = SledRaftLogStore::open(&path).unwrap();
+        let reopened = reopen_sled_store(&path);
         assert_eq!(indexes(&reopened.retained_entries().unwrap()), vec![1, 2]);
         drop(reopened);
         let _ = std::fs::remove_dir_all(path);

@@ -1720,7 +1720,6 @@ fn release_069_execution_wiring_problems(workflow: &WorkflowShape, text: &str) -
         })
         .collect::<Vec<_>>();
     for required in [
-        "if: always()",
         "ci-admission-status",
         "HYDRACACHE_EVIDENCE_HEAD_SHA",
         "HYDRACACHE_EVIDENCE_BASE_SHA",
@@ -1740,13 +1739,17 @@ fn release_069_execution_wiring_problems(workflow: &WorkflowShape, text: &str) -
             problems.push(format!("release 0.69 CI hardening is missing `{required}`"));
         }
     }
+    const ADMISSION_CONDITION: &str =
+        "always() && (github.event_name != 'workflow_dispatch' || inputs.performance_0671_mode == '')";
     if workflow
         .conditions
         .get("migration-conformance-admission-069")
         .map(String::as_str)
-        != Some("always()")
+        != Some(ADMISSION_CONDITION)
     {
-        problems.push("release 0.69 admission must run with if: always()".to_owned());
+        problems.push(format!(
+            "release 0.69 admission must run after every normal CI outcome and stay isolated from performance dispatch via `{ADMISSION_CONDITION}`"
+        ));
     }
     problems
 }

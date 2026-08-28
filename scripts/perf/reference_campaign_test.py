@@ -192,6 +192,53 @@ class ReferenceCampaignTests(unittest.TestCase):
             frozen,
         )
 
+    def test_performance_dispatch_skips_unrelated_ci_jobs(self) -> None:
+        root = Path(__file__).resolve().parents[2]
+        workflow = (root / ".github/workflows/ci.yml").read_text(encoding="utf-8")
+        guard = (
+            "github.event_name != 'workflow_dispatch' "
+            "|| inputs.performance_0671_mode == ''"
+        )
+        workflow_lines = workflow.splitlines()
+
+        def job_block(job: str) -> str:
+            start = workflow_lines.index(f"  {job}:")
+            end = next(
+                (
+                    index
+                    for index in range(start + 1, len(workflow_lines))
+                    if workflow_lines[index].startswith("  ")
+                    and not workflow_lines[index].startswith("    ")
+                    and workflow_lines[index].endswith(":")
+                ),
+                len(workflow_lines),
+            )
+            return "\n".join(workflow_lines[start:end])
+
+        for job in (
+            "ci-topology",
+            "memory-contracts-071",
+            "memory-regression-fast",
+            "docs",
+            "rust",
+            "migration-conformance-fast-evidence-069",
+            "migration-conformance-069",
+            "migration-conformance-postgres-069",
+            "migration-conformance-admission-069",
+            "hc2-linux-required",
+            "hc2-docker-interop",
+            "msrv",
+        ):
+            self.assertIn(guard, job_block(job), job)
+
+        for job in (
+            "release-0671-performance-qualification",
+            "release-0671-performance-full-dress",
+            "release-0671-performance-bootstrap",
+            "release-0671-frozen-candidate",
+        ):
+            self.assertNotIn(guard, job_block(job), job)
+
     def test_runner_is_online_before_dispatch_discovery(self) -> None:
         source = Path(campaign.__file__).read_text(encoding="utf-8")
         execute_stage = source[

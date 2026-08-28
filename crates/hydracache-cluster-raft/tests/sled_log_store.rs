@@ -1,6 +1,8 @@
 #![cfg(feature = "sled-log-store")]
 
 use std::fs;
+use std::thread;
+use std::time::Duration;
 use std::time::{SystemTime, UNIX_EPOCH};
 
 use hydracache_cluster_raft::{RaftLogStore, SledRaftLogStore};
@@ -24,6 +26,22 @@ fn temp_path() -> std::path::PathBuf {
     std::env::temp_dir().join(format!("hydracache-sled-log-{unique}"))
 }
 
+fn reopen_store(path: &std::path::Path) -> SledRaftLogStore {
+    let deadline = std::time::Instant::now() + Duration::from_secs(2);
+    loop {
+        match SledRaftLogStore::open(path) {
+            Ok(store) => return store,
+            Err(error)
+                if error.to_string().contains("could not acquire lock")
+                    && std::time::Instant::now() < deadline =>
+            {
+                thread::sleep(Duration::from_millis(10));
+            }
+            Err(error) => panic!("reopening sled raft log store failed: {error}"),
+        }
+    }
+}
+
 #[test]
 fn sled_log_store_persists_across_reopen() {
     let path = temp_path();
@@ -40,7 +58,7 @@ fn sled_log_store_persists_across_reopen() {
     store.mark_applied(2).unwrap();
     drop(store);
 
-    let reopened = SledRaftLogStore::open(&path).unwrap();
+    let reopened = reopen_store(&path);
     assert_eq!(
         reopened
             .retained_entries()
