@@ -2996,7 +2996,11 @@ where
             "node-native-wire".to_owned(),
         ],
     };
-    report.validate(scenario)?;
+    // The direct-daemon RESP producer cannot attach its kill+wait lifecycle
+    // until this measurement returns and the owned child has been stopped.
+    // Every public caller performs the full validation after completing its
+    // surface-specific lifecycle (immediately for in-process surfaces, after
+    // daemon cleanup for node-RESP).
     Ok(report)
 }
 

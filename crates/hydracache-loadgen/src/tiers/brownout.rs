@@ -571,12 +571,12 @@ impl ControlPlaneBrownoutDriver for LiveControlPlaneBrownoutDriver {
             .harness
             .endpoint(after_baseline.authority_node_id())
             .map_err(|error| BrownoutError::Driver(error.to_string()))?;
+        let recovery_started = Instant::now();
         let recovery = tokio::spawn(run_control_window(recovered_endpoint, plan.clone()));
         let (disruption_window, recovered_window) = tokio::try_join!(
             join_window(disruption, "leader-failover disruption"),
             join_window(recovery, "leader-failover recovery")
         )?;
-        let recovered = Instant::now();
         let termination =
             WaitedProcessTermination::from_wait_status(waited.process.pid, waited.exit_status)?;
         let receipt = ControlPlaneActionReceipt::leader_failover(&waited.process, termination)?;
@@ -589,7 +589,7 @@ impl ControlPlaneBrownoutDriver for LiveControlPlaneBrownoutDriver {
             recovered_window,
             action_started,
             committed,
-            recovered,
+            recovery_started,
         )
     }
 
@@ -640,12 +640,12 @@ impl ControlPlaneBrownoutDriver for LiveControlPlaneBrownoutDriver {
             .harness
             .endpoint(&transition.authority_node_id)
             .map_err(|error| BrownoutError::Driver(error.to_string()))?;
+        let recovery_started = Instant::now();
         let recovery = tokio::spawn(run_control_window(recovered_endpoint, plan.clone()));
         let (disruption_window, recovered_window) = tokio::try_join!(
             join_window(disruption, "member-add disruption"),
             join_window(recovery, "member-add recovery")
         )?;
-        let recovered = Instant::now();
         state.transient_node_id = Some(target_node_id);
         let receipt = ControlPlaneActionReceipt::member_add(action)?;
         RawControlPlaneEvent::from_observed(
@@ -657,7 +657,7 @@ impl ControlPlaneBrownoutDriver for LiveControlPlaneBrownoutDriver {
             recovered_window,
             action_started,
             committed,
-            recovered,
+            recovery_started,
         )
     }
 
@@ -722,12 +722,12 @@ impl ControlPlaneBrownoutDriver for LiveControlPlaneBrownoutDriver {
             .harness
             .endpoint(&transition.authority_node_id)
             .map_err(|error| BrownoutError::Driver(error.to_string()))?;
+        let recovery_started = Instant::now();
         let recovery = tokio::spawn(run_control_window(recovered_endpoint, plan.clone()));
         let (disruption_window, recovered_window) = tokio::try_join!(
             join_window(disruption, "member-drain disruption"),
             join_window(recovery, "member-drain recovery")
         )?;
-        let recovered = Instant::now();
         let receipt = ControlPlaneActionReceipt::member_drain(action, &target_process, cleanup)?;
         RawControlPlaneEvent::from_observed(
             receipt,
@@ -738,7 +738,7 @@ impl ControlPlaneBrownoutDriver for LiveControlPlaneBrownoutDriver {
             recovered_window,
             action_started,
             committed,
-            recovered,
+            recovery_started,
         )
     }
 
@@ -800,12 +800,12 @@ impl ControlPlaneBrownoutDriver for LiveControlPlaneBrownoutDriver {
             .harness
             .endpoint(after_baseline.authority_node_id())
             .map_err(|error| BrownoutError::Driver(error.to_string()))?;
+        let recovery_started = Instant::now();
         let recovery = tokio::spawn(run_control_window(recovered_endpoint, plan.clone()));
         let (disruption_window, recovered_window) = tokio::try_join!(
             join_window(disruption, "node-kill-rejoin disruption"),
             join_window(recovery, "node-kill-rejoin recovery")
         )?;
-        let recovered = Instant::now();
         let termination =
             WaitedProcessTermination::from_wait_status(waited.process.pid, waited.exit_status)?;
         let restarted = ObservedProcessImage::from_w4a_receipt(&restarted)?;
@@ -820,7 +820,7 @@ impl ControlPlaneBrownoutDriver for LiveControlPlaneBrownoutDriver {
             recovered_window,
             action_started,
             committed,
-            recovered,
+            recovery_started,
         )
     }
 
@@ -1331,6 +1331,10 @@ impl RespBrownoutDriver for LiveRespBrownoutDriver {
             Arc::new(b"hc:perf:w5b:recovery:".to_vec()),
         )
         .await?;
+        // The successful bounded window proves that steady throughput resumed
+        // at its start.  Its full observation duration is proof time, not part
+        // of the endpoint recovery latency.
+        let recovery_started = Instant::now();
         let recovery = tokio::spawn(run_resp_window(recovered_target, plan.clone()));
         let disruption_window = join_resp_window(disruption, "selected disruption").await?;
         let recovered_window = join_resp_window(recovery, "selected recovery").await?;
@@ -1338,7 +1342,6 @@ impl RespBrownoutDriver for LiveRespBrownoutDriver {
         for task in control_tasks {
             control_windows.push(join_resp_window(task, "independent control").await?);
         }
-        let recovered = Instant::now();
         let (restarted_pid, restarted_status) = state
             .selected
             .kill_and_wait()
@@ -1376,7 +1379,7 @@ impl RespBrownoutDriver for LiveRespBrownoutDriver {
             independent_controls,
             kill_started,
             socket_down,
-            recovered,
+            recovery_started,
         )
     }
 }
