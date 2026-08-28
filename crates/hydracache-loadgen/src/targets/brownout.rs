@@ -2505,13 +2505,22 @@ impl RespBrownoutReport {
             || self.value_survival_claim
             || self.cross_node_failover_claim
             || self.aggregate_goodput
-            || self.selected_endpoint_recovery_millis != self.event.timeline.recovery_millis()
-            || self.selected_endpoint_recovery_millis > scenario.event.max_recovery_millis
         {
             return Err(BrownoutError::Boundary(
                 "W5B must remain one node-local endpoint lifecycle with no failover/value-recovery claim"
                     .to_owned(),
             ));
+        }
+        if self.selected_endpoint_recovery_millis != self.event.timeline.recovery_millis() {
+            return Err(BrownoutError::Evidence(
+                "W5B selected endpoint recovery differs from its sealed event timeline".to_owned(),
+            ));
+        }
+        if self.selected_endpoint_recovery_millis > scenario.event.max_recovery_millis {
+            return Err(BrownoutError::Evidence(format!(
+                "W5B selected endpoint recovery {}ms exceeds the committed {}ms limit",
+                self.selected_endpoint_recovery_millis, scenario.event.max_recovery_millis
+            )));
         }
         match (self.run_mode, self.reference_provenance.as_ref()) {
             (BrownoutRunMode::DeterministicSmoke, None) => {}
@@ -3392,13 +3401,21 @@ fn validate_control_plane_event(
     run_mode: BrownoutRunMode,
     offered_rate_per_second: u64,
 ) -> Result<(), BrownoutError> {
-    if event.action != event.raw.receipt.action()
-        || event.transition_recovery_millis != event.raw.timeline.recovery_millis()
-        || event.transition_recovery_millis > scenario.events.max_transition_recovery_millis
-    {
+    if event.action != event.raw.receipt.action() {
         return Err(BrownoutError::Evidence(
-            "W5A event action/recovery is not derived from its raw typed receipt".to_owned(),
+            "W5A event action is not derived from its raw typed receipt".to_owned(),
         ));
+    }
+    if event.transition_recovery_millis != event.raw.timeline.recovery_millis() {
+        return Err(BrownoutError::Evidence(
+            "W5A transition recovery differs from its sealed event timeline".to_owned(),
+        ));
+    }
+    if event.transition_recovery_millis > scenario.events.max_transition_recovery_millis {
+        return Err(BrownoutError::Evidence(format!(
+            "W5A transition recovery {}ms exceeds the committed {}ms limit",
+            event.transition_recovery_millis, scenario.events.max_transition_recovery_millis
+        )));
     }
     let expected_origin = match run_mode {
         BrownoutRunMode::DeterministicSmoke => ObservationOrigin::Fixture,
@@ -4870,4 +4887,57 @@ fn is_git_commit(value: &str) -> bool {
 
 fn valid_socket_endpoint(value: &str) -> bool {
     value.parse::<std::net::SocketAddr>().is_ok()
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn control_plane_recovery_budget_failure_reports_the_actual_limit() {
+        let scenario_path = Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("../../docs/testing/perf-scenarios/0.67/brownout-control-plane-v1.toml");
+        let scenario =
+            ControlPlaneBrownoutScenario::load(&scenario_path).expect("load W5A scenario");
+        let mut report = run_control_plane_smoke(&scenario).expect("build valid W5A smoke report");
+        let recovery_millis = scenario.events.max_transition_recovery_millis + 1;
+        report.events[0].raw.timeline = ObservedEventTimeline::from_nanos(
+            50_000_000,
+            recovery_millis.saturating_mul(1_000_000),
+        )
+        .expect("build over-budget timeline");
+        report.events[0].transition_recovery_millis = recovery_millis;
+
+        let error = report
+            .validate(&scenario)
+            .expect_err("over-budget recovery must fail closed");
+        assert!(error.to_string().contains(&format!(
+            "recovery {recovery_millis}ms exceeds the committed {}ms limit",
+            scenario.events.max_transition_recovery_millis
+        )));
+    }
+
+    #[test]
+    fn resp_recovery_budget_failure_is_not_reported_as_a_claim_boundary() {
+        let scenario_path = Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("../../docs/testing/perf-scenarios/0.67/brownout-resp-endpoint-v1.toml");
+        let scenario = RespBrownoutScenario::load(&scenario_path).expect("load W5B scenario");
+        let mut report = run_resp_smoke(&scenario).expect("build valid W5B smoke report");
+        let recovery_millis = scenario.event.max_recovery_millis + 1;
+        report.event.timeline = ObservedEventTimeline::from_nanos(
+            50_000_000,
+            recovery_millis.saturating_mul(1_000_000),
+        )
+        .expect("build over-budget timeline");
+        report.selected_endpoint_recovery_millis = recovery_millis;
+
+        let error = report
+            .validate(&scenario)
+            .expect_err("over-budget recovery must fail closed");
+        assert!(error.to_string().contains(&format!(
+            "recovery {recovery_millis}ms exceeds the committed {}ms limit",
+            scenario.event.max_recovery_millis
+        )));
+        assert!(!error.to_string().contains("failover/value-recovery claim"));
+    }
 }
