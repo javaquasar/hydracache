@@ -1148,7 +1148,6 @@ jobs:
 
   hc2-linux-required:
     name: HC/2 Linux Required
-    if: always() && (github.event_name != 'workflow_dispatch' || inputs.performance_0671_mode == '')
     runs-on: ubuntu-latest
     timeout-minutes: 45
     needs:
@@ -1158,7 +1157,7 @@ jobs:
       - migration-conformance-postgres-069
       - migration-conformance-admission-069
       - msrv
-    if: always()
+    if: always() && (github.event_name != 'workflow_dispatch' || inputs.performance_0671_mode == '')
 
     steps:
       - name: Require Linux checks
