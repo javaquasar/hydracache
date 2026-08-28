@@ -125,6 +125,7 @@ env:
 jobs:
   ci-topology:
     name: 0.71 CI topology safety gate
+    if: github.event_name != 'workflow_dispatch' || inputs.performance_0671_mode == ''
     runs-on: ubuntu-latest
     timeout-minutes: 15
 
@@ -157,6 +158,7 @@ jobs:
 
   memory-contracts-071:
     name: 0.71 Memory Contracts
+    if: github.event_name != 'workflow_dispatch' || inputs.performance_0671_mode == ''
     runs-on: ubuntu-latest
     timeout-minutes: 30
 
@@ -259,6 +261,7 @@ jobs:
 
   memory-regression-fast:
     name: Memory Regression Fast
+    if: github.event_name != 'workflow_dispatch' || inputs.performance_0671_mode == ''
     runs-on: ubuntu-24.04
     timeout-minutes: 30
 
@@ -551,6 +554,7 @@ jobs:
 
   docs:
     name: Docs
+    if: github.event_name != 'workflow_dispatch' || inputs.performance_0671_mode == ''
     runs-on: ubuntu-latest
     timeout-minutes: 30
 
@@ -593,6 +597,7 @@ jobs:
 
   rust:
     name: Rust
+    if: github.event_name != 'workflow_dispatch' || inputs.performance_0671_mode == ''
     runs-on: ubuntu-latest
     timeout-minutes: 120
     env:
@@ -815,6 +820,7 @@ jobs:
 
   migration-conformance-fast-evidence-069:
     name: Migration Conformance Fast Evidence 0.69
+    if: github.event_name != 'workflow_dispatch' || inputs.performance_0671_mode == ''
     runs-on: ubuntu-latest
     timeout-minutes: 50
 
@@ -888,6 +894,7 @@ jobs:
 
   migration-conformance-069:
     name: Migration Conformance 0.69
+    if: github.event_name != 'workflow_dispatch' || inputs.performance_0671_mode == ''
     runs-on: ubuntu-latest
     timeout-minutes: 60
 
@@ -957,6 +964,7 @@ jobs:
 
   migration-conformance-postgres-069:
     name: Migration Conformance PostgreSQL 0.69 (${{ matrix.postgres.series }})
+    if: github.event_name != 'workflow_dispatch' || inputs.performance_0671_mode == ''
     runs-on: ubuntu-latest
     timeout-minutes: 45
     strategy:
@@ -1067,7 +1075,7 @@ jobs:
     name: Migration Conformance Admission 0.69
     runs-on: ubuntu-latest
     timeout-minutes: 15
-    if: always()
+    if: always() && (github.event_name != 'workflow_dispatch' || inputs.performance_0671_mode == '')
     needs:
       - migration-conformance-fast-evidence-069
       - migration-conformance-069
@@ -1140,6 +1148,7 @@ jobs:
 
   hc2-linux-required:
     name: HC/2 Linux Required
+    if: always() && (github.event_name != 'workflow_dispatch' || inputs.performance_0671_mode == '')
     runs-on: ubuntu-latest
     timeout-minutes: 45
     needs:
@@ -1174,7 +1183,7 @@ jobs:
     timeout-minutes: 60
     needs:
       - rust
-    if: always()
+    if: always() && (github.event_name != 'workflow_dispatch' || inputs.performance_0671_mode == '')
 
     steps:
       - name: Require Rust gate
@@ -2763,6 +2772,7 @@ jobs:
 
   msrv:
     name: MSRV 1.88.0
+    if: github.event_name != 'workflow_dispatch' || inputs.performance_0671_mode == ''
     runs-on: ubuntu-latest
     timeout-minutes: 120
 
