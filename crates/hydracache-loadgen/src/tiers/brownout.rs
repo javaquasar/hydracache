@@ -55,6 +55,7 @@ const CONTROL_PROBE_TIMEOUT: Duration = Duration::from_secs(2);
 const CONTROL_TRANSITION_POLL: Duration = Duration::from_millis(50);
 const CONTROL_WINDOW_READY_TIMEOUT: Duration = Duration::from_secs(5);
 const RESP_STARTUP_TIMEOUT: Duration = Duration::from_secs(20);
+const RESP_PING_ATTEMPT_TIMEOUT: Duration = Duration::from_secs(1);
 const RESP_POLL_INTERVAL: Duration = Duration::from_millis(25);
 const RESP_PING_FRAME: &[u8] = b"*1\r\n$4\r\nPING\r\n";
 const RESP_PONG_FRAME: &[u8] = b"+PONG\r\n";
@@ -1604,7 +1605,7 @@ async fn wait_for_resp_ping(
                 "W5B child exited before readiness: {status}"
             )));
         }
-        let latest = match strict_resp_ping(endpoint).await {
+        let latest = match strict_resp_ping(endpoint, RESP_PING_ATTEMPT_TIMEOUT).await {
             Ok(()) => return Ok(()),
             Err(error) => error.to_string(),
         };
@@ -1617,19 +1618,31 @@ async fn wait_for_resp_ping(
     }
 }
 
-async fn strict_resp_ping(endpoint: SocketAddr) -> Result<(), std::io::Error> {
-    let mut stream = TcpStream::connect(endpoint).await?;
-    stream.write_all(RESP_PING_FRAME).await?;
-    stream.flush().await?;
-    let mut response = [0_u8; 7];
-    stream.read_exact(&mut response).await?;
-    if response != RESP_PONG_FRAME {
-        return Err(std::io::Error::new(
-            std::io::ErrorKind::InvalidData,
-            "RESP PING returned a non-PONG frame",
-        ));
-    }
-    Ok(())
+async fn strict_resp_ping(
+    endpoint: SocketAddr,
+    attempt_timeout: Duration,
+) -> Result<(), std::io::Error> {
+    tokio::time::timeout(attempt_timeout, async {
+        let mut stream = TcpStream::connect(endpoint).await?;
+        stream.write_all(RESP_PING_FRAME).await?;
+        stream.flush().await?;
+        let mut response = [0_u8; 7];
+        stream.read_exact(&mut response).await?;
+        if response != RESP_PONG_FRAME {
+            return Err(std::io::Error::new(
+                std::io::ErrorKind::InvalidData,
+                "RESP PING returned a non-PONG frame",
+            ));
+        }
+        Ok(())
+    })
+    .await
+    .map_err(|_| {
+        std::io::Error::new(
+            std::io::ErrorKind::TimedOut,
+            format!("RESP PING attempt timed out after {attempt_timeout:?}"),
+        )
+    })?
 }
 
 async fn wait_for_socket_down(
@@ -1819,6 +1832,30 @@ mod tests {
         .await
         .expect_err("persistent failure must remain fatal");
         assert_eq!(error, "still unavailable");
+    }
+
+    #[tokio::test]
+    async fn resp_readiness_attempt_is_bounded_when_peer_never_replies() {
+        let listener = tokio::net::TcpListener::bind((Ipv4Addr::LOCALHOST, 0))
+            .await
+            .expect("bind isolated RESP listener");
+        let endpoint = listener.local_addr().expect("read listener endpoint");
+        let peer = tokio::spawn(async move {
+            let (mut stream, _) = listener.accept().await.expect("accept readiness probe");
+            let mut request = vec![0_u8; RESP_PING_FRAME.len()];
+            stream
+                .read_exact(&mut request)
+                .await
+                .expect("read exact readiness request");
+            assert_eq!(request, RESP_PING_FRAME);
+            std::future::pending::<()>().await;
+        });
+
+        let error = strict_resp_ping(endpoint, Duration::from_millis(20))
+            .await
+            .expect_err("a silent peer must not hang readiness");
+        assert_eq!(error.kind(), std::io::ErrorKind::TimedOut);
+        peer.abort();
     }
 
     #[test]
