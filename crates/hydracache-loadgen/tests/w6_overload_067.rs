@@ -46,6 +46,37 @@ fn committed_scenario_digest_seals_workload_spread_and_recovery_shape() {
     assert!(drifted.validate().is_err());
 }
 
+#[test]
+fn node_resp_validation_runs_only_after_fresh_daemon_lifecycle_is_attached() {
+    let source = include_str!("../src/overload.rs");
+    let producer = source
+        .split_once("async fn run_resp_reference_overload(")
+        .expect("node-RESP producer must exist")
+        .1
+        .split_once("struct AdapterOperationInput")
+        .expect("node-RESP producer must end before adapter inputs")
+        .0;
+    let attach = producer
+        .find("report.daemon_lifecycle = Some(lifecycle);")
+        .expect("node-RESP producer must attach the waited daemon lifecycle");
+    let validate = producer
+        .find("report.validate(scenario)?;")
+        .expect("node-RESP producer must validate the finalized report");
+    assert!(attach < validate);
+
+    let inner = source
+        .split_once("async fn run_overload_curve_inner")
+        .expect("shared W6 measurement runner must exist")
+        .1
+        .split_once("async fn run_overload_repeat")
+        .expect("shared W6 measurement runner must end before one repeat")
+        .0;
+    assert!(
+        !inner.contains("report.validate(scenario)?;"),
+        "shared measurement cannot require node-RESP cleanup evidence before the caller stops the daemon"
+    );
+}
+
 fn sha256(bytes: &[u8]) -> String {
     Sha256::digest(bytes)
         .iter()
