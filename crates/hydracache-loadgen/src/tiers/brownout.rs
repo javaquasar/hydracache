@@ -1308,10 +1308,14 @@ impl RespBrownoutDriver for LiveRespBrownoutDriver {
             .restart()
             .await
             .map_err(|error| BrownoutError::Driver(error.to_string()))?;
+        // The disruption target reconnects automatically after the selected
+        // endpoint returns. Drain that window before resetting and preloading
+        // the recovery target, otherwise its late SET/MSET operations race the
+        // recovery preload and make the verified initial state nondeterministic.
+        let disruption_window = join_resp_window(disruption, "selected disruption").await?;
         let recovered_target =
             prepare_resp_target(selected_endpoint, &plan.selected_capacity).await?;
         let recovery = tokio::spawn(run_resp_window(recovered_target, plan.clone()));
-        let disruption_window = join_resp_window(disruption, "selected disruption").await?;
         let recovered_window = join_resp_window(recovery, "selected recovery").await?;
         let mut control_windows = Vec::with_capacity(control_tasks.len());
         for task in control_tasks {
