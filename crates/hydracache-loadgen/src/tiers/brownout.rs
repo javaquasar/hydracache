@@ -1273,14 +1273,27 @@ impl RespBrownoutDriver for LiveRespBrownoutDriver {
             .selected
             .process_image()
             .map_err(|error| BrownoutError::Driver(error.to_string()))?;
-        let before_target = prepare_resp_target(selected_endpoint, &plan.selected_capacity).await?;
+        let selected_prefix = Arc::new(b"hc:perf:w5b:selected:".to_vec());
+        let before_target = prepare_resp_target(
+            selected_endpoint,
+            &plan.selected_capacity,
+            Arc::clone(&selected_prefix),
+        )
+        .await?;
         let disruption_target =
-            prepare_resp_target(selected_endpoint, &plan.selected_capacity).await?;
+            prepare_resp_target(selected_endpoint, &plan.selected_capacity, selected_prefix)
+                .await?;
         let mut control_targets = Vec::with_capacity(state.controls.len());
         let mut control_processes = Vec::with_capacity(state.controls.len());
         for control in &state.controls {
-            control_targets
-                .push(prepare_resp_target(control.endpoint(), &plan.selected_capacity).await?);
+            control_targets.push(
+                prepare_resp_target(
+                    control.endpoint(),
+                    &plan.selected_capacity,
+                    Arc::new(b"hc:perf:w5b:control:".to_vec()),
+                )
+                .await?,
+            );
             control_processes.push(
                 control
                     .process_image()
@@ -1308,14 +1321,18 @@ impl RespBrownoutDriver for LiveRespBrownoutDriver {
             .restart()
             .await
             .map_err(|error| BrownoutError::Driver(error.to_string()))?;
-        // The disruption target reconnects automatically after the selected
-        // endpoint returns. Drain that window before resetting and preloading
-        // the recovery target, otherwise its late SET/MSET operations race the
-        // recovery preload and make the verified initial state nondeterministic.
-        let disruption_window = join_resp_window(disruption, "selected disruption").await?;
-        let recovered_target =
-            prepare_resp_target(selected_endpoint, &plan.selected_capacity).await?;
+        // The disruption target reconnects after the endpoint returns, so the
+        // recovery phase owns a disjoint keyspace while both bounded windows
+        // overlap. This preserves the recovery timeline without allowing late
+        // disruption SET/MSET operations to race the recovery preload.
+        let recovered_target = prepare_resp_target(
+            selected_endpoint,
+            &plan.selected_capacity,
+            Arc::new(b"hc:perf:w5b:recovery:".to_vec()),
+        )
+        .await?;
         let recovery = tokio::spawn(run_resp_window(recovered_target, plan.clone()));
+        let disruption_window = join_resp_window(disruption, "selected disruption").await?;
         let recovered_window = join_resp_window(recovery, "selected recovery").await?;
         let mut control_windows = Vec::with_capacity(control_tasks.len());
         for task in control_tasks {
@@ -1367,6 +1384,7 @@ impl RespBrownoutDriver for LiveRespBrownoutDriver {
 async fn prepare_resp_target(
     endpoint: SocketAddr,
     contract: &RespSelectedCapacityContract,
+    key_prefix: Arc<Vec<u8>>,
 ) -> Result<Arc<RespTcpTarget>, BrownoutError> {
     let seed = contract.workload.seed.ok_or_else(|| {
         BrownoutError::Driver("selected W3 workload has no deterministic seed".to_owned())
@@ -1432,6 +1450,7 @@ async fn prepare_resp_target(
             })?,
             operation_mix: resp_operation_mix(&contract.workload)?,
             key_schedule: Arc::new(schedule.keys),
+            key_prefix,
             connect_timeout: Duration::from_secs(2),
             io_timeout: Duration::from_secs(2),
             parser_limits: Resp2Limits::default(),

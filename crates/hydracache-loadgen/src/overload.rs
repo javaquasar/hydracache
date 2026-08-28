@@ -2211,6 +2211,7 @@ async fn run_resp_reference_overload(
             reset_batch_entries: 128,
             operation_mix,
             key_schedule: Arc::new(schedule.keys),
+            key_prefix: Arc::new(b"hc:perf:w3:".to_vec()),
             connect_timeout: Duration::from_secs(2),
             io_timeout: Duration::from_secs(2),
             parser_limits: Resp2Limits::default(),

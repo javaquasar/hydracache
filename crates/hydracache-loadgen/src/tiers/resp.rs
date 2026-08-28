@@ -1464,6 +1464,7 @@ fn resp_target(
         reset_batch_entries: 128,
         operation_mix: parsed_operation_mix(&binding.resp)?,
         key_schedule: Arc::new(schedule.keys.clone()),
+        key_prefix: Arc::new(b"hc:perf:w3:".to_vec()),
         connect_timeout: RESP_CONNECT_TIMEOUT,
         io_timeout: RESP_IO_TIMEOUT,
         parser_limits: Resp2Limits::default(),
