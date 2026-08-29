@@ -270,6 +270,35 @@ class ReferenceCampaignTests(unittest.TestCase):
         self.assertIn("runner_online(campaign_dir)", recovery_branch)
         self.assertIn("run = discover_run(state, step)", recovery_branch)
 
+    def test_transient_run_watch_failure_keeps_runner_online_until_authoritative_completion(self) -> None:
+        state = base_state()
+        with tempfile.TemporaryDirectory() as temporary:
+            campaign_dir = Path(temporary)
+            with (
+                mock.patch.object(campaign, "disarm_runner_watchdog") as disarm,
+                mock.patch.object(campaign, "arm_runner_watchdog") as arm,
+                mock.patch.object(campaign, "runner_online") as online,
+                mock.patch.object(campaign, "ensure_runner_offline") as offline,
+                mock.patch.object(campaign, "run_visible", side_effect=[1, 0]) as watch,
+                mock.patch.object(
+                    campaign,
+                    "view_run",
+                    side_effect=[
+                        {"status": "in_progress", "conclusion": ""},
+                        {"status": "completed", "conclusion": "success"},
+                    ],
+                ) as view,
+                mock.patch.object(campaign.time, "sleep") as sleep,
+            ):
+                self.assertEqual(campaign.wait_for_run(campaign_dir, state, 123, "full-dress-1"), 0)
+        self.assertEqual(watch.call_count, 2)
+        self.assertEqual(view.call_count, 2)
+        sleep.assert_called_once_with(15)
+        online.assert_called_once_with(campaign_dir)
+        offline.assert_called_once_with(campaign_dir)
+        self.assertEqual(arm.call_count, 1)
+        self.assertEqual(disarm.call_count, 2)
+
     def test_receipt_retention_is_immutable_and_sample_directory_is_exact(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)

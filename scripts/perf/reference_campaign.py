@@ -1435,21 +1435,44 @@ def wait_for_run(campaign_dir: Path, state: dict[str, Any], run_id: int, step: s
     arm_runner_watchdog(campaign_dir, state, step)
     try:
         runner_online(campaign_dir)
-        return run_visible(
-            [
-                "gh",
-                "run",
-                "watch",
-                str(run_id),
-                "--repo",
-                state["repository"],
-                "--interval",
-                "30",
-                "--exit-status",
-            ],
-            cwd=repo_root(),
-            log_path=campaign_dir / f"{step}.log",
-        )
+        while True:
+            watch_status = run_visible(
+                [
+                    "gh",
+                    "run",
+                    "watch",
+                    str(run_id),
+                    "--repo",
+                    state["repository"],
+                    "--interval",
+                    "30",
+                    "--exit-status",
+                ],
+                cwd=repo_root(),
+                log_path=campaign_dir / f"{step}.log",
+            )
+            try:
+                run = view_run(state, run_id)
+            except Exception as error:
+                append_event(
+                    campaign_dir,
+                    "run-watch-status-retry",
+                    step=step,
+                    run_id=run_id,
+                    detail=str(error),
+                )
+                time.sleep(15)
+                continue
+            if run.get("status") == "completed":
+                return 0 if run.get("conclusion") == "success" else (watch_status or 1)
+            append_event(
+                campaign_dir,
+                "run-watch-transport-retry",
+                step=step,
+                run_id=run_id,
+                watch_status=watch_status,
+            )
+            time.sleep(15)
     finally:
         ensure_runner_offline(campaign_dir)
         disarm_runner_watchdog(campaign_dir, state, step)
