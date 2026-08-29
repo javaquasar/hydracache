@@ -2255,12 +2255,14 @@ fn start_redis_container(
         scenario.docker.platform.clone(),
         image_reference.clone(),
     ];
-    let pull = execute_checked(
+    let pull = execute_checked_with_retry(
         &tools.docker,
         &pull_argv,
         Duration::from_secs(900),
         scenario,
         "docker-pull-pinned-redis",
+        3,
+        Duration::from_secs(2),
     )?;
     verify_tool_unchanged(&tools.docker)?;
     let manifest_argv = vec![
@@ -2269,12 +2271,14 @@ fn start_redis_container(
         "--verbose".to_owned(),
         image_reference.clone(),
     ];
-    let manifest_inspect = execute_checked(
+    let manifest_inspect = execute_checked_with_retry(
         &tools.docker,
         &manifest_argv,
         Duration::from_secs(120),
         scenario,
         "docker-manifest-inspect",
+        3,
+        Duration::from_secs(2),
     )?;
     if !manifest_output_contains_platform_digest(
         &manifest_inspect.stdout,
@@ -2761,6 +2765,30 @@ fn execute_checked(
         stdout,
         stderr,
     })
+}
+
+fn execute_checked_with_retry(
+    tool: &ResolvedExternalTool,
+    argv: &[String],
+    timeout: Duration,
+    scenario: &RedisComparisonScenario,
+    phase: &str,
+    attempts: u32,
+    retry_delay: Duration,
+) -> Result<RawCommandEvidence, RedisComparisonError> {
+    if attempts == 0 {
+        return Err(RedisComparisonError::Contract(
+            "external command retry count must be positive".to_owned(),
+        ));
+    }
+    for attempt in 1..=attempts {
+        match execute_checked(tool, argv, timeout, scenario, phase) {
+            Ok(evidence) => return Ok(evidence),
+            Err(_) if attempt < attempts => thread::sleep(retry_delay),
+            Err(error) => return Err(error),
+        }
+    }
+    unreachable!("positive retry count must execute at least one attempt")
 }
 
 fn empty_raw_evidence(tool: &ResolvedExternalTool) -> RawCommandEvidence {
