@@ -1170,6 +1170,7 @@ fn release_067_execution_wiring_problems(text: &str) -> Result<Vec<String>, Box<
 mkdir --parents "$tools_dir"
 cd "$tools_dir"
 curl --proto '=https' --tlsv1.2 --fail --location --silent --show-error \
+  --retry 5 --retry-all-errors --retry-delay 2 --connect-timeout 15 --max-time 180 \
   --output redis-7.2.5.tar.gz \
   https://download.redis.io/releases/redis-7.2.5.tar.gz
 printf '%s  redis-7.2.5.tar.gz\n' '5981179706f8391f03be91d951acafaeda91af7fac56beffb2701963103e423d' \
