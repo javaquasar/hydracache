@@ -852,7 +852,11 @@ async fn run_control_window(
     wait_for_control_window_ready(Arc::clone(&target)).await?;
     run_open_loop(
         target,
-        &open_loop_config(plan.offered_rate_per_second, plan.observation_window_millis)?,
+        &open_loop_config(
+            plan.offered_rate_per_second,
+            plan.observation_window_millis,
+            plan.transition_budget_millis,
+        )?,
     )
     .await
     .map_err(BrownoutError::Driver)
@@ -1523,7 +1527,11 @@ async fn run_resp_window(
 ) -> Result<OpenLoopObservation, BrownoutError> {
     run_open_loop(
         target,
-        &open_loop_config(plan.offered_rate_per_second, plan.observation_window_millis)?,
+        &open_loop_config(
+            plan.offered_rate_per_second,
+            plan.observation_window_millis,
+            plan.transition_budget_millis,
+        )?,
     )
     .await
     .map_err(BrownoutError::Driver)
@@ -1674,6 +1682,7 @@ async fn wait_for_socket_down(
 fn open_loop_config(
     offered_rate_per_second: u64,
     observation_window_millis: u64,
+    transition_budget_millis: u64,
 ) -> Result<OpenLoopConfig, BrownoutError> {
     let operations = u128::from(offered_rate_per_second)
         .checked_mul(u128::from(observation_window_millis))
@@ -1681,13 +1690,26 @@ fn open_loop_config(
         .and_then(|value| u64::try_from(value).ok())
         .filter(|value| *value > 0)
         .ok_or_else(|| BrownoutError::Driver("W5 open-loop operation count overflow".to_owned()))?;
+    let drain_timeout_millis = transition_budget_millis
+        .checked_add(observation_window_millis)
+        .ok_or_else(|| BrownoutError::Driver("W5 drain timeout overflow".to_owned()))?;
+    let highest_trackable_latency_millis = transition_budget_millis
+        .checked_add(drain_timeout_millis)
+        .ok_or_else(|| BrownoutError::Driver("W5 latency range overflow".to_owned()))?;
     Ok(OpenLoopConfig {
         offered_rate_per_second,
         operations,
-        highest_trackable_latency: Duration::from_secs(10),
+        // W5 deliberately observes a bounded service transition. A request
+        // scheduled at the start of that transition can remain queued while
+        // the endpoint is unavailable and while the fixed-rate backlog drains.
+        // Keep the measurement window and offered rate unchanged, but size the
+        // evidence collector from the committed transition budget so a
+        // threshold-compliant event cannot be misclassified as forged solely
+        // because the old generic 10-second collector bound expired first.
+        highest_trackable_latency: Duration::from_millis(highest_trackable_latency_millis),
         significant_figures: 3,
         p999_min_samples: 1,
-        drain_timeout: Duration::from_secs(10),
+        drain_timeout: Duration::from_millis(drain_timeout_millis),
     })
 }
 
@@ -1795,9 +1817,11 @@ mod tests {
 
     #[test]
     fn producer_window_is_exact_rate_times_duration() {
-        let config = open_loop_config(600, 10_000).expect("valid exact window");
+        let config = open_loop_config(600, 10_000, 15_000).expect("valid exact window");
         assert_eq!(config.offered_rate_per_second, 600);
         assert_eq!(config.operations, 6_000);
+        assert_eq!(config.drain_timeout, Duration::from_secs(25));
+        assert_eq!(config.highest_trackable_latency, Duration::from_secs(40));
     }
 
     #[tokio::test]
