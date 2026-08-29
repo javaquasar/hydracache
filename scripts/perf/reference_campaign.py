@@ -1066,6 +1066,37 @@ def download_artifacts(campaign_dir: Path, state: dict[str, Any], run_id: int, s
     return {name: run_dir / "original-artifacts" / path.name for name, path in paths.items()}
 
 
+def download_artifacts_with_retry(
+    campaign_dir: Path,
+    state: dict[str, Any],
+    run_id: int,
+    step: str,
+    attempts: int = 5,
+) -> dict[str, Path]:
+    if attempts <= 0:
+        raise CampaignError("artifact download retry count must be positive")
+    latest: Exception | None = None
+    for attempt in range(1, attempts + 1):
+        try:
+            return download_artifacts(campaign_dir, state, run_id, step)
+        except Exception as error:
+            latest = error
+            if attempt == attempts:
+                break
+            append_event(
+                campaign_dir,
+                "artifact-download-retry",
+                step=step,
+                run_id=run_id,
+                attempt=attempt,
+                detail=str(error),
+            )
+            time.sleep(15)
+    raise CampaignError(
+        f"artifact download failed after {attempts} attempts: {latest}"
+    ) from latest
+
+
 def artifact_by_prefix(artifacts: dict[str, Path], prefix: str) -> Path:
     matches = [path for name, path in artifacts.items() if name.startswith(prefix)]
     if len(matches) != 1:
@@ -1435,21 +1466,44 @@ def wait_for_run(campaign_dir: Path, state: dict[str, Any], run_id: int, step: s
     arm_runner_watchdog(campaign_dir, state, step)
     try:
         runner_online(campaign_dir)
-        return run_visible(
-            [
-                "gh",
-                "run",
-                "watch",
-                str(run_id),
-                "--repo",
-                state["repository"],
-                "--interval",
-                "30",
-                "--exit-status",
-            ],
-            cwd=repo_root(),
-            log_path=campaign_dir / f"{step}.log",
-        )
+        while True:
+            watch_status = run_visible(
+                [
+                    "gh",
+                    "run",
+                    "watch",
+                    str(run_id),
+                    "--repo",
+                    state["repository"],
+                    "--interval",
+                    "30",
+                    "--exit-status",
+                ],
+                cwd=repo_root(),
+                log_path=campaign_dir / f"{step}.log",
+            )
+            try:
+                run = view_run(state, run_id)
+            except Exception as error:
+                append_event(
+                    campaign_dir,
+                    "run-watch-status-retry",
+                    step=step,
+                    run_id=run_id,
+                    detail=str(error),
+                )
+                time.sleep(15)
+                continue
+            if run.get("status") == "completed":
+                return 0 if run.get("conclusion") == "success" else (watch_status or 1)
+            append_event(
+                campaign_dir,
+                "run-watch-transport-retry",
+                step=step,
+                run_id=run_id,
+                watch_status=watch_status,
+            )
+            time.sleep(15)
     finally:
         ensure_runner_offline(campaign_dir)
         disarm_runner_watchdog(campaign_dir, state, step)
@@ -1533,7 +1587,7 @@ def execute_stage(campaign_dir: Path, state: dict[str, Any], spec: dict[str, Any
     artifacts: dict[str, Path] = {}
     artifact_error: str | None = None
     try:
-        artifacts = download_artifacts(campaign_dir, state, run_id, step)
+        artifacts = download_artifacts_with_retry(campaign_dir, state, run_id, step)
     except Exception as error:  # retain the run failure separately from download failure
         artifact_error = str(error)
 
