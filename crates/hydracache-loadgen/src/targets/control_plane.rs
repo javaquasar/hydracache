@@ -2484,15 +2484,19 @@ pub async fn observe_membership_transition(
     invocation: MembershipTransitionInvocation,
     expected_endpoints_after: Vec<ControlPlaneEndpoint>,
     timeout: Duration,
+    probe_timeout: Duration,
     poll_interval: Duration,
 ) -> Result<MembershipEventEvidence, ControlPlaneError> {
     if timeout.is_zero()
         || timeout > Duration::from_secs(120)
+        || probe_timeout.is_zero()
+        || probe_timeout > Duration::from_secs(60)
         || poll_interval.is_zero()
         || poll_interval > timeout
     {
         return Err(ControlPlaneError::Contract(
-            "membership observation requires bounded non-zero timeout/poll intervals".to_owned(),
+            "membership observation requires bounded non-zero transition, probe, and poll intervals"
+                .to_owned(),
         ));
     }
     let expected = normalized_endpoints(&expected_endpoints_after)?;
@@ -2526,13 +2530,12 @@ pub async fn observe_membership_transition(
         ordered.sort_by_key(|endpoint| endpoint.node_id != authority_node_id);
         let mut snapshots = Vec::with_capacity(ordered.len());
         for endpoint in ordered {
+            let remaining = deadline.saturating_duration_since(Instant::now());
+            if remaining.is_zero() {
+                break;
+            }
             attempts = attempts.saturating_add(1);
-            match probe_public_snapshot_with_wire(
-                endpoint,
-                poll_interval.min(Duration::from_secs(10)),
-            )
-            .await
-            {
+            match probe_public_snapshot_with_wire(endpoint, probe_timeout.min(remaining)).await {
                 Ok(receipt) => {
                     request_bytes = request_bytes.saturating_add(receipt.request_network_bytes);
                     response_bytes = response_bytes.saturating_add(receipt.response_network_bytes);

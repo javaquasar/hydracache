@@ -147,6 +147,7 @@ async fn run_control_plane_reference_inner(
         add_invocation,
         full_endpoints.clone(),
         Duration::from_millis(scenario.membership_event.event_timeout_millis),
+        PER_PROBE_TIMEOUT,
         POLL_INTERVAL,
     )
     .await?;
@@ -206,6 +207,7 @@ async fn run_control_plane_reference_inner(
         drain_invocation,
         initial_endpoints,
         Duration::from_millis(scenario.membership_event.event_timeout_millis),
+        PER_PROBE_TIMEOUT,
         POLL_INTERVAL,
     )
     .await?;

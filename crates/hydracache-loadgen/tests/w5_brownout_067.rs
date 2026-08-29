@@ -107,6 +107,27 @@ fn w5_reference_shape_rejects_every_material_contract_drift() {
 }
 
 #[test]
+fn w5a_membership_probe_timeout_is_independent_from_poll_cadence() {
+    let producer = include_str!("../src/tiers/brownout.rs");
+    let observer = include_str!("../src/targets/control_plane.rs");
+
+    assert!(producer.contains(
+        "Duration::from_secs(15),\n            CONTROL_PROBE_TIMEOUT,\n            CONTROL_TRANSITION_POLL,"
+    ));
+    assert_eq!(
+        producer
+            .matches(
+                "Duration::from_secs(15),\n            CONTROL_PROBE_TIMEOUT,\n            CONTROL_TRANSITION_POLL,"
+            )
+            .count(),
+        2
+    );
+    assert!(observer.contains("probe_timeout: Duration,\n    poll_interval: Duration,"));
+    assert!(observer.contains("probe_timeout.min(remaining)"));
+    assert!(!observer.contains("poll_interval.min(Duration::from_secs(10))"));
+}
+
+#[test]
 fn w5_smoke_provenance_cannot_be_promoted_by_changing_mode() {
     let (control_scenario, resp_scenario, model_scenario) = scenarios();
 
