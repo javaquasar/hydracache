@@ -509,6 +509,20 @@ fn performance_lane_requires_protected_self_hosted_labels_and_serial_concurrency
         .iter()
         .any(|problem| problem.contains("checksum-pinned source recipe")));
 
+    let unbounded_redis_download = workflow.replacen(
+        "  --retry 5 --retry-all-errors --retry-delay 2 --connect-timeout 15 --max-time 180 \\",
+        "  --connect-timeout 15 --max-time 180 \\",
+        1,
+    );
+    let problems = xtask::release_governance::release_execution_wiring_problems(
+        &unbounded_redis_download,
+        "0.67",
+    )
+    .unwrap();
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("checksum-pinned source recipe")));
+
     let missing_opt_in = workflow.replacen(
         "github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && inputs.run_reference_performance && inputs.candidate_release == '0.67'",
         "github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && inputs.candidate_release == '0.67'",
