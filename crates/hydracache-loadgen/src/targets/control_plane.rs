@@ -1844,28 +1844,63 @@ fn validate_public_snapshot(
     node_count: u8,
 ) -> Result<(), ControlPlaneError> {
     let expected = normalized_endpoints(expected)?;
-    if expected.len() != usize::from(node_count)
-        || !expected
-            .iter()
-            .any(|endpoint| endpoint == &snapshot.endpoint)
-        || snapshot.admin_status.source != ControlPlaneSource::Live
-        || snapshot.cluster_overview.source != ControlPlaneSource::Live
-        || !snapshot.admin_status.quorum_ok
-        || snapshot.admin_status.draining
-        || snapshot.admin_status.term == 0
-        || snapshot.admin_status.reshard_phase != "idle"
-        || snapshot.cluster_overview.lifecycle.reshard_phase != "idle"
-        || snapshot.cluster_overview.lifecycle.upgrade_phase != "idle"
-        || snapshot.cluster_overview.partitions.under_replicated != 0
-        || snapshot.admin_status.members != u32::from(node_count)
-        || snapshot.admin_status.member_ids.len() != usize::from(node_count)
-        || snapshot.admin_status.voters != u32::from(node_count)
-        || snapshot.admin_status.voter_ids.len() != usize::from(node_count)
-        || snapshot.cluster_overview.members.len() != usize::from(node_count)
+    let mut violations = Vec::new();
+    if expected.len() != usize::from(node_count) {
+        violations.push("expected-endpoint-count");
+    }
+    if !expected
+        .iter()
+        .any(|endpoint| endpoint == &snapshot.endpoint)
     {
-        return Err(ControlPlaneError::Evidence(
-            "W4A snapshot is not an exact live, quorate, healthy, idle complete view".to_owned(),
-        ));
+        violations.push("unexpected-endpoint");
+    }
+    if snapshot.admin_status.source != ControlPlaneSource::Live {
+        violations.push("admin-source-not-live");
+    }
+    if snapshot.cluster_overview.source != ControlPlaneSource::Live {
+        violations.push("overview-source-not-live");
+    }
+    if !snapshot.admin_status.quorum_ok {
+        violations.push("quorum-not-ready");
+    }
+    if snapshot.admin_status.draining {
+        violations.push("draining");
+    }
+    if snapshot.admin_status.term == 0 {
+        violations.push("zero-term");
+    }
+    if snapshot.admin_status.reshard_phase != "idle" {
+        violations.push("admin-reshard-not-idle");
+    }
+    if snapshot.cluster_overview.lifecycle.reshard_phase != "idle" {
+        violations.push("overview-reshard-not-idle");
+    }
+    if snapshot.cluster_overview.lifecycle.upgrade_phase != "idle" {
+        violations.push("upgrade-not-idle");
+    }
+    if snapshot.cluster_overview.partitions.under_replicated != 0 {
+        violations.push("under-replicated");
+    }
+    if snapshot.admin_status.members != u32::from(node_count) {
+        violations.push("member-count");
+    }
+    if snapshot.admin_status.member_ids.len() != usize::from(node_count) {
+        violations.push("member-id-count");
+    }
+    if snapshot.admin_status.voters != u32::from(node_count) {
+        violations.push("voter-count");
+    }
+    if snapshot.admin_status.voter_ids.len() != usize::from(node_count) {
+        violations.push("voter-id-count");
+    }
+    if snapshot.cluster_overview.members.len() != usize::from(node_count) {
+        violations.push("overview-member-count");
+    }
+    if !violations.is_empty() {
+        return Err(ControlPlaneError::Evidence(format!(
+            "W4A snapshot is not an exact live, quorate, healthy, idle complete view; violated={}",
+            violations.join(",")
+        )));
     }
     let expected_ids = expected
         .iter()
@@ -1883,13 +1918,58 @@ fn validate_public_snapshot(
         .iter()
         .map(|member| member.node_id.as_str())
         .collect::<BTreeSet<_>>();
-    let all_members_exact = snapshot.cluster_overview.members.iter().all(|member| {
-        portable_identifier(&member.node_id)
-            && member.role == "member"
-            && member.reachable
-            && member.reachability == "reachable"
-            && member.generation > 0
-    });
+    if expected_ids != status_ids {
+        violations.push("admin-member-ids");
+    }
+    if expected_ids != overview_ids {
+        violations.push("overview-member-ids");
+    }
+    if status_ids.len() != usize::from(node_count) {
+        violations.push("unique-admin-member-ids");
+    }
+    if overview_ids.len() != usize::from(node_count) {
+        violations.push("unique-overview-member-ids");
+    }
+    if snapshot
+        .cluster_overview
+        .members
+        .iter()
+        .any(|member| !portable_identifier(&member.node_id))
+    {
+        violations.push("invalid-overview-member-id");
+    }
+    if snapshot
+        .cluster_overview
+        .members
+        .iter()
+        .any(|member| member.role != "member")
+    {
+        violations.push("overview-member-role");
+    }
+    if snapshot
+        .cluster_overview
+        .members
+        .iter()
+        .any(|member| !member.reachable)
+    {
+        violations.push("overview-member-unreachable");
+    }
+    if snapshot
+        .cluster_overview
+        .members
+        .iter()
+        .any(|member| member.reachability != "reachable")
+    {
+        violations.push("overview-reachability-state");
+    }
+    if snapshot
+        .cluster_overview
+        .members
+        .iter()
+        .any(|member| member.generation == 0)
+    {
+        violations.push("zero-member-generation");
+    }
     let voter_ids = snapshot
         .admin_status
         .voter_ids
@@ -1898,23 +1978,25 @@ fn validate_public_snapshot(
         .collect::<BTreeSet<_>>();
     let admin_leader = snapshot.admin_status.leader.as_deref();
     let overview_leader = snapshot.cluster_overview.leader.as_ref();
-    if expected_ids != status_ids
-        || expected_ids != overview_ids
-        || status_ids.len() != usize::from(node_count)
-        || overview_ids.len() != usize::from(node_count)
-        || !all_members_exact
-        || voter_ids.len() != usize::from(node_count)
-        || voter_ids.contains(&0)
-        || admin_leader.is_none()
-        || overview_leader.map(|leader| leader.node_id.as_str()) != admin_leader
-        || overview_leader.map(|leader| (leader.term, leader.epoch))
-            != Some((snapshot.admin_status.term, snapshot.admin_status.epoch))
-        || !admin_leader.is_some_and(|leader| expected_ids.contains(leader))
+    if voter_ids.len() != usize::from(node_count) {
+        violations.push("unique-voter-ids");
+    }
+    if voter_ids.contains(&0) {
+        violations.push("zero-voter-id");
+    }
+    if admin_leader.is_none() {
+        violations.push("missing-admin-leader");
+    }
+    if overview_leader.map(|leader| leader.node_id.as_str()) != admin_leader {
+        violations.push("overview-leader");
+    }
+    if overview_leader.map(|leader| (leader.term, leader.epoch))
+        != Some((snapshot.admin_status.term, snapshot.admin_status.epoch))
     {
-        return Err(ControlPlaneError::Evidence(
-            "W4A strict public documents disagree on exact members, voters, leader, term, or epoch"
-                .to_owned(),
-        ));
+        violations.push("overview-leader-term-epoch");
+    }
+    if !admin_leader.is_some_and(|leader| expected_ids.contains(leader)) {
+        violations.push("leader-outside-membership");
     }
     let mut consistency_levels = BTreeSet::new();
     if snapshot
@@ -1924,9 +2006,13 @@ fn validate_public_snapshot(
         .iter()
         .any(|entry| !portable_identifier(&entry.level) || !consistency_levels.insert(&entry.level))
     {
-        return Err(ControlPlaneError::Evidence(
-            "W4A overview contains duplicate/invalid consistency counter identities".to_owned(),
-        ));
+        violations.push("consistency-counter-identities");
+    }
+    if !violations.is_empty() {
+        return Err(ControlPlaneError::Evidence(format!(
+            "W4A snapshot is not an exact live, quorate, healthy, idle complete view; violated={}",
+            violations.join(",")
+        )));
     }
     Ok(())
 }
@@ -2814,8 +2900,36 @@ fn membership_transition_round_summary(
                 .count()
         })
         .collect::<BTreeSet<_>>();
+    let leader_documents = snapshots
+        .iter()
+        .filter(|snapshot| snapshot.admin_status.leader.is_some())
+        .count();
+    let quorum_documents = snapshots
+        .iter()
+        .filter(|snapshot| snapshot.admin_status.quorum_ok)
+        .count();
+    let draining_documents = snapshots
+        .iter()
+        .filter(|snapshot| snapshot.admin_status.draining)
+        .count();
+    let under_replicated = snapshots
+        .iter()
+        .map(|snapshot| snapshot.cluster_overview.partitions.under_replicated)
+        .collect::<BTreeSet<_>>();
+    let admin_reshard_phases = snapshots
+        .iter()
+        .map(|snapshot| snapshot.admin_status.reshard_phase.as_str())
+        .collect::<BTreeSet<_>>();
+    let overview_reshard_phases = snapshots
+        .iter()
+        .map(|snapshot| snapshot.cluster_overview.lifecycle.reshard_phase.as_str())
+        .collect::<BTreeSet<_>>();
+    let upgrade_phases = snapshots
+        .iter()
+        .map(|snapshot| snapshot.cluster_overview.lifecycle.upgrade_phase.as_str())
+        .collect::<BTreeSet<_>>();
     format!(
-        "observed={}/{expected_count}, leaders={leaders:?}, terms={terms:?}, epochs={epochs:?}, members={member_counts:?}, voters={voter_counts:?}, reachable={reachable_counts:?}",
+        "observed={}/{expected_count}, leader_documents={leader_documents}, quorum_documents={quorum_documents}, draining_documents={draining_documents}, leaders={leaders:?}, terms={terms:?}, epochs={epochs:?}, members={member_counts:?}, voters={voter_counts:?}, reachable={reachable_counts:?}, under_replicated={under_replicated:?}, admin_reshard={admin_reshard_phases:?}, overview_reshard={overview_reshard_phases:?}, upgrade={upgrade_phases:?}",
         snapshots.len()
     )
 }
@@ -3776,8 +3890,66 @@ mod tests {
         let snapshot = placeholder_snapshot(endpoint);
         let summary = membership_transition_round_summary(&[snapshot], 3);
         assert!(summary.contains("observed=1/3"));
+        assert!(summary.contains("leader_documents=1"));
+        assert!(summary.contains("quorum_documents=1"));
+        assert!(summary.contains("draining_documents=0"));
         assert!(summary.contains("leaders={\"node-a\"}"));
         assert!(summary.contains("epochs={1}"));
+        assert!(summary.contains("under_replicated={0}"));
         assert!(!summary.contains("127.0.0.1"));
+    }
+
+    #[test]
+    fn strict_snapshot_diagnostics_name_every_failed_health_invariant() {
+        let endpoint = ControlPlaneEndpoint {
+            node_id: "node-a".to_owned(),
+            admin_addr: "127.0.0.1:19100".parse().unwrap(),
+        };
+        let mut snapshot = placeholder_snapshot(endpoint.clone());
+        snapshot.admin_status.quorum_ok = false;
+        snapshot.admin_status.draining = true;
+        snapshot.cluster_overview.partitions.under_replicated = 2;
+        snapshot.cluster_overview.lifecycle.upgrade_phase = "rolling".to_owned();
+
+        let error = validate_public_snapshot(&snapshot, &[endpoint], 1).unwrap_err();
+        let detail = error.to_string();
+        assert!(detail.contains("quorum-not-ready"));
+        assert!(detail.contains("draining"));
+        assert!(detail.contains("under-replicated"));
+        assert!(detail.contains("upgrade-not-idle"));
+        assert!(!detail.contains("127.0.0.1"));
+    }
+
+    #[test]
+    fn strict_snapshot_diagnostics_name_every_failed_topology_invariant() {
+        let endpoint = ControlPlaneEndpoint {
+            node_id: "node-a".to_owned(),
+            admin_addr: "127.0.0.1:19100".parse().unwrap(),
+        };
+        let mut snapshot = placeholder_snapshot(endpoint.clone());
+        snapshot.admin_status.member_ids = vec!["node-b".to_owned()];
+        snapshot.admin_status.voter_ids = vec![0];
+        snapshot.admin_status.leader = None;
+        snapshot.cluster_overview.members[0].node_id = "node-b".to_owned();
+        snapshot.cluster_overview.members[0].reachable = false;
+        snapshot.cluster_overview.members[0].reachability = "unreachable".to_owned();
+        snapshot.cluster_overview.members[0].generation = 0;
+
+        let error = validate_public_snapshot(&snapshot, &[endpoint], 1).unwrap_err();
+        let detail = error.to_string();
+        for invariant in [
+            "admin-member-ids",
+            "overview-member-ids",
+            "overview-member-unreachable",
+            "overview-reachability-state",
+            "zero-member-generation",
+            "zero-voter-id",
+            "missing-admin-leader",
+            "overview-leader",
+            "leader-outside-membership",
+        ] {
+            assert!(detail.contains(invariant), "missing {invariant}: {detail}");
+        }
+        assert!(!detail.contains("127.0.0.1"));
     }
 }
