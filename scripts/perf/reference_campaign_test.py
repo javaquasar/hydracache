@@ -299,6 +299,47 @@ class ReferenceCampaignTests(unittest.TestCase):
         self.assertEqual(arm.call_count, 1)
         self.assertEqual(disarm.call_count, 2)
 
+    def test_transient_artifact_download_failure_retries_atomic_download(self) -> None:
+        state = base_state()
+        expected = {"diagnostics": Path("diagnostics.zip")}
+        with tempfile.TemporaryDirectory() as temporary:
+            campaign_dir = Path(temporary)
+            with (
+                mock.patch.object(
+                    campaign,
+                    "download_artifacts",
+                    side_effect=[campaign.CampaignError("TLS timeout"), expected],
+                ) as download,
+                mock.patch.object(campaign.time, "sleep") as sleep,
+            ):
+                self.assertEqual(
+                    campaign.download_artifacts_with_retry(
+                        campaign_dir, state, 123, "full-dress-1"
+                    ),
+                    expected,
+                )
+        self.assertEqual(download.call_count, 2)
+        sleep.assert_called_once_with(15)
+
+    def test_persistent_artifact_download_failure_remains_fatal(self) -> None:
+        state = base_state()
+        with tempfile.TemporaryDirectory() as temporary:
+            campaign_dir = Path(temporary)
+            with (
+                mock.patch.object(
+                    campaign,
+                    "download_artifacts",
+                    side_effect=campaign.CampaignError("still unavailable"),
+                ) as download,
+                mock.patch.object(campaign.time, "sleep") as sleep,
+                self.assertRaisesRegex(campaign.CampaignError, "failed after 3 attempts"),
+            ):
+                campaign.download_artifacts_with_retry(
+                    campaign_dir, state, 123, "full-dress-1", attempts=3
+                )
+        self.assertEqual(download.call_count, 3)
+        self.assertEqual(sleep.call_count, 2)
+
     def test_receipt_retention_is_immutable_and_sample_directory_is_exact(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)

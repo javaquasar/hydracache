@@ -1066,6 +1066,37 @@ def download_artifacts(campaign_dir: Path, state: dict[str, Any], run_id: int, s
     return {name: run_dir / "original-artifacts" / path.name for name, path in paths.items()}
 
 
+def download_artifacts_with_retry(
+    campaign_dir: Path,
+    state: dict[str, Any],
+    run_id: int,
+    step: str,
+    attempts: int = 5,
+) -> dict[str, Path]:
+    if attempts <= 0:
+        raise CampaignError("artifact download retry count must be positive")
+    latest: Exception | None = None
+    for attempt in range(1, attempts + 1):
+        try:
+            return download_artifacts(campaign_dir, state, run_id, step)
+        except Exception as error:
+            latest = error
+            if attempt == attempts:
+                break
+            append_event(
+                campaign_dir,
+                "artifact-download-retry",
+                step=step,
+                run_id=run_id,
+                attempt=attempt,
+                detail=str(error),
+            )
+            time.sleep(15)
+    raise CampaignError(
+        f"artifact download failed after {attempts} attempts: {latest}"
+    ) from latest
+
+
 def artifact_by_prefix(artifacts: dict[str, Path], prefix: str) -> Path:
     matches = [path for name, path in artifacts.items() if name.startswith(prefix)]
     if len(matches) != 1:
@@ -1556,7 +1587,7 @@ def execute_stage(campaign_dir: Path, state: dict[str, Any], spec: dict[str, Any
     artifacts: dict[str, Path] = {}
     artifact_error: str | None = None
     try:
-        artifacts = download_artifacts(campaign_dir, state, run_id, step)
+        artifacts = download_artifacts_with_retry(campaign_dir, state, run_id, step)
     except Exception as error:  # retain the run failure separately from download failure
         artifact_error = str(error)
 
