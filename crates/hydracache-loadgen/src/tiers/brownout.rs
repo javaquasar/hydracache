@@ -16,6 +16,7 @@ use std::sync::Arc;
 use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
 
 use async_trait::async_trait;
+use futures_util::future::join_all;
 use hydracache_cache_sim::{KeyDistribution, KeyScheduleSpec, KEY_SCHEDULE_GENERATOR_VERSION};
 use serde::de::DeserializeOwned;
 use serde::Serialize;
@@ -943,8 +944,18 @@ async fn wait_for_new_leader(
     let deadline = Instant::now() + timeout;
     let mut latest = "no survivor exposed a new leader".to_owned();
     loop {
-        for endpoint in &survivors {
-            match w4a::probe_public_snapshot(endpoint.clone(), CONTROL_PROBE_TIMEOUT).await {
+        let probes = survivors.iter().map(|endpoint| {
+            let endpoint = endpoint.clone();
+            async move {
+                let node_id = endpoint.node_id.clone();
+                (
+                    node_id,
+                    w4a::probe_public_snapshot(endpoint, CONTROL_PROBE_TIMEOUT).await,
+                )
+            }
+        });
+        for (node_id, result) in join_all(probes).await {
+            match result {
                 Ok(snapshot) => {
                     let members = snapshot
                         .admin_status
@@ -969,10 +980,10 @@ async fn wait_for_new_leader(
                     }
                     latest = format!(
                         "{} still reports leader={leader:?} term={} members={members:?}",
-                        endpoint.node_id, snapshot.admin_status.term
+                        node_id, snapshot.admin_status.term
                     );
                 }
-                Err(error) => latest = error.to_string(),
+                Err(error) => latest = format!("{node_id}: {error}"),
             }
         }
         if Instant::now() >= deadline {
