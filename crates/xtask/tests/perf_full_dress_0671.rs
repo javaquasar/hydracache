@@ -205,11 +205,11 @@ fn full_dress_and_bootstrap_execute_the_same_reference_families_in_order() {
         .next()
         .unwrap();
     let commands = [
+        "--gate env.hydracache-run-067-perf-control-plane",
         "--gate env.hydracache-run-067-perf-core",
         "scripts/perf/rootless-docker.sh start",
         "--gate env.hydracache-run-067-perf-resp",
         "scripts/perf/rootless-docker.sh stop",
-        "--gate env.hydracache-run-067-perf-control-plane",
     ];
     for job in [full_dress, bootstrap] {
         let positions = commands
