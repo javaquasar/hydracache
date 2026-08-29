@@ -629,7 +629,7 @@ impl ControlPlaneBrownoutDriver for LiveControlPlaneBrownoutDriver {
         state.active_node_ids.insert(target_node_id.clone());
         let invocation = w4a::begin_daemon_add_transition(baseline, action.clone(), action_started)
             .map_err(|error| BrownoutError::Driver(error.to_string()))?;
-        let transition = w4a::observe_membership_transition(
+        let transition = w4a::observe_membership_transition_following_committed_leader(
             invocation,
             state.active_endpoints()?,
             Duration::from_secs(15),
@@ -697,7 +697,7 @@ impl ControlPlaneBrownoutDriver for LiveControlPlaneBrownoutDriver {
                 .await
                 .map_err(|error| BrownoutError::Driver(error.to_string()))?;
         state.active_node_ids.remove(&target_node_id);
-        let transition = w4a::observe_membership_transition(
+        let transition = w4a::observe_membership_transition_following_committed_leader(
             invocation,
             state.active_endpoints()?,
             Duration::from_secs(15),

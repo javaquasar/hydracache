@@ -108,8 +108,8 @@ fn w5_reference_shape_rejects_every_material_contract_drift() {
 
 #[test]
 fn w5a_membership_probe_timeout_is_independent_from_poll_cadence() {
-    let producer = include_str!("../src/tiers/brownout.rs");
-    let observer = include_str!("../src/targets/control_plane.rs");
+    let producer = include_str!("../src/tiers/brownout.rs").replace("\r\n", "\n");
+    let observer = include_str!("../src/targets/control_plane.rs").replace("\r\n", "\n");
 
     assert!(producer.contains(
         "Duration::from_secs(15),\n            CONTROL_PROBE_TIMEOUT,\n            CONTROL_TRANSITION_POLL,"
@@ -121,6 +121,17 @@ fn w5a_membership_probe_timeout_is_independent_from_poll_cadence() {
             )
             .count(),
         2
+    );
+    assert_eq!(
+        producer
+            .matches("observe_membership_transition_following_committed_leader(")
+            .count(),
+        2
+    );
+    assert!(observer
+        .contains("MembershipAuthorityPolicy::StableInvocationAuthority,\n    )\n    .await"));
+    assert!(
+        observer.contains("MembershipAuthorityPolicy::FollowCommittedLeader,\n    )\n    .await")
     );
     assert!(observer.contains("probe_timeout: Duration,\n    poll_interval: Duration,"));
     assert!(observer.contains("probe_timeout.min(remaining)"));
