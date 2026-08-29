@@ -15,6 +15,7 @@ use std::sync::Arc;
 use std::time::{Duration, Instant};
 
 use async_trait::async_trait;
+use futures_util::future::join_all;
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 use thiserror::Error;
@@ -2000,8 +2001,7 @@ pub async fn probe_control_plane_capability(
     }
     let expected = normalized_endpoints(&attestation.endpoints)?;
     let mut baseline = Vec::with_capacity(expected.len());
-    for endpoint in &expected {
-        let receipt = probe_public_snapshot_with_wire(endpoint.clone(), timeout).await?;
+    for receipt in probe_public_snapshot_set_with_wire(expected.clone(), timeout).await? {
         validate_public_snapshot(&receipt.snapshot, &expected, attestation.node_count)?;
         baseline.push(receipt.snapshot);
     }
@@ -2038,8 +2038,16 @@ async fn probe_public_snapshot_with_wire(
     endpoint: ControlPlaneEndpoint,
     timeout: Duration,
 ) -> Result<SnapshotProbeReceipt, ControlPlaneError> {
+    let deadline = Instant::now() + timeout;
     let admin = admin_http_json(&endpoint, ADMIN_STATUS_PATH, true, timeout).await?;
-    let overview = admin_http_json(&endpoint, CLUSTER_OVERVIEW_PATH, false, timeout).await?;
+    let remaining = deadline.saturating_duration_since(Instant::now());
+    if remaining.is_zero() {
+        return Err(ControlPlaneError::Probe(format!(
+            "snapshot probe budget exhausted after {ADMIN_STATUS_PATH} on {}",
+            endpoint.node_id
+        )));
+    }
+    let overview = admin_http_json(&endpoint, CLUSTER_OVERVIEW_PATH, false, remaining).await?;
     let snapshot = PublicControlPlaneSnapshot {
         endpoint,
         admin_status: serde_json::from_slice(&admin.body).map_err(|error| {
@@ -2056,6 +2064,27 @@ async fn probe_public_snapshot_with_wire(
         request_network_bytes: admin.request_bytes.saturating_add(overview.request_bytes),
         response_network_bytes: admin.response_bytes.saturating_add(overview.response_bytes),
     })
+}
+
+async fn probe_public_snapshot_set_with_wire(
+    endpoints: Vec<ControlPlaneEndpoint>,
+    timeout: Duration,
+) -> Result<Vec<SnapshotProbeReceipt>, ControlPlaneError> {
+    let mut receipts = join_all(
+        endpoints
+            .into_iter()
+            .map(|endpoint| probe_public_snapshot_with_wire(endpoint, timeout)),
+    )
+    .await
+    .into_iter()
+    .collect::<Result<Vec<_>, _>>()?;
+    receipts.sort_by(|left, right| {
+        left.snapshot
+            .endpoint
+            .node_id
+            .cmp(&right.snapshot.endpoint.node_id)
+    });
+    Ok(receipts)
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -2332,10 +2361,11 @@ pub async fn capture_membership_baseline(
         ));
     }
     let endpoints = normalized_endpoints(&endpoints)?;
-    let mut snapshots = Vec::with_capacity(endpoints.len());
-    for endpoint in endpoints {
-        snapshots.push(probe_public_snapshot(endpoint, timeout).await?);
-    }
+    let snapshots = probe_public_snapshot_set_with_wire(endpoints, timeout)
+        .await?
+        .into_iter()
+        .map(|receipt| receipt.snapshot)
+        .collect::<Vec<_>>();
     let (_, leader, _, prior_epoch) = validate_snapshot_set(&snapshots)?;
     if leader != authority_node_id {
         return Err(ControlPlaneError::Evidence(format!(
@@ -2360,10 +2390,11 @@ pub async fn capture_membership_baseline_from_live(
         ));
     }
     let endpoints = normalized_endpoints(&endpoints)?;
-    let mut snapshots = Vec::with_capacity(endpoints.len());
-    for endpoint in endpoints {
-        snapshots.push(probe_public_snapshot(endpoint, timeout).await?);
-    }
+    let snapshots = probe_public_snapshot_set_with_wire(endpoints, timeout)
+        .await?
+        .into_iter()
+        .map(|receipt| receipt.snapshot)
+        .collect::<Vec<_>>();
     let (_, authority_node_id, _, prior_epoch) = validate_snapshot_set(&snapshots)?;
     Ok(MembershipBaseline {
         authority_node_id,
@@ -2573,27 +2604,61 @@ async fn observe_membership_transition_with_authority(
     let mut authority_commit = None;
     let mut committed_after_nanos = None;
     let mut latest_error = None;
+    let mut latest_nonempty_state = None;
+    let mut latest_validation_error = None;
     loop {
+        if Instant::now() >= deadline {
+            let latest_state = latest_nonempty_state
+                .as_deref()
+                .unwrap_or("no snapshot round completed before the deadline");
+            return Err(ControlPlaneError::Probe(format!(
+                "membership transition did not converge within {}ms; authority_policy={authority_policy:?}; latest_error={latest_error:?}; latest_validation_error={latest_validation_error:?}; latest_state={latest_state}",
+                timeout.as_millis(),
+            )));
+        }
         rounds = rounds.saturating_add(1);
         let mut ordered = expected.clone();
         ordered.sort_by_key(|endpoint| endpoint.node_id != authority_node_id);
-        let mut snapshots = Vec::with_capacity(ordered.len());
-        for endpoint in ordered {
-            let remaining = deadline.saturating_duration_since(Instant::now());
-            if remaining.is_zero() {
-                break;
+        let remaining = deadline.saturating_duration_since(Instant::now());
+        let round_probe_timeout = probe_timeout.min(remaining);
+        attempts = attempts.saturating_add(u64::try_from(ordered.len()).unwrap_or(u64::MAX));
+        let probes = ordered.into_iter().map(|endpoint| {
+            let node_id = endpoint.node_id.clone();
+            async move {
+                (
+                    node_id,
+                    probe_public_snapshot_with_wire(endpoint, round_probe_timeout).await,
+                )
             }
-            attempts = attempts.saturating_add(1);
-            match probe_public_snapshot_with_wire(endpoint, probe_timeout.min(remaining)).await {
+        });
+        let mut snapshots = Vec::with_capacity(expected.len());
+        latest_error = None;
+        for (node_id, result) in join_all(probes).await {
+            match result {
                 Ok(receipt) => {
                     request_bytes = request_bytes.saturating_add(receipt.request_network_bytes);
                     response_bytes = response_bytes.saturating_add(receipt.response_network_bytes);
                     snapshots.push(receipt.snapshot);
                 }
-                Err(error) => latest_error = Some(error.to_string()),
+                Err(error) => latest_error = Some(format!("{node_id}: {error}")),
             }
         }
+        snapshots.sort_by(|left, right| left.endpoint.node_id.cmp(&right.endpoint.node_id));
         let latest_state = membership_transition_round_summary(&snapshots, expected.len());
+        if !snapshots.is_empty() {
+            latest_nonempty_state = Some(latest_state.clone());
+        }
+        latest_validation_error = if snapshots.len() == expected.len() {
+            validate_snapshot_set(&snapshots)
+                .err()
+                .map(|error| error.to_string())
+        } else {
+            Some(format!(
+                "snapshot round incomplete: observed {}/{} endpoints",
+                snapshots.len(),
+                expected.len()
+            ))
+        };
         if let Some(snapshot) = membership_commit_candidate(
             &snapshots,
             &expected,
@@ -2673,12 +2738,6 @@ async fn observe_membership_transition_with_authority(
                     complete_snapshot_observations: complete_observations,
                 },
             });
-        }
-        if Instant::now() >= deadline {
-            return Err(ControlPlaneError::Probe(format!(
-                "membership transition did not converge within {}ms; authority_policy={authority_policy:?}; latest_error={latest_error:?}; latest_state={latest_state}",
-                timeout.as_millis(),
-            )));
         }
         tokio::time::sleep(poll_interval.min(deadline.saturating_duration_since(Instant::now())))
             .await;
@@ -3226,6 +3285,8 @@ fn observed_process_executable(pid: u32) -> Result<PathBuf, ControlPlaneError> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use tokio::net::TcpListener;
+    use tokio::sync::Notify;
 
     const SCENARIO: &str = include_str!(
         "../../../../docs/testing/perf-scenarios/0.67/control-plane-real-daemon-v1.toml"
@@ -3556,6 +3617,105 @@ mod tests {
                 },
             },
         }
+    }
+
+    async fn serve_snapshot_documents(
+        listener: TcpListener,
+        snapshot: PublicControlPlaneSnapshot,
+        first_request_gate: Option<(Arc<AtomicU64>, Arc<Notify>)>,
+        response_delay: Duration,
+    ) {
+        for request_index in 0..2 {
+            let (mut stream, _) = listener.accept().await.unwrap();
+            let mut request = vec![0_u8; 4096];
+            let read = stream.read(&mut request).await.unwrap();
+            let request = std::str::from_utf8(&request[..read]).unwrap();
+            if request_index == 0 {
+                if let Some((arrivals, notify)) = &first_request_gate {
+                    let notified = notify.notified();
+                    let arrived = arrivals.fetch_add(1, Ordering::SeqCst) + 1;
+                    if arrived == 2 {
+                        notify.notify_waiters();
+                    } else if arrivals.load(Ordering::SeqCst) < 2 {
+                        notified.await;
+                    }
+                }
+            }
+            tokio::time::sleep(response_delay).await;
+            let body = if request.contains(ADMIN_STATUS_PATH) {
+                serde_json::to_vec(&snapshot.admin_status).unwrap()
+            } else if request.contains(CLUSTER_OVERVIEW_PATH) {
+                serde_json::to_vec(&snapshot.cluster_overview).unwrap()
+            } else {
+                panic!("unexpected snapshot request: {request}");
+            };
+            let head = format!(
+                "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nContent-Length: {}\r\nConnection: close\r\n\r\n",
+                body.len()
+            );
+            stream.write_all(head.as_bytes()).await.unwrap();
+            stream.write_all(&body).await.unwrap();
+        }
+    }
+
+    #[tokio::test]
+    async fn snapshot_sets_probe_endpoints_concurrently() {
+        let listener_a = TcpListener::bind("127.0.0.1:0").await.unwrap();
+        let listener_b = TcpListener::bind("127.0.0.1:0").await.unwrap();
+        let expected = vec![
+            ControlPlaneEndpoint {
+                node_id: "node-a".to_owned(),
+                admin_addr: listener_a.local_addr().unwrap(),
+            },
+            ControlPlaneEndpoint {
+                node_id: "node-b".to_owned(),
+                admin_addr: listener_b.local_addr().unwrap(),
+            },
+        ];
+        let arrivals = Arc::new(AtomicU64::new(0));
+        let notify = Arc::new(Notify::new());
+        let server_a = tokio::spawn(serve_snapshot_documents(
+            listener_a,
+            consensus_snapshot(expected[0].clone(), &expected, "node-a", 1, 1),
+            Some((Arc::clone(&arrivals), Arc::clone(&notify))),
+            Duration::ZERO,
+        ));
+        let server_b = tokio::spawn(serve_snapshot_documents(
+            listener_b,
+            consensus_snapshot(expected[1].clone(), &expected, "node-a", 1, 1),
+            Some((Arc::clone(&arrivals), Arc::clone(&notify))),
+            Duration::ZERO,
+        ));
+
+        let receipts =
+            probe_public_snapshot_set_with_wire(expected.clone(), Duration::from_millis(500))
+                .await
+                .unwrap();
+        assert_eq!(receipts.len(), 2);
+        assert_eq!(arrivals.load(Ordering::SeqCst), 2);
+        server_a.await.unwrap();
+        server_b.await.unwrap();
+    }
+
+    #[tokio::test]
+    async fn snapshot_documents_share_one_probe_budget() {
+        let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
+        let endpoint = ControlPlaneEndpoint {
+            node_id: "node-a".to_owned(),
+            admin_addr: listener.local_addr().unwrap(),
+        };
+        let server = tokio::spawn(serve_snapshot_documents(
+            listener,
+            placeholder_snapshot(endpoint.clone()),
+            None,
+            Duration::from_millis(80),
+        ));
+
+        let error = probe_public_snapshot_with_wire(endpoint, Duration::from_millis(120))
+            .await
+            .unwrap_err();
+        assert!(matches!(error, ControlPlaneError::Timeout { .. }));
+        server.abort();
     }
 
     #[test]
