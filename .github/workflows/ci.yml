@@ -2020,6 +2020,12 @@ jobs:
       - name: Prebuild exact 0.67 performance binaries
         run: cargo run -p xtask --locked -- evidence-run --release 0.67 --gate tool.perf-prebuild-067
 
+      # Run the comparatively short control-plane family first. It has no
+      # dependency on the core or Redis evidence and failing fast avoids
+      # spending roughly two hours before surfacing a membership defect.
+      - name: Run full-dress control-plane reference evidence
+        run: cargo run -p xtask --locked -- evidence-run --release 0.67 --gate env.hydracache-run-067-perf-control-plane
+
       - name: Run full-dress core reference evidence
         run: cargo run -p xtask --locked -- evidence-run --release 0.67 --gate env.hydracache-run-067-perf-core
 
@@ -2032,9 +2038,6 @@ jobs:
       - name: Stop isolated rootless Docker after full-dress Redis comparison
         if: always()
         run: scripts/perf/rootless-docker.sh stop
-
-      - name: Run full-dress control-plane reference evidence
-        run: cargo run -p xtask --locked -- evidence-run --release 0.67 --gate env.hydracache-run-067-perf-control-plane
 
       - name: Materialize tmpfs reference evidence
         if: always()
@@ -2214,6 +2217,9 @@ jobs:
           fi
           cargo run -p xtask --locked -- perf-bootstrap "${args[@]}"
 
+      - name: Run bootstrap control-plane reference evidence
+        run: cargo run -p xtask --locked -- evidence-run --release 0.67 --gate env.hydracache-run-067-perf-control-plane
+
       - name: Run bootstrap core reference evidence
         run: cargo run -p xtask --locked -- evidence-run --release 0.67 --gate env.hydracache-run-067-perf-core
 
@@ -2226,9 +2232,6 @@ jobs:
       - name: Stop isolated rootless Docker after Redis comparison
         if: always()
         run: scripts/perf/rootless-docker.sh stop
-
-      - name: Run bootstrap control-plane reference evidence
-        run: cargo run -p xtask --locked -- evidence-run --release 0.67 --gate env.hydracache-run-067-perf-control-plane
 
       - name: Materialize tmpfs reference evidence
         if: always()
@@ -2349,6 +2352,9 @@ jobs:
       - name: Prebuild exact frozen performance binaries
         run: cargo run -p xtask --locked -- evidence-run --release 0.67 --gate tool.perf-prebuild-067
 
+      - name: Run frozen-candidate real 3/5/7 daemon control-plane evidence
+        run: cargo run -p xtask --locked -- evidence-run --release 0.67 --gate env.hydracache-run-067-perf-control-plane
+
       - name: Run frozen-candidate core reference evidence
         run: cargo run -p xtask --locked -- evidence-run --release 0.67 --gate env.hydracache-run-067-perf-core
 
@@ -2361,9 +2367,6 @@ jobs:
       - name: Stop isolated rootless Docker after frozen Redis comparison
         if: always()
         run: scripts/perf/rootless-docker.sh stop
-
-      - name: Run frozen-candidate real 3/5/7 daemon control-plane evidence
-        run: cargo run -p xtask --locked -- evidence-run --release 0.67 --gate env.hydracache-run-067-perf-control-plane
 
       - name: Materialize tmpfs reference evidence
         if: always()
