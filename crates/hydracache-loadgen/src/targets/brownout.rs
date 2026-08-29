@@ -2160,6 +2160,7 @@ impl ControlPlaneBrownoutReport {
 pub struct ControlPlaneBrownoutLoadPlan {
     pub offered_rate_per_second: u64,
     pub observation_window_millis: u64,
+    pub transition_budget_millis: u64,
     pub predecessor_w4_scenario_sha256: String,
     pub predecessor_artifact_sha256: String,
 }
@@ -2209,9 +2210,15 @@ pub async fn run_control_plane_reference<D: ControlPlaneBrownoutDriver>(
             scenario.reference.capability_env
         )));
     }
+    let transition_budget_millis = scenario
+        .events
+        .max_leader_unavailable_millis
+        .checked_add(scenario.events.max_transition_recovery_millis)
+        .ok_or_else(|| BrownoutError::Contract("W5A transition budget overflows u64".to_owned()))?;
     let plan = ControlPlaneBrownoutLoadPlan {
         offered_rate_per_second: predecessor.summary.offered_rate_per_second,
         observation_window_millis: scenario.load.observation_window_millis,
+        transition_budget_millis,
         predecessor_w4_scenario_sha256: predecessor.w4_scenario_sha256.clone(),
         predecessor_artifact_sha256: predecessor.summary.artifact_sha256.clone(),
     };
@@ -2586,6 +2593,7 @@ impl RespBrownoutReport {
 pub struct RespBrownoutLoadPlan {
     pub offered_rate_per_second: u64,
     pub observation_window_millis: u64,
+    pub transition_budget_millis: u64,
     pub independent_control_endpoints: u8,
     pub selected_capacity: RespSelectedCapacityContract,
     pub capacity_matrix_sha256: String,
@@ -2622,6 +2630,7 @@ pub async fn run_resp_reference<D: RespBrownoutDriver>(
     let plan = RespBrownoutLoadPlan {
         offered_rate_per_second: predecessor.summary.offered_rate_per_second,
         observation_window_millis: scenario.load.observation_window_millis,
+        transition_budget_millis: scenario.event.max_recovery_millis,
         independent_control_endpoints: scenario.event.independent_control_endpoints,
         selected_capacity: predecessor.selected_capacity.clone(),
         capacity_matrix_sha256: predecessor.capacity_matrix_sha256.clone(),
@@ -3429,9 +3438,21 @@ fn validate_control_plane_event(
         ));
     }
     event.raw.timeline.validate()?;
-    validate_open_loop_window(&event.raw.before_window, offered_rate_per_second)?;
-    validate_open_loop_window(&event.raw.disruption_window, offered_rate_per_second)?;
-    validate_open_loop_window(&event.raw.recovered_window, offered_rate_per_second)?;
+    validate_open_loop_window(
+        "control-plane before",
+        &event.raw.before_window,
+        offered_rate_per_second,
+    )?;
+    validate_open_loop_window(
+        "control-plane disruption",
+        &event.raw.disruption_window,
+        offered_rate_per_second,
+    )?;
+    validate_open_loop_window(
+        "control-plane recovery",
+        &event.raw.recovered_window,
+        offered_rate_per_second,
+    )?;
     if availability_ppm(&event.raw.recovered_window)? < 990_000 {
         return Err(BrownoutError::Evidence(
             "W5A recovered W0 window did not return to at least 99% availability".to_owned(),
@@ -3894,9 +3915,17 @@ fn validate_resp_raw_event(
                 .to_owned(),
         ));
     }
-    validate_open_loop_window(&event.before_window, offered_rate_per_second)?;
-    validate_open_loop_window(&event.disruption_window, offered_rate_per_second)?;
-    validate_open_loop_window(&event.recovered_window, offered_rate_per_second)?;
+    validate_open_loop_window("RESP before", &event.before_window, offered_rate_per_second)?;
+    validate_open_loop_window(
+        "RESP disruption",
+        &event.disruption_window,
+        offered_rate_per_second,
+    )?;
+    validate_open_loop_window(
+        "RESP recovery",
+        &event.recovered_window,
+        offered_rate_per_second,
+    )?;
     if availability_ppm(&event.recovered_window)? < 990_000
         || availability_ppm(&event.disruption_window)? >= availability_ppm(&event.before_window)?
     {
@@ -3914,7 +3943,11 @@ fn validate_resp_raw_event(
     for control in &event.independent_controls {
         control.process.validate()?;
         control.cleanup.validate()?;
-        validate_open_loop_window(&control.window, offered_rate_per_second)?;
+        validate_open_loop_window(
+            "RESP independent control",
+            &control.window,
+            offered_rate_per_second,
+        )?;
         if control.process.pid != control.cleanup.pid
             || control.endpoint == event.selected_endpoint
             || !endpoints.insert(control.endpoint.as_str())
@@ -4640,6 +4673,7 @@ pub fn canary_extended_leader_downtime_breaches_the_control_plane_brownout_budge
 }
 
 fn validate_open_loop_window(
+    label: &str,
     window: &OpenLoopObservation,
     expected_rate_per_second: u64,
 ) -> Result<(), BrownoutError> {
@@ -4651,24 +4685,62 @@ fn validate_open_loop_window(
         .ok_or_else(|| BrownoutError::Evidence("W0 window accounting overflow".to_owned()))?;
     let rate_matches =
         (window.offered_rate_per_second - expected_rate_per_second as f64).abs() <= f64::EPSILON;
-    if window.offered == 0
-        || window.started != window.offered
-        || window.completed != window.started
-        || classified != window.completed
-        || !window.backlog_drained
-        || window.backlog_high_water > window.started
-        || window.elapsed_ms == 0
-        || !rate_matches
-        || !window.achieved_rate_per_second.is_finite()
-        || window.achieved_rate_per_second < 0.0
-        || window.latency.samples != window.completed
-        || window.latency.p99_us.is_none()
-        || window.latency.overflow_count != 0
-    {
-        return Err(BrownoutError::Evidence(
-            "raw W0 window is unbalanced, closed-loop, undrained, or rate/latency forged"
-                .to_owned(),
-        ));
+    let mut problems = Vec::new();
+    if window.offered == 0 {
+        problems.push("offered=0");
+    }
+    if window.started != window.offered {
+        problems.push("started!=offered");
+    }
+    if window.completed != window.started {
+        problems.push("completed!=started");
+    }
+    if classified != window.completed {
+        problems.push("classified!=completed");
+    }
+    if !window.backlog_drained {
+        problems.push("backlog_not_drained");
+    }
+    if window.backlog_high_water > window.started {
+        problems.push("backlog_high_water>started");
+    }
+    if window.elapsed_ms == 0 {
+        problems.push("elapsed_ms=0");
+    }
+    if !rate_matches {
+        problems.push("offered_rate_mismatch");
+    }
+    if !window.achieved_rate_per_second.is_finite() || window.achieved_rate_per_second < 0.0 {
+        problems.push("achieved_rate_invalid");
+    }
+    if window.latency.samples != window.completed {
+        problems.push("latency_samples!=completed");
+    }
+    if window.latency.p99_us.is_none() {
+        problems.push("latency_p99_missing");
+    }
+    if window.latency.overflow_count != 0 {
+        problems.push("latency_overflow");
+    }
+    if !problems.is_empty() {
+        return Err(BrownoutError::Evidence(format!(
+            "raw W0 {label} window is invalid: {}; offered={} started={} completed={} classified={} backlog_high_water={} backlog_drained={} drain_ms={} elapsed_ms={} offered_rate_per_second={} expected_rate_per_second={} achieved_rate_per_second={} latency_samples={} latency_p99_us={:?} latency_overflow_count={}",
+            problems.join(","),
+            window.offered,
+            window.started,
+            window.completed,
+            classified,
+            window.backlog_high_water,
+            window.backlog_drained,
+            window.drain_ms,
+            window.elapsed_ms,
+            window.offered_rate_per_second,
+            expected_rate_per_second,
+            window.achieved_rate_per_second,
+            window.latency.samples,
+            window.latency.p99_us,
+            window.latency.overflow_count,
+        )));
     }
     Ok(())
 }
@@ -4941,5 +5013,25 @@ mod tests {
             scenario.event.max_recovery_millis
         )));
         assert!(!error.to_string().contains("failover/value-recovery claim"));
+    }
+
+    #[test]
+    fn w0_validation_reports_the_exact_failed_accounting_guards() {
+        let mut window = fixture_open_loop(600, 1_000_000);
+        window.completed = window.completed.saturating_sub(1);
+        window.backlog_drained = false;
+        window.latency.overflow_count = 1;
+
+        let error = validate_open_loop_window("RESP disruption", &window, 600)
+            .expect_err("invalid raw accounting must remain fatal")
+            .to_string();
+
+        assert!(error.contains("raw W0 RESP disruption window is invalid"));
+        assert!(error.contains("completed!=started"));
+        assert!(error.contains("classified!=completed"));
+        assert!(error.contains("backlog_not_drained"));
+        assert!(error.contains("latency_samples!=completed"));
+        assert!(error.contains("latency_overflow"));
+        assert!(error.contains("latency_overflow_count=1"));
     }
 }
