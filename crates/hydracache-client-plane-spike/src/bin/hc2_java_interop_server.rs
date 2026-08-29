@@ -631,9 +631,18 @@ fn write_credential(path: &Path, name: &str, contents: &str) -> Result<PathBuf, 
     Ok(target)
 }
 
-fn free_addr() -> Result<SocketAddr, Box<dyn Error>> {
-    let listener = StdTcpListener::bind("127.0.0.1:0")?;
-    Ok(listener.local_addr()?)
+fn reserve_addrs<const N: usize>() -> Result<([SocketAddr; N], Vec<StdTcpListener>), Box<dyn Error>>
+{
+    let listeners = (0..N)
+        .map(|_| StdTcpListener::bind("127.0.0.1:0"))
+        .collect::<Result<Vec<_>, _>>()?;
+    let addrs = listeners
+        .iter()
+        .map(StdTcpListener::local_addr)
+        .collect::<Result<Vec<_>, _>>()?
+        .try_into()
+        .map_err(|_| "reservation count must match the requested address count")?;
+    Ok((addrs, listeners))
 }
 
 fn request_daemon_drain(admin: SocketAddr) -> Result<(), Box<dyn Error>> {
@@ -665,9 +674,8 @@ fn run_daemon_fixture(
     let server_cert = write_credential(credentials, "server.pem", &pki.server_cert_pem)?;
     let server_key = write_credential(credentials, "server.key", &pki.server_key_pem)?;
     let client_ca = write_credential(credentials, "clients.pem", &pki.ca_pem)?;
-    let client_addr = free_addr()?;
-    let hc2_addr = free_addr()?;
-    let admin_addr = free_addr()?;
+    let ([client_addr, hc2_addr, admin_addr], reservations) = reserve_addrs::<3>()?;
+    drop(reservations);
     let mut child = Command::new(daemon)
         .env("HYDRACACHE_CLIENT_API_ENABLED", "true")
         .env("HYDRACACHE_LISTEN_ADDR", client_addr.to_string())

@@ -18,6 +18,7 @@ use hydracache_server::{ADMIN_DRAIN_PATH, ADMIN_METRICS_PATH};
 use rcgen::{
     BasicConstraints, CertificateParams, CertifiedIssuer, ExtendedKeyUsagePurpose, IsCa, KeyPair,
 };
+use tokio::sync::{Mutex, MutexGuard};
 
 struct TestPki {
     ca: String,
@@ -25,6 +26,19 @@ struct TestPki {
     server_key: String,
     client_cert: String,
     client_key: String,
+}
+
+// These tests release reserved ports before a child process binds them. Keep
+// the hand-off and the post-exit availability assertions isolated from the
+// other tests in this binary so they cannot steal one another's addresses.
+static DAEMON_PROCESS_LOCK: Mutex<()> = Mutex::const_new(());
+
+fn daemon_process_guard() -> MutexGuard<'static, ()> {
+    DAEMON_PROCESS_LOCK.blocking_lock()
+}
+
+async fn async_daemon_process_guard() -> MutexGuard<'static, ()> {
+    DAEMON_PROCESS_LOCK.lock().await
 }
 
 fn pki() -> TestPki {
@@ -163,6 +177,7 @@ async fn hc1_response(response: reqwest::Response) -> ClientResponseEnvelope {
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 async fn real_daemon_shares_hc1_hc2_dispatch_and_exits_on_drain() {
+    let _guard = async_daemon_process_guard().await;
     let root = test_root("coexistence");
     let pki = pki();
     let (cert, key, ca) = write_pki(&root, &pki);
@@ -312,6 +327,7 @@ async fn real_daemon_shares_hc1_hc2_dispatch_and_exits_on_drain() {
 
 #[test]
 fn port_conflict_fails_before_any_listener_accepts() {
+    let _guard = daemon_process_guard();
     let root = test_root("conflict");
     let pki = pki();
     let (cert, key, ca) = write_pki(&root, &pki);
@@ -338,6 +354,7 @@ fn port_conflict_fails_before_any_listener_accepts() {
 
 #[test]
 fn unreadable_hc2_tls_fails_before_readiness_or_listener_startup() {
+    let _guard = daemon_process_guard();
     let root = test_root("missing-tls");
     std::fs::create_dir_all(&root).unwrap();
     let ([client_addr, admin_addr, hc2_addr], reservations) = reserve_addrs::<3>();
@@ -362,6 +379,7 @@ fn unreadable_hc2_tls_fails_before_readiness_or_listener_startup() {
 
 #[test]
 fn reserved_listener_addresses_are_distinct_and_held() {
+    let _guard = daemon_process_guard();
     let (addrs, reservations) = reserve_addrs::<8>();
     for (index, addr) in addrs.iter().enumerate() {
         assert!(

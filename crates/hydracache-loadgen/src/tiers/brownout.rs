@@ -633,6 +633,7 @@ impl ControlPlaneBrownoutDriver for LiveControlPlaneBrownoutDriver {
             invocation,
             state.active_endpoints()?,
             Duration::from_secs(15),
+            CONTROL_PROBE_TIMEOUT,
             CONTROL_TRANSITION_POLL,
         )
         .await
@@ -700,6 +701,7 @@ impl ControlPlaneBrownoutDriver for LiveControlPlaneBrownoutDriver {
             invocation,
             state.active_endpoints()?,
             Duration::from_secs(15),
+            CONTROL_PROBE_TIMEOUT,
             CONTROL_TRANSITION_POLL,
         )
         .await
