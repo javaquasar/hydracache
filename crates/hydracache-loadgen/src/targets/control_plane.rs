@@ -2311,6 +2311,12 @@ pub struct MembershipTransitionInvocation {
     invoked_at: Instant,
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum MembershipAuthorityPolicy {
+    StableInvocationAuthority,
+    FollowCommittedLeader,
+}
+
 /// Capture the complete pre-action view and derive its authority/epoch.
 pub async fn capture_membership_baseline(
     authority_node_id: &str,
@@ -2487,6 +2493,49 @@ pub async fn observe_membership_transition(
     probe_timeout: Duration,
     poll_interval: Duration,
 ) -> Result<MembershipEventEvidence, ControlPlaneError> {
+    observe_membership_transition_with_authority(
+        invocation,
+        expected_endpoints_after,
+        timeout,
+        probe_timeout,
+        poll_interval,
+        MembershipAuthorityPolicy::StableInvocationAuthority,
+    )
+    .await
+}
+
+/// Observe the same exact committed membership transition while allowing a
+/// concurrent Raft election to hand authority to another member. W4A keeps
+/// using `observe_membership_transition`, whose stable-authority requirement
+/// is part of its ordinary add/drain contract. W5A uses this variant because
+/// its brownout contract requires an exact converged membership view, but does
+/// not require add/drain to preserve the leader selected before the action.
+pub async fn observe_membership_transition_following_committed_leader(
+    invocation: MembershipTransitionInvocation,
+    expected_endpoints_after: Vec<ControlPlaneEndpoint>,
+    timeout: Duration,
+    probe_timeout: Duration,
+    poll_interval: Duration,
+) -> Result<MembershipEventEvidence, ControlPlaneError> {
+    observe_membership_transition_with_authority(
+        invocation,
+        expected_endpoints_after,
+        timeout,
+        probe_timeout,
+        poll_interval,
+        MembershipAuthorityPolicy::FollowCommittedLeader,
+    )
+    .await
+}
+
+async fn observe_membership_transition_with_authority(
+    invocation: MembershipTransitionInvocation,
+    expected_endpoints_after: Vec<ControlPlaneEndpoint>,
+    timeout: Duration,
+    probe_timeout: Duration,
+    poll_interval: Duration,
+    authority_policy: MembershipAuthorityPolicy,
+) -> Result<MembershipEventEvidence, ControlPlaneError> {
     if timeout.is_zero()
         || timeout > Duration::from_secs(120)
         || probe_timeout.is_zero()
@@ -2544,14 +2593,26 @@ pub async fn observe_membership_transition(
                 Err(error) => latest_error = Some(error.to_string()),
             }
         }
-        if let Some(snapshot) = snapshots.iter().find(|snapshot| {
-            snapshot.endpoint.node_id == authority_node_id
-                && snapshot.admin_status.source == ControlPlaneSource::Live
-                && snapshot.admin_status.quorum_ok
-                && snapshot.admin_status.epoch > prior_epoch
-                && validate_public_snapshot(snapshot, &expected, expected.len() as u8).is_ok()
-        }) {
-            if authority_commit.is_none() {
+        let latest_state = membership_transition_round_summary(&snapshots, expected.len());
+        if let Some(snapshot) = membership_commit_candidate(
+            &snapshots,
+            &expected,
+            prior_epoch,
+            &authority_node_id,
+            authority_policy,
+        ) {
+            let authority_changed =
+                authority_commit
+                    .as_ref()
+                    .is_some_and(|committed: &PublicControlPlaneSnapshot| {
+                        committed.endpoint.node_id != snapshot.endpoint.node_id
+                            || committed.admin_status.term != snapshot.admin_status.term
+                            || committed.admin_status.epoch != snapshot.admin_status.epoch
+                    });
+            if authority_commit.is_none()
+                || (authority_policy == MembershipAuthorityPolicy::FollowCommittedLeader
+                    && authority_changed)
+            {
                 authority_commit = Some(snapshot.clone());
                 committed_after_nanos = Some(elapsed_since_nanos(invocation.invoked_at));
             }
@@ -2559,10 +2620,15 @@ pub async fn observe_membership_transition(
         let committed_epoch = authority_commit
             .as_ref()
             .map(|snapshot| snapshot.admin_status.epoch);
-        let converged = snapshots.len() == expected.len()
-            && validate_snapshot_set(&snapshots).is_ok_and(|(_, leader, _, epoch)| {
-                leader == authority_node_id && Some(epoch) == committed_epoch
-            });
+        let committed_authority = authority_commit
+            .as_ref()
+            .map(|snapshot| snapshot.endpoint.node_id.as_str());
+        let converged = membership_transition_converged(
+            &snapshots,
+            expected.len(),
+            committed_authority,
+            committed_epoch,
+        );
         if converged {
             complete_observations = complete_observations.saturating_add(1);
             let authority_commit_snapshot = authority_commit.ok_or_else(|| {
@@ -2571,6 +2637,7 @@ pub async fn observe_membership_transition(
                 )
             })?;
             let new_epoch = authority_commit_snapshot.admin_status.epoch;
+            let committed_authority_node_id = authority_commit_snapshot.endpoint.node_id.clone();
             let commit_latency_nanos = committed_after_nanos.expect("commit snapshot sets time");
             let convergence_latency_nanos = elapsed_since_nanos(invocation.invoked_at);
             snapshots.sort_by(|left, right| left.endpoint.node_id.cmp(&right.endpoint.node_id));
@@ -2585,7 +2652,7 @@ pub async fn observe_membership_transition(
             return Ok(MembershipEventEvidence {
                 action,
                 target_node_id,
-                authority_node_id,
+                authority_node_id: committed_authority_node_id,
                 action_receipt,
                 pre_transition_snapshots: baseline.snapshots,
                 authority_commit_snapshot,
@@ -2609,13 +2676,89 @@ pub async fn observe_membership_transition(
         }
         if Instant::now() >= deadline {
             return Err(ControlPlaneError::Probe(format!(
-                "membership transition did not converge within {}ms; latest_error={latest_error:?}",
-                timeout.as_millis()
+                "membership transition did not converge within {}ms; authority_policy={authority_policy:?}; latest_error={latest_error:?}; latest_state={latest_state}",
+                timeout.as_millis(),
             )));
         }
         tokio::time::sleep(poll_interval.min(deadline.saturating_duration_since(Instant::now())))
             .await;
     }
+}
+
+fn membership_commit_candidate<'a>(
+    snapshots: &'a [PublicControlPlaneSnapshot],
+    expected: &[ControlPlaneEndpoint],
+    prior_epoch: u64,
+    invocation_authority: &str,
+    authority_policy: MembershipAuthorityPolicy,
+) -> Option<&'a PublicControlPlaneSnapshot> {
+    let node_count = u8::try_from(expected.len()).ok()?;
+    snapshots.iter().find(|snapshot| {
+        let expected_authority = match authority_policy {
+            MembershipAuthorityPolicy::StableInvocationAuthority => invocation_authority,
+            MembershipAuthorityPolicy::FollowCommittedLeader => {
+                snapshot.admin_status.leader.as_deref().unwrap_or_default()
+            }
+        };
+        snapshot.endpoint.node_id == expected_authority
+            && snapshot.admin_status.source == ControlPlaneSource::Live
+            && snapshot.admin_status.quorum_ok
+            && snapshot.admin_status.epoch > prior_epoch
+            && validate_public_snapshot(snapshot, expected, node_count).is_ok()
+    })
+}
+
+fn membership_transition_converged(
+    snapshots: &[PublicControlPlaneSnapshot],
+    expected_count: usize,
+    committed_authority: Option<&str>,
+    committed_epoch: Option<u64>,
+) -> bool {
+    snapshots.len() == expected_count
+        && validate_snapshot_set(snapshots).is_ok_and(|(_, leader, _, epoch)| {
+            Some(leader.as_str()) == committed_authority && Some(epoch) == committed_epoch
+        })
+}
+
+fn membership_transition_round_summary(
+    snapshots: &[PublicControlPlaneSnapshot],
+    expected_count: usize,
+) -> String {
+    let leaders = snapshots
+        .iter()
+        .filter_map(|snapshot| snapshot.admin_status.leader.clone())
+        .collect::<BTreeSet<_>>();
+    let terms = snapshots
+        .iter()
+        .map(|snapshot| snapshot.admin_status.term)
+        .collect::<BTreeSet<_>>();
+    let epochs = snapshots
+        .iter()
+        .map(|snapshot| snapshot.admin_status.epoch)
+        .collect::<BTreeSet<_>>();
+    let member_counts = snapshots
+        .iter()
+        .map(|snapshot| snapshot.admin_status.members)
+        .collect::<BTreeSet<_>>();
+    let voter_counts = snapshots
+        .iter()
+        .map(|snapshot| snapshot.admin_status.voters)
+        .collect::<BTreeSet<_>>();
+    let reachable_counts = snapshots
+        .iter()
+        .map(|snapshot| {
+            snapshot
+                .cluster_overview
+                .members
+                .iter()
+                .filter(|member| member.reachable)
+                .count()
+        })
+        .collect::<BTreeSet<_>>();
+    format!(
+        "observed={}/{expected_count}, leaders={leaders:?}, terms={terms:?}, epochs={epochs:?}, members={member_counts:?}, voters={voter_counts:?}, reachable={reachable_counts:?}",
+        snapshots.len()
+    )
 }
 
 fn elapsed_since_nanos(started: Instant) -> u64 {
@@ -3351,5 +3494,130 @@ mod tests {
                 },
             },
         }
+    }
+
+    fn consensus_snapshot(
+        endpoint: ControlPlaneEndpoint,
+        expected: &[ControlPlaneEndpoint],
+        leader: &str,
+        term: u64,
+        epoch: u64,
+    ) -> PublicControlPlaneSnapshot {
+        let member_ids = expected
+            .iter()
+            .map(|member| member.node_id.clone())
+            .collect::<Vec<_>>();
+        let members = expected
+            .iter()
+            .map(|member| OverviewMemberObservation {
+                node_id: member.node_id.clone(),
+                role: "member".to_owned(),
+                reachable: true,
+                reachability: "reachable".to_owned(),
+                generation: 1,
+            })
+            .collect::<Vec<_>>();
+        let count = u32::try_from(expected.len()).unwrap();
+        PublicControlPlaneSnapshot {
+            endpoint,
+            admin_status: AdminStatusObservation {
+                source: ControlPlaneSource::Live,
+                leader: Some(leader.to_owned()),
+                term,
+                epoch,
+                quorum_ok: true,
+                members: count,
+                member_ids,
+                voters: count,
+                voter_ids: (1..=u64::from(count)).collect(),
+                reshard_phase: "idle".to_owned(),
+                draining: false,
+            },
+            cluster_overview: ClusterOverviewObservation {
+                source: ControlPlaneSource::Live,
+                members,
+                leader: Some(OverviewLeaderObservation {
+                    node_id: leader.to_owned(),
+                    term,
+                    epoch,
+                }),
+                partitions: OverviewPartitionObservation {
+                    under_replicated: 0,
+                    count: 0,
+                },
+                consistency: OverviewConsistencyObservation {
+                    configured_default: None,
+                    op_counts_by_level: Vec::new(),
+                },
+                backup_age_seconds: None,
+                lifecycle: OverviewLifecycleObservation {
+                    reshard_phase: "idle".to_owned(),
+                    upgrade_phase: "idle".to_owned(),
+                },
+            },
+        }
+    }
+
+    #[test]
+    fn w5_membership_observation_follows_a_committed_leader_handoff() {
+        let expected = ["node-a", "node-b", "node-c"]
+            .into_iter()
+            .enumerate()
+            .map(|(index, node_id)| ControlPlaneEndpoint {
+                node_id: node_id.to_owned(),
+                admin_addr: format!("127.0.0.1:{}", 19_100 + index).parse().unwrap(),
+            })
+            .collect::<Vec<_>>();
+        let snapshots = expected
+            .iter()
+            .cloned()
+            .map(|endpoint| consensus_snapshot(endpoint, &expected, "node-b", 2, 4))
+            .collect::<Vec<_>>();
+
+        let stable = membership_commit_candidate(
+            &snapshots,
+            &expected,
+            3,
+            "node-a",
+            MembershipAuthorityPolicy::StableInvocationAuthority,
+        )
+        .unwrap();
+        assert_eq!(stable.endpoint.node_id, "node-a");
+        assert!(!membership_transition_converged(
+            &snapshots,
+            expected.len(),
+            Some(stable.endpoint.node_id.as_str()),
+            Some(stable.admin_status.epoch),
+        ));
+
+        let followed = membership_commit_candidate(
+            &snapshots,
+            &expected,
+            3,
+            "node-a",
+            MembershipAuthorityPolicy::FollowCommittedLeader,
+        )
+        .unwrap();
+        assert_eq!(followed.endpoint.node_id, "node-b");
+        assert!(membership_transition_converged(
+            &snapshots,
+            expected.len(),
+            Some(followed.endpoint.node_id.as_str()),
+            Some(followed.admin_status.epoch),
+        ));
+    }
+
+    #[test]
+    fn membership_timeout_summary_exposes_consensus_shape_without_addresses() {
+        let endpoint = ControlPlaneEndpoint {
+            node_id: "node-a".to_owned(),
+            admin_addr: "127.0.0.1:19100".parse().unwrap(),
+        };
+        let snapshot = placeholder_snapshot(endpoint);
+        let summary = membership_transition_round_summary(&[snapshot], 3);
+        assert!(summary.contains("observed=1/3"));
+        assert!(summary.contains("leaders={\"node-a\"}"));
+        assert!(summary.contains("epochs={1}"));
+        assert!(!summary.contains("127.0.0.1"));
     }
 }
