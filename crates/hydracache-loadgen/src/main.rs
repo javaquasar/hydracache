@@ -4,7 +4,7 @@ use hydracache_loadgen::budget_receipt::{
     build_control_plane_brownout_macro_envelope, build_control_plane_macro_envelope,
     build_grid_model_brownout_macro_envelope, build_grid_model_macro_envelope,
     build_overload_macro_envelope, build_resp_brownout_macro_envelope, prepare_macro_artifact,
-    publish_macro_batch, PreparedMacroArtifact, MACRO_RAW_DIR_RELATIVE,
+    publish_macro_batch, PreparedMacroArtifact,
 };
 use hydracache_loadgen::cli;
 use hydracache_loadgen::cli::{BrownoutTarget, LoadgenCommand, OverloadTarget};
@@ -69,7 +69,6 @@ const BROWNOUT_GRID_MODEL_SCENARIO: &str =
     "docs/testing/perf-scenarios/0.67/brownout-grid-model-v1.toml";
 const OVERLOAD_SCENARIO: &str = "docs/testing/perf-scenarios/0.67/overload-capacity-v1.toml";
 const METRICS_HONESTY_SCENARIO: &str = "docs/testing/perf-scenarios/0.67/metrics-honesty-v1.toml";
-const W7_CONTROL_PLANE_3_RAW_REPORT: &str = "control-plane-3-reference-v1.raw.json";
 
 #[tokio::main]
 async fn main() {
@@ -272,6 +271,12 @@ async fn run() -> Result<(), String> {
                     &overload_path,
                 )
                 .await?;
+                // W7 seals all W4-W6 reports as one fail-closed batch.  The
+                // workflow intentionally runs control-plane, core, and RESP
+                // in that order, so RESP is the first point at which the
+                // complete batch exists.
+                let repo_root = repository_root()?;
+                publish_w7_macro_tail(&repo_root).await?;
             } else {
                 write_resp_report(command.profile(), &path)
                     .await
@@ -338,13 +343,12 @@ async fn run() -> Result<(), String> {
                 &brownout_path,
             )
             .await?;
-            publish_w7_macro_tail(&repo_root).await?;
             let control_plane_scenario =
                 ControlPlaneScenario::load(&repo_root.join(CONTROL_PLANE_SCENARIO))
                     .map_err(|error| error.to_string())?;
-            let raw_report_path = repo_root
-                .join(MACRO_RAW_DIR_RELATIVE)
-                .join(W7_CONTROL_PLANE_3_RAW_REPORT);
+            // W9 consumes the freshly written W4 report before the final RESP
+            // stage archives it under w7-raw as part of the atomic W7 batch.
+            let raw_report_path = absolute_output_path(&repo_root, predecessor);
             let metrics_report_path = absolute_output_path(&repo_root, predecessor)
                 .with_file_name("metrics-control-plane.json");
             publish_control_plane_metrics_report(
