@@ -55,7 +55,7 @@ const W3_EXTERNAL_ARTIFACT: &str = "w3_external_report";
 const W3_LIFECYCLE_ARTIFACT: &str = "w3_daemon_lifecycle";
 const W3_SUITE_RECEIPT_ARTIFACT: &str = "w3_suite_receipt";
 const W4A_REPORT_ARTIFACT: &str = "w4a_control_plane_report";
-const W7_RAW_DIRECTORY: &str = "w7-raw";
+const W9_RAW_DIRECTORY: &str = "w9-raw";
 
 static REPORT_SEQUENCE: AtomicU64 = AtomicU64::new(0);
 
@@ -2085,10 +2085,9 @@ impl MetricsPredecessorReceipt {
         Ok(receipt)
     }
 
-    /// Capture the W4A raw report only after W7 has moved it into its
-    /// immutable recovery directory. Capturing `control-plane-N.json` before
-    /// the W7 macro tail would leave this receipt pointing at the envelope
-    /// that replaces the raw report.
+    /// Capture the immutable W9 copy of the W4A raw report.  W7 later replaces
+    /// the producer path with its macro envelope, so W9 must never retain that
+    /// mutable path in its predecessor receipt.
     pub fn from_w4a_path(
         report_path: &Path,
         scenario: &ControlPlaneScenario,
@@ -2276,7 +2275,7 @@ impl MetricsPredecessorReceipt {
                         .parent()
                         .and_then(Path::file_name)
                         .and_then(|value| value.to_str())
-                        != Some(W7_RAW_DIRECTORY)
+                        != Some(W9_RAW_DIRECTORY)
                     || self
                         .processes
                         .iter()
@@ -2488,9 +2487,10 @@ pub fn publish_resp_metrics_report(
     Ok(report)
 }
 
-/// Publish the independent W9 validator for the W7-preserved raw W4A report
-/// and the metrics window captured from one of that report's exact live child
-/// PIDs. This must run after the W7 macro tail has landed its raw sidecars.
+/// Publish the independent W9 validator for an immutable raw W4A archive and
+/// the metrics window captured from one of that report's exact live child
+/// PIDs. The archive is a create-new hard link, so later W7 publication can
+/// replace the producer path without invalidating W9's predecessor receipt.
 pub fn publish_control_plane_metrics_report(
     scenario: &MetricsHonestyScenario,
     control_plane_scenario: &ControlPlaneScenario,
@@ -2503,14 +2503,49 @@ pub fn publish_control_plane_metrics_report(
             "control-plane metrics publisher received a non-W4A window".to_owned(),
         ));
     }
-    let predecessor = MetricsPredecessorReceipt::from_w4a_path(
-        control_plane_report_path,
-        control_plane_scenario,
-    )?;
+    let archived_path = archive_w4a_predecessor(control_plane_report_path, control_plane_scenario)?;
+    let predecessor =
+        MetricsPredecessorReceipt::from_w4a_path(&archived_path, control_plane_scenario)?;
     let report = MetricsHonestyReport::new(scenario, predecessor, vec![window])?;
     report.validate_archived(scenario, Some(control_plane_scenario))?;
     write_new_report(report_path, scenario, Some(control_plane_scenario), &report)?;
     Ok(report)
+}
+
+fn archive_w4a_predecessor(
+    report_path: &Path,
+    scenario: &ControlPlaneScenario,
+) -> Result<PathBuf, MetricsHonestyError> {
+    let (_, report_bytes) = ArchivedArtifactReceipt::capture(W4A_REPORT_ARTIFACT, report_path)?;
+    let report: ControlPlaneReport = serde_json::from_slice(&report_bytes)?;
+    let capability = report
+        .validate_archived(scenario)
+        .map_err(|error| MetricsHonestyError::Binding(error.to_string()))?;
+    create_w9_raw_archive(report_path, capability.nodes.len())
+}
+
+fn create_w9_raw_archive(
+    report_path: &Path,
+    node_count: usize,
+) -> Result<PathBuf, MetricsHonestyError> {
+    let source_path = fs::canonicalize(report_path)?;
+    let source_parent = source_path.parent().ok_or_else(|| {
+        MetricsHonestyError::Binding("W4A predecessor has no canonical parent".to_owned())
+    })?;
+    let archive_dir = source_parent.join(W9_RAW_DIRECTORY);
+    fs::create_dir(&archive_dir)?;
+    let archive_dir = fs::canonicalize(&archive_dir)?;
+    if archive_dir.parent() != Some(source_parent) {
+        return Err(MetricsHonestyError::Binding(
+            "W9 predecessor archive escaped the evidence root".to_owned(),
+        ));
+    }
+    let archived_path = archive_dir.join(format!(
+        "control-plane-{}-reference-v1.raw.json",
+        node_count
+    ));
+    fs::hard_link(&source_path, &archived_path)?;
+    Ok(archived_path)
 }
 
 fn write_new_report(
@@ -2886,7 +2921,7 @@ mod tests {
             unix_nanos().expect("clock")
         ));
         fs::create_dir(&root).expect("temp root");
-        let raw_root = root.join(W7_RAW_DIRECTORY);
+        let raw_root = root.join(W9_RAW_DIRECTORY);
         fs::create_dir(&raw_root).expect("raw root");
         let path = fs::canonicalize(&raw_root)
             .expect("canonical raw root")
@@ -2896,6 +2931,39 @@ mod tests {
             ArchivedArtifactReceipt::capture(W4A_REPORT_ARTIFACT, &path).expect("capture artifact");
         fs::remove_file(&path).expect("remove artifact");
         assert!(receipt.validate_archived().is_err());
+        fs::remove_dir_all(&root).expect("remove temp root");
+    }
+
+    #[test]
+    fn w9_raw_archive_survives_later_w7_source_replacement() {
+        let root = std::env::temp_dir().join(format!(
+            "hydracache-w9-raw-archive-{}-{}",
+            std::process::id(),
+            unix_nanos().expect("clock")
+        ));
+        fs::create_dir(&root).expect("temp root");
+        let source = root.join("control-plane-3.json");
+        fs::write(&source, b"raw-control-plane-report").expect("raw report");
+
+        let archived = create_w9_raw_archive(&source, 3).expect("archive W4A report");
+        assert_eq!(
+            archived.parent().and_then(Path::file_name),
+            Some(std::ffi::OsStr::new(W9_RAW_DIRECTORY))
+        );
+        assert_eq!(
+            archived.file_name(),
+            Some(std::ffi::OsStr::new(
+                "control-plane-3-reference-v1.raw.json"
+            ))
+        );
+
+        fs::remove_file(&source).expect("remove raw producer path");
+        fs::write(&source, b"w7-macro-envelope").expect("replace producer path");
+        assert_eq!(
+            fs::read(&archived).expect("read archived raw report"),
+            b"raw-control-plane-report"
+        );
+        assert!(create_w9_raw_archive(&source, 3).is_err());
         fs::remove_dir_all(&root).expect("remove temp root");
     }
 

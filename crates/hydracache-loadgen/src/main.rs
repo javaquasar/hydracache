@@ -346,8 +346,8 @@ async fn run() -> Result<(), String> {
             let control_plane_scenario =
                 ControlPlaneScenario::load(&repo_root.join(CONTROL_PLANE_SCENARIO))
                     .map_err(|error| error.to_string())?;
-            // W9 consumes the freshly written W4 report before the final RESP
-            // stage archives it under w7-raw as part of the atomic W7 batch.
+            // W9 archives and consumes the freshly written W4 report before
+            // the final RESP stage replaces this path during atomic W7 publication.
             let raw_report_path = absolute_output_path(&repo_root, predecessor);
             let metrics_report_path = absolute_output_path(&repo_root, predecessor)
                 .with_file_name("metrics-control-plane.json");
