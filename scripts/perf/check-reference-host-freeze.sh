@@ -130,7 +130,7 @@ LC_ALL=C dpkg-query --show --showformat='${binary:Package}\t${Version}\n' |
 LC_ALL=C systemctl list-unit-files --all --no-legend --no-pager |
   awk '$2 != "transient"' |
   sort >"$comparison_dir/systemd-unit-files.tsv"
-LC_ALL=C systemctl list-units --all --type=service --type=timer --no-legend --no-pager |
+LC_ALL=C systemctl list-units --all --type=service --type=timer --no-legend --no-pager --plain --full |
   sort >"$comparison_dir/systemd-active-state.tsv"
 : >"$comparison_dir/sysctls.tsv"
 while IFS= read -r key; do
