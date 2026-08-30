@@ -112,12 +112,12 @@ fn w5a_membership_probe_timeout_is_independent_from_poll_cadence() {
     let observer = include_str!("../src/targets/control_plane.rs").replace("\r\n", "\n");
 
     assert!(producer.contains(
-        "Duration::from_secs(15),\n            CONTROL_PROBE_TIMEOUT,\n            CONTROL_TRANSITION_POLL,"
+        "CONTROL_TRANSITION_TIMEOUT,\n            CONTROL_PROBE_TIMEOUT,\n            CONTROL_TRANSITION_POLL,"
     ));
     assert_eq!(
         producer
             .matches(
-                "Duration::from_secs(15),\n            CONTROL_PROBE_TIMEOUT,\n            CONTROL_TRANSITION_POLL,"
+                "CONTROL_TRANSITION_TIMEOUT,\n            CONTROL_PROBE_TIMEOUT,\n            CONTROL_TRANSITION_POLL,"
             )
             .count(),
         2
