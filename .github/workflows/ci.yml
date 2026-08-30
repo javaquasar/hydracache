@@ -1783,14 +1783,14 @@ jobs:
         # by the reference-v1 contract.
         run: taskset --cpu-list 1-4 cargo run -p xtask --locked -- evidence-run --release 0.67 --gate tool.perf-prebuild-067
 
+      - name: Run 0.67 control-plane performance evidence
+        run: cargo run -p xtask --locked -- evidence-run --release 0.67 --gate env.hydracache-run-067-perf-control-plane
+
       - name: Run 0.67 core performance evidence
         run: cargo run -p xtask --locked -- evidence-run --release 0.67 --gate env.hydracache-run-067-perf-core
 
       - name: Run 0.67 RESP performance evidence
         run: cargo run -p xtask --locked -- evidence-run --release 0.67 --gate env.hydracache-run-067-perf-resp
-
-      - name: Run 0.67 control-plane performance evidence
-        run: cargo run -p xtask --locked -- evidence-run --release 0.67 --gate env.hydracache-run-067-perf-control-plane
 
       - name: Materialize tmpfs reference evidence
         if: always()
