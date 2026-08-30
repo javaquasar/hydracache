@@ -291,8 +291,8 @@ where
         ))
     })?;
     let expected_relative = expected_macro_path(&envelope.budget_receipt.report_id)?;
-    let expected_path = canonical_root.join(expected_relative);
-    if canonical_path != expected_path || !safe_relative_json_path(expected_relative) {
+    let expected_path = canonical_existing_macro_path(&canonical_root, expected_relative)?;
+    if canonical_path != expected_path {
         return Err(MacroReceiptError::Publication(format!(
             "{} is not the exact canonical path for {}",
             canonical_path.display(),
@@ -1084,25 +1084,44 @@ fn validate_prepared_batch(
     let first = prepared
         .first()
         .ok_or_else(|| MacroReceiptError::Publication("macro batch is empty".to_owned()))?;
-    if prepared.iter().any(|artifact| {
-        artifact.source_commit != first.source_commit
+    for artifact in prepared {
+        let expected_path =
+            canonical_existing_macro_path(canonical_root, &artifact.canonical_relative_path)?;
+        if artifact.source_commit != first.source_commit
             || artifact.runner_profile != first.runner_profile
             || artifact.runner_fingerprint != first.runner_fingerprint
             || artifact.prebuild_manifest_sha256 != first.prebuild_manifest_sha256
             || artifact.runner_profile != REFERENCE_PROFILE
-            || artifact.canonical_path != canonical_root.join(&artifact.canonical_relative_path)
+            || artifact.canonical_path != expected_path
             || !is_git_commit(&artifact.source_commit)
             || !is_sha256(&artifact.runner_fingerprint)
             || !is_sha256(&artifact.prebuild_manifest_sha256)
             || !is_sha256(&artifact.raw_sha256)
             || !is_sha256(&artifact.envelope_sha256)
             || !is_sha256(&artifact.source_report_sha256)
-    }) {
-        return Err(MacroReceiptError::Publication(
-            "macro batch mixes source, runner, prebuild, path, or digest identities".to_owned(),
-        ));
+        {
+            return Err(MacroReceiptError::Publication(
+                "macro batch mixes source, runner, prebuild, path, or digest identities".to_owned(),
+            ));
+        }
     }
     Ok(())
+}
+
+fn canonical_existing_macro_path(
+    canonical_root: &Path,
+    relative: &str,
+) -> Result<PathBuf, MacroReceiptError> {
+    if !safe_relative_json_path(relative) {
+        return Err(MacroReceiptError::Publication(format!(
+            "unsafe canonical macro report path {relative:?}"
+        )));
+    }
+    fs::canonicalize(canonical_root.join(relative)).map_err(|error| {
+        MacroReceiptError::Publication(format!(
+            "unable to canonicalize expected macro report {relative}: {error}"
+        ))
+    })
 }
 
 fn expected_macro_path(report_id: &str) -> Result<&'static str, MacroReceiptError> {
@@ -1315,7 +1334,7 @@ mod tests {
         MACRO_REPORT_PATHS
             .iter()
             .map(|(report_id, relative)| {
-                let canonical_path = canonical_root.join(relative);
+                let report_path = canonical_root.join(relative);
                 let raw_bytes = serde_json::to_vec_pretty(&serde_json::json!({
                     "raw_report_id": report_id,
                 }))
@@ -1325,7 +1344,8 @@ mod tests {
                     "budget_receipt": { "report_id": report_id },
                 }))
                 .unwrap();
-                fs::write(&canonical_path, &raw_bytes).expect("raw report");
+                fs::write(&report_path, &raw_bytes).expect("raw report");
+                let canonical_path = fs::canonicalize(report_path).expect("canonical raw report");
                 PreparedMacroArtifact {
                     report_id: (*report_id).to_owned(),
                     canonical_path,
@@ -1410,5 +1430,36 @@ mod tests {
             .iter()
             .all(|(report_id, _)| recovery.join(format!("{report_id}.raw.json")).is_file()));
         fs::remove_dir_all(&root).expect("cleanup exact temp repo");
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn macro_batch_accepts_exact_evidence_paths_through_tmpfs_symlink() {
+        use std::os::unix::fs::symlink;
+
+        let root = temporary_repo("tmpfs-symlink");
+        let linked_evidence = root.join("target/test-evidence/0.67");
+        fs::remove_dir(&linked_evidence).expect("remove placeholder evidence directory");
+        let tmpfs_evidence = std::env::temp_dir().join(format!(
+            "hydracache-w7-tmpfs-{}-{}",
+            std::process::id(),
+            SystemTime::now()
+                .duration_since(UNIX_EPOCH)
+                .expect("clock")
+                .as_nanos()
+        ));
+        fs::create_dir_all(&tmpfs_evidence).expect("tmpfs-style evidence directory");
+        symlink(&tmpfs_evidence, &linked_evidence).expect("evidence symlink");
+
+        let prepared = prepared_batch(&root);
+        assert!(prepared
+            .iter()
+            .all(|artifact| artifact.canonical_path.starts_with(&tmpfs_evidence)));
+        let receipt = publish_macro_batch(&root, prepared).expect("publish through symlink");
+        assert!(receipt.receipt_is_valid());
+        assert!(root.join(MACRO_PUBLICATION_RECEIPT_RELATIVE).is_file());
+
+        fs::remove_dir_all(&root).expect("cleanup symlink repo");
+        fs::remove_dir_all(&tmpfs_evidence).expect("cleanup tmpfs-style evidence");
     }
 }
