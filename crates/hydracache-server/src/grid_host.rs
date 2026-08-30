@@ -2429,7 +2429,8 @@ impl GridControlPlaneHandle for NetworkedGridHandle {
     }
 
     fn has_quorum(&self) -> bool {
-        if self.raft.leader_id().is_none() || self.raft.members().is_empty() {
+        let members = self.raft.members();
+        if self.raft.leader_id().is_none() || members.is_empty() {
             return false;
         }
         let Ok(voters) = self.raft.voter_ids() else {
@@ -2440,9 +2441,35 @@ impl GridControlPlaneHandle for NetworkedGridHandle {
         }
         let reachable = voters
             .iter()
-            .filter(|raft_id| self.raft_voter_reachability(**raft_id) == Reachability::Reachable)
+            .filter(|raft_id| {
+                self.raft_voter_reachability(**raft_id, &members) == Reachability::Reachable
+            })
             .count();
-        raft_voter_majority_reachable(voters.len(), reachable)
+        let has_quorum = raft_voter_majority_reachable(voters.len(), reachable);
+        if !has_quorum {
+            let committed_member_voters = voters
+                .iter()
+                .filter(|raft_id| {
+                    members
+                        .iter()
+                        .any(|member| raft_node_id(&member.node_id) == **raft_id)
+                })
+                .count();
+            let peers = self.raft_peers.read().expect("raft peer map poisoned");
+            let known_peer_voters = voters
+                .iter()
+                .filter(|raft_id| peers.contains_key(raft_id))
+                .count();
+            eprintln!(
+                "HC_RAFT_QUORUM_NOT_READY node_id={} voters={} reachable_voters={} committed_member_voters={} known_peer_voters={}",
+                self.node_id,
+                voters.len(),
+                reachable,
+                committed_member_voters,
+                known_peer_voters,
+            );
+        }
+        has_quorum
     }
 
     fn metadata_authority_matches(&self, observed: &RaftMetadataSnapshot) -> bool {
@@ -2538,6 +2565,18 @@ fn local_voter_removal_applied(voters: &[u64], local_raft_node_id: u64) -> bool 
     voters.len() <= 1 || !voters.contains(&local_raft_node_id)
 }
 
+fn raft_voter_node_id(
+    raft_id: u64,
+    members: &[ClusterMember],
+    peers: &BTreeMap<u64, RaftPeer>,
+) -> Option<ClusterNodeId> {
+    members
+        .iter()
+        .find(|member| raft_node_id(&member.node_id) == raft_id)
+        .map(|member| member.node_id.clone())
+        .or_else(|| peers.get(&raft_id).map(|peer| peer.node_id.clone()))
+}
+
 fn drain_leadership_transfer_target(
     voters: &[u64],
     local_raft_node_id: u64,
@@ -2577,17 +2616,12 @@ fn raft_compaction_status(
 }
 
 impl NetworkedGridHandle {
-    fn raft_voter_reachability(&self, raft_id: u64) -> Reachability {
+    fn raft_voter_reachability(&self, raft_id: u64, members: &[ClusterMember]) -> Reachability {
         if raft_id == self.raft_node_id {
             return Reachability::Reachable;
         }
-        let Some(node_id) = self
-            .raft_peers
-            .read()
-            .expect("raft peer map poisoned")
-            .get(&raft_id)
-            .map(|peer| peer.node_id.clone())
-        else {
+        let peers = self.raft_peers.read().expect("raft peer map poisoned");
+        let Some(node_id) = raft_voter_node_id(raft_id, members, &peers) else {
             return Reachability::Unreachable;
         };
         self.reachability(&node_id)
@@ -4353,6 +4387,24 @@ mod tests {
         assert!(!local_voter_removal_applied(&[1, 2, 3], 2));
         assert!(local_voter_removal_applied(&[1, 3], 2));
         assert!(local_voter_removal_applied(&[2], 2));
+    }
+
+    #[test]
+    fn voter_identity_comes_from_committed_members_when_peer_map_is_incomplete() {
+        let node_id = ClusterNodeId::from("member-restarted");
+        let member = ClusterMember {
+            node_id: node_id.clone(),
+            generation: ClusterGeneration::new(1),
+            role: ClusterRole::Member,
+            epoch: ClusterEpoch::new(1),
+            endpoints: ClusterEndpoints::new(),
+            metadata: BTreeMap::new(),
+        };
+
+        assert_eq!(
+            raft_voter_node_id(raft_node_id(&node_id), &[member], &BTreeMap::new()),
+            Some(node_id)
+        );
     }
 
     #[test]
