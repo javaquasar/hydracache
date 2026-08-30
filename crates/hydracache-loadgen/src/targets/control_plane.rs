@@ -2908,6 +2908,11 @@ fn membership_transition_round_summary(
         .iter()
         .filter(|snapshot| snapshot.admin_status.quorum_ok)
         .count();
+    let non_quorum_nodes = snapshots
+        .iter()
+        .filter(|snapshot| !snapshot.admin_status.quorum_ok)
+        .map(|snapshot| snapshot.endpoint.node_id.clone())
+        .collect::<BTreeSet<_>>();
     let draining_documents = snapshots
         .iter()
         .filter(|snapshot| snapshot.admin_status.draining)
@@ -2929,7 +2934,7 @@ fn membership_transition_round_summary(
         .map(|snapshot| snapshot.cluster_overview.lifecycle.upgrade_phase.as_str())
         .collect::<BTreeSet<_>>();
     format!(
-        "observed={}/{expected_count}, leader_documents={leader_documents}, quorum_documents={quorum_documents}, draining_documents={draining_documents}, leaders={leaders:?}, terms={terms:?}, epochs={epochs:?}, members={member_counts:?}, voters={voter_counts:?}, reachable={reachable_counts:?}, under_replicated={under_replicated:?}, admin_reshard={admin_reshard_phases:?}, overview_reshard={overview_reshard_phases:?}, upgrade={upgrade_phases:?}",
+        "observed={}/{expected_count}, leader_documents={leader_documents}, quorum_documents={quorum_documents}, non_quorum_nodes={non_quorum_nodes:?}, draining_documents={draining_documents}, leaders={leaders:?}, terms={terms:?}, epochs={epochs:?}, members={member_counts:?}, voters={voter_counts:?}, reachable={reachable_counts:?}, under_replicated={under_replicated:?}, admin_reshard={admin_reshard_phases:?}, overview_reshard={overview_reshard_phases:?}, upgrade={upgrade_phases:?}",
         snapshots.len()
     )
 }
@@ -3892,10 +3897,20 @@ mod tests {
         assert!(summary.contains("observed=1/3"));
         assert!(summary.contains("leader_documents=1"));
         assert!(summary.contains("quorum_documents=1"));
+        assert!(summary.contains("non_quorum_nodes={}"));
         assert!(summary.contains("draining_documents=0"));
         assert!(summary.contains("leaders={\"node-a\"}"));
         assert!(summary.contains("epochs={1}"));
         assert!(summary.contains("under_replicated={0}"));
+        assert!(!summary.contains("127.0.0.1"));
+
+        let mut non_quorate = placeholder_snapshot(ControlPlaneEndpoint {
+            node_id: "node-b".to_owned(),
+            admin_addr: "127.0.0.1:19101".parse().unwrap(),
+        });
+        non_quorate.admin_status.quorum_ok = false;
+        let summary = membership_transition_round_summary(&[non_quorate], 1);
+        assert!(summary.contains("non_quorum_nodes={\"node-b\"}"));
         assert!(!summary.contains("127.0.0.1"));
     }
 
