@@ -1188,9 +1188,11 @@ fn raft_authority_observation_is_fresh(
     })
 }
 
-fn raft_metadata_progress_is_fully_applied(progress: &RaftMetadataRuntimeSnapshot) -> bool {
+fn raft_metadata_committed_state_is_fully_applied(progress: &RaftMetadataRuntimeSnapshot) -> bool {
+    // An uncommitted local tail is not part of the authoritative metadata
+    // state and can legitimately survive a leader change until a later entry
+    // overwrites it. Fence only while committed metadata is still unapplied.
     progress.applied_index == progress.commit_index
-        && progress.commit_index == progress.last_log_index
 }
 
 fn confirmed_raft_authority_term(
@@ -2450,7 +2452,7 @@ impl GridControlPlaneHandle for NetworkedGridHandle {
         };
         let raft_authority_fresh =
             voters.len() <= 1 || self.drive_diagnostics.raft_authority_fresh(progress.term);
-        let fully_applied = raft_metadata_progress_is_fully_applied(&progress);
+        let fully_applied = raft_metadata_committed_state_is_fully_applied(&progress);
         let snapshot_matches = self.raft.metadata_snapshot() == *observed;
         let authoritative = raft_authority_fresh && fully_applied && snapshot_matches;
         if !authoritative {
@@ -3833,18 +3835,18 @@ mod tests {
     }
 
     #[test]
-    fn metadata_authority_rejects_uncommitted_or_unapplied_log_entries() {
+    fn metadata_authority_requires_committed_state_to_be_fully_applied() {
         let mut progress = test_raft_runtime().snapshot();
-        assert!(raft_metadata_progress_is_fully_applied(&progress));
+        assert!(raft_metadata_committed_state_is_fully_applied(&progress));
 
         progress.last_log_index += 1;
-        assert!(!raft_metadata_progress_is_fully_applied(&progress));
+        assert!(raft_metadata_committed_state_is_fully_applied(&progress));
 
         progress.commit_index = progress.last_log_index;
-        assert!(!raft_metadata_progress_is_fully_applied(&progress));
+        assert!(!raft_metadata_committed_state_is_fully_applied(&progress));
 
         progress.applied_index = progress.commit_index;
-        assert!(raft_metadata_progress_is_fully_applied(&progress));
+        assert!(raft_metadata_committed_state_is_fully_applied(&progress));
     }
 
     #[test]
