@@ -54,6 +54,11 @@ use crate::tiers::resp_reference::{
 const MAX_INPUT_BYTES: u64 = 128 * 1024 * 1024;
 const CONTROL_PROBE_TIMEOUT: Duration = Duration::from_secs(2);
 const CONTROL_TRANSITION_POLL: Duration = Duration::from_millis(50);
+// Membership changes can transiently leave one follower without a quorum
+// view while the committed configuration is applied. Keep this bounded
+// readiness budget separate from the measurement windows so W5A does not
+// reject a healthy transition solely on propagation jitter.
+const CONTROL_TRANSITION_TIMEOUT: Duration = Duration::from_secs(30);
 const CONTROL_WINDOW_READY_TIMEOUT: Duration = Duration::from_secs(5);
 const RESP_STARTUP_TIMEOUT: Duration = Duration::from_secs(20);
 const RESP_PING_ATTEMPT_TIMEOUT: Duration = Duration::from_secs(1);
@@ -561,7 +566,7 @@ impl ControlPlaneBrownoutDriver for LiveControlPlaneBrownoutDriver {
             &old_leader,
             old_term,
             &expected_members,
-            Duration::from_secs(15),
+            CONTROL_TRANSITION_TIMEOUT,
         )
         .await?;
         state
@@ -633,7 +638,7 @@ impl ControlPlaneBrownoutDriver for LiveControlPlaneBrownoutDriver {
         let transition = w4a::observe_membership_transition_following_committed_leader(
             invocation,
             state.active_endpoints()?,
-            Duration::from_secs(15),
+            CONTROL_TRANSITION_TIMEOUT,
             CONTROL_PROBE_TIMEOUT,
             CONTROL_TRANSITION_POLL,
         )
@@ -701,7 +706,7 @@ impl ControlPlaneBrownoutDriver for LiveControlPlaneBrownoutDriver {
         let transition = w4a::observe_membership_transition_following_committed_leader(
             invocation,
             state.active_endpoints()?,
-            Duration::from_secs(15),
+            CONTROL_TRANSITION_TIMEOUT,
             CONTROL_PROBE_TIMEOUT,
             CONTROL_TRANSITION_POLL,
         )
