@@ -2450,9 +2450,23 @@ impl GridControlPlaneHandle for NetworkedGridHandle {
         };
         let raft_authority_fresh =
             voters.len() <= 1 || self.drive_diagnostics.raft_authority_fresh(progress.term);
-        raft_authority_fresh
-            && raft_metadata_progress_is_fully_applied(&progress)
-            && self.raft.metadata_snapshot() == *observed
+        let fully_applied = raft_metadata_progress_is_fully_applied(&progress);
+        let snapshot_matches = self.raft.metadata_snapshot() == *observed;
+        let authoritative = raft_authority_fresh && fully_applied && snapshot_matches;
+        if !authoritative {
+            eprintln!(
+                "HC_RAFT_METADATA_AUTHORITY_NOT_READY node_id={} term={} authority_fresh={} fully_applied={} applied_index={} commit_index={} last_log_index={} snapshot_matches={}",
+                self.node_id,
+                progress.term,
+                raft_authority_fresh,
+                fully_applied,
+                progress.applied_index,
+                progress.commit_index,
+                progress.last_log_index,
+                snapshot_matches,
+            );
+        }
+        authoritative
     }
 
     fn voter_count(&self) -> u32 {
