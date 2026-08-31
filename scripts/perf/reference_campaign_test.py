@@ -270,6 +270,53 @@ class ReferenceCampaignTests(unittest.TestCase):
         self.assertIn("runner_online(campaign_dir)", recovery_branch)
         self.assertIn("run = discover_run(state, step)", recovery_branch)
 
+    def test_reference_dispatch_is_isolated_from_scheduled_ci_concurrency(self) -> None:
+        workflow = (campaign.repo_root() / ".github/workflows/ci.yml").read_text(
+            encoding="utf-8"
+        )
+        concurrency = workflow.split("concurrency:", 1)[1].split("\npermissions:", 1)[0]
+        self.assertIn("github.event_name", concurrency)
+        self.assertIn("github.event_name == 'pull_request'", concurrency)
+        self.assertIn("github.event_name == 'push'", concurrency)
+        self.assertNotIn(
+            "cancel-in-progress: ${{ !startsWith(github.ref, 'refs/tags/v') }}",
+            concurrency,
+        )
+
+    def test_reference_job_timeout_and_runner_watchdog_contract(self) -> None:
+        workflow = (campaign.repo_root() / ".github/workflows/ci.yml").read_text(
+            encoding="utf-8"
+        )
+        workflow_lines = workflow.splitlines()
+
+        def job_block(job: str) -> str:
+            start = workflow_lines.index(f"  {job}:")
+            end = next(
+                (
+                    index
+                    for index in range(start + 1, len(workflow_lines))
+                    if workflow_lines[index].startswith("  ")
+                    and not workflow_lines[index].startswith("    ")
+                    and workflow_lines[index].endswith(":")
+                ),
+                len(workflow_lines),
+            )
+            return "\n".join(workflow_lines[start:end])
+
+        for job in (
+            "release-0671-performance-qualification",
+            "release-0671-performance-full-dress",
+            "release-0671-performance-bootstrap",
+            "release-0671-frozen-candidate",
+        ):
+            block = job_block(job)
+            self.assertIn("timeout-minutes: 360", block, job)
+            self.assertIn("group: release-067-performance-reference-v1", block, job)
+            self.assertIn("cancel-in-progress: false", block, job)
+
+        source = Path(campaign.__file__).read_text(encoding="utf-8")
+        self.assertIn('"--on-active=370m"', source)
+
     def test_transient_run_watch_failure_keeps_runner_online_until_authoritative_completion(self) -> None:
         state = base_state()
         with tempfile.TemporaryDirectory() as temporary:
