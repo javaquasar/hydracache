@@ -375,6 +375,27 @@ impl LiveControlPlaneProcessHarness {
         node.kill_and_wait(&self.context)
     }
 
+    /// Wait and reap the exact owned PID after an accepted graceful drain.
+    /// A successful self-exit is the expected outcome; this path never turns
+    /// the drain into synthetic kill evidence.
+    pub async fn wait_for_graceful_exit(
+        &mut self,
+        node_id: &str,
+        timeout: Duration,
+    ) -> Result<WaitedDaemonProcess, ControlPlaneReferenceError> {
+        let node = self
+            .cluster
+            .nodes
+            .iter_mut()
+            .find(|node| node.config.launch_config.node_id == node_id)
+            .ok_or_else(|| {
+                ControlPlaneReferenceError::Contract(format!(
+                    "live control-plane harness has no node {node_id:?}"
+                ))
+            })?;
+        node.wait_for_graceful_exit(&self.context, timeout).await
+    }
+
     /// Restart a previously waited node with byte-identical config and server
     /// binary, under a fresh PID and separate log generation.
     pub fn restart(
@@ -663,6 +684,58 @@ impl ReferenceNode {
             process,
             exit_status,
         })
+    }
+
+    async fn wait_for_graceful_exit(
+        &mut self,
+        context: &ValidatedRespReferenceContext,
+        timeout: Duration,
+    ) -> Result<WaitedDaemonProcess, ControlPlaneReferenceError> {
+        let process = self.process_receipt(context)?;
+        let mut child = self.child.take().ok_or_else(|| {
+            ControlPlaneReferenceError::Lifecycle(format!(
+                "node {} has no owned child to wait after graceful drain",
+                process.node_id
+            ))
+        })?;
+        let deadline = Instant::now() + timeout;
+        loop {
+            match child
+                .try_wait()
+                .map_err(system_io("inspect daemon after graceful drain"))
+            {
+                Ok(Some(status)) if status.success() => {
+                    self.pid = None;
+                    return Ok(WaitedDaemonProcess {
+                        process,
+                        exit_status: status,
+                    });
+                }
+                Ok(Some(status)) => {
+                    self.pid = None;
+                    return Err(ControlPlaneReferenceError::Lifecycle(format!(
+                        "node {} PID {} exited unsuccessfully after graceful drain: {}",
+                        process.node_id,
+                        process.pid,
+                        exit_status_text(&status)
+                    )));
+                }
+                Ok(None) => {}
+                Err(error) => {
+                    self.child = Some(child);
+                    return Err(error);
+                }
+            }
+            let remaining = deadline.saturating_duration_since(Instant::now());
+            if remaining.is_zero() {
+                self.child = Some(child);
+                return Err(ControlPlaneReferenceError::Lifecycle(format!(
+                    "node {} PID {} did not exit within {timeout:?} after graceful drain",
+                    process.node_id, process.pid
+                )));
+            }
+            tokio::time::sleep(POLL_INTERVAL.min(remaining)).await;
+        }
     }
 
     fn prepare_restart_logs(&mut self, run_root: &Path) {
