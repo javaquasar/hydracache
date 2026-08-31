@@ -1603,6 +1603,12 @@ impl FreshExecutionReceipt {
         runtime_capability_sha256: Option<String>,
         selected_endpoint: Option<String>,
     ) -> Result<Self, OverloadError> {
+        if kind == ReferenceExecutionKind::InProcess && owning_pid != std::process::id() {
+            return Err(OverloadError::Boundary(
+                "fresh in-process W6 execution receipt is not owned by its producer process"
+                    .to_owned(),
+            ));
+        }
         let mut receipt = Self {
             schema_version: FRESH_EXECUTION_RECEIPT_VERSION,
             surface: contract.surface,
@@ -1634,11 +1640,7 @@ impl FreshExecutionReceipt {
             (
                 EligibleOverloadSurface::Local | EligibleOverloadSurface::ClientSurface,
                 ReferenceExecutionKind::InProcess,
-            ) => {
-                self.owning_pid == std::process::id()
-                    && self.runtime_capability_sha256.is_none()
-                    && self.selected_endpoint.is_none()
-            }
+            ) => self.runtime_capability_sha256.is_none() && self.selected_endpoint.is_none(),
             (EligibleOverloadSurface::NodeResp, ReferenceExecutionKind::DirectDaemon) => {
                 self.runtime_capability_sha256
                     .as_deref()
@@ -3887,6 +3889,45 @@ mod reference_identity_tests {
         assert_eq!(first.owning_pid, second.owning_pid);
         assert_ne!(first.instance_sequence, second.instance_sequence);
         assert_ne!(first.receipt_sha256, second.receipt_sha256);
+    }
+
+    #[test]
+    fn in_process_receipt_revalidates_after_its_producer_process_exits() {
+        let contract = in_process_contract();
+        let mut receipt = FreshExecutionReceipt::seal(
+            &contract,
+            ReferenceExecutionKind::InProcess,
+            std::process::id(),
+            None,
+            None,
+        )
+        .unwrap();
+
+        // W7 is assembled by a later suite process. Its consumer must validate
+        // the sealed producer identity, not require that historical PID to be
+        // the consumer's own PID.
+        receipt.owning_pid = std::process::id().saturating_add(1);
+        receipt.receipt_sha256 = receipt.computed_sha256().unwrap();
+        let archived: FreshExecutionReceipt =
+            serde_json::from_slice(&serde_json::to_vec(&receipt).unwrap()).unwrap();
+
+        archived.validate_seal().unwrap();
+    }
+
+    #[test]
+    fn in_process_receipt_can_only_be_sealed_by_its_producer_process() {
+        let error = FreshExecutionReceipt::seal(
+            &in_process_contract(),
+            ReferenceExecutionKind::InProcess,
+            std::process::id().saturating_add(1),
+            None,
+            None,
+        )
+        .unwrap_err();
+
+        assert!(error
+            .to_string()
+            .contains("not owned by its producer process"));
     }
 
     #[test]
