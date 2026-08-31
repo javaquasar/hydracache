@@ -723,7 +723,8 @@ impl ControlPlaneBrownoutDriver for LiveControlPlaneBrownoutDriver {
         let committed = instant_after(action_started, transition.commit_latency_nanos)?;
         let waited = state
             .harness
-            .kill_and_wait(&target_node_id)
+            .wait_for_graceful_exit(&target_node_id, CONTROL_TRANSITION_TIMEOUT)
+            .await
             .map_err(|error| BrownoutError::Driver(error.to_string()))?;
         let cleanup =
             WaitedProcessTermination::from_wait_status(waited.process.pid, waited.exit_status)?;

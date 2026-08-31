@@ -139,6 +139,20 @@ fn w5a_membership_probe_timeout_is_independent_from_poll_cadence() {
 }
 
 #[test]
+fn w5a_member_drain_reaps_the_successful_self_exit_without_killing_it() {
+    let producer = include_str!("../src/tiers/brownout.rs").replace("\r\n", "\n");
+    let harness = include_str!("../src/tiers/control_plane.rs").replace("\r\n", "\n");
+
+    assert!(producer.contains(
+        ".wait_for_graceful_exit(&target_node_id, CONTROL_TRANSITION_TIMEOUT)\n            .await"
+    ));
+    assert_eq!(producer.matches(".kill_and_wait(&").count(), 2);
+    assert!(harness.contains("pub async fn wait_for_graceful_exit("));
+    assert!(harness.contains("Ok(Some(status)) if status.success()"));
+    assert!(harness.contains("did not exit within {timeout:?} after graceful drain"));
+}
+
+#[test]
 fn w5_smoke_provenance_cannot_be_promoted_by_changing_mode() {
     let (control_scenario, resp_scenario, model_scenario) = scenarios();
 
