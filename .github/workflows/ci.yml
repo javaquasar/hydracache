@@ -104,8 +104,11 @@ on:
     - cron: "0 3 * * 1"
 
 concurrency:
-  group: ci-${{ startsWith(github.ref, 'refs/tags/v') && 'release' || 'core' }}-${{ github.event.pull_request.head.sha || github.sha }}
-  cancel-in-progress: ${{ !startsWith(github.ref, 'refs/tags/v') }}
+  # Keep scheduled/push CI from cancelling a long-running reference dispatch
+  # that happens to use the same main SHA. Reference jobs have their own
+  # serialized concurrency group and must be allowed to finish.
+  group: ci-${{ github.event_name }}-${{ startsWith(github.ref, 'refs/tags/v') && 'release' || 'core' }}-${{ github.event.pull_request.head.sha || github.sha }}
+  cancel-in-progress: ${{ (github.event_name == 'pull_request' || github.event_name == 'push') && !startsWith(github.ref, 'refs/tags/v') }}
 
 permissions:
   contents: read
