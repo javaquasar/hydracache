@@ -212,7 +212,14 @@ async fn run_control_plane_reference_inner(
     )
     .await?;
 
-    let lifecycle = cluster.stop_all(context, probed.receipt_sha256(), &drain_target)?;
+    let lifecycle = cluster
+        .stop_all(
+            context,
+            probed.receipt_sha256(),
+            &drain_target,
+            Duration::from_millis(scenario.membership_event.event_timeout_millis),
+        )
+        .await?;
     let report = ControlPlaneReport {
         schema_version: 1,
         scenario_id: scenario.scenario_id.clone(),
@@ -445,10 +452,10 @@ impl LiveControlPlaneProcessHarness {
     /// Reap every still-live child (including restarted/transient nodes) and
     /// verify the prebuilt server/loadgen bytes once more. Drop provides the
     /// same reap guarantee on every early-return path.
-    pub fn shutdown(
+    pub async fn shutdown(
         mut self,
     ) -> Result<Vec<DaemonNodeLifecycleEvidence>, ControlPlaneReferenceError> {
-        self.cluster.stop_all_unsealed(&self.context, None)
+        self.cluster.stop_all_unsealed(&self.context, None).await
     }
 }
 
@@ -692,50 +699,45 @@ impl ReferenceNode {
         timeout: Duration,
     ) -> Result<WaitedDaemonProcess, ControlPlaneReferenceError> {
         let process = self.process_receipt(context)?;
-        let mut child = self.child.take().ok_or_else(|| {
-            ControlPlaneReferenceError::Lifecycle(format!(
-                "node {} has no owned child to wait after graceful drain",
-                process.node_id
-            ))
-        })?;
         let deadline = Instant::now() + timeout;
-        loop {
-            match child
+        let status = loop {
+            let child = self.child.as_mut().ok_or_else(|| {
+                ControlPlaneReferenceError::Lifecycle(format!(
+                    "node {} has no owned child to wait after graceful drain",
+                    process.node_id
+                ))
+            })?;
+            if let Some(status) = child
                 .try_wait()
-                .map_err(system_io("inspect daemon after graceful drain"))
+                .map_err(system_io("inspect daemon after graceful drain"))?
             {
-                Ok(Some(status)) if status.success() => {
-                    self.pid = None;
-                    return Ok(WaitedDaemonProcess {
-                        process,
-                        exit_status: status,
-                    });
-                }
-                Ok(Some(status)) => {
-                    self.pid = None;
-                    return Err(ControlPlaneReferenceError::Lifecycle(format!(
-                        "node {} PID {} exited unsuccessfully after graceful drain: {}",
-                        process.node_id,
-                        process.pid,
-                        exit_status_text(&status)
-                    )));
-                }
-                Ok(None) => {}
-                Err(error) => {
-                    self.child = Some(child);
-                    return Err(error);
-                }
+                break status;
             }
             let remaining = deadline.saturating_duration_since(Instant::now());
             if remaining.is_zero() {
-                self.child = Some(child);
                 return Err(ControlPlaneReferenceError::Lifecycle(format!(
                     "node {} PID {} did not exit within {timeout:?} after graceful drain",
                     process.node_id, process.pid
                 )));
             }
             tokio::time::sleep(POLL_INTERVAL.min(remaining)).await;
+        };
+        // Keep the child anchored in `self` across every await above. If this
+        // future is cancelled, Drop still owns and reaps the exact process.
+        drop(self.child.take());
+        self.pid = None;
+        if !status.success() {
+            return Err(ControlPlaneReferenceError::Lifecycle(format!(
+                "node {} PID {} exited unsuccessfully after graceful drain: {}",
+                process.node_id,
+                process.pid,
+                exit_status_text(&status)
+            )));
         }
+        Ok(WaitedDaemonProcess {
+            process,
+            exit_status: status,
+        })
     }
 
     fn prepare_restart_logs(&mut self, run_root: &Path) {
@@ -771,25 +773,43 @@ impl ReferenceNode {
         })
     }
 
-    fn stop(
+    async fn stop(
         &mut self,
         context: &ValidatedRespReferenceContext,
-        graceful_drain_expected: bool,
+        graceful_drain_timeout: Option<Duration>,
     ) -> Result<DaemonNodeLifecycleEvidence, String> {
         let pid = self.pid.ok_or_else(|| "node has no PID".to_owned())?;
+        let mut problems = Vec::new();
+        let graceful_drain_expected = graceful_drain_timeout.is_some();
+        let deadline = graceful_drain_timeout.map(|timeout| Instant::now() + timeout);
+        let already_exited = loop {
+            let child = self
+                .child
+                .as_mut()
+                .ok_or_else(|| format!("node {pid} has no owned child"))?;
+            match child.try_wait() {
+                Ok(Some(status)) => break Some(status),
+                Ok(None) if !graceful_drain_expected => break None,
+                Ok(None) => {}
+                Err(error) => {
+                    problems.push(format!("pre-termination status failed: {error}"));
+                    break None;
+                }
+            }
+            let remaining = deadline
+                .expect("graceful drain deadline exists")
+                .saturating_duration_since(Instant::now());
+            if remaining.is_zero() {
+                break None;
+            }
+            tokio::time::sleep(POLL_INTERVAL.min(remaining)).await;
+        };
+        // The owned handle stays in `self` while a graceful drain is awaited,
+        // so async cancellation cannot orphan a still-running child.
         let mut child = self
             .child
             .take()
             .ok_or_else(|| format!("node {pid} has no owned child"))?;
-        let mut problems = Vec::new();
-        let already_exited = match child.try_wait() {
-            Ok(None) => None,
-            Ok(Some(status)) => Some(status),
-            Err(error) => {
-                problems.push(format!("pre-termination status failed: {error}"));
-                None
-            }
-        };
         let (termination_kind, kill_requested, status) = match already_exited {
             Some(status) if graceful_drain_expected && status.success() => {
                 (DaemonTerminationKind::GracefulDrain, false, Some(status))
@@ -803,9 +823,10 @@ impl ReferenceNode {
             }
             None => {
                 if graceful_drain_expected {
-                    problems.push(
-                        "drain target remained running at lifecycle cleanup boundary".to_owned(),
-                    );
+                    problems.push(format!(
+                        "drain target remained running after bounded graceful-exit wait ({:?})",
+                        graceful_drain_timeout.expect("graceful drain timeout exists")
+                    ));
                 }
                 if let Err(error) = child.kill() {
                     problems.push(format!("kill failed: {error}"));
@@ -1103,26 +1124,42 @@ impl ReferenceControlPlaneCluster {
         Ok(index)
     }
 
-    fn stop_all_unsealed(
+    async fn stop_all_unsealed(
         &mut self,
         context: &ValidatedRespReferenceContext,
-        graceful_drain_node_id: Option<&str>,
+        graceful_drain: Option<(&str, Duration)>,
     ) -> Result<Vec<DaemonNodeLifecycleEvidence>, ControlPlaneReferenceError> {
         let mut evidence = Vec::with_capacity(self.nodes.len());
         let mut problems = Vec::new();
-        for node in &mut self.nodes {
+        let mut stop_order = (0..self.nodes.len()).collect::<Vec<_>>();
+        if let Some((graceful_node_id, _)) = graceful_drain {
+            let graceful_index = self
+                .nodes
+                .iter()
+                .position(|node| node.config.launch_config.node_id == graceful_node_id)
+                .ok_or_else(|| {
+                    ControlPlaneReferenceError::Lifecycle(format!(
+                        "graceful drain target {graceful_node_id:?} is not owned by the cluster"
+                    ))
+                })?;
+            stop_order.swap(0, graceful_index);
+        }
+        for index in stop_order {
+            let node = &mut self.nodes[index];
             if node.child.is_none() && node.pid.is_none() {
                 // A fault-oriented caller already retained the exact wait
                 // status for this node. W4 never takes this branch.
                 continue;
             }
-            let graceful_drain_expected = graceful_drain_node_id
-                .is_some_and(|node_id| node_id == node.config.launch_config.node_id);
-            match node.stop(context, graceful_drain_expected) {
+            let graceful_drain_timeout = graceful_drain.and_then(|(node_id, timeout)| {
+                (node_id == node.config.launch_config.node_id).then_some(timeout)
+            });
+            match node.stop(context, graceful_drain_timeout).await {
                 Ok(node_evidence) => evidence.push(node_evidence),
                 Err(error) => problems.push(error),
             }
         }
+        evidence.sort_by(|left, right| left.node_id.cmp(&right.node_id));
         if let Err(error) = context.verify_binaries_unchanged() {
             problems.push(format!(
                 "post-run prebuilt binary verification failed: {error}"
@@ -1171,13 +1208,19 @@ impl ReferenceControlPlaneCluster {
         ControlPlaneCapabilityAttestation::seal(payload).map_err(Into::into)
     }
 
-    fn stop_all(
+    async fn stop_all(
         &mut self,
         context: &ValidatedRespReferenceContext,
         capability_receipt_sha256: &str,
         graceful_drain_node_id: &str,
+        graceful_drain_timeout: Duration,
     ) -> Result<ControlPlaneLifecycleReceipt, ControlPlaneReferenceError> {
-        let evidence = self.stop_all_unsealed(context, Some(graceful_drain_node_id))?;
+        let evidence = self
+            .stop_all_unsealed(
+                context,
+                Some((graceful_drain_node_id, graceful_drain_timeout)),
+            )
+            .await?;
         ControlPlaneLifecycleReceipt::seal(ControlPlaneLifecycleReceiptPayload {
             receipt_kind: LIFECYCLE_RECEIPT_KIND.to_owned(),
             receipt_source: DaemonReceiptSource::ObservedProcessHarness,
