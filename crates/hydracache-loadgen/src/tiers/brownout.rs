@@ -524,7 +524,7 @@ impl LiveControlPlaneBrownoutDriver {
                 "W5A process state was already consumed before cleanup".to_owned(),
             )
         })?;
-        state.harness.shutdown().map_err(Into::into)
+        state.harness.shutdown().await.map_err(Into::into)
     }
 }
 
@@ -843,6 +843,7 @@ impl ControlPlaneBrownoutDriver for LiveControlPlaneBrownoutDriver {
         let nodes = state
             .harness
             .shutdown()
+            .await
             .map_err(|error| BrownoutError::Driver(error.to_string()))?;
         ControlPlaneFinalCleanupReceipt::from_observed(nodes)
     }

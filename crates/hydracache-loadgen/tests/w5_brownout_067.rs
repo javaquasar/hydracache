@@ -148,8 +148,32 @@ fn w5a_member_drain_reaps_the_successful_self_exit_without_killing_it() {
     ));
     assert_eq!(producer.matches(".kill_and_wait(&").count(), 2);
     assert!(harness.contains("pub async fn wait_for_graceful_exit("));
-    assert!(harness.contains("Ok(Some(status)) if status.success()"));
+    let graceful_wait = harness
+        .split("async fn wait_for_graceful_exit(")
+        .nth(2)
+        .unwrap()
+        .split("fn prepare_restart_logs")
+        .next()
+        .unwrap();
+    assert!(graceful_wait.contains("let child = self.child.as_mut()"));
+    assert!(graceful_wait.contains("drop(self.child.take());"));
+    assert!(
+        graceful_wait.find("tokio::time::sleep").unwrap()
+            < graceful_wait.find("drop(self.child.take());").unwrap()
+    );
     assert!(harness.contains("did not exit within {timeout:?} after graceful drain"));
+}
+
+#[test]
+fn w4a_final_cleanup_has_the_same_bounded_cancellation_safe_drain_wait() {
+    let harness = include_str!("../src/tiers/control_plane.rs").replace("\r\n", "\n");
+
+    assert!(harness.contains("async fn stop("));
+    assert!(harness.contains("graceful_drain_timeout: Option<Duration>"));
+    assert!(harness.contains("let child = self\n                .child\n                .as_mut()"));
+    assert!(harness.contains("tokio::time::sleep(POLL_INTERVAL.min(remaining)).await"));
+    assert!(harness.contains("stop_order.swap(0, graceful_index)"));
+    assert!(harness.contains("drain target remained running after bounded graceful-exit wait"));
 }
 
 #[test]
