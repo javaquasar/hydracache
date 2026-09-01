@@ -177,6 +177,26 @@ fn w4a_final_cleanup_has_the_same_bounded_cancellation_safe_drain_wait() {
 }
 
 #[test]
+fn w5a_drain_transport_budget_is_not_the_probe_timeout() {
+    let producer = include_str!("../src/tiers/brownout.rs").replace("\r\n", "\n");
+    let drain = producer
+        .split_once("let drain_response_timeout =")
+        .expect("W5A drain response timeout")
+        .1
+        .split_once("state.active_node_ids.remove")
+        .expect("W5A drain invocation")
+        .0;
+
+    assert!(drain.contains("CONTROL_TRANSITION_TIMEOUT.saturating_add(CONTROL_PROBE_TIMEOUT)"));
+    assert!(drain.contains(
+        "begin_admin_drain_transition(baseline, &target_node_id, drain_response_timeout)"
+    ));
+    assert!(!drain.contains(
+        "begin_admin_drain_transition(baseline, &target_node_id, CONTROL_PROBE_TIMEOUT)"
+    ));
+}
+
+#[test]
 fn w5_smoke_provenance_cannot_be_promoted_by_changing_mode() {
     let (control_scenario, resp_scenario, model_scenario) = scenarios();
 

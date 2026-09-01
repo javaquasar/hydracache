@@ -2523,7 +2523,7 @@ pub fn begin_daemon_add_transition(
 pub async fn begin_admin_drain_transition(
     baseline: MembershipBaseline,
     target_node_id: &str,
-    timeout: Duration,
+    action_timeout: Duration,
 ) -> Result<MembershipTransitionInvocation, ControlPlaneError> {
     if target_node_id == baseline.authority_node_id {
         return Err(ControlPlaneError::Evidence(
@@ -2542,7 +2542,7 @@ pub async fn begin_admin_drain_transition(
             )
         })?;
     let invoked_at = Instant::now();
-    let receipt = request_admin_drain(endpoint, timeout).await?;
+    let receipt = request_admin_drain(endpoint, action_timeout).await?;
     Ok(MembershipTransitionInvocation {
         baseline,
         action_receipt: MembershipActionReceipt::AdminDrain(receipt),

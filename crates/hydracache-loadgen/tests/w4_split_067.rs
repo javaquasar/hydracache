@@ -70,6 +70,25 @@ fn w4a_reference_capability_fails_closed_and_local_absence_skips_loud() {
     ));
 }
 
+#[test]
+fn w4a_drain_transport_budget_is_not_the_steady_read_timeout() {
+    let producer = include_str!("../src/tiers/control_plane.rs").replace("\r\n", "\n");
+    let drain = producer
+        .split_once("let membership_event_timeout =")
+        .expect("W4A membership event timeout")
+        .1
+        .split_once("let drain_event =")
+        .expect("W4A drain invocation")
+        .0;
+
+    assert!(drain.contains("scenario.membership_event.event_timeout_millis"));
+    assert!(drain.contains("membership_event_timeout.saturating_add(PER_PROBE_TIMEOUT)"));
+    assert!(drain.contains(
+        "begin_admin_drain_transition(drain_baseline, &drain_target, drain_response_timeout)"
+    ));
+    assert!(!drain.contains("scenario.read_only.timeout_millis"));
+}
+
 #[tokio::test]
 async fn w4b_executes_exported_primitives_with_exact_copy_and_fanout_accounting() {
     let scenario = reduced_grid_scenario();
