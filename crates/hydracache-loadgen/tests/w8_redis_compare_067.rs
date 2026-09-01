@@ -18,6 +18,7 @@ fn w8_contract_is_same_box_same_tool_and_immutable() {
     assert_eq!(scenario.claim_scope, W8_CLAIM_SCOPE);
     assert_eq!(scenario.interpretation, W8_INTERPRETATION);
     assert_eq!(scenario.repeats, 5);
+    assert_eq!(scenario.unmeasured_warmup_repeats, 1);
     assert_eq!(scenario.pipelines, [1, 10]);
     assert_eq!(scenario.operations, ["get", "set"]);
     assert_eq!(scenario.tool.expected_version, "redis-benchmark 7.2.5");
@@ -67,6 +68,10 @@ fn mutable_image_or_relaxed_method_is_rejected() {
     let mut three_repeats = exact.clone();
     three_repeats.repeats = 3;
     assert!(three_repeats.validate().is_err());
+
+    let mut no_warmup = exact.clone();
+    no_warmup.unmeasured_warmup_repeats = 0;
+    assert!(no_warmup.validate().is_err());
 
     let mut one_pipeline = exact;
     one_pipeline.pipelines = vec![1];
@@ -132,7 +137,7 @@ fn w8_applies_the_same_exact_stderr_policy_live_and_when_revalidating_evidence()
         source
             .matches("redis_benchmark_stderr_is_allowed(&process.stderr)")
             .count(),
-        1
+        2
     );
     assert_eq!(
         source

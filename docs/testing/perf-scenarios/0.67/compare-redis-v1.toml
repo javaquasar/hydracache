@@ -6,6 +6,7 @@ claim_scope = "selected-node-local-resp-endpoint-comparison-only"
 interpretation = "Measured on one eligible reference runner with one exact redis-benchmark binary; this is not a universal superiority or aggregate-cluster-capacity claim."
 required_runner_profile = "reference-v1"
 repeats = 5
+unmeasured_warmup_repeats = 1
 connections = 50
 requests_per_system_case = 100000
 payload_bytes = 256

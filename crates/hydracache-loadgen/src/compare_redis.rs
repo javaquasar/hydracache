@@ -79,6 +79,7 @@ pub struct RedisComparisonScenario {
     pub interpretation: String,
     pub required_runner_profile: String,
     pub repeats: u8,
+    pub unmeasured_warmup_repeats: u8,
     pub connections: u32,
     pub requests_per_system_case: u64,
     pub payload_bytes: u32,
@@ -161,6 +162,7 @@ impl RedisComparisonScenario {
             && self.interpretation == W8_INTERPRETATION
             && self.required_runner_profile == "reference-v1"
             && (5..=9).contains(&self.repeats)
+            && self.unmeasured_warmup_repeats == 1
             && self.connections > 0
             && self.requests_per_system_case > 0
             && self.payload_bytes > 0
@@ -975,6 +977,7 @@ pub struct SameBoxRedisComparisonReport {
     pub methodology: String,
     pub claim_scope: String,
     pub interpretation: String,
+    pub unmeasured_warmup_repeats: u8,
     pub run_mode: RedisComparisonRunMode,
     pub source: SourceIdentity,
     pub build: BuildIdentity,
@@ -1012,6 +1015,7 @@ impl SameBoxRedisComparisonReport {
             || self.methodology != W8_METHOD
             || self.claim_scope != W8_CLAIM_SCOPE
             || self.interpretation != W8_INTERPRETATION
+            || self.unmeasured_warmup_repeats != scenario.unmeasured_warmup_repeats
         {
             problems.push("W8 report lost its exact method/scope/scenario identity".to_owned());
         }
@@ -1709,6 +1713,7 @@ pub async fn run_same_box_redis_comparison(
         methodology: W8_METHOD.to_owned(),
         claim_scope: W8_CLAIM_SCOPE.to_owned(),
         interpretation: W8_INTERPRETATION.to_owned(),
+        unmeasured_warmup_repeats: scenario.unmeasured_warmup_repeats,
         run_mode,
         source: context.source.clone(),
         build: context.build.clone(),
@@ -2187,6 +2192,43 @@ fn run_blocking_comparison(
     verify_tool_unchanged(&tools.docker)?;
     let redis = start_redis_container(scenario, tools)?;
     let redis_endpoint = redis.endpoint;
+    for warmup_repeat in 1..=scenario.unmeasured_warmup_repeats {
+        for pipeline in &scenario.pipelines {
+            for system in [ComparisonSystem::Hydracache, ComparisonSystem::Redis] {
+                let endpoint = match system {
+                    ComparisonSystem::Hydracache => hydracache_endpoint,
+                    ComparisonSystem::Redis => redis_endpoint,
+                };
+                verify_tool_unchanged(&tools.redis_benchmark)?;
+                let _initial_state = reset_and_preload(endpoint, scenario)?;
+                let argv = scenario.benchmark_argv(endpoint, *pipeline);
+                let process = execute_checked(
+                    &tools.redis_benchmark,
+                    &argv,
+                    Duration::from_secs(scenario.case_timeout_seconds),
+                    scenario,
+                    &format!("benchmark-warmup-{warmup_repeat}-pipeline-{pipeline}-{system:?}"),
+                )?;
+                verify_tool_unchanged(&tools.redis_benchmark)?;
+                if !redis_benchmark_stderr_is_allowed(&process.stderr) {
+                    return Err(RedisComparisonError::Process {
+                        phase: format!(
+                            "benchmark-warmup-{warmup_repeat}-pipeline-{pipeline}-{system:?}"
+                        ),
+                        detail: format!("unexpected stderr: {:?}", process.stderr),
+                    });
+                }
+                let expected = ["GET".to_owned(), "SET".to_owned()];
+                parse_redis_benchmark_csv(process.stdout.as_bytes(), &expected).map_err(
+                    |error| {
+                        RedisComparisonError::Evidence(format!(
+                            "invalid redis-benchmark warmup CSV for warmup {warmup_repeat}, pipeline {pipeline}, {system:?}: {error}"
+                        ))
+                    },
+                )?;
+            }
+        }
+    }
     let mut repeats = Vec::with_capacity(usize::from(scenario.repeats));
     for repeat in 1..=scenario.repeats {
         let order = ExecutionOrder::for_repeat(repeat);
