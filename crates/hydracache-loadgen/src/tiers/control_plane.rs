@@ -197,16 +197,20 @@ async fn run_control_plane_reference_inner(
 
     let drain_baseline = wait_for_live_baseline(full_endpoints, STARTUP_TIMEOUT).await?;
     let drain_target = cluster.joiner_node_id().to_owned();
-    let drain_invocation = begin_admin_drain_transition(
-        drain_baseline,
-        &drain_target,
-        Duration::from_millis(scenario.read_only.timeout_millis),
-    )
-    .await?;
+    let membership_event_timeout =
+        Duration::from_millis(scenario.membership_event.event_timeout_millis);
+    // The drain route waits for the bounded server-side drain before it can
+    // return its strict receipt. Keep its transport budget outside the
+    // measured event budget so slow-but-bounded transitions are rejected by
+    // the membership evidence contract, not misreported as a steady-read
+    // HTTP timeout.
+    let drain_response_timeout = membership_event_timeout.saturating_add(PER_PROBE_TIMEOUT);
+    let drain_invocation =
+        begin_admin_drain_transition(drain_baseline, &drain_target, drain_response_timeout).await?;
     let drain_event = observe_membership_transition(
         drain_invocation,
         initial_endpoints,
-        Duration::from_millis(scenario.membership_event.event_timeout_millis),
+        membership_event_timeout,
         PER_PROBE_TIMEOUT,
         POLL_INTERVAL,
     )
@@ -217,7 +221,7 @@ async fn run_control_plane_reference_inner(
             context,
             probed.receipt_sha256(),
             &drain_target,
-            Duration::from_millis(scenario.membership_event.event_timeout_millis),
+            membership_event_timeout,
         )
         .await?;
     let report = ControlPlaneReport {

@@ -698,8 +698,15 @@ impl ControlPlaneBrownoutDriver for LiveControlPlaneBrownoutDriver {
         let action_started = Instant::now();
         let disruption = tokio::spawn(run_control_window(load_endpoint, plan.clone()));
         tokio::task::yield_now().await;
+        // The admin drain response is a completed server-side drain receipt,
+        // not a read-only probe. Let the measured transition budget expire
+        // first, plus one probe margin for the HTTP response, so the evidence
+        // path reports the real transition failure instead of a 2s socket
+        // timeout.
+        let drain_response_timeout =
+            CONTROL_TRANSITION_TIMEOUT.saturating_add(CONTROL_PROBE_TIMEOUT);
         let invocation =
-            w4a::begin_admin_drain_transition(baseline, &target_node_id, CONTROL_PROBE_TIMEOUT)
+            w4a::begin_admin_drain_transition(baseline, &target_node_id, drain_response_timeout)
                 .await
                 .map_err(|error| BrownoutError::Driver(error.to_string()))?;
         state.active_node_ids.remove(&target_node_id);
