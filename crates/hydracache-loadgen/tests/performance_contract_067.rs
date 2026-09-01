@@ -1055,6 +1055,7 @@ async fn hit_miss_and_loader_path_cost_breakdown_smoke() {
         point.sample_count == 3
             && point.samples.len() == 3
             && point.quantity.unit == "operations_per_second"
+            && point.dimensions.get("unmeasured_warmup_repeats") == Some(&DimensionValue::U64(1))
     }));
 }
 
@@ -1423,6 +1424,8 @@ async fn client_surface_payload_sweep_enforces_documented_cap() {
         point.dimensions.get("beyond_cap_http_status") == Some(&DimensionValue::U64(413))
             && point.dimensions.get("beyond_cap_rejected_before_dispatch")
                 == Some(&DimensionValue::Bool(true))
+            && point.dimensions.get("unmeasured_warmup_repeats") == Some(&DimensionValue::U64(1))
+            && point.samples.len() == 3
     }));
 }
 

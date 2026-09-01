@@ -32,6 +32,7 @@ const SMOKE_REPEATS: usize = 3;
 const SMOKE_OPERATIONS: u64 = 240;
 const SMOKE_SPREAD_LIMIT: f64 = 1_000.0;
 const SINGLE_FLIGHT_UNMEASURED_WARMUP_REPEATS: usize = 1;
+const PATH_COST_UNMEASURED_WARMUP_REPEATS: usize = 1;
 const LOCAL_REFERENCE_CAPABILITY_VERSION: u32 = 1;
 const LOCAL_REFERENCE_INSTANCE_VERSION: u32 = 1;
 pub const LOCAL_W6_CAPACITY_MEASUREMENT: &str = "hot_key_contention_throughput_floor";
@@ -1611,6 +1612,9 @@ async fn local_path_cost_measurement(
     };
     let operations = shape.operations(binding.scenario.steady_operations);
     let repeats = shape.repeats(binding.scenario.repeats as usize);
+    let total_repeats = repeats
+        .checked_add(PATH_COST_UNMEASURED_WARMUP_REPEATS)
+        .ok_or_else(|| LocalTierError::Runtime("path-cost repeat count overflow".to_owned()))?;
     let schedule = schedule_for(binding.scenario.seed, key_count, operations, &binding.local)
         .generate()
         .map_err(LocalTierError::Runtime)?;
@@ -1624,7 +1628,7 @@ async fn local_path_cost_measurement(
     let mut points = Vec::new();
     for (name, operation) in paths {
         let mut samples = Vec::with_capacity(repeats);
-        for _ in 0..repeats {
+        for repeat_index in 0..total_repeats {
             let target = LocalCacheTarget::new(LocalTargetConfig {
                 max_capacity: resident_capacity_bytes(key_count, payload_bytes),
                 preload_entries: key_count,
@@ -1643,10 +1647,19 @@ async fn local_path_cost_measurement(
                 };
                 ensure_success(target.execute_operation(operation, sequence).await, name)?;
             }
-            samples.push(throughput(schedule.keys.len() as u64, started.elapsed()));
+            let sample = throughput(schedule.keys.len() as u64, started.elapsed());
+            if repeat_index >= PATH_COST_UNMEASURED_WARMUP_REPEATS {
+                samples.push(sample);
+            }
         }
         points.push(scalar_point(
-            BTreeMap::from([("path".to_owned(), DimensionValue::Text(name.to_owned()))]),
+            BTreeMap::from([
+                ("path".to_owned(), DimensionValue::Text(name.to_owned())),
+                (
+                    "unmeasured_warmup_repeats".to_owned(),
+                    DimensionValue::U64(PATH_COST_UNMEASURED_WARMUP_REPEATS as u64),
+                ),
+            ]),
             "operations_per_second",
             samples,
         ));
@@ -1659,6 +1672,7 @@ async fn local_path_cost_measurement(
                 "operations": operations,
                 "repeats": repeats,
                 "key_count": key_count,
+                "unmeasured_warmup_repeats": PATH_COST_UNMEASURED_WARMUP_REPEATS,
             }),
         ),
         workload: workload_from_schedule(
@@ -2343,10 +2357,17 @@ fn validate_local_reference_scalar_shapes(report: &PerfReport) -> Result<(), Loc
             "operations": path.scenario.steady_operations,
             "repeats": path.scenario.repeats,
             "key_count": path.local.key_count,
+            "unmeasured_warmup_repeats": PATH_COST_UNMEASURED_WARMUP_REPEATS,
         }),
     );
-    if scalar_measurement(report, "hit_miss_and_loader_path_cost_breakdown")?.scenario_digest
-        != path_digest
+    let path_cost = scalar_measurement(report, "hit_miss_and_loader_path_cost_breakdown")?;
+    if path_cost.scenario_digest != path_digest
+        || path_cost.points.iter().any(|point| {
+            point.dimensions.get("unmeasured_warmup_repeats")
+                != Some(&DimensionValue::U64(
+                    PATH_COST_UNMEASURED_WARMUP_REPEATS as u64,
+                ))
+        })
     {
         return Err(LocalTierError::Report(
             "W1 reference path-cost shape differs from the committed scenario".to_owned(),

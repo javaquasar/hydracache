@@ -453,6 +453,7 @@ struct PayloadInput {
     seed: u64,
     operations_per_repeat: u64,
     repeats: usize,
+    unmeasured_warmup_repeats: usize,
     key_count: u64,
     payload_bytes: Vec<usize>,
     max_frame_bytes: usize,
@@ -795,13 +796,18 @@ async fn client_surface_payload_measurement(
         ClientRunShape::Reference => input.operations_per_repeat,
     };
     let repeats = shape.repeats(input.repeats);
+    let total_repeats = repeats
+        .checked_add(input.unmeasured_warmup_repeats)
+        .ok_or_else(|| {
+            ClientSurfaceTierError::Runtime("payload repeat count overflowed usize".into())
+        })?;
     let schedule = KeyScheduleSpec::uniform(input.seed, input.key_count, operations)
         .generate()
         .map_err(ClientSurfaceTierError::Runtime)?;
     let mut points = Vec::new();
     for payload_bytes in &input.payload_bytes {
         let mut samples = Vec::with_capacity(repeats);
-        for _ in 0..repeats {
+        for repeat_index in 0..total_repeats {
             let target = ClientSurfaceTarget::new(simple_target_config(
                 input.max_frame_bytes,
                 0,
@@ -824,13 +830,20 @@ async fn client_surface_payload_measurement(
                     )));
                 }
             }
-            samples.push(throughput(operations, started.elapsed()));
+            let sample = throughput(operations, started.elapsed());
+            if repeat_index >= input.unmeasured_warmup_repeats {
+                samples.push(sample);
+            }
         }
         points.push(scalar_point(
             BTreeMap::from([
                 (
                     "payload_bytes".to_owned(),
                     DimensionValue::U64(*payload_bytes as u64),
+                ),
+                (
+                    "unmeasured_warmup_repeats".to_owned(),
+                    DimensionValue::U64(input.unmeasured_warmup_repeats as u64),
                 ),
                 ("expected_rejection".to_owned(), DimensionValue::Bool(false)),
             ]),
@@ -839,7 +852,7 @@ async fn client_surface_payload_measurement(
         ));
     }
     let mut rejection_samples = Vec::with_capacity(repeats);
-    for _ in 0..repeats {
+    for repeat_index in 0..total_repeats {
         let target = ClientSurfaceTarget::new(simple_target_config(
             input.max_frame_bytes,
             0,
@@ -868,7 +881,10 @@ async fn client_surface_payload_measurement(
                 "beyond-cap request did not fail before dispatch and mutation: dispatch={dispatch:?}, before={before:?}, after={after:?}"
             )));
         }
-        rejection_samples.push(throughput(1, elapsed));
+        let sample = throughput(1, elapsed);
+        if repeat_index >= input.unmeasured_warmup_repeats {
+            rejection_samples.push(sample);
+        }
     }
     let rejection_rate = rejection_samples
         .iter()
@@ -901,7 +917,11 @@ async fn client_surface_payload_measurement(
         id: "client_surface_payload_sweep_100b_1kb_64kb_1mb".to_owned(),
         scenario_digest: shape.custom_digest(
             PAYLOAD_SCENARIO,
-            &serde_json::json!({"operations_per_repeat": operations, "repeats": repeats}),
+            &serde_json::json!({
+                "operations_per_repeat": operations,
+                "repeats": repeats,
+                "unmeasured_warmup_repeats": input.unmeasured_warmup_repeats,
+            }),
         ),
         workload: workload_identity_from_parts(
             &schedule,
@@ -1734,6 +1754,7 @@ fn validate_payload_input(input: &PayloadInput) -> Result<(), ClientSurfaceTierE
         || input.id.is_empty()
         || input.operations_per_repeat == 0
         || input.repeats < 3
+        || input.unmeasured_warmup_repeats != 1
         || input.key_count == 0
         || input.payload_bytes != [100, 1_000, 65_536, 1_000_000]
         || input.max_frame_bytes != 1_048_576
@@ -1997,6 +2018,7 @@ fn validate_client_surface_reference_scalar_shapes(
         &serde_json::json!({
             "operations_per_repeat": payload_input.operations_per_repeat,
             "repeats": payload_input.repeats,
+            "unmeasured_warmup_repeats": payload_input.unmeasured_warmup_repeats,
         }),
     );
     let payloads = payload
@@ -2011,10 +2033,12 @@ fn validate_client_surface_reference_scalar_shapes(
         || payload.max_robust_spread_ratio != payload_input.robust_spread_tolerance
         || payload.points.len() != 4
         || payloads != BTreeSet::from([100, 1_000, 65_536, 1_000_000])
-        || payload
-            .points
-            .iter()
-            .any(|point| point.sample_count != 3 || point.samples.len() != 3)
+        || payload.points.iter().any(|point| {
+            point.sample_count != 3
+                || point.samples.len() != 3
+                || point.dimensions.get("unmeasured_warmup_repeats")
+                    != Some(&DimensionValue::U64(1))
+        })
     {
         return Err(ClientSurfaceTierError::Report(
             "W2 reference payload evidence differs from the exact committed sweep".to_owned(),
