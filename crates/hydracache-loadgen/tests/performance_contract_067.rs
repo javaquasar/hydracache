@@ -948,6 +948,12 @@ async fn hot_key_contention_throughput_floor_smoke() {
         Some(&DimensionValue::U64(1))
     );
     assert_eq!(
+        single_flight.points[0]
+            .dimensions
+            .get("unmeasured_warmup_repeats"),
+        Some(&DimensionValue::U64(1))
+    );
+    assert_eq!(
         single_flight.points[0].dimensions.get("loader_executions"),
         Some(&DimensionValue::U64(1))
     );
