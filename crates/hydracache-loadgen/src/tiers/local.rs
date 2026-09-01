@@ -31,6 +31,7 @@ use crate::{PerformanceProfile, RunnerFingerprint};
 const SMOKE_REPEATS: usize = 3;
 const SMOKE_OPERATIONS: u64 = 240;
 const SMOKE_SPREAD_LIMIT: f64 = 1_000.0;
+const SINGLE_FLIGHT_UNMEASURED_WARMUP_REPEATS: usize = 1;
 const LOCAL_REFERENCE_CAPABILITY_VERSION: u32 = 1;
 const LOCAL_REFERENCE_INSTANCE_VERSION: u32 = 1;
 pub const LOCAL_W6_CAPACITY_MEASUREMENT: &str = "hot_key_contention_throughput_floor";
@@ -1197,8 +1198,15 @@ async fn local_hot_key_single_flight_measurement(
             "single-flight reference window must contain at least one burst".to_owned(),
         ));
     }
+    // The first synchronized task burst also initializes Tokio scheduler and
+    // allocation paths that are shared by every later repeat. Run one complete
+    // window outside the evidence samples so that this one-time process warmup
+    // cannot masquerade as repeat-to-repeat cache throughput spread.
+    let total_repeats = repeats
+        .checked_add(SINGLE_FLIGHT_UNMEASURED_WARMUP_REPEATS)
+        .ok_or_else(|| LocalTierError::Runtime("single-flight repeat count overflow".to_owned()))?;
     let mut samples = Vec::with_capacity(repeats);
-    for _ in 0..repeats {
+    for repeat_index in 0..total_repeats {
         let target = Arc::new(LocalCacheTarget::new(LocalTargetConfig {
             preload_entries: 0,
             key_space: 1,
@@ -1250,10 +1258,12 @@ async fn local_hot_key_single_flight_measurement(
                 )));
             }
         }
-        samples.push(throughput(
-            workers as u64 * bursts_per_repeat as u64,
-            measured,
-        ));
+        if repeat_index >= SINGLE_FLIGHT_UNMEASURED_WARMUP_REPEATS {
+            samples.push(throughput(
+                workers as u64 * bursts_per_repeat as u64,
+                measured,
+            ));
+        }
     }
     let schedule = KeyScheduleSpec::uniform(binding.scenario.seed, 1, workers as u64)
         .generate()
@@ -1268,6 +1278,7 @@ async fn local_hot_key_single_flight_measurement(
                 "loader_delay_us": binding.local.loader_delay_us.max(1),
                 "repeats": repeats,
                 "bursts_per_repeat": bursts_per_repeat,
+                "unmeasured_warmup_repeats": SINGLE_FLIGHT_UNMEASURED_WARMUP_REPEATS,
             }),
         ),
         workload: workload_from_schedule(
@@ -1293,6 +1304,10 @@ async fn local_hot_key_single_flight_measurement(
                 (
                     "bursts_per_repeat".to_owned(),
                     DimensionValue::U64(bursts_per_repeat as u64),
+                ),
+                (
+                    "unmeasured_warmup_repeats".to_owned(),
+                    DimensionValue::U64(SINGLE_FLIGHT_UNMEASURED_WARMUP_REPEATS as u64),
                 ),
             ]),
             "operations_per_second",
@@ -2258,13 +2273,20 @@ fn validate_local_reference_scalar_shapes(report: &PerfReport) -> Result<(), Loc
             "loader_delay_us": hot.local.loader_delay_us.max(1),
             "repeats": hot.scenario.repeats,
             "bursts_per_repeat": hot.local.single_flight_bursts_per_repeat,
+            "unmeasured_warmup_repeats": SINGLE_FLIGHT_UNMEASURED_WARMUP_REPEATS,
         }),
     );
-    if scalar_measurement(report, "hot_key_single_flight_miss_stampede_cost")?.scenario_digest
-        != hot_single_digest
+    let hot_single = scalar_measurement(report, "hot_key_single_flight_miss_stampede_cost")?;
+    if hot_single.scenario_digest != hot_single_digest
+        || hot_single.points[0]
+            .dimensions
+            .get("unmeasured_warmup_repeats")
+            != Some(&DimensionValue::U64(
+                SINGLE_FLIGHT_UNMEASURED_WARMUP_REPEATS as u64,
+            ))
     {
         return Err(LocalTierError::Report(
-            "W1 reference single-flight shape differs from the committed hot-key contract"
+            "W1 reference single-flight shape or warmup differs from the committed hot-key contract"
                 .to_owned(),
         ));
     }
@@ -2641,6 +2663,10 @@ mod tests {
         assert_eq!(
             point.dimensions.get("bursts_per_repeat"),
             Some(&DimensionValue::U64(256))
+        );
+        assert_eq!(
+            point.dimensions.get("unmeasured_warmup_repeats"),
+            Some(&DimensionValue::U64(1))
         );
         assert_eq!(
             point.dimensions.get("loader_executions"),
