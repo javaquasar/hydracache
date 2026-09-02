@@ -2391,11 +2391,24 @@ impl GridControlPlaneHandle for NetworkedGridHandle {
     fn wait_for_drain_ready(&self, timeout: Duration) -> bool {
         let deadline = Instant::now() + timeout;
         loop {
-            if self
-                .raft
-                .voter_ids()
-                .is_ok_and(|voters| local_voter_removal_applied(&voters, self.raft_node_id))
-            {
+            if self.raft.voter_ids().is_ok_and(|voters| {
+                let members = self.raft.members();
+                let local_member_committed =
+                    members.iter().any(|member| member.node_id == self.node_id);
+                let reachable_remote_voters = voters
+                    .iter()
+                    .filter(|raft_id| **raft_id != self.raft_node_id)
+                    .filter(|raft_id| {
+                        self.raft_voter_reachability(**raft_id, &members) == Reachability::Reachable
+                    })
+                    .count();
+                local_voter_drain_ready(
+                    &voters,
+                    self.raft_node_id,
+                    local_member_committed,
+                    reachable_remote_voters,
+                )
+            }) {
                 return true;
             }
             if Instant::now() >= deadline {
@@ -2563,6 +2576,26 @@ impl GridControlPlaneHandle for NetworkedGridHandle {
 
 fn local_voter_removal_applied(voters: &[u64], local_raft_node_id: u64) -> bool {
     voters.len() <= 1 || !voters.contains(&local_raft_node_id)
+}
+
+fn local_voter_drain_ready(
+    voters: &[u64],
+    local_raft_node_id: u64,
+    local_member_committed: bool,
+    reachable_remote_voters: usize,
+) -> bool {
+    if local_voter_removal_applied(voters, local_raft_node_id) {
+        return true;
+    }
+
+    // A removed voter is not guaranteed to receive the commit-index advance
+    // for its own ConfChange after the leader applies that change and drops
+    // the peer from replication. Once NodeLeft is committed locally, stopping
+    // is nevertheless safe when the reachable survivors still form a quorum
+    // of the current voter set; they can commit or retain the removal without
+    // the draining process. Two-voter clusters deliberately cannot use this
+    // path and continue waiting for the single-voter configuration to apply.
+    !local_member_committed && raft_voter_majority_reachable(voters.len(), reachable_remote_voters)
 }
 
 fn raft_voter_node_id(
@@ -4383,10 +4416,19 @@ mod tests {
     }
 
     #[test]
-    fn drain_readiness_requires_the_local_voter_to_be_absent() {
-        assert!(!local_voter_removal_applied(&[1, 2, 3], 2));
-        assert!(local_voter_removal_applied(&[1, 3], 2));
-        assert!(local_voter_removal_applied(&[2], 2));
+    fn drain_readiness_accepts_applied_removal_or_safe_remote_quorum() {
+        assert!(!local_voter_drain_ready(&[1, 2, 3], 2, true, 2));
+        assert!(local_voter_drain_ready(&[1, 2, 3], 2, false, 2));
+        assert!(!local_voter_drain_ready(&[1, 2], 2, false, 1));
+        assert!(!local_voter_drain_ready(
+            &[1, 2, 3, 4, 5, 6, 7],
+            7,
+            false,
+            3,
+        ));
+        assert!(local_voter_drain_ready(&[1, 2, 3, 4, 5, 6, 7], 7, false, 4,));
+        assert!(local_voter_drain_ready(&[1, 3], 2, true, 0));
+        assert!(local_voter_drain_ready(&[2], 2, true, 0));
     }
 
     #[test]
