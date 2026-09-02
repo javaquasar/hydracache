@@ -41,6 +41,10 @@ RUN_ID_RE = re.compile(r"^[1-9][0-9]*$")
 ACTIVE_PERF_TITLE_RE = re.compile(
     r"^CI dispatch (?:hc0671-[a-z0-9-]+:)?(?:qualification|qualify|full-dress(?:-[12])?|bootstrap(?:-[1-5])?|frozen-candidate)$"
 )
+ARTIFACT_DOWNLOAD_ATTEMPTS = 12
+ARTIFACT_DOWNLOAD_RETRY_DELAY_SECONDS = 15
+ARTIFACT_DOWNLOAD_MAX_RETRY_DELAY_SECONDS = 60
+ARTIFACT_DOWNLOAD_TIMEOUT_SECONDS = 600
 
 
 class CampaignError(RuntimeError):
@@ -960,12 +964,32 @@ def disarm_runner_watchdog(campaign_dir: Path, state: dict[str, Any], step: str)
     raise CampaignError("runner watchdog transient units did not unload")
 
 
-def download_binary(args: list[str], output: Path) -> None:
+def download_binary(
+    args: list[str],
+    output: Path,
+    *,
+    timeout_seconds: int = ARTIFACT_DOWNLOAD_TIMEOUT_SECONDS,
+) -> None:
+    if timeout_seconds <= 0:
+        raise CampaignError("artifact download timeout must be positive")
     partial = output.with_name(f".{output.name}.partial")
     if partial.exists():
         partial.unlink()
-    with partial.open("xb") as stream:
-        completed = subprocess.run(args, cwd=repo_root(), stdout=stream, stderr=subprocess.PIPE, check=False)
+    try:
+        with partial.open("xb") as stream:
+            completed = subprocess.run(
+                args,
+                cwd=repo_root(),
+                stdout=stream,
+                stderr=subprocess.PIPE,
+                check=False,
+                timeout=timeout_seconds,
+            )
+    except subprocess.TimeoutExpired as error:
+        partial.unlink(missing_ok=True)
+        raise CampaignError(
+            f"artifact download timed out after {timeout_seconds} seconds"
+        ) from error
     if completed.returncode != 0:
         partial.unlink(missing_ok=True)
         detail = completed.stderr.decode("utf-8", errors="replace").strip()
@@ -1071,15 +1095,20 @@ def download_artifacts_with_retry(
     state: dict[str, Any],
     run_id: int,
     step: str,
-    attempts: int = 5,
+    attempts: int = ARTIFACT_DOWNLOAD_ATTEMPTS,
+    initial_delay_seconds: int = ARTIFACT_DOWNLOAD_RETRY_DELAY_SECONDS,
+    max_delay_seconds: int = ARTIFACT_DOWNLOAD_MAX_RETRY_DELAY_SECONDS,
 ) -> dict[str, Path]:
     if attempts <= 0:
         raise CampaignError("artifact download retry count must be positive")
-    latest: Exception | None = None
+    if initial_delay_seconds <= 0 or max_delay_seconds < initial_delay_seconds:
+        raise CampaignError("artifact download retry delays are invalid")
+    latest: CampaignError | None = None
+    delay_seconds = initial_delay_seconds
     for attempt in range(1, attempts + 1):
         try:
             return download_artifacts(campaign_dir, state, run_id, step)
-        except Exception as error:
+        except CampaignError as error:
             latest = error
             if attempt == attempts:
                 break
@@ -1089,9 +1118,11 @@ def download_artifacts_with_retry(
                 step=step,
                 run_id=run_id,
                 attempt=attempt,
+                retry_in_seconds=delay_seconds,
                 detail=str(error),
             )
-            time.sleep(15)
+            time.sleep(delay_seconds)
+            delay_seconds = min(delay_seconds * 2, max_delay_seconds)
     raise CampaignError(
         f"artifact download failed after {attempts} attempts: {latest}"
     ) from latest
