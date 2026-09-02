@@ -2,6 +2,7 @@
 
 import json
 from pathlib import Path
+import subprocess
 import tempfile
 import unittest
 from unittest import mock
@@ -368,6 +369,22 @@ class ReferenceCampaignTests(unittest.TestCase):
         self.assertEqual(download.call_count, 2)
         sleep.assert_called_once_with(15)
 
+    def test_artifact_download_timeout_removes_partial_file(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            output = Path(temporary) / "artifact.zip"
+            with mock.patch.object(
+                campaign.subprocess,
+                "run",
+                side_effect=subprocess.TimeoutExpired(["gh", "api"], 23),
+            ) as run:
+                with self.assertRaisesRegex(
+                    campaign.CampaignError, "timed out after 23 seconds"
+                ):
+                    campaign.download_binary(["gh", "api"], output, timeout_seconds=23)
+        self.assertEqual(run.call_args.kwargs["timeout"], 23)
+        self.assertFalse(output.exists())
+        self.assertFalse(output.with_name(".artifact.zip.partial").exists())
+
     def test_persistent_artifact_download_failure_remains_fatal(self) -> None:
         state = base_state()
         with tempfile.TemporaryDirectory() as temporary:
@@ -379,13 +396,19 @@ class ReferenceCampaignTests(unittest.TestCase):
                     side_effect=campaign.CampaignError("still unavailable"),
                 ) as download,
                 mock.patch.object(campaign.time, "sleep") as sleep,
-                self.assertRaisesRegex(campaign.CampaignError, "failed after 3 attempts"),
+                self.assertRaisesRegex(
+                    campaign.CampaignError,
+                    f"failed after {campaign.ARTIFACT_DOWNLOAD_ATTEMPTS} attempts",
+                ),
             ):
                 campaign.download_artifacts_with_retry(
-                    campaign_dir, state, 123, "full-dress-1", attempts=3
+                    campaign_dir, state, 123, "full-dress-1"
                 )
-        self.assertEqual(download.call_count, 3)
-        self.assertEqual(sleep.call_count, 2)
+        self.assertEqual(download.call_count, campaign.ARTIFACT_DOWNLOAD_ATTEMPTS)
+        self.assertEqual(
+            [call.args[0] for call in sleep.call_args_list],
+            [15, 30, *([60] * (campaign.ARTIFACT_DOWNLOAD_ATTEMPTS - 3))],
+        )
 
     def test_receipt_retention_is_immutable_and_sample_directory_is_exact(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
