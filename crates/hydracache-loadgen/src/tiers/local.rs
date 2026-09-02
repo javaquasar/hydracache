@@ -2660,6 +2660,7 @@ mod tests {
     fn committed_hosted_worker_shapes_fit_four_core_reference() {
         let scaling = parse_local_scenario(SCALING_SCENARIO).unwrap();
         let hot_key = parse_local_scenario(HOT_KEY_SCENARIO).unwrap();
+        let path_cost = parse_local_scenario(PATH_SCENARIO).unwrap();
 
         assert_eq!(scaling.local.worker_counts, [1, 2, 4]);
         assert_eq!(scaling.scenario.steady_operations, 10_000_000);
@@ -2668,6 +2669,9 @@ mod tests {
         assert_eq!(scaling.scenario.robust_spread_tolerance, 0.15);
         assert_eq!(hot_key.local.worker_counts, [1, 2, 4]);
         assert_eq!(hot_key.local.single_flight_bursts_per_repeat, 256);
+        assert_eq!(path_cost.scenario.steady_operations, 1_000_000);
+        assert_eq!(path_cost.scenario.repeats, 3);
+        assert_eq!(path_cost.scenario.robust_spread_tolerance, 0.15);
     }
 
     #[tokio::test]
