@@ -45,10 +45,22 @@ ARTIFACT_DOWNLOAD_ATTEMPTS = 12
 ARTIFACT_DOWNLOAD_RETRY_DELAY_SECONDS = 15
 ARTIFACT_DOWNLOAD_MAX_RETRY_DELAY_SECONDS = 60
 ARTIFACT_DOWNLOAD_TIMEOUT_SECONDS = 600
+ARTIFACT_CANARY_ATTEMPTS = 3
+ARTIFACT_CANARY_RETRY_DELAY_SECONDS = 15
+ARTIFACT_CANARY_TIMEOUT_SECONDS = 120
+ARTIFACT_CANARY_MAX_BYTES = 64 * 1024 * 1024
 
 
 class CampaignError(RuntimeError):
     """An admission or orchestration invariant failed."""
+
+
+class ArtifactTransportError(CampaignError):
+    """Artifact bytes are temporarily unavailable without invalidating a run."""
+
+
+class ArtifactIntegrityError(CampaignError):
+    """Artifact identity or bytes are permanently unsuitable as evidence."""
 
 
 def utc_now() -> str:
@@ -72,17 +84,25 @@ def repo_root() -> Path:
 
 
 def run_capture(
-    args: Iterable[str], *, cwd: Path | None = None, check: bool = True
+    args: Iterable[str],
+    *,
+    cwd: Path | None = None,
+    check: bool = True,
+    timeout_seconds: int | None = None,
 ) -> str:
-    completed = subprocess.run(
-        list(args),
-        cwd=cwd,
-        check=False,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        text=True,
-        encoding="utf-8",
-    )
+    try:
+        completed = subprocess.run(
+            list(args),
+            cwd=cwd,
+            check=False,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+            encoding="utf-8",
+            timeout=timeout_seconds,
+        )
+    except subprocess.TimeoutExpired as error:
+        raise CampaignError(f"command timed out after {timeout_seconds} seconds") from error
     if check and completed.returncode != 0:
         detail = completed.stderr.strip() or completed.stdout.strip()
         raise CampaignError(f"command failed ({completed.returncode}): {detail}")
@@ -742,8 +762,10 @@ def command_freeze(args: argparse.Namespace) -> None:
     print(f"HOST_ADMISSION_PASSED=true campaign_dir={campaign_dir}")
 
 
-def gh_json(args: Iterable[str]) -> Any:
-    output = run_capture(["gh", *args], cwd=repo_root())
+def gh_json(args: Iterable[str], *, timeout_seconds: int | None = None) -> Any:
+    output = run_capture(
+        ["gh", *args], cwd=repo_root(), timeout_seconds=timeout_seconds
+    )
     try:
         return json.loads(output)
     except json.JSONDecodeError as error:
@@ -987,13 +1009,13 @@ def download_binary(
             )
     except subprocess.TimeoutExpired as error:
         partial.unlink(missing_ok=True)
-        raise CampaignError(
+        raise ArtifactTransportError(
             f"artifact download timed out after {timeout_seconds} seconds"
         ) from error
     if completed.returncode != 0:
         partial.unlink(missing_ok=True)
         detail = completed.stderr.decode("utf-8", errors="replace").strip()
-        raise CampaignError(f"artifact download failed: {detail}")
+        raise ArtifactTransportError(f"artifact download failed: {detail}")
     os.replace(partial, output)
     os.chmod(output, 0o444)
 
@@ -1012,7 +1034,9 @@ def download_artifacts(campaign_dir: Path, state: dict[str, Any], run_id: int, s
         try:
             manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
         except (OSError, json.JSONDecodeError) as error:
-            raise CampaignError(f"incomplete prior artifact download for {step}: {error}") from error
+            raise ArtifactIntegrityError(
+                f"incomplete prior artifact download for {step}: {error}"
+            ) from error
         paths: dict[str, Path] = {}
         for artifact in manifest.get("artifacts", []):
             path = campaign_dir / artifact.get("archive_file", "")
@@ -1021,10 +1045,10 @@ def download_artifacts(campaign_dir: Path, state: dict[str, Any], run_id: int, s
                 or sha256_file(path) != artifact.get("archive_sha256")
                 or artifact.get("name") in paths
             ):
-                raise CampaignError(f"retained artifact drift for {step}")
+                raise ArtifactIntegrityError(f"retained artifact drift for {step}")
             paths[artifact["name"]] = path
         if not paths:
-            raise CampaignError(f"empty retained artifact manifest for {step}")
+            raise ArtifactIntegrityError(f"empty retained artifact manifest for {step}")
         return paths
 
     runs_dir = campaign_dir / "runs"
@@ -1034,15 +1058,19 @@ def download_artifacts(campaign_dir: Path, state: dict[str, Any], run_id: int, s
         shutil.rmtree(staging)
     originals = staging / "original-artifacts"
     originals.mkdir(parents=True, mode=0o700)
-    response = gh_json(
-        [
-            "api",
-            f"repos/{state['repository']}/actions/runs/{run_id}/artifacts?per_page=100",
-        ]
-    )
+    try:
+        response = gh_json(
+            [
+                "api",
+                f"repos/{state['repository']}/actions/runs/{run_id}/artifacts?per_page=100",
+            ],
+            timeout_seconds=ARTIFACT_DOWNLOAD_TIMEOUT_SECONDS,
+        )
+    except CampaignError as error:
+        raise ArtifactTransportError(f"artifact listing failed for run {run_id}: {error}") from error
     artifacts = response.get("artifacts") if isinstance(response, dict) else None
     if not isinstance(artifacts, list) or not artifacts:
-        raise CampaignError(f"run {run_id} has no downloadable artifacts")
+        raise ArtifactTransportError(f"run {run_id} has no downloadable artifacts yet")
     names: set[str] = set()
     paths: dict[str, Path] = {}
     manifest: list[dict[str, Any]] = []
@@ -1050,9 +1078,9 @@ def download_artifacts(campaign_dir: Path, state: dict[str, Any], run_id: int, s
         artifact_id = artifact.get("id")
         name = artifact.get("name")
         if not isinstance(artifact_id, int) or not isinstance(name, str) or name in names:
-            raise CampaignError("artifact API returned invalid or duplicate identity")
+            raise ArtifactIntegrityError("artifact API returned invalid or duplicate identity")
         if artifact.get("expired") is True:
-            raise CampaignError(f"artifact already expired: {name}")
+            raise ArtifactIntegrityError(f"artifact already expired: {name}")
         names.add(name)
         output = originals / safe_artifact_filename(artifact_id, name)
         download_binary(
@@ -1067,9 +1095,9 @@ def download_artifacts(campaign_dir: Path, state: dict[str, Any], run_id: int, s
             with zipfile.ZipFile(output) as archive:
                 corrupt = archive.testzip()
         except zipfile.BadZipFile as error:
-            raise CampaignError(f"artifact is not a valid ZIP: {name}") from error
+            raise ArtifactIntegrityError(f"artifact is not a valid ZIP: {name}") from error
         if corrupt is not None:
-            raise CampaignError(f"artifact ZIP has a corrupt member: {name}:{corrupt}")
+            raise ArtifactIntegrityError(f"artifact ZIP has a corrupt member: {name}:{corrupt}")
         paths[name] = output
         manifest.append(
             {
@@ -1103,12 +1131,12 @@ def download_artifacts_with_retry(
         raise CampaignError("artifact download retry count must be positive")
     if initial_delay_seconds <= 0 or max_delay_seconds < initial_delay_seconds:
         raise CampaignError("artifact download retry delays are invalid")
-    latest: CampaignError | None = None
+    latest: ArtifactTransportError | None = None
     delay_seconds = initial_delay_seconds
     for attempt in range(1, attempts + 1):
         try:
             return download_artifacts(campaign_dir, state, run_id, step)
-        except CampaignError as error:
+        except ArtifactTransportError as error:
             latest = error
             if attempt == attempts:
                 break
@@ -1123,7 +1151,7 @@ def download_artifacts_with_retry(
             )
             time.sleep(delay_seconds)
             delay_seconds = min(delay_seconds * 2, max_delay_seconds)
-    raise CampaignError(
+    raise ArtifactTransportError(
         f"artifact download failed after {attempts} attempts: {latest}"
     ) from latest
 
@@ -1475,12 +1503,112 @@ def view_run(state: dict[str, Any], run_id: int) -> dict[str, Any]:
     return value
 
 
+def check_artifact_transport_canary(
+    campaign_dir: Path,
+    state: dict[str, Any],
+    step: str,
+    *,
+    attempts: int = ARTIFACT_CANARY_ATTEMPTS,
+    retry_delay_seconds: int = ARTIFACT_CANARY_RETRY_DELAY_SECONDS,
+) -> None:
+    """Prove that GitHub artifact storage is readable before dispatching a long run."""
+    if attempts <= 0 or retry_delay_seconds <= 0:
+        raise CampaignError("artifact transport canary retry settings are invalid")
+    output = campaign_dir / f".artifact-transport-canary-{step}.zip"
+    latest: ArtifactTransportError | None = None
+    for attempt in range(1, attempts + 1):
+        try:
+            try:
+                response = gh_json(
+                    ["api", f"repos/{state['repository']}/actions/artifacts?per_page=100"],
+                    timeout_seconds=ARTIFACT_CANARY_TIMEOUT_SECONDS,
+                )
+            except CampaignError as error:
+                raise ArtifactTransportError(f"artifact canary listing failed: {error}") from error
+            artifacts = response.get("artifacts") if isinstance(response, dict) else None
+            if not isinstance(artifacts, list):
+                raise ArtifactTransportError("artifact canary listing has an invalid shape")
+            candidates = [
+                artifact
+                for artifact in artifacts
+                if isinstance(artifact, dict)
+                and isinstance(artifact.get("id"), int)
+                and isinstance(artifact.get("name"), str)
+                and isinstance(artifact.get("size_in_bytes"), int)
+                and 0 < artifact["size_in_bytes"] <= ARTIFACT_CANARY_MAX_BYTES
+                and artifact.get("expired") is not True
+            ]
+            if not candidates:
+                raise ArtifactTransportError(
+                    "artifact transport canary found no non-expired artifact within the size limit"
+                )
+            artifact = min(candidates, key=lambda candidate: candidate["size_in_bytes"])
+            download_binary(
+                [
+                    "gh",
+                    "api",
+                    f"repos/{state['repository']}/actions/artifacts/{artifact['id']}/zip",
+                ],
+                output,
+                timeout_seconds=ARTIFACT_CANARY_TIMEOUT_SECONDS,
+            )
+            try:
+                with zipfile.ZipFile(output) as archive:
+                    corrupt = archive.testzip()
+            except zipfile.BadZipFile as error:
+                raise ArtifactTransportError("artifact transport canary returned a non-ZIP body") from error
+            if corrupt is not None:
+                raise ArtifactTransportError(
+                    f"artifact transport canary ZIP has a corrupt member: {corrupt}"
+                )
+            receipt = {
+                "schema_version": 1,
+                "step": step,
+                "checked_at": utc_now(),
+                "artifact_id": artifact["id"],
+                "artifact_name": artifact["name"],
+                "reported_size_bytes": artifact["size_in_bytes"],
+                "archive_size_bytes": output.stat().st_size,
+                "archive_sha256": sha256_file(output),
+            }
+            write_json_atomic(campaign_dir / f"artifact-transport-canary-{step}.json", receipt)
+            append_event(
+                campaign_dir,
+                "artifact-transport-canary-passed",
+                step=step,
+                artifact_id=artifact["id"],
+            )
+            return
+        except ArtifactTransportError as error:
+            latest = error
+            if attempt == attempts:
+                break
+            append_event(
+                campaign_dir,
+                "artifact-transport-canary-retry",
+                step=step,
+                attempt=attempt,
+                retry_in_seconds=retry_delay_seconds,
+                detail=str(error),
+            )
+            time.sleep(retry_delay_seconds)
+        finally:
+            if output.exists():
+                os.chmod(output, stat.S_IRUSR | stat.S_IWUSR)
+                output.unlink()
+            output.with_name(f".{output.name}.partial").unlink(missing_ok=True)
+    raise ArtifactTransportError(
+        f"artifact transport canary failed after {attempts} attempts: {latest}"
+    ) from latest
+
+
 def check_pre_dispatch(campaign_dir: Path, state: dict[str, Any], step: str) -> None:
     ensure_checkout(state["expected_sha"])
     if github_main_sha(state) != state["expected_sha"]:
         raise CampaignError("origin main no longer equals the qualified campaign SHA")
     ensure_github_runner_contract(state)
     ensure_runner_offline(campaign_dir)
+    check_artifact_transport_canary(campaign_dir, state, step)
     run_host_action(campaign_dir, state, "check-frozen")
     guard = repo_root() / "scripts/perf/reference-runtime-irq-guard.sh"
     result = run_visible(
@@ -1616,11 +1744,14 @@ def execute_stage(campaign_dir: Path, state: dict[str, Any], spec: dict[str, Any
         watch_status = wait_for_run(campaign_dir, state, run_id, step)
         run = view_run(state, run_id)
     artifacts: dict[str, Path] = {}
-    artifact_error: str | None = None
+    artifact_transport_error: str | None = None
+    artifact_integrity_error: str | None = None
     try:
         artifacts = download_artifacts_with_retry(campaign_dir, state, run_id, step)
-    except Exception as error:  # retain the run failure separately from download failure
-        artifact_error = str(error)
+    except ArtifactTransportError as error:
+        artifact_transport_error = str(error)
+    except Exception as error:  # integrity/identity failures permanently invalidate evidence
+        artifact_integrity_error = str(error)
 
     post_error: str | None = None
     try:
@@ -1640,11 +1771,13 @@ def execute_stage(campaign_dir: Path, state: dict[str, Any], spec: dict[str, Any
         rejection_reasons.append(f"GitHub run conclusion={run.get('conclusion')} watch_status={watch_status}")
     if run.get("headSha") != state["expected_sha"] or run.get("displayTitle") != expected_title(state, step):
         rejection_reasons.append("GitHub run identity mismatch")
-    if artifact_error:
-        rejection_reasons.append(artifact_error)
+    if artifact_integrity_error:
+        rejection_reasons.append(artifact_integrity_error)
     if post_error:
         rejection_reasons.append(post_error)
     if rejection_reasons:
+        if artifact_transport_error:
+            rejection_reasons.append(artifact_transport_error)
         stage.update(
             {
                 "status": "rejected",
@@ -1657,6 +1790,31 @@ def execute_stage(campaign_dir: Path, state: dict[str, Any], spec: dict[str, Any
         save_state(campaign_dir, state)
         append_event(campaign_dir, "stage-rejected", step=step, run_id=run_id, reasons=rejection_reasons)
         raise CampaignError(f"stage {step} rejected: {'; '.join(rejection_reasons)}")
+
+    if artifact_transport_error:
+        waiting_since = stage.get("awaiting_artifacts_since") or utc_now()
+        stage.update(
+            {
+                "status": "awaiting-artifacts",
+                "conclusion": "success",
+                "awaiting_artifacts_since": waiting_since,
+                "artifact_transport_attempted_at": utc_now(),
+                "artifact_transport_error": artifact_transport_error,
+            }
+        )
+        state["phase"] = "awaiting-artifacts"
+        save_state(campaign_dir, state)
+        append_event(
+            campaign_dir,
+            "stage-awaiting-artifacts",
+            step=step,
+            run_id=run_id,
+            detail=artifact_transport_error,
+        )
+        raise CampaignError(
+            f"stage {step} run {run_id} succeeded and is awaiting artifact retrieval: "
+            f"{artifact_transport_error}"
+        )
 
     try:
         retained = validate_stage_artifacts(campaign_dir, state, spec, run_id, artifacts)
@@ -1682,6 +1840,13 @@ def execute_stage(campaign_dir: Path, state: dict[str, Any], spec: dict[str, Any
             **retained,
         }
     )
+    for field in (
+        "awaiting_artifacts_since",
+        "artifact_transport_attempted_at",
+        "artifact_transport_error",
+        "rejection_reasons",
+    ):
+        stage.pop(field, None)
     save_state(campaign_dir, state)
     append_event(campaign_dir, "stage-accepted", step=step, run_id=run_id)
     print(f"STAGE_ACCEPTED={step} RUN_ID={run_id}")
@@ -1889,8 +2054,10 @@ def write_summary(campaign_dir: Path, state: dict[str, Any]) -> None:
 def command_run(args: argparse.Namespace) -> None:
     campaign_dir = ensure_external_campaign_dir(Path(args.campaign_dir))
     state = load_state(campaign_dir)
-    if state["phase"] not in {"ready", "running"}:
-        raise CampaignError(f"run requires ready/running state, found {state['phase']}")
+    if state["phase"] not in {"ready", "running", "awaiting-artifacts"}:
+        raise CampaignError(
+            f"run requires ready/running/awaiting-artifacts state, found {state['phase']}"
+        )
     require_tools(["gh", "git", "sudo", "systemctl"])
     require_github_dispatch_readiness()
     ensure_checkout(state["expected_sha"])

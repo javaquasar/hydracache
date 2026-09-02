@@ -356,7 +356,7 @@ class ReferenceCampaignTests(unittest.TestCase):
                 mock.patch.object(
                     campaign,
                     "download_artifacts",
-                    side_effect=[campaign.CampaignError("TLS timeout"), expected],
+                    side_effect=[campaign.ArtifactTransportError("TLS timeout"), expected],
                 ) as download,
                 mock.patch.object(campaign.time, "sleep") as sleep,
             ):
@@ -385,7 +385,7 @@ class ReferenceCampaignTests(unittest.TestCase):
         self.assertFalse(output.exists())
         self.assertFalse(output.with_name(".artifact.zip.partial").exists())
 
-    def test_persistent_artifact_download_failure_remains_fatal(self) -> None:
+    def test_persistent_artifact_download_failure_remains_resumable(self) -> None:
         state = base_state()
         with tempfile.TemporaryDirectory() as temporary:
             campaign_dir = Path(temporary)
@@ -393,11 +393,11 @@ class ReferenceCampaignTests(unittest.TestCase):
                 mock.patch.object(
                     campaign,
                     "download_artifacts",
-                    side_effect=campaign.CampaignError("still unavailable"),
+                    side_effect=campaign.ArtifactTransportError("still unavailable"),
                 ) as download,
                 mock.patch.object(campaign.time, "sleep") as sleep,
                 self.assertRaisesRegex(
-                    campaign.CampaignError,
+                    campaign.ArtifactTransportError,
                     f"failed after {campaign.ARTIFACT_DOWNLOAD_ATTEMPTS} attempts",
                 ),
             ):
@@ -409,6 +409,162 @@ class ReferenceCampaignTests(unittest.TestCase):
             [call.args[0] for call in sleep.call_args_list],
             [15, 30, *([60] * (campaign.ARTIFACT_DOWNLOAD_ATTEMPTS - 3))],
         )
+
+    def test_artifact_integrity_failure_is_not_retried(self) -> None:
+        state = base_state()
+        with tempfile.TemporaryDirectory() as temporary:
+            campaign_dir = Path(temporary)
+            with (
+                mock.patch.object(
+                    campaign,
+                    "download_artifacts",
+                    side_effect=campaign.ArtifactIntegrityError("bad ZIP"),
+                ) as download,
+                mock.patch.object(campaign.time, "sleep") as sleep,
+                self.assertRaisesRegex(campaign.ArtifactIntegrityError, "bad ZIP"),
+            ):
+                campaign.download_artifacts_with_retry(
+                    campaign_dir, state, 123, "full-dress-1"
+                )
+        download.assert_called_once()
+        sleep.assert_not_called()
+
+    def test_artifact_transport_canary_downloads_smallest_readable_zip(self) -> None:
+        state = base_state()
+        listing = {
+            "artifacts": [
+                {"id": 11, "name": "large", "size_in_bytes": 2000, "expired": False},
+                {"id": 12, "name": "small", "size_in_bytes": 1000, "expired": False},
+            ]
+        }
+
+        def write_zip(_args: list[str], output: Path, **_kwargs: object) -> None:
+            with zipfile.ZipFile(output, "w") as archive:
+                archive.writestr("canary.txt", "ok")
+            output.chmod(0o444)
+
+        with tempfile.TemporaryDirectory() as temporary:
+            campaign_dir = Path(temporary)
+            with (
+                mock.patch.object(campaign, "gh_json", return_value=listing),
+                mock.patch.object(campaign, "download_binary", side_effect=write_zip) as download,
+            ):
+                campaign.check_artifact_transport_canary(campaign_dir, state, "qualification")
+            receipt_path = campaign_dir / "artifact-transport-canary-qualification.json"
+            receipt = json.loads(receipt_path.read_text(encoding="utf-8"))
+            self.assertEqual(receipt["artifact_id"], 12)
+            self.assertRegex(receipt["archive_sha256"], r"^[0-9a-f]{64}$")
+            self.assertFalse((campaign_dir / ".artifact-transport-canary-qualification.zip").exists())
+        self.assertIn("actions/artifacts/12/zip", download.call_args.args[0][-1])
+
+    def test_artifact_transport_canary_blocks_before_frozen_host_check(self) -> None:
+        state = base_state()
+        with tempfile.TemporaryDirectory() as temporary:
+            campaign_dir = Path(temporary)
+            with (
+                mock.patch.object(campaign, "ensure_checkout"),
+                mock.patch.object(campaign, "github_main_sha", return_value=SHA),
+                mock.patch.object(campaign, "ensure_github_runner_contract"),
+                mock.patch.object(campaign, "ensure_runner_offline"),
+                mock.patch.object(
+                    campaign,
+                    "check_artifact_transport_canary",
+                    side_effect=campaign.ArtifactTransportError("blob unavailable"),
+                ),
+                mock.patch.object(campaign, "run_host_action") as host_action,
+                self.assertRaisesRegex(campaign.ArtifactTransportError, "blob unavailable"),
+            ):
+                campaign.check_pre_dispatch(campaign_dir, state, "qualification")
+        host_action.assert_not_called()
+
+    def test_successful_run_with_transport_failure_resumes_same_run(self) -> None:
+        state = base_state()
+        state["phase"] = "running"
+        state["stages"]["qualification"] = {"status": "running", "run_id": 123}
+        run = {
+            "databaseId": 123,
+            "displayTitle": campaign.expected_title(state, "qualification"),
+            "headSha": SHA,
+            "status": "completed",
+            "conclusion": "success",
+            "url": "https://example.invalid/run/123",
+        }
+        artifacts = {"diagnostic": Path("diagnostic.zip")}
+        with tempfile.TemporaryDirectory() as temporary:
+            campaign_dir = Path(temporary)
+            with (
+                mock.patch.object(campaign, "view_run", return_value=run),
+                mock.patch.object(campaign, "assert_no_foreign_reference_runs"),
+                mock.patch.object(campaign, "ensure_runner_offline"),
+                mock.patch.object(campaign, "disarm_runner_watchdog"),
+                mock.patch.object(
+                    campaign,
+                    "download_artifacts_with_retry",
+                    side_effect=[campaign.ArtifactTransportError("blob unavailable"), artifacts],
+                ) as download,
+                mock.patch.object(campaign, "run_host_action"),
+                mock.patch.object(campaign, "run_visible", return_value=0),
+                mock.patch.object(
+                    campaign, "validate_stage_artifacts", return_value={"receipt": "receipt.json"}
+                ),
+                mock.patch.object(campaign, "check_pre_dispatch") as pre_dispatch,
+            ):
+                with self.assertRaisesRegex(campaign.CampaignError, "awaiting artifact retrieval"):
+                    campaign.execute_stage(
+                        campaign_dir, state, {"name": "qualification"}
+                    )
+                self.assertEqual(state["phase"], "awaiting-artifacts")
+                self.assertEqual(
+                    state["stages"]["qualification"]["status"], "awaiting-artifacts"
+                )
+                self.assertEqual(state["stages"]["qualification"]["run_id"], 123)
+
+                state["phase"] = "running"
+                campaign.execute_stage(campaign_dir, state, {"name": "qualification"})
+
+            self.assertEqual(state["stages"]["qualification"]["status"], "completed")
+            self.assertEqual(state["stages"]["qualification"]["run_id"], 123)
+            self.assertNotIn(
+                "artifact_transport_error", state["stages"]["qualification"]
+            )
+        self.assertEqual(download.call_count, 2)
+        pre_dispatch.assert_not_called()
+
+    def test_command_run_accepts_awaiting_artifacts_phase(self) -> None:
+        state = base_state()
+        state["phase"] = "awaiting-artifacts"
+        state["stages"]["bootstrap-5"] = {"status": "completed"}
+        with tempfile.TemporaryDirectory() as temporary:
+            campaign_dir = Path(temporary)
+            args = mock.Mock(campaign_dir=str(campaign_dir))
+            with (
+                mock.patch.object(
+                    campaign, "ensure_external_campaign_dir", return_value=campaign_dir
+                ),
+                mock.patch.object(campaign, "load_state", return_value=state),
+                mock.patch.object(campaign, "require_tools"),
+                mock.patch.object(campaign, "require_github_dispatch_readiness"),
+                mock.patch.object(campaign, "ensure_checkout"),
+                mock.patch.object(campaign, "validate_host_admission_state"),
+                mock.patch.object(campaign, "pin_controller_to_housekeeping"),
+                mock.patch.object(campaign, "stage_specs", return_value=[]),
+                mock.patch.object(campaign, "ensure_runner_offline"),
+                mock.patch.object(campaign, "run_host_action"),
+                mock.patch.object(
+                    campaign, "cargo_sample_set", return_value=campaign_dir / "samples.json"
+                ),
+                mock.patch.object(campaign, "sha256_file", return_value="a" * 64),
+                mock.patch.object(
+                    campaign,
+                    "prepare_reference_inputs",
+                    return_value=campaign_dir / "reference-inputs.json",
+                ),
+                mock.patch.object(campaign, "save_state"),
+                mock.patch.object(campaign, "append_event"),
+                mock.patch.object(campaign, "write_summary"),
+            ):
+                campaign.command_run(args)
+        self.assertEqual(state["phase"], "complete")
 
     def test_receipt_retention_is_immutable_and_sample_directory_is_exact(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:

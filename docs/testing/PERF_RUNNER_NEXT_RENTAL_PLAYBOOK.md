@@ -334,6 +334,12 @@ sudo scripts/perf/prepare-reference-host.sh check-frozen \
   --profile "$HC_PROFILE" --state-dir "$HC_STATE"
 ```
 
+The campaign controller also downloads and ZIP-checks a small, non-expired
+artifact from a previous repository run while the runner is still offline. This
+bounded transport canary must pass before the runner is enabled and the long job
+is dispatched. It detects GitHub/Azure artifact-delivery failures without
+spending a fresh measurement run to discover them.
+
 The check fails on source/profile/plan/applied/provisioning digest drift, kernel
 or command-line drift, package changes, systemd unit-file or active-state drift,
 or selected sysctl drift. Do not “fix” the receipt to match a changed host. Find
@@ -381,6 +387,14 @@ the next run before the predecessor artifact exists. Failed, cancelled, unstable
 identity-mismatched, IRQ-contaminated, or drifted runs do not count and
 cannot authorize a successor. Keep original downloads unchanged and build any
 analyses from copies.
+
+Artifact delivery is resumable. If an identity-matched GitHub run completed
+successfully, the frozen-host and IRQ post-checks passed, but artifact listing or
+download exhausted its bounded retries, the controller records the exact run id
+and enters `awaiting-artifacts`. Re-running the controller retries retrieval and
+validation for that same run; it does not dispatch the workload again. A failed
+or cancelled run, expired artifact, invalid artifact identity, corrupt ZIP,
+receipt mismatch, host drift, or IRQ failure remains a terminal rejection.
 
 ## What previous experiments taught us
 
