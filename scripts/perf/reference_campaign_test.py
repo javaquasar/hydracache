@@ -640,7 +640,7 @@ class ReferenceCampaignTests(unittest.TestCase):
             receipt_data = (json.dumps(receipt) + "\n").encode()
             archive = root / "diagnostic.zip"
             with zipfile.ZipFile(archive, "w") as output:
-                output.writestr(relative, evidence)
+                output.writestr(relative.removeprefix("target/"), evidence)
             materialized = campaign.materialize_bootstrap_input(
                 root, 1, receipt_data, archive
             )

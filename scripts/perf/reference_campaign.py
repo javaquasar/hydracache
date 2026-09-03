@@ -1184,13 +1184,17 @@ def read_evidence_member(archive_path: Path, relative: str, expected_sha256: str
         or not re.fullmatch(r"[0-9a-f]{64}", expected_sha256)
     ):
         raise CampaignError(f"unsafe bootstrap evidence identity: {relative}")
+    archive_relatives = {relative, relative.removeprefix("target/")}
     with zipfile.ZipFile(archive_path) as archive:
         matches: list[zipfile.ZipInfo] = []
         for info in archive.infolist():
             name = info.filename.removeprefix("./")
             if info.is_dir() or name.startswith("/") or "\\" in name or ".." in name.split("/"):
                 continue
-            if name == relative or name.endswith(f"/{relative}"):
+            if any(
+                name == archive_relative or name.endswith(f"/{archive_relative}")
+                for archive_relative in archive_relatives
+            ):
                 matches.append(info)
         if len(matches) != 1:
             raise CampaignError(
