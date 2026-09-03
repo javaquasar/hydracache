@@ -413,16 +413,30 @@ fn member_from_sample(
         .reports
         .first()
         .ok_or("sample has no normalized reports")?;
-    if sample.reports.iter().any(|report| {
-        report.source_commit != sample.receipt.source_commit
-            || report.runner_fingerprint != sample.receipt.runner_fingerprint
-            || report.prebuild_contract_digest != sample.receipt.prebuild_contract_digest
-            || !report.stable
-            || report.maximum_spread_ratio > REPORT_SPREAD_CEILING
-    }) {
+    let invalid_reports = sample
+        .reports
+        .iter()
+        .filter_map(|report| {
+            let identity_matches = report.source_commit == sample.receipt.source_commit
+                && report.runner_fingerprint == sample.receipt.runner_fingerprint
+                && report.prebuild_contract_digest == sample.receipt.prebuild_contract_digest;
+            (!identity_matches
+                || !report.stable
+                || report.maximum_spread_ratio > REPORT_SPREAD_CEILING)
+                .then(|| {
+                    format!(
+                        "{}(identity_matches={},stable={},spread={})",
+                        report.id, identity_matches, report.stable, report.maximum_spread_ratio,
+                    )
+                })
+        })
+        .collect::<Vec<_>>();
+    if !invalid_reports.is_empty() {
         return Err(format!(
-            "sample {} mixes identity or unstable reports",
-            sample.receipt.sample_index
+            "sample {} has invalid reports [{}] (spread ceiling={})",
+            sample.receipt.sample_index,
+            invalid_reports.join(", "),
+            REPORT_SPREAD_CEILING,
         )
         .into());
     }
@@ -1133,7 +1147,7 @@ fn load_samples(
                 return Err(format!("sample artifact digest mismatch: {}", artifact.path).into());
             }
         }
-        let reports = perf_budget::load_candidate_reports(&root, budget)?;
+        let reports = perf_budget::load_archived_candidate_reports(&root, budget)?;
         inputs.push(ReferenceSampleInput {
             receipt,
             receipt_sha256: sha256(&receipt_bytes),

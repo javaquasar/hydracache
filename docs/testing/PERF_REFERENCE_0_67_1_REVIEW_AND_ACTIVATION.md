@@ -191,9 +191,11 @@ python3 scripts/perf/reference_campaign.py close \
   --campaign-dir /var/lib/hydracache-campaigns/<campaign-id>
 ```
 
-`SAFE_TO_DELETE_SERVER=true` means local services are stopped and the final host archive exists.
-Provider deletion, runner credential revocation, artifact archival, and billing confirmation are
-still explicit operator actions.
+`LOCAL_HOST_CLOSEOUT_COMPLETE=true` means only that local services are stopped and the final host
+archive exists. The controller also prints `SERVER_DELETION_BLOCKED=true`: complete and verify the
+off-host campaign/host-state copy and GitHub artifacts, commit the sanitized report, run the secret
+scan, and revoke runner credentials before separately authorizing provider deletion and confirming
+that billing stopped.
 
 ## Failure interpretation
 

@@ -1795,12 +1795,15 @@ jobs:
       - name: Run 0.67 RESP performance evidence
         run: cargo run -p xtask --locked -- evidence-run --release 0.67 --gate env.hydracache-run-067-perf-resp
 
+      - name: Check 0.67 performance budgets
+        run: cargo run -p xtask --locked -- evidence-run --release 0.67 --gate tool.perf-budget-check-067
+
+      # The budget checker re-hashes the receipt-bound absolute source files.
+      # Keep tmpfs live through this step, then copy both the evidence and its
+      # verdict to persistent storage even when the checker fails.
       - name: Materialize tmpfs reference evidence
         if: always()
         run: scripts/perf/reference-evidence-tmpfs.sh materialize
-
-      - name: Check 0.67 performance budgets
-        run: cargo run -p xtask --locked -- evidence-run --release 0.67 --gate tool.perf-budget-check-067
 
       - name: Aggregate exact 0.67 candidate evidence
         run: cargo run -p xtask --locked -- release-evidence --release 0.67 --receipts-dir target/release-evidence/receipts --require-ship
@@ -2371,12 +2374,16 @@ jobs:
         if: always()
         run: scripts/perf/rootless-docker.sh stop
 
+      - name: Check activated 0.67.1 reference budgets and rolling baseline
+        run: cargo run -p xtask --locked -- perf-budget-check --release 0.67.1 --profile reference-v1
+
+      # Live source re-hashing above depends on the absolute files under
+      # /dev/shm. Materialize only after the verdict has been written so the
+      # final receipt consumes persistent evidence without weakening that
+      # validation to archived identity checks.
       - name: Materialize tmpfs reference evidence
         if: always()
         run: scripts/perf/reference-evidence-tmpfs.sh materialize
-
-      - name: Check activated 0.67.1 reference budgets and rolling baseline
-        run: cargo run -p xtask --locked -- perf-budget-check --release 0.67.1 --profile reference-v1
 
       - name: Execute complete 0.67.1 expected-red canary sweep
         run: cargo run -p xtask --locked -- canary-sweep --release 0.67.1 --tier all

@@ -24,7 +24,7 @@ use hydracache_loadgen::overload::{
     EligibleOverloadSurface, NodeRespStableCapability, OverloadReport, OverloadRunMode,
     ReferenceExecutionKind,
 };
-use hydracache_loadgen::report::WorkloadIdentity;
+use hydracache_loadgen::report::{RespEndpointCapability, WorkloadIdentity};
 use hydracache_loadgen::targets::control_plane::{
     ControlPlaneReport, DaemonTerminationKind, MembershipAction,
 };
@@ -51,6 +51,8 @@ pub const VERDICT_PATH_0671: &str = "target/test-evidence/0.67.1/perf-budget-ver
 pub const DEFAULT_MINIMUM_MEMBERS: usize = 5;
 pub const DEFAULT_MAXIMUM_MEMBERS: usize = 10;
 pub const DEFAULT_MAXIMUM_AGE_DAYS: i64 = 30;
+const REFERENCE_OVERLOAD_WINDOW_OPERATIONS: u64 = 50_000;
+const REFERENCE_OVERLOAD_WARMUP_OPERATIONS: u64 = 4;
 pub const CLEAN_GIT_STATUS_SHA256: &str =
     "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855";
 
@@ -2162,9 +2164,83 @@ fn validate_rolling_metrics(
     }
 }
 
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+enum SourceFileValidation {
+    Live,
+    ArchivedIdentity,
+}
+
 pub fn load_candidate_reports(
     root: &Path,
     budget: &BudgetContract,
+) -> Result<Vec<CandidateReport>, PerfBudgetError> {
+    load_candidate_reports_with_validation(root, budget, SourceFileValidation::Live)
+}
+
+/// Validate the complete materialized 0.67.1 candidate before a bootstrap
+/// sample is allowed to enter the immutable predecessor chain. This
+/// deliberately uses the same archived-report normalization and macro
+/// dependency checks as proposal generation so an unstable reviewed report
+/// cannot be discovered only after five long-running samples have completed.
+pub fn validate_bootstrap_candidate_reports(root: &Path) -> Result<Vec<String>, PerfBudgetError> {
+    let budget_path = root.join(BUDGET_ROOT).join("reference-v1.toml");
+    let budget = parse_toml(&budget_path, &read_bounded(&budget_path)?)?;
+    let reports = load_archived_candidate_reports(root, &budget)?;
+    require_stable_candidate_reports(&reports)?;
+
+    let marker_path = root.join(MACRO_PUBLICATION_RECEIPT_RELATIVE);
+    let marker: MacroBatchPublicationReceipt = serde_json::from_slice(&read_bounded(&marker_path)?)
+        .map_err(|error| {
+            PerfBudgetError::new(format!(
+                "invalid W7 macro publication receipt {}: {error}",
+                marker_path.display()
+            ))
+        })?;
+    let mut support_files = marker
+        .artifacts
+        .into_iter()
+        .map(|artifact| artifact.raw_sidecar_path)
+        .collect::<Vec<_>>();
+    support_files.push(MACRO_PUBLICATION_RECEIPT_RELATIVE.to_owned());
+    support_files.push(PREBUILD_MANIFEST_PATH.to_owned());
+    support_files.sort();
+    support_files.dedup();
+    Ok(support_files)
+}
+
+fn require_stable_candidate_reports(reports: &[CandidateReport]) -> Result<(), PerfBudgetError> {
+    let mut unstable = reports
+        .iter()
+        .filter(|report| !report.stable)
+        .map(|report| {
+            format!(
+                "{} (maximum_spread_ratio={})",
+                report.id, report.maximum_spread_ratio
+            )
+        })
+        .collect::<Vec<_>>();
+    unstable.sort();
+    if unstable.is_empty() {
+        Ok(())
+    } else {
+        Err(PerfBudgetError::new(format!(
+            "bootstrap candidate contains unstable reviewed reports: {}",
+            unstable.join(", ")
+        )))
+    }
+}
+
+pub(crate) fn load_archived_candidate_reports(
+    root: &Path,
+    budget: &BudgetContract,
+) -> Result<Vec<CandidateReport>, PerfBudgetError> {
+    load_candidate_reports_with_validation(root, budget, SourceFileValidation::ArchivedIdentity)
+}
+
+fn load_candidate_reports_with_validation(
+    root: &Path,
+    budget: &BudgetContract,
+    source_file_validation: SourceFileValidation,
 ) -> Result<Vec<CandidateReport>, PerfBudgetError> {
     validate_macro_publication_receipt(root, budget)?;
     reject_extra_macro_reports(root, budget)?;
@@ -2174,13 +2250,25 @@ pub fn load_candidate_reports(
         .map(|expected| {
             let path = root.join(&expected.path);
             let bytes = read_bounded(&path)?;
-            let mut report = normalize_report(expected, budget.enforcement, &bytes)?;
+            let mut report = normalize_report_with_validation(
+                expected,
+                budget.enforcement,
+                &bytes,
+                source_file_validation,
+            )?;
             let expected_metrics = budget
                 .budgets
                 .iter()
                 .filter(|rule| rule.report == expected.id)
                 .map(|rule| rule.metric.as_str())
                 .collect::<BTreeSet<_>>();
+            if expected.format == ReportFormat::PerfReportV1 {
+                let reviewed_spread =
+                    reviewed_perf_report_spread(expected, &bytes, &expected_metrics)?;
+                report.maximum_spread_ratio = reviewed_spread;
+                report.stable = report.stable
+                    && reviewed_spread <= enforcement_spread_limit(budget.enforcement);
+            }
             report
                 .metrics
                 .retain(|metric, _| expected_metrics.contains(metric.as_str()));
@@ -2193,7 +2281,7 @@ pub fn load_candidate_reports(
             Ok(report)
         })
         .collect::<Result<Vec<_>, _>>()?;
-    validate_macro_dependency_graph(root, budget)?;
+    validate_macro_dependency_graph(root, budget, source_file_validation)?;
     Ok(reports)
 }
 
@@ -2345,7 +2433,16 @@ fn validate_macro_publication_receipt(
 fn validate_macro_dependency_graph(
     root: &Path,
     budget: &BudgetContract,
+    source_file_validation: SourceFileValidation,
 ) -> Result<(), PerfBudgetError> {
+    let marker_bytes = read_bounded(&root.join(MACRO_PUBLICATION_RECEIPT_RELATIVE))?;
+    let marker: MacroBatchPublicationReceipt = serde_json::from_slice(&marker_bytes)
+        .map_err(|error| PerfBudgetError::new(format!("invalid W7 marker JSON: {error}")))?;
+    let raw_macro_sources = marker
+        .artifacts
+        .iter()
+        .map(|artifact| (artifact.report_id.as_str(), artifact.raw_sha256.as_str()))
+        .collect::<BTreeMap<_, _>>();
     let mut sources = BTreeMap::new();
     let mut values = BTreeMap::new();
     for expected in &budget.reports {
@@ -2355,7 +2452,16 @@ fn validate_macro_dependency_graph(
         })?;
         let source_sha256 = match expected.format {
             ReportFormat::PerfReportV1 => sha256(&bytes),
-            ReportFormat::MacroReceiptV1 => macro_raw_source_sha256(&expected.id, &value)?,
+            ReportFormat::MacroReceiptV1 => raw_macro_sources
+                .get(expected.report_id.as_str())
+                .copied()
+                .ok_or_else(|| {
+                    PerfBudgetError::new(format!(
+                        "{} has no raw source identity in the W7 marker",
+                        expected.id
+                    ))
+                })?
+                .to_owned(),
         };
         sources.insert(expected.id.as_str(), source_sha256);
         values.insert(expected.id.as_str(), value);
@@ -2437,39 +2543,14 @@ fn validate_macro_dependency_graph(
             "W5C predecessor receipt differs from the exact W4B reference receipt",
         ));
     }
-    validate_w5b_dependency_graph(root, &values)?;
+    validate_w5b_dependency_graph(root, &values, source_file_validation)?;
     Ok(())
-}
-
-fn macro_raw_source_sha256(report_id: &str, envelope: &Value) -> Result<String, PerfBudgetError> {
-    let source = envelope
-        .get("report")
-        .ok_or_else(|| PerfBudgetError::new(format!("{report_id} has no typed source report")))?;
-    let bytes = match report_id {
-        "control-plane-3" | "control-plane-5" | "control-plane-7" => {
-            let typed: ControlPlaneReport = deserialize_typed_report(report_id, source)?;
-            serde_json::to_vec_pretty(&typed)
-        }
-        "grid-model" => {
-            let typed: GridModelReport = deserialize_typed_report(report_id, source)?;
-            serde_json::to_vec_pretty(&typed)
-        }
-        // No W5/W6 report is a predecessor of another macro-budget report.
-        // Their outer receipt still seals the normalized source-report digest;
-        // a raw pretty-byte identity is needed only for W4 -> W5 edges.
-        _ => serde_json::to_vec(source),
-    }
-    .map_err(|error| {
-        PerfBudgetError::new(format!(
-            "serializing {report_id} dependency source: {error}"
-        ))
-    })?;
-    Ok(sha256(&bytes))
 }
 
 fn validate_w5b_dependency_graph(
     root: &Path,
     values: &BTreeMap<&str, Value>,
+    source_file_validation: SourceFileValidation,
 ) -> Result<(), PerfBudgetError> {
     let w3 = values
         .get("node-resp-open-loop")
@@ -2480,13 +2561,18 @@ fn validate_w5b_dependency_graph(
     let provenance = w5b
         .pointer("/report/reference_provenance")
         .ok_or_else(|| PerfBudgetError::new("W5B provenance is absent"))?;
+    let archived_capability: RespEndpointCapability = serde_json::from_value(
+        w3.get("resp_endpoint_capability")
+            .cloned()
+            .ok_or_else(|| PerfBudgetError::new("W3 RESP endpoint capability is absent"))?,
+    )
+    .map_err(|error| PerfBudgetError::new(format!("invalid W3 RESP capability: {error}")))?;
+    let archived_capability_sha256 =
+        resp_capability_digest(&archived_capability, source_file_validation)?;
     if provenance
         .get("archived_process_receipt_sha256")
         .and_then(Value::as_str)
-        != w3
-            .get("resp_endpoint_capability")
-            .map(digest_json)
-            .as_deref()
+        != Some(archived_capability_sha256.as_str())
         || provenance
             .get("predecessor_scenario_digest")
             .and_then(Value::as_str)
@@ -2563,9 +2649,20 @@ pub fn normalize_report(
     enforcement: Enforcement,
     bytes: &[u8],
 ) -> Result<CandidateReport, PerfBudgetError> {
+    normalize_report_with_validation(expected, enforcement, bytes, SourceFileValidation::Live)
+}
+
+fn normalize_report_with_validation(
+    expected: &ExpectedReport,
+    enforcement: Enforcement,
+    bytes: &[u8],
+    source_file_validation: SourceFileValidation,
+) -> Result<CandidateReport, PerfBudgetError> {
     match expected.format {
         ReportFormat::PerfReportV1 => normalize_perf_report(expected, enforcement, bytes),
-        ReportFormat::MacroReceiptV1 => normalize_macro_receipt(expected, enforcement, bytes),
+        ReportFormat::MacroReceiptV1 => {
+            normalize_macro_receipt(expected, enforcement, bytes, source_file_validation)
+        }
     }
 }
 
@@ -2573,6 +2670,7 @@ fn normalize_macro_receipt(
     expected: &ExpectedReport,
     enforcement: Enforcement,
     bytes: &[u8],
+    source_file_validation: SourceFileValidation,
 ) -> Result<CandidateReport, PerfBudgetError> {
     let root: Value = serde_json::from_slice(bytes)
         .map_err(|error| PerfBudgetError::new(format!("invalid {} JSON: {error}", expected.id)))?;
@@ -2639,13 +2737,14 @@ fn normalize_macro_receipt(
         receipt.maximum_spread_ratio,
     )?;
     let toolchain_identity = canonical_toolchain_identity(&receipt.toolchain_identity)?;
-    let (derived_metrics, derived_spread) =
-        macro_report_metrics(&expected.id, source_report, &receipt)?;
+    let (derived_metrics, derived_spread) = macro_report_metrics(
+        &expected.id,
+        source_report,
+        &receipt,
+        source_file_validation,
+    )?;
     let metrics = metric_map(receipt.metrics)?;
-    let spread_limit = match enforcement {
-        Enforcement::Ship => 0.05,
-        Enforcement::NonEnforcingTripwire => 0.30,
-    };
+    let spread_limit = enforcement_spread_limit(enforcement);
     let derived_stable = derived_spread <= spread_limit;
     if metrics != derived_metrics
         || !approx_eq(receipt.maximum_spread_ratio, derived_spread)
@@ -2684,10 +2783,18 @@ fn normalize_macro_receipt(
     })
 }
 
+fn enforcement_spread_limit(enforcement: Enforcement) -> f64 {
+    match enforcement {
+        Enforcement::Ship => 0.05,
+        Enforcement::NonEnforcingTripwire => 0.30,
+    }
+}
+
 fn macro_report_metrics(
     report_id: &str,
     report: &Value,
     receipt: &MacroReportReceipt,
+    source_file_validation: SourceFileValidation,
 ) -> Result<(BTreeMap<String, ReportMetric>, f64), PerfBudgetError> {
     let mut metrics = BTreeMap::new();
     let mut add = |id: &str, value: f64, unit: &str| {
@@ -2728,8 +2835,8 @@ fn macro_report_metrics(
                 .rsplit('-')
                 .next()
                 .and_then(|value| value.parse::<u64>().ok());
-            validate_w4_capability(report, expected_nodes, receipt)?;
-            validate_w4_archived_lifecycle(&typed, receipt)?;
+            validate_w4_capability(report, expected_nodes, receipt, source_file_validation)?;
+            validate_w4_archived_lifecycle(&typed, receipt, source_file_validation)?;
             if report.get("schema_version").and_then(Value::as_u64) != Some(1)
                 || report.get("node_count").and_then(Value::as_u64) != expected_nodes
                 || report.get("evidence_class").and_then(Value::as_str)
@@ -2959,7 +3066,7 @@ fn macro_report_metrics(
                     "control-plane brownout is not exact reference operational evidence",
                 ));
             }
-            validate_w5_control_provenance(report, receipt)?;
+            validate_w5_control_provenance(report, receipt, source_file_validation)?;
             let events = report
                 .get("events")
                 .and_then(Value::as_array)
@@ -3138,7 +3245,7 @@ fn macro_report_metrics(
                     "grid-model brownout crossed its reference model boundary",
                 ));
             }
-            validate_w5_grid_provenance(report, receipt)?;
+            validate_w5_grid_provenance(report, receipt, source_file_validation)?;
             let faults = report
                 .get("faults")
                 .and_then(Value::as_array)
@@ -3177,7 +3284,12 @@ fn macro_report_metrics(
             Ok((metrics, spread))
         }
         "overload-local" | "overload-client-surface" | "overload-node-resp" => {
-            let (goodput, spread) = validate_overload_budget_report(report_id, report, receipt)?;
+            let (goodput, spread) = validate_overload_budget_report(
+                report_id,
+                report,
+                receipt,
+                source_file_validation,
+            )?;
             add(
                 "overload_goodput_curve_1_2x_1_5x_2x_knee_per_eligible_surface.minimum_goodput_per_second",
                 goodput,
@@ -3217,6 +3329,7 @@ fn validate_w4_capability(
     report: &Value,
     expected_nodes: Option<u64>,
     receipt: &MacroReportReceipt,
+    source_file_validation: SourceFileValidation,
 ) -> Result<(), PerfBudgetError> {
     let attestation: W4CapabilityAttestation = serde_json::from_value(
         report
@@ -3256,11 +3369,13 @@ fn validate_w4_capability(
         &payload.prebuild_manifest_canonical_path,
         &payload.prebuild_manifest_sha256,
         "W4A prebuild manifest",
+        source_file_validation,
     )?;
     rehash_exact_absolute_file(
         &payload.server_binary.canonical_path,
         &payload.server_binary.sha256,
         "W4A prebuilt server",
+        source_file_validation,
     )?;
     let mut node_ids = BTreeSet::new();
     let mut pids = BTreeSet::new();
@@ -3285,6 +3400,7 @@ fn validate_w4_capability(
             &node.config.canonical_path,
             &node.config.sha256,
             "W4A daemon config",
+            source_file_validation,
         )?;
     }
     Ok(())
@@ -3293,6 +3409,7 @@ fn validate_w4_capability(
 fn validate_w4_archived_lifecycle(
     report: &ControlPlaneReport,
     receipt: &MacroReportReceipt,
+    source_file_validation: SourceFileValidation,
 ) -> Result<(), PerfBudgetError> {
     let capability = report
         .capability
@@ -3360,22 +3477,26 @@ fn validate_w4_archived_lifecycle(
             node.stdout_log.bytes,
             &node.stdout_log.sha256,
             "W4A stdout",
+            source_file_validation,
         )?;
         validate_archived_log(
             &node.stderr_log.canonical_path,
             node.stderr_log.bytes,
             &node.stderr_log.sha256,
             "W4A stderr",
+            source_file_validation,
         )?;
         rehash_exact_absolute_file(
             &node.server_binary_path_after,
             &node.server_binary_sha256_after,
             "W4A lifecycle server binary",
+            source_file_validation,
         )?;
         rehash_exact_absolute_file(
             &node.node_config_path_after,
             &node.node_config_sha256_after,
             "W4A lifecycle node config",
+            source_file_validation,
         )?;
     }
     Ok(())
@@ -3398,7 +3519,19 @@ fn validate_archived_log(
     expected_bytes: u64,
     expected_sha256: &str,
     label: &str,
+    source_file_validation: SourceFileValidation,
 ) -> Result<(), PerfBudgetError> {
+    if !source_path_is_absolute(path, source_file_validation)
+        || expected_bytes > 64 * 1024 * 1024
+        || !is_sha256(expected_sha256)
+    {
+        return Err(PerfBudgetError::new(format!(
+            "{label} path/length/SHA receipt is incomplete"
+        )));
+    }
+    if source_file_validation == SourceFileValidation::ArchivedIdentity {
+        return Ok(());
+    }
     let canonical = fs::canonicalize(path)
         .map_err(|error| PerfBudgetError::new(format!("canonicalizing {label}: {error}")))?;
     let metadata = fs::metadata(&canonical)
@@ -3406,8 +3539,6 @@ fn validate_archived_log(
     if canonical != path
         || !metadata.is_file()
         || metadata.len() != expected_bytes
-        || metadata.len() > 64 * 1024 * 1024
-        || !is_sha256(expected_sha256)
         || sha256_file(&canonical)? != expected_sha256
     {
         return Err(PerfBudgetError::new(format!(
@@ -3420,6 +3551,7 @@ fn validate_archived_log(
 fn validate_w5_control_provenance(
     report: &Value,
     receipt: &MacroReportReceipt,
+    source_file_validation: SourceFileValidation,
 ) -> Result<(), PerfBudgetError> {
     let provenance: W5ControlPlaneProvenance = serde_json::from_value(
         report
@@ -3473,13 +3605,14 @@ fn validate_w5_control_provenance(
             "W5A provenance receipt does not recompute",
         ));
     }
-    validate_w5_final_cleanup(&cleanup, receipt)?;
+    validate_w5_final_cleanup(&cleanup, receipt, source_file_validation)?;
     Ok(())
 }
 
 fn validate_w5_final_cleanup(
     cleanup: &W5ControlPlaneFinalCleanupReceipt,
     receipt: &MacroReportReceipt,
+    source_file_validation: SourceFileValidation,
 ) -> Result<(), PerfBudgetError> {
     if cleanup.receipt_sha256 != receipt_digest_without_field(cleanup)
         || cleanup.nodes.len() < 3
@@ -3514,22 +3647,26 @@ fn validate_w5_final_cleanup(
             node.stdout_log.bytes,
             &node.stdout_log.sha256,
             "W5A stdout",
+            source_file_validation,
         )?;
         validate_archived_log(
             &node.stderr_log.canonical_path,
             node.stderr_log.bytes,
             &node.stderr_log.sha256,
             "W5A stderr",
+            source_file_validation,
         )?;
         rehash_exact_absolute_file(
             &node.server_binary_path_after,
             &node.server_binary_sha256_after,
             "W5A cleanup server binary",
+            source_file_validation,
         )?;
         rehash_exact_absolute_file(
             &node.node_config_path_after,
             &node.node_config_sha256_after,
             "W5A cleanup node config",
+            source_file_validation,
         )?;
     }
     Ok(())
@@ -3615,6 +3752,7 @@ fn validate_w5_resp_provenance(report: &Value) -> Result<(), PerfBudgetError> {
 fn validate_w5_grid_provenance(
     report: &Value,
     receipt: &MacroReportReceipt,
+    source_file_validation: SourceFileValidation,
 ) -> Result<(), PerfBudgetError> {
     let provenance: W5GridModelProvenance = serde_json::from_value(
         report
@@ -3663,6 +3801,7 @@ fn validate_w5_grid_provenance(
         &execution.loadgen_canonical_path,
         &execution.loadgen_sha256,
         "W5C fresh loadgen binary",
+        source_file_validation,
     )?;
     Ok(())
 }
@@ -3671,11 +3810,15 @@ fn rehash_exact_absolute_file(
     path: &Path,
     expected_sha256: &str,
     label: &str,
+    source_file_validation: SourceFileValidation,
 ) -> Result<(), PerfBudgetError> {
-    if !path.is_absolute() || !is_sha256(expected_sha256) {
+    if !source_path_is_absolute(path, source_file_validation) || !is_sha256(expected_sha256) {
         return Err(PerfBudgetError::new(format!(
             "{label} path/digest is incomplete"
         )));
+    }
+    if source_file_validation == SourceFileValidation::ArchivedIdentity {
+        return Ok(());
     }
     let canonical = fs::canonicalize(path)
         .map_err(|error| PerfBudgetError::new(format!("canonicalizing {label}: {error}")))?;
@@ -3685,6 +3828,23 @@ fn rehash_exact_absolute_file(
         )));
     }
     Ok(())
+}
+
+fn source_path_is_absolute(path: &Path, validation: SourceFileValidation) -> bool {
+    if path.is_absolute() {
+        return true;
+    }
+    if validation == SourceFileValidation::Live {
+        return false;
+    }
+    let value = path.to_string_lossy();
+    let bytes = value.as_bytes();
+    value.starts_with('/')
+        || value.starts_with("\\\\")
+        || (bytes.len() >= 3
+            && bytes[0].is_ascii_alphabetic()
+            && bytes[1] == b':'
+            && matches!(bytes[2], b'/' | b'\\'))
 }
 
 fn require_exact_object_keys(
@@ -4042,6 +4202,7 @@ fn validate_overload_budget_report(
     report_id: &str,
     report: &Value,
     receipt: &MacroReportReceipt,
+    source_file_validation: SourceFileValidation,
 ) -> Result<(f64, f64), PerfBudgetError> {
     let typed: OverloadReport = deserialize_typed_report(report_id, report)?;
     require_exact_object_keys(
@@ -4071,12 +4232,7 @@ fn validate_overload_budget_report(
         ],
         "overload report",
     )?;
-    let expected_surface = match report_id {
-        "overload-local" => "local",
-        "overload-client-surface" => "client_surface",
-        "overload-node-resp" => "node_resp",
-        _ => return Err(PerfBudgetError::new("unknown overload surface")),
-    };
+    let (expected_surface, expected_preload_operations) = overload_reference_contract(report_id)?;
     if report.get("schema_version").and_then(Value::as_u64) != Some(1)
         || report.get("release").and_then(Value::as_str) != Some(RELEASE)
         || report.get("run_mode").and_then(Value::as_str) != Some("reference")
@@ -4095,7 +4251,13 @@ fn validate_overload_budget_report(
             "overload budget requires an exact reference surface adapter without tier overclaims",
         ));
     }
-    validate_overload_reference_binding(report_id, report, &typed, receipt)?;
+    validate_overload_reference_binding(
+        report_id,
+        report,
+        &typed,
+        receipt,
+        source_file_validation,
+    )?;
     let baseline_goodput = report
         .get("baseline_goodput_per_second")
         .and_then(Value::as_f64)
@@ -4165,6 +4327,7 @@ fn validate_overload_budget_report(
                 derived_knee,
                 baseline_goodput,
                 baseline_p99,
+                expected_preload_operations,
             )?;
             if common_reset
                 .replace(reset.clone())
@@ -4172,7 +4335,7 @@ fn validate_overload_budget_report(
                 || common_preloaded
                     .replace(preloaded.clone())
                     .is_some_and(|prior| prior != preloaded)
-                || reset != preloaded
+                || (expected_preload_operations == 0 && reset != preloaded)
             {
                 return Err(PerfBudgetError::new(
                     "overload reset/preload digests differ across factors/repeats",
@@ -4223,11 +4386,21 @@ fn validate_overload_budget_report(
     Ok((minimum_goodput, maximum_spread))
 }
 
+fn overload_reference_contract(report_id: &str) -> Result<(&'static str, u64), PerfBudgetError> {
+    match report_id {
+        "overload-local" => Ok(("local", 0)),
+        "overload-client-surface" => Ok(("client-surface", 10_000)),
+        "overload-node-resp" => Ok(("node-resp", 10_000)),
+        _ => Err(PerfBudgetError::new("unknown overload surface")),
+    }
+}
+
 fn validate_overload_reference_binding(
     report_id: &str,
     report: &Value,
     typed: &OverloadReport,
     receipt: &MacroReportReceipt,
+    source_file_validation: SourceFileValidation,
 ) -> Result<(), PerfBudgetError> {
     let expected_surface = match report_id {
         "overload-local" => EligibleOverloadSurface::Local,
@@ -4320,7 +4493,11 @@ fn validate_overload_reference_binding(
             "W6 predecessor receipt is unsealed or loses capacity/source/build identity",
         ));
     }
-    validate_w6_predecessor_files(expected_surface, &predecessor_receipt)?;
+    validate_w6_predecessor_files(
+        expected_surface,
+        &predecessor_receipt,
+        source_file_validation,
+    )?;
 
     let execution_value = report
         .pointer("/target_binding/execution")
@@ -4359,7 +4536,13 @@ fn validate_overload_reference_binding(
             }
         }
         EligibleOverloadSurface::NodeResp => {
-            validate_w6_resp_execution(binding, &execution, typed, receipt)?;
+            validate_w6_resp_execution(
+                binding,
+                &execution,
+                typed,
+                receipt,
+                source_file_validation,
+            )?;
         }
     }
     Ok(())
@@ -4368,16 +4551,19 @@ fn validate_overload_reference_binding(
 fn validate_w6_predecessor_files(
     surface: EligibleOverloadSurface,
     receipt: &W6ReferencePredecessorReceipt,
+    source_file_validation: SourceFileValidation,
 ) -> Result<(), PerfBudgetError> {
     rehash_exact_absolute_file(
         &receipt.predecessor_report_path,
         &receipt.predecessor_report_sha256,
         "W6 raw predecessor report",
+        source_file_validation,
     )?;
     rehash_exact_absolute_file(
         &receipt.prebuild_manifest_path,
         &receipt.prebuild_receipt_sha256,
         "W6 predecessor prebuild manifest",
+        source_file_validation,
     )?;
     match (
         surface,
@@ -4385,7 +4571,12 @@ fn validate_w6_predecessor_files(
         receipt.predecessor_lifecycle_sha256.as_ref(),
     ) {
         (EligibleOverloadSurface::NodeResp, Some(path), Some(sha256)) => {
-            rehash_exact_absolute_file(path, sha256, "W6 archived W3 lifecycle")?;
+            rehash_exact_absolute_file(
+                path,
+                sha256,
+                "W6 archived W3 lifecycle",
+                source_file_validation,
+            )?;
         }
         (EligibleOverloadSurface::Local | EligibleOverloadSurface::ClientSurface, None, None) => {}
         _ => {
@@ -4402,6 +4593,7 @@ fn validate_w6_resp_execution(
     execution: &W6FreshExecutionReceipt,
     report: &OverloadReport,
     receipt: &MacroReportReceipt,
+    source_file_validation: SourceFileValidation,
 ) -> Result<(), PerfBudgetError> {
     if execution.kind != ReferenceExecutionKind::DirectDaemon {
         return Err(PerfBudgetError::new(
@@ -4412,8 +4604,7 @@ fn validate_w6_resp_execution(
         .resp_runtime_capability
         .as_ref()
         .ok_or_else(|| PerfBudgetError::new("node-RESP W6 binding has no runtime capability"))?;
-    let capability_sha256 = capability
-        .digest()
+    let capability_sha256 = resp_capability_digest(capability, source_file_validation)
         .map_err(|error| PerfBudgetError::new(format!("invalid W6 RESP capability: {error}")))?;
     let stable = NodeRespStableCapability {
         schema_version: 1,
@@ -4470,24 +4661,75 @@ fn validate_w6_resp_execution(
         lifecycle.stdout_log.bytes,
         &lifecycle.stdout_log.sha256,
         "W6 node-RESP stdout",
+        source_file_validation,
     )?;
     validate_archived_log(
         &lifecycle.stderr_log.canonical_path,
         lifecycle.stderr_log.bytes,
         &lifecycle.stderr_log.sha256,
         "W6 node-RESP stderr",
+        source_file_validation,
     )?;
     rehash_exact_absolute_file(
         &lifecycle.server_binary_path,
         &lifecycle.server_binary_sha256,
         "W6 node-RESP server binary",
+        source_file_validation,
     )?;
     rehash_exact_absolute_file(
         &lifecycle.loadgen_binary_path,
         &lifecycle.loadgen_binary_sha256,
         "W6 node-RESP loadgen binary",
+        source_file_validation,
     )?;
     Ok(())
+}
+
+fn resp_capability_digest(
+    capability: &RespEndpointCapability,
+    source_file_validation: SourceFileValidation,
+) -> Result<String, PerfBudgetError> {
+    if source_file_validation == SourceFileValidation::Live {
+        return capability
+            .digest()
+            .map_err(|error| PerfBudgetError::new(error.to_string()));
+    }
+    let loopback_zero = SocketAddr::from(([127, 0, 0, 1], 0));
+    let redis = capability.config.redis_addr;
+    let admin = capability.config.admin_addr;
+    if capability.schema_version != 1
+        || capability.pid == 0
+        || capability.started_unix_nanos == 0
+        || !capability.direct_prebuilt_exec
+        || !capability.fresh_data_dir
+        || capability.config.role != "local"
+        || capability.config.listen_addr != loopback_zero
+        || capability.config.cluster_addr != loopback_zero
+        || !capability.config.admin_enabled
+        || !capability.config.redis_enabled
+        || capability.config.redis_auth_required
+        || capability.config.rediss_enabled
+        || redis == admin
+        || redis.ip() != loopback_zero.ip()
+        || redis.port() == 0
+        || admin.ip() != loopback_zero.ip()
+        || admin.port() == 0
+        || capability.selected_endpoint != format!("hydracache-server@{redis}")
+        || !source_path_is_absolute(
+            &capability.config.storage_dir,
+            SourceFileValidation::ArchivedIdentity,
+        )
+        || !is_sha256(&capability.server_binary_sha256)
+        || !is_sha256(&capability.loadgen_binary_sha256)
+        || !is_sha256(&capability.prebuild_manifest_sha256)
+        || !is_sha256(&capability.prebuild_contract_digest)
+        || !is_git_commit(&capability.source_commit)
+    {
+        return Err(PerfBudgetError::new(
+            "archived RESP endpoint capability is incomplete or malformed",
+        ));
+    }
+    Ok(digest_json(capability))
 }
 
 fn validate_overload_repeat(
@@ -4497,6 +4739,7 @@ fn validate_overload_repeat(
     knee_rate: u64,
     baseline_goodput: f64,
     baseline_p99: u64,
+    expected_preload_operations: u64,
 ) -> Result<(f64, String, String), PerfBudgetError> {
     require_exact_object_keys(
         repeat,
@@ -4529,8 +4772,10 @@ fn validate_overload_repeat(
         .get("steady_state_digest")
         .and_then(Value::as_str)
         .is_none_or(str::is_empty)
-        || repeat.get("preload_operations").and_then(Value::as_u64) != Some(0)
-        || repeat.get("warmup_operations").and_then(Value::as_u64) != Some(4)
+        || repeat.get("preload_operations").and_then(Value::as_u64)
+            != Some(expected_preload_operations)
+        || repeat.get("warmup_operations").and_then(Value::as_u64)
+            != Some(REFERENCE_OVERLOAD_WARMUP_OPERATIONS)
     {
         return Err(PerfBudgetError::new(
             "overload repeat lifecycle differs from the committed contract",
@@ -4556,7 +4801,7 @@ fn validate_overload_repeat(
     let overload = repeat
         .get("overload")
         .ok_or_else(|| PerfBudgetError::new("overload raw window is absent"))?;
-    let derived = overload_metrics(overload, offered_rate, 48)?;
+    let derived = overload_metrics(overload, offered_rate, REFERENCE_OVERLOAD_WINDOW_OPERATIONS)?;
     let stored = repeat
         .get("metrics")
         .ok_or_else(|| PerfBudgetError::new("overload metrics are absent"))?;
@@ -4618,6 +4863,12 @@ fn overload_metrics(
         .and_then(Value::as_u64)
         .filter(|value| *value > 0)
         .ok_or_else(|| PerfBudgetError::new("overload raw window has no p99"))?;
+    let achieved_rate = window
+        .get("achieved_rate_per_second")
+        .and_then(Value::as_f64)
+        .filter(|value| value.is_finite() && *value >= 0.0)
+        .ok_or_else(|| PerfBudgetError::new("overload raw window has no achieved rate"))?;
+    let backlog = read("backlog_high_water").unwrap_or(u64::MAX);
     if offered != expected_operations
         || started != offered
         || completed > started
@@ -4631,6 +4882,7 @@ fn overload_metrics(
             .get("offered_rate_per_second")
             .and_then(Value::as_f64)
             .is_some_and(|value| approx_eq(value, expected_rate as f64))
+        || backlog > started
     {
         return Err(PerfBudgetError::new(
             "overload raw window is unbalanced or bound to the wrong open-loop schedule",
@@ -4638,11 +4890,11 @@ fn overload_metrics(
     }
     let denominator = started.max(1) as f64;
     Ok(DerivedOverloadMetrics {
-        goodput: successes as f64 / (elapsed_ms as f64 / 1_000.0),
+        goodput: achieved_rate * successes as f64 / completed.max(1) as f64,
         p99,
         rejection_ratio: rejections as f64 / denominator,
         error_timeout_ratio: errors.saturating_add(timeouts) as f64 / denominator,
-        backlog: read("backlog_high_water").unwrap_or(u64::MAX),
+        backlog,
         drained: window
             .get("backlog_drained")
             .and_then(Value::as_bool)
@@ -4692,7 +4944,7 @@ fn validate_overload_recovery(
     let mut consecutive = 0_u64;
     let mut recovered = None;
     for (index, window) in windows.iter().enumerate() {
-        let metrics = overload_metrics(window, knee_rate, 48)?;
+        let metrics = overload_metrics(window, knee_rate, REFERENCE_OVERLOAD_WINDOW_OPERATIONS)?;
         elapsed = elapsed
             .checked_add(metrics.elapsed_ms)
             .ok_or_else(|| PerfBudgetError::new("overload recovery duration overflow"))?;
@@ -5029,11 +5281,7 @@ fn perf_metrics(
                 let (values, observed_unit, scalar_spread) = validate_scalar_evidence(
                     id,
                     evidence,
-                    if report_id == "node-resp-open-loop" {
-                        Some(5)
-                    } else {
-                        Some(3)
-                    },
+                    Some(scalar_exact_samples(report_id, id)),
                 )?;
                 max_spread = max_spread.max(scalar_spread);
                 let mut median_values = values.clone();
@@ -5131,6 +5379,83 @@ fn perf_metrics(
         }
     }
     Ok((metrics, max_spread))
+}
+
+fn reviewed_perf_report_spread(
+    expected: &ExpectedReport,
+    bytes: &[u8],
+    expected_metrics: &BTreeSet<&str>,
+) -> Result<f64, PerfBudgetError> {
+    let value: Value = serde_json::from_slice(bytes).map_err(|error| {
+        PerfBudgetError::new(format!("invalid {} spread JSON: {error}", expected.id))
+    })?;
+    let measurements = value
+        .get("measurements")
+        .and_then(Value::as_array)
+        .ok_or_else(|| PerfBudgetError::new(format!("{} has no measurements", expected.id)))?;
+    let mut maximum_spread = 0.0_f64;
+    let mut selected = 0_usize;
+    for measurement in measurements {
+        let kind = measurement
+            .get("kind")
+            .and_then(Value::as_str)
+            .ok_or_else(|| PerfBudgetError::new("measurement kind is absent"))?;
+        let evidence = measurement
+            .get("evidence")
+            .ok_or_else(|| PerfBudgetError::new("measurement evidence is absent"))?;
+        let id = evidence
+            .get("id")
+            .and_then(Value::as_str)
+            .ok_or_else(|| PerfBudgetError::new("measurement id is absent"))?;
+        if !expected_metrics.iter().any(|metric| {
+            metric
+                .strip_prefix(id)
+                .is_some_and(|suffix| suffix.starts_with('.'))
+        }) {
+            continue;
+        }
+        selected += 1;
+        let spread = match kind {
+            "load_curve" => {
+                let required_repeats = if expected.id == "node-resp-open-loop" {
+                    5
+                } else {
+                    3
+                };
+                validate_knee_evidence(id, evidence, Some(required_repeats))?.maximum_spread_ratio
+            }
+            "scalar" => {
+                validate_scalar_evidence(
+                    id,
+                    evidence,
+                    Some(scalar_exact_samples(&expected.id, id)),
+                )?
+                .2
+            }
+            "comparison" | "trace_replay" => 0.0,
+            other => {
+                return Err(PerfBudgetError::new(format!(
+                    "unknown performance measurement kind {other:?}"
+                )));
+            }
+        };
+        maximum_spread = maximum_spread.max(spread);
+    }
+    if selected == 0 {
+        return Err(PerfBudgetError::new(format!(
+            "{} has no measurement for its reviewed budget metrics",
+            expected.id
+        )));
+    }
+    Ok(maximum_spread)
+}
+
+fn scalar_exact_samples(report_id: &str, measurement_id: &str) -> usize {
+    match (report_id, measurement_id) {
+        ("node-resp-open-loop", "resp_open_loop_stall_is_visible_in_scheduled_latency") => 3,
+        ("node-resp-open-loop", _) => 5,
+        _ => 3,
+    }
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -6494,6 +6819,154 @@ pub fn digest_json<T: Serialize + ?Sized>(value: &T) -> String {
 mod semantic_tests {
     use super::*;
 
+    fn candidate_report(id: &str, stable: bool, maximum_spread_ratio: f64) -> CandidateReport {
+        CandidateReport {
+            id: id.to_owned(),
+            path: String::new(),
+            report_id: String::new(),
+            report_sha256: String::new(),
+            claim_scope: String::new(),
+            run_mode: EvidenceRunMode::ReferenceEvidence,
+            runner_profile: String::new(),
+            runner_contract_digest: String::new(),
+            runner_class: String::new(),
+            runner_fingerprint: String::new(),
+            source_commit: String::new(),
+            cargo_lock_sha256: String::new(),
+            toolchain_identity: String::new(),
+            prebuild_contract_digest: String::new(),
+            prebuild_manifest_sha256: String::new(),
+            binary_sha256: Vec::new(),
+            binary_set_digest: String::new(),
+            scenario_digest: String::new(),
+            workload_digest: String::new(),
+            slo_digest: String::new(),
+            methodology_digest: String::new(),
+            stable,
+            maximum_spread_ratio,
+            metrics: BTreeMap::new(),
+        }
+    }
+
+    #[test]
+    fn bootstrap_rejects_unstable_reviewed_report_before_sealing_sample() {
+        let stable = candidate_report("stable", true, 0.01);
+        assert!(require_stable_candidate_reports(std::slice::from_ref(&stable)).is_ok());
+
+        let unstable = candidate_report("overload-node-resp", false, 0.0568);
+        let error = require_stable_candidate_reports(&[stable, unstable]).unwrap_err();
+        assert!(error.to_string().contains("overload-node-resp"));
+        assert!(error.to_string().contains("0.0568"));
+    }
+
+    #[test]
+    fn archived_source_identity_does_not_require_the_live_file() {
+        let missing = std::env::temp_dir().join(format!(
+            "hydracache-archived-source-{}-missing",
+            std::process::id()
+        ));
+        let digest = "a".repeat(64);
+
+        assert!(rehash_exact_absolute_file(
+            &missing,
+            &digest,
+            "archived test source",
+            SourceFileValidation::ArchivedIdentity,
+        )
+        .is_ok());
+        assert!(rehash_exact_absolute_file(
+            Path::new("/archived/linux/source"),
+            &digest,
+            "archived cross-platform source",
+            SourceFileValidation::ArchivedIdentity,
+        )
+        .is_ok());
+        assert!(rehash_exact_absolute_file(
+            &missing,
+            &digest,
+            "live test source",
+            SourceFileValidation::Live,
+        )
+        .is_err());
+    }
+
+    #[test]
+    fn archived_source_identity_still_requires_safe_shape() {
+        let digest = "a".repeat(64);
+        assert!(rehash_exact_absolute_file(
+            Path::new("relative/source"),
+            &digest,
+            "archived relative source",
+            SourceFileValidation::ArchivedIdentity,
+        )
+        .is_err());
+        assert!(rehash_exact_absolute_file(
+            &std::env::temp_dir().join("hydracache-archived-source-bad-digest"),
+            "not-a-sha256",
+            "archived malformed digest",
+            SourceFileValidation::ArchivedIdentity,
+        )
+        .is_err());
+        assert!(validate_archived_log(
+            &std::env::temp_dir().join("hydracache-archived-log-too-large"),
+            64 * 1024 * 1024 + 1,
+            &digest,
+            "archived oversized log",
+            SourceFileValidation::ArchivedIdentity,
+        )
+        .is_err());
+    }
+
+    #[test]
+    fn overload_reference_contract_uses_published_surface_and_window_shape() {
+        assert_eq!(
+            overload_reference_contract("overload-local").unwrap(),
+            ("local", 0)
+        );
+        assert_eq!(
+            overload_reference_contract("overload-client-surface").unwrap(),
+            ("client-surface", 10_000)
+        );
+        assert_eq!(
+            overload_reference_contract("overload-node-resp").unwrap(),
+            ("node-resp", 10_000)
+        );
+
+        let window = serde_json::json!({
+            "offered": 50_000,
+            "started": 50_000,
+            "completed": 50_000,
+            "successes": 41_667,
+            "errors": 0,
+            "timeouts": 0,
+            "rejections": 8_333,
+            "backlog_high_water": 48,
+            "backlog_drained": true,
+            "drain_ms": 0,
+            "elapsed_ms": 2_084,
+            "offered_rate_per_second": 24_000.0,
+            "achieved_rate_per_second": 23_986.02405377018,
+            "latency": {
+                "samples": 50_000,
+                "p50_us": 1_057,
+                "p90_us": 1_627,
+                "p99_us": 1_945,
+                "p999_us": 2_044,
+                "p999_min_samples": 1,
+                "p999_reportable": true,
+                "max_us": 2_083,
+                "overflow_count": 0
+            }
+        });
+        let metrics =
+            overload_metrics(&window, 24_000, REFERENCE_OVERLOAD_WINDOW_OPERATIONS).unwrap();
+        assert!(approx_eq(
+            metrics.goodput,
+            23_986.02405377018 * 41_667.0 / 50_000.0
+        ));
+        assert!(overload_metrics(&window, 24_000, 48).is_err());
+    }
+
     fn repeat() -> Value {
         serde_json::json!({
             "reset_state_digest": "reset",
@@ -6596,5 +7069,23 @@ mod semantic_tests {
         let mut forged = evidence;
         forged["knee"]["sustainable_rate_per_second"] = serde_json::json!(200.0);
         assert!(validate_knee_evidence("capacity", &forged, Some(3)).is_err());
+    }
+
+    #[test]
+    fn resp_stall_probe_uses_its_reviewed_three_repeat_contract() {
+        assert_eq!(
+            scalar_exact_samples(
+                "node-resp-open-loop",
+                "resp_open_loop_stall_is_visible_in_scheduled_latency",
+            ),
+            3
+        );
+        assert_eq!(
+            scalar_exact_samples(
+                "node-resp-open-loop",
+                "resp_open_loop_connection_and_pipeline_sweeps",
+            ),
+            5
+        );
     }
 }

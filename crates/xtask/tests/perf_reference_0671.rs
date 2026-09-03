@@ -231,8 +231,8 @@ fn frozen_candidate_gate_is_wired_to_full_pipeline() {
         "Run frozen-candidate real 3/5/7 daemon control-plane evidence",
         "Run frozen-candidate core reference evidence",
         "Run frozen-candidate RESP and Redis reference evidence",
-        "Materialize tmpfs reference evidence",
         "Check activated 0.67.1 reference budgets and rolling baseline",
+        "Materialize tmpfs reference evidence",
         "Execute complete 0.67.1 expected-red canary sweep",
         "Seal exact frozen-candidate reference receipt",
         "Aggregate exact 0.67.1 ship evidence",
@@ -262,6 +262,44 @@ fn frozen_candidate_gate_is_wired_to_full_pipeline() {
         );
     }
     assert!(!job.contains("perf-budget-check --release 0.67 --profile reference-v1"));
+}
+
+#[test]
+fn live_budget_checks_precede_destructive_tmpfs_materialization() {
+    let workflow = std::fs::read_to_string(repo_root().join(".github/workflows/ci.yml")).unwrap();
+    let reference_job = workflow
+        .split("  release-067-performance:")
+        .nth(1)
+        .expect("0.67 reference job must exist")
+        .split("  release-0671-performance-qualification:")
+        .next()
+        .expect("0.67 reference job must be bounded");
+    assert!(
+        reference_job
+            .find("Check 0.67 performance budgets")
+            .expect("0.67 budget step must exist")
+            < reference_job
+                .find("Materialize tmpfs reference evidence")
+                .expect("0.67 materialization step must exist"),
+        "the live 0.67 budget checker must run before materialization deletes /dev/shm"
+    );
+
+    let frozen_job = workflow
+        .split("  release-0671-frozen-candidate:")
+        .nth(1)
+        .expect("frozen-candidate job must exist")
+        .split("  raft-loom:")
+        .next()
+        .expect("frozen-candidate job must be bounded");
+    assert!(
+        frozen_job
+            .find("Check activated 0.67.1 reference budgets and rolling baseline")
+            .expect("frozen budget step must exist")
+            < frozen_job
+                .find("Materialize tmpfs reference evidence")
+                .expect("frozen materialization step must exist"),
+        "the live frozen budget checker must run before materialization deletes /dev/shm"
+    );
 }
 
 fn approved_bundle() -> (ContractBundle, ReviewReceipt) {

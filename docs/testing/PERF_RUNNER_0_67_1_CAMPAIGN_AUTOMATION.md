@@ -48,7 +48,8 @@ checkout и причину обязательного prewarm до IRQ baseline.
 - Rust `sample-set` validator после ровно пяти принятых samples;
 - JSONL-журнал событий, durable state, итоговые JSON и Markdown summaries;
 - безопасная финальная остановка runner/Docker и выдача
-  `SAFE_TO_DELETE_SERVER=true` без самостоятельного удаления машины.
+  `LOCAL_HOST_CLOSEOUT_COMPLETE=true`; удаление машины остаётся заблокировано до
+  полного внешнего сохранения и проверки результатов.
 
 Контроллер останавливает всю семью **после первого отказа**. Rejected run
 сохраняется как диагностика, но следующий full-dress/sample не запускается.
@@ -217,11 +218,15 @@ scripts/perf/reference-campaign.sh close \
 reference jobs, создаёт финальный host-state archive и переносит canonical host
 admission в каталог закрываемой кампании только после проверки campaign ID,
 source SHA и обоих SHA-256. Затем он печатает
-`SAFE_TO_DELETE_SERVER=true`. После этого оператор отдельно:
+`LOCAL_HOST_CLOSEOUT_COMPLETE=true` и `SERVER_DELETION_BLOCKED=true`. Это
+подтверждает только локальное закрытие. До удаления оператор обязан:
 
-1. переносит каталог кампании в постоянное хранилище и сверяет hashes;
-2. отзывает GitHub runner credentials;
-3. удаляет/release-ит машину в панели/API провайдера;
-4. проверяет, что биллинг действительно остановлен.
+1. перенести полный каталог кампании и host-state/receipts в постоянное внешнее
+   хранилище, сверить SHA-256, целостность и читаемость архивов;
+2. опубликовать и повторно проверить требуемые GitHub artifacts;
+3. закоммитить обезличенный итоговый отчёт и выполнить secret scan;
+4. отозвать GitHub runner credentials;
+5. только после отдельного подтверждения удалить/release-ить машину в панели/API
+   провайдера и проверить остановку биллинга.
 
 `power off` без удаления не считается остановкой биллинга.

@@ -165,10 +165,13 @@ pub fn run(args: Vec<String>) -> Result<(), Box<dyn Error>> {
                 .samples_dir
                 .ok_or("--samples-dir is required for sample-set phase")?;
             let receipt = build_sample_set(&samples_dir)?;
-            write_create_new_json(&root.join(BOOTSTRAP_SAMPLE_SET_RELATIVE_PATH), &receipt)?;
+            let output = options
+                .output
+                .unwrap_or_else(|| root.join(BOOTSTRAP_SAMPLE_SET_RELATIVE_PATH));
+            write_create_new_json(&output, &receipt)?;
             println!(
                 "0.67.1 bootstrap sample set validated: {}",
-                root.join(BOOTSTRAP_SAMPLE_SET_RELATIVE_PATH).display()
+                output.display()
             );
         }
         _ => unreachable!("phase parser is exhaustive"),
@@ -257,6 +260,7 @@ pub fn collect_full_reference_evidence(
     {
         return Err("bootstrap prebuild does not bind checkout and runner fingerprint".into());
     }
+    let support_files = crate::perf_budget::validate_bootstrap_candidate_reports(root)?;
 
     let registry = crate::gated_tests::load_registry(root)?;
     let mut paths = BTreeSet::new();
@@ -271,6 +275,7 @@ pub fn collect_full_reference_evidence(
         }
         paths.extend(gate.artifacts.iter().cloned());
     }
+    paths.extend(support_files);
 
     let mut evidence_files = Vec::new();
     let mut scenario_contracts = Vec::new();
@@ -682,6 +687,7 @@ fn digest_bytes(bytes: &[u8]) -> String {
 struct Options {
     phase: String,
     samples_dir: Option<PathBuf>,
+    output: Option<PathBuf>,
     sample_index: Option<u32>,
     admission: Option<PathBuf>,
     predecessor: Option<PathBuf>,
@@ -693,6 +699,7 @@ impl Options {
         let mut profile = None;
         let mut phase = None;
         let mut samples_dir = None;
+        let mut output = None;
         let mut sample_index = None;
         let mut admission = None;
         let mut predecessor = None;
@@ -703,6 +710,7 @@ impl Options {
                 "--profile" => profile = args.next(),
                 "--phase" => phase = args.next(),
                 "--samples-dir" => samples_dir = args.next().map(PathBuf::from),
+                "--output" => output = args.next().map(PathBuf::from),
                 "--sample-index" => {
                     sample_index = Some(
                         args.next()
@@ -723,13 +731,17 @@ impl Options {
             )
         {
             return Err(
-                "usage: perf-bootstrap --release 0.67.1 --profile reference-v1 --phase <context|authorize|sample|sample-set> [--sample-index 1..5 --admission PATH --predecessor PATH] [--samples-dir PATH]"
+                "usage: perf-bootstrap --release 0.67.1 --profile reference-v1 --phase <context|authorize|sample|sample-set> [--sample-index 1..5 --admission PATH --predecessor PATH] [--samples-dir PATH --output PATH]"
                     .into(),
             );
+        }
+        if phase.as_deref() != Some("sample-set") && output.is_some() {
+            return Err("--output is supported only for sample-set phase".into());
         }
         Ok(Self {
             phase: phase.expect("phase was checked"),
             samples_dir,
+            output,
             sample_index,
             admission,
             predecessor,
