@@ -1884,18 +1884,34 @@ def validate_host_admission_state(campaign_dir: Path, state: dict[str, Any]) -> 
             raise CampaignError(f"canonical host admission drift: {name}")
 
 
+def select_sample_set_cargo() -> list[str]:
+    runner_cargo = "/home/github-runner/.cargo/bin/cargo"
+    try:
+        runner_probe = subprocess.run(
+            runner_command("test", "-x", runner_cargo),
+            cwd=repo_root(),
+            stdin=subprocess.DEVNULL,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+            check=False,
+            timeout=30,
+        )
+    except (OSError, subprocess.TimeoutExpired):
+        runner_probe = None
+    if runner_probe is not None and runner_probe.returncode == 0:
+        return runner_command(runner_cargo)
+
+    found = shutil.which("cargo")
+    if found is None or Path(found) == Path(runner_cargo):
+        raise CampaignError("cargo is unavailable for final sample-set validation")
+    return [found]
+
+
 def cargo_sample_set(campaign_dir: Path) -> Path:
     output = repo_root() / "target/test-evidence/0.67.1/bootstrap-sample-set.json"
     if output.exists():
         raise CampaignError("sample-set output already exists before final validation")
-    cargo = Path("/home/github-runner/.cargo/bin/cargo")
-    if not cargo.is_file():
-        found = shutil.which("cargo")
-        if found is None:
-            raise CampaignError("cargo is unavailable for final sample-set validation")
-        command = [found]
-    else:
-        command = runner_command(str(cargo))
+    command = select_sample_set_cargo()
     command.extend(
         [
             "run",

@@ -27,6 +27,45 @@ def base_state() -> dict:
 
 
 class ReferenceCampaignTests(unittest.TestCase):
+    def test_sample_set_cargo_is_probed_as_the_runner_user(self) -> None:
+        runner_cargo = "/home/github-runner/.cargo/bin/cargo"
+        with (
+            mock.patch.object(
+                campaign.subprocess,
+                "run",
+                return_value=mock.Mock(returncode=0),
+            ) as run,
+            mock.patch.object(campaign, "repo_root", return_value=Path("/repo")),
+            mock.patch.object(campaign.shutil, "which", return_value=runner_cargo),
+        ):
+            self.assertEqual(
+                campaign.select_sample_set_cargo(),
+                campaign.runner_command(runner_cargo),
+            )
+
+        run.assert_called_once_with(
+            campaign.runner_command("test", "-x", runner_cargo),
+            cwd=Path("/repo"),
+            stdin=subprocess.DEVNULL,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+            check=False,
+            timeout=30,
+        )
+
+    def test_sample_set_cargo_rejects_inaccessible_runner_path_fallback(self) -> None:
+        runner_cargo = "/home/github-runner/.cargo/bin/cargo"
+        with (
+            mock.patch.object(
+                campaign.subprocess,
+                "run",
+                return_value=mock.Mock(returncode=1),
+            ),
+            mock.patch.object(campaign.shutil, "which", return_value=runner_cargo),
+            self.assertRaisesRegex(campaign.CampaignError, "cargo is unavailable"),
+        ):
+            campaign.select_sample_set_cargo()
+
     def test_privileged_commands_are_non_interactive_after_sudo_lease(self) -> None:
         with mock.patch.object(campaign.os, "geteuid", return_value=1000, create=True):
             self.assertEqual(
