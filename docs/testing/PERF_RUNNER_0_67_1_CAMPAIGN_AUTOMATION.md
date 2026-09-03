@@ -205,6 +205,9 @@ scripts/perf/reference-campaign.sh status \
 State не является release evidence. Источником остаются оригинальные ZIP,
 GitHub run identity и проверенные repository receipts. При resume контроллер
 пересчитывает сохранённые SHA-256 и не принимает изменённые файлы.
+Для каждого stage также требуется полный, непагинированный ответ GitHub API и
+точный набор имён artifacts; лишний, отсутствующий или дублированный artifact
+считается нарушением identity, а не игнорируется.
 Для frozen-candidate он дополнительно требует физическое наличие и совпадение
 SHA-256 каждого reference/canary файла из sealed receipt, activation/verdict и
 точный ship-ready aggregate W0-W7; усечённый ZIP не считается завершением.

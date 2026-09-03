@@ -685,9 +685,9 @@ class ReferenceCampaignTests(unittest.TestCase):
     def test_retained_artifact_manifest_is_run_bound_and_cannot_escape(self) -> None:
         state = base_state()
         run_id = 123
-        step = "bootstrap-1"
+        step = "qualification"
         artifact_id = 456
-        name = "performance-0671-bootstrap-example"
+        name = f"performance-0671-qualification-{SHA}-{run_id}"
         with tempfile.TemporaryDirectory() as temporary:
             campaign_dir = Path(temporary)
             run_dir = campaign_dir / "runs" / f"{step}-{run_id}"
@@ -722,6 +722,53 @@ class ReferenceCampaignTests(unittest.TestCase):
             manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
             with self.assertRaises(campaign.ArtifactIntegrityError):
                 campaign.download_artifacts(campaign_dir, state, run_id, step)
+
+    def test_stage_artifact_sets_are_exact(self) -> None:
+        state = base_state()
+        run_id = 123
+        self.assertEqual(
+            campaign.expected_stage_artifact_names(state, run_id, "bootstrap-5"),
+            {
+                "performance-0671-bootstrap-receipt",
+                f"performance-0671-bootstrap-{SHA}-{run_id}",
+            },
+        )
+        self.assertEqual(
+            campaign.expected_stage_artifact_names(state, run_id, "full-dress-2"),
+            {
+                "performance-0671-full-dress-receipt",
+                "performance-0671-full-dress-admission",
+                f"performance-0671-full-dress-{SHA}-{run_id}",
+            },
+        )
+        with self.assertRaisesRegex(campaign.CampaignError, "unknown"):
+            campaign.expected_stage_artifact_names(state, run_id, "bootstrap-6")
+
+    def test_artifact_listing_must_be_complete_before_download(self) -> None:
+        state = base_state()
+        run_id = 123
+        expected_name = f"performance-0671-qualification-{SHA}-{run_id}"
+        listing = {
+            "total_count": 2,
+            "artifacts": [
+                {
+                    "id": 456,
+                    "name": expected_name,
+                    "size_in_bytes": 100,
+                    "expired": False,
+                }
+            ],
+        }
+        with tempfile.TemporaryDirectory() as temporary:
+            with (
+                mock.patch.object(campaign, "gh_json", return_value=listing),
+                mock.patch.object(campaign, "download_binary") as download,
+                self.assertRaisesRegex(campaign.ArtifactIntegrityError, "incomplete"),
+            ):
+                campaign.download_artifacts(
+                    Path(temporary), state, run_id, "qualification"
+                )
+        download.assert_not_called()
 
     def test_artifact_lookup_requires_the_exact_name(self) -> None:
         expected = "performance-0671-bootstrap-sha-run"

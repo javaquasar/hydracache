@@ -1078,6 +1078,33 @@ def safe_artifact_filename(artifact_id: int, name: str) -> str:
     return f"{artifact_id}-{slug}.zip"
 
 
+def expected_stage_artifact_names(
+    state: dict[str, Any], run_id: int, step: str
+) -> set[str]:
+    source = state["expected_sha"]
+    if step == "qualification":
+        return {f"performance-0671-qualification-{source}-{run_id}"}
+    if step == "full-dress-1":
+        return {
+            "performance-0671-full-dress-receipt",
+            f"performance-0671-full-dress-{source}-{run_id}",
+        }
+    if step == "full-dress-2":
+        return {
+            "performance-0671-full-dress-receipt",
+            "performance-0671-full-dress-admission",
+            f"performance-0671-full-dress-{source}-{run_id}",
+        }
+    if re.fullmatch(r"bootstrap-[1-5]", step):
+        return {
+            "performance-0671-bootstrap-receipt",
+            f"performance-0671-bootstrap-{source}-{run_id}",
+        }
+    if step == "frozen-candidate":
+        return {f"performance-0671-frozen-candidate-{source}-{run_id}"}
+    raise CampaignError(f"unknown reference campaign stage: {step}")
+
+
 def download_artifacts(campaign_dir: Path, state: dict[str, Any], run_id: int, step: str) -> dict[str, Path]:
     run_dir = campaign_dir / "runs" / f"{step}-{run_id}"
     manifest_path = run_dir / "artifact-manifest.json"
@@ -1145,6 +1172,8 @@ def download_artifacts(campaign_dir: Path, state: dict[str, Any], run_id: int, s
             ):
                 raise ArtifactIntegrityError(f"retained artifact drift for {step}")
             paths[name] = path
+        if set(paths) != expected_stage_artifact_names(state, run_id, step):
+            raise ArtifactIntegrityError(f"retained artifact set is not exact for {step}")
         return paths
 
     runs_dir = campaign_dir / "runs"
@@ -1165,8 +1194,18 @@ def download_artifacts(campaign_dir: Path, state: dict[str, Any], run_id: int, s
     except CampaignError as error:
         raise ArtifactTransportError(f"artifact listing failed for run {run_id}: {error}") from error
     artifacts = response.get("artifacts") if isinstance(response, dict) else None
+    total_count = response.get("total_count") if isinstance(response, dict) else None
     if not isinstance(artifacts, list) or not artifacts:
         raise ArtifactTransportError(f"run {run_id} has no downloadable artifacts yet")
+    if not isinstance(total_count, int) or total_count != len(artifacts):
+        raise ArtifactIntegrityError(f"artifact listing is incomplete for {step}")
+    listed_names = [artifact.get("name") for artifact in artifacts if isinstance(artifact, dict)]
+    if (
+        len(listed_names) != len(artifacts)
+        or not all(isinstance(name, str) for name in listed_names)
+        or set(listed_names) != expected_stage_artifact_names(state, run_id, step)
+    ):
+        raise ArtifactIntegrityError(f"artifact set is not exact for {step}")
     names: set[str] = set()
     paths: dict[str, Path] = {}
     manifest: list[dict[str, Any]] = []
