@@ -208,6 +208,8 @@ GitHub run identity и проверенные repository receipts. При resume
 Для каждого stage также требуется полный, непагинированный ответ GitHub API и
 точный набор имён artifacts; лишний, отсутствующий или дублированный artifact
 считается нарушением identity, а не игнорируется.
+Reusable full-dress/bootstrap receipts и admission должны byte-exact совпадать
+с одноимёнными копиями внутри соответствующего diagnostic ZIP.
 Для frozen-candidate он дополнительно требует физическое наличие и совпадение
 SHA-256 каждого reference/canary файла из sealed receipt, activation/verdict и
 точный ship-ready aggregate W0-W7; усечённый ZIP не считается завершением.

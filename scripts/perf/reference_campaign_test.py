@@ -82,8 +82,8 @@ class ReferenceCampaignTests(unittest.TestCase):
             diagnostic = root / "diagnostic.zip"
             with zipfile.ZipFile(reusable, "w") as archive:
                 archive.writestr("bootstrap-sample.json", json.dumps(receipt))
-            with zipfile.ZipFile(diagnostic, "w"):
-                pass
+            with zipfile.ZipFile(diagnostic, "w") as archive:
+                archive.writestr("nested/bootstrap-sample.json", json.dumps(receipt))
             artifacts = {
                 "performance-0671-bootstrap-receipt": reusable,
                 f"performance-0671-bootstrap-{SHA}-123": diagnostic,
@@ -102,6 +102,22 @@ class ReferenceCampaignTests(unittest.TestCase):
                     artifacts,
                 )
             self.assertTrue(Path(retained["receipt"]).is_file())
+            with zipfile.ZipFile(diagnostic, "w") as archive:
+                archive.writestr("bootstrap-sample.json", '{"different":true}')
+            with mock.patch.object(campaign, "validate_host_admission_artifact"):
+                with self.assertRaisesRegex(campaign.CampaignError, "differs"):
+                    campaign.validate_stage_artifacts(
+                        root,
+                        state,
+                        {
+                            "name": "bootstrap-1",
+                            "mode": "bootstrap",
+                            "sample_index": "1",
+                            "bootstrap_predecessor": "",
+                        },
+                        123,
+                        artifacts,
+                    )
 
     def test_full_dress_admission_binds_exact_run_receipt_pairs_and_contracts(self) -> None:
         contracts = {

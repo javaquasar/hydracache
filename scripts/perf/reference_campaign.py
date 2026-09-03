@@ -1913,6 +1913,8 @@ def validate_stage_artifacts(
         diagnostic = artifact_named(artifacts, f"performance-0671-full-dress-{state['expected_sha']}-{run_id}")
         validate_host_admission_artifact(campaign_dir, state, diagnostic)
         data = read_unique_member(reusable, "full-dress-receipt.json")
+        if read_unique_member(diagnostic, "full-dress-receipt.json") != data:
+            raise CampaignError("full-dress reusable receipt differs from diagnostic archive")
         receipt = json_receipt(data, "full-dress receipt")
         expect_common_receipt(receipt, state, run_id, schema_version=1)
         if (
@@ -1931,6 +1933,8 @@ def validate_stage_artifacts(
         if admission_archive is None:
             raise CampaignError("second full-dress run did not publish admission")
         admission_data = read_unique_member(admission_archive, "full-dress-admission.json")
+        if read_unique_member(diagnostic, "full-dress-admission.json") != admission_data:
+            raise CampaignError("full-dress reusable admission differs from diagnostic archive")
         admission = json_receipt(admission_data, "full-dress admission")
         if (
             admission.get("source_commit") != state["expected_sha"]
@@ -1977,6 +1981,8 @@ def validate_stage_artifacts(
     diagnostic = artifact_named(artifacts, f"performance-0671-bootstrap-{state['expected_sha']}-{run_id}")
     validate_host_admission_artifact(campaign_dir, state, diagnostic)
     data = read_unique_member(reusable, "bootstrap-sample.json")
+    if read_unique_member(diagnostic, "bootstrap-sample.json") != data:
+        raise CampaignError("bootstrap reusable receipt differs from diagnostic archive")
     receipt = json_receipt(data, "bootstrap sample receipt")
     expect_common_receipt(receipt, state, run_id, schema_version=2)
     index = int(spec["sample_index"])
