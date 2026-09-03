@@ -1742,8 +1742,23 @@ def validate_full_dress_admission_chain(
         "bootstrap_eligible",
         "ship_evidence_eligible",
     }
-    if set(admission) != expected_fields:
+    if (
+        set(admission) != expected_fields
+        or admission.get("schema_version") != 1
+        or admission.get("release") != "0.67.1"
+        or admission.get("profile") != "reference-v1"
+    ):
         raise CampaignError("full-dress admission has missing or unknown fields")
+
+    for receipt in (first_receipt, second_receipt):
+        if (
+            receipt.get("schema_version") != 1
+            or receipt.get("release") != "0.67.1"
+            or receipt.get("profile") != "reference-v1"
+            or receipt.get("source_commit") != admission.get("source_commit")
+            or receipt.get("runner_fingerprint") != admission.get("runner_fingerprint")
+        ):
+            raise CampaignError("full-dress admission mixes receipt identity")
 
     contract_fields = (
         "runner_provisioning_sha256",

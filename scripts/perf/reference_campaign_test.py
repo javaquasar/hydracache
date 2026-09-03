@@ -34,8 +34,15 @@ class ReferenceCampaignTests(unittest.TestCase):
             "prebuild_contract_digest": "2" * 64,
             "scenario_contract_set_digest": "3" * 64,
         }
-        first = dict(contracts)
-        second = dict(contracts)
+        receipt_identity = {
+            "schema_version": 1,
+            "release": "0.67.1",
+            "profile": "reference-v1",
+            "source_commit": SHA,
+            "runner_fingerprint": FINGERPRINT,
+        }
+        first = {**receipt_identity, **contracts}
+        second = {**receipt_identity, **contracts}
         expected_members = {"101": "4" * 64, "202": "5" * 64}
         admission = {
             "schema_version": 1,
