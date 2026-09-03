@@ -1721,6 +1721,70 @@ def expect_common_receipt(receipt: dict[str, Any], state: dict[str, Any], run_id
     state["stages"]["runner_fingerprint"] = fingerprint
 
 
+def validate_full_dress_admission_chain(
+    admission: dict[str, Any],
+    first_receipt: dict[str, Any],
+    second_receipt: dict[str, Any],
+    expected_members: dict[str, str],
+) -> dict[str, str]:
+    expected_fields = {
+        "schema_version",
+        "release",
+        "profile",
+        "source_commit",
+        "runner_fingerprint",
+        "runner_provisioning_sha256",
+        "prebuild_contract_digest",
+        "scenario_contract_set_digest",
+        "full_dress_runs",
+        "passed",
+        "bootstrap_admission_eligible",
+        "bootstrap_eligible",
+        "ship_evidence_eligible",
+    }
+    if set(admission) != expected_fields:
+        raise CampaignError("full-dress admission has missing or unknown fields")
+
+    contract_fields = (
+        "runner_provisioning_sha256",
+        "prebuild_contract_digest",
+        "scenario_contract_set_digest",
+    )
+    contracts: dict[str, str] = {}
+    for field in contract_fields:
+        value = admission.get(field)
+        if (
+            not isinstance(value, str)
+            or not re.fullmatch(r"[0-9a-f]{64}", value)
+            or first_receipt.get(field) != value
+            or second_receipt.get(field) != value
+        ):
+            raise CampaignError(f"full-dress admission {field} chain is inconsistent")
+        contracts[field] = value
+
+    members = admission.get("full_dress_runs")
+    if not isinstance(members, list) or len(members) != 2:
+        raise CampaignError("full-dress admission must contain exactly two runs")
+    observed_members: dict[str, str] = {}
+    for member in members:
+        if not isinstance(member, dict) or set(member) != {"github_run_id", "receipt_sha256"}:
+            raise CampaignError("full-dress admission member is malformed")
+        run_id = member.get("github_run_id")
+        receipt_sha256 = member.get("receipt_sha256")
+        if (
+            not isinstance(run_id, str)
+            or not RUN_ID_RE.fullmatch(run_id)
+            or run_id in observed_members
+            or not isinstance(receipt_sha256, str)
+            or not re.fullmatch(r"[0-9a-f]{64}", receipt_sha256)
+        ):
+            raise CampaignError("full-dress admission member identity is invalid")
+        observed_members[run_id] = receipt_sha256
+    if observed_members != expected_members:
+        raise CampaignError("full-dress admission run-to-receipt mapping is wrong")
+    return contracts
+
+
 def validate_stage_artifacts(
     campaign_dir: Path,
     state: dict[str, Any],
@@ -1812,21 +1876,32 @@ def validate_stage_artifacts(
             or admission.get("ship_evidence_eligible") is not False
         ):
             raise CampaignError("full-dress admission contract failed")
-        members = admission.get("full_dress_runs")
-        expected_ids = {str(state["stages"]["full-dress-1"]["run_id"]), str(run_id)}
-        if not isinstance(members, list) or {str(member.get("github_run_id")) for member in members} != expected_ids:
-            raise CampaignError("full-dress admission member identities are wrong")
-        expected_hashes = {
-            state["stages"]["full-dress-1"]["receipt_sha256"],
-            result["receipt_sha256"],
-        }
-        if {str(member.get("receipt_sha256")) for member in members} != expected_hashes:
-            raise CampaignError("full-dress admission member digests are wrong")
+        first_stage = state["stages"]["full-dress-1"]
+        first_receipt_path = Path(first_stage["receipt"])
+        if (
+            not first_receipt_path.is_file()
+            or first_receipt_path.is_symlink()
+            or sha256_file(first_receipt_path) != first_stage["receipt_sha256"]
+        ):
+            raise CampaignError("first full-dress receipt changed before admission")
+        first_receipt = json_receipt(
+            first_receipt_path.read_bytes(), "first full-dress receipt"
+        )
+        contracts = validate_full_dress_admission_chain(
+            admission,
+            first_receipt,
+            receipt,
+            {
+                str(first_stage["run_id"]): first_stage["receipt_sha256"],
+                str(run_id): result["receipt_sha256"],
+            },
+        )
         admission_path = retain_receipt(campaign_dir, "full-dress-admission.json", admission_data)
         result.update(
             {
                 "admission": str(admission_path),
                 "admission_sha256": sha256_bytes(admission_data),
+                **contracts,
             }
         )
         return result
@@ -1850,6 +1925,14 @@ def validate_stage_artifacts(
         or receipt.get("admission_sha256") != state["stages"]["full-dress-2"]["admission_sha256"]
         or receipt.get("predecessor_github_run_id") != expected_predecessor
         or receipt.get("predecessor_receipt_sha256") != expected_predecessor_hash
+        or any(
+            receipt.get(field) != state["stages"]["full-dress-2"].get(field)
+            for field in (
+                "runner_provisioning_sha256",
+                "prebuild_contract_digest",
+                "scenario_contract_set_digest",
+            )
+        )
     ):
         raise CampaignError(f"bootstrap sample {index} chain contract failed")
     retained = retain_receipt(campaign_dir, f"bootstrap-samples/sample-{index}.json", data)

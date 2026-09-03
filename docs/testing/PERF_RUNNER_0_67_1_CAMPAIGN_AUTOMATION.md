@@ -44,7 +44,8 @@ checkout и причину обязательного prewarm до IRQ baseline.
 - атомарная публикация актуального root-owned runner-provisioning receipt из
   frozen exact-SHA audit; предыдущая версия переносится в каталог кампании;
 - внешняя повторная проверка receipt identity, eligibility, fingerprint,
-  predecessor run/digest и full-dress admission;
+  точного `run_id → receipt SHA-256` состава full-dress admission и неизменности
+  provisioning/prebuild/scenario contract во всей bootstrap predecessor chain;
 - Rust `sample-set` validator после ровно пяти принятых samples;
 - JSONL-журнал событий, durable state, итоговые JSON и Markdown summaries;
 - безопасная финальная остановка runner/Docker и выдача

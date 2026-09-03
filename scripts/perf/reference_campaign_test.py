@@ -28,6 +28,43 @@ def base_state() -> dict:
 
 
 class ReferenceCampaignTests(unittest.TestCase):
+    def test_full_dress_admission_binds_exact_run_receipt_pairs_and_contracts(self) -> None:
+        contracts = {
+            "runner_provisioning_sha256": "1" * 64,
+            "prebuild_contract_digest": "2" * 64,
+            "scenario_contract_set_digest": "3" * 64,
+        }
+        first = dict(contracts)
+        second = dict(contracts)
+        expected_members = {"101": "4" * 64, "202": "5" * 64}
+        admission = {
+            "schema_version": 1,
+            "release": "0.67.1",
+            "profile": "reference-v1",
+            "source_commit": SHA,
+            "runner_fingerprint": FINGERPRINT,
+            **contracts,
+            "full_dress_runs": [
+                {"github_run_id": run_id, "receipt_sha256": digest}
+                for run_id, digest in expected_members.items()
+            ],
+            "passed": True,
+            "bootstrap_admission_eligible": True,
+            "bootstrap_eligible": False,
+            "ship_evidence_eligible": False,
+        }
+        self.assertEqual(
+            campaign.validate_full_dress_admission_chain(
+                admission, first, second, expected_members
+            ),
+            contracts,
+        )
+        admission["full_dress_runs"][0]["receipt_sha256"] = "5" * 64
+        with self.assertRaisesRegex(campaign.CampaignError, "mapping is wrong"):
+            campaign.validate_full_dress_admission_chain(
+                admission, first, second, expected_members
+            )
+
     def test_frozen_receipt_seal_and_ship_aggregate_are_recomputed(self) -> None:
         receipt = {
             "schema_version": 1,
