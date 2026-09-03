@@ -1706,8 +1706,13 @@ def retain_receipt(campaign_dir: Path, name: str, data: bytes) -> Path:
 
 
 def expect_common_receipt(receipt: dict[str, Any], state: dict[str, Any], run_id: int) -> None:
-    if receipt.get("source_commit") != state["expected_sha"]:
-        raise CampaignError("receipt source commit mismatch")
+    if (
+        receipt.get("schema_version") != 1
+        or receipt.get("release") != "0.67.1"
+        or receipt.get("profile") != "reference-v1"
+        or receipt.get("source_commit") != state["expected_sha"]
+    ):
+        raise CampaignError("receipt release/profile/source identity mismatch")
     if receipt.get("github_run_id") != str(run_id):
         raise CampaignError("receipt GitHub run identity mismatch")
     if receipt.get("passed") is not True or receipt.get("ship_evidence_eligible") is not False:

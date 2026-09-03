@@ -28,6 +28,23 @@ def base_state() -> dict:
 
 
 class ReferenceCampaignTests(unittest.TestCase):
+    def test_common_receipt_requires_exact_release_profile_and_source(self) -> None:
+        state = base_state()
+        receipt = {
+            "schema_version": 1,
+            "release": "0.67.1",
+            "profile": "reference-v1",
+            "source_commit": SHA,
+            "github_run_id": "123",
+            "passed": True,
+            "ship_evidence_eligible": False,
+            "runner_fingerprint": FINGERPRINT,
+        }
+        campaign.expect_common_receipt(receipt, state, 123)
+        receipt["release"] = "0.67.0"
+        with self.assertRaisesRegex(campaign.CampaignError, "identity mismatch"):
+            campaign.expect_common_receipt(receipt, state, 123)
+
     def test_full_dress_admission_binds_exact_run_receipt_pairs_and_contracts(self) -> None:
         contracts = {
             "runner_provisioning_sha256": "1" * 64,
