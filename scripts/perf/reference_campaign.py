@@ -1563,7 +1563,7 @@ def validate_frozen_receipt_artifacts(
         "ship_evidence_eligible",
         "receipt_sha256",
     }
-    if set(receipt) != expected_fields:
+    if set(receipt) != expected_fields or receipt.get("schema_version") != 1:
         raise CampaignError("frozen-candidate receipt has missing or unknown fields")
 
     for field, relative in (
@@ -1705,9 +1705,15 @@ def retain_receipt(campaign_dir: Path, name: str, data: bytes) -> Path:
     return output
 
 
-def expect_common_receipt(receipt: dict[str, Any], state: dict[str, Any], run_id: int) -> None:
+def expect_common_receipt(
+    receipt: dict[str, Any],
+    state: dict[str, Any],
+    run_id: int,
+    *,
+    schema_version: int,
+) -> None:
     if (
-        receipt.get("schema_version") != 1
+        receipt.get("schema_version") != schema_version
         or receipt.get("release") != "0.67.1"
         or receipt.get("profile") != "reference-v1"
         or receipt.get("source_commit") != state["expected_sha"]
@@ -1855,7 +1861,7 @@ def validate_stage_artifacts(
         validate_host_admission_artifact(campaign_dir, state, diagnostic)
         data = read_unique_member(diagnostic, "qualification.json")
         receipt = json_receipt(data, "qualification receipt")
-        expect_common_receipt(receipt, state, run_id)
+        expect_common_receipt(receipt, state, run_id, schema_version=1)
         if receipt.get("mode") != "qualification-only" or receipt.get("bootstrap_eligible") is not False:
             raise CampaignError("qualification receipt eligibility contract failed")
         retained = retain_receipt(campaign_dir, "qualification.json", data)
@@ -1869,7 +1875,7 @@ def validate_stage_artifacts(
         validate_host_admission_artifact(campaign_dir, state, diagnostic)
         data = read_unique_member(reusable, "full-dress-receipt.json")
         receipt = json_receipt(data, "full-dress receipt")
-        expect_common_receipt(receipt, state, run_id)
+        expect_common_receipt(receipt, state, run_id, schema_version=1)
         if (
             receipt.get("mode") != "full-dress-qualification-only"
             or receipt.get("qualification_only") is not True
@@ -1933,7 +1939,7 @@ def validate_stage_artifacts(
     validate_host_admission_artifact(campaign_dir, state, diagnostic)
     data = read_unique_member(reusable, "bootstrap-sample.json")
     receipt = json_receipt(data, "bootstrap sample receipt")
-    expect_common_receipt(receipt, state, run_id)
+    expect_common_receipt(receipt, state, run_id, schema_version=2)
     index = int(spec["sample_index"])
     expected_predecessor = None if index == 1 else spec["bootstrap_predecessor"]
     expected_predecessor_hash = (

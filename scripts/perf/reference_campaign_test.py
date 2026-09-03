@@ -40,10 +40,14 @@ class ReferenceCampaignTests(unittest.TestCase):
             "ship_evidence_eligible": False,
             "runner_fingerprint": FINGERPRINT,
         }
-        campaign.expect_common_receipt(receipt, state, 123)
+        campaign.expect_common_receipt(receipt, state, 123, schema_version=1)
+        receipt["schema_version"] = 2
+        with self.assertRaisesRegex(campaign.CampaignError, "identity mismatch"):
+            campaign.expect_common_receipt(receipt, state, 123, schema_version=1)
+        campaign.expect_common_receipt(receipt, state, 123, schema_version=2)
         receipt["release"] = "0.67.0"
         with self.assertRaisesRegex(campaign.CampaignError, "identity mismatch"):
-            campaign.expect_common_receipt(receipt, state, 123)
+            campaign.expect_common_receipt(receipt, state, 123, schema_version=2)
 
     def test_full_dress_admission_binds_exact_run_receipt_pairs_and_contracts(self) -> None:
         contracts = {
@@ -177,6 +181,10 @@ class ReferenceCampaignTests(unittest.TestCase):
                 "receipt_sha256": "6" * 64,
             }
             campaign.validate_frozen_receipt_artifacts(receipt, archive_path)
+            receipt["schema_version"] = 2
+            with self.assertRaisesRegex(campaign.CampaignError, "missing or unknown"):
+                campaign.validate_frozen_receipt_artifacts(receipt, archive_path)
+            receipt["schema_version"] = 1
             receipt["reference_evidence_sha256"][0]["sha256"] = "7" * 64
             with self.assertRaisesRegex(campaign.CampaignError, "digest mismatch"):
                 campaign.validate_frozen_receipt_artifacts(receipt, archive_path)
@@ -1013,7 +1021,7 @@ class ReferenceCampaignTests(unittest.TestCase):
             "runner_fingerprint": "6" * 64,
         }
         with self.assertRaises(campaign.CampaignError):
-            campaign.expect_common_receipt(receipt, state, 101)
+            campaign.expect_common_receipt(receipt, state, 101, schema_version=1)
 
     def test_burn_receipt_is_non_evidence_and_minimum_duration_is_enforced(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
