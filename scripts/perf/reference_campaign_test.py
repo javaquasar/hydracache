@@ -49,6 +49,60 @@ class ReferenceCampaignTests(unittest.TestCase):
         with self.assertRaisesRegex(campaign.CampaignError, "identity mismatch"):
             campaign.expect_common_receipt(receipt, state, 123, schema_version=2)
 
+    def test_bootstrap_stage_accepts_the_producer_v2_schema(self) -> None:
+        state = base_state()
+        contracts = {
+            "runner_provisioning_sha256": "1" * 64,
+            "prebuild_contract_digest": "2" * 64,
+            "scenario_contract_set_digest": "3" * 64,
+        }
+        state["stages"]["full-dress-2"] = {
+            "admission_sha256": "4" * 64,
+            **contracts,
+        }
+        receipt = {
+            "schema_version": 2,
+            "release": "0.67.1",
+            "profile": "reference-v1",
+            "source_commit": SHA,
+            "github_run_id": "123",
+            "runner_fingerprint": FINGERPRINT,
+            "sample_index": 1,
+            "admission_sha256": "4" * 64,
+            "predecessor_github_run_id": None,
+            "predecessor_receipt_sha256": None,
+            "passed": True,
+            "bootstrap_eligible": True,
+            "ship_evidence_eligible": False,
+            **contracts,
+        }
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            reusable = root / "receipt.zip"
+            diagnostic = root / "diagnostic.zip"
+            with zipfile.ZipFile(reusable, "w") as archive:
+                archive.writestr("bootstrap-sample.json", json.dumps(receipt))
+            with zipfile.ZipFile(diagnostic, "w"):
+                pass
+            artifacts = {
+                "performance-0671-bootstrap-receipt": reusable,
+                f"performance-0671-bootstrap-{SHA}-123": diagnostic,
+            }
+            with mock.patch.object(campaign, "validate_host_admission_artifact"):
+                retained = campaign.validate_stage_artifacts(
+                    root,
+                    state,
+                    {
+                        "name": "bootstrap-1",
+                        "mode": "bootstrap",
+                        "sample_index": "1",
+                        "bootstrap_predecessor": "",
+                    },
+                    123,
+                    artifacts,
+                )
+            self.assertTrue(Path(retained["receipt"]).is_file())
+
     def test_full_dress_admission_binds_exact_run_receipt_pairs_and_contracts(self) -> None:
         contracts = {
             "runner_provisioning_sha256": "1" * 64,
