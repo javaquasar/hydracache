@@ -52,6 +52,9 @@ ARTIFACT_CANARY_MAX_BYTES = 64 * 1024 * 1024
 ARTIFACT_ARCHIVE_MAX_BYTES = 1024 * 1024 * 1024
 GITHUB_CONTROL_TIMEOUT_SECONDS = 120
 SAMPLE_SET_VALIDATION_TIMEOUT_SECONDS = 600
+FROZEN_ACTIVATION_PATH = "target/test-evidence/0.67.1/reference-activation.json"
+FROZEN_BUDGET_VERDICT_PATH = "target/test-evidence/0.67.1/perf-budget-verdict.json"
+EXPECTED_0671_WORK_ITEMS = tuple(f"W{index}" for index in range(8))
 
 
 class CampaignError(RuntimeError):
@@ -1313,6 +1316,43 @@ def read_bounded_evidence_member(archive_path: Path, relative: str) -> bytes:
         return archive.read(info)
 
 
+def read_bounded_frozen_member(archive_path: Path, relative: str) -> bytes:
+    """Read one receipt-bound final artifact from the immutable workflow ZIP."""
+    allowed_prefixes = (
+        "target/test-evidence/0.67/",
+        "target/test-evidence/0.67.1/",
+        "target/release-evidence/canaries/",
+    )
+    if (
+        not relative.startswith(allowed_prefixes)
+        or "\\" in relative
+        or relative.startswith("/")
+        or any(part in {"", ".", ".."} for part in relative.split("/"))
+    ):
+        raise CampaignError(f"unsafe frozen evidence identity: {relative}")
+    archive_relatives = {relative, relative.removeprefix("target/")}
+    with zipfile.ZipFile(archive_path) as archive:
+        matches: list[zipfile.ZipInfo] = []
+        for info in archive.infolist():
+            name = info.filename.removeprefix("./")
+            if info.is_dir() or name.startswith("/") or "\\" in name or ".." in name.split("/"):
+                continue
+            if any(
+                name == archive_relative or name.endswith(f"/{archive_relative}")
+                for archive_relative in archive_relatives
+            ):
+                matches.append(info)
+        if len(matches) != 1:
+            raise CampaignError(
+                f"expected one exact {relative} in {archive_path.name}, found {len(matches)}"
+            )
+        info = matches[0]
+        unix_mode = info.external_attr >> 16
+        if stat.S_ISLNK(unix_mode) or info.flag_bits & 0x1 or info.file_size > 64 * 1024 * 1024:
+            raise CampaignError(f"unsafe or oversized ZIP evidence member: {relative}")
+        return archive.read(info)
+
+
 def read_evidence_member(archive_path: Path, relative: str, expected_sha256: str) -> bytes:
     if not re.fullmatch(r"[0-9a-f]{64}", expected_sha256):
         raise CampaignError(f"unsafe bootstrap evidence identity: {relative}")
@@ -1505,6 +1545,90 @@ def sealed_json_receipt_is_valid(receipt: dict[str, Any]) -> bool:
     return sha256_bytes(canonical) == claimed
 
 
+def validate_frozen_receipt_artifacts(
+    receipt: dict[str, Any], diagnostic: Path
+) -> None:
+    expected_fields = {
+        "schema_version",
+        "release",
+        "profile",
+        "source_commit",
+        "github_run_id",
+        "runner_fingerprint",
+        "activation_sha256",
+        "budget_verdict_sha256",
+        "reference_evidence_sha256",
+        "canary_receipt_sha256",
+        "passed",
+        "ship_evidence_eligible",
+        "receipt_sha256",
+    }
+    if set(receipt) != expected_fields:
+        raise CampaignError("frozen-candidate receipt has missing or unknown fields")
+
+    for field, relative in (
+        ("activation_sha256", FROZEN_ACTIVATION_PATH),
+        ("budget_verdict_sha256", FROZEN_BUDGET_VERDICT_PATH),
+    ):
+        expected_sha256 = receipt.get(field)
+        if (
+            not isinstance(expected_sha256, str)
+            or not re.fullmatch(r"[0-9a-f]{64}", expected_sha256)
+            or sha256_bytes(read_bounded_frozen_member(diagnostic, relative))
+            != expected_sha256
+        ):
+            raise CampaignError(f"frozen-candidate {field} does not bind its archived file")
+
+    reference_files = receipt.get("reference_evidence_sha256")
+    if not isinstance(reference_files, list) or not reference_files or len(reference_files) > 256:
+        raise CampaignError("frozen-candidate reference evidence manifest is invalid")
+    reference_paths: set[str] = set()
+    for item in reference_files:
+        if not isinstance(item, dict) or set(item) != {"id", "path", "sha256"}:
+            raise CampaignError("frozen-candidate reference evidence entry is malformed")
+        relative = item.get("path")
+        expected_sha256 = item.get("sha256")
+        if (
+            not isinstance(relative, str)
+            or not relative.startswith("target/test-evidence/0.67/")
+            or item.get("id") != relative
+            or relative in reference_paths
+            or not isinstance(expected_sha256, str)
+            or not re.fullmatch(r"[0-9a-f]{64}", expected_sha256)
+        ):
+            raise CampaignError("frozen-candidate reference evidence identity is invalid")
+        reference_paths.add(relative)
+        if sha256_bytes(read_bounded_frozen_member(diagnostic, relative)) != expected_sha256:
+            raise CampaignError(f"frozen-candidate archived evidence digest mismatch: {relative}")
+
+    canary_files = receipt.get("canary_receipt_sha256")
+    if not isinstance(canary_files, list):
+        raise CampaignError("frozen-candidate canary evidence manifest is invalid")
+    expected_canaries = [
+        (work_item, f"target/release-evidence/canaries/0.67.1-{work_item}.json")
+        for work_item in EXPECTED_0671_WORK_ITEMS
+    ]
+    observed_canaries: list[tuple[str, str]] = []
+    for item in canary_files:
+        if not isinstance(item, dict) or set(item) != {"id", "path", "sha256"}:
+            raise CampaignError("frozen-candidate canary evidence entry is malformed")
+        identity = item.get("id")
+        relative = item.get("path")
+        expected_sha256 = item.get("sha256")
+        if (
+            not isinstance(identity, str)
+            or not isinstance(relative, str)
+            or not isinstance(expected_sha256, str)
+            or not re.fullmatch(r"[0-9a-f]{64}", expected_sha256)
+        ):
+            raise CampaignError("frozen-candidate canary evidence identity is invalid")
+        observed_canaries.append((identity, relative))
+        if sha256_bytes(read_bounded_frozen_member(diagnostic, relative)) != expected_sha256:
+            raise CampaignError(f"frozen-candidate archived canary digest mismatch: {relative}")
+    if observed_canaries != expected_canaries:
+        raise CampaignError("frozen-candidate canary evidence is not the exact W0-W7 set")
+
+
 def validate_ship_aggregate(
     aggregate: dict[str, Any], state: dict[str, Any]
 ) -> None:
@@ -1536,7 +1660,7 @@ def validate_ship_aggregate(
     ):
         raise CampaignError("frozen-candidate aggregate is not an exact ship-ready report")
 
-    work_item_ids: set[str] = set()
+    work_item_ids: list[str] = []
     for item in work_items:
         if (
             not isinstance(item, dict)
@@ -1550,7 +1674,9 @@ def validate_ship_aggregate(
             raise CampaignError(
                 "frozen-candidate aggregate contains a non-ship or malformed work item"
             )
-        work_item_ids.add(item["id"])
+        work_item_ids.append(item["id"])
+    if tuple(work_item_ids) != EXPECTED_0671_WORK_ITEMS:
+        raise CampaignError("frozen-candidate aggregate is not the exact W0-W7 release set")
     if counts != {
         "planned": 0,
         "implemented": 0,
@@ -1626,6 +1752,7 @@ def validate_stage_artifacts(
             or not sealed_json_receipt_is_valid(receipt)
         ):
             raise CampaignError("frozen-candidate receipt identity/eligibility contract failed")
+        validate_frozen_receipt_artifacts(receipt, diagnostic)
         state["stages"]["runner_fingerprint"] = fingerprint
         retained = retain_receipt(campaign_dir, "frozen-candidate.json", data)
         aggregate = read_unique_member(diagnostic, "0.67.1.json")

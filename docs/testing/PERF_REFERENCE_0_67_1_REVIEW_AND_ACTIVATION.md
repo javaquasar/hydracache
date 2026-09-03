@@ -179,8 +179,10 @@ or ambiguous runs. The workflow executes, in order:
 12. sealed frozen-candidate receipt and `--require-ship` aggregation.
 
 The controller downloads and retains the immutable artifact ZIP, validates the current SHA/run
-identity, and requires `ship_evidence_eligible=true` on the frozen receipt. A failed, unstable, or
-identity-mismatched run is retained as diagnostic evidence and does not count.
+identity, requires `ship_evidence_eligible=true`, re-hashes every receipt-bound reference/canary
+member plus the activation and budget verdict from that ZIP, and requires the exact W0-W7
+ship-ready aggregate. A failed, unstable, incomplete, or identity-mismatched run is retained as
+diagnostic evidence and does not count.
 
 ## 7. Teardown boundary
 

@@ -54,15 +54,71 @@ class ReferenceCampaignTests(unittest.TestCase):
                 "implemented": 0,
                 "fast-green": 0,
                 "gated-green": 0,
-                "ship-ready": 1,
+                "ship-ready": 8,
             },
             "reasons": [],
-            "work_items": [{"id": "W7", "stage": "ship-ready", "reasons": []}],
+            "work_items": [
+                {"id": f"W{index}", "stage": "ship-ready", "reasons": []}
+                for index in range(8)
+            ],
         }
         campaign.validate_ship_aggregate(aggregate, base_state())
         aggregate["work_items"][0]["stage"] = "gated-green"
         with self.assertRaises(campaign.CampaignError):
             campaign.validate_ship_aggregate(aggregate, base_state())
+
+    def test_frozen_receipt_requires_every_digest_bound_archive_member(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            archive_path = Path(temporary) / "frozen.zip"
+            activation = b'{"activation":true}\n'
+            verdict = b'{"verdict":true}\n'
+            reference_path = "target/test-evidence/0.67/local.json"
+            reference = b'{"reference":true}\n'
+            canaries = {
+                f"target/release-evidence/canaries/0.67.1-W{index}.json": (
+                    f'{{"canary":"W{index}"}}\n'.encode()
+                )
+                for index in range(8)
+            }
+            with zipfile.ZipFile(archive_path, "w") as archive:
+                archive.writestr(campaign.FROZEN_ACTIVATION_PATH.removeprefix("target/"), activation)
+                archive.writestr(campaign.FROZEN_BUDGET_VERDICT_PATH, verdict)
+                archive.writestr(reference_path, reference)
+                for relative, data in canaries.items():
+                    archive.writestr(relative.removeprefix("target/"), data)
+
+            receipt = {
+                "schema_version": 1,
+                "release": "0.67.1",
+                "profile": "reference-v1",
+                "source_commit": SHA,
+                "github_run_id": "123",
+                "runner_fingerprint": FINGERPRINT,
+                "activation_sha256": campaign.sha256_bytes(activation),
+                "budget_verdict_sha256": campaign.sha256_bytes(verdict),
+                "reference_evidence_sha256": [
+                    {
+                        "id": reference_path,
+                        "path": reference_path,
+                        "sha256": campaign.sha256_bytes(reference),
+                    }
+                ],
+                "canary_receipt_sha256": [
+                    {
+                        "id": f"W{index}",
+                        "path": relative,
+                        "sha256": campaign.sha256_bytes(canaries[relative]),
+                    }
+                    for index, relative in enumerate(canaries)
+                ],
+                "passed": True,
+                "ship_evidence_eligible": True,
+                "receipt_sha256": "6" * 64,
+            }
+            campaign.validate_frozen_receipt_artifacts(receipt, archive_path)
+            receipt["reference_evidence_sha256"][0]["sha256"] = "7" * 64
+            with self.assertRaisesRegex(campaign.CampaignError, "digest mismatch"):
+                campaign.validate_frozen_receipt_artifacts(receipt, archive_path)
 
     def test_visible_command_timeout_is_bounded(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
