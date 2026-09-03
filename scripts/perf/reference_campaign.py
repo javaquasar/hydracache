@@ -49,6 +49,12 @@ ARTIFACT_CANARY_ATTEMPTS = 3
 ARTIFACT_CANARY_RETRY_DELAY_SECONDS = 15
 ARTIFACT_CANARY_TIMEOUT_SECONDS = 120
 ARTIFACT_CANARY_MAX_BYTES = 64 * 1024 * 1024
+ARTIFACT_ARCHIVE_MAX_BYTES = 1024 * 1024 * 1024
+GITHUB_CONTROL_TIMEOUT_SECONDS = 120
+SAMPLE_SET_VALIDATION_TIMEOUT_SECONDS = 600
+FROZEN_ACTIVATION_PATH = "target/test-evidence/0.67.1/reference-activation.json"
+FROZEN_BUDGET_VERDICT_PATH = "target/test-evidence/0.67.1/perf-budget-verdict.json"
+EXPECTED_0671_WORK_ITEMS = tuple(f"W{index}" for index in range(8))
 
 
 class CampaignError(RuntimeError):
@@ -109,7 +115,13 @@ def run_capture(
     return completed.stdout.strip()
 
 
-def run_visible(args: Iterable[str], *, cwd: Path, log_path: Path) -> int:
+def run_visible(
+    args: Iterable[str],
+    *,
+    cwd: Path,
+    log_path: Path,
+    timeout_seconds: int | float | None = None,
+) -> int:
     command = list(args)
     with log_path.open("a", encoding="utf-8", newline="\n") as log:
         log.write(f"[{utc_now()}] command: {' '.join(command)}\n")
@@ -124,21 +136,53 @@ def run_visible(args: Iterable[str], *, cwd: Path, log_path: Path) -> int:
             errors="replace",
         )
         assert process.stdout is not None
-        try:
-            for line in process.stdout:
-                sys.stdout.write(line)
-                sys.stdout.flush()
-                log.write(line)
-                log.flush()
-            return process.wait()
-        except BaseException:
-            process.terminate()
+        reader_error: list[BaseException] = []
+
+        def stream_output() -> None:
             try:
-                process.wait(timeout=10)
-            except subprocess.TimeoutExpired:
-                process.kill()
-                process.wait()
+                for line in process.stdout:
+                    sys.stdout.write(line)
+                    sys.stdout.flush()
+                    log.write(line)
+                    log.flush()
+            except BaseException as error:
+                reader_error.append(error)
+
+        reader = threading.Thread(target=stream_output, name="hydracache-command-output")
+        reader.start()
+        try:
+            try:
+                result = process.wait(timeout=timeout_seconds)
+            except subprocess.TimeoutExpired as error:
+                process.terminate()
+                try:
+                    process.wait(timeout=10)
+                except subprocess.TimeoutExpired:
+                    process.kill()
+                    process.wait()
+                raise CampaignError(
+                    f"command timed out after {timeout_seconds} seconds"
+                ) from error
+            reader.join()
+            if reader_error:
+                raise reader_error[0]
+            return result
+        except BaseException:
+            if process.poll() is None:
+                process.terminate()
+                try:
+                    process.wait(timeout=10)
+                except subprocess.TimeoutExpired:
+                    process.kill()
+                    process.wait()
+            reader.join(timeout=10)
             raise
+        finally:
+            # Popen is not used as a context manager because output is streamed
+            # concurrently. Close its pipe explicitly on both success and
+            # timeout so repeated controller invocations do not leak handles.
+            reader.join(timeout=10)
+            process.stdout.close()
 
 
 def require_tools(names: Iterable[str]) -> None:
@@ -150,7 +194,11 @@ def require_tools(names: Iterable[str]) -> None:
 def require_github_dispatch_readiness() -> None:
     """Fail before freeze if installing/authenticating gh would drift the host later."""
     require_tools(["gh"])
-    run_capture(["gh", "auth", "status"], cwd=repo_root())
+    run_capture(
+        ["gh", "auth", "status"],
+        cwd=repo_root(),
+        timeout_seconds=GITHUB_CONTROL_TIMEOUT_SECONDS,
+    )
 
 
 def sudo_prefix() -> list[str]:
@@ -762,7 +810,9 @@ def command_freeze(args: argparse.Namespace) -> None:
     print(f"HOST_ADMISSION_PASSED=true campaign_dir={campaign_dir}")
 
 
-def gh_json(args: Iterable[str], *, timeout_seconds: int | None = None) -> Any:
+def gh_json(
+    args: Iterable[str], *, timeout_seconds: int | None = GITHUB_CONTROL_TIMEOUT_SECONDS
+) -> Any:
     output = run_capture(
         ["gh", *args], cwd=repo_root(), timeout_seconds=timeout_seconds
     )
@@ -782,6 +832,7 @@ def github_main_sha(state: dict[str, Any]) -> str:
             ".sha",
         ],
         cwd=repo_root(),
+        timeout_seconds=GITHUB_CONTROL_TIMEOUT_SECONDS,
     )
 
 
@@ -1027,6 +1078,33 @@ def safe_artifact_filename(artifact_id: int, name: str) -> str:
     return f"{artifact_id}-{slug}.zip"
 
 
+def expected_stage_artifact_names(
+    state: dict[str, Any], run_id: int, step: str
+) -> set[str]:
+    source = state["expected_sha"]
+    if step == "qualification":
+        return {f"performance-0671-qualification-{source}-{run_id}"}
+    if step == "full-dress-1":
+        return {
+            "performance-0671-full-dress-receipt",
+            f"performance-0671-full-dress-{source}-{run_id}",
+        }
+    if step == "full-dress-2":
+        return {
+            "performance-0671-full-dress-receipt",
+            "performance-0671-full-dress-admission",
+            f"performance-0671-full-dress-{source}-{run_id}",
+        }
+    if re.fullmatch(r"bootstrap-[1-5]", step):
+        return {
+            "performance-0671-bootstrap-receipt",
+            f"performance-0671-bootstrap-{source}-{run_id}",
+        }
+    if step == "frozen-candidate":
+        return {f"performance-0671-frozen-candidate-{source}-{run_id}"}
+    raise CampaignError(f"unknown reference campaign stage: {step}")
+
+
 def download_artifacts(campaign_dir: Path, state: dict[str, Any], run_id: int, step: str) -> dict[str, Path]:
     run_dir = campaign_dir / "runs" / f"{step}-{run_id}"
     manifest_path = run_dir / "artifact-manifest.json"
@@ -1037,18 +1115,65 @@ def download_artifacts(campaign_dir: Path, state: dict[str, Any], run_id: int, s
             raise ArtifactIntegrityError(
                 f"incomplete prior artifact download for {step}: {error}"
             ) from error
+        if (
+            not isinstance(manifest, dict)
+            or set(manifest) != {"schema_version", "run_id", "step", "artifacts"}
+            or manifest.get("schema_version") != 1
+            or manifest.get("run_id") != run_id
+            or manifest.get("step") != step
+            or not isinstance(manifest.get("artifacts"), list)
+            or not manifest["artifacts"]
+        ):
+            raise ArtifactIntegrityError(f"retained artifact manifest identity mismatch for {step}")
         paths: dict[str, Path] = {}
-        for artifact in manifest.get("artifacts", []):
-            path = campaign_dir / artifact.get("archive_file", "")
+        for artifact in manifest["artifacts"]:
+            if not isinstance(artifact, dict) or set(artifact) != {
+                "artifact_id",
+                "name",
+                "reported_size_bytes",
+                "archive_file",
+                "archive_size_bytes",
+                "archive_sha256",
+            }:
+                raise ArtifactIntegrityError(f"malformed retained artifact entry for {step}")
+            artifact_id = artifact.get("artifact_id")
+            name = artifact.get("name")
+            reported_size = artifact.get("reported_size_bytes")
+            archive_size = artifact.get("archive_size_bytes")
+            archive_sha256 = artifact.get("archive_sha256")
+            if (
+                not isinstance(artifact_id, int)
+                or not isinstance(name, str)
+                or not isinstance(reported_size, int)
+                or reported_size <= 0
+                or reported_size > ARTIFACT_ARCHIVE_MAX_BYTES
+                or not isinstance(archive_size, int)
+                or archive_size <= 0
+                or archive_size > ARTIFACT_ARCHIVE_MAX_BYTES
+                or not isinstance(archive_sha256, str)
+                or not re.fullmatch(r"[0-9a-f]{64}", archive_sha256)
+            ):
+                raise ArtifactIntegrityError(f"invalid retained artifact identity for {step}")
+            expected_relative = (
+                Path("runs")
+                / f"{step}-{run_id}"
+                / "original-artifacts"
+                / safe_artifact_filename(artifact_id, name)
+            )
+            if Path(artifact.get("archive_file", "")) != expected_relative:
+                raise ArtifactIntegrityError(f"retained artifact path escaped its run directory for {step}")
+            path = campaign_dir / expected_relative
             if (
                 not path.is_file()
-                or sha256_file(path) != artifact.get("archive_sha256")
-                or artifact.get("name") in paths
+                or path.is_symlink()
+                or path.stat().st_size != archive_size
+                or sha256_file(path) != archive_sha256
+                or name in paths
             ):
                 raise ArtifactIntegrityError(f"retained artifact drift for {step}")
-            paths[artifact["name"]] = path
-        if not paths:
-            raise ArtifactIntegrityError(f"empty retained artifact manifest for {step}")
+            paths[name] = path
+        if set(paths) != expected_stage_artifact_names(state, run_id, step):
+            raise ArtifactIntegrityError(f"retained artifact set is not exact for {step}")
         return paths
 
     runs_dir = campaign_dir / "runs"
@@ -1069,8 +1194,18 @@ def download_artifacts(campaign_dir: Path, state: dict[str, Any], run_id: int, s
     except CampaignError as error:
         raise ArtifactTransportError(f"artifact listing failed for run {run_id}: {error}") from error
     artifacts = response.get("artifacts") if isinstance(response, dict) else None
+    total_count = response.get("total_count") if isinstance(response, dict) else None
     if not isinstance(artifacts, list) or not artifacts:
         raise ArtifactTransportError(f"run {run_id} has no downloadable artifacts yet")
+    if not isinstance(total_count, int) or total_count != len(artifacts):
+        raise ArtifactIntegrityError(f"artifact listing is incomplete for {step}")
+    listed_names = [artifact.get("name") for artifact in artifacts if isinstance(artifact, dict)]
+    if (
+        len(listed_names) != len(artifacts)
+        or not all(isinstance(name, str) for name in listed_names)
+        or set(listed_names) != expected_stage_artifact_names(state, run_id, step)
+    ):
+        raise ArtifactIntegrityError(f"artifact set is not exact for {step}")
     names: set[str] = set()
     paths: dict[str, Path] = {}
     manifest: list[dict[str, Any]] = []
@@ -1081,6 +1216,13 @@ def download_artifacts(campaign_dir: Path, state: dict[str, Any], run_id: int, s
             raise ArtifactIntegrityError("artifact API returned invalid or duplicate identity")
         if artifact.get("expired") is True:
             raise ArtifactIntegrityError(f"artifact already expired: {name}")
+        reported_size = artifact.get("size_in_bytes")
+        if (
+            not isinstance(reported_size, int)
+            or reported_size <= 0
+            or reported_size > ARTIFACT_ARCHIVE_MAX_BYTES
+        ):
+            raise ArtifactIntegrityError(f"artifact size is invalid or exceeds the cap: {name}")
         names.add(name)
         output = originals / safe_artifact_filename(artifact_id, name)
         download_binary(
@@ -1098,6 +1240,8 @@ def download_artifacts(campaign_dir: Path, state: dict[str, Any], run_id: int, s
             raise ArtifactIntegrityError(f"artifact is not a valid ZIP: {name}") from error
         if corrupt is not None:
             raise ArtifactIntegrityError(f"artifact ZIP has a corrupt member: {name}:{corrupt}")
+        if output.stat().st_size <= 0 or output.stat().st_size > ARTIFACT_ARCHIVE_MAX_BYTES:
+            raise ArtifactIntegrityError(f"downloaded artifact size is invalid: {name}")
         paths[name] = output
         manifest.append(
             {
@@ -1156,41 +1300,49 @@ def download_artifacts_with_retry(
     ) from latest
 
 
-def artifact_by_prefix(artifacts: dict[str, Path], prefix: str) -> Path:
-    matches = [path for name, path in artifacts.items() if name.startswith(prefix)]
-    if len(matches) != 1:
-        raise CampaignError(f"expected exactly one artifact with prefix {prefix}, found {len(matches)}")
-    return matches[0]
+def artifact_named(artifacts: dict[str, Path], name: str) -> Path:
+    artifact = artifacts.get(name)
+    if artifact is None:
+        raise CampaignError(f"expected exact artifact {name}")
+    return artifact
 
 
 def read_unique_member(archive_path: Path, basename: str) -> bytes:
     with zipfile.ZipFile(archive_path) as archive:
-        matches = [name for name in archive.namelist() if Path(name).name == basename and not name.endswith("/")]
+        matches = [
+            info
+            for info in archive.infolist()
+            if Path(info.filename).name == basename and not info.is_dir()
+        ]
         if len(matches) != 1:
             raise CampaignError(f"expected one {basename} in {archive_path.name}, found {len(matches)}")
-        info = archive.getinfo(matches[0])
-        if info.file_size > 64 * 1024 * 1024:
-            raise CampaignError(f"receipt is unexpectedly large: {basename}")
+        info = matches[0]
+        unix_mode = info.external_attr >> 16
+        if stat.S_ISLNK(unix_mode) or info.flag_bits & 0x1 or info.file_size > 64 * 1024 * 1024:
+            raise CampaignError(f"receipt is unsafe or unexpectedly large: {basename}")
         return archive.read(info)
 
 
-def read_evidence_member(archive_path: Path, relative: str, expected_sha256: str) -> bytes:
+def read_bounded_evidence_member(archive_path: Path, relative: str) -> bytes:
     """Read one exact bounded evidence member without trusting ZIP paths."""
     if (
         not relative.startswith("target/test-evidence/0.67/")
         or "\\" in relative
         or relative.startswith("/")
         or any(part in {"", ".", ".."} for part in relative.split("/"))
-        or not re.fullmatch(r"[0-9a-f]{64}", expected_sha256)
     ):
         raise CampaignError(f"unsafe bootstrap evidence identity: {relative}")
+    archive_relatives = {relative, relative.removeprefix("target/")}
     with zipfile.ZipFile(archive_path) as archive:
         matches: list[zipfile.ZipInfo] = []
         for info in archive.infolist():
             name = info.filename.removeprefix("./")
             if info.is_dir() or name.startswith("/") or "\\" in name or ".." in name.split("/"):
                 continue
-            if name == relative or name.endswith(f"/{relative}"):
+            if any(
+                name == archive_relative or name.endswith(f"/{archive_relative}")
+                for archive_relative in archive_relatives
+            ):
                 matches.append(info)
         if len(matches) != 1:
             raise CampaignError(
@@ -1200,10 +1352,108 @@ def read_evidence_member(archive_path: Path, relative: str, expected_sha256: str
         unix_mode = info.external_attr >> 16
         if stat.S_ISLNK(unix_mode) or info.flag_bits & 0x1 or info.file_size > 64 * 1024 * 1024:
             raise CampaignError(f"unsafe or oversized ZIP evidence member: {relative}")
-        data = archive.read(info)
+        return archive.read(info)
+
+
+def read_bounded_frozen_member(archive_path: Path, relative: str) -> bytes:
+    """Read one receipt-bound final artifact from the immutable workflow ZIP."""
+    allowed_prefixes = (
+        "target/test-evidence/0.67/",
+        "target/test-evidence/0.67.1/",
+        "target/release-evidence/canaries/",
+    )
+    if (
+        not relative.startswith(allowed_prefixes)
+        or "\\" in relative
+        or relative.startswith("/")
+        or any(part in {"", ".", ".."} for part in relative.split("/"))
+    ):
+        raise CampaignError(f"unsafe frozen evidence identity: {relative}")
+    archive_relatives = {relative, relative.removeprefix("target/")}
+    with zipfile.ZipFile(archive_path) as archive:
+        matches: list[zipfile.ZipInfo] = []
+        for info in archive.infolist():
+            name = info.filename.removeprefix("./")
+            if info.is_dir() or name.startswith("/") or "\\" in name or ".." in name.split("/"):
+                continue
+            if any(
+                name == archive_relative or name.endswith(f"/{archive_relative}")
+                for archive_relative in archive_relatives
+            ):
+                matches.append(info)
+        if len(matches) != 1:
+            raise CampaignError(
+                f"expected one exact {relative} in {archive_path.name}, found {len(matches)}"
+            )
+        info = matches[0]
+        unix_mode = info.external_attr >> 16
+        if stat.S_ISLNK(unix_mode) or info.flag_bits & 0x1 or info.file_size > 64 * 1024 * 1024:
+            raise CampaignError(f"unsafe or oversized ZIP evidence member: {relative}")
+        return archive.read(info)
+
+
+def read_evidence_member(archive_path: Path, relative: str, expected_sha256: str) -> bytes:
+    if not re.fullmatch(r"[0-9a-f]{64}", expected_sha256):
+        raise CampaignError(f"unsafe bootstrap evidence identity: {relative}")
+    data = read_bounded_evidence_member(archive_path, relative)
     if sha256_bytes(data) != expected_sha256:
         raise CampaignError(f"bootstrap evidence digest mismatch: {relative}")
     return data
+
+
+def validate_materialized_macro_support(
+    receipt: dict[str, Any],
+    payloads: dict[str, bytes],
+    digests: dict[str, str],
+) -> None:
+    marker_relative = "target/test-evidence/0.67/w7-raw/macro-publication-receipt.json"
+    prebuild_relative = "target/test-evidence/0.67/prebuild-manifest.json"
+    marker_data = payloads.get(marker_relative)
+    if marker_data is None:
+        raise CampaignError("bootstrap receipt does not bind the W7 publication marker")
+    marker = json_receipt(marker_data, "W7 macro publication receipt")
+    artifacts = marker.get("artifacts")
+    prebuild_sha256 = marker.get("prebuild_manifest_sha256")
+    if (
+        marker.get("schema_version") != 1
+        or marker.get("source_commit") != receipt.get("source_commit")
+        or marker.get("runner_profile") != "reference-v1"
+        or marker.get("runner_fingerprint") != receipt.get("runner_fingerprint")
+        or not isinstance(prebuild_sha256, str)
+        or not isinstance(artifacts, list)
+        or not artifacts
+        or len(artifacts) > 64
+    ):
+        raise CampaignError("W7 macro publication identity is invalid")
+
+    prebuild_data = payloads.get(prebuild_relative)
+    if prebuild_data is None or digests.get(prebuild_relative) != prebuild_sha256:
+        raise CampaignError("bootstrap receipt does not bind the exact W7 prebuild manifest")
+
+    raw_paths: set[str] = set()
+    for artifact in artifacts:
+        if not isinstance(artifact, dict):
+            raise CampaignError("W7 macro publication artifact is malformed")
+        canonical = artifact.get("canonical_path")
+        envelope_sha256 = artifact.get("envelope_sha256")
+        raw_relative = artifact.get("raw_sidecar_path")
+        raw_sha256 = artifact.get("raw_sha256")
+        if (
+            not isinstance(canonical, str)
+            or canonical not in payloads
+            or digests.get(canonical) != envelope_sha256
+            or not isinstance(raw_relative, str)
+            or not raw_relative.startswith("target/test-evidence/0.67/w7-raw/")
+            or raw_relative in raw_paths
+            or not isinstance(raw_sha256, str)
+        ):
+            raise CampaignError("W7 macro publication artifact identity is invalid")
+        raw_paths.add(raw_relative)
+        if raw_relative not in payloads or digests.get(raw_relative) != raw_sha256:
+            raise CampaignError("bootstrap receipt does not bind an exact W7 raw sidecar")
+
+    if digests.get(marker_relative) != sha256_bytes(marker_data):
+        raise CampaignError("bootstrap receipt W7 marker digest mismatch")
 
 
 def materialize_bootstrap_input(
@@ -1236,6 +1486,11 @@ def materialize_bootstrap_input(
             raise CampaignError(f"bootstrap sample {index} evidence exceeds 512 MiB")
         payloads[relative] = data
         digests[relative] = digest
+
+    validate_materialized_macro_support(receipt, payloads, digests)
+    total_bytes = sum(len(data) for data in payloads.values())
+    if total_bytes > 512 * 1024 * 1024:
+        raise CampaignError(f"bootstrap sample {index} evidence exceeds 512 MiB")
 
     output = campaign_dir / "reference-inputs" / f"sample-{index}"
     if output.exists():
@@ -1314,6 +1569,163 @@ def json_receipt(data: bytes, label: str) -> dict[str, Any]:
     return value
 
 
+def sealed_json_receipt_is_valid(receipt: dict[str, Any]) -> bool:
+    claimed = receipt.get("receipt_sha256")
+    if not isinstance(claimed, str) or not re.fullmatch(r"[0-9a-f]{64}", claimed):
+        return False
+    payload = dict(receipt)
+    payload["receipt_sha256"] = ""
+    # Rust's serde_json compact serializer preserves struct field order and
+    # emits UTF-8 directly. json.loads preserves that order for the retained
+    # receipt, allowing the controller to recompute the same seal.
+    canonical = json.dumps(
+        payload, ensure_ascii=False, separators=(",", ":")
+    ).encode("utf-8")
+    return sha256_bytes(canonical) == claimed
+
+
+def validate_frozen_receipt_artifacts(
+    receipt: dict[str, Any], diagnostic: Path
+) -> None:
+    expected_fields = {
+        "schema_version",
+        "release",
+        "profile",
+        "source_commit",
+        "github_run_id",
+        "runner_fingerprint",
+        "activation_sha256",
+        "budget_verdict_sha256",
+        "reference_evidence_sha256",
+        "canary_receipt_sha256",
+        "passed",
+        "ship_evidence_eligible",
+        "receipt_sha256",
+    }
+    if set(receipt) != expected_fields or receipt.get("schema_version") != 1:
+        raise CampaignError("frozen-candidate receipt has missing or unknown fields")
+
+    for field, relative in (
+        ("activation_sha256", FROZEN_ACTIVATION_PATH),
+        ("budget_verdict_sha256", FROZEN_BUDGET_VERDICT_PATH),
+    ):
+        expected_sha256 = receipt.get(field)
+        if (
+            not isinstance(expected_sha256, str)
+            or not re.fullmatch(r"[0-9a-f]{64}", expected_sha256)
+            or sha256_bytes(read_bounded_frozen_member(diagnostic, relative))
+            != expected_sha256
+        ):
+            raise CampaignError(f"frozen-candidate {field} does not bind its archived file")
+
+    reference_files = receipt.get("reference_evidence_sha256")
+    if not isinstance(reference_files, list) or not reference_files or len(reference_files) > 256:
+        raise CampaignError("frozen-candidate reference evidence manifest is invalid")
+    reference_paths: set[str] = set()
+    for item in reference_files:
+        if not isinstance(item, dict) or set(item) != {"id", "path", "sha256"}:
+            raise CampaignError("frozen-candidate reference evidence entry is malformed")
+        relative = item.get("path")
+        expected_sha256 = item.get("sha256")
+        if (
+            not isinstance(relative, str)
+            or not relative.startswith("target/test-evidence/0.67/")
+            or item.get("id") != relative
+            or relative in reference_paths
+            or not isinstance(expected_sha256, str)
+            or not re.fullmatch(r"[0-9a-f]{64}", expected_sha256)
+        ):
+            raise CampaignError("frozen-candidate reference evidence identity is invalid")
+        reference_paths.add(relative)
+        if sha256_bytes(read_bounded_frozen_member(diagnostic, relative)) != expected_sha256:
+            raise CampaignError(f"frozen-candidate archived evidence digest mismatch: {relative}")
+
+    canary_files = receipt.get("canary_receipt_sha256")
+    if not isinstance(canary_files, list):
+        raise CampaignError("frozen-candidate canary evidence manifest is invalid")
+    expected_canaries = [
+        (work_item, f"target/release-evidence/canaries/0.67.1-{work_item}.json")
+        for work_item in EXPECTED_0671_WORK_ITEMS
+    ]
+    observed_canaries: list[tuple[str, str]] = []
+    for item in canary_files:
+        if not isinstance(item, dict) or set(item) != {"id", "path", "sha256"}:
+            raise CampaignError("frozen-candidate canary evidence entry is malformed")
+        identity = item.get("id")
+        relative = item.get("path")
+        expected_sha256 = item.get("sha256")
+        if (
+            not isinstance(identity, str)
+            or not isinstance(relative, str)
+            or not isinstance(expected_sha256, str)
+            or not re.fullmatch(r"[0-9a-f]{64}", expected_sha256)
+        ):
+            raise CampaignError("frozen-candidate canary evidence identity is invalid")
+        observed_canaries.append((identity, relative))
+        if sha256_bytes(read_bounded_frozen_member(diagnostic, relative)) != expected_sha256:
+            raise CampaignError(f"frozen-candidate archived canary digest mismatch: {relative}")
+    if observed_canaries != expected_canaries:
+        raise CampaignError("frozen-candidate canary evidence is not the exact W0-W7 set")
+
+
+def validate_ship_aggregate(
+    aggregate: dict[str, Any], state: dict[str, Any]
+) -> None:
+    expected_fields = {
+        "schema_version",
+        "release",
+        "source_commit",
+        "current_worktree_dirty",
+        "receipts_supplied",
+        "counts",
+        "reasons",
+        "work_items",
+    }
+    counts = aggregate.get("counts")
+    work_items = aggregate.get("work_items")
+    if (
+        set(aggregate) != expected_fields
+        or aggregate.get("schema_version") != 1
+        or aggregate.get("release") != "0.67.1"
+        or aggregate.get("source_commit") != state["expected_sha"]
+        or aggregate.get("current_worktree_dirty") is not False
+        or aggregate.get("receipts_supplied") is not True
+        or aggregate.get("reasons") != []
+        or not isinstance(counts, dict)
+        or set(counts)
+        != {"planned", "implemented", "fast-green", "gated-green", "ship-ready"}
+        or not isinstance(work_items, list)
+        or not work_items
+    ):
+        raise CampaignError("frozen-candidate aggregate is not an exact ship-ready report")
+
+    work_item_ids: list[str] = []
+    for item in work_items:
+        if (
+            not isinstance(item, dict)
+            or set(item) != {"id", "stage", "reasons"}
+            or not isinstance(item.get("id"), str)
+            or not item["id"]
+            or item["id"] in work_item_ids
+            or item.get("stage") != "ship-ready"
+            or item.get("reasons") != []
+        ):
+            raise CampaignError(
+                "frozen-candidate aggregate contains a non-ship or malformed work item"
+            )
+        work_item_ids.append(item["id"])
+    if tuple(work_item_ids) != EXPECTED_0671_WORK_ITEMS:
+        raise CampaignError("frozen-candidate aggregate is not the exact W0-W7 release set")
+    if counts != {
+        "planned": 0,
+        "implemented": 0,
+        "fast-green": 0,
+        "gated-green": 0,
+        "ship-ready": len(work_items),
+    }:
+        raise CampaignError("frozen-candidate aggregate counts do not match its work items")
+
+
 def retain_receipt(campaign_dir: Path, name: str, data: bytes) -> Path:
     accepted = campaign_dir / "accepted-receipts"
     accepted.mkdir(mode=0o700, exist_ok=True)
@@ -1332,9 +1744,20 @@ def retain_receipt(campaign_dir: Path, name: str, data: bytes) -> Path:
     return output
 
 
-def expect_common_receipt(receipt: dict[str, Any], state: dict[str, Any], run_id: int) -> None:
-    if receipt.get("source_commit") != state["expected_sha"]:
-        raise CampaignError("receipt source commit mismatch")
+def expect_common_receipt(
+    receipt: dict[str, Any],
+    state: dict[str, Any],
+    run_id: int,
+    *,
+    schema_version: int,
+) -> None:
+    if (
+        receipt.get("schema_version") != schema_version
+        or receipt.get("release") != "0.67.1"
+        or receipt.get("profile") != "reference-v1"
+        or receipt.get("source_commit") != state["expected_sha"]
+    ):
+        raise CampaignError("receipt release/profile/source identity mismatch")
     if receipt.get("github_run_id") != str(run_id):
         raise CampaignError("receipt GitHub run identity mismatch")
     if receipt.get("passed") is not True or receipt.get("ship_evidence_eligible") is not False:
@@ -1348,6 +1771,85 @@ def expect_common_receipt(receipt: dict[str, Any], state: dict[str, Any], run_id
     state["stages"]["runner_fingerprint"] = fingerprint
 
 
+def validate_full_dress_admission_chain(
+    admission: dict[str, Any],
+    first_receipt: dict[str, Any],
+    second_receipt: dict[str, Any],
+    expected_members: dict[str, str],
+) -> dict[str, str]:
+    expected_fields = {
+        "schema_version",
+        "release",
+        "profile",
+        "source_commit",
+        "runner_fingerprint",
+        "runner_provisioning_sha256",
+        "prebuild_contract_digest",
+        "scenario_contract_set_digest",
+        "full_dress_runs",
+        "passed",
+        "bootstrap_admission_eligible",
+        "bootstrap_eligible",
+        "ship_evidence_eligible",
+    }
+    if (
+        set(admission) != expected_fields
+        or admission.get("schema_version") != 1
+        or admission.get("release") != "0.67.1"
+        or admission.get("profile") != "reference-v1"
+    ):
+        raise CampaignError("full-dress admission has missing or unknown fields")
+
+    for receipt in (first_receipt, second_receipt):
+        if (
+            receipt.get("schema_version") != 1
+            or receipt.get("release") != "0.67.1"
+            or receipt.get("profile") != "reference-v1"
+            or receipt.get("source_commit") != admission.get("source_commit")
+            or receipt.get("runner_fingerprint") != admission.get("runner_fingerprint")
+        ):
+            raise CampaignError("full-dress admission mixes receipt identity")
+
+    contract_fields = (
+        "runner_provisioning_sha256",
+        "prebuild_contract_digest",
+        "scenario_contract_set_digest",
+    )
+    contracts: dict[str, str] = {}
+    for field in contract_fields:
+        value = admission.get(field)
+        if (
+            not isinstance(value, str)
+            or not re.fullmatch(r"[0-9a-f]{64}", value)
+            or first_receipt.get(field) != value
+            or second_receipt.get(field) != value
+        ):
+            raise CampaignError(f"full-dress admission {field} chain is inconsistent")
+        contracts[field] = value
+
+    members = admission.get("full_dress_runs")
+    if not isinstance(members, list) or len(members) != 2:
+        raise CampaignError("full-dress admission must contain exactly two runs")
+    observed_members: dict[str, str] = {}
+    for member in members:
+        if not isinstance(member, dict) or set(member) != {"github_run_id", "receipt_sha256"}:
+            raise CampaignError("full-dress admission member is malformed")
+        run_id = member.get("github_run_id")
+        receipt_sha256 = member.get("receipt_sha256")
+        if (
+            not isinstance(run_id, str)
+            or not RUN_ID_RE.fullmatch(run_id)
+            or run_id in observed_members
+            or not isinstance(receipt_sha256, str)
+            or not re.fullmatch(r"[0-9a-f]{64}", receipt_sha256)
+        ):
+            raise CampaignError("full-dress admission member identity is invalid")
+        observed_members[run_id] = receipt_sha256
+    if observed_members != expected_members:
+        raise CampaignError("full-dress admission run-to-receipt mapping is wrong")
+    return contracts
+
+
 def validate_stage_artifacts(
     campaign_dir: Path,
     state: dict[str, Any],
@@ -1357,7 +1859,7 @@ def validate_stage_artifacts(
 ) -> dict[str, Any]:
     step = spec["name"]
     if spec["mode"] == "frozen-candidate":
-        diagnostic = artifact_by_prefix(
+        diagnostic = artifact_named(
             artifacts,
             f"performance-0671-frozen-candidate-{state['expected_sha']}-{run_id}",
         )
@@ -1376,18 +1878,15 @@ def validate_stage_artifacts(
             or (known_fingerprint is not None and fingerprint != known_fingerprint)
             or receipt.get("passed") is not True
             or receipt.get("ship_evidence_eligible") is not True
-            or not re.fullmatch(r"[0-9a-f]{64}", str(receipt.get("receipt_sha256", "")))
+            or not sealed_json_receipt_is_valid(receipt)
         ):
             raise CampaignError("frozen-candidate receipt identity/eligibility contract failed")
+        validate_frozen_receipt_artifacts(receipt, diagnostic)
         state["stages"]["runner_fingerprint"] = fingerprint
         retained = retain_receipt(campaign_dir, "frozen-candidate.json", data)
         aggregate = read_unique_member(diagnostic, "0.67.1.json")
         aggregate_receipt = json_receipt(aggregate, "0.67.1 aggregate release evidence")
-        if (
-            aggregate_receipt.get("release") != "0.67.1"
-            or aggregate_receipt.get("source_commit") != state["expected_sha"]
-        ):
-            raise CampaignError("frozen-candidate aggregate evidence identity mismatch")
+        validate_ship_aggregate(aggregate_receipt, state)
         aggregate_path = retain_receipt(campaign_dir, "release-evidence-0.67.1.json", aggregate)
         return {
             "receipt": str(retained),
@@ -1397,11 +1896,11 @@ def validate_stage_artifacts(
         }
 
     if spec["mode"] == "qualify":
-        diagnostic = artifact_by_prefix(artifacts, f"performance-0671-qualification-{state['expected_sha']}-{run_id}")
+        diagnostic = artifact_named(artifacts, f"performance-0671-qualification-{state['expected_sha']}-{run_id}")
         validate_host_admission_artifact(campaign_dir, state, diagnostic)
         data = read_unique_member(diagnostic, "qualification.json")
         receipt = json_receipt(data, "qualification receipt")
-        expect_common_receipt(receipt, state, run_id)
+        expect_common_receipt(receipt, state, run_id, schema_version=1)
         if receipt.get("mode") != "qualification-only" or receipt.get("bootstrap_eligible") is not False:
             raise CampaignError("qualification receipt eligibility contract failed")
         retained = retain_receipt(campaign_dir, "qualification.json", data)
@@ -1411,11 +1910,13 @@ def validate_stage_artifacts(
         reusable = artifacts.get("performance-0671-full-dress-receipt")
         if reusable is None:
             raise CampaignError("full-dress reusable receipt artifact is missing")
-        diagnostic = artifact_by_prefix(artifacts, f"performance-0671-full-dress-{state['expected_sha']}-{run_id}")
+        diagnostic = artifact_named(artifacts, f"performance-0671-full-dress-{state['expected_sha']}-{run_id}")
         validate_host_admission_artifact(campaign_dir, state, diagnostic)
         data = read_unique_member(reusable, "full-dress-receipt.json")
+        if read_unique_member(diagnostic, "full-dress-receipt.json") != data:
+            raise CampaignError("full-dress reusable receipt differs from diagnostic archive")
         receipt = json_receipt(data, "full-dress receipt")
-        expect_common_receipt(receipt, state, run_id)
+        expect_common_receipt(receipt, state, run_id, schema_version=1)
         if (
             receipt.get("mode") != "full-dress-qualification-only"
             or receipt.get("qualification_only") is not True
@@ -1432,6 +1933,8 @@ def validate_stage_artifacts(
         if admission_archive is None:
             raise CampaignError("second full-dress run did not publish admission")
         admission_data = read_unique_member(admission_archive, "full-dress-admission.json")
+        if read_unique_member(diagnostic, "full-dress-admission.json") != admission_data:
+            raise CampaignError("full-dress reusable admission differs from diagnostic archive")
         admission = json_receipt(admission_data, "full-dress admission")
         if (
             admission.get("source_commit") != state["expected_sha"]
@@ -1442,21 +1945,32 @@ def validate_stage_artifacts(
             or admission.get("ship_evidence_eligible") is not False
         ):
             raise CampaignError("full-dress admission contract failed")
-        members = admission.get("full_dress_runs")
-        expected_ids = {str(state["stages"]["full-dress-1"]["run_id"]), str(run_id)}
-        if not isinstance(members, list) or {str(member.get("github_run_id")) for member in members} != expected_ids:
-            raise CampaignError("full-dress admission member identities are wrong")
-        expected_hashes = {
-            state["stages"]["full-dress-1"]["receipt_sha256"],
-            result["receipt_sha256"],
-        }
-        if {str(member.get("receipt_sha256")) for member in members} != expected_hashes:
-            raise CampaignError("full-dress admission member digests are wrong")
+        first_stage = state["stages"]["full-dress-1"]
+        first_receipt_path = Path(first_stage["receipt"])
+        if (
+            not first_receipt_path.is_file()
+            or first_receipt_path.is_symlink()
+            or sha256_file(first_receipt_path) != first_stage["receipt_sha256"]
+        ):
+            raise CampaignError("first full-dress receipt changed before admission")
+        first_receipt = json_receipt(
+            first_receipt_path.read_bytes(), "first full-dress receipt"
+        )
+        contracts = validate_full_dress_admission_chain(
+            admission,
+            first_receipt,
+            receipt,
+            {
+                str(first_stage["run_id"]): first_stage["receipt_sha256"],
+                str(run_id): result["receipt_sha256"],
+            },
+        )
         admission_path = retain_receipt(campaign_dir, "full-dress-admission.json", admission_data)
         result.update(
             {
                 "admission": str(admission_path),
                 "admission_sha256": sha256_bytes(admission_data),
+                **contracts,
             }
         )
         return result
@@ -1464,11 +1978,13 @@ def validate_stage_artifacts(
     reusable = artifacts.get("performance-0671-bootstrap-receipt")
     if reusable is None:
         raise CampaignError("bootstrap reusable receipt artifact is missing")
-    diagnostic = artifact_by_prefix(artifacts, f"performance-0671-bootstrap-{state['expected_sha']}-{run_id}")
+    diagnostic = artifact_named(artifacts, f"performance-0671-bootstrap-{state['expected_sha']}-{run_id}")
     validate_host_admission_artifact(campaign_dir, state, diagnostic)
     data = read_unique_member(reusable, "bootstrap-sample.json")
+    if read_unique_member(diagnostic, "bootstrap-sample.json") != data:
+        raise CampaignError("bootstrap reusable receipt differs from diagnostic archive")
     receipt = json_receipt(data, "bootstrap sample receipt")
-    expect_common_receipt(receipt, state, run_id)
+    expect_common_receipt(receipt, state, run_id, schema_version=2)
     index = int(spec["sample_index"])
     expected_predecessor = None if index == 1 else spec["bootstrap_predecessor"]
     expected_predecessor_hash = (
@@ -1480,6 +1996,14 @@ def validate_stage_artifacts(
         or receipt.get("admission_sha256") != state["stages"]["full-dress-2"]["admission_sha256"]
         or receipt.get("predecessor_github_run_id") != expected_predecessor
         or receipt.get("predecessor_receipt_sha256") != expected_predecessor_hash
+        or any(
+            receipt.get(field) != state["stages"]["full-dress-2"].get(field)
+            for field in (
+                "runner_provisioning_sha256",
+                "prebuild_contract_digest",
+                "scenario_contract_set_digest",
+            )
+        )
     ):
         raise CampaignError(f"bootstrap sample {index} chain contract failed")
     retained = retain_receipt(campaign_dir, f"bootstrap-samples/sample-{index}.json", data)
@@ -1718,7 +2242,12 @@ def execute_stage(campaign_dir: Path, state: dict[str, Any], spec: dict[str, Any
                 *dispatch_fields(state, spec),
             ]
             try:
-                result = run_visible(command, cwd=repo_root(), log_path=campaign_dir / f"{step}.log")
+                result = run_visible(
+                    command,
+                    cwd=repo_root(),
+                    log_path=campaign_dir / f"{step}.log",
+                    timeout_seconds=GITHUB_CONTROL_TIMEOUT_SECONDS,
+                )
                 if result != 0:
                     raise CampaignError(f"workflow dispatch failed for {step}")
                 run = discover_run(state, step)
@@ -1884,18 +2413,36 @@ def validate_host_admission_state(campaign_dir: Path, state: dict[str, Any]) -> 
             raise CampaignError(f"canonical host admission drift: {name}")
 
 
+def select_sample_set_cargo() -> list[str]:
+    runner_cargo = "/home/github-runner/.cargo/bin/cargo"
+    try:
+        runner_probe = subprocess.run(
+            runner_command("test", "-x", runner_cargo),
+            cwd=repo_root(),
+            stdin=subprocess.DEVNULL,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+            check=False,
+            timeout=30,
+        )
+    except (OSError, subprocess.TimeoutExpired):
+        runner_probe = None
+    if runner_probe is not None and runner_probe.returncode == 0:
+        return runner_command(runner_cargo)
+
+    found = shutil.which("cargo")
+    if found is None or Path(found) == Path(runner_cargo):
+        raise CampaignError("cargo is unavailable for final sample-set validation")
+    return [found]
+
+
 def cargo_sample_set(campaign_dir: Path) -> Path:
-    output = repo_root() / "target/test-evidence/0.67.1/bootstrap-sample-set.json"
-    if output.exists():
-        raise CampaignError("sample-set output already exists before final validation")
-    cargo = Path("/home/github-runner/.cargo/bin/cargo")
-    if not cargo.is_file():
-        found = shutil.which("cargo")
-        if found is None:
-            raise CampaignError("cargo is unavailable for final sample-set validation")
-        command = [found]
-    else:
-        command = runner_command(str(cargo))
+    output = (
+        repo_root()
+        / "target/test-evidence/0.67.1/controller-sample-sets"
+        / f"{campaign_dir.name}-{time.time_ns()}.json"
+    )
+    command = select_sample_set_cargo()
     command.extend(
         [
             "run",
@@ -1913,9 +2460,16 @@ def cargo_sample_set(campaign_dir: Path) -> Path:
             "sample-set",
             "--samples-dir",
             str(campaign_dir / "accepted-receipts/bootstrap-samples"),
+            "--output",
+            str(output),
         ]
     )
-    result = run_visible(command, cwd=repo_root(), log_path=campaign_dir / "sample-set-validation.log")
+    result = run_visible(
+        command,
+        cwd=repo_root(),
+        log_path=campaign_dir / "sample-set-validation.log",
+        timeout_seconds=SAMPLE_SET_VALIDATION_TIMEOUT_SECONDS,
+    )
     if result != 0 or not output.is_file():
         raise CampaignError("Rust sample-set validator rejected the five-sample chain")
     data = output.read_bytes()
@@ -1946,8 +2500,10 @@ def prepare_reference_inputs(campaign_dir: Path, state: dict[str, Any]) -> Path:
             or sha256_file(receipt_path) != stage.get("receipt_sha256")
         ):
             raise CampaignError(f"accepted {step} receipt is absent or changed")
-        artifacts = download_artifacts(campaign_dir, state, run_id, step)
-        diagnostic = artifact_by_prefix(
+        artifacts = download_artifacts_with_retry(
+            campaign_dir, state, run_id, step
+        )
+        diagnostic = artifact_named(
             artifacts,
             f"performance-0671-bootstrap-{state['expected_sha']}-{run_id}",
         )
@@ -2114,10 +2670,17 @@ def command_prepare_review(args: argparse.Namespace) -> None:
 def command_frozen(args: argparse.Namespace) -> None:
     campaign_dir = ensure_external_campaign_dir(Path(args.campaign_dir))
     state = load_state(campaign_dir)
-    if state["phase"] not in {"ready", "running"}:
-        raise CampaignError(f"frozen run requires a fresh ready/running campaign, found {state['phase']}")
+    if state["phase"] not in {"ready", "running", "awaiting-artifacts"}:
+        raise CampaignError(
+            "frozen run requires a fresh ready/running/awaiting-artifacts campaign, "
+            f"found {state['phase']}"
+        )
     require_tools(["gh", "git", "sudo", "systemctl"])
-    run_capture(["gh", "auth", "status"], cwd=repo_root())
+    run_capture(
+        ["gh", "auth", "status"],
+        cwd=repo_root(),
+        timeout_seconds=GITHUB_CONTROL_TIMEOUT_SECONDS,
+    )
     ensure_checkout(state["expected_sha"])
     validate_host_admission_state(campaign_dir, state)
     pin_controller_to_housekeeping(state)
@@ -2162,8 +2725,12 @@ def command_close(args: argparse.Namespace) -> None:
     save_state(campaign_dir, state)
     append_event(campaign_dir, "campaign-closed")
     write_summary(campaign_dir, state)
-    print("SAFE_TO_DELETE_SERVER=true")
-    print("Provider deletion, runner credential revocation, and billing confirmation remain explicit.")
+    print("LOCAL_HOST_CLOSEOUT_COMPLETE=true")
+    print(
+        "SERVER_DELETION_BLOCKED=true: copy and verify the complete campaign and host-state "
+        "off-host, publish/verify GitHub artifacts, commit the sanitized final report, and "
+        "complete a secret scan before provider deletion."
+    )
 
 
 def parser() -> argparse.ArgumentParser:

@@ -179,8 +179,10 @@ or ambiguous runs. The workflow executes, in order:
 12. sealed frozen-candidate receipt and `--require-ship` aggregation.
 
 The controller downloads and retains the immutable artifact ZIP, validates the current SHA/run
-identity, and requires `ship_evidence_eligible=true` on the frozen receipt. A failed, unstable, or
-identity-mismatched run is retained as diagnostic evidence and does not count.
+identity, requires `ship_evidence_eligible=true`, re-hashes every receipt-bound reference/canary
+member plus the activation and budget verdict from that ZIP, and requires the exact W0-W7
+ship-ready aggregate. A failed, unstable, incomplete, or identity-mismatched run is retained as
+diagnostic evidence and does not count.
 
 ## 7. Teardown boundary
 
@@ -191,9 +193,11 @@ python3 scripts/perf/reference_campaign.py close \
   --campaign-dir /var/lib/hydracache-campaigns/<campaign-id>
 ```
 
-`SAFE_TO_DELETE_SERVER=true` means local services are stopped and the final host archive exists.
-Provider deletion, runner credential revocation, artifact archival, and billing confirmation are
-still explicit operator actions.
+`LOCAL_HOST_CLOSEOUT_COMPLETE=true` means only that local services are stopped and the final host
+archive exists. The controller also prints `SERVER_DELETION_BLOCKED=true`: complete and verify the
+off-host campaign/host-state copy and GitHub artifacts, commit the sanitized report, run the secret
+scan, and revoke runner credentials before separately authorizing provider deletion and confirming
+that billing stopped.
 
 ## Failure interpretation
 

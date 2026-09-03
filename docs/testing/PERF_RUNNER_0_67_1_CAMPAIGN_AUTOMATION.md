@@ -44,11 +44,13 @@ checkout и причину обязательного prewarm до IRQ baseline.
 - атомарная публикация актуального root-owned runner-provisioning receipt из
   frozen exact-SHA audit; предыдущая версия переносится в каталог кампании;
 - внешняя повторная проверка receipt identity, eligibility, fingerprint,
-  predecessor run/digest и full-dress admission;
+  точного `run_id → receipt SHA-256` состава full-dress admission и неизменности
+  provisioning/prebuild/scenario contract во всей bootstrap predecessor chain;
 - Rust `sample-set` validator после ровно пяти принятых samples;
 - JSONL-журнал событий, durable state, итоговые JSON и Markdown summaries;
 - безопасная финальная остановка runner/Docker и выдача
-  `SAFE_TO_DELETE_SERVER=true` без самостоятельного удаления машины.
+  `LOCAL_HOST_CLOSEOUT_COMPLETE=true`; удаление машины остаётся заблокировано до
+  полного внешнего сохранения и проверки результатов.
 
 Контроллер останавливает всю семью **после первого отказа**. Rejected run
 сохраняется как диагностика, но следующий full-dress/sample не запускается.
@@ -203,6 +205,14 @@ scripts/perf/reference-campaign.sh status \
 State не является release evidence. Источником остаются оригинальные ZIP,
 GitHub run identity и проверенные repository receipts. При resume контроллер
 пересчитывает сохранённые SHA-256 и не принимает изменённые файлы.
+Для каждого stage также требуется полный, непагинированный ответ GitHub API и
+точный набор имён artifacts; лишний, отсутствующий или дублированный artifact
+считается нарушением identity, а не игнорируется.
+Reusable full-dress/bootstrap receipts и admission должны byte-exact совпадать
+с одноимёнными копиями внутри соответствующего diagnostic ZIP.
+Для frozen-candidate он дополнительно требует физическое наличие и совпадение
+SHA-256 каждого reference/canary файла из sealed receipt, activation/verdict и
+точный ship-ready aggregate W0-W7; усечённый ZIP не считается завершением.
 
 ## 5. Завершение аренды
 
@@ -217,11 +227,15 @@ scripts/perf/reference-campaign.sh close \
 reference jobs, создаёт финальный host-state archive и переносит canonical host
 admission в каталог закрываемой кампании только после проверки campaign ID,
 source SHA и обоих SHA-256. Затем он печатает
-`SAFE_TO_DELETE_SERVER=true`. После этого оператор отдельно:
+`LOCAL_HOST_CLOSEOUT_COMPLETE=true` и `SERVER_DELETION_BLOCKED=true`. Это
+подтверждает только локальное закрытие. До удаления оператор обязан:
 
-1. переносит каталог кампании в постоянное хранилище и сверяет hashes;
-2. отзывает GitHub runner credentials;
-3. удаляет/release-ит машину в панели/API провайдера;
-4. проверяет, что биллинг действительно остановлен.
+1. перенести полный каталог кампании и host-state/receipts в постоянное внешнее
+   хранилище, сверить SHA-256, целостность и читаемость архивов;
+2. опубликовать и повторно проверить требуемые GitHub artifacts;
+3. закоммитить обезличенный итоговый отчёт и выполнить secret scan;
+4. отозвать GitHub runner credentials;
+5. только после отдельного подтверждения удалить/release-ить машину в панели/API
+   провайдера и проверить остановку биллинга.
 
 `power off` без удаления не считается остановкой биллинга.

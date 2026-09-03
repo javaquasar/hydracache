@@ -3,6 +3,7 @@
 import json
 from pathlib import Path
 import subprocess
+import sys
 import tempfile
 import unittest
 from unittest import mock
@@ -27,6 +28,326 @@ def base_state() -> dict:
 
 
 class ReferenceCampaignTests(unittest.TestCase):
+    def test_common_receipt_requires_exact_release_profile_and_source(self) -> None:
+        state = base_state()
+        receipt = {
+            "schema_version": 1,
+            "release": "0.67.1",
+            "profile": "reference-v1",
+            "source_commit": SHA,
+            "github_run_id": "123",
+            "passed": True,
+            "ship_evidence_eligible": False,
+            "runner_fingerprint": FINGERPRINT,
+        }
+        campaign.expect_common_receipt(receipt, state, 123, schema_version=1)
+        receipt["schema_version"] = 2
+        with self.assertRaisesRegex(campaign.CampaignError, "identity mismatch"):
+            campaign.expect_common_receipt(receipt, state, 123, schema_version=1)
+        campaign.expect_common_receipt(receipt, state, 123, schema_version=2)
+        receipt["release"] = "0.67.0"
+        with self.assertRaisesRegex(campaign.CampaignError, "identity mismatch"):
+            campaign.expect_common_receipt(receipt, state, 123, schema_version=2)
+
+    def test_bootstrap_stage_accepts_the_producer_v2_schema(self) -> None:
+        state = base_state()
+        contracts = {
+            "runner_provisioning_sha256": "1" * 64,
+            "prebuild_contract_digest": "2" * 64,
+            "scenario_contract_set_digest": "3" * 64,
+        }
+        state["stages"]["full-dress-2"] = {
+            "admission_sha256": "4" * 64,
+            **contracts,
+        }
+        receipt = {
+            "schema_version": 2,
+            "release": "0.67.1",
+            "profile": "reference-v1",
+            "source_commit": SHA,
+            "github_run_id": "123",
+            "runner_fingerprint": FINGERPRINT,
+            "sample_index": 1,
+            "admission_sha256": "4" * 64,
+            "predecessor_github_run_id": None,
+            "predecessor_receipt_sha256": None,
+            "passed": True,
+            "bootstrap_eligible": True,
+            "ship_evidence_eligible": False,
+            **contracts,
+        }
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            reusable = root / "receipt.zip"
+            diagnostic = root / "diagnostic.zip"
+            with zipfile.ZipFile(reusable, "w") as archive:
+                archive.writestr("bootstrap-sample.json", json.dumps(receipt))
+            with zipfile.ZipFile(diagnostic, "w") as archive:
+                archive.writestr("nested/bootstrap-sample.json", json.dumps(receipt))
+            artifacts = {
+                "performance-0671-bootstrap-receipt": reusable,
+                f"performance-0671-bootstrap-{SHA}-123": diagnostic,
+            }
+            with mock.patch.object(campaign, "validate_host_admission_artifact"):
+                retained = campaign.validate_stage_artifacts(
+                    root,
+                    state,
+                    {
+                        "name": "bootstrap-1",
+                        "mode": "bootstrap",
+                        "sample_index": "1",
+                        "bootstrap_predecessor": "",
+                    },
+                    123,
+                    artifacts,
+                )
+            self.assertTrue(Path(retained["receipt"]).is_file())
+            with zipfile.ZipFile(diagnostic, "w") as archive:
+                archive.writestr("bootstrap-sample.json", '{"different":true}')
+            with mock.patch.object(campaign, "validate_host_admission_artifact"):
+                with self.assertRaisesRegex(campaign.CampaignError, "differs"):
+                    campaign.validate_stage_artifacts(
+                        root,
+                        state,
+                        {
+                            "name": "bootstrap-1",
+                            "mode": "bootstrap",
+                            "sample_index": "1",
+                            "bootstrap_predecessor": "",
+                        },
+                        123,
+                        artifacts,
+                    )
+
+    def test_full_dress_admission_binds_exact_run_receipt_pairs_and_contracts(self) -> None:
+        contracts = {
+            "runner_provisioning_sha256": "1" * 64,
+            "prebuild_contract_digest": "2" * 64,
+            "scenario_contract_set_digest": "3" * 64,
+        }
+        receipt_identity = {
+            "schema_version": 1,
+            "release": "0.67.1",
+            "profile": "reference-v1",
+            "source_commit": SHA,
+            "runner_fingerprint": FINGERPRINT,
+        }
+        first = {**receipt_identity, **contracts}
+        second = {**receipt_identity, **contracts}
+        expected_members = {"101": "4" * 64, "202": "5" * 64}
+        admission = {
+            "schema_version": 1,
+            "release": "0.67.1",
+            "profile": "reference-v1",
+            "source_commit": SHA,
+            "runner_fingerprint": FINGERPRINT,
+            **contracts,
+            "full_dress_runs": [
+                {"github_run_id": run_id, "receipt_sha256": digest}
+                for run_id, digest in expected_members.items()
+            ],
+            "passed": True,
+            "bootstrap_admission_eligible": True,
+            "bootstrap_eligible": False,
+            "ship_evidence_eligible": False,
+        }
+        self.assertEqual(
+            campaign.validate_full_dress_admission_chain(
+                admission, first, second, expected_members
+            ),
+            contracts,
+        )
+        admission["full_dress_runs"][0]["receipt_sha256"] = "5" * 64
+        with self.assertRaisesRegex(campaign.CampaignError, "mapping is wrong"):
+            campaign.validate_full_dress_admission_chain(
+                admission, first, second, expected_members
+            )
+
+    def test_frozen_receipt_seal_and_ship_aggregate_are_recomputed(self) -> None:
+        receipt = {
+            "schema_version": 1,
+            "release": "0.67.1",
+            "receipt_sha256": "",
+        }
+        receipt["receipt_sha256"] = campaign.sha256_bytes(
+            json.dumps(
+                receipt, ensure_ascii=False, separators=(",", ":")
+            ).encode("utf-8")
+        )
+        self.assertTrue(campaign.sealed_json_receipt_is_valid(receipt))
+        receipt["release"] = "0.67.2"
+        self.assertFalse(campaign.sealed_json_receipt_is_valid(receipt))
+
+        aggregate = {
+            "schema_version": 1,
+            "release": "0.67.1",
+            "source_commit": SHA,
+            "current_worktree_dirty": False,
+            "receipts_supplied": True,
+            "counts": {
+                "planned": 0,
+                "implemented": 0,
+                "fast-green": 0,
+                "gated-green": 0,
+                "ship-ready": 8,
+            },
+            "reasons": [],
+            "work_items": [
+                {"id": f"W{index}", "stage": "ship-ready", "reasons": []}
+                for index in range(8)
+            ],
+        }
+        campaign.validate_ship_aggregate(aggregate, base_state())
+        aggregate["work_items"][0]["stage"] = "gated-green"
+        with self.assertRaises(campaign.CampaignError):
+            campaign.validate_ship_aggregate(aggregate, base_state())
+
+    def test_frozen_receipt_requires_every_digest_bound_archive_member(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            archive_path = Path(temporary) / "frozen.zip"
+            activation = b'{"activation":true}\n'
+            verdict = b'{"verdict":true}\n'
+            reference_path = "target/test-evidence/0.67/local.json"
+            reference = b'{"reference":true}\n'
+            canaries = {
+                f"target/release-evidence/canaries/0.67.1-W{index}.json": (
+                    f'{{"canary":"W{index}"}}\n'.encode()
+                )
+                for index in range(8)
+            }
+            with zipfile.ZipFile(archive_path, "w") as archive:
+                archive.writestr(campaign.FROZEN_ACTIVATION_PATH.removeprefix("target/"), activation)
+                archive.writestr(campaign.FROZEN_BUDGET_VERDICT_PATH, verdict)
+                archive.writestr(reference_path, reference)
+                for relative, data in canaries.items():
+                    archive.writestr(relative.removeprefix("target/"), data)
+
+            receipt = {
+                "schema_version": 1,
+                "release": "0.67.1",
+                "profile": "reference-v1",
+                "source_commit": SHA,
+                "github_run_id": "123",
+                "runner_fingerprint": FINGERPRINT,
+                "activation_sha256": campaign.sha256_bytes(activation),
+                "budget_verdict_sha256": campaign.sha256_bytes(verdict),
+                "reference_evidence_sha256": [
+                    {
+                        "id": reference_path,
+                        "path": reference_path,
+                        "sha256": campaign.sha256_bytes(reference),
+                    }
+                ],
+                "canary_receipt_sha256": [
+                    {
+                        "id": f"W{index}",
+                        "path": relative,
+                        "sha256": campaign.sha256_bytes(canaries[relative]),
+                    }
+                    for index, relative in enumerate(canaries)
+                ],
+                "passed": True,
+                "ship_evidence_eligible": True,
+                "receipt_sha256": "6" * 64,
+            }
+            campaign.validate_frozen_receipt_artifacts(receipt, archive_path)
+            receipt["schema_version"] = 2
+            with self.assertRaisesRegex(campaign.CampaignError, "missing or unknown"):
+                campaign.validate_frozen_receipt_artifacts(receipt, archive_path)
+            receipt["schema_version"] = 1
+            receipt["reference_evidence_sha256"][0]["sha256"] = "7" * 64
+            with self.assertRaisesRegex(campaign.CampaignError, "digest mismatch"):
+                campaign.validate_frozen_receipt_artifacts(receipt, archive_path)
+
+    def test_visible_command_timeout_is_bounded(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            with self.assertRaisesRegex(campaign.CampaignError, "timed out"):
+                campaign.run_visible(
+                    [sys.executable, "-c", "import time; time.sleep(5)"],
+                    cwd=root,
+                    log_path=root / "timeout.log",
+                    timeout_seconds=0.05,
+                )
+
+    def test_sample_set_cargo_is_probed_as_the_runner_user(self) -> None:
+        runner_cargo = "/home/github-runner/.cargo/bin/cargo"
+        with (
+            mock.patch.object(
+                campaign.subprocess,
+                "run",
+                return_value=mock.Mock(returncode=0),
+            ) as run,
+            mock.patch.object(campaign, "repo_root", return_value=Path("/repo")),
+            mock.patch.object(campaign.shutil, "which", return_value=runner_cargo),
+        ):
+            self.assertEqual(
+                campaign.select_sample_set_cargo(),
+                campaign.runner_command(runner_cargo),
+            )
+
+        run.assert_called_once_with(
+            campaign.runner_command("test", "-x", runner_cargo),
+            cwd=Path("/repo"),
+            stdin=subprocess.DEVNULL,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+            check=False,
+            timeout=30,
+        )
+
+    def test_sample_set_cargo_rejects_inaccessible_runner_path_fallback(self) -> None:
+        runner_cargo = "/home/github-runner/.cargo/bin/cargo"
+        with (
+            mock.patch.object(
+                campaign.subprocess,
+                "run",
+                return_value=mock.Mock(returncode=1),
+            ),
+            mock.patch.object(campaign.shutil, "which", return_value=runner_cargo),
+            self.assertRaisesRegex(campaign.CampaignError, "cargo is unavailable"),
+        ):
+            campaign.select_sample_set_cargo()
+
+    def test_sample_set_validator_uses_unique_bounded_output(self) -> None:
+        data = b'{"bootstrap_eligible":true}\n'
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            repo = root / "repo"
+            campaign_dir = root / "hc0671-test-campaign"
+            repo.mkdir()
+            campaign_dir.mkdir()
+
+            def run_validator(command: list[str], **kwargs: object) -> int:
+                output = Path(command[command.index("--output") + 1])
+                output.parent.mkdir(parents=True)
+                output.write_bytes(data)
+                self.assertEqual(
+                    kwargs.get("timeout_seconds"),
+                    campaign.SAMPLE_SET_VALIDATION_TIMEOUT_SECONDS,
+                )
+                return 0
+
+            with (
+                mock.patch.object(campaign, "repo_root", return_value=repo),
+                mock.patch.object(
+                    campaign, "select_sample_set_cargo", return_value=["cargo"]
+                ),
+                mock.patch.object(
+                    campaign, "run_visible", side_effect=run_validator
+                ) as run,
+            ):
+                retained = campaign.cargo_sample_set(campaign_dir)
+
+            self.assertEqual(retained.read_bytes(), data)
+            command = run.call_args.args[0]
+            output = Path(command[command.index("--output") + 1])
+            self.assertIn("controller-sample-sets", output.parts)
+            self.assertNotEqual(
+                output,
+                repo / "target/test-evidence/0.67.1/bootstrap-sample-set.json",
+            )
+
     def test_privileged_commands_are_non_interactive_after_sudo_lease(self) -> None:
         with mock.patch.object(campaign.os, "geteuid", return_value=1000, create=True):
             self.assertEqual(
@@ -112,7 +433,9 @@ class ReferenceCampaignTests(unittest.TestCase):
             campaign.require_github_dispatch_readiness()
         require_tools.assert_called_once_with(["gh"])
         run_capture.assert_called_once_with(
-            ["gh", "auth", "status"], cwd=Path("/repo")
+            ["gh", "auth", "status"],
+            cwd=Path("/repo"),
+            timeout_seconds=campaign.GITHUB_CONTROL_TIMEOUT_SECONDS,
         )
 
     def test_canonical_admission_owner_is_digest_and_campaign_bound(self) -> None:
@@ -429,6 +752,101 @@ class ReferenceCampaignTests(unittest.TestCase):
         download.assert_called_once()
         sleep.assert_not_called()
 
+    def test_retained_artifact_manifest_is_run_bound_and_cannot_escape(self) -> None:
+        state = base_state()
+        run_id = 123
+        step = "qualification"
+        artifact_id = 456
+        name = f"performance-0671-qualification-{SHA}-{run_id}"
+        with tempfile.TemporaryDirectory() as temporary:
+            campaign_dir = Path(temporary)
+            run_dir = campaign_dir / "runs" / f"{step}-{run_id}"
+            originals = run_dir / "original-artifacts"
+            originals.mkdir(parents=True)
+            archive = originals / campaign.safe_artifact_filename(artifact_id, name)
+            archive.write_bytes(b"retained-zip")
+            relative = archive.relative_to(campaign_dir)
+            manifest = {
+                "schema_version": 1,
+                "run_id": run_id,
+                "step": step,
+                "artifacts": [
+                    {
+                        "artifact_id": artifact_id,
+                        "name": name,
+                        "reported_size_bytes": archive.stat().st_size,
+                        "archive_file": str(relative),
+                        "archive_size_bytes": archive.stat().st_size,
+                        "archive_sha256": campaign.sha256_file(archive),
+                    }
+                ],
+            }
+            manifest_path = run_dir / "artifact-manifest.json"
+            manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+            self.assertEqual(
+                campaign.download_artifacts(campaign_dir, state, run_id, step),
+                {name: archive},
+            )
+
+            manifest["artifacts"][0]["archive_file"] = "../outside.zip"
+            manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+            with self.assertRaises(campaign.ArtifactIntegrityError):
+                campaign.download_artifacts(campaign_dir, state, run_id, step)
+
+    def test_stage_artifact_sets_are_exact(self) -> None:
+        state = base_state()
+        run_id = 123
+        self.assertEqual(
+            campaign.expected_stage_artifact_names(state, run_id, "bootstrap-5"),
+            {
+                "performance-0671-bootstrap-receipt",
+                f"performance-0671-bootstrap-{SHA}-{run_id}",
+            },
+        )
+        self.assertEqual(
+            campaign.expected_stage_artifact_names(state, run_id, "full-dress-2"),
+            {
+                "performance-0671-full-dress-receipt",
+                "performance-0671-full-dress-admission",
+                f"performance-0671-full-dress-{SHA}-{run_id}",
+            },
+        )
+        with self.assertRaisesRegex(campaign.CampaignError, "unknown"):
+            campaign.expected_stage_artifact_names(state, run_id, "bootstrap-6")
+
+    def test_artifact_listing_must_be_complete_before_download(self) -> None:
+        state = base_state()
+        run_id = 123
+        expected_name = f"performance-0671-qualification-{SHA}-{run_id}"
+        listing = {
+            "total_count": 2,
+            "artifacts": [
+                {
+                    "id": 456,
+                    "name": expected_name,
+                    "size_in_bytes": 100,
+                    "expired": False,
+                }
+            ],
+        }
+        with tempfile.TemporaryDirectory() as temporary:
+            with (
+                mock.patch.object(campaign, "gh_json", return_value=listing),
+                mock.patch.object(campaign, "download_binary") as download,
+                self.assertRaisesRegex(campaign.ArtifactIntegrityError, "incomplete"),
+            ):
+                campaign.download_artifacts(
+                    Path(temporary), state, run_id, "qualification"
+                )
+        download.assert_not_called()
+
+    def test_artifact_lookup_requires_the_exact_name(self) -> None:
+        expected = "performance-0671-bootstrap-sha-run"
+        with self.assertRaises(campaign.CampaignError):
+            campaign.artifact_named(
+                {f"{expected}-unexpected-suffix": Path("artifact.zip")}, expected
+            )
+
     def test_artifact_transport_canary_downloads_smallest_readable_zip(self) -> None:
         state = base_state()
         listing = {
@@ -566,6 +984,39 @@ class ReferenceCampaignTests(unittest.TestCase):
                 campaign.command_run(args)
         self.assertEqual(state["phase"], "complete")
 
+    def test_command_frozen_resumes_awaiting_artifacts_without_redispatch(self) -> None:
+        state = base_state()
+        state["phase"] = "awaiting-artifacts"
+        state["stages"]["frozen-candidate"] = {
+            "status": "awaiting-artifacts",
+            "run_id": 123,
+        }
+        with tempfile.TemporaryDirectory() as temporary:
+            campaign_dir = Path(temporary)
+            args = mock.Mock(campaign_dir=str(campaign_dir))
+            with (
+                mock.patch.object(
+                    campaign, "ensure_external_campaign_dir", return_value=campaign_dir
+                ),
+                mock.patch.object(campaign, "load_state", return_value=state),
+                mock.patch.object(campaign, "require_tools"),
+                mock.patch.object(campaign, "run_capture"),
+                mock.patch.object(campaign, "ensure_checkout"),
+                mock.patch.object(campaign, "validate_host_admission_state"),
+                mock.patch.object(campaign, "pin_controller_to_housekeeping"),
+                mock.patch.object(campaign, "execute_stage") as execute,
+                mock.patch.object(campaign, "ensure_runner_offline"),
+                mock.patch.object(campaign, "run_host_action"),
+                mock.patch.object(campaign, "save_state"),
+                mock.patch.object(campaign, "append_event"),
+                mock.patch.object(campaign, "write_summary"),
+            ):
+                campaign.command_frozen(args)
+
+        self.assertEqual(state["phase"], "complete")
+        execute.assert_called_once()
+        self.assertEqual(execute.call_args.args[2]["name"], "frozen-candidate")
+
     def test_receipt_retention_is_immutable_and_sample_directory_is_exact(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
@@ -594,18 +1045,61 @@ class ReferenceCampaignTests(unittest.TestCase):
             relative = "target/test-evidence/0.67/report.json"
             receipt = {
                 "sample_index": 1,
-                "evidence_files": [
-                    {"path": relative, "sha256": campaign.sha256_bytes(evidence)}
-                ],
+                "source_commit": SHA,
+                "runner_fingerprint": FINGERPRINT,
+                "evidence_files": [],
             }
             receipt_data = (json.dumps(receipt) + "\n").encode()
             archive = root / "diagnostic.zip"
+            raw_relative = "target/test-evidence/0.67/w7-raw/report.raw.json"
+            raw = b'{"raw":true}\n'
+            prebuild_relative = "target/test-evidence/0.67/prebuild-manifest.json"
+            prebuild = b'{"prebuild":true}\n'
+            marker_relative = (
+                "target/test-evidence/0.67/w7-raw/macro-publication-receipt.json"
+            )
+            marker = {
+                "schema_version": 1,
+                "source_commit": SHA,
+                "runner_profile": "reference-v1",
+                "runner_fingerprint": FINGERPRINT,
+                "prebuild_manifest_sha256": campaign.sha256_bytes(prebuild),
+                "artifacts": [
+                    {
+                        "canonical_path": relative,
+                        "envelope_sha256": campaign.sha256_bytes(evidence),
+                        "raw_sidecar_path": raw_relative,
+                        "raw_sha256": campaign.sha256_bytes(raw),
+                    }
+                ],
+            }
+            marker_data = json.dumps(marker).encode()
+            receipt["evidence_files"] = [
+                {"path": relative, "sha256": campaign.sha256_bytes(evidence)},
+                {"path": raw_relative, "sha256": campaign.sha256_bytes(raw)},
+                {
+                    "path": prebuild_relative,
+                    "sha256": campaign.sha256_bytes(prebuild),
+                },
+                {
+                    "path": marker_relative,
+                    "sha256": campaign.sha256_bytes(marker_data),
+                },
+            ]
+            receipt_data = (json.dumps(receipt) + "\n").encode()
             with zipfile.ZipFile(archive, "w") as output:
-                output.writestr(relative, evidence)
+                output.writestr(relative.removeprefix("target/"), evidence)
+                output.writestr(raw_relative.removeprefix("target/"), raw)
+                output.writestr(prebuild_relative.removeprefix("target/"), prebuild)
+                output.writestr(
+                    marker_relative.removeprefix("target/"), marker_data
+                )
             materialized = campaign.materialize_bootstrap_input(
                 root, 1, receipt_data, archive
             )
             self.assertEqual((materialized / relative).read_bytes(), evidence)
+            self.assertEqual((materialized / raw_relative).read_bytes(), raw)
+            self.assertEqual((materialized / prebuild_relative).read_bytes(), prebuild)
             self.assertEqual(
                 campaign.materialize_bootstrap_input(root, 1, receipt_data, archive),
                 materialized,
@@ -644,7 +1138,7 @@ class ReferenceCampaignTests(unittest.TestCase):
             "runner_fingerprint": "6" * 64,
         }
         with self.assertRaises(campaign.CampaignError):
-            campaign.expect_common_receipt(receipt, state, 101)
+            campaign.expect_common_receipt(receipt, state, 101, schema_version=1)
 
     def test_burn_receipt_is_non_evidence_and_minimum_duration_is_enforced(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:

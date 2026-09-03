@@ -365,7 +365,8 @@ fn reference_campaign_controller_is_serial_resumable_and_provider_safe() {
         "bootstrap-samples/sample-",
         "perf-bootstrap",
         "sample-set",
-        "SAFE_TO_DELETE_SERVER=true",
+        "LOCAL_HOST_CLOSEOUT_COMPLETE=true",
+        "SERVER_DELETION_BLOCKED=true",
         "publish_host_admission",
         "publish_runner_provisioning_receipt",
         "validate_host_admission_artifact",
@@ -433,7 +434,8 @@ fn reference_campaign_controller_is_serial_resumable_and_provider_safe() {
         "qualification → full-dress-1 → full-dress-2",
         "исходных ZIP",
         "после первого отказа",
-        "SAFE_TO_DELETE_SERVER=true",
+        "LOCAL_HOST_CLOSEOUT_COMPLETE=true",
+        "SERVER_DELETION_BLOCKED=true",
     ] {
         assert!(
             guide.contains(required),
