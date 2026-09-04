@@ -15,6 +15,7 @@ use crate::doc_check;
 use crate::evidence_run::{self, EvidenceOutcome, EvidenceReceipt};
 use crate::fast_suite::{self, FastSuiteEntry};
 use crate::gated_tests::{self, GateEntry};
+use crate::management_center;
 use crate::quarantine;
 
 const RELEASES_PATH: &str = "docs/plans/releases.toml";
@@ -127,6 +128,20 @@ pub fn run(args: Vec<String>) -> Result<(), Box<dyn Error>> {
         fs::write(&path, toml::to_string_pretty(&manifest)?)?;
         println!("release-evidence: wrote template to {}", path.display());
         return Ok(());
+    }
+
+    if normalize_release(&options.release) == "0.72.0" {
+        let management_problems = management_center::check(&options.root, options.require_ship)?;
+        if !management_problems.is_empty() {
+            for problem in &management_problems {
+                eprintln!("release-evidence: management-center: {problem}");
+            }
+            return Err(format!(
+                "release-evidence: management-center admission found {} problem(s)",
+                management_problems.len()
+            )
+            .into());
+        }
     }
 
     let report = build_report(

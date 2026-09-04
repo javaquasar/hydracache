@@ -260,3 +260,13 @@ defect_env = "HYDRACACHE_CANARY_DEFECT=MC72-W14-EVIDENCE-TAMPER"
 expected_failure = "HC-CANARY-RED:MC72-W14-EVIDENCE-TAMPER"
 green_evidence = "A missing or altered claim/test/canary/evidence mapping rejects admission."
 red_evidence = "The mutant ignores one tampered mapping and the same meta-oracle turns red."
+
+[[canary]]
+id = "MC72-W14-PAPER-GREEN"
+status = "active"
+test = "canary_w14_paper_green_release_is_rejected"
+command = "cargo test -p xtask --test management_center_072 --locked canary_w14_paper_green_release_is_rejected -- --nocapture"
+defect_env = "HYDRACACHE_CANARY_DEFECT=MC72-W14-PAPER-GREEN"
+expected_failure = "HC-CANARY-RED:MC72-W14-PAPER-GREEN"
+green_evidence = "Ship admission rejects a candidate with missing exact-candidate receipts or incomplete taxonomy."
+red_evidence = "The paper-green mutant attempts to credit source-tree success without its exact red/green evidence pair."

@@ -116,11 +116,11 @@
     },
     {
       "w_item": "W14",
-      "guard": {"file": "crates/xtask/tests/management_center_072.rs", "function": "canary_w14_tampered_evidence_is_rejected"},
-      "canary": {"file": "crates/xtask/tests/management_center_072.rs", "function": "canary_w14_tampered_evidence_is_rejected"},
-      "guard_command": {"program": "cargo", "args": ["test", "-p", "xtask", "--test", "management_center_072", "--locked", "canary_w14_tampered_evidence_is_rejected", "--", "--exact", "--nocapture"], "env": {}, "cwd": ".", "platform": "any"},
-      "canary_command": {"program": "cargo", "args": ["test", "-p", "xtask", "--test", "management_center_072", "--locked", "canary_w14_tampered_evidence_is_rejected", "--", "--exact", "--nocapture"], "env": {"HYDRACACHE_CANARY_DEFECT": "MC72-W14-EVIDENCE-TAMPER"}, "cwd": ".", "platform": "any"},
-      "defect_id": "MC72-W14-EVIDENCE-TAMPER", "expected_failure": "HC-CANARY-RED:MC72-W14-EVIDENCE-TAMPER", "timeout_seconds": 300, "tier": "fast", "artifacts": ["target/release-evidence/canaries/0.72-W14.json"], "red_evidence": "Tampered claim, test, canary or receipt references must block release admission."
+      "guard": {"file": "crates/xtask/tests/management_center_072.rs", "function": "canary_w14_paper_green_release_is_rejected"},
+      "canary": {"file": "crates/xtask/tests/management_center_072.rs", "function": "canary_w14_paper_green_release_is_rejected"},
+      "guard_command": {"program": "cargo", "args": ["test", "-p", "xtask", "--test", "management_center_072", "--locked", "canary_w14_paper_green_release_is_rejected", "--", "--exact", "--nocapture"], "env": {}, "cwd": ".", "platform": "any"},
+      "canary_command": {"program": "cargo", "args": ["test", "-p", "xtask", "--test", "management_center_072", "--locked", "canary_w14_paper_green_release_is_rejected", "--", "--exact", "--nocapture"], "env": {"HYDRACACHE_CANARY_DEFECT": "MC72-W14-PAPER-GREEN"}, "cwd": ".", "platform": "any"},
+      "defect_id": "MC72-W14-PAPER-GREEN", "expected_failure": "HC-CANARY-RED:MC72-W14-PAPER-GREEN", "timeout_seconds": 300, "tier": "fast", "artifacts": ["target/release-evidence/canaries/0.72-W14.json"], "red_evidence": "A paper-green candidate without exact receipts or its red proof must be rejected."
     }
   ]
 }

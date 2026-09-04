@@ -224,6 +224,6 @@ work_item = "W14"
 claim = "Missing mappings, expected-red proofs or exact-candidate receipts reject ship admission."
 implementation = ["crates/xtask/src/management_center.rs#pub fn check"]
 behavior_tests = ["crates/xtask/tests/management_center_072.rs#management_registry_rejects_missing_or_tampered_proof"]
-canaries = ["MC72-W14-EVIDENCE-TAMPER"]
+canaries = ["MC72-W14-EVIDENCE-TAMPER", "MC72-W14-PAPER-GREEN"]
 receipts = ["target/release-evidence/management-center/0.72/W14.json"]
 status = "implemented"

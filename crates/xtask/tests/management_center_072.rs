@@ -131,3 +131,22 @@ fn canary_w14_tampered_evidence_is_rejected() {
         panic!("HC-CANARY-RED:MC72-W14-EVIDENCE-TAMPER");
     }
 }
+
+#[test]
+fn canary_w14_paper_green_release_is_rejected() {
+    let result = xtask::release_evidence::run(vec![
+        "--root".to_owned(),
+        root().display().to_string(),
+        "--release".to_owned(),
+        "0.72".to_owned(),
+        "--require-ship".to_owned(),
+    ]);
+    let error = result.expect_err("ship admission accepted missing exact-candidate evidence");
+    assert!(
+        error.to_string().contains("management-center admission"),
+        "release evidence bypassed strict management admission: {error}"
+    );
+    if defect("MC72-W14-PAPER-GREEN") {
+        panic!("HC-CANARY-RED:MC72-W14-PAPER-GREEN");
+    }
+}
