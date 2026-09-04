@@ -20,8 +20,8 @@
 > - **Unblocks:** an operator-grade, evidence-backed management experience; supportable production
 >   diagnostics; and the final 1.0 operations/distribution rehearsal without adding a write-capable
 >   control plane.
-> - **Status:** planned (W0-W13 implemented; W14 next; exact 0.71/0.72
->   mixed-binary ship evidence remains blocked until a shipped 0.71 artifact exists).
+> - **Status:** planned (W0-W14 implementation complete; promotion remains fail-closed until the
+>   shipped 0.71 baseline, exact-candidate mixed-binary, coverage and long-soak receipts exist).
 >
 > Roadmap: [`INDEX.md`](INDEX.md) - rules: [`../RULES.md`](../RULES.md) -
 > gates: [`../GATES.md`](../GATES.md) - compatibility: [`../COMPAT.md`](../COMPAT.md) -
@@ -34,10 +34,12 @@ bundled UI assets. It must not add an unreviewed state-changing browser action, 
 distributed authority, widen metric label cardinality, expose cache keys or authentication
 material, or silently turn missing evidence into a green state.
 
-Implementation progress: W0-W13 are implemented on `feat/0.72-management-center-2`; their source,
-tests, bounds and falsifiability canaries are registered in the 0.72 evidence manifests. W13 local
-compatibility/package/publication rehearsal is green, while its real mixed-binary lane remains a
-fail-closed external blocker because no shipped `v0.71.x` tag or artifact exists in origin.
+Implementation progress: W0-W14 are implemented on `feat/0.72-management-center-2`; their source,
+tests, bounds, changed-module branch review, NATS-derived failure taxonomy and falsifiability
+canaries are registered in the 0.72 evidence manifests. The ordinary verify and CI paths execute
+the structural admission and all 15 work-item canaries. W13 local compatibility/package/publication
+rehearsal is green, while real mixed-binary and candidate/ship soak lanes remain fail-closed external
+inputs because no shipped `v0.71.x` artifact or frozen 0.72 candidate exists yet.
 
 ## Existing baseline and evidence boundary
 
