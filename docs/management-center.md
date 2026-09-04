@@ -215,6 +215,32 @@ npm --prefix console run supply-chain
 npm --prefix console audit --audit-level=high
 ```
 
+## Real-process and fault evidence
+
+W12 composes existing storage/Raft source proofs with a dedicated management projection matrix at
+`docs/testing/management-center/0.72/fault-matrix.toml`. Its 13 rows cover clean reopen, missing
+derivatives, corruption, torn artifacts, ENOSPC, uncommitted WAL, authoritative snapshot failure,
+commit/apply separation, stale-peer deletion, foreign identity, interrupted reconciliation,
+concurrent aggregation and bounded pressure. Every source and projection reference is resolved to
+an actual test function by the fast suite.
+
+The process gate starts the production server in one- and three-daemon shapes. It verifies the
+embedded console and every management section, then runs follower kill → explicit partial truth →
+32-reader pressure → same-disk restart → recovered membership. The receipt binds the binary hash,
+fixed seed, length-framed schedule/event digests, endpoint p95 and process resources. Retry attempts
+are append-only and linked; failures cannot be overwritten. Long scheduled/candidate/ship receipts
+remain exact-candidate environment evidence and cannot be replaced by this short local proof.
+
+Local W12 verification:
+
+```powershell
+cargo test -p hydracache-server --test management_process_072 --locked
+$env:HYDRACACHE_RUN_DAEMON_PROCESS_E2E='1'
+cargo test -p hydracache-server --test management_process_072 --locked one_daemon_production_management_surface_is_typed_and_honest -- --nocapture
+cargo test -p hydracache-server --test management_process_072 --locked three_daemon_fault_recovery_retains_partial_truth_and_resource_bounds -- --nocapture
+Remove-Item Env:\HYDRACACHE_RUN_DAEMON_PROCESS_E2E
+```
+
 ## Verification
 
 Local W5 verification:

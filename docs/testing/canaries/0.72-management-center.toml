@@ -180,3 +180,43 @@ defect_env = "HYDRACACHE_CANARY_DEFECT=MC72-W11-XSS-AUTH-BYPASS"
 expected_failure = "HC-CANARY-RED:MC72-W11-XSS-AUTH-BYPASS"
 green_evidence = "All management routes require management.read (write-admin implies it), hostile identifiers are pseudonymized, and the browser uses text-only DOM construction under restrictive CSP."
 red_evidence = "The reversible mutant represents the combined XSS/auth bypass class and makes the same guard oracle fail with the registered marker."
+
+[[canary]]
+id = "MC72-W12-FAULT-MASKED"
+status = "active"
+test = "canary_fault_masked_is_detected"
+command = "cargo test -p hydracache-server --test management_process_072 --locked canary_fault_masked_is_detected -- --nocapture"
+defect_env = "HYDRACACHE_CANARY_DEFECT=MC72-W12-FAULT-MASKED"
+expected_failure = "HC-CANARY-RED:MC72-W12-FAULT-MASKED"
+green_evidence = "A killed committed peer produces explicit partial management truth while the surviving quorum remains available."
+red_evidence = "The mutant paints that partial observation complete and the projection oracle turns red."
+
+[[canary]]
+id = "MC72-W12-FAULT-NOT-ACTIVATED"
+status = "active"
+test = "canary_fault_activation_receipt_is_required"
+command = "cargo test -p hydracache-server --test management_process_072 --locked canary_fault_activation_receipt_is_required -- --nocapture"
+defect_env = "HYDRACACHE_CANARY_DEFECT=MC72-W12-FAULT-NOT-ACTIVATED"
+expected_failure = "HC-CANARY-RED:MC72-W12-FAULT-NOT-ACTIVATED"
+green_evidence = "Fault attempts require a positive observed-hit receipt before their result can be admitted."
+red_evidence = "The mutant removes activation and the receipt validator turns red."
+
+[[canary]]
+id = "MC72-W12-RESURRECTION"
+status = "active"
+test = "canary_authoritative_deletion_cannot_be_resurrected"
+command = "cargo test -p hydracache-server --test management_process_072 --locked canary_authoritative_deletion_cannot_be_resurrected -- --nocapture"
+defect_env = "HYDRACACHE_CANARY_DEFECT=MC72-W12-RESURRECTION"
+expected_failure = "HC-CANARY-RED:MC72-W12-RESURRECTION"
+green_evidence = "Observed post-catch-up objects must be a subset of authoritative desired state."
+red_evidence = "The mutant reintroduces a deleted stale-disk object and the subset oracle turns red."
+
+[[canary]]
+id = "MC72-W12-RETRY-ERASES-RED"
+status = "active"
+test = "canary_retry_chain_cannot_erase_red_attempt"
+command = "cargo test -p hydracache-server --test management_process_072 --locked canary_retry_chain_cannot_erase_red_attempt -- --nocapture"
+defect_env = "HYDRACACHE_CANARY_DEFECT=MC72-W12-RETRY-ERASES-RED"
+expected_failure = "HC-CANARY-RED:MC72-W12-RETRY-ERASES-RED"
+green_evidence = "Every retry links to and retains its earlier failed attempt with seed and digests."
+red_evidence = "The mutant replaces the two-attempt chain with the green retry and the cardinality/link oracle turns red."

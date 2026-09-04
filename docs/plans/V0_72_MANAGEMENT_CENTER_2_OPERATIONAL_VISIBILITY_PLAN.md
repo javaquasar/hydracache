@@ -20,7 +20,7 @@
 > - **Unblocks:** an operator-grade, evidence-backed management experience; supportable production
 >   diagnostics; and the final 1.0 operations/distribution rehearsal without adding a write-capable
 >   control plane.
-> - **Status:** planned (implementation progress W0-W11; W12 next).
+> - **Status:** planned (implementation progress W0-W12; W13 next).
 >
 > Roadmap: [`INDEX.md`](INDEX.md) - rules: [`../RULES.md`](../RULES.md) -
 > gates: [`../GATES.md`](../GATES.md) - compatibility: [`../COMPAT.md`](../COMPAT.md) -
@@ -33,7 +33,7 @@ bundled UI assets. It must not add an unreviewed state-changing browser action, 
 distributed authority, widen metric label cardinality, expose cache keys or authentication
 material, or silently turn missing evidence into a green state.
 
-Implementation progress: W0-W11 are implemented on `feat/0.72-management-center-2`; their source,
+Implementation progress: W0-W12 are implemented on `feat/0.72-management-center-2`; their source,
 tests, bounds and falsifiability canaries are registered in the 0.72 evidence manifests.
 
 ## Existing baseline and evidence boundary

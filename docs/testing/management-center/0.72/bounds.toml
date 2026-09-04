@@ -108,3 +108,14 @@ overload_status = 429
 admission = "fail-fast, independently owned semaphore; permit released on response, cancellation, or panic unwind"
 remote_exposure = "disabled by topology: internal admin listener only; remote use requires TLS/mTLS reverse proxy with trusted identity-header replacement"
 runtime_dependencies = "same-origin embedded assets only; no CDN"
+
+[process_proof]
+fixed_seed = 513430148729536513
+concurrent_management_readers = 32
+max_endpoint_p95_ms = 2500
+max_open_fd_growth = 12
+max_rss_growth_kib_above_process_hwm = 65536
+required_process_shapes = [1, 3]
+fault_schedule = ["kill follower", "observe partial", "32 concurrent reads", "restart same disk", "observe recovery"]
+receipt_fields = ["binary_sha256", "seed", "schedule_digest", "event_digest", "endpoint_p95_ms", "baseline", "final_sample"]
+retry_policy = "append-only linked attempts; failed attempt cannot be replaced by retry"

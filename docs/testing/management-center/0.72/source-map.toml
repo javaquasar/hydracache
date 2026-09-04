@@ -246,3 +246,14 @@ max_concurrency = 16
 overload = "429 without entering management collection; write administration remains independently admitted"
 browser_policy = "same-origin GET only, text-only DOM, restrictive CSP, no CDN/runtime third party"
 test_owner = "crates/hydracache-server/tests/management_security_072.rs + console/tests/console_readonly.spec.js"
+
+[[proof]]
+id = "real-process-fault-projection"
+registry = "docs/testing/management-center/0.72/fault-matrix.toml"
+producer = "production hydracache-server binary through DaemonCluster"
+shapes = [1, 3]
+fault = "kill one committed follower, observe partial, pressure with 32 readers, restart same disk, observe recovery"
+consistency = "one typed response retains authority epoch/sequence; absence and peer failure never become complete/healthy"
+resource_contract = "p95, RSS/HWM and FD bounds from frozen bounds.toml"
+evidence = "binary SHA-256 plus seed, length-framed schedule/event digests, resources and append-only attempts"
+test_owner = "crates/hydracache-server/tests/management_process_072.rs"

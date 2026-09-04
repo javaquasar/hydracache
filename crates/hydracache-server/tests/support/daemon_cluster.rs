@@ -435,6 +435,16 @@ impl DaemonCluster {
         )
     }
 
+    /// Read one authenticated management endpoint from the real daemon process.
+    pub fn management_json(&self, index: usize, path: &str) -> TestResult<Value> {
+        http_json_with_capability(
+            self.nodes[index].spec.admin_addr,
+            "GET",
+            path,
+            Some("x-hydracache-management-read: true\r\n"),
+        )
+    }
+
     pub fn raft_compaction_status(&self, index: usize) -> TestResult<Value> {
         http_json(
             self.nodes[index].spec.admin_addr,
@@ -1692,6 +1702,54 @@ fn member_node_id_for_addr(addr: SocketAddr) -> String {
 }
 
 fn http_json(addr: SocketAddr, method: &str, path: &str, admin: bool) -> TestResult<Value> {
+    let capability = admin.then_some("x-hydracache-admin: true\r\n");
+    http_json_with_capability(addr, method, path, capability)
+}
+
+fn http_json_with_capability(
+    addr: SocketAddr,
+    method: &str,
+    path: &str,
+    capability: Option<&str>,
+) -> TestResult<Value> {
+    let (status, body) = http_json_response(addr, method, path, capability)?;
+    if status != 200 && status != 202 {
+        return Err(format!("HTTP {method} {path} returned {status}: {body}").into());
+    }
+    Ok(body)
+}
+
+/// Read a management endpoint while retaining its status for concurrency/backpressure proofs.
+pub fn management_json_status(addr: SocketAddr, path: &str) -> TestResult<(u16, Value)> {
+    http_json_response(
+        addr,
+        "GET",
+        path,
+        Some("x-hydracache-management-read: true\r\n"),
+    )
+}
+
+/// Read a public text asset from the real daemon without weakening management authorization.
+pub fn public_text_status(addr: SocketAddr, path: &str) -> TestResult<(u16, String)> {
+    http_response(addr, "GET", path, None)
+}
+
+fn http_json_response(
+    addr: SocketAddr,
+    method: &str,
+    path: &str,
+    capability: Option<&str>,
+) -> TestResult<(u16, Value)> {
+    let (status, body) = http_response(addr, method, path, capability)?;
+    Ok((status, serde_json::from_str(&body)?))
+}
+
+fn http_response(
+    addr: SocketAddr,
+    method: &str,
+    path: &str,
+    capability: Option<&str>,
+) -> TestResult<(u16, String)> {
     let mut stream = TcpStream::connect_timeout(&addr, Duration::from_secs(2))?;
     stream.set_read_timeout(Some(Duration::from_secs(5)))?;
     stream.set_write_timeout(Some(Duration::from_secs(5)))?;
@@ -1699,10 +1757,11 @@ fn http_json(addr: SocketAddr, method: &str, path: &str, admin: bool) -> TestRes
     let mut request = format!(
         "{method} {path} HTTP/1.1\r\nHost: {addr}\r\nConnection: close\r\nContent-Length: 0\r\n"
     );
-    if admin {
+    if let Some(capability) = capability {
         request.push_str(
-            "x-hydracache-client-id: daemon-process-test\r\nx-hydracache-tenant: system\r\nx-hydracache-admin: true\r\n",
+            "x-hydracache-client-id: daemon-process-test\r\nx-hydracache-tenant: system\r\n",
         );
+        request.push_str(capability);
     }
     request.push_str("\r\n");
     stream.write_all(request.as_bytes())?;
@@ -1715,11 +1774,9 @@ fn http_json(addr: SocketAddr, method: &str, path: &str, admin: bool) -> TestRes
     let status = head
         .split_whitespace()
         .nth(1)
-        .ok_or("HTTP response missing status")?;
-    if status != "200" && status != "202" {
-        return Err(format!("HTTP {method} {path} returned {status}: {body}").into());
-    }
-    Ok(serde_json::from_str(body)?)
+        .ok_or("HTTP response missing status")?
+        .parse::<u16>()?;
+    Ok((status, body.to_owned()))
 }
 
 fn u32_field(value: &Value, field: &'static str) -> TestResult<u32> {

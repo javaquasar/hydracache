@@ -80,3 +80,12 @@ test = "crates/hydracache-server/tests/management_security_072.rs + crates/hydra
 gate = "cargo test -p hydracache-server --test management_security_072 --locked && cargo test -p hydracache-server --lib --locked management_security && npm --prefix console test && npm --prefix console run supply-chain && npm --prefix console audit --audit-level=high"
 evidence = "docs/testing/management-center/0.72/w11-security-evidence.md"
 release_blocker = "workspace cargo deny baseline is red; resolution is assigned to W13 and required by W14"
+
+[[work_item]]
+id = "W12-process-fault-soak-resource-proof"
+status = "implemented"
+source = "crates/hydracache-server/tests/{support/daemon_cluster.rs,management_process_072.rs} + docs/testing/management-center/0.72/fault-matrix.toml"
+test = "crates/hydracache-server/tests/management_process_072.rs + linked source tests in fault-matrix.toml"
+gate = "cargo test -p hydracache-server --test management_process_072 --locked && HYDRACACHE_RUN_DAEMON_PROCESS_E2E=1 cargo test -p hydracache-server --test management_process_072 --locked one_daemon_production_management_surface_is_typed_and_honest && HYDRACACHE_RUN_DAEMON_PROCESS_E2E=1 cargo test -p hydracache-server --test management_process_072 --locked three_daemon_fault_recovery_retains_partial_truth_and_resource_bounds"
+evidence = "docs/testing/management-center/0.72/w12-process-evidence.md"
+scheduled_scope = "3/5/7 daemon, six-hour candidate and 24-hour ship receipts remain environment-bound W14 admission artifacts; they cannot be fabricated by a source commit"
