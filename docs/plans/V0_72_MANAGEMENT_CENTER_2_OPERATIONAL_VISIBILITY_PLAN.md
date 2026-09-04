@@ -33,6 +33,9 @@ bundled UI assets. It must not add an unreviewed state-changing browser action, 
 distributed authority, widen metric label cardinality, expose cache keys or authentication
 material, or silently turn missing evidence into a green state.
 
+Implementation progress: W0-W4 are implemented on `feat/0.72-management-center-2`; their source,
+tests, bounds and falsifiability canaries are registered in the 0.72 evidence manifests.
+
 ## Existing baseline and evidence boundary
 
 The release begins from what the repository actually implements:

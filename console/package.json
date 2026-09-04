@@ -6,7 +6,8 @@
   "scripts": {
     "build": "node ./scripts/check-static.mjs",
     "serve": "node ./scripts/serve-static.mjs",
-    "test": "playwright test --config ./playwright.config.mjs"
+    "unit": "node --test ./tests/history.test.js",
+    "test": "npm run unit && playwright test --config ./playwright.config.mjs"
   },
   "devDependencies": {
     "@playwright/test": "1.57.0"

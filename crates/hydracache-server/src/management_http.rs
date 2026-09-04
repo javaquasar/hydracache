@@ -34,6 +34,8 @@ use crate::management_aggregation::{
 
 /// Management capability negotiation path.
 pub const MANAGEMENT_CAPABILITIES_PATH: &str = "/management/v1/capabilities";
+/// Bounded typed dashboard snapshot path.
+pub const MANAGEMENT_DASHBOARD_PATH: &str = "/management/v1/dashboard";
 /// Bounded cluster-formation observations path.
 pub const MANAGEMENT_FORMATION_PATH: &str = "/management/v1/formation";
 /// Honest durable-recovery observation path.
@@ -159,6 +161,7 @@ pub(crate) fn routes(
 ) -> Router {
     Router::new()
         .route(MANAGEMENT_CAPABILITIES_PATH, get(capabilities))
+        .route(MANAGEMENT_DASHBOARD_PATH, get(dashboard))
         .route(MANAGEMENT_FORMATION_PATH, get(formation))
         .route(MANAGEMENT_RECOVERY_PATH, get(recovery))
         .route(MANAGEMENT_CONSENSUS_PROGRESS_PATH, get(consensus_progress))
@@ -167,6 +170,253 @@ pub(crate) fn routes(
             cursors,
             aggregator,
         }))
+}
+
+#[derive(Debug, Serialize)]
+struct DashboardData {
+    cluster: DashboardCluster,
+    replication: DashboardReplication,
+    partitions: DashboardPartitions,
+    reshard: DashboardReshard,
+    cache: DashboardCache,
+    consensus: DashboardConsensus,
+    placement: DashboardPlacement,
+    members: Vec<DashboardMember>,
+    unavailable_fields: Vec<&'static str>,
+}
+
+#[derive(Debug, Serialize)]
+struct DashboardCluster {
+    state: &'static str,
+    quorum_ok: bool,
+    leader: Option<OpaqueNodeIdentity>,
+    term: u64,
+    authority_epoch: u64,
+    metadata_authoritative: bool,
+    member_count: u64,
+    voter_count: u32,
+}
+
+#[derive(Debug, Serialize)]
+struct DashboardReplication {
+    success_total: u64,
+    failure_total: u64,
+    backpressure_total: u64,
+    under_replicated: u64,
+    repair_debt: u64,
+    degraded: bool,
+    zone_underspread: u64,
+}
+
+#[derive(Debug, Serialize)]
+struct DashboardPartitions {
+    total: u64,
+    assigned: Option<u64>,
+    unassigned: Option<u64>,
+    distribution: Vec<u64>,
+}
+
+#[derive(Debug, Serialize)]
+struct DashboardReshard {
+    phase: String,
+    moves_inflight: u64,
+    backfill_lag: u64,
+}
+
+#[derive(Debug, Serialize)]
+struct DashboardCache {
+    entries: u64,
+    retained_bytes: Option<u64>,
+    hits_total: u64,
+    misses_total: u64,
+    loads_total: u64,
+    hit_ratio: Option<f64>,
+    admission_queue_depth: u64,
+    admission_rejected_total: u64,
+    ttl_backlog: Option<u64>,
+}
+
+#[derive(Debug, Serialize)]
+struct DashboardConsensus {
+    commit_index: Option<u64>,
+    applied_index: Option<u64>,
+    apply_lag: Option<u64>,
+}
+
+#[derive(Debug, Serialize)]
+struct DashboardPlacement {
+    outcome: Option<&'static str>,
+    selected: Option<u64>,
+    rejected: Option<u64>,
+    latest_committed_epoch: Option<u64>,
+    latest_applied_epoch: Option<u64>,
+}
+
+#[derive(Debug, Serialize)]
+struct DashboardMember {
+    node: OpaqueNodeIdentity,
+    generation: u64,
+    role: &'static str,
+    reachability: &'static str,
+    cpu_percent: Option<f64>,
+    rss_bytes: Option<u64>,
+    retained_bytes: Option<u64>,
+    uptime_seconds: Option<u64>,
+}
+
+async fn dashboard(State(state): State<Arc<ManagementHttpState>>, headers: HeaderMap) -> Response {
+    if let Err(error) = require_admin(&headers) {
+        return error.into_response();
+    }
+    let (status, registry, cluster_overview) = {
+        let runtime = state.runtime.lock().expect("server runtime mutex");
+        (
+            runtime.cluster_status_snapshot(),
+            runtime.metrics_registry(),
+            runtime.cluster_overview(),
+        )
+    };
+    let overview = registry.overview().await;
+    let counters = overview.cluster_grid;
+    let entries = overview
+        .caches
+        .iter()
+        .map(|cache| cache.estimated_entries)
+        .fold(0_u64, u64::saturating_add);
+    let hits = overview
+        .caches
+        .iter()
+        .map(|cache| cache.stats.hits)
+        .fold(0_u64, u64::saturating_add);
+    let misses = overview
+        .caches
+        .iter()
+        .map(|cache| cache.stats.misses)
+        .fold(0_u64, u64::saturating_add);
+    let loads = overview
+        .caches
+        .iter()
+        .map(|cache| cache.stats.loads)
+        .fold(0_u64, u64::saturating_add);
+    let requests = hits.saturating_add(misses);
+    let progress = status.local_consensus.as_ref();
+    let data = DashboardData {
+        cluster: DashboardCluster {
+            state: if status.draining {
+                "draining"
+            } else if status.quorum_ok {
+                "active"
+            } else {
+                "degraded"
+            },
+            quorum_ok: status.quorum_ok,
+            leader: status.leader.as_deref().map(opaque_node_identity),
+            term: status.term,
+            authority_epoch: status.epoch,
+            metadata_authoritative: status.metadata_authoritative,
+            member_count: status.members.len() as u64,
+            voter_count: status.voters,
+        },
+        replication: DashboardReplication {
+            success_total: counters.replication_success_total,
+            failure_total: counters.replication_failure_total,
+            backpressure_total: counters.replication_backpressure_total,
+            under_replicated: counters.under_replicated_keys,
+            repair_debt: counters.tombstone_repair_debt,
+            degraded: counters.repair_debt_degraded_mode > 0,
+            zone_underspread: counters.placement_zone_underspread,
+        },
+        partitions: DashboardPartitions {
+            total: cluster_overview.partitions.count,
+            assigned: None,
+            unassigned: None,
+            distribution: Vec::new(),
+        },
+        reshard: DashboardReshard {
+            phase: status.reshard_phase.to_string(),
+            moves_inflight: counters.reshard_moves_inflight,
+            backfill_lag: counters.reshard_backfill_lag,
+        },
+        cache: DashboardCache {
+            entries,
+            retained_bytes: None,
+            hits_total: hits,
+            misses_total: misses,
+            loads_total: loads,
+            hit_ratio: (requests > 0).then_some(hits as f64 / requests as f64),
+            admission_queue_depth: overview.admission.queue_depth,
+            admission_rejected_total: overview.admission.rejected_total,
+            ttl_backlog: None,
+        },
+        consensus: DashboardConsensus {
+            commit_index: progress.map(|value| value.commit_index),
+            applied_index: progress.map(|value| value.applied_index),
+            apply_lag: progress.map(|value| value.commit_index.saturating_sub(value.applied_index)),
+        },
+        placement: DashboardPlacement {
+            outcome: None,
+            selected: None,
+            rejected: None,
+            latest_committed_epoch: None,
+            latest_applied_epoch: None,
+        },
+        members: status
+            .members
+            .iter()
+            .take(MAX_MANAGEMENT_PAGE_ITEMS)
+            .map(|member| DashboardMember {
+                node: opaque_node_identity(&member.node_id),
+                generation: member.generation,
+                role: member_role(member.role),
+                reachability: member_reachability(member.reachable),
+                cpu_percent: None,
+                rss_bytes: None,
+                retained_bytes: None,
+                uptime_seconds: None,
+            })
+            .collect(),
+        unavailable_fields: vec![
+            "cache.retained_bytes",
+            "cache.ttl_backlog",
+            "partitions.assigned",
+            "partitions.unassigned",
+            "partitions.distribution",
+            "members.cpu_percent",
+            "members.rss_bytes",
+            "members.retained_bytes",
+            "members.uptime_seconds",
+            "placement.outcome",
+        ],
+    };
+    let completeness = ManagementCompleteness::Partial;
+    let mut warnings = vec![ManagementWarning {
+        code: ManagementWarningCode::PartialObservation,
+        affected_count: Some(data.unavailable_fields.len() as u64),
+    }];
+    if status.members.len() > MAX_MANAGEMENT_PAGE_ITEMS {
+        warnings.push(ManagementWarning {
+            code: ManagementWarningCode::ResultTruncated,
+            affected_count: Some((status.members.len() - MAX_MANAGEMENT_PAGE_ITEMS) as u64),
+        });
+    }
+    let envelope = envelope(&status, completeness, warnings, data);
+    management_response(&envelope)
+}
+
+fn member_role(role: crate::cluster_status::MemberRole) -> &'static str {
+    match role {
+        crate::cluster_status::MemberRole::Local => "local",
+        crate::cluster_status::MemberRole::Client => "client",
+        crate::cluster_status::MemberRole::Member => "member",
+    }
+}
+
+fn member_reachability(reachability: Reachability) -> &'static str {
+    match reachability {
+        Reachability::Reachable => "reachable",
+        Reachability::Suspect => "suspect",
+        Reachability::Unreachable => "unreachable",
+    }
 }
 
 #[derive(Debug, Deserialize)]

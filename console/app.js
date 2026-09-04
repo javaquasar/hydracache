@@ -1,332 +1,495 @@
+import { HISTORY_LIMITS, SnapshotHistory, shouldPauseCollection } from "./history.js";
+
 const MAX_RENDERED_MEMBERS = 48;
-const POLL_INTERVAL_MS = 10_000;
-const OVERVIEW_URL = "/cluster/overview";
-const METRICS_URL = "/metrics";
-
-const els = {};
-
-document.addEventListener("DOMContentLoaded", () => {
-  cacheElements();
-  loadSnapshot();
-  window.setInterval(loadSnapshot, POLL_INTERVAL_MS);
+const BASE_POLL_INTERVAL_MS = 10_000;
+const MAX_BACKOFF_MS = 60_000;
+const ENDPOINTS = Object.freeze({
+  dashboard: "/management/v1/dashboard",
+  formation: "/management/v1/formation?limit=100",
+  consensus: "/management/v1/consensus/progress?limit=100",
+  recovery: "/management/v1/persistence/recovery?limit=100",
+});
+const ADMIN_HEADERS = Object.freeze({
+  "x-hydracache-client-id": "management-console",
+  "x-hydracache-tenant": "operator",
+  "x-hydracache-admin": "true",
 });
 
-function cacheElements() {
-  els.sourceBadge = document.querySelector("[data-testid='source-badge']");
-  els.pollState = document.querySelector("[data-testid='poll-state']");
-  els.degraded = document.querySelector("[data-testid='degraded-state']");
-  els.leader = document.querySelector("[data-testid='leader']");
-  els.partitions = document.querySelector("[data-testid='partition-summary']");
-  els.backupAge = document.querySelector("[data-testid='backup-age']");
-  els.lifecycle = document.querySelector("[data-testid='lifecycle-panel']");
-  els.renderCap = document.querySelector("[data-testid='render-cap']");
-  els.graph = document.querySelector("[data-testid='topology-graph']");
-  els.membersList = document.querySelector("[data-testid='members-list']");
-  els.consistencyDefault = document.querySelector("[data-field='configured-default']");
-  els.consistencyCounts = document.querySelector("[data-field='consistency-counts']");
-  els.metricsStrip = document.querySelector("[data-testid='metrics-strip']");
+const history = new SnapshotHistory();
+const state = { timer: null, controller: null, failures: 0, paused: false, refreshes: 0 };
+window.__HC_CONSOLE_STATE__ = { state, history, limits: HISTORY_LIMITS };
+
+document.addEventListener("DOMContentLoaded", () => {
+  wireLifecycle();
+  refresh();
+});
+
+function wireLifecycle() {
+  const reevaluate = () => {
+    const paused = shouldPauseCollection(document.hidden, navigator.onLine);
+    state.paused = paused;
+    if (paused) {
+      clearTimeout(state.timer);
+      state.controller?.abort();
+      setText("poll-state", document.hidden ? "paused while hidden" : "paused while offline");
+    } else {
+      schedule(0);
+    }
+  };
+  document.addEventListener("visibilitychange", reevaluate);
+  window.addEventListener("online", reevaluate);
+  window.addEventListener("offline", reevaluate);
 }
 
-async function loadSnapshot() {
+async function refresh() {
+  if (state.paused || document.hidden || !navigator.onLine) return;
+  state.controller?.abort();
+  state.controller = new AbortController();
+  setText("poll-state", "refreshing typed snapshots");
   try {
-    setPollState("refreshing admin view");
-    const [overview, metricsText] = await Promise.all([fetchOverview(), fetchMetrics()]);
-    renderOverview(overview, parseMetrics(metricsText));
+    const results = await Promise.allSettled(
+      Object.entries(ENDPOINTS).map(async ([name, url]) => [
+        name,
+        await fetchEnvelope(url, state.controller.signal),
+      ]),
+    );
+    const values = Object.fromEntries(
+      results.filter((item) => item.status === "fulfilled").map((item) => item.value),
+    );
+    if (!values.dashboard) throw new Error("dashboard snapshot unavailable");
+    render(values);
+    state.failures = 0;
+    state.refreshes += 1;
+    schedule(BASE_POLL_INTERVAL_MS);
   } catch (error) {
+    if (error.name === "AbortError") return;
+    state.failures += 1;
     renderDegraded(error);
+    schedule(backoffDelay(state.failures));
   }
 }
 
-async function fetchOverview() {
-  const response = await fetch(OVERVIEW_URL, { cache: "no-store" });
-  if (!response.ok) {
-    throw new Error(`cluster overview returned ${response.status}`);
-  }
+async function fetchEnvelope(url, signal) {
+  const response = await fetch(url, { cache: "no-store", headers: ADMIN_HEADERS, signal });
+  if (!response.ok) throw new Error(`${url} returned ${response.status}`);
   return response.json();
 }
 
-async function fetchMetrics() {
-  try {
-    const response = await fetch(METRICS_URL, { cache: "no-store" });
-    return response.ok ? response.text() : "";
-  } catch (_error) {
-    return "";
+function schedule(delay) {
+  clearTimeout(state.timer);
+  if (state.paused || document.hidden || !navigator.onLine) return;
+  state.timer = setTimeout(refresh, delay);
+}
+
+function backoffDelay(failures) {
+  const exponential = Math.min(
+    MAX_BACKOFF_MS,
+    BASE_POLL_INTERVAL_MS * 2 ** Math.min(failures, 4),
+  );
+  return Math.round(exponential * (0.85 + Math.random() * 0.3));
+}
+
+function render(values) {
+  const envelope = values.dashboard;
+  const data = envelope.data;
+  const source = ["live", "modeled", "unavailable"].includes(envelope.source)
+    ? envelope.source
+    : "unavailable";
+  badge(source);
+  setText("poll-state", `last refresh ${new Date().toLocaleTimeString()}`);
+  const degraded = byTest("degraded-state");
+  degraded.hidden = true;
+  renderWarnings(Object.values(values));
+  renderSummary(data, values);
+  renderMetrics(data);
+  renderMembers(data.members ?? []);
+  renderFormation(values.formation);
+  renderConsensus(values.consensus, data.consensus);
+  renderRecovery(values.recovery);
+  renderPlacement(data.placement);
+  history.ingest(
+    { ...data, authority_epoch: envelope.authority_epoch },
+    envelope.captured_at_unix_ms,
+  );
+  renderHistory();
+}
+
+function renderWarnings(envelopes) {
+  const warnings = envelopes.flatMap((value) => value?.warnings ?? []);
+  const strip = byTest("truth-warnings");
+  strip.hidden = warnings.length === 0;
+  strip.replaceChildren(...warnings.map((warning) => chip(warning.code ?? "unknown", "warning")));
+}
+
+function renderSummary(data, values) {
+  metric(
+    "cluster-state",
+    "Cluster state",
+    data.cluster?.state ?? "unavailable",
+    `quorum ${truth(data.cluster?.quorum_ok)} · authority ${truth(data.cluster?.metadata_authoritative)}`,
+  );
+  metric(
+    "leader",
+    "Leader",
+    data.cluster?.leader ?? "electing",
+    `term ${known(data.cluster?.term)} / epoch ${known(data.cluster?.authority_epoch)}`,
+  );
+  metric(
+    "partition-summary",
+    "Replication",
+    format(data.replication?.success_total),
+    `failed ${format(data.replication?.failure_total)} · under-replicated ${format(data.replication?.under_replicated)}`,
+  );
+  metric(
+    "member-summary",
+    "Members",
+    format(data.cluster?.member_count),
+    `${format(data.cluster?.voter_count)} voters · snapshot ${values.dashboard.completeness}`,
+  );
+  const formation = values.formation?.data;
+  const formationItems = formation?.items ?? [];
+  const blocked = formationItems.filter((item) => item.serving === "blocked").length;
+  const discovered = formationItems.filter((item) => item.discovery !== "absent").length;
+  const authenticated = formationItems.filter((item) => item.transport === "authenticated").length;
+  const admitted = formationItems.filter((item) => item.admission === "admitted").length;
+  const current = formationItems.filter((item) => item.catch_up === "current").length;
+  const serving = formationItems.filter((item) => item.serving === "serving").length;
+  const unknown = formationItems.filter((item) =>
+    [item.transport, item.admission, item.consensus_role, item.catch_up, item.serving].includes(
+      "unknown",
+    ),
+  ).length;
+  metric(
+    "formation-summary",
+    "Formation",
+    `${serving} serving`,
+    `${discovered} discovered · ${authenticated} auth · ${admitted} admitted · ${current} current · ${blocked} blocked · ${unknown} unknown${formation?.truncated ? " · truncated" : ""}`,
+  );
+  const lag = data.consensus?.apply_lag;
+  metric(
+    "consensus-summary",
+    "Raft apply lag",
+    known(lag),
+    lag == null
+      ? "source unavailable"
+      : `${known(data.consensus.commit_index)} committed / ${known(data.consensus.applied_index)} applied`,
+  );
+  const recoveries = values.recovery?.data?.items ?? [];
+  metric(
+    "recovery-summary",
+    "Recovery",
+    `${recoveries.length} observed`,
+    recoveryLabel(recoveries),
+  );
+  const placement = data.placement;
+  metric(
+    "placement-summary",
+    "Placement",
+    placement?.outcome ?? "unavailable",
+    placement?.selected == null
+      ? "source unavailable"
+      : `${placement.selected} selected · ${placement.rejected ?? "unknown"} rejected`,
+  );
+}
+
+function renderMetrics(data) {
+  const values = [
+    [
+      "hit ratio",
+      data.cache?.hit_ratio == null ? "unavailable" : `${(data.cache.hit_ratio * 100).toFixed(1)}%`,
+    ],
+    ["entries", known(data.cache?.entries)],
+    ["retained bytes", bytes(data.cache?.retained_bytes)],
+    ["loads", known(data.cache?.loads_total)],
+    ["admission rejects", known(data.cache?.admission_rejected_total)],
+    ["queue depth", known(data.cache?.admission_queue_depth)],
+    ["repair debt", known(data.replication?.repair_debt)],
+    ["zone underspread", known(data.replication?.zone_underspread)],
+    ["partitions", known(data.partitions?.total)],
+    ["unassigned", known(data.partitions?.unassigned)],
+  ];
+  byTest("metrics-strip").replaceChildren(...values.map(([label, value]) => pill(label, value)));
+  const facts = byTest("lifecycle-panel");
+  facts.replaceChildren(
+    fact("Reshard phase", data.reshard?.phase),
+    fact("Moves in flight", data.reshard?.moves_inflight),
+    fact("Backfill lag", data.reshard?.backfill_lag),
+    fact("TTL backlog", data.cache?.ttl_backlog),
+  );
+}
+
+function renderMembers(members) {
+  const rendered = members.slice(0, MAX_RENDERED_MEMBERS);
+  setText(
+    "render-cap",
+    rendered.length < members.length
+      ? `${rendered.length} rendered, ${members.length - rendered.length} not rendered`
+      : `${rendered.length} rendered`,
+  );
+  byTest("members-list").replaceChildren(
+    ...rendered.map((member) =>
+      row(
+        [
+          member.node,
+          member.role,
+          status(member.reachability),
+          known(member.generation),
+          known(member.cpu_percent, "%"),
+          bytes(member.rss_bytes),
+          bytes(member.retained_bytes),
+          duration(member.uptime_seconds),
+        ],
+        { testid: "member", reachability: member.reachability },
+      ),
+    ),
+  );
+}
+
+function renderFormation(envelope) {
+  const items = envelope?.data?.items ?? [];
+  byTest("formation-table").replaceChildren(
+    ...items.map((item) =>
+      row(
+        [
+          item.node,
+          status(item.transport),
+          status(item.admission),
+          `${item.consensus_role} / ${item.catch_up}`,
+          status(item.serving),
+          item.blocker ?? "none",
+        ],
+        { testid: "formation-row" },
+      ),
+    ),
+  );
+  if (items.length === 0) {
+    byTest("formation-table").append(
+      row([
+        "No formation evidence",
+        "unavailable",
+        "unavailable",
+        "unavailable",
+        "blocked",
+        "source-unavailable",
+      ]),
+    );
   }
 }
 
-function renderOverview(overview, metrics) {
-  const source = overview?.source === "live" ? "live" : "modeled";
-  els.degraded.hidden = true;
-  els.degraded.textContent = "";
-  els.sourceBadge.textContent = source;
-  els.sourceBadge.dataset.source = source;
-  setPollState(`last refresh ${new Date().toLocaleTimeString()}`);
+function renderConsensus(envelope, local) {
+  const items = envelope?.data?.items ?? [];
+  byTest("consensus-table").replaceChildren(
+    ...items.map((item) => {
+      const lag =
+        item.commit_index == null || item.applied_index == null
+          ? null
+          : Math.max(0, item.commit_index - item.applied_index);
+      return row(
+        [
+          item.node,
+          known(item.commit_index),
+          known(item.applied_index),
+          known(lag),
+          status(lag === 0 ? "current" : lag == null ? "unavailable" : "behind"),
+        ],
+        { testid: "consensus-row" },
+      );
+    }),
+  );
+  if (items.length === 0) {
+    byTest("consensus-table").append(
+      row([
+        "Local summary",
+        known(local?.commit_index),
+        known(local?.applied_index),
+        known(local?.apply_lag),
+        "unavailable",
+      ]),
+    );
+  }
+}
 
-  renderLeader(overview);
-  renderPartitions(overview);
-  renderBackup(overview);
-  renderLifecycle(overview);
-  renderMembers(overview?.members ?? [], overview?.leader?.node_id ?? null);
-  renderConsistency(overview?.consistency);
-  renderMetrics(metrics);
+function renderRecovery(envelope) {
+  const items = envelope?.data?.items ?? [];
+  const outcomes = ["clean", "repaired", "partial", "corrupt", "failed"];
+  byTest("recovery-outcomes").replaceChildren(
+    ...outcomes.map((outcome) =>
+      pill(
+        outcome,
+        items.filter((item) => item.outcome === outcome).length,
+      ),
+    ),
+  );
+  byTest("recovery-table").replaceChildren(
+    ...items.map((item) =>
+      row(
+        [
+          item.scope,
+          status(item.outcome),
+          item.phase,
+          boundedCount(item.corrupt_records),
+          item.reason ?? "none",
+        ],
+        { testid: "recovery-row" },
+      ),
+    ),
+  );
+}
+
+function renderPlacement(placement) {
+  const state = byTest("placement-state");
+  state.textContent = placement?.outcome ?? "unavailable";
+  state.className = `truth-chip ${placement?.outcome ?? "unavailable"}`;
+  byTest("placement-details").replaceChildren(
+    pill("selected", known(placement?.selected)),
+    pill("rejected", known(placement?.rejected)),
+    pill("committed epoch", known(placement?.latest_committed_epoch)),
+    pill("applied epoch", known(placement?.latest_applied_epoch)),
+  );
+}
+
+function renderHistory() {
+  const snapshot = history.snapshot();
+  setText(
+    "history-budget",
+    `${snapshot.totalPoints}/${HISTORY_LIMITS.maxTotalPoints} points · ${snapshot.byteSize}/${HISTORY_LIMITS.maxBytes} bytes · ${snapshot.seriesCount}/${HISTORY_LIMITS.maxSeries} series`,
+  );
+  for (const svg of document.querySelectorAll("svg[data-series]")) {
+    drawSparkline(svg, history.points(svg.dataset.series));
+  }
+}
+
+function drawSparkline(svg, points) {
+  svg.replaceChildren();
+  const finite = points
+    .map((point, index) => ({ x: index, y: point.value }))
+    .filter((point) => point.y != null);
+  if (finite.length < 2) {
+    const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
+    text.setAttribute("x", "16");
+    text.setAttribute("y", "66");
+    text.textContent = "waiting for comparable samples";
+    svg.append(text);
+    return;
+  }
+  const max = Math.max(...finite.map((point) => point.y), 1);
+  const span = Math.max(points.length - 1, 1);
+  const polyline = document.createElementNS("http://www.w3.org/2000/svg", "polyline");
+  polyline.setAttribute(
+    "points",
+    finite
+      .map((point) => `${10 + (point.x / span) * 460},${110 - (point.y / max) * 96}`)
+      .join(" "),
+  );
+  svg.append(polyline);
 }
 
 function renderDegraded(error) {
-  els.sourceBadge.textContent = "unreachable";
-  els.sourceBadge.dataset.source = "unreachable";
-  setPollState("cannot reach cluster");
-  els.degraded.hidden = false;
-  els.degraded.textContent = `Cannot reach cluster: ${error.message}`;
-  setMetricCell(els.leader, "Leader", "unavailable", "no trusted snapshot");
-  setMetricCell(els.partitions, "Partitions", "unavailable", "no trusted snapshot");
-  setMetricCell(els.backupAge, "Backup age", "unavailable", "no trusted snapshot");
-  setMetricCell(els.lifecycle, "Lifecycle", "unavailable", "no trusted snapshot");
-  els.renderCap.textContent = "no members rendered";
-  els.membersList.replaceChildren();
-  els.graph.replaceChildren();
-  els.consistencyDefault.textContent = "-";
-  els.consistencyCounts.textContent = "-";
-  els.metricsStrip.replaceChildren(textNode("metrics unavailable"));
-}
-
-function setPollState(text) {
-  els.pollState.textContent = text;
-}
-
-function renderLeader(overview) {
-  const leader = overview?.leader;
-  if (!leader) {
-    setMetricCell(els.leader, "Leader", "electing", "term - / epoch -");
-    return;
+  badge("unavailable");
+  setText("poll-state", "cannot reach management snapshots");
+  const node = byTest("degraded-state");
+  node.hidden = false;
+  node.textContent = `Cannot reach cluster: ${error.message}`;
+  for (const id of [
+    "cluster-state",
+    "leader",
+    "partition-summary",
+    "member-summary",
+    "formation-summary",
+    "consensus-summary",
+    "recovery-summary",
+  ]) {
+    metric(id, id.replaceAll("-", " "), "unavailable", "no trusted snapshot");
   }
-  setMetricCell(els.leader, "Leader", leader.node_id, `term ${leader.term} / epoch ${leader.epoch}`);
 }
 
-function renderPartitions(overview) {
-  const partitions = overview?.partitions ?? { count: 0, under_replicated: 0 };
-  setMetricCell(
-    els.partitions,
-    "Partitions",
-    formatNumber(partitions.count),
-    `under-replicated ${formatNumber(partitions.under_replicated)}`,
+function badge(source) {
+  const node = byTest("source-badge");
+  node.textContent = source;
+  node.dataset.source = source;
+}
+function metric(id, label, value, detail) {
+  const node = byTest(id);
+  node.replaceChildren();
+  const a = document.createElement("span");
+  a.textContent = label;
+  const b = document.createElement("strong");
+  b.textContent = value;
+  const c = document.createElement("small");
+  c.textContent = detail;
+  node.append(a, b, c);
+}
+function pill(label, value) {
+  const node = document.createElement("span");
+  node.className = "metric-pill";
+  const a = document.createElement("small");
+  a.textContent = label;
+  const b = document.createElement("strong");
+  b.textContent = value;
+  node.append(a, b);
+  return node;
+}
+function fact(label, value) {
+  const wrap = document.createElement("div");
+  const dt = document.createElement("dt");
+  dt.textContent = label;
+  const dd = document.createElement("dd");
+  dd.textContent = known(value);
+  wrap.append(dt, dd);
+  return wrap;
+}
+function row(values, data = {}) {
+  const tr = document.createElement("tr");
+  if (data.testid) tr.dataset.testid = data.testid;
+  if (data.reachability) tr.dataset.reachability = data.reachability;
+  tr.append(
+    ...values.map((value) => {
+      const td = document.createElement("td");
+      if (value instanceof Node) td.append(value);
+      else td.textContent = value ?? "unavailable";
+      return td;
+    }),
   );
+  return tr;
 }
-
-function renderBackup(overview) {
-  const seconds = overview?.backup_age_seconds;
-  setMetricCell(
-    els.backupAge,
-    "Backup age",
-    seconds == null ? "none" : formatDuration(seconds),
-    seconds == null ? "no snapshot recorded" : "worst known namespace",
-  );
+function status(value) {
+  return chip(value ?? "unknown", value ?? "unknown");
 }
-
-function renderLifecycle(overview) {
-  const lifecycle = overview?.lifecycle ?? { reshard_phase: "idle", upgrade_phase: "idle" };
-  setMetricCell(
-    els.lifecycle,
-    "Lifecycle",
-    lifecycle.reshard_phase,
-    `upgrade ${lifecycle.upgrade_phase}`,
-  );
+function chip(text, kind) {
+  const node = document.createElement("span");
+  node.className = `truth-chip ${kind}`;
+  node.textContent = text;
+  return node;
 }
-
-function setMetricCell(cell, label, value, detail) {
-  cell.replaceChildren();
-  const span = document.createElement("span");
-  span.textContent = label;
-  const strong = document.createElement("strong");
-  strong.textContent = value;
-  const small = document.createElement("small");
-  small.textContent = detail;
-  cell.append(span, strong, small);
+function byTest(id) {
+  return document.querySelector(`[data-testid='${id}']`);
 }
-
-function renderMembers(members, leaderId) {
-  const rendered = members.slice(0, MAX_RENDERED_MEMBERS);
-  const hidden = Math.max(0, members.length - rendered.length);
-  els.renderCap.textContent =
-    hidden > 0
-      ? `${rendered.length} rendered, ${hidden} not rendered`
-      : `${rendered.length} rendered`;
-
-  els.membersList.replaceChildren(...rendered.map((member) => memberCard(member, leaderId)));
-  renderGraph(rendered, leaderId, members.length);
+function setText(id, text) {
+  byTest(id).textContent = text;
 }
-
-function memberCard(member, leaderId) {
-  const card = document.createElement("article");
-  card.className = "member-card";
-  card.dataset.testid = "member";
-  card.dataset.reachability = member.reachability ?? (member.reachable ? "reachable" : "unreachable");
-  if (member.node_id === leaderId) {
-    card.dataset.leader = "true";
-  }
-
-  const top = document.createElement("div");
-  top.className = "member-topline";
-  const id = document.createElement("strong");
-  id.textContent = member.node_id;
-  const role = document.createElement("span");
-  role.textContent = member.role ?? "member";
-  top.append(id, role);
-
-  const detail = document.createElement("p");
-  detail.textContent = `${member.reachability ?? "unknown"} / generation ${member.generation ?? 0}`;
-  card.append(top, detail);
-  return card;
+function known(value, suffix = "") {
+  return value == null ? "unavailable" : `${new Intl.NumberFormat("en-US").format(value)}${suffix}`;
 }
-
-function renderGraph(members, leaderId, totalMembers) {
-  els.graph.replaceChildren();
-  const width = 640;
-  const height = 360;
-  const center = { x: width / 2, y: height / 2 };
-  const radius = members.length <= 8 ? 122 : 142;
-  const positions = new Map();
-
-  members.forEach((member, index) => {
-    const angle = members.length === 1 ? 0 : (Math.PI * 2 * index) / members.length - Math.PI / 2;
-    positions.set(member.node_id, {
-      x: members.length === 1 ? center.x : center.x + Math.cos(angle) * radius,
-      y: members.length === 1 ? center.y : center.y + Math.sin(angle) * radius,
-    });
-  });
-
-  if (leaderId && positions.has(leaderId)) {
-    const leaderPosition = positions.get(leaderId);
-    for (const [nodeId, position] of positions) {
-      if (nodeId === leaderId) {
-        continue;
-      }
-      els.graph.append(svgLine(leaderPosition, position));
-    }
-  }
-
-  for (const member of members) {
-    const position = positions.get(member.node_id);
-    els.graph.append(svgNode(member, position, member.node_id === leaderId, totalMembers));
-  }
+function format(value) {
+  return known(value);
 }
-
-function svgLine(from, to) {
-  const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
-  line.setAttribute("class", "graph-link");
-  line.setAttribute("x1", from.x.toFixed(1));
-  line.setAttribute("y1", from.y.toFixed(1));
-  line.setAttribute("x2", to.x.toFixed(1));
-  line.setAttribute("y2", to.y.toFixed(1));
-  return line;
+function truth(value) {
+  return value === true ? "yes" : value === false ? "no" : "unknown";
 }
-
-function svgNode(member, position, isLeader, totalMembers) {
-  const group = document.createElementNS("http://www.w3.org/2000/svg", "g");
-  group.setAttribute("class", `graph-node ${isLeader ? "leader" : ""}`);
-  group.setAttribute("transform", `translate(${position.x.toFixed(1)} ${position.y.toFixed(1)})`);
-  const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
-  circle.setAttribute("r", isLeader ? "18" : "14");
-  circle.setAttribute("data-reachability", member.reachability ?? "unknown");
-  const title = document.createElementNS("http://www.w3.org/2000/svg", "title");
-  title.textContent = `${member.node_id} ${member.reachability ?? "unknown"}`;
-  group.append(title, circle);
-  if (totalMembers <= 16) {
-    const label = document.createElementNS("http://www.w3.org/2000/svg", "text");
-    label.setAttribute("y", "33");
-    label.textContent = truncateMiddle(member.node_id, 14);
-    group.append(label);
-  }
-  return group;
+function bytes(value) {
+  if (value == null) return "unavailable";
+  if (value < 1024) return `${value} B`;
+  return `${(value / 1024).toFixed(1)} KiB`;
 }
-
-function renderConsistency(consistency) {
-  els.consistencyDefault.textContent = consistency?.configured_default ?? "not configured";
-  const counts = consistency?.op_counts_by_level ?? [];
-  els.consistencyCounts.textContent =
-    counts.length === 0
-      ? "no operation counts"
-      : counts.map((entry) => `${entry.level}: ${formatNumber(entry.count)}`).join(", ");
+function duration(value) {
+  if (value == null) return "unavailable";
+  return value < 60 ? `${value}s` : `${Math.floor(value / 60)}m`;
 }
-
-function renderMetrics(metrics) {
-  els.metricsStrip.replaceChildren(
-    metricPill("hit ratio", metrics.hitRatio == null ? "-" : formatRatio(metrics.hitRatio)),
-    metricPill("admission rejects", formatNumber(metrics.admissionRejected ?? 0)),
-    metricPill("queue depth", formatNumber(metrics.queueDepth ?? 0)),
-    metricPill("members gauge", formatNumber(metrics.clusterMembers ?? 0)),
-  );
+function boundedCount(value) {
+  return value?.value == null ? "unavailable" : `${value.value}${value.exact ? "" : "+"}`;
 }
-
-function metricPill(label, value) {
-  const pill = document.createElement("span");
-  pill.className = "metric-pill";
-  const labelNode = document.createElement("small");
-  labelNode.textContent = label;
-  const valueNode = document.createElement("strong");
-  valueNode.textContent = value;
-  pill.append(labelNode, valueNode);
-  return pill;
-}
-
-function parseMetrics(text) {
-  const metrics = {
-    hitRatio: null,
-    admissionRejected: null,
-    queueDepth: null,
-    clusterMembers: null,
-  };
-  for (const line of text.split("\n")) {
-    if (!line || line.startsWith("#")) {
-      continue;
-    }
-    const match = line.match(/^([a-zA-Z_:][a-zA-Z0-9_:]*)(?:\{[^}]*\})?\s+(-?\d+(?:\.\d+)?)/);
-    if (!match) {
-      continue;
-    }
-    const value = Number.parseFloat(match[2]);
-    switch (match[1]) {
-      case "hydracache_cache_hit_ratio":
-        metrics.hitRatio ??= value;
-        break;
-      case "hydracache_admission_rejected_total":
-        metrics.admissionRejected = value;
-        break;
-      case "hydracache_admission_queue_depth":
-        metrics.queueDepth = value;
-        break;
-      case "hydracache_cluster_members":
-        metrics.clusterMembers = value;
-        break;
-    }
-  }
-  return metrics;
-}
-
-function textNode(text) {
-  return document.createTextNode(text);
-}
-
-function formatNumber(value) {
-  return new Intl.NumberFormat("en-US").format(value);
-}
-
-function formatRatio(value) {
-  return `${Math.round(value * 1000) / 10}%`;
-}
-
-function formatDuration(seconds) {
-  if (seconds < 60) {
-    return `${seconds}s`;
-  }
-  if (seconds < 3600) {
-    return `${Math.floor(seconds / 60)}m`;
-  }
-  return `${Math.floor(seconds / 3600)}h`;
-}
-
-function truncateMiddle(value, maxLength) {
-  if (value.length <= maxLength) {
-    return value;
-  }
-  return `${value.slice(0, 6)}...${value.slice(-5)}`;
+function recoveryLabel(items) {
+  if (items.length === 0) return "source unavailable";
+  const bad = items.filter((item) => ["corrupt", "failed", "partial"].includes(item.outcome)).length;
+  return bad ? `${bad} need attention` : "no adverse outcome observed";
 }

@@ -3,6 +3,7 @@ const baseURL = `http://127.0.0.1:${port}/console/`;
 
 export default {
   testDir: "./tests",
+  testIgnore: "**/history.test.js",
   timeout: 45_000,
   expect: {
     timeout: 10_000

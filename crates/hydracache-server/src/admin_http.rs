@@ -119,6 +119,7 @@ impl AdminHttpSurface {
             .route("/console/", get(console_index))
             .route("/console/index.html", get(console_index))
             .route("/console/app.js", get(console_app))
+            .route("/console/history.js", get(console_history))
             .route("/console/style.css", get(console_style))
             .route(ADMIN_CLUSTER_OVERVIEW_PATH, get(cluster_overview))
             .route(ADMIN_STATUS_PATH, get(admin_status))
@@ -191,6 +192,14 @@ async fn console_app() -> Response {
     (
         [(CONTENT_TYPE, "text/javascript; charset=utf-8")],
         include_str!("../console/app.js"),
+    )
+        .into_response()
+}
+
+async fn console_history() -> Response {
+    (
+        [(CONTENT_TYPE, "text/javascript; charset=utf-8")],
+        include_str!("../console/history.js"),
     )
         .into_response()
 }

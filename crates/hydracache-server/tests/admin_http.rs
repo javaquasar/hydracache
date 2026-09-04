@@ -326,8 +326,22 @@ mod admin_http {
             .unwrap();
         assert_eq!(app.status(), StatusCode::OK);
         let javascript = text_response(app).await;
-        assert!(javascript.contains("/cluster/overview"));
+        assert!(javascript.contains("/management/v1/dashboard"));
         assert!(javascript.contains("MAX_RENDERED_MEMBERS"));
+
+        let history = surface
+            .routes()
+            .oneshot(
+                Request::builder()
+                    .method("GET")
+                    .uri("/console/history.js")
+                    .body(Body::empty())
+                    .unwrap(),
+            )
+            .await
+            .unwrap();
+        assert_eq!(history.status(), StatusCode::OK);
+        assert!(text_response(history).await.contains("HISTORY_LIMITS"));
     }
 
     #[tokio::test]

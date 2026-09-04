@@ -30,6 +30,16 @@ max_rpc_request_bytes = 4096
 max_rpc_response_bytes = 262144
 deduplication_key = ["node_id", "generation", "authority_epoch", "observation_seq"]
 
+[browser_history]
+max_series = 24
+max_points_per_series = 360
+max_total_points = 4320
+max_encoded_bytes = 262144
+retention = "per-tab since page opened; oldest-first eviction"
+pause_conditions = ["document_hidden", "navigator_offline"]
+epoch_policy = "clear all series before accepting a different authority epoch"
+counter_reset_policy = "emit a gap; never a negative rate"
+
 [placement]
 max_candidates = 512
 max_selected = 64

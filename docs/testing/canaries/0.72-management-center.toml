@@ -20,3 +20,13 @@ defect_env = "HYDRACACHE_CANARY_DEFECT=MC72-W3"
 expected_failure = "HC-CANARY-RED:MC72-W3"
 green_evidence = "Only the committed roster is resolved and a cached epoch/sequence never regresses."
 red_evidence = "The mutant fans out to an injected metadata-service address or publishes a late older epoch."
+
+[[canary]]
+id = "MC72-W4-UNBOUNDED-HISTORY"
+status = "active"
+test = "ring evicts oldest points by per-series point and byte budgets"
+command = "npm --prefix console run unit"
+defect_env = "HYDRACACHE_CANARY_DEFECT=MC72-W4"
+expected_failure = "HC-CANARY-RED:MC72-W4"
+green_evidence = "A twelve-hour accelerated soak stays below frozen series, point and encoded-byte budgets; hidden/offline browser tests pause polling and abort obsolete requests."
+red_evidence = "The mutant disables eviction and the same budget oracle fails with the reviewed marker."

@@ -15,6 +15,19 @@ fallback = "unavailable with stable reason"
 test_owner = "crates/hydracache-server/tests/management_http.rs"
 
 [[source]]
+id = "dashboard"
+route = "/management/v1/dashboard"
+field_group = "cluster, replication, reshard, cache, local consensus and bounded member summary"
+producer = "ClusterStatusProvider + HydraCacheRegistry typed overview"
+authority = "committed local control-plane snapshot plus local cache counters"
+lifetime = "request; browser retains only its bounded per-tab ring"
+consistency = "one authority epoch; unavailable resource fields stay null"
+max_cardinality = 100
+privacy = "node ids SHA-256 pseudonymized; no keys, endpoints, paths or raw errors"
+fallback = "partial with explicit unavailable_fields and stable warnings; never zero-filled"
+test_owner = "crates/hydracache-server/tests/management_http.rs + console/tests"
+
+[[source]]
 id = "cluster-formation"
 route = "/management/v1/formation"
 field_group = "committed roster, generation, reachability, local admission and catch-up"

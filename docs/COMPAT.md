@@ -452,7 +452,7 @@ documented reader window. These DTOs are not persisted in 0.72; if a later work 
 recovery or placement status on disk, that artifact receives a separate format registration and
 crash-recovery contract before use.
 
-The first server-backed routes are `/management/v1/capabilities`, `/management/v1/formation`,
+The first server-backed routes are `/management/v1/capabilities`, `/management/v1/dashboard`, `/management/v1/formation`,
 `/management/v1/consensus/progress`, and `/management/v1/persistence/recovery`. They are available
 only on the internal admin listener and currently reuse its verified privileged identity boundary.
 The routes accept GET and body-free HEAD; mutation methods are not registered. Formation reads the
@@ -475,3 +475,13 @@ cursors bound to route class, authority epoch, and observation sequence; a chang
 `snapshot-changed` instead of merging pages. The cursor registry retains at most 1,024 records.
 These limits and source ownership are mirrored in the machine-checked 0.72 source and bounds
 registries under `docs/testing/management-center/0.72`.
+
+The W4 dashboard consumes typed management snapshots and does not parse the Prometheus endpoint.
+Its charts are explicitly browser-local history since the page opened: at most 24 series, 360
+points per series, 4,320 points overall and 256 KiB of encoded ring state. Oldest samples are
+evicted, hidden/offline tabs pause collection, obsolete fetches are aborted, and retry delay is
+bounded with jitter. A new authority epoch resets all series; a counter reset produces a gap while
+gauges remain point values. Missing, non-finite, partial, stale and modeled observations are never
+coerced to zero or live. The dashboard currently reports CPU, RSS, retained bytes, uptime and TTL
+backlog as unavailable because no authoritative source is connected; later work items may fill
+those fields without changing their null/unavailable meaning.

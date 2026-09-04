@@ -18,11 +18,12 @@ use hydracache_server::{
     LocalConsensusStatus, MemberRole, MemberStatus, Reachability, ReshardPhase, ServerConfig,
     ServerRole, ServerRuntime, StatusSource, CLUSTER_MANAGEMENT_SNAPSHOT_PATH,
     MANAGEMENT_CAPABILITIES_PATH, MANAGEMENT_CONSENSUS_PROGRESS_PATH, MANAGEMENT_CURSOR_TTL_MS,
-    MANAGEMENT_FORMATION_PATH, MANAGEMENT_MAX_RESPONSE_BYTES, MANAGEMENT_MAX_RETAINED_CURSORS,
-    MANAGEMENT_RECOVERY_PATH, MANAGEMENT_SNAPSHOT_CACHE_TTL, MANAGEMENT_SNAPSHOT_MAX_CONCURRENCY,
-    MANAGEMENT_SNAPSHOT_MAX_PEERS, MANAGEMENT_SNAPSHOT_MAX_REQUEST_BYTES,
-    MANAGEMENT_SNAPSHOT_MAX_RESPONSE_BYTES, MANAGEMENT_SNAPSHOT_PEER_TIMEOUT,
-    MANAGEMENT_SNAPSHOT_REFRESH_TIMEOUT, MANAGEMENT_STALE_AFTER_MS,
+    MANAGEMENT_DASHBOARD_PATH, MANAGEMENT_FORMATION_PATH, MANAGEMENT_MAX_RESPONSE_BYTES,
+    MANAGEMENT_MAX_RETAINED_CURSORS, MANAGEMENT_RECOVERY_PATH, MANAGEMENT_SNAPSHOT_CACHE_TTL,
+    MANAGEMENT_SNAPSHOT_MAX_CONCURRENCY, MANAGEMENT_SNAPSHOT_MAX_PEERS,
+    MANAGEMENT_SNAPSHOT_MAX_REQUEST_BYTES, MANAGEMENT_SNAPSHOT_MAX_RESPONSE_BYTES,
+    MANAGEMENT_SNAPSHOT_PEER_TIMEOUT, MANAGEMENT_SNAPSHOT_REFRESH_TIMEOUT,
+    MANAGEMENT_STALE_AFTER_MS,
 };
 use serde_json::Value;
 use tower::ServiceExt;
@@ -163,6 +164,7 @@ async fn management_routes_require_verified_privileged_identity_before_reading_s
 
     for path in [
         MANAGEMENT_CAPABILITIES_PATH,
+        MANAGEMENT_DASHBOARD_PATH,
         MANAGEMENT_FORMATION_PATH,
         MANAGEMENT_CONSENSUS_PROGRESS_PATH,
         MANAGEMENT_RECOVERY_PATH,
@@ -192,6 +194,38 @@ async fn management_routes_require_verified_privileged_identity_before_reading_s
         baseline,
         "auth rejection must precede source IO"
     );
+}
+
+#[tokio::test]
+async fn dashboard_is_typed_bounded_pseudonymous_and_does_not_zero_fill_missing_sources() {
+    let provider = Arc::new(CountingProvider::new(live_status()));
+    let response = surface(provider)
+        .routes()
+        .oneshot(management_request(Method::GET, MANAGEMENT_DASHBOARD_PATH))
+        .await
+        .unwrap();
+
+    assert_eq!(response.status(), StatusCode::OK);
+    let bytes = body_bytes(response).await;
+    assert!(bytes.len() <= MANAGEMENT_MAX_RESPONSE_BYTES);
+    let body: Value = serde_json::from_slice(&bytes).unwrap();
+    assert_eq!(body["source"], "live");
+    assert_eq!(body["completeness"], "partial");
+    assert_eq!(body["data"]["cluster"]["quorum_ok"], true);
+    assert_eq!(body["data"]["cluster"]["authority_epoch"], 42);
+    assert_eq!(body["data"]["consensus"]["apply_lag"], 0);
+    assert_eq!(body["data"]["partitions"]["total"], 0);
+    assert!(body["data"]["partitions"]["distribution"]
+        .as_array()
+        .unwrap()
+        .is_empty());
+    assert!(body["data"]["cache"]["retained_bytes"].is_null());
+    assert!(body["data"]["cache"]["ttl_backlog"].is_null());
+    assert!(body["data"]["members"][0]["cpu_percent"].is_null());
+    let encoded = String::from_utf8(bytes).unwrap();
+    assert!(!encoded.contains("local-secret-token"));
+    assert!(!encoded.contains("remote-a-private"));
+    assert!(encoded.contains("partial-observation"));
 }
 
 #[tokio::test]
@@ -482,6 +516,7 @@ fn source_and_bound_registries_match_executable_contract() {
         routes,
         [
             MANAGEMENT_CAPABILITIES_PATH,
+            MANAGEMENT_DASHBOARD_PATH,
             MANAGEMENT_FORMATION_PATH,
             MANAGEMENT_CONSENSUS_PROGRESS_PATH,
             CLUSTER_MANAGEMENT_SNAPSHOT_PATH,

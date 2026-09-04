@@ -8,97 +8,49 @@
   </head>
   <body>
     <header class="topbar">
-      <div class="brand">
-        <span class="brand-mark" aria-hidden="true">HC</span>
-        <div>
-          <h1>HydraCache Management Center</h1>
-          <p data-testid="poll-state">Connecting to admin surface</p>
-        </div>
-      </div>
-      <div class="status-strip" aria-label="Console status">
-        <span class="source-badge" data-testid="source-badge">loading</span>
-        <span class="readonly-badge" data-testid="readonly-badge">read only</span>
-      </div>
+      <div class="brand"><span class="brand-mark">HC</span><div><h1>HydraCache</h1><p>Management Center 2.0</p></div></div>
+      <div class="cluster-picker"><span class="health-dot"></span><strong>current cluster</strong><span data-testid="poll-state">connecting</span></div>
+      <div class="status-strip"><span class="source-badge" data-testid="source-badge">loading</span><span class="readonly-badge" data-testid="readonly-badge">read only</span></div>
     </header>
+    <div class="app-shell">
+      <nav class="sidebar" aria-label="Management sections">
+        <a href="#dashboard" class="active">Dashboard</a><a href="#formation">Formation</a><a href="#members">Members</a><a href="#replication">Replication</a><a href="#placement">Placement</a><a href="#consensus">Consensus</a><a href="#recovery">Recovery</a><a href="#history">Local history</a>
+      </nav>
+      <main class="page-shell" id="dashboard">
+        <section class="degraded" data-testid="degraded-state" hidden></section>
+        <section class="warning-strip" data-testid="truth-warnings" hidden></section>
 
-    <main class="page-shell">
-      <section class="degraded" data-testid="degraded-state" hidden></section>
+        <section class="summary-grid" aria-label="Cluster summary">
+          <a href="#formation" class="metric-cell" data-testid="cluster-state"><span>Cluster state</span><strong>loading</strong><small>quorum unknown</small></a>
+          <a href="#consensus" class="metric-cell" data-testid="leader"><span>Leader</span><strong>loading</strong><small>term - / epoch -</small></a>
+          <a href="#replication" class="metric-cell" data-testid="partition-summary"><span>Replication</span><strong>loading</strong><small>under-replicated -</small></a>
+          <a href="#members" class="metric-cell" data-testid="member-summary"><span>Members</span><strong>loading</strong><small>freshness unknown</small></a>
+          <a href="#formation" class="metric-cell" data-testid="formation-summary"><span>Formation</span><strong>loading</strong><small>blockers unknown</small></a>
+          <a href="#placement" class="metric-cell" data-testid="placement-summary"><span>Placement</span><strong>unavailable</strong><small>not retained by source</small></a>
+          <a href="#consensus" class="metric-cell" data-testid="consensus-summary"><span>Raft apply lag</span><strong>loading</strong><small>missing is not zero</small></a>
+          <a href="#recovery" class="metric-cell" data-testid="recovery-summary"><span>Recovery</span><strong>loading</strong><small>five outcomes</small></a>
+        </section>
 
-      <section class="summary-grid" aria-label="Cluster summary">
-        <div class="metric-cell" data-testid="leader">
-          <span>Leader</span>
-          <strong>loading</strong>
-          <small>term - / epoch -</small>
-        </div>
-        <div class="metric-cell" data-testid="partition-summary">
-          <span>Partitions</span>
-          <strong>loading</strong>
-          <small>under-replicated -</small>
-        </div>
-        <div class="metric-cell" data-testid="backup-age">
-          <span>Backup age</span>
-          <strong>loading</strong>
-          <small>worst known namespace</small>
-        </div>
-        <div class="metric-cell" data-testid="lifecycle-panel">
-          <span>Lifecycle</span>
-          <strong>loading</strong>
-          <small>upgrade -</small>
-        </div>
-      </section>
+        <section class="panel" id="history" aria-labelledby="history-title">
+          <div class="section-heading"><div><h2 id="history-title">History since page opened</h2><p data-testid="history-budget">No samples</p></div><span class="trust-note">browser-local · bounded</span></div>
+          <div class="chart-grid"><figure><figcaption>Replication events / poll</figcaption><svg data-series="replication.success" viewBox="0 0 480 120" role="img"></svg></figure><figure><figcaption>Cache entries</figcaption><svg data-series="cache.entries" viewBox="0 0 480 120" role="img"></svg></figure><figure><figcaption>Raft apply lag</figcaption><svg data-series="consensus.apply_lag" viewBox="0 0 480 120" role="img"></svg></figure></div>
+        </section>
 
-      <section class="topology-section" aria-labelledby="topology-title">
-        <div class="section-heading">
-          <div>
-            <h2 id="topology-title">Topology</h2>
-            <p data-testid="render-cap">waiting for members</p>
-          </div>
-          <span class="trust-note">point-in-time view</span>
-        </div>
-        <div class="topology-shell">
-          <svg
-            id="topology-graph"
-            data-testid="topology-graph"
-            viewBox="0 0 640 360"
-            role="img"
-            aria-label="Cluster topology graph"
-          ></svg>
-          <div class="member-list" data-testid="members-list"></div>
-        </div>
-      </section>
+        <section class="two-column">
+          <section class="panel" id="replication"><div class="section-heading"><div><h2>Data plane</h2><p>Typed point-in-time counters and gauges</p></div></div><div class="metrics-strip" data-testid="metrics-strip"></div><dl class="facts" data-testid="lifecycle-panel"></dl></section>
+          <section class="panel" id="formation"><div class="section-heading"><div><h2>Cluster formation</h2><p>Discovery → authentication → admission → current → serving</p></div></div><div class="table-scroll"><table><thead><tr><th>Member</th><th>Transport</th><th>Admission</th><th>Consensus</th><th>Serving</th><th>Blocker</th></tr></thead><tbody data-testid="formation-table"></tbody></table></div></section>
+        </section>
 
-      <section class="details-grid" aria-label="Cluster details">
-        <div class="detail-panel" data-testid="consistency-panel">
-          <h2>Consistency</h2>
-          <dl>
-            <div>
-              <dt>Configured default</dt>
-              <dd data-field="configured-default">-</dd>
-            </div>
-            <div>
-              <dt>Observed operations</dt>
-              <dd data-field="consistency-counts">-</dd>
-            </div>
-          </dl>
-        </div>
-        <div class="detail-panel">
-          <h2>Metrics</h2>
-          <div class="metrics-strip" data-testid="metrics-strip">
-            <span>metrics unavailable</span>
-          </div>
-        </div>
-        <div class="detail-panel">
-          <h2>Write Path</h2>
-          <p class="readonly-copy">
-            Observe here. Mutations stay on the authz-gated admin API.
-          </p>
-          <code>POST /admin/drain</code>
-          <code>POST /admin/reshard</code>
-          <code>POST /admin/backup</code>
-        </div>
-      </section>
-    </main>
+        <section class="panel" id="members"><div class="section-heading"><div><h2>Members</h2><p data-testid="render-cap">waiting for members</p></div><span class="trust-note">bounded to 48 rows</span></div><div class="table-scroll"><table><thead><tr><th>Member</th><th>Role</th><th>Reachability</th><th>Generation</th><th>CPU</th><th>RSS</th><th>Retained</th><th>Uptime</th></tr></thead><tbody data-testid="members-list"></tbody></table></div></section>
 
+        <section class="two-column">
+          <section class="panel" id="consensus"><div class="section-heading"><div><h2>Consensus progress</h2><p>Commit/apply gaps remain unknown when the source is missing</p></div></div><div class="table-scroll"><table><thead><tr><th>Member</th><th>Commit</th><th>Applied</th><th>Lag</th><th>State</th></tr></thead><tbody data-testid="consensus-table"></tbody></table></div></section>
+          <section class="panel" id="recovery"><div class="section-heading"><div><h2>Persistence recovery</h2><p>Clean · repaired · partial · corrupt · failed</p></div></div><div class="outcome-grid" data-testid="recovery-outcomes"></div><div class="table-scroll"><table><thead><tr><th>Scope</th><th>Outcome</th><th>Phase</th><th>Corrupt</th><th>Reason</th></tr></thead><tbody data-testid="recovery-table"></tbody></table></div></section>
+        </section>
+
+        <section class="panel" id="placement"><div class="section-heading"><div><h2>Placement evidence</h2><p>Selected/rejected candidates and latest committed/applied decision</p></div><span class="truth-chip unavailable" data-testid="placement-state">unavailable</span></div><div class="metrics-strip" data-testid="placement-details"></div></section>
+      </main>
+    </div>
     <script type="module" src="./app.js"></script>
   </body>
 </html>
