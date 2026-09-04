@@ -22,7 +22,7 @@ sha256 = "c85fa4fcc8fc87cba85bb710aa96ca60eb0be94136793872064dfc31281b3252"
 
 [[scenario.input]]
 path = "docs/testing/memory/0.71/ownership-registry.toml"
-sha256 = "b3ed8ee8d9aaf1976552f5079499fc1856838c2b29ec2181f2920a61c3c89157"
+sha256 = "b8b497f434e14b4e5c6b6ffceed164e6dd92e83f02b526bb4c150b9040bf7e6a"
 
 [[scenario.input]]
 path = "docs/testing/memory/0.71/allocator-capabilities.toml"
