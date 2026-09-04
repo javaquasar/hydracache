@@ -1,0 +1,91 @@
+schema_version = 1
+release = "0.72.0"
+workspace_line_floor_percent = 88.0
+
+[[module]]
+path = "crates/hydracache-observability/src/management.rs"
+work_items = ["W2", "W5", "W10"]
+tests = ["crates/hydracache-observability/tests/management_schema_072.rs#envelope_rejects_unavailable_complete_and_missing_source_warnings", "crates/hydracache-observability/tests/management_schema_072.rs#placement_trace_enforces_every_collection_and_identifier_bound", "crates/hydracache-observability/tests/management_schema_072.rs#recovery_outcomes_require_their_declared_evidence"]
+reviewed_branches = ["schema-version", "complete-partial-unavailable", "unknown-enum", "collection-bound", "commit-versus-apply"]
+receipt = "target/test-evidence/0.72/coverage-management-observability.json"
+
+[[module]]
+path = "crates/hydracache-observability/src/management_health.rs"
+work_items = ["W8"]
+tests = ["crates/hydracache-observability/tests/management_health_072.rs#operational_limit_rules_cover_boundary_minus_one_equal_and_plus_one", "crates/hydracache-observability/tests/management_health_072.rs#missing_modeled_and_partial_inputs_are_unknown_not_pass", "crates/hydracache-observability/tests/management_health_072.rs#unknown_count_survives_a_known_failure"]
+reviewed_branches = ["pass-warn-fail-disabled-unknown", "threshold-boundaries", "aggregate-precedence", "missing-stale-partial-truncated"]
+receipt = "target/test-evidence/0.72/coverage-management-health.json"
+
+[[module]]
+path = "crates/hydracache-server/src/management_aggregation.rs"
+work_items = ["W3", "W13"]
+tests = ["crates/hydracache-server/tests/management_aggregation_072.rs#protected_rpc_fails_loud_for_epoch_schema_method_and_body_bounds", "crates/hydracache-server/tests/management_aggregation_072.rs#three_member_http_aggregate_recovers_from_partial_to_complete", "crates/hydracache-server/tests/management_aggregation_072.rs#real_http_transport_probes_capability_before_posting_to_an_old_member"]
+reviewed_branches = ["deadline", "coalescing", "epoch-fence", "partial-peer", "old-peer-capability", "oversize-malformed"]
+receipt = "target/test-evidence/0.72/coverage-management-aggregation.json"
+
+[[module]]
+path = "crates/hydracache-server/src/management_history.rs"
+work_items = ["W9"]
+tests = ["crates/hydracache-server/tests/management_history_072.rs#request_bounds_reject_amplification_before_network_work", "crates/hydracache-server/tests/management_history_072.rs#resolver_rejects_private_link_local_metadata_and_mixed_rebinding_sets", "crates/hydracache-server/tests/management_history_072.rs#adapter_refuses_redirect_timeout_and_oversize_without_exposing_upstream_body"]
+reviewed_branches = ["disabled", "fixed-query", "ssrf-address", "redirect-rebinding", "timeout", "oversize", "malformed-upstream"]
+receipt = "target/test-evidence/0.72/coverage-management-history.json"
+
+[[module]]
+path = "crates/hydracache-server/src/management_http.rs"
+work_items = ["W2", "W5", "W6", "W7", "W8", "W10"]
+tests = ["crates/hydracache-server/tests/management_http.rs#management_routes_require_verified_privileged_identity_before_reading_sources", "crates/hydracache-server/tests/management_clients_072.rs#client_lifecycle_route_is_admin_only_bounded_and_protocol_complete_without_identity", "crates/hydracache-server/tests/management_namespaces_072.rs#namespace_and_cache_views_are_authorized_before_totals_and_keep_unavailable_unknown"]
+reviewed_branches = ["authentication-before-source", "get-head-options-only", "content-type", "pagination-cursor", "response-byte-cap", "source-unavailable", "tenant-scope"]
+receipt = "target/test-evidence/0.72/coverage-management-http.json"
+
+[[module]]
+path = "crates/hydracache-server/src/management_operations.rs"
+work_items = ["W10"]
+tests = ["crates/hydracache-server/tests/management_operations_072.rs#accepted_backup_is_not_reported_as_running_completed_or_verified", "crates/hydracache-server/tests/management_operations_072.rs#pagination_is_snapshot_stable_and_invalidated_by_new_transition", "crates/hydracache-server/tests/management_operations_072.rs#recovery_remains_unknown_when_runtime_does_not_retain_report"]
+reviewed_branches = ["requested-accepted-running-terminal", "bounded-journal", "cursor-invalidation", "redaction", "missing-recovery-report"]
+receipt = "target/test-evidence/0.72/coverage-management-operations.json"
+
+[[module]]
+path = "crates/hydracache-server/src/management_security.rs"
+work_items = ["W11"]
+tests = ["crates/hydracache-server/tests/management_security_072.rs#authorization_matrix_separates_management_read_tenant_read_and_write_admin", "crates/hydracache-server/tests/management_security_072.rs#console_and_json_responses_ship_restrictive_security_headers", "crates/hydracache-server/tests/management_security_072.rs#management_saturation_is_fail_fast_and_does_not_consume_write_admin_capacity"]
+reviewed_branches = ["capability-matrix", "security-headers", "separate-concurrency-budget", "saturation"]
+receipt = "target/test-evidence/0.72/coverage-management-security.json"
+
+[[module]]
+path = "crates/hydracache-server/src/management_topology.rs"
+work_items = ["W5"]
+tests = ["crates/hydracache-server/tests/management_topology_072.rs#members_are_committed_epoch_fenced_pseudonymous_and_platform_unknown_is_null", "crates/hydracache-server/tests/management_topology_072.rs#partitions_and_trace_are_returned_only_for_the_exact_authority_observation"]
+reviewed_branches = ["committed-versus-discovered", "epoch-sequence-fence", "resource-unknown", "placement-trace-missing"]
+receipt = "target/test-evidence/0.72/coverage-management-topology.json"
+
+[[module]]
+path = "console/app.js"
+work_items = ["W1", "W4", "W5", "W6", "W7", "W8", "W9", "W10", "W11"]
+tests = ["console/tests/console_readonly.spec.js#console_renders_typed_dashboard_and_all_truth_states", "console/tests/console_readonly.spec.js#console_shows_degraded_state_when_required_snapshot_is_unreachable", "console/tests/console_readonly.spec.js#console_is_read_only_and_never_scrapes_prometheus"]
+reviewed_branches = ["live-modeled-stale-partial-unavailable", "route-navigation", "abort-obsolete", "text-only-render", "bounded-table"]
+receipt = "target/test-evidence/0.72/coverage-console-app.json"
+
+[[module]]
+path = "console/history.js"
+work_items = ["W4", "W9"]
+tests = ["console/tests/history.test.js#counter reset is a gap while gauges are never differentiated", "console/tests/history.test.js#ring evicts oldest points by per-series point and byte budgets", "console/tests/history.test.js#accelerated multi-hour soak remains within production budgets"]
+reviewed_branches = ["gauge-versus-counter", "counter-reset", "missing-nonfinite", "epoch-reset", "hidden-offline", "point-byte-eviction"]
+receipt = "target/test-evidence/0.72/coverage-console-history.json"
+
+[[module]]
+path = "console/scripts/package-management-center.mjs"
+work_items = ["W13"]
+tests = ["console/tests/package.test.js#candidate bundle is deterministic and verifies every artifact", "console/tests/package.test.js#MC72-W13-MIXED-ARTIFACT rejects one substituted file"]
+reviewed_branches = ["dirty-tree", "source-sha", "file-digest", "artifact-set-digest", "substitution"]
+receipt = "target/test-evidence/0.72/coverage-console-package.json"
+
+[[module]]
+path = "crates/xtask/src/management_center.rs"
+work_items = ["W14"]
+tests = ["crates/xtask/tests/management_center_072.rs#management_registry_covers_every_route_and_failure_class", "crates/xtask/tests/management_center_072.rs#management_registry_rejects_missing_or_tampered_proof"]
+reviewed_branches = ["missing-duplicate-reference", "unsafe-path", "unknown-canary", "partial-taxonomy", "missing-receipt", "coverage-floor", "coverage-exemption"]
+receipt = "target/test-evidence/0.72/coverage-management-admission.json"
+
+# No coverage exclusions are granted for 0.72. Any future entry must declare
+# path, owner, rationale, expiry and non_ship=true and therefore cannot support
+# a ship claim until removed.

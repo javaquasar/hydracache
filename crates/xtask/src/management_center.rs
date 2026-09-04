@@ -11,6 +11,8 @@ const REGISTRY: &str = "docs/testing/management-center/0.72/claims.toml";
 const TAXONOMY: &str = "docs/testing/management-center/0.72/failure-taxonomy.toml";
 const SOURCE_MAP: &str = "docs/testing/management-center/0.72/source-map.toml";
 const CANARIES: &str = "docs/testing/canaries/0.72-management-center.toml";
+const COVERAGE: &str = "docs/testing/management-center/0.72/coverage.toml";
+const COVERAGE_RATCHET: &str = "docs/testing/coverage-ratchet.toml";
 
 #[derive(Debug, Deserialize, Serialize)]
 #[serde(deny_unknown_fields)]
@@ -88,6 +90,37 @@ struct CanaryRow {
     id: String,
 }
 
+#[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
+struct CoverageInventory {
+    schema_version: u32,
+    release: String,
+    workspace_line_floor_percent: f64,
+    module: Vec<CoverageModule>,
+    #[serde(default)]
+    exclusion: Vec<CoverageExclusion>,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
+struct CoverageModule {
+    path: String,
+    work_items: Vec<String>,
+    tests: Vec<String>,
+    reviewed_branches: Vec<String>,
+    receipt: String,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
+struct CoverageExclusion {
+    path: String,
+    owner: String,
+    rationale: String,
+    expires: String,
+    non_ship: bool,
+}
+
 pub fn run(args: Vec<String>) -> Result<(), Box<dyn Error>> {
     let options = Options::parse(args)?;
     let problems = check(&options.root, options.require_evidence)?;
@@ -107,14 +140,122 @@ pub fn run(args: Vec<String>) -> Result<(), Box<dyn Error>> {
 }
 
 pub fn check(root: &Path, require_evidence: bool) -> Result<Vec<String>, Box<dyn Error>> {
-    check_documents(
+    let mut problems = check_documents(
         root,
         &fs::read_to_string(root.join(REGISTRY))?,
         &fs::read_to_string(root.join(TAXONOMY))?,
         &fs::read_to_string(root.join(CANARIES))?,
         &fs::read_to_string(root.join(SOURCE_MAP))?,
         require_evidence,
-    )
+    )?;
+    problems.extend(check_coverage_document(
+        root,
+        &fs::read_to_string(root.join(COVERAGE))?,
+    )?);
+    Ok(problems)
+}
+
+/// Validate the management diff-coverage inventory and preserve the workspace
+/// floor. Exact numeric coverage is retained as a candidate receipt; this
+/// structural gate prevents a changed module or branch review from vanishing.
+pub fn check_coverage_document(
+    root: &Path,
+    coverage_text: &str,
+) -> Result<Vec<String>, Box<dyn Error>> {
+    let inventory: CoverageInventory = toml::from_str(coverage_text)?;
+    let ratchet: toml::Value = toml::from_str(&fs::read_to_string(root.join(COVERAGE_RATCHET))?)?;
+    let configured_floor = ratchet
+        .get("configured_floor_percent")
+        .and_then(toml::Value::as_float)
+        .unwrap_or_default();
+    let minimum_floor = ratchet
+        .get("minimum_floor_percent")
+        .and_then(toml::Value::as_float)
+        .unwrap_or_default();
+    let mut problems = Vec::new();
+    if inventory.schema_version != 1 || inventory.release != "0.72.0" {
+        problems.push("coverage inventory must be schema 1 for release 0.72.0".to_owned());
+    }
+    if inventory.workspace_line_floor_percent < 88.0
+        || configured_floor < inventory.workspace_line_floor_percent
+        || minimum_floor < 88.0
+    {
+        problems.push(format!(
+            "coverage floor regressed: inventory={}, configured={}, minimum={}",
+            inventory.workspace_line_floor_percent, configured_floor, minimum_floor
+        ));
+    }
+
+    let required_modules = BTreeSet::from([
+        "crates/hydracache-observability/src/management.rs",
+        "crates/hydracache-observability/src/management_health.rs",
+        "crates/hydracache-server/src/management_aggregation.rs",
+        "crates/hydracache-server/src/management_history.rs",
+        "crates/hydracache-server/src/management_http.rs",
+        "crates/hydracache-server/src/management_operations.rs",
+        "crates/hydracache-server/src/management_security.rs",
+        "crates/hydracache-server/src/management_topology.rs",
+        "console/app.js",
+        "console/history.js",
+        "console/scripts/package-management-center.mjs",
+        "crates/xtask/src/management_center.rs",
+    ]);
+    let mut registered = BTreeSet::new();
+    for module in &inventory.module {
+        if !registered.insert(module.path.as_str()) {
+            problems.push(format!("duplicate coverage module {}", module.path));
+        }
+        if !safe_relative(&module.path) || !root.join(&module.path).is_file() {
+            problems.push(format!(
+                "coverage module is missing or unsafe: {}",
+                module.path
+            ));
+        }
+        if module.work_items.is_empty()
+            || module.tests.is_empty()
+            || module.reviewed_branches.is_empty()
+        {
+            problems.push(format!(
+                "coverage module {} lacks work item, test, or reviewed branch class",
+                module.path
+            ));
+        }
+        for test in &module.tests {
+            validate_reference(root, test, true, &module.path, &mut problems);
+        }
+        if !safe_relative(&module.receipt)
+            || !Path::new(&module.receipt).starts_with("target/test-evidence/0.72")
+        {
+            problems.push(format!(
+                "coverage module {} has invalid exact-candidate receipt {}",
+                module.path, module.receipt
+            ));
+        }
+    }
+    for missing in required_modules.difference(&registered) {
+        problems.push(format!(
+            "changed management module lacks coverage row: {missing}"
+        ));
+    }
+    for extra in registered.difference(&required_modules) {
+        problems.push(format!(
+            "coverage row is not a reviewed management module: {extra}"
+        ));
+    }
+    for exclusion in &inventory.exclusion {
+        if !safe_relative(&exclusion.path)
+            || exclusion.owner.trim().is_empty()
+            || exclusion.rationale.trim().is_empty()
+            || exclusion.expires.trim().is_empty()
+            || !exclusion.non_ship
+        {
+            problems.push(format!(
+                "coverage exclusion {} needs safe path, owner, rationale, expiry and non_ship=true",
+                exclusion.path
+            ));
+        }
+    }
+    Ok(problems)
 }
 
 /// Validate explicit registry documents against the repository. This seam lets

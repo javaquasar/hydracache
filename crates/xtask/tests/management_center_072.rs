@@ -54,6 +54,32 @@ fn management_registry_rejects_missing_or_tampered_proof() {
 }
 
 #[test]
+fn management_coverage_inventory_rejects_floor_and_module_omission() {
+    let coverage =
+        fs::read_to_string(root().join("docs/testing/management-center/0.72/coverage.toml"))
+            .unwrap();
+    let lowered = coverage.replacen(
+        "workspace_line_floor_percent = 88.0",
+        "workspace_line_floor_percent = 87.9",
+        1,
+    );
+    let problems = xtask::management_center::check_coverage_document(&root(), &lowered).unwrap();
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("coverage floor regressed")));
+
+    let omitted = coverage.replacen(
+        "path = \"console/history.js\"",
+        "path = \"console/not-a-reviewed-module.js\"",
+        1,
+    );
+    let problems = xtask::management_center::check_coverage_document(&root(), &omitted).unwrap();
+    assert!(problems.iter().any(|problem| {
+        problem.contains("changed management module lacks coverage row: console/history.js")
+    }));
+}
+
+#[test]
 fn canary_w0_missing_baseline_is_rejected() {
     let bounds =
         fs::read_to_string(root().join("docs/testing/management-center/0.72/bounds.toml")).unwrap();
