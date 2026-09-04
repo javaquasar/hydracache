@@ -51,8 +51,11 @@ pub const VERDICT_PATH_0671: &str = "target/test-evidence/0.67.1/perf-budget-ver
 pub const DEFAULT_MINIMUM_MEMBERS: usize = 5;
 pub const DEFAULT_MAXIMUM_MEMBERS: usize = 10;
 pub const DEFAULT_MAXIMUM_AGE_DAYS: i64 = 30;
-const REFERENCE_OVERLOAD_WINDOW_OPERATIONS: u64 = 50_000;
-const REFERENCE_OVERLOAD_WARMUP_OPERATIONS: u64 = 4;
+const REFERENCE_OVERLOAD_BASE_OPERATIONS: u64 = 100_000;
+const REFERENCE_OVERLOAD_RECOVERY_OPERATIONS: u64 = 100_000;
+const REFERENCE_OVERLOAD_WARMUP_OPERATIONS: u64 = 10_000;
+const REFERENCE_OVERLOAD_P999_MIN_SAMPLES: u64 = 10_000;
+const OVERLOAD_FACTOR_DENOMINATOR: u64 = 1_000_000;
 pub const CLEAN_GIT_STATUS_SHA256: &str =
     "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855";
 
@@ -4806,7 +4809,8 @@ fn validate_overload_repeat(
     let overload = repeat
         .get("overload")
         .ok_or_else(|| PerfBudgetError::new("overload raw window is absent"))?;
-    let derived = overload_metrics(overload, offered_rate, REFERENCE_OVERLOAD_WINDOW_OPERATIONS)?;
+    let expected_overload_operations = reference_overload_operations(factor)?;
+    let derived = overload_metrics(overload, offered_rate, expected_overload_operations)?;
     let stored = repeat
         .get("metrics")
         .ok_or_else(|| PerfBudgetError::new("overload metrics are absent"))?;
@@ -4880,6 +4884,14 @@ fn overload_metrics(
         || outcomes != Some(completed)
         || window.pointer("/latency/samples").and_then(Value::as_u64) != Some(completed)
         || window
+            .pointer("/latency/p999_min_samples")
+            .and_then(Value::as_u64)
+            != Some(REFERENCE_OVERLOAD_P999_MIN_SAMPLES)
+        || window
+            .pointer("/latency/p999_reportable")
+            .and_then(Value::as_bool)
+            != Some(true)
+        || window
             .pointer("/latency/overflow_count")
             .and_then(Value::as_u64)
             != Some(0)
@@ -4890,7 +4902,7 @@ fn overload_metrics(
         || backlog > started
     {
         return Err(PerfBudgetError::new(
-            "overload raw window is unbalanced or bound to the wrong open-loop schedule",
+            "overload raw window is unbalanced or bound to the wrong schedule/latency contract",
         ));
     }
     let denominator = started.max(1) as f64;
@@ -4949,7 +4961,7 @@ fn validate_overload_recovery(
     let mut consecutive = 0_u64;
     let mut recovered = None;
     for (index, window) in windows.iter().enumerate() {
-        let metrics = overload_metrics(window, knee_rate, REFERENCE_OVERLOAD_WINDOW_OPERATIONS)?;
+        let metrics = overload_metrics(window, knee_rate, REFERENCE_OVERLOAD_RECOVERY_OPERATIONS)?;
         elapsed = elapsed
             .checked_add(metrics.elapsed_ms)
             .ok_or_else(|| PerfBudgetError::new("overload recovery duration overflow"))?;
@@ -4985,6 +4997,18 @@ fn validate_overload_recovery(
         ));
     }
     Ok(())
+}
+
+fn reference_overload_operations(factor: u32) -> Result<u64, PerfBudgetError> {
+    REFERENCE_OVERLOAD_BASE_OPERATIONS
+        .checked_mul(u64::from(factor))
+        .filter(|operations| operations.is_multiple_of(OVERLOAD_FACTOR_DENOMINATOR))
+        .map(|operations| operations / OVERLOAD_FACTOR_DENOMINATOR)
+        .ok_or_else(|| {
+            PerfBudgetError::new(
+                "reference overload operation count does not scale exactly with its factor",
+            )
+        })
 }
 
 fn json_f64_eq(value: &Value, field: &str, expected: f64) -> bool {
@@ -6929,6 +6953,29 @@ mod semantic_tests {
 
     #[test]
     fn overload_reference_contract_uses_published_surface_and_window_shape() {
+        let scenario = hydracache_loadgen::overload::OverloadScenario::load(
+            &Path::new(env!("CARGO_MANIFEST_DIR"))
+                .join("../..")
+                .join("docs/testing/perf-scenarios/0.67/overload-capacity-v1.toml"),
+        )
+        .unwrap();
+        assert_eq!(
+            scenario.work.burst_operations,
+            REFERENCE_OVERLOAD_BASE_OPERATIONS
+        );
+        assert_eq!(
+            scenario.work.recovery_operations_per_window,
+            REFERENCE_OVERLOAD_RECOVERY_OPERATIONS
+        );
+        assert_eq!(
+            scenario.work.warmup_operations,
+            REFERENCE_OVERLOAD_WARMUP_OPERATIONS
+        );
+        assert_eq!(
+            scenario.work.p999_min_samples,
+            REFERENCE_OVERLOAD_P999_MIN_SAMPLES
+        );
+
         assert_eq!(
             overload_reference_contract("overload-local").unwrap(),
             ("local", 0)
@@ -6942,39 +6989,51 @@ mod semantic_tests {
             ("node-resp", 10_000)
         );
 
+        assert_eq!(reference_overload_operations(1_200_000).unwrap(), 120_000);
+        assert_eq!(reference_overload_operations(1_500_000).unwrap(), 150_000);
+        assert_eq!(reference_overload_operations(2_000_000).unwrap(), 200_000);
+        assert!(reference_overload_operations(1_200_001).is_err());
+
         let window = serde_json::json!({
-            "offered": 50_000,
-            "started": 50_000,
-            "completed": 50_000,
-            "successes": 41_667,
+            "offered": 120_000,
+            "started": 120_000,
+            "completed": 120_000,
+            "successes": 100_000,
             "errors": 0,
             "timeouts": 0,
-            "rejections": 8_333,
+            "rejections": 20_000,
             "backlog_high_water": 48,
             "backlog_drained": true,
             "drain_ms": 0,
-            "elapsed_ms": 2_084,
+            "elapsed_ms": 5_003,
             "offered_rate_per_second": 24_000.0,
             "achieved_rate_per_second": 23_986.02405377018,
             "latency": {
-                "samples": 50_000,
+                "samples": 120_000,
                 "p50_us": 1_057,
                 "p90_us": 1_627,
                 "p99_us": 1_945,
                 "p999_us": 2_044,
-                "p999_min_samples": 1,
+                "p999_min_samples": 10_000,
                 "p999_reportable": true,
                 "max_us": 2_083,
                 "overflow_count": 0
             }
         });
-        let metrics =
-            overload_metrics(&window, 24_000, REFERENCE_OVERLOAD_WINDOW_OPERATIONS).unwrap();
+        let metrics = overload_metrics(
+            &window,
+            24_000,
+            reference_overload_operations(1_200_000).unwrap(),
+        )
+        .unwrap();
         assert!(approx_eq(
             metrics.goodput,
-            23_986.02405377018 * 41_667.0 / 50_000.0
+            23_986.02405377018 * 100_000.0 / 120_000.0
         ));
         assert!(overload_metrics(&window, 24_000, 48).is_err());
+        let mut stale_window = window;
+        stale_window["latency"]["p999_min_samples"] = serde_json::json!(1);
+        assert!(overload_metrics(&stale_window, 24_000, 120_000).is_err());
     }
 
     fn repeat() -> Value {
