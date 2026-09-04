@@ -4,7 +4,7 @@ use std::sync::{Arc, Mutex};
 use axum::body::{to_bytes, Body};
 use axum::http::{HeaderMap, Request, StatusCode};
 use axum::response::IntoResponse;
-use axum::routing::post;
+use axum::routing::{get, post};
 use axum::Router;
 use hydracache::ClusterNodeId;
 use hydracache_client_transport_axum::{
@@ -21,9 +21,9 @@ use hydracache_server::{
     ManagementPeerTarget, ManagementPeerTransport, ManagementSnapshotAggregator,
     ManagementSnapshotRequest, ManagementSnapshotRpcService, MemberRole, MemberStatus,
     Reachability, ReshardPhase, ServerConfig, ServerRole, ServerRuntime, StatusSource,
-    CLUSTER_MANAGEMENT_SNAPSHOT_PATH, MANAGEMENT_CONSENSUS_PROGRESS_PATH,
-    MANAGEMENT_FORMATION_PATH, MANAGEMENT_SNAPSHOT_MAX_REQUEST_BYTES,
-    MANAGEMENT_SNAPSHOT_MAX_RESPONSE_BYTES,
+    CLUSTER_MANAGEMENT_CAPABILITIES_PATH, CLUSTER_MANAGEMENT_SNAPSHOT_PATH,
+    MANAGEMENT_CONSENSUS_PROGRESS_PATH, MANAGEMENT_FORMATION_PATH,
+    MANAGEMENT_SNAPSHOT_MAX_REQUEST_BYTES, MANAGEMENT_SNAPSHOT_MAX_RESPONSE_BYTES,
 };
 use tower::ServiceExt;
 
@@ -38,6 +38,23 @@ impl ClusterStatusProvider for StaticStatusProvider {
 
 #[derive(Debug)]
 struct AggregateTransport;
+
+#[derive(Debug, Default)]
+struct NeverCalledLegacyTransport {
+    calls: AtomicUsize,
+}
+
+#[async_trait::async_trait]
+impl ManagementPeerTransport for NeverCalledLegacyTransport {
+    async fn fetch(
+        &self,
+        _target: &ManagementPeerTarget,
+        _request: ManagementSnapshotRequest,
+    ) -> Result<Vec<u8>, ManagementAggregationIssue> {
+        self.calls.fetch_add(1, Ordering::SeqCst);
+        panic!("a peer without the 0.72 capability must not receive the snapshot RPC")
+    }
+}
 
 #[async_trait::async_trait]
 impl ManagementPeerTransport for AggregateTransport {
@@ -316,11 +333,13 @@ async fn public_routes_publish_cluster_aggregate_as_partial_without_raw_identity
                 node_id: "remote-z-private".to_owned(),
                 generation: 2,
                 endpoint: "remote-z:7000".to_owned(),
+                management_schema_version: Some(MANAGEMENT_API_SCHEMA_VERSION),
             },
             ManagementPeerTarget {
                 node_id: "remote-a-private".to_owned(),
                 generation: 3,
                 endpoint: "remote-a:7000".to_owned(),
+                management_schema_version: Some(MANAGEMENT_API_SCHEMA_VERSION),
             },
         ],
         Arc::new(AggregateTransport),
@@ -362,6 +381,62 @@ async fn public_routes_publish_cluster_aggregate_as_partial_without_raw_identity
         .contains("remote-z-private"));
 }
 
+#[tokio::test]
+async fn pre_072_peer_is_partial_without_sending_an_unsupported_rpc() {
+    let transport = Arc::new(NeverCalledLegacyTransport::default());
+    let aggregator = ManagementSnapshotAggregator::new(transport.clone());
+    let aggregate = aggregator
+        .refresh(
+            member_for_aggregate("local", 1, 7, 11, 11),
+            vec![ManagementPeerTarget {
+                node_id: "legacy-071".to_owned(),
+                generation: 2,
+                endpoint: "legacy.example:7000".to_owned(),
+                management_schema_version: None,
+            }],
+        )
+        .await;
+
+    assert!(!aggregate.complete());
+    assert_eq!(aggregate.members.len(), 1);
+    assert_eq!(aggregate.failures.len(), 1);
+    assert_eq!(
+        aggregate.failures[0].issue,
+        ManagementAggregationIssue::Incompatible
+    );
+    assert_eq!(transport.calls.load(Ordering::SeqCst), 0);
+}
+
+#[tokio::test]
+async fn disabling_management_v1_preserves_legacy_cluster_overview() {
+    let runtime = ServerRuntime::new(ServerConfig {
+        management_api_enabled: false,
+        ..ServerConfig::default()
+    })
+    .unwrap()
+    .start();
+    let router = AdminHttpSurface::new(runtime).routes();
+
+    let management = router
+        .clone()
+        .oneshot(management_get(MANAGEMENT_FORMATION_PATH))
+        .await
+        .unwrap();
+    assert_eq!(management.status(), StatusCode::NOT_FOUND);
+
+    let legacy = router
+        .oneshot(
+            Request::builder()
+                .method("GET")
+                .uri(hydracache_server::ADMIN_CLUSTER_OVERVIEW_PATH)
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(legacy.status(), StatusCode::OK);
+}
+
 fn member_for_aggregate(
     node_id: &str,
     generation: u64,
@@ -394,9 +469,20 @@ async fn spawn_test_server(router: Router) -> (String, tokio::task::JoinHandle<(
     (endpoint, task)
 }
 
+fn with_snapshot_capability(router: Router) -> Router {
+    router.route(
+        CLUSTER_MANAGEMENT_CAPABILITIES_PATH,
+        get(|| async {
+            axum::Json(serde_json::json!({
+                "snapshot_schema_versions": [MANAGEMENT_API_SCHEMA_VERSION]
+            }))
+        }),
+    )
+}
+
 #[tokio::test]
 async fn real_http_transport_rejects_oversize_and_aggregator_rejects_malformed_reply() {
-    let oversize_router = Router::new().route(
+    let oversize_router = with_snapshot_capability(Router::new().route(
         CLUSTER_MANAGEMENT_SNAPSHOT_PATH,
         post(|| async {
             (
@@ -405,7 +491,7 @@ async fn real_http_transport_rejects_oversize_and_aggregator_rejects_malformed_r
             )
                 .into_response()
         }),
-    );
+    ));
     let (oversize_endpoint, oversize_server) = spawn_test_server(oversize_router).await;
     let auth = ClusterRouteAuth::missing_provider().acknowledge_insecure_trust_boundary(true);
     let transport = HttpManagementPeerTransport::new(reqwest::Client::new(), auth.clone(), false);
@@ -413,6 +499,7 @@ async fn real_http_transport_rejects_oversize_and_aggregator_rejects_malformed_r
         node_id: "peer".to_owned(),
         generation: 1,
         endpoint: oversize_endpoint,
+        management_schema_version: Some(MANAGEMENT_API_SCHEMA_VERSION),
     };
     let result = transport
         .fetch(
@@ -426,10 +513,10 @@ async fn real_http_transport_rejects_oversize_and_aggregator_rejects_malformed_r
     assert_eq!(result, Err(ManagementAggregationIssue::Oversize));
     oversize_server.abort();
 
-    let malformed_router = Router::new().route(
+    let malformed_router = with_snapshot_capability(Router::new().route(
         CLUSTER_MANAGEMENT_SNAPSHOT_PATH,
         post(|| async { (StatusCode::OK, "not-json").into_response() }),
-    );
+    ));
     let (malformed_endpoint, malformed_server) = spawn_test_server(malformed_router).await;
     let transport: Arc<dyn ManagementPeerTransport> = Arc::new(HttpManagementPeerTransport::new(
         reqwest::Client::new(),
@@ -444,6 +531,7 @@ async fn real_http_transport_rejects_oversize_and_aggregator_rejects_malformed_r
                 node_id: "peer".to_owned(),
                 generation: 1,
                 endpoint: malformed_endpoint,
+                management_schema_version: Some(MANAGEMENT_API_SCHEMA_VERSION),
             }],
         )
         .await;
@@ -454,6 +542,43 @@ async fn real_http_transport_rejects_oversize_and_aggregator_rejects_malformed_r
         ManagementAggregationIssue::Malformed
     );
     malformed_server.abort();
+}
+
+#[tokio::test]
+async fn real_http_transport_probes_capability_before_posting_to_an_old_member() {
+    let snapshot_posts = Arc::new(AtomicUsize::new(0));
+    let observed_posts = Arc::clone(&snapshot_posts);
+    let legacy_router = Router::new().route(
+        CLUSTER_MANAGEMENT_SNAPSHOT_PATH,
+        post(move || {
+            let observed_posts = Arc::clone(&observed_posts);
+            async move {
+                observed_posts.fetch_add(1, Ordering::SeqCst);
+                StatusCode::NOT_FOUND
+            }
+        }),
+    );
+    let (endpoint, server) = spawn_test_server(legacy_router).await;
+    let auth = ClusterRouteAuth::missing_provider().acknowledge_insecure_trust_boundary(true);
+    let transport = HttpManagementPeerTransport::new(reqwest::Client::new(), auth, false);
+    let result = transport
+        .fetch(
+            &ManagementPeerTarget {
+                node_id: "legacy-071".to_owned(),
+                generation: 1,
+                endpoint,
+                management_schema_version: Some(MANAGEMENT_API_SCHEMA_VERSION),
+            },
+            ManagementSnapshotRequest {
+                schema_version: MANAGEMENT_API_SCHEMA_VERSION,
+                authority_epoch: 7,
+            },
+        )
+        .await;
+
+    assert_eq!(result, Err(ManagementAggregationIssue::Incompatible));
+    assert_eq!(snapshot_posts.load(Ordering::SeqCst), 0);
+    server.abort();
 }
 
 #[tokio::test]
@@ -490,11 +615,13 @@ async fn three_member_http_aggregate_recovers_from_partial_to_complete() {
             node_id: "peer-b".to_owned(),
             generation: 2,
             endpoint: endpoint_b,
+            management_schema_version: Some(MANAGEMENT_API_SCHEMA_VERSION),
         },
         ManagementPeerTarget {
             node_id: "peer-c".to_owned(),
             generation: 3,
             endpoint: endpoint_c,
+            management_schema_version: Some(MANAGEMENT_API_SCHEMA_VERSION),
         },
     ];
 

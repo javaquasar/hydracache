@@ -1305,6 +1305,9 @@ fn committed_management_targets(
                 node_id: member.node_id.to_string(),
                 generation: member.generation.value(),
                 endpoint,
+                management_schema_version: Some(
+                    hydracache_observability::MANAGEMENT_API_SCHEMA_VERSION,
+                ),
             }
         })
         .collect::<Vec<_>>();
@@ -3599,6 +3602,9 @@ mod tests {
                     node_id: peer.node_id.to_string(),
                     generation: 1,
                     endpoint: peer.endpoint.clone(),
+                    management_schema_version: Some(
+                        hydracache_observability::MANAGEMENT_API_SCHEMA_VERSION,
+                    ),
                 })
                 .collect()
         } else {

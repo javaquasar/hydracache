@@ -12,7 +12,7 @@ use async_trait::async_trait;
 use axum::extract::{DefaultBodyLimit, State};
 use axum::http::{HeaderMap, StatusCode};
 use axum::response::{IntoResponse, Response};
-use axum::routing::post;
+use axum::routing::{get, post};
 use axum::{Json, Router};
 use futures_util::stream::{self, StreamExt};
 use hydracache_cluster_transport_axum::{ClusterRoute, ClusterRouteAuth};
@@ -22,6 +22,8 @@ use tokio::sync::Mutex as AsyncMutex;
 
 /// Protected member-to-member snapshot path on the cluster listener.
 pub const CLUSTER_MANAGEMENT_SNAPSHOT_PATH: &str = "/cluster/management/v1/snapshot";
+/// Protected capability probe used before sending the 0.72 snapshot RPC.
+pub const CLUSTER_MANAGEMENT_CAPABILITIES_PATH: &str = "/cluster/management/capabilities";
 /// Maximum request bytes accepted by the protected snapshot route.
 pub const MANAGEMENT_SNAPSHOT_MAX_REQUEST_BYTES: usize = 4 * 1024;
 /// Maximum response bytes retained from one peer.
@@ -129,10 +131,43 @@ impl ManagementSnapshotRpcService {
 
     pub fn routes(&self) -> Router {
         Router::new()
+            .route(
+                CLUSTER_MANAGEMENT_CAPABILITIES_PATH,
+                get(snapshot_capabilities_rpc),
+            )
             .route(CLUSTER_MANAGEMENT_SNAPSHOT_PATH, post(snapshot_rpc))
             .layer(DefaultBodyLimit::max(MANAGEMENT_SNAPSHOT_MAX_REQUEST_BYTES))
             .with_state(self.state.clone())
     }
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+struct ManagementSnapshotCapabilities {
+    snapshot_schema_versions: Vec<u16>,
+}
+
+async fn snapshot_capabilities_rpc(
+    State(state): State<SnapshotRpcState>,
+    headers: HeaderMap,
+) -> Response {
+    if let Err(error) = state
+        .auth
+        .verify(ClusterRoute::ManagementSnapshot, &headers)
+    {
+        return (
+            error.status,
+            Json(SnapshotRpcError {
+                schema_version: MANAGEMENT_API_SCHEMA_VERSION,
+                code: error.code,
+            }),
+        )
+            .into_response();
+    }
+    Json(ManagementSnapshotCapabilities {
+        snapshot_schema_versions: vec![MANAGEMENT_API_SCHEMA_VERSION],
+    })
+    .into_response()
 }
 
 #[derive(Debug, Serialize)]
@@ -197,6 +232,9 @@ pub struct ManagementPeerTarget {
     pub node_id: String,
     pub generation: u64,
     pub endpoint: String,
+    /// Snapshot schema advertised by membership capability discovery.
+    /// `None` represents a pre-0.72 member and is never sent the new RPC.
+    pub management_schema_version: Option<u16>,
 }
 
 /// Stable reason why a committed member did not contribute to an aggregate.
@@ -289,6 +327,40 @@ impl ManagementPeerTransport for HttpManagementPeerTransport {
         self.auth
             .apply_outbound_headers(&mut headers)
             .map_err(|_| ManagementAggregationIssue::Transport)?;
+        let capability_response = self
+            .client
+            .get(format!(
+                "{}://{}{}",
+                self.scheme, target.endpoint, CLUSTER_MANAGEMENT_CAPABILITIES_PATH
+            ))
+            .headers(headers.clone())
+            .send()
+            .await
+            .map_err(|_| ManagementAggregationIssue::Transport)?;
+        if !capability_response.status().is_success() {
+            return Err(match capability_response.status() {
+                StatusCode::NOT_FOUND | StatusCode::NOT_ACCEPTABLE => {
+                    ManagementAggregationIssue::Incompatible
+                }
+                _ => ManagementAggregationIssue::Transport,
+            });
+        }
+        let capability_bytes = capability_response
+            .bytes()
+            .await
+            .map_err(|_| ManagementAggregationIssue::Transport)?;
+        if capability_bytes.len() > MANAGEMENT_SNAPSHOT_MAX_REQUEST_BYTES {
+            return Err(ManagementAggregationIssue::Oversize);
+        }
+        let capabilities: ManagementSnapshotCapabilities =
+            serde_json::from_slice(&capability_bytes)
+                .map_err(|_| ManagementAggregationIssue::Malformed)?;
+        if !capabilities
+            .snapshot_schema_versions
+            .contains(&request.schema_version)
+        {
+            return Err(ManagementAggregationIssue::Incompatible);
+        }
         let mut response = self
             .client
             .post(format!(
@@ -331,9 +403,11 @@ impl ManagementPeerTransport for HttpManagementPeerTransport {
 #[derive(Debug, Clone)]
 struct CachedAggregate {
     inserted: Instant,
-    roster_key: Vec<(String, u64)>,
+    roster_key: ManagementRosterKey,
     value: Arc<AggregatedManagementSnapshot>,
 }
+
+type ManagementRosterKey = Vec<(String, u64, Option<u16>)>;
 
 #[derive(Debug, Default)]
 struct AggregatorState {
@@ -454,15 +528,18 @@ impl ManagementSnapshotAggregator {
         let mut futures = stream::iter(targets.into_iter().map(move |target| {
             let transport = Arc::clone(&transport);
             async move {
-                let result = if target.endpoint.trim().is_empty() {
-                    Err(ManagementAggregationIssue::MissingEndpoint)
-                } else {
-                    tokio::time::timeout(peer_timeout, transport.fetch(&target, request))
-                        .await
-                        .map_err(|_| ManagementAggregationIssue::Timeout)
-                        .and_then(|result| result)
-                        .and_then(|bytes| decode_peer(&target, epoch, &bytes))
-                };
+                let result =
+                    if target.management_schema_version != Some(MANAGEMENT_API_SCHEMA_VERSION) {
+                        Err(ManagementAggregationIssue::Incompatible)
+                    } else if target.endpoint.trim().is_empty() {
+                        Err(ManagementAggregationIssue::MissingEndpoint)
+                    } else {
+                        tokio::time::timeout(peer_timeout, transport.fetch(&target, request))
+                            .await
+                            .map_err(|_| ManagementAggregationIssue::Timeout)
+                            .and_then(|result| result)
+                            .and_then(|bytes| decode_peer(&target, epoch, &bytes))
+                    };
                 (target, result)
             }
         }))
@@ -547,37 +624,39 @@ impl ManagementSnapshotAggregator {
 fn normalize_roster(
     local: &ManagementMemberSnapshot,
     targets: Vec<ManagementPeerTarget>,
-) -> (Vec<ManagementPeerTarget>, Vec<(String, u64)>, bool) {
-    let mut unique = BTreeMap::new();
+) -> (Vec<ManagementPeerTarget>, ManagementRosterKey, bool) {
+    let mut unique = BTreeMap::<(String, u64), ManagementPeerTarget>::new();
     for target in targets {
         if target.node_id == local.node_id && target.generation == local.generation {
             continue;
         }
         unique
             .entry((target.node_id.clone(), target.generation))
-            .and_modify(|endpoint: &mut String| {
-                if target.endpoint < *endpoint {
-                    *endpoint = target.endpoint.clone();
+            .and_modify(|current| {
+                if target.endpoint < current.endpoint {
+                    current.endpoint = target.endpoint.clone();
+                }
+                if current.management_schema_version != target.management_schema_version {
+                    current.management_schema_version = None;
                 }
             })
-            .or_insert(target.endpoint);
+            .or_insert(target);
     }
-    let mut targets = unique
-        .into_iter()
-        .map(|((node_id, generation), endpoint)| ManagementPeerTarget {
-            node_id,
-            generation,
-            endpoint,
-        })
-        .collect::<Vec<_>>();
+    let mut targets = unique.into_values().collect::<Vec<_>>();
     let truncated = targets.len() > MANAGEMENT_SNAPSHOT_MAX_PEERS.saturating_sub(1);
     targets.truncate(MANAGEMENT_SNAPSHOT_MAX_PEERS.saturating_sub(1));
-    let mut roster_key = vec![(local.node_id.clone(), local.generation)];
-    roster_key.extend(
-        targets
-            .iter()
-            .map(|target| (target.node_id.clone(), target.generation)),
-    );
+    let mut roster_key = vec![(
+        local.node_id.clone(),
+        local.generation,
+        Some(MANAGEMENT_API_SCHEMA_VERSION),
+    )];
+    roster_key.extend(targets.iter().map(|target| {
+        (
+            target.node_id.clone(),
+            target.generation,
+            target.management_schema_version,
+        )
+    }));
     roster_key.sort();
     (targets, roster_key, truncated)
 }
@@ -774,6 +853,7 @@ mod tests {
             node_id: node.to_owned(),
             generation,
             endpoint: endpoint.to_owned(),
+            management_schema_version: Some(MANAGEMENT_API_SCHEMA_VERSION),
         }
     }
 
@@ -831,7 +911,13 @@ mod tests {
         );
         assert!(!truncated);
         assert_eq!(targets, vec![target("b", 2, "a:2")]);
-        assert_eq!(key, vec![("a".to_owned(), 1), ("b".to_owned(), 2)]);
+        assert_eq!(
+            key,
+            vec![
+                ("a".to_owned(), 1, Some(MANAGEMENT_API_SCHEMA_VERSION)),
+                ("b".to_owned(), 2, Some(MANAGEMENT_API_SCHEMA_VERSION)),
+            ]
+        );
     }
 
     #[test]

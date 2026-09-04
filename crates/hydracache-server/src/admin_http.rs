@@ -131,21 +131,14 @@ impl AdminHttpSurface {
 
     /// Return the axum router for `/healthz`, `/readyz`, and `/admin/*`.
     pub fn routes(&self) -> Router {
-        let actuator_registry = self
-            .runtime
-            .lock()
-            .expect("server runtime mutex")
-            .metrics_registry();
-        let routes = Router::new()
+        let runtime = self.runtime.lock().expect("server runtime mutex");
+        let actuator_registry = runtime.metrics_registry();
+        let management_api_enabled = runtime.config().management_api_enabled;
+        drop(runtime);
+        let mut routes = Router::new()
             .route(ADMIN_HEALTHZ_PATH, get(healthz))
             .route(ADMIN_READYZ_PATH, get(readyz))
             .route(ADMIN_METRICS_PATH, get(metrics))
-            .route(ADMIN_CONSOLE_PATH, get(console_index))
-            .route("/console/", get(console_index))
-            .route("/console/index.html", get(console_index))
-            .route("/console/app.js", get(console_app))
-            .route("/console/history.js", get(console_history))
-            .route("/console/style.css", get(console_style))
             .route(ADMIN_CLUSTER_OVERVIEW_PATH, get(cluster_overview))
             .route(ADMIN_STATUS_PATH, get(admin_status))
             .route(ADMIN_DRAIN_PATH, get(admin_drain).post(admin_drain))
@@ -161,15 +154,24 @@ impl AdminHttpSurface {
             .nest(
                 ADMIN_ACTUATOR_PATH,
                 HydraCacheActuator::routes_for(actuator_registry),
-            )
-            .merge(crate::management_http::routes(
-                Arc::clone(&self.runtime),
-                Arc::clone(&self.management_cursors),
-                self.management_aggregator.clone(),
-                self.hc2_metrics.clone(),
-                self.management_history.clone(),
-                self.management_read_limiter.clone(),
-            ));
+            );
+        if management_api_enabled {
+            routes = routes
+                .route(ADMIN_CONSOLE_PATH, get(console_index))
+                .route("/console/", get(console_index))
+                .route("/console/index.html", get(console_index))
+                .route("/console/app.js", get(console_app))
+                .route("/console/history.js", get(console_history))
+                .route("/console/style.css", get(console_style))
+                .merge(crate::management_http::routes(
+                    Arc::clone(&self.runtime),
+                    Arc::clone(&self.management_cursors),
+                    self.management_aggregator.clone(),
+                    self.hc2_metrics.clone(),
+                    self.management_history.clone(),
+                    self.management_read_limiter.clone(),
+                ));
+        }
         if let Some(service) = self.hc2_metrics.clone() {
             routes.layer(Extension(service))
         } else {

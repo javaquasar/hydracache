@@ -48,11 +48,11 @@ pub use management_aggregation::{
     ManagementAggregationIssue, ManagementConsensusObservation, ManagementMemberSnapshot,
     ManagementPeerFailure, ManagementPeerTarget, ManagementPeerTransport,
     ManagementSnapshotAggregator, ManagementSnapshotRequest, ManagementSnapshotRpcService,
-    RetainedLocalManagementSnapshot, CLUSTER_MANAGEMENT_SNAPSHOT_PATH,
-    MANAGEMENT_SNAPSHOT_CACHE_TTL, MANAGEMENT_SNAPSHOT_MAX_CONCURRENCY,
-    MANAGEMENT_SNAPSHOT_MAX_PEERS, MANAGEMENT_SNAPSHOT_MAX_REQUEST_BYTES,
-    MANAGEMENT_SNAPSHOT_MAX_RESPONSE_BYTES, MANAGEMENT_SNAPSHOT_PEER_TIMEOUT,
-    MANAGEMENT_SNAPSHOT_REFRESH_TIMEOUT,
+    RetainedLocalManagementSnapshot, CLUSTER_MANAGEMENT_CAPABILITIES_PATH,
+    CLUSTER_MANAGEMENT_SNAPSHOT_PATH, MANAGEMENT_SNAPSHOT_CACHE_TTL,
+    MANAGEMENT_SNAPSHOT_MAX_CONCURRENCY, MANAGEMENT_SNAPSHOT_MAX_PEERS,
+    MANAGEMENT_SNAPSHOT_MAX_REQUEST_BYTES, MANAGEMENT_SNAPSHOT_MAX_RESPONSE_BYTES,
+    MANAGEMENT_SNAPSHOT_PEER_TIMEOUT, MANAGEMENT_SNAPSHOT_REFRESH_TIMEOUT,
 };
 pub use management_history::{
     parse_prometheus_response, validate_resolved_addresses, ManagementHistoryData,

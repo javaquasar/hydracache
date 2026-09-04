@@ -253,6 +253,12 @@ pub struct ServerConfig {
     pub backup: BackupConfig,
     /// Optional guarded Management Center history adapter.
     pub management_history: ManagementHistoryConfig,
+    /// Whether the read-only Management Center v1 API and embedded console are mounted.
+    ///
+    /// The legacy cluster overview remains available when this is disabled so an
+    /// operator can roll back the 0.72 surface without losing the established
+    /// administrative endpoint.
+    pub management_api_enabled: bool,
     /// External client API policy.
     pub client_api: ClientApiConfig,
     /// Optional production HC/2 gRPC client plane.
@@ -289,6 +295,7 @@ impl Default for ServerConfig {
             cluster_auth: ClusterAuthConfig::default(),
             backup: BackupConfig::default(),
             management_history: ManagementHistoryConfig::default(),
+            management_api_enabled: true,
             client_api: ClientApiConfig::default(),
             hc2_client_plane: Hc2ClientPlaneConfig::default(),
             admin_api: AdminApiConfig::default(),
@@ -410,6 +417,9 @@ impl ServerConfig {
         if env::var("HYDRACACHE_MANAGEMENT_HISTORY_ALLOW_PRIVATE_NETWORKS").as_deref() == Ok("true")
         {
             config.management_history.allow_private_networks = true;
+        }
+        if let Ok(enabled) = env::var("HYDRACACHE_MANAGEMENT_API_ENABLED") {
+            config.management_api_enabled = enabled != "false";
         }
         if env::var("HYDRACACHE_CLIENT_API_ENABLED").as_deref() == Ok("true") {
             config.client_api.enabled = true;
