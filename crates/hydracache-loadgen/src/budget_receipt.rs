@@ -36,6 +36,23 @@ pub const MACRO_RAW_DIR_RELATIVE: &str = "target/test-evidence/0.67/w7-raw";
 pub const MACRO_PUBLICATION_RECEIPT_RELATIVE: &str =
     "target/test-evidence/0.67/w7-raw/macro-publication-receipt.json";
 
+/// Maximum repeat spread accepted while acquiring one reference bootstrap
+/// sample. These are the committed scenario limits, additionally capped by
+/// the `reference-v1` profile's 30% report-noise boundary. The independently
+/// reviewed, activated budget remains stricter (5%) for future candidates.
+pub fn reference_macro_report_spread_limit(report_id: &str) -> Option<f64> {
+    match report_id {
+        "control-plane-3-reference-v1"
+        | "control-plane-5-reference-v1"
+        | "control-plane-7-reference-v1"
+        | "grid-model-reference-v1" => Some(0.15),
+        "brownout-control-plane-reference-v1" | "brownout-resp-endpoint-reference-v1" => Some(0.0),
+        "brownout-grid-model-reference-v1" => Some(0.30),
+        "overload-local-v1" | "overload-client-surface-v1" | "overload-node-resp-v1" => Some(0.25),
+        _ => None,
+    }
+}
+
 /// Exact W4-W6 raw reports that must be published as one fail-closed batch.
 pub const MACRO_REPORT_PATHS: [(&str, &str); 10] = [
     (
@@ -575,6 +592,9 @@ pub fn build_control_plane_macro_envelope(
         .map(|point| point.sample.robust_spread_ratio)
         .fold(0.0_f64, f64::max);
     let report_id = format!("control-plane-{}-reference-v1", report.node_count);
+    let spread_limit = reference_macro_report_spread_limit(&report_id).ok_or_else(|| {
+        MacroReceiptError::Inputs(format!("unknown reference macro report {report_id}"))
+    })?;
     let inputs = MacroReceiptInputs {
         report_id,
         claim_scope: "w4a-real-daemon-control-plane".to_owned(),
@@ -590,7 +610,7 @@ pub fn build_control_plane_macro_envelope(
                 &scenario.reference,
             ),
         )?,
-        stable: spread <= 0.05,
+        stable: spread <= spread_limit,
         maximum_spread_ratio: spread,
         metrics: vec![ReportMetric {
             id: "membership_add_drain_commit_and_convergence_latency.max_milliseconds".to_owned(),
@@ -649,8 +669,12 @@ pub fn build_grid_model_macro_envelope(
         .max()
         .unwrap_or(0) as f64
         / 1_000_000.0;
+    let report_id = "grid-model-reference-v1";
+    let spread_limit = reference_macro_report_spread_limit(report_id).ok_or_else(|| {
+        MacroReceiptError::Inputs(format!("unknown reference macro report {report_id}"))
+    })?;
     let inputs = MacroReceiptInputs {
-        report_id: "grid-model-reference-v1".to_owned(),
+        report_id: report_id.to_owned(),
         claim_scope: "w4b-in-process-library-model".to_owned(),
         run_mode: EvidenceRunMode::ReferenceEvidence,
         scenario_digest: scenario.contract_sha256(),
@@ -660,7 +684,7 @@ pub fn build_grid_model_macro_envelope(
             "w4b-methodology-v1",
             &(&scenario.identity, &scenario.reference),
         )?,
-        stable: spread <= 0.05,
+        stable: spread <= spread_limit,
         maximum_spread_ratio: spread,
         metrics: vec![ReportMetric {
             id: "consistency_ack_requirement_cost_by_level_and_replica_shape.max_nanoseconds_per_operation"
@@ -823,8 +847,12 @@ pub fn build_grid_model_brownout_macro_envelope(
         .max()
         .unwrap_or(0) as f64
         / 1_000_000.0;
+    let report_id = "brownout-grid-model-reference-v1";
+    let spread_limit = reference_macro_report_spread_limit(report_id).ok_or_else(|| {
+        MacroReceiptError::Inputs(format!("unknown reference macro report {report_id}"))
+    })?;
     let inputs = MacroReceiptInputs {
-        report_id: "brownout-grid-model-reference-v1".to_owned(),
+        report_id: report_id.to_owned(),
         claim_scope: "w5c-in-process-model-replica-fault".to_owned(),
         run_mode: EvidenceRunMode::ReferenceEvidence,
         scenario_digest: scenario.contract_sha256(),
@@ -834,7 +862,7 @@ pub fn build_grid_model_brownout_macro_envelope(
             "w5c-methodology-v1",
             &(&scenario.identity, &scenario.reference),
         )?,
-        stable: spread <= 0.05,
+        stable: spread <= spread_limit,
         maximum_spread_ratio: spread,
         metrics: vec![
             ReportMetric {
@@ -879,6 +907,9 @@ pub fn build_overload_macro_envelope(
             report.report_id
         )));
     }
+    let spread_limit = reference_macro_report_spread_limit(report_id).ok_or_else(|| {
+        MacroReceiptError::Inputs(format!("unknown reference macro report {report_id}"))
+    })?;
     let minimum = report
         .points
         .iter()
@@ -906,7 +937,7 @@ pub fn build_overload_macro_envelope(
             "w6-methodology-v1",
             &(&scenario.identity, &scenario.reference, surface_name),
         )?,
-        stable: spread <= 0.05,
+        stable: spread <= spread_limit,
         maximum_spread_ratio: spread,
         metrics: vec![ReportMetric {
             id: "overload_goodput_curve_1_2x_1_5x_2x_knee_per_eligible_surface.minimum_goodput_per_second"
@@ -1315,6 +1346,36 @@ mod tests {
     use std::time::{SystemTime, UNIX_EPOCH};
 
     use super::*;
+
+    #[test]
+    fn bootstrap_macro_spread_limits_match_the_committed_scenarios() {
+        for report_id in [
+            "control-plane-3-reference-v1",
+            "control-plane-5-reference-v1",
+            "control-plane-7-reference-v1",
+            "grid-model-reference-v1",
+        ] {
+            assert_eq!(reference_macro_report_spread_limit(report_id), Some(0.15));
+        }
+        for report_id in [
+            "brownout-control-plane-reference-v1",
+            "brownout-resp-endpoint-reference-v1",
+        ] {
+            assert_eq!(reference_macro_report_spread_limit(report_id), Some(0.0));
+        }
+        assert_eq!(
+            reference_macro_report_spread_limit("brownout-grid-model-reference-v1"),
+            Some(0.30)
+        );
+        for report_id in [
+            "overload-local-v1",
+            "overload-client-surface-v1",
+            "overload-node-resp-v1",
+        ] {
+            assert_eq!(reference_macro_report_spread_limit(report_id), Some(0.25));
+        }
+        assert_eq!(reference_macro_report_spread_limit("unknown"), None);
+    }
 
     fn temporary_repo(label: &str) -> PathBuf {
         let nonce = SystemTime::now()

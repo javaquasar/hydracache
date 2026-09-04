@@ -422,7 +422,7 @@ fn member_from_sample(
                 && report.prebuild_contract_digest == sample.receipt.prebuild_contract_digest;
             (!identity_matches
                 || !report.stable
-                || report.maximum_spread_ratio > REPORT_SPREAD_CEILING)
+                || report.maximum_spread_ratio > profile.noise.maximum_report_spread_ratio)
                 .then(|| {
                     format!(
                         "{}(identity_matches={},stable={},spread={})",
@@ -433,10 +433,10 @@ fn member_from_sample(
         .collect::<Vec<_>>();
     if !invalid_reports.is_empty() {
         return Err(format!(
-            "sample {} has invalid reports [{}] (spread ceiling={})",
+            "sample {} has invalid reports [{}] (bootstrap profile spread ceiling={})",
             sample.receipt.sample_index,
             invalid_reports.join(", "),
-            REPORT_SPREAD_CEILING,
+            profile.noise.maximum_report_spread_ratio,
         )
         .into());
     }

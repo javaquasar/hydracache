@@ -419,6 +419,56 @@ fn reference_proposal_rejects_a_broken_five_sample_chain() {
 }
 
 #[test]
+fn bootstrap_accepts_scenario_eligible_spread_but_activation_stays_at_five_percent() {
+    let (profile, budget, sample_set, mut samples) = fixture();
+    let overload = samples[0]
+        .reports
+        .iter_mut()
+        .find(|report| report.id == "overload-node-resp")
+        .expect("overload report");
+    overload.maximum_spread_ratio = 0.25;
+    let (_, activated_budget, _, _) = derive_contracts(
+        profile.clone(),
+        budget.clone(),
+        &sample_set,
+        &samples,
+        ProposalMetadata {
+            sample_set_sha256: &sha("sample-set"),
+            producer: "reference-automation",
+            proposed_at: "2026-08-06T12:00:00Z",
+            rationale: "bootstrap exact five-run reference contract",
+            previous_baseline_sha256: &sha("previous-baseline"),
+        },
+    )
+    .expect("scenario-eligible bootstrap spread");
+    assert!(activated_budget
+        .budgets
+        .iter()
+        .all(|rule| rule.maximum_spread_ratio == Some(0.05)));
+
+    let overload = samples[0]
+        .reports
+        .iter_mut()
+        .find(|report| report.id == "overload-node-resp")
+        .expect("overload report");
+    overload.maximum_spread_ratio = 0.31;
+    assert!(derive_contracts(
+        profile,
+        budget,
+        &sample_set,
+        &samples,
+        ProposalMetadata {
+            sample_set_sha256: &sha("sample-set"),
+            producer: "reference-automation",
+            proposed_at: "2026-08-06T12:00:00Z",
+            rationale: "bootstrap exact five-run reference contract",
+            previous_baseline_sha256: &sha("previous-baseline"),
+        },
+    )
+    .is_err());
+}
+
+#[test]
 fn independent_review_binds_exact_proposal_and_rejects_same_identity() {
     let mut proposal = ProposalReceipt {
         schema_version: 1,
