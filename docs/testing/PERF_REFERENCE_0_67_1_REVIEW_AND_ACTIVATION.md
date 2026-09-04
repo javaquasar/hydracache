@@ -83,8 +83,9 @@ The proposal is written with create-new semantics under
 - a sealed proposal receipt.
 
 All five eligible samples participate. Medians are derived from the five-member set; the tool does
-not choose the fastest run. The activated per-report spread ceiling is `0.05`; the existing
-per-scenario `0.15` eligibility gate remains unchanged and is evaluated earlier.
+not choose the fastest run. The activated per-report spread ceiling is `0.05`. Acquisition first
+uses each committed scenario's own repeat-stability limit, bounded by the `reference-v1` profile's
+`0.30` maximum report spread; the stricter activated ceiling is evaluated only for later candidates.
 
 ## 3. Record an independent decision
 

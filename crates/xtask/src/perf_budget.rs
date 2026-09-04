@@ -31,8 +31,8 @@ use hydracache_loadgen::targets::control_plane::{
 use hydracache_loadgen::targets::grid_model::GridModelReport;
 
 pub use hydracache_loadgen::budget_receipt::{
-    BinaryDigest, MacroBatchPublicationReceipt, MacroReportReceipt, ReportMetric,
-    MACRO_PUBLICATION_RECEIPT_RELATIVE, MACRO_REPORT_PATHS,
+    reference_macro_report_spread_limit, BinaryDigest, MacroBatchPublicationReceipt,
+    MacroReportReceipt, ReportMetric, MACRO_PUBLICATION_RECEIPT_RELATIVE, MACRO_REPORT_PATHS,
 };
 pub use hydracache_loadgen::profile::{
     PerformanceProfile as RunnerContract, RunnerFingerprint as ObservedRunner,
@@ -2184,9 +2184,11 @@ pub fn load_candidate_reports(
 /// cannot be discovered only after five long-running samples have completed.
 pub fn validate_bootstrap_candidate_reports(root: &Path) -> Result<Vec<String>, PerfBudgetError> {
     let budget_path = root.join(BUDGET_ROOT).join("reference-v1.toml");
+    let profile_path = root.join(PROFILE_ROOT).join("reference-v1.toml");
     let budget = parse_toml(&budget_path, &read_bounded(&budget_path)?)?;
+    let profile: ProfileContract = parse_toml(&profile_path, &read_bounded(&profile_path)?)?;
     let reports = load_archived_candidate_reports(root, &budget)?;
-    require_stable_candidate_reports(&reports)?;
+    require_stable_candidate_reports(&reports, profile.noise.maximum_report_spread_ratio)?;
 
     let marker_path = root.join(MACRO_PUBLICATION_RECEIPT_RELATIVE);
     let marker: MacroBatchPublicationReceipt = serde_json::from_slice(&read_bounded(&marker_path)?)
@@ -2208,10 +2210,15 @@ pub fn validate_bootstrap_candidate_reports(root: &Path) -> Result<Vec<String>, 
     Ok(support_files)
 }
 
-fn require_stable_candidate_reports(reports: &[CandidateReport]) -> Result<(), PerfBudgetError> {
+fn require_stable_candidate_reports(
+    reports: &[CandidateReport],
+    maximum_report_spread_ratio: f64,
+) -> Result<(), PerfBudgetError> {
     let mut unstable = reports
         .iter()
-        .filter(|report| !report.stable)
+        .filter(|report| {
+            !report.stable || report.maximum_spread_ratio > maximum_report_spread_ratio
+        })
         .map(|report| {
             format!(
                 "{} (maximum_spread_ratio={})",
@@ -2224,8 +2231,9 @@ fn require_stable_candidate_reports(reports: &[CandidateReport]) -> Result<(), P
         Ok(())
     } else {
         Err(PerfBudgetError::new(format!(
-            "bootstrap candidate contains unstable reviewed reports: {}",
-            unstable.join(", ")
+            "bootstrap candidate contains unstable or profile-ineligible reviewed reports (maximum_report_spread_ratio={}): {}",
+            maximum_report_spread_ratio,
+            unstable.join(", "),
         )))
     }
 }
@@ -2266,8 +2274,6 @@ fn load_candidate_reports_with_validation(
                 let reviewed_spread =
                     reviewed_perf_report_spread(expected, &bytes, &expected_metrics)?;
                 report.maximum_spread_ratio = reviewed_spread;
-                report.stable = report.stable
-                    && reviewed_spread <= enforcement_spread_limit(budget.enforcement);
             }
             report
                 .metrics
@@ -2744,7 +2750,13 @@ fn normalize_macro_receipt(
         source_file_validation,
     )?;
     let metrics = metric_map(receipt.metrics)?;
-    let spread_limit = enforcement_spread_limit(enforcement);
+    let spread_limit =
+        reference_macro_report_spread_limit(&receipt.report_id).ok_or_else(|| {
+            PerfBudgetError::new(format!(
+                "{} has no committed bootstrap spread contract",
+                expected.id
+            ))
+        })?;
     let derived_stable = derived_spread <= spread_limit;
     if metrics != derived_metrics
         || !approx_eq(receipt.maximum_spread_ratio, derived_spread)
@@ -2781,13 +2793,6 @@ fn normalize_macro_receipt(
         maximum_spread_ratio: receipt.maximum_spread_ratio,
         metrics,
     })
-}
-
-fn enforcement_spread_limit(enforcement: Enforcement) -> f64 {
-    match enforcement {
-        Enforcement::Ship => 0.05,
-        Enforcement::NonEnforcingTripwire => 0.30,
-    }
 }
 
 fn macro_report_metrics(
@@ -6851,12 +6856,17 @@ mod semantic_tests {
     #[test]
     fn bootstrap_rejects_unstable_reviewed_report_before_sealing_sample() {
         let stable = candidate_report("stable", true, 0.01);
-        assert!(require_stable_candidate_reports(std::slice::from_ref(&stable)).is_ok());
+        assert!(require_stable_candidate_reports(std::slice::from_ref(&stable), 0.30).is_ok());
 
         let unstable = candidate_report("overload-node-resp", false, 0.0568);
-        let error = require_stable_candidate_reports(&[stable, unstable]).unwrap_err();
+        let error = require_stable_candidate_reports(&[stable, unstable], 0.30).unwrap_err();
         assert!(error.to_string().contains("overload-node-resp"));
         assert!(error.to_string().contains("0.0568"));
+
+        let profile_ineligible = candidate_report("client-surface", true, 0.31);
+        let error = require_stable_candidate_reports(&[profile_ineligible], 0.30).unwrap_err();
+        assert!(error.to_string().contains("profile-ineligible"));
+        assert!(error.to_string().contains("0.31"));
     }
 
     #[test]
