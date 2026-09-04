@@ -20,7 +20,7 @@
 > - **Unblocks:** an operator-grade, evidence-backed management experience; supportable production
 >   diagnostics; and the final 1.0 operations/distribution rehearsal without adding a write-capable
 >   control plane.
-> - **Status:** implementation in progress (W0-W13 implemented; W14 next; exact 0.71/0.72
+> - **Status:** planned (W0-W13 implemented; W14 next; exact 0.71/0.72
 >   mixed-binary ship evidence remains blocked until a shipped 0.71 artifact exists).
 >
 > Roadmap: [`INDEX.md`](INDEX.md) - rules: [`../RULES.md`](../RULES.md) -
