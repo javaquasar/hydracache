@@ -3,16 +3,84 @@ use hydracache_observability::{
     ClusterFormationSnapshot, ConsensusProgressSnapshot, DiscoveryState, DurableRecoveryStatus,
     FormationReasonCode, ManagementCapabilities, ManagementCapability,
     ManagementCapabilityAvailability, ManagementCapabilityId, ManagementCompleteness,
-    ManagementConsensusRole, ManagementContractError, ManagementEnvelope,
-    ManagementObservationSource, ManagementWarning, ManagementWarningCode, OpaqueCursor,
-    OpaqueNodeIdentity, PlacementCandidateDecision, PlacementCandidatePage, PlacementDecisionTrace,
-    PlacementOutcome, PlacementReasonCode, RecoveryArtifactKind, RecoveryOutcome, RecoveryPhase,
-    RecoveryReasonCode, RecoveryScope, RecoveryWatermark, RepairState, ServingState,
-    TransportState, MANAGEMENT_API_SCHEMA_VERSION, MAX_MANAGEMENT_NODE_ID_BYTES,
-    MAX_MANAGEMENT_PAGE_ITEMS, MAX_MANAGEMENT_WARNINGS, MAX_PLACEMENT_CANDIDATES,
-    MAX_PLACEMENT_LABELS, MAX_PLACEMENT_LABEL_BYTES, MAX_PLACEMENT_REASONS_PER_CANDIDATE,
-    MAX_PLACEMENT_SELECTED,
+    ManagementConsensusRole, ManagementContractError, ManagementEnvelope, ManagementMemberDetail,
+    ManagementObservationSource, ManagementPartitionSnapshot, ManagementWarning,
+    ManagementWarningCode, MemberFormationTransition, MemberReachabilityReason, OpaqueCursor,
+    OpaqueNodeIdentity, PartitionMemberCount, PlacementCandidateDecision, PlacementCandidatePage,
+    PlacementDecisionTrace, PlacementOutcome, PlacementReasonCode, RecoveryArtifactKind,
+    RecoveryOutcome, RecoveryPhase, RecoveryReasonCode, RecoveryScope, RecoveryWatermark,
+    RepairState, ServingState, TransportState, MANAGEMENT_API_SCHEMA_VERSION,
+    MAX_MANAGEMENT_NODE_ID_BYTES, MAX_MANAGEMENT_PAGE_ITEMS, MAX_MANAGEMENT_WARNINGS,
+    MAX_PLACEMENT_CANDIDATES, MAX_PLACEMENT_LABELS, MAX_PLACEMENT_LABEL_BYTES,
+    MAX_PLACEMENT_REASONS_PER_CANDIDATE, MAX_PLACEMENT_SELECTED,
 };
+
+fn member_detail() -> ManagementMemberDetail {
+    ManagementMemberDetail {
+        schema_version: MANAGEMENT_API_SCHEMA_VERSION,
+        node: OpaqueNodeIdentity::new("member-a"),
+        generation: 7,
+        authority_epoch: Some(13),
+        observation_seq: 21,
+        consensus_role: ManagementConsensusRole::Voter,
+        product_version: Some("0.72.0".to_owned()),
+        protocol_compatible: Some(true),
+        reachability: TransportState::Authenticated,
+        reachability_reason: MemberReachabilityReason::Healthy,
+        draining: Some(false),
+        uptime_seconds: Some(100),
+        cpu_percent: Some(12.5),
+        rss_bytes: Some(1024),
+        retained_bytes: Some(512),
+        open_fds: Some(7),
+        thread_count: Some(4),
+        task_count: Some(3),
+        client_count: Some(2),
+        partition_count: Some(32),
+        config_digest: Some("sha256-v1:0123456789abcdef".to_owned()),
+        formation: live_formation(),
+        timeline: vec![MemberFormationTransition {
+            observation_seq: 21,
+            authority_epoch: 13,
+            serving: ServingState::Serving,
+            blocker: None,
+        }],
+        source: ManagementObservationSource::Live,
+        completeness: ManagementCompleteness::Complete,
+    }
+}
+
+fn partition_snapshot() -> ManagementPartitionSnapshot {
+    ManagementPartitionSnapshot {
+        schema_version: MANAGEMENT_API_SCHEMA_VERSION,
+        authority_epoch: Some(13),
+        observation_seq: 21,
+        total: 64,
+        assigned: Some(64),
+        unassigned: Some(0),
+        distribution: vec![
+            PartitionMemberCount {
+                node: OpaqueNodeIdentity::new("member-a"),
+                primary: 32,
+                backup: 32,
+            },
+            PartitionMemberCount {
+                node: OpaqueNodeIdentity::new("member-b"),
+                primary: 32,
+                backup: 32,
+            },
+        ],
+        under_replicated: 0,
+        zone_underspread: 0,
+        repair_debt: 0,
+        reshard_phase: "idle".to_owned(),
+        reshard_moves_inflight: 0,
+        backfill_lag: 0,
+        placement_trace_id: Some("placement-17".to_owned()),
+        source: ManagementObservationSource::Live,
+        completeness: ManagementCompleteness::Complete,
+    }
+}
 
 #[test]
 fn envelope_rejects_unavailable_complete_and_missing_source_warnings() {
@@ -236,6 +304,69 @@ fn formation_requires_authority_authentication_and_currentness_before_serving() 
 }
 
 #[test]
+fn member_detail_fences_identity_generation_epoch_resources_and_timeline() {
+    let valid = member_detail();
+    valid.validate().unwrap();
+
+    let mut wrong_generation = valid.clone();
+    wrong_generation.generation += 1;
+    assert_incoherent(wrong_generation.validate(), "member.formation");
+
+    let mut mixed_epoch = valid.clone();
+    mixed_epoch.timeline[0].authority_epoch += 1;
+    assert_incoherent(mixed_epoch.validate(), "member.timeline");
+
+    let mut regressed = valid.clone();
+    regressed.timeline.push(MemberFormationTransition {
+        observation_seq: regressed.timeline[0].observation_seq,
+        authority_epoch: 13,
+        serving: ServingState::Blocked,
+        blocker: Some(FormationReasonCode::LearnerBehind),
+    });
+    assert_unstable(regressed.validate(), "member.timeline");
+
+    for cpu in [f64::NAN, f64::INFINITY, -0.1] {
+        let mut invalid = valid.clone();
+        invalid.cpu_percent = Some(cpu);
+        assert_incoherent(invalid.validate(), "member.cpu_percent");
+    }
+}
+
+#[test]
+fn platform_missing_member_resources_are_unknown_not_zero() {
+    let mut missing = member_detail();
+    missing.cpu_percent = None;
+    missing.rss_bytes = None;
+    missing.open_fds = None;
+    missing.thread_count = None;
+    missing.task_count = None;
+    missing.completeness = ManagementCompleteness::Partial;
+    missing.validate().unwrap();
+    let json = serde_json::to_value(missing).unwrap();
+    assert!(json["cpu_percent"].is_null());
+    assert!(json["rss_bytes"].is_null());
+    assert!(json["open_fds"].is_null());
+}
+
+#[test]
+fn partition_snapshot_rejects_mixed_counts_and_unstable_distribution() {
+    let valid = partition_snapshot();
+    valid.validate().unwrap();
+
+    let mut bad_total = valid.clone();
+    bad_total.unassigned = Some(1);
+    assert_incoherent(bad_total.validate(), "partition.counts");
+
+    let mut bad_sum = valid.clone();
+    bad_sum.distribution[0].primary = 31;
+    assert_incoherent(bad_sum.validate(), "partition.distribution");
+
+    let mut unstable = valid;
+    unstable.distribution.swap(0, 1);
+    assert_unstable(unstable.validate(), "partition.distribution");
+}
+
+#[test]
 fn formation_unknowns_remain_unknown_and_cannot_be_complete() {
     let mut json = serde_json::to_value(live_formation()).unwrap();
     json["transport"] = serde_json::json!("future_transport_state");
@@ -319,7 +450,7 @@ fn placement_trace_is_stable_bounded_and_selection_consistent() {
     assert_unstable(duplicate_selected.validate(), "selected");
 
     let mut mismatched_flag = valid.clone();
-    mismatched_flag.candidates.items[0].selected = false;
+    mismatched_flag.selected.remove(0);
     assert_incoherent(mismatched_flag.validate(), "candidate.selected");
 
     let mut missing_reason = valid;

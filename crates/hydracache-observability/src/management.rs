@@ -31,6 +31,12 @@ pub const MAX_MANAGEMENT_PAGE_ITEMS: usize = 100;
 pub const MAX_MANAGEMENT_CURSOR_BYTES: usize = 256;
 /// Maximum warnings retained in one management response envelope.
 pub const MAX_MANAGEMENT_WARNINGS: usize = 32;
+/// Maximum number of member rows in one topology snapshot.
+pub const MAX_MANAGEMENT_MEMBERS: usize = 100;
+/// Maximum number of bounded formation transitions retained per member generation.
+pub const MAX_MEMBER_FORMATION_TRANSITIONS: usize = 64;
+/// Maximum encoded bytes for product version and configuration digest fields.
+pub const MAX_MANAGEMENT_DIAGNOSTIC_STRING_BYTES: usize = 128;
 
 /// Stable warning vocabulary carried by management response envelopes.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
@@ -377,6 +383,194 @@ pub struct ClusterFormationSnapshot {
     pub completeness: ManagementCompleteness,
 }
 
+/// Stable reachability explanation for the committed-member view.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "kebab-case")]
+pub enum MemberReachabilityReason {
+    Healthy,
+    Suspected,
+    TransportUnreachable,
+    SourceUnavailable,
+    #[serde(other)]
+    Unknown,
+}
+
+/// One bounded transition retained only for the current node generation.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct MemberFormationTransition {
+    pub observation_seq: u64,
+    pub authority_epoch: u64,
+    pub serving: ServingState,
+    pub blocker: Option<FormationReasonCode>,
+}
+
+/// Epoch-consistent committed member detail for the Management Center.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct ManagementMemberDetail {
+    pub schema_version: u16,
+    pub node: OpaqueNodeIdentity,
+    pub generation: u64,
+    pub authority_epoch: Option<u64>,
+    pub observation_seq: u64,
+    pub consensus_role: ManagementConsensusRole,
+    pub product_version: Option<String>,
+    pub protocol_compatible: Option<bool>,
+    pub reachability: TransportState,
+    pub reachability_reason: MemberReachabilityReason,
+    pub draining: Option<bool>,
+    pub uptime_seconds: Option<u64>,
+    pub cpu_percent: Option<f64>,
+    pub rss_bytes: Option<u64>,
+    pub retained_bytes: Option<u64>,
+    pub open_fds: Option<u64>,
+    pub thread_count: Option<u64>,
+    pub task_count: Option<u64>,
+    pub client_count: Option<u64>,
+    pub partition_count: Option<u64>,
+    pub config_digest: Option<String>,
+    pub formation: ClusterFormationSnapshot,
+    pub timeline: Vec<MemberFormationTransition>,
+    pub source: ManagementObservationSource,
+    pub completeness: ManagementCompleteness,
+}
+
+impl ManagementMemberDetail {
+    /// Validate identity, generation/epoch alignment, finite resources and bounded history.
+    pub fn validate(&self) -> Result<(), ManagementContractError> {
+        validate_schema(self.schema_version)?;
+        validate_opaque_id(
+            "member.node",
+            self.node.as_str(),
+            MAX_MANAGEMENT_NODE_ID_BYTES,
+        )?;
+        self.formation.validate()?;
+        if self.node != self.formation.node || self.generation != self.formation.generation {
+            return Err(ManagementContractError::Incoherent {
+                field: "member.formation",
+                reason: "formation identity and generation must match the member row",
+            });
+        }
+        if self.authority_epoch != self.formation.authority_epoch {
+            return Err(ManagementContractError::Incoherent {
+                field: "member.authority_epoch",
+                reason: "member and formation authority epoch must match",
+            });
+        }
+        if self
+            .cpu_percent
+            .is_some_and(|value| !value.is_finite() || value < 0.0)
+        {
+            return Err(ManagementContractError::Incoherent {
+                field: "member.cpu_percent",
+                reason: "CPU percent must be finite and non-negative",
+            });
+        }
+        for (field, value) in [
+            ("member.product_version", self.product_version.as_deref()),
+            ("member.config_digest", self.config_digest.as_deref()),
+        ] {
+            if let Some(value) = value {
+                validate_opaque_id(field, value, MAX_MANAGEMENT_DIAGNOSTIC_STRING_BYTES)?;
+            }
+        }
+        validate_limit(
+            "member.timeline",
+            self.timeline.len(),
+            MAX_MEMBER_FORMATION_TRANSITIONS,
+        )?;
+        let mut last_seq = None;
+        for transition in &self.timeline {
+            if transition.authority_epoch != self.authority_epoch.unwrap_or_default() {
+                return Err(ManagementContractError::Incoherent {
+                    field: "member.timeline",
+                    reason: "timeline contains a mixed authority epoch",
+                });
+            }
+            if last_seq.is_some_and(|previous| transition.observation_seq <= previous) {
+                return Err(ManagementContractError::UnstableOrder {
+                    field: "member.timeline",
+                });
+            }
+            last_seq = Some(transition.observation_seq);
+        }
+        Ok(())
+    }
+}
+
+/// One per-member partition assignment count; partition identifiers stay out of metrics.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct PartitionMemberCount {
+    pub node: OpaqueNodeIdentity,
+    pub primary: u64,
+    pub backup: u64,
+}
+
+/// Epoch-consistent aggregate partition ownership and repair view.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct ManagementPartitionSnapshot {
+    pub schema_version: u16,
+    pub authority_epoch: Option<u64>,
+    pub observation_seq: u64,
+    pub total: u64,
+    pub assigned: Option<u64>,
+    pub unassigned: Option<u64>,
+    pub distribution: Vec<PartitionMemberCount>,
+    pub under_replicated: u64,
+    pub zone_underspread: u64,
+    pub repair_debt: u64,
+    pub reshard_phase: String,
+    pub reshard_moves_inflight: u64,
+    pub backfill_lag: u64,
+    pub placement_trace_id: Option<String>,
+    pub source: ManagementObservationSource,
+    pub completeness: ManagementCompleteness,
+}
+
+impl ManagementPartitionSnapshot {
+    /// Validate aggregate arithmetic, stable distribution and opaque trace identifier.
+    pub fn validate(&self) -> Result<(), ManagementContractError> {
+        validate_schema(self.schema_version)?;
+        validate_limit(
+            "partition.distribution",
+            self.distribution.len(),
+            MAX_MANAGEMENT_MEMBERS,
+        )?;
+        let nodes = self
+            .distribution
+            .iter()
+            .map(|entry| &entry.node)
+            .collect::<Vec<_>>();
+        validate_strict_order("partition.distribution", &nodes)?;
+        if let (Some(assigned), Some(unassigned)) = (self.assigned, self.unassigned) {
+            if assigned.saturating_add(unassigned) != self.total {
+                return Err(ManagementContractError::Incoherent {
+                    field: "partition.counts",
+                    reason: "assigned plus unassigned must equal total",
+                });
+            }
+            let distributed = self
+                .distribution
+                .iter()
+                .map(|entry| entry.primary)
+                .fold(0_u64, u64::saturating_add);
+            if !self.distribution.is_empty() && distributed != assigned {
+                return Err(ManagementContractError::Incoherent {
+                    field: "partition.distribution",
+                    reason: "primary distribution must sum to assigned partitions",
+                });
+            }
+        }
+        if let Some(trace_id) = &self.placement_trace_id {
+            validate_opaque_id(
+                "partition.placement_trace_id",
+                trace_id,
+                MAX_MANAGEMENT_OPAQUE_ID_BYTES,
+            )?;
+        }
+        Ok(())
+    }
+}
+
 impl ClusterFormationSnapshot {
     /// Validate cross-field authority and readiness invariants.
     pub fn validate(&self) -> Result<(), ManagementContractError> {
@@ -552,13 +746,16 @@ impl PlacementDecisionTrace {
         }
 
         validate_strict_order("selected", &self.selected)?;
-        let candidate_nodes = self
-            .candidates
-            .items
-            .iter()
-            .map(|candidate| &candidate.node)
-            .collect::<Vec<_>>();
-        validate_strict_order("candidates", &candidate_nodes)?;
+        for pair in self.candidates.items.windows(2) {
+            let [left, right] = pair else { continue };
+            let stable = (left.selected && !right.selected)
+                || (left.selected == right.selected && left.node < right.node);
+            if !stable {
+                return Err(ManagementContractError::UnstableOrder {
+                    field: "candidates",
+                });
+            }
+        }
 
         for candidate in &self.candidates.items {
             validate_opaque_id(

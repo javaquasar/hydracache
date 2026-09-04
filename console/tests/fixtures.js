@@ -121,6 +121,64 @@ export const formationEnvelope = {
   },
 };
 
+export const membersEnvelope = {
+  ...metadata,
+  data: {
+    items: dashboardEnvelope.data.members.map((item, index) => ({
+      ...item,
+      consensus_role: index === 2 ? "learner" : "voter",
+      client_count: index === 0 ? 4 : null,
+      partition_count: index === 0 ? 32 : null,
+      config_digest: index === 0 ? "sha256-v1:abc123" : null,
+    })),
+    next_cursor: null,
+    truncated: false,
+  },
+};
+
+export const partitionsEnvelope = {
+  ...metadata,
+  completeness: "complete",
+  data: {
+    authority_epoch: 42,
+    observation_seq: 9,
+    total: 64,
+    assigned: 64,
+    unassigned: 0,
+    distribution: [
+      { node: "node-opaque-1", primary: 32, backup: 32 },
+      { node: "node-opaque-2", primary: 32, backup: 32 },
+    ],
+    under_replicated: 2,
+    zone_underspread: 1,
+    repair_debt: 4,
+    reshard_phase: "moving",
+    reshard_moves_inflight: 3,
+    backfill_lag: 12,
+    placement_trace_id: "trace_Opaque-42",
+  },
+};
+
+export const placementTraceEnvelope = {
+  ...metadata,
+  completeness: "complete",
+  data: {
+    trace_id: "trace_Opaque-42",
+    topology_epoch: 42,
+    outcome: "committed",
+    commit_index: 100,
+    applied_index: 96,
+    selected: ["node-opaque-2"],
+    candidates: {
+      items: [
+        { node: "node-opaque-2", selected: true, reasons: [] },
+        { node: "node-opaque-1", selected: false, reasons: ["zone-conflict"] },
+      ],
+      truncated: false,
+    },
+  },
+};
+
 export const consensusEnvelope = {
   ...metadata,
   data: {

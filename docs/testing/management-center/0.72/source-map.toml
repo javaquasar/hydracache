@@ -15,6 +15,19 @@ fallback = "unavailable with stable reason"
 test_owner = "crates/hydracache-server/tests/management_http.rs"
 
 [[source]]
+id = "cluster-formation-compat-alias"
+route = "/management/v1/formation"
+field_group = "compatibility alias of cluster formation"
+producer = "same handler and evidence as cluster-formation"
+authority = "committed Raft roster joined to authenticated per-member snapshots"
+lifetime = "request plus bounded 30-second cursor"
+consistency = "authority epoch + observation sequence"
+max_cardinality = 100
+privacy = "node ids SHA-256 pseudonymized before wire serialization"
+fallback = "identical to /management/v1/cluster/formation"
+test_owner = "crates/hydracache-server/tests/management_http.rs"
+
+[[source]]
 id = "dashboard"
 route = "/management/v1/dashboard"
 field_group = "cluster, replication, reshard, cache, local consensus and bounded member summary"
@@ -29,7 +42,7 @@ test_owner = "crates/hydracache-server/tests/management_http.rs + console/tests"
 
 [[source]]
 id = "cluster-formation"
-route = "/management/v1/formation"
+route = "/management/v1/cluster/formation"
 field_group = "committed roster, generation, reachability, local admission and catch-up"
 producer = "ClusterStatusProvider backed by GridControlPlaneHandle"
 authority = "committed Raft roster joined to authenticated per-member snapshots"
@@ -39,6 +52,45 @@ max_cardinality = 100
 privacy = "member diagnostic; node ids SHA-256 pseudonymized before wire serialization"
 fallback = "partial; unknown dimensions remain unknown and serving remains blocked"
 test_owner = "crates/hydracache-server/tests/management_http.rs"
+
+[[source]]
+id = "cluster-members"
+route = "/management/v1/cluster/members"
+field_group = "committed identity generation, raft role, reachability, local resources and current-generation formation timeline"
+producer = "ClusterStatusProvider + authenticated member aggregation + local process/cache diagnostics"
+authority = "committed Raft roster at one authority epoch; resources are local-only unless a peer proves them"
+lifetime = "request plus bounded 30-second cursor"
+consistency = "authority epoch + observation sequence + node generation"
+max_cardinality = 100
+privacy = "node ids pseudonymized; configuration represented only by an allowlisted non-reversible digest"
+fallback = "partial with null unavailable resource fields; discovery never implies readiness"
+test_owner = "crates/hydracache-server/tests/management_topology_072.rs"
+
+[[source]]
+id = "cluster-partitions"
+route = "/management/v1/cluster/partitions"
+field_group = "partition counts, ownership distribution, under-replication, zone spread, repair, reshard and backfill"
+producer = "validated ManagementTopologyModel plus real local cluster counters"
+authority = "exact authority epoch and observation sequence"
+lifetime = "one immutable runtime observation"
+consistency = "ownership is returned only when both epoch and sequence match; otherwise counts remain unavailable"
+max_cardinality = 100
+privacy = "aggregate counts and pseudonymous members only"
+fallback = "real aggregate repair counters with assigned/distribution null and stale/source warning"
+test_owner = "crates/hydracache-server/tests/management_topology_072.rs"
+
+[[source]]
+id = "placement-trace"
+route = "/management/v1/cluster/placement-traces/{opaque_id}"
+field_group = "selected and rejected candidates, stable reasons, constraints, commit and apply progress"
+producer = "validated ManagementTopologyModel placement observation"
+authority = "current topology epoch"
+lifetime = "bounded immutable runtime evidence addressed by a server-issued opaque id"
+consistency = "selected first, deterministic pseudonymous ordering; commit and apply stay distinct"
+max_cardinality = 512
+privacy = "admin-only non-enumerable id; no endpoints, keys, tokens, paths or raw errors"
+fallback = "unknown, malformed and stale ids return the same 404"
+test_owner = "crates/hydracache-server/tests/management_topology_072.rs"
 
 [[source]]
 id = "consensus-progress"

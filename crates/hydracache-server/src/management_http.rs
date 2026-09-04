@@ -6,7 +6,7 @@ use std::sync::{Arc, Mutex};
 use std::time::{SystemTime, UNIX_EPOCH};
 
 use axum::extract::rejection::QueryRejection;
-use axum::extract::{Query, State};
+use axum::extract::{Path, Query, State};
 use axum::http::header::CONTENT_TYPE;
 use axum::http::{HeaderMap, StatusCode};
 use axum::response::{IntoResponse, Response};
@@ -17,10 +17,12 @@ use hydracache_observability::{
     ConsensusProgressSnapshot, DiscoveryState, DurableRecoveryStatus, FormationReasonCode,
     ManagementCapabilities, ManagementCapability, ManagementCapabilityAvailability,
     ManagementCapabilityId, ManagementCompleteness, ManagementConsensusRole, ManagementEnvelope,
-    ManagementObservationSource, ManagementWarning, ManagementWarningCode, OpaqueCursor,
-    OpaqueNodeIdentity, RecoveryArtifactKind, RecoveryOutcome, RecoveryPhase, RecoveryReasonCode,
-    RecoveryScope, RepairState, ServingState, TransportState, MANAGEMENT_API_SCHEMA_VERSION,
-    MAX_MANAGEMENT_CURSOR_BYTES, MAX_MANAGEMENT_PAGE_ITEMS,
+    ManagementMemberDetail, ManagementObservationSource, ManagementPartitionSnapshot,
+    ManagementWarning, ManagementWarningCode, MemberFormationTransition, MemberReachabilityReason,
+    OpaqueCursor, OpaqueNodeIdentity, PlacementDecisionTrace, RecoveryArtifactKind,
+    RecoveryOutcome, RecoveryPhase, RecoveryReasonCode, RecoveryScope, RepairState, ServingState,
+    TransportState, MANAGEMENT_API_SCHEMA_VERSION, MAX_MANAGEMENT_CURSOR_BYTES,
+    MAX_MANAGEMENT_PAGE_ITEMS,
 };
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
@@ -38,6 +40,14 @@ pub const MANAGEMENT_CAPABILITIES_PATH: &str = "/management/v1/capabilities";
 pub const MANAGEMENT_DASHBOARD_PATH: &str = "/management/v1/dashboard";
 /// Bounded cluster-formation observations path.
 pub const MANAGEMENT_FORMATION_PATH: &str = "/management/v1/formation";
+/// Epoch-consistent committed-member detail path.
+pub const MANAGEMENT_CLUSTER_MEMBERS_PATH: &str = "/management/v1/cluster/members";
+/// Cluster-scoped alias for the formation state machine.
+pub const MANAGEMENT_CLUSTER_FORMATION_PATH: &str = "/management/v1/cluster/formation";
+/// Honest aggregate partition ownership and repair path.
+pub const MANAGEMENT_CLUSTER_PARTITIONS_PATH: &str = "/management/v1/cluster/partitions";
+/// Prefix for non-enumerable placement-decision trace resources.
+pub const MANAGEMENT_PLACEMENT_TRACE_PREFIX: &str = "/management/v1/cluster/placement-traces";
 /// Honest durable-recovery observation path.
 pub const MANAGEMENT_RECOVERY_PATH: &str = "/management/v1/persistence/recovery";
 /// Local authoritative Raft progress path.
@@ -55,6 +65,7 @@ pub const MANAGEMENT_MAX_RETAINED_CURSORS: usize = 1_024;
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 enum CursorKind {
     Formation,
+    Members,
     ConsensusProgress,
     Recovery,
 }
@@ -163,6 +174,13 @@ pub(crate) fn routes(
         .route(MANAGEMENT_CAPABILITIES_PATH, get(capabilities))
         .route(MANAGEMENT_DASHBOARD_PATH, get(dashboard))
         .route(MANAGEMENT_FORMATION_PATH, get(formation))
+        .route(MANAGEMENT_CLUSTER_FORMATION_PATH, get(formation))
+        .route(MANAGEMENT_CLUSTER_MEMBERS_PATH, get(members))
+        .route(MANAGEMENT_CLUSTER_PARTITIONS_PATH, get(partitions))
+        .route(
+            "/management/v1/cluster/placement-traces/{opaque_id}",
+            get(placement_trace),
+        )
         .route(MANAGEMENT_RECOVERY_PATH, get(recovery))
         .route(MANAGEMENT_CONSENSUS_PROGRESS_PATH, get(consensus_progress))
         .with_state(Arc::new(ManagementHttpState {
@@ -631,6 +649,235 @@ async fn formation(
     }
     let envelope = envelope(&status, completeness, warnings, page);
     management_response(&envelope)
+}
+
+async fn members(
+    State(state): State<Arc<ManagementHttpState>>,
+    headers: HeaderMap,
+    query: Result<Query<PageQuery>, QueryRejection>,
+) -> Response {
+    if let Err(error) = require_admin(&headers) {
+        return error.into_response();
+    }
+    let query = match parse_query(query) {
+        Ok(query) => query,
+        Err(error) => return error.into_response(),
+    };
+    let (status, can_serve, aggregate) = request_snapshot(&state).await;
+    let (diagnostics, cache) = {
+        let runtime = state.runtime.lock().expect("server runtime mutex");
+        (
+            runtime.management_local_diagnostics(),
+            runtime.management_cache(),
+        )
+    };
+    let retained_bytes = cache
+        .memory_footprint_snapshot(hydracache::MemorySnapshotRequest::Admin)
+        .await
+        .ok()
+        .map(|snapshot| snapshot.estimated_retained_bytes);
+    let now = unix_time_ms();
+    let start = match page_start(&state, &query, CursorKind::Members, &status, now) {
+        Ok(start) => start,
+        Err(error) => return error.into_response(),
+    };
+    let mut committed = status.members.clone();
+    committed.sort_by(|left, right| {
+        left.node_id
+            .cmp(&right.node_id)
+            .then(left.generation.cmp(&right.generation))
+    });
+    if start > committed.len() {
+        return ManagementHttpError::SnapshotChanged.into_response();
+    }
+    let end = start.saturating_add(query.limit).min(committed.len());
+    let mut items = Vec::with_capacity(end.saturating_sub(start));
+    for member in &committed[start..end] {
+        let peer = aggregate.as_ref().and_then(|aggregate| {
+            aggregate.members.iter().find(|candidate| {
+                candidate.node_id == member.node_id && candidate.generation == member.generation
+            })
+        });
+        let formation = formation_item(&status, member, peer, can_serve);
+        let local = status.local_consensus.as_ref().is_some_and(|progress| {
+            progress.node_id == member.node_id && progress.generation == member.generation
+        });
+        let reachability_reason = match member.reachable {
+            Reachability::Reachable => MemberReachabilityReason::Healthy,
+            Reachability::Suspect => MemberReachabilityReason::Suspected,
+            Reachability::Unreachable => MemberReachabilityReason::TransportUnreachable,
+        };
+        let timeline = formation
+            .authority_epoch
+            .map(|authority_epoch| {
+                vec![MemberFormationTransition {
+                    observation_seq: status.observation_seq,
+                    authority_epoch,
+                    serving: formation.serving,
+                    blocker: formation.blocker,
+                }]
+            })
+            .unwrap_or_default();
+        let item = ManagementMemberDetail {
+            schema_version: MANAGEMENT_API_SCHEMA_VERSION,
+            node: formation.node.clone(),
+            generation: member.generation,
+            authority_epoch: formation.authority_epoch,
+            observation_seq: status.observation_seq,
+            consensus_role: formation.consensus_role,
+            product_version: local.then(|| diagnostics.product_version.clone()),
+            protocol_compatible: local.then_some(true),
+            reachability: formation.transport,
+            reachability_reason,
+            draining: local.then_some(status.draining),
+            uptime_seconds: local.then_some(diagnostics.uptime_seconds),
+            cpu_percent: None,
+            rss_bytes: local.then_some(diagnostics.rss_bytes).flatten(),
+            retained_bytes: local.then_some(retained_bytes).flatten(),
+            open_fds: local.then_some(diagnostics.open_fds).flatten(),
+            thread_count: local.then_some(diagnostics.thread_count).flatten(),
+            task_count: None,
+            client_count: local.then_some(diagnostics.client_count),
+            partition_count: None,
+            config_digest: local.then(|| diagnostics.config_digest.clone()),
+            formation,
+            timeline,
+            source: source(status.source),
+            completeness: ManagementCompleteness::Partial,
+        };
+        if item.validate().is_err() {
+            return ManagementHttpError::ContractViolation.into_response();
+        }
+        items.push(item);
+    }
+    let truncated = end < committed.len();
+    let next_cursor = truncated.then(|| {
+        state
+            .cursors
+            .lock()
+            .expect("management cursor store mutex")
+            .issue(
+                CursorKind::Members,
+                status.epoch,
+                status.observation_seq,
+                end,
+                now,
+            )
+    });
+    let page = BoundedPage {
+        items,
+        next_cursor,
+        truncated,
+    };
+    if page.validate().is_err() {
+        return ManagementHttpError::ContractViolation.into_response();
+    }
+    let mut warnings = response_warnings(
+        ManagementCompleteness::Partial,
+        truncated,
+        committed.len().saturating_sub(end),
+    );
+    if let Some(aggregate) = &aggregate {
+        append_aggregation_warnings(&mut warnings, aggregate);
+    }
+    management_response(&envelope(
+        &status,
+        ManagementCompleteness::Partial,
+        warnings,
+        page,
+    ))
+}
+
+async fn partitions(State(state): State<Arc<ManagementHttpState>>, headers: HeaderMap) -> Response {
+    if let Err(error) = require_admin(&headers) {
+        return error.into_response();
+    }
+    let (status, topology, cluster_overview, registry) = {
+        let runtime = state.runtime.lock().expect("server runtime mutex");
+        (
+            runtime.cluster_status_snapshot(),
+            runtime.management_topology_model(),
+            runtime.cluster_overview(),
+            runtime.metrics_registry(),
+        )
+    };
+    let overview = registry.overview().await;
+    let stale = topology.partition_observation().is_some()
+        && topology
+            .partition_for(status.epoch, status.observation_seq)
+            .is_none();
+    let (data, warnings) =
+        if let Some(snapshot) = topology.partition_for(status.epoch, status.observation_seq) {
+            (snapshot, Vec::new())
+        } else {
+            let counters = overview.cluster_grid;
+            (
+                ManagementPartitionSnapshot {
+                    schema_version: MANAGEMENT_API_SCHEMA_VERSION,
+                    authority_epoch: status.metadata_authoritative.then_some(status.epoch),
+                    observation_seq: status.observation_seq,
+                    total: cluster_overview.partitions.count,
+                    assigned: None,
+                    unassigned: None,
+                    distribution: Vec::new(),
+                    under_replicated: counters.under_replicated_keys,
+                    zone_underspread: counters.placement_zone_underspread,
+                    repair_debt: counters.tombstone_repair_debt,
+                    reshard_phase: status.reshard_phase.to_string(),
+                    reshard_moves_inflight: counters.reshard_moves_inflight,
+                    backfill_lag: counters.reshard_backfill_lag,
+                    placement_trace_id: None,
+                    source: source(status.source),
+                    completeness: ManagementCompleteness::Partial,
+                },
+                vec![ManagementWarning {
+                    code: if stale {
+                        ManagementWarningCode::StaleObservation
+                    } else {
+                        ManagementWarningCode::SourceUnavailable
+                    },
+                    affected_count: Some(1),
+                }],
+            )
+        };
+    if data.validate().is_err() {
+        return ManagementHttpError::ContractViolation.into_response();
+    }
+    let completeness = data.completeness;
+    management_response(&envelope(&status, completeness, warnings, data))
+}
+
+async fn placement_trace(
+    State(state): State<Arc<ManagementHttpState>>,
+    headers: HeaderMap,
+    Path(opaque_id): Path<String>,
+) -> Response {
+    if let Err(error) = require_admin(&headers) {
+        return error.into_response();
+    }
+    if opaque_id.is_empty()
+        || opaque_id.len() > 128
+        || !opaque_id
+            .bytes()
+            .all(|byte| byte.is_ascii_alphanumeric() || matches!(byte, b'-' | b'_'))
+    {
+        return StatusCode::NOT_FOUND.into_response();
+    }
+    let (status, trace): (ClusterStatus, Option<PlacementDecisionTrace>) = {
+        let runtime = state.runtime.lock().expect("server runtime mutex");
+        let status = runtime.cluster_status_snapshot();
+        let trace = runtime
+            .management_topology_model()
+            .placement_trace_for(&opaque_id, status.epoch);
+        (status, trace)
+    };
+    let Some(trace) = trace else {
+        return StatusCode::NOT_FOUND.into_response();
+    };
+    if trace.validate().is_err() {
+        return ManagementHttpError::ContractViolation.into_response();
+    }
+    management_response(&envelope(&status, trace.completeness, Vec::new(), trace))
 }
 
 async fn consensus_progress(

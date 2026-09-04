@@ -5,7 +5,10 @@ import {
   dashboardEnvelope,
   formationEnvelope,
   largeDashboardEnvelope,
+  membersEnvelope,
   modeledDashboardEnvelope,
+  partitionsEnvelope,
+  placementTraceEnvelope,
   recoveryEnvelope,
 } from "./fixtures.js";
 
@@ -29,7 +32,12 @@ test("console_renders_typed_dashboard_and_all_truth_states", async ({ page }) =>
   await expect(page.getByTestId("recovery-table")).toContainText("1000000+");
   await expect(page.getByTestId("truth-warnings")).toContainText("partial-observation");
   await expect(page.getByTestId("placement-state")).toHaveText("committed");
-  await expect(page.getByTestId("placement-details")).toContainText("41");
+  await expect(page.getByTestId("placement-details")).toContainText("96");
+  await expect(page.getByTestId("partition-row")).toHaveCount(2);
+  await expect(page.getByTestId("members-list")).toContainText("sha256-v1:abc123");
+  await expect(page.getByTestId("placement-row")).toHaveCount(2);
+  await expect(page.getByTestId("placement-row").first()).toContainText("selected");
+  await expect(page.getByTestId("placement-table")).toContainText("zone-conflict");
 });
 
 test("placement_outcomes_and_stale_warning_are_rendered_without_inference", async ({ page }) => {
@@ -44,7 +52,7 @@ test("placement_outcomes_and_stale_warning_are_rendered_without_inference", asyn
       latest_applied_epoch: outcome === "applied" ? 42 : null,
     };
     await page.unrouteAll({ behavior: "wait" });
-    await routeManagement(page, { dashboard: fixture });
+    await routeManagement(page, { dashboard: fixture, placementTrace: null });
     await page.goto(consoleUrl);
     await expect(page.getByTestId("placement-state")).toHaveText(outcome ?? "unavailable");
     await expect(page.getByTestId("truth-warnings")).toContainText("stale-observation");
@@ -74,6 +82,19 @@ test("console_is_read_only_and_never_scrapes_prometheus", async ({ page }) => {
   await expect(page.locator("button")).toHaveCount(0);
   await expect(page.getByRole("button", { name: /drain|reshard|backup|delete|remove/i })).toHaveCount(0);
   expect(metricsRequests).toBe(0);
+});
+
+test("hostile_diagnostic_text_is_rendered_only_as_text", async ({ page }) => {
+  const hostileMembers = structuredClone(membersEnvelope);
+  hostileMembers.data.items[0].config_digest = '<img src=x onerror="window.__xss=1">';
+  const hostileTrace = structuredClone(placementTraceEnvelope);
+  hostileTrace.data.candidates.items[1].reasons = ['<script>window.__xss=1</script>'];
+  await routeManagement(page, { members: hostileMembers, placementTrace: hostileTrace });
+  await page.goto(consoleUrl);
+  await expect(page.getByTestId("members-list")).toContainText("<img src=x");
+  await expect(page.getByTestId("placement-table")).toContainText("<script>");
+  expect(await page.evaluate(() => window.__xss)).toBeUndefined();
+  await expect(page.locator("#members img, #placement script")).toHaveCount(0);
 });
 
 test("modeled_source_and_missing_raft_values_are_never_painted_live_or_zero", async ({ page }) => {
@@ -155,11 +176,30 @@ async function routeManagement(page, overrides = {}) {
     formation: overrides.formation === undefined ? formationEnvelope : overrides.formation,
     consensus: overrides.consensus === undefined ? consensusEnvelope : overrides.consensus,
     recovery: overrides.recovery === undefined ? recoveryEnvelope : overrides.recovery,
+    members:
+      overrides.members === undefined
+        ? overrides.dashboard
+          ? {
+              ...membersEnvelope,
+              source: overrides.dashboard.source,
+              data: { ...membersEnvelope.data, items: overrides.dashboard.data.members ?? [] },
+            }
+          : membersEnvelope
+        : overrides.members,
+    partitions: overrides.partitions === undefined ? partitionsEnvelope : overrides.partitions,
+    placementTrace:
+      overrides.placementTrace === undefined ? placementTraceEnvelope : overrides.placementTrace,
   };
   await page.route("**/management/v1/**", (route) => {
     const path = new URL(route.request().url()).pathname;
-    const fixture = path.endsWith("/dashboard")
+    const fixture = path.includes("/placement-traces/")
+      ? fixtures.placementTrace
+      : path.endsWith("/dashboard")
       ? fixtures.dashboard
+      : path.endsWith("/cluster/members")
+        ? fixtures.members
+        : path.endsWith("/cluster/partitions")
+          ? fixtures.partitions
       : path.endsWith("/formation")
         ? fixtures.formation
         : path.endsWith("/consensus/progress")

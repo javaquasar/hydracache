@@ -46,3 +46,10 @@ max_selected = 64
 max_reasons_per_candidate = 16
 max_labels_per_constraint_set = 64
 max_label_bytes = 128
+
+[topology]
+max_members = 100
+max_current_generation_transitions_per_member = 64
+max_diagnostic_string_bytes = 128
+unknown_trace_status = 404
+ownership_binding = ["authority_epoch", "observation_seq"]

@@ -5,7 +5,9 @@ const BASE_POLL_INTERVAL_MS = 10_000;
 const MAX_BACKOFF_MS = 60_000;
 const ENDPOINTS = Object.freeze({
   dashboard: "/management/v1/dashboard",
-  formation: "/management/v1/formation?limit=100",
+  formation: "/management/v1/cluster/formation?limit=100",
+  members: "/management/v1/cluster/members?limit=100",
+  partitions: "/management/v1/cluster/partitions",
   consensus: "/management/v1/consensus/progress?limit=100",
   recovery: "/management/v1/persistence/recovery?limit=100",
 });
@@ -57,6 +59,17 @@ async function refresh() {
       results.filter((item) => item.status === "fulfilled").map((item) => item.value),
     );
     if (!values.dashboard) throw new Error("dashboard snapshot unavailable");
+    const traceId = values.partitions?.data?.placement_trace_id;
+    if (typeof traceId === "string" && /^[A-Za-z0-9_-]{1,128}$/.test(traceId)) {
+      try {
+        values.placementTrace = await fetchEnvelope(
+          `/management/v1/cluster/placement-traces/${encodeURIComponent(traceId)}`,
+          state.controller.signal,
+        );
+      } catch (error) {
+        if (error.name === "AbortError") throw error;
+      }
+    }
     render(values);
     state.failures = 0;
     state.refreshes += 1;
@@ -102,11 +115,12 @@ function render(values) {
   renderWarnings(Object.values(values));
   renderSummary(data, values);
   renderMetrics(data);
-  renderMembers(data.members ?? []);
+  renderMembers(values.members?.data?.items ?? data.members ?? []);
   renderFormation(values.formation);
+  renderPartitions(values.partitions, data.partitions);
   renderConsensus(values.consensus, data.consensus);
   renderRecovery(values.recovery);
-  renderPlacement(data.placement);
+  renderPlacement(values.placementTrace?.data, data.placement);
   history.ingest(
     { ...data, authority_epoch: envelope.authority_epoch },
     envelope.captured_at_unix_ms,
@@ -231,18 +245,48 @@ function renderMembers(members) {
       row(
         [
           member.node,
-          member.role,
+          member.consensus_role ?? member.role ?? "unknown",
           status(member.reachability),
           known(member.generation),
           known(member.cpu_percent, "%"),
           bytes(member.rss_bytes),
           bytes(member.retained_bytes),
           duration(member.uptime_seconds),
+          known(member.client_count),
+          known(member.partition_count),
+          member.config_digest ?? "unavailable",
         ],
         { testid: "member", reachability: member.reachability },
       ),
     ),
   );
+}
+
+function renderPartitions(envelope, fallback) {
+  const snapshot = envelope?.data ?? fallback ?? {};
+  byTest("partition-details").replaceChildren(
+    pill("total", known(snapshot.total)),
+    pill("assigned", known(snapshot.assigned)),
+    pill("unassigned", known(snapshot.unassigned)),
+    pill("under replicated", known(snapshot.under_replicated)),
+    pill("zone underspread", known(snapshot.zone_underspread)),
+    pill("repair debt", known(snapshot.repair_debt)),
+    pill("moves", known(snapshot.reshard_moves_inflight)),
+    pill("backfill lag", known(snapshot.backfill_lag)),
+  );
+  const distribution = Array.isArray(snapshot.distribution) ? snapshot.distribution : [];
+  byTest("partition-table").replaceChildren(
+    ...distribution.slice(0, MAX_RENDERED_MEMBERS).map((item) =>
+      row([item.node, known(item.primary), known(item.backup)], {
+        testid: "partition-row",
+      }),
+    ),
+  );
+  if (distribution.length === 0) {
+    byTest("partition-table").append(
+      row(["Ownership source unavailable", "unavailable", "unavailable"]),
+    );
+  }
 }
 
 function renderFormation(envelope) {
@@ -336,16 +380,35 @@ function renderRecovery(envelope) {
   );
 }
 
-function renderPlacement(placement) {
+function renderPlacement(trace, fallback) {
+  const placement = trace ?? fallback;
   const state = byTest("placement-state");
   state.textContent = placement?.outcome ?? "unavailable";
   state.className = `truth-chip ${placement?.outcome ?? "unavailable"}`;
   byTest("placement-details").replaceChildren(
-    pill("selected", known(placement?.selected)),
-    pill("rejected", known(placement?.rejected)),
-    pill("committed epoch", known(placement?.latest_committed_epoch)),
-    pill("applied epoch", known(placement?.latest_applied_epoch)),
+    pill("selected", known(Array.isArray(placement?.selected) ? placement.selected.length : placement?.selected)),
+    pill("rejected", known(trace ? trace.candidates?.items?.filter((item) => !item.selected).length : placement?.rejected)),
+    pill("committed", known(trace?.commit_index ?? placement?.latest_committed_epoch)),
+    pill("applied", known(trace?.applied_index ?? placement?.latest_applied_epoch)),
   );
+  const candidates = trace?.candidates?.items ?? [];
+  byTest("placement-table").replaceChildren(
+    ...candidates.slice(0, MAX_RENDERED_MEMBERS).map((candidate) =>
+      row(
+        [
+          candidate.node,
+          status(candidate.selected ? "selected" : "rejected"),
+          candidate.reasons?.join(", ") || "none",
+        ],
+        { testid: "placement-row" },
+      ),
+    ),
+  );
+  if (candidates.length === 0) {
+    byTest("placement-table").append(
+      row(["No retained placement trace", "unavailable", "source-unavailable"]),
+    );
+  }
 }
 
 function renderHistory() {

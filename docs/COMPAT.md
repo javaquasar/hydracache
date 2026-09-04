@@ -485,3 +485,19 @@ gauges remain point values. Missing, non-finite, partial, stale and modeled obse
 coerced to zero or live. The dashboard currently reports CPU, RSS, retained bytes, uptime and TTL
 backlog as unavailable because no authoritative source is connected; later work items may fill
 those fields without changing their null/unavailable meaning.
+
+W5 adds `/management/v1/cluster/members`, `/management/v1/cluster/formation`,
+`/management/v1/cluster/partitions`, and the non-enumerable
+`/management/v1/cluster/placement-traces/{opaque_id}` resource. The original
+`/management/v1/formation` path remains a compatibility alias. Member and ownership rows are bound
+to one authority epoch, observation sequence, and node generation. Only the local member exposes
+proved process/cache facts; unavailable remote CPU, RSS, file descriptor, task, client, and
+partition measurements remain null. Configuration is represented by a non-reversible digest over
+an explicit secret-free field allowlist.
+
+Partition ownership and placement traces are published only from a validated runtime topology
+observation matching the request's exact epoch (and, for ownership, sequence). In runtimes without
+that source, real repair/reshard counters remain visible while assigned, unassigned, distribution,
+and trace link stay unavailable. Placement candidates have deterministic selected-first order and
+stable reason order. `committed` and `applied` are distinct outcomes with distinct progress indexes;
+unknown, malformed, and stale opaque trace identifiers return the same 404 response.

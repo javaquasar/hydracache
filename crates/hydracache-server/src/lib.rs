@@ -13,6 +13,7 @@ mod grid_host;
 pub mod hc2;
 pub mod management_aggregation;
 mod management_http;
+pub mod management_topology;
 pub mod redis_tcp;
 pub mod services;
 pub mod upgrade;
@@ -50,10 +51,13 @@ pub use management_aggregation::{
     MANAGEMENT_SNAPSHOT_REFRESH_TIMEOUT,
 };
 pub use management_http::{
-    MANAGEMENT_CAPABILITIES_PATH, MANAGEMENT_CONSENSUS_PROGRESS_PATH, MANAGEMENT_CURSOR_TTL_MS,
-    MANAGEMENT_DASHBOARD_PATH, MANAGEMENT_FORMATION_PATH, MANAGEMENT_MAX_RESPONSE_BYTES,
-    MANAGEMENT_MAX_RETAINED_CURSORS, MANAGEMENT_RECOVERY_PATH, MANAGEMENT_STALE_AFTER_MS,
+    MANAGEMENT_CAPABILITIES_PATH, MANAGEMENT_CLUSTER_FORMATION_PATH,
+    MANAGEMENT_CLUSTER_MEMBERS_PATH, MANAGEMENT_CLUSTER_PARTITIONS_PATH,
+    MANAGEMENT_CONSENSUS_PROGRESS_PATH, MANAGEMENT_CURSOR_TTL_MS, MANAGEMENT_DASHBOARD_PATH,
+    MANAGEMENT_FORMATION_PATH, MANAGEMENT_MAX_RESPONSE_BYTES, MANAGEMENT_MAX_RETAINED_CURSORS,
+    MANAGEMENT_PLACEMENT_TRACE_PREFIX, MANAGEMENT_RECOVERY_PATH, MANAGEMENT_STALE_AFTER_MS,
 };
+pub use management_topology::{normalize_placement_trace, ManagementTopologyModel};
 pub use redis_tcp::{serve_redis_listener, RedisTcpError, RedisTlsAcceptor, RedisTlsError};
 pub use services::{DrainOutcome, GracefulShutdown, ServiceSet};
 pub use upgrade::{

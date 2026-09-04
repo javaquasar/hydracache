@@ -30,3 +30,43 @@ defect_env = "HYDRACACHE_CANARY_DEFECT=MC72-W4"
 expected_failure = "HC-CANARY-RED:MC72-W4"
 green_evidence = "A twelve-hour accelerated soak stays below frozen series, point and encoded-byte budgets; hidden/offline browser tests pause polling and abort obsolete requests."
 red_evidence = "The mutant disables eviction and the same budget oracle fails with the reviewed marker."
+
+[[canary]]
+id = "MC72-W5-MIXED-EPOCH"
+status = "active"
+test = "canary_mixed_epoch_partition_evidence_is_never_published_as_current"
+command = "cargo test -p hydracache-server --test management_topology_072 --locked canary_mixed_epoch_partition_evidence_is_never_published_as_current -- --nocapture"
+defect_env = "HYDRACACHE_CANARY_DEFECT=MC72-W5-MIXED-EPOCH"
+expected_failure = "HC-CANARY-RED:MC72-W5-MIXED-EPOCH"
+green_evidence = "A partition observation must match both the current authority epoch and observation sequence; stale ownership becomes unavailable."
+red_evidence = "The mutant presents an epoch-70 ownership snapshot as current under epoch 71 and the same oracle rejects it."
+
+[[canary]]
+id = "MC72-W5-DISCOVERED-IS-READY"
+status = "active"
+test = "canary_discovered_or_reachable_member_is_not_inferred_ready"
+command = "cargo test -p hydracache-server --test management_topology_072 --locked canary_discovered_or_reachable_member_is_not_inferred_ready -- --nocapture"
+defect_env = "HYDRACACHE_CANARY_DEFECT=MC72-W5-DISCOVERED-IS-READY"
+expected_failure = "HC-CANARY-RED:MC72-W5-DISCOVERED-IS-READY"
+green_evidence = "An unreachable discovered member remains blocked until authenticated, admitted, consensus-current evidence exists."
+red_evidence = "The mutant promotes the discovered member to serving and the readiness oracle turns red."
+
+[[canary]]
+id = "MC72-W5-NONDETERMINISTIC-PLACEMENT"
+status = "active"
+test = "canary_placement_normalization_is_permutation_invariant"
+command = "cargo test -p hydracache-server --test management_topology_072 --locked canary_placement_normalization_is_permutation_invariant -- --nocapture"
+defect_env = "HYDRACACHE_CANARY_DEFECT=MC72-W5-NONDETERMINISTIC-PLACEMENT"
+expected_failure = "HC-CANARY-RED:MC72-W5-NONDETERMINISTIC-PLACEMENT"
+green_evidence = "Candidate input permutations normalize to identical selected-first wire evidence."
+red_evidence = "The mutant reverses normalized candidates and the byte-for-byte determinism oracle fails."
+
+[[canary]]
+id = "MC72-W5-COMMIT-IS-APPLY"
+status = "active"
+test = "canary_committed_placement_is_not_reported_as_applied"
+command = "cargo test -p hydracache-server --test management_topology_072 --locked canary_committed_placement_is_not_reported_as_applied -- --nocapture"
+defect_env = "HYDRACACHE_CANARY_DEFECT=MC72-W5-COMMIT-IS-APPLY"
+expected_failure = "HC-CANARY-RED:MC72-W5-COMMIT-IS-APPLY"
+green_evidence = "Committed outcome retains an applied index below commit and is not painted applied."
+red_evidence = "The mutant copies commit into apply and changes the outcome; the same oracle turns red."

@@ -7,6 +7,7 @@ use hydracache_observability::{
 };
 use hydracache_redis_compat::{RedisListenerConfig, RedisRespServer, RedisServeError};
 use serde::Serialize;
+use sha2::{Digest, Sha256};
 use std::net::SocketAddr;
 use std::sync::Arc;
 use std::time::Instant;
@@ -263,10 +264,24 @@ pub struct ServerRuntime {
     cluster_status: Arc<dyn ClusterStatusProvider>,
     grid_control: Option<Arc<dyn GridControlPlaneHandle>>,
     management_snapshot_override: Option<ManagementSnapshotOverride>,
+    management_topology: crate::management_topology::ManagementTopologyModel,
     observability: ServerObservabilityModel,
     last_client_surface_drain: Option<ClientSurfaceDrain>,
     last_redis_surface_drain: Option<RedisSurfaceDrain>,
     last_drain: Option<DrainOutcome>,
+    started_at: Instant,
+}
+
+/// Secret-free local process facts used by the authenticated management surface.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub(crate) struct LocalManagementDiagnostics {
+    pub(crate) product_version: String,
+    pub(crate) uptime_seconds: u64,
+    pub(crate) rss_bytes: Option<u64>,
+    pub(crate) open_fds: Option<u64>,
+    pub(crate) thread_count: Option<u64>,
+    pub(crate) client_count: u64,
+    pub(crate) config_digest: String,
 }
 
 impl ServerRuntime {
@@ -341,10 +356,12 @@ impl ServerRuntime {
             cluster_status,
             grid_control,
             management_snapshot_override: None,
+            management_topology: crate::management_topology::ManagementTopologyModel::default(),
             observability: ServerObservabilityModel::default(),
             last_client_surface_drain: None,
             last_redis_surface_drain: None,
             last_drain: None,
+            started_at: Instant::now(),
         })
     }
 
@@ -768,6 +785,60 @@ impl ServerRuntime {
         self
     }
 
+    /// Attach validated immutable partition and placement evidence.
+    pub fn with_management_topology_model(
+        mut self,
+        model: crate::management_topology::ManagementTopologyModel,
+    ) -> Self {
+        self.management_topology = model;
+        self
+    }
+
+    pub(crate) fn management_topology_model(
+        &self,
+    ) -> crate::management_topology::ManagementTopologyModel {
+        self.management_topology.clone()
+    }
+
+    pub(crate) fn management_local_diagnostics(&self) -> LocalManagementDiagnostics {
+        let (rss_bytes, open_fds, thread_count) = process_resource_counts();
+        let mut hasher = Sha256::new();
+        hasher.update(b"hydracache-management-config-v1\0");
+        hasher.update(format!(
+            "role={:?};tls={};client={};hc2={};admin={};redis={};backup={};partitions={}",
+            self.config.role,
+            self.config.tls.enabled,
+            self.config.client_api.enabled,
+            self.config.hc2_client_plane.enabled,
+            self.config.admin_api.enabled,
+            self.config.redis_api.enabled,
+            self.config.backup.enabled,
+            self.observability.partition_count,
+        ));
+        let digest = hasher.finalize();
+        LocalManagementDiagnostics {
+            product_version: env!("CARGO_PKG_VERSION").to_owned(),
+            uptime_seconds: self.started_at.elapsed().as_secs(),
+            rss_bytes,
+            open_fds,
+            thread_count,
+            client_count: self
+                .client_active_subscriptions()
+                .saturating_add(self.redis_active_connections()),
+            config_digest: format!(
+                "sha256-v1:{}",
+                digest[..12]
+                    .iter()
+                    .map(|byte| format!("{byte:02x}"))
+                    .collect::<String>()
+            ),
+        }
+    }
+
+    pub(crate) fn management_cache(&self) -> HydraCache {
+        self.cache.clone()
+    }
+
     pub(crate) fn management_snapshot_input(
         &self,
     ) -> Option<(
@@ -848,6 +919,37 @@ impl ServerRuntime {
     pub fn config(&self) -> &ServerConfig {
         &self.config
     }
+}
+
+#[cfg(target_os = "linux")]
+fn process_resource_counts() -> (Option<u64>, Option<u64>, Option<u64>) {
+    let open_fds = std::fs::read_dir("/proc/self/fd")
+        .ok()
+        .map(|entries| entries.filter_map(Result::ok).count() as u64);
+    let status = std::fs::read_to_string("/proc/self/status").ok();
+    let rss_bytes = status.as_deref().and_then(|status| {
+        status.lines().find_map(|line| {
+            line.strip_prefix("VmRSS:").and_then(|value| {
+                value
+                    .split_whitespace()
+                    .next()
+                    .and_then(|kilobytes| kilobytes.parse::<u64>().ok())
+                    .and_then(|kilobytes| kilobytes.checked_mul(1024))
+            })
+        })
+    });
+    let thread_count = status.as_deref().and_then(|status| {
+        status.lines().find_map(|line| {
+            line.strip_prefix("Threads:")
+                .and_then(|value| value.trim().parse().ok())
+        })
+    });
+    (rss_bytes, open_fds, thread_count)
+}
+
+#[cfg(not(target_os = "linux"))]
+fn process_resource_counts() -> (Option<u64>, Option<u64>, Option<u64>) {
+    (None, None, None)
 }
 
 fn topology_status_source(source: StatusSource) -> TopologyStatusSource {

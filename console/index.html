@@ -14,7 +14,7 @@
     </header>
     <div class="app-shell">
       <nav class="sidebar" aria-label="Management sections">
-        <a href="#dashboard" class="active">Dashboard</a><a href="#formation">Formation</a><a href="#members">Members</a><a href="#replication">Replication</a><a href="#placement">Placement</a><a href="#consensus">Consensus</a><a href="#recovery">Recovery</a><a href="#history">Local history</a>
+        <a href="#dashboard" class="active">Dashboard</a><a href="#formation">Formation</a><a href="#members">Members</a><a href="#partitions">Partitions</a><a href="#replication">Replication</a><a href="#placement">Placement</a><a href="#consensus">Consensus</a><a href="#recovery">Recovery</a><a href="#history">Local history</a>
       </nav>
       <main class="page-shell" id="dashboard">
         <section class="degraded" data-testid="degraded-state" hidden></section>
@@ -41,14 +41,16 @@
           <section class="panel" id="formation"><div class="section-heading"><div><h2>Cluster formation</h2><p>Discovery → authentication → admission → current → serving</p></div></div><div class="table-scroll"><table><thead><tr><th>Member</th><th>Transport</th><th>Admission</th><th>Consensus</th><th>Serving</th><th>Blocker</th></tr></thead><tbody data-testid="formation-table"></tbody></table></div></section>
         </section>
 
-        <section class="panel" id="members"><div class="section-heading"><div><h2>Members</h2><p data-testid="render-cap">waiting for members</p></div><span class="trust-note">bounded to 48 rows</span></div><div class="table-scroll"><table><thead><tr><th>Member</th><th>Role</th><th>Reachability</th><th>Generation</th><th>CPU</th><th>RSS</th><th>Retained</th><th>Uptime</th></tr></thead><tbody data-testid="members-list"></tbody></table></div></section>
+        <section class="panel" id="members"><div class="section-heading"><div><h2>Committed members</h2><p data-testid="render-cap">waiting for members</p></div><span class="trust-note">one epoch · bounded to 48 rows</span></div><div class="table-scroll"><table><thead><tr><th>Member</th><th>Raft role</th><th>Reachability</th><th>Generation</th><th>CPU</th><th>RSS</th><th>Retained</th><th>Uptime</th><th>Clients</th><th>Partitions</th><th>Config digest</th></tr></thead><tbody data-testid="members-list"></tbody></table></div></section>
+
+        <section class="panel" id="partitions"><div class="section-heading"><div><h2>Partitions</h2><p>Authoritative ownership is shown only when it matches this observation epoch</p></div><span class="trust-note">missing is not zero</span></div><div class="metrics-strip" data-testid="partition-details"></div><div class="table-scroll"><table><thead><tr><th>Member</th><th>Primary</th><th>Backup</th></tr></thead><tbody data-testid="partition-table"></tbody></table></div></section>
 
         <section class="two-column">
           <section class="panel" id="consensus"><div class="section-heading"><div><h2>Consensus progress</h2><p>Commit/apply gaps remain unknown when the source is missing</p></div></div><div class="table-scroll"><table><thead><tr><th>Member</th><th>Commit</th><th>Applied</th><th>Lag</th><th>State</th></tr></thead><tbody data-testid="consensus-table"></tbody></table></div></section>
           <section class="panel" id="recovery"><div class="section-heading"><div><h2>Persistence recovery</h2><p>Clean · repaired · partial · corrupt · failed</p></div></div><div class="outcome-grid" data-testid="recovery-outcomes"></div><div class="table-scroll"><table><thead><tr><th>Scope</th><th>Outcome</th><th>Phase</th><th>Corrupt</th><th>Reason</th></tr></thead><tbody data-testid="recovery-table"></tbody></table></div></section>
         </section>
 
-        <section class="panel" id="placement"><div class="section-heading"><div><h2>Placement evidence</h2><p>Selected/rejected candidates and latest committed/applied decision</p></div><span class="truth-chip unavailable" data-testid="placement-state">unavailable</span></div><div class="metrics-strip" data-testid="placement-details"></div></section>
+        <section class="panel" id="placement"><div class="section-heading"><div><h2>Placement evidence</h2><p>Selected candidates first; commit and apply progress remain distinct</p></div><span class="truth-chip unavailable" data-testid="placement-state">unavailable</span></div><div class="metrics-strip" data-testid="placement-details"></div><div class="table-scroll"><table><thead><tr><th>Candidate</th><th>Decision</th><th>Stable reasons</th></tr></thead><tbody data-testid="placement-table"></tbody></table></div></section>
       </main>
     </div>
     <script type="module" src="./app.js"></script>
