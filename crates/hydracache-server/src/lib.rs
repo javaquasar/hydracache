@@ -12,6 +12,7 @@ pub mod config;
 mod grid_host;
 pub mod hc2;
 pub mod management_aggregation;
+pub mod management_history;
 mod management_http;
 pub mod management_topology;
 pub mod redis_tcp;
@@ -36,7 +37,8 @@ pub use cluster_status::{
 };
 pub use config::{
     AdminApiConfig, BackupConfig, ClientApiConfig, ClusterAuthConfig, ClusterStartMode,
-    Hc2ClientPlaneConfig, RedisApiConfig, ServerConfig, ServerConfigError, ServerRole, TlsConfig,
+    Hc2ClientPlaneConfig, ManagementHistoryConfig, RedisApiConfig, ServerConfig, ServerConfigError,
+    ServerRole, TlsConfig,
 };
 pub use hc2::{serve_hc2_listener, Hc2ClientPlaneService, Hc2ListenerTls, Hc2ServeError};
 pub use management_aggregation::{
@@ -49,6 +51,16 @@ pub use management_aggregation::{
     MANAGEMENT_SNAPSHOT_MAX_PEERS, MANAGEMENT_SNAPSHOT_MAX_REQUEST_BYTES,
     MANAGEMENT_SNAPSHOT_MAX_RESPONSE_BYTES, MANAGEMENT_SNAPSHOT_PEER_TIMEOUT,
     MANAGEMENT_SNAPSHOT_REFRESH_TIMEOUT,
+};
+pub use management_history::{
+    parse_prometheus_response, validate_resolved_addresses, ManagementHistoryData,
+    ManagementHistoryError, ManagementHistoryPoint, ManagementHistoryQueryId,
+    ManagementHistoryRequest, ManagementHistorySeries, ManagementHistoryService,
+    ManagementHistoryState, MANAGEMENT_HISTORY_DEADLINE, MANAGEMENT_HISTORY_MAX_CONCURRENCY,
+    MANAGEMENT_HISTORY_MAX_POINTS, MANAGEMENT_HISTORY_MAX_RANGE_MS,
+    MANAGEMENT_HISTORY_MAX_RESOLVED_ADDRESSES, MANAGEMENT_HISTORY_MAX_RESPONSE_BYTES,
+    MANAGEMENT_HISTORY_MAX_SERIES, MANAGEMENT_HISTORY_MAX_TOKEN_BYTES,
+    MANAGEMENT_HISTORY_MIN_STEP_MS, MANAGEMENT_HISTORY_PATH,
 };
 pub use management_http::{
     MANAGEMENT_CAPABILITIES_PATH, MANAGEMENT_CLIENTS_PATH, MANAGEMENT_CLUSTER_FORMATION_PATH,

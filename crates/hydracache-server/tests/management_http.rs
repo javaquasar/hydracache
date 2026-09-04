@@ -23,8 +23,12 @@ use hydracache_server::{
     MANAGEMENT_CAPABILITIES_PATH, MANAGEMENT_CLIENTS_PATH, MANAGEMENT_CLUSTER_FORMATION_PATH,
     MANAGEMENT_CLUSTER_MEMBERS_PATH, MANAGEMENT_CLUSTER_PARTITIONS_PATH,
     MANAGEMENT_CONSENSUS_PROGRESS_PATH, MANAGEMENT_CURSOR_TTL_MS, MANAGEMENT_DASHBOARD_PATH,
-    MANAGEMENT_FORMATION_PATH, MANAGEMENT_HEALTHCHECKS_PATH, MANAGEMENT_MAX_RESPONSE_BYTES,
-    MANAGEMENT_MAX_RETAINED_CURSORS, MANAGEMENT_NAMESPACES_PATH,
+    MANAGEMENT_FORMATION_PATH, MANAGEMENT_HEALTHCHECKS_PATH, MANAGEMENT_HISTORY_DEADLINE,
+    MANAGEMENT_HISTORY_MAX_CONCURRENCY, MANAGEMENT_HISTORY_MAX_POINTS,
+    MANAGEMENT_HISTORY_MAX_RANGE_MS, MANAGEMENT_HISTORY_MAX_RESOLVED_ADDRESSES,
+    MANAGEMENT_HISTORY_MAX_RESPONSE_BYTES, MANAGEMENT_HISTORY_MAX_SERIES,
+    MANAGEMENT_HISTORY_MAX_TOKEN_BYTES, MANAGEMENT_HISTORY_MIN_STEP_MS, MANAGEMENT_HISTORY_PATH,
+    MANAGEMENT_MAX_RESPONSE_BYTES, MANAGEMENT_MAX_RETAINED_CURSORS, MANAGEMENT_NAMESPACES_PATH,
     MANAGEMENT_NAMESPACE_CACHES_PREFIX, MANAGEMENT_PLACEMENT_TRACE_PREFIX,
     MANAGEMENT_RECOVERY_PATH, MANAGEMENT_SNAPSHOT_CACHE_TTL, MANAGEMENT_SNAPSHOT_MAX_CONCURRENCY,
     MANAGEMENT_SNAPSHOT_MAX_PEERS, MANAGEMENT_SNAPSHOT_MAX_REQUEST_BYTES,
@@ -178,6 +182,7 @@ async fn management_routes_require_verified_privileged_identity_before_reading_s
         MANAGEMENT_CLIENTS_PATH,
         MANAGEMENT_NAMESPACES_PATH,
         MANAGEMENT_HEALTHCHECKS_PATH,
+        MANAGEMENT_HISTORY_PATH,
         MANAGEMENT_CONSENSUS_PROGRESS_PATH,
         MANAGEMENT_RECOVERY_PATH,
     ] {
@@ -540,6 +545,7 @@ fn source_and_bound_registries_match_executable_contract() {
             MANAGEMENT_NAMESPACES_PATH,
             "/management/v1/namespaces/{namespace}/caches",
             MANAGEMENT_HEALTHCHECKS_PATH,
+            MANAGEMENT_HISTORY_PATH,
             MANAGEMENT_RECOVERY_PATH,
         ]
     );
@@ -649,6 +655,42 @@ fn source_and_bound_registries_match_executable_contract() {
     assert_eq!(
         value("healthchecks", "max_evidence_per_check"),
         MAX_MANAGEMENT_HEALTH_EVIDENCE
+    );
+    assert_eq!(
+        value("prometheus_history", "max_range_ms"),
+        MANAGEMENT_HISTORY_MAX_RANGE_MS as usize
+    );
+    assert_eq!(
+        value("prometheus_history", "min_step_ms"),
+        MANAGEMENT_HISTORY_MIN_STEP_MS as usize
+    );
+    assert_eq!(
+        value("prometheus_history", "max_points"),
+        MANAGEMENT_HISTORY_MAX_POINTS
+    );
+    assert_eq!(
+        value("prometheus_history", "max_series"),
+        MANAGEMENT_HISTORY_MAX_SERIES
+    );
+    assert_eq!(
+        value("prometheus_history", "max_response_bytes"),
+        MANAGEMENT_HISTORY_MAX_RESPONSE_BYTES
+    );
+    assert_eq!(
+        value("prometheus_history", "max_resolved_addresses"),
+        MANAGEMENT_HISTORY_MAX_RESOLVED_ADDRESSES
+    );
+    assert_eq!(
+        value("prometheus_history", "max_token_bytes"),
+        MANAGEMENT_HISTORY_MAX_TOKEN_BYTES as usize
+    );
+    assert_eq!(
+        value("prometheus_history", "max_concurrency"),
+        MANAGEMENT_HISTORY_MAX_CONCURRENCY
+    );
+    assert_eq!(
+        value("prometheus_history", "deadline_ms"),
+        MANAGEMENT_HISTORY_DEADLINE.as_millis() as usize
     );
 
     let canaries_text =

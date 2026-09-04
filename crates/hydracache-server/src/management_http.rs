@@ -38,6 +38,10 @@ use crate::management_aggregation::{
     AggregatedManagementSnapshot, ManagementAggregationIssue, ManagementMemberSnapshot,
     ManagementSnapshotAggregator,
 };
+use crate::management_history::{
+    ManagementHistoryData, ManagementHistoryError, ManagementHistoryRequest,
+    ManagementHistoryService, ManagementHistoryState, MANAGEMENT_HISTORY_PATH,
+};
 
 /// Management capability negotiation path.
 pub const MANAGEMENT_CAPABILITIES_PATH: &str = "/management/v1/capabilities";
@@ -178,6 +182,7 @@ struct ManagementHttpState {
     cursors: Arc<Mutex<ManagementCursorStore>>,
     aggregator: Option<Arc<ManagementSnapshotAggregator>>,
     hc2: Option<crate::hc2::Hc2ClientPlaneService>,
+    history: Option<ManagementHistoryService>,
 }
 
 /// Build the management routes with state shared across repeated router construction in tests.
@@ -186,6 +191,7 @@ pub(crate) fn routes(
     cursors: Arc<Mutex<ManagementCursorStore>>,
     aggregator: Option<Arc<ManagementSnapshotAggregator>>,
     hc2: Option<crate::hc2::Hc2ClientPlaneService>,
+    history_service: Option<ManagementHistoryService>,
 ) -> Router {
     Router::new()
         .route(MANAGEMENT_CAPABILITIES_PATH, get(capabilities))
@@ -197,6 +203,7 @@ pub(crate) fn routes(
         .route(MANAGEMENT_CLIENTS_PATH, get(clients))
         .route(MANAGEMENT_NAMESPACES_PATH, get(namespaces))
         .route(MANAGEMENT_HEALTHCHECKS_PATH, get(healthchecks))
+        .route(MANAGEMENT_HISTORY_PATH, get(history))
         .route(
             "/management/v1/namespaces/{namespace}/caches",
             get(namespace_caches),
@@ -212,6 +219,7 @@ pub(crate) fn routes(
             cursors,
             aggregator,
             hc2,
+            history: history_service,
         }))
 }
 
@@ -950,11 +958,13 @@ async fn healthchecks(
             .cmp(&right.node)
             .then(left.generation.cmp(&right.generation))
     });
-    let (topology, registry) = {
+    let (topology, registry, persistence_enabled, history_enabled) = {
         let runtime = state.runtime.lock().expect("server runtime mutex");
         (
             runtime.management_topology_model(),
             runtime.metrics_registry(),
+            runtime.config().backup.enabled,
+            runtime.config().management_history.enabled,
         )
     };
     let partition = topology.partition_for(status.epoch, status.observation_seq);
@@ -987,6 +997,10 @@ async fn healthchecks(
         reshard_backfill_lag: Some(counters.reshard_backfill_lag),
         reshard_backfill_lag_limit: None,
         admission_queue_depth: Some(overview.admission.queue_depth),
+        persistence_enabled: Some(persistence_enabled),
+        backup_age_seconds: overview.backup_age_seconds,
+        history_enabled: Some(history_enabled),
+        history_source_available: Some(state.history.is_some()),
         ..OperationalHealthSignals::default()
     };
     let input = ManagementHealthInput {
@@ -1074,6 +1088,75 @@ async fn healthchecks(
         checks,
     };
     management_response(&envelope(&status, completeness, warnings, data))
+}
+
+async fn history(
+    State(state): State<Arc<ManagementHttpState>>,
+    headers: HeaderMap,
+    query: Result<Query<ManagementHistoryRequest>, QueryRejection>,
+) -> Response {
+    if let Err(error) = require_admin(&headers) {
+        return error.into_response();
+    }
+    let Query(request) = match query {
+        Ok(query) => query,
+        Err(_) => return ManagementHttpError::InvalidQuery.into_response(),
+    };
+    if request.validate().is_err() {
+        return ManagementHttpError::InvalidQuery.into_response();
+    }
+    let status = snapshot(&state);
+    let result = match &state.history {
+        Some(service) => service.query(request).await,
+        None => Ok(ManagementHistoryData::unavailable(
+            request.query_id,
+            ManagementHistoryState::NoAdapter,
+        )),
+    };
+    let data = match result {
+        Ok(data) => data,
+        Err(ManagementHistoryError::InvalidRange) => {
+            return ManagementHttpError::InvalidQuery.into_response();
+        }
+        Err(ManagementHistoryError::Timeout) => {
+            ManagementHistoryData::unavailable(request.query_id, ManagementHistoryState::Timeout)
+        }
+        Err(ManagementHistoryError::Malformed) => {
+            ManagementHistoryData::unavailable(request.query_id, ManagementHistoryState::Malformed)
+        }
+        Err(ManagementHistoryError::Oversize) => {
+            ManagementHistoryData::unavailable(request.query_id, ManagementHistoryState::Oversize)
+        }
+        Err(
+            ManagementHistoryError::UnsafeDestination
+            | ManagementHistoryError::CredentialUnavailable
+            | ManagementHistoryError::Upstream,
+        ) => ManagementHistoryData::unavailable(
+            request.query_id,
+            ManagementHistoryState::UpstreamError,
+        ),
+    };
+    let complete = matches!(
+        data.state,
+        ManagementHistoryState::Available | ManagementHistoryState::NoData
+    ) && !data.truncated;
+    let completeness = if complete {
+        ManagementCompleteness::Complete
+    } else {
+        ManagementCompleteness::Partial
+    };
+    let warnings = (!complete)
+        .then_some(ManagementWarning {
+            code: ManagementWarningCode::SourceUnavailable,
+            affected_count: Some(1),
+        })
+        .into_iter()
+        .collect();
+    let mut response = envelope(&status, completeness, warnings, data);
+    if !complete {
+        response.source = ManagementObservationSource::Unavailable;
+    }
+    management_response(&response)
 }
 
 async fn namespaces(

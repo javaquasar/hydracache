@@ -59,8 +59,13 @@ async function refresh() {
   state.controller = new AbortController();
   setText("poll-state", "refreshing typed snapshots");
   try {
+    const historyEnd = Date.now();
+    const requestEndpoints = {
+      ...ENDPOINTS,
+      remoteHistory: `/management/v1/history?query_id=cache_entries&start_ms=${historyEnd - 3_600_000}&end_ms=${historyEnd}&step_ms=60000`,
+    };
     const results = await Promise.allSettled(
-      Object.entries(ENDPOINTS).map(async ([name, url]) => [
+      Object.entries(requestEndpoints).map(async ([name, url]) => [
         name,
         await fetchEnvelope(url, state.controller.signal),
       ]),
@@ -151,11 +156,25 @@ function render(values) {
   renderConsensus(values.consensus, data.consensus);
   renderRecovery(values.recovery);
   renderPlacement(values.placementTrace?.data, data.placement);
+  renderRemoteHistory(values.remoteHistory);
   history.ingest(
     { ...data, authority_epoch: envelope.authority_epoch },
     envelope.captured_at_unix_ms,
   );
   renderHistory();
+}
+
+function renderRemoteHistory(envelope) {
+  const data = envelope?.data;
+  const state = data?.state ?? "no_adapter";
+  const source = data?.source ?? "browser_local";
+  const series = Array.isArray(data?.series) ? data.series.length : 0;
+  setText(
+    "remote-history-state",
+    state === "available" || state === "partial"
+      ? `${source} · ${state} · ${series} bounded series (kept separate)`
+      : `${state} · using browser-local history`,
+  );
 }
 
 function renderHealth(envelope) {

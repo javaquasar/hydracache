@@ -534,3 +534,14 @@ evidence is `UNKNOWN`, never `PASS`; `DISABLED` requires explicit configuration.
 the worst known status while UNKNOWN remains a separate count. Recovery improvement is accepted
 only from a strictly newer coherent observation in the current authority epoch, so stale `Clean`
 cannot overwrite newer `Degraded` evidence.
+
+W9 adds the opt-in `/management/v1/history` fixed-query adapter. The browser can select only the
+registered `replication_success`, `replication_failure`, `cache_entries`, or
+`admission_queue_depth` query
+ID plus bounded start/end/step values; PromQL, origin, headers, redirects, and credentials are not
+wire fields. The configured origin contains scheme/host/port only. HTTPS is required unless HTTP
+is explicitly allowed, and private/loopback destinations require a separate explicit allowance.
+Every DNS answer is checked before a socket opens and the reviewed address is pinned for the
+request. Range, point, series, response-byte, concurrency, token-file and deadline limits are
+compatibility-visible. Labels and upstream error bodies are discarded. Disabled or failed history
+never replaces the bounded browser-local W4 ring, and remote/local series are not spliced.

@@ -291,6 +291,18 @@ export const healthEnvelope = {
   },
 };
 
+export const historyEnvelope = {
+  ...metadata,
+  source: "unavailable",
+  data: {
+    query_id: "cache_entries",
+    state: "no_adapter",
+    source: "prometheus_fixed_query",
+    series: [],
+    truncated: false,
+  },
+};
+
 export const consensusEnvelope = {
   ...metadata,
   data: {

@@ -107,6 +107,21 @@ pub struct BackupConfig {
     pub location: Option<String>,
 }
 
+/// Off-by-default fixed-query Prometheus history policy.
+#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
+pub struct ManagementHistoryConfig {
+    /// Explicitly enable the history adapter.
+    pub enabled: bool,
+    /// Single operator-reviewed Prometheus origin; paths and queries are rejected.
+    pub origin: Option<String>,
+    /// Optional file containing a bearer token. Its contents never enter management responses.
+    pub bearer_token_file: Option<PathBuf>,
+    /// Permit HTTP only for an explicitly reviewed test/development deployment.
+    pub allow_http: bool,
+    /// Permit private/loopback resolved addresses only for an explicitly reviewed deployment.
+    pub allow_private_networks: bool,
+}
+
 /// External client API startup policy.
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize)]
 pub struct ClientApiConfig {
@@ -236,6 +251,8 @@ pub struct ServerConfig {
     pub cluster_auth: ClusterAuthConfig,
     /// Backup policy.
     pub backup: BackupConfig,
+    /// Optional guarded Management Center history adapter.
+    pub management_history: ManagementHistoryConfig,
     /// External client API policy.
     pub client_api: ClientApiConfig,
     /// Optional production HC/2 gRPC client plane.
@@ -271,6 +288,7 @@ impl Default for ServerConfig {
             tls: TlsConfig::default(),
             cluster_auth: ClusterAuthConfig::default(),
             backup: BackupConfig::default(),
+            management_history: ManagementHistoryConfig::default(),
             client_api: ClientApiConfig::default(),
             hc2_client_plane: Hc2ClientPlaneConfig::default(),
             admin_api: AdminApiConfig::default(),
@@ -376,6 +394,22 @@ impl ServerConfig {
         }
         if let Ok(location) = env::var("HYDRACACHE_BACKUP_LOCATION") {
             config.backup.location = Some(location);
+        }
+        if env::var("HYDRACACHE_MANAGEMENT_HISTORY_ENABLED").as_deref() == Ok("true") {
+            config.management_history.enabled = true;
+        }
+        if let Ok(origin) = env::var("HYDRACACHE_MANAGEMENT_HISTORY_ORIGIN") {
+            config.management_history.origin = Some(origin);
+        }
+        if let Ok(path) = env::var("HYDRACACHE_MANAGEMENT_HISTORY_TOKEN_FILE") {
+            config.management_history.bearer_token_file = Some(PathBuf::from(path));
+        }
+        if env::var("HYDRACACHE_MANAGEMENT_HISTORY_ALLOW_HTTP").as_deref() == Ok("true") {
+            config.management_history.allow_http = true;
+        }
+        if env::var("HYDRACACHE_MANAGEMENT_HISTORY_ALLOW_PRIVATE_NETWORKS").as_deref() == Ok("true")
+        {
+            config.management_history.allow_private_networks = true;
         }
         if env::var("HYDRACACHE_CLIENT_API_ENABLED").as_deref() == Ok("true") {
             config.client_api.enabled = true;
@@ -493,6 +527,7 @@ impl ServerConfig {
         {
             return Err(ServerConfigError::MissingBackupLocation);
         }
+        validate_management_history(&self.management_history)?;
         if !self.tls.has_complete_material() {
             return Err(ServerConfigError::IncompleteTlsMaterial);
         }
@@ -624,6 +659,47 @@ impl ServerConfig {
     }
 }
 
+fn validate_management_history(history: &ManagementHistoryConfig) -> Result<(), ServerConfigError> {
+    if !history.enabled {
+        return Ok(());
+    }
+    let origin = history
+        .origin
+        .as_deref()
+        .ok_or(ServerConfigError::InvalidManagementHistory(
+            "enabled adapter requires origin",
+        ))?;
+    let url = reqwest::Url::parse(origin).map_err(|_| {
+        ServerConfigError::InvalidManagementHistory("origin must be an absolute http(s) URL")
+    })?;
+    if url.scheme() != "https" && !(url.scheme() == "http" && history.allow_http) {
+        return Err(ServerConfigError::InvalidManagementHistory(
+            "origin requires https unless allow_http=true",
+        ));
+    }
+    if url.host_str().is_none()
+        || !url.username().is_empty()
+        || url.password().is_some()
+        || url.query().is_some()
+        || url.fragment().is_some()
+        || !matches!(url.path(), "" | "/")
+    {
+        return Err(ServerConfigError::InvalidManagementHistory(
+            "origin must contain only scheme, host, and optional port",
+        ));
+    }
+    if history
+        .bearer_token_file
+        .as_deref()
+        .is_some_and(|path| path.as_os_str().is_empty())
+    {
+        return Err(ServerConfigError::InvalidManagementHistory(
+            "bearer_token_file must not be empty",
+        ));
+    }
+    Ok(())
+}
+
 /// Fail-loud configuration errors.
 #[derive(Debug, Error)]
 pub enum ServerConfigError {
@@ -719,6 +795,9 @@ pub enum ServerConfigError {
     /// External client API config is invalid.
     #[error("invalid client_api config: {0}")]
     InvalidClientApi(String),
+    /// Guarded history adapter configuration is incomplete or unsafe.
+    #[error("invalid management_history config: {0}")]
+    InvalidManagementHistory(&'static str),
     /// Member grid host could not be constructed.
     #[error("failed to start member grid host: {0}")]
     GridHostStart(String),

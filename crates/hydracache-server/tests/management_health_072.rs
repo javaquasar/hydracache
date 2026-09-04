@@ -150,7 +150,8 @@ async fn server_evaluates_checks_and_retains_unknown_separately() {
     let body = json(response).await;
     assert_eq!(body["data"]["aggregate"], "PASS");
     assert_eq!(body["data"]["counts"]["pass"], 8);
-    assert_eq!(body["data"]["counts"]["unknown"], 10);
+    assert_eq!(body["data"]["counts"]["unknown"], 8);
+    assert_eq!(body["data"]["counts"]["disabled"], 2);
     assert_eq!(
         body["data"]["checks"]["items"].as_array().unwrap().len(),
         18
@@ -176,7 +177,7 @@ async fn category_status_filters_and_cursor_are_server_side_and_stable() {
             .unwrap(),
     )
     .await;
-    assert_eq!(unknown["data"]["counts"]["unknown"], 10);
+    assert_eq!(unknown["data"]["counts"]["unknown"], 8);
     assert!(unknown["data"]["checks"]["items"]
         .as_array()
         .unwrap()

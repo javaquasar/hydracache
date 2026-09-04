@@ -74,3 +74,16 @@ evaluation_version = 1
 raft_apply_lag_warn_entries = 100
 raft_apply_lag_fail_entries = 1000
 unknown_policy = "retained separately; never promoted to pass"
+
+[prometheus_history]
+max_range_ms = 86400000
+min_step_ms = 10000
+max_points = 1000
+max_series = 24
+max_response_bytes = 262144
+max_resolved_addresses = 16
+max_token_bytes = 4096
+max_concurrency = 2
+deadline_ms = 2000
+redirects = false
+query_ids = ["replication_success", "replication_failure", "cache_entries", "admission_queue_depth"]

@@ -6,6 +6,7 @@ import {
   dashboardEnvelope,
   formationEnvelope,
   healthEnvelope,
+  historyEnvelope,
   largeDashboardEnvelope,
   membersEnvelope,
   modeledDashboardEnvelope,
@@ -52,6 +53,19 @@ test("console_renders_typed_dashboard_and_all_truth_states", async ({ page }) =>
   await expect(page.getByTestId("health-counts")).toContainText("UNKNOWN15");
   await expect(page.getByTestId("health-aggregate")).toHaveText("FAIL");
   await expect(page.getByTestId("health-table")).toContainText("apply-lag=100 entries");
+  await expect(page.getByTestId("remote-history-state")).toContainText("using browser-local history");
+});
+
+test("optional_prometheus_history_is_labeled_and_never_spliced_into_local_ring", async ({ page }) => {
+  const remote = structuredClone(historyEnvelope);
+  remote.source = "live";
+  remote.data.state = "available";
+  remote.data.series = [{ series_index: 0, points: [{ timestamp_unix_ms: 1, value: 999 }] }];
+  await routeManagement(page, { history: remote });
+  await page.goto(consoleUrl);
+  await expect(page.getByTestId("remote-history-state")).toContainText("kept separate");
+  const local = await page.evaluate(() => window.__HC_CONSOLE_STATE__.history.points("cache.entries"));
+  expect(local.some((point) => point.value === 999)).toBe(false);
 });
 
 test("health_filters_use_server_verdicts_and_keep_unknown_visible", async ({ page }) => {
@@ -218,6 +232,7 @@ async function routeManagement(page, overrides = {}) {
     clients: overrides.clients === undefined ? clientsEnvelope : overrides.clients,
     namespaces: overrides.namespaces === undefined ? namespacesEnvelope : overrides.namespaces,
     health: overrides.health === undefined ? healthEnvelope : overrides.health,
+    history: overrides.history === undefined ? historyEnvelope : overrides.history,
     namespaceCaches:
       overrides.namespaceCaches === undefined
         ? namespaceCachesEnvelope
@@ -235,6 +250,8 @@ async function routeManagement(page, overrides = {}) {
         ? fixtures.namespaces
       : path.endsWith("/healthchecks")
         ? fixtures.health
+      : path.endsWith("/history")
+        ? fixtures.history
       : path.endsWith("/clients")
         ? fixtures.clients
       : path.endsWith("/cluster/members")

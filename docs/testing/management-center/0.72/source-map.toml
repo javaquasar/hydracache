@@ -171,6 +171,19 @@ fallback = "required missing, partial, modeled, stale, incoherent or truncated e
 test_owner = "crates/hydracache-observability/tests/management_health_072.rs + crates/hydracache-server/tests/management_health_072.rs"
 
 [[source]]
+id = "prometheus-fixed-history"
+route = "/management/v1/history"
+field_group = "bounded historical samples for four reviewed query IDs"
+producer = "single configured Prometheus origin through DNS-fenced reqwest adapter"
+authority = "external observational metrics source; never control-plane authority"
+lifetime = "one deadline-bound request; browser keeps server history separate from its local ring"
+consistency = "one fixed query/range; labels discarded; no cross-source splicing"
+max_cardinality = 24
+privacy = "no PromQL, URL, headers, credentials, labels, or upstream error bodies cross the browser boundary"
+fallback = "no_adapter/no_data/timeout/partial/malformed/oversize states; local history remains available"
+test_owner = "crates/hydracache-server/tests/management_history_072.rs + console/tests/console_readonly.spec.js"
+
+[[source]]
 id = "persistence-recovery"
 route = "/management/v1/persistence/recovery"
 field_group = "durable recovery outcome and bounded evidence counts"

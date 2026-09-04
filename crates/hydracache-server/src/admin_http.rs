@@ -57,6 +57,7 @@ pub struct AdminHttpSurface {
     hc2_metrics: Option<Hc2ClientPlaneService>,
     management_cursors: Arc<Mutex<crate::management_http::ManagementCursorStore>>,
     management_aggregator: Option<Arc<crate::management_aggregation::ManagementSnapshotAggregator>>,
+    management_history: Option<crate::management_history::ManagementHistoryService>,
 }
 
 impl AdminHttpSurface {
@@ -65,11 +66,16 @@ impl AdminHttpSurface {
         let management_aggregator = runtime.management_peer_transport().map(|transport| {
             Arc::new(crate::management_aggregation::ManagementSnapshotAggregator::new(transport))
         });
+        let management_history = crate::management_history::ManagementHistoryService::from_config(
+            &runtime.config().management_history,
+        )
+        .expect("validated management history config");
         Self {
             runtime: Arc::new(Mutex::new(runtime)),
             hc2_metrics: None,
             management_cursors: Arc::new(Mutex::new(Default::default())),
             management_aggregator,
+            management_history,
         }
     }
 
@@ -84,11 +90,19 @@ impl AdminHttpSurface {
                     crate::management_aggregation::ManagementSnapshotAggregator::new(transport),
                 )
             });
+        let management_history = {
+            let runtime = runtime.lock().expect("server runtime mutex");
+            crate::management_history::ManagementHistoryService::from_config(
+                &runtime.config().management_history,
+            )
+            .expect("validated management history config")
+        };
         Self {
             runtime,
             hc2_metrics: None,
             management_cursors: Arc::new(Mutex::new(Default::default())),
             management_aggregator,
+            management_history,
         }
     }
 
@@ -142,6 +156,7 @@ impl AdminHttpSurface {
                 Arc::clone(&self.management_cursors),
                 self.management_aggregator.clone(),
                 self.hc2_metrics.clone(),
+                self.management_history.clone(),
             ));
         if let Some(service) = self.hc2_metrics.clone() {
             routes.layer(Extension(service))

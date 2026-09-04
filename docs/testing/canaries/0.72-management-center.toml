@@ -120,3 +120,13 @@ defect_env = "HYDRACACHE_CANARY_DEFECT=MC72-W8-TRUNCATED-PLACEMENT-PASS"
 expected_failure = "HC-CANARY-RED:MC72-W8-TRUNCATED-PLACEMENT-PASS"
 green_evidence = "A truncated placement trace whose outcome is unknown evaluates UNKNOWN."
 red_evidence = "The mutant paints the truncated unknown outcome PASS and the same truth-table oracle turns red."
+
+[[canary]]
+id = "MC72-W9-ARBITRARY-PROXY"
+status = "active"
+test = "canary_arbitrary_proxy_and_amplification_are_rejected_before_socket_open"
+command = "cargo test -p hydracache-server --test management_history_072 --locked canary_arbitrary_proxy_and_amplification_are_rejected_before_socket_open -- --nocapture"
+defect_env = "HYDRACACHE_CANARY_DEFECT=MC72-W9-ARBITRARY-PROXY"
+expected_failure = "HC-CANARY-RED:MC72-W9-ARBITRARY-PROXY"
+green_evidence = "Range amplification and metadata-service addresses are rejected by pure validation before the adapter constructs a client."
+red_evidence = "The mutant bypasses both pre-socket guards and the same security oracle turns red."
