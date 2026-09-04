@@ -5,6 +5,7 @@ import {
   clientsEnvelope,
   dashboardEnvelope,
   formationEnvelope,
+  healthEnvelope,
   largeDashboardEnvelope,
   membersEnvelope,
   modeledDashboardEnvelope,
@@ -47,6 +48,22 @@ test("console_renders_typed_dashboard_and_all_truth_states", async ({ page }) =>
   await expect(page.getByTestId("namespace-row")).toContainText("orders");
   await expect(page.getByTestId("namespace-row")).toContainText("unavailable");
   await expect(page.getByTestId("cache-row")).toContainText("client-surface");
+  await expect(page.getByTestId("health-row")).toHaveCount(18);
+  await expect(page.getByTestId("health-counts")).toContainText("UNKNOWN15");
+  await expect(page.getByTestId("health-aggregate")).toHaveText("FAIL");
+  await expect(page.getByTestId("health-table")).toContainText("apply-lag=100 entries");
+});
+
+test("health_filters_use_server_verdicts_and_keep_unknown_visible", async ({ page }) => {
+  await routeManagement(page);
+  await page.goto(consoleUrl);
+  await page.getByTestId("health-status-filter").selectOption("UNKNOWN");
+  await expect(page.getByTestId("health-row")).toHaveCount(15);
+  await page.getByTestId("health-category-filter").selectOption("recovery");
+  await expect(page.getByTestId("health-row")).toHaveCount(2);
+  await page.getByTestId("health-search").fill("reconciliation");
+  await expect(page.getByTestId("health-row")).toHaveCount(1);
+  await expect(page.getByTestId("health-row")).toContainText("HC-RECOVERY-003");
 });
 
 test("placement_outcomes_and_stale_warning_are_rendered_without_inference", async ({ page }) => {
@@ -200,6 +217,7 @@ async function routeManagement(page, overrides = {}) {
       overrides.placementTrace === undefined ? placementTraceEnvelope : overrides.placementTrace,
     clients: overrides.clients === undefined ? clientsEnvelope : overrides.clients,
     namespaces: overrides.namespaces === undefined ? namespacesEnvelope : overrides.namespaces,
+    health: overrides.health === undefined ? healthEnvelope : overrides.health,
     namespaceCaches:
       overrides.namespaceCaches === undefined
         ? namespaceCachesEnvelope
@@ -215,6 +233,8 @@ async function routeManagement(page, overrides = {}) {
       ? fixtures.dashboard
       : path.endsWith("/namespaces")
         ? fixtures.namespaces
+      : path.endsWith("/healthchecks")
+        ? fixtures.health
       : path.endsWith("/clients")
         ? fixtures.clients
       : path.endsWith("/cluster/members")

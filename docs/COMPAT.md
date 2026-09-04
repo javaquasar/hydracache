@@ -525,3 +525,12 @@ backup, and breaker values remain null until a tenant-scoped owner source can pr
 single `client-surface` cache row is therefore partial and explicitly quality-tagged. Subscription
 status for isolated tenants no longer reuses the global process gauge, preventing a cross-tenant
 count oracle.
+
+W8 adds the admin-only `/management/v1/healthchecks` catalogue. Stable check IDs, status/category
+enums, remediation codes, evidence codes, threshold units and evaluation version are compatibility
+artifacts. The server evaluates checks from immutable typed inputs; the browser only filters and
+renders returned verdicts. Missing, partial, modeled, mixed-epoch, incoherent, or required truncated
+evidence is `UNKNOWN`, never `PASS`; `DISABLED` requires explicit configuration. The headline is
+the worst known status while UNKNOWN remains a separate count. Recovery improvement is accepted
+only from a strictly newer coherent observation in the current authority epoch, so stale `Clean`
+cannot overwrite newer `Degraded` evidence.

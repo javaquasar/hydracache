@@ -14,7 +14,7 @@
     </header>
     <div class="app-shell">
       <nav class="sidebar" aria-label="Management sections">
-        <a href="#dashboard" class="active">Dashboard</a><a href="#formation">Formation</a><a href="#members">Members</a><a href="#partitions">Partitions</a><a href="#clients">Clients</a><a href="#namespaces">Namespaces</a><a href="#replication">Replication</a><a href="#placement">Placement</a><a href="#consensus">Consensus</a><a href="#recovery">Recovery</a><a href="#history">Local history</a>
+        <a href="#dashboard" class="active">Dashboard</a><a href="#healthchecks">Healthchecks</a><a href="#formation">Formation</a><a href="#members">Members</a><a href="#partitions">Partitions</a><a href="#clients">Clients</a><a href="#namespaces">Namespaces</a><a href="#replication">Replication</a><a href="#placement">Placement</a><a href="#consensus">Consensus</a><a href="#recovery">Recovery</a><a href="#history">Local history</a>
       </nav>
       <main class="page-shell" id="dashboard">
         <section class="degraded" data-testid="degraded-state" hidden></section>
@@ -30,6 +30,8 @@
           <a href="#consensus" class="metric-cell" data-testid="consensus-summary"><span>Raft apply lag</span><strong>loading</strong><small>missing is not zero</small></a>
           <a href="#recovery" class="metric-cell" data-testid="recovery-summary"><span>Recovery</span><strong>loading</strong><small>five outcomes</small></a>
         </section>
+
+        <section class="panel" id="healthchecks"><div class="section-heading"><div><h2>Deterministic healthchecks</h2><p>Statuses and thresholds are evaluated by the server; UNKNOWN remains visible</p></div><span class="truth-chip unknown" data-testid="health-aggregate">UNKNOWN</span></div><div class="metrics-strip" data-testid="health-counts"></div><div class="filter-strip"><label>Search <input data-testid="health-search" type="search" maxlength="128" /></label><label>Status <select data-testid="health-status-filter"><option value="">All</option><option>FAIL</option><option>WARN</option><option>UNKNOWN</option><option>PASS</option><option>DISABLED</option></select></label><label>Category <select data-testid="health-category-filter"><option value="">All</option><option value="authority">Authority</option><option value="formation">Formation</option><option value="consensus">Consensus</option><option value="membership">Membership</option><option value="partitions">Partitions</option><option value="placement">Placement</option><option value="replication">Replication</option><option value="repair">Repair</option><option value="reshard">Reshard</option><option value="resource">Resource</option><option value="expiry">Expiry</option><option value="clients">Clients</option><option value="persistence">Persistence</option><option value="recovery">Recovery</option><option value="audit">Audit</option><option value="history">History</option></select></label></div><div class="table-scroll"><table><thead><tr><th>ID</th><th>Status</th><th>Category</th><th>Title</th><th>Evidence</th><th>Affected</th><th>Remediation</th><th>Sequence</th></tr></thead><tbody data-testid="health-table"></tbody></table></div></section>
 
         <section class="panel" id="history" aria-labelledby="history-title">
           <div class="section-heading"><div><h2 id="history-title">History since page opened</h2><p data-testid="history-budget">No samples</p></div><span class="trust-note">browser-local · bounded</span></div>

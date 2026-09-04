@@ -10,6 +10,7 @@ const ENDPOINTS = Object.freeze({
   partitions: "/management/v1/cluster/partitions",
   clients: "/management/v1/clients",
   namespaces: "/management/v1/namespaces?limit=100",
+  health: "/management/v1/healthchecks?limit=100",
   consensus: "/management/v1/consensus/progress?limit=100",
   recovery: "/management/v1/persistence/recovery?limit=100",
 });
@@ -20,13 +21,20 @@ const ADMIN_HEADERS = Object.freeze({
 });
 
 const history = new SnapshotHistory();
-const state = { timer: null, controller: null, failures: 0, paused: false, refreshes: 0 };
+const state = { timer: null, controller: null, failures: 0, paused: false, refreshes: 0, health: null };
 window.__HC_CONSOLE_STATE__ = { state, history, limits: HISTORY_LIMITS };
 
 document.addEventListener("DOMContentLoaded", () => {
   wireLifecycle();
+  wireHealthFilters();
   refresh();
 });
+
+function wireHealthFilters() {
+  for (const id of ["health-search", "health-status-filter", "health-category-filter"]) {
+    byTest(id).addEventListener("input", () => renderHealth(state.health));
+  }
+}
 
 function wireLifecycle() {
   const reevaluate = () => {
@@ -138,6 +146,8 @@ function render(values) {
   renderPartitions(values.partitions, data.partitions);
   renderClients(values.clients);
   renderNamespaces(values.namespaces, values.namespaceCaches);
+  state.health = values.health;
+  renderHealth(values.health);
   renderConsensus(values.consensus, data.consensus);
   renderRecovery(values.recovery);
   renderPlacement(values.placementTrace?.data, data.placement);
@@ -146,6 +156,58 @@ function render(values) {
     envelope.captured_at_unix_ms,
   );
   renderHistory();
+}
+
+function renderHealth(envelope) {
+  const data = envelope?.data ?? {};
+  const checks = data.checks?.items ?? [];
+  const search = byTest("health-search").value.trim().toLocaleLowerCase();
+  const statusFilter = byTest("health-status-filter").value;
+  const categoryFilter = byTest("health-category-filter").value;
+  const visible = checks
+    .filter((check) => !statusFilter || check.status === statusFilter)
+    .filter((check) => !categoryFilter || check.category === categoryFilter)
+    .filter(
+      (check) =>
+        !search ||
+        `${check.id} ${check.title} ${check.remediation_code}`.toLocaleLowerCase().includes(search),
+    )
+    .slice(0, MAX_RENDERED_MEMBERS);
+  const counts = data.counts ?? {};
+  byTest("health-counts").replaceChildren(
+    ...["fail", "warn", "unknown", "pass", "disabled"].map((name) =>
+      pill(name.toUpperCase(), known(counts[name])),
+    ),
+  );
+  const aggregate = byTest("health-aggregate");
+  aggregate.textContent = data.aggregate ?? "UNKNOWN";
+  aggregate.className = `truth-chip ${(data.aggregate ?? "UNKNOWN").toLocaleLowerCase()}`;
+  byTest("health-table").replaceChildren(
+    ...visible.map((check) =>
+      row(
+        [
+          check.id,
+          status(check.status),
+          check.category,
+          check.title,
+          (check.evidence ?? [])
+            .map((item) =>
+              item.value == null ? item.code : `${item.code}=${item.value}${item.unit ? ` ${item.unit}` : ""}`,
+            )
+            .join(", ") || "none",
+          check.affected_count == null ? "none" : known(check.affected_count),
+          check.remediation_code,
+          known(check.observation_seq),
+        ],
+        { testid: "health-row" },
+      ),
+    ),
+  );
+  if (visible.length === 0) {
+    byTest("health-table").append(
+      row(["No matching checks", "UNKNOWN", "unknown", "No server verdict", "source-unavailable", "none", "inspect-source", "unavailable"]),
+    );
+  }
 }
 
 function renderWarnings(envelopes) {

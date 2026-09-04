@@ -14,17 +14,20 @@ use axum::routing::get;
 use axum::Router;
 use hydracache_client_transport_axum::ClientIdentity;
 use hydracache_observability::{
-    AdmissionState, BoundedCount, BoundedPage, CatchUpState, ClientProtocolLifecycle,
-    ClusterFormationSnapshot, ConsensusProgressSnapshot, DiscoveryState, DurableRecoveryStatus,
-    FormationReasonCode, ManagementCacheDetail, ManagementCapabilities, ManagementCapability,
-    ManagementCapabilityAvailability, ManagementCapabilityId, ManagementClientProtocol,
-    ManagementClientsSnapshot, ManagementCompleteness, ManagementConsensusRole, ManagementEnvelope,
-    ManagementMeasurementQuality, ManagementMemberDetail, ManagementNamespaceSummary,
-    ManagementObservationSource, ManagementPartitionSnapshot, ManagementWarning,
-    ManagementWarningCode, MemberFormationTransition, MemberReachabilityReason, OpaqueCursor,
-    OpaqueNodeIdentity, PlacementDecisionTrace, RecoveryArtifactKind, RecoveryOutcome,
-    RecoveryPhase, RecoveryReasonCode, RecoveryScope, RepairState, ServingState, TransportState,
-    MANAGEMENT_API_SCHEMA_VERSION, MAX_MANAGEMENT_CURSOR_BYTES, MAX_MANAGEMENT_PAGE_ITEMS,
+    evaluate_management_health, AdmissionState, BoundedCount, BoundedPage, CatchUpState,
+    ClientProtocolLifecycle, ClusterFormationSnapshot, ConsensusProgressSnapshot, DiscoveryState,
+    DurableRecoveryStatus, FormationReasonCode, ManagementCacheDetail, ManagementCapabilities,
+    ManagementCapability, ManagementCapabilityAvailability, ManagementCapabilityId,
+    ManagementClientProtocol, ManagementClientsSnapshot, ManagementCompleteness,
+    ManagementConsensusRole, ManagementEnvelope, ManagementHealthCategory, ManagementHealthCheck,
+    ManagementHealthCounts, ManagementHealthInput, ManagementHealthReport, ManagementHealthStatus,
+    ManagementHealthThresholds, ManagementMeasurementQuality, ManagementMemberDetail,
+    ManagementNamespaceSummary, ManagementObservationSource, ManagementPartitionSnapshot,
+    ManagementWarning, ManagementWarningCode, MemberFormationTransition, MemberReachabilityReason,
+    OpaqueCursor, OpaqueNodeIdentity, OperationalHealthSignals, PlacementDecisionTrace,
+    RecoveryArtifactKind, RecoveryOutcome, RecoveryPhase, RecoveryReasonCode, RecoveryScope,
+    RepairState, ServingState, TransportState, MANAGEMENT_API_SCHEMA_VERSION,
+    MAX_MANAGEMENT_CURSOR_BYTES, MAX_MANAGEMENT_PAGE_ITEMS,
 };
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
@@ -52,6 +55,8 @@ pub const MANAGEMENT_CLUSTER_PARTITIONS_PATH: &str = "/management/v1/cluster/par
 pub const MANAGEMENT_CLIENTS_PATH: &str = "/management/v1/clients";
 /// Caller-authorized namespace summary path.
 pub const MANAGEMENT_NAMESPACES_PATH: &str = "/management/v1/namespaces";
+/// Deterministic, server-evaluated health catalogue path.
+pub const MANAGEMENT_HEALTHCHECKS_PATH: &str = "/management/v1/healthchecks";
 /// Prefix for caller-authorized namespace cache detail.
 pub const MANAGEMENT_NAMESPACE_CACHES_PREFIX: &str = "/management/v1/namespaces";
 /// Prefix for non-enumerable placement-decision trace resources.
@@ -75,6 +80,7 @@ enum CursorKind {
     Formation,
     Members,
     Namespaces,
+    Healthchecks,
     ConsensusProgress,
     Recovery,
 }
@@ -190,6 +196,7 @@ pub(crate) fn routes(
         .route(MANAGEMENT_CLUSTER_PARTITIONS_PATH, get(partitions))
         .route(MANAGEMENT_CLIENTS_PATH, get(clients))
         .route(MANAGEMENT_NAMESPACES_PATH, get(namespaces))
+        .route(MANAGEMENT_HEALTHCHECKS_PATH, get(healthchecks))
         .route(
             "/management/v1/namespaces/{namespace}/caches",
             get(namespace_caches),
@@ -862,6 +869,210 @@ async fn partitions(State(state): State<Arc<ManagementHttpState>>, headers: Head
         return ManagementHttpError::ContractViolation.into_response();
     }
     let completeness = data.completeness;
+    management_response(&envelope(&status, completeness, warnings, data))
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
+struct HealthQuery {
+    category: Option<ManagementHealthCategory>,
+    status: Option<ManagementHealthStatus>,
+    limit: Option<usize>,
+    cursor: Option<String>,
+}
+
+#[derive(Debug, Serialize)]
+struct ManagementHealthPage {
+    aggregate: ManagementHealthStatus,
+    counts: ManagementHealthCounts,
+    thresholds: ManagementHealthThresholds,
+    checks: BoundedPage<ManagementHealthCheck>,
+}
+
+async fn healthchecks(
+    State(state): State<Arc<ManagementHttpState>>,
+    headers: HeaderMap,
+    query: Result<Query<HealthQuery>, QueryRejection>,
+) -> Response {
+    if let Err(error) = require_admin(&headers) {
+        return error.into_response();
+    }
+    let Query(query) = match query {
+        Ok(query) => query,
+        Err(_) => return ManagementHttpError::InvalidQuery.into_response(),
+    };
+    let limit = query.limit.unwrap_or(MAX_MANAGEMENT_PAGE_ITEMS);
+    if !(1..=MAX_MANAGEMENT_PAGE_ITEMS).contains(&limit) {
+        return ManagementHttpError::InvalidLimit.into_response();
+    }
+    if query
+        .cursor
+        .as_ref()
+        .is_some_and(|cursor| cursor.is_empty() || cursor.len() > MAX_MANAGEMENT_CURSOR_BYTES)
+    {
+        return ManagementHttpError::InvalidCursor.into_response();
+    }
+
+    let (status, can_serve, aggregate) = request_snapshot(&state).await;
+    let mut formation = status
+        .members
+        .iter()
+        .map(|member| {
+            let peer = aggregate.as_ref().and_then(|aggregate| {
+                aggregate.members.iter().find(|candidate| {
+                    candidate.node_id == member.node_id && candidate.generation == member.generation
+                })
+            });
+            formation_item(&status, member, peer, can_serve)
+        })
+        .collect::<Vec<_>>();
+    formation.sort_by(|left, right| {
+        left.node
+            .cmp(&right.node)
+            .then(left.generation.cmp(&right.generation))
+    });
+    let mut consensus = if let Some(aggregate) = &aggregate {
+        aggregate
+            .members
+            .iter()
+            .filter_map(|member| consensus_aggregate_item(&status, member))
+            .collect::<Vec<_>>()
+    } else {
+        status
+            .local_consensus
+            .as_ref()
+            .map(|progress| consensus_item(&status, progress))
+            .into_iter()
+            .collect::<Vec<_>>()
+    };
+    consensus.sort_by(|left, right| {
+        left.node
+            .cmp(&right.node)
+            .then(left.generation.cmp(&right.generation))
+    });
+    let (topology, registry) = {
+        let runtime = state.runtime.lock().expect("server runtime mutex");
+        (
+            runtime.management_topology_model(),
+            runtime.metrics_registry(),
+        )
+    };
+    let partition = topology.partition_for(status.epoch, status.observation_seq);
+    let placement = partition
+        .as_ref()
+        .and_then(|partition| partition.placement_trace_id.as_deref())
+        .and_then(|trace_id| topology.placement_trace_for(trace_id, status.epoch));
+    let overview = registry.overview().await;
+    let counters = overview.cluster_grid;
+    let operational = OperationalHealthSignals {
+        quorum_ok: Some(status.quorum_ok),
+        leader_present: Some(status.leader.is_some()),
+        unreachable_members: Some(
+            status
+                .members
+                .iter()
+                .filter(|member| member.reachable == Reachability::Unreachable)
+                .count() as u64,
+        ),
+        incompatible_members: None,
+        config_skew_members: None,
+        unassigned_partitions: partition.as_ref().and_then(|value| value.unassigned),
+        under_replicated_partitions: partition.as_ref().map(|value| value.under_replicated),
+        zone_underspread_partitions: partition.as_ref().map(|value| value.zone_underspread),
+        replication_failures: Some(counters.replication_failure_total),
+        replication_backpressure: Some(counters.replication_backpressure_total),
+        repair_debt: Some(counters.tombstone_repair_debt),
+        degraded_mode: Some(counters.repair_debt_degraded_mode > 0),
+        reshard_active: Some(status.reshard_phase != crate::cluster_status::ReshardPhase::Idle),
+        reshard_backfill_lag: Some(counters.reshard_backfill_lag),
+        reshard_backfill_lag_limit: None,
+        admission_queue_depth: Some(overview.admission.queue_depth),
+        ..OperationalHealthSignals::default()
+    };
+    let input = ManagementHealthInput {
+        authority_epoch: status.metadata_authoritative.then_some(status.epoch),
+        observation_seq: status.observation_seq,
+        source: source(status.source),
+        completeness: if status.metadata_authoritative && status.source == StatusSource::Live {
+            ManagementCompleteness::Complete
+        } else {
+            ManagementCompleteness::Partial
+        },
+        formation,
+        consensus,
+        placement,
+        recovery: None,
+        operational,
+        thresholds: ManagementHealthThresholds::default(),
+    };
+    let evaluated = evaluate_management_health(&input);
+    if evaluated.validate().is_err() {
+        return ManagementHttpError::ContractViolation.into_response();
+    }
+    let filtered = evaluated
+        .checks
+        .into_iter()
+        .filter(|check| {
+            query
+                .category
+                .is_none_or(|category| check.category == category)
+        })
+        .filter(|check| query.status.is_none_or(|status| check.status == status))
+        .collect::<Vec<_>>();
+    let filtered_report = ManagementHealthReport::from_checks(evaluated.thresholds, filtered);
+    let now = unix_time_ms();
+    let normalized = NormalizedPageQuery {
+        limit,
+        cursor: query.cursor,
+    };
+    let start = match page_start(&state, &normalized, CursorKind::Healthchecks, &status, now) {
+        Ok(start) => start,
+        Err(error) => return error.into_response(),
+    };
+    if start > filtered_report.checks.len() {
+        return ManagementHttpError::SnapshotChanged.into_response();
+    }
+    let end = start
+        .saturating_add(limit)
+        .min(filtered_report.checks.len());
+    let truncated = end < filtered_report.checks.len();
+    let next_cursor = truncated.then(|| {
+        state
+            .cursors
+            .lock()
+            .expect("management cursor store mutex")
+            .issue(
+                CursorKind::Healthchecks,
+                status.epoch,
+                status.observation_seq,
+                end,
+                now,
+            )
+    });
+    let checks = BoundedPage {
+        items: filtered_report.checks[start..end].to_vec(),
+        next_cursor,
+        truncated,
+    };
+    if checks.validate().is_err() {
+        return ManagementHttpError::ContractViolation.into_response();
+    }
+    let completeness = if filtered_report.counts.unknown == 0 && !truncated {
+        ManagementCompleteness::Complete
+    } else {
+        ManagementCompleteness::Partial
+    };
+    let warnings = response_warnings(
+        completeness,
+        truncated,
+        filtered_report.checks.len().saturating_sub(end),
+    );
+    let data = ManagementHealthPage {
+        aggregate: filtered_report.aggregate,
+        counts: filtered_report.counts,
+        thresholds: filtered_report.thresholds,
+        checks,
+    };
     management_response(&envelope(&status, completeness, warnings, data))
 }
 

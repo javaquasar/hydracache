@@ -90,3 +90,33 @@ defect_env = "HYDRACACHE_CANARY_DEFECT=MC72-W7-CROSS-TENANT"
 expected_failure = "HC-CANARY-RED:MC72-W7-CROSS-TENANT"
 green_evidence = "The tenant roster authorizes the caller before namespace totals are computed; hidden names, keys and payloads never enter the DTO."
 red_evidence = "The mutant switches the authorized source to tenant B and the same body scanner detects its distinctive namespace."
+
+[[canary]]
+id = "MC72-W8-UNKNOWN-AS-PASS"
+status = "active"
+test = "canary_missing_required_input_is_never_promoted_to_pass"
+command = "cargo test -p hydracache-observability --test management_health_072 --locked canary_missing_required_input_is_never_promoted_to_pass -- --nocapture"
+defect_env = "HYDRACACHE_CANARY_DEFECT=MC72-W8-UNKNOWN-AS-PASS"
+expected_failure = "HC-CANARY-RED:MC72-W8-UNKNOWN-AS-PASS"
+green_evidence = "A missing required placement input evaluates UNKNOWN and remains counted separately."
+red_evidence = "The mutant paints missing evidence PASS and the same status oracle turns red."
+
+[[canary]]
+id = "MC72-W8-STALE-RECOVERY-WINS"
+status = "active"
+test = "canary_stale_clean_recovery_cannot_replace_newer_degraded"
+command = "cargo test -p hydracache-observability --test management_health_072 --locked canary_stale_clean_recovery_cannot_replace_newer_degraded -- --nocapture"
+defect_env = "HYDRACACHE_CANARY_DEFECT=MC72-W8-STALE-RECOVERY-WINS"
+expected_failure = "HC-CANARY-RED:MC72-W8-STALE-RECOVERY-WINS"
+green_evidence = "The sequence/epoch reducer retains the newer Degraded recovery observation."
+red_evidence = "The mutant replaces it with an older Clean result and the timeline oracle turns red."
+
+[[canary]]
+id = "MC72-W8-TRUNCATED-PLACEMENT-PASS"
+status = "active"
+test = "canary_truncated_unknown_placement_cannot_pass"
+command = "cargo test -p hydracache-observability --test management_health_072 --locked canary_truncated_unknown_placement_cannot_pass -- --nocapture"
+defect_env = "HYDRACACHE_CANARY_DEFECT=MC72-W8-TRUNCATED-PLACEMENT-PASS"
+expected_failure = "HC-CANARY-RED:MC72-W8-TRUNCATED-PLACEMENT-PASS"
+green_evidence = "A truncated placement trace whose outcome is unknown evaluates UNKNOWN."
+red_evidence = "The mutant paints the truncated unknown outcome PASS and the same truth-table oracle turns red."

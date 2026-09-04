@@ -48,6 +48,7 @@ pub mod audit;
 pub mod consumer;
 pub mod exporter;
 pub mod management;
+pub mod management_health;
 
 pub use audit::{
     AuditEnvelope, AuditError, AuditEvent, AuditHealth, AuditKey, AuditKeyPolicy, AuditOutcome,
@@ -78,6 +79,14 @@ pub use management::{
     MAX_MANAGEMENT_OPAQUE_ID_BYTES, MAX_MANAGEMENT_PAGE_ITEMS, MAX_MANAGEMENT_WARNINGS,
     MAX_MEMBER_FORMATION_TRANSITIONS, MAX_PLACEMENT_CANDIDATES, MAX_PLACEMENT_LABELS,
     MAX_PLACEMENT_LABEL_BYTES, MAX_PLACEMENT_REASONS_PER_CANDIDATE, MAX_PLACEMENT_SELECTED,
+};
+pub use management_health::{
+    evaluate_management_health, retain_newer_recovery_observation, HealthThresholdSource,
+    ManagementHealthCategory, ManagementHealthCheck, ManagementHealthCounts,
+    ManagementHealthEvidence, ManagementHealthEvidenceCode, ManagementHealthInput,
+    ManagementHealthReport, ManagementHealthStatus, ManagementHealthThresholds,
+    OperationalHealthSignals, RecoveryHealthObservation, MANAGEMENT_HEALTH_EVALUATION_VERSION,
+    MAX_MANAGEMENT_HEALTH_CHECKS, MAX_MANAGEMENT_HEALTH_EVIDENCE,
 };
 
 /// Serializable snapshot of [`CacheStats`].

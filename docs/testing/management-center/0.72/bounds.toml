@@ -66,3 +66,11 @@ max_caches_per_client_namespace = 1
 max_identifier_bytes = 128
 hidden_scope_status = 404
 authorization = "server-side before totals and serialization"
+
+[healthchecks]
+max_checks = 64
+max_evidence_per_check = 16
+evaluation_version = 1
+raft_apply_lag_warn_entries = 100
+raft_apply_lag_fail_entries = 1000
+unknown_policy = "retained separately; never promoted to pass"

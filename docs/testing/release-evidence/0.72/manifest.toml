@@ -50,3 +50,10 @@ status = "implemented"
 source = "crates/hydracache-client-transport-axum/src/lib.rs + crates/hydracache-observability/src/management.rs + crates/hydracache-server/src/{bootstrap,management_http}.rs + console/{index.html,app.js}"
 test = "crates/hydracache-server/tests/management_namespaces_072.rs + crates/hydracache-client-transport-axum/tests/client_surface.rs + console/tests/console_readonly.spec.js"
 gate = "cargo test -p hydracache-server --test management_namespaces_072 --locked && cargo test -p hydracache-client-transport-axum --locked && npm --prefix console test"
+
+[[work_item]]
+id = "W8-health-engine"
+status = "implemented"
+source = "crates/hydracache-observability/src/management_health.rs + crates/hydracache-server/src/management_http.rs + console/{index.html,app.js}"
+test = "crates/hydracache-observability/tests/management_health_072.rs + crates/hydracache-server/tests/management_health_072.rs + console/tests/console_readonly.spec.js"
+gate = "cargo test -p hydracache-observability --test management_health_072 --locked && cargo test -p hydracache-server --test management_health_072 --locked && npm --prefix console test"

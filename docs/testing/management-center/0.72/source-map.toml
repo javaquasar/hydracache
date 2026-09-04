@@ -158,6 +158,19 @@ fallback = "unknown or hidden namespace returns 404; unavailable measurements re
 test_owner = "crates/hydracache-server/tests/management_namespaces_072.rs"
 
 [[source]]
+id = "deterministic-healthchecks"
+route = "/management/v1/healthchecks"
+field_group = "stable server-evaluated health status, bounded evidence, thresholds and remediation codes"
+producer = "hydracache-observability deterministic health evaluators over typed management inputs"
+authority = "same authority epoch and observation sequence as source formation, consensus, placement and recovery evidence"
+lifetime = "request plus 30-second epoch/sequence-bound cursor"
+consistency = "status may improve only on a newer coherent observation; UNKNOWN remains separate"
+max_cardinality = 64
+privacy = "stable codes, pseudonymous identities and bounded numeric evidence only"
+fallback = "required missing, partial, modeled, stale, incoherent or truncated evidence is UNKNOWN"
+test_owner = "crates/hydracache-observability/tests/management_health_072.rs + crates/hydracache-server/tests/management_health_072.rs"
+
+[[source]]
 id = "persistence-recovery"
 route = "/management/v1/persistence/recovery"
 field_group = "durable recovery outcome and bounded evidence counts"

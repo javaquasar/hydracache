@@ -253,6 +253,44 @@ export const namespaceCachesEnvelope = {
   },
 };
 
+export const healthEnvelope = {
+  ...metadata,
+  data: {
+    aggregate: "FAIL",
+    counts: { pass: 1, warn: 1, fail: 1, unknown: 15, disabled: 0 },
+    thresholds: {
+      raft_apply_lag_warn_entries: 100,
+      raft_apply_lag_fail_entries: 1000,
+      source: "reviewed_default",
+      evaluation_version: 1,
+    },
+    checks: {
+      items: [
+        health("HC-AUDIT-001", "UNKNOWN", "audit", "Audit sink is available"),
+        health("HC-AUTH-001", "UNKNOWN", "authority", "Authority quorum and leader are accessible"),
+        health("HC-CLIENT-001", "UNKNOWN", "clients", "Client sessions and buffered bytes are within bounds"),
+        health("HC-EXPIRY-001", "UNKNOWN", "expiry", "Expiry backlog is within its reviewed bound"),
+        health("HC-FORM-001", "PASS", "formation", "Committed member formation is complete"),
+        health("HC-HISTORY-001", "UNKNOWN", "history", "Optional history source is available"),
+        health("HC-MEMBER-001", "UNKNOWN", "membership", "Member reachability, version and configuration agree"),
+        health("HC-MEM-001", "UNKNOWN", "resource", "Retained memory and admission queue are within bounds"),
+        health("HC-PART-001", "UNKNOWN", "partitions", "Partitions are assigned, replicated and zone-spread"),
+        health("HC-PERSIST-001", "UNKNOWN", "persistence", "Persistence disk and backup freshness are healthy"),
+        health("HC-PLACE-001", "UNKNOWN", "placement", "Placement constraints are satisfiable and applied"),
+        health("HC-RAFT-001", "WARN", "consensus", "Raft apply progress is within bounds", [{ code: "apply-lag", value: 100, unit: "entries" }]),
+        health("HC-REPAIR-001", "UNKNOWN", "repair", "Repair debt is clear and degraded mode is inactive"),
+        health("HC-REPL-001", "UNKNOWN", "replication", "Replication has no failures or backpressure"),
+        health("HC-RECOVERY-001", "FAIL", "recovery", "Durable recovery completed safely"),
+        health("HC-RECOVERY-002", "UNKNOWN", "recovery", "No unaccounted corruption or data loss was verified"),
+        health("HC-RECOVERY-003", "UNKNOWN", "recovery", "Recovery reconciliation is complete"),
+        health("HC-RESHARD-001", "UNKNOWN", "reshard", "Reshard progress is not stalled"),
+      ],
+      next_cursor: null,
+      truncated: false,
+    },
+  },
+};
+
 export const consensusEnvelope = {
   ...metadata,
   data: {
@@ -311,4 +349,8 @@ function formation(node, serving, blocker) {
 
 function consensus(node, commit_index, applied_index) {
   return { node, generation: 1, commit_index, applied_index, catch_up_target: commit_index };
+}
+
+function health(id, status, category, title, evidence = [{ code: "required-input-missing", value: null, unit: null }]) {
+  return { id, status, category, title, evidence, affected_count: null, remediation_code: `inspect-${category}`, remediation_link: "/docs/operations/management-healthchecks", source: "live", observation_seq: 9, evaluation_version: 1 };
 }
