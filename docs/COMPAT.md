@@ -558,3 +558,16 @@ audit metadata retains at most 256 transitions. Eviction and generation are expl
 forward transitions are accepted and terminal records cannot change. The audit view covers only
 these management transitions and contains no keys, values, paths, credentials, tenant/client
 identity, or raw error text. The console issues only GET requests for all three views.
+
+W11 changes the management authorization contract from the legacy write-admin marker to a distinct
+`management.read` capability on every `/management/v1/**` route. Write-admin identities continue to
+imply read; a tenant-scoped reader does not. This is an internal-admin-listener header contract, not
+a public bearer credential: any remote reverse proxy must authenticate the caller, strip inbound
+`x-hydracache-*` headers and install verified identity/capability headers. The console now emits
+`x-hydracache-management-read: true` and no write-admin header.
+
+Management reads have a separate frozen concurrency ceiling of 16 and fail fast with HTTP 429 when
+saturated. Static and JSON responses add restrictive CSP/no-sniff/no-referrer/no-store headers;
+assets remain same-origin with no runtime CDN dependency. These protections and the exact npm/SBOM
+inputs are package-visible behavior for 0.72 and may only be relaxed through a reviewed compatibility
+change with replacement security evidence.

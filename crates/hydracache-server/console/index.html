@@ -9,16 +9,16 @@
   <body>
     <header class="topbar">
       <div class="brand"><span class="brand-mark">HC</span><div><h1>HydraCache</h1><p>Management Center 2.0</p></div></div>
-      <div class="cluster-picker"><span class="health-dot"></span><strong>current cluster</strong><span data-testid="poll-state">connecting</span></div>
+      <div class="cluster-picker"><span class="health-dot" aria-hidden="true"></span><strong>current cluster</strong><span data-testid="poll-state" aria-live="polite">connecting</span></div>
       <div class="status-strip"><span class="source-badge" data-testid="source-badge">loading</span><span class="readonly-badge" data-testid="readonly-badge">read only</span></div>
     </header>
     <div class="app-shell">
       <nav class="sidebar" aria-label="Management sections">
-        <a href="#dashboard" class="active">Dashboard</a><a href="#healthchecks">Healthchecks</a><a href="#formation">Formation</a><a href="#members">Members</a><a href="#partitions">Partitions</a><a href="#clients">Clients</a><a href="#namespaces">Namespaces</a><a href="#replication">Replication</a><a href="#placement">Placement</a><a href="#consensus">Consensus</a><a href="#persistence">Persistence</a><a href="#operations">Operations</a><a href="#audit">Audit</a><a href="#recovery">Recovery</a><a href="#history">Local history</a>
+        <a href="#dashboard" class="active" aria-current="page">Dashboard</a><a href="#healthchecks">Healthchecks</a><a href="#formation">Formation</a><a href="#members">Members</a><a href="#partitions">Partitions</a><a href="#clients">Clients</a><a href="#namespaces">Namespaces</a><a href="#replication">Replication</a><a href="#placement">Placement</a><a href="#consensus">Consensus</a><a href="#persistence">Persistence</a><a href="#operations">Operations</a><a href="#audit">Audit</a><a href="#recovery">Recovery</a><a href="#history">Local history</a>
       </nav>
       <main class="page-shell" id="dashboard">
-        <section class="degraded" data-testid="degraded-state" hidden></section>
-        <section class="warning-strip" data-testid="truth-warnings" hidden></section>
+        <section class="degraded" data-testid="degraded-state" role="alert" hidden></section>
+        <section class="warning-strip" data-testid="truth-warnings" role="status" aria-live="polite" hidden></section>
 
         <section class="summary-grid" aria-label="Cluster summary">
           <a href="#formation" class="metric-cell" data-testid="cluster-state"><span>Cluster state</span><strong>loading</strong><small>quorum unknown</small></a>
@@ -35,7 +35,7 @@
 
         <section class="panel" id="history" aria-labelledby="history-title">
           <div class="section-heading"><div><h2 id="history-title">History since page opened</h2><p data-testid="history-budget">No samples</p><p data-testid="remote-history-state">checking optional history source</p></div><span class="trust-note">sources never spliced · bounded</span></div>
-          <div class="chart-grid"><figure><figcaption>Replication events / poll</figcaption><svg data-series="replication.success" viewBox="0 0 480 120" role="img"></svg></figure><figure><figcaption>Cache entries</figcaption><svg data-series="cache.entries" viewBox="0 0 480 120" role="img"></svg></figure><figure><figcaption>Raft apply lag</figcaption><svg data-series="consensus.apply_lag" viewBox="0 0 480 120" role="img"></svg></figure></div>
+          <div class="chart-grid"><figure><figcaption>Replication events / poll</figcaption><svg data-series="replication.success" viewBox="0 0 480 120" role="img" aria-label="Replication events since this page opened"></svg></figure><figure><figcaption>Cache entries</figcaption><svg data-series="cache.entries" viewBox="0 0 480 120" role="img" aria-label="Cache entries since this page opened"></svg></figure><figure><figcaption>Raft apply lag</figcaption><svg data-series="consensus.apply_lag" viewBox="0 0 480 120" role="img" aria-label="Raft apply lag since this page opened"></svg></figure></div>
         </section>
 
         <section class="two-column">

@@ -20,7 +20,7 @@ const ENDPOINTS = Object.freeze({
 const ADMIN_HEADERS = Object.freeze({
   "x-hydracache-client-id": "management-console",
   "x-hydracache-tenant": "operator",
-  "x-hydracache-admin": "true",
+  "x-hydracache-management-read": "true",
 });
 
 const history = new SnapshotHistory();
@@ -28,6 +28,9 @@ const state = { timer: null, controller: null, failures: 0, paused: false, refre
 window.__HC_CONSOLE_STATE__ = { state, history, limits: HISTORY_LIMITS };
 
 document.addEventListener("DOMContentLoaded", () => {
+  for (const region of document.querySelectorAll(".table-scroll")) {
+    region.tabIndex = 0;
+  }
   wireLifecycle();
   wireHealthFilters();
   refresh();

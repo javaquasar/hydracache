@@ -99,3 +99,12 @@ max_retained_records = 256
 retention = "current process generation only; oldest-first eviction"
 coverage = "management operation transitions only"
 forbidden_fields = ["keys", "values", "paths", "credentials", "actor_identity"]
+
+[management_security]
+authorization_capability = "management.read"
+write_admin_implies_read = true
+max_concurrent_reads = 16
+overload_status = 429
+admission = "fail-fast, independently owned semaphore; permit released on response, cancellation, or panic unwind"
+remote_exposure = "disabled by topology: internal admin listener only; remote use requires TLS/mTLS reverse proxy with trusted identity-header replacement"
+runtime_dependencies = "same-origin embedded assets only; no CDN"

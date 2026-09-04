@@ -15,6 +15,7 @@ pub mod management_aggregation;
 pub mod management_history;
 mod management_http;
 pub mod management_operations;
+pub mod management_security;
 pub mod management_topology;
 pub mod redis_tcp;
 pub mod services;
@@ -25,7 +26,7 @@ pub use admin_http::{
     ADMIN_BACKUP_PATH, ADMIN_CLUSTER_OVERVIEW_PATH, ADMIN_CONSOLE_PATH,
     ADMIN_DIAGNOSTIC_RESET_PATH, ADMIN_DRAIN_PATH, ADMIN_HEALTHZ_PATH, ADMIN_MEMORY_FOOTPRINT_PATH,
     ADMIN_METRICS_PATH, ADMIN_RAFT_COMPACTION_PATH, ADMIN_READYZ_PATH, ADMIN_RESHARD_PATH,
-    ADMIN_STATUS_PATH,
+    ADMIN_STATUS_PATH, HYDRACACHE_MANAGEMENT_READ_HEADER,
 };
 pub use bootstrap::{
     RedisSurfaceDrain, ServerAdminAction, ServerAdminActionError, ServerAdminStatus, ServerHealth,
@@ -78,6 +79,9 @@ pub use management_operations::{
     ManagementOperationJournal, ManagementOperationKind, ManagementOperationRecord,
     ManagementOperationSnapshot, ManagementOperationState, MANAGEMENT_AUDIT_CAPACITY,
     MANAGEMENT_OPERATION_CAPACITY,
+};
+pub use management_security::{
+    ManagementReadLimitError, ManagementReadLimiter, MANAGEMENT_READ_MAX_CONCURRENCY,
 };
 pub use management_topology::{normalize_placement_trace, ManagementTopologyModel};
 pub use redis_tcp::{serve_redis_listener, RedisTcpError, RedisTlsAcceptor, RedisTlsError};

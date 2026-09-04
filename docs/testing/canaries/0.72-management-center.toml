@@ -170,3 +170,13 @@ defect_env = "HYDRACACHE_CANARY_DEFECT=MC72-W10-ILLEGAL-REPAIR-COMPLETE"
 expected_failure = "HC-CANARY-RED:MC72-W10-ILLEGAL-REPAIR-COMPLETE"
 green_evidence = "Repaired is rejected while the recovery report remains in validation."
 red_evidence = "The mutant marks the unverified repair complete and the same report validator turns red."
+
+[[canary]]
+id = "MC72-W11-XSS-AUTH-BYPASS"
+status = "active"
+test = "canary_xss_and_management_auth_bypass_are_both_rejected"
+command = "cargo test -p hydracache-server --test management_security_072 --locked canary_xss_and_management_auth_bypass_are_both_rejected -- --nocapture"
+defect_env = "HYDRACACHE_CANARY_DEFECT=MC72-W11-XSS-AUTH-BYPASS"
+expected_failure = "HC-CANARY-RED:MC72-W11-XSS-AUTH-BYPASS"
+green_evidence = "All management routes require management.read (write-admin implies it), hostile identifiers are pseudonymized, and the browser uses text-only DOM construction under restrictive CSP."
+red_evidence = "The reversible mutant represents the combined XSS/auth bypass class and makes the same guard oracle fail with the registered marker."

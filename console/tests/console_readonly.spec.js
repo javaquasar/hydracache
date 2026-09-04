@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import AxeBuilder from "@axe-core/playwright";
 
 import {
   auditEnvelope,
@@ -119,11 +120,12 @@ test("summary_links_open_read_only_filtered_sections", async ({ page }) => {
 test("console_is_read_only_and_never_scrapes_prometheus", async ({ page }) => {
   let metricsRequests = 0;
   const managementMethods = [];
+  const managementHeaders = [];
   await page.route("**/metrics", (route) => {
     metricsRequests += 1;
     return route.abort("failed");
   });
-  await routeManagement(page, { requestMethods: managementMethods });
+  await routeManagement(page, { requestMethods: managementMethods, requestHeaders: managementHeaders });
   await page.goto(consoleUrl);
 
   await expect(page.getByTestId("readonly-badge")).toHaveText(/read only/i);
@@ -131,6 +133,8 @@ test("console_is_read_only_and_never_scrapes_prometheus", async ({ page }) => {
   await expect(page.getByRole("button", { name: /drain|reshard|backup|delete|remove/i })).toHaveCount(0);
   expect(metricsRequests).toBe(0);
   expect([...new Set(managementMethods)]).toEqual(["GET"]);
+  expect(managementHeaders.every((headers) => headers["x-hydracache-management-read"] === "true")).toBe(true);
+  expect(managementHeaders.every((headers) => headers["x-hydracache-admin"] == null)).toBe(true);
 });
 
 test("hostile_diagnostic_text_is_rendered_only_as_text", async ({ page }) => {
@@ -138,12 +142,43 @@ test("hostile_diagnostic_text_is_rendered_only_as_text", async ({ page }) => {
   hostileMembers.data.items[0].config_digest = '<img src=x onerror="window.__xss=1">';
   const hostileTrace = structuredClone(placementTraceEnvelope);
   hostileTrace.data.candidates.items[1].reasons = ['<script>window.__xss=1</script>'];
-  await routeManagement(page, { members: hostileMembers, placementTrace: hostileTrace });
+  const hostileAudit = structuredClone(auditEnvelope);
+  hostileAudit.data.items.items[0].action = '<img src=x onerror="window.__xss=1">';
+  await routeManagement(page, { members: hostileMembers, placementTrace: hostileTrace, audit: hostileAudit });
   await page.goto(consoleUrl);
   await expect(page.getByTestId("members-list")).toContainText("<img src=x");
   await expect(page.getByTestId("placement-table")).toContainText("<script>");
+  await expect(page.getByTestId("audit-table")).toContainText("<img src=x");
   expect(await page.evaluate(() => window.__xss)).toBeUndefined();
-  await expect(page.locator("#members img, #placement script")).toHaveCount(0);
+  await expect(page.locator("#members img, #placement script, #audit img")).toHaveCount(0);
+});
+
+test("management center passes automated accessibility checks in normal and forced modes", async ({ page }) => {
+  await routeManagement(page);
+  await page.goto(consoleUrl);
+  const results = await new AxeBuilder({ page }).analyze();
+  expect(results.violations).toEqual([]);
+  await page.emulateMedia({ reducedMotion: "reduce", forcedColors: "active" });
+  await expect(page.getByTestId("health-aggregate")).toHaveText("FAIL");
+  await expect(page.getByTestId("operations-table")).toContainText("accepted");
+  const motion = await page.evaluate(() => getComputedStyle(document.documentElement).scrollBehavior);
+  expect(motion).toBe("auto");
+});
+
+test("keyboard navigation exposes a visible focus path through management sections", async ({ page }) => {
+  await routeManagement(page);
+  await page.goto(consoleUrl);
+  await page.keyboard.press("Tab");
+  const focused = page.locator(":focus-visible");
+  await expect(focused).toBeVisible();
+  const outline = await focused.evaluate((element) => getComputedStyle(element).outlineStyle);
+  expect(outline).not.toBe("none");
+  for (let step = 0; step < 20 && (await page.locator(":focus").getAttribute("href")) !== "#operations"; step += 1) {
+    await page.keyboard.press("Tab");
+  }
+  await expect(page.locator(":focus")).toHaveAttribute("href", "#operations");
+  await page.keyboard.press("Enter");
+  await expect(page).toHaveURL(/#operations$/);
 });
 
 test("modeled_source_and_missing_raft_values_are_never_painted_live_or_zero", async ({ page }) => {
@@ -219,6 +254,18 @@ test("responsive dashboard remains usable on configured viewport", async ({ page
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)).toBe(true);
 });
 
+test("tablet layout retains truth at effective 200 percent zoom without page overflow", async ({ page }) => {
+  // Browser zoom halves the CSS-pixel viewport. A 384px CSS viewport is the deterministic
+  // cross-browser equivalent of a 768px tablet at 200% zoom.
+  await page.setViewportSize({ width: 384, height: 512 });
+  await routeManagement(page);
+  await page.goto(consoleUrl);
+  await expect(page.getByTestId("source-badge")).toHaveText("live");
+  await expect(page.getByTestId("health-aggregate")).toHaveText("FAIL");
+  await expect(page.getByTestId("operations-table")).toContainText("accepted");
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)).toBe(true);
+});
+
 async function routeManagement(page, overrides = {}) {
   const fixtures = {
     dashboard: overrides.dashboard ?? dashboardEnvelope,
@@ -253,6 +300,7 @@ async function routeManagement(page, overrides = {}) {
   await page.route("**/management/v1/**", (route) => {
     const path = new URL(route.request().url()).pathname;
     overrides.requestMethods?.push(route.request().method());
+    overrides.requestHeaders?.push(route.request().headers());
     const fixture = path.includes("/placement-traces/")
       ? fixtures.placementTrace
       : /\/namespaces\/[^/]+\/caches$/.test(path)

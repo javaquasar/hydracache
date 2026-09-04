@@ -17,6 +17,7 @@ use thiserror::Error;
 use crate::bootstrap::{ServerAdminActionError, ServerRuntime};
 use crate::cluster_status::RaftCompactionError;
 use crate::hc2::Hc2ClientPlaneService;
+use crate::management_security::ManagementReadLimiter;
 use crate::services::DrainOutcome;
 use hydracache_observability::PrometheusExporter;
 
@@ -46,6 +47,8 @@ pub const ADMIN_RAFT_COMPACTION_PATH: &str = "/admin/raft/compaction";
 pub const ADMIN_DIAGNOSTIC_RESET_PATH: &str = "/admin/diagnostics/reset";
 /// Privileged, read-only aggregate memory-footprint path.
 pub const ADMIN_MEMORY_FOOTPRINT_PATH: &str = "/admin/memory-footprint";
+/// Explicit read-only management capability header used after identity verification.
+pub const HYDRACACHE_MANAGEMENT_READ_HEADER: &str = "x-hydracache-management-read";
 
 /// Shared runtime state for the admin HTTP surface.
 pub type SharedServerRuntime = Arc<Mutex<ServerRuntime>>;
@@ -58,6 +61,7 @@ pub struct AdminHttpSurface {
     management_cursors: Arc<Mutex<crate::management_http::ManagementCursorStore>>,
     management_aggregator: Option<Arc<crate::management_aggregation::ManagementSnapshotAggregator>>,
     management_history: Option<crate::management_history::ManagementHistoryService>,
+    management_read_limiter: ManagementReadLimiter,
 }
 
 impl AdminHttpSurface {
@@ -76,6 +80,7 @@ impl AdminHttpSurface {
             management_cursors: Arc::new(Mutex::new(Default::default())),
             management_aggregator,
             management_history,
+            management_read_limiter: ManagementReadLimiter::default(),
         }
     }
 
@@ -103,6 +108,7 @@ impl AdminHttpSurface {
             management_cursors: Arc::new(Mutex::new(Default::default())),
             management_aggregator,
             management_history,
+            management_read_limiter: ManagementReadLimiter::default(),
         }
     }
 
@@ -116,6 +122,11 @@ impl AdminHttpSurface {
     /// Return shared runtime state for tests and embedding code.
     pub fn runtime(&self) -> SharedServerRuntime {
         Arc::clone(&self.runtime)
+    }
+
+    /// Return the independent management-read limiter for diagnostics and cleanup proofs.
+    pub fn management_read_limiter(&self) -> ManagementReadLimiter {
+        self.management_read_limiter.clone()
     }
 
     /// Return the axum router for `/healthz`, `/readyz`, and `/admin/*`.
@@ -157,6 +168,7 @@ impl AdminHttpSurface {
                 self.management_aggregator.clone(),
                 self.hc2_metrics.clone(),
                 self.management_history.clone(),
+                self.management_read_limiter.clone(),
             ));
         if let Some(service) = self.hc2_metrics.clone() {
             routes.layer(Extension(service))
@@ -197,35 +209,55 @@ async fn metrics(
 }
 
 async fn console_index() -> Response {
-    (
-        [(CONTENT_TYPE, "text/html; charset=utf-8")],
+    console_asset(
+        "text/html; charset=utf-8",
         include_str!("../console/index.html"),
     )
-        .into_response()
 }
 
 async fn console_app() -> Response {
-    (
-        [(CONTENT_TYPE, "text/javascript; charset=utf-8")],
+    console_asset(
+        "text/javascript; charset=utf-8",
         include_str!("../console/app.js"),
     )
-        .into_response()
 }
 
 async fn console_history() -> Response {
-    (
-        [(CONTENT_TYPE, "text/javascript; charset=utf-8")],
+    console_asset(
+        "text/javascript; charset=utf-8",
         include_str!("../console/history.js"),
     )
-        .into_response()
 }
 
 async fn console_style() -> Response {
-    (
-        [(CONTENT_TYPE, "text/css; charset=utf-8")],
+    console_asset(
+        "text/css; charset=utf-8",
         include_str!("../console/style.css"),
     )
-        .into_response()
+}
+
+fn console_asset(content_type: &'static str, body: &'static str) -> Response {
+    let mut response = ([(CONTENT_TYPE, content_type)], body).into_response();
+    let headers = response.headers_mut();
+    headers.insert(
+        "content-security-policy",
+        "default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self'; font-src 'self'; base-uri 'none'; frame-ancestors 'none'; form-action 'none'; object-src 'none'"
+            .parse()
+            .expect("static CSP is valid"),
+    );
+    headers.insert("x-content-type-options", "nosniff".parse().unwrap());
+    headers.insert("x-frame-options", "DENY".parse().unwrap());
+    headers.insert("referrer-policy", "no-referrer".parse().unwrap());
+    headers.insert(
+        "permissions-policy",
+        "camera=(), microphone=(), geolocation=()".parse().unwrap(),
+    );
+    headers.insert(
+        "cross-origin-resource-policy",
+        "same-origin".parse().unwrap(),
+    );
+    headers.insert("cache-control", "no-store".parse().unwrap());
+    response
 }
 
 async fn cluster_overview(State(runtime): State<SharedServerRuntime>) -> Response {
@@ -501,6 +533,26 @@ pub(crate) fn require_admin(headers: &HeaderMap) -> Result<(), AdminHttpError> {
         .and_then(|value| value.to_str().ok())
         .is_some_and(|value| matches!(value, "true" | "1"));
     if !admin {
+        return Err(AdminHttpError::Unauthorized);
+    }
+    Ok(())
+}
+
+pub(crate) fn require_management_read(headers: &HeaderMap) -> Result<(), AdminHttpError> {
+    let has_identity = header_value(headers, HYDRACACHE_CLIENT_ID_HEADER).is_some()
+        && header_value(headers, HYDRACACHE_TENANT_HEADER).is_some();
+    if !has_identity {
+        return Err(AdminHttpError::Unauthenticated);
+    }
+    let reader = headers
+        .get(HYDRACACHE_MANAGEMENT_READ_HEADER)
+        .and_then(|value| value.to_str().ok())
+        .is_some_and(|value| matches!(value, "true" | "1"));
+    let write_admin = headers
+        .get(HYDRACACHE_ADMIN_HEADER)
+        .and_then(|value| value.to_str().ok())
+        .is_some_and(|value| matches!(value, "true" | "1"));
+    if !reader && !write_admin {
         return Err(AdminHttpError::Unauthorized);
     }
     Ok(())

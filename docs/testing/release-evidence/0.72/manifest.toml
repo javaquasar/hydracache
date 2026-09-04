@@ -71,3 +71,12 @@ status = "implemented"
 source = "crates/hydracache-server/src/{management_operations,bootstrap,management_http}.rs + console/{index.html,app.js}"
 test = "crates/hydracache-server/tests/management_operations_072.rs + crates/hydracache-server/src/management_operations.rs + console/tests/console_readonly.spec.js"
 gate = "cargo test -p hydracache-server --test management_operations_072 --locked && cargo test -p hydracache-server --lib --locked management_operations && npm --prefix console test"
+
+[[work_item]]
+id = "W11-security-accessibility-supply-chain"
+status = "implemented"
+source = "crates/hydracache-server/src/{admin_http,management_http,management_security}.rs + console/{index.html,app.js,style.css,package-lock.json,scripts}"
+test = "crates/hydracache-server/tests/management_security_072.rs + crates/hydracache-server/src/management_security.rs + console/tests/console_readonly.spec.js"
+gate = "cargo test -p hydracache-server --test management_security_072 --locked && cargo test -p hydracache-server --lib --locked management_security && npm --prefix console test && npm --prefix console run supply-chain && npm --prefix console audit --audit-level=high"
+evidence = "docs/testing/management-center/0.72/w11-security-evidence.md"
+release_blocker = "workspace cargo deny baseline is red; resolution is assigned to W13 and required by W14"

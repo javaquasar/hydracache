@@ -234,3 +234,15 @@ max_cardinality = 1
 privacy = "no paths, keys, raw errors or checksums"
 fallback = "unknown/status-not-retained"
 test_owner = "crates/hydracache-server/tests/management_http.rs"
+
+[[security_control]]
+id = "management-read-boundary"
+routes = "/management/v1/**"
+authority = "verified internal identity plus management.read capability; write-admin implies read, tenant scope does not"
+default_boundary = "internal administration listener"
+remote_boundary = "TLS/mTLS reverse proxy replaces all x-hydracache identity and capability headers"
+concurrency_owner = "ManagementReadLimiter"
+max_concurrency = 16
+overload = "429 without entering management collection; write administration remains independently admitted"
+browser_policy = "same-origin GET only, text-only DOM, restrictive CSP, no CDN/runtime third party"
+test_owner = "crates/hydracache-server/tests/management_security_072.rs + console/tests/console_readonly.spec.js"

@@ -176,6 +176,45 @@ cargo test -p hydracache-server --lib --locked management_operations
 npm --prefix console test
 ```
 
+## Management read security and accessibility
+
+All `/management/v1/**` routes require a verified internal identity plus the dedicated
+`management.read` capability. Tenant-scoped read alone is insufficient and cannot enumerate the
+management surface. A write-admin identity implies management read, while a management reader
+cannot invoke `/admin/*` mutations. The management reader has its own 16-permit fail-fast budget;
+overload returns 429, cancellation releases the permit, and admin recovery admission remains
+independent.
+
+The administration listener remains the default trust boundary. Normal access is loopback or an
+internal port-forward. Remote deployments must place a TLS (preferably mTLS) reverse proxy in
+front, reject public access to the raw listener, strip every client-supplied `x-hydracache-*`
+identity/capability header, and install only identity headers derived from authenticated proxy
+state. Forwarded headers are not a substitute for that boundary.
+
+Console assets are same-origin and locally bundled. Responses set a restrictive CSP, deny framing,
+disable MIME sniffing and referrers, and disable caching. The browser issues GET only and inserts
+diagnostic values with text nodes. Static checks reject raw-HTML/eval/write markers, external or
+inline runtime dependencies and credential-like strings. The npm lock uses exact direct versions;
+the supply-chain gate validates registry provenance, integrity and reviewed licenses and writes a
+CycloneDX 1.5 SBOM to `target/management-center-0.72-sbom.cdx.json`.
+
+Status is conveyed by labels as well as color. Semantic landmarks/tables, accessible names,
+focus-visible navigation, focusable overflow regions, reduced motion and forced-color behavior are
+tested at desktop, tablet/200%-zoom and narrow-mobile sizes. Automated axe checks run against the
+fully populated production page; forced-colors and keyboard workflows have separate behavioral
+oracles so OS color substitution cannot mask structural accessibility failures.
+
+Local W11 verification:
+
+```powershell
+cargo test -p hydracache-server --test management_security_072 --locked
+cargo test -p hydracache-server --lib --locked management_security
+npm --prefix console run build
+npm --prefix console test
+npm --prefix console run supply-chain
+npm --prefix console audit --audit-level=high
+```
+
 ## Verification
 
 Local W5 verification:

@@ -32,7 +32,7 @@ use hydracache_observability::{
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 
-use crate::admin_http::{require_admin, SharedServerRuntime};
+use crate::admin_http::{require_management_read as require_admin, SharedServerRuntime};
 use crate::cluster_status::{ClusterStatus, LocalConsensusStatus, Reachability, StatusSource};
 use crate::management_aggregation::{
     AggregatedManagementSnapshot, ManagementAggregationIssue, ManagementMemberSnapshot,
@@ -43,6 +43,7 @@ use crate::management_history::{
     ManagementHistoryService, ManagementHistoryState, MANAGEMENT_HISTORY_PATH,
 };
 use crate::management_operations::{ManagementAuditRecord, ManagementOperationRecord};
+use crate::management_security::ManagementReadLimiter;
 
 /// Management capability negotiation path.
 pub const MANAGEMENT_CAPABILITIES_PATH: &str = "/management/v1/capabilities";
@@ -192,6 +193,7 @@ struct ManagementHttpState {
     aggregator: Option<Arc<ManagementSnapshotAggregator>>,
     hc2: Option<crate::hc2::Hc2ClientPlaneService>,
     history: Option<ManagementHistoryService>,
+    read_limiter: ManagementReadLimiter,
 }
 
 /// Build the management routes with state shared across repeated router construction in tests.
@@ -201,7 +203,16 @@ pub(crate) fn routes(
     aggregator: Option<Arc<ManagementSnapshotAggregator>>,
     hc2: Option<crate::hc2::Hc2ClientPlaneService>,
     history_service: Option<ManagementHistoryService>,
+    read_limiter: ManagementReadLimiter,
 ) -> Router {
+    let state = Arc::new(ManagementHttpState {
+        runtime,
+        cursors,
+        aggregator,
+        hc2,
+        history: history_service,
+        read_limiter,
+    });
     Router::new()
         .route(MANAGEMENT_CAPABILITIES_PATH, get(capabilities))
         .route(MANAGEMENT_DASHBOARD_PATH, get(dashboard))
@@ -226,13 +237,26 @@ pub(crate) fn routes(
         )
         .route(MANAGEMENT_RECOVERY_PATH, get(recovery))
         .route(MANAGEMENT_CONSENSUS_PROGRESS_PATH, get(consensus_progress))
-        .with_state(Arc::new(ManagementHttpState {
-            runtime,
-            cursors,
-            aggregator,
-            hc2,
-            history: history_service,
-        }))
+        .layer(axum::middleware::from_fn_with_state(
+            Arc::clone(&state),
+            management_read_admission,
+        ))
+        .with_state(state)
+}
+
+async fn management_read_admission(
+    State(state): State<Arc<ManagementHttpState>>,
+    request: axum::extract::Request,
+    next: axum::middleware::Next,
+) -> Response {
+    if let Err(error) = require_admin(request.headers()) {
+        return error.into_response();
+    }
+    let _permit = match state.read_limiter.try_acquire() {
+        Ok(permit) => permit,
+        Err(_) => return ManagementHttpError::Busy.into_response(),
+    };
+    next.run(request).await
 }
 
 #[derive(Debug, Serialize)]
@@ -504,6 +528,7 @@ enum ManagementHttpError {
     SnapshotChanged,
     ContractViolation,
     ResponseTooLarge,
+    Busy,
 }
 
 impl ManagementHttpError {
@@ -538,6 +563,11 @@ impl ManagementHttpError {
                 StatusCode::SERVICE_UNAVAILABLE,
                 "response-too-large",
                 "the bounded management response exceeded its byte budget",
+            ),
+            Self::Busy => (
+                StatusCode::TOO_MANY_REQUESTS,
+                "management-read-saturated",
+                "the bounded management-read concurrency budget is exhausted",
             ),
         };
         bounded_json(
@@ -2327,7 +2357,18 @@ fn bounded_json<T: Serialize>(
     if body.len() > MANAGEMENT_MAX_RESPONSE_BYTES {
         return Err(ManagementHttpError::ResponseTooLarge);
     }
-    Ok((status, [(CONTENT_TYPE, "application/json")], body).into_response())
+    let mut response = (status, [(CONTENT_TYPE, "application/json")], body).into_response();
+    let headers = response.headers_mut();
+    headers.insert("x-content-type-options", "nosniff".parse().unwrap());
+    headers.insert("referrer-policy", "no-referrer".parse().unwrap());
+    headers.insert("cache-control", "no-store".parse().unwrap());
+    headers.insert(
+        "content-security-policy",
+        "default-src 'none'; frame-ancestors 'none'"
+            .parse()
+            .unwrap(),
+    );
+    Ok(response)
 }
 
 #[cfg(test)]
