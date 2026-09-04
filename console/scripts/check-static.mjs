@@ -12,6 +12,8 @@ const required = [
   "tests/console_readonly.spec.js",
   "tests/fixtures.js",
   "playwright.config.mjs"
+  ,"scripts/package-management-center.mjs"
+  ,"tests/package.test.js"
 ];
 
 for (const file of required) {

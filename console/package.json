@@ -6,9 +6,11 @@
   "scripts": {
     "build": "node ./scripts/check-static.mjs",
     "serve": "node ./scripts/serve-static.mjs",
-    "unit": "node --test ./tests/history.test.js",
+    "unit": "npm run supply-chain && node --test ./tests/history.test.js ./tests/package.test.js",
     "test": "npm run unit && playwright test --config ./playwright.config.mjs",
-    "supply-chain": "node ./scripts/check-supply-chain.mjs"
+    "supply-chain": "node ./scripts/check-supply-chain.mjs",
+    "package": "npm run build && npm run supply-chain && node ./scripts/package-management-center.mjs package",
+    "verify-package": "node ./scripts/package-management-center.mjs verify"
   },
   "devDependencies": {
     "@axe-core/playwright": "4.10.2",
