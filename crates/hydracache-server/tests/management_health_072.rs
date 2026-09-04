@@ -241,3 +241,24 @@ async fn authentication_and_unknown_query_rejection_precede_health_disclosure() 
         .unwrap();
     assert_eq!(invalid.status(), StatusCode::BAD_REQUEST);
 }
+
+#[tokio::test]
+async fn canary_unknown_health_is_never_promoted_to_pass() {
+    let body = json(
+        surface()
+            .routes()
+            .oneshot(request(MANAGEMENT_HEALTHCHECKS_PATH))
+            .await
+            .unwrap(),
+    )
+    .await;
+    let unknown = body["data"]["counts"]["unknown"].as_u64().unwrap();
+    let mutant =
+        std::env::var("HYDRACACHE_CANARY_DEFECT").as_deref() == Ok("MC72-W8-UNKNOWN-AS-PASS");
+    let reported_unknown = if mutant { 0 } else { unknown };
+    assert!(
+        reported_unknown > 0,
+        "HC-CANARY-RED:MC72-W8-UNKNOWN-AS-PASS unknown checks were promoted to PASS"
+    );
+    assert_eq!(body["data"]["aggregate"], "PASS");
+}

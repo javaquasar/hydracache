@@ -84,14 +84,16 @@ test("member set changes are captured as bounded sorted evidence", () => {
   assert.deepEqual(history.snapshot().memberSet, ["b"]);
 });
 
-test("collection pauses for hidden or offline tabs", () => {
+function canaryCollectionPausesForHiddenOrOfflineTabs() {
   const mutant = process.env.HYDRACACHE_CANARY_DEFECT === "MC72-W4";
   if (!shouldPauseCollection(true, true, { disableHiddenPause: mutant })) {
     throw new Error("HC-CANARY-RED:MC72-W4 hidden tab continued collecting history");
   }
   assert.equal(shouldPauseCollection(false, false), true);
   assert.equal(shouldPauseCollection(false, true), false);
-});
+}
+
+test("collection pauses for hidden or offline tabs", canaryCollectionPausesForHiddenOrOfflineTabs);
 
 test("ring evicts oldest points by per-series point and byte budgets", () => {
   const history = new SnapshotHistory({

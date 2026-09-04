@@ -1,0 +1,126 @@
+{
+  "version": 2,
+  "release": "0.72.0",
+  "entries": [
+    {
+      "w_item": "W0",
+      "guard": {"file": "crates/xtask/tests/management_center_072.rs", "function": "canary_w0_missing_baseline_is_rejected"},
+      "canary": {"file": "crates/xtask/tests/management_center_072.rs", "function": "canary_w0_missing_baseline_is_rejected"},
+      "guard_command": {"program": "cargo", "args": ["test", "-p", "xtask", "--test", "management_center_072", "--locked", "canary_w0_missing_baseline_is_rejected", "--", "--exact", "--nocapture"], "env": {}, "cwd": ".", "platform": "any"},
+      "canary_command": {"program": "cargo", "args": ["test", "-p", "xtask", "--test", "management_center_072", "--locked", "canary_w0_missing_baseline_is_rejected", "--", "--exact", "--nocapture"], "env": {"HYDRACACHE_CANARY_DEFECT": "MC72-W0-BASELINE-DRIFT"}, "cwd": ".", "platform": "any"},
+      "defect_id": "MC72-W0-BASELINE-DRIFT", "expected_failure": "HC-CANARY-RED:MC72-W0-BASELINE-DRIFT", "timeout_seconds": 300, "tier": "fast", "artifacts": ["target/release-evidence/canaries/0.72-W0.json"], "red_evidence": "A missing or stale baseline must block admission rather than silently becoming the new baseline."
+    },
+    {
+      "w_item": "W1",
+      "guard": {"file": "crates/xtask/tests/management_center_072.rs", "function": "canary_w1_false_source_mapping_is_rejected"},
+      "canary": {"file": "crates/xtask/tests/management_center_072.rs", "function": "canary_w1_false_source_mapping_is_rejected"},
+      "guard_command": {"program": "cargo", "args": ["test", "-p", "xtask", "--test", "management_center_072", "--locked", "canary_w1_false_source_mapping_is_rejected", "--", "--exact", "--nocapture"], "env": {}, "cwd": ".", "platform": "any"},
+      "canary_command": {"program": "cargo", "args": ["test", "-p", "xtask", "--test", "management_center_072", "--locked", "canary_w1_false_source_mapping_is_rejected", "--", "--exact", "--nocapture"], "env": {"HYDRACACHE_CANARY_DEFECT": "MC72-W1-FALSE-SOURCE"}, "cwd": ".", "platform": "any"},
+      "defect_id": "MC72-W1-FALSE-SOURCE", "expected_failure": "HC-CANARY-RED:MC72-W1-FALSE-SOURCE", "timeout_seconds": 300, "tier": "fast", "artifacts": ["target/release-evidence/canaries/0.72-W1.json"], "red_evidence": "Every visible field must retain a real source and explicit unavailable semantics."
+    },
+    {
+      "w_item": "W2",
+      "guard": {"file": "crates/hydracache-server/tests/management_http.rs", "function": "canary_management_api_detects_internal_identity_leak_or_oversize_payload"},
+      "canary": {"file": "crates/hydracache-server/tests/management_http.rs", "function": "canary_management_api_detects_internal_identity_leak_or_oversize_payload"},
+      "guard_command": {"program": "cargo", "args": ["test", "-p", "hydracache-server", "--test", "management_http", "--locked", "canary_management_api_detects_internal_identity_leak_or_oversize_payload", "--", "--exact", "--nocapture", "--test-threads=1"], "env": {}, "cwd": ".", "platform": "any"},
+      "canary_command": {"program": "cargo", "args": ["test", "-p", "hydracache-server", "--test", "management_http", "--locked", "canary_management_api_detects_internal_identity_leak_or_oversize_payload", "--", "--exact", "--nocapture", "--test-threads=1"], "env": {"HYDRACACHE_CANARY_DEFECT": "MC72-W2"}, "cwd": ".", "platform": "any"},
+      "defect_id": "MC72-W2", "expected_failure": "HC-CANARY-RED:MC72-W2", "timeout_seconds": 300, "tier": "fast", "artifacts": ["target/release-evidence/canaries/0.72-W2.json"], "red_evidence": "The management DTO allowlist and response byte budget must reject identity leaks and amplification."
+    },
+    {
+      "w_item": "W3",
+      "guard": {"file": "crates/hydracache-server/src/management_aggregation.rs", "function": "canary_management_fanout_coalesces_and_late_epoch_cannot_replace_cache"},
+      "canary": {"file": "crates/hydracache-server/src/management_aggregation.rs", "function": "canary_management_fanout_coalesces_and_late_epoch_cannot_replace_cache"},
+      "guard_command": {"program": "cargo", "args": ["test", "-p", "hydracache-server", "--lib", "--locked", "management_aggregation::tests::canary_management_fanout_coalesces_and_late_epoch_cannot_replace_cache", "--", "--exact", "--nocapture", "--test-threads=1"], "env": {}, "cwd": ".", "platform": "any"},
+      "canary_command": {"program": "cargo", "args": ["test", "-p", "hydracache-server", "--lib", "--locked", "management_aggregation::tests::canary_management_fanout_coalesces_and_late_epoch_cannot_replace_cache", "--", "--exact", "--nocapture", "--test-threads=1"], "env": {"HYDRACACHE_CANARY_DEFECT": "MC72-W3"}, "cwd": ".", "platform": "any"},
+      "defect_id": "MC72-W3", "expected_failure": "HC-CANARY-RED:MC72-W3", "timeout_seconds": 300, "tier": "fast", "artifacts": ["target/release-evidence/canaries/0.72-W3.json"], "red_evidence": "A late older epoch must never replace the current coalesced cluster snapshot."
+    },
+    {
+      "w_item": "W4",
+      "guard": {"file": "console/tests/history.test.js", "function": "canaryCollectionPausesForHiddenOrOfflineTabs"},
+      "canary": {"file": "console/tests/history.test.js", "function": "canaryCollectionPausesForHiddenOrOfflineTabs"},
+      "guard_command": {"program": "node", "args": ["--test", "--test-name-pattern=collection pauses for hidden or offline tabs", "./tests/history.test.js"], "env": {}, "cwd": "console", "platform": "any"},
+      "canary_command": {"program": "node", "args": ["--test", "--test-name-pattern=collection pauses for hidden or offline tabs", "./tests/history.test.js"], "env": {"HYDRACACHE_CANARY_DEFECT": "MC72-W4"}, "cwd": "console", "platform": "any"},
+      "defect_id": "MC72-W4", "expected_failure": "HC-CANARY-RED:MC72-W4", "timeout_seconds": 120, "tier": "fast", "artifacts": ["target/release-evidence/canaries/0.72-W4.json"], "red_evidence": "Browser-local history must pause when hidden and retain fixed point and byte budgets."
+    },
+    {
+      "w_item": "W5",
+      "guard": {"file": "crates/hydracache-server/tests/management_topology_072.rs", "function": "canary_mixed_epoch_partition_evidence_is_never_published_as_current"},
+      "canary": {"file": "crates/hydracache-server/tests/management_topology_072.rs", "function": "canary_mixed_epoch_partition_evidence_is_never_published_as_current"},
+      "guard_command": {"program": "cargo", "args": ["test", "-p", "hydracache-server", "--test", "management_topology_072", "--locked", "canary_mixed_epoch_partition_evidence_is_never_published_as_current", "--", "--exact", "--nocapture", "--test-threads=1"], "env": {}, "cwd": ".", "platform": "any"},
+      "canary_command": {"program": "cargo", "args": ["test", "-p", "hydracache-server", "--test", "management_topology_072", "--locked", "canary_mixed_epoch_partition_evidence_is_never_published_as_current", "--", "--exact", "--nocapture", "--test-threads=1"], "env": {"HYDRACACHE_CANARY_DEFECT": "MC72-W5-MIXED-EPOCH"}, "cwd": ".", "platform": "any"},
+      "defect_id": "MC72-W5-MIXED-EPOCH", "expected_failure": "HC-CANARY-RED:MC72-W5-MIXED-EPOCH", "timeout_seconds": 300, "tier": "fast", "artifacts": ["target/release-evidence/canaries/0.72-W5.json"], "red_evidence": "Partition evidence from another authority epoch must remain fenced and visibly partial."
+    },
+    {
+      "w_item": "W6",
+      "guard": {"file": "crates/hydracache-server/tests/management_clients_072.rs", "function": "canary_closed_client_owner_cannot_survive_cleanup"},
+      "canary": {"file": "crates/hydracache-server/tests/management_clients_072.rs", "function": "canary_closed_client_owner_cannot_survive_cleanup"},
+      "guard_command": {"program": "cargo", "args": ["test", "-p", "hydracache-server", "--test", "management_clients_072", "--locked", "canary_closed_client_owner_cannot_survive_cleanup", "--", "--exact", "--nocapture", "--test-threads=1"], "env": {}, "cwd": ".", "platform": "any"},
+      "canary_command": {"program": "cargo", "args": ["test", "-p", "hydracache-server", "--test", "management_clients_072", "--locked", "canary_closed_client_owner_cannot_survive_cleanup", "--", "--exact", "--nocapture", "--test-threads=1"], "env": {"HYDRACACHE_CANARY_DEFECT": "MC72-W6-CLOSED-CLIENT-LEAK"}, "cwd": ".", "platform": "any"},
+      "defect_id": "MC72-W6-CLOSED-CLIENT-LEAK", "expected_failure": "HC-CANARY-RED:MC72-W6-CLOSED-CLIENT-LEAK", "timeout_seconds": 300, "tier": "fast", "artifacts": ["target/release-evidence/canaries/0.72-W6.json"], "red_evidence": "Closed HC/1, HC/2 and RESP clients must leave bounded lifecycle accounting."
+    },
+    {
+      "w_item": "W7",
+      "guard": {"file": "crates/hydracache-server/tests/management_namespaces_072.rs", "function": "canary_cross_tenant_source_never_changes_authorized_body"},
+      "canary": {"file": "crates/hydracache-server/tests/management_namespaces_072.rs", "function": "canary_cross_tenant_source_never_changes_authorized_body"},
+      "guard_command": {"program": "cargo", "args": ["test", "-p", "hydracache-server", "--test", "management_namespaces_072", "--locked", "canary_cross_tenant_source_never_changes_authorized_body", "--", "--exact", "--nocapture", "--test-threads=1"], "env": {}, "cwd": ".", "platform": "any"},
+      "canary_command": {"program": "cargo", "args": ["test", "-p", "hydracache-server", "--test", "management_namespaces_072", "--locked", "canary_cross_tenant_source_never_changes_authorized_body", "--", "--exact", "--nocapture", "--test-threads=1"], "env": {"HYDRACACHE_CANARY_DEFECT": "MC72-W7-CROSS-TENANT"}, "cwd": ".", "platform": "any"},
+      "defect_id": "MC72-W7-CROSS-TENANT", "expected_failure": "HC-CANARY-RED:MC72-W7-CROSS-TENANT", "timeout_seconds": 300, "tier": "fast", "artifacts": ["target/release-evidence/canaries/0.72-W7.json"], "red_evidence": "Tenant filters must apply before aggregation so hidden namespaces cannot influence visible output."
+    },
+    {
+      "w_item": "W8",
+      "guard": {"file": "crates/hydracache-server/tests/management_health_072.rs", "function": "canary_unknown_health_is_never_promoted_to_pass"},
+      "canary": {"file": "crates/hydracache-server/tests/management_health_072.rs", "function": "canary_unknown_health_is_never_promoted_to_pass"},
+      "guard_command": {"program": "cargo", "args": ["test", "-p", "hydracache-server", "--test", "management_health_072", "--locked", "canary_unknown_health_is_never_promoted_to_pass", "--", "--exact", "--nocapture", "--test-threads=1"], "env": {}, "cwd": ".", "platform": "any"},
+      "canary_command": {"program": "cargo", "args": ["test", "-p", "hydracache-server", "--test", "management_health_072", "--locked", "canary_unknown_health_is_never_promoted_to_pass", "--", "--exact", "--nocapture", "--test-threads=1"], "env": {"HYDRACACHE_CANARY_DEFECT": "MC72-W8-UNKNOWN-AS-PASS"}, "cwd": ".", "platform": "any"},
+      "defect_id": "MC72-W8-UNKNOWN-AS-PASS", "expected_failure": "HC-CANARY-RED:MC72-W8-UNKNOWN-AS-PASS", "timeout_seconds": 300, "tier": "fast", "artifacts": ["target/release-evidence/canaries/0.72-W8.json"], "red_evidence": "Unknown health inputs must remain unknown and must never be counted as passing evidence."
+    },
+    {
+      "w_item": "W9",
+      "guard": {"file": "crates/hydracache-server/tests/management_history_072.rs", "function": "canary_arbitrary_proxy_and_amplification_are_rejected_before_socket_open"},
+      "canary": {"file": "crates/hydracache-server/tests/management_history_072.rs", "function": "canary_arbitrary_proxy_and_amplification_are_rejected_before_socket_open"},
+      "guard_command": {"program": "cargo", "args": ["test", "-p", "hydracache-server", "--test", "management_history_072", "--locked", "canary_arbitrary_proxy_and_amplification_are_rejected_before_socket_open", "--", "--exact", "--nocapture", "--test-threads=1"], "env": {}, "cwd": ".", "platform": "any"},
+      "canary_command": {"program": "cargo", "args": ["test", "-p", "hydracache-server", "--test", "management_history_072", "--locked", "canary_arbitrary_proxy_and_amplification_are_rejected_before_socket_open", "--", "--exact", "--nocapture", "--test-threads=1"], "env": {"HYDRACACHE_CANARY_DEFECT": "MC72-W9-ARBITRARY-PROXY"}, "cwd": ".", "platform": "any"},
+      "defect_id": "MC72-W9-ARBITRARY-PROXY", "expected_failure": "HC-CANARY-RED:MC72-W9-ARBITRARY-PROXY", "timeout_seconds": 300, "tier": "fast", "artifacts": ["target/release-evidence/canaries/0.72-W9.json"], "red_evidence": "Prometheus history must stay on fixed queries, fixed destinations and bounded ranges."
+    },
+    {
+      "w_item": "W10",
+      "guard": {"file": "crates/hydracache-server/tests/management_operations_072.rs", "function": "operation_canary_rejects_accepted_as_completed_and_ui_write_assumptions"},
+      "canary": {"file": "crates/hydracache-server/tests/management_operations_072.rs", "function": "operation_canary_rejects_accepted_as_completed_and_ui_write_assumptions"},
+      "guard_command": {"program": "cargo", "args": ["test", "-p", "hydracache-server", "--test", "management_operations_072", "--locked", "operation_canary_rejects_accepted_as_completed_and_ui_write_assumptions", "--", "--exact", "--nocapture", "--test-threads=1"], "env": {}, "cwd": ".", "platform": "any"},
+      "canary_command": {"program": "cargo", "args": ["test", "-p", "hydracache-server", "--test", "management_operations_072", "--locked", "operation_canary_rejects_accepted_as_completed_and_ui_write_assumptions", "--", "--exact", "--nocapture", "--test-threads=1"], "env": {"HYDRACACHE_CANARY_DEFECT": "MC72-W10-WRITE-FROM-UI"}, "cwd": ".", "platform": "any"},
+      "defect_id": "MC72-W10-WRITE-FROM-UI", "expected_failure": "HC-CANARY-RED:MC72-W10-WRITE-FROM-UI", "timeout_seconds": 300, "tier": "fast", "artifacts": ["target/release-evidence/canaries/0.72-W10.json"], "red_evidence": "The console must remain read-only and accepted operations must not be presented as completed."
+    },
+    {
+      "w_item": "W11",
+      "guard": {"file": "crates/hydracache-server/tests/management_security_072.rs", "function": "canary_xss_and_management_auth_bypass_are_both_rejected"},
+      "canary": {"file": "crates/hydracache-server/tests/management_security_072.rs", "function": "canary_xss_and_management_auth_bypass_are_both_rejected"},
+      "guard_command": {"program": "cargo", "args": ["test", "-p", "hydracache-server", "--test", "management_security_072", "--locked", "canary_xss_and_management_auth_bypass_are_both_rejected", "--", "--exact", "--nocapture", "--test-threads=1"], "env": {}, "cwd": ".", "platform": "any"},
+      "canary_command": {"program": "cargo", "args": ["test", "-p", "hydracache-server", "--test", "management_security_072", "--locked", "canary_xss_and_management_auth_bypass_are_both_rejected", "--", "--exact", "--nocapture", "--test-threads=1"], "env": {"HYDRACACHE_CANARY_DEFECT": "MC72-W11-XSS-AUTH-BYPASS"}, "cwd": ".", "platform": "any"},
+      "defect_id": "MC72-W11-XSS-AUTH-BYPASS", "expected_failure": "HC-CANARY-RED:MC72-W11-XSS-AUTH-BYPASS", "timeout_seconds": 300, "tier": "fast", "artifacts": ["target/release-evidence/canaries/0.72-W11.json"], "red_evidence": "Hostile identity data and missing management.read permission must both fail before disclosure."
+    },
+    {
+      "w_item": "W12",
+      "guard": {"file": "crates/hydracache-server/tests/management_process_072.rs", "function": "canary_fault_masked_is_detected"},
+      "canary": {"file": "crates/hydracache-server/tests/management_process_072.rs", "function": "canary_fault_masked_is_detected"},
+      "guard_command": {"program": "cargo", "args": ["test", "-p", "hydracache-server", "--test", "management_process_072", "--locked", "canary_fault_masked_is_detected", "--", "--exact", "--nocapture", "--test-threads=1"], "env": {}, "cwd": ".", "platform": "any"},
+      "canary_command": {"program": "cargo", "args": ["test", "-p", "hydracache-server", "--test", "management_process_072", "--locked", "canary_fault_masked_is_detected", "--", "--exact", "--nocapture", "--test-threads=1"], "env": {"HYDRACACHE_CANARY_DEFECT": "MC72-W12-FAULT-MASKED"}, "cwd": ".", "platform": "any"},
+      "defect_id": "MC72-W12-FAULT-MASKED", "expected_failure": "HC-CANARY-RED:MC72-W12-FAULT-MASKED", "timeout_seconds": 300, "tier": "fast", "artifacts": ["target/release-evidence/canaries/0.72-W12.json"], "red_evidence": "Injected peer faults must be activated and visible as partial rather than painted complete."
+    },
+    {
+      "w_item": "W13",
+      "guard": {"file": "crates/xtask/tests/management_center_072.rs", "function": "canary_w13_mixed_artifact_is_rejected"},
+      "canary": {"file": "crates/xtask/tests/management_center_072.rs", "function": "canary_w13_mixed_artifact_is_rejected"},
+      "guard_command": {"program": "cargo", "args": ["test", "-p", "xtask", "--test", "management_center_072", "--locked", "canary_w13_mixed_artifact_is_rejected", "--", "--exact", "--nocapture"], "env": {}, "cwd": ".", "platform": "any"},
+      "canary_command": {"program": "cargo", "args": ["test", "-p", "xtask", "--test", "management_center_072", "--locked", "canary_w13_mixed_artifact_is_rejected", "--", "--exact", "--nocapture"], "env": {"HYDRACACHE_CANARY_DEFECT": "MC72-W13-MIXED-ARTIFACT"}, "cwd": ".", "platform": "any"},
+      "defect_id": "MC72-W13-MIXED-ARTIFACT", "expected_failure": "HC-CANARY-RED:MC72-W13-MIXED-ARTIFACT", "timeout_seconds": 300, "tier": "fast", "artifacts": ["target/release-evidence/canaries/0.72-W13.json"], "red_evidence": "A console bundle from another commit must never be accepted as the server candidate."
+    },
+    {
+      "w_item": "W14",
+      "guard": {"file": "crates/xtask/tests/management_center_072.rs", "function": "canary_w14_tampered_evidence_is_rejected"},
+      "canary": {"file": "crates/xtask/tests/management_center_072.rs", "function": "canary_w14_tampered_evidence_is_rejected"},
+      "guard_command": {"program": "cargo", "args": ["test", "-p", "xtask", "--test", "management_center_072", "--locked", "canary_w14_tampered_evidence_is_rejected", "--", "--exact", "--nocapture"], "env": {}, "cwd": ".", "platform": "any"},
+      "canary_command": {"program": "cargo", "args": ["test", "-p", "xtask", "--test", "management_center_072", "--locked", "canary_w14_tampered_evidence_is_rejected", "--", "--exact", "--nocapture"], "env": {"HYDRACACHE_CANARY_DEFECT": "MC72-W14-EVIDENCE-TAMPER"}, "cwd": ".", "platform": "any"},
+      "defect_id": "MC72-W14-EVIDENCE-TAMPER", "expected_failure": "HC-CANARY-RED:MC72-W14-EVIDENCE-TAMPER", "timeout_seconds": 300, "tier": "fast", "artifacts": ["target/release-evidence/canaries/0.72-W14.json"], "red_evidence": "Tampered claim, test, canary or receipt references must block release admission."
+    }
+  ]
+}
