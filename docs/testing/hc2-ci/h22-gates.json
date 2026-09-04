@@ -39,7 +39,7 @@
       "job_name": "HC/2 Docker Interop",
       "runner": "ubuntu-24.04",
       "trigger": "pull_request,push,tag,schedule,workflow_dispatch",
-      "timeout_minutes": 45,
+      "timeout_minutes": 90,
       "rust_release_required": true,
       "java_python_promotion_required": true
     },

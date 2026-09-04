@@ -502,6 +502,10 @@ Remove-Item Env:\HYDRACACHE_RUN_PERF_CORE -ErrorAction SilentlyContinue
 1.2x/1.5x/2x a valid W1/W2/W3 capacity knee. W4A read-only admin may participate only if it has the
 same complete sustainability predicate; one-shot control-plane events and W4B model costs do not
 inherit a synthetic "cluster knee". Any model overload curve stays labeled library/model.
+Reference overload points scale the offered operation count with the offered-rate factor so every
+point contains 100,000 admitted operations over an equal knee-relative window. Reference warm-up
+and recovery windows use 10,000 and 100,000 operations respectively; the four-operation warm-up and
+48-operation windows remain deterministic-smoke-only fixtures.
 
 **Required measurements:**
 - `overload_goodput_curve_1_2x_1_5x_2x_knee_per_eligible_surface`;

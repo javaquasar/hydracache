@@ -34,8 +34,21 @@ fn committed_scenario_digest_seals_workload_spread_and_recovery_shape() {
         contract.reference.committed_scenario_sha256
     );
     assert_eq!(contract.work.reference_preload_operations.local, 0);
-    assert_eq!(contract.work.burst_operations, 50_000);
-    assert_eq!(contract.work.recovery_operations_per_window, 50_000);
+    assert_eq!(contract.work.warmup_operations, 10_000);
+    assert_eq!(contract.work.burst_operations, 100_000);
+    assert_eq!(contract.work.recovery_operations_per_window, 100_000);
+    assert_eq!(contract.work.p999_min_samples, 10_000);
+    assert_eq!(
+        OVERLOAD_FACTORS_MILLIONTHS
+            .into_iter()
+            .map(|factor| {
+                contract
+                    .overload_operations(OverloadRunMode::Reference, factor)
+                    .unwrap()
+            })
+            .collect::<Vec<_>>(),
+        vec![120_000, 150_000, 200_000]
+    );
     assert_eq!(
         contract.work.reference_preload_operations.client_surface,
         10_000

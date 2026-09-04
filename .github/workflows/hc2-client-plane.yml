@@ -235,7 +235,10 @@ jobs:
   docker-interop:
     name: HC/2 Docker Interop
     runs-on: ubuntu-24.04
-    timeout-minutes: 45
+    # The digest-pinned image is rebuilt with --pull on every candidate. Keep a
+    # bounded margin for transient Ubuntu archive slowness before the actual
+    # interop suite starts.
+    timeout-minutes: 90
     steps:
       - name: Checkout exact candidate
         uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
