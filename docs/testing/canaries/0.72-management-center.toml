@@ -1,0 +1,20 @@
+schema_version = 1
+release = "0.72.0"
+
+[[canary]]
+id = "MC72-W2-LEAK-OR-OVERSIZE"
+status = "active"
+test = "canary_management_api_detects_internal_identity_leak_or_oversize_payload"
+command = "cargo test -p hydracache-server --test management_http --locked canary_management_api_detects_internal_identity_leak_or_oversize_payload -- --nocapture"
+defect_env = "HYDRACACHE_CANARY_DEFECT=MC72-W2"
+expected_failure = "HC-CANARY-RED:MC72-W2"
+green_evidence = "The real route remains within its byte ceiling and never serializes internal node identities."
+red_evidence = "The mutant serializes ClusterStatus directly; the same oracle detects the leaked identity."
+
+[[canary]]
+id = "MC72-W3-CONFUSED-FANOUT"
+status = "planned"
+test = "not implemented in the local-source route slice"
+expected_failure = "HC-CANARY-RED:MC72-W3"
+green_evidence = "Pending authenticated member-to-member snapshot transport."
+red_evidence = "Must reject an uncommitted address and a late older-epoch response."

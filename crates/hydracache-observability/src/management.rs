@@ -25,6 +25,199 @@ pub const MAX_PLACEMENT_REASONS_PER_CANDIDATE: usize = 16;
 pub const MAX_PLACEMENT_LABELS: usize = 64;
 /// Maximum encoded bytes accepted for one placement label.
 pub const MAX_PLACEMENT_LABEL_BYTES: usize = 128;
+/// Maximum number of items returned by one management page.
+pub const MAX_MANAGEMENT_PAGE_ITEMS: usize = 100;
+/// Maximum encoded bytes accepted for an opaque pagination cursor.
+pub const MAX_MANAGEMENT_CURSOR_BYTES: usize = 256;
+/// Maximum warnings retained in one management response envelope.
+pub const MAX_MANAGEMENT_WARNINGS: usize = 32;
+
+/// Stable warning vocabulary carried by management response envelopes.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
+#[serde(rename_all = "kebab-case")]
+pub enum ManagementWarningCode {
+    SourceUnavailable,
+    PartialObservation,
+    StaleObservation,
+    ResultTruncated,
+    AuthorityUnavailable,
+    StatusNotRetained,
+    #[serde(other)]
+    Unknown,
+}
+
+/// Bounded warning without raw internal errors or sensitive values.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct ManagementWarning {
+    pub code: ManagementWarningCode,
+    pub affected_count: Option<u64>,
+}
+
+/// Common metadata wrapped around every `/management/v1` response.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct ManagementEnvelope<T> {
+    pub schema_version: u16,
+    pub observation_seq: u64,
+    pub authority_epoch: Option<u64>,
+    pub captured_at_unix_ms: u64,
+    pub source: ManagementObservationSource,
+    pub completeness: ManagementCompleteness,
+    pub stale_after_ms: u64,
+    pub warnings: Vec<ManagementWarning>,
+    pub data: T,
+}
+
+impl<T> ManagementEnvelope<T> {
+    /// Validate common version, source-truth, and cardinality rules.
+    pub fn validate(&self) -> Result<(), ManagementContractError> {
+        validate_schema(self.schema_version)?;
+        validate_limit("warnings", self.warnings.len(), MAX_MANAGEMENT_WARNINGS)?;
+        if self.stale_after_ms == 0 {
+            return Err(ManagementContractError::Incoherent {
+                field: "stale_after_ms",
+                reason: "staleness window must be non-zero",
+            });
+        }
+        if matches!(
+            self.source,
+            ManagementObservationSource::Unavailable | ManagementObservationSource::Unknown
+        ) && self.completeness == ManagementCompleteness::Complete
+        {
+            return Err(ManagementContractError::Incoherent {
+                field: "completeness",
+                reason: "an unavailable source cannot be complete",
+            });
+        }
+        if self.completeness == ManagementCompleteness::Unknown {
+            return Err(ManagementContractError::Incoherent {
+                field: "completeness",
+                reason: "unknown completeness cannot be published",
+            });
+        }
+        if self.completeness == ManagementCompleteness::Complete
+            && self.warnings.iter().any(|warning| {
+                matches!(
+                    warning.code,
+                    ManagementWarningCode::SourceUnavailable
+                        | ManagementWarningCode::PartialObservation
+                        | ManagementWarningCode::AuthorityUnavailable
+                )
+            })
+        {
+            return Err(ManagementContractError::Incoherent {
+                field: "warnings",
+                reason: "complete response cannot report a missing required source",
+            });
+        }
+        Ok(())
+    }
+}
+
+/// Opaque server-issued pagination token.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(transparent)]
+pub struct OpaqueCursor(String);
+
+impl OpaqueCursor {
+    /// Build a cursor. The issuing transport remains responsible for authenticity and expiry.
+    pub fn new(value: impl Into<String>) -> Self {
+        Self(value.into())
+    }
+
+    /// Borrow the encoded cursor.
+    pub fn as_str(&self) -> &str {
+        &self.0
+    }
+
+    /// Validate only the cross-transport encoded-size contract.
+    pub fn validate(&self) -> Result<(), ManagementContractError> {
+        validate_opaque_id("cursor", self.as_str(), MAX_MANAGEMENT_CURSOR_BYTES)
+    }
+}
+
+/// Stable bounded page used by list endpoints.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct BoundedPage<T> {
+    pub items: Vec<T>,
+    pub next_cursor: Option<OpaqueCursor>,
+    pub truncated: bool,
+}
+
+impl<T> BoundedPage<T> {
+    /// Validate the page cardinality and cursor encoding bounds.
+    pub fn validate(&self) -> Result<(), ManagementContractError> {
+        validate_limit("page.items", self.items.len(), MAX_MANAGEMENT_PAGE_ITEMS)?;
+        if let Some(cursor) = &self.next_cursor {
+            cursor.validate()?;
+        }
+        if self.next_cursor.is_some() && !self.truncated {
+            return Err(ManagementContractError::Incoherent {
+                field: "next_cursor",
+                reason: "a continuation cursor requires truncated=true",
+            });
+        }
+        Ok(())
+    }
+}
+
+/// Capability identifiers used to drive Management Center navigation.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum ManagementCapabilityId {
+    ClusterFormation,
+    ConsensusProgress,
+    PersistenceRecovery,
+    #[serde(other)]
+    Unknown,
+}
+
+/// Availability of one server-side management data source.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum ManagementCapabilityAvailability {
+    Available,
+    Partial,
+    Unavailable,
+    #[serde(other)]
+    Unknown,
+}
+
+/// One capability and its stable unavailability reason, if any.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct ManagementCapability {
+    pub id: ManagementCapabilityId,
+    pub availability: ManagementCapabilityAvailability,
+    pub reason: Option<ManagementWarningCode>,
+}
+
+/// Stable, sorted capability negotiation payload.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct ManagementCapabilities {
+    pub capabilities: Vec<ManagementCapability>,
+}
+
+impl ManagementCapabilities {
+    /// Validate stable order and reason/availability consistency.
+    pub fn validate(&self) -> Result<(), ManagementContractError> {
+        let ids = self
+            .capabilities
+            .iter()
+            .map(|capability| capability.id)
+            .collect::<Vec<_>>();
+        validate_strict_order("capabilities", &ids)?;
+        for capability in &self.capabilities {
+            if capability.availability != ManagementCapabilityAvailability::Available
+                && capability.reason.is_none()
+            {
+                return Err(ManagementContractError::Incoherent {
+                    field: "capability.reason",
+                    reason: "partial or unavailable capability requires a stable reason",
+                });
+            }
+        }
+        Ok(())
+    }
+}
 
 /// Source quality for one management observation.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]

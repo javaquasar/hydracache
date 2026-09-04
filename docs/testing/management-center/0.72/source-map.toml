@@ -1,0 +1,54 @@
+schema_version = 1
+release = "0.72.0"
+
+[[source]]
+id = "capabilities"
+route = "/management/v1/capabilities"
+field_group = "capability availability and stable reason"
+producer = "ServerRuntime + Management API route registry"
+authority = "observational"
+lifetime = "request"
+consistency = "one local runtime snapshot"
+max_cardinality = 3
+privacy = "cluster-safe; no internal identities"
+fallback = "unavailable with stable reason"
+test_owner = "crates/hydracache-server/tests/management_http.rs"
+
+[[source]]
+id = "cluster-formation"
+route = "/management/v1/formation"
+field_group = "committed roster, generation, reachability, local admission and catch-up"
+producer = "ClusterStatusProvider backed by GridControlPlaneHandle"
+authority = "committed Raft roster plus explicitly partial transport observations"
+lifetime = "request and 30-second cursor"
+consistency = "authority epoch + observation sequence"
+max_cardinality = 100
+privacy = "member diagnostic; node ids SHA-256 pseudonymized before wire serialization"
+fallback = "partial; unknown dimensions remain unknown and serving remains blocked"
+test_owner = "crates/hydracache-server/tests/management_http.rs"
+
+[[source]]
+id = "consensus-progress"
+route = "/management/v1/consensus/progress"
+field_group = "local commit, apply, snapshot and catch-up positions"
+producer = "GridControlPlaneHandle::local_consensus_status"
+authority = "live local raft-rs runtime"
+lifetime = "request"
+consistency = "one node generation and authority epoch"
+max_cardinality = 1
+privacy = "cluster-safe counters; node id pseudonymized"
+fallback = "empty partial page with source-unavailable warning"
+test_owner = "crates/hydracache-server/tests/management_http.rs"
+
+[[source]]
+id = "persistence-recovery"
+route = "/management/v1/persistence/recovery"
+field_group = "durable recovery outcome and bounded evidence counts"
+producer = "absent in current slice"
+authority = "unavailable"
+lifetime = "request"
+consistency = "no retained recovery status"
+max_cardinality = 1
+privacy = "no paths, keys, raw errors or checksums"
+fallback = "unknown/status-not-retained"
+test_owner = "crates/hydracache-server/tests/management_http.rs"

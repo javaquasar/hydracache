@@ -451,3 +451,18 @@ Changing a limit or field meaning is a compatibility change and requires new gol
 documented reader window. These DTOs are not persisted in 0.72; if a later work item retains
 recovery or placement status on disk, that artifact receives a separate format registration and
 crash-recovery contract before use.
+
+The first server-backed routes are `/management/v1/capabilities`, `/management/v1/formation`,
+`/management/v1/consensus/progress`, and `/management/v1/persistence/recovery`. They are available
+only on the internal admin listener and currently reuse its verified privileged identity boundary.
+The routes accept GET and body-free HEAD; mutation methods are not registered. Formation reads the
+committed roster and local Raft progress through `GridControlPlaneHandle`, hashes node identities
+before serialization, and leaves remote authentication/catch-up dimensions partial until W3 fan-out
+exists. Recovery deliberately returns `unknown/status-not-retained` until a real retained source is
+connected; process liveness is never upgraded to a clean recovery claim.
+
+List responses are capped at 100 items and 256 KiB. Continuations are 30-second opaque server-side
+cursors bound to route class, authority epoch, and observation sequence; a changed snapshot returns
+`snapshot-changed` instead of merging pages. The cursor registry retains at most 1,024 records.
+These limits and source ownership are mirrored in the machine-checked 0.72 source and bounds
+registries under `docs/testing/management-center/0.72`.

@@ -60,16 +60,19 @@ pub use consumer::{
 };
 pub use exporter::{registered_metric_names, PrometheusExporter};
 pub use management::{
-    AdmissionState, BoundedCount, BoundedPlacementConstraints, CatchUpState,
+    AdmissionState, BoundedCount, BoundedPage, BoundedPlacementConstraints, CatchUpState,
     ClusterFormationSnapshot, ConsensusProgressSnapshot, DiscoveryState, DurableRecoveryStatus,
-    FormationReasonCode, ManagementCompleteness, ManagementConsensusRole, ManagementContractError,
-    ManagementObservationSource, OpaqueNodeIdentity, PlacementCandidateDecision,
-    PlacementCandidatePage, PlacementDecisionTrace, PlacementOutcome, PlacementReasonCode,
-    RecoveryArtifactKind, RecoveryOutcome, RecoveryPhase, RecoveryReasonCode, RecoveryScope,
-    RecoveryWatermark, RepairState, ServingState, TransportState, MANAGEMENT_API_SCHEMA_VERSION,
-    MAX_MANAGEMENT_NODE_ID_BYTES, MAX_MANAGEMENT_OPAQUE_ID_BYTES, MAX_PLACEMENT_CANDIDATES,
-    MAX_PLACEMENT_LABELS, MAX_PLACEMENT_LABEL_BYTES, MAX_PLACEMENT_REASONS_PER_CANDIDATE,
-    MAX_PLACEMENT_SELECTED,
+    FormationReasonCode, ManagementCapabilities, ManagementCapability,
+    ManagementCapabilityAvailability, ManagementCapabilityId, ManagementCompleteness,
+    ManagementConsensusRole, ManagementContractError, ManagementEnvelope,
+    ManagementObservationSource, ManagementWarning, ManagementWarningCode, OpaqueCursor,
+    OpaqueNodeIdentity, PlacementCandidateDecision, PlacementCandidatePage, PlacementDecisionTrace,
+    PlacementOutcome, PlacementReasonCode, RecoveryArtifactKind, RecoveryOutcome, RecoveryPhase,
+    RecoveryReasonCode, RecoveryScope, RecoveryWatermark, RepairState, ServingState,
+    TransportState, MANAGEMENT_API_SCHEMA_VERSION, MAX_MANAGEMENT_CURSOR_BYTES,
+    MAX_MANAGEMENT_NODE_ID_BYTES, MAX_MANAGEMENT_OPAQUE_ID_BYTES, MAX_MANAGEMENT_PAGE_ITEMS,
+    MAX_MANAGEMENT_WARNINGS, MAX_PLACEMENT_CANDIDATES, MAX_PLACEMENT_LABELS,
+    MAX_PLACEMENT_LABEL_BYTES, MAX_PLACEMENT_REASONS_PER_CANDIDATE, MAX_PLACEMENT_SELECTED,
 };
 
 /// Serializable snapshot of [`CacheStats`].

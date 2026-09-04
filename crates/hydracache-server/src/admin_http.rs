@@ -55,6 +55,7 @@ pub type SharedServerRuntime = Arc<Mutex<ServerRuntime>>;
 pub struct AdminHttpSurface {
     runtime: SharedServerRuntime,
     hc2_metrics: Option<Hc2ClientPlaneService>,
+    management_cursors: Arc<Mutex<crate::management_http::ManagementCursorStore>>,
 }
 
 impl AdminHttpSurface {
@@ -63,6 +64,7 @@ impl AdminHttpSurface {
         Self {
             runtime: Arc::new(Mutex::new(runtime)),
             hc2_metrics: None,
+            management_cursors: Arc::new(Mutex::new(Default::default())),
         }
     }
 
@@ -71,6 +73,7 @@ impl AdminHttpSurface {
         Self {
             runtime,
             hc2_metrics: None,
+            management_cursors: Arc::new(Mutex::new(Default::default())),
         }
     }
 
@@ -117,7 +120,11 @@ impl AdminHttpSurface {
             .nest(
                 ADMIN_ACTUATOR_PATH,
                 HydraCacheActuator::routes_for(actuator_registry),
-            );
+            )
+            .merge(crate::management_http::routes(
+                Arc::clone(&self.runtime),
+                Arc::clone(&self.management_cursors),
+            ));
         if let Some(service) = self.hc2_metrics.clone() {
             routes.layer(Extension(service))
         } else {
@@ -442,7 +449,7 @@ struct AdminBackupRequestAcceptance {
     restore_point_available: bool,
 }
 
-fn require_admin(headers: &HeaderMap) -> Result<(), AdminHttpError> {
+pub(crate) fn require_admin(headers: &HeaderMap) -> Result<(), AdminHttpError> {
     let has_identity = header_value(headers, HYDRACACHE_CLIENT_ID_HEADER).is_some()
         && header_value(headers, HYDRACACHE_TENANT_HEADER).is_some();
     if !has_identity {

@@ -738,7 +738,7 @@ impl ServerRuntime {
         )
     }
 
-    fn cluster_status_snapshot(&self) -> ClusterStatus {
+    pub(crate) fn cluster_status_snapshot(&self) -> ClusterStatus {
         let cluster_ready = self.cluster_ready && self.state != ServerState::Stopped;
         self.cluster_status
             .cluster_status(ClusterStatusRuntime::new(cluster_ready, self.is_draining()))

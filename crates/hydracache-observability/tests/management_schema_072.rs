@@ -1,14 +1,101 @@
 use hydracache_observability::{
-    AdmissionState, BoundedCount, BoundedPlacementConstraints, CatchUpState,
+    AdmissionState, BoundedCount, BoundedPage, BoundedPlacementConstraints, CatchUpState,
     ClusterFormationSnapshot, ConsensusProgressSnapshot, DiscoveryState, DurableRecoveryStatus,
-    FormationReasonCode, ManagementCompleteness, ManagementConsensusRole, ManagementContractError,
-    ManagementObservationSource, OpaqueNodeIdentity, PlacementCandidateDecision,
-    PlacementCandidatePage, PlacementDecisionTrace, PlacementOutcome, PlacementReasonCode,
-    RecoveryArtifactKind, RecoveryOutcome, RecoveryPhase, RecoveryReasonCode, RecoveryScope,
-    RecoveryWatermark, RepairState, ServingState, TransportState, MANAGEMENT_API_SCHEMA_VERSION,
-    MAX_MANAGEMENT_NODE_ID_BYTES, MAX_PLACEMENT_CANDIDATES, MAX_PLACEMENT_LABELS,
-    MAX_PLACEMENT_LABEL_BYTES, MAX_PLACEMENT_REASONS_PER_CANDIDATE, MAX_PLACEMENT_SELECTED,
+    FormationReasonCode, ManagementCapabilities, ManagementCapability,
+    ManagementCapabilityAvailability, ManagementCapabilityId, ManagementCompleteness,
+    ManagementConsensusRole, ManagementContractError, ManagementEnvelope,
+    ManagementObservationSource, ManagementWarning, ManagementWarningCode, OpaqueCursor,
+    OpaqueNodeIdentity, PlacementCandidateDecision, PlacementCandidatePage, PlacementDecisionTrace,
+    PlacementOutcome, PlacementReasonCode, RecoveryArtifactKind, RecoveryOutcome, RecoveryPhase,
+    RecoveryReasonCode, RecoveryScope, RecoveryWatermark, RepairState, ServingState,
+    TransportState, MANAGEMENT_API_SCHEMA_VERSION, MAX_MANAGEMENT_NODE_ID_BYTES,
+    MAX_MANAGEMENT_PAGE_ITEMS, MAX_MANAGEMENT_WARNINGS, MAX_PLACEMENT_CANDIDATES,
+    MAX_PLACEMENT_LABELS, MAX_PLACEMENT_LABEL_BYTES, MAX_PLACEMENT_REASONS_PER_CANDIDATE,
+    MAX_PLACEMENT_SELECTED,
 };
+
+#[test]
+fn envelope_rejects_unavailable_complete_and_missing_source_warnings() {
+    let mut envelope = ManagementEnvelope {
+        schema_version: MANAGEMENT_API_SCHEMA_VERSION,
+        observation_seq: 7,
+        authority_epoch: Some(3),
+        captured_at_unix_ms: 1_000,
+        source: ManagementObservationSource::Unavailable,
+        completeness: ManagementCompleteness::Complete,
+        stale_after_ms: 2_000,
+        warnings: Vec::new(),
+        data: (),
+    };
+    assert_incoherent(envelope.validate(), "completeness");
+
+    envelope.source = ManagementObservationSource::Live;
+    envelope.warnings.push(ManagementWarning {
+        code: ManagementWarningCode::SourceUnavailable,
+        affected_count: Some(1),
+    });
+    assert_incoherent(envelope.validate(), "warnings");
+
+    envelope.completeness = ManagementCompleteness::Partial;
+    assert_eq!(envelope.validate(), Ok(()));
+    envelope.source = ManagementObservationSource::Unknown;
+    envelope.completeness = ManagementCompleteness::Complete;
+    envelope.warnings.clear();
+    assert_incoherent(envelope.validate(), "completeness");
+    envelope.source = ManagementObservationSource::Live;
+    envelope.completeness = ManagementCompleteness::Unknown;
+    assert_incoherent(envelope.validate(), "completeness");
+    envelope.completeness = ManagementCompleteness::Partial;
+    envelope.warnings = vec![
+        ManagementWarning {
+            code: ManagementWarningCode::PartialObservation,
+            affected_count: None,
+        };
+        MAX_MANAGEMENT_WARNINGS + 1
+    ];
+    assert_limit(envelope.validate(), "warnings", MAX_MANAGEMENT_WARNINGS);
+}
+
+#[test]
+fn bounded_page_requires_bounded_items_and_truthful_continuation() {
+    let mut page = BoundedPage {
+        items: vec![0_u8; MAX_MANAGEMENT_PAGE_ITEMS + 1],
+        next_cursor: None,
+        truncated: true,
+    };
+    assert_limit(page.validate(), "page.items", MAX_MANAGEMENT_PAGE_ITEMS);
+
+    page.items.truncate(1);
+    page.next_cursor = Some(OpaqueCursor::new("opaque"));
+    page.truncated = false;
+    assert_incoherent(page.validate(), "next_cursor");
+    page.truncated = true;
+    assert_eq!(page.validate(), Ok(()));
+}
+
+#[test]
+fn capability_list_is_sorted_and_unavailable_entries_explain_why() {
+    let mut capabilities = ManagementCapabilities {
+        capabilities: vec![
+            ManagementCapability {
+                id: ManagementCapabilityId::ClusterFormation,
+                availability: ManagementCapabilityAvailability::Available,
+                reason: None,
+            },
+            ManagementCapability {
+                id: ManagementCapabilityId::ConsensusProgress,
+                availability: ManagementCapabilityAvailability::Unavailable,
+                reason: Some(ManagementWarningCode::SourceUnavailable),
+            },
+        ],
+    };
+    assert_eq!(capabilities.validate(), Ok(()));
+    capabilities.capabilities.reverse();
+    assert_unstable(capabilities.validate(), "capabilities");
+    capabilities.capabilities.reverse();
+    capabilities.capabilities[1].reason = None;
+    assert_incoherent(capabilities.validate(), "capability.reason");
+}
 
 fn live_formation() -> ClusterFormationSnapshot {
     ClusterFormationSnapshot {

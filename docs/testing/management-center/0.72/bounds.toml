@@ -1,0 +1,28 @@
+schema_version = 1
+release = "0.72.0"
+
+[http]
+max_page_items = 100
+max_response_bytes = 262144
+stale_after_ms = 2000
+
+[cursor]
+max_encoded_bytes = 256
+ttl_ms = 30000
+max_retained_records = 1024
+snapshot_binding = ["route_kind", "authority_epoch", "observation_seq"]
+
+[identity]
+max_source_node_id_bytes = 256
+wire_scheme = "sha256-prefix-v1"
+wire_digest_bytes = 16
+
+[envelope]
+max_warnings = 32
+
+[placement]
+max_candidates = 512
+max_selected = 64
+max_reasons_per_candidate = 16
+max_labels_per_constraint_set = 64
+max_label_bytes = 128

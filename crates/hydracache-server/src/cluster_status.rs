@@ -107,6 +107,25 @@ pub struct MemberStatus {
     pub generation: u64,
 }
 
+/// Coherent local Raft progress captured from the control-plane runtime.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+pub struct LocalConsensusStatus {
+    /// Stable logical identity of the local member.
+    pub node_id: String,
+    /// Current local member generation.
+    pub generation: u64,
+    /// Whether the committed Raft configuration contains this node as a voter.
+    pub voter: bool,
+    /// Current committed Raft index.
+    pub commit_index: u64,
+    /// Last locally applied Raft index.
+    pub applied_index: u64,
+    /// Last installed durable snapshot index, when exposed by the runtime.
+    pub last_snapshot_index: Option<u64>,
+    /// Authoritative catch-up target for this observation.
+    pub catch_up_target: u64,
+}
+
 /// Read-only cluster status snapshot.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 pub struct ClusterStatus {
@@ -118,6 +137,10 @@ pub struct ClusterStatus {
     pub term: u64,
     /// Current authority epoch.
     pub epoch: u64,
+    /// Monotone source sequence used to reject management snapshot regression.
+    pub observation_seq: u64,
+    /// Whether the member roster and epoch match fully applied Raft authority.
+    pub metadata_authoritative: bool,
     /// Whether quorum is available while the runtime is not draining.
     pub quorum_ok: bool,
     /// Visible members. Unreachable members remain present.
@@ -130,6 +153,8 @@ pub struct ClusterStatus {
     pub reshard_phase: ReshardPhase,
     /// Whether the runtime is draining.
     pub draining: bool,
+    /// Local Raft progress, absent when this provider cannot prove it.
+    pub local_consensus: Option<LocalConsensusStatus>,
 }
 
 /// Read-only state of the disk-backed Raft compaction control.
@@ -226,12 +251,15 @@ impl ClusterStatusProvider for ModeledClusterStatus {
             leader: runtime.ready.then(|| "local".to_owned()),
             term: u64::from(runtime.ready),
             epoch: 0,
+            observation_seq: u64::from(runtime.ready),
+            metadata_authoritative: false,
             quorum_ok: runtime.ready && !runtime.draining,
             members: Vec::new(),
             voters: 0,
             voter_ids: Vec::new(),
             reshard_phase: ReshardPhase::Idle,
             draining: runtime.draining,
+            local_consensus: None,
         }
     }
 }
@@ -264,6 +292,10 @@ pub trait GridControlPlaneHandle: fmt::Debug + Send + Sync {
     fn metadata_authority_matches(&self, observed: &RaftMetadataSnapshot) -> bool {
         let _ = observed;
         true
+    }
+    /// Return one coherent local consensus observation, when exposed by the runtime.
+    fn local_consensus_status(&self) -> Option<LocalConsensusStatus> {
+        None
     }
     /// Return current raft voter count.
     fn voter_count(&self) -> u32;
@@ -323,7 +355,14 @@ impl ClusterStatusProvider for LiveClusterStatus {
                 generation: member.generation.value(),
             })
             .collect();
-        let metadata_authoritative = self.grid.metadata_authority_matches(&snapshot);
+        let local_consensus = self.grid.local_consensus_status();
+        let progress_matches_snapshot = local_consensus.as_ref().is_none_or(|progress| {
+            progress.commit_index == snapshot.commit_index
+                && progress.applied_index == snapshot.commit_index
+        });
+        let metadata_authoritative =
+            progress_matches_snapshot && self.grid.metadata_authority_matches(&snapshot);
+        let observation_seq = snapshot.commit_index;
 
         ClusterStatus {
             source: StatusSource::Live,
@@ -332,6 +371,8 @@ impl ClusterStatusProvider for LiveClusterStatus {
                 .flatten(),
             term: snapshot.term,
             epoch: snapshot.epoch.value(),
+            observation_seq,
+            metadata_authoritative,
             quorum_ok: runtime.ready
                 && metadata_authoritative
                 && self.grid.has_quorum()
@@ -341,6 +382,7 @@ impl ClusterStatusProvider for LiveClusterStatus {
             voter_ids: self.grid.voter_ids(),
             reshard_phase: self.grid.reshard_phase(),
             draining,
+            local_consensus,
         }
     }
 }

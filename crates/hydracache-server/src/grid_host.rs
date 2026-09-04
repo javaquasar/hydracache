@@ -32,7 +32,8 @@ use serde::{Deserialize, Serialize};
 use tokio::sync::watch;
 
 use crate::cluster_status::{
-    GridControlPlaneHandle, RaftCompactionError, RaftCompactionStatus, Reachability, ReshardPhase,
+    GridControlPlaneHandle, LocalConsensusStatus, RaftCompactionError, RaftCompactionStatus,
+    Reachability, ReshardPhase,
 };
 use crate::config::{ClusterStartMode, ServerConfig, ServerConfigError};
 
@@ -283,6 +284,7 @@ async fn networked_member_stack(config: &ServerConfig) -> CacheResult<NetworkedM
     Ok(NetworkedMemberStack {
         cache,
         node_id,
+        generation,
         raft_node_id,
         raft_peers,
         raft,
@@ -2242,6 +2244,7 @@ fn noop_waker() -> Waker {
 struct NetworkedMemberStack {
     cache: HydraCache,
     node_id: ClusterNodeId,
+    generation: ClusterGeneration,
     raft_node_id: u64,
     raft_peers: SharedRaftPeers,
     raft: Arc<NetworkedRaftRuntime>,
@@ -2257,6 +2260,7 @@ struct NetworkedMemberStack {
 
 struct NetworkedGridHandle {
     node_id: ClusterNodeId,
+    generation: ClusterGeneration,
     raft_node_id: u64,
     raft_peers: SharedRaftPeers,
     raft: Arc<NetworkedRaftRuntime>,
@@ -2275,6 +2279,7 @@ impl NetworkedGridHandle {
     fn new(stack: NetworkedMemberStack, runtime: Option<DedicatedGridRuntime>) -> Self {
         Self {
             node_id: stack.node_id,
+            generation: stack.generation,
             raft_node_id: stack.raft_node_id,
             raft_peers: stack.raft_peers,
             raft: stack.raft,
@@ -2509,6 +2514,25 @@ impl GridControlPlaneHandle for NetworkedGridHandle {
             );
         }
         authoritative
+    }
+
+    fn local_consensus_status(&self) -> Option<LocalConsensusStatus> {
+        let progress = self.raft.snapshot();
+        let voters = self.raft.voter_ids().ok()?;
+        let last_snapshot_index = self
+            .raft
+            .log_compaction_observation()
+            .ok()
+            .map(|observation| observation.snapshot_index);
+        Some(LocalConsensusStatus {
+            node_id: self.node_id.to_string(),
+            generation: self.generation.value(),
+            voter: voters.contains(&self.raft_node_id),
+            commit_index: progress.commit_index,
+            applied_index: progress.applied_index,
+            last_snapshot_index,
+            catch_up_target: progress.commit_index,
+        })
     }
 
     fn voter_count(&self) -> u32 {
@@ -2770,6 +2794,23 @@ impl GridControlPlaneHandle for InProcessGridHandle {
 
     fn has_quorum(&self) -> bool {
         !self.control_plane.members().is_empty()
+    }
+
+    fn local_consensus_status(&self) -> Option<LocalConsensusStatus> {
+        let members = self.control_plane.members();
+        let [member] = members.as_slice() else {
+            return None;
+        };
+        let snapshot = self.control_plane.snapshot();
+        Some(LocalConsensusStatus {
+            node_id: member.node_id.to_string(),
+            generation: member.generation.value(),
+            voter: member.is_member(),
+            commit_index: snapshot.commit_index,
+            applied_index: snapshot.commit_index,
+            last_snapshot_index: None,
+            catch_up_target: snapshot.commit_index,
+        })
     }
 
     fn voter_count(&self) -> u32 {
