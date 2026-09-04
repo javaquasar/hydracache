@@ -23,6 +23,7 @@ use hydracache_server::{
     MANAGEMENT_CLUSTER_MEMBERS_PATH, MANAGEMENT_CLUSTER_PARTITIONS_PATH,
     MANAGEMENT_CONSENSUS_PROGRESS_PATH, MANAGEMENT_CURSOR_TTL_MS, MANAGEMENT_DASHBOARD_PATH,
     MANAGEMENT_FORMATION_PATH, MANAGEMENT_MAX_RESPONSE_BYTES, MANAGEMENT_MAX_RETAINED_CURSORS,
+    MANAGEMENT_NAMESPACES_PATH, MANAGEMENT_NAMESPACE_CACHES_PREFIX,
     MANAGEMENT_PLACEMENT_TRACE_PREFIX, MANAGEMENT_RECOVERY_PATH, MANAGEMENT_SNAPSHOT_CACHE_TTL,
     MANAGEMENT_SNAPSHOT_MAX_CONCURRENCY, MANAGEMENT_SNAPSHOT_MAX_PEERS,
     MANAGEMENT_SNAPSHOT_MAX_REQUEST_BYTES, MANAGEMENT_SNAPSHOT_MAX_RESPONSE_BYTES,
@@ -174,6 +175,7 @@ async fn management_routes_require_verified_privileged_identity_before_reading_s
         MANAGEMENT_CLUSTER_MEMBERS_PATH,
         MANAGEMENT_CLUSTER_PARTITIONS_PATH,
         MANAGEMENT_CLIENTS_PATH,
+        MANAGEMENT_NAMESPACES_PATH,
         MANAGEMENT_CONSENSUS_PROGRESS_PATH,
         MANAGEMENT_RECOVERY_PATH,
     ] {
@@ -533,6 +535,8 @@ fn source_and_bound_registries_match_executable_contract() {
             MANAGEMENT_CONSENSUS_PROGRESS_PATH,
             MANAGEMENT_CLIENTS_PATH,
             CLUSTER_MANAGEMENT_SNAPSHOT_PATH,
+            MANAGEMENT_NAMESPACES_PATH,
+            "/management/v1/namespaces/{namespace}/caches",
             MANAGEMENT_RECOVERY_PATH,
         ]
     );
@@ -629,6 +633,12 @@ fn source_and_bound_registries_match_executable_contract() {
         MAX_MANAGEMENT_CLIENT_PROTOCOLS
     );
     assert_eq!(bounds["clients"]["detail_available"].as_bool(), Some(false));
+    assert_eq!(
+        value("namespaces", "max_page_items"),
+        MAX_MANAGEMENT_PAGE_ITEMS
+    );
+    assert_eq!(value("namespaces", "max_caches_per_client_namespace"), 1);
+    assert!(MANAGEMENT_NAMESPACE_CACHES_PREFIX.ends_with("namespaces"));
 
     let canaries_text =
         std::fs::read_to_string(root.join("docs/testing/canaries/0.72-management-center.toml"))

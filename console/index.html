@@ -14,7 +14,7 @@
     </header>
     <div class="app-shell">
       <nav class="sidebar" aria-label="Management sections">
-        <a href="#dashboard" class="active">Dashboard</a><a href="#formation">Formation</a><a href="#members">Members</a><a href="#partitions">Partitions</a><a href="#clients">Clients</a><a href="#replication">Replication</a><a href="#placement">Placement</a><a href="#consensus">Consensus</a><a href="#recovery">Recovery</a><a href="#history">Local history</a>
+        <a href="#dashboard" class="active">Dashboard</a><a href="#formation">Formation</a><a href="#members">Members</a><a href="#partitions">Partitions</a><a href="#clients">Clients</a><a href="#namespaces">Namespaces</a><a href="#replication">Replication</a><a href="#placement">Placement</a><a href="#consensus">Consensus</a><a href="#recovery">Recovery</a><a href="#history">Local history</a>
       </nav>
       <main class="page-shell" id="dashboard">
         <section class="degraded" data-testid="degraded-state" hidden></section>
@@ -46,6 +46,8 @@
         <section class="panel" id="partitions"><div class="section-heading"><div><h2>Partitions</h2><p>Authoritative ownership is shown only when it matches this observation epoch</p></div><span class="trust-note">missing is not zero</span></div><div class="metrics-strip" data-testid="partition-details"></div><div class="table-scroll"><table><thead><tr><th>Member</th><th>Primary</th><th>Backup</th></tr></thead><tbody data-testid="partition-table"></tbody></table></div></section>
 
         <section class="panel" id="clients"><div class="section-heading"><div><h2>Client lifecycle</h2><p>Node-local bounded protocol accounting; unavailable connection dimensions remain unknown</p></div><span class="trust-note">no addresses or identities</span></div><div class="metrics-strip" data-testid="client-details"></div><div class="table-scroll"><table><thead><tr><th>Protocol</th><th>Version</th><th>Active</th><th>Accepted</th><th>Closed</th><th>Rejected</th><th>Pending</th></tr></thead><tbody data-testid="client-table"></tbody></table></div></section>
+
+        <section class="panel" id="namespaces"><div class="section-heading"><div><h2>Authorized namespaces and caches</h2><p>Totals are computed only after caller-scope authorization</p></div><span class="trust-note">no keys, values or policy</span></div><div class="table-scroll"><table><thead><tr><th>Namespace</th><th>Caches</th><th>Entries</th><th>Logical</th><th>Retained</th><th>Entry quota</th><th>Byte quota</th><th>Rejected</th><th>Persistence</th></tr></thead><tbody data-testid="namespace-table"></tbody></table></div><div class="table-scroll"><table><thead><tr><th>Namespace</th><th>Cache</th><th>Entries</th><th>Logical</th><th>Retained</th><th>TTL backlog</th><th>Idempotency</th><th>Backup age</th></tr></thead><tbody data-testid="cache-table"></tbody></table></div></section>
 
         <section class="two-column">
           <section class="panel" id="consensus"><div class="section-heading"><div><h2>Consensus progress</h2><p>Commit/apply gaps remain unknown when the source is missing</p></div></div><div class="table-scroll"><table><thead><tr><th>Member</th><th>Commit</th><th>Applied</th><th>Lag</th><th>State</th></tr></thead><tbody data-testid="consensus-table"></tbody></table></div></section>

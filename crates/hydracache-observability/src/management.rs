@@ -689,6 +689,102 @@ impl ManagementClientsSnapshot {
     }
 }
 
+/// Provenance quality for one management measurement family.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum ManagementMeasurementQuality {
+    Exact,
+    Sampled,
+    Modeled,
+    Unavailable,
+    #[serde(other)]
+    Unknown,
+}
+
+/// Caller-authorized namespace summary; tenant identity is intentionally not repeated.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct ManagementNamespaceSummary {
+    pub schema_version: u16,
+    pub namespace: String,
+    pub cache_count: u64,
+    pub entries: u64,
+    pub logical_bytes: u64,
+    pub retained_bytes: Option<u64>,
+    pub max_entries: u64,
+    pub max_bytes: u64,
+    pub admitted_requests: u64,
+    pub rate_limit_per_window: u64,
+    pub fair_share_count: u64,
+    pub fair_share_per_window: u64,
+    pub admission_rejected_total: u64,
+    pub active_subscriptions: u64,
+    pub near_cache_repairs_total: u64,
+    pub persistence_status: ManagementMeasurementQuality,
+    pub usage_quality: ManagementMeasurementQuality,
+    pub source: ManagementObservationSource,
+    pub completeness: ManagementCompleteness,
+}
+
+impl ManagementNamespaceSummary {
+    pub fn validate(&self) -> Result<(), ManagementContractError> {
+        validate_schema(self.schema_version)?;
+        validate_opaque_id(
+            "namespace.namespace",
+            &self.namespace,
+            MAX_MANAGEMENT_DIAGNOSTIC_STRING_BYTES,
+        )?;
+        if self.cache_count > 1 {
+            return Err(ManagementContractError::Incoherent {
+                field: "namespace.cache_count",
+                reason: "the client-surface source exposes at most one logical cache per namespace",
+            });
+        }
+        Ok(())
+    }
+}
+
+/// Caller-authorized cache detail from the shared client-surface owner accounting.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct ManagementCacheDetail {
+    pub schema_version: u16,
+    pub namespace: String,
+    pub cache: String,
+    pub entries: u64,
+    pub logical_bytes: u64,
+    pub retained_bytes: Option<u64>,
+    pub max_entries: u64,
+    pub max_bytes: u64,
+    pub hit_total: Option<u64>,
+    pub miss_total: Option<u64>,
+    pub load_total: Option<u64>,
+    pub ttl_backlog: Option<u64>,
+    pub tag_index_bytes: Option<u64>,
+    pub conditional_records: Option<u64>,
+    pub idempotency_records: Option<u64>,
+    pub audit_records: Option<u64>,
+    pub backup_age_seconds: Option<u64>,
+    pub load_breaker_active: Option<bool>,
+    pub usage_quality: ManagementMeasurementQuality,
+    pub source: ManagementObservationSource,
+    pub completeness: ManagementCompleteness,
+}
+
+impl ManagementCacheDetail {
+    pub fn validate(&self) -> Result<(), ManagementContractError> {
+        validate_schema(self.schema_version)?;
+        validate_opaque_id(
+            "cache.namespace",
+            &self.namespace,
+            MAX_MANAGEMENT_DIAGNOSTIC_STRING_BYTES,
+        )?;
+        validate_opaque_id(
+            "cache.cache",
+            &self.cache,
+            MAX_MANAGEMENT_DIAGNOSTIC_STRING_BYTES,
+        )
+    }
+}
+
 impl ClusterFormationSnapshot {
     /// Validate cross-field authority and readiness invariants.
     pub fn validate(&self) -> Result<(), ManagementContractError> {

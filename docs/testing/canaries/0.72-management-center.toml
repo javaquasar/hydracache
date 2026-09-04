@@ -80,3 +80,13 @@ defect_env = "HYDRACACHE_CANARY_DEFECT=MC72-W6-CLOSED-CLIENT-LEAK"
 expected_failure = "HC-CANARY-RED:MC72-W6-CLOSED-CLIENT-LEAK"
 green_evidence = "Accepted minus closed reconciles exactly to the live connection owners and detail serialization is disabled without a safe bounded source."
 red_evidence = "The mutant retains one active owner after the only accepted client closes; lifecycle validation and the same cleanup oracle fail."
+
+[[canary]]
+id = "MC72-W7-CROSS-TENANT"
+status = "active"
+test = "canary_cross_tenant_source_never_changes_authorized_body"
+command = "cargo test -p hydracache-server --test management_namespaces_072 --locked canary_cross_tenant_source_never_changes_authorized_body -- --nocapture"
+defect_env = "HYDRACACHE_CANARY_DEFECT=MC72-W7-CROSS-TENANT"
+expected_failure = "HC-CANARY-RED:MC72-W7-CROSS-TENANT"
+green_evidence = "The tenant roster authorizes the caller before namespace totals are computed; hidden names, keys and payloads never enter the DTO."
+red_evidence = "The mutant switches the authorized source to tenant B and the same body scanner detects its distinctive namespace."

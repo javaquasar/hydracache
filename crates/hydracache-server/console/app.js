@@ -9,6 +9,7 @@ const ENDPOINTS = Object.freeze({
   members: "/management/v1/cluster/members?limit=100",
   partitions: "/management/v1/cluster/partitions",
   clients: "/management/v1/clients",
+  namespaces: "/management/v1/namespaces?limit=100",
   consensus: "/management/v1/consensus/progress?limit=100",
   recovery: "/management/v1/persistence/recovery?limit=100",
 });
@@ -71,6 +72,22 @@ async function refresh() {
         if (error.name === "AbortError") throw error;
       }
     }
+    const namespace = values.namespaces?.data?.items?.[0]?.namespace;
+    if (
+      typeof namespace === "string" &&
+      namespace.length > 0 &&
+      namespace.length <= 128 &&
+      !/[\u0000-\u001f\u007f]/.test(namespace)
+    ) {
+      try {
+        values.namespaceCaches = await fetchEnvelope(
+          `/management/v1/namespaces/${encodeURIComponent(namespace)}/caches`,
+          state.controller.signal,
+        );
+      } catch (error) {
+        if (error.name === "AbortError") throw error;
+      }
+    }
     render(values);
     state.failures = 0;
     state.refreshes += 1;
@@ -120,6 +137,7 @@ function render(values) {
   renderFormation(values.formation);
   renderPartitions(values.partitions, data.partitions);
   renderClients(values.clients);
+  renderNamespaces(values.namespaces, values.namespaceCaches);
   renderConsensus(values.consensus, data.consensus);
   renderRecovery(values.recovery);
   renderPlacement(values.placementTrace?.data, data.placement);
@@ -323,6 +341,56 @@ function renderClients(envelope) {
   if (protocols.length === 0) {
     byTest("client-table").append(
       row(["No protocol source", "unavailable", "unavailable", "unavailable", "unavailable", "unavailable", "unavailable"]),
+    );
+  }
+}
+
+function renderNamespaces(envelope, cacheEnvelope) {
+  const namespaces = envelope?.data?.items ?? [];
+  byTest("namespace-table").replaceChildren(
+    ...namespaces.slice(0, MAX_RENDERED_MEMBERS).map((namespace) =>
+      row(
+        [
+          namespace.namespace,
+          known(namespace.cache_count),
+          known(namespace.entries),
+          bytes(namespace.logical_bytes),
+          bytes(namespace.retained_bytes),
+          `${known(namespace.entries)} / ${known(namespace.max_entries)}`,
+          `${bytes(namespace.logical_bytes)} / ${bytes(namespace.max_bytes)}`,
+          known(namespace.admission_rejected_total),
+          namespace.persistence_status ?? "unavailable",
+        ],
+        { testid: "namespace-row" },
+      ),
+    ),
+  );
+  if (namespaces.length === 0) {
+    byTest("namespace-table").append(
+      row(["No authorized namespace source", "unavailable", "unavailable", "unavailable", "unavailable", "unavailable", "unavailable", "unavailable", "unavailable"]),
+    );
+  }
+  const caches = cacheEnvelope?.data?.items ?? [];
+  byTest("cache-table").replaceChildren(
+    ...caches.map((cache) =>
+      row(
+        [
+          cache.namespace,
+          cache.cache,
+          known(cache.entries),
+          bytes(cache.logical_bytes),
+          bytes(cache.retained_bytes),
+          known(cache.ttl_backlog),
+          known(cache.idempotency_records),
+          known(cache.backup_age_seconds),
+        ],
+        { testid: "cache-row" },
+      ),
+    ),
+  );
+  if (caches.length === 0) {
+    byTest("cache-table").append(
+      row(["No cache detail", "unavailable", "unavailable", "unavailable", "unavailable", "unavailable", "unavailable", "unavailable"]),
     );
   }
 }

@@ -271,6 +271,7 @@ pub struct ServerRuntime {
     flushed: bool,
     client_surface: Option<ClientSurfaceRuntime>,
     client_dispatch_state: Option<Arc<hydracache_client_transport_axum::ClientSurfaceState>>,
+    management_client_state: Option<Arc<hydracache_client_transport_axum::ClientSurfaceState>>,
     redis_listener_config: Option<RedisListenerConfig>,
     redis_surface: Option<RedisSurfaceRuntime>,
     cluster_status: Arc<dyn ClusterStatusProvider>,
@@ -374,6 +375,7 @@ impl ServerRuntime {
             flushed: false,
             client_surface,
             client_dispatch_state,
+            management_client_state: None,
             redis_listener_config,
             redis_surface,
             cluster_status,
@@ -402,6 +404,15 @@ impl ServerRuntime {
     /// Override additional read-only observability signals.
     pub fn with_observability_model(mut self, observability: ServerObservabilityModel) -> Self {
         self.observability = observability;
+        self
+    }
+
+    /// Override the tenant-scoped read source used by Management Center embeddings and tests.
+    pub fn with_management_client_state(
+        mut self,
+        state: Arc<hydracache_client_transport_axum::ClientSurfaceState>,
+    ) -> Self {
+        self.management_client_state = Some(state);
         self
     }
 
@@ -893,6 +904,15 @@ impl ServerRuntime {
                 .as_ref()
                 .map(|surface| surface.rejected_connections),
         }
+    }
+
+    pub(crate) fn management_client_state(
+        &self,
+    ) -> Option<Arc<hydracache_client_transport_axum::ClientSurfaceState>> {
+        self.management_client_state
+            .as_ref()
+            .map(Arc::clone)
+            .or_else(|| self.client_dispatch_state())
     }
 
     pub(crate) fn management_snapshot_input(

@@ -511,3 +511,17 @@ partial. Missing buffered-byte, reconnect, slow-client, cleanup-lag, or quota so
 never zero-filled. Per-client detail is not advertised until a bounded process-scoped opaque
 registry exists, preventing remote address, identity, certificate, token, tenant, key, payload,
 and session-token disclosure.
+
+W7 adds caller-scoped `/management/v1/namespaces` and
+`/management/v1/namespaces/{namespace}/caches` resources. The verified client/tenant headers are
+resolved against the server-side tenant roster before totals are computed. An identity/tenant
+mismatch returns 403; both a hidden namespace and a nonexistent namespace return the same 404 on
+the detail route. The DTO never repeats tenant identity and never exposes keys, values, tags,
+loader errors, raw policy, request payloads, or listener data.
+
+Namespace entry/logical-byte usage and quota values come from the exact 0.71 tenant accounting.
+Physical retained bytes, hit/miss/load, TTL backlog, tag/index, conditional, idempotency, audit,
+backup, and breaker values remain null until a tenant-scoped owner source can prove them. The
+single `client-surface` cache row is therefore partial and explicitly quality-tagged. Subscription
+status for isolated tenants no longer reuses the global process gauge, preventing a cross-tenant
+count oracle.

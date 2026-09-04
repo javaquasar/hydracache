@@ -8,6 +8,8 @@ import {
   largeDashboardEnvelope,
   membersEnvelope,
   modeledDashboardEnvelope,
+  namespaceCachesEnvelope,
+  namespacesEnvelope,
   partitionsEnvelope,
   placementTraceEnvelope,
   recoveryEnvelope,
@@ -42,6 +44,9 @@ test("console_renders_typed_dashboard_and_all_truth_states", async ({ page }) =>
   await expect(page.getByTestId("client-protocol-row")).toHaveCount(3);
   await expect(page.getByTestId("client-table")).toContainText("hc-2-alpha");
   await expect(page.getByTestId("client-details")).toContainText("unavailable");
+  await expect(page.getByTestId("namespace-row")).toContainText("orders");
+  await expect(page.getByTestId("namespace-row")).toContainText("unavailable");
+  await expect(page.getByTestId("cache-row")).toContainText("client-surface");
 });
 
 test("placement_outcomes_and_stale_warning_are_rendered_without_inference", async ({ page }) => {
@@ -194,13 +199,22 @@ async function routeManagement(page, overrides = {}) {
     placementTrace:
       overrides.placementTrace === undefined ? placementTraceEnvelope : overrides.placementTrace,
     clients: overrides.clients === undefined ? clientsEnvelope : overrides.clients,
+    namespaces: overrides.namespaces === undefined ? namespacesEnvelope : overrides.namespaces,
+    namespaceCaches:
+      overrides.namespaceCaches === undefined
+        ? namespaceCachesEnvelope
+        : overrides.namespaceCaches,
   };
   await page.route("**/management/v1/**", (route) => {
     const path = new URL(route.request().url()).pathname;
     const fixture = path.includes("/placement-traces/")
       ? fixtures.placementTrace
+      : /\/namespaces\/[^/]+\/caches$/.test(path)
+        ? fixtures.namespaceCaches
       : path.endsWith("/dashboard")
       ? fixtures.dashboard
+      : path.endsWith("/namespaces")
+        ? fixtures.namespaces
       : path.endsWith("/clients")
         ? fixtures.clients
       : path.endsWith("/cluster/members")

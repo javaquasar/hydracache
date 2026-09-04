@@ -12,18 +12,19 @@ use axum::http::{HeaderMap, StatusCode};
 use axum::response::{IntoResponse, Response};
 use axum::routing::get;
 use axum::Router;
+use hydracache_client_transport_axum::ClientIdentity;
 use hydracache_observability::{
     AdmissionState, BoundedCount, BoundedPage, CatchUpState, ClientProtocolLifecycle,
     ClusterFormationSnapshot, ConsensusProgressSnapshot, DiscoveryState, DurableRecoveryStatus,
-    FormationReasonCode, ManagementCapabilities, ManagementCapability,
+    FormationReasonCode, ManagementCacheDetail, ManagementCapabilities, ManagementCapability,
     ManagementCapabilityAvailability, ManagementCapabilityId, ManagementClientProtocol,
     ManagementClientsSnapshot, ManagementCompleteness, ManagementConsensusRole, ManagementEnvelope,
-    ManagementMemberDetail, ManagementObservationSource, ManagementPartitionSnapshot,
-    ManagementWarning, ManagementWarningCode, MemberFormationTransition, MemberReachabilityReason,
-    OpaqueCursor, OpaqueNodeIdentity, PlacementDecisionTrace, RecoveryArtifactKind,
-    RecoveryOutcome, RecoveryPhase, RecoveryReasonCode, RecoveryScope, RepairState, ServingState,
-    TransportState, MANAGEMENT_API_SCHEMA_VERSION, MAX_MANAGEMENT_CURSOR_BYTES,
-    MAX_MANAGEMENT_PAGE_ITEMS,
+    ManagementMeasurementQuality, ManagementMemberDetail, ManagementNamespaceSummary,
+    ManagementObservationSource, ManagementPartitionSnapshot, ManagementWarning,
+    ManagementWarningCode, MemberFormationTransition, MemberReachabilityReason, OpaqueCursor,
+    OpaqueNodeIdentity, PlacementDecisionTrace, RecoveryArtifactKind, RecoveryOutcome,
+    RecoveryPhase, RecoveryReasonCode, RecoveryScope, RepairState, ServingState, TransportState,
+    MANAGEMENT_API_SCHEMA_VERSION, MAX_MANAGEMENT_CURSOR_BYTES, MAX_MANAGEMENT_PAGE_ITEMS,
 };
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
@@ -49,6 +50,10 @@ pub const MANAGEMENT_CLUSTER_FORMATION_PATH: &str = "/management/v1/cluster/form
 pub const MANAGEMENT_CLUSTER_PARTITIONS_PATH: &str = "/management/v1/cluster/partitions";
 /// Bounded node-local client lifecycle summary path.
 pub const MANAGEMENT_CLIENTS_PATH: &str = "/management/v1/clients";
+/// Caller-authorized namespace summary path.
+pub const MANAGEMENT_NAMESPACES_PATH: &str = "/management/v1/namespaces";
+/// Prefix for caller-authorized namespace cache detail.
+pub const MANAGEMENT_NAMESPACE_CACHES_PREFIX: &str = "/management/v1/namespaces";
 /// Prefix for non-enumerable placement-decision trace resources.
 pub const MANAGEMENT_PLACEMENT_TRACE_PREFIX: &str = "/management/v1/cluster/placement-traces";
 /// Honest durable-recovery observation path.
@@ -69,6 +74,7 @@ pub const MANAGEMENT_MAX_RETAINED_CURSORS: usize = 1_024;
 enum CursorKind {
     Formation,
     Members,
+    Namespaces,
     ConsensusProgress,
     Recovery,
 }
@@ -183,6 +189,11 @@ pub(crate) fn routes(
         .route(MANAGEMENT_CLUSTER_MEMBERS_PATH, get(members))
         .route(MANAGEMENT_CLUSTER_PARTITIONS_PATH, get(partitions))
         .route(MANAGEMENT_CLIENTS_PATH, get(clients))
+        .route(MANAGEMENT_NAMESPACES_PATH, get(namespaces))
+        .route(
+            "/management/v1/namespaces/{namespace}/caches",
+            get(namespace_caches),
+        )
         .route(
             "/management/v1/cluster/placement-traces/{opaque_id}",
             get(placement_trace),
@@ -852,6 +863,207 @@ async fn partitions(State(state): State<Arc<ManagementHttpState>>, headers: Head
     }
     let completeness = data.completeness;
     management_response(&envelope(&status, completeness, warnings, data))
+}
+
+async fn namespaces(
+    State(state): State<Arc<ManagementHttpState>>,
+    headers: HeaderMap,
+    query: Result<Query<PageQuery>, QueryRejection>,
+) -> Response {
+    if let Err(error) = require_admin(&headers) {
+        return error.into_response();
+    }
+    let identity = match ClientIdentity::from_headers(&headers) {
+        Ok(identity) => identity,
+        Err(_) => return StatusCode::FORBIDDEN.into_response(),
+    };
+    let query = match parse_query(query) {
+        Ok(query) => query,
+        Err(error) => return error.into_response(),
+    };
+    let (status, client_state) = {
+        let runtime = state.runtime.lock().expect("server runtime mutex");
+        (
+            runtime.cluster_status_snapshot(),
+            runtime.management_client_state(),
+        )
+    };
+    let Some(client_state) = client_state else {
+        let page = BoundedPage::<ManagementNamespaceSummary> {
+            items: Vec::new(),
+            next_cursor: None,
+            truncated: false,
+        };
+        let mut result = envelope(
+            &status,
+            ManagementCompleteness::Partial,
+            vec![ManagementWarning {
+                code: ManagementWarningCode::SourceUnavailable,
+                affected_count: Some(1),
+            }],
+            page,
+        );
+        result.source = ManagementObservationSource::Unavailable;
+        return management_response(&result);
+    };
+    let tenant = match client_state.tenant_status(&identity) {
+        Ok(tenant) => tenant,
+        Err(_) => return StatusCode::FORBIDDEN.into_response(),
+    };
+    let now = unix_time_ms();
+    let start = match page_start(&state, &query, CursorKind::Namespaces, &status, now) {
+        Ok(start) => start,
+        Err(error) => return error.into_response(),
+    };
+    if start > tenant.namespaces.len() {
+        return ManagementHttpError::SnapshotChanged.into_response();
+    }
+    let end = start
+        .saturating_add(query.limit)
+        .min(tenant.namespaces.len());
+    let mut items = Vec::with_capacity(end.saturating_sub(start));
+    for namespace in &tenant.namespaces[start..end] {
+        let item = ManagementNamespaceSummary {
+            schema_version: MANAGEMENT_API_SCHEMA_VERSION,
+            namespace: namespace.namespace.clone(),
+            cache_count: 1,
+            entries: namespace.entries,
+            logical_bytes: namespace.bytes,
+            retained_bytes: None,
+            max_entries: namespace.max_entries,
+            max_bytes: namespace.max_bytes,
+            admitted_requests: tenant.rate_limit.request_count,
+            rate_limit_per_window: tenant.rate_limit.rate_limit_per_window,
+            fair_share_count: tenant.rate_limit.fair_share_count,
+            fair_share_per_window: tenant.rate_limit.fair_share_per_window,
+            admission_rejected_total: tenant.rate_limit.admission_rejected_total,
+            active_subscriptions: tenant.near_cache.active_subscriptions,
+            near_cache_repairs_total: tenant.near_cache.repairs_total,
+            persistence_status: ManagementMeasurementQuality::Unavailable,
+            usage_quality: ManagementMeasurementQuality::Exact,
+            source: source(status.source),
+            completeness: ManagementCompleteness::Partial,
+        };
+        if item.validate().is_err() {
+            return ManagementHttpError::ContractViolation.into_response();
+        }
+        items.push(item);
+    }
+    let truncated = end < tenant.namespaces.len();
+    let next_cursor = truncated.then(|| {
+        state
+            .cursors
+            .lock()
+            .expect("management cursor store mutex")
+            .issue(
+                CursorKind::Namespaces,
+                status.epoch,
+                status.observation_seq,
+                end,
+                now,
+            )
+    });
+    let page = BoundedPage {
+        items,
+        next_cursor,
+        truncated,
+    };
+    if page.validate().is_err() {
+        return ManagementHttpError::ContractViolation.into_response();
+    }
+    let mut warnings = response_warnings(
+        ManagementCompleteness::Partial,
+        truncated,
+        tenant.namespaces.len().saturating_sub(end),
+    );
+    warnings.push(ManagementWarning {
+        code: ManagementWarningCode::SourceUnavailable,
+        affected_count: Some(page.items.len() as u64),
+    });
+    management_response(&envelope(
+        &status,
+        ManagementCompleteness::Partial,
+        warnings,
+        page,
+    ))
+}
+
+async fn namespace_caches(
+    State(state): State<Arc<ManagementHttpState>>,
+    headers: HeaderMap,
+    Path(namespace): Path<String>,
+) -> Response {
+    if let Err(error) = require_admin(&headers) {
+        return error.into_response();
+    }
+    let identity = match ClientIdentity::from_headers(&headers) {
+        Ok(identity) => identity,
+        Err(_) => return StatusCode::FORBIDDEN.into_response(),
+    };
+    if namespace.is_empty() || namespace.len() > 128 || namespace.chars().any(char::is_control) {
+        return StatusCode::NOT_FOUND.into_response();
+    }
+    let (status, client_state) = {
+        let runtime = state.runtime.lock().expect("server runtime mutex");
+        (
+            runtime.cluster_status_snapshot(),
+            runtime.management_client_state(),
+        )
+    };
+    let Some(client_state) = client_state else {
+        return StatusCode::NOT_FOUND.into_response();
+    };
+    let tenant = match client_state.tenant_status(&identity) {
+        Ok(tenant) => tenant,
+        Err(_) => return StatusCode::FORBIDDEN.into_response(),
+    };
+    let Some(namespace) = tenant
+        .namespaces
+        .iter()
+        .find(|candidate| candidate.namespace == namespace)
+    else {
+        return StatusCode::NOT_FOUND.into_response();
+    };
+    let item = ManagementCacheDetail {
+        schema_version: MANAGEMENT_API_SCHEMA_VERSION,
+        namespace: namespace.namespace.clone(),
+        cache: "client-surface".to_owned(),
+        entries: namespace.entries,
+        logical_bytes: namespace.bytes,
+        retained_bytes: None,
+        max_entries: namespace.max_entries,
+        max_bytes: namespace.max_bytes,
+        hit_total: None,
+        miss_total: None,
+        load_total: None,
+        ttl_backlog: None,
+        tag_index_bytes: None,
+        conditional_records: None,
+        idempotency_records: None,
+        audit_records: None,
+        backup_age_seconds: None,
+        load_breaker_active: None,
+        usage_quality: ManagementMeasurementQuality::Exact,
+        source: source(status.source),
+        completeness: ManagementCompleteness::Partial,
+    };
+    if item.validate().is_err() {
+        return ManagementHttpError::ContractViolation.into_response();
+    }
+    let page = BoundedPage {
+        items: vec![item],
+        next_cursor: None,
+        truncated: false,
+    };
+    management_response(&envelope(
+        &status,
+        ManagementCompleteness::Partial,
+        vec![ManagementWarning {
+            code: ManagementWarningCode::SourceUnavailable,
+            affected_count: Some(1),
+        }],
+        page,
+    ))
 }
 
 async fn clients(State(state): State<Arc<ManagementHttpState>>, headers: HeaderMap) -> Response {

@@ -132,6 +132,32 @@ fallback = "fail loud; caller records bounded partial evidence"
 test_owner = "crates/hydracache-server/tests/management_aggregation_072.rs"
 
 [[source]]
+id = "authorized-namespaces"
+route = "/management/v1/namespaces"
+field_group = "authorized namespace entry/logical-byte usage, quotas, fair-share, admission and subscription state"
+producer = "ClientSurfaceState tenant roster and TenantMetricsSnapshot"
+authority = "caller tenant scope resolved server-side before aggregation"
+lifetime = "request plus 30-second epoch/sequence-bound cursor"
+consistency = "one tenant metrics snapshot; exact usage fields and explicit unavailable owner fields"
+max_cardinality = 100
+privacy = "tenant is not repeated; no hidden namespace, keys, values, tags, payloads or raw policy"
+fallback = "source absent returns empty partial; identity mismatch returns 403"
+test_owner = "crates/hydracache-server/tests/management_namespaces_072.rs"
+
+[[source]]
+id = "authorized-namespace-caches"
+route = "/management/v1/namespaces/{namespace}/caches"
+field_group = "single client-surface cache usage/quota detail and explicit unavailable diagnostics"
+producer = "authorized TenantNamespaceStatus"
+authority = "same caller tenant scope as namespace summary"
+lifetime = "request"
+consistency = "authorization precedes lookup and serialization"
+max_cardinality = 1
+privacy = "hidden and nonexistent namespace both 404; no cross-scope count oracle"
+fallback = "unknown or hidden namespace returns 404; unavailable measurements remain null"
+test_owner = "crates/hydracache-server/tests/management_namespaces_072.rs"
+
+[[source]]
 id = "persistence-recovery"
 route = "/management/v1/persistence/recovery"
 field_group = "durable recovery outcome and bounded evidence counts"

@@ -289,7 +289,8 @@ impl ClientIdentity {
         self.admin
     }
 
-    fn from_headers(headers: &HeaderMap) -> Result<Self, ClientSurfaceError> {
+    /// Parse the verified identity headers for an internal adapter that applies its own authz.
+    pub fn from_headers(headers: &HeaderMap) -> Result<Self, ClientSurfaceError> {
         let client_id = header_value(headers, HYDRACACHE_CLIENT_ID_HEADER)?;
         let tenant = header_value(headers, HYDRACACHE_TENANT_HEADER)?;
         let mut identity = Self::new(client_id, tenant)?;
@@ -717,10 +718,19 @@ impl ClientSurfaceState {
         } else {
             TenantMetricsSnapshot::default()
         };
+        let active_subscriptions = if self.isolation.is_some() {
+            metrics
+                .tenant_subscriptions
+                .get(identity.tenant())
+                .copied()
+                .unwrap_or_default()
+        } else {
+            self.active_subscriptions()
+        };
         Ok(TenantStatus::from_metrics(
             identity.tenant(),
             &metrics,
-            self.active_subscriptions(),
+            active_subscriptions,
             0,
         ))
     }

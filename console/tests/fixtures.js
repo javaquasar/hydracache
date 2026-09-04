@@ -205,6 +205,54 @@ export const clientsEnvelope = {
   },
 };
 
+export const namespacesEnvelope = {
+  ...metadata,
+  data: {
+    items: [
+      {
+        namespace: "orders",
+        cache_count: 1,
+        entries: 42,
+        logical_bytes: 4096,
+        retained_bytes: null,
+        max_entries: 1000,
+        max_bytes: 1048576,
+        admitted_requests: 120,
+        rate_limit_per_window: 1000,
+        fair_share_count: 120,
+        fair_share_per_window: 500,
+        admission_rejected_total: 2,
+        active_subscriptions: 1,
+        near_cache_repairs_total: 0,
+        persistence_status: "unavailable",
+        usage_quality: "exact",
+      },
+    ],
+    next_cursor: null,
+    truncated: false,
+  },
+};
+
+export const namespaceCachesEnvelope = {
+  ...metadata,
+  data: {
+    items: [
+      {
+        namespace: "orders",
+        cache: "client-surface",
+        entries: 42,
+        logical_bytes: 4096,
+        retained_bytes: null,
+        ttl_backlog: null,
+        idempotency_records: null,
+        backup_age_seconds: null,
+      },
+    ],
+    next_cursor: null,
+    truncated: false,
+  },
+};
+
 export const consensusEnvelope = {
   ...metadata,
   data: {
