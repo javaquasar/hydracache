@@ -1,0 +1,106 @@
+schema_version = 1
+release = "0.72.0"
+
+[[row]]
+id = "reopen"
+status = "covered"
+source_tests = ["crates/hydracache-cluster-raft/tests/durable_runtime.rs#durable_runtime_recovers_committed_metadata_after_reopen"]
+management_tests = ["crates/hydracache-server/tests/management_process_072.rs#three_daemon_fault_recovery_retains_partial_truth_and_resource_bounds"]
+canaries = ["MC72-W12-FAULT-MASKED"]
+receipts = ["docs/testing/management-center/0.72/w12-process-evidence.md"]
+
+[[row]]
+id = "missing-derivative"
+status = "covered"
+source_tests = ["crates/hydracache/tests/session_lifecycle.rs#failover_recovery_preserves_empty_repairs_nonempty_or_rebuilds_loudly"]
+management_tests = ["crates/hydracache-server/tests/management_operations_072.rs#recovery_remains_unknown_when_runtime_does_not_retain_report"]
+canaries = ["MC72-W10-LIVENESS-IS-CLEAN"]
+receipts = ["docs/testing/management-center/0.72/w12-process-evidence.md"]
+
+[[row]]
+id = "bit-rot"
+status = "covered"
+source_tests = ["crates/hydracache-cluster-raft/tests/snapshot_corruption.rs#snapshot_bitflip_fails_loud_checksum"]
+management_tests = ["crates/hydracache-server/tests/management_operations_072.rs#recovery_canary_preserves_nonzero_loss_evidence"]
+canaries = ["MC72-W10-LOSS-HIDDEN"]
+receipts = ["docs/testing/management-center/0.72/w12-process-evidence.md"]
+
+[[row]]
+id = "torn-artifact"
+status = "covered"
+source_tests = ["crates/hydracache-cluster-raft/tests/snapshot_corruption.rs#snapshot_truncated_bytes_fail_loud_without_partial_apply"]
+management_tests = ["crates/hydracache-server/tests/management_operations_072.rs#recovery_canary_preserves_nonzero_loss_evidence"]
+canaries = ["MC72-W10-LOSS-HIDDEN"]
+receipts = ["docs/testing/management-center/0.72/w12-process-evidence.md"]
+
+[[row]]
+id = "enospc-write-error"
+status = "covered"
+source_tests = ["crates/hydracache-cluster-raft/tests/failpoints_crash_safety.rs#disk_full_on_append_fails_loud_not_silent"]
+management_tests = ["crates/hydracache-server/tests/management_process_072.rs#fault_matrix_projection_contract_never_promotes_absent_or_partial_truth"]
+canaries = ["MC72-W12-FAULT-NOT-ACTIVATED"]
+receipts = ["docs/testing/management-center/0.72/w12-process-evidence.md"]
+
+[[row]]
+id = "uncommitted-wal"
+status = "covered"
+source_tests = ["crates/hydracache-cluster-raft/tests/persistent_log.rs#persistent_log_truncate_suffix_drops_conflicting_tail"]
+management_tests = ["crates/hydracache-server/tests/management_process_072.rs#fault_matrix_projection_contract_never_promotes_absent_or_partial_truth"]
+canaries = ["MC72-W12-FAULT-MASKED"]
+receipts = ["docs/testing/management-center/0.72/w12-process-evidence.md"]
+
+[[row]]
+id = "corrupt-authoritative-snapshot"
+status = "covered"
+source_tests = ["crates/hydracache-cluster-raft/tests/durable_recovery_corpus.rs#failed_recovery_leaves_last_good_snapshot_reopenable"]
+management_tests = ["crates/hydracache-server/tests/management_operations_072.rs#recovery_canary_rejects_repaired_before_terminal_verification"]
+canaries = ["MC72-W10-ILLEGAL-REPAIR-COMPLETE"]
+receipts = ["docs/testing/management-center/0.72/w12-process-evidence.md"]
+
+[[row]]
+id = "commit-before-apply"
+status = "covered"
+source_tests = ["crates/hydracache-server/src/grid_host.rs#metadata_authority_requires_committed_state_to_be_fully_applied"]
+management_tests = ["crates/hydracache-server/tests/management_topology_072.rs#canary_committed_placement_is_not_reported_as_applied"]
+canaries = ["MC72-W5-COMMIT-IS-APPLY"]
+receipts = ["docs/testing/management-center/0.72/w12-process-evidence.md"]
+
+[[row]]
+id = "deletion-stale-peer"
+status = "covered"
+source_tests = ["crates/hydracache-server/tests/daemon_process_cluster.rs#drained_node_restart_does_not_silently_resurrect_voter"]
+management_tests = ["crates/hydracache-server/tests/management_process_072.rs#canary_authoritative_deletion_cannot_be_resurrected"]
+canaries = ["MC72-W12-RESURRECTION"]
+receipts = ["docs/testing/management-center/0.72/w12-process-evidence.md"]
+
+[[row]]
+id = "foreign-identity-disk"
+status = "covered"
+source_tests = ["crates/hydracache-server/src/grid_host.rs#persisted_identity_rejects_wrong_cluster_hash_and_malformed_files"]
+management_tests = ["crates/hydracache-server/tests/management_process_072.rs#fault_matrix_projection_contract_never_promotes_absent_or_partial_truth"]
+canaries = ["MC72-W12-FAULT-MASKED"]
+receipts = ["docs/testing/management-center/0.72/w12-process-evidence.md"]
+
+[[row]]
+id = "interrupted-reconciliation"
+status = "covered"
+source_tests = ["crates/hydracache-cluster-raft/src/lib.rs#raft_snapshot_install_rejects_late_error_without_partial_publish"]
+management_tests = ["crates/hydracache-server/tests/management_process_072.rs#fault_matrix_projection_contract_never_promotes_absent_or_partial_truth"]
+canaries = ["MC72-W12-FAULT-MASKED"]
+receipts = ["docs/testing/management-center/0.72/w12-process-evidence.md"]
+
+[[row]]
+id = "concurrent-snapshot-aggregation"
+status = "covered"
+source_tests = ["crates/hydracache-server/src/management_aggregation.rs#canary_management_fanout_coalesces_and_late_epoch_cannot_replace_cache"]
+management_tests = ["crates/hydracache-server/tests/management_aggregation_072.rs#three_member_http_aggregate_recovers_from_partial_to_complete"]
+canaries = ["MC72-W3-CONFUSED-FANOUT"]
+receipts = ["docs/testing/management-center/0.72/w12-process-evidence.md"]
+
+[[row]]
+id = "bounded-resource-pressure"
+status = "partial"
+source_tests = ["crates/hydracache-server/tests/snapshot_resource_budget.rs#slow_receiver_applies_bounded_backpressure_without_unbounded_tasks_or_rss"]
+management_tests = ["crates/hydracache-server/tests/management_process_072.rs#three_daemon_fault_recovery_retains_partial_truth_and_resource_bounds"]
+canaries = ["MC72-W12-FAULT-MASKED"]
+receipts = ["docs/testing/management-center/0.72/w12-process-evidence.md"]

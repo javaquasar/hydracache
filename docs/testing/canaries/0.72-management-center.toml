@@ -2,6 +2,26 @@ schema_version = 1
 release = "0.72.0"
 
 [[canary]]
+id = "MC72-W0-BASELINE-DRIFT"
+status = "active"
+test = "canary_w0_missing_baseline_is_rejected"
+command = "cargo test -p xtask --test management_center_072 --locked canary_w0_missing_baseline_is_rejected -- --nocapture"
+defect_env = "HYDRACACHE_CANARY_DEFECT=MC72-W0-BASELINE-DRIFT"
+expected_failure = "HC-CANARY-RED:MC72-W0-BASELINE-DRIFT"
+green_evidence = "Frozen management bounds are present and structurally valid."
+red_evidence = "The mutant removes the baseline and the same registry oracle turns red."
+
+[[canary]]
+id = "MC72-W1-FALSE-SOURCE"
+status = "active"
+test = "canary_w1_false_source_mapping_is_rejected"
+command = "cargo test -p xtask --test management_center_072 --locked canary_w1_false_source_mapping_is_rejected -- --nocapture"
+defect_env = "HYDRACACHE_CANARY_DEFECT=MC72-W1-FALSE-SOURCE"
+expected_failure = "HC-CANARY-RED:MC72-W1-FALSE-SOURCE"
+green_evidence = "Every source-map row contains an owner and honest fallback."
+red_evidence = "The mutant removes source ownership and the same registry oracle turns red."
+
+[[canary]]
 id = "MC72-W2-LEAK-OR-OVERSIZE"
 status = "active"
 test = "canary_management_api_detects_internal_identity_leak_or_oversize_payload"
@@ -220,3 +240,23 @@ defect_env = "HYDRACACHE_CANARY_DEFECT=MC72-W12-RETRY-ERASES-RED"
 expected_failure = "HC-CANARY-RED:MC72-W12-RETRY-ERASES-RED"
 green_evidence = "Every retry links to and retains its earlier failed attempt with seed and digests."
 red_evidence = "The mutant replaces the two-attempt chain with the green retry and the cardinality/link oracle turns red."
+
+[[canary]]
+id = "MC72-W13-MIXED-ARTIFACT"
+status = "active"
+test = "canary_w13_mixed_artifact_is_rejected"
+command = "cargo test -p xtask --test management_center_072 --locked canary_w13_mixed_artifact_is_rejected -- --nocapture"
+defect_env = "HYDRACACHE_CANARY_DEFECT=MC72-W13-MIXED-ARTIFACT"
+expected_failure = "HC-CANARY-RED:MC72-W13-MIXED-ARTIFACT"
+green_evidence = "The package test substitutes one console asset and requires digest verification to reject it."
+red_evidence = "The mutant accepts the mixed artifact and the package oracle turns red."
+
+[[canary]]
+id = "MC72-W14-EVIDENCE-TAMPER"
+status = "active"
+test = "canary_w14_tampered_evidence_is_rejected"
+command = "cargo test -p xtask --test management_center_072 --locked canary_w14_tampered_evidence_is_rejected -- --nocapture"
+defect_env = "HYDRACACHE_CANARY_DEFECT=MC72-W14-EVIDENCE-TAMPER"
+expected_failure = "HC-CANARY-RED:MC72-W14-EVIDENCE-TAMPER"
+green_evidence = "A missing or altered claim/test/canary/evidence mapping rejects admission."
+red_evidence = "The mutant ignores one tampered mapping and the same meta-oracle turns red."

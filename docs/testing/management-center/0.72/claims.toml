@@ -1,0 +1,229 @@
+schema_version = 1
+release = "0.72.0"
+
+[[claim]]
+id = "MC72-BASELINE-BOUNDS"
+work_item = "W0"
+claim = "Every management collection has a frozen cardinality, byte, time or concurrency bound."
+implementation = ["docs/testing/management-center/0.72/bounds.toml#max_response_bytes"]
+behavior_tests = ["crates/hydracache-server/tests/management_http.rs#source_and_bound_registries_match_executable_contract"]
+canaries = ["MC72-W0-BASELINE-DRIFT"]
+bounds = ["all-registered-bounds"]
+receipts = ["target/release-evidence/management-center/0.72/W0.json"]
+status = "implemented"
+
+[[claim]]
+id = "MC72-SOURCE-OWNERSHIP"
+work_item = "W1"
+claim = "Every visible value names its authoritative owner and fallback semantics."
+implementation = ["docs/testing/management-center/0.72/source-map.toml#fallback"]
+behavior_tests = ["crates/hydracache-server/tests/management_http.rs#source_and_bound_registries_match_executable_contract"]
+canaries = ["MC72-W1-FALSE-SOURCE"]
+privacy_rules = ["no-secret-source-fields"]
+receipts = ["target/release-evidence/management-center/0.72/W1.json"]
+status = "implemented"
+
+[[claim]]
+id = "MC72-DTO-TRUTH"
+work_item = "W2"
+claim = "Schema-v1 envelopes reject unknown schema and incoherent complete/unavailable truth."
+implementation = ["crates/hydracache-observability/src/management.rs#ManagementEnvelope"]
+behavior_tests = ["crates/hydracache-observability/tests/management_schema_072.rs#envelope_rejects_unavailable_complete_and_missing_source_warnings"]
+canaries = ["MC72-W2-LEAK-OR-OVERSIZE"]
+compat_artifacts = ["management-v1-envelope-v1"]
+privacy_rules = ["opaque-node-id"]
+receipts = ["target/release-evidence/management-center/0.72/W2.json"]
+status = "implemented"
+
+[[claim]]
+id = "MC72-READ-ROUTES"
+work_item = "W2"
+claim = "The bounded management API is internal, authenticated and read only."
+implementation = ["crates/hydracache-server/src/management_http.rs#pub(crate) fn routes"]
+behavior_tests = ["crates/hydracache-server/tests/management_http.rs#management_routes_require_verified_privileged_identity_before_reading_sources"]
+canaries = ["MC72-W2-LEAK-OR-OVERSIZE"]
+routes = ["/management/v1/capabilities", "/management/v1/persistence/recovery", "/management/v1/**"]
+bounds = ["response-bytes", "page-items", "cursor-count"]
+receipts = ["target/release-evidence/management-center/0.72/W2-routes.json"]
+status = "implemented"
+
+[[claim]]
+id = "MC72-AGGREGATION-FENCING"
+work_item = "W3"
+claim = "Peer aggregation is committed-roster-only, epoch fenced, deadline bounded and partial on failure."
+implementation = ["crates/hydracache-server/src/management_aggregation.rs#ManagementSnapshotAggregator"]
+behavior_tests = ["crates/hydracache-server/tests/management_aggregation_072.rs#three_member_http_aggregate_recovers_from_partial_to_complete"]
+canaries = ["MC72-W3-CONFUSED-FANOUT"]
+routes = ["/cluster/management/v1/snapshot"]
+bounds = ["peer-count", "fanout-concurrency", "peer-deadline", "refresh-deadline"]
+privacy_rules = ["no-browser-selected-peer"]
+receipts = ["target/release-evidence/management-center/0.72/W3.json"]
+status = "implemented"
+
+[[claim]]
+id = "MC72-DASHBOARD-HISTORY"
+work_item = "W4"
+claim = "The console renders typed truth and retains only bounded browser-local history."
+implementation = ["console/app.js#renderDegraded", "console/history.js#HISTORY_LIMITS"]
+behavior_tests = ["console/tests/console_readonly.spec.js#console_renders_typed_dashboard_and_all_truth_states", "console/tests/history.test.js#accelerated multi-hour soak remains within production budgets"]
+canaries = ["MC72-W4-UNBOUNDED-HISTORY"]
+routes = ["/management/v1/dashboard"]
+bounds = ["series", "points", "encoded-bytes"]
+receipts = ["target/release-evidence/management-center/0.72/W4.json"]
+status = "implemented"
+
+[[claim]]
+id = "MC72-FORMATION-MEMBERS"
+work_item = "W5"
+claim = "Discovered or reachable members are not promoted to admitted, current or serving."
+implementation = ["crates/hydracache-observability/src/management.rs#ClusterFormationSnapshot"]
+behavior_tests = ["crates/hydracache-server/tests/management_topology_072.rs#members_are_committed_epoch_fenced_pseudonymous_and_platform_unknown_is_null"]
+canaries = ["MC72-W5-DISCOVERED-IS-READY"]
+routes = ["/management/v1/formation", "/management/v1/cluster/formation", "/management/v1/cluster/members"]
+compat_artifacts = ["management-v1-formation-v1"]
+privacy_rules = ["opaque-node-id", "no-peer-address"]
+receipts = ["target/release-evidence/management-center/0.72/W5-formation.json"]
+status = "implemented"
+
+[[claim]]
+id = "MC72-PARTITION-PLACEMENT"
+work_item = "W5"
+claim = "Partition and placement views use one exact epoch/sequence and distinguish commit from apply."
+implementation = ["crates/hydracache-server/src/management_topology.rs#ManagementTopologyModel"]
+behavior_tests = ["crates/hydracache-server/tests/management_topology_072.rs#partitions_and_trace_are_returned_only_for_the_exact_authority_observation"]
+canaries = ["MC72-W5-MIXED-EPOCH", "MC72-W5-NONDETERMINISTIC-PLACEMENT", "MC72-W5-COMMIT-IS-APPLY"]
+routes = ["/management/v1/cluster/partitions", "/management/v1/cluster/placement-traces/{opaque_id}"]
+compat_artifacts = ["management-v1-placement-trace-v1"]
+bounds = ["candidate-count", "reason-count"]
+receipts = ["target/release-evidence/management-center/0.72/W5-placement.json"]
+status = "implemented"
+
+[[claim]]
+id = "MC72-CLIENT-LIFECYCLE"
+work_item = "W6"
+claim = "Client protocol summaries reconcile accepted, closed and active owners without identity disclosure."
+implementation = ["crates/hydracache-server/src/management_http.rs#async fn clients"]
+behavior_tests = ["crates/hydracache-server/tests/management_clients_072.rs#client_lifecycle_route_is_admin_only_bounded_and_protocol_complete_without_identity"]
+canaries = ["MC72-W6-CLOSED-CLIENT-LEAK"]
+routes = ["/management/v1/clients"]
+privacy_rules = ["no-client-address", "no-client-identity"]
+receipts = ["target/release-evidence/management-center/0.72/W6.json"]
+status = "implemented"
+
+[[claim]]
+id = "MC72-TENANT-SCOPE"
+work_item = "W7"
+claim = "Namespace and cache totals are computed only after tenant authorization."
+implementation = ["crates/hydracache-server/src/management_http.rs#async fn namespaces"]
+behavior_tests = ["crates/hydracache-server/tests/management_namespaces_072.rs#namespace_and_cache_views_are_authorized_before_totals_and_keep_unavailable_unknown"]
+canaries = ["MC72-W7-CROSS-TENANT"]
+routes = ["/management/v1/namespaces", "/management/v1/namespaces/{namespace}/caches"]
+privacy_rules = ["no-cross-tenant-count-oracle", "no-keys-values-tags"]
+receipts = ["target/release-evidence/management-center/0.72/W7.json"]
+status = "implemented"
+
+[[claim]]
+id = "MC72-HEALTH-TRUTH"
+work_item = "W8"
+claim = "Missing, partial, stale or truncated health evidence is UNKNOWN, never PASS."
+implementation = ["crates/hydracache-observability/src/management_health.rs#evaluate_management_health"]
+behavior_tests = ["crates/hydracache-observability/tests/management_health_072.rs#missing_modeled_and_partial_inputs_are_unknown_not_pass"]
+canaries = ["MC72-W8-UNKNOWN-AS-PASS", "MC72-W8-STALE-RECOVERY-WINS", "MC72-W8-TRUNCATED-PLACEMENT-PASS"]
+compat_artifacts = ["management-v1-health-catalogue-v1", "management-v1-consensus-progress-v1"]
+routes = ["/management/v1/healthchecks", "/management/v1/consensus/progress"]
+receipts = ["target/release-evidence/management-center/0.72/W8.json"]
+status = "implemented"
+
+[[claim]]
+id = "MC72-HISTORY-GUARD"
+work_item = "W9"
+claim = "History accepts only fixed query IDs and rejects SSRF/amplification before socket open."
+implementation = ["crates/hydracache-server/src/management_history.rs#ManagementHistoryService"]
+behavior_tests = ["crates/hydracache-server/tests/management_history_072.rs#resolver_rejects_private_link_local_metadata_and_mixed_rebinding_sets"]
+canaries = ["MC72-W9-ARBITRARY-PROXY"]
+routes = ["/management/v1/history"]
+bounds = ["range", "points", "series", "response-bytes", "concurrency"]
+privacy_rules = ["no-promql", "no-upstream-error-body"]
+receipts = ["target/release-evidence/management-center/0.72/W9.json"]
+status = "implemented"
+
+[[claim]]
+id = "MC72-RECOVERY-TRUTH"
+work_item = "W10"
+claim = "Liveness and accepted backup requests never become clean/verified recovery evidence."
+implementation = ["crates/hydracache-server/src/management_http.rs#async fn persistence"]
+behavior_tests = ["crates/hydracache-server/tests/management_operations_072.rs#recovery_remains_unknown_when_runtime_does_not_retain_report"]
+canaries = ["MC72-W10-LIVENESS-IS-CLEAN", "MC72-W10-LOSS-HIDDEN", "MC72-W10-ILLEGAL-REPAIR-COMPLETE"]
+routes = ["/management/v1/persistence"]
+compat_artifacts = ["management-v1-durable-recovery-v1"]
+privacy_rules = ["no-storage-destination"]
+receipts = ["target/release-evidence/management-center/0.72/W10-recovery.json"]
+status = "implemented"
+
+[[claim]]
+id = "MC72-OPERATION-AUDIT"
+work_item = "W10"
+claim = "Operation/audit journals are bounded, append-only, redacted and preserve nonterminal states."
+implementation = ["crates/hydracache-server/src/management_operations.rs#ManagementOperationJournal"]
+behavior_tests = ["crates/hydracache-server/tests/management_operations_072.rs#accepted_backup_is_not_reported_as_running_completed_or_verified"]
+canaries = ["MC72-W10-WRITE-FROM-UI"]
+routes = ["/management/v1/operations", "/management/v1/audit"]
+bounds = ["operation-capacity", "audit-capacity"]
+privacy_rules = ["redacted-errors", "no-credentials-or-paths"]
+receipts = ["target/release-evidence/management-center/0.72/W10-operations.json"]
+status = "implemented"
+
+[[claim]]
+id = "MC72-SECURITY-ACCESSIBILITY"
+work_item = "W11"
+claim = "Management reads have distinct auth/capacity, restrictive headers and text-only accessible rendering."
+implementation = ["crates/hydracache-server/src/management_security.rs#ManagementReadLimiter", "console/scripts/check-static.mjs#unsafe or write-capable"]
+behavior_tests = ["crates/hydracache-server/tests/management_security_072.rs#authorization_matrix_separates_management_read_tenant_read_and_write_admin"]
+canaries = ["MC72-W11-XSS-AUTH-BYPASS"]
+bounds = ["management-read-concurrency"]
+privacy_rules = ["text-only-dom", "management-read-capability"]
+receipts = ["docs/testing/management-center/0.72/w11-security-evidence.md"]
+status = "evidenced"
+
+[[claim]]
+id = "MC72-PROCESS-FAULTS"
+work_item = "W12"
+claim = "Real process peer loss remains partial, bounded and recovers after same-disk restart."
+implementation = ["crates/hydracache-server/tests/management_process_072.rs#three_daemon_fault_recovery_retains_partial_truth_and_resource_bounds"]
+behavior_tests = ["crates/hydracache-server/tests/management_process_072.rs#three_daemon_fault_recovery_retains_partial_truth_and_resource_bounds"]
+canaries = ["MC72-W12-FAULT-MASKED", "MC72-W12-FAULT-NOT-ACTIVATED", "MC72-W12-RESURRECTION", "MC72-W12-RETRY-ERASES-RED"]
+bounds = ["reader-concurrency", "p95", "response-bytes"]
+receipts = ["docs/testing/management-center/0.72/w12-process-evidence.md"]
+status = "evidenced"
+
+[[claim]]
+id = "MC72-MIXED-COMPAT"
+work_item = "W13"
+claim = "Old peers are capability-limited and never receive unsupported snapshot POSTs."
+implementation = ["crates/hydracache-server/src/management_aggregation.rs#CLUSTER_MANAGEMENT_CAPABILITIES_PATH"]
+behavior_tests = ["crates/hydracache-server/tests/management_aggregation_072.rs#real_http_transport_probes_capability_before_posting_to_an_old_member"]
+canaries = ["MC72-W13-MIXED-ARTIFACT"]
+compat_artifacts = ["management-v1-formation-v1", "management-v1-placement-trace-v1", "management-v1-durable-recovery-v1", "management-v1-health-catalogue-v1", "management-v1-consensus-progress-v1"]
+receipts = ["docs/testing/management-center/0.72/w13-compatibility-evidence.md"]
+status = "evidenced"
+
+[[claim]]
+id = "MC72-PACKAGE-BINDING"
+work_item = "W13"
+claim = "Console, embedded assets, schemas and SBOM are bound to one commit and artifact-set digest."
+implementation = ["console/scripts/package-management-center.mjs#artifactSetDigest"]
+behavior_tests = ["console/tests/package.test.js#MC72-W13-MIXED-ARTIFACT rejects one substituted file"]
+canaries = ["MC72-W13-MIXED-ARTIFACT"]
+bounds = ["exact-file-inventory"]
+receipts = ["target/release-evidence/management-center/0.72/W13-package.json"]
+status = "implemented"
+
+[[claim]]
+id = "MC72-FAIL-CLOSED-ADMISSION"
+work_item = "W14"
+claim = "Missing mappings, expected-red proofs or exact-candidate receipts reject ship admission."
+implementation = ["crates/xtask/src/management_center.rs#pub fn check"]
+behavior_tests = ["crates/xtask/tests/management_center_072.rs#management_registry_rejects_missing_or_tampered_proof"]
+canaries = ["MC72-W14-EVIDENCE-TAMPER"]
+receipts = ["target/release-evidence/management-center/0.72/W14.json"]
+status = "implemented"

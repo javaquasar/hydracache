@@ -25,6 +25,7 @@ pub mod fast_suite;
 pub mod feature_leak;
 pub mod gated_tests;
 pub mod host_attestation;
+pub mod management_center;
 pub mod memory_baseline;
 pub mod memory_contracts;
 pub mod memory_ownership;
