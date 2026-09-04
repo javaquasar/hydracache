@@ -2009,3 +2009,44 @@ the Java recovery/session-loss contract, so the borrowed manifest is not accepte
 The release canary registry now points W0-W5 at six distinct semantic defects. The release-evidence
 parser accepts `language = "rust" | "java" | "python"`; Java selectors require a nearby JUnit
 annotation, allowing W1 to name its live-daemon and recovery tests directly.
+
+## Management Center 0.72 evidence
+
+The executable claim registry is `docs/testing/management-center/0.72/claims.toml`; its companion
+coverage and failure-taxonomy registries enumerate every changed management module and the 13
+storage/formation/recovery failure classes adapted from the NATS source audit. Run the ordinary
+structural and falsifiability gates with:
+
+```powershell
+cargo test -p xtask --test management_center_072 --locked
+cargo xtask management-center-check --release 0.72
+cargo xtask canary-check --release 0.72
+cargo xtask canary-sweep --release 0.72 --tier fast
+cargo xtask release-evidence --release 0.72
+```
+
+Every canary first executes the unchanged oracle, then the same exact selector with one named,
+reversible defect. Credit requires a non-zero result containing the registered
+`HC-CANARY-RED:MC72-*` signature. A compile failure, zero selected tests, timeout, unrelated panic,
+skip, stale SHA, dirty tree or canary that remains green is non-evidence. Receipts under
+`target/release-evidence/canaries/` bind the command and registry digests to the source commit.
+
+The workspace product line floor remains 88%. The 0.72 coverage inventory adds a structural
+diff-review layer: each changed management module names behavioral tests and every reviewed branch
+class (auth, absent/stale/partial/error, bounds, pagination, cleanup and compatibility). Coverage is
+supporting evidence only; it cannot replace fault, privacy, process or cross-version behavior.
+Exclusions require path, owner, rationale, expiry and `non_ship=true`, so an exemption cannot support
+a ship claim.
+
+Final admission is deliberately stricter:
+
+```powershell
+cargo xtask management-center-check --release 0.72 --require-evidence
+cargo xtask release-evidence --release 0.72 --require-ship
+```
+
+It requires clean exact-candidate gate and canary receipts, the shipped `v0.71.0` ancestor and real
+mixed-binary exercise, Linux process/resource evidence, the six-hour candidate and 24-hour ship
+soaks, exact console/schema/SBOM hashes and complete failure-taxonomy coverage. Missing external
+capability is a red result, never a quiet skip. Failed, timed-out and superseded attempts stay in
+the append-only evidence chain; retries do not erase them.

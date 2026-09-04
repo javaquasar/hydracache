@@ -10,7 +10,7 @@ use std::error::Error;
 use std::path::{Path, PathBuf};
 use std::process::{Command, Stdio};
 
-use crate::{doc_check, feature_leak};
+use crate::{doc_check, feature_leak, management_center};
 
 /// A release gate: a human label, the `cargo` arguments, and optional env vars.
 #[derive(Clone, Debug, Eq, PartialEq)]
@@ -62,7 +62,7 @@ fn gates_for_platform(is_windows: bool) -> Vec<Gate> {
             ],
             None,
         ),
-        gate("dependency bans", ["deny", "check", "bans"], None),
+        gate("dependency policy", ["deny", "check"], None),
         gate(
             "DST fast budget",
             [
@@ -172,6 +172,20 @@ pub fn run(_args: Vec<String>) -> Result<(), Box<dyn Error>> {
         return Err(format!("doc-check found {} problem(s)", problems.len()).into());
     }
     println!("doc-check: OK");
+
+    println!("== management-center-check 0.72 ==");
+    let management_problems = management_center::check(&root, false)?;
+    if !management_problems.is_empty() {
+        for problem in &management_problems {
+            eprintln!("management-center-check: {problem}");
+        }
+        return Err(format!(
+            "management-center-check found {} problem(s)",
+            management_problems.len()
+        )
+        .into());
+    }
+    println!("management-center-check: OK");
 
     println!("== release feature leak ==");
     let leaks = feature_leak::check(&root)?;
@@ -367,6 +381,12 @@ mod tests {
                 "--test-threads=1"
             ]
         );
+    }
+
+    #[test]
+    fn verify_enforces_full_dependency_policy() {
+        let gates = gates_for_platform(false);
+        assert_eq!(args_for(&gates, "dependency policy"), ["deny", "check"]);
     }
 
     #[test]

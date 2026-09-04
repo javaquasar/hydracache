@@ -662,8 +662,8 @@ jobs:
           PIP_DISABLE_PIP_VERSION_CHECK: "1"
         run: cargo run -p xtask --locked -- client-plane-spike-check
 
-      - name: Dependency bans
-        run: cargo deny check bans
+      - name: Dependency policy
+        run: cargo deny check
 
       - name: Docs consistency
         run: |
@@ -692,6 +692,14 @@ jobs:
           cargo run -p xtask --locked -- canary-sweep --release 0.68 --tier fast
           cargo run -p xtask --locked -- canary-check --release 0.70
           cargo run -p xtask --locked -- canary-sweep --release 0.70 --tier fast
+          cargo run -p xtask --locked -- canary-check --release 0.72
+          cargo run -p xtask --locked -- canary-sweep --release 0.72 --tier fast
+
+      - name: Management Center 0.72 admission contract
+        run: |
+          cargo test -p xtask --test management_center_072 --locked
+          cargo run -p xtask --locked -- management-center-check --release 0.72
+          cargo run -p xtask --locked -- release-evidence --release 0.72
 
       - name: Fuzz corpus regression
         run: cargo run -p xtask --locked -- evidence-run --release "$HYDRACACHE_CANDIDATE_RELEASE" --gate fast.fuzz-corpus-regression
