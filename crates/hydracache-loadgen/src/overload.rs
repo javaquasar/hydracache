@@ -55,6 +55,7 @@ pub const W6_CORE_REFERENCE_ENV: &str = "HYDRACACHE_RUN_PERF_CORE";
 pub const W6_RESP_REFERENCE_ENV: &str = "HYDRACACHE_RUN_PERF_RESP";
 
 const DETERMINISTIC_SMOKE_WINDOW_OPERATIONS: u64 = 48;
+const DETERMINISTIC_SMOKE_WARMUP_OPERATIONS: u64 = 4;
 const LOCAL_PREDECESSOR: &str = "w1-local-cache-capacity";
 const CLIENT_SURFACE_PREDECESSOR: &str = "w2-client-surface-in-process-capacity";
 const RESP_PREDECESSOR: &str = "w3-node-local-resp-open-loop";
@@ -325,12 +326,12 @@ impl OverloadScenario {
             || self.work.reference_preload_operations.local != 0
             || self.work.reference_preload_operations.client_surface != 10_000
             || self.work.reference_preload_operations.node_resp != 10_000
-            || self.work.warmup_operations != 4
-            || self.work.burst_operations != 50_000
-            || self.work.recovery_operations_per_window != 50_000
+            || self.work.warmup_operations != 10_000
+            || self.work.burst_operations != 100_000
+            || self.work.recovery_operations_per_window != 100_000
             || self.work.max_recovery_windows != 3
             || self.work.required_consecutive_recovery_windows != 2
-            || self.work.p999_min_samples != 1
+            || self.work.p999_min_samples != 10_000
             || self.work.highest_trackable_latency_us != 1_000_000
             || self.work.histogram_significant_figures != 3
             || self.work.drain_timeout_ms != 1_000
@@ -374,16 +375,39 @@ impl OverloadScenario {
         canonical_digest(&payload)
     }
 
-    fn window_operations(&self, run_mode: OverloadRunMode) -> (u64, u64) {
+    fn warmup_operations(&self, run_mode: OverloadRunMode) -> u64 {
         match run_mode {
-            OverloadRunMode::DeterministicSmoke => (
-                DETERMINISTIC_SMOKE_WINDOW_OPERATIONS,
-                DETERMINISTIC_SMOKE_WINDOW_OPERATIONS,
-            ),
-            OverloadRunMode::Reference => (
-                self.work.burst_operations,
-                self.work.recovery_operations_per_window,
-            ),
+            OverloadRunMode::DeterministicSmoke => DETERMINISTIC_SMOKE_WARMUP_OPERATIONS,
+            OverloadRunMode::Reference => self.work.warmup_operations,
+        }
+    }
+
+    pub(crate) fn overload_operations(
+        &self,
+        run_mode: OverloadRunMode,
+        factor_millionths: u32,
+    ) -> Result<u64, OverloadError> {
+        match run_mode {
+            OverloadRunMode::DeterministicSmoke => Ok(DETERMINISTIC_SMOKE_WINDOW_OPERATIONS),
+            OverloadRunMode::Reference => self
+                .work
+                .burst_operations
+                .checked_mul(u64::from(factor_millionths))
+                .filter(|operations| operations.is_multiple_of(1_000_000))
+                .map(|operations| operations / 1_000_000)
+                .ok_or_else(|| {
+                    OverloadError::Contract(
+                        "reference W6 overload operations must scale exactly with the offered-rate factor"
+                            .to_owned(),
+                    )
+                }),
+        }
+    }
+
+    fn recovery_operations(&self, run_mode: OverloadRunMode) -> u64 {
+        match run_mode {
+            OverloadRunMode::DeterministicSmoke => DETERMINISTIC_SMOKE_WINDOW_OPERATIONS,
+            OverloadRunMode::Reference => self.work.recovery_operations_per_window,
         }
     }
 }
@@ -2813,8 +2837,10 @@ impl OverloadReport {
         let knee_rate = self.predecessor.knee_rate_per_second()?;
         let expected_preload_operations =
             scenario.expected_preload_operations(self.surface, self.run_mode);
-        let (overload_operations, recovery_operations) = scenario.window_operations(self.run_mode);
+        let recovery_operations = scenario.recovery_operations(self.run_mode);
+        let expected_warmup_operations = scenario.warmup_operations(self.run_mode);
         for (point, factor) in self.points.iter().zip(OVERLOAD_FACTORS_MILLIONTHS) {
+            let overload_operations = scenario.overload_operations(self.run_mode, factor)?;
             validate_point(
                 point,
                 factor,
@@ -2822,6 +2848,7 @@ impl OverloadReport {
                 expected_goodput,
                 expected_p99,
                 expected_preload_operations,
+                expected_warmup_operations,
                 overload_operations,
                 recovery_operations,
                 scenario,
@@ -2926,10 +2953,12 @@ where
     let knee_rate = predecessor.knee_rate_per_second()?;
     let expected_preload_operations =
         scenario.expected_preload_operations(predecessor.surface, run_mode);
-    let (overload_operations, recovery_operations) = scenario.window_operations(run_mode);
+    let recovery_operations = scenario.recovery_operations(run_mode);
+    let warmup_operations = scenario.warmup_operations(run_mode);
     let mut points = Vec::with_capacity(OVERLOAD_FACTORS_MILLIONTHS.len());
     for factor_millionths in OVERLOAD_FACTORS_MILLIONTHS {
         let offered_rate_per_second = factored_rate(knee_rate, factor_millionths)?;
+        let overload_operations = scenario.overload_operations(run_mode, factor_millionths)?;
         let mut repeats = Vec::with_capacity(scenario.work.repeats as usize);
         for _ in 0..scenario.work.repeats {
             repeats.push(
@@ -2943,6 +2972,7 @@ where
                     baseline_goodput_per_second,
                     baseline_scheduled_p99_us,
                     expected_preload_operations,
+                    warmup_operations,
                     overload_operations,
                     recovery_operations,
                 )
@@ -2951,9 +2981,18 @@ where
         }
         let aggregate = aggregate_repeats(&repeats)?;
         if aggregate.robust_goodput_spread_ratio > scenario.work.maximum_goodput_spread_ratio {
+            let repeat_goodput_per_second = repeats
+                .iter()
+                .map(|repeat| repeat.metrics.successful_goodput_per_second)
+                .collect::<Vec<_>>();
             return Err(OverloadError::Evidence(format!(
-                "overload repeat spread {} exceeds committed tolerance {}",
-                aggregate.robust_goodput_spread_ratio, scenario.work.maximum_goodput_spread_ratio
+                "overload repeat spread {} exceeds committed tolerance {} at factor {}; goodput_per_second={repeat_goodput_per_second:?}, min={}, median={}, max={}",
+                aggregate.robust_goodput_spread_ratio,
+                scenario.work.maximum_goodput_spread_ratio,
+                factor_millionths,
+                aggregate.goodput_min_per_second,
+                aggregate.successful_goodput_per_second,
+                aggregate.goodput_max_per_second,
             )));
         }
         points.push(OverloadPointEvidence {
@@ -3017,6 +3056,7 @@ async fn run_overload_repeat<T, C>(
     baseline_goodput_per_second: f64,
     baseline_scheduled_p99_us: u64,
     expected_preload_operations: u64,
+    warmup_operations: u64,
     overload_operations: u64,
     recovery_operations: u64,
 ) -> Result<OverloadRepeatEvidence, OverloadError>
@@ -3040,7 +3080,7 @@ where
         ));
     }
     control.prepare_recovery_window().await?;
-    for sequence in 0..scenario.work.warmup_operations {
+    for sequence in 0..warmup_operations {
         if target.execute(TargetRequest { sequence }).await != TargetOutcome::Success {
             return Err(OverloadError::Measurement(
                 "W6 warm-up must complete successfully outside the overload histogram".to_owned(),
@@ -3110,7 +3150,7 @@ where
         preloaded_state_digest: preload.state_digest,
         steady_state_digest,
         preload_operations: preload.operations,
-        warmup_operations: scenario.work.warmup_operations,
+        warmup_operations,
         admission_control,
         overload,
         metrics,
@@ -3151,6 +3191,7 @@ fn validate_point(
     baseline_goodput: f64,
     baseline_p99: u64,
     expected_preload_operations: u64,
+    expected_warmup_operations: u64,
     overload_operations: u64,
     recovery_operations: u64,
     scenario: &OverloadScenario,
@@ -3173,6 +3214,7 @@ fn validate_point(
             baseline_goodput,
             baseline_p99,
             expected_preload_operations,
+            expected_warmup_operations,
             overload_operations,
             recovery_operations,
             scenario,
@@ -3200,6 +3242,7 @@ fn validate_repeat(
     baseline_goodput: f64,
     baseline_p99: u64,
     expected_preload_operations: u64,
+    expected_warmup_operations: u64,
     overload_operations: u64,
     recovery_operations: u64,
     scenario: &OverloadScenario,
@@ -3209,7 +3252,7 @@ fn validate_repeat(
         || repeat.steady_state_digest.is_empty()
         || repeat.recovery.final_state_digest.is_empty()
         || repeat.preload_operations != expected_preload_operations
-        || repeat.warmup_operations != scenario.work.warmup_operations
+        || repeat.warmup_operations != expected_warmup_operations
         || expected_preload_operations == 0
             && repeat.reset_state_digest != repeat.preloaded_state_digest
     {

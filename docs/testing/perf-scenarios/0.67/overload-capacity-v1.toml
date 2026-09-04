@@ -13,12 +13,18 @@ reject_operational_event_as_capacity = true
 [work]
 factors_millionths = [1200000, 1500000, 2000000]
 repeats = 3
-warmup_operations = 4
-burst_operations = 50000
-recovery_operations_per_window = 50000
+# Reference W6 uses the same warm-up depth as the selected W2/W3 capacity
+# workloads. Deterministic smoke keeps its separate four-operation fixture.
+warmup_operations = 10000
+# The reference runner scales this baseline operation count by each overload
+# factor. Every 1.2x/1.5x/2x point therefore observes 100000 accepted requests
+# over the same two-second knee-relative window instead of progressively
+# shrinking sub-second windows.
+burst_operations = 100000
+recovery_operations_per_window = 100000
 max_recovery_windows = 3
 required_consecutive_recovery_windows = 2
-p999_min_samples = 1
+p999_min_samples = 10000
 highest_trackable_latency_us = 1000000
 histogram_significant_figures = 3
 drain_timeout_ms = 1000
@@ -39,4 +45,4 @@ require_runner_fingerprint = true
 require_prebuild_receipt = true
 require_surface_capability_receipt = true
 require_target_workload_binding = true
-committed_scenario_sha256 = "543e3340f6771e4c85cdc2912b507182ba20490124052a93823a71c6bb79ce2f"
+committed_scenario_sha256 = "23737b7a83647d596829d0f0207feccb441c4d2782e0dd7ef74cebd378ec7279"
