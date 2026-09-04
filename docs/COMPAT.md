@@ -430,3 +430,24 @@ This matrix is the declared 0.69 evidence boundary; other PostgreSQL majors are 
 HC/1 client compatibility is executed for the library commits behind `v0.62.0`, `v0.62.1`, and
 `v0.63.0`. HC/2 is not reimplemented in 0.69: the complete retained nine-row 0.68 compatibility
 artifact remains a required prerequisite.
+
+## 0.72 Management Center 2.0
+
+The read-only `/management/v1` JSON contract starts at schema version `1`. The first registered
+runtime DTOs are `ClusterFormationSnapshot`, `PlacementDecisionTrace`, `DurableRecoveryStatus`,
+and `ConsensusProgressSnapshot` from `hydracache-observability`. They are observations only and do
+not admit members, choose/commit placement, repair storage, or advance Raft state.
+
+Readers accept schema version `1` and reject any other top-level schema version through
+`validate()` before publication or rendering. Unknown future enum/reason values deserialize to an
+explicit `unknown` variant and must remain unavailable/partial; they never fall through to serving,
+applied, clean, repaired, or PASS. Cross-field validation rejects discovery-as-authority,
+serving without live authenticated/admitted/current state, unstable placement order, placement
+progress contradictions, clean recovery with loss/corruption/partial evidence, and Raft progress
+where snapshot/applied/commit/catch-up positions are incoherent.
+
+Candidate, reason, label, identity, and selected-peer collections have exported hard limits.
+Changing a limit or field meaning is a compatibility change and requires new goldens plus a
+documented reader window. These DTOs are not persisted in 0.72; if a later work item retains
+recovery or placement status on disk, that artifact receives a separate format registration and
+crash-recovery contract before use.
