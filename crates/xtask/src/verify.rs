@@ -49,12 +49,65 @@ fn console_npm_steps() -> [(&'static str, Vec<&'static str>); 3] {
 fn gates_for_platform(is_windows: bool) -> Vec<Gate> {
     let mut gates = vec![
         gate(
-            "clippy",
+            "clippy workspace",
             [
                 "clippy",
                 "--workspace",
                 "--all-targets",
                 "--all-features",
+                "--exclude",
+                "hydracache",
+                "--locked",
+                "--",
+                "-D",
+                "warnings",
+            ],
+            None,
+        ),
+        gate(
+            "clippy hydracache common",
+            [
+                "clippy",
+                "-p",
+                "hydracache",
+                "--all-targets",
+                "--no-default-features",
+                "--features",
+                "durable-value-store,durable-values,tiered-values,testing",
+                "--locked",
+                "--",
+                "-D",
+                "warnings",
+            ],
+            None,
+        ),
+        gate(
+            "clippy hydracache system allocator",
+            [
+                "clippy",
+                "-p",
+                "hydracache",
+                "--all-targets",
+                "--no-default-features",
+                "--features",
+                "durable-value-store,durable-values,tiered-values,testing,allocator-system",
+                "--locked",
+                "--",
+                "-D",
+                "warnings",
+            ],
+            None,
+        ),
+        gate(
+            "clippy hydracache mimalloc",
+            [
+                "clippy",
+                "-p",
+                "hydracache",
+                "--lib",
+                "--no-default-features",
+                "--features",
+                "durable-value-store,durable-values,tiered-values,testing,allocator-mimalloc",
                 "--locked",
                 "--",
                 "-D",
@@ -131,6 +184,23 @@ fn gates_for_platform(is_windows: bool) -> Vec<Gate> {
             None,
         ));
     } else {
+        gates.push(gate(
+            "clippy hydracache jemalloc",
+            [
+                "clippy",
+                "-p",
+                "hydracache",
+                "--lib",
+                "--no-default-features",
+                "--features",
+                "durable-value-store,durable-values,tiered-values,testing,allocator-jemalloc",
+                "--locked",
+                "--",
+                "-D",
+                "warnings",
+            ],
+            None,
+        ));
         gates.push(gate("tests", ["test", "--workspace", "--locked"], None));
     }
 
@@ -435,6 +505,22 @@ mod tests {
     fn verify_enforces_full_dependency_policy() {
         let gates = gates_for_platform(false);
         assert_eq!(args_for(&gates, "dependency policy"), ["deny", "check"]);
+    }
+
+    #[test]
+    fn windows_clippy_uses_only_supported_allocator_matrix() {
+        let windows = gates_for_platform(true);
+        assert!(windows
+            .iter()
+            .any(|gate| gate.label == "clippy hydracache mimalloc"));
+        assert!(!windows
+            .iter()
+            .any(|gate| gate.label == "clippy hydracache jemalloc"));
+
+        let non_windows = gates_for_platform(false);
+        assert!(non_windows
+            .iter()
+            .any(|gate| gate.label == "clippy hydracache jemalloc"));
     }
 
     #[test]

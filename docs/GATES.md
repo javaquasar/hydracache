@@ -32,6 +32,8 @@ linker locks on test binaries. The child cargo gates also use
 artifacts and locked test binaries from earlier verify runs cannot block the run.
 The format gate likewise enumerates unique workspace manifests and invokes `cargo fmt --check`
 per package, preserving `--all` coverage without exceeding the Windows process command-line limit.
+The allocator lint matrix omits jemalloc only on Windows, where its upstream build is unsupported;
+system and mimalloc remain checked there, while Linux CI checks system, mimalloc and jemalloc.
 
 ## Gate registry
 
