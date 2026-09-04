@@ -19,6 +19,10 @@ use crate::cluster_status::{
     Reachability, ReshardPhase, StatusSource,
 };
 use crate::config::{ServerConfig, ServerConfigError, ServerRole};
+use crate::management_operations::{
+    ManagementAuditSnapshot, ManagementOperationJournal, ManagementOperationKind,
+    ManagementOperationSnapshot, ManagementOperationState,
+};
 use crate::redis_tcp::{RedisTlsAcceptor, RedisTlsError};
 use crate::services::{DrainOutcome, GracefulShutdown, ServiceSet};
 
@@ -278,6 +282,7 @@ pub struct ServerRuntime {
     grid_control: Option<Arc<dyn GridControlPlaneHandle>>,
     management_snapshot_override: Option<ManagementSnapshotOverride>,
     management_topology: crate::management_topology::ManagementTopologyModel,
+    management_operations: ManagementOperationJournal,
     observability: ServerObservabilityModel,
     last_client_surface_drain: Option<ClientSurfaceDrain>,
     last_redis_surface_drain: Option<RedisSurfaceDrain>,
@@ -382,6 +387,7 @@ impl ServerRuntime {
             grid_control,
             management_snapshot_override: None,
             management_topology: crate::management_topology::ManagementTopologyModel::default(),
+            management_operations: ManagementOperationJournal::default(),
             observability: ServerObservabilityModel::default(),
             last_client_surface_drain: None,
             last_redis_surface_drain: None,
@@ -606,13 +612,34 @@ impl ServerRuntime {
 
     /// Accept an operator/admin drain request without stopping the daemon process.
     pub fn request_admin_drain(&mut self) -> DrainOutcome {
+        let operation_id = self
+            .management_operations
+            .request(ManagementOperationKind::Drain, "node");
+        let _ = self.management_operations.transition(
+            &operation_id,
+            ManagementOperationState::Accepted,
+            None,
+            None,
+        );
         if self.state == ServerState::Stopped {
+            let _ = self.management_operations.transition(
+                &operation_id,
+                ManagementOperationState::Failed,
+                Some("runtime_stopped"),
+                Some("start_runtime"),
+            );
             return self.last_drain.unwrap_or(DrainOutcome {
                 started_with: 0,
                 remaining: 0,
                 timed_out: false,
             });
         }
+        let _ = self.management_operations.transition(
+            &operation_id,
+            ManagementOperationState::Running,
+            None,
+            None,
+        );
         self.begin_local_drain();
         let drain_timeout = self.config.drain_timeout();
         let started = Instant::now();
@@ -621,6 +648,16 @@ impl ServerRuntime {
             .drain(&mut self.services);
         outcome.timed_out |= !control_plane_drained;
         self.last_drain = Some(outcome);
+        let _ = self.management_operations.transition(
+            &operation_id,
+            if outcome.timed_out {
+                ManagementOperationState::Failed
+            } else {
+                ManagementOperationState::Completed
+            },
+            outcome.timed_out.then_some("drain_timeout"),
+            outcome.timed_out.then_some("inspect_inflight_and_retry"),
+        );
         outcome
     }
 
@@ -729,17 +766,61 @@ impl ServerRuntime {
 
     /// Explicitly compact the durable Raft log at current applied progress.
     pub fn request_raft_compaction(&self) -> Result<RaftCompactionStatus, ServerAdminActionError> {
+        let operation_id = self
+            .management_operations
+            .request(ManagementOperationKind::RaftCompaction, "raft_metadata");
         if !self.can_serve() {
+            let _ = self.management_operations.transition(
+                &operation_id,
+                ManagementOperationState::Failed,
+                Some("not_ready"),
+                Some("retry_when_ready"),
+            );
             return Err(ServerAdminActionError::NotReady("raft compaction"));
         }
         if !matches!(self.config.role, ServerRole::Member) {
+            let _ = self.management_operations.transition(
+                &operation_id,
+                ManagementOperationState::Failed,
+                Some("member_role_required"),
+                Some("run_on_member"),
+            );
             return Err(ServerAdminActionError::RequiresMember("raft compaction"));
         }
-        self.grid_control
-            .as_ref()
-            .ok_or(RaftCompactionError::Unavailable)?
-            .compact_raft_log_at_applied()
-            .map_err(ServerAdminActionError::from)
+        let _ = self.management_operations.transition(
+            &operation_id,
+            ManagementOperationState::Accepted,
+            None,
+            None,
+        );
+        let _ = self.management_operations.transition(
+            &operation_id,
+            ManagementOperationState::Running,
+            None,
+            None,
+        );
+        let result = self.grid_control.as_ref().map_or_else(
+            || {
+                Err(ServerAdminActionError::from(
+                    RaftCompactionError::Unavailable,
+                ))
+            },
+            |grid| {
+                grid.compact_raft_log_at_applied()
+                    .map_err(ServerAdminActionError::from)
+            },
+        );
+        let _ = self.management_operations.transition(
+            &operation_id,
+            if result.is_ok() {
+                ManagementOperationState::Completed
+            } else {
+                ManagementOperationState::Failed
+            },
+            result.as_ref().err().map(|_| "raft_compaction_failed"),
+            result.as_ref().err().map(|_| "inspect_raft_storage"),
+        );
+        result
     }
 
     /// Build a metrics registry snapshot for the admin surface.
@@ -944,12 +1025,33 @@ impl ServerRuntime {
 
     /// Request an online reshard through the current runtime model.
     pub fn request_reshard(&self) -> Result<ServerAdminAction, ServerAdminActionError> {
+        let operation_id = self
+            .management_operations
+            .request(ManagementOperationKind::Reshard, "cluster");
         if !self.can_serve() {
+            let _ = self.management_operations.transition(
+                &operation_id,
+                ManagementOperationState::Failed,
+                Some("not_ready"),
+                Some("retry_when_ready"),
+            );
             return Err(ServerAdminActionError::NotReady("reshard"));
         }
         if !matches!(self.config.role, ServerRole::Member) {
+            let _ = self.management_operations.transition(
+                &operation_id,
+                ManagementOperationState::Failed,
+                Some("member_role_required"),
+                Some("run_on_member"),
+            );
             return Err(ServerAdminActionError::RequiresMember("reshard"));
         }
+        let _ = self.management_operations.transition(
+            &operation_id,
+            ManagementOperationState::Accepted,
+            None,
+            None,
+        );
         Ok(ServerAdminAction {
             action: "reshard",
             outcome: "accepted",
@@ -959,7 +1061,16 @@ impl ServerRuntime {
 
     /// Request a backup through the current runtime model.
     pub fn request_backup(&self) -> Result<ServerAdminAction, ServerAdminActionError> {
+        let operation_id = self
+            .management_operations
+            .request(ManagementOperationKind::Backup, "cluster");
         if !self.can_serve() {
+            let _ = self.management_operations.transition(
+                &operation_id,
+                ManagementOperationState::Failed,
+                Some("not_ready"),
+                Some("retry_when_ready"),
+            );
             return Err(ServerAdminActionError::NotReady("backup"));
         }
         if !self.config.backup.enabled
@@ -972,8 +1083,20 @@ impl ServerRuntime {
                 .trim()
                 .is_empty()
         {
+            let _ = self.management_operations.transition(
+                &operation_id,
+                ManagementOperationState::Failed,
+                Some("backup_disabled"),
+                Some("configure_backup"),
+            );
             return Err(ServerAdminActionError::BackupDisabled);
         }
+        let _ = self.management_operations.transition(
+            &operation_id,
+            ManagementOperationState::Accepted,
+            None,
+            None,
+        );
         Ok(ServerAdminAction {
             action: "backup",
             outcome: "accepted",
@@ -984,6 +1107,21 @@ impl ServerRuntime {
     /// Return whether shutdown flushed durable state.
     pub fn flushed(&self) -> bool {
         self.flushed
+    }
+
+    /// Return a bounded snapshot of operations owned by this process generation.
+    pub fn management_operations(&self) -> ManagementOperationSnapshot {
+        self.management_operations.snapshot()
+    }
+
+    /// Return redacted audit metadata derived from management operation transitions.
+    pub fn management_audit(&self) -> ManagementAuditSnapshot {
+        self.management_operations.audit_snapshot()
+    }
+
+    /// Return the worst verified backup age signal, without implying an artifact identity.
+    pub fn management_backup_age_seconds(&self) -> Option<u64> {
+        self.observability.backup_age_seconds
     }
 
     /// Return cache handle used by embedded tests/adapters.

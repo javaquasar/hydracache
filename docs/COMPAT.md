@@ -545,3 +545,16 @@ Every DNS answer is checked before a socket opens and the reviewed address is pi
 request. Range, point, series, response-byte, concurrency, token-file and deadline limits are
 compatibility-visible. Labels and upstream error bodies are discarded. Disabled or failed history
 never replaces the bounded browser-local W4 ring, and remote/local series are not spliced.
+
+W10 adds authenticated GET-only `/management/v1/persistence`, `/management/v1/operations`, and
+`/management/v1/audit` resources. Persistence configuration never exposes its destination and a
+backup-age observation is not a verified artifact. Verified backup/restore identity, size and
+capacity remain null until a durable owner retains that proof. Recovery remains
+`unknown/status-not-retained` when no `RecoveryReport` survives startup.
+
+The operation journal retains at most 128 newest records for the current process generation;
+audit metadata retains at most 256 transitions. Eviction and generation are explicit. `requested`,
+`accepted`, `running`, `completed`, `failed`, and `unknown` are distinct wire states; only legal
+forward transitions are accepted and terminal records cannot change. The audit view covers only
+these management transitions and contains no keys, values, paths, credentials, tenant/client
+identity, or raw error text. The console issues only GET requests for all three views.

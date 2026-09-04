@@ -149,6 +149,33 @@ the dashboard and rejects references to metrics not emitted by
 6. Use `/actuator/hydracache/caches/server/diagnostics` for per-cache stats when
    the aggregate overview is not detailed enough.
 
+## Persistence, Operations, and Audit
+
+The 0.72 console reads three additional admin-only resources:
+
+- `GET /management/v1/persistence` separates configured backup support, observed backup age, and
+  verified artifact evidence. Missing verification is displayed as unavailable.
+- `GET /management/v1/operations?limit=...` returns a cursor-bound, newest-first journal for the
+  current process generation. Accepted backup and reshard requests stay accepted until a real
+  owner publishes later transitions.
+- `GET /management/v1/audit?limit=...` returns redacted metadata for those transitions only. It is
+  not presented as a complete security audit stream.
+
+The browser contains no controls for drain, backup, reshard, repair, restore, delete, or retry and
+never calls a write method. Tests assert that all management requests made by the console are GET,
+that accepted is not completed, terminal records are immutable, cursor snapshots invalidate on a
+new transition, bounded eviction is reported, recovery without a retained report is unknown, and
+destination/identity/credential strings do not enter JSON or the DOM. Four W10 falsifiability
+canaries deliberately violate those rules and must fail with their registered marker.
+
+Local W10 verification:
+
+```powershell
+cargo test -p hydracache-server --test management_operations_072 --locked
+cargo test -p hydracache-server --lib --locked management_operations
+npm --prefix console test
+```
+
 ## Verification
 
 Local W5 verification:

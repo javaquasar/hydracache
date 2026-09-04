@@ -303,6 +303,100 @@ export const historyEnvelope = {
   },
 };
 
+export const persistenceEnvelope = {
+  ...metadata,
+  source: "unavailable",
+  data: {
+    configured: true,
+    enabled: true,
+    destination_configured: true,
+    storage_open: true,
+    runtime_role: "member",
+    backup_age_seconds: 45,
+    backup_age_source: "runtime_observation",
+    last_verified_backup_id: null,
+    last_verified_backup_at_unix_ms: null,
+    last_verified_restore_id: null,
+    last_verified_restore_at_unix_ms: null,
+    artifact_size_bytes: null,
+    available_capacity_bytes: null,
+    verification_state: "unavailable",
+    recovery_state: "unknown",
+    recovery_reason_code: "status-not-retained",
+  },
+};
+
+export const operationsEnvelope = {
+  ...metadata,
+  data: {
+    generation: 1700000000000,
+    latest_sequence: 2,
+    evicted_records: 0,
+    retention_scope: "current_process_generation",
+    items: {
+      items: [
+        {
+          operation_id: "op-redacted-2",
+          generation: 1700000000000,
+          sequence: 2,
+          kind: "backup",
+          scope: "cluster",
+          state: "accepted",
+          requested_at_unix_ms: 1700000000000,
+          accepted_at_unix_ms: 1700000000001,
+          started_at_unix_ms: null,
+          terminal_at_unix_ms: null,
+          reason_code: null,
+          source: "runtime_journal",
+          completeness: "partial",
+        },
+        {
+          operation_id: "op-redacted-1",
+          generation: 1700000000000,
+          sequence: 1,
+          kind: "drain",
+          scope: "node",
+          state: "completed",
+          requested_at_unix_ms: 1699999999000,
+          accepted_at_unix_ms: 1699999999001,
+          started_at_unix_ms: 1699999999002,
+          terminal_at_unix_ms: 1699999999003,
+          reason_code: null,
+          source: "runtime_journal",
+          completeness: "complete",
+        },
+      ],
+      next_cursor: null,
+      truncated: false,
+    },
+  },
+};
+
+export const auditEnvelope = {
+  ...metadata,
+  data: {
+    generation: 1700000000000,
+    latest_sequence: 2,
+    evicted_records: 0,
+    coverage: "management_operations_current_process_only",
+    redaction: "no_keys_values_paths_credentials_or_actor_identity",
+    items: {
+      items: [
+        {
+          event_id: "op-audit-redacted",
+          operation_id: "op-redacted-2",
+          action: "backup",
+          outcome: "accepted",
+          occurred_at_unix_ms: 1700000000001,
+          source: "runtime_journal",
+        },
+      ],
+      next_cursor: null,
+      truncated: false,
+    },
+  },
+};
+
 export const consensusEnvelope = {
   ...metadata,
   data: {

@@ -1,6 +1,7 @@
 import { expect, test } from "@playwright/test";
 
 import {
+  auditEnvelope,
   consensusEnvelope,
   clientsEnvelope,
   dashboardEnvelope,
@@ -12,7 +13,9 @@ import {
   modeledDashboardEnvelope,
   namespaceCachesEnvelope,
   namespacesEnvelope,
+  operationsEnvelope,
   partitionsEnvelope,
+  persistenceEnvelope,
   placementTraceEnvelope,
   recoveryEnvelope,
 } from "./fixtures.js";
@@ -54,6 +57,10 @@ test("console_renders_typed_dashboard_and_all_truth_states", async ({ page }) =>
   await expect(page.getByTestId("health-aggregate")).toHaveText("FAIL");
   await expect(page.getByTestId("health-table")).toContainText("apply-lag=100 entries");
   await expect(page.getByTestId("remote-history-state")).toContainText("using browser-local history");
+  await expect(page.getByTestId("persistence-details")).toContainText("verified backupunavailable");
+  await expect(page.getByTestId("operations-table")).toContainText("accepted");
+  await expect(page.getByTestId("operations-table")).toContainText("completed");
+  await expect(page.getByTestId("audit-table")).toContainText("runtime_journal");
 });
 
 test("optional_prometheus_history_is_labeled_and_never_spliced_into_local_ring", async ({ page }) => {
@@ -111,17 +118,19 @@ test("summary_links_open_read_only_filtered_sections", async ({ page }) => {
 
 test("console_is_read_only_and_never_scrapes_prometheus", async ({ page }) => {
   let metricsRequests = 0;
+  const managementMethods = [];
   await page.route("**/metrics", (route) => {
     metricsRequests += 1;
     return route.abort("failed");
   });
-  await routeManagement(page);
+  await routeManagement(page, { requestMethods: managementMethods });
   await page.goto(consoleUrl);
 
   await expect(page.getByTestId("readonly-badge")).toHaveText(/read only/i);
   await expect(page.locator("button")).toHaveCount(0);
   await expect(page.getByRole("button", { name: /drain|reshard|backup|delete|remove/i })).toHaveCount(0);
   expect(metricsRequests).toBe(0);
+  expect([...new Set(managementMethods)]).toEqual(["GET"]);
 });
 
 test("hostile_diagnostic_text_is_rendered_only_as_text", async ({ page }) => {
@@ -233,6 +242,9 @@ async function routeManagement(page, overrides = {}) {
     namespaces: overrides.namespaces === undefined ? namespacesEnvelope : overrides.namespaces,
     health: overrides.health === undefined ? healthEnvelope : overrides.health,
     history: overrides.history === undefined ? historyEnvelope : overrides.history,
+    persistence: overrides.persistence === undefined ? persistenceEnvelope : overrides.persistence,
+    operations: overrides.operations === undefined ? operationsEnvelope : overrides.operations,
+    audit: overrides.audit === undefined ? auditEnvelope : overrides.audit,
     namespaceCaches:
       overrides.namespaceCaches === undefined
         ? namespaceCachesEnvelope
@@ -240,6 +252,7 @@ async function routeManagement(page, overrides = {}) {
   };
   await page.route("**/management/v1/**", (route) => {
     const path = new URL(route.request().url()).pathname;
+    overrides.requestMethods?.push(route.request().method());
     const fixture = path.includes("/placement-traces/")
       ? fixtures.placementTrace
       : /\/namespaces\/[^/]+\/caches$/.test(path)
@@ -252,6 +265,12 @@ async function routeManagement(page, overrides = {}) {
         ? fixtures.health
       : path.endsWith("/history")
         ? fixtures.history
+      : path.endsWith("/persistence")
+        ? fixtures.persistence
+      : path.endsWith("/operations")
+        ? fixtures.operations
+      : path.endsWith("/audit")
+        ? fixtures.audit
       : path.endsWith("/clients")
         ? fixtures.clients
       : path.endsWith("/cluster/members")

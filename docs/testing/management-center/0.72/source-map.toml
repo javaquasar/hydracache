@@ -15,6 +15,45 @@ fallback = "unavailable with stable reason"
 test_owner = "crates/hydracache-server/tests/management_http.rs"
 
 [[source]]
+id = "persistence-summary"
+route = "/management/v1/persistence"
+field_group = "backup configuration, storage-open observation, backup age, verified artifact and recovery availability"
+producer = "ServerRuntime configuration and observability model"
+authority = "local runtime observation; no durable artifact authority retained"
+lifetime = "request"
+consistency = "configuration and observation are separate from verification"
+max_cardinality = 1
+privacy = "destination, paths, object identity, credentials and raw errors omitted"
+fallback = "verification unavailable and recovery unknown/status-not-retained"
+test_owner = "crates/hydracache-server/tests/management_operations_072.rs"
+
+[[source]]
+id = "management-operations"
+route = "/management/v1/operations"
+field_group = "bounded requested, accepted, running and terminal operation transitions"
+producer = "process-local ManagementOperationJournal"
+authority = "actual runtime method transitions only"
+lifetime = "current process generation; oldest-first eviction"
+consistency = "cursor bound to generation and latest transition sequence"
+max_cardinality = 128
+privacy = "opaque operation IDs, stable types/scopes/reasons; no caller identity or payload"
+fallback = "empty current-generation page; evicted count remains explicit"
+test_owner = "crates/hydracache-server/src/management_operations.rs + crates/hydracache-server/tests/management_operations_072.rs"
+
+[[source]]
+id = "management-audit"
+route = "/management/v1/audit"
+field_group = "redacted management operation transition metadata"
+producer = "process-local ManagementOperationJournal"
+authority = "partial audit coverage; management operations only"
+lifetime = "current process generation; oldest-first eviction"
+consistency = "cursor bound to generation and latest audit sequence"
+max_cardinality = 256
+privacy = "no keys, values, paths, credentials, tenant/client identity or raw errors"
+fallback = "empty partial page with explicit coverage and eviction metadata"
+test_owner = "crates/hydracache-server/src/management_operations.rs + crates/hydracache-server/tests/management_operations_072.rs + console/tests/console_readonly.spec.js"
+
+[[source]]
 id = "cluster-formation-compat-alias"
 route = "/management/v1/formation"
 field_group = "compatibility alias of cluster formation"

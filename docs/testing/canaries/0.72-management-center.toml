@@ -130,3 +130,43 @@ defect_env = "HYDRACACHE_CANARY_DEFECT=MC72-W9-ARBITRARY-PROXY"
 expected_failure = "HC-CANARY-RED:MC72-W9-ARBITRARY-PROXY"
 green_evidence = "Range amplification and metadata-service addresses are rejected by pure validation before the adapter constructs a client."
 red_evidence = "The mutant bypasses both pre-socket guards and the same security oracle turns red."
+
+[[canary]]
+id = "MC72-W10-WRITE-FROM-UI"
+status = "active"
+test = "operation_canary_rejects_accepted_as_completed_and_ui_write_assumptions"
+command = "cargo test -p hydracache-server --test management_operations_072 --locked operation_canary_rejects_accepted_as_completed_and_ui_write_assumptions -- --nocapture"
+defect_env = "HYDRACACHE_CANARY_DEFECT=MC72-W10-WRITE-FROM-UI"
+expected_failure = "HC-CANARY-RED:MC72-W10-WRITE-FROM-UI"
+green_evidence = "The operation journal and browser preserve accepted as a non-terminal state, and browser network tests permit GET only."
+red_evidence = "The mutant promotes accepted backup to completed and the same state oracle turns red."
+
+[[canary]]
+id = "MC72-W10-LIVENESS-IS-CLEAN"
+status = "active"
+test = "recovery_canary_liveness_is_never_clean_without_retained_report"
+command = "cargo test -p hydracache-server --test management_operations_072 --locked recovery_canary_liveness_is_never_clean_without_retained_report -- --nocapture"
+defect_env = "HYDRACACHE_CANARY_DEFECT=MC72-W10-LIVENESS-IS-CLEAN"
+expected_failure = "HC-CANARY-RED:MC72-W10-LIVENESS-IS-CLEAN"
+green_evidence = "A live process without a retained recovery owner reports unknown/status-not-retained."
+red_evidence = "The mutant promotes process liveness to clean recovery and the same endpoint oracle turns red."
+
+[[canary]]
+id = "MC72-W10-LOSS-HIDDEN"
+status = "active"
+test = "recovery_canary_preserves_nonzero_loss_evidence"
+command = "cargo test -p hydracache-server --test management_operations_072 --locked recovery_canary_preserves_nonzero_loss_evidence -- --nocapture"
+defect_env = "HYDRACACHE_CANARY_DEFECT=MC72-W10-LOSS-HIDDEN"
+expected_failure = "HC-CANARY-RED:MC72-W10-LOSS-HIDDEN"
+green_evidence = "Nonzero discarded/corrupt evidence remains nonzero through the recovery presentation oracle."
+red_evidence = "The mutant zeroes a known discarded count and the same loss oracle turns red."
+
+[[canary]]
+id = "MC72-W10-ILLEGAL-REPAIR-COMPLETE"
+status = "active"
+test = "recovery_canary_rejects_repaired_before_terminal_verification"
+command = "cargo test -p hydracache-server --test management_operations_072 --locked recovery_canary_rejects_repaired_before_terminal_verification -- --nocapture"
+defect_env = "HYDRACACHE_CANARY_DEFECT=MC72-W10-ILLEGAL-REPAIR-COMPLETE"
+expected_failure = "HC-CANARY-RED:MC72-W10-ILLEGAL-REPAIR-COMPLETE"
+green_evidence = "Repaired is rejected while the recovery report remains in validation."
+red_evidence = "The mutant marks the unverified repair complete and the same report validator turns red."

@@ -87,3 +87,15 @@ max_concurrency = 2
 deadline_ms = 2000
 redirects = false
 query_ids = ["replication_success", "replication_failure", "cache_entries", "admission_queue_depth"]
+
+[operations]
+max_retained_records = 128
+retention = "current process generation only; oldest-first eviction"
+states = ["requested", "accepted", "running", "completed", "failed", "unknown"]
+terminal_records_are_immutable = true
+
+[management_audit]
+max_retained_records = 256
+retention = "current process generation only; oldest-first eviction"
+coverage = "management operation transitions only"
+forbidden_fields = ["keys", "values", "paths", "credentials", "actor_identity"]

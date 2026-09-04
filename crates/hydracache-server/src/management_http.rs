@@ -42,6 +42,7 @@ use crate::management_history::{
     ManagementHistoryData, ManagementHistoryError, ManagementHistoryRequest,
     ManagementHistoryService, ManagementHistoryState, MANAGEMENT_HISTORY_PATH,
 };
+use crate::management_operations::{ManagementAuditRecord, ManagementOperationRecord};
 
 /// Management capability negotiation path.
 pub const MANAGEMENT_CAPABILITIES_PATH: &str = "/management/v1/capabilities";
@@ -61,6 +62,12 @@ pub const MANAGEMENT_CLIENTS_PATH: &str = "/management/v1/clients";
 pub const MANAGEMENT_NAMESPACES_PATH: &str = "/management/v1/namespaces";
 /// Deterministic, server-evaluated health catalogue path.
 pub const MANAGEMENT_HEALTHCHECKS_PATH: &str = "/management/v1/healthchecks";
+/// Read-only persistence configuration and verified-evidence summary path.
+pub const MANAGEMENT_PERSISTENCE_PATH: &str = "/management/v1/persistence";
+/// Bounded process-generation operation journal path.
+pub const MANAGEMENT_OPERATIONS_PATH: &str = "/management/v1/operations";
+/// Bounded redacted management audit metadata path.
+pub const MANAGEMENT_AUDIT_PATH: &str = "/management/v1/audit";
 /// Prefix for caller-authorized namespace cache detail.
 pub const MANAGEMENT_NAMESPACE_CACHES_PREFIX: &str = "/management/v1/namespaces";
 /// Prefix for non-enumerable placement-decision trace resources.
@@ -87,6 +94,8 @@ enum CursorKind {
     Healthchecks,
     ConsensusProgress,
     Recovery,
+    Operations,
+    Audit,
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -203,6 +212,9 @@ pub(crate) fn routes(
         .route(MANAGEMENT_CLIENTS_PATH, get(clients))
         .route(MANAGEMENT_NAMESPACES_PATH, get(namespaces))
         .route(MANAGEMENT_HEALTHCHECKS_PATH, get(healthchecks))
+        .route(MANAGEMENT_PERSISTENCE_PATH, get(persistence))
+        .route(MANAGEMENT_OPERATIONS_PATH, get(operations))
+        .route(MANAGEMENT_AUDIT_PATH, get(audit))
         .route(MANAGEMENT_HISTORY_PATH, get(history))
         .route(
             "/management/v1/namespaces/{namespace}/caches",
@@ -1688,6 +1700,274 @@ async fn recovery(
     );
     envelope.source = ManagementObservationSource::Unavailable;
     management_response(&envelope)
+}
+
+#[derive(Debug, Serialize)]
+struct PersistenceData {
+    configured: bool,
+    enabled: bool,
+    destination_configured: bool,
+    storage_open: bool,
+    runtime_role: &'static str,
+    backup_age_seconds: Option<u64>,
+    backup_age_source: &'static str,
+    last_verified_backup_id: Option<String>,
+    last_verified_backup_at_unix_ms: Option<u64>,
+    last_verified_restore_id: Option<String>,
+    last_verified_restore_at_unix_ms: Option<u64>,
+    artifact_size_bytes: Option<u64>,
+    available_capacity_bytes: Option<u64>,
+    verification_state: &'static str,
+    recovery_state: &'static str,
+    recovery_reason_code: &'static str,
+}
+
+async fn persistence(
+    State(state): State<Arc<ManagementHttpState>>,
+    headers: HeaderMap,
+) -> Response {
+    if let Err(error) = require_admin(&headers) {
+        return error.into_response();
+    }
+    let (status, data) = {
+        let runtime = state.runtime.lock().expect("server runtime mutex");
+        let config = runtime.config();
+        let destination_configured = config
+            .backup
+            .location
+            .as_deref()
+            .is_some_and(|location| !location.trim().is_empty());
+        (
+            runtime.cluster_status_snapshot(),
+            PersistenceData {
+                configured: config.backup.enabled && destination_configured,
+                enabled: config.backup.enabled,
+                destination_configured,
+                storage_open: runtime.ready().storage_open,
+                runtime_role: match config.role {
+                    crate::config::ServerRole::Local => "local",
+                    crate::config::ServerRole::Member => "member",
+                    crate::config::ServerRole::Client => "client",
+                },
+                backup_age_seconds: runtime.management_backup_age_seconds(),
+                backup_age_source: if runtime.management_backup_age_seconds().is_some() {
+                    "runtime_observation"
+                } else {
+                    "unavailable"
+                },
+                // The current backup service does not retain a verified artifact owner.
+                last_verified_backup_id: None,
+                last_verified_backup_at_unix_ms: None,
+                last_verified_restore_id: None,
+                last_verified_restore_at_unix_ms: None,
+                artifact_size_bytes: None,
+                available_capacity_bytes: None,
+                verification_state: "unavailable",
+                recovery_state: "unknown",
+                recovery_reason_code: "status-not-retained",
+            },
+        )
+    };
+    let response = envelope(
+        &status,
+        ManagementCompleteness::Partial,
+        vec![ManagementWarning {
+            code: ManagementWarningCode::StatusNotRetained,
+            affected_count: Some(1),
+        }],
+        data,
+    );
+    management_response(&response)
+}
+
+#[derive(Debug, Serialize)]
+struct OperationsData {
+    generation: u64,
+    latest_sequence: u64,
+    evicted_records: u64,
+    retention_scope: &'static str,
+    items: BoundedPage<ManagementOperationRecord>,
+}
+
+async fn operations(
+    State(state): State<Arc<ManagementHttpState>>,
+    headers: HeaderMap,
+    query: Result<Query<PageQuery>, QueryRejection>,
+) -> Response {
+    if let Err(error) = require_admin(&headers) {
+        return error.into_response();
+    }
+    let query = match parse_query(query) {
+        Ok(query) => query,
+        Err(error) => return error.into_response(),
+    };
+    let (status, journal) = {
+        let runtime = state.runtime.lock().expect("server runtime mutex");
+        (
+            runtime.cluster_status_snapshot(),
+            runtime.management_operations(),
+        )
+    };
+    let now = unix_time_ms();
+    let start = match journal_page_start(
+        &state,
+        &query,
+        CursorKind::Operations,
+        journal.generation,
+        journal.latest_sequence,
+        now,
+    ) {
+        Ok(start) => start,
+        Err(error) => return error.into_response(),
+    };
+    if start > journal.items.len() {
+        return ManagementHttpError::SnapshotChanged.into_response();
+    }
+    let end = start.saturating_add(query.limit).min(journal.items.len());
+    let truncated = end < journal.items.len();
+    let next_cursor = truncated.then(|| {
+        state
+            .cursors
+            .lock()
+            .expect("management cursor store mutex")
+            .issue(
+                CursorKind::Operations,
+                journal.generation,
+                journal.latest_sequence,
+                end,
+                now,
+            )
+    });
+    let page = BoundedPage {
+        items: journal.items[start..end].to_vec(),
+        next_cursor,
+        truncated,
+    };
+    let mut response = envelope(
+        &status,
+        ManagementCompleteness::Partial,
+        response_warnings(
+            ManagementCompleteness::Partial,
+            truncated,
+            journal.items.len().saturating_sub(end),
+        ),
+        OperationsData {
+            generation: journal.generation,
+            latest_sequence: journal.latest_sequence,
+            evicted_records: journal.evicted_records,
+            retention_scope: "current_process_generation",
+            items: page,
+        },
+    );
+    response.observation_seq = journal.latest_sequence;
+    management_response(&response)
+}
+
+#[derive(Debug, Serialize)]
+struct AuditData {
+    generation: u64,
+    latest_sequence: u64,
+    evicted_records: u64,
+    coverage: &'static str,
+    redaction: &'static str,
+    items: BoundedPage<ManagementAuditRecord>,
+}
+
+async fn audit(
+    State(state): State<Arc<ManagementHttpState>>,
+    headers: HeaderMap,
+    query: Result<Query<PageQuery>, QueryRejection>,
+) -> Response {
+    if let Err(error) = require_admin(&headers) {
+        return error.into_response();
+    }
+    let query = match parse_query(query) {
+        Ok(query) => query,
+        Err(error) => return error.into_response(),
+    };
+    let (status, journal) = {
+        let runtime = state.runtime.lock().expect("server runtime mutex");
+        (
+            runtime.cluster_status_snapshot(),
+            runtime.management_audit(),
+        )
+    };
+    let now = unix_time_ms();
+    let start = match journal_page_start(
+        &state,
+        &query,
+        CursorKind::Audit,
+        journal.generation,
+        journal.latest_sequence,
+        now,
+    ) {
+        Ok(start) => start,
+        Err(error) => return error.into_response(),
+    };
+    if start > journal.items.len() {
+        return ManagementHttpError::SnapshotChanged.into_response();
+    }
+    let end = start.saturating_add(query.limit).min(journal.items.len());
+    let truncated = end < journal.items.len();
+    let next_cursor = truncated.then(|| {
+        state
+            .cursors
+            .lock()
+            .expect("management cursor store mutex")
+            .issue(
+                CursorKind::Audit,
+                journal.generation,
+                journal.latest_sequence,
+                end,
+                now,
+            )
+    });
+    let page = BoundedPage {
+        items: journal.items[start..end].to_vec(),
+        next_cursor,
+        truncated,
+    };
+    let mut warnings = response_warnings(
+        ManagementCompleteness::Partial,
+        truncated,
+        journal.items.len().saturating_sub(end),
+    );
+    warnings.push(ManagementWarning {
+        code: ManagementWarningCode::StatusNotRetained,
+        affected_count: None,
+    });
+    let mut response = envelope(
+        &status,
+        ManagementCompleteness::Partial,
+        warnings,
+        AuditData {
+            generation: journal.generation,
+            latest_sequence: journal.latest_sequence,
+            evicted_records: journal.evicted_records,
+            coverage: "management_operations_current_process_only",
+            redaction: "no_keys_values_paths_credentials_or_actor_identity",
+            items: page,
+        },
+    );
+    response.observation_seq = journal.latest_sequence;
+    management_response(&response)
+}
+
+fn journal_page_start(
+    state: &ManagementHttpState,
+    query: &NormalizedPageQuery,
+    kind: CursorKind,
+    generation: u64,
+    latest_sequence: u64,
+    now_unix_ms: u64,
+) -> Result<usize, ManagementHttpError> {
+    query.cursor.as_deref().map_or(Ok(0), |cursor| {
+        state
+            .cursors
+            .lock()
+            .expect("management cursor store mutex")
+            .resolve(cursor, kind, generation, latest_sequence, now_unix_ms)
+    })
 }
 
 fn formation_item(

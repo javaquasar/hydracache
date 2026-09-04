@@ -13,6 +13,9 @@ const ENDPOINTS = Object.freeze({
   health: "/management/v1/healthchecks?limit=100",
   consensus: "/management/v1/consensus/progress?limit=100",
   recovery: "/management/v1/persistence/recovery?limit=100",
+  persistence: "/management/v1/persistence",
+  operations: "/management/v1/operations?limit=100",
+  audit: "/management/v1/audit?limit=100",
 });
 const ADMIN_HEADERS = Object.freeze({
   "x-hydracache-client-id": "management-console",
@@ -155,6 +158,9 @@ function render(values) {
   renderHealth(values.health);
   renderConsensus(values.consensus, data.consensus);
   renderRecovery(values.recovery);
+  renderPersistence(values.persistence);
+  renderOperations(values.operations);
+  renderAudit(values.audit);
   renderPlacement(values.placementTrace?.data, data.placement);
   renderRemoteHistory(values.remoteHistory);
   history.ingest(
@@ -567,6 +573,80 @@ function renderRecovery(envelope) {
   );
 }
 
+function renderPersistence(envelope) {
+  const data = envelope?.data ?? {};
+  byTest("persistence-details").replaceChildren(
+    pill("configured", truth(data.configured)),
+    pill("enabled", truth(data.enabled)),
+    pill("storage", data.storage_open === true ? "open" : data.storage_open === false ? "closed" : "unavailable"),
+    pill("backup age", known(data.backup_age_seconds, " s")),
+    pill("verified backup", data.last_verified_backup_id ?? "unavailable"),
+    pill("verified restore", data.last_verified_restore_id ?? "unavailable"),
+    pill("verification", data.verification_state ?? "unavailable"),
+    pill("recovery", data.recovery_state ?? "unknown"),
+  );
+}
+
+function renderOperations(envelope) {
+  const data = envelope?.data ?? {};
+  const items = data.items?.items ?? [];
+  setText(
+    "operations-generation",
+    `generation ${known(data.generation)} · sequence ${known(data.latest_sequence)} · evicted ${known(data.evicted_records)}`,
+  );
+  byTest("operations-table").replaceChildren(
+    ...items.slice(0, MAX_RENDERED_MEMBERS).map((item) =>
+      row(
+        [
+          item.operation_id,
+          item.kind,
+          item.scope,
+          status(item.state),
+          time(item.requested_at_unix_ms),
+          time(item.started_at_unix_ms),
+          time(item.terminal_at_unix_ms),
+          item.reason_code ?? "none",
+        ],
+        { testid: "operation-row" },
+      ),
+    ),
+  );
+  if (items.length === 0) {
+    byTest("operations-table").append(
+      row(["No retained operations", "none", "current process", "unknown", "unavailable", "unavailable", "unavailable", "none"]),
+    );
+  }
+}
+
+function renderAudit(envelope) {
+  const data = envelope?.data ?? {};
+  const items = data.items?.items ?? [];
+  setText(
+    "audit-coverage",
+    `${data.coverage ?? "management operations current process only"} · evicted ${known(data.evicted_records)}`,
+  );
+  byTest("audit-table").replaceChildren(
+    ...items.slice(0, MAX_RENDERED_MEMBERS).map((item) =>
+      row(
+        [
+          item.event_id,
+          item.operation_id,
+          item.action,
+          status(item.outcome),
+          time(item.occurred_at_unix_ms),
+          item.source,
+        ],
+        { testid: "audit-row" },
+      ),
+    ),
+  );
+  if (items.length === 0) {
+    byTest("audit-table").append(
+      row(["No retained audit metadata", "none", "none", "unknown", "unavailable", "runtime_journal"]),
+    );
+  }
+}
+
 function renderPlacement(trace, fallback) {
   const placement = trace ?? fallback;
   const state = byTest("placement-state");
@@ -737,6 +817,11 @@ function duration(value) {
 }
 function boundedCount(value) {
   return value?.value == null ? "unavailable" : `${value.value}${value.exact ? "" : "+"}`;
+}
+
+function time(value) {
+  if (!Number.isFinite(value)) return "unavailable";
+  return new Date(value).toISOString();
 }
 function recoveryLabel(items) {
   if (items.length === 0) return "source unavailable";
