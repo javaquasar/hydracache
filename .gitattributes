@@ -4,3 +4,4 @@ crates/hydracache-cache-sim/traces/*.trace text eol=lf
 scripts/perf/*.py text eol=lf
 docs/testing/hc2-compat/artifacts/**/*.pom text eol=lf
 sdks/python/hydracache-client-hc2/src/hydracache_hc2_generated/** text eol=lf
+.github/workflows/*.yml text eol=lf

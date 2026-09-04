@@ -123,7 +123,9 @@ fn closure_problems(omitted: Option<&str>) -> Vec<String> {
     if !package_script.contains("\"hydracache-client-hc2\"") {
         problems.push("publishable Rust HC/2 client package validation is missing".to_owned());
     }
-    let ci = fs::read_to_string(root.join(".github/workflows/ci.yml")).unwrap_or_default();
+    let ci = fs::read_to_string(root.join(".github/workflows/ci.yml"))
+        .unwrap_or_default()
+        .replace("\r\n", "\n");
     let history_checkpoint = ci.find("- name: Restore and verify full release history");
     let workspace_test = ci
         .find("- name: Test\n")
