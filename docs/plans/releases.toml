@@ -327,3 +327,12 @@ networked_control_plane = true
 work_items = ["W0", "W1", "W2", "W3", "W4", "W5", "W6", "W7", "W8", "W9", "W10", "W11", "W12", "W13"]
 theme = "Memory Footprint & Retention Efficiency - consume the 0.70 owner inventory and bounded-lifecycle proof plus the completed 0.67.1 dedicated-reference bootstrap, then turn the 0.67 exploratory memory screens into causal exact-candidate optimization. Keep the unmodified 0.70 release baseline separate from the pre-optimization instrumented 0.71 baseline, correct byte accounting without silently reinterpreting legacy capacity, compact only measured representations, reduce copies, compare allocators and profiles, separate durable page cache, and pass a finite fixed-cardinality long-duration matrix without weakening semantics, workload, SLOs or fail-closed behavior. A fully evidenced no-win release may ship with accounting/bounds claims and no numerical improvement claim."
 depends_on = ["0.70.0", "0.67.1"]
+
+[[release]]
+version = "0.72.0"
+file = "docs/plans/V0_72_MANAGEMENT_CENTER_2_OPERATIONAL_VISIBILITY_PLAN.md"
+status = "planned"
+networked_control_plane = true
+work_items = ["W0", "W1", "W2", "W3", "W4", "W5", "W6", "W7", "W8", "W9", "W10", "W11", "W12", "W13", "W14"]
+theme = "Management Center 2.0 & Operational Visibility - replace the single-page observe-only console with a locally bundled TypeScript/component application and a versioned, bounded, privacy-reviewed management API. Add honest complete/partial and fresh/stale/live/modeled/unavailable semantics; authenticated server-side cluster aggregation; dashboard, members/partitions, HC/1-HC/2-RESP clients, namespaces/caches, deterministic health checks, persistence/operations/audit views; bounded browser-local history; and an optional fixed-query Prometheus adapter. Every new route, field, state, permission, bound and failure branch is mapped to tests, falsifiability canaries, real-process faults, exact-candidate six-hour/24-hour resource evidence, mixed-version upgrade/rollback, packaged-asset identity and fail-closed release receipts. The browser remains read-only: no arbitrary proxy/fan-out, state-changing controls, unbounded history, sensitive identifiers or invented health."
+depends_on = ["0.71.0"]

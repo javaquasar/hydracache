@@ -16,6 +16,7 @@ deepened later when a specific feature enters implementation.
 | Project | Local source | Primary docs read | Best use for HydraCache |
 |---|---|---|---|
 | Hazelcast | [hazelcast](../../../hazelcast) | [reread](../../../hazelcast/HAZELCAST_HYDRACACHE_REREAD.md), [knowledge base](../../../hazelcast/HAZELCAST_KNOWLEDGE_BASE.md) | member/client model, service boundaries, partition affinity, lifecycle |
+| NATS Server | [nats-server](../../../nats-server) | [reread](../../../nats-server/NATS_HYDRACACHE_REREAD.md), [knowledge base](../../../nats-server/NATS_KNOWLEDGE_BASE.md) | recoverable storage, discovery/authority split, Raft snapshots, placement diagnostics, failure testing |
 | Groupcache | [groupcache](../../../groupcache) | [reread](../../../groupcache/GROUPCACHE_HYDRACACHE_REREAD.md), [knowledge base](../../../groupcache/GROUPCACHE_KNOWLEDGE_BASE.md) | ownership routing, remote fetch, hot-cache mirroring, cross-node single-flight |
 | Moka | [moka](../../../moka) | [reread](../../../moka/MOKA_HYDRACACHE_REREAD.md), [knowledge base](../../../moka/MOKA_KNOWLEDGE_BASE.md) | local backend constraints, deferred maintenance, eviction/expiration seams |
 | Caffeine | [caffeine](../../../caffeine) | [reread](../../../caffeine/CAFFEINE_HYDRACACHE_REREAD.md), [knowledge base](../../../caffeine/CAFFEINE_KNOWLEDGE_BASE.md) | hot-path discipline, amortized maintenance, refresh/stale-while-revalidate ideas |
@@ -44,7 +45,7 @@ deepened later when a specific feature enters implementation.
 - DB caching should stay adapter-shaped. SQLx, PgCat, ReadySet, DataFusion, and
   Sail all show that query parsing, planning, routing, and execution should not
   leak into the local cache core.
-- Cluster work should be layered. Hazelcast, Groupcache, Olric, ScyllaDB,
+- Cluster work should be layered. Hazelcast, NATS, Groupcache, Olric, ScyllaDB,
   Curvine, Chitchat, and raft-rs all support the same split:
   soft discovery, authoritative metadata, hot invalidation transport, and
   optional owner-side value fetch are separate concerns.
@@ -137,6 +138,7 @@ Sources:
 - [Curvine knowledge base](../../../curvine/CURVINE_KNOWLEDGE_BASE.md)
 - [Sail knowledge base](../../../sail/SAIL_KNOWLEDGE_BASE.md)
 - [ReadySet knowledge base](../../../readyset/READYSET_KNOWLEDGE_BASE.md)
+- [NATS reread](../../../nats-server/NATS_HYDRACACHE_REREAD.md)
 - [new HydraCache cluster load test](../../../hydracache/crates/hydracache/tests/cluster_load_stability.rs)
 
 Idea:
@@ -157,7 +159,9 @@ Candidate work:
 - Add a `docs/testing/cluster-load.md` or extend `docs/TESTING.md` with target
   workload profiles.
 - Add scenarios for slow receivers, repeated rejoin, stale generation storms,
-  and value-owner fetch once ownership exists.
+  value-owner fetch once ownership exists, corrupt snapshots, uncommitted WAL
+  truncation, interrupted artifact replacement, and deletion during stale-peer
+  catch-up.
 - Add sandbox endpoint that runs a bounded cluster stability profile and returns
   a report.
 
@@ -203,6 +207,7 @@ Sources:
 - [PgCat knowledge base](../../../pgcat/PGCAT_KNOWLEDGE_BASE.md)
 - [ScyllaDB knowledge base](../../../scylladb/SCYLLADB_KNOWLEDGE_BASE.md)
 - [Hazelcast knowledge base](../../../hazelcast/HAZELCAST_KNOWLEDGE_BASE.md)
+- [NATS reread](../../../nats-server/NATS_HYDRACACHE_REREAD.md)
 - [Sail telemetry notes](../../../sail/SAIL_KNOWLEDGE_BASE.md)
 
 Idea:
@@ -222,6 +227,8 @@ Candidate work:
 
 - Add `ClusterHealthSnapshot`.
 - Add per-component health counters.
+- Retain a versioned durable recovery outcome (`clean`, `repaired`, `degraded`,
+  `refused`, `unknown`) and formation progress separate from readiness.
 - Surface the same snapshot through actuator and sandbox.
 - Keep write/admin endpoints out of actuator until safety semantics are clear.
 
@@ -317,6 +324,7 @@ Sources:
 - [raft-rs README](../../../cluster_libs/raft-rs/README.md)
 - [ScyllaDB knowledge base](../../../scylladb/SCYLLADB_KNOWLEDGE_BASE.md)
 - [Curvine knowledge base](../../../curvine/CURVINE_KNOWLEDGE_BASE.md)
+- [NATS reread](../../../nats-server/NATS_HYDRACACHE_REREAD.md)
 
 Idea:
 
@@ -340,6 +348,10 @@ Candidate work:
   for asymmetric partition, duplicate, delay, and reorder regressions.
 - Keep failpoint crash-safety and golden-vector checks tied to this boundary so
   storage/codec changes fail before they become release claims.
+- Keep the previous valid snapshot until its replacement is validated and
+  installed; compact only behind applied state, not merely committed state.
+- Reconcile local disk discoveries against authoritative snapshot plus committed
+  tail so a stale peer cannot resurrect removed state.
 
 ### 10. Optional P2P Discovery/Transport Spike
 
@@ -491,6 +503,7 @@ Sources:
 - [PgCat knowledge base](../../../pgcat/PGCAT_KNOWLEDGE_BASE.md)
 - [ScyllaDB knowledge base](../../../scylladb/SCYLLADB_KNOWLEDGE_BASE.md)
 - [Curvine knowledge base](../../../curvine/CURVINE_KNOWLEDGE_BASE.md)
+- [NATS reread](../../../nats-server/NATS_HYDRACACHE_REREAD.md)
 
 Idea:
 
@@ -509,12 +522,18 @@ Candidate read endpoints:
 - listener/subscriber counts
 - last events by kind
 - prepared query policy registry
+- durable recovery/scrub status and lost-data counts
+- placement decision trace with bounded, stable rejection reason codes
 
 Explicitly defer:
 
 - remote flush all
 - force member removal
 - arbitrary config mutation
+
+The NATS reread adds a strict truth rule for these read surfaces: a listening
+endpoint, discovered peer, committed command, accepted backup, or attempted
+repair is not equivalent to `ready`, `applied`, `durable`, or `recovered`.
 
 ## Performance And Allocation Ideas
 
@@ -615,6 +634,9 @@ cache
 - Hot remote cache layer with clear diagnostics.
 - Durable raft metadata storage abstraction behind an optional feature.
 - Discovery reset/tombstone diagnostics for chitchat-backed clusters.
+- Durable recovery-status ledger and primary-versus-derived artifact contract.
+- Crash-safe artifact replacement audit and storage/snapshot decoder fuzzing.
+- Deterministic placement decision traces with bounded rejection reasons.
 
 ### Later
 
@@ -634,3 +656,5 @@ cache
 - Sail: actor framework and gold-test documentation workflow.
 - Chitchat: reset behavior after tombstone GC and graceful leave propagation.
 - raft-rs: transport/log/state-machine division for a real multi-node adapter.
+- NATS: file-block recovery, Raft checkpoint-plus-tail snapshots, placement
+  rejection reasons, and the corruption/restart/no-resurrection test taxonomy.
