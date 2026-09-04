@@ -29,12 +29,10 @@ file records reproducible local gate definitions and known admission state, not 
 With `HYDRACACHE_CANARY_DEFECT=MC72-W11-XSS-AUTH-BYPASS`, the registered test fails with
 `HC-CANARY-RED:MC72-W11-XSS-AUTH-BYPASS`. With the candidate restored, that same test is green.
 
-## Explicit workspace-wide blocker
+## Resolved workspace-wide blocker
 
-`cargo deny check` was executed and is red on the inherited workspace graph: unapproved MIT-0 and
-NCSA license expressions, the unlicensed local `hydracache-fuzz` package, and already-yanked
-transitive `chacha20 0.10.1`/`spin 0.9.8`. W11 adds no Rust dependency, so this does not invalidate
-the narrower new-code dependency result, but it remains a release-level supply-chain blocker. W13
-must resolve or explicitly replace these versions/licenses; W14 must not admit the release while
-the workspace audit is red. This failure is intentionally retained rather than described as a
-skip or green result.
+The original W11 run was intentionally retained as red: unapproved MIT-0/NCSA expressions, the
+unlicensed local fuzz package, and yanked `chacha20 0.10.1`/`spin 0.9.8`. W13 resolved rather than
+waived it: `h2` is 0.4.19, `chacha20` is 0.10.2, `spin` is 0.9.9, OSI-approved MIT-0/NCSA are
+explicitly reviewed, and `hydracache-fuzz` inherits the workspace Apache-2.0 license. The repeated
+full `cargo deny check` reports advisories, bans, licenses and sources all green.

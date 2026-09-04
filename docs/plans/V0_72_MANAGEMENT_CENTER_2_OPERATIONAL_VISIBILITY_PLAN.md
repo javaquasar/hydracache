@@ -20,7 +20,8 @@
 > - **Unblocks:** an operator-grade, evidence-backed management experience; supportable production
 >   diagnostics; and the final 1.0 operations/distribution rehearsal without adding a write-capable
 >   control plane.
-> - **Status:** planned (implementation progress W0-W12; W13 next).
+> - **Status:** implementation in progress (W0-W13 implemented; W14 next; exact 0.71/0.72
+>   mixed-binary ship evidence remains blocked until a shipped 0.71 artifact exists).
 >
 > Roadmap: [`INDEX.md`](INDEX.md) - rules: [`../RULES.md`](../RULES.md) -
 > gates: [`../GATES.md`](../GATES.md) - compatibility: [`../COMPAT.md`](../COMPAT.md) -
@@ -33,8 +34,10 @@ bundled UI assets. It must not add an unreviewed state-changing browser action, 
 distributed authority, widen metric label cardinality, expose cache keys or authentication
 material, or silently turn missing evidence into a green state.
 
-Implementation progress: W0-W12 are implemented on `feat/0.72-management-center-2`; their source,
-tests, bounds and falsifiability canaries are registered in the 0.72 evidence manifests.
+Implementation progress: W0-W13 are implemented on `feat/0.72-management-center-2`; their source,
+tests, bounds and falsifiability canaries are registered in the 0.72 evidence manifests. W13 local
+compatibility/package/publication rehearsal is green, while its real mixed-binary lane remains a
+fail-closed external blocker because no shipped `v0.71.x` tag or artifact exists in origin.
 
 ## Existing baseline and evidence boundary
 
