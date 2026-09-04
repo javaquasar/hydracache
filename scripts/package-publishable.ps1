@@ -1,7 +1,8 @@
 param(
     [ValidateSet("all", "bootstrap", "runtime", "adapters")]
     [string]$Set = "all",
-    [switch]$AllowDirty
+    [switch]$AllowDirty,
+    [switch]$NoVerify
 )
 
 $ErrorActionPreference = "Stop"
@@ -73,6 +74,9 @@ try {
         $args = @("package", "-p", $package, "--locked")
         if ($AllowDirty) {
             $args += "--allow-dirty"
+        }
+        if ($NoVerify) {
+            $args += "--no-verify"
         }
         & cargo @args
         if ($LASTEXITCODE -ne 0) {

@@ -81,4 +81,55 @@ fn compatibility_guards_are_wired_to_product_and_package_tests() {
     let package = fs::read_to_string(root.join("console/package.json")).unwrap();
     assert!(package.contains("package-management-center.mjs package"));
     assert!(package.contains("package-management-center.mjs verify"));
+
+    let rehearsal = fs::read_to_string(root.join("scripts/rehearse-publication.ps1")).unwrap();
+    for marker in [
+        "cargo @arguments",
+        "--list",
+        "artifact_set_sha256",
+        "different candidate",
+        "valid topological prefix",
+        "Injected publication rehearsal interruption",
+        "-Resume",
+        "status = \"complete\"",
+    ] {
+        assert!(
+            rehearsal.contains(marker),
+            "missing rehearsal guard {marker}"
+        );
+    }
+
+    let readiness = fs::read_to_string(root.join("scripts/verify-release-readiness.ps1")).unwrap();
+    let packager = fs::read_to_string(root.join("scripts/package-publishable.ps1")).unwrap();
+    assert!(packager.contains("[switch]$NoVerify"));
+    assert!(packager.contains("$args += \"--no-verify\""));
+    let packages = [
+        "hydracache-core",
+        "hydracache-macros",
+        "hydracache",
+        "hydracache-client-protocol",
+        "hydracache-observability",
+        "hydracache-client-transport-axum",
+        "hydracache-client",
+        "hydracache-client-hc2",
+        "hydracache-cluster-chitchat",
+        "hydracache-cluster-transport-axum",
+        "hydracache-cluster-raft",
+        "hydracache-cluster",
+        "hydracache-actuator-axum",
+        "hydracache-redis-compat",
+        "hydracache-server",
+        "hydracache-db",
+        "hydracache-sql-lint",
+        "hydracache-cdc-postgres",
+        "hydracache-diesel",
+        "hydracache-seaorm",
+        "hydracache-sqlx",
+        "hydracache-transport-nats",
+        "hydracache-transport-redis",
+    ];
+    for package in packages {
+        assert!(readiness.contains(&format!("\"{package}\"")));
+        assert!(rehearsal.contains(&format!("\"{package}\"")));
+    }
 }
