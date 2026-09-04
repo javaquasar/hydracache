@@ -571,3 +571,24 @@ saturated. Static and JSON responses add restrictive CSP/no-sniff/no-referrer/no
 assets remain same-origin with no runtime CDN dependency. These protections and the exact npm/SBOM
 inputs are package-visible behavior for 0.72 and may only be relaxed through a reviewed compatibility
 change with replacement security evidence.
+
+W13 freezes five separately named compatibility artifacts in
+`docs/testing/management-center/0.72/compatibility.toml`: formation, placement trace, durable
+recovery, health catalogue/evaluation, and consensus progress, all at schema version `1`. They are
+read models and are not persisted. A 0.72 reader accepts only the registered schema, maps supported
+future enum values to explicit `unknown`, and rejects an unknown top-level schema before rendering.
+
+Before a 0.72 member sends `/cluster/management/v1/snapshot`, it authenticates and reads the bounded
+`/cluster/management/capabilities` endpoint. A 0.71 peer has no such endpoint, so it is recorded as
+`incompatible`/partial and never receives the unsupported snapshot POST. This is intentionally not
+zero-filled: apply lag, recovery cleanliness, membership admission, and serving state remain
+unknown. The capability is part of the aggregation cache key, so a peer upgrade invalidates the
+cached partial observation.
+
+`HYDRACACHE_MANAGEMENT_API_ENABLED=false` removes both `/management/v1/**` and the embedded
+`/console` assets while preserving `/cluster/overview`. This is the rollback and old-bookmark
+window; callers must treat 404 as absence of the 0.72 capability, not as an empty healthy cluster.
+The exact console, its server-embedded copy, source registries, and CycloneDX SBOM are packaged in
+one deterministic bundle whose manifest records every file SHA-256, a set digest, and the exact
+40-character candidate commit. Verification rejects dirty-tree release packaging, an altered
+file, a rebuilt substitute, or a source-commit mismatch.

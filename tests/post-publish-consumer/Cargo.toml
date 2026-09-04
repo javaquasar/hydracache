@@ -21,6 +21,7 @@ hydracache-observability.workspace = true
 hydracache-seaorm.workspace = true
 hydracache-sqlx.workspace = true
 serde.workspace = true
+serde_json.workspace = true
 tokio.workspace = true
 
 [lints]
