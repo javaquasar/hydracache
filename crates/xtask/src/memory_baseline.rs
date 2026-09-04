@@ -695,11 +695,16 @@ fn load_toml(path: &Path) -> Result<toml::Value, Box<dyn Error>> {
 }
 
 fn sha256_file(path: &Path) -> Result<String, Box<dyn Error>> {
-    let bytes = fs::read(path)?;
-    Ok(Sha256::digest(bytes)
+    let text = fs::read_to_string(path)?;
+    Ok(sha256_text(text.as_bytes()))
+}
+
+fn sha256_text(bytes: &[u8]) -> String {
+    let normalized = String::from_utf8_lossy(bytes).replace("\r\n", "\n");
+    Sha256::digest(normalized.as_bytes())
         .iter()
         .map(|byte| format!("{byte:02x}"))
-        .collect())
+        .collect()
 }
 
 fn is_sha(value: &str) -> bool {
@@ -761,4 +766,21 @@ fn git_success(root: &Path, args: &[&str]) -> bool {
         .current_dir(root)
         .status()
         .is_ok_and(|status| status.success())
+}
+
+#[cfg(test)]
+mod line_ending_tests {
+    use super::sha256_text;
+
+    #[test]
+    fn frozen_text_identity_is_stable_across_checkout_line_endings() {
+        assert_eq!(
+            sha256_text(b"first = 1\nsecond = 2\n"),
+            sha256_text(b"first = 1\r\nsecond = 2\r\n")
+        );
+        assert_ne!(
+            sha256_text(b"first = 1\nsecond = 2\n"),
+            sha256_text(b"first = 1\nsecond = 3\n")
+        );
+    }
 }
