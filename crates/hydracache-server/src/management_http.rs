@@ -13,10 +13,11 @@ use axum::response::{IntoResponse, Response};
 use axum::routing::get;
 use axum::Router;
 use hydracache_observability::{
-    AdmissionState, BoundedCount, BoundedPage, CatchUpState, ClusterFormationSnapshot,
-    ConsensusProgressSnapshot, DiscoveryState, DurableRecoveryStatus, FormationReasonCode,
-    ManagementCapabilities, ManagementCapability, ManagementCapabilityAvailability,
-    ManagementCapabilityId, ManagementCompleteness, ManagementConsensusRole, ManagementEnvelope,
+    AdmissionState, BoundedCount, BoundedPage, CatchUpState, ClientProtocolLifecycle,
+    ClusterFormationSnapshot, ConsensusProgressSnapshot, DiscoveryState, DurableRecoveryStatus,
+    FormationReasonCode, ManagementCapabilities, ManagementCapability,
+    ManagementCapabilityAvailability, ManagementCapabilityId, ManagementClientProtocol,
+    ManagementClientsSnapshot, ManagementCompleteness, ManagementConsensusRole, ManagementEnvelope,
     ManagementMemberDetail, ManagementObservationSource, ManagementPartitionSnapshot,
     ManagementWarning, ManagementWarningCode, MemberFormationTransition, MemberReachabilityReason,
     OpaqueCursor, OpaqueNodeIdentity, PlacementDecisionTrace, RecoveryArtifactKind,
@@ -46,6 +47,8 @@ pub const MANAGEMENT_CLUSTER_MEMBERS_PATH: &str = "/management/v1/cluster/member
 pub const MANAGEMENT_CLUSTER_FORMATION_PATH: &str = "/management/v1/cluster/formation";
 /// Honest aggregate partition ownership and repair path.
 pub const MANAGEMENT_CLUSTER_PARTITIONS_PATH: &str = "/management/v1/cluster/partitions";
+/// Bounded node-local client lifecycle summary path.
+pub const MANAGEMENT_CLIENTS_PATH: &str = "/management/v1/clients";
 /// Prefix for non-enumerable placement-decision trace resources.
 pub const MANAGEMENT_PLACEMENT_TRACE_PREFIX: &str = "/management/v1/cluster/placement-traces";
 /// Honest durable-recovery observation path.
@@ -162,6 +165,7 @@ struct ManagementHttpState {
     runtime: SharedServerRuntime,
     cursors: Arc<Mutex<ManagementCursorStore>>,
     aggregator: Option<Arc<ManagementSnapshotAggregator>>,
+    hc2: Option<crate::hc2::Hc2ClientPlaneService>,
 }
 
 /// Build the management routes with state shared across repeated router construction in tests.
@@ -169,6 +173,7 @@ pub(crate) fn routes(
     runtime: SharedServerRuntime,
     cursors: Arc<Mutex<ManagementCursorStore>>,
     aggregator: Option<Arc<ManagementSnapshotAggregator>>,
+    hc2: Option<crate::hc2::Hc2ClientPlaneService>,
 ) -> Router {
     Router::new()
         .route(MANAGEMENT_CAPABILITIES_PATH, get(capabilities))
@@ -177,6 +182,7 @@ pub(crate) fn routes(
         .route(MANAGEMENT_CLUSTER_FORMATION_PATH, get(formation))
         .route(MANAGEMENT_CLUSTER_MEMBERS_PATH, get(members))
         .route(MANAGEMENT_CLUSTER_PARTITIONS_PATH, get(partitions))
+        .route(MANAGEMENT_CLIENTS_PATH, get(clients))
         .route(
             "/management/v1/cluster/placement-traces/{opaque_id}",
             get(placement_trace),
@@ -187,6 +193,7 @@ pub(crate) fn routes(
             runtime,
             cursors,
             aggregator,
+            hc2,
         }))
 }
 
@@ -845,6 +852,139 @@ async fn partitions(State(state): State<Arc<ManagementHttpState>>, headers: Head
     }
     let completeness = data.completeness;
     management_response(&envelope(&status, completeness, warnings, data))
+}
+
+async fn clients(State(state): State<Arc<ManagementHttpState>>, headers: HeaderMap) -> Response {
+    if let Err(error) = require_admin(&headers) {
+        return error.into_response();
+    }
+    let (status, local) = {
+        let runtime = state.runtime.lock().expect("server runtime mutex");
+        (
+            runtime.cluster_status_snapshot(),
+            runtime.management_client_lifecycle(),
+        )
+    };
+    let mut protocols = Vec::new();
+    if let (Some(rejected), Some(subscriptions)) =
+        (local.hc1_rejected_total, local.hc1_active_subscriptions)
+    {
+        protocols.push(ClientProtocolLifecycle {
+            protocol: ManagementClientProtocol::Hc1,
+            version: Some("hc-1".to_owned()),
+            active_connections: None,
+            accepted_total: None,
+            closed_total: None,
+            rejected_total: Some(rejected),
+            pending_invocations: None,
+            active_subscriptions: Some(subscriptions),
+            active_sessions: None,
+            buffered_bytes: None,
+        });
+    }
+    if let Some(service) = &state.hc2 {
+        let accounting = service.accounting();
+        protocols.push(ClientProtocolLifecycle {
+            protocol: ManagementClientProtocol::Hc2,
+            version: Some("hc-2-alpha".to_owned()),
+            active_connections: Some(accounting.active_connections),
+            accepted_total: Some(accounting.accepted_connections),
+            closed_total: Some(accounting.closed_connections),
+            rejected_total: Some(accounting.rejected_frames),
+            pending_invocations: Some(accounting.pending_invocations),
+            active_subscriptions: Some(accounting.active_subscriptions),
+            active_sessions: Some(accounting.active_sessions),
+            buffered_bytes: None,
+        });
+    }
+    if let (Some(active), Some(accepted), Some(closed), Some(rejected)) = (
+        local.resp_active,
+        local.resp_accepted,
+        local.resp_closed,
+        local.resp_rejected,
+    ) {
+        protocols.push(ClientProtocolLifecycle {
+            protocol: ManagementClientProtocol::Resp,
+            version: Some("resp-2-3".to_owned()),
+            active_connections: Some(active),
+            accepted_total: Some(accepted),
+            closed_total: Some(closed),
+            rejected_total: Some(rejected),
+            pending_invocations: Some(0),
+            active_subscriptions: Some(0),
+            active_sessions: Some(0),
+            buffered_bytes: None,
+        });
+    }
+    protocols.sort_by_key(|protocol| protocol.protocol);
+    let active_connections = sum_protocol_field(&protocols, |item| item.active_connections);
+    let accepted_total = sum_protocol_field(&protocols, |item| item.accepted_total);
+    let closed_total = sum_protocol_field(&protocols, |item| item.closed_total);
+    let pending_invocations = sum_protocol_field(&protocols, |item| item.pending_invocations);
+    let active_sessions = sum_protocol_field(&protocols, |item| item.active_sessions);
+    let active_subscriptions = protocols
+        .iter()
+        .filter_map(|item| item.active_subscriptions)
+        .fold(0_u64, u64::saturating_add);
+    let rejected_total = protocols
+        .iter()
+        .filter_map(|item| item.rejected_total)
+        .fold(0_u64, u64::saturating_add);
+    let complete = !protocols.is_empty()
+        && protocols.iter().all(|item| {
+            item.active_connections.is_some()
+                && item.accepted_total.is_some()
+                && item.closed_total.is_some()
+                && item.pending_invocations.is_some()
+                && item.active_sessions.is_some()
+                && item.buffered_bytes.is_some()
+        });
+    let completeness = if complete {
+        ManagementCompleteness::Complete
+    } else {
+        ManagementCompleteness::Partial
+    };
+    let data = ManagementClientsSnapshot {
+        schema_version: MANAGEMENT_API_SCHEMA_VERSION,
+        authority_epoch: status.metadata_authoritative.then_some(status.epoch),
+        observation_seq: status.observation_seq,
+        active_connections,
+        accepted_total,
+        closed_total,
+        rejected_total,
+        pending_invocations,
+        active_subscriptions,
+        active_sessions,
+        buffered_bytes: None,
+        reconnecting: None,
+        slow: None,
+        quota_rejected_total: None,
+        cleanup_lag: None,
+        protocols,
+        detail_available: false,
+        source: source(status.source),
+        completeness,
+    };
+    if data.validate().is_err() {
+        return ManagementHttpError::ContractViolation.into_response();
+    }
+    let warnings = (!complete)
+        .then_some(ManagementWarning {
+            code: ManagementWarningCode::PartialObservation,
+            affected_count: Some(1),
+        })
+        .into_iter()
+        .collect();
+    management_response(&envelope(&status, completeness, warnings, data))
+}
+
+fn sum_protocol_field(
+    protocols: &[ClientProtocolLifecycle],
+    field: impl Fn(&ClientProtocolLifecycle) -> Option<u64>,
+) -> Option<u64> {
+    protocols.iter().try_fold(0_u64, |sum, protocol| {
+        field(protocol).map(|value| sum.saturating_add(value))
+    })
 }
 
 async fn placement_trace(

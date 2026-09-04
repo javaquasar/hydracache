@@ -61,21 +61,22 @@ pub use consumer::{
 pub use exporter::{registered_metric_names, PrometheusExporter};
 pub use management::{
     AdmissionState, BoundedCount, BoundedPage, BoundedPlacementConstraints, CatchUpState,
-    ClusterFormationSnapshot, ConsensusProgressSnapshot, DiscoveryState, DurableRecoveryStatus,
-    FormationReasonCode, ManagementCapabilities, ManagementCapability,
-    ManagementCapabilityAvailability, ManagementCapabilityId, ManagementCompleteness,
-    ManagementConsensusRole, ManagementContractError, ManagementEnvelope, ManagementMemberDetail,
+    ClientProtocolLifecycle, ClusterFormationSnapshot, ConsensusProgressSnapshot, DiscoveryState,
+    DurableRecoveryStatus, FormationReasonCode, ManagementCapabilities, ManagementCapability,
+    ManagementCapabilityAvailability, ManagementCapabilityId, ManagementClientProtocol,
+    ManagementClientsSnapshot, ManagementCompleteness, ManagementConsensusRole,
+    ManagementContractError, ManagementEnvelope, ManagementMemberDetail,
     ManagementObservationSource, ManagementPartitionSnapshot, ManagementWarning,
     ManagementWarningCode, MemberFormationTransition, MemberReachabilityReason, OpaqueCursor,
     OpaqueNodeIdentity, PartitionMemberCount, PlacementCandidateDecision, PlacementCandidatePage,
     PlacementDecisionTrace, PlacementOutcome, PlacementReasonCode, RecoveryArtifactKind,
     RecoveryOutcome, RecoveryPhase, RecoveryReasonCode, RecoveryScope, RecoveryWatermark,
     RepairState, ServingState, TransportState, MANAGEMENT_API_SCHEMA_VERSION,
-    MAX_MANAGEMENT_CURSOR_BYTES, MAX_MANAGEMENT_DIAGNOSTIC_STRING_BYTES, MAX_MANAGEMENT_MEMBERS,
-    MAX_MANAGEMENT_NODE_ID_BYTES, MAX_MANAGEMENT_OPAQUE_ID_BYTES, MAX_MANAGEMENT_PAGE_ITEMS,
-    MAX_MANAGEMENT_WARNINGS, MAX_MEMBER_FORMATION_TRANSITIONS, MAX_PLACEMENT_CANDIDATES,
-    MAX_PLACEMENT_LABELS, MAX_PLACEMENT_LABEL_BYTES, MAX_PLACEMENT_REASONS_PER_CANDIDATE,
-    MAX_PLACEMENT_SELECTED,
+    MAX_MANAGEMENT_CLIENT_PROTOCOLS, MAX_MANAGEMENT_CURSOR_BYTES,
+    MAX_MANAGEMENT_DIAGNOSTIC_STRING_BYTES, MAX_MANAGEMENT_MEMBERS, MAX_MANAGEMENT_NODE_ID_BYTES,
+    MAX_MANAGEMENT_OPAQUE_ID_BYTES, MAX_MANAGEMENT_PAGE_ITEMS, MAX_MANAGEMENT_WARNINGS,
+    MAX_MEMBER_FORMATION_TRANSITIONS, MAX_PLACEMENT_CANDIDATES, MAX_PLACEMENT_LABELS,
+    MAX_PLACEMENT_LABEL_BYTES, MAX_PLACEMENT_REASONS_PER_CANDIDATE, MAX_PLACEMENT_SELECTED,
 };
 
 /// Serializable snapshot of [`CacheStats`].

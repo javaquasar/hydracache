@@ -72,6 +72,10 @@ impl Hc2ListenerTls {
 pub struct Hc2AccountingSnapshot {
     /// Currently open authenticated gRPC streams.
     pub active_connections: u64,
+    /// Transport streams accepted since process start.
+    pub accepted_connections: u64,
+    /// Accepted streams closed since process start.
+    pub closed_connections: u64,
     /// Active subscriptions across all streams.
     pub active_subscriptions: u64,
     /// Active fenced sessions across all streams.
@@ -82,9 +86,21 @@ pub struct Hc2AccountingSnapshot {
     pub rejected_frames: u64,
 }
 
+impl Hc2AccountingSnapshot {
+    /// Whether every live owner has been released; lifetime totals are intentionally retained.
+    pub fn live_resources_zero(self) -> bool {
+        self.active_connections == 0
+            && self.active_subscriptions == 0
+            && self.active_sessions == 0
+            && self.pending_invocations == 0
+    }
+}
+
 #[derive(Debug, Default)]
 struct Accounting {
     active_connections: AtomicU64,
+    accepted_connections: AtomicU64,
+    closed_connections: AtomicU64,
     active_subscriptions: AtomicU64,
     active_sessions: AtomicU64,
     pending_invocations: AtomicU64,
@@ -115,6 +131,8 @@ impl Hc2ClientPlaneService {
     pub fn accounting(&self) -> Hc2AccountingSnapshot {
         Hc2AccountingSnapshot {
             active_connections: self.accounting.active_connections.load(Ordering::Acquire),
+            accepted_connections: self.accounting.accepted_connections.load(Ordering::Acquire),
+            closed_connections: self.accounting.closed_connections.load(Ordering::Acquire),
             active_subscriptions: self.accounting.active_subscriptions.load(Ordering::Acquire),
             active_sessions: self.accounting.active_sessions.load(Ordering::Acquire),
             pending_invocations: self.accounting.pending_invocations.load(Ordering::Acquire),
@@ -239,6 +257,9 @@ impl Drop for StreamResourceGuard {
 impl ConnectionGuard {
     fn new(accounting: Arc<Accounting>) -> Self {
         accounting.active_connections.fetch_add(1, Ordering::AcqRel);
+        accounting
+            .accepted_connections
+            .fetch_add(1, Ordering::AcqRel);
         Self { accounting }
     }
 }
@@ -248,6 +269,9 @@ impl Drop for ConnectionGuard {
         self.accounting
             .active_connections
             .fetch_sub(1, Ordering::AcqRel);
+        self.accounting
+            .closed_connections
+            .fetch_add(1, Ordering::AcqRel);
     }
 }
 
@@ -1281,12 +1305,12 @@ mod tests {
         );
 
         for _ in 0..50 {
-            if observed.accounting() == Hc2AccountingSnapshot::default() {
+            if observed.accounting().live_resources_zero() {
                 break;
             }
             tokio::time::sleep(Duration::from_millis(10)).await;
         }
-        assert_eq!(observed.accounting(), Hc2AccountingSnapshot::default());
+        assert!(observed.accounting().live_resources_zero());
 
         for cardinality in [1_usize, 10, 100] {
             let mut clients = Vec::with_capacity(cardinality);
@@ -1308,13 +1332,11 @@ mod tests {
                 }
                 tokio::time::sleep(Duration::from_millis(10)).await;
             }
-            assert_eq!(
-                observed.accounting(),
-                Hc2AccountingSnapshot {
-                    active_connections: cardinality as u64,
-                    ..Hc2AccountingSnapshot::default()
-                }
-            );
+            let active = observed.accounting();
+            assert_eq!(active.active_connections, cardinality as u64);
+            assert_eq!(active.active_subscriptions, 0);
+            assert_eq!(active.active_sessions, 0);
+            assert_eq!(active.pending_invocations, 0);
             for client in &clients {
                 let retained = client.retained_state();
                 assert_eq!(retained.pending_invocations, 0);
@@ -1326,12 +1348,12 @@ mod tests {
             }
             drop(clients);
             for _ in 0..100 {
-                if observed.accounting() == Hc2AccountingSnapshot::default() {
+                if observed.accounting().live_resources_zero() {
                     break;
                 }
                 tokio::time::sleep(Duration::from_millis(10)).await;
             }
-            assert_eq!(observed.accounting(), Hc2AccountingSnapshot::default());
+            assert!(observed.accounting().live_resources_zero());
         }
         shutdown_tx.send(true).unwrap();
         serving.await.unwrap().unwrap();

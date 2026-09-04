@@ -105,6 +105,9 @@ pub struct ServerAdminAction {
 pub struct RedisSurfaceRuntime {
     accepting: bool,
     active_connections: u64,
+    accepted_connections: u64,
+    closed_connections: u64,
+    rejected_connections: u64,
 }
 
 impl RedisSurfaceRuntime {
@@ -112,6 +115,9 @@ impl RedisSurfaceRuntime {
         Self {
             accepting: false,
             active_connections: 0,
+            accepted_connections: 0,
+            closed_connections: 0,
+            rejected_connections: 0,
         }
     }
 
@@ -125,13 +131,18 @@ impl RedisSurfaceRuntime {
 
     fn begin_connection(&mut self) -> bool {
         if !self.accepting {
+            self.rejected_connections = self.rejected_connections.saturating_add(1);
             return false;
         }
         self.active_connections = self.active_connections.saturating_add(1);
+        self.accepted_connections = self.accepted_connections.saturating_add(1);
         true
     }
 
     fn finish_connection(&mut self) {
+        if self.active_connections > 0 {
+            self.closed_connections = self.closed_connections.saturating_add(1);
+        }
         self.active_connections = self.active_connections.saturating_sub(1);
     }
 
@@ -142,6 +153,7 @@ impl RedisSurfaceRuntime {
     fn shutdown(&mut self) -> RedisSurfaceDrain {
         self.accepting = false;
         let started_with = self.active_connections;
+        self.closed_connections = self.closed_connections.saturating_add(started_with);
         self.active_connections = 0;
         RedisSurfaceDrain {
             started_with,
@@ -282,6 +294,17 @@ pub(crate) struct LocalManagementDiagnostics {
     pub(crate) thread_count: Option<u64>,
     pub(crate) client_count: u64,
     pub(crate) config_digest: String,
+}
+
+/// Node-local protocol accounting; unavailable dimensions stay optional.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub(crate) struct ClientLifecycleDiagnostics {
+    pub(crate) hc1_rejected_total: Option<u64>,
+    pub(crate) hc1_active_subscriptions: Option<u64>,
+    pub(crate) resp_active: Option<u64>,
+    pub(crate) resp_accepted: Option<u64>,
+    pub(crate) resp_closed: Option<u64>,
+    pub(crate) resp_rejected: Option<u64>,
 }
 
 impl ServerRuntime {
@@ -837,6 +860,39 @@ impl ServerRuntime {
 
     pub(crate) fn management_cache(&self) -> HydraCache {
         self.cache.clone()
+    }
+
+    pub(crate) fn management_client_lifecycle(&self) -> ClientLifecycleDiagnostics {
+        let hc1 = self
+            .config
+            .client_api
+            .enabled
+            .then(|| self.client_dispatch_state())
+            .flatten();
+        ClientLifecycleDiagnostics {
+            hc1_rejected_total: hc1.as_ref().map(|state| {
+                state
+                    .rejected_anonymous()
+                    .saturating_add(state.rejected_oversized())
+            }),
+            hc1_active_subscriptions: hc1.as_ref().map(|state| state.active_subscriptions()),
+            resp_active: self
+                .redis_surface
+                .as_ref()
+                .map(RedisSurfaceRuntime::active_connections),
+            resp_accepted: self
+                .redis_surface
+                .as_ref()
+                .map(|surface| surface.accepted_connections),
+            resp_closed: self
+                .redis_surface
+                .as_ref()
+                .map(|surface| surface.closed_connections),
+            resp_rejected: self
+                .redis_surface
+                .as_ref()
+                .map(|surface| surface.rejected_connections),
+        }
     }
 
     pub(crate) fn management_snapshot_input(

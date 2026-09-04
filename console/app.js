@@ -8,6 +8,7 @@ const ENDPOINTS = Object.freeze({
   formation: "/management/v1/cluster/formation?limit=100",
   members: "/management/v1/cluster/members?limit=100",
   partitions: "/management/v1/cluster/partitions",
+  clients: "/management/v1/clients",
   consensus: "/management/v1/consensus/progress?limit=100",
   recovery: "/management/v1/persistence/recovery?limit=100",
 });
@@ -118,6 +119,7 @@ function render(values) {
   renderMembers(values.members?.data?.items ?? data.members ?? []);
   renderFormation(values.formation);
   renderPartitions(values.partitions, data.partitions);
+  renderClients(values.clients);
   renderConsensus(values.consensus, data.consensus);
   renderRecovery(values.recovery);
   renderPlacement(values.placementTrace?.data, data.placement);
@@ -285,6 +287,42 @@ function renderPartitions(envelope, fallback) {
   if (distribution.length === 0) {
     byTest("partition-table").append(
       row(["Ownership source unavailable", "unavailable", "unavailable"]),
+    );
+  }
+}
+
+function renderClients(envelope) {
+  const clients = envelope?.data ?? {};
+  byTest("client-details").replaceChildren(
+    pill("active", known(clients.active_connections)),
+    pill("accepted", known(clients.accepted_total)),
+    pill("closed", known(clients.closed_total)),
+    pill("rejected", known(clients.rejected_total)),
+    pill("pending", known(clients.pending_invocations)),
+    pill("subscriptions", known(clients.active_subscriptions)),
+    pill("sessions", known(clients.active_sessions)),
+    pill("buffered bytes", bytes(clients.buffered_bytes)),
+  );
+  const protocols = Array.isArray(clients.protocols) ? clients.protocols : [];
+  byTest("client-table").replaceChildren(
+    ...protocols.map((protocol) =>
+      row(
+        [
+          protocol.protocol,
+          protocol.version ?? "unavailable",
+          known(protocol.active_connections),
+          known(protocol.accepted_total),
+          known(protocol.closed_total),
+          known(protocol.rejected_total),
+          known(protocol.pending_invocations),
+        ],
+        { testid: "client-protocol-row" },
+      ),
+    ),
+  );
+  if (protocols.length === 0) {
+    byTest("client-table").append(
+      row(["No protocol source", "unavailable", "unavailable", "unavailable", "unavailable", "unavailable", "unavailable"]),
     );
   }
 }

@@ -70,3 +70,13 @@ defect_env = "HYDRACACHE_CANARY_DEFECT=MC72-W5-COMMIT-IS-APPLY"
 expected_failure = "HC-CANARY-RED:MC72-W5-COMMIT-IS-APPLY"
 green_evidence = "Committed outcome retains an applied index below commit and is not painted applied."
 red_evidence = "The mutant copies commit into apply and changes the outcome; the same oracle turns red."
+
+[[canary]]
+id = "MC72-W6-CLOSED-CLIENT-LEAK"
+status = "active"
+test = "canary_closed_client_owner_cannot_survive_cleanup"
+command = "cargo test -p hydracache-server --test management_clients_072 --locked canary_closed_client_owner_cannot_survive_cleanup -- --nocapture"
+defect_env = "HYDRACACHE_CANARY_DEFECT=MC72-W6-CLOSED-CLIENT-LEAK"
+expected_failure = "HC-CANARY-RED:MC72-W6-CLOSED-CLIENT-LEAK"
+green_evidence = "Accepted minus closed reconciles exactly to the live connection owners and detail serialization is disabled without a safe bounded source."
+red_evidence = "The mutant retains one active owner after the only accepted client closes; lifecycle validation and the same cleanup oracle fail."

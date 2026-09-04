@@ -106,6 +106,19 @@ fallback = "empty partial page with source-unavailable warning"
 test_owner = "crates/hydracache-server/tests/management_http.rs"
 
 [[source]]
+id = "client-lifecycle"
+route = "/management/v1/clients"
+field_group = "node-local protocol connection lifecycle, pending work, subscriptions, sessions and rejected work"
+producer = "HC/1 dispatch accounting + HC/2 stream accounting + RESP listener lifecycle"
+authority = "node-local runtime counters; no cluster-complete claim"
+lifetime = "process lifetime counters and live-owner gauges"
+consistency = "one local request snapshot; accepted minus closed reconciles to active where all three dimensions exist"
+max_cardinality = 3
+privacy = "closed protocol domain only; no address, identity, tenant, certificate, token, key, payload or session token"
+fallback = "unavailable dimensions are null and response is partial; optional detail remains disabled"
+test_owner = "crates/hydracache-server/tests/management_clients_072.rs"
+
+[[source]]
 id = "cluster-member-snapshot-rpc"
 route = "/cluster/management/v1/snapshot"
 field_group = "node generation, authority epoch, observation sequence and local consensus positions"

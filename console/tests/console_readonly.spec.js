@@ -2,6 +2,7 @@ import { expect, test } from "@playwright/test";
 
 import {
   consensusEnvelope,
+  clientsEnvelope,
   dashboardEnvelope,
   formationEnvelope,
   largeDashboardEnvelope,
@@ -38,6 +39,9 @@ test("console_renders_typed_dashboard_and_all_truth_states", async ({ page }) =>
   await expect(page.getByTestId("placement-row")).toHaveCount(2);
   await expect(page.getByTestId("placement-row").first()).toContainText("selected");
   await expect(page.getByTestId("placement-table")).toContainText("zone-conflict");
+  await expect(page.getByTestId("client-protocol-row")).toHaveCount(3);
+  await expect(page.getByTestId("client-table")).toContainText("hc-2-alpha");
+  await expect(page.getByTestId("client-details")).toContainText("unavailable");
 });
 
 test("placement_outcomes_and_stale_warning_are_rendered_without_inference", async ({ page }) => {
@@ -189,6 +193,7 @@ async function routeManagement(page, overrides = {}) {
     partitions: overrides.partitions === undefined ? partitionsEnvelope : overrides.partitions,
     placementTrace:
       overrides.placementTrace === undefined ? placementTraceEnvelope : overrides.placementTrace,
+    clients: overrides.clients === undefined ? clientsEnvelope : overrides.clients,
   };
   await page.route("**/management/v1/**", (route) => {
     const path = new URL(route.request().url()).pathname;
@@ -196,6 +201,8 @@ async function routeManagement(page, overrides = {}) {
       ? fixtures.placementTrace
       : path.endsWith("/dashboard")
       ? fixtures.dashboard
+      : path.endsWith("/clients")
+        ? fixtures.clients
       : path.endsWith("/cluster/members")
         ? fixtures.members
         : path.endsWith("/cluster/partitions")

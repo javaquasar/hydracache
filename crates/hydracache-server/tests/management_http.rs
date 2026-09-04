@@ -9,16 +9,17 @@ use hydracache_client_transport_axum::{
     HYDRACACHE_TENANT_HEADER,
 };
 use hydracache_observability::{
-    MAX_MANAGEMENT_CURSOR_BYTES, MAX_MANAGEMENT_DIAGNOSTIC_STRING_BYTES, MAX_MANAGEMENT_MEMBERS,
-    MAX_MANAGEMENT_NODE_ID_BYTES, MAX_MANAGEMENT_PAGE_ITEMS, MAX_MANAGEMENT_WARNINGS,
-    MAX_MEMBER_FORMATION_TRANSITIONS, MAX_PLACEMENT_CANDIDATES, MAX_PLACEMENT_LABELS,
-    MAX_PLACEMENT_LABEL_BYTES, MAX_PLACEMENT_REASONS_PER_CANDIDATE, MAX_PLACEMENT_SELECTED,
+    MAX_MANAGEMENT_CLIENT_PROTOCOLS, MAX_MANAGEMENT_CURSOR_BYTES,
+    MAX_MANAGEMENT_DIAGNOSTIC_STRING_BYTES, MAX_MANAGEMENT_MEMBERS, MAX_MANAGEMENT_NODE_ID_BYTES,
+    MAX_MANAGEMENT_PAGE_ITEMS, MAX_MANAGEMENT_WARNINGS, MAX_MEMBER_FORMATION_TRANSITIONS,
+    MAX_PLACEMENT_CANDIDATES, MAX_PLACEMENT_LABELS, MAX_PLACEMENT_LABEL_BYTES,
+    MAX_PLACEMENT_REASONS_PER_CANDIDATE, MAX_PLACEMENT_SELECTED,
 };
 use hydracache_server::{
     AdminHttpSurface, ClusterStatus, ClusterStatusProvider, ClusterStatusRuntime,
     LocalConsensusStatus, MemberRole, MemberStatus, Reachability, ReshardPhase, ServerConfig,
     ServerRole, ServerRuntime, StatusSource, CLUSTER_MANAGEMENT_SNAPSHOT_PATH,
-    MANAGEMENT_CAPABILITIES_PATH, MANAGEMENT_CLUSTER_FORMATION_PATH,
+    MANAGEMENT_CAPABILITIES_PATH, MANAGEMENT_CLIENTS_PATH, MANAGEMENT_CLUSTER_FORMATION_PATH,
     MANAGEMENT_CLUSTER_MEMBERS_PATH, MANAGEMENT_CLUSTER_PARTITIONS_PATH,
     MANAGEMENT_CONSENSUS_PROGRESS_PATH, MANAGEMENT_CURSOR_TTL_MS, MANAGEMENT_DASHBOARD_PATH,
     MANAGEMENT_FORMATION_PATH, MANAGEMENT_MAX_RESPONSE_BYTES, MANAGEMENT_MAX_RETAINED_CURSORS,
@@ -172,6 +173,7 @@ async fn management_routes_require_verified_privileged_identity_before_reading_s
         MANAGEMENT_CLUSTER_FORMATION_PATH,
         MANAGEMENT_CLUSTER_MEMBERS_PATH,
         MANAGEMENT_CLUSTER_PARTITIONS_PATH,
+        MANAGEMENT_CLIENTS_PATH,
         MANAGEMENT_CONSENSUS_PROGRESS_PATH,
         MANAGEMENT_RECOVERY_PATH,
     ] {
@@ -529,6 +531,7 @@ fn source_and_bound_registries_match_executable_contract() {
             MANAGEMENT_CLUSTER_PARTITIONS_PATH,
             "/management/v1/cluster/placement-traces/{opaque_id}",
             MANAGEMENT_CONSENSUS_PROGRESS_PATH,
+            MANAGEMENT_CLIENTS_PATH,
             CLUSTER_MANAGEMENT_SNAPSHOT_PATH,
             MANAGEMENT_RECOVERY_PATH,
         ]
@@ -621,6 +624,11 @@ fn source_and_bound_registries_match_executable_contract() {
         Some(404)
     );
     assert!(MANAGEMENT_PLACEMENT_TRACE_PREFIX.ends_with("placement-traces"));
+    assert_eq!(
+        value("clients", "max_protocol_rows"),
+        MAX_MANAGEMENT_CLIENT_PROTOCOLS
+    );
+    assert_eq!(bounds["clients"]["detail_available"].as_bool(), Some(false));
 
     let canaries_text =
         std::fs::read_to_string(root.join("docs/testing/canaries/0.72-management-center.toml"))

@@ -179,6 +179,32 @@ export const placementTraceEnvelope = {
   },
 };
 
+export const clientsEnvelope = {
+  ...metadata,
+  data: {
+    authority_epoch: 42,
+    observation_seq: 9,
+    active_connections: null,
+    accepted_total: null,
+    closed_total: null,
+    rejected_total: 3,
+    pending_invocations: null,
+    active_subscriptions: 2,
+    active_sessions: null,
+    buffered_bytes: null,
+    reconnecting: null,
+    slow: null,
+    quota_rejected_total: null,
+    cleanup_lag: null,
+    detail_available: false,
+    protocols: [
+      { protocol: "hc1", version: "hc-1", active_connections: null, accepted_total: null, closed_total: null, rejected_total: 1, pending_invocations: null },
+      { protocol: "hc2", version: "hc-2-alpha", active_connections: 1, accepted_total: 4, closed_total: 3, rejected_total: 2, pending_invocations: 0 },
+      { protocol: "resp", version: "resp-2-3", active_connections: 0, accepted_total: 5, closed_total: 5, rejected_total: 0, pending_invocations: 0 },
+    ],
+  },
+};
+
 export const consensusEnvelope = {
   ...metadata,
   data: {

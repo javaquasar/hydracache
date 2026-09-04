@@ -37,6 +37,8 @@ pub const MAX_MANAGEMENT_MEMBERS: usize = 100;
 pub const MAX_MEMBER_FORMATION_TRANSITIONS: usize = 64;
 /// Maximum encoded bytes for product version and configuration digest fields.
 pub const MAX_MANAGEMENT_DIAGNOSTIC_STRING_BYTES: usize = 128;
+/// Closed protocol domain retained by the client lifecycle summary.
+pub const MAX_MANAGEMENT_CLIENT_PROTOCOLS: usize = 3;
 
 /// Stable warning vocabulary carried by management response envelopes.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
@@ -566,6 +568,122 @@ impl ManagementPartitionSnapshot {
                 trace_id,
                 MAX_MANAGEMENT_OPAQUE_ID_BYTES,
             )?;
+        }
+        Ok(())
+    }
+}
+
+/// Client protocol family with a deliberately closed cardinality domain.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
+#[serde(rename_all = "kebab-case")]
+pub enum ManagementClientProtocol {
+    Hc1,
+    Hc2,
+    Resp,
+    #[serde(other)]
+    Unknown,
+}
+
+/// Node-local lifecycle accounting for one protocol family.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct ClientProtocolLifecycle {
+    pub protocol: ManagementClientProtocol,
+    pub version: Option<String>,
+    pub active_connections: Option<u64>,
+    pub accepted_total: Option<u64>,
+    pub closed_total: Option<u64>,
+    pub rejected_total: Option<u64>,
+    pub pending_invocations: Option<u64>,
+    pub active_subscriptions: Option<u64>,
+    pub active_sessions: Option<u64>,
+    pub buffered_bytes: Option<u64>,
+}
+
+impl ClientProtocolLifecycle {
+    fn validate(&self) -> Result<(), ManagementContractError> {
+        if let Some(version) = &self.version {
+            validate_opaque_id(
+                "client.protocol.version",
+                version,
+                MAX_MANAGEMENT_DIAGNOSTIC_STRING_BYTES,
+            )?;
+        }
+        if let (Some(accepted), Some(closed), Some(active)) = (
+            self.accepted_total,
+            self.closed_total,
+            self.active_connections,
+        ) {
+            if closed > accepted || accepted.saturating_sub(closed) != active {
+                return Err(ManagementContractError::Incoherent {
+                    field: "client.lifecycle",
+                    reason: "accepted minus closed must equal active connections",
+                });
+            }
+        }
+        Ok(())
+    }
+}
+
+/// Bounded client lifecycle summary. Per-client identity is intentionally absent unless a
+/// future authenticated source supplies process-scoped opaque detail rows.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct ManagementClientsSnapshot {
+    pub schema_version: u16,
+    pub authority_epoch: Option<u64>,
+    pub observation_seq: u64,
+    pub active_connections: Option<u64>,
+    pub accepted_total: Option<u64>,
+    pub closed_total: Option<u64>,
+    pub rejected_total: u64,
+    pub pending_invocations: Option<u64>,
+    pub active_subscriptions: u64,
+    pub active_sessions: Option<u64>,
+    pub buffered_bytes: Option<u64>,
+    pub reconnecting: Option<u64>,
+    pub slow: Option<u64>,
+    pub quota_rejected_total: Option<u64>,
+    pub cleanup_lag: Option<u64>,
+    pub protocols: Vec<ClientProtocolLifecycle>,
+    pub detail_available: bool,
+    pub source: ManagementObservationSource,
+    pub completeness: ManagementCompleteness,
+}
+
+impl ManagementClientsSnapshot {
+    /// Validate protocol ordering, closed-client reconciliation and aggregate arithmetic.
+    pub fn validate(&self) -> Result<(), ManagementContractError> {
+        validate_schema(self.schema_version)?;
+        validate_limit(
+            "client.protocols",
+            self.protocols.len(),
+            MAX_MANAGEMENT_CLIENT_PROTOCOLS,
+        )?;
+        let protocols = self
+            .protocols
+            .iter()
+            .map(|item| item.protocol)
+            .collect::<Vec<_>>();
+        validate_strict_order("client.protocols", &protocols)?;
+        for protocol in &self.protocols {
+            protocol.validate()?;
+        }
+        if let (Some(accepted), Some(closed), Some(active)) = (
+            self.accepted_total,
+            self.closed_total,
+            self.active_connections,
+        ) {
+            if closed > accepted || accepted.saturating_sub(closed) != active {
+                return Err(ManagementContractError::Incoherent {
+                    field: "client.lifecycle",
+                    reason: "aggregate accepted minus closed must equal active connections",
+                });
+            }
+        }
+        if self.detail_available {
+            return Err(ManagementContractError::Incoherent {
+                field: "client.detail_available",
+                reason: "detail cannot be advertised without a bounded opaque detail source",
+            });
         }
         Ok(())
     }

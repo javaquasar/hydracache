@@ -501,3 +501,13 @@ that source, real repair/reshard counters remain visible while assigned, unassig
 and trace link stay unavailable. Placement candidates have deterministic selected-first order and
 stable reason order. `committed` and `applied` are distinct outcomes with distinct progress indexes;
 unknown, malformed, and stale opaque trace identifiers return the same 404 response.
+
+W6 adds the admin-only `/management/v1/clients` schema version `1`. It reports a fixed, sorted
+protocol domain (`hc1`, `hc2`, `resp`) from node-local runtime accounting. HC/2 and RESP retain
+process-lifetime accepted/closed counters and live-owner gauges; where lifecycle dimensions are
+available, `accepted - closed = active` is a validated invariant. HC/1 exposes only counters its
+request-oriented transport can prove, so connection totals remain null and the response remains
+partial. Missing buffered-byte, reconnect, slow-client, cleanup-lag, or quota sources are null,
+never zero-filled. Per-client detail is not advertised until a bounded process-scoped opaque
+registry exists, preventing remote address, identity, certificate, token, tenant, key, payload,
+and session-token disclosure.

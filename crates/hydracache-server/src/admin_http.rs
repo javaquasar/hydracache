@@ -141,6 +141,7 @@ impl AdminHttpSurface {
                 Arc::clone(&self.runtime),
                 Arc::clone(&self.management_cursors),
                 self.management_aggregator.clone(),
+                self.hc2_metrics.clone(),
             ));
         if let Some(service) = self.hc2_metrics.clone() {
             routes.layer(Extension(service))
