@@ -18,7 +18,7 @@ gate = "cargo test -p hydracache-server --test management_http --locked"
 
 [[work_item]]
 id = "W3-cluster-aggregation"
-status = "planned"
-source = "not implemented"
-test = "required before W3 closure"
-gate = "required before W3 closure"
+status = "implemented"
+source = "crates/hydracache-server/src/management_aggregation.rs"
+test = "crates/hydracache-server/tests/management_aggregation_072.rs + module reducer/cancellation tests"
+gate = "cargo test -p hydracache-server --test management_aggregation_072 --locked && cargo test -p hydracache-server --lib --locked management_aggregation"

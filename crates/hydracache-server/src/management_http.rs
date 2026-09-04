@@ -27,6 +27,10 @@ use sha2::{Digest, Sha256};
 
 use crate::admin_http::{require_admin, SharedServerRuntime};
 use crate::cluster_status::{ClusterStatus, LocalConsensusStatus, Reachability, StatusSource};
+use crate::management_aggregation::{
+    AggregatedManagementSnapshot, ManagementAggregationIssue, ManagementMemberSnapshot,
+    ManagementSnapshotAggregator,
+};
 
 /// Management capability negotiation path.
 pub const MANAGEMENT_CAPABILITIES_PATH: &str = "/management/v1/capabilities";
@@ -144,19 +148,25 @@ impl ManagementCursorStore {
 struct ManagementHttpState {
     runtime: SharedServerRuntime,
     cursors: Arc<Mutex<ManagementCursorStore>>,
+    aggregator: Option<Arc<ManagementSnapshotAggregator>>,
 }
 
 /// Build the management routes with state shared across repeated router construction in tests.
 pub(crate) fn routes(
     runtime: SharedServerRuntime,
     cursors: Arc<Mutex<ManagementCursorStore>>,
+    aggregator: Option<Arc<ManagementSnapshotAggregator>>,
 ) -> Router {
     Router::new()
         .route(MANAGEMENT_CAPABILITIES_PATH, get(capabilities))
         .route(MANAGEMENT_FORMATION_PATH, get(formation))
         .route(MANAGEMENT_RECOVERY_PATH, get(recovery))
         .route(MANAGEMENT_CONSENSUS_PROGRESS_PATH, get(consensus_progress))
-        .with_state(Arc::new(ManagementHttpState { runtime, cursors }))
+        .with_state(Arc::new(ManagementHttpState {
+            runtime,
+            cursors,
+            aggregator,
+        }))
 }
 
 #[derive(Debug, Deserialize)]
@@ -300,10 +310,7 @@ async fn formation(
         Ok(query) => query,
         Err(error) => return error.into_response(),
     };
-    let runtime = state.runtime.lock().expect("server runtime mutex");
-    let can_serve = runtime.can_serve();
-    let status = runtime.cluster_status_snapshot();
-    drop(runtime);
+    let (status, can_serve, aggregate) = request_snapshot(&state).await;
     let now = unix_time_ms();
     let start = match page_start(&state, &query, CursorKind::Formation, &status, now) {
         Ok(start) => start,
@@ -322,7 +329,12 @@ async fn formation(
     }
     let mut items = Vec::with_capacity(end.saturating_sub(start));
     for member in &members[start..end] {
-        let item = formation_item(&status, member, can_serve);
+        let peer = aggregate.as_ref().and_then(|aggregate| {
+            aggregate.members.iter().find(|snapshot| {
+                snapshot.node_id == member.node_id && snapshot.generation == member.generation
+            })
+        });
+        let item = formation_item(&status, member, peer, can_serve);
         if item.validate().is_err() {
             return ManagementHttpError::ContractViolation.into_response();
         }
@@ -353,13 +365,20 @@ async fn formation(
     let complete = page.items.iter().all(|item| {
         item.completeness == ManagementCompleteness::Complete
             && item.source == ManagementObservationSource::Live
-    }) && !truncated;
+    }) && !truncated
+        && aggregate
+            .as_ref()
+            .is_none_or(|aggregate| aggregate.complete());
     let completeness = if complete {
         ManagementCompleteness::Complete
     } else {
         ManagementCompleteness::Partial
     };
-    let warnings = response_warnings(completeness, truncated, members.len().saturating_sub(end));
+    let mut warnings =
+        response_warnings(completeness, truncated, members.len().saturating_sub(end));
+    if let Some(aggregate) = &aggregate {
+        append_aggregation_warnings(&mut warnings, aggregate);
+    }
     let envelope = envelope(&status, completeness, warnings, page);
     management_response(&envelope)
 }
@@ -376,33 +395,66 @@ async fn consensus_progress(
         Ok(query) => query,
         Err(error) => return error.into_response(),
     };
-    let status = snapshot(&state);
+    let (status, _can_serve, aggregate) = request_snapshot(&state).await;
     let now = unix_time_ms();
     let start = match page_start(&state, &query, CursorKind::ConsensusProgress, &status, now) {
         Ok(start) => start,
         Err(error) => return error.into_response(),
     };
-    let mut all = status
-        .local_consensus
-        .as_ref()
-        .map(|progress| consensus_item(&status, progress))
-        .into_iter()
-        .collect::<Vec<_>>();
+    let mut all = if let Some(aggregate) = &aggregate {
+        aggregate
+            .members
+            .iter()
+            .filter_map(|member| consensus_aggregate_item(&status, member))
+            .collect::<Vec<_>>()
+    } else {
+        status
+            .local_consensus
+            .as_ref()
+            .map(|progress| consensus_item(&status, progress))
+            .into_iter()
+            .collect::<Vec<_>>()
+    };
+    all.sort_by(|left, right| {
+        left.node
+            .cmp(&right.node)
+            .then(left.generation.cmp(&right.generation))
+    });
     if all.iter().any(|item| item.validate().is_err()) {
         return ManagementHttpError::ContractViolation.into_response();
     }
     if start > all.len() {
         return ManagementHttpError::SnapshotChanged.into_response();
     }
-    let end = start.saturating_add(query.limit).min(all.len());
+    let total = all.len();
+    let end = start.saturating_add(query.limit).min(total);
     let items = all.drain(start..end).collect::<Vec<_>>();
+    let truncated = end < total;
+    let next_cursor = truncated.then(|| {
+        state
+            .cursors
+            .lock()
+            .expect("management cursor store mutex")
+            .issue(
+                CursorKind::ConsensusProgress,
+                status.epoch,
+                status.observation_seq,
+                end,
+                now,
+            )
+    });
     let page = BoundedPage {
         items,
-        next_cursor: None,
-        truncated: false,
+        next_cursor,
+        truncated,
     };
-    let available = status.local_consensus.is_some();
-    let complete = available && status.metadata_authoritative;
+    let available = total > 0;
+    let complete = available
+        && status.metadata_authoritative
+        && !truncated
+        && aggregate
+            .as_ref()
+            .is_none_or(|aggregate| aggregate.complete());
     let source = if available {
         source(status.source)
     } else {
@@ -413,7 +465,7 @@ async fn consensus_progress(
     } else {
         ManagementCompleteness::Partial
     };
-    let warnings = (!complete)
+    let mut warnings = (!complete)
         .then_some(ManagementWarning {
             code: if available {
                 ManagementWarningCode::AuthorityUnavailable
@@ -424,6 +476,9 @@ async fn consensus_progress(
         })
         .into_iter()
         .collect();
+    if let Some(aggregate) = &aggregate {
+        append_aggregation_warnings(&mut warnings, aggregate);
+    }
     let mut envelope = envelope(&status, completeness, warnings, page);
     envelope.source = source;
     management_response(&envelope)
@@ -495,13 +550,22 @@ async fn recovery(
 fn formation_item(
     status: &ClusterStatus,
     member: &crate::cluster_status::MemberStatus,
+    aggregated: Option<&ManagementMemberSnapshot>,
     can_serve: bool,
 ) -> ClusterFormationSnapshot {
     let local = status.local_consensus.as_ref().filter(|progress| {
         progress.node_id == member.node_id && progress.generation == member.generation
     });
-    let authoritative = status.metadata_authoritative && status.source == StatusSource::Live;
-    let transport = match (local.is_some(), member.reachable) {
+    let aggregated = aggregated.filter(|snapshot| {
+        snapshot.authority_epoch == status.epoch
+            && snapshot.node_id == member.node_id
+            && snapshot.generation == member.generation
+    });
+    let observed = aggregated.is_some() || local.is_some();
+    let authoritative = status.metadata_authoritative
+        && status.source == StatusSource::Live
+        && aggregated.is_none_or(|snapshot| snapshot.authority_epoch == status.epoch);
+    let transport = match (observed, member.reachable) {
         (_, Reachability::Unreachable) => TransportState::Unreachable,
         (true, _) => TransportState::Authenticated,
         (false, _) => TransportState::Reachable,
@@ -512,18 +576,26 @@ fn formation_item(
         AdmissionState::Unknown
     };
     let consensus_role = if admission == AdmissionState::Admitted {
-        local.map_or(ManagementConsensusRole::Unknown, |progress| {
-            if progress.voter {
-                ManagementConsensusRole::Voter
-            } else {
-                ManagementConsensusRole::Learner
-            }
-        })
+        aggregated
+            .and_then(|snapshot| snapshot.consensus.as_ref())
+            .map(|progress| progress.voter)
+            .or_else(|| local.map(|progress| progress.voter))
+            .map_or(ManagementConsensusRole::Unknown, |voter| {
+                if voter {
+                    ManagementConsensusRole::Voter
+                } else {
+                    ManagementConsensusRole::Learner
+                }
+            })
     } else {
         ManagementConsensusRole::Unknown
     };
-    let catch_up = local.map_or(CatchUpState::Unknown, |progress| {
-        if progress.applied_index >= progress.catch_up_target {
+    let progress = aggregated
+        .and_then(|snapshot| snapshot.consensus.as_ref())
+        .map(|progress| (progress.applied_index, progress.catch_up_target))
+        .or_else(|| local.map(|progress| (progress.applied_index, progress.catch_up_target)));
+    let catch_up = progress.map_or(CatchUpState::Unknown, |(applied, target)| {
+        if applied >= target {
             CatchUpState::Current
         } else {
             CatchUpState::Behind
@@ -548,7 +620,7 @@ fn formation_item(
             Some(FormationReasonCode::TransportUnreachable)
         }
         _ if !authoritative => Some(FormationReasonCode::AuthorityUnknown),
-        _ if local.is_some_and(|progress| progress.applied_index < progress.catch_up_target) => {
+        _ if progress.is_some_and(|(applied, target)| applied < target) => {
             Some(FormationReasonCode::LearnerBehind)
         }
         _ => Some(FormationReasonCode::SourceUnavailable),
@@ -566,7 +638,9 @@ fn formation_item(
         schema_version: MANAGEMENT_API_SCHEMA_VERSION,
         node: opaque_node_identity(&member.node_id),
         generation: member.generation,
-        candidate_observation_seq: Some(status.observation_seq),
+        candidate_observation_seq: aggregated
+            .map(|snapshot| snapshot.observation_seq)
+            .or(Some(status.observation_seq)),
         authority_epoch: authoritative.then_some(status.epoch),
         discovery: DiscoveryState::Discovered,
         transport,
@@ -600,6 +674,29 @@ fn consensus_item(
             ManagementCompleteness::Partial
         },
     }
+}
+
+fn consensus_aggregate_item(
+    status: &ClusterStatus,
+    member: &ManagementMemberSnapshot,
+) -> Option<ConsensusProgressSnapshot> {
+    let progress = member.consensus.as_ref()?;
+    Some(ConsensusProgressSnapshot {
+        schema_version: MANAGEMENT_API_SCHEMA_VERSION,
+        node: opaque_node_identity(&member.node_id),
+        generation: member.generation,
+        authority_epoch: (member.authority_epoch == status.epoch).then_some(status.epoch),
+        commit_index: Some(progress.commit_index),
+        applied_index: Some(progress.applied_index),
+        last_snapshot_index: progress.last_snapshot_index,
+        catch_up_target: Some(progress.catch_up_target),
+        source: ManagementObservationSource::Live,
+        completeness: if member.authority_epoch == status.epoch {
+            ManagementCompleteness::Complete
+        } else {
+            ManagementCompleteness::Partial
+        },
+    })
 }
 
 fn parse_query(
@@ -657,6 +754,70 @@ fn snapshot(state: &ManagementHttpState) -> ClusterStatus {
         .lock()
         .expect("server runtime mutex")
         .cluster_status_snapshot()
+}
+
+async fn request_snapshot(
+    state: &ManagementHttpState,
+) -> (
+    ClusterStatus,
+    bool,
+    Option<Arc<AggregatedManagementSnapshot>>,
+) {
+    let (status, can_serve, input) = {
+        let runtime = state.runtime.lock().expect("server runtime mutex");
+        (
+            runtime.cluster_status_snapshot(),
+            runtime.can_serve(),
+            runtime.management_snapshot_input(),
+        )
+    };
+    let aggregate = match (&state.aggregator, input) {
+        (Some(aggregator), Some((local, targets)))
+            if local.authority_epoch == status.epoch
+                && local.observation_seq == status.observation_seq =>
+        {
+            Some(aggregator.refresh(local, targets).await)
+        }
+        _ => None,
+    };
+    (status, can_serve, aggregate)
+}
+
+fn append_aggregation_warnings(
+    warnings: &mut Vec<ManagementWarning>,
+    aggregate: &AggregatedManagementSnapshot,
+) {
+    let mut counts = BTreeMap::<ManagementWarningCode, u64>::new();
+    for failure in &aggregate.failures {
+        let code = match failure.issue {
+            ManagementAggregationIssue::Timeout => ManagementWarningCode::PeerTimeout,
+            ManagementAggregationIssue::Incompatible => ManagementWarningCode::PeerIncompatible,
+            ManagementAggregationIssue::Duplicate => ManagementWarningCode::DuplicateObservation,
+            ManagementAggregationIssue::IdentityMismatch
+            | ManagementAggregationIssue::GenerationMismatch => {
+                ManagementWarningCode::PeerIdentityMismatch
+            }
+            ManagementAggregationIssue::EpochMismatch | ManagementAggregationIssue::Stale => {
+                ManagementWarningCode::StaleObservation
+            }
+            ManagementAggregationIssue::TruncatedRoster => ManagementWarningCode::ResultTruncated,
+            ManagementAggregationIssue::MissingEndpoint
+            | ManagementAggregationIssue::Transport
+            | ManagementAggregationIssue::Oversize
+            | ManagementAggregationIssue::Malformed => ManagementWarningCode::SourceUnavailable,
+        };
+        let count = counts.entry(code).or_default();
+        *count = count.saturating_add(1);
+    }
+    for (code, affected_count) in counts {
+        if warnings.len() >= hydracache_observability::MAX_MANAGEMENT_WARNINGS {
+            break;
+        }
+        warnings.push(ManagementWarning {
+            code,
+            affected_count: Some(affected_count),
+        });
+    }
 }
 
 fn envelope<T>(

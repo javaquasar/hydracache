@@ -238,6 +238,13 @@ pub enum ServerAdminActionError {
     RaftCompaction(#[from] RaftCompactionError),
 }
 
+#[derive(Debug, Clone)]
+struct ManagementSnapshotOverride {
+    local: crate::management_aggregation::ManagementMemberSnapshot,
+    committed_targets: Vec<crate::management_aggregation::ManagementPeerTarget>,
+    transport: Arc<dyn crate::management_aggregation::ManagementPeerTransport>,
+}
+
 /// Standalone server runtime.
 #[derive(Debug, Clone)]
 pub struct ServerRuntime {
@@ -255,6 +262,7 @@ pub struct ServerRuntime {
     redis_surface: Option<RedisSurfaceRuntime>,
     cluster_status: Arc<dyn ClusterStatusProvider>,
     grid_control: Option<Arc<dyn GridControlPlaneHandle>>,
+    management_snapshot_override: Option<ManagementSnapshotOverride>,
     observability: ServerObservabilityModel,
     last_client_surface_drain: Option<ClientSurfaceDrain>,
     last_redis_surface_drain: Option<RedisSurfaceDrain>,
@@ -332,6 +340,7 @@ impl ServerRuntime {
             redis_surface,
             cluster_status,
             grid_control,
+            management_snapshot_override: None,
             observability: ServerObservabilityModel::default(),
             last_client_surface_drain: None,
             last_redis_surface_drain: None,
@@ -742,6 +751,48 @@ impl ServerRuntime {
         let cluster_ready = self.cluster_ready && self.state != ServerState::Stopped;
         self.cluster_status
             .cluster_status(ClusterStatusRuntime::new(cluster_ready, self.is_draining()))
+    }
+
+    /// Override the read-only management aggregation source for embedding and tests.
+    pub fn with_management_snapshot_source(
+        mut self,
+        local: crate::management_aggregation::ManagementMemberSnapshot,
+        committed_targets: Vec<crate::management_aggregation::ManagementPeerTarget>,
+        transport: Arc<dyn crate::management_aggregation::ManagementPeerTransport>,
+    ) -> Self {
+        self.management_snapshot_override = Some(ManagementSnapshotOverride {
+            local,
+            committed_targets,
+            transport,
+        });
+        self
+    }
+
+    pub(crate) fn management_snapshot_input(
+        &self,
+    ) -> Option<(
+        crate::management_aggregation::ManagementMemberSnapshot,
+        Vec<crate::management_aggregation::ManagementPeerTarget>,
+    )> {
+        if let Some(source) = &self.management_snapshot_override {
+            return Some((source.local.clone(), source.committed_targets.clone()));
+        }
+        let grid = self.grid_control.as_ref()?;
+        Some((
+            grid.local_management_snapshot()?,
+            grid.management_peer_targets(),
+        ))
+    }
+
+    pub(crate) fn management_peer_transport(
+        &self,
+    ) -> Option<Arc<dyn crate::management_aggregation::ManagementPeerTransport>> {
+        if let Some(source) = &self.management_snapshot_override {
+            return Some(Arc::clone(&source.transport));
+        }
+        self.grid_control
+            .as_ref()
+            .and_then(|grid| grid.management_peer_transport())
     }
 
     /// Request an online reshard through the current runtime model.

@@ -56,24 +56,39 @@ pub struct AdminHttpSurface {
     runtime: SharedServerRuntime,
     hc2_metrics: Option<Hc2ClientPlaneService>,
     management_cursors: Arc<Mutex<crate::management_http::ManagementCursorStore>>,
+    management_aggregator: Option<Arc<crate::management_aggregation::ManagementSnapshotAggregator>>,
 }
 
 impl AdminHttpSurface {
     /// Create an admin surface from a server runtime.
     pub fn new(runtime: ServerRuntime) -> Self {
+        let management_aggregator = runtime.management_peer_transport().map(|transport| {
+            Arc::new(crate::management_aggregation::ManagementSnapshotAggregator::new(transport))
+        });
         Self {
             runtime: Arc::new(Mutex::new(runtime)),
             hc2_metrics: None,
             management_cursors: Arc::new(Mutex::new(Default::default())),
+            management_aggregator,
         }
     }
 
     /// Create an admin surface from shared runtime state.
     pub fn from_shared(runtime: SharedServerRuntime) -> Self {
+        let management_aggregator = runtime
+            .lock()
+            .expect("server runtime mutex")
+            .management_peer_transport()
+            .map(|transport| {
+                Arc::new(
+                    crate::management_aggregation::ManagementSnapshotAggregator::new(transport),
+                )
+            });
         Self {
             runtime,
             hc2_metrics: None,
             management_cursors: Arc::new(Mutex::new(Default::default())),
+            management_aggregator,
         }
     }
 
@@ -124,6 +139,7 @@ impl AdminHttpSurface {
             .merge(crate::management_http::routes(
                 Arc::clone(&self.runtime),
                 Arc::clone(&self.management_cursors),
+                self.management_aggregator.clone(),
             ));
         if let Some(service) = self.hc2_metrics.clone() {
             routes.layer(Extension(service))

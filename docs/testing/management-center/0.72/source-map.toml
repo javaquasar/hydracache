@@ -19,8 +19,8 @@ id = "cluster-formation"
 route = "/management/v1/formation"
 field_group = "committed roster, generation, reachability, local admission and catch-up"
 producer = "ClusterStatusProvider backed by GridControlPlaneHandle"
-authority = "committed Raft roster plus explicitly partial transport observations"
-lifetime = "request and 30-second cursor"
+authority = "committed Raft roster joined to authenticated per-member snapshots"
+lifetime = "one-second immutable aggregate cache and 30-second cursor"
 consistency = "authority epoch + observation sequence"
 max_cardinality = 100
 privacy = "member diagnostic; node ids SHA-256 pseudonymized before wire serialization"
@@ -31,14 +31,27 @@ test_owner = "crates/hydracache-server/tests/management_http.rs"
 id = "consensus-progress"
 route = "/management/v1/consensus/progress"
 field_group = "local commit, apply, snapshot and catch-up positions"
-producer = "GridControlPlaneHandle::local_consensus_status"
-authority = "live local raft-rs runtime"
-lifetime = "request"
+producer = "GridControlPlaneHandle local and peer management snapshots"
+authority = "live local and authenticated committed-member raft-rs observations"
+lifetime = "one-second immutable aggregate cache"
 consistency = "one node generation and authority epoch"
-max_cardinality = 1
+max_cardinality = 100
 privacy = "cluster-safe counters; node id pseudonymized"
 fallback = "empty partial page with source-unavailable warning"
 test_owner = "crates/hydracache-server/tests/management_http.rs"
+
+[[source]]
+id = "cluster-member-snapshot-rpc"
+route = "/cluster/management/v1/snapshot"
+field_group = "node generation, authority epoch, observation sequence and local consensus positions"
+producer = "GridControlPlaneHandle local immutable snapshot"
+authority = "read-only local raft-rs observation fenced by requested epoch"
+lifetime = "request; retained only inside one-second aggregate cache"
+consistency = "exact schema, node id, generation, authority epoch and monotone observation sequence"
+max_cardinality = 1
+privacy = "cluster-internal authenticated route; raw identity is pseudonymized before admin serialization"
+fallback = "fail loud; caller records bounded partial evidence"
+test_owner = "crates/hydracache-server/tests/management_aggregation_072.rs"
 
 [[source]]
 id = "persistence-recovery"

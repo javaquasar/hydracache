@@ -456,10 +456,19 @@ The first server-backed routes are `/management/v1/capabilities`, `/management/v
 `/management/v1/consensus/progress`, and `/management/v1/persistence/recovery`. They are available
 only on the internal admin listener and currently reuse its verified privileged identity boundary.
 The routes accept GET and body-free HEAD; mutation methods are not registered. Formation reads the
-committed roster and local Raft progress through `GridControlPlaneHandle`, hashes node identities
-before serialization, and leaves remote authentication/catch-up dimensions partial until W3 fan-out
-exists. Recovery deliberately returns `unknown/status-not-retained` until a real retained source is
-connected; process liveness is never upgraded to a clean recovery claim.
+committed roster and Raft progress through `GridControlPlaneHandle`, hashes node identities before
+serialization, and joins remote progress only through the authenticated
+`/cluster/management/v1/snapshot` route. Recovery deliberately returns
+`unknown/status-not-retained` until a real retained source is connected; process liveness is never
+upgraded to a clean recovery claim.
+
+The W3 cluster snapshot RPC uses schema version `1` and is unavailable on public client listeners.
+Targets are resolved only from the current committed roster; browser URLs and discovery-only
+candidates are never inputs. Collection is capped at 100 members, concurrency 8, 500 ms per peer,
+1.5 seconds per refresh, 256 KiB per peer response and one coalesced in-flight refresh. Its
+one-second immutable cache rejects authority-epoch or observation-sequence regression. Missing,
+late, incompatible, duplicate and identity-mismatched observations remain bounded partial evidence;
+they are never zero-filled or retried until shown green.
 
 List responses are capped at 100 items and 256 KiB. Continuations are 30-second opaque server-side
 cursors bound to route class, authority epoch, and observation sequence; a changed snapshot returns

@@ -20,6 +20,16 @@ wire_digest_bytes = 16
 [envelope]
 max_warnings = 32
 
+[cluster_aggregation]
+max_committed_peers = 100
+max_concurrency = 8
+per_peer_timeout_ms = 500
+whole_refresh_timeout_ms = 1500
+cache_ttl_ms = 1000
+max_rpc_request_bytes = 4096
+max_rpc_response_bytes = 262144
+deduplication_key = ["node_id", "generation", "authority_epoch", "observation_seq"]
+
 [placement]
 max_candidates = 512
 max_selected = 64

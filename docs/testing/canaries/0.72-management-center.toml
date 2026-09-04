@@ -13,8 +13,10 @@ red_evidence = "The mutant serializes ClusterStatus directly; the same oracle de
 
 [[canary]]
 id = "MC72-W3-CONFUSED-FANOUT"
-status = "planned"
-test = "not implemented in the local-source route slice"
+status = "active"
+test = "canary_management_fanout_*"
+command = "cargo test -p hydracache-server --lib --locked canary_management_fanout -- --nocapture"
+defect_env = "HYDRACACHE_CANARY_DEFECT=MC72-W3"
 expected_failure = "HC-CANARY-RED:MC72-W3"
-green_evidence = "Pending authenticated member-to-member snapshot transport."
-red_evidence = "Must reject an uncommitted address and a late older-epoch response."
+green_evidence = "Only the committed roster is resolved and a cached epoch/sequence never regresses."
+red_evidence = "The mutant fans out to an injected metadata-service address or publishes a late older epoch."

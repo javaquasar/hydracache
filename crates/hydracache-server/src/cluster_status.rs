@@ -297,6 +297,22 @@ pub trait GridControlPlaneHandle: fmt::Debug + Send + Sync {
     fn local_consensus_status(&self) -> Option<LocalConsensusStatus> {
         None
     }
+    /// Return the local immutable management observation used by peer aggregation.
+    fn local_management_snapshot(
+        &self,
+    ) -> Option<crate::management_aggregation::ManagementMemberSnapshot> {
+        None
+    }
+    /// Resolve only committed members to server-owned cluster endpoints.
+    fn management_peer_targets(&self) -> Vec<crate::management_aggregation::ManagementPeerTarget> {
+        Vec::new()
+    }
+    /// Return the authenticated cluster transport used for management snapshots.
+    fn management_peer_transport(
+        &self,
+    ) -> Option<Arc<dyn crate::management_aggregation::ManagementPeerTransport>> {
+        None
+    }
     /// Return current raft voter count.
     fn voter_count(&self) -> u32;
     /// Return sorted current Raft voter ids.

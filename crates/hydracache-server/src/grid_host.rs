@@ -36,6 +36,11 @@ use crate::cluster_status::{
     Reachability, ReshardPhase,
 };
 use crate::config::{ClusterStartMode, ServerConfig, ServerConfigError};
+use crate::management_aggregation::{
+    HttpManagementPeerTransport, LocalManagementSnapshotProvider, ManagementConsensusObservation,
+    ManagementMemberSnapshot, ManagementPeerTarget, ManagementPeerTransport,
+    ManagementSnapshotRpcService,
+};
 
 const DEFAULT_CLUSTER_NAME: &str = "hydracache";
 const GRID_INPROC_ENV: &str = "HYDRACACHE_GRID_INPROC";
@@ -243,13 +248,14 @@ async fn networked_member_stack(config: &ServerConfig) -> CacheResult<NetworkedM
     spawn_cluster_transport(
         config,
         node_id.clone(),
+        generation,
         ClusterTransportHandles {
             raft: raft.clone(),
             message_sink: message_sink.clone(),
             raft_peers: raft_peers.clone(),
             drive_diagnostics: drive_diagnostics.clone(),
         },
-        route_auth,
+        route_auth.clone(),
         test_snapshot_handler_delay,
         shutdown.subscribe(),
     )
@@ -280,6 +286,13 @@ async fn networked_member_stack(config: &ServerConfig) -> CacheResult<NetworkedM
         generation,
     )
     .await?;
+    let (management_scheme, management_client) = raft_http_client(config)?;
+    let management_transport: Arc<dyn ManagementPeerTransport> =
+        Arc::new(HttpManagementPeerTransport::new(
+            management_client,
+            route_auth,
+            management_scheme == "https",
+        ));
 
     Ok(NetworkedMemberStack {
         cache,
@@ -295,6 +308,7 @@ async fn networked_member_stack(config: &ServerConfig) -> CacheResult<NetworkedM
         draining,
         drain_remove_proposed,
         raft_compaction_enabled: config.raft_compaction_enabled,
+        management_transport,
         shutdown,
     })
 }
@@ -427,9 +441,47 @@ struct ClusterTransportHandles {
     drive_diagnostics: Arc<GridDriveDiagnostics>,
 }
 
+#[derive(Debug)]
+struct RaftLocalManagementSnapshotProvider {
+    node_id: ClusterNodeId,
+    generation: ClusterGeneration,
+    raft_node_id: u64,
+    raft: Arc<NetworkedRaftRuntime>,
+}
+
+impl LocalManagementSnapshotProvider for RaftLocalManagementSnapshotProvider {
+    fn local_snapshot(&self) -> Option<ManagementMemberSnapshot> {
+        let metadata = self.raft.metadata_snapshot();
+        let progress = self.raft.snapshot();
+        let last_snapshot_index = self
+            .raft
+            .log_compaction_observation()
+            .ok()
+            .map(|observation| observation.snapshot_index);
+        Some(ManagementMemberSnapshot {
+            schema_version: hydracache_observability::MANAGEMENT_API_SCHEMA_VERSION,
+            node_id: self.node_id.to_string(),
+            generation: self.generation.value(),
+            authority_epoch: metadata.epoch.value(),
+            observation_seq: metadata.commit_index,
+            consensus: Some(ManagementConsensusObservation {
+                commit_index: progress.commit_index,
+                applied_index: progress.applied_index,
+                last_snapshot_index,
+                catch_up_target: metadata.commit_index,
+                voter: self
+                    .raft
+                    .voter_ids()
+                    .is_ok_and(|voters| voters.contains(&self.raft_node_id)),
+            }),
+        })
+    }
+}
+
 async fn spawn_cluster_transport(
     config: &ServerConfig,
     node_id: ClusterNodeId,
+    generation: ClusterGeneration,
     handles: ClusterTransportHandles,
     auth: ClusterRouteAuth,
     test_snapshot_handler_delay: Option<Duration>,
@@ -447,6 +499,13 @@ async fn spawn_cluster_transport(
             "failed to configure cluster transport listener: {error}"
         ))
     })?;
+    let snapshot_provider: Arc<dyn LocalManagementSnapshotProvider> =
+        Arc::new(RaftLocalManagementSnapshotProvider {
+            node_id: node_id.clone(),
+            generation,
+            raft_node_id: raft_node_id(&node_id),
+            raft: Arc::clone(&handles.raft),
+        });
     let routes = AxumClusterMessageService::new(
         node_id.clone(),
         Arc::new(RaftClusterMessageHandler {
@@ -458,9 +517,10 @@ async fn spawn_cluster_transport(
             drive_diagnostics: handles.drive_diagnostics,
             test_snapshot_handler_delay,
         }),
-        auth,
+        auth.clone(),
     )
-    .routes();
+    .routes()
+    .merge(ManagementSnapshotRpcService::new(snapshot_provider, auth).routes());
     if config.tls.enabled {
         install_default_rustls_provider();
         let cert_path = config
@@ -1225,6 +1285,31 @@ fn confirmed_raft_authority_term(
 struct RaftPeer {
     node_id: ClusterNodeId,
     endpoint: String,
+}
+
+fn committed_management_targets(
+    local_node_id: &ClusterNodeId,
+    committed_members: Vec<ClusterMember>,
+    peers: &BTreeMap<u64, RaftPeer>,
+) -> Vec<ManagementPeerTarget> {
+    let mut targets = committed_members
+        .into_iter()
+        .filter(|member| member.node_id != *local_node_id)
+        .map(|member| {
+            let endpoint = peers
+                .get(&raft_node_id(&member.node_id))
+                .filter(|peer| peer.node_id == member.node_id)
+                .map(|peer| peer.endpoint.clone())
+                .unwrap_or_default();
+            ManagementPeerTarget {
+                node_id: member.node_id.to_string(),
+                generation: member.generation.value(),
+                endpoint,
+            }
+        })
+        .collect::<Vec<_>>();
+    targets.sort();
+    targets
 }
 
 #[derive(Debug, Clone)]
@@ -2255,6 +2340,7 @@ struct NetworkedMemberStack {
     draining: Arc<AtomicBool>,
     drain_remove_proposed: Arc<AtomicBool>,
     raft_compaction_enabled: bool,
+    management_transport: Arc<dyn ManagementPeerTransport>,
     shutdown: watch::Sender<bool>,
 }
 
@@ -2271,6 +2357,7 @@ struct NetworkedGridHandle {
     draining: Arc<AtomicBool>,
     drain_remove_proposed: Arc<AtomicBool>,
     raft_compaction_enabled: bool,
+    management_transport: Arc<dyn ManagementPeerTransport>,
     shutdown: watch::Sender<bool>,
     _runtime: Option<DedicatedGridRuntime>,
 }
@@ -2290,6 +2377,7 @@ impl NetworkedGridHandle {
             draining: stack.draining,
             drain_remove_proposed: stack.drain_remove_proposed,
             raft_compaction_enabled: stack.raft_compaction_enabled,
+            management_transport: stack.management_transport,
             shutdown: stack.shutdown,
             _runtime: runtime,
         }
@@ -2533,6 +2621,34 @@ impl GridControlPlaneHandle for NetworkedGridHandle {
             last_snapshot_index,
             catch_up_target: progress.commit_index,
         })
+    }
+
+    fn local_management_snapshot(&self) -> Option<ManagementMemberSnapshot> {
+        let metadata = self.raft.metadata_snapshot();
+        let consensus = self.local_consensus_status()?;
+        Some(ManagementMemberSnapshot {
+            schema_version: hydracache_observability::MANAGEMENT_API_SCHEMA_VERSION,
+            node_id: consensus.node_id,
+            generation: consensus.generation,
+            authority_epoch: metadata.epoch.value(),
+            observation_seq: metadata.commit_index,
+            consensus: Some(ManagementConsensusObservation {
+                commit_index: consensus.commit_index,
+                applied_index: consensus.applied_index,
+                last_snapshot_index: consensus.last_snapshot_index,
+                catch_up_target: consensus.catch_up_target,
+                voter: consensus.voter,
+            }),
+        })
+    }
+
+    fn management_peer_targets(&self) -> Vec<ManagementPeerTarget> {
+        let peers = self.raft_peers.read().expect("raft peer map poisoned");
+        committed_management_targets(&self.node_id, self.raft.members(), &peers)
+    }
+
+    fn management_peer_transport(&self) -> Option<Arc<dyn ManagementPeerTransport>> {
+        Some(Arc::clone(&self.management_transport))
     }
 
     fn voter_count(&self) -> u32 {
@@ -2810,6 +2926,25 @@ impl GridControlPlaneHandle for InProcessGridHandle {
             applied_index: snapshot.commit_index,
             last_snapshot_index: None,
             catch_up_target: snapshot.commit_index,
+        })
+    }
+
+    fn local_management_snapshot(&self) -> Option<ManagementMemberSnapshot> {
+        let snapshot = self.control_plane.snapshot();
+        let consensus = self.local_consensus_status()?;
+        Some(ManagementMemberSnapshot {
+            schema_version: hydracache_observability::MANAGEMENT_API_SCHEMA_VERSION,
+            node_id: consensus.node_id,
+            generation: consensus.generation,
+            authority_epoch: snapshot.epoch.value(),
+            observation_seq: snapshot.commit_index,
+            consensus: Some(ManagementConsensusObservation {
+                commit_index: consensus.commit_index,
+                applied_index: consensus.applied_index,
+                last_snapshot_index: None,
+                catch_up_target: consensus.catch_up_target,
+                voter: consensus.voter,
+            }),
         })
     }
 
@@ -3425,6 +3560,61 @@ mod tests {
                 .map(|peer| peer.endpoint.as_str()),
             Some("demo-1.demo-headless:7000")
         );
+    }
+
+    #[test]
+    fn canary_management_fanout_uses_only_committed_roster_endpoints() {
+        let local = ClusterNodeId::from("local");
+        let committed = ClusterNodeId::from("member-a");
+        let injected = ClusterNodeId::from("metadata-service");
+        let members = vec![ClusterMember {
+            node_id: committed.clone(),
+            generation: ClusterGeneration::new(4),
+            role: ClusterRole::Member,
+            epoch: hydracache::ClusterEpoch::new(9),
+            endpoints: ClusterEndpoints::new().control("127.0.0.1:7001"),
+            metadata: BTreeMap::new(),
+        }];
+        let peers = BTreeMap::from([
+            (
+                raft_node_id(&committed),
+                RaftPeer {
+                    node_id: committed.clone(),
+                    endpoint: "127.0.0.1:7001".to_owned(),
+                },
+            ),
+            (
+                raft_node_id(&injected),
+                RaftPeer {
+                    node_id: injected,
+                    endpoint: "169.254.169.254:80".to_owned(),
+                },
+            ),
+        ]);
+
+        let targets = if std::env::var("HYDRACACHE_CANARY_DEFECT").as_deref() == Ok("MC72-W3") {
+            peers
+                .values()
+                .map(|peer| ManagementPeerTarget {
+                    node_id: peer.node_id.to_string(),
+                    generation: 1,
+                    endpoint: peer.endpoint.clone(),
+                })
+                .collect()
+        } else {
+            committed_management_targets(&local, members, &peers)
+        };
+
+        assert!(
+            targets
+                .iter()
+                .all(|target| !target.endpoint.contains("169.254.169.254")),
+            "HC-CANARY-RED:MC72-W3 uncommitted endpoint entered management fan-out"
+        );
+        assert_eq!(targets.len(), 1);
+        assert_eq!(targets[0].node_id, "member-a");
+        assert_eq!(targets[0].generation, 4);
+        assert_eq!(targets[0].endpoint, "127.0.0.1:7001");
     }
 
     #[test]

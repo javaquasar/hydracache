@@ -16,10 +16,13 @@ use hydracache_observability::{
 use hydracache_server::{
     AdminHttpSurface, ClusterStatus, ClusterStatusProvider, ClusterStatusRuntime,
     LocalConsensusStatus, MemberRole, MemberStatus, Reachability, ReshardPhase, ServerConfig,
-    ServerRole, ServerRuntime, StatusSource, MANAGEMENT_CAPABILITIES_PATH,
-    MANAGEMENT_CONSENSUS_PROGRESS_PATH, MANAGEMENT_CURSOR_TTL_MS, MANAGEMENT_FORMATION_PATH,
-    MANAGEMENT_MAX_RESPONSE_BYTES, MANAGEMENT_MAX_RETAINED_CURSORS, MANAGEMENT_RECOVERY_PATH,
-    MANAGEMENT_STALE_AFTER_MS,
+    ServerRole, ServerRuntime, StatusSource, CLUSTER_MANAGEMENT_SNAPSHOT_PATH,
+    MANAGEMENT_CAPABILITIES_PATH, MANAGEMENT_CONSENSUS_PROGRESS_PATH, MANAGEMENT_CURSOR_TTL_MS,
+    MANAGEMENT_FORMATION_PATH, MANAGEMENT_MAX_RESPONSE_BYTES, MANAGEMENT_MAX_RETAINED_CURSORS,
+    MANAGEMENT_RECOVERY_PATH, MANAGEMENT_SNAPSHOT_CACHE_TTL, MANAGEMENT_SNAPSHOT_MAX_CONCURRENCY,
+    MANAGEMENT_SNAPSHOT_MAX_PEERS, MANAGEMENT_SNAPSHOT_MAX_REQUEST_BYTES,
+    MANAGEMENT_SNAPSHOT_MAX_RESPONSE_BYTES, MANAGEMENT_SNAPSHOT_PEER_TIMEOUT,
+    MANAGEMENT_SNAPSHOT_REFRESH_TIMEOUT, MANAGEMENT_STALE_AFTER_MS,
 };
 use serde_json::Value;
 use tower::ServiceExt;
@@ -481,6 +484,7 @@ fn source_and_bound_registries_match_executable_contract() {
             MANAGEMENT_CAPABILITIES_PATH,
             MANAGEMENT_FORMATION_PATH,
             MANAGEMENT_CONSENSUS_PROGRESS_PATH,
+            CLUSTER_MANAGEMENT_SNAPSHOT_PATH,
             MANAGEMENT_RECOVERY_PATH,
         ]
     );
@@ -513,6 +517,34 @@ fn source_and_bound_registries_match_executable_contract() {
         MAX_MANAGEMENT_NODE_ID_BYTES
     );
     assert_eq!(value("envelope", "max_warnings"), MAX_MANAGEMENT_WARNINGS);
+    assert_eq!(
+        value("cluster_aggregation", "max_committed_peers"),
+        MANAGEMENT_SNAPSHOT_MAX_PEERS
+    );
+    assert_eq!(
+        value("cluster_aggregation", "max_concurrency"),
+        MANAGEMENT_SNAPSHOT_MAX_CONCURRENCY
+    );
+    assert_eq!(
+        value("cluster_aggregation", "per_peer_timeout_ms"),
+        MANAGEMENT_SNAPSHOT_PEER_TIMEOUT.as_millis() as usize
+    );
+    assert_eq!(
+        value("cluster_aggregation", "whole_refresh_timeout_ms"),
+        MANAGEMENT_SNAPSHOT_REFRESH_TIMEOUT.as_millis() as usize
+    );
+    assert_eq!(
+        value("cluster_aggregation", "cache_ttl_ms"),
+        MANAGEMENT_SNAPSHOT_CACHE_TTL.as_millis() as usize
+    );
+    assert_eq!(
+        value("cluster_aggregation", "max_rpc_request_bytes"),
+        MANAGEMENT_SNAPSHOT_MAX_REQUEST_BYTES
+    );
+    assert_eq!(
+        value("cluster_aggregation", "max_rpc_response_bytes"),
+        MANAGEMENT_SNAPSHOT_MAX_RESPONSE_BYTES
+    );
     assert_eq!(
         value("placement", "max_candidates"),
         MAX_PLACEMENT_CANDIDATES

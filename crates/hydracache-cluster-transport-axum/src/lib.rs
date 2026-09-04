@@ -212,6 +212,8 @@ pub enum ClusterRoute {
     Snapshot,
     /// Administrative/actuator route.
     Admin,
+    /// Read-only member management snapshot route.
+    ManagementSnapshot,
 }
 
 impl ClusterRoute {
@@ -225,6 +227,7 @@ impl ClusterRoute {
             Self::RaftVote => "raft_vote",
             Self::Snapshot => "snapshot",
             Self::Admin => "admin",
+            Self::ManagementSnapshot => "management_snapshot",
         }
     }
 }

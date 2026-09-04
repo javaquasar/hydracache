@@ -42,6 +42,10 @@ pub enum ManagementWarningCode {
     ResultTruncated,
     AuthorityUnavailable,
     StatusNotRetained,
+    PeerTimeout,
+    PeerIncompatible,
+    DuplicateObservation,
+    PeerIdentityMismatch,
     #[serde(other)]
     Unknown,
 }
@@ -100,7 +104,13 @@ impl<T> ManagementEnvelope<T> {
                     warning.code,
                     ManagementWarningCode::SourceUnavailable
                         | ManagementWarningCode::PartialObservation
+                        | ManagementWarningCode::StaleObservation
+                        | ManagementWarningCode::ResultTruncated
                         | ManagementWarningCode::AuthorityUnavailable
+                        | ManagementWarningCode::PeerTimeout
+                        | ManagementWarningCode::PeerIncompatible
+                        | ManagementWarningCode::DuplicateObservation
+                        | ManagementWarningCode::PeerIdentityMismatch
                 )
             })
         {
