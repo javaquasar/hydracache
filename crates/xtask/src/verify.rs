@@ -6,6 +6,7 @@
 //! The browser console gate runs only when Node and npm are available; otherwise
 //! it logs an explicit skip.
 
+use std::collections::BTreeSet;
 use std::error::Error;
 use std::path::{Path, PathBuf};
 use std::process::{Command, Stdio};
@@ -47,7 +48,6 @@ fn console_npm_steps() -> [(&'static str, Vec<&'static str>); 3] {
 
 fn gates_for_platform(is_windows: bool) -> Vec<Gate> {
     let mut gates = vec![
-        gate("format", ["fmt", "--all", "--", "--check"], None),
         gate(
             "clippy",
             [
@@ -203,6 +203,8 @@ pub fn run(_args: Vec<String>) -> Result<(), Box<dyn Error>> {
     let is_windows = cfg!(windows);
     let windows_target_dir = is_windows.then(|| windows_verify_target_dir(&root));
 
+    run_format_gate(&root, is_windows)?;
+
     for Gate { label, args, env } in gates_for_platform(is_windows) {
         println!("== {label} ==");
         let mut cmd = Command::new("cargo");
@@ -224,6 +226,52 @@ pub fn run(_args: Vec<String>) -> Result<(), Box<dyn Error>> {
     run_console_gate(&root)?;
 
     println!("verify: all gates passed");
+    Ok(())
+}
+
+fn run_format_gate(root: &Path, is_windows: bool) -> Result<(), Box<dyn Error>> {
+    println!("== format ==");
+    if !is_windows {
+        let status = Command::new("cargo")
+            .args(["fmt", "--all", "--", "--check"])
+            .current_dir(root)
+            .status()?;
+        return status
+            .success()
+            .then_some(())
+            .ok_or_else(|| "gate 'format' failed".into());
+    }
+
+    // `cargo fmt --all` expands every Rust source onto one rustfmt command and
+    // exceeds CreateProcess' command-line limit in this workspace. Formatting
+    // each unique workspace manifest preserves identical coverage without the
+    // Windows-only os error 206.
+    let output = Command::new("cargo")
+        .args(["metadata", "--no-deps", "--format-version", "1"])
+        .current_dir(root)
+        .output()?;
+    if !output.status.success() {
+        return Err("format gate could not enumerate workspace packages".into());
+    }
+    let metadata: serde_json::Value = serde_json::from_slice(&output.stdout)?;
+    let manifests = metadata["packages"]
+        .as_array()
+        .ok_or("cargo metadata packages is not an array")?
+        .iter()
+        .filter_map(|package| package["manifest_path"].as_str())
+        .collect::<BTreeSet<_>>();
+    if manifests.is_empty() {
+        return Err("format gate found no workspace package manifests".into());
+    }
+    for manifest in manifests {
+        let status = Command::new("cargo")
+            .args(["fmt", "--manifest-path", manifest, "--", "--check"])
+            .current_dir(root)
+            .status()?;
+        if !status.success() {
+            return Err(format!("format gate failed for {manifest}").into());
+        }
+    }
     Ok(())
 }
 

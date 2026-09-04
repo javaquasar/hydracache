@@ -30,6 +30,8 @@ avoiding the OS lock on the currently running `target/debug/xtask.exe` and trans
 linker locks on test binaries. The child cargo gates also use
 `CARGO_TARGET_DIR=target/xtask-verify-<process-id>` on Windows so stale default-target
 artifacts and locked test binaries from earlier verify runs cannot block the run.
+The format gate likewise enumerates unique workspace manifests and invokes `cargo fmt --check`
+per package, preserving `--all` coverage without exceeding the Windows process command-line limit.
 
 ## Gate registry
 
