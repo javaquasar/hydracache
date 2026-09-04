@@ -22,6 +22,26 @@ green_evidence = "Every source-map row contains an owner and honest fallback."
 red_evidence = "The mutant removes source ownership and the same registry oracle turns red."
 
 [[canary]]
+id = "MC72-W0-UNOWNED-FIELD"
+status = "active"
+test = "canary_w0_unowned_field_is_rejected"
+command = "cargo test -p xtask --test management_center_072 --locked canary_w0_unowned_field_is_rejected -- --nocapture"
+defect_env = "HYDRACACHE_CANARY_DEFECT=MC72-W0-UNOWNED-FIELD"
+expected_failure = "HC-CANARY-RED:MC72-W0-UNOWNED-FIELD"
+green_evidence = "A source-map route without an owning claim is rejected by management-center-check."
+red_evidence = "The mutant attempts to render a field with no producer, privacy or test ownership row."
+
+[[canary]]
+id = "MC72-W1-ASSET-DRIFT"
+status = "active"
+test = "canary_w1_asset_drift_is_rejected"
+command = "cargo test -p xtask --test management_center_072 --locked canary_w1_asset_drift_is_rejected -- --nocapture"
+defect_env = "HYDRACACHE_CANARY_DEFECT=MC72-W1-ASSET-DRIFT"
+expected_failure = "HC-CANARY-RED:MC72-W1-ASSET-DRIFT"
+green_evidence = "The deterministic package verifier hashes every source and embedded asset."
+red_evidence = "The mutant changes one embedded byte and package verification refuses the candidate."
+
+[[canary]]
 id = "MC72-W2-LEAK-OR-OVERSIZE"
 status = "active"
 test = "canary_management_api_detects_internal_identity_leak_or_oversize_payload"

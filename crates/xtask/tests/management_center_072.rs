@@ -90,6 +90,29 @@ fn canary_w0_missing_baseline_is_rejected() {
 }
 
 #[test]
+fn canary_w0_unowned_field_is_rejected() {
+    let (claims, taxonomy, canaries, source_map) = documents();
+    let unowned = format!(
+        "{source_map}\n[[source]]\nfield = \"unowned.test\"\nauthority = \"none\"\nfallback = \"unavailable\"\nroute = \"/management/v1/unowned\"\n"
+    );
+    let problems = xtask::management_center::check_documents(
+        &root(),
+        &claims,
+        &taxonomy,
+        &canaries,
+        &unowned,
+        false,
+    )
+    .unwrap();
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("source-map route has no claim")));
+    if defect("MC72-W0-UNOWNED-FIELD") {
+        panic!("HC-CANARY-RED:MC72-W0-UNOWNED-FIELD");
+    }
+}
+
+#[test]
 fn canary_w1_false_source_mapping_is_rejected() {
     let source =
         fs::read_to_string(root().join("docs/testing/management-center/0.72/source-map.toml"))
@@ -98,6 +121,16 @@ fn canary_w1_false_source_mapping_is_rejected() {
     assert!(source.contains("fallback"));
     if defect("MC72-W1-FALSE-SOURCE") {
         panic!("HC-CANARY-RED:MC72-W1-FALSE-SOURCE");
+    }
+}
+
+#[test]
+fn canary_w1_asset_drift_is_rejected() {
+    let package_test = fs::read_to_string(root().join("console/tests/package.test.js")).unwrap();
+    assert!(package_test.contains("substituted artifact"));
+    assert!(package_test.contains("assert.throws"));
+    if defect("MC72-W1-ASSET-DRIFT") {
+        panic!("HC-CANARY-RED:MC72-W1-ASSET-DRIFT");
     }
 }
 
