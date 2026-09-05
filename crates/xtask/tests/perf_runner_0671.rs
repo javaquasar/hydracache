@@ -141,7 +141,8 @@ fn runner_runbook_and_helpers_are_fail_closed_and_secret_free() {
     assert!(prebuild.contains("/usr/bin/findmnt"));
     assert!(prebuild.contains("GITHUB_ACTIONS"));
     assert!(prebuild.contains("GITHUB_SHA"));
-    assert!(prebuild.contains("Some(\"qualify\" | \"full-dress\" | \"bootstrap\")"));
+    assert!(prebuild
+        .contains("Some(\"qualify\" | \"full-dress\" | \"bootstrap\" | \"frozen-candidate\")"));
     assert!(prebuild.contains("filesystem_type == \"tmpfs\""));
     assert!(measurement
         .contains("reference measurement orchestration must remain on housekeeping CPUs 0,5-7"));
