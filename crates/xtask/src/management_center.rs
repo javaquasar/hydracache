@@ -1,4 +1,4 @@
-use std::collections::BTreeSet;
+use std::collections::{BTreeMap, BTreeSet};
 use std::error::Error;
 use std::fs;
 use std::path::{Component, Path, PathBuf};
@@ -106,6 +106,7 @@ struct FailureTaxonomy {
 #[serde(deny_unknown_fields)]
 struct TaxonomyRow {
     id: String,
+    work_item: String,
     status: TaxonomyStatus,
     source_tests: Vec<String>,
     management_tests: Vec<String>,
@@ -474,6 +475,7 @@ pub fn check_documents(
         .collect::<BTreeSet<_>>();
     let mut claim_ids = BTreeSet::new();
     let mut claimed_routes = BTreeSet::new();
+    let mut claim_receipts_by_work_item = BTreeMap::<&str, BTreeSet<&str>>::new();
     for claim in &registry.claim {
         if !claim_ids.insert(claim.id.as_str()) {
             problems.push(format!("duplicate claim id {}", claim.id));
@@ -542,6 +544,10 @@ pub fn check_documents(
                     receipt,
                 ));
             }
+            claim_receipts_by_work_item
+                .entry(claim.work_item.as_str())
+                .or_default()
+                .insert(receipt.as_str());
         }
         if matches!(claim.status, ClaimStatus::Planned | ClaimStatus::Deferred) {
             problems.push(format!(
@@ -604,6 +610,27 @@ pub fn check_documents(
                 problems.push(format!(
                     "taxonomy {} references unknown canary {canary}",
                     row.id
+                ));
+            }
+            if !canary.starts_with(&format!("MC72-{}-", row.work_item)) {
+                problems.push(format!(
+                    "taxonomy {} canary {canary} is not owned by {}",
+                    row.id, row.work_item
+                ));
+            }
+        }
+        let owned_receipts = claim_receipts_by_work_item
+            .get(row.work_item.as_str())
+            .cloned()
+            .unwrap_or_default();
+        for receipt in &row.receipts {
+            if !safe_relative(receipt)
+                || !Path::new(receipt).starts_with("target/release-evidence/management-center/0.72")
+                || !owned_receipts.contains(receipt.as_str())
+            {
+                problems.push(format!(
+                    "taxonomy {} receipt {receipt} is not a validated {} claim receipt",
+                    row.id, row.work_item
                 ));
             }
         }

@@ -18,6 +18,9 @@ candidate command remains intentionally red until all external exact-candidate i
   receipts with `cargo xtask management-center-check --release 0.72 --write-receipts
   --receipts-dir target/release-evidence/receipts`. Any dirty, stale, missing, duplicated,
   path-traversing or hash-mismatched input makes generation/admission fail closed.
+- Every NATS-derived failure-taxonomy row names its owning W-item and may reference only a validated
+  claim receipt owned by that same item. A prose note, receipt from another item, or canary whose
+  ID has another owner is rejected before ship admission.
 - `canary-registry-0.72.json` registers W0-W14. `canary-sweep` runs the unchanged selector first and
   then one reversible defect, requiring the exact `HC-CANARY-RED` marker and writing a clean-SHA,
   command-digest and registry-digest receipt.

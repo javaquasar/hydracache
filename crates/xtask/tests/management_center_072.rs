@@ -87,8 +87,8 @@ fn management_registry_rejects_missing_or_tampered_proof() {
         .contains("receipt target/release-evidence/management-center/0.72")
         && problem.contains("is missing")));
     let partial_taxonomy = taxonomy.replace(
-        "id = \"bounded-resource-pressure\"\nstatus = \"covered\"",
-        "id = \"bounded-resource-pressure\"\nstatus = \"partial\"",
+        "id = \"bounded-resource-pressure\"\nwork_item = \"W12\"\nstatus = \"covered\"",
+        "id = \"bounded-resource-pressure\"\nwork_item = \"W12\"\nstatus = \"partial\"",
     );
     let partial_problems = xtask::management_center::check_documents(
         &root(),
@@ -102,6 +102,38 @@ fn management_registry_rejects_missing_or_tampered_proof() {
     assert!(partial_problems
         .iter()
         .any(|problem| problem.contains("bounded-resource-pressure is not covered")));
+
+    let prose_receipt = taxonomy.replacen(
+        "receipts = [\"target/release-evidence/management-center/0.72/W12.json\"]",
+        "receipts = [\"docs/testing/management-center/0.72/w12-process-evidence.md\"]",
+        1,
+    );
+    let prose_problems = xtask::management_center::check_documents(
+        &root(),
+        &claims,
+        &prose_receipt,
+        &canaries,
+        &source_map,
+        false,
+    )
+    .unwrap();
+    assert!(prose_problems
+        .iter()
+        .any(|problem| problem.contains("is not a validated W12 claim receipt")));
+
+    let wrong_owner = taxonomy.replacen("work_item = \"W12\"", "work_item = \"W3\"", 1);
+    let owner_problems = xtask::management_center::check_documents(
+        &root(),
+        &claims,
+        &wrong_owner,
+        &canaries,
+        &source_map,
+        false,
+    )
+    .unwrap();
+    assert!(owner_problems
+        .iter()
+        .any(|problem| problem.contains("is not owned by W3")));
 }
 
 #[test]
