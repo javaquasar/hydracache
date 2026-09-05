@@ -182,8 +182,8 @@ behavior_tests = ["crates/hydracache-server/tests/management_security_072.rs#aut
 canaries = ["MC72-W11-XSS-AUTH-BYPASS"]
 bounds = ["management-read-concurrency"]
 privacy_rules = ["text-only-dom", "management-read-capability"]
-receipts = ["docs/testing/management-center/0.72/w11-security-evidence.md"]
-status = "evidenced"
+receipts = ["target/release-evidence/management-center/0.72/W11.json"]
+status = "implemented"
 
 [[claim]]
 id = "MC72-PROCESS-FAULTS"
@@ -193,8 +193,8 @@ implementation = ["crates/hydracache-server/tests/management_process_072.rs#thre
 behavior_tests = ["crates/hydracache-server/tests/management_process_072.rs#three_daemon_fault_recovery_retains_partial_truth_and_resource_bounds"]
 canaries = ["MC72-W12-FAULT-MASKED", "MC72-W12-FAULT-NOT-ACTIVATED", "MC72-W12-RESURRECTION", "MC72-W12-RETRY-ERASES-RED"]
 bounds = ["reader-concurrency", "p95", "response-bytes"]
-receipts = ["docs/testing/management-center/0.72/w12-process-evidence.md"]
-status = "evidenced"
+receipts = ["target/release-evidence/management-center/0.72/W12.json"]
+status = "implemented"
 
 [[claim]]
 id = "MC72-MIXED-COMPAT"
@@ -204,8 +204,8 @@ implementation = ["crates/hydracache-server/src/management_aggregation.rs#CLUSTE
 behavior_tests = ["crates/hydracache-server/tests/management_aggregation_072.rs#real_http_transport_probes_capability_before_posting_to_an_old_member"]
 canaries = ["MC72-W13-MIXED-ARTIFACT"]
 compat_artifacts = ["management-v1-formation-v1", "management-v1-placement-trace-v1", "management-v1-durable-recovery-v1", "management-v1-health-catalogue-v1", "management-v1-consensus-progress-v1"]
-receipts = ["docs/testing/management-center/0.72/w13-compatibility-evidence.md"]
-status = "evidenced"
+receipts = ["target/release-evidence/management-center/0.72/W13-compat.json"]
+status = "implemented"
 
 [[claim]]
 id = "MC72-PACKAGE-BINDING"

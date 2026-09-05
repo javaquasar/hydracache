@@ -7,8 +7,17 @@ candidate command remains intentionally red until all external exact-candidate i
 
 - `management-center-check` parses the claim, source-map, coverage, canary and failure-taxonomy
   registries. It rejects duplicate or missing IDs, unsafe/missing symbols and tests, unowned routes,
-  unknown canaries, incomplete status, missing evidenced receipts, partial taxonomy and coverage
-  floor/module drift.
+  unknown canaries, incomplete status, invalid exact-candidate receipts, partial taxonomy and
+  coverage floor/module drift.
+- Claim receipts are strict JSON envelopes, never committed prose. They bind the claim ID, work
+  item, implementation/test/canary mapping and registry digest to one clean 40-hex source commit.
+  Their proof-input set must exactly equal the work item's fast gates, gated gates and dynamic
+  canary. Every referenced receipt is re-parsed and revalidated for command/registry/input/artifact
+  digests and expected-red outcome; existence or a self-reported `pass` is insufficient.
+- After all underlying receipts exist for a frozen clean candidate, generate the derived claim
+  receipts with `cargo xtask management-center-check --release 0.72 --write-receipts
+  --receipts-dir target/release-evidence/receipts`. Any dirty, stale, missing, duplicated,
+  path-traversing or hash-mismatched input makes generation/admission fail closed.
 - `canary-registry-0.72.json` registers W0-W14. `canary-sweep` runs the unchanged selector first and
   then one reversible defect, requiring the exact `HC-CANARY-RED` marker and writing a clean-SHA,
   command-digest and registry-digest receipt.
@@ -33,7 +42,7 @@ candidate command remains intentionally red until all external exact-candidate i
 The following checks are green on the implementation branch:
 
 ```text
-cargo test -p xtask --test management_center_072 --locked       11 passed
+cargo test -p xtask --test management_center_072 --locked       14 passed
 cargo test -p hydracache-fuzz --test fuzz_corpus_regression --locked 4 passed
 cargo xtask management-center-check --release 0.72              OK
 cargo xtask canary-check --release 0.72                          OK
@@ -57,8 +66,9 @@ from a clean checkout after the tag candidate is frozen.
 3. Linux FD/RSS and full workspace LLVM coverage receipts must be generated for that same SHA;
 4. the covered `bounded-resource-pressure` row still requires the dedicated Linux resource gate
    receipt; its source-tree status cannot substitute for execution;
-5. implemented claims retain `status = "implemented"` until their exact-candidate evidence files are
-   produced. Static source-tree success is not allowed to relabel them `evidenced`.
+5. claim source status remains `implemented`: promotion is derived exclusively from validated
+   exact-candidate receipts, so generating evidence never requires a post-freeze source edit that
+   would invalidate the candidate SHA.
 
 These are release-admission inputs, not missing feature implementations. Quiet skip, a development
 branch standing in for v0.71, a dirty receipt, a stale commit, or a retry that overwrites a failed

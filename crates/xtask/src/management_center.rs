@@ -2,10 +2,14 @@ use std::collections::BTreeSet;
 use std::error::Error;
 use std::fs;
 use std::path::{Component, Path, PathBuf};
+use std::process::Command;
 
 use serde::{Deserialize, Serialize};
+use sha2::{Digest, Sha256};
 
-use crate::doc_check;
+use crate::{
+    canary_check, canary_sweep, doc_check, evidence_run, fast_suite, gated_tests, release_evidence,
+};
 
 const REGISTRY: &str = "docs/testing/management-center/0.72/claims.toml";
 const TAXONOMY: &str = "docs/testing/management-center/0.72/failure-taxonomy.toml";
@@ -52,6 +56,42 @@ enum ClaimStatus {
     Implemented,
     Evidenced,
     Deferred,
+}
+
+#[derive(Debug, Clone, Deserialize, Serialize)]
+#[serde(deny_unknown_fields)]
+struct ClaimReceipt {
+    schema_version: u32,
+    release: String,
+    claim_id: String,
+    work_item: String,
+    source_commit: String,
+    dirty_worktree: bool,
+    claim_registry_sha256: String,
+    implementation: Vec<String>,
+    behavior_tests: Vec<String>,
+    canaries: Vec<String>,
+    proof_inputs: Vec<ClaimProofInput>,
+}
+
+#[derive(Debug, Clone, Deserialize, Serialize)]
+#[serde(deny_unknown_fields)]
+struct ClaimProofInput {
+    kind: ClaimProofKind,
+    id: String,
+    path: String,
+    bytes: u64,
+    sha256: String,
+}
+
+type ReceiptFile = (String, Vec<u8>);
+
+#[derive(Debug, Clone, Copy, Deserialize, Serialize, PartialEq, Eq, PartialOrd, Ord)]
+#[serde(rename_all = "snake_case")]
+enum ClaimProofKind {
+    FastGate,
+    GatedGate,
+    Canary,
 }
 
 #[derive(Debug, Deserialize)]
@@ -125,6 +165,11 @@ struct CoverageExclusion {
 
 pub fn run(args: Vec<String>) -> Result<(), Box<dyn Error>> {
     let options = Options::parse(args)?;
+    if options.write_receipts {
+        write_claim_receipts(&options.root, &options.receipts_dir)?;
+        println!("management-center-check: wrote exact-candidate claim receipts");
+        return Ok(());
+    }
     let problems = check(&options.root, options.require_evidence)?;
     if problems.is_empty() {
         println!("management-center-check: OK");
@@ -407,6 +452,11 @@ pub fn check_documents(
     let canaries: CanaryDocument = toml::from_str(canary_text)?;
     let source_map: toml::Value = toml::from_str(source_map_text)?;
     let mut problems = Vec::new();
+    let proof_context = if require_evidence {
+        Some(ClaimProofContext::load(root)?)
+    } else {
+        None
+    };
 
     if registry.schema_version != 1 || registry.release != "0.72.0" {
         problems.push("claim registry must be schema 1 for release 0.72.0".to_owned());
@@ -472,13 +522,24 @@ pub fn check_documents(
             }
         }
         claimed_routes.extend(claim.routes.iter().map(String::as_str));
+        if claim.receipts.is_empty() {
+            problems.push(format!("{} has no exact-candidate receipt path", claim.id));
+        }
         for receipt in &claim.receipts {
-            if !safe_relative(receipt) {
+            if !safe_relative(receipt)
+                || !Path::new(receipt).starts_with("target/release-evidence/management-center/0.72")
+                || Path::new(receipt)
+                    .extension()
+                    .and_then(|value| value.to_str())
+                    != Some("json")
+            {
                 problems.push(format!("{} has unsafe receipt path {receipt}", claim.id));
-            } else if claim.status == ClaimStatus::Evidenced && !root.join(receipt).is_file() {
-                problems.push(format!(
-                    "{} evidenced receipt is missing: {receipt}",
-                    claim.id
+            } else if let Some(context) = &proof_context {
+                problems.extend(context.validate_claim_receipt(
+                    root,
+                    registry_text,
+                    claim,
+                    receipt,
                 ));
             }
         }
@@ -487,9 +548,6 @@ pub fn check_documents(
                 "{} is still {:?} while registered as implemented UI/API",
                 claim.id, claim.status
             ));
-        }
-        if require_evidence && claim.status != ClaimStatus::Evidenced {
-            problems.push(format!("{} lacks exact-candidate evidence", claim.id));
         }
         if claim
             .compat_artifacts
@@ -569,6 +627,377 @@ pub fn check_documents(
     Ok(problems)
 }
 
+struct ClaimProofContext {
+    source_commit: String,
+    dirty_worktree: bool,
+    manifest: release_evidence::EvidenceManifest,
+    fast: fast_suite::FastSuiteRegistry,
+    gated: gated_tests::GatedTestRegistry,
+    canaries: canary_check::CanaryRegistry,
+}
+
+impl ClaimProofContext {
+    fn load(root: &Path) -> Result<Self, Box<dyn Error>> {
+        let (source_commit, dirty_worktree) = git_identity(root)?;
+        Ok(Self {
+            source_commit,
+            dirty_worktree,
+            manifest: release_evidence::parse_manifest_text(&fs::read_to_string(
+                root.join("docs/testing/release-evidence/0.72.toml"),
+            )?)?,
+            fast: fast_suite::load_registry(root)?,
+            gated: gated_tests::load_registry(root)?,
+            canaries: canary_check::load_registry_for_release(root, "0.72")?,
+        })
+    }
+
+    fn validate_claim_receipt(
+        &self,
+        root: &Path,
+        registry_text: &str,
+        claim: &Claim,
+        receipt_path: &str,
+    ) -> Vec<String> {
+        let prefix = format!("{} receipt {receipt_path}", claim.id);
+        let bytes = match fs::read(root.join(receipt_path)) {
+            Ok(bytes) => bytes,
+            Err(error) => return vec![format!("{prefix} is missing: {error}")],
+        };
+        let receipt: ClaimReceipt = match serde_json::from_slice(&bytes) {
+            Ok(receipt) => receipt,
+            Err(error) => return vec![format!("{prefix} is invalid JSON: {error}")],
+        };
+        let mut problems = Vec::new();
+        if receipt.schema_version != 1
+            || receipt.release != "0.72.0"
+            || receipt.claim_id != claim.id
+            || receipt.work_item != claim.work_item
+        {
+            problems.push(format!(
+                "{prefix} has wrong schema, release, claim or work item"
+            ));
+        }
+        if receipt.source_commit != self.source_commit {
+            problems.push(format!("{prefix} has wrong source commit"));
+        }
+        if receipt.dirty_worktree || self.dirty_worktree {
+            problems.push(format!("{prefix} is not bound to a clean candidate"));
+        }
+        if receipt.claim_registry_sha256 != sha256(registry_text.as_bytes()) {
+            problems.push(format!("{prefix} has stale claim-registry digest"));
+        }
+        if receipt.implementation != claim.implementation
+            || receipt.behavior_tests != claim.behavior_tests
+            || receipt.canaries != claim.canaries
+        {
+            problems.push(format!("{prefix} has stale claim/test/canary mapping"));
+        }
+
+        let Some(item) = self
+            .manifest
+            .work_item
+            .iter()
+            .find(|item| item.id == claim.work_item)
+        else {
+            problems.push(format!("{prefix} references an unregistered work item"));
+            return problems;
+        };
+        let Some(canary) = self
+            .canaries
+            .entries
+            .iter()
+            .find(|entry| entry.w_item == claim.work_item)
+        else {
+            problems.push(format!("{prefix} has no release canary"));
+            return problems;
+        };
+
+        let mut expected = BTreeSet::new();
+        expected.extend(
+            item.fast_gate_ids
+                .iter()
+                .map(|id| (ClaimProofKind::FastGate, id.clone())),
+        );
+        expected.extend(
+            item.gated_gate_ids
+                .iter()
+                .map(|id| (ClaimProofKind::GatedGate, id.clone())),
+        );
+        expected.insert((ClaimProofKind::Canary, canary.defect_id.clone()));
+        let mut observed = BTreeSet::new();
+        for input in &receipt.proof_inputs {
+            if !observed.insert((input.kind, input.id.clone())) {
+                problems.push(format!("{prefix} repeats proof input {}", input.id));
+                continue;
+            }
+            problems.extend(self.validate_proof_input(root, input, &prefix));
+        }
+        if observed != expected {
+            problems.push(format!(
+                "{prefix} proof set differs from the exact fast/gated/canary contract"
+            ));
+        }
+        problems
+    }
+
+    fn validate_proof_input(
+        &self,
+        root: &Path,
+        input: &ClaimProofInput,
+        prefix: &str,
+    ) -> Vec<String> {
+        if !safe_relative(&input.path)
+            || !Path::new(&input.path).starts_with("target/release-evidence")
+        {
+            return vec![format!("{prefix} has unsafe proof input {}", input.path)];
+        }
+        let bytes = match fs::read(root.join(&input.path)) {
+            Ok(bytes) => bytes,
+            Err(error) => {
+                return vec![format!(
+                    "{prefix} proof input {} is missing: {error}",
+                    input.path
+                )]
+            }
+        };
+        if input.bytes != bytes.len() as u64 || input.sha256 != sha256(&bytes) {
+            return vec![format!("{prefix} proof input {} hash mismatch", input.path)];
+        }
+        match input.kind {
+            ClaimProofKind::FastGate => {
+                let Some(suite) = self.fast.suite.iter().find(|suite| suite.id == input.id) else {
+                    return vec![format!(
+                        "{prefix} references unknown fast gate {}",
+                        input.id
+                    )];
+                };
+                match serde_json::from_slice::<evidence_run::EvidenceReceipt>(&bytes) {
+                    Ok(receipt) => release_evidence::fast_receipt_problems(
+                        root,
+                        "0.72",
+                        &self.source_commit,
+                        suite,
+                        &receipt,
+                    )
+                    .into_iter()
+                    .map(|problem| format!("{prefix} fast proof {}: {problem}", input.id))
+                    .collect(),
+                    Err(error) => vec![format!(
+                        "{prefix} fast proof {} is invalid: {error}",
+                        input.id
+                    )],
+                }
+            }
+            ClaimProofKind::GatedGate => {
+                let Some(gate) = self.gated.gate.iter().find(|gate| gate.id == input.id) else {
+                    return vec![format!(
+                        "{prefix} references unknown gated gate {}",
+                        input.id
+                    )];
+                };
+                match serde_json::from_slice::<evidence_run::EvidenceReceipt>(&bytes) {
+                    Ok(receipt) => release_evidence::receipt_problems(
+                        root,
+                        "0.72",
+                        &self.source_commit,
+                        gate,
+                        &receipt,
+                    )
+                    .into_iter()
+                    .map(|problem| format!("{prefix} gated proof {}: {problem}", input.id))
+                    .collect(),
+                    Err(error) => vec![format!(
+                        "{prefix} gated proof {} is invalid: {error}",
+                        input.id
+                    )],
+                }
+            }
+            ClaimProofKind::Canary => {
+                let Some(entry) = self
+                    .canaries
+                    .entries
+                    .iter()
+                    .find(|entry| entry.defect_id == input.id)
+                else {
+                    return vec![format!("{prefix} references unknown canary {}", input.id)];
+                };
+                match serde_json::from_slice::<canary_sweep::CanaryReceipt>(&bytes) {
+                    Ok(receipt) => canary_sweep::receipt_problems(
+                        root,
+                        &self.canaries,
+                        entry,
+                        &receipt,
+                        &self.source_commit,
+                    )
+                    .into_iter()
+                    .map(|problem| format!("{prefix} canary proof {}: {problem}", input.id))
+                    .collect(),
+                    Err(error) => vec![format!(
+                        "{prefix} canary proof {} is invalid: {error}",
+                        input.id
+                    )],
+                }
+            }
+        }
+    }
+}
+
+fn write_claim_receipts(root: &Path, receipts_dir: &Path) -> Result<(), Box<dyn Error>> {
+    let registry_text = fs::read_to_string(root.join(REGISTRY))?;
+    let registry: ClaimRegistry = toml::from_str(&registry_text)?;
+    let context = ClaimProofContext::load(root)?;
+    if context.dirty_worktree {
+        return Err("claim receipts can only be written from a clean candidate worktree".into());
+    }
+    let evidence_files = receipt_files(root, receipts_dir)?;
+    let canary_files = receipt_files(root, Path::new(canary_sweep::RECEIPTS_DIR))?;
+    for claim in &registry.claim {
+        let item = context
+            .manifest
+            .work_item
+            .iter()
+            .find(|item| item.id == claim.work_item)
+            .ok_or_else(|| format!("missing release work item {}", claim.work_item))?;
+        let canary = context
+            .canaries
+            .entries
+            .iter()
+            .find(|entry| entry.w_item == claim.work_item)
+            .ok_or_else(|| format!("missing canary for {}", claim.work_item))?;
+        let mut inputs = Vec::new();
+        for (kind, id, files) in item
+            .fast_gate_ids
+            .iter()
+            .map(|id| (ClaimProofKind::FastGate, id, &evidence_files))
+            .chain(
+                item.gated_gate_ids
+                    .iter()
+                    .map(|id| (ClaimProofKind::GatedGate, id, &evidence_files)),
+            )
+            .chain(std::iter::once((
+                ClaimProofKind::Canary,
+                &canary.defect_id,
+                &canary_files,
+            )))
+        {
+            let input = files
+                .iter()
+                .filter_map(|(path, bytes)| proof_input(kind, id, path, bytes).ok())
+                .find(|input| {
+                    context
+                        .validate_proof_input(root, input, &claim.id)
+                        .is_empty()
+                })
+                .ok_or_else(|| format!("no valid exact-candidate {kind:?} proof for {id}"))?;
+            inputs.push(input);
+        }
+        let receipt = ClaimReceipt {
+            schema_version: 1,
+            release: registry.release.clone(),
+            claim_id: claim.id.clone(),
+            work_item: claim.work_item.clone(),
+            source_commit: context.source_commit.clone(),
+            dirty_worktree: false,
+            claim_registry_sha256: sha256(registry_text.as_bytes()),
+            implementation: claim.implementation.clone(),
+            behavior_tests: claim.behavior_tests.clone(),
+            canaries: claim.canaries.clone(),
+            proof_inputs: inputs,
+        };
+        for relative in &claim.receipts {
+            let destination = root.join(relative);
+            if let Some(parent) = destination.parent() {
+                fs::create_dir_all(parent)?;
+            }
+            let temporary = destination.with_extension("json.tmp");
+            fs::write(&temporary, serde_json::to_vec_pretty(&receipt)?)?;
+            fs::rename(temporary, destination)?;
+        }
+    }
+    Ok(())
+}
+
+fn receipt_files(root: &Path, directory: &Path) -> Result<Vec<ReceiptFile>, Box<dyn Error>> {
+    if !safe_relative(directory.to_string_lossy().as_ref())
+        || !directory.starts_with("target/release-evidence")
+    {
+        return Err("receipt directory must be below target/release-evidence".into());
+    }
+    let absolute = root.join(directory);
+    if !absolute.is_dir() {
+        return Err(format!("receipt directory is missing: {}", absolute.display()).into());
+    }
+    let mut files = Vec::new();
+    for entry in fs::read_dir(absolute)? {
+        let path = entry?.path();
+        if path.extension().and_then(|value| value.to_str()) == Some("json") {
+            let relative = path
+                .strip_prefix(root)?
+                .to_string_lossy()
+                .replace('\\', "/");
+            files.push((relative, fs::read(path)?));
+        }
+    }
+    Ok(files)
+}
+
+fn proof_input(
+    kind: ClaimProofKind,
+    id: &str,
+    path: &str,
+    bytes: &[u8],
+) -> Result<ClaimProofInput, Box<dyn Error>> {
+    let actual_id = match kind {
+        ClaimProofKind::FastGate | ClaimProofKind::GatedGate => {
+            serde_json::from_slice::<evidence_run::EvidenceReceipt>(bytes)?.gate_id
+        }
+        ClaimProofKind::Canary => {
+            serde_json::from_slice::<canary_sweep::CanaryReceipt>(bytes)?.defect_id
+        }
+    };
+    if actual_id != id {
+        return Err("proof identity mismatch".into());
+    }
+    Ok(ClaimProofInput {
+        kind,
+        id: id.to_owned(),
+        path: path.to_owned(),
+        bytes: bytes.len() as u64,
+        sha256: sha256(bytes),
+    })
+}
+
+fn sha256(bytes: &[u8]) -> String {
+    Sha256::digest(bytes)
+        .iter()
+        .map(|byte| format!("{byte:02x}"))
+        .collect()
+}
+
+fn git_identity(root: &Path) -> Result<(String, bool), Box<dyn Error>> {
+    let commit = command_output(root, "git", &["rev-parse", "HEAD"])
+        .ok_or("unable to resolve source commit")?;
+    let status = command_output(
+        root,
+        "git",
+        &["status", "--porcelain", "--untracked-files=normal"],
+    )
+    .ok_or("unable to inspect worktree status")?;
+    Ok((commit, !status.trim().is_empty()))
+}
+
+fn command_output(root: &Path, program: &str, args: &[&str]) -> Option<String> {
+    let output = Command::new(program)
+        .current_dir(root)
+        .args(args)
+        .output()
+        .ok()?;
+    output
+        .status
+        .success()
+        .then(|| String::from_utf8_lossy(&output.stdout).trim().to_owned())
+}
+
 fn validate_reference(
     root: &Path,
     reference: &str,
@@ -625,6 +1054,8 @@ fn safe_relative(value: &str) -> bool {
 struct Options {
     root: PathBuf,
     require_evidence: bool,
+    write_receipts: bool,
+    receipts_dir: PathBuf,
 }
 
 impl Options {
@@ -632,12 +1063,18 @@ impl Options {
         let mut root = None;
         let mut release = "0.72".to_owned();
         let mut require_evidence = false;
+        let mut write_receipts = false;
+        let mut receipts_dir = PathBuf::from("target/release-evidence/receipts");
         let mut it = args.into_iter();
         while let Some(arg) = it.next() {
             match arg.as_str() {
                 "--root" => root = Some(PathBuf::from(it.next().ok_or("--root requires a path")?)),
                 "--release" => release = it.next().ok_or("--release requires a value")?,
                 "--require-evidence" | "--require-ship" => require_evidence = true,
+                "--write-receipts" => write_receipts = true,
+                "--receipts-dir" => {
+                    receipts_dir = PathBuf::from(it.next().ok_or("--receipts-dir requires a path")?)
+                }
                 other => {
                     return Err(format!("unknown management-center-check argument: {other}").into())
                 }
@@ -649,6 +1086,8 @@ impl Options {
         Ok(Self {
             root: root.unwrap_or(doc_check::find_repo_root()?),
             require_evidence,
+            write_receipts,
+            receipts_dir,
         })
     }
 }

@@ -83,9 +83,9 @@ fn management_registry_rejects_missing_or_tampered_proof() {
         .any(|problem| problem.contains("unknown canary")));
 
     let ship_problems = xtask::management_center::check(&root(), true).unwrap();
-    assert!(ship_problems
-        .iter()
-        .any(|problem| problem.contains("lacks exact-candidate evidence")));
+    assert!(ship_problems.iter().any(|problem| problem
+        .contains("receipt target/release-evidence/management-center/0.72")
+        && problem.contains("is missing")));
     let partial_taxonomy = taxonomy.replace(
         "id = \"bounded-resource-pressure\"\nstatus = \"covered\"",
         "id = \"bounded-resource-pressure\"\nstatus = \"partial\"",
@@ -102,6 +102,22 @@ fn management_registry_rejects_missing_or_tampered_proof() {
     assert!(partial_problems
         .iter()
         .any(|problem| problem.contains("bounded-resource-pressure is not covered")));
+}
+
+#[test]
+fn management_claims_require_machine_validated_candidate_receipts() {
+    let claims =
+        fs::read_to_string(root().join("docs/testing/management-center/0.72/claims.toml")).unwrap();
+    let value: toml::Value = toml::from_str(&claims).unwrap();
+    for claim in value["claim"].as_array().unwrap() {
+        assert_eq!(claim["status"].as_str(), Some("implemented"));
+        for receipt in claim["receipts"].as_array().unwrap() {
+            let path = receipt.as_str().unwrap();
+            assert!(path.starts_with("target/release-evidence/management-center/0.72/"));
+            assert!(path.ends_with(".json"));
+        }
+    }
+    assert!(!claims.contains("-evidence.md\"]\nstatus = \"evidenced\""));
 }
 
 #[test]
