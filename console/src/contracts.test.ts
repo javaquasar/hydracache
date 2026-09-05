@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 import { backoffDelay, fetchManagementEnvelope, isEnvelope, MANAGEMENT_HEADERS } from "./api";
 import { routeFromHash } from "./router";
 import { normalizeObservationSource, shouldAcceptObservation } from "./state";
+import { capabilityAllowsEndpoint, capabilityViews } from "./capabilities";
 
 const envelope = {
   schema_version: 1,
@@ -41,6 +42,19 @@ describe("typed management contracts", () => {
   it("routes only to declared sections", () => {
     expect(routeFromHash("#members")).toBe("members");
     expect(routeFromHash("#unknown")).toBe("dashboard");
+  });
+
+  it("maps absent and unavailable capabilities to hidden views without issuing their requests", () => {
+    const views = capabilityViews({
+      capabilities: [
+        { id: "cluster_formation", availability: "partial", reason: "partial-observation" },
+        { id: "persistence_recovery", availability: "unavailable", reason: "status-not-retained" },
+      ],
+    });
+    expect(views.find((view) => view.id === "cluster_formation")).toMatchObject({ available: true });
+    expect(views.find((view) => view.id === "consensus_progress")).toMatchObject({ available: false, reason: "capability-not-advertised" });
+    expect(capabilityAllowsEndpoint("recovery", { capabilities: [{ id: "persistence_recovery", availability: "unavailable" }] })).toBe(false);
+    expect(capabilityAllowsEndpoint("dashboard", {})).toBe(true);
   });
 
   it("rejects source and observation regression", () => {

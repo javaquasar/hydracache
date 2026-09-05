@@ -13,6 +13,8 @@ export const MANAGEMENT_ENDPOINTS = Object.freeze({
   audit: "/management/v1/audit?limit=100",
 });
 
+export const MANAGEMENT_CAPABILITIES_ENDPOINT = "/management/v1/capabilities";
+
 export const MANAGEMENT_HEADERS = Object.freeze({
   "x-hydracache-client-id": "management-console",
   "x-hydracache-tenant": "operator",

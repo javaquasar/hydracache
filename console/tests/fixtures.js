@@ -9,6 +9,19 @@ const metadata = {
   warnings: [{ code: "partial-observation", affected_count: 6 }],
 };
 
+export const capabilitiesEnvelope = {
+  ...metadata,
+  completeness: "complete",
+  warnings: [],
+  data: {
+    capabilities: [
+      { id: "cluster_formation", availability: "available", reason: null },
+      { id: "consensus_progress", availability: "available", reason: null },
+      { id: "persistence_recovery", availability: "available", reason: null },
+    ],
+  },
+};
+
 export const dashboardEnvelope = {
   ...metadata,
   data: {

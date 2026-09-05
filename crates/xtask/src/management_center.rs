@@ -317,6 +317,7 @@ pub fn check_coverage_document(
         "crates/hydracache-server/src/generated_console_assets.rs",
         "console/src/api.ts",
         "console/src/app.tsx",
+        "console/src/capabilities.ts",
         "console/src/controller.ts",
         "console/src/history.ts",
         "console/src/router.ts",

@@ -16,6 +16,7 @@ const required = [
   "src/app.tsx",
   "src/controller.ts",
   "src/api.ts",
+  "src/capabilities.ts",
   "src/state.ts",
   "src/router.ts",
   "src/history.ts",
@@ -75,6 +76,7 @@ for (const marker of [
   "source-badge",
   "render(<AppShell />",
   "MANAGEMENT_ROUTES",
+  "capabilityAllowsEndpoint",
 ]) {
   if (!sourceText.includes(marker)) throw new Error(`missing console source marker: ${marker}`);
 }

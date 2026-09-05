@@ -129,6 +129,7 @@ export function AppShell() {
         <main class="page-shell" id="dashboard">
           <section class="degraded" data-testid="degraded-state" role="alert" hidden />
           <section class="warning-strip" data-testid="truth-warnings" role="status" aria-live="polite" hidden />
+          <section class="warning-strip" data-testid="capability-notices" role="status" aria-live="polite" hidden />
           <Summary />
           <HealthPanel />
           <HistoryPanel />

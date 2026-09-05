@@ -3,6 +3,7 @@ import AxeBuilder from "@axe-core/playwright";
 
 import {
   auditEnvelope,
+  capabilitiesEnvelope,
   consensusEnvelope,
   clientsEnvelope,
   dashboardEnvelope,
@@ -115,6 +116,26 @@ test("summary_links_open_read_only_filtered_sections", async ({ page }) => {
   await expect(page.locator("#formation")).toBeVisible();
   await page.getByTestId("recovery-summary").click();
   await expect(page).toHaveURL(/#recovery$/);
+});
+
+test("capabilities hide unavailable views and suppress their request loop", async ({ page }) => {
+  const capabilities = structuredClone(capabilitiesEnvelope);
+  capabilities.data.capabilities = capabilities.data.capabilities.filter(
+    (item) => item.id !== "consensus_progress",
+  );
+  capabilities.data.capabilities.find((item) => item.id === "persistence_recovery").availability = "unavailable";
+  capabilities.data.capabilities.find((item) => item.id === "persistence_recovery").reason = "status-not-retained";
+  const requestPaths = [];
+  await routeManagement(page, { capabilities, requestPaths });
+  await page.goto(consoleUrl);
+
+  await expect(page.locator("nav a[href='#consensus']")).toBeHidden();
+  await expect(page.locator("#consensus")).toBeHidden();
+  await expect(page.locator("#recovery")).toBeHidden();
+  await expect(page.getByTestId("capability-notices")).toContainText("consensus: unavailable (capability-not-advertised)");
+  await expect(page.getByTestId("capability-notices")).toContainText("recovery: unavailable (status-not-retained)");
+  expect(requestPaths).not.toContain("/management/v1/consensus/progress");
+  expect(requestPaths).not.toContain("/management/v1/persistence/recovery");
 });
 
 test("console_is_read_only_and_never_scrapes_prometheus", async ({ page }) => {
@@ -268,6 +289,7 @@ test("tablet layout retains truth at effective 200 percent zoom without page ove
 
 async function routeManagement(page, overrides = {}) {
   const fixtures = {
+    capabilities: overrides.capabilities ?? capabilitiesEnvelope,
     dashboard: overrides.dashboard ?? dashboardEnvelope,
     formation: overrides.formation === undefined ? formationEnvelope : overrides.formation,
     consensus: overrides.consensus === undefined ? consensusEnvelope : overrides.consensus,
@@ -299,9 +321,12 @@ async function routeManagement(page, overrides = {}) {
   };
   await page.route("**/management/v1/**", (route) => {
     const path = new URL(route.request().url()).pathname;
+    overrides.requestPaths?.push(path);
     overrides.requestMethods?.push(route.request().method());
     overrides.requestHeaders?.push(route.request().headers());
-    const fixture = path.includes("/placement-traces/")
+    const fixture = path.endsWith("/capabilities")
+      ? fixtures.capabilities
+      : path.includes("/placement-traces/")
       ? fixtures.placementTrace
       : /\/namespaces\/[^/]+\/caches$/.test(path)
         ? fixtures.namespaceCaches

@@ -4,7 +4,7 @@
 pub(crate) fn get(path: &str) -> Option<(&'static str, &'static [u8])> {
     match path {
         "app.js" => Some(("text/javascript; charset=utf-8", include_bytes!(concat!(env!("CARGO_MANIFEST_DIR"), "/console/app.js")))),
-        "assets/index-DSJ-a2TK.js" => Some(("text/javascript; charset=utf-8", include_bytes!(concat!(env!("CARGO_MANIFEST_DIR"), "/console/assets/index-DSJ-a2TK.js")))),
+        "assets/index-DtBtpmpB.js" => Some(("text/javascript; charset=utf-8", include_bytes!(concat!(env!("CARGO_MANIFEST_DIR"), "/console/assets/index-DtBtpmpB.js")))),
         "assets/index-lVZVr4pw.css" => Some(("text/css; charset=utf-8", include_bytes!(concat!(env!("CARGO_MANIFEST_DIR"), "/console/assets/index-lVZVr4pw.css")))),
         "history.js" => Some(("text/javascript; charset=utf-8", include_bytes!(concat!(env!("CARGO_MANIFEST_DIR"), "/console/history.js")))),
         "index.html" => Some(("text/html; charset=utf-8", include_bytes!(concat!(env!("CARGO_MANIFEST_DIR"), "/console/index.html")))),

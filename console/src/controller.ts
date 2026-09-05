@@ -1,9 +1,11 @@
 import { HISTORY_LIMITS, SnapshotHistory, shouldPauseCollection } from "./history";
 import {
+  MANAGEMENT_CAPABILITIES_ENDPOINT,
   MANAGEMENT_ENDPOINTS,
   backoffDelay,
   fetchManagementEnvelope,
 } from "./api";
+import { capabilityAllowsEndpoint, capabilityViews } from "./capabilities";
 import { normalizeObservationSource } from "./state";
 
 const MAX_RENDERED_MEMBERS = 48;
@@ -80,11 +82,18 @@ async function refresh() {
   state.controller = controller;
   setText("poll-state", "refreshing typed snapshots");
   try {
+    const capabilities = await fetchManagementEnvelope(
+      MANAGEMENT_CAPABILITIES_ENDPOINT,
+      controller.signal,
+    );
     const historyEnd = Date.now();
-    const requestEndpoints = {
+    const candidates = {
       ...MANAGEMENT_ENDPOINTS,
       remoteHistory: `/management/v1/history?query_id=cache_entries&start_ms=${historyEnd - 3_600_000}&end_ms=${historyEnd}&step_ms=60000`,
     };
+    const requestEndpoints = Object.fromEntries(
+      Object.entries(candidates).filter(([name]) => capabilityAllowsEndpoint(name, capabilities.data)),
+    );
     const results = await Promise.allSettled(
       Object.entries(requestEndpoints).map(async ([name, url]) => [
         name,
@@ -94,6 +103,7 @@ async function refresh() {
     const values: RenderValues = Object.fromEntries(
       results.filter((item) => item.status === "fulfilled").map((item) => item.value),
     );
+    values.capabilities = capabilities;
     if (!values.dashboard) throw new Error("dashboard snapshot unavailable");
     const traceId = values.partitions?.data?.placement_trace_id;
     if (typeof traceId === "string" && /^[A-Za-z0-9_-]{1,128}$/.test(traceId)) {
@@ -149,6 +159,7 @@ function render(values: RenderValues) {
   const degraded = byTest("degraded-state");
   degraded.hidden = true;
   renderWarnings(Object.values(values));
+  renderCapabilities(values.capabilities);
   renderSummary(data, values);
   renderMetrics(data);
   renderMembers(values.members?.data?.items ?? data.members ?? []);
@@ -170,6 +181,24 @@ function render(values: RenderValues) {
     envelope.captured_at_unix_ms,
   );
   renderHistory();
+}
+
+function renderCapabilities(envelope: WireValue) {
+  const notices = byTest("capability-notices");
+  notices.replaceChildren();
+  for (const view of capabilityViews(envelope?.data)) {
+    for (const link of document.querySelectorAll(`a[href='#${view.route}']`)) {
+      (link as HTMLElement).hidden = !view.available;
+    }
+    const section = document.getElementById(view.route);
+    if (section !== null) section.hidden = !view.available;
+    if (!view.available) {
+      const notice = document.createElement("p");
+      notice.textContent = `${view.route}: unavailable (${view.reason})`;
+      notices.append(notice);
+    }
+  }
+  notices.hidden = notices.childElementCount === 0;
 }
 
 function renderRemoteHistory(envelope: WireValue) {
