@@ -46,6 +46,10 @@ test("console_renders_typed_dashboard_and_all_truth_states", async ({ page }) =>
   await expect(page.getByTestId("truth-warnings")).toContainText("partial-observation");
   await expect(page.getByTestId("placement-state")).toHaveText("committed");
   await expect(page.getByTestId("placement-details")).toContainText("96");
+  await expect(page.getByTestId("placement-details")).toContainText("topology epoch42");
+  await expect(page.getByTestId("placement-details")).toContainText("required labelsssd");
+  await expect(page.getByTestId("placement-details")).toContainText("excluded labelsarchive");
+  await expect(page.getByTestId("placement-details")).toContainText("tie-break seed7");
   await expect(page.getByTestId("partition-row")).toHaveCount(2);
   await expect(page.getByTestId("members-list")).toContainText("sha256-v1:abc123");
   await expect(page.getByTestId("members-list")).toContainText("0.72.0");
@@ -223,6 +227,26 @@ test("placement_outcomes_and_stale_warning_are_rendered_without_inference", asyn
     await expect(page.getByTestId("placement-state")).toHaveText(outcome ?? "unavailable");
     await expect(page.getByTestId("truth-warnings")).toContainText("stale-observation");
   }
+});
+
+test("placement_trace_exposes_constraints_identity_progress_and_truncation", async ({ page }) => {
+  const placementTrace = structuredClone(placementTraceEnvelope);
+  placementTrace.data.candidates.truncated = true;
+  placementTrace.data.constraints.truncated = true;
+  await routeManagement(page, { placementTrace });
+  await page.goto(`${consoleUrl}#placement`);
+  const evidence = page.getByTestId("placement-details");
+  await expect(evidence).toContainText("tracetrace_Opaque-42");
+  await expect(evidence).toContainText("requestrequest_Opaque-42");
+  await expect(evidence).toContainText("requested replicas2");
+  await expect(evidence).toContainText("required zones2");
+  await expect(evidence).toContainText("unique hostsyes");
+  await expect(evidence).toContainText("candidate detailtruncated");
+  await expect(evidence).toContainText("constraint detailtruncated");
+  await expect(evidence).toContainText("committed100");
+  await expect(evidence).toContainText("applied96");
+  await expect(evidence).toContainText("sourcelive");
+  await expect(evidence).toContainText("completenesscomplete");
 });
 
 test("summary_links_open_read_only_filtered_sections", async ({ page }) => {

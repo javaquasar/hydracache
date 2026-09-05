@@ -186,12 +186,26 @@ export const placementTraceEnvelope = {
   ...metadata,
   completeness: "complete",
   data: {
+    schema_version: 1,
     trace_id: "trace_Opaque-42",
     topology_epoch: 42,
+    request_digest: "request_Opaque-42",
+    requested_replicas: 2,
+    constraints: {
+      required_labels: ["ssd"],
+      excluded_labels: ["archive"],
+      required_zones: 2,
+      unique_hosts: true,
+      truncated: false,
+    },
     outcome: "committed",
     commit_index: 100,
     applied_index: 96,
     selected: ["node-opaque-2"],
+    tie_break_seed: 7,
+    reason: null,
+    source: "live",
+    completeness: "complete",
     candidates: {
       items: [
         { node: "node-opaque-2", selected: true, reasons: [] },

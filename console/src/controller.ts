@@ -849,9 +849,25 @@ function renderPlacement(trace: WireValue, fallback: WireValue) {
   const state = byTest("placement-state");
   state.textContent = placement?.outcome ?? "unavailable";
   state.className = `truth-chip ${placement?.outcome ?? "unavailable"}`;
+  const constraints = trace?.constraints ?? {};
   byTest("placement-details").replaceChildren(
+    pill("trace", trace?.trace_id ?? "unavailable"),
+    pill("schema", known(trace?.schema_version)),
+    pill("topology epoch", known(trace?.topology_epoch)),
+    pill("request", trace?.request_digest ?? "unavailable"),
+    pill("requested replicas", known(trace?.requested_replicas)),
     pill("selected", known(Array.isArray(placement?.selected) ? placement.selected.length : placement?.selected)),
     pill("rejected", known(trace ? trace.candidates?.items?.filter((item: WireValue) => !item.selected).length : placement?.rejected)),
+    pill("candidate detail", trace ? (trace.candidates?.truncated ? "truncated" : "complete") : "unavailable"),
+    pill("required labels", Array.isArray(constraints.required_labels) && constraints.required_labels.length > 0 ? constraints.required_labels.join(", ") : "none"),
+    pill("excluded labels", Array.isArray(constraints.excluded_labels) && constraints.excluded_labels.length > 0 ? constraints.excluded_labels.join(", ") : "none"),
+    pill("required zones", known(constraints.required_zones)),
+    pill("unique hosts", truth(constraints.unique_hosts)),
+    pill("constraint detail", trace ? (constraints.truncated ? "truncated" : "complete") : "unavailable"),
+    pill("tie-break seed", known(trace?.tie_break_seed)),
+    pill("reason", trace?.reason ?? "none"),
+    pill("source", trace?.source ?? "unavailable"),
+    pill("completeness", trace?.completeness ?? "unavailable"),
     pill("committed", known(trace?.commit_index ?? placement?.latest_committed_epoch)),
     pill("applied", known(trace?.applied_index ?? placement?.latest_applied_epoch)),
   );
