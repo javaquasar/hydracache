@@ -1183,8 +1183,8 @@ fn write_contract_files(
         ("anchor", "anchor.json", serde_json::to_vec_pretty(anchor)?),
     ];
     let mut files = Vec::new();
-    for (id, name, mut bytes) in values {
-        bytes.push(b'\n');
+    for (id, name, bytes) in values {
+        let bytes = canonical_output_bytes(bytes);
         write_new_bytes(&directory.join(name), &bytes)?;
         files.push(FileDigest {
             id: id.to_owned(),
@@ -1193,6 +1193,14 @@ fn write_contract_files(
         });
     }
     Ok(files)
+}
+
+fn canonical_output_bytes(mut bytes: Vec<u8>) -> Vec<u8> {
+    while matches!(bytes.last(), Some(b'\r' | b'\n')) {
+        bytes.pop();
+    }
+    bytes.push(b'\n');
+    bytes
 }
 
 fn verify_files(root: &Path, files: &[FileDigest]) -> Result<(), Box<dyn Error>> {
@@ -1402,5 +1410,24 @@ impl Options {
             );
         }
         Ok(options)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::canonical_output_bytes;
+
+    #[test]
+    fn generated_contracts_have_exactly_one_trailing_newline() {
+        for input in [
+            b"payload".to_vec(),
+            b"payload\n".to_vec(),
+            b"payload\r\n\n".to_vec(),
+        ] {
+            let bytes = canonical_output_bytes(input);
+            assert!(bytes.ends_with(b"\n"));
+            assert!(!bytes.ends_with(b"\n\n"));
+            assert!(!bytes.ends_with(b"\r\n"));
+        }
     }
 }
