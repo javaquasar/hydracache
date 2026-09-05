@@ -53,6 +53,33 @@ fn nextest_serializes_trybuild_harnesses_with_a_bounded_compile_timeout() {
         compile_override["slow-timeout"]["terminate-after"].as_integer(),
         Some(3)
     );
+    assert_eq!(
+        compile_override["threads-required"].as_str(),
+        Some("num-test-threads")
+    );
+
+    let ownership_override = config["profile"]["ci"]["overrides"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|entry| {
+            entry["filter"].as_str().is_some_and(|filter| {
+                filter.contains("checked_in_registry_closes_current_production_inventory")
+            })
+        })
+        .unwrap();
+    assert_eq!(
+        ownership_override["threads-required"].as_str(),
+        Some("num-test-threads")
+    );
+    assert_eq!(
+        ownership_override["slow-timeout"]["period"].as_str(),
+        Some("120s")
+    );
+    assert_eq!(
+        ownership_override["slow-timeout"]["terminate-after"].as_integer(),
+        Some(2)
+    );
 }
 
 #[test]
