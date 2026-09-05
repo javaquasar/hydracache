@@ -11,7 +11,8 @@
 > - **Depends on:** shipped `0.67.0`.
 > - **Unblocks:** official, narrowly scoped reference evidence and future numerical capacity
 >   claims. It is no longer a source-code prerequisite for the `0.68.0` Rust release.
-> - **Status:** in-progress; implementation complete, authoritative qualification deferred.
+> - **Status:** in-progress; W0-W6 complete with reviewed dedicated-host activation, W7 frozen
+>   candidate pending.
 >
 > Roadmap: [`INDEX.md`](INDEX.md) - parent plan:
 > [`V0_67_PERFORMANCE_CHARACTERIZATION_PLAN.md`](V0_67_PERFORMANCE_CHARACTERIZATION_PLAN.md)
@@ -24,10 +25,11 @@ Read [`CLAUDE.md`](../../CLAUDE.md), [`docs/RULES.md`](../RULES.md),
 [`docs/PERFORMANCE.md`](../PERFORMANCE.md), and [`docs/GATES.md`](../GATES.md) first.
 This is an evidence/bootstrap patch, not an optimization or product-surface release.
 
-**Preparation state:** W0-W4 acquisition/aggregation and W5-W7 deterministic
-proposal/review/activation/frozen-candidate machinery are prepared. Live evidence is still required;
-this does not mark 0.67.1 shipped, resolve TD-0013, satisfy any runtime stage receipt, or authorize a
-numerical claim. ADR-0020 permits the separately scoped 0.68 Rust release to proceed while this
+**Execution state:** W1 qualification, two-run full-dress admission, W4's exact five chained
+bootstrap samples, W5 independent review, and W6 activation are complete. TD-0013 is resolved by
+the reviewed bootstrap evidence. W7 still requires a clean frozen-candidate run from the exact
+activation merge SHA; until that passes, `0.67.1` remains in progress and no final release verdict
+is authorized. ADR-0020 permits the separately scoped 0.68 Rust release to proceed while this
 evidence-only campaign remains `in-progress`.
 
 **Non-ship readiness additions:** a separate `indicative-exploratory-v1` tier

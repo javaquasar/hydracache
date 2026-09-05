@@ -2,45 +2,64 @@
 
 ## Status
 
-Open — blocked on dedicated infrastructure.
+Resolved — 2026-09-05. One protected bare-metal runner was qualified, two full-dress runs were
+admitted, exactly five chained bootstrap samples were retained, and the resulting reference
+contracts were independently reviewed and activated.
 
 Owner: performance/release infrastructure.
 
-Candidate target: the first evidence-only follow-up after a protected `hydracache-perf-v1` runner is available. This debt does not block shipping the 0.67 measurement framework without numerical performance claims.
+Resolution target: the evidence-only `0.67.1` reference activation. The separate frozen-candidate
+run remains release work item W7 and must pass before `0.67.1` may ship or publish a final
+performance verdict.
 
 ## Context
 
-Release 0.67 implements the open-loop load generator, scenario catalog, report schemas, runner attestation, immutable-anchor and rolling-baseline validation, exact-candidate receipts, and the protected self-hosted workflow. The remaining work is not product code: no non-shared bare-metal runner is currently available to generate stable official reference evidence.
+Release 0.67 implemented the open-loop load generator, scenario catalog, report schemas, runner
+attestation, immutable-anchor and rolling-baseline validation, exact-candidate receipts, and the
+protected self-hosted workflow. Release 0.67.1 supplied the missing dedicated-host evidence: one
+privacy-safe fingerprint, five exact pre-candidate samples, and independently reviewed anchor,
+rolling baseline, and numerical budgets. The committed `reference-v1` contract is now
+`bootstrapped`.
 
-The committed `reference-v1` profile, anchor, budgets, and baseline therefore remain `unbootstrapped`. The five reference execution gates remain registered, manual, serialized, and fail-closed, but are deferred evidence gates rather than 0.67 ship-mandatory gates.
-
-## Why It Is Deferred
+## Why It Was Deferred
 
 GitHub-hosted runners are shared and variable. Their results are useful as broad regression tripwires, but they cannot honestly establish an immutable capacity anchor, portable sizing guidance, or a same-box comparative release claim. Weakening repeat counts, zero-error rules, SLOs, the 15% spread limit, fingerprint checks, or baseline eligibility would manufacture confidence rather than evidence.
 
-## Risk While Open
+## Resolution Evidence
 
-- HydraCache has no official capacity floors or sizing guidance.
-- No Redis comparative result may be quoted as a 0.67 release claim.
-- No numerical `reference-v1` baseline or budget is active.
-- A regression that remains inside the broad hosted-runner tripwire tolerance may not be detected until the dedicated lane is bootstrapped.
+- one non-virtualized bare-metal host passed the v5 topology, isolation, NVMe, kernel, toolchain,
+  calibration, and IRQ admission contract;
+- two distinct full-dress runs established immutable admission for the bootstrap chain;
+- five successful `main` runs from commit
+  `b3304e3a560fdddaf820d813a76773ca33565c50` used one runner fingerprint and one contract family;
+- every sample was artifact-bound, zero-error, stable under its committed acquisition limits, and
+  chained to the preceding accepted receipt;
+- the proposal retained all five eligible samples, selected medians rather than a fastest run,
+  preserved the fixed 10% anchor/rolling tolerance and 5% frozen-candidate per-report spread
+  ceiling, and received an independent digest-bound approval;
+- reviewed bytes are committed under `docs/testing/perf-{anchors,baselines,budgets,reviews}/0.67.1/`.
 
-## Constraints While Open
+## Remaining Release Boundary
 
-- GitHub-hosted `ci-shared` measurements are tripwire-only and never capacity evidence.
-- `reference-v1` remains `unbootstrapped`; numerical release claims are forbidden.
-- The self-hosted workflow stays protected, manual, serialized, and fail-closed.
-- Missing tools, unstable spread, mismatched fingerprints, insufficient history, or failed measurements remain red; this deferral must not relax their checks.
+- GitHub-hosted `ci-shared` measurements remain tripwire-only and never capacity evidence.
+- The reviewed numbers describe only the admitted physical host, exact scenarios, exact toolchain,
+  and documented method. They are not portable sizing guidance or universal Redis comparisons.
+- Hardware, kernel, topology, governor, turbo, storage identity, toolchain, or contract drift requires
+  requalification; it must not migrate this baseline automatically.
+- W7 must still run the complete frozen candidate from the exact activation merge SHA. Until it is
+  green, `0.67.1` is not shipped and the reviewed bootstrap values are not a final release verdict.
 
 ## Definition Of Done
 
-Close this debt only when all of the following are independently verified:
+This debt was closed after all bootstrap-specific conditions were independently verified:
 
 1. A protected non-shared bare-metal runner with the exact `hydracache-perf-v1` label is connected and satisfies the committed host contract.
 2. At least five eligible, stable, successful `main` runs from one runner fingerprint and contract family are retained.
 3. The immutable anchor, rolling baseline selection, and numerical budgets are independently reviewed.
 4. The committed `reference-v1` profile, anchor, budgets, and baseline are changed from `unbootstrapped` to `bootstrapped` without candidate self-baselining.
-5. The full reference pipeline is green for one frozen clean candidate, including core, RESP/Redis, control-plane, budget, canary, receipt, and artifact-integrity stages.
+5. The activation commit preserves candidate self-baseline prevention. The subsequent full frozen
+   candidate, including core, RESP/Redis, control-plane, budget, canary, receipt, and artifact
+   integrity stages, remains the distinct W7 ship gate.
 
 ## Related
 

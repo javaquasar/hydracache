@@ -289,7 +289,7 @@ file = "docs/plans/V0_67_1_DEDICATED_PERFORMANCE_REFERENCE_BOOTSTRAP_PLAN.md"
 status = "in-progress"
 networked_control_plane = true
 work_items = ["W0", "W1", "W2", "W3", "W4", "W5", "W6", "W7"]
-theme = "Dedicated Performance Reference Bootstrap - implementation and orchestration hardening are complete, while authoritative bare-metal qualification is explicitly deferred until suitable rented hardware is available. The unchanged evidence campaign must still qualify one protected non-shared bare-metal runner, collect at least five stable pre-candidate main runs from one fingerprint/contract family, independently review immutable anchor/rolling baseline/budgets, activate reference-v1 without candidate self-baselining, close TD-0013, and pass the full frozen-candidate pipeline. No failed run, numerical claim, product optimization, or surface change is promoted."
+theme = "Dedicated Performance Reference Bootstrap - one protected non-shared bare-metal fingerprint passed qualification and two-run full-dress admission; exactly five stable chained pre-candidate main runs from one contract family were retained; and the immutable anchor, rolling baseline, budgets, and reference-v1 profile were independently reviewed and activated without candidate self-baselining, closing TD-0013. The separate full frozen-candidate pipeline remains the W7 ship gate. No failed run, portable sizing statement, universal comparison, product optimization, or surface change is promoted."
 depends_on = ["0.67.0"]
 
 [[release]]

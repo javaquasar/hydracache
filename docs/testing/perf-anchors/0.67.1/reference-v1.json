@@ -1,0 +1,3248 @@
+{
+  "schema_version": 1,
+  "release": "0.67.1",
+  "profile": "reference-v1",
+  "sample_set_sha256": "9069de679ee9be070084ea94485ee538d65db669f8d8d3edd8ad5bd371810b83",
+  "anchor": {
+    "status": "bootstrapped",
+    "frozen_at": "2026-09-05T11:41:57.987233208Z",
+    "contract_commit": "b3304e3a560fdddaf820d813a76773ca33565c50",
+    "source_run_ids": [
+      "33928168358",
+      "33936443587",
+      "33943280348",
+      "33949714161",
+      "33957530434"
+    ],
+    "source_member": [
+      {
+        "run_id": "33928168358",
+        "branch": "main",
+        "source_commit": "b3304e3a560fdddaf820d813a76773ca33565c50",
+        "observed_at": "2026-09-05T01:31:27.408793145Z",
+        "successful": true,
+        "quarantined": false,
+        "calibration_passed": true,
+        "spread_stable": true,
+        "gate_exit_code": 0,
+        "git_status_porcelain_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "quarantine_reason": null,
+        "runner_contract": {
+          "name": "reference-v1",
+          "required_runner_class": "self-hosted-bare-metal-v1",
+          "allowed_fingerprints": [
+            "25baeec1c9ec75da90b5dd0f29c101897450b96651d7e47570e18684be486ebb"
+          ],
+          "minimum_logical_cores": 4,
+          "required_cpu_affinity": "1-4",
+          "required_cgroup_cpu_quota": "unlimited",
+          "require_dedicated": true,
+          "maximum_calibration_score": 0.25
+        },
+        "runner_contract_digest": "c728014af9fd0aae4c474456e74437a033110940db01caa1577b1b5b5efabfe0",
+        "observed_runner": {
+          "runner_class": "self-hosted-bare-metal-v1",
+          "fingerprint": "25baeec1c9ec75da90b5dd0f29c101897450b96651d7e47570e18684be486ebb",
+          "cpu_model": "AMD Ryzen 7 PRO 8700GE w/ Radeon 780M Graphics",
+          "logical_cores": 4,
+          "ram_bytes": 66490494976,
+          "os": "linux",
+          "kernel": "6.8.0-138-generic",
+          "cpu_affinity": "1-4",
+          "cgroup_cpu_quota": "unlimited",
+          "governor": "performance",
+          "turbo": "enabled",
+          "shared_hardware": false,
+          "calibration_score": 0.0036919469208773494,
+          "attestation": {
+            "schema_version": 5,
+            "contract_version": "hydracache-reference-host-v5",
+            "virtualization": "none",
+            "physical_cores": 8,
+            "measurement_cores": [
+              {
+                "logical_cpu": 1,
+                "package_id": 0,
+                "core_id": 1
+              },
+              {
+                "logical_cpu": 2,
+                "package_id": 0,
+                "core_id": 2
+              },
+              {
+                "logical_cpu": 3,
+                "package_id": 0,
+                "core_id": 3
+              },
+              {
+                "logical_cpu": 4,
+                "package_id": 0,
+                "core_id": 4
+              }
+            ],
+            "cpu_isolation": {
+              "smt_control": "off",
+              "online_cpus": "0-7",
+              "isolated_cpus": "1-4",
+              "nohz_full_cpus": "1-4",
+              "rcu_nocbs_cpus": "1-4",
+              "housekeeping_cpus": "0,5-7",
+              "irq_affinity_policy": "housekeeping-only-v1",
+              "measurement_idle_policy": "latency-cap-us-v1",
+              "measurement_max_idle_latency_us": 1,
+              "housekeeping_idle_policy": "latency-cap-us-v1",
+              "housekeeping_max_idle_latency_us": 1
+            },
+            "host_digest": "571591a534c9894242fc0af0c5f80c31131fe7e4cdb9d0ea63da6d8b56af8932",
+            "storage_class": "local-nvme",
+            "storage_identity_digest": "2833a0938166031dd80b21de8a9fc4912f53b5e33914d07e2ac4ae74efc3805f",
+            "os_image": "ubuntu-24.04",
+            "toolchain_identity": "rustc-1.94.0",
+            "prebuild_contract_digest": "f2caae0689d8b075d2a6d59d6090466365f9a6824c6996d6b92830956831cc55"
+          }
+        },
+        "runner_fingerprint": "25baeec1c9ec75da90b5dd0f29c101897450b96651d7e47570e18684be486ebb",
+        "toolchain_identity": "rustc-1.94.0",
+        "prebuild_contract_digest": "f2caae0689d8b075d2a6d59d6090466365f9a6824c6996d6b92830956831cc55",
+        "profile_sha256": "b12cdad2db06ba8cb2c8f1344491cf586a9bbe7e93f4a9a203eb82463f6ffc31",
+        "budget_sha256": "d5eb28b7ec433730aa40c9a78ca87c8df258444760eaf212963a10e6b563aa40",
+        "report": [
+          {
+            "report_id": "local",
+            "report_sha256": "3e8b158fc668e4bd0d0472c30f614130eac413c0974bb353d695ee3b315e6b64",
+            "scenario_digest": "41877a7da9095d085008581a48b411c22e5c8eafa288f08e6383b1ce4d87bbd4",
+            "workload_digest": "c9efd268ee3afdf95833aa892ad96c8589c1c7133ba23cde3b7b3462a4894715",
+            "slo_digest": "1dcde01444e6427a08940f23fc93ba1128201b723026ba5ce1c6e97e478285b7",
+            "methodology_digest": "f9c5b268795fed99849e77f3be9a2e0e414ceb8d0e26107f092df345e46907be",
+            "cargo_lock_sha256": "dc480dad8567eda4a4d13b393651d3d1201cc26ba7599e3c8ff822b725569def",
+            "prebuild_manifest_sha256": "51719b644a1fa8ff11790483ec91b07df32d3f2e946890aabd6de35e3857eee4",
+            "binary_sha256": [
+              {
+                "id": "hydracache-loadgen",
+                "sha256": "b8f5afe27ac272a0be883879a51294ff509663d13c5949fdffdcf3f87f5adae1"
+              },
+              {
+                "id": "hydracache-server",
+                "sha256": "a17b5148cad43e2193c69a64e3372e2832fa94a47196a7b6bec405128f3633c6"
+              }
+            ],
+            "binary_set_digest": "9ac47b2a45fe70f5fe856bf1072545569bee9568d6d3eb1a65c47b978a697600",
+            "stable": true,
+            "maximum_spread_ratio": 0.0001256421152710607,
+            "metric": [
+              {
+                "id": "hot_key_contention_throughput_floor.throughput_at_slo",
+                "value": 20000.0,
+                "unit": "operations_per_second"
+              },
+              {
+                "id": "hot_key_contention_throughput_floor.p99_microseconds_at_slo",
+                "value": 1936.0,
+                "unit": "microseconds"
+              }
+            ],
+            "receipt_sha256": "8b629a7c8057a54aa0f4af66c45bd53ebb6f84fa22f4c14832388cfb5bbdcb04"
+          },
+          {
+            "report_id": "client-surface",
+            "report_sha256": "b3ebfbaf16bf64e74d31716a8d8c164d06dfe5cb19d727e2a6ea9a36fed565c6",
+            "scenario_digest": "c35633445676d474f344fbf23d788a5a0bf63a3add96db1c042ba59d0ac401fa",
+            "workload_digest": "9c8472282999d14b3da2039a86662d85cca40354f7a18404fef19971432942b7",
+            "slo_digest": "e024a1a54f480f4d853cf32867cdfb285e41983b88c4e9fcdeb6a783cb5759d5",
+            "methodology_digest": "46d09de186ed08a23559c4d5092f8a2ecda4fabeb863c6e25818e873e8f7499a",
+            "cargo_lock_sha256": "dc480dad8567eda4a4d13b393651d3d1201cc26ba7599e3c8ff822b725569def",
+            "prebuild_manifest_sha256": "51719b644a1fa8ff11790483ec91b07df32d3f2e946890aabd6de35e3857eee4",
+            "binary_sha256": [
+              {
+                "id": "hydracache-loadgen",
+                "sha256": "b8f5afe27ac272a0be883879a51294ff509663d13c5949fdffdcf3f87f5adae1"
+              },
+              {
+                "id": "hydracache-server",
+                "sha256": "a17b5148cad43e2193c69a64e3372e2832fa94a47196a7b6bec405128f3633c6"
+              }
+            ],
+            "binary_set_digest": "9ac47b2a45fe70f5fe856bf1072545569bee9568d6d3eb1a65c47b978a697600",
+            "stable": true,
+            "maximum_spread_ratio": 0.00020800906900470301,
+            "metric": [
+              {
+                "id": "client_surface_in_process_knee_at_slo_for_a_b_c.throughput_at_slo",
+                "value": 24991.104328945246,
+                "unit": "operations_per_second"
+              },
+              {
+                "id": "client_surface_in_process_knee_at_slo_for_a_b_c.p99_microseconds_at_slo",
+                "value": 2067.0,
+                "unit": "microseconds"
+              }
+            ],
+            "receipt_sha256": "473a1b237c2aa687fa6798a2b581d71d5719d852ab2b636f8fbdb1c23a7688fd"
+          },
+          {
+            "report_id": "node-resp-open-loop",
+            "report_sha256": "2a181d41c2b53fff863a548e23d0eda65b578f85309f643ea358fabfbe4969f0",
+            "scenario_digest": "35691a7517dd36047dd5d3b02d984e277585207318d8fa0efab2da5c1a7fad6a",
+            "workload_digest": "9655bdd6868a69ee44a138896da03e3be4dc9fcc506cc78f4b537ae1b628af50",
+            "slo_digest": "bd051d1f04bf8912a07c388bfb483d73fb1b82acbda7efedd3c0c37c915eee05",
+            "methodology_digest": "53b640daf77b5f46021c82137068242f35b3c074316137358ff03f41ae71285f",
+            "cargo_lock_sha256": "dc480dad8567eda4a4d13b393651d3d1201cc26ba7599e3c8ff822b725569def",
+            "prebuild_manifest_sha256": "51719b644a1fa8ff11790483ec91b07df32d3f2e946890aabd6de35e3857eee4",
+            "binary_sha256": [
+              {
+                "id": "hydracache-loadgen",
+                "sha256": "b8f5afe27ac272a0be883879a51294ff509663d13c5949fdffdcf3f87f5adae1"
+              },
+              {
+                "id": "hydracache-server",
+                "sha256": "a17b5148cad43e2193c69a64e3372e2832fa94a47196a7b6bec405128f3633c6"
+              }
+            ],
+            "binary_set_digest": "9ac47b2a45fe70f5fe856bf1072545569bee9568d6d3eb1a65c47b978a697600",
+            "stable": true,
+            "maximum_spread_ratio": 0.0005622038181707881,
+            "metric": [
+              {
+                "id": "resp_open_loop_get_set_knee_at_slo.throughput_at_slo",
+                "value": 49949.726249875945,
+                "unit": "operations_per_second"
+              },
+              {
+                "id": "resp_open_loop_get_set_knee_at_slo.p99_microseconds_at_slo",
+                "value": 3549.0,
+                "unit": "microseconds"
+              }
+            ],
+            "receipt_sha256": "e1046030595dfeb3668dc668694993da2c8bc17fbcd26afbfb05587c615c9f7b"
+          },
+          {
+            "report_id": "control-plane-3",
+            "report_sha256": "3229d4aeeaa947a062f98e32ac38e71f6ef2e65ec2cd3ea213559f9532f25d97",
+            "scenario_digest": "c9570d61946ba50b48cbc54af7d1f4ff0e49e740bcbf73e54b83873342c15d69",
+            "workload_digest": "6e8f8cbe73811afcaf794f795650cfb85cf347dbd822e7e94c7e138f4ef7486f",
+            "slo_digest": "d04a7a3fa59a167dfbd8ca4e205cc38accd6864f12035785797e5056beb34f85",
+            "methodology_digest": "94005eea779aa38393f67d2adcfd28695d7cdf26a4e7c7319ef8eccd2950329b",
+            "cargo_lock_sha256": "dc480dad8567eda4a4d13b393651d3d1201cc26ba7599e3c8ff822b725569def",
+            "prebuild_manifest_sha256": "51719b644a1fa8ff11790483ec91b07df32d3f2e946890aabd6de35e3857eee4",
+            "binary_sha256": [
+              {
+                "id": "hydracache-loadgen",
+                "sha256": "b8f5afe27ac272a0be883879a51294ff509663d13c5949fdffdcf3f87f5adae1"
+              },
+              {
+                "id": "hydracache-server",
+                "sha256": "a17b5148cad43e2193c69a64e3372e2832fa94a47196a7b6bec405128f3633c6"
+              }
+            ],
+            "binary_set_digest": "9ac47b2a45fe70f5fe856bf1072545569bee9568d6d3eb1a65c47b978a697600",
+            "stable": true,
+            "maximum_spread_ratio": 0.0005786631297096967,
+            "metric": [
+              {
+                "id": "membership_add_drain_commit_and_convergence_latency.max_milliseconds",
+                "value": 799.6016,
+                "unit": "milliseconds"
+              }
+            ],
+            "receipt_sha256": "78ac426ca6e077c874e775ad8b3e7d5de371d350015ee3c110de894ae5c20a19"
+          },
+          {
+            "report_id": "control-plane-5",
+            "report_sha256": "c8b1d5595408182f2791f025fbf2bf98df1074690b5ff173003a97c19f76135b",
+            "scenario_digest": "c9570d61946ba50b48cbc54af7d1f4ff0e49e740bcbf73e54b83873342c15d69",
+            "workload_digest": "6e8f8cbe73811afcaf794f795650cfb85cf347dbd822e7e94c7e138f4ef7486f",
+            "slo_digest": "d04a7a3fa59a167dfbd8ca4e205cc38accd6864f12035785797e5056beb34f85",
+            "methodology_digest": "94005eea779aa38393f67d2adcfd28695d7cdf26a4e7c7319ef8eccd2950329b",
+            "cargo_lock_sha256": "dc480dad8567eda4a4d13b393651d3d1201cc26ba7599e3c8ff822b725569def",
+            "prebuild_manifest_sha256": "51719b644a1fa8ff11790483ec91b07df32d3f2e946890aabd6de35e3857eee4",
+            "binary_sha256": [
+              {
+                "id": "hydracache-loadgen",
+                "sha256": "b8f5afe27ac272a0be883879a51294ff509663d13c5949fdffdcf3f87f5adae1"
+              },
+              {
+                "id": "hydracache-server",
+                "sha256": "a17b5148cad43e2193c69a64e3372e2832fa94a47196a7b6bec405128f3633c6"
+              }
+            ],
+            "binary_set_digest": "9ac47b2a45fe70f5fe856bf1072545569bee9568d6d3eb1a65c47b978a697600",
+            "stable": true,
+            "maximum_spread_ratio": 0.0005621460882636923,
+            "metric": [
+              {
+                "id": "membership_add_drain_commit_and_convergence_latency.max_milliseconds",
+                "value": 647.226564,
+                "unit": "milliseconds"
+              }
+            ],
+            "receipt_sha256": "856f527599960927726daedb89965c6b4bf5877b415f36cde040f40f62283462"
+          },
+          {
+            "report_id": "control-plane-7",
+            "report_sha256": "07735f7e4aa3ac9326690868cabaa46337e6be654548f20c9f607462431f2105",
+            "scenario_digest": "c9570d61946ba50b48cbc54af7d1f4ff0e49e740bcbf73e54b83873342c15d69",
+            "workload_digest": "6e8f8cbe73811afcaf794f795650cfb85cf347dbd822e7e94c7e138f4ef7486f",
+            "slo_digest": "d04a7a3fa59a167dfbd8ca4e205cc38accd6864f12035785797e5056beb34f85",
+            "methodology_digest": "94005eea779aa38393f67d2adcfd28695d7cdf26a4e7c7319ef8eccd2950329b",
+            "cargo_lock_sha256": "dc480dad8567eda4a4d13b393651d3d1201cc26ba7599e3c8ff822b725569def",
+            "prebuild_manifest_sha256": "51719b644a1fa8ff11790483ec91b07df32d3f2e946890aabd6de35e3857eee4",
+            "binary_sha256": [
+              {
+                "id": "hydracache-loadgen",
+                "sha256": "b8f5afe27ac272a0be883879a51294ff509663d13c5949fdffdcf3f87f5adae1"
+              },
+              {
+                "id": "hydracache-server",
+                "sha256": "a17b5148cad43e2193c69a64e3372e2832fa94a47196a7b6bec405128f3633c6"
+              }
+            ],
+            "binary_set_digest": "9ac47b2a45fe70f5fe856bf1072545569bee9568d6d3eb1a65c47b978a697600",
+            "stable": true,
+            "maximum_spread_ratio": 0.0009566669107687574,
+            "metric": [
+              {
+                "id": "membership_add_drain_commit_and_convergence_latency.max_milliseconds",
+                "value": 854.300816,
+                "unit": "milliseconds"
+              }
+            ],
+            "receipt_sha256": "29f6bbe580fed3d40dc4b500d3458f3e88ec60b933914b51afca042a16eb72d4"
+          },
+          {
+            "report_id": "grid-model",
+            "report_sha256": "1a6c631ce1e47d675637840b2db567ad136913442170044b13324ca439d22a40",
+            "scenario_digest": "bee82e99244cdb4b860598ee2a1a2a34f8788813f497d6cb075f916a433d2ecb",
+            "workload_digest": "0ca85cc6a2fe6e4753a2a658688c38050bea93ef1f5708ef0a2b2c3d2c3663b4",
+            "slo_digest": "1a36fe6e34fce061cdb88a1163d0dec9b301e3cc29d3c70093b1278c4c48f703",
+            "methodology_digest": "8160a7e90c2beea0ca12cd5fc6c2cf6c7b2480e916915bbd1ff1cdf06beeb884",
+            "cargo_lock_sha256": "dc480dad8567eda4a4d13b393651d3d1201cc26ba7599e3c8ff822b725569def",
+            "prebuild_manifest_sha256": "51719b644a1fa8ff11790483ec91b07df32d3f2e946890aabd6de35e3857eee4",
+            "binary_sha256": [
+              {
+                "id": "hydracache-loadgen",
+                "sha256": "b8f5afe27ac272a0be883879a51294ff509663d13c5949fdffdcf3f87f5adae1"
+              },
+              {
+                "id": "hydracache-server",
+                "sha256": "a17b5148cad43e2193c69a64e3372e2832fa94a47196a7b6bec405128f3633c6"
+              }
+            ],
+            "binary_set_digest": "9ac47b2a45fe70f5fe856bf1072545569bee9568d6d3eb1a65c47b978a697600",
+            "stable": true,
+            "maximum_spread_ratio": 0.017235,
+            "metric": [
+              {
+                "id": "consistency_ack_requirement_cost_by_level_and_replica_shape.max_nanoseconds_per_operation",
+                "value": 1266.3155,
+                "unit": "nanoseconds_per_operation"
+              }
+            ],
+            "receipt_sha256": "e17a71443dfe00834069c81cd4a214c39ad4b5d056f77d095d69c83724846843"
+          },
+          {
+            "report_id": "brownout-control-plane",
+            "report_sha256": "cdc18e54fcf60867e32aff28f7897955bb555ae77ff28a255569108a1cb13ce5",
+            "scenario_digest": "7c7eeab8137a62fb70fc8ac23309d9168bbc7d00084a4b1f94b958e262de71f0",
+            "workload_digest": "5f656244097e34a88ad33771d7377133d079ed72188e188027703f5369ace96c",
+            "slo_digest": "12b48135f1fd7f6c2b54661291c24d2c240ddaa2e3c9d457de39486fcec01dc0",
+            "methodology_digest": "1aef4e5e730268439c73d14206ae68585129b5d9d3c9cbea5e98fcd8416a0e44",
+            "cargo_lock_sha256": "dc480dad8567eda4a4d13b393651d3d1201cc26ba7599e3c8ff822b725569def",
+            "prebuild_manifest_sha256": "51719b644a1fa8ff11790483ec91b07df32d3f2e946890aabd6de35e3857eee4",
+            "binary_sha256": [
+              {
+                "id": "hydracache-loadgen",
+                "sha256": "b8f5afe27ac272a0be883879a51294ff509663d13c5949fdffdcf3f87f5adae1"
+              },
+              {
+                "id": "hydracache-server",
+                "sha256": "a17b5148cad43e2193c69a64e3372e2832fa94a47196a7b6bec405128f3633c6"
+              }
+            ],
+            "binary_set_digest": "9ac47b2a45fe70f5fe856bf1072545569bee9568d6d3eb1a65c47b978a697600",
+            "stable": true,
+            "maximum_spread_ratio": 0.0,
+            "metric": [
+              {
+                "id": "control_plane_brownout.recovery_milliseconds",
+                "value": 892.0,
+                "unit": "milliseconds"
+              },
+              {
+                "id": "control_plane_brownout.maximum_availability_dip_ppm",
+                "value": 84.0,
+                "unit": "parts_per_million"
+              }
+            ],
+            "receipt_sha256": "5c489d697829a15e84329487eef237f6e01c315b55fb5a2c02933f81feecb60f"
+          },
+          {
+            "report_id": "brownout-resp-endpoint",
+            "report_sha256": "4e5e16b29cbc875e8739561f3d45c978df14dd54217955c3c0408c15cdb8644a",
+            "scenario_digest": "244b6870d07ea2454bbe87f6e34119c02e879b87d5abaa9cd073952f0289876f",
+            "workload_digest": "09e0179f1f3a576a4edd40eb00c13bc25e652272408d955dedc45804eae68424",
+            "slo_digest": "257f0cbbdb6c59d954690b5e491c05759fded9ba7889b82f331beecd8541ad90",
+            "methodology_digest": "6209da0741592c22fa3747741e8d4ee2bde45b5c4e7fbbdf6b0761cd50451a6c",
+            "cargo_lock_sha256": "dc480dad8567eda4a4d13b393651d3d1201cc26ba7599e3c8ff822b725569def",
+            "prebuild_manifest_sha256": "51719b644a1fa8ff11790483ec91b07df32d3f2e946890aabd6de35e3857eee4",
+            "binary_sha256": [
+              {
+                "id": "hydracache-loadgen",
+                "sha256": "b8f5afe27ac272a0be883879a51294ff509663d13c5949fdffdcf3f87f5adae1"
+              },
+              {
+                "id": "hydracache-server",
+                "sha256": "a17b5148cad43e2193c69a64e3372e2832fa94a47196a7b6bec405128f3633c6"
+              }
+            ],
+            "binary_set_digest": "9ac47b2a45fe70f5fe856bf1072545569bee9568d6d3eb1a65c47b978a697600",
+            "stable": true,
+            "maximum_spread_ratio": 0.0,
+            "metric": [
+              {
+                "id": "resp_endpoint_brownout.recovery_milliseconds",
+                "value": 1207.0,
+                "unit": "milliseconds"
+              },
+              {
+                "id": "resp_endpoint_brownout.availability_dip_ppm",
+                "value": 9867.0,
+                "unit": "parts_per_million"
+              }
+            ],
+            "receipt_sha256": "a4364307c27ddfd379cfaab93dc0a2bf235ac2481355df3605df03995d1cc4ff"
+          },
+          {
+            "report_id": "brownout-grid-model",
+            "report_sha256": "a39c158d84ed519d563a4e324fbaff8ce496ebc6baaef2390ea6b3d7893e2f3c",
+            "scenario_digest": "15d8dcb41d9062f223bd425bde9651fca47ed8f2deb507b080966eb661e4c871",
+            "workload_digest": "b317e34ed049d824b53872b66cd053e22bc025b566e481034965ecaa08034cbb",
+            "slo_digest": "aa5005c4f67c9d4ff23cb0d498e77297ce6221618504b7f45994249ae2288047",
+            "methodology_digest": "33d7a9f10247204ef248021b4bd7958c127f60f9bd757407c2fe0e9e778e0bda",
+            "cargo_lock_sha256": "dc480dad8567eda4a4d13b393651d3d1201cc26ba7599e3c8ff822b725569def",
+            "prebuild_manifest_sha256": "51719b644a1fa8ff11790483ec91b07df32d3f2e946890aabd6de35e3857eee4",
+            "binary_sha256": [
+              {
+                "id": "hydracache-loadgen",
+                "sha256": "b8f5afe27ac272a0be883879a51294ff509663d13c5949fdffdcf3f87f5adae1"
+              },
+              {
+                "id": "hydracache-server",
+                "sha256": "a17b5148cad43e2193c69a64e3372e2832fa94a47196a7b6bec405128f3633c6"
+              }
+            ],
+            "binary_set_digest": "9ac47b2a45fe70f5fe856bf1072545569bee9568d6d3eb1a65c47b978a697600",
+            "stable": true,
+            "maximum_spread_ratio": 0.19186,
+            "metric": [
+              {
+                "id": "grid_model_fault.maximum_recovery_cost_nanos",
+                "value": 199.0,
+                "unit": "nanoseconds"
+              },
+              {
+                "id": "grid_model_fault.maximum_decision_cost_increase_nanos",
+                "value": 76749.0,
+                "unit": "nanoseconds"
+              }
+            ],
+            "receipt_sha256": "4015c7986ec16b5baabea4e382ece033fef938c2434d7b05c47637f5b9add058"
+          },
+          {
+            "report_id": "overload-local",
+            "report_sha256": "940b5ec58497e6d32e7791aa57492df61f3a8662d4a05af05d7c48a65809e77f",
+            "scenario_digest": "23737b7a83647d596829d0f0207feccb441c4d2782e0dd7ef74cebd378ec7279",
+            "workload_digest": "5af83efcb9857714635936b63af686f06dde987326dd724eeaf6a952bf9c3f7c",
+            "slo_digest": "7d56c986b9aebc9c66b6f61be0aaf67cd73b45aaecb3f834d2c5977aee4d3a46",
+            "methodology_digest": "ded1061458a4c279cb382e5c951c0b0b5bbbae5d57d75ea98a5460dd197b39cf",
+            "cargo_lock_sha256": "dc480dad8567eda4a4d13b393651d3d1201cc26ba7599e3c8ff822b725569def",
+            "prebuild_manifest_sha256": "51719b644a1fa8ff11790483ec91b07df32d3f2e946890aabd6de35e3857eee4",
+            "binary_sha256": [
+              {
+                "id": "hydracache-loadgen",
+                "sha256": "b8f5afe27ac272a0be883879a51294ff509663d13c5949fdffdcf3f87f5adae1"
+              },
+              {
+                "id": "hydracache-server",
+                "sha256": "a17b5148cad43e2193c69a64e3372e2832fa94a47196a7b6bec405128f3633c6"
+              }
+            ],
+            "binary_set_digest": "9ac47b2a45fe70f5fe856bf1072545569bee9568d6d3eb1a65c47b978a697600",
+            "stable": true,
+            "maximum_spread_ratio": 0.00021854210613306675,
+            "metric": [
+              {
+                "id": "overload_goodput_curve_1_2x_1_5x_2x_knee_per_eligible_surface.minimum_goodput_per_second",
+                "value": 19995.372742823198,
+                "unit": "operations_per_second"
+              }
+            ],
+            "receipt_sha256": "50cd7ea42120711a5e084703be4912501701d329af231bb66bfa97ee09109afa"
+          },
+          {
+            "report_id": "overload-client-surface",
+            "report_sha256": "93c653626c4b02762f6319b9524109b3b06e13c5659385637ba97d60bab033c9",
+            "scenario_digest": "23737b7a83647d596829d0f0207feccb441c4d2782e0dd7ef74cebd378ec7279",
+            "workload_digest": "b5f9537eafa6b5e04cacbdd7511d0479f9ea2275dc12703483ecbd4c3e80447f",
+            "slo_digest": "7d56c986b9aebc9c66b6f61be0aaf67cd73b45aaecb3f834d2c5977aee4d3a46",
+            "methodology_digest": "99190c8f41d0c68cf4722e8a4a30ee9ca956f5ec0d82785d183407e274471336",
+            "cargo_lock_sha256": "dc480dad8567eda4a4d13b393651d3d1201cc26ba7599e3c8ff822b725569def",
+            "prebuild_manifest_sha256": "51719b644a1fa8ff11790483ec91b07df32d3f2e946890aabd6de35e3857eee4",
+            "binary_sha256": [
+              {
+                "id": "hydracache-loadgen",
+                "sha256": "b8f5afe27ac272a0be883879a51294ff509663d13c5949fdffdcf3f87f5adae1"
+              },
+              {
+                "id": "hydracache-server",
+                "sha256": "a17b5148cad43e2193c69a64e3372e2832fa94a47196a7b6bec405128f3633c6"
+              }
+            ],
+            "binary_set_digest": "9ac47b2a45fe70f5fe856bf1072545569bee9568d6d3eb1a65c47b978a697600",
+            "stable": true,
+            "maximum_spread_ratio": 0.00035905721372876773,
+            "metric": [
+              {
+                "id": "overload_goodput_curve_1_2x_1_5x_2x_knee_per_eligible_surface.minimum_goodput_per_second",
+                "value": 24990.398345337744,
+                "unit": "operations_per_second"
+              }
+            ],
+            "receipt_sha256": "6219fd535044cb649a40e60f7120f50333ab5517deffd3d4b3302349aecb1112"
+          },
+          {
+            "report_id": "overload-node-resp",
+            "report_sha256": "f2760f6c80eee6f305e4ea5a4bec738ee1f59042e93bb5b3fc93e4d7c7a2a7ff",
+            "scenario_digest": "23737b7a83647d596829d0f0207feccb441c4d2782e0dd7ef74cebd378ec7279",
+            "workload_digest": "fe8b0c4beff342c74d8660116f1b94c1bf5bb23a7de48701aae03d6dac4101fb",
+            "slo_digest": "7d56c986b9aebc9c66b6f61be0aaf67cd73b45aaecb3f834d2c5977aee4d3a46",
+            "methodology_digest": "33d89d02700959967732a4d93172be098c53b98329f3336a2b0491c0f17f197a",
+            "cargo_lock_sha256": "dc480dad8567eda4a4d13b393651d3d1201cc26ba7599e3c8ff822b725569def",
+            "prebuild_manifest_sha256": "51719b644a1fa8ff11790483ec91b07df32d3f2e946890aabd6de35e3857eee4",
+            "binary_sha256": [
+              {
+                "id": "hydracache-loadgen",
+                "sha256": "b8f5afe27ac272a0be883879a51294ff509663d13c5949fdffdcf3f87f5adae1"
+              },
+              {
+                "id": "hydracache-server",
+                "sha256": "a17b5148cad43e2193c69a64e3372e2832fa94a47196a7b6bec405128f3633c6"
+              }
+            ],
+            "binary_set_digest": "9ac47b2a45fe70f5fe856bf1072545569bee9568d6d3eb1a65c47b978a697600",
+            "stable": true,
+            "maximum_spread_ratio": 0.07641135016009198,
+            "metric": [
+              {
+                "id": "overload_goodput_curve_1_2x_1_5x_2x_knee_per_eligible_surface.minimum_goodput_per_second",
+                "value": 42986.72041208053,
+                "unit": "operations_per_second"
+              }
+            ],
+            "receipt_sha256": "7b71fc812b27e131a40a3ffcd65e328d3d8a28a4a3327b6eb4e01901e51d3607"
+          }
+        ],
+        "metric": [
+          {
+            "budget_id": "local-capacity-floor",
+            "value": 20000.0,
+            "unit": "operations_per_second"
+          },
+          {
+            "budget_id": "client-surface-capacity-floor",
+            "value": 24991.104328945246,
+            "unit": "operations_per_second"
+          },
+          {
+            "budget_id": "local-p99-at-slo-ceiling",
+            "value": 1936.0,
+            "unit": "microseconds"
+          },
+          {
+            "budget_id": "client-surface-p99-at-slo-ceiling",
+            "value": 2067.0,
+            "unit": "microseconds"
+          },
+          {
+            "budget_id": "node-resp-capacity-floor",
+            "value": 49949.726249875945,
+            "unit": "operations_per_second"
+          },
+          {
+            "budget_id": "node-resp-p99-at-slo-ceiling",
+            "value": 3549.0,
+            "unit": "microseconds"
+          },
+          {
+            "budget_id": "control-plane-3-event-ceiling",
+            "value": 799.6016,
+            "unit": "milliseconds"
+          },
+          {
+            "budget_id": "control-plane-5-event-ceiling",
+            "value": 647.226564,
+            "unit": "milliseconds"
+          },
+          {
+            "budget_id": "control-plane-7-event-ceiling",
+            "value": 854.300816,
+            "unit": "milliseconds"
+          },
+          {
+            "budget_id": "grid-model-primitive-cost-ceiling",
+            "value": 1266.3155,
+            "unit": "nanoseconds_per_operation"
+          },
+          {
+            "budget_id": "brownout-control-plane-recovery-ceiling",
+            "value": 892.0,
+            "unit": "milliseconds"
+          },
+          {
+            "budget_id": "brownout-control-plane-depth-ceiling",
+            "value": 84.0,
+            "unit": "parts_per_million"
+          },
+          {
+            "budget_id": "brownout-resp-endpoint-recovery-ceiling",
+            "value": 1207.0,
+            "unit": "milliseconds"
+          },
+          {
+            "budget_id": "brownout-resp-endpoint-depth-ceiling",
+            "value": 9867.0,
+            "unit": "parts_per_million"
+          },
+          {
+            "budget_id": "brownout-grid-model-recovery-ceiling",
+            "value": 199.0,
+            "unit": "nanoseconds"
+          },
+          {
+            "budget_id": "brownout-grid-model-depth-ceiling",
+            "value": 76749.0,
+            "unit": "nanoseconds"
+          },
+          {
+            "budget_id": "overload-local-goodput-floor",
+            "value": 19995.372742823198,
+            "unit": "operations_per_second"
+          },
+          {
+            "budget_id": "overload-client-surface-goodput-floor",
+            "value": 24990.398345337744,
+            "unit": "operations_per_second"
+          },
+          {
+            "budget_id": "overload-node-resp-goodput-floor",
+            "value": 42986.72041208053,
+            "unit": "operations_per_second"
+          }
+        ],
+        "receipt_sha256": "7f91e90a6fb9d9c480c1e7c0e6ddf9a1f9a99f77bb66528392f71ebed2f80e7c"
+      },
+      {
+        "run_id": "33936443587",
+        "branch": "main",
+        "source_commit": "b3304e3a560fdddaf820d813a76773ca33565c50",
+        "observed_at": "2026-09-05T03:57:32.285828893Z",
+        "successful": true,
+        "quarantined": false,
+        "calibration_passed": true,
+        "spread_stable": true,
+        "gate_exit_code": 0,
+        "git_status_porcelain_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "quarantine_reason": null,
+        "runner_contract": {
+          "name": "reference-v1",
+          "required_runner_class": "self-hosted-bare-metal-v1",
+          "allowed_fingerprints": [
+            "25baeec1c9ec75da90b5dd0f29c101897450b96651d7e47570e18684be486ebb"
+          ],
+          "minimum_logical_cores": 4,
+          "required_cpu_affinity": "1-4",
+          "required_cgroup_cpu_quota": "unlimited",
+          "require_dedicated": true,
+          "maximum_calibration_score": 0.25
+        },
+        "runner_contract_digest": "c728014af9fd0aae4c474456e74437a033110940db01caa1577b1b5b5efabfe0",
+        "observed_runner": {
+          "runner_class": "self-hosted-bare-metal-v1",
+          "fingerprint": "25baeec1c9ec75da90b5dd0f29c101897450b96651d7e47570e18684be486ebb",
+          "cpu_model": "AMD Ryzen 7 PRO 8700GE w/ Radeon 780M Graphics",
+          "logical_cores": 4,
+          "ram_bytes": 66490494976,
+          "os": "linux",
+          "kernel": "6.8.0-138-generic",
+          "cpu_affinity": "1-4",
+          "cgroup_cpu_quota": "unlimited",
+          "governor": "performance",
+          "turbo": "enabled",
+          "shared_hardware": false,
+          "calibration_score": 0.000029924233939611145,
+          "attestation": {
+            "schema_version": 5,
+            "contract_version": "hydracache-reference-host-v5",
+            "virtualization": "none",
+            "physical_cores": 8,
+            "measurement_cores": [
+              {
+                "logical_cpu": 1,
+                "package_id": 0,
+                "core_id": 1
+              },
+              {
+                "logical_cpu": 2,
+                "package_id": 0,
+                "core_id": 2
+              },
+              {
+                "logical_cpu": 3,
+                "package_id": 0,
+                "core_id": 3
+              },
+              {
+                "logical_cpu": 4,
+                "package_id": 0,
+                "core_id": 4
+              }
+            ],
+            "cpu_isolation": {
+              "smt_control": "off",
+              "online_cpus": "0-7",
+              "isolated_cpus": "1-4",
+              "nohz_full_cpus": "1-4",
+              "rcu_nocbs_cpus": "1-4",
+              "housekeeping_cpus": "0,5-7",
+              "irq_affinity_policy": "housekeeping-only-v1",
+              "measurement_idle_policy": "latency-cap-us-v1",
+              "measurement_max_idle_latency_us": 1,
+              "housekeeping_idle_policy": "latency-cap-us-v1",
+              "housekeeping_max_idle_latency_us": 1
+            },
+            "host_digest": "571591a534c9894242fc0af0c5f80c31131fe7e4cdb9d0ea63da6d8b56af8932",
+            "storage_class": "local-nvme",
+            "storage_identity_digest": "2833a0938166031dd80b21de8a9fc4912f53b5e33914d07e2ac4ae74efc3805f",
+            "os_image": "ubuntu-24.04",
+            "toolchain_identity": "rustc-1.94.0",
+            "prebuild_contract_digest": "f2caae0689d8b075d2a6d59d6090466365f9a6824c6996d6b92830956831cc55"
+          }
+        },
+        "runner_fingerprint": "25baeec1c9ec75da90b5dd0f29c101897450b96651d7e47570e18684be486ebb",
+        "toolchain_identity": "rustc-1.94.0",
+        "prebuild_contract_digest": "f2caae0689d8b075d2a6d59d6090466365f9a6824c6996d6b92830956831cc55",
+        "profile_sha256": "b12cdad2db06ba8cb2c8f1344491cf586a9bbe7e93f4a9a203eb82463f6ffc31",
+        "budget_sha256": "d5eb28b7ec433730aa40c9a78ca87c8df258444760eaf212963a10e6b563aa40",
+        "report": [
+          {
+            "report_id": "local",
+            "report_sha256": "c88fc04d00c8adde8f93dc02ab331e9e717f2bcde3f5236907a571cf31c7f302",
+            "scenario_digest": "41877a7da9095d085008581a48b411c22e5c8eafa288f08e6383b1ce4d87bbd4",
+            "workload_digest": "c9efd268ee3afdf95833aa892ad96c8589c1c7133ba23cde3b7b3462a4894715",
+            "slo_digest": "1dcde01444e6427a08940f23fc93ba1128201b723026ba5ce1c6e97e478285b7",
+            "methodology_digest": "f9c5b268795fed99849e77f3be9a2e0e414ceb8d0e26107f092df345e46907be",
+            "cargo_lock_sha256": "dc480dad8567eda4a4d13b393651d3d1201cc26ba7599e3c8ff822b725569def",
+            "prebuild_manifest_sha256": "51719b644a1fa8ff11790483ec91b07df32d3f2e946890aabd6de35e3857eee4",
+            "binary_sha256": [
+              {
+                "id": "hydracache-loadgen",
+                "sha256": "b8f5afe27ac272a0be883879a51294ff509663d13c5949fdffdcf3f87f5adae1"
+              },
+              {
+                "id": "hydracache-server",
+                "sha256": "a17b5148cad43e2193c69a64e3372e2832fa94a47196a7b6bec405128f3633c6"
+              }
+            ],
+            "binary_set_digest": "9ac47b2a45fe70f5fe856bf1072545569bee9568d6d3eb1a65c47b978a697600",
+            "stable": true,
+            "maximum_spread_ratio": 0.0002337021664241999,
+            "metric": [
+              {
+                "id": "hot_key_contention_throughput_floor.throughput_at_slo",
+                "value": 20000.0,
+                "unit": "operations_per_second"
+              },
+              {
+                "id": "hot_key_contention_throughput_floor.p99_microseconds_at_slo",
+                "value": 1940.0,
+                "unit": "microseconds"
+              }
+            ],
+            "receipt_sha256": "f82f1ebc2efd10663d501bc2302478b69ba39f8b3b40d15a739fbaaf20e13bf3"
+          },
+          {
+            "report_id": "client-surface",
+            "report_sha256": "d406ebe3aa206c09911bec5d9426b89cc6a860d620bd8027238667694983426d",
+            "scenario_digest": "c35633445676d474f344fbf23d788a5a0bf63a3add96db1c042ba59d0ac401fa",
+            "workload_digest": "9c8472282999d14b3da2039a86662d85cca40354f7a18404fef19971432942b7",
+            "slo_digest": "e024a1a54f480f4d853cf32867cdfb285e41983b88c4e9fcdeb6a783cb5759d5",
+            "methodology_digest": "46d09de186ed08a23559c4d5092f8a2ecda4fabeb863c6e25818e873e8f7499a",
+            "cargo_lock_sha256": "dc480dad8567eda4a4d13b393651d3d1201cc26ba7599e3c8ff822b725569def",
+            "prebuild_manifest_sha256": "51719b644a1fa8ff11790483ec91b07df32d3f2e946890aabd6de35e3857eee4",
+            "binary_sha256": [
+              {
+                "id": "hydracache-loadgen",
+                "sha256": "b8f5afe27ac272a0be883879a51294ff509663d13c5949fdffdcf3f87f5adae1"
+              },
+              {
+                "id": "hydracache-server",
+                "sha256": "a17b5148cad43e2193c69a64e3372e2832fa94a47196a7b6bec405128f3633c6"
+              }
+            ],
+            "binary_set_digest": "9ac47b2a45fe70f5fe856bf1072545569bee9568d6d3eb1a65c47b978a697600",
+            "stable": true,
+            "maximum_spread_ratio": 0.00028365695847078106,
+            "metric": [
+              {
+                "id": "client_surface_in_process_knee_at_slo_for_a_b_c.throughput_at_slo",
+                "value": 24991.765944130566,
+                "unit": "operations_per_second"
+              },
+              {
+                "id": "client_surface_in_process_knee_at_slo_for_a_b_c.p99_microseconds_at_slo",
+                "value": 2079.0,
+                "unit": "microseconds"
+              }
+            ],
+            "receipt_sha256": "096da948c364371b7db77c71211d9810366885d2d97b0f7517bec62adf37f84a"
+          },
+          {
+            "report_id": "node-resp-open-loop",
+            "report_sha256": "fd8d5f674f725bd43c9ef1c6445becc012540eefc3bc0b4b0b099eed49856ec7",
+            "scenario_digest": "35691a7517dd36047dd5d3b02d984e277585207318d8fa0efab2da5c1a7fad6a",
+            "workload_digest": "9655bdd6868a69ee44a138896da03e3be4dc9fcc506cc78f4b537ae1b628af50",
+            "slo_digest": "bd051d1f04bf8912a07c388bfb483d73fb1b82acbda7efedd3c0c37c915eee05",
+            "methodology_digest": "53b640daf77b5f46021c82137068242f35b3c074316137358ff03f41ae71285f",
+            "cargo_lock_sha256": "dc480dad8567eda4a4d13b393651d3d1201cc26ba7599e3c8ff822b725569def",
+            "prebuild_manifest_sha256": "51719b644a1fa8ff11790483ec91b07df32d3f2e946890aabd6de35e3857eee4",
+            "binary_sha256": [
+              {
+                "id": "hydracache-loadgen",
+                "sha256": "b8f5afe27ac272a0be883879a51294ff509663d13c5949fdffdcf3f87f5adae1"
+              },
+              {
+                "id": "hydracache-server",
+                "sha256": "a17b5148cad43e2193c69a64e3372e2832fa94a47196a7b6bec405128f3633c6"
+              }
+            ],
+            "binary_set_digest": "9ac47b2a45fe70f5fe856bf1072545569bee9568d6d3eb1a65c47b978a697600",
+            "stable": true,
+            "maximum_spread_ratio": 0.00047072390556438925,
+            "metric": [
+              {
+                "id": "resp_open_loop_get_set_knee_at_slo.throughput_at_slo",
+                "value": 49951.73937675984,
+                "unit": "operations_per_second"
+              },
+              {
+                "id": "resp_open_loop_get_set_knee_at_slo.p99_microseconds_at_slo",
+                "value": 3477.0,
+                "unit": "microseconds"
+              }
+            ],
+            "receipt_sha256": "bc5b11632785d4fb82e1dcde05daaf71a5d9e2ec71aad441bac81d9e252f3023"
+          },
+          {
+            "report_id": "control-plane-3",
+            "report_sha256": "b353f721298198b8ca55d1e32262515ab1515e89a8d7160fee785cdd50d5b085",
+            "scenario_digest": "c9570d61946ba50b48cbc54af7d1f4ff0e49e740bcbf73e54b83873342c15d69",
+            "workload_digest": "6e8f8cbe73811afcaf794f795650cfb85cf347dbd822e7e94c7e138f4ef7486f",
+            "slo_digest": "d04a7a3fa59a167dfbd8ca4e205cc38accd6864f12035785797e5056beb34f85",
+            "methodology_digest": "94005eea779aa38393f67d2adcfd28695d7cdf26a4e7c7319ef8eccd2950329b",
+            "cargo_lock_sha256": "dc480dad8567eda4a4d13b393651d3d1201cc26ba7599e3c8ff822b725569def",
+            "prebuild_manifest_sha256": "51719b644a1fa8ff11790483ec91b07df32d3f2e946890aabd6de35e3857eee4",
+            "binary_sha256": [
+              {
+                "id": "hydracache-loadgen",
+                "sha256": "b8f5afe27ac272a0be883879a51294ff509663d13c5949fdffdcf3f87f5adae1"
+              },
+              {
+                "id": "hydracache-server",
+                "sha256": "a17b5148cad43e2193c69a64e3372e2832fa94a47196a7b6bec405128f3633c6"
+              }
+            ],
+            "binary_set_digest": "9ac47b2a45fe70f5fe856bf1072545569bee9568d6d3eb1a65c47b978a697600",
+            "stable": true,
+            "maximum_spread_ratio": 0.0006595914712083782,
+            "metric": [
+              {
+                "id": "membership_add_drain_commit_and_convergence_latency.max_milliseconds",
+                "value": 899.879911,
+                "unit": "milliseconds"
+              }
+            ],
+            "receipt_sha256": "b7c382466e283e072cf030a7b3f2873d5762bbe55dc9adf6d05af4dfbed301f2"
+          },
+          {
+            "report_id": "control-plane-5",
+            "report_sha256": "453f48ef6b6e7de0ff2895297a131fa9d6b661ec2054bb53df3585addeca91d4",
+            "scenario_digest": "c9570d61946ba50b48cbc54af7d1f4ff0e49e740bcbf73e54b83873342c15d69",
+            "workload_digest": "6e8f8cbe73811afcaf794f795650cfb85cf347dbd822e7e94c7e138f4ef7486f",
+            "slo_digest": "d04a7a3fa59a167dfbd8ca4e205cc38accd6864f12035785797e5056beb34f85",
+            "methodology_digest": "94005eea779aa38393f67d2adcfd28695d7cdf26a4e7c7319ef8eccd2950329b",
+            "cargo_lock_sha256": "dc480dad8567eda4a4d13b393651d3d1201cc26ba7599e3c8ff822b725569def",
+            "prebuild_manifest_sha256": "51719b644a1fa8ff11790483ec91b07df32d3f2e946890aabd6de35e3857eee4",
+            "binary_sha256": [
+              {
+                "id": "hydracache-loadgen",
+                "sha256": "b8f5afe27ac272a0be883879a51294ff509663d13c5949fdffdcf3f87f5adae1"
+              },
+              {
+                "id": "hydracache-server",
+                "sha256": "a17b5148cad43e2193c69a64e3372e2832fa94a47196a7b6bec405128f3633c6"
+              }
+            ],
+            "binary_set_digest": "9ac47b2a45fe70f5fe856bf1072545569bee9568d6d3eb1a65c47b978a697600",
+            "stable": true,
+            "maximum_spread_ratio": 0.0009592926473199007,
+            "metric": [
+              {
+                "id": "membership_add_drain_commit_and_convergence_latency.max_milliseconds",
+                "value": 697.588307,
+                "unit": "milliseconds"
+              }
+            ],
+            "receipt_sha256": "c4688ad8e56eef21eb3a84dc8f657a13b599e9e38b298359523079e754cb3817"
+          },
+          {
+            "report_id": "control-plane-7",
+            "report_sha256": "e760ad65665184087d7a04c8b8cf0d2c7363f0bb32fcd25dc35b4b5cc07da44a",
+            "scenario_digest": "c9570d61946ba50b48cbc54af7d1f4ff0e49e740bcbf73e54b83873342c15d69",
+            "workload_digest": "6e8f8cbe73811afcaf794f795650cfb85cf347dbd822e7e94c7e138f4ef7486f",
+            "slo_digest": "d04a7a3fa59a167dfbd8ca4e205cc38accd6864f12035785797e5056beb34f85",
+            "methodology_digest": "94005eea779aa38393f67d2adcfd28695d7cdf26a4e7c7319ef8eccd2950329b",
+            "cargo_lock_sha256": "dc480dad8567eda4a4d13b393651d3d1201cc26ba7599e3c8ff822b725569def",
+            "prebuild_manifest_sha256": "51719b644a1fa8ff11790483ec91b07df32d3f2e946890aabd6de35e3857eee4",
+            "binary_sha256": [
+              {
+                "id": "hydracache-loadgen",
+                "sha256": "b8f5afe27ac272a0be883879a51294ff509663d13c5949fdffdcf3f87f5adae1"
+              },
+              {
+                "id": "hydracache-server",
+                "sha256": "a17b5148cad43e2193c69a64e3372e2832fa94a47196a7b6bec405128f3633c6"
+              }
+            ],
+            "binary_set_digest": "9ac47b2a45fe70f5fe856bf1072545569bee9568d6d3eb1a65c47b978a697600",
+            "stable": true,
+            "maximum_spread_ratio": 0.0006557018779175456,
+            "metric": [
+              {
+                "id": "membership_add_drain_commit_and_convergence_latency.max_milliseconds",
+                "value": 853.734136,
+                "unit": "milliseconds"
+              }
+            ],
+            "receipt_sha256": "728fa7704f43b417a722b79d3a20e39f2d1a97c0065cae21cd868d829d979fe4"
+          },
+          {
+            "report_id": "grid-model",
+            "report_sha256": "6362114442d51b91a981ecf4bdebb5ea89ae8f33b3c416fbce7e466785093699",
+            "scenario_digest": "bee82e99244cdb4b860598ee2a1a2a34f8788813f497d6cb075f916a433d2ecb",
+            "workload_digest": "0ca85cc6a2fe6e4753a2a658688c38050bea93ef1f5708ef0a2b2c3d2c3663b4",
+            "slo_digest": "1a36fe6e34fce061cdb88a1163d0dec9b301e3cc29d3c70093b1278c4c48f703",
+            "methodology_digest": "8160a7e90c2beea0ca12cd5fc6c2cf6c7b2480e916915bbd1ff1cdf06beeb884",
+            "cargo_lock_sha256": "dc480dad8567eda4a4d13b393651d3d1201cc26ba7599e3c8ff822b725569def",
+            "prebuild_manifest_sha256": "51719b644a1fa8ff11790483ec91b07df32d3f2e946890aabd6de35e3857eee4",
+            "binary_sha256": [
+              {
+                "id": "hydracache-loadgen",
+                "sha256": "b8f5afe27ac272a0be883879a51294ff509663d13c5949fdffdcf3f87f5adae1"
+              },
+              {
+                "id": "hydracache-server",
+                "sha256": "a17b5148cad43e2193c69a64e3372e2832fa94a47196a7b6bec405128f3633c6"
+              }
+            ],
+            "binary_set_digest": "9ac47b2a45fe70f5fe856bf1072545569bee9568d6d3eb1a65c47b978a697600",
+            "stable": true,
+            "maximum_spread_ratio": 0.020837,
+            "metric": [
+              {
+                "id": "consistency_ack_requirement_cost_by_level_and_replica_shape.max_nanoseconds_per_operation",
+                "value": 1280.976,
+                "unit": "nanoseconds_per_operation"
+              }
+            ],
+            "receipt_sha256": "3917446c4e196557c0509ef9962b4edc1142800f774916a511a6082f71607441"
+          },
+          {
+            "report_id": "brownout-control-plane",
+            "report_sha256": "4bcf0b544efbfa624fa453185f094f195f921b82d19a47e13ac44dba73e7b62d",
+            "scenario_digest": "7c7eeab8137a62fb70fc8ac23309d9168bbc7d00084a4b1f94b958e262de71f0",
+            "workload_digest": "5f656244097e34a88ad33771d7377133d079ed72188e188027703f5369ace96c",
+            "slo_digest": "12b48135f1fd7f6c2b54661291c24d2c240ddaa2e3c9d457de39486fcec01dc0",
+            "methodology_digest": "1aef4e5e730268439c73d14206ae68585129b5d9d3c9cbea5e98fcd8416a0e44",
+            "cargo_lock_sha256": "dc480dad8567eda4a4d13b393651d3d1201cc26ba7599e3c8ff822b725569def",
+            "prebuild_manifest_sha256": "51719b644a1fa8ff11790483ec91b07df32d3f2e946890aabd6de35e3857eee4",
+            "binary_sha256": [
+              {
+                "id": "hydracache-loadgen",
+                "sha256": "b8f5afe27ac272a0be883879a51294ff509663d13c5949fdffdcf3f87f5adae1"
+              },
+              {
+                "id": "hydracache-server",
+                "sha256": "a17b5148cad43e2193c69a64e3372e2832fa94a47196a7b6bec405128f3633c6"
+              }
+            ],
+            "binary_set_digest": "9ac47b2a45fe70f5fe856bf1072545569bee9568d6d3eb1a65c47b978a697600",
+            "stable": true,
+            "maximum_spread_ratio": 0.0,
+            "metric": [
+              {
+                "id": "control_plane_brownout.recovery_milliseconds",
+                "value": 686.0,
+                "unit": "milliseconds"
+              },
+              {
+                "id": "control_plane_brownout.maximum_availability_dip_ppm",
+                "value": 125.0,
+                "unit": "parts_per_million"
+              }
+            ],
+            "receipt_sha256": "ab0410e13e9b427dbacb0162957a214150e2777b06c8d36967953b579f0619d3"
+          },
+          {
+            "report_id": "brownout-resp-endpoint",
+            "report_sha256": "5312056a1a6b288f723e59d06fbb9ef2ca7a7218588c0a08f9eb1285b6731496",
+            "scenario_digest": "244b6870d07ea2454bbe87f6e34119c02e879b87d5abaa9cd073952f0289876f",
+            "workload_digest": "09e0179f1f3a576a4edd40eb00c13bc25e652272408d955dedc45804eae68424",
+            "slo_digest": "257f0cbbdb6c59d954690b5e491c05759fded9ba7889b82f331beecd8541ad90",
+            "methodology_digest": "6209da0741592c22fa3747741e8d4ee2bde45b5c4e7fbbdf6b0761cd50451a6c",
+            "cargo_lock_sha256": "dc480dad8567eda4a4d13b393651d3d1201cc26ba7599e3c8ff822b725569def",
+            "prebuild_manifest_sha256": "51719b644a1fa8ff11790483ec91b07df32d3f2e946890aabd6de35e3857eee4",
+            "binary_sha256": [
+              {
+                "id": "hydracache-loadgen",
+                "sha256": "b8f5afe27ac272a0be883879a51294ff509663d13c5949fdffdcf3f87f5adae1"
+              },
+              {
+                "id": "hydracache-server",
+                "sha256": "a17b5148cad43e2193c69a64e3372e2832fa94a47196a7b6bec405128f3633c6"
+              }
+            ],
+            "binary_set_digest": "9ac47b2a45fe70f5fe856bf1072545569bee9568d6d3eb1a65c47b978a697600",
+            "stable": true,
+            "maximum_spread_ratio": 0.0,
+            "metric": [
+              {
+                "id": "resp_endpoint_brownout.recovery_milliseconds",
+                "value": 1229.0,
+                "unit": "milliseconds"
+              },
+              {
+                "id": "resp_endpoint_brownout.availability_dip_ppm",
+                "value": 10984.0,
+                "unit": "parts_per_million"
+              }
+            ],
+            "receipt_sha256": "c44518282c1c63fdf2cc6f3d1e77293ac09660fcf740457eb1865ebcafc7852f"
+          },
+          {
+            "report_id": "brownout-grid-model",
+            "report_sha256": "5e24341b5eafd06ada1baf8bcc55863cb7d17f11912ebfa2fe8d12b382d56c65",
+            "scenario_digest": "15d8dcb41d9062f223bd425bde9651fca47ed8f2deb507b080966eb661e4c871",
+            "workload_digest": "b317e34ed049d824b53872b66cd053e22bc025b566e481034965ecaa08034cbb",
+            "slo_digest": "aa5005c4f67c9d4ff23cb0d498e77297ce6221618504b7f45994249ae2288047",
+            "methodology_digest": "33d7a9f10247204ef248021b4bd7958c127f60f9bd757407c2fe0e9e778e0bda",
+            "cargo_lock_sha256": "dc480dad8567eda4a4d13b393651d3d1201cc26ba7599e3c8ff822b725569def",
+            "prebuild_manifest_sha256": "51719b644a1fa8ff11790483ec91b07df32d3f2e946890aabd6de35e3857eee4",
+            "binary_sha256": [
+              {
+                "id": "hydracache-loadgen",
+                "sha256": "b8f5afe27ac272a0be883879a51294ff509663d13c5949fdffdcf3f87f5adae1"
+              },
+              {
+                "id": "hydracache-server",
+                "sha256": "a17b5148cad43e2193c69a64e3372e2832fa94a47196a7b6bec405128f3633c6"
+              }
+            ],
+            "binary_set_digest": "9ac47b2a45fe70f5fe856bf1072545569bee9568d6d3eb1a65c47b978a697600",
+            "stable": true,
+            "maximum_spread_ratio": 0.037037,
+            "metric": [
+              {
+                "id": "grid_model_fault.maximum_recovery_cost_nanos",
+                "value": 195.0,
+                "unit": "nanoseconds"
+              },
+              {
+                "id": "grid_model_fault.maximum_decision_cost_increase_nanos",
+                "value": 76750.0,
+                "unit": "nanoseconds"
+              }
+            ],
+            "receipt_sha256": "b486ee830059aea4a17b34c944e899279862c30dc490674654f8471b52f84d79"
+          },
+          {
+            "report_id": "overload-local",
+            "report_sha256": "50e47af1298199b235d05964e8bba84c4d50545e9c62b2978ae1eaf5d71a899e",
+            "scenario_digest": "23737b7a83647d596829d0f0207feccb441c4d2782e0dd7ef74cebd378ec7279",
+            "workload_digest": "5af83efcb9857714635936b63af686f06dde987326dd724eeaf6a952bf9c3f7c",
+            "slo_digest": "7d56c986b9aebc9c66b6f61be0aaf67cd73b45aaecb3f834d2c5977aee4d3a46",
+            "methodology_digest": "ded1061458a4c279cb382e5c951c0b0b5bbbae5d57d75ea98a5460dd197b39cf",
+            "cargo_lock_sha256": "dc480dad8567eda4a4d13b393651d3d1201cc26ba7599e3c8ff822b725569def",
+            "prebuild_manifest_sha256": "51719b644a1fa8ff11790483ec91b07df32d3f2e946890aabd6de35e3857eee4",
+            "binary_sha256": [
+              {
+                "id": "hydracache-loadgen",
+                "sha256": "b8f5afe27ac272a0be883879a51294ff509663d13c5949fdffdcf3f87f5adae1"
+              },
+              {
+                "id": "hydracache-server",
+                "sha256": "a17b5148cad43e2193c69a64e3372e2832fa94a47196a7b6bec405128f3633c6"
+              }
+            ],
+            "binary_set_digest": "9ac47b2a45fe70f5fe856bf1072545569bee9568d6d3eb1a65c47b978a697600",
+            "stable": true,
+            "maximum_spread_ratio": 0.0003431297538680994,
+            "metric": [
+              {
+                "id": "overload_goodput_curve_1_2x_1_5x_2x_knee_per_eligible_surface.minimum_goodput_per_second",
+                "value": 19994.30587361545,
+                "unit": "operations_per_second"
+              }
+            ],
+            "receipt_sha256": "4a5e312095717a986332943b22f09dac8e4099403bb356a953322e2e6e2503e7"
+          },
+          {
+            "report_id": "overload-client-surface",
+            "report_sha256": "919355fb8dcf0f3f6bcc619a564873bfd36b9f0405adf9484b0a104d8cbccbbb",
+            "scenario_digest": "23737b7a83647d596829d0f0207feccb441c4d2782e0dd7ef74cebd378ec7279",
+            "workload_digest": "b5f9537eafa6b5e04cacbdd7511d0479f9ea2275dc12703483ecbd4c3e80447f",
+            "slo_digest": "7d56c986b9aebc9c66b6f61be0aaf67cd73b45aaecb3f834d2c5977aee4d3a46",
+            "methodology_digest": "99190c8f41d0c68cf4722e8a4a30ee9ca956f5ec0d82785d183407e274471336",
+            "cargo_lock_sha256": "dc480dad8567eda4a4d13b393651d3d1201cc26ba7599e3c8ff822b725569def",
+            "prebuild_manifest_sha256": "51719b644a1fa8ff11790483ec91b07df32d3f2e946890aabd6de35e3857eee4",
+            "binary_sha256": [
+              {
+                "id": "hydracache-loadgen",
+                "sha256": "b8f5afe27ac272a0be883879a51294ff509663d13c5949fdffdcf3f87f5adae1"
+              },
+              {
+                "id": "hydracache-server",
+                "sha256": "a17b5148cad43e2193c69a64e3372e2832fa94a47196a7b6bec405128f3633c6"
+              }
+            ],
+            "binary_set_digest": "9ac47b2a45fe70f5fe856bf1072545569bee9568d6d3eb1a65c47b978a697600",
+            "stable": true,
+            "maximum_spread_ratio": 0.00022407324553167543,
+            "metric": [
+              {
+                "id": "overload_goodput_curve_1_2x_1_5x_2x_knee_per_eligible_surface.minimum_goodput_per_second",
+                "value": 24991.85039500877,
+                "unit": "operations_per_second"
+              }
+            ],
+            "receipt_sha256": "32de21b782c55fb2bd3da874886547c1fb1e6b15b609302b06ce56de2494b892"
+          },
+          {
+            "report_id": "overload-node-resp",
+            "report_sha256": "010c4fc8b265ac4fbe411cfaf2919295d9cb1df5811a7fdfdb30a872cf60416d",
+            "scenario_digest": "23737b7a83647d596829d0f0207feccb441c4d2782e0dd7ef74cebd378ec7279",
+            "workload_digest": "fe8b0c4beff342c74d8660116f1b94c1bf5bb23a7de48701aae03d6dac4101fb",
+            "slo_digest": "7d56c986b9aebc9c66b6f61be0aaf67cd73b45aaecb3f834d2c5977aee4d3a46",
+            "methodology_digest": "33d89d02700959967732a4d93172be098c53b98329f3336a2b0491c0f17f197a",
+            "cargo_lock_sha256": "dc480dad8567eda4a4d13b393651d3d1201cc26ba7599e3c8ff822b725569def",
+            "prebuild_manifest_sha256": "51719b644a1fa8ff11790483ec91b07df32d3f2e946890aabd6de35e3857eee4",
+            "binary_sha256": [
+              {
+                "id": "hydracache-loadgen",
+                "sha256": "b8f5afe27ac272a0be883879a51294ff509663d13c5949fdffdcf3f87f5adae1"
+              },
+              {
+                "id": "hydracache-server",
+                "sha256": "a17b5148cad43e2193c69a64e3372e2832fa94a47196a7b6bec405128f3633c6"
+              }
+            ],
+            "binary_set_digest": "9ac47b2a45fe70f5fe856bf1072545569bee9568d6d3eb1a65c47b978a697600",
+            "stable": true,
+            "maximum_spread_ratio": 0.036324001938897545,
+            "metric": [
+              {
+                "id": "overload_goodput_curve_1_2x_1_5x_2x_knee_per_eligible_surface.minimum_goodput_per_second",
+                "value": 43029.346047997926,
+                "unit": "operations_per_second"
+              }
+            ],
+            "receipt_sha256": "c9ceebc8c6e6c41db3437e3b49346bd626c02dc4e6dd28990bb5a47909dccebc"
+          }
+        ],
+        "metric": [
+          {
+            "budget_id": "local-capacity-floor",
+            "value": 20000.0,
+            "unit": "operations_per_second"
+          },
+          {
+            "budget_id": "client-surface-capacity-floor",
+            "value": 24991.765944130566,
+            "unit": "operations_per_second"
+          },
+          {
+            "budget_id": "local-p99-at-slo-ceiling",
+            "value": 1940.0,
+            "unit": "microseconds"
+          },
+          {
+            "budget_id": "client-surface-p99-at-slo-ceiling",
+            "value": 2079.0,
+            "unit": "microseconds"
+          },
+          {
+            "budget_id": "node-resp-capacity-floor",
+            "value": 49951.73937675984,
+            "unit": "operations_per_second"
+          },
+          {
+            "budget_id": "node-resp-p99-at-slo-ceiling",
+            "value": 3477.0,
+            "unit": "microseconds"
+          },
+          {
+            "budget_id": "control-plane-3-event-ceiling",
+            "value": 899.879911,
+            "unit": "milliseconds"
+          },
+          {
+            "budget_id": "control-plane-5-event-ceiling",
+            "value": 697.588307,
+            "unit": "milliseconds"
+          },
+          {
+            "budget_id": "control-plane-7-event-ceiling",
+            "value": 853.734136,
+            "unit": "milliseconds"
+          },
+          {
+            "budget_id": "grid-model-primitive-cost-ceiling",
+            "value": 1280.976,
+            "unit": "nanoseconds_per_operation"
+          },
+          {
+            "budget_id": "brownout-control-plane-recovery-ceiling",
+            "value": 686.0,
+            "unit": "milliseconds"
+          },
+          {
+            "budget_id": "brownout-control-plane-depth-ceiling",
+            "value": 125.0,
+            "unit": "parts_per_million"
+          },
+          {
+            "budget_id": "brownout-resp-endpoint-recovery-ceiling",
+            "value": 1229.0,
+            "unit": "milliseconds"
+          },
+          {
+            "budget_id": "brownout-resp-endpoint-depth-ceiling",
+            "value": 10984.0,
+            "unit": "parts_per_million"
+          },
+          {
+            "budget_id": "brownout-grid-model-recovery-ceiling",
+            "value": 195.0,
+            "unit": "nanoseconds"
+          },
+          {
+            "budget_id": "brownout-grid-model-depth-ceiling",
+            "value": 76750.0,
+            "unit": "nanoseconds"
+          },
+          {
+            "budget_id": "overload-local-goodput-floor",
+            "value": 19994.30587361545,
+            "unit": "operations_per_second"
+          },
+          {
+            "budget_id": "overload-client-surface-goodput-floor",
+            "value": 24991.85039500877,
+            "unit": "operations_per_second"
+          },
+          {
+            "budget_id": "overload-node-resp-goodput-floor",
+            "value": 43029.346047997926,
+            "unit": "operations_per_second"
+          }
+        ],
+        "receipt_sha256": "605855b1ebc629a9d64033a112d5f1a604e0d6d896a68760f30fecdf2816b6c5"
+      },
+      {
+        "run_id": "33943280348",
+        "branch": "main",
+        "source_commit": "b3304e3a560fdddaf820d813a76773ca33565c50",
+        "observed_at": "2026-09-05T06:23:46.870889638Z",
+        "successful": true,
+        "quarantined": false,
+        "calibration_passed": true,
+        "spread_stable": true,
+        "gate_exit_code": 0,
+        "git_status_porcelain_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "quarantine_reason": null,
+        "runner_contract": {
+          "name": "reference-v1",
+          "required_runner_class": "self-hosted-bare-metal-v1",
+          "allowed_fingerprints": [
+            "25baeec1c9ec75da90b5dd0f29c101897450b96651d7e47570e18684be486ebb"
+          ],
+          "minimum_logical_cores": 4,
+          "required_cpu_affinity": "1-4",
+          "required_cgroup_cpu_quota": "unlimited",
+          "require_dedicated": true,
+          "maximum_calibration_score": 0.25
+        },
+        "runner_contract_digest": "c728014af9fd0aae4c474456e74437a033110940db01caa1577b1b5b5efabfe0",
+        "observed_runner": {
+          "runner_class": "self-hosted-bare-metal-v1",
+          "fingerprint": "25baeec1c9ec75da90b5dd0f29c101897450b96651d7e47570e18684be486ebb",
+          "cpu_model": "AMD Ryzen 7 PRO 8700GE w/ Radeon 780M Graphics",
+          "logical_cores": 4,
+          "ram_bytes": 66490494976,
+          "os": "linux",
+          "kernel": "6.8.0-138-generic",
+          "cpu_affinity": "1-4",
+          "cgroup_cpu_quota": "unlimited",
+          "governor": "performance",
+          "turbo": "enabled",
+          "shared_hardware": false,
+          "calibration_score": 0.00006299598400601961,
+          "attestation": {
+            "schema_version": 5,
+            "contract_version": "hydracache-reference-host-v5",
+            "virtualization": "none",
+            "physical_cores": 8,
+            "measurement_cores": [
+              {
+                "logical_cpu": 1,
+                "package_id": 0,
+                "core_id": 1
+              },
+              {
+                "logical_cpu": 2,
+                "package_id": 0,
+                "core_id": 2
+              },
+              {
+                "logical_cpu": 3,
+                "package_id": 0,
+                "core_id": 3
+              },
+              {
+                "logical_cpu": 4,
+                "package_id": 0,
+                "core_id": 4
+              }
+            ],
+            "cpu_isolation": {
+              "smt_control": "off",
+              "online_cpus": "0-7",
+              "isolated_cpus": "1-4",
+              "nohz_full_cpus": "1-4",
+              "rcu_nocbs_cpus": "1-4",
+              "housekeeping_cpus": "0,5-7",
+              "irq_affinity_policy": "housekeeping-only-v1",
+              "measurement_idle_policy": "latency-cap-us-v1",
+              "measurement_max_idle_latency_us": 1,
+              "housekeeping_idle_policy": "latency-cap-us-v1",
+              "housekeeping_max_idle_latency_us": 1
+            },
+            "host_digest": "571591a534c9894242fc0af0c5f80c31131fe7e4cdb9d0ea63da6d8b56af8932",
+            "storage_class": "local-nvme",
+            "storage_identity_digest": "2833a0938166031dd80b21de8a9fc4912f53b5e33914d07e2ac4ae74efc3805f",
+            "os_image": "ubuntu-24.04",
+            "toolchain_identity": "rustc-1.94.0",
+            "prebuild_contract_digest": "f2caae0689d8b075d2a6d59d6090466365f9a6824c6996d6b92830956831cc55"
+          }
+        },
+        "runner_fingerprint": "25baeec1c9ec75da90b5dd0f29c101897450b96651d7e47570e18684be486ebb",
+        "toolchain_identity": "rustc-1.94.0",
+        "prebuild_contract_digest": "f2caae0689d8b075d2a6d59d6090466365f9a6824c6996d6b92830956831cc55",
+        "profile_sha256": "b12cdad2db06ba8cb2c8f1344491cf586a9bbe7e93f4a9a203eb82463f6ffc31",
+        "budget_sha256": "d5eb28b7ec433730aa40c9a78ca87c8df258444760eaf212963a10e6b563aa40",
+        "report": [
+          {
+            "report_id": "local",
+            "report_sha256": "d93a4dcde272358f4442260a24d59def61146183946d11d873a1f98d64725325",
+            "scenario_digest": "41877a7da9095d085008581a48b411c22e5c8eafa288f08e6383b1ce4d87bbd4",
+            "workload_digest": "c9efd268ee3afdf95833aa892ad96c8589c1c7133ba23cde3b7b3462a4894715",
+            "slo_digest": "1dcde01444e6427a08940f23fc93ba1128201b723026ba5ce1c6e97e478285b7",
+            "methodology_digest": "f9c5b268795fed99849e77f3be9a2e0e414ceb8d0e26107f092df345e46907be",
+            "cargo_lock_sha256": "dc480dad8567eda4a4d13b393651d3d1201cc26ba7599e3c8ff822b725569def",
+            "prebuild_manifest_sha256": "51719b644a1fa8ff11790483ec91b07df32d3f2e946890aabd6de35e3857eee4",
+            "binary_sha256": [
+              {
+                "id": "hydracache-loadgen",
+                "sha256": "b8f5afe27ac272a0be883879a51294ff509663d13c5949fdffdcf3f87f5adae1"
+              },
+              {
+                "id": "hydracache-server",
+                "sha256": "a17b5148cad43e2193c69a64e3372e2832fa94a47196a7b6bec405128f3633c6"
+              }
+            ],
+            "binary_set_digest": "9ac47b2a45fe70f5fe856bf1072545569bee9568d6d3eb1a65c47b978a697600",
+            "stable": true,
+            "maximum_spread_ratio": 0.0002505728118108417,
+            "metric": [
+              {
+                "id": "hot_key_contention_throughput_floor.throughput_at_slo",
+                "value": 20000.0,
+                "unit": "operations_per_second"
+              },
+              {
+                "id": "hot_key_contention_throughput_floor.p99_microseconds_at_slo",
+                "value": 1944.0,
+                "unit": "microseconds"
+              }
+            ],
+            "receipt_sha256": "78059a82f076c5695c45e0e24ee4365b0183eb77fe04701b9518f79ae540e7fb"
+          },
+          {
+            "report_id": "client-surface",
+            "report_sha256": "491bb5b4da78752b894b3c5689935575852b66e9cd31c1c0786a0701e426cef2",
+            "scenario_digest": "c35633445676d474f344fbf23d788a5a0bf63a3add96db1c042ba59d0ac401fa",
+            "workload_digest": "9c8472282999d14b3da2039a86662d85cca40354f7a18404fef19971432942b7",
+            "slo_digest": "e024a1a54f480f4d853cf32867cdfb285e41983b88c4e9fcdeb6a783cb5759d5",
+            "methodology_digest": "46d09de186ed08a23559c4d5092f8a2ecda4fabeb863c6e25818e873e8f7499a",
+            "cargo_lock_sha256": "dc480dad8567eda4a4d13b393651d3d1201cc26ba7599e3c8ff822b725569def",
+            "prebuild_manifest_sha256": "51719b644a1fa8ff11790483ec91b07df32d3f2e946890aabd6de35e3857eee4",
+            "binary_sha256": [
+              {
+                "id": "hydracache-loadgen",
+                "sha256": "b8f5afe27ac272a0be883879a51294ff509663d13c5949fdffdcf3f87f5adae1"
+              },
+              {
+                "id": "hydracache-server",
+                "sha256": "a17b5148cad43e2193c69a64e3372e2832fa94a47196a7b6bec405128f3633c6"
+              }
+            ],
+            "binary_set_digest": "9ac47b2a45fe70f5fe856bf1072545569bee9568d6d3eb1a65c47b978a697600",
+            "stable": true,
+            "maximum_spread_ratio": 0.00016224859926295098,
+            "metric": [
+              {
+                "id": "client_surface_in_process_knee_at_slo_for_a_b_c.throughput_at_slo",
+                "value": 24990.600791384004,
+                "unit": "operations_per_second"
+              },
+              {
+                "id": "client_surface_in_process_knee_at_slo_for_a_b_c.p99_microseconds_at_slo",
+                "value": 2107.0,
+                "unit": "microseconds"
+              }
+            ],
+            "receipt_sha256": "7a44893dec48322874ba50745976b006d02f4d4a13fd7c0b10cf055410dcd5fe"
+          },
+          {
+            "report_id": "node-resp-open-loop",
+            "report_sha256": "49ce540563fb42c216800a64c7a5a27426cc9ecb3222a4179ece7abe5559cb22",
+            "scenario_digest": "35691a7517dd36047dd5d3b02d984e277585207318d8fa0efab2da5c1a7fad6a",
+            "workload_digest": "9655bdd6868a69ee44a138896da03e3be4dc9fcc506cc78f4b537ae1b628af50",
+            "slo_digest": "bd051d1f04bf8912a07c388bfb483d73fb1b82acbda7efedd3c0c37c915eee05",
+            "methodology_digest": "53b640daf77b5f46021c82137068242f35b3c074316137358ff03f41ae71285f",
+            "cargo_lock_sha256": "dc480dad8567eda4a4d13b393651d3d1201cc26ba7599e3c8ff822b725569def",
+            "prebuild_manifest_sha256": "51719b644a1fa8ff11790483ec91b07df32d3f2e946890aabd6de35e3857eee4",
+            "binary_sha256": [
+              {
+                "id": "hydracache-loadgen",
+                "sha256": "b8f5afe27ac272a0be883879a51294ff509663d13c5949fdffdcf3f87f5adae1"
+              },
+              {
+                "id": "hydracache-server",
+                "sha256": "a17b5148cad43e2193c69a64e3372e2832fa94a47196a7b6bec405128f3633c6"
+              }
+            ],
+            "binary_set_digest": "9ac47b2a45fe70f5fe856bf1072545569bee9568d6d3eb1a65c47b978a697600",
+            "stable": true,
+            "maximum_spread_ratio": 0.00042234630837347014,
+            "metric": [
+              {
+                "id": "resp_open_loop_get_set_knee_at_slo.throughput_at_slo",
+                "value": 49955.75888020114,
+                "unit": "operations_per_second"
+              },
+              {
+                "id": "resp_open_loop_get_set_knee_at_slo.p99_microseconds_at_slo",
+                "value": 3421.0,
+                "unit": "microseconds"
+              }
+            ],
+            "receipt_sha256": "2307963cec4edee8e19fe7212c8187a92c7b46c7ae864c5615f0530bd060313e"
+          },
+          {
+            "report_id": "control-plane-3",
+            "report_sha256": "c957e81529035e29058680d5df97223cf5c7e0ed4a1d7f0935a0ebaa5573faf8",
+            "scenario_digest": "c9570d61946ba50b48cbc54af7d1f4ff0e49e740bcbf73e54b83873342c15d69",
+            "workload_digest": "6e8f8cbe73811afcaf794f795650cfb85cf347dbd822e7e94c7e138f4ef7486f",
+            "slo_digest": "d04a7a3fa59a167dfbd8ca4e205cc38accd6864f12035785797e5056beb34f85",
+            "methodology_digest": "94005eea779aa38393f67d2adcfd28695d7cdf26a4e7c7319ef8eccd2950329b",
+            "cargo_lock_sha256": "dc480dad8567eda4a4d13b393651d3d1201cc26ba7599e3c8ff822b725569def",
+            "prebuild_manifest_sha256": "51719b644a1fa8ff11790483ec91b07df32d3f2e946890aabd6de35e3857eee4",
+            "binary_sha256": [
+              {
+                "id": "hydracache-loadgen",
+                "sha256": "b8f5afe27ac272a0be883879a51294ff509663d13c5949fdffdcf3f87f5adae1"
+              },
+              {
+                "id": "hydracache-server",
+                "sha256": "a17b5148cad43e2193c69a64e3372e2832fa94a47196a7b6bec405128f3633c6"
+              }
+            ],
+            "binary_set_digest": "9ac47b2a45fe70f5fe856bf1072545569bee9568d6d3eb1a65c47b978a697600",
+            "stable": true,
+            "maximum_spread_ratio": 0.000834254978784622,
+            "metric": [
+              {
+                "id": "membership_add_drain_commit_and_convergence_latency.max_milliseconds",
+                "value": 646.02576,
+                "unit": "milliseconds"
+              }
+            ],
+            "receipt_sha256": "e5a24e9f7e4f8aa16f093279d9dd1f95deabbcb33f08ec100d7dd77bc673c702"
+          },
+          {
+            "report_id": "control-plane-5",
+            "report_sha256": "0120bc66f2b20aa4077f3a9f7a9d993e491b05d1596cc4baf91ec907c2b9e043",
+            "scenario_digest": "c9570d61946ba50b48cbc54af7d1f4ff0e49e740bcbf73e54b83873342c15d69",
+            "workload_digest": "6e8f8cbe73811afcaf794f795650cfb85cf347dbd822e7e94c7e138f4ef7486f",
+            "slo_digest": "d04a7a3fa59a167dfbd8ca4e205cc38accd6864f12035785797e5056beb34f85",
+            "methodology_digest": "94005eea779aa38393f67d2adcfd28695d7cdf26a4e7c7319ef8eccd2950329b",
+            "cargo_lock_sha256": "dc480dad8567eda4a4d13b393651d3d1201cc26ba7599e3c8ff822b725569def",
+            "prebuild_manifest_sha256": "51719b644a1fa8ff11790483ec91b07df32d3f2e946890aabd6de35e3857eee4",
+            "binary_sha256": [
+              {
+                "id": "hydracache-loadgen",
+                "sha256": "b8f5afe27ac272a0be883879a51294ff509663d13c5949fdffdcf3f87f5adae1"
+              },
+              {
+                "id": "hydracache-server",
+                "sha256": "a17b5148cad43e2193c69a64e3372e2832fa94a47196a7b6bec405128f3633c6"
+              }
+            ],
+            "binary_set_digest": "9ac47b2a45fe70f5fe856bf1072545569bee9568d6d3eb1a65c47b978a697600",
+            "stable": true,
+            "maximum_spread_ratio": 0.0008486358184174878,
+            "metric": [
+              {
+                "id": "membership_add_drain_commit_and_convergence_latency.max_milliseconds",
+                "value": 647.674158,
+                "unit": "milliseconds"
+              }
+            ],
+            "receipt_sha256": "da28fb29ba9823a76dac62f9d77720742e192aa122c971d09f37b61b1ddc3a3f"
+          },
+          {
+            "report_id": "control-plane-7",
+            "report_sha256": "fd2b8f8a95c091d0b5543d5ec36ae1babbcaccbd42c7fd0c16a1c6356a625dae",
+            "scenario_digest": "c9570d61946ba50b48cbc54af7d1f4ff0e49e740bcbf73e54b83873342c15d69",
+            "workload_digest": "6e8f8cbe73811afcaf794f795650cfb85cf347dbd822e7e94c7e138f4ef7486f",
+            "slo_digest": "d04a7a3fa59a167dfbd8ca4e205cc38accd6864f12035785797e5056beb34f85",
+            "methodology_digest": "94005eea779aa38393f67d2adcfd28695d7cdf26a4e7c7319ef8eccd2950329b",
+            "cargo_lock_sha256": "dc480dad8567eda4a4d13b393651d3d1201cc26ba7599e3c8ff822b725569def",
+            "prebuild_manifest_sha256": "51719b644a1fa8ff11790483ec91b07df32d3f2e946890aabd6de35e3857eee4",
+            "binary_sha256": [
+              {
+                "id": "hydracache-loadgen",
+                "sha256": "b8f5afe27ac272a0be883879a51294ff509663d13c5949fdffdcf3f87f5adae1"
+              },
+              {
+                "id": "hydracache-server",
+                "sha256": "a17b5148cad43e2193c69a64e3372e2832fa94a47196a7b6bec405128f3633c6"
+              }
+            ],
+            "binary_set_digest": "9ac47b2a45fe70f5fe856bf1072545569bee9568d6d3eb1a65c47b978a697600",
+            "stable": true,
+            "maximum_spread_ratio": 0.0007701686983842958,
+            "metric": [
+              {
+                "id": "membership_add_drain_commit_and_convergence_latency.max_milliseconds",
+                "value": 904.916322,
+                "unit": "milliseconds"
+              }
+            ],
+            "receipt_sha256": "603ace99fdaf53465e9a5780f5202198472aaabad6685a8836b9d6aea3c847cd"
+          },
+          {
+            "report_id": "grid-model",
+            "report_sha256": "3dc7e4012d7fef5b5b12e26fdc25ce000adc0a0ee88a1567201cd96091f5b8f6",
+            "scenario_digest": "bee82e99244cdb4b860598ee2a1a2a34f8788813f497d6cb075f916a433d2ecb",
+            "workload_digest": "0ca85cc6a2fe6e4753a2a658688c38050bea93ef1f5708ef0a2b2c3d2c3663b4",
+            "slo_digest": "1a36fe6e34fce061cdb88a1163d0dec9b301e3cc29d3c70093b1278c4c48f703",
+            "methodology_digest": "8160a7e90c2beea0ca12cd5fc6c2cf6c7b2480e916915bbd1ff1cdf06beeb884",
+            "cargo_lock_sha256": "dc480dad8567eda4a4d13b393651d3d1201cc26ba7599e3c8ff822b725569def",
+            "prebuild_manifest_sha256": "51719b644a1fa8ff11790483ec91b07df32d3f2e946890aabd6de35e3857eee4",
+            "binary_sha256": [
+              {
+                "id": "hydracache-loadgen",
+                "sha256": "b8f5afe27ac272a0be883879a51294ff509663d13c5949fdffdcf3f87f5adae1"
+              },
+              {
+                "id": "hydracache-server",
+                "sha256": "a17b5148cad43e2193c69a64e3372e2832fa94a47196a7b6bec405128f3633c6"
+              }
+            ],
+            "binary_set_digest": "9ac47b2a45fe70f5fe856bf1072545569bee9568d6d3eb1a65c47b978a697600",
+            "stable": true,
+            "maximum_spread_ratio": 0.009267,
+            "metric": [
+              {
+                "id": "consistency_ack_requirement_cost_by_level_and_replica_shape.max_nanoseconds_per_operation",
+                "value": 1300.3734,
+                "unit": "nanoseconds_per_operation"
+              }
+            ],
+            "receipt_sha256": "f2aa64c5bb40677566d5406d568c17de043d8b0717e08d3f49b5fa7be84fe46c"
+          },
+          {
+            "report_id": "brownout-control-plane",
+            "report_sha256": "257774d0ce44ae4e790ff496c292bb7d2398a6c76735855afae38a14841439c4",
+            "scenario_digest": "7c7eeab8137a62fb70fc8ac23309d9168bbc7d00084a4b1f94b958e262de71f0",
+            "workload_digest": "5f656244097e34a88ad33771d7377133d079ed72188e188027703f5369ace96c",
+            "slo_digest": "12b48135f1fd7f6c2b54661291c24d2c240ddaa2e3c9d457de39486fcec01dc0",
+            "methodology_digest": "1aef4e5e730268439c73d14206ae68585129b5d9d3c9cbea5e98fcd8416a0e44",
+            "cargo_lock_sha256": "dc480dad8567eda4a4d13b393651d3d1201cc26ba7599e3c8ff822b725569def",
+            "prebuild_manifest_sha256": "51719b644a1fa8ff11790483ec91b07df32d3f2e946890aabd6de35e3857eee4",
+            "binary_sha256": [
+              {
+                "id": "hydracache-loadgen",
+                "sha256": "b8f5afe27ac272a0be883879a51294ff509663d13c5949fdffdcf3f87f5adae1"
+              },
+              {
+                "id": "hydracache-server",
+                "sha256": "a17b5148cad43e2193c69a64e3372e2832fa94a47196a7b6bec405128f3633c6"
+              }
+            ],
+            "binary_set_digest": "9ac47b2a45fe70f5fe856bf1072545569bee9568d6d3eb1a65c47b978a697600",
+            "stable": true,
+            "maximum_spread_ratio": 0.0,
+            "metric": [
+              {
+                "id": "control_plane_brownout.recovery_milliseconds",
+                "value": 728.0,
+                "unit": "milliseconds"
+              },
+              {
+                "id": "control_plane_brownout.maximum_availability_dip_ppm",
+                "value": 125.0,
+                "unit": "parts_per_million"
+              }
+            ],
+            "receipt_sha256": "bc7d751decd204d24377ac7ca48219d37ff37b87dc313422b5e1d72c016c10fe"
+          },
+          {
+            "report_id": "brownout-resp-endpoint",
+            "report_sha256": "3449394d8e1769530038e8f1d2189e4e9c81dd6f1c6a7556341618bfa76b9fe8",
+            "scenario_digest": "244b6870d07ea2454bbe87f6e34119c02e879b87d5abaa9cd073952f0289876f",
+            "workload_digest": "09e0179f1f3a576a4edd40eb00c13bc25e652272408d955dedc45804eae68424",
+            "slo_digest": "257f0cbbdb6c59d954690b5e491c05759fded9ba7889b82f331beecd8541ad90",
+            "methodology_digest": "6209da0741592c22fa3747741e8d4ee2bde45b5c4e7fbbdf6b0761cd50451a6c",
+            "cargo_lock_sha256": "dc480dad8567eda4a4d13b393651d3d1201cc26ba7599e3c8ff822b725569def",
+            "prebuild_manifest_sha256": "51719b644a1fa8ff11790483ec91b07df32d3f2e946890aabd6de35e3857eee4",
+            "binary_sha256": [
+              {
+                "id": "hydracache-loadgen",
+                "sha256": "b8f5afe27ac272a0be883879a51294ff509663d13c5949fdffdcf3f87f5adae1"
+              },
+              {
+                "id": "hydracache-server",
+                "sha256": "a17b5148cad43e2193c69a64e3372e2832fa94a47196a7b6bec405128f3633c6"
+              }
+            ],
+            "binary_set_digest": "9ac47b2a45fe70f5fe856bf1072545569bee9568d6d3eb1a65c47b978a697600",
+            "stable": true,
+            "maximum_spread_ratio": 0.0,
+            "metric": [
+              {
+                "id": "resp_endpoint_brownout.recovery_milliseconds",
+                "value": 1199.0,
+                "unit": "milliseconds"
+              },
+              {
+                "id": "resp_endpoint_brownout.availability_dip_ppm",
+                "value": 11807.0,
+                "unit": "parts_per_million"
+              }
+            ],
+            "receipt_sha256": "b321d031ff313e5613fc2112f71ba84d09fa6f4aa4d49addb0ce8ab2b0f7b38d"
+          },
+          {
+            "report_id": "brownout-grid-model",
+            "report_sha256": "d682777ade831a655880d828a6b4cdfdc3bd53c5129f8111314ea26fbb7fb6e5",
+            "scenario_digest": "15d8dcb41d9062f223bd425bde9651fca47ed8f2deb507b080966eb661e4c871",
+            "workload_digest": "b317e34ed049d824b53872b66cd053e22bc025b566e481034965ecaa08034cbb",
+            "slo_digest": "aa5005c4f67c9d4ff23cb0d498e77297ce6221618504b7f45994249ae2288047",
+            "methodology_digest": "33d7a9f10247204ef248021b4bd7958c127f60f9bd757407c2fe0e9e778e0bda",
+            "cargo_lock_sha256": "dc480dad8567eda4a4d13b393651d3d1201cc26ba7599e3c8ff822b725569def",
+            "prebuild_manifest_sha256": "51719b644a1fa8ff11790483ec91b07df32d3f2e946890aabd6de35e3857eee4",
+            "binary_sha256": [
+              {
+                "id": "hydracache-loadgen",
+                "sha256": "b8f5afe27ac272a0be883879a51294ff509663d13c5949fdffdcf3f87f5adae1"
+              },
+              {
+                "id": "hydracache-server",
+                "sha256": "a17b5148cad43e2193c69a64e3372e2832fa94a47196a7b6bec405128f3633c6"
+              }
+            ],
+            "binary_set_digest": "9ac47b2a45fe70f5fe856bf1072545569bee9568d6d3eb1a65c47b978a697600",
+            "stable": true,
+            "maximum_spread_ratio": 0.148571,
+            "metric": [
+              {
+                "id": "grid_model_fault.maximum_recovery_cost_nanos",
+                "value": 193.0,
+                "unit": "nanoseconds"
+              },
+              {
+                "id": "grid_model_fault.maximum_decision_cost_increase_nanos",
+                "value": 76721.0,
+                "unit": "nanoseconds"
+              }
+            ],
+            "receipt_sha256": "f5682f4833248eb93ae1803d03c417bdf49bac462576925ce5d2759f1cb5f8f8"
+          },
+          {
+            "report_id": "overload-local",
+            "report_sha256": "ef22fed571d4e7a041c2e2e89efe4102614b1f6b92db8185f6ae40a612e02de7",
+            "scenario_digest": "23737b7a83647d596829d0f0207feccb441c4d2782e0dd7ef74cebd378ec7279",
+            "workload_digest": "5af83efcb9857714635936b63af686f06dde987326dd724eeaf6a952bf9c3f7c",
+            "slo_digest": "7d56c986b9aebc9c66b6f61be0aaf67cd73b45aaecb3f834d2c5977aee4d3a46",
+            "methodology_digest": "ded1061458a4c279cb382e5c951c0b0b5bbbae5d57d75ea98a5460dd197b39cf",
+            "cargo_lock_sha256": "dc480dad8567eda4a4d13b393651d3d1201cc26ba7599e3c8ff822b725569def",
+            "prebuild_manifest_sha256": "51719b644a1fa8ff11790483ec91b07df32d3f2e946890aabd6de35e3857eee4",
+            "binary_sha256": [
+              {
+                "id": "hydracache-loadgen",
+                "sha256": "b8f5afe27ac272a0be883879a51294ff509663d13c5949fdffdcf3f87f5adae1"
+              },
+              {
+                "id": "hydracache-server",
+                "sha256": "a17b5148cad43e2193c69a64e3372e2832fa94a47196a7b6bec405128f3633c6"
+              }
+            ],
+            "binary_set_digest": "9ac47b2a45fe70f5fe856bf1072545569bee9568d6d3eb1a65c47b978a697600",
+            "stable": true,
+            "maximum_spread_ratio": 0.00013103130619978762,
+            "metric": [
+              {
+                "id": "overload_goodput_curve_1_2x_1_5x_2x_knee_per_eligible_surface.minimum_goodput_per_second",
+                "value": 19995.079035092767,
+                "unit": "operations_per_second"
+              }
+            ],
+            "receipt_sha256": "c13abee2465d0f4aac14b81b72681f949df603e29fad99331841859c0ae4fa11"
+          },
+          {
+            "report_id": "overload-client-surface",
+            "report_sha256": "a4fd0fce3905f1b0866e28de43c26b0de3670b96d3b793037e95172be95c9aec",
+            "scenario_digest": "23737b7a83647d596829d0f0207feccb441c4d2782e0dd7ef74cebd378ec7279",
+            "workload_digest": "b5f9537eafa6b5e04cacbdd7511d0479f9ea2275dc12703483ecbd4c3e80447f",
+            "slo_digest": "7d56c986b9aebc9c66b6f61be0aaf67cd73b45aaecb3f834d2c5977aee4d3a46",
+            "methodology_digest": "99190c8f41d0c68cf4722e8a4a30ee9ca956f5ec0d82785d183407e274471336",
+            "cargo_lock_sha256": "dc480dad8567eda4a4d13b393651d3d1201cc26ba7599e3c8ff822b725569def",
+            "prebuild_manifest_sha256": "51719b644a1fa8ff11790483ec91b07df32d3f2e946890aabd6de35e3857eee4",
+            "binary_sha256": [
+              {
+                "id": "hydracache-loadgen",
+                "sha256": "b8f5afe27ac272a0be883879a51294ff509663d13c5949fdffdcf3f87f5adae1"
+              },
+              {
+                "id": "hydracache-server",
+                "sha256": "a17b5148cad43e2193c69a64e3372e2832fa94a47196a7b6bec405128f3633c6"
+              }
+            ],
+            "binary_set_digest": "9ac47b2a45fe70f5fe856bf1072545569bee9568d6d3eb1a65c47b978a697600",
+            "stable": true,
+            "maximum_spread_ratio": 0.0003275672058651922,
+            "metric": [
+              {
+                "id": "overload_goodput_curve_1_2x_1_5x_2x_knee_per_eligible_surface.minimum_goodput_per_second",
+                "value": 24990.126844458504,
+                "unit": "operations_per_second"
+              }
+            ],
+            "receipt_sha256": "a6908fd774b592a8d88f5e88c2021709fb5bae96093f37f81f7658fde0467da7"
+          },
+          {
+            "report_id": "overload-node-resp",
+            "report_sha256": "2af2c3bce9d3d0620737eb1bb2a79cd9ceddaa998d61bf44ee310d08d1478b42",
+            "scenario_digest": "23737b7a83647d596829d0f0207feccb441c4d2782e0dd7ef74cebd378ec7279",
+            "workload_digest": "fe8b0c4beff342c74d8660116f1b94c1bf5bb23a7de48701aae03d6dac4101fb",
+            "slo_digest": "7d56c986b9aebc9c66b6f61be0aaf67cd73b45aaecb3f834d2c5977aee4d3a46",
+            "methodology_digest": "33d89d02700959967732a4d93172be098c53b98329f3336a2b0491c0f17f197a",
+            "cargo_lock_sha256": "dc480dad8567eda4a4d13b393651d3d1201cc26ba7599e3c8ff822b725569def",
+            "prebuild_manifest_sha256": "51719b644a1fa8ff11790483ec91b07df32d3f2e946890aabd6de35e3857eee4",
+            "binary_sha256": [
+              {
+                "id": "hydracache-loadgen",
+                "sha256": "b8f5afe27ac272a0be883879a51294ff509663d13c5949fdffdcf3f87f5adae1"
+              },
+              {
+                "id": "hydracache-server",
+                "sha256": "a17b5148cad43e2193c69a64e3372e2832fa94a47196a7b6bec405128f3633c6"
+              }
+            ],
+            "binary_set_digest": "9ac47b2a45fe70f5fe856bf1072545569bee9568d6d3eb1a65c47b978a697600",
+            "stable": true,
+            "maximum_spread_ratio": 0.005005836961716722,
+            "metric": [
+              {
+                "id": "overload_goodput_curve_1_2x_1_5x_2x_knee_per_eligible_surface.minimum_goodput_per_second",
+                "value": 43131.17619357546,
+                "unit": "operations_per_second"
+              }
+            ],
+            "receipt_sha256": "0d019ed9cf7bd05b8d1ea2181b5d34bb7e530d5b99cce24c1f1ffab066f0bf26"
+          }
+        ],
+        "metric": [
+          {
+            "budget_id": "local-capacity-floor",
+            "value": 20000.0,
+            "unit": "operations_per_second"
+          },
+          {
+            "budget_id": "client-surface-capacity-floor",
+            "value": 24990.600791384004,
+            "unit": "operations_per_second"
+          },
+          {
+            "budget_id": "local-p99-at-slo-ceiling",
+            "value": 1944.0,
+            "unit": "microseconds"
+          },
+          {
+            "budget_id": "client-surface-p99-at-slo-ceiling",
+            "value": 2107.0,
+            "unit": "microseconds"
+          },
+          {
+            "budget_id": "node-resp-capacity-floor",
+            "value": 49955.75888020114,
+            "unit": "operations_per_second"
+          },
+          {
+            "budget_id": "node-resp-p99-at-slo-ceiling",
+            "value": 3421.0,
+            "unit": "microseconds"
+          },
+          {
+            "budget_id": "control-plane-3-event-ceiling",
+            "value": 646.02576,
+            "unit": "milliseconds"
+          },
+          {
+            "budget_id": "control-plane-5-event-ceiling",
+            "value": 647.674158,
+            "unit": "milliseconds"
+          },
+          {
+            "budget_id": "control-plane-7-event-ceiling",
+            "value": 904.916322,
+            "unit": "milliseconds"
+          },
+          {
+            "budget_id": "grid-model-primitive-cost-ceiling",
+            "value": 1300.3734,
+            "unit": "nanoseconds_per_operation"
+          },
+          {
+            "budget_id": "brownout-control-plane-recovery-ceiling",
+            "value": 728.0,
+            "unit": "milliseconds"
+          },
+          {
+            "budget_id": "brownout-control-plane-depth-ceiling",
+            "value": 125.0,
+            "unit": "parts_per_million"
+          },
+          {
+            "budget_id": "brownout-resp-endpoint-recovery-ceiling",
+            "value": 1199.0,
+            "unit": "milliseconds"
+          },
+          {
+            "budget_id": "brownout-resp-endpoint-depth-ceiling",
+            "value": 11807.0,
+            "unit": "parts_per_million"
+          },
+          {
+            "budget_id": "brownout-grid-model-recovery-ceiling",
+            "value": 193.0,
+            "unit": "nanoseconds"
+          },
+          {
+            "budget_id": "brownout-grid-model-depth-ceiling",
+            "value": 76721.0,
+            "unit": "nanoseconds"
+          },
+          {
+            "budget_id": "overload-local-goodput-floor",
+            "value": 19995.079035092767,
+            "unit": "operations_per_second"
+          },
+          {
+            "budget_id": "overload-client-surface-goodput-floor",
+            "value": 24990.126844458504,
+            "unit": "operations_per_second"
+          },
+          {
+            "budget_id": "overload-node-resp-goodput-floor",
+            "value": 43131.17619357546,
+            "unit": "operations_per_second"
+          }
+        ],
+        "receipt_sha256": "b4581f0df75daefdfe86dc95dec2a51b457b7a1d83a7da9e9472a738b1071872"
+      },
+      {
+        "run_id": "33949714161",
+        "branch": "main",
+        "source_commit": "b3304e3a560fdddaf820d813a76773ca33565c50",
+        "observed_at": "2026-09-05T08:49:56.559643462Z",
+        "successful": true,
+        "quarantined": false,
+        "calibration_passed": true,
+        "spread_stable": true,
+        "gate_exit_code": 0,
+        "git_status_porcelain_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "quarantine_reason": null,
+        "runner_contract": {
+          "name": "reference-v1",
+          "required_runner_class": "self-hosted-bare-metal-v1",
+          "allowed_fingerprints": [
+            "25baeec1c9ec75da90b5dd0f29c101897450b96651d7e47570e18684be486ebb"
+          ],
+          "minimum_logical_cores": 4,
+          "required_cpu_affinity": "1-4",
+          "required_cgroup_cpu_quota": "unlimited",
+          "require_dedicated": true,
+          "maximum_calibration_score": 0.25
+        },
+        "runner_contract_digest": "c728014af9fd0aae4c474456e74437a033110940db01caa1577b1b5b5efabfe0",
+        "observed_runner": {
+          "runner_class": "self-hosted-bare-metal-v1",
+          "fingerprint": "25baeec1c9ec75da90b5dd0f29c101897450b96651d7e47570e18684be486ebb",
+          "cpu_model": "AMD Ryzen 7 PRO 8700GE w/ Radeon 780M Graphics",
+          "logical_cores": 4,
+          "ram_bytes": 66490494976,
+          "os": "linux",
+          "kernel": "6.8.0-138-generic",
+          "cpu_affinity": "1-4",
+          "cgroup_cpu_quota": "unlimited",
+          "governor": "performance",
+          "turbo": "enabled",
+          "shared_hardware": false,
+          "calibration_score": 0.000017499481577858256,
+          "attestation": {
+            "schema_version": 5,
+            "contract_version": "hydracache-reference-host-v5",
+            "virtualization": "none",
+            "physical_cores": 8,
+            "measurement_cores": [
+              {
+                "logical_cpu": 1,
+                "package_id": 0,
+                "core_id": 1
+              },
+              {
+                "logical_cpu": 2,
+                "package_id": 0,
+                "core_id": 2
+              },
+              {
+                "logical_cpu": 3,
+                "package_id": 0,
+                "core_id": 3
+              },
+              {
+                "logical_cpu": 4,
+                "package_id": 0,
+                "core_id": 4
+              }
+            ],
+            "cpu_isolation": {
+              "smt_control": "off",
+              "online_cpus": "0-7",
+              "isolated_cpus": "1-4",
+              "nohz_full_cpus": "1-4",
+              "rcu_nocbs_cpus": "1-4",
+              "housekeeping_cpus": "0,5-7",
+              "irq_affinity_policy": "housekeeping-only-v1",
+              "measurement_idle_policy": "latency-cap-us-v1",
+              "measurement_max_idle_latency_us": 1,
+              "housekeeping_idle_policy": "latency-cap-us-v1",
+              "housekeeping_max_idle_latency_us": 1
+            },
+            "host_digest": "571591a534c9894242fc0af0c5f80c31131fe7e4cdb9d0ea63da6d8b56af8932",
+            "storage_class": "local-nvme",
+            "storage_identity_digest": "2833a0938166031dd80b21de8a9fc4912f53b5e33914d07e2ac4ae74efc3805f",
+            "os_image": "ubuntu-24.04",
+            "toolchain_identity": "rustc-1.94.0",
+            "prebuild_contract_digest": "f2caae0689d8b075d2a6d59d6090466365f9a6824c6996d6b92830956831cc55"
+          }
+        },
+        "runner_fingerprint": "25baeec1c9ec75da90b5dd0f29c101897450b96651d7e47570e18684be486ebb",
+        "toolchain_identity": "rustc-1.94.0",
+        "prebuild_contract_digest": "f2caae0689d8b075d2a6d59d6090466365f9a6824c6996d6b92830956831cc55",
+        "profile_sha256": "b12cdad2db06ba8cb2c8f1344491cf586a9bbe7e93f4a9a203eb82463f6ffc31",
+        "budget_sha256": "d5eb28b7ec433730aa40c9a78ca87c8df258444760eaf212963a10e6b563aa40",
+        "report": [
+          {
+            "report_id": "local",
+            "report_sha256": "16a03f64a9f6b5ea5af9ea237ad0bd9c8f3373413a942efaf035af911ac7826c",
+            "scenario_digest": "41877a7da9095d085008581a48b411c22e5c8eafa288f08e6383b1ce4d87bbd4",
+            "workload_digest": "c9efd268ee3afdf95833aa892ad96c8589c1c7133ba23cde3b7b3462a4894715",
+            "slo_digest": "1dcde01444e6427a08940f23fc93ba1128201b723026ba5ce1c6e97e478285b7",
+            "methodology_digest": "f9c5b268795fed99849e77f3be9a2e0e414ceb8d0e26107f092df345e46907be",
+            "cargo_lock_sha256": "dc480dad8567eda4a4d13b393651d3d1201cc26ba7599e3c8ff822b725569def",
+            "prebuild_manifest_sha256": "51719b644a1fa8ff11790483ec91b07df32d3f2e946890aabd6de35e3857eee4",
+            "binary_sha256": [
+              {
+                "id": "hydracache-loadgen",
+                "sha256": "b8f5afe27ac272a0be883879a51294ff509663d13c5949fdffdcf3f87f5adae1"
+              },
+              {
+                "id": "hydracache-server",
+                "sha256": "a17b5148cad43e2193c69a64e3372e2832fa94a47196a7b6bec405128f3633c6"
+              }
+            ],
+            "binary_set_digest": "9ac47b2a45fe70f5fe856bf1072545569bee9568d6d3eb1a65c47b978a697600",
+            "stable": true,
+            "maximum_spread_ratio": 0.00021173759569874018,
+            "metric": [
+              {
+                "id": "hot_key_contention_throughput_floor.throughput_at_slo",
+                "value": 20000.0,
+                "unit": "operations_per_second"
+              },
+              {
+                "id": "hot_key_contention_throughput_floor.p99_microseconds_at_slo",
+                "value": 1969.0,
+                "unit": "microseconds"
+              }
+            ],
+            "receipt_sha256": "bceca8b6eb726d3cbd1e1990f7fcbc41ac946727da0cb2b2901659a516f9bdc0"
+          },
+          {
+            "report_id": "client-surface",
+            "report_sha256": "ebd628021176c142de731fd0fb6383da136e84ce9ef6f717b1e728186ed4c43b",
+            "scenario_digest": "c35633445676d474f344fbf23d788a5a0bf63a3add96db1c042ba59d0ac401fa",
+            "workload_digest": "9c8472282999d14b3da2039a86662d85cca40354f7a18404fef19971432942b7",
+            "slo_digest": "e024a1a54f480f4d853cf32867cdfb285e41983b88c4e9fcdeb6a783cb5759d5",
+            "methodology_digest": "46d09de186ed08a23559c4d5092f8a2ecda4fabeb863c6e25818e873e8f7499a",
+            "cargo_lock_sha256": "dc480dad8567eda4a4d13b393651d3d1201cc26ba7599e3c8ff822b725569def",
+            "prebuild_manifest_sha256": "51719b644a1fa8ff11790483ec91b07df32d3f2e946890aabd6de35e3857eee4",
+            "binary_sha256": [
+              {
+                "id": "hydracache-loadgen",
+                "sha256": "b8f5afe27ac272a0be883879a51294ff509663d13c5949fdffdcf3f87f5adae1"
+              },
+              {
+                "id": "hydracache-server",
+                "sha256": "a17b5148cad43e2193c69a64e3372e2832fa94a47196a7b6bec405128f3633c6"
+              }
+            ],
+            "binary_set_digest": "9ac47b2a45fe70f5fe856bf1072545569bee9568d6d3eb1a65c47b978a697600",
+            "stable": true,
+            "maximum_spread_ratio": 0.0002860093417652828,
+            "metric": [
+              {
+                "id": "client_surface_in_process_knee_at_slo_for_a_b_c.throughput_at_slo",
+                "value": 24988.567811439112,
+                "unit": "operations_per_second"
+              },
+              {
+                "id": "client_surface_in_process_knee_at_slo_for_a_b_c.p99_microseconds_at_slo",
+                "value": 2077.0,
+                "unit": "microseconds"
+              }
+            ],
+            "receipt_sha256": "4e19714a1eba6aaee196742007fac8aa1457aca229d27505faa8616567513af6"
+          },
+          {
+            "report_id": "node-resp-open-loop",
+            "report_sha256": "7b289dab6531fb6e9ef2e94107d391c28fb862607b7d293ee3370c25de5c6483",
+            "scenario_digest": "35691a7517dd36047dd5d3b02d984e277585207318d8fa0efab2da5c1a7fad6a",
+            "workload_digest": "9655bdd6868a69ee44a138896da03e3be4dc9fcc506cc78f4b537ae1b628af50",
+            "slo_digest": "bd051d1f04bf8912a07c388bfb483d73fb1b82acbda7efedd3c0c37c915eee05",
+            "methodology_digest": "53b640daf77b5f46021c82137068242f35b3c074316137358ff03f41ae71285f",
+            "cargo_lock_sha256": "dc480dad8567eda4a4d13b393651d3d1201cc26ba7599e3c8ff822b725569def",
+            "prebuild_manifest_sha256": "51719b644a1fa8ff11790483ec91b07df32d3f2e946890aabd6de35e3857eee4",
+            "binary_sha256": [
+              {
+                "id": "hydracache-loadgen",
+                "sha256": "b8f5afe27ac272a0be883879a51294ff509663d13c5949fdffdcf3f87f5adae1"
+              },
+              {
+                "id": "hydracache-server",
+                "sha256": "a17b5148cad43e2193c69a64e3372e2832fa94a47196a7b6bec405128f3633c6"
+              }
+            ],
+            "binary_set_digest": "9ac47b2a45fe70f5fe856bf1072545569bee9568d6d3eb1a65c47b978a697600",
+            "stable": true,
+            "maximum_spread_ratio": 0.0005439221652127765,
+            "metric": [
+              {
+                "id": "resp_open_loop_get_set_knee_at_slo.throughput_at_slo",
+                "value": 49947.68811299171,
+                "unit": "operations_per_second"
+              },
+              {
+                "id": "resp_open_loop_get_set_knee_at_slo.p99_microseconds_at_slo",
+                "value": 3503.0,
+                "unit": "microseconds"
+              }
+            ],
+            "receipt_sha256": "5dd9e0188573c09d92b69bed4e6bdbab5ef7fd8911de7691569275fb2624f5aa"
+          },
+          {
+            "report_id": "control-plane-3",
+            "report_sha256": "b86200aab1a99d31158f5acf2dca4dca75d62a0a44974d81b1bdea17f59d5c4c",
+            "scenario_digest": "c9570d61946ba50b48cbc54af7d1f4ff0e49e740bcbf73e54b83873342c15d69",
+            "workload_digest": "6e8f8cbe73811afcaf794f795650cfb85cf347dbd822e7e94c7e138f4ef7486f",
+            "slo_digest": "d04a7a3fa59a167dfbd8ca4e205cc38accd6864f12035785797e5056beb34f85",
+            "methodology_digest": "94005eea779aa38393f67d2adcfd28695d7cdf26a4e7c7319ef8eccd2950329b",
+            "cargo_lock_sha256": "dc480dad8567eda4a4d13b393651d3d1201cc26ba7599e3c8ff822b725569def",
+            "prebuild_manifest_sha256": "51719b644a1fa8ff11790483ec91b07df32d3f2e946890aabd6de35e3857eee4",
+            "binary_sha256": [
+              {
+                "id": "hydracache-loadgen",
+                "sha256": "b8f5afe27ac272a0be883879a51294ff509663d13c5949fdffdcf3f87f5adae1"
+              },
+              {
+                "id": "hydracache-server",
+                "sha256": "a17b5148cad43e2193c69a64e3372e2832fa94a47196a7b6bec405128f3633c6"
+              }
+            ],
+            "binary_set_digest": "9ac47b2a45fe70f5fe856bf1072545569bee9568d6d3eb1a65c47b978a697600",
+            "stable": true,
+            "maximum_spread_ratio": 0.0009516922007407462,
+            "metric": [
+              {
+                "id": "membership_add_drain_commit_and_convergence_latency.max_milliseconds",
+                "value": 441.568398,
+                "unit": "milliseconds"
+              }
+            ],
+            "receipt_sha256": "9d328f9ce8f57e857178376d3cc6302543b881d01ebaee07a72060e080a2547b"
+          },
+          {
+            "report_id": "control-plane-5",
+            "report_sha256": "50be877cebfe49adb3ad02d76dc4a8f310ce96a4846e22130f9f3199ffe97424",
+            "scenario_digest": "c9570d61946ba50b48cbc54af7d1f4ff0e49e740bcbf73e54b83873342c15d69",
+            "workload_digest": "6e8f8cbe73811afcaf794f795650cfb85cf347dbd822e7e94c7e138f4ef7486f",
+            "slo_digest": "d04a7a3fa59a167dfbd8ca4e205cc38accd6864f12035785797e5056beb34f85",
+            "methodology_digest": "94005eea779aa38393f67d2adcfd28695d7cdf26a4e7c7319ef8eccd2950329b",
+            "cargo_lock_sha256": "dc480dad8567eda4a4d13b393651d3d1201cc26ba7599e3c8ff822b725569def",
+            "prebuild_manifest_sha256": "51719b644a1fa8ff11790483ec91b07df32d3f2e946890aabd6de35e3857eee4",
+            "binary_sha256": [
+              {
+                "id": "hydracache-loadgen",
+                "sha256": "b8f5afe27ac272a0be883879a51294ff509663d13c5949fdffdcf3f87f5adae1"
+              },
+              {
+                "id": "hydracache-server",
+                "sha256": "a17b5148cad43e2193c69a64e3372e2832fa94a47196a7b6bec405128f3633c6"
+              }
+            ],
+            "binary_set_digest": "9ac47b2a45fe70f5fe856bf1072545569bee9568d6d3eb1a65c47b978a697600",
+            "stable": true,
+            "maximum_spread_ratio": 0.0008270524850622014,
+            "metric": [
+              {
+                "id": "membership_add_drain_commit_and_convergence_latency.max_milliseconds",
+                "value": 698.087868,
+                "unit": "milliseconds"
+              }
+            ],
+            "receipt_sha256": "4e91a65541355b1cdfafa318c17e6ef484d88259cb0956baa5290b04b166a1b5"
+          },
+          {
+            "report_id": "control-plane-7",
+            "report_sha256": "79ee9ce8540acdc2762fb433e87eb70d110fc780164a9fcc31579b4580c1653c",
+            "scenario_digest": "c9570d61946ba50b48cbc54af7d1f4ff0e49e740bcbf73e54b83873342c15d69",
+            "workload_digest": "6e8f8cbe73811afcaf794f795650cfb85cf347dbd822e7e94c7e138f4ef7486f",
+            "slo_digest": "d04a7a3fa59a167dfbd8ca4e205cc38accd6864f12035785797e5056beb34f85",
+            "methodology_digest": "94005eea779aa38393f67d2adcfd28695d7cdf26a4e7c7319ef8eccd2950329b",
+            "cargo_lock_sha256": "dc480dad8567eda4a4d13b393651d3d1201cc26ba7599e3c8ff822b725569def",
+            "prebuild_manifest_sha256": "51719b644a1fa8ff11790483ec91b07df32d3f2e946890aabd6de35e3857eee4",
+            "binary_sha256": [
+              {
+                "id": "hydracache-loadgen",
+                "sha256": "b8f5afe27ac272a0be883879a51294ff509663d13c5949fdffdcf3f87f5adae1"
+              },
+              {
+                "id": "hydracache-server",
+                "sha256": "a17b5148cad43e2193c69a64e3372e2832fa94a47196a7b6bec405128f3633c6"
+              }
+            ],
+            "binary_set_digest": "9ac47b2a45fe70f5fe856bf1072545569bee9568d6d3eb1a65c47b978a697600",
+            "stable": true,
+            "maximum_spread_ratio": 0.0006049011818358193,
+            "metric": [
+              {
+                "id": "membership_add_drain_commit_and_convergence_latency.max_milliseconds",
+                "value": 700.01919,
+                "unit": "milliseconds"
+              }
+            ],
+            "receipt_sha256": "773124a52e794f2891e55e8c73fbb2ec524ec45667e8dd36c6dc0e34b1142f13"
+          },
+          {
+            "report_id": "grid-model",
+            "report_sha256": "96d3820cc06e23e416aef1e6b83d5e0258058ce9149aa4b547cba5d41ced8c36",
+            "scenario_digest": "bee82e99244cdb4b860598ee2a1a2a34f8788813f497d6cb075f916a433d2ecb",
+            "workload_digest": "0ca85cc6a2fe6e4753a2a658688c38050bea93ef1f5708ef0a2b2c3d2c3663b4",
+            "slo_digest": "1a36fe6e34fce061cdb88a1163d0dec9b301e3cc29d3c70093b1278c4c48f703",
+            "methodology_digest": "8160a7e90c2beea0ca12cd5fc6c2cf6c7b2480e916915bbd1ff1cdf06beeb884",
+            "cargo_lock_sha256": "dc480dad8567eda4a4d13b393651d3d1201cc26ba7599e3c8ff822b725569def",
+            "prebuild_manifest_sha256": "51719b644a1fa8ff11790483ec91b07df32d3f2e946890aabd6de35e3857eee4",
+            "binary_sha256": [
+              {
+                "id": "hydracache-loadgen",
+                "sha256": "b8f5afe27ac272a0be883879a51294ff509663d13c5949fdffdcf3f87f5adae1"
+              },
+              {
+                "id": "hydracache-server",
+                "sha256": "a17b5148cad43e2193c69a64e3372e2832fa94a47196a7b6bec405128f3633c6"
+              }
+            ],
+            "binary_set_digest": "9ac47b2a45fe70f5fe856bf1072545569bee9568d6d3eb1a65c47b978a697600",
+            "stable": true,
+            "maximum_spread_ratio": 0.023264,
+            "metric": [
+              {
+                "id": "consistency_ack_requirement_cost_by_level_and_replica_shape.max_nanoseconds_per_operation",
+                "value": 1250.1933,
+                "unit": "nanoseconds_per_operation"
+              }
+            ],
+            "receipt_sha256": "998ee3d662b762daa5aee3009a0da4e84bf1bb83155b536f2b7e3000997255f5"
+          },
+          {
+            "report_id": "brownout-control-plane",
+            "report_sha256": "9fefa7175af25c2a92981fdcc3a7ee2526591deb75f32946de5a4396205d8737",
+            "scenario_digest": "7c7eeab8137a62fb70fc8ac23309d9168bbc7d00084a4b1f94b958e262de71f0",
+            "workload_digest": "5f656244097e34a88ad33771d7377133d079ed72188e188027703f5369ace96c",
+            "slo_digest": "12b48135f1fd7f6c2b54661291c24d2c240ddaa2e3c9d457de39486fcec01dc0",
+            "methodology_digest": "1aef4e5e730268439c73d14206ae68585129b5d9d3c9cbea5e98fcd8416a0e44",
+            "cargo_lock_sha256": "dc480dad8567eda4a4d13b393651d3d1201cc26ba7599e3c8ff822b725569def",
+            "prebuild_manifest_sha256": "51719b644a1fa8ff11790483ec91b07df32d3f2e946890aabd6de35e3857eee4",
+            "binary_sha256": [
+              {
+                "id": "hydracache-loadgen",
+                "sha256": "b8f5afe27ac272a0be883879a51294ff509663d13c5949fdffdcf3f87f5adae1"
+              },
+              {
+                "id": "hydracache-server",
+                "sha256": "a17b5148cad43e2193c69a64e3372e2832fa94a47196a7b6bec405128f3633c6"
+              }
+            ],
+            "binary_set_digest": "9ac47b2a45fe70f5fe856bf1072545569bee9568d6d3eb1a65c47b978a697600",
+            "stable": true,
+            "maximum_spread_ratio": 0.0,
+            "metric": [
+              {
+                "id": "control_plane_brownout.recovery_milliseconds",
+                "value": 836.0,
+                "unit": "milliseconds"
+              },
+              {
+                "id": "control_plane_brownout.maximum_availability_dip_ppm",
+                "value": 42.0,
+                "unit": "parts_per_million"
+              }
+            ],
+            "receipt_sha256": "9f1f4f5be75fe05413f5d38191ef5abbd008f35506d149be1cbcc26b40390ecb"
+          },
+          {
+            "report_id": "brownout-resp-endpoint",
+            "report_sha256": "48b4c4fd8e5664e881162cdca8ebd9f54d5a0b97f7b5e630572ab69e7c1e6d62",
+            "scenario_digest": "244b6870d07ea2454bbe87f6e34119c02e879b87d5abaa9cd073952f0289876f",
+            "workload_digest": "09e0179f1f3a576a4edd40eb00c13bc25e652272408d955dedc45804eae68424",
+            "slo_digest": "257f0cbbdb6c59d954690b5e491c05759fded9ba7889b82f331beecd8541ad90",
+            "methodology_digest": "6209da0741592c22fa3747741e8d4ee2bde45b5c4e7fbbdf6b0761cd50451a6c",
+            "cargo_lock_sha256": "dc480dad8567eda4a4d13b393651d3d1201cc26ba7599e3c8ff822b725569def",
+            "prebuild_manifest_sha256": "51719b644a1fa8ff11790483ec91b07df32d3f2e946890aabd6de35e3857eee4",
+            "binary_sha256": [
+              {
+                "id": "hydracache-loadgen",
+                "sha256": "b8f5afe27ac272a0be883879a51294ff509663d13c5949fdffdcf3f87f5adae1"
+              },
+              {
+                "id": "hydracache-server",
+                "sha256": "a17b5148cad43e2193c69a64e3372e2832fa94a47196a7b6bec405128f3633c6"
+              }
+            ],
+            "binary_set_digest": "9ac47b2a45fe70f5fe856bf1072545569bee9568d6d3eb1a65c47b978a697600",
+            "stable": true,
+            "maximum_spread_ratio": 0.0,
+            "metric": [
+              {
+                "id": "resp_endpoint_brownout.recovery_milliseconds",
+                "value": 1182.0,
+                "unit": "milliseconds"
+              },
+              {
+                "id": "resp_endpoint_brownout.availability_dip_ppm",
+                "value": 6677.0,
+                "unit": "parts_per_million"
+              }
+            ],
+            "receipt_sha256": "507b68a50afa1bdc9953b6a57a3c5a91bb953ee42df0086eab8448206be3aa0b"
+          },
+          {
+            "report_id": "brownout-grid-model",
+            "report_sha256": "9ee1e6958cd73034c77ef47136b8d149e984a0d6fd812c1d69a311745f535022",
+            "scenario_digest": "15d8dcb41d9062f223bd425bde9651fca47ed8f2deb507b080966eb661e4c871",
+            "workload_digest": "b317e34ed049d824b53872b66cd053e22bc025b566e481034965ecaa08034cbb",
+            "slo_digest": "aa5005c4f67c9d4ff23cb0d498e77297ce6221618504b7f45994249ae2288047",
+            "methodology_digest": "33d7a9f10247204ef248021b4bd7958c127f60f9bd757407c2fe0e9e778e0bda",
+            "cargo_lock_sha256": "dc480dad8567eda4a4d13b393651d3d1201cc26ba7599e3c8ff822b725569def",
+            "prebuild_manifest_sha256": "51719b644a1fa8ff11790483ec91b07df32d3f2e946890aabd6de35e3857eee4",
+            "binary_sha256": [
+              {
+                "id": "hydracache-loadgen",
+                "sha256": "b8f5afe27ac272a0be883879a51294ff509663d13c5949fdffdcf3f87f5adae1"
+              },
+              {
+                "id": "hydracache-server",
+                "sha256": "a17b5148cad43e2193c69a64e3372e2832fa94a47196a7b6bec405128f3633c6"
+              }
+            ],
+            "binary_set_digest": "9ac47b2a45fe70f5fe856bf1072545569bee9568d6d3eb1a65c47b978a697600",
+            "stable": true,
+            "maximum_spread_ratio": 0.059602,
+            "metric": [
+              {
+                "id": "grid_model_fault.maximum_recovery_cost_nanos",
+                "value": 196.0,
+                "unit": "nanoseconds"
+              },
+              {
+                "id": "grid_model_fault.maximum_decision_cost_increase_nanos",
+                "value": 76756.0,
+                "unit": "nanoseconds"
+              }
+            ],
+            "receipt_sha256": "015fcad5e76a8bf1980cd23ac0ba3ddd27adb7db2ba863a778b0996164dddbb8"
+          },
+          {
+            "report_id": "overload-local",
+            "report_sha256": "efb8c55ec580d40ed21084bcb9b9d3014bb77723e1094c25c5b29f46364f84b3",
+            "scenario_digest": "23737b7a83647d596829d0f0207feccb441c4d2782e0dd7ef74cebd378ec7279",
+            "workload_digest": "5af83efcb9857714635936b63af686f06dde987326dd724eeaf6a952bf9c3f7c",
+            "slo_digest": "7d56c986b9aebc9c66b6f61be0aaf67cd73b45aaecb3f834d2c5977aee4d3a46",
+            "methodology_digest": "ded1061458a4c279cb382e5c951c0b0b5bbbae5d57d75ea98a5460dd197b39cf",
+            "cargo_lock_sha256": "dc480dad8567eda4a4d13b393651d3d1201cc26ba7599e3c8ff822b725569def",
+            "prebuild_manifest_sha256": "51719b644a1fa8ff11790483ec91b07df32d3f2e946890aabd6de35e3857eee4",
+            "binary_sha256": [
+              {
+                "id": "hydracache-loadgen",
+                "sha256": "b8f5afe27ac272a0be883879a51294ff509663d13c5949fdffdcf3f87f5adae1"
+              },
+              {
+                "id": "hydracache-server",
+                "sha256": "a17b5148cad43e2193c69a64e3372e2832fa94a47196a7b6bec405128f3633c6"
+              }
+            ],
+            "binary_set_digest": "9ac47b2a45fe70f5fe856bf1072545569bee9568d6d3eb1a65c47b978a697600",
+            "stable": true,
+            "maximum_spread_ratio": 0.00006032020008737281,
+            "metric": [
+              {
+                "id": "overload_goodput_curve_1_2x_1_5x_2x_knee_per_eligible_surface.minimum_goodput_per_second",
+                "value": 19994.580764803497,
+                "unit": "operations_per_second"
+              }
+            ],
+            "receipt_sha256": "424499e23468c824008c91acab429c101b5893301410174b1f47315c1b8e0121"
+          },
+          {
+            "report_id": "overload-client-surface",
+            "report_sha256": "8629a980d9a72c1892b269015b4b3c471a578ff2dbc73f17d87eb25c4f697795",
+            "scenario_digest": "23737b7a83647d596829d0f0207feccb441c4d2782e0dd7ef74cebd378ec7279",
+            "workload_digest": "b5f9537eafa6b5e04cacbdd7511d0479f9ea2275dc12703483ecbd4c3e80447f",
+            "slo_digest": "7d56c986b9aebc9c66b6f61be0aaf67cd73b45aaecb3f834d2c5977aee4d3a46",
+            "methodology_digest": "99190c8f41d0c68cf4722e8a4a30ee9ca956f5ec0d82785d183407e274471336",
+            "cargo_lock_sha256": "dc480dad8567eda4a4d13b393651d3d1201cc26ba7599e3c8ff822b725569def",
+            "prebuild_manifest_sha256": "51719b644a1fa8ff11790483ec91b07df32d3f2e946890aabd6de35e3857eee4",
+            "binary_sha256": [
+              {
+                "id": "hydracache-loadgen",
+                "sha256": "b8f5afe27ac272a0be883879a51294ff509663d13c5949fdffdcf3f87f5adae1"
+              },
+              {
+                "id": "hydracache-server",
+                "sha256": "a17b5148cad43e2193c69a64e3372e2832fa94a47196a7b6bec405128f3633c6"
+              }
+            ],
+            "binary_set_digest": "9ac47b2a45fe70f5fe856bf1072545569bee9568d6d3eb1a65c47b978a697600",
+            "stable": true,
+            "maximum_spread_ratio": 0.00025369095255178847,
+            "metric": [
+              {
+                "id": "overload_goodput_curve_1_2x_1_5x_2x_knee_per_eligible_surface.minimum_goodput_per_second",
+                "value": 24992.264731615844,
+                "unit": "operations_per_second"
+              }
+            ],
+            "receipt_sha256": "0b89cae109dc561cf9c08497d002c53fca10c7a6ec8aaf849b5398af0a994dd9"
+          },
+          {
+            "report_id": "overload-node-resp",
+            "report_sha256": "5c7ca83a8a88fee9a5b56d34cbe3fae89cb448c1857262f9fa967c57ad6931a9",
+            "scenario_digest": "23737b7a83647d596829d0f0207feccb441c4d2782e0dd7ef74cebd378ec7279",
+            "workload_digest": "fe8b0c4beff342c74d8660116f1b94c1bf5bb23a7de48701aae03d6dac4101fb",
+            "slo_digest": "7d56c986b9aebc9c66b6f61be0aaf67cd73b45aaecb3f834d2c5977aee4d3a46",
+            "methodology_digest": "33d89d02700959967732a4d93172be098c53b98329f3336a2b0491c0f17f197a",
+            "cargo_lock_sha256": "dc480dad8567eda4a4d13b393651d3d1201cc26ba7599e3c8ff822b725569def",
+            "prebuild_manifest_sha256": "51719b644a1fa8ff11790483ec91b07df32d3f2e946890aabd6de35e3857eee4",
+            "binary_sha256": [
+              {
+                "id": "hydracache-loadgen",
+                "sha256": "b8f5afe27ac272a0be883879a51294ff509663d13c5949fdffdcf3f87f5adae1"
+              },
+              {
+                "id": "hydracache-server",
+                "sha256": "a17b5148cad43e2193c69a64e3372e2832fa94a47196a7b6bec405128f3633c6"
+              }
+            ],
+            "binary_set_digest": "9ac47b2a45fe70f5fe856bf1072545569bee9568d6d3eb1a65c47b978a697600",
+            "stable": true,
+            "maximum_spread_ratio": 0.0009703541560167943,
+            "metric": [
+              {
+                "id": "overload_goodput_curve_1_2x_1_5x_2x_knee_per_eligible_surface.minimum_goodput_per_second",
+                "value": 42963.83492385852,
+                "unit": "operations_per_second"
+              }
+            ],
+            "receipt_sha256": "93e3629e912968c341fefda8022324caeffd7bcc32c281d37683c22e4878538f"
+          }
+        ],
+        "metric": [
+          {
+            "budget_id": "local-capacity-floor",
+            "value": 20000.0,
+            "unit": "operations_per_second"
+          },
+          {
+            "budget_id": "client-surface-capacity-floor",
+            "value": 24988.567811439112,
+            "unit": "operations_per_second"
+          },
+          {
+            "budget_id": "local-p99-at-slo-ceiling",
+            "value": 1969.0,
+            "unit": "microseconds"
+          },
+          {
+            "budget_id": "client-surface-p99-at-slo-ceiling",
+            "value": 2077.0,
+            "unit": "microseconds"
+          },
+          {
+            "budget_id": "node-resp-capacity-floor",
+            "value": 49947.68811299171,
+            "unit": "operations_per_second"
+          },
+          {
+            "budget_id": "node-resp-p99-at-slo-ceiling",
+            "value": 3503.0,
+            "unit": "microseconds"
+          },
+          {
+            "budget_id": "control-plane-3-event-ceiling",
+            "value": 441.568398,
+            "unit": "milliseconds"
+          },
+          {
+            "budget_id": "control-plane-5-event-ceiling",
+            "value": 698.087868,
+            "unit": "milliseconds"
+          },
+          {
+            "budget_id": "control-plane-7-event-ceiling",
+            "value": 700.01919,
+            "unit": "milliseconds"
+          },
+          {
+            "budget_id": "grid-model-primitive-cost-ceiling",
+            "value": 1250.1933,
+            "unit": "nanoseconds_per_operation"
+          },
+          {
+            "budget_id": "brownout-control-plane-recovery-ceiling",
+            "value": 836.0,
+            "unit": "milliseconds"
+          },
+          {
+            "budget_id": "brownout-control-plane-depth-ceiling",
+            "value": 42.0,
+            "unit": "parts_per_million"
+          },
+          {
+            "budget_id": "brownout-resp-endpoint-recovery-ceiling",
+            "value": 1182.0,
+            "unit": "milliseconds"
+          },
+          {
+            "budget_id": "brownout-resp-endpoint-depth-ceiling",
+            "value": 6677.0,
+            "unit": "parts_per_million"
+          },
+          {
+            "budget_id": "brownout-grid-model-recovery-ceiling",
+            "value": 196.0,
+            "unit": "nanoseconds"
+          },
+          {
+            "budget_id": "brownout-grid-model-depth-ceiling",
+            "value": 76756.0,
+            "unit": "nanoseconds"
+          },
+          {
+            "budget_id": "overload-local-goodput-floor",
+            "value": 19994.580764803497,
+            "unit": "operations_per_second"
+          },
+          {
+            "budget_id": "overload-client-surface-goodput-floor",
+            "value": 24992.264731615844,
+            "unit": "operations_per_second"
+          },
+          {
+            "budget_id": "overload-node-resp-goodput-floor",
+            "value": 42963.83492385852,
+            "unit": "operations_per_second"
+          }
+        ],
+        "receipt_sha256": "11b9c2e45a7d6fcaf74524a3a66fc0e9c9a84aa91d63913523179ff6b3e57194"
+      },
+      {
+        "run_id": "33957530434",
+        "branch": "main",
+        "source_commit": "b3304e3a560fdddaf820d813a76773ca33565c50",
+        "observed_at": "2026-09-05T11:41:57.987233208Z",
+        "successful": true,
+        "quarantined": false,
+        "calibration_passed": true,
+        "spread_stable": true,
+        "gate_exit_code": 0,
+        "git_status_porcelain_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "quarantine_reason": null,
+        "runner_contract": {
+          "name": "reference-v1",
+          "required_runner_class": "self-hosted-bare-metal-v1",
+          "allowed_fingerprints": [
+            "25baeec1c9ec75da90b5dd0f29c101897450b96651d7e47570e18684be486ebb"
+          ],
+          "minimum_logical_cores": 4,
+          "required_cpu_affinity": "1-4",
+          "required_cgroup_cpu_quota": "unlimited",
+          "require_dedicated": true,
+          "maximum_calibration_score": 0.25
+        },
+        "runner_contract_digest": "c728014af9fd0aae4c474456e74437a033110940db01caa1577b1b5b5efabfe0",
+        "observed_runner": {
+          "runner_class": "self-hosted-bare-metal-v1",
+          "fingerprint": "25baeec1c9ec75da90b5dd0f29c101897450b96651d7e47570e18684be486ebb",
+          "cpu_model": "AMD Ryzen 7 PRO 8700GE w/ Radeon 780M Graphics",
+          "logical_cores": 4,
+          "ram_bytes": 66490494976,
+          "os": "linux",
+          "kernel": "6.8.0-138-generic",
+          "cpu_affinity": "1-4",
+          "cgroup_cpu_quota": "unlimited",
+          "governor": "performance",
+          "turbo": "enabled",
+          "shared_hardware": false,
+          "calibration_score": 0.000010674945290905385,
+          "attestation": {
+            "schema_version": 5,
+            "contract_version": "hydracache-reference-host-v5",
+            "virtualization": "none",
+            "physical_cores": 8,
+            "measurement_cores": [
+              {
+                "logical_cpu": 1,
+                "package_id": 0,
+                "core_id": 1
+              },
+              {
+                "logical_cpu": 2,
+                "package_id": 0,
+                "core_id": 2
+              },
+              {
+                "logical_cpu": 3,
+                "package_id": 0,
+                "core_id": 3
+              },
+              {
+                "logical_cpu": 4,
+                "package_id": 0,
+                "core_id": 4
+              }
+            ],
+            "cpu_isolation": {
+              "smt_control": "off",
+              "online_cpus": "0-7",
+              "isolated_cpus": "1-4",
+              "nohz_full_cpus": "1-4",
+              "rcu_nocbs_cpus": "1-4",
+              "housekeeping_cpus": "0,5-7",
+              "irq_affinity_policy": "housekeeping-only-v1",
+              "measurement_idle_policy": "latency-cap-us-v1",
+              "measurement_max_idle_latency_us": 1,
+              "housekeeping_idle_policy": "latency-cap-us-v1",
+              "housekeeping_max_idle_latency_us": 1
+            },
+            "host_digest": "571591a534c9894242fc0af0c5f80c31131fe7e4cdb9d0ea63da6d8b56af8932",
+            "storage_class": "local-nvme",
+            "storage_identity_digest": "2833a0938166031dd80b21de8a9fc4912f53b5e33914d07e2ac4ae74efc3805f",
+            "os_image": "ubuntu-24.04",
+            "toolchain_identity": "rustc-1.94.0",
+            "prebuild_contract_digest": "f2caae0689d8b075d2a6d59d6090466365f9a6824c6996d6b92830956831cc55"
+          }
+        },
+        "runner_fingerprint": "25baeec1c9ec75da90b5dd0f29c101897450b96651d7e47570e18684be486ebb",
+        "toolchain_identity": "rustc-1.94.0",
+        "prebuild_contract_digest": "f2caae0689d8b075d2a6d59d6090466365f9a6824c6996d6b92830956831cc55",
+        "profile_sha256": "b12cdad2db06ba8cb2c8f1344491cf586a9bbe7e93f4a9a203eb82463f6ffc31",
+        "budget_sha256": "d5eb28b7ec433730aa40c9a78ca87c8df258444760eaf212963a10e6b563aa40",
+        "report": [
+          {
+            "report_id": "local",
+            "report_sha256": "78d162ab2b887e1da6f21374a970db7dec9f38a432977b6e6212b1afd365a291",
+            "scenario_digest": "41877a7da9095d085008581a48b411c22e5c8eafa288f08e6383b1ce4d87bbd4",
+            "workload_digest": "c9efd268ee3afdf95833aa892ad96c8589c1c7133ba23cde3b7b3462a4894715",
+            "slo_digest": "1dcde01444e6427a08940f23fc93ba1128201b723026ba5ce1c6e97e478285b7",
+            "methodology_digest": "f9c5b268795fed99849e77f3be9a2e0e414ceb8d0e26107f092df345e46907be",
+            "cargo_lock_sha256": "dc480dad8567eda4a4d13b393651d3d1201cc26ba7599e3c8ff822b725569def",
+            "prebuild_manifest_sha256": "51719b644a1fa8ff11790483ec91b07df32d3f2e946890aabd6de35e3857eee4",
+            "binary_sha256": [
+              {
+                "id": "hydracache-loadgen",
+                "sha256": "b8f5afe27ac272a0be883879a51294ff509663d13c5949fdffdcf3f87f5adae1"
+              },
+              {
+                "id": "hydracache-server",
+                "sha256": "a17b5148cad43e2193c69a64e3372e2832fa94a47196a7b6bec405128f3633c6"
+              }
+            ],
+            "binary_set_digest": "9ac47b2a45fe70f5fe856bf1072545569bee9568d6d3eb1a65c47b978a697600",
+            "stable": true,
+            "maximum_spread_ratio": 0.0002296851005070376,
+            "metric": [
+              {
+                "id": "hot_key_contention_throughput_floor.throughput_at_slo",
+                "value": 20000.0,
+                "unit": "operations_per_second"
+              },
+              {
+                "id": "hot_key_contention_throughput_floor.p99_microseconds_at_slo",
+                "value": 1964.0,
+                "unit": "microseconds"
+              }
+            ],
+            "receipt_sha256": "9ca6dda3101638f88e9757def3f51c58f6f48c39e0d303a48f6fa578d8093477"
+          },
+          {
+            "report_id": "client-surface",
+            "report_sha256": "df4b9a1452f4077d968278a4b57f34064845aa37fa17920d597e9cd731dedd4a",
+            "scenario_digest": "c35633445676d474f344fbf23d788a5a0bf63a3add96db1c042ba59d0ac401fa",
+            "workload_digest": "9c8472282999d14b3da2039a86662d85cca40354f7a18404fef19971432942b7",
+            "slo_digest": "e024a1a54f480f4d853cf32867cdfb285e41983b88c4e9fcdeb6a783cb5759d5",
+            "methodology_digest": "46d09de186ed08a23559c4d5092f8a2ecda4fabeb863c6e25818e873e8f7499a",
+            "cargo_lock_sha256": "dc480dad8567eda4a4d13b393651d3d1201cc26ba7599e3c8ff822b725569def",
+            "prebuild_manifest_sha256": "51719b644a1fa8ff11790483ec91b07df32d3f2e946890aabd6de35e3857eee4",
+            "binary_sha256": [
+              {
+                "id": "hydracache-loadgen",
+                "sha256": "b8f5afe27ac272a0be883879a51294ff509663d13c5949fdffdcf3f87f5adae1"
+              },
+              {
+                "id": "hydracache-server",
+                "sha256": "a17b5148cad43e2193c69a64e3372e2832fa94a47196a7b6bec405128f3633c6"
+              }
+            ],
+            "binary_set_digest": "9ac47b2a45fe70f5fe856bf1072545569bee9568d6d3eb1a65c47b978a697600",
+            "stable": true,
+            "maximum_spread_ratio": 0.0002910642725297889,
+            "metric": [
+              {
+                "id": "client_surface_in_process_knee_at_slo_for_a_b_c.throughput_at_slo",
+                "value": 24988.86974501018,
+                "unit": "operations_per_second"
+              },
+              {
+                "id": "client_surface_in_process_knee_at_slo_for_a_b_c.p99_microseconds_at_slo",
+                "value": 2065.0,
+                "unit": "microseconds"
+              }
+            ],
+            "receipt_sha256": "e5c24809259afb34ad44824749ae6049ab48db08d48dd1228ebb5127df16861f"
+          },
+          {
+            "report_id": "node-resp-open-loop",
+            "report_sha256": "d75392a5d386f295b89d704379c131d774093a92bcd9a80b9b3f10753a469034",
+            "scenario_digest": "35691a7517dd36047dd5d3b02d984e277585207318d8fa0efab2da5c1a7fad6a",
+            "workload_digest": "9655bdd6868a69ee44a138896da03e3be4dc9fcc506cc78f4b537ae1b628af50",
+            "slo_digest": "bd051d1f04bf8912a07c388bfb483d73fb1b82acbda7efedd3c0c37c915eee05",
+            "methodology_digest": "53b640daf77b5f46021c82137068242f35b3c074316137358ff03f41ae71285f",
+            "cargo_lock_sha256": "dc480dad8567eda4a4d13b393651d3d1201cc26ba7599e3c8ff822b725569def",
+            "prebuild_manifest_sha256": "51719b644a1fa8ff11790483ec91b07df32d3f2e946890aabd6de35e3857eee4",
+            "binary_sha256": [
+              {
+                "id": "hydracache-loadgen",
+                "sha256": "b8f5afe27ac272a0be883879a51294ff509663d13c5949fdffdcf3f87f5adae1"
+              },
+              {
+                "id": "hydracache-server",
+                "sha256": "a17b5148cad43e2193c69a64e3372e2832fa94a47196a7b6bec405128f3633c6"
+              }
+            ],
+            "binary_set_digest": "9ac47b2a45fe70f5fe856bf1072545569bee9568d6d3eb1a65c47b978a697600",
+            "stable": true,
+            "maximum_spread_ratio": 0.0005508334304795945,
+            "metric": [
+              {
+                "id": "resp_open_loop_get_set_knee_at_slo.throughput_at_slo",
+                "value": 49950.196357518595,
+                "unit": "operations_per_second"
+              },
+              {
+                "id": "resp_open_loop_get_set_knee_at_slo.p99_microseconds_at_slo",
+                "value": 3319.0,
+                "unit": "microseconds"
+              }
+            ],
+            "receipt_sha256": "85ad97159a3fa0e9f9d27a9e2f3371f7d1e34ce67a3e209d1a328cd396e624c0"
+          },
+          {
+            "report_id": "control-plane-3",
+            "report_sha256": "22150308cffcd21f9fa10a4349fa52ca5e97801babad2e7c00990736654d049b",
+            "scenario_digest": "c9570d61946ba50b48cbc54af7d1f4ff0e49e740bcbf73e54b83873342c15d69",
+            "workload_digest": "6e8f8cbe73811afcaf794f795650cfb85cf347dbd822e7e94c7e138f4ef7486f",
+            "slo_digest": "d04a7a3fa59a167dfbd8ca4e205cc38accd6864f12035785797e5056beb34f85",
+            "methodology_digest": "94005eea779aa38393f67d2adcfd28695d7cdf26a4e7c7319ef8eccd2950329b",
+            "cargo_lock_sha256": "dc480dad8567eda4a4d13b393651d3d1201cc26ba7599e3c8ff822b725569def",
+            "prebuild_manifest_sha256": "51719b644a1fa8ff11790483ec91b07df32d3f2e946890aabd6de35e3857eee4",
+            "binary_sha256": [
+              {
+                "id": "hydracache-loadgen",
+                "sha256": "b8f5afe27ac272a0be883879a51294ff509663d13c5949fdffdcf3f87f5adae1"
+              },
+              {
+                "id": "hydracache-server",
+                "sha256": "a17b5148cad43e2193c69a64e3372e2832fa94a47196a7b6bec405128f3633c6"
+              }
+            ],
+            "binary_set_digest": "9ac47b2a45fe70f5fe856bf1072545569bee9568d6d3eb1a65c47b978a697600",
+            "stable": true,
+            "maximum_spread_ratio": 0.0007750296791364261,
+            "metric": [
+              {
+                "id": "membership_add_drain_commit_and_convergence_latency.max_milliseconds",
+                "value": 595.561686,
+                "unit": "milliseconds"
+              }
+            ],
+            "receipt_sha256": "963c29ecd5acf36dc08ede9d1d7aa97d219ffad8535dd953bd8ef467def0ce64"
+          },
+          {
+            "report_id": "control-plane-5",
+            "report_sha256": "db3da042d686259b402d93965cff5515b34e9546701172fd5febb7f6a77c764d",
+            "scenario_digest": "c9570d61946ba50b48cbc54af7d1f4ff0e49e740bcbf73e54b83873342c15d69",
+            "workload_digest": "6e8f8cbe73811afcaf794f795650cfb85cf347dbd822e7e94c7e138f4ef7486f",
+            "slo_digest": "d04a7a3fa59a167dfbd8ca4e205cc38accd6864f12035785797e5056beb34f85",
+            "methodology_digest": "94005eea779aa38393f67d2adcfd28695d7cdf26a4e7c7319ef8eccd2950329b",
+            "cargo_lock_sha256": "dc480dad8567eda4a4d13b393651d3d1201cc26ba7599e3c8ff822b725569def",
+            "prebuild_manifest_sha256": "51719b644a1fa8ff11790483ec91b07df32d3f2e946890aabd6de35e3857eee4",
+            "binary_sha256": [
+              {
+                "id": "hydracache-loadgen",
+                "sha256": "b8f5afe27ac272a0be883879a51294ff509663d13c5949fdffdcf3f87f5adae1"
+              },
+              {
+                "id": "hydracache-server",
+                "sha256": "a17b5148cad43e2193c69a64e3372e2832fa94a47196a7b6bec405128f3633c6"
+              }
+            ],
+            "binary_set_digest": "9ac47b2a45fe70f5fe856bf1072545569bee9568d6d3eb1a65c47b978a697600",
+            "stable": true,
+            "maximum_spread_ratio": 0.0006811730161024715,
+            "metric": [
+              {
+                "id": "membership_add_drain_commit_and_convergence_latency.max_milliseconds",
+                "value": 800.78432,
+                "unit": "milliseconds"
+              }
+            ],
+            "receipt_sha256": "9848b594a8387baff084a245f4cb432433ab9ff84d952766672c15b629ded64c"
+          },
+          {
+            "report_id": "control-plane-7",
+            "report_sha256": "ff67156c3918c5a3a60e76ea2b194beebe5e67a83b8a0fec4327e94f358001ea",
+            "scenario_digest": "c9570d61946ba50b48cbc54af7d1f4ff0e49e740bcbf73e54b83873342c15d69",
+            "workload_digest": "6e8f8cbe73811afcaf794f795650cfb85cf347dbd822e7e94c7e138f4ef7486f",
+            "slo_digest": "d04a7a3fa59a167dfbd8ca4e205cc38accd6864f12035785797e5056beb34f85",
+            "methodology_digest": "94005eea779aa38393f67d2adcfd28695d7cdf26a4e7c7319ef8eccd2950329b",
+            "cargo_lock_sha256": "dc480dad8567eda4a4d13b393651d3d1201cc26ba7599e3c8ff822b725569def",
+            "prebuild_manifest_sha256": "51719b644a1fa8ff11790483ec91b07df32d3f2e946890aabd6de35e3857eee4",
+            "binary_sha256": [
+              {
+                "id": "hydracache-loadgen",
+                "sha256": "b8f5afe27ac272a0be883879a51294ff509663d13c5949fdffdcf3f87f5adae1"
+              },
+              {
+                "id": "hydracache-server",
+                "sha256": "a17b5148cad43e2193c69a64e3372e2832fa94a47196a7b6bec405128f3633c6"
+              }
+            ],
+            "binary_set_digest": "9ac47b2a45fe70f5fe856bf1072545569bee9568d6d3eb1a65c47b978a697600",
+            "stable": true,
+            "maximum_spread_ratio": 0.0006102879338984845,
+            "metric": [
+              {
+                "id": "membership_add_drain_commit_and_convergence_latency.max_milliseconds",
+                "value": 904.007043,
+                "unit": "milliseconds"
+              }
+            ],
+            "receipt_sha256": "f34da9efec7cf0ff45b9cc0dded0aaf18c48cafcfcb411b84ae1604d6618870a"
+          },
+          {
+            "report_id": "grid-model",
+            "report_sha256": "b46e4a66595f0fd1f96c83a46f6d64a2f330ece6ee3339389182dba4ef2de672",
+            "scenario_digest": "bee82e99244cdb4b860598ee2a1a2a34f8788813f497d6cb075f916a433d2ecb",
+            "workload_digest": "0ca85cc6a2fe6e4753a2a658688c38050bea93ef1f5708ef0a2b2c3d2c3663b4",
+            "slo_digest": "1a36fe6e34fce061cdb88a1163d0dec9b301e3cc29d3c70093b1278c4c48f703",
+            "methodology_digest": "8160a7e90c2beea0ca12cd5fc6c2cf6c7b2480e916915bbd1ff1cdf06beeb884",
+            "cargo_lock_sha256": "dc480dad8567eda4a4d13b393651d3d1201cc26ba7599e3c8ff822b725569def",
+            "prebuild_manifest_sha256": "51719b644a1fa8ff11790483ec91b07df32d3f2e946890aabd6de35e3857eee4",
+            "binary_sha256": [
+              {
+                "id": "hydracache-loadgen",
+                "sha256": "b8f5afe27ac272a0be883879a51294ff509663d13c5949fdffdcf3f87f5adae1"
+              },
+              {
+                "id": "hydracache-server",
+                "sha256": "a17b5148cad43e2193c69a64e3372e2832fa94a47196a7b6bec405128f3633c6"
+              }
+            ],
+            "binary_set_digest": "9ac47b2a45fe70f5fe856bf1072545569bee9568d6d3eb1a65c47b978a697600",
+            "stable": true,
+            "maximum_spread_ratio": 0.01201,
+            "metric": [
+              {
+                "id": "consistency_ack_requirement_cost_by_level_and_replica_shape.max_nanoseconds_per_operation",
+                "value": 1273.2257,
+                "unit": "nanoseconds_per_operation"
+              }
+            ],
+            "receipt_sha256": "e7c355eb1e4c6f88950fab5f7c0d06e9c87c9b686ce638e31f6578874c5ae291"
+          },
+          {
+            "report_id": "brownout-control-plane",
+            "report_sha256": "bdac078ad7c30030f7fe720caa8252088242cc63e730457eb7c7782f244eec09",
+            "scenario_digest": "7c7eeab8137a62fb70fc8ac23309d9168bbc7d00084a4b1f94b958e262de71f0",
+            "workload_digest": "5f656244097e34a88ad33771d7377133d079ed72188e188027703f5369ace96c",
+            "slo_digest": "12b48135f1fd7f6c2b54661291c24d2c240ddaa2e3c9d457de39486fcec01dc0",
+            "methodology_digest": "1aef4e5e730268439c73d14206ae68585129b5d9d3c9cbea5e98fcd8416a0e44",
+            "cargo_lock_sha256": "dc480dad8567eda4a4d13b393651d3d1201cc26ba7599e3c8ff822b725569def",
+            "prebuild_manifest_sha256": "51719b644a1fa8ff11790483ec91b07df32d3f2e946890aabd6de35e3857eee4",
+            "binary_sha256": [
+              {
+                "id": "hydracache-loadgen",
+                "sha256": "b8f5afe27ac272a0be883879a51294ff509663d13c5949fdffdcf3f87f5adae1"
+              },
+              {
+                "id": "hydracache-server",
+                "sha256": "a17b5148cad43e2193c69a64e3372e2832fa94a47196a7b6bec405128f3633c6"
+              }
+            ],
+            "binary_set_digest": "9ac47b2a45fe70f5fe856bf1072545569bee9568d6d3eb1a65c47b978a697600",
+            "stable": true,
+            "maximum_spread_ratio": 0.0,
+            "metric": [
+              {
+                "id": "control_plane_brownout.recovery_milliseconds",
+                "value": 733.0,
+                "unit": "milliseconds"
+              },
+              {
+                "id": "control_plane_brownout.maximum_availability_dip_ppm",
+                "value": 84.0,
+                "unit": "parts_per_million"
+              }
+            ],
+            "receipt_sha256": "92d6b00dcfd122179e6988199f8484ba9290fab8ec23c795c7ed191eb80024e3"
+          },
+          {
+            "report_id": "brownout-resp-endpoint",
+            "report_sha256": "70461188dc27d1e4ec5ce42ec7929e83c36c5e4ea46dabcddab0e972c1fbc2d9",
+            "scenario_digest": "244b6870d07ea2454bbe87f6e34119c02e879b87d5abaa9cd073952f0289876f",
+            "workload_digest": "09e0179f1f3a576a4edd40eb00c13bc25e652272408d955dedc45804eae68424",
+            "slo_digest": "257f0cbbdb6c59d954690b5e491c05759fded9ba7889b82f331beecd8541ad90",
+            "methodology_digest": "6209da0741592c22fa3747741e8d4ee2bde45b5c4e7fbbdf6b0761cd50451a6c",
+            "cargo_lock_sha256": "dc480dad8567eda4a4d13b393651d3d1201cc26ba7599e3c8ff822b725569def",
+            "prebuild_manifest_sha256": "51719b644a1fa8ff11790483ec91b07df32d3f2e946890aabd6de35e3857eee4",
+            "binary_sha256": [
+              {
+                "id": "hydracache-loadgen",
+                "sha256": "b8f5afe27ac272a0be883879a51294ff509663d13c5949fdffdcf3f87f5adae1"
+              },
+              {
+                "id": "hydracache-server",
+                "sha256": "a17b5148cad43e2193c69a64e3372e2832fa94a47196a7b6bec405128f3633c6"
+              }
+            ],
+            "binary_set_digest": "9ac47b2a45fe70f5fe856bf1072545569bee9568d6d3eb1a65c47b978a697600",
+            "stable": true,
+            "maximum_spread_ratio": 0.0,
+            "metric": [
+              {
+                "id": "resp_endpoint_brownout.recovery_milliseconds",
+                "value": 1179.0,
+                "unit": "milliseconds"
+              },
+              {
+                "id": "resp_endpoint_brownout.availability_dip_ppm",
+                "value": 10934.0,
+                "unit": "parts_per_million"
+              }
+            ],
+            "receipt_sha256": "c19850e07e34daaaf5a492b97f959319571ef79b8166d45ba63a73fe55395b25"
+          },
+          {
+            "report_id": "brownout-grid-model",
+            "report_sha256": "fdb62055c8e8d0ee59bb72cc7c8c13ba132e1482d4e43d973a64041654699ca3",
+            "scenario_digest": "15d8dcb41d9062f223bd425bde9651fca47ed8f2deb507b080966eb661e4c871",
+            "workload_digest": "b317e34ed049d824b53872b66cd053e22bc025b566e481034965ecaa08034cbb",
+            "slo_digest": "aa5005c4f67c9d4ff23cb0d498e77297ce6221618504b7f45994249ae2288047",
+            "methodology_digest": "33d7a9f10247204ef248021b4bd7958c127f60f9bd757407c2fe0e9e778e0bda",
+            "cargo_lock_sha256": "dc480dad8567eda4a4d13b393651d3d1201cc26ba7599e3c8ff822b725569def",
+            "prebuild_manifest_sha256": "51719b644a1fa8ff11790483ec91b07df32d3f2e946890aabd6de35e3857eee4",
+            "binary_sha256": [
+              {
+                "id": "hydracache-loadgen",
+                "sha256": "b8f5afe27ac272a0be883879a51294ff509663d13c5949fdffdcf3f87f5adae1"
+              },
+              {
+                "id": "hydracache-server",
+                "sha256": "a17b5148cad43e2193c69a64e3372e2832fa94a47196a7b6bec405128f3633c6"
+              }
+            ],
+            "binary_set_digest": "9ac47b2a45fe70f5fe856bf1072545569bee9568d6d3eb1a65c47b978a697600",
+            "stable": true,
+            "maximum_spread_ratio": 0.142857,
+            "metric": [
+              {
+                "id": "grid_model_fault.maximum_recovery_cost_nanos",
+                "value": 195.0,
+                "unit": "nanoseconds"
+              },
+              {
+                "id": "grid_model_fault.maximum_decision_cost_increase_nanos",
+                "value": 76751.0,
+                "unit": "nanoseconds"
+              }
+            ],
+            "receipt_sha256": "f43b72ccf81139487ff145bb59cdf8498cfaa119bb96cb578ffe32c1f50922c9"
+          },
+          {
+            "report_id": "overload-local",
+            "report_sha256": "70315b7b5a9c6204d9dc2b4d2eb40a3c8f5667e52f2001077284f37584165810",
+            "scenario_digest": "23737b7a83647d596829d0f0207feccb441c4d2782e0dd7ef74cebd378ec7279",
+            "workload_digest": "5af83efcb9857714635936b63af686f06dde987326dd724eeaf6a952bf9c3f7c",
+            "slo_digest": "7d56c986b9aebc9c66b6f61be0aaf67cd73b45aaecb3f834d2c5977aee4d3a46",
+            "methodology_digest": "ded1061458a4c279cb382e5c951c0b0b5bbbae5d57d75ea98a5460dd197b39cf",
+            "cargo_lock_sha256": "dc480dad8567eda4a4d13b393651d3d1201cc26ba7599e3c8ff822b725569def",
+            "prebuild_manifest_sha256": "51719b644a1fa8ff11790483ec91b07df32d3f2e946890aabd6de35e3857eee4",
+            "binary_sha256": [
+              {
+                "id": "hydracache-loadgen",
+                "sha256": "b8f5afe27ac272a0be883879a51294ff509663d13c5949fdffdcf3f87f5adae1"
+              },
+              {
+                "id": "hydracache-server",
+                "sha256": "a17b5148cad43e2193c69a64e3372e2832fa94a47196a7b6bec405128f3633c6"
+              }
+            ],
+            "binary_set_digest": "9ac47b2a45fe70f5fe856bf1072545569bee9568d6d3eb1a65c47b978a697600",
+            "stable": true,
+            "maximum_spread_ratio": 0.0002990589163037198,
+            "metric": [
+              {
+                "id": "overload_goodput_curve_1_2x_1_5x_2x_knee_per_eligible_surface.minimum_goodput_per_second",
+                "value": 19993.87069099729,
+                "unit": "operations_per_second"
+              }
+            ],
+            "receipt_sha256": "8aa40bd713dfdccb9ea7caf8f4bc738786a4241836fb6657b83a542c837f2754"
+          },
+          {
+            "report_id": "overload-client-surface",
+            "report_sha256": "db14005c897bee2978861db054dea1e1968007c3e0c1f1c06513dee09e5ced33",
+            "scenario_digest": "23737b7a83647d596829d0f0207feccb441c4d2782e0dd7ef74cebd378ec7279",
+            "workload_digest": "b5f9537eafa6b5e04cacbdd7511d0479f9ea2275dc12703483ecbd4c3e80447f",
+            "slo_digest": "7d56c986b9aebc9c66b6f61be0aaf67cd73b45aaecb3f834d2c5977aee4d3a46",
+            "methodology_digest": "99190c8f41d0c68cf4722e8a4a30ee9ca956f5ec0d82785d183407e274471336",
+            "cargo_lock_sha256": "dc480dad8567eda4a4d13b393651d3d1201cc26ba7599e3c8ff822b725569def",
+            "prebuild_manifest_sha256": "51719b644a1fa8ff11790483ec91b07df32d3f2e946890aabd6de35e3857eee4",
+            "binary_sha256": [
+              {
+                "id": "hydracache-loadgen",
+                "sha256": "b8f5afe27ac272a0be883879a51294ff509663d13c5949fdffdcf3f87f5adae1"
+              },
+              {
+                "id": "hydracache-server",
+                "sha256": "a17b5148cad43e2193c69a64e3372e2832fa94a47196a7b6bec405128f3633c6"
+              }
+            ],
+            "binary_set_digest": "9ac47b2a45fe70f5fe856bf1072545569bee9568d6d3eb1a65c47b978a697600",
+            "stable": true,
+            "maximum_spread_ratio": 0.0002440958301896904,
+            "metric": [
+              {
+                "id": "overload_goodput_curve_1_2x_1_5x_2x_knee_per_eligible_surface.minimum_goodput_per_second",
+                "value": 24992.659174891643,
+                "unit": "operations_per_second"
+              }
+            ],
+            "receipt_sha256": "78bf21e4186fdc7f749c45b8222fb777f9bc9cb7f0a7d4375b4ee8602b69fee9"
+          },
+          {
+            "report_id": "overload-node-resp",
+            "report_sha256": "87c741895a53dc68e00ed2f4bd41616dcd35354b1d654be2ac50cbea62ea44ee",
+            "scenario_digest": "23737b7a83647d596829d0f0207feccb441c4d2782e0dd7ef74cebd378ec7279",
+            "workload_digest": "fe8b0c4beff342c74d8660116f1b94c1bf5bb23a7de48701aae03d6dac4101fb",
+            "slo_digest": "7d56c986b9aebc9c66b6f61be0aaf67cd73b45aaecb3f834d2c5977aee4d3a46",
+            "methodology_digest": "33d89d02700959967732a4d93172be098c53b98329f3336a2b0491c0f17f197a",
+            "cargo_lock_sha256": "dc480dad8567eda4a4d13b393651d3d1201cc26ba7599e3c8ff822b725569def",
+            "prebuild_manifest_sha256": "51719b644a1fa8ff11790483ec91b07df32d3f2e946890aabd6de35e3857eee4",
+            "binary_sha256": [
+              {
+                "id": "hydracache-loadgen",
+                "sha256": "b8f5afe27ac272a0be883879a51294ff509663d13c5949fdffdcf3f87f5adae1"
+              },
+              {
+                "id": "hydracache-server",
+                "sha256": "a17b5148cad43e2193c69a64e3372e2832fa94a47196a7b6bec405128f3633c6"
+              }
+            ],
+            "binary_set_digest": "9ac47b2a45fe70f5fe856bf1072545569bee9568d6d3eb1a65c47b978a697600",
+            "stable": true,
+            "maximum_spread_ratio": 0.0009697495568049751,
+            "metric": [
+              {
+                "id": "overload_goodput_curve_1_2x_1_5x_2x_knee_per_eligible_surface.minimum_goodput_per_second",
+                "value": 42934.57163404415,
+                "unit": "operations_per_second"
+              }
+            ],
+            "receipt_sha256": "dc2acd3de44486bd670a53a191a01012870bf987aac274cf5227eefc1930852c"
+          }
+        ],
+        "metric": [
+          {
+            "budget_id": "local-capacity-floor",
+            "value": 20000.0,
+            "unit": "operations_per_second"
+          },
+          {
+            "budget_id": "client-surface-capacity-floor",
+            "value": 24988.86974501018,
+            "unit": "operations_per_second"
+          },
+          {
+            "budget_id": "local-p99-at-slo-ceiling",
+            "value": 1964.0,
+            "unit": "microseconds"
+          },
+          {
+            "budget_id": "client-surface-p99-at-slo-ceiling",
+            "value": 2065.0,
+            "unit": "microseconds"
+          },
+          {
+            "budget_id": "node-resp-capacity-floor",
+            "value": 49950.196357518595,
+            "unit": "operations_per_second"
+          },
+          {
+            "budget_id": "node-resp-p99-at-slo-ceiling",
+            "value": 3319.0,
+            "unit": "microseconds"
+          },
+          {
+            "budget_id": "control-plane-3-event-ceiling",
+            "value": 595.561686,
+            "unit": "milliseconds"
+          },
+          {
+            "budget_id": "control-plane-5-event-ceiling",
+            "value": 800.78432,
+            "unit": "milliseconds"
+          },
+          {
+            "budget_id": "control-plane-7-event-ceiling",
+            "value": 904.007043,
+            "unit": "milliseconds"
+          },
+          {
+            "budget_id": "grid-model-primitive-cost-ceiling",
+            "value": 1273.2257,
+            "unit": "nanoseconds_per_operation"
+          },
+          {
+            "budget_id": "brownout-control-plane-recovery-ceiling",
+            "value": 733.0,
+            "unit": "milliseconds"
+          },
+          {
+            "budget_id": "brownout-control-plane-depth-ceiling",
+            "value": 84.0,
+            "unit": "parts_per_million"
+          },
+          {
+            "budget_id": "brownout-resp-endpoint-recovery-ceiling",
+            "value": 1179.0,
+            "unit": "milliseconds"
+          },
+          {
+            "budget_id": "brownout-resp-endpoint-depth-ceiling",
+            "value": 10934.0,
+            "unit": "parts_per_million"
+          },
+          {
+            "budget_id": "brownout-grid-model-recovery-ceiling",
+            "value": 195.0,
+            "unit": "nanoseconds"
+          },
+          {
+            "budget_id": "brownout-grid-model-depth-ceiling",
+            "value": 76751.0,
+            "unit": "nanoseconds"
+          },
+          {
+            "budget_id": "overload-local-goodput-floor",
+            "value": 19993.87069099729,
+            "unit": "operations_per_second"
+          },
+          {
+            "budget_id": "overload-client-surface-goodput-floor",
+            "value": 24992.659174891643,
+            "unit": "operations_per_second"
+          },
+          {
+            "budget_id": "overload-node-resp-goodput-floor",
+            "value": 42934.57163404415,
+            "unit": "operations_per_second"
+          }
+        ],
+        "receipt_sha256": "14053dfc191a4c6491f7f42cafabc0667a9f734ff53d912060aabb0afd269344"
+      }
+    ],
+    "metric": [
+      {
+        "budget_id": "local-capacity-floor",
+        "value": 20000.0,
+        "unit": "operations_per_second"
+      },
+      {
+        "budget_id": "client-surface-capacity-floor",
+        "value": 24990.600791384004,
+        "unit": "operations_per_second"
+      },
+      {
+        "budget_id": "local-p99-at-slo-ceiling",
+        "value": 1944.0,
+        "unit": "microseconds"
+      },
+      {
+        "budget_id": "client-surface-p99-at-slo-ceiling",
+        "value": 2077.0,
+        "unit": "microseconds"
+      },
+      {
+        "budget_id": "node-resp-capacity-floor",
+        "value": 49950.196357518595,
+        "unit": "operations_per_second"
+      },
+      {
+        "budget_id": "node-resp-p99-at-slo-ceiling",
+        "value": 3477.0,
+        "unit": "microseconds"
+      },
+      {
+        "budget_id": "control-plane-3-event-ceiling",
+        "value": 646.02576,
+        "unit": "milliseconds"
+      },
+      {
+        "budget_id": "control-plane-5-event-ceiling",
+        "value": 697.588307,
+        "unit": "milliseconds"
+      },
+      {
+        "budget_id": "control-plane-7-event-ceiling",
+        "value": 854.300816,
+        "unit": "milliseconds"
+      },
+      {
+        "budget_id": "grid-model-primitive-cost-ceiling",
+        "value": 1273.2257,
+        "unit": "nanoseconds_per_operation"
+      },
+      {
+        "budget_id": "brownout-control-plane-recovery-ceiling",
+        "value": 733.0,
+        "unit": "milliseconds"
+      },
+      {
+        "budget_id": "brownout-control-plane-depth-ceiling",
+        "value": 84.0,
+        "unit": "parts_per_million"
+      },
+      {
+        "budget_id": "brownout-resp-endpoint-recovery-ceiling",
+        "value": 1199.0,
+        "unit": "milliseconds"
+      },
+      {
+        "budget_id": "brownout-resp-endpoint-depth-ceiling",
+        "value": 10934.0,
+        "unit": "parts_per_million"
+      },
+      {
+        "budget_id": "brownout-grid-model-recovery-ceiling",
+        "value": 195.0,
+        "unit": "nanoseconds"
+      },
+      {
+        "budget_id": "brownout-grid-model-depth-ceiling",
+        "value": 76750.0,
+        "unit": "nanoseconds"
+      },
+      {
+        "budget_id": "overload-local-goodput-floor",
+        "value": 19994.580764803497,
+        "unit": "operations_per_second"
+      },
+      {
+        "budget_id": "overload-client-surface-goodput-floor",
+        "value": 24991.85039500877,
+        "unit": "operations_per_second"
+      },
+      {
+        "budget_id": "overload-node-resp-goodput-floor",
+        "value": 42986.72041208053,
+        "unit": "operations_per_second"
+      }
+    ]
+  },
+  "anchor_sha256": "bea788acf805de272c58425184708b9768739ca4d5a1df303673b2197621d152"
+}

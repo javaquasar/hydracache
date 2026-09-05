@@ -109,8 +109,8 @@ Release 0.67 ships performance methodology and tooling without numerical perform
 | Core reference | `evidence-run --release 0.67 --gate env.hydracache-run-067-perf-core` | Serialized protected bare-metal lane | Deferred evidence for embedded, in-process client, and labeled model surfaces. |
 | RESP/Redis reference | `evidence-run --release 0.67 --gate env.hydracache-run-067-perf-resp` | Serialized protected Linux lane | Deferred node-local RESP, paired Redis, and exported-metrics evidence; no distributed or superiority claim. |
 | Control-plane reference | `evidence-run --release 0.67 --gate env.hydracache-run-067-perf-control-plane` | Serialized protected Linux lane | Deferred real 3/5/7-daemon admin/control-plane evidence; no value-plane capacity claim. |
-| W7 budget verdict | `evidence-run --release 0.67 --gate tool.perf-budget-check-067` | After all reference measurements | Deferred and currently red because `reference-v1` is unbootstrapped. |
-| 0.67 release aggregation | `canary-sweep --release 0.67 --tier all` plus `release-evidence --release 0.67 --receipts-dir ... --require-ship` | Frozen candidate | Requires implementation receipts and canaries. The five deferred reference receipts are deliberately outside the 0.67 ship manifest while TD-0013 is open. |
+| W7 budget verdict | `evidence-run --release 0.67 --gate tool.perf-budget-check-067` | After all reference measurements | Historical 0.67 deferred gate; it was red at 0.67 ship time because `reference-v1` was then unbootstrapped. |
+| 0.67 release aggregation | `canary-sweep --release 0.67 --tier all` plus `release-evidence --release 0.67 --receipts-dir ... --require-ship` | Frozen candidate | Historical 0.67 aggregation. Its five reference receipts were deliberately outside the 0.67 ship manifest while TD-0013 was open. |
 
 The deferred gates remain registered, protected, serialized, and fail-closed. Missing tools, unstable spread, wrong fingerprints, stale artifacts, insufficient baseline history, or candidate self-baselining stays red. GitHub-hosted `ci-shared` results remain tripwires only and cannot support any numerical release claim.
 
@@ -128,6 +128,10 @@ commands:
 The three gates run in the trusted manual `release-0671-frozen-candidate` job. Bootstrap and frozen
 candidate are separate serialized campaigns. See
 [`testing/PERF_REFERENCE_0_67_1_REVIEW_AND_ACTIVATION.md`](testing/PERF_REFERENCE_0_67_1_REVIEW_AND_ACTIVATION.md).
+
+The reviewed-contract and activation gates are now green for the W6 activation change. The frozen
+candidate must still run from that change's exact merge SHA; it may consume but never join the five
+pre-candidate baseline members.
 
 ## Chaos / soak / Docker (nightly / pre-release)
 

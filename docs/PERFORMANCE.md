@@ -1,9 +1,14 @@
 # HydraCache Performance Evidence
 
-This document defines the performance methodology delivered by release `0.67.0`, the surfaces it can measure, and the claim boundary while dedicated reference evidence is deferred.
+This document defines the performance methodology delivered by release `0.67.0`, the surfaces it
+can measure, and the narrow claim boundary for the reviewed `0.67.1` dedicated reference contract.
 
-> **Current status (2026-07-26): tooling scope implemented; numerical evidence deferred.**
-> The W0-W10 measurement and governance implementation is present. The 0.67 code release may ship that infrastructure without capacity, sizing, Redis-comparison, metrics-agreement, or numerical baseline claims. Dedicated `reference-v1` bootstrap is tracked by [`TD-0013`](technical-debt/TD-0013-dedicated-performance-runner-and-baseline-bootstrap.md).
+> **Current status (2026-09-05): reference bootstrap reviewed and activated; frozen candidate
+> pending.** The 0.67 tooling release remains claim-free. The `0.67.1` contract now contains one
+> independently reviewed five-sample bare-metal anchor and baseline, resolving
+> [`TD-0013`](technical-debt/TD-0013-dedicated-performance-runner-and-baseline-bootstrap.md).
+> W7 must still pass from the exact activation merge SHA before `0.67.1` may ship or publish a final
+> reference verdict.
 
 ## Measured surfaces and claim boundaries
 
@@ -28,14 +33,18 @@ Missing exported metrics remain `not_available`; release 0.67 does not add produ
 - Unstable spread, shared or mismatched hardware, missing tools, stale artifacts, or incomplete predecessor evidence remains fail-closed.
 - Results with different surface semantics remain separate and are never combined into a protocol ratio or aggregate cluster number.
 
-Scenarios live under [`testing/perf-scenarios/0.67`](testing/perf-scenarios/0.67); profiles, budgets, and baseline contracts live under `docs/testing/perf-profiles`, `docs/testing/perf-budgets/0.67`, and `docs/testing/perf-baselines/0.67`.
+Scenarios live under [`testing/perf-scenarios/0.67`](testing/perf-scenarios/0.67). The activated
+profile lives under `docs/testing/perf-profiles`; reviewed `0.67.1` payloads live under
+`docs/testing/perf-anchors/0.67.1`, `docs/testing/perf-budgets/0.67.1`,
+`docs/testing/perf-baselines/0.67.1`, and `docs/testing/perf-reviews/0.67.1`. Historical `0.67`
+budget and baseline files remain unchanged.
 
 ## Hosted tripwire versus deferred reference evidence
 
 | Lane | Purpose | 0.67 ship role |
 | --- | --- | --- |
 | `ci-shared` | Broad-tolerance hosted regression tripwire plus structural/unit receipts | Non-numerical regression signal only |
-| `reference-v1` | Manual serialized execution on protected `hydracache-perf-v1` bare metal | Deferred by TD-0013; no 0.67 numerical claim |
+| `reference-v1` | Manual serialized execution on protected `hydracache-perf-v1` bare metal | Deferred for 0.67; independently reviewed and activated for 0.67.1, with W7 still pending |
 
 The protected workflow and these registered gates are retained unchanged in method:
 
@@ -47,19 +56,27 @@ env.hydracache-run-067-perf-control-plane
 tool.perf-budget-check-067
 ```
 
-They remain fail-closed on missing capability, runner mismatch, unstable spread, stale/mixed evidence, or unbootstrapped budgets. They are not listed as 0.67 ship-mandatory receipts while TD-0013 is open.
+They remain fail-closed on missing capability, runner mismatch, unstable spread, stale/mixed
+evidence, or unbootstrapped budgets. They were not listed as 0.67 ship-mandatory receipts; 0.67.1
+adds its own reviewed activation and frozen-candidate gates without rewriting that historical ship
+manifest.
 
-The committed `reference-v1` profile, anchor, budgets, and baseline stay `unbootstrapped`. Closure requires the protected runner, at least five eligible stable successful `main` runs from one fingerprint/contract family, independent anchor/baseline/budget review, activation without candidate self-baselining, and one fully green frozen-candidate reference pipeline.
+The committed `reference-v1` profile, anchor, budgets, and baseline are now `bootstrapped` from five
+eligible, stable, successful pre-candidate `main` runs from one fingerprint and contract family.
+The activation preserves candidate self-baseline prevention. A fully green frozen-candidate
+reference pipeline is still required for the 0.67.1 release verdict.
 
-Release 0.67.1 prepares that closure as an explicit two-campaign protocol. The pre-activation
-bootstrap SHA contributes exactly five non-ship samples; deterministic W5 automation derives a
-median-based contract from all five and a separate identity reviews the exact bytes. Only after
-those bytes are committed may a new exact `main` SHA run the full frozen-candidate ship gate. The
-canonical activated budget/baseline paths are under `0.67.1`; the underlying report and scenario
-schema remains the 0.67 measurement contract. Preparation alone does not activate a numerical
-claim or resolve TD-0013. Operational details are in
+Release 0.67.1 uses an explicit two-campaign protocol. The completed pre-activation bootstrap SHA
+contributed exactly five non-ship samples; deterministic W5 automation derived a median-based
+contract from all five and a separate identity reviewed the exact bytes. Those activated bytes are
+the immutable input to a new exact `main` SHA's frozen-candidate ship gate. The underlying report
+and scenario schema remains the 0.67 measurement contract. Operational details are in
 [`testing/PERF_REFERENCE_0_67_1_REVIEW_AND_ACTIVATION.md`](testing/PERF_REFERENCE_0_67_1_REVIEW_AND_ACTIVATION.md).
 
 ## Quotation rule
 
-No numerical 0.67 release claim is currently permitted. Exploratory output must be labeled exploratory and must not appear as capacity floors, sizing advice, comparative claims, or release baselines. After TD-0013 closes, any quoted number must identify its report, scenario, fingerprint, profile, commit, method, and claim scope.
+No numerical 0.67 release claim is permitted. The reviewed 0.67.1 bootstrap values are a
+pre-candidate contract, not a final release verdict. They may be described only with their exact
+report, scenario, fingerprint, profile, commit, method, and host scope, and never as portable sizing
+advice or universal comparative performance. Final 0.67.1 claims additionally require green W7
+frozen-candidate evidence.
