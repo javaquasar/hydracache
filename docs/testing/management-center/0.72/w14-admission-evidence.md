@@ -21,6 +21,11 @@ candidate command remains intentionally red until all external exact-candidate i
 - Every NATS-derived failure-taxonomy row names its owning W-item and may reference only a validated
   claim receipt owned by that same item. A prose note, receipt from another item, or canary whose
   ID has another owner is rejected before ship admission.
+- Pre-feature and published-0.71 baseline files use a deny-unknown-fields JSON schema. Admission
+  resolves the source ref to its exact commit, binds it to the clean candidate SHA, requires outcome
+  `pass`, and requires each declared measurement exactly once with a finite non-negative value,
+  reviewed unit, non-zero sample count, and command/output SHA-256 provenance. File existence alone
+  is never baseline evidence.
 - `canary-registry-0.72.json` registers W0-W14. `canary-sweep` runs the unchanged selector first and
   then one reversible defect, requiring the exact `HC-CANARY-RED` marker and writing a clean-SHA,
   command-digest and registry-digest receipt.

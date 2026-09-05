@@ -164,6 +164,31 @@ struct CoverageExclusion {
     non_ship: bool,
 }
 
+#[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
+struct BaselineReceipt {
+    schema_version: u32,
+    release: String,
+    baseline: String,
+    source_ref: String,
+    source_commit: String,
+    candidate_commit: String,
+    dirty_worktree: bool,
+    outcome: String,
+    measurements: Vec<BaselineMeasurement>,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
+struct BaselineMeasurement {
+    id: String,
+    value: f64,
+    unit: String,
+    samples: u64,
+    command_sha256: String,
+    output_sha256: String,
+}
+
 pub fn run(args: Vec<String>) -> Result<(), Box<dyn Error>> {
     let options = Options::parse(args)?;
     if options.write_receipts {
@@ -288,8 +313,17 @@ pub fn check_baseline_document(
             || !Path::new(receipt).starts_with("target/release-evidence/management-center/0.72")
         {
             problems.push(format!("{name} baseline has an unsafe receipt path"));
-        } else if require_evidence && !root.join(receipt).is_file() {
-            problems.push(format!("{name} baseline receipt is missing: {receipt}"));
+        } else if require_evidence {
+            match fs::read(root.join(receipt)) {
+                Ok(bytes) => problems.extend(validate_baseline_receipt(
+                    root,
+                    name,
+                    row,
+                    measurements.map_or(&[], Vec::as_slice),
+                    &bytes,
+                )),
+                Err(_) => problems.push(format!("{name} baseline receipt is missing: {receipt}")),
+            }
         }
     }
     for flag in [
@@ -317,6 +351,99 @@ pub fn check_baseline_document(
         }
     }
     Ok(problems)
+}
+
+fn validate_baseline_receipt(
+    root: &Path,
+    name: &str,
+    row: Option<&toml::Value>,
+    required_measurements: &[toml::Value],
+    bytes: &[u8],
+) -> Vec<String> {
+    let receipt: BaselineReceipt = match serde_json::from_slice(bytes) {
+        Ok(receipt) => receipt,
+        Err(error) => return vec![format!("{name} baseline receipt is invalid JSON: {error}")],
+    };
+    let mut problems = Vec::new();
+    let expected_baseline = if name == "pre-feature" {
+        "pre_feature"
+    } else {
+        "published_previous"
+    };
+    let expected_ref = if name == "pre-feature" {
+        row.and_then(|value| value.get("source_commit"))
+            .and_then(toml::Value::as_str)
+            .unwrap_or_default()
+    } else {
+        row.and_then(|value| value.get("tag"))
+            .and_then(toml::Value::as_str)
+            .unwrap_or_default()
+    };
+    let expected_source_commit = if name == "pre-feature" {
+        expected_ref.to_owned()
+    } else {
+        command_output(
+            root,
+            "git",
+            &["rev-parse", &format!("{expected_ref}^{{commit}}")],
+        )
+        .unwrap_or_default()
+    };
+    let (candidate_commit, candidate_dirty) = git_identity(root).unwrap_or_default();
+    if receipt.schema_version != 1
+        || receipt.release != "0.72.0"
+        || receipt.baseline != expected_baseline
+        || receipt.source_ref != expected_ref
+        || receipt.source_commit != expected_source_commit
+    {
+        problems.push(format!(
+            "{name} baseline receipt has wrong identity or provenance"
+        ));
+    }
+    if receipt.candidate_commit != candidate_commit || receipt.dirty_worktree || candidate_dirty {
+        problems.push(format!(
+            "{name} baseline receipt is not bound to the clean candidate"
+        ));
+    }
+    if receipt.outcome != "pass" {
+        problems.push(format!("{name} baseline outcome is not pass"));
+    }
+    let expected = required_measurements
+        .iter()
+        .filter_map(toml::Value::as_str)
+        .collect::<BTreeSet<_>>();
+    let observed = receipt
+        .measurements
+        .iter()
+        .map(|measurement| measurement.id.as_str())
+        .collect::<BTreeSet<_>>();
+    if receipt.measurements.len() != expected.len() || observed != expected {
+        problems.push(format!(
+            "{name} baseline lacks the exact required measurement set"
+        ));
+    }
+    for measurement in &receipt.measurements {
+        if !measurement.value.is_finite()
+            || measurement.value < 0.0
+            || measurement.samples == 0
+            || !matches!(
+                measurement.unit.as_str(),
+                "bytes" | "milliseconds" | "count" | "percent"
+            )
+            || !valid_sha256(&measurement.command_sha256)
+            || !valid_sha256(&measurement.output_sha256)
+        {
+            problems.push(format!(
+                "{name} baseline measurement {} is unbounded or lacks command/output provenance",
+                measurement.id
+            ));
+        }
+    }
+    problems
+}
+
+fn valid_sha256(value: &str) -> bool {
+    value.len() == 64 && value.bytes().all(|byte| byte.is_ascii_hexdigit())
 }
 
 /// Validate the management diff-coverage inventory and preserve the workspace
@@ -1116,5 +1243,48 @@ impl Options {
             write_receipts,
             receipts_dir,
         })
+    }
+}
+
+#[cfg(test)]
+mod baseline_receipt_tests {
+    use super::validate_baseline_receipt;
+    use std::path::Path;
+
+    #[test]
+    fn baseline_receipt_rejects_invalid_json_and_empty_measurement_claims() {
+        let row: toml::Value =
+            toml::from_str("source_commit = \"8d205fa302d81a07c19147cb4431e16390d256c3\"").unwrap();
+        let required = vec![toml::Value::String("bundle_bytes".to_owned())];
+        assert!(validate_baseline_receipt(
+            Path::new("."),
+            "pre-feature",
+            Some(&row),
+            &required,
+            b"not-json"
+        )
+        .iter()
+        .any(|problem| problem.contains("invalid JSON")));
+
+        let empty = serde_json::json!({
+            "schema_version": 1,
+            "release": "0.72.0",
+            "baseline": "pre_feature",
+            "source_ref": "8d205fa302d81a07c19147cb4431e16390d256c3",
+            "source_commit": "8d205fa302d81a07c19147cb4431e16390d256c3",
+            "candidate_commit": "0".repeat(40),
+            "dirty_worktree": false,
+            "outcome": "pass",
+            "measurements": []
+        });
+        assert!(validate_baseline_receipt(
+            Path::new("."),
+            "pre-feature",
+            Some(&row),
+            &required,
+            &serde_json::to_vec(&empty).unwrap()
+        )
+        .iter()
+        .any(|problem| problem.contains("exact required measurement set")));
     }
 }
