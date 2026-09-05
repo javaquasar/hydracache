@@ -328,6 +328,7 @@ pub fn check_coverage_document(
         "console/scripts/embed-dist.mjs",
         "console/scripts/package-management-center.mjs",
         "console/vite.config.ts",
+        "fuzz/src/lib.rs",
         "crates/xtask/src/management_center.rs",
     ]);
     let mut registered = BTreeSet::new();

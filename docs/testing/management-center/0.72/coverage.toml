@@ -164,6 +164,13 @@ reviewed_branches = ["relative-base", "hashed-entry", "hashed-chunk", "hashed-cs
 receipt = "target/test-evidence/0.72/coverage-console-vite.json"
 
 [[module]]
+path = "fuzz/src/lib.rs"
+work_items = ["W2", "W5", "W10", "W14"]
+tests = ["fuzz/tests/fuzz_corpus_regression.rs#fuzz_corpus_regression_replays_every_committed_seed_without_panic_or_unbounded_alloc", "fuzz/tests/fuzz_corpus_regression.rs#management_decoder_corpora_cover_valid_invalid_and_oversize_boundaries"]
+reviewed_branches = ["input-byte-bound", "malformed-json", "unknown-enum", "contract-validation", "oversize-short-circuit"]
+receipt = "target/test-evidence/0.72/coverage-management-fuzz-decoders.json"
+
+[[module]]
 path = "crates/xtask/src/management_center.rs"
 work_items = ["W14"]
 tests = ["crates/xtask/tests/management_center_072.rs#management_registry_covers_every_route_and_failure_class", "crates/xtask/tests/management_center_072.rs#management_registry_rejects_missing_or_tampered_proof"]

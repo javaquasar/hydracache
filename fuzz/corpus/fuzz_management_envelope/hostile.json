@@ -1,0 +1,1 @@
+{"schema_version":65535,"observation_seq":0,"authority_epoch":null,"captured_at_unix_ms":0,"source":"future-source","completeness":"future-state","stale_after_ms":0,"warnings":[{"code":"future-warning","affected_count":18446744073709551615}],"data":{"nested":[[["<script>token=secret</script>"]]]}}

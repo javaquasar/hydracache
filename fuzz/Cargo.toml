@@ -15,12 +15,14 @@ hydracache-client-hc2.workspace = true
 hydracache-client-plane-spike.workspace = true
 hydracache-cluster-raft.workspace = true
 hydracache-cluster-transport-axum.workspace = true
+hydracache-observability.workspace = true
 hydracache-redis-compat.workspace = true
 hydracache-server.workspace = true
 libfuzzer-sys = "0.4"
 prost.workspace = true
 protobuf.workspace = true
 raft.workspace = true
+serde.workspace = true
 serde_json.workspace = true
 
 [[bin]]
@@ -61,6 +63,34 @@ bench = false
 [[bin]]
 name = "fuzz_hc2_client_plane"
 path = "fuzz_targets/fuzz_hc2_client_plane.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "fuzz_management_envelope"
+path = "fuzz_targets/fuzz_management_envelope.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "fuzz_management_recovery"
+path = "fuzz_targets/fuzz_management_recovery.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "fuzz_management_placement"
+path = "fuzz_targets/fuzz_management_placement.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "fuzz_management_cursor"
+path = "fuzz_targets/fuzz_management_cursor.rs"
 test = false
 doc = false
 bench = false

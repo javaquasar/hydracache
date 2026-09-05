@@ -3,6 +3,10 @@ use std::fs;
 use std::panic::{catch_unwind, AssertUnwindSafe};
 use std::path::Path;
 
+use hydracache_observability::{
+    DurableRecoveryStatus, ManagementEnvelope, OpaqueCursor, PlacementDecisionTrace,
+};
+
 type FuzzTarget = (&'static str, fn(&[u8]));
 
 #[test]
@@ -69,7 +73,7 @@ fn committed_seed_count() -> usize {
         .sum()
 }
 
-fn fuzz_targets() -> [FuzzTarget; 5] {
+fn fuzz_targets() -> [FuzzTarget; 9] {
     [
         ("fuzz_config_parse", hydracache_fuzz::fuzz_config_parse),
         ("fuzz_kv_codec", hydracache_fuzz::fuzz_kv_codec),
@@ -79,7 +83,67 @@ fn fuzz_targets() -> [FuzzTarget; 5] {
             hydracache_fuzz::fuzz_snapshot_decode,
         ),
         ("raft_wire_frame", hydracache_fuzz::fuzz_raft_wire_frame),
+        (
+            "fuzz_management_envelope",
+            hydracache_fuzz::fuzz_management_envelope,
+        ),
+        (
+            "fuzz_management_recovery",
+            hydracache_fuzz::fuzz_management_recovery,
+        ),
+        (
+            "fuzz_management_placement",
+            hydracache_fuzz::fuzz_management_placement,
+        ),
+        (
+            "fuzz_management_cursor",
+            hydracache_fuzz::fuzz_management_cursor,
+        ),
     ]
+}
+
+#[test]
+fn management_decoder_corpora_cover_valid_invalid_and_oversize_boundaries() {
+    for target in [
+        "fuzz_management_envelope",
+        "fuzz_management_recovery",
+        "fuzz_management_placement",
+        "fuzz_management_cursor",
+    ] {
+        let names = fs::read_dir(committed_corpus().join(target))
+            .expect("management corpus directory should exist")
+            .filter_map(Result::ok)
+            .map(|entry| entry.file_name().to_string_lossy().into_owned())
+            .collect::<BTreeSet<_>>();
+        assert!(names.contains("valid.json"), "{target} lacks a valid seed");
+        assert!(
+            names.contains("hostile.json"),
+            "{target} lacks a hostile seed"
+        );
+    }
+
+    let oversized = vec![b'x'; 16 * 1024 + 1];
+    for (_, replay) in fuzz_targets().into_iter().skip(5) {
+        replay(&oversized);
+    }
+
+    let envelope: ManagementEnvelope<serde_json::Value> =
+        management_seed("fuzz_management_envelope");
+    envelope.validate().expect("valid envelope seed");
+    let recovery: DurableRecoveryStatus = management_seed("fuzz_management_recovery");
+    recovery.validate().expect("valid recovery seed");
+    let placement: PlacementDecisionTrace = management_seed("fuzz_management_placement");
+    placement.validate().expect("valid placement seed");
+    let cursor: OpaqueCursor = management_seed("fuzz_management_cursor");
+    cursor.validate().expect("valid cursor seed");
+}
+
+fn management_seed<T: serde::de::DeserializeOwned>(target: &str) -> T {
+    serde_json::from_slice(
+        &fs::read(committed_corpus().join(target).join("valid.json"))
+            .expect("valid management seed should be readable"),
+    )
+    .expect("valid management seed should decode")
 }
 
 #[test]

@@ -227,3 +227,14 @@ behavior_tests = ["crates/xtask/tests/management_center_072.rs#management_regist
 canaries = ["MC72-W14-EVIDENCE-TAMPER", "MC72-W14-PAPER-GREEN"]
 receipts = ["target/release-evidence/management-center/0.72/W14.json"]
 status = "implemented"
+
+[[claim]]
+id = "MC72-MANAGEMENT-DECODER-FUZZ"
+work_item = "W14"
+claim = "Management envelope, recovery, placement and cursor decoders remain bounded and panic-free for hostile bytes."
+implementation = ["fuzz/src/lib.rs#fuzz_management_envelope", "fuzz/src/lib.rs#fuzz_management_recovery", "fuzz/src/lib.rs#fuzz_management_placement", "fuzz/src/lib.rs#fuzz_management_cursor"]
+behavior_tests = ["fuzz/tests/fuzz_corpus_regression.rs#management_decoder_corpora_cover_valid_invalid_and_oversize_boundaries"]
+canaries = ["MC72-W14-PAPER-GREEN"]
+bounds = ["fuzz-input-bytes"]
+receipts = ["target/release-evidence/management-center/0.72/W14-fuzz.json"]
+status = "implemented"

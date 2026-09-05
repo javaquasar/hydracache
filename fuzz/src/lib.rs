@@ -1,6 +1,9 @@
 use hydracache_client_protocol::{ClientFrame, ClientWireMessage, VersionHandshake};
 use hydracache_cluster_raft::{RaftMetadataRuntime, RaftWireMessage};
 use hydracache_cluster_transport_axum::ClusterOpaqueMessage;
+use hydracache_observability::{
+    DurableRecoveryStatus, ManagementEnvelope, OpaqueCursor, PlacementDecisionTrace,
+};
 use hydracache_redis_compat::{
     decode_resp2_command_with_limits, decode_resp3_command_with_limits, RespDecodeLimits,
 };
@@ -71,6 +74,46 @@ pub fn fuzz_snapshot_decode(data: &[u8]) {
         return;
     }
     let _ = Snapshot::parse_from_bytes(data);
+}
+
+/// Decode and validate the common management envelope without accepting unbounded input.
+pub fn fuzz_management_envelope(data: &[u8]) {
+    if data.len() > MAX_FUZZ_INPUT_BYTES {
+        return;
+    }
+    if let Ok(envelope) = serde_json::from_slice::<ManagementEnvelope<serde_json::Value>>(data) {
+        let _ = envelope.validate();
+    }
+}
+
+/// Decode and validate durable recovery read models. Invalid state combinations must fail closed.
+pub fn fuzz_management_recovery(data: &[u8]) {
+    if data.len() > MAX_FUZZ_INPUT_BYTES {
+        return;
+    }
+    if let Ok(recovery) = serde_json::from_slice::<DurableRecoveryStatus>(data) {
+        let _ = recovery.validate();
+    }
+}
+
+/// Decode and validate placement traces, including all collection and identity bounds.
+pub fn fuzz_management_placement(data: &[u8]) {
+    if data.len() > MAX_FUZZ_INPUT_BYTES {
+        return;
+    }
+    if let Ok(trace) = serde_json::from_slice::<PlacementDecisionTrace>(data) {
+        let _ = trace.validate();
+    }
+}
+
+/// Decode and validate opaque cursors without interpreting attacker-controlled cursor contents.
+pub fn fuzz_management_cursor(data: &[u8]) {
+    if data.len() > MAX_FUZZ_INPUT_BYTES {
+        return;
+    }
+    if let Ok(cursor) = serde_json::from_slice::<OpaqueCursor>(data) {
+        let _ = cursor.validate();
+    }
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]

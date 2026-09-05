@@ -2359,12 +2359,14 @@ dependencies = [
  "hydracache-client-protocol",
  "hydracache-cluster-raft",
  "hydracache-cluster-transport-axum",
+ "hydracache-observability",
  "hydracache-redis-compat",
  "hydracache-server",
  "libfuzzer-sys",
  "prost",
  "protobuf",
  "raft",
+ "serde",
  "serde_json",
 ]
 
