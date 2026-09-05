@@ -5268,6 +5268,7 @@ fn methodology_dimensions(evidence: &Value) -> Value {
         "reference_owning_pid",
         "reference_process_pid",
         "selected_endpoint",
+        "surface_capability_sha256",
     ] {
         stable.remove(volatile);
     }
@@ -6211,15 +6212,31 @@ pub fn evaluate(
             .members
             .iter()
             .map(|member| member.receipt_sha256.as_str())
-            .collect::<Vec<_>>();
+            .collect::<BTreeSet<_>>();
         let eligible_receipts = eligible
             .iter()
             .map(|member| member.receipt_sha256.as_str())
-            .collect::<Vec<_>>();
+            .collect::<BTreeSet<_>>();
         if eligible_receipts != selected_receipts {
             problems.push(
                 "rolling manifest contains mixed/stale/unstable/ineligible members or is not the newest eligible window from its audited pool".to_owned(),
             );
+            for member in &bundle.baseline.candidate_members {
+                let reasons = baseline_member_eligibility_reasons(
+                    member,
+                    &bundle.baseline,
+                    reports,
+                    now,
+                    &candidate_commit,
+                );
+                if !reasons.is_empty() {
+                    problems.push(format!(
+                        "rolling baseline member {} is ineligible: {}",
+                        member.run_id,
+                        reasons.join(", ")
+                    ));
+                }
+            }
         }
         if eligible.len() < bundle.baseline.policy.minimum_members {
             problems.push("rolling baseline has fewer than five eligible main members".to_owned());
@@ -6438,58 +6455,14 @@ pub fn eligible_members<'a>(
     now: OffsetDateTime,
     candidate_commit: &str,
 ) -> Vec<&'a BaselineMember> {
-    let candidate_by_id = reports
-        .iter()
-        .map(|report| (report.id.as_str(), report))
-        .collect::<BTreeMap<_, _>>();
-    let common_fingerprint = common_candidate(reports, |report| &report.runner_fingerprint);
-    let common_runner_class = common_candidate(reports, |report| &report.runner_class);
-    let common_toolchain = common_candidate(reports, |report| &report.toolchain_identity);
-    let common_prebuild = common_candidate(reports, |report| &report.prebuild_contract_digest);
-    let cutoff = now - time::Duration::days(manifest.policy.maximum_age_days);
     let mut eligible = manifest
         .members
         .iter()
         .filter_map(|member| {
             let observed = parse_time(&member.observed_at).ok()?;
-            let exact_reports = member.reports.len() == candidate_by_id.len()
-                && member.reports.iter().all(|baseline| {
-                    candidate_by_id
-                        .get(baseline.report_id.as_str())
-                        .is_some_and(|candidate| {
-                            baseline.scenario_digest == candidate.scenario_digest
-                                && baseline.workload_digest == candidate.workload_digest
-                                && baseline.slo_digest == candidate.slo_digest
-                                && baseline.methodology_digest == candidate.methodology_digest
-                                && valid_baseline_report(baseline)
-                                && baseline.receipt_sha256 == baseline_report_receipt(baseline)
-                        })
-                });
-            let same_runner = if manifest.profile == "reference-v1" {
-                common_fingerprint == Some(member.runner_fingerprint.as_str())
-            } else {
-                common_runner_class == Some(member.observed_runner.runner_class.as_str())
-            };
-            (member.branch == manifest.policy.branch
-                && member.successful
-                && member.gate_exit_code == 0
-                && !member.quarantined
-                && member.quarantine_reason.is_none()
-                && member.calibration_passed
-                && member.spread_stable
-                && member.git_status_porcelain_sha256 == CLEAN_GIT_STATUS_SHA256
-                && member.source_commit != candidate_commit
-                && is_git_commit(&member.source_commit)
-                && same_runner
-                && common_toolchain == Some(member.toolchain_identity.as_str())
-                && common_prebuild == Some(member.prebuild_contract_digest.as_str())
-                && member.profile_sha256 == manifest.profile_sha256
-                && member.budget_sha256 == manifest.budget_sha256
-                && observed >= cutoff
-                && observed <= now
-                && exact_reports
-                && member.receipt_sha256 == baseline_member_receipt(member))
-            .then_some((observed, member))
+            baseline_member_eligibility_reasons(member, manifest, reports, now, candidate_commit)
+                .is_empty()
+                .then_some((observed, member))
         })
         .collect::<Vec<_>>();
     eligible.sort_by(|left, right| {
@@ -6503,6 +6476,129 @@ pub fn eligible_members<'a>(
         .take(manifest.policy.maximum_members)
         .map(|(_, member)| member)
         .collect()
+}
+
+fn baseline_member_eligibility_reasons(
+    member: &BaselineMember,
+    manifest: &RollingBaselineManifest,
+    reports: &[CandidateReport],
+    now: OffsetDateTime,
+    candidate_commit: &str,
+) -> Vec<String> {
+    let candidate_by_id = reports
+        .iter()
+        .map(|report| (report.id.as_str(), report))
+        .collect::<BTreeMap<_, _>>();
+    let common_fingerprint = common_candidate(reports, |report| &report.runner_fingerprint);
+    let common_runner_class = common_candidate(reports, |report| &report.runner_class);
+    let common_toolchain = common_candidate(reports, |report| &report.toolchain_identity);
+    let common_prebuild = common_candidate(reports, |report| &report.prebuild_contract_digest);
+    let observed = parse_time(&member.observed_at).ok();
+    let cutoff = now - time::Duration::days(manifest.policy.maximum_age_days);
+    let same_runner = if manifest.profile == "reference-v1" {
+        common_fingerprint == Some(member.runner_fingerprint.as_str())
+    } else {
+        common_runner_class == Some(member.observed_runner.runner_class.as_str())
+    };
+    let mut reasons = Vec::new();
+    let mut require = |condition: bool, reason: &str| {
+        if !condition {
+            reasons.push(reason.to_owned());
+        }
+    };
+    require(member.branch == manifest.policy.branch, "branch");
+    require(member.successful && member.gate_exit_code == 0, "success");
+    require(
+        !member.quarantined && member.quarantine_reason.is_none(),
+        "quarantine",
+    );
+    require(member.calibration_passed, "calibration");
+    require(member.spread_stable, "spread");
+    require(
+        member.git_status_porcelain_sha256 == CLEAN_GIT_STATUS_SHA256,
+        "git-status",
+    );
+    require(member.source_commit != candidate_commit, "candidate-commit");
+    require(is_git_commit(&member.source_commit), "source-commit");
+    require(same_runner, "runner-identity");
+    require(
+        common_toolchain == Some(member.toolchain_identity.as_str()),
+        "toolchain",
+    );
+    require(
+        common_prebuild == Some(member.prebuild_contract_digest.as_str()),
+        "prebuild-contract",
+    );
+    require(member.profile_sha256 == manifest.profile_sha256, "profile");
+    require(member.budget_sha256 == manifest.budget_sha256, "budget");
+    require(observed.is_some_and(|value| value >= cutoff), "too-old");
+    require(observed.is_some_and(|value| value <= now), "future-dated");
+    require(
+        member.reports.len() == candidate_by_id.len(),
+        "report-count",
+    );
+    for baseline in &member.reports {
+        let prefix = format!("report-{}", baseline.report_id);
+        if let Some(candidate) = candidate_by_id.get(baseline.report_id.as_str()) {
+            require(
+                baseline.scenario_digest == candidate.scenario_digest,
+                &format!("{prefix}-scenario"),
+            );
+            require(
+                baseline.workload_digest == candidate.workload_digest,
+                &format!("{prefix}-workload"),
+            );
+            require(
+                baseline.slo_digest == candidate.slo_digest,
+                &format!("{prefix}-slo"),
+            );
+            require(
+                methodology_digests_compatible(
+                    &baseline.report_id,
+                    &baseline.methodology_digest,
+                    &candidate.methodology_digest,
+                ),
+                &format!("{prefix}-methodology"),
+            );
+        } else {
+            require(false, &format!("{prefix}-missing"));
+        }
+        require(
+            valid_baseline_report(baseline),
+            &format!("{prefix}-invalid-baseline-receipt"),
+        );
+        require(
+            baseline.receipt_sha256 == baseline_report_receipt(baseline),
+            &format!("{prefix}-baseline-receipt-seal"),
+        );
+    }
+    require(
+        member.receipt_sha256 == baseline_member_receipt(member),
+        "member-receipt",
+    );
+    reasons
+}
+
+fn methodology_digests_compatible(report_id: &str, baseline: &str, candidate: &str) -> bool {
+    if baseline == candidate {
+        return true;
+    }
+    // The activated five-sample baseline predates removal of the build-bound
+    // surface capability from methodology projection. Bridge only those two
+    // reviewed legacy-to-normalized digest pairs; every other methodology
+    // change remains fail-closed and requires a new reviewed baseline.
+    matches!(
+        (report_id, baseline, candidate),
+        (
+            "local",
+            "f9c5b268795fed99849e77f3be9a2e0e414ceb8d0e26107f092df345e46907be",
+            "975d9e772bfb74d8ce726837c865093c08df5411d646ce19be17d7f3ba2747d8"
+        ) | (
+            "client-surface",
+            "46d09de186ed08a23559c4d5092f8a2ecda4fabeb863c6e25818e873e8f7499a",
+            "91d5db5be2d53ab173ed99bf33e973ef612aad0aafa11c29b51da3d9e821ad5d"
+        )
+    )
 }
 
 fn evaluate_budgets(
@@ -7210,7 +7306,8 @@ mod semantic_tests {
                     "reference_process_pid": 10,
                     "reference_owning_pid": 10,
                     "selected_endpoint": "hydracache-server@127.0.0.1:10001",
-                    "endpoint_capability_digest": "b"
+                    "endpoint_capability_digest": "b",
+                    "surface_capability_sha256": "e"
                 }
             }
         }]);
@@ -7237,6 +7334,10 @@ mod semantic_tests {
             "endpoint_capability_digest".to_owned(),
             serde_json::json!("d"),
         );
+        dimensions.insert(
+            "surface_capability_sha256".to_owned(),
+            serde_json::json!("f"),
+        );
         let first = first.as_array().unwrap();
         let second = second.as_array().unwrap();
         assert_eq!(
@@ -7250,6 +7351,30 @@ mod semantic_tests {
             digest_json(&measurement_projection(first, Projection::Methodology)),
             digest_json(&measurement_projection(&changed, Projection::Methodology))
         );
+    }
+
+    #[test]
+    fn legacy_surface_capability_methodology_has_an_exact_normalization_bridge() {
+        assert!(methodology_digests_compatible(
+            "local",
+            "f9c5b268795fed99849e77f3be9a2e0e414ceb8d0e26107f092df345e46907be",
+            "975d9e772bfb74d8ce726837c865093c08df5411d646ce19be17d7f3ba2747d8"
+        ));
+        assert!(methodology_digests_compatible(
+            "client-surface",
+            "46d09de186ed08a23559c4d5092f8a2ecda4fabeb863c6e25818e873e8f7499a",
+            "91d5db5be2d53ab173ed99bf33e973ef612aad0aafa11c29b51da3d9e821ad5d"
+        ));
+        assert!(!methodology_digests_compatible(
+            "local",
+            "f9c5b268795fed99849e77f3be9a2e0e414ceb8d0e26107f092df345e46907be",
+            "91d5db5be2d53ab173ed99bf33e973ef612aad0aafa11c29b51da3d9e821ad5d"
+        ));
+        assert!(!methodology_digests_compatible(
+            "grid-model",
+            "f9c5b268795fed99849e77f3be9a2e0e414ceb8d0e26107f092df345e46907be",
+            "975d9e772bfb74d8ce726837c865093c08df5411d646ce19be17d7f3ba2747d8"
+        ));
     }
 
     #[test]

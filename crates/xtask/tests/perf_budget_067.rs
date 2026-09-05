@@ -1089,6 +1089,25 @@ fn rolling_baseline_uses_only_eligible_same_fingerprint_main_reports() {
 }
 
 #[test]
+fn rolling_window_identity_is_independent_of_sample_chain_order() {
+    let (mut bundle, reports) = bootstrapped_fixture();
+    bundle.baseline.members.reverse();
+    perf_budget::seal_baseline_manifest(&mut bundle.baseline);
+
+    let verdict = perf_budget::evaluate(&bundle, &reports, now());
+    assert!(!verdict
+        .payload
+        .problems
+        .iter()
+        .any(|problem| problem.contains("not the newest eligible window")));
+    assert!(!verdict
+        .payload
+        .problems
+        .iter()
+        .any(|problem| problem.contains("fewer than five")));
+}
+
+#[test]
 fn rolling_baseline_rejects_mixed_stale_insufficient_or_unstable_window() {
     let (mut mixed, reports) = bootstrapped_fixture();
     mixed.baseline.members[0].reports[0].methodology_digest = sha("other-methodology");
