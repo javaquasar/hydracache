@@ -46,7 +46,7 @@ sha256 = "cb975242c95c17c7ab944d1e6a2f37a10456557436f85b92a9f656453639a128"
 
 [[scenario.input]]
 path = "docs/testing/memory/0.71/ci-topology.json"
-sha256 = "c813f168ed0653f181dff1f14c7c5e340c792e9abc6a070f03fb2598d36fc520"
+sha256 = "0e5989af80317d395d33dc71edaad2ff42e1ccb20c0989c2798a2783f22d4222"
 
 [[scenario.input]]
 path = "docs/testing/memory/0.71/historical-input-requirements.toml"
