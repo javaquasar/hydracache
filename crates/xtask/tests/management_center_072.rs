@@ -242,3 +242,34 @@ fn management_w14_requires_every_decoder_fuzz_receipt() {
         );
     }
 }
+
+#[test]
+fn management_w12_requires_dedicated_process_and_linux_resource_receipts() {
+    let release = fs::read_to_string(root().join("docs/testing/release-evidence/0.72.toml"))
+        .expect("0.72 release evidence manifest");
+    let registry = fs::read_to_string(root().join("docs/testing/gated-test-registry.toml"))
+        .expect("gated test registry");
+    let ci = fs::read_to_string(root().join(".github/workflows/ci.yml")).expect("CI workflow");
+    for gate in [
+        "env.hydracache-run-management-process-072",
+        "env.hydracache-run-management-resource-linux-072",
+    ] {
+        assert!(release.contains(gate), "W12 does not require {gate}");
+        assert!(
+            registry.contains(&format!("id = \"{gate}\"")),
+            "{gate} is unregistered"
+        );
+        assert!(
+            ci.contains(&format!("--gate {gate}")),
+            "CI does not execute {gate} through evidence-run"
+        );
+    }
+    let resource = registry
+        .split("[[gate]]")
+        .find(|row| row.contains("id = \"env.hydracache-run-management-resource-linux-072\""))
+        .expect("resource gate row");
+    assert!(resource.contains("platform = \"linux\""));
+    assert!(
+        resource.contains("three_daemon_fault_recovery_retains_partial_truth_and_resource_bounds")
+    );
+}

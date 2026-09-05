@@ -144,7 +144,7 @@ id = "W12"
 required_sources = ["crates/hydracache-server/tests/management_process_072.rs"]
 required_artifacts = ["docs/testing/management-center/0.72/failure-taxonomy.toml", "docs/testing/management-center/0.72/w12-process-evidence.md"]
 fast_gate_ids = ["fast.workspace-nextest"]
-gated_gate_ids = ["env.hydracache-run-daemon-process-e2e", "env.hydracache-run-daemon-resource-linux"]
+gated_gate_ids = ["env.hydracache-run-management-process-072", "env.hydracache-run-management-resource-linux-072"]
 ship_required = true
 [[work_item.required_tests]]
 source = "crates/hydracache-server/tests/management_process_072.rs"

@@ -9,7 +9,7 @@ use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use sha2::{Digest, Sha256};
 use support::daemon_cluster::{
-    management_json_status, public_text_status, skip_unless_daemon_process_e2e, DaemonCluster,
+    daemon_process_e2e_enabled, management_json_status, public_text_status, DaemonCluster,
     OsResourceTotals, TestResult,
 };
 
@@ -17,6 +17,8 @@ const SEED: u64 = 0x0720_1200_0000_0001;
 const MAX_ENDPOINT_P95_MS: u64 = 2_500;
 const MAX_FD_GROWTH: u64 = 12;
 const MAX_RSS_GROWTH_KIB: u64 = 65_536;
+const MANAGEMENT_PROCESS_ENV: &str = "HYDRACACHE_RUN_MANAGEMENT_PROCESS_072";
+const MANAGEMENT_RESOURCE_ENV: &str = "HYDRACACHE_RUN_MANAGEMENT_RESOURCE_LINUX_072";
 
 #[derive(Debug, Deserialize)]
 struct FaultMatrix {
@@ -78,6 +80,19 @@ impl From<OsResourceTotals> for ResourceReceipt {
 
 fn defect(id: &str) -> bool {
     std::env::var("HYDRACACHE_CANARY_DEFECT").as_deref() == Ok(id)
+}
+
+fn management_gate_enabled(name: &str) -> bool {
+    daemon_process_e2e_enabled() || std::env::var(name).as_deref() == Ok("1")
+}
+
+fn skip_unless_management_gate(name: &str, test: &str) -> bool {
+    if management_gate_enabled(name) {
+        true
+    } else {
+        eprintln!("skipped: set {name}=1 to run {test}");
+        false
+    }
 }
 
 fn workspace_root() -> PathBuf {
@@ -269,7 +284,8 @@ fn evidence_attempt_chain_retains_failure_and_is_deterministic() {
 
 #[test]
 fn one_daemon_production_management_surface_is_typed_and_honest() -> TestResult {
-    if !skip_unless_daemon_process_e2e(
+    if !skip_unless_management_gate(
+        MANAGEMENT_PROCESS_ENV,
         "one_daemon_production_management_surface_is_typed_and_honest",
     ) {
         return Ok(());
@@ -328,7 +344,8 @@ fn one_daemon_production_management_surface_is_typed_and_honest() -> TestResult 
 
 #[test]
 fn three_daemon_fault_recovery_retains_partial_truth_and_resource_bounds() -> TestResult {
-    if !skip_unless_daemon_process_e2e(
+    if !skip_unless_management_gate(
+        MANAGEMENT_RESOURCE_ENV,
         "three_daemon_fault_recovery_retains_partial_truth_and_resource_bounds",
     ) {
         return Ok(());

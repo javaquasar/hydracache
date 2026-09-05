@@ -4631,6 +4631,72 @@ platform = "any"
 HYDRACACHE_RUN_DAEMON_PROCESS_E2E = "1"
 
 [[gate]]
+id = "env.hydracache-run-management-process-072"
+kind = "env_gate"
+source = "crates/hydracache-server/tests/management_process_072.rs"
+package = "hydracache-server"
+target = "management_process_072"
+test = "one_daemon_production_management_surface_is_typed_and_honest"
+cfg = ""
+env = "HYDRACACHE_RUN_MANAGEMENT_PROCESS_072"
+reason = "Production daemon and embedded Management Center 0.72 must be exercised through the typed read-only surface"
+tier = "nightly"
+required_features = []
+required_env = ["HYDRACACHE_RUN_MANAGEMENT_PROCESS_072"]
+required_tools = []
+timeout_seconds = 1800
+owner_release = "0.72.0"
+ship_mandatory = true
+artifacts = []
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "dst-nightly-soak"
+step = "Run 0.72 production management process proof"
+
+[gate.command]
+program = "cargo"
+args = ["test", "-p", "hydracache-server", "--test", "management_process_072", "--locked", "one_daemon_production_management_surface_is_typed_and_honest", "--", "--exact", "--nocapture", "--test-threads=1"]
+cwd = "."
+platform = "any"
+
+[gate.command.env]
+HYDRACACHE_RUN_MANAGEMENT_PROCESS_072 = "1"
+
+[[gate]]
+id = "env.hydracache-run-management-resource-linux-072"
+kind = "env_gate"
+source = "crates/hydracache-server/tests/management_process_072.rs"
+package = "hydracache-server"
+target = "management_process_072"
+test = "three_daemon_fault_recovery_retains_partial_truth_and_resource_bounds"
+cfg = "target_os=linux"
+env = "HYDRACACHE_RUN_MANAGEMENT_RESOURCE_LINUX_072"
+reason = "Linux process proof must retain bounded Management Center endpoint, FD and RSS evidence after fault recovery"
+tier = "nightly"
+required_features = []
+required_env = ["HYDRACACHE_RUN_MANAGEMENT_RESOURCE_LINUX_072"]
+required_tools = []
+timeout_seconds = 1800
+owner_release = "0.72.0"
+ship_mandatory = true
+artifacts = []
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "dst-nightly-soak"
+step = "Run 0.72 management Linux resource proof"
+
+[gate.command]
+program = "cargo"
+args = ["test", "-p", "hydracache-server", "--test", "management_process_072", "--locked", "three_daemon_fault_recovery_retains_partial_truth_and_resource_bounds", "--", "--exact", "--nocapture", "--test-threads=1"]
+cwd = "."
+platform = "linux"
+
+[gate.command.env]
+HYDRACACHE_RUN_MANAGEMENT_RESOURCE_LINUX_072 = "1"
+
+[[gate]]
 id = "env.hydracache-run-redis-resp-multinode-e2e"
 kind = "env_gate"
 source = "crates/hydracache-server/tests/support/daemon_cluster.rs"

@@ -1335,6 +1335,12 @@ jobs:
       - name: Run daemon-process cluster tier
         run: cargo run -p xtask --locked -- evidence-run --release 0.64 --gate env.hydracache-run-daemon-process-e2e
 
+      - name: Run 0.72 production management process proof
+        run: cargo run -p xtask --locked -- evidence-run --release 0.72 --gate env.hydracache-run-management-process-072
+
+      - name: Run 0.72 management Linux resource proof
+        run: cargo run -p xtask --locked -- evidence-run --release 0.72 --gate env.hydracache-run-management-resource-linux-072
+
       - name: Redis RESP multinode debt sentinels
         run: cargo run -p xtask --locked -- evidence-run --release 0.65 --gate env.hydracache-run-redis-resp-multinode-e2e
 

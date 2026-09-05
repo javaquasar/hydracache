@@ -194,8 +194,8 @@ receipt = "target/test-evidence/0.72/coverage-management-fuzz-decoders.json"
 [[module]]
 path = "crates/xtask/src/management_center.rs"
 work_items = ["W14"]
-tests = ["crates/xtask/tests/management_center_072.rs#management_registry_covers_every_route_and_failure_class", "crates/xtask/tests/management_center_072.rs#management_registry_rejects_missing_or_tampered_proof", "crates/xtask/tests/management_center_072.rs#management_w14_requires_every_decoder_fuzz_receipt"]
-reviewed_branches = ["missing-duplicate-reference", "unsafe-path", "unknown-canary", "partial-taxonomy", "missing-receipt", "missing-fuzz-receipt", "coverage-floor", "coverage-exemption"]
+tests = ["crates/xtask/tests/management_center_072.rs#management_registry_covers_every_route_and_failure_class", "crates/xtask/tests/management_center_072.rs#management_registry_rejects_missing_or_tampered_proof", "crates/xtask/tests/management_center_072.rs#management_w14_requires_every_decoder_fuzz_receipt", "crates/xtask/tests/management_center_072.rs#management_w12_requires_dedicated_process_and_linux_resource_receipts"]
+reviewed_branches = ["missing-duplicate-reference", "unsafe-path", "unknown-canary", "partial-taxonomy", "missing-receipt", "missing-fuzz-receipt", "generic-process-receipt-substitution", "non-linux-resource-receipt", "coverage-floor", "coverage-exemption"]
 receipt = "target/test-evidence/0.72/coverage-management-admission.json"
 
 # No coverage exclusions are granted for 0.72. Any future entry must declare

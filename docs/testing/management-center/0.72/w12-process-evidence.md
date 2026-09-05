@@ -19,15 +19,22 @@ host and remain W14 release inputs.
   polls 32 more times, checks p95/FD/RSS budgets, and writes then rereads a binary-bound receipt.
 - The fixed seed is `0x0720120000000001`. Schedule and normalized event streams use length-framed
   SHA-256 so concatenation ambiguity cannot change their identity.
+- Scheduled/tag CI runs these proofs only through the dedicated
+  `env.hydracache-run-management-process-072` and
+  `env.hydracache-run-management-resource-linux-072` gates. The latter is Linux-only and owns the
+  FD/RSS numerical claim; receipts from the older generic daemon/resource targets cannot satisfy
+  W12.
 
 Commands used locally:
 
 ```powershell
 cargo test -p hydracache-server --test management_process_072 --locked
-$env:HYDRACACHE_RUN_DAEMON_PROCESS_E2E='1'
+$env:HYDRACACHE_RUN_MANAGEMENT_PROCESS_072='1'
 cargo test -p hydracache-server --test management_process_072 --locked one_daemon_production_management_surface_is_typed_and_honest -- --nocapture
+Remove-Item Env:\HYDRACACHE_RUN_MANAGEMENT_PROCESS_072
+$env:HYDRACACHE_RUN_MANAGEMENT_RESOURCE_LINUX_072='1'
 cargo test -p hydracache-server --test management_process_072 --locked three_daemon_fault_recovery_retains_partial_truth_and_resource_bounds -- --nocapture
-Remove-Item Env:\HYDRACACHE_RUN_DAEMON_PROCESS_E2E
+Remove-Item Env:\HYDRACACHE_RUN_MANAGEMENT_RESOURCE_LINUX_072
 ```
 
 ## Retained source proofs and truth boundary
