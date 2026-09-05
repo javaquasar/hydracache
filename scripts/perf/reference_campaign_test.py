@@ -272,6 +272,7 @@ class ReferenceCampaignTests(unittest.TestCase):
 
     def test_sample_set_cargo_is_probed_as_the_runner_user(self) -> None:
         runner_cargo = "/home/github-runner/.cargo/bin/cargo"
+        cargo_target = Path("/tmp/controller-cargo-target")
         with (
             mock.patch.object(
                 campaign.subprocess,
@@ -282,8 +283,10 @@ class ReferenceCampaignTests(unittest.TestCase):
             mock.patch.object(campaign.shutil, "which", return_value=runner_cargo),
         ):
             self.assertEqual(
-                campaign.select_sample_set_cargo(),
-                campaign.runner_command(runner_cargo),
+                campaign.select_sample_set_cargo(cargo_target),
+                campaign.runner_command(
+                    "env", f"CARGO_TARGET_DIR={cargo_target}", runner_cargo
+                ),
             )
 
         run.assert_called_once_with(
@@ -298,6 +301,7 @@ class ReferenceCampaignTests(unittest.TestCase):
 
     def test_sample_set_cargo_rejects_inaccessible_runner_path_fallback(self) -> None:
         runner_cargo = "/home/github-runner/.cargo/bin/cargo"
+        cargo_target = Path("/tmp/controller-cargo-target")
         with (
             mock.patch.object(
                 campaign.subprocess,
@@ -307,7 +311,7 @@ class ReferenceCampaignTests(unittest.TestCase):
             mock.patch.object(campaign.shutil, "which", return_value=runner_cargo),
             self.assertRaisesRegex(campaign.CampaignError, "cargo is unavailable"),
         ):
-            campaign.select_sample_set_cargo()
+            campaign.select_sample_set_cargo(cargo_target)
 
     def test_sample_set_validator_uses_unique_bounded_output(self) -> None:
         data = b'{"bootstrap_eligible":true}\n'
@@ -317,11 +321,20 @@ class ReferenceCampaignTests(unittest.TestCase):
             campaign_dir = root / "hc0671-test-campaign"
             repo.mkdir()
             campaign_dir.mkdir()
+            samples = campaign_dir / "accepted-receipts/bootstrap-samples"
+            samples.mkdir(parents=True)
+            for index in range(1, 6):
+                (samples / f"sample-{index}.json").write_bytes(b"{}\n")
 
             def run_validator(command: list[str], **kwargs: object) -> int:
                 output = Path(command[command.index("--output") + 1])
-                output.parent.mkdir(parents=True)
                 output.write_bytes(data)
+                staged = Path(command[command.index("--samples-dir") + 1])
+                self.assertNotEqual(staged, samples)
+                self.assertEqual(
+                    sorted(path.name for path in staged.iterdir()),
+                    [f"sample-{index}.json" for index in range(1, 6)],
+                )
                 self.assertEqual(
                     kwargs.get("timeout_seconds"),
                     campaign.SAMPLE_SET_VALIDATION_TIMEOUT_SECONDS,
@@ -342,7 +355,13 @@ class ReferenceCampaignTests(unittest.TestCase):
             self.assertEqual(retained.read_bytes(), data)
             command = run.call_args.args[0]
             output = Path(command[command.index("--output") + 1])
-            self.assertIn("controller-sample-sets", output.parts)
+            self.assertTrue(
+                any(
+                    part.startswith("hydracache-controller-sample-set-")
+                    for part in output.parts
+                )
+            )
+            self.assertFalse(output.exists())
             self.assertNotEqual(
                 output,
                 repo / "target/test-evidence/0.67.1/bootstrap-sample-set.json",

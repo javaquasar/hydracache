@@ -5333,12 +5333,13 @@ fn perf_metrics(
                     "client_surface_in_process_knee_at_slo_for_a_b_c"
                         | "resp_open_loop_get_set_knee_at_slo"
                 ) {
+                    let throughput_unit = capacity_throughput_unit(id, &observed_unit)?;
                     insert_metric(
                         &mut metrics,
                         ReportMetric {
                             id: format!("{id}.throughput_at_slo"),
                             value: min,
-                            unit: observed_unit.clone(),
+                            unit: throughput_unit.to_owned(),
                         },
                     )?;
                     let dependencies = evidence
@@ -5408,6 +5409,24 @@ fn perf_metrics(
         }
     }
     Ok((metrics, max_spread))
+}
+
+fn capacity_throughput_unit(
+    id: &str,
+    observed_unit: &str,
+) -> Result<&'static str, PerfBudgetError> {
+    if observed_unit != "operations_per_second_at_slo" {
+        return Err(PerfBudgetError::new(format!(
+            "capacity aggregate {id} has unit {observed_unit}, expected operations_per_second_at_slo"
+        )));
+    }
+    match id {
+        "client_surface_in_process_knee_at_slo_for_a_b_c"
+        | "resp_open_loop_get_set_knee_at_slo" => Ok("operations_per_second"),
+        _ => Err(PerfBudgetError::new(format!(
+            "unsupported capacity aggregate {id}"
+        ))),
+    }
 }
 
 fn reviewed_perf_report_spread(
@@ -7138,6 +7157,25 @@ mod semantic_tests {
         let mut forged = evidence;
         forged["knee"]["sustainable_rate_per_second"] = serde_json::json!(200.0);
         assert!(validate_knee_evidence("capacity", &forged, Some(3)).is_err());
+    }
+
+    #[test]
+    fn capacity_aggregate_units_are_normalized_for_budget_rules() {
+        for id in [
+            "client_surface_in_process_knee_at_slo_for_a_b_c",
+            "resp_open_loop_get_set_knee_at_slo",
+        ] {
+            assert_eq!(
+                capacity_throughput_unit(id, "operations_per_second_at_slo").unwrap(),
+                "operations_per_second"
+            );
+            assert!(capacity_throughput_unit(id, "requests_per_second").is_err());
+        }
+        assert!(capacity_throughput_unit(
+            "unreviewed_capacity_aggregate",
+            "operations_per_second_at_slo"
+        )
+        .is_err());
     }
 
     #[test]
