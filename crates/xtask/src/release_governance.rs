@@ -162,26 +162,9 @@ pub fn check(root: &Path, release: &str) -> Result<GovernanceReport, Box<dyn Err
         runtime_evidence_hygiene_problems(&workflow, &gitignore),
     ));
     report.completed_checks += 1;
-    for required in [
-        "canary-sweep --release 0.64 --tier fast",
-        "dynamic-canary-sweep:",
-        "canary-sweep --release 0.64 --tier all",
-        "canary-sweep --release 0.65 --tier all",
-        "canary-sweep --release 0.66 --tier all",
-        "canary-sweep --release 0.67 --tier all",
-        "canary-sweep --release 0.67.1 --tier fast",
-        "canary-sweep --release 0.67.1 --tier all",
-        "canary-sweep --release 0.68 --tier fast",
-        "canary-sweep --release 0.68 --tier all",
-        "canary-sweep --release 0.69 --tier fast",
-        "canary-sweep --release 0.69 --tier all",
-    ] {
-        if !workflow.contains(required) {
-            report
-                .problems
-                .push(format!("canary-sweep CI wiring is missing `{required}`"));
-        }
-    }
+    report
+        .problems
+        .extend(canary_sweep_wiring_problems(&workflow));
     report.completed_checks += 1;
 
     let publish_workflow = fs::read_to_string(root.join(".github/workflows/publish-crates.yml"))?;
@@ -201,6 +184,32 @@ pub fn check(root: &Path, release: &str) -> Result<GovernanceReport, Box<dyn Err
     ));
     report.completed_checks += 1;
     Ok(report)
+}
+
+pub fn canary_sweep_wiring_problems(workflow: &str) -> Vec<String> {
+    let mut problems = Vec::new();
+    for required in [
+        "canary-sweep --release 0.64 --tier fast",
+        "dynamic-canary-sweep:",
+        "canary-sweep --release 0.64 --tier all",
+        "canary-sweep --release 0.65 --tier all",
+        "canary-sweep --release 0.66 --tier all",
+        "canary-sweep --release 0.67 --tier all",
+        "canary-sweep --release 0.67.1 --tier fast",
+        "canary-sweep --release 0.67.1 --tier all",
+        "canary-sweep --release 0.68 --tier fast",
+        "canary-sweep --release 0.68 --tier all",
+        "canary-sweep --release 0.69 --tier fast",
+        "canary-sweep --release 0.69 --tier all",
+        "canary-sweep --release 0.72 --tier fast",
+        "canary-sweep --release 0.72 --tier all",
+    ] {
+        if !workflow.contains(required) {
+            problems
+                .push(format!("canary-sweep CI wiring is missing `{required}`"));
+        }
+    }
+    problems
 }
 
 pub fn runtime_evidence_hygiene_problems(workflow: &str, gitignore: &str) -> Vec<String> {

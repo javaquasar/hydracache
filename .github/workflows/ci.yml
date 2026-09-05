@@ -2873,6 +2873,7 @@ jobs:
           cargo run -p xtask --locked -- canary-sweep --release 0.67.1 --tier all
           cargo run -p xtask --locked -- canary-sweep --release 0.68 --tier all
           cargo run -p xtask --locked -- canary-sweep --release 0.69 --tier all
+          cargo run -p xtask --locked -- canary-sweep --release 0.72 --tier all
 
       - name: Run deterministic suite sweep
         run: cargo run -p xtask --locked -- evidence-run --release 0.64 --gate tool.determinism-sweep

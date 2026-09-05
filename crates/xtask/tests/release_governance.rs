@@ -20,6 +20,22 @@ fn release_governance_check_accepts_current_structural_meta_gates() {
 }
 
 #[test]
+fn release_governance_requires_complete_072_dynamic_canary_wiring() {
+    let root = xtask::doc_check::find_repo_root().unwrap();
+    let workflow = read_ci_workflow(&root);
+    let broken = workflow.replacen(
+        "cargo run -p xtask --locked -- canary-sweep --release 0.72 --tier all",
+        "cargo run -p xtask --locked -- canary-sweep --release 0.72 --tier omitted",
+        1,
+    );
+    let problems = xtask::release_governance::canary_sweep_wiring_problems(&broken);
+    assert!(problems.iter().any(|problem| {
+        problem.contains("canary-sweep CI wiring")
+            && problem.contains("canary-sweep --release 0.72 --tier all")
+    }));
+}
+
+#[test]
 fn release_governance_check_accepts_the_explicit_0_66_fast_wiring() {
     let root = xtask::doc_check::find_repo_root().unwrap();
     let report = xtask::release_governance::check(&root, "0.66").unwrap();
