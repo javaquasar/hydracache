@@ -30,8 +30,14 @@ fn release_governance_requires_complete_072_dynamic_canary_wiring() {
     );
     let problems = xtask::release_governance::canary_sweep_wiring_problems(&broken);
     assert!(problems.iter().any(|problem| {
-        problem.contains("canary-sweep CI wiring")
+        problem.contains("dynamic canary sweep")
             && problem.contains("canary-sweep --release 0.72 --tier all")
+    }));
+
+    let missing_node_modules = workflow.replacen("npm ci --prefix console", "npm --version", 1);
+    let problems = xtask::release_governance::canary_sweep_wiring_problems(&missing_node_modules);
+    assert!(problems.iter().any(|problem| {
+        problem.contains("dynamic canary sweep") && problem.contains("npm ci --prefix console")
     }));
 }
 

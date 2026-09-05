@@ -2848,6 +2848,16 @@ jobs:
         timeout-minutes: 15
         run: rustup toolchain install nightly-2026-07-01 --component rust-src
 
+      - name: Install Node for management canaries
+        uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: console/package-lock.json
+
+      - name: Install management console dependencies
+        run: npm ci --prefix console
+
       - name: Cache Rust dependencies
         uses: Swatinem/rust-cache@v2
         with:

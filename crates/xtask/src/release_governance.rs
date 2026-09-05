@@ -191,22 +191,36 @@ pub fn canary_sweep_wiring_problems(workflow: &str) -> Vec<String> {
     for required in [
         "canary-sweep --release 0.64 --tier fast",
         "dynamic-canary-sweep:",
-        "canary-sweep --release 0.64 --tier all",
-        "canary-sweep --release 0.65 --tier all",
-        "canary-sweep --release 0.66 --tier all",
-        "canary-sweep --release 0.67 --tier all",
         "canary-sweep --release 0.67.1 --tier fast",
-        "canary-sweep --release 0.67.1 --tier all",
         "canary-sweep --release 0.68 --tier fast",
-        "canary-sweep --release 0.68 --tier all",
         "canary-sweep --release 0.69 --tier fast",
-        "canary-sweep --release 0.69 --tier all",
         "canary-sweep --release 0.72 --tier fast",
-        "canary-sweep --release 0.72 --tier all",
     ] {
         if !workflow.contains(required) {
             problems
                 .push(format!("canary-sweep CI wiring is missing `{required}`"));
+        }
+    }
+    let dynamic_job = workflow
+        .split_once("  dynamic-canary-sweep:")
+        .and_then(|(_, suffix)| suffix.split_once("\n  coverage-ratchet:").map(|(job, _)| job))
+        .unwrap_or_default();
+    for required in [
+        "actions/setup-node@v5",
+        "npm ci --prefix console",
+        "canary-sweep --release 0.64 --tier all",
+        "canary-sweep --release 0.65 --tier all",
+        "canary-sweep --release 0.66 --tier all",
+        "canary-sweep --release 0.67 --tier all",
+        "canary-sweep --release 0.67.1 --tier all",
+        "canary-sweep --release 0.68 --tier all",
+        "canary-sweep --release 0.69 --tier all",
+        "canary-sweep --release 0.72 --tier all",
+    ] {
+        if !dynamic_job.contains(required) {
+            problems.push(format!(
+                "dynamic canary sweep is missing required runtime or command `{required}`"
+            ));
         }
     }
     problems
