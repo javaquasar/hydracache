@@ -415,18 +415,59 @@ function renderMembers(members: WireValue[]) {
           member.consensus_role ?? member.role ?? "unknown",
           status(member.reachability),
           known(member.generation),
+          member.product_version ?? "unavailable",
+          truth(member.protocol_compatible),
+          truth(member.draining),
           known(member.cpu_percent, "%"),
           bytes(member.rss_bytes),
           bytes(member.retained_bytes),
           duration(member.uptime_seconds),
+          known(member.open_fds),
+          known(member.thread_count),
+          known(member.task_count),
           known(member.client_count),
           known(member.partition_count),
           member.config_digest ?? "unavailable",
+          memberFormationDetail(member),
         ],
         { testid: "member", reachability: member.reachability },
       ),
     ),
   );
+}
+
+function memberFormationDetail(member: WireValue) {
+  const details = document.createElement("details");
+  details.dataset.testid = "member-detail";
+  const summary = document.createElement("summary");
+  summary.textContent = "Formation evidence";
+  const facts = document.createElement("dl");
+  const formation = member.formation ?? {};
+  facts.append(
+    fact("Discovery", formation.discovery),
+    fact("Transport", formation.transport),
+    fact("Admission", formation.admission),
+    fact("Consensus", formation.consensus_role),
+    fact("Catch-up", formation.catch_up),
+    fact("Serving", formation.serving),
+    fact("Blocker", formation.blocker ?? "none"),
+    fact("Authority epoch", member.authority_epoch),
+    fact("Observation", member.observation_seq),
+  );
+  const timeline = document.createElement("ol");
+  timeline.setAttribute("aria-label", "Current generation formation timeline");
+  for (const transition of (Array.isArray(member.timeline) ? member.timeline : []).slice(0, 64)) {
+    const item = document.createElement("li");
+    item.textContent = `seq ${known(transition.observation_seq)} · epoch ${known(transition.authority_epoch)} · ${transition.serving ?? "unknown"} · ${transition.blocker ?? "none"}`;
+    timeline.append(item);
+  }
+  if (timeline.childElementCount === 0) {
+    const item = document.createElement("li");
+    item.textContent = "No retained transition evidence";
+    timeline.append(item);
+  }
+  details.append(summary, facts, timeline);
+  return details;
 }
 
 function renderPartitions(envelope: WireValue, fallback: WireValue) {

@@ -72,6 +72,10 @@ table { width: 100%; border-collapse: collapse; font-size: .76rem; }
 th { color: var(--muted); background: #edf3f8; text-align: left; font-weight: 700; }
 th, td { padding: .48rem .52rem; border-bottom: 1px solid #e7edf1; white-space: nowrap; }
 tbody tr:hover { background: #f8fbfc; }
+details { min-width: 12rem; }
+details summary { cursor: pointer; color: var(--violet); font-weight: 700; }
+details dl { display: grid; grid-template-columns: repeat(2, minmax(9rem, 1fr)); gap: .3rem; margin: .6rem 0; }
+details ol { margin: .4rem 0; padding-left: 1.2rem; color: var(--muted); }
 .chart-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .65rem; }
 figure { border: 1px solid var(--line); border-radius: 7px; padding: .5rem; background: var(--surface-soft); }
 figcaption { margin-bottom: .35rem; font-size: .72rem; font-weight: 650; }

@@ -45,6 +45,11 @@ test("console_renders_typed_dashboard_and_all_truth_states", async ({ page }) =>
   await expect(page.getByTestId("placement-details")).toContainText("96");
   await expect(page.getByTestId("partition-row")).toHaveCount(2);
   await expect(page.getByTestId("members-list")).toContainText("sha256-v1:abc123");
+  await expect(page.getByTestId("members-list")).toContainText("0.72.0");
+  await expect(page.getByTestId("members-list")).toContainText("27");
+  await page.getByTestId("member-detail").first().locator("summary").click();
+  await expect(page.getByTestId("member-detail").first()).toContainText("Authority epoch");
+  await expect(page.getByTestId("member-detail").first()).toContainText("seq 9 · epoch 42 · serving · none");
   await expect(page.getByTestId("placement-row")).toHaveCount(2);
   await expect(page.getByTestId("placement-row").first()).toContainText("selected");
   await expect(page.getByTestId("placement-table")).toContainText("zone-conflict");
@@ -205,6 +210,16 @@ test("keyboard navigation exposes a visible focus path through management sectio
   await expect(page.locator(":focus")).toHaveAttribute("href", "#operations");
   await page.keyboard.press("Enter");
   await expect(page).toHaveURL(/#operations$/);
+});
+
+test("member formation detail is keyboard operable and keeps current generation evidence", async ({ page }) => {
+  await routeManagement(page);
+  await page.goto(`${consoleUrl}#members`);
+  const summary = page.getByTestId("member-detail").first().locator("summary");
+  await summary.focus();
+  await page.keyboard.press("Enter");
+  await expect(page.getByTestId("member-detail").first()).toHaveAttribute("open", "");
+  await expect(page.getByTestId("member-detail").first().getByRole("list", { name: "Current generation formation timeline" })).toBeVisible();
 });
 
 test("modeled_source_and_missing_raft_values_are_never_painted_live_or_zero", async ({ page }) => {
