@@ -18,18 +18,26 @@ W14 validates an annotated candidate and the shipped 0.71 predecessor artifact.
 | Partial publication recovery | pass | injected interruption after `hydracache-macros` retained a two-item prefix; `-Resume` continued from item 3 and completed all 23 |
 | Bootstrap archive verification | pass | `hydracache-core` and `hydracache-macros` both pass `cargo package --locked` archive build and clean unpacked verification |
 | Supply chain | pass | `cargo deny check`: advisories, bans, licenses and sources green after upgrading `h2`, `chacha20` and `spin` |
+| Real mixed-binary machinery | implemented, receipt pending | dedicated ship-mandatory gate accepts only the full-history `v0.71.0` tag, starts real 0.71/0.72 daemons, exercises all five scenarios, and retains binary/provenance/observation digests |
 
 ## Required evidence that is unavailable
 
 `git tag --list "v0.71*"` and `git ls-remote --tags origin "refs/tags/v0.71*"` both return no
 artifact. The available `feat/0.71-memory-footprint-retention-efficiency` branch still declares
-workspace version `0.70.0`; it is not a substitute for a shipped 0.71 binary. Consequently these
-required W13 lanes are **blocked and non-promotable**, not skipped or passed:
+workspace version `0.70.0`; it is not a substitute for a shipped 0.71 binary. Consequently the
+implemented `env.hydracache-run-management-mixed-072` gate is **blocked and non-promotable**, not
+skipped or passed. Its executable scenario covers:
 
 - old leader/new followers and new leader/old follower with actual 0.71/0.72 executables;
 - leader change and old-peer restart during the mixed window;
 - rollback to the shipped 0.71 binary before and after browser observation;
 - package/archive launch against crates that depend on unpublished internal 0.72 packages.
+
+The gate has no 0.65 development fallback. It requires `v0.71.0` in full history and verifies it is
+an ancestor of the candidate. An explicit predecessor binary is accepted only when its supplied ref
+and 40-hex commit equal that tag. Otherwise the gate builds the predecessor in a detached worktree,
+refuses byte-identical binaries, and stores all five observations in
+`target/test-evidence/0.72/management-mixed-071-072.json`.
 
 The last archive limitation is expected in a staged crates.io release: after bootstrap crates are
 published and indexed, runtime and adapter packages must be verified in order. W13 creates archives
@@ -40,6 +48,7 @@ crate. It does not publish packages or claim their post-publication consumer lan
 
 ```powershell
 cargo test -p hydracache-server --test management_aggregation_072 --locked
+cargo run -p xtask --locked -- evidence-run --release 0.72 --gate env.hydracache-run-management-mixed-072
 cargo test -p hydracache-post-publish-consumer published_management_v1_contract_smoke_test --locked
 cargo test -p xtask --test management_compat_072 --locked
 npm --prefix console ci

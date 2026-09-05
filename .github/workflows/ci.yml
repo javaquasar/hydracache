@@ -30,6 +30,11 @@ on:
         required: false
         default: false
         type: boolean
+      run_management_mixed_072:
+        description: "Build shipped v0.71.0 and run the exact 0.71/0.72 upgrade/rollback proof"
+        required: false
+        default: false
+        type: boolean
       run_reference_performance:
         description: "Run 0.67 ship evidence on the authorized self-hosted bare-metal runner"
         required: false
@@ -1393,6 +1398,39 @@ jobs:
         with:
           name: SOAK_REPORT
           path: SOAK_REPORT.json
+
+  management-mixed-072:
+    name: 0.71 to 0.72 Management Compatibility
+    runs-on: [self-hosted, linux, x64, hydracache-release]
+    timeout-minutes: 120
+    if: (github.event_name == 'workflow_dispatch' && inputs.run_management_mixed_072) || startsWith(github.ref, 'refs/tags/v0.72.')
+
+    steps:
+      - name: Checkout full release history
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Verify shipped v0.71.0 provenance
+        run: |
+          git rev-parse --verify refs/tags/v0.71.0
+          git merge-base --is-ancestor refs/tags/v0.71.0 HEAD
+
+      - name: Run real 0.71 and 0.72 management upgrade rollback proof
+        run: cargo run -p xtask --locked -- evidence-run --release 0.72 --gate env.hydracache-run-management-mixed-072
+
+      - name: Upload mixed release evidence
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: "management-mixed-071-072-${{ github.sha }}-${{ runner.name }}"
+          path: |
+            target/test-evidence/0.72/management-mixed-071-072.json
+            target/release-evidence/receipts/**
+          if-no-files-found: error
 
   management-candidate-soak-072:
     name: 0.72 Management Candidate Soak

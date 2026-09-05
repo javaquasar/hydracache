@@ -133,3 +133,27 @@ fn compatibility_guards_are_wired_to_product_and_package_tests() {
         assert!(rehearsal.contains(&format!("\"{package}\"")));
     }
 }
+
+#[test]
+fn real_mixed_binary_proof_is_release_blocking_and_cannot_use_the_065_fallback() {
+    let root = root();
+    let release = fs::read_to_string(root.join("docs/testing/release-evidence/0.72.toml")).unwrap();
+    let gates = fs::read_to_string(root.join("docs/testing/gated-test-registry.toml")).unwrap();
+    let workflow = fs::read_to_string(root.join(".github/workflows/ci.yml")).unwrap();
+    let source =
+        fs::read_to_string(root.join("crates/hydracache-server/tests/management_mixed_072.rs"))
+            .unwrap();
+    let gate = "env.hydracache-run-management-mixed-072";
+    assert!(release.contains(gate));
+    let row = gates
+        .split("[[gate]]")
+        .find(|row| row.contains(&format!("id = \"{gate}\"")))
+        .expect("0.72 mixed gate");
+    assert!(row.contains("ship_mandatory = true"));
+    assert!(row.contains("management-mixed-071-072.json"));
+    assert!(workflow.contains(&format!("--gate {gate}")));
+    assert!(workflow.contains("git rev-parse --verify refs/tags/v0.71.0"));
+    assert!(source.contains("const PREVIOUS_TAG: &str = \"v0.71.0\""));
+    assert!(!source.contains("PREVIOUS_DAEMON_DEV_COMMIT"));
+    assert!(!source.contains("v0.65.0"));
+}

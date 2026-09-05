@@ -1234,6 +1234,52 @@ pub fn resolve_previous_daemon_binary() -> TestResult<Option<PreviousDaemonBinar
     }
 }
 
+pub fn resolve_shipped_daemon_binary(
+    tag: &str,
+    binary_env: &str,
+    source_ref_env: &str,
+    source_commit_env: &str,
+    build_env: &str,
+) -> TestResult<PreviousDaemonBinary> {
+    let root = workspace_root();
+    let tag_commit = git_resolve_commit(&root, tag)?
+        .ok_or_else(|| format!("full-history shipped tag {tag} is required"))?;
+    if !git_is_ancestor(&root, &tag_commit, "HEAD")? {
+        return Err(format!("shipped tag {tag} ({tag_commit}) is not an ancestor of HEAD").into());
+    }
+    let path = if let Some(path) = std::env::var_os(binary_env) {
+        let source_ref = required_environment(source_ref_env)?;
+        let source_commit = required_environment(source_commit_env)?;
+        validate_commit_id(&source_commit)?;
+        if source_ref != tag || source_commit != tag_commit {
+            return Err(format!(
+                "explicit shipped daemon provenance mismatch: expected {tag}@{tag_commit}, got {source_ref}@{source_commit}"
+            )
+            .into());
+        }
+        let path = fs::canonicalize(PathBuf::from(path))
+            .map_err(|error| format!("{binary_env} is not a readable binary: {error}"))?;
+        if !path.is_file() {
+            return Err(format!("{binary_env} is not a file: {}", path.display()).into());
+        }
+        path
+    } else {
+        if !environment_flag(build_env) {
+            return Err(format!(
+                "shipped compatibility proof requires {binary_env} with provenance or {build_env}=1"
+            )
+            .into());
+        }
+        build_previous_daemon(&root, tag, &tag_commit)?
+    };
+    Ok(PreviousDaemonBinary {
+        path,
+        source_ref: tag.to_owned(),
+        source_commit: tag_commit,
+        shipped_tag: true,
+    })
+}
+
 fn resolve_previous_daemon_binary_uncached() -> TestResult<Option<PreviousDaemonBinary>> {
     let root = workspace_root();
     let ship_mode = environment_flag(MIXED_DAEMON_SHIP_MODE_ENV);

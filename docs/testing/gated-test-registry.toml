@@ -4793,6 +4793,40 @@ platform = "linux"
 HYDRACACHE_RUN_MANAGEMENT_SHIP_SOAK_072 = "1"
 
 [[gate]]
+id = "env.hydracache-run-management-mixed-072"
+kind = "env_gate"
+source = "crates/hydracache-server/tests/management_mixed_072.rs"
+package = "hydracache-server"
+target = "management_mixed_072"
+test = "real_071_072_upgrade_leadership_restart_and_rollback_are_capability_safe"
+cfg = "target_os=linux"
+env = "HYDRACACHE_RUN_MANAGEMENT_MIXED_072"
+reason = "Ship admission requires actual shipped v0.71.0 and exact v0.72 daemons through mixed leadership, restart, rolling upgrade and same-disk rollback"
+tier = "external"
+required_features = []
+required_env = ["HYDRACACHE_RUN_MANAGEMENT_MIXED_072", "HYDRACACHE_BUILD_071_DAEMON"]
+required_tools = []
+timeout_seconds = 6600
+owner_release = "0.72.0"
+ship_mandatory = true
+artifacts = ["target/test-evidence/0.72/management-mixed-071-072.json"]
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "management-mixed-072"
+step = "Run real 0.71 and 0.72 management upgrade rollback proof"
+
+[gate.command]
+program = "cargo"
+args = ["test", "-p", "hydracache-server", "--test", "management_mixed_072", "--locked", "real_071_072_upgrade_leadership_restart_and_rollback_are_capability_safe", "--", "--exact", "--nocapture", "--test-threads=1"]
+cwd = "."
+platform = "linux"
+
+[gate.command.env]
+HYDRACACHE_RUN_MANAGEMENT_MIXED_072 = "1"
+HYDRACACHE_BUILD_071_DAEMON = "1"
+
+[[gate]]
 id = "env.hydracache-run-redis-resp-multinode-e2e"
 kind = "env_gate"
 source = "crates/hydracache-server/tests/support/daemon_cluster.rs"

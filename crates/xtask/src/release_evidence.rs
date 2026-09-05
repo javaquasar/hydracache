@@ -603,6 +603,11 @@ fn referenced_runtime_artifact_problems(
     {
         return management_soak_artifact_problems(artifact, bytes);
     }
+    if normalize_release(release) == "0.72.0"
+        && artifact == "target/test-evidence/0.72/management-mixed-071-072.json"
+    {
+        return management_mixed_artifact_problems(artifact, bytes);
+    }
 
     if normalize_release(release) != "0.67.0"
         || !artifact.replace('\\', "/").starts_with(EVIDENCE_PREFIX)
@@ -770,6 +775,92 @@ fn management_soak_pair_problems(root: &Path) -> Vec<String> {
         ],
         _ => vec!["0.72 candidate/ship soak artifact pair is incomplete".to_owned()],
     }
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
+struct ManagementMixedArtifact {
+    schema_version: u32,
+    release: String,
+    previous_tag: String,
+    previous_commit: String,
+    previous_binary_sha256: String,
+    candidate_binary_sha256: String,
+    scenarios: Vec<ManagementMixedScenario>,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
+struct ManagementMixedScenario {
+    id: String,
+    outcome: String,
+    observation_sha256: String,
+}
+
+fn management_mixed_artifact_problems(artifact: &str, bytes: &[u8]) -> Vec<String> {
+    let receipt: ManagementMixedArtifact = match serde_json::from_slice(bytes) {
+        Ok(receipt) => receipt,
+        Err(error) => {
+            return vec![format!(
+                "invalid management mixed artifact {artifact}: {error}"
+            )]
+        }
+    };
+    let mut problems = Vec::new();
+    if receipt.schema_version != 1
+        || receipt.release != "0.72.0"
+        || receipt.previous_tag != "v0.71.0"
+        || receipt.previous_commit.len() != 40
+        || !receipt
+            .previous_commit
+            .bytes()
+            .all(|byte| byte.is_ascii_hexdigit())
+    {
+        problems.push(format!(
+            "{artifact} has wrong schema, release or v0.71.0 provenance"
+        ));
+    }
+    for (name, digest) in [
+        ("previous binary", &receipt.previous_binary_sha256),
+        ("candidate binary", &receipt.candidate_binary_sha256),
+    ] {
+        if digest.len() != 64 || !digest.bytes().all(|byte| byte.is_ascii_hexdigit()) {
+            problems.push(format!("{artifact} has invalid {name} digest"));
+        }
+    }
+    if receipt.previous_binary_sha256 == receipt.candidate_binary_sha256 {
+        problems.push(format!(
+            "{artifact} used byte-identical old and new binaries"
+        ));
+    }
+    let expected = BTreeSet::from([
+        "old-leader-new-followers",
+        "new-leader-old-follower",
+        "leadership-change-during-aggregation",
+        "old-peer-restart-during-placement-trace",
+        "rollback-after-ui-observation",
+    ]);
+    let observed = receipt
+        .scenarios
+        .iter()
+        .map(|scenario| scenario.id.as_str())
+        .collect::<BTreeSet<_>>();
+    if receipt.scenarios.len() != expected.len()
+        || observed != expected
+        || receipt.scenarios.iter().any(|scenario| {
+            scenario.outcome != "pass"
+                || scenario.observation_sha256.len() != 64
+                || !scenario
+                    .observation_sha256
+                    .bytes()
+                    .all(|byte| byte.is_ascii_hexdigit())
+        })
+    {
+        problems.push(format!(
+            "{artifact} lacks the exact five passing mixed scenarios"
+        ));
+    }
+    problems
 }
 
 fn collect_archived_file_receipts<'a>(
@@ -1464,7 +1555,8 @@ impl Options {
 #[cfg(test)]
 mod language_selector_tests {
     use super::{
-        java_test_exists, management_soak_artifact_problems, python_test_exists, rust_test_exists,
+        java_test_exists, management_mixed_artifact_problems, management_soak_artifact_problems,
+        python_test_exists, rust_test_exists,
     };
 
     #[test]
@@ -1531,5 +1623,48 @@ mod language_selector_tests {
         assert!(problems.iter().any(|problem| problem.contains("duration")));
         assert!(problems.iter().any(|problem| problem.contains("traffic")));
         assert!(problems.iter().any(|problem| problem.contains("bounds")));
+    }
+
+    #[test]
+    fn management_mixed_artifact_requires_distinct_binaries_and_all_scenarios() {
+        let scenario = |id: &str| {
+            serde_json::json!({
+                "id": id,
+                "outcome": "pass",
+                "observation_sha256": "c".repeat(64)
+            })
+        };
+        let artifact = serde_json::json!({
+            "schema_version": 1,
+            "release": "0.72.0",
+            "previous_tag": "v0.71.0",
+            "previous_commit": "a".repeat(40),
+            "previous_binary_sha256": "a".repeat(64),
+            "candidate_binary_sha256": "b".repeat(64),
+            "scenarios": [
+                scenario("old-leader-new-followers"),
+                scenario("new-leader-old-follower"),
+                scenario("leadership-change-during-aggregation"),
+                scenario("old-peer-restart-during-placement-trace"),
+                scenario("rollback-after-ui-observation")
+            ]
+        });
+        let path = "target/test-evidence/0.72/management-mixed-071-072.json";
+        assert!(
+            management_mixed_artifact_problems(path, &serde_json::to_vec(&artifact).unwrap())
+                .is_empty()
+        );
+
+        let mut tampered = artifact;
+        tampered["candidate_binary_sha256"] = "a".repeat(64).into();
+        tampered["scenarios"].as_array_mut().unwrap().pop();
+        let problems =
+            management_mixed_artifact_problems(path, &serde_json::to_vec(&tampered).unwrap());
+        assert!(problems
+            .iter()
+            .any(|problem| problem.contains("byte-identical")));
+        assert!(problems
+            .iter()
+            .any(|problem| problem.contains("five passing")));
     }
 }
