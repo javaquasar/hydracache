@@ -55,7 +55,8 @@ from a clean checkout after the tag candidate is frozen.
    upgrade, leadership-change, peer-restart and rollback scenarios cannot be executed honestly;
 2. the six-hour candidate and 24-hour ship-confirmation runs require a frozen SHA and admitted host;
 3. Linux FD/RSS and full workspace LLVM coverage receipts must be generated for that same SHA;
-4. `bounded-resource-pressure` stays `partial` until the scheduled/candidate resource receipt exists;
+4. the covered `bounded-resource-pressure` row still requires the dedicated Linux resource gate
+   receipt; its source-tree status cannot substitute for execution;
 5. implemented claims retain `status = "implemented"` until their exact-candidate evidence files are
    produced. Static source-tree success is not allowed to relabel them `evidenced`.
 

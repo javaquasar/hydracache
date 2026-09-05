@@ -86,7 +86,20 @@ fn management_registry_rejects_missing_or_tampered_proof() {
     assert!(ship_problems
         .iter()
         .any(|problem| problem.contains("lacks exact-candidate evidence")));
-    assert!(ship_problems
+    let partial_taxonomy = taxonomy.replace(
+        "id = \"bounded-resource-pressure\"\nstatus = \"covered\"",
+        "id = \"bounded-resource-pressure\"\nstatus = \"partial\"",
+    );
+    let partial_problems = xtask::management_center::check_documents(
+        &root(),
+        &claims,
+        &partial_taxonomy,
+        &canaries,
+        &source_map,
+        true,
+    )
+    .unwrap();
+    assert!(partial_problems
         .iter()
         .any(|problem| problem.contains("bounded-resource-pressure is not covered")));
 }
@@ -272,4 +285,13 @@ fn management_w12_requires_dedicated_process_and_linux_resource_receipts() {
     assert!(
         resource.contains("three_daemon_fault_recovery_retains_partial_truth_and_resource_bounds")
     );
+    let taxonomy = fs::read_to_string(
+        root().join("docs/testing/management-center/0.72/failure-taxonomy.toml"),
+    )
+    .expect("failure taxonomy");
+    let pressure = taxonomy
+        .split("[[row]]")
+        .find(|row| row.contains("id = \"bounded-resource-pressure\""))
+        .expect("bounded resource pressure taxonomy row");
+    assert!(pressure.contains("status = \"covered\""));
 }

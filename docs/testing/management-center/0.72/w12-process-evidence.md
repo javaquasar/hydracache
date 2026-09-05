@@ -23,7 +23,8 @@ host and remain W14 release inputs.
   `env.hydracache-run-management-process-072` and
   `env.hydracache-run-management-resource-linux-072` gates. The latter is Linux-only and owns the
   FD/RSS numerical claim; receipts from the older generic daemon/resource targets cannot satisfy
-  W12.
+  W12. The taxonomy row is `covered` because this executable proof path is implemented; promotion
+  still requires a green exact-SHA receipt from that gate.
 
 Commands used locally:
 

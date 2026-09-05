@@ -99,7 +99,7 @@ receipts = ["docs/testing/management-center/0.72/w12-process-evidence.md"]
 
 [[row]]
 id = "bounded-resource-pressure"
-status = "partial"
+status = "covered"
 source_tests = ["crates/hydracache-server/tests/snapshot_resource_budget.rs#slow_receiver_applies_bounded_backpressure_without_unbounded_tasks_or_rss"]
 management_tests = ["crates/hydracache-server/tests/management_process_072.rs#three_daemon_fault_recovery_retains_partial_truth_and_resource_bounds"]
 canaries = ["MC72-W12-FAULT-MASKED"]
