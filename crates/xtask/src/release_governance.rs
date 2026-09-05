@@ -166,6 +166,10 @@ pub fn check(root: &Path, release: &str) -> Result<GovernanceReport, Box<dyn Err
         .problems
         .extend(canary_sweep_wiring_problems(&workflow));
     report.completed_checks += 1;
+    report
+        .problems
+        .extend(coverage_ratchet_wiring_problems(&workflow));
+    report.completed_checks += 1;
 
     let publish_workflow = fs::read_to_string(root.join(".github/workflows/publish-crates.yml"))?;
     report.problems.extend(prefix(
@@ -197,13 +201,16 @@ pub fn canary_sweep_wiring_problems(workflow: &str) -> Vec<String> {
         "canary-sweep --release 0.72 --tier fast",
     ] {
         if !workflow.contains(required) {
-            problems
-                .push(format!("canary-sweep CI wiring is missing `{required}`"));
+            problems.push(format!("canary-sweep CI wiring is missing `{required}`"));
         }
     }
     let dynamic_job = workflow
         .split_once("  dynamic-canary-sweep:")
-        .and_then(|(_, suffix)| suffix.split_once("\n  coverage-ratchet:").map(|(job, _)| job))
+        .and_then(|(_, suffix)| {
+            suffix
+                .split_once("\n  coverage-ratchet:")
+                .map(|(job, _)| job)
+        })
         .unwrap_or_default();
     for required in [
         "actions/setup-node@v5",
@@ -224,6 +231,20 @@ pub fn canary_sweep_wiring_problems(workflow: &str) -> Vec<String> {
         }
     }
     problems
+}
+
+pub fn coverage_ratchet_wiring_problems(workflow: &str) -> Vec<String> {
+    const CANDIDATE_COMMAND: &str =
+        "evidence-run --release \"$HYDRACACHE_CANDIDATE_RELEASE\" --gate tool.coverage-ratchet";
+    let coverage_job = workflow
+        .split_once("  coverage-ratchet:")
+        .and_then(|(_, suffix)| suffix.split_once("\n  msrv:").map(|(job, _)| job))
+        .unwrap_or_default();
+    if coverage_job.contains(CANDIDATE_COMMAND) {
+        Vec::new()
+    } else {
+        vec!["coverage ratchet must bind its receipt to HYDRACACHE_CANDIDATE_RELEASE".to_owned()]
+    }
 }
 
 pub fn runtime_evidence_hygiene_problems(workflow: &str, gitignore: &str) -> Vec<String> {

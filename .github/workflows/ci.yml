@@ -2950,7 +2950,7 @@ jobs:
         uses: taiki-e/install-action@cargo-deny
 
       - name: Run commit-bound coverage ratchet
-        run: cargo run -p xtask --locked -- evidence-run --release 0.64 --gate tool.coverage-ratchet
+        run: cargo run -p xtask --locked -- evidence-run --release "$HYDRACACHE_CANDIDATE_RELEASE" --gate tool.coverage-ratchet
 
       - name: Generate coverage artifacts on failure
         if: failure()

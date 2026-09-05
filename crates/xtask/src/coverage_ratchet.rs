@@ -190,7 +190,7 @@ pub fn validate_contract(
     let workflow = fs::read_to_string(root.join(".github/workflows/ci.yml"))?;
     for required in [
         "tool: cargo-llvm-cov@0.8.7",
-        "evidence-run --release 0.64 --gate tool.coverage-ratchet",
+        "evidence-run --release \"$HYDRACACHE_CANDIDATE_RELEASE\" --gate tool.coverage-ratchet",
         "--ignore-filename-regex '(^|/)crates/(xtask|hydracache-loadgen)/'",
         "target/test-evidence/0.64/coverage-*.json",
         "postgres:16.4-alpine",

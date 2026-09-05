@@ -571,6 +571,27 @@ fn performance_lane_requires_protected_self_hosted_labels_and_serial_concurrency
 }
 
 #[test]
+fn release_governance_rejects_coverage_receipts_bound_to_an_older_release() {
+    let root = xtask::doc_check::find_repo_root().unwrap();
+    let workflow = read_ci_workflow(&root);
+    assert!(xtask::release_governance::coverage_ratchet_wiring_problems(&workflow).is_empty());
+
+    let candidate =
+        r#"evidence-run --release "$HYDRACACHE_CANDIDATE_RELEASE" --gate tool.coverage-ratchet"#;
+    let broken = workflow.replacen(
+        candidate,
+        "evidence-run --release 0.64 --gate tool.coverage-ratchet",
+        1,
+    );
+    assert_ne!(broken, workflow, "coverage candidate command was not found");
+    let problems = xtask::release_governance::coverage_ratchet_wiring_problems(&broken);
+    assert_eq!(
+        problems,
+        vec!["coverage ratchet must bind its receipt to HYDRACACHE_CANDIDATE_RELEASE"]
+    );
+}
+
+#[test]
 fn runtime_reports_are_gate_artifacts_not_committed_manifest_artifacts() {
     let root = xtask::doc_check::find_repo_root().unwrap();
     let workflow = read_ci_workflow(&root);
