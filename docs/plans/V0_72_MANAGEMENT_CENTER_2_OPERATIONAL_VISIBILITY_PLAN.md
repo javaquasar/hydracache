@@ -41,6 +41,12 @@ the structural admission and all 15 work-item canaries. W13 local compatibility/
 rehearsal is green, while real mixed-binary and candidate/ship soak lanes remain fail-closed external
 inputs because no shipped `v0.71.x` artifact or frozen 0.72 candidate exists yet.
 
+The latest complete development contour runs every workspace and `xtask` test binary, all doc-tests,
+strict `-D warnings` rustdoc, the four decoder corpus regressions, 16 console unit tests, four
+deterministic package/supply-chain tests and 46 desktop/mobile Playwright executions. Required Linux
+coverage/resource receipts, the real shipped-0.71 mixed-binary proof and the non-shortenable six-hour
+and 24-hour soaks remain candidate admission evidence; they are not represented as locally green.
+
 ## Existing baseline and evidence boundary
 
 The release begins from what the repository actually implements:

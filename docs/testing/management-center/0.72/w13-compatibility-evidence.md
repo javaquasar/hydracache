@@ -11,7 +11,7 @@ W14 validates an annotated candidate and the shipped 0.71 predecessor artifact.
 | Management API rollback switch | pass | `HYDRACACHE_MANAGEMENT_API_ENABLED=false` returns 404 for `/management/v1/**` while `/cluster/overview` remains 200 |
 | Compatibility registry | pass | five schema-v1 artifacts and five mixed scenarios in `compatibility.toml`; xtask registry tests pass |
 | Fresh downstream compile | pass | `hydracache-post-publish-consumer` compiles all five public DTO families and preserves future enum values as `Unknown` |
-| Clean console install/test | pass | `npm ci`: 0 vulnerabilities; 10 Node tests and 32 Playwright cases pass on desktop/mobile projects |
+| Clean console install/test | pass | `npm ci`: 0 vulnerabilities; 16 unit tests, four deterministic package/supply-chain tests and 46 Playwright cases pass on desktop/mobile projects |
 | Deterministic console bundle | pass | source/embedded bytes, four source registries and CycloneDX SBOM are bound by per-file and set SHA-256 plus exact source commit |
 | Mixed artifact canary | expected red | `MC72-W13-MIXED-ARTIFACT` substitutes `console/app.js`; verifier rejects its digest |
 | Publication ordering | pass | all 23 publishable crates pass `cargo package --list --locked` in the same order as release readiness |

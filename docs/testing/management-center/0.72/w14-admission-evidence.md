@@ -60,6 +60,22 @@ cargo test -p xtask --test doc_check --locked                    16 passed
 cargo deny check                                                 all four checks OK
 ```
 
+The implementation branch was also exercised as one full Windows development contour, with build
+artifacts isolated from retained release receipts:
+
+```text
+cargo test --workspace --exclude xtask --locked -j 1             all test and doc-test binaries passed; declared external/chaos tiers remained explicit ignored gates
+cargo test -p xtask --lib --tests --locked -j 1                  84 unit tests and every integration suite passed
+RUSTDOCFLAGS="-D warnings" cargo doc --workspace --no-deps       passed for the complete workspace
+npm --prefix console ci                                          0 vulnerabilities
+npm --prefix console run build                                   deterministic seven-asset embedded bundle passed
+npm --prefix console test                                        16 unit + 4 package/supply-chain + 46 Playwright passed
+```
+
+This development contour proves source, schema, integration, process, fuzz-corpus, documentation
+and browser compatibility on Windows. It does not replace the separately registered Linux
+coverage/resource gates, the shipped-predecessor mixed-binary gate or either wall-clock soak tier.
+
 The canary receipts are generated under `target/release-evidence/canaries/` and are intentionally
 not committed: any later source commit makes them stale. The final candidate must regenerate them
 from a clean checkout after the tag candidate is frozen.

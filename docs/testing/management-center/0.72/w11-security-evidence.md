@@ -14,9 +14,10 @@ file records reproducible local gate definitions and known admission state, not 
   soak tests remain explicitly ignored according to their existing gates.
 - `cargo clippy -p hydracache-server --all-targets --locked -- -D warnings` and package rustfmt:
   green.
-- `npm --prefix console test`: 8 unit plus 32 Playwright project executions green across desktop
-  and narrow mobile, including axe, keyboard, forced colors, reduced motion, hostile text,
-  GET-only networking, responsive and effective tablet/200%-zoom checks.
+- `npm --prefix console test`: 16 unit tests, four deterministic package/supply-chain tests and 46
+  Playwright project executions green across desktop and narrow mobile, including axe, keyboard,
+  forced colors, reduced motion, hostile text, GET-only networking, bounded large-cluster rendering,
+  polling cancellation, responsive layout and effective tablet/200%-zoom overflow checks.
 - `npm --prefix console run build`: embedded asset drift, raw-HTML/eval/write markers, external
   runtime dependencies, accessibility markers and credential-pattern scan green.
 - `npm --prefix console run supply-chain`: exact direct pins, npm-registry provenance, integrity,
