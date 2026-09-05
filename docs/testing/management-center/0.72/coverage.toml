@@ -59,18 +59,95 @@ reviewed_branches = ["committed-versus-discovered", "epoch-sequence-fence", "res
 receipt = "target/test-evidence/0.72/coverage-management-topology.json"
 
 [[module]]
-path = "console/app.js"
-work_items = ["W1", "W4", "W5", "W6", "W7", "W8", "W9", "W10", "W11"]
-tests = ["console/tests/console_readonly.spec.js#console_renders_typed_dashboard_and_all_truth_states", "console/tests/console_readonly.spec.js#console_shows_degraded_state_when_required_snapshot_is_unreachable", "console/tests/console_readonly.spec.js#console_is_read_only_and_never_scrapes_prometheus"]
-reviewed_branches = ["live-modeled-stale-partial-unavailable", "route-navigation", "abort-obsolete", "text-only-render", "bounded-table"]
-receipt = "target/test-evidence/0.72/coverage-console-app.json"
+path = "crates/hydracache-server/src/admin_http.rs"
+work_items = ["W1", "W11", "W13"]
+tests = ["crates/hydracache-server/tests/admin_http.rs#console_assets_are_served_from_admin_surface", "crates/hydracache-server/tests/management_security_072.rs#console_and_json_responses_ship_restrictive_security_headers"]
+reviewed_branches = ["management-disabled", "index-route", "hashed-asset-route", "unknown-asset-404", "security-headers"]
+receipt = "target/test-evidence/0.72/coverage-console-server-mount.json"
 
 [[module]]
-path = "console/history.js"
+path = "crates/hydracache-server/src/generated_console_assets.rs"
+work_items = ["W1", "W13"]
+tests = ["console/tests/package.test.js#static and supply-chain gates validate the generated production bundle", "crates/hydracache-server/tests/admin_http.rs#console_assets_are_served_from_admin_surface"]
+reviewed_branches = ["known-asset", "unknown-asset", "content-type", "manifest-bound-include"]
+receipt = "target/test-evidence/0.72/coverage-generated-console-assets.json"
+
+[[module]]
+path = "console/src/api.ts"
+work_items = ["W1", "W2", "W11"]
+tests = ["console/src/contracts.test.ts#rejects malformed and unsupported envelopes", "console/src/contracts.test.ts#refuses URLs outside the fixed management prefix before fetch", "console/tests/console_readonly.spec.js#console_is_read_only_and_never_scrapes_prometheus"]
+reviewed_branches = ["fixed-route-prefix", "get-only", "same-origin", "unsupported-schema", "malformed-envelope", "abort"]
+receipt = "target/test-evidence/0.72/coverage-console-api.json"
+
+[[module]]
+path = "console/src/app.tsx"
+work_items = ["W1"]
+tests = ["console/src/components/shell.test.tsx#renders all capability-driven read-only sections with bounded tables", "console/tests/console_readonly.spec.js#console_renders_typed_dashboard_and_all_truth_states"]
+reviewed_branches = ["missing-root-fail-loud", "component-mount", "controller-start-after-mount"]
+receipt = "target/test-evidence/0.72/coverage-console-bootstrap.json"
+
+[[module]]
+path = "console/src/controller.ts"
+work_items = ["W1", "W4", "W5", "W6", "W7", "W8", "W9", "W10", "W11"]
+tests = ["console/tests/console_readonly.spec.js#console_renders_typed_dashboard_and_all_truth_states", "console/tests/console_readonly.spec.js#console_shows_degraded_state_when_required_snapshot_is_unreachable", "console/tests/console_readonly.spec.js#offline_and_hidden_lifecycle_pauses_polling_and_aborts_obsolete_work", "console/tests/console_readonly.spec.js#hostile_diagnostic_text_is_rendered_only_as_text"]
+reviewed_branches = ["live-modeled-stale-partial-unavailable", "abort-obsolete", "text-only-render", "bounded-table", "empty-source", "unknown-value"]
+receipt = "target/test-evidence/0.72/coverage-console-controller.json"
+
+[[module]]
+path = "console/src/history.ts"
 work_items = ["W4", "W9"]
-tests = ["console/tests/history.test.js#counter reset is a gap while gauges are never differentiated", "console/tests/history.test.js#ring evicts oldest points by per-series point and byte budgets", "console/tests/history.test.js#accelerated multi-hour soak remains within production budgets"]
-reviewed_branches = ["gauge-versus-counter", "counter-reset", "missing-nonfinite", "epoch-reset", "hidden-offline", "point-byte-eviction"]
+tests = ["console/src/history.test.ts#derives counters, preserves gauges and turns resets into gaps", "console/src/history.test.ts#evicts oldest samples under point and byte budgets", "console/src/history.test.ts#survives an accelerated twelve-hour run within production budgets"]
+reviewed_branches = ["gauge-versus-counter", "counter-reset", "missing-nonfinite", "epoch-reset", "hidden-offline", "point-byte-eviction", "incremental-byte-accounting"]
 receipt = "target/test-evidence/0.72/coverage-console-history.json"
+
+[[module]]
+path = "console/src/router.ts"
+work_items = ["W1"]
+tests = ["console/src/contracts.test.ts#routes only to declared sections", "console/tests/console_readonly.spec.js#summary_links_open_read_only_filtered_sections"]
+reviewed_branches = ["known-route", "unknown-route-dashboard-fallback", "typed-navigation"]
+receipt = "target/test-evidence/0.72/coverage-console-router.json"
+
+[[module]]
+path = "console/src/state.ts"
+work_items = ["W1", "W4"]
+tests = ["console/src/contracts.test.ts#rejects source and observation regression", "console/tests/console_readonly.spec.js#modeled_source_and_missing_raft_values_are_never_painted_live_or_zero"]
+reviewed_branches = ["unknown-source", "null-authority", "epoch-regression", "sequence-regression", "epoch-advance"]
+receipt = "target/test-evidence/0.72/coverage-console-state.json"
+
+[[module]]
+path = "console/src/components/primitives.tsx"
+work_items = ["W1", "W11"]
+tests = ["console/src/components/shell.test.tsx#renders all capability-driven read-only sections with bounded tables", "console/tests/console_readonly.spec.js#management center passes automated accessibility checks in normal and forced modes"]
+reviewed_branches = ["optional-aside", "semantic-table", "labelled-scroll-region", "keyboard-focus"]
+receipt = "target/test-evidence/0.72/coverage-console-primitives.json"
+
+[[module]]
+path = "console/src/components/shell.tsx"
+work_items = ["W1", "W4", "W5", "W6", "W7", "W8", "W10", "W11"]
+tests = ["console/src/components/shell.test.tsx#renders all capability-driven read-only sections with bounded tables", "console/tests/console_readonly.spec.js#console_renders_typed_dashboard_and_all_truth_states", "console/tests/console_readonly.spec.js#keyboard navigation exposes a visible focus path"]
+reviewed_branches = ["all-routes", "read-only-controls", "truth-banners", "table-landmarks", "responsive-layout"]
+receipt = "target/test-evidence/0.72/coverage-console-shell.json"
+
+[[module]]
+path = "console/scripts/check-static.mjs"
+work_items = ["W1", "W11", "W13"]
+tests = ["console/tests/package.test.js#static and supply-chain gates validate the generated production bundle"]
+reviewed_branches = ["missing-source", "asset-drift", "unhashed-entry", "source-map", "unsafe-dom", "missing-test"]
+receipt = "target/test-evidence/0.72/coverage-console-static-check.json"
+
+[[module]]
+path = "console/scripts/check-supply-chain.mjs"
+work_items = ["W11"]
+tests = ["console/tests/package.test.js#static and supply-chain gates validate the generated production bundle"]
+reviewed_branches = ["exact-pin", "registry-provenance", "integrity", "reviewed-license", "deterministic-sbom"]
+receipt = "target/test-evidence/0.72/coverage-console-supply-chain.json"
+
+[[module]]
+path = "console/scripts/embed-dist.mjs"
+work_items = ["W1", "W13"]
+tests = ["console/tests/package.test.js#static and supply-chain gates validate the generated production bundle", "console/tests/package.test.js#locked Vite build is byte-identical across clean output directories"]
+reviewed_branches = ["manifest-entry", "content-hash", "external-url", "source-map", "legacy-alias", "generated-rust-table"]
+receipt = "target/test-evidence/0.72/coverage-console-embed.json"
 
 [[module]]
 path = "console/scripts/package-management-center.mjs"
@@ -78,6 +155,13 @@ work_items = ["W13"]
 tests = ["console/tests/package.test.js#candidate bundle is deterministic and verifies every artifact", "console/tests/package.test.js#MC72-W13-MIXED-ARTIFACT rejects one substituted file"]
 reviewed_branches = ["dirty-tree", "source-sha", "file-digest", "artifact-set-digest", "substitution"]
 receipt = "target/test-evidence/0.72/coverage-console-package.json"
+
+[[module]]
+path = "console/vite.config.ts"
+work_items = ["W1", "W13"]
+tests = ["console/tests/package.test.js#locked Vite build is byte-identical across clean output directories", "console/tests/package.test.js#candidate bundle is deterministic and verifies every artifact"]
+reviewed_branches = ["relative-base", "hashed-entry", "hashed-chunk", "hashed-css", "manifest", "no-source-map"]
+receipt = "target/test-evidence/0.72/coverage-console-vite.json"
 
 [[module]]
 path = "crates/xtask/src/management_center.rs"

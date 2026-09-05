@@ -5,12 +5,23 @@ import { fileURLToPath } from "node:url";
 const root = dirname(dirname(fileURLToPath(import.meta.url)));
 const lock = JSON.parse(readFileSync(join(root, "package-lock.json"), "utf8"));
 const manifest = JSON.parse(readFileSync(join(root, "package.json"), "utf8"));
-const allowedLicenses = new Set(["Apache-2.0", "MIT", "MPL-2.0"]);
+const allowedLicenses = new Set([
+  "Apache-2.0",
+  "BlueOak-1.0.0",
+  "BSD-2-Clause",
+  "BSD-3-Clause",
+  "ISC",
+  "MIT",
+  "MPL-2.0",
+]);
 
 if (lock.lockfileVersion !== 3 || !lock.requires) {
   throw new Error("management console requires npm lockfileVersion 3");
 }
-for (const [name, version] of Object.entries(manifest.devDependencies ?? {})) {
+for (const [name, version] of Object.entries({
+  ...(manifest.dependencies ?? {}),
+  ...(manifest.devDependencies ?? {}),
+})) {
   if (!/^\d+\.\d+\.\d+$/.test(version)) {
     throw new Error(`direct dependency is not exact: ${name}@${version}`);
   }

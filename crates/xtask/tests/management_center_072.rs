@@ -107,13 +107,13 @@ fn management_coverage_inventory_rejects_floor_and_module_omission() {
         .any(|problem| problem.contains("coverage floor regressed")));
 
     let omitted = coverage.replacen(
-        "path = \"console/history.js\"",
+        "path = \"console/src/history.ts\"",
         "path = \"console/not-a-reviewed-module.js\"",
         1,
     );
     let problems = xtask::management_center::check_coverage_document(&root(), &omitted).unwrap();
     assert!(problems.iter().any(|problem| {
-        problem.contains("changed management module lacks coverage row: console/history.js")
+        problem.contains("changed management module lacks coverage row: console/src/history.ts")
     }));
 }
 

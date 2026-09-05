@@ -4,67 +4,9 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>HydraCache Management Center</title>
-    <link rel="stylesheet" href="./style.css" />
   </head>
   <body>
-    <header class="topbar">
-      <div class="brand"><span class="brand-mark">HC</span><div><h1>HydraCache</h1><p>Management Center 2.0</p></div></div>
-      <div class="cluster-picker"><span class="health-dot" aria-hidden="true"></span><strong>current cluster</strong><span data-testid="poll-state" aria-live="polite">connecting</span></div>
-      <div class="status-strip"><span class="source-badge" data-testid="source-badge">loading</span><span class="readonly-badge" data-testid="readonly-badge">read only</span></div>
-    </header>
-    <div class="app-shell">
-      <nav class="sidebar" aria-label="Management sections">
-        <a href="#dashboard" class="active" aria-current="page">Dashboard</a><a href="#healthchecks">Healthchecks</a><a href="#formation">Formation</a><a href="#members">Members</a><a href="#partitions">Partitions</a><a href="#clients">Clients</a><a href="#namespaces">Namespaces</a><a href="#replication">Replication</a><a href="#placement">Placement</a><a href="#consensus">Consensus</a><a href="#persistence">Persistence</a><a href="#operations">Operations</a><a href="#audit">Audit</a><a href="#recovery">Recovery</a><a href="#history">Local history</a>
-      </nav>
-      <main class="page-shell" id="dashboard">
-        <section class="degraded" data-testid="degraded-state" role="alert" hidden></section>
-        <section class="warning-strip" data-testid="truth-warnings" role="status" aria-live="polite" hidden></section>
-
-        <section class="summary-grid" aria-label="Cluster summary">
-          <a href="#formation" class="metric-cell" data-testid="cluster-state"><span>Cluster state</span><strong>loading</strong><small>quorum unknown</small></a>
-          <a href="#consensus" class="metric-cell" data-testid="leader"><span>Leader</span><strong>loading</strong><small>term - / epoch -</small></a>
-          <a href="#replication" class="metric-cell" data-testid="partition-summary"><span>Replication</span><strong>loading</strong><small>under-replicated -</small></a>
-          <a href="#members" class="metric-cell" data-testid="member-summary"><span>Members</span><strong>loading</strong><small>freshness unknown</small></a>
-          <a href="#formation" class="metric-cell" data-testid="formation-summary"><span>Formation</span><strong>loading</strong><small>blockers unknown</small></a>
-          <a href="#placement" class="metric-cell" data-testid="placement-summary"><span>Placement</span><strong>unavailable</strong><small>not retained by source</small></a>
-          <a href="#consensus" class="metric-cell" data-testid="consensus-summary"><span>Raft apply lag</span><strong>loading</strong><small>missing is not zero</small></a>
-          <a href="#recovery" class="metric-cell" data-testid="recovery-summary"><span>Recovery</span><strong>loading</strong><small>five outcomes</small></a>
-        </section>
-
-        <section class="panel" id="healthchecks"><div class="section-heading"><div><h2>Deterministic healthchecks</h2><p>Statuses and thresholds are evaluated by the server; UNKNOWN remains visible</p></div><span class="truth-chip unknown" data-testid="health-aggregate">UNKNOWN</span></div><div class="metrics-strip" data-testid="health-counts"></div><div class="filter-strip"><label>Search <input data-testid="health-search" type="search" maxlength="128" /></label><label>Status <select data-testid="health-status-filter"><option value="">All</option><option>FAIL</option><option>WARN</option><option>UNKNOWN</option><option>PASS</option><option>DISABLED</option></select></label><label>Category <select data-testid="health-category-filter"><option value="">All</option><option value="authority">Authority</option><option value="formation">Formation</option><option value="consensus">Consensus</option><option value="membership">Membership</option><option value="partitions">Partitions</option><option value="placement">Placement</option><option value="replication">Replication</option><option value="repair">Repair</option><option value="reshard">Reshard</option><option value="resource">Resource</option><option value="expiry">Expiry</option><option value="clients">Clients</option><option value="persistence">Persistence</option><option value="recovery">Recovery</option><option value="audit">Audit</option><option value="history">History</option></select></label></div><div class="table-scroll"><table><thead><tr><th>ID</th><th>Status</th><th>Category</th><th>Title</th><th>Evidence</th><th>Affected</th><th>Remediation</th><th>Sequence</th></tr></thead><tbody data-testid="health-table"></tbody></table></div></section>
-
-        <section class="panel" id="history" aria-labelledby="history-title">
-          <div class="section-heading"><div><h2 id="history-title">History since page opened</h2><p data-testid="history-budget">No samples</p><p data-testid="remote-history-state">checking optional history source</p></div><span class="trust-note">sources never spliced · bounded</span></div>
-          <div class="chart-grid"><figure><figcaption>Replication events / poll</figcaption><svg data-series="replication.success" viewBox="0 0 480 120" role="img" aria-label="Replication events since this page opened"></svg></figure><figure><figcaption>Cache entries</figcaption><svg data-series="cache.entries" viewBox="0 0 480 120" role="img" aria-label="Cache entries since this page opened"></svg></figure><figure><figcaption>Raft apply lag</figcaption><svg data-series="consensus.apply_lag" viewBox="0 0 480 120" role="img" aria-label="Raft apply lag since this page opened"></svg></figure></div>
-        </section>
-
-        <section class="two-column">
-          <section class="panel" id="replication"><div class="section-heading"><div><h2>Data plane</h2><p>Typed point-in-time counters and gauges</p></div></div><div class="metrics-strip" data-testid="metrics-strip"></div><dl class="facts" data-testid="lifecycle-panel"></dl></section>
-          <section class="panel" id="formation"><div class="section-heading"><div><h2>Cluster formation</h2><p>Discovery → authentication → admission → current → serving</p></div></div><div class="table-scroll"><table><thead><tr><th>Member</th><th>Transport</th><th>Admission</th><th>Consensus</th><th>Serving</th><th>Blocker</th></tr></thead><tbody data-testid="formation-table"></tbody></table></div></section>
-        </section>
-
-        <section class="panel" id="persistence"><div class="section-heading"><div><h2>Persistence evidence</h2><p>Configuration, observed age and verified artifacts remain separate</p></div><span class="trust-note">no paths or object-store identities</span></div><div class="metrics-strip" data-testid="persistence-details"></div></section>
-
-        <section class="panel" id="operations"><div class="section-heading"><div><h2>Operations</h2><p data-testid="operations-generation">Current process generation</p></div><span class="readonly-badge">read only</span></div><div class="table-scroll"><table><thead><tr><th>ID</th><th>Type</th><th>Scope</th><th>State</th><th>Requested</th><th>Started</th><th>Terminal</th><th>Reason</th></tr></thead><tbody data-testid="operations-table"></tbody></table></div></section>
-
-        <section class="panel" id="audit"><div class="section-heading"><div><h2>Audit metadata</h2><p data-testid="audit-coverage">Management operations in this process only</p></div><span class="trust-note">redacted · bounded</span></div><div class="table-scroll"><table><thead><tr><th>Event</th><th>Operation</th><th>Action</th><th>Outcome</th><th>Time</th><th>Source</th></tr></thead><tbody data-testid="audit-table"></tbody></table></div></section>
-
-        <section class="panel" id="members"><div class="section-heading"><div><h2>Committed members</h2><p data-testid="render-cap">waiting for members</p></div><span class="trust-note">one epoch · bounded to 48 rows</span></div><div class="table-scroll"><table><thead><tr><th>Member</th><th>Raft role</th><th>Reachability</th><th>Generation</th><th>CPU</th><th>RSS</th><th>Retained</th><th>Uptime</th><th>Clients</th><th>Partitions</th><th>Config digest</th></tr></thead><tbody data-testid="members-list"></tbody></table></div></section>
-
-        <section class="panel" id="partitions"><div class="section-heading"><div><h2>Partitions</h2><p>Authoritative ownership is shown only when it matches this observation epoch</p></div><span class="trust-note">missing is not zero</span></div><div class="metrics-strip" data-testid="partition-details"></div><div class="table-scroll"><table><thead><tr><th>Member</th><th>Primary</th><th>Backup</th></tr></thead><tbody data-testid="partition-table"></tbody></table></div></section>
-
-        <section class="panel" id="clients"><div class="section-heading"><div><h2>Client lifecycle</h2><p>Node-local bounded protocol accounting; unavailable connection dimensions remain unknown</p></div><span class="trust-note">no addresses or identities</span></div><div class="metrics-strip" data-testid="client-details"></div><div class="table-scroll"><table><thead><tr><th>Protocol</th><th>Version</th><th>Active</th><th>Accepted</th><th>Closed</th><th>Rejected</th><th>Pending</th></tr></thead><tbody data-testid="client-table"></tbody></table></div></section>
-
-        <section class="panel" id="namespaces"><div class="section-heading"><div><h2>Authorized namespaces and caches</h2><p>Totals are computed only after caller-scope authorization</p></div><span class="trust-note">no keys, values or policy</span></div><div class="table-scroll"><table><thead><tr><th>Namespace</th><th>Caches</th><th>Entries</th><th>Logical</th><th>Retained</th><th>Entry quota</th><th>Byte quota</th><th>Rejected</th><th>Persistence</th></tr></thead><tbody data-testid="namespace-table"></tbody></table></div><div class="table-scroll"><table><thead><tr><th>Namespace</th><th>Cache</th><th>Entries</th><th>Logical</th><th>Retained</th><th>TTL backlog</th><th>Idempotency</th><th>Backup age</th></tr></thead><tbody data-testid="cache-table"></tbody></table></div></section>
-
-        <section class="two-column">
-          <section class="panel" id="consensus"><div class="section-heading"><div><h2>Consensus progress</h2><p>Commit/apply gaps remain unknown when the source is missing</p></div></div><div class="table-scroll"><table><thead><tr><th>Member</th><th>Commit</th><th>Applied</th><th>Lag</th><th>State</th></tr></thead><tbody data-testid="consensus-table"></tbody></table></div></section>
-          <section class="panel" id="recovery"><div class="section-heading"><div><h2>Persistence recovery</h2><p>Clean · repaired · partial · corrupt · failed</p></div></div><div class="outcome-grid" data-testid="recovery-outcomes"></div><div class="table-scroll"><table><thead><tr><th>Scope</th><th>Outcome</th><th>Phase</th><th>Corrupt</th><th>Reason</th></tr></thead><tbody data-testid="recovery-table"></tbody></table></div></section>
-        </section>
-
-        <section class="panel" id="placement"><div class="section-heading"><div><h2>Placement evidence</h2><p>Selected candidates first; commit and apply progress remain distinct</p></div><span class="truth-chip unavailable" data-testid="placement-state">unavailable</span></div><div class="metrics-strip" data-testid="placement-details"></div><div class="table-scroll"><table><thead><tr><th>Candidate</th><th>Decision</th><th>Stable reasons</th></tr></thead><tbody data-testid="placement-table"></tbody></table></div></section>
-      </main>
-    </div>
-    <script type="module" src="./app.js"></script>
+    <div id="app"></div>
+    <script type="module" src="/src/app.tsx"></script>
   </body>
 </html>

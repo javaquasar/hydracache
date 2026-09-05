@@ -17,7 +17,7 @@ function = "canary_w0_missing_baseline_is_rejected"
 
 [[work_item]]
 id = "W1"
-required_sources = ["docs/testing/management-center/0.72/source-map.toml", "console/app.js"]
+required_sources = ["docs/testing/management-center/0.72/source-map.toml", "console/src/app.tsx", "console/vite.config.ts"]
 required_artifacts = ["docs/testing/management-center/0.72/claims.toml"]
 fast_gate_ids = ["fast.workspace-nextest"]
 gated_gate_ids = []
@@ -53,7 +53,7 @@ function = "three_member_http_aggregate_recovers_from_partial_to_complete"
 
 [[work_item]]
 id = "W4"
-required_sources = ["console/app.js", "console/history.js"]
+required_sources = ["console/src/controller.ts", "console/src/history.ts"]
 required_artifacts = ["docs/testing/management-center/0.72/coverage.toml"]
 fast_gate_ids = ["fast.workspace-nextest"]
 gated_gate_ids = []

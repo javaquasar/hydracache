@@ -311,7 +311,8 @@ mod admin_http {
         );
         let html = text_response(index).await;
         assert!(html.contains("HydraCache Management Center"));
-        assert!(html.contains("./app.js"));
+        assert!(html.contains("./assets/"));
+        assert!(html.contains("type=\"module\""));
 
         let app = surface
             .routes()

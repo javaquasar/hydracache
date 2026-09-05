@@ -1,40 +1,54 @@
-import { HISTORY_LIMITS, SnapshotHistory, shouldPauseCollection } from "./history.js";
+import { HISTORY_LIMITS, SnapshotHistory, shouldPauseCollection } from "./history";
+import {
+  MANAGEMENT_ENDPOINTS,
+  backoffDelay,
+  fetchManagementEnvelope,
+} from "./api";
+import { normalizeObservationSource } from "./state";
 
 const MAX_RENDERED_MEMBERS = 48;
 const BASE_POLL_INTERVAL_MS = 10_000;
-const MAX_BACKOFF_MS = 60_000;
-const ENDPOINTS = Object.freeze({
-  dashboard: "/management/v1/dashboard",
-  formation: "/management/v1/cluster/formation?limit=100",
-  members: "/management/v1/cluster/members?limit=100",
-  partitions: "/management/v1/cluster/partitions",
-  clients: "/management/v1/clients",
-  namespaces: "/management/v1/namespaces?limit=100",
-  health: "/management/v1/healthchecks?limit=100",
-  consensus: "/management/v1/consensus/progress?limit=100",
-  recovery: "/management/v1/persistence/recovery?limit=100",
-  persistence: "/management/v1/persistence",
-  operations: "/management/v1/operations?limit=100",
-  audit: "/management/v1/audit?limit=100",
-});
-const ADMIN_HEADERS = Object.freeze({
-  "x-hydracache-client-id": "management-console",
-  "x-hydracache-tenant": "operator",
-  "x-hydracache-management-read": "true",
-});
+type WireValue = ReturnType<typeof JSON.parse>;
+type RenderValues = Record<string, WireValue>;
+type ManagedElement = HTMLElement & HTMLInputElement & SVGSVGElement;
+type ControllerState = {
+  timer: ReturnType<typeof setTimeout> | null;
+  controller: AbortController | null;
+  failures: number;
+  paused: boolean;
+  refreshes: number;
+  health: WireValue | null;
+};
+
+declare global {
+  interface Window {
+    __HC_CONSOLE_STATE__: {
+      state: ControllerState;
+      history: SnapshotHistory;
+      limits: typeof HISTORY_LIMITS;
+    };
+  }
+}
 
 const history = new SnapshotHistory();
-const state = { timer: null, controller: null, failures: 0, paused: false, refreshes: 0, health: null };
+const state: ControllerState = {
+  timer: null,
+  controller: null,
+  failures: 0,
+  paused: false,
+  refreshes: 0,
+  health: null,
+};
 window.__HC_CONSOLE_STATE__ = { state, history, limits: HISTORY_LIMITS };
 
-document.addEventListener("DOMContentLoaded", () => {
+export function startController() {
   for (const region of document.querySelectorAll(".table-scroll")) {
-    region.tabIndex = 0;
+    (region as HTMLElement).tabIndex = 0;
   }
   wireLifecycle();
   wireHealthFilters();
-  refresh();
-});
+  void refresh();
+}
 
 function wireHealthFilters() {
   for (const id of ["health-search", "health-status-filter", "health-category-filter"]) {
@@ -47,7 +61,7 @@ function wireLifecycle() {
     const paused = shouldPauseCollection(document.hidden, navigator.onLine);
     state.paused = paused;
     if (paused) {
-      clearTimeout(state.timer);
+      if (state.timer !== null) clearTimeout(state.timer);
       state.controller?.abort();
       setText("poll-state", document.hidden ? "paused while hidden" : "paused while offline");
     } else {
@@ -62,33 +76,34 @@ function wireLifecycle() {
 async function refresh() {
   if (state.paused || document.hidden || !navigator.onLine) return;
   state.controller?.abort();
-  state.controller = new AbortController();
+  const controller = new AbortController();
+  state.controller = controller;
   setText("poll-state", "refreshing typed snapshots");
   try {
     const historyEnd = Date.now();
     const requestEndpoints = {
-      ...ENDPOINTS,
+      ...MANAGEMENT_ENDPOINTS,
       remoteHistory: `/management/v1/history?query_id=cache_entries&start_ms=${historyEnd - 3_600_000}&end_ms=${historyEnd}&step_ms=60000`,
     };
     const results = await Promise.allSettled(
       Object.entries(requestEndpoints).map(async ([name, url]) => [
         name,
-        await fetchEnvelope(url, state.controller.signal),
-      ]),
+        await fetchManagementEnvelope(url, controller.signal),
+      ] as const),
     );
-    const values = Object.fromEntries(
+    const values: RenderValues = Object.fromEntries(
       results.filter((item) => item.status === "fulfilled").map((item) => item.value),
     );
     if (!values.dashboard) throw new Error("dashboard snapshot unavailable");
     const traceId = values.partitions?.data?.placement_trace_id;
     if (typeof traceId === "string" && /^[A-Za-z0-9_-]{1,128}$/.test(traceId)) {
       try {
-        values.placementTrace = await fetchEnvelope(
+        values.placementTrace = await fetchManagementEnvelope(
           `/management/v1/cluster/placement-traces/${encodeURIComponent(traceId)}`,
-          state.controller.signal,
+          controller.signal,
         );
       } catch (error) {
-        if (error.name === "AbortError") throw error;
+        if (isAbortError(error)) throw error;
       }
     }
     const namespace = values.namespaces?.data?.items?.[0]?.namespace;
@@ -96,15 +111,15 @@ async function refresh() {
       typeof namespace === "string" &&
       namespace.length > 0 &&
       namespace.length <= 128 &&
-      !/[\u0000-\u001f\u007f]/.test(namespace)
+      !containsControlCharacter(namespace)
     ) {
       try {
-        values.namespaceCaches = await fetchEnvelope(
+        values.namespaceCaches = await fetchManagementEnvelope(
           `/management/v1/namespaces/${encodeURIComponent(namespace)}/caches`,
-          state.controller.signal,
+          controller.signal,
         );
       } catch (error) {
-        if (error.name === "AbortError") throw error;
+        if (isAbortError(error)) throw error;
       }
     }
     render(values);
@@ -112,39 +127,23 @@ async function refresh() {
     state.refreshes += 1;
     schedule(BASE_POLL_INTERVAL_MS);
   } catch (error) {
-    if (error.name === "AbortError") return;
+    if (isAbortError(error)) return;
     state.failures += 1;
     renderDegraded(error);
     schedule(backoffDelay(state.failures));
   }
 }
 
-async function fetchEnvelope(url, signal) {
-  const response = await fetch(url, { cache: "no-store", headers: ADMIN_HEADERS, signal });
-  if (!response.ok) throw new Error(`${url} returned ${response.status}`);
-  return response.json();
-}
-
-function schedule(delay) {
-  clearTimeout(state.timer);
+function schedule(delay: number) {
+  if (state.timer !== null) clearTimeout(state.timer);
   if (state.paused || document.hidden || !navigator.onLine) return;
   state.timer = setTimeout(refresh, delay);
 }
 
-function backoffDelay(failures) {
-  const exponential = Math.min(
-    MAX_BACKOFF_MS,
-    BASE_POLL_INTERVAL_MS * 2 ** Math.min(failures, 4),
-  );
-  return Math.round(exponential * (0.85 + Math.random() * 0.3));
-}
-
-function render(values) {
+function render(values: RenderValues) {
   const envelope = values.dashboard;
   const data = envelope.data;
-  const source = ["live", "modeled", "unavailable"].includes(envelope.source)
-    ? envelope.source
-    : "unavailable";
+  const source = normalizeObservationSource(envelope.source);
   badge(source);
   setText("poll-state", `last refresh ${new Date().toLocaleTimeString()}`);
   const degraded = byTest("degraded-state");
@@ -173,7 +172,7 @@ function render(values) {
   renderHistory();
 }
 
-function renderRemoteHistory(envelope) {
+function renderRemoteHistory(envelope: WireValue) {
   const data = envelope?.data;
   const state = data?.state ?? "no_adapter";
   const source = data?.source ?? "browser_local";
@@ -186,17 +185,17 @@ function renderRemoteHistory(envelope) {
   );
 }
 
-function renderHealth(envelope) {
+function renderHealth(envelope: WireValue) {
   const data = envelope?.data ?? {};
   const checks = data.checks?.items ?? [];
   const search = byTest("health-search").value.trim().toLocaleLowerCase();
   const statusFilter = byTest("health-status-filter").value;
   const categoryFilter = byTest("health-category-filter").value;
   const visible = checks
-    .filter((check) => !statusFilter || check.status === statusFilter)
-    .filter((check) => !categoryFilter || check.category === categoryFilter)
+    .filter((check: WireValue) => !statusFilter || check.status === statusFilter)
+    .filter((check: WireValue) => !categoryFilter || check.category === categoryFilter)
     .filter(
-      (check) =>
+      (check: WireValue) =>
         !search ||
         `${check.id} ${check.title} ${check.remediation_code}`.toLocaleLowerCase().includes(search),
     )
@@ -211,7 +210,7 @@ function renderHealth(envelope) {
   aggregate.textContent = data.aggregate ?? "UNKNOWN";
   aggregate.className = `truth-chip ${(data.aggregate ?? "UNKNOWN").toLocaleLowerCase()}`;
   byTest("health-table").replaceChildren(
-    ...visible.map((check) =>
+    ...visible.map((check: WireValue) =>
       row(
         [
           check.id,
@@ -219,7 +218,7 @@ function renderHealth(envelope) {
           check.category,
           check.title,
           (check.evidence ?? [])
-            .map((item) =>
+            .map((item: WireValue) =>
               item.value == null ? item.code : `${item.code}=${item.value}${item.unit ? ` ${item.unit}` : ""}`,
             )
             .join(", ") || "none",
@@ -238,14 +237,14 @@ function renderHealth(envelope) {
   }
 }
 
-function renderWarnings(envelopes) {
+function renderWarnings(envelopes: WireValue[]) {
   const warnings = envelopes.flatMap((value) => value?.warnings ?? []);
   const strip = byTest("truth-warnings");
   strip.hidden = warnings.length === 0;
   strip.replaceChildren(...warnings.map((warning) => chip(warning.code ?? "unknown", "warning")));
 }
 
-function renderSummary(data, values) {
+function renderSummary(data: WireValue, values: RenderValues) {
   metric(
     "cluster-state",
     "Cluster state",
@@ -272,13 +271,13 @@ function renderSummary(data, values) {
   );
   const formation = values.formation?.data;
   const formationItems = formation?.items ?? [];
-  const blocked = formationItems.filter((item) => item.serving === "blocked").length;
-  const discovered = formationItems.filter((item) => item.discovery !== "absent").length;
-  const authenticated = formationItems.filter((item) => item.transport === "authenticated").length;
-  const admitted = formationItems.filter((item) => item.admission === "admitted").length;
-  const current = formationItems.filter((item) => item.catch_up === "current").length;
-  const serving = formationItems.filter((item) => item.serving === "serving").length;
-  const unknown = formationItems.filter((item) =>
+  const blocked = formationItems.filter((item: WireValue) => item.serving === "blocked").length;
+  const discovered = formationItems.filter((item: WireValue) => item.discovery !== "absent").length;
+  const authenticated = formationItems.filter((item: WireValue) => item.transport === "authenticated").length;
+  const admitted = formationItems.filter((item: WireValue) => item.admission === "admitted").length;
+  const current = formationItems.filter((item: WireValue) => item.catch_up === "current").length;
+  const serving = formationItems.filter((item: WireValue) => item.serving === "serving").length;
+  const unknown = formationItems.filter((item: WireValue) =>
     [item.transport, item.admission, item.consensus_role, item.catch_up, item.serving].includes(
       "unknown",
     ),
@@ -316,8 +315,8 @@ function renderSummary(data, values) {
   );
 }
 
-function renderMetrics(data) {
-  const values = [
+function renderMetrics(data: WireValue) {
+  const values: Array<[string, string]> = [
     [
       "hit ratio",
       data.cache?.hit_ratio == null ? "unavailable" : `${(data.cache.hit_ratio * 100).toFixed(1)}%`,
@@ -342,7 +341,7 @@ function renderMetrics(data) {
   );
 }
 
-function renderMembers(members) {
+function renderMembers(members: WireValue[]) {
   const rendered = members.slice(0, MAX_RENDERED_MEMBERS);
   setText(
     "render-cap",
@@ -372,7 +371,7 @@ function renderMembers(members) {
   );
 }
 
-function renderPartitions(envelope, fallback) {
+function renderPartitions(envelope: WireValue, fallback: WireValue) {
   const snapshot = envelope?.data ?? fallback ?? {};
   byTest("partition-details").replaceChildren(
     pill("total", known(snapshot.total)),
@@ -386,7 +385,7 @@ function renderPartitions(envelope, fallback) {
   );
   const distribution = Array.isArray(snapshot.distribution) ? snapshot.distribution : [];
   byTest("partition-table").replaceChildren(
-    ...distribution.slice(0, MAX_RENDERED_MEMBERS).map((item) =>
+    ...distribution.slice(0, MAX_RENDERED_MEMBERS).map((item: WireValue) =>
       row([item.node, known(item.primary), known(item.backup)], {
         testid: "partition-row",
       }),
@@ -399,7 +398,7 @@ function renderPartitions(envelope, fallback) {
   }
 }
 
-function renderClients(envelope) {
+function renderClients(envelope: WireValue) {
   const clients = envelope?.data ?? {};
   byTest("client-details").replaceChildren(
     pill("active", known(clients.active_connections)),
@@ -413,7 +412,7 @@ function renderClients(envelope) {
   );
   const protocols = Array.isArray(clients.protocols) ? clients.protocols : [];
   byTest("client-table").replaceChildren(
-    ...protocols.map((protocol) =>
+    ...protocols.map((protocol: WireValue) =>
       row(
         [
           protocol.protocol,
@@ -435,10 +434,10 @@ function renderClients(envelope) {
   }
 }
 
-function renderNamespaces(envelope, cacheEnvelope) {
+function renderNamespaces(envelope: WireValue, cacheEnvelope: WireValue) {
   const namespaces = envelope?.data?.items ?? [];
   byTest("namespace-table").replaceChildren(
-    ...namespaces.slice(0, MAX_RENDERED_MEMBERS).map((namespace) =>
+    ...namespaces.slice(0, MAX_RENDERED_MEMBERS).map((namespace: WireValue) =>
       row(
         [
           namespace.namespace,
@@ -462,7 +461,7 @@ function renderNamespaces(envelope, cacheEnvelope) {
   }
   const caches = cacheEnvelope?.data?.items ?? [];
   byTest("cache-table").replaceChildren(
-    ...caches.map((cache) =>
+    ...caches.map((cache: WireValue) =>
       row(
         [
           cache.namespace,
@@ -485,10 +484,10 @@ function renderNamespaces(envelope, cacheEnvelope) {
   }
 }
 
-function renderFormation(envelope) {
+function renderFormation(envelope: WireValue) {
   const items = envelope?.data?.items ?? [];
   byTest("formation-table").replaceChildren(
-    ...items.map((item) =>
+    ...items.map((item: WireValue) =>
       row(
         [
           item.node,
@@ -516,10 +515,10 @@ function renderFormation(envelope) {
   }
 }
 
-function renderConsensus(envelope, local) {
+function renderConsensus(envelope: WireValue, local: WireValue) {
   const items = envelope?.data?.items ?? [];
   byTest("consensus-table").replaceChildren(
-    ...items.map((item) => {
+    ...items.map((item: WireValue) => {
       const lag =
         item.commit_index == null || item.applied_index == null
           ? null
@@ -549,19 +548,19 @@ function renderConsensus(envelope, local) {
   }
 }
 
-function renderRecovery(envelope) {
+function renderRecovery(envelope: WireValue) {
   const items = envelope?.data?.items ?? [];
   const outcomes = ["clean", "repaired", "partial", "corrupt", "failed"];
   byTest("recovery-outcomes").replaceChildren(
     ...outcomes.map((outcome) =>
       pill(
         outcome,
-        items.filter((item) => item.outcome === outcome).length,
+        items.filter((item: WireValue) => item.outcome === outcome).length,
       ),
     ),
   );
   byTest("recovery-table").replaceChildren(
-    ...items.map((item) =>
+    ...items.map((item: WireValue) =>
       row(
         [
           item.scope,
@@ -576,7 +575,7 @@ function renderRecovery(envelope) {
   );
 }
 
-function renderPersistence(envelope) {
+function renderPersistence(envelope: WireValue) {
   const data = envelope?.data ?? {};
   byTest("persistence-details").replaceChildren(
     pill("configured", truth(data.configured)),
@@ -590,7 +589,7 @@ function renderPersistence(envelope) {
   );
 }
 
-function renderOperations(envelope) {
+function renderOperations(envelope: WireValue) {
   const data = envelope?.data ?? {};
   const items = data.items?.items ?? [];
   setText(
@@ -598,7 +597,7 @@ function renderOperations(envelope) {
     `generation ${known(data.generation)} · sequence ${known(data.latest_sequence)} · evicted ${known(data.evicted_records)}`,
   );
   byTest("operations-table").replaceChildren(
-    ...items.slice(0, MAX_RENDERED_MEMBERS).map((item) =>
+    ...items.slice(0, MAX_RENDERED_MEMBERS).map((item: WireValue) =>
       row(
         [
           item.operation_id,
@@ -621,7 +620,7 @@ function renderOperations(envelope) {
   }
 }
 
-function renderAudit(envelope) {
+function renderAudit(envelope: WireValue) {
   const data = envelope?.data ?? {};
   const items = data.items?.items ?? [];
   setText(
@@ -629,7 +628,7 @@ function renderAudit(envelope) {
     `${data.coverage ?? "management operations current process only"} · evicted ${known(data.evicted_records)}`,
   );
   byTest("audit-table").replaceChildren(
-    ...items.slice(0, MAX_RENDERED_MEMBERS).map((item) =>
+    ...items.slice(0, MAX_RENDERED_MEMBERS).map((item: WireValue) =>
       row(
         [
           item.event_id,
@@ -650,20 +649,20 @@ function renderAudit(envelope) {
   }
 }
 
-function renderPlacement(trace, fallback) {
+function renderPlacement(trace: WireValue, fallback: WireValue) {
   const placement = trace ?? fallback;
   const state = byTest("placement-state");
   state.textContent = placement?.outcome ?? "unavailable";
   state.className = `truth-chip ${placement?.outcome ?? "unavailable"}`;
   byTest("placement-details").replaceChildren(
     pill("selected", known(Array.isArray(placement?.selected) ? placement.selected.length : placement?.selected)),
-    pill("rejected", known(trace ? trace.candidates?.items?.filter((item) => !item.selected).length : placement?.rejected)),
+    pill("rejected", known(trace ? trace.candidates?.items?.filter((item: WireValue) => !item.selected).length : placement?.rejected)),
     pill("committed", known(trace?.commit_index ?? placement?.latest_committed_epoch)),
     pill("applied", known(trace?.applied_index ?? placement?.latest_applied_epoch)),
   );
   const candidates = trace?.candidates?.items ?? [];
   byTest("placement-table").replaceChildren(
-    ...candidates.slice(0, MAX_RENDERED_MEMBERS).map((candidate) =>
+    ...candidates.slice(0, MAX_RENDERED_MEMBERS).map((candidate: WireValue) =>
       row(
         [
           candidate.node,
@@ -687,16 +686,16 @@ function renderHistory() {
     "history-budget",
     `${snapshot.totalPoints}/${HISTORY_LIMITS.maxTotalPoints} points · ${snapshot.byteSize}/${HISTORY_LIMITS.maxBytes} bytes · ${snapshot.seriesCount}/${HISTORY_LIMITS.maxSeries} series`,
   );
-  for (const svg of document.querySelectorAll("svg[data-series]")) {
-    drawSparkline(svg, history.points(svg.dataset.series));
+  for (const svg of document.querySelectorAll<SVGSVGElement>("svg[data-series]")) {
+    drawSparkline(svg, history.points(svg.dataset.series ?? ""));
   }
 }
 
-function drawSparkline(svg, points) {
+function drawSparkline(svg: SVGSVGElement, points: ReturnType<SnapshotHistory["points"]>) {
   svg.replaceChildren();
-  const finite = points
-    .map((point, index) => ({ x: index, y: point.value }))
-    .filter((point) => point.y != null);
+  const finite = points.flatMap((point, index) =>
+    point.value === null ? [] : [{ x: index, y: point.value }],
+  );
   if (finite.length < 2) {
     const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
     text.setAttribute("x", "16");
@@ -717,12 +716,12 @@ function drawSparkline(svg, points) {
   svg.append(polyline);
 }
 
-function renderDegraded(error) {
+function renderDegraded(error: unknown) {
   badge("unavailable");
   setText("poll-state", "cannot reach management snapshots");
   const node = byTest("degraded-state");
   node.hidden = false;
-  node.textContent = `Cannot reach cluster: ${error.message}`;
+  node.textContent = `Cannot reach cluster: ${errorMessage(error)}`;
   for (const id of [
     "cluster-state",
     "leader",
@@ -736,33 +735,33 @@ function renderDegraded(error) {
   }
 }
 
-function badge(source) {
+function badge(source: string) {
   const node = byTest("source-badge");
   node.textContent = source;
   node.dataset.source = source;
 }
-function metric(id, label, value, detail) {
+function metric(id: string, label: string, value: string, detail: string) {
   const node = byTest(id);
   node.replaceChildren();
   const a = document.createElement("span");
   a.textContent = label;
   const b = document.createElement("strong");
-  b.textContent = value;
+  b.textContent = String(value);
   const c = document.createElement("small");
   c.textContent = detail;
   node.append(a, b, c);
 }
-function pill(label, value) {
+function pill(label: string, value: string | number) {
   const node = document.createElement("span");
   node.className = "metric-pill";
   const a = document.createElement("small");
   a.textContent = label;
   const b = document.createElement("strong");
-  b.textContent = value;
+  b.textContent = String(value);
   node.append(a, b);
   return node;
 }
-function fact(label, value) {
+function fact(label: string, value: WireValue) {
   const wrap = document.createElement("div");
   const dt = document.createElement("dt");
   dt.textContent = label;
@@ -771,7 +770,10 @@ function fact(label, value) {
   wrap.append(dt, dd);
   return wrap;
 }
-function row(values, data = {}) {
+function row(
+  values: Array<string | number | Node | null | undefined>,
+  data: { testid?: string; reachability?: string } = {},
+) {
   const tr = document.createElement("tr");
   if (data.testid) tr.dataset.testid = data.testid;
   if (data.reachability) tr.dataset.reachability = data.reachability;
@@ -779,55 +781,72 @@ function row(values, data = {}) {
     ...values.map((value) => {
       const td = document.createElement("td");
       if (value instanceof Node) td.append(value);
-      else td.textContent = value ?? "unavailable";
+      else td.textContent = value == null ? "unavailable" : String(value);
       return td;
     }),
   );
   return tr;
 }
-function status(value) {
+function status(value: WireValue) {
   return chip(value ?? "unknown", value ?? "unknown");
 }
-function chip(text, kind) {
+function chip(text: string, kind: string) {
   const node = document.createElement("span");
   node.className = `truth-chip ${kind}`;
   node.textContent = text;
   return node;
 }
-function byTest(id) {
-  return document.querySelector(`[data-testid='${id}']`);
+function byTest(id: string): ManagedElement {
+  const node = document.querySelector(`[data-testid='${id}']`);
+  if (node === null) throw new Error(`Management Center element is missing: ${id}`);
+  return node as ManagedElement;
 }
-function setText(id, text) {
+function setText(id: string, text: string) {
   byTest(id).textContent = text;
 }
-function known(value, suffix = "") {
+function known(value: WireValue, suffix = "") {
   return value == null ? "unavailable" : `${new Intl.NumberFormat("en-US").format(value)}${suffix}`;
 }
-function format(value) {
+function format(value: WireValue) {
   return known(value);
 }
-function truth(value) {
+function truth(value: WireValue) {
   return value === true ? "yes" : value === false ? "no" : "unknown";
 }
-function bytes(value) {
+function bytes(value: WireValue) {
   if (value == null) return "unavailable";
   if (value < 1024) return `${value} B`;
   return `${(value / 1024).toFixed(1)} KiB`;
 }
-function duration(value) {
+function duration(value: WireValue) {
   if (value == null) return "unavailable";
   return value < 60 ? `${value}s` : `${Math.floor(value / 60)}m`;
 }
-function boundedCount(value) {
+function boundedCount(value: WireValue) {
   return value?.value == null ? "unavailable" : `${value.value}${value.exact ? "" : "+"}`;
 }
 
-function time(value) {
+function time(value: WireValue) {
   if (!Number.isFinite(value)) return "unavailable";
   return new Date(value).toISOString();
 }
-function recoveryLabel(items) {
+function recoveryLabel(items: WireValue[]) {
   if (items.length === 0) return "source unavailable";
   const bad = items.filter((item) => ["corrupt", "failed", "partial"].includes(item.outcome)).length;
   return bad ? `${bad} need attention` : "no adverse outcome observed";
+}
+
+function isAbortError(error: unknown): boolean {
+  return error instanceof DOMException && error.name === "AbortError";
+}
+
+function errorMessage(error: unknown): string {
+  return error instanceof Error ? error.message : "unknown management error";
+}
+
+function containsControlCharacter(value: string): boolean {
+  return [...value].some((character) => {
+    const code = character.charCodeAt(0);
+    return code <= 0x1f || code === 0x7f;
+  });
 }

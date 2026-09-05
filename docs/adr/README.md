@@ -27,6 +27,7 @@ wire compatibility, or long-term product direction.
 | [ADR-0018](0018-hazelcast-compatibility-surface-boundaries.md) | Accepted | Hazelcast surface boundaries: embedded facade + client-protocol facade + migration bridge supported; member co-clustering will NOT be supported. |
 | [ADR-0019](0019-hc2-client-transport.md) | Proposed for 0.68 | Prefer gRPC/protobuf for HC/2, subject to real TLS, Java, cancellation, and slow-consumer W0 evidence. |
 | [ADR-0020](0020-deferred-qualification-and-source-only-client-distribution.md) | Accepted for 0.68 | Defer 0.67.1 bare-metal qualification, publish Rust libraries plus the Rust HC/2 client under hosted evidence, and keep Java/Python clients source-only. |
+| [ADR-0021](0021-management-center-frontend-toolchain.md) | Accepted for 0.72 | Use strict TypeScript, Preact, and Vite with deterministic content-hashed embedding. |
 
 ## Naming
 

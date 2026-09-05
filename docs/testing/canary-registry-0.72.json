@@ -36,10 +36,10 @@
     },
     {
       "w_item": "W4",
-      "guard": {"file": "console/tests/history.test.js", "function": "canaryCollectionPausesForHiddenOrOfflineTabs"},
-      "canary": {"file": "console/tests/history.test.js", "function": "canaryCollectionPausesForHiddenOrOfflineTabs"},
-      "guard_command": {"program": "node", "args": ["--test", "--test-name-pattern=collection pauses for hidden or offline tabs", "./tests/history.test.js"], "env": {}, "cwd": "console", "platform": "any"},
-      "canary_command": {"program": "node", "args": ["--test", "--test-name-pattern=collection pauses for hidden or offline tabs", "./tests/history.test.js"], "env": {"HYDRACACHE_CANARY_DEFECT": "MC72-W4"}, "cwd": "console", "platform": "any"},
+      "guard": {"file": "console/src/history.test.ts", "function": "canaryCollectionPausesForHiddenOrOfflineTabs"},
+      "canary": {"file": "console/src/history.test.ts", "function": "canaryCollectionPausesForHiddenOrOfflineTabs"},
+      "guard_command": {"program": "npm", "args": ["run", "test:canary:w4"], "env": {}, "cwd": "console", "platform": "any"},
+      "canary_command": {"program": "npm", "args": ["run", "test:canary:w4"], "env": {"HYDRACACHE_CANARY_DEFECT": "MC72-W4"}, "cwd": "console", "platform": "any"},
       "defect_id": "MC72-W4", "expected_failure": "HC-CANARY-RED:MC72-W4", "timeout_seconds": 120, "tier": "fast", "artifacts": ["target/release-evidence/canaries/0.72-W4.json"], "red_evidence": "Browser-local history must pause when hidden and retain fixed point and byte budgets."
     },
     {

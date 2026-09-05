@@ -2,6 +2,7 @@ import {
   cpSync,
   mkdirSync,
   mkdtempSync,
+  readdirSync,
   readFileSync,
   rmSync,
   statSync,
@@ -16,9 +17,11 @@ import { fileURLToPath } from "node:url";
 export const RELEASE = "0.72.0";
 const SCRIPT_ROOT = dirname(dirname(fileURLToPath(import.meta.url)));
 const DEFAULT_REPO_ROOT = resolve(SCRIPT_ROOT, "..");
-const ASSETS = ["index.html", "app.js", "history.js", "style.css"];
 const CONTRACTS = [
+  "docs/architecture/management-center-v2.md",
+  "docs/testing/management-center/0.72/baselines.toml",
   "docs/testing/management-center/0.72/bounds.toml",
+  "docs/testing/management-center/0.72/claims.toml",
   "docs/testing/management-center/0.72/fault-matrix.toml",
   "docs/testing/management-center/0.72/healthchecks.toml",
   "docs/testing/management-center/0.72/source-map.toml",
@@ -53,8 +56,15 @@ export function assertCleanSource(repoRoot = DEFAULT_REPO_ROOT) {
 
 function sourceEntries(repoRoot) {
   const entries = [];
-  for (const asset of ASSETS) {
-    const source = join(repoRoot, "console", asset);
+  const dist = join(repoRoot, "console/dist");
+  const embeddedRoot = join(repoRoot, "crates/hydracache-server/console");
+  const assets = walkFiles(dist);
+  const embeddedAssets = walkFiles(embeddedRoot);
+  if (JSON.stringify(assets) !== JSON.stringify(embeddedAssets)) {
+    throw new Error("embedded console asset set differs from Vite dist");
+  }
+  for (const asset of assets) {
+    const source = join(dist, asset);
     const embedded = join(repoRoot, "crates/hydracache-server/console", asset);
     const sourceBytes = readFileSync(source);
     const embeddedBytes = readFileSync(embedded);
@@ -130,12 +140,28 @@ export function verifyBundle({ outDir, expectedSourceCommit }) {
   if (artifactSetDigest(actual) !== manifest.artifact_set_sha256) {
     throw new Error("bundle artifact-set digest mismatch");
   }
-  for (const asset of ASSETS) {
+  const consoleAssets = names
+    .filter((name) => name.startsWith("console/"))
+    .map((name) => name.slice("console/".length));
+  for (const asset of consoleAssets) {
     const source = readFileSync(join(destination, "console", asset));
     const embedded = readFileSync(join(destination, "embedded", asset));
     if (!source.equals(embedded)) throw new Error(`bundle embedded asset mismatch: ${asset}`);
   }
   return manifest;
+}
+
+function walkFiles(root) {
+  const found = [];
+  const visit = (directory) => {
+    for (const entry of readdirSync(directory, { withFileTypes: true })) {
+      const absolute = join(directory, entry.name);
+      if (entry.isDirectory()) visit(absolute);
+      else if (entry.isFile()) found.push(relative(root, absolute).replaceAll("\\", "/"));
+    }
+  };
+  visit(root);
+  return found.sort();
 }
 
 function cli() {

@@ -1,6 +1,8 @@
 # HydraCache Management Center
 
-This is the read-only 0.72 Management Center 2.0 bundle. It is intentionally separate
+This is the read-only 0.72 Management Center 2.0 bundle. The application is written in
+strict TypeScript with Preact components and built by Vite into content-hashed assets.
+It is intentionally separate
 from the simulator `demo/` bundle: the console renders the real admin read
 endpoints, while the demo remains a teaching lab.
 
@@ -16,8 +18,9 @@ TLS (prefer mTLS) at a trusted reverse proxy, strip all inbound `x-hydracache-*`
 capability headers, and set verified replacements. Do not expose the raw admin listener publicly.
 
 Static responses use a self-only Content Security Policy; JSON is `nosniff` and non-cacheable.
-The bundle has no CDN or runtime third-party dependency and constructs diagnostic values as text,
-never raw HTML. Management reads have an independent fail-fast concurrency budget of 16, returning
+The bundle has no CDN dependency; Preact is pinned, audited, and compiled into the candidate
+artifact. Diagnostic values are constructed as text, never raw HTML. Management reads have an
+independent fail-fast concurrency budget of 16, returning
 429 without consuming write-admin admission capacity.
 
 Charts retain history only in the current tab. The ring is frozen at 24 series,
@@ -32,7 +35,7 @@ Run locally:
 cd console
 npm ci
 npm test
-npm run supply-chain
+npm run test:coverage
 npm audit --audit-level=high
 ```
 
@@ -41,7 +44,8 @@ keyboard focus, forced colors, reduced motion, hostile diagnostic strings and GE
 behavior. `npm run supply-chain` validates exact pins, registry provenance, integrity and reviewed
 licenses, then emits `target/management-center-0.72-sbom.cdx.json`.
 
-The release gate is `cargo xtask verify`; it runs these specs when Node/npm are
+`npm run build` must regenerate both `console/dist` and the byte-identical embedded server
+assets. The release gate is `cargo xtask verify`; it runs these specs when Node/npm are
 available and logs an explicit skip when they are not installed.
 
 Fidelity note: `live`, `modeled`, `partial`, `stale`, and `unavailable` are

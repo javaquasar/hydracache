@@ -27,7 +27,7 @@ gate = "cargo test -p hydracache-server --test management_aggregation_072 --lock
 id = "W4-dashboard-history"
 status = "implemented"
 source = "crates/hydracache-server/src/management_http.rs + console/{index.html,app.js,history.js,style.css}"
-test = "crates/hydracache-server/tests/{management_http,admin_http}.rs + console/tests/{history.test.js,console_readonly.spec.js}"
+test = "crates/hydracache-server/tests/{management_http,admin_http}.rs + console/src/history.test.ts + console/tests/console_readonly.spec.js"
 gate = "npm --prefix console run build && npm --prefix console test && cargo test -p hydracache-server --test management_http --locked && cargo test -p hydracache-server --test admin_http --locked"
 
 [[work_item]]

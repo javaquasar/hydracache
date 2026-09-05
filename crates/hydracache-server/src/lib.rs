@@ -9,6 +9,7 @@ pub mod admin_http;
 pub mod bootstrap;
 pub mod cluster_status;
 pub mod config;
+mod generated_console_assets;
 mod grid_host;
 pub mod hc2;
 pub mod management_aggregation;

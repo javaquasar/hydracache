@@ -1,6 +1,6 @@
 use std::sync::{Arc, Mutex};
 
-use axum::extract::State;
+use axum::extract::{Path as AxumPath, State};
 use axum::http::header::CONTENT_TYPE;
 use axum::http::{HeaderMap, StatusCode};
 use axum::response::{IntoResponse, Response};
@@ -160,9 +160,7 @@ impl AdminHttpSurface {
                 .route(ADMIN_CONSOLE_PATH, get(console_index))
                 .route("/console/", get(console_index))
                 .route("/console/index.html", get(console_index))
-                .route("/console/app.js", get(console_app))
-                .route("/console/history.js", get(console_history))
-                .route("/console/style.css", get(console_style))
+                .route("/console/{*asset}", get(console_dist_asset))
                 .merge(crate::management_http::routes(
                     Arc::clone(&self.runtime),
                     Arc::clone(&self.management_cursors),
@@ -211,34 +209,17 @@ async fn metrics(
 }
 
 async fn console_index() -> Response {
-    console_asset(
-        "text/html; charset=utf-8",
-        include_str!("../console/index.html"),
-    )
+    console_asset_response("index.html")
 }
 
-async fn console_app() -> Response {
-    console_asset(
-        "text/javascript; charset=utf-8",
-        include_str!("../console/app.js"),
-    )
+async fn console_dist_asset(AxumPath(asset): AxumPath<String>) -> Response {
+    console_asset_response(&asset)
 }
 
-async fn console_history() -> Response {
-    console_asset(
-        "text/javascript; charset=utf-8",
-        include_str!("../console/history.js"),
-    )
-}
-
-async fn console_style() -> Response {
-    console_asset(
-        "text/css; charset=utf-8",
-        include_str!("../console/style.css"),
-    )
-}
-
-fn console_asset(content_type: &'static str, body: &'static str) -> Response {
+fn console_asset_response(path: &str) -> Response {
+    let Some((content_type, body)) = crate::generated_console_assets::get(path) else {
+        return StatusCode::NOT_FOUND.into_response();
+    };
     let mut response = ([(CONTENT_TYPE, content_type)], body).into_response();
     let headers = response.headers_mut();
     headers.insert(
