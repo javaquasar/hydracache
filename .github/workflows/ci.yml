@@ -20,6 +20,16 @@ on:
         required: false
         default: false
         type: boolean
+      run_management_candidate_soak_072:
+        description: "Run the exact six-hour 0.72 Management Center candidate soak"
+        required: false
+        default: false
+        type: boolean
+      run_management_ship_soak_072:
+        description: "Run six-hour candidate plus 24-hour 0.72 ship confirmation on one release host"
+        required: false
+        default: false
+        type: boolean
       run_reference_performance:
         description: "Run 0.67 ship evidence on the authorized self-hosted bare-metal runner"
         required: false
@@ -1383,6 +1393,78 @@ jobs:
         with:
           name: SOAK_REPORT
           path: SOAK_REPORT.json
+
+  management-candidate-soak-072:
+    name: 0.72 Management Candidate Soak
+    runs-on: [self-hosted, linux, x64, hydracache-release]
+    timeout-minutes: 420
+    if: github.event_name == 'workflow_dispatch' && inputs.run_management_candidate_soak_072
+
+    steps:
+      - name: Checkout exact candidate
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Prove exact-candidate HC1 and HC2 coexistence
+        run: cargo run -p xtask --locked -- evidence-run --release 0.72 --gate tool.hydracache-server.management-hc1-hc2-coexistence-072
+
+      - name: Run exact six-hour 0.72 management candidate soak
+        env:
+          HYDRACACHE_RELEASE_HOST_ID: ${{ runner.name }}
+        run: cargo run -p xtask --locked -- evidence-run --release 0.72 --gate env.hydracache-run-management-candidate-soak-072
+
+      - name: Upload exact candidate soak evidence
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: "management-candidate-soak-072-${{ github.sha }}-${{ runner.name }}"
+          path: |
+            target/test-evidence/0.72/management-candidate-soak.json
+            target/release-evidence/receipts/**
+          if-no-files-found: error
+
+  management-ship-soak-072:
+    name: 0.72 Management Ship Confirmation
+    runs-on: [self-hosted, linux, x64, hydracache-release]
+    timeout-minutes: 1900
+    if: github.event_name == 'workflow_dispatch' && inputs.run_management_ship_soak_072
+
+    steps:
+      - name: Checkout exact candidate
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Prove exact-candidate HC1 and HC2 coexistence
+        run: cargo run -p xtask --locked -- evidence-run --release 0.72 --gate tool.hydracache-server.management-hc1-hc2-coexistence-072
+
+      - name: Re-run exact six-hour candidate soak on ship host
+        env:
+          HYDRACACHE_RELEASE_HOST_ID: ${{ runner.name }}
+        run: cargo run -p xtask --locked -- evidence-run --release 0.72 --gate env.hydracache-run-management-candidate-soak-072
+
+      - name: Run exact 24-hour 0.72 management ship soak
+        env:
+          HYDRACACHE_RELEASE_HOST_ID: ${{ runner.name }}
+        run: cargo run -p xtask --locked -- evidence-run --release 0.72 --gate env.hydracache-run-management-ship-soak-072
+
+      - name: Upload exact ship soak evidence
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: "management-ship-soak-072-${{ github.sha }}-${{ runner.name }}"
+          path: |
+            target/test-evidence/0.72/management-candidate-soak.json
+            target/test-evidence/0.72/management-ship-soak.json
+            target/release-evidence/receipts/**
+          if-no-files-found: error
 
   raft-corner-case-nightly:
     name: Raft Corner-Case Nightly

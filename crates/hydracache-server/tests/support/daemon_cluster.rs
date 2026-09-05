@@ -388,6 +388,10 @@ impl DaemonCluster {
         self.nodes[index].spec.admin_addr
     }
 
+    pub fn client_addr(&self, index: usize) -> SocketAddr {
+        self.nodes[index].spec.listen_addr
+    }
+
     pub fn redis_addr(&self, index: usize) -> Option<SocketAddr> {
         self.nodes[index].spec.redis_addr
     }

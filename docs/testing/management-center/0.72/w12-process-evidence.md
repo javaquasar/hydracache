@@ -1,8 +1,8 @@
 # W12 process, fault, soak, and resource evidence
 
 This work item adds executable proof machinery; it does not synthesize the six-hour candidate or
-24-hour ship receipts. Those receipts must be produced from the frozen candidate on the admitted
-host and remain W14 release inputs.
+24-hour ship receipts. Dedicated external gates produce those receipts from the frozen candidate
+on the admitted host and keep them as W14 release inputs.
 
 ## Fast and real-process evidence
 
@@ -50,9 +50,24 @@ source and changing the source map, tests and canaries together.
 
 ## Scheduled/candidate/ship evidence contract
 
+The candidate and ship tiers are executable, non-overridable wall-clock tests:
+
+- `env.hydracache-run-management-candidate-soak-072` runs exactly six hours;
+- `env.hydracache-run-management-ship-soak-072` runs exactly 24 hours;
+- both start three production daemons with RESP, poll the typed dashboard every second, issue HC/1
+  writes and RESP traffic every second, restart a follower hourly, require visible partial truth and
+  full recovery, enforce p95/FD/RSS ceilings, and retain a binary-bound JSON artifact;
+- the paired `tool.hydracache-server.management-hc1-hc2-coexistence-072` gate starts the same exact
+  candidate as a real process and proves HC/1 plus mTLS HC/2 shared-dispatch traffic and clean drain;
+- the ship workflow first repeats the candidate gate and then runs the ship gate in the same job on
+  the same labelled self-hosted Linux runner. The hashed `HYDRACACHE_RELEASE_HOST_ID` is retained in
+  both artifacts, and the two standard evidence receipts bind them to the same source SHA;
+- ordinary nightly runners cannot shorten either duration. Both gates are `ship_mandatory` and are
+  required by W12, so absent self-hosted execution remains a red admission result.
+
 The source commit freezes the scenario tiers and receipt schema. Scheduled 3/5/7-daemon churn,
-Prometheus and disk faults, the six-hour candidate poll/load run, the 24-hour ship confirmation and
-rolling upgrade/rollback must record the exact candidate binary/UI/schema/SBOM hashes, host
+Prometheus and disk faults and rolling upgrade/rollback must record the exact candidate
+binary/UI/schema/SBOM hashes, host
 fingerprint, seed, external schedule, activation receipts, redacted logs/traces, resource series,
   endpoint histogram and every linked attempt. A missing environment is a blocking structured result,
   not success; a retry cannot overwrite its predecessor. Shared Windows execution proves structure

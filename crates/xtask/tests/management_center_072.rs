@@ -282,6 +282,9 @@ fn management_w12_requires_dedicated_process_and_linux_resource_receipts() {
     for gate in [
         "env.hydracache-run-management-process-072",
         "env.hydracache-run-management-resource-linux-072",
+        "tool.hydracache-server.management-hc1-hc2-coexistence-072",
+        "env.hydracache-run-management-candidate-soak-072",
+        "env.hydracache-run-management-ship-soak-072",
     ] {
         assert!(release.contains(gate), "W12 does not require {gate}");
         assert!(
@@ -310,4 +313,12 @@ fn management_w12_requires_dedicated_process_and_linux_resource_receipts() {
         .find(|row| row.contains("id = \"bounded-resource-pressure\""))
         .expect("bounded resource pressure taxonomy row");
     assert!(pressure.contains("status = \"covered\""));
+
+    let process =
+        fs::read_to_string(root().join("crates/hydracache-server/tests/management_process_072.rs"))
+            .expect("management process suite");
+    assert!(process.contains("const CANDIDATE_SOAK_SECONDS: u64 = 6 * 60 * 60"));
+    assert!(process.contains("const SHIP_SOAK_SECONDS: u64 = 24 * 60 * 60"));
+    assert!(process.contains("management-candidate-soak.json"));
+    assert!(process.contains("management-ship-soak.json"));
 }

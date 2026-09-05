@@ -4697,6 +4697,102 @@ platform = "linux"
 HYDRACACHE_RUN_MANAGEMENT_RESOURCE_LINUX_072 = "1"
 
 [[gate]]
+id = "env.hydracache-run-management-candidate-soak-072"
+kind = "env_gate"
+source = "crates/hydracache-server/tests/management_process_072.rs"
+package = "hydracache-server"
+target = "management_process_072"
+test = "candidate_six_hour_management_soak_is_bounded_and_recovers"
+cfg = "target_os=linux"
+env = "HYDRACACHE_RUN_MANAGEMENT_CANDIDATE_SOAK_072"
+reason = "The frozen 0.72 candidate must sustain six hours of fixed-rate management polling, RESP traffic and hourly follower recovery on an admitted Linux host"
+tier = "external"
+required_features = []
+required_env = ["HYDRACACHE_RUN_MANAGEMENT_CANDIDATE_SOAK_072", "HYDRACACHE_RELEASE_HOST_ID"]
+required_tools = []
+timeout_seconds = 23400
+owner_release = "0.72.0"
+ship_mandatory = true
+artifacts = ["target/test-evidence/0.72/management-candidate-soak.json"]
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "management-candidate-soak-072"
+step = "Run exact six-hour 0.72 management candidate soak"
+
+[gate.command]
+program = "cargo"
+args = ["test", "-p", "hydracache-server", "--test", "management_process_072", "--locked", "candidate_six_hour_management_soak_is_bounded_and_recovers", "--", "--exact", "--nocapture", "--test-threads=1"]
+cwd = "."
+platform = "linux"
+
+[gate.command.env]
+HYDRACACHE_RUN_MANAGEMENT_CANDIDATE_SOAK_072 = "1"
+
+[[gate]]
+id = "tool.hydracache-server.management-hc1-hc2-coexistence-072"
+kind = "external_tool"
+source = "crates/hydracache-server/tests/hc2_daemon_process.rs"
+package = "hydracache-server"
+target = "hc2_daemon_process"
+test = "real_daemon_shares_hc1_hc2_dispatch_and_exits_on_drain"
+cfg = "target_os=linux"
+env = ""
+reason = "The exact 0.72 candidate must prove real HC/1 and mTLS HC/2 traffic share dispatch and remain observable before the long management soak"
+tier = "external"
+required_features = []
+required_env = []
+required_tools = ["cargo"]
+timeout_seconds = 600
+owner_release = "0.72.0"
+ship_mandatory = true
+artifacts = []
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "management-candidate-soak-072"
+step = "Prove exact-candidate HC1 and HC2 coexistence"
+
+[gate.command]
+program = "cargo"
+args = ["test", "-p", "hydracache-server", "--test", "hc2_daemon_process", "--locked", "real_daemon_shares_hc1_hc2_dispatch_and_exits_on_drain", "--", "--exact", "--nocapture", "--test-threads=1"]
+cwd = "."
+platform = "linux"
+
+[[gate]]
+id = "env.hydracache-run-management-ship-soak-072"
+kind = "env_gate"
+source = "crates/hydracache-server/tests/management_process_072.rs"
+package = "hydracache-server"
+target = "management_process_072"
+test = "ship_twenty_four_hour_management_soak_is_bounded_and_recovers"
+cfg = "target_os=linux"
+env = "HYDRACACHE_RUN_MANAGEMENT_SHIP_SOAK_072"
+reason = "The exact 0.72 candidate must sustain 24 hours of fixed-rate management polling, RESP traffic and hourly follower recovery on the same admitted Linux host"
+tier = "external"
+required_features = []
+required_env = ["HYDRACACHE_RUN_MANAGEMENT_SHIP_SOAK_072", "HYDRACACHE_RELEASE_HOST_ID"]
+required_tools = []
+timeout_seconds = 90000
+owner_release = "0.72.0"
+ship_mandatory = true
+artifacts = ["target/test-evidence/0.72/management-ship-soak.json"]
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "management-ship-soak-072"
+step = "Run exact 24-hour 0.72 management ship soak"
+
+[gate.command]
+program = "cargo"
+args = ["test", "-p", "hydracache-server", "--test", "management_process_072", "--locked", "ship_twenty_four_hour_management_soak_is_bounded_and_recovers", "--", "--exact", "--nocapture", "--test-threads=1"]
+cwd = "."
+platform = "linux"
+
+[gate.command.env]
+HYDRACACHE_RUN_MANAGEMENT_SHIP_SOAK_072 = "1"
+
+[[gate]]
 id = "env.hydracache-run-redis-resp-multinode-e2e"
 kind = "env_gate"
 source = "crates/hydracache-server/tests/support/daemon_cluster.rs"

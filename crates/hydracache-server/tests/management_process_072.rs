@@ -2,9 +2,16 @@ mod support;
 
 use std::collections::{BTreeMap, BTreeSet};
 use std::fs;
+use std::io::{Read, Write};
+use std::net::{Shutdown, SocketAddr, TcpStream};
 use std::path::{Path, PathBuf};
-use std::time::Instant;
+use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
 
+use hydracache_client_protocol::{
+    ClientFrame, ClientRequest, ClientRequestEnvelope, ClientResponse, ClientWireMessage,
+    Namespace, StructuredKey,
+};
+use hydracache_client_transport_axum::CLIENT_DATA_PATH;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use sha2::{Digest, Sha256};
@@ -19,6 +26,10 @@ const MAX_FD_GROWTH: u64 = 12;
 const MAX_RSS_GROWTH_KIB: u64 = 65_536;
 const MANAGEMENT_PROCESS_ENV: &str = "HYDRACACHE_RUN_MANAGEMENT_PROCESS_072";
 const MANAGEMENT_RESOURCE_ENV: &str = "HYDRACACHE_RUN_MANAGEMENT_RESOURCE_LINUX_072";
+const MANAGEMENT_CANDIDATE_SOAK_ENV: &str = "HYDRACACHE_RUN_MANAGEMENT_CANDIDATE_SOAK_072";
+const MANAGEMENT_SHIP_SOAK_ENV: &str = "HYDRACACHE_RUN_MANAGEMENT_SHIP_SOAK_072";
+const CANDIDATE_SOAK_SECONDS: u64 = 6 * 60 * 60;
+const SHIP_SOAK_SECONDS: u64 = 24 * 60 * 60;
 
 #[derive(Debug, Deserialize)]
 struct FaultMatrix {
@@ -66,6 +77,29 @@ struct ResourceReceipt {
     rss_kib: u64,
     rss_hwm_kib: u64,
     open_fds: u64,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+struct SoakReceipt {
+    schema_version: u32,
+    release: String,
+    tier: String,
+    required_duration_seconds: u64,
+    observed_duration_seconds: u64,
+    started_unix_seconds: u64,
+    ended_unix_seconds: u64,
+    host_fingerprint_sha256: String,
+    binary_sha256: String,
+    seed: u64,
+    management_samples: u64,
+    hc1_samples: u64,
+    resp_samples: u64,
+    recovery_cycles: u64,
+    endpoint_p95_ms: u64,
+    schedule_digest: String,
+    event_digest: String,
+    baseline: ResourceReceipt,
+    final_sample: ResourceReceipt,
 }
 
 impl From<OsResourceTotals> for ResourceReceipt {
@@ -126,6 +160,214 @@ fn p95(mut samples: Vec<u64>) -> u64 {
         .div_ceil(100)
         .saturating_sub(1);
     samples.get(index).copied().unwrap_or_default()
+}
+
+fn resp_ping(addr: SocketAddr) -> TestResult {
+    let mut stream = TcpStream::connect_timeout(&addr, Duration::from_secs(3))?;
+    stream.set_read_timeout(Some(Duration::from_secs(3)))?;
+    stream.set_write_timeout(Some(Duration::from_secs(3)))?;
+    stream.write_all(b"*1\r\n$4\r\nPING\r\n")?;
+    let mut response = [0_u8; 7];
+    stream.read_exact(&mut response)?;
+    if response != *b"+PONG\r\n" {
+        return Err(format!("unexpected RESP PING response: {response:?}").into());
+    }
+    Ok(())
+}
+
+fn hc1_put(addr: SocketAddr, sequence: u64) -> TestResult {
+    let namespace = Namespace::new("management-soak")?;
+    let key = StructuredKey::new(vec![format!("{sequence:016x}")])?;
+    let frame =
+        ClientFrame::from_message(&ClientWireMessage::Request(ClientRequestEnvelope::new(
+            format!("soak-{sequence}"),
+            ClientRequest::Put {
+                ns: namespace,
+                key,
+                value: sequence.to_be_bytes().to_vec(),
+                ttl_ms: Some(60_000),
+                dimensions: Vec::new(),
+            },
+        )))?
+        .encode()?;
+    let mut stream = TcpStream::connect_timeout(&addr, Duration::from_secs(3))?;
+    stream.set_read_timeout(Some(Duration::from_secs(3)))?;
+    stream.set_write_timeout(Some(Duration::from_secs(3)))?;
+    let request = format!(
+        "POST {CLIENT_DATA_PATH} HTTP/1.1\r\nHost: {addr}\r\nx-hydracache-client-id: management-soak\r\nx-hydracache-tenant: system\r\nContent-Length: {}\r\nConnection: close\r\n\r\n",
+        frame.len()
+    );
+    stream.write_all(request.as_bytes())?;
+    stream.write_all(&frame)?;
+    stream.shutdown(Shutdown::Write)?;
+    let mut response = Vec::new();
+    stream.read_to_end(&mut response)?;
+    let marker = b"\r\n\r\n";
+    let body = response
+        .windows(marker.len())
+        .position(|window| window == marker)
+        .map(|index| &response[index + marker.len()..])
+        .ok_or("HC/1 response has no header boundary")?;
+    let decoded = ClientFrame::decode(body, 1024 * 1024)?.decode_message()?;
+    match decoded {
+        ClientWireMessage::Response(response)
+            if matches!(response.result, Ok(ClientResponse::Stored)) =>
+        {
+            Ok(())
+        }
+        other => Err(format!("unexpected HC/1 response: {other:?}").into()),
+    }
+}
+
+fn management_soak_enabled(name: &str) -> bool {
+    std::env::var(name).as_deref() == Ok("1")
+}
+
+fn host_fingerprint() -> String {
+    sha256(format!(
+        "{}|{}|{}|{}",
+        std::env::consts::OS,
+        std::env::consts::ARCH,
+        std::thread::available_parallelism().map_or(0, usize::from),
+        std::env::var("HYDRACACHE_RELEASE_HOST_ID").unwrap_or_default()
+    ))
+}
+
+fn run_management_soak(tier: &str, required_duration: Duration, output: &Path) -> TestResult {
+    let mut cluster = DaemonCluster::start_bootstrap_with_redis(3, tier)?;
+    let statuses = cluster.wait_for_shape(3, 3)?;
+    let leader = statuses[0].leader.clone().ok_or("leader before soak")?;
+    let victim = cluster
+        .node_ids()
+        .iter()
+        .position(|node| node != &leader)
+        .ok_or("follower victim")?;
+    let observer = (0..3).find(|index| *index != victim).ok_or("observer")?;
+    let redis = cluster.redis_addr(observer).ok_or("RESP listener")?;
+    let hc1 = cluster.client_addr(observer);
+    let baseline = cluster
+        .os_resource_totals()
+        .map(ResourceReceipt::from)
+        .ok_or("Linux /proc resource baseline is unavailable")?;
+    let started_unix_seconds = SystemTime::now().duration_since(UNIX_EPOCH)?.as_secs();
+    let start = Instant::now();
+    let deadline = start + required_duration;
+    let mut management_samples = 0_u64;
+    let mut hc1_samples = 0_u64;
+    let mut resp_samples = 0_u64;
+    let mut recovery_cycles = 0_u64;
+    let mut latencies = Vec::new();
+    let mut events = Vec::new();
+    let fault_interval = Duration::from_secs(60 * 60);
+    let mut next_fault = start + fault_interval;
+    let mut next_sample = start;
+    while Instant::now() < deadline {
+        let request_start = Instant::now();
+        let dashboard = cluster.management_json(observer, "/management/v1/dashboard")?;
+        latencies.push(request_start.elapsed().as_millis() as u64);
+        assert_eq!(dashboard["data"]["cluster"]["quorum_ok"], true);
+        management_samples += 1;
+        hc1_put(hc1, management_samples)?;
+        hc1_samples += 1;
+        resp_ping(redis)?;
+        resp_samples += 1;
+        if Instant::now() >= next_fault {
+            cluster.kill(victim)?;
+            cluster.wait_for_responsive_shape(2, 3, 3)?;
+            let partial = cluster.management_json(observer, "/management/v1/dashboard")?;
+            assert_eq!(partial["completeness"], "partial");
+            cluster.restart(victim)?;
+            cluster.wait_for_shape(3, 3)?;
+            recovery_cycles += 1;
+            events.push(format!("recovery:{recovery_cycles}"));
+            next_fault += fault_interval;
+        }
+        next_sample += Duration::from_secs(1);
+        if let Some(delay) = next_sample.checked_duration_since(Instant::now()) {
+            std::thread::sleep(delay);
+        }
+    }
+    let observed_duration_seconds = start.elapsed().as_secs();
+    assert!(observed_duration_seconds >= required_duration.as_secs());
+    assert!(recovery_cycles >= required_duration.as_secs() / fault_interval.as_secs());
+    let final_sample = cluster
+        .os_resource_totals()
+        .map(ResourceReceipt::from)
+        .ok_or("Linux /proc resource final sample is unavailable")?;
+    assert!(final_sample.open_fds <= baseline.open_fds.saturating_add(MAX_FD_GROWTH));
+    assert!(final_sample.rss_kib <= baseline.rss_hwm_kib.saturating_add(MAX_RSS_GROWTH_KIB));
+    let endpoint_p95_ms = p95(latencies);
+    assert!(endpoint_p95_ms <= MAX_ENDPOINT_P95_MS);
+    let schedule = vec![
+        format!("duration:{}", required_duration.as_secs()),
+        "poll:management-dashboard:1s".to_owned(),
+        "traffic:hc1-put:1s".to_owned(),
+        "traffic:resp-ping:1s".to_owned(),
+        "fault:follower-restart:1h".to_owned(),
+    ];
+    let receipt = SoakReceipt {
+        schema_version: 1,
+        release: "0.72.0".to_owned(),
+        tier: tier.to_owned(),
+        required_duration_seconds: required_duration.as_secs(),
+        observed_duration_seconds,
+        started_unix_seconds,
+        ended_unix_seconds: SystemTime::now().duration_since(UNIX_EPOCH)?.as_secs(),
+        host_fingerprint_sha256: host_fingerprint(),
+        binary_sha256: sha256(fs::read(cluster.binary_path(observer))?),
+        seed: SEED,
+        management_samples,
+        hc1_samples,
+        resp_samples,
+        recovery_cycles,
+        endpoint_p95_ms,
+        schedule_digest: canonical_digest(&schedule),
+        event_digest: canonical_digest(&events),
+        baseline,
+        final_sample,
+    };
+    if let Some(parent) = output.parent() {
+        fs::create_dir_all(parent)?;
+    }
+    fs::write(output, serde_json::to_vec_pretty(&receipt)?)?;
+    let reread: SoakReceipt = serde_json::from_slice(&fs::read(output)?)?;
+    assert_eq!(reread, receipt);
+    Ok(())
+}
+
+#[test]
+fn candidate_six_hour_management_soak_is_bounded_and_recovers() -> TestResult {
+    if !management_soak_enabled(MANAGEMENT_CANDIDATE_SOAK_ENV) {
+        eprintln!(
+            "skipped: set {MANAGEMENT_CANDIDATE_SOAK_ENV}=1 on the admitted Linux release host"
+        );
+        return Ok(());
+    }
+    run_management_soak(
+        "candidate-six-hour",
+        Duration::from_secs(CANDIDATE_SOAK_SECONDS),
+        &workspace_root().join("target/test-evidence/0.72/management-candidate-soak.json"),
+    )
+}
+
+#[test]
+fn ship_twenty_four_hour_management_soak_is_bounded_and_recovers() -> TestResult {
+    if !management_soak_enabled(MANAGEMENT_SHIP_SOAK_ENV) {
+        eprintln!("skipped: set {MANAGEMENT_SHIP_SOAK_ENV}=1 on the admitted Linux release host");
+        return Ok(());
+    }
+    run_management_soak(
+        "ship-twenty-four-hour",
+        Duration::from_secs(SHIP_SOAK_SECONDS),
+        &workspace_root().join("target/test-evidence/0.72/management-ship-soak.json"),
+    )
+}
+
+#[test]
+fn soak_tiers_have_non_overridable_release_durations_and_distinct_artifacts() {
+    assert_eq!(CANDIDATE_SOAK_SECONDS, 21_600);
+    assert_eq!(SHIP_SOAK_SECONDS, 86_400);
+    assert_ne!(MANAGEMENT_CANDIDATE_SOAK_ENV, MANAGEMENT_SHIP_SOAK_ENV);
 }
 
 fn validate_attempt_chain(

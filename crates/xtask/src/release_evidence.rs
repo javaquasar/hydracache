@@ -217,6 +217,9 @@ pub fn build_report(
         }
     }
     let receipts = load_receipts(root, receipts_dir, &mut global_reasons)?;
+    if receipts_dir.is_some() && normalize_release(release) == "0.72.0" {
+        global_reasons.extend(management_soak_pair_problems(root));
+    }
     let quarantine_report = quarantine::check_at(root, release, time::OffsetDateTime::now_utc())?;
     if !quarantine_report.problems.is_empty() {
         return Err(quarantine_report.problems.join("; ").into());
@@ -591,6 +594,16 @@ fn referenced_runtime_artifact_problems(
 ) -> Vec<String> {
     const EVIDENCE_PREFIX: &str = "target/test-evidence/0.67/";
 
+    if normalize_release(release) == "0.72.0"
+        && matches!(
+            artifact,
+            "target/test-evidence/0.72/management-candidate-soak.json"
+                | "target/test-evidence/0.72/management-ship-soak.json"
+        )
+    {
+        return management_soak_artifact_problems(artifact, bytes);
+    }
+
     if normalize_release(release) != "0.67.0"
         || !artifact.replace('\\', "/").starts_with(EVIDENCE_PREFIX)
         || !artifact.ends_with(".json")
@@ -640,6 +653,123 @@ fn referenced_runtime_artifact_problems(
         }
     }
     problems
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
+struct ManagementSoakArtifact {
+    schema_version: u32,
+    release: String,
+    tier: String,
+    required_duration_seconds: u64,
+    observed_duration_seconds: u64,
+    started_unix_seconds: u64,
+    ended_unix_seconds: u64,
+    host_fingerprint_sha256: String,
+    binary_sha256: String,
+    seed: u64,
+    management_samples: u64,
+    hc1_samples: u64,
+    resp_samples: u64,
+    recovery_cycles: u64,
+    endpoint_p95_ms: u64,
+    schedule_digest: String,
+    event_digest: String,
+    baseline: ManagementSoakResource,
+    final_sample: ManagementSoakResource,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
+struct ManagementSoakResource {
+    rss_kib: u64,
+    rss_hwm_kib: u64,
+    open_fds: u64,
+}
+
+fn management_soak_artifact_problems(artifact: &str, bytes: &[u8]) -> Vec<String> {
+    let receipt: ManagementSoakArtifact = match serde_json::from_slice(bytes) {
+        Ok(receipt) => receipt,
+        Err(error) => {
+            return vec![format!(
+                "invalid management soak artifact {artifact}: {error}"
+            )]
+        }
+    };
+    let (tier, duration) = if artifact.ends_with("management-candidate-soak.json") {
+        ("candidate-six-hour", 21_600)
+    } else {
+        ("ship-twenty-four-hour", 86_400)
+    };
+    let mut problems = Vec::new();
+    if receipt.schema_version != 1
+        || receipt.release != "0.72.0"
+        || receipt.tier != tier
+        || receipt.required_duration_seconds != duration
+        || receipt.observed_duration_seconds < duration
+    {
+        problems.push(format!(
+            "{artifact} has wrong schema, tier or wall-clock duration"
+        ));
+    }
+    if receipt.ended_unix_seconds < receipt.started_unix_seconds.saturating_add(duration) {
+        problems.push(format!(
+            "{artifact} wall-clock timestamps are shorter than the tier"
+        ));
+    }
+    if receipt.management_samples < duration.saturating_sub(300)
+        || receipt.hc1_samples != receipt.management_samples
+        || receipt.resp_samples != receipt.management_samples
+        || receipt.recovery_cycles < duration / 3_600
+    {
+        problems.push(format!(
+            "{artifact} lacks fixed-rate traffic or hourly recovery samples"
+        ));
+    }
+    if receipt.endpoint_p95_ms > 2_500
+        || receipt.final_sample.open_fds > receipt.baseline.open_fds.saturating_add(12)
+        || receipt.final_sample.rss_kib > receipt.baseline.rss_hwm_kib.saturating_add(65_536)
+    {
+        problems.push(format!("{artifact} exceeds latency, FD or RSS bounds"));
+    }
+    for (name, digest) in [
+        ("host fingerprint", &receipt.host_fingerprint_sha256),
+        ("binary", &receipt.binary_sha256),
+        ("schedule", &receipt.schedule_digest),
+        ("event", &receipt.event_digest),
+    ] {
+        if digest.len() != 64 || !digest.bytes().all(|byte| byte.is_ascii_hexdigit()) {
+            problems.push(format!("{artifact} has invalid {name} digest"));
+        }
+    }
+    if receipt.seed != 0x0720_1200_0000_0001 {
+        problems.push(format!("{artifact} has an unreviewed seed"));
+    }
+    problems
+}
+
+fn management_soak_pair_problems(root: &Path) -> Vec<String> {
+    let candidate_path = root.join("target/test-evidence/0.72/management-candidate-soak.json");
+    let ship_path = root.join("target/test-evidence/0.72/management-ship-soak.json");
+    let candidate = fs::read(&candidate_path)
+        .ok()
+        .and_then(|bytes| serde_json::from_slice::<ManagementSoakArtifact>(&bytes).ok());
+    let ship = fs::read(&ship_path)
+        .ok()
+        .and_then(|bytes| serde_json::from_slice::<ManagementSoakArtifact>(&bytes).ok());
+    match (candidate, ship) {
+        (Some(candidate), Some(ship))
+            if candidate.host_fingerprint_sha256 == ship.host_fingerprint_sha256
+                && candidate.binary_sha256 == ship.binary_sha256 =>
+        {
+            Vec::new()
+        }
+        (Some(_), Some(_)) => vec![
+            "0.72 candidate and ship soak artifacts use different host or binary fingerprints"
+                .to_owned(),
+        ],
+        _ => vec!["0.72 candidate/ship soak artifact pair is incomplete".to_owned()],
+    }
 }
 
 fn collect_archived_file_receipts<'a>(
@@ -1333,7 +1463,9 @@ impl Options {
 
 #[cfg(test)]
 mod language_selector_tests {
-    use super::{java_test_exists, python_test_exists, rust_test_exists};
+    use super::{
+        java_test_exists, management_soak_artifact_problems, python_test_exists, rust_test_exists,
+    };
 
     #[test]
     fn java_selector_requires_a_junit_annotation() {
@@ -1355,5 +1487,49 @@ mod language_selector_tests {
     fn rust_selector_still_requires_a_test_attribute() {
         assert!(rust_test_exists("#[test]\nfn contract() {}", "contract").unwrap());
         assert!(!rust_test_exists("fn contract() {}", "contract").unwrap());
+    }
+
+    #[test]
+    fn management_soak_artifact_requires_real_duration_traffic_recovery_and_bounds() {
+        let artifact = serde_json::json!({
+            "schema_version": 1,
+            "release": "0.72.0",
+            "tier": "candidate-six-hour",
+            "required_duration_seconds": 21600,
+            "observed_duration_seconds": 21600,
+            "started_unix_seconds": 100,
+            "ended_unix_seconds": 21700,
+            "host_fingerprint_sha256": "a".repeat(64),
+            "binary_sha256": "b".repeat(64),
+            "seed": 0x0720_1200_0000_0001_u64,
+            "management_samples": 21600,
+            "hc1_samples": 21600,
+            "resp_samples": 21600,
+            "recovery_cycles": 6,
+            "endpoint_p95_ms": 100,
+            "schedule_digest": "c".repeat(64),
+            "event_digest": "d".repeat(64),
+            "baseline": {"rss_kib": 1000, "rss_hwm_kib": 1100, "open_fds": 20},
+            "final_sample": {"rss_kib": 1200, "rss_hwm_kib": 1250, "open_fds": 24}
+        });
+        let bytes = serde_json::to_vec(&artifact).unwrap();
+        assert!(management_soak_artifact_problems(
+            "target/test-evidence/0.72/management-candidate-soak.json",
+            &bytes
+        )
+        .is_empty());
+
+        let mut shortened = artifact;
+        shortened["observed_duration_seconds"] = 60.into();
+        shortened["ended_unix_seconds"] = 160.into();
+        shortened["hc1_samples"] = 0.into();
+        shortened["endpoint_p95_ms"] = 2501.into();
+        let problems = management_soak_artifact_problems(
+            "target/test-evidence/0.72/management-candidate-soak.json",
+            &serde_json::to_vec(&shortened).unwrap(),
+        );
+        assert!(problems.iter().any(|problem| problem.contains("duration")));
+        assert!(problems.iter().any(|problem| problem.contains("traffic")));
+        assert!(problems.iter().any(|problem| problem.contains("bounds")));
     }
 }
