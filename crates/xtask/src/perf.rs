@@ -892,7 +892,7 @@ fn exact_tmpfs_publication_contract(
 ) -> bool {
     matches!(
         observation.performance_mode,
-        Some("qualify" | "full-dress" | "bootstrap")
+        Some("qualify" | "full-dress" | "bootstrap" | "frozen-candidate")
     ) && observation.github_actions == Some("true")
         && observation.github_sha == Some(source_commit)
         && observation.parent == root.join("target/test-evidence/0.67")
@@ -1550,7 +1550,7 @@ fn resolve_reference_cpu_affinity(
 
     if matches!(
         performance_0671_mode,
-        Some("qualify" | "full-dress" | "bootstrap")
+        Some("qualify" | "full-dress" | "bootstrap" | "frozen-candidate")
     ) {
         let isolation = &attestation.cpu_isolation;
         if process_cpu_affinity != REFERENCE_HOUSEKEEPING_AFFINITY
@@ -1916,7 +1916,7 @@ mod preflight_tests {
             resolve_reference_cpu_affinity("1-4", &profile, &attestation, None).unwrap(),
             "1-4"
         );
-        for mode in ["qualify", "full-dress", "bootstrap"] {
+        for mode in ["qualify", "full-dress", "bootstrap", "frozen-candidate"] {
             assert_eq!(
                 resolve_reference_cpu_affinity("0,5-7", &profile, &attestation, Some(mode))
                     .unwrap(),
@@ -1994,7 +1994,7 @@ mod preflight_tests {
             )
         };
 
-        for mode in ["qualify", "full-dress", "bootstrap"] {
+        for mode in ["qualify", "full-dress", "bootstrap", "frozen-candidate"] {
             assert!(matches(
                 Some(mode),
                 Some("true"),
