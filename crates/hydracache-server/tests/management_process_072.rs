@@ -280,9 +280,22 @@ fn one_daemon_production_management_surface_is_typed_and_honest() -> TestResult 
     let (index_status, index) = public_text_status(admin_addr, "/console/")?;
     let (app_status, app) = public_text_status(admin_addr, "/console/app.js")?;
     assert_eq!((index_status, app_status), (200, 200));
-    assert!(index.contains("<main") && index.contains("read only"));
-    assert!(app.contains("x-hydracache-management-read"));
-    assert!(!app.contains("x-hydracache-admin"));
+    assert!(index.contains("<div id=\"app\"></div>"));
+    let entry_start = index
+        .find("src=\"./assets/")
+        .ok_or("console index is missing its content-hashed module entry")?
+        + "src=\".".len();
+    let entry_end = index[entry_start..]
+        .find('"')
+        .ok_or("console module entry is not quote terminated")?
+        + entry_start;
+    let entry_path = format!("/console{}", &index[entry_start..entry_end]);
+    assert!(entry_path.starts_with("/console/assets/") && entry_path.ends_with(".js"));
+    let (entry_status, entry) = public_text_status(admin_addr, &entry_path)?;
+    assert_eq!(entry_status, 200);
+    assert!(app.contains("import \"./assets/"));
+    assert!(entry.contains("x-hydracache-management-read"));
+    assert!(!entry.contains("x-hydracache-admin"));
     assert!(!index.contains("https://") && !index.contains("http://"));
     for path in [
         "/management/v1/capabilities",

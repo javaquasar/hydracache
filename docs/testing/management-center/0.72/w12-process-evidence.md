@@ -10,9 +10,9 @@ host and remain W14 release inputs.
   rows, resolves every registered `path::test` to a real function, tests fail-closed projection,
   deterministic framed SHA-256 digests, append-only retry chains, and all four W12 canaries.
 - With `HYDRACACHE_RUN_DAEMON_PROCESS_E2E=1`, the one-daemon test starts the production binary,
-  reads the embedded console bundle, proves the bundle sends `management.read` rather than
-  write-admin, exercises all management sections, and preserves unknown recovery without a retained
-  source.
+  resolves the content-hashed module from the served production `index.html`, reads that exact
+  embedded asset, proves the bundle sends `management.read` rather than write-admin, exercises all
+  management sections, and preserves unknown recovery without a retained source.
 - The three-daemon test forms quorum, kills a follower, positively observes partial management
   truth, races 32 readers after cache expiry, proves only bounded 200-partial/429 outcomes, verifies
   write-admin status remains responsive, restarts the same disk, observes recovered membership,
