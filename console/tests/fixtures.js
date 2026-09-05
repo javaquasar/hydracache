@@ -444,24 +444,13 @@ export const consensusEnvelope = {
 export const recoveryEnvelope = {
   ...metadata,
   data: {
-    items: ["clean", "repaired", "partial", "corrupt", "failed"].map((outcome, index) => ({
-      schema_version: 1,
-      scope: "node",
-      outcome,
-      phase: outcome === "failed" ? "failed" : "completed",
-      artifact: "durable_value_store",
-      records_checked: { value: 100, exact: true },
-      records_recovered: { value: outcome === "repaired" ? 3 : 0, exact: true },
-      records_discarded: { value: outcome === "partial" ? 2 : 0, exact: true },
-      corrupt_records: {
-        value: outcome === "corrupt" ? 1_000_000 : 0,
-        exact: outcome !== "corrupt",
-      },
-      repair: outcome === "repaired" ? "completed" : "not_required",
-      reason: outcome === "failed" ? "io-failure" : null,
-      source: "live",
-      completeness: index > 1 ? "partial" : "complete",
-    })),
+    items: [
+      recovery("clean", "complete", "not_required", null),
+      recovery("repaired", "complete", "complete", "checksum-mismatch", { recovered: 3 }),
+      recovery("degraded", "reconcile", "failed", "reconciliation-failed", { discarded: 2 }),
+      recovery("refused", "validate", "not_required", "unsupported-format"),
+      recovery("unknown", "unknown", "unknown", "status-not-retained", { corrupt: 1_000_000, truncated: true, unavailable: true }),
+    ],
     next_cursor: null,
     truncated: false,
   },
@@ -490,4 +479,26 @@ function consensus(node, commit_index, applied_index) {
 
 function health(id, status, category, title, evidence = [{ code: "required-input-missing", value: null, unit: null }]) {
   return { id, status, category, title, evidence, affected_count: null, remediation_code: `inspect-${category}`, remediation_link: "/docs/operations/management-healthchecks", source: "live", observation_seq: 9, evaluation_version: 1 };
+}
+
+function recovery(outcome, phase, repair, reason, options = {}) {
+  return {
+    schema_version: 1,
+    scope: "node",
+    outcome,
+    phase,
+    artifact: "durable_value_store",
+    artifact_format_version: options.unavailable ? null : 3,
+    validated_watermark: options.unavailable ? null : { authority_epoch: 42, version: 96 },
+    records_checked: { value: 100, truncated: false },
+    records_recovered: { value: options.recovered ?? 0, truncated: false },
+    records_discarded: { value: options.discarded ?? 0, truncated: false },
+    corrupt_records: { value: options.corrupt ?? 0, truncated: options.truncated ?? false },
+    repair,
+    reason,
+    started_at_unix_ms: options.unavailable ? null : 1_700_000_000_000,
+    completed_at_unix_ms: ["clean", "repaired"].includes(outcome) ? 1_700_000_001_000 : null,
+    source: options.unavailable ? "unavailable" : "live",
+    completeness: options.unavailable || outcome === "degraded" ? "partial" : "complete",
+  };
 }

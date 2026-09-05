@@ -117,7 +117,7 @@ function ConsensusRecoveryPlacement() {
     <>
       <section class="two-column">
         <Panel id="consensus" title="Consensus progress" description="Commit/apply gaps remain unknown when the source is missing"><DataTable label="Consensus progress" headings={["Member", "Commit", "Applied", "Lag", "State"]} bodyTestId="consensus-table" /></Panel>
-        <Panel id="recovery" title="Persistence recovery" description="Clean · repaired · partial · corrupt · failed"><div class="outcome-grid" data-testid="recovery-outcomes" /><DataTable label="Persistence recovery" headings={["Scope", "Outcome", "Phase", "Corrupt", "Reason"]} bodyTestId="recovery-table" /></Panel>
+        <Panel id="recovery" title="Persistence recovery" description="Clean · repaired · degraded · refused · unknown"><div class="outcome-grid" data-testid="recovery-outcomes" /><DataTable label="Persistence recovery" headings={["Scope", "Outcome", "Phase", "Artifact", "Watermark", "Checked", "Recovered", "Discarded", "Corrupt", "Repair", "Source / completeness", "Evidence"]} bodyTestId="recovery-table" /></Panel>
       </section>
       <Panel id="placement" title="Placement evidence" description="Selected candidates first; commit and apply progress remain distinct" aside={<span class="truth-chip unavailable" data-testid="placement-state">unavailable</span>}><div class="metrics-strip" data-testid="placement-details" /><DataTable label="Placement candidates" headings={["Candidate", "Decision", "Stable reasons"]} bodyTestId="placement-table" /></Panel>
     </>

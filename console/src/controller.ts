@@ -676,7 +676,7 @@ function renderConsensus(envelope: WireValue, local: WireValue) {
 
 function renderRecovery(envelope: WireValue) {
   const items = envelope?.data?.items ?? [];
-  const outcomes = ["clean", "repaired", "partial", "corrupt", "failed"];
+  const outcomes = ["clean", "repaired", "degraded", "refused", "unknown"];
   byTest("recovery-outcomes").replaceChildren(
     ...outcomes.map((outcome) =>
       pill(
@@ -686,19 +686,71 @@ function renderRecovery(envelope: WireValue) {
     ),
   );
   byTest("recovery-table").replaceChildren(
-    ...items.map((item: WireValue) =>
+    ...items.slice(0, MAX_RENDERED_MEMBERS).map((item: WireValue) =>
       row(
         [
           item.scope,
           status(item.outcome),
           item.phase,
+          `${item.artifact ?? "unknown"} / v${known(item.artifact_format_version)}`,
+          item.validated_watermark == null
+            ? "unavailable"
+            : `epoch ${known(item.validated_watermark.authority_epoch)} / version ${known(item.validated_watermark.version)}`,
+          boundedCount(item.records_checked),
+          boundedCount(item.records_recovered),
+          boundedCount(item.records_discarded),
           boundedCount(item.corrupt_records),
-          item.reason ?? "none",
+          item.repair ?? "unknown",
+          `${item.source ?? "unavailable"} / ${item.completeness ?? "unknown"}`,
+          recoveryDetail(item, envelope),
         ],
         { testid: "recovery-row" },
       ),
     ),
   );
+  if (items.length === 0) {
+    byTest("recovery-table").append(
+      row(["No retained recovery status", "unknown", "unknown", "unavailable", "unavailable", "unavailable", "unavailable", "unavailable", "unavailable", "unknown", "unavailable / partial", "source-unavailable"]),
+    );
+  }
+}
+
+function recoveryDetail(item: WireValue, envelope: WireValue) {
+  const remediation: Record<string, string> = {
+    "artifact-missing": "Verify the configured durable artifact and follow the recovery runbook.",
+    "unsupported-format": "Use a compatible reader or the documented upgrade recovery workflow.",
+    "checksum-mismatch": "Quarantine the artifact and follow checksum recovery guidance.",
+    "truncated-artifact": "Restore a verified complete artifact before retrying startup.",
+    "foreign-identity": "Verify cluster and node identity before admitting the artifact.",
+    "stale-watermark": "Reconcile against the current authority epoch and watermark.",
+    timeout: "Inspect the bounded recovery timeout and retry through the authenticated workflow.",
+    "io-error": "Inspect storage health and the durable recovery runbook.",
+    "disk-full": "Restore capacity before using the authenticated recovery workflow.",
+    "repair-source-unavailable": "Restore the authoritative repair source before retrying.",
+    "repair-failed": "Inspect repair evidence and follow the recovery runbook.",
+    "reconciliation-failed": "Resolve the desired/local reconciliation failure before serving.",
+    "status-not-retained": "No durable result is retained; treat recovery as unknown.",
+  };
+  const details = document.createElement("details");
+  details.dataset.testid = "recovery-detail";
+  const summary = document.createElement("summary");
+  summary.textContent = "Evidence and remediation";
+  const facts = document.createElement("dl");
+  const reason = item.reason ?? "none";
+  facts.append(
+    fact("Reason", reason),
+    fact("Schema", item.schema_version),
+    fact("Observation", envelope?.observation_seq),
+    fact("Authority epoch", envelope?.authority_epoch),
+    fact("Started", time(item.started_at_unix_ms)),
+    fact("Completed", time(item.completed_at_unix_ms)),
+  );
+  const guidance = document.createElement("p");
+  guidance.textContent = reason === "none"
+    ? "No remediation is required by this retained result."
+    : remediation[reason] ?? "Unknown reason code; inspect compatibility and the recovery source.";
+  details.append(summary, facts, guidance);
+  return details;
 }
 
 function renderPersistence(envelope: WireValue) {
@@ -892,7 +944,11 @@ function fact(label: string, value: WireValue) {
   const dt = document.createElement("dt");
   dt.textContent = label;
   const dd = document.createElement("dd");
-  dd.textContent = known(value);
+  dd.textContent = value == null
+    ? "unavailable"
+    : typeof value === "number"
+      ? known(value)
+      : String(value);
   wrap.append(dt, dd);
   return wrap;
 }
@@ -949,7 +1005,7 @@ function duration(value: WireValue) {
   return value < 60 ? `${value}s` : `${Math.floor(value / 60)}m`;
 }
 function boundedCount(value: WireValue) {
-  return value?.value == null ? "unavailable" : `${value.value}${value.exact ? "" : "+"}`;
+  return value?.value == null ? "unavailable" : `${known(value.value)}${value.truncated ? "+" : ""}`;
 }
 
 function time(value: WireValue) {
@@ -958,8 +1014,10 @@ function time(value: WireValue) {
 }
 function recoveryLabel(items: WireValue[]) {
   if (items.length === 0) return "source unavailable";
-  const bad = items.filter((item) => ["corrupt", "failed", "partial"].includes(item.outcome)).length;
-  return bad ? `${bad} need attention` : "no adverse outcome observed";
+  const adverse = items.filter((item) => ["degraded", "refused"].includes(item.outcome)).length;
+  const unknown = items.filter((item) => item.outcome === "unknown").length;
+  const repaired = items.filter((item) => item.outcome === "repaired").length;
+  return `${adverse} adverse · ${unknown} unknown · ${repaired} repaired`;
 }
 
 function isAbortError(error: unknown): boolean {

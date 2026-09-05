@@ -37,9 +37,12 @@ test("console_renders_typed_dashboard_and_all_truth_states", async ({ page }) =>
   await expect(page.getByTestId("formation-row")).toHaveCount(13);
   await expect(page.getByTestId("formation-table")).toContainText("cluster-identity-mismatch");
   await expect(page.getByTestId("consensus-table")).toContainText("unavailable");
-  await expect(page.getByTestId("recovery-outcomes")).toContainText("corrupt");
-  await expect(page.getByTestId("recovery-outcomes")).toContainText("failed");
-  await expect(page.getByTestId("recovery-table")).toContainText("1000000+");
+  await expect(page.getByTestId("recovery-outcomes")).toContainText("degraded1");
+  await expect(page.getByTestId("recovery-outcomes")).toContainText("refused1");
+  await expect(page.getByTestId("recovery-outcomes")).toContainText("unknown1");
+  await expect(page.getByTestId("recovery-table")).toContainText("1,000,000+");
+  await expect(page.getByTestId("recovery-table")).toContainText("epoch 42 / version 96");
+  await expect(page.getByTestId("recovery-summary")).toContainText("2 adverse · 1 unknown · 1 repaired");
   await expect(page.getByTestId("truth-warnings")).toContainText("partial-observation");
   await expect(page.getByTestId("placement-state")).toHaveText("committed");
   await expect(page.getByTestId("placement-details")).toContainText("96");
@@ -82,6 +85,24 @@ test("console_renders_typed_dashboard_and_all_truth_states", async ({ page }) =>
   await expect(page.getByTestId("operations-table")).toContainText("accepted");
   await expect(page.getByTestId("operations-table")).toContainText("completed");
   await expect(page.getByTestId("audit-table")).toContainText("runtime_journal");
+});
+
+test("recovery_contract_renders_all_five_outcomes_and_bounded_evidence", async ({ page }) => {
+  await routeManagement(page);
+  await page.goto(`${consoleUrl}#recovery`);
+  for (const outcome of ["clean", "repaired", "degraded", "refused", "unknown"]) {
+    await expect(page.getByTestId("recovery-outcomes")).toContainText(`${outcome}1`);
+  }
+  await expect(page.getByTestId("recovery-row")).toHaveCount(5);
+  await expect(page.getByTestId("recovery-table")).toContainText("100");
+  await expect(page.getByTestId("recovery-table")).toContainText("3");
+  await expect(page.getByTestId("recovery-table")).toContainText("2");
+  await expect(page.getByTestId("recovery-table")).toContainText("1,000,000+");
+  await expect(page.getByTestId("recovery-table")).toContainText("unavailable / partial");
+  const refused = page.getByTestId("recovery-row").filter({ hasText: "refused" });
+  await refused.getByTestId("recovery-detail").locator("summary").click();
+  await expect(refused.getByTestId("recovery-detail")).toContainText("unsupported-format");
+  await expect(refused.getByTestId("recovery-detail")).toContainText("compatible reader");
 });
 
 test("optional_prometheus_history_is_labeled_and_never_spliced_into_local_ring", async ({ page }) => {
