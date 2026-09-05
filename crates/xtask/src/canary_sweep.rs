@@ -467,11 +467,15 @@ fn platform_matches(platform: &str) -> bool {
 }
 
 fn platform_program(program: &str, windows: bool) -> &str {
-    if windows && program.eq_ignore_ascii_case("mvn") {
-        "mvn.cmd"
-    } else {
-        program
+    if windows {
+        if program.eq_ignore_ascii_case("mvn") {
+            return "mvn.cmd";
+        }
+        if program.eq_ignore_ascii_case("npm") {
+            return "npm.cmd";
+        }
     }
+    program
 }
 
 fn is_cargo_program(program: &str) -> bool {
@@ -543,10 +547,13 @@ mod platform_program_tests {
     use super::platform_program;
 
     #[test]
-    fn maven_uses_its_windows_batch_shim_without_changing_other_platforms() {
+    fn command_line_package_managers_use_windows_batch_shims() {
         assert_eq!(platform_program("mvn", true), "mvn.cmd");
         assert_eq!(platform_program("MVN", true), "mvn.cmd");
+        assert_eq!(platform_program("npm", true), "npm.cmd");
+        assert_eq!(platform_program("NPM", true), "npm.cmd");
         assert_eq!(platform_program("mvn", false), "mvn");
+        assert_eq!(platform_program("npm", false), "npm");
         assert_eq!(platform_program("cargo", true), "cargo");
     }
 }
