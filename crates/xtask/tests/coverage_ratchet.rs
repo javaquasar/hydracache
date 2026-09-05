@@ -122,8 +122,8 @@ fn coverage_plan_runs_default_before_additive_tiers_and_reports_once() {
         .find(|step| step.id == "server-networked-daemon")
         .unwrap();
     assert_eq!(
-        networked.environment,
-        [("HYDRACACHE_RUN_NETWORKED_DAEMON_E2E", "1")]
+        networked.environment.last().copied(),
+        Some(("HYDRACACHE_RUN_NETWORKED_DAEMON_E2E", "1"))
     );
     for step in plan.iter().filter(|step| {
         matches!(
@@ -162,4 +162,61 @@ fn coverage_plan_rejects_a_required_tier_skip_or_second_clean() {
     assert!(problems
         .iter()
         .any(|problem| problem.contains("incompatible --no-clean and --no-report")));
+}
+
+#[test]
+fn windows_report_uses_short_coverage_paths_and_response_safe_arguments() {
+    let root = xtask::doc_check::find_repo_root().unwrap();
+    let config = xtask::coverage_ratchet::load_config(&root).unwrap();
+    let plan = xtask::coverage_ratchet::measurement_plan(&config);
+    let report = plan.last().unwrap();
+
+    if cfg!(windows) {
+        assert!(report
+            .environment
+            .contains(&("CARGO_LLVM_COV_TARGET_DIR", "target/c")));
+        assert!(report
+            .environment
+            .contains(&("CARGO_LLVM_COV_BUILD_DIR", "target/c")));
+    } else {
+        assert!(report.environment.is_empty());
+    }
+    assert_eq!(
+        xtask::coverage_ratchet::quote_response_argument("target/c/debug/test.exe"),
+        "target/c/debug/test.exe"
+    );
+    assert_eq!(
+        xtask::coverage_ratchet::quote_response_argument("target/a path/test.exe"),
+        "\"target/a path/test.exe\""
+    );
+}
+
+#[test]
+fn windows_report_selects_only_workspace_objects_and_accepts_hashed_names() {
+    use std::collections::BTreeSet;
+
+    let names = ["hydracache_server", "management_http", "libcache"]
+        .into_iter()
+        .map(str::to_owned)
+        .collect::<BTreeSet<_>>();
+    assert!(xtask::coverage_ratchet::workspace_object_matches(
+        "hydracache_server-0123456789abcdef",
+        &names
+    ));
+    assert!(xtask::coverage_ratchet::workspace_object_matches(
+        "libhydracache_server-0123456789abcdef",
+        &names
+    ));
+    assert!(xtask::coverage_ratchet::workspace_object_matches(
+        "management_http",
+        &names
+    ));
+    assert!(xtask::coverage_ratchet::workspace_object_matches(
+        "libcache-0123456789abcdef",
+        &names
+    ));
+    assert!(!xtask::coverage_ratchet::workspace_object_matches(
+        "serde-0123456789abcdef",
+        &names
+    ));
 }

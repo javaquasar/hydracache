@@ -1,7 +1,8 @@
+use std::collections::BTreeSet;
 use std::error::Error;
 use std::fs;
 use std::path::{Component, Path, PathBuf};
-use std::process::Command;
+use std::process::{Command, Stdio};
 
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
@@ -11,6 +12,8 @@ use crate::doc_check;
 pub const CONFIG_PATH: &str = "docs/testing/coverage-ratchet.toml";
 pub const MINIMUM_FLOOR_PERCENT: f64 = 88.0;
 const REVIEWED_IGNORED_SOURCE_REGEX: &str = "(^|/)crates/(xtask|hydracache-loadgen)/";
+const WINDOWS_COVERAGE_TARGET_DIR: &str = "target/c";
+const WINDOWS_RESPONSE_FILE: &str = "target/c/llvm-cov-export.rsp";
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
 #[serde(deny_unknown_fields)]
@@ -48,6 +51,7 @@ struct CoverageEvidence {
     measured_lines_percent: f64,
     ignored_source_regex: String,
     raw_report_artifact: String,
+    report_backend: &'static str,
     profile_steps: Vec<CoverageStepEvidence>,
 }
 
@@ -220,12 +224,13 @@ pub fn enforce_floor(measured: f64, configured_floor: f64) -> Result<(), String>
 }
 
 pub fn measurement_plan(config: &CoverageRatchet) -> Vec<CoverageStep> {
+    let coverage_environment = windows_coverage_environment();
     vec![
         CoverageStep {
             id: "clean",
             kind: CoverageStepKind::Clean,
             args: strings(&["llvm-cov", "clean", "--workspace"]),
-            environment: Vec::new(),
+            environment: coverage_environment.clone(),
         },
         CoverageStep {
             id: "default-workspace",
@@ -237,7 +242,7 @@ pub fn measurement_plan(config: &CoverageRatchet) -> Vec<CoverageStep> {
                 "--locked",
                 "--no-report",
             ]),
-            environment: Vec::new(),
+            environment: coverage_environment.clone(),
         },
         CoverageStep {
             id: "raft-sled-log-store",
@@ -257,7 +262,7 @@ pub fn measurement_plan(config: &CoverageRatchet) -> Vec<CoverageStep> {
                 "--locked",
                 "--no-report",
             ]),
-            environment: Vec::new(),
+            environment: coverage_environment.clone(),
         },
         CoverageStep {
             id: "raft-test-failpoints",
@@ -279,7 +284,7 @@ pub fn measurement_plan(config: &CoverageRatchet) -> Vec<CoverageStep> {
                 "--",
                 "--test-threads=1",
             ]),
-            environment: Vec::new(),
+            environment: coverage_environment.clone(),
         },
         CoverageStep {
             id: "db-postgres-outbox",
@@ -298,7 +303,7 @@ pub fn measurement_plan(config: &CoverageRatchet) -> Vec<CoverageStep> {
                 "--ignored",
                 "--test-threads=1",
             ]),
-            environment: Vec::new(),
+            environment: coverage_environment.clone(),
         },
         CoverageStep {
             id: "server-networked-daemon",
@@ -316,7 +321,11 @@ pub fn measurement_plan(config: &CoverageRatchet) -> Vec<CoverageStep> {
                 "--nocapture",
                 "--test-threads=1",
             ]),
-            environment: vec![("HYDRACACHE_RUN_NETWORKED_DAEMON_E2E", "1")],
+            environment: coverage_environment
+                .iter()
+                .copied()
+                .chain([("HYDRACACHE_RUN_NETWORKED_DAEMON_E2E", "1")])
+                .collect(),
         },
         CoverageStep {
             id: "report",
@@ -330,9 +339,20 @@ pub fn measurement_plan(config: &CoverageRatchet) -> Vec<CoverageStep> {
                 "--output-path".to_owned(),
                 config.raw_report_artifact.clone(),
             ],
-            environment: Vec::new(),
+            environment: coverage_environment,
         },
     ]
+}
+
+fn windows_coverage_environment() -> Vec<(&'static str, &'static str)> {
+    if cfg!(windows) {
+        vec![
+            ("CARGO_LLVM_COV_TARGET_DIR", WINDOWS_COVERAGE_TARGET_DIR),
+            ("CARGO_LLVM_COV_BUILD_DIR", WINDOWS_COVERAGE_TARGET_DIR),
+        ]
+    } else {
+        Vec::new()
+    }
 }
 
 pub fn validate_measurement_plan(plan: &[CoverageStep], config: &CoverageRatchet) -> Vec<String> {
@@ -373,9 +393,11 @@ pub fn validate_measurement_plan(plan: &[CoverageStep], config: &CoverageRatchet
     for step in plan {
         match step.kind {
             CoverageStepKind::Clean => {
-                if !step.environment.is_empty() {
-                    problems
-                        .push("coverage clean step may not set environment variables".to_owned());
+                if step.environment != windows_coverage_environment() {
+                    problems.push(
+                        "coverage clean step must use only the reviewed platform environment"
+                            .to_owned(),
+                    );
                 }
                 if step.args != strings(&["llvm-cov", "clean", "--workspace"]) {
                     problems.push(
@@ -405,7 +427,11 @@ pub fn validate_measurement_plan(plan: &[CoverageStep], config: &CoverageRatchet
                     ));
                 }
                 if step.id == "server-networked-daemon"
-                    && step.environment != vec![("HYDRACACHE_RUN_NETWORKED_DAEMON_E2E", "1")]
+                    && step.environment
+                        != windows_coverage_environment()
+                            .into_iter()
+                            .chain([("HYDRACACHE_RUN_NETWORKED_DAEMON_E2E", "1")])
+                            .collect::<Vec<_>>()
                 {
                     problems.push(
                         "server networked coverage tier must enable its reviewed E2E gate"
@@ -414,9 +440,11 @@ pub fn validate_measurement_plan(plan: &[CoverageStep], config: &CoverageRatchet
                 }
             }
             CoverageStepKind::Report => {
-                if !step.environment.is_empty() {
-                    problems
-                        .push("coverage report step may not set environment variables".to_owned());
+                if step.environment != windows_coverage_environment() {
+                    problems.push(
+                        "coverage report step must use only the reviewed platform environment"
+                            .to_owned(),
+                    );
                 }
                 for required in ["report", "--json", "--output-path"] {
                     if !has_arg(&step.args, required) {
@@ -463,12 +491,16 @@ fn execute_measurement(root: &Path, config: &CoverageRatchet) -> Result<(), Box<
                 fs::create_dir_all(parent)?;
             }
         }
-        let status = Command::new("cargo")
-            .args(&step.args)
-            .envs(step.environment.iter().copied())
-            .env("CARGO_BUILD_JOBS", "2")
-            .current_dir(root)
-            .status()?;
+        let status = if cfg!(windows) && step.kind == CoverageStepKind::Report {
+            windows_response_file_report(root, config)?
+        } else {
+            Command::new("cargo")
+                .args(&step.args)
+                .envs(step.environment.iter().copied())
+                .env("CARGO_BUILD_JOBS", "2")
+                .current_dir(root)
+                .status()?
+        };
         if !status.success() {
             return Err(format!(
                 "coverage profile step {} failed with status {status}",
@@ -491,6 +523,11 @@ fn execute_measurement(root: &Path, config: &CoverageRatchet) -> Result<(), Box<
         measured_lines_percent: measured,
         ignored_source_regex: config.ignored_source_regex.clone(),
         raw_report_artifact: config.raw_report_artifact.clone(),
+        report_backend: if cfg!(windows) {
+            "llvm-cov-response-file"
+        } else {
+            "cargo-llvm-cov"
+        },
         profile_steps: plan
             .into_iter()
             .map(|step| CoverageStepEvidence {
@@ -514,6 +551,249 @@ fn execute_measurement(root: &Path, config: &CoverageRatchet) -> Result<(), Box<
         config.configured_floor_percent
     );
     Ok(())
+}
+
+#[derive(Debug, Deserialize)]
+struct CargoMetadata {
+    packages: Vec<CargoPackage>,
+    workspace_members: Vec<String>,
+}
+
+#[derive(Debug, Deserialize)]
+struct CargoPackage {
+    id: String,
+    name: String,
+    targets: Vec<CargoTarget>,
+}
+
+#[derive(Debug, Deserialize)]
+struct CargoTarget {
+    name: String,
+}
+
+fn windows_response_file_report(
+    root: &Path,
+    config: &CoverageRatchet,
+) -> Result<std::process::ExitStatus, Box<dyn Error>> {
+    let target = root.join(WINDOWS_COVERAGE_TARGET_DIR);
+    let profile_paths =
+        collect_files(&target, |path| path.extension() == Some("profraw".as_ref()))?;
+    if profile_paths.is_empty() {
+        return Err(format!("no coverage profiles found in {}", target.display()).into());
+    }
+
+    let host = command_text(root, "rustc", &["-vV"])?
+        .lines()
+        .find_map(|line| line.strip_prefix("host: "))
+        .ok_or("rustc -vV did not report a host triple")?
+        .to_owned();
+    let sysroot = PathBuf::from(command_text(root, "rustc", &["--print", "sysroot"])?);
+    let tools = sysroot.join("lib").join("rustlib").join(host).join("bin");
+    let llvm_profdata = tools.join("llvm-profdata.exe");
+    let llvm_cov = tools.join("llvm-cov.exe");
+    for tool in [&llvm_profdata, &llvm_cov] {
+        if !tool.is_file() {
+            return Err(
+                format!("required LLVM coverage tool is missing: {}", tool.display()).into(),
+            );
+        }
+    }
+
+    let profile_list = target.join("profraw-list");
+    let profile_lines = profile_paths
+        .iter()
+        .map(|path| response_path(root, path))
+        .collect::<Vec<_>>()
+        .join("\n");
+    fs::write(&profile_list, format!("{profile_lines}\n"))?;
+    let profdata = target.join("hydracache.profdata");
+    let merge_status = Command::new(&llvm_profdata)
+        .args(["merge", "-sparse", "-f"])
+        .arg(response_path(root, &profile_list))
+        .arg("-o")
+        .arg(response_path(root, &profdata))
+        .current_dir(root)
+        .status()?;
+    if !merge_status.success() {
+        return Ok(merge_status);
+    }
+
+    let target_names = workspace_target_names(root)?;
+    let mut objects = collect_files(&target.join("debug"), |path| {
+        matches!(
+            path.extension().and_then(|value| value.to_str()),
+            Some("exe" | "dll")
+        ) && path
+            .file_stem()
+            .and_then(|value| value.to_str())
+            .is_some_and(|stem| workspace_object_matches(stem, &target_names))
+    })?;
+    objects.sort();
+    objects.dedup();
+    if objects.is_empty() {
+        return Err(format!(
+            "no instrumented workspace objects found in {}",
+            target.display()
+        )
+        .into());
+    }
+
+    let ignore = windows_ignore_filename_regex(root, &target, &config.ignored_source_regex);
+    let mut response = vec![
+        "-format=text".to_owned(),
+        "-summary-only".to_owned(),
+        format!("-instr-profile={}", response_path(root, &profdata)),
+    ];
+    for object in &objects {
+        response.push("-object".to_owned());
+        response.push(response_path(root, object));
+    }
+    response.push("-ignore-filename-regex".to_owned());
+    response.push(ignore);
+    let response_file = root.join(WINDOWS_RESPONSE_FILE);
+    let response_text = response
+        .iter()
+        .map(|argument| quote_response_argument(argument))
+        .collect::<Vec<_>>()
+        .join("\n");
+    fs::write(&response_file, format!("{response_text}\n"))?;
+
+    let raw_path = root.join(&config.raw_report_artifact);
+    let output = fs::File::create(raw_path)?;
+    Command::new(llvm_cov)
+        .arg("export")
+        .arg(format!("@{}", response_path(root, &response_file)))
+        .current_dir(root)
+        .stdout(Stdio::from(output))
+        .status()
+        .map_err(Into::into)
+}
+
+fn workspace_target_names(root: &Path) -> Result<BTreeSet<String>, Box<dyn Error>> {
+    let output = Command::new("cargo")
+        .args(["metadata", "--format-version", "1", "--no-deps", "--locked"])
+        .current_dir(root)
+        .output()?;
+    if !output.status.success() {
+        return Err("cargo metadata failed while collecting coverage object names".into());
+    }
+    let metadata: CargoMetadata = serde_json::from_slice(&output.stdout)?;
+    let members = metadata
+        .workspace_members
+        .into_iter()
+        .collect::<BTreeSet<_>>();
+    let mut names = BTreeSet::new();
+    for package in metadata.packages {
+        if members.contains(&package.id) {
+            names.insert(normalize_target_name(&package.name));
+            names.extend(
+                package
+                    .targets
+                    .into_iter()
+                    .map(|target| normalize_target_name(&target.name)),
+            );
+        }
+    }
+    Ok(names)
+}
+
+fn collect_files(
+    directory: &Path,
+    predicate: impl Fn(&Path) -> bool + Copy,
+) -> Result<Vec<PathBuf>, Box<dyn Error>> {
+    let mut files = Vec::new();
+    if !directory.is_dir() {
+        return Ok(files);
+    }
+    for entry in fs::read_dir(directory)? {
+        let path = entry?.path();
+        if path.is_dir() {
+            files.extend(collect_files(&path, predicate)?);
+        } else if predicate(&path) {
+            files.push(path);
+        }
+    }
+    Ok(files)
+}
+
+fn normalize_target_name(value: &str) -> String {
+    value.replace('-', "_")
+}
+
+pub fn workspace_object_matches(stem: &str, target_names: &BTreeSet<String>) -> bool {
+    [stem, stem.strip_prefix("lib").unwrap_or(stem)]
+        .into_iter()
+        .any(|candidate| {
+            let unhashed = candidate
+                .rsplit_once('-')
+                .filter(|(_, suffix)| {
+                    suffix.len() >= 8 && suffix.chars().all(|ch| ch.is_ascii_hexdigit())
+                })
+                .map_or(candidate, |(prefix, _)| prefix);
+            target_names.contains(&normalize_target_name(unhashed))
+        })
+}
+
+fn response_path(root: &Path, path: &Path) -> String {
+    path.strip_prefix(root)
+        .unwrap_or(path)
+        .to_string_lossy()
+        .replace('\\', "/")
+}
+
+pub fn quote_response_argument(argument: &str) -> String {
+    if !argument.chars().any(|ch| ch.is_whitespace() || ch == '"') {
+        return argument.to_owned();
+    }
+    format!("\"{}\"", argument.replace('"', "\\\""))
+}
+
+fn regex_escape_literal(value: &str) -> String {
+    let mut escaped = String::with_capacity(value.len());
+    for ch in value.chars() {
+        if matches!(
+            ch,
+            '\\' | '.' | '+' | '*' | '?' | '(' | ')' | '|' | '[' | ']' | '{' | '}' | '^' | '$'
+        ) {
+            escaped.push('\\');
+        }
+        escaped.push(ch);
+    }
+    escaped
+}
+
+fn windows_ignore_filename_regex(root: &Path, target: &Path, reviewed: &str) -> String {
+    let workspace = regex_escape_literal(&root.to_string_lossy());
+    let coverage_target = regex_escape_literal(&target.to_string_lossy());
+    let cargo_home = std::env::var_os("CARGO_HOME")
+        .map(PathBuf::from)
+        .or_else(|| std::env::var_os("USERPROFILE").map(|home| PathBuf::from(home).join(".cargo")));
+    let rustup_home = std::env::var_os("RUSTUP_HOME")
+        .map(PathBuf::from)
+        .or_else(|| {
+            std::env::var_os("USERPROFILE").map(|home| PathBuf::from(home).join(".rustup"))
+        });
+    let mut parts = vec![
+        reviewed.to_owned(),
+        r"(^|\\)crates\\(xtask|hydracache-loadgen)\\".to_owned(),
+        r"\\rustc\\([0-9a-f]+|[0-9]+\.[0-9]+\.[0-9]+)\\".to_owned(),
+        format!(r"^{workspace}(\\.*)?\\(tests|examples|benches)\\"),
+        format!(r"^{workspace}(\\.*)?\\(tests\.rs|[0-9a-zA-Z_-]+[_-]tests\.rs)$"),
+        format!(r"^{coverage_target}($|\\)"),
+    ];
+    if let Some(path) = cargo_home {
+        parts.push(format!(
+            r"^{}\\(registry|git)\\",
+            regex_escape_literal(&path.to_string_lossy())
+        ));
+    }
+    if let Some(path) = rustup_home {
+        parts.push(format!(
+            r"^{}\\toolchains($|\\)",
+            regex_escape_literal(&path.to_string_lossy())
+        ));
+    }
+    parts.join("|")
 }
 
 fn strings(values: &[&str]) -> Vec<String> {
