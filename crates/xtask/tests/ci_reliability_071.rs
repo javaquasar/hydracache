@@ -147,6 +147,39 @@ jobs:
 }
 
 #[test]
+fn topology_rejects_install_step_without_a_bounded_timeout() {
+    let temp = TempDir::new("install-step-timeout");
+    let workflow = r#"
+name: fixture
+on: workflow_dispatch
+concurrency:
+  group: fixture-${{ github.sha }}
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Install management console dependencies
+        run: npm ci --prefix console
+"#;
+    let path = write_fixture(
+        &temp,
+        workflow,
+        topology(
+            classes(&["check"], &[], &[]),
+            ".github/workflows/fixture.yml#check",
+            &["workflow_dispatch"],
+        ),
+    );
+    let error = xtask::ci_topology::check_with_path(temp.path(), "0.71", &path)
+        .expect_err("unbounded install step must fail")
+        .to_string();
+    assert!(error.contains(
+        "Install management console dependencies\") needs a positive timeout-minutes smaller than job timeout 10"
+    ));
+}
+
+#[test]
 fn topology_rejects_mixed_artifact_identity() {
     let temp = TempDir::new("artifact");
     let workflow = r#"

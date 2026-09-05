@@ -2856,6 +2856,7 @@ jobs:
           cache-dependency-path: console/package-lock.json
 
       - name: Install management console dependencies
+        timeout-minutes: 15
         run: npm ci --prefix console
 
       - name: Cache Rust dependencies
