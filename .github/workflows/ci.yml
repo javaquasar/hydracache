@@ -1420,13 +1420,14 @@ jobs:
           git merge-base --is-ancestor refs/tags/v0.71.0 HEAD
 
       - name: Run real 0.71 and 0.72 management upgrade rollback proof
+        timeout-minutes: 105
         run: cargo run -p xtask --locked -- evidence-run --release 0.72 --gate env.hydracache-run-management-mixed-072
 
       - name: Upload mixed release evidence
         if: always()
         uses: actions/upload-artifact@v6
         with:
-          name: "management-mixed-071-072-${{ github.sha }}-${{ runner.name }}"
+          name: "management-mixed-071-072-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}-${{ runner.name }}"
           path: |
             target/test-evidence/0.72/management-mixed-071-072.json
             target/release-evidence/receipts/**
@@ -1451,6 +1452,7 @@ jobs:
         run: cargo run -p xtask --locked -- evidence-run --release 0.72 --gate tool.hydracache-server.management-hc1-hc2-coexistence-072
 
       - name: Run exact six-hour 0.72 management candidate soak
+        timeout-minutes: 390
         env:
           HYDRACACHE_RELEASE_HOST_ID: ${{ runner.name }}
         run: cargo run -p xtask --locked -- evidence-run --release 0.72 --gate env.hydracache-run-management-candidate-soak-072
@@ -1459,7 +1461,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v6
         with:
-          name: "management-candidate-soak-072-${{ github.sha }}-${{ runner.name }}"
+          name: "management-candidate-soak-072-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}-${{ runner.name }}"
           path: |
             target/test-evidence/0.72/management-candidate-soak.json
             target/release-evidence/receipts/**
@@ -1484,11 +1486,13 @@ jobs:
         run: cargo run -p xtask --locked -- evidence-run --release 0.72 --gate tool.hydracache-server.management-hc1-hc2-coexistence-072
 
       - name: Re-run exact six-hour candidate soak on ship host
+        timeout-minutes: 390
         env:
           HYDRACACHE_RELEASE_HOST_ID: ${{ runner.name }}
         run: cargo run -p xtask --locked -- evidence-run --release 0.72 --gate env.hydracache-run-management-candidate-soak-072
 
       - name: Run exact 24-hour 0.72 management ship soak
+        timeout-minutes: 1500
         env:
           HYDRACACHE_RELEASE_HOST_ID: ${{ runner.name }}
         run: cargo run -p xtask --locked -- evidence-run --release 0.72 --gate env.hydracache-run-management-ship-soak-072
@@ -1497,7 +1501,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v6
         with:
-          name: "management-ship-soak-072-${{ github.sha }}-${{ runner.name }}"
+          name: "management-ship-soak-072-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}-${{ runner.name }}"
           path: |
             target/test-evidence/0.72/management-candidate-soak.json
             target/test-evidence/0.72/management-ship-soak.json

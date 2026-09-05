@@ -40,7 +40,10 @@
           "release-0671-performance-qualification",
           "release-0671-performance-full-dress",
           "release-0671-performance-bootstrap",
-          "release-0671-frozen-candidate"
+          "release-0671-frozen-candidate",
+          "management-mixed-072",
+          "management-candidate-soak-072",
+          "management-ship-soak-072"
         ],
         "scheduled-diagnostic": [
           "memory-diagnostic-hosted",
