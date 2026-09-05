@@ -782,7 +782,7 @@ function renderOperations(envelope: WireValue) {
   const items = data.items?.items ?? [];
   setText(
     "operations-generation",
-    `generation ${known(data.generation)} · sequence ${known(data.latest_sequence)} · evicted ${known(data.evicted_records)}`,
+    `generation ${known(data.generation)} · sequence ${known(data.latest_sequence)} · evicted ${known(data.evicted_records)} · ${data.retention_scope ?? "unknown retention"} · page ${data.items?.truncated ? "truncated" : "complete"}`,
   );
   byTest("operations-table").replaceChildren(
     ...items.slice(0, MAX_RENDERED_MEMBERS).map((item: WireValue) =>
@@ -792,10 +792,15 @@ function renderOperations(envelope: WireValue) {
           item.kind,
           item.scope,
           status(item.state),
+          item.progress_current == null || item.progress_total == null
+            ? "unavailable"
+            : `${known(item.progress_current)} / ${known(item.progress_total)} ${item.progress_unit ?? "units"}`,
           time(item.requested_at_unix_ms),
+          time(item.accepted_at_unix_ms),
           time(item.started_at_unix_ms),
           time(item.terminal_at_unix_ms),
-          item.reason_code ?? "none",
+          `${item.source ?? "unavailable"} / ${item.completeness ?? "unknown"}`,
+          `${item.reason_code ?? "none"} / ${item.remediation_code ?? "none"}`,
         ],
         { testid: "operation-row" },
       ),
@@ -803,7 +808,7 @@ function renderOperations(envelope: WireValue) {
   );
   if (items.length === 0) {
     byTest("operations-table").append(
-      row(["No retained operations", "none", "current process", "unknown", "unavailable", "unavailable", "unavailable", "none"]),
+      row(["No retained operations", "none", "current process", "unknown", "unavailable", "unavailable", "unavailable", "unavailable", "unavailable", "unavailable / partial", "none / none"]),
     );
   }
 }
@@ -813,14 +818,16 @@ function renderAudit(envelope: WireValue) {
   const items = data.items?.items ?? [];
   setText(
     "audit-coverage",
-    `${data.coverage ?? "management operations current process only"} · evicted ${known(data.evicted_records)}`,
+    `generation ${known(data.generation)} · sequence ${known(data.latest_sequence)} · ${data.coverage ?? "management operations current process only"} · ${data.redaction ?? "redaction unknown"} · evicted ${known(data.evicted_records)} · page ${data.items?.truncated ? "truncated" : "complete"}`,
   );
   byTest("audit-table").replaceChildren(
     ...items.slice(0, MAX_RENDERED_MEMBERS).map((item: WireValue) =>
       row(
         [
           item.event_id,
+          known(item.sequence),
           item.operation_id,
+          item.category ?? "unknown",
           item.action,
           status(item.outcome),
           time(item.occurred_at_unix_ms),
@@ -832,7 +839,7 @@ function renderAudit(envelope: WireValue) {
   );
   if (items.length === 0) {
     byTest("audit-table").append(
-      row(["No retained audit metadata", "none", "none", "unknown", "unavailable", "runtime_journal"]),
+      row(["No retained audit metadata", "unavailable", "none", "unknown", "none", "unknown", "unavailable", "runtime_journal"]),
     );
   }
 }

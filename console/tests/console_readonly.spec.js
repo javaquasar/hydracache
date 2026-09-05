@@ -86,7 +86,10 @@ test("console_renders_typed_dashboard_and_all_truth_states", async ({ page }) =>
   await expect(page.getByTestId("persistence-details")).toContainText("recovery reasonstatus-not-retained");
   await expect(page.getByTestId("operations-table")).toContainText("accepted");
   await expect(page.getByTestId("operations-table")).toContainText("completed");
+  await expect(page.getByTestId("operations-table")).toContainText("3 / 3 members");
+  await expect(page.getByTestId("operations-generation")).toContainText("current_process_generation");
   await expect(page.getByTestId("audit-table")).toContainText("runtime_journal");
+  await expect(page.getByTestId("audit-coverage")).toContainText("no_keys_values_paths_credentials_or_actor_identity");
 });
 
 test("recovery_contract_renders_all_five_outcomes_and_bounded_evidence", async ({ page }) => {
@@ -130,6 +133,41 @@ test("persistence_keeps_runtime_backup_age_separate_from_verified_artifacts", as
   await expect(details).toContainText("available capacity4.0 KiB");
   await expect(details).toContainText("sourcelive");
   await expect(details).toContainText("completenesscomplete");
+});
+
+test("operation_and_audit_views_preserve_state_progress_retention_and_redaction", async ({ page }) => {
+  const operations = structuredClone(operationsEnvelope);
+  const template = operations.data.items.items[0];
+  operations.data.items.items = ["requested", "accepted", "running", "completed", "failed", "unknown"].map((state, index) => ({
+    ...template,
+    operation_id: `op-state-${state}`,
+    sequence: index + 1,
+    state,
+    accepted_at_unix_ms: ["accepted", "running", "completed", "failed"].includes(state) ? 1_700_000_000_001 : null,
+    started_at_unix_ms: ["running", "completed", "failed"].includes(state) ? 1_700_000_000_002 : null,
+    terminal_at_unix_ms: ["completed", "failed"].includes(state) ? 1_700_000_000_003 : null,
+    progress_current: state === "running" ? 2 : null,
+    progress_total: state === "running" ? 5 : null,
+    progress_unit: state === "running" ? "partitions" : null,
+    completeness: ["completed", "failed"].includes(state) ? "complete" : "partial",
+    reason_code: state === "failed" ? "operation-failed" : null,
+    remediation_code: state === "failed" ? "inspect-operation" : null,
+  }));
+  operations.data.items.truncated = true;
+  const audit = structuredClone(auditEnvelope);
+  audit.data.items.truncated = true;
+  await routeManagement(page, { operations, audit });
+  await page.goto(`${consoleUrl}#operations`);
+  for (const state of ["requested", "accepted", "running", "completed", "failed", "unknown"]) {
+    await expect(page.getByTestId("operations-table")).toContainText(state);
+  }
+  await expect(page.getByTestId("operations-table")).toContainText("2 / 5 partitions");
+  await expect(page.getByTestId("operations-table")).toContainText("operation-failed / inspect-operation");
+  await expect(page.getByTestId("operations-generation")).toContainText("page truncated");
+  await page.goto(`${consoleUrl}#audit`);
+  await expect(page.getByTestId("audit-table")).toContainText("management_operation");
+  await expect(page.getByTestId("audit-table")).toContainText("2");
+  await expect(page.getByTestId("audit-coverage")).toContainText("page truncated");
 });
 
 test("optional_prometheus_history_is_labeled_and_never_spliced_into_local_ring", async ({ page }) => {
