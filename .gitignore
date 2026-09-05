@@ -32,6 +32,10 @@ test-results/
 .playwright/
 docs-site/book/
 
+# Root-level runtime evidence emitted by the nightly soak workflow. The file is
+# uploaded as a CI artifact and must not make exact-commit receipts dirty.
+/SOAK_REPORT.json
+
 # RustRover
 #  JetBrains specific template is maintained in a separate JetBrains.gitignore that can
 #  be found at https://github.com/github/gitignore/blob/main/Global/JetBrains.gitignore

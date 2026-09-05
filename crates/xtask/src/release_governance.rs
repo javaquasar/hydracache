@@ -156,6 +156,12 @@ pub fn check(root: &Path, release: &str) -> Result<GovernanceReport, Box<dyn Err
         .problems
         .extend(release_execution_wiring_problems(&workflow, release)?);
     report.completed_checks += 1;
+    let gitignore = fs::read_to_string(root.join(".gitignore"))?;
+    report.problems.extend(prefix(
+        "runtime-evidence-hygiene",
+        runtime_evidence_hygiene_problems(&workflow, &gitignore),
+    ));
+    report.completed_checks += 1;
     for required in [
         "canary-sweep --release 0.64 --tier fast",
         "dynamic-canary-sweep:",
@@ -195,6 +201,21 @@ pub fn check(root: &Path, release: &str) -> Result<GovernanceReport, Box<dyn Err
     ));
     report.completed_checks += 1;
     Ok(report)
+}
+
+pub fn runtime_evidence_hygiene_problems(workflow: &str, gitignore: &str) -> Vec<String> {
+    let mut problems = Vec::new();
+    if workflow.contains("tee SOAK_REPORT.json")
+        && !gitignore
+            .lines()
+            .any(|line| line.trim() == "/SOAK_REPORT.json")
+    {
+        problems.push(
+            "SOAK_REPORT.json is written before exact-commit evidence gates and must be root-ignored"
+                .to_owned(),
+        );
+    }
+    problems
 }
 
 pub fn publish_workflow_problems(text: &str) -> Vec<String> {

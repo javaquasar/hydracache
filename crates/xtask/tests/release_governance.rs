@@ -551,6 +551,19 @@ fn performance_lane_requires_protected_self_hosted_labels_and_serial_concurrency
 #[test]
 fn runtime_reports_are_gate_artifacts_not_committed_manifest_artifacts() {
     let root = xtask::doc_check::find_repo_root().unwrap();
+    let workflow = read_ci_workflow(&root);
+    let gitignore = std::fs::read_to_string(root.join(".gitignore")).unwrap();
+    assert!(
+        xtask::release_governance::runtime_evidence_hygiene_problems(&workflow, &gitignore)
+            .is_empty()
+    );
+    let broken_ignore = gitignore.replace("/SOAK_REPORT.json", "/different-report.json");
+    let problems =
+        xtask::release_governance::runtime_evidence_hygiene_problems(&workflow, &broken_ignore);
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("SOAK_REPORT.json")));
+
     let manifest_text =
         std::fs::read_to_string(root.join("docs/testing/release-evidence/0.67.toml")).unwrap();
     let manifest = xtask::release_evidence::parse_manifest_text(&manifest_text).unwrap();
