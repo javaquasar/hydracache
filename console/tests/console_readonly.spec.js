@@ -428,7 +428,7 @@ test("responsive dashboard remains usable on configured viewport", async ({ page
   await page.goto(consoleUrl);
   await expect(page.locator("#dashboard")).toBeVisible();
   await expect(page.locator("#members")).toBeVisible();
-  expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)).toBe(true);
+  expect(await horizontalOverflow(page)).toEqual([]);
 });
 
 test("tablet layout retains truth at effective 200 percent zoom without page overflow", async ({ page }) => {
@@ -440,8 +440,40 @@ test("tablet layout retains truth at effective 200 percent zoom without page ove
   await expect(page.getByTestId("source-badge")).toHaveText("live");
   await expect(page.getByTestId("health-aggregate")).toHaveText("FAIL");
   await expect(page.getByTestId("operations-table")).toContainText("accepted");
-  expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)).toBe(true);
+  expect(await horizontalOverflow(page)).toEqual([]);
 });
+
+async function horizontalOverflow(page) {
+  return page.evaluate(() => {
+    const viewport = document.documentElement.clientWidth;
+    if (document.documentElement.scrollWidth <= viewport) return [];
+    const diagnostics = [...document.querySelectorAll("html, body, .app-shell, .page-shell, .panel, .table-scroll")]
+      .slice(-8)
+      .map((element) => ({
+        tag: element.tagName.toLowerCase(),
+        id: element.id,
+        className: typeof element.className === "string" ? element.className : "",
+        left: Math.round(element.getBoundingClientRect().left),
+        right: Math.round(element.getBoundingClientRect().right),
+        scrollWidth: element.scrollWidth,
+        clientWidth: element.clientWidth,
+        overflowX: getComputedStyle(element).overflowX,
+      }));
+    const offenders = [...document.querySelectorAll("body *")]
+      .map((element) => ({
+        tag: element.tagName.toLowerCase(),
+        id: element.id,
+        className: typeof element.className === "string" ? element.className : "",
+        left: Math.round(element.getBoundingClientRect().left),
+        right: Math.round(element.getBoundingClientRect().right),
+        scrollWidth: element.scrollWidth,
+        clientWidth: element.clientWidth,
+      }))
+      .filter((element) => element.right > viewport || element.left < 0)
+      .slice(0, 20);
+    return [...diagnostics, ...offenders];
+  });
+}
 
 async function routeManagement(page, overrides = {}) {
   const fixtures = {

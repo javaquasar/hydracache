@@ -35,15 +35,16 @@ h2 { font-size: .96rem; }
 .health-dot { width: 9px; height: 9px; border-radius: 50%; background: #36cf8b; box-shadow: 0 0 0 3px #1a493e; }
 .status-strip { display: flex; justify-content: flex-end; gap: .45rem; }
 .source-badge, .readonly-badge, .trust-note, .truth-chip { display: inline-flex; align-items: center; min-height: 25px; padding: .2rem .5rem; border: 1px solid var(--line); border-radius: 999px; background: #edf2f5; color: var(--muted); font-size: .7rem; font-weight: 750; text-transform: uppercase; white-space: nowrap; }
+.trust-note { max-width: 100%; white-space: normal; overflow-wrap: anywhere; }
 .source-badge[data-source="live"], .truth-chip.serving, .truth-chip.current, .truth-chip.authenticated, .truth-chip.admitted, .truth-chip.clean, .truth-chip.repaired, .truth-chip.committed, .truth-chip.applied { border-color: #9fd9bd; color: var(--green); background: var(--green-soft); }
 .source-badge[data-source="modeled"], .truth-chip.warning, .truth-chip.behind, .truth-chip.partial, .truth-chip.suspect, .truth-chip.proposed, .truth-chip.stale { border-color: #efcf87; color: var(--amber); background: var(--amber-soft); }
 .source-badge[data-source="unavailable"], .truth-chip.blocked, .truth-chip.failed, .truth-chip.corrupt, .truth-chip.unreachable, .truth-chip.rejected { border-color: #edabb8; color: var(--red); background: var(--red-soft); }
 .readonly-badge { border-color: #aaa0dd; color: #ddd7ff; background: #302954; }
-.app-shell { display: grid; grid-template-columns: 190px minmax(0, 1fr); min-height: calc(100vh - 68px); }
+.app-shell { display: grid; grid-template-columns: 190px minmax(0, 1fr); width: 100%; min-width: 0; min-height: calc(100vh - 68px); }
 .sidebar { position: sticky; top: 68px; align-self: start; display: grid; gap: .15rem; min-height: calc(100vh - 68px); padding: 1rem .6rem; background: var(--navy); }
 .sidebar a { padding: .65rem .8rem; border-radius: 7px; color: #b8cad5; font-size: .84rem; text-decoration: none; }
 .sidebar a:hover, .sidebar a.active { color: #65daf0; background: var(--navy-soft); }
-.page-shell { display: grid; gap: .85rem; width: min(1600px, 100%); padding: .85rem; }
+.page-shell { display: grid; grid-template-columns: minmax(0, 1fr); gap: .85rem; width: min(1600px, 100%); min-width: 0; max-width: 100%; padding: .85rem; }
 .degraded, .warning-strip { display: flex; flex-wrap: wrap; gap: .4rem; border: 1px solid #edabb8; border-radius: 8px; padding: .7rem .85rem; background: var(--red-soft); color: var(--red); font-weight: 700; }
 .warning-strip { border-color: #efcf87; background: var(--amber-soft); color: var(--amber); }
 .summary-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: .65rem; }

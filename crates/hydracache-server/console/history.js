@@ -1,2 +1,2 @@
 // Compatibility alias: HISTORY_LIMITS
-import "./assets/index-D9Z74Raa.js";
+import "./assets/index-10J6KuuK.js";
