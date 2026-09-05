@@ -85,6 +85,7 @@ struct ClaimProofInput {
 }
 
 type ReceiptFile = (String, Vec<u8>);
+type PreparedClaimReceipt = (PathBuf, Vec<u8>);
 
 #[derive(Debug, Clone, Copy, Deserialize, Serialize, PartialEq, Eq, PartialOrd, Ord)]
 #[serde(rename_all = "snake_case")]
@@ -997,6 +998,13 @@ impl ClaimProofContext {
 }
 
 fn write_claim_receipts(root: &Path, receipts_dir: &Path) -> Result<(), Box<dyn Error>> {
+    persist_prepared_claim_receipts(prepare_claim_receipts(root, receipts_dir))
+}
+
+fn prepare_claim_receipts(
+    root: &Path,
+    receipts_dir: &Path,
+) -> Result<Vec<PreparedClaimReceipt>, Box<dyn Error>> {
     let registry_text = fs::read_to_string(root.join(REGISTRY))?;
     let registry: ClaimRegistry = toml::from_str(&registry_text)?;
     let context = ClaimProofContext::load(root)?;
@@ -1005,6 +1013,7 @@ fn write_claim_receipts(root: &Path, receipts_dir: &Path) -> Result<(), Box<dyn 
     }
     let evidence_files = receipt_files(root, receipts_dir)?;
     let canary_files = receipt_files(root, Path::new(canary_sweep::RECEIPTS_DIR))?;
+    let mut prepared = Vec::new();
     for claim in &registry.claim {
         let item = context
             .manifest
@@ -1060,15 +1069,79 @@ fn write_claim_receipts(root: &Path, receipts_dir: &Path) -> Result<(), Box<dyn 
         };
         for relative in &claim.receipts {
             let destination = root.join(relative);
-            if let Some(parent) = destination.parent() {
-                fs::create_dir_all(parent)?;
-            }
-            let temporary = destination.with_extension("json.tmp");
-            fs::write(&temporary, serde_json::to_vec_pretty(&receipt)?)?;
-            fs::rename(temporary, destination)?;
+            prepared.push((destination, serde_json::to_vec_pretty(&receipt)?));
         }
     }
+    Ok(prepared)
+}
+
+fn persist_prepared_claim_receipts(
+    prepared: Result<Vec<PreparedClaimReceipt>, Box<dyn Error>>,
+) -> Result<(), Box<dyn Error>> {
+    let prepared = prepared?;
+    for (destination, bytes) in prepared {
+        if let Some(parent) = destination.parent() {
+            fs::create_dir_all(parent)?;
+        }
+        let temporary = destination.with_extension("json.tmp");
+        fs::write(&temporary, bytes)?;
+        fs::rename(temporary, destination)?;
+    }
     Ok(())
+}
+
+#[cfg(test)]
+mod claim_receipt_persistence_tests {
+    use super::{persist_prepared_claim_receipts, PreparedClaimReceipt};
+    use std::error::Error;
+    use std::fs;
+    use std::path::PathBuf;
+    use std::time::{SystemTime, UNIX_EPOCH};
+
+    fn scratch(name: &str) -> PathBuf {
+        let nonce = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .expect("clock after epoch")
+            .as_nanos();
+        std::env::temp_dir().join(format!(
+            "hydracache-management-claim-{name}-{}-{nonce}",
+            std::process::id()
+        ))
+    }
+
+    #[test]
+    fn prepared_claim_batch_is_invisible_until_persisted() {
+        let root = scratch("batch");
+        let first = root.join("W0.json");
+        let second = root.join("nested/W1.json");
+        let prepared: Vec<PreparedClaimReceipt> = vec![
+            (first.clone(), br#"{"claim":"W0"}"#.to_vec()),
+            (second.clone(), br#"{"claim":"W1"}"#.to_vec()),
+        ];
+
+        assert!(!first.exists());
+        assert!(!second.exists());
+        persist_prepared_claim_receipts(Ok(prepared)).expect("persist complete prepared batch");
+        assert_eq!(fs::read(&first).unwrap(), br#"{"claim":"W0"}"#);
+        assert_eq!(fs::read(&second).unwrap(), br#"{"claim":"W1"}"#);
+
+        fs::remove_dir_all(root).expect("remove claim receipt scratch directory");
+    }
+
+    #[test]
+    fn failed_complete_batch_preparation_writes_no_partial_receipts() {
+        let root = scratch("failed-preparation");
+        let first = root.join("W0.json");
+        let second = root.join("W12.json");
+        let failure: Result<Vec<PreparedClaimReceipt>, Box<dyn Error>> =
+            Err("missing late W12 proof".into());
+
+        let error = persist_prepared_claim_receipts(failure)
+            .expect_err("incomplete prepared batch must be rejected");
+        assert!(error.to_string().contains("missing late W12 proof"));
+        assert!(!first.exists());
+        assert!(!second.exists());
+    }
 }
 
 fn receipt_files(root: &Path, directory: &Path) -> Result<Vec<ReceiptFile>, Box<dyn Error>> {
