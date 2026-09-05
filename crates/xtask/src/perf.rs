@@ -13,7 +13,7 @@ use std::path::{Path, PathBuf};
 use std::process::Command;
 use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
 
-use hydracache_loadgen::profile::{PerformanceProfile, RunnerFingerprint};
+use hydracache_loadgen::profile::{PerformanceProfile, RunnerAttestationV5, RunnerFingerprint};
 use hydracache_loadgen::resp_external::{
     current_platform_key, ExternalToolExecutor, ExternalToolPrebuildReceipt,
     ExternalToolPrebuildReceiptPayload, ExternalToolProvenanceRegistry, ProcessLimits,
@@ -51,6 +51,8 @@ pub const RUNNER_PREFLIGHT_REPEATS: usize = 7;
 pub const RUNNER_PREFLIGHT_MAX_SPREAD_RATIO: f64 = 0.15;
 const REDIS_PROVENANCE_ID: &str = "redis-benchmark-7.2.5-linux-x86_64-gnu-source-v1";
 const MAX_CONTRACT_BYTES: u64 = 1024 * 1024;
+const X86_64_BASE_PAGE_BYTES: u64 = 4096;
+const MEMTOTAL_BOOT_DRIFT_MAX_BYTES: u64 = 16 * 1024 * 1024;
 const BUILD_ARGS: [&str; 7] = [
     "build",
     "-p",
@@ -60,6 +62,21 @@ const BUILD_ARGS: [&str; 7] = [
     "--release",
     "--locked",
 ];
+
+#[derive(Clone, Serialize)]
+struct StableRunnerFingerprint<'a> {
+    schema_version: u32,
+    runner_class: &'a str,
+    cpu_model: &'a str,
+    logical_cores: u32,
+    ram_bytes: u64,
+    kernel: &'a str,
+    cpu_affinity: &'a str,
+    cgroup_cpu_quota: &'a str,
+    governor: &'a str,
+    turbo: &'a str,
+    attestation: &'a RunnerAttestationV5,
+}
 
 #[derive(Debug)]
 pub struct PerfPrebuildError(String);
@@ -1228,6 +1245,47 @@ pub fn sha256_bytes(bytes: &[u8]) -> String {
     hex_digest(&hasher.finalize())
 }
 
+fn stable_runner_fingerprint(stable: &StableRunnerFingerprint<'_>) -> Result<String, String> {
+    serde_json::to_vec(stable)
+        .map(|bytes| sha256_bytes(&bytes))
+        .map_err(|error| error.to_string())
+}
+
+fn approved_fingerprint_with_memtotal_boot_drift(
+    stable: &StableRunnerFingerprint<'_>,
+    allowed_fingerprints: &[String],
+) -> Result<String, String> {
+    let observed = stable_runner_fingerprint(stable)?;
+    if allowed_fingerprints.is_empty() || allowed_fingerprints.contains(&observed) {
+        return Ok(observed);
+    }
+
+    // Linux MemTotal excludes boot-reserved pages and can move by a few pages
+    // across reboots on the same physical host. Preserve the reviewed legacy
+    // fingerprint when only that bounded, page-aligned value moved; every
+    // other CPU, kernel, isolation, storage, host, and build fact remains part
+    // of the SHA-256 preimage, while the report retains the exact observed RAM.
+    for delta in (X86_64_BASE_PAGE_BYTES..=MEMTOTAL_BOOT_DRIFT_MAX_BYTES)
+        .step_by(X86_64_BASE_PAGE_BYTES as usize)
+    {
+        for ram_bytes in [
+            stable.ram_bytes.checked_sub(delta),
+            stable.ram_bytes.checked_add(delta),
+        ]
+        .into_iter()
+        .flatten()
+        {
+            let mut candidate = stable.clone();
+            candidate.ram_bytes = ram_bytes;
+            let fingerprint = stable_runner_fingerprint(&candidate)?;
+            if allowed_fingerprints.contains(&fingerprint) {
+                return Ok(fingerprint);
+            }
+        }
+    }
+    Ok(observed)
+}
+
 fn hex_digest(bytes: &[u8]) -> String {
     bytes.iter().map(|byte| format!("{byte:02x}")).collect()
 }
@@ -1326,21 +1384,7 @@ fn observe_linux_reference_runner(
         return Err("self-hosted runner core count is below the profile minimum".to_owned());
     }
     let calibration_score = calibration_score();
-    #[derive(Serialize)]
-    struct StableFingerprint<'a> {
-        schema_version: u32,
-        runner_class: &'a str,
-        cpu_model: &'a str,
-        logical_cores: u32,
-        ram_bytes: u64,
-        kernel: &'a str,
-        cpu_affinity: &'a str,
-        cgroup_cpu_quota: &'a str,
-        governor: &'a str,
-        turbo: &'a str,
-        attestation: &'a hydracache_loadgen::profile::RunnerAttestationV5,
-    }
-    let stable = StableFingerprint {
+    let stable = StableRunnerFingerprint {
         schema_version: 4,
         runner_class: &profile.required_runner_class,
         cpu_model: &cpu_model,
@@ -1353,10 +1397,11 @@ fn observe_linux_reference_runner(
         turbo: &turbo,
         attestation: &attestation,
     };
-    let stable_bytes = serde_json::to_vec(&stable).map_err(|error| error.to_string())?;
+    let fingerprint =
+        approved_fingerprint_with_memtotal_boot_drift(&stable, &profile.allowed_fingerprints)?;
     Ok(RunnerFingerprint {
         runner_class: profile.required_runner_class.clone(),
-        fingerprint: sha256_bytes(&stable_bytes),
+        fingerprint,
         cpu_model,
         logical_cores,
         ram_bytes,
@@ -1806,6 +1851,60 @@ mod preflight_tests {
         attestation.cpu_isolation.housekeeping_cpus = "0,5-7".to_owned();
         attestation.cpu_isolation.isolated_cpus = "1-4".to_owned();
         attestation
+    }
+
+    fn stable_runner(
+        ram_bytes: u64,
+        attestation: &RunnerAttestationV5,
+    ) -> StableRunnerFingerprint<'_> {
+        StableRunnerFingerprint {
+            schema_version: 4,
+            runner_class: "self-hosted-bare-metal-v1",
+            cpu_model: "fixture-cpu",
+            logical_cores: 4,
+            ram_bytes,
+            kernel: "fixture-kernel",
+            cpu_affinity: "1-4",
+            cgroup_cpu_quota: "unlimited",
+            governor: "performance",
+            turbo: "enabled",
+            attestation,
+        }
+    }
+
+    #[test]
+    fn fingerprint_accepts_only_bounded_page_aligned_memtotal_boot_drift() {
+        let attestation = isolated_attestation();
+        let reviewed = stable_runner(64 * 1024 * 1024 * 1024, &attestation);
+        let reviewed_fingerprint = stable_runner_fingerprint(&reviewed).unwrap();
+        let allowed = vec![reviewed_fingerprint.clone()];
+
+        let one_page_less =
+            stable_runner(reviewed.ram_bytes - X86_64_BASE_PAGE_BYTES, &attestation);
+        assert_eq!(
+            approved_fingerprint_with_memtotal_boot_drift(&one_page_less, &allowed).unwrap(),
+            reviewed_fingerprint
+        );
+
+        let outside_bound = stable_runner(
+            reviewed.ram_bytes - MEMTOTAL_BOOT_DRIFT_MAX_BYTES - X86_64_BASE_PAGE_BYTES,
+            &attestation,
+        );
+        assert_ne!(
+            approved_fingerprint_with_memtotal_boot_drift(&outside_bound, &allowed).unwrap(),
+            reviewed_fingerprint
+        );
+
+        let mut changed_attestation = attestation.clone();
+        changed_attestation.storage_identity_digest = "f".repeat(64);
+        let changed_storage = stable_runner(
+            reviewed.ram_bytes - X86_64_BASE_PAGE_BYTES,
+            &changed_attestation,
+        );
+        assert_ne!(
+            approved_fingerprint_with_memtotal_boot_drift(&changed_storage, &allowed).unwrap(),
+            reviewed_fingerprint
+        );
     }
 
     #[test]
