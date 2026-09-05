@@ -54,7 +54,7 @@ receipt = "target/test-evidence/0.72/coverage-management-security.json"
 [[module]]
 path = "crates/hydracache-server/src/management_topology.rs"
 work_items = ["W5"]
-tests = ["crates/hydracache-server/tests/management_topology_072.rs#members_are_committed_epoch_fenced_pseudonymous_and_platform_unknown_is_null", "crates/hydracache-server/tests/management_topology_072.rs#partitions_and_trace_are_returned_only_for_the_exact_authority_observation"]
+tests = ["crates/hydracache-server/tests/management_topology_072.rs#members_are_committed_epoch_fenced_pseudonymous_and_remote_platform_unknown_is_null", "crates/hydracache-server/tests/management_topology_072.rs#local_member_preserves_available_linux_process_resources", "crates/hydracache-server/tests/management_topology_072.rs#partitions_and_trace_are_returned_only_for_the_exact_authority_observation"]
 reviewed_branches = ["committed-versus-discovered", "epoch-sequence-fence", "resource-unknown", "placement-trace-missing"]
 receipt = "target/test-evidence/0.72/coverage-management-topology.json"
 

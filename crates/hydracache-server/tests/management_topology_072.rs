@@ -172,7 +172,7 @@ async fn json(response: axum::response::Response) -> Value {
 }
 
 #[tokio::test]
-async fn members_are_committed_epoch_fenced_pseudonymous_and_platform_unknown_is_null() {
+async fn members_are_committed_epoch_fenced_pseudonymous_and_remote_platform_unknown_is_null() {
     let response = surface(ManagementTopologyModel::new())
         .routes()
         .oneshot(request(MANAGEMENT_CLUSTER_MEMBERS_PATH))
@@ -184,7 +184,6 @@ async fn members_are_committed_epoch_fenced_pseudonymous_and_platform_unknown_is
     assert_eq!(items.len(), 2);
     assert!(items.iter().all(|item| item["authority_epoch"] == 71));
     assert!(items.iter().all(|item| item["cpu_percent"].is_null()));
-    assert!(items.iter().all(|item| item["rss_bytes"].is_null()));
     let local = items.iter().find(|item| item["generation"] == 4).unwrap();
     assert!(local["product_version"].is_string());
     assert!(local["config_digest"]
@@ -195,9 +194,31 @@ async fn members_are_committed_epoch_fenced_pseudonymous_and_platform_unknown_is
     assert_eq!(remote["formation"]["serving"], "blocked");
     assert_eq!(remote["reachability_reason"], "transport-unreachable");
     assert!(remote["uptime_seconds"].is_null());
+    assert!(remote["rss_bytes"].is_null());
+    assert!(remote["open_fds"].is_null());
+    assert!(remote["thread_count"].is_null());
     let encoded = body.to_string();
     assert!(!encoded.contains("raw-local-secret"));
     assert!(!encoded.contains("raw-remote-secret"));
+}
+
+#[cfg(target_os = "linux")]
+#[tokio::test]
+async fn local_member_preserves_available_linux_process_resources() {
+    let response = surface(ManagementTopologyModel::new())
+        .routes()
+        .oneshot(request(MANAGEMENT_CLUSTER_MEMBERS_PATH))
+        .await
+        .unwrap();
+    assert_eq!(response.status(), StatusCode::OK);
+    let body = json(response).await;
+    let items = body["data"]["items"].as_array().unwrap();
+    let local = items.iter().find(|item| item["generation"] == 4).unwrap();
+    assert!(local["rss_bytes"].as_u64().is_some_and(|bytes| bytes > 0));
+    assert!(local["open_fds"].as_u64().is_some_and(|count| count > 0));
+    assert!(local["thread_count"]
+        .as_u64()
+        .is_some_and(|count| count > 0));
 }
 
 #[tokio::test]
