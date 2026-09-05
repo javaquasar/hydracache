@@ -13,6 +13,8 @@ const SOURCE_MAP: &str = "docs/testing/management-center/0.72/source-map.toml";
 const CANARIES: &str = "docs/testing/canaries/0.72-management-center.toml";
 const COVERAGE: &str = "docs/testing/management-center/0.72/coverage.toml";
 const COVERAGE_RATCHET: &str = "docs/testing/coverage-ratchet.toml";
+const ARCHITECTURE: &str = "docs/architecture/management-center-v2.md";
+const BASELINES: &str = "docs/testing/management-center/0.72/baselines.toml";
 
 #[derive(Debug, Deserialize, Serialize)]
 #[serde(deny_unknown_fields)]
@@ -152,6 +154,122 @@ pub fn check(root: &Path, require_evidence: bool) -> Result<Vec<String>, Box<dyn
         root,
         &fs::read_to_string(root.join(COVERAGE))?,
     )?);
+    problems.extend(check_architecture_document(&fs::read_to_string(
+        root.join(ARCHITECTURE),
+    )?));
+    problems.extend(check_baseline_document(
+        root,
+        &fs::read_to_string(root.join(BASELINES))?,
+        require_evidence,
+    )?);
+    Ok(problems)
+}
+
+/// Keep the human architecture decision tied to the threat, truth, budget and
+/// interaction contracts that the machine-readable registries enforce.
+pub fn check_architecture_document(text: &str) -> Vec<String> {
+    let required = [
+        "# Management Center 2.0 architecture",
+        "## Scope and non-goals",
+        "## Information architecture",
+        "## Authority and observation state machine",
+        "## Permissions and data classification",
+        "## Trust boundaries and threat model",
+        "## Request and aggregation sequences",
+        "## Endpoint budgets",
+        "## Responsive interaction specification",
+        "## Baselines and evidence boundary",
+        "confused-deputy fan-out and SSRF",
+        "enumeration and cross-tenant disclosure",
+        "stale replay and mixed epochs",
+        "response amplification and denial of service",
+        "stored/reflected XSS",
+        "Desktop",
+        "Tablet",
+        "Narrow mobile",
+    ];
+    required
+        .into_iter()
+        .filter(|marker| !text.contains(marker))
+        .map(|marker| format!("management architecture is missing required marker: {marker}"))
+        .collect()
+}
+
+pub fn check_baseline_document(
+    root: &Path,
+    text: &str,
+    require_evidence: bool,
+) -> Result<Vec<String>, Box<dyn Error>> {
+    let value: toml::Value = toml::from_str(text)?;
+    let mut problems = Vec::new();
+    if value
+        .get("schema_version")
+        .and_then(toml::Value::as_integer)
+        != Some(1)
+        || value.get("release").and_then(toml::Value::as_str) != Some("0.72.0")
+    {
+        problems.push("baseline registry must be schema 1 for release 0.72.0".to_owned());
+    }
+    let pre = value.get("pre_feature");
+    let previous = value.get("published_previous");
+    let policy = value.get("policy");
+    let pre_sha = pre
+        .and_then(|row| row.get("source_commit"))
+        .and_then(toml::Value::as_str)
+        .unwrap_or_default();
+    if pre_sha.len() != 40 || !pre_sha.bytes().all(|byte| byte.is_ascii_hexdigit()) {
+        problems.push("pre-feature baseline must name an exact 40-hex source commit".to_owned());
+    }
+    if previous
+        .and_then(|row| row.get("tag"))
+        .and_then(toml::Value::as_str)
+        != Some("v0.71.0")
+    {
+        problems.push("published previous baseline must name v0.71.0".to_owned());
+    }
+    for (name, row) in [("pre-feature", pre), ("published previous", previous)] {
+        let measurements = row
+            .and_then(|entry| entry.get("required_measurements"))
+            .and_then(toml::Value::as_array);
+        if measurements.is_none_or(Vec::is_empty) {
+            problems.push(format!("{name} baseline has no required measurements"));
+        }
+        let receipt = row
+            .and_then(|entry| entry.get("receipt"))
+            .and_then(toml::Value::as_str)
+            .unwrap_or_default();
+        if !safe_relative(receipt)
+            || !Path::new(receipt).starts_with("target/release-evidence/management-center/0.72")
+        {
+            problems.push(format!("{name} baseline has an unsafe receipt path"));
+        } else if require_evidence && !root.join(receipt).is_file() {
+            problems.push(format!("{name} baseline receipt is missing: {receipt}"));
+        }
+    }
+    for flag in [
+        "candidate_may_self_baseline",
+        "development_branch_may_substitute_for_published_artifact",
+    ] {
+        if policy
+            .and_then(|entry| entry.get(flag))
+            .and_then(toml::Value::as_bool)
+            != Some(false)
+        {
+            problems.push(format!("baseline policy must keep {flag}=false"));
+        }
+    }
+    for flag in [
+        "missing_baseline_blocks_ship",
+        "failed_attempts_are_append_only",
+    ] {
+        if policy
+            .and_then(|entry| entry.get(flag))
+            .and_then(toml::Value::as_bool)
+            != Some(true)
+        {
+            problems.push(format!("baseline policy must keep {flag}=true"));
+        }
+    }
     Ok(problems)
 }
 

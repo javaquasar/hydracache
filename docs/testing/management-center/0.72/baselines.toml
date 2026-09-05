@@ -1,0 +1,24 @@
+schema_version = 1
+release = "0.72.0"
+
+[pre_feature]
+source_commit = "8d205fa302d81a07c19147cb4431e16390d256c3"
+status = "declared"
+relationship = "first parent of the initial 0.72 plan commit"
+required_measurements = ["bundle_bytes", "endpoint_latency_bytes", "server_retained_owners", "browser_heap_dom", "fd_task_counts", "console_coverage"]
+receipt = "target/release-evidence/management-center/0.72/pre-feature-baseline.json"
+
+[published_previous]
+version = "0.71.0"
+tag = "v0.71.0"
+status = "unavailable"
+reason = "no published v0.71.x tag or retained artifact exists in the local or origin repository"
+required_measurements = ["legacy_console_tests", "bundle_bytes", "endpoint_latency_bytes", "server_retained_owners", "browser_heap_dom", "fd_task_counts", "console_coverage"]
+receipt = "target/release-evidence/management-center/0.72/v0.71-baseline.json"
+
+[policy]
+candidate_may_self_baseline = false
+missing_baseline_blocks_ship = true
+development_branch_may_substitute_for_published_artifact = false
+failed_attempts_are_append_only = true
+

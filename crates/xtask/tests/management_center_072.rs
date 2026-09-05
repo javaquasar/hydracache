@@ -28,6 +28,44 @@ fn management_registry_covers_every_route_and_failure_class() {
 }
 
 #[test]
+fn management_architecture_and_baseline_contracts_fail_closed() {
+    let architecture =
+        fs::read_to_string(root().join("docs/architecture/management-center-v2.md")).unwrap();
+    assert!(xtask::management_center::check_architecture_document(&architecture).is_empty());
+    let missing_threat = architecture.replace("confused-deputy fan-out and SSRF", "fan-out");
+    assert!(
+        xtask::management_center::check_architecture_document(&missing_threat)
+            .iter()
+            .any(|problem| problem.contains("confused-deputy"))
+    );
+
+    let baselines =
+        fs::read_to_string(root().join("docs/testing/management-center/0.72/baselines.toml"))
+            .unwrap();
+    assert!(
+        xtask::management_center::check_baseline_document(&root(), &baselines, false)
+            .unwrap()
+            .is_empty()
+    );
+    let self_baselined = baselines.replace(
+        "candidate_may_self_baseline = false",
+        "candidate_may_self_baseline = true",
+    );
+    assert!(
+        xtask::management_center::check_baseline_document(&root(), &self_baselined, false)
+            .unwrap()
+            .iter()
+            .any(|problem| problem.contains("candidate_may_self_baseline=false"))
+    );
+    assert!(
+        xtask::management_center::check_baseline_document(&root(), &baselines, true)
+            .unwrap()
+            .iter()
+            .any(|problem| problem.contains("baseline receipt is missing"))
+    );
+}
+
+#[test]
 fn management_registry_rejects_missing_or_tampered_proof() {
     let (claims, taxonomy, canaries, source_map) = documents();
     let tampered = claims.replacen("MC72-W2-LEAK-OR-OVERSIZE", "MC72-W2-NONEXISTENT-CANARY", 1);
