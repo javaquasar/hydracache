@@ -1,3 +1,4 @@
+use std::borrow::Cow;
 use std::collections::BTreeMap;
 use std::error::Error;
 use std::ffi::OsStr;
@@ -264,7 +265,8 @@ fn expected_digests_for(
     id: &str,
     command_spec: &CommandSpec,
 ) -> Result<ExpectedDigests, Box<dyn Error>> {
-    let registry = sha256(&fs::read(root.join(registry_path))?);
+    let registry_bytes = fs::read(root.join(registry_path))?;
+    let registry = sha256(canonical_registry_bytes(&registry_bytes).as_ref());
     let command = sha256(&serde_json::to_vec(command_spec)?);
     let input = sha256(format!("{id}\n{registry}\n{command}").as_bytes());
     Ok(ExpectedDigests {
@@ -272,6 +274,25 @@ fn expected_digests_for(
         registry,
         input,
     })
+}
+
+fn canonical_registry_bytes(bytes: &[u8]) -> Cow<'_, [u8]> {
+    if !bytes.windows(2).any(|pair| pair == b"\r\n") {
+        return Cow::Borrowed(bytes);
+    }
+
+    let mut canonical = Vec::with_capacity(bytes.len());
+    let mut index = 0;
+    while index < bytes.len() {
+        if bytes[index] == b'\r' && bytes.get(index + 1) == Some(&b'\n') {
+            canonical.push(b'\n');
+            index += 2;
+        } else {
+            canonical.push(bytes[index]);
+            index += 1;
+        }
+    }
+    Cow::Owned(canonical)
 }
 
 pub fn exit_code_for(receipt: &EvidenceReceipt) -> i32 {

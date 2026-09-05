@@ -280,6 +280,30 @@ fn evidence_registry_baseline_can_execute_a_later_release() {
 }
 
 #[test]
+fn evidence_registry_digest_is_stable_across_lf_and_crlf_checkouts() {
+    let root = temp_root("registry-line-endings");
+    write_registry(&root, "pass", 5, vec![]);
+    let registry_path = root.join(xtask::gated_tests::REGISTRY_PATH);
+    let registry: xtask::gated_tests::GatedTestRegistry =
+        toml::from_str(&fs::read_to_string(&registry_path).unwrap()).unwrap();
+    let lf = xtask::evidence_run::expected_digests(&root, &registry.gate[0]).unwrap();
+
+    let lf_bytes = fs::read(&registry_path).unwrap();
+    assert!(!lf_bytes.windows(2).any(|pair| pair == b"\r\n"));
+    let crlf_bytes = String::from_utf8(lf_bytes)
+        .unwrap()
+        .replace('\n', "\r\n")
+        .into_bytes();
+    fs::write(&registry_path, crlf_bytes).unwrap();
+    let crlf = xtask::evidence_run::expected_digests(&root, &registry.gate[0]).unwrap();
+
+    assert_eq!(crlf.command, lf.command);
+    assert_eq!(crlf.registry, lf.registry);
+    assert_eq!(crlf.input, lf.input);
+    fs::remove_dir_all(root).unwrap();
+}
+
+#[test]
 fn evidence_executor_writes_atomic_receipts_for_success_failure_and_timeout() {
     for (mode, expected) in [
         ("pass", EvidenceOutcome::Pass),
