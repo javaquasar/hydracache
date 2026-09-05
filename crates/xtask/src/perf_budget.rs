@@ -5248,12 +5248,30 @@ fn measurement_projection(measurements: &[Value], projection: Projection) -> Vec
                     "id": evidence.get("id"),
                     "kind": kind,
                     "claim": evidence.get("claim"),
-                    "dimensions": evidence.get("dimensions"),
+                    "dimensions": methodology_dimensions(evidence),
                     "derived_from": evidence.get("derived_from"),
                 }),
             }
         })
         .collect()
+}
+
+fn methodology_dimensions(evidence: &Value) -> Value {
+    let Some(dimensions) = evidence.get("dimensions").and_then(Value::as_object) else {
+        return evidence.get("dimensions").cloned().unwrap_or(Value::Null);
+    };
+    let mut stable = dimensions.clone();
+    for volatile in [
+        "endpoint_capability_digest",
+        "reference_instance_created_unix_nanos",
+        "reference_instance_receipt_sha256",
+        "reference_owning_pid",
+        "reference_process_pid",
+        "selected_endpoint",
+    ] {
+        stable.remove(volatile);
+    }
+    Value::Object(stable)
 }
 
 fn perf_metrics(
@@ -7176,6 +7194,62 @@ mod semantic_tests {
             "operations_per_second_at_slo"
         )
         .is_err());
+    }
+
+    #[test]
+    fn methodology_projection_excludes_per_run_runtime_identity() {
+        let first = serde_json::json!([{
+            "kind": "load_curve",
+            "evidence": {
+                "id": "capacity",
+                "claim": "capacity_knee",
+                "dimensions": {
+                    "repeats": 3,
+                    "reference_instance_created_unix_nanos": 100,
+                    "reference_instance_receipt_sha256": "a",
+                    "reference_process_pid": 10,
+                    "reference_owning_pid": 10,
+                    "selected_endpoint": "hydracache-server@127.0.0.1:10001",
+                    "endpoint_capability_digest": "b"
+                }
+            }
+        }]);
+        let mut second = first.clone();
+        let dimensions = second
+            .pointer_mut("/0/evidence/dimensions")
+            .and_then(Value::as_object_mut)
+            .unwrap();
+        dimensions.insert(
+            "reference_instance_created_unix_nanos".to_owned(),
+            serde_json::json!(200),
+        );
+        dimensions.insert(
+            "reference_instance_receipt_sha256".to_owned(),
+            serde_json::json!("c"),
+        );
+        dimensions.insert("reference_process_pid".to_owned(), serde_json::json!(20));
+        dimensions.insert("reference_owning_pid".to_owned(), serde_json::json!(20));
+        dimensions.insert(
+            "selected_endpoint".to_owned(),
+            serde_json::json!("hydracache-server@127.0.0.1:20002"),
+        );
+        dimensions.insert(
+            "endpoint_capability_digest".to_owned(),
+            serde_json::json!("d"),
+        );
+        let first = first.as_array().unwrap();
+        let second = second.as_array().unwrap();
+        assert_eq!(
+            digest_json(&measurement_projection(first, Projection::Methodology)),
+            digest_json(&measurement_projection(second, Projection::Methodology))
+        );
+
+        let mut changed = second.clone();
+        changed[0]["evidence"]["dimensions"]["repeats"] = serde_json::json!(4);
+        assert_ne!(
+            digest_json(&measurement_projection(first, Projection::Methodology)),
+            digest_json(&measurement_projection(&changed, Projection::Methodology))
+        );
     }
 
     #[test]
