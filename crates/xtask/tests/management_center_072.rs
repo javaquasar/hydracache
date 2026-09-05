@@ -221,3 +221,24 @@ fn canary_w14_paper_green_release_is_rejected() {
         panic!("HC-CANARY-RED:MC72-W14-PAPER-GREEN");
     }
 }
+
+#[test]
+fn management_w14_requires_every_decoder_fuzz_receipt() {
+    let release = fs::read_to_string(root().join("docs/testing/release-evidence/0.72.toml"))
+        .expect("0.72 release evidence manifest");
+    let registry = fs::read_to_string(root().join("docs/testing/gated-test-registry.toml"))
+        .expect("gated test registry");
+    let ci = fs::read_to_string(root().join(".github/workflows/ci.yml")).expect("CI workflow");
+    for target in ["envelope", "recovery", "placement", "cursor"] {
+        let gate = format!("tool.cargo-fuzz.management-{target}-072");
+        assert!(release.contains(&gate), "W14 does not require {gate}");
+        assert!(
+            registry.contains(&format!("id = \"{gate}\"")),
+            "{gate} is unregistered"
+        );
+        assert!(
+            ci.contains(&format!("--gate {gate}")),
+            "CI does not execute {gate} through evidence-run"
+        );
+    }
+}

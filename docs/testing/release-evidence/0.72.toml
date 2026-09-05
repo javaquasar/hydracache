@@ -166,7 +166,7 @@ id = "W14"
 required_sources = ["crates/xtask/src/management_center.rs", "fuzz/src/lib.rs", "fuzz/tests/fuzz_corpus_regression.rs"]
 required_artifacts = ["docs/testing/canary-registry-0.72.json", "docs/testing/management-center/0.72/claims.toml", "docs/testing/management-center/0.72/coverage.toml", "docs/testing/management-center/0.72/failure-taxonomy.toml", "docs/testing/management-center/0.72/w14-admission-evidence.md"]
 fast_gate_ids = ["fast.workspace-nextest"]
-gated_gate_ids = ["tool.coverage-ratchet"]
+gated_gate_ids = ["tool.coverage-ratchet", "tool.cargo-fuzz.management-envelope-072", "tool.cargo-fuzz.management-recovery-072", "tool.cargo-fuzz.management-placement-072", "tool.cargo-fuzz.management-cursor-072"]
 ship_required = true
 [[work_item.required_tests]]
 source = "crates/xtask/tests/management_center_072.rs"

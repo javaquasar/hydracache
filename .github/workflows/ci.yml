@@ -2477,6 +2477,18 @@ jobs:
       - name: Run 0.66 Raft wire fuzz release proof
         run: cargo run -p xtask --locked -- evidence-run --release 0.66 --gate tool.cargo-fuzz.raft-wire-frame-066
 
+      - name: Run 0.72 management envelope fuzz proof
+        run: cargo run -p xtask --locked -- evidence-run --release 0.72 --gate tool.cargo-fuzz.management-envelope-072
+
+      - name: Run 0.72 management recovery fuzz proof
+        run: cargo run -p xtask --locked -- evidence-run --release 0.72 --gate tool.cargo-fuzz.management-recovery-072
+
+      - name: Run 0.72 management placement fuzz proof
+        run: cargo run -p xtask --locked -- evidence-run --release 0.72 --gate tool.cargo-fuzz.management-placement-072
+
+      - name: Run 0.72 management cursor fuzz proof
+        run: cargo run -p xtask --locked -- evidence-run --release 0.72 --gate tool.cargo-fuzz.management-cursor-072
+
       - name: Upload 0.66 fuzz evidence
         if: always()
         uses: actions/upload-artifact@v6
@@ -2485,6 +2497,17 @@ jobs:
           path: |
             fuzz/artifacts/raft_wire_frame/**
             fuzz/corpus/raft_wire_frame/**
+            target/release-evidence/receipts/**
+          if-no-files-found: error
+
+      - name: Upload 0.72 management fuzz evidence
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: "management-fuzz-072-${{ github.sha }}"
+          path: |
+            fuzz/artifacts/fuzz_management_*/**
+            fuzz/corpus/fuzz_management_*/**
             target/release-evidence/receipts/**
           if-no-files-found: error
 

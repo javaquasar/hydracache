@@ -15,9 +15,11 @@ candidate command remains intentionally red until all external exact-candidate i
 - `release-evidence/0.72.toml` maps every work item to sources, executable Rust tests, artifacts,
   `fast.workspace-nextest`, and the applicable daemon/resource/coverage gates.
 - Four dedicated cargo-fuzz entry points cover the management envelope, durable recovery,
-  placement trace and opaque cursor decoders behind a 16 KiB input ceiling. The fast corpus gate
-  replays committed valid and hostile seeds and asserts the oversize short-circuit; scheduled
-  candidate runs retain the time-bounded libFuzzer receipts.
+  placement trace and opaque cursor decoders behind a 16 KiB input ceiling. Each is registered as
+  its own ship-mandatory `tool.cargo-fuzz.management-*-072` gate and runs through `evidence-run` in
+  scheduled/tag CI. The fast corpus gate replays committed valid and hostile seeds and asserts the
+  oversize short-circuit; scheduled candidate runs retain four distinct time-bounded libFuzzer
+  receipts, so one green decoder cannot stand in for another.
 - `release-evidence --release 0.72 --require-ship` invokes strict management admission before it can
   aggregate ordinary gate receipts. The `MC72-W14-PAPER-GREEN` test proves this path cannot bypass
   missing semantic evidence.

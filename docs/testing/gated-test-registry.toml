@@ -5644,6 +5644,134 @@ platform = "linux"
 [gate.command.env]
 
 [[gate]]
+id = "tool.cargo-fuzz.management-envelope-072"
+kind = "external_tool"
+source = "fuzz/fuzz_targets/fuzz_management_envelope.rs"
+package = "hydracache-fuzz"
+target = "fuzz_management_envelope"
+test = ""
+cfg = ""
+env = ""
+reason = "Pinned nightly cargo-fuzz mutates the bounded Management Center envelope decoder"
+tier = "nightly"
+required_features = []
+required_env = []
+required_tools = ["nightly", "cargo-fuzz=0.13.2"]
+timeout_seconds = 300
+owner_release = "0.72.0"
+ship_mandatory = true
+artifacts = []
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "fuzz-nightly"
+step = "Run 0.72 management envelope fuzz proof"
+
+[gate.command]
+program = "cargo"
+args = ["+nightly", "fuzz", "run", "fuzz_management_envelope", "--", "-max_total_time=60"]
+cwd = "fuzz"
+platform = "linux"
+
+[gate.command.env]
+
+[[gate]]
+id = "tool.cargo-fuzz.management-recovery-072"
+kind = "external_tool"
+source = "fuzz/fuzz_targets/fuzz_management_recovery.rs"
+package = "hydracache-fuzz"
+target = "fuzz_management_recovery"
+test = ""
+cfg = ""
+env = ""
+reason = "Pinned nightly cargo-fuzz mutates the bounded durable recovery status decoder"
+tier = "nightly"
+required_features = []
+required_env = []
+required_tools = ["nightly", "cargo-fuzz=0.13.2"]
+timeout_seconds = 300
+owner_release = "0.72.0"
+ship_mandatory = true
+artifacts = []
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "fuzz-nightly"
+step = "Run 0.72 management recovery fuzz proof"
+
+[gate.command]
+program = "cargo"
+args = ["+nightly", "fuzz", "run", "fuzz_management_recovery", "--", "-max_total_time=60"]
+cwd = "fuzz"
+platform = "linux"
+
+[gate.command.env]
+
+[[gate]]
+id = "tool.cargo-fuzz.management-placement-072"
+kind = "external_tool"
+source = "fuzz/fuzz_targets/fuzz_management_placement.rs"
+package = "hydracache-fuzz"
+target = "fuzz_management_placement"
+test = ""
+cfg = ""
+env = ""
+reason = "Pinned nightly cargo-fuzz mutates the bounded deterministic placement trace decoder"
+tier = "nightly"
+required_features = []
+required_env = []
+required_tools = ["nightly", "cargo-fuzz=0.13.2"]
+timeout_seconds = 300
+owner_release = "0.72.0"
+ship_mandatory = true
+artifacts = []
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "fuzz-nightly"
+step = "Run 0.72 management placement fuzz proof"
+
+[gate.command]
+program = "cargo"
+args = ["+nightly", "fuzz", "run", "fuzz_management_placement", "--", "-max_total_time=60"]
+cwd = "fuzz"
+platform = "linux"
+
+[gate.command.env]
+
+[[gate]]
+id = "tool.cargo-fuzz.management-cursor-072"
+kind = "external_tool"
+source = "fuzz/fuzz_targets/fuzz_management_cursor.rs"
+package = "hydracache-fuzz"
+target = "fuzz_management_cursor"
+test = ""
+cfg = ""
+env = ""
+reason = "Pinned nightly cargo-fuzz mutates the bounded opaque management cursor decoder"
+tier = "nightly"
+required_features = []
+required_env = []
+required_tools = ["nightly", "cargo-fuzz=0.13.2"]
+timeout_seconds = 300
+owner_release = "0.72.0"
+ship_mandatory = true
+artifacts = []
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "fuzz-nightly"
+step = "Run 0.72 management cursor fuzz proof"
+
+[gate.command]
+program = "cargo"
+args = ["+nightly", "fuzz", "run", "fuzz_management_cursor", "--", "-max_total_time=60"]
+cwd = "fuzz"
+platform = "linux"
+
+[gate.command.env]
+
+[[gate]]
 id = "ignored.hydracache-operator.soak-kind.operator-scale-chaos-kind-lane-records-voters-and-metadata-epoch"
 kind = "ignored_test"
 source = "crates/hydracache-operator/tests/soak_kind.rs"
