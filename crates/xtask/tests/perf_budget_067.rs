@@ -471,9 +471,8 @@ fn bootstrapped_fixture() -> (ContractBundle, Vec<CandidateReport>) {
 }
 
 #[test]
-fn committed_w7_contract_is_explicitly_unbootstrapped_and_fail_closed() {
-    let reference =
-        perf_budget::load_bundle(&repo_root(), perf_budget::RELEASE, "reference-v1").unwrap();
+fn committed_w7_contract_is_bootstrapped_and_still_fail_closed() {
+    let reference = perf_budget::load_bundle(&repo_root(), "0.67.1", "reference-v1").unwrap();
     assert_eq!(
         reference.baseline.profile_sha256,
         perf_budget::digest_json(&reference.profile)
@@ -482,23 +481,40 @@ fn committed_w7_contract_is_explicitly_unbootstrapped_and_fail_closed() {
     assert!(reference_problems.is_empty(), "{reference_problems:#?}");
     assert_eq!(
         reference.profile.bootstrap_status,
-        BootstrapStatus::Unbootstrapped
+        BootstrapStatus::Bootstrapped
     );
-    assert!(reference.profile.runner.allowed_fingerprints.is_empty());
+    assert_eq!(reference.profile.runner.allowed_fingerprints.len(), 1);
     assert_eq!(
         reference.profile.runner.required_runner_class,
         "self-hosted-bare-metal-v1"
     );
     assert!(!reference.profile.noise.absolute_numbers_are_ship_evidence);
-    assert!(reference.baseline.members.is_empty());
-    assert!(reference.baseline.anchor.metrics.is_empty());
+    assert_eq!(
+        reference.budget.bootstrap_status,
+        BootstrapStatus::Bootstrapped
+    );
+    assert!(reference
+        .budget
+        .budgets
+        .iter()
+        .all(|rule| rule.status == BudgetRuleStatus::Active));
+    assert_eq!(
+        reference.baseline.bootstrap_status,
+        BootstrapStatus::Bootstrapped
+    );
+    assert_eq!(reference.baseline.members.len(), 5);
+    assert_eq!(reference.baseline.anchor.source_members.len(), 5);
+    assert_eq!(
+        reference.baseline.anchor.metrics.len(),
+        reference.budget.budgets.len()
+    );
     let verdict = perf_budget::evaluate(&reference, &[], now());
     assert_eq!(verdict.payload.status, VerdictStatus::Failed);
     assert!(verdict
         .payload
         .problems
         .iter()
-        .any(|problem| problem.contains("explicitly unbootstrapped")));
+        .any(|problem| problem.contains("candidate report set is missing")));
 
     let shared = perf_budget::load_bundle(&repo_root(), perf_budget::RELEASE, "ci-shared").unwrap();
     assert!(perf_budget::validate_contract_bundle(&shared).is_empty());

@@ -1,0 +1,47 @@
+{
+  "schema_version": 1,
+  "release": "0.67.1",
+  "profile": "reference-v1",
+  "proposal_receipt_sha256": "4572cb0e9074543bde87f84676e834e290b3cfb234d7c720adbffec1b1747ab6",
+  "sample_set_sha256": "9069de679ee9be070084ea94485ee538d65db669f8d8d3edd8ad5bd371810b83",
+  "sample_receipt_sha256": [
+    "a096ca43d222d3fadd81f8437554be8185e17faf0b5ddcb345287ebd62fd918a",
+    "c5097eebea89985df58f9dde3ac9ee77a143db37b86ff4b0a1ab9486f833a264",
+    "c756588ee395f8bd04edf729390f0d178ee8661ee5e7aac9c56f4e79873834b1",
+    "669b898b81e25ef37db159b7a9cf20999b6cebe60b6bd3a7a5a8ee3c54ad5971",
+    "d9f8efd1c0e03c3d6f667fad683ce12e950bb52e4fda275215c223026c54ac9f"
+  ],
+  "runner_provisioning_sha256": "2877a13bb8a4dd6b03583afa816857fb2ca1607da8a0352ae01686a7c35e71f8",
+  "full_dress_admission_sha256": "d373a3f6693562c08d9cd1f629262bf210bb51feea902e38d28c72680e5c0445",
+  "producer": "reference-automation",
+  "reviewer": "codex-independent-reference-review",
+  "reviewed_at": "2026-09-05T12:41:30Z",
+  "review_reference": "https://github.com/javaquasar/hydracache/pull/169",
+  "decision": "approve",
+  "reason": "Approved after exact five-receipt sample-set and artifact-provenance verification: all five members share scenario, workload, SLO, and stable methodology identities; proposed medians retain the fixed 10% anchor/rolling tolerance and 5% candidate spread ceiling without widening; observed cross-run control-plane and brownout variance remains subject to the separate frozen-candidate gate.",
+  "reviewed_files": [
+    {
+      "id": "profile",
+      "path": "profile.toml",
+      "sha256": "7a852565b93cf1d3483823262234de7ce155596e8a4c64918fef11cba6869d64"
+    },
+    {
+      "id": "budget",
+      "path": "budget.toml",
+      "sha256": "c9be3dc643567393c9afa4fdfca9c0d0d5487e656c9220af70b37413e3944151"
+    },
+    {
+      "id": "baseline",
+      "path": "baseline.toml",
+      "sha256": "dcaeaaeef1028e18e27594ae3e1be6f385fa0833676cd441f95f3c033740363e"
+    },
+    {
+      "id": "anchor",
+      "path": "anchor.json",
+      "sha256": "15e36781d19a39b0c294f1fd1bdcc9105e759e45a0208757dcafe362ac81a535"
+    }
+  ],
+  "passed": true,
+  "ship_evidence_eligible": false,
+  "receipt_sha256": "c7c1dba0060a244fdda4c030a154073dce83308a41930e1dab5041e45e7cfffd"
+}

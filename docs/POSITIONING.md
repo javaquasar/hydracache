@@ -116,9 +116,16 @@ operability surface, and soak mileage), not missing core capability.
 
 Release `0.67.0` delivers performance measurement infrastructure, not official performance numbers. It must not be presented as capacity validation, sizing guidance, a Redis comparison result, or a bootstrapped numerical baseline.
 
-The methodology preserves strict surface labels: embedded-cache, in-process client router, one selected node-local RESP endpoint, daemon control-plane, and library/model primitives are separate. GitHub-hosted results are tripwires only. Dedicated `reference-v1` evidence is deferred by [`TD-0013`](technical-debt/TD-0013-dedicated-performance-runner-and-baseline-bootstrap.md) and remains unbootstrapped.
+The methodology preserves strict surface labels: embedded-cache, in-process client router, one
+selected node-local RESP endpoint, daemon control-plane, and library/model primitives are separate.
+GitHub-hosted results are tripwires only. The later 0.67.1 campaign resolved
+[`TD-0013`](technical-debt/TD-0013-dedicated-performance-runner-and-baseline-bootstrap.md) with an
+independently reviewed, narrowly scoped five-sample bare-metal baseline. Its frozen-candidate W7
+release verdict remains pending, so no final 0.67.1 positioning number is published yet.
 
-The existing statement still applies: HydraCache is not marketed as a Redis throughput replacement. The W8 harness is tooling for a future pinned same-box observation, not a released superiority claim.
+The existing statement still applies: HydraCache is not marketed as a Redis throughput
+replacement. The pinned Redis observation is a same-box comparison for one exact scenario and
+cannot support a released superiority claim.
 
 ## Maintaining the position
 
