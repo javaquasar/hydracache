@@ -508,6 +508,10 @@ function renderClients(envelope: WireValue) {
     pill("subscriptions", known(clients.active_subscriptions)),
     pill("sessions", known(clients.active_sessions)),
     pill("buffered bytes", bytes(clients.buffered_bytes)),
+    pill("reconnecting", known(clients.reconnecting)),
+    pill("slow", known(clients.slow)),
+    pill("quota rejected", known(clients.quota_rejected_total)),
+    pill("cleanup lag", known(clients.cleanup_lag)),
   );
   const protocols = Array.isArray(clients.protocols) ? clients.protocols : [];
   byTest("client-table").replaceChildren(
@@ -521,6 +525,9 @@ function renderClients(envelope: WireValue) {
           known(protocol.closed_total),
           known(protocol.rejected_total),
           known(protocol.pending_invocations),
+          known(protocol.active_subscriptions),
+          known(protocol.active_sessions),
+          bytes(protocol.buffered_bytes),
         ],
         { testid: "client-protocol-row" },
       ),
@@ -528,7 +535,7 @@ function renderClients(envelope: WireValue) {
   );
   if (protocols.length === 0) {
     byTest("client-table").append(
-      row(["No protocol source", "unavailable", "unavailable", "unavailable", "unavailable", "unavailable", "unavailable"]),
+      row(["No protocol source", "unavailable", "unavailable", "unavailable", "unavailable", "unavailable", "unavailable", "unavailable", "unavailable", "unavailable"]),
     );
   }
 }

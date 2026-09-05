@@ -56,6 +56,10 @@ test("console_renders_typed_dashboard_and_all_truth_states", async ({ page }) =>
   await expect(page.getByTestId("client-protocol-row")).toHaveCount(3);
   await expect(page.getByTestId("client-table")).toContainText("hc-2-alpha");
   await expect(page.getByTestId("client-details")).toContainText("unavailable");
+  await expect(page.getByTestId("client-details")).toContainText("reconnecting2");
+  await expect(page.getByTestId("client-details")).toContainText("slow1");
+  await expect(page.getByTestId("client-details")).toContainText("quota rejected7");
+  await expect(page.getByTestId("client-table")).toContainText("2.0 KiB");
   await expect(page.getByTestId("namespace-row")).toContainText("orders");
   await expect(page.getByTestId("namespace-row")).toContainText("unavailable");
   await expect(page.getByTestId("cache-row")).toContainText("client-surface");
