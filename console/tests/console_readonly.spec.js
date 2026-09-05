@@ -82,6 +82,8 @@ test("console_renders_typed_dashboard_and_all_truth_states", async ({ page }) =>
   await expect(page.getByTestId("health-table")).toContainText("v1");
   await expect(page.getByTestId("remote-history-state")).toContainText("using browser-local history");
   await expect(page.getByTestId("persistence-details")).toContainText("verified backupunavailable");
+  await expect(page.getByTestId("persistence-details")).toContainText("age sourceruntime_observation");
+  await expect(page.getByTestId("persistence-details")).toContainText("recovery reasonstatus-not-retained");
   await expect(page.getByTestId("operations-table")).toContainText("accepted");
   await expect(page.getByTestId("operations-table")).toContainText("completed");
   await expect(page.getByTestId("audit-table")).toContainText("runtime_journal");
@@ -103,6 +105,31 @@ test("recovery_contract_renders_all_five_outcomes_and_bounded_evidence", async (
   await refused.getByTestId("recovery-detail").locator("summary").click();
   await expect(refused.getByTestId("recovery-detail")).toContainText("unsupported-format");
   await expect(refused.getByTestId("recovery-detail")).toContainText("compatible reader");
+});
+
+test("persistence_keeps_runtime_backup_age_separate_from_verified_artifacts", async ({ page }) => {
+  const persistence = structuredClone(persistenceEnvelope);
+  persistence.source = "live";
+  persistence.completeness = "complete";
+  persistence.data.last_verified_backup_id = "backup-opaque-7";
+  persistence.data.last_verified_backup_at_unix_ms = 1_700_000_000_000;
+  persistence.data.last_verified_restore_id = "restore-opaque-4";
+  persistence.data.last_verified_restore_at_unix_ms = 1_700_000_001_000;
+  persistence.data.artifact_size_bytes = 2048;
+  persistence.data.available_capacity_bytes = 4096;
+  persistence.data.verification_state = "verified";
+  persistence.data.recovery_state = "clean";
+  persistence.data.recovery_reason_code = "none";
+  await routeManagement(page, { persistence });
+  await page.goto(`${consoleUrl}#persistence`);
+  const details = page.getByTestId("persistence-details");
+  await expect(details).toContainText("backup age45 s");
+  await expect(details).toContainText("verified backupbackup-opaque-7");
+  await expect(details).toContainText("backup verified at2023-11-14T22:13:20.000Z");
+  await expect(details).toContainText("artifact size2.0 KiB");
+  await expect(details).toContainText("available capacity4.0 KiB");
+  await expect(details).toContainText("sourcelive");
+  await expect(details).toContainText("completenesscomplete");
 });
 
 test("optional_prometheus_history_is_labeled_and_never_spliced_into_local_ring", async ({ page }) => {

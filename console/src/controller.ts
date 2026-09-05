@@ -758,12 +758,22 @@ function renderPersistence(envelope: WireValue) {
   byTest("persistence-details").replaceChildren(
     pill("configured", truth(data.configured)),
     pill("enabled", truth(data.enabled)),
+    pill("destination", truth(data.destination_configured)),
     pill("storage", data.storage_open === true ? "open" : data.storage_open === false ? "closed" : "unavailable"),
+    pill("runtime role", data.runtime_role ?? "unavailable"),
     pill("backup age", known(data.backup_age_seconds, " s")),
+    pill("age source", data.backup_age_source ?? "unavailable"),
     pill("verified backup", data.last_verified_backup_id ?? "unavailable"),
+    pill("backup verified at", time(data.last_verified_backup_at_unix_ms)),
     pill("verified restore", data.last_verified_restore_id ?? "unavailable"),
+    pill("restore verified at", time(data.last_verified_restore_at_unix_ms)),
+    pill("artifact size", bytes(data.artifact_size_bytes)),
+    pill("available capacity", bytes(data.available_capacity_bytes)),
     pill("verification", data.verification_state ?? "unavailable"),
     pill("recovery", data.recovery_state ?? "unknown"),
+    pill("recovery reason", data.recovery_reason_code ?? "unknown"),
+    pill("source", envelope?.source ?? "unavailable"),
+    pill("completeness", envelope?.completeness ?? "partial"),
   );
 }
 
