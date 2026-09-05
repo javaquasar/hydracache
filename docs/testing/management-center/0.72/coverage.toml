@@ -90,7 +90,7 @@ receipt = "target/test-evidence/0.72/coverage-console-bootstrap.json"
 path = "console/src/controller.ts"
 work_items = ["W1", "W4", "W5", "W6", "W7", "W8", "W9", "W10", "W11"]
 tests = ["console/tests/console_readonly.spec.js#console_renders_typed_dashboard_and_all_truth_states", "console/tests/console_readonly.spec.js#console_shows_degraded_state_when_required_snapshot_is_unreachable", "console/tests/console_readonly.spec.js#offline_and_hidden_lifecycle_pauses_polling_and_aborts_obsolete_work", "console/tests/console_readonly.spec.js#hostile_diagnostic_text_is_rendered_only_as_text", "console/tests/console_readonly.spec.js#member formation detail is keyboard operable and keeps current generation evidence"]
-reviewed_branches = ["live-modeled-stale-partial-unavailable", "capability-present-partial-unavailable-absent", "member-resource-known-unknown", "formation-timeline-present-empty-bounded", "client-lifecycle-known-unknown-by-protocol", "namespace-cache-quality-known-unavailable", "abort-obsolete", "text-only-render", "bounded-table", "empty-source", "unknown-value"]
+reviewed_branches = ["live-modeled-stale-partial-unavailable", "capability-present-partial-unavailable-absent", "member-resource-known-unknown", "formation-timeline-present-empty-bounded", "client-lifecycle-known-unknown-by-protocol", "namespace-cache-quality-known-unavailable", "health-threshold-present-unavailable", "health-source-sequence-evaluation-version", "abort-obsolete", "text-only-render", "bounded-table", "empty-source", "unknown-value"]
 receipt = "target/test-evidence/0.72/coverage-console-controller.json"
 
 [[module]]

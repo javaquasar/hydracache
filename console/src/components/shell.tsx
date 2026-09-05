@@ -60,12 +60,13 @@ function HealthPanel() {
   return (
     <Panel id="healthchecks" title="Deterministic healthchecks" description="Statuses and thresholds are evaluated by the server; UNKNOWN remains visible" aside={<span class="truth-chip unknown" data-testid="health-aggregate">UNKNOWN</span>}>
       <div class="metrics-strip" data-testid="health-counts" />
+      <p class="trust-note" data-testid="health-thresholds">Threshold configuration unavailable</p>
       <div class="filter-strip">
         <label>Search <input data-testid="health-search" type="search" maxLength={128} /></label>
         <label>Status <select data-testid="health-status-filter"><option value="">All</option><option>FAIL</option><option>WARN</option><option>UNKNOWN</option><option>PASS</option><option>DISABLED</option></select></label>
         <label>Category <select data-testid="health-category-filter"><option value="">All</option>{["authority", "formation", "consensus", "membership", "partitions", "placement", "replication", "repair", "reshard", "resource", "expiry", "clients", "persistence", "recovery", "audit", "history"].map((category) => <option value={category} key={category}>{category.charAt(0).toUpperCase() + category.slice(1)}</option>)}</select></label>
       </div>
-      <DataTable label="Health checks" headings={["ID", "Status", "Category", "Title", "Evidence", "Affected", "Remediation", "Sequence"]} bodyTestId="health-table" />
+      <DataTable label="Health checks" headings={["ID", "Status", "Category", "Title", "Evidence", "Affected", "Remediation", "Source", "Sequence", "Evaluation"]} bodyTestId="health-table" />
     </Panel>
   );
 }

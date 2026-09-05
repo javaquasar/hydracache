@@ -72,6 +72,11 @@ test("console_renders_typed_dashboard_and_all_truth_states", async ({ page }) =>
   await expect(page.getByTestId("health-counts")).toContainText("UNKNOWN15");
   await expect(page.getByTestId("health-aggregate")).toHaveText("FAIL");
   await expect(page.getByTestId("health-table")).toContainText("apply-lag=100 entries");
+  await expect(page.getByTestId("health-thresholds")).toHaveText(
+    "Raft apply lag: WARN at 100 entries, FAIL at 1,000 entries · reviewed_default · evaluation v1",
+  );
+  await expect(page.getByTestId("health-table")).toContainText("live");
+  await expect(page.getByTestId("health-table")).toContainText("v1");
   await expect(page.getByTestId("remote-history-state")).toContainText("using browser-local history");
   await expect(page.getByTestId("persistence-details")).toContainText("verified backupunavailable");
   await expect(page.getByTestId("operations-table")).toContainText("accepted");
@@ -101,6 +106,18 @@ test("health_filters_use_server_verdicts_and_keep_unknown_visible", async ({ pag
   await page.getByTestId("health-search").fill("reconciliation");
   await expect(page.getByTestId("health-row")).toHaveCount(1);
   await expect(page.getByTestId("health-row")).toContainText("HC-RECOVERY-003");
+});
+
+test("health_missing_thresholds_remain_visibly_unavailable", async ({ page }) => {
+  const health = structuredClone(healthEnvelope);
+  delete health.data.thresholds;
+  health.data.checks.items[0].source = "unavailable";
+  health.data.checks.items[0].evaluation_version = null;
+  await routeManagement(page, { health });
+  await page.goto(`${consoleUrl}#healthchecks`);
+  await expect(page.getByTestId("health-thresholds")).toHaveText("Threshold configuration unavailable");
+  await expect(page.getByTestId("health-row").first()).toContainText("unavailable");
+  await expect(page.getByTestId("health-row").first()).toContainText("vunavailable");
 });
 
 test("placement_outcomes_and_stale_warning_are_rendered_without_inference", async ({ page }) => {

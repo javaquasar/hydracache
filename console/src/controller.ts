@@ -267,6 +267,13 @@ function renderHealth(envelope: WireValue) {
   const aggregate = byTest("health-aggregate");
   aggregate.textContent = data.aggregate ?? "UNKNOWN";
   aggregate.className = `truth-chip ${(data.aggregate ?? "UNKNOWN").toLocaleLowerCase()}`;
+  const thresholds = data.thresholds ?? {};
+  setText(
+    "health-thresholds",
+    thresholds.raft_apply_lag_warn_entries == null || thresholds.raft_apply_lag_fail_entries == null
+      ? "Threshold configuration unavailable"
+      : `Raft apply lag: WARN at ${known(thresholds.raft_apply_lag_warn_entries)} entries, FAIL at ${known(thresholds.raft_apply_lag_fail_entries)} entries · ${thresholds.source ?? "unknown source"} · evaluation v${known(thresholds.evaluation_version)}`,
+  );
   byTest("health-table").replaceChildren(
     ...visible.map((check: WireValue) =>
       row(
@@ -282,7 +289,9 @@ function renderHealth(envelope: WireValue) {
             .join(", ") || "none",
           check.affected_count == null ? "none" : known(check.affected_count),
           check.remediation_code,
+          check.source ?? "unavailable",
           known(check.observation_seq),
+          `v${known(check.evaluation_version)}`,
         ],
         { testid: "health-row" },
       ),
@@ -290,7 +299,7 @@ function renderHealth(envelope: WireValue) {
   );
   if (visible.length === 0) {
     byTest("health-table").append(
-      row(["No matching checks", "UNKNOWN", "unknown", "No server verdict", "source-unavailable", "none", "inspect-source", "unavailable"]),
+      row(["No matching checks", "UNKNOWN", "unknown", "No server verdict", "source-unavailable", "none", "inspect-source", "unavailable", "unavailable", "vunknown"]),
     );
   }
 }
