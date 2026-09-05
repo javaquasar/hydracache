@@ -215,6 +215,38 @@ pub fn runtime_evidence_hygiene_problems(workflow: &str, gitignore: &str) -> Vec
                 .to_owned(),
         );
     }
+    const FUZZ_CLEANUP: &str = "git clean -fd -- fuzz/corpus";
+    for (cleanup_step, proof_step) in [
+        (
+            "Clean corpus before 0.66 Raft wire fuzz evidence",
+            "Run 0.66 Raft wire fuzz release proof",
+        ),
+        (
+            "Clean corpus before 0.72 management envelope fuzz evidence",
+            "Run 0.72 management envelope fuzz proof",
+        ),
+        (
+            "Clean corpus before 0.72 management recovery fuzz evidence",
+            "Run 0.72 management recovery fuzz proof",
+        ),
+        (
+            "Clean corpus before 0.72 management placement fuzz evidence",
+            "Run 0.72 management placement fuzz proof",
+        ),
+        (
+            "Clean corpus before 0.72 management cursor fuzz evidence",
+            "Run 0.72 management cursor fuzz proof",
+        ),
+    ] {
+        let expected = format!(
+            "- name: {cleanup_step}\n        run: {FUZZ_CLEANUP}\n\n      - name: {proof_step}"
+        );
+        if !workflow.contains(&expected) {
+            problems.push(format!(
+                "{proof_step} must be immediately preceded by removal of untracked fuzz corpus additions"
+            ));
+        }
+    }
     problems
 }
 

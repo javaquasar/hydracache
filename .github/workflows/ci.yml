@@ -2604,17 +2604,32 @@ jobs:
           cargo +nightly fuzz run fuzz_resp_command -- -max_total_time=60
           cargo +nightly fuzz run fuzz_snapshot_decode -- -max_total_time=60
 
+      - name: Clean corpus before 0.66 Raft wire fuzz evidence
+        run: git clean -fd -- fuzz/corpus
+
       - name: Run 0.66 Raft wire fuzz release proof
         run: cargo run -p xtask --locked -- evidence-run --release 0.66 --gate tool.cargo-fuzz.raft-wire-frame-066
+
+      - name: Clean corpus before 0.72 management envelope fuzz evidence
+        run: git clean -fd -- fuzz/corpus
 
       - name: Run 0.72 management envelope fuzz proof
         run: cargo run -p xtask --locked -- evidence-run --release 0.72 --gate tool.cargo-fuzz.management-envelope-072
 
+      - name: Clean corpus before 0.72 management recovery fuzz evidence
+        run: git clean -fd -- fuzz/corpus
+
       - name: Run 0.72 management recovery fuzz proof
         run: cargo run -p xtask --locked -- evidence-run --release 0.72 --gate tool.cargo-fuzz.management-recovery-072
 
+      - name: Clean corpus before 0.72 management placement fuzz evidence
+        run: git clean -fd -- fuzz/corpus
+
       - name: Run 0.72 management placement fuzz proof
         run: cargo run -p xtask --locked -- evidence-run --release 0.72 --gate tool.cargo-fuzz.management-placement-072
+
+      - name: Clean corpus before 0.72 management cursor fuzz evidence
+        run: git clean -fd -- fuzz/corpus
 
       - name: Run 0.72 management cursor fuzz proof
         run: cargo run -p xtask --locked -- evidence-run --release 0.72 --gate tool.cargo-fuzz.management-cursor-072

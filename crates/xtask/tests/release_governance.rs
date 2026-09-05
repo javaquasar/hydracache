@@ -564,6 +564,16 @@ fn runtime_reports_are_gate_artifacts_not_committed_manifest_artifacts() {
         .iter()
         .any(|problem| problem.contains("SOAK_REPORT.json")));
 
+    let broken_fuzz_cleanup = workflow.replacen("git clean -fd -- fuzz/corpus", "true", 1);
+    let problems = xtask::release_governance::runtime_evidence_hygiene_problems(
+        &broken_fuzz_cleanup,
+        &gitignore,
+    );
+    assert!(problems.iter().any(|problem| {
+        problem.contains("Raft wire fuzz release proof")
+            && problem.contains("untracked fuzz corpus additions")
+    }));
+
     let manifest_text =
         std::fs::read_to_string(root.join("docs/testing/release-evidence/0.67.toml")).unwrap();
     let manifest = xtask::release_evidence::parse_manifest_text(&manifest_text).unwrap();
