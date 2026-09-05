@@ -553,8 +553,13 @@ function renderNamespaces(envelope: WireValue, cacheEnvelope: WireValue) {
           bytes(namespace.retained_bytes),
           `${known(namespace.entries)} / ${known(namespace.max_entries)}`,
           `${bytes(namespace.logical_bytes)} / ${bytes(namespace.max_bytes)}`,
+          `${known(namespace.admitted_requests)} / ${known(namespace.rate_limit_per_window)}`,
+          `${known(namespace.fair_share_count)} / ${known(namespace.fair_share_per_window)}`,
           known(namespace.admission_rejected_total),
+          known(namespace.active_subscriptions),
+          known(namespace.near_cache_repairs_total),
           namespace.persistence_status ?? "unavailable",
+          namespace.usage_quality ?? "unavailable",
         ],
         { testid: "namespace-row" },
       ),
@@ -562,7 +567,7 @@ function renderNamespaces(envelope: WireValue, cacheEnvelope: WireValue) {
   );
   if (namespaces.length === 0) {
     byTest("namespace-table").append(
-      row(["No authorized namespace source", "unavailable", "unavailable", "unavailable", "unavailable", "unavailable", "unavailable", "unavailable", "unavailable"]),
+      row(["No authorized namespace source", "unavailable", "unavailable", "unavailable", "unavailable", "unavailable", "unavailable", "unavailable", "unavailable", "unavailable", "unavailable", "unavailable", "unavailable", "unavailable"]),
     );
   }
   const caches = cacheEnvelope?.data?.items ?? [];
@@ -575,9 +580,15 @@ function renderNamespaces(envelope: WireValue, cacheEnvelope: WireValue) {
           known(cache.entries),
           bytes(cache.logical_bytes),
           bytes(cache.retained_bytes),
+          `${known(cache.hit_total)} / ${known(cache.miss_total)} / ${known(cache.load_total)}`,
           known(cache.ttl_backlog),
+          bytes(cache.tag_index_bytes),
+          known(cache.conditional_records),
           known(cache.idempotency_records),
+          known(cache.audit_records),
           known(cache.backup_age_seconds),
+          truth(cache.load_breaker_active),
+          cache.usage_quality ?? "unavailable",
         ],
         { testid: "cache-row" },
       ),
@@ -585,7 +596,7 @@ function renderNamespaces(envelope: WireValue, cacheEnvelope: WireValue) {
   );
   if (caches.length === 0) {
     byTest("cache-table").append(
-      row(["No cache detail", "unavailable", "unavailable", "unavailable", "unavailable", "unavailable", "unavailable", "unavailable"]),
+      row(["No cache detail", "unavailable", "unavailable", "unavailable", "unavailable", "unavailable", "unavailable", "unavailable", "unavailable", "unavailable", "unavailable", "unavailable", "unavailable", "unavailable"]),
     );
   }
 }

@@ -62,7 +62,12 @@ test("console_renders_typed_dashboard_and_all_truth_states", async ({ page }) =>
   await expect(page.getByTestId("client-table")).toContainText("2.0 KiB");
   await expect(page.getByTestId("namespace-row")).toContainText("orders");
   await expect(page.getByTestId("namespace-row")).toContainText("unavailable");
+  await expect(page.getByTestId("namespace-row")).toContainText("120 / 1,000");
+  await expect(page.getByTestId("namespace-row")).toContainText("120 / 500");
   await expect(page.getByTestId("cache-row")).toContainText("client-surface");
+  await expect(page.getByTestId("cache-row")).toContainText("80 / 20 / 12");
+  await expect(page.getByTestId("cache-row")).toContainText("512 B");
+  await expect(page.getByTestId("cache-row")).toContainText("exact");
   await expect(page.getByTestId("health-row")).toHaveCount(18);
   await expect(page.getByTestId("health-counts")).toContainText("UNKNOWN15");
   await expect(page.getByTestId("health-aggregate")).toHaveText("FAIL");
