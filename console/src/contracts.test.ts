@@ -1,8 +1,9 @@
 import { describe, expect, it, vi } from "vitest";
-import { backoffDelay, fetchManagementEnvelope, isEnvelope, MANAGEMENT_HEADERS } from "./api";
+import { backoffDelay, fetchManagementEnvelope, isEnvelope, MANAGEMENT_HEADERS, ManagementQueryCache } from "./api";
 import { routeFromHash } from "./router";
 import { normalizeObservationSource, shouldAcceptObservation } from "./state";
 import { capabilityAllowsEndpoint, capabilityViews } from "./capabilities";
+import { panelIsVisible } from "./pages/visibility";
 
 const envelope = {
   schema_version: 1,
@@ -39,9 +40,49 @@ describe("typed management contracts", () => {
     expect(backoffDelay(100, () => 1)).toBe(69_000);
   });
 
+  it("coalesces and expires typed management query cache entries", async () => {
+    let now = 10;
+    const fetchSpy = vi.fn().mockResolvedValue({ ok: true, json: async () => envelope });
+    vi.stubGlobal("fetch", fetchSpy);
+    const cache = new ManagementQueryCache(100, () => now);
+    const signal = new AbortController().signal;
+    const [first, second] = await Promise.all([
+      cache.read("/management/v1/dashboard", signal),
+      cache.read("/management/v1/dashboard", signal),
+    ]);
+    expect(first).toBe(second);
+    expect(fetchSpy).toHaveBeenCalledTimes(1);
+    await cache.read("/management/v1/dashboard", signal);
+    expect(fetchSpy).toHaveBeenCalledTimes(1);
+    now = 111;
+    await cache.read("/management/v1/dashboard", signal);
+    expect(fetchSpy).toHaveBeenCalledTimes(2);
+    cache.clear();
+    await cache.read("/management/v1/dashboard", signal);
+    expect(fetchSpy).toHaveBeenCalledTimes(3);
+    vi.unstubAllGlobals();
+  });
+
+  it("drops a failed query so cancellation cannot poison the next refresh", async () => {
+    const fetchSpy = vi.fn()
+      .mockRejectedValueOnce(new DOMException("cancelled", "AbortError"))
+      .mockResolvedValueOnce({ ok: true, json: async () => envelope });
+    vi.stubGlobal("fetch", fetchSpy);
+    const cache = new ManagementQueryCache();
+    const signal = new AbortController().signal;
+    await expect(cache.read("/management/v1/dashboard", signal)).rejects.toMatchObject({ name: "AbortError" });
+    await expect(cache.read("/management/v1/dashboard", signal)).resolves.toEqual(envelope);
+    expect(fetchSpy).toHaveBeenCalledTimes(2);
+    vi.unstubAllGlobals();
+  });
+
   it("routes only to declared sections", () => {
     expect(routeFromHash("#members")).toBe("members");
     expect(routeFromHash("#unknown")).toBe("dashboard");
+    expect(panelIsVisible("dashboard", "members", true)).toBe(true);
+    expect(panelIsVisible("members", "members", true)).toBe(true);
+    expect(panelIsVisible("members", "healthchecks", true)).toBe(false);
+    expect(panelIsVisible("recovery", "recovery", false)).toBe(false);
   });
 
   it("maps absent and unavailable capabilities to hidden views without issuing their requests", () => {

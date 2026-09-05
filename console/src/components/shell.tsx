@@ -10,7 +10,10 @@ function Header() {
       </div>
       <div class="cluster-picker">
         <span class="health-dot" aria-hidden="true" />
-        <strong>current cluster</strong>
+        <label for="cluster-selector">Cluster</label>
+        <select id="cluster-selector" data-testid="cluster-selector" aria-label="Selected cluster" disabled>
+          <option>current cluster</option>
+        </select>
         <span data-testid="poll-state" aria-live="polite">connecting</span>
       </div>
       <div class="status-strip">
@@ -25,7 +28,7 @@ function Navigation() {
   return (
     <nav class="sidebar" aria-label="Management sections">
       {MANAGEMENT_ROUTES.map(([route, label], index) => (
-        <a href={`#${route}`} class={index === 0 ? "active" : undefined} aria-current={index === 0 ? "page" : undefined} key={route}>{label}</a>
+        <a href={`#${route}`} data-route={route} class={index === 0 ? "active" : undefined} aria-current={index === 0 ? "page" : undefined} key={route}>{label}</a>
       ))}
     </nav>
   );

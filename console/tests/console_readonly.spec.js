@@ -116,6 +116,11 @@ test("summary_links_open_read_only_filtered_sections", async ({ page }) => {
   await expect(page.locator("#formation")).toBeVisible();
   await page.getByTestId("recovery-summary").click();
   await expect(page).toHaveURL(/#recovery$/);
+  await expect(page.locator("#recovery")).toBeVisible();
+  await expect(page.locator("#members")).toBeHidden();
+  await page.reload();
+  await expect(page).toHaveURL(/#recovery$/);
+  await expect(page.locator("nav a[href='#recovery']")).toHaveAttribute("aria-current", "page");
 });
 
 test("capabilities hide unavailable views and suppress their request loop", async ({ page }) => {

@@ -2,11 +2,13 @@ import { HISTORY_LIMITS, SnapshotHistory, shouldPauseCollection } from "./histor
 import {
   MANAGEMENT_CAPABILITIES_ENDPOINT,
   MANAGEMENT_ENDPOINTS,
+  ManagementQueryCache,
   backoffDelay,
-  fetchManagementEnvelope,
 } from "./api";
 import { capabilityAllowsEndpoint, capabilityViews } from "./capabilities";
 import { normalizeObservationSource } from "./state";
+import { routeFromHash } from "./router";
+import { panelIsVisible } from "./pages/visibility";
 
 const MAX_RENDERED_MEMBERS = 48;
 const BASE_POLL_INTERVAL_MS = 10_000;
@@ -33,6 +35,7 @@ declare global {
 }
 
 const history = new SnapshotHistory();
+const queryCache = new ManagementQueryCache();
 const state: ControllerState = {
   timer: null,
   controller: null,
@@ -49,7 +52,32 @@ export function startController() {
   }
   wireLifecycle();
   wireHealthFilters();
+  wireNavigation();
   void refresh();
+}
+
+function wireNavigation() {
+  window.addEventListener("hashchange", applyNavigation);
+  applyNavigation();
+}
+
+function applyNavigation() {
+  const active = routeFromHash(window.location.hash);
+  for (const link of document.querySelectorAll<HTMLAnchorElement>(".sidebar a[data-route]")) {
+    const selected = link.dataset.route === active;
+    link.classList.toggle("active", selected);
+    if (selected) link.setAttribute("aria-current", "page");
+    else link.removeAttribute("aria-current");
+  }
+  const dashboardOnly = document.querySelector<HTMLElement>(".summary-grid");
+  if (dashboardOnly !== null) dashboardOnly.hidden = active !== "dashboard";
+  for (const panel of document.querySelectorAll<HTMLElement>(".panel[id]")) {
+    panel.hidden = !panelIsVisible(
+      active,
+      panel.id,
+      panel.dataset.capabilityAvailable !== "false",
+    );
+  }
 }
 
 function wireHealthFilters() {
@@ -82,7 +110,7 @@ async function refresh() {
   state.controller = controller;
   setText("poll-state", "refreshing typed snapshots");
   try {
-    const capabilities = await fetchManagementEnvelope(
+    const capabilities = await queryCache.read(
       MANAGEMENT_CAPABILITIES_ENDPOINT,
       controller.signal,
     );
@@ -97,7 +125,7 @@ async function refresh() {
     const results = await Promise.allSettled(
       Object.entries(requestEndpoints).map(async ([name, url]) => [
         name,
-        await fetchManagementEnvelope(url, controller.signal),
+        await queryCache.read(url, controller.signal),
       ] as const),
     );
     const values: RenderValues = Object.fromEntries(
@@ -108,7 +136,7 @@ async function refresh() {
     const traceId = values.partitions?.data?.placement_trace_id;
     if (typeof traceId === "string" && /^[A-Za-z0-9_-]{1,128}$/.test(traceId)) {
       try {
-        values.placementTrace = await fetchManagementEnvelope(
+        values.placementTrace = await queryCache.read(
           `/management/v1/cluster/placement-traces/${encodeURIComponent(traceId)}`,
           controller.signal,
         );
@@ -124,7 +152,7 @@ async function refresh() {
       !containsControlCharacter(namespace)
     ) {
       try {
-        values.namespaceCaches = await fetchManagementEnvelope(
+        values.namespaceCaches = await queryCache.read(
           `/management/v1/namespaces/${encodeURIComponent(namespace)}/caches`,
           controller.signal,
         );
@@ -191,7 +219,7 @@ function renderCapabilities(envelope: WireValue) {
       (link as HTMLElement).hidden = !view.available;
     }
     const section = document.getElementById(view.route);
-    if (section !== null) section.hidden = !view.available;
+    if (section !== null) section.dataset.capabilityAvailable = String(view.available);
     if (!view.available) {
       const notice = document.createElement("p");
       notice.textContent = `${view.route}: unavailable (${view.reason})`;
@@ -199,6 +227,7 @@ function renderCapabilities(envelope: WireValue) {
     }
   }
   notices.hidden = notices.childElementCount === 0;
+  applyNavigation();
 }
 
 function renderRemoteHistory(envelope: WireValue) {

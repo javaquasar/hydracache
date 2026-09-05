@@ -129,11 +129,25 @@ reviewed_branches = ["optional-aside", "semantic-table", "labelled-scroll-region
 receipt = "target/test-evidence/0.72/coverage-console-primitives.json"
 
 [[module]]
+path = "console/src/components/error-boundary.tsx"
+work_items = ["W1", "W11"]
+tests = ["console/src/components/shell.test.tsx#redacts component render exceptions behind a stable error boundary", "console/tests/console_readonly.spec.js#console_shows_degraded_state_when_required_snapshot_is_unreachable"]
+reviewed_branches = ["normal-render", "render-exception", "redacted-fallback"]
+receipt = "target/test-evidence/0.72/coverage-console-error-boundary.json"
+
+[[module]]
 path = "console/src/components/shell.tsx"
 work_items = ["W1", "W4", "W5", "W6", "W7", "W8", "W10", "W11"]
 tests = ["console/src/components/shell.test.tsx#renders all capability-driven read-only sections with bounded tables", "console/tests/console_readonly.spec.js#console_renders_typed_dashboard_and_all_truth_states", "console/tests/console_readonly.spec.js#keyboard navigation exposes a visible focus path"]
 reviewed_branches = ["all-routes", "read-only-controls", "truth-banners", "table-landmarks", "responsive-layout"]
 receipt = "target/test-evidence/0.72/coverage-console-shell.json"
+
+[[module]]
+path = "console/src/pages/visibility.ts"
+work_items = ["W1"]
+tests = ["console/src/contracts.test.ts#routes only to declared sections", "console/tests/console_readonly.spec.js#summary_links_open_read_only_filtered_sections"]
+reviewed_branches = ["dashboard", "deep-link", "other-page", "capability-hidden"]
+receipt = "target/test-evidence/0.72/coverage-console-page-visibility.json"
 
 [[module]]
 path = "console/scripts/check-static.mjs"

@@ -57,6 +57,47 @@ export async function fetchManagementEnvelope(
   return value;
 }
 
+type CachedEnvelope = {
+  expiresAt: number;
+  value: ManagementEnvelope<Record<string, unknown>>;
+};
+
+export class ManagementQueryCache {
+  readonly #cached = new Map<string, CachedEnvelope>();
+  readonly #inFlight = new Map<string, Promise<ManagementEnvelope<Record<string, unknown>>>>();
+
+  constructor(
+    readonly ttlMs = 1_000,
+    readonly now: () => number = Date.now,
+  ) {
+    if (!Number.isSafeInteger(ttlMs) || ttlMs < 0 || ttlMs > 60_000) {
+      throw new Error("management query cache TTL is outside its bound");
+    }
+  }
+
+  read(url: string, signal: AbortSignal): Promise<ManagementEnvelope<Record<string, unknown>>> {
+    const cached = this.#cached.get(url);
+    if (cached !== undefined && cached.expiresAt > this.now()) return Promise.resolve(cached.value);
+    const existing = this.#inFlight.get(url);
+    if (existing !== undefined) return existing;
+
+    const request = fetchManagementEnvelope(url, signal)
+      .then((value) => {
+        this.#cached.set(url, { expiresAt: this.now() + this.ttlMs, value });
+        return value;
+      })
+      .finally(() => {
+        if (this.#inFlight.get(url) === request) this.#inFlight.delete(url);
+      });
+    this.#inFlight.set(url, request);
+    return request;
+  }
+
+  clear(): void {
+    this.#cached.clear();
+  }
+}
+
 export function isEnvelope(value: unknown): value is ManagementEnvelope<Record<string, unknown>> {
   if (typeof value !== "object" || value === null) return false;
   const row = value as Record<string, unknown>;

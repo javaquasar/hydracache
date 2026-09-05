@@ -22,6 +22,8 @@ const required = [
   "src/history.ts",
   "src/components/shell.tsx",
   "src/components/primitives.tsx",
+  "src/components/error-boundary.tsx",
+  "src/pages/visibility.ts",
   "README.md",
   "tests/console_readonly.spec.js",
   "tests/fixtures.js",
@@ -77,6 +79,7 @@ for (const marker of [
   "render(<AppShell />",
   "MANAGEMENT_ROUTES",
   "capabilityAllowsEndpoint",
+  "ManagementQueryCache",
 ]) {
   if (!sourceText.includes(marker)) throw new Error(`missing console source marker: ${marker}`);
 }
