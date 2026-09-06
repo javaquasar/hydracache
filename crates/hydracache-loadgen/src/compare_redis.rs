@@ -65,6 +65,8 @@ const MAX_W3_LIFECYCLE_BYTES: u64 = 4 * 1024 * 1024;
 const MAX_W3_SUITE_RECEIPT_BYTES: u64 = 1024 * 1024;
 const MAX_W3_LOG_BYTES: u64 = 64 * 1024 * 1024;
 const W8_DAEMON_REPEAT_INDEX: u32 = 80_008;
+const DOCKER_RUN_PORT_COLLISION_ATTEMPTS: u32 = 3;
+const DOCKER_RUN_PORT_COLLISION_RETRY_DELAY: Duration = Duration::from_millis(250);
 const COMMAND_ENVIRONMENT: [&str; 3] = ["LANG=C", "LC_ALL=C", "TZ=UTC"];
 static W8_ARTIFACT_SEQUENCE: AtomicU64 = AtomicU64::new(0);
 
@@ -2346,30 +2348,8 @@ fn start_redis_container(
         "docker-image-inspect",
     )?;
     let inspected = parse_image_inspect(&image_inspect.stdout, scenario)?;
-    let container_name = unique_container_name()?;
-    let mut run_argv = vec![
-        "run".to_owned(),
-        "--detach".to_owned(),
-        "--rm".to_owned(),
-        "--cpuset-cpus".to_owned(),
-        "1-4".to_owned(),
-        "--name".to_owned(),
-        container_name.clone(),
-        "--platform".to_owned(),
-        scenario.docker.platform.clone(),
-        "--publish".to_owned(),
-        format!("127.0.0.1::{}/tcp", scenario.docker.container_port),
-        image_reference.clone(),
-    ];
-    run_argv.extend(scenario.docker.server_argv.clone());
-    let mut pending_container = PendingRedisContainer::new(&tools.docker, &container_name);
-    let container_run = execute_checked(
-        &tools.docker,
-        &run_argv,
-        Duration::from_secs(60),
-        scenario,
-        "docker-run-pinned-redis",
-    )?;
+    let (container_name, container_run, mut pending_container) =
+        run_redis_container_with_port_collision_retry(&tools.docker, scenario, &image_reference)?;
     let container_id =
         exact_single_line(&container_run.stdout).ok_or_else(|| RedisComparisonError::Process {
             phase: "docker-run-pinned-redis".to_owned(),
@@ -2458,6 +2438,67 @@ fn start_redis_container(
     guard.readiness_attempts = readiness;
     verify_tool_unchanged(&tools.docker)?;
     Ok(guard)
+}
+
+fn run_redis_container_with_port_collision_retry(
+    docker: &ResolvedExternalTool,
+    scenario: &RedisComparisonScenario,
+    image_reference: &str,
+) -> Result<(String, RawCommandEvidence, PendingRedisContainer), RedisComparisonError> {
+    for attempt in 1..=DOCKER_RUN_PORT_COLLISION_ATTEMPTS {
+        let container_name = unique_container_name()?;
+        let mut argv = vec![
+            "run".to_owned(),
+            "--detach".to_owned(),
+            "--rm".to_owned(),
+            "--cpuset-cpus".to_owned(),
+            "1-4".to_owned(),
+            "--name".to_owned(),
+            container_name.clone(),
+            "--platform".to_owned(),
+            scenario.docker.platform.clone(),
+            "--publish".to_owned(),
+            format!("127.0.0.1::{}/tcp", scenario.docker.container_port),
+            image_reference.to_owned(),
+        ];
+        argv.extend(scenario.docker.server_argv.clone());
+        let pending = PendingRedisContainer::new(docker, &container_name);
+        match execute_checked(
+            docker,
+            &argv,
+            Duration::from_secs(60),
+            scenario,
+            "docker-run-pinned-redis",
+        ) {
+            Ok(evidence) => return Ok((container_name, evidence, pending)),
+            Err(error)
+                if attempt < DOCKER_RUN_PORT_COLLISION_ATTEMPTS
+                    && retryable_rootless_port_collision(&error) =>
+            {
+                // Dropping the armed guard removes any partially created
+                // container before a new name and Docker-assigned port are
+                // requested. The exact failed attempt remains in the job log.
+                drop(pending);
+                eprintln!(
+                    "hydracache-loadgen: transient rootless Docker port collision on attempt {attempt}/{DOCKER_RUN_PORT_COLLISION_ATTEMPTS}; cleaned partial container and retrying: {error}"
+                );
+                thread::sleep(DOCKER_RUN_PORT_COLLISION_RETRY_DELAY);
+            }
+            Err(error) => return Err(error),
+        }
+    }
+    unreachable!("positive Docker run retry count executes at least one attempt")
+}
+
+fn retryable_rootless_port_collision(error: &RedisComparisonError) -> bool {
+    matches!(
+        error,
+        RedisComparisonError::Process { phase, detail }
+            if phase == "docker-run-pinned-redis"
+                && detail.contains("failed programming external connectivity")
+                && detail.contains("RootlessKit PortManager.AddPort()")
+                && detail.contains("bind: address already in use")
+    )
 }
 
 struct ImageInspectFacts {
@@ -2991,6 +3032,27 @@ mod tests {
     use crate::report::RespDaemonConfigIdentity;
     use crate::tiers::resp::RespReferenceSuiteReceiptPayload;
     use crate::tiers::resp_reference::RespPingEvidence;
+
+    #[test]
+    fn docker_run_retry_is_limited_to_exact_rootless_port_collisions() {
+        let collision = RedisComparisonError::Process {
+            phase: "docker-run-pinned-redis".to_owned(),
+            detail: "failed programming external connectivity: error while calling RootlessKit PortManager.AddPort(): listen tcp4 127.0.0.1:32768: bind: address already in use".to_owned(),
+        };
+        assert!(retryable_rootless_port_collision(&collision));
+
+        let wrong_phase = RedisComparisonError::Process {
+            phase: "docker-image-inspect".to_owned(),
+            detail: collision.to_string(),
+        };
+        assert!(!retryable_rootless_port_collision(&wrong_phase));
+
+        let generic_failure = RedisComparisonError::Process {
+            phase: "docker-run-pinned-redis".to_owned(),
+            detail: "permission denied".to_owned(),
+        };
+        assert!(!retryable_rootless_port_collision(&generic_failure));
+    }
 
     #[test]
     fn redis_benchmark_stderr_allows_only_the_exact_pinned_config_warning() {
