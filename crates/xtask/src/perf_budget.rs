@@ -6665,9 +6665,9 @@ fn evaluate_budgets(
             problems.push(format!("budget {} mixes metric units", rule.id));
             continue;
         }
-        if !candidate.value.is_finite() || candidate.value <= 0.0 {
+        if !candidate.value.is_finite() || candidate.value < 0.0 {
             problems.push(format!(
-                "budget {} candidate metric is not positive and finite",
+                "budget {} candidate metric is not nonnegative and finite",
                 rule.id
             ));
             continue;

@@ -656,6 +656,30 @@ fn perf_budget_check_fails_on_floor_breach_and_on_unstable_spread() {
 }
 
 #[test]
+fn zero_candidate_is_valid_for_a_ceiling_budget() {
+    let (bundle, mut reports) = bootstrapped_fixture();
+    let ceiling = bundle
+        .budget
+        .budgets
+        .iter()
+        .find(|rule| rule.direction == perf_budget::BudgetDirection::Ceiling)
+        .unwrap();
+    let report = reports
+        .iter_mut()
+        .find(|report| report.id == ceiling.report)
+        .unwrap();
+    report.metrics.get_mut(&ceiling.metric).unwrap().value = 0.0;
+
+    let verdict = perf_budget::evaluate(&bundle, &reports, now());
+    assert_eq!(verdict.payload.status, VerdictStatus::Passed);
+    assert!(verdict
+        .payload
+        .checks
+        .iter()
+        .any(|check| { check.budget_id == ceiling.id && check.candidate == 0.0 && check.passed }));
+}
+
+#[test]
 fn perf_budget_rejects_missing_extra_or_mixed_report_set() {
     let (bundle, reports) = bootstrapped_fixture();
     let missing = perf_budget::evaluate(&bundle, &reports[1..], now());
