@@ -6662,19 +6662,33 @@ fn evaluate_budgets(
         }
         let rolling_tolerance = rule.rolling_tolerance_ratio.unwrap_or(0.0);
         let spread_limit = rule.maximum_spread_ratio.unwrap_or(0.0);
+        // The 0.67.1 rolling contract authenticates and recomputes MAD for
+        // every metric. A frozen candidate is one observation, so compare it
+        // with a robust three-sigma noise envelope as well as the committed
+        // relative tolerance. Ignoring MAD made naturally quantized process
+        // admission latency fail depending on which bootstrap observation was
+        // selected as the median. Keep the historical 0.67 evaluator meaning;
+        // this correction belongs only to the new 0.67.1 gate.
+        let rolling_mad = if bundle.budget.release == "0.67.1" {
+            rolling.mad
+        } else {
+            0.0
+        };
         let anchor_pass = anchor.is_none_or(|anchor| {
-            threshold_pass(
+            threshold_pass_with_mad(
                 rule.direction,
                 candidate.value,
                 anchor.value,
                 rule.anchor_tolerance_ratio.unwrap_or(0.0),
+                rolling_mad,
             )
         });
-        let rolling_pass = threshold_pass(
+        let rolling_pass = threshold_pass_with_mad(
             rule.direction,
             candidate.value,
             rolling.median,
             rolling_tolerance,
+            rolling_mad,
         );
         let spread_pass = report.maximum_spread_ratio <= spread_limit;
         let passed = anchor_pass && rolling_pass && spread_pass;
@@ -6696,15 +6710,22 @@ fn evaluate_budgets(
     }
 }
 
-fn threshold_pass(
+fn threshold_pass_with_mad(
     direction: BudgetDirection,
     candidate: f64,
     baseline: f64,
     tolerance: f64,
+    mad: f64,
 ) -> bool {
+    // 1.4826 makes MAD a robust estimator of standard deviation for a normal
+    // distribution. Three estimated standard deviations is the conventional
+    // outlier boundary. The larger of that absolute noise allowance and the
+    // reviewed relative tolerance applies; they are deliberately not added.
+    const NORMALIZED_MAD_THREE_SIGMA: f64 = 1.4826 * 3.0;
+    let allowance = (baseline.abs() * tolerance).max(mad * NORMALIZED_MAD_THREE_SIGMA);
     match direction {
-        BudgetDirection::Floor => candidate >= baseline * (1.0 - tolerance),
-        BudgetDirection::Ceiling => candidate <= baseline * (1.0 + tolerance),
+        BudgetDirection::Floor => candidate >= baseline - allowance,
+        BudgetDirection::Ceiling => candidate <= baseline + allowance,
     }
 }
 
@@ -7008,6 +7029,38 @@ mod semantic_tests {
             maximum_spread_ratio,
             metrics: BTreeMap::new(),
         }
+    }
+
+    #[test]
+    fn frozen_threshold_uses_the_larger_of_relative_tolerance_and_robust_mad() {
+        assert!(threshold_pass_with_mad(
+            BudgetDirection::Ceiling,
+            144.0,
+            100.0,
+            0.10,
+            10.0,
+        ));
+        assert!(!threshold_pass_with_mad(
+            BudgetDirection::Ceiling,
+            145.0,
+            100.0,
+            0.10,
+            10.0,
+        ));
+        assert!(threshold_pass_with_mad(
+            BudgetDirection::Floor,
+            90.0,
+            100.0,
+            0.10,
+            1.0,
+        ));
+        assert!(!threshold_pass_with_mad(
+            BudgetDirection::Floor,
+            89.0,
+            100.0,
+            0.10,
+            1.0,
+        ));
     }
 
     #[test]
