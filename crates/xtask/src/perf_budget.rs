@@ -5266,6 +5266,7 @@ fn methodology_dimensions(evidence: &Value) -> Value {
     let mut stable = dimensions.clone();
     for volatile in [
         "endpoint_capability_digest",
+        "loadgen_binary_sha256",
         "reference_instance_created_unix_nanos",
         "reference_instance_receipt_sha256",
         "reference_owning_pid",
@@ -6587,8 +6588,8 @@ fn methodology_digests_compatible(report_id: &str, baseline: &str, candidate: &s
         return true;
     }
     // The activated five-sample baseline predates removal of the build-bound
-    // surface capability from methodology projection. Bridge only those two
-    // reviewed legacy-to-normalized digest pairs; every other methodology
+    // surface capability and load-generator binary from methodology projection.
+    // Bridge only the reviewed legacy-to-normalized digest pairs; every other methodology
     // change remains fail-closed and requires a new reviewed baseline.
     matches!(
         (report_id, baseline, candidate),
@@ -6600,6 +6601,14 @@ fn methodology_digests_compatible(report_id: &str, baseline: &str, candidate: &s
             "client-surface",
             "46d09de186ed08a23559c4d5092f8a2ecda4fabeb863c6e25818e873e8f7499a",
             "91d5db5be2d53ab173ed99bf33e973ef612aad0aafa11c29b51da3d9e821ad5d"
+        ) | (
+            "local",
+            "f9c5b268795fed99849e77f3be9a2e0e414ceb8d0e26107f092df345e46907be",
+            "4294bad2e3c1d50db25a7b525f7d8f122fd5b99af483c2cd8a494ec7d6a48d9d"
+        ) | (
+            "client-surface",
+            "46d09de186ed08a23559c4d5092f8a2ecda4fabeb863c6e25818e873e8f7499a",
+            "5c1656ea59ae35752de136670af6e1fc4bac1846061fa7f29821e3cc315c37eb"
         )
     )
 }
@@ -7370,6 +7379,7 @@ mod semantic_tests {
                     "reference_owning_pid": 10,
                     "selected_endpoint": "hydracache-server@127.0.0.1:10001",
                     "endpoint_capability_digest": "b",
+                    "loadgen_binary_sha256": "build-a",
                     "surface_capability_sha256": "e"
                 }
             }
@@ -7396,6 +7406,10 @@ mod semantic_tests {
         dimensions.insert(
             "endpoint_capability_digest".to_owned(),
             serde_json::json!("d"),
+        );
+        dimensions.insert(
+            "loadgen_binary_sha256".to_owned(),
+            serde_json::json!("build-b"),
         );
         dimensions.insert(
             "surface_capability_sha256".to_owned(),
@@ -7427,6 +7441,16 @@ mod semantic_tests {
             "client-surface",
             "46d09de186ed08a23559c4d5092f8a2ecda4fabeb863c6e25818e873e8f7499a",
             "91d5db5be2d53ab173ed99bf33e973ef612aad0aafa11c29b51da3d9e821ad5d"
+        ));
+        assert!(methodology_digests_compatible(
+            "local",
+            "f9c5b268795fed99849e77f3be9a2e0e414ceb8d0e26107f092df345e46907be",
+            "4294bad2e3c1d50db25a7b525f7d8f122fd5b99af483c2cd8a494ec7d6a48d9d"
+        ));
+        assert!(methodology_digests_compatible(
+            "client-surface",
+            "46d09de186ed08a23559c4d5092f8a2ecda4fabeb863c6e25818e873e8f7499a",
+            "5c1656ea59ae35752de136670af6e1fc4bac1846061fa7f29821e3cc315c37eb"
         ));
         assert!(!methodology_digests_compatible(
             "local",
