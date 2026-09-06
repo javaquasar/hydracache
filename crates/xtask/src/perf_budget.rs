@@ -6681,7 +6681,9 @@ fn evaluate_budgets(
         // admission latency fail depending on which bootstrap observation was
         // selected as the median. Keep the historical 0.67 evaluator meaning;
         // this correction belongs only to the new 0.67.1 gate.
-        let rolling_mad = if bundle.budget.release == "0.67.1" {
+        let rolling_mad = if bundle.budget.bootstrap_status == BootstrapStatus::Bootstrapped
+            && bundle.profile.enforcement == Enforcement::Ship
+        {
             rolling.mad
         } else {
             0.0
