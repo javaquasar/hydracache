@@ -795,6 +795,9 @@ pub struct BudgetCheckRecord {
     pub candidate: f64,
     pub anchor: Option<f64>,
     pub rolling_median: f64,
+    pub rolling_mad: f64,
+    pub anchor_boundary: Option<f64>,
+    pub rolling_boundary: f64,
     pub unit: String,
     pub passed: bool,
 }
@@ -6674,22 +6677,25 @@ fn evaluate_budgets(
         } else {
             0.0
         };
-        let anchor_pass = anchor.is_none_or(|anchor| {
-            threshold_pass_with_mad(
+        let anchor_boundary = anchor.map(|anchor| {
+            threshold_boundary_with_mad(
                 rule.direction,
-                candidate.value,
                 anchor.value,
                 rule.anchor_tolerance_ratio.unwrap_or(0.0),
                 rolling_mad,
             )
         });
-        let rolling_pass = threshold_pass_with_mad(
+        let rolling_boundary = threshold_boundary_with_mad(
             rule.direction,
-            candidate.value,
             rolling.median,
             rolling_tolerance,
             rolling_mad,
         );
+        let anchor_pass = anchor_boundary.is_none_or(|boundary| {
+            threshold_boundary_pass(rule.direction, candidate.value, boundary)
+        });
+        let rolling_pass =
+            threshold_boundary_pass(rule.direction, candidate.value, rolling_boundary);
         let spread_pass = report.maximum_spread_ratio <= spread_limit;
         let passed = anchor_pass && rolling_pass && spread_pass;
         if !passed {
@@ -6704,19 +6710,21 @@ fn evaluate_budgets(
             candidate: candidate.value,
             anchor: anchor.map(|anchor| anchor.value),
             rolling_median: rolling.median,
+            rolling_mad,
+            anchor_boundary,
+            rolling_boundary,
             unit: rule.unit.clone(),
             passed,
         });
     }
 }
 
-fn threshold_pass_with_mad(
+fn threshold_boundary_with_mad(
     direction: BudgetDirection,
-    candidate: f64,
     baseline: f64,
     tolerance: f64,
     mad: f64,
-) -> bool {
+) -> f64 {
     // 1.4826 makes MAD a robust estimator of standard deviation for a normal
     // distribution. Three estimated standard deviations is the conventional
     // outlier boundary. The larger of that absolute noise allowance and the
@@ -6724,8 +6732,15 @@ fn threshold_pass_with_mad(
     const NORMALIZED_MAD_THREE_SIGMA: f64 = 1.4826 * 3.0;
     let allowance = (baseline.abs() * tolerance).max(mad * NORMALIZED_MAD_THREE_SIGMA);
     match direction {
-        BudgetDirection::Floor => candidate >= baseline - allowance,
-        BudgetDirection::Ceiling => candidate <= baseline + allowance,
+        BudgetDirection::Floor => baseline - allowance,
+        BudgetDirection::Ceiling => baseline + allowance,
+    }
+}
+
+fn threshold_boundary_pass(direction: BudgetDirection, candidate: f64, boundary: f64) -> bool {
+    match direction {
+        BudgetDirection::Floor => candidate >= boundary,
+        BudgetDirection::Ceiling => candidate <= boundary,
     }
 }
 
@@ -7033,33 +7048,28 @@ mod semantic_tests {
 
     #[test]
     fn frozen_threshold_uses_the_larger_of_relative_tolerance_and_robust_mad() {
-        assert!(threshold_pass_with_mad(
+        let noisy_ceiling =
+            threshold_boundary_with_mad(BudgetDirection::Ceiling, 100.0, 0.10, 10.0);
+        assert!(threshold_boundary_pass(
             BudgetDirection::Ceiling,
             144.0,
-            100.0,
-            0.10,
-            10.0,
+            noisy_ceiling,
         ));
-        assert!(!threshold_pass_with_mad(
+        assert!(!threshold_boundary_pass(
             BudgetDirection::Ceiling,
             145.0,
-            100.0,
-            0.10,
-            10.0,
+            noisy_ceiling,
         ));
-        assert!(threshold_pass_with_mad(
+        let relative_floor = threshold_boundary_with_mad(BudgetDirection::Floor, 100.0, 0.10, 1.0);
+        assert!(threshold_boundary_pass(
             BudgetDirection::Floor,
             90.0,
-            100.0,
-            0.10,
-            1.0,
+            relative_floor,
         ));
-        assert!(!threshold_pass_with_mad(
+        assert!(!threshold_boundary_pass(
             BudgetDirection::Floor,
             89.0,
-            100.0,
-            0.10,
-            1.0,
+            relative_floor,
         ));
     }
 
