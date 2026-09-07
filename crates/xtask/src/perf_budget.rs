@@ -4168,6 +4168,7 @@ fn validate_model_summary(
     repeats: &[Value],
     elapsed_field: &str,
 ) -> Result<(u64, f64), PerfBudgetError> {
+    const MODEL_ITERATIONS: u64 = 10_000;
     require_exact_object_keys(
         summary,
         &[
@@ -4183,7 +4184,7 @@ fn validate_model_summary(
             repeat
                 .get(elapsed_field)
                 .and_then(Value::as_u64)
-                .map(|value| value.saturating_add(999) / 1_000)
+                .map(|value| value.saturating_add(MODEL_ITERATIONS - 1) / MODEL_ITERATIONS)
         })
         .collect::<Option<Vec<_>>>()
         .ok_or_else(|| PerfBudgetError::new("grid-model fault elapsed samples are absent"))?;
@@ -7565,6 +7566,24 @@ mod semantic_tests {
                 successor
             ));
         }
+    }
+
+    #[test]
+    fn w5c_summary_recomputes_with_the_ten_thousand_iteration_window() {
+        let repeats = [1_142_271_u64, 788_967, 786_177, 788_887, 786_237]
+            .into_iter()
+            .map(|elapsed| serde_json::json!({ "fault_elapsed_nanos": elapsed }))
+            .collect::<Vec<_>>();
+        let summary = serde_json::json!({
+            "median_nanos_per_iteration": 79,
+            "robust_spread_ratio_millionths": 0,
+            "stable": true
+        });
+
+        assert_eq!(
+            validate_model_summary(&summary, &repeats, "fault_elapsed_nanos").unwrap(),
+            (79, 0.0)
+        );
     }
 
     #[test]
