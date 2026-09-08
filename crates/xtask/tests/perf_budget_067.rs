@@ -1402,6 +1402,47 @@ fn bootstrapped_ship_gate_preserves_the_reviewed_empirical_envelope() {
 }
 
 #[test]
+fn bootstrapped_ship_gate_preserves_the_reviewed_report_spread_envelope() {
+    let (mut bundle, mut reports) = bootstrapped_fixture();
+    let rule = bundle.budget.budgets[0].clone();
+    bundle.budget.budgets[0].maximum_spread_ratio = Some(0.05);
+    for member in &mut bundle.baseline.members {
+        member
+            .reports
+            .iter_mut()
+            .find(|report| report.report_id == rule.report)
+            .unwrap()
+            .maximum_spread_ratio = 0.07;
+        perf_budget::seal_baseline_member(member);
+    }
+    bundle.baseline.candidate_members = bundle.baseline.members.clone();
+    bundle.baseline.anchor.source_members = bundle.baseline.members.clone();
+    approve_baseline_change(&mut bundle);
+    perf_budget::seal_baseline_manifest(&mut bundle.baseline);
+
+    reports
+        .iter_mut()
+        .find(|report| report.id == rule.report)
+        .unwrap()
+        .maximum_spread_ratio = 0.06;
+    let verdict = perf_budget::evaluate(&bundle, &reports, now());
+    assert_eq!(verdict.payload.status, VerdictStatus::Passed);
+
+    reports
+        .iter_mut()
+        .find(|report| report.id == rule.report)
+        .unwrap()
+        .maximum_spread_ratio = 0.071;
+    let verdict = perf_budget::evaluate(&bundle, &reports, now());
+    assert_eq!(verdict.payload.status, VerdictStatus::Failed);
+    assert!(verdict
+        .payload
+        .problems
+        .iter()
+        .any(|problem| problem.contains(&rule.id)));
+}
+
+#[test]
 fn baseline_manifest_and_budget_verdict_are_receipt_digest_bound() {
     let (mut bundle, reports) = bootstrapped_fixture();
     let problems = perf_budget::validate_contract_bundle(&bundle);
