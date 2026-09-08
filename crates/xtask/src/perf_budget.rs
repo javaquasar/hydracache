@@ -6731,7 +6731,7 @@ fn evaluate_budgets(
             continue;
         }
         let rolling_tolerance = rule.rolling_tolerance_ratio.unwrap_or(0.0);
-        let spread_limit = rule.maximum_spread_ratio.unwrap_or(0.0);
+        let declared_spread_limit = rule.maximum_spread_ratio.unwrap_or(0.0);
         // The 0.67.1 rolling contract authenticates and recomputes MAD for
         // every metric. A frozen candidate is one observation, so compare it
         // with a robust three-sigma noise envelope as well as the committed
@@ -6760,6 +6760,26 @@ fn evaluate_budgets(
         });
         let rolling_observed_extreme =
             observed_metric_extreme(rule.direction, &bundle.baseline.members, &rule.id);
+        // Apply the same reviewed-evidence invariant to report stability that we apply to
+        // metric values below. Bootstrap accepts scenario-eligible reports under a wider
+        // acquisition ceiling, while activation intentionally keeps the ordinary 5% limit.
+        // Without preserving the authenticated source envelope here, a report no noisier
+        // than an accepted bootstrap member can still be rejected by the release gate.
+        let spread_limit = if bundle.budget.bootstrap_status == BootstrapStatus::Bootstrapped
+            && bundle.profile.enforcement == Enforcement::Ship
+        {
+            declared_spread_limit
+                .max(observed_report_spread_extreme(
+                    &bundle.baseline.anchor.source_members,
+                    &rule.report,
+                ))
+                .max(observed_report_spread_extreme(
+                    &bundle.baseline.members,
+                    &rule.report,
+                ))
+        } else {
+            declared_spread_limit
+        };
         let anchor_boundary = anchor.map(|anchor| {
             threshold_boundary_with_empirical_envelope(
                 rule.direction,
@@ -6802,6 +6822,20 @@ fn evaluate_budgets(
             passed,
         });
     }
+}
+
+fn observed_report_spread_extreme(members: &[BaselineMember], report_id: &str) -> f64 {
+    members
+        .iter()
+        .filter_map(|member| {
+            member
+                .reports
+                .iter()
+                .find(|report| report.report_id == report_id)
+                .map(|report| report.maximum_spread_ratio)
+        })
+        .filter(|spread| spread.is_finite() && *spread >= 0.0)
+        .fold(0.0, f64::max)
 }
 
 fn observed_metric_extreme(
