@@ -1254,6 +1254,7 @@ fn stable_runner_fingerprint(stable: &StableRunnerFingerprint<'_>) -> Result<Str
 fn approved_fingerprint_with_memtotal_boot_drift(
     stable: &StableRunnerFingerprint<'_>,
     allowed_fingerprints: &[String],
+    compatible_storage_digests: &[String],
 ) -> Result<String, String> {
     let observed = stable_runner_fingerprint(stable)?;
     if allowed_fingerprints.is_empty() || allowed_fingerprints.contains(&observed) {
@@ -1265,18 +1266,26 @@ fn approved_fingerprint_with_memtotal_boot_drift(
     // fingerprint when only that bounded, page-aligned value moved; every
     // other CPU, kernel, isolation, storage, host, and build fact remains part
     // of the SHA-256 preimage, while the report retains the exact observed RAM.
+    let mut ram_candidates = vec![stable.ram_bytes];
     for delta in (X86_64_BASE_PAGE_BYTES..=MEMTOTAL_BOOT_DRIFT_MAX_BYTES)
         .step_by(X86_64_BASE_PAGE_BYTES as usize)
     {
-        for ram_bytes in [
-            stable.ram_bytes.checked_sub(delta),
-            stable.ram_bytes.checked_add(delta),
-        ]
-        .into_iter()
-        .flatten()
-        {
+        ram_candidates.extend(
+            [
+                stable.ram_bytes.checked_sub(delta),
+                stable.ram_bytes.checked_add(delta),
+            ]
+            .into_iter()
+            .flatten(),
+        );
+    }
+    for storage_digest in compatible_storage_digests {
+        let mut attestation = stable.attestation.clone();
+        attestation.storage_identity_digest = storage_digest.clone();
+        for ram_bytes in &ram_candidates {
             let mut candidate = stable.clone();
-            candidate.ram_bytes = ram_bytes;
+            candidate.ram_bytes = *ram_bytes;
+            candidate.attestation = &attestation;
             let fingerprint = stable_runner_fingerprint(&candidate)?;
             if allowed_fingerprints.contains(&fingerprint) {
                 return Ok(fingerprint);
@@ -1369,10 +1378,11 @@ fn observe_linux_reference_runner(
     let governor = observed_governors.remove(0);
 
     let turbo = observe_turbo_policy()?;
-    let attestation = crate::host_attestation::observe_reference_attestation(
-        toolchain_identity,
-        prebuild_contract_digest,
-    )?;
+    let (attestation, compatible_storage_digests) =
+        crate::host_attestation::observe_reference_attestation(
+            toolchain_identity,
+            prebuild_contract_digest,
+        )?;
     let cpu_affinity = resolve_reference_cpu_affinity(
         &process_cpu_affinity,
         profile,
@@ -1397,8 +1407,11 @@ fn observe_linux_reference_runner(
         turbo: &turbo,
         attestation: &attestation,
     };
-    let fingerprint =
-        approved_fingerprint_with_memtotal_boot_drift(&stable, &profile.allowed_fingerprints)?;
+    let fingerprint = approved_fingerprint_with_memtotal_boot_drift(
+        &stable,
+        &profile.allowed_fingerprints,
+        &compatible_storage_digests,
+    )?;
     Ok(RunnerFingerprint {
         runner_class: profile.required_runner_class.clone(),
         fingerprint,
@@ -1882,7 +1895,12 @@ mod preflight_tests {
         let one_page_less =
             stable_runner(reviewed.ram_bytes - X86_64_BASE_PAGE_BYTES, &attestation);
         assert_eq!(
-            approved_fingerprint_with_memtotal_boot_drift(&one_page_less, &allowed).unwrap(),
+            approved_fingerprint_with_memtotal_boot_drift(
+                &one_page_less,
+                &allowed,
+                &[attestation.storage_identity_digest.clone()],
+            )
+            .unwrap(),
             reviewed_fingerprint
         );
 
@@ -1891,7 +1909,12 @@ mod preflight_tests {
             &attestation,
         );
         assert_ne!(
-            approved_fingerprint_with_memtotal_boot_drift(&outside_bound, &allowed).unwrap(),
+            approved_fingerprint_with_memtotal_boot_drift(
+                &outside_bound,
+                &allowed,
+                &[attestation.storage_identity_digest.clone()],
+            )
+            .unwrap(),
             reviewed_fingerprint
         );
 
@@ -1902,7 +1925,21 @@ mod preflight_tests {
             &changed_attestation,
         );
         assert_ne!(
-            approved_fingerprint_with_memtotal_boot_drift(&changed_storage, &allowed).unwrap(),
+            approved_fingerprint_with_memtotal_boot_drift(
+                &changed_storage,
+                &allowed,
+                &[changed_attestation.storage_identity_digest.clone()],
+            )
+            .unwrap(),
+            reviewed_fingerprint
+        );
+        assert_eq!(
+            approved_fingerprint_with_memtotal_boot_drift(
+                &changed_storage,
+                &allowed,
+                &[attestation.storage_identity_digest.clone()],
+            )
+            .unwrap(),
             reviewed_fingerprint
         );
     }
