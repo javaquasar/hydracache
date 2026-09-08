@@ -1316,6 +1316,92 @@ fn bootstrapped_ship_gate_applies_the_authenticated_rolling_mad() {
 }
 
 #[test]
+fn bootstrapped_ship_gate_preserves_the_reviewed_empirical_envelope() {
+    let (mut bundle, mut reports) = bootstrapped_fixture();
+    let ceiling = bundle
+        .budget
+        .budgets
+        .iter()
+        .find(|rule| rule.direction == perf_budget::BudgetDirection::Ceiling)
+        .unwrap()
+        .clone();
+    for (member, value) in bundle
+        .baseline
+        .members
+        .iter_mut()
+        .zip([492.0, 593.0, 593.5, 594.0, 748.0])
+    {
+        member
+            .metrics
+            .iter_mut()
+            .find(|metric| metric.budget_id == ceiling.id)
+            .unwrap()
+            .value = value;
+        member
+            .reports
+            .iter_mut()
+            .find(|report| report.report_id == ceiling.report)
+            .and_then(|report| {
+                report
+                    .metrics
+                    .iter_mut()
+                    .find(|metric| metric.id == ceiling.metric)
+            })
+            .unwrap()
+            .value = value;
+        perf_budget::seal_baseline_member(member);
+    }
+    bundle.baseline.candidate_members = bundle.baseline.members.clone();
+    bundle.baseline.anchor.source_members = bundle.baseline.members.clone();
+    bundle
+        .baseline
+        .anchor
+        .metrics
+        .iter_mut()
+        .find(|metric| metric.budget_id == ceiling.id)
+        .unwrap()
+        .value = 593.5;
+    bundle.baseline.rolling_metrics =
+        perf_budget::rolling_summaries(&bundle.budget.budgets, &bundle.baseline.members).unwrap();
+    approve_baseline_change(&mut bundle);
+    perf_budget::seal_baseline_manifest(&mut bundle.baseline);
+    reports
+        .iter_mut()
+        .find(|report| report.id == ceiling.report)
+        .unwrap()
+        .metrics
+        .get_mut(&ceiling.metric)
+        .unwrap()
+        .value = 697.0;
+    let verdict = perf_budget::evaluate(&bundle, &reports, now());
+    let check = verdict
+        .payload
+        .checks
+        .iter()
+        .find(|check| check.budget_id == ceiling.id)
+        .unwrap();
+    assert_eq!(check.rolling_boundary, 748.0);
+    assert!(check.passed);
+
+    reports
+        .iter_mut()
+        .find(|report| report.id == ceiling.report)
+        .unwrap()
+        .metrics
+        .get_mut(&ceiling.metric)
+        .unwrap()
+        .value = 749.0;
+    let verdict = perf_budget::evaluate(&bundle, &reports, now());
+    let check = verdict
+        .payload
+        .checks
+        .iter()
+        .find(|check| check.budget_id == ceiling.id)
+        .unwrap();
+    assert!(!check.passed);
+}
+
+#[test]
 fn baseline_manifest_and_budget_verdict_are_receipt_digest_bound() {
     let (mut bundle, reports) = bootstrapped_fixture();
     let problems = perf_budget::validate_contract_bundle(&bundle);
