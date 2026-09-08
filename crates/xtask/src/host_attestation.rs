@@ -348,26 +348,38 @@ fn observe_root_storage() -> Result<(String, Vec<String>), String> {
 }
 
 fn parse_root_storage_identity(text: &str) -> Result<Vec<String>, String> {
-    let mut raw_identity = Vec::new();
-    let mut disk_count = 0_u32;
+    let mut disk_names = Vec::new();
+    let mut stable_identities = Vec::new();
     for line in text.lines() {
         let fields = line.split_whitespace().collect::<Vec<_>>();
         if fields.len() < 3 || fields[1] != "disk" {
             continue;
         }
-        disk_count += 1;
         if fields[2] != "nvme" {
             return Err(format!(
                 "root storage leaf is not NVMe: {}",
                 fields[..3].join(" ")
             ));
         }
-        raw_identity.push(fields.join(" "));
+        disk_names.push(fields[0]);
+        stable_identities.push(fields[1..].join(" "));
     }
-    if disk_count == 0 {
+    if disk_names.is_empty() {
         return Err("root storage has no observable physical disk leaves".to_owned());
     }
-    Ok(raw_identity)
+
+    // Linux may swap nvme0n1/nvme1n1 after a reboot even though the same
+    // physical RAID members, serials, and WWNs remain present. Canonicalize
+    // those volatile kernel names independently from the stable device facts
+    // so enumeration order cannot change the approved runner fingerprint.
+    // Device replacement still changes the model/serial/WWN preimage.
+    disk_names.sort_unstable();
+    stable_identities.sort_unstable();
+    Ok(disk_names
+        .into_iter()
+        .zip(stable_identities)
+        .map(|(name, identity)| format!("{name} {identity}"))
+        .collect())
 }
 
 fn observe_os_image() -> Result<String, String> {
@@ -663,6 +675,26 @@ mod tests {
         assert_eq!(
             privacy_digest("hydracache-storage-identity-v2", &first_identity).unwrap(),
             privacy_digest("hydracache-storage-identity-v2", &reversed_identity).unwrap()
+        );
+    }
+
+    #[test]
+    fn raw_lsblk_identity_ignores_nvme_name_swaps_across_reboots() {
+        let before = "\
+/dev/md1 raid1
+/dev/nvme0n1 disk nvme SAMSUNG\\x20MZVLB1T0HALR-00000 SERIAL-A wwn-a
+/dev/nvme1n1 disk nvme SAMSUNG\\x20MZVLB1T0HALR-00000 SERIAL-B wwn-b";
+        let after = "\
+/dev/md1 raid1
+/dev/nvme0n1 disk nvme SAMSUNG\\x20MZVLB1T0HALR-00000 SERIAL-B wwn-b
+/dev/nvme1n1 disk nvme SAMSUNG\\x20MZVLB1T0HALR-00000 SERIAL-A wwn-a";
+
+        let before_identity = parse_root_storage_identity(before).unwrap();
+        let after_identity = parse_root_storage_identity(after).unwrap();
+        assert_eq!(before_identity, after_identity);
+        assert_eq!(
+            privacy_digest("hydracache-storage-identity-v2", &before_identity).unwrap(),
+            privacy_digest("hydracache-storage-identity-v2", &after_identity).unwrap()
         );
     }
 }
