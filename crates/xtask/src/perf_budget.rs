@@ -1721,8 +1721,7 @@ fn validate_baseline(bundle: &ContractBundle, problems: &mut Vec<String>) {
                             |(report_metric, member_metric)| {
                                 report_metric.unit != rule.unit
                                     || member_metric.unit != rule.unit
-                                    || !report_metric.value.is_finite()
-                                    || report_metric.value <= 0.0
+                                    || !valid_budget_metric_value(rule, report_metric.value)
                                     || !approx_eq(report_metric.value, member_metric.value)
                             },
                         ) {
@@ -1771,8 +1770,7 @@ fn validate_baseline(bundle: &ContractBundle, problems: &mut Vec<String>) {
                         .find(|rule| rule.id == metric.budget_id)
                         .is_some_and(|rule| {
                             metric.unit == rule.unit
-                                && metric.value.is_finite()
-                                && metric.value > 0.0
+                                && valid_budget_metric_value(rule, metric.value)
                         });
                     if !valid {
                         problems.push(format!(
@@ -1869,7 +1867,7 @@ fn validate_anchor_coverage(
     for rule in &budget.budgets {
         match anchors.get(rule.id.as_str()) {
             Some(metric)
-                if metric.unit == rule.unit && metric.value.is_finite() && metric.value > 0.0 => {}
+                if metric.unit == rule.unit && valid_budget_metric_value(rule, metric.value) => {}
             _ => problems.push(format!(
                 "budget {} lacks a valid reference-v1 anchor",
                 rule.id
@@ -2075,13 +2073,17 @@ fn baseline_member_receipts_valid(bundle: &ContractBundle, member: &BaselineMemb
                             |(report_metric, member_metric)| {
                                 report_metric.unit == rule.unit
                                     && member_metric.unit == rule.unit
-                                    && report_metric.value.is_finite()
-                                    && report_metric.value > 0.0
+                                    && valid_budget_metric_value(rule, report_metric.value)
                                     && approx_eq(report_metric.value, member_metric.value)
                             },
                         )
                     })
         })
+}
+
+fn valid_budget_metric_value(rule: &BudgetRule, value: f64) -> bool {
+    value.is_finite()
+        && (value > 0.0 || (rule.direction == BudgetDirection::Ceiling && value == 0.0))
 }
 
 fn baseline_member_semantics_valid(bundle: &ContractBundle, member: &BaselineMember) -> bool {
