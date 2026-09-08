@@ -2,23 +2,23 @@
   "schema_version": 1,
   "release": "0.67.1",
   "profile": "reference-v1",
-  "proposal_receipt_sha256": "4572cb0e9074543bde87f84676e834e290b3cfb234d7c720adbffec1b1747ab6",
-  "sample_set_sha256": "9069de679ee9be070084ea94485ee538d65db669f8d8d3edd8ad5bd371810b83",
+  "proposal_receipt_sha256": "96f92ed37178012d455cd12b7ed19ab787354c26f9bd0580b55b837270bb4866",
+  "sample_set_sha256": "0208ccf873d9afe31fd136a399ebf9926b0ea6cfe00889ab9741deb7e289d64b",
   "sample_receipt_sha256": [
-    "a096ca43d222d3fadd81f8437554be8185e17faf0b5ddcb345287ebd62fd918a",
-    "c5097eebea89985df58f9dde3ac9ee77a143db37b86ff4b0a1ab9486f833a264",
-    "c756588ee395f8bd04edf729390f0d178ee8661ee5e7aac9c56f4e79873834b1",
-    "669b898b81e25ef37db159b7a9cf20999b6cebe60b6bd3a7a5a8ee3c54ad5971",
-    "d9f8efd1c0e03c3d6f667fad683ce12e950bb52e4fda275215c223026c54ac9f"
+    "01b59a014c655a5717b74df75367bf9e4a86c6f06059cc599cd5c068e27f532c",
+    "2e0f0b1ce328b59bbf0f988e29db6476aaed710c935fab5e7fbb9ce442da8484",
+    "fbc5887cf24a14103aa298bfac9c426b6352828ae85e37c45f5555bcd456babf",
+    "e94ef5eb5e37038c181d86db0054dfb50190a740e51f86eb9ac3bb4e61b9614d",
+    "23e345f362f6b6d26e2917a08734025984758d41b2397a94cf2e35d611ebfafd"
   ],
-  "runner_provisioning_sha256": "2877a13bb8a4dd6b03583afa816857fb2ca1607da8a0352ae01686a7c35e71f8",
-  "full_dress_admission_sha256": "d373a3f6693562c08d9cd1f629262bf210bb51feea902e38d28c72680e5c0445",
+  "runner_provisioning_sha256": "4113a063971822cba837757e9580271873f8e069d0b46307c3156ffaaabdf90b",
+  "full_dress_admission_sha256": "df9c3a97b1ffb1517caf3574837e101af1addb3ffe4278cb329c9ec24e558db0",
   "producer": "reference-automation",
-  "reviewer": "codex-independent-reference-review",
-  "reviewed_at": "2026-09-05T12:41:30Z",
-  "review_reference": "https://github.com/javaquasar/hydracache/pull/169",
+  "reviewer": "codex-independent-review",
+  "reviewed_at": "2026-09-08T01:24:00Z",
+  "review_reference": "ax42-campaign:hc0671-ax42-20260907-ch:review-20260908",
   "decision": "approve",
-  "reason": "Approved after exact five-receipt sample-set and artifact-provenance verification: all five members share scenario, workload, SLO, and stable methodology identities; proposed medians retain the fixed 10% anchor/rolling tolerance and 5% candidate spread ceiling without widening; observed cross-run control-plane and brownout variance remains subject to the separate frozen-candidate gate.",
+  "reason": "Approved after independently checking the five unique chained sample receipts against the exact source SHA, runner fingerprint, provisioning, full-dress admission, prebuild and scenario-contract digests; verifying all retained GitHub ZIP archives are readable without CRC errors; matching the proposal and payload digests; and confirming the generated profile and budgets retain the frozen workload, SLO, 5% candidate spread ceiling, and all-five-sample median method without selecting a favorable run.",
   "reviewed_files": [
     {
       "id": "profile",
@@ -33,15 +33,15 @@
     {
       "id": "baseline",
       "path": "baseline.toml",
-      "sha256": "dcaeaaeef1028e18e27594ae3e1be6f385fa0833676cd441f95f3c033740363e"
+      "sha256": "8ff9d8f9bfefebca32d7fdf8d07709d2c865af369b4b2faff3f579816fea5ae9"
     },
     {
       "id": "anchor",
       "path": "anchor.json",
-      "sha256": "15e36781d19a39b0c294f1fd1bdcc9105e759e45a0208757dcafe362ac81a535"
+      "sha256": "17386dc64ee7200ec2d383875ebdaa3d98f5ae0debb98b6de3bdc45347df2c2f"
     }
   ],
   "passed": true,
   "ship_evidence_eligible": false,
-  "receipt_sha256": "c7c1dba0060a244fdda4c030a154073dce83308a41930e1dab5041e45e7cfffd"
+  "receipt_sha256": "5a62f2b04814857426ca60835d6f8ff8aaa9a8a6230033ad95a0c22105c70f5f"
 }
