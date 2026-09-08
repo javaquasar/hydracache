@@ -6746,19 +6746,35 @@ fn evaluate_budgets(
         } else {
             0.0
         };
+        // A reviewed bootstrap sample is admissible evidence by construction. Preserve the
+        // adverse edge of that authenticated empirical envelope when MAD collapses around a
+        // quantized mode (for example, membership convergence observed on polling boundaries).
+        // Otherwise four tightly clustered samples can make the median/MAD boundary reject a
+        // frozen observation that is less extreme than the fifth reviewed sample.
+        let anchor_observed_extreme = anchor.and_then(|_| {
+            observed_metric_extreme(
+                rule.direction,
+                &bundle.baseline.anchor.source_members,
+                &rule.id,
+            )
+        });
+        let rolling_observed_extreme =
+            observed_metric_extreme(rule.direction, &bundle.baseline.members, &rule.id);
         let anchor_boundary = anchor.map(|anchor| {
-            threshold_boundary_with_mad(
+            threshold_boundary_with_empirical_envelope(
                 rule.direction,
                 anchor.value,
                 rule.anchor_tolerance_ratio.unwrap_or(0.0),
                 rolling_mad,
+                anchor_observed_extreme,
             )
         });
-        let rolling_boundary = threshold_boundary_with_mad(
+        let rolling_boundary = threshold_boundary_with_empirical_envelope(
             rule.direction,
             rolling.median,
             rolling_tolerance,
             rolling_mad,
+            rolling_observed_extreme,
         );
         let anchor_pass = anchor_boundary.is_none_or(|boundary| {
             threshold_boundary_pass(rule.direction, candidate.value, boundary)
@@ -6788,11 +6804,32 @@ fn evaluate_budgets(
     }
 }
 
-fn threshold_boundary_with_mad(
+fn observed_metric_extreme(
+    direction: BudgetDirection,
+    members: &[BaselineMember],
+    budget_id: &str,
+) -> Option<f64> {
+    members
+        .iter()
+        .filter_map(|member| {
+            member
+                .metrics
+                .iter()
+                .find(|metric| metric.budget_id == budget_id)
+                .map(|metric| metric.value)
+        })
+        .reduce(|left, right| match direction {
+            BudgetDirection::Floor => left.min(right),
+            BudgetDirection::Ceiling => left.max(right),
+        })
+}
+
+fn threshold_boundary_with_empirical_envelope(
     direction: BudgetDirection,
     baseline: f64,
     tolerance: f64,
     mad: f64,
+    observed_extreme: Option<f64>,
 ) -> f64 {
     // 1.4826 makes MAD a robust estimator of standard deviation for a normal
     // distribution. Three estimated standard deviations is the conventional
@@ -6800,10 +6837,25 @@ fn threshold_boundary_with_mad(
     // reviewed relative tolerance applies; they are deliberately not added.
     const NORMALIZED_MAD_THREE_SIGMA: f64 = 1.4826 * 3.0;
     let allowance = (baseline.abs() * tolerance).max(mad * NORMALIZED_MAD_THREE_SIGMA);
-    match direction {
+    let statistical_boundary = match direction {
         BudgetDirection::Floor => baseline - allowance,
         BudgetDirection::Ceiling => baseline + allowance,
+    };
+    match (direction, observed_extreme) {
+        (BudgetDirection::Floor, Some(extreme)) => statistical_boundary.min(extreme),
+        (BudgetDirection::Ceiling, Some(extreme)) => statistical_boundary.max(extreme),
+        (_, None) => statistical_boundary,
     }
+}
+
+#[cfg(test)]
+fn threshold_boundary_with_mad(
+    direction: BudgetDirection,
+    baseline: f64,
+    tolerance: f64,
+    mad: f64,
+) -> f64 {
+    threshold_boundary_with_empirical_envelope(direction, baseline, tolerance, mad, None)
 }
 
 fn threshold_boundary_pass(direction: BudgetDirection, candidate: f64, boundary: f64) -> bool {
