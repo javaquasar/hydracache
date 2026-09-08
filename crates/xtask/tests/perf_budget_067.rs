@@ -1402,10 +1402,19 @@ fn bootstrapped_ship_gate_preserves_the_reviewed_empirical_envelope() {
 }
 
 #[test]
-fn bootstrapped_ship_gate_preserves_the_reviewed_report_spread_envelope() {
+fn bootstrapped_ship_gate_uses_producer_stability_when_sources_exceed_generic_spread() {
     let (mut bundle, mut reports) = bootstrapped_fixture();
     let rule = bundle.budget.budgets[0].clone();
     bundle.budget.budgets[0].maximum_spread_ratio = Some(0.05);
+
+    reports
+        .iter_mut()
+        .find(|report| report.id == rule.report)
+        .unwrap()
+        .maximum_spread_ratio = 0.06;
+    let verdict = perf_budget::evaluate(&bundle, &reports, now());
+    assert_eq!(verdict.payload.status, VerdictStatus::Failed);
+
     for member in &mut bundle.baseline.members {
         member
             .reports
@@ -1424,7 +1433,7 @@ fn bootstrapped_ship_gate_preserves_the_reviewed_report_spread_envelope() {
         .iter_mut()
         .find(|report| report.id == rule.report)
         .unwrap()
-        .maximum_spread_ratio = 0.06;
+        .maximum_spread_ratio = 0.29;
     let verdict = perf_budget::evaluate(&bundle, &reports, now());
     assert_eq!(verdict.payload.status, VerdictStatus::Passed);
 
@@ -1432,7 +1441,7 @@ fn bootstrapped_ship_gate_preserves_the_reviewed_report_spread_envelope() {
         .iter_mut()
         .find(|report| report.id == rule.report)
         .unwrap()
-        .maximum_spread_ratio = 0.071;
+        .maximum_spread_ratio = 0.301;
     let verdict = perf_budget::evaluate(&bundle, &reports, now());
     assert_eq!(verdict.payload.status, VerdictStatus::Failed);
     assert!(verdict

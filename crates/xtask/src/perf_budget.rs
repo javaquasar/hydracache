@@ -6768,15 +6768,26 @@ fn evaluate_budgets(
         let spread_limit = if bundle.budget.bootstrap_status == BootstrapStatus::Bootstrapped
             && bundle.profile.enforcement == Enforcement::Ship
         {
-            declared_spread_limit
-                .max(observed_report_spread_extreme(
-                    &bundle.baseline.anchor.source_members,
-                    &rule.report,
-                ))
-                .max(observed_report_spread_extreme(
-                    &bundle.baseline.members,
-                    &rule.report,
-                ))
+            let reviewed_spread_extreme = observed_report_spread_extreme(
+                &bundle.baseline.anchor.source_members,
+                &rule.report,
+            )
+            .max(observed_report_spread_extreme(
+                &bundle.baseline.members,
+                &rule.report,
+            ));
+            if reviewed_spread_extreme > declared_spread_limit {
+                // The generic activation ceiling is incompatible with the reviewed source
+                // report. In that case defer to the report producer's revalidated `stable`
+                // contract, bounded by the committed profile ceiling. This is especially
+                // important for very short nanosecond-scale measurements whose scenario
+                // contract intentionally permits more sampling variance. Reports whose
+                // reviewed sources fit the generic ceiling continue to use that stricter
+                // ceiling.
+                bundle.profile.noise.maximum_report_spread_ratio
+            } else {
+                declared_spread_limit
+            }
         } else {
             declared_spread_limit
         };
