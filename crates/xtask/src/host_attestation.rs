@@ -16,6 +16,7 @@ use sha2::{Digest, Sha256};
 const PROVISIONING_RECEIPT_PATH: &str = "/var/lib/hydracache-perf/runner-provisioned.json";
 const MEASUREMENT_IO_POLICY_ENV: &str = "HYDRACACHE_MEASUREMENT_IO_POLICY";
 const MEASUREMENT_IO_POLICY: &str = "tmpfs-housekeeping-orchestration-v1";
+const MAX_ROOT_STORAGE_LEAVES: usize = 8;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct HostAttestationInput {
@@ -66,15 +67,15 @@ pub fn build_attestation(input: HostAttestationInput) -> Result<RunnerAttestatio
 pub fn observe_reference_attestation(
     toolchain_identity: &str,
     prebuild_contract_digest: &str,
-) -> Result<RunnerAttestationV5, String> {
+) -> Result<(RunnerAttestationV5, Vec<String>), String> {
     let virtualization = detect_virtualization()?;
     let (physical_cores, measurement_cores) = observe_cpu_topology()?;
     let (provisioned_host_digest, provisioned_cpu_isolation) = read_provisioning_contract()?;
     let cpu_isolation = observe_cpu_isolation(&provisioned_cpu_isolation)?;
-    let (storage_class, raw_storage_identity) = observe_root_storage()?;
+    let (storage_class, raw_storage_identity, compatible_storage_digests) = observe_root_storage()?;
     let os_image = observe_os_image()?;
 
-    build_attestation(HostAttestationInput {
+    let attestation = build_attestation(HostAttestationInput {
         virtualization,
         physical_cores,
         measurement_cores,
@@ -86,7 +87,8 @@ pub fn observe_reference_attestation(
         os_image,
         toolchain_identity: toolchain_identity.to_owned(),
         prebuild_contract_digest: prebuild_contract_digest.to_owned(),
-    })
+    })?;
+    Ok((attestation, compatible_storage_digests))
 }
 
 #[derive(serde::Deserialize)]
@@ -322,7 +324,7 @@ fn observe_cpu_topology() -> Result<(u32, Vec<MeasurementCore>), String> {
     Ok((physical_cores, measurement_cores))
 }
 
-fn observe_root_storage() -> Result<(String, Vec<String>), String> {
+fn observe_root_storage() -> Result<(String, Vec<String>, Vec<String>), String> {
     let findmnt = command_output("findmnt", &["--noheadings", "--output", "SOURCE", "/"])?;
     let source = stdout_trimmed(&findmnt, "findmnt")?;
     if !source.starts_with("/dev/") {
@@ -344,10 +346,15 @@ fn observe_root_storage() -> Result<(String, Vec<String>), String> {
     )?;
     let text = stdout_trimmed(&lsblk, "lsblk")?;
     let raw_identity = parse_root_storage_identity(text)?;
-    Ok((REFERENCE_STORAGE_CLASS.to_owned(), raw_identity))
+    let compatible_digests = compatible_root_storage_digests(text)?;
+    Ok((
+        REFERENCE_STORAGE_CLASS.to_owned(),
+        raw_identity,
+        compatible_digests,
+    ))
 }
 
-fn parse_root_storage_identity(text: &str) -> Result<Vec<String>, String> {
+fn parse_root_storage_parts(text: &str) -> Result<(Vec<String>, Vec<String>), String> {
     let mut disk_names = Vec::new();
     let mut stable_identities = Vec::new();
     for line in text.lines() {
@@ -361,12 +368,23 @@ fn parse_root_storage_identity(text: &str) -> Result<Vec<String>, String> {
                 fields[..3].join(" ")
             ));
         }
-        disk_names.push(fields[0]);
+        disk_names.push(fields[0].to_owned());
         stable_identities.push(fields[1..].join(" "));
     }
     if disk_names.is_empty() {
         return Err("root storage has no observable physical disk leaves".to_owned());
     }
+    if disk_names.len() > MAX_ROOT_STORAGE_LEAVES {
+        return Err(format!(
+            "root storage has more than {MAX_ROOT_STORAGE_LEAVES} physical disk leaves"
+        ));
+    }
+
+    Ok((disk_names, stable_identities))
+}
+
+fn parse_root_storage_identity(text: &str) -> Result<Vec<String>, String> {
+    let (mut disk_names, mut stable_identities) = parse_root_storage_parts(text)?;
 
     // Linux may swap nvme0n1/nvme1n1 after a reboot even though the same
     // physical RAID members, serials, and WWNs remain present. Canonicalize
@@ -380,6 +398,43 @@ fn parse_root_storage_identity(text: &str) -> Result<Vec<String>, String> {
         .zip(stable_identities)
         .map(|(name, identity)| format!("{name} {identity}"))
         .collect())
+}
+
+fn compatible_root_storage_digests(text: &str) -> Result<Vec<String>, String> {
+    let (mut disk_names, mut stable_identities) = parse_root_storage_parts(text)?;
+    disk_names.sort_unstable();
+    let mut identities = Vec::new();
+    permute_storage_identities(&disk_names, &mut stable_identities, 0, &mut identities);
+    let mut digests = identities
+        .into_iter()
+        .map(|identity| privacy_digest("hydracache-storage-identity-v2", &identity))
+        .collect::<Result<Vec<_>, _>>()?;
+    digests.sort_unstable();
+    digests.dedup();
+    Ok(digests)
+}
+
+fn permute_storage_identities(
+    disk_names: &[String],
+    stable_identities: &mut [String],
+    offset: usize,
+    output: &mut Vec<Vec<String>>,
+) {
+    if offset == stable_identities.len() {
+        output.push(
+            disk_names
+                .iter()
+                .zip(stable_identities.iter())
+                .map(|(name, identity)| format!("{name} {identity}"))
+                .collect(),
+        );
+        return;
+    }
+    for index in offset..stable_identities.len() {
+        stable_identities.swap(offset, index);
+        permute_storage_identities(disk_names, stable_identities, offset + 1, output);
+        stable_identities.swap(offset, index);
+    }
 }
 
 fn observe_os_image() -> Result<String, String> {
@@ -695,6 +750,10 @@ mod tests {
         assert_eq!(
             privacy_digest("hydracache-storage-identity-v2", &before_identity).unwrap(),
             privacy_digest("hydracache-storage-identity-v2", &after_identity).unwrap()
+        );
+        assert_eq!(
+            compatible_root_storage_digests(before).unwrap(),
+            compatible_root_storage_digests(after).unwrap()
         );
     }
 }
