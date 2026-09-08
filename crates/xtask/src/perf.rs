@@ -1898,7 +1898,7 @@ mod preflight_tests {
             approved_fingerprint_with_memtotal_boot_drift(
                 &one_page_less,
                 &allowed,
-                &[attestation.storage_identity_digest.clone()],
+                std::slice::from_ref(&attestation.storage_identity_digest),
             )
             .unwrap(),
             reviewed_fingerprint
@@ -1912,7 +1912,7 @@ mod preflight_tests {
             approved_fingerprint_with_memtotal_boot_drift(
                 &outside_bound,
                 &allowed,
-                &[attestation.storage_identity_digest.clone()],
+                std::slice::from_ref(&attestation.storage_identity_digest),
             )
             .unwrap(),
             reviewed_fingerprint
@@ -1928,7 +1928,7 @@ mod preflight_tests {
             approved_fingerprint_with_memtotal_boot_drift(
                 &changed_storage,
                 &allowed,
-                &[changed_attestation.storage_identity_digest.clone()],
+                std::slice::from_ref(&changed_attestation.storage_identity_digest),
             )
             .unwrap(),
             reviewed_fingerprint
@@ -1937,7 +1937,7 @@ mod preflight_tests {
             approved_fingerprint_with_memtotal_boot_drift(
                 &changed_storage,
                 &allowed,
-                &[attestation.storage_identity_digest.clone()],
+                std::slice::from_ref(&attestation.storage_identity_digest),
             )
             .unwrap(),
             reviewed_fingerprint
