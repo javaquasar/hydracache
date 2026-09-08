@@ -419,6 +419,89 @@ fn reference_proposal_rejects_a_broken_five_sample_chain() {
 }
 
 #[test]
+fn reviewed_reference_accepts_zero_for_a_ceiling_metric() {
+    let (mut bundle, _) = approved_bundle();
+    let budget_id = "brownout-control-plane-depth-ceiling";
+    let rule = bundle
+        .budget
+        .budgets
+        .iter()
+        .find(|rule| rule.id == budget_id)
+        .expect("brownout depth budget")
+        .clone();
+
+    let set_zero = |member: &mut xtask::perf_budget::BaselineMember| {
+        member
+            .metrics
+            .iter_mut()
+            .find(|metric| metric.budget_id == budget_id)
+            .expect("baseline metric")
+            .value = 0.0;
+        member
+            .reports
+            .iter_mut()
+            .find(|report| report.report_id == rule.report)
+            .expect("baseline report")
+            .metrics
+            .iter_mut()
+            .find(|metric| metric.id == rule.metric)
+            .expect("report metric")
+            .value = 0.0;
+    };
+    bundle
+        .baseline
+        .anchor
+        .source_members
+        .iter_mut()
+        .for_each(set_zero);
+    bundle
+        .baseline
+        .candidate_members
+        .iter_mut()
+        .for_each(set_zero);
+    bundle.baseline.members.iter_mut().for_each(set_zero);
+    bundle
+        .baseline
+        .anchor
+        .metrics
+        .iter_mut()
+        .find(|metric| metric.budget_id == budget_id)
+        .expect("anchor metric")
+        .value = 0.0;
+    let rolling = bundle
+        .baseline
+        .rolling_metrics
+        .iter_mut()
+        .find(|metric| metric.budget_id == budget_id)
+        .expect("rolling metric");
+    rolling.median = 0.0;
+    rolling.mad = 0.0;
+
+    perf_budget::seal_baseline_manifest(&mut bundle.baseline);
+    let payload_sha256 = perf_budget::baseline_payload_digest(&bundle.baseline);
+    let proposal = bundle
+        .baseline
+        .change_control
+        .proposal
+        .as_mut()
+        .expect("proposal");
+    proposal.proposed_payload_sha256 = payload_sha256.clone();
+    let proposal_sha256 = perf_budget::digest_json(proposal);
+    let approval = bundle
+        .baseline
+        .change_control
+        .approval
+        .as_mut()
+        .expect("approval");
+    approval.proposal_sha256 = proposal_sha256;
+    approval.approved_payload_sha256 = payload_sha256;
+    perf_budget::seal_baseline_manifest(&mut bundle.baseline);
+
+    let problems = perf_budget::validate_contract_bundle(&bundle);
+    assert!(problems.is_empty(), "{problems:#?}");
+}
+
+#[test]
 fn bootstrap_accepts_scenario_eligible_spread_but_activation_stays_at_five_percent() {
     let (profile, budget, sample_set, mut samples) = fixture();
     let overload = samples[0]
