@@ -6640,6 +6640,30 @@ fn contract_digest_compatible(
     if baseline == candidate {
         return true;
     }
+    // The original W1 path-cost reference measured only 1,000,000 operations
+    // per repeat. Two independent AX42 campaigns each captured one short
+    // housekeeping/runtime interruption large enough to dominate one of the
+    // three samples (16-20% spread), while the adjacent samples agreed. The
+    // successor preserves the operation mix, repeat count, SLO, and 15% gate,
+    // but measures 5,000,000 operations so that the same fixed interruption
+    // cannot decide canonical eligibility. Bridge only the exact suite
+    // scenario/workload identities produced by that reviewed window change.
+    if report_id == "local"
+        && matches!(
+            (dimension, baseline, candidate),
+            (
+                "scenario",
+                "41877a7da9095d085008581a48b411c22e5c8eafa288f08e6383b1ce4d87bbd4",
+                "fd8b4480e4a542b97769a08b9afbfd73655a3b6097b4f77ab93845b90d91189e"
+            ) | (
+                "workload",
+                "c9efd268ee3afdf95833aa892ad96c8589c1c7133ba23cde3b7b3462a4894715",
+                "bd4935ca1d76b0ee86c19dd2ebec0f6358dbd5dc0af74afe9e9a27bf8d870572"
+            )
+        )
+    {
+        return true;
+    }
     // The original W5C reference used only 100 warmup and 1,000 measured
     // iterations for ~80 ns operations. Two independent frozen campaigns
     // reproduced a bimodal 8.2% spread, while four of the five reviewed
@@ -7665,6 +7689,48 @@ mod semantic_tests {
                 successor
             ));
         }
+    }
+
+    #[test]
+    fn w1_path_cost_window_bridge_is_exact_and_one_way() {
+        let pairs = [
+            (
+                "scenario",
+                "41877a7da9095d085008581a48b411c22e5c8eafa288f08e6383b1ce4d87bbd4",
+                "fd8b4480e4a542b97769a08b9afbfd73655a3b6097b4f77ab93845b90d91189e",
+            ),
+            (
+                "workload",
+                "c9efd268ee3afdf95833aa892ad96c8589c1c7133ba23cde3b7b3462a4894715",
+                "bd4935ca1d76b0ee86c19dd2ebec0f6358dbd5dc0af74afe9e9a27bf8d870572",
+            ),
+        ];
+        for (dimension, legacy, successor) in pairs {
+            assert!(contract_digest_compatible(
+                dimension, "local", legacy, successor
+            ));
+            assert!(!contract_digest_compatible(
+                dimension, "local", successor, legacy
+            ));
+            assert!(!contract_digest_compatible(
+                dimension,
+                "client-surface",
+                legacy,
+                successor
+            ));
+        }
+        assert!(!contract_digest_compatible(
+            "slo",
+            "local",
+            "1dcde01444e6427a08940f23fc93ba1128201b723026ba5ce1c6e97e478285b7",
+            "changed"
+        ));
+        assert!(!contract_digest_compatible(
+            "methodology",
+            "local",
+            "4294bad2e3c1d50db25a7b525f7d8f122fd5b99af483c2cd8a494ec7d6a48d9d",
+            "changed"
+        ));
     }
 
     #[test]
