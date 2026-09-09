@@ -270,6 +270,33 @@ class ReferenceCampaignTests(unittest.TestCase):
                     timeout_seconds=0.05,
                 )
 
+    def test_visible_command_keeps_draining_after_console_disconnect(self) -> None:
+        class DisconnectedConsole:
+            def write(self, _text: str) -> None:
+                raise BrokenPipeError("detached SSH stdout")
+
+            def flush(self) -> None:
+                raise BrokenPipeError("detached SSH stdout")
+
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            log_path = root / "detached.log"
+            payload_size = 256 * 1024
+            with mock.patch.object(campaign.sys, "stdout", DisconnectedConsole()):
+                result = campaign.run_visible(
+                    [
+                        sys.executable,
+                        "-c",
+                        f"import sys; sys.stdout.write('x' * {payload_size})",
+                    ],
+                    cwd=root,
+                    log_path=log_path,
+                    timeout_seconds=5,
+                )
+
+            self.assertEqual(result, 0)
+            self.assertTrue(log_path.read_text(encoding="utf-8").endswith("x" * payload_size))
+
     def test_sample_set_cargo_is_probed_as_the_runner_user(self) -> None:
         runner_cargo = "/home/github-runner/.cargo/bin/cargo"
         cargo_target = Path("/tmp/controller-cargo-target")

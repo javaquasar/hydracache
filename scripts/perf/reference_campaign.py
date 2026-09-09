@@ -140,10 +140,20 @@ def run_visible(
         reader_error: list[BaseException] = []
 
         def stream_output() -> None:
+            console_enabled = True
             try:
                 for line in process.stdout:
-                    sys.stdout.write(line)
-                    sys.stdout.flush()
+                    if console_enabled:
+                        try:
+                            sys.stdout.write(line)
+                            sys.stdout.flush()
+                        except (OSError, ValueError):
+                            # A detached controller can outlive the SSH pipe
+                            # that originally owned stdout. Keep draining the
+                            # child and writing the durable log; otherwise a
+                            # verbose `gh run watch` fills its pipe and both
+                            # processes deadlock after the GitHub run ends.
+                            console_enabled = False
                     log.write(line)
                     log.flush()
             except BaseException as error:
