@@ -644,31 +644,17 @@ pub fn build_grid_model_macro_envelope(
         .map(|point| point.timing.median_elapsed_nanos as f64 / point.iterations as f64)
         .max_by(f64::total_cmp)
         .ok_or_else(|| MacroReceiptError::Report("W4B has no ack-cost points".to_owned()))?;
-    let spread = report
-        .ack_requirement_cost
-        .iter()
-        .map(|point| point.timing.robust_spread_ratio_millionths)
-        .chain(
-            report
-                .session_decision_cost
-                .iter()
-                .map(|point| point.timing.robust_spread_ratio_millionths),
-        )
-        .chain(
-            report
-                .replication_primitive_curve
-                .iter()
-                .map(|point| point.timing.robust_spread_ratio_millionths),
-        )
-        .chain(
-            report
-                .invalidation_fanout_cost
-                .iter()
-                .map(|point| point.timing.robust_spread_ratio_millionths),
-        )
-        .max()
-        .unwrap_or(0) as f64
-        / 1_000_000.0;
+    // The only active W4B budget is the ack-requirement primitive cost. The
+    // supplemental session/replication/invalidation curves remain validated
+    // by `GridModelReport::validate`, including their own 15% stability
+    // contract, but their noise must not be attributed to this unrelated
+    // budget metric.
+    let spread = maximum_spread_ratio_from_millionths(
+        report
+            .ack_requirement_cost
+            .iter()
+            .map(|point| point.timing.robust_spread_ratio_millionths),
+    );
     let report_id = "grid-model-reference-v1";
     let spread_limit = reference_macro_report_spread_limit(report_id).ok_or_else(|| {
         MacroReceiptError::Inputs(format!("unknown reference macro report {report_id}"))
@@ -694,6 +680,10 @@ pub fn build_grid_model_macro_envelope(
         }],
     };
     build_macro_report_envelope(context, report, inputs)
+}
+
+fn maximum_spread_ratio_from_millionths(spreads: impl Iterator<Item = u64>) -> f64 {
+    spreads.max().unwrap_or(0) as f64 / 1_000_000.0
 }
 
 pub fn build_control_plane_brownout_macro_envelope(
@@ -1375,6 +1365,22 @@ mod tests {
             assert_eq!(reference_macro_report_spread_limit(report_id), Some(0.25));
         }
         assert_eq!(reference_macro_report_spread_limit("unknown"), None);
+    }
+
+    #[test]
+    fn grid_model_ack_budget_spread_excludes_supplemental_primitive_noise() {
+        let ack_spreads = [15_287_u64, 15_265, 11_382];
+        let supplemental_spreads = [64_282_u64, 53_949, 18_156];
+        assert_eq!(
+            maximum_spread_ratio_from_millionths(ack_spreads.into_iter()),
+            0.015_287
+        );
+        assert_eq!(
+            maximum_spread_ratio_from_millionths(
+                ack_spreads.into_iter().chain(supplemental_spreads)
+            ),
+            0.064_282
+        );
     }
 
     fn temporary_repo(label: &str) -> PathBuf {

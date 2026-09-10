@@ -3002,10 +3002,7 @@ fn macro_report_metrics(
                 .map(|(value, _)| *value)
                 .max_by(f64::total_cmp)
                 .ok_or_else(|| PerfBudgetError::new("grid-model ack cost is absent"))?;
-            let mut spread = summaries
-                .iter()
-                .map(|(_, spread)| *spread)
-                .fold(0.0_f64, f64::max);
+            let spread = maximum_budget_metric_spread(&summaries);
             for collection in [
                 "session_decision_cost",
                 "replication_primitive_curve",
@@ -3027,15 +3024,11 @@ fn macro_report_metrics(
                                     "grid-model {collection} iterations are absent"
                                 ))
                             })?;
-                    spread = spread.max(
-                        validate_primitive_timing(
-                            row.get("timing").ok_or_else(|| {
-                                PerfBudgetError::new("grid-model timing is absent")
-                            })?,
-                            iterations,
-                        )?
-                        .1,
-                    );
+                    validate_primitive_timing(
+                        row.get("timing")
+                            .ok_or_else(|| PerfBudgetError::new("grid-model timing is absent"))?,
+                        iterations,
+                    )?;
                 }
             }
             add(
@@ -3043,6 +3036,10 @@ fn macro_report_metrics(
                 maximum,
                 "nanoseconds_per_operation",
             )?;
+            // The active budget metric is derived exclusively from the ack
+            // summaries above. Supplemental timings are still recomputed and
+            // must satisfy their producer stability contract, but their
+            // spread cannot reject the unrelated ack-cost budget.
             Ok((metrics, spread))
         }
         "brownout-control-plane" => {
@@ -3319,6 +3316,13 @@ fn macro_report_metrics(
             "unsupported macro report identity {report_id}"
         ))),
     }
+}
+
+fn maximum_budget_metric_spread(summaries: &[(f64, f64)]) -> f64 {
+    summaries
+        .iter()
+        .map(|(_, spread)| *spread)
+        .fold(0.0_f64, f64::max)
 }
 
 fn deserialize_typed_report<T>(report_id: &str, report: &Value) -> Result<T, PerfBudgetError>
@@ -7925,6 +7929,12 @@ mod semantic_tests {
             validate_model_summary(&summary, &repeats, "fault_elapsed_nanos").unwrap(),
             (79, 0.0)
         );
+    }
+
+    #[test]
+    fn grid_model_checker_keeps_spread_scoped_to_the_budget_metric() {
+        let ack_summaries = [(1_274.556_7, 0.015_287), (1_201.0, 0.011_382)];
+        assert_eq!(maximum_budget_metric_spread(&ack_summaries), 0.015_287);
     }
 
     #[test]
