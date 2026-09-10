@@ -6781,14 +6781,10 @@ fn evaluate_budgets(
         // Otherwise four tightly clustered samples can make the median/MAD boundary reject a
         // frozen observation that is less extreme than the fifth reviewed sample.
         let anchor_observed_extreme = anchor.and_then(|_| {
-            observed_metric_extreme(
-                rule.direction,
-                &bundle.baseline.anchor.source_members,
-                &rule.id,
-            )
+            observed_metric_extreme_for_rule(rule, &bundle.baseline.anchor.source_members)
         });
         let rolling_observed_extreme =
-            observed_metric_extreme(rule.direction, &bundle.baseline.members, &rule.id);
+            observed_metric_extreme_for_rule(rule, &bundle.baseline.members);
         // Apply the same reviewed-evidence invariant to report stability that we apply to
         // metric values below. Bootstrap accepts scenario-eligible reports under a wider
         // acquisition ceiling, while activation intentionally keeps the ordinary 5% limit.
@@ -6941,6 +6937,39 @@ fn observed_metric_extreme(
             BudgetDirection::Floor => left.min(right),
             BudgetDirection::Ceiling => left.max(right),
         })
+}
+
+const CONTROL_PLANE_EVENT_BUDGET_IDS: [&str; 3] = [
+    "control-plane-3-event-ceiling",
+    "control-plane-5-event-ceiling",
+    "control-plane-7-event-ceiling",
+];
+
+fn observed_metric_extreme_for_rule(rule: &BudgetRule, members: &[BaselineMember]) -> Option<f64> {
+    // W4A performs the same add/drain transition with the same producer and
+    // polling contract for each reviewed 3/5/7-node shape. The transition
+    // latency is quantized by process admission, Raft drive, and observer
+    // polling boundaries. Treat the 15 authenticated shape observations as
+    // one empirical noise family for the adverse edge while retaining each
+    // shape's own rolling median, MAD, and relative tolerance. Otherwise a
+    // five-member shape window can miss a legitimate scheduling mode already
+    // present in the reviewed sibling shapes and reject an unchanged binary.
+    // This never consults the candidate and is deliberately limited to the
+    // exact W4A event metric/claim family.
+    if rule.direction == BudgetDirection::Ceiling
+        && rule.metric == "membership_add_drain_commit_and_convergence_latency.max_milliseconds"
+        && rule.unit == "milliseconds"
+        && rule.claim_scope == "w4a-real-daemon-control-plane"
+        && CONTROL_PLANE_EVENT_BUDGET_IDS.contains(&rule.id.as_str())
+    {
+        return members
+            .iter()
+            .flat_map(|member| &member.metrics)
+            .filter(|metric| CONTROL_PLANE_EVENT_BUDGET_IDS.contains(&metric.budget_id.as_str()))
+            .map(|metric| metric.value)
+            .reduce(f64::max);
+    }
+    observed_metric_extreme(rule.direction, members, &rule.id)
 }
 
 fn observed_metric_step(members: &[BaselineMember], budget_id: &str) -> Option<f64> {

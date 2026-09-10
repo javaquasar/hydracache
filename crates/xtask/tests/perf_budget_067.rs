@@ -1518,6 +1518,106 @@ fn bootstrapped_ship_gate_preserves_the_reviewed_empirical_envelope() {
 }
 
 #[test]
+fn bootstrapped_ship_gate_uses_the_reviewed_w4a_event_family_envelope() {
+    let (mut bundle, mut reports) = bootstrapped_fixture();
+    let event_rules = bundle
+        .budget
+        .budgets
+        .iter()
+        .filter(|rule| {
+            rule.metric == "membership_add_drain_commit_and_convergence_latency.max_milliseconds"
+        })
+        .cloned()
+        .collect::<Vec<_>>();
+    assert_eq!(event_rules.len(), 3);
+    let values = [
+        [491.972, 698.073, 700.980],
+        [440.907, 647.880, 903.704],
+        [798.101, 698.933, 650.235],
+        [900.771, 698.602, 905.094],
+        [902.426, 697.992, 648.890],
+    ];
+    for (member, member_values) in bundle.baseline.members.iter_mut().zip(values) {
+        for (rule, value) in event_rules.iter().zip(member_values) {
+            member
+                .metrics
+                .iter_mut()
+                .find(|metric| metric.budget_id == rule.id)
+                .unwrap()
+                .value = value;
+            member
+                .reports
+                .iter_mut()
+                .find(|report| report.report_id == rule.report)
+                .and_then(|report| {
+                    report
+                        .metrics
+                        .iter_mut()
+                        .find(|metric| metric.id == rule.metric)
+                })
+                .unwrap()
+                .value = value;
+        }
+        perf_budget::seal_baseline_member(member);
+    }
+    bundle.baseline.candidate_members = bundle.baseline.members.clone();
+    bundle.baseline.anchor.source_members = bundle.baseline.members.clone();
+    for (rule, value) in event_rules.iter().zip([798.101, 698.073, 700.980]) {
+        bundle
+            .baseline
+            .anchor
+            .metrics
+            .iter_mut()
+            .find(|metric| metric.budget_id == rule.id)
+            .unwrap()
+            .value = value;
+    }
+    bundle.baseline.rolling_metrics =
+        perf_budget::rolling_summaries(&bundle.budget.budgets, &bundle.baseline.members).unwrap();
+    approve_baseline_change(&mut bundle);
+    perf_budget::seal_baseline_manifest(&mut bundle.baseline);
+
+    let control_plane_5 = event_rules
+        .iter()
+        .find(|rule| rule.id == "control-plane-5-event-ceiling")
+        .unwrap();
+    let candidate_metric = reports
+        .iter_mut()
+        .find(|report| report.id == control_plane_5.report)
+        .unwrap()
+        .metrics
+        .get_mut(&control_plane_5.metric)
+        .unwrap();
+    candidate_metric.value = 850.068;
+    let verdict = perf_budget::evaluate(&bundle, &reports, now());
+    let check = verdict
+        .payload
+        .checks
+        .iter()
+        .find(|check| check.budget_id == control_plane_5.id)
+        .unwrap_or_else(|| panic!("budget checks absent: {:?}", verdict.payload.problems));
+    assert_eq!(check.rolling_boundary, 905.094);
+    assert!(check.passed);
+
+    reports
+        .iter_mut()
+        .find(|report| report.id == control_plane_5.report)
+        .unwrap()
+        .metrics
+        .get_mut(&control_plane_5.metric)
+        .unwrap()
+        .value = 905.095;
+    let verdict = perf_budget::evaluate(&bundle, &reports, now());
+    let check = verdict
+        .payload
+        .checks
+        .iter()
+        .find(|check| check.budget_id == control_plane_5.id)
+        .unwrap();
+    assert!(!check.passed);
+}
+
+#[test]
 fn bootstrapped_ship_gate_allows_one_reviewed_quantization_step() {
     let (mut bundle, mut reports) = bootstrapped_fixture();
     let ceiling = bundle
