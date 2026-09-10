@@ -2388,6 +2388,14 @@ jobs:
       - name: Execute complete 0.67.1 expected-red canary sweep
         run: cargo run -p xtask --locked -- canary-sweep --release 0.67.1 --tier all
 
+      - name: Install pinned cargo-nextest for final aggregation
+        uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-nextest@0.9.137
+
+      - name: Record exact-candidate fast workspace evidence
+        run: cargo run -p xtask --locked -- evidence-run --release 0.67.1 --gate fast.workspace-nextest
+
       - name: Seal exact frozen-candidate reference receipt
         run: cargo run -p xtask --locked -- evidence-run --release 0.67.1 --gate tool.perf-frozen-candidate-0671
 
@@ -2405,6 +2413,7 @@ jobs:
             target/release-evidence/canaries/0.67.1-*.json
             target/release-evidence/receipts/**
             target/release-evidence/0.67.1.json
+            target/nextest/ci/junit.xml
           if-no-files-found: error
 
   raft-loom:

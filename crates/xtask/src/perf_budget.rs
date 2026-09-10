@@ -780,7 +780,7 @@ pub struct ContractBundle {
     pub baseline_sha256: String,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum VerdictStatus {
     Passed,
@@ -789,7 +789,8 @@ pub enum VerdictStatus {
     TripwireUnavailable,
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct BudgetCheckRecord {
     pub budget_id: String,
     pub candidate: f64,
@@ -802,14 +803,16 @@ pub struct BudgetCheckRecord {
     pub passed: bool,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct VerdictReportInput {
     pub id: String,
     pub path: String,
     pub sha256: String,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct VerdictBaselineInput {
     pub run_id: String,
     pub source_commit: String,
@@ -817,7 +820,8 @@ pub struct VerdictBaselineInput {
     pub eligible: bool,
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct BudgetVerdictPayload {
     pub schema_version: u32,
     pub release: String,
@@ -835,7 +839,8 @@ pub struct BudgetVerdictPayload {
     pub problems: Vec<String>,
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct BudgetVerdict {
     pub payload: BudgetVerdictPayload,
     pub receipt_sha256: String,
