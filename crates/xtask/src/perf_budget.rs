@@ -6789,18 +6789,20 @@ fn evaluate_budgets(
         // acquisition ceiling, while activation intentionally keeps the ordinary 5% limit.
         // Without preserving the authenticated source envelope here, a report no noisier
         // than an accepted bootstrap member can still be rejected by the release gate.
+        let reviewed_report_spread_extreme =
+            observed_report_spread_extreme(&bundle.baseline.anchor.source_members, &rule.report)
+                .max(observed_report_spread_extreme(
+                    &bundle.baseline.members,
+                    &rule.report,
+                ));
+        let preserve_reviewed_report_noise = bundle.budget.bootstrap_status
+            == BootstrapStatus::Bootstrapped
+            && bundle.profile.enforcement == Enforcement::Ship
+            && reviewed_report_spread_extreme > declared_spread_limit;
         let spread_limit = if bundle.budget.bootstrap_status == BootstrapStatus::Bootstrapped
             && bundle.profile.enforcement == Enforcement::Ship
         {
-            let reviewed_spread_extreme = observed_report_spread_extreme(
-                &bundle.baseline.anchor.source_members,
-                &rule.report,
-            )
-            .max(observed_report_spread_extreme(
-                &bundle.baseline.members,
-                &rule.report,
-            ));
-            if reviewed_spread_extreme > declared_spread_limit {
+            if preserve_reviewed_report_noise {
                 // The generic activation ceiling is incompatible with the reviewed source
                 // report. In that case defer to the report producer's revalidated `stable`
                 // contract, bounded by the committed profile ceiling. This is especially
@@ -6815,6 +6817,31 @@ fn evaluate_budgets(
         } else {
             declared_spread_limit
         };
+        // Preserve two noise properties authenticated by the reviewed source receipts which a
+        // five-member median/MAD alone cannot describe:
+        //
+        // * Quantized counters can have a zero MAD at their adverse mode. Permit exactly one
+        //   observed lattice step beyond that mode instead of treating the next count as a
+        //   regression. The control-plane availability metric, for example, advances by about
+        //   42 ppm per failed operation in its fixed 24,000-operation disruption window.
+        // * Reports admitted under the producer's wider stability contract carry a robust
+        //   within-report spread estimate. Convert the largest reviewed spread to the same
+        //   three-sigma envelope used for rolling MAD, capped by the committed profile ceiling.
+        //
+        // Neither allowance is learned from the candidate, so a candidate cannot widen its own
+        // gate. Ordinary reports whose reviewed spread fits the stricter budget retain the
+        // historical relative/MAD boundary.
+        let reviewed_noise_ratio = if preserve_reviewed_report_noise {
+            (reviewed_report_spread_extreme * NORMALIZED_MAD_THREE_SIGMA)
+                .min(bundle.profile.noise.maximum_report_spread_ratio)
+        } else {
+            0.0
+        };
+        let anchor_resolution_allowance = anchor
+            .and_then(|_| observed_metric_step(&bundle.baseline.anchor.source_members, &rule.id))
+            .unwrap_or(0.0);
+        let rolling_resolution_allowance =
+            observed_metric_step(&bundle.baseline.members, &rule.id).unwrap_or(0.0);
         let anchor_boundary = anchor.map(|anchor| {
             threshold_boundary_with_empirical_envelope(
                 rule.direction,
@@ -6822,6 +6849,7 @@ fn evaluate_budgets(
                 rule.anchor_tolerance_ratio.unwrap_or(0.0),
                 rolling_mad,
                 anchor_observed_extreme,
+                anchor_resolution_allowance.max(anchor.value.abs() * reviewed_noise_ratio),
             )
         });
         let rolling_boundary = threshold_boundary_with_empirical_envelope(
@@ -6830,6 +6858,7 @@ fn evaluate_budgets(
             rolling_tolerance,
             rolling_mad,
             rolling_observed_extreme,
+            rolling_resolution_allowance.max(rolling.median.abs() * reviewed_noise_ratio),
         );
         let anchor_pass = anchor_boundary.is_none_or(|boundary| {
             threshold_boundary_pass(rule.direction, candidate.value, boundary)
@@ -6893,19 +6922,44 @@ fn observed_metric_extreme(
         })
 }
 
+fn observed_metric_step(members: &[BaselineMember], budget_id: &str) -> Option<f64> {
+    let mut values = members
+        .iter()
+        .filter_map(|member| {
+            member
+                .metrics
+                .iter()
+                .find(|metric| metric.budget_id == budget_id)
+                .map(|metric| metric.value)
+        })
+        .filter(|value| value.is_finite())
+        .collect::<Vec<_>>();
+    values.sort_by(f64::total_cmp);
+    values.dedup_by(|left, right| approx_eq(*left, *right));
+    values
+        .windows(2)
+        .map(|pair| pair[1] - pair[0])
+        .filter(|step| step.is_finite() && *step > 0.0)
+        .reduce(f64::min)
+}
+
+const NORMALIZED_MAD_THREE_SIGMA: f64 = 1.4826 * 3.0;
+
 fn threshold_boundary_with_empirical_envelope(
     direction: BudgetDirection,
     baseline: f64,
     tolerance: f64,
     mad: f64,
     observed_extreme: Option<f64>,
+    absolute_allowance: f64,
 ) -> f64 {
     // 1.4826 makes MAD a robust estimator of standard deviation for a normal
     // distribution. Three estimated standard deviations is the conventional
     // outlier boundary. The larger of that absolute noise allowance and the
     // reviewed relative tolerance applies; they are deliberately not added.
-    const NORMALIZED_MAD_THREE_SIGMA: f64 = 1.4826 * 3.0;
-    let allowance = (baseline.abs() * tolerance).max(mad * NORMALIZED_MAD_THREE_SIGMA);
+    let allowance = (baseline.abs() * tolerance)
+        .max(mad * NORMALIZED_MAD_THREE_SIGMA)
+        .max(absolute_allowance);
     let statistical_boundary = match direction {
         BudgetDirection::Floor => baseline - allowance,
         BudgetDirection::Ceiling => baseline + allowance,
@@ -6924,7 +6978,7 @@ fn threshold_boundary_with_mad(
     tolerance: f64,
     mad: f64,
 ) -> f64 {
-    threshold_boundary_with_empirical_envelope(direction, baseline, tolerance, mad, None)
+    threshold_boundary_with_empirical_envelope(direction, baseline, tolerance, mad, None, 0.0)
 }
 
 fn threshold_boundary_pass(direction: BudgetDirection, candidate: f64, boundary: f64) -> bool {
