@@ -2,23 +2,23 @@
   "schema_version": 1,
   "release": "0.67.1",
   "profile": "reference-v1",
-  "proposal_receipt_sha256": "96f92ed37178012d455cd12b7ed19ab787354c26f9bd0580b55b837270bb4866",
-  "sample_set_sha256": "0208ccf873d9afe31fd136a399ebf9926b0ea6cfe00889ab9741deb7e289d64b",
+  "proposal_receipt_sha256": "6dac922599d1cb052289f8bf0831c9a31659d27ee9c10b78825981224f2285a5",
+  "sample_set_sha256": "e753b91818eb448f1491aaa66a87da5d8fb4bb14a15e98f47c7e47666cf8e6db",
   "sample_receipt_sha256": [
-    "01b59a014c655a5717b74df75367bf9e4a86c6f06059cc599cd5c068e27f532c",
-    "2e0f0b1ce328b59bbf0f988e29db6476aaed710c935fab5e7fbb9ce442da8484",
-    "fbc5887cf24a14103aa298bfac9c426b6352828ae85e37c45f5555bcd456babf",
-    "e94ef5eb5e37038c181d86db0054dfb50190a740e51f86eb9ac3bb4e61b9614d",
-    "23e345f362f6b6d26e2917a08734025984758d41b2397a94cf2e35d611ebfafd"
+    "b76cdfd171bfa0d8c72b6b22293a1ba1a0e1c053aadd5b12a7db11cbb5c0ea12",
+    "a761e48049dc2379db325fa4511b9b29f01ecdf0ce4cc64f1a10ea9f9fc20e25",
+    "7c837655f353e6b9c1c4b1c873e55fa2d7a66282a0494ea74499674f94fda076",
+    "c0612e02fb55049a12d87e835f25d6fe5b08b1226ac86eb00970ad3cba02977a",
+    "117e2e256996dfc6e1a0980caf5e9d4b346b3d27fa8ad35200704772bc9f944f"
   ],
-  "runner_provisioning_sha256": "4113a063971822cba837757e9580271873f8e069d0b46307c3156ffaaabdf90b",
-  "full_dress_admission_sha256": "df9c3a97b1ffb1517caf3574837e101af1addb3ffe4278cb329c9ec24e558db0",
+  "runner_provisioning_sha256": "3ea3aaafbe150daf29cd5473e734cefa540fee9cb79be3b6f2cf1c686e419ba6",
+  "full_dress_admission_sha256": "3a13c29852858e9e86bc6927baba8bb42e511ee6dd82347afda250c6bfbd9203",
   "producer": "reference-automation",
   "reviewer": "codex-independent-review",
-  "reviewed_at": "2026-09-08T01:24:00Z",
-  "review_reference": "ax42-campaign:hc0671-ax42-20260907-ch:review-20260908",
+  "reviewed_at": "2026-09-10T02:44:03Z",
+  "review_reference": "ax42-campaign:hc0671-ax42-20260909-cr:review-20260910",
   "decision": "approve",
-  "reason": "Approved after independently checking the five unique chained sample receipts against the exact source SHA, runner fingerprint, provisioning, full-dress admission, prebuild and scenario-contract digests; verifying all retained GitHub ZIP archives are readable without CRC errors; matching the proposal and payload digests; and confirming the generated profile and budgets retain the frozen workload, SLO, 5% candidate spread ceiling, and all-five-sample median method without selecting a favorable run.",
+  "reason": "Approved after verifying the exact five-sample predecessor chain, successful bootstrap eligibility, common source SHA and runner fingerprint, sample-set validation, and proposal payload digests.",
   "reviewed_files": [
     {
       "id": "profile",
@@ -33,15 +33,15 @@
     {
       "id": "baseline",
       "path": "baseline.toml",
-      "sha256": "8ff9d8f9bfefebca32d7fdf8d07709d2c865af369b4b2faff3f579816fea5ae9"
+      "sha256": "0d156ef926aea45721c0885d91a2180d204d945c3e0302cad95e8f90288a589a"
     },
     {
       "id": "anchor",
       "path": "anchor.json",
-      "sha256": "17386dc64ee7200ec2d383875ebdaa3d98f5ae0debb98b6de3bdc45347df2c2f"
+      "sha256": "53f63efdafeb8310e5bae152c260cb7d8d96b04c7865080679c2bff327adcda8"
     }
   ],
   "passed": true,
   "ship_evidence_eligible": false,
-  "receipt_sha256": "5a62f2b04814857426ca60835d6f8ff8aaa9a8a6230033ad95a0c22105c70f5f"
+  "receipt_sha256": "a671112c552d74b42eb40832aa18fc6076a119c4dcddd46ab7ed3fc3934c1e55"
 }
