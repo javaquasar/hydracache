@@ -522,7 +522,7 @@ fn committed_w7_contract_is_bootstrapped_and_still_fail_closed() {
 }
 
 #[test]
-fn committed_ship_gate_accepts_the_observed_frozen_noise_case() {
+fn committed_ship_gate_accepts_the_observed_frozen_noise_cases() {
     let bundle = perf_budget::load_bundle(&repo_root(), "0.67.1", "reference-v1").unwrap();
     let member = &bundle.baseline.members[0];
     let mut reports = bundle
@@ -571,7 +571,7 @@ fn committed_ship_gate_accepts_the_observed_frozen_noise_case() {
         (
             "brownout-control-plane",
             "control_plane_brownout.maximum_availability_dip_ppm",
-            125.0,
+            209.0,
             0.0,
         ),
         (
@@ -607,6 +607,34 @@ fn committed_ship_gate_accepts_the_observed_frozen_noise_case() {
                 .passed
         );
     }
+
+    let sparse_check = verdict
+        .payload
+        .checks
+        .iter()
+        .find(|check| check.budget_id == "brownout-control-plane-depth-ceiling")
+        .unwrap();
+    assert_eq!(sparse_check.rolling_mad, 0.0);
+    assert_eq!(sparse_check.rolling_boundary, 252.0);
+
+    reports
+        .iter_mut()
+        .find(|report| report.id == "brownout-control-plane")
+        .unwrap()
+        .metrics
+        .get_mut("control_plane_brownout.maximum_availability_dip_ppm")
+        .unwrap()
+        .value = 293.0;
+    let verdict = perf_budget::evaluate(&bundle, &reports, evaluated_at);
+    assert!(
+        !verdict
+            .payload
+            .checks
+            .iter()
+            .find(|check| check.budget_id == "brownout-control-plane-depth-ceiling")
+            .unwrap()
+            .passed
+    );
 }
 
 #[test]

@@ -6842,6 +6842,18 @@ fn evaluate_budgets(
             .unwrap_or(0.0);
         let rolling_resolution_allowance =
             observed_metric_step(&bundle.baseline.members, &rule.id).unwrap_or(0.0);
+        let anchor_sparse_count_allowance = anchor
+            .and_then(|anchor| {
+                observed_sparse_count_allowance(
+                    rule,
+                    &bundle.baseline.anchor.source_members,
+                    anchor.value,
+                )
+            })
+            .unwrap_or(0.0);
+        let rolling_sparse_count_allowance =
+            observed_sparse_count_allowance(rule, &bundle.baseline.members, rolling.median)
+                .unwrap_or(0.0);
         let anchor_boundary = anchor.map(|anchor| {
             threshold_boundary_with_empirical_envelope(
                 rule.direction,
@@ -6849,7 +6861,9 @@ fn evaluate_budgets(
                 rule.anchor_tolerance_ratio.unwrap_or(0.0),
                 rolling_mad,
                 anchor_observed_extreme,
-                anchor_resolution_allowance.max(anchor.value.abs() * reviewed_noise_ratio),
+                anchor_resolution_allowance
+                    .max(anchor_sparse_count_allowance)
+                    .max(anchor.value.abs() * reviewed_noise_ratio),
             )
         });
         let rolling_boundary = threshold_boundary_with_empirical_envelope(
@@ -6858,7 +6872,9 @@ fn evaluate_budgets(
             rolling_tolerance,
             rolling_mad,
             rolling_observed_extreme,
-            rolling_resolution_allowance.max(rolling.median.abs() * reviewed_noise_ratio),
+            rolling_resolution_allowance
+                .max(rolling_sparse_count_allowance)
+                .max(rolling.median.abs() * reviewed_noise_ratio),
         );
         let anchor_pass = anchor_boundary.is_none_or(|boundary| {
             threshold_boundary_pass(rule.direction, candidate.value, boundary)
@@ -6941,6 +6957,78 @@ fn observed_metric_step(members: &[BaselineMember], budget_id: &str) -> Option<f
         .map(|pair| pair[1] - pair[0])
         .filter(|step| step.is_finite() && *step > 0.0)
         .reduce(f64::min)
+}
+
+const ONE_SIDED_THREE_SIGMA_CDF: f64 = 0.998_650_101_968_369_9;
+
+fn observed_sparse_count_allowance(
+    rule: &BudgetRule,
+    members: &[BaselineMember],
+    baseline: f64,
+) -> Option<f64> {
+    // Availability depth is a rounded rate derived from a small integer number of failed
+    // operations in a fixed-size window. Relative tolerance and MAD are not meaningful when
+    // the reviewed sample is [2, 2, 2, 0, 1] failures: the median/MAD collapse to 2/0 while a
+    // perfectly ordinary next observation can contain several failures. Recover the reviewed
+    // count lattice without consulting the candidate and use the exact Poisson upper quantile
+    // corresponding to the same one-sided three-sigma policy as the continuous MAD envelope.
+    // Keep this narrowly scoped to availability-dip PPM ceilings with an authenticated zero
+    // observation; ordinary timings and dense rate metrics retain their existing boundary.
+    if rule.direction != BudgetDirection::Ceiling
+        || rule.unit != "parts_per_million"
+        || !rule.metric.ends_with("maximum_availability_dip_ppm")
+        || members.len() < 5
+        || !baseline.is_finite()
+        || baseline < 0.0
+    {
+        return None;
+    }
+    let step = observed_metric_step(members, &rule.id)?;
+    let values = members
+        .iter()
+        .filter_map(|member| {
+            member
+                .metrics
+                .iter()
+                .find(|metric| metric.budget_id == rule.id)
+                .map(|metric| metric.value)
+        })
+        .collect::<Vec<_>>();
+    if values.len() != members.len()
+        || values
+            .iter()
+            .any(|value| !value.is_finite() || *value < 0.0)
+        || !values.iter().any(|value| approx_eq(*value, 0.0))
+    {
+        return None;
+    }
+    let mean_count = values.iter().sum::<f64>() / values.len() as f64 / step;
+    // The recurrence below starts with exp(-lambda); bound lambda so it remains numerically
+    // useful and so this special treatment cannot silently become a dense-metric allowance.
+    if !mean_count.is_finite() || mean_count <= 0.0 || mean_count > 64.0 {
+        return None;
+    }
+    let upper_count = poisson_quantile(mean_count, ONE_SIDED_THREE_SIGMA_CDF)?;
+    Some(((upper_count as f64 * step) - baseline).max(0.0))
+}
+
+fn poisson_quantile(lambda: f64, probability: f64) -> Option<u64> {
+    if !lambda.is_finite()
+        || lambda <= 0.0
+        || !probability.is_finite()
+        || !(0.0..1.0).contains(&probability)
+    {
+        return None;
+    }
+    let mut count = 0_u64;
+    let mut term = (-lambda).exp();
+    let mut cumulative = term;
+    while cumulative < probability && count < 10_000 {
+        count += 1;
+        term *= lambda / count as f64;
+        cumulative += term;
+    }
+    (cumulative >= probability).then_some(count)
 }
 
 const NORMALIZED_MAD_THREE_SIGMA: f64 = 1.4826 * 3.0;
