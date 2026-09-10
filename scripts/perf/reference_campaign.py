@@ -2459,13 +2459,19 @@ def cleanup_runner_cargo_target(cargo_target_dir: Path) -> None:
         or cargo_target_dir.is_symlink()
     ):
         raise CampaignError("refusing to clean an unexpected runner cargo target")
+    # The controller owns the target root while github-runner owns its nested
+    # build directories. Give the runner read access for traversal, let it
+    # delete only its descendants, then remove the empty root as the owner.
+    cargo_target_dir.chmod(0o755)
     run_capture(
-        runner_command("rm", "-rf", "--", str(cargo_target_dir)),
+        runner_command("find", str(cargo_target_dir), "-mindepth", "1", "-delete"),
         cwd=repo_root(),
         timeout_seconds=GITHUB_CONTROL_TIMEOUT_SECONDS,
     )
-    if cargo_target_dir.exists():
-        raise CampaignError("runner cargo target cleanup did not remove the directory")
+    try:
+        cargo_target_dir.rmdir()
+    except OSError as error:
+        raise CampaignError("runner cargo target cleanup left residual entries") from error
 
 
 def cargo_sample_set(campaign_dir: Path) -> Path:

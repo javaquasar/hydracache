@@ -410,13 +410,14 @@ class ReferenceCampaignTests(unittest.TestCase):
             def remove_target(command: list[str], **kwargs: object) -> str:
                 self.assertEqual(
                     command,
-                    campaign.runner_command("rm", "-rf", "--", str(cargo_target)),
+                    campaign.runner_command(
+                        "find", str(cargo_target), "-mindepth", "1", "-delete"
+                    ),
                 )
                 self.assertEqual(
                     kwargs.get("timeout_seconds"),
                     campaign.GITHUB_CONTROL_TIMEOUT_SECONDS,
                 )
-                campaign.shutil.rmtree(cargo_target)
                 return ""
 
             with mock.patch.object(
