@@ -26,8 +26,9 @@ use crate::perf_bootstrap::{
 use crate::perf_budget::{
     self, AnchorMetric, BaselineChangeApproval, BaselineChangeControl, BaselineChangeProposal,
     BaselineMember, BaselineReportReceipt, BootstrapStatus, BudgetContract, BudgetRuleStatus,
-    CandidateReport, ChangeControlStatus, ContractBundle, MemberMetric, ProfileContract,
-    ReleaseAnchor, RollingBaselineManifest, CLEAN_GIT_STATUS_SHA256,
+    BudgetVerdict, CandidateReport, ChangeControlStatus, ContractBundle, MemberMetric,
+    ProfileContract, ReleaseAnchor, RollingBaselineManifest, VerdictStatus,
+    CLEAN_GIT_STATUS_SHA256,
 };
 use crate::perf_qualification::{observe_context, trusted_performance_context_problems};
 
@@ -876,34 +877,13 @@ fn frozen_candidate(options: &Options) -> Result<(), Box<dyn Error>> {
     }
     let verdict_path = root.join(perf_budget::VERDICT_PATH_0671);
     let verdict_bytes = read_bounded(&verdict_path)?;
-    let verdict: serde_json::Value = serde_json::from_slice(&verdict_bytes)?;
-    let verdict_payload_sha256 = perf_budget::digest_json(&verdict["payload"]);
-    if verdict
-        .pointer("/payload/release")
-        .and_then(|value| value.as_str())
-        != Some(RELEASE)
-        || verdict
-            .pointer("/payload/profile")
-            .and_then(|value| value.as_str())
-            != Some(PROFILE)
-        || verdict
-            .pointer("/payload/candidate_commit")
-            .and_then(|value| value.as_str())
-            != Some(context.git_head.as_str())
-        || verdict
-            .pointer("/payload/status")
-            .and_then(|value| value.as_str())
-            != Some("passed")
-        || verdict
-            .pointer("/payload/problems")
-            .and_then(|value| value.as_array())
-            .is_none_or(|v| !v.is_empty())
-        || verdict
-            .get("receipt_sha256")
-            .and_then(|value| value.as_str())
-            != Some(verdict_payload_sha256.as_str())
-    {
-        return Err("frozen candidate budget verdict is not exact and green".into());
+    let verdict: BudgetVerdict = serde_json::from_slice(&verdict_bytes)?;
+    let verdict_problems = frozen_budget_verdict_problems(&verdict, &context.git_head);
+    if !verdict_problems.is_empty() {
+        return Err(format!(
+            "frozen candidate budget verdict is not exact and green: {verdict_problems:?}"
+        )
+        .into());
     }
     let canaries = validate_canary_receipts(root, &context.git_head)?;
     let mut receipt = FrozenCandidateReceipt {
@@ -933,6 +913,29 @@ fn frozen_candidate(options: &Options) -> Result<(), Box<dyn Error>> {
     write_new_json(&root.join(FROZEN_RECEIPT_PATH), &receipt)?;
     println!("perf-reference frozen-candidate: OK");
     Ok(())
+}
+
+pub fn frozen_budget_verdict_problems(verdict: &BudgetVerdict, source_commit: &str) -> Vec<String> {
+    let mut problems = Vec::new();
+    if verdict.payload.release != RELEASE {
+        problems.push("release identity differs".to_owned());
+    }
+    if verdict.payload.profile != PROFILE {
+        problems.push("profile identity differs".to_owned());
+    }
+    if verdict.payload.candidate_commit != source_commit {
+        problems.push("candidate commit differs".to_owned());
+    }
+    if verdict.payload.status != VerdictStatus::Passed {
+        problems.push("budget status is not passed".to_owned());
+    }
+    if !verdict.payload.problems.is_empty() {
+        problems.push("budget verdict reports problems".to_owned());
+    }
+    if !verdict.receipt_is_valid() {
+        problems.push("budget verdict receipt does not recompute".to_owned());
+    }
+    problems
 }
 
 fn validate_canary_receipts(

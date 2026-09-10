@@ -13,13 +13,14 @@ use xtask::perf_bootstrap::{
     BootstrapSampleSetReceipt,
 };
 use xtask::perf_budget::{
-    self, BaselineChangeApproval, BootstrapStatus, CandidateReport, ChangeControlStatus,
-    ContractBundle, EvidenceRunMode,
+    self, BaselineChangeApproval, BootstrapStatus, BudgetVerdict, BudgetVerdictPayload,
+    CandidateReport, ChangeControlStatus, ContractBundle, Enforcement, EvidenceRunMode,
+    VerdictStatus,
 };
 use xtask::perf_reference::{
     activation_bundle_problems, activation_receipt_problems, derive_contracts,
-    review_decision_problems, ActivationReceipt, ProposalMetadata, ProposalReceipt,
-    ReferenceSampleInput, ReviewDecision, ReviewDecisionKind, ReviewReceipt,
+    frozen_budget_verdict_problems, review_decision_problems, ActivationReceipt, ProposalMetadata,
+    ProposalReceipt, ReferenceSampleInput, ReviewDecision, ReviewDecisionKind, ReviewReceipt,
 };
 
 const SOURCE_SHA: &str = "0123456789abcdef0123456789abcdef01234567";
@@ -234,6 +235,8 @@ fn frozen_candidate_gate_is_wired_to_full_pipeline() {
         "Check activated 0.67.1 reference budgets and rolling baseline",
         "Materialize tmpfs reference evidence",
         "Execute complete 0.67.1 expected-red canary sweep",
+        "Install pinned cargo-nextest for final aggregation",
+        "Record exact-candidate fast workspace evidence",
         "Seal exact frozen-candidate reference receipt",
         "Aggregate exact 0.67.1 ship evidence",
         "Upload immutable frozen-candidate evidence",
@@ -253,8 +256,10 @@ fn frozen_candidate_gate_is_wired_to_full_pipeline() {
         "clean: true",
         "persist-credentials: false",
         "--release 0.67.1 --profile reference-v1",
+        "evidence-run --release 0.67.1 --gate fast.workspace-nextest",
         "--release 0.67.1 --receipts-dir target/release-evidence/receipts --require-ship",
         "if-no-files-found: error",
+        "target/nextest/ci/junit.xml",
     ] {
         assert!(
             job.contains(required),
@@ -262,6 +267,39 @@ fn frozen_candidate_gate_is_wired_to_full_pipeline() {
         );
     }
     assert!(!job.contains("perf-budget-check --release 0.67 --profile reference-v1"));
+}
+
+#[test]
+fn frozen_candidate_validates_the_typed_budget_verdict_receipt() {
+    let verdict = BudgetVerdict::new(BudgetVerdictPayload {
+        schema_version: 1,
+        release: "0.67.1".to_owned(),
+        profile: "reference-v1".to_owned(),
+        enforcement: Enforcement::Ship,
+        candidate_commit: CANDIDATE_SHA.to_owned(),
+        status: VerdictStatus::Passed,
+        profile_sha256: sha("profile"),
+        budget_sha256: sha("budget"),
+        baseline_sha256: sha("baseline"),
+        report_set_digest: sha("reports"),
+        reports: Vec::new(),
+        baseline_members: Vec::new(),
+        checks: Vec::new(),
+        problems: Vec::new(),
+    });
+    let bytes = serde_json::to_vec_pretty(&verdict).unwrap();
+    let untyped: serde_json::Value = serde_json::from_slice(&bytes).unwrap();
+    assert_ne!(
+        verdict.receipt_sha256,
+        perf_budget::digest_json(&untyped["payload"]),
+        "the old untyped check must reproduce its object-key ordering defect"
+    );
+    let decoded: BudgetVerdict = serde_json::from_slice(&bytes).unwrap();
+    assert!(frozen_budget_verdict_problems(&decoded, CANDIDATE_SHA).is_empty());
+
+    let mut tampered = decoded;
+    tampered.payload.candidate_commit = SOURCE_SHA.to_owned();
+    assert!(!frozen_budget_verdict_problems(&tampered, CANDIDATE_SHA).is_empty());
 }
 
 #[test]
