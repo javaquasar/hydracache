@@ -270,6 +270,33 @@ class ReferenceCampaignTests(unittest.TestCase):
                     timeout_seconds=0.05,
                 )
 
+    def test_visible_command_keeps_draining_after_console_disconnect(self) -> None:
+        class DisconnectedConsole:
+            def write(self, _text: str) -> None:
+                raise BrokenPipeError("detached SSH stdout")
+
+            def flush(self) -> None:
+                raise BrokenPipeError("detached SSH stdout")
+
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            log_path = root / "detached.log"
+            payload_size = 256 * 1024
+            with mock.patch.object(campaign.sys, "stdout", DisconnectedConsole()):
+                result = campaign.run_visible(
+                    [
+                        sys.executable,
+                        "-c",
+                        f"import sys; sys.stdout.write('x' * {payload_size})",
+                    ],
+                    cwd=root,
+                    log_path=log_path,
+                    timeout_seconds=5,
+                )
+
+            self.assertEqual(result, 0)
+            self.assertTrue(log_path.read_text(encoding="utf-8").endswith("x" * payload_size))
+
     def test_sample_set_cargo_is_probed_as_the_runner_user(self) -> None:
         runner_cargo = "/home/github-runner/.cargo/bin/cargo"
         cargo_target = Path("/tmp/controller-cargo-target")
@@ -349,6 +376,11 @@ class ReferenceCampaignTests(unittest.TestCase):
                 mock.patch.object(
                     campaign, "run_visible", side_effect=run_validator
                 ) as run,
+                mock.patch.object(
+                    campaign,
+                    "cleanup_runner_cargo_target",
+                    side_effect=lambda path: campaign.shutil.rmtree(path),
+                ) as cleanup,
             ):
                 retained = campaign.cargo_sample_set(campaign_dir)
 
@@ -366,6 +398,34 @@ class ReferenceCampaignTests(unittest.TestCase):
                 output,
                 repo / "target/test-evidence/0.67.1/bootstrap-sample-set.json",
             )
+            cleanup.assert_called_once()
+
+    def test_runner_cargo_target_cleanup_is_bounded_to_sample_set_workspace(self) -> None:
+        with tempfile.TemporaryDirectory(
+            prefix="hydracache-controller-sample-set-"
+        ) as temporary:
+            cargo_target = Path(temporary) / "cargo-target"
+            cargo_target.mkdir()
+
+            def remove_target(command: list[str], **kwargs: object) -> str:
+                self.assertEqual(
+                    command,
+                    campaign.sudo_command("rm", "-rf", "--", str(cargo_target)),
+                )
+                self.assertEqual(
+                    kwargs.get("timeout_seconds"),
+                    campaign.GITHUB_CONTROL_TIMEOUT_SECONDS,
+                )
+                campaign.shutil.rmtree(cargo_target)
+                return ""
+
+            with mock.patch.object(
+                campaign, "run_capture", side_effect=remove_target
+            ) as run:
+                campaign.cleanup_runner_cargo_target(cargo_target)
+
+            run.assert_called_once()
+            self.assertFalse(cargo_target.exists())
 
     def test_privileged_commands_are_non_interactive_after_sudo_lease(self) -> None:
         with mock.patch.object(campaign.os, "geteuid", return_value=1000, create=True):
