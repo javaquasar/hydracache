@@ -522,6 +522,94 @@ fn committed_w7_contract_is_bootstrapped_and_still_fail_closed() {
 }
 
 #[test]
+fn committed_ship_gate_accepts_the_observed_frozen_noise_case() {
+    let bundle = perf_budget::load_bundle(&repo_root(), "0.67.1", "reference-v1").unwrap();
+    let member = &bundle.baseline.members[0];
+    let mut reports = bundle
+        .budget
+        .reports
+        .iter()
+        .map(|expected| {
+            let baseline = member
+                .reports
+                .iter()
+                .find(|report| report.report_id == expected.id)
+                .unwrap();
+            CandidateReport {
+                id: expected.id.clone(),
+                path: expected.path.clone(),
+                report_id: expected.report_id.clone(),
+                report_sha256: baseline.report_sha256.clone(),
+                claim_scope: expected.claim_scope.clone(),
+                run_mode: perf_budget::EvidenceRunMode::ReferenceEvidence,
+                runner_profile: bundle.profile.name.clone(),
+                runner_contract_digest: member.runner_contract_digest.clone(),
+                runner_class: member.observed_runner.runner_class.clone(),
+                runner_fingerprint: member.runner_fingerprint.clone(),
+                source_commit: "b".repeat(40),
+                cargo_lock_sha256: baseline.cargo_lock_sha256.clone(),
+                toolchain_identity: member.toolchain_identity.clone(),
+                prebuild_contract_digest: member.prebuild_contract_digest.clone(),
+                prebuild_manifest_sha256: baseline.prebuild_manifest_sha256.clone(),
+                binary_sha256: baseline.binary_sha256.clone(),
+                binary_set_digest: baseline.binary_set_digest.clone(),
+                scenario_digest: baseline.scenario_digest.clone(),
+                workload_digest: baseline.workload_digest.clone(),
+                slo_digest: baseline.slo_digest.clone(),
+                methodology_digest: baseline.methodology_digest.clone(),
+                stable: true,
+                maximum_spread_ratio: baseline.maximum_spread_ratio,
+                metrics: baseline
+                    .metrics
+                    .iter()
+                    .map(|metric| (metric.id.clone(), metric.clone()))
+                    .collect(),
+            }
+        })
+        .collect::<Vec<_>>();
+    let observed = [
+        (
+            "brownout-control-plane",
+            "control_plane_brownout.maximum_availability_dip_ppm",
+            125.0,
+            0.0,
+        ),
+        (
+            "brownout-grid-model",
+            "grid_model_fault.maximum_recovery_cost_nanos",
+            212.0,
+            0.047169,
+        ),
+    ];
+    for (report_id, metric_id, value, spread) in observed {
+        let report = reports
+            .iter_mut()
+            .find(|report| report.id == report_id)
+            .unwrap();
+        report.metrics.get_mut(metric_id).unwrap().value = value;
+        report.maximum_spread_ratio = spread;
+    }
+
+    let evaluated_at = OffsetDateTime::parse("2026-09-10T08:00:00Z", &Rfc3339).unwrap();
+    let verdict = perf_budget::evaluate(&bundle, &reports, evaluated_at);
+    assert_eq!(verdict.payload.status, VerdictStatus::Passed);
+    for budget_id in [
+        "brownout-control-plane-depth-ceiling",
+        "brownout-grid-model-recovery-ceiling",
+    ] {
+        assert!(
+            verdict
+                .payload
+                .checks
+                .iter()
+                .find(|check| check.budget_id == budget_id)
+                .unwrap()
+                .passed
+        );
+    }
+}
+
+#[test]
 fn rolling_baseline_contract_has_a_versioned_fail_closed_schema() {
     let schema_path = repo_root().join("docs/testing/schemas/perf-rolling-baseline.schema.json");
     let schema: serde_json::Value =
@@ -1402,10 +1490,104 @@ fn bootstrapped_ship_gate_preserves_the_reviewed_empirical_envelope() {
 }
 
 #[test]
+fn bootstrapped_ship_gate_allows_one_reviewed_quantization_step() {
+    let (mut bundle, mut reports) = bootstrapped_fixture();
+    let ceiling = bundle
+        .budget
+        .budgets
+        .iter()
+        .find(|rule| rule.direction == perf_budget::BudgetDirection::Ceiling)
+        .unwrap()
+        .clone();
+    for (member, value) in bundle
+        .baseline
+        .members
+        .iter_mut()
+        .zip([84.0, 84.0, 84.0, 0.0, 42.0])
+    {
+        member
+            .metrics
+            .iter_mut()
+            .find(|metric| metric.budget_id == ceiling.id)
+            .unwrap()
+            .value = value;
+        member
+            .reports
+            .iter_mut()
+            .find(|report| report.report_id == ceiling.report)
+            .and_then(|report| {
+                report
+                    .metrics
+                    .iter_mut()
+                    .find(|metric| metric.id == ceiling.metric)
+            })
+            .unwrap()
+            .value = value;
+        perf_budget::seal_baseline_member(member);
+    }
+    bundle.baseline.candidate_members = bundle.baseline.members.clone();
+    bundle.baseline.anchor.source_members = bundle.baseline.members.clone();
+    bundle
+        .baseline
+        .anchor
+        .metrics
+        .iter_mut()
+        .find(|metric| metric.budget_id == ceiling.id)
+        .unwrap()
+        .value = 84.0;
+    bundle.baseline.rolling_metrics =
+        perf_budget::rolling_summaries(&bundle.budget.budgets, &bundle.baseline.members).unwrap();
+    approve_baseline_change(&mut bundle);
+    perf_budget::seal_baseline_manifest(&mut bundle.baseline);
+    let candidate = reports
+        .iter_mut()
+        .find(|report| report.id == ceiling.report)
+        .unwrap()
+        .metrics
+        .get_mut(&ceiling.metric)
+        .unwrap();
+    candidate.value = 125.0;
+
+    let verdict = perf_budget::evaluate(&bundle, &reports, now());
+    let check = verdict
+        .payload
+        .checks
+        .iter()
+        .find(|check| check.budget_id == ceiling.id)
+        .unwrap();
+    assert_eq!(check.rolling_mad, 0.0);
+    assert_eq!(check.rolling_boundary, 126.0);
+    assert!(check.passed);
+
+    reports
+        .iter_mut()
+        .find(|report| report.id == ceiling.report)
+        .unwrap()
+        .metrics
+        .get_mut(&ceiling.metric)
+        .unwrap()
+        .value = 127.0;
+    let verdict = perf_budget::evaluate(&bundle, &reports, now());
+    let check = verdict
+        .payload
+        .checks
+        .iter()
+        .find(|check| check.budget_id == ceiling.id)
+        .unwrap();
+    assert!(!check.passed);
+}
+
+#[test]
 fn bootstrapped_ship_gate_uses_producer_stability_when_sources_exceed_generic_spread() {
     let (mut bundle, mut reports) = bootstrapped_fixture();
-    let rule = bundle.budget.budgets[0].clone();
-    bundle.budget.budgets[0].maximum_spread_ratio = Some(0.05);
+    let rule_index = bundle
+        .budget
+        .budgets
+        .iter()
+        .position(|rule| rule.direction == perf_budget::BudgetDirection::Ceiling)
+        .unwrap();
+    let rule = bundle.budget.budgets[rule_index].clone();
+    bundle.budget.budgets[rule_index].maximum_spread_ratio = Some(0.05);
 
     reports
         .iter_mut()
@@ -1434,9 +1616,36 @@ fn bootstrapped_ship_gate_uses_producer_stability_when_sources_exceed_generic_sp
         .find(|report| report.id == rule.report)
         .unwrap()
         .maximum_spread_ratio = 0.29;
+    reports
+        .iter_mut()
+        .find(|report| report.id == rule.report)
+        .unwrap()
+        .metrics
+        .get_mut(&rule.metric)
+        .unwrap()
+        .value = 125.0;
     let verdict = perf_budget::evaluate(&bundle, &reports, now());
     assert_eq!(verdict.payload.status, VerdictStatus::Passed);
 
+    reports
+        .iter_mut()
+        .find(|report| report.id == rule.report)
+        .unwrap()
+        .metrics
+        .get_mut(&rule.metric)
+        .unwrap()
+        .value = 131.0;
+    let verdict = perf_budget::evaluate(&bundle, &reports, now());
+    assert_eq!(verdict.payload.status, VerdictStatus::Failed);
+
+    reports
+        .iter_mut()
+        .find(|report| report.id == rule.report)
+        .unwrap()
+        .metrics
+        .get_mut(&rule.metric)
+        .unwrap()
+        .value = 125.0;
     reports
         .iter_mut()
         .find(|report| report.id == rule.report)
