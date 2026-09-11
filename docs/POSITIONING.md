@@ -125,6 +125,13 @@ release verdict passed on 2026-09-11. The resulting numbers remain limited to th
 scenario, commit, and same-box method documented in the anonymized
 [`0.67.1` AX42 report](testing/perf-scenarios/0.67/results/ax42-reference-0.67.1-20260911.md).
 
+Within that exact paired method, HydraCache reached 67.9%/67.6% of Redis for GET/SET at pipeline 1
+and 18.1%/18.0% at pipeline 10. The result supports one engineering conclusion: the current
+node-local RESP path gains much less from pipelining than Redis and is a clear optimization target.
+It does not support a portable ratio, a distributed-cache comparison, or a Redis-replacement claim.
+The preparation, noise-control, and interpretation method is documented in
+[`How to Measure Cache Performance Without Measuring Noise`](articles/006-measuring-cache-performance-on-bare-metal.md).
+
 The existing statement still applies: HydraCache is not marketed as a Redis throughput
 replacement. The pinned Redis observation is a same-box comparison for one exact scenario and
 cannot support a released superiority claim.

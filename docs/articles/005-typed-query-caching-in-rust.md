@@ -14,6 +14,7 @@ You are reading: Part 5.
 - [Part 3: TTL Is Not Enough](https://medium.com/@artur.buzov/ttl-is-not-enough-ec4e96d89546)
 - [Part 4: Local-first Distributed Invalidation](https://medium.com/@artur.buzov/local-first-distributed-invalidation-87bf0249e935)
 - Part 5: Typed Query Caching in Rust
+- Draft: How to Measure Cache Performance Without Measuring Noise
 
 GitHub:
 

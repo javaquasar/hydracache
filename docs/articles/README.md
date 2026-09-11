@@ -86,5 +86,6 @@ npx --prefix console playwright install chromium
 - [005 - Typed Query Caching in Rust](005-typed-query-caching-in-rust.md)
   - Cover: [005-typed-query-caching-in-rust-cover.png](005-typed-query-caching-in-rust-cover.png)
   - Prompt: [005-typed-query-caching-in-rust-cover.prompt.md](005-typed-query-caching-in-rust-cover.prompt.md)
+- [Draft - How to Measure Cache Performance Without Measuring Noise](006-measuring-cache-performance-on-bare-metal.md)
 - [Draft - Raft Snapshot Bugs, AI Agents, and the Cost of Ignoring Contradictions](002-raft-snapshot-agent-bug.md)
   - Cover: [002-raft-snapshot-agent-bug-cover.jpg](002-raft-snapshot-agent-bug-cover.jpg)

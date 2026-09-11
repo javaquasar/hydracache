@@ -164,6 +164,10 @@ Raw campaign artifacts and host-state archives are not committed because they in
 host details. Git retains only reviewed, anonymized conclusions and digest-bound evidence
 identifiers.
 
+For a reusable explanation of server preparation, CPU/IRQ and NVMe isolation, measurement-window
+design, telemetry, failure classification, and artifact handling, see
+[`How to Measure Cache Performance Without Measuring Noise`](../../../../articles/006-measuring-cache-performance-on-bare-metal.md).
+
 ## Conclusion
 
 The dedicated AX42 evidence chain is complete: qualification, two-run full-dress admission, five
