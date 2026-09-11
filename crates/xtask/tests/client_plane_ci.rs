@@ -93,6 +93,13 @@ fn docker_interop_uses_https_ubuntu_archives_with_bounded_retries() {
     assert!(dockerfile
         .contains("s|http://security.ubuntu.com/ubuntu|https://security.ubuntu.com/ubuntu|g"));
     assert!(dockerfile.matches("Acquire::Retries=8").count() >= 2);
+    let trust_seed = dockerfile
+        .find("COPY --from=rust-toolchain /etc/ssl/certs/ca-certificates.crt")
+        .expect("interop image must seed HTTPS trust from a pinned stage");
+    let apt_update = dockerfile
+        .find("apt-get -o Acquire::Retries=8")
+        .expect("interop image must retain bounded apt retries");
+    assert!(trust_seed < apt_update);
 }
 
 fn write_all(directory: &Path, commit: &str, omit: Option<&str>) {
