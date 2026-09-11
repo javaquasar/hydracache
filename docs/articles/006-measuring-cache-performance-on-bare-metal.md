@@ -25,22 +25,23 @@ https://crates.io/crates/hydracache
 
 A benchmark does not measure only your program.
 
-It measures your program, the load generator, the kernel scheduler, CPU power management, interrupt
-routing, storage activity, network queues, background services, the build system, the telemetry
-collector, and whatever else the machine decided to do during the measurement window.
+It measures your program, the load generator, the kernel scheduler, central processing unit (CPU)
+power management, interrupt routing, storage activity, network queues, background services, the
+build system, the telemetry collector, and whatever else the machine decided to do during the
+measurement window.
 
 That is why a fast benchmark is easy to run and a trustworthy benchmark is hard to produce.
 
 During HydraCache's dedicated bare-metal campaign, the code that generated requests was only one
 part of the work. We also had to make a rented Linux server boot reproducibly, separate measurement
-work from orchestration, prove that NVMe interrupts did not enter the measured CPU set, retain every
-failed sample, validate artifacts after long jobs, and reject results that looked plausible but did
-not satisfy the frozen method.
+work from orchestration, prove that Non-Volatile Memory Express (NVMe) storage interrupts did not
+enter the measured CPU set, retain every failed sample, validate artifacts after long jobs, and
+reject results that looked plausible but did not satisfy the frozen method.
 
 The final campaign was useful precisely because the method was strict. It gave us stable local,
-client-surface, RESP, control-plane, brownout, overload, and same-host Redis observations. It also
-showed a real weakness: HydraCache was reasonably close to Redis without pipelining, but scaled much
-less effectively at pipeline depth 10.
+client-surface, Redis Serialization Protocol (RESP), control-plane, brownout, overload, and
+same-host Redis observations. It also showed a real weakness: HydraCache was reasonably close to
+Redis without pipelining, but scaled much less effectively at pipeline depth 10.
 
 This article explains the method behind that conclusion and the operational lessons that made the
 numbers believable.
@@ -48,7 +49,9 @@ numbers believable.
 ## The result, before the methodology
 
 The final comparison used five repeats, alternating execution order, one physical host, one frozen
-software environment, one node-local loopback endpoint, and a pinned Redis toolchain.
+software environment, one node-local loopback endpoint, and a pinned Redis toolchain. Throughput in
+the table is expressed in requests per second (`req/s`). `GET` denotes a read and `SET` a write. The
+pipeline value is the number of commands sent before the client waits for their replies.
 
 | Operation | Pipeline | HydraCache median | Redis median | HydraCache / Redis |
 | --- | ---: | ---: | ---: | ---: |
@@ -81,15 +84,16 @@ For a cache runtime, several surfaces can look similar while measuring different
 
 - an embedded cache call measures process-local code;
 - an in-process client router adds request translation but no socket;
-- a loopback RESP endpoint adds parsing, encoding, connection management, and TCP;
+- a loopback RESP endpoint adds parsing, encoding, connection management, and Transmission Control
+  Protocol (TCP) processing;
 - a control-plane cluster measures membership and metadata behavior, not distributed value-plane
   capacity;
 - a same-host Redis comparison measures two implementations under one method, not universal
   product superiority.
 
-Do not combine these into one headline throughput number. A local API result cannot be presented as
-network capacity, and a three-daemon control-plane result cannot be multiplied into a distributed
-data-plane claim.
+Do not combine these into one headline throughput number. A local application programming
+interface (API) result cannot be presented as network capacity, and a three-daemon control-plane
+result cannot be multiplied into a distributed data-plane claim.
 
 Define the experiment contract before the first sample:
 
@@ -100,7 +104,7 @@ Define the experiment contract before the first sample:
 - open-loop or closed-loop scheduling;
 - offered-rate grid and backlog policy;
 - repeat count;
-- latency SLO and where latency starts;
+- latency service-level objective (SLO) and where latency starts;
 - permitted error, timeout, and rejection counts;
 - stability calculation and limit;
 - host and toolchain identity;
@@ -130,8 +134,9 @@ or artifact writer. That only moves the noise around. In our final layout:
 - CPUs `1-4` ran the prewarmed measurement children;
 - CPUs `0,5-7` handled the Actions runner, builds, Docker control work, storage submission, and
   artifact materialization;
-- measurement output was written to tmpfs and copied to durable storage only after the timed work;
-- IRQ guards ran before and after every important phase.
+- measurement output was written to `tmpfs`, a memory-backed temporary filesystem, and copied to
+  durable storage only after the timed work;
+- interrupt request (IRQ) guards ran before and after every important phase.
 
 The exact CPU numbers are specific to one eight-core host. The principle is portable: select whole
 physical cores for measurement, reserve enough cores for the operating system, and verify effective
@@ -153,25 +158,32 @@ lspci -nn | grep -Ei 'ethernet|network|non-volatile'
 findmnt --output TARGET,SOURCE,FSTYPE,OPTIONS
 ```
 
+In this inventory, `ROTA` is the rotational-device flag, `TRAN` is the device transport, and
+`FSTYPE` is the filesystem type.
+
 Review at least these questions:
 
-1. Is this really bare metal, or a VM with noisy-neighbor risk?
-2. How many physical cores exist, and which logical CPUs are SMT siblings?
+1. Is this really bare metal, or a virtual machine (VM) with noisy-neighbor risk?
+2. How many physical cores exist, and which logical CPUs are simultaneous multithreading (SMT)
+   siblings?
 3. Is memory capacity sufficient without swap pressure?
-4. Is the root filesystem on NVMe, SATA SSD, network block storage, or RAID?
+4. Is the root filesystem on NVMe, a Serial ATA (SATA) solid-state drive (SSD), network block
+   storage, or a redundant array of independent disks (RAID)?
 5. Are all RAID members healthy?
-6. What NIC and negotiated link speed are present?
-7. Does the host use cgroup v2, and is any ancestor applying a CPU quota?
+6. What network interface controller (NIC) and negotiated link speed are present?
+7. Does the host use Linux control groups version 2 (`cgroup v2`), and is any ancestor applying a
+   CPU quota?
 8. Can the chosen measurement CPUs be separated from normal IRQ and housekeeping work?
 
-Record model and capacity for the report, but do not put IP addresses, MAC addresses, DMI UUIDs,
-disk serial numbers, provider identifiers, tokens, or SSH material into Git or public artifacts.
-Use privacy-preserving digests when identity must be bound mechanically.
+Record model and capacity for the report, but do not put Internet Protocol (IP) addresses, Media
+Access Control (MAC) addresses, Desktop Management Interface (DMI) universally unique identifiers
+(UUIDs), disk serial numbers, provider identifiers, tokens, or Secure Shell (SSH) material into Git
+or public artifacts. Use privacy-preserving digests when identity must be bound mechanically.
 
-The HydraCache reference host had an eight-core AMD processor, 64 GiB memory class, two NVMe
-devices in healthy software RAID1, and an Intel gigabit NIC. That was enough for the intended
-method, but the product SKU alone was not evidence. The exact topology and interrupt behavior still
-had to pass admission.
+The HydraCache reference host had an eight-core AMD processor, 64 gibibytes (GiB) of memory, two NVMe
+devices in healthy software RAID level 1 (RAID1, mirroring), and an Intel gigabit NIC. That was enough
+for the intended method, but the product stock-keeping unit (SKU) alone was not evidence. The exact
+topology and interrupt behavior still had to pass admission.
 
 ## CPU topology matters more than the CPU name
 
@@ -182,11 +194,11 @@ Build a CPU map that includes:
 
 - socket, core, and thread sibling relationships;
 - online and offline CPUs;
-- NUMA nodes;
+- non-uniform memory access (NUMA) nodes;
 - current governor and frequency driver;
 - turbo/boost policy;
 - idle-state availability and exit latency;
-- effective cgroup cpusets and quotas;
+- effective cgroup CPU sets (`cpusets`) and quotas;
 - current IRQ effective affinities.
 
 For a small single-socket host, disabling SMT can simplify the contract. It removes sibling
@@ -221,10 +233,11 @@ At minimum, record:
 - thermal throttling counters before and after the run.
 
 Do not infer AMD behavior from Intel-only files or vice versa. One HydraCache qualification passed
-the shell audit but failed the Rust fingerprint because the host used active `amd-pstate-epp` and
-did not expose the generic or Intel control files the second implementation expected. The fix was
-not "assume turbo is enabled." Both implementations were changed to prove the same AMD contract:
-CPB capability, the expected driver, and equal positive maximum frequencies for every policy.
+the shell audit but failed the Rust fingerprint because the host used the active AMD P-state Energy
+Performance Preference driver (`amd-pstate-epp`) and did not expose the generic or Intel control
+files the second implementation expected. The fix was not "assume turbo is enabled." Both
+implementations were changed to prove the same AMD contract: Core Performance Boost (CPB)
+capability, the expected driver, and equal positive maximum frequencies for every policy.
 
 The final host used the `performance` governor, enabled AMD P-state turbo under that proof, and
 applied a maximum idle-latency cap of one microsecond to both measurement and housekeeping CPUs.
@@ -247,10 +260,11 @@ for irq_dir in /proc/irq/[0-9]*; do
 done
 ```
 
-Network and storage devices often use MSI-X with multiple queues. Some IRQ affinities can be moved;
-managed IRQs may have kernel-controlled effective placement. NVMe adds another layer: blk-mq maps
-submission/completion queues to CPUs, and a vector that looks dormant can become active only after
-I/O is submitted from a particular CPU.
+Network and storage devices often use Message Signaled Interrupts (MSI), commonly the extended
+MSI-X form, with multiple queues. Some IRQ affinities can be moved; managed IRQs may have
+kernel-controlled effective placement. NVMe adds another layer: the Linux block multi-queue layer
+(`blk-mq`) maps submission/completion queues to CPUs, and a vector that looks dormant can become
+active only after input/output (I/O) is submitted from a particular CPU.
 
 That creates a strict distinction:
 
@@ -270,10 +284,10 @@ reachable. Raising the tolerance would hide the defect instead of isolating the 
 
 Our most expensive host incident came from trying to eliminate NVMe MSI-X globally.
 
-The kernel argument `pci=nomsi` was added after a preflight showed a routed legacy interrupt pin.
-That observation did not prove that the NVMe root filesystem could boot with MSI and MSI-X
-disabled. The installed system failed to return after reboot and had to be repaired through the
-provider's Rescue environment.
+The Linux kernel argument `pci=nomsi`, which disables Peripheral Component Interconnect (PCI) MSI
+support, was added after a preflight showed a routed legacy interrupt pin. That observation did not
+prove that the NVMe root filesystem could boot with MSI and MSI-X disabled. The installed system
+failed to return after reboot and had to be repaired through the provider's Rescue environment.
 
 The recovery preserved the existing RAID and filesystem, removed only the rejected boot argument,
 regenerated the boot configuration, and returned to the installed OS. No benchmark result from the
@@ -319,8 +333,9 @@ the final guard.
 Healthy RAID does not imply quiet storage, and quiet storage does not imply healthy RAID.
 
 Before every campaign, verify that all expected members are active. For a reviewed two-device RAID1
-layout, `[UU]` is required. A degraded array may still serve data, but rebuild activity, changed
-latency, and reduced fault tolerance invalidate the reference environment.
+layout, `[UU]` is required; each `U` means that the corresponding expected member is up. A degraded
+array may still serve data, but rebuild activity, changed latency, and reduced fault tolerance
+invalidate the reference environment.
 
 Then distinguish these activities:
 
@@ -421,13 +436,14 @@ admission is intended to reveal.
 - execute the ordered measurement families;
 - disable the runner immediately afterward;
 - verify frozen state and IRQ deltas before accepting output;
-- bind artifact, run ID, source, binary, scenario, and host receipts.
+- bind artifact, run identifier (ID), source, binary, scenario, and host receipts.
 
 ### Close
 
 - copy the complete campaign and host-state archives off the rented host;
 - retain the original artifact ZIP, not only extracted files;
-- verify SHA-256, ZIP/tar readability, and structured JSON/XML parsing;
+- verify Secure Hash Algorithm 256-bit (SHA-256) digests, ZIP/tar archive readability, and parsing
+  of structured JavaScript Object Notation (JSON) and Extensible Markup Language (XML) data;
 - commit only anonymized conclusions;
 - scan the Git diff for secrets and hardware identifiers;
 - revoke the runner registration before authorizing server deletion.
@@ -456,8 +472,9 @@ the report says what was measured. They should not silently replace the open-loo
 
 ## Tail latency needs enough observations
 
-At p99, only one percent of observations describe the tail. A repeat with 10,000 requests contains
-roughly 100 p99-tail observations. That can be dominated by a small number of scheduler events.
+The notation p50, p95, or p99 means the 50th, 95th, or 99th percentile. At p99, only one percent of
+observations describe the slower tail. A repeat with 10,000 requests contains roughly 100 p99-tail
+observations. That can be dominated by a small number of scheduler events.
 
 HydraCache initially used 10,000 observations for each RESP connection/pipeline point. All six
 points failed the stability rule. Raising the count to 200,000 produced roughly 2,000 p99-tail
@@ -495,7 +512,7 @@ Warm the exact behavior:
 - key/value working set;
 - container image and executable inputs;
 - control-plane membership before event timing;
-- JIT compilation for comparison systems that use a JIT;
+- just-in-time (JIT) compilation for comparison systems that use it;
 - caches that are intentionally warm in the reported scenario.
 
 Do not include target setup, key reset, process startup, or container image pulls in a steady-state
@@ -542,9 +559,11 @@ Host telemetry explains why a result changed:
 - effective CPU affinity and cgroup quota/throttling;
 - frequency, idle-state residency, temperature, and thermal throttling;
 - per-IRQ counters and effective affinity before/after each phase;
-- block-device IOPS, bandwidth, queue depth, await time, and RAID state;
+- block-device input/output operations per second (IOPS), bandwidth, queue depth, await time, and
+  RAID state;
 - NIC bytes, packets, drops, errors, and queue counters;
-- process RSS/HWM, anonymous/file-backed memory, faults, threads, and file descriptors;
+- process resident set size (RSS) and high-water mark (HWM), anonymous/file-backed memory, faults,
+  threads, and file descriptors;
 - cgroup memory current/peak and CPU accounting;
 - CPU, memory, and I/O pressure-stall information.
 
@@ -563,7 +582,7 @@ pipeline was not yet exercised end to end:
 
 - a required Python or Rust audit tool was missing only at final receipt generation;
 - artifact delivery temporarily failed after a successful long job;
-- a controller child filled a stdout pipe and stalled;
+- a controller child filled a standard-output (`stdout`) pipe and stalled;
 - a validator rejected a legitimate sparse result shape;
 - a measurement budget was shorter than the operation it was meant to observe;
 - the runner service was healthy locally but had the wrong repository label;
@@ -574,12 +593,13 @@ The fixes follow one principle: move cheap failures earlier without weakening la
 Before the expensive phase:
 
 - run every required tool with a version/probe command;
-- validate pinned downloads and CA certificates;
+- validate pinned downloads and certificate authority (CA) certificates;
 - build the exact binaries and record their hashes;
 - run a bounded artifact download canary;
 - prove the repository sees one idle runner with the exact label;
 - exercise receipt generation on smoke data;
-- test controller stdout/stderr draining and watchdog behavior;
+- test controller standard-output and standard-error (`stdout`/`stderr`) draining and watchdog
+  behavior;
 - validate the scenario and result schemas;
 - confirm enough disk and tmpfs capacity.
 
@@ -592,10 +612,10 @@ measurement terminally unusable.
 
 Fail-closed does not mean throw the data away.
 
-The campaign that recorded one RESP p99 value above the 5 ms SLO was ineligible as release evidence,
-but it showed genuine tail variability at the selected 50,000 operations/s knee. Another campaign
-completed all long measurements and then failed because workspace evidence tools were absent. Its
-performance data remained diagnostic, while the release verdict remained red.
+The campaign that recorded one RESP p99 value above the 5-millisecond (ms) SLO was ineligible as
+release evidence, but it showed genuine tail variability at the selected 50,000 operations/s knee.
+Another campaign completed all long measurements and then failed because workspace evidence tools
+were absent. Its performance data remained diagnostic, while the release verdict remained red.
 
 Classify failures explicitly:
 
@@ -623,7 +643,8 @@ After the host and controller corrections, the final frozen candidate completed 
 - all 3,025 workspace tests used by the final receipt;
 - original artifact ZIP and host-state archives copied off-host and verified.
 
-Selected release checks were:
+Selected release checks were. Throughput is expressed in operations per second (`ops/s`); latency is
+expressed in microseconds (`us`, the plain-text spelling used in the raw artifacts).
 
 | Check | Candidate | Boundary |
 | --- | ---: | ---: |
@@ -700,6 +721,56 @@ The goal is to make variance observable, constrain the major sources, reject con
 retain enough evidence to explain every decision.
 
 Only then does a comparison point to engineering work instead of merely producing a number.
+
+## Abbreviation and notation glossary
+
+The first occurrence of every method-critical abbreviation is expanded in the text. This glossary
+keeps the definitions in one place for readers who enter the article at a later section. Product and
+model names such as HydraCache, Redis, AMD, Intel, and AX42 are proper names rather than measurement
+abbreviations.
+
+| Term | Meaning in this article |
+| --- | --- |
+| API | Application programming interface: the callable software surface. |
+| `blk-mq` | The Linux block multi-queue layer, which maps storage submission and completion queues to CPUs. |
+| CA | Certificate authority, whose certificate anchors trust for a secure connection. |
+| `cgroup`, `cpuset` | Linux control group and its CPU-set controller, used to constrain resources and CPU placement. |
+| CPB | Core Performance Boost, AMD's processor boost capability. |
+| CPU | Central processing unit; a logical CPU is a schedulable hardware thread. |
+| DMI | Desktop Management Interface, a source of firmware-provided system identity and inventory. |
+| GiB | Gibibyte, or 2^30 bytes. |
+| HWM | High-water mark, the highest observed value; here, peak resident process memory. |
+| ID, PID | Identifier and process identifier. |
+| I/O, IOPS | Input/output and input/output operations per second. |
+| IP, MAC | Internet Protocol address and Media Access Control address. Both can identify a host and must be redacted. |
+| IRQ | Interrupt request, the mechanism by which hardware asks a CPU for service. |
+| JIT | Just-in-time compilation performed while a program runs. |
+| JSON, XML | JavaScript Object Notation and Extensible Markup Language structured-data formats. |
+| MSI, MSI-X | Message Signaled Interrupts and their extended form, used by PCI devices for interrupt delivery. |
+| NIC | Network interface controller. |
+| NUMA | Non-uniform memory access, where memory access cost depends on CPU and memory location. |
+| NVMe | Non-Volatile Memory Express, the storage interface used by the reference host's solid-state devices. |
+| OS, VM | Operating system and virtual machine. |
+| p50, p95, p99 | The 50th, 95th, and 99th percentiles of a distribution; p50 is the median. |
+| P-state | Processor performance state, which controls a CPU's performance and power operating point. |
+| PCI | Peripheral Component Interconnect, the bus family used by the relevant storage and network devices. |
+| RAID, RAID1 | Redundant array of independent disks and RAID level 1, which mirrors data across members. |
+| `req/s`, `ops/s` | Requests per second and operations per second, the throughput units used in the tables. |
+| RESP | Redis Serialization Protocol, the wire protocol used by the compared endpoints. |
+| RSS | Resident set size, the process memory currently resident in physical memory. |
+| SATA, SSD | Serial ATA (Advanced Technology Attachment) and solid-state drive. |
+| SHA-256 | Secure Hash Algorithm with a 256-bit digest, used here to bind and verify evidence. |
+| SKU | Stock-keeping unit, the provider's commercial server configuration label. |
+| SLO | Service-level objective, the precommitted performance boundary a result must satisfy. |
+| SMT | Simultaneous multithreading, which exposes sibling logical CPUs on one physical core. |
+| SSH | Secure Shell, used for authenticated remote administration. |
+| `stdout`, `stderr` | A process's standard-output and standard-error streams. |
+| TCP | Transmission Control Protocol, the transport used by the loopback RESP endpoint. |
+| `tmpfs`, `procfs`, `sysfs` | Linux memory-backed temporary, process-state, and kernel/device-state filesystems. |
+| TTL | Time to live, the configured lifetime of a cache entry. |
+| UUID | Universally unique identifier. |
+| `ms`, `us` | Milliseconds and microseconds; raw machine-readable evidence uses plain-text `us` for microseconds. |
+| ZIP, tar | Archive formats retained and checked as part of the evidence chain. |
 
 ## Reproduction resources
 
