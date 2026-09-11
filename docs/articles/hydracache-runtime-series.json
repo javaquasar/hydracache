@@ -44,7 +44,8 @@
       "url": "https://medium.com/@artur.buzov/typed-query-caching-in-rust-aac4352599f0"
     },
     {
-      "status": "draft",
+      "status": "ready",
+      "part": 6,
       "title": "How to Measure Cache Performance Without Measuring Noise",
       "file": "006-measuring-cache-performance-on-bare-metal.md"
     }

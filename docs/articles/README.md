@@ -48,6 +48,10 @@ Article drafts should include a short series/resources block near the top with t
 
 Draft and planned entries stay unnumbered in generated series blocks until they are published. Running `--set-url` records the public URL and promotes that draft to the next numbered series part.
 
+A reviewed article may use `status: "ready"` with its reserved `part` immediately before copying it
+to the publishing platform. This renders the final part number without inventing a public URL;
+`--set-url` removes the temporary status after publication.
+
 Refresh the generated series block after changing the series manifest at [hydracache-runtime-series.json](hydracache-runtime-series.json):
 
 ```powershell
@@ -87,5 +91,7 @@ npx --prefix console playwright install chromium
   - Cover: [005-typed-query-caching-in-rust-cover.png](005-typed-query-caching-in-rust-cover.png)
   - Prompt: [005-typed-query-caching-in-rust-cover.prompt.md](005-typed-query-caching-in-rust-cover.prompt.md)
 - [Draft - How to Measure Cache Performance Without Measuring Noise](006-measuring-cache-performance-on-bare-metal.md)
+  - Cover: [006-measuring-cache-performance-on-bare-metal-cover.png](006-measuring-cache-performance-on-bare-metal-cover.png)
+  - Prompt: [006-measuring-cache-performance-on-bare-metal-cover.prompt.md](006-measuring-cache-performance-on-bare-metal-cover.prompt.md)
 - [Draft - Raft Snapshot Bugs, AI Agents, and the Cost of Ignoring Contradictions](002-raft-snapshot-agent-bug.md)
   - Cover: [002-raft-snapshot-agent-bug-cover.jpg](002-raft-snapshot-agent-bug-cover.jpg)
