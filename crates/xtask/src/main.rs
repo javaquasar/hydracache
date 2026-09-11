@@ -72,6 +72,8 @@ fn main() -> Result<(), Box<dyn Error>> {
             xtask::memory_baseline::run_report_check(args.collect())?
         }
         Some("memory-baseline-status") => xtask::memory_baseline::run_status(args.collect())?,
+        Some("memory-contract-check") => xtask::memory_campaign::run_contracts(args.collect())?,
+        Some("memory-campaign-check") => xtask::memory_campaign::run_campaign(args.collect())?,
         Some("postgres-conformance-check") => {
             xtask::migration_conformance::run_postgres(args.collect())?
         }
@@ -133,7 +135,7 @@ fn print_usage() {
          cargo xtask legacy-client-check --matrix hc1  # build shipped HC/1 libraries into consumers and run them against the current server\n  \
          cargo xtask miri-check  # run pinned Miri-safe snapshot proofs (skip loud when unavailable)\n  \
          cargo xtask migration-conformance-check <--structural|--upstream>  # validate 0.69 manifests or resolve selectors at pinned upstream commits\n  \
-         cargo xtask memory-owner-inventory --release 0.71  # generate conservative source ownership candidates\n  \
+         cargo xtask memory-owner-inventory --release 0.71 [--check]  # generate candidates or verify reviewed closure without writing\n  \
          cargo xtask memory-ownership-check --release 0.71  # require reviewed closure for every ownership candidate\n  \
          cargo xtask memory-decision-check --release 0.71  # validate immutable D0-D4 proposal transitions\n  \
          cargo xtask memory-statistics-check --release 0.71  # validate the preregistered numerical decision contract\n  \
@@ -144,6 +146,8 @@ fn print_usage() {
          cargo xtask memory-baseline-check --release 0.71 [--require-d0]  # validate B0/B1, scenario, archive, and D0 admission\n  \
          cargo xtask memory-baseline-report-check --release 0.71 --report <path> [--allow-diagnostic-source]  # validate one typed memory measurement report\n  \
          cargo xtask memory-baseline-status --release 0.71 --output <path>  # emit a non-promotable local baseline status\n  \
+         cargo xtask memory-contract-check --release 0.71 [--require-ship]  # validate the complete static memory contract\n  \
+         cargo xtask memory-campaign-check --release 0.71 [--campaigns <dir>] [--require-ship]  # validate retained campaign receipts, including external evidence roots\n  \
          cargo xtask postgres-conformance-check --mode <happy|canary>  # execute the real PostgreSQL differential or expected-red sentinel\n  \
          cargo xtask mutants       # validate the Raft mutation-testing baseline, optionally run cargo-mutants\n  \
          cargo xtask perf-runner-preflight --release 0.67 --profile reference-v1  # reject an unstable reference runner before build/measurement\n  \

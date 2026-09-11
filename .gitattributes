@@ -2,6 +2,11 @@
 crates/hydracache-cache-sim/traces/*.trace text eol=lf
 *.sh text eol=lf
 scripts/perf/*.py text eol=lf
+sdks/python/hydracache-client-hc2/src/hydracache_hc2_generated/* text eol=lf
+docs/testing/hc2-compat/artifacts/**/*.pom text eol=lf
+docs/testing/memory/0.71/** text eol=lf
+docs/testing/perf-scenarios/0.71/** text eol=lf
+docs/testing/perf-host-profiles/memory-reference-071-v1.json text eol=lf
 
 # Archived performance evidence is immutable. Do not normalize text files inside
 # these byte-for-byte campaign copies on add or checkout.

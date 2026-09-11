@@ -48,20 +48,6 @@ fn console_npm_steps() -> [(&'static str, Vec<&'static str>); 3] {
 fn gates_for_platform(is_windows: bool) -> Vec<Gate> {
     let mut gates = vec![
         gate("format", ["fmt", "--all", "--", "--check"], None),
-        gate(
-            "clippy",
-            [
-                "clippy",
-                "--workspace",
-                "--all-targets",
-                "--all-features",
-                "--locked",
-                "--",
-                "-D",
-                "warnings",
-            ],
-            None,
-        ),
         gate("dependency bans", ["deny", "check", "bans"], None),
         gate(
             "DST fast budget",
@@ -105,7 +91,55 @@ fn gates_for_platform(is_windows: bool) -> Vec<Gate> {
         ),
     ];
 
+    let clippy = if is_windows {
+        gate(
+            "clippy",
+            [
+                "clippy",
+                "--workspace",
+                "--all-targets",
+                "--locked",
+                "--",
+                "-D",
+                "warnings",
+            ],
+            None,
+        )
+    } else {
+        gate(
+            "clippy",
+            [
+                "clippy",
+                "--workspace",
+                "--all-targets",
+                "--all-features",
+                "--locked",
+                "--",
+                "-D",
+                "warnings",
+            ],
+            None,
+        )
+    };
+    gates.insert(1, clippy);
+
     if is_windows {
+        gates.push(gate(
+            "clippy (Windows allocator)",
+            [
+                "clippy",
+                "-p",
+                "hydracache",
+                "--lib",
+                "--features",
+                "allocator-mimalloc",
+                "--locked",
+                "--",
+                "-D",
+                "warnings",
+            ],
+            None,
+        ));
         // A running `target/debug/xtask.exe` cannot be overwritten on Windows.
         // Test the rest of the workspace first, then run xtask lib/integration
         // tests without rebuilding the xtask binary target. Serializing the
@@ -159,6 +193,13 @@ fn windows_verify_target_dir_for_process(root: &Path, process_id: u32) -> PathBu
         .join(format!("xtask-verify-{process_id}"))
 }
 
+fn needs_windows_target_dir(label: &str) -> bool {
+    // `cargo fmt` does not build or replace the running xtask binary. Giving it
+    // a process-specific target directory makes rustfmt discover generated
+    // paths and can exceed MAX_PATH on Windows.
+    label != "format"
+}
+
 pub fn run(_args: Vec<String>) -> Result<(), Box<dyn Error>> {
     let root = doc_check::find_repo_root()?;
 
@@ -191,10 +232,16 @@ pub fn run(_args: Vec<String>) -> Result<(), Box<dyn Error>> {
 
     for Gate { label, args, env } in gates_for_platform(is_windows) {
         println!("== {label} ==");
+        if is_windows && label == "format" {
+            run_windows_format(&root)?;
+            continue;
+        }
         let mut cmd = Command::new("cargo");
         cmd.args(args).current_dir(&root);
-        if let Some(target_dir) = &windows_target_dir {
-            cmd.env("CARGO_TARGET_DIR", target_dir);
+        if needs_windows_target_dir(label) {
+            if let Some(target_dir) = &windows_target_dir {
+                cmd.env("CARGO_TARGET_DIR", target_dir);
+            }
         }
         if let Some((key, value)) = env {
             cmd.env(key, value);
@@ -210,6 +257,36 @@ pub fn run(_args: Vec<String>) -> Result<(), Box<dyn Error>> {
     run_console_gate(&root)?;
 
     println!("verify: all gates passed");
+    Ok(())
+}
+
+fn run_windows_format(root: &Path) -> Result<(), Box<dyn Error>> {
+    let output = Command::new("cargo")
+        .args(["metadata", "--no-deps", "--format-version", "1"])
+        .current_dir(root)
+        .output()?;
+    if !output.status.success() {
+        return Err("gate 'format' could not read cargo metadata".into());
+    }
+    let metadata: serde_json::Value = serde_json::from_slice(&output.stdout)?;
+    let mut packages = metadata
+        .get("packages")
+        .and_then(serde_json::Value::as_array)
+        .ok_or("cargo metadata omitted packages")?
+        .iter()
+        .filter_map(|package| package.get("name").and_then(serde_json::Value::as_str))
+        .collect::<Vec<_>>();
+    packages.sort_unstable();
+    packages.dedup();
+    for package in packages {
+        let status = Command::new("cargo")
+            .args(["fmt", "--package", package, "--", "--check"])
+            .current_dir(root)
+            .status()?;
+        if !status.success() {
+            return Err(format!("gate 'format' failed for package {package}").into());
+        }
+    }
     Ok(())
 }
 
@@ -254,8 +331,8 @@ mod tests {
     use std::path::{Path, PathBuf};
 
     use super::{
-        console_npm_steps, gates_for_platform, windows_verify_target_dir_for_process, Gate,
-        CONSOLE_GATE_LABEL,
+        console_npm_steps, gates_for_platform, needs_windows_target_dir,
+        windows_verify_target_dir_for_process, Gate, CONSOLE_GATE_LABEL,
     };
 
     fn args_for<'a>(gates: &'a [Gate], label: &str) -> &'a [&'static str] {
@@ -305,6 +382,27 @@ mod tests {
     }
 
     #[test]
+    fn windows_clippy_uses_only_supported_allocator_features() {
+        let gates = gates_for_platform(true);
+        assert!(!args_for(&gates, "clippy").contains(&"--all-features"));
+        assert_eq!(
+            args_for(&gates, "clippy (Windows allocator)"),
+            [
+                "clippy",
+                "-p",
+                "hydracache",
+                "--lib",
+                "--features",
+                "allocator-mimalloc",
+                "--locked",
+                "--",
+                "-D",
+                "warnings"
+            ]
+        );
+    }
+
+    #[test]
     fn windows_verify_target_dir_is_inside_repo_target() {
         let root = Path::new("repo");
 
@@ -346,6 +444,13 @@ mod tests {
                 "--locked"
             ]
         );
+    }
+
+    #[test]
+    fn windows_format_does_not_receive_the_build_target_override() {
+        assert!(!needs_windows_target_dir("format"));
+        assert!(needs_windows_target_dir("clippy"));
+        assert!(needs_windows_target_dir("tests (xtask lib/integration)"));
     }
 
     #[test]

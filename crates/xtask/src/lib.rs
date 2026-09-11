@@ -26,6 +26,7 @@ pub mod feature_leak;
 pub mod gated_tests;
 pub mod host_attestation;
 pub mod memory_baseline;
+pub mod memory_campaign;
 pub mod memory_contracts;
 pub mod memory_ownership;
 pub mod memory_statistics;

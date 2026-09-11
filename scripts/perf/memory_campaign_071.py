@@ -1050,8 +1050,12 @@ def finalize(campaign_dir: Path) -> dict[str, Any]:
         "scenario_digest": state["scenario_digest"],
         "job_count": state["job_count"],
         "completed_jobs": len(state["jobs"]),
+        "case_ids": sorted({job["case_id"] for job in state["jobs"]}),
         "finalized_at": utc_now(),
-        "ship_evidence_eligible": False,
+        "result": "success",
+        "ship_evidence_eligible": (
+            state["mode"] == "evidence" and identity["campaign_role"] == "candidate"
+        ),
         "artifacts": artifacts,
     }
     atomic_json(campaign_dir / "campaign-receipt.json", receipt)
