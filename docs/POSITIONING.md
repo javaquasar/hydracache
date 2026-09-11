@@ -121,7 +121,9 @@ selected node-local RESP endpoint, daemon control-plane, and library/model primi
 GitHub-hosted results are tripwires only. The later 0.67.1 campaign resolved
 [`TD-0013`](technical-debt/TD-0013-dedicated-performance-runner-and-baseline-bootstrap.md) with an
 independently reviewed, narrowly scoped five-sample bare-metal baseline. Its frozen-candidate W7
-release verdict remains pending, so no final 0.67.1 positioning number is published yet.
+release verdict passed on 2026-09-11. The resulting numbers remain limited to the exact host,
+scenario, commit, and same-box method documented in the anonymized
+[`0.67.1` AX42 report](testing/perf-scenarios/0.67/results/ax42-reference-0.67.1-20260911.md).
 
 The existing statement still applies: HydraCache is not marketed as a Redis throughput
 replacement. The pinned Redis observation is a same-box comparison for one exact scenario and

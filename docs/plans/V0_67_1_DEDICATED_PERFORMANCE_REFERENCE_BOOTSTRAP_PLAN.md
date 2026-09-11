@@ -11,8 +11,8 @@
 > - **Depends on:** shipped `0.67.0`.
 > - **Unblocks:** official, narrowly scoped reference evidence and future numerical capacity
 >   claims. It is no longer a source-code prerequisite for the `0.68.0` Rust release.
-> - **Status:** in-progress; W0-W6 complete with reviewed dedicated-host activation, W7 frozen
->   candidate pending.
+> - **Status:** in-progress; W0-W7 evidence passed, with the final frozen candidate closed and
+>   preserved off-host on 2026-09-11; publication closeout remains.
 >
 > Roadmap: [`INDEX.md`](INDEX.md) - parent plan:
 > [`V0_67_PERFORMANCE_CHARACTERIZATION_PLAN.md`](V0_67_PERFORMANCE_CHARACTERIZATION_PLAN.md)
@@ -26,11 +26,10 @@ Read [`CLAUDE.md`](../../CLAUDE.md), [`docs/RULES.md`](../RULES.md),
 This is an evidence/bootstrap patch, not an optimization or product-surface release.
 
 **Execution state:** W1 qualification, two-run full-dress admission, W4's exact five chained
-bootstrap samples, W5 independent review, and W6 activation are complete. TD-0013 is resolved by
-the reviewed bootstrap evidence. W7 still requires a clean frozen-candidate run from the exact
-activation merge SHA; until that passes, `0.67.1` remains in progress and no final release verdict
-is authorized. ADR-0020 permits the separately scoped 0.68 Rust release to proceed while this
-evidence-only campaign remains `in-progress`.
+bootstrap samples, W5 independent review, W6 activation, and W7's clean frozen-candidate run are
+complete. TD-0013 is resolved and the exact-SHA final evidence is preserved off-host. The
+anonymized verdict is
+[`../testing/perf-scenarios/0.67/results/ax42-reference-0.67.1-20260911.md`](../testing/perf-scenarios/0.67/results/ax42-reference-0.67.1-20260911.md).
 
 **Non-ship readiness additions:** a separate `indicative-exploratory-v1` tier
 provides reproducible same-host characterization without capacity or sizing
@@ -445,6 +444,11 @@ cargo run -p xtask --locked -- canary-sweep --release 0.67.1 --tier all
 cargo run -p xtask --locked -- release-evidence --release 0.67.1 `
   --receipts-dir target/release-evidence/receipts --require-ship
 ```
+
+Completed on campaign `hc0671-ax42-20260911-da` at exact commit
+`7bd31af9a5092466d7a7284995f388d33ed3110f`: the GitHub run completed successfully, all W0-W7
+items aggregated as `ship-ready`, the immutable campaign was closed, and its original artifacts
+and host-state archives were verified and retained off-host.
 
 ## Execution Order
 

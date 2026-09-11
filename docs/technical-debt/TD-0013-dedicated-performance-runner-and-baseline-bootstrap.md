@@ -9,8 +9,8 @@ contracts were independently reviewed and activated.
 Owner: performance/release infrastructure.
 
 Resolution target: the evidence-only `0.67.1` reference activation. The separate frozen-candidate
-run remains release work item W7 and must pass before `0.67.1` may ship or publish a final
-performance verdict.
+release work item W7 passed on 2026-09-11 and published the final narrowly scoped performance
+verdict.
 
 ## Context
 
@@ -39,15 +39,16 @@ GitHub-hosted runners are shared and variable. Their results are useful as broad
   ceiling, and received an independent digest-bound approval;
 - reviewed bytes are committed under `docs/testing/perf-{anchors,baselines,budgets,reviews}/0.67.1/`.
 
-## Remaining Release Boundary
+## Retained Release Boundary
 
 - GitHub-hosted `ci-shared` measurements remain tripwire-only and never capacity evidence.
 - The reviewed numbers describe only the admitted physical host, exact scenarios, exact toolchain,
   and documented method. They are not portable sizing guidance or universal Redis comparisons.
 - Hardware, kernel, topology, governor, turbo, storage identity, toolchain, or contract drift requires
   requalification; it must not migrate this baseline automatically.
-- W7 must still run the complete frozen candidate from the exact activation merge SHA. Until it is
-  green, `0.67.1` is not shipped and the reviewed bootstrap values are not a final release verdict.
+- W7 ran the complete frozen candidate from exact commit
+  `7bd31af9a5092466d7a7284995f388d33ed3110f` and passed. Its anonymized report is
+  [`../testing/perf-scenarios/0.67/results/ax42-reference-0.67.1-20260911.md`](../testing/perf-scenarios/0.67/results/ax42-reference-0.67.1-20260911.md).
 
 ## Definition Of Done
 
@@ -58,8 +59,8 @@ This debt was closed after all bootstrap-specific conditions were independently 
 3. The immutable anchor, rolling baseline selection, and numerical budgets are independently reviewed.
 4. The committed `reference-v1` profile, anchor, budgets, and baseline are changed from `unbootstrapped` to `bootstrapped` without candidate self-baselining.
 5. The activation commit preserves candidate self-baseline prevention. The subsequent full frozen
-   candidate, including core, RESP/Redis, control-plane, budget, canary, receipt, and artifact
-   integrity stages, remains the distinct W7 ship gate.
+   candidate passed core, RESP/Redis, control-plane, budget, canary, receipt, artifact-integrity,
+   and release-aggregation stages as the distinct W7 ship gate.
 
 ## Related
 
