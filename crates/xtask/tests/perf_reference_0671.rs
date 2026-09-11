@@ -222,6 +222,10 @@ fn frozen_candidate_gate_is_wired_to_full_pipeline() {
         .expect("frozen-candidate job must be bounded");
     let ordered = [
         "Checkout trusted frozen main",
+        "Install Python for final workspace evidence",
+        "Install cargo-deny for final workspace evidence",
+        "Install pinned cargo-nextest for final workspace evidence",
+        "Preflight final workspace evidence toolchain",
         "Prepare tmpfs reference evidence",
         "Import frozen campaign host admission",
         "Revalidate committed five-sample independent review",
@@ -235,7 +239,6 @@ fn frozen_candidate_gate_is_wired_to_full_pipeline() {
         "Check activated 0.67.1 reference budgets and rolling baseline",
         "Materialize tmpfs reference evidence",
         "Execute complete 0.67.1 expected-red canary sweep",
-        "Install pinned cargo-nextest for final aggregation",
         "Record exact-candidate fast workspace evidence",
         "Seal exact frozen-candidate reference receipt",
         "Aggregate exact 0.67.1 ship evidence",
@@ -257,6 +260,9 @@ fn frozen_candidate_gate_is_wired_to_full_pipeline() {
         "persist-credentials: false",
         "--release 0.67.1 --profile reference-v1",
         "evidence-run --release 0.67.1 --gate fast.workspace-nextest",
+        "python --version",
+        "cargo deny --version",
+        "cargo nextest --version",
         "--release 0.67.1 --receipts-dir target/release-evidence/receipts --require-ship",
         "if-no-files-found: error",
         "target/nextest/ci/junit.xml",

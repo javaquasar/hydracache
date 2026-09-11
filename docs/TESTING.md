@@ -1412,6 +1412,10 @@ W5 input tree. `prepare-review` can reconstruct that tree from retained ZIPs; `r
 the separate post-activation dispatch and leaves the runner offline afterward. Neither command
 creates, deletes, or powers off provider resources.
 
+The frozen-candidate job provisions and probes Python, `cargo-deny`, and the pinned
+`cargo-nextest` before starting the long measurements. The final workspace receipt therefore cannot
+discover a missing helper only after otherwise successful performance evidence has completed.
+
 The RESP gate describes one selected node-local endpoint and a method-scoped same-box Redis comparison. The control-plane gate describes real daemon metadata/admin behavior. Neither may be converted into a distributed value-plane or general Redis-replacement claim.
 
 ## Performance Smoke Tests

@@ -2309,6 +2309,28 @@ jobs:
       - name: Install pinned Rust 1.94.0
         uses: dtolnay/rust-toolchain@1.94.0
 
+      # The final workspace gate executes tests which invoke both `python` and
+      # `cargo deny`. Provision and probe its complete toolchain before any
+      # multi-hour performance measurements so a missing helper fails early.
+      - name: Install Python for final workspace evidence
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Install cargo-deny for final workspace evidence
+        uses: taiki-e/install-action@cargo-deny
+
+      - name: Install pinned cargo-nextest for final workspace evidence
+        uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-nextest@0.9.137
+
+      - name: Preflight final workspace evidence toolchain
+        run: |
+          python --version
+          cargo deny --version
+          cargo nextest --version
+
       - name: Clear only prior frozen-candidate evidence scratch
         shell: bash
         run: |
@@ -2387,11 +2409,6 @@ jobs:
 
       - name: Execute complete 0.67.1 expected-red canary sweep
         run: cargo run -p xtask --locked -- canary-sweep --release 0.67.1 --tier all
-
-      - name: Install pinned cargo-nextest for final aggregation
-        uses: taiki-e/install-action@v2
-        with:
-          tool: cargo-nextest@0.9.137
 
       - name: Record exact-candidate fast workspace evidence
         run: cargo run -p xtask --locked -- evidence-run --release 0.67.1 --gate fast.workspace-nextest
