@@ -397,6 +397,43 @@ class MemoryCampaign071Tests(unittest.TestCase):
             with self.assertRaises(campaign.CampaignError):
                 campaign.verify_live_host(campaign_dir, observed)
 
+    def test_finalize_marks_only_complete_admitted_candidate_shape_ship_eligible(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            campaign_dir = Path(directory)
+            jobs = []
+            for index, case_id in enumerate(("M9-6h", "M10-24h"), start=1):
+                job_id = f"job-{index}"
+                jobs.append({"job_id": job_id, "case_id": case_id, "status": "success"})
+                job_dir = campaign_dir / "jobs" / job_id
+                job_dir.mkdir(parents=True)
+                campaign.atomic_json(
+                    job_dir / "executor-receipt.json",
+                    {"pid": index, "fresh_process": True, "stopped": True},
+                )
+            campaign.atomic_json(
+                campaign_dir / "state.json",
+                {
+                    "mode": "evidence",
+                    "campaign_id": "candidate-final",
+                    "identity": {"sha256": "f" * 64},
+                    "scenario_digest": "s" * 64,
+                    "job_count": len(jobs),
+                    "jobs": jobs,
+                },
+            )
+            identity = {
+                "workflow_sha": "1" * 40,
+                "source_sha": "2" * 40,
+                "campaign_role": "candidate",
+            }
+            with mock.patch.object(campaign, "retained_campaign_identity", return_value=identity):
+                receipt = campaign.finalize(campaign_dir)
+
+            self.assertEqual(receipt["result"], "success")
+            self.assertTrue(receipt["ship_evidence_eligible"])
+            self.assertEqual(receipt["case_ids"], ["M10-24h", "M9-6h"])
+            self.assertEqual(receipt["completed_jobs"], receipt["job_count"])
+
 
 if __name__ == "__main__":
     unittest.main()

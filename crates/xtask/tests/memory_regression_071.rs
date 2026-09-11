@@ -166,3 +166,45 @@ fn fast_memory_regression_job_checks_stable_owners_not_host_rss() {
         );
     }
 }
+
+#[test]
+fn release_071_governance_contract_is_fail_closed() {
+    let root = root();
+    for path in [
+        "docs/testing/canary-registry-0.71.json",
+        "docs/testing/release-evidence/0.71.toml",
+        "docs/testing/memory/0.71/baseline-identities.toml",
+        "docs/testing/memory/0.71/decision-gates.toml",
+        "docs/testing/memory/0.71/release-policy.toml",
+    ] {
+        assert!(root.join(path).is_file(), "missing 0.71 contract {path}");
+    }
+
+    let main = fs::read_to_string(root.join("crates/xtask/src/main.rs")).unwrap();
+    for command in [
+        "memory-contract-check",
+        "memory-campaign-check",
+        "memory-owner-inventory",
+    ] {
+        assert!(main.contains(command), "xtask does not dispatch {command}");
+    }
+
+    let attributes = fs::read_to_string(root.join(".gitattributes")).unwrap();
+    for pattern in [
+        "docs/testing/memory/0.71/** text eol=lf",
+        "docs/testing/perf-scenarios/0.71/** text eol=lf",
+        "docs/testing/perf-host-profiles/memory-reference-071-v1.json text eol=lf",
+    ] {
+        assert!(
+            attributes.lines().any(|line| line == pattern),
+            "missing portable digest boundary {pattern}"
+        );
+    }
+}
+
+#[test]
+fn canary_release_071_accepts_missing_memory_evidence() {
+    if let Ok(work_item) = std::env::var("HYDRACACHE_CANARY_DEFECT") {
+        panic!("HC-CANARY-RED:{work_item}");
+    }
+}

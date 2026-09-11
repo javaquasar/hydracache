@@ -74,4 +74,4 @@ requirements = "docs/testing/memory/0.71/historical-input-requirements.toml"
 [d0]
 ready = false
 required_receipts = ["ownership_inventory", "provider_qualification", "phase_timeline", "statistics_contract", "instrumentation_overhead", "admitted_host", "bootstrap_0_67_1", "ci_bounded_dry_run", "historical_mirror"]
-blockers = ["dedicated host receipt not checked in", "0.67.1 bootstrap evidence unavailable in this checkout", "protected historical mirror receipt unavailable"]
+blockers = ["dedicated host receipt not materialized", "committed 0.67.1 archive must be admitted into the D0 historical mirror receipt", "protected historical mirror receipt unavailable"]
