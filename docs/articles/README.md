@@ -44,6 +44,10 @@ node scripts/medium-draft.mjs --clipboard-title --article docs/articles/001-why-
 node scripts/medium-draft.mjs --clipboard-body --article docs/articles/001-why-rust-needs-cache-semantics.md
 ```
 
+The clipboard converter renders Markdown tables as labelled bullet lists because Medium's editor
+does not provide a native table block. This preserves every cell without leaving raw pipe-delimited
+Markdown in the story.
+
 Article drafts should include a short series/resources block near the top with the current publication state, planned series entries, GitHub, and crates.io links. Bare `https://` links are converted to clickable links by the Medium draft script.
 
 Draft and planned entries stay unnumbered in generated series blocks until they are published. Running `--set-url` records the public URL and promotes that draft to the next numbered series part.
