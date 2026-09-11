@@ -14,6 +14,7 @@ This directory contains external-facing article drafts for HydraCache.
 - 2026-08-05 - [003 - TTL Is Not Enough](https://medium.com/@artur.buzov/ttl-is-not-enough-ec4e96d89546) - Medium
 - 2026-08-06 - [004 - Local-first Distributed Invalidation](https://medium.com/@artur.buzov/local-first-distributed-invalidation-87bf0249e935) - Medium
 - 2026-08-10 - [005 - Typed Query Caching in Rust](https://medium.com/@artur.buzov/typed-query-caching-in-rust-aac4352599f0) - Medium
+- 2026-09-11 - [006 - How to Measure Cache Performance Without Measuring Noise](https://medium.com/@artur.buzov/how-to-measure-cache-performance-without-measuring-noise-926c10d713f5) - Medium
 
 ## Medium Drafting
 
@@ -94,7 +95,7 @@ npx --prefix console playwright install chromium
 - [005 - Typed Query Caching in Rust](005-typed-query-caching-in-rust.md)
   - Cover: [005-typed-query-caching-in-rust-cover.png](005-typed-query-caching-in-rust-cover.png)
   - Prompt: [005-typed-query-caching-in-rust-cover.prompt.md](005-typed-query-caching-in-rust-cover.prompt.md)
-- [Draft - How to Measure Cache Performance Without Measuring Noise](006-measuring-cache-performance-on-bare-metal.md)
+- [006 - How to Measure Cache Performance Without Measuring Noise](006-measuring-cache-performance-on-bare-metal.md)
   - Cover: [006-measuring-cache-performance-on-bare-metal-cover.png](006-measuring-cache-performance-on-bare-metal-cover.png)
   - Prompt: [006-measuring-cache-performance-on-bare-metal-cover.prompt.md](006-measuring-cache-performance-on-bare-metal-cover.prompt.md)
 - [Draft - Raft Snapshot Bugs, AI Agents, and the Cost of Ignoring Contradictions](002-raft-snapshot-agent-bug.md)
