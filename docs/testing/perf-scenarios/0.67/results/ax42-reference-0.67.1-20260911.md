@@ -143,8 +143,10 @@ zero-error rule, spread limit, or evidence identity check.
 
 The complete campaign directory was copied to operator-controlled storage outside the rented
 server and outside the Git worktree before closeout. The initial remote/local comparison covered
-27 files with zero missing files, zero extras, and zero SHA-256 mismatches. Extracted verification
-material was added only on the off-host copy.
+27 files with zero missing files, zero extras, and zero SHA-256 mismatches. After closeout, the
+verified off-host directory was also mirrored byte-for-byte into the public repository under the
+immutable campaign ID at
+[`perf-artifacts/0.67.1/hc0671-ax42-20260911-da`](../../../perf-artifacts/0.67.1/hc0671-ax42-20260911-da/).
 
 - Original GitHub artifact ID: `10261605556`.
 - Original artifact size: 500,282 bytes.
@@ -160,9 +162,16 @@ material was added only on the off-host copy.
 - Final aggregate SHA-256:
   `22a4b57e791558412d7e397d9226c69e52fbb21c4f2e73183d7ef17cca146eb5`.
 
-Raw campaign artifacts and host-state archives are not committed because they include operational
-host details. Git retains only reviewed, anonymized conclusions and digest-bound evidence
-identifiers.
+The committed raw copy intentionally includes limited operational host details: a Linux boot ID,
+a root-filesystem UUID, synthetic test-node identities, internal container network details,
+process IDs, timestamps, and detailed host configuration. A pre-publication scan found no
+passwords, private keys, GitHub token shapes, public host address, physical NIC MAC address, disk
+serial number, disk WWN, or production/user payload. The anonymized conclusions above remain the
+appropriate source for public performance claims.
+
+For a reusable explanation of server preparation, CPU/IRQ and NVMe isolation, measurement-window
+design, telemetry, failure classification, and artifact handling, see
+[`How to Measure Cache Performance Without Measuring Noise`](../../../../articles/006-measuring-cache-performance-on-bare-metal.md).
 
 ## Conclusion
 

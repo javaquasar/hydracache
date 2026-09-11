@@ -1,0 +1,25 @@
+{
+  "schema_version": 2,
+  "stage": "reference-host-irq-burn-in",
+  "source_commit": "7bd31af9a5092466d7a7284995f388d33ed3110f",
+  "profile_sha256": "34e820f7e3ac38df50f8ebc9a839b9aad61ebd04e24d5005063308f2a98475ca",
+  "measurement_cpus": "1-4",
+  "storage_io_cpus": "0,5-7",
+  "duration_seconds": 900,
+  "read_mebibytes_per_storage_cpu_device": 256,
+  "network_target": "37.27.115.65",
+  "nvme_devices": [
+    "/dev/nvme0n1",
+    "/dev/nvme1n1"
+  ],
+  "started_at": "2026-09-11T08:21:26+00:00",
+  "finished_at": "2026-09-11T08:36:27+00:00",
+  "irq_baseline_sha256": "1729ce090295471397d481e3c495676f15d04996251d319d569be55bf2e58475",
+  "interrupts_before_sha256": "ae7cfd2a951f18453dc3ca62e76427d4d71409ce8a0da016d346ce1d87ab21d7",
+  "interrupts_after_sha256": "48bed0665302c35a20daa8dfd263e2106215d4a430817b0c52e1b63d5233af3e",
+  "passed": true,
+  "failure_step": null,
+  "qualification_evidence": false,
+  "bootstrap_evidence": false,
+  "ship_evidence_eligible": false
+}

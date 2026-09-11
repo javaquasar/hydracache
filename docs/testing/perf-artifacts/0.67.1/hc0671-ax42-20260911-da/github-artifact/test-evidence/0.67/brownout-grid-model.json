@@ -1,0 +1,395 @@
+{
+  "report": {
+    "schema_version": 1,
+    "scenario_id": "brownout-grid-model-v1",
+    "scenario_sha256": "44c515cfa134db951bbdcb5903767e0fc137c00b67c96957d79b537496a00a9f",
+    "evidence_class": "w5c-in-process-model-replica-fault",
+    "run_mode": "reference",
+    "predecessor": {
+      "evidence_class": "w4b-in-process-library-model",
+      "artifact_sha256": "dc0bd04e91835fdd6442a24c71f288494466e63538c28b91bf2cc0c832172ecc",
+      "reference_receipt_sha256": "5344966f12efc01b2ed632ae49dda825aec022a4e4dbbe05f509cbd39054ba13",
+      "synthetic_knee_rate_per_second": null
+    },
+    "reference_provenance": {
+      "w4b_artifact_sha256": "dc0bd04e91835fdd6442a24c71f288494466e63538c28b91bf2cc0c832172ecc",
+      "w4b_reference_receipt_sha256": "5344966f12efc01b2ed632ae49dda825aec022a4e4dbbe05f509cbd39054ba13",
+      "w4b_scenario_sha256": "bee82e99244cdb4b860598ee2a1a2a34f8788813f497d6cb075f916a433d2ecb",
+      "source_commit": "7bd31af9a5092466d7a7284995f388d33ed3110f",
+      "runner_fingerprint": "25baeec1c9ec75da90b5dd0f29c101897450b96651d7e47570e18684be486ebb",
+      "prebuild_manifest_sha256": "2768ca970a2b3e09c3ee63bbd9bba466c3aee40be8dfca8e06cbe98309e4b296",
+      "fresh_execution": {
+        "source_commit": "7bd31af9a5092466d7a7284995f388d33ed3110f",
+        "cargo_lock_sha256": "dc480dad8567eda4a4d13b393651d3d1201cc26ba7599e3c8ff822b725569def",
+        "runner_fingerprint": "25baeec1c9ec75da90b5dd0f29c101897450b96651d7e47570e18684be486ebb",
+        "prebuild_manifest_sha256": "2768ca970a2b3e09c3ee63bbd9bba466c3aee40be8dfca8e06cbe98309e4b296",
+        "prebuild_contract_sha256": "f2caae0689d8b075d2a6d59d6090466365f9a6824c6996d6b92830956831cc55",
+        "loadgen_canonical_path": "/opt/actions-runner/_work/hydracache/hydracache/target/release/hydracache-loadgen",
+        "loadgen_sha256": "c2c0e14ab40dd5b3c2ee5d71631bdfee81d7d61c0cd2c83c8b927c126aff7bd2",
+        "process_id": 26512,
+        "started_unix_nanos": 1789119896651975410,
+        "sequence": 1,
+        "receipt_sha256": "9dfbf363b45a0a33126231d37a48e687b8b399bb0531f4e2897c4ad74f7c50b3"
+      },
+      "w5_scenario_sha256": "44c515cfa134db951bbdcb5903767e0fc137c00b67c96957d79b537496a00a9f",
+      "receipt_sha256": "03d6f7246fca5ef4d6fc8382abbf3b47bf6559f919a104172bbf105ac6e019eb"
+    },
+    "faults": [
+      {
+        "fault": "slow_replica",
+        "primitive": "LiveReplicationPeer::send_record",
+        "fault_adapter": "bounded-delay-before-real-primitive",
+        "raw_repeats": [
+          {
+            "repeat_index": 0,
+            "warmup_iterations": 1000,
+            "steady_iterations": 10000,
+            "fresh_model_identity_sha256": "b1246860187ff81198d399b72de236aa1017b3a10019f63be66131f6e205d87d",
+            "baseline_elapsed_nanos": 1531013,
+            "baseline_result_checksum": 9557600764496548530,
+            "baseline_admitted_sends": 10000,
+            "fault_elapsed_nanos": 769521877,
+            "fault_result_checksum": 17492977892095483645,
+            "injected_fault_events": 10000,
+            "unavailable_decisions": 0,
+            "slow_primitive_calls": 10000,
+            "recovery_elapsed_nanos": 2009855,
+            "recovery_result_checksum": 2964727247659417618,
+            "recovery_admitted_sends": 10000,
+            "final_record_checksum": 14053496175100373870
+          },
+          {
+            "repeat_index": 1,
+            "warmup_iterations": 1000,
+            "steady_iterations": 10000,
+            "fresh_model_identity_sha256": "ce753893b0d47e56328127da8264bcd71bd30597b12645c8bb554d2de47c8bc5",
+            "baseline_elapsed_nanos": 1342957,
+            "baseline_result_checksum": 13855043036818532994,
+            "baseline_admitted_sends": 10000,
+            "fault_elapsed_nanos": 769315053,
+            "fault_result_checksum": 3642680193606044045,
+            "injected_fault_events": 10000,
+            "unavailable_decisions": 0,
+            "slow_primitive_calls": 10000,
+            "recovery_elapsed_nanos": 1869458,
+            "recovery_result_checksum": 14837317712543150658,
+            "recovery_admitted_sends": 10000,
+            "final_record_checksum": 17662589908403890630
+          },
+          {
+            "repeat_index": 2,
+            "warmup_iterations": 1000,
+            "steady_iterations": 10000,
+            "fresh_model_identity_sha256": "566971e6d0fced33702df6a1934fd9d32dd83c6a6aa4234230a19f284c5c6527",
+            "baseline_elapsed_nanos": 1332188,
+            "baseline_result_checksum": 11761039168900119858,
+            "baseline_admitted_sends": 10000,
+            "fault_elapsed_nanos": 769229318,
+            "fault_result_checksum": 39707569996467581,
+            "injected_fault_events": 10000,
+            "unavailable_decisions": 0,
+            "slow_primitive_calls": 10000,
+            "recovery_elapsed_nanos": 1547154,
+            "recovery_result_checksum": 11211141165473074450,
+            "recovery_admitted_sends": 10000,
+            "final_record_checksum": 2227395282717539406
+          },
+          {
+            "repeat_index": 3,
+            "warmup_iterations": 1000,
+            "steady_iterations": 10000,
+            "fresh_model_identity_sha256": "4cf5ee52005742ecc316a988a2ef191adb8702fe56634d4aed32c5e85bd23a14",
+            "baseline_elapsed_nanos": 1332707,
+            "baseline_result_checksum": 14797622598293690626,
+            "baseline_admitted_sends": 10000,
+            "fault_elapsed_nanos": 769268193,
+            "fault_result_checksum": 15840656532361010061,
+            "injected_fault_events": 10000,
+            "unavailable_decisions": 0,
+            "slow_primitive_calls": 10000,
+            "recovery_elapsed_nanos": 1781389,
+            "recovery_result_checksum": 16830804324987744962,
+            "recovery_admitted_sends": 10000,
+            "final_record_checksum": 18279971003665888902
+          },
+          {
+            "repeat_index": 4,
+            "warmup_iterations": 1000,
+            "steady_iterations": 10000,
+            "fresh_model_identity_sha256": "9edb91eb207b1d354e4bf201232fbaaf7d130bdcce6c7f1b31d699674dd82ffd",
+            "baseline_elapsed_nanos": 1340917,
+            "baseline_result_checksum": 7537466015041576370,
+            "baseline_admitted_sends": 10000,
+            "fault_elapsed_nanos": 769265217,
+            "fault_result_checksum": 17417505525523164797,
+            "injected_fault_events": 10000,
+            "unavailable_decisions": 0,
+            "slow_primitive_calls": 10000,
+            "recovery_elapsed_nanos": 1828209,
+            "recovery_result_checksum": 13845979289130269010,
+            "recovery_admitted_sends": 10000,
+            "final_record_checksum": 7106474843638540238
+          }
+        ],
+        "baseline_timing": {
+          "median_nanos_per_iteration": 135,
+          "robust_spread_ratio_millionths": 7407,
+          "stable": true
+        },
+        "fault_timing": {
+          "median_nanos_per_iteration": 76927,
+          "robust_spread_ratio_millionths": 51,
+          "stable": true
+        },
+        "recovery_timing": {
+          "median_nanos_per_iteration": 183,
+          "robust_spread_ratio_millionths": 21857,
+          "stable": true
+        },
+        "affected_decisions": 50000,
+        "injected_fault_events": 50000,
+        "independent_result_checksum": 3455447844319452168
+      },
+      {
+        "fault": "unavailable_replica",
+        "primitive": "LiveReplicationPeer::send_record",
+        "fault_adapter": "typed-unavailable-before-real-primitive",
+        "raw_repeats": [
+          {
+            "repeat_index": 0,
+            "warmup_iterations": 1000,
+            "steady_iterations": 10000,
+            "fresh_model_identity_sha256": "7c52998937c7da7dd9e9c54761cb74fa289cc8ba4231c8f3fe815436040dfe4e",
+            "baseline_elapsed_nanos": 1678591,
+            "baseline_result_checksum": 9557600764496548530,
+            "baseline_admitted_sends": 10000,
+            "fault_elapsed_nanos": 935624,
+            "fault_result_checksum": 7201569239667712061,
+            "injected_fault_events": 10000,
+            "unavailable_decisions": 10000,
+            "slow_primitive_calls": 0,
+            "recovery_elapsed_nanos": 1700741,
+            "recovery_result_checksum": 2964727247659417618,
+            "recovery_admitted_sends": 10000,
+            "final_record_checksum": 14053496175100373870
+          },
+          {
+            "repeat_index": 1,
+            "warmup_iterations": 1000,
+            "steady_iterations": 10000,
+            "fresh_model_identity_sha256": "85fb5088b0f497bfc9b68261562fabc8a43e6a9cd4d36e4a42540a8f072d9c0f",
+            "baseline_elapsed_nanos": 1328378,
+            "baseline_result_checksum": 13855043036818532994,
+            "baseline_admitted_sends": 10000,
+            "fault_elapsed_nanos": 774956,
+            "fault_result_checksum": 11798015614887824077,
+            "injected_fault_events": 10000,
+            "unavailable_decisions": 10000,
+            "slow_primitive_calls": 0,
+            "recovery_elapsed_nanos": 1390367,
+            "recovery_result_checksum": 14837317712543150658,
+            "recovery_admitted_sends": 10000,
+            "final_record_checksum": 17662589908403890630
+          },
+          {
+            "repeat_index": 2,
+            "warmup_iterations": 1000,
+            "steady_iterations": 10000,
+            "fresh_model_identity_sha256": "b107fb3b2684beb114b5c01fae8f68a29c4481310164939879c3b874dffc34fb",
+            "baseline_elapsed_nanos": 1320727,
+            "baseline_result_checksum": 11761039168900119858,
+            "baseline_admitted_sends": 10000,
+            "fault_elapsed_nanos": 794187,
+            "fault_result_checksum": 8195042991278247613,
+            "injected_fault_events": 10000,
+            "unavailable_decisions": 10000,
+            "slow_primitive_calls": 0,
+            "recovery_elapsed_nanos": 1391446,
+            "recovery_result_checksum": 11211141165473074450,
+            "recovery_admitted_sends": 10000,
+            "final_record_checksum": 2227395282717539406
+          },
+          {
+            "repeat_index": 3,
+            "warmup_iterations": 1000,
+            "steady_iterations": 10000,
+            "fresh_model_identity_sha256": "f674b33cbd1141ee2d793e3b34ef11721869827f9c4847defa45ba4475b0b2f5",
+            "baseline_elapsed_nanos": 1326818,
+            "baseline_result_checksum": 14797622598293690626,
+            "baseline_admitted_sends": 10000,
+            "fault_elapsed_nanos": 792236,
+            "fault_result_checksum": 5549247879933238477,
+            "injected_fault_events": 10000,
+            "unavailable_decisions": 10000,
+            "slow_primitive_calls": 0,
+            "recovery_elapsed_nanos": 1399466,
+            "recovery_result_checksum": 16830804324987744962,
+            "recovery_admitted_sends": 10000,
+            "final_record_checksum": 18279971003665888902
+          },
+          {
+            "repeat_index": 4,
+            "warmup_iterations": 1000,
+            "steady_iterations": 10000,
+            "fresh_model_identity_sha256": "9801a6722bc7f3a5e60dce6964c1b516afc348e87875f413c4d79d8cda912235",
+            "baseline_elapsed_nanos": 1331477,
+            "baseline_result_checksum": 7537466015041576370,
+            "baseline_admitted_sends": 10000,
+            "fault_elapsed_nanos": 794176,
+            "fault_result_checksum": 7126096873095393213,
+            "injected_fault_events": 10000,
+            "unavailable_decisions": 10000,
+            "slow_primitive_calls": 0,
+            "recovery_elapsed_nanos": 1390446,
+            "recovery_result_checksum": 13845979289130269010,
+            "recovery_admitted_sends": 10000,
+            "final_record_checksum": 7106474843638540238
+          }
+        ],
+        "baseline_timing": {
+          "median_nanos_per_iteration": 133,
+          "robust_spread_ratio_millionths": 0,
+          "stable": true
+        },
+        "fault_timing": {
+          "median_nanos_per_iteration": 80,
+          "robust_spread_ratio_millionths": 0,
+          "stable": true
+        },
+        "recovery_timing": {
+          "median_nanos_per_iteration": 140,
+          "robust_spread_ratio_millionths": 0,
+          "stable": true
+        },
+        "affected_decisions": 50000,
+        "injected_fault_events": 50000,
+        "independent_result_checksum": 9966170838216488648
+      }
+    ],
+    "daemon_brownout_evidence": false,
+    "product_data_plane": false,
+    "live_rebalance_measured": false,
+    "live_reshard_measured": false,
+    "aggregate_goodput": false
+  },
+  "budget_receipt": {
+    "schema_version": 1,
+    "release": "0.67.0",
+    "report_id": "brownout-grid-model-reference-v1",
+    "source_report_sha256": "b8a9fb86aa45e6c2cbf2457128439dc8d85d3ece2a6a77734db67897978927eb",
+    "claim_scope": "w5c-in-process-model-replica-fault",
+    "run_mode": "reference_evidence",
+    "runner_profile": "reference-v1",
+    "runner_contract": {
+      "name": "reference-v1",
+      "required_runner_class": "self-hosted-bare-metal-v1",
+      "allowed_fingerprints": [
+        "25baeec1c9ec75da90b5dd0f29c101897450b96651d7e47570e18684be486ebb"
+      ],
+      "minimum_logical_cores": 4,
+      "required_cpu_affinity": "1-4",
+      "required_cgroup_cpu_quota": "unlimited",
+      "require_dedicated": true,
+      "maximum_calibration_score": 0.25
+    },
+    "runner_contract_digest": "c728014af9fd0aae4c474456e74437a033110940db01caa1577b1b5b5efabfe0",
+    "observed_runner": {
+      "runner_class": "self-hosted-bare-metal-v1",
+      "fingerprint": "25baeec1c9ec75da90b5dd0f29c101897450b96651d7e47570e18684be486ebb",
+      "cpu_model": "AMD Ryzen 7 PRO 8700GE w/ Radeon 780M Graphics",
+      "logical_cores": 4,
+      "ram_bytes": 66490486784,
+      "os": "linux",
+      "kernel": "6.8.0-138-generic",
+      "cpu_affinity": "1-4",
+      "cgroup_cpu_quota": "unlimited",
+      "governor": "performance",
+      "turbo": "enabled",
+      "shared_hardware": false,
+      "calibration_score": 0.015776637614821176,
+      "attestation": {
+        "schema_version": 5,
+        "contract_version": "hydracache-reference-host-v5",
+        "virtualization": "none",
+        "physical_cores": 8,
+        "measurement_cores": [
+          {
+            "logical_cpu": 1,
+            "package_id": 0,
+            "core_id": 1
+          },
+          {
+            "logical_cpu": 2,
+            "package_id": 0,
+            "core_id": 2
+          },
+          {
+            "logical_cpu": 3,
+            "package_id": 0,
+            "core_id": 3
+          },
+          {
+            "logical_cpu": 4,
+            "package_id": 0,
+            "core_id": 4
+          }
+        ],
+        "cpu_isolation": {
+          "smt_control": "off",
+          "online_cpus": "0-7",
+          "isolated_cpus": "1-4",
+          "nohz_full_cpus": "1-4",
+          "rcu_nocbs_cpus": "1-4",
+          "housekeeping_cpus": "0,5-7",
+          "irq_affinity_policy": "housekeeping-only-v1",
+          "measurement_idle_policy": "latency-cap-us-v1",
+          "measurement_max_idle_latency_us": 1,
+          "housekeeping_idle_policy": "latency-cap-us-v1",
+          "housekeeping_max_idle_latency_us": 1
+        },
+        "host_digest": "571591a534c9894242fc0af0c5f80c31131fe7e4cdb9d0ea63da6d8b56af8932",
+        "storage_class": "local-nvme",
+        "storage_identity_digest": "74ec6d1126c24b7a3899494eef2564aec2d3085056ac200e4a8cc8ca0ae43a50",
+        "os_image": "ubuntu-24.04",
+        "toolchain_identity": "rustc-1.94.0",
+        "prebuild_contract_digest": "f2caae0689d8b075d2a6d59d6090466365f9a6824c6996d6b92830956831cc55"
+      }
+    },
+    "runner_fingerprint": "25baeec1c9ec75da90b5dd0f29c101897450b96651d7e47570e18684be486ebb",
+    "source_commit": "7bd31af9a5092466d7a7284995f388d33ed3110f",
+    "cargo_lock_sha256": "dc480dad8567eda4a4d13b393651d3d1201cc26ba7599e3c8ff822b725569def",
+    "toolchain_identity": "rustc-1.94.0",
+    "prebuild_contract_digest": "f2caae0689d8b075d2a6d59d6090466365f9a6824c6996d6b92830956831cc55",
+    "prebuild_manifest_sha256": "2768ca970a2b3e09c3ee63bbd9bba466c3aee40be8dfca8e06cbe98309e4b296",
+    "binary_sha256": [
+      {
+        "id": "hydracache-loadgen",
+        "sha256": "c2c0e14ab40dd5b3c2ee5d71631bdfee81d7d61c0cd2c83c8b927c126aff7bd2"
+      },
+      {
+        "id": "hydracache-server",
+        "sha256": "a17b5148cad43e2193c69a64e3372e2832fa94a47196a7b6bec405128f3633c6"
+      }
+    ],
+    "binary_set_digest": "226175eeacd19e16f15bf8af6e9da5253aef1330c5583c73bf039920fa8abf61",
+    "scenario_digest": "44c515cfa134db951bbdcb5903767e0fc137c00b67c96957d79b537496a00a9f",
+    "workload_digest": "2b9824cba4308ce2f37e6a399c29306cd3d8e2a8ddb0354de3f22070a4d6563d",
+    "slo_digest": "0ee87d0a87c88b5151a769980cdc818b74e552104608bea73b48c644e6ea9c3d",
+    "methodology_digest": "bd0bbaa791b0b0f25376b9c38d4dd282c0879ceeb1e53426095bc7985f54c6ac",
+    "stable": true,
+    "maximum_spread_ratio": 0.021857,
+    "metric": [
+      {
+        "id": "grid_model_fault.maximum_recovery_cost_nanos",
+        "value": 183.0,
+        "unit": "nanoseconds"
+      },
+      {
+        "id": "grid_model_fault.maximum_decision_cost_increase_nanos",
+        "value": 76792.0,
+        "unit": "nanoseconds"
+      }
+    ],
+    "receipt_sha256": "ecc3dbbbd1860652c235adacd3fb54c689ad4c42c1e954c116ef02291435eeec"
+  }
+}

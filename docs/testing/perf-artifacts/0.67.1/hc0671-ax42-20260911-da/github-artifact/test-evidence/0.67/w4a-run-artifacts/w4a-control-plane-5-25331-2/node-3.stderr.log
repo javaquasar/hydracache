@@ -1,0 +1,3 @@
+HC_RAFT_QUORUM_NOT_READY node_id=member-127-0-0-1-43377 voters=4 reachable_voters=2 committed_member_voters=2 known_peer_voters=4
+HC_RAFT_QUORUM_NOT_READY node_id=member-127-0-0-1-43377 voters=4 reachable_voters=2 committed_member_voters=2 known_peer_voters=4
+HC_RAFT_QUORUM_NOT_READY node_id=member-127-0-0-1-43377 voters=4 reachable_voters=2 committed_member_voters=2 known_peer_voters=4

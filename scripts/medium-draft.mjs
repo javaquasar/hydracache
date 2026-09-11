@@ -212,7 +212,8 @@ async function markdownToHtml(markdown, baseDir) {
     list = null;
   };
 
-  for (const line of lines) {
+  for (let lineIndex = 0; lineIndex < lines.length; lineIndex += 1) {
+    const line = lines[lineIndex];
     const fence = line.match(/^```([A-Za-z0-9_-]*)\s*$/);
     if (fence && !inCode) {
       flushParagraph();
@@ -233,6 +234,15 @@ async function markdownToHtml(markdown, baseDir) {
 
     if (inCode) {
       codeLines.push(line);
+      continue;
+    }
+
+    const table = parseMarkdownTable(lines, lineIndex);
+    if (table) {
+      flushParagraph();
+      flushList();
+      html.push(table.html);
+      lineIndex = table.endIndex - 1;
       continue;
     }
 
@@ -298,6 +308,68 @@ async function markdownToHtml(markdown, baseDir) {
   flushList();
 
   return html.join("\n");
+}
+
+function parseMarkdownTable(lines, startIndex) {
+  if (startIndex + 2 >= lines.length) {
+    return null;
+  }
+
+  const headers = parseMarkdownTableRow(lines[startIndex]);
+  const separator = parseMarkdownTableRow(lines[startIndex + 1]);
+  if (!headers || !separator || headers.length !== separator.length || headers.length < 2) {
+    return null;
+  }
+  if (!separator.every((cell) => /^:?-{3,}:?$/.test(cell))) {
+    return null;
+  }
+
+  const rows = [];
+  let endIndex = startIndex + 2;
+  while (endIndex < lines.length) {
+    const row = parseMarkdownTableRow(lines[endIndex]);
+    if (!row || row.length !== headers.length) {
+      break;
+    }
+    rows.push(row);
+    endIndex += 1;
+  }
+
+  if (rows.length === 0) {
+    return null;
+  }
+
+  return {
+    endIndex,
+    html: markdownTableToListHtml(headers, rows)
+  };
+}
+
+function parseMarkdownTableRow(line) {
+  const trimmed = line.trim();
+  if (!trimmed.startsWith("|") || !trimmed.endsWith("|")) {
+    return null;
+  }
+  return trimmed
+    .slice(1, -1)
+    .split("|")
+    .map((cell) => cell.trim());
+}
+
+function markdownTableToListHtml(headers, rows) {
+  const items = rows.map((row) => {
+    if (headers.length === 2) {
+      return `<li><strong>${formatInline(row[0])}</strong> — ${formatInline(row[1])}</li>`;
+    }
+
+    const subject = `<strong>${formatInline(headers[0])}: ${formatInline(row[0])}</strong>`;
+    const details = headers
+      .slice(1)
+      .map((header, index) => `<strong>${formatInline(header)}:</strong> ${formatInline(row[index + 1])}`)
+      .join("; ");
+    return `<li>${subject} — ${details}</li>`;
+  });
+  return `<ul>${items.join("")}</ul>`;
 }
 
 function codeBlockToHtml(codeLines, codeLang) {

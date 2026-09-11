@@ -1,0 +1,53 @@
+reference CPU isolation verified: measurement=1-4 housekeeping=0,5-7 smt=off irq=housekeeping-only measurement-idle=latency-cap-us-v1:1us housekeeping-idle=latency-cap-us-v1:1us dormant-unmapped-nvme=8
+REFERENCE_HOST_VERIFIED=true
+reference CPU isolation verified: measurement=1-4 housekeeping=0,5-7 smt=off irq=housekeeping-only measurement-idle=latency-cap-us-v1:1us housekeeping-idle=latency-cap-us-v1:1us dormant-unmapped-nvme=8
+reference CPU isolation verified: measurement=1-4 housekeeping=0,5-7 smt=off irq=housekeeping-only measurement-idle=latency-cap-us-v1:1us housekeeping-idle=latency-cap-us-v1:1us dormant-unmapped-nvme=8
+runner provisioning audit passed: /opt/hydracache/trusted-main/target/test-evidence/0.67.1/runner-provisioned.json
+/var/lib/hydracache-perf/host-tuning-hc0671-ax42-20260911-da/freeze/host-freeze.json
+SAMPLE_FAMILY_FROZEN=true
+reference CPU isolation verified: measurement=1-4 housekeeping=0,5-7 smt=off irq=housekeeping-only measurement-idle=latency-cap-us-v1:1us housekeeping-idle=latency-cap-us-v1:1us dormant-unmapped-nvme=8
+frozen host contract verified
+reference runtime IRQ guard passed: phase=burn-in-preflight measurement=1-4 irq_files=68 dormant-unmapped-nvme=8
+reference runtime IRQ delta baseline captured: phase=baseline measurement=1-4 file=/home/hydracache-admin/hydracache-campaigns/hc0671-ax42-20260911-da/irq-burn-in/irq-baseline.tsv
+PING 37.27.115.65 (37.27.115.65) 56(84) bytes of data.
+PING 37.27.115.65 (37.27.115.65) 56(84) bytes of data.
+PING 37.27.115.65 (37.27.115.65) 56(84) bytes of data.
+PING 37.27.115.65 (37.27.115.65) 56(84) bytes of data.
+
+
+--- 37.27.115.65 ping statistics ---
+32 packets transmitted, 32 received, 0% packet loss, time 666ms
+rtt min/avg/max/mdev = 0.490/1.445/10.102/2.199 ms
+--- 37.27.115.65 ping statistics ---
+32 packets transmitted, 32 received, 0% packet loss, time 667ms
+rtt min/avg/max/mdev = 0.432/1.445/10.102/2.209 ms
+
+--- 37.27.115.65 ping statistics ---
+32 packets transmitted, 32 received, 0% packet loss, time 668ms
+rtt min/avg/max/mdev = 0.420/1.412/9.144/2.093 ms
+
+--- 37.27.115.65 ping statistics ---
+32 packets transmitted, 32 received, 0% packet loss, time 667ms
+rtt min/avg/max/mdev = 0.425/1.407/9.143/2.091 ms
+reference runtime IRQ delta guard passed: phase=post-stimulus measurement=1-4 monitored=8
+reference IRQ burn-in idle progress: 60/900s
+reference IRQ burn-in idle progress: 120/900s
+reference IRQ burn-in idle progress: 180/900s
+reference IRQ burn-in idle progress: 240/900s
+reference IRQ burn-in idle progress: 300/900s
+reference IRQ burn-in idle progress: 360/900s
+reference IRQ burn-in idle progress: 420/900s
+reference IRQ burn-in idle progress: 480/900s
+reference IRQ burn-in idle progress: 540/900s
+reference IRQ burn-in idle progress: 600/900s
+reference IRQ burn-in idle progress: 660/900s
+reference IRQ burn-in idle progress: 720/900s
+reference IRQ burn-in idle progress: 780/900s
+reference IRQ burn-in idle progress: 840/900s
+reference IRQ burn-in idle progress: 900/900s
+reference runtime IRQ guard passed: phase=burn-in-post-idle measurement=1-4 irq_files=68 dormant-unmapped-nvme=8
+reference runtime IRQ delta guard passed: phase=post-idle measurement=1-4 monitored=8
+reference IRQ burn-in passed: receipt=/home/hydracache-admin/hydracache-campaigns/hc0671-ax42-20260911-da/irq-burn-in/irq-burn-in.json
+reference CPU isolation verified: measurement=1-4 housekeeping=0,5-7 smt=off irq=housekeeping-only measurement-idle=latency-cap-us-v1:1us housekeeping-idle=latency-cap-us-v1:1us dormant-unmapped-nvme=8
+frozen host contract verified
+HOST_ADMISSION_PASSED=true campaign_dir=/home/hydracache-admin/hydracache-campaigns/hc0671-ax42-20260911-da

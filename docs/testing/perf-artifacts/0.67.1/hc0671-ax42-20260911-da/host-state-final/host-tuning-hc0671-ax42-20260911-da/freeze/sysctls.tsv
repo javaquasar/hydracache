@@ -1,0 +1,7 @@
+kernel.numa_balancing	sysctl	kernel.numa_balancing	0
+kernel.sched_autogroup_enabled	sysctl	kernel.sched_autogroup_enabled	1
+kernel.sched_migration_cost_ns	debugfs	/sys/kernel/debug/sched/migration_cost_ns	500000
+kernel.watchdog	sysctl	kernel.watchdog	1
+vm.dirty_background_ratio	sysctl	vm.dirty_background_ratio	10
+vm.dirty_ratio	sysctl	vm.dirty_ratio	20
+vm.swappiness	sysctl	vm.swappiness	60

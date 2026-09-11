@@ -1,0 +1,69 @@
+{
+  "schema_version": 4,
+  "release": "0.67.1",
+  "profile": "reference-v1",
+  "ship_evidence_eligible": false,
+  "passed": true,
+  "observed_runner": {
+    "runner_class": "self-hosted-bare-metal-v1",
+    "fingerprint": "25baeec1c9ec75da90b5dd0f29c101897450b96651d7e47570e18684be486ebb",
+    "cpu_model": "AMD Ryzen 7 PRO 8700GE w/ Radeon 780M Graphics",
+    "logical_cores": 4,
+    "ram_bytes": 66490486784,
+    "os": "linux",
+    "kernel": "6.8.0-138-generic",
+    "cpu_affinity": "1-4",
+    "cgroup_cpu_quota": "unlimited",
+    "governor": "performance",
+    "turbo": "enabled",
+    "shared_hardware": false,
+    "calibration_score": 0.000016370582848409385,
+    "attestation": {
+      "schema_version": 5,
+      "contract_version": "hydracache-reference-host-v5",
+      "virtualization": "none",
+      "physical_cores": 8,
+      "measurement_cores": [
+        {
+          "logical_cpu": 1,
+          "package_id": 0,
+          "core_id": 1
+        },
+        {
+          "logical_cpu": 2,
+          "package_id": 0,
+          "core_id": 2
+        },
+        {
+          "logical_cpu": 3,
+          "package_id": 0,
+          "core_id": 3
+        },
+        {
+          "logical_cpu": 4,
+          "package_id": 0,
+          "core_id": 4
+        }
+      ],
+      "cpu_isolation": {
+        "smt_control": "off",
+        "online_cpus": "0-7",
+        "isolated_cpus": "1-4",
+        "nohz_full_cpus": "1-4",
+        "rcu_nocbs_cpus": "1-4",
+        "housekeeping_cpus": "0,5-7",
+        "irq_affinity_policy": "housekeeping-only-v1",
+        "measurement_idle_policy": "latency-cap-us-v1",
+        "measurement_max_idle_latency_us": 1,
+        "housekeeping_idle_policy": "latency-cap-us-v1",
+        "housekeeping_max_idle_latency_us": 1
+      },
+      "host_digest": "571591a534c9894242fc0af0c5f80c31131fe7e4cdb9d0ea63da6d8b56af8932",
+      "storage_class": "local-nvme",
+      "storage_identity_digest": "74ec6d1126c24b7a3899494eef2564aec2d3085056ac200e4a8cc8ca0ae43a50",
+      "os_image": "ubuntu-24.04",
+      "toolchain_identity": "rustc-1.94.0",
+      "prebuild_contract_digest": "f2caae0689d8b075d2a6d59d6090466365f9a6824c6996d6b92830956831cc55"
+    }
+  }
+}

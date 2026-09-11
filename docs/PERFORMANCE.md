@@ -73,6 +73,34 @@ the immutable input to a new exact `main` SHA's frozen-candidate ship gate. The 
 and scenario schema remains the 0.67 measurement contract. Operational details are in
 [`testing/PERF_REFERENCE_0_67_1_REVIEW_AND_ACTIVATION.md`](testing/PERF_REFERENCE_0_67_1_REVIEW_AND_ACTIVATION.md).
 
+## Published 0.67.1 reference result
+
+The final exact-SHA AX42 campaign passed all 19 numerical budget checks and aggregated W0-W7 as
+`ship-ready`. Its selected capacity and p99 results were:
+
+| Surface | Capacity | p99 at SLO | Effective release boundary |
+| --- | ---: | ---: | --- |
+| Embedded local cache | 20,000 ops/s | 1,917 us | at least 18,000 ops/s; at most 2,137.3 us |
+| In-process client surface | 24,989.1 ops/s | 2,085 us | at least 22,490.6 ops/s; at most 2,269.3 us |
+| Node-local RESP endpoint | 49,948.1 ops/s | 3,769 us | at least 44,954.9 ops/s; at most 3,890.7 us |
+
+The pinned same-host Redis comparison used five alternating-order repeats and produced these stable
+medians:
+
+| Operation | Pipeline | HydraCache | Redis | HydraCache / Redis |
+| --- | ---: | ---: | ---: | ---: |
+| GET | 1 | 59,630 req/s | 87,796 req/s | 67.9% |
+| SET | 1 | 59,382 req/s | 87,719 req/s | 67.6% |
+| GET | 10 | 136,426 req/s | 757,576 req/s | 18.1% |
+| SET | 10 | 132,979 req/s | 746,269 req/s | 18.0% |
+
+The pipeline-10 rows identify pipelined RESP processing as a measured optimization opportunity; they
+do not establish general Redis-relative performance. Full identity, host, budget, artifact, and
+claim-boundary details are in the
+[`0.67.1` AX42 report](testing/perf-scenarios/0.67/results/ax42-reference-0.67.1-20260911.md).
+The reusable host-preparation and low-noise measurement lessons are explained in
+[`How to Measure Cache Performance Without Measuring Noise`](articles/006-measuring-cache-performance-on-bare-metal.md).
+
 ## Quotation rule
 
 No numerical 0.67 release claim is permitted. The reviewed 0.67.1 bootstrap values remain the

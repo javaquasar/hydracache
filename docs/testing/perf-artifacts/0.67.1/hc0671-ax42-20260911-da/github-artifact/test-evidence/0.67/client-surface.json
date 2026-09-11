@@ -1,0 +1,2902 @@
+{
+  "build": {
+    "binary_sha256": [
+      [
+        "hydracache-loadgen",
+        "c2c0e14ab40dd5b3c2ee5d71631bdfee81d7d61c0cd2c83c8b927c126aff7bd2"
+      ],
+      [
+        "hydracache-server",
+        "a17b5148cad43e2193c69a64e3372e2832fa94a47196a7b6bec405128f3633c6"
+      ]
+    ],
+    "prebuild_contract_digest": "f2caae0689d8b075d2a6d59d6090466365f9a6824c6996d6b92830956831cc55",
+    "prebuild_manifest_sha256": "2768ca970a2b3e09c3ee63bbd9bba466c3aee40be8dfca8e06cbe98309e4b296"
+  },
+  "measurements": [
+    {
+      "evidence": {
+        "claim": "capacity_knee",
+        "criteria": {
+          "max_drain_ms": 2000,
+          "max_error_ratio": 0.0,
+          "max_rejection_ratio": 0.0,
+          "max_robust_spread_ratio": 0.15,
+          "max_timeout_ratio": 0.0,
+          "min_achieved_ratio": 0.95,
+          "p999_slo_us": 25000,
+          "p99_slo_us": 10000
+        },
+        "dimensions": {
+          "capacity_scenario_source_sha256": "d2cb20b4441d7c132a18b532c0eed7469087b9ee976c61e0133b1928a689e34e",
+          "direct_prebuilt_exec": true,
+          "execution_mode": "in-process-axum-router",
+          "key_count": 10000,
+          "loadgen_binary_path": "/opt/actions-runner/_work/hydracache/hydracache/target/release/hydracache-loadgen",
+          "loadgen_binary_sha256": "c2c0e14ab40dd5b3c2ee5d71631bdfee81d7d61c0cd2c83c8b927c126aff7bd2",
+          "network_boundary": "none",
+          "preload_operations": 10000,
+          "reference_instance_created_unix_nanos": 1789118662329929698,
+          "reference_instance_receipt_sha256": "97a01e31f625e10dce049bdb4f5b5e67ebc9f27345208116cb5c33f94e47b1b3",
+          "reference_instance_schema_version": 1,
+          "reference_instance_sequence": 1,
+          "reference_owning_pid": 26512,
+          "repeats": 3,
+          "steady_operations": 100000,
+          "surface_capability_sha256": "5ea97b399b35808dfe04537ddc6128d651cc76349b682d84dda198af3ec7be3e",
+          "w6_capacity_eligible": true,
+          "warmup_operations": 10000,
+          "workload": "A"
+        },
+        "id": "client_surface_in_process_knee_at_slo_workload_a",
+        "knee": {
+          "evaluated": [
+            {
+              "repeats": [
+                {
+                  "phase": {
+                    "preload_ms": 216,
+                    "preload_operations": 10000,
+                    "reset_ms": 49,
+                    "reset_operations": 1,
+                    "steady_ms": 100000,
+                    "steady_operations": 100000,
+                    "warmup_errors": 0,
+                    "warmup_ms": 84,
+                    "warmup_operations": 10000,
+                    "warmup_rejections": 0,
+                    "warmup_samples_in_steady_histogram": 0,
+                    "warmup_successes": 10000,
+                    "warmup_timeouts": 0
+                  },
+                  "preloaded_state_digest": "1163c5b94b5236ff57fda62f31e79bde1637354189928643f690269c26ac13ee",
+                  "reset_state_digest": "9a2d31cc7749d53399aa765a23d6720fc9101ae5a7c63441a74936eaded27760",
+                  "state_digest": "2c6aa46c123917f28dcfe3693cec57add4908f341076cf4a761468e849b4861f",
+                  "steady": {
+                    "achieved_rate_per_second": 999.9988619012953,
+                    "backlog_drained": true,
+                    "backlog_high_water": 2,
+                    "completed": 100000,
+                    "drain_ms": 0,
+                    "elapsed_ms": 100000,
+                    "errors": 0,
+                    "latency": {
+                      "max_us": 2012,
+                      "overflow_count": 0,
+                      "p50_us": 1419,
+                      "p90_us": 1847,
+                      "p999_min_samples": 10000,
+                      "p999_reportable": true,
+                      "p999_us": 1970,
+                      "p99_us": 1940,
+                      "samples": 100000
+                    },
+                    "offered": 100000,
+                    "offered_rate_per_second": 1000.0,
+                    "rejections": 0,
+                    "started": 100000,
+                    "successes": 100000,
+                    "timeouts": 0
+                  }
+                },
+                {
+                  "phase": {
+                    "preload_ms": 215,
+                    "preload_operations": 10000,
+                    "reset_ms": 51,
+                    "reset_operations": 1,
+                    "steady_ms": 100000,
+                    "steady_operations": 100000,
+                    "warmup_errors": 0,
+                    "warmup_ms": 83,
+                    "warmup_operations": 10000,
+                    "warmup_rejections": 0,
+                    "warmup_samples_in_steady_histogram": 0,
+                    "warmup_successes": 10000,
+                    "warmup_timeouts": 0
+                  },
+                  "preloaded_state_digest": "1163c5b94b5236ff57fda62f31e79bde1637354189928643f690269c26ac13ee",
+                  "reset_state_digest": "9a2d31cc7749d53399aa765a23d6720fc9101ae5a7c63441a74936eaded27760",
+                  "state_digest": "2c6aa46c123917f28dcfe3693cec57add4908f341076cf4a761468e849b4861f",
+                  "steady": {
+                    "achieved_rate_per_second": 999.9991897506565,
+                    "backlog_drained": true,
+                    "backlog_high_water": 2,
+                    "completed": 100000,
+                    "drain_ms": 0,
+                    "elapsed_ms": 100000,
+                    "errors": 0,
+                    "latency": {
+                      "max_us": 1209,
+                      "overflow_count": 0,
+                      "p50_us": 602,
+                      "p90_us": 1030,
+                      "p999_min_samples": 10000,
+                      "p999_reportable": true,
+                      "p999_us": 1151,
+                      "p99_us": 1123,
+                      "samples": 100000
+                    },
+                    "offered": 100000,
+                    "offered_rate_per_second": 1000.0,
+                    "rejections": 0,
+                    "started": 100000,
+                    "successes": 100000,
+                    "timeouts": 0
+                  }
+                },
+                {
+                  "phase": {
+                    "preload_ms": 216,
+                    "preload_operations": 10000,
+                    "reset_ms": 51,
+                    "reset_operations": 1,
+                    "steady_ms": 99999,
+                    "steady_operations": 100000,
+                    "warmup_errors": 0,
+                    "warmup_ms": 84,
+                    "warmup_operations": 10000,
+                    "warmup_rejections": 0,
+                    "warmup_samples_in_steady_histogram": 0,
+                    "warmup_successes": 10000,
+                    "warmup_timeouts": 0
+                  },
+                  "preloaded_state_digest": "1163c5b94b5236ff57fda62f31e79bde1637354189928643f690269c26ac13ee",
+                  "reset_state_digest": "9a2d31cc7749d53399aa765a23d6720fc9101ae5a7c63441a74936eaded27760",
+                  "state_digest": "2c6aa46c123917f28dcfe3693cec57add4908f341076cf4a761468e849b4861f",
+                  "steady": {
+                    "achieved_rate_per_second": 1000.0046488416117,
+                    "backlog_drained": true,
+                    "backlog_high_water": 2,
+                    "completed": 100000,
+                    "drain_ms": 0,
+                    "elapsed_ms": 99999,
+                    "errors": 0,
+                    "latency": {
+                      "max_us": 1293,
+                      "overflow_count": 0,
+                      "p50_us": 720,
+                      "p90_us": 1149,
+                      "p999_min_samples": 10000,
+                      "p999_reportable": true,
+                      "p999_us": 1270,
+                      "p99_us": 1241,
+                      "samples": 100000
+                    },
+                    "offered": 100000,
+                    "offered_rate_per_second": 1000.0,
+                    "rejections": 0,
+                    "started": 100000,
+                    "successes": 100000,
+                    "timeouts": 0
+                  }
+                }
+              ],
+              "sample": {
+                "achieved_rate_max_per_second": 1000.0046488416117,
+                "achieved_rate_min_per_second": 999.9988619012953,
+                "achieved_rate_per_second": 999.9991897506565,
+                "backlog_drained": true,
+                "completed": 100000,
+                "drain_ms": 0,
+                "errors": 0,
+                "latency": {
+                  "max_us": 1209,
+                  "overflow_count": 0,
+                  "p50_us": 602,
+                  "p90_us": 1030,
+                  "p999_min_samples": 10000,
+                  "p999_reportable": true,
+                  "p999_us": 1151,
+                  "p99_us": 1123,
+                  "samples": 100000
+                },
+                "offered": 100000,
+                "offered_rate_per_second": 1000.0,
+                "rejections": 0,
+                "robust_spread_ratio": 5.7869450052660955e-6,
+                "started": 100000,
+                "successes": 100000,
+                "timeouts": 0
+              },
+              "verdict": {
+                "reasons": [],
+                "sustainable": true
+              }
+            },
+            {
+              "repeats": [
+                {
+                  "phase": {
+                    "preload_ms": 216,
+                    "preload_operations": 10000,
+                    "reset_ms": 52,
+                    "reset_operations": 1,
+                    "steady_ms": 20001,
+                    "steady_operations": 100000,
+                    "warmup_errors": 0,
+                    "warmup_ms": 84,
+                    "warmup_operations": 10000,
+                    "warmup_rejections": 0,
+                    "warmup_samples_in_steady_histogram": 0,
+                    "warmup_successes": 10000,
+                    "warmup_timeouts": 0
+                  },
+                  "preloaded_state_digest": "1163c5b94b5236ff57fda62f31e79bde1637354189928643f690269c26ac13ee",
+                  "reset_state_digest": "9a2d31cc7749d53399aa765a23d6720fc9101ae5a7c63441a74936eaded27760",
+                  "state_digest": "2c6aa46c123917f28dcfe3693cec57add4908f341076cf4a761468e849b4861f",
+                  "steady": {
+                    "achieved_rate_per_second": 4999.658537570911,
+                    "backlog_drained": true,
+                    "backlog_high_water": 10,
+                    "completed": 100000,
+                    "drain_ms": 0,
+                    "elapsed_ms": 20001,
+                    "errors": 0,
+                    "latency": {
+                      "max_us": 2255,
+                      "overflow_count": 0,
+                      "p50_us": 1099,
+                      "p90_us": 1659,
+                      "p999_min_samples": 10000,
+                      "p999_reportable": true,
+                      "p999_us": 2022,
+                      "p99_us": 1964,
+                      "samples": 100000
+                    },
+                    "offered": 100000,
+                    "offered_rate_per_second": 5000.0,
+                    "rejections": 0,
+                    "started": 100000,
+                    "successes": 100000,
+                    "timeouts": 0
+                  }
+                },
+                {
+                  "phase": {
+                    "preload_ms": 216,
+                    "preload_operations": 10000,
+                    "reset_ms": 52,
+                    "reset_operations": 1,
+                    "steady_ms": 20001,
+                    "steady_operations": 100000,
+                    "warmup_errors": 0,
+                    "warmup_ms": 84,
+                    "warmup_operations": 10000,
+                    "warmup_rejections": 0,
+                    "warmup_samples_in_steady_histogram": 0,
+                    "warmup_successes": 10000,
+                    "warmup_timeouts": 0
+                  },
+                  "preloaded_state_digest": "1163c5b94b5236ff57fda62f31e79bde1637354189928643f690269c26ac13ee",
+                  "reset_state_digest": "9a2d31cc7749d53399aa765a23d6720fc9101ae5a7c63441a74936eaded27760",
+                  "state_digest": "2c6aa46c123917f28dcfe3693cec57add4908f341076cf4a761468e849b4861f",
+                  "steady": {
+                    "achieved_rate_per_second": 4999.744412315681,
+                    "backlog_drained": true,
+                    "backlog_high_water": 10,
+                    "completed": 100000,
+                    "drain_ms": 0,
+                    "elapsed_ms": 20001,
+                    "errors": 0,
+                    "latency": {
+                      "max_us": 2209,
+                      "overflow_count": 0,
+                      "p50_us": 1054,
+                      "p90_us": 1614,
+                      "p999_min_samples": 10000,
+                      "p999_reportable": true,
+                      "p999_us": 1976,
+                      "p99_us": 1919,
+                      "samples": 100000
+                    },
+                    "offered": 100000,
+                    "offered_rate_per_second": 5000.0,
+                    "rejections": 0,
+                    "started": 100000,
+                    "successes": 100000,
+                    "timeouts": 0
+                  }
+                },
+                {
+                  "phase": {
+                    "preload_ms": 215,
+                    "preload_operations": 10000,
+                    "reset_ms": 51,
+                    "reset_operations": 1,
+                    "steady_ms": 20000,
+                    "steady_operations": 100000,
+                    "warmup_errors": 0,
+                    "warmup_ms": 83,
+                    "warmup_operations": 10000,
+                    "warmup_rejections": 0,
+                    "warmup_samples_in_steady_histogram": 0,
+                    "warmup_successes": 10000,
+                    "warmup_timeouts": 0
+                  },
+                  "preloaded_state_digest": "1163c5b94b5236ff57fda62f31e79bde1637354189928643f690269c26ac13ee",
+                  "reset_state_digest": "9a2d31cc7749d53399aa765a23d6720fc9101ae5a7c63441a74936eaded27760",
+                  "state_digest": "2c6aa46c123917f28dcfe3693cec57add4908f341076cf4a761468e849b4861f",
+                  "steady": {
+                    "achieved_rate_per_second": 4999.773956469598,
+                    "backlog_drained": true,
+                    "backlog_high_water": 10,
+                    "completed": 100000,
+                    "drain_ms": 0,
+                    "elapsed_ms": 20000,
+                    "errors": 0,
+                    "latency": {
+                      "max_us": 2233,
+                      "overflow_count": 0,
+                      "p50_us": 1048,
+                      "p90_us": 1608,
+                      "p999_min_samples": 10000,
+                      "p999_reportable": true,
+                      "p999_us": 1970,
+                      "p99_us": 1912,
+                      "samples": 100000
+                    },
+                    "offered": 100000,
+                    "offered_rate_per_second": 5000.0,
+                    "rejections": 0,
+                    "started": 100000,
+                    "successes": 100000,
+                    "timeouts": 0
+                  }
+                }
+              ],
+              "sample": {
+                "achieved_rate_max_per_second": 4999.773956469598,
+                "achieved_rate_min_per_second": 4999.658537570911,
+                "achieved_rate_per_second": 4999.744412315681,
+                "backlog_drained": true,
+                "completed": 100000,
+                "drain_ms": 0,
+                "errors": 0,
+                "latency": {
+                  "max_us": 2209,
+                  "overflow_count": 0,
+                  "p50_us": 1054,
+                  "p90_us": 1614,
+                  "p999_min_samples": 10000,
+                  "p999_reportable": true,
+                  "p999_us": 1976,
+                  "p99_us": 1919,
+                  "samples": 100000
+                },
+                "offered": 100000,
+                "offered_rate_per_second": 5000.0,
+                "rejections": 0,
+                "robust_spread_ratio": 0.00002308495978359968,
+                "started": 100000,
+                "successes": 100000,
+                "timeouts": 0
+              },
+              "verdict": {
+                "reasons": [],
+                "sustainable": true
+              }
+            },
+            {
+              "repeats": [
+                {
+                  "phase": {
+                    "preload_ms": 216,
+                    "preload_operations": 10000,
+                    "reset_ms": 51,
+                    "reset_operations": 1,
+                    "steady_ms": 10001,
+                    "steady_operations": 100000,
+                    "warmup_errors": 0,
+                    "warmup_ms": 84,
+                    "warmup_operations": 10000,
+                    "warmup_rejections": 0,
+                    "warmup_samples_in_steady_histogram": 0,
+                    "warmup_successes": 10000,
+                    "warmup_timeouts": 0
+                  },
+                  "preloaded_state_digest": "1163c5b94b5236ff57fda62f31e79bde1637354189928643f690269c26ac13ee",
+                  "reset_state_digest": "9a2d31cc7749d53399aa765a23d6720fc9101ae5a7c63441a74936eaded27760",
+                  "state_digest": "2c6aa46c123917f28dcfe3693cec57add4908f341076cf4a761468e849b4861f",
+                  "steady": {
+                    "achieved_rate_per_second": 9998.489608162812,
+                    "backlog_drained": true,
+                    "backlog_high_water": 20,
+                    "completed": 100000,
+                    "drain_ms": 0,
+                    "elapsed_ms": 10001,
+                    "errors": 0,
+                    "latency": {
+                      "max_us": 2423,
+                      "overflow_count": 0,
+                      "p50_us": 1090,
+                      "p90_us": 1653,
+                      "p999_min_samples": 10000,
+                      "p999_reportable": true,
+                      "p999_us": 2177,
+                      "p99_us": 1974,
+                      "samples": 100000
+                    },
+                    "offered": 100000,
+                    "offered_rate_per_second": 10000.0,
+                    "rejections": 0,
+                    "started": 100000,
+                    "successes": 100000,
+                    "timeouts": 0
+                  }
+                },
+                {
+                  "phase": {
+                    "preload_ms": 216,
+                    "preload_operations": 10000,
+                    "reset_ms": 51,
+                    "reset_operations": 1,
+                    "steady_ms": 10001,
+                    "steady_operations": 100000,
+                    "warmup_errors": 0,
+                    "warmup_ms": 84,
+                    "warmup_operations": 10000,
+                    "warmup_rejections": 0,
+                    "warmup_samples_in_steady_histogram": 0,
+                    "warmup_successes": 10000,
+                    "warmup_timeouts": 0
+                  },
+                  "preloaded_state_digest": "1163c5b94b5236ff57fda62f31e79bde1637354189928643f690269c26ac13ee",
+                  "reset_state_digest": "9a2d31cc7749d53399aa765a23d6720fc9101ae5a7c63441a74936eaded27760",
+                  "state_digest": "2c6aa46c123917f28dcfe3693cec57add4908f341076cf4a761468e849b4861f",
+                  "steady": {
+                    "achieved_rate_per_second": 9998.729159524079,
+                    "backlog_drained": true,
+                    "backlog_high_water": 20,
+                    "completed": 100000,
+                    "drain_ms": 0,
+                    "elapsed_ms": 10001,
+                    "errors": 0,
+                    "latency": {
+                      "max_us": 2401,
+                      "overflow_count": 0,
+                      "p50_us": 1073,
+                      "p90_us": 1642,
+                      "p999_min_samples": 10000,
+                      "p999_reportable": true,
+                      "p999_us": 2185,
+                      "p99_us": 1966,
+                      "samples": 100000
+                    },
+                    "offered": 100000,
+                    "offered_rate_per_second": 10000.0,
+                    "rejections": 0,
+                    "started": 100000,
+                    "successes": 100000,
+                    "timeouts": 0
+                  }
+                },
+                {
+                  "phase": {
+                    "preload_ms": 215,
+                    "preload_operations": 10000,
+                    "reset_ms": 50,
+                    "reset_operations": 1,
+                    "steady_ms": 10001,
+                    "steady_operations": 100000,
+                    "warmup_errors": 0,
+                    "warmup_ms": 82,
+                    "warmup_operations": 10000,
+                    "warmup_rejections": 0,
+                    "warmup_samples_in_steady_histogram": 0,
+                    "warmup_successes": 10000,
+                    "warmup_timeouts": 0
+                  },
+                  "preloaded_state_digest": "1163c5b94b5236ff57fda62f31e79bde1637354189928643f690269c26ac13ee",
+                  "reset_state_digest": "9a2d31cc7749d53399aa765a23d6720fc9101ae5a7c63441a74936eaded27760",
+                  "state_digest": "2c6aa46c123917f28dcfe3693cec57add4908f341076cf4a761468e849b4861f",
+                  "steady": {
+                    "achieved_rate_per_second": 9998.614078104574,
+                    "backlog_drained": true,
+                    "backlog_high_water": 20,
+                    "completed": 100000,
+                    "drain_ms": 0,
+                    "elapsed_ms": 10001,
+                    "errors": 0,
+                    "latency": {
+                      "max_us": 2371,
+                      "overflow_count": 0,
+                      "p50_us": 1052,
+                      "p90_us": 1616,
+                      "p999_min_samples": 10000,
+                      "p999_reportable": true,
+                      "p999_us": 2161,
+                      "p99_us": 1943,
+                      "samples": 100000
+                    },
+                    "offered": 100000,
+                    "offered_rate_per_second": 10000.0,
+                    "rejections": 0,
+                    "started": 100000,
+                    "successes": 100000,
+                    "timeouts": 0
+                  }
+                }
+              ],
+              "sample": {
+                "achieved_rate_max_per_second": 9998.729159524079,
+                "achieved_rate_min_per_second": 9998.489608162812,
+                "achieved_rate_per_second": 9998.614078104574,
+                "backlog_drained": true,
+                "completed": 100000,
+                "drain_ms": 0,
+                "errors": 0,
+                "latency": {
+                  "max_us": 2371,
+                  "overflow_count": 0,
+                  "p50_us": 1052,
+                  "p90_us": 1616,
+                  "p999_min_samples": 10000,
+                  "p999_reportable": true,
+                  "p999_us": 2161,
+                  "p99_us": 1943,
+                  "samples": 100000
+                },
+                "offered": 100000,
+                "offered_rate_per_second": 10000.0,
+                "rejections": 0,
+                "robust_spread_ratio": 0.000023958456581597878,
+                "started": 100000,
+                "successes": 100000,
+                "timeouts": 0
+              },
+              "verdict": {
+                "reasons": [],
+                "sustainable": true
+              }
+            },
+            {
+              "repeats": [
+                {
+                  "phase": {
+                    "preload_ms": 215,
+                    "preload_operations": 10000,
+                    "reset_ms": 51,
+                    "reset_operations": 1,
+                    "steady_ms": 4001,
+                    "steady_operations": 100000,
+                    "warmup_errors": 0,
+                    "warmup_ms": 83,
+                    "warmup_operations": 10000,
+                    "warmup_rejections": 0,
+                    "warmup_samples_in_steady_histogram": 0,
+                    "warmup_successes": 10000,
+                    "warmup_timeouts": 0
+                  },
+                  "preloaded_state_digest": "1163c5b94b5236ff57fda62f31e79bde1637354189928643f690269c26ac13ee",
+                  "reset_state_digest": "9a2d31cc7749d53399aa765a23d6720fc9101ae5a7c63441a74936eaded27760",
+                  "state_digest": "2c6aa46c123917f28dcfe3693cec57add4908f341076cf4a761468e849b4861f",
+                  "steady": {
+                    "achieved_rate_per_second": 24992.033533142963,
+                    "backlog_drained": true,
+                    "backlog_high_water": 50,
+                    "completed": 100000,
+                    "drain_ms": 0,
+                    "elapsed_ms": 4001,
+                    "errors": 0,
+                    "latency": {
+                      "max_us": 2709,
+                      "overflow_count": 0,
+                      "p50_us": 1129,
+                      "p90_us": 1689,
+                      "p999_min_samples": 10000,
+                      "p999_reportable": true,
+                      "p999_us": 2293,
+                      "p99_us": 2033,
+                      "samples": 100000
+                    },
+                    "offered": 100000,
+                    "offered_rate_per_second": 25000.0,
+                    "rejections": 0,
+                    "started": 100000,
+                    "successes": 100000,
+                    "timeouts": 0
+                  }
+                },
+                {
+                  "phase": {
+                    "preload_ms": 216,
+                    "preload_operations": 10000,
+                    "reset_ms": 50,
+                    "reset_operations": 1,
+                    "steady_ms": 4001,
+                    "steady_operations": 100000,
+                    "warmup_errors": 0,
+                    "warmup_ms": 84,
+                    "warmup_operations": 10000,
+                    "warmup_rejections": 0,
+                    "warmup_samples_in_steady_histogram": 0,
+                    "warmup_successes": 10000,
+                    "warmup_timeouts": 0
+                  },
+                  "preloaded_state_digest": "1163c5b94b5236ff57fda62f31e79bde1637354189928643f690269c26ac13ee",
+                  "reset_state_digest": "9a2d31cc7749d53399aa765a23d6720fc9101ae5a7c63441a74936eaded27760",
+                  "state_digest": "2c6aa46c123917f28dcfe3693cec57add4908f341076cf4a761468e849b4861f",
+                  "steady": {
+                    "achieved_rate_per_second": 24991.394606881586,
+                    "backlog_drained": true,
+                    "backlog_high_water": 50,
+                    "completed": 100000,
+                    "drain_ms": 0,
+                    "elapsed_ms": 4001,
+                    "errors": 0,
+                    "latency": {
+                      "max_us": 2779,
+                      "overflow_count": 0,
+                      "p50_us": 1130,
+                      "p90_us": 1689,
+                      "p999_min_samples": 10000,
+                      "p999_reportable": true,
+                      "p999_us": 2393,
+                      "p99_us": 2061,
+                      "samples": 100000
+                    },
+                    "offered": 100000,
+                    "offered_rate_per_second": 25000.0,
+                    "rejections": 0,
+                    "started": 100000,
+                    "successes": 100000,
+                    "timeouts": 0
+                  }
+                },
+                {
+                  "phase": {
+                    "preload_ms": 215,
+                    "preload_operations": 10000,
+                    "reset_ms": 50,
+                    "reset_operations": 1,
+                    "steady_ms": 4001,
+                    "steady_operations": 100000,
+                    "warmup_errors": 0,
+                    "warmup_ms": 83,
+                    "warmup_operations": 10000,
+                    "warmup_rejections": 0,
+                    "warmup_samples_in_steady_histogram": 0,
+                    "warmup_successes": 10000,
+                    "warmup_timeouts": 0
+                  },
+                  "preloaded_state_digest": "1163c5b94b5236ff57fda62f31e79bde1637354189928643f690269c26ac13ee",
+                  "reset_state_digest": "9a2d31cc7749d53399aa765a23d6720fc9101ae5a7c63441a74936eaded27760",
+                  "state_digest": "2c6aa46c123917f28dcfe3693cec57add4908f341076cf4a761468e849b4861f",
+                  "steady": {
+                    "achieved_rate_per_second": 24991.80535571855,
+                    "backlog_drained": true,
+                    "backlog_high_water": 50,
+                    "completed": 100000,
+                    "drain_ms": 0,
+                    "elapsed_ms": 4001,
+                    "errors": 0,
+                    "latency": {
+                      "max_us": 2763,
+                      "overflow_count": 0,
+                      "p50_us": 1104,
+                      "p90_us": 1672,
+                      "p999_min_samples": 10000,
+                      "p999_reportable": true,
+                      "p999_us": 2351,
+                      "p99_us": 2022,
+                      "samples": 100000
+                    },
+                    "offered": 100000,
+                    "offered_rate_per_second": 25000.0,
+                    "rejections": 0,
+                    "started": 100000,
+                    "successes": 100000,
+                    "timeouts": 0
+                  }
+                }
+              ],
+              "sample": {
+                "achieved_rate_max_per_second": 24992.033533142963,
+                "achieved_rate_min_per_second": 24991.394606881586,
+                "achieved_rate_per_second": 24991.80535571855,
+                "backlog_drained": true,
+                "completed": 100000,
+                "drain_ms": 0,
+                "errors": 0,
+                "latency": {
+                  "max_us": 2763,
+                  "overflow_count": 0,
+                  "p50_us": 1104,
+                  "p90_us": 1672,
+                  "p999_min_samples": 10000,
+                  "p999_reportable": true,
+                  "p999_us": 2351,
+                  "p99_us": 2022,
+                  "samples": 100000
+                },
+                "offered": 100000,
+                "offered_rate_per_second": 25000.0,
+                "rejections": 0,
+                "robust_spread_ratio": 0.000025565430439433805,
+                "started": 100000,
+                "successes": 100000,
+                "timeouts": 0
+              },
+              "verdict": {
+                "reasons": [],
+                "sustainable": true
+              }
+            }
+          ],
+          "sustainable_rate_per_second": 25000.0
+        },
+        "scenario_digest": "c93761dd8d3fc86998f9b3c3e3fb5d9d01ffebcfd7cf200420693882456d2cee",
+        "workload": {
+          "digest": "535eb208663b549cd98b8587f5ad2a03f97755897ac7805b6b6b449d3b30b852",
+          "generator": "hydracache-cache-sim-key-schedule",
+          "generator_version": "1",
+          "key_count": 10000,
+          "key_distribution": {
+            "kind": "uniform",
+            "theta": null
+          },
+          "operation_mix": [
+            {
+              "operation": "get",
+              "weight": 0.45
+            },
+            {
+              "operation": "put",
+              "weight": 0.45
+            },
+            {
+              "operation": "batch_get",
+              "weight": 0.05
+            },
+            {
+              "operation": "batch_put",
+              "weight": 0.05
+            }
+          ],
+          "payload_mix": [
+            {
+              "bytes": 1000,
+              "weight": 1.0
+            }
+          ],
+          "seed": 6721
+        }
+      },
+      "kind": "load_curve"
+    },
+    {
+      "evidence": {
+        "claim": "capacity_knee",
+        "criteria": {
+          "max_drain_ms": 2000,
+          "max_error_ratio": 0.0,
+          "max_rejection_ratio": 0.0,
+          "max_robust_spread_ratio": 0.15,
+          "max_timeout_ratio": 0.0,
+          "min_achieved_ratio": 0.95,
+          "p999_slo_us": 25000,
+          "p99_slo_us": 10000
+        },
+        "dimensions": {
+          "capacity_scenario_source_sha256": "ea11b07c5110e949b569c12703b1c383ddaaa9c9c9b7310cb887c4623200b8be",
+          "direct_prebuilt_exec": true,
+          "execution_mode": "in-process-axum-router",
+          "key_count": 10000,
+          "loadgen_binary_path": "/opt/actions-runner/_work/hydracache/hydracache/target/release/hydracache-loadgen",
+          "loadgen_binary_sha256": "c2c0e14ab40dd5b3c2ee5d71631bdfee81d7d61c0cd2c83c8b927c126aff7bd2",
+          "network_boundary": "none",
+          "preload_operations": 10000,
+          "reference_instance_created_unix_nanos": 1789118662329929698,
+          "reference_instance_receipt_sha256": "97a01e31f625e10dce049bdb4f5b5e67ebc9f27345208116cb5c33f94e47b1b3",
+          "reference_instance_schema_version": 1,
+          "reference_instance_sequence": 1,
+          "reference_owning_pid": 26512,
+          "repeats": 3,
+          "steady_operations": 100000,
+          "surface_capability_sha256": "5ea97b399b35808dfe04537ddc6128d651cc76349b682d84dda198af3ec7be3e",
+          "w6_capacity_eligible": true,
+          "warmup_operations": 10000,
+          "workload": "B"
+        },
+        "id": "client_surface_in_process_knee_at_slo_workload_b",
+        "knee": {
+          "evaluated": [
+            {
+              "repeats": [
+                {
+                  "phase": {
+                    "preload_ms": 215,
+                    "preload_operations": 10000,
+                    "reset_ms": 51,
+                    "reset_operations": 1,
+                    "steady_ms": 100000,
+                    "steady_operations": 100000,
+                    "warmup_errors": 0,
+                    "warmup_ms": 78,
+                    "warmup_operations": 10000,
+                    "warmup_rejections": 0,
+                    "warmup_samples_in_steady_histogram": 0,
+                    "warmup_successes": 10000,
+                    "warmup_timeouts": 0
+                  },
+                  "preloaded_state_digest": "1163c5b94b5236ff57fda62f31e79bde1637354189928643f690269c26ac13ee",
+                  "reset_state_digest": "9a2d31cc7749d53399aa765a23d6720fc9101ae5a7c63441a74936eaded27760",
+                  "state_digest": "fa97956af2ef7ad3284042db48669324a8a4304d39299d9eb78d7cc0d7a89ff1",
+                  "steady": {
+                    "achieved_rate_per_second": 999.9996439701267,
+                    "backlog_drained": true,
+                    "backlog_high_water": 2,
+                    "completed": 100000,
+                    "drain_ms": 0,
+                    "elapsed_ms": 100000,
+                    "errors": 0,
+                    "latency": {
+                      "max_us": 1650,
+                      "overflow_count": 0,
+                      "p50_us": 1070,
+                      "p90_us": 1499,
+                      "p999_min_samples": 10000,
+                      "p999_reportable": true,
+                      "p999_us": 1615,
+                      "p99_us": 1591,
+                      "samples": 100000
+                    },
+                    "offered": 100000,
+                    "offered_rate_per_second": 1000.0,
+                    "rejections": 0,
+                    "started": 100000,
+                    "successes": 100000,
+                    "timeouts": 0
+                  }
+                },
+                {
+                  "phase": {
+                    "preload_ms": 216,
+                    "preload_operations": 10000,
+                    "reset_ms": 52,
+                    "reset_operations": 1,
+                    "steady_ms": 99999,
+                    "steady_operations": 100000,
+                    "warmup_errors": 0,
+                    "warmup_ms": 79,
+                    "warmup_operations": 10000,
+                    "warmup_rejections": 0,
+                    "warmup_samples_in_steady_histogram": 0,
+                    "warmup_successes": 10000,
+                    "warmup_timeouts": 0
+                  },
+                  "preloaded_state_digest": "1163c5b94b5236ff57fda62f31e79bde1637354189928643f690269c26ac13ee",
+                  "reset_state_digest": "9a2d31cc7749d53399aa765a23d6720fc9101ae5a7c63441a74936eaded27760",
+                  "state_digest": "fa97956af2ef7ad3284042db48669324a8a4304d39299d9eb78d7cc0d7a89ff1",
+                  "steady": {
+                    "achieved_rate_per_second": 1000.0023342654487,
+                    "backlog_drained": true,
+                    "backlog_high_water": 2,
+                    "completed": 100000,
+                    "drain_ms": 0,
+                    "elapsed_ms": 99999,
+                    "errors": 0,
+                    "latency": {
+                      "max_us": 1406,
+                      "overflow_count": 0,
+                      "p50_us": 802,
+                      "p90_us": 1230,
+                      "p999_min_samples": 10000,
+                      "p999_reportable": true,
+                      "p999_us": 1349,
+                      "p99_us": 1323,
+                      "samples": 100000
+                    },
+                    "offered": 100000,
+                    "offered_rate_per_second": 1000.0,
+                    "rejections": 0,
+                    "started": 100000,
+                    "successes": 100000,
+                    "timeouts": 0
+                  }
+                },
+                {
+                  "phase": {
+                    "preload_ms": 215,
+                    "preload_operations": 10000,
+                    "reset_ms": 52,
+                    "reset_operations": 1,
+                    "steady_ms": 99999,
+                    "steady_operations": 100000,
+                    "warmup_errors": 0,
+                    "warmup_ms": 78,
+                    "warmup_operations": 10000,
+                    "warmup_rejections": 0,
+                    "warmup_samples_in_steady_histogram": 0,
+                    "warmup_successes": 10000,
+                    "warmup_timeouts": 0
+                  },
+                  "preloaded_state_digest": "1163c5b94b5236ff57fda62f31e79bde1637354189928643f690269c26ac13ee",
+                  "reset_state_digest": "9a2d31cc7749d53399aa765a23d6720fc9101ae5a7c63441a74936eaded27760",
+                  "state_digest": "fa97956af2ef7ad3284042db48669324a8a4304d39299d9eb78d7cc0d7a89ff1",
+                  "steady": {
+                    "achieved_rate_per_second": 1000.0024689460956,
+                    "backlog_drained": true,
+                    "backlog_high_water": 2,
+                    "completed": 100000,
+                    "drain_ms": 0,
+                    "elapsed_ms": 99999,
+                    "errors": 0,
+                    "latency": {
+                      "max_us": 1195,
+                      "overflow_count": 0,
+                      "p50_us": 599,
+                      "p90_us": 1028,
+                      "p999_min_samples": 10000,
+                      "p999_reportable": true,
+                      "p999_us": 1144,
+                      "p99_us": 1120,
+                      "samples": 100000
+                    },
+                    "offered": 100000,
+                    "offered_rate_per_second": 1000.0,
+                    "rejections": 0,
+                    "started": 100000,
+                    "successes": 100000,
+                    "timeouts": 0
+                  }
+                }
+              ],
+              "sample": {
+                "achieved_rate_max_per_second": 1000.0024689460956,
+                "achieved_rate_min_per_second": 999.9996439701267,
+                "achieved_rate_per_second": 1000.0023342654487,
+                "backlog_drained": true,
+                "completed": 100000,
+                "drain_ms": 0,
+                "errors": 0,
+                "latency": {
+                  "max_us": 1406,
+                  "overflow_count": 0,
+                  "p50_us": 802,
+                  "p90_us": 1230,
+                  "p999_min_samples": 10000,
+                  "p999_reportable": true,
+                  "p999_us": 1349,
+                  "p99_us": 1323,
+                  "samples": 100000
+                },
+                "offered": 100000,
+                "offered_rate_per_second": 1000.0,
+                "rejections": 0,
+                "robust_spread_ratio": 2.824969374677669e-6,
+                "started": 100000,
+                "successes": 100000,
+                "timeouts": 0
+              },
+              "verdict": {
+                "reasons": [],
+                "sustainable": true
+              }
+            },
+            {
+              "repeats": [
+                {
+                  "phase": {
+                    "preload_ms": 216,
+                    "preload_operations": 10000,
+                    "reset_ms": 52,
+                    "reset_operations": 1,
+                    "steady_ms": 20001,
+                    "steady_operations": 100000,
+                    "warmup_errors": 0,
+                    "warmup_ms": 78,
+                    "warmup_operations": 10000,
+                    "warmup_rejections": 0,
+                    "warmup_samples_in_steady_histogram": 0,
+                    "warmup_successes": 10000,
+                    "warmup_timeouts": 0
+                  },
+                  "preloaded_state_digest": "1163c5b94b5236ff57fda62f31e79bde1637354189928643f690269c26ac13ee",
+                  "reset_state_digest": "9a2d31cc7749d53399aa765a23d6720fc9101ae5a7c63441a74936eaded27760",
+                  "state_digest": "fa97956af2ef7ad3284042db48669324a8a4304d39299d9eb78d7cc0d7a89ff1",
+                  "steady": {
+                    "achieved_rate_per_second": 4999.669743315337,
+                    "backlog_drained": true,
+                    "backlog_high_water": 10,
+                    "completed": 100000,
+                    "drain_ms": 0,
+                    "elapsed_ms": 20001,
+                    "errors": 0,
+                    "latency": {
+                      "max_us": 2117,
+                      "overflow_count": 0,
+                      "p50_us": 989,
+                      "p90_us": 1550,
+                      "p999_min_samples": 10000,
+                      "p999_reportable": true,
+                      "p999_us": 1916,
+                      "p99_us": 1848,
+                      "samples": 100000
+                    },
+                    "offered": 100000,
+                    "offered_rate_per_second": 5000.0,
+                    "rejections": 0,
+                    "started": 100000,
+                    "successes": 100000,
+                    "timeouts": 0
+                  }
+                },
+                {
+                  "phase": {
+                    "preload_ms": 216,
+                    "preload_operations": 10000,
+                    "reset_ms": 52,
+                    "reset_operations": 1,
+                    "steady_ms": 20001,
+                    "steady_operations": 100000,
+                    "warmup_errors": 0,
+                    "warmup_ms": 78,
+                    "warmup_operations": 10000,
+                    "warmup_rejections": 0,
+                    "warmup_samples_in_steady_histogram": 0,
+                    "warmup_successes": 10000,
+                    "warmup_timeouts": 0
+                  },
+                  "preloaded_state_digest": "1163c5b94b5236ff57fda62f31e79bde1637354189928643f690269c26ac13ee",
+                  "reset_state_digest": "9a2d31cc7749d53399aa765a23d6720fc9101ae5a7c63441a74936eaded27760",
+                  "state_digest": "fa97956af2ef7ad3284042db48669324a8a4304d39299d9eb78d7cc0d7a89ff1",
+                  "steady": {
+                    "achieved_rate_per_second": 4999.682442669813,
+                    "backlog_drained": true,
+                    "backlog_high_water": 10,
+                    "completed": 100000,
+                    "drain_ms": 0,
+                    "elapsed_ms": 20001,
+                    "errors": 0,
+                    "latency": {
+                      "max_us": 2267,
+                      "overflow_count": 0,
+                      "p50_us": 1148,
+                      "p90_us": 1710,
+                      "p999_min_samples": 10000,
+                      "p999_reportable": true,
+                      "p999_us": 2077,
+                      "p99_us": 2008,
+                      "samples": 100000
+                    },
+                    "offered": 100000,
+                    "offered_rate_per_second": 5000.0,
+                    "rejections": 0,
+                    "started": 100000,
+                    "successes": 100000,
+                    "timeouts": 0
+                  }
+                },
+                {
+                  "phase": {
+                    "preload_ms": 215,
+                    "preload_operations": 10000,
+                    "reset_ms": 52,
+                    "reset_operations": 1,
+                    "steady_ms": 20000,
+                    "steady_operations": 100000,
+                    "warmup_errors": 0,
+                    "warmup_ms": 78,
+                    "warmup_operations": 10000,
+                    "warmup_rejections": 0,
+                    "warmup_samples_in_steady_histogram": 0,
+                    "warmup_successes": 10000,
+                    "warmup_timeouts": 0
+                  },
+                  "preloaded_state_digest": "1163c5b94b5236ff57fda62f31e79bde1637354189928643f690269c26ac13ee",
+                  "reset_state_digest": "9a2d31cc7749d53399aa765a23d6720fc9101ae5a7c63441a74936eaded27760",
+                  "state_digest": "fa97956af2ef7ad3284042db48669324a8a4304d39299d9eb78d7cc0d7a89ff1",
+                  "steady": {
+                    "achieved_rate_per_second": 4999.782922174965,
+                    "backlog_drained": true,
+                    "backlog_high_water": 10,
+                    "completed": 100000,
+                    "drain_ms": 0,
+                    "elapsed_ms": 20000,
+                    "errors": 0,
+                    "latency": {
+                      "max_us": 2201,
+                      "overflow_count": 0,
+                      "p50_us": 1058,
+                      "p90_us": 1617,
+                      "p999_min_samples": 10000,
+                      "p999_reportable": true,
+                      "p999_us": 1983,
+                      "p99_us": 1918,
+                      "samples": 100000
+                    },
+                    "offered": 100000,
+                    "offered_rate_per_second": 5000.0,
+                    "rejections": 0,
+                    "started": 100000,
+                    "successes": 100000,
+                    "timeouts": 0
+                  }
+                }
+              ],
+              "sample": {
+                "achieved_rate_max_per_second": 4999.782922174965,
+                "achieved_rate_min_per_second": 4999.669743315337,
+                "achieved_rate_per_second": 4999.682442669813,
+                "backlog_drained": true,
+                "completed": 100000,
+                "drain_ms": 0,
+                "errors": 0,
+                "latency": {
+                  "max_us": 2267,
+                  "overflow_count": 0,
+                  "p50_us": 1148,
+                  "p90_us": 1710,
+                  "p999_min_samples": 10000,
+                  "p999_reportable": true,
+                  "p999_us": 2077,
+                  "p99_us": 2008,
+                  "samples": 100000
+                },
+                "offered": 100000,
+                "offered_rate_per_second": 5000.0,
+                "rejections": 0,
+                "robust_spread_ratio": 0.000022637209648078395,
+                "started": 100000,
+                "successes": 100000,
+                "timeouts": 0
+              },
+              "verdict": {
+                "reasons": [],
+                "sustainable": true
+              }
+            },
+            {
+              "repeats": [
+                {
+                  "phase": {
+                    "preload_ms": 215,
+                    "preload_operations": 10000,
+                    "reset_ms": 52,
+                    "reset_operations": 1,
+                    "steady_ms": 10001,
+                    "steady_operations": 100000,
+                    "warmup_errors": 0,
+                    "warmup_ms": 78,
+                    "warmup_operations": 10000,
+                    "warmup_rejections": 0,
+                    "warmup_samples_in_steady_histogram": 0,
+                    "warmup_successes": 10000,
+                    "warmup_timeouts": 0
+                  },
+                  "preloaded_state_digest": "1163c5b94b5236ff57fda62f31e79bde1637354189928643f690269c26ac13ee",
+                  "reset_state_digest": "9a2d31cc7749d53399aa765a23d6720fc9101ae5a7c63441a74936eaded27760",
+                  "state_digest": "fa97956af2ef7ad3284042db48669324a8a4304d39299d9eb78d7cc0d7a89ff1",
+                  "steady": {
+                    "achieved_rate_per_second": 9998.817373876998,
+                    "backlog_drained": true,
+                    "backlog_high_water": 20,
+                    "completed": 100000,
+                    "drain_ms": 0,
+                    "elapsed_ms": 10001,
+                    "errors": 0,
+                    "latency": {
+                      "max_us": 2301,
+                      "overflow_count": 0,
+                      "p50_us": 1029,
+                      "p90_us": 1596,
+                      "p999_min_samples": 10000,
+                      "p999_reportable": true,
+                      "p999_us": 2046,
+                      "p99_us": 1908,
+                      "samples": 100000
+                    },
+                    "offered": 100000,
+                    "offered_rate_per_second": 10000.0,
+                    "rejections": 0,
+                    "started": 100000,
+                    "successes": 100000,
+                    "timeouts": 0
+                  }
+                },
+                {
+                  "phase": {
+                    "preload_ms": 214,
+                    "preload_operations": 10000,
+                    "reset_ms": 53,
+                    "reset_operations": 1,
+                    "steady_ms": 10000,
+                    "steady_operations": 100000,
+                    "warmup_errors": 0,
+                    "warmup_ms": 77,
+                    "warmup_operations": 10000,
+                    "warmup_rejections": 0,
+                    "warmup_samples_in_steady_histogram": 0,
+                    "warmup_successes": 10000,
+                    "warmup_timeouts": 0
+                  },
+                  "preloaded_state_digest": "1163c5b94b5236ff57fda62f31e79bde1637354189928643f690269c26ac13ee",
+                  "reset_state_digest": "9a2d31cc7749d53399aa765a23d6720fc9101ae5a7c63441a74936eaded27760",
+                  "state_digest": "fa97956af2ef7ad3284042db48669324a8a4304d39299d9eb78d7cc0d7a89ff1",
+                  "steady": {
+                    "achieved_rate_per_second": 9999.059727419566,
+                    "backlog_drained": true,
+                    "backlog_high_water": 20,
+                    "completed": 100000,
+                    "drain_ms": 0,
+                    "elapsed_ms": 10000,
+                    "errors": 0,
+                    "latency": {
+                      "max_us": 2381,
+                      "overflow_count": 0,
+                      "p50_us": 1100,
+                      "p90_us": 1667,
+                      "p999_min_samples": 10000,
+                      "p999_reportable": true,
+                      "p999_us": 2181,
+                      "p99_us": 1990,
+                      "samples": 100000
+                    },
+                    "offered": 100000,
+                    "offered_rate_per_second": 10000.0,
+                    "rejections": 0,
+                    "started": 100000,
+                    "successes": 100000,
+                    "timeouts": 0
+                  }
+                },
+                {
+                  "phase": {
+                    "preload_ms": 215,
+                    "preload_operations": 10000,
+                    "reset_ms": 52,
+                    "reset_operations": 1,
+                    "steady_ms": 10001,
+                    "steady_operations": 100000,
+                    "warmup_errors": 0,
+                    "warmup_ms": 78,
+                    "warmup_operations": 10000,
+                    "warmup_rejections": 0,
+                    "warmup_samples_in_steady_histogram": 0,
+                    "warmup_successes": 10000,
+                    "warmup_timeouts": 0
+                  },
+                  "preloaded_state_digest": "1163c5b94b5236ff57fda62f31e79bde1637354189928643f690269c26ac13ee",
+                  "reset_state_digest": "9a2d31cc7749d53399aa765a23d6720fc9101ae5a7c63441a74936eaded27760",
+                  "state_digest": "fa97956af2ef7ad3284042db48669324a8a4304d39299d9eb78d7cc0d7a89ff1",
+                  "steady": {
+                    "achieved_rate_per_second": 9998.904915934045,
+                    "backlog_drained": true,
+                    "backlog_high_water": 20,
+                    "completed": 100000,
+                    "drain_ms": 0,
+                    "elapsed_ms": 10001,
+                    "errors": 0,
+                    "latency": {
+                      "max_us": 2339,
+                      "overflow_count": 0,
+                      "p50_us": 1064,
+                      "p90_us": 1633,
+                      "p999_min_samples": 10000,
+                      "p999_reportable": true,
+                      "p999_us": 2169,
+                      "p99_us": 1952,
+                      "samples": 100000
+                    },
+                    "offered": 100000,
+                    "offered_rate_per_second": 10000.0,
+                    "rejections": 0,
+                    "started": 100000,
+                    "successes": 100000,
+                    "timeouts": 0
+                  }
+                }
+              ],
+              "sample": {
+                "achieved_rate_max_per_second": 9999.059727419566,
+                "achieved_rate_min_per_second": 9998.817373876998,
+                "achieved_rate_per_second": 9998.904915934045,
+                "backlog_drained": true,
+                "completed": 100000,
+                "drain_ms": 0,
+                "errors": 0,
+                "latency": {
+                  "max_us": 2339,
+                  "overflow_count": 0,
+                  "p50_us": 1064,
+                  "p90_us": 1633,
+                  "p999_min_samples": 10000,
+                  "p999_reportable": true,
+                  "p999_us": 2169,
+                  "p99_us": 1952,
+                  "samples": 100000
+                },
+                "offered": 100000,
+                "offered_rate_per_second": 10000.0,
+                "rejections": 0,
+                "robust_spread_ratio": 0.000024238008522472174,
+                "started": 100000,
+                "successes": 100000,
+                "timeouts": 0
+              },
+              "verdict": {
+                "reasons": [],
+                "sustainable": true
+              }
+            },
+            {
+              "repeats": [
+                {
+                  "phase": {
+                    "preload_ms": 215,
+                    "preload_operations": 10000,
+                    "reset_ms": 53,
+                    "reset_operations": 1,
+                    "steady_ms": 4001,
+                    "steady_operations": 100000,
+                    "warmup_errors": 0,
+                    "warmup_ms": 78,
+                    "warmup_operations": 10000,
+                    "warmup_rejections": 0,
+                    "warmup_samples_in_steady_histogram": 0,
+                    "warmup_successes": 10000,
+                    "warmup_timeouts": 0
+                  },
+                  "preloaded_state_digest": "1163c5b94b5236ff57fda62f31e79bde1637354189928643f690269c26ac13ee",
+                  "reset_state_digest": "9a2d31cc7749d53399aa765a23d6720fc9101ae5a7c63441a74936eaded27760",
+                  "state_digest": "fa97956af2ef7ad3284042db48669324a8a4304d39299d9eb78d7cc0d7a89ff1",
+                  "steady": {
+                    "achieved_rate_per_second": 24989.01043294784,
+                    "backlog_drained": true,
+                    "backlog_high_water": 50,
+                    "completed": 100000,
+                    "drain_ms": 0,
+                    "elapsed_ms": 4001,
+                    "errors": 0,
+                    "latency": {
+                      "max_us": 2661,
+                      "overflow_count": 0,
+                      "p50_us": 1107,
+                      "p90_us": 1670,
+                      "p999_min_samples": 10000,
+                      "p999_reportable": true,
+                      "p999_us": 2355,
+                      "p99_us": 2026,
+                      "samples": 100000
+                    },
+                    "offered": 100000,
+                    "offered_rate_per_second": 25000.0,
+                    "rejections": 0,
+                    "started": 100000,
+                    "successes": 100000,
+                    "timeouts": 0
+                  }
+                },
+                {
+                  "phase": {
+                    "preload_ms": 216,
+                    "preload_operations": 10000,
+                    "reset_ms": 52,
+                    "reset_operations": 1,
+                    "steady_ms": 4000,
+                    "steady_operations": 100000,
+                    "warmup_errors": 0,
+                    "warmup_ms": 78,
+                    "warmup_operations": 10000,
+                    "warmup_rejections": 0,
+                    "warmup_samples_in_steady_histogram": 0,
+                    "warmup_successes": 10000,
+                    "warmup_timeouts": 0
+                  },
+                  "preloaded_state_digest": "1163c5b94b5236ff57fda62f31e79bde1637354189928643f690269c26ac13ee",
+                  "reset_state_digest": "9a2d31cc7749d53399aa765a23d6720fc9101ae5a7c63441a74936eaded27760",
+                  "state_digest": "fa97956af2ef7ad3284042db48669324a8a4304d39299d9eb78d7cc0d7a89ff1",
+                  "steady": {
+                    "achieved_rate_per_second": 24994.254626925984,
+                    "backlog_drained": true,
+                    "backlog_high_water": 50,
+                    "completed": 100000,
+                    "drain_ms": 0,
+                    "elapsed_ms": 4000,
+                    "errors": 0,
+                    "latency": {
+                      "max_us": 2679,
+                      "overflow_count": 0,
+                      "p50_us": 1124,
+                      "p90_us": 1671,
+                      "p999_min_samples": 10000,
+                      "p999_reportable": true,
+                      "p999_us": 2375,
+                      "p99_us": 2044,
+                      "samples": 100000
+                    },
+                    "offered": 100000,
+                    "offered_rate_per_second": 25000.0,
+                    "rejections": 0,
+                    "started": 100000,
+                    "successes": 100000,
+                    "timeouts": 0
+                  }
+                },
+                {
+                  "phase": {
+                    "preload_ms": 215,
+                    "preload_operations": 10000,
+                    "reset_ms": 52,
+                    "reset_operations": 1,
+                    "steady_ms": 4001,
+                    "steady_operations": 100000,
+                    "warmup_errors": 0,
+                    "warmup_ms": 78,
+                    "warmup_operations": 10000,
+                    "warmup_rejections": 0,
+                    "warmup_samples_in_steady_histogram": 0,
+                    "warmup_successes": 10000,
+                    "warmup_timeouts": 0
+                  },
+                  "preloaded_state_digest": "1163c5b94b5236ff57fda62f31e79bde1637354189928643f690269c26ac13ee",
+                  "reset_state_digest": "9a2d31cc7749d53399aa765a23d6720fc9101ae5a7c63441a74936eaded27760",
+                  "state_digest": "fa97956af2ef7ad3284042db48669324a8a4304d39299d9eb78d7cc0d7a89ff1",
+                  "steady": {
+                    "achieved_rate_per_second": 24989.08289441051,
+                    "backlog_drained": true,
+                    "backlog_high_water": 50,
+                    "completed": 100000,
+                    "drain_ms": 0,
+                    "elapsed_ms": 4001,
+                    "errors": 0,
+                    "latency": {
+                      "max_us": 2705,
+                      "overflow_count": 0,
+                      "p50_us": 1114,
+                      "p90_us": 1664,
+                      "p999_min_samples": 10000,
+                      "p999_reportable": true,
+                      "p999_us": 2315,
+                      "p99_us": 2013,
+                      "samples": 100000
+                    },
+                    "offered": 100000,
+                    "offered_rate_per_second": 25000.0,
+                    "rejections": 0,
+                    "started": 100000,
+                    "successes": 100000,
+                    "timeouts": 0
+                  }
+                }
+              ],
+              "sample": {
+                "achieved_rate_max_per_second": 24994.254626925984,
+                "achieved_rate_min_per_second": 24989.01043294784,
+                "achieved_rate_per_second": 24989.08289441051,
+                "backlog_drained": true,
+                "completed": 100000,
+                "drain_ms": 0,
+                "errors": 0,
+                "latency": {
+                  "max_us": 2705,
+                  "overflow_count": 0,
+                  "p50_us": 1114,
+                  "p90_us": 1664,
+                  "p999_min_samples": 10000,
+                  "p999_reportable": true,
+                  "p999_us": 2315,
+                  "p99_us": 2013,
+                  "samples": 100000
+                },
+                "offered": 100000,
+                "offered_rate_per_second": 25000.0,
+                "rejections": 0,
+                "robust_spread_ratio": 0.00020985940141544771,
+                "started": 100000,
+                "successes": 100000,
+                "timeouts": 0
+              },
+              "verdict": {
+                "reasons": [],
+                "sustainable": true
+              }
+            }
+          ],
+          "sustainable_rate_per_second": 25000.0
+        },
+        "scenario_digest": "6eb673ebbc4642d6b85ad24fffa74ec45e17382e5673b5e21895bdb8218face6",
+        "workload": {
+          "digest": "381337596050d5e8ea3c40634d7410117d594d41a0752be5f418aa9a8f3cc1ee",
+          "generator": "hydracache-cache-sim-key-schedule",
+          "generator_version": "1",
+          "key_count": 10000,
+          "key_distribution": {
+            "kind": "uniform",
+            "theta": null
+          },
+          "operation_mix": [
+            {
+              "operation": "get",
+              "weight": 0.9
+            },
+            {
+              "operation": "put",
+              "weight": 0.04
+            },
+            {
+              "operation": "batch_get",
+              "weight": 0.05
+            },
+            {
+              "operation": "batch_put",
+              "weight": 0.01
+            }
+          ],
+          "payload_mix": [
+            {
+              "bytes": 1000,
+              "weight": 1.0
+            }
+          ],
+          "seed": 6722
+        }
+      },
+      "kind": "load_curve"
+    },
+    {
+      "evidence": {
+        "claim": "capacity_knee",
+        "criteria": {
+          "max_drain_ms": 2000,
+          "max_error_ratio": 0.0,
+          "max_rejection_ratio": 0.0,
+          "max_robust_spread_ratio": 0.15,
+          "max_timeout_ratio": 0.0,
+          "min_achieved_ratio": 0.95,
+          "p999_slo_us": 25000,
+          "p99_slo_us": 10000
+        },
+        "dimensions": {
+          "capacity_scenario_source_sha256": "97bc4db111af9e147a1fa1b26a1a919987aea81a67eaafb6fd9889dd13ad43b8",
+          "direct_prebuilt_exec": true,
+          "execution_mode": "in-process-axum-router",
+          "key_count": 10000,
+          "loadgen_binary_path": "/opt/actions-runner/_work/hydracache/hydracache/target/release/hydracache-loadgen",
+          "loadgen_binary_sha256": "c2c0e14ab40dd5b3c2ee5d71631bdfee81d7d61c0cd2c83c8b927c126aff7bd2",
+          "network_boundary": "none",
+          "preload_operations": 10000,
+          "reference_instance_created_unix_nanos": 1789118662329929698,
+          "reference_instance_receipt_sha256": "97a01e31f625e10dce049bdb4f5b5e67ebc9f27345208116cb5c33f94e47b1b3",
+          "reference_instance_schema_version": 1,
+          "reference_instance_sequence": 1,
+          "reference_owning_pid": 26512,
+          "repeats": 3,
+          "steady_operations": 100000,
+          "surface_capability_sha256": "5ea97b399b35808dfe04537ddc6128d651cc76349b682d84dda198af3ec7be3e",
+          "w6_capacity_eligible": true,
+          "warmup_operations": 10000,
+          "workload": "C"
+        },
+        "id": "client_surface_in_process_knee_at_slo_workload_c",
+        "knee": {
+          "evaluated": [
+            {
+              "repeats": [
+                {
+                  "phase": {
+                    "preload_ms": 215,
+                    "preload_operations": 10000,
+                    "reset_ms": 51,
+                    "reset_operations": 1,
+                    "steady_ms": 100000,
+                    "steady_operations": 100000,
+                    "warmup_errors": 0,
+                    "warmup_ms": 84,
+                    "warmup_operations": 10000,
+                    "warmup_rejections": 0,
+                    "warmup_samples_in_steady_histogram": 0,
+                    "warmup_successes": 10000,
+                    "warmup_timeouts": 0
+                  },
+                  "preloaded_state_digest": "1163c5b94b5236ff57fda62f31e79bde1637354189928643f690269c26ac13ee",
+                  "reset_state_digest": "9a2d31cc7749d53399aa765a23d6720fc9101ae5a7c63441a74936eaded27760",
+                  "state_digest": "1163c5b94b5236ff57fda62f31e79bde1637354189928643f690269c26ac13ee",
+                  "steady": {
+                    "achieved_rate_per_second": 999.9948690563268,
+                    "backlog_drained": true,
+                    "backlog_high_water": 2,
+                    "completed": 100000,
+                    "drain_ms": 0,
+                    "elapsed_ms": 100000,
+                    "errors": 0,
+                    "latency": {
+                      "max_us": 1763,
+                      "overflow_count": 0,
+                      "p50_us": 1179,
+                      "p90_us": 1607,
+                      "p999_min_samples": 10000,
+                      "p999_reportable": true,
+                      "p999_us": 1729,
+                      "p99_us": 1699,
+                      "samples": 100000
+                    },
+                    "offered": 100000,
+                    "offered_rate_per_second": 1000.0,
+                    "rejections": 0,
+                    "started": 100000,
+                    "successes": 100000,
+                    "timeouts": 0
+                  }
+                },
+                {
+                  "phase": {
+                    "preload_ms": 218,
+                    "preload_operations": 10000,
+                    "reset_ms": 52,
+                    "reset_operations": 1,
+                    "steady_ms": 99999,
+                    "steady_operations": 100000,
+                    "warmup_errors": 0,
+                    "warmup_ms": 85,
+                    "warmup_operations": 10000,
+                    "warmup_rejections": 0,
+                    "warmup_samples_in_steady_histogram": 0,
+                    "warmup_successes": 10000,
+                    "warmup_timeouts": 0
+                  },
+                  "preloaded_state_digest": "1163c5b94b5236ff57fda62f31e79bde1637354189928643f690269c26ac13ee",
+                  "reset_state_digest": "9a2d31cc7749d53399aa765a23d6720fc9101ae5a7c63441a74936eaded27760",
+                  "state_digest": "1163c5b94b5236ff57fda62f31e79bde1637354189928643f690269c26ac13ee",
+                  "steady": {
+                    "achieved_rate_per_second": 1000.0026334669351,
+                    "backlog_drained": true,
+                    "backlog_high_water": 2,
+                    "completed": 100000,
+                    "drain_ms": 0,
+                    "elapsed_ms": 99999,
+                    "errors": 0,
+                    "latency": {
+                      "max_us": 1411,
+                      "overflow_count": 0,
+                      "p50_us": 817,
+                      "p90_us": 1247,
+                      "p999_min_samples": 10000,
+                      "p999_reportable": true,
+                      "p999_us": 1371,
+                      "p99_us": 1339,
+                      "samples": 100000
+                    },
+                    "offered": 100000,
+                    "offered_rate_per_second": 1000.0,
+                    "rejections": 0,
+                    "started": 100000,
+                    "successes": 100000,
+                    "timeouts": 0
+                  }
+                },
+                {
+                  "phase": {
+                    "preload_ms": 217,
+                    "preload_operations": 10000,
+                    "reset_ms": 53,
+                    "reset_operations": 1,
+                    "steady_ms": 99999,
+                    "steady_operations": 100000,
+                    "warmup_errors": 0,
+                    "warmup_ms": 85,
+                    "warmup_operations": 10000,
+                    "warmup_rejections": 0,
+                    "warmup_samples_in_steady_histogram": 0,
+                    "warmup_successes": 10000,
+                    "warmup_timeouts": 0
+                  },
+                  "preloaded_state_digest": "1163c5b94b5236ff57fda62f31e79bde1637354189928643f690269c26ac13ee",
+                  "reset_state_digest": "9a2d31cc7749d53399aa765a23d6720fc9101ae5a7c63441a74936eaded27760",
+                  "state_digest": "1163c5b94b5236ff57fda62f31e79bde1637354189928643f690269c26ac13ee",
+                  "steady": {
+                    "achieved_rate_per_second": 1000.0049615346167,
+                    "backlog_drained": true,
+                    "backlog_high_water": 2,
+                    "completed": 100000,
+                    "drain_ms": 0,
+                    "elapsed_ms": 99999,
+                    "errors": 0,
+                    "latency": {
+                      "max_us": 1543,
+                      "overflow_count": 0,
+                      "p50_us": 943,
+                      "p90_us": 1372,
+                      "p999_min_samples": 10000,
+                      "p999_reportable": true,
+                      "p999_us": 1494,
+                      "p99_us": 1465,
+                      "samples": 100000
+                    },
+                    "offered": 100000,
+                    "offered_rate_per_second": 1000.0,
+                    "rejections": 0,
+                    "started": 100000,
+                    "successes": 100000,
+                    "timeouts": 0
+                  }
+                }
+              ],
+              "sample": {
+                "achieved_rate_max_per_second": 1000.0049615346167,
+                "achieved_rate_min_per_second": 999.9948690563268,
+                "achieved_rate_per_second": 1000.0026334669351,
+                "backlog_drained": true,
+                "completed": 100000,
+                "drain_ms": 0,
+                "errors": 0,
+                "latency": {
+                  "max_us": 1411,
+                  "overflow_count": 0,
+                  "p50_us": 817,
+                  "p90_us": 1247,
+                  "p999_min_samples": 10000,
+                  "p999_reportable": true,
+                  "p999_us": 1371,
+                  "p99_us": 1339,
+                  "samples": 100000
+                },
+                "offered": 100000,
+                "offered_rate_per_second": 1000.0,
+                "rejections": 0,
+                "robust_spread_ratio": 0.00001009245171169674,
+                "started": 100000,
+                "successes": 100000,
+                "timeouts": 0
+              },
+              "verdict": {
+                "reasons": [],
+                "sustainable": true
+              }
+            },
+            {
+              "repeats": [
+                {
+                  "phase": {
+                    "preload_ms": 216,
+                    "preload_operations": 10000,
+                    "reset_ms": 52,
+                    "reset_operations": 1,
+                    "steady_ms": 20000,
+                    "steady_operations": 100000,
+                    "warmup_errors": 0,
+                    "warmup_ms": 85,
+                    "warmup_operations": 10000,
+                    "warmup_rejections": 0,
+                    "warmup_samples_in_steady_histogram": 0,
+                    "warmup_successes": 10000,
+                    "warmup_timeouts": 0
+                  },
+                  "preloaded_state_digest": "1163c5b94b5236ff57fda62f31e79bde1637354189928643f690269c26ac13ee",
+                  "reset_state_digest": "9a2d31cc7749d53399aa765a23d6720fc9101ae5a7c63441a74936eaded27760",
+                  "state_digest": "1163c5b94b5236ff57fda62f31e79bde1637354189928643f690269c26ac13ee",
+                  "steady": {
+                    "achieved_rate_per_second": 4999.806870710073,
+                    "backlog_drained": true,
+                    "backlog_high_water": 10,
+                    "completed": 100000,
+                    "drain_ms": 0,
+                    "elapsed_ms": 20000,
+                    "errors": 0,
+                    "latency": {
+                      "max_us": 2141,
+                      "overflow_count": 0,
+                      "p50_us": 972,
+                      "p90_us": 1532,
+                      "p999_min_samples": 10000,
+                      "p999_reportable": true,
+                      "p999_us": 1902,
+                      "p99_us": 1838,
+                      "samples": 100000
+                    },
+                    "offered": 100000,
+                    "offered_rate_per_second": 5000.0,
+                    "rejections": 0,
+                    "started": 100000,
+                    "successes": 100000,
+                    "timeouts": 0
+                  }
+                },
+                {
+                  "phase": {
+                    "preload_ms": 216,
+                    "preload_operations": 10000,
+                    "reset_ms": 52,
+                    "reset_operations": 1,
+                    "steady_ms": 20000,
+                    "steady_operations": 100000,
+                    "warmup_errors": 0,
+                    "warmup_ms": 85,
+                    "warmup_operations": 10000,
+                    "warmup_rejections": 0,
+                    "warmup_samples_in_steady_histogram": 0,
+                    "warmup_successes": 10000,
+                    "warmup_timeouts": 0
+                  },
+                  "preloaded_state_digest": "1163c5b94b5236ff57fda62f31e79bde1637354189928643f690269c26ac13ee",
+                  "reset_state_digest": "9a2d31cc7749d53399aa765a23d6720fc9101ae5a7c63441a74936eaded27760",
+                  "state_digest": "1163c5b94b5236ff57fda62f31e79bde1637354189928643f690269c26ac13ee",
+                  "steady": {
+                    "achieved_rate_per_second": 4999.800739941231,
+                    "backlog_drained": true,
+                    "backlog_high_water": 10,
+                    "completed": 100000,
+                    "drain_ms": 0,
+                    "elapsed_ms": 20000,
+                    "errors": 0,
+                    "latency": {
+                      "max_us": 2325,
+                      "overflow_count": 0,
+                      "p50_us": 1142,
+                      "p90_us": 1701,
+                      "p999_min_samples": 10000,
+                      "p999_reportable": true,
+                      "p999_us": 2059,
+                      "p99_us": 2006,
+                      "samples": 100000
+                    },
+                    "offered": 100000,
+                    "offered_rate_per_second": 5000.0,
+                    "rejections": 0,
+                    "started": 100000,
+                    "successes": 100000,
+                    "timeouts": 0
+                  }
+                },
+                {
+                  "phase": {
+                    "preload_ms": 215,
+                    "preload_operations": 10000,
+                    "reset_ms": 52,
+                    "reset_operations": 1,
+                    "steady_ms": 20001,
+                    "steady_operations": 100000,
+                    "warmup_errors": 0,
+                    "warmup_ms": 84,
+                    "warmup_operations": 10000,
+                    "warmup_rejections": 0,
+                    "warmup_samples_in_steady_histogram": 0,
+                    "warmup_successes": 10000,
+                    "warmup_timeouts": 0
+                  },
+                  "preloaded_state_digest": "1163c5b94b5236ff57fda62f31e79bde1637354189928643f690269c26ac13ee",
+                  "reset_state_digest": "9a2d31cc7749d53399aa765a23d6720fc9101ae5a7c63441a74936eaded27760",
+                  "state_digest": "1163c5b94b5236ff57fda62f31e79bde1637354189928643f690269c26ac13ee",
+                  "steady": {
+                    "achieved_rate_per_second": 4999.670349235358,
+                    "backlog_drained": true,
+                    "backlog_high_water": 10,
+                    "completed": 100000,
+                    "drain_ms": 0,
+                    "elapsed_ms": 20001,
+                    "errors": 0,
+                    "latency": {
+                      "max_us": 2305,
+                      "overflow_count": 0,
+                      "p50_us": 1155,
+                      "p90_us": 1713,
+                      "p999_min_samples": 10000,
+                      "p999_reportable": true,
+                      "p999_us": 2075,
+                      "p99_us": 2017,
+                      "samples": 100000
+                    },
+                    "offered": 100000,
+                    "offered_rate_per_second": 5000.0,
+                    "rejections": 0,
+                    "started": 100000,
+                    "successes": 100000,
+                    "timeouts": 0
+                  }
+                }
+              ],
+              "sample": {
+                "achieved_rate_max_per_second": 4999.806870710073,
+                "achieved_rate_min_per_second": 4999.670349235358,
+                "achieved_rate_per_second": 4999.800739941231,
+                "backlog_drained": true,
+                "completed": 100000,
+                "drain_ms": 0,
+                "errors": 0,
+                "latency": {
+                  "max_us": 2325,
+                  "overflow_count": 0,
+                  "p50_us": 1142,
+                  "p90_us": 1701,
+                  "p999_min_samples": 10000,
+                  "p999_reportable": true,
+                  "p999_us": 2059,
+                  "p99_us": 2006,
+                  "samples": 100000
+                },
+                "offered": 100000,
+                "offered_rate_per_second": 5000.0,
+                "rejections": 0,
+                "robust_spread_ratio": 0.000027305383117399883,
+                "started": 100000,
+                "successes": 100000,
+                "timeouts": 0
+              },
+              "verdict": {
+                "reasons": [],
+                "sustainable": true
+              }
+            },
+            {
+              "repeats": [
+                {
+                  "phase": {
+                    "preload_ms": 217,
+                    "preload_operations": 10000,
+                    "reset_ms": 52,
+                    "reset_operations": 1,
+                    "steady_ms": 10001,
+                    "steady_operations": 100000,
+                    "warmup_errors": 0,
+                    "warmup_ms": 85,
+                    "warmup_operations": 10000,
+                    "warmup_rejections": 0,
+                    "warmup_samples_in_steady_histogram": 0,
+                    "warmup_successes": 10000,
+                    "warmup_timeouts": 0
+                  },
+                  "preloaded_state_digest": "1163c5b94b5236ff57fda62f31e79bde1637354189928643f690269c26ac13ee",
+                  "reset_state_digest": "9a2d31cc7749d53399aa765a23d6720fc9101ae5a7c63441a74936eaded27760",
+                  "state_digest": "1163c5b94b5236ff57fda62f31e79bde1637354189928643f690269c26ac13ee",
+                  "steady": {
+                    "achieved_rate_per_second": 9998.735593892497,
+                    "backlog_drained": true,
+                    "backlog_high_water": 20,
+                    "completed": 100000,
+                    "drain_ms": 0,
+                    "elapsed_ms": 10001,
+                    "errors": 0,
+                    "latency": {
+                      "max_us": 2413,
+                      "overflow_count": 0,
+                      "p50_us": 1086,
+                      "p90_us": 1651,
+                      "p999_min_samples": 10000,
+                      "p999_reportable": true,
+                      "p999_us": 2195,
+                      "p99_us": 1977,
+                      "samples": 100000
+                    },
+                    "offered": 100000,
+                    "offered_rate_per_second": 10000.0,
+                    "rejections": 0,
+                    "started": 100000,
+                    "successes": 100000,
+                    "timeouts": 0
+                  }
+                },
+                {
+                  "phase": {
+                    "preload_ms": 215,
+                    "preload_operations": 10000,
+                    "reset_ms": 52,
+                    "reset_operations": 1,
+                    "steady_ms": 10001,
+                    "steady_operations": 100000,
+                    "warmup_errors": 0,
+                    "warmup_ms": 83,
+                    "warmup_operations": 10000,
+                    "warmup_rejections": 0,
+                    "warmup_samples_in_steady_histogram": 0,
+                    "warmup_successes": 10000,
+                    "warmup_timeouts": 0
+                  },
+                  "preloaded_state_digest": "1163c5b94b5236ff57fda62f31e79bde1637354189928643f690269c26ac13ee",
+                  "reset_state_digest": "9a2d31cc7749d53399aa765a23d6720fc9101ae5a7c63441a74936eaded27760",
+                  "state_digest": "1163c5b94b5236ff57fda62f31e79bde1637354189928643f690269c26ac13ee",
+                  "steady": {
+                    "achieved_rate_per_second": 9998.485664355976,
+                    "backlog_drained": true,
+                    "backlog_high_water": 20,
+                    "completed": 100000,
+                    "drain_ms": 0,
+                    "elapsed_ms": 10001,
+                    "errors": 0,
+                    "latency": {
+                      "max_us": 2489,
+                      "overflow_count": 0,
+                      "p50_us": 1143,
+                      "p90_us": 1706,
+                      "p999_min_samples": 10000,
+                      "p999_reportable": true,
+                      "p999_us": 2255,
+                      "p99_us": 2030,
+                      "samples": 100000
+                    },
+                    "offered": 100000,
+                    "offered_rate_per_second": 10000.0,
+                    "rejections": 0,
+                    "started": 100000,
+                    "successes": 100000,
+                    "timeouts": 0
+                  }
+                },
+                {
+                  "phase": {
+                    "preload_ms": 215,
+                    "preload_operations": 10000,
+                    "reset_ms": 52,
+                    "reset_operations": 1,
+                    "steady_ms": 10000,
+                    "steady_operations": 100000,
+                    "warmup_errors": 0,
+                    "warmup_ms": 84,
+                    "warmup_operations": 10000,
+                    "warmup_rejections": 0,
+                    "warmup_samples_in_steady_histogram": 0,
+                    "warmup_successes": 10000,
+                    "warmup_timeouts": 0
+                  },
+                  "preloaded_state_digest": "1163c5b94b5236ff57fda62f31e79bde1637354189928643f690269c26ac13ee",
+                  "reset_state_digest": "9a2d31cc7749d53399aa765a23d6720fc9101ae5a7c63441a74936eaded27760",
+                  "state_digest": "1163c5b94b5236ff57fda62f31e79bde1637354189928643f690269c26ac13ee",
+                  "steady": {
+                    "achieved_rate_per_second": 9999.117843826816,
+                    "backlog_drained": true,
+                    "backlog_high_water": 20,
+                    "completed": 100000,
+                    "drain_ms": 0,
+                    "elapsed_ms": 10000,
+                    "errors": 0,
+                    "latency": {
+                      "max_us": 2399,
+                      "overflow_count": 0,
+                      "p50_us": 1055,
+                      "p90_us": 1617,
+                      "p999_min_samples": 10000,
+                      "p999_reportable": true,
+                      "p999_us": 2093,
+                      "p99_us": 1931,
+                      "samples": 100000
+                    },
+                    "offered": 100000,
+                    "offered_rate_per_second": 10000.0,
+                    "rejections": 0,
+                    "started": 100000,
+                    "successes": 100000,
+                    "timeouts": 0
+                  }
+                }
+              ],
+              "sample": {
+                "achieved_rate_max_per_second": 9999.117843826816,
+                "achieved_rate_min_per_second": 9998.485664355976,
+                "achieved_rate_per_second": 9998.735593892497,
+                "backlog_drained": true,
+                "completed": 100000,
+                "drain_ms": 0,
+                "errors": 0,
+                "latency": {
+                  "max_us": 2413,
+                  "overflow_count": 0,
+                  "p50_us": 1086,
+                  "p90_us": 1651,
+                  "p999_min_samples": 10000,
+                  "p999_reportable": true,
+                  "p999_us": 2195,
+                  "p99_us": 1977,
+                  "samples": 100000
+                },
+                "offered": 100000,
+                "offered_rate_per_second": 10000.0,
+                "rejections": 0,
+                "robust_spread_ratio": 0.00006322594141066007,
+                "started": 100000,
+                "successes": 100000,
+                "timeouts": 0
+              },
+              "verdict": {
+                "reasons": [],
+                "sustainable": true
+              }
+            },
+            {
+              "repeats": [
+                {
+                  "phase": {
+                    "preload_ms": 215,
+                    "preload_operations": 10000,
+                    "reset_ms": 52,
+                    "reset_operations": 1,
+                    "steady_ms": 4000,
+                    "steady_operations": 100000,
+                    "warmup_errors": 0,
+                    "warmup_ms": 84,
+                    "warmup_operations": 10000,
+                    "warmup_rejections": 0,
+                    "warmup_samples_in_steady_histogram": 0,
+                    "warmup_successes": 10000,
+                    "warmup_timeouts": 0
+                  },
+                  "preloaded_state_digest": "1163c5b94b5236ff57fda62f31e79bde1637354189928643f690269c26ac13ee",
+                  "reset_state_digest": "9a2d31cc7749d53399aa765a23d6720fc9101ae5a7c63441a74936eaded27760",
+                  "state_digest": "1163c5b94b5236ff57fda62f31e79bde1637354189928643f690269c26ac13ee",
+                  "steady": {
+                    "achieved_rate_per_second": 24996.245326487628,
+                    "backlog_drained": true,
+                    "backlog_high_water": 50,
+                    "completed": 100000,
+                    "drain_ms": 0,
+                    "elapsed_ms": 4000,
+                    "errors": 0,
+                    "latency": {
+                      "max_us": 2773,
+                      "overflow_count": 0,
+                      "p50_us": 1108,
+                      "p90_us": 1656,
+                      "p999_min_samples": 10000,
+                      "p999_reportable": true,
+                      "p999_us": 2397,
+                      "p99_us": 2055,
+                      "samples": 100000
+                    },
+                    "offered": 100000,
+                    "offered_rate_per_second": 25000.0,
+                    "rejections": 0,
+                    "started": 100000,
+                    "successes": 100000,
+                    "timeouts": 0
+                  }
+                },
+                {
+                  "phase": {
+                    "preload_ms": 215,
+                    "preload_operations": 10000,
+                    "reset_ms": 52,
+                    "reset_operations": 1,
+                    "steady_ms": 4001,
+                    "steady_operations": 100000,
+                    "warmup_errors": 0,
+                    "warmup_ms": 84,
+                    "warmup_operations": 10000,
+                    "warmup_rejections": 0,
+                    "warmup_samples_in_steady_histogram": 0,
+                    "warmup_successes": 10000,
+                    "warmup_timeouts": 0
+                  },
+                  "preloaded_state_digest": "1163c5b94b5236ff57fda62f31e79bde1637354189928643f690269c26ac13ee",
+                  "reset_state_digest": "9a2d31cc7749d53399aa765a23d6720fc9101ae5a7c63441a74936eaded27760",
+                  "state_digest": "1163c5b94b5236ff57fda62f31e79bde1637354189928643f690269c26ac13ee",
+                  "steady": {
+                    "achieved_rate_per_second": 24992.861532640833,
+                    "backlog_drained": true,
+                    "backlog_high_water": 50,
+                    "completed": 100000,
+                    "drain_ms": 0,
+                    "elapsed_ms": 4001,
+                    "errors": 0,
+                    "latency": {
+                      "max_us": 2783,
+                      "overflow_count": 0,
+                      "p50_us": 1145,
+                      "p90_us": 1695,
+                      "p999_min_samples": 10000,
+                      "p999_reportable": true,
+                      "p999_us": 2391,
+                      "p99_us": 2091,
+                      "samples": 100000
+                    },
+                    "offered": 100000,
+                    "offered_rate_per_second": 25000.0,
+                    "rejections": 0,
+                    "started": 100000,
+                    "successes": 100000,
+                    "timeouts": 0
+                  }
+                },
+                {
+                  "phase": {
+                    "preload_ms": 215,
+                    "preload_operations": 10000,
+                    "reset_ms": 51,
+                    "reset_operations": 1,
+                    "steady_ms": 4000,
+                    "steady_operations": 100000,
+                    "warmup_errors": 0,
+                    "warmup_ms": 84,
+                    "warmup_operations": 10000,
+                    "warmup_rejections": 0,
+                    "warmup_samples_in_steady_histogram": 0,
+                    "warmup_successes": 10000,
+                    "warmup_timeouts": 0
+                  },
+                  "preloaded_state_digest": "1163c5b94b5236ff57fda62f31e79bde1637354189928643f690269c26ac13ee",
+                  "reset_state_digest": "9a2d31cc7749d53399aa765a23d6720fc9101ae5a7c63441a74936eaded27760",
+                  "state_digest": "1163c5b94b5236ff57fda62f31e79bde1637354189928643f690269c26ac13ee",
+                  "steady": {
+                    "achieved_rate_per_second": 24994.621613580603,
+                    "backlog_drained": true,
+                    "backlog_high_water": 50,
+                    "completed": 100000,
+                    "drain_ms": 0,
+                    "elapsed_ms": 4000,
+                    "errors": 0,
+                    "latency": {
+                      "max_us": 2761,
+                      "overflow_count": 0,
+                      "p50_us": 1136,
+                      "p90_us": 1692,
+                      "p999_min_samples": 10000,
+                      "p999_reportable": true,
+                      "p999_us": 2393,
+                      "p99_us": 2085,
+                      "samples": 100000
+                    },
+                    "offered": 100000,
+                    "offered_rate_per_second": 25000.0,
+                    "rejections": 0,
+                    "started": 100000,
+                    "successes": 100000,
+                    "timeouts": 0
+                  }
+                }
+              ],
+              "sample": {
+                "achieved_rate_max_per_second": 24996.245326487628,
+                "achieved_rate_min_per_second": 24992.861532640833,
+                "achieved_rate_per_second": 24994.621613580603,
+                "backlog_drained": true,
+                "completed": 100000,
+                "drain_ms": 0,
+                "errors": 0,
+                "latency": {
+                  "max_us": 2761,
+                  "overflow_count": 0,
+                  "p50_us": 1136,
+                  "p90_us": 1692,
+                  "p999_min_samples": 10000,
+                  "p999_reportable": true,
+                  "p999_us": 2393,
+                  "p99_us": 2085,
+                  "samples": 100000
+                },
+                "offered": 100000,
+                "offered_rate_per_second": 25000.0,
+                "rejections": 0,
+                "robust_spread_ratio": 0.00013538087909906432,
+                "started": 100000,
+                "successes": 100000,
+                "timeouts": 0
+              },
+              "verdict": {
+                "reasons": [],
+                "sustainable": true
+              }
+            }
+          ],
+          "sustainable_rate_per_second": 25000.0
+        },
+        "scenario_digest": "3db469d2143b468ec9d7d834cd802371ce606f37ba8483bf82142ac787ccd70a",
+        "workload": {
+          "digest": "f97d856f7b6feb3e7371b996ecbd722f351253998c869ccabbda693dfb5046ca",
+          "generator": "hydracache-cache-sim-key-schedule",
+          "generator_version": "1",
+          "key_count": 10000,
+          "key_distribution": {
+            "kind": "uniform",
+            "theta": null
+          },
+          "operation_mix": [
+            {
+              "operation": "get",
+              "weight": 0.9
+            },
+            {
+              "operation": "batch_get",
+              "weight": 0.1
+            }
+          ],
+          "payload_mix": [
+            {
+              "bytes": 1000,
+              "weight": 1.0
+            }
+          ],
+          "seed": 6723
+        }
+      },
+      "kind": "load_curve"
+    },
+    {
+      "evidence": {
+        "derived_from": [
+          "client_surface_in_process_knee_at_slo_workload_a",
+          "client_surface_in_process_knee_at_slo_workload_b",
+          "client_surface_in_process_knee_at_slo_workload_c"
+        ],
+        "id": "client_surface_in_process_knee_at_slo_for_a_b_c",
+        "max_robust_spread_ratio": 0.15,
+        "points": [
+          {
+            "dimensions": {
+              "workload": "A"
+            },
+            "max": 24992.033533142963,
+            "min": 24991.394606881586,
+            "quantity": {
+              "unit": "operations_per_second_at_slo",
+              "value": 24991.80535571855
+            },
+            "robust_spread_ratio": 0.000025565430439433805,
+            "sample_count": 3,
+            "samples": [
+              24992.033533142963,
+              24991.394606881586,
+              24991.80535571855
+            ]
+          },
+          {
+            "dimensions": {
+              "workload": "B"
+            },
+            "max": 24994.254626925984,
+            "min": 24989.01043294784,
+            "quantity": {
+              "unit": "operations_per_second_at_slo",
+              "value": 24989.08289441051
+            },
+            "robust_spread_ratio": 0.00020985940141544771,
+            "sample_count": 3,
+            "samples": [
+              24989.01043294784,
+              24994.254626925984,
+              24989.08289441051
+            ]
+          },
+          {
+            "dimensions": {
+              "workload": "C"
+            },
+            "max": 24996.245326487628,
+            "min": 24992.861532640833,
+            "quantity": {
+              "unit": "operations_per_second_at_slo",
+              "value": 24994.621613580603
+            },
+            "robust_spread_ratio": 0.00013538087909906432,
+            "sample_count": 3,
+            "samples": [
+              24996.245326487628,
+              24992.861532640833,
+              24994.621613580603
+            ]
+          }
+        ],
+        "scenario_digest": "0991afaa5922cb5dfaf975efe1a7aae078fc302b81895af0de5c76b89442801a",
+        "workload": {
+          "digest": "ca8aab9afee66819402de0193fb0077d1c5456b705acf75dca891255a2b2ed5b",
+          "generator": "hydracache-client-surface-abc-matrix",
+          "generator_version": "1",
+          "key_count": 10000,
+          "key_distribution": {
+            "kind": "uniform",
+            "theta": null
+          },
+          "operation_mix": [
+            {
+              "operation": "workload_a",
+              "weight": 1.0
+            },
+            {
+              "operation": "workload_b",
+              "weight": 1.0
+            },
+            {
+              "operation": "workload_c",
+              "weight": 1.0
+            }
+          ],
+          "payload_mix": [
+            {
+              "bytes": 1000,
+              "weight": 1.0
+            }
+          ],
+          "seed": null
+        }
+      },
+      "kind": "scalar"
+    },
+    {
+      "evidence": {
+        "derived_from": [],
+        "id": "concurrent_inflight_scaling_curve_1_10_100_1000",
+        "max_robust_spread_ratio": 0.15,
+        "points": [
+          {
+            "dimensions": {
+              "concurrent_inflight": 1,
+              "measurement_boundary": "framed-request-lifetime-at-router-oneshot",
+              "measurement_window_operations": 100000,
+              "not_connections": true,
+              "observed_inflight_high_water": 1
+            },
+            "max": 145689.24372715037,
+            "min": 143202.0125817059,
+            "quantity": {
+              "unit": "operations_per_second",
+              "value": 145657.64729995548
+            },
+            "robust_spread_ratio": 0.01707587065663961,
+            "sample_count": 3,
+            "samples": [
+              145689.24372715037,
+              143202.0125817059,
+              145657.64729995548
+            ]
+          },
+          {
+            "dimensions": {
+              "concurrent_inflight": 10,
+              "measurement_boundary": "framed-request-lifetime-at-router-oneshot",
+              "measurement_window_operations": 100000,
+              "not_connections": true,
+              "observed_inflight_high_water": 10
+            },
+            "max": 95008.21905177072,
+            "min": 92066.3580833737,
+            "quantity": {
+              "unit": "operations_per_second",
+              "value": 93281.55904574045
+            },
+            "robust_spread_ratio": 0.031537433534472525,
+            "sample_count": 3,
+            "samples": [
+              95008.21905177072,
+              93281.55904574045,
+              92066.3580833737
+            ]
+          },
+          {
+            "dimensions": {
+              "concurrent_inflight": 100,
+              "measurement_boundary": "framed-request-lifetime-at-router-oneshot",
+              "measurement_window_operations": 100000,
+              "not_connections": true,
+              "observed_inflight_high_water": 100
+            },
+            "max": 129980.8757707689,
+            "min": 129824.50296426145,
+            "quantity": {
+              "unit": "operations_per_second",
+              "value": 129955.55336837472
+            },
+            "robust_spread_ratio": 0.001203279140093241,
+            "sample_count": 3,
+            "samples": [
+              129955.55336837472,
+              129824.50296426145,
+              129980.8757707689
+            ]
+          },
+          {
+            "dimensions": {
+              "concurrent_inflight": 1000,
+              "measurement_boundary": "framed-request-lifetime-at-router-oneshot",
+              "measurement_window_operations": 100000,
+              "not_connections": true,
+              "observed_inflight_high_water": 1000
+            },
+            "max": 128437.27099795127,
+            "min": 127266.76295059071,
+            "quantity": {
+              "unit": "operations_per_second",
+              "value": 127932.16704902882
+            },
+            "robust_spread_ratio": 0.009149442820834706,
+            "sample_count": 3,
+            "samples": [
+              127932.16704902882,
+              128437.27099795127,
+              127266.76295059071
+            ]
+          }
+        ],
+        "scenario_digest": "0b7ad43686aa5fd732356123726f8ed0d3276914ad66a65ba966772d501202ac",
+        "workload": {
+          "digest": "b93e99f566f2450e6482ee6311080c1435701a99ad17c2ccda9dae43de24294a",
+          "generator": "hydracache-cache-sim-key-schedule",
+          "generator_version": "1",
+          "key_count": 256,
+          "key_distribution": {
+            "kind": "uniform",
+            "theta": null
+          },
+          "operation_mix": [
+            {
+              "operation": "get",
+              "weight": 1.0
+            }
+          ],
+          "payload_mix": [
+            {
+              "bytes": 1000,
+              "weight": 1.0
+            }
+          ],
+          "seed": 6724
+        }
+      },
+      "kind": "scalar"
+    },
+    {
+      "evidence": {
+        "derived_from": [],
+        "id": "client_surface_payload_sweep_100b_1kb_64kb_1mb",
+        "max_robust_spread_ratio": 0.5,
+        "points": [
+          {
+            "dimensions": {
+              "beyond_cap_http_status": 413,
+              "beyond_cap_min_rejections_per_second": 1897.8897364020945,
+              "beyond_cap_rejected_before_dispatch": true,
+              "beyond_cap_value_bytes": 1048576,
+              "expected_rejection": false,
+              "frame_cap_bytes": 1048576,
+              "payload_bytes": 100,
+              "unmeasured_warmup_repeats": 1
+            },
+            "max": 180795.0462157337,
+            "min": 166670.13896122837,
+            "quantity": {
+              "unit": "operations_per_second",
+              "value": 178455.91023667715
+            },
+            "robust_spread_ratio": 0.07915068341402738,
+            "sample_count": 3,
+            "samples": [
+              178455.91023667715,
+              166670.13896122837,
+              180795.0462157337
+            ]
+          },
+          {
+            "dimensions": {
+              "beyond_cap_http_status": 413,
+              "beyond_cap_min_rejections_per_second": 1897.8897364020945,
+              "beyond_cap_rejected_before_dispatch": true,
+              "beyond_cap_value_bytes": 1048576,
+              "expected_rejection": false,
+              "frame_cap_bytes": 1048576,
+              "payload_bytes": 1000,
+              "unmeasured_warmup_repeats": 1
+            },
+            "max": 147305.23485978384,
+            "min": 138219.38872475337,
+            "quantity": {
+              "unit": "operations_per_second",
+              "value": 147034.497969086
+            },
+            "robust_spread_ratio": 0.06179397529510912,
+            "sample_count": 3,
+            "samples": [
+              147034.497969086,
+              147305.23485978384,
+              138219.38872475337
+            ]
+          },
+          {
+            "dimensions": {
+              "beyond_cap_http_status": 413,
+              "beyond_cap_min_rejections_per_second": 1897.8897364020945,
+              "beyond_cap_rejected_before_dispatch": true,
+              "beyond_cap_value_bytes": 1048576,
+              "expected_rejection": false,
+              "frame_cap_bytes": 1048576,
+              "payload_bytes": 65536,
+              "unmeasured_warmup_repeats": 1
+            },
+            "max": 12634.657813983093,
+            "min": 12617.500473156268,
+            "quantity": {
+              "unit": "operations_per_second",
+              "value": 12632.463219793806
+            },
+            "robust_spread_ratio": 0.001358194401859899,
+            "sample_count": 3,
+            "samples": [
+              12617.500473156268,
+              12632.463219793806,
+              12634.657813983093
+            ]
+          },
+          {
+            "dimensions": {
+              "beyond_cap_http_status": 413,
+              "beyond_cap_min_rejections_per_second": 1897.8897364020945,
+              "beyond_cap_rejected_before_dispatch": true,
+              "beyond_cap_value_bytes": 1048576,
+              "expected_rejection": false,
+              "frame_cap_bytes": 1048576,
+              "payload_bytes": 1000000,
+              "unmeasured_warmup_repeats": 1
+            },
+            "max": 885.9882617630169,
+            "min": 880.8512193843642,
+            "quantity": {
+              "unit": "operations_per_second",
+              "value": 884.4895362123837
+            },
+            "robust_spread_ratio": 0.005807917638744361,
+            "sample_count": 3,
+            "samples": [
+              884.4895362123837,
+              885.9882617630169,
+              880.8512193843642
+            ]
+          }
+        ],
+        "scenario_digest": "5288f400e1c7c94cf38564f48ba6e434c37465e78b4a562092f1c97e87ed30dd",
+        "workload": {
+          "digest": "6a8f0876ae48f502ec077eb61bc855fc735d00f6c35a1308358957af3d346f42",
+          "generator": "hydracache-cache-sim-key-schedule",
+          "generator_version": "1",
+          "key_count": 64,
+          "key_distribution": {
+            "kind": "uniform",
+            "theta": null
+          },
+          "operation_mix": [
+            {
+              "operation": "put",
+              "weight": 1.0
+            }
+          ],
+          "payload_mix": [
+            {
+              "bytes": 100,
+              "weight": 1.0
+            },
+            {
+              "bytes": 1000,
+              "weight": 1.0
+            },
+            {
+              "bytes": 65536,
+              "weight": 1.0
+            },
+            {
+              "bytes": 1000000,
+              "weight": 1.0
+            }
+          ],
+          "seed": 6725
+        }
+      },
+      "kind": "scalar"
+    },
+    {
+      "evidence": {
+        "derived_from": [],
+        "id": "client_surface_codec_dispatch_and_admission_rejection_cost",
+        "max_robust_spread_ratio": 1.0,
+        "points": [
+          {
+            "dimensions": {
+              "path": "codec_encode_decode",
+              "payload_bytes": 1000
+            },
+            "max": 1826.375,
+            "min": 1787.0,
+            "quantity": {
+              "unit": "nanoseconds_per_operation",
+              "value": 1805.125
+            },
+            "robust_spread_ratio": 0.021812893843916627,
+            "sample_count": 3,
+            "samples": [
+              1787.0,
+              1805.125,
+              1826.375
+            ]
+          },
+          {
+            "dimensions": {
+              "path": "router_dispatch",
+              "payload_bytes": 1000
+            },
+            "max": 6918.15625,
+            "min": 6794.875,
+            "quantity": {
+              "unit": "nanoseconds_per_operation",
+              "value": 6874.25
+            },
+            "robust_spread_ratio": 0.01793377459359203,
+            "sample_count": 3,
+            "samples": [
+              6874.25,
+              6918.15625,
+              6794.875
+            ]
+          },
+          {
+            "dimensions": {
+              "path": "oversized_admission_rejection",
+              "payload_bytes": 1048576,
+              "rejected_before_dispatch": true
+            },
+            "max": 525566.453125,
+            "min": 524314.28125,
+            "quantity": {
+              "unit": "nanoseconds_per_operation",
+              "value": 525268.328125
+            },
+            "robust_spread_ratio": 0.0023838708864662712,
+            "sample_count": 3,
+            "samples": [
+              525566.453125,
+              525268.328125,
+              524314.28125
+            ]
+          }
+        ],
+        "scenario_digest": "8d898f6bf3d5f7e764cd1189208a54d1390ec9ee927d9d363fde4109454798d3",
+        "workload": {
+          "digest": "8017ecb178ca55375a0d0b99196e955eb864105548268762257c8e9b5c16335c",
+          "generator": "hydracache-cache-sim-key-schedule",
+          "generator_version": "1",
+          "key_count": 64,
+          "key_distribution": {
+            "kind": "uniform",
+            "theta": null
+          },
+          "operation_mix": [
+            {
+              "operation": "codec_encode_decode",
+              "weight": 1.0
+            },
+            {
+              "operation": "router_dispatch",
+              "weight": 1.0
+            },
+            {
+              "operation": "oversized_admission_rejection",
+              "weight": 1.0
+            }
+          ],
+          "payload_mix": [
+            {
+              "bytes": 1000,
+              "weight": 0.6666666666666666
+            },
+            {
+              "bytes": 1048576,
+              "weight": 0.3333333333333333
+            }
+          ],
+          "seed": 6726
+        }
+      },
+      "kind": "scalar"
+    }
+  ],
+  "observed_runner": {
+    "attestation": {
+      "contract_version": "hydracache-reference-host-v5",
+      "cpu_isolation": {
+        "housekeeping_cpus": "0,5-7",
+        "housekeeping_idle_policy": "latency-cap-us-v1",
+        "housekeeping_max_idle_latency_us": 1,
+        "irq_affinity_policy": "housekeeping-only-v1",
+        "isolated_cpus": "1-4",
+        "measurement_idle_policy": "latency-cap-us-v1",
+        "measurement_max_idle_latency_us": 1,
+        "nohz_full_cpus": "1-4",
+        "online_cpus": "0-7",
+        "rcu_nocbs_cpus": "1-4",
+        "smt_control": "off"
+      },
+      "host_digest": "571591a534c9894242fc0af0c5f80c31131fe7e4cdb9d0ea63da6d8b56af8932",
+      "measurement_cores": [
+        {
+          "core_id": 1,
+          "logical_cpu": 1,
+          "package_id": 0
+        },
+        {
+          "core_id": 2,
+          "logical_cpu": 2,
+          "package_id": 0
+        },
+        {
+          "core_id": 3,
+          "logical_cpu": 3,
+          "package_id": 0
+        },
+        {
+          "core_id": 4,
+          "logical_cpu": 4,
+          "package_id": 0
+        }
+      ],
+      "os_image": "ubuntu-24.04",
+      "physical_cores": 8,
+      "prebuild_contract_digest": "f2caae0689d8b075d2a6d59d6090466365f9a6824c6996d6b92830956831cc55",
+      "schema_version": 5,
+      "storage_class": "local-nvme",
+      "storage_identity_digest": "74ec6d1126c24b7a3899494eef2564aec2d3085056ac200e4a8cc8ca0ae43a50",
+      "toolchain_identity": "rustc-1.94.0",
+      "virtualization": "none"
+    },
+    "calibration_score": 0.015776637614821176,
+    "cgroup_cpu_quota": "unlimited",
+    "cpu_affinity": "1-4",
+    "cpu_model": "AMD Ryzen 7 PRO 8700GE w/ Radeon 780M Graphics",
+    "fingerprint": "25baeec1c9ec75da90b5dd0f29c101897450b96651d7e47570e18684be486ebb",
+    "governor": "performance",
+    "kernel": "6.8.0-138-generic",
+    "logical_cores": 4,
+    "os": "linux",
+    "ram_bytes": 66490486784,
+    "runner_class": "self-hosted-bare-metal-v1",
+    "shared_hardware": false,
+    "turbo": "enabled"
+  },
+  "profile_validation": {
+    "eligible": true,
+    "reasons": []
+  },
+  "release": "0.67.0",
+  "report_id": "client-surface-tier-reference-v1",
+  "run_mode": "reference_evidence",
+  "runner_contract": {
+    "allowed_fingerprints": [
+      "25baeec1c9ec75da90b5dd0f29c101897450b96651d7e47570e18684be486ebb"
+    ],
+    "maximum_calibration_score": 0.25,
+    "minimum_logical_cores": 4,
+    "name": "reference-v1",
+    "require_dedicated": true,
+    "required_cgroup_cpu_quota": "unlimited",
+    "required_cpu_affinity": "1-4",
+    "required_runner_class": "self-hosted-bare-metal-v1"
+  },
+  "runner_contract_digest": "c728014af9fd0aae4c474456e74437a033110940db01caa1577b1b5b5efabfe0",
+  "runner_profile": "reference-v1",
+  "scenario_digest": "c35633445676d474f344fbf23d788a5a0bf63a3add96db1c042ba59d0ac401fa",
+  "scenario_id": "client-surface-w2-suite-reference-v1",
+  "schema_version": 1,
+  "seed": 8014089043702747492,
+  "source": {
+    "build_flags": [
+      "--locked",
+      "--release"
+    ],
+    "cargo_lock_sha256": "dc480dad8567eda4a4d13b393651d3d1201cc26ba7599e3c8ff822b725569def",
+    "git_commit": "7bd31af9a5092466d7a7284995f388d33ed3110f",
+    "toolchain": "rustc-1.94.0"
+  },
+  "stability_reasons": [],
+  "stable": true,
+  "state_digest": "320b7b00236a98f0d225815014dc0dfb7d50c17cb5022181b7193ac9f5aa7957",
+  "surface": {
+    "claim_scope": "in-process-client-surface-capacity",
+    "execution_mode": "in-process-axum-router",
+    "network_boundary": "none",
+    "state_scope": "process-local",
+    "surface_kind": "client-surface"
+  },
+  "workload_digest": "9c8472282999d14b3da2039a86662d85cca40354f7a18404fef19971432942b7"
+}

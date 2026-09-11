@@ -1,0 +1,10 @@
+{
+  "archive_sha256": "9309c607c8f2dec76bb3fb45ecdbf2479d339dfa022295c727dcb2994fbe10e2",
+  "archive_size_bytes": 405,
+  "artifact_id": 10188353810,
+  "artifact_name": "hc2-linux-2ec0782d4b9e488e08cade645486035794c68703-34571454863-1",
+  "checked_at": "2026-09-11T08:48:01+00:00",
+  "reported_size_bytes": 405,
+  "schema_version": 1,
+  "step": "frozen-candidate"
+}

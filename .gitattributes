@@ -2,3 +2,7 @@
 crates/hydracache-cache-sim/traces/*.trace text eol=lf
 *.sh text eol=lf
 scripts/perf/*.py text eol=lf
+
+# Archived performance evidence is immutable. Do not normalize text files inside
+# these byte-for-byte campaign copies on add or checkout.
+docs/testing/perf-artifacts/** -text

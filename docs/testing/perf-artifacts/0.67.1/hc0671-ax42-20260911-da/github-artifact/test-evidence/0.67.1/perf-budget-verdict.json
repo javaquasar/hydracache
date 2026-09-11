@@ -1,0 +1,326 @@
+{
+  "payload": {
+    "schema_version": 1,
+    "release": "0.67.1",
+    "profile": "reference-v1",
+    "enforcement": "ship",
+    "candidate_commit": "7bd31af9a5092466d7a7284995f388d33ed3110f",
+    "status": "passed",
+    "profile_sha256": "b12cdad2db06ba8cb2c8f1344491cf586a9bbe7e93f4a9a203eb82463f6ffc31",
+    "budget_sha256": "d5eb28b7ec433730aa40c9a78ca87c8df258444760eaf212963a10e6b563aa40",
+    "baseline_sha256": "3152981e8d4588cbe493625e7976f8ce073f3ef5432fea328ebc1e274f37fb50",
+    "report_set_digest": "404bd3c45a0429049258befee6ce6a710672d32d38e412186a68610f6a1d79d2",
+    "reports": [
+      {
+        "id": "local",
+        "path": "target/test-evidence/0.67/local.json",
+        "sha256": "d2aa4bb89f1a1434aef36776d6b0229730032acb82fe9bd90350498b8ae957e2"
+      },
+      {
+        "id": "client-surface",
+        "path": "target/test-evidence/0.67/client-surface.json",
+        "sha256": "158b5d659a1acf754475f2d31a4de805d0e0a7ae6145346d8f8f73f7c42981a7"
+      },
+      {
+        "id": "node-resp-open-loop",
+        "path": "target/test-evidence/0.67/node-resp-open-loop.json",
+        "sha256": "d238c95d42d42f5065ce7e41a83a8a88b9211ff6d37b436a45e4efb666bb0b5e"
+      },
+      {
+        "id": "control-plane-3",
+        "path": "target/test-evidence/0.67/control-plane-3.json",
+        "sha256": "a804dd584796705c6578e3a0a31a03f2e790eb8200b67b9bda04a1772df9b667"
+      },
+      {
+        "id": "control-plane-5",
+        "path": "target/test-evidence/0.67/control-plane-5.json",
+        "sha256": "a27f204f4d3ec0f0e939fc9003a4b17329d0d2c66ccffbde99fcef39042448ef"
+      },
+      {
+        "id": "control-plane-7",
+        "path": "target/test-evidence/0.67/control-plane-7.json",
+        "sha256": "d3d767efbdf7a9bfb1563c88dd5c35a7e2a352452fb6f825fadb73a18a787d84"
+      },
+      {
+        "id": "grid-model",
+        "path": "target/test-evidence/0.67/grid-model.json",
+        "sha256": "0c0ebbd1c4eb3d64bcd023c1d79a6122c418e638fa60de23cb7b7b09df99518c"
+      },
+      {
+        "id": "brownout-control-plane",
+        "path": "target/test-evidence/0.67/brownout-control-plane.json",
+        "sha256": "41920634f807e27f88f5ed94488da6975e21288924321a8b4023cabae82704e2"
+      },
+      {
+        "id": "brownout-resp-endpoint",
+        "path": "target/test-evidence/0.67/brownout-resp-endpoint.json",
+        "sha256": "cb56f5ca3a115f919c2f50e2193a63a3b7a387c74769c8d89c787d673bf943a6"
+      },
+      {
+        "id": "brownout-grid-model",
+        "path": "target/test-evidence/0.67/brownout-grid-model.json",
+        "sha256": "e294e9b787602cc747c89e206fed754dfd268c404366f0da6d880a74e9914664"
+      },
+      {
+        "id": "overload-local",
+        "path": "target/test-evidence/0.67/overload-local.json",
+        "sha256": "9a76af86dfa9725170c36244ef293f5e10ece1f9e5b8e9fc42c519af5439db6c"
+      },
+      {
+        "id": "overload-client-surface",
+        "path": "target/test-evidence/0.67/overload-client-surface.json",
+        "sha256": "f4b7c3d89f22fc1fe413394194b3c1476b2164c6d034d81067e189899265d9d8"
+      },
+      {
+        "id": "overload-node-resp",
+        "path": "target/test-evidence/0.67/overload-node-resp.json",
+        "sha256": "829aac219666d6f410ded6355b80c9398f487ac56bcef8edac910ca5d2e9b8e4"
+      }
+    ],
+    "baseline_members": [
+      {
+        "run_id": "34358714775",
+        "source_commit": "0b6acb370ebe3e6d107a007726bcf98a4cf60ce7",
+        "receipt_sha256": "2be2a0d96a739255ea1f23b08cd1944a27a11326cfa1cb7b902e464a53b56572",
+        "eligible": true
+      },
+      {
+        "run_id": "34375085752",
+        "source_commit": "0b6acb370ebe3e6d107a007726bcf98a4cf60ce7",
+        "receipt_sha256": "d75900885ec363706dedd4388155fd7361ddcf0f095911001ebcfe9311fefbab",
+        "eligible": true
+      },
+      {
+        "run_id": "34390382211",
+        "source_commit": "0b6acb370ebe3e6d107a007726bcf98a4cf60ce7",
+        "receipt_sha256": "b5a4331809885bb7bfceb667923940c266378846f0149e03676bc5121f61108b",
+        "eligible": true
+      },
+      {
+        "run_id": "34405275147",
+        "source_commit": "0b6acb370ebe3e6d107a007726bcf98a4cf60ce7",
+        "receipt_sha256": "2c648a6d5f7bc6fee721972aca0886ecf2968a90902b0f0af1339966392a7b65",
+        "eligible": true
+      },
+      {
+        "run_id": "34417814297",
+        "source_commit": "0b6acb370ebe3e6d107a007726bcf98a4cf60ce7",
+        "receipt_sha256": "367e2340cc9434ce197a5bc4a11264d40778688e2725a347665c47f095230b20",
+        "eligible": true
+      }
+    ],
+    "checks": [
+      {
+        "budget_id": "local-capacity-floor",
+        "candidate": 20000.0,
+        "anchor": 20000.0,
+        "rolling_median": 20000.0,
+        "rolling_mad": 0.0,
+        "anchor_boundary": 18000.0,
+        "rolling_boundary": 18000.0,
+        "unit": "operations_per_second",
+        "passed": true
+      },
+      {
+        "budget_id": "client-surface-capacity-floor",
+        "candidate": 24989.08289441051,
+        "anchor": 24989.53869813603,
+        "rolling_median": 24989.53869813603,
+        "rolling_mad": 1.5558501303421508,
+        "anchor_boundary": 22490.58482832243,
+        "rolling_boundary": 22490.58482832243,
+        "unit": "operations_per_second",
+        "passed": true
+      },
+      {
+        "budget_id": "local-p99-at-slo-ceiling",
+        "candidate": 1917.0,
+        "anchor": 1943.0,
+        "rolling_median": 1943.0,
+        "rolling_mad": 9.0,
+        "anchor_boundary": 2137.3,
+        "rolling_boundary": 2137.3,
+        "unit": "microseconds",
+        "passed": true
+      },
+      {
+        "budget_id": "client-surface-p99-at-slo-ceiling",
+        "candidate": 2085.0,
+        "anchor": 2063.0,
+        "rolling_median": 2063.0,
+        "rolling_mad": 14.0,
+        "anchor_boundary": 2269.3,
+        "rolling_boundary": 2269.3,
+        "unit": "microseconds",
+        "passed": true
+      },
+      {
+        "budget_id": "node-resp-capacity-floor",
+        "candidate": 49948.14505952875,
+        "anchor": 49949.936177967546,
+        "rolling_median": 49949.936177967546,
+        "rolling_mad": 2.64146240271657,
+        "anchor_boundary": 44954.94256017079,
+        "rolling_boundary": 44954.94256017079,
+        "unit": "operations_per_second",
+        "passed": true
+      },
+      {
+        "budget_id": "node-resp-p99-at-slo-ceiling",
+        "candidate": 3769.0,
+        "anchor": 3537.0,
+        "rolling_median": 3537.0,
+        "rolling_mad": 48.0,
+        "anchor_boundary": 3890.7,
+        "rolling_boundary": 3890.7,
+        "unit": "microseconds",
+        "passed": true
+      },
+      {
+        "budget_id": "control-plane-3-event-ceiling",
+        "candidate": 848.589556,
+        "anchor": 798.100649,
+        "rolling_median": 798.100649,
+        "rolling_mad": 104.32555200000002,
+        "anchor_boundary": 1262.1198391856,
+        "rolling_boundary": 1262.1198391856,
+        "unit": "milliseconds",
+        "passed": true
+      },
+      {
+        "budget_id": "control-plane-5-event-ceiling",
+        "candidate": 850.746731,
+        "anchor": 698.073053,
+        "rolling_median": 698.073053,
+        "rolling_mad": 0.5287160000000313,
+        "anchor_boundary": 905.093853,
+        "rolling_boundary": 905.093853,
+        "unit": "milliseconds",
+        "passed": true
+      },
+      {
+        "budget_id": "control-plane-7-event-ceiling",
+        "candidate": 903.453575,
+        "anchor": 700.980081,
+        "rolling_median": 700.980081,
+        "rolling_mad": 52.090245000000095,
+        "anchor_boundary": 932.6670727110004,
+        "rolling_boundary": 932.6670727110004,
+        "unit": "milliseconds",
+        "passed": true
+      },
+      {
+        "budget_id": "grid-model-primitive-cost-ceiling",
+        "candidate": 1253.3005,
+        "anchor": 1269.0305,
+        "rolling_median": 1269.0305,
+        "rolling_mad": 14.575000000000045,
+        "anchor_boundary": 1405.2091,
+        "rolling_boundary": 1405.2091,
+        "unit": "nanoseconds_per_operation",
+        "passed": true
+      },
+      {
+        "budget_id": "brownout-control-plane-recovery-ceiling",
+        "candidate": 839.0,
+        "anchor": 787.0,
+        "rolling_median": 787.0,
+        "rolling_mad": 51.0,
+        "anchor_boundary": 1013.8378,
+        "rolling_boundary": 1013.8378,
+        "unit": "milliseconds",
+        "passed": true
+      },
+      {
+        "budget_id": "brownout-control-plane-depth-ceiling",
+        "candidate": 42.0,
+        "anchor": 84.0,
+        "rolling_median": 84.0,
+        "rolling_mad": 0.0,
+        "anchor_boundary": 252.0,
+        "rolling_boundary": 252.0,
+        "unit": "parts_per_million",
+        "passed": true
+      },
+      {
+        "budget_id": "brownout-resp-endpoint-recovery-ceiling",
+        "candidate": 1213.0,
+        "anchor": 1222.0,
+        "rolling_median": 1222.0,
+        "rolling_mad": 31.0,
+        "anchor_boundary": 1359.8818,
+        "rolling_boundary": 1359.8818,
+        "unit": "milliseconds",
+        "passed": true
+      },
+      {
+        "budget_id": "brownout-resp-endpoint-depth-ceiling",
+        "candidate": 11484.0,
+        "anchor": 9844.0,
+        "rolling_median": 9844.0,
+        "rolling_mad": 1177.0,
+        "anchor_boundary": 15079.0606,
+        "rolling_boundary": 15079.0606,
+        "unit": "parts_per_million",
+        "passed": true
+      },
+      {
+        "budget_id": "brownout-grid-model-recovery-ceiling",
+        "candidate": 183.0,
+        "anchor": 173.0,
+        "rolling_median": 173.0,
+        "rolling_mad": 4.0,
+        "anchor_boundary": 224.873779601,
+        "rolling_boundary": 224.873779601,
+        "unit": "nanoseconds",
+        "passed": true
+      },
+      {
+        "budget_id": "brownout-grid-model-depth-ceiling",
+        "candidate": 76792.0,
+        "anchor": 76791.0,
+        "rolling_median": 76791.0,
+        "rolling_mad": 2.0,
+        "anchor_boundary": 99816.661325667,
+        "rolling_boundary": 99816.661325667,
+        "unit": "nanoseconds",
+        "passed": true
+      },
+      {
+        "budget_id": "overload-local-goodput-floor",
+        "candidate": 19994.61838447904,
+        "anchor": 19995.93523428395,
+        "rolling_median": 19995.93523428395,
+        "rolling_mad": 0.2135714437426941,
+        "anchor_boundary": 17996.341710855555,
+        "rolling_boundary": 17996.341710855555,
+        "unit": "operations_per_second",
+        "passed": true
+      },
+      {
+        "budget_id": "overload-client-surface-goodput-floor",
+        "candidate": 24991.08666653397,
+        "anchor": 24991.919781191802,
+        "rolling_median": 24991.919781191802,
+        "rolling_mad": 0.3048752992071968,
+        "anchor_boundary": 22492.727803072623,
+        "rolling_boundary": 22492.727803072623,
+        "unit": "operations_per_second",
+        "passed": true
+      },
+      {
+        "budget_id": "overload-node-resp-goodput-floor",
+        "candidate": 44374.543415346394,
+        "anchor": 43077.03800380958,
+        "rolling_median": 43077.03800380958,
+        "rolling_mad": 129.41304131274228,
+        "anchor_boundary": 30153.92660266671,
+        "rolling_boundary": 30153.92660266671,
+        "unit": "operations_per_second",
+        "passed": true
+      }
+    ],
+    "problems": []
+  },
+  "receipt_sha256": "cc6293dfcbc190da163c4480bbdeacf7ad5d9c779eb9aaa3875e74c551c2f829"
+}

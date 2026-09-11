@@ -1,0 +1,43 @@
+{
+  "schema_version": 1,
+  "release": "0.67.1",
+  "gate_id": "tool.perf-baseline-review-0671",
+  "source_commit": "7bd31af9a5092466d7a7284995f388d33ed3110f",
+  "dirty_worktree": false,
+  "command_digest": "6754e93ebb9a1229e4856db0cb85217f6f7fb12dd73ababcb38bef7c0434824a",
+  "registry_digest": "e4b3b756e74d9d301d612e460c72516f2afcfab2ba5635a750e1c2ac98e2888f",
+  "input_digest": "07c345b5badb641668dd3f336b001b533e9da490ea081e7a66855326bb63822a",
+  "toolchain": "rustc 1.94.0 (4a4ef493e 2026-03-02)",
+  "container_identity": {
+    "CI": "true",
+    "GITHUB_ACTIONS": "true",
+    "GITHUB_RUN_ATTEMPT": "1",
+    "GITHUB_RUN_ID": "34580969962",
+    "GITHUB_SHA": "7bd31af9a5092466d7a7284995f388d33ed3110f",
+    "HYDRACACHE_EVIDENCE_BASE_SHA": "7bd31af9a5092466d7a7284995f388d33ed3110f",
+    "HYDRACACHE_EVIDENCE_HEAD_SHA": "7bd31af9a5092466d7a7284995f388d33ed3110f",
+    "HYDRACACHE_EVIDENCE_TESTED_SHA": "7bd31af9a5092466d7a7284995f388d33ed3110f"
+  },
+  "platform": "linux-x86_64",
+  "started_at": "2026-09-11T08:49:27.005439172Z",
+  "ended_at": "2026-09-11T08:49:49.353730704Z",
+  "duration_ms": 22358,
+  "outcome": "pass",
+  "exit_code": 0,
+  "normalized_result": {
+    "outcome": "pass",
+    "exit_code": 0,
+    "stdout_sha256": "a326862c39b4d1b3cb96cdb5b0e96df9fa46400e0a18b831ade2d6af17a7df49",
+    "stderr_sha256": "9bc139a78c2bfb497f798d0709dfcde6a6dbc95b150ef4a8f57a109336264098"
+  },
+  "stdout": "perf-reference reviewed: OK\n",
+  "stderr": "\u001b[1m\u001b[92m   Compiling\u001b[0m ring v0.17.14\n\u001b[1m\u001b[92m   Compiling\u001b[0m rustls v0.23.41\n\u001b[1m\u001b[92m   Compiling\u001b[0m rustls-webpki v0.103.13\n\u001b[1m\u001b[92m   Compiling\u001b[0m rcgen v0.14.8\n\u001b[1m\u001b[92m   Compiling\u001b[0m tokio-rustls v0.26.4\n\u001b[1m\u001b[92m   Compiling\u001b[0m tonic v0.14.6\n\u001b[1m\u001b[92m   Compiling\u001b[0m tonic-prost v0.14.6\n\u001b[1m\u001b[92m   Compiling\u001b[0m hydracache-client-hc2 v0.70.0 (/opt/actions-runner/_work/hydracache/hydracache/crates/hydracache-client-hc2)\n\u001b[1m\u001b[92m   Compiling\u001b[0m hydracache-client-plane-spike v0.70.0 (/opt/actions-runner/_work/hydracache/hydracache/crates/hydracache-client-plane-spike)\n\u001b[1m\u001b[92m   Compiling\u001b[0m hydracache-loadgen v0.70.0 (/opt/actions-runner/_work/hydracache/hydracache/crates/hydracache-loadgen)\n\u001b[1m\u001b[92m   Compiling\u001b[0m xtask v0.70.0 (/opt/actions-runner/_work/hydracache/hydracache/crates/xtask)\n\u001b[1m\u001b[92m    Finished\u001b[0m `dev` profile [unoptimized] target(s) in 22.20s\n\u001b[1m\u001b[92m     Running\u001b[0m `target/debug/xtask perf-reference --release 0.67.1 --profile reference-v1 --phase reviewed`\n",
+  "artifacts": [
+    {
+      "path": "target/test-evidence/0.67.1/baseline-review.json",
+      "sha256": "028fa72faa6a23c83d5abbcf2ff93ebfa61681fbe6369941490730b9d0caeb6b",
+      "bytes": 2056
+    }
+  ],
+  "missing_artifacts": []
+}

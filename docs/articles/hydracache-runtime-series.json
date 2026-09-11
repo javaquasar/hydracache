@@ -42,6 +42,12 @@
       "title": "Typed Query Caching in Rust",
       "file": "005-typed-query-caching-in-rust.md",
       "url": "https://medium.com/@artur.buzov/typed-query-caching-in-rust-aac4352599f0"
+    },
+    {
+      "part": 6,
+      "title": "How to Measure Cache Performance Without Measuring Noise",
+      "file": "006-measuring-cache-performance-on-bare-metal.md",
+      "url": "https://medium.com/@artur.buzov/how-to-measure-cache-performance-without-measuring-noise-926c10d713f5"
     }
   ]
 }

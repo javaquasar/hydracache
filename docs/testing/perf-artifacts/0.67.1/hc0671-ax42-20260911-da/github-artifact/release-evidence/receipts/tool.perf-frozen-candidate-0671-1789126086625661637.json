@@ -1,0 +1,43 @@
+{
+  "schema_version": 1,
+  "release": "0.67.1",
+  "gate_id": "tool.perf-frozen-candidate-0671",
+  "source_commit": "7bd31af9a5092466d7a7284995f388d33ed3110f",
+  "dirty_worktree": false,
+  "command_digest": "8a240ab1d24b9f22e6190e059273340c5d82b11d21c79dbf6dfe898f76777bb7",
+  "registry_digest": "e4b3b756e74d9d301d612e460c72516f2afcfab2ba5635a750e1c2ac98e2888f",
+  "input_digest": "c47633388a21ff5fd3e6a283dbf7046a6fe6652df85a02ebdbf37600952eaade",
+  "toolchain": "rustc 1.94.0 (4a4ef493e 2026-03-02)",
+  "container_identity": {
+    "CI": "true",
+    "GITHUB_ACTIONS": "true",
+    "GITHUB_RUN_ATTEMPT": "1",
+    "GITHUB_RUN_ID": "34580969962",
+    "GITHUB_SHA": "7bd31af9a5092466d7a7284995f388d33ed3110f",
+    "HYDRACACHE_EVIDENCE_BASE_SHA": "7bd31af9a5092466d7a7284995f388d33ed3110f",
+    "HYDRACACHE_EVIDENCE_HEAD_SHA": "7bd31af9a5092466d7a7284995f388d33ed3110f",
+    "HYDRACACHE_EVIDENCE_TESTED_SHA": "7bd31af9a5092466d7a7284995f388d33ed3110f"
+  },
+  "platform": "linux-x86_64",
+  "started_at": "2026-09-11T11:27:42.61982497Z",
+  "ended_at": "2026-09-11T11:28:06.615097103Z",
+  "duration_ms": 24005,
+  "outcome": "pass",
+  "exit_code": 0,
+  "normalized_result": {
+    "outcome": "pass",
+    "exit_code": 0,
+    "stdout_sha256": "e443f60303b9a6871fcccb9556ac4de66d6e8d9dd56b48e3a5455b1058a661f5",
+    "stderr_sha256": "e855f1f08c5c71358b7ebdb75b2751e9e8fe92bb290701319a3a3440c1a916a5"
+  },
+  "stdout": "perf-reference frozen-candidate: OK\n",
+  "stderr": "\u001b[1m\u001b[92m   Compiling\u001b[0m ring v0.17.14\n\u001b[1m\u001b[92m   Compiling\u001b[0m rustls v0.23.41\n\u001b[1m\u001b[92m   Compiling\u001b[0m rustls-webpki v0.103.13\n\u001b[1m\u001b[92m   Compiling\u001b[0m rcgen v0.14.8\n\u001b[1m\u001b[92m   Compiling\u001b[0m tokio-rustls v0.26.4\n\u001b[1m\u001b[92m   Compiling\u001b[0m tonic v0.14.6\n\u001b[1m\u001b[92m   Compiling\u001b[0m tonic-prost v0.14.6\n\u001b[1m\u001b[92m   Compiling\u001b[0m hydracache-client-hc2 v0.70.0 (/opt/actions-runner/_work/hydracache/hydracache/crates/hydracache-client-hc2)\n\u001b[1m\u001b[92m   Compiling\u001b[0m hydracache-client-plane-spike v0.70.0 (/opt/actions-runner/_work/hydracache/hydracache/crates/hydracache-client-plane-spike)\n\u001b[1m\u001b[92m   Compiling\u001b[0m hydracache-loadgen v0.70.0 (/opt/actions-runner/_work/hydracache/hydracache/crates/hydracache-loadgen)\n\u001b[1m\u001b[92m   Compiling\u001b[0m xtask v0.70.0 (/opt/actions-runner/_work/hydracache/hydracache/crates/xtask)\n\u001b[1m\u001b[92m    Finished\u001b[0m `dev` profile [unoptimized] target(s) in 22.30s\n\u001b[1m\u001b[92m     Running\u001b[0m `target/debug/xtask perf-reference --release 0.67.1 --profile reference-v1 --phase frozen-candidate`\n",
+  "artifacts": [
+    {
+      "path": "target/test-evidence/0.67.1/frozen-candidate.json",
+      "sha256": "0e673a0660e68330e66bebfb664542eb35f2f2e4c34b83ca23b5fd668c326de4",
+      "bytes": 9573
+    }
+  ],
+  "missing_artifacts": []
+}

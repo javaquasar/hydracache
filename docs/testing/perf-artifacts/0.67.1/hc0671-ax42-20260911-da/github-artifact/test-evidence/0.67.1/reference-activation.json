@@ -1,0 +1,35 @@
+{
+  "schema_version": 1,
+  "release": "0.67.1",
+  "profile": "reference-v1",
+  "source_commit": "7bd31af9a5092466d7a7284995f388d33ed3110f",
+  "runner_fingerprint": "25baeec1c9ec75da90b5dd0f29c101897450b96651d7e47570e18684be486ebb",
+  "review_receipt_sha256": "028fa72faa6a23c83d5abbcf2ff93ebfa61681fbe6369941490730b9d0caeb6b",
+  "files": [
+    {
+      "id": "profile",
+      "path": "docs/testing/perf-profiles/reference-v1.toml",
+      "sha256": "7a852565b93cf1d3483823262234de7ce155596e8a4c64918fef11cba6869d64"
+    },
+    {
+      "id": "budget",
+      "path": "docs/testing/perf-budgets/0.67.1/reference-v1.toml",
+      "sha256": "c9be3dc643567393c9afa4fdfca9c0d0d5487e656c9220af70b37413e3944151"
+    },
+    {
+      "id": "baseline",
+      "path": "docs/testing/perf-baselines/0.67.1/reference-v1.toml",
+      "sha256": "0d156ef926aea45721c0885d91a2180d204d945c3e0302cad95e8f90288a589a"
+    },
+    {
+      "id": "anchor",
+      "path": "docs/testing/perf-anchors/0.67.1/reference-v1.json",
+      "sha256": "53f63efdafeb8310e5bae152c260cb7d8d96b04c7865080679c2bff327adcda8"
+    }
+  ],
+  "td_0013_resolved": true,
+  "release_notes_present": true,
+  "passed": true,
+  "ship_evidence_eligible": true,
+  "receipt_sha256": "920b0423d0482216fe152603edd0dd3ac080c96564591da2d535c251264426d1"
+}
