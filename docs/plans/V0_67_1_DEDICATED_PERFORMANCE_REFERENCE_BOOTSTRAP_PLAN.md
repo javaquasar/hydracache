@@ -11,8 +11,8 @@
 > - **Depends on:** shipped `0.67.0`.
 > - **Unblocks:** official, narrowly scoped reference evidence and future numerical capacity
 >   claims. It is no longer a source-code prerequisite for the `0.68.0` Rust release.
-> - **Status:** in-progress; W0-W7 evidence passed, with the final frozen candidate closed and
->   preserved off-host on 2026-09-11; publication closeout remains.
+> - **Status:** shipped; W0-W7 evidence passed, the final frozen candidate was closed and
+>   preserved off-host, and publication closeout completed on 2026-09-11.
 >
 > Roadmap: [`INDEX.md`](INDEX.md) - parent plan:
 > [`V0_67_PERFORMANCE_CHARACTERIZATION_PLAN.md`](V0_67_PERFORMANCE_CHARACTERIZATION_PLAN.md)
@@ -27,9 +27,13 @@ This is an evidence/bootstrap patch, not an optimization or product-surface rele
 
 **Execution state:** W1 qualification, two-run full-dress admission, W4's exact five chained
 bootstrap samples, W5 independent review, W6 activation, and W7's clean frozen-candidate run are
-complete. TD-0013 is resolved and the exact-SHA final evidence is preserved off-host. The
-anonymized verdict is
-[`../testing/perf-scenarios/0.67/results/ax42-reference-0.67.1-20260911.md`](../testing/perf-scenarios/0.67/results/ax42-reference-0.67.1-20260911.md).
+complete. TD-0013 is resolved. The exact-SHA final evidence is preserved off-host and mirrored
+byte-for-byte in the public repository under its immutable campaign ID. The anonymized verdict is
+[`../testing/perf-scenarios/0.67/results/ax42-reference-0.67.1-20260911.md`](../testing/perf-scenarios/0.67/results/ax42-reference-0.67.1-20260911.md),
+the reusable method is recorded in
+[`../articles/006-measuring-cache-performance-on-bare-metal.md`](../articles/006-measuring-cache-performance-on-bare-metal.md),
+and the raw evidence inventory starts at
+[`../testing/perf-artifacts/README.md`](../testing/perf-artifacts/README.md).
 
 **Non-ship readiness additions:** a separate `indicative-exploratory-v1` tier
 provides reproducible same-host characterization without capacity or sizing
@@ -122,16 +126,16 @@ spread, calibration, affinity, quota, privacy, IRQ, or fail-closed threshold.
 tooling and methodology release without capacity, sizing, Redis-comparison, metrics-agreement, or
 numerical baseline claims.
 
-This patch may publish numerical reference evidence only after every work item below is complete.
-Until W6 activates the reviewed contracts and W7 passes on the frozen candidate:
+This evidence milestone publishes numerical reference evidence only because every work item below
+is complete. Before W6 activated the reviewed contracts and W7 passed on the frozen candidate:
 
-- `reference-v1` remains `unbootstrapped`;
-- every bootstrap sample is non-ship exploratory evidence;
-- no number may be quoted as a capacity floor, sizing recommendation, Redis advantage, portable
+- `reference-v1` remained `unbootstrapped`;
+- every bootstrap sample was non-ship exploratory evidence;
+- no number could be quoted as a capacity floor, sizing recommendation, Redis advantage, portable
   baseline, or general cluster-capacity claim;
 - the existing open-loop schedule, SLOs, repeat counts, zero-error rules, and 15% scenario spread
-  rule must not be weakened;
-- GitHub-hosted `ci-shared` results remain tripwire-only.
+  rule could not be weakened;
+- GitHub-hosted `ci-shared` results remained tripwire-only.
 
 The reference surfaces remain exactly those defined by `0.67.0`: embedded cache, in-process client
 surface, one selected node-local RESP endpoint, real daemon control-plane, and library/model
@@ -460,7 +464,9 @@ and host-state archives were verified and retained off-host.
 6. Generate and independently review W5 payloads.
 7. Land W6 activation as a dedicated reviewable commit.
 8. Run W7 on the frozen candidate.
-9. Tag and publish `0.67.1` only after ordinary CI and the full reference pipeline are green.
+9. Close the `0.67.1` evidence milestone only after ordinary CI and the full reference pipeline
+   are green. Because the campaign completed after the workspace had advanced to `0.70.0`, do not
+   create a misleading `v0.67.1` crates tag from the later source tree.
 10. Archive evidence, take the runner offline, and delete hourly infrastructure when retention is
     no longer needed.
 

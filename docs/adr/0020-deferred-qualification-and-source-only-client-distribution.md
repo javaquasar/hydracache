@@ -34,10 +34,11 @@ source preview into an external compatibility commitment.
 
 Choose option 3.
 
-1. Release 0.67.1 remains `in-progress`: its implementation is complete, but its
-   authoritative `reference-v1` qualification and five accepted bootstrap
-   samples are deferred. No failed or unstable run is promoted, no numerical
-   capacity claim is introduced, and all bare-metal acceptance criteria remain
+1. At the time of this decision, release 0.67.1 remained `in-progress`: its
+   implementation was complete, but its authoritative `reference-v1`
+   qualification and five accepted bootstrap samples were deferred. No failed
+   or unstable run was promoted, no numerical
+   capacity claim was introduced, and all bare-metal acceptance criteria remained
    unchanged.
 2. The 0.68 Rust library candidate may use shipped `v0.67.0` as its published
    compatibility baseline because all 0.67.1 orchestration hardening is already

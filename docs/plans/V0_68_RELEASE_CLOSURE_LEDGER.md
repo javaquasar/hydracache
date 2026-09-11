@@ -64,9 +64,10 @@ checked-in preview code only and do not claim Maven/PyPI publication.
 The labelled Ubuntu 24.04 fixed-host receipt remains outstanding, but ADR-0020
 assigns it to future Java/Python distribution promotion rather than the Rust
 0.68 release. It remains a correctness/stability gate and is not weakened.
-The 0.67.1 bare-metal performance campaign likewise remains `in-progress` and
-retains every original acceptance rule; it is not a numerical claim dependency
-for this release.
+At the time 0.68 shipped, the 0.67.1 bare-metal performance campaign likewise
+remained `in-progress` and retained every original acceptance rule; it was not a
+numerical claim dependency for this release. It completed later as a separate
+evidence milestone.
 
 ## Required final commands
 
