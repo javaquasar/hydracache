@@ -1,0 +1,1162 @@
+{
+  "schema_version": 1,
+  "release": "0.67.0",
+  "scenario_id": "metrics-honesty-daemon-v1",
+  "scenario_sha256": "992773c2e460aa683aecdd33474f592befc529705039119464b203c19b3ff34c",
+  "evidence_class": "real-daemon-exporter-cross-check",
+  "surface": "w3_node_resp",
+  "predecessor": {
+    "schema_version": 1,
+    "surface": "w3_node_resp",
+    "report_sha256": "d238c95d42d42f5065ce7e41a83a8a88b9211ff6d37b436a45e4efb666bb0b5e",
+    "lifecycle_sha256": "be3791c4c2b72cd17734595f796efae9bd8c23134cc02fb52514adc6291bd9d6",
+    "external_report_sha256": "bf2301a1b804ede0d14d2c3a9658811d4dd7cd986c976644fc9876c1c49c446e",
+    "suite_receipt_sha256": "cab9666a6c5a8f49cc23b147d039e7f9bb35ef9e818d04cb13e54dcdb7dbe4be",
+    "source_commit": "7bd31af9a5092466d7a7284995f388d33ed3110f",
+    "cargo_lock_sha256": "dc480dad8567eda4a4d13b393651d3d1201cc26ba7599e3c8ff822b725569def",
+    "runner_profile": "reference-v1",
+    "runner_identity_sha256": "a9df9a2de7fcf01850789aa3307d4b5a00f884c084e43b92b969840c61d3f70d",
+    "prebuild_manifest_sha256": "2768ca970a2b3e09c3ee63bbd9bba466c3aee40be8dfca8e06cbe98309e4b296",
+    "prebuild_contract_sha256": "f2caae0689d8b075d2a6d59d6090466365f9a6824c6996d6b92830956831cc55",
+    "capability_receipt_sha256": "14b729d15ac097dd368a63519198917497f92dc588e80278b6f16a815bd2f8ab",
+    "processes": [
+      {
+        "node_id": "selected-node-local-resp-endpoint",
+        "pid": 27987,
+        "admin_endpoint": "127.0.0.1:44707",
+        "server_binary_sha256": "a17b5148cad43e2193c69a64e3372e2832fa94a47196a7b6bec405128f3633c6",
+        "loadgen_binary_sha256": "c2c0e14ab40dd5b3c2ee5d71631bdfee81d7d61c0cd2c83c8b927c126aff7bd2",
+        "killed_and_waited": true
+      }
+    ],
+    "artifacts": [
+      {
+        "logical_name": "w3_open_loop_report",
+        "canonical_path": "/dev/shm/hydracache-reference-evidence-v1/0.67/node-resp-open-loop.json",
+        "bytes": 198255,
+        "sha256": "d238c95d42d42f5065ce7e41a83a8a88b9211ff6d37b436a45e4efb666bb0b5e"
+      },
+      {
+        "logical_name": "w3_external_report",
+        "canonical_path": "/dev/shm/hydracache-reference-evidence-v1/0.67/node-resp-redis-benchmark.json",
+        "bytes": 54956,
+        "sha256": "bf2301a1b804ede0d14d2c3a9658811d4dd7cd986c976644fc9876c1c49c446e"
+      },
+      {
+        "logical_name": "w3_daemon_lifecycle",
+        "canonical_path": "/dev/shm/hydracache-reference-evidence-v1/0.67/node-resp-daemon-lifecycle.json",
+        "bytes": 1840,
+        "sha256": "be3791c4c2b72cd17734595f796efae9bd8c23134cc02fb52514adc6291bd9d6"
+      },
+      {
+        "logical_name": "w3_suite_receipt",
+        "canonical_path": "/dev/shm/hydracache-reference-evidence-v1/0.67/node-resp-suite-receipt.json",
+        "bytes": 760,
+        "sha256": "cab9666a6c5a8f49cc23b147d039e7f9bb35ef9e818d04cb13e54dcdb7dbe4be"
+      }
+    ]
+  },
+  "windows": [
+    {
+      "schema_version": 1,
+      "window_id": "w3-node-resp-pid-27987-started-1789120154180358532",
+      "binding": {
+        "schema_version": 1,
+        "surface": "w3_node_resp",
+        "scenario_id": "metrics-honesty-daemon-v1",
+        "scenario_sha256": "992773c2e460aa683aecdd33474f592befc529705039119464b203c19b3ff34c",
+        "node_id": "selected-node-local-resp-endpoint",
+        "pid": 27987,
+        "admin_endpoint": "127.0.0.1:44707",
+        "source_commit": "7bd31af9a5092466d7a7284995f388d33ed3110f",
+        "cargo_lock_sha256": "dc480dad8567eda4a4d13b393651d3d1201cc26ba7599e3c8ff822b725569def",
+        "runner_profile": "reference-v1",
+        "runner_identity_sha256": "a9df9a2de7fcf01850789aa3307d4b5a00f884c084e43b92b969840c61d3f70d",
+        "prebuild_manifest_sha256": "2768ca970a2b3e09c3ee63bbd9bba466c3aee40be8dfca8e06cbe98309e4b296",
+        "prebuild_contract_sha256": "f2caae0689d8b075d2a6d59d6090466365f9a6824c6996d6b92830956831cc55",
+        "server_binary_sha256": "a17b5148cad43e2193c69a64e3372e2832fa94a47196a7b6bec405128f3633c6",
+        "loadgen_binary_sha256": "c2c0e14ab40dd5b3c2ee5d71631bdfee81d7d61c0cd2c83c8b927c126aff7bd2",
+        "capability_receipt_sha256": "14b729d15ac097dd368a63519198917497f92dc588e80278b6f16a815bd2f8ab",
+        "direct_prebuilt_exec": true
+      },
+      "before": {
+        "schema_version": 1,
+        "binding_sha256": "df56950f7faf7e86b1c3226057859ab1bf695553adc40fe4e2d363e78d7d5819",
+        "admin_endpoint": "127.0.0.1:44707",
+        "exporter_path": "/metrics",
+        "request_sha256": "46753c007fbd7db86774b52584c9f94460b16032ac945eccfee65fbca3f33133",
+        "started_unix_nanos": 1789120154182481519,
+        "finished_unix_nanos": 1789120154182763554,
+        "elapsed_monotonic_nanos": 281865,
+        "status_code": 200,
+        "content_type": "text/plain; version=0.0.4",
+        "raw_http_response": "HTTP/1.1 200 OK\r\ncontent-type: text/plain; version=0.0.4\r\ncontent-length: 16619\r\nconnection: close\r\ndate: Fri, 11 Sep 2026 09:49:14 GMT\r\n\r\n# HELP hydracache_cache_hits_total Cache hits.\n# TYPE hydracache_cache_hits_total counter\n# HELP hydracache_cache_misses_total Cache misses.\n# TYPE hydracache_cache_misses_total counter\n# HELP hydracache_cache_loads_total Loader executions.\n# TYPE hydracache_cache_loads_total counter\n# HELP hydracache_cache_hit_ratio Cache hit ratio.\n# TYPE hydracache_cache_hit_ratio gauge\n# HELP hydracache_cache_estimated_entries Estimated local entries.\n# TYPE hydracache_cache_estimated_entries gauge\nhydracache_cache_hits_total{cache=\"server\"} 0\nhydracache_cache_misses_total{cache=\"server\"} 0\nhydracache_cache_loads_total{cache=\"server\"} 0\nhydracache_cache_hit_ratio{cache=\"server\"} 0.000000\nhydracache_cache_estimated_entries{cache=\"server\"} 0\n# HELP hydracache_admission_rejected_total Admission requests rejected by overload control.\n# TYPE hydracache_admission_rejected_total counter\n# HELP hydracache_admission_in_flight Current admitted operation count.\n# TYPE hydracache_admission_in_flight gauge\n# HELP hydracache_admission_queue_depth Current admission queue depth.\n# TYPE hydracache_admission_queue_depth gauge\nhydracache_admission_rejected_total 0\nhydracache_admission_in_flight 0\nhydracache_admission_queue_depth 0\n# HELP hydracache_replication_success_total HydraCache cluster-grid metric.\n# TYPE hydracache_replication_success_total counter\nhydracache_replication_success_total{role=\"aggregate\",outcome=\"aggregate\"} 0\n# HELP hydracache_replication_failure_total HydraCache cluster-grid metric.\n# TYPE hydracache_replication_failure_total counter\nhydracache_replication_failure_total{role=\"aggregate\",outcome=\"aggregate\"} 0\n# HELP hydracache_bytes_replicated_total HydraCache cluster-grid metric.\n# TYPE hydracache_bytes_replicated_total counter\nhydracache_bytes_replicated_total{role=\"aggregate\"} 0\n# HELP hydracache_replication_backpressure_total HydraCache cluster-grid metric.\n# TYPE hydracache_replication_backpressure_total counter\nhydracache_replication_backpressure_total{role=\"aggregate\"} 0\n# HELP hydracache_replication_oversized_rejected_total HydraCache cluster-grid metric.\n# TYPE hydracache_replication_oversized_rejected_total counter\nhydracache_replication_oversized_rejected_total{role=\"aggregate\"} 0\n# HELP hydracache_under_replicated_keys HydraCache cluster-grid metric.\n# TYPE hydracache_under_replicated_keys gauge\nhydracache_under_replicated_keys 0\n# HELP hydracache_topology_fence_rejected_total HydraCache cluster-grid metric.\n# TYPE hydracache_topology_fence_rejected_total counter\nhydracache_topology_fence_rejected_total{role=\"aggregate\"} 0\n# HELP hydracache_tombstone_repair_debt HydraCache cluster-grid metric.\n# TYPE hydracache_tombstone_repair_debt gauge\nhydracache_tombstone_repair_debt 0\n# HELP hydracache_replicated_value_rejected_total HydraCache cluster-grid metric.\n# TYPE hydracache_replicated_value_rejected_total counter\nhydracache_replicated_value_rejected_total{reason=\"aggregate\"} 0\n# HELP hydracache_replication_window_size HydraCache cluster-grid metric.\n# TYPE hydracache_replication_window_size gauge\nhydracache_replication_window_size{role=\"aggregate\"} 0\n# HELP hydracache_promotion_freeze_window_ms HydraCache cluster-grid metric.\n# TYPE hydracache_promotion_freeze_window_ms gauge\nhydracache_promotion_freeze_window_ms 0\n# HELP hydracache_replication_lag HydraCache cluster-grid metric.\n# TYPE hydracache_replication_lag gauge\nhydracache_replication_lag 0\n# HELP hydracache_split_brain_detected_total HydraCache cluster-grid metric.\n# TYPE hydracache_split_brain_detected_total counter\nhydracache_split_brain_detected_total 0\n# HELP hydracache_merge_discarded_entries_total HydraCache cluster-grid metric.\n# TYPE hydracache_merge_discarded_entries_total counter\nhydracache_merge_discarded_entries_total 0\n# HELP hydracache_merge_unresolved_conflicts_total HydraCache cluster-grid metric.\n# TYPE hydracache_merge_unresolved_conflicts_total counter\nhydracache_merge_unresolved_conflicts_total 0\n# HELP hydracache_cluster_auth_rejected_total HydraCache cluster-grid metric.\n# TYPE hydracache_cluster_auth_rejected_total counter\nhydracache_cluster_auth_rejected_total{route=\"aggregate\"} 0\n# HELP hydracache_repair_debt_degraded_mode HydraCache cluster-grid metric.\n# TYPE hydracache_repair_debt_degraded_mode gauge\nhydracache_repair_debt_degraded_mode 0\n# HELP hydracache_placement_zone_underspread HydraCache cluster-grid metric.\n# TYPE hydracache_placement_zone_underspread gauge\nhydracache_placement_zone_underspread 0\n# HELP hydracache_reshard_moves_inflight HydraCache cluster-grid metric.\n# TYPE hydracache_reshard_moves_inflight gauge\nhydracache_reshard_moves_inflight 0\n# HELP hydracache_reshard_backfill_lag HydraCache cluster-grid metric.\n# TYPE hydracache_reshard_backfill_lag gauge\nhydracache_reshard_backfill_lag 0\n# HELP hydracache_read_local_zone_total HydraCache cluster-grid metric.\n# TYPE hydracache_read_local_zone_total counter\nhydracache_read_local_zone_total 0\n# HELP hydracache_read_hedged_total HydraCache cluster-grid metric.\n# TYPE hydracache_read_hedged_total counter\nhydracache_read_hedged_total 0\n# HELP hydracache_read_hedge_win_total HydraCache cluster-grid metric.\n# TYPE hydracache_read_hedge_win_total counter\nhydracache_read_hedge_win_total 0\n# HELP hydracache_value_tier_promotions_total HydraCache cluster-grid metric.\n# TYPE hydracache_value_tier_promotions_total counter\nhydracache_value_tier_promotions_total 0\n# HELP hydracache_value_tier_demotions_total HydraCache cluster-grid metric.\n# TYPE hydracache_value_tier_demotions_total counter\nhydracache_value_tier_demotions_total 0\n# HELP hydracache_invalidate_batch_total HydraCache cluster-grid metric.\n# TYPE hydracache_invalidate_batch_total counter\nhydracache_invalidate_batch_total 0\n# HELP hydracache_invalidation_saga_pending HydraCache cluster-grid metric.\n# TYPE hydracache_invalidation_saga_pending gauge\nhydracache_invalidation_saga_pending 0\n# HELP hydracache_auto_repair_active_total HydraCache cluster-grid metric.\n# TYPE hydracache_auto_repair_active_total counter\nhydracache_auto_repair_active_total 0\n# HELP hydracache_auto_repair_advisory_total HydraCache cluster-grid metric.\n# TYPE hydracache_auto_repair_advisory_total counter\nhydracache_auto_repair_advisory_total 0\n# HELP hydracache_region_staleness_window_ms HydraCache cluster-grid metric.\n# TYPE hydracache_region_staleness_window_ms gauge\nhydracache_region_staleness_window_ms{region=\"aggregate\"} 0\n# HELP hydracache_region_link_lag HydraCache cluster-grid metric.\n# TYPE hydracache_region_link_lag gauge\nhydracache_region_link_lag{link=\"aggregate\"} 0\n# HELP hydracache_region_link_bytes_total HydraCache cluster-grid metric.\n# TYPE hydracache_region_link_bytes_total counter\nhydracache_region_link_bytes_total{link=\"aggregate\"} 0\n# HELP hydracache_region_link_window HydraCache cluster-grid metric.\n# TYPE hydracache_region_link_window gauge\nhydracache_region_link_window{link=\"aggregate\"} 0\n# HELP hydracache_region_state HydraCache cluster-grid metric.\n# TYPE hydracache_region_state gauge\nhydracache_region_state{region=\"aggregate\",state=\"unknown\"} 0\n# HELP hydracache_region_promotion_total HydraCache cluster-grid metric.\n# TYPE hydracache_region_promotion_total counter\nhydracache_region_promotion_total{region=\"aggregate\"} 0\n# HELP hydracache_region_restore_duration_ms HydraCache cluster-grid metric.\n# TYPE hydracache_region_restore_duration_ms gauge\nhydracache_region_restore_duration_ms{region=\"aggregate\"} 0\n# HELP hydracache_tenant_bytes HydraCache cluster-grid metric.\n# TYPE hydracache_tenant_bytes gauge\nhydracache_tenant_bytes{tenant=\"aggregate\"} 0\n# HELP hydracache_tenant_entries HydraCache cluster-grid metric.\n# TYPE hydracache_tenant_entries gauge\nhydracache_tenant_entries{tenant=\"aggregate\"} 0\n# HELP hydracache_tenant_admission_rejected_total HydraCache cluster-grid metric.\n# TYPE hydracache_tenant_admission_rejected_total counter\nhydracache_tenant_admission_rejected_total{tenant=\"aggregate\"} 0\n# HELP hydracache_client_auth_rejected_total HydraCache cluster-grid metric.\n# TYPE hydracache_client_auth_rejected_total counter\nhydracache_client_auth_rejected_total{route=\"aggregate\"} 0\n# HELP hydracache_residency_rejected_placement_total HydraCache cluster-grid metric.\n# TYPE hydracache_residency_rejected_placement_total counter\nhydracache_residency_rejected_placement_total 0\n# HELP hydracache_residency_refused_crossing_total HydraCache cluster-grid metric.\n# TYPE hydracache_residency_refused_crossing_total counter\nhydracache_residency_refused_crossing_total 0\n# HELP hydracache_audit_sink_failures_total HydraCache cluster-grid metric.\n# TYPE hydracache_audit_sink_failures_total counter\nhydracache_audit_sink_failures_total 0\n# HELP hydracache_audit_mandatory_fail_closed_total HydraCache cluster-grid metric.\n# TYPE hydracache_audit_mandatory_fail_closed_total counter\nhydracache_audit_mandatory_fail_closed_total 0\n# HELP hydracache_crdt_metadata_bytes HydraCache cluster-grid metric.\n# TYPE hydracache_crdt_metadata_bytes gauge\nhydracache_crdt_metadata_bytes{region=\"aggregate\"} 0\n# HELP hydracache_capacity_recommendation HydraCache cluster-grid metric.\n# TYPE hydracache_capacity_recommendation gauge\nhydracache_capacity_recommendation{region=\"aggregate\",recommendation=\"aggregate\"} 0\n# HELP hydracache_scale_actions_total HydraCache cluster-grid metric.\n# TYPE hydracache_scale_actions_total counter\nhydracache_scale_actions_total{region=\"aggregate\",action=\"aggregate\"} 0\n# HELP hydracache_op_consistency_level_total HydraCache cluster-grid metric.\n# TYPE hydracache_op_consistency_level_total counter\nhydracache_op_consistency_level_total{operation=\"aggregate\",level=\"aggregate\"} 0\n# HELP hydracache_consistency_unsatisfiable_total HydraCache cluster-grid metric.\n# TYPE hydracache_consistency_unsatisfiable_total counter\nhydracache_consistency_unsatisfiable_total{operation=\"aggregate\",level=\"aggregate\"} 0\n# HELP hydracache_hints_stored_total HydraCache cluster-grid metric.\n# TYPE hydracache_hints_stored_total counter\nhydracache_hints_stored_total 0\n# HELP hydracache_hints_replayed_total HydraCache cluster-grid metric.\n# TYPE hydracache_hints_replayed_total counter\nhydracache_hints_replayed_total 0\n# HELP hydracache_hints_dropped_total HydraCache cluster-grid metric.\n# TYPE hydracache_hints_dropped_total counter\nhydracache_hints_dropped_total{reason=\"aggregate\"} 0\n# HELP hydracache_hint_store_bytes HydraCache cluster-grid metric.\n# TYPE hydracache_hint_store_bytes gauge\nhydracache_hint_store_bytes 0\n# HELP hydracache_repair_sessions_total HydraCache cluster-grid metric.\n# TYPE hydracache_repair_sessions_total counter\nhydracache_repair_sessions_total{kind=\"aggregate\"} 0\n# HELP hydracache_repair_ranges_exchanged_total HydraCache cluster-grid metric.\n# TYPE hydracache_repair_ranges_exchanged_total counter\nhydracache_repair_ranges_exchanged_total{kind=\"aggregate\"} 0\n# HELP hydracache_read_repair_total HydraCache cluster-grid metric.\n# TYPE hydracache_read_repair_total counter\nhydracache_read_repair_total 0\n# HELP hydracache_repair_progress_ratio HydraCache cluster-grid metric.\n# TYPE hydracache_repair_progress_ratio gauge\nhydracache_repair_progress_ratio{partition=\"aggregate\"} 0\n# HELP hydracache_peer_phi HydraCache cluster-grid metric.\n# TYPE hydracache_peer_phi gauge\nhydracache_peer_phi{peer=\"aggregate\"} 0\n# HELP hydracache_false_suspect_total HydraCache cluster-grid metric.\n# TYPE hydracache_false_suspect_total counter\nhydracache_false_suspect_total 0\n# HELP hydracache_cas_applied_total HydraCache cluster-grid metric.\n# TYPE hydracache_cas_applied_total counter\nhydracache_cas_applied_total 0\n# HELP hydracache_cas_mismatch_total HydraCache cluster-grid metric.\n# TYPE hydracache_cas_mismatch_total counter\nhydracache_cas_mismatch_total 0\n# HELP hydracache_lock_acquired_total HydraCache cluster-grid metric.\n# TYPE hydracache_lock_acquired_total counter\nhydracache_lock_acquired_total 0\n# HELP hydracache_lock_stale_token_rejected_total HydraCache cluster-grid metric.\n# TYPE hydracache_lock_stale_token_rejected_total counter\nhydracache_lock_stale_token_rejected_total 0\n# HELP hydracache_invalidation_ring_depth HydraCache cluster-grid metric.\n# TYPE hydracache_invalidation_ring_depth gauge\nhydracache_invalidation_ring_depth{partition=\"aggregate\"} 0\n# HELP hydracache_invalidation_replayed_total HydraCache cluster-grid metric.\n# TYPE hydracache_invalidation_replayed_total counter\nhydracache_invalidation_replayed_total{subscriber=\"aggregate\"} 0\n# HELP hydracache_invalidation_fell_behind_total HydraCache cluster-grid metric.\n# TYPE hydracache_invalidation_fell_behind_total counter\nhydracache_invalidation_fell_behind_total{subscriber=\"aggregate\"} 0\n# HELP hydracache_invalidation_ring_overrun_total HydraCache cluster-grid metric.\n# TYPE hydracache_invalidation_ring_overrun_total counter\nhydracache_invalidation_ring_overrun_total{partition=\"aggregate\"} 0\n# HELP hydracache_session_watermark_entries HydraCache cluster-grid metric.\n# TYPE hydracache_session_watermark_entries gauge\nhydracache_session_watermark_entries 0\n# HELP hydracache_session_active_sessions HydraCache cluster-grid metric.\n# TYPE hydracache_session_active_sessions gauge\nhydracache_session_active_sessions 0\n# HELP hydracache_session_watermark_entries_p99 HydraCache cluster-grid metric.\n# TYPE hydracache_session_watermark_entries_p99 gauge\nhydracache_session_watermark_entries_p99 0\n# HELP hydracache_session_worst_staleness_versions HydraCache cluster-grid metric.\n# TYPE hydracache_session_worst_staleness_versions gauge\nhydracache_session_worst_staleness_versions 0\n# HELP hydracache_session_watermark_coarsened_total HydraCache cluster-grid metric.\n# TYPE hydracache_session_watermark_coarsened_total counter\nhydracache_session_watermark_coarsened_total{reason=\"aggregate\"} 0\n# HELP hydracache_session_token_rejected_total HydraCache cluster-grid metric.\n# TYPE hydracache_session_token_rejected_total counter\nhydracache_session_token_rejected_total{reason=\"aggregate\"} 0\n# HELP hydracache_session_ryw_escalations_total HydraCache cluster-grid metric.\n# TYPE hydracache_session_ryw_escalations_total counter\nhydracache_session_ryw_escalations_total{path=\"aggregate\"} 0\n# HELP hydracache_session_guarantee_unmet_total HydraCache cluster-grid metric.\n# TYPE hydracache_session_guarantee_unmet_total counter\nhydracache_session_guarantee_unmet_total{guarantee=\"aggregate\"} 0\n# HELP hydracache_monotonic_read_violations_prevented_total HydraCache cluster-grid metric.\n# TYPE hydracache_monotonic_read_violations_prevented_total counter\nhydracache_monotonic_read_violations_prevented_total{guarantee=\"aggregate\"} 0\n# HELP hydracache_monotonic_write_reorders_prevented_total HydraCache cluster-grid metric.\n# TYPE hydracache_monotonic_write_reorders_prevented_total counter\nhydracache_monotonic_write_reorders_prevented_total{guarantee=\"aggregate\"} 0\n# HELP hydracache_causal_writes_deferred_total HydraCache cluster-grid metric.\n# TYPE hydracache_causal_writes_deferred_total counter\nhydracache_causal_writes_deferred_total{reason=\"aggregate\"} 0\n# HELP hydracache_causal_summary_coarsened_total HydraCache cluster-grid metric.\n# TYPE hydracache_causal_summary_coarsened_total counter\nhydracache_causal_summary_coarsened_total{reason=\"aggregate\"} 0\n# HELP hydracache_causal_dependency_bytes HydraCache cluster-grid metric.\n# TYPE hydracache_causal_dependency_bytes gauge\nhydracache_causal_dependency_bytes 0\n# HELP hydracache_bounded_staleness_fast_serves_total HydraCache cluster-grid metric.\n# TYPE hydracache_bounded_staleness_fast_serves_total counter\nhydracache_bounded_staleness_fast_serves_total{mode=\"aggregate\"} 0\n# HELP hydracache_bounded_staleness_escalations_total HydraCache cluster-grid metric.\n# TYPE hydracache_bounded_staleness_escalations_total counter\nhydracache_bounded_staleness_escalations_total{reason=\"aggregate\"} 0\n# HELP hydracache_cluster_members Visible cluster member count.\n# TYPE hydracache_cluster_members gauge\n# HELP hydracache_cluster_leader Cluster leader indicator.\n# TYPE hydracache_cluster_leader gauge\n# HELP hydracache_cluster_epoch Current cluster authority epoch.\n# TYPE hydracache_cluster_epoch gauge\n# HELP hydracache_cluster_reshard_phase Current cluster reshard phase.\n# TYPE hydracache_cluster_reshard_phase gauge\n# HELP hydracache_backup_age_seconds Worst known backup age in seconds.\n# TYPE hydracache_backup_age_seconds gauge\nhydracache_cluster_members{source=\"modeled\"} 0\nhydracache_cluster_leader{source=\"modeled\",node=\"local\"} 1\nhydracache_cluster_epoch{source=\"modeled\"} 0\nhydracache_cluster_reshard_phase{source=\"modeled\",phase=\"idle\"} 1\nhydracache_backup_age_seconds{source=\"modeled\"} 0\n",
+        "raw_http_response_sha256": "d185fdb23c57960254f94b83e935fadee04c8d3552949531e39dd169845e59b3",
+        "raw_body": "# HELP hydracache_cache_hits_total Cache hits.\n# TYPE hydracache_cache_hits_total counter\n# HELP hydracache_cache_misses_total Cache misses.\n# TYPE hydracache_cache_misses_total counter\n# HELP hydracache_cache_loads_total Loader executions.\n# TYPE hydracache_cache_loads_total counter\n# HELP hydracache_cache_hit_ratio Cache hit ratio.\n# TYPE hydracache_cache_hit_ratio gauge\n# HELP hydracache_cache_estimated_entries Estimated local entries.\n# TYPE hydracache_cache_estimated_entries gauge\nhydracache_cache_hits_total{cache=\"server\"} 0\nhydracache_cache_misses_total{cache=\"server\"} 0\nhydracache_cache_loads_total{cache=\"server\"} 0\nhydracache_cache_hit_ratio{cache=\"server\"} 0.000000\nhydracache_cache_estimated_entries{cache=\"server\"} 0\n# HELP hydracache_admission_rejected_total Admission requests rejected by overload control.\n# TYPE hydracache_admission_rejected_total counter\n# HELP hydracache_admission_in_flight Current admitted operation count.\n# TYPE hydracache_admission_in_flight gauge\n# HELP hydracache_admission_queue_depth Current admission queue depth.\n# TYPE hydracache_admission_queue_depth gauge\nhydracache_admission_rejected_total 0\nhydracache_admission_in_flight 0\nhydracache_admission_queue_depth 0\n# HELP hydracache_replication_success_total HydraCache cluster-grid metric.\n# TYPE hydracache_replication_success_total counter\nhydracache_replication_success_total{role=\"aggregate\",outcome=\"aggregate\"} 0\n# HELP hydracache_replication_failure_total HydraCache cluster-grid metric.\n# TYPE hydracache_replication_failure_total counter\nhydracache_replication_failure_total{role=\"aggregate\",outcome=\"aggregate\"} 0\n# HELP hydracache_bytes_replicated_total HydraCache cluster-grid metric.\n# TYPE hydracache_bytes_replicated_total counter\nhydracache_bytes_replicated_total{role=\"aggregate\"} 0\n# HELP hydracache_replication_backpressure_total HydraCache cluster-grid metric.\n# TYPE hydracache_replication_backpressure_total counter\nhydracache_replication_backpressure_total{role=\"aggregate\"} 0\n# HELP hydracache_replication_oversized_rejected_total HydraCache cluster-grid metric.\n# TYPE hydracache_replication_oversized_rejected_total counter\nhydracache_replication_oversized_rejected_total{role=\"aggregate\"} 0\n# HELP hydracache_under_replicated_keys HydraCache cluster-grid metric.\n# TYPE hydracache_under_replicated_keys gauge\nhydracache_under_replicated_keys 0\n# HELP hydracache_topology_fence_rejected_total HydraCache cluster-grid metric.\n# TYPE hydracache_topology_fence_rejected_total counter\nhydracache_topology_fence_rejected_total{role=\"aggregate\"} 0\n# HELP hydracache_tombstone_repair_debt HydraCache cluster-grid metric.\n# TYPE hydracache_tombstone_repair_debt gauge\nhydracache_tombstone_repair_debt 0\n# HELP hydracache_replicated_value_rejected_total HydraCache cluster-grid metric.\n# TYPE hydracache_replicated_value_rejected_total counter\nhydracache_replicated_value_rejected_total{reason=\"aggregate\"} 0\n# HELP hydracache_replication_window_size HydraCache cluster-grid metric.\n# TYPE hydracache_replication_window_size gauge\nhydracache_replication_window_size{role=\"aggregate\"} 0\n# HELP hydracache_promotion_freeze_window_ms HydraCache cluster-grid metric.\n# TYPE hydracache_promotion_freeze_window_ms gauge\nhydracache_promotion_freeze_window_ms 0\n# HELP hydracache_replication_lag HydraCache cluster-grid metric.\n# TYPE hydracache_replication_lag gauge\nhydracache_replication_lag 0\n# HELP hydracache_split_brain_detected_total HydraCache cluster-grid metric.\n# TYPE hydracache_split_brain_detected_total counter\nhydracache_split_brain_detected_total 0\n# HELP hydracache_merge_discarded_entries_total HydraCache cluster-grid metric.\n# TYPE hydracache_merge_discarded_entries_total counter\nhydracache_merge_discarded_entries_total 0\n# HELP hydracache_merge_unresolved_conflicts_total HydraCache cluster-grid metric.\n# TYPE hydracache_merge_unresolved_conflicts_total counter\nhydracache_merge_unresolved_conflicts_total 0\n# HELP hydracache_cluster_auth_rejected_total HydraCache cluster-grid metric.\n# TYPE hydracache_cluster_auth_rejected_total counter\nhydracache_cluster_auth_rejected_total{route=\"aggregate\"} 0\n# HELP hydracache_repair_debt_degraded_mode HydraCache cluster-grid metric.\n# TYPE hydracache_repair_debt_degraded_mode gauge\nhydracache_repair_debt_degraded_mode 0\n# HELP hydracache_placement_zone_underspread HydraCache cluster-grid metric.\n# TYPE hydracache_placement_zone_underspread gauge\nhydracache_placement_zone_underspread 0\n# HELP hydracache_reshard_moves_inflight HydraCache cluster-grid metric.\n# TYPE hydracache_reshard_moves_inflight gauge\nhydracache_reshard_moves_inflight 0\n# HELP hydracache_reshard_backfill_lag HydraCache cluster-grid metric.\n# TYPE hydracache_reshard_backfill_lag gauge\nhydracache_reshard_backfill_lag 0\n# HELP hydracache_read_local_zone_total HydraCache cluster-grid metric.\n# TYPE hydracache_read_local_zone_total counter\nhydracache_read_local_zone_total 0\n# HELP hydracache_read_hedged_total HydraCache cluster-grid metric.\n# TYPE hydracache_read_hedged_total counter\nhydracache_read_hedged_total 0\n# HELP hydracache_read_hedge_win_total HydraCache cluster-grid metric.\n# TYPE hydracache_read_hedge_win_total counter\nhydracache_read_hedge_win_total 0\n# HELP hydracache_value_tier_promotions_total HydraCache cluster-grid metric.\n# TYPE hydracache_value_tier_promotions_total counter\nhydracache_value_tier_promotions_total 0\n# HELP hydracache_value_tier_demotions_total HydraCache cluster-grid metric.\n# TYPE hydracache_value_tier_demotions_total counter\nhydracache_value_tier_demotions_total 0\n# HELP hydracache_invalidate_batch_total HydraCache cluster-grid metric.\n# TYPE hydracache_invalidate_batch_total counter\nhydracache_invalidate_batch_total 0\n# HELP hydracache_invalidation_saga_pending HydraCache cluster-grid metric.\n# TYPE hydracache_invalidation_saga_pending gauge\nhydracache_invalidation_saga_pending 0\n# HELP hydracache_auto_repair_active_total HydraCache cluster-grid metric.\n# TYPE hydracache_auto_repair_active_total counter\nhydracache_auto_repair_active_total 0\n# HELP hydracache_auto_repair_advisory_total HydraCache cluster-grid metric.\n# TYPE hydracache_auto_repair_advisory_total counter\nhydracache_auto_repair_advisory_total 0\n# HELP hydracache_region_staleness_window_ms HydraCache cluster-grid metric.\n# TYPE hydracache_region_staleness_window_ms gauge\nhydracache_region_staleness_window_ms{region=\"aggregate\"} 0\n# HELP hydracache_region_link_lag HydraCache cluster-grid metric.\n# TYPE hydracache_region_link_lag gauge\nhydracache_region_link_lag{link=\"aggregate\"} 0\n# HELP hydracache_region_link_bytes_total HydraCache cluster-grid metric.\n# TYPE hydracache_region_link_bytes_total counter\nhydracache_region_link_bytes_total{link=\"aggregate\"} 0\n# HELP hydracache_region_link_window HydraCache cluster-grid metric.\n# TYPE hydracache_region_link_window gauge\nhydracache_region_link_window{link=\"aggregate\"} 0\n# HELP hydracache_region_state HydraCache cluster-grid metric.\n# TYPE hydracache_region_state gauge\nhydracache_region_state{region=\"aggregate\",state=\"unknown\"} 0\n# HELP hydracache_region_promotion_total HydraCache cluster-grid metric.\n# TYPE hydracache_region_promotion_total counter\nhydracache_region_promotion_total{region=\"aggregate\"} 0\n# HELP hydracache_region_restore_duration_ms HydraCache cluster-grid metric.\n# TYPE hydracache_region_restore_duration_ms gauge\nhydracache_region_restore_duration_ms{region=\"aggregate\"} 0\n# HELP hydracache_tenant_bytes HydraCache cluster-grid metric.\n# TYPE hydracache_tenant_bytes gauge\nhydracache_tenant_bytes{tenant=\"aggregate\"} 0\n# HELP hydracache_tenant_entries HydraCache cluster-grid metric.\n# TYPE hydracache_tenant_entries gauge\nhydracache_tenant_entries{tenant=\"aggregate\"} 0\n# HELP hydracache_tenant_admission_rejected_total HydraCache cluster-grid metric.\n# TYPE hydracache_tenant_admission_rejected_total counter\nhydracache_tenant_admission_rejected_total{tenant=\"aggregate\"} 0\n# HELP hydracache_client_auth_rejected_total HydraCache cluster-grid metric.\n# TYPE hydracache_client_auth_rejected_total counter\nhydracache_client_auth_rejected_total{route=\"aggregate\"} 0\n# HELP hydracache_residency_rejected_placement_total HydraCache cluster-grid metric.\n# TYPE hydracache_residency_rejected_placement_total counter\nhydracache_residency_rejected_placement_total 0\n# HELP hydracache_residency_refused_crossing_total HydraCache cluster-grid metric.\n# TYPE hydracache_residency_refused_crossing_total counter\nhydracache_residency_refused_crossing_total 0\n# HELP hydracache_audit_sink_failures_total HydraCache cluster-grid metric.\n# TYPE hydracache_audit_sink_failures_total counter\nhydracache_audit_sink_failures_total 0\n# HELP hydracache_audit_mandatory_fail_closed_total HydraCache cluster-grid metric.\n# TYPE hydracache_audit_mandatory_fail_closed_total counter\nhydracache_audit_mandatory_fail_closed_total 0\n# HELP hydracache_crdt_metadata_bytes HydraCache cluster-grid metric.\n# TYPE hydracache_crdt_metadata_bytes gauge\nhydracache_crdt_metadata_bytes{region=\"aggregate\"} 0\n# HELP hydracache_capacity_recommendation HydraCache cluster-grid metric.\n# TYPE hydracache_capacity_recommendation gauge\nhydracache_capacity_recommendation{region=\"aggregate\",recommendation=\"aggregate\"} 0\n# HELP hydracache_scale_actions_total HydraCache cluster-grid metric.\n# TYPE hydracache_scale_actions_total counter\nhydracache_scale_actions_total{region=\"aggregate\",action=\"aggregate\"} 0\n# HELP hydracache_op_consistency_level_total HydraCache cluster-grid metric.\n# TYPE hydracache_op_consistency_level_total counter\nhydracache_op_consistency_level_total{operation=\"aggregate\",level=\"aggregate\"} 0\n# HELP hydracache_consistency_unsatisfiable_total HydraCache cluster-grid metric.\n# TYPE hydracache_consistency_unsatisfiable_total counter\nhydracache_consistency_unsatisfiable_total{operation=\"aggregate\",level=\"aggregate\"} 0\n# HELP hydracache_hints_stored_total HydraCache cluster-grid metric.\n# TYPE hydracache_hints_stored_total counter\nhydracache_hints_stored_total 0\n# HELP hydracache_hints_replayed_total HydraCache cluster-grid metric.\n# TYPE hydracache_hints_replayed_total counter\nhydracache_hints_replayed_total 0\n# HELP hydracache_hints_dropped_total HydraCache cluster-grid metric.\n# TYPE hydracache_hints_dropped_total counter\nhydracache_hints_dropped_total{reason=\"aggregate\"} 0\n# HELP hydracache_hint_store_bytes HydraCache cluster-grid metric.\n# TYPE hydracache_hint_store_bytes gauge\nhydracache_hint_store_bytes 0\n# HELP hydracache_repair_sessions_total HydraCache cluster-grid metric.\n# TYPE hydracache_repair_sessions_total counter\nhydracache_repair_sessions_total{kind=\"aggregate\"} 0\n# HELP hydracache_repair_ranges_exchanged_total HydraCache cluster-grid metric.\n# TYPE hydracache_repair_ranges_exchanged_total counter\nhydracache_repair_ranges_exchanged_total{kind=\"aggregate\"} 0\n# HELP hydracache_read_repair_total HydraCache cluster-grid metric.\n# TYPE hydracache_read_repair_total counter\nhydracache_read_repair_total 0\n# HELP hydracache_repair_progress_ratio HydraCache cluster-grid metric.\n# TYPE hydracache_repair_progress_ratio gauge\nhydracache_repair_progress_ratio{partition=\"aggregate\"} 0\n# HELP hydracache_peer_phi HydraCache cluster-grid metric.\n# TYPE hydracache_peer_phi gauge\nhydracache_peer_phi{peer=\"aggregate\"} 0\n# HELP hydracache_false_suspect_total HydraCache cluster-grid metric.\n# TYPE hydracache_false_suspect_total counter\nhydracache_false_suspect_total 0\n# HELP hydracache_cas_applied_total HydraCache cluster-grid metric.\n# TYPE hydracache_cas_applied_total counter\nhydracache_cas_applied_total 0\n# HELP hydracache_cas_mismatch_total HydraCache cluster-grid metric.\n# TYPE hydracache_cas_mismatch_total counter\nhydracache_cas_mismatch_total 0\n# HELP hydracache_lock_acquired_total HydraCache cluster-grid metric.\n# TYPE hydracache_lock_acquired_total counter\nhydracache_lock_acquired_total 0\n# HELP hydracache_lock_stale_token_rejected_total HydraCache cluster-grid metric.\n# TYPE hydracache_lock_stale_token_rejected_total counter\nhydracache_lock_stale_token_rejected_total 0\n# HELP hydracache_invalidation_ring_depth HydraCache cluster-grid metric.\n# TYPE hydracache_invalidation_ring_depth gauge\nhydracache_invalidation_ring_depth{partition=\"aggregate\"} 0\n# HELP hydracache_invalidation_replayed_total HydraCache cluster-grid metric.\n# TYPE hydracache_invalidation_replayed_total counter\nhydracache_invalidation_replayed_total{subscriber=\"aggregate\"} 0\n# HELP hydracache_invalidation_fell_behind_total HydraCache cluster-grid metric.\n# TYPE hydracache_invalidation_fell_behind_total counter\nhydracache_invalidation_fell_behind_total{subscriber=\"aggregate\"} 0\n# HELP hydracache_invalidation_ring_overrun_total HydraCache cluster-grid metric.\n# TYPE hydracache_invalidation_ring_overrun_total counter\nhydracache_invalidation_ring_overrun_total{partition=\"aggregate\"} 0\n# HELP hydracache_session_watermark_entries HydraCache cluster-grid metric.\n# TYPE hydracache_session_watermark_entries gauge\nhydracache_session_watermark_entries 0\n# HELP hydracache_session_active_sessions HydraCache cluster-grid metric.\n# TYPE hydracache_session_active_sessions gauge\nhydracache_session_active_sessions 0\n# HELP hydracache_session_watermark_entries_p99 HydraCache cluster-grid metric.\n# TYPE hydracache_session_watermark_entries_p99 gauge\nhydracache_session_watermark_entries_p99 0\n# HELP hydracache_session_worst_staleness_versions HydraCache cluster-grid metric.\n# TYPE hydracache_session_worst_staleness_versions gauge\nhydracache_session_worst_staleness_versions 0\n# HELP hydracache_session_watermark_coarsened_total HydraCache cluster-grid metric.\n# TYPE hydracache_session_watermark_coarsened_total counter\nhydracache_session_watermark_coarsened_total{reason=\"aggregate\"} 0\n# HELP hydracache_session_token_rejected_total HydraCache cluster-grid metric.\n# TYPE hydracache_session_token_rejected_total counter\nhydracache_session_token_rejected_total{reason=\"aggregate\"} 0\n# HELP hydracache_session_ryw_escalations_total HydraCache cluster-grid metric.\n# TYPE hydracache_session_ryw_escalations_total counter\nhydracache_session_ryw_escalations_total{path=\"aggregate\"} 0\n# HELP hydracache_session_guarantee_unmet_total HydraCache cluster-grid metric.\n# TYPE hydracache_session_guarantee_unmet_total counter\nhydracache_session_guarantee_unmet_total{guarantee=\"aggregate\"} 0\n# HELP hydracache_monotonic_read_violations_prevented_total HydraCache cluster-grid metric.\n# TYPE hydracache_monotonic_read_violations_prevented_total counter\nhydracache_monotonic_read_violations_prevented_total{guarantee=\"aggregate\"} 0\n# HELP hydracache_monotonic_write_reorders_prevented_total HydraCache cluster-grid metric.\n# TYPE hydracache_monotonic_write_reorders_prevented_total counter\nhydracache_monotonic_write_reorders_prevented_total{guarantee=\"aggregate\"} 0\n# HELP hydracache_causal_writes_deferred_total HydraCache cluster-grid metric.\n# TYPE hydracache_causal_writes_deferred_total counter\nhydracache_causal_writes_deferred_total{reason=\"aggregate\"} 0\n# HELP hydracache_causal_summary_coarsened_total HydraCache cluster-grid metric.\n# TYPE hydracache_causal_summary_coarsened_total counter\nhydracache_causal_summary_coarsened_total{reason=\"aggregate\"} 0\n# HELP hydracache_causal_dependency_bytes HydraCache cluster-grid metric.\n# TYPE hydracache_causal_dependency_bytes gauge\nhydracache_causal_dependency_bytes 0\n# HELP hydracache_bounded_staleness_fast_serves_total HydraCache cluster-grid metric.\n# TYPE hydracache_bounded_staleness_fast_serves_total counter\nhydracache_bounded_staleness_fast_serves_total{mode=\"aggregate\"} 0\n# HELP hydracache_bounded_staleness_escalations_total HydraCache cluster-grid metric.\n# TYPE hydracache_bounded_staleness_escalations_total counter\nhydracache_bounded_staleness_escalations_total{reason=\"aggregate\"} 0\n# HELP hydracache_cluster_members Visible cluster member count.\n# TYPE hydracache_cluster_members gauge\n# HELP hydracache_cluster_leader Cluster leader indicator.\n# TYPE hydracache_cluster_leader gauge\n# HELP hydracache_cluster_epoch Current cluster authority epoch.\n# TYPE hydracache_cluster_epoch gauge\n# HELP hydracache_cluster_reshard_phase Current cluster reshard phase.\n# TYPE hydracache_cluster_reshard_phase gauge\n# HELP hydracache_backup_age_seconds Worst known backup age in seconds.\n# TYPE hydracache_backup_age_seconds gauge\nhydracache_cluster_members{source=\"modeled\"} 0\nhydracache_cluster_leader{source=\"modeled\",node=\"local\"} 1\nhydracache_cluster_epoch{source=\"modeled\"} 0\nhydracache_cluster_reshard_phase{source=\"modeled\",phase=\"idle\"} 1\nhydracache_backup_age_seconds{source=\"modeled\"} 0\n",
+        "raw_body_sha256": "b304c4541519f65c38e15a30d62b1e1a634db9064f89441115ce2e248a33d285",
+        "inventory": [
+          {
+            "name": "hydracache_admission_in_flight",
+            "metric_type": "gauge",
+            "sample_count": 1
+          },
+          {
+            "name": "hydracache_admission_queue_depth",
+            "metric_type": "gauge",
+            "sample_count": 1
+          },
+          {
+            "name": "hydracache_admission_rejected_total",
+            "metric_type": "counter",
+            "sample_count": 1
+          },
+          {
+            "name": "hydracache_audit_mandatory_fail_closed_total",
+            "metric_type": "counter",
+            "sample_count": 1
+          },
+          {
+            "name": "hydracache_audit_sink_failures_total",
+            "metric_type": "counter",
+            "sample_count": 1
+          },
+          {
+            "name": "hydracache_auto_repair_active_total",
+            "metric_type": "counter",
+            "sample_count": 1
+          },
+          {
+            "name": "hydracache_auto_repair_advisory_total",
+            "metric_type": "counter",
+            "sample_count": 1
+          },
+          {
+            "name": "hydracache_backup_age_seconds",
+            "metric_type": "gauge",
+            "sample_count": 1
+          },
+          {
+            "name": "hydracache_bounded_staleness_escalations_total",
+            "metric_type": "counter",
+            "sample_count": 1
+          },
+          {
+            "name": "hydracache_bounded_staleness_fast_serves_total",
+            "metric_type": "counter",
+            "sample_count": 1
+          },
+          {
+            "name": "hydracache_bytes_replicated_total",
+            "metric_type": "counter",
+            "sample_count": 1
+          },
+          {
+            "name": "hydracache_cache_estimated_entries",
+            "metric_type": "gauge",
+            "sample_count": 1
+          },
+          {
+            "name": "hydracache_cache_hit_ratio",
+            "metric_type": "gauge",
+            "sample_count": 1
+          },
+          {
+            "name": "hydracache_cache_hits_total",
+            "metric_type": "counter",
+            "sample_count": 1
+          },
+          {
+            "name": "hydracache_cache_loads_total",
+            "metric_type": "counter",
+            "sample_count": 1
+          },
+          {
+            "name": "hydracache_cache_misses_total",
+            "metric_type": "counter",
+            "sample_count": 1
+          },
+          {
+            "name": "hydracache_capacity_recommendation",
+            "metric_type": "gauge",
+            "sample_count": 1
+          },
+          {
+            "name": "hydracache_cas_applied_total",
+            "metric_type": "counter",
+            "sample_count": 1
+          },
+          {
+            "name": "hydracache_cas_mismatch_total",
+            "metric_type": "counter",
+            "sample_count": 1
+          },
+          {
+            "name": "hydracache_causal_dependency_bytes",
+            "metric_type": "gauge",
+            "sample_count": 1
+          },
+          {
+            "name": "hydracache_causal_summary_coarsened_total",
+            "metric_type": "counter",
+            "sample_count": 1
+          },
+          {
+            "name": "hydracache_causal_writes_deferred_total",
+            "metric_type": "counter",
+            "sample_count": 1
+          },
+          {
+            "name": "hydracache_client_auth_rejected_total",
+            "metric_type": "counter",
+            "sample_count": 1
+          },
+          {
+            "name": "hydracache_cluster_auth_rejected_total",
+            "metric_type": "counter",
+            "sample_count": 1
+          },
+          {
+            "name": "hydracache_cluster_epoch",
+            "metric_type": "gauge",
+            "sample_count": 1
+          },
+          {
+            "name": "hydracache_cluster_leader",
+            "metric_type": "gauge",
+            "sample_count": 1
+          },
+          {
+            "name": "hydracache_cluster_members",
+            "metric_type": "gauge",
+            "sample_count": 1
+          },
+          {
+            "name": "hydracache_cluster_reshard_phase",
+            "metric_type": "gauge",
+            "sample_count": 1
+          },
+          {
+            "name": "hydracache_consistency_unsatisfiable_total",
+            "metric_type": "counter",
+            "sample_count": 1
+          },
+          {
+            "name": "hydracache_crdt_metadata_bytes",
+            "metric_type": "gauge",
+            "sample_count": 1
+          },
+          {
+            "name": "hydracache_false_suspect_total",
+            "metric_type": "counter",
+            "sample_count": 1
+          },
+          {
+            "name": "hydracache_hint_store_bytes",
+            "metric_type": "gauge",
+            "sample_count": 1
+          },
+          {
+            "name": "hydracache_hints_dropped_total",
+            "metric_type": "counter",
+            "sample_count": 1
+          },
+          {
+            "name": "hydracache_hints_replayed_total",
+            "metric_type": "counter",
+            "sample_count": 1
+          },
+          {
+            "name": "hydracache_hints_stored_total",
+            "metric_type": "counter",
+            "sample_count": 1
+          },
+          {
+            "name": "hydracache_invalidate_batch_total",
+            "metric_type": "counter",
+            "sample_count": 1
+          },
+          {
+            "name": "hydracache_invalidation_fell_behind_total",
+            "metric_type": "counter",
+            "sample_count": 1
+          },
+          {
+            "name": "hydracache_invalidation_replayed_total",
+            "metric_type": "counter",
+            "sample_count": 1
+          },
+          {
+            "name": "hydracache_invalidation_ring_depth",
+            "metric_type": "gauge",
+            "sample_count": 1
+          },
+          {
+            "name": "hydracache_invalidation_ring_overrun_total",
+            "metric_type": "counter",
+            "sample_count": 1
+          },
+          {
+            "name": "hydracache_invalidation_saga_pending",
+            "metric_type": "gauge",
+            "sample_count": 1
+          },
+          {
+            "name": "hydracache_lock_acquired_total",
+            "metric_type": "counter",
+            "sample_count": 1
+          },
+          {
+            "name": "hydracache_lock_stale_token_rejected_total",
+            "metric_type": "counter",
+            "sample_count": 1
+          },
+          {
+            "name": "hydracache_merge_discarded_entries_total",
+            "metric_type": "counter",
+            "sample_count": 1
+          },
+          {
+            "name": "hydracache_merge_unresolved_conflicts_total",
+            "metric_type": "counter",
+            "sample_count": 1
+          },
+          {
+            "name": "hydracache_monotonic_read_violations_prevented_total",
+            "metric_type": "counter",
+            "sample_count": 1
+          },
+          {
+            "name": "hydracache_monotonic_write_reorders_prevented_total",
+            "metric_type": "counter",
+            "sample_count": 1
+          },
+          {
+            "name": "hydracache_op_consistency_level_total",
+            "metric_type": "counter",
+            "sample_count": 1
+          },
+          {
+            "name": "hydracache_peer_phi",
+            "metric_type": "gauge",
+            "sample_count": 1
+          },
+          {
+            "name": "hydracache_placement_zone_underspread",
+            "metric_type": "gauge",
+            "sample_count": 1
+          },
+          {
+            "name": "hydracache_promotion_freeze_window_ms",
+            "metric_type": "gauge",
+            "sample_count": 1
+          },
+          {
+            "name": "hydracache_read_hedge_win_total",
+            "metric_type": "counter",
+            "sample_count": 1
+          },
+          {
+            "name": "hydracache_read_hedged_total",
+            "metric_type": "counter",
+            "sample_count": 1
+          },
+          {
+            "name": "hydracache_read_local_zone_total",
+            "metric_type": "counter",
+            "sample_count": 1
+          },
+          {
+            "name": "hydracache_read_repair_total",
+            "metric_type": "counter",
+            "sample_count": 1
+          },
+          {
+            "name": "hydracache_region_link_bytes_total",
+            "metric_type": "counter",
+            "sample_count": 1
+          },
+          {
+            "name": "hydracache_region_link_lag",
+            "metric_type": "gauge",
+            "sample_count": 1
+          },
+          {
+            "name": "hydracache_region_link_window",
+            "metric_type": "gauge",
+            "sample_count": 1
+          },
+          {
+            "name": "hydracache_region_promotion_total",
+            "metric_type": "counter",
+            "sample_count": 1
+          },
+          {
+            "name": "hydracache_region_restore_duration_ms",
+            "metric_type": "gauge",
+            "sample_count": 1
+          },
+          {
+            "name": "hydracache_region_staleness_window_ms",
+            "metric_type": "gauge",
+            "sample_count": 1
+          },
+          {
+            "name": "hydracache_region_state",
+            "metric_type": "gauge",
+            "sample_count": 1
+          },
+          {
+            "name": "hydracache_repair_debt_degraded_mode",
+            "metric_type": "gauge",
+            "sample_count": 1
+          },
+          {
+            "name": "hydracache_repair_progress_ratio",
+            "metric_type": "gauge",
+            "sample_count": 1
+          },
+          {
+            "name": "hydracache_repair_ranges_exchanged_total",
+            "metric_type": "counter",
+            "sample_count": 1
+          },
+          {
+            "name": "hydracache_repair_sessions_total",
+            "metric_type": "counter",
+            "sample_count": 1
+          },
+          {
+            "name": "hydracache_replicated_value_rejected_total",
+            "metric_type": "counter",
+            "sample_count": 1
+          },
+          {
+            "name": "hydracache_replication_backpressure_total",
+            "metric_type": "counter",
+            "sample_count": 1
+          },
+          {
+            "name": "hydracache_replication_failure_total",
+            "metric_type": "counter",
+            "sample_count": 1
+          },
+          {
+            "name": "hydracache_replication_lag",
+            "metric_type": "gauge",
+            "sample_count": 1
+          },
+          {
+            "name": "hydracache_replication_oversized_rejected_total",
+            "metric_type": "counter",
+            "sample_count": 1
+          },
+          {
+            "name": "hydracache_replication_success_total",
+            "metric_type": "counter",
+            "sample_count": 1
+          },
+          {
+            "name": "hydracache_replication_window_size",
+            "metric_type": "gauge",
+            "sample_count": 1
+          },
+          {
+            "name": "hydracache_reshard_backfill_lag",
+            "metric_type": "gauge",
+            "sample_count": 1
+          },
+          {
+            "name": "hydracache_reshard_moves_inflight",
+            "metric_type": "gauge",
+            "sample_count": 1
+          },
+          {
+            "name": "hydracache_residency_refused_crossing_total",
+            "metric_type": "counter",
+            "sample_count": 1
+          },
+          {
+            "name": "hydracache_residency_rejected_placement_total",
+            "metric_type": "counter",
+            "sample_count": 1
+          },
+          {
+            "name": "hydracache_scale_actions_total",
+            "metric_type": "counter",
+            "sample_count": 1
+          },
+          {
+            "name": "hydracache_session_active_sessions",
+            "metric_type": "gauge",
+            "sample_count": 1
+          },
+          {
+            "name": "hydracache_session_guarantee_unmet_total",
+            "metric_type": "counter",
+            "sample_count": 1
+          },
+          {
+            "name": "hydracache_session_ryw_escalations_total",
+            "metric_type": "counter",
+            "sample_count": 1
+          },
+          {
+            "name": "hydracache_session_token_rejected_total",
+            "metric_type": "counter",
+            "sample_count": 1
+          },
+          {
+            "name": "hydracache_session_watermark_coarsened_total",
+            "metric_type": "counter",
+            "sample_count": 1
+          },
+          {
+            "name": "hydracache_session_watermark_entries",
+            "metric_type": "gauge",
+            "sample_count": 1
+          },
+          {
+            "name": "hydracache_session_watermark_entries_p99",
+            "metric_type": "gauge",
+            "sample_count": 1
+          },
+          {
+            "name": "hydracache_session_worst_staleness_versions",
+            "metric_type": "gauge",
+            "sample_count": 1
+          },
+          {
+            "name": "hydracache_split_brain_detected_total",
+            "metric_type": "counter",
+            "sample_count": 1
+          },
+          {
+            "name": "hydracache_tenant_admission_rejected_total",
+            "metric_type": "counter",
+            "sample_count": 1
+          },
+          {
+            "name": "hydracache_tenant_bytes",
+            "metric_type": "gauge",
+            "sample_count": 1
+          },
+          {
+            "name": "hydracache_tenant_entries",
+            "metric_type": "gauge",
+            "sample_count": 1
+          },
+          {
+            "name": "hydracache_tombstone_repair_debt",
+            "metric_type": "gauge",
+            "sample_count": 1
+          },
+          {
+            "name": "hydracache_topology_fence_rejected_total",
+            "metric_type": "counter",
+            "sample_count": 1
+          },
+          {
+            "name": "hydracache_under_replicated_keys",
+            "metric_type": "gauge",
+            "sample_count": 1
+          },
+          {
+            "name": "hydracache_value_tier_demotions_total",
+            "metric_type": "counter",
+            "sample_count": 1
+          },
+          {
+            "name": "hydracache_value_tier_promotions_total",
+            "metric_type": "counter",
+            "sample_count": 1
+          }
+        ]
+      },
+      "observer": {
+        "observer": "w0-open-loop-scheduled-send-independent",
+        "interval_clock": "monotonic-elapsed-plus-unix-boundary",
+        "probe_contract_sha256": "2cee636f877eb099b2fceae5a1752a3640e29c2ba5463cd85d1a0235283d0cb3",
+        "started_unix_nanos": 1789120154183011180,
+        "ended_unix_nanos": 1789120154246626614,
+        "elapsed_monotonic_nanos": 63615494,
+        "raw_open_loop_json": "{\"offered\":64,\"started\":64,\"completed\":64,\"successes\":64,\"errors\":0,\"timeouts\":0,\"rejections\":0,\"backlog_high_water\":2,\"backlog_drained\":true,\"drain_ms\":0,\"elapsed_ms\":63,\"offered_rate_per_second\":1000.0,\"achieved_rate_per_second\":1006.8288956432075,\"latency\":{\"samples\":64,\"p50_us\":1032,\"p90_us\":1482,\"p99_us\":1583,\"p999_us\":1583,\"p999_min_samples\":1,\"p999_reportable\":true,\"max_us\":1583,\"overflow_count\":0}}",
+        "raw_open_loop_sha256": "fe8c41d902ce957ab36996920851d0635c1a0abb04ae868b9ec25b9e574144b8",
+        "accounting": {
+          "attempted_operations": 64,
+          "successful_operations": 64,
+          "errors": 0,
+          "timeouts": 0,
+          "rejections": 0,
+          "scheduled_latency_sample_count": 64,
+          "scheduled_latency_evidence_sha256": "e4aaec070aba2a7715c03d4e974f5b38941a57bf87653b025658b3f2aee5acb1"
+        },
+        "topology_before": null,
+        "topology_after": null
+      },
+      "after": {
+        "schema_version": 1,
+        "binding_sha256": "df56950f7faf7e86b1c3226057859ab1bf695553adc40fe4e2d363e78d7d5819",
+        "admin_endpoint": "127.0.0.1:44707",
+        "exporter_path": "/metrics",
+        "request_sha256": "46753c007fbd7db86774b52584c9f94460b16032ac945eccfee65fbca3f33133",
+        "started_unix_nanos": 1789120154246655484,
+        "finished_unix_nanos": 1789120154246956259,
+        "elapsed_monotonic_nanos": 300635,
+        "status_code": 200,
+        "content_type": "text/plain; version=0.0.4",
+        "raw_http_response": "HTTP/1.1 200 OK\r\ncontent-type: text/plain; version=0.0.4\r\ncontent-length: 16619\r\nconnection: close\r\ndate: Fri, 11 Sep 2026 09:49:14 GMT\r\n\r\n# HELP hydracache_cache_hits_total Cache hits.\n# TYPE hydracache_cache_hits_total counter\n# HELP hydracache_cache_misses_total Cache misses.\n# TYPE hydracache_cache_misses_total counter\n# HELP hydracache_cache_loads_total Loader executions.\n# TYPE hydracache_cache_loads_total counter\n# HELP hydracache_cache_hit_ratio Cache hit ratio.\n# TYPE hydracache_cache_hit_ratio gauge\n# HELP hydracache_cache_estimated_entries Estimated local entries.\n# TYPE hydracache_cache_estimated_entries gauge\nhydracache_cache_hits_total{cache=\"server\"} 0\nhydracache_cache_misses_total{cache=\"server\"} 0\nhydracache_cache_loads_total{cache=\"server\"} 0\nhydracache_cache_hit_ratio{cache=\"server\"} 0.000000\nhydracache_cache_estimated_entries{cache=\"server\"} 0\n# HELP hydracache_admission_rejected_total Admission requests rejected by overload control.\n# TYPE hydracache_admission_rejected_total counter\n# HELP hydracache_admission_in_flight Current admitted operation count.\n# TYPE hydracache_admission_in_flight gauge\n# HELP hydracache_admission_queue_depth Current admission queue depth.\n# TYPE hydracache_admission_queue_depth gauge\nhydracache_admission_rejected_total 0\nhydracache_admission_in_flight 0\nhydracache_admission_queue_depth 0\n# HELP hydracache_replication_success_total HydraCache cluster-grid metric.\n# TYPE hydracache_replication_success_total counter\nhydracache_replication_success_total{role=\"aggregate\",outcome=\"aggregate\"} 0\n# HELP hydracache_replication_failure_total HydraCache cluster-grid metric.\n# TYPE hydracache_replication_failure_total counter\nhydracache_replication_failure_total{role=\"aggregate\",outcome=\"aggregate\"} 0\n# HELP hydracache_bytes_replicated_total HydraCache cluster-grid metric.\n# TYPE hydracache_bytes_replicated_total counter\nhydracache_bytes_replicated_total{role=\"aggregate\"} 0\n# HELP hydracache_replication_backpressure_total HydraCache cluster-grid metric.\n# TYPE hydracache_replication_backpressure_total counter\nhydracache_replication_backpressure_total{role=\"aggregate\"} 0\n# HELP hydracache_replication_oversized_rejected_total HydraCache cluster-grid metric.\n# TYPE hydracache_replication_oversized_rejected_total counter\nhydracache_replication_oversized_rejected_total{role=\"aggregate\"} 0\n# HELP hydracache_under_replicated_keys HydraCache cluster-grid metric.\n# TYPE hydracache_under_replicated_keys gauge\nhydracache_under_replicated_keys 0\n# HELP hydracache_topology_fence_rejected_total HydraCache cluster-grid metric.\n# TYPE hydracache_topology_fence_rejected_total counter\nhydracache_topology_fence_rejected_total{role=\"aggregate\"} 0\n# HELP hydracache_tombstone_repair_debt HydraCache cluster-grid metric.\n# TYPE hydracache_tombstone_repair_debt gauge\nhydracache_tombstone_repair_debt 0\n# HELP hydracache_replicated_value_rejected_total HydraCache cluster-grid metric.\n# TYPE hydracache_replicated_value_rejected_total counter\nhydracache_replicated_value_rejected_total{reason=\"aggregate\"} 0\n# HELP hydracache_replication_window_size HydraCache cluster-grid metric.\n# TYPE hydracache_replication_window_size gauge\nhydracache_replication_window_size{role=\"aggregate\"} 0\n# HELP hydracache_promotion_freeze_window_ms HydraCache cluster-grid metric.\n# TYPE hydracache_promotion_freeze_window_ms gauge\nhydracache_promotion_freeze_window_ms 0\n# HELP hydracache_replication_lag HydraCache cluster-grid metric.\n# TYPE hydracache_replication_lag gauge\nhydracache_replication_lag 0\n# HELP hydracache_split_brain_detected_total HydraCache cluster-grid metric.\n# TYPE hydracache_split_brain_detected_total counter\nhydracache_split_brain_detected_total 0\n# HELP hydracache_merge_discarded_entries_total HydraCache cluster-grid metric.\n# TYPE hydracache_merge_discarded_entries_total counter\nhydracache_merge_discarded_entries_total 0\n# HELP hydracache_merge_unresolved_conflicts_total HydraCache cluster-grid metric.\n# TYPE hydracache_merge_unresolved_conflicts_total counter\nhydracache_merge_unresolved_conflicts_total 0\n# HELP hydracache_cluster_auth_rejected_total HydraCache cluster-grid metric.\n# TYPE hydracache_cluster_auth_rejected_total counter\nhydracache_cluster_auth_rejected_total{route=\"aggregate\"} 0\n# HELP hydracache_repair_debt_degraded_mode HydraCache cluster-grid metric.\n# TYPE hydracache_repair_debt_degraded_mode gauge\nhydracache_repair_debt_degraded_mode 0\n# HELP hydracache_placement_zone_underspread HydraCache cluster-grid metric.\n# TYPE hydracache_placement_zone_underspread gauge\nhydracache_placement_zone_underspread 0\n# HELP hydracache_reshard_moves_inflight HydraCache cluster-grid metric.\n# TYPE hydracache_reshard_moves_inflight gauge\nhydracache_reshard_moves_inflight 0\n# HELP hydracache_reshard_backfill_lag HydraCache cluster-grid metric.\n# TYPE hydracache_reshard_backfill_lag gauge\nhydracache_reshard_backfill_lag 0\n# HELP hydracache_read_local_zone_total HydraCache cluster-grid metric.\n# TYPE hydracache_read_local_zone_total counter\nhydracache_read_local_zone_total 0\n# HELP hydracache_read_hedged_total HydraCache cluster-grid metric.\n# TYPE hydracache_read_hedged_total counter\nhydracache_read_hedged_total 0\n# HELP hydracache_read_hedge_win_total HydraCache cluster-grid metric.\n# TYPE hydracache_read_hedge_win_total counter\nhydracache_read_hedge_win_total 0\n# HELP hydracache_value_tier_promotions_total HydraCache cluster-grid metric.\n# TYPE hydracache_value_tier_promotions_total counter\nhydracache_value_tier_promotions_total 0\n# HELP hydracache_value_tier_demotions_total HydraCache cluster-grid metric.\n# TYPE hydracache_value_tier_demotions_total counter\nhydracache_value_tier_demotions_total 0\n# HELP hydracache_invalidate_batch_total HydraCache cluster-grid metric.\n# TYPE hydracache_invalidate_batch_total counter\nhydracache_invalidate_batch_total 0\n# HELP hydracache_invalidation_saga_pending HydraCache cluster-grid metric.\n# TYPE hydracache_invalidation_saga_pending gauge\nhydracache_invalidation_saga_pending 0\n# HELP hydracache_auto_repair_active_total HydraCache cluster-grid metric.\n# TYPE hydracache_auto_repair_active_total counter\nhydracache_auto_repair_active_total 0\n# HELP hydracache_auto_repair_advisory_total HydraCache cluster-grid metric.\n# TYPE hydracache_auto_repair_advisory_total counter\nhydracache_auto_repair_advisory_total 0\n# HELP hydracache_region_staleness_window_ms HydraCache cluster-grid metric.\n# TYPE hydracache_region_staleness_window_ms gauge\nhydracache_region_staleness_window_ms{region=\"aggregate\"} 0\n# HELP hydracache_region_link_lag HydraCache cluster-grid metric.\n# TYPE hydracache_region_link_lag gauge\nhydracache_region_link_lag{link=\"aggregate\"} 0\n# HELP hydracache_region_link_bytes_total HydraCache cluster-grid metric.\n# TYPE hydracache_region_link_bytes_total counter\nhydracache_region_link_bytes_total{link=\"aggregate\"} 0\n# HELP hydracache_region_link_window HydraCache cluster-grid metric.\n# TYPE hydracache_region_link_window gauge\nhydracache_region_link_window{link=\"aggregate\"} 0\n# HELP hydracache_region_state HydraCache cluster-grid metric.\n# TYPE hydracache_region_state gauge\nhydracache_region_state{region=\"aggregate\",state=\"unknown\"} 0\n# HELP hydracache_region_promotion_total HydraCache cluster-grid metric.\n# TYPE hydracache_region_promotion_total counter\nhydracache_region_promotion_total{region=\"aggregate\"} 0\n# HELP hydracache_region_restore_duration_ms HydraCache cluster-grid metric.\n# TYPE hydracache_region_restore_duration_ms gauge\nhydracache_region_restore_duration_ms{region=\"aggregate\"} 0\n# HELP hydracache_tenant_bytes HydraCache cluster-grid metric.\n# TYPE hydracache_tenant_bytes gauge\nhydracache_tenant_bytes{tenant=\"aggregate\"} 0\n# HELP hydracache_tenant_entries HydraCache cluster-grid metric.\n# TYPE hydracache_tenant_entries gauge\nhydracache_tenant_entries{tenant=\"aggregate\"} 0\n# HELP hydracache_tenant_admission_rejected_total HydraCache cluster-grid metric.\n# TYPE hydracache_tenant_admission_rejected_total counter\nhydracache_tenant_admission_rejected_total{tenant=\"aggregate\"} 0\n# HELP hydracache_client_auth_rejected_total HydraCache cluster-grid metric.\n# TYPE hydracache_client_auth_rejected_total counter\nhydracache_client_auth_rejected_total{route=\"aggregate\"} 0\n# HELP hydracache_residency_rejected_placement_total HydraCache cluster-grid metric.\n# TYPE hydracache_residency_rejected_placement_total counter\nhydracache_residency_rejected_placement_total 0\n# HELP hydracache_residency_refused_crossing_total HydraCache cluster-grid metric.\n# TYPE hydracache_residency_refused_crossing_total counter\nhydracache_residency_refused_crossing_total 0\n# HELP hydracache_audit_sink_failures_total HydraCache cluster-grid metric.\n# TYPE hydracache_audit_sink_failures_total counter\nhydracache_audit_sink_failures_total 0\n# HELP hydracache_audit_mandatory_fail_closed_total HydraCache cluster-grid metric.\n# TYPE hydracache_audit_mandatory_fail_closed_total counter\nhydracache_audit_mandatory_fail_closed_total 0\n# HELP hydracache_crdt_metadata_bytes HydraCache cluster-grid metric.\n# TYPE hydracache_crdt_metadata_bytes gauge\nhydracache_crdt_metadata_bytes{region=\"aggregate\"} 0\n# HELP hydracache_capacity_recommendation HydraCache cluster-grid metric.\n# TYPE hydracache_capacity_recommendation gauge\nhydracache_capacity_recommendation{region=\"aggregate\",recommendation=\"aggregate\"} 0\n# HELP hydracache_scale_actions_total HydraCache cluster-grid metric.\n# TYPE hydracache_scale_actions_total counter\nhydracache_scale_actions_total{region=\"aggregate\",action=\"aggregate\"} 0\n# HELP hydracache_op_consistency_level_total HydraCache cluster-grid metric.\n# TYPE hydracache_op_consistency_level_total counter\nhydracache_op_consistency_level_total{operation=\"aggregate\",level=\"aggregate\"} 0\n# HELP hydracache_consistency_unsatisfiable_total HydraCache cluster-grid metric.\n# TYPE hydracache_consistency_unsatisfiable_total counter\nhydracache_consistency_unsatisfiable_total{operation=\"aggregate\",level=\"aggregate\"} 0\n# HELP hydracache_hints_stored_total HydraCache cluster-grid metric.\n# TYPE hydracache_hints_stored_total counter\nhydracache_hints_stored_total 0\n# HELP hydracache_hints_replayed_total HydraCache cluster-grid metric.\n# TYPE hydracache_hints_replayed_total counter\nhydracache_hints_replayed_total 0\n# HELP hydracache_hints_dropped_total HydraCache cluster-grid metric.\n# TYPE hydracache_hints_dropped_total counter\nhydracache_hints_dropped_total{reason=\"aggregate\"} 0\n# HELP hydracache_hint_store_bytes HydraCache cluster-grid metric.\n# TYPE hydracache_hint_store_bytes gauge\nhydracache_hint_store_bytes 0\n# HELP hydracache_repair_sessions_total HydraCache cluster-grid metric.\n# TYPE hydracache_repair_sessions_total counter\nhydracache_repair_sessions_total{kind=\"aggregate\"} 0\n# HELP hydracache_repair_ranges_exchanged_total HydraCache cluster-grid metric.\n# TYPE hydracache_repair_ranges_exchanged_total counter\nhydracache_repair_ranges_exchanged_total{kind=\"aggregate\"} 0\n# HELP hydracache_read_repair_total HydraCache cluster-grid metric.\n# TYPE hydracache_read_repair_total counter\nhydracache_read_repair_total 0\n# HELP hydracache_repair_progress_ratio HydraCache cluster-grid metric.\n# TYPE hydracache_repair_progress_ratio gauge\nhydracache_repair_progress_ratio{partition=\"aggregate\"} 0\n# HELP hydracache_peer_phi HydraCache cluster-grid metric.\n# TYPE hydracache_peer_phi gauge\nhydracache_peer_phi{peer=\"aggregate\"} 0\n# HELP hydracache_false_suspect_total HydraCache cluster-grid metric.\n# TYPE hydracache_false_suspect_total counter\nhydracache_false_suspect_total 0\n# HELP hydracache_cas_applied_total HydraCache cluster-grid metric.\n# TYPE hydracache_cas_applied_total counter\nhydracache_cas_applied_total 0\n# HELP hydracache_cas_mismatch_total HydraCache cluster-grid metric.\n# TYPE hydracache_cas_mismatch_total counter\nhydracache_cas_mismatch_total 0\n# HELP hydracache_lock_acquired_total HydraCache cluster-grid metric.\n# TYPE hydracache_lock_acquired_total counter\nhydracache_lock_acquired_total 0\n# HELP hydracache_lock_stale_token_rejected_total HydraCache cluster-grid metric.\n# TYPE hydracache_lock_stale_token_rejected_total counter\nhydracache_lock_stale_token_rejected_total 0\n# HELP hydracache_invalidation_ring_depth HydraCache cluster-grid metric.\n# TYPE hydracache_invalidation_ring_depth gauge\nhydracache_invalidation_ring_depth{partition=\"aggregate\"} 0\n# HELP hydracache_invalidation_replayed_total HydraCache cluster-grid metric.\n# TYPE hydracache_invalidation_replayed_total counter\nhydracache_invalidation_replayed_total{subscriber=\"aggregate\"} 0\n# HELP hydracache_invalidation_fell_behind_total HydraCache cluster-grid metric.\n# TYPE hydracache_invalidation_fell_behind_total counter\nhydracache_invalidation_fell_behind_total{subscriber=\"aggregate\"} 0\n# HELP hydracache_invalidation_ring_overrun_total HydraCache cluster-grid metric.\n# TYPE hydracache_invalidation_ring_overrun_total counter\nhydracache_invalidation_ring_overrun_total{partition=\"aggregate\"} 0\n# HELP hydracache_session_watermark_entries HydraCache cluster-grid metric.\n# TYPE hydracache_session_watermark_entries gauge\nhydracache_session_watermark_entries 0\n# HELP hydracache_session_active_sessions HydraCache cluster-grid metric.\n# TYPE hydracache_session_active_sessions gauge\nhydracache_session_active_sessions 0\n# HELP hydracache_session_watermark_entries_p99 HydraCache cluster-grid metric.\n# TYPE hydracache_session_watermark_entries_p99 gauge\nhydracache_session_watermark_entries_p99 0\n# HELP hydracache_session_worst_staleness_versions HydraCache cluster-grid metric.\n# TYPE hydracache_session_worst_staleness_versions gauge\nhydracache_session_worst_staleness_versions 0\n# HELP hydracache_session_watermark_coarsened_total HydraCache cluster-grid metric.\n# TYPE hydracache_session_watermark_coarsened_total counter\nhydracache_session_watermark_coarsened_total{reason=\"aggregate\"} 0\n# HELP hydracache_session_token_rejected_total HydraCache cluster-grid metric.\n# TYPE hydracache_session_token_rejected_total counter\nhydracache_session_token_rejected_total{reason=\"aggregate\"} 0\n# HELP hydracache_session_ryw_escalations_total HydraCache cluster-grid metric.\n# TYPE hydracache_session_ryw_escalations_total counter\nhydracache_session_ryw_escalations_total{path=\"aggregate\"} 0\n# HELP hydracache_session_guarantee_unmet_total HydraCache cluster-grid metric.\n# TYPE hydracache_session_guarantee_unmet_total counter\nhydracache_session_guarantee_unmet_total{guarantee=\"aggregate\"} 0\n# HELP hydracache_monotonic_read_violations_prevented_total HydraCache cluster-grid metric.\n# TYPE hydracache_monotonic_read_violations_prevented_total counter\nhydracache_monotonic_read_violations_prevented_total{guarantee=\"aggregate\"} 0\n# HELP hydracache_monotonic_write_reorders_prevented_total HydraCache cluster-grid metric.\n# TYPE hydracache_monotonic_write_reorders_prevented_total counter\nhydracache_monotonic_write_reorders_prevented_total{guarantee=\"aggregate\"} 0\n# HELP hydracache_causal_writes_deferred_total HydraCache cluster-grid metric.\n# TYPE hydracache_causal_writes_deferred_total counter\nhydracache_causal_writes_deferred_total{reason=\"aggregate\"} 0\n# HELP hydracache_causal_summary_coarsened_total HydraCache cluster-grid metric.\n# TYPE hydracache_causal_summary_coarsened_total counter\nhydracache_causal_summary_coarsened_total{reason=\"aggregate\"} 0\n# HELP hydracache_causal_dependency_bytes HydraCache cluster-grid metric.\n# TYPE hydracache_causal_dependency_bytes gauge\nhydracache_causal_dependency_bytes 0\n# HELP hydracache_bounded_staleness_fast_serves_total HydraCache cluster-grid metric.\n# TYPE hydracache_bounded_staleness_fast_serves_total counter\nhydracache_bounded_staleness_fast_serves_total{mode=\"aggregate\"} 0\n# HELP hydracache_bounded_staleness_escalations_total HydraCache cluster-grid metric.\n# TYPE hydracache_bounded_staleness_escalations_total counter\nhydracache_bounded_staleness_escalations_total{reason=\"aggregate\"} 0\n# HELP hydracache_cluster_members Visible cluster member count.\n# TYPE hydracache_cluster_members gauge\n# HELP hydracache_cluster_leader Cluster leader indicator.\n# TYPE hydracache_cluster_leader gauge\n# HELP hydracache_cluster_epoch Current cluster authority epoch.\n# TYPE hydracache_cluster_epoch gauge\n# HELP hydracache_cluster_reshard_phase Current cluster reshard phase.\n# TYPE hydracache_cluster_reshard_phase gauge\n# HELP hydracache_backup_age_seconds Worst known backup age in seconds.\n# TYPE hydracache_backup_age_seconds gauge\nhydracache_cluster_members{source=\"modeled\"} 0\nhydracache_cluster_leader{source=\"modeled\",node=\"local\"} 1\nhydracache_cluster_epoch{source=\"modeled\"} 0\nhydracache_cluster_reshard_phase{source=\"modeled\",phase=\"idle\"} 1\nhydracache_backup_age_seconds{source=\"modeled\"} 0\n",
+        "raw_http_response_sha256": "d185fdb23c57960254f94b83e935fadee04c8d3552949531e39dd169845e59b3",
+        "raw_body": "# HELP hydracache_cache_hits_total Cache hits.\n# TYPE hydracache_cache_hits_total counter\n# HELP hydracache_cache_misses_total Cache misses.\n# TYPE hydracache_cache_misses_total counter\n# HELP hydracache_cache_loads_total Loader executions.\n# TYPE hydracache_cache_loads_total counter\n# HELP hydracache_cache_hit_ratio Cache hit ratio.\n# TYPE hydracache_cache_hit_ratio gauge\n# HELP hydracache_cache_estimated_entries Estimated local entries.\n# TYPE hydracache_cache_estimated_entries gauge\nhydracache_cache_hits_total{cache=\"server\"} 0\nhydracache_cache_misses_total{cache=\"server\"} 0\nhydracache_cache_loads_total{cache=\"server\"} 0\nhydracache_cache_hit_ratio{cache=\"server\"} 0.000000\nhydracache_cache_estimated_entries{cache=\"server\"} 0\n# HELP hydracache_admission_rejected_total Admission requests rejected by overload control.\n# TYPE hydracache_admission_rejected_total counter\n# HELP hydracache_admission_in_flight Current admitted operation count.\n# TYPE hydracache_admission_in_flight gauge\n# HELP hydracache_admission_queue_depth Current admission queue depth.\n# TYPE hydracache_admission_queue_depth gauge\nhydracache_admission_rejected_total 0\nhydracache_admission_in_flight 0\nhydracache_admission_queue_depth 0\n# HELP hydracache_replication_success_total HydraCache cluster-grid metric.\n# TYPE hydracache_replication_success_total counter\nhydracache_replication_success_total{role=\"aggregate\",outcome=\"aggregate\"} 0\n# HELP hydracache_replication_failure_total HydraCache cluster-grid metric.\n# TYPE hydracache_replication_failure_total counter\nhydracache_replication_failure_total{role=\"aggregate\",outcome=\"aggregate\"} 0\n# HELP hydracache_bytes_replicated_total HydraCache cluster-grid metric.\n# TYPE hydracache_bytes_replicated_total counter\nhydracache_bytes_replicated_total{role=\"aggregate\"} 0\n# HELP hydracache_replication_backpressure_total HydraCache cluster-grid metric.\n# TYPE hydracache_replication_backpressure_total counter\nhydracache_replication_backpressure_total{role=\"aggregate\"} 0\n# HELP hydracache_replication_oversized_rejected_total HydraCache cluster-grid metric.\n# TYPE hydracache_replication_oversized_rejected_total counter\nhydracache_replication_oversized_rejected_total{role=\"aggregate\"} 0\n# HELP hydracache_under_replicated_keys HydraCache cluster-grid metric.\n# TYPE hydracache_under_replicated_keys gauge\nhydracache_under_replicated_keys 0\n# HELP hydracache_topology_fence_rejected_total HydraCache cluster-grid metric.\n# TYPE hydracache_topology_fence_rejected_total counter\nhydracache_topology_fence_rejected_total{role=\"aggregate\"} 0\n# HELP hydracache_tombstone_repair_debt HydraCache cluster-grid metric.\n# TYPE hydracache_tombstone_repair_debt gauge\nhydracache_tombstone_repair_debt 0\n# HELP hydracache_replicated_value_rejected_total HydraCache cluster-grid metric.\n# TYPE hydracache_replicated_value_rejected_total counter\nhydracache_replicated_value_rejected_total{reason=\"aggregate\"} 0\n# HELP hydracache_replication_window_size HydraCache cluster-grid metric.\n# TYPE hydracache_replication_window_size gauge\nhydracache_replication_window_size{role=\"aggregate\"} 0\n# HELP hydracache_promotion_freeze_window_ms HydraCache cluster-grid metric.\n# TYPE hydracache_promotion_freeze_window_ms gauge\nhydracache_promotion_freeze_window_ms 0\n# HELP hydracache_replication_lag HydraCache cluster-grid metric.\n# TYPE hydracache_replication_lag gauge\nhydracache_replication_lag 0\n# HELP hydracache_split_brain_detected_total HydraCache cluster-grid metric.\n# TYPE hydracache_split_brain_detected_total counter\nhydracache_split_brain_detected_total 0\n# HELP hydracache_merge_discarded_entries_total HydraCache cluster-grid metric.\n# TYPE hydracache_merge_discarded_entries_total counter\nhydracache_merge_discarded_entries_total 0\n# HELP hydracache_merge_unresolved_conflicts_total HydraCache cluster-grid metric.\n# TYPE hydracache_merge_unresolved_conflicts_total counter\nhydracache_merge_unresolved_conflicts_total 0\n# HELP hydracache_cluster_auth_rejected_total HydraCache cluster-grid metric.\n# TYPE hydracache_cluster_auth_rejected_total counter\nhydracache_cluster_auth_rejected_total{route=\"aggregate\"} 0\n# HELP hydracache_repair_debt_degraded_mode HydraCache cluster-grid metric.\n# TYPE hydracache_repair_debt_degraded_mode gauge\nhydracache_repair_debt_degraded_mode 0\n# HELP hydracache_placement_zone_underspread HydraCache cluster-grid metric.\n# TYPE hydracache_placement_zone_underspread gauge\nhydracache_placement_zone_underspread 0\n# HELP hydracache_reshard_moves_inflight HydraCache cluster-grid metric.\n# TYPE hydracache_reshard_moves_inflight gauge\nhydracache_reshard_moves_inflight 0\n# HELP hydracache_reshard_backfill_lag HydraCache cluster-grid metric.\n# TYPE hydracache_reshard_backfill_lag gauge\nhydracache_reshard_backfill_lag 0\n# HELP hydracache_read_local_zone_total HydraCache cluster-grid metric.\n# TYPE hydracache_read_local_zone_total counter\nhydracache_read_local_zone_total 0\n# HELP hydracache_read_hedged_total HydraCache cluster-grid metric.\n# TYPE hydracache_read_hedged_total counter\nhydracache_read_hedged_total 0\n# HELP hydracache_read_hedge_win_total HydraCache cluster-grid metric.\n# TYPE hydracache_read_hedge_win_total counter\nhydracache_read_hedge_win_total 0\n# HELP hydracache_value_tier_promotions_total HydraCache cluster-grid metric.\n# TYPE hydracache_value_tier_promotions_total counter\nhydracache_value_tier_promotions_total 0\n# HELP hydracache_value_tier_demotions_total HydraCache cluster-grid metric.\n# TYPE hydracache_value_tier_demotions_total counter\nhydracache_value_tier_demotions_total 0\n# HELP hydracache_invalidate_batch_total HydraCache cluster-grid metric.\n# TYPE hydracache_invalidate_batch_total counter\nhydracache_invalidate_batch_total 0\n# HELP hydracache_invalidation_saga_pending HydraCache cluster-grid metric.\n# TYPE hydracache_invalidation_saga_pending gauge\nhydracache_invalidation_saga_pending 0\n# HELP hydracache_auto_repair_active_total HydraCache cluster-grid metric.\n# TYPE hydracache_auto_repair_active_total counter\nhydracache_auto_repair_active_total 0\n# HELP hydracache_auto_repair_advisory_total HydraCache cluster-grid metric.\n# TYPE hydracache_auto_repair_advisory_total counter\nhydracache_auto_repair_advisory_total 0\n# HELP hydracache_region_staleness_window_ms HydraCache cluster-grid metric.\n# TYPE hydracache_region_staleness_window_ms gauge\nhydracache_region_staleness_window_ms{region=\"aggregate\"} 0\n# HELP hydracache_region_link_lag HydraCache cluster-grid metric.\n# TYPE hydracache_region_link_lag gauge\nhydracache_region_link_lag{link=\"aggregate\"} 0\n# HELP hydracache_region_link_bytes_total HydraCache cluster-grid metric.\n# TYPE hydracache_region_link_bytes_total counter\nhydracache_region_link_bytes_total{link=\"aggregate\"} 0\n# HELP hydracache_region_link_window HydraCache cluster-grid metric.\n# TYPE hydracache_region_link_window gauge\nhydracache_region_link_window{link=\"aggregate\"} 0\n# HELP hydracache_region_state HydraCache cluster-grid metric.\n# TYPE hydracache_region_state gauge\nhydracache_region_state{region=\"aggregate\",state=\"unknown\"} 0\n# HELP hydracache_region_promotion_total HydraCache cluster-grid metric.\n# TYPE hydracache_region_promotion_total counter\nhydracache_region_promotion_total{region=\"aggregate\"} 0\n# HELP hydracache_region_restore_duration_ms HydraCache cluster-grid metric.\n# TYPE hydracache_region_restore_duration_ms gauge\nhydracache_region_restore_duration_ms{region=\"aggregate\"} 0\n# HELP hydracache_tenant_bytes HydraCache cluster-grid metric.\n# TYPE hydracache_tenant_bytes gauge\nhydracache_tenant_bytes{tenant=\"aggregate\"} 0\n# HELP hydracache_tenant_entries HydraCache cluster-grid metric.\n# TYPE hydracache_tenant_entries gauge\nhydracache_tenant_entries{tenant=\"aggregate\"} 0\n# HELP hydracache_tenant_admission_rejected_total HydraCache cluster-grid metric.\n# TYPE hydracache_tenant_admission_rejected_total counter\nhydracache_tenant_admission_rejected_total{tenant=\"aggregate\"} 0\n# HELP hydracache_client_auth_rejected_total HydraCache cluster-grid metric.\n# TYPE hydracache_client_auth_rejected_total counter\nhydracache_client_auth_rejected_total{route=\"aggregate\"} 0\n# HELP hydracache_residency_rejected_placement_total HydraCache cluster-grid metric.\n# TYPE hydracache_residency_rejected_placement_total counter\nhydracache_residency_rejected_placement_total 0\n# HELP hydracache_residency_refused_crossing_total HydraCache cluster-grid metric.\n# TYPE hydracache_residency_refused_crossing_total counter\nhydracache_residency_refused_crossing_total 0\n# HELP hydracache_audit_sink_failures_total HydraCache cluster-grid metric.\n# TYPE hydracache_audit_sink_failures_total counter\nhydracache_audit_sink_failures_total 0\n# HELP hydracache_audit_mandatory_fail_closed_total HydraCache cluster-grid metric.\n# TYPE hydracache_audit_mandatory_fail_closed_total counter\nhydracache_audit_mandatory_fail_closed_total 0\n# HELP hydracache_crdt_metadata_bytes HydraCache cluster-grid metric.\n# TYPE hydracache_crdt_metadata_bytes gauge\nhydracache_crdt_metadata_bytes{region=\"aggregate\"} 0\n# HELP hydracache_capacity_recommendation HydraCache cluster-grid metric.\n# TYPE hydracache_capacity_recommendation gauge\nhydracache_capacity_recommendation{region=\"aggregate\",recommendation=\"aggregate\"} 0\n# HELP hydracache_scale_actions_total HydraCache cluster-grid metric.\n# TYPE hydracache_scale_actions_total counter\nhydracache_scale_actions_total{region=\"aggregate\",action=\"aggregate\"} 0\n# HELP hydracache_op_consistency_level_total HydraCache cluster-grid metric.\n# TYPE hydracache_op_consistency_level_total counter\nhydracache_op_consistency_level_total{operation=\"aggregate\",level=\"aggregate\"} 0\n# HELP hydracache_consistency_unsatisfiable_total HydraCache cluster-grid metric.\n# TYPE hydracache_consistency_unsatisfiable_total counter\nhydracache_consistency_unsatisfiable_total{operation=\"aggregate\",level=\"aggregate\"} 0\n# HELP hydracache_hints_stored_total HydraCache cluster-grid metric.\n# TYPE hydracache_hints_stored_total counter\nhydracache_hints_stored_total 0\n# HELP hydracache_hints_replayed_total HydraCache cluster-grid metric.\n# TYPE hydracache_hints_replayed_total counter\nhydracache_hints_replayed_total 0\n# HELP hydracache_hints_dropped_total HydraCache cluster-grid metric.\n# TYPE hydracache_hints_dropped_total counter\nhydracache_hints_dropped_total{reason=\"aggregate\"} 0\n# HELP hydracache_hint_store_bytes HydraCache cluster-grid metric.\n# TYPE hydracache_hint_store_bytes gauge\nhydracache_hint_store_bytes 0\n# HELP hydracache_repair_sessions_total HydraCache cluster-grid metric.\n# TYPE hydracache_repair_sessions_total counter\nhydracache_repair_sessions_total{kind=\"aggregate\"} 0\n# HELP hydracache_repair_ranges_exchanged_total HydraCache cluster-grid metric.\n# TYPE hydracache_repair_ranges_exchanged_total counter\nhydracache_repair_ranges_exchanged_total{kind=\"aggregate\"} 0\n# HELP hydracache_read_repair_total HydraCache cluster-grid metric.\n# TYPE hydracache_read_repair_total counter\nhydracache_read_repair_total 0\n# HELP hydracache_repair_progress_ratio HydraCache cluster-grid metric.\n# TYPE hydracache_repair_progress_ratio gauge\nhydracache_repair_progress_ratio{partition=\"aggregate\"} 0\n# HELP hydracache_peer_phi HydraCache cluster-grid metric.\n# TYPE hydracache_peer_phi gauge\nhydracache_peer_phi{peer=\"aggregate\"} 0\n# HELP hydracache_false_suspect_total HydraCache cluster-grid metric.\n# TYPE hydracache_false_suspect_total counter\nhydracache_false_suspect_total 0\n# HELP hydracache_cas_applied_total HydraCache cluster-grid metric.\n# TYPE hydracache_cas_applied_total counter\nhydracache_cas_applied_total 0\n# HELP hydracache_cas_mismatch_total HydraCache cluster-grid metric.\n# TYPE hydracache_cas_mismatch_total counter\nhydracache_cas_mismatch_total 0\n# HELP hydracache_lock_acquired_total HydraCache cluster-grid metric.\n# TYPE hydracache_lock_acquired_total counter\nhydracache_lock_acquired_total 0\n# HELP hydracache_lock_stale_token_rejected_total HydraCache cluster-grid metric.\n# TYPE hydracache_lock_stale_token_rejected_total counter\nhydracache_lock_stale_token_rejected_total 0\n# HELP hydracache_invalidation_ring_depth HydraCache cluster-grid metric.\n# TYPE hydracache_invalidation_ring_depth gauge\nhydracache_invalidation_ring_depth{partition=\"aggregate\"} 0\n# HELP hydracache_invalidation_replayed_total HydraCache cluster-grid metric.\n# TYPE hydracache_invalidation_replayed_total counter\nhydracache_invalidation_replayed_total{subscriber=\"aggregate\"} 0\n# HELP hydracache_invalidation_fell_behind_total HydraCache cluster-grid metric.\n# TYPE hydracache_invalidation_fell_behind_total counter\nhydracache_invalidation_fell_behind_total{subscriber=\"aggregate\"} 0\n# HELP hydracache_invalidation_ring_overrun_total HydraCache cluster-grid metric.\n# TYPE hydracache_invalidation_ring_overrun_total counter\nhydracache_invalidation_ring_overrun_total{partition=\"aggregate\"} 0\n# HELP hydracache_session_watermark_entries HydraCache cluster-grid metric.\n# TYPE hydracache_session_watermark_entries gauge\nhydracache_session_watermark_entries 0\n# HELP hydracache_session_active_sessions HydraCache cluster-grid metric.\n# TYPE hydracache_session_active_sessions gauge\nhydracache_session_active_sessions 0\n# HELP hydracache_session_watermark_entries_p99 HydraCache cluster-grid metric.\n# TYPE hydracache_session_watermark_entries_p99 gauge\nhydracache_session_watermark_entries_p99 0\n# HELP hydracache_session_worst_staleness_versions HydraCache cluster-grid metric.\n# TYPE hydracache_session_worst_staleness_versions gauge\nhydracache_session_worst_staleness_versions 0\n# HELP hydracache_session_watermark_coarsened_total HydraCache cluster-grid metric.\n# TYPE hydracache_session_watermark_coarsened_total counter\nhydracache_session_watermark_coarsened_total{reason=\"aggregate\"} 0\n# HELP hydracache_session_token_rejected_total HydraCache cluster-grid metric.\n# TYPE hydracache_session_token_rejected_total counter\nhydracache_session_token_rejected_total{reason=\"aggregate\"} 0\n# HELP hydracache_session_ryw_escalations_total HydraCache cluster-grid metric.\n# TYPE hydracache_session_ryw_escalations_total counter\nhydracache_session_ryw_escalations_total{path=\"aggregate\"} 0\n# HELP hydracache_session_guarantee_unmet_total HydraCache cluster-grid metric.\n# TYPE hydracache_session_guarantee_unmet_total counter\nhydracache_session_guarantee_unmet_total{guarantee=\"aggregate\"} 0\n# HELP hydracache_monotonic_read_violations_prevented_total HydraCache cluster-grid metric.\n# TYPE hydracache_monotonic_read_violations_prevented_total counter\nhydracache_monotonic_read_violations_prevented_total{guarantee=\"aggregate\"} 0\n# HELP hydracache_monotonic_write_reorders_prevented_total HydraCache cluster-grid metric.\n# TYPE hydracache_monotonic_write_reorders_prevented_total counter\nhydracache_monotonic_write_reorders_prevented_total{guarantee=\"aggregate\"} 0\n# HELP hydracache_causal_writes_deferred_total HydraCache cluster-grid metric.\n# TYPE hydracache_causal_writes_deferred_total counter\nhydracache_causal_writes_deferred_total{reason=\"aggregate\"} 0\n# HELP hydracache_causal_summary_coarsened_total HydraCache cluster-grid metric.\n# TYPE hydracache_causal_summary_coarsened_total counter\nhydracache_causal_summary_coarsened_total{reason=\"aggregate\"} 0\n# HELP hydracache_causal_dependency_bytes HydraCache cluster-grid metric.\n# TYPE hydracache_causal_dependency_bytes gauge\nhydracache_causal_dependency_bytes 0\n# HELP hydracache_bounded_staleness_fast_serves_total HydraCache cluster-grid metric.\n# TYPE hydracache_bounded_staleness_fast_serves_total counter\nhydracache_bounded_staleness_fast_serves_total{mode=\"aggregate\"} 0\n# HELP hydracache_bounded_staleness_escalations_total HydraCache cluster-grid metric.\n# TYPE hydracache_bounded_staleness_escalations_total counter\nhydracache_bounded_staleness_escalations_total{reason=\"aggregate\"} 0\n# HELP hydracache_cluster_members Visible cluster member count.\n# TYPE hydracache_cluster_members gauge\n# HELP hydracache_cluster_leader Cluster leader indicator.\n# TYPE hydracache_cluster_leader gauge\n# HELP hydracache_cluster_epoch Current cluster authority epoch.\n# TYPE hydracache_cluster_epoch gauge\n# HELP hydracache_cluster_reshard_phase Current cluster reshard phase.\n# TYPE hydracache_cluster_reshard_phase gauge\n# HELP hydracache_backup_age_seconds Worst known backup age in seconds.\n# TYPE hydracache_backup_age_seconds gauge\nhydracache_cluster_members{source=\"modeled\"} 0\nhydracache_cluster_leader{source=\"modeled\",node=\"local\"} 1\nhydracache_cluster_epoch{source=\"modeled\"} 0\nhydracache_cluster_reshard_phase{source=\"modeled\",phase=\"idle\"} 1\nhydracache_backup_age_seconds{source=\"modeled\"} 0\n",
+        "raw_body_sha256": "b304c4541519f65c38e15a30d62b1e1a634db9064f89441115ce2e248a33d285",
+        "inventory": [
+          {
+            "name": "hydracache_admission_in_flight",
+            "metric_type": "gauge",
+            "sample_count": 1
+          },
+          {
+            "name": "hydracache_admission_queue_depth",
+            "metric_type": "gauge",
+            "sample_count": 1
+          },
+          {
+            "name": "hydracache_admission_rejected_total",
+            "metric_type": "counter",
+            "sample_count": 1
+          },
+          {
+            "name": "hydracache_audit_mandatory_fail_closed_total",
+            "metric_type": "counter",
+            "sample_count": 1
+          },
+          {
+            "name": "hydracache_audit_sink_failures_total",
+            "metric_type": "counter",
+            "sample_count": 1
+          },
+          {
+            "name": "hydracache_auto_repair_active_total",
+            "metric_type": "counter",
+            "sample_count": 1
+          },
+          {
+            "name": "hydracache_auto_repair_advisory_total",
+            "metric_type": "counter",
+            "sample_count": 1
+          },
+          {
+            "name": "hydracache_backup_age_seconds",
+            "metric_type": "gauge",
+            "sample_count": 1
+          },
+          {
+            "name": "hydracache_bounded_staleness_escalations_total",
+            "metric_type": "counter",
+            "sample_count": 1
+          },
+          {
+            "name": "hydracache_bounded_staleness_fast_serves_total",
+            "metric_type": "counter",
+            "sample_count": 1
+          },
+          {
+            "name": "hydracache_bytes_replicated_total",
+            "metric_type": "counter",
+            "sample_count": 1
+          },
+          {
+            "name": "hydracache_cache_estimated_entries",
+            "metric_type": "gauge",
+            "sample_count": 1
+          },
+          {
+            "name": "hydracache_cache_hit_ratio",
+            "metric_type": "gauge",
+            "sample_count": 1
+          },
+          {
+            "name": "hydracache_cache_hits_total",
+            "metric_type": "counter",
+            "sample_count": 1
+          },
+          {
+            "name": "hydracache_cache_loads_total",
+            "metric_type": "counter",
+            "sample_count": 1
+          },
+          {
+            "name": "hydracache_cache_misses_total",
+            "metric_type": "counter",
+            "sample_count": 1
+          },
+          {
+            "name": "hydracache_capacity_recommendation",
+            "metric_type": "gauge",
+            "sample_count": 1
+          },
+          {
+            "name": "hydracache_cas_applied_total",
+            "metric_type": "counter",
+            "sample_count": 1
+          },
+          {
+            "name": "hydracache_cas_mismatch_total",
+            "metric_type": "counter",
+            "sample_count": 1
+          },
+          {
+            "name": "hydracache_causal_dependency_bytes",
+            "metric_type": "gauge",
+            "sample_count": 1
+          },
+          {
+            "name": "hydracache_causal_summary_coarsened_total",
+            "metric_type": "counter",
+            "sample_count": 1
+          },
+          {
+            "name": "hydracache_causal_writes_deferred_total",
+            "metric_type": "counter",
+            "sample_count": 1
+          },
+          {
+            "name": "hydracache_client_auth_rejected_total",
+            "metric_type": "counter",
+            "sample_count": 1
+          },
+          {
+            "name": "hydracache_cluster_auth_rejected_total",
+            "metric_type": "counter",
+            "sample_count": 1
+          },
+          {
+            "name": "hydracache_cluster_epoch",
+            "metric_type": "gauge",
+            "sample_count": 1
+          },
+          {
+            "name": "hydracache_cluster_leader",
+            "metric_type": "gauge",
+            "sample_count": 1
+          },
+          {
+            "name": "hydracache_cluster_members",
+            "metric_type": "gauge",
+            "sample_count": 1
+          },
+          {
+            "name": "hydracache_cluster_reshard_phase",
+            "metric_type": "gauge",
+            "sample_count": 1
+          },
+          {
+            "name": "hydracache_consistency_unsatisfiable_total",
+            "metric_type": "counter",
+            "sample_count": 1
+          },
+          {
+            "name": "hydracache_crdt_metadata_bytes",
+            "metric_type": "gauge",
+            "sample_count": 1
+          },
+          {
+            "name": "hydracache_false_suspect_total",
+            "metric_type": "counter",
+            "sample_count": 1
+          },
+          {
+            "name": "hydracache_hint_store_bytes",
+            "metric_type": "gauge",
+            "sample_count": 1
+          },
+          {
+            "name": "hydracache_hints_dropped_total",
+            "metric_type": "counter",
+            "sample_count": 1
+          },
+          {
+            "name": "hydracache_hints_replayed_total",
+            "metric_type": "counter",
+            "sample_count": 1
+          },
+          {
+            "name": "hydracache_hints_stored_total",
+            "metric_type": "counter",
+            "sample_count": 1
+          },
+          {
+            "name": "hydracache_invalidate_batch_total",
+            "metric_type": "counter",
+            "sample_count": 1
+          },
+          {
+            "name": "hydracache_invalidation_fell_behind_total",
+            "metric_type": "counter",
+            "sample_count": 1
+          },
+          {
+            "name": "hydracache_invalidation_replayed_total",
+            "metric_type": "counter",
+            "sample_count": 1
+          },
+          {
+            "name": "hydracache_invalidation_ring_depth",
+            "metric_type": "gauge",
+            "sample_count": 1
+          },
+          {
+            "name": "hydracache_invalidation_ring_overrun_total",
+            "metric_type": "counter",
+            "sample_count": 1
+          },
+          {
+            "name": "hydracache_invalidation_saga_pending",
+            "metric_type": "gauge",
+            "sample_count": 1
+          },
+          {
+            "name": "hydracache_lock_acquired_total",
+            "metric_type": "counter",
+            "sample_count": 1
+          },
+          {
+            "name": "hydracache_lock_stale_token_rejected_total",
+            "metric_type": "counter",
+            "sample_count": 1
+          },
+          {
+            "name": "hydracache_merge_discarded_entries_total",
+            "metric_type": "counter",
+            "sample_count": 1
+          },
+          {
+            "name": "hydracache_merge_unresolved_conflicts_total",
+            "metric_type": "counter",
+            "sample_count": 1
+          },
+          {
+            "name": "hydracache_monotonic_read_violations_prevented_total",
+            "metric_type": "counter",
+            "sample_count": 1
+          },
+          {
+            "name": "hydracache_monotonic_write_reorders_prevented_total",
+            "metric_type": "counter",
+            "sample_count": 1
+          },
+          {
+            "name": "hydracache_op_consistency_level_total",
+            "metric_type": "counter",
+            "sample_count": 1
+          },
+          {
+            "name": "hydracache_peer_phi",
+            "metric_type": "gauge",
+            "sample_count": 1
+          },
+          {
+            "name": "hydracache_placement_zone_underspread",
+            "metric_type": "gauge",
+            "sample_count": 1
+          },
+          {
+            "name": "hydracache_promotion_freeze_window_ms",
+            "metric_type": "gauge",
+            "sample_count": 1
+          },
+          {
+            "name": "hydracache_read_hedge_win_total",
+            "metric_type": "counter",
+            "sample_count": 1
+          },
+          {
+            "name": "hydracache_read_hedged_total",
+            "metric_type": "counter",
+            "sample_count": 1
+          },
+          {
+            "name": "hydracache_read_local_zone_total",
+            "metric_type": "counter",
+            "sample_count": 1
+          },
+          {
+            "name": "hydracache_read_repair_total",
+            "metric_type": "counter",
+            "sample_count": 1
+          },
+          {
+            "name": "hydracache_region_link_bytes_total",
+            "metric_type": "counter",
+            "sample_count": 1
+          },
+          {
+            "name": "hydracache_region_link_lag",
+            "metric_type": "gauge",
+            "sample_count": 1
+          },
+          {
+            "name": "hydracache_region_link_window",
+            "metric_type": "gauge",
+            "sample_count": 1
+          },
+          {
+            "name": "hydracache_region_promotion_total",
+            "metric_type": "counter",
+            "sample_count": 1
+          },
+          {
+            "name": "hydracache_region_restore_duration_ms",
+            "metric_type": "gauge",
+            "sample_count": 1
+          },
+          {
+            "name": "hydracache_region_staleness_window_ms",
+            "metric_type": "gauge",
+            "sample_count": 1
+          },
+          {
+            "name": "hydracache_region_state",
+            "metric_type": "gauge",
+            "sample_count": 1
+          },
+          {
+            "name": "hydracache_repair_debt_degraded_mode",
+            "metric_type": "gauge",
+            "sample_count": 1
+          },
+          {
+            "name": "hydracache_repair_progress_ratio",
+            "metric_type": "gauge",
+            "sample_count": 1
+          },
+          {
+            "name": "hydracache_repair_ranges_exchanged_total",
+            "metric_type": "counter",
+            "sample_count": 1
+          },
+          {
+            "name": "hydracache_repair_sessions_total",
+            "metric_type": "counter",
+            "sample_count": 1
+          },
+          {
+            "name": "hydracache_replicated_value_rejected_total",
+            "metric_type": "counter",
+            "sample_count": 1
+          },
+          {
+            "name": "hydracache_replication_backpressure_total",
+            "metric_type": "counter",
+            "sample_count": 1
+          },
+          {
+            "name": "hydracache_replication_failure_total",
+            "metric_type": "counter",
+            "sample_count": 1
+          },
+          {
+            "name": "hydracache_replication_lag",
+            "metric_type": "gauge",
+            "sample_count": 1
+          },
+          {
+            "name": "hydracache_replication_oversized_rejected_total",
+            "metric_type": "counter",
+            "sample_count": 1
+          },
+          {
+            "name": "hydracache_replication_success_total",
+            "metric_type": "counter",
+            "sample_count": 1
+          },
+          {
+            "name": "hydracache_replication_window_size",
+            "metric_type": "gauge",
+            "sample_count": 1
+          },
+          {
+            "name": "hydracache_reshard_backfill_lag",
+            "metric_type": "gauge",
+            "sample_count": 1
+          },
+          {
+            "name": "hydracache_reshard_moves_inflight",
+            "metric_type": "gauge",
+            "sample_count": 1
+          },
+          {
+            "name": "hydracache_residency_refused_crossing_total",
+            "metric_type": "counter",
+            "sample_count": 1
+          },
+          {
+            "name": "hydracache_residency_rejected_placement_total",
+            "metric_type": "counter",
+            "sample_count": 1
+          },
+          {
+            "name": "hydracache_scale_actions_total",
+            "metric_type": "counter",
+            "sample_count": 1
+          },
+          {
+            "name": "hydracache_session_active_sessions",
+            "metric_type": "gauge",
+            "sample_count": 1
+          },
+          {
+            "name": "hydracache_session_guarantee_unmet_total",
+            "metric_type": "counter",
+            "sample_count": 1
+          },
+          {
+            "name": "hydracache_session_ryw_escalations_total",
+            "metric_type": "counter",
+            "sample_count": 1
+          },
+          {
+            "name": "hydracache_session_token_rejected_total",
+            "metric_type": "counter",
+            "sample_count": 1
+          },
+          {
+            "name": "hydracache_session_watermark_coarsened_total",
+            "metric_type": "counter",
+            "sample_count": 1
+          },
+          {
+            "name": "hydracache_session_watermark_entries",
+            "metric_type": "gauge",
+            "sample_count": 1
+          },
+          {
+            "name": "hydracache_session_watermark_entries_p99",
+            "metric_type": "gauge",
+            "sample_count": 1
+          },
+          {
+            "name": "hydracache_session_worst_staleness_versions",
+            "metric_type": "gauge",
+            "sample_count": 1
+          },
+          {
+            "name": "hydracache_split_brain_detected_total",
+            "metric_type": "counter",
+            "sample_count": 1
+          },
+          {
+            "name": "hydracache_tenant_admission_rejected_total",
+            "metric_type": "counter",
+            "sample_count": 1
+          },
+          {
+            "name": "hydracache_tenant_bytes",
+            "metric_type": "gauge",
+            "sample_count": 1
+          },
+          {
+            "name": "hydracache_tenant_entries",
+            "metric_type": "gauge",
+            "sample_count": 1
+          },
+          {
+            "name": "hydracache_tombstone_repair_debt",
+            "metric_type": "gauge",
+            "sample_count": 1
+          },
+          {
+            "name": "hydracache_topology_fence_rejected_total",
+            "metric_type": "counter",
+            "sample_count": 1
+          },
+          {
+            "name": "hydracache_under_replicated_keys",
+            "metric_type": "gauge",
+            "sample_count": 1
+          },
+          {
+            "name": "hydracache_value_tier_demotions_total",
+            "metric_type": "counter",
+            "sample_count": 1
+          },
+          {
+            "name": "hydracache_value_tier_promotions_total",
+            "metric_type": "counter",
+            "sample_count": 1
+          }
+        ]
+      },
+      "coverage": [
+        {
+          "availability": "not_available",
+          "evidence": {
+            "field": "operations",
+            "status": "not_available",
+            "reason": "no-exported-generic-resp-command-counter",
+            "metric_selector": null,
+            "agreement_claim": false
+          }
+        },
+        {
+          "availability": "not_available",
+          "evidence": {
+            "field": "rejections",
+            "status": "not_available",
+            "reason": "no-exported-resp-surface-rejection-counter",
+            "metric_selector": null,
+            "agreement_claim": false
+          }
+        },
+        {
+          "availability": "not_available",
+          "evidence": {
+            "field": "internal_service_latency",
+            "status": "not_available",
+            "reason": "no-exported-resp-service-latency-summary",
+            "metric_selector": null,
+            "agreement_claim": false
+          }
+        },
+        {
+          "availability": "not_available",
+          "evidence": {
+            "field": "topology_members",
+            "status": "not_available",
+            "reason": "resp-capacity-is-node-local-and-not-a-topology-claim",
+            "metric_selector": null,
+            "agreement_claim": false
+          }
+        },
+        {
+          "availability": "not_available",
+          "evidence": {
+            "field": "topology_leader",
+            "status": "not_available",
+            "reason": "resp-capacity-is-node-local-and-not-a-topology-claim",
+            "metric_selector": null,
+            "agreement_claim": false
+          }
+        },
+        {
+          "availability": "not_available",
+          "evidence": {
+            "field": "topology_epoch",
+            "status": "not_available",
+            "reason": "resp-capacity-is-node-local-and-not-a-topology-claim",
+            "metric_selector": null,
+            "agreement_claim": false
+          }
+        }
+      ],
+      "latency_boundary": {
+        "observer_metric": "scheduled-send-to-completion-latency",
+        "observer_includes_scheduler_queue_delay": true,
+        "server_internal_service_metric_status": "not_available",
+        "matching_observer_interval_required_if_available": true,
+        "equality_with_scheduled_latency_claimed": false
+      }
+    }
+  ],
+  "no_new_product_metric": true,
+  "no_in_process_daemon_claim": true
+}

@@ -1,0 +1,91 @@
+{
+  "schema_version": 1,
+  "release": "0.67.0",
+  "source_commit": "7bd31af9a5092466d7a7284995f388d33ed3110f",
+  "runner_profile": "reference-v1",
+  "runner_fingerprint": "25baeec1c9ec75da90b5dd0f29c101897450b96651d7e47570e18684be486ebb",
+  "prebuild_manifest_sha256": "2768ca970a2b3e09c3ee63bbd9bba466c3aee40be8dfca8e06cbe98309e4b296",
+  "artifacts": [
+    {
+      "report_id": "brownout-control-plane-reference-v1",
+      "canonical_path": "target/test-evidence/0.67/brownout-control-plane.json",
+      "raw_sidecar_path": "target/test-evidence/0.67/w7-raw/brownout-control-plane-reference-v1.raw.json",
+      "raw_sha256": "c0777d05c6a2112b31845564c05dd969a3381a2fceccef014da3a221146e752c",
+      "source_report_sha256": "f0f55bbf4523cd2b597f779299104d4d23b3efee727d1135e80ce36352a4b4f8",
+      "envelope_sha256": "41920634f807e27f88f5ed94488da6975e21288924321a8b4023cabae82704e2"
+    },
+    {
+      "report_id": "brownout-grid-model-reference-v1",
+      "canonical_path": "target/test-evidence/0.67/brownout-grid-model.json",
+      "raw_sidecar_path": "target/test-evidence/0.67/w7-raw/brownout-grid-model-reference-v1.raw.json",
+      "raw_sha256": "1a45bd35769fb3443be623cc644ae7dd38b1fbcaa79e202569b3031651d083f8",
+      "source_report_sha256": "b8a9fb86aa45e6c2cbf2457128439dc8d85d3ece2a6a77734db67897978927eb",
+      "envelope_sha256": "e294e9b787602cc747c89e206fed754dfd268c404366f0da6d880a74e9914664"
+    },
+    {
+      "report_id": "brownout-resp-endpoint-reference-v1",
+      "canonical_path": "target/test-evidence/0.67/brownout-resp-endpoint.json",
+      "raw_sidecar_path": "target/test-evidence/0.67/w7-raw/brownout-resp-endpoint-reference-v1.raw.json",
+      "raw_sha256": "7312671da3eb10719780bdaa9c9dc89f7c642c1ff198929897f540d4c85b7357",
+      "source_report_sha256": "942288d7e01346caf9124e9ee84fe5d3834cc027b8dd8a5c1f77756178d662bf",
+      "envelope_sha256": "cb56f5ca3a115f919c2f50e2193a63a3b7a387c74769c8d89c787d673bf943a6"
+    },
+    {
+      "report_id": "control-plane-3-reference-v1",
+      "canonical_path": "target/test-evidence/0.67/control-plane-3.json",
+      "raw_sidecar_path": "target/test-evidence/0.67/w7-raw/control-plane-3-reference-v1.raw.json",
+      "raw_sha256": "940048b814fd5e5746eca03c01d05a13b96cb82aa6590d6d0233fe3ff8037a32",
+      "source_report_sha256": "e9c0b3109bcd5fe696c29c60164733fcb54c7cd00554e0f33526f3e9024cccac",
+      "envelope_sha256": "a804dd584796705c6578e3a0a31a03f2e790eb8200b67b9bda04a1772df9b667"
+    },
+    {
+      "report_id": "control-plane-5-reference-v1",
+      "canonical_path": "target/test-evidence/0.67/control-plane-5.json",
+      "raw_sidecar_path": "target/test-evidence/0.67/w7-raw/control-plane-5-reference-v1.raw.json",
+      "raw_sha256": "c499c262f05d4cfde23085c40961325dac0e4352114e2d9c7cef98403721bd3f",
+      "source_report_sha256": "62cee82af13195ed77965ff148d99bc4b37701241273eff99f8337f3ff328d7f",
+      "envelope_sha256": "a27f204f4d3ec0f0e939fc9003a4b17329d0d2c66ccffbde99fcef39042448ef"
+    },
+    {
+      "report_id": "control-plane-7-reference-v1",
+      "canonical_path": "target/test-evidence/0.67/control-plane-7.json",
+      "raw_sidecar_path": "target/test-evidence/0.67/w7-raw/control-plane-7-reference-v1.raw.json",
+      "raw_sha256": "b55229e2412adce778fe57b8f8dc94591d27751cd94f06893a695c96a7cb9bd3",
+      "source_report_sha256": "9d4cda4c841970d3ce02a7ae71e41366784729ab36c5b9cb53209627501f53f7",
+      "envelope_sha256": "d3d767efbdf7a9bfb1563c88dd5c35a7e2a352452fb6f825fadb73a18a787d84"
+    },
+    {
+      "report_id": "grid-model-reference-v1",
+      "canonical_path": "target/test-evidence/0.67/grid-model.json",
+      "raw_sidecar_path": "target/test-evidence/0.67/w7-raw/grid-model-reference-v1.raw.json",
+      "raw_sha256": "dc0bd04e91835fdd6442a24c71f288494466e63538c28b91bf2cc0c832172ecc",
+      "source_report_sha256": "488cbd30a2be37cdc099ba15d8f795a5c87ae963b887e86fc7319d32c5e29e57",
+      "envelope_sha256": "0c0ebbd1c4eb3d64bcd023c1d79a6122c418e638fa60de23cb7b7b09df99518c"
+    },
+    {
+      "report_id": "overload-client-surface-v1",
+      "canonical_path": "target/test-evidence/0.67/overload-client-surface.json",
+      "raw_sidecar_path": "target/test-evidence/0.67/w7-raw/overload-client-surface-v1.raw.json",
+      "raw_sha256": "5e2663b0cd99a211de8e82e7f4c1d6704d16f31ea1f1f226c08ca8617b468dcf",
+      "source_report_sha256": "a52d63d1cbb57c7b5399bd556db4178842c291b6a7ad65118df01fd4aa63b075",
+      "envelope_sha256": "f4b7c3d89f22fc1fe413394194b3c1476b2164c6d034d81067e189899265d9d8"
+    },
+    {
+      "report_id": "overload-local-v1",
+      "canonical_path": "target/test-evidence/0.67/overload-local.json",
+      "raw_sidecar_path": "target/test-evidence/0.67/w7-raw/overload-local-v1.raw.json",
+      "raw_sha256": "d087b1e2d0087131588e7fe3af47038c33d823ba1f5875674787cf6b01dbf1c5",
+      "source_report_sha256": "752d8f465750129c3cc0f76a4e7716a216d84a396b2ef78f832fadffa28de199",
+      "envelope_sha256": "9a76af86dfa9725170c36244ef293f5e10ece1f9e5b8e9fc42c519af5439db6c"
+    },
+    {
+      "report_id": "overload-node-resp-v1",
+      "canonical_path": "target/test-evidence/0.67/overload-node-resp.json",
+      "raw_sidecar_path": "target/test-evidence/0.67/w7-raw/overload-node-resp-v1.raw.json",
+      "raw_sha256": "728fb0a1a244322094bc09f1fa8937ff31b684aabd77d316806d182a27a0f3e5",
+      "source_report_sha256": "37b573a0474368c3ac22c938ba64e607a24d9a1ee93228910511284436390a1a",
+      "envelope_sha256": "829aac219666d6f410ded6355b80c9398f487ac56bcef8edac910ca5d2e9b8e4"
+    }
+  ],
+  "receipt_sha256": "c8967d7c361f7e47470205ad57e450917e7b7a2b745c3abd4ab4616a9f14d3a7"
+}

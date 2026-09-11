@@ -1,0 +1,2173 @@
+{
+  "schema_version": 1,
+  "release": "0.67.0",
+  "report_id": "same-box-redis-vs-hydracache-resp-reference-v1",
+  "scenario_id": "same-box-redis-vs-hydracache-resp-v1",
+  "scenario_sha256": "ec3a5678eaf4f33a311ef4da88ad79b0a3f8b103b6404a02628f6bdf20068fe3",
+  "measurement_id": "same_box_redis_vs_hydracache_resp_get_set_ratio",
+  "methodology": "same-box-same-tool-alternating-ab-ba-closed-loop",
+  "claim_scope": "selected-node-local-resp-endpoint-comparison-only",
+  "interpretation": "Measured on one eligible reference runner with one exact redis-benchmark binary; this is not a universal superiority or aggregate-cluster-capacity claim.",
+  "unmeasured_warmup_repeats": 1,
+  "run_mode": "mandatory_reference",
+  "source": {
+    "git_commit": "7bd31af9a5092466d7a7284995f388d33ed3110f",
+    "cargo_lock_sha256": "dc480dad8567eda4a4d13b393651d3d1201cc26ba7599e3c8ff822b725569def",
+    "toolchain": "rustc-1.94.0",
+    "build_flags": [
+      "--locked",
+      "--release"
+    ]
+  },
+  "build": {
+    "prebuild_contract_digest": "f2caae0689d8b075d2a6d59d6090466365f9a6824c6996d6b92830956831cc55",
+    "prebuild_manifest_sha256": "2768ca970a2b3e09c3ee63bbd9bba466c3aee40be8dfca8e06cbe98309e4b296",
+    "binary_sha256": [
+      [
+        "hydracache-loadgen",
+        "c2c0e14ab40dd5b3c2ee5d71631bdfee81d7d61c0cd2c83c8b927c126aff7bd2"
+      ],
+      [
+        "hydracache-server",
+        "a17b5148cad43e2193c69a64e3372e2832fa94a47196a7b6bec405128f3633c6"
+      ]
+    ]
+  },
+  "runner_profile": {
+    "name": "reference-v1",
+    "required_runner_class": "self-hosted-bare-metal-v1",
+    "allowed_fingerprints": [
+      "25baeec1c9ec75da90b5dd0f29c101897450b96651d7e47570e18684be486ebb"
+    ],
+    "minimum_logical_cores": 4,
+    "required_cpu_affinity": "1-4",
+    "required_cgroup_cpu_quota": "unlimited",
+    "require_dedicated": true,
+    "maximum_calibration_score": 0.25
+  },
+  "observed_runner": {
+    "runner_class": "self-hosted-bare-metal-v1",
+    "fingerprint": "25baeec1c9ec75da90b5dd0f29c101897450b96651d7e47570e18684be486ebb",
+    "cpu_model": "AMD Ryzen 7 PRO 8700GE w/ Radeon 780M Graphics",
+    "logical_cores": 4,
+    "ram_bytes": 66490486784,
+    "os": "linux",
+    "kernel": "6.8.0-138-generic",
+    "cpu_affinity": "1-4",
+    "cgroup_cpu_quota": "unlimited",
+    "governor": "performance",
+    "turbo": "enabled",
+    "shared_hardware": false,
+    "calibration_score": 0.015776637614821176,
+    "attestation": {
+      "schema_version": 5,
+      "contract_version": "hydracache-reference-host-v5",
+      "virtualization": "none",
+      "physical_cores": 8,
+      "measurement_cores": [
+        {
+          "logical_cpu": 1,
+          "package_id": 0,
+          "core_id": 1
+        },
+        {
+          "logical_cpu": 2,
+          "package_id": 0,
+          "core_id": 2
+        },
+        {
+          "logical_cpu": 3,
+          "package_id": 0,
+          "core_id": 3
+        },
+        {
+          "logical_cpu": 4,
+          "package_id": 0,
+          "core_id": 4
+        }
+      ],
+      "cpu_isolation": {
+        "smt_control": "off",
+        "online_cpus": "0-7",
+        "isolated_cpus": "1-4",
+        "nohz_full_cpus": "1-4",
+        "rcu_nocbs_cpus": "1-4",
+        "housekeeping_cpus": "0,5-7",
+        "irq_affinity_policy": "housekeeping-only-v1",
+        "measurement_idle_policy": "latency-cap-us-v1",
+        "measurement_max_idle_latency_us": 1,
+        "housekeeping_idle_policy": "latency-cap-us-v1",
+        "housekeeping_max_idle_latency_us": 1
+      },
+      "host_digest": "571591a534c9894242fc0af0c5f80c31131fe7e4cdb9d0ea63da6d8b56af8932",
+      "storage_class": "local-nvme",
+      "storage_identity_digest": "74ec6d1126c24b7a3899494eef2564aec2d3085056ac200e4a8cc8ca0ae43a50",
+      "os_image": "ubuntu-24.04",
+      "toolchain_identity": "rustc-1.94.0",
+      "prebuild_contract_digest": "f2caae0689d8b075d2a6d59d6090466365f9a6824c6996d6b92830956831cc55"
+    }
+  },
+  "host_fingerprint": "25baeec1c9ec75da90b5dd0f29c101897450b96651d7e47570e18684be486ebb",
+  "w3_reference": {
+    "canonical_path": "/dev/shm/hydracache-reference-evidence-v1/0.67/node-resp-open-loop.json",
+    "artifact_sha256": "d238c95d42d42f5065ce7e41a83a8a88b9211ff6d37b436a45e4efb666bb0b5e",
+    "daemon_lifecycle_path": "/dev/shm/hydracache-reference-evidence-v1/0.67/node-resp-daemon-lifecycle.json",
+    "daemon_lifecycle_sha256": "be3791c4c2b72cd17734595f796efae9bd8c23134cc02fb52514adc6291bd9d6",
+    "external_report_path": "/dev/shm/hydracache-reference-evidence-v1/0.67/node-resp-redis-benchmark.json",
+    "external_report_sha256": "bf2301a1b804ede0d14d2c3a9658811d4dd7cd986c976644fc9876c1c49c446e",
+    "suite_receipt_path": "/dev/shm/hydracache-reference-evidence-v1/0.67/node-resp-suite-receipt.json",
+    "suite_receipt_artifact_sha256": "cab9666a6c5a8f49cc23b147d039e7f9bb35ef9e818d04cb13e54dcdb7dbe4be",
+    "suite_receipt_sha256": "c7f673a7b8a1146e8c143910c62c12c35bba43e962fcd686bd78df05b66090cc",
+    "report_id": "node-resp-open-loop-reference-v1",
+    "scenario_id": "resp-w3-open-loop-reference-v1",
+    "source": {
+      "git_commit": "7bd31af9a5092466d7a7284995f388d33ed3110f",
+      "cargo_lock_sha256": "dc480dad8567eda4a4d13b393651d3d1201cc26ba7599e3c8ff822b725569def",
+      "toolchain": "rustc-1.94.0",
+      "build_flags": [
+        "--locked",
+        "--release"
+      ]
+    },
+    "build": {
+      "prebuild_contract_digest": "f2caae0689d8b075d2a6d59d6090466365f9a6824c6996d6b92830956831cc55",
+      "prebuild_manifest_sha256": "2768ca970a2b3e09c3ee63bbd9bba466c3aee40be8dfca8e06cbe98309e4b296",
+      "binary_sha256": [
+        [
+          "hydracache-loadgen",
+          "c2c0e14ab40dd5b3c2ee5d71631bdfee81d7d61c0cd2c83c8b927c126aff7bd2"
+        ],
+        [
+          "hydracache-server",
+          "a17b5148cad43e2193c69a64e3372e2832fa94a47196a7b6bec405128f3633c6"
+        ]
+      ]
+    },
+    "runner_profile": "reference-v1",
+    "runner_contract_digest": "c728014af9fd0aae4c474456e74437a033110940db01caa1577b1b5b5efabfe0",
+    "observed_runner_fingerprint": "25baeec1c9ec75da90b5dd0f29c101897450b96651d7e47570e18684be486ebb",
+    "selected_endpoint": "hydracache-server@127.0.0.1:41319",
+    "endpoint_capability_sha256": "14b729d15ac097dd368a63519198917497f92dc588e80278b6f16a815bd2f8ab",
+    "archived_pid": 27987,
+    "archived_started_unix_nanos": 1789120154180358532,
+    "external_tool_prebuild_receipt_sha256": "32197a3881908e7ef8f5b28b201817312d6a7eb6d7f0a02a925d5d4e28ef42d5"
+  },
+  "hydracache_endpoint_capability": {
+    "schema_version": 1,
+    "pid": 29015,
+    "started_unix_nanos": 1789125332588673131,
+    "repeat_index": 80008,
+    "direct_prebuilt_exec": true,
+    "fresh_data_dir": true,
+    "config": {
+      "role": "local",
+      "listen_addr": "127.0.0.1:0",
+      "cluster_addr": "127.0.0.1:0",
+      "storage_dir": "/dev/shm/hydracache-reference-evidence-v1/0.67/resp-daemon-repeats/repeat-80008-pid-27970-nanos-1789125332587122297-seq-1/data",
+      "admin_enabled": true,
+      "admin_addr": "127.0.0.1:45499",
+      "redis_enabled": true,
+      "redis_addr": "127.0.0.1:39579",
+      "redis_auth_required": false,
+      "rediss_enabled": false
+    },
+    "selected_endpoint": "hydracache-server@127.0.0.1:39579",
+    "server_binary_sha256": "a17b5148cad43e2193c69a64e3372e2832fa94a47196a7b6bec405128f3633c6",
+    "loadgen_binary_sha256": "c2c0e14ab40dd5b3c2ee5d71631bdfee81d7d61c0cd2c83c8b927c126aff7bd2",
+    "prebuild_manifest_sha256": "2768ca970a2b3e09c3ee63bbd9bba466c3aee40be8dfca8e06cbe98309e4b296",
+    "prebuild_contract_digest": "f2caae0689d8b075d2a6d59d6090466365f9a6824c6996d6b92830956831cc55",
+    "source_commit": "7bd31af9a5092466d7a7284995f388d33ed3110f"
+  },
+  "hydracache_endpoint_capability_sha256": "578bd7299b9702e39710272c1099b127d693a6e0a134997f4ec07c46d35614a6",
+  "hydracache_daemon_lifecycle": {
+    "repeat_index": 80008,
+    "pid": 29015,
+    "direct_prebuilt_exec": true,
+    "server_binary_path": "/opt/actions-runner/_work/hydracache/hydracache/target/release/hydracache-server",
+    "server_binary_sha256": "a17b5148cad43e2193c69a64e3372e2832fa94a47196a7b6bec405128f3633c6",
+    "loadgen_binary_path": "/opt/actions-runner/_work/hydracache/hydracache/target/release/hydracache-loadgen",
+    "loadgen_binary_sha256": "c2c0e14ab40dd5b3c2ee5d71631bdfee81d7d61c0cd2c83c8b927c126aff7bd2",
+    "binaries_verified_after_measurement": true,
+    "resp_endpoint": "127.0.0.1:39579",
+    "admin_endpoint": "127.0.0.1:45499",
+    "selected_endpoint": "hydracache-server@127.0.0.1:39579",
+    "endpoint_capability_digest": "578bd7299b9702e39710272c1099b127d693a6e0a134997f4ec07c46d35614a6",
+    "data_dir": "/dev/shm/hydracache-reference-evidence-v1/0.67/resp-daemon-repeats/repeat-80008-pid-27970-nanos-1789125332587122297-seq-1/data",
+    "readiness": {
+      "request_sha256": "a43cb6a3b9d261112714d00e36b33106d1479eb1b3d8131a07684d4d477c5989",
+      "response_sha256": "64c2f2c744321d052076467905a0561f91e9a6de4e84441addbcc549cd71095c",
+      "attempts": 1,
+      "selected_endpoint": "127.0.0.1:39579",
+      "exact_response": "+PONG\\r\\n"
+    },
+    "killed_and_waited": true,
+    "exit_code": null,
+    "stdout_log": {
+      "canonical_path": "/dev/shm/hydracache-reference-evidence-v1/0.67/resp-daemon-repeats/repeat-80008-pid-27970-nanos-1789125332587122297-seq-1/hydracache-server.stdout.log",
+      "bytes": 16,
+      "sha256": "6489d6d7a33c5d40e18fc61eeb6c34c341279ee61816394dde5189aa4ad8fae5"
+    },
+    "stderr_log": {
+      "canonical_path": "/dev/shm/hydracache-reference-evidence-v1/0.67/resp-daemon-repeats/repeat-80008-pid-27970-nanos-1789125332587122297-seq-1/hydracache-server.stderr.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  },
+  "redis_benchmark_identity": {
+    "logical_name": "redis-benchmark",
+    "canonical_path": "/opt/actions-runner/_work/_temp/hydracache-perf-tools/redis-7.2.5/src/redis-benchmark",
+    "sha256": "71bf5cbf35038d8ee73379ddcb1d78559bcc88ba70039ed2f55ea9db7521c91f"
+  },
+  "redis_benchmark_prebuild_receipt_sha256": "32197a3881908e7ef8f5b28b201817312d6a7eb6d7f0a02a925d5d4e28ef42d5",
+  "redis_benchmark_version": "redis-benchmark 7.2.5",
+  "redis_benchmark_version_probe": {
+    "executable": {
+      "logical_name": "redis-benchmark",
+      "canonical_path": "/opt/actions-runner/_work/_temp/hydracache-perf-tools/redis-7.2.5/src/redis-benchmark",
+      "sha256": "71bf5cbf35038d8ee73379ddcb1d78559bcc88ba70039ed2f55ea9db7521c91f"
+    },
+    "argv": [
+      "--version"
+    ],
+    "execution_environment": [
+      "LANG=C",
+      "LC_ALL=C",
+      "TZ=UTC"
+    ],
+    "exit_code": 0,
+    "timed_out": false,
+    "stdout": "redis-benchmark 7.2.5\n",
+    "stderr": "",
+    "stdout_bytes": 22,
+    "stderr_bytes": 0,
+    "stdout_sha256": "5291d69fd40678ba66ede16ef46079aa991f0a404f6492a7449689d99ed9455a",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "docker": {
+    "docker_identity": {
+      "logical_name": "docker",
+      "canonical_path": "/usr/bin/docker",
+      "sha256": "d767d00af09e69cf053e9d923550fda999c2b5911c7a0a0a920b964e86b32d25"
+    },
+    "docker_version": "Docker version 29.6.1, build 8900f1d",
+    "version_probe": {
+      "executable": {
+        "logical_name": "docker",
+        "canonical_path": "/usr/bin/docker",
+        "sha256": "d767d00af09e69cf053e9d923550fda999c2b5911c7a0a0a920b964e86b32d25"
+      },
+      "argv": [
+        "--version"
+      ],
+      "execution_environment": [
+        "LANG=C",
+        "LC_ALL=C",
+        "TZ=UTC"
+      ],
+      "exit_code": 0,
+      "timed_out": false,
+      "stdout": "Docker version 29.6.1, build 8900f1d\n",
+      "stderr": "",
+      "stdout_bytes": 37,
+      "stderr_bytes": 0,
+      "stdout_sha256": "6c3eedd3ebbb15c84b8d8ac36c69542bf7639ee6e572e195985d5d34fe5678ea",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "pull": {
+      "executable": {
+        "logical_name": "docker",
+        "canonical_path": "/usr/bin/docker",
+        "sha256": "d767d00af09e69cf053e9d923550fda999c2b5911c7a0a0a920b964e86b32d25"
+      },
+      "argv": [
+        "pull",
+        "--platform",
+        "linux/amd64",
+        "redis@sha256:3aaec283e6e593bde528077d60280ac1589887067a39273348860837c9346d7e"
+      ],
+      "execution_environment": [
+        "LANG=C",
+        "LC_ALL=C",
+        "TZ=UTC"
+      ],
+      "exit_code": 0,
+      "timed_out": false,
+      "stdout": "docker.io/library/redis@sha256:3aaec283e6e593bde528077d60280ac1589887067a39273348860837c9346d7e: Pulling from library/redis\nDigest: sha256:3aaec283e6e593bde528077d60280ac1589887067a39273348860837c9346d7e\nStatus: Image is up to date for redis@sha256:3aaec283e6e593bde528077d60280ac1589887067a39273348860837c9346d7e\ndocker.io/library/redis@sha256:3aaec283e6e593bde528077d60280ac1589887067a39273348860837c9346d7e\n",
+      "stderr": "",
+      "stdout_bytes": 410,
+      "stderr_bytes": 0,
+      "stdout_sha256": "862d7260ad2f5824a2ddb9cf623381738154ce027348323477604e60727f0719",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "manifest_inspect": {
+      "executable": {
+        "logical_name": "docker",
+        "canonical_path": "/usr/bin/docker",
+        "sha256": "d767d00af09e69cf053e9d923550fda999c2b5911c7a0a0a920b964e86b32d25"
+      },
+      "argv": [
+        "manifest",
+        "inspect",
+        "--verbose",
+        "redis@sha256:3aaec283e6e593bde528077d60280ac1589887067a39273348860837c9346d7e"
+      ],
+      "execution_environment": [
+        "LANG=C",
+        "LC_ALL=C",
+        "TZ=UTC"
+      ],
+      "exit_code": 0,
+      "timed_out": false,
+      "stdout": "[\n\t{\n\t\t\"Ref\": \"docker.io/library/redis@sha256:301f993bbc91d0b50b0737a97962905657d9f595e9935282b7db16a563b53d1b\",\n\t\t\"Descriptor\": {\n\t\t\t\"mediaType\": \"application/vnd.oci.image.manifest.v1+json\",\n\t\t\t\"digest\": \"sha256:301f993bbc91d0b50b0737a97962905657d9f595e9935282b7db16a563b53d1b\",\n\t\t\t\"size\": 2483,\n\t\t\t\"platform\": {\n\t\t\t\t\"architecture\": \"amd64\",\n\t\t\t\t\"os\": \"linux\"\n\t\t\t}\n\t\t},\n\t\t\"Raw\": \"ewogICJzY2hlbWFWZXJzaW9uIjogMiwKICAibWVkaWFUeXBlIjogImFwcGxpY2F0aW9uL3ZuZC5vY2kuaW1hZ2UubWFuaWZlc3QudjEranNvbiIsCiAgImNvbmZpZyI6IHsKICAgICJtZWRpYVR5cGUiOiAiYXBwbGljYXRpb24vdm5kLm9jaS5pbWFnZS5jb25maWcudjEranNvbiIsCiAgICAiZGlnZXN0IjogInNoYTI1NjplYTViM2IyZmEzZTkwNzQ4NzI0ODYxZDIwMzdiNzBiZjllZDc1OWUwNzc1MWRkNjc4NmY3Nzc4OWJmNTYyODY4IiwKICAgICJzaXplIjogODcxOQogIH0sCiAgImxheWVycyI6IFsKICAgIHsKICAgICAgIm1lZGlhVHlwZSI6ICJhcHBsaWNhdGlvbi92bmQub2NpLmltYWdlLmxheWVyLnYxLnRhcitnemlwIiwKICAgICAgImRpZ2VzdCI6ICJzaGEyNTY6MzAyZTNlZTQ5ODA1M2E3YjUzMzJhYzc5ZThlZmViZWMxNmU5MDAyODlmYzFlY2QxYzc1NGNlOGZhMDQ3ZmNhYiIsCiAgICAgICJzaXplIjogMjkxMjYyNzYKICAgIH0sCiAgICB7CiAgICAgICJtZWRpYVR5cGUiOiAiYXBwbGljYXRpb24vdm5kLm9jaS5pbWFnZS5sYXllci52MS50YXIrZ3ppcCIsCiAgICAgICJkaWdlc3QiOiAic2hhMjU2OjA5ZmY0YTdiMzg2NzkwMzI3OGMxODdmNjk4N2JkYWIwNWY5Y2M1OTUyYjIyMzAzY2VhYzYyZjkyY2M4MjVjNDMiLAogICAgICAic2l6ZSI6IDExMDEKICAgIH0sCiAgICB7CiAgICAgICJtZWRpYVR5cGUiOiAiYXBwbGljYXRpb24vdm5kLm9jaS5pbWFnZS5sYXllci52MS50YXIrZ3ppcCIsCiAgICAgICJkaWdlc3QiOiAic2hhMjU2OjVkNDI4MTJiYzhiYWFmZmE3NDQxY2ZjZDFjZDljYjc4ZmMxMjQyMmY0NmVmYmE2NjgxYWU5N2MxNTk3YzkxMWEiLAogICAgICAic2l6ZSI6IDg3NAogICAgfSwKICAgIHsKICAgICAgIm1lZGlhVHlwZSI6ICJhcHBsaWNhdGlvbi92bmQub2NpLmltYWdlLmxheWVyLnYxLnRhcitnemlwIiwKICAgICAgImRpZ2VzdCI6ICJzaGEyNTY6NzlkMTQ5OTgxOTNmYmFhNTcxYzkwMTllNjQ2NGRhMGFjZTM4NDlmN2JkMTVjYWY4YmFiNDJlMzViYzU5OTM2YyIsCiAgICAgICJzaXplIjogMTQzNzgxMwogICAgfSwKICAgIHsKICAgICAgIm1lZGlhVHlwZSI6ICJhcHBsaWNhdGlvbi92bmQub2NpLmltYWdlLmxheWVyLnYxLnRhcitnemlwIiwKICAgICAgImRpZ2VzdCI6ICJzaGEyNTY6YTY2ODdjMTY3MmM5NTc4ZjY3MzMzMGNhZjBkN2ZkMWQwMTBlNTAzMDU4ZDY1YjgxZGIxNzMwODBlZjExYjg3OSIsCiAgICAgICJzaXplIjogMTQ5MTQ3MTMKICAgIH0sCiAgICB7CiAgICAgICJtZWRpYVR5cGUiOiAiYXBwbGljYXRpb24vdm5kLm9jaS5pbWFnZS5sYXllci52MS50YXIrZ3ppcCIsCiAgICAgICJkaWdlc3QiOiAic2hhMjU2Ojg2MWYzNWFlOGRlNjNlNmI2ZGFhMTZmZTM1YTFkODRkNGUzMjI4Y2E4YjViZThmMWVmMDkzMWJjNzI3MzNjNDYiLAogICAgICAic2l6ZSI6IDk2CiAgICB9LAogICAgewogICAgICAibWVkaWFUeXBlIjogImFwcGxpY2F0aW9uL3ZuZC5vY2kuaW1hZ2UubGF5ZXIudjEudGFyK2d6aXAiLAogICAgICAiZGlnZXN0IjogInNoYTI1Njo0ZjRmYjcwMGVmNTQ0NjFjZmEwMjU3MWFlMGRiOWEwZGMxZTBjZGI1NTc3NDg0YTZkNzVlNjhkYzM4ZThhY2MxIiwKICAgICAgInNpemUiOiAzMgogICAgfSwKICAgIHsKICAgICAgIm1lZGlhVHlwZSI6ICJhcHBsaWNhdGlvbi92bmQub2NpLmltYWdlLmxheWVyLnYxLnRhcitnemlwIiwKICAgICAgImRpZ2VzdCI6ICJzaGEyNTY6ZWRlMmFmZmQyMWM0NzVlNTliNzVjYTJkZjc5NjViZTAzMTA4NjQxOTQ2ZThmNTM1MzY4YmIyODFhNjU1YmQ4YiIsCiAgICAgICJzaXplIjogNTcwCiAgICB9CiAgXSwKICAiYW5ub3RhdGlvbnMiOiB7CiAgICAiY29tLmRvY2tlci5vZmZpY2lhbC1pbWFnZXMuYmFzaGJyZXcuYXJjaCI6ICJhbWQ2NCIsCiAgICAib3JnLm9wZW5jb250YWluZXJzLmltYWdlLmJhc2UuZGlnZXN0IjogInNoYTI1Njo3MDk1ZWE2MjljNDU2MzcxNGI5NjU1MTM3ZGIyZWFjZDQ1NmViM2VlYTBlYjhhMmIwYTRhNmIwYjE4NzIyMGE5IiwKICAgICJvcmcub3BlbmNvbnRhaW5lcnMuaW1hZ2UuYmFzZS5uYW1lIjogImRlYmlhbjpib29rd29ybS1zbGltIiwKICAgICJvcmcub3BlbmNvbnRhaW5lcnMuaW1hZ2UuY3JlYXRlZCI6ICIyMDI0LTA1LTIyVDIzOjE3OjU5WiIsCiAgICAib3JnLm9wZW5jb250YWluZXJzLmltYWdlLnJldmlzaW9uIjogIjVmMDgzNjNlNmQ2NGI5N2EwYzJlNjUxZjRiZGNlYzZlNzFhMzJhYjQiLAogICAgIm9yZy5vcGVuY29udGFpbmVycy5pbWFnZS5zb3VyY2UiOiAiaHR0cHM6Ly9naXRodWIuY29tL3JlZGlzL2RvY2tlci1saWJyYXJ5LXJlZGlzLmdpdCM1ZjA4MzYzZTZkNjRiOTdhMGMyZTY1MWY0YmRjZWM2ZTcxYTMyYWI0OjcuMi9kZWJpYW4iLAogICAgIm9yZy5vcGVuY29udGFpbmVycy5pbWFnZS51cmwiOiAiaHR0cHM6Ly9odWIuZG9ja2VyLmNvbS9fL3JlZGlzIiwKICAgICJvcmcub3BlbmNvbnRhaW5lcnMuaW1hZ2UudmVyc2lvbiI6ICI3LjIuNSIKICB9Cn0=\",\n\t\t\"OCIManifest\": {\n\t\t\t\"schemaVersion\": 2,\n\t\t\t\"mediaType\": \"application/vnd.oci.image.manifest.v1+json\",\n\t\t\t\"config\": {\n\t\t\t\t\"mediaType\": \"application/vnd.oci.image.config.v1+json\",\n\t\t\t\t\"digest\": \"sha256:ea5b3b2fa3e90748724861d2037b70bf9ed759e07751dd6786f77789bf562868\",\n\t\t\t\t\"size\": 8719\n\t\t\t},\n\t\t\t\"layers\": [\n\t\t\t\t{\n\t\t\t\t\t\"mediaType\": \"application/vnd.oci.image.layer.v1.tar+gzip\",\n\t\t\t\t\t\"digest\": \"sha256:302e3ee498053a7b5332ac79e8efebec16e900289fc1ecd1c754ce8fa047fcab\",\n\t\t\t\t\t\"size\": 29126276\n\t\t\t\t},\n\t\t\t\t{\n\t\t\t\t\t\"mediaType\": \"application/vnd.oci.image.layer.v1.tar+gzip\",\n\t\t\t\t\t\"digest\": \"sha256:09ff4a7b3867903278c187f6987bdab05f9cc5952b22303ceac62f92cc825c43\",\n\t\t\t\t\t\"size\": 1101\n\t\t\t\t},\n\t\t\t\t{\n\t\t\t\t\t\"mediaType\": \"application/vnd.oci.image.layer.v1.tar+gzip\",\n\t\t\t\t\t\"digest\": \"sha256:5d42812bc8baaffa7441cfcd1cd9cb78fc12422f46efba6681ae97c1597c911a\",\n\t\t\t\t\t\"size\": 874\n\t\t\t\t},\n\t\t\t\t{\n\t\t\t\t\t\"mediaType\": \"application/vnd.oci.image.layer.v1.tar+gzip\",\n\t\t\t\t\t\"digest\": \"sha256:79d14998193fbaa571c9019e6464da0ace3849f7bd15caf8bab42e35bc59936c\",\n\t\t\t\t\t\"size\": 1437813\n\t\t\t\t},\n\t\t\t\t{\n\t\t\t\t\t\"mediaType\": \"application/vnd.oci.image.layer.v1.tar+gzip\",\n\t\t\t\t\t\"digest\": \"sha256:a6687c1672c9578f673330caf0d7fd1d010e503058d65b81db173080ef11b879\",\n\t\t\t\t\t\"size\": 14914713\n\t\t\t\t},\n\t\t\t\t{\n\t\t\t\t\t\"mediaType\": \"application/vnd.oci.image.layer.v1.tar+gzip\",\n\t\t\t\t\t\"digest\": \"sha256:861f35ae8de63e6b6daa16fe35a1d84d4e3228ca8b5be8f1ef0931bc72733c46\",\n\t\t\t\t\t\"size\": 96\n\t\t\t\t},\n\t\t\t\t{\n\t\t\t\t\t\"mediaType\": \"application/vnd.oci.image.layer.v1.tar+gzip\",\n\t\t\t\t\t\"digest\": \"sha256:4f4fb700ef54461cfa02571ae0db9a0dc1e0cdb5577484a6d75e68dc38e8acc1\",\n\t\t\t\t\t\"size\": 32\n\t\t\t\t},\n\t\t\t\t{\n\t\t\t\t\t\"mediaType\": \"application/vnd.oci.image.layer.v1.tar+gzip\",\n\t\t\t\t\t\"digest\": \"sha256:ede2affd21c475e59b75ca2df7965be03108641946e8f535368bb281a655bd8b\",\n\t\t\t\t\t\"size\": 570\n\t\t\t\t}\n\t\t\t],\n\t\t\t\"annotations\": {\n\t\t\t\t\"com.docker.official-images.bashbrew.arch\": \"amd64\",\n\t\t\t\t\"org.opencontainers.image.base.digest\": \"sha256:7095ea629c4563714b9655137db2eacd456eb3eea0eb8a2b0a4a6b0b187220a9\",\n\t\t\t\t\"org.opencontainers.image.base.name\": \"debian:bookworm-slim\",\n\t\t\t\t\"org.opencontainers.image.created\": \"2024-05-22T23:17:59Z\",\n\t\t\t\t\"org.opencontainers.image.revision\": \"5f08363e6d64b97a0c2e651f4bdcec6e71a32ab4\",\n\t\t\t\t\"org.opencontainers.image.source\": \"https://github.com/redis/docker-library-redis.git#5f08363e6d64b97a0c2e651f4bdcec6e71a32ab4:7.2/debian\",\n\t\t\t\t\"org.opencontainers.image.url\": \"https://hub.docker.com/_/redis\",\n\t\t\t\t\"org.opencontainers.image.version\": \"7.2.5\"\n\t\t\t}\n\t\t}\n\t},\n\t{\n\t\t\"Ref\": \"docker.io/library/redis@sha256:49d72e8287441221d37e3c5432375e5231703fd59d8638c28b866c0e5d394412\",\n\t\t\"Descriptor\": {\n\t\t\t\"mediaType\": \"application/vnd.oci.image.manifest.v1+json\",\n\t\t\t\"digest\": \"sha256:49d72e8287441221d37e3c5432375e5231703fd59d8638c28b866c0e5d394412\",\n\t\t\t\"size\": 841,\n\t\t\t\"platform\": {\n\t\t\t\t\"architecture\": \"unknown\",\n\t\t\t\t\"os\": \"unknown\"\n\t\t\t}\n\t\t},\n\t\t\"Raw\": \"ewogICJzY2hlbWFWZXJzaW9uIjogMiwKICAibWVkaWFUeXBlIjogImFwcGxpY2F0aW9uL3ZuZC5vY2kuaW1hZ2UubWFuaWZlc3QudjEranNvbiIsCiAgImNvbmZpZyI6IHsKICAgICJtZWRpYVR5cGUiOiAiYXBwbGljYXRpb24vdm5kLm9jaS5pbWFnZS5jb25maWcudjEranNvbiIsCiAgICAiZGlnZXN0IjogInNoYTI1NjoyM2E5NmMyZjdlMTQ3Y2FjNGI3MmI3OGE2YzFhM2FlMDY2MDYzYzM0ZDAyMTQyOWVkYzQ2OTRlZTA5YzM1MTY0IiwKICAgICJzaXplIjogMjQxCiAgfSwKICAibGF5ZXJzIjogWwogICAgewogICAgICAibWVkaWFUeXBlIjogImFwcGxpY2F0aW9uL3ZuZC5pbi10b3RvK2pzb24iLAogICAgICAiZGlnZXN0IjogInNoYTI1NjowMDY5NTg1YjU3YjY5MjlhNzNhZGFhYTc5ZTliMTAwYmRmYjJiYmY3OWVmYmZhNTk1ZGMxZmEyZWFkNWRmOGZjIiwKICAgICAgInNpemUiOiAyMjU2MzM2LAogICAgICAiYW5ub3RhdGlvbnMiOiB7CiAgICAgICAgImluLXRvdG8uaW8vcHJlZGljYXRlLXR5cGUiOiAiaHR0cHM6Ly9zcGR4LmRldi9Eb2N1bWVudCIKICAgICAgfQogICAgfSwKICAgIHsKICAgICAgIm1lZGlhVHlwZSI6ICJhcHBsaWNhdGlvbi92bmQuaW4tdG90bytqc29uIiwKICAgICAgImRpZ2VzdCI6ICJzaGEyNTY6NzI2YTliZTJmN2E5NTk5NmFmZWQxYjE0MDNjOTk3ZjQ5Y2JlY2VjMmNmYTc3NzBjNjhlMzNiMWEwYzdkMGI3YSIsCiAgICAgICJzaXplIjogMzQ5ODIsCiAgICAgICJhbm5vdGF0aW9ucyI6IHsKICAgICAgICAiaW4tdG90by5pby9wcmVkaWNhdGUtdHlwZSI6ICJodHRwczovL3Nsc2EuZGV2L3Byb3ZlbmFuY2UvdjAuMiIKICAgICAgfQogICAgfQogIF0KfQ==\",\n\t\t\"OCIManifest\": {\n\t\t\t\"schemaVersion\": 2,\n\t\t\t\"mediaType\": \"application/vnd.oci.image.manifest.v1+json\",\n\t\t\t\"config\": {\n\t\t\t\t\"mediaType\": \"application/vnd.oci.image.config.v1+json\",\n\t\t\t\t\"digest\": \"sha256:23a96c2f7e147cac4b72b78a6c1a3ae066063c34d021429edc4694ee09c35164\",\n\t\t\t\t\"size\": 241\n\t\t\t},\n\t\t\t\"layers\": [\n\t\t\t\t{\n\t\t\t\t\t\"mediaType\": \"application/vnd.in-toto+json\",\n\t\t\t\t\t\"digest\": \"sha256:0069585b57b6929a73adaaa79e9b100bdfb2bbf79efbfa595dc1fa2ead5df8fc\",\n\t\t\t\t\t\"size\": 2256336,\n\t\t\t\t\t\"annotations\": {\n\t\t\t\t\t\t\"in-toto.io/predicate-type\": \"https://spdx.dev/Document\"\n\t\t\t\t\t}\n\t\t\t\t},\n\t\t\t\t{\n\t\t\t\t\t\"mediaType\": \"application/vnd.in-toto+json\",\n\t\t\t\t\t\"digest\": \"sha256:726a9be2f7a95996afed1b1403c997f49cbecec2cfa7770c68e33b1a0c7d0b7a\",\n\t\t\t\t\t\"size\": 34982,\n\t\t\t\t\t\"annotations\": {\n\t\t\t\t\t\t\"in-toto.io/predicate-type\": \"https://slsa.dev/provenance/v0.2\"\n\t\t\t\t\t}\n\t\t\t\t}\n\t\t\t]\n\t\t}\n\t},\n\t{\n\t\t\"Ref\": \"docker.io/library/redis@sha256:618b341282031a1c10b9e35ce91d6b6fa05da08dc23daf15ef3474ed020cafff\",\n\t\t\"Descriptor\": {\n\t\t\t\"mediaType\": \"application/vnd.oci.image.manifest.v1+json\",\n\t\t\t\"digest\": \"sha256:618b341282031a1c10b9e35ce91d6b6fa05da08dc23daf15ef3474ed020cafff\",\n\t\t\t\"size\": 2485,\n\t\t\t\"platform\": {\n\t\t\t\t\"architecture\": \"arm\",\n\t\t\t\t\"os\": \"linux\",\n\t\t\t\t\"variant\": \"v5\"\n\t\t\t}\n\t\t},\n\t\t\"Raw\": \"ewogICJzY2hlbWFWZXJzaW9uIjogMiwKICAibWVkaWFUeXBlIjogImFwcGxpY2F0aW9uL3ZuZC5vY2kuaW1hZ2UubWFuaWZlc3QudjEranNvbiIsCiAgImNvbmZpZyI6IHsKICAgICJtZWRpYVR5cGUiOiAiYXBwbGljYXRpb24vdm5kLm9jaS5pbWFnZS5jb25maWcudjEranNvbiIsCiAgICAiZGlnZXN0IjogInNoYTI1Njo0MTNjZmU2Y2JjNzRiMjk0YmZmMGIzODNlODkyM2E0NzliYjFkYTczNGQ2YmYzMGU2Yjc5N2ZjYWI4MzQzMTcwIiwKICAgICJzaXplIjogODczMgogIH0sCiAgImxheWVycyI6IFsKICAgIHsKICAgICAgIm1lZGlhVHlwZSI6ICJhcHBsaWNhdGlvbi92bmQub2NpLmltYWdlLmxheWVyLnYxLnRhcitnemlwIiwKICAgICAgImRpZ2VzdCI6ICJzaGEyNTY6NzVhMjBjNDRlOGJlY2QxNDFiYTU4NmVhNDEzYTE2NDkyNTE0MzdhMjA3NTAyZDRmOGFkMjNkMjA4ZjAxM2U2MCIsCiAgICAgICJzaXplIjogMjY4ODczMDIKICAgIH0sCiAgICB7CiAgICAgICJtZWRpYVR5cGUiOiAiYXBwbGljYXRpb24vdm5kLm9jaS5pbWFnZS5sYXllci52MS50YXIrZ3ppcCIsCiAgICAgICJkaWdlc3QiOiAic2hhMjU2OjAzY2IzZWJjODFiOTRiZDViYjUyZTNlNzg1NmRhNzZmNTQ5NzY0OTAzN2Q2MWI3YjQzN2Y1OWVjZjJkMmVlZTUiLAogICAgICAic2l6ZSI6IDExMDEKICAgIH0sCiAgICB7CiAgICAgICJtZWRpYVR5cGUiOiAiYXBwbGljYXRpb24vdm5kLm9jaS5pbWFnZS5sYXllci52MS50YXIrZ3ppcCIsCiAgICAgICJkaWdlc3QiOiAic2hhMjU2OjlhNTJlZTlhNGJlZjYwMjllNTFkOTgzMWVkOGZjODEyOGYxNjZjOTMyMjgxZDFlOTNiNTA5NDFhYmQzYmQ4MGYiLAogICAgICAic2l6ZSI6IDg3MwogICAgfSwKICAgIHsKICAgICAgIm1lZGlhVHlwZSI6ICJhcHBsaWNhdGlvbi92bmQub2NpLmltYWdlLmxheWVyLnYxLnRhcitnemlwIiwKICAgICAgImRpZ2VzdCI6ICJzaGEyNTY6NWUxMjYwZTI5ZTNhMTk4YmM4YmI5YTJhNzM4ZWYxZTY1ZGJkODk1OGFlZWNkMmMxODhmNGIyMDMyMGE1MzYzNSIsCiAgICAgICJzaXplIjogMTQxNDI1MAogICAgfSwKICAgIHsKICAgICAgIm1lZGlhVHlwZSI6ICJhcHBsaWNhdGlvbi92bmQub2NpLmltYWdlLmxheWVyLnYxLnRhcitnemlwIiwKICAgICAgImRpZ2VzdCI6ICJzaGEyNTY6ZGExNDUxYmQ3NjgyZDYzNDVhZjhkNmY2NGEyNjg2Y2M2MDVkOTdkYmYzOThiOWM1OGJjNTNkNDYwNTg2ODc1NiIsCiAgICAgICJzaXplIjogMTQ1NzczMTAKICAgIH0sCiAgICB7CiAgICAgICJtZWRpYVR5cGUiOiAiYXBwbGljYXRpb24vdm5kLm9jaS5pbWFnZS5sYXllci52MS50YXIrZ3ppcCIsCiAgICAgICJkaWdlc3QiOiAic2hhMjU2OmEzOTk1MmUyYmI2NjlmOTYyYWZiMmE0Y2YyOTM4MzI3NWY1ZDkxZDM0Mzc5YTFhOGQ2Y2JlYzY0MGMxNjA2ZGYiLAogICAgICAic2l6ZSI6IDk1CiAgICB9LAogICAgewogICAgICAibWVkaWFUeXBlIjogImFwcGxpY2F0aW9uL3ZuZC5vY2kuaW1hZ2UubGF5ZXIudjEudGFyK2d6aXAiLAogICAgICAiZGlnZXN0IjogInNoYTI1Njo0ZjRmYjcwMGVmNTQ0NjFjZmEwMjU3MWFlMGRiOWEwZGMxZTBjZGI1NTc3NDg0YTZkNzVlNjhkYzM4ZThhY2MxIiwKICAgICAgInNpemUiOiAzMgogICAgfSwKICAgIHsKICAgICAgIm1lZGlhVHlwZSI6ICJhcHBsaWNhdGlvbi92bmQub2NpLmltYWdlLmxheWVyLnYxLnRhcitnemlwIiwKICAgICAgImRpZ2VzdCI6ICJzaGEyNTY6NDAxOWYwZTZjZjgxY2NkMmE4MzE1M2YyYTZmOWYyODdmMTI2ZDFkZTdlNGUzNjg5YzBiODA4MDIzMzhhM2Y2MCIsCiAgICAgICJzaXplIjogNTczCiAgICB9CiAgXSwKICAiYW5ub3RhdGlvbnMiOiB7CiAgICAiY29tLmRvY2tlci5vZmZpY2lhbC1pbWFnZXMuYmFzaGJyZXcuYXJjaCI6ICJhcm0zMnY1IiwKICAgICJvcmcub3BlbmNvbnRhaW5lcnMuaW1hZ2UuYmFzZS5kaWdlc3QiOiAic2hhMjU2Ojc1NTFkNTJkYWEzNzhiOWM1NzYzMjFlNzJkZjU3YmE2NGZmZTJlMDVkZWVkOWY0MDg2YWYyOGQ3ZDBmOGE3MWMiLAogICAgIm9yZy5vcGVuY29udGFpbmVycy5pbWFnZS5iYXNlLm5hbWUiOiAiZGViaWFuOmJvb2t3b3JtLXNsaW0iLAogICAgIm9yZy5vcGVuY29udGFpbmVycy5pbWFnZS5jcmVhdGVkIjogIjIwMjQtMDUtMjJUMjM6MTc6NTlaIiwKICAgICJvcmcub3BlbmNvbnRhaW5lcnMuaW1hZ2UucmV2aXNpb24iOiAiNWYwODM2M2U2ZDY0Yjk3YTBjMmU2NTFmNGJkY2VjNmU3MWEzMmFiNCIsCiAgICAib3JnLm9wZW5jb250YWluZXJzLmltYWdlLnNvdXJjZSI6ICJodHRwczovL2dpdGh1Yi5jb20vcmVkaXMvZG9ja2VyLWxpYnJhcnktcmVkaXMuZ2l0IzVmMDgzNjNlNmQ2NGI5N2EwYzJlNjUxZjRiZGNlYzZlNzFhMzJhYjQ6Ny4yL2RlYmlhbiIsCiAgICAib3JnLm9wZW5jb250YWluZXJzLmltYWdlLnVybCI6ICJodHRwczovL2h1Yi5kb2NrZXIuY29tL18vcmVkaXMiLAogICAgIm9yZy5vcGVuY29udGFpbmVycy5pbWFnZS52ZXJzaW9uIjogIjcuMi41IgogIH0KfQ==\",\n\t\t\"OCIManifest\": {\n\t\t\t\"schemaVersion\": 2,\n\t\t\t\"mediaType\": \"application/vnd.oci.image.manifest.v1+json\",\n\t\t\t\"config\": {\n\t\t\t\t\"mediaType\": \"application/vnd.oci.image.config.v1+json\",\n\t\t\t\t\"digest\": \"sha256:413cfe6cbc74b294bff0b383e8923a479bb1da734d6bf30e6b797fcab8343170\",\n\t\t\t\t\"size\": 8732\n\t\t\t},\n\t\t\t\"layers\": [\n\t\t\t\t{\n\t\t\t\t\t\"mediaType\": \"application/vnd.oci.image.layer.v1.tar+gzip\",\n\t\t\t\t\t\"digest\": \"sha256:75a20c44e8becd141ba586ea413a1649251437a207502d4f8ad23d208f013e60\",\n\t\t\t\t\t\"size\": 26887302\n\t\t\t\t},\n\t\t\t\t{\n\t\t\t\t\t\"mediaType\": \"application/vnd.oci.image.layer.v1.tar+gzip\",\n\t\t\t\t\t\"digest\": \"sha256:03cb3ebc81b94bd5bb52e3e7856da76f5497649037d61b7b437f59ecf2d2eee5\",\n\t\t\t\t\t\"size\": 1101\n\t\t\t\t},\n\t\t\t\t{\n\t\t\t\t\t\"mediaType\": \"application/vnd.oci.image.layer.v1.tar+gzip\",\n\t\t\t\t\t\"digest\": \"sha256:9a52ee9a4bef6029e51d9831ed8fc8128f166c932281d1e93b50941abd3bd80f\",\n\t\t\t\t\t\"size\": 873\n\t\t\t\t},\n\t\t\t\t{\n\t\t\t\t\t\"mediaType\": \"application/vnd.oci.image.layer.v1.tar+gzip\",\n\t\t\t\t\t\"digest\": \"sha256:5e1260e29e3a198bc8bb9a2a738ef1e65dbd8958aeecd2c188f4b20320a53635\",\n\t\t\t\t\t\"size\": 1414250\n\t\t\t\t},\n\t\t\t\t{\n\t\t\t\t\t\"mediaType\": \"application/vnd.oci.image.layer.v1.tar+gzip\",\n\t\t\t\t\t\"digest\": \"sha256:da1451bd7682d6345af8d6f64a2686cc605d97dbf398b9c58bc53d4605868756\",\n\t\t\t\t\t\"size\": 14577310\n\t\t\t\t},\n\t\t\t\t{\n\t\t\t\t\t\"mediaType\": \"application/vnd.oci.image.layer.v1.tar+gzip\",\n\t\t\t\t\t\"digest\": \"sha256:a39952e2bb669f962afb2a4cf29383275f5d91d34379a1a8d6cbec640c1606df\",\n\t\t\t\t\t\"size\": 95\n\t\t\t\t},\n\t\t\t\t{\n\t\t\t\t\t\"mediaType\": \"application/vnd.oci.image.layer.v1.tar+gzip\",\n\t\t\t\t\t\"digest\": \"sha256:4f4fb700ef54461cfa02571ae0db9a0dc1e0cdb5577484a6d75e68dc38e8acc1\",\n\t\t\t\t\t\"size\": 32\n\t\t\t\t},\n\t\t\t\t{\n\t\t\t\t\t\"mediaType\": \"application/vnd.oci.image.layer.v1.tar+gzip\",\n\t\t\t\t\t\"digest\": \"sha256:4019f0e6cf81ccd2a83153f2a6f9f287f126d1de7e4e3689c0b80802338a3f60\",\n\t\t\t\t\t\"size\": 573\n\t\t\t\t}\n\t\t\t],\n\t\t\t\"annotations\": {\n\t\t\t\t\"com.docker.official-images.bashbrew.arch\": \"arm32v5\",\n\t\t\t\t\"org.opencontainers.image.base.digest\": \"sha256:7551d52daa378b9c576321e72df57ba64ffe2e05deed9f4086af28d7d0f8a71c\",\n\t\t\t\t\"org.opencontainers.image.base.name\": \"debian:bookworm-slim\",\n\t\t\t\t\"org.opencontainers.image.created\": \"2024-05-22T23:17:59Z\",\n\t\t\t\t\"org.opencontainers.image.revision\": \"5f08363e6d64b97a0c2e651f4bdcec6e71a32ab4\",\n\t\t\t\t\"org.opencontainers.image.source\": \"https://github.com/redis/docker-library-redis.git#5f08363e6d64b97a0c2e651f4bdcec6e71a32ab4:7.2/debian\",\n\t\t\t\t\"org.opencontainers.image.url\": \"https://hub.docker.com/_/redis\",\n\t\t\t\t\"org.opencontainers.image.version\": \"7.2.5\"\n\t\t\t}\n\t\t}\n\t},\n\t{\n\t\t\"Ref\": \"docker.io/library/redis@sha256:77fe7a9d0c278671a471c44cd7cdde2f50af1d4f13a33b0ebcad6f5ac0c4e1bb\",\n\t\t\"Descriptor\": {\n\t\t\t\"mediaType\": \"application/vnd.oci.image.manifest.v1+json\",\n\t\t\t\"digest\": \"sha256:77fe7a9d0c278671a471c44cd7cdde2f50af1d4f13a33b0ebcad6f5ac0c4e1bb\",\n\t\t\t\"size\": 841,\n\t\t\t\"platform\": {\n\t\t\t\t\"architecture\": \"unknown\",\n\t\t\t\t\"os\": \"unknown\"\n\t\t\t}\n\t\t},\n\t\t\"Raw\": \"ewogICJzY2hlbWFWZXJzaW9uIjogMiwKICAibWVkaWFUeXBlIjogImFwcGxpY2F0aW9uL3ZuZC5vY2kuaW1hZ2UubWFuaWZlc3QudjEranNvbiIsCiAgImNvbmZpZyI6IHsKICAgICJtZWRpYVR5cGUiOiAiYXBwbGljYXRpb24vdm5kLm9jaS5pbWFnZS5jb25maWcudjEranNvbiIsCiAgICAiZGlnZXN0IjogInNoYTI1NjpiMmJiMjVkYTE0Yzg1MjhiNWMzYmI3M2E1MDYyYzFmYTg4ZjVhY2IyODg4NjgyZTE2Nzg0NjdkM2QzOWI5ODdlIiwKICAgICJzaXplIjogMjQxCiAgfSwKICAibGF5ZXJzIjogWwogICAgewogICAgICAibWVkaWFUeXBlIjogImFwcGxpY2F0aW9uL3ZuZC5pbi10b3RvK2pzb24iLAogICAgICAiZGlnZXN0IjogInNoYTI1NjphZjRjN2UxNmE4N2U2NGY4NGYzZDk0OTY2NjA0ZTE1N2Y2NWFiMWI0MWQ3Njk3NjJiNzY0YmQ0NzZiMGNkNTc2IiwKICAgICAgInNpemUiOiAyMjU4NjM4LAogICAgICAiYW5ub3RhdGlvbnMiOiB7CiAgICAgICAgImluLXRvdG8uaW8vcHJlZGljYXRlLXR5cGUiOiAiaHR0cHM6Ly9zcGR4LmRldi9Eb2N1bWVudCIKICAgICAgfQogICAgfSwKICAgIHsKICAgICAgIm1lZGlhVHlwZSI6ICJhcHBsaWNhdGlvbi92bmQuaW4tdG90bytqc29uIiwKICAgICAgImRpZ2VzdCI6ICJzaGEyNTY6NGUzMGY5NTFmODcwNDRiZWVlMTY5N2UwZDU1NjBiMWZjYTEyMjk2OWM4MmY3Yjc0ZWI5ZjRiNjI2NjQ0YTg3NCIsCiAgICAgICJzaXplIjogMzUxMDQsCiAgICAgICJhbm5vdGF0aW9ucyI6IHsKICAgICAgICAiaW4tdG90by5pby9wcmVkaWNhdGUtdHlwZSI6ICJodHRwczovL3Nsc2EuZGV2L3Byb3ZlbmFuY2UvdjAuMiIKICAgICAgfQogICAgfQogIF0KfQ==\",\n\t\t\"OCIManifest\": {\n\t\t\t\"schemaVersion\": 2,\n\t\t\t\"mediaType\": \"application/vnd.oci.image.manifest.v1+json\",\n\t\t\t\"config\": {\n\t\t\t\t\"mediaType\": \"application/vnd.oci.image.config.v1+json\",\n\t\t\t\t\"digest\": \"sha256:b2bb25da14c8528b5c3bb73a5062c1fa88f5acb2888682e1678467d3d39b987e\",\n\t\t\t\t\"size\": 241\n\t\t\t},\n\t\t\t\"layers\": [\n\t\t\t\t{\n\t\t\t\t\t\"mediaType\": \"application/vnd.in-toto+json\",\n\t\t\t\t\t\"digest\": \"sha256:af4c7e16a87e64f84f3d94966604e157f65ab1b41d769762b764bd476b0cd576\",\n\t\t\t\t\t\"size\": 2258638,\n\t\t\t\t\t\"annotations\": {\n\t\t\t\t\t\t\"in-toto.io/predicate-type\": \"https://spdx.dev/Document\"\n\t\t\t\t\t}\n\t\t\t\t},\n\t\t\t\t{\n\t\t\t\t\t\"mediaType\": \"application/vnd.in-toto+json\",\n\t\t\t\t\t\"digest\": \"sha256:4e30f951f87044beee1697e0d5560b1fca122969c82f7b74eb9f4b626644a874\",\n\t\t\t\t\t\"size\": 35104,\n\t\t\t\t\t\"annotations\": {\n\t\t\t\t\t\t\"in-toto.io/predicate-type\": \"https://slsa.dev/provenance/v0.2\"\n\t\t\t\t\t}\n\t\t\t\t}\n\t\t\t]\n\t\t}\n\t},\n\t{\n\t\t\"Ref\": \"docker.io/library/redis@sha256:ba13ac2b4e0939869d8bd7161136019a1e98c489020406cca494658321aa2fed\",\n\t\t\"Descriptor\": {\n\t\t\t\"mediaType\": \"application/vnd.oci.image.manifest.v1+json\",\n\t\t\t\"digest\": \"sha256:ba13ac2b4e0939869d8bd7161136019a1e98c489020406cca494658321aa2fed\",\n\t\t\t\"size\": 2485,\n\t\t\t\"platform\": {\n\t\t\t\t\"architecture\": \"arm\",\n\t\t\t\t\"os\": \"linux\",\n\t\t\t\t\"variant\": \"v7\"\n\t\t\t}\n\t\t},\n\t\t\"Raw\": \"ewogICJzY2hlbWFWZXJzaW9uIjogMiwKICAibWVkaWFUeXBlIjogImFwcGxpY2F0aW9uL3ZuZC5vY2kuaW1hZ2UubWFuaWZlc3QudjEranNvbiIsCiAgImNvbmZpZyI6IHsKICAgICJtZWRpYVR5cGUiOiAiYXBwbGljYXRpb24vdm5kLm9jaS5pbWFnZS5jb25maWcudjEranNvbiIsCiAgICAiZGlnZXN0IjogInNoYTI1Njo4ZmVhMjhkMjMyNjZlNTM2NTg2MTNlYWE0OGM4ZjE2NmM0NjQwNDlkZjc4M2FlNTA1MDVlMzZlMjg0MjhiNTdhIiwKICAgICJzaXplIjogODczMgogIH0sCiAgImxheWVycyI6IFsKICAgIHsKICAgICAgIm1lZGlhVHlwZSI6ICJhcHBsaWNhdGlvbi92bmQub2NpLmltYWdlLmxheWVyLnYxLnRhcitnemlwIiwKICAgICAgImRpZ2VzdCI6ICJzaGEyNTY6MjEzNjQ5OTE4NWJhOTAyM2M2ZGIxMWJiYzgzNmI2YzQyOGRhNzk2OWFhN2RiM2NjYWFjNTc2YTEwMDUyYzljZSIsCiAgICAgICJzaXplIjogMjQ3MTgxNDUKICAgIH0sCiAgICB7CiAgICAgICJtZWRpYVR5cGUiOiAiYXBwbGljYXRpb24vdm5kLm9jaS5pbWFnZS5sYXllci52MS50YXIrZ3ppcCIsCiAgICAgICJkaWdlc3QiOiAic2hhMjU2OjU5ZGJkYzNjOGNlNGFmYjFkZjZhODk1ODY0MWZlM2RkYzNkMmYyYmFkNGMyYmM1NDY5ODhhYmNiMTQyNjI2ZjciLAogICAgICAic2l6ZSI6IDExMDAKICAgIH0sCiAgICB7CiAgICAgICJtZWRpYVR5cGUiOiAiYXBwbGljYXRpb24vdm5kLm9jaS5pbWFnZS5sYXllci52MS50YXIrZ3ppcCIsCiAgICAgICJkaWdlc3QiOiAic2hhMjU2OjE4YmIwMzIwZWFjMmFiOGE4Y2I1OTI1Y2UyNzMwMzE1N2Y0NDVmOTA1N2M5MjM2NGZjMmYwZjJlMGYyYTE4MzgiLAogICAgICAic2l6ZSI6IDg3NAogICAgfSwKICAgIHsKICAgICAgIm1lZGlhVHlwZSI6ICJhcHBsaWNhdGlvbi92bmQub2NpLmltYWdlLmxheWVyLnYxLnRhcitnemlwIiwKICAgICAgImRpZ2VzdCI6ICJzaGEyNTY6MDE0ODUzZTc4MjkyOTI5ZjljYjkwMWZlYzkwY2RiN2M4ZWU3NDk3NTMwMjVhMjQyYTQxZTM2ZWNiNGM3MTg1YSIsCiAgICAgICJzaXplIjogMTQwNTM2NQogICAgfSwKICAgIHsKICAgICAgIm1lZGlhVHlwZSI6ICJhcHBsaWNhdGlvbi92bmQub2NpLmltYWdlLmxheWVyLnYxLnRhcitnemlwIiwKICAgICAgImRpZ2VzdCI6ICJzaGEyNTY6Y2E5MDMyNTM0MDEzZTU4NjNhMWM5ODM2YzEzODk4ZTczNjA1YTE1ZGM3ZWIwMjgzY2Y3NDg0ZjBmNWM1MzI4YSIsCiAgICAgICJzaXplIjogMTQyNDI3ODIKICAgIH0sCiAgICB7CiAgICAgICJtZWRpYVR5cGUiOiAiYXBwbGljYXRpb24vdm5kLm9jaS5pbWFnZS5sYXllci52MS50YXIrZ3ppcCIsCiAgICAgICJkaWdlc3QiOiAic2hhMjU2OmEwNWViMDIwMTE1OTkzMTBlNGJkM2FmNmJiYTUyYmZlZjVlYTg4ZDYzMzFmMjRmYTFiNWQwMzQ1ZDNhYThiNmUiLAogICAgICAic2l6ZSI6IDk2CiAgICB9LAogICAgewogICAgICAibWVkaWFUeXBlIjogImFwcGxpY2F0aW9uL3ZuZC5vY2kuaW1hZ2UubGF5ZXIudjEudGFyK2d6aXAiLAogICAgICAiZGlnZXN0IjogInNoYTI1Njo0ZjRmYjcwMGVmNTQ0NjFjZmEwMjU3MWFlMGRiOWEwZGMxZTBjZGI1NTc3NDg0YTZkNzVlNjhkYzM4ZThhY2MxIiwKICAgICAgInNpemUiOiAzMgogICAgfSwKICAgIHsKICAgICAgIm1lZGlhVHlwZSI6ICJhcHBsaWNhdGlvbi92bmQub2NpLmltYWdlLmxheWVyLnYxLnRhcitnemlwIiwKICAgICAgImRpZ2VzdCI6ICJzaGEyNTY6MGI4ODg4MThiMTFiYjU0MzRlZWU0NzQ2YTAwYTIzZTVhOTkyYzBhNzA5NGFiOTQwNmExNWRhNmYwZmIzMTBkMiIsCiAgICAgICJzaXplIjogNTcyCiAgICB9CiAgXSwKICAiYW5ub3RhdGlvbnMiOiB7CiAgICAiY29tLmRvY2tlci5vZmZpY2lhbC1pbWFnZXMuYmFzaGJyZXcuYXJjaCI6ICJhcm0zMnY3IiwKICAgICJvcmcub3BlbmNvbnRhaW5lcnMuaW1hZ2UuYmFzZS5kaWdlc3QiOiAic2hhMjU2OjUxODVhZDdlMDEzYTVmOTdiOTU4NTEzYmMzYzkzYmE0YmFiMmEwNTMwMDQzNjU1YTM5MjY3MzU0OTkzN2NhNmMiLAogICAgIm9yZy5vcGVuY29udGFpbmVycy5pbWFnZS5iYXNlLm5hbWUiOiAiZGViaWFuOmJvb2t3b3JtLXNsaW0iLAogICAgIm9yZy5vcGVuY29udGFpbmVycy5pbWFnZS5jcmVhdGVkIjogIjIwMjQtMDUtMjJUMjM6MTc6NTlaIiwKICAgICJvcmcub3BlbmNvbnRhaW5lcnMuaW1hZ2UucmV2aXNpb24iOiAiNWYwODM2M2U2ZDY0Yjk3YTBjMmU2NTFmNGJkY2VjNmU3MWEzMmFiNCIsCiAgICAib3JnLm9wZW5jb250YWluZXJzLmltYWdlLnNvdXJjZSI6ICJodHRwczovL2dpdGh1Yi5jb20vcmVkaXMvZG9ja2VyLWxpYnJhcnktcmVkaXMuZ2l0IzVmMDgzNjNlNmQ2NGI5N2EwYzJlNjUxZjRiZGNlYzZlNzFhMzJhYjQ6Ny4yL2RlYmlhbiIsCiAgICAib3JnLm9wZW5jb250YWluZXJzLmltYWdlLnVybCI6ICJodHRwczovL2h1Yi5kb2NrZXIuY29tL18vcmVkaXMiLAogICAgIm9yZy5vcGVuY29udGFpbmVycy5pbWFnZS52ZXJzaW9uIjogIjcuMi41IgogIH0KfQ==\",\n\t\t\"OCIManifest\": {\n\t\t\t\"schemaVersion\": 2,\n\t\t\t\"mediaType\": \"application/vnd.oci.image.manifest.v1+json\",\n\t\t\t\"config\": {\n\t\t\t\t\"mediaType\": \"application/vnd.oci.image.config.v1+json\",\n\t\t\t\t\"digest\": \"sha256:8fea28d23266e53658613eaa48c8f166c464049df783ae50505e36e28428b57a\",\n\t\t\t\t\"size\": 8732\n\t\t\t},\n\t\t\t\"layers\": [\n\t\t\t\t{\n\t\t\t\t\t\"mediaType\": \"application/vnd.oci.image.layer.v1.tar+gzip\",\n\t\t\t\t\t\"digest\": \"sha256:2136499185ba9023c6db11bbc836b6c428da7969aa7db3ccaac576a10052c9ce\",\n\t\t\t\t\t\"size\": 24718145\n\t\t\t\t},\n\t\t\t\t{\n\t\t\t\t\t\"mediaType\": \"application/vnd.oci.image.layer.v1.tar+gzip\",\n\t\t\t\t\t\"digest\": \"sha256:59dbdc3c8ce4afb1df6a8958641fe3ddc3d2f2bad4c2bc546988abcb142626f7\",\n\t\t\t\t\t\"size\": 1100\n\t\t\t\t},\n\t\t\t\t{\n\t\t\t\t\t\"mediaType\": \"application/vnd.oci.image.layer.v1.tar+gzip\",\n\t\t\t\t\t\"digest\": \"sha256:18bb0320eac2ab8a8cb5925ce27303157f445f9057c92364fc2f0f2e0f2a1838\",\n\t\t\t\t\t\"size\": 874\n\t\t\t\t},\n\t\t\t\t{\n\t\t\t\t\t\"mediaType\": \"application/vnd.oci.image.layer.v1.tar+gzip\",\n\t\t\t\t\t\"digest\": \"sha256:014853e78292929f9cb901fec90cdb7c8ee749753025a242a41e36ecb4c7185a\",\n\t\t\t\t\t\"size\": 1405365\n\t\t\t\t},\n\t\t\t\t{\n\t\t\t\t\t\"mediaType\": \"application/vnd.oci.image.layer.v1.tar+gzip\",\n\t\t\t\t\t\"digest\": \"sha256:ca9032534013e5863a1c9836c13898e73605a15dc7eb0283cf7484f0f5c5328a\",\n\t\t\t\t\t\"size\": 14242782\n\t\t\t\t},\n\t\t\t\t{\n\t\t\t\t\t\"mediaType\": \"application/vnd.oci.image.layer.v1.tar+gzip\",\n\t\t\t\t\t\"digest\": \"sha256:a05eb02011599310e4bd3af6bba52bfef5ea88d6331f24fa1b5d0345d3aa8b6e\",\n\t\t\t\t\t\"size\": 96\n\t\t\t\t},\n\t\t\t\t{\n\t\t\t\t\t\"mediaType\": \"application/vnd.oci.image.layer.v1.tar+gzip\",\n\t\t\t\t\t\"digest\": \"sha256:4f4fb700ef54461cfa02571ae0db9a0dc1e0cdb5577484a6d75e68dc38e8acc1\",\n\t\t\t\t\t\"size\": 32\n\t\t\t\t},\n\t\t\t\t{\n\t\t\t\t\t\"mediaType\": \"application/vnd.oci.image.layer.v1.tar+gzip\",\n\t\t\t\t\t\"digest\": \"sha256:0b888818b11bb5434eee4746a00a23e5a992c0a7094ab9406a15da6f0fb310d2\",\n\t\t\t\t\t\"size\": 572\n\t\t\t\t}\n\t\t\t],\n\t\t\t\"annotations\": {\n\t\t\t\t\"com.docker.official-images.bashbrew.arch\": \"arm32v7\",\n\t\t\t\t\"org.opencontainers.image.base.digest\": \"sha256:5185ad7e013a5f97b958513bc3c93ba4bab2a0530043655a392673549937ca6c\",\n\t\t\t\t\"org.opencontainers.image.base.name\": \"debian:bookworm-slim\",\n\t\t\t\t\"org.opencontainers.image.created\": \"2024-05-22T23:17:59Z\",\n\t\t\t\t\"org.opencontainers.image.revision\": \"5f08363e6d64b97a0c2e651f4bdcec6e71a32ab4\",\n\t\t\t\t\"org.opencontainers.image.source\": \"https://github.com/redis/docker-library-redis.git#5f08363e6d64b97a0c2e651f4bdcec6e71a32ab4:7.2/debian\",\n\t\t\t\t\"org.opencontainers.image.url\": \"https://hub.docker.com/_/redis\",\n\t\t\t\t\"org.opencontainers.image.version\": \"7.2.5\"\n\t\t\t}\n\t\t}\n\t},\n\t{\n\t\t\"Ref\": \"docker.io/library/redis@sha256:0c7f3aa19685d483b87629df789b0b81ea8c06099e8227df4396a41d34026f49\",\n\t\t\"Descriptor\": {\n\t\t\t\"mediaType\": \"application/vnd.oci.image.manifest.v1+json\",\n\t\t\t\"digest\": \"sha256:0c7f3aa19685d483b87629df789b0b81ea8c06099e8227df4396a41d34026f49\",\n\t\t\t\"size\": 841,\n\t\t\t\"platform\": {\n\t\t\t\t\"architecture\": \"unknown\",\n\t\t\t\t\"os\": \"unknown\"\n\t\t\t}\n\t\t},\n\t\t\"Raw\": \"ewogICJzY2hlbWFWZXJzaW9uIjogMiwKICAibWVkaWFUeXBlIjogImFwcGxpY2F0aW9uL3ZuZC5vY2kuaW1hZ2UubWFuaWZlc3QudjEranNvbiIsCiAgImNvbmZpZyI6IHsKICAgICJtZWRpYVR5cGUiOiAiYXBwbGljYXRpb24vdm5kLm9jaS5pbWFnZS5jb25maWcudjEranNvbiIsCiAgICAiZGlnZXN0IjogInNoYTI1Njo0Yjc3OGU1OTAzNDVhNzZhNjA1ZjQ3NTQ5YTRhMmUyOWU1NzAxMzZkYTBlOTIwNzA1NjcxODU0ZjUxNjNmNzkxIiwKICAgICJzaXplIjogMjQxCiAgfSwKICAibGF5ZXJzIjogWwogICAgewogICAgICAibWVkaWFUeXBlIjogImFwcGxpY2F0aW9uL3ZuZC5pbi10b3RvK2pzb24iLAogICAgICAiZGlnZXN0IjogInNoYTI1NjoyYmVkZmE3MjRmYzM2NWMzNDZhNWJlNjUzYzQ5NWQwYTI3M2E5NTJhYzk2NDNiMDAwNjkyYTE5Mzk5ZDhjMDBjIiwKICAgICAgInNpemUiOiAyMjU3NDY5LAogICAgICAiYW5ub3RhdGlvbnMiOiB7CiAgICAgICAgImluLXRvdG8uaW8vcHJlZGljYXRlLXR5cGUiOiAiaHR0cHM6Ly9zcGR4LmRldi9Eb2N1bWVudCIKICAgICAgfQogICAgfSwKICAgIHsKICAgICAgIm1lZGlhVHlwZSI6ICJhcHBsaWNhdGlvbi92bmQuaW4tdG90bytqc29uIiwKICAgICAgImRpZ2VzdCI6ICJzaGEyNTY6MTQyNDVmNGMwZWM3MGVkMzk2MDk0YWNjMDFhOTgzZmEyZGMxYTY0ZGQ2ZjA2MjM3ZjMxOTYyZjQ4ZmMxNTQ2OCIsCiAgICAgICJzaXplIjogMzUxMDQsCiAgICAgICJhbm5vdGF0aW9ucyI6IHsKICAgICAgICAiaW4tdG90by5pby9wcmVkaWNhdGUtdHlwZSI6ICJodHRwczovL3Nsc2EuZGV2L3Byb3ZlbmFuY2UvdjAuMiIKICAgICAgfQogICAgfQogIF0KfQ==\",\n\t\t\"OCIManifest\": {\n\t\t\t\"schemaVersion\": 2,\n\t\t\t\"mediaType\": \"application/vnd.oci.image.manifest.v1+json\",\n\t\t\t\"config\": {\n\t\t\t\t\"mediaType\": \"application/vnd.oci.image.config.v1+json\",\n\t\t\t\t\"digest\": \"sha256:4b778e590345a76a605f47549a4a2e29e570136da0e920705671854f5163f791\",\n\t\t\t\t\"size\": 241\n\t\t\t},\n\t\t\t\"layers\": [\n\t\t\t\t{\n\t\t\t\t\t\"mediaType\": \"application/vnd.in-toto+json\",\n\t\t\t\t\t\"digest\": \"sha256:2bedfa724fc365c346a5be653c495d0a273a952ac9643b000692a19399d8c00c\",\n\t\t\t\t\t\"size\": 2257469,\n\t\t\t\t\t\"annotations\": {\n\t\t\t\t\t\t\"in-toto.io/predicate-type\": \"https://spdx.dev/Document\"\n\t\t\t\t\t}\n\t\t\t\t},\n\t\t\t\t{\n\t\t\t\t\t\"mediaType\": \"application/vnd.in-toto+json\",\n\t\t\t\t\t\"digest\": \"sha256:14245f4c0ec70ed396094acc01a983fa2dc1a64dd6f06237f31962f48fc15468\",\n\t\t\t\t\t\"size\": 35104,\n\t\t\t\t\t\"annotations\": {\n\t\t\t\t\t\t\"in-toto.io/predicate-type\": \"https://slsa.dev/provenance/v0.2\"\n\t\t\t\t\t}\n\t\t\t\t}\n\t\t\t]\n\t\t}\n\t},\n\t{\n\t\t\"Ref\": \"docker.io/library/redis@sha256:48f4dde7f0231a8138727a73b32ecf65ac3c2138fdf3c654c5495eb368214a5b\",\n\t\t\"Descriptor\": {\n\t\t\t\"mediaType\": \"application/vnd.oci.image.manifest.v1+json\",\n\t\t\t\"digest\": \"sha256:48f4dde7f0231a8138727a73b32ecf65ac3c2138fdf3c654c5495eb368214a5b\",\n\t\t\t\"size\": 2485,\n\t\t\t\"platform\": {\n\t\t\t\t\"architecture\": \"arm64\",\n\t\t\t\t\"os\": \"linux\",\n\t\t\t\t\"variant\": \"v8\"\n\t\t\t}\n\t\t},\n\t\t\"Raw\": \"ewogICJzY2hlbWFWZXJzaW9uIjogMiwKICAibWVkaWFUeXBlIjogImFwcGxpY2F0aW9uL3ZuZC5vY2kuaW1hZ2UubWFuaWZlc3QudjEranNvbiIsCiAgImNvbmZpZyI6IHsKICAgICJtZWRpYVR5cGUiOiAiYXBwbGljYXRpb24vdm5kLm9jaS5pbWFnZS5jb25maWcudjEranNvbiIsCiAgICAiZGlnZXN0IjogInNoYTI1NjpkYTg5YzBjOGY5N2U5NGY4NDI5Y2M4YjFkNDBiZTU0NGE5NGY3MmE0MWFkMmM2NjVjYTFjOTRkMjcxYWQ0OTdiIiwKICAgICJzaXplIjogODcxOQogIH0sCiAgImxheWVycyI6IFsKICAgIHsKICAgICAgIm1lZGlhVHlwZSI6ICJhcHBsaWNhdGlvbi92bmQub2NpLmltYWdlLmxheWVyLnYxLnRhcitnemlwIiwKICAgICAgImRpZ2VzdCI6ICJzaGEyNTY6MTRjOWQ5ZDE5OTMyM2NiZjBhNGMyMzQ3YThhZjg1ZjI4NzVjMWYyYzI2YTE1NThmZDM0ZGZjYTdhMjZjZmYyMiIsCiAgICAgICJzaXplIjogMjkxNTYzNjkKICAgIH0sCiAgICB7CiAgICAgICJtZWRpYVR5cGUiOiAiYXBwbGljYXRpb24vdm5kLm9jaS5pbWFnZS5sYXllci52MS50YXIrZ3ppcCIsCiAgICAgICJkaWdlc3QiOiAic2hhMjU2OjA4NzM0NzI1OWRiNWRjNjBiNmQ3N2MzMjY2MTg2MTkzNmRhOTIzMTZlZTZiOTUwMjdjMGQ0MjE0Y2M2ZWE0MmEiLAogICAgICAic2l6ZSI6IDExMDAKICAgIH0sCiAgICB7CiAgICAgICJtZWRpYVR5cGUiOiAiYXBwbGljYXRpb24vdm5kLm9jaS5pbWFnZS5sYXllci52MS50YXIrZ3ppcCIsCiAgICAgICJkaWdlc3QiOiAic2hhMjU2OjZkOTViMjI5MmQxZmJhNzBjNGNlZjA2YTY4OTJlNWRkMzJhMjlmYmZmMzZhM2I2NzliNmFkMjYwMGM2YTAxMmMiLAogICAgICAic2l6ZSI6IDg3MAogICAgfSwKICAgIHsKICAgICAgIm1lZGlhVHlwZSI6ICJhcHBsaWNhdGlvbi92bmQub2NpLmltYWdlLmxheWVyLnYxLnRhcitnemlwIiwKICAgICAgImRpZ2VzdCI6ICJzaGEyNTY6YjIwMDYxNGRkMWM4ZWY2ZjRlMjg1MzJlZDZiMTJmM2E1ZTUzMmIxNjI3YzFkODk3OWMxOGU5ZTFjZTNmMTRhZCIsCiAgICAgICJzaXplIjogMTM2OTM2MwogICAgfSwKICAgIHsKICAgICAgIm1lZGlhVHlwZSI6ICJhcHBsaWNhdGlvbi92bmQub2NpLmltYWdlLmxheWVyLnYxLnRhcitnemlwIiwKICAgICAgImRpZ2VzdCI6ICJzaGEyNTY6YTJiMzdlZjE2ZjAwMGVkNzUyNWJkNTcyNjVkZmJmMjUzNzliMDhlMDIzN2FmYmM0NDcwNTc3MjA0OWNlZDliZSIsCiAgICAgICJzaXplIjogMTQ5MjA4OTEKICAgIH0sCiAgICB7CiAgICAgICJtZWRpYVR5cGUiOiAiYXBwbGljYXRpb24vdm5kLm9jaS5pbWFnZS5sYXllci52MS50YXIrZ3ppcCIsCiAgICAgICJkaWdlc3QiOiAic2hhMjU2OmI1NGNjM2NlOWQwNzA1YjBhMWY4Yjc2NzdjZWJhZDI4YmVjNGJkNWMyZDU1MTExN2JjZTc0ZGI0ZjMyMzQ1MzIiLAogICAgICAic2l6ZSI6IDk3CiAgICB9LAogICAgewogICAgICAibWVkaWFUeXBlIjogImFwcGxpY2F0aW9uL3ZuZC5vY2kuaW1hZ2UubGF5ZXIudjEudGFyK2d6aXAiLAogICAgICAiZGlnZXN0IjogInNoYTI1Njo0ZjRmYjcwMGVmNTQ0NjFjZmEwMjU3MWFlMGRiOWEwZGMxZTBjZGI1NTc3NDg0YTZkNzVlNjhkYzM4ZThhY2MxIiwKICAgICAgInNpemUiOiAzMgogICAgfSwKICAgIHsKICAgICAgIm1lZGlhVHlwZSI6ICJhcHBsaWNhdGlvbi92bmQub2NpLmltYWdlLmxheWVyLnYxLnRhcitnemlwIiwKICAgICAgImRpZ2VzdCI6ICJzaGEyNTY6NDg3YmQ5N2RiY2NjMmViMGI4Y2YwMmUwNzViM2RiOTJhZDBjMWNmNDUwY2UwODA2ZWRmMzNkOGZhYzcxYjViNyIsCiAgICAgICJzaXplIjogNTcxCiAgICB9CiAgXSwKICAiYW5ub3RhdGlvbnMiOiB7CiAgICAiY29tLmRvY2tlci5vZmZpY2lhbC1pbWFnZXMuYmFzaGJyZXcuYXJjaCI6ICJhcm02NHY4IiwKICAgICJvcmcub3BlbmNvbnRhaW5lcnMuaW1hZ2UuYmFzZS5kaWdlc3QiOiAic2hhMjU2OjkyM2UxNDg2MzMyYzVlNjM4MmI2NjZmNDY5M2QxNDIwODg3ODMzZjg4NmVlZjg1NTc4MDA2YjBjYTkwMmU1NTkiLAogICAgIm9yZy5vcGVuY29udGFpbmVycy5pbWFnZS5iYXNlLm5hbWUiOiAiZGViaWFuOmJvb2t3b3JtLXNsaW0iLAogICAgIm9yZy5vcGVuY29udGFpbmVycy5pbWFnZS5jcmVhdGVkIjogIjIwMjQtMDUtMjJUMjM6MTc6NTlaIiwKICAgICJvcmcub3BlbmNvbnRhaW5lcnMuaW1hZ2UucmV2aXNpb24iOiAiNWYwODM2M2U2ZDY0Yjk3YTBjMmU2NTFmNGJkY2VjNmU3MWEzMmFiNCIsCiAgICAib3JnLm9wZW5jb250YWluZXJzLmltYWdlLnNvdXJjZSI6ICJodHRwczovL2dpdGh1Yi5jb20vcmVkaXMvZG9ja2VyLWxpYnJhcnktcmVkaXMuZ2l0IzVmMDgzNjNlNmQ2NGI5N2EwYzJlNjUxZjRiZGNlYzZlNzFhMzJhYjQ6Ny4yL2RlYmlhbiIsCiAgICAib3JnLm9wZW5jb250YWluZXJzLmltYWdlLnVybCI6ICJodHRwczovL2h1Yi5kb2NrZXIuY29tL18vcmVkaXMiLAogICAgIm9yZy5vcGVuY29udGFpbmVycy5pbWFnZS52ZXJzaW9uIjogIjcuMi41IgogIH0KfQ==\",\n\t\t\"OCIManifest\": {\n\t\t\t\"schemaVersion\": 2,\n\t\t\t\"mediaType\": \"application/vnd.oci.image.manifest.v1+json\",\n\t\t\t\"config\": {\n\t\t\t\t\"mediaType\": \"application/vnd.oci.image.config.v1+json\",\n\t\t\t\t\"digest\": \"sha256:da89c0c8f97e94f8429cc8b1d40be544a94f72a41ad2c665ca1c94d271ad497b\",\n\t\t\t\t\"size\": 8719\n\t\t\t},\n\t\t\t\"layers\": [\n\t\t\t\t{\n\t\t\t\t\t\"mediaType\": \"application/vnd.oci.image.layer.v1.tar+gzip\",\n\t\t\t\t\t\"digest\": \"sha256:14c9d9d199323cbf0a4c2347a8af85f2875c1f2c26a1558fd34dfca7a26cff22\",\n\t\t\t\t\t\"size\": 29156369\n\t\t\t\t},\n\t\t\t\t{\n\t\t\t\t\t\"mediaType\": \"application/vnd.oci.image.layer.v1.tar+gzip\",\n\t\t\t\t\t\"digest\": \"sha256:087347259db5dc60b6d77c32661861936da92316ee6b95027c0d4214cc6ea42a\",\n\t\t\t\t\t\"size\": 1100\n\t\t\t\t},\n\t\t\t\t{\n\t\t\t\t\t\"mediaType\": \"application/vnd.oci.image.layer.v1.tar+gzip\",\n\t\t\t\t\t\"digest\": \"sha256:6d95b2292d1fba70c4cef06a6892e5dd32a29fbff36a3b679b6ad2600c6a012c\",\n\t\t\t\t\t\"size\": 870\n\t\t\t\t},\n\t\t\t\t{\n\t\t\t\t\t\"mediaType\": \"application/vnd.oci.image.layer.v1.tar+gzip\",\n\t\t\t\t\t\"digest\": \"sha256:b200614dd1c8ef6f4e28532ed6b12f3a5e532b1627c1d8979c18e9e1ce3f14ad\",\n\t\t\t\t\t\"size\": 1369363\n\t\t\t\t},\n\t\t\t\t{\n\t\t\t\t\t\"mediaType\": \"application/vnd.oci.image.layer.v1.tar+gzip\",\n\t\t\t\t\t\"digest\": \"sha256:a2b37ef16f000ed7525bd57265dfbf25379b08e0237afbc44705772049ced9be\",\n\t\t\t\t\t\"size\": 14920891\n\t\t\t\t},\n\t\t\t\t{\n\t\t\t\t\t\"mediaType\": \"application/vnd.oci.image.layer.v1.tar+gzip\",\n\t\t\t\t\t\"digest\": \"sha256:b54cc3ce9d0705b0a1f8b7677cebad28bec4bd5c2d551117bce74db4f3234532\",\n\t\t\t\t\t\"size\": 97\n\t\t\t\t},\n\t\t\t\t{\n\t\t\t\t\t\"mediaType\": \"application/vnd.oci.image.layer.v1.tar+gzip\",\n\t\t\t\t\t\"digest\": \"sha256:4f4fb700ef54461cfa02571ae0db9a0dc1e0cdb5577484a6d75e68dc38e8acc1\",\n\t\t\t\t\t\"size\": 32\n\t\t\t\t},\n\t\t\t\t{\n\t\t\t\t\t\"mediaType\": \"application/vnd.oci.image.layer.v1.tar+gzip\",\n\t\t\t\t\t\"digest\": \"sha256:487bd97dbccc2eb0b8cf02e075b3db92ad0c1cf450ce0806edf33d8fac71b5b7\",\n\t\t\t\t\t\"size\": 571\n\t\t\t\t}\n\t\t\t],\n\t\t\t\"annotations\": {\n\t\t\t\t\"com.docker.official-images.bashbrew.arch\": \"arm64v8\",\n\t\t\t\t\"org.opencontainers.image.base.digest\": \"sha256:923e1486332c5e6382b666f4693d1420887833f886eef85578006b0ca902e559\",\n\t\t\t\t\"org.opencontainers.image.base.name\": \"debian:bookworm-slim\",\n\t\t\t\t\"org.opencontainers.image.created\": \"2024-05-22T23:17:59Z\",\n\t\t\t\t\"org.opencontainers.image.revision\": \"5f08363e6d64b97a0c2e651f4bdcec6e71a32ab4\",\n\t\t\t\t\"org.opencontainers.image.source\": \"https://github.com/redis/docker-library-redis.git#5f08363e6d64b97a0c2e651f4bdcec6e71a32ab4:7.2/debian\",\n\t\t\t\t\"org.opencontainers.image.url\": \"https://hub.docker.com/_/redis\",\n\t\t\t\t\"org.opencontainers.image.version\": \"7.2.5\"\n\t\t\t}\n\t\t}\n\t},\n\t{\n\t\t\"Ref\": \"docker.io/library/redis@sha256:c415271b75fd8c64da863644fede01ae8a70561b274ca156a36a46bf228e95f5\",\n\t\t\"Descriptor\": {\n\t\t\t\"mediaType\": \"application/vnd.oci.image.manifest.v1+json\",\n\t\t\t\"digest\": \"sha256:c415271b75fd8c64da863644fede01ae8a70561b274ca156a36a46bf228e95f5\",\n\t\t\t\"size\": 841,\n\t\t\t\"platform\": {\n\t\t\t\t\"architecture\": \"unknown\",\n\t\t\t\t\"os\": \"unknown\"\n\t\t\t}\n\t\t},\n\t\t\"Raw\": \"ewogICJzY2hlbWFWZXJzaW9uIjogMiwKICAibWVkaWFUeXBlIjogImFwcGxpY2F0aW9uL3ZuZC5vY2kuaW1hZ2UubWFuaWZlc3QudjEranNvbiIsCiAgImNvbmZpZyI6IHsKICAgICJtZWRpYVR5cGUiOiAiYXBwbGljYXRpb24vdm5kLm9jaS5pbWFnZS5jb25maWcudjEranNvbiIsCiAgICAiZGlnZXN0IjogInNoYTI1NjpjMTMxZTU2OThiYmNhYmJmMGMwMzYxMDIwNmJmZmUxOGU0NGFkNDQ1NjVmZDg4MzZmM2U1MTczNWY4N2Q0NWY3IiwKICAgICJzaXplIjogMjQxCiAgfSwKICAibGF5ZXJzIjogWwogICAgewogICAgICAibWVkaWFUeXBlIjogImFwcGxpY2F0aW9uL3ZuZC5pbi10b3RvK2pzb24iLAogICAgICAiZGlnZXN0IjogInNoYTI1NjpjNmIyNGE4ZWZhOGFlZDFjZTQ5ZTE3Mzg4Y2RmMDVhMThiOGJkOWI0MTk0ODc2Mzc5OTlhMDhmMDYyNDBmNmY4IiwKICAgICAgInNpemUiOiAyMjU2NTkyLAogICAgICAiYW5ub3RhdGlvbnMiOiB7CiAgICAgICAgImluLXRvdG8uaW8vcHJlZGljYXRlLXR5cGUiOiAiaHR0cHM6Ly9zcGR4LmRldi9Eb2N1bWVudCIKICAgICAgfQogICAgfSwKICAgIHsKICAgICAgIm1lZGlhVHlwZSI6ICJhcHBsaWNhdGlvbi92bmQuaW4tdG90bytqc29uIiwKICAgICAgImRpZ2VzdCI6ICJzaGEyNTY6MTE3NzRlYTM1ZDhlNWFkYjgzNjA5NmQwNzU2YzJkZjM1Yzk5MzcxZjE3MzE1YzYwYzg0ZDc5MWMyNjFkMWNiOCIsCiAgICAgICJzaXplIjogMzUyODksCiAgICAgICJhbm5vdGF0aW9ucyI6IHsKICAgICAgICAiaW4tdG90by5pby9wcmVkaWNhdGUtdHlwZSI6ICJodHRwczovL3Nsc2EuZGV2L3Byb3ZlbmFuY2UvdjAuMiIKICAgICAgfQogICAgfQogIF0KfQ==\",\n\t\t\"OCIManifest\": {\n\t\t\t\"schemaVersion\": 2,\n\t\t\t\"mediaType\": \"application/vnd.oci.image.manifest.v1+json\",\n\t\t\t\"config\": {\n\t\t\t\t\"mediaType\": \"application/vnd.oci.image.config.v1+json\",\n\t\t\t\t\"digest\": \"sha256:c131e5698bbcabbf0c03610206bffe18e44ad44565fd8836f3e51735f87d45f7\",\n\t\t\t\t\"size\": 241\n\t\t\t},\n\t\t\t\"layers\": [\n\t\t\t\t{\n\t\t\t\t\t\"mediaType\": \"application/vnd.in-toto+json\",\n\t\t\t\t\t\"digest\": \"sha256:c6b24a8efa8aed1ce49e17388cdf05a18b8bd9b419487637999a08f06240f6f8\",\n\t\t\t\t\t\"size\": 2256592,\n\t\t\t\t\t\"annotations\": {\n\t\t\t\t\t\t\"in-toto.io/predicate-type\": \"https://spdx.dev/Document\"\n\t\t\t\t\t}\n\t\t\t\t},\n\t\t\t\t{\n\t\t\t\t\t\"mediaType\": \"application/vnd.in-toto+json\",\n\t\t\t\t\t\"digest\": \"sha256:11774ea35d8e5adb836096d0756c2df35c99371f17315c60c84d791c261d1cb8\",\n\t\t\t\t\t\"size\": 35289,\n\t\t\t\t\t\"annotations\": {\n\t\t\t\t\t\t\"in-toto.io/predicate-type\": \"https://slsa.dev/provenance/v0.2\"\n\t\t\t\t\t}\n\t\t\t\t}\n\t\t\t]\n\t\t}\n\t},\n\t{\n\t\t\"Ref\": \"docker.io/library/redis@sha256:33b9e8ac5ca85cbc3fd2d6ede8d3aaf15d409c6da21d9abcd7ba024abb2040f1\",\n\t\t\"Descriptor\": {\n\t\t\t\"mediaType\": \"application/vnd.oci.image.manifest.v1+json\",\n\t\t\t\"digest\": \"sha256:33b9e8ac5ca85cbc3fd2d6ede8d3aaf15d409c6da21d9abcd7ba024abb2040f1\",\n\t\t\t\"size\": 2482,\n\t\t\t\"platform\": {\n\t\t\t\t\"architecture\": \"386\",\n\t\t\t\t\"os\": \"linux\"\n\t\t\t}\n\t\t},\n\t\t\"Raw\": \"ewogICJzY2hlbWFWZXJzaW9uIjogMiwKICAibWVkaWFUeXBlIjogImFwcGxpY2F0aW9uL3ZuZC5vY2kuaW1hZ2UubWFuaWZlc3QudjEranNvbiIsCiAgImNvbmZpZyI6IHsKICAgICJtZWRpYVR5cGUiOiAiYXBwbGljYXRpb24vdm5kLm9jaS5pbWFnZS5jb25maWcudjEranNvbiIsCiAgICAiZGlnZXN0IjogInNoYTI1Njo2ZDdhOGNiYjE2ODg0MjNlY2Q3YjgyZmU2YWE1YmQxMmJjYzkyZWQ2YmU3N2ZhY2RkYmRhZjM0YzNhYzRlOTk0IiwKICAgICJzaXplIjogODcxNwogIH0sCiAgImxheWVycyI6IFsKICAgIHsKICAgICAgIm1lZGlhVHlwZSI6ICJhcHBsaWNhdGlvbi92bmQub2NpLmltYWdlLmxheWVyLnYxLnRhcitnemlwIiwKICAgICAgImRpZ2VzdCI6ICJzaGEyNTY6Yzk1MzUyNGVkMjdkNTNjZTVlN2Q0ZTc0ODcxMzc3ODlkZTczZjQwNThlOTZiMDUyODRlZWZiY2FlMWI0N2MyNiIsCiAgICAgICJzaXplIjogMzAxNDQyMTYKICAgIH0sCiAgICB7CiAgICAgICJtZWRpYVR5cGUiOiAiYXBwbGljYXRpb24vdm5kLm9jaS5pbWFnZS5sYXllci52MS50YXIrZ3ppcCIsCiAgICAgICJkaWdlc3QiOiAic2hhMjU2OjE3Nzg3NjNiNjg3MmUyNDg4OGU0OWZhNGI5NWRjYTM5YjgxNjA0NjIxNWY1ZDZkZDEzMjY2NzIwMmM3MWVhOTAiLAogICAgICAic2l6ZSI6IDExMDEKICAgIH0sCiAgICB7CiAgICAgICJtZWRpYVR5cGUiOiAiYXBwbGljYXRpb24vdm5kLm9jaS5pbWFnZS5sYXllci52MS50YXIrZ3ppcCIsCiAgICAgICJkaWdlc3QiOiAic2hhMjU2OmU1YzYzZTFkZjdiMmY1Njc1ZDc3YjgyNzVmMmUwMzQwZTNhZmMyMmY4MTI5ZTIwMjI5Yjg2MWUxMWIwMjJjY2EiLAogICAgICAic2l6ZSI6IDg3MwogICAgfSwKICAgIHsKICAgICAgIm1lZGlhVHlwZSI6ICJhcHBsaWNhdGlvbi92bmQub2NpLmltYWdlLmxheWVyLnYxLnRhcitnemlwIiwKICAgICAgImRpZ2VzdCI6ICJzaGEyNTY6MzNlYWFiNjNlOTMwOTkwOTE1YzE3NjNhY2FkNjQ4YzliNzZlM2I0OGEzYjVhYjE0ZDdlMjRhMDkzNmQyOWVhZCIsCiAgICAgICJzaXplIjogMTQxMzE1MQogICAgfSwKICAgIHsKICAgICAgIm1lZGlhVHlwZSI6ICJhcHBsaWNhdGlvbi92bmQub2NpLmltYWdlLmxheWVyLnYxLnRhcitnemlwIiwKICAgICAgImRpZ2VzdCI6ICJzaGEyNTY6NzM1YzFkYzMzMGFlNTcwYTFkMzc1ZjIyMjdkZTMyYzdiOGI2YzkzNTBiNGYyMmI1MjMyNDBlNDllOGMzYWU1MiIsCiAgICAgICJzaXplIjogMTQ1MzU4NDQKICAgIH0sCiAgICB7CiAgICAgICJtZWRpYVR5cGUiOiAiYXBwbGljYXRpb24vdm5kLm9jaS5pbWFnZS5sYXllci52MS50YXIrZ3ppcCIsCiAgICAgICJkaWdlc3QiOiAic2hhMjU2OmMwN2Y5YTk2N2QxYWI3ZTVlMWUyMzJjNDgwYjUzYjg3ODJiZDE4MmExNmU0YTM4MzNiZGFjZWMzYzkyYjRmNDkiLAogICAgICAic2l6ZSI6IDk3CiAgICB9LAogICAgewogICAgICAibWVkaWFUeXBlIjogImFwcGxpY2F0aW9uL3ZuZC5vY2kuaW1hZ2UubGF5ZXIudjEudGFyK2d6aXAiLAogICAgICAiZGlnZXN0IjogInNoYTI1Njo0ZjRmYjcwMGVmNTQ0NjFjZmEwMjU3MWFlMGRiOWEwZGMxZTBjZGI1NTc3NDg0YTZkNzVlNjhkYzM4ZThhY2MxIiwKICAgICAgInNpemUiOiAzMgogICAgfSwKICAgIHsKICAgICAgIm1lZGlhVHlwZSI6ICJhcHBsaWNhdGlvbi92bmQub2NpLmltYWdlLmxheWVyLnYxLnRhcitnemlwIiwKICAgICAgImRpZ2VzdCI6ICJzaGEyNTY6YWZjYjVkN2UwNTlkZGFkODVmNTU0ODliZWEzMjQ2ZDFkZmM3Y2M5NjMxZWQ5NjQxNGQyYjFhM2MxOGJlMjQ0NCIsCiAgICAgICJzaXplIjogNTcwCiAgICB9CiAgXSwKICAiYW5ub3RhdGlvbnMiOiB7CiAgICAiY29tLmRvY2tlci5vZmZpY2lhbC1pbWFnZXMuYmFzaGJyZXcuYXJjaCI6ICJpMzg2IiwKICAgICJvcmcub3BlbmNvbnRhaW5lcnMuaW1hZ2UuYmFzZS5kaWdlc3QiOiAic2hhMjU2OjcxOWRkYzYwNDg3YmM0YmZiN2FmN2E4MWQ0YTcwYzBmYzc0NTMzMDI3YTRlOGQwNDEwOGIwMThkYTNhYzg1ZGEiLAogICAgIm9yZy5vcGVuY29udGFpbmVycy5pbWFnZS5iYXNlLm5hbWUiOiAiZGViaWFuOmJvb2t3b3JtLXNsaW0iLAogICAgIm9yZy5vcGVuY29udGFpbmVycy5pbWFnZS5jcmVhdGVkIjogIjIwMjQtMDUtMjJUMjM6MTc6NTlaIiwKICAgICJvcmcub3BlbmNvbnRhaW5lcnMuaW1hZ2UucmV2aXNpb24iOiAiNWYwODM2M2U2ZDY0Yjk3YTBjMmU2NTFmNGJkY2VjNmU3MWEzMmFiNCIsCiAgICAib3JnLm9wZW5jb250YWluZXJzLmltYWdlLnNvdXJjZSI6ICJodHRwczovL2dpdGh1Yi5jb20vcmVkaXMvZG9ja2VyLWxpYnJhcnktcmVkaXMuZ2l0IzVmMDgzNjNlNmQ2NGI5N2EwYzJlNjUxZjRiZGNlYzZlNzFhMzJhYjQ6Ny4yL2RlYmlhbiIsCiAgICAib3JnLm9wZW5jb250YWluZXJzLmltYWdlLnVybCI6ICJodHRwczovL2h1Yi5kb2NrZXIuY29tL18vcmVkaXMiLAogICAgIm9yZy5vcGVuY29udGFpbmVycy5pbWFnZS52ZXJzaW9uIjogIjcuMi41IgogIH0KfQ==\",\n\t\t\"OCIManifest\": {\n\t\t\t\"schemaVersion\": 2,\n\t\t\t\"mediaType\": \"application/vnd.oci.image.manifest.v1+json\",\n\t\t\t\"config\": {\n\t\t\t\t\"mediaType\": \"application/vnd.oci.image.config.v1+json\",\n\t\t\t\t\"digest\": \"sha256:6d7a8cbb1688423ecd7b82fe6aa5bd12bcc92ed6be77facddbdaf34c3ac4e994\",\n\t\t\t\t\"size\": 8717\n\t\t\t},\n\t\t\t\"layers\": [\n\t\t\t\t{\n\t\t\t\t\t\"mediaType\": \"application/vnd.oci.image.layer.v1.tar+gzip\",\n\t\t\t\t\t\"digest\": \"sha256:c953524ed27d53ce5e7d4e7487137789de73f4058e96b05284eefbcae1b47c26\",\n\t\t\t\t\t\"size\": 30144216\n\t\t\t\t},\n\t\t\t\t{\n\t\t\t\t\t\"mediaType\": \"application/vnd.oci.image.layer.v1.tar+gzip\",\n\t\t\t\t\t\"digest\": \"sha256:1778763b6872e24888e49fa4b95dca39b816046215f5d6dd132667202c71ea90\",\n\t\t\t\t\t\"size\": 1101\n\t\t\t\t},\n\t\t\t\t{\n\t\t\t\t\t\"mediaType\": \"application/vnd.oci.image.layer.v1.tar+gzip\",\n\t\t\t\t\t\"digest\": \"sha256:e5c63e1df7b2f5675d77b8275f2e0340e3afc22f8129e20229b861e11b022cca\",\n\t\t\t\t\t\"size\": 873\n\t\t\t\t},\n\t\t\t\t{\n\t\t\t\t\t\"mediaType\": \"application/vnd.oci.image.layer.v1.tar+gzip\",\n\t\t\t\t\t\"digest\": \"sha256:33eaab63e930990915c1763acad648c9b76e3b48a3b5ab14d7e24a0936d29ead\",\n\t\t\t\t\t\"size\": 1413151\n\t\t\t\t},\n\t\t\t\t{\n\t\t\t\t\t\"mediaType\": \"application/vnd.oci.image.layer.v1.tar+gzip\",\n\t\t\t\t\t\"digest\": \"sha256:735c1dc330ae570a1d375f2227de32c7b8b6c9350b4f22b523240e49e8c3ae52\",\n\t\t\t\t\t\"size\": 14535844\n\t\t\t\t},\n\t\t\t\t{\n\t\t\t\t\t\"mediaType\": \"application/vnd.oci.image.layer.v1.tar+gzip\",\n\t\t\t\t\t\"digest\": \"sha256:c07f9a967d1ab7e5e1e232c480b53b8782bd182a16e4a3833bdacec3c92b4f49\",\n\t\t\t\t\t\"size\": 97\n\t\t\t\t},\n\t\t\t\t{\n\t\t\t\t\t\"mediaType\": \"application/vnd.oci.image.layer.v1.tar+gzip\",\n\t\t\t\t\t\"digest\": \"sha256:4f4fb700ef54461cfa02571ae0db9a0dc1e0cdb5577484a6d75e68dc38e8acc1\",\n\t\t\t\t\t\"size\": 32\n\t\t\t\t},\n\t\t\t\t{\n\t\t\t\t\t\"mediaType\": \"application/vnd.oci.image.layer.v1.tar+gzip\",\n\t\t\t\t\t\"digest\": \"sha256:afcb5d7e059ddad85f55489bea3246d1dfc7cc9631ed96414d2b1a3c18be2444\",\n\t\t\t\t\t\"size\": 570\n\t\t\t\t}\n\t\t\t],\n\t\t\t\"annotations\": {\n\t\t\t\t\"com.docker.official-images.bashbrew.arch\": \"i386\",\n\t\t\t\t\"org.opencontainers.image.base.digest\": \"sha256:719ddc60487bc4bfb7af7a81d4a70c0fc74533027a4e8d04108b018da3ac85da\",\n\t\t\t\t\"org.opencontainers.image.base.name\": \"debian:bookworm-slim\",\n\t\t\t\t\"org.opencontainers.image.created\": \"2024-05-22T23:17:59Z\",\n\t\t\t\t\"org.opencontainers.image.revision\": \"5f08363e6d64b97a0c2e651f4bdcec6e71a32ab4\",\n\t\t\t\t\"org.opencontainers.image.source\": \"https://github.com/redis/docker-library-redis.git#5f08363e6d64b97a0c2e651f4bdcec6e71a32ab4:7.2/debian\",\n\t\t\t\t\"org.opencontainers.image.url\": \"https://hub.docker.com/_/redis\",\n\t\t\t\t\"org.opencontainers.image.version\": \"7.2.5\"\n\t\t\t}\n\t\t}\n\t},\n\t{\n\t\t\"Ref\": \"docker.io/library/redis@sha256:a60b1a8acaa668f3a6fe1ecbf8cfda968edeb22a70efd56c10ed6f96d1381573\",\n\t\t\"Descriptor\": {\n\t\t\t\"mediaType\": \"application/vnd.oci.image.manifest.v1+json\",\n\t\t\t\"digest\": \"sha256:a60b1a8acaa668f3a6fe1ecbf8cfda968edeb22a70efd56c10ed6f96d1381573\",\n\t\t\t\"size\": 841,\n\t\t\t\"platform\": {\n\t\t\t\t\"architecture\": \"unknown\",\n\t\t\t\t\"os\": \"unknown\"\n\t\t\t}\n\t\t},\n\t\t\"Raw\": \"ewogICJzY2hlbWFWZXJzaW9uIjogMiwKICAibWVkaWFUeXBlIjogImFwcGxpY2F0aW9uL3ZuZC5vY2kuaW1hZ2UubWFuaWZlc3QudjEranNvbiIsCiAgImNvbmZpZyI6IHsKICAgICJtZWRpYVR5cGUiOiAiYXBwbGljYXRpb24vdm5kLm9jaS5pbWFnZS5jb25maWcudjEranNvbiIsCiAgICAiZGlnZXN0IjogInNoYTI1NjowZjkzNmFkOThhYjc5MWMwZWE2YWFmZDA1YjkxNmM4MTNjNjcwMWM4ZGVjOTM4NDRiNGY5ZDcxZmM1OGY3NzA4IiwKICAgICJzaXplIjogMjQxCiAgfSwKICAibGF5ZXJzIjogWwogICAgewogICAgICAibWVkaWFUeXBlIjogImFwcGxpY2F0aW9uL3ZuZC5pbi10b3RvK2pzb24iLAogICAgICAiZGlnZXN0IjogInNoYTI1Njo1NDU2Yjc4NjUxN2I1MjQxY2ZjMzMyMzVjYjM0ZDNkMDZjOTA0MmQ4ODQ2ODQxN2ZmOTUyNDlmYTEyNjljNDEzIiwKICAgICAgInNpemUiOiAyMjUyMzkxLAogICAgICAiYW5ub3RhdGlvbnMiOiB7CiAgICAgICAgImluLXRvdG8uaW8vcHJlZGljYXRlLXR5cGUiOiAiaHR0cHM6Ly9zcGR4LmRldi9Eb2N1bWVudCIKICAgICAgfQogICAgfSwKICAgIHsKICAgICAgIm1lZGlhVHlwZSI6ICJhcHBsaWNhdGlvbi92bmQuaW4tdG90bytqc29uIiwKICAgICAgImRpZ2VzdCI6ICJzaGEyNTY6ZGY2ZDk3MzNiOTRjZDc1MmY4NWRiZWQ0MWUyOTY4YWIzODYyOGU1ODMyYTFkOWMxMjhjOGM0NzdhNmViMWI1OCIsCiAgICAgICJzaXplIjogMzQ5NDQsCiAgICAgICJhbm5vdGF0aW9ucyI6IHsKICAgICAgICAiaW4tdG90by5pby9wcmVkaWNhdGUtdHlwZSI6ICJodHRwczovL3Nsc2EuZGV2L3Byb3ZlbmFuY2UvdjAuMiIKICAgICAgfQogICAgfQogIF0KfQ==\",\n\t\t\"OCIManifest\": {\n\t\t\t\"schemaVersion\": 2,\n\t\t\t\"mediaType\": \"application/vnd.oci.image.manifest.v1+json\",\n\t\t\t\"config\": {\n\t\t\t\t\"mediaType\": \"application/vnd.oci.image.config.v1+json\",\n\t\t\t\t\"digest\": \"sha256:0f936ad98ab791c0ea6aafd05b916c813c6701c8dec93844b4f9d71fc58f7708\",\n\t\t\t\t\"size\": 241\n\t\t\t},\n\t\t\t\"layers\": [\n\t\t\t\t{\n\t\t\t\t\t\"mediaType\": \"application/vnd.in-toto+json\",\n\t\t\t\t\t\"digest\": \"sha256:5456b786517b5241cfc33235cb34d3d06c9042d88468417ff95249fa1269c413\",\n\t\t\t\t\t\"size\": 2252391,\n\t\t\t\t\t\"annotations\": {\n\t\t\t\t\t\t\"in-toto.io/predicate-type\": \"https://spdx.dev/Document\"\n\t\t\t\t\t}\n\t\t\t\t},\n\t\t\t\t{\n\t\t\t\t\t\"mediaType\": \"application/vnd.in-toto+json\",\n\t\t\t\t\t\"digest\": \"sha256:df6d9733b94cd752f85dbed41e2968ab38628e5832a1d9c128c8c477a6eb1b58\",\n\t\t\t\t\t\"size\": 34944,\n\t\t\t\t\t\"annotations\": {\n\t\t\t\t\t\t\"in-toto.io/predicate-type\": \"https://slsa.dev/provenance/v0.2\"\n\t\t\t\t\t}\n\t\t\t\t}\n\t\t\t]\n\t\t}\n\t},\n\t{\n\t\t\"Ref\": \"docker.io/library/redis@sha256:5f59f133e6e3c53f6f33a10f90a09ff1654a225da86d37963df27bdcb2751593\",\n\t\t\"Descriptor\": {\n\t\t\t\"mediaType\": \"application/vnd.oci.image.manifest.v1+json\",\n\t\t\t\"digest\": \"sha256:5f59f133e6e3c53f6f33a10f90a09ff1654a225da86d37963df27bdcb2751593\",\n\t\t\t\"size\": 2486,\n\t\t\t\"platform\": {\n\t\t\t\t\"architecture\": \"mips64le\",\n\t\t\t\t\"os\": \"linux\"\n\t\t\t}\n\t\t},\n\t\t\"Raw\": \"ewogICJzY2hlbWFWZXJzaW9uIjogMiwKICAibWVkaWFUeXBlIjogImFwcGxpY2F0aW9uL3ZuZC5vY2kuaW1hZ2UubWFuaWZlc3QudjEranNvbiIsCiAgImNvbmZpZyI6IHsKICAgICJtZWRpYVR5cGUiOiAiYXBwbGljYXRpb24vdm5kLm9jaS5pbWFnZS5jb25maWcudjEranNvbiIsCiAgICAiZGlnZXN0IjogInNoYTI1NjpmNjdlODUwY2RlN2JlYzkwMTViZWQxYjk0ZDEyNDhmYzQ4ODQ5Y2ZlNDhkMzIyZjRmNGZhOTUxMGYyNWFlYTdkIiwKICAgICJzaXplIjogODcyMgogIH0sCiAgImxheWVycyI6IFsKICAgIHsKICAgICAgIm1lZGlhVHlwZSI6ICJhcHBsaWNhdGlvbi92bmQub2NpLmltYWdlLmxheWVyLnYxLnRhcitnemlwIiwKICAgICAgImRpZ2VzdCI6ICJzaGEyNTY6NzUzNThjNzk0NTRlMGZlZDQ0YWEyNWRkMzIzNTM2NDQzYjRhMTIzMGZjNDMyYWEyMjY2MjBlNDcwZDcyY2Y1ZiIsCiAgICAgICJzaXplIjogMjkxMjQ4NTgKICAgIH0sCiAgICB7CiAgICAgICJtZWRpYVR5cGUiOiAiYXBwbGljYXRpb24vdm5kLm9jaS5pbWFnZS5sYXllci52MS50YXIrZ3ppcCIsCiAgICAgICJkaWdlc3QiOiAic2hhMjU2OmI2YjBlY2VkMzlkZWI4MWRmMTZmZDQzZTczNjJhZmNhMDllNGEwN2E2NWJjODNmZTlhMjJiMTAwM2UyODk5ODkiLAogICAgICAic2l6ZSI6IDExMDEKICAgIH0sCiAgICB7CiAgICAgICJtZWRpYVR5cGUiOiAiYXBwbGljYXRpb24vdm5kLm9jaS5pbWFnZS5sYXllci52MS50YXIrZ3ppcCIsCiAgICAgICJkaWdlc3QiOiAic2hhMjU2OmJiMjE3YjgzOTlmOWE4ZjBmZDdhZmRkYTcwMTc0MWQyNjVmNGM0OWM4YWM2MmVhZjNmYjcyYTgwNWQ3ZDhkOWEiLAogICAgICAic2l6ZSI6IDg3NAogICAgfSwKICAgIHsKICAgICAgIm1lZGlhVHlwZSI6ICJhcHBsaWNhdGlvbi92bmQub2NpLmltYWdlLmxheWVyLnYxLnRhcitnemlwIiwKICAgICAgImRpZ2VzdCI6ICJzaGEyNTY6MWZmMGM0ZmIyZjM2M2I5ZGQ1ZTczYzI0NWRiOTJlOGVhNzMyNGFmOTRjMWU0N2IzYmI4ZWNmMjhkOTgzZjc1OCIsCiAgICAgICJzaXplIjogMTMyNTM0MgogICAgfSwKICAgIHsKICAgICAgIm1lZGlhVHlwZSI6ICJhcHBsaWNhdGlvbi92bmQub2NpLmltYWdlLmxheWVyLnYxLnRhcitnemlwIiwKICAgICAgImRpZ2VzdCI6ICJzaGEyNTY6ZWE3YjI0NTAyODdlYTk0YWIyNmE1OThiMWE4NDU0ZDI3ODM2MTIyNTJhMTIxMWUxZWRiYzgzN2EzZWVjMjNjYSIsCiAgICAgICJzaXplIjogMTQ5NjA3MjgKICAgIH0sCiAgICB7CiAgICAgICJtZWRpYVR5cGUiOiAiYXBwbGljYXRpb24vdm5kLm9jaS5pbWFnZS5sYXllci52MS50YXIrZ3ppcCIsCiAgICAgICJkaWdlc3QiOiAic2hhMjU2OmJiNGY4YTc3ZWUwNGQ0ZDg4ZWJmNTUyYzY4OGU0NDFmNGY2MjZmZWVkZTQzNGNiYmYzZjg3OTM1OTIwNmY0ZDgiLAogICAgICAic2l6ZSI6IDk3CiAgICB9LAogICAgewogICAgICAibWVkaWFUeXBlIjogImFwcGxpY2F0aW9uL3ZuZC5vY2kuaW1hZ2UubGF5ZXIudjEudGFyK2d6aXAiLAogICAgICAiZGlnZXN0IjogInNoYTI1Njo0ZjRmYjcwMGVmNTQ0NjFjZmEwMjU3MWFlMGRiOWEwZGMxZTBjZGI1NTc3NDg0YTZkNzVlNjhkYzM4ZThhY2MxIiwKICAgICAgInNpemUiOiAzMgogICAgfSwKICAgIHsKICAgICAgIm1lZGlhVHlwZSI6ICJhcHBsaWNhdGlvbi92bmQub2NpLmltYWdlLmxheWVyLnYxLnRhcitnemlwIiwKICAgICAgImRpZ2VzdCI6ICJzaGEyNTY6MDI4ZjEyYWY1YzA1MGIwZWM1YTI1ZjhiZmM2NmEzZGQwODc1NDVmODRhM2EyNzI2MmJlZjAzMDM3ZjczMzMwYiIsCiAgICAgICJzaXplIjogNTY5CiAgICB9CiAgXSwKICAiYW5ub3RhdGlvbnMiOiB7CiAgICAiY29tLmRvY2tlci5vZmZpY2lhbC1pbWFnZXMuYmFzaGJyZXcuYXJjaCI6ICJtaXBzNjRsZSIsCiAgICAib3JnLm9wZW5jb250YWluZXJzLmltYWdlLmJhc2UuZGlnZXN0IjogInNoYTI1NjpmYTNlZTJiNjBmMWJmZTc3ZTBkY2M5MDM0OGQyNTAzY2U3NTA3MjdkODZhMjQzZWQwZWUzM2JjOGFlODM3N2Q2IiwKICAgICJvcmcub3BlbmNvbnRhaW5lcnMuaW1hZ2UuYmFzZS5uYW1lIjogImRlYmlhbjpib29rd29ybS1zbGltIiwKICAgICJvcmcub3BlbmNvbnRhaW5lcnMuaW1hZ2UuY3JlYXRlZCI6ICIyMDI0LTA1LTIyVDIzOjE3OjU5WiIsCiAgICAib3JnLm9wZW5jb250YWluZXJzLmltYWdlLnJldmlzaW9uIjogIjVmMDgzNjNlNmQ2NGI5N2EwYzJlNjUxZjRiZGNlYzZlNzFhMzJhYjQiLAogICAgIm9yZy5vcGVuY29udGFpbmVycy5pbWFnZS5zb3VyY2UiOiAiaHR0cHM6Ly9naXRodWIuY29tL3JlZGlzL2RvY2tlci1saWJyYXJ5LXJlZGlzLmdpdCM1ZjA4MzYzZTZkNjRiOTdhMGMyZTY1MWY0YmRjZWM2ZTcxYTMyYWI0OjcuMi9kZWJpYW4iLAogICAgIm9yZy5vcGVuY29udGFpbmVycy5pbWFnZS51cmwiOiAiaHR0cHM6Ly9odWIuZG9ja2VyLmNvbS9fL3JlZGlzIiwKICAgICJvcmcub3BlbmNvbnRhaW5lcnMuaW1hZ2UudmVyc2lvbiI6ICI3LjIuNSIKICB9Cn0=\",\n\t\t\"OCIManifest\": {\n\t\t\t\"schemaVersion\": 2,\n\t\t\t\"mediaType\": \"application/vnd.oci.image.manifest.v1+json\",\n\t\t\t\"config\": {\n\t\t\t\t\"mediaType\": \"application/vnd.oci.image.config.v1+json\",\n\t\t\t\t\"digest\": \"sha256:f67e850cde7bec9015bed1b94d1248fc48849cfe48d322f4f4fa9510f25aea7d\",\n\t\t\t\t\"size\": 8722\n\t\t\t},\n\t\t\t\"layers\": [\n\t\t\t\t{\n\t\t\t\t\t\"mediaType\": \"application/vnd.oci.image.layer.v1.tar+gzip\",\n\t\t\t\t\t\"digest\": \"sha256:75358c79454e0fed44aa25dd323536443b4a1230fc432aa226620e470d72cf5f\",\n\t\t\t\t\t\"size\": 29124858\n\t\t\t\t},\n\t\t\t\t{\n\t\t\t\t\t\"mediaType\": \"application/vnd.oci.image.layer.v1.tar+gzip\",\n\t\t\t\t\t\"digest\": \"sha256:b6b0eced39deb81df16fd43e7362afca09e4a07a65bc83fe9a22b1003e289989\",\n\t\t\t\t\t\"size\": 1101\n\t\t\t\t},\n\t\t\t\t{\n\t\t\t\t\t\"mediaType\": \"application/vnd.oci.image.layer.v1.tar+gzip\",\n\t\t\t\t\t\"digest\": \"sha256:bb217b8399f9a8f0fd7afdda701741d265f4c49c8ac62eaf3fb72a805d7d8d9a\",\n\t\t\t\t\t\"size\": 874\n\t\t\t\t},\n\t\t\t\t{\n\t\t\t\t\t\"mediaType\": \"application/vnd.oci.image.layer.v1.tar+gzip\",\n\t\t\t\t\t\"digest\": \"sha256:1ff0c4fb2f363b9dd5e73c245db92e8ea7324af94c1e47b3bb8ecf28d983f758\",\n\t\t\t\t\t\"size\": 1325342\n\t\t\t\t},\n\t\t\t\t{\n\t\t\t\t\t\"mediaType\": \"application/vnd.oci.image.layer.v1.tar+gzip\",\n\t\t\t\t\t\"digest\": \"sha256:ea7b2450287ea94ab26a598b1a8454d2783612252a1211e1edbc837a3eec23ca\",\n\t\t\t\t\t\"size\": 14960728\n\t\t\t\t},\n\t\t\t\t{\n\t\t\t\t\t\"mediaType\": \"application/vnd.oci.image.layer.v1.tar+gzip\",\n\t\t\t\t\t\"digest\": \"sha256:bb4f8a77ee04d4d88ebf552c688e441f4f626feede434cbbf3f879359206f4d8\",\n\t\t\t\t\t\"size\": 97\n\t\t\t\t},\n\t\t\t\t{\n\t\t\t\t\t\"mediaType\": \"application/vnd.oci.image.layer.v1.tar+gzip\",\n\t\t\t\t\t\"digest\": \"sha256:4f4fb700ef54461cfa02571ae0db9a0dc1e0cdb5577484a6d75e68dc38e8acc1\",\n\t\t\t\t\t\"size\": 32\n\t\t\t\t},\n\t\t\t\t{\n\t\t\t\t\t\"mediaType\": \"application/vnd.oci.image.layer.v1.tar+gzip\",\n\t\t\t\t\t\"digest\": \"sha256:028f12af5c050b0ec5a25f8bfc66a3dd087545f84a3a27262bef03037f73330b\",\n\t\t\t\t\t\"size\": 569\n\t\t\t\t}\n\t\t\t],\n\t\t\t\"annotations\": {\n\t\t\t\t\"com.docker.official-images.bashbrew.arch\": \"mips64le\",\n\t\t\t\t\"org.opencontainers.image.base.digest\": \"sha256:fa3ee2b60f1bfe77e0dcc90348d2503ce750727d86a243ed0ee33bc8ae8377d6\",\n\t\t\t\t\"org.opencontainers.image.base.name\": \"debian:bookworm-slim\",\n\t\t\t\t\"org.opencontainers.image.created\": \"2024-05-22T23:17:59Z\",\n\t\t\t\t\"org.opencontainers.image.revision\": \"5f08363e6d64b97a0c2e651f4bdcec6e71a32ab4\",\n\t\t\t\t\"org.opencontainers.image.source\": \"https://github.com/redis/docker-library-redis.git#5f08363e6d64b97a0c2e651f4bdcec6e71a32ab4:7.2/debian\",\n\t\t\t\t\"org.opencontainers.image.url\": \"https://hub.docker.com/_/redis\",\n\t\t\t\t\"org.opencontainers.image.version\": \"7.2.5\"\n\t\t\t}\n\t\t}\n\t},\n\t{\n\t\t\"Ref\": \"docker.io/library/redis@sha256:0a160fec42b254b1689086ce4e70953fdf42ca6d74f74982216adcb7ce787af6\",\n\t\t\"Descriptor\": {\n\t\t\t\"mediaType\": \"application/vnd.oci.image.manifest.v1+json\",\n\t\t\t\"digest\": \"sha256:0a160fec42b254b1689086ce4e70953fdf42ca6d74f74982216adcb7ce787af6\",\n\t\t\t\"size\": 567,\n\t\t\t\"platform\": {\n\t\t\t\t\"architecture\": \"unknown\",\n\t\t\t\t\"os\": \"unknown\"\n\t\t\t}\n\t\t},\n\t\t\"Raw\": \"ewogICJzY2hlbWFWZXJzaW9uIjogMiwKICAibWVkaWFUeXBlIjogImFwcGxpY2F0aW9uL3ZuZC5vY2kuaW1hZ2UubWFuaWZlc3QudjEranNvbiIsCiAgImNvbmZpZyI6IHsKICAgICJtZWRpYVR5cGUiOiAiYXBwbGljYXRpb24vdm5kLm9jaS5pbWFnZS5jb25maWcudjEranNvbiIsCiAgICAiZGlnZXN0IjogInNoYTI1NjoyNjI5M2ZmZTc1YzY3Nzc1ZjI2Yzg5MzU0ODI3ODFkMGYyYTRlYzc4ZWNhYWIwYWFmMTFmOGRiYjIyOWE0MjE5IiwKICAgICJzaXplIjogMTY3CiAgfSwKICAibGF5ZXJzIjogWwogICAgewogICAgICAibWVkaWFUeXBlIjogImFwcGxpY2F0aW9uL3ZuZC5pbi10b3RvK2pzb24iLAogICAgICAiZGlnZXN0IjogInNoYTI1Njo1NDI2ZDYwMDQ2YWVjM2U4Nzk1MzRhYjRjNmI5YzA3YmQwYzdkZDhlZDhkZTI4Y2U0MGEwZjQ0ZTM0NzUwM2ZlIiwKICAgICAgInNpemUiOiAzNDgzMiwKICAgICAgImFubm90YXRpb25zIjogewogICAgICAgICJpbi10b3RvLmlvL3ByZWRpY2F0ZS10eXBlIjogImh0dHBzOi8vc2xzYS5kZXYvcHJvdmVuYW5jZS92MC4yIgogICAgICB9CiAgICB9CiAgXQp9\",\n\t\t\"OCIManifest\": {\n\t\t\t\"schemaVersion\": 2,\n\t\t\t\"mediaType\": \"application/vnd.oci.image.manifest.v1+json\",\n\t\t\t\"config\": {\n\t\t\t\t\"mediaType\": \"application/vnd.oci.image.config.v1+json\",\n\t\t\t\t\"digest\": \"sha256:26293ffe75c67775f26c8935482781d0f2a4ec78ecaab0aaf11f8dbb229a4219\",\n\t\t\t\t\"size\": 167\n\t\t\t},\n\t\t\t\"layers\": [\n\t\t\t\t{\n\t\t\t\t\t\"mediaType\": \"application/vnd.in-toto+json\",\n\t\t\t\t\t\"digest\": \"sha256:5426d60046aec3e879534ab4c6b9c07bd0c7dd8ed8de28ce40a0f44e347503fe\",\n\t\t\t\t\t\"size\": 34832,\n\t\t\t\t\t\"annotations\": {\n\t\t\t\t\t\t\"in-toto.io/predicate-type\": \"https://slsa.dev/provenance/v0.2\"\n\t\t\t\t\t}\n\t\t\t\t}\n\t\t\t]\n\t\t}\n\t},\n\t{\n\t\t\"Ref\": \"docker.io/library/redis@sha256:22487105147d29b9d76408515db87e6d9880d28b13718867b70983ae928871ae\",\n\t\t\"Descriptor\": {\n\t\t\t\"mediaType\": \"application/vnd.oci.image.manifest.v1+json\",\n\t\t\t\"digest\": \"sha256:22487105147d29b9d76408515db87e6d9880d28b13718867b70983ae928871ae\",\n\t\t\t\"size\": 2485,\n\t\t\t\"platform\": {\n\t\t\t\t\"architecture\": \"ppc64le\",\n\t\t\t\t\"os\": \"linux\"\n\t\t\t}\n\t\t},\n\t\t\"Raw\": \"ewogICJzY2hlbWFWZXJzaW9uIjogMiwKICAibWVkaWFUeXBlIjogImFwcGxpY2F0aW9uL3ZuZC5vY2kuaW1hZ2UubWFuaWZlc3QudjEranNvbiIsCiAgImNvbmZpZyI6IHsKICAgICJtZWRpYVR5cGUiOiAiYXBwbGljYXRpb24vdm5kLm9jaS5pbWFnZS5jb25maWcudjEranNvbiIsCiAgICAiZGlnZXN0IjogInNoYTI1NjpjZmNkMWRiOGQzN2NhYjQ5ZTQxOWIzNjlkNjlhZTA1MDc3NzIzMjJiODVjYzY4Yjc2NzIwMjcyNWRhYTRmNDJjIiwKICAgICJzaXplIjogODcyMQogIH0sCiAgImxheWVycyI6IFsKICAgIHsKICAgICAgIm1lZGlhVHlwZSI6ICJhcHBsaWNhdGlvbi92bmQub2NpLmltYWdlLmxheWVyLnYxLnRhcitnemlwIiwKICAgICAgImRpZ2VzdCI6ICJzaGEyNTY6YzBkYjY4Mzg5N2QxNmZlNmUyODY5YTM1MWRiZDVkZWFjMjI2OGQ1ODIwZDRiM2MxY2Y5M2VjM2JkNjljYWZiNSIsCiAgICAgICJzaXplIjogMzMxMjIxNjMKICAgIH0sCiAgICB7CiAgICAgICJtZWRpYVR5cGUiOiAiYXBwbGljYXRpb24vdm5kLm9jaS5pbWFnZS5sYXllci52MS50YXIrZ3ppcCIsCiAgICAgICJkaWdlc3QiOiAic2hhMjU2Ojg5ODE4MTUyZTQyMGVjZWNjMmU4NDUwYmI1M2EwZjMxNjhmMGNlZWVhZDc4NjUxYTU5OGFlNTM3OGQ5MDZlOTAiLAogICAgICAic2l6ZSI6IDExMDAKICAgIH0sCiAgICB7CiAgICAgICJtZWRpYVR5cGUiOiAiYXBwbGljYXRpb24vdm5kLm9jaS5pbWFnZS5sYXllci52MS50YXIrZ3ppcCIsCiAgICAgICJkaWdlc3QiOiAic2hhMjU2OmVlYTQ4NjNkYzk2YjNlNGIyZTc2OTZlMDU4ZmUwNDBkNWZhNzMyNDI5NTk0ZTgxYTgwM2RmY2YzYzg0ZGM3ZDAiLAogICAgICAic2l6ZSI6IDg3MwogICAgfSwKICAgIHsKICAgICAgIm1lZGlhVHlwZSI6ICJhcHBsaWNhdGlvbi92bmQub2NpLmltYWdlLmxheWVyLnYxLnRhcitnemlwIiwKICAgICAgImRpZ2VzdCI6ICJzaGEyNTY6YjEzZWJlMzJmZTk3YjY3OWJiNjk3MGYyNTgwMzc5YmQ1YzEzNDZkMTBiZmJjZjZkMDdmMWNkNjI5ZDJhMWUxZSIsCiAgICAgICJzaXplIjogMTM1OTk5MAogICAgfSwKICAgIHsKICAgICAgIm1lZGlhVHlwZSI6ICJhcHBsaWNhdGlvbi92bmQub2NpLmltYWdlLmxheWVyLnYxLnRhcitnemlwIiwKICAgICAgImRpZ2VzdCI6ICJzaGEyNTY6OWQyZGU1Njg2ZDcxNWY1YjcyMjQxMzFlMmIwNmY2NTM4OWM4NDRlMjEwYzRmMDEwODJlMmY2OGQ5YTc0YzYwOCIsCiAgICAgICJzaXplIjogMTYwMjMzODEKICAgIH0sCiAgICB7CiAgICAgICJtZWRpYVR5cGUiOiAiYXBwbGljYXRpb24vdm5kLm9jaS5pbWFnZS5sYXllci52MS50YXIrZ3ppcCIsCiAgICAgICJkaWdlc3QiOiAic2hhMjU2OjY0NThiMjJhNTJiNTVjZmE4NTZlYzFkOTUyNmUwOWVkNjQyODMyMWE1YjExMzAyOGU2Y2ZlZTBkNzNiMGI5OGIiLAogICAgICAic2l6ZSI6IDk3CiAgICB9LAogICAgewogICAgICAibWVkaWFUeXBlIjogImFwcGxpY2F0aW9uL3ZuZC5vY2kuaW1hZ2UubGF5ZXIudjEudGFyK2d6aXAiLAogICAgICAiZGlnZXN0IjogInNoYTI1Njo0ZjRmYjcwMGVmNTQ0NjFjZmEwMjU3MWFlMGRiOWEwZGMxZTBjZGI1NTc3NDg0YTZkNzVlNjhkYzM4ZThhY2MxIiwKICAgICAgInNpemUiOiAzMgogICAgfSwKICAgIHsKICAgICAgIm1lZGlhVHlwZSI6ICJhcHBsaWNhdGlvbi92bmQub2NpLmltYWdlLmxheWVyLnYxLnRhcitnemlwIiwKICAgICAgImRpZ2VzdCI6ICJzaGEyNTY6YzAxNmM5OTIwMzE5OWU3NjU0MjIyZTVmZWIxOGIwNDk1NzRiZGVhYTAzMzk3ZDJkODcxNzk5OTkyZTk3Yjg1YSIsCiAgICAgICJzaXplIjogNTcyCiAgICB9CiAgXSwKICAiYW5ub3RhdGlvbnMiOiB7CiAgICAiY29tLmRvY2tlci5vZmZpY2lhbC1pbWFnZXMuYmFzaGJyZXcuYXJjaCI6ICJwcGM2NGxlIiwKICAgICJvcmcub3BlbmNvbnRhaW5lcnMuaW1hZ2UuYmFzZS5kaWdlc3QiOiAic2hhMjU2OjcyMTU3MGIxZWQ2YjlhMTU4ZDk3ZDk0Y2FlNGE3MGI2YjQ5NmFmY2ZiOTUwNjE1NjY5ZDdlYjU2NDM5MWRlMDQiLAogICAgIm9yZy5vcGVuY29udGFpbmVycy5pbWFnZS5iYXNlLm5hbWUiOiAiZGViaWFuOmJvb2t3b3JtLXNsaW0iLAogICAgIm9yZy5vcGVuY29udGFpbmVycy5pbWFnZS5jcmVhdGVkIjogIjIwMjQtMDUtMjJUMjM6MTc6NTlaIiwKICAgICJvcmcub3BlbmNvbnRhaW5lcnMuaW1hZ2UucmV2aXNpb24iOiAiNWYwODM2M2U2ZDY0Yjk3YTBjMmU2NTFmNGJkY2VjNmU3MWEzMmFiNCIsCiAgICAib3JnLm9wZW5jb250YWluZXJzLmltYWdlLnNvdXJjZSI6ICJodHRwczovL2dpdGh1Yi5jb20vcmVkaXMvZG9ja2VyLWxpYnJhcnktcmVkaXMuZ2l0IzVmMDgzNjNlNmQ2NGI5N2EwYzJlNjUxZjRiZGNlYzZlNzFhMzJhYjQ6Ny4yL2RlYmlhbiIsCiAgICAib3JnLm9wZW5jb250YWluZXJzLmltYWdlLnVybCI6ICJodHRwczovL2h1Yi5kb2NrZXIuY29tL18vcmVkaXMiLAogICAgIm9yZy5vcGVuY29udGFpbmVycy5pbWFnZS52ZXJzaW9uIjogIjcuMi41IgogIH0KfQ==\",\n\t\t\"OCIManifest\": {\n\t\t\t\"schemaVersion\": 2,\n\t\t\t\"mediaType\": \"application/vnd.oci.image.manifest.v1+json\",\n\t\t\t\"config\": {\n\t\t\t\t\"mediaType\": \"application/vnd.oci.image.config.v1+json\",\n\t\t\t\t\"digest\": \"sha256:cfcd1db8d37cab49e419b369d69ae0507772322b85cc68b767202725daa4f42c\",\n\t\t\t\t\"size\": 8721\n\t\t\t},\n\t\t\t\"layers\": [\n\t\t\t\t{\n\t\t\t\t\t\"mediaType\": \"application/vnd.oci.image.layer.v1.tar+gzip\",\n\t\t\t\t\t\"digest\": \"sha256:c0db683897d16fe6e2869a351dbd5deac2268d5820d4b3c1cf93ec3bd69cafb5\",\n\t\t\t\t\t\"size\": 33122163\n\t\t\t\t},\n\t\t\t\t{\n\t\t\t\t\t\"mediaType\": \"application/vnd.oci.image.layer.v1.tar+gzip\",\n\t\t\t\t\t\"digest\": \"sha256:89818152e420ececc2e8450bb53a0f3168f0ceeead78651a598ae5378d906e90\",\n\t\t\t\t\t\"size\": 1100\n\t\t\t\t},\n\t\t\t\t{\n\t\t\t\t\t\"mediaType\": \"application/vnd.oci.image.layer.v1.tar+gzip\",\n\t\t\t\t\t\"digest\": \"sha256:eea4863dc96b3e4b2e7696e058fe040d5fa732429594e81a803dfcf3c84dc7d0\",\n\t\t\t\t\t\"size\": 873\n\t\t\t\t},\n\t\t\t\t{\n\t\t\t\t\t\"mediaType\": \"application/vnd.oci.image.layer.v1.tar+gzip\",\n\t\t\t\t\t\"digest\": \"sha256:b13ebe32fe97b679bb6970f2580379bd5c1346d10bfbcf6d07f1cd629d2a1e1e\",\n\t\t\t\t\t\"size\": 1359990\n\t\t\t\t},\n\t\t\t\t{\n\t\t\t\t\t\"mediaType\": \"application/vnd.oci.image.layer.v1.tar+gzip\",\n\t\t\t\t\t\"digest\": \"sha256:9d2de5686d715f5b7224131e2b06f65389c844e210c4f01082e2f68d9a74c608\",\n\t\t\t\t\t\"size\": 16023381\n\t\t\t\t},\n\t\t\t\t{\n\t\t\t\t\t\"mediaType\": \"application/vnd.oci.image.layer.v1.tar+gzip\",\n\t\t\t\t\t\"digest\": \"sha256:6458b22a52b55cfa856ec1d9526e09ed6428321a5b113028e6cfee0d73b0b98b\",\n\t\t\t\t\t\"size\": 97\n\t\t\t\t},\n\t\t\t\t{\n\t\t\t\t\t\"mediaType\": \"application/vnd.oci.image.layer.v1.tar+gzip\",\n\t\t\t\t\t\"digest\": \"sha256:4f4fb700ef54461cfa02571ae0db9a0dc1e0cdb5577484a6d75e68dc38e8acc1\",\n\t\t\t\t\t\"size\": 32\n\t\t\t\t},\n\t\t\t\t{\n\t\t\t\t\t\"mediaType\": \"application/vnd.oci.image.layer.v1.tar+gzip\",\n\t\t\t\t\t\"digest\": \"sha256:c016c99203199e7654222e5feb18b049574bdeaa03397d2d871799992e97b85a\",\n\t\t\t\t\t\"size\": 572\n\t\t\t\t}\n\t\t\t],\n\t\t\t\"annotations\": {\n\t\t\t\t\"com.docker.official-images.bashbrew.arch\": \"ppc64le\",\n\t\t\t\t\"org.opencontainers.image.base.digest\": \"sha256:721570b1ed6b9a158d97d94cae4a70b6b496afcfb950615669d7eb564391de04\",\n\t\t\t\t\"org.opencontainers.image.base.name\": \"debian:bookworm-slim\",\n\t\t\t\t\"org.opencontainers.image.created\": \"2024-05-22T23:17:59Z\",\n\t\t\t\t\"org.opencontainers.image.revision\": \"5f08363e6d64b97a0c2e651f4bdcec6e71a32ab4\",\n\t\t\t\t\"org.opencontainers.image.source\": \"https://github.com/redis/docker-library-redis.git#5f08363e6d64b97a0c2e651f4bdcec6e71a32ab4:7.2/debian\",\n\t\t\t\t\"org.opencontainers.image.url\": \"https://hub.docker.com/_/redis\",\n\t\t\t\t\"org.opencontainers.image.version\": \"7.2.5\"\n\t\t\t}\n\t\t}\n\t},\n\t{\n\t\t\"Ref\": \"docker.io/library/redis@sha256:3d6e0606e2f8fe3201337a4967dfd3b7d5e6b2d438eb9f13868418393b1840c3\",\n\t\t\"Descriptor\": {\n\t\t\t\"mediaType\": \"application/vnd.oci.image.manifest.v1+json\",\n\t\t\t\"digest\": \"sha256:3d6e0606e2f8fe3201337a4967dfd3b7d5e6b2d438eb9f13868418393b1840c3\",\n\t\t\t\"size\": 841,\n\t\t\t\"platform\": {\n\t\t\t\t\"architecture\": \"unknown\",\n\t\t\t\t\"os\": \"unknown\"\n\t\t\t}\n\t\t},\n\t\t\"Raw\": \"ewogICJzY2hlbWFWZXJzaW9uIjogMiwKICAibWVkaWFUeXBlIjogImFwcGxpY2F0aW9uL3ZuZC5vY2kuaW1hZ2UubWFuaWZlc3QudjEranNvbiIsCiAgImNvbmZpZyI6IHsKICAgICJtZWRpYVR5cGUiOiAiYXBwbGljYXRpb24vdm5kLm9jaS5pbWFnZS5jb25maWcudjEranNvbiIsCiAgICAiZGlnZXN0IjogInNoYTI1Njo4MmI0ZmIzMmEzMmUwZWM5ZThiYjAwYWYyYWJmNTE2NWQ4N2ZmOWMwMTU2NDI5YTE0YjMzNjczZmQ3ZjA3NTZmIiwKICAgICJzaXplIjogMjQxCiAgfSwKICAibGF5ZXJzIjogWwogICAgewogICAgICAibWVkaWFUeXBlIjogImFwcGxpY2F0aW9uL3ZuZC5pbi10b3RvK2pzb24iLAogICAgICAiZGlnZXN0IjogInNoYTI1NjozYTM4Mjk0MGJmMDU2NmY3ZDk1MzNlNjU5ODJhNjUzMDNlMmI0YmJmNGFlZGZiYWY2ZDUyYTQyYzI4MzBlZjQ1IiwKICAgICAgInNpemUiOiAyMjYwNjI1LAogICAgICAiYW5ub3RhdGlvbnMiOiB7CiAgICAgICAgImluLXRvdG8uaW8vcHJlZGljYXRlLXR5cGUiOiAiaHR0cHM6Ly9zcGR4LmRldi9Eb2N1bWVudCIKICAgICAgfQogICAgfSwKICAgIHsKICAgICAgIm1lZGlhVHlwZSI6ICJhcHBsaWNhdGlvbi92bmQuaW4tdG90bytqc29uIiwKICAgICAgImRpZ2VzdCI6ICJzaGEyNTY6MzBkN2M2YzY2YzA4ZTczNTVkZTk2NjZhN2M0MmM4ZGQ2Y2E5NDhkNWQ1MTUwZmZmMTJjOWRmNmMxZmM5MzUyOSIsCiAgICAgICJzaXplIjogMzUwMjgsCiAgICAgICJhbm5vdGF0aW9ucyI6IHsKICAgICAgICAiaW4tdG90by5pby9wcmVkaWNhdGUtdHlwZSI6ICJodHRwczovL3Nsc2EuZGV2L3Byb3ZlbmFuY2UvdjAuMiIKICAgICAgfQogICAgfQogIF0KfQ==\",\n\t\t\"OCIManifest\": {\n\t\t\t\"schemaVersion\": 2,\n\t\t\t\"mediaType\": \"application/vnd.oci.image.manifest.v1+json\",\n\t\t\t\"config\": {\n\t\t\t\t\"mediaType\": \"application/vnd.oci.image.config.v1+json\",\n\t\t\t\t\"digest\": \"sha256:82b4fb32a32e0ec9e8bb00af2abf5165d87ff9c0156429a14b33673fd7f0756f\",\n\t\t\t\t\"size\": 241\n\t\t\t},\n\t\t\t\"layers\": [\n\t\t\t\t{\n\t\t\t\t\t\"mediaType\": \"application/vnd.in-toto+json\",\n\t\t\t\t\t\"digest\": \"sha256:3a382940bf0566f7d9533e65982a65303e2b4bbf4aedfbaf6d52a42c2830ef45\",\n\t\t\t\t\t\"size\": 2260625,\n\t\t\t\t\t\"annotations\": {\n\t\t\t\t\t\t\"in-toto.io/predicate-type\": \"https://spdx.dev/Document\"\n\t\t\t\t\t}\n\t\t\t\t},\n\t\t\t\t{\n\t\t\t\t\t\"mediaType\": \"application/vnd.in-toto+json\",\n\t\t\t\t\t\"digest\": \"sha256:30d7c6c66c08e7355de9666a7c42c8dd6ca948d5d5150fff12c9df6c1fc93529\",\n\t\t\t\t\t\"size\": 35028,\n\t\t\t\t\t\"annotations\": {\n\t\t\t\t\t\t\"in-toto.io/predicate-type\": \"https://slsa.dev/provenance/v0.2\"\n\t\t\t\t\t}\n\t\t\t\t}\n\t\t\t]\n\t\t}\n\t},\n\t{\n\t\t\"Ref\": \"docker.io/library/redis@sha256:9b7bb93e39c7f1f418b5416bb6b0b44189678cc449bde7b4d0653ed2927d9325\",\n\t\t\"Descriptor\": {\n\t\t\t\"mediaType\": \"application/vnd.oci.image.manifest.v1+json\",\n\t\t\t\"digest\": \"sha256:9b7bb93e39c7f1f418b5416bb6b0b44189678cc449bde7b4d0653ed2927d9325\",\n\t\t\t\"size\": 2483,\n\t\t\t\"platform\": {\n\t\t\t\t\"architecture\": \"s390x\",\n\t\t\t\t\"os\": \"linux\"\n\t\t\t}\n\t\t},\n\t\t\"Raw\": \"ewogICJzY2hlbWFWZXJzaW9uIjogMiwKICAibWVkaWFUeXBlIjogImFwcGxpY2F0aW9uL3ZuZC5vY2kuaW1hZ2UubWFuaWZlc3QudjEranNvbiIsCiAgImNvbmZpZyI6IHsKICAgICJtZWRpYVR5cGUiOiAiYXBwbGljYXRpb24vdm5kLm9jaS5pbWFnZS5jb25maWcudjEranNvbiIsCiAgICAiZGlnZXN0IjogInNoYTI1Njo0MjViMWUzZDBmYjg0ZjNiMzRkYTdhZTU4MjY1ZTcyMTQ4ZjU0OTI3YzVkMTRmNTIyOTRlZDc2MTRiMjMxYTFmIiwKICAgICJzaXplIjogODcxOQogIH0sCiAgImxheWVycyI6IFsKICAgIHsKICAgICAgIm1lZGlhVHlwZSI6ICJhcHBsaWNhdGlvbi92bmQub2NpLmltYWdlLmxheWVyLnYxLnRhcitnemlwIiwKICAgICAgImRpZ2VzdCI6ICJzaGEyNTY6ZWNhMWUxOTJkZTI1ZmI1NjgyNmZmN2VkMTRiMmUxNTMyYTQ5YzI3YTA4MTQ3YTYyNDk1MDZlYWZkOGFiNDQ3MiIsCiAgICAgICJzaXplIjogMjc0OTAwMjQKICAgIH0sCiAgICB7CiAgICAgICJtZWRpYVR5cGUiOiAiYXBwbGljYXRpb24vdm5kLm9jaS5pbWFnZS5sYXllci52MS50YXIrZ3ppcCIsCiAgICAgICJkaWdlc3QiOiAic2hhMjU2OjlhZThiNWY2M2Q0YjJkODdiNDljYzY4ZDdjYjU2MTYwZjBjMTJhYzI2YzU4YmE3NWFmYTgwZWJiNTAwMzQ4NDciLAogICAgICAic2l6ZSI6IDExMDEKICAgIH0sCiAgICB7CiAgICAgICJtZWRpYVR5cGUiOiAiYXBwbGljYXRpb24vdm5kLm9jaS5pbWFnZS5sYXllci52MS50YXIrZ3ppcCIsCiAgICAgICJkaWdlc3QiOiAic2hhMjU2OjMzMGIzZTYyMzc1MGIyZGRmZDhlZDI0MzI4YTBhOTI3YWZiYjQ3OWQ1OGJhMDYyNjc4M2QwN2RjYjZmY2EwNjMiLAogICAgICAic2l6ZSI6IDg3NAogICAgfSwKICAgIHsKICAgICAgIm1lZGlhVHlwZSI6ICJhcHBsaWNhdGlvbi92bmQub2NpLmltYWdlLmxheWVyLnYxLnRhcitnemlwIiwKICAgICAgImRpZ2VzdCI6ICJzaGEyNTY6ZjRiODg1ZjBiNzZiYjNjZGEyZjFkYmFhZWUyOTY5ZTU2MTBkY2UwNjZlNzFlZWMyNzU2ZWYwYzQ5ZTc2ZWM4ZCIsCiAgICAgICJzaXplIjogMTQwMzAzMgogICAgfSwKICAgIHsKICAgICAgIm1lZGlhVHlwZSI6ICJhcHBsaWNhdGlvbi92bmQub2NpLmltYWdlLmxheWVyLnYxLnRhcitnemlwIiwKICAgICAgImRpZ2VzdCI6ICJzaGEyNTY6MzBiMjdjNDYyNzVkNjRmNTk2NjUyNTQ1MGQ4N2IyMTgwNmU2ZDA3MzFlOTE4MDY1YWM4MzZjNmIwNDgwNDdlZSIsCiAgICAgICJzaXplIjogMTQ5NjExMzIKICAgIH0sCiAgICB7CiAgICAgICJtZWRpYVR5cGUiOiAiYXBwbGljYXRpb24vdm5kLm9jaS5pbWFnZS5sYXllci52MS50YXIrZ3ppcCIsCiAgICAgICJkaWdlc3QiOiAic2hhMjU2OmM5OTBkOGYxNzkxOTlmZWUxMGNmNGFmYzI1ZGYwMmEzNmY0N2ZhZjEzMTlhMDFmNDdhNmRhMTYxYWJiYmFhYjgiLAogICAgICAic2l6ZSI6IDk1CiAgICB9LAogICAgewogICAgICAibWVkaWFUeXBlIjogImFwcGxpY2F0aW9uL3ZuZC5vY2kuaW1hZ2UubGF5ZXIudjEudGFyK2d6aXAiLAogICAgICAiZGlnZXN0IjogInNoYTI1Njo0ZjRmYjcwMGVmNTQ0NjFjZmEwMjU3MWFlMGRiOWEwZGMxZTBjZGI1NTc3NDg0YTZkNzVlNjhkYzM4ZThhY2MxIiwKICAgICAgInNpemUiOiAzMgogICAgfSwKICAgIHsKICAgICAgIm1lZGlhVHlwZSI6ICJhcHBsaWNhdGlvbi92bmQub2NpLmltYWdlLmxheWVyLnYxLnRhcitnemlwIiwKICAgICAgImRpZ2VzdCI6ICJzaGEyNTY6ZTExNzIyZjQ5N2ZiOThmMmM1ZjRhYTUyMmIyMDc1ZGJiOWQ0OGRjY2NiOGRmYzlkZjM5YzU2YjFlOTlhM2QwZiIsCiAgICAgICJzaXplIjogNTcyCiAgICB9CiAgXSwKICAiYW5ub3RhdGlvbnMiOiB7CiAgICAiY29tLmRvY2tlci5vZmZpY2lhbC1pbWFnZXMuYmFzaGJyZXcuYXJjaCI6ICJzMzkweCIsCiAgICAib3JnLm9wZW5jb250YWluZXJzLmltYWdlLmJhc2UuZGlnZXN0IjogInNoYTI1Njo5NmYwMjY1MGI2NThiOGYzNzhhYTM4MWJiZmVlODIzNDUzNTM4NDNmZTk3ZjEzNDVhZjY0OWFkNDYzNzExZmQzIiwKICAgICJvcmcub3BlbmNvbnRhaW5lcnMuaW1hZ2UuYmFzZS5uYW1lIjogImRlYmlhbjpib29rd29ybS1zbGltIiwKICAgICJvcmcub3BlbmNvbnRhaW5lcnMuaW1hZ2UuY3JlYXRlZCI6ICIyMDI0LTA1LTIyVDIzOjE3OjU5WiIsCiAgICAib3JnLm9wZW5jb250YWluZXJzLmltYWdlLnJldmlzaW9uIjogIjVmMDgzNjNlNmQ2NGI5N2EwYzJlNjUxZjRiZGNlYzZlNzFhMzJhYjQiLAogICAgIm9yZy5vcGVuY29udGFpbmVycy5pbWFnZS5zb3VyY2UiOiAiaHR0cHM6Ly9naXRodWIuY29tL3JlZGlzL2RvY2tlci1saWJyYXJ5LXJlZGlzLmdpdCM1ZjA4MzYzZTZkNjRiOTdhMGMyZTY1MWY0YmRjZWM2ZTcxYTMyYWI0OjcuMi9kZWJpYW4iLAogICAgIm9yZy5vcGVuY29udGFpbmVycy5pbWFnZS51cmwiOiAiaHR0cHM6Ly9odWIuZG9ja2VyLmNvbS9fL3JlZGlzIiwKICAgICJvcmcub3BlbmNvbnRhaW5lcnMuaW1hZ2UudmVyc2lvbiI6ICI3LjIuNSIKICB9Cn0=\",\n\t\t\"OCIManifest\": {\n\t\t\t\"schemaVersion\": 2,\n\t\t\t\"mediaType\": \"application/vnd.oci.image.manifest.v1+json\",\n\t\t\t\"config\": {\n\t\t\t\t\"mediaType\": \"application/vnd.oci.image.config.v1+json\",\n\t\t\t\t\"digest\": \"sha256:425b1e3d0fb84f3b34da7ae58265e72148f54927c5d14f52294ed7614b231a1f\",\n\t\t\t\t\"size\": 8719\n\t\t\t},\n\t\t\t\"layers\": [\n\t\t\t\t{\n\t\t\t\t\t\"mediaType\": \"application/vnd.oci.image.layer.v1.tar+gzip\",\n\t\t\t\t\t\"digest\": \"sha256:eca1e192de25fb56826ff7ed14b2e1532a49c27a08147a6249506eafd8ab4472\",\n\t\t\t\t\t\"size\": 27490024\n\t\t\t\t},\n\t\t\t\t{\n\t\t\t\t\t\"mediaType\": \"application/vnd.oci.image.layer.v1.tar+gzip\",\n\t\t\t\t\t\"digest\": \"sha256:9ae8b5f63d4b2d87b49cc68d7cb56160f0c12ac26c58ba75afa80ebb50034847\",\n\t\t\t\t\t\"size\": 1101\n\t\t\t\t},\n\t\t\t\t{\n\t\t\t\t\t\"mediaType\": \"application/vnd.oci.image.layer.v1.tar+gzip\",\n\t\t\t\t\t\"digest\": \"sha256:330b3e623750b2ddfd8ed24328a0a927afbb479d58ba0626783d07dcb6fca063\",\n\t\t\t\t\t\"size\": 874\n\t\t\t\t},\n\t\t\t\t{\n\t\t\t\t\t\"mediaType\": \"application/vnd.oci.image.layer.v1.tar+gzip\",\n\t\t\t\t\t\"digest\": \"sha256:f4b885f0b76bb3cda2f1dbaaee2969e5610dce066e71eec2756ef0c49e76ec8d\",\n\t\t\t\t\t\"size\": 1403032\n\t\t\t\t},\n\t\t\t\t{\n\t\t\t\t\t\"mediaType\": \"application/vnd.oci.image.layer.v1.tar+gzip\",\n\t\t\t\t\t\"digest\": \"sha256:30b27c46275d64f5966525450d87b21806e6d0731e918065ac836c6b048047ee\",\n\t\t\t\t\t\"size\": 14961132\n\t\t\t\t},\n\t\t\t\t{\n\t\t\t\t\t\"mediaType\": \"application/vnd.oci.image.layer.v1.tar+gzip\",\n\t\t\t\t\t\"digest\": \"sha256:c990d8f179199fee10cf4afc25df02a36f47faf1319a01f47a6da161abbbaab8\",\n\t\t\t\t\t\"size\": 95\n\t\t\t\t},\n\t\t\t\t{\n\t\t\t\t\t\"mediaType\": \"application/vnd.oci.image.layer.v1.tar+gzip\",\n\t\t\t\t\t\"digest\": \"sha256:4f4fb700ef54461cfa02571ae0db9a0dc1e0cdb5577484a6d75e68dc38e8acc1\",\n\t\t\t\t\t\"size\": 32\n\t\t\t\t},\n\t\t\t\t{\n\t\t\t\t\t\"mediaType\": \"application/vnd.oci.image.layer.v1.tar+gzip\",\n\t\t\t\t\t\"digest\": \"sha256:e11722f497fb98f2c5f4aa522b2075dbb9d48dcccb8dfc9df39c56b1e99a3d0f\",\n\t\t\t\t\t\"size\": 572\n\t\t\t\t}\n\t\t\t],\n\t\t\t\"annotations\": {\n\t\t\t\t\"com.docker.official-images.bashbrew.arch\": \"s390x\",\n\t\t\t\t\"org.opencontainers.image.base.digest\": \"sha256:96f02650b658b8f378aa381bbfee82345353843fe97f1345af649ad463711fd3\",\n\t\t\t\t\"org.opencontainers.image.base.name\": \"debian:bookworm-slim\",\n\t\t\t\t\"org.opencontainers.image.created\": \"2024-05-22T23:17:59Z\",\n\t\t\t\t\"org.opencontainers.image.revision\": \"5f08363e6d64b97a0c2e651f4bdcec6e71a32ab4\",\n\t\t\t\t\"org.opencontainers.image.source\": \"https://github.com/redis/docker-library-redis.git#5f08363e6d64b97a0c2e651f4bdcec6e71a32ab4:7.2/debian\",\n\t\t\t\t\"org.opencontainers.image.url\": \"https://hub.docker.com/_/redis\",\n\t\t\t\t\"org.opencontainers.image.version\": \"7.2.5\"\n\t\t\t}\n\t\t}\n\t},\n\t{\n\t\t\"Ref\": \"docker.io/library/redis@sha256:f84156f5e7f397e38a0a8b0be22f6ceb9275f92fef411f0451ce25a71ac59639\",\n\t\t\"Descriptor\": {\n\t\t\t\"mediaType\": \"application/vnd.oci.image.manifest.v1+json\",\n\t\t\t\"digest\": \"sha256:f84156f5e7f397e38a0a8b0be22f6ceb9275f92fef411f0451ce25a71ac59639\",\n\t\t\t\"size\": 841,\n\t\t\t\"platform\": {\n\t\t\t\t\"architecture\": \"unknown\",\n\t\t\t\t\"os\": \"unknown\"\n\t\t\t}\n\t\t},\n\t\t\"Raw\": \"ewogICJzY2hlbWFWZXJzaW9uIjogMiwKICAibWVkaWFUeXBlIjogImFwcGxpY2F0aW9uL3ZuZC5vY2kuaW1hZ2UubWFuaWZlc3QudjEranNvbiIsCiAgImNvbmZpZyI6IHsKICAgICJtZWRpYVR5cGUiOiAiYXBwbGljYXRpb24vdm5kLm9jaS5pbWFnZS5jb25maWcudjEranNvbiIsCiAgICAiZGlnZXN0IjogInNoYTI1NjplMmMyNzllNDM4NmNiNjljNTg0NDgyZmFiN2Q2MjM4MTFjODdkYTk1MDA3ZTUxZTg3MmY2NjA4YzFhNGMyZTljIiwKICAgICJzaXplIjogMjQxCiAgfSwKICAibGF5ZXJzIjogWwogICAgewogICAgICAibWVkaWFUeXBlIjogImFwcGxpY2F0aW9uL3ZuZC5pbi10b3RvK2pzb24iLAogICAgICAiZGlnZXN0IjogInNoYTI1Njo5NjcyMGRmNThkNTg0NDFlOTRjZDRhZTEyNjdiMmUwN2RlNWY1Njc1MWFhOTYyNTQ3Yjg3ODY1OTZjNjczNjE3IiwKICAgICAgInNpemUiOiAyMjU2MTY3LAogICAgICAiYW5ub3RhdGlvbnMiOiB7CiAgICAgICAgImluLXRvdG8uaW8vcHJlZGljYXRlLXR5cGUiOiAiaHR0cHM6Ly9zcGR4LmRldi9Eb2N1bWVudCIKICAgICAgfQogICAgfSwKICAgIHsKICAgICAgIm1lZGlhVHlwZSI6ICJhcHBsaWNhdGlvbi92bmQuaW4tdG90bytqc29uIiwKICAgICAgImRpZ2VzdCI6ICJzaGEyNTY6MjI1Yzc0ZTZiYWFiNDQ1MDFhMzdlZTE3MzBmMDk2YjY5OGM5YzcyNzg2ZGUxNTFlYTg4NTcwMzQ4ZjRjZTY4NyIsCiAgICAgICJzaXplIjogMzQ5ODIsCiAgICAgICJhbm5vdGF0aW9ucyI6IHsKICAgICAgICAiaW4tdG90by5pby9wcmVkaWNhdGUtdHlwZSI6ICJodHRwczovL3Nsc2EuZGV2L3Byb3ZlbmFuY2UvdjAuMiIKICAgICAgfQogICAgfQogIF0KfQ==\",\n\t\t\"OCIManifest\": {\n\t\t\t\"schemaVersion\": 2,\n\t\t\t\"mediaType\": \"application/vnd.oci.image.manifest.v1+json\",\n\t\t\t\"config\": {\n\t\t\t\t\"mediaType\": \"application/vnd.oci.image.config.v1+json\",\n\t\t\t\t\"digest\": \"sha256:e2c279e4386cb69c584482fab7d623811c87da95007e51e872f6608c1a4c2e9c\",\n\t\t\t\t\"size\": 241\n\t\t\t},\n\t\t\t\"layers\": [\n\t\t\t\t{\n\t\t\t\t\t\"mediaType\": \"application/vnd.in-toto+json\",\n\t\t\t\t\t\"digest\": \"sha256:96720df58d58441e94cd4ae1267b2e07de5f56751aa962547b8786596c673617\",\n\t\t\t\t\t\"size\": 2256167,\n\t\t\t\t\t\"annotations\": {\n\t\t\t\t\t\t\"in-toto.io/predicate-type\": \"https://spdx.dev/Document\"\n\t\t\t\t\t}\n\t\t\t\t},\n\t\t\t\t{\n\t\t\t\t\t\"mediaType\": \"application/vnd.in-toto+json\",\n\t\t\t\t\t\"digest\": \"sha256:225c74e6baab44501a37ee1730f096b698c9c72786de151ea88570348f4ce687\",\n\t\t\t\t\t\"size\": 34982,\n\t\t\t\t\t\"annotations\": {\n\t\t\t\t\t\t\"in-toto.io/predicate-type\": \"https://slsa.dev/provenance/v0.2\"\n\t\t\t\t\t}\n\t\t\t\t}\n\t\t\t]\n\t\t}\n\t}\n]\n",
+      "stderr": "",
+      "stdout_bytes": 67884,
+      "stderr_bytes": 0,
+      "stdout_sha256": "245646cb971a07d6a898e2569f19b1439ee03026f7fd73ba64d861c5588de0ce",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "image_inspect": {
+      "executable": {
+        "logical_name": "docker",
+        "canonical_path": "/usr/bin/docker",
+        "sha256": "d767d00af09e69cf053e9d923550fda999c2b5911c7a0a0a920b964e86b32d25"
+      },
+      "argv": [
+        "image",
+        "inspect",
+        "redis@sha256:3aaec283e6e593bde528077d60280ac1589887067a39273348860837c9346d7e"
+      ],
+      "execution_environment": [
+        "LANG=C",
+        "LC_ALL=C",
+        "TZ=UTC"
+      ],
+      "exit_code": 0,
+      "timed_out": false,
+      "stdout": "[\n    {\n        \"Id\": \"sha256:3aaec283e6e593bde528077d60280ac1589887067a39273348860837c9346d7e\",\n        \"RepoTags\": [\n            \"redis@sha256:3aaec283e6e593bde528077d60280ac1589887067a39273348860837c9346d7e\"\n        ],\n        \"RepoDigests\": [\n            \"redis@sha256:3aaec283e6e593bde528077d60280ac1589887067a39273348860837c9346d7e\"\n        ],\n        \"Comment\": \"buildkit.dockerfile.v0\",\n        \"Created\": \"2024-05-22T23:17:59Z\",\n        \"Config\": {\n            \"ExposedPorts\": {\n                \"6379/tcp\": {}\n            },\n            \"Env\": [\n                \"PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin\",\n                \"GOSU_VERSION=1.17\",\n                \"REDIS_VERSION=7.2.5\",\n                \"REDIS_DOWNLOAD_URL=http://download.redis.io/releases/redis-7.2.5.tar.gz\",\n                \"REDIS_DOWNLOAD_SHA=5981179706f8391f03be91d951acafaeda91af7fac56beffb2701963103e423d\"\n            ],\n            \"Entrypoint\": [\n                \"docker-entrypoint.sh\"\n            ],\n            \"Cmd\": [\n                \"redis-server\"\n            ],\n            \"Volumes\": {\n                \"/data\": {}\n            },\n            \"WorkingDir\": \"/data\",\n            \"ArgsEscaped\": true\n        },\n        \"Architecture\": \"amd64\",\n        \"Os\": \"linux\",\n        \"Size\": 45502941,\n        \"RootFS\": {\n            \"Type\": \"layers\",\n            \"Layers\": [\n                \"sha256:8d853c8add5d1e7b0aafc4b68a3d9fb8e7a0da27970c2acf831fe63be4a0cd2c\",\n                \"sha256:cf177cf6c2d447800a305c6589799f58cb00f27dfeba432b5d288d93f9522b65\",\n                \"sha256:c60be607db95853b9906dc7ea737047a4835f159703cc4737161ed007108faa2\",\n                \"sha256:0b4efc673f3ebfcbc8a2412a83ef33f2a15fe0045b186940358bb63fd6ac34ed\",\n                \"sha256:ded28bb75e21c9de25bb1536b6af15859392828d5c9c6de7635fb5bbf25ad960\",\n                \"sha256:6f6eeaf04e8845d0f5b3c804ffcc896854c1b24b8ef726f918ed8ec697243489\",\n                \"sha256:5f70bf18a086007016e948b04aed3b82103a36bea41755b6cddfaf10ace3c6ef\",\n                \"sha256:7d5e8c30071bb2931b20f13b7aa890d738c31b416103520df7388a966238ca44\"\n            ]\n        },\n        \"Metadata\": {\n            \"LastTagTime\": \"2026-09-11T11:15:34.274664907Z\"\n        },\n        \"Descriptor\": {\n            \"mediaType\": \"application/vnd.oci.image.index.v1+json\",\n            \"digest\": \"sha256:3aaec283e6e593bde528077d60280ac1589887067a39273348860837c9346d7e\",\n            \"size\": 10264\n        },\n        \"Identity\": {\n            \"Pull\": [\n                {\n                    \"Repository\": \"docker.io/library/redis\"\n                }\n            ]\n        }\n    }\n]\n",
+      "stderr": "",
+      "stdout_bytes": 2618,
+      "stderr_bytes": 0,
+      "stdout_sha256": "6d9e965b2d967fab0627b89cda2c3f85d9479095a7b73ab46c368bebdbbe92df",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "container_run": {
+      "executable": {
+        "logical_name": "docker",
+        "canonical_path": "/usr/bin/docker",
+        "sha256": "d767d00af09e69cf053e9d923550fda999c2b5911c7a0a0a920b964e86b32d25"
+      },
+      "argv": [
+        "run",
+        "--detach",
+        "--rm",
+        "--cpuset-cpus",
+        "1-4",
+        "--name",
+        "hydracache-perf-w8-27970-1789125348112901942",
+        "--platform",
+        "linux/amd64",
+        "--publish",
+        "127.0.0.1::6379/tcp",
+        "redis@sha256:3aaec283e6e593bde528077d60280ac1589887067a39273348860837c9346d7e",
+        "redis-server",
+        "--save",
+        "",
+        "--appendonly",
+        "no"
+      ],
+      "execution_environment": [
+        "LANG=C",
+        "LC_ALL=C",
+        "TZ=UTC"
+      ],
+      "exit_code": 0,
+      "timed_out": false,
+      "stdout": "6b2eb63b2c9afc42099966db22291e618bb40076c9e9d3489841d5bbea52de49\n",
+      "stderr": "WARNING: Your kernel does not support cpuset or the cgroup is not mounted. Cpuset discarded.\n",
+      "stdout_bytes": 65,
+      "stderr_bytes": 93,
+      "stdout_sha256": "517588c996987cf295a8e616073814835746e6c764a4f2dab6fadd57b656d0ce",
+      "stderr_sha256": "9f724c6104e2fa0e370deb9c0cc31e159b4ef0eae8464bd49cea3aca678ca57b"
+    },
+    "port_inspect": {
+      "executable": {
+        "logical_name": "docker",
+        "canonical_path": "/usr/bin/docker",
+        "sha256": "d767d00af09e69cf053e9d923550fda999c2b5911c7a0a0a920b964e86b32d25"
+      },
+      "argv": [
+        "port",
+        "hydracache-perf-w8-27970-1789125348112901942",
+        "6379/tcp"
+      ],
+      "execution_environment": [
+        "LANG=C",
+        "LC_ALL=C",
+        "TZ=UTC"
+      ],
+      "exit_code": 0,
+      "timed_out": false,
+      "stdout": "127.0.0.1:32768\n",
+      "stderr": "",
+      "stdout_bytes": 16,
+      "stderr_bytes": 0,
+      "stdout_sha256": "592c37d7c53f7980cb3b0e164c27b094a753d13a9663b81bc9899e3ec6356a2e",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "container_inspect": {
+      "executable": {
+        "logical_name": "docker",
+        "canonical_path": "/usr/bin/docker",
+        "sha256": "d767d00af09e69cf053e9d923550fda999c2b5911c7a0a0a920b964e86b32d25"
+      },
+      "argv": [
+        "container",
+        "inspect",
+        "hydracache-perf-w8-27970-1789125348112901942"
+      ],
+      "execution_environment": [
+        "LANG=C",
+        "LC_ALL=C",
+        "TZ=UTC"
+      ],
+      "exit_code": 0,
+      "timed_out": false,
+      "stdout": "[\n    {\n        \"Id\": \"6b2eb63b2c9afc42099966db22291e618bb40076c9e9d3489841d5bbea52de49\",\n        \"Created\": \"2026-09-11T11:15:48.127025311Z\",\n        \"Path\": \"docker-entrypoint.sh\",\n        \"Args\": [\n            \"redis-server\",\n            \"--save\",\n            \"\",\n            \"--appendonly\",\n            \"no\"\n        ],\n        \"State\": {\n            \"Status\": \"running\",\n            \"Running\": true,\n            \"Paused\": false,\n            \"Restarting\": false,\n            \"OOMKilled\": false,\n            \"Dead\": false,\n            \"Pid\": 29100,\n            \"ExitCode\": 0,\n            \"Error\": \"\",\n            \"StartedAt\": \"2026-09-11T11:15:48.25807182Z\",\n            \"FinishedAt\": \"0001-01-01T00:00:00Z\"\n        },\n        \"Image\": \"sha256:3aaec283e6e593bde528077d60280ac1589887067a39273348860837c9346d7e\",\n        \"ResolvConfPath\": \"/home/github-runner/.local/share/docker/containers/6b2eb63b2c9afc42099966db22291e618bb40076c9e9d3489841d5bbea52de49/resolv.conf\",\n        \"HostnamePath\": \"/home/github-runner/.local/share/docker/containers/6b2eb63b2c9afc42099966db22291e618bb40076c9e9d3489841d5bbea52de49/hostname\",\n        \"HostsPath\": \"/home/github-runner/.local/share/docker/containers/6b2eb63b2c9afc42099966db22291e618bb40076c9e9d3489841d5bbea52de49/hosts\",\n        \"LogPath\": \"/home/github-runner/.local/share/docker/containers/6b2eb63b2c9afc42099966db22291e618bb40076c9e9d3489841d5bbea52de49/6b2eb63b2c9afc42099966db22291e618bb40076c9e9d3489841d5bbea52de49-json.log\",\n        \"Name\": \"/hydracache-perf-w8-27970-1789125348112901942\",\n        \"RestartCount\": 0,\n        \"Driver\": \"overlayfs\",\n        \"Platform\": \"linux\",\n        \"MountLabel\": \"\",\n        \"ProcessLabel\": \"\",\n        \"AppArmorProfile\": \"\",\n        \"ExecIDs\": null,\n        \"HostConfig\": {\n            \"Binds\": null,\n            \"ContainerIDFile\": \"\",\n            \"LogConfig\": {\n                \"Type\": \"json-file\",\n                \"Config\": {}\n            },\n            \"NetworkMode\": \"bridge\",\n            \"PortBindings\": {\n                \"6379/tcp\": [\n                    {\n                        \"HostIp\": \"127.0.0.1\",\n                        \"HostPort\": \"\"\n                    }\n                ]\n            },\n            \"RestartPolicy\": {\n                \"Name\": \"no\",\n                \"MaximumRetryCount\": 0\n            },\n            \"AutoRemove\": true,\n            \"VolumeDriver\": \"\",\n            \"VolumesFrom\": null,\n            \"ConsoleSize\": [\n                0,\n                0\n            ],\n            \"CapAdd\": null,\n            \"CapDrop\": null,\n            \"CgroupnsMode\": \"private\",\n            \"Dns\": null,\n            \"DnsOptions\": [],\n            \"DnsSearch\": [],\n            \"ExtraHosts\": null,\n            \"GroupAdd\": null,\n            \"IpcMode\": \"private\",\n            \"Cgroup\": \"\",\n            \"Links\": null,\n            \"OomScoreAdj\": 200,\n            \"PidMode\": \"\",\n            \"Privileged\": false,\n            \"PublishAllPorts\": false,\n            \"ReadonlyRootfs\": false,\n            \"SecurityOpt\": null,\n            \"UTSMode\": \"\",\n            \"UsernsMode\": \"\",\n            \"ShmSize\": 67108864,\n            \"Runtime\": \"runc\",\n            \"Isolation\": \"\",\n            \"CpuShares\": 0,\n            \"Memory\": 0,\n            \"NanoCpus\": 0,\n            \"CgroupParent\": \"\",\n            \"BlkioWeight\": 0,\n            \"BlkioWeightDevice\": [],\n            \"BlkioDeviceReadBps\": [],\n            \"BlkioDeviceWriteBps\": [],\n            \"BlkioDeviceReadIOps\": [],\n            \"BlkioDeviceWriteIOps\": [],\n            \"CpuPeriod\": 0,\n            \"CpuQuota\": 0,\n            \"CpuRealtimePeriod\": 0,\n            \"CpuRealtimeRuntime\": 0,\n            \"CpusetCpus\": \"\",\n            \"CpusetMems\": \"\",\n            \"Devices\": [],\n            \"DeviceCgroupRules\": null,\n            \"DeviceRequests\": null,\n            \"MemoryReservation\": 0,\n            \"MemorySwap\": 0,\n            \"MemorySwappiness\": null,\n            \"OomKillDisable\": null,\n            \"PidsLimit\": null,\n            \"Ulimits\": [],\n            \"CpuCount\": 0,\n            \"CpuPercent\": 0,\n            \"IOMaximumIOps\": 0,\n            \"IOMaximumBandwidth\": 0,\n            \"MaskedPaths\": [\n                \"/proc/acpi\",\n                \"/proc/asound\",\n                \"/proc/interrupts\",\n                \"/proc/kcore\",\n                \"/proc/keys\",\n                \"/proc/latency_stats\",\n                \"/proc/sched_debug\",\n                \"/proc/scsi\",\n                \"/proc/timer_list\",\n                \"/proc/timer_stats\",\n                \"/sys/devices/virtual/powercap\",\n                \"/sys/firmware\"\n            ],\n            \"ReadonlyPaths\": [\n                \"/proc/bus\",\n                \"/proc/fs\",\n                \"/proc/irq\",\n                \"/proc/sys\",\n                \"/proc/sysrq-trigger\"\n            ]\n        },\n        \"Storage\": {\n            \"RootFS\": {\n                \"Snapshot\": {\n                    \"Name\": \"overlayfs\"\n                }\n            }\n        },\n        \"Mounts\": [\n            {\n                \"Type\": \"volume\",\n                \"Name\": \"33613af6b061a8faf10d57b9bb43e1dbc33634ee7997da2d1eb4574b275e0066\",\n                \"Source\": \"/home/github-runner/.local/share/docker/volumes/33613af6b061a8faf10d57b9bb43e1dbc33634ee7997da2d1eb4574b275e0066/_data\",\n                \"Destination\": \"/data\",\n                \"Driver\": \"local\",\n                \"Mode\": \"\",\n                \"RW\": true,\n                \"Propagation\": \"\"\n            }\n        ],\n        \"Config\": {\n            \"Hostname\": \"6b2eb63b2c9a\",\n            \"Domainname\": \"\",\n            \"User\": \"\",\n            \"AttachStdin\": false,\n            \"AttachStdout\": false,\n            \"AttachStderr\": false,\n            \"ExposedPorts\": {\n                \"6379/tcp\": {}\n            },\n            \"Tty\": false,\n            \"OpenStdin\": false,\n            \"StdinOnce\": false,\n            \"Env\": [\n                \"PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin\",\n                \"GOSU_VERSION=1.17\",\n                \"REDIS_VERSION=7.2.5\",\n                \"REDIS_DOWNLOAD_URL=http://download.redis.io/releases/redis-7.2.5.tar.gz\",\n                \"REDIS_DOWNLOAD_SHA=5981179706f8391f03be91d951acafaeda91af7fac56beffb2701963103e423d\"\n            ],\n            \"Cmd\": [\n                \"redis-server\",\n                \"--save\",\n                \"\",\n                \"--appendonly\",\n                \"no\"\n            ],\n            \"Image\": \"redis@sha256:3aaec283e6e593bde528077d60280ac1589887067a39273348860837c9346d7e\",\n            \"Volumes\": {\n                \"/data\": {}\n            },\n            \"WorkingDir\": \"/data\",\n            \"Entrypoint\": [\n                \"docker-entrypoint.sh\"\n            ],\n            \"Labels\": {}\n        },\n        \"NetworkSettings\": {\n            \"SandboxID\": \"4aa71afad7663fc493d1e71effb3fae5f8fe993e9153c74e24735e879b6bba61\",\n            \"SandboxKey\": \"/run/user/1001/docker/netns/4aa71afad766\",\n            \"Ports\": {\n                \"6379/tcp\": [\n                    {\n                        \"HostIp\": \"127.0.0.1\",\n                        \"HostPort\": \"32768\"\n                    }\n                ]\n            },\n            \"Networks\": {\n                \"bridge\": {\n                    \"IPAMConfig\": null,\n                    \"Links\": null,\n                    \"Aliases\": null,\n                    \"DriverOpts\": null,\n                    \"GwPriority\": 0,\n                    \"NetworkID\": \"860332f0ec1fab415708f60ca782272bbcca1f98640920bfc0ed7b113b3d49f0\",\n                    \"EndpointID\": \"b987a24f12c0dd062a0537c195f47dc9940af5b4cc66c24bb0ae52b3e9d93f8b\",\n                    \"Gateway\": \"172.17.0.1\",\n                    \"IPAddress\": \"172.17.0.2\",\n                    \"MacAddress\": \"8a:a1:52:a2:11:f1\",\n                    \"IPPrefixLen\": 16,\n                    \"IPv6Gateway\": \"\",\n                    \"GlobalIPv6Address\": \"\",\n                    \"GlobalIPv6PrefixLen\": 0,\n                    \"DNSNames\": null\n                }\n            }\n        },\n        \"ImageManifestDescriptor\": {\n            \"mediaType\": \"application/vnd.oci.image.manifest.v1+json\",\n            \"digest\": \"sha256:301f993bbc91d0b50b0737a97962905657d9f595e9935282b7db16a563b53d1b\",\n            \"size\": 2483,\n            \"annotations\": {\n                \"com.docker.official-images.bashbrew.arch\": \"amd64\",\n                \"org.opencontainers.image.base.digest\": \"sha256:7095ea629c4563714b9655137db2eacd456eb3eea0eb8a2b0a4a6b0b187220a9\",\n                \"org.opencontainers.image.base.name\": \"debian:bookworm-slim\",\n                \"org.opencontainers.image.created\": \"2024-09-27T06:03:20Z\",\n                \"org.opencontainers.image.revision\": \"5f08363e6d64b97a0c2e651f4bdcec6e71a32ab4\",\n                \"org.opencontainers.image.source\": \"https://github.com/redis/docker-library-redis.git#5f08363e6d64b97a0c2e651f4bdcec6e71a32ab4:7.2/debian\",\n                \"org.opencontainers.image.url\": \"https://hub.docker.com/_/redis\",\n                \"org.opencontainers.image.version\": \"7.2.5\"\n            },\n            \"platform\": {\n                \"architecture\": \"amd64\",\n                \"os\": \"linux\"\n            }\n        }\n    }\n]\n",
+      "stderr": "",
+      "stdout_bytes": 9115,
+      "stderr_bytes": 0,
+      "stdout_sha256": "8336af8088d52b19fbe8ab18ac181f77bbb39fa25dd679664ec3ff841f2e90ba",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "container_stop": {
+      "executable": {
+        "logical_name": "docker",
+        "canonical_path": "/usr/bin/docker",
+        "sha256": "d767d00af09e69cf053e9d923550fda999c2b5911c7a0a0a920b964e86b32d25"
+      },
+      "argv": [
+        "stop",
+        "--time",
+        "10",
+        "hydracache-perf-w8-27970-1789125348112901942"
+      ],
+      "execution_environment": [
+        "LANG=C",
+        "LC_ALL=C",
+        "TZ=UTC"
+      ],
+      "exit_code": 0,
+      "timed_out": false,
+      "stdout": "Flag --time has been deprecated, use --timeout instead\nhydracache-perf-w8-27970-1789125348112901942\n",
+      "stderr": "",
+      "stdout_bytes": 100,
+      "stderr_bytes": 0,
+      "stdout_sha256": "ed7e80e5410067bfa6e9464f8dbc1945f784d359925b392afbd548def61251af",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "container_name": "hydracache-perf-w8-27970-1789125348112901942",
+    "container_id": "6b2eb63b2c9afc42099966db22291e618bb40076c9e9d3489841d5bbea52de49",
+    "redis_endpoint": "127.0.0.1:32768",
+    "readiness_request_sha256": "a43cb6a3b9d261112714d00e36b33106d1479eb1b3d8131a07684d4d477c5989",
+    "readiness_response_sha256": "64c2f2c744321d052076467905a0561f91e9a6de4e84441addbcc549cd71095c",
+    "readiness_attempts": 1,
+    "image": {
+      "requested_reference": "redis@sha256:3aaec283e6e593bde528077d60280ac1589887067a39273348860837c9346d7e",
+      "image_name": "redis",
+      "image_version": "7.2.5",
+      "index_digest": "sha256:3aaec283e6e593bde528077d60280ac1589887067a39273348860837c9346d7e",
+      "platform": "linux/amd64",
+      "platform_manifest_digest": "sha256:301f993bbc91d0b50b0737a97962905657d9f595e9935282b7db16a563b53d1b",
+      "local_image_id": "sha256:3aaec283e6e593bde528077d60280ac1589887067a39273348860837c9346d7e",
+      "container_image_id": "sha256:3aaec283e6e593bde528077d60280ac1589887067a39273348860837c9346d7e",
+      "repo_digests": [
+        "redis@sha256:3aaec283e6e593bde528077d60280ac1589887067a39273348860837c9346d7e"
+      ]
+    }
+  },
+  "repeats": [
+    {
+      "repeat": 1,
+      "order": "hydracache_then_redis",
+      "cases": [
+        {
+          "system": "hydracache",
+          "pipeline": 1,
+          "endpoint": "127.0.0.1:39579",
+          "initial_state": {
+            "endpoint": "127.0.0.1:39579",
+            "method": "resp-del-set-get-exact-single-benchmark-key",
+            "key": "key:__rand_int__",
+            "payload_bytes": 256,
+            "payload_sha256": "1a1ab528466e36d92ab1d52aa56515c027612c9b1ac6b6f40007d0b9f78fd397",
+            "reset_reply_sha256": "6d7dbcb27aa6e24f40bf1f4cb2cc8a36e2f3b7f1ae87edf906578a2936b756d2",
+            "preload_reply_sha256": "4fe64db76d55e725725c37bcdb91df3266f059510ec44c342a31c426fdd01c5f",
+            "verification_reply_sha256": "71e07b56c631fd83937dabf06405e076961e83dea895c65b615b3738d3487a2a",
+            "logical_state_sha256": "e03806cb1ffcc8d0a8b7ede23bac5962dc6fa75c348d7578199380dfad4d1f54"
+          },
+          "process": {
+            "executable": {
+              "logical_name": "redis-benchmark",
+              "canonical_path": "/opt/actions-runner/_work/_temp/hydracache-perf-tools/redis-7.2.5/src/redis-benchmark",
+              "sha256": "71bf5cbf35038d8ee73379ddcb1d78559bcc88ba70039ed2f55ea9db7521c91f"
+            },
+            "argv": [
+              "--csv",
+              "-h",
+              "127.0.0.1",
+              "-p",
+              "39579",
+              "-c",
+              "50",
+              "-n",
+              "100000",
+              "-P",
+              "1",
+              "-d",
+              "256",
+              "-t",
+              "get,set"
+            ],
+            "execution_environment": [
+              "LANG=C",
+              "LC_ALL=C",
+              "TZ=UTC"
+            ],
+            "exit_code": 0,
+            "timed_out": false,
+            "stdout": "\"test\",\"rps\",\"avg_latency_ms\",\"min_latency_ms\",\"p50_latency_ms\",\"p95_latency_ms\",\"p99_latency_ms\",\"max_latency_ms\"\n\"SET\",\"59241.71\",\"0.596\",\"0.016\",\"0.599\",\"0.703\",\"0.871\",\"5.815\"\n\"GET\",\"59417.71\",\"0.597\",\"0.016\",\"0.599\",\"0.695\",\"0.927\",\"3.343\"\n",
+            "stderr": "WARNING: Could not fetch server CONFIG\n",
+            "stdout_bytes": 245,
+            "stderr_bytes": 39,
+            "stdout_sha256": "05134b4e8dce0cd23b46ae1f0aa1a281d1d0c52d30ed34bff856e7ca76a94867",
+            "stderr_sha256": "1d89c0f26b2039760f8f32c71a04225a99b8a39ea54bd9a886e8db8db521de73"
+          },
+          "rows": [
+            {
+              "name": "GET",
+              "requests_per_second": "59417.71",
+              "average_latency_ms": "0.597",
+              "minimum_latency_ms": "0.016",
+              "p50_latency_ms": "0.599",
+              "p95_latency_ms": "0.695",
+              "p99_latency_ms": "0.927",
+              "maximum_latency_ms": "3.343"
+            },
+            {
+              "name": "SET",
+              "requests_per_second": "59241.71",
+              "average_latency_ms": "0.596",
+              "minimum_latency_ms": "0.016",
+              "p50_latency_ms": "0.599",
+              "p95_latency_ms": "0.703",
+              "p99_latency_ms": "0.871",
+              "maximum_latency_ms": "5.815"
+            }
+          ]
+        },
+        {
+          "system": "redis",
+          "pipeline": 1,
+          "endpoint": "127.0.0.1:32768",
+          "initial_state": {
+            "endpoint": "127.0.0.1:32768",
+            "method": "resp-del-set-get-exact-single-benchmark-key",
+            "key": "key:__rand_int__",
+            "payload_bytes": 256,
+            "payload_sha256": "1a1ab528466e36d92ab1d52aa56515c027612c9b1ac6b6f40007d0b9f78fd397",
+            "reset_reply_sha256": "6d7dbcb27aa6e24f40bf1f4cb2cc8a36e2f3b7f1ae87edf906578a2936b756d2",
+            "preload_reply_sha256": "4fe64db76d55e725725c37bcdb91df3266f059510ec44c342a31c426fdd01c5f",
+            "verification_reply_sha256": "71e07b56c631fd83937dabf06405e076961e83dea895c65b615b3738d3487a2a",
+            "logical_state_sha256": "e03806cb1ffcc8d0a8b7ede23bac5962dc6fa75c348d7578199380dfad4d1f54"
+          },
+          "process": {
+            "executable": {
+              "logical_name": "redis-benchmark",
+              "canonical_path": "/opt/actions-runner/_work/_temp/hydracache-perf-tools/redis-7.2.5/src/redis-benchmark",
+              "sha256": "71bf5cbf35038d8ee73379ddcb1d78559bcc88ba70039ed2f55ea9db7521c91f"
+            },
+            "argv": [
+              "--csv",
+              "-h",
+              "127.0.0.1",
+              "-p",
+              "32768",
+              "-c",
+              "50",
+              "-n",
+              "100000",
+              "-P",
+              "1",
+              "-d",
+              "256",
+              "-t",
+              "get,set"
+            ],
+            "execution_environment": [
+              "LANG=C",
+              "LC_ALL=C",
+              "TZ=UTC"
+            ],
+            "exit_code": 0,
+            "timed_out": false,
+            "stdout": "\"test\",\"rps\",\"avg_latency_ms\",\"min_latency_ms\",\"p50_latency_ms\",\"p95_latency_ms\",\"p99_latency_ms\",\"max_latency_ms\"\n\"SET\",\"87489.06\",\"0.477\",\"0.064\",\"0.439\",\"0.847\",\"1.095\",\"9.879\"\n\"GET\",\"87950.75\",\"0.477\",\"0.048\",\"0.439\",\"0.847\",\"1.103\",\"7.999\"\n",
+            "stderr": "",
+            "stdout_bytes": 245,
+            "stderr_bytes": 0,
+            "stdout_sha256": "1b7c706e94e9f9a042395cd85c892442674d25904bb1bde870ab44d96bbca428",
+            "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "rows": [
+            {
+              "name": "GET",
+              "requests_per_second": "87950.75",
+              "average_latency_ms": "0.477",
+              "minimum_latency_ms": "0.048",
+              "p50_latency_ms": "0.439",
+              "p95_latency_ms": "0.847",
+              "p99_latency_ms": "1.103",
+              "maximum_latency_ms": "7.999"
+            },
+            {
+              "name": "SET",
+              "requests_per_second": "87489.06",
+              "average_latency_ms": "0.477",
+              "minimum_latency_ms": "0.064",
+              "p50_latency_ms": "0.439",
+              "p95_latency_ms": "0.847",
+              "p99_latency_ms": "1.095",
+              "maximum_latency_ms": "9.879"
+            }
+          ]
+        },
+        {
+          "system": "hydracache",
+          "pipeline": 10,
+          "endpoint": "127.0.0.1:39579",
+          "initial_state": {
+            "endpoint": "127.0.0.1:39579",
+            "method": "resp-del-set-get-exact-single-benchmark-key",
+            "key": "key:__rand_int__",
+            "payload_bytes": 256,
+            "payload_sha256": "1a1ab528466e36d92ab1d52aa56515c027612c9b1ac6b6f40007d0b9f78fd397",
+            "reset_reply_sha256": "6d7dbcb27aa6e24f40bf1f4cb2cc8a36e2f3b7f1ae87edf906578a2936b756d2",
+            "preload_reply_sha256": "4fe64db76d55e725725c37bcdb91df3266f059510ec44c342a31c426fdd01c5f",
+            "verification_reply_sha256": "71e07b56c631fd83937dabf06405e076961e83dea895c65b615b3738d3487a2a",
+            "logical_state_sha256": "e03806cb1ffcc8d0a8b7ede23bac5962dc6fa75c348d7578199380dfad4d1f54"
+          },
+          "process": {
+            "executable": {
+              "logical_name": "redis-benchmark",
+              "canonical_path": "/opt/actions-runner/_work/_temp/hydracache-perf-tools/redis-7.2.5/src/redis-benchmark",
+              "sha256": "71bf5cbf35038d8ee73379ddcb1d78559bcc88ba70039ed2f55ea9db7521c91f"
+            },
+            "argv": [
+              "--csv",
+              "-h",
+              "127.0.0.1",
+              "-p",
+              "39579",
+              "-c",
+              "50",
+              "-n",
+              "100000",
+              "-P",
+              "10",
+              "-d",
+              "256",
+              "-t",
+              "get,set"
+            ],
+            "execution_environment": [
+              "LANG=C",
+              "LC_ALL=C",
+              "TZ=UTC"
+            ],
+            "exit_code": 0,
+            "timed_out": false,
+            "stdout": "\"test\",\"rps\",\"avg_latency_ms\",\"min_latency_ms\",\"p50_latency_ms\",\"p95_latency_ms\",\"p99_latency_ms\",\"max_latency_ms\"\n\"SET\",\"132275.14\",\"3.360\",\"0.016\",\"3.183\",\"5.367\",\"6.991\",\"8.991\"\n\"GET\",\"136054.42\",\"3.275\",\"0.016\",\"3.119\",\"4.951\",\"6.911\",\"11.407\"\n",
+            "stderr": "WARNING: Could not fetch server CONFIG\n",
+            "stdout_bytes": 248,
+            "stderr_bytes": 39,
+            "stdout_sha256": "75ad6cb83311058244b1cbc2cd1b3ab7d12f72d9c66fdc8b28e9accbc7e76cdf",
+            "stderr_sha256": "1d89c0f26b2039760f8f32c71a04225a99b8a39ea54bd9a886e8db8db521de73"
+          },
+          "rows": [
+            {
+              "name": "GET",
+              "requests_per_second": "136054.42",
+              "average_latency_ms": "3.275",
+              "minimum_latency_ms": "0.016",
+              "p50_latency_ms": "3.119",
+              "p95_latency_ms": "4.951",
+              "p99_latency_ms": "6.911",
+              "maximum_latency_ms": "11.407"
+            },
+            {
+              "name": "SET",
+              "requests_per_second": "132275.14",
+              "average_latency_ms": "3.360",
+              "minimum_latency_ms": "0.016",
+              "p50_latency_ms": "3.183",
+              "p95_latency_ms": "5.367",
+              "p99_latency_ms": "6.991",
+              "maximum_latency_ms": "8.991"
+            }
+          ]
+        },
+        {
+          "system": "redis",
+          "pipeline": 10,
+          "endpoint": "127.0.0.1:32768",
+          "initial_state": {
+            "endpoint": "127.0.0.1:32768",
+            "method": "resp-del-set-get-exact-single-benchmark-key",
+            "key": "key:__rand_int__",
+            "payload_bytes": 256,
+            "payload_sha256": "1a1ab528466e36d92ab1d52aa56515c027612c9b1ac6b6f40007d0b9f78fd397",
+            "reset_reply_sha256": "6d7dbcb27aa6e24f40bf1f4cb2cc8a36e2f3b7f1ae87edf906578a2936b756d2",
+            "preload_reply_sha256": "4fe64db76d55e725725c37bcdb91df3266f059510ec44c342a31c426fdd01c5f",
+            "verification_reply_sha256": "71e07b56c631fd83937dabf06405e076961e83dea895c65b615b3738d3487a2a",
+            "logical_state_sha256": "e03806cb1ffcc8d0a8b7ede23bac5962dc6fa75c348d7578199380dfad4d1f54"
+          },
+          "process": {
+            "executable": {
+              "logical_name": "redis-benchmark",
+              "canonical_path": "/opt/actions-runner/_work/_temp/hydracache-perf-tools/redis-7.2.5/src/redis-benchmark",
+              "sha256": "71bf5cbf35038d8ee73379ddcb1d78559bcc88ba70039ed2f55ea9db7521c91f"
+            },
+            "argv": [
+              "--csv",
+              "-h",
+              "127.0.0.1",
+              "-p",
+              "32768",
+              "-c",
+              "50",
+              "-n",
+              "100000",
+              "-P",
+              "10",
+              "-d",
+              "256",
+              "-t",
+              "get,set"
+            ],
+            "execution_environment": [
+              "LANG=C",
+              "LC_ALL=C",
+              "TZ=UTC"
+            ],
+            "exit_code": 0,
+            "timed_out": false,
+            "stdout": "\"test\",\"rps\",\"avg_latency_ms\",\"min_latency_ms\",\"p50_latency_ms\",\"p95_latency_ms\",\"p99_latency_ms\",\"max_latency_ms\"\n\"SET\",\"751879.69\",\"0.578\",\"0.080\",\"0.535\",\"0.967\",\"1.319\",\"5.687\"\n\"GET\",\"746268.62\",\"0.593\",\"0.072\",\"0.535\",\"0.975\",\"1.327\",\"9.839\"\n",
+            "stderr": "",
+            "stdout_bytes": 247,
+            "stderr_bytes": 0,
+            "stdout_sha256": "a3ffb30211d19ac4f770b73d70d2d4fd88f3ad87bcdf2e87e6f1240ca562a11d",
+            "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "rows": [
+            {
+              "name": "GET",
+              "requests_per_second": "746268.62",
+              "average_latency_ms": "0.593",
+              "minimum_latency_ms": "0.072",
+              "p50_latency_ms": "0.535",
+              "p95_latency_ms": "0.975",
+              "p99_latency_ms": "1.327",
+              "maximum_latency_ms": "9.839"
+            },
+            {
+              "name": "SET",
+              "requests_per_second": "751879.69",
+              "average_latency_ms": "0.578",
+              "minimum_latency_ms": "0.080",
+              "p50_latency_ms": "0.535",
+              "p95_latency_ms": "0.967",
+              "p99_latency_ms": "1.319",
+              "maximum_latency_ms": "5.687"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "repeat": 2,
+      "order": "redis_then_hydracache",
+      "cases": [
+        {
+          "system": "redis",
+          "pipeline": 1,
+          "endpoint": "127.0.0.1:32768",
+          "initial_state": {
+            "endpoint": "127.0.0.1:32768",
+            "method": "resp-del-set-get-exact-single-benchmark-key",
+            "key": "key:__rand_int__",
+            "payload_bytes": 256,
+            "payload_sha256": "1a1ab528466e36d92ab1d52aa56515c027612c9b1ac6b6f40007d0b9f78fd397",
+            "reset_reply_sha256": "6d7dbcb27aa6e24f40bf1f4cb2cc8a36e2f3b7f1ae87edf906578a2936b756d2",
+            "preload_reply_sha256": "4fe64db76d55e725725c37bcdb91df3266f059510ec44c342a31c426fdd01c5f",
+            "verification_reply_sha256": "71e07b56c631fd83937dabf06405e076961e83dea895c65b615b3738d3487a2a",
+            "logical_state_sha256": "e03806cb1ffcc8d0a8b7ede23bac5962dc6fa75c348d7578199380dfad4d1f54"
+          },
+          "process": {
+            "executable": {
+              "logical_name": "redis-benchmark",
+              "canonical_path": "/opt/actions-runner/_work/_temp/hydracache-perf-tools/redis-7.2.5/src/redis-benchmark",
+              "sha256": "71bf5cbf35038d8ee73379ddcb1d78559bcc88ba70039ed2f55ea9db7521c91f"
+            },
+            "argv": [
+              "--csv",
+              "-h",
+              "127.0.0.1",
+              "-p",
+              "32768",
+              "-c",
+              "50",
+              "-n",
+              "100000",
+              "-P",
+              "1",
+              "-d",
+              "256",
+              "-t",
+              "get,set"
+            ],
+            "execution_environment": [
+              "LANG=C",
+              "LC_ALL=C",
+              "TZ=UTC"
+            ],
+            "exit_code": 0,
+            "timed_out": false,
+            "stdout": "\"test\",\"rps\",\"avg_latency_ms\",\"min_latency_ms\",\"p50_latency_ms\",\"p95_latency_ms\",\"p99_latency_ms\",\"max_latency_ms\"\n\"SET\",\"87719.30\",\"0.482\",\"0.048\",\"0.447\",\"0.847\",\"1.071\",\"7.031\"\n\"GET\",\"87796.30\",\"0.477\",\"0.056\",\"0.439\",\"0.847\",\"1.095\",\"6.815\"\n",
+            "stderr": "",
+            "stdout_bytes": 245,
+            "stderr_bytes": 0,
+            "stdout_sha256": "a78b4556f97299be74ad642a24c467a927037302770f817ab7b87fadcc08740d",
+            "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "rows": [
+            {
+              "name": "GET",
+              "requests_per_second": "87796.30",
+              "average_latency_ms": "0.477",
+              "minimum_latency_ms": "0.056",
+              "p50_latency_ms": "0.439",
+              "p95_latency_ms": "0.847",
+              "p99_latency_ms": "1.095",
+              "maximum_latency_ms": "6.815"
+            },
+            {
+              "name": "SET",
+              "requests_per_second": "87719.30",
+              "average_latency_ms": "0.482",
+              "minimum_latency_ms": "0.048",
+              "p50_latency_ms": "0.447",
+              "p95_latency_ms": "0.847",
+              "p99_latency_ms": "1.071",
+              "maximum_latency_ms": "7.031"
+            }
+          ]
+        },
+        {
+          "system": "hydracache",
+          "pipeline": 1,
+          "endpoint": "127.0.0.1:39579",
+          "initial_state": {
+            "endpoint": "127.0.0.1:39579",
+            "method": "resp-del-set-get-exact-single-benchmark-key",
+            "key": "key:__rand_int__",
+            "payload_bytes": 256,
+            "payload_sha256": "1a1ab528466e36d92ab1d52aa56515c027612c9b1ac6b6f40007d0b9f78fd397",
+            "reset_reply_sha256": "6d7dbcb27aa6e24f40bf1f4cb2cc8a36e2f3b7f1ae87edf906578a2936b756d2",
+            "preload_reply_sha256": "4fe64db76d55e725725c37bcdb91df3266f059510ec44c342a31c426fdd01c5f",
+            "verification_reply_sha256": "71e07b56c631fd83937dabf06405e076961e83dea895c65b615b3738d3487a2a",
+            "logical_state_sha256": "e03806cb1ffcc8d0a8b7ede23bac5962dc6fa75c348d7578199380dfad4d1f54"
+          },
+          "process": {
+            "executable": {
+              "logical_name": "redis-benchmark",
+              "canonical_path": "/opt/actions-runner/_work/_temp/hydracache-perf-tools/redis-7.2.5/src/redis-benchmark",
+              "sha256": "71bf5cbf35038d8ee73379ddcb1d78559bcc88ba70039ed2f55ea9db7521c91f"
+            },
+            "argv": [
+              "--csv",
+              "-h",
+              "127.0.0.1",
+              "-p",
+              "39579",
+              "-c",
+              "50",
+              "-n",
+              "100000",
+              "-P",
+              "1",
+              "-d",
+              "256",
+              "-t",
+              "get,set"
+            ],
+            "execution_environment": [
+              "LANG=C",
+              "LC_ALL=C",
+              "TZ=UTC"
+            ],
+            "exit_code": 0,
+            "timed_out": false,
+            "stdout": "\"test\",\"rps\",\"avg_latency_ms\",\"min_latency_ms\",\"p50_latency_ms\",\"p95_latency_ms\",\"p99_latency_ms\",\"max_latency_ms\"\n\"SET\",\"59276.82\",\"0.598\",\"0.024\",\"0.599\",\"0.695\",\"1.023\",\"3.255\"\n\"GET\",\"59630.29\",\"0.595\",\"0.016\",\"0.591\",\"0.695\",\"0.943\",\"3.855\"\n",
+            "stderr": "WARNING: Could not fetch server CONFIG\n",
+            "stdout_bytes": 245,
+            "stderr_bytes": 39,
+            "stdout_sha256": "2d03218db9f33c97311cb10f76c13914a3f94ffa86c5c14ef81ddd1fb2affee8",
+            "stderr_sha256": "1d89c0f26b2039760f8f32c71a04225a99b8a39ea54bd9a886e8db8db521de73"
+          },
+          "rows": [
+            {
+              "name": "GET",
+              "requests_per_second": "59630.29",
+              "average_latency_ms": "0.595",
+              "minimum_latency_ms": "0.016",
+              "p50_latency_ms": "0.591",
+              "p95_latency_ms": "0.695",
+              "p99_latency_ms": "0.943",
+              "maximum_latency_ms": "3.855"
+            },
+            {
+              "name": "SET",
+              "requests_per_second": "59276.82",
+              "average_latency_ms": "0.598",
+              "minimum_latency_ms": "0.024",
+              "p50_latency_ms": "0.599",
+              "p95_latency_ms": "0.695",
+              "p99_latency_ms": "1.023",
+              "maximum_latency_ms": "3.255"
+            }
+          ]
+        },
+        {
+          "system": "redis",
+          "pipeline": 10,
+          "endpoint": "127.0.0.1:32768",
+          "initial_state": {
+            "endpoint": "127.0.0.1:32768",
+            "method": "resp-del-set-get-exact-single-benchmark-key",
+            "key": "key:__rand_int__",
+            "payload_bytes": 256,
+            "payload_sha256": "1a1ab528466e36d92ab1d52aa56515c027612c9b1ac6b6f40007d0b9f78fd397",
+            "reset_reply_sha256": "6d7dbcb27aa6e24f40bf1f4cb2cc8a36e2f3b7f1ae87edf906578a2936b756d2",
+            "preload_reply_sha256": "4fe64db76d55e725725c37bcdb91df3266f059510ec44c342a31c426fdd01c5f",
+            "verification_reply_sha256": "71e07b56c631fd83937dabf06405e076961e83dea895c65b615b3738d3487a2a",
+            "logical_state_sha256": "e03806cb1ffcc8d0a8b7ede23bac5962dc6fa75c348d7578199380dfad4d1f54"
+          },
+          "process": {
+            "executable": {
+              "logical_name": "redis-benchmark",
+              "canonical_path": "/opt/actions-runner/_work/_temp/hydracache-perf-tools/redis-7.2.5/src/redis-benchmark",
+              "sha256": "71bf5cbf35038d8ee73379ddcb1d78559bcc88ba70039ed2f55ea9db7521c91f"
+            },
+            "argv": [
+              "--csv",
+              "-h",
+              "127.0.0.1",
+              "-p",
+              "32768",
+              "-c",
+              "50",
+              "-n",
+              "100000",
+              "-P",
+              "10",
+              "-d",
+              "256",
+              "-t",
+              "get,set"
+            ],
+            "execution_environment": [
+              "LANG=C",
+              "LC_ALL=C",
+              "TZ=UTC"
+            ],
+            "exit_code": 0,
+            "timed_out": false,
+            "stdout": "\"test\",\"rps\",\"avg_latency_ms\",\"min_latency_ms\",\"p50_latency_ms\",\"p95_latency_ms\",\"p99_latency_ms\",\"max_latency_ms\"\n\"SET\",\"746268.62\",\"0.583\",\"0.080\",\"0.527\",\"1.015\",\"1.423\",\"6.511\"\n\"GET\",\"757575.75\",\"0.575\",\"0.064\",\"0.511\",\"0.967\",\"1.351\",\"10.391\"\n",
+            "stderr": "",
+            "stdout_bytes": 248,
+            "stderr_bytes": 0,
+            "stdout_sha256": "e355af95551eeb04982073c9cc348b1a168163f849a753d7f552e008562f517b",
+            "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "rows": [
+            {
+              "name": "GET",
+              "requests_per_second": "757575.75",
+              "average_latency_ms": "0.575",
+              "minimum_latency_ms": "0.064",
+              "p50_latency_ms": "0.511",
+              "p95_latency_ms": "0.967",
+              "p99_latency_ms": "1.351",
+              "maximum_latency_ms": "10.391"
+            },
+            {
+              "name": "SET",
+              "requests_per_second": "746268.62",
+              "average_latency_ms": "0.583",
+              "minimum_latency_ms": "0.080",
+              "p50_latency_ms": "0.527",
+              "p95_latency_ms": "1.015",
+              "p99_latency_ms": "1.423",
+              "maximum_latency_ms": "6.511"
+            }
+          ]
+        },
+        {
+          "system": "hydracache",
+          "pipeline": 10,
+          "endpoint": "127.0.0.1:39579",
+          "initial_state": {
+            "endpoint": "127.0.0.1:39579",
+            "method": "resp-del-set-get-exact-single-benchmark-key",
+            "key": "key:__rand_int__",
+            "payload_bytes": 256,
+            "payload_sha256": "1a1ab528466e36d92ab1d52aa56515c027612c9b1ac6b6f40007d0b9f78fd397",
+            "reset_reply_sha256": "6d7dbcb27aa6e24f40bf1f4cb2cc8a36e2f3b7f1ae87edf906578a2936b756d2",
+            "preload_reply_sha256": "4fe64db76d55e725725c37bcdb91df3266f059510ec44c342a31c426fdd01c5f",
+            "verification_reply_sha256": "71e07b56c631fd83937dabf06405e076961e83dea895c65b615b3738d3487a2a",
+            "logical_state_sha256": "e03806cb1ffcc8d0a8b7ede23bac5962dc6fa75c348d7578199380dfad4d1f54"
+          },
+          "process": {
+            "executable": {
+              "logical_name": "redis-benchmark",
+              "canonical_path": "/opt/actions-runner/_work/_temp/hydracache-perf-tools/redis-7.2.5/src/redis-benchmark",
+              "sha256": "71bf5cbf35038d8ee73379ddcb1d78559bcc88ba70039ed2f55ea9db7521c91f"
+            },
+            "argv": [
+              "--csv",
+              "-h",
+              "127.0.0.1",
+              "-p",
+              "39579",
+              "-c",
+              "50",
+              "-n",
+              "100000",
+              "-P",
+              "10",
+              "-d",
+              "256",
+              "-t",
+              "get,set"
+            ],
+            "execution_environment": [
+              "LANG=C",
+              "LC_ALL=C",
+              "TZ=UTC"
+            ],
+            "exit_code": 0,
+            "timed_out": false,
+            "stdout": "\"test\",\"rps\",\"avg_latency_ms\",\"min_latency_ms\",\"p50_latency_ms\",\"p95_latency_ms\",\"p99_latency_ms\",\"max_latency_ms\"\n\"SET\",\"135318.00\",\"3.294\",\"0.016\",\"3.175\",\"5.215\",\"6.415\",\"11.391\"\n\"GET\",\"137551.58\",\"3.232\",\"0.016\",\"3.087\",\"5.151\",\"6.471\",\"12.967\"\n",
+            "stderr": "WARNING: Could not fetch server CONFIG\n",
+            "stdout_bytes": 249,
+            "stderr_bytes": 39,
+            "stdout_sha256": "69a0cc1929a4c914c97c81b0ac6567a9334ac6cd6f1e32b0df14ae84bfcae6a3",
+            "stderr_sha256": "1d89c0f26b2039760f8f32c71a04225a99b8a39ea54bd9a886e8db8db521de73"
+          },
+          "rows": [
+            {
+              "name": "GET",
+              "requests_per_second": "137551.58",
+              "average_latency_ms": "3.232",
+              "minimum_latency_ms": "0.016",
+              "p50_latency_ms": "3.087",
+              "p95_latency_ms": "5.151",
+              "p99_latency_ms": "6.471",
+              "maximum_latency_ms": "12.967"
+            },
+            {
+              "name": "SET",
+              "requests_per_second": "135318.00",
+              "average_latency_ms": "3.294",
+              "minimum_latency_ms": "0.016",
+              "p50_latency_ms": "3.175",
+              "p95_latency_ms": "5.215",
+              "p99_latency_ms": "6.415",
+              "maximum_latency_ms": "11.391"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "repeat": 3,
+      "order": "hydracache_then_redis",
+      "cases": [
+        {
+          "system": "hydracache",
+          "pipeline": 1,
+          "endpoint": "127.0.0.1:39579",
+          "initial_state": {
+            "endpoint": "127.0.0.1:39579",
+            "method": "resp-del-set-get-exact-single-benchmark-key",
+            "key": "key:__rand_int__",
+            "payload_bytes": 256,
+            "payload_sha256": "1a1ab528466e36d92ab1d52aa56515c027612c9b1ac6b6f40007d0b9f78fd397",
+            "reset_reply_sha256": "6d7dbcb27aa6e24f40bf1f4cb2cc8a36e2f3b7f1ae87edf906578a2936b756d2",
+            "preload_reply_sha256": "4fe64db76d55e725725c37bcdb91df3266f059510ec44c342a31c426fdd01c5f",
+            "verification_reply_sha256": "71e07b56c631fd83937dabf06405e076961e83dea895c65b615b3738d3487a2a",
+            "logical_state_sha256": "e03806cb1ffcc8d0a8b7ede23bac5962dc6fa75c348d7578199380dfad4d1f54"
+          },
+          "process": {
+            "executable": {
+              "logical_name": "redis-benchmark",
+              "canonical_path": "/opt/actions-runner/_work/_temp/hydracache-perf-tools/redis-7.2.5/src/redis-benchmark",
+              "sha256": "71bf5cbf35038d8ee73379ddcb1d78559bcc88ba70039ed2f55ea9db7521c91f"
+            },
+            "argv": [
+              "--csv",
+              "-h",
+              "127.0.0.1",
+              "-p",
+              "39579",
+              "-c",
+              "50",
+              "-n",
+              "100000",
+              "-P",
+              "1",
+              "-d",
+              "256",
+              "-t",
+              "get,set"
+            ],
+            "execution_environment": [
+              "LANG=C",
+              "LC_ALL=C",
+              "TZ=UTC"
+            ],
+            "exit_code": 0,
+            "timed_out": false,
+            "stdout": "\"test\",\"rps\",\"avg_latency_ms\",\"min_latency_ms\",\"p50_latency_ms\",\"p95_latency_ms\",\"p99_latency_ms\",\"max_latency_ms\"\n\"SET\",\"59382.42\",\"0.597\",\"0.024\",\"0.599\",\"0.695\",\"0.863\",\"3.263\"\n\"GET\",\"59665.87\",\"0.594\",\"0.024\",\"0.591\",\"0.695\",\"0.943\",\"3.487\"\n",
+            "stderr": "WARNING: Could not fetch server CONFIG\n",
+            "stdout_bytes": 245,
+            "stderr_bytes": 39,
+            "stdout_sha256": "e6f8c3b3df0cbdd34371e398f3a84de188572e08c5102ef42201724fdd37925e",
+            "stderr_sha256": "1d89c0f26b2039760f8f32c71a04225a99b8a39ea54bd9a886e8db8db521de73"
+          },
+          "rows": [
+            {
+              "name": "GET",
+              "requests_per_second": "59665.87",
+              "average_latency_ms": "0.594",
+              "minimum_latency_ms": "0.024",
+              "p50_latency_ms": "0.591",
+              "p95_latency_ms": "0.695",
+              "p99_latency_ms": "0.943",
+              "maximum_latency_ms": "3.487"
+            },
+            {
+              "name": "SET",
+              "requests_per_second": "59382.42",
+              "average_latency_ms": "0.597",
+              "minimum_latency_ms": "0.024",
+              "p50_latency_ms": "0.599",
+              "p95_latency_ms": "0.695",
+              "p99_latency_ms": "0.863",
+              "maximum_latency_ms": "3.263"
+            }
+          ]
+        },
+        {
+          "system": "redis",
+          "pipeline": 1,
+          "endpoint": "127.0.0.1:32768",
+          "initial_state": {
+            "endpoint": "127.0.0.1:32768",
+            "method": "resp-del-set-get-exact-single-benchmark-key",
+            "key": "key:__rand_int__",
+            "payload_bytes": 256,
+            "payload_sha256": "1a1ab528466e36d92ab1d52aa56515c027612c9b1ac6b6f40007d0b9f78fd397",
+            "reset_reply_sha256": "6d7dbcb27aa6e24f40bf1f4cb2cc8a36e2f3b7f1ae87edf906578a2936b756d2",
+            "preload_reply_sha256": "4fe64db76d55e725725c37bcdb91df3266f059510ec44c342a31c426fdd01c5f",
+            "verification_reply_sha256": "71e07b56c631fd83937dabf06405e076961e83dea895c65b615b3738d3487a2a",
+            "logical_state_sha256": "e03806cb1ffcc8d0a8b7ede23bac5962dc6fa75c348d7578199380dfad4d1f54"
+          },
+          "process": {
+            "executable": {
+              "logical_name": "redis-benchmark",
+              "canonical_path": "/opt/actions-runner/_work/_temp/hydracache-perf-tools/redis-7.2.5/src/redis-benchmark",
+              "sha256": "71bf5cbf35038d8ee73379ddcb1d78559bcc88ba70039ed2f55ea9db7521c91f"
+            },
+            "argv": [
+              "--csv",
+              "-h",
+              "127.0.0.1",
+              "-p",
+              "32768",
+              "-c",
+              "50",
+              "-n",
+              "100000",
+              "-P",
+              "1",
+              "-d",
+              "256",
+              "-t",
+              "get,set"
+            ],
+            "execution_environment": [
+              "LANG=C",
+              "LC_ALL=C",
+              "TZ=UTC"
+            ],
+            "exit_code": 0,
+            "timed_out": false,
+            "stdout": "\"test\",\"rps\",\"avg_latency_ms\",\"min_latency_ms\",\"p50_latency_ms\",\"p95_latency_ms\",\"p99_latency_ms\",\"max_latency_ms\"\n\"SET\",\"88417.33\",\"0.476\",\"0.056\",\"0.439\",\"0.839\",\"1.087\",\"7.159\"\n\"GET\",\"88105.73\",\"0.476\",\"0.040\",\"0.439\",\"0.847\",\"1.079\",\"7.735\"\n",
+            "stderr": "",
+            "stdout_bytes": 245,
+            "stderr_bytes": 0,
+            "stdout_sha256": "871f0440556599a2a893213f6a30970c87531dc7e7fccdf52b775b0cd33bfe2b",
+            "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "rows": [
+            {
+              "name": "GET",
+              "requests_per_second": "88105.73",
+              "average_latency_ms": "0.476",
+              "minimum_latency_ms": "0.040",
+              "p50_latency_ms": "0.439",
+              "p95_latency_ms": "0.847",
+              "p99_latency_ms": "1.079",
+              "maximum_latency_ms": "7.735"
+            },
+            {
+              "name": "SET",
+              "requests_per_second": "88417.33",
+              "average_latency_ms": "0.476",
+              "minimum_latency_ms": "0.056",
+              "p50_latency_ms": "0.439",
+              "p95_latency_ms": "0.839",
+              "p99_latency_ms": "1.087",
+              "maximum_latency_ms": "7.159"
+            }
+          ]
+        },
+        {
+          "system": "hydracache",
+          "pipeline": 10,
+          "endpoint": "127.0.0.1:39579",
+          "initial_state": {
+            "endpoint": "127.0.0.1:39579",
+            "method": "resp-del-set-get-exact-single-benchmark-key",
+            "key": "key:__rand_int__",
+            "payload_bytes": 256,
+            "payload_sha256": "1a1ab528466e36d92ab1d52aa56515c027612c9b1ac6b6f40007d0b9f78fd397",
+            "reset_reply_sha256": "6d7dbcb27aa6e24f40bf1f4cb2cc8a36e2f3b7f1ae87edf906578a2936b756d2",
+            "preload_reply_sha256": "4fe64db76d55e725725c37bcdb91df3266f059510ec44c342a31c426fdd01c5f",
+            "verification_reply_sha256": "71e07b56c631fd83937dabf06405e076961e83dea895c65b615b3738d3487a2a",
+            "logical_state_sha256": "e03806cb1ffcc8d0a8b7ede23bac5962dc6fa75c348d7578199380dfad4d1f54"
+          },
+          "process": {
+            "executable": {
+              "logical_name": "redis-benchmark",
+              "canonical_path": "/opt/actions-runner/_work/_temp/hydracache-perf-tools/redis-7.2.5/src/redis-benchmark",
+              "sha256": "71bf5cbf35038d8ee73379ddcb1d78559bcc88ba70039ed2f55ea9db7521c91f"
+            },
+            "argv": [
+              "--csv",
+              "-h",
+              "127.0.0.1",
+              "-p",
+              "39579",
+              "-c",
+              "50",
+              "-n",
+              "100000",
+              "-P",
+              "10",
+              "-d",
+              "256",
+              "-t",
+              "get,set"
+            ],
+            "execution_environment": [
+              "LANG=C",
+              "LC_ALL=C",
+              "TZ=UTC"
+            ],
+            "exit_code": 0,
+            "timed_out": false,
+            "stdout": "\"test\",\"rps\",\"avg_latency_ms\",\"min_latency_ms\",\"p50_latency_ms\",\"p95_latency_ms\",\"p99_latency_ms\",\"max_latency_ms\"\n\"SET\",\"134589.50\",\"3.308\",\"0.016\",\"3.175\",\"5.135\",\"6.359\",\"11.527\"\n\"GET\",\"136798.91\",\"3.250\",\"0.016\",\"3.087\",\"5.127\",\"6.071\",\"12.783\"\n",
+            "stderr": "WARNING: Could not fetch server CONFIG\n",
+            "stdout_bytes": 249,
+            "stderr_bytes": 39,
+            "stdout_sha256": "c982524ffacfe2f59f0542e9cc56039887aab32c597219afc1491a7a6368cea1",
+            "stderr_sha256": "1d89c0f26b2039760f8f32c71a04225a99b8a39ea54bd9a886e8db8db521de73"
+          },
+          "rows": [
+            {
+              "name": "GET",
+              "requests_per_second": "136798.91",
+              "average_latency_ms": "3.250",
+              "minimum_latency_ms": "0.016",
+              "p50_latency_ms": "3.087",
+              "p95_latency_ms": "5.127",
+              "p99_latency_ms": "6.071",
+              "maximum_latency_ms": "12.783"
+            },
+            {
+              "name": "SET",
+              "requests_per_second": "134589.50",
+              "average_latency_ms": "3.308",
+              "minimum_latency_ms": "0.016",
+              "p50_latency_ms": "3.175",
+              "p95_latency_ms": "5.135",
+              "p99_latency_ms": "6.359",
+              "maximum_latency_ms": "11.527"
+            }
+          ]
+        },
+        {
+          "system": "redis",
+          "pipeline": 10,
+          "endpoint": "127.0.0.1:32768",
+          "initial_state": {
+            "endpoint": "127.0.0.1:32768",
+            "method": "resp-del-set-get-exact-single-benchmark-key",
+            "key": "key:__rand_int__",
+            "payload_bytes": 256,
+            "payload_sha256": "1a1ab528466e36d92ab1d52aa56515c027612c9b1ac6b6f40007d0b9f78fd397",
+            "reset_reply_sha256": "6d7dbcb27aa6e24f40bf1f4cb2cc8a36e2f3b7f1ae87edf906578a2936b756d2",
+            "preload_reply_sha256": "4fe64db76d55e725725c37bcdb91df3266f059510ec44c342a31c426fdd01c5f",
+            "verification_reply_sha256": "71e07b56c631fd83937dabf06405e076961e83dea895c65b615b3738d3487a2a",
+            "logical_state_sha256": "e03806cb1ffcc8d0a8b7ede23bac5962dc6fa75c348d7578199380dfad4d1f54"
+          },
+          "process": {
+            "executable": {
+              "logical_name": "redis-benchmark",
+              "canonical_path": "/opt/actions-runner/_work/_temp/hydracache-perf-tools/redis-7.2.5/src/redis-benchmark",
+              "sha256": "71bf5cbf35038d8ee73379ddcb1d78559bcc88ba70039ed2f55ea9db7521c91f"
+            },
+            "argv": [
+              "--csv",
+              "-h",
+              "127.0.0.1",
+              "-p",
+              "32768",
+              "-c",
+              "50",
+              "-n",
+              "100000",
+              "-P",
+              "10",
+              "-d",
+              "256",
+              "-t",
+              "get,set"
+            ],
+            "execution_environment": [
+              "LANG=C",
+              "LC_ALL=C",
+              "TZ=UTC"
+            ],
+            "exit_code": 0,
+            "timed_out": false,
+            "stdout": "\"test\",\"rps\",\"avg_latency_ms\",\"min_latency_ms\",\"p50_latency_ms\",\"p95_latency_ms\",\"p99_latency_ms\",\"max_latency_ms\"\n\"SET\",\"746268.62\",\"0.589\",\"0.112\",\"0.543\",\"0.999\",\"1.311\",\"6.719\"\n\"GET\",\"757575.75\",\"0.579\",\"0.088\",\"0.519\",\"0.991\",\"1.535\",\"7.535\"\n",
+            "stderr": "",
+            "stdout_bytes": 247,
+            "stderr_bytes": 0,
+            "stdout_sha256": "ffbd063822e4fdc50a57bc09144f6a2eae49e340742308fd04d779d2a2dd9ec7",
+            "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "rows": [
+            {
+              "name": "GET",
+              "requests_per_second": "757575.75",
+              "average_latency_ms": "0.579",
+              "minimum_latency_ms": "0.088",
+              "p50_latency_ms": "0.519",
+              "p95_latency_ms": "0.991",
+              "p99_latency_ms": "1.535",
+              "maximum_latency_ms": "7.535"
+            },
+            {
+              "name": "SET",
+              "requests_per_second": "746268.62",
+              "average_latency_ms": "0.589",
+              "minimum_latency_ms": "0.112",
+              "p50_latency_ms": "0.543",
+              "p95_latency_ms": "0.999",
+              "p99_latency_ms": "1.311",
+              "maximum_latency_ms": "6.719"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "repeat": 4,
+      "order": "redis_then_hydracache",
+      "cases": [
+        {
+          "system": "redis",
+          "pipeline": 1,
+          "endpoint": "127.0.0.1:32768",
+          "initial_state": {
+            "endpoint": "127.0.0.1:32768",
+            "method": "resp-del-set-get-exact-single-benchmark-key",
+            "key": "key:__rand_int__",
+            "payload_bytes": 256,
+            "payload_sha256": "1a1ab528466e36d92ab1d52aa56515c027612c9b1ac6b6f40007d0b9f78fd397",
+            "reset_reply_sha256": "6d7dbcb27aa6e24f40bf1f4cb2cc8a36e2f3b7f1ae87edf906578a2936b756d2",
+            "preload_reply_sha256": "4fe64db76d55e725725c37bcdb91df3266f059510ec44c342a31c426fdd01c5f",
+            "verification_reply_sha256": "71e07b56c631fd83937dabf06405e076961e83dea895c65b615b3738d3487a2a",
+            "logical_state_sha256": "e03806cb1ffcc8d0a8b7ede23bac5962dc6fa75c348d7578199380dfad4d1f54"
+          },
+          "process": {
+            "executable": {
+              "logical_name": "redis-benchmark",
+              "canonical_path": "/opt/actions-runner/_work/_temp/hydracache-perf-tools/redis-7.2.5/src/redis-benchmark",
+              "sha256": "71bf5cbf35038d8ee73379ddcb1d78559bcc88ba70039ed2f55ea9db7521c91f"
+            },
+            "argv": [
+              "--csv",
+              "-h",
+              "127.0.0.1",
+              "-p",
+              "32768",
+              "-c",
+              "50",
+              "-n",
+              "100000",
+              "-P",
+              "1",
+              "-d",
+              "256",
+              "-t",
+              "get,set"
+            ],
+            "execution_environment": [
+              "LANG=C",
+              "LC_ALL=C",
+              "TZ=UTC"
+            ],
+            "exit_code": 0,
+            "timed_out": false,
+            "stdout": "\"test\",\"rps\",\"avg_latency_ms\",\"min_latency_ms\",\"p50_latency_ms\",\"p95_latency_ms\",\"p99_latency_ms\",\"max_latency_ms\"\n\"SET\",\"87412.59\",\"0.484\",\"0.048\",\"0.447\",\"0.863\",\"1.119\",\"7.327\"\n\"GET\",\"87565.68\",\"0.479\",\"0.048\",\"0.439\",\"0.847\",\"1.087\",\"7.879\"\n",
+            "stderr": "",
+            "stdout_bytes": 245,
+            "stderr_bytes": 0,
+            "stdout_sha256": "86d0ad8c81a68b15904f8cb12272addd03f47dad0b19b478c20eb6fc951de12b",
+            "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "rows": [
+            {
+              "name": "GET",
+              "requests_per_second": "87565.68",
+              "average_latency_ms": "0.479",
+              "minimum_latency_ms": "0.048",
+              "p50_latency_ms": "0.439",
+              "p95_latency_ms": "0.847",
+              "p99_latency_ms": "1.087",
+              "maximum_latency_ms": "7.879"
+            },
+            {
+              "name": "SET",
+              "requests_per_second": "87412.59",
+              "average_latency_ms": "0.484",
+              "minimum_latency_ms": "0.048",
+              "p50_latency_ms": "0.447",
+              "p95_latency_ms": "0.863",
+              "p99_latency_ms": "1.119",
+              "maximum_latency_ms": "7.327"
+            }
+          ]
+        },
+        {
+          "system": "hydracache",
+          "pipeline": 1,
+          "endpoint": "127.0.0.1:39579",
+          "initial_state": {
+            "endpoint": "127.0.0.1:39579",
+            "method": "resp-del-set-get-exact-single-benchmark-key",
+            "key": "key:__rand_int__",
+            "payload_bytes": 256,
+            "payload_sha256": "1a1ab528466e36d92ab1d52aa56515c027612c9b1ac6b6f40007d0b9f78fd397",
+            "reset_reply_sha256": "6d7dbcb27aa6e24f40bf1f4cb2cc8a36e2f3b7f1ae87edf906578a2936b756d2",
+            "preload_reply_sha256": "4fe64db76d55e725725c37bcdb91df3266f059510ec44c342a31c426fdd01c5f",
+            "verification_reply_sha256": "71e07b56c631fd83937dabf06405e076961e83dea895c65b615b3738d3487a2a",
+            "logical_state_sha256": "e03806cb1ffcc8d0a8b7ede23bac5962dc6fa75c348d7578199380dfad4d1f54"
+          },
+          "process": {
+            "executable": {
+              "logical_name": "redis-benchmark",
+              "canonical_path": "/opt/actions-runner/_work/_temp/hydracache-perf-tools/redis-7.2.5/src/redis-benchmark",
+              "sha256": "71bf5cbf35038d8ee73379ddcb1d78559bcc88ba70039ed2f55ea9db7521c91f"
+            },
+            "argv": [
+              "--csv",
+              "-h",
+              "127.0.0.1",
+              "-p",
+              "39579",
+              "-c",
+              "50",
+              "-n",
+              "100000",
+              "-P",
+              "1",
+              "-d",
+              "256",
+              "-t",
+              "get,set"
+            ],
+            "execution_environment": [
+              "LANG=C",
+              "LC_ALL=C",
+              "TZ=UTC"
+            ],
+            "exit_code": 0,
+            "timed_out": false,
+            "stdout": "\"test\",\"rps\",\"avg_latency_ms\",\"min_latency_ms\",\"p50_latency_ms\",\"p95_latency_ms\",\"p99_latency_ms\",\"max_latency_ms\"\n\"SET\",\"59417.71\",\"0.597\",\"0.016\",\"0.599\",\"0.703\",\"1.023\",\"3.175\"\n\"GET\",\"59559.26\",\"0.595\",\"0.016\",\"0.591\",\"0.695\",\"1.007\",\"3.551\"\n",
+            "stderr": "WARNING: Could not fetch server CONFIG\n",
+            "stdout_bytes": 245,
+            "stderr_bytes": 39,
+            "stdout_sha256": "836798af7a1eddf4c82eb09298b3bf289e35da44e45ee7130e24a439bc993042",
+            "stderr_sha256": "1d89c0f26b2039760f8f32c71a04225a99b8a39ea54bd9a886e8db8db521de73"
+          },
+          "rows": [
+            {
+              "name": "GET",
+              "requests_per_second": "59559.26",
+              "average_latency_ms": "0.595",
+              "minimum_latency_ms": "0.016",
+              "p50_latency_ms": "0.591",
+              "p95_latency_ms": "0.695",
+              "p99_latency_ms": "1.007",
+              "maximum_latency_ms": "3.551"
+            },
+            {
+              "name": "SET",
+              "requests_per_second": "59417.71",
+              "average_latency_ms": "0.597",
+              "minimum_latency_ms": "0.016",
+              "p50_latency_ms": "0.599",
+              "p95_latency_ms": "0.703",
+              "p99_latency_ms": "1.023",
+              "maximum_latency_ms": "3.175"
+            }
+          ]
+        },
+        {
+          "system": "redis",
+          "pipeline": 10,
+          "endpoint": "127.0.0.1:32768",
+          "initial_state": {
+            "endpoint": "127.0.0.1:32768",
+            "method": "resp-del-set-get-exact-single-benchmark-key",
+            "key": "key:__rand_int__",
+            "payload_bytes": 256,
+            "payload_sha256": "1a1ab528466e36d92ab1d52aa56515c027612c9b1ac6b6f40007d0b9f78fd397",
+            "reset_reply_sha256": "6d7dbcb27aa6e24f40bf1f4cb2cc8a36e2f3b7f1ae87edf906578a2936b756d2",
+            "preload_reply_sha256": "4fe64db76d55e725725c37bcdb91df3266f059510ec44c342a31c426fdd01c5f",
+            "verification_reply_sha256": "71e07b56c631fd83937dabf06405e076961e83dea895c65b615b3738d3487a2a",
+            "logical_state_sha256": "e03806cb1ffcc8d0a8b7ede23bac5962dc6fa75c348d7578199380dfad4d1f54"
+          },
+          "process": {
+            "executable": {
+              "logical_name": "redis-benchmark",
+              "canonical_path": "/opt/actions-runner/_work/_temp/hydracache-perf-tools/redis-7.2.5/src/redis-benchmark",
+              "sha256": "71bf5cbf35038d8ee73379ddcb1d78559bcc88ba70039ed2f55ea9db7521c91f"
+            },
+            "argv": [
+              "--csv",
+              "-h",
+              "127.0.0.1",
+              "-p",
+              "32768",
+              "-c",
+              "50",
+              "-n",
+              "100000",
+              "-P",
+              "10",
+              "-d",
+              "256",
+              "-t",
+              "get,set"
+            ],
+            "execution_environment": [
+              "LANG=C",
+              "LC_ALL=C",
+              "TZ=UTC"
+            ],
+            "exit_code": 0,
+            "timed_out": false,
+            "stdout": "\"test\",\"rps\",\"avg_latency_ms\",\"min_latency_ms\",\"p50_latency_ms\",\"p95_latency_ms\",\"p99_latency_ms\",\"max_latency_ms\"\n\"SET\",\"740740.69\",\"0.591\",\"0.104\",\"0.535\",\"1.047\",\"1.423\",\"7.695\"\n\"GET\",\"757575.75\",\"0.577\",\"0.072\",\"0.519\",\"0.975\",\"1.375\",\"8.751\"\n",
+            "stderr": "",
+            "stdout_bytes": 247,
+            "stderr_bytes": 0,
+            "stdout_sha256": "91c3ddf75667b489fb35fa354a6b606caf82eac043f424efc43dc72d66a1d48d",
+            "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "rows": [
+            {
+              "name": "GET",
+              "requests_per_second": "757575.75",
+              "average_latency_ms": "0.577",
+              "minimum_latency_ms": "0.072",
+              "p50_latency_ms": "0.519",
+              "p95_latency_ms": "0.975",
+              "p99_latency_ms": "1.375",
+              "maximum_latency_ms": "8.751"
+            },
+            {
+              "name": "SET",
+              "requests_per_second": "740740.69",
+              "average_latency_ms": "0.591",
+              "minimum_latency_ms": "0.104",
+              "p50_latency_ms": "0.535",
+              "p95_latency_ms": "1.047",
+              "p99_latency_ms": "1.423",
+              "maximum_latency_ms": "7.695"
+            }
+          ]
+        },
+        {
+          "system": "hydracache",
+          "pipeline": 10,
+          "endpoint": "127.0.0.1:39579",
+          "initial_state": {
+            "endpoint": "127.0.0.1:39579",
+            "method": "resp-del-set-get-exact-single-benchmark-key",
+            "key": "key:__rand_int__",
+            "payload_bytes": 256,
+            "payload_sha256": "1a1ab528466e36d92ab1d52aa56515c027612c9b1ac6b6f40007d0b9f78fd397",
+            "reset_reply_sha256": "6d7dbcb27aa6e24f40bf1f4cb2cc8a36e2f3b7f1ae87edf906578a2936b756d2",
+            "preload_reply_sha256": "4fe64db76d55e725725c37bcdb91df3266f059510ec44c342a31c426fdd01c5f",
+            "verification_reply_sha256": "71e07b56c631fd83937dabf06405e076961e83dea895c65b615b3738d3487a2a",
+            "logical_state_sha256": "e03806cb1ffcc8d0a8b7ede23bac5962dc6fa75c348d7578199380dfad4d1f54"
+          },
+          "process": {
+            "executable": {
+              "logical_name": "redis-benchmark",
+              "canonical_path": "/opt/actions-runner/_work/_temp/hydracache-perf-tools/redis-7.2.5/src/redis-benchmark",
+              "sha256": "71bf5cbf35038d8ee73379ddcb1d78559bcc88ba70039ed2f55ea9db7521c91f"
+            },
+            "argv": [
+              "--csv",
+              "-h",
+              "127.0.0.1",
+              "-p",
+              "39579",
+              "-c",
+              "50",
+              "-n",
+              "100000",
+              "-P",
+              "10",
+              "-d",
+              "256",
+              "-t",
+              "get,set"
+            ],
+            "execution_environment": [
+              "LANG=C",
+              "LC_ALL=C",
+              "TZ=UTC"
+            ],
+            "exit_code": 0,
+            "timed_out": false,
+            "stdout": "\"test\",\"rps\",\"avg_latency_ms\",\"min_latency_ms\",\"p50_latency_ms\",\"p95_latency_ms\",\"p99_latency_ms\",\"max_latency_ms\"\n\"SET\",\"132978.73\",\"3.355\",\"0.016\",\"3.191\",\"5.407\",\"6.391\",\"10.503\"\n\"GET\",\"134589.50\",\"3.309\",\"0.016\",\"3.127\",\"5.423\",\"6.815\",\"12.287\"\n",
+            "stderr": "WARNING: Could not fetch server CONFIG\n",
+            "stdout_bytes": 249,
+            "stderr_bytes": 39,
+            "stdout_sha256": "013de4d8c2e072ccfc752f1a40edb9c76c01dd3d9ceaf334dca0cb86c3bf4a52",
+            "stderr_sha256": "1d89c0f26b2039760f8f32c71a04225a99b8a39ea54bd9a886e8db8db521de73"
+          },
+          "rows": [
+            {
+              "name": "GET",
+              "requests_per_second": "134589.50",
+              "average_latency_ms": "3.309",
+              "minimum_latency_ms": "0.016",
+              "p50_latency_ms": "3.127",
+              "p95_latency_ms": "5.423",
+              "p99_latency_ms": "6.815",
+              "maximum_latency_ms": "12.287"
+            },
+            {
+              "name": "SET",
+              "requests_per_second": "132978.73",
+              "average_latency_ms": "3.355",
+              "minimum_latency_ms": "0.016",
+              "p50_latency_ms": "3.191",
+              "p95_latency_ms": "5.407",
+              "p99_latency_ms": "6.391",
+              "maximum_latency_ms": "10.503"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "repeat": 5,
+      "order": "hydracache_then_redis",
+      "cases": [
+        {
+          "system": "hydracache",
+          "pipeline": 1,
+          "endpoint": "127.0.0.1:39579",
+          "initial_state": {
+            "endpoint": "127.0.0.1:39579",
+            "method": "resp-del-set-get-exact-single-benchmark-key",
+            "key": "key:__rand_int__",
+            "payload_bytes": 256,
+            "payload_sha256": "1a1ab528466e36d92ab1d52aa56515c027612c9b1ac6b6f40007d0b9f78fd397",
+            "reset_reply_sha256": "6d7dbcb27aa6e24f40bf1f4cb2cc8a36e2f3b7f1ae87edf906578a2936b756d2",
+            "preload_reply_sha256": "4fe64db76d55e725725c37bcdb91df3266f059510ec44c342a31c426fdd01c5f",
+            "verification_reply_sha256": "71e07b56c631fd83937dabf06405e076961e83dea895c65b615b3738d3487a2a",
+            "logical_state_sha256": "e03806cb1ffcc8d0a8b7ede23bac5962dc6fa75c348d7578199380dfad4d1f54"
+          },
+          "process": {
+            "executable": {
+              "logical_name": "redis-benchmark",
+              "canonical_path": "/opt/actions-runner/_work/_temp/hydracache-perf-tools/redis-7.2.5/src/redis-benchmark",
+              "sha256": "71bf5cbf35038d8ee73379ddcb1d78559bcc88ba70039ed2f55ea9db7521c91f"
+            },
+            "argv": [
+              "--csv",
+              "-h",
+              "127.0.0.1",
+              "-p",
+              "39579",
+              "-c",
+              "50",
+              "-n",
+              "100000",
+              "-P",
+              "1",
+              "-d",
+              "256",
+              "-t",
+              "get,set"
+            ],
+            "execution_environment": [
+              "LANG=C",
+              "LC_ALL=C",
+              "TZ=UTC"
+            ],
+            "exit_code": 0,
+            "timed_out": false,
+            "stdout": "\"test\",\"rps\",\"avg_latency_ms\",\"min_latency_ms\",\"p50_latency_ms\",\"p95_latency_ms\",\"p99_latency_ms\",\"max_latency_ms\"\n\"SET\",\"59382.42\",\"0.596\",\"0.016\",\"0.599\",\"0.695\",\"0.999\",\"3.303\"\n\"GET\",\"59665.87\",\"0.594\",\"0.024\",\"0.591\",\"0.695\",\"0.919\",\"3.583\"\n",
+            "stderr": "WARNING: Could not fetch server CONFIG\n",
+            "stdout_bytes": 245,
+            "stderr_bytes": 39,
+            "stdout_sha256": "a6c9f821234c56b7d249862f502e4d7bcc86fdd348cc117db6cf1398fff565ef",
+            "stderr_sha256": "1d89c0f26b2039760f8f32c71a04225a99b8a39ea54bd9a886e8db8db521de73"
+          },
+          "rows": [
+            {
+              "name": "GET",
+              "requests_per_second": "59665.87",
+              "average_latency_ms": "0.594",
+              "minimum_latency_ms": "0.024",
+              "p50_latency_ms": "0.591",
+              "p95_latency_ms": "0.695",
+              "p99_latency_ms": "0.919",
+              "maximum_latency_ms": "3.583"
+            },
+            {
+              "name": "SET",
+              "requests_per_second": "59382.42",
+              "average_latency_ms": "0.596",
+              "minimum_latency_ms": "0.016",
+              "p50_latency_ms": "0.599",
+              "p95_latency_ms": "0.695",
+              "p99_latency_ms": "0.999",
+              "maximum_latency_ms": "3.303"
+            }
+          ]
+        },
+        {
+          "system": "redis",
+          "pipeline": 1,
+          "endpoint": "127.0.0.1:32768",
+          "initial_state": {
+            "endpoint": "127.0.0.1:32768",
+            "method": "resp-del-set-get-exact-single-benchmark-key",
+            "key": "key:__rand_int__",
+            "payload_bytes": 256,
+            "payload_sha256": "1a1ab528466e36d92ab1d52aa56515c027612c9b1ac6b6f40007d0b9f78fd397",
+            "reset_reply_sha256": "6d7dbcb27aa6e24f40bf1f4cb2cc8a36e2f3b7f1ae87edf906578a2936b756d2",
+            "preload_reply_sha256": "4fe64db76d55e725725c37bcdb91df3266f059510ec44c342a31c426fdd01c5f",
+            "verification_reply_sha256": "71e07b56c631fd83937dabf06405e076961e83dea895c65b615b3738d3487a2a",
+            "logical_state_sha256": "e03806cb1ffcc8d0a8b7ede23bac5962dc6fa75c348d7578199380dfad4d1f54"
+          },
+          "process": {
+            "executable": {
+              "logical_name": "redis-benchmark",
+              "canonical_path": "/opt/actions-runner/_work/_temp/hydracache-perf-tools/redis-7.2.5/src/redis-benchmark",
+              "sha256": "71bf5cbf35038d8ee73379ddcb1d78559bcc88ba70039ed2f55ea9db7521c91f"
+            },
+            "argv": [
+              "--csv",
+              "-h",
+              "127.0.0.1",
+              "-p",
+              "32768",
+              "-c",
+              "50",
+              "-n",
+              "100000",
+              "-P",
+              "1",
+              "-d",
+              "256",
+              "-t",
+              "get,set"
+            ],
+            "execution_environment": [
+              "LANG=C",
+              "LC_ALL=C",
+              "TZ=UTC"
+            ],
+            "exit_code": 0,
+            "timed_out": false,
+            "stdout": "\"test\",\"rps\",\"avg_latency_ms\",\"min_latency_ms\",\"p50_latency_ms\",\"p95_latency_ms\",\"p99_latency_ms\",\"max_latency_ms\"\n\"SET\",\"87873.46\",\"0.479\",\"0.040\",\"0.447\",\"0.847\",\"1.087\",\"6.583\"\n\"GET\",\"87796.30\",\"0.480\",\"0.064\",\"0.439\",\"0.855\",\"1.103\",\"8.463\"\n",
+            "stderr": "",
+            "stdout_bytes": 245,
+            "stderr_bytes": 0,
+            "stdout_sha256": "25dc2e6b6e62c85b6ca260be0469b0e7333eda3f62c9dfffcc1b5fdbe5dcdb36",
+            "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "rows": [
+            {
+              "name": "GET",
+              "requests_per_second": "87796.30",
+              "average_latency_ms": "0.480",
+              "minimum_latency_ms": "0.064",
+              "p50_latency_ms": "0.439",
+              "p95_latency_ms": "0.855",
+              "p99_latency_ms": "1.103",
+              "maximum_latency_ms": "8.463"
+            },
+            {
+              "name": "SET",
+              "requests_per_second": "87873.46",
+              "average_latency_ms": "0.479",
+              "minimum_latency_ms": "0.040",
+              "p50_latency_ms": "0.447",
+              "p95_latency_ms": "0.847",
+              "p99_latency_ms": "1.087",
+              "maximum_latency_ms": "6.583"
+            }
+          ]
+        },
+        {
+          "system": "hydracache",
+          "pipeline": 10,
+          "endpoint": "127.0.0.1:39579",
+          "initial_state": {
+            "endpoint": "127.0.0.1:39579",
+            "method": "resp-del-set-get-exact-single-benchmark-key",
+            "key": "key:__rand_int__",
+            "payload_bytes": 256,
+            "payload_sha256": "1a1ab528466e36d92ab1d52aa56515c027612c9b1ac6b6f40007d0b9f78fd397",
+            "reset_reply_sha256": "6d7dbcb27aa6e24f40bf1f4cb2cc8a36e2f3b7f1ae87edf906578a2936b756d2",
+            "preload_reply_sha256": "4fe64db76d55e725725c37bcdb91df3266f059510ec44c342a31c426fdd01c5f",
+            "verification_reply_sha256": "71e07b56c631fd83937dabf06405e076961e83dea895c65b615b3738d3487a2a",
+            "logical_state_sha256": "e03806cb1ffcc8d0a8b7ede23bac5962dc6fa75c348d7578199380dfad4d1f54"
+          },
+          "process": {
+            "executable": {
+              "logical_name": "redis-benchmark",
+              "canonical_path": "/opt/actions-runner/_work/_temp/hydracache-perf-tools/redis-7.2.5/src/redis-benchmark",
+              "sha256": "71bf5cbf35038d8ee73379ddcb1d78559bcc88ba70039ed2f55ea9db7521c91f"
+            },
+            "argv": [
+              "--csv",
+              "-h",
+              "127.0.0.1",
+              "-p",
+              "39579",
+              "-c",
+              "50",
+              "-n",
+              "100000",
+              "-P",
+              "10",
+              "-d",
+              "256",
+              "-t",
+              "get,set"
+            ],
+            "execution_environment": [
+              "LANG=C",
+              "LC_ALL=C",
+              "TZ=UTC"
+            ],
+            "exit_code": 0,
+            "timed_out": false,
+            "stdout": "\"test\",\"rps\",\"avg_latency_ms\",\"min_latency_ms\",\"p50_latency_ms\",\"p95_latency_ms\",\"p99_latency_ms\",\"max_latency_ms\"\n\"SET\",\"132100.39\",\"3.372\",\"0.016\",\"3.199\",\"5.455\",\"6.543\",\"10.879\"\n\"GET\",\"136425.66\",\"3.263\",\"0.016\",\"3.127\",\"5.207\",\"6.135\",\"11.911\"\n",
+            "stderr": "WARNING: Could not fetch server CONFIG\n",
+            "stdout_bytes": 249,
+            "stderr_bytes": 39,
+            "stdout_sha256": "586648eb2e80e6b6cc09023750446fcc81d37590e9d851cdfb4d6acd2eb3fc5e",
+            "stderr_sha256": "1d89c0f26b2039760f8f32c71a04225a99b8a39ea54bd9a886e8db8db521de73"
+          },
+          "rows": [
+            {
+              "name": "GET",
+              "requests_per_second": "136425.66",
+              "average_latency_ms": "3.263",
+              "minimum_latency_ms": "0.016",
+              "p50_latency_ms": "3.127",
+              "p95_latency_ms": "5.207",
+              "p99_latency_ms": "6.135",
+              "maximum_latency_ms": "11.911"
+            },
+            {
+              "name": "SET",
+              "requests_per_second": "132100.39",
+              "average_latency_ms": "3.372",
+              "minimum_latency_ms": "0.016",
+              "p50_latency_ms": "3.199",
+              "p95_latency_ms": "5.455",
+              "p99_latency_ms": "6.543",
+              "maximum_latency_ms": "10.879"
+            }
+          ]
+        },
+        {
+          "system": "redis",
+          "pipeline": 10,
+          "endpoint": "127.0.0.1:32768",
+          "initial_state": {
+            "endpoint": "127.0.0.1:32768",
+            "method": "resp-del-set-get-exact-single-benchmark-key",
+            "key": "key:__rand_int__",
+            "payload_bytes": 256,
+            "payload_sha256": "1a1ab528466e36d92ab1d52aa56515c027612c9b1ac6b6f40007d0b9f78fd397",
+            "reset_reply_sha256": "6d7dbcb27aa6e24f40bf1f4cb2cc8a36e2f3b7f1ae87edf906578a2936b756d2",
+            "preload_reply_sha256": "4fe64db76d55e725725c37bcdb91df3266f059510ec44c342a31c426fdd01c5f",
+            "verification_reply_sha256": "71e07b56c631fd83937dabf06405e076961e83dea895c65b615b3738d3487a2a",
+            "logical_state_sha256": "e03806cb1ffcc8d0a8b7ede23bac5962dc6fa75c348d7578199380dfad4d1f54"
+          },
+          "process": {
+            "executable": {
+              "logical_name": "redis-benchmark",
+              "canonical_path": "/opt/actions-runner/_work/_temp/hydracache-perf-tools/redis-7.2.5/src/redis-benchmark",
+              "sha256": "71bf5cbf35038d8ee73379ddcb1d78559bcc88ba70039ed2f55ea9db7521c91f"
+            },
+            "argv": [
+              "--csv",
+              "-h",
+              "127.0.0.1",
+              "-p",
+              "32768",
+              "-c",
+              "50",
+              "-n",
+              "100000",
+              "-P",
+              "10",
+              "-d",
+              "256",
+              "-t",
+              "get,set"
+            ],
+            "execution_environment": [
+              "LANG=C",
+              "LC_ALL=C",
+              "TZ=UTC"
+            ],
+            "exit_code": 0,
+            "timed_out": false,
+            "stdout": "\"test\",\"rps\",\"avg_latency_ms\",\"min_latency_ms\",\"p50_latency_ms\",\"p95_latency_ms\",\"p99_latency_ms\",\"max_latency_ms\"\n\"SET\",\"740740.69\",\"0.593\",\"0.064\",\"0.543\",\"1.015\",\"1.319\",\"7.671\"\n\"GET\",\"757575.75\",\"0.577\",\"0.064\",\"0.527\",\"0.983\",\"1.263\",\"7.887\"\n",
+            "stderr": "",
+            "stdout_bytes": 247,
+            "stderr_bytes": 0,
+            "stdout_sha256": "5720fd2ccc5536f90d20a4d1f98780a3ab043d6abdcb388de53f141b28b83e88",
+            "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "rows": [
+            {
+              "name": "GET",
+              "requests_per_second": "757575.75",
+              "average_latency_ms": "0.577",
+              "minimum_latency_ms": "0.064",
+              "p50_latency_ms": "0.527",
+              "p95_latency_ms": "0.983",
+              "p99_latency_ms": "1.263",
+              "maximum_latency_ms": "7.887"
+            },
+            {
+              "name": "SET",
+              "requests_per_second": "740740.69",
+              "average_latency_ms": "0.593",
+              "minimum_latency_ms": "0.064",
+              "p50_latency_ms": "0.543",
+              "p95_latency_ms": "1.015",
+              "p99_latency_ms": "1.319",
+              "maximum_latency_ms": "7.671"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "aggregates": [
+    {
+      "pipeline": 1,
+      "operation": "GET",
+      "ratio_definition": "hydracache_requests_per_second / redis_requests_per_second",
+      "hydracache_requests_per_second": [
+        59417.71,
+        59630.29,
+        59665.87,
+        59559.26,
+        59665.87
+      ],
+      "redis_requests_per_second": [
+        87950.75,
+        87796.3,
+        88105.73,
+        87565.68,
+        87796.3
+      ],
+      "hydracache_over_redis_ratio": [
+        0.6755793441215681,
+        0.6791891002240413,
+        0.6772076004591302,
+        0.6801667045810642,
+        0.679594356481993
+      ],
+      "hydracache_median_requests_per_second": 59630.29,
+      "redis_median_requests_per_second": 87796.3,
+      "median_hydracache_over_redis_ratio": 0.6791891002240413,
+      "hydracache_robust_spread_ratio": 0.00416164335273237,
+      "redis_robust_spread_ratio": 0.0061511703796173975,
+      "ratio_robust_spread_ratio": 0.006754172671473871,
+      "median_ratio_hydracache_first": 0.6772076004591302,
+      "median_ratio_redis_first": 0.6796779024025528,
+      "order_bias_ratio": 0.0036477764599035303,
+      "stable": true,
+      "stability_reasons": []
+    },
+    {
+      "pipeline": 1,
+      "operation": "SET",
+      "ratio_definition": "hydracache_requests_per_second / redis_requests_per_second",
+      "hydracache_requests_per_second": [
+        59241.71,
+        59276.82,
+        59382.42,
+        59417.71,
+        59382.42
+      ],
+      "redis_requests_per_second": [
+        87489.06,
+        87719.3,
+        88417.33,
+        87412.59,
+        87873.46
+      ],
+      "hydracache_over_redis_ratio": [
+        0.6771327752292686,
+        0.6757557344848852,
+        0.671615168655285,
+        0.6797385822797379,
+        0.6757719566294532
+      ],
+      "hydracache_median_requests_per_second": 59382.42,
+      "redis_median_requests_per_second": 87719.3,
+      "median_hydracache_over_redis_ratio": 0.6757719566294532,
+      "hydracache_robust_spread_ratio": 0.0029638401398932547,
+      "redis_robust_spread_ratio": 0.011454035770919344,
+      "ratio_robust_spread_ratio": 0.012020939230698533,
+      "median_ratio_hydracache_first": 0.6757719566294532,
+      "median_ratio_redis_first": 0.6777471583823116,
+      "order_bias_ratio": 0.002922882095773964,
+      "stable": true,
+      "stability_reasons": []
+    },
+    {
+      "pipeline": 10,
+      "operation": "GET",
+      "ratio_definition": "hydracache_requests_per_second / redis_requests_per_second",
+      "hydracache_requests_per_second": [
+        136054.42,
+        137551.58,
+        136798.91,
+        134589.5,
+        136425.66
+      ],
+      "redis_requests_per_second": [
+        746268.62,
+        757575.75,
+        757575.75,
+        757575.75,
+        757575.75
+      ],
+      "hydracache_over_redis_ratio": [
+        0.18231293176979627,
+        0.18156808741568087,
+        0.18057456300574565,
+        0.17765814177658143,
+        0.18008187300081874
+      ],
+      "hydracache_median_requests_per_second": 136425.66,
+      "redis_median_requests_per_second": 757575.75,
+      "median_hydracache_over_redis_ratio": 0.18057456300574565,
+      "hydracache_robust_spread_ratio": 0.0217120444936824,
+      "redis_robust_spread_ratio": 0.014925411749254124,
+      "ratio_robust_spread_ratio": 0.02577766168021532,
+      "median_ratio_hydracache_first": 0.18057456300574565,
+      "median_ratio_redis_first": 0.17961311459613116,
+      "order_bias_ratio": 0.00535288534902559,
+      "stable": true,
+      "stability_reasons": []
+    },
+    {
+      "pipeline": 10,
+      "operation": "SET",
+      "ratio_definition": "hydracache_requests_per_second / redis_requests_per_second",
+      "hydracache_requests_per_second": [
+        132275.14,
+        135318.0,
+        134589.5,
+        132978.73,
+        132100.39
+      ],
+      "redis_requests_per_second": [
+        751879.69,
+        746268.62,
+        746268.62,
+        740740.69,
+        740740.69
+      ],
+      "hydracache_over_redis_ratio": [
+        0.17592593836388906,
+        0.18132612892124556,
+        0.180349938873217,
+        0.17952129779720893,
+        0.17833553871598443
+      ],
+      "hydracache_median_requests_per_second": 132978.73,
+      "redis_median_requests_per_second": 746268.62,
+      "median_hydracache_over_redis_ratio": 0.17952129779720893,
+      "hydracache_robust_spread_ratio": 0.024196425999857163,
+      "redis_robust_spread_ratio": 0.014926260734372029,
+      "ratio_robust_spread_ratio": 0.03008105792247928,
+      "median_ratio_hydracache_first": 0.17833553871598443,
+      "median_ratio_redis_first": 0.18042371335922724,
+      "order_bias_ratio": 0.01170924571892777,
+      "stable": true,
+      "stability_reasons": []
+    }
+  ],
+  "measurements_stable": true,
+  "ship_evidence_eligible": true,
+  "stability_reasons": []
+}

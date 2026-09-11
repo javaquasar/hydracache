@@ -1,0 +1,43 @@
+{
+  "schema_version": 1,
+  "release": "0.67.1",
+  "gate_id": "tool.perf-runner-provisioned-0671",
+  "source_commit": "7bd31af9a5092466d7a7284995f388d33ed3110f",
+  "dirty_worktree": false,
+  "command_digest": "d11abd682fe3c4773be23349db9b8c90eca980c9d0a2427e4ec844d28f296e7c",
+  "registry_digest": "e4b3b756e74d9d301d612e460c72516f2afcfab2ba5635a750e1c2ac98e2888f",
+  "input_digest": "d8ec08a475c29a98564eb88a186f5230bff23771c2749ef9cf078bd40005107f",
+  "toolchain": "rustc 1.94.0 (4a4ef493e 2026-03-02)",
+  "container_identity": {
+    "CI": "true",
+    "GITHUB_ACTIONS": "true",
+    "GITHUB_RUN_ATTEMPT": "1",
+    "GITHUB_RUN_ID": "34580969962",
+    "GITHUB_SHA": "7bd31af9a5092466d7a7284995f388d33ed3110f",
+    "HYDRACACHE_EVIDENCE_BASE_SHA": "7bd31af9a5092466d7a7284995f388d33ed3110f",
+    "HYDRACACHE_EVIDENCE_HEAD_SHA": "7bd31af9a5092466d7a7284995f388d33ed3110f",
+    "HYDRACACHE_EVIDENCE_TESTED_SHA": "7bd31af9a5092466d7a7284995f388d33ed3110f"
+  },
+  "platform": "linux-x86_64",
+  "started_at": "2026-09-11T08:51:39.274828462Z",
+  "ended_at": "2026-09-11T08:51:39.295440786Z",
+  "duration_ms": 31,
+  "outcome": "pass",
+  "exit_code": 0,
+  "normalized_result": {
+    "outcome": "pass",
+    "exit_code": 0,
+    "stdout_sha256": "a6cd2727f880f35c6866e14bdf699634aff01f99f28b8d340476590d9f8e262f",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "stdout": "offline provisioning receipt imported: /opt/actions-runner/_work/hydracache/hydracache/target/test-evidence/0.67.1/runner-provisioned.json\n",
+  "stderr": "",
+  "artifacts": [
+    {
+      "path": "target/test-evidence/0.67.1/runner-provisioned.json",
+      "sha256": "66fa14436574dd29678fc79fd7e8eb45023a9af8e1687bd6e4fb305a811452f5",
+      "bytes": 1414
+    }
+  ],
+  "missing_artifacts": []
+}

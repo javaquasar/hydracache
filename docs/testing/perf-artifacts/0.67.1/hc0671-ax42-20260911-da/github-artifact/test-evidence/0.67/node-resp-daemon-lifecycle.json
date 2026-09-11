@@ -1,0 +1,34 @@
+{
+  "repeat_index": 0,
+  "pid": 27987,
+  "direct_prebuilt_exec": true,
+  "server_binary_path": "/opt/actions-runner/_work/hydracache/hydracache/target/release/hydracache-server",
+  "server_binary_sha256": "a17b5148cad43e2193c69a64e3372e2832fa94a47196a7b6bec405128f3633c6",
+  "loadgen_binary_path": "/opt/actions-runner/_work/hydracache/hydracache/target/release/hydracache-loadgen",
+  "loadgen_binary_sha256": "c2c0e14ab40dd5b3c2ee5d71631bdfee81d7d61c0cd2c83c8b927c126aff7bd2",
+  "binaries_verified_after_measurement": true,
+  "resp_endpoint": "127.0.0.1:41319",
+  "admin_endpoint": "127.0.0.1:44707",
+  "selected_endpoint": "hydracache-server@127.0.0.1:41319",
+  "endpoint_capability_digest": "14b729d15ac097dd368a63519198917497f92dc588e80278b6f16a815bd2f8ab",
+  "data_dir": "/dev/shm/hydracache-reference-evidence-v1/0.67/resp-daemon-repeats/repeat-0-pid-27970-nanos-1789120154178829256-seq-0/data",
+  "readiness": {
+    "request_sha256": "a43cb6a3b9d261112714d00e36b33106d1479eb1b3d8131a07684d4d477c5989",
+    "response_sha256": "64c2f2c744321d052076467905a0561f91e9a6de4e84441addbcc549cd71095c",
+    "attempts": 1,
+    "selected_endpoint": "127.0.0.1:41319",
+    "exact_response": "+PONG\\r\\n"
+  },
+  "killed_and_waited": true,
+  "exit_code": null,
+  "stdout_log": {
+    "canonical_path": "/dev/shm/hydracache-reference-evidence-v1/0.67/resp-daemon-repeats/repeat-0-pid-27970-nanos-1789120154178829256-seq-0/hydracache-server.stdout.log",
+    "bytes": 16,
+    "sha256": "6489d6d7a33c5d40e18fc61eeb6c34c341279ee61816394dde5189aa4ad8fae5"
+  },
+  "stderr_log": {
+    "canonical_path": "/dev/shm/hydracache-reference-evidence-v1/0.67/resp-daemon-repeats/repeat-0-pid-27970-nanos-1789120154178829256-seq-0/hydracache-server.stderr.log",
+    "bytes": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  }
+}

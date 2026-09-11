@@ -1,0 +1,1475 @@
+{
+  "build": {
+    "binary_sha256": [
+      [
+        "hydracache-loadgen",
+        "c2c0e14ab40dd5b3c2ee5d71631bdfee81d7d61c0cd2c83c8b927c126aff7bd2"
+      ],
+      [
+        "hydracache-server",
+        "a17b5148cad43e2193c69a64e3372e2832fa94a47196a7b6bec405128f3633c6"
+      ]
+    ],
+    "prebuild_contract_digest": "f2caae0689d8b075d2a6d59d6090466365f9a6824c6996d6b92830956831cc55",
+    "prebuild_manifest_sha256": "2768ca970a2b3e09c3ee63bbd9bba466c3aee40be8dfca8e06cbe98309e4b296"
+  },
+  "measurements": [
+    {
+      "evidence": {
+        "derived_from": [],
+        "id": "local_cache_scaling_curve_1_to_n_threads",
+        "max_robust_spread_ratio": 0.15,
+        "points": [
+          {
+            "dimensions": {
+              "worker_threads": 1
+            },
+            "max": 1450098.7704325407,
+            "min": 1430262.1230379874,
+            "quantity": {
+              "unit": "operations_per_second",
+              "value": 1448575.597435418
+            },
+            "robust_spread_ratio": 0.013693898633714676,
+            "sample_count": 3,
+            "samples": [
+              1430262.1230379874,
+              1448575.597435418,
+              1450098.7704325407
+            ]
+          },
+          {
+            "dimensions": {
+              "worker_threads": 2
+            },
+            "max": 1327044.6122367615,
+            "min": 1316548.9252782175,
+            "quantity": {
+              "unit": "operations_per_second",
+              "value": 1317902.537052199
+            },
+            "robust_spread_ratio": 0.007963932584893602,
+            "sample_count": 3,
+            "samples": [
+              1316548.9252782175,
+              1317902.537052199,
+              1327044.6122367615
+            ]
+          },
+          {
+            "dimensions": {
+              "worker_threads": 4
+            },
+            "max": 1201866.6277610902,
+            "min": 1162755.1871310035,
+            "quantity": {
+              "unit": "operations_per_second",
+              "value": 1182773.1081491353
+            },
+            "robust_spread_ratio": 0.03306757683330348,
+            "sample_count": 3,
+            "samples": [
+              1162755.1871310035,
+              1201866.6277610902,
+              1182773.1081491353
+            ]
+          }
+        ],
+        "scenario_digest": "23c22685ca89f79c9a871a45186547acbcf2a75b817dfbd96a4200cdb9b57a24",
+        "workload": {
+          "digest": "3fad2f00633e7cfb65004eabf4a7908fa8db4388bbe38c28a612179f535ffc38",
+          "generator": "hydracache-cache-sim-key-schedule",
+          "generator_version": "1",
+          "key_count": 10000,
+          "key_distribution": {
+            "kind": "uniform",
+            "theta": null
+          },
+          "operation_mix": [
+            {
+              "operation": "get-hit",
+              "weight": 0.7
+            },
+            {
+              "operation": "get-miss",
+              "weight": 0.1
+            },
+            {
+              "operation": "load",
+              "weight": 0.1
+            },
+            {
+              "operation": "put",
+              "weight": 0.1
+            }
+          ],
+          "payload_mix": [
+            {
+              "bytes": 128,
+              "weight": 1.0
+            }
+          ],
+          "seed": 6701
+        }
+      },
+      "kind": "scalar"
+    },
+    {
+      "evidence": {
+        "derived_from": [
+          "local_cache_scaling_curve_1_to_n_threads"
+        ],
+        "id": "local_cache_scaling_efficiency_vs_one_thread",
+        "max_robust_spread_ratio": 0.15,
+        "points": [
+          {
+            "dimensions": {
+              "worker_threads": 1
+            },
+            "max": 1.0010514970705149,
+            "min": 0.9873575984368002,
+            "quantity": {
+              "unit": "ratio",
+              "value": 1.0
+            },
+            "robust_spread_ratio": 0.01369389863371473,
+            "sample_count": 3,
+            "samples": [
+              0.9873575984368002,
+              1.0,
+              1.0010514970705149
+            ]
+          },
+          {
+            "dimensions": {
+              "worker_threads": 2
+            },
+            "max": 0.45805155581323576,
+            "min": 0.45442879460659746,
+            "quantity": {
+              "unit": "ratio",
+              "value": 0.4548960162608825
+            },
+            "robust_spread_ratio": 0.007963932584893514,
+            "sample_count": 3,
+            "samples": [
+              0.45442879460659746,
+              0.4548960162608825,
+              0.45805155581323576
+            ]
+          },
+          {
+            "dimensions": {
+              "worker_threads": 4
+            },
+            "max": 0.2074221445344127,
+            "min": 0.20067216187915293,
+            "quantity": {
+              "unit": "ratio",
+              "value": 0.20412692134313462
+            },
+            "robust_spread_ratio": 0.03306757683330337,
+            "sample_count": 3,
+            "samples": [
+              0.20067216187915293,
+              0.2074221445344127,
+              0.20412692134313462
+            ]
+          }
+        ],
+        "scenario_digest": "23c22685ca89f79c9a871a45186547acbcf2a75b817dfbd96a4200cdb9b57a24",
+        "workload": {
+          "digest": "3fad2f00633e7cfb65004eabf4a7908fa8db4388bbe38c28a612179f535ffc38",
+          "generator": "hydracache-cache-sim-key-schedule",
+          "generator_version": "1",
+          "key_count": 10000,
+          "key_distribution": {
+            "kind": "uniform",
+            "theta": null
+          },
+          "operation_mix": [
+            {
+              "operation": "get-hit",
+              "weight": 0.7
+            },
+            {
+              "operation": "get-miss",
+              "weight": 0.1
+            },
+            {
+              "operation": "load",
+              "weight": 0.1
+            },
+            {
+              "operation": "put",
+              "weight": 0.1
+            }
+          ],
+          "payload_mix": [
+            {
+              "bytes": 128,
+              "weight": 1.0
+            }
+          ],
+          "seed": 6701
+        }
+      },
+      "kind": "scalar"
+    },
+    {
+      "evidence": {
+        "claim": "capacity_knee",
+        "criteria": {
+          "max_drain_ms": 2000,
+          "max_error_ratio": 0.0,
+          "max_rejection_ratio": 0.0,
+          "max_robust_spread_ratio": 0.15,
+          "max_timeout_ratio": 0.0,
+          "min_achieved_ratio": 0.95,
+          "p999_slo_us": 25000,
+          "p99_slo_us": 10000
+        },
+        "dimensions": {
+          "capacity_scenario_source_sha256": "9e57b7c88d6164605d84d9daeab163fdfefbf2ba599f602437e8d512b9208e7d",
+          "direct_prebuilt_exec": true,
+          "loadgen_binary_path": "/opt/actions-runner/_work/hydracache/hydracache/target/release/hydracache-loadgen",
+          "loadgen_binary_sha256": "c2c0e14ab40dd5b3c2ee5d71631bdfee81d7d61c0cd2c83c8b927c126aff7bd2",
+          "logical_key_count": 1,
+          "preload_operations": 0,
+          "reference_instance_created_unix_nanos": 1789118265588619875,
+          "reference_instance_receipt_sha256": "8cea45c9c918c4cbd10e4bc4974b74f9c8261c093272ab5bd923638aff378ab0",
+          "reference_instance_schema_version": 1,
+          "reference_instance_sequence": 1,
+          "reference_process_pid": 26512,
+          "repeats": 3,
+          "steady_operations": 50000,
+          "surface_capability_sha256": "e7acb7d5b93ff0f4a68aac8371f5d4968ba66a5a2855cda21acfc7b5cb5b86b1",
+          "w6_capacity_eligible": true,
+          "warmup_operations": 5000
+        },
+        "id": "hot_key_contention_throughput_floor",
+        "knee": {
+          "evaluated": [
+            {
+              "repeats": [
+                {
+                  "phase": {
+                    "preload_ms": 0,
+                    "preload_operations": 0,
+                    "reset_ms": 0,
+                    "reset_operations": 1,
+                    "steady_ms": 20000,
+                    "steady_operations": 50000,
+                    "warmup_errors": 0,
+                    "warmup_ms": 4,
+                    "warmup_operations": 5000,
+                    "warmup_rejections": 0,
+                    "warmup_samples_in_steady_histogram": 0,
+                    "warmup_successes": 5000,
+                    "warmup_timeouts": 0
+                  },
+                  "preloaded_state_digest": "sha256:b9d46d15844e9be2445de8d9e69892536cd54eae448803e6a869380664d9660e",
+                  "reset_state_digest": "sha256:b9d46d15844e9be2445de8d9e69892536cd54eae448803e6a869380664d9660e",
+                  "state_digest": "sha256:24f476af21702ddd3c1bb6d7e8aa7ff0033ee25b52df581b4655f61c149b8159",
+                  "steady": {
+                    "achieved_rate_per_second": 2499.9844742214204,
+                    "backlog_drained": true,
+                    "backlog_high_water": 7,
+                    "completed": 50000,
+                    "drain_ms": 0,
+                    "elapsed_ms": 20000,
+                    "errors": 0,
+                    "latency": {
+                      "max_us": 3403,
+                      "overflow_count": 0,
+                      "p50_us": 1145,
+                      "p90_us": 1724,
+                      "p999_min_samples": 5000,
+                      "p999_reportable": true,
+                      "p999_us": 2061,
+                      "p99_us": 2041,
+                      "samples": 50000
+                    },
+                    "offered": 50000,
+                    "offered_rate_per_second": 2500.0,
+                    "rejections": 0,
+                    "started": 50000,
+                    "successes": 50000,
+                    "timeouts": 0
+                  }
+                },
+                {
+                  "phase": {
+                    "preload_ms": 0,
+                    "preload_operations": 0,
+                    "reset_ms": 0,
+                    "reset_operations": 1,
+                    "steady_ms": 19999,
+                    "steady_operations": 50000,
+                    "warmup_errors": 0,
+                    "warmup_ms": 4,
+                    "warmup_operations": 5000,
+                    "warmup_rejections": 0,
+                    "warmup_samples_in_steady_histogram": 0,
+                    "warmup_successes": 5000,
+                    "warmup_timeouts": 0
+                  },
+                  "preloaded_state_digest": "sha256:b9d46d15844e9be2445de8d9e69892536cd54eae448803e6a869380664d9660e",
+                  "reset_state_digest": "sha256:b9d46d15844e9be2445de8d9e69892536cd54eae448803e6a869380664d9660e",
+                  "state_digest": "sha256:24f476af21702ddd3c1bb6d7e8aa7ff0033ee25b52df581b4655f61c149b8159",
+                  "steady": {
+                    "achieved_rate_per_second": 2500.0055071371316,
+                    "backlog_drained": true,
+                    "backlog_high_water": 5,
+                    "completed": 50000,
+                    "drain_ms": 0,
+                    "elapsed_ms": 19999,
+                    "errors": 0,
+                    "latency": {
+                      "max_us": 2008,
+                      "overflow_count": 0,
+                      "p50_us": 1077,
+                      "p90_us": 1653,
+                      "p999_min_samples": 5000,
+                      "p999_reportable": true,
+                      "p999_us": 1994,
+                      "p99_us": 1971,
+                      "samples": 50000
+                    },
+                    "offered": 50000,
+                    "offered_rate_per_second": 2500.0,
+                    "rejections": 0,
+                    "started": 50000,
+                    "successes": 50000,
+                    "timeouts": 0
+                  }
+                },
+                {
+                  "phase": {
+                    "preload_ms": 0,
+                    "preload_operations": 0,
+                    "reset_ms": 0,
+                    "reset_operations": 1,
+                    "steady_ms": 20001,
+                    "steady_operations": 50000,
+                    "warmup_errors": 0,
+                    "warmup_ms": 4,
+                    "warmup_operations": 5000,
+                    "warmup_rejections": 0,
+                    "warmup_samples_in_steady_histogram": 0,
+                    "warmup_successes": 5000,
+                    "warmup_timeouts": 0
+                  },
+                  "preloaded_state_digest": "sha256:b9d46d15844e9be2445de8d9e69892536cd54eae448803e6a869380664d9660e",
+                  "reset_state_digest": "sha256:b9d46d15844e9be2445de8d9e69892536cd54eae448803e6a869380664d9660e",
+                  "state_digest": "sha256:24f476af21702ddd3c1bb6d7e8aa7ff0033ee25b52df581b4655f61c149b8159",
+                  "steady": {
+                    "achieved_rate_per_second": 2499.7970264806377,
+                    "backlog_drained": true,
+                    "backlog_high_water": 5,
+                    "completed": 50000,
+                    "drain_ms": 0,
+                    "elapsed_ms": 20001,
+                    "errors": 0,
+                    "latency": {
+                      "max_us": 2042,
+                      "overflow_count": 0,
+                      "p50_us": 1110,
+                      "p90_us": 1685,
+                      "p999_min_samples": 5000,
+                      "p999_reportable": true,
+                      "p999_us": 2025,
+                      "p99_us": 2004,
+                      "samples": 50000
+                    },
+                    "offered": 50000,
+                    "offered_rate_per_second": 2500.0,
+                    "rejections": 0,
+                    "started": 50000,
+                    "successes": 50000,
+                    "timeouts": 0
+                  }
+                }
+              ],
+              "sample": {
+                "achieved_rate_max_per_second": 2500.0055071371316,
+                "achieved_rate_min_per_second": 2499.7970264806377,
+                "achieved_rate_per_second": 2499.9844742214204,
+                "backlog_drained": true,
+                "completed": 50000,
+                "drain_ms": 0,
+                "errors": 0,
+                "latency": {
+                  "max_us": 3403,
+                  "overflow_count": 0,
+                  "p50_us": 1145,
+                  "p90_us": 1724,
+                  "p999_min_samples": 5000,
+                  "p999_reportable": true,
+                  "p999_us": 2061,
+                  "p99_us": 2041,
+                  "samples": 50000
+                },
+                "offered": 50000,
+                "offered_rate_per_second": 2500.0,
+                "rejections": 0,
+                "robust_spread_ratio": 0.00008339278049272819,
+                "started": 50000,
+                "successes": 50000,
+                "timeouts": 0
+              },
+              "verdict": {
+                "reasons": [],
+                "sustainable": true
+              }
+            },
+            {
+              "repeats": [
+                {
+                  "phase": {
+                    "preload_ms": 0,
+                    "preload_operations": 0,
+                    "reset_ms": 0,
+                    "reset_operations": 1,
+                    "steady_ms": 10001,
+                    "steady_operations": 50000,
+                    "warmup_errors": 0,
+                    "warmup_ms": 4,
+                    "warmup_operations": 5000,
+                    "warmup_rejections": 0,
+                    "warmup_samples_in_steady_histogram": 0,
+                    "warmup_successes": 5000,
+                    "warmup_timeouts": 0
+                  },
+                  "preloaded_state_digest": "sha256:b9d46d15844e9be2445de8d9e69892536cd54eae448803e6a869380664d9660e",
+                  "reset_state_digest": "sha256:b9d46d15844e9be2445de8d9e69892536cd54eae448803e6a869380664d9660e",
+                  "state_digest": "sha256:24f476af21702ddd3c1bb6d7e8aa7ff0033ee25b52df581b4655f61c149b8159",
+                  "steady": {
+                    "achieved_rate_per_second": 4999.356951712857,
+                    "backlog_drained": true,
+                    "backlog_high_water": 10,
+                    "completed": 50000,
+                    "drain_ms": 0,
+                    "elapsed_ms": 10001,
+                    "errors": 0,
+                    "latency": {
+                      "max_us": 1973,
+                      "overflow_count": 0,
+                      "p50_us": 1052,
+                      "p90_us": 1611,
+                      "p999_min_samples": 5000,
+                      "p999_reportable": true,
+                      "p999_us": 1968,
+                      "p99_us": 1955,
+                      "samples": 50000
+                    },
+                    "offered": 50000,
+                    "offered_rate_per_second": 5000.0,
+                    "rejections": 0,
+                    "started": 50000,
+                    "successes": 50000,
+                    "timeouts": 0
+                  }
+                },
+                {
+                  "phase": {
+                    "preload_ms": 0,
+                    "preload_operations": 0,
+                    "reset_ms": 0,
+                    "reset_operations": 1,
+                    "steady_ms": 10000,
+                    "steady_operations": 50000,
+                    "warmup_errors": 0,
+                    "warmup_ms": 4,
+                    "warmup_operations": 5000,
+                    "warmup_rejections": 0,
+                    "warmup_samples_in_steady_histogram": 0,
+                    "warmup_successes": 5000,
+                    "warmup_timeouts": 0
+                  },
+                  "preloaded_state_digest": "sha256:b9d46d15844e9be2445de8d9e69892536cd54eae448803e6a869380664d9660e",
+                  "reset_state_digest": "sha256:b9d46d15844e9be2445de8d9e69892536cd54eae448803e6a869380664d9660e",
+                  "state_digest": "sha256:24f476af21702ddd3c1bb6d7e8aa7ff0033ee25b52df581b4655f61c149b8159",
+                  "steady": {
+                    "achieved_rate_per_second": 4999.690227193028,
+                    "backlog_drained": true,
+                    "backlog_high_water": 10,
+                    "completed": 50000,
+                    "drain_ms": 0,
+                    "elapsed_ms": 10000,
+                    "errors": 0,
+                    "latency": {
+                      "max_us": 1965,
+                      "overflow_count": 0,
+                      "p50_us": 1044,
+                      "p90_us": 1603,
+                      "p999_min_samples": 5000,
+                      "p999_reportable": true,
+                      "p999_us": 1961,
+                      "p99_us": 1947,
+                      "samples": 50000
+                    },
+                    "offered": 50000,
+                    "offered_rate_per_second": 5000.0,
+                    "rejections": 0,
+                    "started": 50000,
+                    "successes": 50000,
+                    "timeouts": 0
+                  }
+                },
+                {
+                  "phase": {
+                    "preload_ms": 0,
+                    "preload_operations": 0,
+                    "reset_ms": 0,
+                    "reset_operations": 1,
+                    "steady_ms": 10001,
+                    "steady_operations": 50000,
+                    "warmup_errors": 0,
+                    "warmup_ms": 4,
+                    "warmup_operations": 5000,
+                    "warmup_rejections": 0,
+                    "warmup_samples_in_steady_histogram": 0,
+                    "warmup_successes": 5000,
+                    "warmup_timeouts": 0
+                  },
+                  "preloaded_state_digest": "sha256:b9d46d15844e9be2445de8d9e69892536cd54eae448803e6a869380664d9660e",
+                  "reset_state_digest": "sha256:b9d46d15844e9be2445de8d9e69892536cd54eae448803e6a869380664d9660e",
+                  "state_digest": "sha256:24f476af21702ddd3c1bb6d7e8aa7ff0033ee25b52df581b4655f61c149b8159",
+                  "steady": {
+                    "achieved_rate_per_second": 4999.4672712660295,
+                    "backlog_drained": true,
+                    "backlog_high_water": 10,
+                    "completed": 50000,
+                    "drain_ms": 0,
+                    "elapsed_ms": 10001,
+                    "errors": 0,
+                    "latency": {
+                      "max_us": 1915,
+                      "overflow_count": 0,
+                      "p50_us": 983,
+                      "p90_us": 1543,
+                      "p999_min_samples": 5000,
+                      "p999_reportable": true,
+                      "p999_us": 1902,
+                      "p99_us": 1880,
+                      "samples": 50000
+                    },
+                    "offered": 50000,
+                    "offered_rate_per_second": 5000.0,
+                    "rejections": 0,
+                    "started": 50000,
+                    "successes": 50000,
+                    "timeouts": 0
+                  }
+                }
+              ],
+              "sample": {
+                "achieved_rate_max_per_second": 4999.690227193028,
+                "achieved_rate_min_per_second": 4999.356951712857,
+                "achieved_rate_per_second": 4999.4672712660295,
+                "backlog_drained": true,
+                "completed": 50000,
+                "drain_ms": 0,
+                "errors": 0,
+                "latency": {
+                  "max_us": 1915,
+                  "overflow_count": 0,
+                  "p50_us": 983,
+                  "p90_us": 1543,
+                  "p999_min_samples": 5000,
+                  "p999_reportable": true,
+                  "p999_us": 1902,
+                  "p99_us": 1880,
+                  "samples": 50000
+                },
+                "offered": 50000,
+                "offered_rate_per_second": 5000.0,
+                "rejections": 0,
+                "robust_spread_ratio": 0.00006666219860781642,
+                "started": 50000,
+                "successes": 50000,
+                "timeouts": 0
+              },
+              "verdict": {
+                "reasons": [],
+                "sustainable": true
+              }
+            },
+            {
+              "repeats": [
+                {
+                  "phase": {
+                    "preload_ms": 0,
+                    "preload_operations": 0,
+                    "reset_ms": 0,
+                    "reset_operations": 1,
+                    "steady_ms": 5001,
+                    "steady_operations": 50000,
+                    "warmup_errors": 0,
+                    "warmup_ms": 4,
+                    "warmup_operations": 5000,
+                    "warmup_rejections": 0,
+                    "warmup_samples_in_steady_histogram": 0,
+                    "warmup_successes": 5000,
+                    "warmup_timeouts": 0
+                  },
+                  "preloaded_state_digest": "sha256:b9d46d15844e9be2445de8d9e69892536cd54eae448803e6a869380664d9660e",
+                  "reset_state_digest": "sha256:b9d46d15844e9be2445de8d9e69892536cd54eae448803e6a869380664d9660e",
+                  "state_digest": "sha256:24f476af21702ddd3c1bb6d7e8aa7ff0033ee25b52df581b4655f61c149b8159",
+                  "steady": {
+                    "achieved_rate_per_second": 9997.313505918988,
+                    "backlog_drained": true,
+                    "backlog_high_water": 20,
+                    "completed": 50000,
+                    "drain_ms": 0,
+                    "elapsed_ms": 5001,
+                    "errors": 0,
+                    "latency": {
+                      "max_us": 1980,
+                      "overflow_count": 0,
+                      "p50_us": 1002,
+                      "p90_us": 1571,
+                      "p999_min_samples": 5000,
+                      "p999_reportable": true,
+                      "p999_us": 1958,
+                      "p99_us": 1864,
+                      "samples": 50000
+                    },
+                    "offered": 50000,
+                    "offered_rate_per_second": 10000.0,
+                    "rejections": 0,
+                    "started": 50000,
+                    "successes": 50000,
+                    "timeouts": 0
+                  }
+                },
+                {
+                  "phase": {
+                    "preload_ms": 0,
+                    "preload_operations": 0,
+                    "reset_ms": 0,
+                    "reset_operations": 1,
+                    "steady_ms": 5000,
+                    "steady_operations": 50000,
+                    "warmup_errors": 0,
+                    "warmup_ms": 4,
+                    "warmup_operations": 5000,
+                    "warmup_rejections": 0,
+                    "warmup_samples_in_steady_histogram": 0,
+                    "warmup_successes": 5000,
+                    "warmup_timeouts": 0
+                  },
+                  "preloaded_state_digest": "sha256:b9d46d15844e9be2445de8d9e69892536cd54eae448803e6a869380664d9660e",
+                  "reset_state_digest": "sha256:b9d46d15844e9be2445de8d9e69892536cd54eae448803e6a869380664d9660e",
+                  "state_digest": "sha256:24f476af21702ddd3c1bb6d7e8aa7ff0033ee25b52df581b4655f61c149b8159",
+                  "steady": {
+                    "achieved_rate_per_second": 9998.325636396297,
+                    "backlog_drained": true,
+                    "backlog_high_water": 20,
+                    "completed": 50000,
+                    "drain_ms": 0,
+                    "elapsed_ms": 5000,
+                    "errors": 0,
+                    "latency": {
+                      "max_us": 1978,
+                      "overflow_count": 0,
+                      "p50_us": 998,
+                      "p90_us": 1566,
+                      "p999_min_samples": 5000,
+                      "p999_reportable": true,
+                      "p999_us": 1951,
+                      "p99_us": 1863,
+                      "samples": 50000
+                    },
+                    "offered": 50000,
+                    "offered_rate_per_second": 10000.0,
+                    "rejections": 0,
+                    "started": 50000,
+                    "successes": 50000,
+                    "timeouts": 0
+                  }
+                },
+                {
+                  "phase": {
+                    "preload_ms": 0,
+                    "preload_operations": 0,
+                    "reset_ms": 0,
+                    "reset_operations": 1,
+                    "steady_ms": 5000,
+                    "steady_operations": 50000,
+                    "warmup_errors": 0,
+                    "warmup_ms": 4,
+                    "warmup_operations": 5000,
+                    "warmup_rejections": 0,
+                    "warmup_samples_in_steady_histogram": 0,
+                    "warmup_successes": 5000,
+                    "warmup_timeouts": 0
+                  },
+                  "preloaded_state_digest": "sha256:b9d46d15844e9be2445de8d9e69892536cd54eae448803e6a869380664d9660e",
+                  "reset_state_digest": "sha256:b9d46d15844e9be2445de8d9e69892536cd54eae448803e6a869380664d9660e",
+                  "state_digest": "sha256:24f476af21702ddd3c1bb6d7e8aa7ff0033ee25b52df581b4655f61c149b8159",
+                  "steady": {
+                    "achieved_rate_per_second": 9998.600733821984,
+                    "backlog_drained": true,
+                    "backlog_high_water": 20,
+                    "completed": 50000,
+                    "drain_ms": 0,
+                    "elapsed_ms": 5000,
+                    "errors": 0,
+                    "latency": {
+                      "max_us": 2036,
+                      "overflow_count": 0,
+                      "p50_us": 1067,
+                      "p90_us": 1634,
+                      "p999_min_samples": 5000,
+                      "p999_reportable": true,
+                      "p999_us": 2020,
+                      "p99_us": 1931,
+                      "samples": 50000
+                    },
+                    "offered": 50000,
+                    "offered_rate_per_second": 10000.0,
+                    "rejections": 0,
+                    "started": 50000,
+                    "successes": 50000,
+                    "timeouts": 0
+                  }
+                }
+              ],
+              "sample": {
+                "achieved_rate_max_per_second": 9998.600733821984,
+                "achieved_rate_min_per_second": 9997.313505918988,
+                "achieved_rate_per_second": 9998.325636396297,
+                "backlog_drained": true,
+                "completed": 50000,
+                "drain_ms": 0,
+                "errors": 0,
+                "latency": {
+                  "max_us": 1978,
+                  "overflow_count": 0,
+                  "p50_us": 998,
+                  "p90_us": 1566,
+                  "p999_min_samples": 5000,
+                  "p999_reportable": true,
+                  "p999_us": 1951,
+                  "p99_us": 1863,
+                  "samples": 50000
+                },
+                "offered": 50000,
+                "offered_rate_per_second": 10000.0,
+                "rejections": 0,
+                "robust_spread_ratio": 0.0001287443467844603,
+                "started": 50000,
+                "successes": 50000,
+                "timeouts": 0
+              },
+              "verdict": {
+                "reasons": [],
+                "sustainable": true
+              }
+            },
+            {
+              "repeats": [
+                {
+                  "phase": {
+                    "preload_ms": 0,
+                    "preload_operations": 0,
+                    "reset_ms": 0,
+                    "reset_operations": 1,
+                    "steady_ms": 2501,
+                    "steady_operations": 50000,
+                    "warmup_errors": 0,
+                    "warmup_ms": 4,
+                    "warmup_operations": 5000,
+                    "warmup_rejections": 0,
+                    "warmup_samples_in_steady_histogram": 0,
+                    "warmup_successes": 5000,
+                    "warmup_timeouts": 0
+                  },
+                  "preloaded_state_digest": "sha256:b9d46d15844e9be2445de8d9e69892536cd54eae448803e6a869380664d9660e",
+                  "reset_state_digest": "sha256:b9d46d15844e9be2445de8d9e69892536cd54eae448803e6a869380664d9660e",
+                  "state_digest": "sha256:24f476af21702ddd3c1bb6d7e8aa7ff0033ee25b52df581b4655f61c149b8159",
+                  "steady": {
+                    "achieved_rate_per_second": 19986.67005030331,
+                    "backlog_drained": true,
+                    "backlog_high_water": 40,
+                    "completed": 50000,
+                    "drain_ms": 0,
+                    "elapsed_ms": 2501,
+                    "errors": 0,
+                    "latency": {
+                      "max_us": 2067,
+                      "overflow_count": 0,
+                      "p50_us": 1051,
+                      "p90_us": 1614,
+                      "p999_min_samples": 5000,
+                      "p999_reportable": true,
+                      "p999_us": 2024,
+                      "p99_us": 1929,
+                      "samples": 50000
+                    },
+                    "offered": 50000,
+                    "offered_rate_per_second": 20000.0,
+                    "rejections": 0,
+                    "started": 50000,
+                    "successes": 50000,
+                    "timeouts": 0
+                  }
+                },
+                {
+                  "phase": {
+                    "preload_ms": 0,
+                    "preload_operations": 0,
+                    "reset_ms": 0,
+                    "reset_operations": 1,
+                    "steady_ms": 2500,
+                    "steady_operations": 50000,
+                    "warmup_errors": 0,
+                    "warmup_ms": 4,
+                    "warmup_operations": 5000,
+                    "warmup_rejections": 0,
+                    "warmup_samples_in_steady_histogram": 0,
+                    "warmup_successes": 5000,
+                    "warmup_timeouts": 0
+                  },
+                  "preloaded_state_digest": "sha256:b9d46d15844e9be2445de8d9e69892536cd54eae448803e6a869380664d9660e",
+                  "reset_state_digest": "sha256:b9d46d15844e9be2445de8d9e69892536cd54eae448803e6a869380664d9660e",
+                  "state_digest": "sha256:24f476af21702ddd3c1bb6d7e8aa7ff0033ee25b52df581b4655f61c149b8159",
+                  "steady": {
+                    "achieved_rate_per_second": 19998.13382214724,
+                    "backlog_drained": true,
+                    "backlog_high_water": 40,
+                    "completed": 50000,
+                    "drain_ms": 0,
+                    "elapsed_ms": 2500,
+                    "errors": 0,
+                    "latency": {
+                      "max_us": 2075,
+                      "overflow_count": 0,
+                      "p50_us": 1056,
+                      "p90_us": 1619,
+                      "p999_min_samples": 5000,
+                      "p999_reportable": true,
+                      "p999_us": 2042,
+                      "p99_us": 1935,
+                      "samples": 50000
+                    },
+                    "offered": 50000,
+                    "offered_rate_per_second": 20000.0,
+                    "rejections": 0,
+                    "started": 50000,
+                    "successes": 50000,
+                    "timeouts": 0
+                  }
+                },
+                {
+                  "phase": {
+                    "preload_ms": 0,
+                    "preload_operations": 0,
+                    "reset_ms": 0,
+                    "reset_operations": 1,
+                    "steady_ms": 2501,
+                    "steady_operations": 50000,
+                    "warmup_errors": 0,
+                    "warmup_ms": 4,
+                    "warmup_operations": 5000,
+                    "warmup_rejections": 0,
+                    "warmup_samples_in_steady_histogram": 0,
+                    "warmup_successes": 5000,
+                    "warmup_timeouts": 0
+                  },
+                  "preloaded_state_digest": "sha256:b9d46d15844e9be2445de8d9e69892536cd54eae448803e6a869380664d9660e",
+                  "reset_state_digest": "sha256:b9d46d15844e9be2445de8d9e69892536cd54eae448803e6a869380664d9660e",
+                  "state_digest": "sha256:24f476af21702ddd3c1bb6d7e8aa7ff0033ee25b52df581b4655f61c149b8159",
+                  "steady": {
+                    "achieved_rate_per_second": 19987.620267634833,
+                    "backlog_drained": true,
+                    "backlog_high_water": 40,
+                    "completed": 50000,
+                    "drain_ms": 0,
+                    "elapsed_ms": 2501,
+                    "errors": 0,
+                    "latency": {
+                      "max_us": 2053,
+                      "overflow_count": 0,
+                      "p50_us": 1036,
+                      "p90_us": 1599,
+                      "p999_min_samples": 5000,
+                      "p999_reportable": true,
+                      "p999_us": 2026,
+                      "p99_us": 1917,
+                      "samples": 50000
+                    },
+                    "offered": 50000,
+                    "offered_rate_per_second": 20000.0,
+                    "rejections": 0,
+                    "started": 50000,
+                    "successes": 50000,
+                    "timeouts": 0
+                  }
+                }
+              ],
+              "sample": {
+                "achieved_rate_max_per_second": 19998.13382214724,
+                "achieved_rate_min_per_second": 19986.67005030331,
+                "achieved_rate_per_second": 19987.620267634833,
+                "backlog_drained": true,
+                "completed": 50000,
+                "drain_ms": 0,
+                "errors": 0,
+                "latency": {
+                  "max_us": 2053,
+                  "overflow_count": 0,
+                  "p50_us": 1036,
+                  "p90_us": 1599,
+                  "p999_min_samples": 5000,
+                  "p999_reportable": true,
+                  "p999_us": 2026,
+                  "p99_us": 1917,
+                  "samples": 50000
+                },
+                "offered": 50000,
+                "offered_rate_per_second": 20000.0,
+                "rejections": 0,
+                "robust_spread_ratio": 0.000573543608014842,
+                "started": 50000,
+                "successes": 50000,
+                "timeouts": 0
+              },
+              "verdict": {
+                "reasons": [],
+                "sustainable": true
+              }
+            }
+          ],
+          "sustainable_rate_per_second": 20000.0
+        },
+        "scenario_digest": "f45fbe569654882b88f62ddaf700fc1768b7129baf191faaf3c345e7da0353b3",
+        "workload": {
+          "digest": "d778147a321e24576227e949943aa09f77cb1ee081cc8680280182f5dca6790f",
+          "generator": "hydracache-cache-sim-key-schedule",
+          "generator_version": "1",
+          "key_count": 1,
+          "key_distribution": {
+            "kind": "uniform",
+            "theta": null
+          },
+          "operation_mix": [
+            {
+              "operation": "hot-key-get-or-insert",
+              "weight": 1.0
+            }
+          ],
+          "payload_mix": [
+            {
+              "bytes": 128,
+              "weight": 1.0
+            }
+          ],
+          "seed": 6702
+        }
+      },
+      "kind": "load_curve"
+    },
+    {
+      "evidence": {
+        "derived_from": [],
+        "id": "hot_key_single_flight_miss_stampede_cost",
+        "max_robust_spread_ratio": 0.15,
+        "points": [
+          {
+            "dimensions": {
+              "bursts_per_repeat": 256,
+              "cache_hits": 0,
+              "cache_misses_before_loader_release": 1024,
+              "concurrent_requests": 4,
+              "loader_executions": 256,
+              "unmeasured_warmup_repeats": 1
+            },
+            "max": 1297.1571325670204,
+            "min": 1192.40250080201,
+            "quantity": {
+              "unit": "operations_per_second",
+              "value": 1209.7807374842987
+            },
+            "robust_spread_ratio": 0.0865897666570922,
+            "sample_count": 3,
+            "samples": [
+              1209.7807374842987,
+              1192.40250080201,
+              1297.1571325670204
+            ]
+          }
+        ],
+        "scenario_digest": "62ae5c3ef72be9078dac3b6dd377ee90859877171cab992c7ba7452e170a5ff3",
+        "workload": {
+          "digest": "e623a8717f746ebd6a82793613045a3626a49f5c063a048793d0a1cc5028aae7",
+          "generator": "hydracache-cache-sim-key-schedule",
+          "generator_version": "1",
+          "key_count": 1,
+          "key_distribution": {
+            "kind": "uniform",
+            "theta": null
+          },
+          "operation_mix": [
+            {
+              "operation": "hot-key-get-or-insert",
+              "weight": 1.0
+            }
+          ],
+          "payload_mix": [
+            {
+              "bytes": 128,
+              "weight": 1.0
+            }
+          ],
+          "seed": 6702
+        }
+      },
+      "kind": "scalar"
+    },
+    {
+      "evidence": {
+        "derived_from": [],
+        "id": "throughput_at_full_capacity_vs_half_capacity",
+        "max_robust_spread_ratio": 0.15,
+        "points": [
+          {
+            "dimensions": {
+              "capacity_bytes": 524288,
+              "capacity_profile": "half",
+              "distribution": "uniform",
+              "every_insert_evicts_proof": true,
+              "eviction_proof_operations_per_repeat": 8192,
+              "eviction_proof_repeats": 3,
+              "eviction_proof_scope": "untimed-identical-config-and-schedule",
+              "verified_full_preload_entries": 4032
+            },
+            "max": 555591.2747211667,
+            "min": 546127.1438923692,
+            "quantity": {
+              "unit": "operations_per_second",
+              "value": 555458.2930967356
+            },
+            "robust_spread_ratio": 0.017038418449086414,
+            "sample_count": 3,
+            "samples": [
+              555591.2747211667,
+              555458.2930967356,
+              546127.1438923692
+            ]
+          },
+          {
+            "dimensions": {
+              "capacity_bytes": 1048576,
+              "capacity_profile": "full",
+              "distribution": "uniform",
+              "every_insert_evicts_proof": true,
+              "eviction_proof_operations_per_repeat": 8192,
+              "eviction_proof_repeats": 3,
+              "eviction_proof_scope": "untimed-identical-config-and-schedule",
+              "verified_full_preload_entries": 8065
+            },
+            "max": 553912.0307637549,
+            "min": 552428.4022916878,
+            "quantity": {
+              "unit": "operations_per_second",
+              "value": 553806.4322129299
+            },
+            "robust_spread_ratio": 0.002678965764515777,
+            "sample_count": 3,
+            "samples": [
+              552428.4022916878,
+              553912.0307637549,
+              553806.4322129299
+            ]
+          },
+          {
+            "dimensions": {
+              "capacity_bytes": 524288,
+              "capacity_profile": "half",
+              "distribution": "zipfian",
+              "every_insert_evicts_proof": true,
+              "eviction_proof_operations_per_repeat": 8192,
+              "eviction_proof_repeats": 3,
+              "eviction_proof_scope": "untimed-identical-config-and-schedule",
+              "verified_full_preload_entries": 4032
+            },
+            "max": 558374.2366999646,
+            "min": 557042.717873435,
+            "quantity": {
+              "unit": "operations_per_second",
+              "value": 557897.4186552261
+            },
+            "robust_spread_ratio": 0.0023866732162682383,
+            "sample_count": 3,
+            "samples": [
+              557897.4186552261,
+              558374.2366999646,
+              557042.717873435
+            ]
+          },
+          {
+            "dimensions": {
+              "capacity_bytes": 1048576,
+              "capacity_profile": "full",
+              "distribution": "zipfian",
+              "every_insert_evicts_proof": true,
+              "eviction_proof_operations_per_repeat": 8192,
+              "eviction_proof_repeats": 3,
+              "eviction_proof_scope": "untimed-identical-config-and-schedule",
+              "verified_full_preload_entries": 8065
+            },
+            "max": 562956.5388893222,
+            "min": 558676.62927857,
+            "quantity": {
+              "unit": "operations_per_second",
+              "value": 562677.3606502935
+            },
+            "robust_spread_ratio": 0.007606329861585158,
+            "sample_count": 3,
+            "samples": [
+              558676.62927857,
+              562677.3606502935,
+              562956.5388893222
+            ]
+          }
+        ],
+        "scenario_digest": "9e581722ee2354480abc1c4d470147a6393537f5061123cd8545cdea4c963067",
+        "workload": {
+          "digest": "db6d7b16ae459a9a5d0a02034b1a9d2f35101e922cd5954a5ea72a8c3c8cfd0e",
+          "generator": "hydracache-cache-sim-key-schedule-matrix",
+          "generator_version": "1",
+          "key_count": 8192,
+          "key_distribution": {
+            "kind": "uniform_and_zipfian",
+            "theta": 0.99
+          },
+          "operation_mix": [
+            {
+              "operation": "lookup-then-unique-capacity-pressure-put",
+              "weight": 1.0
+            }
+          ],
+          "payload_mix": [
+            {
+              "bytes": 128,
+              "weight": 1.0
+            }
+          ],
+          "seed": 6703
+        }
+      },
+      "kind": "scalar"
+    },
+    {
+      "evidence": {
+        "derived_from": [],
+        "id": "hit_miss_and_loader_path_cost_breakdown",
+        "max_robust_spread_ratio": 0.15,
+        "points": [
+          {
+            "dimensions": {
+              "path": "hit",
+              "unmeasured_warmup_repeats": 1
+            },
+            "max": 2588113.6209893357,
+            "min": 2585790.672526991,
+            "quantity": {
+              "unit": "operations_per_second",
+              "value": 2586935.9325634893
+            },
+            "robust_spread_ratio": 0.0008979536111057886,
+            "sample_count": 3,
+            "samples": [
+              2588113.6209893357,
+              2585790.672526991,
+              2586935.9325634893
+            ]
+          },
+          {
+            "dimensions": {
+              "path": "miss",
+              "unmeasured_warmup_repeats": 1
+            },
+            "max": 5876997.841485655,
+            "min": 5864726.010375496,
+            "quantity": {
+              "unit": "operations_per_second",
+              "value": 5872303.116166423
+            },
+            "robust_spread_ratio": 0.002089781618454715,
+            "sample_count": 3,
+            "samples": [
+              5864726.010375496,
+              5872303.116166423,
+              5876997.841485655
+            ]
+          },
+          {
+            "dimensions": {
+              "path": "loader",
+              "unmeasured_warmup_repeats": 1
+            },
+            "max": 107468.59573463749,
+            "min": 105297.07648162814,
+            "quantity": {
+              "unit": "operations_per_second",
+              "value": 106921.96520671404
+            },
+            "robust_spread_ratio": 0.020309384033590415,
+            "sample_count": 3,
+            "samples": [
+              106921.96520671404,
+              107468.59573463749,
+              105297.07648162814
+            ]
+          }
+        ],
+        "scenario_digest": "28d2780f42c4364a6882bf18edefb2d9094f04b076d50b4132ac05465bbd90d8",
+        "workload": {
+          "digest": "e9999e11789777497bc376670f37d42e5bf4dc5bb8707fb0fd90e6b35889c93f",
+          "generator": "hydracache-cache-sim-key-schedule",
+          "generator_version": "1",
+          "key_count": 4096,
+          "key_distribution": {
+            "kind": "uniform",
+            "theta": null
+          },
+          "operation_mix": [
+            {
+              "operation": "hit",
+              "weight": 0.3333333333333333
+            },
+            {
+              "operation": "miss",
+              "weight": 0.3333333333333333
+            },
+            {
+              "operation": "loader",
+              "weight": 0.3333333333333333
+            }
+          ],
+          "payload_mix": [
+            {
+              "bytes": 128,
+              "weight": 1.0
+            }
+          ],
+          "seed": 6704
+        }
+      },
+      "kind": "scalar"
+    },
+    {
+      "evidence": {
+        "derived_from": [],
+        "id": "bytes_allocated_per_operation_by_feature",
+        "max_robust_spread_ratio": 0.15,
+        "points": [
+          {
+            "dimensions": {
+              "feature": "baseline"
+            },
+            "max": 1828.4303,
+            "min": 1824.4935,
+            "quantity": {
+              "unit": "gross_allocated_bytes_per_operation",
+              "value": 1826.9847
+            },
+            "robust_spread_ratio": 0.002154807317215053,
+            "sample_count": 3,
+            "samples": [
+              1828.4303,
+              1826.9847,
+              1824.4935
+            ]
+          },
+          {
+            "dimensions": {
+              "feature": "ttl"
+            },
+            "max": 1837.3399,
+            "min": 1824.7103,
+            "quantity": {
+              "unit": "gross_allocated_bytes_per_operation",
+              "value": 1835.2583
+            },
+            "robust_spread_ratio": 0.006881647122914514,
+            "sample_count": 3,
+            "samples": [
+              1824.7103,
+              1835.2583,
+              1837.3399
+            ]
+          },
+          {
+            "dimensions": {
+              "feature": "tags"
+            },
+            "max": 2126.3822,
+            "min": 2123.8862,
+            "quantity": {
+              "unit": "gross_allocated_bytes_per_operation",
+              "value": 2124.5126
+            },
+            "robust_spread_ratio": 0.0011748577061863952,
+            "sample_count": 3,
+            "samples": [
+              2126.3822,
+              2124.5126,
+              2123.8862
+            ]
+          }
+        ],
+        "scenario_digest": "828842b2ae886f8effb09ba04b2fdc04ca445af9028e8f4bcc909d6fd582a2cd",
+        "workload": {
+          "digest": "bda22f9f27f4bae492a5a3e681763828274cd1fe40320b9344dfe10b5b572e9e",
+          "generator": "hydracache-cache-sim-key-schedule",
+          "generator_version": "1",
+          "key_count": 10000,
+          "key_distribution": {
+            "kind": "uniform",
+            "theta": null
+          },
+          "operation_mix": [
+            {
+              "operation": "put",
+              "weight": 1.0
+            }
+          ],
+          "payload_mix": [
+            {
+              "bytes": 128,
+              "weight": 1.0
+            }
+          ],
+          "seed": 6705
+        }
+      },
+      "kind": "scalar"
+    },
+    {
+      "evidence": {
+        "catalog_id": "w22-v1:standard,skewed_zipfian,recency_ttl",
+        "event_count": 83,
+        "hits": 62,
+        "id": "w22_trace_replay_preserves_order_and_records_trace_digest",
+        "input_digest": "51571f50d51777096c519f9d9708fcb69a787d3e6a750ac9db6a4c304c24c612",
+        "misses": 21,
+        "order_preserved": true,
+        "replayed_digest": "51571f50d51777096c519f9d9708fcb69a787d3e6a750ac9db6a4c304c24c612",
+        "scenario_digest": "018c987dba483787d1eea8f125f5f8b289f60a33d25657e7348d0e10955b6620"
+      },
+      "kind": "trace_replay"
+    }
+  ],
+  "observed_runner": {
+    "attestation": {
+      "contract_version": "hydracache-reference-host-v5",
+      "cpu_isolation": {
+        "housekeeping_cpus": "0,5-7",
+        "housekeeping_idle_policy": "latency-cap-us-v1",
+        "housekeeping_max_idle_latency_us": 1,
+        "irq_affinity_policy": "housekeeping-only-v1",
+        "isolated_cpus": "1-4",
+        "measurement_idle_policy": "latency-cap-us-v1",
+        "measurement_max_idle_latency_us": 1,
+        "nohz_full_cpus": "1-4",
+        "online_cpus": "0-7",
+        "rcu_nocbs_cpus": "1-4",
+        "smt_control": "off"
+      },
+      "host_digest": "571591a534c9894242fc0af0c5f80c31131fe7e4cdb9d0ea63da6d8b56af8932",
+      "measurement_cores": [
+        {
+          "core_id": 1,
+          "logical_cpu": 1,
+          "package_id": 0
+        },
+        {
+          "core_id": 2,
+          "logical_cpu": 2,
+          "package_id": 0
+        },
+        {
+          "core_id": 3,
+          "logical_cpu": 3,
+          "package_id": 0
+        },
+        {
+          "core_id": 4,
+          "logical_cpu": 4,
+          "package_id": 0
+        }
+      ],
+      "os_image": "ubuntu-24.04",
+      "physical_cores": 8,
+      "prebuild_contract_digest": "f2caae0689d8b075d2a6d59d6090466365f9a6824c6996d6b92830956831cc55",
+      "schema_version": 5,
+      "storage_class": "local-nvme",
+      "storage_identity_digest": "74ec6d1126c24b7a3899494eef2564aec2d3085056ac200e4a8cc8ca0ae43a50",
+      "toolchain_identity": "rustc-1.94.0",
+      "virtualization": "none"
+    },
+    "calibration_score": 0.015776637614821176,
+    "cgroup_cpu_quota": "unlimited",
+    "cpu_affinity": "1-4",
+    "cpu_model": "AMD Ryzen 7 PRO 8700GE w/ Radeon 780M Graphics",
+    "fingerprint": "25baeec1c9ec75da90b5dd0f29c101897450b96651d7e47570e18684be486ebb",
+    "governor": "performance",
+    "kernel": "6.8.0-138-generic",
+    "logical_cores": 4,
+    "os": "linux",
+    "ram_bytes": 66490486784,
+    "runner_class": "self-hosted-bare-metal-v1",
+    "shared_hardware": false,
+    "turbo": "enabled"
+  },
+  "profile_validation": {
+    "eligible": true,
+    "reasons": []
+  },
+  "release": "0.67.0",
+  "report_id": "local-tier-reference-v1",
+  "run_mode": "reference_evidence",
+  "runner_contract": {
+    "allowed_fingerprints": [
+      "25baeec1c9ec75da90b5dd0f29c101897450b96651d7e47570e18684be486ebb"
+    ],
+    "maximum_calibration_score": 0.25,
+    "minimum_logical_cores": 4,
+    "name": "reference-v1",
+    "require_dedicated": true,
+    "required_cgroup_cpu_quota": "unlimited",
+    "required_cpu_affinity": "1-4",
+    "required_runner_class": "self-hosted-bare-metal-v1"
+  },
+  "runner_contract_digest": "c728014af9fd0aae4c474456e74437a033110940db01caa1577b1b5b5efabfe0",
+  "runner_profile": "reference-v1",
+  "scenario_digest": "da15e05782241dde762681db66cf983155d2b9534a410c9dba68b18341bee207",
+  "scenario_id": "local-w1-suite-reference-v1",
+  "schema_version": 1,
+  "seed": 16189338079671331335,
+  "source": {
+    "build_flags": [
+      "--locked",
+      "--release"
+    ],
+    "cargo_lock_sha256": "dc480dad8567eda4a4d13b393651d3d1201cc26ba7599e3c8ff822b725569def",
+    "git_commit": "7bd31af9a5092466d7a7284995f388d33ed3110f",
+    "toolchain": "rustc-1.94.0"
+  },
+  "stability_reasons": [],
+  "stable": true,
+  "state_digest": "sha256:24f476af21702ddd3c1bb6d7e8aa7ff0033ee25b52df581b4655f61c149b8159",
+  "surface": {
+    "claim_scope": "embedded-cache-capacity",
+    "execution_mode": "in-process-real-hydracache",
+    "network_boundary": "none",
+    "state_scope": "process-local",
+    "surface_kind": "embedded-cache"
+  },
+  "workload_digest": "bd4935ca1d76b0ee86c19dd2ebec0f6358dbd5dc0af74afe9e9a27bf8d870572"
+}

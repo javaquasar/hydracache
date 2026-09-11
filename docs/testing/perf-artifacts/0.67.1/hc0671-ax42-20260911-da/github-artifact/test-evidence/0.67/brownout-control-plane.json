@@ -1,0 +1,2653 @@
+{
+  "report": {
+    "schema_version": 1,
+    "scenario_id": "brownout-control-plane-v1",
+    "scenario_sha256": "7c7eeab8137a62fb70fc8ac23309d9168bbc7d00084a4b1f94b958e262de71f0",
+    "evidence_class": "w5a-control-plane-metadata-brownout",
+    "run_mode": "reference",
+    "predecessor": {
+      "evidence_class": "w4a-real-daemon-control-plane",
+      "artifact_sha256": "940048b814fd5e5746eca03c01d05a13b96cb82aa6590d6d0233fe3ff8037a32",
+      "reference_receipt_sha256": "fbb1e2283c5cfcd8d6c139f44cf2ff79edc9dcc571e153415f4dd3afb40ac2ae",
+      "knee_rate_per_second": 4000,
+      "offered_rate_per_second": 2400,
+      "rate_fraction_millionths": 600000
+    },
+    "predecessor_node_count": 3,
+    "reference_provenance": {
+      "predecessor_artifact_sha256": "940048b814fd5e5746eca03c01d05a13b96cb82aa6590d6d0233fe3ff8037a32",
+      "predecessor_receipt_sha256": "fbb1e2283c5cfcd8d6c139f44cf2ff79edc9dcc571e153415f4dd3afb40ac2ae",
+      "predecessor_node_count": 3,
+      "execution_capability_receipt_sha256": "8d172e74d87763cdcbd4f44a6d2782450667eb36bf176b053535d8588f098c2f",
+      "final_cleanup_receipt_sha256": "b8c5be1dcf0e86061d1f418a90842942a278ec0201222311198147560de181c6",
+      "scenario_sha256": "7c7eeab8137a62fb70fc8ac23309d9168bbc7d00084a4b1f94b958e262de71f0",
+      "receipt_sha256": "662bc7631f329fecda5360fc1180c22355e394e812f3de3bf60e3de5e98195f2"
+    },
+    "final_cleanup": {
+      "nodes": [
+        {
+          "node_id": "member-127-0-0-1-34451",
+          "pid": 25988,
+          "termination_kind": "explicit_kill",
+          "kill_requested": true,
+          "wait_completed": true,
+          "process_no_longer_running": true,
+          "exit_success": false,
+          "exit_status": "terminated-without-exit-code",
+          "stdout_log": {
+            "canonical_path": "/dev/shm/hydracache-reference-evidence-v1/0.67/w5a-run-artifacts/w4a-control-plane-3-25331-6/member-127-0-0-1-34451-restart-7.stdout.log",
+            "sha256": "6489d6d7a33c5d40e18fc61eeb6c34c341279ee61816394dde5189aa4ad8fae5",
+            "bytes": 16
+          },
+          "stderr_log": {
+            "canonical_path": "/dev/shm/hydracache-reference-evidence-v1/0.67/w5a-run-artifacts/w4a-control-plane-3-25331-6/member-127-0-0-1-34451-restart-7.stderr.log",
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "bytes": 0
+          },
+          "server_binary_path_after": "/opt/actions-runner/_work/hydracache/hydracache/target/release/hydracache-server",
+          "server_binary_sha256_after": "a17b5148cad43e2193c69a64e3372e2832fa94a47196a7b6bec405128f3633c6",
+          "node_config_path_after": "/dev/shm/hydracache-reference-evidence-v1/0.67/w5a-run-artifacts/w4a-control-plane-3-25331-6/node-0-launch-config.json",
+          "node_config_sha256_after": "dc679e37c1f67a1cc22ad77386054ae88cc032d44d8d03145c98caf84292f56a"
+        },
+        {
+          "node_id": "member-127-0-0-1-35477",
+          "pid": 25957,
+          "termination_kind": "explicit_kill",
+          "kill_requested": true,
+          "wait_completed": true,
+          "process_no_longer_running": true,
+          "exit_success": false,
+          "exit_status": "terminated-without-exit-code",
+          "stdout_log": {
+            "canonical_path": "/dev/shm/hydracache-reference-evidence-v1/0.67/w5a-run-artifacts/w4a-control-plane-3-25331-6/node-1.stdout.log",
+            "sha256": "6489d6d7a33c5d40e18fc61eeb6c34c341279ee61816394dde5189aa4ad8fae5",
+            "bytes": 16
+          },
+          "stderr_log": {
+            "canonical_path": "/dev/shm/hydracache-reference-evidence-v1/0.67/w5a-run-artifacts/w4a-control-plane-3-25331-6/node-1.stderr.log",
+            "sha256": "09f241057f9ffb45b074a7fd373097a881dcb45e6316cf7459d505d39b4a502c",
+            "bytes": 1488
+          },
+          "server_binary_path_after": "/opt/actions-runner/_work/hydracache/hydracache/target/release/hydracache-server",
+          "server_binary_sha256_after": "a17b5148cad43e2193c69a64e3372e2832fa94a47196a7b6bec405128f3633c6",
+          "node_config_path_after": "/dev/shm/hydracache-reference-evidence-v1/0.67/w5a-run-artifacts/w4a-control-plane-3-25331-6/node-1-launch-config.json",
+          "node_config_sha256_after": "7a13459167ac57202e731077e61e5cfd7356c00f5dc7c51bd22971fc95526216"
+        },
+        {
+          "node_id": "member-127-0-0-1-39471",
+          "pid": 26040,
+          "termination_kind": "explicit_kill",
+          "kill_requested": true,
+          "wait_completed": true,
+          "process_no_longer_running": true,
+          "exit_success": false,
+          "exit_status": "terminated-without-exit-code",
+          "stdout_log": {
+            "canonical_path": "/dev/shm/hydracache-reference-evidence-v1/0.67/w5a-run-artifacts/w4a-control-plane-3-25331-6/member-127-0-0-1-39471-restart-9.stdout.log",
+            "sha256": "6489d6d7a33c5d40e18fc61eeb6c34c341279ee61816394dde5189aa4ad8fae5",
+            "bytes": 16
+          },
+          "stderr_log": {
+            "canonical_path": "/dev/shm/hydracache-reference-evidence-v1/0.67/w5a-run-artifacts/w4a-control-plane-3-25331-6/member-127-0-0-1-39471-restart-9.stderr.log",
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "bytes": 0
+          },
+          "server_binary_path_after": "/opt/actions-runner/_work/hydracache/hydracache/target/release/hydracache-server",
+          "server_binary_sha256_after": "a17b5148cad43e2193c69a64e3372e2832fa94a47196a7b6bec405128f3633c6",
+          "node_config_path_after": "/dev/shm/hydracache-reference-evidence-v1/0.67/w5a-run-artifacts/w4a-control-plane-3-25331-6/node-2-launch-config.json",
+          "node_config_sha256_after": "f37efc63cdf74fba7f07838b4ea140af9ea081dbfe1ed4a5283101cd557ee7c1"
+        }
+      ],
+      "receipt_sha256": "b8c5be1dcf0e86061d1f418a90842942a278ec0201222311198147560de181c6"
+    },
+    "events": [
+      {
+        "action": "leader_failover",
+        "transition_recovery_millis": 516,
+        "raw": {
+          "origin": "observed",
+          "receipt": {
+            "action": "leader_failover",
+            "receipt": {
+              "target": {
+                "node_id": "member-127-0-0-1-34451",
+                "pid": 25942,
+                "binary_path": "/opt/actions-runner/_work/hydracache/hydracache/target/release/hydracache-server",
+                "binary_sha256": "a17b5148cad43e2193c69a64e3372e2832fa94a47196a7b6bec405128f3633c6",
+                "config_path": "/dev/shm/hydracache-reference-evidence-v1/0.67/w5a-run-artifacts/w4a-control-plane-3-25331-6/node-0-launch-config.json",
+                "config_sha256": "dc679e37c1f67a1cc22ad77386054ae88cc032d44d8d03145c98caf84292f56a",
+                "receipt_sha256": "11cf00bc2668342996f1c31369803cb7d4d695a18c5a4fa134789bd0a4e8f34a"
+              },
+              "termination": {
+                "pid": 25942,
+                "exit_status": "ExitStatus(unix_wait_status(9))",
+                "receipt_sha256": "fdbb2a143d44d9db2bc9c385a54bae5353278e1b992175416f7ed1f72a51319a"
+              }
+            }
+          },
+          "before": [
+            {
+              "endpoint": {
+                "node_id": "member-127-0-0-1-34451",
+                "admin_addr": "127.0.0.1:33555"
+              },
+              "admin_status": {
+                "source": "live",
+                "leader": "member-127-0-0-1-34451",
+                "term": 1,
+                "epoch": 3,
+                "quorum_ok": true,
+                "members": 3,
+                "member_ids": [
+                  "member-127-0-0-1-34451",
+                  "member-127-0-0-1-35477",
+                  "member-127-0-0-1-39471"
+                ],
+                "voters": 3,
+                "voter_ids": [
+                  2765421080313107498,
+                  8577428153782664293,
+                  9713472578645303559
+                ],
+                "reshard_phase": "idle",
+                "draining": false
+              },
+              "cluster_overview": {
+                "source": "live",
+                "members": [
+                  {
+                    "node_id": "member-127-0-0-1-34451",
+                    "role": "member",
+                    "reachable": true,
+                    "reachability": "reachable",
+                    "generation": 1
+                  },
+                  {
+                    "node_id": "member-127-0-0-1-35477",
+                    "role": "member",
+                    "reachable": true,
+                    "reachability": "reachable",
+                    "generation": 1
+                  },
+                  {
+                    "node_id": "member-127-0-0-1-39471",
+                    "role": "member",
+                    "reachable": true,
+                    "reachability": "reachable",
+                    "generation": 1
+                  }
+                ],
+                "leader": {
+                  "node_id": "member-127-0-0-1-34451",
+                  "term": 1,
+                  "epoch": 3
+                },
+                "partitions": {
+                  "under_replicated": 0,
+                  "count": 0
+                },
+                "consistency": {
+                  "configured_default": null,
+                  "op_counts_by_level": []
+                },
+                "backup_age_seconds": null,
+                "lifecycle": {
+                  "reshard_phase": "idle",
+                  "upgrade_phase": "idle"
+                }
+              }
+            },
+            {
+              "endpoint": {
+                "node_id": "member-127-0-0-1-35477",
+                "admin_addr": "127.0.0.1:37295"
+              },
+              "admin_status": {
+                "source": "live",
+                "leader": "member-127-0-0-1-34451",
+                "term": 1,
+                "epoch": 3,
+                "quorum_ok": true,
+                "members": 3,
+                "member_ids": [
+                  "member-127-0-0-1-34451",
+                  "member-127-0-0-1-35477",
+                  "member-127-0-0-1-39471"
+                ],
+                "voters": 3,
+                "voter_ids": [
+                  2765421080313107498,
+                  8577428153782664293,
+                  9713472578645303559
+                ],
+                "reshard_phase": "idle",
+                "draining": false
+              },
+              "cluster_overview": {
+                "source": "live",
+                "members": [
+                  {
+                    "node_id": "member-127-0-0-1-34451",
+                    "role": "member",
+                    "reachable": true,
+                    "reachability": "reachable",
+                    "generation": 1
+                  },
+                  {
+                    "node_id": "member-127-0-0-1-35477",
+                    "role": "member",
+                    "reachable": true,
+                    "reachability": "reachable",
+                    "generation": 1
+                  },
+                  {
+                    "node_id": "member-127-0-0-1-39471",
+                    "role": "member",
+                    "reachable": true,
+                    "reachability": "reachable",
+                    "generation": 1
+                  }
+                ],
+                "leader": {
+                  "node_id": "member-127-0-0-1-34451",
+                  "term": 1,
+                  "epoch": 3
+                },
+                "partitions": {
+                  "under_replicated": 0,
+                  "count": 0
+                },
+                "consistency": {
+                  "configured_default": null,
+                  "op_counts_by_level": []
+                },
+                "backup_age_seconds": null,
+                "lifecycle": {
+                  "reshard_phase": "idle",
+                  "upgrade_phase": "idle"
+                }
+              }
+            },
+            {
+              "endpoint": {
+                "node_id": "member-127-0-0-1-39471",
+                "admin_addr": "127.0.0.1:42623"
+              },
+              "admin_status": {
+                "source": "live",
+                "leader": "member-127-0-0-1-34451",
+                "term": 1,
+                "epoch": 3,
+                "quorum_ok": true,
+                "members": 3,
+                "member_ids": [
+                  "member-127-0-0-1-34451",
+                  "member-127-0-0-1-35477",
+                  "member-127-0-0-1-39471"
+                ],
+                "voters": 3,
+                "voter_ids": [
+                  2765421080313107498,
+                  8577428153782664293,
+                  9713472578645303559
+                ],
+                "reshard_phase": "idle",
+                "draining": false
+              },
+              "cluster_overview": {
+                "source": "live",
+                "members": [
+                  {
+                    "node_id": "member-127-0-0-1-34451",
+                    "role": "member",
+                    "reachable": true,
+                    "reachability": "reachable",
+                    "generation": 1
+                  },
+                  {
+                    "node_id": "member-127-0-0-1-35477",
+                    "role": "member",
+                    "reachable": true,
+                    "reachability": "reachable",
+                    "generation": 1
+                  },
+                  {
+                    "node_id": "member-127-0-0-1-39471",
+                    "role": "member",
+                    "reachable": true,
+                    "reachability": "reachable",
+                    "generation": 1
+                  }
+                ],
+                "leader": {
+                  "node_id": "member-127-0-0-1-34451",
+                  "term": 1,
+                  "epoch": 3
+                },
+                "partitions": {
+                  "under_replicated": 0,
+                  "count": 0
+                },
+                "consistency": {
+                  "configured_default": null,
+                  "op_counts_by_level": []
+                },
+                "backup_age_seconds": null,
+                "lifecycle": {
+                  "reshard_phase": "idle",
+                  "upgrade_phase": "idle"
+                }
+              }
+            }
+          ],
+          "after": [
+            {
+              "endpoint": {
+                "node_id": "member-127-0-0-1-34451",
+                "admin_addr": "127.0.0.1:33555"
+              },
+              "admin_status": {
+                "source": "live",
+                "leader": "member-127-0-0-1-35477",
+                "term": 2,
+                "epoch": 4,
+                "quorum_ok": true,
+                "members": 3,
+                "member_ids": [
+                  "member-127-0-0-1-34451",
+                  "member-127-0-0-1-35477",
+                  "member-127-0-0-1-39471"
+                ],
+                "voters": 3,
+                "voter_ids": [
+                  2765421080313107498,
+                  8577428153782664293,
+                  9713472578645303559
+                ],
+                "reshard_phase": "idle",
+                "draining": false
+              },
+              "cluster_overview": {
+                "source": "live",
+                "members": [
+                  {
+                    "node_id": "member-127-0-0-1-34451",
+                    "role": "member",
+                    "reachable": true,
+                    "reachability": "reachable",
+                    "generation": 2
+                  },
+                  {
+                    "node_id": "member-127-0-0-1-35477",
+                    "role": "member",
+                    "reachable": true,
+                    "reachability": "reachable",
+                    "generation": 1
+                  },
+                  {
+                    "node_id": "member-127-0-0-1-39471",
+                    "role": "member",
+                    "reachable": true,
+                    "reachability": "reachable",
+                    "generation": 1
+                  }
+                ],
+                "leader": {
+                  "node_id": "member-127-0-0-1-35477",
+                  "term": 2,
+                  "epoch": 4
+                },
+                "partitions": {
+                  "under_replicated": 0,
+                  "count": 0
+                },
+                "consistency": {
+                  "configured_default": null,
+                  "op_counts_by_level": []
+                },
+                "backup_age_seconds": null,
+                "lifecycle": {
+                  "reshard_phase": "idle",
+                  "upgrade_phase": "idle"
+                }
+              }
+            },
+            {
+              "endpoint": {
+                "node_id": "member-127-0-0-1-35477",
+                "admin_addr": "127.0.0.1:37295"
+              },
+              "admin_status": {
+                "source": "live",
+                "leader": "member-127-0-0-1-35477",
+                "term": 2,
+                "epoch": 4,
+                "quorum_ok": true,
+                "members": 3,
+                "member_ids": [
+                  "member-127-0-0-1-34451",
+                  "member-127-0-0-1-35477",
+                  "member-127-0-0-1-39471"
+                ],
+                "voters": 3,
+                "voter_ids": [
+                  2765421080313107498,
+                  8577428153782664293,
+                  9713472578645303559
+                ],
+                "reshard_phase": "idle",
+                "draining": false
+              },
+              "cluster_overview": {
+                "source": "live",
+                "members": [
+                  {
+                    "node_id": "member-127-0-0-1-34451",
+                    "role": "member",
+                    "reachable": true,
+                    "reachability": "reachable",
+                    "generation": 2
+                  },
+                  {
+                    "node_id": "member-127-0-0-1-35477",
+                    "role": "member",
+                    "reachable": true,
+                    "reachability": "reachable",
+                    "generation": 1
+                  },
+                  {
+                    "node_id": "member-127-0-0-1-39471",
+                    "role": "member",
+                    "reachable": true,
+                    "reachability": "reachable",
+                    "generation": 1
+                  }
+                ],
+                "leader": {
+                  "node_id": "member-127-0-0-1-35477",
+                  "term": 2,
+                  "epoch": 4
+                },
+                "partitions": {
+                  "under_replicated": 0,
+                  "count": 0
+                },
+                "consistency": {
+                  "configured_default": null,
+                  "op_counts_by_level": []
+                },
+                "backup_age_seconds": null,
+                "lifecycle": {
+                  "reshard_phase": "idle",
+                  "upgrade_phase": "idle"
+                }
+              }
+            },
+            {
+              "endpoint": {
+                "node_id": "member-127-0-0-1-39471",
+                "admin_addr": "127.0.0.1:42623"
+              },
+              "admin_status": {
+                "source": "live",
+                "leader": "member-127-0-0-1-35477",
+                "term": 2,
+                "epoch": 4,
+                "quorum_ok": true,
+                "members": 3,
+                "member_ids": [
+                  "member-127-0-0-1-34451",
+                  "member-127-0-0-1-35477",
+                  "member-127-0-0-1-39471"
+                ],
+                "voters": 3,
+                "voter_ids": [
+                  2765421080313107498,
+                  8577428153782664293,
+                  9713472578645303559
+                ],
+                "reshard_phase": "idle",
+                "draining": false
+              },
+              "cluster_overview": {
+                "source": "live",
+                "members": [
+                  {
+                    "node_id": "member-127-0-0-1-34451",
+                    "role": "member",
+                    "reachable": true,
+                    "reachability": "reachable",
+                    "generation": 2
+                  },
+                  {
+                    "node_id": "member-127-0-0-1-35477",
+                    "role": "member",
+                    "reachable": true,
+                    "reachability": "reachable",
+                    "generation": 1
+                  },
+                  {
+                    "node_id": "member-127-0-0-1-39471",
+                    "role": "member",
+                    "reachable": true,
+                    "reachability": "reachable",
+                    "generation": 1
+                  }
+                ],
+                "leader": {
+                  "node_id": "member-127-0-0-1-35477",
+                  "term": 2,
+                  "epoch": 4
+                },
+                "partitions": {
+                  "under_replicated": 0,
+                  "count": 0
+                },
+                "consistency": {
+                  "configured_default": null,
+                  "op_counts_by_level": []
+                },
+                "backup_age_seconds": null,
+                "lifecycle": {
+                  "reshard_phase": "idle",
+                  "upgrade_phase": "idle"
+                }
+              }
+            }
+          ],
+          "before_window": {
+            "offered": 24000,
+            "started": 24000,
+            "completed": 24000,
+            "successes": 24000,
+            "errors": 0,
+            "timeouts": 0,
+            "rejections": 0,
+            "backlog_high_water": 8,
+            "backlog_drained": true,
+            "drain_ms": 0,
+            "elapsed_ms": 10001,
+            "offered_rate_per_second": 2400.0,
+            "achieved_rate_per_second": 2399.7381597699114,
+            "latency": {
+              "samples": 24000,
+              "p50_us": 1658,
+              "p90_us": 2565,
+              "p99_us": 3111,
+              "p999_us": 3479,
+              "p999_min_samples": 1,
+              "p999_reportable": true,
+              "max_us": 3923,
+              "overflow_count": 0
+            }
+          },
+          "disruption_window": {
+            "offered": 24000,
+            "started": 24000,
+            "completed": 24000,
+            "successes": 24000,
+            "errors": 0,
+            "timeouts": 0,
+            "rejections": 0,
+            "backlog_high_water": 12,
+            "backlog_drained": true,
+            "drain_ms": 1,
+            "elapsed_ms": 10002,
+            "offered_rate_per_second": 2400.0,
+            "achieved_rate_per_second": 2399.3822404121515,
+            "latency": {
+              "samples": 24000,
+              "p50_us": 2841,
+              "p90_us": 3849,
+              "p99_us": 4855,
+              "p999_us": 5607,
+              "p999_min_samples": 1,
+              "p999_reportable": true,
+              "max_us": 6315,
+              "overflow_count": 0
+            }
+          },
+          "recovered_window": {
+            "offered": 24000,
+            "started": 24000,
+            "completed": 24000,
+            "successes": 24000,
+            "errors": 0,
+            "timeouts": 0,
+            "rejections": 0,
+            "backlog_high_water": 12,
+            "backlog_drained": true,
+            "drain_ms": 1,
+            "elapsed_ms": 10001,
+            "offered_rate_per_second": 2400.0,
+            "achieved_rate_per_second": 2399.6550059191777,
+            "latency": {
+              "samples": 24000,
+              "p50_us": 2877,
+              "p90_us": 3865,
+              "p99_us": 4883,
+              "p999_us": 5555,
+              "p999_min_samples": 1,
+              "p999_reportable": true,
+              "max_us": 6423,
+              "overflow_count": 0
+            }
+          },
+          "timeline": {
+            "commit_latency_nanos": 366099127,
+            "recovery_latency_nanos": 515310063,
+            "receipt_sha256": "a85d760d720dcfd81d1b9f6d4e8860c8758400370f6ea845a155432017c919a6"
+          }
+        }
+      },
+      {
+        "action": "member_add",
+        "transition_recovery_millis": 839,
+        "raw": {
+          "origin": "observed",
+          "receipt": {
+            "action": "member_add",
+            "receipt": {
+              "action": {
+                "canonical_action_receipt_path": "/dev/shm/hydracache-reference-evidence-v1/0.67/w5a-run-artifacts/w4a-control-plane-3-25331-6/daemon-add-action-transient-8.json",
+                "action_receipt_sha256": "7f5cb47a86dad22331ff7e1efc34d5675cefa134e3de61bb48f752b3f3fd6228",
+                "payload": {
+                  "receipt_kind": "hydracache-daemon-add-action-v1",
+                  "provisioner": "daemon-cluster-process-harness",
+                  "authority_node_id": "member-127-0-0-1-35477",
+                  "target_node_id": "member-127-0-0-1-39379",
+                  "outcome": "process-started-and-admission-requested"
+                },
+                "target_process": {
+                  "node_id": "member-127-0-0-1-39379",
+                  "pid": 26006,
+                  "direct_prebuilt_exec": true,
+                  "observed_executable_path": "/opt/actions-runner/_work/hydracache/hydracache/target/release/hydracache-server",
+                  "observed_executable_sha256": "a17b5148cad43e2193c69a64e3372e2832fa94a47196a7b6bec405128f3633c6",
+                  "config": {
+                    "canonical_path": "/dev/shm/hydracache-reference-evidence-v1/0.67/w5a-run-artifacts/w4a-control-plane-3-25331-6/node-3-launch-config.json",
+                    "sha256": "b31188dc7aa72acfe9fad7c5d6db4649ce07c8adfd5cfb8bd2d2394a2e378cea",
+                    "launch_config": {
+                      "receipt_kind": "hydracache-daemon-launch-config-v1",
+                      "node_id": "member-127-0-0-1-39379",
+                      "client_addr": "127.0.0.1:36079",
+                      "cluster_addr": "127.0.0.1:39379",
+                      "admin_addr": "127.0.0.1:43959",
+                      "redis_addr": null,
+                      "storage_dir": "/dev/shm/hydracache-reference-evidence-v1/0.67/w5a-run-artifacts/w4a-control-plane-3-25331-6/node-3-storage",
+                      "cluster_start": "join",
+                      "seed_cluster_addrs": [
+                        "127.0.0.1:34451",
+                        "127.0.0.1:35477",
+                        "127.0.0.1:39471"
+                      ]
+                    }
+                  }
+                }
+              },
+              "added_process": {
+                "node_id": "member-127-0-0-1-39379",
+                "pid": 26006,
+                "binary_path": "/opt/actions-runner/_work/hydracache/hydracache/target/release/hydracache-server",
+                "binary_sha256": "a17b5148cad43e2193c69a64e3372e2832fa94a47196a7b6bec405128f3633c6",
+                "config_path": "/dev/shm/hydracache-reference-evidence-v1/0.67/w5a-run-artifacts/w4a-control-plane-3-25331-6/node-3-launch-config.json",
+                "config_sha256": "b31188dc7aa72acfe9fad7c5d6db4649ce07c8adfd5cfb8bd2d2394a2e378cea",
+                "receipt_sha256": "69877a3969a40aa5cb93859e392995014b33b123fa3b47f898d4b89d2f1e80ff"
+              }
+            }
+          },
+          "before": [
+            {
+              "endpoint": {
+                "node_id": "member-127-0-0-1-34451",
+                "admin_addr": "127.0.0.1:33555"
+              },
+              "admin_status": {
+                "source": "live",
+                "leader": "member-127-0-0-1-35477",
+                "term": 2,
+                "epoch": 4,
+                "quorum_ok": true,
+                "members": 3,
+                "member_ids": [
+                  "member-127-0-0-1-34451",
+                  "member-127-0-0-1-35477",
+                  "member-127-0-0-1-39471"
+                ],
+                "voters": 3,
+                "voter_ids": [
+                  2765421080313107498,
+                  8577428153782664293,
+                  9713472578645303559
+                ],
+                "reshard_phase": "idle",
+                "draining": false
+              },
+              "cluster_overview": {
+                "source": "live",
+                "members": [
+                  {
+                    "node_id": "member-127-0-0-1-34451",
+                    "role": "member",
+                    "reachable": true,
+                    "reachability": "reachable",
+                    "generation": 2
+                  },
+                  {
+                    "node_id": "member-127-0-0-1-35477",
+                    "role": "member",
+                    "reachable": true,
+                    "reachability": "reachable",
+                    "generation": 1
+                  },
+                  {
+                    "node_id": "member-127-0-0-1-39471",
+                    "role": "member",
+                    "reachable": true,
+                    "reachability": "reachable",
+                    "generation": 1
+                  }
+                ],
+                "leader": {
+                  "node_id": "member-127-0-0-1-35477",
+                  "term": 2,
+                  "epoch": 4
+                },
+                "partitions": {
+                  "under_replicated": 0,
+                  "count": 0
+                },
+                "consistency": {
+                  "configured_default": null,
+                  "op_counts_by_level": []
+                },
+                "backup_age_seconds": null,
+                "lifecycle": {
+                  "reshard_phase": "idle",
+                  "upgrade_phase": "idle"
+                }
+              }
+            },
+            {
+              "endpoint": {
+                "node_id": "member-127-0-0-1-35477",
+                "admin_addr": "127.0.0.1:37295"
+              },
+              "admin_status": {
+                "source": "live",
+                "leader": "member-127-0-0-1-35477",
+                "term": 2,
+                "epoch": 4,
+                "quorum_ok": true,
+                "members": 3,
+                "member_ids": [
+                  "member-127-0-0-1-34451",
+                  "member-127-0-0-1-35477",
+                  "member-127-0-0-1-39471"
+                ],
+                "voters": 3,
+                "voter_ids": [
+                  2765421080313107498,
+                  8577428153782664293,
+                  9713472578645303559
+                ],
+                "reshard_phase": "idle",
+                "draining": false
+              },
+              "cluster_overview": {
+                "source": "live",
+                "members": [
+                  {
+                    "node_id": "member-127-0-0-1-34451",
+                    "role": "member",
+                    "reachable": true,
+                    "reachability": "reachable",
+                    "generation": 2
+                  },
+                  {
+                    "node_id": "member-127-0-0-1-35477",
+                    "role": "member",
+                    "reachable": true,
+                    "reachability": "reachable",
+                    "generation": 1
+                  },
+                  {
+                    "node_id": "member-127-0-0-1-39471",
+                    "role": "member",
+                    "reachable": true,
+                    "reachability": "reachable",
+                    "generation": 1
+                  }
+                ],
+                "leader": {
+                  "node_id": "member-127-0-0-1-35477",
+                  "term": 2,
+                  "epoch": 4
+                },
+                "partitions": {
+                  "under_replicated": 0,
+                  "count": 0
+                },
+                "consistency": {
+                  "configured_default": null,
+                  "op_counts_by_level": []
+                },
+                "backup_age_seconds": null,
+                "lifecycle": {
+                  "reshard_phase": "idle",
+                  "upgrade_phase": "idle"
+                }
+              }
+            },
+            {
+              "endpoint": {
+                "node_id": "member-127-0-0-1-39471",
+                "admin_addr": "127.0.0.1:42623"
+              },
+              "admin_status": {
+                "source": "live",
+                "leader": "member-127-0-0-1-35477",
+                "term": 2,
+                "epoch": 4,
+                "quorum_ok": true,
+                "members": 3,
+                "member_ids": [
+                  "member-127-0-0-1-34451",
+                  "member-127-0-0-1-35477",
+                  "member-127-0-0-1-39471"
+                ],
+                "voters": 3,
+                "voter_ids": [
+                  2765421080313107498,
+                  8577428153782664293,
+                  9713472578645303559
+                ],
+                "reshard_phase": "idle",
+                "draining": false
+              },
+              "cluster_overview": {
+                "source": "live",
+                "members": [
+                  {
+                    "node_id": "member-127-0-0-1-34451",
+                    "role": "member",
+                    "reachable": true,
+                    "reachability": "reachable",
+                    "generation": 2
+                  },
+                  {
+                    "node_id": "member-127-0-0-1-35477",
+                    "role": "member",
+                    "reachable": true,
+                    "reachability": "reachable",
+                    "generation": 1
+                  },
+                  {
+                    "node_id": "member-127-0-0-1-39471",
+                    "role": "member",
+                    "reachable": true,
+                    "reachability": "reachable",
+                    "generation": 1
+                  }
+                ],
+                "leader": {
+                  "node_id": "member-127-0-0-1-35477",
+                  "term": 2,
+                  "epoch": 4
+                },
+                "partitions": {
+                  "under_replicated": 0,
+                  "count": 0
+                },
+                "consistency": {
+                  "configured_default": null,
+                  "op_counts_by_level": []
+                },
+                "backup_age_seconds": null,
+                "lifecycle": {
+                  "reshard_phase": "idle",
+                  "upgrade_phase": "idle"
+                }
+              }
+            }
+          ],
+          "after": [
+            {
+              "endpoint": {
+                "node_id": "member-127-0-0-1-34451",
+                "admin_addr": "127.0.0.1:33555"
+              },
+              "admin_status": {
+                "source": "live",
+                "leader": "member-127-0-0-1-35477",
+                "term": 2,
+                "epoch": 5,
+                "quorum_ok": true,
+                "members": 4,
+                "member_ids": [
+                  "member-127-0-0-1-34451",
+                  "member-127-0-0-1-35477",
+                  "member-127-0-0-1-39379",
+                  "member-127-0-0-1-39471"
+                ],
+                "voters": 4,
+                "voter_ids": [
+                  2765421080313107498,
+                  4156693219653128708,
+                  8577428153782664293,
+                  9713472578645303559
+                ],
+                "reshard_phase": "idle",
+                "draining": false
+              },
+              "cluster_overview": {
+                "source": "live",
+                "members": [
+                  {
+                    "node_id": "member-127-0-0-1-34451",
+                    "role": "member",
+                    "reachable": true,
+                    "reachability": "reachable",
+                    "generation": 2
+                  },
+                  {
+                    "node_id": "member-127-0-0-1-35477",
+                    "role": "member",
+                    "reachable": true,
+                    "reachability": "reachable",
+                    "generation": 1
+                  },
+                  {
+                    "node_id": "member-127-0-0-1-39379",
+                    "role": "member",
+                    "reachable": true,
+                    "reachability": "reachable",
+                    "generation": 1
+                  },
+                  {
+                    "node_id": "member-127-0-0-1-39471",
+                    "role": "member",
+                    "reachable": true,
+                    "reachability": "reachable",
+                    "generation": 1
+                  }
+                ],
+                "leader": {
+                  "node_id": "member-127-0-0-1-35477",
+                  "term": 2,
+                  "epoch": 5
+                },
+                "partitions": {
+                  "under_replicated": 0,
+                  "count": 0
+                },
+                "consistency": {
+                  "configured_default": null,
+                  "op_counts_by_level": []
+                },
+                "backup_age_seconds": null,
+                "lifecycle": {
+                  "reshard_phase": "idle",
+                  "upgrade_phase": "idle"
+                }
+              }
+            },
+            {
+              "endpoint": {
+                "node_id": "member-127-0-0-1-35477",
+                "admin_addr": "127.0.0.1:37295"
+              },
+              "admin_status": {
+                "source": "live",
+                "leader": "member-127-0-0-1-35477",
+                "term": 2,
+                "epoch": 5,
+                "quorum_ok": true,
+                "members": 4,
+                "member_ids": [
+                  "member-127-0-0-1-34451",
+                  "member-127-0-0-1-35477",
+                  "member-127-0-0-1-39379",
+                  "member-127-0-0-1-39471"
+                ],
+                "voters": 4,
+                "voter_ids": [
+                  2765421080313107498,
+                  4156693219653128708,
+                  8577428153782664293,
+                  9713472578645303559
+                ],
+                "reshard_phase": "idle",
+                "draining": false
+              },
+              "cluster_overview": {
+                "source": "live",
+                "members": [
+                  {
+                    "node_id": "member-127-0-0-1-34451",
+                    "role": "member",
+                    "reachable": true,
+                    "reachability": "reachable",
+                    "generation": 2
+                  },
+                  {
+                    "node_id": "member-127-0-0-1-35477",
+                    "role": "member",
+                    "reachable": true,
+                    "reachability": "reachable",
+                    "generation": 1
+                  },
+                  {
+                    "node_id": "member-127-0-0-1-39379",
+                    "role": "member",
+                    "reachable": true,
+                    "reachability": "reachable",
+                    "generation": 1
+                  },
+                  {
+                    "node_id": "member-127-0-0-1-39471",
+                    "role": "member",
+                    "reachable": true,
+                    "reachability": "reachable",
+                    "generation": 1
+                  }
+                ],
+                "leader": {
+                  "node_id": "member-127-0-0-1-35477",
+                  "term": 2,
+                  "epoch": 5
+                },
+                "partitions": {
+                  "under_replicated": 0,
+                  "count": 0
+                },
+                "consistency": {
+                  "configured_default": null,
+                  "op_counts_by_level": []
+                },
+                "backup_age_seconds": null,
+                "lifecycle": {
+                  "reshard_phase": "idle",
+                  "upgrade_phase": "idle"
+                }
+              }
+            },
+            {
+              "endpoint": {
+                "node_id": "member-127-0-0-1-39379",
+                "admin_addr": "127.0.0.1:43959"
+              },
+              "admin_status": {
+                "source": "live",
+                "leader": "member-127-0-0-1-35477",
+                "term": 2,
+                "epoch": 5,
+                "quorum_ok": true,
+                "members": 4,
+                "member_ids": [
+                  "member-127-0-0-1-34451",
+                  "member-127-0-0-1-35477",
+                  "member-127-0-0-1-39379",
+                  "member-127-0-0-1-39471"
+                ],
+                "voters": 4,
+                "voter_ids": [
+                  2765421080313107498,
+                  4156693219653128708,
+                  8577428153782664293,
+                  9713472578645303559
+                ],
+                "reshard_phase": "idle",
+                "draining": false
+              },
+              "cluster_overview": {
+                "source": "live",
+                "members": [
+                  {
+                    "node_id": "member-127-0-0-1-34451",
+                    "role": "member",
+                    "reachable": true,
+                    "reachability": "reachable",
+                    "generation": 2
+                  },
+                  {
+                    "node_id": "member-127-0-0-1-35477",
+                    "role": "member",
+                    "reachable": true,
+                    "reachability": "reachable",
+                    "generation": 1
+                  },
+                  {
+                    "node_id": "member-127-0-0-1-39379",
+                    "role": "member",
+                    "reachable": true,
+                    "reachability": "reachable",
+                    "generation": 1
+                  },
+                  {
+                    "node_id": "member-127-0-0-1-39471",
+                    "role": "member",
+                    "reachable": true,
+                    "reachability": "reachable",
+                    "generation": 1
+                  }
+                ],
+                "leader": {
+                  "node_id": "member-127-0-0-1-35477",
+                  "term": 2,
+                  "epoch": 5
+                },
+                "partitions": {
+                  "under_replicated": 0,
+                  "count": 0
+                },
+                "consistency": {
+                  "configured_default": null,
+                  "op_counts_by_level": []
+                },
+                "backup_age_seconds": null,
+                "lifecycle": {
+                  "reshard_phase": "idle",
+                  "upgrade_phase": "idle"
+                }
+              }
+            },
+            {
+              "endpoint": {
+                "node_id": "member-127-0-0-1-39471",
+                "admin_addr": "127.0.0.1:42623"
+              },
+              "admin_status": {
+                "source": "live",
+                "leader": "member-127-0-0-1-35477",
+                "term": 2,
+                "epoch": 5,
+                "quorum_ok": true,
+                "members": 4,
+                "member_ids": [
+                  "member-127-0-0-1-34451",
+                  "member-127-0-0-1-35477",
+                  "member-127-0-0-1-39379",
+                  "member-127-0-0-1-39471"
+                ],
+                "voters": 4,
+                "voter_ids": [
+                  2765421080313107498,
+                  4156693219653128708,
+                  8577428153782664293,
+                  9713472578645303559
+                ],
+                "reshard_phase": "idle",
+                "draining": false
+              },
+              "cluster_overview": {
+                "source": "live",
+                "members": [
+                  {
+                    "node_id": "member-127-0-0-1-34451",
+                    "role": "member",
+                    "reachable": true,
+                    "reachability": "reachable",
+                    "generation": 2
+                  },
+                  {
+                    "node_id": "member-127-0-0-1-35477",
+                    "role": "member",
+                    "reachable": true,
+                    "reachability": "reachable",
+                    "generation": 1
+                  },
+                  {
+                    "node_id": "member-127-0-0-1-39379",
+                    "role": "member",
+                    "reachable": true,
+                    "reachability": "reachable",
+                    "generation": 1
+                  },
+                  {
+                    "node_id": "member-127-0-0-1-39471",
+                    "role": "member",
+                    "reachable": true,
+                    "reachability": "reachable",
+                    "generation": 1
+                  }
+                ],
+                "leader": {
+                  "node_id": "member-127-0-0-1-35477",
+                  "term": 2,
+                  "epoch": 5
+                },
+                "partitions": {
+                  "under_replicated": 0,
+                  "count": 0
+                },
+                "consistency": {
+                  "configured_default": null,
+                  "op_counts_by_level": []
+                },
+                "backup_age_seconds": null,
+                "lifecycle": {
+                  "reshard_phase": "idle",
+                  "upgrade_phase": "idle"
+                }
+              }
+            }
+          ],
+          "before_window": {
+            "offered": 24000,
+            "started": 24000,
+            "completed": 24000,
+            "successes": 24000,
+            "errors": 0,
+            "timeouts": 0,
+            "rejections": 0,
+            "backlog_high_water": 8,
+            "backlog_drained": true,
+            "drain_ms": 0,
+            "elapsed_ms": 10001,
+            "offered_rate_per_second": 2400.0,
+            "achieved_rate_per_second": 2399.6226758916127,
+            "latency": {
+              "samples": 24000,
+              "p50_us": 1627,
+              "p90_us": 2521,
+              "p99_us": 3037,
+              "p999_us": 3403,
+              "p999_min_samples": 1,
+              "p999_reportable": true,
+              "max_us": 3973,
+              "overflow_count": 0
+            }
+          },
+          "disruption_window": {
+            "offered": 24000,
+            "started": 24000,
+            "completed": 24000,
+            "successes": 24000,
+            "errors": 0,
+            "timeouts": 0,
+            "rejections": 0,
+            "backlog_high_water": 14,
+            "backlog_drained": true,
+            "drain_ms": 1,
+            "elapsed_ms": 10001,
+            "offered_rate_per_second": 2400.0,
+            "achieved_rate_per_second": 2399.566034883242,
+            "latency": {
+              "samples": 24000,
+              "p50_us": 2031,
+              "p90_us": 2717,
+              "p99_us": 3537,
+              "p999_us": 4343,
+              "p999_min_samples": 1,
+              "p999_reportable": true,
+              "max_us": 6427,
+              "overflow_count": 0
+            }
+          },
+          "recovered_window": {
+            "offered": 24000,
+            "started": 24000,
+            "completed": 24000,
+            "successes": 24000,
+            "errors": 0,
+            "timeouts": 0,
+            "rejections": 0,
+            "backlog_high_water": 9,
+            "backlog_drained": true,
+            "drain_ms": 0,
+            "elapsed_ms": 10000,
+            "offered_rate_per_second": 2400.0,
+            "achieved_rate_per_second": 2399.852173425851,
+            "latency": {
+              "samples": 24000,
+              "p50_us": 2030,
+              "p90_us": 2717,
+              "p99_us": 3507,
+              "p999_us": 4151,
+              "p999_min_samples": 1,
+              "p999_reportable": true,
+              "max_us": 5915,
+              "overflow_count": 0
+            }
+          },
+          "timeline": {
+            "commit_latency_nanos": 838397434,
+            "recovery_latency_nanos": 838404994,
+            "receipt_sha256": "0c34898cb021bd45a216d85cc62d1d00e7f5d3dcc856a02d40885506054640fc"
+          }
+        }
+      },
+      {
+        "action": "member_drain",
+        "transition_recovery_millis": 132,
+        "raw": {
+          "origin": "observed",
+          "receipt": {
+            "action": "member_drain",
+            "receipt": {
+              "action": {
+                "target_node_id": "member-127-0-0-1-39379",
+                "path": "/admin/drain",
+                "action": "drain",
+                "outcome": "accepted",
+                "started_with": 0,
+                "remaining": 0,
+                "timed_out": false,
+                "response_sha256": "b7ee82eb5ff441c1ad2ccc68f6ae2a671417b06449180d7f54fef96f78f027be",
+                "request_network_bytes": 208,
+                "response_network_bytes": 225
+              },
+              "target": {
+                "node_id": "member-127-0-0-1-39379",
+                "pid": 26006,
+                "binary_path": "/opt/actions-runner/_work/hydracache/hydracache/target/release/hydracache-server",
+                "binary_sha256": "a17b5148cad43e2193c69a64e3372e2832fa94a47196a7b6bec405128f3633c6",
+                "config_path": "/dev/shm/hydracache-reference-evidence-v1/0.67/w5a-run-artifacts/w4a-control-plane-3-25331-6/node-3-launch-config.json",
+                "config_sha256": "b31188dc7aa72acfe9fad7c5d6db4649ce07c8adfd5cfb8bd2d2394a2e378cea",
+                "receipt_sha256": "69877a3969a40aa5cb93859e392995014b33b123fa3b47f898d4b89d2f1e80ff"
+              },
+              "cleanup": {
+                "pid": 26006,
+                "exit_status": "ExitStatus(unix_wait_status(0))",
+                "receipt_sha256": "0d86adbba58ab23419847464a313e0d926da469ea2d38e259ebde7d8d7b4f62c"
+              }
+            }
+          },
+          "before": [
+            {
+              "endpoint": {
+                "node_id": "member-127-0-0-1-34451",
+                "admin_addr": "127.0.0.1:33555"
+              },
+              "admin_status": {
+                "source": "live",
+                "leader": "member-127-0-0-1-35477",
+                "term": 2,
+                "epoch": 5,
+                "quorum_ok": true,
+                "members": 4,
+                "member_ids": [
+                  "member-127-0-0-1-34451",
+                  "member-127-0-0-1-35477",
+                  "member-127-0-0-1-39379",
+                  "member-127-0-0-1-39471"
+                ],
+                "voters": 4,
+                "voter_ids": [
+                  2765421080313107498,
+                  4156693219653128708,
+                  8577428153782664293,
+                  9713472578645303559
+                ],
+                "reshard_phase": "idle",
+                "draining": false
+              },
+              "cluster_overview": {
+                "source": "live",
+                "members": [
+                  {
+                    "node_id": "member-127-0-0-1-34451",
+                    "role": "member",
+                    "reachable": true,
+                    "reachability": "reachable",
+                    "generation": 2
+                  },
+                  {
+                    "node_id": "member-127-0-0-1-35477",
+                    "role": "member",
+                    "reachable": true,
+                    "reachability": "reachable",
+                    "generation": 1
+                  },
+                  {
+                    "node_id": "member-127-0-0-1-39379",
+                    "role": "member",
+                    "reachable": true,
+                    "reachability": "reachable",
+                    "generation": 1
+                  },
+                  {
+                    "node_id": "member-127-0-0-1-39471",
+                    "role": "member",
+                    "reachable": true,
+                    "reachability": "reachable",
+                    "generation": 1
+                  }
+                ],
+                "leader": {
+                  "node_id": "member-127-0-0-1-35477",
+                  "term": 2,
+                  "epoch": 5
+                },
+                "partitions": {
+                  "under_replicated": 0,
+                  "count": 0
+                },
+                "consistency": {
+                  "configured_default": null,
+                  "op_counts_by_level": []
+                },
+                "backup_age_seconds": null,
+                "lifecycle": {
+                  "reshard_phase": "idle",
+                  "upgrade_phase": "idle"
+                }
+              }
+            },
+            {
+              "endpoint": {
+                "node_id": "member-127-0-0-1-35477",
+                "admin_addr": "127.0.0.1:37295"
+              },
+              "admin_status": {
+                "source": "live",
+                "leader": "member-127-0-0-1-35477",
+                "term": 2,
+                "epoch": 5,
+                "quorum_ok": true,
+                "members": 4,
+                "member_ids": [
+                  "member-127-0-0-1-34451",
+                  "member-127-0-0-1-35477",
+                  "member-127-0-0-1-39379",
+                  "member-127-0-0-1-39471"
+                ],
+                "voters": 4,
+                "voter_ids": [
+                  2765421080313107498,
+                  4156693219653128708,
+                  8577428153782664293,
+                  9713472578645303559
+                ],
+                "reshard_phase": "idle",
+                "draining": false
+              },
+              "cluster_overview": {
+                "source": "live",
+                "members": [
+                  {
+                    "node_id": "member-127-0-0-1-34451",
+                    "role": "member",
+                    "reachable": true,
+                    "reachability": "reachable",
+                    "generation": 2
+                  },
+                  {
+                    "node_id": "member-127-0-0-1-35477",
+                    "role": "member",
+                    "reachable": true,
+                    "reachability": "reachable",
+                    "generation": 1
+                  },
+                  {
+                    "node_id": "member-127-0-0-1-39379",
+                    "role": "member",
+                    "reachable": true,
+                    "reachability": "reachable",
+                    "generation": 1
+                  },
+                  {
+                    "node_id": "member-127-0-0-1-39471",
+                    "role": "member",
+                    "reachable": true,
+                    "reachability": "reachable",
+                    "generation": 1
+                  }
+                ],
+                "leader": {
+                  "node_id": "member-127-0-0-1-35477",
+                  "term": 2,
+                  "epoch": 5
+                },
+                "partitions": {
+                  "under_replicated": 0,
+                  "count": 0
+                },
+                "consistency": {
+                  "configured_default": null,
+                  "op_counts_by_level": []
+                },
+                "backup_age_seconds": null,
+                "lifecycle": {
+                  "reshard_phase": "idle",
+                  "upgrade_phase": "idle"
+                }
+              }
+            },
+            {
+              "endpoint": {
+                "node_id": "member-127-0-0-1-39379",
+                "admin_addr": "127.0.0.1:43959"
+              },
+              "admin_status": {
+                "source": "live",
+                "leader": "member-127-0-0-1-35477",
+                "term": 2,
+                "epoch": 5,
+                "quorum_ok": true,
+                "members": 4,
+                "member_ids": [
+                  "member-127-0-0-1-34451",
+                  "member-127-0-0-1-35477",
+                  "member-127-0-0-1-39379",
+                  "member-127-0-0-1-39471"
+                ],
+                "voters": 4,
+                "voter_ids": [
+                  2765421080313107498,
+                  4156693219653128708,
+                  8577428153782664293,
+                  9713472578645303559
+                ],
+                "reshard_phase": "idle",
+                "draining": false
+              },
+              "cluster_overview": {
+                "source": "live",
+                "members": [
+                  {
+                    "node_id": "member-127-0-0-1-34451",
+                    "role": "member",
+                    "reachable": true,
+                    "reachability": "reachable",
+                    "generation": 2
+                  },
+                  {
+                    "node_id": "member-127-0-0-1-35477",
+                    "role": "member",
+                    "reachable": true,
+                    "reachability": "reachable",
+                    "generation": 1
+                  },
+                  {
+                    "node_id": "member-127-0-0-1-39379",
+                    "role": "member",
+                    "reachable": true,
+                    "reachability": "reachable",
+                    "generation": 1
+                  },
+                  {
+                    "node_id": "member-127-0-0-1-39471",
+                    "role": "member",
+                    "reachable": true,
+                    "reachability": "reachable",
+                    "generation": 1
+                  }
+                ],
+                "leader": {
+                  "node_id": "member-127-0-0-1-35477",
+                  "term": 2,
+                  "epoch": 5
+                },
+                "partitions": {
+                  "under_replicated": 0,
+                  "count": 0
+                },
+                "consistency": {
+                  "configured_default": null,
+                  "op_counts_by_level": []
+                },
+                "backup_age_seconds": null,
+                "lifecycle": {
+                  "reshard_phase": "idle",
+                  "upgrade_phase": "idle"
+                }
+              }
+            },
+            {
+              "endpoint": {
+                "node_id": "member-127-0-0-1-39471",
+                "admin_addr": "127.0.0.1:42623"
+              },
+              "admin_status": {
+                "source": "live",
+                "leader": "member-127-0-0-1-35477",
+                "term": 2,
+                "epoch": 5,
+                "quorum_ok": true,
+                "members": 4,
+                "member_ids": [
+                  "member-127-0-0-1-34451",
+                  "member-127-0-0-1-35477",
+                  "member-127-0-0-1-39379",
+                  "member-127-0-0-1-39471"
+                ],
+                "voters": 4,
+                "voter_ids": [
+                  2765421080313107498,
+                  4156693219653128708,
+                  8577428153782664293,
+                  9713472578645303559
+                ],
+                "reshard_phase": "idle",
+                "draining": false
+              },
+              "cluster_overview": {
+                "source": "live",
+                "members": [
+                  {
+                    "node_id": "member-127-0-0-1-34451",
+                    "role": "member",
+                    "reachable": true,
+                    "reachability": "reachable",
+                    "generation": 2
+                  },
+                  {
+                    "node_id": "member-127-0-0-1-35477",
+                    "role": "member",
+                    "reachable": true,
+                    "reachability": "reachable",
+                    "generation": 1
+                  },
+                  {
+                    "node_id": "member-127-0-0-1-39379",
+                    "role": "member",
+                    "reachable": true,
+                    "reachability": "reachable",
+                    "generation": 1
+                  },
+                  {
+                    "node_id": "member-127-0-0-1-39471",
+                    "role": "member",
+                    "reachable": true,
+                    "reachability": "reachable",
+                    "generation": 1
+                  }
+                ],
+                "leader": {
+                  "node_id": "member-127-0-0-1-35477",
+                  "term": 2,
+                  "epoch": 5
+                },
+                "partitions": {
+                  "under_replicated": 0,
+                  "count": 0
+                },
+                "consistency": {
+                  "configured_default": null,
+                  "op_counts_by_level": []
+                },
+                "backup_age_seconds": null,
+                "lifecycle": {
+                  "reshard_phase": "idle",
+                  "upgrade_phase": "idle"
+                }
+              }
+            }
+          ],
+          "after": [
+            {
+              "endpoint": {
+                "node_id": "member-127-0-0-1-34451",
+                "admin_addr": "127.0.0.1:33555"
+              },
+              "admin_status": {
+                "source": "live",
+                "leader": "member-127-0-0-1-35477",
+                "term": 2,
+                "epoch": 6,
+                "quorum_ok": true,
+                "members": 3,
+                "member_ids": [
+                  "member-127-0-0-1-34451",
+                  "member-127-0-0-1-35477",
+                  "member-127-0-0-1-39471"
+                ],
+                "voters": 3,
+                "voter_ids": [
+                  2765421080313107498,
+                  8577428153782664293,
+                  9713472578645303559
+                ],
+                "reshard_phase": "idle",
+                "draining": false
+              },
+              "cluster_overview": {
+                "source": "live",
+                "members": [
+                  {
+                    "node_id": "member-127-0-0-1-34451",
+                    "role": "member",
+                    "reachable": true,
+                    "reachability": "reachable",
+                    "generation": 2
+                  },
+                  {
+                    "node_id": "member-127-0-0-1-35477",
+                    "role": "member",
+                    "reachable": true,
+                    "reachability": "reachable",
+                    "generation": 1
+                  },
+                  {
+                    "node_id": "member-127-0-0-1-39471",
+                    "role": "member",
+                    "reachable": true,
+                    "reachability": "reachable",
+                    "generation": 1
+                  }
+                ],
+                "leader": {
+                  "node_id": "member-127-0-0-1-35477",
+                  "term": 2,
+                  "epoch": 6
+                },
+                "partitions": {
+                  "under_replicated": 0,
+                  "count": 0
+                },
+                "consistency": {
+                  "configured_default": null,
+                  "op_counts_by_level": []
+                },
+                "backup_age_seconds": null,
+                "lifecycle": {
+                  "reshard_phase": "idle",
+                  "upgrade_phase": "idle"
+                }
+              }
+            },
+            {
+              "endpoint": {
+                "node_id": "member-127-0-0-1-35477",
+                "admin_addr": "127.0.0.1:37295"
+              },
+              "admin_status": {
+                "source": "live",
+                "leader": "member-127-0-0-1-35477",
+                "term": 2,
+                "epoch": 6,
+                "quorum_ok": true,
+                "members": 3,
+                "member_ids": [
+                  "member-127-0-0-1-34451",
+                  "member-127-0-0-1-35477",
+                  "member-127-0-0-1-39471"
+                ],
+                "voters": 3,
+                "voter_ids": [
+                  2765421080313107498,
+                  8577428153782664293,
+                  9713472578645303559
+                ],
+                "reshard_phase": "idle",
+                "draining": false
+              },
+              "cluster_overview": {
+                "source": "live",
+                "members": [
+                  {
+                    "node_id": "member-127-0-0-1-34451",
+                    "role": "member",
+                    "reachable": true,
+                    "reachability": "reachable",
+                    "generation": 2
+                  },
+                  {
+                    "node_id": "member-127-0-0-1-35477",
+                    "role": "member",
+                    "reachable": true,
+                    "reachability": "reachable",
+                    "generation": 1
+                  },
+                  {
+                    "node_id": "member-127-0-0-1-39471",
+                    "role": "member",
+                    "reachable": true,
+                    "reachability": "reachable",
+                    "generation": 1
+                  }
+                ],
+                "leader": {
+                  "node_id": "member-127-0-0-1-35477",
+                  "term": 2,
+                  "epoch": 6
+                },
+                "partitions": {
+                  "under_replicated": 0,
+                  "count": 0
+                },
+                "consistency": {
+                  "configured_default": null,
+                  "op_counts_by_level": []
+                },
+                "backup_age_seconds": null,
+                "lifecycle": {
+                  "reshard_phase": "idle",
+                  "upgrade_phase": "idle"
+                }
+              }
+            },
+            {
+              "endpoint": {
+                "node_id": "member-127-0-0-1-39471",
+                "admin_addr": "127.0.0.1:42623"
+              },
+              "admin_status": {
+                "source": "live",
+                "leader": "member-127-0-0-1-35477",
+                "term": 2,
+                "epoch": 6,
+                "quorum_ok": true,
+                "members": 3,
+                "member_ids": [
+                  "member-127-0-0-1-34451",
+                  "member-127-0-0-1-35477",
+                  "member-127-0-0-1-39471"
+                ],
+                "voters": 3,
+                "voter_ids": [
+                  2765421080313107498,
+                  8577428153782664293,
+                  9713472578645303559
+                ],
+                "reshard_phase": "idle",
+                "draining": false
+              },
+              "cluster_overview": {
+                "source": "live",
+                "members": [
+                  {
+                    "node_id": "member-127-0-0-1-34451",
+                    "role": "member",
+                    "reachable": true,
+                    "reachability": "reachable",
+                    "generation": 2
+                  },
+                  {
+                    "node_id": "member-127-0-0-1-35477",
+                    "role": "member",
+                    "reachable": true,
+                    "reachability": "reachable",
+                    "generation": 1
+                  },
+                  {
+                    "node_id": "member-127-0-0-1-39471",
+                    "role": "member",
+                    "reachable": true,
+                    "reachability": "reachable",
+                    "generation": 1
+                  }
+                ],
+                "leader": {
+                  "node_id": "member-127-0-0-1-35477",
+                  "term": 2,
+                  "epoch": 6
+                },
+                "partitions": {
+                  "under_replicated": 0,
+                  "count": 0
+                },
+                "consistency": {
+                  "configured_default": null,
+                  "op_counts_by_level": []
+                },
+                "backup_age_seconds": null,
+                "lifecycle": {
+                  "reshard_phase": "idle",
+                  "upgrade_phase": "idle"
+                }
+              }
+            }
+          ],
+          "before_window": {
+            "offered": 24000,
+            "started": 24000,
+            "completed": 24000,
+            "successes": 24000,
+            "errors": 0,
+            "timeouts": 0,
+            "rejections": 0,
+            "backlog_high_water": 8,
+            "backlog_drained": true,
+            "drain_ms": 0,
+            "elapsed_ms": 10000,
+            "offered_rate_per_second": 2400.0,
+            "achieved_rate_per_second": 2399.8271394912117,
+            "latency": {
+              "samples": 24000,
+              "p50_us": 1691,
+              "p90_us": 2593,
+              "p99_us": 3167,
+              "p999_us": 3645,
+              "p999_min_samples": 1,
+              "p999_reportable": true,
+              "max_us": 4735,
+              "overflow_count": 0
+            }
+          },
+          "disruption_window": {
+            "offered": 24000,
+            "started": 24000,
+            "completed": 24000,
+            "successes": 23999,
+            "errors": 1,
+            "timeouts": 0,
+            "rejections": 0,
+            "backlog_high_water": 12,
+            "backlog_drained": true,
+            "drain_ms": 0,
+            "elapsed_ms": 10001,
+            "offered_rate_per_second": 2400.0,
+            "achieved_rate_per_second": 2399.6490246940343,
+            "latency": {
+              "samples": 24000,
+              "p50_us": 1958,
+              "p90_us": 2629,
+              "p99_us": 3589,
+              "p999_us": 4779,
+              "p999_min_samples": 1,
+              "p999_reportable": true,
+              "max_us": 6427,
+              "overflow_count": 0
+            }
+          },
+          "recovered_window": {
+            "offered": 24000,
+            "started": 24000,
+            "completed": 24000,
+            "successes": 24000,
+            "errors": 0,
+            "timeouts": 0,
+            "rejections": 0,
+            "backlog_high_water": 12,
+            "backlog_drained": true,
+            "drain_ms": 0,
+            "elapsed_ms": 10001,
+            "offered_rate_per_second": 2400.0,
+            "achieved_rate_per_second": 2399.652223202596,
+            "latency": {
+              "samples": 24000,
+              "p50_us": 1976,
+              "p90_us": 2683,
+              "p99_us": 3599,
+              "p999_us": 4603,
+              "p999_min_samples": 1,
+              "p999_reportable": true,
+              "max_us": 6743,
+              "overflow_count": 0
+            }
+          },
+          "timeline": {
+            "commit_latency_nanos": 30338815,
+            "recovery_latency_nanos": 131202345,
+            "receipt_sha256": "d5b4d5629fff6545249996717e7e95b4694ce6e6dd780a5b84b25980bc85eb70"
+          }
+        }
+      },
+      {
+        "action": "node_kill_rejoin",
+        "transition_recovery_millis": 226,
+        "raw": {
+          "origin": "observed",
+          "receipt": {
+            "action": "node_kill_rejoin",
+            "receipt": {
+              "original": {
+                "node_id": "member-127-0-0-1-39471",
+                "pid": 25972,
+                "binary_path": "/opt/actions-runner/_work/hydracache/hydracache/target/release/hydracache-server",
+                "binary_sha256": "a17b5148cad43e2193c69a64e3372e2832fa94a47196a7b6bec405128f3633c6",
+                "config_path": "/dev/shm/hydracache-reference-evidence-v1/0.67/w5a-run-artifacts/w4a-control-plane-3-25331-6/node-2-launch-config.json",
+                "config_sha256": "f37efc63cdf74fba7f07838b4ea140af9ea081dbfe1ed4a5283101cd557ee7c1",
+                "receipt_sha256": "e85c744175660eb0d5d3854218c259d3ed590685b0007fd34bbf5b1356ded123"
+              },
+              "termination": {
+                "pid": 25972,
+                "exit_status": "ExitStatus(unix_wait_status(9))",
+                "receipt_sha256": "1704274252452ac4b61ab07a75f8a7871c6162ba833312e3ee72dfd54bec4cb5"
+              },
+              "restarted": {
+                "node_id": "member-127-0-0-1-39471",
+                "pid": 26040,
+                "binary_path": "/opt/actions-runner/_work/hydracache/hydracache/target/release/hydracache-server",
+                "binary_sha256": "a17b5148cad43e2193c69a64e3372e2832fa94a47196a7b6bec405128f3633c6",
+                "config_path": "/dev/shm/hydracache-reference-evidence-v1/0.67/w5a-run-artifacts/w4a-control-plane-3-25331-6/node-2-launch-config.json",
+                "config_sha256": "f37efc63cdf74fba7f07838b4ea140af9ea081dbfe1ed4a5283101cd557ee7c1",
+                "receipt_sha256": "39f0b9f4fd5096a263b73770f20ecee2d35490587f75325af6fe40418ebf3cfa"
+              }
+            }
+          },
+          "before": [
+            {
+              "endpoint": {
+                "node_id": "member-127-0-0-1-34451",
+                "admin_addr": "127.0.0.1:33555"
+              },
+              "admin_status": {
+                "source": "live",
+                "leader": "member-127-0-0-1-35477",
+                "term": 2,
+                "epoch": 6,
+                "quorum_ok": true,
+                "members": 3,
+                "member_ids": [
+                  "member-127-0-0-1-34451",
+                  "member-127-0-0-1-35477",
+                  "member-127-0-0-1-39471"
+                ],
+                "voters": 3,
+                "voter_ids": [
+                  2765421080313107498,
+                  8577428153782664293,
+                  9713472578645303559
+                ],
+                "reshard_phase": "idle",
+                "draining": false
+              },
+              "cluster_overview": {
+                "source": "live",
+                "members": [
+                  {
+                    "node_id": "member-127-0-0-1-34451",
+                    "role": "member",
+                    "reachable": true,
+                    "reachability": "reachable",
+                    "generation": 2
+                  },
+                  {
+                    "node_id": "member-127-0-0-1-35477",
+                    "role": "member",
+                    "reachable": true,
+                    "reachability": "reachable",
+                    "generation": 1
+                  },
+                  {
+                    "node_id": "member-127-0-0-1-39471",
+                    "role": "member",
+                    "reachable": true,
+                    "reachability": "reachable",
+                    "generation": 1
+                  }
+                ],
+                "leader": {
+                  "node_id": "member-127-0-0-1-35477",
+                  "term": 2,
+                  "epoch": 6
+                },
+                "partitions": {
+                  "under_replicated": 0,
+                  "count": 0
+                },
+                "consistency": {
+                  "configured_default": null,
+                  "op_counts_by_level": []
+                },
+                "backup_age_seconds": null,
+                "lifecycle": {
+                  "reshard_phase": "idle",
+                  "upgrade_phase": "idle"
+                }
+              }
+            },
+            {
+              "endpoint": {
+                "node_id": "member-127-0-0-1-35477",
+                "admin_addr": "127.0.0.1:37295"
+              },
+              "admin_status": {
+                "source": "live",
+                "leader": "member-127-0-0-1-35477",
+                "term": 2,
+                "epoch": 6,
+                "quorum_ok": true,
+                "members": 3,
+                "member_ids": [
+                  "member-127-0-0-1-34451",
+                  "member-127-0-0-1-35477",
+                  "member-127-0-0-1-39471"
+                ],
+                "voters": 3,
+                "voter_ids": [
+                  2765421080313107498,
+                  8577428153782664293,
+                  9713472578645303559
+                ],
+                "reshard_phase": "idle",
+                "draining": false
+              },
+              "cluster_overview": {
+                "source": "live",
+                "members": [
+                  {
+                    "node_id": "member-127-0-0-1-34451",
+                    "role": "member",
+                    "reachable": true,
+                    "reachability": "reachable",
+                    "generation": 2
+                  },
+                  {
+                    "node_id": "member-127-0-0-1-35477",
+                    "role": "member",
+                    "reachable": true,
+                    "reachability": "reachable",
+                    "generation": 1
+                  },
+                  {
+                    "node_id": "member-127-0-0-1-39471",
+                    "role": "member",
+                    "reachable": true,
+                    "reachability": "reachable",
+                    "generation": 1
+                  }
+                ],
+                "leader": {
+                  "node_id": "member-127-0-0-1-35477",
+                  "term": 2,
+                  "epoch": 6
+                },
+                "partitions": {
+                  "under_replicated": 0,
+                  "count": 0
+                },
+                "consistency": {
+                  "configured_default": null,
+                  "op_counts_by_level": []
+                },
+                "backup_age_seconds": null,
+                "lifecycle": {
+                  "reshard_phase": "idle",
+                  "upgrade_phase": "idle"
+                }
+              }
+            },
+            {
+              "endpoint": {
+                "node_id": "member-127-0-0-1-39471",
+                "admin_addr": "127.0.0.1:42623"
+              },
+              "admin_status": {
+                "source": "live",
+                "leader": "member-127-0-0-1-35477",
+                "term": 2,
+                "epoch": 6,
+                "quorum_ok": true,
+                "members": 3,
+                "member_ids": [
+                  "member-127-0-0-1-34451",
+                  "member-127-0-0-1-35477",
+                  "member-127-0-0-1-39471"
+                ],
+                "voters": 3,
+                "voter_ids": [
+                  2765421080313107498,
+                  8577428153782664293,
+                  9713472578645303559
+                ],
+                "reshard_phase": "idle",
+                "draining": false
+              },
+              "cluster_overview": {
+                "source": "live",
+                "members": [
+                  {
+                    "node_id": "member-127-0-0-1-34451",
+                    "role": "member",
+                    "reachable": true,
+                    "reachability": "reachable",
+                    "generation": 2
+                  },
+                  {
+                    "node_id": "member-127-0-0-1-35477",
+                    "role": "member",
+                    "reachable": true,
+                    "reachability": "reachable",
+                    "generation": 1
+                  },
+                  {
+                    "node_id": "member-127-0-0-1-39471",
+                    "role": "member",
+                    "reachable": true,
+                    "reachability": "reachable",
+                    "generation": 1
+                  }
+                ],
+                "leader": {
+                  "node_id": "member-127-0-0-1-35477",
+                  "term": 2,
+                  "epoch": 6
+                },
+                "partitions": {
+                  "under_replicated": 0,
+                  "count": 0
+                },
+                "consistency": {
+                  "configured_default": null,
+                  "op_counts_by_level": []
+                },
+                "backup_age_seconds": null,
+                "lifecycle": {
+                  "reshard_phase": "idle",
+                  "upgrade_phase": "idle"
+                }
+              }
+            }
+          ],
+          "after": [
+            {
+              "endpoint": {
+                "node_id": "member-127-0-0-1-34451",
+                "admin_addr": "127.0.0.1:33555"
+              },
+              "admin_status": {
+                "source": "live",
+                "leader": "member-127-0-0-1-35477",
+                "term": 2,
+                "epoch": 7,
+                "quorum_ok": true,
+                "members": 3,
+                "member_ids": [
+                  "member-127-0-0-1-34451",
+                  "member-127-0-0-1-35477",
+                  "member-127-0-0-1-39471"
+                ],
+                "voters": 3,
+                "voter_ids": [
+                  2765421080313107498,
+                  8577428153782664293,
+                  9713472578645303559
+                ],
+                "reshard_phase": "idle",
+                "draining": false
+              },
+              "cluster_overview": {
+                "source": "live",
+                "members": [
+                  {
+                    "node_id": "member-127-0-0-1-34451",
+                    "role": "member",
+                    "reachable": true,
+                    "reachability": "reachable",
+                    "generation": 2
+                  },
+                  {
+                    "node_id": "member-127-0-0-1-35477",
+                    "role": "member",
+                    "reachable": true,
+                    "reachability": "reachable",
+                    "generation": 1
+                  },
+                  {
+                    "node_id": "member-127-0-0-1-39471",
+                    "role": "member",
+                    "reachable": true,
+                    "reachability": "reachable",
+                    "generation": 2
+                  }
+                ],
+                "leader": {
+                  "node_id": "member-127-0-0-1-35477",
+                  "term": 2,
+                  "epoch": 7
+                },
+                "partitions": {
+                  "under_replicated": 0,
+                  "count": 0
+                },
+                "consistency": {
+                  "configured_default": null,
+                  "op_counts_by_level": []
+                },
+                "backup_age_seconds": null,
+                "lifecycle": {
+                  "reshard_phase": "idle",
+                  "upgrade_phase": "idle"
+                }
+              }
+            },
+            {
+              "endpoint": {
+                "node_id": "member-127-0-0-1-35477",
+                "admin_addr": "127.0.0.1:37295"
+              },
+              "admin_status": {
+                "source": "live",
+                "leader": "member-127-0-0-1-35477",
+                "term": 2,
+                "epoch": 7,
+                "quorum_ok": true,
+                "members": 3,
+                "member_ids": [
+                  "member-127-0-0-1-34451",
+                  "member-127-0-0-1-35477",
+                  "member-127-0-0-1-39471"
+                ],
+                "voters": 3,
+                "voter_ids": [
+                  2765421080313107498,
+                  8577428153782664293,
+                  9713472578645303559
+                ],
+                "reshard_phase": "idle",
+                "draining": false
+              },
+              "cluster_overview": {
+                "source": "live",
+                "members": [
+                  {
+                    "node_id": "member-127-0-0-1-34451",
+                    "role": "member",
+                    "reachable": true,
+                    "reachability": "reachable",
+                    "generation": 2
+                  },
+                  {
+                    "node_id": "member-127-0-0-1-35477",
+                    "role": "member",
+                    "reachable": true,
+                    "reachability": "reachable",
+                    "generation": 1
+                  },
+                  {
+                    "node_id": "member-127-0-0-1-39471",
+                    "role": "member",
+                    "reachable": true,
+                    "reachability": "reachable",
+                    "generation": 2
+                  }
+                ],
+                "leader": {
+                  "node_id": "member-127-0-0-1-35477",
+                  "term": 2,
+                  "epoch": 7
+                },
+                "partitions": {
+                  "under_replicated": 0,
+                  "count": 0
+                },
+                "consistency": {
+                  "configured_default": null,
+                  "op_counts_by_level": []
+                },
+                "backup_age_seconds": null,
+                "lifecycle": {
+                  "reshard_phase": "idle",
+                  "upgrade_phase": "idle"
+                }
+              }
+            },
+            {
+              "endpoint": {
+                "node_id": "member-127-0-0-1-39471",
+                "admin_addr": "127.0.0.1:42623"
+              },
+              "admin_status": {
+                "source": "live",
+                "leader": "member-127-0-0-1-35477",
+                "term": 2,
+                "epoch": 7,
+                "quorum_ok": true,
+                "members": 3,
+                "member_ids": [
+                  "member-127-0-0-1-34451",
+                  "member-127-0-0-1-35477",
+                  "member-127-0-0-1-39471"
+                ],
+                "voters": 3,
+                "voter_ids": [
+                  2765421080313107498,
+                  8577428153782664293,
+                  9713472578645303559
+                ],
+                "reshard_phase": "idle",
+                "draining": false
+              },
+              "cluster_overview": {
+                "source": "live",
+                "members": [
+                  {
+                    "node_id": "member-127-0-0-1-34451",
+                    "role": "member",
+                    "reachable": true,
+                    "reachability": "reachable",
+                    "generation": 2
+                  },
+                  {
+                    "node_id": "member-127-0-0-1-35477",
+                    "role": "member",
+                    "reachable": true,
+                    "reachability": "reachable",
+                    "generation": 1
+                  },
+                  {
+                    "node_id": "member-127-0-0-1-39471",
+                    "role": "member",
+                    "reachable": true,
+                    "reachability": "reachable",
+                    "generation": 2
+                  }
+                ],
+                "leader": {
+                  "node_id": "member-127-0-0-1-35477",
+                  "term": 2,
+                  "epoch": 7
+                },
+                "partitions": {
+                  "under_replicated": 0,
+                  "count": 0
+                },
+                "consistency": {
+                  "configured_default": null,
+                  "op_counts_by_level": []
+                },
+                "backup_age_seconds": null,
+                "lifecycle": {
+                  "reshard_phase": "idle",
+                  "upgrade_phase": "idle"
+                }
+              }
+            }
+          ],
+          "before_window": {
+            "offered": 24000,
+            "started": 24000,
+            "completed": 24000,
+            "successes": 24000,
+            "errors": 0,
+            "timeouts": 0,
+            "rejections": 0,
+            "backlog_high_water": 8,
+            "backlog_drained": true,
+            "drain_ms": 0,
+            "elapsed_ms": 10000,
+            "offered_rate_per_second": 2400.0,
+            "achieved_rate_per_second": 2399.839326677352,
+            "latency": {
+              "samples": 24000,
+              "p50_us": 1697,
+              "p90_us": 2599,
+              "p99_us": 3121,
+              "p999_us": 3465,
+              "p999_min_samples": 1,
+              "p999_reportable": true,
+              "max_us": 3921,
+              "overflow_count": 0
+            }
+          },
+          "disruption_window": {
+            "offered": 24000,
+            "started": 24000,
+            "completed": 24000,
+            "successes": 24000,
+            "errors": 0,
+            "timeouts": 0,
+            "rejections": 0,
+            "backlog_high_water": 18,
+            "backlog_drained": true,
+            "drain_ms": 0,
+            "elapsed_ms": 10001,
+            "offered_rate_per_second": 2400.0,
+            "achieved_rate_per_second": 2399.6537429230266,
+            "latency": {
+              "samples": 24000,
+              "p50_us": 1954,
+              "p90_us": 2623,
+              "p99_us": 3453,
+              "p999_us": 4895,
+              "p999_min_samples": 1,
+              "p999_reportable": true,
+              "max_us": 8423,
+              "overflow_count": 0
+            }
+          },
+          "recovered_window": {
+            "offered": 24000,
+            "started": 24000,
+            "completed": 24000,
+            "successes": 24000,
+            "errors": 0,
+            "timeouts": 0,
+            "rejections": 0,
+            "backlog_high_water": 12,
+            "backlog_drained": true,
+            "drain_ms": 0,
+            "elapsed_ms": 10001,
+            "offered_rate_per_second": 2400.0,
+            "achieved_rate_per_second": 2399.6769859600477,
+            "latency": {
+              "samples": 24000,
+              "p50_us": 1894,
+              "p90_us": 2545,
+              "p99_us": 3379,
+              "p999_us": 4403,
+              "p999_min_samples": 1,
+              "p999_reportable": true,
+              "max_us": 6827,
+              "overflow_count": 0
+            }
+          },
+          "timeline": {
+            "commit_latency_nanos": 1901872,
+            "recovery_latency_nanos": 225326604,
+            "receipt_sha256": "5e989827b5912a72a6369f2bc6838b6b185ddf397e982525483fbebf7a764850"
+          }
+        }
+      }
+    ],
+    "generic_client_write_invariant": false,
+    "distributed_value_invariant": false,
+    "live_reshard_measured": false,
+    "aggregate_goodput": false
+  },
+  "budget_receipt": {
+    "schema_version": 1,
+    "release": "0.67.0",
+    "report_id": "brownout-control-plane-reference-v1",
+    "source_report_sha256": "f0f55bbf4523cd2b597f779299104d4d23b3efee727d1135e80ce36352a4b4f8",
+    "claim_scope": "w5a-control-plane-metadata-brownout",
+    "run_mode": "reference_evidence",
+    "runner_profile": "reference-v1",
+    "runner_contract": {
+      "name": "reference-v1",
+      "required_runner_class": "self-hosted-bare-metal-v1",
+      "allowed_fingerprints": [
+        "25baeec1c9ec75da90b5dd0f29c101897450b96651d7e47570e18684be486ebb"
+      ],
+      "minimum_logical_cores": 4,
+      "required_cpu_affinity": "1-4",
+      "required_cgroup_cpu_quota": "unlimited",
+      "require_dedicated": true,
+      "maximum_calibration_score": 0.25
+    },
+    "runner_contract_digest": "c728014af9fd0aae4c474456e74437a033110940db01caa1577b1b5b5efabfe0",
+    "observed_runner": {
+      "runner_class": "self-hosted-bare-metal-v1",
+      "fingerprint": "25baeec1c9ec75da90b5dd0f29c101897450b96651d7e47570e18684be486ebb",
+      "cpu_model": "AMD Ryzen 7 PRO 8700GE w/ Radeon 780M Graphics",
+      "logical_cores": 4,
+      "ram_bytes": 66490486784,
+      "os": "linux",
+      "kernel": "6.8.0-138-generic",
+      "cpu_affinity": "1-4",
+      "cgroup_cpu_quota": "unlimited",
+      "governor": "performance",
+      "turbo": "enabled",
+      "shared_hardware": false,
+      "calibration_score": 0.015776637614821176,
+      "attestation": {
+        "schema_version": 5,
+        "contract_version": "hydracache-reference-host-v5",
+        "virtualization": "none",
+        "physical_cores": 8,
+        "measurement_cores": [
+          {
+            "logical_cpu": 1,
+            "package_id": 0,
+            "core_id": 1
+          },
+          {
+            "logical_cpu": 2,
+            "package_id": 0,
+            "core_id": 2
+          },
+          {
+            "logical_cpu": 3,
+            "package_id": 0,
+            "core_id": 3
+          },
+          {
+            "logical_cpu": 4,
+            "package_id": 0,
+            "core_id": 4
+          }
+        ],
+        "cpu_isolation": {
+          "smt_control": "off",
+          "online_cpus": "0-7",
+          "isolated_cpus": "1-4",
+          "nohz_full_cpus": "1-4",
+          "rcu_nocbs_cpus": "1-4",
+          "housekeeping_cpus": "0,5-7",
+          "irq_affinity_policy": "housekeeping-only-v1",
+          "measurement_idle_policy": "latency-cap-us-v1",
+          "measurement_max_idle_latency_us": 1,
+          "housekeeping_idle_policy": "latency-cap-us-v1",
+          "housekeeping_max_idle_latency_us": 1
+        },
+        "host_digest": "571591a534c9894242fc0af0c5f80c31131fe7e4cdb9d0ea63da6d8b56af8932",
+        "storage_class": "local-nvme",
+        "storage_identity_digest": "74ec6d1126c24b7a3899494eef2564aec2d3085056ac200e4a8cc8ca0ae43a50",
+        "os_image": "ubuntu-24.04",
+        "toolchain_identity": "rustc-1.94.0",
+        "prebuild_contract_digest": "f2caae0689d8b075d2a6d59d6090466365f9a6824c6996d6b92830956831cc55"
+      }
+    },
+    "runner_fingerprint": "25baeec1c9ec75da90b5dd0f29c101897450b96651d7e47570e18684be486ebb",
+    "source_commit": "7bd31af9a5092466d7a7284995f388d33ed3110f",
+    "cargo_lock_sha256": "dc480dad8567eda4a4d13b393651d3d1201cc26ba7599e3c8ff822b725569def",
+    "toolchain_identity": "rustc-1.94.0",
+    "prebuild_contract_digest": "f2caae0689d8b075d2a6d59d6090466365f9a6824c6996d6b92830956831cc55",
+    "prebuild_manifest_sha256": "2768ca970a2b3e09c3ee63bbd9bba466c3aee40be8dfca8e06cbe98309e4b296",
+    "binary_sha256": [
+      {
+        "id": "hydracache-loadgen",
+        "sha256": "c2c0e14ab40dd5b3c2ee5d71631bdfee81d7d61c0cd2c83c8b927c126aff7bd2"
+      },
+      {
+        "id": "hydracache-server",
+        "sha256": "a17b5148cad43e2193c69a64e3372e2832fa94a47196a7b6bec405128f3633c6"
+      }
+    ],
+    "binary_set_digest": "226175eeacd19e16f15bf8af6e9da5253aef1330c5583c73bf039920fa8abf61",
+    "scenario_digest": "7c7eeab8137a62fb70fc8ac23309d9168bbc7d00084a4b1f94b958e262de71f0",
+    "workload_digest": "5f656244097e34a88ad33771d7377133d079ed72188e188027703f5369ace96c",
+    "slo_digest": "12b48135f1fd7f6c2b54661291c24d2c240ddaa2e3c9d457de39486fcec01dc0",
+    "methodology_digest": "1aef4e5e730268439c73d14206ae68585129b5d9d3c9cbea5e98fcd8416a0e44",
+    "stable": true,
+    "maximum_spread_ratio": 0.0,
+    "metric": [
+      {
+        "id": "control_plane_brownout.recovery_milliseconds",
+        "value": 839.0,
+        "unit": "milliseconds"
+      },
+      {
+        "id": "control_plane_brownout.maximum_availability_dip_ppm",
+        "value": 42.0,
+        "unit": "parts_per_million"
+      }
+    ],
+    "receipt_sha256": "eedd49d16088b075405b4975a1a6c25348ff2f8b9ef5ab80415b4672d12df1e7"
+  }
+}

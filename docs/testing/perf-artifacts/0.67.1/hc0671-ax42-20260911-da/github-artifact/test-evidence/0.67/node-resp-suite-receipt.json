@@ -1,0 +1,13 @@
+{
+  "payload": {
+    "schema_version": 1,
+    "source_commit": "7bd31af9a5092466d7a7284995f388d33ed3110f",
+    "prebuild_manifest_sha256": "2768ca970a2b3e09c3ee63bbd9bba466c3aee40be8dfca8e06cbe98309e4b296",
+    "selected_endpoint": "hydracache-server@127.0.0.1:41319",
+    "endpoint_capability_sha256": "14b729d15ac097dd368a63519198917497f92dc588e80278b6f16a815bd2f8ab",
+    "open_loop_report_sha256": "d238c95d42d42f5065ce7e41a83a8a88b9211ff6d37b436a45e4efb666bb0b5e",
+    "external_report_sha256": "bf2301a1b804ede0d14d2c3a9658811d4dd7cd986c976644fc9876c1c49c446e",
+    "daemon_lifecycle_sha256": "be3791c4c2b72cd17734595f796efae9bd8c23134cc02fb52514adc6291bd9d6"
+  },
+  "receipt_sha256": "c7f673a7b8a1146e8c143910c62c12c35bba43e962fcd686bd78df05b66090cc"
+}

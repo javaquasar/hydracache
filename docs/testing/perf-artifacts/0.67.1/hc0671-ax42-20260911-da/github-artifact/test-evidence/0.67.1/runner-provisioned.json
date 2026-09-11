@@ -1,0 +1,47 @@
+{
+  "schema_version": 4,
+  "release": "0.67.1",
+  "stage": "runner-provisioned",
+  "source_commit": "7bd31af9a5092466d7a7284995f388d33ed3110f",
+  "platform": "linux-x86_64",
+  "os_image": "ubuntu-24.04",
+  "kernel": "6.8.0-138-generic",
+  "virtualization": "none",
+  "host_identity_digest": "571591a534c9894242fc0af0c5f80c31131fe7e4cdb9d0ea63da6d8b56af8932",
+  "physical_cores": 8,
+  "memory_bytes": 66490486784,
+  "measurement_cpuset": "1-4",
+  "measurement_topology": [
+    "0:1",
+    "0:2",
+    "0:3",
+    "0:4"
+  ],
+  "cpu_isolation": {
+    "smt_control": "off",
+    "online_cpus": "0-7",
+    "isolated_cpus": "1-4",
+    "nohz_full_cpus": "1-4",
+    "rcu_nocbs_cpus": "1-4",
+    "housekeeping_cpus": "0,5-7",
+    "irq_affinity_policy": "housekeeping-only-v1",
+    "measurement_idle_policy": "latency-cap-us-v1",
+    "measurement_max_idle_latency_us": 1,
+    "housekeeping_idle_policy": "latency-cap-us-v1",
+    "housekeeping_max_idle_latency_us": 1
+  },
+  "storage_transport": "nvme",
+  "storage_devices": [
+    "nvme0n1",
+    "nvme1n1"
+  ],
+  "cgroup_version": 2,
+  "cgroup_cpu_quota": "unlimited",
+  "governor": "performance",
+  "turbo_policy": "enabled",
+  "turbo_policy_backend": "amd-pstate-active-max-frequency-v1",
+  "runner_name": "hydracache-perf-v1",
+  "runner_service": "actions.runner.javaquasar-hydracache.hydracache-perf-v1.service",
+  "runner_online": false,
+  "ship_evidence_eligible": false
+}
