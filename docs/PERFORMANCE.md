@@ -3,12 +3,12 @@
 This document defines the performance methodology delivered by release `0.67.0`, the surfaces it
 can measure, and the narrow claim boundary for the reviewed `0.67.1` dedicated reference contract.
 
-> **Current status (2026-09-05): reference bootstrap reviewed and activated; frozen candidate
-> pending.** The 0.67 tooling release remains claim-free. The `0.67.1` contract now contains one
+> **Current status (2026-09-11): reference bootstrap and frozen candidate complete.** The 0.67
+> tooling release remains claim-free. The `0.67.1` contract contains one
 > independently reviewed five-sample bare-metal anchor and baseline, resolving
 > [`TD-0013`](technical-debt/TD-0013-dedicated-performance-runner-and-baseline-bootstrap.md).
-> W7 must still pass from the exact activation merge SHA before `0.67.1` may ship or publish a final
-> reference verdict.
+> W7 passed from an exact post-activation `main` SHA; the anonymized final verdict is
+> [`testing/perf-scenarios/0.67/results/ax42-reference-0.67.1-20260911.md`](testing/perf-scenarios/0.67/results/ax42-reference-0.67.1-20260911.md).
 
 ## Measured surfaces and claim boundaries
 
@@ -44,7 +44,7 @@ budget and baseline files remain unchanged.
 | Lane | Purpose | 0.67 ship role |
 | --- | --- | --- |
 | `ci-shared` | Broad-tolerance hosted regression tripwire plus structural/unit receipts | Non-numerical regression signal only |
-| `reference-v1` | Manual serialized execution on protected `hydracache-perf-v1` bare metal | Deferred for 0.67; independently reviewed and activated for 0.67.1, with W7 still pending |
+| `reference-v1` | Manual serialized execution on protected `hydracache-perf-v1` bare metal | Deferred for 0.67; independently reviewed, activated, and passed by the separate 0.67.1 W7 frozen candidate |
 
 The protected workflow and these registered gates are retained unchanged in method:
 
@@ -63,8 +63,8 @@ manifest.
 
 The committed `reference-v1` profile, anchor, budgets, and baseline are now `bootstrapped` from five
 eligible, stable, successful pre-candidate `main` runs from one fingerprint and contract family.
-The activation preserves candidate self-baseline prevention. A fully green frozen-candidate
-reference pipeline is still required for the 0.67.1 release verdict.
+The activation preserves candidate self-baseline prevention. The separate frozen-candidate
+reference pipeline passed and did not become a member of its own baseline.
 
 Release 0.67.1 uses an explicit two-campaign protocol. The completed pre-activation bootstrap SHA
 contributed exactly five non-ship samples; deterministic W5 automation derived a median-based
@@ -75,8 +75,7 @@ and scenario schema remains the 0.67 measurement contract. Operational details a
 
 ## Quotation rule
 
-No numerical 0.67 release claim is permitted. The reviewed 0.67.1 bootstrap values are a
-pre-candidate contract, not a final release verdict. They may be described only with their exact
-report, scenario, fingerprint, profile, commit, method, and host scope, and never as portable sizing
-advice or universal comparative performance. Final 0.67.1 claims additionally require green W7
-frozen-candidate evidence.
+No numerical 0.67 release claim is permitted. The reviewed 0.67.1 bootstrap values remain the
+pre-candidate contract, and the separate green W7 result is the final narrowly scoped verdict.
+Numbers may be described only with their exact report, scenario, fingerprint, profile, commit,
+method, and host scope, and never as portable sizing advice or universal comparative performance.

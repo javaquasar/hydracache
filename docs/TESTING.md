@@ -1349,10 +1349,11 @@ private modules or infer Redis/HC/2 wire compatibility from the local API.
 
 The canonical methodology and claim boundary are in [`PERFORMANCE.md`](PERFORMANCE.md). Release
 0.67 shipped the W0-W10 testing infrastructure without official capacity, sizing,
-Redis-comparison, metrics-agreement, or numerical baseline results. Release 0.67.1 has now resolved
+Redis-comparison, metrics-agreement, or numerical baseline results. Release 0.67.1 resolved
 the missing dedicated-runner bootstrap debt, [`TD-0013`](technical-debt/TD-0013-dedicated-performance-runner-and-baseline-bootstrap.md),
-through an independently reviewed five-sample activation; its separate frozen-candidate W7 ship
-gate remains pending.
+through an independently reviewed five-sample activation. Its separate frozen-candidate W7 ship
+gate also passed; the anonymized result is
+[`testing/perf-scenarios/0.67/results/ax42-reference-0.67.1-20260911.md`](testing/perf-scenarios/0.67/results/ax42-reference-0.67.1-20260911.md).
 
 The profile-selection rules, evidence hierarchy, and prohibition on promoting a
 weaker result into a stronger claim are defined in
@@ -1403,9 +1404,9 @@ unset HYDRACACHE_PERF_RUNNER_CLASS HYDRACACHE_RUN_PERF_REFERENCE HYDRACACHE_RUN_
 
 These commands remain deliberately fail-closed. TD-0013 is resolved by the completed qualification,
 two-run full-dress admission, five eligible chained `main` samples, independent contract review,
-and `reference-v1` activation. A complete green frozen-candidate run is the remaining W7 release
-gate. Candidate, failed, quarantined, unstable, stale, mixed-fingerprint, or self-baselining runs
-remain ineligible.
+and `reference-v1` activation. W7 subsequently passed on the separate exact-SHA frozen candidate.
+Candidate, failed, quarantined, unstable, stale, mixed-fingerprint, or self-baselining runs remain
+ineligible.
 
 The campaign controller retains every original GitHub ZIP and also materializes a digest-verified
 W5 input tree. `prepare-review` can reconstruct that tree from retained ZIPs; `run-frozen` controls
