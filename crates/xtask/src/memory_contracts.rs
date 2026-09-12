@@ -593,6 +593,11 @@ pub fn run_host_preflight(args: Vec<String>) -> Result<(), Box<dyn Error>> {
             "MALLOC_CONF": std::env::var("MALLOC_CONF").ok(),
             "MIMALLOC_OPTIONS": std::env::var("MIMALLOC_OPTIONS").ok()
         },
+        "affinity_policy": {
+            "daemon": std::env::var("HYDRACACHE_MEMORY_DAEMON_CPUSET").ok(),
+            "loadgen": std::env::var("HYDRACACHE_MEMORY_LOADGEN_CPUSET").ok(),
+            "collector": std::env::var("HYDRACACHE_MEMORY_COLLECTOR_CPUSET").ok()
+        },
         "competing_load": read_optional("/proc/loadavg"),
         "available_memory": first_matching_line("/proc/meminfo", "MemAvailable"),
         "major_faults_and_throttling": read_optional("/proc/self/status"),
@@ -607,12 +612,20 @@ pub fn run_host_preflight(args: Vec<String>) -> Result<(), Box<dyn Error>> {
         .get("relative_spread")
         .and_then(JsonValue::as_f64)
         .is_some_and(|spread| spread <= calibration_limit);
-    let fingerprint = canonical_json_digest(&probes);
+    let identity_probes = host_identity_probes(&probes);
+    let fingerprint = canonical_json_digest(&identity_probes);
     let toolchain = format!(
         "rustc={};cargo={}",
         command_optional("rustc", &["--version"]).unwrap_or_else(|| "unavailable".to_owned()),
         command_optional("cargo", &["--version"]).unwrap_or_else(|| "unavailable".to_owned())
     );
+    let affinity_declared = [
+        "HYDRACACHE_MEMORY_DAEMON_CPUSET",
+        "HYDRACACHE_MEMORY_LOADGEN_CPUSET",
+        "HYDRACACHE_MEMORY_COLLECTOR_CPUSET",
+    ]
+    .iter()
+    .all(|name| std::env::var(name).is_ok_and(|value| !value.trim().is_empty()));
     let eligible = cfg!(target_os = "linux")
         && dedicated
         && protected_environment.as_deref() == Some("memory-reference-071")
@@ -621,6 +634,7 @@ pub fn run_host_preflight(args: Vec<String>) -> Result<(), Box<dyn Error>> {
             .is_some_and(|value| !value.is_empty())
         && lease_end.as_deref().is_some_and(|value| !value.is_empty())
         && calibration_green
+        && affinity_declared
         && tools
             .values()
             .all(|value| value.as_str() != Some("unavailable"));
@@ -642,6 +656,7 @@ pub fn run_host_preflight(args: Vec<String>) -> Result<(), Box<dyn Error>> {
         "protected_environment": protected_environment,
         "lease": {"owner": lease_owner, "end": lease_end},
         "pre_probes": probes,
+        "identity_probes": identity_probes,
         "calibration": calibration,
         "calibration_limit": calibration_limit,
         "post_probes_required": true,
@@ -721,6 +736,52 @@ pub fn canonical_json_digest(value: &JsonValue) -> String {
     let canonical = canonical_json(value);
     let bytes = serde_json::to_vec(&canonical).expect("canonical JSON serialization");
     format!("sha256:{}", hex(&Sha256::digest(bytes)))
+}
+
+/// Select the stable host identity and held policy values from a full
+/// preflight observation. Volatile admission observations remain in the
+/// receipt but cannot make the same machine acquire a new fingerprint merely
+/// because free memory, load, temperature, or the probing process changed.
+pub fn host_identity_probes(probes: &JsonValue) -> JsonValue {
+    const IDENTITY_FIELDS: &[&str] = &[
+        "platform",
+        "protected_environment",
+        "dedicated_bare_metal",
+        "tools",
+        "logical_cpus",
+        "hardware_model",
+        "cpu_topology",
+        "numa_topology",
+        "ram",
+        "firmware",
+        "microcode",
+        "page_size",
+        "kernel",
+        "distro",
+        "cpu_governor",
+        "turbo_policy",
+        "transparent_huge_pages",
+        "swap",
+        "overcommit",
+        "ksm",
+        "cgroup",
+        "cgroup_memory_limit",
+        "container_runtime",
+        "clock_source",
+        "filesystem",
+        "allocator_knobs",
+        "affinity_policy",
+    ];
+    let mut identity = JsonMap::new();
+    if let Some(values) = probes.as_object() {
+        for field in IDENTITY_FIELDS {
+            identity.insert(
+                (*field).to_owned(),
+                values.get(*field).cloned().unwrap_or(JsonValue::Null),
+            );
+        }
+    }
+    JsonValue::Object(identity)
 }
 
 fn canonical_json(value: &JsonValue) -> JsonValue {

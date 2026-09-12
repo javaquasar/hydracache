@@ -680,6 +680,8 @@ def validate_admission_receipts(receipts: dict[str, dict[str, Any]], state: dict
         raise CampaignError("0.67.1 reference activation receipt is invalid")
     historical = receipts["historical-input-receipt"]
     mirror = historical.get("mirror", {})
+    bootstrap_history = historical.get("bootstrap_0_67_1", {})
+    bootstrap_mirror = bootstrap_history.get("mirror", {})
     if (
         historical.get("schema_version") != 1
         or historical.get("release") != RELEASE
@@ -687,14 +689,37 @@ def validate_admission_receipts(receipts: dict[str, dict[str, Any]], state: dict
         or historical.get("checkout_clean") is not True
         or not historical.get("files")
         or mirror.get("manifest_sha256") != mirror.get("restored_manifest_sha256")
+        or bootstrap_history.get("source_path")
+        != "docs/testing/perf-artifacts/0.67.1"
+        or not bootstrap_history.get("files")
+        or bootstrap_mirror.get("manifest_sha256")
+        != bootstrap_mirror.get("restored_manifest_sha256")
     ):
         raise CampaignError("historical protected-mirror receipt is invalid")
     overhead = receipts["instrumentation-overhead"]
+    design = overhead.get("measurement_design", {})
+    envelope = overhead.get("frozen_envelope", {})
+    expected_modes = {"off", "production", "profile"}
+    expected_workloads = {"cold", "small-hot", "tag-heavy", "hc2-1000", "reset"}
     if (
         overhead.get("schema_version") != 1
         or overhead.get("release") != RELEASE
         or overhead.get("source_sha") != state["source_shas"].get("B1-instrumented")
         or overhead.get("host_fingerprint") != host.get("host_fingerprint")
+        or overhead.get("scenario_digest") != state.get("scenario_digest")
+        or set(design.get("modes", [])) != expected_modes
+        or set(design.get("workloads", [])) != expected_workloads
+        or int(design.get("repetitions", 0)) < 3
+        or design.get("candidate_data_used") is not False
+        or len(overhead.get("comparisons", [])) != len(expected_workloads)
+        or not overhead.get("samples")
+        or set(envelope) != {
+            "rss_delta_bytes",
+            "rss_regression_fraction",
+            "rps_regression_fraction",
+            "p99_regression_fraction",
+            "cpu_per_request_regression_fraction",
+        }
         or overhead.get("passed") is not True
         or overhead.get("ship_evidence_eligible") is not True
     ):

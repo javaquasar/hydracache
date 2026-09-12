@@ -13,7 +13,7 @@ const HISTORICAL_REQUIREMENTS: &str = "docs/testing/memory/0.71/historical-input
 const HISTORICAL_RECEIPT: &str = "target/memory-evidence/0.71/historical-input-receipt.json";
 const EXPECTED_ARCHIVE_COMMIT: &str = "dbc2f82f7f303528b3cca7842818730c82232b9c";
 const B0_SHA: &str = "75719b0bf5de2250cf4eb16a30073dd7429538e3";
-const B1_SHA: &str = "795f9493bcbb7a56aa229c59e4a717f60c654cdb";
+const B1_SHA: &str = "906aa24cc22ad6b50b824120ed6364208484203a";
 
 #[derive(Debug)]
 struct Options {
@@ -244,8 +244,8 @@ fn check_identities(
         .and_then(toml::Value::as_array)
         .cloned()
         .unwrap_or_default();
-    if scenario_inputs.len() != 11 {
-        problems.push("scenario cohort must freeze exactly eleven prerequisite inputs".to_owned());
+    if scenario_inputs.len() != 12 {
+        problems.push("scenario cohort must freeze exactly twelve prerequisite inputs".to_owned());
     }
     for input in scenario_inputs {
         let Some(path) = input.get("path").and_then(toml::Value::as_str) else {
@@ -366,6 +366,9 @@ fn check_historical_requirements(
     }
     if bool_at(value, &["missing_mirror_blocks_d0"]) != Some(true)
         || bool_at(value, &["ordinary_clone_is_protected_mirror"]) != Some(false)
+        || bool_at(value, &["require_bootstrap_archive_in_protected_mirror"]) != Some(true)
+        || string_at(value, &["bootstrap_archive_path"])
+            != Some("docs/testing/perf-artifacts/0.67.1")
     {
         problems.push("historical mirror boundary is fail-open".to_owned());
     }
@@ -463,6 +466,23 @@ pub fn validate_historical_receipt(receipt: &JsonValue) -> Vec<String> {
     }
     if mirror.get("manifest_sha256") != mirror.get("restored_manifest_sha256") {
         problems.push("restored historical mirror manifest mismatch".to_owned());
+    }
+    let bootstrap = receipt.get("bootstrap_0_67_1").unwrap_or(&JsonValue::Null);
+    if bootstrap.get("source_path").and_then(JsonValue::as_str)
+        != Some("docs/testing/perf-artifacts/0.67.1")
+    {
+        problems.push("historical receipt omits the committed 0.67.1 archive".to_owned());
+    }
+    let bootstrap_mirror = bootstrap.get("mirror").unwrap_or(&JsonValue::Null);
+    if bootstrap_mirror.get("manifest_sha256") != bootstrap_mirror.get("restored_manifest_sha256") {
+        problems.push("restored 0.67.1 bootstrap mirror manifest mismatch".to_owned());
+    }
+    if bootstrap
+        .get("files")
+        .and_then(JsonValue::as_array)
+        .is_none_or(Vec::is_empty)
+    {
+        problems.push("historical receipt has no 0.67.1 bootstrap file manifest".to_owned());
     }
     let files = receipt
         .get("files")

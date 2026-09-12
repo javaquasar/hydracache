@@ -68,7 +68,7 @@ class MemoryCampaign071Tests(unittest.TestCase):
         self.assertEqual(plan["admitted_host_cap_seconds"], 3_600)
         self.assertEqual(
             plan["source_shas"]["B1-instrumented"],
-            "795f9493bcbb7a56aa229c59e4a717f60c654cdb",
+            "906aa24cc22ad6b50b824120ed6364208484203a",
         )
 
     def test_b0_cannot_be_pooled_into_instrumented_rows(self) -> None:
@@ -113,7 +113,7 @@ class MemoryCampaign071Tests(unittest.TestCase):
                 1,
                 False,
                 workflow_sha,
-                workflow_sha,
+                "75719b0bf5de2250cf4eb16a30073dd7429538e3",
                 "baseline",
             )
 
@@ -175,6 +175,23 @@ class MemoryCampaign071Tests(unittest.TestCase):
         ):
             with self.subTest(marker=marker):
                 self.assertIn(marker, workflow)
+
+    def test_protected_workflow_measures_s5_before_admission_and_execution(self) -> None:
+        workflow = (self.root / ".github/workflows/memory-reference-071.yml").read_text(
+            encoding="utf-8"
+        )
+        build = workflow.index("- name: Build immutable cohorts")
+        overhead = workflow.index("- name: Measure and freeze S5 instrumentation overhead")
+        admission = workflow.index("- name: Admit campaign or verify retained host identity")
+        execution = workflow.index("- name: Run or resume bounded row")
+        self.assertLess(build, overhead)
+        self.assertLess(overhead, admission)
+        self.assertLess(admission, execution)
+        self.assertIn('if [[ "$HYDRACACHE_MEMORY_CAMPAIGN_ROLE" != "baseline" ]]', workflow)
+        self.assertIn("memory_instrumentation_overhead_071.py", workflow)
+        self.assertIn("vars.HYDRACACHE_MEMORY_DAEMON_CPUSET || '5-6'", workflow)
+        self.assertIn("vars.HYDRACACHE_MEMORY_LOADGEN_CPUSET || '7'", workflow)
+        self.assertIn("vars.HYDRACACHE_MEMORY_COLLECTOR_CPUSET || '0'", workflow)
 
     def test_campaign_identity_rejects_moved_source_harness_role_and_case(self) -> None:
         workflow_sha = campaign.git(self.root, "rev-parse", "HEAD")
@@ -312,8 +329,9 @@ class MemoryCampaign071Tests(unittest.TestCase):
     def test_admission_rejects_cross_host_overhead(self) -> None:
         state = {
             "source_shas": {
-                "B1-instrumented": "795f9493bcbb7a56aa229c59e4a717f60c654cdb"
-            }
+                "B1-instrumented": "906aa24cc22ad6b50b824120ed6364208484203a"
+            },
+            "scenario_digest": "sha256:scenario",
         }
         receipts = {
             "host-preflight": {
@@ -339,12 +357,33 @@ class MemoryCampaign071Tests(unittest.TestCase):
                 "checkout_clean": True,
                 "files": [{"path": "raw", "bytes": 1}],
                 "mirror": {"manifest_sha256": "same", "restored_manifest_sha256": "same"},
+                "bootstrap_0_67_1": {
+                    "source_path": "docs/testing/perf-artifacts/0.67.1",
+                    "files": [{"path": "bootstrap", "bytes": 1}],
+                    "mirror": {"manifest_sha256": "same", "restored_manifest_sha256": "same"},
+                },
             },
             "instrumentation-overhead": {
                 "schema_version": 1,
                 "release": "0.71",
                 "source_sha": state["source_shas"]["B1-instrumented"],
                 "host_fingerprint": "host-b",
+                "scenario_digest": state["scenario_digest"],
+                "measurement_design": {
+                    "modes": ["off", "production", "profile"],
+                    "workloads": ["cold", "small-hot", "tag-heavy", "hc2-1000", "reset"],
+                    "repetitions": 3,
+                    "candidate_data_used": False,
+                },
+                "samples": [{"sample": 1}],
+                "comparisons": [{"workload": value} for value in ("cold", "small-hot", "tag-heavy", "hc2-1000", "reset")],
+                "frozen_envelope": {
+                    "rss_delta_bytes": 1,
+                    "rss_regression_fraction": 0.1,
+                    "rps_regression_fraction": 0.1,
+                    "p99_regression_fraction": 0.1,
+                    "cpu_per_request_regression_fraction": 0.1,
+                },
                 "passed": True,
                 "ship_evidence_eligible": True,
             },

@@ -880,7 +880,7 @@ the release-evidence registry in the same review.
 | S2 | `cargo test -p xtask --test memory_profile_071 --locked` | provider lifecycle, phase alignment, retained/freed/background stacks, symbol mismatch, redaction |
 | S3 | `cargo test -p xtask --test memory_decision_071 --locked` | D0-D4 state machine, frozen digests, unauthorized surface, mixed SHA/host, no-win disposition |
 | S4 | `cargo test -p xtask --test memory_statistics_071 --locked` | golden time series, autocorrelation/bootstrap, missing rows, deterministic precision, manipulation canaries |
-| S5 | `cargo test -p hydracache --test memory_snapshot_071 --locked -- --test-threads=1` | counter lifecycle, coherent epoch, concurrent mutation, overflow, absent acknowledgement, overhead modes |
+| S5 | `cargo test -p hydracache --test memory_footprint_071 --locked -- --test-threads=1` plus `python scripts/perf/memory_instrumentation_overhead_071_test.py` | counter lifecycle, coherent epoch, concurrent mutation, overflow, absent acknowledgement, overhead modes and baseline-only envelope materialization |
 | S6 | `cargo test -p xtask --test allocator_matrix_071 --locked` | capability fixtures, units, mutual exclusion, size classes/arenas, refill/purge classification |
 | S7 | `cargo test -p xtask --test memory_host_profile_071 --locked` | `/proc`/`/sys`/cgroup fixtures, canonical fingerprint, mutable drift, calibration and lease |
 | S8 | `cargo test -p xtask --test memory_compat_071 --locked` | matrix validation, real-binary identities, upgrade, mixed version, rollback or pre-mutation refusal |
@@ -894,7 +894,7 @@ the same review.
 | Work item | Planned target / exact command | Named coverage |
 | --- | --- | --- |
 | W0 | `cargo test -p xtask --test memory_baseline_071 --locked` | `b0_b1_are_distinct_cohorts`, corrected TTL final checkpoint, dirty identity and archive/mirror mismatch rejection |
-| W1 | `cargo test -p hydracache --test memory_snapshot_071 --locked -- --test-threads=1` | `exact_snapshot_reconciles_every_registered_owner`, non-atomic rejection, counter overflow and redaction |
+| W1 | `cargo test -p hydracache --test memory_footprint_071 --locked -- --test-threads=1` | registered-owner reconciliation, removal/reset lifecycle, off-mode label suppression and bounded aggregates |
 | W2 | `cargo test -p hydracache --test memory_accounting_071 --locked` and `cargo test -p hydracache-client-transport-axum --test memory_admission_071 --locked` | W2a estimator corpus; W2b legacy-limit compatibility, aggregate request admission and fail-loud overflow |
 | W3 | `cargo test -p hydracache-client-transport-axum --test retention_bounds_071 --locked -- --test-threads=1` | million-operation plateau, idempotency outcome retention, replay repair and mandatory-audit pressure |
 | W4 | `cargo test -p hydracache --test reclamation_071 --locked -- --test-threads=1` | 100-cycle TTL/delete/reset exact-zero, bounded backlog and stale-load fencing |
