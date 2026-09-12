@@ -646,7 +646,8 @@ pub fn diagnostic_fixture_report() -> JsonValue {
                     "mapped_bytes": unavailable("system allocator has no portable mapped counter")
                 },
                 "performance": {
-                    "rps": 1.0, "p50_ns": 1, "p95_ns": 1, "p99_ns": 1,
+                    "request_count": 20_000, "rps": 1.0,
+                    "p50_ns": 1, "p95_ns": 1, "p99_ns": 1,
                     "max_ns": 1, "errors": 0, "timeouts": 0, "retries": 0,
                     "cpu_seconds": 0.1, "context_switches": 1
                 }
@@ -667,10 +668,17 @@ pub fn diagnostic_fixture_report() -> JsonValue {
             "affinity": "0", "cgroup_limit": 1
         },
         "allocator": {"name": "system", "provider": "system", "provider_version": "fixture"},
+        "instrumentation_mode": "production",
+        "selected_measurement_phase": null,
+        "post_measurement_passive_wait_elision_enabled": false,
         "exact_command": ["hydracache-loadgen", "memory-efficiency"],
         "unique_keys": 10_000,
         "unique_key_verification": {"method": "owner_snapshot", "observed": 10_000},
         "request_count": 20_000,
+        "resp_connection_lifecycle": {
+            "policy": "reconnect-after-passive-wait-exceeding-idle-timeout",
+            "reconnections": 2
+        },
         "diagnostic_only": true,
         "ship_evidence_eligible": false,
         "checkpoints": checkpoints

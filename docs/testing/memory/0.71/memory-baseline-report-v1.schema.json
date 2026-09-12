@@ -3,7 +3,7 @@
   "$id": "https://hydracache.dev/schemas/0.71/memory-baseline-report-v1.schema.json",
   "type": "object",
   "additionalProperties": false,
-  "required": ["schema_version", "release", "cohort", "source_sha", "binary_sha256", "scenario_digest", "host_fingerprint", "build", "allocator", "exact_command", "unique_keys", "unique_key_verification", "request_count", "diagnostic_only", "ship_evidence_eligible", "checkpoints"],
+  "required": ["schema_version", "release", "cohort", "source_sha", "binary_sha256", "scenario_digest", "host_fingerprint", "build", "allocator", "instrumentation_mode", "selected_measurement_phase", "post_measurement_passive_wait_elision_enabled", "exact_command", "unique_keys", "unique_key_verification", "request_count", "resp_connection_lifecycle", "diagnostic_only", "ship_evidence_eligible", "checkpoints"],
   "properties": {
     "schema_version": { "const": 1 },
     "release": { "const": "0.71" },
@@ -37,6 +37,12 @@
         "provider_version": { "type": "string", "minLength": 1 }
       }
     },
+    "instrumentation_mode": { "enum": ["off", "production", "profile"] },
+    "selected_measurement_phase": {
+      "type": ["string", "null"],
+      "enum": ["cold", "fill", "steady", "expire_or_delete", "reset", "refill", "post_idle", "shutdown", null]
+    },
+    "post_measurement_passive_wait_elision_enabled": { "type": "boolean" },
     "exact_command": { "type": "array", "minItems": 1, "items": { "type": "string", "minLength": 1 } },
     "unique_keys": { "type": "integer", "minimum": 0 },
     "unique_key_verification": {
@@ -49,6 +55,15 @@
       }
     },
     "request_count": { "type": "integer", "minimum": 0 },
+    "resp_connection_lifecycle": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["policy", "reconnections"],
+      "properties": {
+        "policy": { "const": "reconnect-after-passive-wait-exceeding-idle-timeout" },
+        "reconnections": { "type": "integer", "minimum": 0 }
+      }
+    },
     "diagnostic_only": { "type": "boolean" },
     "ship_evidence_eligible": { "type": "boolean" },
     "checkpoints": {
@@ -155,8 +170,9 @@
     "performance": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["rps", "p50_ns", "p95_ns", "p99_ns", "max_ns", "errors", "timeouts", "retries", "cpu_seconds", "context_switches"],
+      "required": ["request_count", "rps", "p50_ns", "p95_ns", "p99_ns", "max_ns", "errors", "timeouts", "retries", "cpu_seconds", "context_switches"],
       "properties": {
+        "request_count": { "$ref": "#/$defs/nonnegative" },
         "rps": { "type": "number", "minimum": 0 },
         "p50_ns": { "$ref": "#/$defs/nonnegative" },
         "p95_ns": { "$ref": "#/$defs/nonnegative" },
