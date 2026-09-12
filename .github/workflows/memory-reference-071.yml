@@ -126,7 +126,7 @@ jobs:
           test "$(git rev-parse 'FETCH_HEAD^{commit}')" = "$SOURCE_SHA"
           git cat-file -e "$SOURCE_SHA^{commit}"
 
-      - name: Admit host and freeze campaign plan
+      - name: Preflight host and freeze campaign plan
         shell: bash
         timeout-minutes: 15
         run: |
@@ -134,7 +134,6 @@ jobs:
           test -n "${{ inputs.campaign_id }}"
           test -f "$BOOTSTRAP_RECEIPT"
           test -f "$HISTORICAL_RECEIPT"
-          test -f "$OVERHEAD_RECEIPT"
           python3 scripts/perf/memory_campaign_071.py doctor --evidence
           cargo run -p xtask --locked -- perf-memory-preflight \
             --release 0.71 \
@@ -165,6 +164,55 @@ jobs:
             --workflow-sha "$HYDRACACHE_MEMORY_WORKFLOW_SHA" \
             --source-sha "$HYDRACACHE_MEMORY_SOURCE_SHA" \
             --campaign-role "$HYDRACACHE_MEMORY_CAMPAIGN_ROLE"
+
+      - name: Build immutable cohorts
+        shell: bash
+        timeout-minutes: 120
+        run: |
+          set -euo pipefail
+          python3 scripts/perf/memory_campaign_071.py --output-root "$CAMPAIGN_ROOT" prepare \
+            --campaign-id "${{ inputs.campaign_id }}" \
+            --build-root "$BUILD_ROOT"
+
+      - name: Measure and freeze S5 instrumentation overhead
+        shell: bash
+        timeout-minutes: 480
+        run: |
+          set -euo pipefail
+          campaign_dir="$CAMPAIGN_ROOT/${{ inputs.campaign_id }}"
+          if [[ ! -f "$OVERHEAD_RECEIPT" ]]; then
+            if [[ "$HYDRACACHE_MEMORY_CAMPAIGN_ROLE" != "baseline" ]]; then
+              echo "candidate campaigns require the frozen baseline-only S5 receipt" >&2
+              exit 1
+            fi
+            readarray -t retained < <(python3 - "$campaign_dir/state.json" <<'PY'
+          import json
+          import pathlib
+          import sys
+          state_path = pathlib.Path(sys.argv[1])
+          state = json.loads(state_path.read_text(encoding="utf-8"))
+          root = state_path.parent
+          print(root / state["builds"]["B1-instrumented"]["manifest"])
+          print(root / state["controller_tools"]["hc2_helper_manifest"])
+          print(state["scenario_digest"])
+          PY
+            )
+            python3 scripts/perf/memory_instrumentation_overhead_071.py \
+              --build-manifest "${retained[0]}" \
+              --hc2-helper-manifest "${retained[1]}" \
+              --scenario-digest "${retained[2]}" \
+              --host-preflight "$RUNNER_TEMP/host-preflight.json" \
+              --work-root "$CAMPAIGN_ROOT/_s5/${{ inputs.campaign_id }}-${{ github.run_id }}-${{ github.run_attempt }}" \
+              --output "$OVERHEAD_RECEIPT"
+          fi
+
+      - name: Admit campaign or verify retained host identity
+        shell: bash
+        timeout-minutes: 5
+        run: |
+          set -euo pipefail
+          campaign_dir="$CAMPAIGN_ROOT/${{ inputs.campaign_id }}"
+          test -f "$OVERHEAD_RECEIPT"
           if [[ ! -f "$campaign_dir/admission/admission-manifest.json" ]]; then
             python3 scripts/perf/memory_campaign_071.py --output-root "$CAMPAIGN_ROOT" admit \
               --campaign-id "${{ inputs.campaign_id }}" \
@@ -177,15 +225,6 @@ jobs:
               --campaign-id "${{ inputs.campaign_id }}" \
               --host-preflight "$RUNNER_TEMP/host-preflight.json"
           fi
-
-      - name: Build immutable cohorts
-        shell: bash
-        timeout-minutes: 120
-        run: |
-          set -euo pipefail
-          python3 scripts/perf/memory_campaign_071.py --output-root "$CAMPAIGN_ROOT" prepare \
-            --campaign-id "${{ inputs.campaign_id }}" \
-            --build-root "$BUILD_ROOT"
 
       - name: Run or resume bounded row
         shell: bash

@@ -4,6 +4,7 @@ use std::net::{IpAddr, SocketAddr};
 use std::path::{Path, PathBuf};
 use std::time::Duration;
 
+use hydracache::MemoryInstrumentationMode;
 use hydracache_client_transport_axum::ClientSurfaceLimits;
 use hydracache_redis_compat::{
     RedisAuthConfig, RedisKeyspaceEventConfig, RedisListenerConfig,
@@ -244,6 +245,12 @@ pub struct ServerConfig {
     pub admin_api: AdminApiConfig,
     /// Optional Redis RESP edge facade policy.
     pub redis_api: RedisApiConfig,
+    /// Bounded memory-accounting posture used by the embedded cache.
+    ///
+    /// Production is the daemon default. The explicit off/profile variants
+    /// let the 0.71 admitted host measure observability overhead with the same
+    /// immutable binary; neither changes cache semantics.
+    pub memory_instrumentation_mode: MemoryInstrumentationMode,
     /// Whether the narrow admin Raft compaction test/ops seam is enabled.
     ///
     /// This remains false in normal production configuration and does not
@@ -275,6 +282,7 @@ impl Default for ServerConfig {
             hc2_client_plane: Hc2ClientPlaneConfig::default(),
             admin_api: AdminApiConfig::default(),
             redis_api: RedisApiConfig::default(),
+            memory_instrumentation_mode: MemoryInstrumentationMode::Production,
             raft_compaction_enabled: false,
         }
     }
@@ -337,6 +345,9 @@ impl ServerConfig {
                 .filter(|seed| !seed.is_empty())
                 .map(ToOwned::to_owned)
                 .collect();
+        }
+        if let Ok(mode) = env::var("HYDRACACHE_MEMORY_INSTRUMENTATION_MODE") {
+            config.memory_instrumentation_mode = parse_memory_instrumentation_mode(&mode)?;
         }
         apply_statefulset_env(&mut config, cluster_start_explicit)?;
         if let Ok(join_timeout) = env::var("HYDRACACHE_JOIN_TIMEOUT_MS") {
@@ -644,6 +655,9 @@ pub enum ServerConfigError {
     /// Cluster start mode value is unknown.
     #[error("invalid cluster start mode: {0}")]
     InvalidClusterStart(String),
+    /// Memory instrumentation posture is unknown.
+    #[error("invalid memory instrumentation mode: {0}")]
+    InvalidMemoryInstrumentationMode(String),
     /// Address value is invalid.
     #[error("invalid listen address: {0}")]
     InvalidAddress(String),
@@ -788,6 +802,19 @@ fn parse_cluster_start(value: &str) -> Result<ClusterStartMode, ServerConfigErro
         "bootstrap" => Ok(ClusterStartMode::Bootstrap),
         "join" => Ok(ClusterStartMode::Join),
         _ => Err(ServerConfigError::InvalidClusterStart(value.to_owned())),
+    }
+}
+
+fn parse_memory_instrumentation_mode(
+    value: &str,
+) -> Result<MemoryInstrumentationMode, ServerConfigError> {
+    match value.trim().to_ascii_lowercase().as_str() {
+        "off" => Ok(MemoryInstrumentationMode::Off),
+        "production" => Ok(MemoryInstrumentationMode::Production),
+        "profile" => Ok(MemoryInstrumentationMode::Profile),
+        _ => Err(ServerConfigError::InvalidMemoryInstrumentationMode(
+            value.to_owned(),
+        )),
     }
 }
 

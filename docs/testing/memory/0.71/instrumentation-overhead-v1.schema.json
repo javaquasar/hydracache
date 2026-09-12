@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://hydracache.dev/schemas/0.71/instrumentation-overhead-v1.schema.json",
+  "title": "HydraCache 0.71 instrumentation overhead receipt",
+  "type": "object",
+  "required": ["schema_version", "release", "source_sha", "binary_sha256", "host_fingerprint", "scenario_digest", "measurement_design", "samples", "comparisons", "frozen_envelope", "passed", "ship_evidence_eligible"],
+  "properties": {
+    "schema_version": { "const": 1 },
+    "release": { "const": "0.71" },
+    "source_sha": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
+    "binary_sha256": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" },
+    "host_fingerprint": { "type": "string", "minLength": 1 },
+    "scenario_digest": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" },
+    "measurement_design": {
+      "type": "object",
+      "required": ["modes", "workloads", "repetitions", "mode_order", "candidate_data_used"],
+      "properties": {
+        "modes": { "const": ["off", "production", "profile"] },
+        "workloads": { "const": ["cold", "small-hot", "tag-heavy", "hc2-1000", "reset"] },
+        "repetitions": { "type": "integer", "minimum": 3 },
+        "mode_order": { "const": "cyclic-alternating" },
+        "candidate_data_used": { "const": false }
+      },
+      "additionalProperties": false
+    },
+    "samples": { "type": "array", "minItems": 45 },
+    "comparisons": { "type": "array", "minItems": 5, "maxItems": 5 },
+    "frozen_envelope": {
+      "type": "object",
+      "required": ["rss_delta_bytes", "rss_regression_fraction", "rps_regression_fraction", "p99_regression_fraction", "cpu_per_request_regression_fraction"]
+    },
+    "passed": { "const": true },
+    "ship_evidence_eligible": { "const": true }
+  },
+  "additionalProperties": true
+}

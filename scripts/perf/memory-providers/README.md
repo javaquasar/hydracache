@@ -5,6 +5,13 @@ Each adapter implements `probe`, `start`, `mark`, `snapshot`, `stop`, and
 fixed phase names, and sanitized folded stack names. A run is invalid unless
 all eight phases occur exactly once and in canonical order.
 
+S5 calibration is orchestrated by
+`memory_instrumentation_overhead_071.py`. It uses the retained B1 server and
+HC/2 helper manifests, runs `off`, `production`, and `profile` modes in cyclic
+order, and freezes a baseline-only production-versus-off envelope. Its final
+receipt is atomic and is rejected if any report, binary, scenario, or host
+identity differs.
+
 The 0.71 campaign controller expands the finite M0-M10 matrix, applies row
 time caps, journals every attempt, and resumes without repeating successful
 jobs. Run a bounded orchestration rehearsal before allocating a reference

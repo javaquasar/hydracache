@@ -57,3 +57,17 @@ false`. The completed 0.67.1 archive is retained under
 historical mirror receipt, qualify a dedicated Linux host, measure
 instrumentation overhead, and approve D0. No numerical memory claim is valid
 before those receipts exist.
+
+The protected workflow plans and builds the immutable B1 cohort before final
+campaign admission because S5 must measure that exact binary. On the first
+baseline dispatch it executes the daemon in `off`, `production`, and `profile`
+modes across cold, small-hot, tag-heavy, HC/2-1000, and reset workloads. Mode
+order rotates for at least three repetitions. The receipt is written only after
+every sample succeeds; candidate dispatches cannot create or replace it.
+
+Admission binds that receipt to the B1 source and binary, scenario digest, and
+stable host fingerprint. The fingerprint contains held identity facts such as
+hardware topology, kernel/OS, RAID, and configured policy. Free memory,
+temperatures, process identifiers, and competing-load observations remain in
+the preflight receipt for diagnosis but do not create false host drift on
+resume.

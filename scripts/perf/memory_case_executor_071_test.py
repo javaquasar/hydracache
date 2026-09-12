@@ -76,6 +76,24 @@ class MemoryCaseExecutor071Tests(unittest.TestCase):
         self.assertEqual(executor.percentile(values, 0.95), 95)
         self.assertEqual(executor.percentile(values, 0.99), 99)
 
+    def test_proc_stat_cpu_parser_handles_spaces_and_parentheses_in_name(self) -> None:
+        fields = ["S"] + ["0"] * 10 + ["125", "75"] + ["0"] * 20
+        stat = "42 (hydra cache (worker)) " + " ".join(fields)
+        self.assertEqual(executor.parse_process_cpu_seconds(stat, 100), 2.0)
+
+    def test_performance_reports_process_usage_delta(self) -> None:
+        workload = self.workload("one-hot", 1, 1)
+        workload.requests = 10
+        workload.latencies = [10, 20]
+        report = workload.performance(
+            1_000_000_000,
+            {"cpu_seconds": 3.25, "context_switches": 21},
+            {"cpu_seconds": 1.0, "context_switches": 8},
+        )
+        self.assertEqual(report["rps"], 10.0)
+        self.assertEqual(report["cpu_seconds"], 2.25)
+        self.assertEqual(report["context_switches"], 13)
+
     def test_unavailable_is_explicit(self) -> None:
         self.assertEqual(
             executor.available(None, "not exposed"),

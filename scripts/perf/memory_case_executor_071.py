@@ -250,6 +250,31 @@ def process_snapshot(pid: int) -> dict[str, Any]:
     }
 
 
+def parse_process_cpu_seconds(stat_line: str, clock_ticks: int) -> float:
+    """Return user+system CPU from one Linux /proc/<pid>/stat record."""
+    if clock_ticks <= 0:
+        raise ValueError("clock_ticks must be positive")
+    marker = stat_line.rfind(") ")
+    if marker < 0:
+        raise ValueError("invalid /proc stat record")
+    fields = stat_line[marker + 2 :].split()
+    if len(fields) <= 12:
+        raise ValueError("truncated /proc stat record")
+    return (int(fields[11]) + int(fields[12])) / clock_ticks
+
+
+def process_usage(pid: int) -> dict[str, float | int]:
+    status = key_values(Path(f"/proc/{pid}/status"))
+    stat_line = Path(f"/proc/{pid}/stat").read_text(encoding="ascii")
+    return {
+        "cpu_seconds": parse_process_cpu_seconds(
+            stat_line, int(os.sysconf("SC_CLK_TCK"))
+        ),
+        "context_switches": int(status.get("voluntary_ctxt_switches", "0"))
+        + int(status.get("nonvoluntary_ctxt_switches", "0")),
+    }
+
+
 def cgroup_directory(pid: int) -> Path | None:
     path = Path(f"/proc/{pid}/cgroup")
     if not path.is_file():
@@ -569,8 +594,14 @@ class Workload:
                 self.live.add(index)
                 self.apply_tags(index)
 
-    def performance(self, elapsed_ns: int) -> dict[str, Any]:
+    def performance(
+        self,
+        elapsed_ns: int,
+        usage: dict[str, float | int],
+        initial_usage: dict[str, float | int],
+    ) -> dict[str, Any]:
         return {
+            "request_count": self.requests,
             "rps": 0.0 if elapsed_ns <= 0 else self.requests / (elapsed_ns / 1_000_000_000),
             "p50_ns": percentile(self.latencies, 0.50),
             "p95_ns": percentile(self.latencies, 0.95),
@@ -579,8 +610,14 @@ class Workload:
             "errors": self.errors,
             "timeouts": 0,
             "retries": 0,
-            "cpu_seconds": 0.0,
-            "context_switches": 0,
+            "cpu_seconds": max(
+                0.0, float(usage["cpu_seconds"]) - float(initial_usage["cpu_seconds"])
+            ),
+            "context_switches": max(
+                0,
+                int(usage["context_switches"])
+                - int(initial_usage["context_switches"]),
+            ),
         }
 
 
@@ -659,6 +696,7 @@ def execute(args: argparse.Namespace) -> None:
     environment.update(
         {
             "HYDRACACHE_ROLE": "local",
+            "HYDRACACHE_MEMORY_INSTRUMENTATION_MODE": args.instrumentation_mode,
             "HYDRACACHE_REDIS_API_ENABLED": "true",
             "HYDRACACHE_REDIS_ADDR": f"127.0.0.1:{redis_port}",
             "HYDRACACHE_ADMIN_API_ENABLED": "true",
@@ -718,6 +756,7 @@ def execute(args: argparse.Namespace) -> None:
     completed = False
     try:
         wait_ready(process, redis_port)
+        initial_usage = process_usage(process.pid)
         provider_command(adapter, "probe", "--output", str(output / "provider-probe.json"))
         provider_command(
             adapter,
@@ -784,7 +823,9 @@ def execute(args: argparse.Namespace) -> None:
                         name: available(None, f"{args.provider} adapter does not expose comparable {name}")
                         for name in ("allocated_bytes", "active_bytes", "resident_bytes", "retained_bytes", "mapped_bytes")
                     },
-                    "performance": workload.performance(monotonic_ns),
+                    "performance": workload.performance(
+                        monotonic_ns, process_usage(process.pid), initial_usage
+                    ),
                 }
                 checkpoints.append(checkpoint)
                 if durable_store:
@@ -859,6 +900,8 @@ def execute(args: argparse.Namespace) -> None:
         eligible = not args.rehearsal and host.get("ship_evidence_eligible") is True
         exact_command = [
             f"HYDRACACHE_ROLE={environment['HYDRACACHE_ROLE']}",
+            "HYDRACACHE_MEMORY_INSTRUMENTATION_MODE="
+            f"{environment['HYDRACACHE_MEMORY_INSTRUMENTATION_MODE']}",
             f"HYDRACACHE_REDIS_API_ENABLED={environment['HYDRACACHE_REDIS_API_ENABLED']}",
             f"HYDRACACHE_REDIS_ADDR={environment['HYDRACACHE_REDIS_ADDR']}",
             f"HYDRACACHE_ADMIN_API_ENABLED={environment['HYDRACACHE_ADMIN_API_ENABLED']}",
@@ -904,6 +947,7 @@ def execute(args: argparse.Namespace) -> None:
                 "cgroup_limit": None,
             },
             "allocator": {"name": manifest["allocator"], "provider": args.provider, "provider_version": "provider-protocol-v1"},
+            "instrumentation_mode": args.instrumentation_mode,
             "exact_command": exact_command,
             "unique_keys": 0 if job["case_id"] == "M0-cold" else workload.keys,
             "unique_key_verification": {
@@ -948,6 +992,11 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--scenario-digest", required=True)
     parser.add_argument("--provider", choices=["system", "jemalloc", "mimalloc"], default="system")
+    parser.add_argument(
+        "--instrumentation-mode",
+        choices=["off", "production", "profile"],
+        default="production",
+    )
     parser.add_argument("--host-preflight", type=Path)
     parser.add_argument("--hc2-helper-manifest", type=Path)
     parser.add_argument("--rehearsal", action="store_true")
