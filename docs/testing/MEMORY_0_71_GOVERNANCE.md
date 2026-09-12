@@ -66,11 +66,16 @@ order rotates for at least three repetitions. The receipt is written only after
 every sample succeeds; candidate dispatches cannot create or replace it.
 
 Admission binds that receipt to the B1 source and binary, scenario digest, and
-stable host fingerprint. The fingerprint contains held identity facts such as
-hardware topology, kernel/OS, RAID, and configured policy. Free memory,
-temperatures, process identifiers, and competing-load observations remain in
-the preflight receipt for diagnosis but do not create false host drift on
-resume.
+stable host fingerprint. The workflow retains the exact preflight receipt that
+created the S5 binding next to the overhead receipt. When an older fingerprint
+encoding is compared with the current encoding, admission first verifies that
+legacy binding and then compares normalized identity probes; it never trusts
+the overhead payload alone. The fingerprint contains held identity facts such
+as hardware topology, kernel/OS, RAID, and configured policy. Free memory,
+temperatures, process identifiers, CPU scaling percentage, filesystem
+occupancy, and competing-load observations remain available for diagnosis but
+do not create false host drift on resume. Filesystem source/type/mountpoint and
+the non-volatile CPU topology remain identity-bearing.
 
 The preflight stability calibration discards one CPU warm-up iteration before
 evaluating five measured iterations on the reviewed load-generator CPU set.

@@ -80,6 +80,7 @@ jobs:
       BOOTSTRAP_RECEIPT: /var/lib/hydracache-memory/admission/reference-activation.json
       HISTORICAL_RECEIPT: /var/lib/hydracache-memory/admission/historical-input-receipt.json
       OVERHEAD_RECEIPT: /var/lib/hydracache-memory/admission/instrumentation-overhead.json
+      OVERHEAD_HOST_PREFLIGHT: /var/lib/hydracache-memory/admission/instrumentation-overhead-host-preflight.json
 
     steps:
       - name: Checkout trusted campaign harness from main
@@ -213,13 +214,20 @@ jobs:
           print(state["scenario_digest"])
           PY
             )
+            overhead_tmp="${OVERHEAD_RECEIPT}.${{ github.run_id }}.${{ github.run_attempt }}.tmp"
+            trap 'rm -f -- "$overhead_tmp"' EXIT
             python3 scripts/perf/memory_instrumentation_overhead_071.py \
               --build-manifest "${retained[0]}" \
               --hc2-helper-manifest "${retained[1]}" \
               --scenario-digest "${retained[2]}" \
               --host-preflight "$RUNNER_TEMP/host-preflight.json" \
               --work-root "$CAMPAIGN_ROOT/_s5/${{ inputs.campaign_id }}-${{ github.run_id }}-${{ github.run_attempt }}" \
-              --output "$OVERHEAD_RECEIPT"
+              --output "$overhead_tmp"
+            cp --no-clobber "$RUNNER_TEMP/host-preflight.json" "$OVERHEAD_HOST_PREFLIGHT"
+            chmod 0444 "$OVERHEAD_HOST_PREFLIGHT"
+            mv --no-clobber "$overhead_tmp" "$OVERHEAD_RECEIPT"
+            chmod 0444 "$OVERHEAD_RECEIPT"
+            trap - EXIT
           fi
 
       - name: Admit campaign or verify retained host identity
@@ -229,13 +237,15 @@ jobs:
           set -euo pipefail
           campaign_dir="$CAMPAIGN_ROOT/${{ inputs.campaign_id }}"
           test -f "$OVERHEAD_RECEIPT"
+          test -f "$OVERHEAD_HOST_PREFLIGHT"
           if [[ ! -f "$campaign_dir/admission/admission-manifest.json" ]]; then
             python3 scripts/perf/memory_campaign_071.py --output-root "$CAMPAIGN_ROOT" admit \
               --campaign-id "${{ inputs.campaign_id }}" \
               --host-preflight "$RUNNER_TEMP/host-preflight.json" \
               --bootstrap "$BOOTSTRAP_RECEIPT" \
               --historical "$HISTORICAL_RECEIPT" \
-              --overhead "$OVERHEAD_RECEIPT"
+              --overhead "$OVERHEAD_RECEIPT" \
+              --overhead-host-preflight "$OVERHEAD_HOST_PREFLIGHT"
           else
             python3 scripts/perf/memory_campaign_071.py --output-root "$CAMPAIGN_ROOT" verify-host \
               --campaign-id "${{ inputs.campaign_id }}" \
