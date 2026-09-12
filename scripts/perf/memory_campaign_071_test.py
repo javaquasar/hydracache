@@ -68,7 +68,7 @@ class MemoryCampaign071Tests(unittest.TestCase):
         self.assertEqual(plan["admitted_host_cap_seconds"], 3_600)
         self.assertEqual(
             plan["source_shas"]["B1-instrumented"],
-            "795f9493bcbb7a56aa229c59e4a717f60c654cdb",
+            "906aa24cc22ad6b50b824120ed6364208484203a",
         )
 
     def test_b0_cannot_be_pooled_into_instrumented_rows(self) -> None:
@@ -113,7 +113,7 @@ class MemoryCampaign071Tests(unittest.TestCase):
                 1,
                 False,
                 workflow_sha,
-                workflow_sha,
+                "75719b0bf5de2250cf4eb16a30073dd7429538e3",
                 "baseline",
             )
 
@@ -326,7 +326,7 @@ class MemoryCampaign071Tests(unittest.TestCase):
     def test_admission_rejects_cross_host_overhead(self) -> None:
         state = {
             "source_shas": {
-                "B1-instrumented": "795f9493bcbb7a56aa229c59e4a717f60c654cdb"
+                "B1-instrumented": "906aa24cc22ad6b50b824120ed6364208484203a"
             },
             "scenario_digest": "sha256:scenario",
         }

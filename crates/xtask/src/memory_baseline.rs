@@ -13,7 +13,7 @@ const HISTORICAL_REQUIREMENTS: &str = "docs/testing/memory/0.71/historical-input
 const HISTORICAL_RECEIPT: &str = "target/memory-evidence/0.71/historical-input-receipt.json";
 const EXPECTED_ARCHIVE_COMMIT: &str = "dbc2f82f7f303528b3cca7842818730c82232b9c";
 const B0_SHA: &str = "75719b0bf5de2250cf4eb16a30073dd7429538e3";
-const B1_SHA: &str = "795f9493bcbb7a56aa229c59e4a717f60c654cdb";
+const B1_SHA: &str = "906aa24cc22ad6b50b824120ed6364208484203a";
 
 #[derive(Debug)]
 struct Options {
@@ -244,8 +244,8 @@ fn check_identities(
         .and_then(toml::Value::as_array)
         .cloned()
         .unwrap_or_default();
-    if scenario_inputs.len() != 11 {
-        problems.push("scenario cohort must freeze exactly eleven prerequisite inputs".to_owned());
+    if scenario_inputs.len() != 12 {
+        problems.push("scenario cohort must freeze exactly twelve prerequisite inputs".to_owned());
     }
     for input in scenario_inputs {
         let Some(path) = input.get("path").and_then(toml::Value::as_str) else {
