@@ -15,11 +15,14 @@ import sys
 import time
 import urllib.error
 import urllib.request
+from contextlib import ExitStack
 from pathlib import Path
-from typing import Any
+from typing import Any, Callable
 
 
 PHASES = ["cold", "fill", "steady", "expire_or_delete", "reset", "refill", "post_idle", "shutdown"]
+RESP_IDLE_TIMEOUT_SECONDS = 60.0
+RESP_IDLE_RECONNECT_MARGIN_SECONDS = 5.0
 ADMIN_HEADERS = {
     "x-hydracache-client-id": "memory-campaign-071",
     "x-hydracache-tenant": "memory-campaign-071",
@@ -392,6 +395,37 @@ def elide_passive_wait_after(selected_phase: str | None, current_phase: str) -> 
     return PHASES.index(current_phase) > PHASES.index(selected_phase)
 
 
+def passive_wait_exceeds_resp_idle_timeout(
+    case_id: str,
+    phase: str,
+    *,
+    rehearsal: bool,
+    elide_passive_wait: bool,
+) -> bool:
+    """Return whether a completed phase requires a fresh RESP connection.
+
+    Production evidence deliberately includes passive waits that are longer than
+    the daemon's 60-second RESP idle timeout.  Reconnect at that explicit phase
+    boundary rather than sending keepalives that would contaminate the idle
+    measurement or retrying an application command whose outcome may be unknown.
+    """
+    if rehearsal or elide_passive_wait or case_id == "M0-cold":
+        return False
+    if phase in {"cold", "post_idle"}:
+        return True
+    return case_id == "M3-ttl" and phase == "expire_or_delete"
+
+
+def duration_sleep_needs_resp_reconnect(
+    sleep_seconds: float, *, rehearsal: bool
+) -> bool:
+    return (
+        not rehearsal
+        and sleep_seconds
+        >= RESP_IDLE_TIMEOUT_SECONDS - RESP_IDLE_RECONNECT_MARGIN_SECONDS
+    )
+
+
 class Workload:
     def __init__(self, stream: socket.socket, job: dict[str, Any], rehearsal: bool):
         self.stream = stream
@@ -405,9 +439,15 @@ class Workload:
         self.latencies: list[int] = []
         self.requests = 0
         self.errors = 0
+        self.resp_reconnections = 0
         self.value_bytes = int(self.dimensions.get("value_bytes", 256))
         requested_keys = int(self.dimensions.get("keys", 10_000))
         self.keys = min(requested_keys, 32) if rehearsal else requested_keys
+
+    def replace_stream(self, stream: socket.socket) -> None:
+        self.stream.close()
+        self.stream = stream
+        self.resp_reconnections += 1
 
     def call(self, *parts: bytes) -> Any:
         started = time.monotonic_ns()
@@ -484,6 +524,7 @@ class Workload:
         process_pid: int,
         output: Path,
         fleet: Hc2Fleet | None,
+        reconnect_resp: Callable[[], None],
     ) -> dict[str, Any]:
         configured_sequence = self.dimensions["sequence"]
         schedule = (
@@ -555,6 +596,10 @@ class Workload:
             sleep_for = min(max(0.0, interval - (time.monotonic() - iteration_started)), max(0.0, deadline - time.monotonic()))
             if sleep_for:
                 time.sleep(sleep_for)
+                if duration_sleep_needs_resp_reconnect(
+                    sleep_for, rehearsal=self.rehearsal
+                ):
+                    reconnect_resp()
             if sequence == "ttl":
                 self.live.clear()
             now = time.monotonic()
@@ -868,9 +913,20 @@ def execute(args: argparse.Namespace) -> None:
             str(binary),
             cpus=affinity.get("collector"),
         )
-        with socket.create_connection(("127.0.0.1", redis_port), timeout=5) as stream:
+        with ExitStack() as resp_streams:
+            stream = resp_streams.enter_context(
+                socket.create_connection(("127.0.0.1", redis_port), timeout=5)
+            )
             stream.settimeout(30)
             workload = Workload(stream, job, args.rehearsal)
+
+            def reconnect_resp() -> None:
+                replacement = resp_streams.enter_context(
+                    socket.create_connection(("127.0.0.1", redis_port), timeout=5)
+                )
+                replacement.settimeout(30)
+                workload.replace_stream(replacement)
+
             started = time.monotonic_ns()
             for sequence, phase in enumerate(PHASES, 1):
                 if job["case_id"] == "M6-connections" and fleet and phase in {"fill", "refill"}:
@@ -884,16 +940,24 @@ def execute(args: argparse.Namespace) -> None:
                     fleet.stop()
                 if job["case_id"] in {"M8-60m", "M9-6h", "M10-24h"} and phase == "steady":
                     duration_receipt = workload.run_duration_sequence(
-                        admin_port, process.pid, output, fleet
+                        admin_port, process.pid, output, fleet, reconnect_resp
                     )
                 else:
+                    elide_passive_wait = elide_passive_wait_after(
+                        args.selected_measurement_phase, phase
+                    )
                     workload.run_phase(
                         phase,
                         admin_port,
-                        elide_passive_wait=elide_passive_wait_after(
-                            args.selected_measurement_phase, phase
-                        ),
+                        elide_passive_wait=elide_passive_wait,
                     )
+                    if passive_wait_exceeds_resp_idle_timeout(
+                        job["case_id"],
+                        phase,
+                        rehearsal=args.rehearsal,
+                        elide_passive_wait=elide_passive_wait,
+                    ):
+                        reconnect_resp()
                 workload.observe_distribution(phase)
                 provider_command(
                     adapter,
@@ -1101,6 +1165,10 @@ def execute(args: argparse.Namespace) -> None:
             "request_count": workload.requests + sum(
                 int(receipt.get("pressure_events", 0)) for receipt in hc2_helper_receipts
             ),
+            "resp_connection_lifecycle": {
+                "policy": "reconnect-after-passive-wait-exceeding-idle-timeout",
+                "reconnections": workload.resp_reconnections,
+            },
             "diagnostic_only": not eligible,
             "ship_evidence_eligible": eligible,
             "checkpoints": checkpoints,

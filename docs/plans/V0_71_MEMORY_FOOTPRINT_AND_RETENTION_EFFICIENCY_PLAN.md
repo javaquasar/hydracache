@@ -593,6 +593,15 @@ HC/2 1k-connection and reset cases. Freeze maximum production-mode deltas for re
 bytes/owner, allocations/op, CPU, throughput and p99 before optimization work. Profile-mode
 overhead is reported but is not held to production limits.
 
+The RESP control connection must not turn a deliberate passive phase into a harness failure. The
+daemon's production idle timeout remains unchanged: before a five-minute cold/post-idle window the
+executor permits that connection to expire, then opens a fresh connection at the explicit phase
+boundary. The TTL expiry wait follows the same rule. It must not send keepalives (which would
+contaminate the idle workload) or retry an application command after an ambiguous disconnect.
+The minute-cadence M8-M10 duration loop also reconnects after a sleep that reaches the timeout
+safety boundary. Every report records the reconnection policy and count so B0/B1/C comparisons
+prove identical client lifecycle treatment.
+
 **Tests and canaries.** Unit tests cover checked increments/decrements, overflow, replacement
 deltas, double cleanup, cancellation and snapshot retry. A concurrency test mutates two subsystems
 during capture and proves the result is marked non-atomic or retried to a coherent epoch. A

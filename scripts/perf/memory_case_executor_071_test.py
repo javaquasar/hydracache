@@ -139,6 +139,70 @@ class MemoryCaseExecutor071Tests(unittest.TestCase):
             workload.run_phase("post_idle", 1, elide_passive_wait=True)
             sleep.assert_called_once_with(0)
 
+    def test_production_passive_waits_require_explicit_resp_reconnect(self) -> None:
+        self.assertTrue(
+            executor.passive_wait_exceeds_resp_idle_timeout(
+                "M1-shape", "cold", rehearsal=False, elide_passive_wait=False
+            )
+        )
+        self.assertTrue(
+            executor.passive_wait_exceeds_resp_idle_timeout(
+                "M3-ttl",
+                "expire_or_delete",
+                rehearsal=False,
+                elide_passive_wait=False,
+            )
+        )
+        self.assertTrue(
+            executor.passive_wait_exceeds_resp_idle_timeout(
+                "M5-tags", "post_idle", rehearsal=False, elide_passive_wait=False
+            )
+        )
+        for case_id, phase, rehearsal, elided in (
+            ("M0-cold", "cold", False, False),
+            ("M1-shape", "cold", True, False),
+            ("M1-shape", "post_idle", False, True),
+            ("M1-shape", "steady", False, False),
+        ):
+            with self.subTest(case_id=case_id, phase=phase):
+                self.assertFalse(
+                    executor.passive_wait_exceeds_resp_idle_timeout(
+                        case_id,
+                        phase,
+                        rehearsal=rehearsal,
+                        elide_passive_wait=elided,
+                    )
+                )
+
+    def test_resp_reconnect_closes_stale_stream_and_records_boundary(self) -> None:
+        old_stream = mock.Mock()
+        replacement = mock.Mock()
+        workload = executor.Workload(
+            old_stream,
+            {"case_id": "M1-shape", "dimensions": {"keys": 10}},
+            False,
+        )
+
+        workload.replace_stream(replacement)
+
+        old_stream.close.assert_called_once_with()
+        self.assertIs(workload.stream, replacement)
+        self.assertEqual(workload.resp_reconnections, 1)
+
+    def test_duration_sleep_reconnects_before_idle_timeout_race(self) -> None:
+        self.assertTrue(
+            executor.duration_sleep_needs_resp_reconnect(55.0, rehearsal=False)
+        )
+        self.assertTrue(
+            executor.duration_sleep_needs_resp_reconnect(60.0, rehearsal=False)
+        )
+        self.assertFalse(
+            executor.duration_sleep_needs_resp_reconnect(54.999, rehearsal=False)
+        )
+        self.assertFalse(
+            executor.duration_sleep_needs_resp_reconnect(60.0, rehearsal=True)
+        )
+
 
 if __name__ == "__main__":
     unittest.main()
