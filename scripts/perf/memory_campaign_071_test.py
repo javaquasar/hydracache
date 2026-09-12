@@ -93,6 +93,25 @@ class MemoryCampaign071Tests(unittest.TestCase):
             campaign.remaining_row_budget_seconds(plan, "M10-24h"), 59
         )
 
+    def test_evidence_timeout_interrupts_executor_before_forced_kill(self) -> None:
+        process = mock.Mock()
+        process.wait.side_effect = [
+            campaign.subprocess.TimeoutExpired(["executor"], 10),
+            0,
+        ]
+        process.returncode = 130
+        with mock.patch.object(campaign.subprocess, "Popen", return_value=process):
+            returncode, timed_out = campaign.run_bounded_evidence_process(
+                ["executor"], cwd=self.root, timeout_seconds=10
+            )
+        self.assertEqual(returncode, 130)
+        self.assertTrue(timed_out)
+        if campaign.os.name == "nt":
+            process.terminate.assert_called_once_with()
+        else:
+            process.send_signal.assert_called_once_with(campaign.signal.SIGINT)
+        process.kill.assert_not_called()
+
     def test_b0_cannot_be_pooled_into_instrumented_rows(self) -> None:
         with self.assertRaises(campaign.CampaignError):
             campaign.build_plan(

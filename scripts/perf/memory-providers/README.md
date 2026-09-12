@@ -19,6 +19,11 @@ snapshots still run so provider normalization remains fail-closed. Every sample
 emits start/completion progress, while the workflow gives the complete
 45-sample calibration a bounded 12-hour window.
 
+Campaign row budgets are aggregate across completed attempts. If the remaining
+budget expires inside an evidence executor, the controller first sends a
+cooperative interrupt so the executor can stop its daemon and HC/2 fleet; only
+an executor that ignores the cleanup grace period is force-killed.
+
 The protected runner must install Rust under `$HOME/.cargo/bin`. The workflow
 publishes that directory through `GITHUB_PATH` and verifies both `cargo` and
 `rustc` before preflight, rather than depending on the runner service's cached

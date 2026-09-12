@@ -16,6 +16,7 @@ import json
 import os
 import platform
 import re
+import signal
 import shutil
 import subprocess
 import sys
@@ -886,6 +887,29 @@ def unsupported_evidence_reason(job: dict[str, Any]) -> str | None:
     return None
 
 
+def run_bounded_evidence_process(
+    command: list[str],
+    *,
+    cwd: Path,
+    timeout_seconds: int,
+) -> tuple[int, bool]:
+    """Interrupt the executor cooperatively so its daemon cleanup can run."""
+    process = subprocess.Popen(command, cwd=cwd)
+    try:
+        return process.wait(timeout=timeout_seconds), False
+    except subprocess.TimeoutExpired:
+        if os.name == "nt":
+            process.terminate()
+        else:
+            process.send_signal(signal.SIGINT)
+        try:
+            process.wait(timeout=30)
+        except subprocess.TimeoutExpired:
+            process.kill()
+            process.wait()
+        return int(process.returncode or 1), True
+
+
 def execute_evidence(
     root: Path,
     campaign_dir: Path,
@@ -944,17 +968,16 @@ def execute_evidence(
             raise CampaignError("retained HC/2 helper manifest is missing or drifted")
         command.extend(["--hc2-helper-manifest", str(helper_manifest)])
     try:
-        completed = subprocess.run(
+        returncode, timed_out = run_bounded_evidence_process(
             command,
             cwd=root,
-            timeout=timeout_seconds,
-            check=False,
+            timeout_seconds=timeout_seconds,
         )
-    except subprocess.TimeoutExpired:
-        return "timeout", command
     except OSError:
         return "tool-unavailable", command
-    if completed.returncode != 0:
+    if timed_out:
+        return "timeout", command
+    if returncode != 0:
         return "product-failure", command
     report = output / "memory-baseline-report.json"
     validation = subprocess.run(
