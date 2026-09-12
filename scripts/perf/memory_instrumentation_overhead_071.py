@@ -216,11 +216,17 @@ def execute(args: argparse.Namespace) -> None:
                     "--scenario-digest", args.scenario_digest,
                     "--host-preflight", str(args.host_preflight),
                     "--instrumentation-mode", mode,
+                    "--selected-measurement-phase", phase,
                 ]
                 if workload == "hc2-1000":
                     if not args.hc2_helper_manifest:
                         raise OverheadError("HC/2 helper manifest is required")
                     command.extend(["--hc2-helper-manifest", str(args.hc2_helper_manifest)])
+                print(
+                    f"S5 sample start: repetition={repetition + 1} "
+                    f"mode={mode} workload={workload} target_phase={phase}",
+                    flush=True,
+                )
                 completed = subprocess.run(command, check=False)
                 if completed.returncode != 0:
                     raise OverheadError(f"executor failed for {job['job_id']} with {completed.returncode}")
@@ -231,6 +237,9 @@ def execute(args: argparse.Namespace) -> None:
                     or report.get("binary_sha256") != manifest.get("binary_sha256")
                     or report.get("host_fingerprint") != host.get("host_fingerprint")
                     or report.get("instrumentation_mode") != mode
+                    or report.get("selected_measurement_phase") != phase
+                    or report.get("post_measurement_passive_wait_elision_enabled")
+                    is not True
                     or report.get("ship_evidence_eligible") is not True
                 ):
                     raise OverheadError(f"identity mismatch in {job['job_id']}")
@@ -243,6 +252,11 @@ def execute(args: argparse.Namespace) -> None:
                         "report_sha256": sha256(report_path),
                         "metrics": selected_sample(report, phase),
                     }
+                )
+                print(
+                    f"S5 sample complete: repetition={repetition + 1} "
+                    f"mode={mode} workload={workload}",
+                    flush=True,
                 )
     comparisons, envelope = summarize(samples, args.repetitions)
     atomic_json(
@@ -259,6 +273,8 @@ def execute(args: argparse.Namespace) -> None:
                 "workloads": [item[0] for item in WORKLOADS],
                 "repetitions": args.repetitions,
                 "mode_order": "cyclic-alternating",
+                "selected_checkpoint_only": True,
+                "post_checkpoint_passive_waits_elided": True,
                 "candidate_data_used": False,
             },
             "samples": samples,

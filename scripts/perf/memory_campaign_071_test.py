@@ -71,6 +71,47 @@ class MemoryCampaign071Tests(unittest.TestCase):
             "906aa24cc22ad6b50b824120ed6364208484203a",
         )
 
+    def test_row_cap_scales_by_cohort_and_consumes_prior_attempts(self) -> None:
+        scenario = campaign.tomllib.loads(
+            (self.root / campaign.SCENARIO_RELATIVE).read_text(encoding="utf-8")
+        )
+        m10 = next(case for case in scenario["case"] if case["id"] == "M10-24h")
+        self.assertEqual(
+            campaign.bounded_row_cap_seconds(
+                m10, cell_count=1, repetitions=1, cohort_count=2
+            ),
+            208_800,
+        )
+        plan = {
+            "row_time_caps_seconds": {"M10-24h": 100},
+            "jobs": [
+                {"case_id": "M10-24h", "attempts": [{"elapsed_ns": 25_000_000_000}]},
+                {"case_id": "M10-24h", "attempts": [{"elapsed_ns": 15_500_000_000}]},
+            ],
+        }
+        self.assertEqual(
+            campaign.remaining_row_budget_seconds(plan, "M10-24h"), 59
+        )
+
+    def test_evidence_timeout_interrupts_executor_before_forced_kill(self) -> None:
+        process = mock.Mock()
+        process.wait.side_effect = [
+            campaign.subprocess.TimeoutExpired(["executor"], 10),
+            0,
+        ]
+        process.returncode = 130
+        with mock.patch.object(campaign.subprocess, "Popen", return_value=process):
+            returncode, timed_out = campaign.run_bounded_evidence_process(
+                ["executor"], cwd=self.root, timeout_seconds=10
+            )
+        self.assertEqual(returncode, 130)
+        self.assertTrue(timed_out)
+        if campaign.os.name == "nt":
+            process.terminate.assert_called_once_with()
+        else:
+            process.send_signal.assert_called_once_with(campaign.signal.SIGINT)
+        process.kill.assert_not_called()
+
     def test_b0_cannot_be_pooled_into_instrumented_rows(self) -> None:
         with self.assertRaises(campaign.CampaignError):
             campaign.build_plan(
@@ -195,6 +236,8 @@ class MemoryCampaign071Tests(unittest.TestCase):
         self.assertIn(
             'taskset --cpu-list "$HYDRACACHE_MEMORY_LOADGEN_CPUSET"', workflow
         )
+        self.assertIn('echo "$rust_bin" >> "$GITHUB_PATH"', workflow)
+        self.assertIn("timeout-minutes: 720", workflow)
 
     def test_campaign_identity_rejects_moved_source_harness_role_and_case(self) -> None:
         workflow_sha = campaign.git(self.root, "rev-parse", "HEAD")
