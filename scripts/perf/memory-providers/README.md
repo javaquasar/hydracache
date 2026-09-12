@@ -12,6 +12,18 @@ order, and freezes a baseline-only production-versus-off envelope. Its final
 receipt is atomic and is rejected if any report, binary, scenario, or host
 identity differs.
 
+Each S5 sample still emits the canonical eight provider phases. Once its
+preregistered measurement checkpoint has been captured, later passive idle
+waits are elided because they cannot affect that sample; later actions and
+snapshots still run so provider normalization remains fail-closed. Every sample
+emits start/completion progress, while the workflow gives the complete
+45-sample calibration a bounded 12-hour window.
+
+The protected runner must install Rust under `$HOME/.cargo/bin`. The workflow
+publishes that directory through `GITHUB_PATH` and verifies both `cargo` and
+`rustc` before preflight, rather than depending on the runner service's cached
+PATH.
+
 On evidence hosts, the executor requires explicit daemon, load-generator, and
 collector CPU sets. It applies affinity rather than merely recording a label;
 provider protocol commands execute on the collector set and cannot overlap the

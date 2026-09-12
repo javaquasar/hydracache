@@ -220,6 +220,30 @@ def selected_cases(scenario: dict[str, Any], requested: list[str]) -> list[dict[
     return selected
 
 
+def bounded_row_cap_seconds(
+    case: dict[str, Any],
+    *,
+    cell_count: int,
+    repetitions: int,
+    cohort_count: int,
+) -> int:
+    """Honor the frozen declaration while reserving time for mandatory waits."""
+    case_id = str(case["id"])
+    if case_id == "M0-cold":
+        passive_floor_per_job = 300
+    elif case_id == "M3-ttl":
+        passive_floor_per_job = 300 + 61 + 61
+    elif case_id in {"M8-60m", "M9-6h", "M10-24h"}:
+        passive_floor_per_job = int(case["duration_seconds"]) + 600
+    else:
+        passive_floor_per_job = 600
+    floor = passive_floor_per_job * cell_count * repetitions * cohort_count
+    # Real fill/reset/TLS work must fit in addition to the contractual sleeps.
+    # Round the 20% reserve up to a half-hour so the advertised budget is stable.
+    reserved = ((floor * 12 // 10 + 1_799) // 1_800) * 1_800
+    return max(int(case["host_time_cap_seconds"]), reserved)
+
+
 def build_plan(
     root: Path,
     cases: list[str],
@@ -263,11 +287,18 @@ def build_plan(
     }
     jobs: list[dict[str, Any]] = []
     row_caps: dict[str, int] = {}
+    cohort_count = len(set(cohorts))
     for case in selected:
         case_id = str(case["id"])
         repetitions = repetition_override or int(case["d0_repetitions"])
-        row_caps[case_id] = 30 if rehearsal else int(case["host_time_cap_seconds"])
-        for cell in expand_case(case):
+        cells = expand_case(case)
+        row_caps[case_id] = 30 if rehearsal else bounded_row_cap_seconds(
+            case,
+            cell_count=len(cells),
+            repetitions=repetitions,
+            cohort_count=cohort_count,
+        )
+        for cell in cells:
             for repetition in range(1, repetitions + 1):
                 for cohort in cohorts:
                     job_id = f"{cell.cell_id}__{cohort}__r{repetition}"
@@ -803,7 +834,12 @@ def verify_live_host(campaign_dir: Path, host_preflight: Path) -> None:
         raise CampaignError("live host fingerprint or eligibility drifted from campaign admission")
 
 
-def execute_rehearsal(root: Path, campaign_dir: Path, job: dict[str, Any]) -> tuple[str, list[str]]:
+def execute_rehearsal(
+    root: Path,
+    campaign_dir: Path,
+    job: dict[str, Any],
+    timeout_seconds: int,
+) -> tuple[str, list[str]]:
     output = campaign_dir / "jobs" / job["job_id"]
     command = [
         "cargo",
@@ -834,7 +870,7 @@ def execute_rehearsal(root: Path, campaign_dir: Path, job: dict[str, Any]) -> tu
                 # Rehearsal includes a locked development build when no warm
                 # binary exists. The measured smoke itself remains bounded by
                 # the much smaller row cap recorded in the plan.
-                timeout=180,
+                timeout=min(180, timeout_seconds),
                 check=False,
             )
         except subprocess.TimeoutExpired:
@@ -850,7 +886,13 @@ def unsupported_evidence_reason(job: dict[str, Any]) -> str | None:
     return None
 
 
-def execute_evidence(root: Path, campaign_dir: Path, state: dict[str, Any], job: dict[str, Any]) -> tuple[str, list[str]]:
+def execute_evidence(
+    root: Path,
+    campaign_dir: Path,
+    state: dict[str, Any],
+    job: dict[str, Any],
+    timeout_seconds: int,
+) -> tuple[str, list[str]]:
     unsupported = unsupported_evidence_reason(job)
     if unsupported:
         raise CampaignError(unsupported)
@@ -902,7 +944,12 @@ def execute_evidence(root: Path, campaign_dir: Path, state: dict[str, Any], job:
             raise CampaignError("retained HC/2 helper manifest is missing or drifted")
         command.extend(["--hc2-helper-manifest", str(helper_manifest)])
     try:
-        completed = subprocess.run(command, cwd=root, timeout=state["row_time_caps_seconds"][job["case_id"]], check=False)
+        completed = subprocess.run(
+            command,
+            cwd=root,
+            timeout=timeout_seconds,
+            check=False,
+        )
     except subprocess.TimeoutExpired:
         return "timeout", command
     except OSError:
@@ -989,6 +1036,17 @@ def publish_job(campaign_dir: Path, state: dict[str, Any], job: dict[str, Any]) 
     }
 
 
+def remaining_row_budget_seconds(state: dict[str, Any], case_id: str) -> int:
+    consumed_ns = sum(
+        int(attempt.get("elapsed_ns", 0))
+        for job in state["jobs"]
+        if job["case_id"] == case_id
+        for attempt in job.get("attempts", [])
+    )
+    cap_ns = int(state["row_time_caps_seconds"][case_id]) * 1_000_000_000
+    return max(0, (cap_ns - consumed_ns) // 1_000_000_000)
+
+
 def run_campaign(root: Path, campaign_dir: Path) -> None:
     state_path = campaign_dir / "state.json"
     events_path = campaign_dir / "events.jsonl"
@@ -1003,11 +1061,15 @@ def run_campaign(root: Path, campaign_dir: Path) -> None:
             attempt = len(job["attempts"]) + 1
             append_event(events_path, {"event": "job-started", "job_id": job["job_id"], "attempt": attempt})
             started = time.monotonic_ns()
-            status, command = (
-                execute_rehearsal(root, campaign_dir, job)
-                if state["mode"] == "rehearsal"
-                else execute_evidence(root, campaign_dir, state, job)
-            )
+            remaining = remaining_row_budget_seconds(state, job["case_id"])
+            if remaining <= 0:
+                status, command = "timeout", ["row-time-budget-exhausted"]
+            else:
+                status, command = (
+                    execute_rehearsal(root, campaign_dir, job, remaining)
+                    if state["mode"] == "rehearsal"
+                    else execute_evidence(root, campaign_dir, state, job, remaining)
+                )
             job["status"] = status
             job["attempts"].append(
                 {

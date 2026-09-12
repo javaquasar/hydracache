@@ -385,6 +385,13 @@ def percentile(values: list[int], fraction: float) -> int:
     return ordered[min(len(ordered) - 1, max(0, math.ceil(len(ordered) * fraction) - 1))]
 
 
+def elide_passive_wait_after(selected_phase: str | None, current_phase: str) -> bool:
+    """Elide only waits that occur after an already-captured S5 checkpoint."""
+    if selected_phase is None:
+        return False
+    return PHASES.index(current_phase) > PHASES.index(selected_phase)
+
+
 class Workload:
     def __init__(self, stream: socket.socket, job: dict[str, Any], rehearsal: bool):
         self.stream = stream
@@ -583,14 +590,24 @@ class Workload:
             "hc2_churn": churn,
         }
 
-    def run_phase(self, phase: str, admin_port: int) -> None:
+    def run_phase(
+        self,
+        phase: str,
+        admin_port: int,
+        *,
+        elide_passive_wait: bool = False,
+    ) -> None:
         case_id = self.job["case_id"]
         if case_id == "M0-cold":
-            time.sleep(0.01 if self.rehearsal else (300 if phase == "cold" else 0))
+            time.sleep(
+                0.01
+                if self.rehearsal
+                else (300 if phase == "cold" and not elide_passive_wait else 0)
+            )
             return
         if phase in {"cold", "post_idle", "shutdown"}:
             if case_id == "M3-ttl" and phase == "post_idle":
-                time.sleep(0.3 if self.rehearsal else 61)
+                time.sleep(0.3 if self.rehearsal else (0 if elide_passive_wait else 61))
                 self.live.clear()
                 self.live_tags.clear()
                 return
@@ -601,7 +618,15 @@ class Workload:
                 self.live.clear()
                 self.live_tags.clear()
                 return
-            delay = 0.01 if self.rehearsal else (300 if phase in {"cold", "post_idle"} else 0)
+            delay = (
+                0.01
+                if self.rehearsal
+                else (
+                    300
+                    if phase in {"cold", "post_idle"} and not elide_passive_wait
+                    else 0
+                )
+            )
             time.sleep(delay)
             return
         if phase == "fill":
@@ -862,7 +887,13 @@ def execute(args: argparse.Namespace) -> None:
                         admin_port, process.pid, output, fleet
                     )
                 else:
-                    workload.run_phase(phase, admin_port)
+                    workload.run_phase(
+                        phase,
+                        admin_port,
+                        elide_passive_wait=elide_passive_wait_after(
+                            args.selected_measurement_phase, phase
+                        ),
+                    )
                 workload.observe_distribution(phase)
                 provider_command(
                     adapter,
@@ -1029,6 +1060,10 @@ def execute(args: argparse.Namespace) -> None:
                     "HYDRACACHE_STORAGE_DIR=durable-store",
                 ]
             )
+        if args.selected_measurement_phase:
+            exact_command.append(
+                f"S5_SELECTED_MEASUREMENT_PHASE={args.selected_measurement_phase}"
+            )
         exact_command.append(str(binary))
         report = {
             "schema_version": 1,
@@ -1053,6 +1088,10 @@ def execute(args: argparse.Namespace) -> None:
             },
             "allocator": {"name": manifest["allocator"], "provider": args.provider, "provider_version": "provider-protocol-v1"},
             "instrumentation_mode": args.instrumentation_mode,
+            "selected_measurement_phase": args.selected_measurement_phase,
+            "post_measurement_passive_wait_elision_enabled": bool(
+                args.selected_measurement_phase
+            ),
             "exact_command": exact_command,
             "unique_keys": 0 if job["case_id"] == "M0-cold" else workload.keys,
             "unique_key_verification": {
@@ -1104,6 +1143,7 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument("--host-preflight", type=Path)
     parser.add_argument("--hc2-helper-manifest", type=Path)
+    parser.add_argument("--selected-measurement-phase", choices=PHASES)
     parser.add_argument("--rehearsal", action="store_true")
     return parser.parse_args()
 

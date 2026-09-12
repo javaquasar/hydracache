@@ -961,17 +961,17 @@ its affected owner. The rows are not multiplied into a full Cartesian product.
 
 | ID | Varied factor and fixed boundary | Repetition / duration | Evidence role | Estimated admitted-host time cap |
 | --- | --- | --- | --- | --- |
-| `M0-cold` | empty daemon, canonical services, five-minute idle | three fresh B0 and B1 processes at D0; five alternating B1/C pairs only when a cold-footprint proposal exists | cold floor and instrumentation overhead | `<= 1 h` per D0 cohort; `<= 1 h` optional D4 pair set |
-| `M1-shape` | intentional 4x4 grid: 1k/10k/50k/250k keys x 64/256/1,024/4,096-byte values; other factors canonical | three fresh B1 processes per D0 cell; D4 repeats only proposal-selected cells with five alternating B1/C pairs | bytes/entry and payload amplification | `<= 8 h` D0 screen; `<= 5 h` per selected D4 proposal |
+| `M0-cold` | empty daemon, canonical services, five-minute idle | three fresh B0 and B1 processes at D0; five alternating B1/C pairs only when a cold-footprint proposal exists | cold floor and instrumentation overhead | `<= 1 h` D0 B0/B1 pair |
+| `M1-shape` | intentional 4x4 grid: 1k/10k/50k/250k keys x 64/256/1,024/4,096-byte values; other factors canonical | three fresh B1 processes per D0 cell; D4 repeats only proposal-selected cells with five alternating B1/C pairs | bytes/entry and payload amplification | `<= 10 h` per full-grid cohort; `<= 20 h` for a full B1/C pair |
 | `M2-rewrite` | canonical fixed keyspace; six-cycle focused and sixty-cycle scheduled variants | three fresh D0 runs; five alternating B1/C focused pairs for affected proposals | allocation churn and reuse | `<= 4 h` |
 | `M3-ttl` | canonical fill-expire-idle with final checkpoint covered; sixty cycles | three fresh D0 runs and five alternating B1/C D4 pairs | TTL cleanup/recovery | `<= 6 h` |
 | `M4-reset` | canonical fill-delete and namespace-reset, sixty cycles each | three fresh D0 runs and five alternating B1/C D4 pairs | exact owner zero and allocator reuse | `<= 6 h` |
-| `M5-tags` | 0/1/4/16 tags per entry plus separately declared one-hot/high-fanout cases; other factors canonical | three D0 runs per distribution; D4 only for W5/W6 cells | tag/index amplification | `<= 4 h` D0; `<= 4 h` selected D4 |
+| `M5-tags` | 0/1/4/16 tags per entry plus separately declared one-hot/high-fanout cases; other factors canonical | three D0 runs per distribution; D4 only for W5/W6 cells | tag/index amplification | `<= 4 h` D0; `<= 7.5 h` for a full B1/C pair |
 | `M6-connections` | 1/10/100/1,000 idle HC/2 connections over the contract-mandated gRPC+mTLS transport; 100 slow consumers is a distinct case | three D0 runs per scale; five B1/C pairs for W10-affected cells | per-connection floor/high-water | `<= 6 h` D0; `<= 6 h` selected D4 |
 | `M7-persistence` | persistence off and each supported mode; canonical dataset; anon/file/slab split | three fresh runs per mode; D4 only for W11 changes | durable/page-cache attribution | `<= 6 h` per cohort |
-| `M8-60m` | fixed-keyspace, TTL, reset and HC/2 churn as four serialized cases | one 60-minute B1 and C run per case after five shorter comparison pairs are green | weekly/scheduled boundedness | `<= 8 h` per candidate pair |
-| `M9-6h` | one preregistered multi-scenario sequence, fixed cardinality | one six-hour B1 and one six-hour C run per candidate iteration | candidate soak | `<= 12 h` per candidate pair |
-| `M10-24h` | one preregistered ship sequence on the same admitted fingerprint | one 24-hour B1 run and one 24-hour exact-C run, serialized | final long-tail confirmation | `<= 48 h` plus calibration/preflight |
+| `M8-60m` | fixed-keyspace, TTL, reset and HC/2 churn as four serialized cases | one 60-minute B1 and C run per case after five shorter comparison pairs are green | weekly/scheduled boundedness | `<= 11.5 h` per candidate pair |
+| `M9-6h` | one preregistered multi-scenario sequence, fixed cardinality | one six-hour B1 and one six-hour C run per candidate iteration | candidate soak | `<= 15 h` per candidate pair |
+| `M10-24h` | one preregistered ship sequence on the same admitted fingerprint | one 24-hour B1 run and one 24-hour exact-C run, serialized | final long-tail confirmation | `<= 58 h` per candidate pair, plus calibration/preflight |
 
 The statistical sample unit for D3/D4 improvement decisions is one independently started process
 pair in alternating B1/C order. The `0.67.1` five-sample rule applies to the shorter numerical
@@ -979,7 +979,11 @@ qualification rows selected for a proposal; it does **not** mean five separate 2
 `M10-24h` is a boundedness/recovery confirmation after those five pairs are green, not the sole
 estimator of an improvement. Three fresh processes are the minimum for D0 attribution screens and
 cannot by themselves support an improvement claim. S9 computes the exact runner-hour estimate from
-the selected rows before dispatch and rejects a campaign exceeding these caps unless the plan,
+the selected rows before dispatch. The frozen scenario cap is a lower bound; the controller also
+computes the mandatory idle/duration floor for the expanded cells, repetitions, and cohorts, adds a
+20% execution reserve, and rounds up to a half-hour. It then enforces that aggregate remaining row
+budget across attempts instead of incorrectly granting the whole budget to every child job. A
+campaign exceeding these caps is rejected unless the plan,
 statistics contract and protected-environment approval are reviewed before candidate data exists.
 
 Before using these cases to authorize W2b-W11 implementation, execute and archive the transferred

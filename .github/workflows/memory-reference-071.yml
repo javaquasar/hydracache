@@ -107,6 +107,18 @@ jobs:
           fi
           test "$(git rev-parse HEAD)" = "$WORKFLOW_SHA"
 
+      - name: Expose and verify the runner Rust toolchain
+        shell: bash
+        timeout-minutes: 1
+        run: |
+          set -euo pipefail
+          rust_bin="$HOME/.cargo/bin"
+          test -x "$rust_bin/cargo"
+          test -x "$rust_bin/rustc"
+          echo "$rust_bin" >> "$GITHUB_PATH"
+          "$rust_bin/cargo" --version
+          "$rust_bin/rustc" --version
+
       - name: Checkout exact candidate source without persisted credentials
         uses: actions/checkout@v5
         with:
@@ -180,7 +192,7 @@ jobs:
 
       - name: Measure and freeze S5 instrumentation overhead
         shell: bash
-        timeout-minutes: 480
+        timeout-minutes: 720
         run: |
           set -euo pipefail
           campaign_dir="$CAMPAIGN_ROOT/${{ inputs.campaign_id }}"

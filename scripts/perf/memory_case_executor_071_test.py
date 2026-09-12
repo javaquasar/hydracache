@@ -8,6 +8,7 @@ import sys
 import tempfile
 import threading
 import unittest
+from unittest import mock
 from pathlib import Path
 
 
@@ -127,6 +128,16 @@ class MemoryCaseExecutor071Tests(unittest.TestCase):
             snapshot = executor.directory_snapshot(root)
             self.assertEqual(snapshot["logical_bytes"], 7)
             self.assertEqual(snapshot["files"][0]["path"], "raft-log/segment")
+
+    def test_s5_elides_only_passive_waits_after_selected_checkpoint(self) -> None:
+        self.assertFalse(executor.elide_passive_wait_after(None, "post_idle"))
+        self.assertFalse(executor.elide_passive_wait_after("steady", "cold"))
+        self.assertFalse(executor.elide_passive_wait_after("steady", "steady"))
+        self.assertTrue(executor.elide_passive_wait_after("steady", "post_idle"))
+        workload = self.workload("one-hot", 1, 1)
+        with mock.patch.object(executor.time, "sleep") as sleep:
+            workload.run_phase("post_idle", 1, elide_passive_wait=True)
+            sleep.assert_called_once_with(0)
 
 
 if __name__ == "__main__":
