@@ -58,7 +58,7 @@ sha256 = "78d8fe47f941b1129aa090b59df8b3deac210c487770e9b11a1465bde10c117c"
 
 [[scenario.input]]
 path = "docs/testing/memory/0.71/historical-input-receipt-v1.schema.json"
-sha256 = "8dec4dad178243082450c57a85c32ac8ec8476272f63b6cd9289732555636527"
+sha256 = "1ea67ae69382914ad2fb6b7f43adf1630f89b1e70fcb8b5fe7ef0944e5c2c080"
 
 [[scenario.input]]
 path = "docs/testing/memory/0.71/memory-baseline-status-v1.schema.json"

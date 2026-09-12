@@ -192,7 +192,11 @@ def create(args: argparse.Namespace) -> None:
     command = ["git", "archive", "--format=tar.gz", "-o", str(staging), COMMIT, "--", *ARCHIVE_PATHS]
     subprocess.run(command, cwd=root, check=True)
     files, mirror = verified_mirror(
-        staging, archive, args.provider, args.retention_deadline
+        staging,
+        archive,
+        args.provider,
+        args.retention_deadline,
+        allow_empty=True,
     )
     bootstrap_staging = mirror_root / f".{bootstrap_archive.name}.{os.getpid()}.partial"
     tracked_archive(root, root / BOOTSTRAP_ARCHIVE_ROOT, bootstrap_staging)
