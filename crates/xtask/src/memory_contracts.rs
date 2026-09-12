@@ -811,11 +811,7 @@ fn stable_filesystem_identity(value: &JsonValue) -> JsonValue {
     let Some(raw) = value.as_str() else {
         return value.clone();
     };
-    let Some(row) = raw
-        .lines()
-        .filter(|line| !line.trim().is_empty())
-        .next_back()
-    else {
+    let Some(row) = raw.lines().rfind(|line| !line.trim().is_empty()) else {
         return value.clone();
     };
     let columns: Vec<_> = row.split_whitespace().collect();
