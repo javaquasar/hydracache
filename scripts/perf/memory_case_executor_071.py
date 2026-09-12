@@ -52,6 +52,61 @@ def free_port() -> int:
         return int(listener.getsockname()[1])
 
 
+def parse_cpu_set(value: str) -> set[int]:
+    cpus: set[int] = set()
+    for item in value.split(","):
+        item = item.strip()
+        if not item:
+            raise ExecutionError("CPU set contains an empty item")
+        if "-" in item:
+            first, last = item.split("-", 1)
+            start, stop = int(first), int(last)
+            if start < 0 or stop < start:
+                raise ExecutionError(f"invalid CPU range: {item}")
+            cpus.update(range(start, stop + 1))
+        else:
+            cpu = int(item)
+            if cpu < 0:
+                raise ExecutionError(f"invalid CPU number: {item}")
+            cpus.add(cpu)
+    if not cpus:
+        raise ExecutionError("CPU set cannot be empty")
+    return cpus
+
+
+def configure_affinity(rehearsal: bool) -> dict[str, set[int]]:
+    if os.name == "nt" or rehearsal:
+        return {}
+    names = {
+        "daemon": "HYDRACACHE_MEMORY_DAEMON_CPUSET",
+        "loadgen": "HYDRACACHE_MEMORY_LOADGEN_CPUSET",
+        "collector": "HYDRACACHE_MEMORY_COLLECTOR_CPUSET",
+    }
+    values: dict[str, set[int]] = {}
+    available = set(os.sched_getaffinity(0))
+    for role, name in names.items():
+        raw = os.environ.get(name)
+        if not raw:
+            raise ExecutionError(f"evidence execution requires {name}")
+        values[role] = parse_cpu_set(raw)
+        if not values[role].issubset(available):
+            raise ExecutionError(f"{name} contains CPUs outside runner affinity")
+    if values["daemon"] & (values["loadgen"] | values["collector"]):
+        raise ExecutionError("daemon CPU set must not overlap loadgen or collector CPU sets")
+    os.sched_setaffinity(0, values["loadgen"])
+    return values
+
+
+def affinity_preexec(cpus: set[int] | None) -> Any:
+    if not cpus or os.name == "nt":
+        return None
+
+    def apply() -> None:
+        os.sched_setaffinity(0, cpus)
+
+    return apply
+
+
 def resp_command(stream: socket.socket, *parts: bytes) -> Any:
     payload = b"*" + str(len(parts)).encode() + b"\r\n"
     for part in parts:
@@ -645,8 +700,17 @@ def logical_snapshot(document: dict[str, Any] | None, workload: Workload) -> dic
     }
 
 
-def provider_command(adapter: Path, *arguments: str, allow_unavailable: bool = False) -> None:
-    completed = subprocess.run([sys.executable, str(adapter), *arguments], check=False)
+def provider_command(
+    adapter: Path,
+    *arguments: str,
+    allow_unavailable: bool = False,
+    cpus: set[int] | None = None,
+) -> None:
+    completed = subprocess.run(
+        [sys.executable, str(adapter), *arguments],
+        check=False,
+        preexec_fn=affinity_preexec(cpus),
+    )
     if completed.returncode != 0 and not (allow_unavailable and completed.returncode == 3):
         raise ExecutionError(f"provider command failed ({completed.returncode}): {' '.join(arguments)}")
 
@@ -692,6 +756,7 @@ def execute(args: argparse.Namespace) -> None:
         if not helper.is_file() or sha256(helper) != helper_manifest["binary_sha256"]:
             raise ExecutionError("retained HC/2 helper is missing or drifted")
         subprocess.run([str(helper), "pki", "--output", str(pki)], check=True)
+    affinity = configure_affinity(args.rehearsal)
     environment = os.environ.copy()
     environment.update(
         {
@@ -742,6 +807,7 @@ def execute(args: argparse.Namespace) -> None:
         stderr=subprocess.STDOUT,
         start_new_session=True,
         creationflags=subprocess.CREATE_NEW_PROCESS_GROUP if os.name == "nt" else 0,
+        preexec_fn=affinity_preexec(affinity.get("daemon")),
     )
     adapter = Path(__file__).with_name("memory-providers") / f"{args.provider}.py"
     provider_state = output / "provider-state.json"
@@ -757,7 +823,13 @@ def execute(args: argparse.Namespace) -> None:
     try:
         wait_ready(process, redis_port)
         initial_usage = process_usage(process.pid)
-        provider_command(adapter, "probe", "--output", str(output / "provider-probe.json"))
+        provider_command(
+            adapter,
+            "probe",
+            "--output",
+            str(output / "provider-probe.json"),
+            cpus=affinity.get("collector"),
+        )
         provider_command(
             adapter,
             "start",
@@ -769,6 +841,7 @@ def execute(args: argparse.Namespace) -> None:
             str(process.pid),
             "--binary",
             str(binary),
+            cpus=affinity.get("collector"),
         )
         with socket.create_connection(("127.0.0.1", redis_port), timeout=5) as stream:
             stream.settimeout(30)
@@ -791,8 +864,24 @@ def execute(args: argparse.Namespace) -> None:
                 else:
                     workload.run_phase(phase, admin_port)
                 workload.observe_distribution(phase)
-                provider_command(adapter, "mark", "--state", str(provider_state), "--phase", phase)
-                provider_command(adapter, "snapshot", "--state", str(provider_state), "--phase", phase)
+                provider_command(
+                    adapter,
+                    "mark",
+                    "--state",
+                    str(provider_state),
+                    "--phase",
+                    phase,
+                    cpus=affinity.get("collector"),
+                )
+                provider_command(
+                    adapter,
+                    "snapshot",
+                    "--state",
+                    str(provider_state),
+                    "--phase",
+                    phase,
+                    cpus=affinity.get("collector"),
+                )
                 monotonic_ns = time.monotonic_ns() - started
                 owner = http_json(admin_port, "/admin/memory-footprint")
                 if job["case_id"] == "M6-connections" and fleet:
@@ -885,7 +974,13 @@ def execute(args: argparse.Namespace) -> None:
                         "observations": persistence_observations,
                     },
                 )
-        provider_command(adapter, "stop", "--state", str(provider_state))
+        provider_command(
+            adapter,
+            "stop",
+            "--state",
+            str(provider_state),
+            cpus=affinity.get("collector"),
+        )
         provider_command(
             adapter,
             "normalize",
@@ -895,6 +990,7 @@ def execute(args: argparse.Namespace) -> None:
             str(timeline_path),
             "--output",
             str(output / "provider-normalized.json"),
+            cpus=affinity.get("collector"),
         )
         host = json.loads(args.host_preflight.read_text(encoding="utf-8")) if args.host_preflight else {}
         eligible = not args.rehearsal and host.get("ship_evidence_eligible") is True
@@ -902,6 +998,12 @@ def execute(args: argparse.Namespace) -> None:
             f"HYDRACACHE_ROLE={environment['HYDRACACHE_ROLE']}",
             "HYDRACACHE_MEMORY_INSTRUMENTATION_MODE="
             f"{environment['HYDRACACHE_MEMORY_INSTRUMENTATION_MODE']}",
+            "HYDRACACHE_MEMORY_DAEMON_CPUSET="
+            f"{environment.get('HYDRACACHE_MEMORY_DAEMON_CPUSET', 'unbound-diagnostic')}",
+            "HYDRACACHE_MEMORY_LOADGEN_CPUSET="
+            f"{environment.get('HYDRACACHE_MEMORY_LOADGEN_CPUSET', 'unbound-diagnostic')}",
+            "HYDRACACHE_MEMORY_COLLECTOR_CPUSET="
+            f"{environment.get('HYDRACACHE_MEMORY_COLLECTOR_CPUSET', 'unbound-diagnostic')}",
             f"HYDRACACHE_REDIS_API_ENABLED={environment['HYDRACACHE_REDIS_API_ENABLED']}",
             f"HYDRACACHE_REDIS_ADDR={environment['HYDRACACHE_REDIS_ADDR']}",
             f"HYDRACACHE_ADMIN_API_ENABLED={environment['HYDRACACHE_ADMIN_API_ENABLED']}",
@@ -943,7 +1045,10 @@ def execute(args: argparse.Namespace) -> None:
                 "image_digest": None,
                 "kernel": os.uname().release if hasattr(os, "uname") else sys.platform,
                 "service_profile": "memory-reference-071-v1",
-                "affinity": environment.get("HYDRACACHE_MEMORY_DAEMON_CPUSET", "unbound-diagnostic"),
+                "affinity": ";".join(
+                    f"{role}={','.join(str(cpu) for cpu in sorted(cpus))}"
+                    for role, cpus in affinity.items()
+                ) if affinity else "unbound-diagnostic",
                 "cgroup_limit": None,
             },
             "allocator": {"name": manifest["allocator"], "provider": args.provider, "provider_version": "provider-protocol-v1"},

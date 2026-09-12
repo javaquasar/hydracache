@@ -76,6 +76,14 @@ class MemoryCaseExecutor071Tests(unittest.TestCase):
         self.assertEqual(executor.percentile(values, 0.95), 95)
         self.assertEqual(executor.percentile(values, 0.99), 99)
 
+    def test_cpu_set_parser_accepts_ranges_and_rejects_invalid_values(self) -> None:
+        self.assertEqual(executor.parse_cpu_set("0,5-7"), {0, 5, 6, 7})
+        for value in ("", "2-1", "-1"):
+            with self.subTest(value=value), self.assertRaises(
+                (executor.ExecutionError, ValueError)
+            ):
+                executor.parse_cpu_set(value)
+
     def test_proc_stat_cpu_parser_handles_spaces_and_parentheses_in_name(self) -> None:
         fields = ["S"] + ["0"] * 10 + ["125", "75"] + ["0"] * 20
         stat = "42 (hydra cache (worker)) " + " ".join(fields)

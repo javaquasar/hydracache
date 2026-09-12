@@ -593,6 +593,11 @@ pub fn run_host_preflight(args: Vec<String>) -> Result<(), Box<dyn Error>> {
             "MALLOC_CONF": std::env::var("MALLOC_CONF").ok(),
             "MIMALLOC_OPTIONS": std::env::var("MIMALLOC_OPTIONS").ok()
         },
+        "affinity_policy": {
+            "daemon": std::env::var("HYDRACACHE_MEMORY_DAEMON_CPUSET").ok(),
+            "loadgen": std::env::var("HYDRACACHE_MEMORY_LOADGEN_CPUSET").ok(),
+            "collector": std::env::var("HYDRACACHE_MEMORY_COLLECTOR_CPUSET").ok()
+        },
         "competing_load": read_optional("/proc/loadavg"),
         "available_memory": first_matching_line("/proc/meminfo", "MemAvailable"),
         "major_faults_and_throttling": read_optional("/proc/self/status"),
@@ -614,6 +619,13 @@ pub fn run_host_preflight(args: Vec<String>) -> Result<(), Box<dyn Error>> {
         command_optional("rustc", &["--version"]).unwrap_or_else(|| "unavailable".to_owned()),
         command_optional("cargo", &["--version"]).unwrap_or_else(|| "unavailable".to_owned())
     );
+    let affinity_declared = [
+        "HYDRACACHE_MEMORY_DAEMON_CPUSET",
+        "HYDRACACHE_MEMORY_LOADGEN_CPUSET",
+        "HYDRACACHE_MEMORY_COLLECTOR_CPUSET",
+    ]
+    .iter()
+    .all(|name| std::env::var(name).is_ok_and(|value| !value.trim().is_empty()));
     let eligible = cfg!(target_os = "linux")
         && dedicated
         && protected_environment.as_deref() == Some("memory-reference-071")
@@ -622,6 +634,7 @@ pub fn run_host_preflight(args: Vec<String>) -> Result<(), Box<dyn Error>> {
             .is_some_and(|value| !value.is_empty())
         && lease_end.as_deref().is_some_and(|value| !value.is_empty())
         && calibration_green
+        && affinity_declared
         && tools
             .values()
             .all(|value| value.as_str() != Some("unavailable"));
@@ -757,6 +770,7 @@ pub fn host_identity_probes(probes: &JsonValue) -> JsonValue {
         "clock_source",
         "filesystem",
         "allocator_knobs",
+        "affinity_policy",
     ];
     let mut identity = JsonMap::new();
     if let Some(values) = probes.as_object() {

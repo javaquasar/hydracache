@@ -71,3 +71,10 @@ hardware topology, kernel/OS, RAID, and configured policy. Free memory,
 temperatures, process identifiers, and competing-load observations remain in
 the preflight receipt for diagnosis but do not create false host drift on
 resume.
+
+The AX42 profile pins the measured daemon to CPUs 5-6, the in-process load
+generator to CPU 7, and provider commands to housekeeping CPU 0. Evidence
+execution rejects missing sets, CPUs outside the runner service affinity, or
+any daemon overlap with load generation or collection. The held mapping is
+part of the stable host fingerprint and every report records the effective
+sets.

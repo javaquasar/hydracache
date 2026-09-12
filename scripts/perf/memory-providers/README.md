@@ -12,6 +12,11 @@ order, and freezes a baseline-only production-versus-off envelope. Its final
 receipt is atomic and is rejected if any report, binary, scenario, or host
 identity differs.
 
+On evidence hosts, the executor requires explicit daemon, load-generator, and
+collector CPU sets. It applies affinity rather than merely recording a label;
+provider protocol commands execute on the collector set and cannot overlap the
+daemon set.
+
 The 0.71 campaign controller expands the finite M0-M10 matrix, applies row
 time caps, journals every attempt, and resumes without repeating successful
 jobs. Run a bounded orchestration rehearsal before allocating a reference
