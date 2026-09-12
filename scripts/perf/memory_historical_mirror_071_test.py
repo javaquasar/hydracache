@@ -42,6 +42,8 @@ class HistoricalMirror071Tests(unittest.TestCase):
                 archive.addfile(member, io.BytesIO())
             with self.assertRaises(mirror.MirrorError):
                 mirror.manifest_from_archive(archive_path)
+            accepted = mirror.manifest_from_archive(archive_path, allow_empty=True)
+            self.assertEqual(accepted[0]["bytes"], 0)
 
     def test_path_traversal_is_rejected(self) -> None:
         with tempfile.TemporaryDirectory() as directory:

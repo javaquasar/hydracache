@@ -680,6 +680,8 @@ def validate_admission_receipts(receipts: dict[str, dict[str, Any]], state: dict
         raise CampaignError("0.67.1 reference activation receipt is invalid")
     historical = receipts["historical-input-receipt"]
     mirror = historical.get("mirror", {})
+    bootstrap_history = historical.get("bootstrap_0_67_1", {})
+    bootstrap_mirror = bootstrap_history.get("mirror", {})
     if (
         historical.get("schema_version") != 1
         or historical.get("release") != RELEASE
@@ -687,6 +689,11 @@ def validate_admission_receipts(receipts: dict[str, dict[str, Any]], state: dict
         or historical.get("checkout_clean") is not True
         or not historical.get("files")
         or mirror.get("manifest_sha256") != mirror.get("restored_manifest_sha256")
+        or bootstrap_history.get("source_path")
+        != "docs/testing/perf-artifacts/0.67.1"
+        or not bootstrap_history.get("files")
+        or bootstrap_mirror.get("manifest_sha256")
+        != bootstrap_mirror.get("restored_manifest_sha256")
     ):
         raise CampaignError("historical protected-mirror receipt is invalid")
     overhead = receipts["instrumentation-overhead"]

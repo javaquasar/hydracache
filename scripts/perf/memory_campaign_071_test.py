@@ -357,6 +357,11 @@ class MemoryCampaign071Tests(unittest.TestCase):
                 "checkout_clean": True,
                 "files": [{"path": "raw", "bytes": 1}],
                 "mirror": {"manifest_sha256": "same", "restored_manifest_sha256": "same"},
+                "bootstrap_0_67_1": {
+                    "source_path": "docs/testing/perf-artifacts/0.67.1",
+                    "files": [{"path": "bootstrap", "bytes": 1}],
+                    "mirror": {"manifest_sha256": "same", "restored_manifest_sha256": "same"},
+                },
             },
             "instrumentation-overhead": {
                 "schema_version": 1,

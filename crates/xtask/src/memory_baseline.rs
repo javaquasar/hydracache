@@ -366,6 +366,9 @@ fn check_historical_requirements(
     }
     if bool_at(value, &["missing_mirror_blocks_d0"]) != Some(true)
         || bool_at(value, &["ordinary_clone_is_protected_mirror"]) != Some(false)
+        || bool_at(value, &["require_bootstrap_archive_in_protected_mirror"]) != Some(true)
+        || string_at(value, &["bootstrap_archive_path"])
+            != Some("docs/testing/perf-artifacts/0.67.1")
     {
         problems.push("historical mirror boundary is fail-open".to_owned());
     }
@@ -463,6 +466,23 @@ pub fn validate_historical_receipt(receipt: &JsonValue) -> Vec<String> {
     }
     if mirror.get("manifest_sha256") != mirror.get("restored_manifest_sha256") {
         problems.push("restored historical mirror manifest mismatch".to_owned());
+    }
+    let bootstrap = receipt.get("bootstrap_0_67_1").unwrap_or(&JsonValue::Null);
+    if bootstrap.get("source_path").and_then(JsonValue::as_str)
+        != Some("docs/testing/perf-artifacts/0.67.1")
+    {
+        problems.push("historical receipt omits the committed 0.67.1 archive".to_owned());
+    }
+    let bootstrap_mirror = bootstrap.get("mirror").unwrap_or(&JsonValue::Null);
+    if bootstrap_mirror.get("manifest_sha256") != bootstrap_mirror.get("restored_manifest_sha256") {
+        problems.push("restored 0.67.1 bootstrap mirror manifest mismatch".to_owned());
+    }
+    if bootstrap
+        .get("files")
+        .and_then(JsonValue::as_array)
+        .is_none_or(Vec::is_empty)
+    {
+        problems.push("historical receipt has no 0.67.1 bootstrap file manifest".to_owned());
     }
     let files = receipt
         .get("files")

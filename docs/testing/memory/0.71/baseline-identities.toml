@@ -50,7 +50,7 @@ sha256 = "c813f168ed0653f181dff1f14c7c5e340c792e9abc6a070f03fb2598d36fc520"
 
 [[scenario.input]]
 path = "docs/testing/memory/0.71/historical-input-requirements.toml"
-sha256 = "3fdff1886e8458f3b2df81583944015d056c0a84faebe7398b2e12de33a2778b"
+sha256 = "c2eaa45ec042a16f67b67cafacd1284316c01bc90da41ab012a6600eabaa2b67"
 
 [[scenario.input]]
 path = "docs/testing/memory/0.71/memory-baseline-report-v1.schema.json"
@@ -58,7 +58,7 @@ sha256 = "78d8fe47f941b1129aa090b59df8b3deac210c487770e9b11a1465bde10c117c"
 
 [[scenario.input]]
 path = "docs/testing/memory/0.71/historical-input-receipt-v1.schema.json"
-sha256 = "c06ef23ada025f85912d2cf983c3ed3f1432342f0eda715d933440bfdf42325a"
+sha256 = "8dec4dad178243082450c57a85c32ac8ec8476272f63b6cd9289732555636527"
 
 [[scenario.input]]
 path = "docs/testing/memory/0.71/memory-baseline-status-v1.schema.json"

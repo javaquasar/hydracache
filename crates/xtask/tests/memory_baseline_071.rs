@@ -36,6 +36,24 @@ fn valid_historical_receipt() -> JsonValue {
             "restored_manifest_sha256": format!("sha256:{}", "3".repeat(64)),
             "verified_at": "2026-08-20T12:00:00Z",
             "retention_deadline": "2027-08-20T12:00:00Z"
+        },
+        "bootstrap_0_67_1": {
+            "source_path": "docs/testing/perf-artifacts/0.67.1",
+            "files": [{
+                "path": "docs/testing/perf-artifacts/0.67.1/receipt.json",
+                "bytes": 0,
+                "sha256": format!("sha256:{}", "4".repeat(64))
+            }],
+            "mirror": {
+                "provider": "protected-object-store",
+                "object_id": "memory-0671/full.tar.gz",
+                "archive_sha256": format!("sha256:{}", "5".repeat(64)),
+                "byte_length": 789,
+                "manifest_sha256": format!("sha256:{}", "6".repeat(64)),
+                "restored_manifest_sha256": format!("sha256:{}", "6".repeat(64)),
+                "verified_at": "2026-09-12T12:00:00Z",
+                "retention_deadline": "2027-09-12T12:00:00Z"
+            }
         }
     })
 }
