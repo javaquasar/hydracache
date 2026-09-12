@@ -173,6 +173,10 @@ def create(args: argparse.Namespace) -> None:
         raise MirrorError("protected mirror must be outside the ordinary Git worktree")
     if not args.approve_protected_mirror:
         raise MirrorError("creation requires explicit --approve-protected-mirror")
+    if args.output.exists():
+        raise MirrorError(f"refusing to overwrite receipt: {args.output}")
+    if git(root, "status", "--porcelain=v1", "--untracked-files=all"):
+        raise MirrorError("protected mirror creation requires a clean checkout")
     if git(root, "rev-list", "-n", "1", TAG) != COMMIT:
         raise MirrorError("historical tag does not resolve to the frozen commit")
     if git(root, "rev-parse", f"origin/{BRANCH}") != COMMIT:
