@@ -7,13 +7,11 @@ import argparse
 import hashlib
 import json
 import os
-import shutil
 import subprocess
 import sys
 import tarfile
-import tempfile
 from datetime import datetime, timezone
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 from typing import Any
 
 
@@ -113,41 +111,32 @@ def manifest_digest(files: list[dict[str, Any]]) -> str:
 
 
 def restored_manifest(path: Path) -> list[dict[str, Any]]:
-    with tempfile.TemporaryDirectory(prefix="hydracache-memory-history-") as directory:
-        root = Path(directory)
-        root_resolved = root.resolve()
-        extracted: set[Path] = set()
-        with tarfile.open(path, "r:gz") as archive:
-            for member in archive.getmembers():
-                destination = (root / member.name).resolve()
-                if not destination.is_relative_to(root_resolved):
-                    raise MirrorError(f"unsafe archive member: {member.name}")
-                if member.isdir():
-                    destination.mkdir(parents=True, exist_ok=True)
-                    continue
-                if not member.isfile():
-                    raise MirrorError(f"unsupported archive member: {member.name}")
-                if destination in extracted:
-                    raise MirrorError(f"duplicate archive member: {member.name}")
-                stream = archive.extractfile(member)
-                if stream is None:
-                    raise MirrorError(f"archive member cannot be read: {member.name}")
-                destination.parent.mkdir(parents=True, exist_ok=True)
-                with destination.open("xb") as output:
-                    shutil.copyfileobj(stream, output)
-                extracted.add(destination)
-        files = []
-        for item in sorted(root.rglob("*")):
-            if item.is_file():
-                content = item.read_bytes()
-                files.append(
-                    {
-                        "path": str(item.relative_to(root)).replace("\\", "/"),
-                        "bytes": len(content),
-                        "sha256": sha256_bytes(content),
-                    }
-                )
-        return files
+    files = []
+    extracted: set[str] = set()
+    with tarfile.open(path, "r:gz") as archive:
+        for member in archive.getmembers():
+            member_path = PurePosixPath(member.name)
+            if member_path.is_absolute() or ".." in member_path.parts:
+                raise MirrorError(f"unsafe archive member: {member.name}")
+            if member.isdir():
+                continue
+            if not member.isfile():
+                raise MirrorError(f"unsupported archive member: {member.name}")
+            if member.name in extracted:
+                raise MirrorError(f"duplicate archive member: {member.name}")
+            stream = archive.extractfile(member)
+            if stream is None:
+                raise MirrorError(f"archive member cannot be read: {member.name}")
+            content = stream.read()
+            files.append(
+                {
+                    "path": member.name,
+                    "bytes": len(content),
+                    "sha256": sha256_bytes(content),
+                }
+            )
+            extracted.add(member.name)
+    return sorted(files, key=lambda item: item["path"])
 
 
 def git(root: Path, *arguments: str) -> str:
