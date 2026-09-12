@@ -138,7 +138,8 @@ jobs:
           test -f "$BOOTSTRAP_RECEIPT"
           test -f "$HISTORICAL_RECEIPT"
           python3 scripts/perf/memory_campaign_071.py doctor --evidence
-          cargo run -p xtask --locked -- perf-memory-preflight \
+          taskset --cpu-list "$HYDRACACHE_MEMORY_LOADGEN_CPUSET" \
+            cargo run -p xtask --locked -- perf-memory-preflight \
             --release 0.71 \
             --profile memory-reference-071-v1 \
             --output "$RUNNER_TEMP/host-preflight.json"

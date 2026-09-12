@@ -72,6 +72,14 @@ temperatures, process identifiers, and competing-load observations remain in
 the preflight receipt for diagnosis but do not create false host drift on
 resume.
 
+The preflight stability calibration discards one CPU warm-up iteration before
+evaluating five measured iterations on the reviewed load-generator CPU set.
+This prevents cold instruction-cache, frequency-ramp cost, and cross-core
+migration from being mislabeled as host noise, while the recorded five-sample
+spread must still remain within the frozen profile limit. Each sample performs
+20 million integer-mix iterations so scheduler jitter is not amplified by an
+unrepresentatively short probe.
+
 The AX42 profile pins the measured daemon to CPUs 5-6, the in-process load
 generator to CPU 7, and provider commands to housekeeping CPU 0. Evidence
 execution rejects missing sets, CPUs outside the runner service affinity, or

@@ -931,16 +931,35 @@ fn first_matching_line(path: &str, prefix: &str) -> Option<String> {
 }
 
 fn calibration_samples() -> JsonValue {
-    let mut durations = Vec::new();
-    for sample in 0..5_u64 {
-        let started = std::time::Instant::now();
-        let mut value = sample.wrapping_add(1);
-        for index in 0..2_000_000_u64 {
-            value = std::hint::black_box(value.rotate_left(7) ^ index).wrapping_mul(0x9e37_79b9);
-        }
-        std::hint::black_box(value);
-        durations.push(started.elapsed().as_secs_f64());
+    const WARMUP_SAMPLES: u64 = 1;
+    const MEASURED_SAMPLES: u64 = 5;
+    const ITERATIONS_PER_SAMPLE: u64 = 20_000_000;
+
+    for sample in 0..WARMUP_SAMPLES {
+        run_calibration_sample(sample, ITERATIONS_PER_SAMPLE);
     }
+    let durations = (0..MEASURED_SAMPLES)
+        .map(|sample| run_calibration_sample(WARMUP_SAMPLES + sample, ITERATIONS_PER_SAMPLE))
+        .collect::<Vec<_>>();
+    summarize_calibration(&durations, WARMUP_SAMPLES, ITERATIONS_PER_SAMPLE)
+}
+
+fn run_calibration_sample(sample: u64, iterations: u64) -> f64 {
+    let started = std::time::Instant::now();
+    let mut value = sample.wrapping_add(1);
+    for index in 0..iterations {
+        value = std::hint::black_box(value.rotate_left(7) ^ index).wrapping_mul(0x9e37_79b9);
+    }
+    std::hint::black_box(value);
+    started.elapsed().as_secs_f64()
+}
+
+fn summarize_calibration(
+    durations: &[f64],
+    warmup_samples_discarded: u64,
+    iterations_per_sample: u64,
+) -> JsonValue {
+    debug_assert!(!durations.is_empty());
     let minimum = durations.iter().copied().fold(f64::INFINITY, f64::min);
     let maximum = durations.iter().copied().fold(0.0_f64, f64::max);
     let mean = durations.iter().sum::<f64>() / durations.len() as f64;
@@ -950,7 +969,9 @@ fn calibration_samples() -> JsonValue {
         f64::INFINITY
     };
     json!({
-        "algorithm": "integer-mix-v1",
+        "algorithm": "integer-mix-v3-warmed-20m",
+        "warmup_samples_discarded": warmup_samples_discarded,
+        "iterations_per_sample": iterations_per_sample,
         "samples_seconds": durations,
         "minimum_seconds": minimum,
         "maximum_seconds": maximum,
@@ -1019,4 +1040,23 @@ fn take(args: &[String], index: &mut usize, flag: &str) -> Result<String, Box<dy
     args.get(*index)
         .cloned()
         .ok_or_else(|| format!("{flag} requires a value").into())
+}
+
+#[cfg(test)]
+mod calibration_tests {
+    use super::summarize_calibration;
+
+    #[test]
+    fn summary_records_discarded_warmup_and_measured_spread() {
+        let summary = summarize_calibration(&[10.0, 10.1, 9.9, 10.0, 10.0], 1, 20_000_000);
+
+        assert_eq!(summary["warmup_samples_discarded"], 1);
+        assert_eq!(summary["iterations_per_sample"], 20_000_000);
+        assert_eq!(summary["algorithm"], "integer-mix-v3-warmed-20m");
+        assert_eq!(summary["samples_seconds"].as_array().unwrap().len(), 5);
+        assert_eq!(summary["minimum_seconds"], 9.9);
+        assert_eq!(summary["maximum_seconds"], 10.1);
+        let spread = summary["relative_spread"].as_f64().unwrap();
+        assert!((spread - 0.02).abs() < f64::EPSILON);
+    }
 }
