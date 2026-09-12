@@ -74,9 +74,9 @@ jobs:
       HYDRACACHE_MEMORY_WORKFLOW_SHA: ${{ github.sha }}
       HYDRACACHE_MEMORY_SOURCE_SHA: ${{ inputs.source_sha }}
       HYDRACACHE_MEMORY_CAMPAIGN_ROLE: ${{ inputs.campaign_role }}
-      HYDRACACHE_MEMORY_DAEMON_CPUSET: "5-6"
-      HYDRACACHE_MEMORY_LOADGEN_CPUSET: "7"
-      HYDRACACHE_MEMORY_COLLECTOR_CPUSET: "0"
+      HYDRACACHE_MEMORY_DAEMON_CPUSET: ${{ vars.HYDRACACHE_MEMORY_DAEMON_CPUSET || '5-6' }}
+      HYDRACACHE_MEMORY_LOADGEN_CPUSET: ${{ vars.HYDRACACHE_MEMORY_LOADGEN_CPUSET || '7' }}
+      HYDRACACHE_MEMORY_COLLECTOR_CPUSET: ${{ vars.HYDRACACHE_MEMORY_COLLECTOR_CPUSET || '0' }}
       BOOTSTRAP_RECEIPT: /var/lib/hydracache-memory/admission/reference-activation.json
       HISTORICAL_RECEIPT: /var/lib/hydracache-memory/admission/historical-input-receipt.json
       OVERHEAD_RECEIPT: /var/lib/hydracache-memory/admission/instrumentation-overhead.json

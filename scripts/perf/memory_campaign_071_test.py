@@ -189,9 +189,9 @@ class MemoryCampaign071Tests(unittest.TestCase):
         self.assertLess(admission, execution)
         self.assertIn('if [[ "$HYDRACACHE_MEMORY_CAMPAIGN_ROLE" != "baseline" ]]', workflow)
         self.assertIn("memory_instrumentation_overhead_071.py", workflow)
-        self.assertIn('HYDRACACHE_MEMORY_DAEMON_CPUSET: "5-6"', workflow)
-        self.assertIn('HYDRACACHE_MEMORY_LOADGEN_CPUSET: "7"', workflow)
-        self.assertIn('HYDRACACHE_MEMORY_COLLECTOR_CPUSET: "0"', workflow)
+        self.assertIn("vars.HYDRACACHE_MEMORY_DAEMON_CPUSET || '5-6'", workflow)
+        self.assertIn("vars.HYDRACACHE_MEMORY_LOADGEN_CPUSET || '7'", workflow)
+        self.assertIn("vars.HYDRACACHE_MEMORY_COLLECTOR_CPUSET || '0'", workflow)
 
     def test_campaign_identity_rejects_moved_source_harness_role_and_case(self) -> None:
         workflow_sha = campaign.git(self.root, "rev-parse", "HEAD")

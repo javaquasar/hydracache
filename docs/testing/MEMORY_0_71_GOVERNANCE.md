@@ -78,3 +78,8 @@ execution rejects missing sets, CPUs outside the runner service affinity, or
 any daemon overlap with load generation or collection. The held mapping is
 part of the stable host fingerprint and every report records the effective
 sets.
+
+Those AX42 mappings are workflow defaults, not baked into the executor. A
+future protected host sets the three same-named GitHub environment variables
+after reviewing its CPU/NUMA/IRQ topology; the resulting values are still
+preflight-bound and overlap-checked without changing campaign scripts.
