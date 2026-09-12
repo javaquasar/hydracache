@@ -775,13 +775,58 @@ pub fn host_identity_probes(probes: &JsonValue) -> JsonValue {
     let mut identity = JsonMap::new();
     if let Some(values) = probes.as_object() {
         for field in IDENTITY_FIELDS {
-            identity.insert(
-                (*field).to_owned(),
-                values.get(*field).cloned().unwrap_or(JsonValue::Null),
-            );
+            let value = match *field {
+                "cpu_topology" => values
+                    .get(*field)
+                    .map(stable_cpu_topology)
+                    .unwrap_or(JsonValue::Null),
+                "filesystem" => values
+                    .get(*field)
+                    .map(stable_filesystem_identity)
+                    .unwrap_or(JsonValue::Null),
+                _ => values.get(*field).cloned().unwrap_or(JsonValue::Null),
+            };
+            identity.insert((*field).to_owned(), value);
         }
     }
     JsonValue::Object(identity)
+}
+
+fn stable_cpu_topology(value: &JsonValue) -> JsonValue {
+    let Some(raw) = value.as_str() else {
+        return value.clone();
+    };
+    let Ok(mut topology) = serde_json::from_str::<JsonValue>(raw) else {
+        return value.clone();
+    };
+    if let Some(rows) = topology.get_mut("lscpu").and_then(JsonValue::as_array_mut) {
+        rows.retain(|row| {
+            row.get("field").and_then(JsonValue::as_str) != Some("CPU(s) scaling MHz:")
+        });
+    }
+    topology
+}
+
+fn stable_filesystem_identity(value: &JsonValue) -> JsonValue {
+    let Some(raw) = value.as_str() else {
+        return value.clone();
+    };
+    let Some(row) = raw
+        .lines()
+        .filter(|line| !line.trim().is_empty())
+        .next_back()
+    else {
+        return value.clone();
+    };
+    let columns: Vec<_> = row.split_whitespace().collect();
+    if columns.len() < 3 {
+        return value.clone();
+    }
+    json!({
+        "source": columns[0],
+        "filesystem_type": columns[1],
+        "mountpoint": columns[columns.len() - 1],
+    })
 }
 
 fn canonical_json(value: &JsonValue) -> JsonValue {

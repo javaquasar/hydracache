@@ -437,6 +437,37 @@ class MemoryCampaign071Tests(unittest.TestCase):
         with self.assertRaises(campaign.CampaignError):
             campaign.validate_admission_receipts(receipts, state)
 
+    def test_overhead_host_binding_ignores_only_volatile_probe_values(self) -> None:
+        old_identity = {
+            "kernel": "6.8",
+            "hardware_model": "cpu",
+            "cgroup": "runner.service",
+            "cpu_topology": '{"lscpu":[{"field":"CPU(s):","data":"16"},{"field":"CPU(s) scaling MHz:","data":"34%"}]}',
+            "filesystem": "Filesystem Type Blocks Used Available Use% Mounted on\n/dev/md2 ext4 1000 100 900 10% /",
+        }
+        new_identity = dict(old_identity)
+        new_identity["cpu_topology"] = '{"lscpu":[{"field":"CPU(s):","data":"16"},{"field":"CPU(s) scaling MHz:","data":"71%"}]}'
+        new_identity["filesystem"] = "Filesystem Type Blocks Used Available Use% Mounted on\n/dev/md2 ext4 1000 700 300 70% /"
+        overhead = {"host_fingerprint": "legacy-host"}
+        origin = {
+            "schema_version": 1,
+            "release": "0.71",
+            "profile_id": "memory-reference-071-v1",
+            "result": "success",
+            "ship_evidence_eligible": True,
+            "host_fingerprint": "legacy-host",
+            "identity_probes": old_identity,
+        }
+        current = {
+            "profile_id": "memory-reference-071-v1",
+            "host_fingerprint": "normalized-host",
+            "identity_probes": new_identity,
+        }
+        self.assertTrue(campaign.overhead_matches_host(overhead, current, origin))
+
+        current["identity_probes"]["kernel"] = "6.9"
+        self.assertFalse(campaign.overhead_matches_host(overhead, current, origin))
+
     def test_completed_job_is_published_once_and_drift_fails(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)

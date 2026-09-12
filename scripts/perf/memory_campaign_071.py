@@ -690,6 +690,57 @@ def prepare_builds(root: Path, campaign_dir: Path, build_root: Path) -> None:
                 shutil.rmtree(target_dir, ignore_errors=True)
 
 
+def stable_host_identity(receipt: dict[str, Any]) -> dict[str, Any]:
+    identity = receipt.get("identity_probes")
+    if not isinstance(identity, dict):
+        raise CampaignError("host preflight receipt has no identity probes")
+    stable = json.loads(json.dumps(identity))
+    topology = stable.get("cpu_topology")
+    if isinstance(topology, str):
+        try:
+            parsed = json.loads(topology)
+        except json.JSONDecodeError:
+            parsed = topology
+        if isinstance(parsed, dict) and isinstance(parsed.get("lscpu"), list):
+            parsed["lscpu"] = [
+                row
+                for row in parsed["lscpu"]
+                if not isinstance(row, dict) or row.get("field") != "CPU(s) scaling MHz:"
+            ]
+        stable["cpu_topology"] = parsed
+    filesystem = stable.get("filesystem")
+    if isinstance(filesystem, str):
+        rows = [row.split() for row in filesystem.splitlines() if row.strip()]
+        if rows and len(rows[-1]) >= 3:
+            stable["filesystem"] = {
+                "source": rows[-1][0],
+                "filesystem_type": rows[-1][1],
+                "mountpoint": rows[-1][-1],
+            }
+    return stable
+
+
+def overhead_matches_host(
+    overhead: dict[str, Any],
+    host: dict[str, Any],
+    origin_host: dict[str, Any] | None,
+) -> bool:
+    if overhead.get("host_fingerprint") == host.get("host_fingerprint"):
+        return True
+    if origin_host is None:
+        return False
+    if (
+        origin_host.get("schema_version") != 1
+        or origin_host.get("release") != RELEASE
+        or origin_host.get("profile_id") != host.get("profile_id")
+        or origin_host.get("result") != "success"
+        or origin_host.get("ship_evidence_eligible") is not True
+        or overhead.get("host_fingerprint") != origin_host.get("host_fingerprint")
+    ):
+        return False
+    return stable_host_identity(origin_host) == stable_host_identity(host)
+
+
 def validate_admission_receipts(receipts: dict[str, dict[str, Any]], state: dict[str, Any]) -> None:
     host = receipts["host-preflight"]
     if (
@@ -737,7 +788,11 @@ def validate_admission_receipts(receipts: dict[str, dict[str, Any]], state: dict
         overhead.get("schema_version") != 1
         or overhead.get("release") != RELEASE
         or overhead.get("source_sha") != state["source_shas"].get("B1-instrumented")
-        or overhead.get("host_fingerprint") != host.get("host_fingerprint")
+        or not overhead_matches_host(
+            overhead,
+            host,
+            receipts.get("instrumentation-overhead-host-preflight"),
+        )
         or overhead.get("scenario_digest") != state.get("scenario_digest")
         or set(design.get("modes", [])) != expected_modes
         or set(design.get("workloads", [])) != expected_workloads
@@ -764,6 +819,7 @@ def admit_campaign(
     bootstrap: Path,
     historical: Path,
     overhead: Path,
+    overhead_host_preflight: Path | None,
 ) -> None:
     state_path = campaign_dir / "state.json"
     if not state_path.is_file():
@@ -774,6 +830,8 @@ def admit_campaign(
         "historical-input-receipt": historical,
         "instrumentation-overhead": overhead,
     }
+    if overhead_host_preflight is not None:
+        sources["instrumentation-overhead-host-preflight"] = overhead_host_preflight
     documents: dict[str, dict[str, Any]] = {}
     for name, source in sources.items():
         if not source.is_file() or source.stat().st_size > 10 * 1024 * 1024:
@@ -1208,6 +1266,7 @@ def parse_args() -> argparse.Namespace:
     admit_parser.add_argument("--bootstrap", type=Path, required=True)
     admit_parser.add_argument("--historical", type=Path, required=True)
     admit_parser.add_argument("--overhead", type=Path, required=True)
+    admit_parser.add_argument("--overhead-host-preflight", type=Path)
     verify_host_parser = commands.add_parser("verify-host")
     verify_host_parser.add_argument("--campaign-id", required=True)
     verify_host_parser.add_argument("--host-preflight", type=Path, required=True)
@@ -1313,6 +1372,7 @@ def main() -> int:
                 args.bootstrap,
                 args.historical,
                 args.overhead,
+                args.overhead_host_preflight,
             )
         elif args.command == "verify-host":
             verify_live_host(campaign_dir, args.host_preflight)
