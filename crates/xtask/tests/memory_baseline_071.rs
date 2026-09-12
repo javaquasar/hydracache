@@ -150,6 +150,42 @@ fn typed_report_rejects_identity_unique_key_allocator_and_unavailable_lies() {
 }
 
 #[test]
+fn typed_report_requires_executor_instrumentation_and_request_fields() {
+    let report = xtask::memory_baseline::diagnostic_fixture_report();
+    assert!(
+        xtask::memory_baseline::validate_baseline_report(&report).is_empty(),
+        "executor-shaped fixture must satisfy the strict report schema"
+    );
+
+    for path in [
+        vec!["instrumentation_mode"],
+        vec!["resp_connection_lifecycle"],
+        vec!["checkpoints", "0", "performance", "request_count"],
+    ] {
+        let mut mutated = report.clone();
+        let mut value = &mut mutated;
+        for component in &path[..path.len() - 1] {
+            value = if let Ok(index) = component.parse::<usize>() {
+                &mut value[index]
+            } else {
+                &mut value[*component]
+            };
+        }
+        value
+            .as_object_mut()
+            .expect("parent object")
+            .remove(*path.last().expect("field"));
+        let problems = xtask::memory_baseline::validate_baseline_report(&mutated);
+        assert!(
+            problems
+                .iter()
+                .any(|problem| problem.contains("schema violation")),
+            "missing {path:?} was accepted: {problems:#?}"
+        );
+    }
+}
+
+#[test]
 fn diagnostic_source_override_cannot_promote_evidence() {
     let mut report = xtask::memory_baseline::diagnostic_fixture_report();
     report["source_sha"] = serde_json::json!("0123456789012345678901234567890123456789");
