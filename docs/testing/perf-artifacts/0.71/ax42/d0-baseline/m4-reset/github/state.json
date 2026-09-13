@@ -1,0 +1,173 @@
+{
+  "admission": {
+    "admitted_at": "2026-09-13T07:59:25.304853+00:00",
+    "manifest": "admission/admission-manifest.json",
+    "manifest_sha256": "sha256:ea9b89fd5e11e000da229d78926b469385ca57583efc4f21b9ed5e3db08263d1"
+  },
+  "admitted_host_cap_seconds": 21600,
+  "builds": {
+    "B1-instrumented": {
+      "manifest": "builds/B1-instrumented/build-manifest.json",
+      "manifest_sha256": "sha256:3cca512b8d8c7f8acbbdabb85344cee4672951e8adec4e4aa13c82482f5f4664"
+    }
+  },
+  "campaign_id": "hc071-d0-ax42-20260913-m4-01",
+  "campaign_role": "baseline",
+  "case_ids": [
+    "M4-reset"
+  ],
+  "cohorts": [
+    "B1-instrumented"
+  ],
+  "completed_at": "2026-09-13T08:30:21.453609+00:00",
+  "controller_sha": "9c533d1de5a25b83bcb294e5b939064737b7d9fc",
+  "controller_tools": {
+    "hc2_helper_manifest": "builds/controller-tools/hc2-helper-manifest.json",
+    "hc2_helper_manifest_sha256": "sha256:74984c1e198c20b4008bb6fa31576cc6c1c2eeac0f04df1540011230e09fc880"
+  },
+  "created_at": "2026-09-13T07:55:48.439113+00:00",
+  "identity": {
+    "path": "campaign-identity.json",
+    "sha256": "sha256:51084e20364527438924b40c16221ff10874398962a7a181e357b4a8fb5aef93"
+  },
+  "job_count": 3,
+  "jobs": [
+    {
+      "attempts": [
+        {
+          "attempt": 1,
+          "elapsed_ns": 618640741607,
+          "exact_command": [
+            "/usr/bin/python3",
+            "/opt/actions-runner/_work/hydracache/hydracache/trusted-harness/scripts/perf/memory_case_executor_071.py",
+            "--job",
+            "/var/lib/hydracache-memory/campaigns/hc071-d0-ax42-20260913-m4-01/job-specs/M4-reset__cycles-60__B1-instrumented__r1.json",
+            "--build-manifest",
+            "/var/lib/hydracache-memory/campaigns/hc071-d0-ax42-20260913-m4-01/builds/B1-instrumented/build-manifest.json",
+            "--output",
+            "/var/lib/hydracache-memory/campaigns/hc071-d0-ax42-20260913-m4-01/jobs/M4-reset__cycles-60__B1-instrumented__r1",
+            "--scenario-digest",
+            "sha256:c85fa4fcc8fc87cba85bb710aa96ca60eb0be94136793872064dfc31281b3252",
+            "--provider",
+            "system",
+            "--host-preflight",
+            "/var/lib/hydracache-memory/campaigns/hc071-d0-ax42-20260913-m4-01/admission/host-preflight.json"
+          ],
+          "started_at": "2026-09-13T08:09:44.037610+00:00",
+          "status": "success"
+        }
+      ],
+      "case_id": "M4-reset",
+      "cell_id": "M4-reset__cycles-60",
+      "cohort": "B1-instrumented",
+      "dimensions": {
+        "cycles": 60
+      },
+      "job_id": "M4-reset__cycles-60__B1-instrumented__r1",
+      "repetition": 1,
+      "status": "success"
+    },
+    {
+      "attempts": [
+        {
+          "attempt": 1,
+          "elapsed_ns": 618589962070,
+          "exact_command": [
+            "/usr/bin/python3",
+            "/opt/actions-runner/_work/hydracache/hydracache/trusted-harness/scripts/perf/memory_case_executor_071.py",
+            "--job",
+            "/var/lib/hydracache-memory/campaigns/hc071-d0-ax42-20260913-m4-01/job-specs/M4-reset__cycles-60__B1-instrumented__r2.json",
+            "--build-manifest",
+            "/var/lib/hydracache-memory/campaigns/hc071-d0-ax42-20260913-m4-01/builds/B1-instrumented/build-manifest.json",
+            "--output",
+            "/var/lib/hydracache-memory/campaigns/hc071-d0-ax42-20260913-m4-01/jobs/M4-reset__cycles-60__B1-instrumented__r2",
+            "--scenario-digest",
+            "sha256:c85fa4fcc8fc87cba85bb710aa96ca60eb0be94136793872064dfc31281b3252",
+            "--provider",
+            "system",
+            "--host-preflight",
+            "/var/lib/hydracache-memory/campaigns/hc071-d0-ax42-20260913-m4-01/admission/host-preflight.json"
+          ],
+          "started_at": "2026-09-13T08:20:02.658492+00:00",
+          "status": "success"
+        }
+      ],
+      "case_id": "M4-reset",
+      "cell_id": "M4-reset__cycles-60",
+      "cohort": "B1-instrumented",
+      "dimensions": {
+        "cycles": 60
+      },
+      "job_id": "M4-reset__cycles-60__B1-instrumented__r2",
+      "repetition": 2,
+      "status": "success"
+    },
+    {
+      "attempts": [
+        {
+          "attempt": 1,
+          "elapsed_ns": 618742069248,
+          "exact_command": [
+            "/usr/bin/python3",
+            "/opt/actions-runner/_work/hydracache/hydracache/trusted-harness/scripts/perf/memory_case_executor_071.py",
+            "--job",
+            "/var/lib/hydracache-memory/campaigns/hc071-d0-ax42-20260913-m4-01/job-specs/M4-reset__cycles-60__B1-instrumented__r3.json",
+            "--build-manifest",
+            "/var/lib/hydracache-memory/campaigns/hc071-d0-ax42-20260913-m4-01/builds/B1-instrumented/build-manifest.json",
+            "--output",
+            "/var/lib/hydracache-memory/campaigns/hc071-d0-ax42-20260913-m4-01/jobs/M4-reset__cycles-60__B1-instrumented__r3",
+            "--scenario-digest",
+            "sha256:c85fa4fcc8fc87cba85bb710aa96ca60eb0be94136793872064dfc31281b3252",
+            "--provider",
+            "system",
+            "--host-preflight",
+            "/var/lib/hydracache-memory/campaigns/hc071-d0-ax42-20260913-m4-01/admission/host-preflight.json"
+          ],
+          "started_at": "2026-09-13T08:30:21.429853+00:00",
+          "status": "success"
+        }
+      ],
+      "case_id": "M4-reset",
+      "cell_id": "M4-reset__cycles-60",
+      "cohort": "B1-instrumented",
+      "dimensions": {
+        "cycles": 60
+      },
+      "job_id": "M4-reset__cycles-60__B1-instrumented__r3",
+      "repetition": 3,
+      "status": "success"
+    }
+  ],
+  "mirror_root": "/mnt/hydracache-protected-memory",
+  "mode": "evidence",
+  "published_jobs": {
+    "M4-reset__cycles-60__B1-instrumented__r1": {
+      "archive": "/mnt/hydracache-protected-memory/hc071-d0-ax42-20260913-m4-01/jobs/M4-reset__cycles-60__B1-instrumented__r1.tar.gz",
+      "archive_sha256": "sha256:713d285885f03b8ad76c0d3cd3d3adfb7475dbef1f4e8fbfb044db737e926645",
+      "receipt": "/mnt/hydracache-protected-memory/hc071-d0-ax42-20260913-m4-01/jobs/M4-reset__cycles-60__B1-instrumented__r1.json"
+    },
+    "M4-reset__cycles-60__B1-instrumented__r2": {
+      "archive": "/mnt/hydracache-protected-memory/hc071-d0-ax42-20260913-m4-01/jobs/M4-reset__cycles-60__B1-instrumented__r2.tar.gz",
+      "archive_sha256": "sha256:82c4a1f602e3ffb2329320928b053c46fee56be6f977add773f3f598c5c82bf2",
+      "receipt": "/mnt/hydracache-protected-memory/hc071-d0-ax42-20260913-m4-01/jobs/M4-reset__cycles-60__B1-instrumented__r2.json"
+    },
+    "M4-reset__cycles-60__B1-instrumented__r3": {
+      "archive": "/mnt/hydracache-protected-memory/hc071-d0-ax42-20260913-m4-01/jobs/M4-reset__cycles-60__B1-instrumented__r3.tar.gz",
+      "archive_sha256": "sha256:471634ab12d2695cbe049cffd85975ca61f7194e845f516dfd877a0f51ac32bf",
+      "receipt": "/mnt/hydracache-protected-memory/hc071-d0-ax42-20260913-m4-01/jobs/M4-reset__cycles-60__B1-instrumented__r3.json"
+    }
+  },
+  "release": "0.71",
+  "row_time_caps_seconds": {
+    "M4-reset": 21600
+  },
+  "scenario": "docs/testing/perf-scenarios/0.71/memory-efficiency-v1.toml",
+  "scenario_digest": "sha256:c85fa4fcc8fc87cba85bb710aa96ca60eb0be94136793872064dfc31281b3252",
+  "schema_version": 1,
+  "source_sha": "906aa24cc22ad6b50b824120ed6364208484203a",
+  "source_shas": {
+    "B1-instrumented": "906aa24cc22ad6b50b824120ed6364208484203a"
+  },
+  "status": "success",
+  "workflow_sha": "9c533d1de5a25b83bcb294e5b939064737b7d9fc"
+}

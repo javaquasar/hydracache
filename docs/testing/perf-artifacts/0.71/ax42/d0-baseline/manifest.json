@@ -1,0 +1,101 @@
+{
+  "schema_version": 1,
+  "release": "0.71",
+  "gate": "D0-baseline-ready",
+  "host_class": "hetzner-ax42-dedicated",
+  "source_sha": "906aa24cc22ad6b50b824120ed6364208484203a",
+  "workflow_sha": "9c533d1de5a25b83bcb294e5b939064737b7d9fc",
+  "result": "success",
+  "job_count": 105,
+  "completed_jobs": 105,
+  "campaigns": [
+    {
+      "slot": "M0",
+      "scenario": "cold",
+      "directory": "m0-cold",
+      "campaign_id": "hc071-d0-ax42-20260912-m0-07",
+      "run_id": 34718869848,
+      "job_count": 6,
+      "campaign_archive": {"bytes": 27222330, "sha256": "33b0826c2fddda13753908eb69c9037ee45ad5418fa93f148e0c7f797d464538"},
+      "mirror_archive": {"bytes": 25987, "sha256": "85e22cde5c22e33e850694a61f826f7d6bf6b71af5a57a2f58cfee059cadda6f"}
+    },
+    {
+      "slot": "M1",
+      "scenario": "shape",
+      "directory": "m1-shape",
+      "campaign_id": "hc071-d0-ax42-20260912-m1-01",
+      "run_id": 34721063612,
+      "job_count": 48,
+      "campaign_archive": {"bytes": 19434868, "sha256": "7b64f974ee019cde976113d604d7d9e8b89e1660493085b8a7f6d97fb7dfc45d"},
+      "mirror_archive": {"bytes": 252394, "sha256": "787da575328b6a5fa9b99ebeab132794171c6fd2845c9b0e12a7641ffcb9d494"}
+    },
+    {
+      "slot": "M2",
+      "scenario": "rewrite",
+      "directory": "m2-rewrite",
+      "campaign_id": "hc071-d0-ax42-20260913-m2-01",
+      "run_id": 34742078073,
+      "job_count": 6,
+      "campaign_archive": {"bytes": 19195845, "sha256": "2eeb4bef418e1ed78ad3c75279dfac7b01f0109c26dccb023e8167f154299716"},
+      "mirror_archive": {"bytes": 32180, "sha256": "3c0fd487f584ae77a0afeea17df15d1ebd4725a60dd4207dda0e8b6c736b3753"}
+    },
+    {
+      "slot": "M3",
+      "scenario": "ttl",
+      "directory": "m3-ttl",
+      "campaign_id": "hc071-d0-ax42-20260913-m3-01",
+      "run_id": 34745085320,
+      "job_count": 3,
+      "campaign_archive": {"bytes": 19179912, "sha256": "0b0c0032d0e67dafeb63e568451b9ee5cd17b3c780e1550c18cae8e3c95601ea"},
+      "mirror_archive": {"bytes": 16634, "sha256": "5aabbcbb6a3e488f1b22727a5eac042bc026cf1427ca6bb9a3f603354f653eae"}
+    },
+    {
+      "slot": "M4",
+      "scenario": "reset",
+      "directory": "m4-reset",
+      "campaign_id": "hc071-d0-ax42-20260913-m4-01",
+      "run_id": 34746314692,
+      "job_count": 3,
+      "campaign_archive": {"bytes": 19180548, "sha256": "407ecdec385e80ec8d8eff86653a151c2f6df6c5dc383f4ee276f9ed692c5dd1"},
+      "mirror_archive": {"bytes": 16628, "sha256": "ec53f3d98ac40557b43c056a17f931c646dcdba874db76272db5b0e1081c9f42"}
+    },
+    {
+      "slot": "M5",
+      "scenario": "tags",
+      "directory": "m5-tags",
+      "campaign_id": "hc071-d0-ax42-20260913-m5-01",
+      "run_id": 34748154680,
+      "job_count": 18,
+      "campaign_archive": {"bytes": 19272133, "sha256": "d594773f29e262bab3116bf6399886af8b58f893c3e7bd9c5e657a2655b2255f"},
+      "mirror_archive": {"bytes": 103481, "sha256": "065c9159264115f7c996808813e1af4eda67789e2c00f7c6d5c38543d75497f8"}
+    },
+    {
+      "slot": "M6",
+      "scenario": "connections",
+      "directory": "m6-connections",
+      "campaign_id": "hc071-d0-ax42-20260913-m6-01",
+      "run_id": 34755585783,
+      "job_count": 15,
+      "campaign_archive": {
+        "published_file": "hc071-d0-ax42-20260913-m6-01.campaign.sanitized.tar.gz",
+        "bytes": 19095941,
+        "sha256": "65fd85162acbdae972aa17bad6e7efa36028322877528b565f6c204d99221662",
+        "original_bytes": 19288362,
+        "original_sha256": "220fdf1478b5c0e709616629e568bfac3f6ad7508f1100475b3005986f3a1651",
+        "redaction_receipt": "redaction-receipt.json",
+        "removed_generated_private_keys": 30
+      },
+      "mirror_archive": {"bytes": 116169, "sha256": "aca21ba40965c2f310827698d4df3e4f9f88b73dfeb659ac00f08a4df9bc7bee"}
+    },
+    {
+      "slot": "M7",
+      "scenario": "persistence",
+      "directory": "m7-persistence",
+      "campaign_id": "hc071-d0-ax42-20260913-m7-01",
+      "run_id": 34763224825,
+      "job_count": 6,
+      "campaign_archive": {"bytes": 19200096, "sha256": "9a821a5363d44d9c0e9ac6ed6a672b3be3e16abb373145c641d2a9b99e0a2bec"},
+      "mirror_archive": {"bytes": 35733, "sha256": "0adede1b0a4acd5bd1d8dbe0e124ab92bfedea568bcd7fd8d9d84e3ae89cf7bf"}
+    }
+  ]
+}

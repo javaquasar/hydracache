@@ -1,0 +1,14 @@
+{"at": "2026-09-12T21:06:38.472342+00:00", "campaign_role": "baseline", "event": "campaign-planned", "job_count": 6, "source_sha": "906aa24cc22ad6b50b824120ed6364208484203a", "workflow_sha": "9c533d1de5a25b83bcb294e5b939064737b7d9fc"}
+{"at": "2026-09-12T21:11:41.428196+00:00", "attempt": 1, "event": "job-started", "job_id": "M0-cold__B0-release__r1"}
+{"at": "2026-09-12T21:16:42.341844+00:00", "attempt": 1, "event": "job-finished", "job_id": "M0-cold__B0-release__r1", "status": "success"}
+{"at": "2026-09-12T21:16:42.351594+00:00", "attempt": 1, "event": "job-started", "job_id": "M0-cold__B1-instrumented__r1"}
+{"at": "2026-09-12T21:21:43.363161+00:00", "attempt": 1, "event": "job-finished", "job_id": "M0-cold__B1-instrumented__r1", "status": "success"}
+{"at": "2026-09-12T21:21:43.373285+00:00", "attempt": 1, "event": "job-started", "job_id": "M0-cold__B0-release__r2"}
+{"at": "2026-09-12T21:26:44.281774+00:00", "attempt": 1, "event": "job-finished", "job_id": "M0-cold__B0-release__r2", "status": "success"}
+{"at": "2026-09-12T21:26:44.291588+00:00", "attempt": 1, "event": "job-started", "job_id": "M0-cold__B1-instrumented__r2"}
+{"at": "2026-09-12T21:31:45.297978+00:00", "attempt": 1, "event": "job-finished", "job_id": "M0-cold__B1-instrumented__r2", "status": "success"}
+{"at": "2026-09-12T21:31:45.307736+00:00", "attempt": 1, "event": "job-started", "job_id": "M0-cold__B0-release__r3"}
+{"at": "2026-09-12T21:36:46.324967+00:00", "attempt": 1, "event": "job-finished", "job_id": "M0-cold__B0-release__r3", "status": "success"}
+{"at": "2026-09-12T21:36:46.334800+00:00", "attempt": 1, "event": "job-started", "job_id": "M0-cold__B1-instrumented__r3"}
+{"at": "2026-09-12T21:41:47.339914+00:00", "attempt": 1, "event": "job-finished", "job_id": "M0-cold__B1-instrumented__r3", "status": "success"}
+{"at": "2026-09-12T21:41:47.355201+00:00", "event": "campaign-finished", "status": "success"}

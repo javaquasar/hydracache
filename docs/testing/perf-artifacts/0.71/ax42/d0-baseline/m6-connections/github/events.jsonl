@@ -1,0 +1,32 @@
+{"at": "2026-09-13T11:56:03.534559+00:00", "campaign_role": "baseline", "event": "campaign-planned", "job_count": 15, "source_sha": "906aa24cc22ad6b50b824120ed6364208484203a", "workflow_sha": "9c533d1de5a25b83bcb294e5b939064737b7d9fc"}
+{"at": "2026-09-13T11:59:39.523179+00:00", "attempt": 1, "event": "job-started", "job_id": "M6-connections__connections-1__slow_consumers-0__tls-true__B1-instrumented__r1"}
+{"at": "2026-09-13T12:09:41.327659+00:00", "attempt": 1, "event": "job-finished", "job_id": "M6-connections__connections-1__slow_consumers-0__tls-true__B1-instrumented__r1", "status": "success"}
+{"at": "2026-09-13T12:09:41.337668+00:00", "attempt": 1, "event": "job-started", "job_id": "M6-connections__connections-1__slow_consumers-0__tls-true__B1-instrumented__r2"}
+{"at": "2026-09-13T12:19:43.232831+00:00", "attempt": 1, "event": "job-finished", "job_id": "M6-connections__connections-1__slow_consumers-0__tls-true__B1-instrumented__r2", "status": "success"}
+{"at": "2026-09-13T12:19:43.242568+00:00", "attempt": 1, "event": "job-started", "job_id": "M6-connections__connections-1__slow_consumers-0__tls-true__B1-instrumented__r3"}
+{"at": "2026-09-13T12:29:44.987725+00:00", "attempt": 1, "event": "job-finished", "job_id": "M6-connections__connections-1__slow_consumers-0__tls-true__B1-instrumented__r3", "status": "success"}
+{"at": "2026-09-13T12:29:44.997509+00:00", "attempt": 1, "event": "job-started", "job_id": "M6-connections__connections-10__slow_consumers-0__tls-true__B1-instrumented__r1"}
+{"at": "2026-09-13T12:39:46.744503+00:00", "attempt": 1, "event": "job-finished", "job_id": "M6-connections__connections-10__slow_consumers-0__tls-true__B1-instrumented__r1", "status": "success"}
+{"at": "2026-09-13T12:39:46.754236+00:00", "attempt": 1, "event": "job-started", "job_id": "M6-connections__connections-10__slow_consumers-0__tls-true__B1-instrumented__r2"}
+{"at": "2026-09-13T12:49:48.553505+00:00", "attempt": 1, "event": "job-finished", "job_id": "M6-connections__connections-10__slow_consumers-0__tls-true__B1-instrumented__r2", "status": "success"}
+{"at": "2026-09-13T12:49:48.563346+00:00", "attempt": 1, "event": "job-started", "job_id": "M6-connections__connections-10__slow_consumers-0__tls-true__B1-instrumented__r3"}
+{"at": "2026-09-13T12:59:50.463373+00:00", "attempt": 1, "event": "job-finished", "job_id": "M6-connections__connections-10__slow_consumers-0__tls-true__B1-instrumented__r3", "status": "success"}
+{"at": "2026-09-13T12:59:50.473183+00:00", "attempt": 1, "event": "job-started", "job_id": "M6-connections__connections-100__slow_consumers-0__tls-true__B1-instrumented__r1"}
+{"at": "2026-09-13T13:09:52.375244+00:00", "attempt": 1, "event": "job-finished", "job_id": "M6-connections__connections-100__slow_consumers-0__tls-true__B1-instrumented__r1", "status": "success"}
+{"at": "2026-09-13T13:09:52.385019+00:00", "attempt": 1, "event": "job-started", "job_id": "M6-connections__connections-100__slow_consumers-0__tls-true__B1-instrumented__r2"}
+{"at": "2026-09-13T13:19:54.379618+00:00", "attempt": 1, "event": "job-finished", "job_id": "M6-connections__connections-100__slow_consumers-0__tls-true__B1-instrumented__r2", "status": "success"}
+{"at": "2026-09-13T13:19:54.389431+00:00", "attempt": 1, "event": "job-started", "job_id": "M6-connections__connections-100__slow_consumers-0__tls-true__B1-instrumented__r3"}
+{"at": "2026-09-13T13:29:56.287678+00:00", "attempt": 1, "event": "job-finished", "job_id": "M6-connections__connections-100__slow_consumers-0__tls-true__B1-instrumented__r3", "status": "success"}
+{"at": "2026-09-13T13:29:56.297384+00:00", "attempt": 1, "event": "job-started", "job_id": "M6-connections__connections-1000__slow_consumers-0__tls-true__B1-instrumented__r1"}
+{"at": "2026-09-13T13:39:58.995557+00:00", "attempt": 1, "event": "job-finished", "job_id": "M6-connections__connections-1000__slow_consumers-0__tls-true__B1-instrumented__r1", "status": "success"}
+{"at": "2026-09-13T13:39:59.005290+00:00", "attempt": 1, "event": "job-started", "job_id": "M6-connections__connections-1000__slow_consumers-0__tls-true__B1-instrumented__r2"}
+{"at": "2026-09-13T13:50:01.750017+00:00", "attempt": 1, "event": "job-finished", "job_id": "M6-connections__connections-1000__slow_consumers-0__tls-true__B1-instrumented__r2", "status": "success"}
+{"at": "2026-09-13T13:50:01.755494+00:00", "attempt": 1, "event": "job-started", "job_id": "M6-connections__connections-1000__slow_consumers-0__tls-true__B1-instrumented__r3"}
+{"at": "2026-09-13T14:00:04.557453+00:00", "attempt": 1, "event": "job-finished", "job_id": "M6-connections__connections-1000__slow_consumers-0__tls-true__B1-instrumented__r3", "status": "success"}
+{"at": "2026-09-13T14:00:04.562859+00:00", "attempt": 1, "event": "job-started", "job_id": "M6-connections__connections-100__slow_consumers-100__tls-true__B1-instrumented__r1"}
+{"at": "2026-09-13T14:10:06.559611+00:00", "attempt": 1, "event": "job-finished", "job_id": "M6-connections__connections-100__slow_consumers-100__tls-true__B1-instrumented__r1", "status": "success"}
+{"at": "2026-09-13T14:10:06.569338+00:00", "attempt": 1, "event": "job-started", "job_id": "M6-connections__connections-100__slow_consumers-100__tls-true__B1-instrumented__r2"}
+{"at": "2026-09-13T14:20:08.655850+00:00", "attempt": 1, "event": "job-finished", "job_id": "M6-connections__connections-100__slow_consumers-100__tls-true__B1-instrumented__r2", "status": "success"}
+{"at": "2026-09-13T14:20:08.665670+00:00", "attempt": 1, "event": "job-started", "job_id": "M6-connections__connections-100__slow_consumers-100__tls-true__B1-instrumented__r3"}
+{"at": "2026-09-13T14:30:10.661014+00:00", "attempt": 1, "event": "job-finished", "job_id": "M6-connections__connections-100__slow_consumers-100__tls-true__B1-instrumented__r3", "status": "success"}
+{"at": "2026-09-13T14:30:10.676888+00:00", "event": "campaign-finished", "status": "success"}

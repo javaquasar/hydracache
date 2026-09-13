@@ -1,0 +1,38 @@
+{"at": "2026-09-13T08:41:17.532048+00:00", "campaign_role": "baseline", "event": "campaign-planned", "job_count": 18, "source_sha": "906aa24cc22ad6b50b824120ed6364208484203a", "workflow_sha": "9c533d1de5a25b83bcb294e5b939064737b7d9fc"}
+{"at": "2026-09-13T08:44:54.929442+00:00", "attempt": 1, "event": "job-started", "job_id": "M5-tags__distribution-uniform__tag_pool-private-per-entry__tags_per_entry-0__B1-instrumented__r1"}
+{"at": "2026-09-13T08:54:56.619302+00:00", "attempt": 1, "event": "job-finished", "job_id": "M5-tags__distribution-uniform__tag_pool-private-per-entry__tags_per_entry-0__B1-instrumented__r1", "status": "success"}
+{"at": "2026-09-13T08:54:56.629042+00:00", "attempt": 1, "event": "job-started", "job_id": "M5-tags__distribution-uniform__tag_pool-private-per-entry__tags_per_entry-0__B1-instrumented__r2"}
+{"at": "2026-09-13T09:04:58.271599+00:00", "attempt": 1, "event": "job-finished", "job_id": "M5-tags__distribution-uniform__tag_pool-private-per-entry__tags_per_entry-0__B1-instrumented__r2", "status": "success"}
+{"at": "2026-09-13T09:04:58.281430+00:00", "attempt": 1, "event": "job-started", "job_id": "M5-tags__distribution-uniform__tag_pool-private-per-entry__tags_per_entry-0__B1-instrumented__r3"}
+{"at": "2026-09-13T09:14:59.924319+00:00", "attempt": 1, "event": "job-finished", "job_id": "M5-tags__distribution-uniform__tag_pool-private-per-entry__tags_per_entry-0__B1-instrumented__r3", "status": "success"}
+{"at": "2026-09-13T09:14:59.934198+00:00", "attempt": 1, "event": "job-started", "job_id": "M5-tags__distribution-uniform__tag_pool-private-per-entry__tags_per_entry-1__B1-instrumented__r1"}
+{"at": "2026-09-13T09:25:01.992531+00:00", "attempt": 1, "event": "job-finished", "job_id": "M5-tags__distribution-uniform__tag_pool-private-per-entry__tags_per_entry-1__B1-instrumented__r1", "status": "success"}
+{"at": "2026-09-13T09:25:02.002508+00:00", "attempt": 1, "event": "job-started", "job_id": "M5-tags__distribution-uniform__tag_pool-private-per-entry__tags_per_entry-1__B1-instrumented__r2"}
+{"at": "2026-09-13T09:35:04.201460+00:00", "attempt": 1, "event": "job-finished", "job_id": "M5-tags__distribution-uniform__tag_pool-private-per-entry__tags_per_entry-1__B1-instrumented__r2", "status": "success"}
+{"at": "2026-09-13T09:35:04.211316+00:00", "attempt": 1, "event": "job-started", "job_id": "M5-tags__distribution-uniform__tag_pool-private-per-entry__tags_per_entry-1__B1-instrumented__r3"}
+{"at": "2026-09-13T09:45:06.305464+00:00", "attempt": 1, "event": "job-finished", "job_id": "M5-tags__distribution-uniform__tag_pool-private-per-entry__tags_per_entry-1__B1-instrumented__r3", "status": "success"}
+{"at": "2026-09-13T09:45:06.315297+00:00", "attempt": 1, "event": "job-started", "job_id": "M5-tags__distribution-uniform__tag_pool-private-per-entry__tags_per_entry-4__B1-instrumented__r1"}
+{"at": "2026-09-13T09:55:08.615596+00:00", "attempt": 1, "event": "job-finished", "job_id": "M5-tags__distribution-uniform__tag_pool-private-per-entry__tags_per_entry-4__B1-instrumented__r1", "status": "success"}
+{"at": "2026-09-13T09:55:08.625334+00:00", "attempt": 1, "event": "job-started", "job_id": "M5-tags__distribution-uniform__tag_pool-private-per-entry__tags_per_entry-4__B1-instrumented__r2"}
+{"at": "2026-09-13T10:05:10.823718+00:00", "attempt": 1, "event": "job-finished", "job_id": "M5-tags__distribution-uniform__tag_pool-private-per-entry__tags_per_entry-4__B1-instrumented__r2", "status": "success"}
+{"at": "2026-09-13T10:05:10.833435+00:00", "attempt": 1, "event": "job-started", "job_id": "M5-tags__distribution-uniform__tag_pool-private-per-entry__tags_per_entry-4__B1-instrumented__r3"}
+{"at": "2026-09-13T10:15:13.039561+00:00", "attempt": 1, "event": "job-finished", "job_id": "M5-tags__distribution-uniform__tag_pool-private-per-entry__tags_per_entry-4__B1-instrumented__r3", "status": "success"}
+{"at": "2026-09-13T10:15:13.051890+00:00", "attempt": 1, "event": "job-started", "job_id": "M5-tags__distribution-uniform__tag_pool-private-per-entry__tags_per_entry-16__B1-instrumented__r1"}
+{"at": "2026-09-13T10:25:15.600307+00:00", "attempt": 1, "event": "job-finished", "job_id": "M5-tags__distribution-uniform__tag_pool-private-per-entry__tags_per_entry-16__B1-instrumented__r1", "status": "success"}
+{"at": "2026-09-13T10:25:15.610069+00:00", "attempt": 1, "event": "job-started", "job_id": "M5-tags__distribution-uniform__tag_pool-private-per-entry__tags_per_entry-16__B1-instrumented__r2"}
+{"at": "2026-09-13T10:35:18.252944+00:00", "attempt": 1, "event": "job-finished", "job_id": "M5-tags__distribution-uniform__tag_pool-private-per-entry__tags_per_entry-16__B1-instrumented__r2", "status": "success"}
+{"at": "2026-09-13T10:35:18.262733+00:00", "attempt": 1, "event": "job-started", "job_id": "M5-tags__distribution-uniform__tag_pool-private-per-entry__tags_per_entry-16__B1-instrumented__r3"}
+{"at": "2026-09-13T10:45:20.953917+00:00", "attempt": 1, "event": "job-finished", "job_id": "M5-tags__distribution-uniform__tag_pool-private-per-entry__tags_per_entry-16__B1-instrumented__r3", "status": "success"}
+{"at": "2026-09-13T10:45:20.963719+00:00", "attempt": 1, "event": "job-started", "job_id": "M5-tags__distribution-one-hot__tag_pool-1__tags_per_entry-1__B1-instrumented__r1"}
+{"at": "2026-09-13T10:55:23.109478+00:00", "attempt": 1, "event": "job-finished", "job_id": "M5-tags__distribution-one-hot__tag_pool-1__tags_per_entry-1__B1-instrumented__r1", "status": "success"}
+{"at": "2026-09-13T10:55:23.114926+00:00", "attempt": 1, "event": "job-started", "job_id": "M5-tags__distribution-one-hot__tag_pool-1__tags_per_entry-1__B1-instrumented__r2"}
+{"at": "2026-09-13T11:05:25.155107+00:00", "attempt": 1, "event": "job-finished", "job_id": "M5-tags__distribution-one-hot__tag_pool-1__tags_per_entry-1__B1-instrumented__r2", "status": "success"}
+{"at": "2026-09-13T11:05:25.165005+00:00", "attempt": 1, "event": "job-started", "job_id": "M5-tags__distribution-one-hot__tag_pool-1__tags_per_entry-1__B1-instrumented__r3"}
+{"at": "2026-09-13T11:15:27.358814+00:00", "attempt": 1, "event": "job-finished", "job_id": "M5-tags__distribution-one-hot__tag_pool-1__tags_per_entry-1__B1-instrumented__r3", "status": "success"}
+{"at": "2026-09-13T11:15:27.371283+00:00", "attempt": 1, "event": "job-started", "job_id": "M5-tags__distribution-high-fanout__tag_pool-16__tags_per_entry-16__B1-instrumented__r1"}
+{"at": "2026-09-13T11:25:29.766691+00:00", "attempt": 1, "event": "job-finished", "job_id": "M5-tags__distribution-high-fanout__tag_pool-16__tags_per_entry-16__B1-instrumented__r1", "status": "success"}
+{"at": "2026-09-13T11:25:29.772130+00:00", "attempt": 1, "event": "job-started", "job_id": "M5-tags__distribution-high-fanout__tag_pool-16__tags_per_entry-16__B1-instrumented__r2"}
+{"at": "2026-09-13T11:35:32.259321+00:00", "attempt": 1, "event": "job-finished", "job_id": "M5-tags__distribution-high-fanout__tag_pool-16__tags_per_entry-16__B1-instrumented__r2", "status": "success"}
+{"at": "2026-09-13T11:35:32.269070+00:00", "attempt": 1, "event": "job-started", "job_id": "M5-tags__distribution-high-fanout__tag_pool-16__tags_per_entry-16__B1-instrumented__r3"}
+{"at": "2026-09-13T11:45:34.665822+00:00", "attempt": 1, "event": "job-finished", "job_id": "M5-tags__distribution-high-fanout__tag_pool-16__tags_per_entry-16__B1-instrumented__r3", "status": "success"}
+{"at": "2026-09-13T11:45:34.681852+00:00", "event": "campaign-finished", "status": "success"}
