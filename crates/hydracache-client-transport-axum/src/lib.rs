@@ -61,6 +61,9 @@ pub const CLIENT_SURFACE_IDEMPOTENCY_CAPACITY: usize = 4_096;
 /// Retention window for a successful idempotent outcome.
 pub const CLIENT_SURFACE_IDEMPOTENCY_TTL_MS: u64 = 24 * 60 * 60 * 1_000;
 
+/// Maximum interval between opportunistic expired-entry sweeps while traffic is active.
+pub const CLIENT_SURFACE_EXPIRY_SWEEP_INTERVAL_MS: u64 = 1_000;
+
 /// Mutation kind emitted after a verified client-surface state transition.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum ClientSurfaceMutationKind {
@@ -494,6 +497,7 @@ pub struct ClientSurfaceState {
     store: Mutex<BTreeMap<StoreKey, StoredValue>>,
     cache_now_ms_for_tests: Mutex<Option<u64>>,
     cache_time_floor_ms: AtomicU64,
+    next_expiry_sweep_ms: AtomicU64,
     idempotency_keys: Mutex<BTreeMap<IdempotencyKey, IdempotencyRecord>>,
     lock_service: Mutex<ClientLockService>,
     audit_sink: Arc<InMemoryAuditSink>,
@@ -519,6 +523,7 @@ impl ClientSurfaceState {
             store: Mutex::new(BTreeMap::new()),
             cache_now_ms_for_tests: Mutex::new(None),
             cache_time_floor_ms: AtomicU64::new(0),
+            next_expiry_sweep_ms: AtomicU64::new(0),
             idempotency_keys: Mutex::new(BTreeMap::new()),
             lock_service: Mutex::new(ClientLockService::new()),
             audit: Mutex::new(AuditRecorder::new(Arc::clone(&audit_sink))),
@@ -547,6 +552,7 @@ impl ClientSurfaceState {
             store: Mutex::new(BTreeMap::new()),
             cache_now_ms_for_tests: Mutex::new(None),
             cache_time_floor_ms: AtomicU64::new(0),
+            next_expiry_sweep_ms: AtomicU64::new(0),
             idempotency_keys: Mutex::new(BTreeMap::new()),
             lock_service: Mutex::new(ClientLockService::new()),
             audit: Mutex::new(AuditRecorder::new(Arc::clone(&audit_sink))),
@@ -648,6 +654,7 @@ impl ClientSurfaceState {
     /// fields momentarily non-atomic, so release evidence must quiesce clients
     /// before calling this method.
     pub fn retained_state_for_diagnostics(&self) -> ClientSurfaceRetainedState {
+        self.sweep_expired_entries(self.now_ms(), true);
         let idempotency = self.idempotency_keys.lock().expect("idempotency mutex");
         let store = self.store.lock().expect("store mutex");
         let lock_service = self.lock_service.lock().expect("lock service mutex");
@@ -815,6 +822,58 @@ impl ClientSurfaceState {
         candidate.max(previous)
     }
 
+    fn sweep_expired_entries(&self, now_ms: u64, force: bool) -> usize {
+        let next = self.next_expiry_sweep_ms.load(Ordering::SeqCst);
+        if !force && now_ms < next {
+            return 0;
+        }
+        if !force
+            && self
+                .next_expiry_sweep_ms
+                .compare_exchange(
+                    next,
+                    now_ms.saturating_add(CLIENT_SURFACE_EXPIRY_SWEEP_INTERVAL_MS),
+                    Ordering::SeqCst,
+                    Ordering::SeqCst,
+                )
+                .is_err()
+        {
+            return 0;
+        }
+        if force {
+            self.next_expiry_sweep_ms.store(
+                now_ms.saturating_add(CLIENT_SURFACE_EXPIRY_SWEEP_INTERVAL_MS),
+                Ordering::SeqCst,
+            );
+        }
+
+        let removed = if let Some(isolation) = &self.isolation {
+            let mut isolation = isolation.lock().expect("isolation mutex");
+            let mut store = self.store.lock().expect("store mutex");
+            let expired = store
+                .iter()
+                .filter(|(_, value)| value.is_expired(now_ms))
+                .map(|(key, _)| key.clone())
+                .collect::<Vec<_>>();
+            for (tenant, namespace, key) in &expired {
+                let tenant = TenantId::new(tenant).expect("stored tenant identity was validated");
+                isolation.remove_entry_for_tenant(&tenant, namespace, key);
+                store.remove(&(tenant.as_str().to_owned(), namespace.clone(), key.clone()));
+            }
+            expired.len()
+        } else {
+            let mut store = self.store.lock().expect("store mutex");
+            let before = store.len();
+            store.retain(|_, value| !value.is_expired(now_ms));
+            before.saturating_sub(store.len())
+        };
+        if removed != 0 {
+            self.state_mutations
+                .fetch_add(removed as u64, Ordering::SeqCst);
+        }
+        removed
+    }
+
     fn begin_subscription(&self) {
         self.active_subscriptions.fetch_add(1, Ordering::SeqCst);
     }
@@ -879,6 +938,7 @@ impl ClientSurfaceState {
             )
             .with_protocol_version(response_protocol_version);
         }
+        self.sweep_expired_entries(self.now_ms(), false);
 
         let response = match envelope.request {
             ClientRequest::Get { ns, key } => {
@@ -2709,18 +2769,93 @@ mod retention_tests {
         key: String,
         idempotency_key: Option<String>,
     ) -> ClientResponseEnvelope {
+        put_for_key_with_ttl(state, identity, request_id, key, idempotency_key, None)
+    }
+
+    fn put_for_key_with_ttl(
+        state: &ClientSurfaceState,
+        identity: &ClientIdentity,
+        request_id: String,
+        key: String,
+        idempotency_key: Option<String>,
+        ttl_ms: Option<u64>,
+    ) -> ClientResponseEnvelope {
         let mut request = ClientRequestEnvelope::new(
             request_id,
             ClientRequest::Put {
                 ns: Namespace::new("retention").unwrap(),
                 key: StructuredKey::new(vec![key]).unwrap(),
                 value: b"value".to_vec(),
-                ttl_ms: None,
+                ttl_ms,
                 dimensions: Vec::new(),
             },
         );
         request.idempotency_key = idempotency_key;
         state.dispatch_verified_request(identity, request)
+    }
+
+    #[test]
+    fn expired_entries_are_reaped_without_key_access() {
+        let state = ClientSurfaceState::new(ClientSurfaceLimits::default()).unwrap();
+        let identity = ClientIdentity::new("client", "tenant").unwrap();
+        state.set_cache_time_for_tests(Some(1_000));
+        for index in 0..128 {
+            let response = put_for_key_with_ttl(
+                &state,
+                &identity,
+                format!("put-{index}"),
+                format!("ttl-{index}"),
+                None,
+                Some(500),
+            );
+            assert!(response.result.is_ok());
+        }
+        assert_eq!(state.retained_state_for_diagnostics().store_entries, 128);
+
+        state.advance_cache_time_for_tests(501);
+        let reclaimed = state.retained_state_for_diagnostics();
+
+        assert_eq!(reclaimed.store_entries, 0);
+        assert_eq!(reclaimed.value_bytes, 0);
+        assert_eq!(reclaimed.store_identity_bytes, 0);
+    }
+
+    #[test]
+    fn expiry_reaper_releases_tenant_quota_accounting() {
+        let roster = hydracache::TenantRoster::new(vec![hydracache::Tenant::new("tenant")
+            .unwrap()
+            .allow_client("client")
+            .namespace("retention", hydracache::NamespaceQuota::new(5, 1))])
+        .unwrap();
+        let state = ClientSurfaceState::with_isolation(
+            ClientSurfaceLimits::default(),
+            ConsumerIsolation::new(roster, hydracache::ConsumerIsolationConfig::default()),
+        )
+        .unwrap();
+        let identity = ClientIdentity::new("client", "tenant").unwrap();
+        state.set_cache_time_for_tests(Some(1_000));
+        assert!(put_for_key_with_ttl(
+            &state,
+            &identity,
+            "first".to_owned(),
+            "first".to_owned(),
+            None,
+            Some(500),
+        )
+        .result
+        .is_ok());
+
+        state.advance_cache_time_for_tests(501);
+        assert_eq!(state.retained_state_for_diagnostics().store_entries, 0);
+        assert!(put_for_key(
+            &state,
+            &identity,
+            "replacement".to_owned(),
+            "replacement".to_owned(),
+            None,
+        )
+        .result
+        .is_ok());
     }
 
     #[test]
