@@ -54,6 +54,39 @@ class MemoryCaseExecutor071Tests(unittest.TestCase):
         self.assertEqual(snapshot["tag_records"], 32)
         self.assertEqual(snapshot["tag_bytes"], workload.tag_bytes())
 
+    def test_logical_accounting_combines_embedded_and_client_surface_owners(self) -> None:
+        workload = self.workload("one-hot", 1, 1)
+        document = {
+            "embedded_cache": {
+                "live_entries": 2,
+                "logical_key_bytes": 20,
+                "logical_value_bytes": 200,
+            },
+            "client_surface": {
+                "store_entries": 3,
+                "store_identity_bytes": 30,
+                "value_bytes": 300,
+            },
+        }
+
+        snapshot = executor.logical_snapshot(document, workload)
+
+        self.assertEqual(snapshot["entries"], 5)
+        self.assertEqual(snapshot["key_bytes"], 50)
+        self.assertEqual(snapshot["value_bytes"], 500)
+
+    def test_logical_accounting_does_not_replace_observed_zero_with_ledger(self) -> None:
+        workload = self.workload("one-hot", 1, 1)
+        workload.live.update({0, 1})
+
+        snapshot = executor.logical_snapshot(
+            {"embedded_cache": {}, "client_surface": {}}, workload
+        )
+
+        self.assertEqual(snapshot["entries"], 0)
+        self.assertEqual(snapshot["key_bytes"], 0)
+        self.assertEqual(snapshot["value_bytes"], 0)
+
     def test_resp_round_trip_parser(self) -> None:
         client, server = socket.socketpair()
 
