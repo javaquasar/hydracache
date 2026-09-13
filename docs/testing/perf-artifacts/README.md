@@ -25,3 +25,10 @@ physical NIC MAC address, disk serial number, disk WWN, or production/user paylo
 
 The original ZIP and host-state archives remain unchanged. Derived reports must identify their
 source campaign and must not broaden its exact-host, exact-source, and same-box claim boundaries.
+
+## 0.71 AX42 D0 memory baseline
+
+The complete eight-row D0 memory baseline is archived under
+[`0.71/ax42/d0-baseline`](0.71/ax42/d0-baseline/). Compressed server and mirror copies use Git LFS;
+the downloaded GitHub artifacts remain ordinary Git files so receipts and measurements can be
+searched and reviewed without unpacking a campaign archive.

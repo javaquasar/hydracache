@@ -1,0 +1,8 @@
+{"at": "2026-09-13T07:25:47.398604+00:00", "campaign_role": "baseline", "event": "campaign-planned", "job_count": 3, "source_sha": "906aa24cc22ad6b50b824120ed6364208484203a", "workflow_sha": "9c533d1de5a25b83bcb294e5b939064737b7d9fc"}
+{"at": "2026-09-13T07:29:22.603060+00:00", "attempt": 1, "event": "job-started", "job_id": "M3-ttl__cycles-60__B1-instrumented__r1"}
+{"at": "2026-09-13T07:36:43.418475+00:00", "attempt": 1, "event": "job-finished", "job_id": "M3-ttl__cycles-60__B1-instrumented__r1", "status": "success"}
+{"at": "2026-09-13T07:36:43.428150+00:00", "attempt": 1, "event": "job-started", "job_id": "M3-ttl__cycles-60__B1-instrumented__r2"}
+{"at": "2026-09-13T07:44:04.186289+00:00", "attempt": 1, "event": "job-finished", "job_id": "M3-ttl__cycles-60__B1-instrumented__r2", "status": "success"}
+{"at": "2026-09-13T07:44:04.195952+00:00", "attempt": 1, "event": "job-started", "job_id": "M3-ttl__cycles-60__B1-instrumented__r3"}
+{"at": "2026-09-13T07:51:24.859011+00:00", "attempt": 1, "event": "job-finished", "job_id": "M3-ttl__cycles-60__B1-instrumented__r3", "status": "success"}
+{"at": "2026-09-13T07:51:24.874674+00:00", "event": "campaign-finished", "status": "success"}

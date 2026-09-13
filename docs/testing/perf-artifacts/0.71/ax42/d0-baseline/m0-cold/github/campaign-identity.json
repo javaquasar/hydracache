@@ -1,0 +1,17 @@
+{
+  "campaign_id": "hc071-d0-ax42-20260912-m0-07",
+  "campaign_role": "baseline",
+  "case_ids": [
+    "M0-cold"
+  ],
+  "controller_sha": "9c533d1de5a25b83bcb294e5b939064737b7d9fc",
+  "release": "0.71",
+  "scenario_digest": "sha256:c85fa4fcc8fc87cba85bb710aa96ca60eb0be94136793872064dfc31281b3252",
+  "schema_version": 1,
+  "source_sha": "906aa24cc22ad6b50b824120ed6364208484203a",
+  "source_shas": {
+    "B0-release": "75719b0bf5de2250cf4eb16a30073dd7429538e3",
+    "B1-instrumented": "906aa24cc22ad6b50b824120ed6364208484203a"
+  },
+  "workflow_sha": "9c533d1de5a25b83bcb294e5b939064737b7d9fc"
+}

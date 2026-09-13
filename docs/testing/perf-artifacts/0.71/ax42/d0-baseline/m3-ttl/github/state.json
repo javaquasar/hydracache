@@ -1,0 +1,173 @@
+{
+  "admission": {
+    "admitted_at": "2026-09-13T07:29:22.520394+00:00",
+    "manifest": "admission/admission-manifest.json",
+    "manifest_sha256": "sha256:52b71c0b3e0625107dc557542430b1970df5bbdb444446c53d4a148f7a1299cc"
+  },
+  "admitted_host_cap_seconds": 21600,
+  "builds": {
+    "B1-instrumented": {
+      "manifest": "builds/B1-instrumented/build-manifest.json",
+      "manifest_sha256": "sha256:db51dd7a22b69efac12e26f92f46e979a9504bec41cc35e053adca56af415e61"
+    }
+  },
+  "campaign_id": "hc071-d0-ax42-20260913-m3-01",
+  "campaign_role": "baseline",
+  "case_ids": [
+    "M3-ttl"
+  ],
+  "cohorts": [
+    "B1-instrumented"
+  ],
+  "completed_at": "2026-09-13T07:51:24.868839+00:00",
+  "controller_sha": "9c533d1de5a25b83bcb294e5b939064737b7d9fc",
+  "controller_tools": {
+    "hc2_helper_manifest": "builds/controller-tools/hc2-helper-manifest.json",
+    "hc2_helper_manifest_sha256": "sha256:f1ffdc52f4dd4528464e2c0d87a0b7cf6398f0055981c5dfeb08f57381c4ed46"
+  },
+  "created_at": "2026-09-13T07:25:47.372768+00:00",
+  "identity": {
+    "path": "campaign-identity.json",
+    "sha256": "sha256:e348c4fc57314f22cdf6ccd6ab22a6efc8c582f89573ee10643b8739a4a1c0bb"
+  },
+  "job_count": 3,
+  "jobs": [
+    {
+      "attempts": [
+        {
+          "attempt": 1,
+          "elapsed_ns": 440790087697,
+          "exact_command": [
+            "/usr/bin/python3",
+            "/opt/actions-runner/_work/hydracache/hydracache/trusted-harness/scripts/perf/memory_case_executor_071.py",
+            "--job",
+            "/var/lib/hydracache-memory/campaigns/hc071-d0-ax42-20260913-m3-01/job-specs/M3-ttl__cycles-60__B1-instrumented__r1.json",
+            "--build-manifest",
+            "/var/lib/hydracache-memory/campaigns/hc071-d0-ax42-20260913-m3-01/builds/B1-instrumented/build-manifest.json",
+            "--output",
+            "/var/lib/hydracache-memory/campaigns/hc071-d0-ax42-20260913-m3-01/jobs/M3-ttl__cycles-60__B1-instrumented__r1",
+            "--scenario-digest",
+            "sha256:c85fa4fcc8fc87cba85bb710aa96ca60eb0be94136793872064dfc31281b3252",
+            "--provider",
+            "system",
+            "--host-preflight",
+            "/var/lib/hydracache-memory/campaigns/hc071-d0-ax42-20260913-m3-01/admission/host-preflight.json"
+          ],
+          "started_at": "2026-09-13T07:36:43.403017+00:00",
+          "status": "success"
+        }
+      ],
+      "case_id": "M3-ttl",
+      "cell_id": "M3-ttl__cycles-60",
+      "cohort": "B1-instrumented",
+      "dimensions": {
+        "cycles": 60
+      },
+      "job_id": "M3-ttl__cycles-60__B1-instrumented__r1",
+      "repetition": 1,
+      "status": "success"
+    },
+    {
+      "attempts": [
+        {
+          "attempt": 1,
+          "elapsed_ns": 440738873023,
+          "exact_command": [
+            "/usr/bin/python3",
+            "/opt/actions-runner/_work/hydracache/hydracache/trusted-harness/scripts/perf/memory_case_executor_071.py",
+            "--job",
+            "/var/lib/hydracache-memory/campaigns/hc071-d0-ax42-20260913-m3-01/job-specs/M3-ttl__cycles-60__B1-instrumented__r2.json",
+            "--build-manifest",
+            "/var/lib/hydracache-memory/campaigns/hc071-d0-ax42-20260913-m3-01/builds/B1-instrumented/build-manifest.json",
+            "--output",
+            "/var/lib/hydracache-memory/campaigns/hc071-d0-ax42-20260913-m3-01/jobs/M3-ttl__cycles-60__B1-instrumented__r2",
+            "--scenario-digest",
+            "sha256:c85fa4fcc8fc87cba85bb710aa96ca60eb0be94136793872064dfc31281b3252",
+            "--provider",
+            "system",
+            "--host-preflight",
+            "/var/lib/hydracache-memory/campaigns/hc071-d0-ax42-20260913-m3-01/admission/host-preflight.json"
+          ],
+          "started_at": "2026-09-13T07:44:04.172390+00:00",
+          "status": "success"
+        }
+      ],
+      "case_id": "M3-ttl",
+      "cell_id": "M3-ttl__cycles-60",
+      "cohort": "B1-instrumented",
+      "dimensions": {
+        "cycles": 60
+      },
+      "job_id": "M3-ttl__cycles-60__B1-instrumented__r2",
+      "repetition": 2,
+      "status": "success"
+    },
+    {
+      "attempts": [
+        {
+          "attempt": 1,
+          "elapsed_ns": 440643752688,
+          "exact_command": [
+            "/usr/bin/python3",
+            "/opt/actions-runner/_work/hydracache/hydracache/trusted-harness/scripts/perf/memory_case_executor_071.py",
+            "--job",
+            "/var/lib/hydracache-memory/campaigns/hc071-d0-ax42-20260913-m3-01/job-specs/M3-ttl__cycles-60__B1-instrumented__r3.json",
+            "--build-manifest",
+            "/var/lib/hydracache-memory/campaigns/hc071-d0-ax42-20260913-m3-01/builds/B1-instrumented/build-manifest.json",
+            "--output",
+            "/var/lib/hydracache-memory/campaigns/hc071-d0-ax42-20260913-m3-01/jobs/M3-ttl__cycles-60__B1-instrumented__r3",
+            "--scenario-digest",
+            "sha256:c85fa4fcc8fc87cba85bb710aa96ca60eb0be94136793872064dfc31281b3252",
+            "--provider",
+            "system",
+            "--host-preflight",
+            "/var/lib/hydracache-memory/campaigns/hc071-d0-ax42-20260913-m3-01/admission/host-preflight.json"
+          ],
+          "started_at": "2026-09-13T07:51:24.845149+00:00",
+          "status": "success"
+        }
+      ],
+      "case_id": "M3-ttl",
+      "cell_id": "M3-ttl__cycles-60",
+      "cohort": "B1-instrumented",
+      "dimensions": {
+        "cycles": 60
+      },
+      "job_id": "M3-ttl__cycles-60__B1-instrumented__r3",
+      "repetition": 3,
+      "status": "success"
+    }
+  ],
+  "mirror_root": "/mnt/hydracache-protected-memory",
+  "mode": "evidence",
+  "published_jobs": {
+    "M3-ttl__cycles-60__B1-instrumented__r1": {
+      "archive": "/mnt/hydracache-protected-memory/hc071-d0-ax42-20260913-m3-01/jobs/M3-ttl__cycles-60__B1-instrumented__r1.tar.gz",
+      "archive_sha256": "sha256:fb85ad0419492eab99d46005bae1942cb2b9b42751e725549a4448eb5ced9d7e",
+      "receipt": "/mnt/hydracache-protected-memory/hc071-d0-ax42-20260913-m3-01/jobs/M3-ttl__cycles-60__B1-instrumented__r1.json"
+    },
+    "M3-ttl__cycles-60__B1-instrumented__r2": {
+      "archive": "/mnt/hydracache-protected-memory/hc071-d0-ax42-20260913-m3-01/jobs/M3-ttl__cycles-60__B1-instrumented__r2.tar.gz",
+      "archive_sha256": "sha256:0a56d0e122197599fbeaeebab17e1cef4d0adbd9c7e053587bfdaa3d3c204fed",
+      "receipt": "/mnt/hydracache-protected-memory/hc071-d0-ax42-20260913-m3-01/jobs/M3-ttl__cycles-60__B1-instrumented__r2.json"
+    },
+    "M3-ttl__cycles-60__B1-instrumented__r3": {
+      "archive": "/mnt/hydracache-protected-memory/hc071-d0-ax42-20260913-m3-01/jobs/M3-ttl__cycles-60__B1-instrumented__r3.tar.gz",
+      "archive_sha256": "sha256:ce8d7c2321d6c9aaec2a5c923c68334c2c52e9b5b4b63df2d27febb704d82e50",
+      "receipt": "/mnt/hydracache-protected-memory/hc071-d0-ax42-20260913-m3-01/jobs/M3-ttl__cycles-60__B1-instrumented__r3.json"
+    }
+  },
+  "release": "0.71",
+  "row_time_caps_seconds": {
+    "M3-ttl": 21600
+  },
+  "scenario": "docs/testing/perf-scenarios/0.71/memory-efficiency-v1.toml",
+  "scenario_digest": "sha256:c85fa4fcc8fc87cba85bb710aa96ca60eb0be94136793872064dfc31281b3252",
+  "schema_version": 1,
+  "source_sha": "906aa24cc22ad6b50b824120ed6364208484203a",
+  "source_shas": {
+    "B1-instrumented": "906aa24cc22ad6b50b824120ed6364208484203a"
+  },
+  "status": "success",
+  "workflow_sha": "9c533d1de5a25b83bcb294e5b939064737b7d9fc"
+}

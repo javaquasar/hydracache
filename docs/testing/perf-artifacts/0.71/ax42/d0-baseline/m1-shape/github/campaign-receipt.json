@@ -1,0 +1,3861 @@
+{
+  "artifacts": [
+    {
+      "bytes": 16,
+      "path": "jobs/M1-shape__keys-10000__value_bytes-1024__B1-instrumented__r1/daemon.log",
+      "sha256": "sha256:6489d6d7a33c5d40e18fc61eeb6c34c341279ee61816394dde5189aa4ad8fae5"
+    },
+    {
+      "bytes": 326,
+      "path": "jobs/M1-shape__keys-10000__value_bytes-1024__B1-instrumented__r1/executor-receipt.json",
+      "sha256": "sha256:eb4f8faea764430a2889d5694c3ee1c4ea72752c33feddf5e47100686bcb6d8a"
+    },
+    {
+      "bytes": 22785,
+      "path": "jobs/M1-shape__keys-10000__value_bytes-1024__B1-instrumented__r1/memory-baseline-report.json",
+      "sha256": "sha256:b100fbfb9b0625f8383c85fb27c7600e7799a1e4f1be2ebd856aea7275940505"
+    },
+    {
+      "bytes": 3072,
+      "path": "jobs/M1-shape__keys-10000__value_bytes-1024__B1-instrumented__r1/owner-snapshots/cold.json",
+      "sha256": "sha256:5272e1cd1b1d7c1eb092000d56c5b84341e1aeb3147cba7190e34312069c20fc"
+    },
+    {
+      "bytes": 3072,
+      "path": "jobs/M1-shape__keys-10000__value_bytes-1024__B1-instrumented__r1/owner-snapshots/expire_or_delete.json",
+      "sha256": "sha256:5272e1cd1b1d7c1eb092000d56c5b84341e1aeb3147cba7190e34312069c20fc"
+    },
+    {
+      "bytes": 3099,
+      "path": "jobs/M1-shape__keys-10000__value_bytes-1024__B1-instrumented__r1/owner-snapshots/fill.json",
+      "sha256": "sha256:15bf9799a1903c5a1caa68ec76fba93916d89ae431e1804a107d6840864e0227"
+    },
+    {
+      "bytes": 3095,
+      "path": "jobs/M1-shape__keys-10000__value_bytes-1024__B1-instrumented__r1/owner-snapshots/post_idle.json",
+      "sha256": "sha256:a6873d6bb31f8ea37eb022122b54227471bb405fe7917c491e5f4458a21de668"
+    },
+    {
+      "bytes": 3095,
+      "path": "jobs/M1-shape__keys-10000__value_bytes-1024__B1-instrumented__r1/owner-snapshots/refill.json",
+      "sha256": "sha256:a6873d6bb31f8ea37eb022122b54227471bb405fe7917c491e5f4458a21de668"
+    },
+    {
+      "bytes": 3072,
+      "path": "jobs/M1-shape__keys-10000__value_bytes-1024__B1-instrumented__r1/owner-snapshots/reset.json",
+      "sha256": "sha256:361cb155cd41440924cf25472d8e5e4a574f4f2c1f330f2bbb269e158f01e5bb"
+    },
+    {
+      "bytes": 3095,
+      "path": "jobs/M1-shape__keys-10000__value_bytes-1024__B1-instrumented__r1/owner-snapshots/shutdown.json",
+      "sha256": "sha256:a6873d6bb31f8ea37eb022122b54227471bb405fe7917c491e5f4458a21de668"
+    },
+    {
+      "bytes": 3099,
+      "path": "jobs/M1-shape__keys-10000__value_bytes-1024__B1-instrumented__r1/owner-snapshots/steady.json",
+      "sha256": "sha256:15bf9799a1903c5a1caa68ec76fba93916d89ae431e1804a107d6840864e0227"
+    },
+    {
+      "bytes": 530,
+      "path": "jobs/M1-shape__keys-10000__value_bytes-1024__B1-instrumented__r1/phase-timeline.jsonl",
+      "sha256": "sha256:5b66dfa36e170678b3fddb86356cc711f792f208bc8c5cf96c9de19fd44ab53d"
+    },
+    {
+      "bytes": 2763,
+      "path": "jobs/M1-shape__keys-10000__value_bytes-1024__B1-instrumented__r1/provider-normalized.json",
+      "sha256": "sha256:5c5dda03f0e7dc3ec69f295863a86d7c13419f79afce4529087e6d148075d279"
+    },
+    {
+      "bytes": 66,
+      "path": "jobs/M1-shape__keys-10000__value_bytes-1024__B1-instrumented__r1/provider-probe.json",
+      "sha256": "sha256:70ae6ae2c959f51c746fab1f44e83852e8c757082c60aaa9a31f1fbe6e8fecc4"
+    },
+    {
+      "bytes": 1127,
+      "path": "jobs/M1-shape__keys-10000__value_bytes-1024__B1-instrumented__r1/provider-raw.jsonl",
+      "sha256": "sha256:bb4f4abb1aa9643f36e42937b58f062f9556c27c3871e7f7f7f5fdcbc022e206"
+    },
+    {
+      "bytes": 1709,
+      "path": "jobs/M1-shape__keys-10000__value_bytes-1024__B1-instrumented__r1/provider-state.json",
+      "sha256": "sha256:a3a03639c3d8b12ab3089217584f70d0118c38c6694d3365942b2f3de5209715"
+    },
+    {
+      "bytes": 16,
+      "path": "jobs/M1-shape__keys-10000__value_bytes-1024__B1-instrumented__r2/daemon.log",
+      "sha256": "sha256:6489d6d7a33c5d40e18fc61eeb6c34c341279ee61816394dde5189aa4ad8fae5"
+    },
+    {
+      "bytes": 326,
+      "path": "jobs/M1-shape__keys-10000__value_bytes-1024__B1-instrumented__r2/executor-receipt.json",
+      "sha256": "sha256:85fc6b8febf9bf955a64cb7be9af9f60db02c5172a3a565daec8562afa3f3b71"
+    },
+    {
+      "bytes": 22789,
+      "path": "jobs/M1-shape__keys-10000__value_bytes-1024__B1-instrumented__r2/memory-baseline-report.json",
+      "sha256": "sha256:3875a25f7d02dc58f7e6708dc448a2410c1937d85f01ce460808c16bf62bea50"
+    },
+    {
+      "bytes": 3072,
+      "path": "jobs/M1-shape__keys-10000__value_bytes-1024__B1-instrumented__r2/owner-snapshots/cold.json",
+      "sha256": "sha256:5272e1cd1b1d7c1eb092000d56c5b84341e1aeb3147cba7190e34312069c20fc"
+    },
+    {
+      "bytes": 3072,
+      "path": "jobs/M1-shape__keys-10000__value_bytes-1024__B1-instrumented__r2/owner-snapshots/expire_or_delete.json",
+      "sha256": "sha256:5272e1cd1b1d7c1eb092000d56c5b84341e1aeb3147cba7190e34312069c20fc"
+    },
+    {
+      "bytes": 3099,
+      "path": "jobs/M1-shape__keys-10000__value_bytes-1024__B1-instrumented__r2/owner-snapshots/fill.json",
+      "sha256": "sha256:15bf9799a1903c5a1caa68ec76fba93916d89ae431e1804a107d6840864e0227"
+    },
+    {
+      "bytes": 3095,
+      "path": "jobs/M1-shape__keys-10000__value_bytes-1024__B1-instrumented__r2/owner-snapshots/post_idle.json",
+      "sha256": "sha256:a6873d6bb31f8ea37eb022122b54227471bb405fe7917c491e5f4458a21de668"
+    },
+    {
+      "bytes": 3095,
+      "path": "jobs/M1-shape__keys-10000__value_bytes-1024__B1-instrumented__r2/owner-snapshots/refill.json",
+      "sha256": "sha256:a6873d6bb31f8ea37eb022122b54227471bb405fe7917c491e5f4458a21de668"
+    },
+    {
+      "bytes": 3072,
+      "path": "jobs/M1-shape__keys-10000__value_bytes-1024__B1-instrumented__r2/owner-snapshots/reset.json",
+      "sha256": "sha256:361cb155cd41440924cf25472d8e5e4a574f4f2c1f330f2bbb269e158f01e5bb"
+    },
+    {
+      "bytes": 3095,
+      "path": "jobs/M1-shape__keys-10000__value_bytes-1024__B1-instrumented__r2/owner-snapshots/shutdown.json",
+      "sha256": "sha256:a6873d6bb31f8ea37eb022122b54227471bb405fe7917c491e5f4458a21de668"
+    },
+    {
+      "bytes": 3099,
+      "path": "jobs/M1-shape__keys-10000__value_bytes-1024__B1-instrumented__r2/owner-snapshots/steady.json",
+      "sha256": "sha256:15bf9799a1903c5a1caa68ec76fba93916d89ae431e1804a107d6840864e0227"
+    },
+    {
+      "bytes": 530,
+      "path": "jobs/M1-shape__keys-10000__value_bytes-1024__B1-instrumented__r2/phase-timeline.jsonl",
+      "sha256": "sha256:ba76e5383b67e58ce5f5fa63e5c8b8b8e947e880c60197a10d2b169765a208c4"
+    },
+    {
+      "bytes": 2763,
+      "path": "jobs/M1-shape__keys-10000__value_bytes-1024__B1-instrumented__r2/provider-normalized.json",
+      "sha256": "sha256:6f1eb72b64e0ebff8143dc97e0f2c9e3cb799e34fa5fba832e6adfaab9b2b24a"
+    },
+    {
+      "bytes": 66,
+      "path": "jobs/M1-shape__keys-10000__value_bytes-1024__B1-instrumented__r2/provider-probe.json",
+      "sha256": "sha256:70ae6ae2c959f51c746fab1f44e83852e8c757082c60aaa9a31f1fbe6e8fecc4"
+    },
+    {
+      "bytes": 1127,
+      "path": "jobs/M1-shape__keys-10000__value_bytes-1024__B1-instrumented__r2/provider-raw.jsonl",
+      "sha256": "sha256:3ae8c1021bbd8f30650905044b933abc6c2f21313f4b7cc06810e027a4488a67"
+    },
+    {
+      "bytes": 1709,
+      "path": "jobs/M1-shape__keys-10000__value_bytes-1024__B1-instrumented__r2/provider-state.json",
+      "sha256": "sha256:d3e5ab9f5e778ec56b4027c07a3786849d5b10a9ac53490dd498159fa27c9300"
+    },
+    {
+      "bytes": 16,
+      "path": "jobs/M1-shape__keys-10000__value_bytes-1024__B1-instrumented__r3/daemon.log",
+      "sha256": "sha256:6489d6d7a33c5d40e18fc61eeb6c34c341279ee61816394dde5189aa4ad8fae5"
+    },
+    {
+      "bytes": 326,
+      "path": "jobs/M1-shape__keys-10000__value_bytes-1024__B1-instrumented__r3/executor-receipt.json",
+      "sha256": "sha256:cda6ba2d84d24f0e94f883a94131eb7615eab31800cba54a784c28f6405b96af"
+    },
+    {
+      "bytes": 22790,
+      "path": "jobs/M1-shape__keys-10000__value_bytes-1024__B1-instrumented__r3/memory-baseline-report.json",
+      "sha256": "sha256:9a695f374802da2b9c173d2e39b9d9cd4c1d1afae688ecc8c77f45fef7421766"
+    },
+    {
+      "bytes": 3072,
+      "path": "jobs/M1-shape__keys-10000__value_bytes-1024__B1-instrumented__r3/owner-snapshots/cold.json",
+      "sha256": "sha256:5272e1cd1b1d7c1eb092000d56c5b84341e1aeb3147cba7190e34312069c20fc"
+    },
+    {
+      "bytes": 3072,
+      "path": "jobs/M1-shape__keys-10000__value_bytes-1024__B1-instrumented__r3/owner-snapshots/expire_or_delete.json",
+      "sha256": "sha256:5272e1cd1b1d7c1eb092000d56c5b84341e1aeb3147cba7190e34312069c20fc"
+    },
+    {
+      "bytes": 3099,
+      "path": "jobs/M1-shape__keys-10000__value_bytes-1024__B1-instrumented__r3/owner-snapshots/fill.json",
+      "sha256": "sha256:15bf9799a1903c5a1caa68ec76fba93916d89ae431e1804a107d6840864e0227"
+    },
+    {
+      "bytes": 3095,
+      "path": "jobs/M1-shape__keys-10000__value_bytes-1024__B1-instrumented__r3/owner-snapshots/post_idle.json",
+      "sha256": "sha256:a6873d6bb31f8ea37eb022122b54227471bb405fe7917c491e5f4458a21de668"
+    },
+    {
+      "bytes": 3095,
+      "path": "jobs/M1-shape__keys-10000__value_bytes-1024__B1-instrumented__r3/owner-snapshots/refill.json",
+      "sha256": "sha256:a6873d6bb31f8ea37eb022122b54227471bb405fe7917c491e5f4458a21de668"
+    },
+    {
+      "bytes": 3072,
+      "path": "jobs/M1-shape__keys-10000__value_bytes-1024__B1-instrumented__r3/owner-snapshots/reset.json",
+      "sha256": "sha256:361cb155cd41440924cf25472d8e5e4a574f4f2c1f330f2bbb269e158f01e5bb"
+    },
+    {
+      "bytes": 3095,
+      "path": "jobs/M1-shape__keys-10000__value_bytes-1024__B1-instrumented__r3/owner-snapshots/shutdown.json",
+      "sha256": "sha256:a6873d6bb31f8ea37eb022122b54227471bb405fe7917c491e5f4458a21de668"
+    },
+    {
+      "bytes": 3099,
+      "path": "jobs/M1-shape__keys-10000__value_bytes-1024__B1-instrumented__r3/owner-snapshots/steady.json",
+      "sha256": "sha256:15bf9799a1903c5a1caa68ec76fba93916d89ae431e1804a107d6840864e0227"
+    },
+    {
+      "bytes": 530,
+      "path": "jobs/M1-shape__keys-10000__value_bytes-1024__B1-instrumented__r3/phase-timeline.jsonl",
+      "sha256": "sha256:28d666609712b89d926d472f27958eadfa2a18d6d594fea3ed4b61bd2b53d45c"
+    },
+    {
+      "bytes": 2757,
+      "path": "jobs/M1-shape__keys-10000__value_bytes-1024__B1-instrumented__r3/provider-normalized.json",
+      "sha256": "sha256:a81860c5c600e8963e73f37a4319ee1b1992cba78abcd5db9907d13e5e03ce62"
+    },
+    {
+      "bytes": 66,
+      "path": "jobs/M1-shape__keys-10000__value_bytes-1024__B1-instrumented__r3/provider-probe.json",
+      "sha256": "sha256:70ae6ae2c959f51c746fab1f44e83852e8c757082c60aaa9a31f1fbe6e8fecc4"
+    },
+    {
+      "bytes": 1127,
+      "path": "jobs/M1-shape__keys-10000__value_bytes-1024__B1-instrumented__r3/provider-raw.jsonl",
+      "sha256": "sha256:a4cc33224847c950337034f7fd6530881553db34760ce854515aa9a9aea3496d"
+    },
+    {
+      "bytes": 1709,
+      "path": "jobs/M1-shape__keys-10000__value_bytes-1024__B1-instrumented__r3/provider-state.json",
+      "sha256": "sha256:b05abf262a7be7f5f13eac22f1bc90eb4a196de104e7c4c57bd085f13e127223"
+    },
+    {
+      "bytes": 16,
+      "path": "jobs/M1-shape__keys-10000__value_bytes-256__B1-instrumented__r1/daemon.log",
+      "sha256": "sha256:6489d6d7a33c5d40e18fc61eeb6c34c341279ee61816394dde5189aa4ad8fae5"
+    },
+    {
+      "bytes": 325,
+      "path": "jobs/M1-shape__keys-10000__value_bytes-256__B1-instrumented__r1/executor-receipt.json",
+      "sha256": "sha256:4b834910bc7fd465b546f9850125719402a5c29792df3677174707442514ad05"
+    },
+    {
+      "bytes": 22778,
+      "path": "jobs/M1-shape__keys-10000__value_bytes-256__B1-instrumented__r1/memory-baseline-report.json",
+      "sha256": "sha256:2fb2ecb98bf228bf7e04aa93010c3b499fb6c71e2ce9d856cd7bbc19391472b7"
+    },
+    {
+      "bytes": 3072,
+      "path": "jobs/M1-shape__keys-10000__value_bytes-256__B1-instrumented__r1/owner-snapshots/cold.json",
+      "sha256": "sha256:5272e1cd1b1d7c1eb092000d56c5b84341e1aeb3147cba7190e34312069c20fc"
+    },
+    {
+      "bytes": 3072,
+      "path": "jobs/M1-shape__keys-10000__value_bytes-256__B1-instrumented__r1/owner-snapshots/expire_or_delete.json",
+      "sha256": "sha256:5272e1cd1b1d7c1eb092000d56c5b84341e1aeb3147cba7190e34312069c20fc"
+    },
+    {
+      "bytes": 3097,
+      "path": "jobs/M1-shape__keys-10000__value_bytes-256__B1-instrumented__r1/owner-snapshots/fill.json",
+      "sha256": "sha256:a62703dbbebf8026e6ef1844d0ead11e4422854be3d1accb2d8eb21fb8d49564"
+    },
+    {
+      "bytes": 3095,
+      "path": "jobs/M1-shape__keys-10000__value_bytes-256__B1-instrumented__r1/owner-snapshots/post_idle.json",
+      "sha256": "sha256:d32a4a249ffb24e23310a64f58a9df1957d8e473e7044abed9169a3f8e75d327"
+    },
+    {
+      "bytes": 3095,
+      "path": "jobs/M1-shape__keys-10000__value_bytes-256__B1-instrumented__r1/owner-snapshots/refill.json",
+      "sha256": "sha256:d32a4a249ffb24e23310a64f58a9df1957d8e473e7044abed9169a3f8e75d327"
+    },
+    {
+      "bytes": 3072,
+      "path": "jobs/M1-shape__keys-10000__value_bytes-256__B1-instrumented__r1/owner-snapshots/reset.json",
+      "sha256": "sha256:361cb155cd41440924cf25472d8e5e4a574f4f2c1f330f2bbb269e158f01e5bb"
+    },
+    {
+      "bytes": 3095,
+      "path": "jobs/M1-shape__keys-10000__value_bytes-256__B1-instrumented__r1/owner-snapshots/shutdown.json",
+      "sha256": "sha256:d32a4a249ffb24e23310a64f58a9df1957d8e473e7044abed9169a3f8e75d327"
+    },
+    {
+      "bytes": 3097,
+      "path": "jobs/M1-shape__keys-10000__value_bytes-256__B1-instrumented__r1/owner-snapshots/steady.json",
+      "sha256": "sha256:a62703dbbebf8026e6ef1844d0ead11e4422854be3d1accb2d8eb21fb8d49564"
+    },
+    {
+      "bytes": 530,
+      "path": "jobs/M1-shape__keys-10000__value_bytes-256__B1-instrumented__r1/phase-timeline.jsonl",
+      "sha256": "sha256:05cbb478686acb2b613fa17795080fa9d1649d21e3bb01dfda243edaeeabbe38"
+    },
+    {
+      "bytes": 2757,
+      "path": "jobs/M1-shape__keys-10000__value_bytes-256__B1-instrumented__r1/provider-normalized.json",
+      "sha256": "sha256:8f9c2af73100bde20695289025c3aeddb9ff1a1d3245ecb83099240553f139cf"
+    },
+    {
+      "bytes": 66,
+      "path": "jobs/M1-shape__keys-10000__value_bytes-256__B1-instrumented__r1/provider-probe.json",
+      "sha256": "sha256:70ae6ae2c959f51c746fab1f44e83852e8c757082c60aaa9a31f1fbe6e8fecc4"
+    },
+    {
+      "bytes": 1127,
+      "path": "jobs/M1-shape__keys-10000__value_bytes-256__B1-instrumented__r1/provider-raw.jsonl",
+      "sha256": "sha256:4e71fccd05dcbe77e9bcdfc3f989c2f7c9a48b2c42bfc1008c4d3e8732309ebf"
+    },
+    {
+      "bytes": 1706,
+      "path": "jobs/M1-shape__keys-10000__value_bytes-256__B1-instrumented__r1/provider-state.json",
+      "sha256": "sha256:560cd8ba9ceb8311b915826ad8c231c31c63d93b60a538c3c4b689ea2c9ba60e"
+    },
+    {
+      "bytes": 16,
+      "path": "jobs/M1-shape__keys-10000__value_bytes-256__B1-instrumented__r2/daemon.log",
+      "sha256": "sha256:6489d6d7a33c5d40e18fc61eeb6c34c341279ee61816394dde5189aa4ad8fae5"
+    },
+    {
+      "bytes": 325,
+      "path": "jobs/M1-shape__keys-10000__value_bytes-256__B1-instrumented__r2/executor-receipt.json",
+      "sha256": "sha256:10a531c258028c369048da5224ce8a75c5243007461ba1f634e7c920690d36bf"
+    },
+    {
+      "bytes": 22783,
+      "path": "jobs/M1-shape__keys-10000__value_bytes-256__B1-instrumented__r2/memory-baseline-report.json",
+      "sha256": "sha256:9ca6694d7c96d1695eab0aa1da4b8a5d54ca3b274d65ce7cd368a04704efc2fe"
+    },
+    {
+      "bytes": 3072,
+      "path": "jobs/M1-shape__keys-10000__value_bytes-256__B1-instrumented__r2/owner-snapshots/cold.json",
+      "sha256": "sha256:5272e1cd1b1d7c1eb092000d56c5b84341e1aeb3147cba7190e34312069c20fc"
+    },
+    {
+      "bytes": 3072,
+      "path": "jobs/M1-shape__keys-10000__value_bytes-256__B1-instrumented__r2/owner-snapshots/expire_or_delete.json",
+      "sha256": "sha256:5272e1cd1b1d7c1eb092000d56c5b84341e1aeb3147cba7190e34312069c20fc"
+    },
+    {
+      "bytes": 3097,
+      "path": "jobs/M1-shape__keys-10000__value_bytes-256__B1-instrumented__r2/owner-snapshots/fill.json",
+      "sha256": "sha256:a62703dbbebf8026e6ef1844d0ead11e4422854be3d1accb2d8eb21fb8d49564"
+    },
+    {
+      "bytes": 3095,
+      "path": "jobs/M1-shape__keys-10000__value_bytes-256__B1-instrumented__r2/owner-snapshots/post_idle.json",
+      "sha256": "sha256:d32a4a249ffb24e23310a64f58a9df1957d8e473e7044abed9169a3f8e75d327"
+    },
+    {
+      "bytes": 3095,
+      "path": "jobs/M1-shape__keys-10000__value_bytes-256__B1-instrumented__r2/owner-snapshots/refill.json",
+      "sha256": "sha256:d32a4a249ffb24e23310a64f58a9df1957d8e473e7044abed9169a3f8e75d327"
+    },
+    {
+      "bytes": 3072,
+      "path": "jobs/M1-shape__keys-10000__value_bytes-256__B1-instrumented__r2/owner-snapshots/reset.json",
+      "sha256": "sha256:361cb155cd41440924cf25472d8e5e4a574f4f2c1f330f2bbb269e158f01e5bb"
+    },
+    {
+      "bytes": 3095,
+      "path": "jobs/M1-shape__keys-10000__value_bytes-256__B1-instrumented__r2/owner-snapshots/shutdown.json",
+      "sha256": "sha256:d32a4a249ffb24e23310a64f58a9df1957d8e473e7044abed9169a3f8e75d327"
+    },
+    {
+      "bytes": 3097,
+      "path": "jobs/M1-shape__keys-10000__value_bytes-256__B1-instrumented__r2/owner-snapshots/steady.json",
+      "sha256": "sha256:a62703dbbebf8026e6ef1844d0ead11e4422854be3d1accb2d8eb21fb8d49564"
+    },
+    {
+      "bytes": 530,
+      "path": "jobs/M1-shape__keys-10000__value_bytes-256__B1-instrumented__r2/phase-timeline.jsonl",
+      "sha256": "sha256:c64d7574e5e4c4b06fe1606788997635016c25b6672737952c19fbd522dba319"
+    },
+    {
+      "bytes": 2758,
+      "path": "jobs/M1-shape__keys-10000__value_bytes-256__B1-instrumented__r2/provider-normalized.json",
+      "sha256": "sha256:6aa05fff31a217e9c67f9dfd0b6604d359aa55fec5ed70c000cac45041914bff"
+    },
+    {
+      "bytes": 66,
+      "path": "jobs/M1-shape__keys-10000__value_bytes-256__B1-instrumented__r2/provider-probe.json",
+      "sha256": "sha256:70ae6ae2c959f51c746fab1f44e83852e8c757082c60aaa9a31f1fbe6e8fecc4"
+    },
+    {
+      "bytes": 1127,
+      "path": "jobs/M1-shape__keys-10000__value_bytes-256__B1-instrumented__r2/provider-raw.jsonl",
+      "sha256": "sha256:15fa29f09ac9e798b8dfab5e45bf422c1518c7350bc230e3f7a26a973f6404cb"
+    },
+    {
+      "bytes": 1706,
+      "path": "jobs/M1-shape__keys-10000__value_bytes-256__B1-instrumented__r2/provider-state.json",
+      "sha256": "sha256:6b3ae01791c56f6fe5c007aa7b7f848c6a0ac63bb9f2df2f857e7c99450ef16b"
+    },
+    {
+      "bytes": 16,
+      "path": "jobs/M1-shape__keys-10000__value_bytes-256__B1-instrumented__r3/daemon.log",
+      "sha256": "sha256:6489d6d7a33c5d40e18fc61eeb6c34c341279ee61816394dde5189aa4ad8fae5"
+    },
+    {
+      "bytes": 325,
+      "path": "jobs/M1-shape__keys-10000__value_bytes-256__B1-instrumented__r3/executor-receipt.json",
+      "sha256": "sha256:69114e693804896fd5768260e6fac3bf0f733e0f316b86d657b111c8e8bf510a"
+    },
+    {
+      "bytes": 22779,
+      "path": "jobs/M1-shape__keys-10000__value_bytes-256__B1-instrumented__r3/memory-baseline-report.json",
+      "sha256": "sha256:6c6b3fb67a1cf0c77c299d2513abd10daa1a10277beae2511f7da282feccc709"
+    },
+    {
+      "bytes": 3072,
+      "path": "jobs/M1-shape__keys-10000__value_bytes-256__B1-instrumented__r3/owner-snapshots/cold.json",
+      "sha256": "sha256:5272e1cd1b1d7c1eb092000d56c5b84341e1aeb3147cba7190e34312069c20fc"
+    },
+    {
+      "bytes": 3072,
+      "path": "jobs/M1-shape__keys-10000__value_bytes-256__B1-instrumented__r3/owner-snapshots/expire_or_delete.json",
+      "sha256": "sha256:5272e1cd1b1d7c1eb092000d56c5b84341e1aeb3147cba7190e34312069c20fc"
+    },
+    {
+      "bytes": 3097,
+      "path": "jobs/M1-shape__keys-10000__value_bytes-256__B1-instrumented__r3/owner-snapshots/fill.json",
+      "sha256": "sha256:a62703dbbebf8026e6ef1844d0ead11e4422854be3d1accb2d8eb21fb8d49564"
+    },
+    {
+      "bytes": 3095,
+      "path": "jobs/M1-shape__keys-10000__value_bytes-256__B1-instrumented__r3/owner-snapshots/post_idle.json",
+      "sha256": "sha256:d32a4a249ffb24e23310a64f58a9df1957d8e473e7044abed9169a3f8e75d327"
+    },
+    {
+      "bytes": 3095,
+      "path": "jobs/M1-shape__keys-10000__value_bytes-256__B1-instrumented__r3/owner-snapshots/refill.json",
+      "sha256": "sha256:d32a4a249ffb24e23310a64f58a9df1957d8e473e7044abed9169a3f8e75d327"
+    },
+    {
+      "bytes": 3072,
+      "path": "jobs/M1-shape__keys-10000__value_bytes-256__B1-instrumented__r3/owner-snapshots/reset.json",
+      "sha256": "sha256:361cb155cd41440924cf25472d8e5e4a574f4f2c1f330f2bbb269e158f01e5bb"
+    },
+    {
+      "bytes": 3095,
+      "path": "jobs/M1-shape__keys-10000__value_bytes-256__B1-instrumented__r3/owner-snapshots/shutdown.json",
+      "sha256": "sha256:d32a4a249ffb24e23310a64f58a9df1957d8e473e7044abed9169a3f8e75d327"
+    },
+    {
+      "bytes": 3097,
+      "path": "jobs/M1-shape__keys-10000__value_bytes-256__B1-instrumented__r3/owner-snapshots/steady.json",
+      "sha256": "sha256:a62703dbbebf8026e6ef1844d0ead11e4422854be3d1accb2d8eb21fb8d49564"
+    },
+    {
+      "bytes": 530,
+      "path": "jobs/M1-shape__keys-10000__value_bytes-256__B1-instrumented__r3/phase-timeline.jsonl",
+      "sha256": "sha256:7de44e7e201398c81c98d86f38d1eff1c15cf85a28341cdea0f75c29c034fe08"
+    },
+    {
+      "bytes": 2747,
+      "path": "jobs/M1-shape__keys-10000__value_bytes-256__B1-instrumented__r3/provider-normalized.json",
+      "sha256": "sha256:f5b94085c15c2e47ff31aee2cb201e775ddfb4478c52d33429be9b83a30d540c"
+    },
+    {
+      "bytes": 66,
+      "path": "jobs/M1-shape__keys-10000__value_bytes-256__B1-instrumented__r3/provider-probe.json",
+      "sha256": "sha256:70ae6ae2c959f51c746fab1f44e83852e8c757082c60aaa9a31f1fbe6e8fecc4"
+    },
+    {
+      "bytes": 1127,
+      "path": "jobs/M1-shape__keys-10000__value_bytes-256__B1-instrumented__r3/provider-raw.jsonl",
+      "sha256": "sha256:0499e251458d476cbf81b4b6ae7560e25eeb33f49d88a4e896a33f842ff4fc99"
+    },
+    {
+      "bytes": 1706,
+      "path": "jobs/M1-shape__keys-10000__value_bytes-256__B1-instrumented__r3/provider-state.json",
+      "sha256": "sha256:e018095bd45e0b1e049cc2a54c45194da513860055f4263be0a7ba0b4f99a487"
+    },
+    {
+      "bytes": 16,
+      "path": "jobs/M1-shape__keys-10000__value_bytes-4096__B1-instrumented__r1/daemon.log",
+      "sha256": "sha256:6489d6d7a33c5d40e18fc61eeb6c34c341279ee61816394dde5189aa4ad8fae5"
+    },
+    {
+      "bytes": 326,
+      "path": "jobs/M1-shape__keys-10000__value_bytes-4096__B1-instrumented__r1/executor-receipt.json",
+      "sha256": "sha256:b70a6d3c4c4bf399b57b437cfa1af9a138f7bab96f92ba949e909c5435b12fef"
+    },
+    {
+      "bytes": 22792,
+      "path": "jobs/M1-shape__keys-10000__value_bytes-4096__B1-instrumented__r1/memory-baseline-report.json",
+      "sha256": "sha256:237521ff5c76f7ef57d7236c5d8edaac0a2f0e2eee37fc8a56049545ddc80b87"
+    },
+    {
+      "bytes": 3072,
+      "path": "jobs/M1-shape__keys-10000__value_bytes-4096__B1-instrumented__r1/owner-snapshots/cold.json",
+      "sha256": "sha256:5272e1cd1b1d7c1eb092000d56c5b84341e1aeb3147cba7190e34312069c20fc"
+    },
+    {
+      "bytes": 3072,
+      "path": "jobs/M1-shape__keys-10000__value_bytes-4096__B1-instrumented__r1/owner-snapshots/expire_or_delete.json",
+      "sha256": "sha256:5272e1cd1b1d7c1eb092000d56c5b84341e1aeb3147cba7190e34312069c20fc"
+    },
+    {
+      "bytes": 3099,
+      "path": "jobs/M1-shape__keys-10000__value_bytes-4096__B1-instrumented__r1/owner-snapshots/fill.json",
+      "sha256": "sha256:e48335aadf0ac66107dc0dc0fcd70c746d637e24d8b7433d2cdd8041dcf62061"
+    },
+    {
+      "bytes": 3097,
+      "path": "jobs/M1-shape__keys-10000__value_bytes-4096__B1-instrumented__r1/owner-snapshots/post_idle.json",
+      "sha256": "sha256:e93946ae34b4c2e2c0ef3b0bc7b954996de2ad3e24745faa7f3000bc5a955496"
+    },
+    {
+      "bytes": 3097,
+      "path": "jobs/M1-shape__keys-10000__value_bytes-4096__B1-instrumented__r1/owner-snapshots/refill.json",
+      "sha256": "sha256:e93946ae34b4c2e2c0ef3b0bc7b954996de2ad3e24745faa7f3000bc5a955496"
+    },
+    {
+      "bytes": 3072,
+      "path": "jobs/M1-shape__keys-10000__value_bytes-4096__B1-instrumented__r1/owner-snapshots/reset.json",
+      "sha256": "sha256:361cb155cd41440924cf25472d8e5e4a574f4f2c1f330f2bbb269e158f01e5bb"
+    },
+    {
+      "bytes": 3097,
+      "path": "jobs/M1-shape__keys-10000__value_bytes-4096__B1-instrumented__r1/owner-snapshots/shutdown.json",
+      "sha256": "sha256:e93946ae34b4c2e2c0ef3b0bc7b954996de2ad3e24745faa7f3000bc5a955496"
+    },
+    {
+      "bytes": 3099,
+      "path": "jobs/M1-shape__keys-10000__value_bytes-4096__B1-instrumented__r1/owner-snapshots/steady.json",
+      "sha256": "sha256:e48335aadf0ac66107dc0dc0fcd70c746d637e24d8b7433d2cdd8041dcf62061"
+    },
+    {
+      "bytes": 530,
+      "path": "jobs/M1-shape__keys-10000__value_bytes-4096__B1-instrumented__r1/phase-timeline.jsonl",
+      "sha256": "sha256:dd62ab6b5ed67595a378cdb18447cede9f18d1a0c92a70249e13576ff7643302"
+    },
+    {
+      "bytes": 2752,
+      "path": "jobs/M1-shape__keys-10000__value_bytes-4096__B1-instrumented__r1/provider-normalized.json",
+      "sha256": "sha256:d88d90cf2fde611cc9bafc64d9c82dc19112cc5ebbabfe30265b6f738219c452"
+    },
+    {
+      "bytes": 66,
+      "path": "jobs/M1-shape__keys-10000__value_bytes-4096__B1-instrumented__r1/provider-probe.json",
+      "sha256": "sha256:70ae6ae2c959f51c746fab1f44e83852e8c757082c60aaa9a31f1fbe6e8fecc4"
+    },
+    {
+      "bytes": 1127,
+      "path": "jobs/M1-shape__keys-10000__value_bytes-4096__B1-instrumented__r1/provider-raw.jsonl",
+      "sha256": "sha256:588d569dd848fa555f142c1f96a9644b3ccdf558b47130b880d374641c8e1087"
+    },
+    {
+      "bytes": 1709,
+      "path": "jobs/M1-shape__keys-10000__value_bytes-4096__B1-instrumented__r1/provider-state.json",
+      "sha256": "sha256:0688f92cffea36cbef81aa8a909e89ab8f019ddc2774b34d60831af03f5f09b5"
+    },
+    {
+      "bytes": 16,
+      "path": "jobs/M1-shape__keys-10000__value_bytes-4096__B1-instrumented__r2/daemon.log",
+      "sha256": "sha256:6489d6d7a33c5d40e18fc61eeb6c34c341279ee61816394dde5189aa4ad8fae5"
+    },
+    {
+      "bytes": 326,
+      "path": "jobs/M1-shape__keys-10000__value_bytes-4096__B1-instrumented__r2/executor-receipt.json",
+      "sha256": "sha256:e9fa6c1f45aeeffd3f21f91190adad1399de0ee9f0e839ae239df48aab7342be"
+    },
+    {
+      "bytes": 22790,
+      "path": "jobs/M1-shape__keys-10000__value_bytes-4096__B1-instrumented__r2/memory-baseline-report.json",
+      "sha256": "sha256:f63d0b9a5349c981ab1a80493217afb9fcc34b1a13759874b254beeef2345b3f"
+    },
+    {
+      "bytes": 3072,
+      "path": "jobs/M1-shape__keys-10000__value_bytes-4096__B1-instrumented__r2/owner-snapshots/cold.json",
+      "sha256": "sha256:5272e1cd1b1d7c1eb092000d56c5b84341e1aeb3147cba7190e34312069c20fc"
+    },
+    {
+      "bytes": 3072,
+      "path": "jobs/M1-shape__keys-10000__value_bytes-4096__B1-instrumented__r2/owner-snapshots/expire_or_delete.json",
+      "sha256": "sha256:5272e1cd1b1d7c1eb092000d56c5b84341e1aeb3147cba7190e34312069c20fc"
+    },
+    {
+      "bytes": 3099,
+      "path": "jobs/M1-shape__keys-10000__value_bytes-4096__B1-instrumented__r2/owner-snapshots/fill.json",
+      "sha256": "sha256:e48335aadf0ac66107dc0dc0fcd70c746d637e24d8b7433d2cdd8041dcf62061"
+    },
+    {
+      "bytes": 3097,
+      "path": "jobs/M1-shape__keys-10000__value_bytes-4096__B1-instrumented__r2/owner-snapshots/post_idle.json",
+      "sha256": "sha256:e93946ae34b4c2e2c0ef3b0bc7b954996de2ad3e24745faa7f3000bc5a955496"
+    },
+    {
+      "bytes": 3097,
+      "path": "jobs/M1-shape__keys-10000__value_bytes-4096__B1-instrumented__r2/owner-snapshots/refill.json",
+      "sha256": "sha256:e93946ae34b4c2e2c0ef3b0bc7b954996de2ad3e24745faa7f3000bc5a955496"
+    },
+    {
+      "bytes": 3072,
+      "path": "jobs/M1-shape__keys-10000__value_bytes-4096__B1-instrumented__r2/owner-snapshots/reset.json",
+      "sha256": "sha256:361cb155cd41440924cf25472d8e5e4a574f4f2c1f330f2bbb269e158f01e5bb"
+    },
+    {
+      "bytes": 3097,
+      "path": "jobs/M1-shape__keys-10000__value_bytes-4096__B1-instrumented__r2/owner-snapshots/shutdown.json",
+      "sha256": "sha256:e93946ae34b4c2e2c0ef3b0bc7b954996de2ad3e24745faa7f3000bc5a955496"
+    },
+    {
+      "bytes": 3099,
+      "path": "jobs/M1-shape__keys-10000__value_bytes-4096__B1-instrumented__r2/owner-snapshots/steady.json",
+      "sha256": "sha256:e48335aadf0ac66107dc0dc0fcd70c746d637e24d8b7433d2cdd8041dcf62061"
+    },
+    {
+      "bytes": 530,
+      "path": "jobs/M1-shape__keys-10000__value_bytes-4096__B1-instrumented__r2/phase-timeline.jsonl",
+      "sha256": "sha256:4d3da34080b6779473aac005ac0a19e0e899ea854748ca7fe39151845389bf4d"
+    },
+    {
+      "bytes": 2760,
+      "path": "jobs/M1-shape__keys-10000__value_bytes-4096__B1-instrumented__r2/provider-normalized.json",
+      "sha256": "sha256:f82f1df50876a4e51e99ba9c08f24c254e696cffb3450d28a721ba31b8046f83"
+    },
+    {
+      "bytes": 66,
+      "path": "jobs/M1-shape__keys-10000__value_bytes-4096__B1-instrumented__r2/provider-probe.json",
+      "sha256": "sha256:70ae6ae2c959f51c746fab1f44e83852e8c757082c60aaa9a31f1fbe6e8fecc4"
+    },
+    {
+      "bytes": 1127,
+      "path": "jobs/M1-shape__keys-10000__value_bytes-4096__B1-instrumented__r2/provider-raw.jsonl",
+      "sha256": "sha256:d4591417c070c489aea1d418531bba16ccc740a76a7e66221242f88163d2cc08"
+    },
+    {
+      "bytes": 1709,
+      "path": "jobs/M1-shape__keys-10000__value_bytes-4096__B1-instrumented__r2/provider-state.json",
+      "sha256": "sha256:79ba339f5cefae4bf90a047c7d94dfcb5a9b4ac369f0ed7a0442a3fae39e5175"
+    },
+    {
+      "bytes": 16,
+      "path": "jobs/M1-shape__keys-10000__value_bytes-4096__B1-instrumented__r3/daemon.log",
+      "sha256": "sha256:6489d6d7a33c5d40e18fc61eeb6c34c341279ee61816394dde5189aa4ad8fae5"
+    },
+    {
+      "bytes": 326,
+      "path": "jobs/M1-shape__keys-10000__value_bytes-4096__B1-instrumented__r3/executor-receipt.json",
+      "sha256": "sha256:1c95914831db88a652356a582aad87632614e17c763db3b695724a45173610f1"
+    },
+    {
+      "bytes": 22790,
+      "path": "jobs/M1-shape__keys-10000__value_bytes-4096__B1-instrumented__r3/memory-baseline-report.json",
+      "sha256": "sha256:acc9e27b09b562f0897984212dfe6b2d7641aaf5e47f7bc838de4a39efa02d8a"
+    },
+    {
+      "bytes": 3072,
+      "path": "jobs/M1-shape__keys-10000__value_bytes-4096__B1-instrumented__r3/owner-snapshots/cold.json",
+      "sha256": "sha256:5272e1cd1b1d7c1eb092000d56c5b84341e1aeb3147cba7190e34312069c20fc"
+    },
+    {
+      "bytes": 3072,
+      "path": "jobs/M1-shape__keys-10000__value_bytes-4096__B1-instrumented__r3/owner-snapshots/expire_or_delete.json",
+      "sha256": "sha256:5272e1cd1b1d7c1eb092000d56c5b84341e1aeb3147cba7190e34312069c20fc"
+    },
+    {
+      "bytes": 3099,
+      "path": "jobs/M1-shape__keys-10000__value_bytes-4096__B1-instrumented__r3/owner-snapshots/fill.json",
+      "sha256": "sha256:e48335aadf0ac66107dc0dc0fcd70c746d637e24d8b7433d2cdd8041dcf62061"
+    },
+    {
+      "bytes": 3097,
+      "path": "jobs/M1-shape__keys-10000__value_bytes-4096__B1-instrumented__r3/owner-snapshots/post_idle.json",
+      "sha256": "sha256:e93946ae34b4c2e2c0ef3b0bc7b954996de2ad3e24745faa7f3000bc5a955496"
+    },
+    {
+      "bytes": 3097,
+      "path": "jobs/M1-shape__keys-10000__value_bytes-4096__B1-instrumented__r3/owner-snapshots/refill.json",
+      "sha256": "sha256:e93946ae34b4c2e2c0ef3b0bc7b954996de2ad3e24745faa7f3000bc5a955496"
+    },
+    {
+      "bytes": 3072,
+      "path": "jobs/M1-shape__keys-10000__value_bytes-4096__B1-instrumented__r3/owner-snapshots/reset.json",
+      "sha256": "sha256:361cb155cd41440924cf25472d8e5e4a574f4f2c1f330f2bbb269e158f01e5bb"
+    },
+    {
+      "bytes": 3097,
+      "path": "jobs/M1-shape__keys-10000__value_bytes-4096__B1-instrumented__r3/owner-snapshots/shutdown.json",
+      "sha256": "sha256:e93946ae34b4c2e2c0ef3b0bc7b954996de2ad3e24745faa7f3000bc5a955496"
+    },
+    {
+      "bytes": 3099,
+      "path": "jobs/M1-shape__keys-10000__value_bytes-4096__B1-instrumented__r3/owner-snapshots/steady.json",
+      "sha256": "sha256:e48335aadf0ac66107dc0dc0fcd70c746d637e24d8b7433d2cdd8041dcf62061"
+    },
+    {
+      "bytes": 530,
+      "path": "jobs/M1-shape__keys-10000__value_bytes-4096__B1-instrumented__r3/phase-timeline.jsonl",
+      "sha256": "sha256:7666347a2aade627afc1fd32073d05e4f299ad02c7b44b0150d05560ba22174e"
+    },
+    {
+      "bytes": 2760,
+      "path": "jobs/M1-shape__keys-10000__value_bytes-4096__B1-instrumented__r3/provider-normalized.json",
+      "sha256": "sha256:b388b5df388f98f8c54edcd558bd191aef3a682a8c96311604a26b3f99feed28"
+    },
+    {
+      "bytes": 66,
+      "path": "jobs/M1-shape__keys-10000__value_bytes-4096__B1-instrumented__r3/provider-probe.json",
+      "sha256": "sha256:70ae6ae2c959f51c746fab1f44e83852e8c757082c60aaa9a31f1fbe6e8fecc4"
+    },
+    {
+      "bytes": 1127,
+      "path": "jobs/M1-shape__keys-10000__value_bytes-4096__B1-instrumented__r3/provider-raw.jsonl",
+      "sha256": "sha256:5ab40bb876d3ab9e93917316ba1351ea3041e9b1ac3a2325f3357449e48a965c"
+    },
+    {
+      "bytes": 1709,
+      "path": "jobs/M1-shape__keys-10000__value_bytes-4096__B1-instrumented__r3/provider-state.json",
+      "sha256": "sha256:e9d71cfffe2e6829bf36caffa1dbd58c5d80fc4857504548b4b247c59d6e94ec"
+    },
+    {
+      "bytes": 16,
+      "path": "jobs/M1-shape__keys-10000__value_bytes-64__B1-instrumented__r1/daemon.log",
+      "sha256": "sha256:6489d6d7a33c5d40e18fc61eeb6c34c341279ee61816394dde5189aa4ad8fae5"
+    },
+    {
+      "bytes": 324,
+      "path": "jobs/M1-shape__keys-10000__value_bytes-64__B1-instrumented__r1/executor-receipt.json",
+      "sha256": "sha256:16bb0a5dc3c0707e0ee7519b52e70106957ac06dea339f0caa3dde80a8849e68"
+    },
+    {
+      "bytes": 22781,
+      "path": "jobs/M1-shape__keys-10000__value_bytes-64__B1-instrumented__r1/memory-baseline-report.json",
+      "sha256": "sha256:2d3dcf34567229d71f3d2d991535d5d351015d3b9f64a9de063db3db1189fd67"
+    },
+    {
+      "bytes": 3072,
+      "path": "jobs/M1-shape__keys-10000__value_bytes-64__B1-instrumented__r1/owner-snapshots/cold.json",
+      "sha256": "sha256:5272e1cd1b1d7c1eb092000d56c5b84341e1aeb3147cba7190e34312069c20fc"
+    },
+    {
+      "bytes": 3072,
+      "path": "jobs/M1-shape__keys-10000__value_bytes-64__B1-instrumented__r1/owner-snapshots/expire_or_delete.json",
+      "sha256": "sha256:5272e1cd1b1d7c1eb092000d56c5b84341e1aeb3147cba7190e34312069c20fc"
+    },
+    {
+      "bytes": 3096,
+      "path": "jobs/M1-shape__keys-10000__value_bytes-64__B1-instrumented__r1/owner-snapshots/fill.json",
+      "sha256": "sha256:800f207a876996deb66210996e28bbc20288ceaba876460185f039b450e435eb"
+    },
+    {
+      "bytes": 3093,
+      "path": "jobs/M1-shape__keys-10000__value_bytes-64__B1-instrumented__r1/owner-snapshots/post_idle.json",
+      "sha256": "sha256:fc4d6cefd48e09dc74c8a97fe8d0a032f6e2cf463186cf35ae5842bc014d1e68"
+    },
+    {
+      "bytes": 3093,
+      "path": "jobs/M1-shape__keys-10000__value_bytes-64__B1-instrumented__r1/owner-snapshots/refill.json",
+      "sha256": "sha256:fc4d6cefd48e09dc74c8a97fe8d0a032f6e2cf463186cf35ae5842bc014d1e68"
+    },
+    {
+      "bytes": 3072,
+      "path": "jobs/M1-shape__keys-10000__value_bytes-64__B1-instrumented__r1/owner-snapshots/reset.json",
+      "sha256": "sha256:361cb155cd41440924cf25472d8e5e4a574f4f2c1f330f2bbb269e158f01e5bb"
+    },
+    {
+      "bytes": 3093,
+      "path": "jobs/M1-shape__keys-10000__value_bytes-64__B1-instrumented__r1/owner-snapshots/shutdown.json",
+      "sha256": "sha256:fc4d6cefd48e09dc74c8a97fe8d0a032f6e2cf463186cf35ae5842bc014d1e68"
+    },
+    {
+      "bytes": 3096,
+      "path": "jobs/M1-shape__keys-10000__value_bytes-64__B1-instrumented__r1/owner-snapshots/steady.json",
+      "sha256": "sha256:800f207a876996deb66210996e28bbc20288ceaba876460185f039b450e435eb"
+    },
+    {
+      "bytes": 530,
+      "path": "jobs/M1-shape__keys-10000__value_bytes-64__B1-instrumented__r1/phase-timeline.jsonl",
+      "sha256": "sha256:e457f3f1317adecbca682adcac030644832ab86a3d9070482ea33c5e576a188d"
+    },
+    {
+      "bytes": 2758,
+      "path": "jobs/M1-shape__keys-10000__value_bytes-64__B1-instrumented__r1/provider-normalized.json",
+      "sha256": "sha256:7847068ba4d610ebbaab32b2baddbd1f580c3a668450fa2497c176ef469845fc"
+    },
+    {
+      "bytes": 66,
+      "path": "jobs/M1-shape__keys-10000__value_bytes-64__B1-instrumented__r1/provider-probe.json",
+      "sha256": "sha256:70ae6ae2c959f51c746fab1f44e83852e8c757082c60aaa9a31f1fbe6e8fecc4"
+    },
+    {
+      "bytes": 1127,
+      "path": "jobs/M1-shape__keys-10000__value_bytes-64__B1-instrumented__r1/provider-raw.jsonl",
+      "sha256": "sha256:8b9e00b3b5e1458e7e714061441a84c3abcdb4b2c76f2c5108e7250b741237c3"
+    },
+    {
+      "bytes": 1703,
+      "path": "jobs/M1-shape__keys-10000__value_bytes-64__B1-instrumented__r1/provider-state.json",
+      "sha256": "sha256:01d2f913809ccbcadbda60a32211e21a236eff1d3cd1ccb87a6b20990f095248"
+    },
+    {
+      "bytes": 16,
+      "path": "jobs/M1-shape__keys-10000__value_bytes-64__B1-instrumented__r2/daemon.log",
+      "sha256": "sha256:6489d6d7a33c5d40e18fc61eeb6c34c341279ee61816394dde5189aa4ad8fae5"
+    },
+    {
+      "bytes": 324,
+      "path": "jobs/M1-shape__keys-10000__value_bytes-64__B1-instrumented__r2/executor-receipt.json",
+      "sha256": "sha256:80ccc9e6fdbb9b1b5f5a49cc8df0ef679ddf3ca706fd155b6f7281f4d548996f"
+    },
+    {
+      "bytes": 22781,
+      "path": "jobs/M1-shape__keys-10000__value_bytes-64__B1-instrumented__r2/memory-baseline-report.json",
+      "sha256": "sha256:e5f8defaa622f30da2a632eaf3676eb1981699add9585e53fc35c9e25d2e3845"
+    },
+    {
+      "bytes": 3072,
+      "path": "jobs/M1-shape__keys-10000__value_bytes-64__B1-instrumented__r2/owner-snapshots/cold.json",
+      "sha256": "sha256:5272e1cd1b1d7c1eb092000d56c5b84341e1aeb3147cba7190e34312069c20fc"
+    },
+    {
+      "bytes": 3072,
+      "path": "jobs/M1-shape__keys-10000__value_bytes-64__B1-instrumented__r2/owner-snapshots/expire_or_delete.json",
+      "sha256": "sha256:5272e1cd1b1d7c1eb092000d56c5b84341e1aeb3147cba7190e34312069c20fc"
+    },
+    {
+      "bytes": 3096,
+      "path": "jobs/M1-shape__keys-10000__value_bytes-64__B1-instrumented__r2/owner-snapshots/fill.json",
+      "sha256": "sha256:800f207a876996deb66210996e28bbc20288ceaba876460185f039b450e435eb"
+    },
+    {
+      "bytes": 3093,
+      "path": "jobs/M1-shape__keys-10000__value_bytes-64__B1-instrumented__r2/owner-snapshots/post_idle.json",
+      "sha256": "sha256:fc4d6cefd48e09dc74c8a97fe8d0a032f6e2cf463186cf35ae5842bc014d1e68"
+    },
+    {
+      "bytes": 3093,
+      "path": "jobs/M1-shape__keys-10000__value_bytes-64__B1-instrumented__r2/owner-snapshots/refill.json",
+      "sha256": "sha256:fc4d6cefd48e09dc74c8a97fe8d0a032f6e2cf463186cf35ae5842bc014d1e68"
+    },
+    {
+      "bytes": 3072,
+      "path": "jobs/M1-shape__keys-10000__value_bytes-64__B1-instrumented__r2/owner-snapshots/reset.json",
+      "sha256": "sha256:361cb155cd41440924cf25472d8e5e4a574f4f2c1f330f2bbb269e158f01e5bb"
+    },
+    {
+      "bytes": 3093,
+      "path": "jobs/M1-shape__keys-10000__value_bytes-64__B1-instrumented__r2/owner-snapshots/shutdown.json",
+      "sha256": "sha256:fc4d6cefd48e09dc74c8a97fe8d0a032f6e2cf463186cf35ae5842bc014d1e68"
+    },
+    {
+      "bytes": 3096,
+      "path": "jobs/M1-shape__keys-10000__value_bytes-64__B1-instrumented__r2/owner-snapshots/steady.json",
+      "sha256": "sha256:800f207a876996deb66210996e28bbc20288ceaba876460185f039b450e435eb"
+    },
+    {
+      "bytes": 530,
+      "path": "jobs/M1-shape__keys-10000__value_bytes-64__B1-instrumented__r2/phase-timeline.jsonl",
+      "sha256": "sha256:a8267ccbcd7ffc2b1fd8049f35ad3a2bf2407be9a23d6aafa63a6a6e25b28280"
+    },
+    {
+      "bytes": 2754,
+      "path": "jobs/M1-shape__keys-10000__value_bytes-64__B1-instrumented__r2/provider-normalized.json",
+      "sha256": "sha256:d0b7d0566f0f1f5553b45bd4bf583a52dc7a1e3babebf4986f046b49ff9a4bc6"
+    },
+    {
+      "bytes": 66,
+      "path": "jobs/M1-shape__keys-10000__value_bytes-64__B1-instrumented__r2/provider-probe.json",
+      "sha256": "sha256:70ae6ae2c959f51c746fab1f44e83852e8c757082c60aaa9a31f1fbe6e8fecc4"
+    },
+    {
+      "bytes": 1127,
+      "path": "jobs/M1-shape__keys-10000__value_bytes-64__B1-instrumented__r2/provider-raw.jsonl",
+      "sha256": "sha256:93c6ae148d94c29a00a77ef42702759464a5663b3671b7b18a2f46d6b097a8e9"
+    },
+    {
+      "bytes": 1703,
+      "path": "jobs/M1-shape__keys-10000__value_bytes-64__B1-instrumented__r2/provider-state.json",
+      "sha256": "sha256:07625921d5626acc3196d8494a68f6fa65d991aa135155d5eeb8bb888afdc347"
+    },
+    {
+      "bytes": 16,
+      "path": "jobs/M1-shape__keys-10000__value_bytes-64__B1-instrumented__r3/daemon.log",
+      "sha256": "sha256:6489d6d7a33c5d40e18fc61eeb6c34c341279ee61816394dde5189aa4ad8fae5"
+    },
+    {
+      "bytes": 324,
+      "path": "jobs/M1-shape__keys-10000__value_bytes-64__B1-instrumented__r3/executor-receipt.json",
+      "sha256": "sha256:fc34613c05e987897cb0deb481979a13bf32cfd4813e66f9b473b7e7f855a965"
+    },
+    {
+      "bytes": 22782,
+      "path": "jobs/M1-shape__keys-10000__value_bytes-64__B1-instrumented__r3/memory-baseline-report.json",
+      "sha256": "sha256:49ca82f2c1c9e508934adeb27c7b3710c79707bf0c14cd88499e9d9b9a7f455c"
+    },
+    {
+      "bytes": 3072,
+      "path": "jobs/M1-shape__keys-10000__value_bytes-64__B1-instrumented__r3/owner-snapshots/cold.json",
+      "sha256": "sha256:5272e1cd1b1d7c1eb092000d56c5b84341e1aeb3147cba7190e34312069c20fc"
+    },
+    {
+      "bytes": 3072,
+      "path": "jobs/M1-shape__keys-10000__value_bytes-64__B1-instrumented__r3/owner-snapshots/expire_or_delete.json",
+      "sha256": "sha256:5272e1cd1b1d7c1eb092000d56c5b84341e1aeb3147cba7190e34312069c20fc"
+    },
+    {
+      "bytes": 3096,
+      "path": "jobs/M1-shape__keys-10000__value_bytes-64__B1-instrumented__r3/owner-snapshots/fill.json",
+      "sha256": "sha256:800f207a876996deb66210996e28bbc20288ceaba876460185f039b450e435eb"
+    },
+    {
+      "bytes": 3093,
+      "path": "jobs/M1-shape__keys-10000__value_bytes-64__B1-instrumented__r3/owner-snapshots/post_idle.json",
+      "sha256": "sha256:fc4d6cefd48e09dc74c8a97fe8d0a032f6e2cf463186cf35ae5842bc014d1e68"
+    },
+    {
+      "bytes": 3093,
+      "path": "jobs/M1-shape__keys-10000__value_bytes-64__B1-instrumented__r3/owner-snapshots/refill.json",
+      "sha256": "sha256:fc4d6cefd48e09dc74c8a97fe8d0a032f6e2cf463186cf35ae5842bc014d1e68"
+    },
+    {
+      "bytes": 3072,
+      "path": "jobs/M1-shape__keys-10000__value_bytes-64__B1-instrumented__r3/owner-snapshots/reset.json",
+      "sha256": "sha256:361cb155cd41440924cf25472d8e5e4a574f4f2c1f330f2bbb269e158f01e5bb"
+    },
+    {
+      "bytes": 3093,
+      "path": "jobs/M1-shape__keys-10000__value_bytes-64__B1-instrumented__r3/owner-snapshots/shutdown.json",
+      "sha256": "sha256:fc4d6cefd48e09dc74c8a97fe8d0a032f6e2cf463186cf35ae5842bc014d1e68"
+    },
+    {
+      "bytes": 3096,
+      "path": "jobs/M1-shape__keys-10000__value_bytes-64__B1-instrumented__r3/owner-snapshots/steady.json",
+      "sha256": "sha256:800f207a876996deb66210996e28bbc20288ceaba876460185f039b450e435eb"
+    },
+    {
+      "bytes": 530,
+      "path": "jobs/M1-shape__keys-10000__value_bytes-64__B1-instrumented__r3/phase-timeline.jsonl",
+      "sha256": "sha256:61142138181258c42cf78928c9c44847375279053e6b8e21afd7d16f003dcf51"
+    },
+    {
+      "bytes": 2750,
+      "path": "jobs/M1-shape__keys-10000__value_bytes-64__B1-instrumented__r3/provider-normalized.json",
+      "sha256": "sha256:a1e7307f3907397212ecd7ac28aad88cf4b63fe0aa98f47a4a7be9aa1071f3e7"
+    },
+    {
+      "bytes": 66,
+      "path": "jobs/M1-shape__keys-10000__value_bytes-64__B1-instrumented__r3/provider-probe.json",
+      "sha256": "sha256:70ae6ae2c959f51c746fab1f44e83852e8c757082c60aaa9a31f1fbe6e8fecc4"
+    },
+    {
+      "bytes": 1127,
+      "path": "jobs/M1-shape__keys-10000__value_bytes-64__B1-instrumented__r3/provider-raw.jsonl",
+      "sha256": "sha256:595086f5f5614739749d1107d3c6e6813556628587f1176efa20d4903287629e"
+    },
+    {
+      "bytes": 1703,
+      "path": "jobs/M1-shape__keys-10000__value_bytes-64__B1-instrumented__r3/provider-state.json",
+      "sha256": "sha256:0c7c746bf0ec062327b271326382b5056964abbe4f9b58942f1dc2dcc197d8ec"
+    },
+    {
+      "bytes": 16,
+      "path": "jobs/M1-shape__keys-1000__value_bytes-1024__B1-instrumented__r1/daemon.log",
+      "sha256": "sha256:6489d6d7a33c5d40e18fc61eeb6c34c341279ee61816394dde5189aa4ad8fae5"
+    },
+    {
+      "bytes": 325,
+      "path": "jobs/M1-shape__keys-1000__value_bytes-1024__B1-instrumented__r1/executor-receipt.json",
+      "sha256": "sha256:6541549ef0f960deba0a66a96c68b6cac658161e459c3accd45f1f1ab5911f71"
+    },
+    {
+      "bytes": 22765,
+      "path": "jobs/M1-shape__keys-1000__value_bytes-1024__B1-instrumented__r1/memory-baseline-report.json",
+      "sha256": "sha256:38ba223fac0c6194e60f40fbebfca4914117145b4b5d03cf94c1c3f42291576b"
+    },
+    {
+      "bytes": 3072,
+      "path": "jobs/M1-shape__keys-1000__value_bytes-1024__B1-instrumented__r1/owner-snapshots/cold.json",
+      "sha256": "sha256:5272e1cd1b1d7c1eb092000d56c5b84341e1aeb3147cba7190e34312069c20fc"
+    },
+    {
+      "bytes": 3072,
+      "path": "jobs/M1-shape__keys-1000__value_bytes-1024__B1-instrumented__r1/owner-snapshots/expire_or_delete.json",
+      "sha256": "sha256:5272e1cd1b1d7c1eb092000d56c5b84341e1aeb3147cba7190e34312069c20fc"
+    },
+    {
+      "bytes": 3094,
+      "path": "jobs/M1-shape__keys-1000__value_bytes-1024__B1-instrumented__r1/owner-snapshots/fill.json",
+      "sha256": "sha256:2ade509bbb73f7caaafe87dce5c3c84e23de30a182f638bc473dbdddf4297f5d"
+    },
+    {
+      "bytes": 3090,
+      "path": "jobs/M1-shape__keys-1000__value_bytes-1024__B1-instrumented__r1/owner-snapshots/post_idle.json",
+      "sha256": "sha256:98a4af289bceb11855dd703214fff0f127a360a6aadb3b17e6a030c57dbb1052"
+    },
+    {
+      "bytes": 3090,
+      "path": "jobs/M1-shape__keys-1000__value_bytes-1024__B1-instrumented__r1/owner-snapshots/refill.json",
+      "sha256": "sha256:98a4af289bceb11855dd703214fff0f127a360a6aadb3b17e6a030c57dbb1052"
+    },
+    {
+      "bytes": 3072,
+      "path": "jobs/M1-shape__keys-1000__value_bytes-1024__B1-instrumented__r1/owner-snapshots/reset.json",
+      "sha256": "sha256:361cb155cd41440924cf25472d8e5e4a574f4f2c1f330f2bbb269e158f01e5bb"
+    },
+    {
+      "bytes": 3090,
+      "path": "jobs/M1-shape__keys-1000__value_bytes-1024__B1-instrumented__r1/owner-snapshots/shutdown.json",
+      "sha256": "sha256:98a4af289bceb11855dd703214fff0f127a360a6aadb3b17e6a030c57dbb1052"
+    },
+    {
+      "bytes": 3094,
+      "path": "jobs/M1-shape__keys-1000__value_bytes-1024__B1-instrumented__r1/owner-snapshots/steady.json",
+      "sha256": "sha256:2ade509bbb73f7caaafe87dce5c3c84e23de30a182f638bc473dbdddf4297f5d"
+    },
+    {
+      "bytes": 530,
+      "path": "jobs/M1-shape__keys-1000__value_bytes-1024__B1-instrumented__r1/phase-timeline.jsonl",
+      "sha256": "sha256:8eea405c8de86f0ca7ef61ed95ed9b9a8c5e2dafbdaa0b9611bff29f4597c552"
+    },
+    {
+      "bytes": 2757,
+      "path": "jobs/M1-shape__keys-1000__value_bytes-1024__B1-instrumented__r1/provider-normalized.json",
+      "sha256": "sha256:a438443ff07b62802a4113d5b046defccb052a9158b7f2a7c4cbc0d91a0df0d8"
+    },
+    {
+      "bytes": 66,
+      "path": "jobs/M1-shape__keys-1000__value_bytes-1024__B1-instrumented__r1/provider-probe.json",
+      "sha256": "sha256:70ae6ae2c959f51c746fab1f44e83852e8c757082c60aaa9a31f1fbe6e8fecc4"
+    },
+    {
+      "bytes": 1127,
+      "path": "jobs/M1-shape__keys-1000__value_bytes-1024__B1-instrumented__r1/provider-raw.jsonl",
+      "sha256": "sha256:16beadf7533bdfeb0857561181fe8e242361379a865cb7a503b1a7bb8f5f64f5"
+    },
+    {
+      "bytes": 1706,
+      "path": "jobs/M1-shape__keys-1000__value_bytes-1024__B1-instrumented__r1/provider-state.json",
+      "sha256": "sha256:a15f45709669dd355a2a62ff988cca1e832e474370020c69e7af4214c6a871f4"
+    },
+    {
+      "bytes": 16,
+      "path": "jobs/M1-shape__keys-1000__value_bytes-1024__B1-instrumented__r2/daemon.log",
+      "sha256": "sha256:6489d6d7a33c5d40e18fc61eeb6c34c341279ee61816394dde5189aa4ad8fae5"
+    },
+    {
+      "bytes": 325,
+      "path": "jobs/M1-shape__keys-1000__value_bytes-1024__B1-instrumented__r2/executor-receipt.json",
+      "sha256": "sha256:c97449a8c4ec709c486455a30a04afab5087dc45b55d67bdbf59fd866c814776"
+    },
+    {
+      "bytes": 22763,
+      "path": "jobs/M1-shape__keys-1000__value_bytes-1024__B1-instrumented__r2/memory-baseline-report.json",
+      "sha256": "sha256:869d0ef096a9a5f78a90e37d5fac4de620679d7ace3bb5f4cebe0cd132283138"
+    },
+    {
+      "bytes": 3072,
+      "path": "jobs/M1-shape__keys-1000__value_bytes-1024__B1-instrumented__r2/owner-snapshots/cold.json",
+      "sha256": "sha256:5272e1cd1b1d7c1eb092000d56c5b84341e1aeb3147cba7190e34312069c20fc"
+    },
+    {
+      "bytes": 3072,
+      "path": "jobs/M1-shape__keys-1000__value_bytes-1024__B1-instrumented__r2/owner-snapshots/expire_or_delete.json",
+      "sha256": "sha256:5272e1cd1b1d7c1eb092000d56c5b84341e1aeb3147cba7190e34312069c20fc"
+    },
+    {
+      "bytes": 3094,
+      "path": "jobs/M1-shape__keys-1000__value_bytes-1024__B1-instrumented__r2/owner-snapshots/fill.json",
+      "sha256": "sha256:2ade509bbb73f7caaafe87dce5c3c84e23de30a182f638bc473dbdddf4297f5d"
+    },
+    {
+      "bytes": 3090,
+      "path": "jobs/M1-shape__keys-1000__value_bytes-1024__B1-instrumented__r2/owner-snapshots/post_idle.json",
+      "sha256": "sha256:98a4af289bceb11855dd703214fff0f127a360a6aadb3b17e6a030c57dbb1052"
+    },
+    {
+      "bytes": 3090,
+      "path": "jobs/M1-shape__keys-1000__value_bytes-1024__B1-instrumented__r2/owner-snapshots/refill.json",
+      "sha256": "sha256:98a4af289bceb11855dd703214fff0f127a360a6aadb3b17e6a030c57dbb1052"
+    },
+    {
+      "bytes": 3072,
+      "path": "jobs/M1-shape__keys-1000__value_bytes-1024__B1-instrumented__r2/owner-snapshots/reset.json",
+      "sha256": "sha256:361cb155cd41440924cf25472d8e5e4a574f4f2c1f330f2bbb269e158f01e5bb"
+    },
+    {
+      "bytes": 3090,
+      "path": "jobs/M1-shape__keys-1000__value_bytes-1024__B1-instrumented__r2/owner-snapshots/shutdown.json",
+      "sha256": "sha256:98a4af289bceb11855dd703214fff0f127a360a6aadb3b17e6a030c57dbb1052"
+    },
+    {
+      "bytes": 3094,
+      "path": "jobs/M1-shape__keys-1000__value_bytes-1024__B1-instrumented__r2/owner-snapshots/steady.json",
+      "sha256": "sha256:2ade509bbb73f7caaafe87dce5c3c84e23de30a182f638bc473dbdddf4297f5d"
+    },
+    {
+      "bytes": 530,
+      "path": "jobs/M1-shape__keys-1000__value_bytes-1024__B1-instrumented__r2/phase-timeline.jsonl",
+      "sha256": "sha256:7b1cf9c8549e12d3016a21d75be671bf841ce19416acdf9593494449cb17e306"
+    },
+    {
+      "bytes": 2757,
+      "path": "jobs/M1-shape__keys-1000__value_bytes-1024__B1-instrumented__r2/provider-normalized.json",
+      "sha256": "sha256:42bea1f943abc2de8d8da8e3aed8cb34444ed311fd986715f2a7a4199ce08dde"
+    },
+    {
+      "bytes": 66,
+      "path": "jobs/M1-shape__keys-1000__value_bytes-1024__B1-instrumented__r2/provider-probe.json",
+      "sha256": "sha256:70ae6ae2c959f51c746fab1f44e83852e8c757082c60aaa9a31f1fbe6e8fecc4"
+    },
+    {
+      "bytes": 1127,
+      "path": "jobs/M1-shape__keys-1000__value_bytes-1024__B1-instrumented__r2/provider-raw.jsonl",
+      "sha256": "sha256:05757069abbc38e4f5c1b319818a5cf9ed1125af54e75ffb064f5f2f8a6419a3"
+    },
+    {
+      "bytes": 1706,
+      "path": "jobs/M1-shape__keys-1000__value_bytes-1024__B1-instrumented__r2/provider-state.json",
+      "sha256": "sha256:61b5b8781a82a4b8bab8e31b2b724f0c1318e1a3fe2cceb4fab6d715217109f4"
+    },
+    {
+      "bytes": 16,
+      "path": "jobs/M1-shape__keys-1000__value_bytes-1024__B1-instrumented__r3/daemon.log",
+      "sha256": "sha256:6489d6d7a33c5d40e18fc61eeb6c34c341279ee61816394dde5189aa4ad8fae5"
+    },
+    {
+      "bytes": 325,
+      "path": "jobs/M1-shape__keys-1000__value_bytes-1024__B1-instrumented__r3/executor-receipt.json",
+      "sha256": "sha256:f377a42b29e14ba70738865d192c881750ebaa0ff8244ef936d59059d3bb92af"
+    },
+    {
+      "bytes": 22759,
+      "path": "jobs/M1-shape__keys-1000__value_bytes-1024__B1-instrumented__r3/memory-baseline-report.json",
+      "sha256": "sha256:c8b5be4c582d1e333042aa7d955b6cb5067f1a8d85f80f14462c78bb35f21fda"
+    },
+    {
+      "bytes": 3072,
+      "path": "jobs/M1-shape__keys-1000__value_bytes-1024__B1-instrumented__r3/owner-snapshots/cold.json",
+      "sha256": "sha256:5272e1cd1b1d7c1eb092000d56c5b84341e1aeb3147cba7190e34312069c20fc"
+    },
+    {
+      "bytes": 3072,
+      "path": "jobs/M1-shape__keys-1000__value_bytes-1024__B1-instrumented__r3/owner-snapshots/expire_or_delete.json",
+      "sha256": "sha256:5272e1cd1b1d7c1eb092000d56c5b84341e1aeb3147cba7190e34312069c20fc"
+    },
+    {
+      "bytes": 3094,
+      "path": "jobs/M1-shape__keys-1000__value_bytes-1024__B1-instrumented__r3/owner-snapshots/fill.json",
+      "sha256": "sha256:2ade509bbb73f7caaafe87dce5c3c84e23de30a182f638bc473dbdddf4297f5d"
+    },
+    {
+      "bytes": 3090,
+      "path": "jobs/M1-shape__keys-1000__value_bytes-1024__B1-instrumented__r3/owner-snapshots/post_idle.json",
+      "sha256": "sha256:98a4af289bceb11855dd703214fff0f127a360a6aadb3b17e6a030c57dbb1052"
+    },
+    {
+      "bytes": 3090,
+      "path": "jobs/M1-shape__keys-1000__value_bytes-1024__B1-instrumented__r3/owner-snapshots/refill.json",
+      "sha256": "sha256:98a4af289bceb11855dd703214fff0f127a360a6aadb3b17e6a030c57dbb1052"
+    },
+    {
+      "bytes": 3072,
+      "path": "jobs/M1-shape__keys-1000__value_bytes-1024__B1-instrumented__r3/owner-snapshots/reset.json",
+      "sha256": "sha256:361cb155cd41440924cf25472d8e5e4a574f4f2c1f330f2bbb269e158f01e5bb"
+    },
+    {
+      "bytes": 3090,
+      "path": "jobs/M1-shape__keys-1000__value_bytes-1024__B1-instrumented__r3/owner-snapshots/shutdown.json",
+      "sha256": "sha256:98a4af289bceb11855dd703214fff0f127a360a6aadb3b17e6a030c57dbb1052"
+    },
+    {
+      "bytes": 3094,
+      "path": "jobs/M1-shape__keys-1000__value_bytes-1024__B1-instrumented__r3/owner-snapshots/steady.json",
+      "sha256": "sha256:2ade509bbb73f7caaafe87dce5c3c84e23de30a182f638bc473dbdddf4297f5d"
+    },
+    {
+      "bytes": 530,
+      "path": "jobs/M1-shape__keys-1000__value_bytes-1024__B1-instrumented__r3/phase-timeline.jsonl",
+      "sha256": "sha256:eb04bbece2462b1cd190a06e65daaed6067b2880e68f10c734270fbd650ac9fb"
+    },
+    {
+      "bytes": 2751,
+      "path": "jobs/M1-shape__keys-1000__value_bytes-1024__B1-instrumented__r3/provider-normalized.json",
+      "sha256": "sha256:20c3194428e7d926544f691333f33ebf7963db62332220f353a16d12cfd99869"
+    },
+    {
+      "bytes": 66,
+      "path": "jobs/M1-shape__keys-1000__value_bytes-1024__B1-instrumented__r3/provider-probe.json",
+      "sha256": "sha256:70ae6ae2c959f51c746fab1f44e83852e8c757082c60aaa9a31f1fbe6e8fecc4"
+    },
+    {
+      "bytes": 1127,
+      "path": "jobs/M1-shape__keys-1000__value_bytes-1024__B1-instrumented__r3/provider-raw.jsonl",
+      "sha256": "sha256:cd0d5e3ee8c27ef0e080c857f5b34a3718ee68337b02a58f4a8bb7b7836aa7a7"
+    },
+    {
+      "bytes": 1706,
+      "path": "jobs/M1-shape__keys-1000__value_bytes-1024__B1-instrumented__r3/provider-state.json",
+      "sha256": "sha256:c0e7edf3111683777a89c52b905ec76148dde7bef43cf549fbfea6f34678088c"
+    },
+    {
+      "bytes": 16,
+      "path": "jobs/M1-shape__keys-1000__value_bytes-256__B1-instrumented__r1/daemon.log",
+      "sha256": "sha256:6489d6d7a33c5d40e18fc61eeb6c34c341279ee61816394dde5189aa4ad8fae5"
+    },
+    {
+      "bytes": 324,
+      "path": "jobs/M1-shape__keys-1000__value_bytes-256__B1-instrumented__r1/executor-receipt.json",
+      "sha256": "sha256:7f9be9d1e6da2e85ba5d17a717c1417a537b77acb2f6a38e1dea0324b4cf3c88"
+    },
+    {
+      "bytes": 22765,
+      "path": "jobs/M1-shape__keys-1000__value_bytes-256__B1-instrumented__r1/memory-baseline-report.json",
+      "sha256": "sha256:8326edbe7eb7506f04abc5c4c94d72fe63507410f26eb74a73e23acecf74f517"
+    },
+    {
+      "bytes": 3072,
+      "path": "jobs/M1-shape__keys-1000__value_bytes-256__B1-instrumented__r1/owner-snapshots/cold.json",
+      "sha256": "sha256:5272e1cd1b1d7c1eb092000d56c5b84341e1aeb3147cba7190e34312069c20fc"
+    },
+    {
+      "bytes": 3072,
+      "path": "jobs/M1-shape__keys-1000__value_bytes-256__B1-instrumented__r1/owner-snapshots/expire_or_delete.json",
+      "sha256": "sha256:5272e1cd1b1d7c1eb092000d56c5b84341e1aeb3147cba7190e34312069c20fc"
+    },
+    {
+      "bytes": 3092,
+      "path": "jobs/M1-shape__keys-1000__value_bytes-256__B1-instrumented__r1/owner-snapshots/fill.json",
+      "sha256": "sha256:009c892d2d0562219eb7d00e9a6277ce28900a87d2007384bc3ddbae1f261d93"
+    },
+    {
+      "bytes": 3090,
+      "path": "jobs/M1-shape__keys-1000__value_bytes-256__B1-instrumented__r1/owner-snapshots/post_idle.json",
+      "sha256": "sha256:43700a9eb0f585f3862c0e72b1cd3d5efd2bd311547c1c2b82c3e23cd6c2fe7b"
+    },
+    {
+      "bytes": 3090,
+      "path": "jobs/M1-shape__keys-1000__value_bytes-256__B1-instrumented__r1/owner-snapshots/refill.json",
+      "sha256": "sha256:43700a9eb0f585f3862c0e72b1cd3d5efd2bd311547c1c2b82c3e23cd6c2fe7b"
+    },
+    {
+      "bytes": 3072,
+      "path": "jobs/M1-shape__keys-1000__value_bytes-256__B1-instrumented__r1/owner-snapshots/reset.json",
+      "sha256": "sha256:361cb155cd41440924cf25472d8e5e4a574f4f2c1f330f2bbb269e158f01e5bb"
+    },
+    {
+      "bytes": 3090,
+      "path": "jobs/M1-shape__keys-1000__value_bytes-256__B1-instrumented__r1/owner-snapshots/shutdown.json",
+      "sha256": "sha256:43700a9eb0f585f3862c0e72b1cd3d5efd2bd311547c1c2b82c3e23cd6c2fe7b"
+    },
+    {
+      "bytes": 3092,
+      "path": "jobs/M1-shape__keys-1000__value_bytes-256__B1-instrumented__r1/owner-snapshots/steady.json",
+      "sha256": "sha256:009c892d2d0562219eb7d00e9a6277ce28900a87d2007384bc3ddbae1f261d93"
+    },
+    {
+      "bytes": 530,
+      "path": "jobs/M1-shape__keys-1000__value_bytes-256__B1-instrumented__r1/phase-timeline.jsonl",
+      "sha256": "sha256:d2916f64361f8aaded39bfa3068426fa5f3491af6ea67d366776204580333275"
+    },
+    {
+      "bytes": 2756,
+      "path": "jobs/M1-shape__keys-1000__value_bytes-256__B1-instrumented__r1/provider-normalized.json",
+      "sha256": "sha256:c438654ec87efbdaca505bf7e93388b0a75e6b08d2855055e2d599ab295f66f2"
+    },
+    {
+      "bytes": 66,
+      "path": "jobs/M1-shape__keys-1000__value_bytes-256__B1-instrumented__r1/provider-probe.json",
+      "sha256": "sha256:70ae6ae2c959f51c746fab1f44e83852e8c757082c60aaa9a31f1fbe6e8fecc4"
+    },
+    {
+      "bytes": 1127,
+      "path": "jobs/M1-shape__keys-1000__value_bytes-256__B1-instrumented__r1/provider-raw.jsonl",
+      "sha256": "sha256:a7160baf10cbe48b6a6e48e80540493977e4dc11add9f5353b6d95a7ba3993ee"
+    },
+    {
+      "bytes": 1703,
+      "path": "jobs/M1-shape__keys-1000__value_bytes-256__B1-instrumented__r1/provider-state.json",
+      "sha256": "sha256:fd7702abc17ce03e99a0abc317bfd1e504e7449efae543700d8d3db654a3d20d"
+    },
+    {
+      "bytes": 16,
+      "path": "jobs/M1-shape__keys-1000__value_bytes-256__B1-instrumented__r2/daemon.log",
+      "sha256": "sha256:6489d6d7a33c5d40e18fc61eeb6c34c341279ee61816394dde5189aa4ad8fae5"
+    },
+    {
+      "bytes": 324,
+      "path": "jobs/M1-shape__keys-1000__value_bytes-256__B1-instrumented__r2/executor-receipt.json",
+      "sha256": "sha256:36101a1bb6fe032b909ab9af1177c54df8333839cb0c1fbd0949f2a425f3439d"
+    },
+    {
+      "bytes": 22764,
+      "path": "jobs/M1-shape__keys-1000__value_bytes-256__B1-instrumented__r2/memory-baseline-report.json",
+      "sha256": "sha256:2090cdb41878433fe685f32298f912fb4fc4cbeee1665089fa96fc0b48887520"
+    },
+    {
+      "bytes": 3072,
+      "path": "jobs/M1-shape__keys-1000__value_bytes-256__B1-instrumented__r2/owner-snapshots/cold.json",
+      "sha256": "sha256:5272e1cd1b1d7c1eb092000d56c5b84341e1aeb3147cba7190e34312069c20fc"
+    },
+    {
+      "bytes": 3072,
+      "path": "jobs/M1-shape__keys-1000__value_bytes-256__B1-instrumented__r2/owner-snapshots/expire_or_delete.json",
+      "sha256": "sha256:5272e1cd1b1d7c1eb092000d56c5b84341e1aeb3147cba7190e34312069c20fc"
+    },
+    {
+      "bytes": 3092,
+      "path": "jobs/M1-shape__keys-1000__value_bytes-256__B1-instrumented__r2/owner-snapshots/fill.json",
+      "sha256": "sha256:009c892d2d0562219eb7d00e9a6277ce28900a87d2007384bc3ddbae1f261d93"
+    },
+    {
+      "bytes": 3090,
+      "path": "jobs/M1-shape__keys-1000__value_bytes-256__B1-instrumented__r2/owner-snapshots/post_idle.json",
+      "sha256": "sha256:43700a9eb0f585f3862c0e72b1cd3d5efd2bd311547c1c2b82c3e23cd6c2fe7b"
+    },
+    {
+      "bytes": 3090,
+      "path": "jobs/M1-shape__keys-1000__value_bytes-256__B1-instrumented__r2/owner-snapshots/refill.json",
+      "sha256": "sha256:43700a9eb0f585f3862c0e72b1cd3d5efd2bd311547c1c2b82c3e23cd6c2fe7b"
+    },
+    {
+      "bytes": 3072,
+      "path": "jobs/M1-shape__keys-1000__value_bytes-256__B1-instrumented__r2/owner-snapshots/reset.json",
+      "sha256": "sha256:361cb155cd41440924cf25472d8e5e4a574f4f2c1f330f2bbb269e158f01e5bb"
+    },
+    {
+      "bytes": 3090,
+      "path": "jobs/M1-shape__keys-1000__value_bytes-256__B1-instrumented__r2/owner-snapshots/shutdown.json",
+      "sha256": "sha256:43700a9eb0f585f3862c0e72b1cd3d5efd2bd311547c1c2b82c3e23cd6c2fe7b"
+    },
+    {
+      "bytes": 3092,
+      "path": "jobs/M1-shape__keys-1000__value_bytes-256__B1-instrumented__r2/owner-snapshots/steady.json",
+      "sha256": "sha256:009c892d2d0562219eb7d00e9a6277ce28900a87d2007384bc3ddbae1f261d93"
+    },
+    {
+      "bytes": 530,
+      "path": "jobs/M1-shape__keys-1000__value_bytes-256__B1-instrumented__r2/phase-timeline.jsonl",
+      "sha256": "sha256:2369c8c8c40f979cb2c43e7080230b047641784755042f3df294f7a25db1d1f1"
+    },
+    {
+      "bytes": 2760,
+      "path": "jobs/M1-shape__keys-1000__value_bytes-256__B1-instrumented__r2/provider-normalized.json",
+      "sha256": "sha256:7a6feb117ecf2370a167fb9dcb55acd5f93ab401c668448dc697c2d37a57a833"
+    },
+    {
+      "bytes": 66,
+      "path": "jobs/M1-shape__keys-1000__value_bytes-256__B1-instrumented__r2/provider-probe.json",
+      "sha256": "sha256:70ae6ae2c959f51c746fab1f44e83852e8c757082c60aaa9a31f1fbe6e8fecc4"
+    },
+    {
+      "bytes": 1127,
+      "path": "jobs/M1-shape__keys-1000__value_bytes-256__B1-instrumented__r2/provider-raw.jsonl",
+      "sha256": "sha256:14c0e388a111ade09919bdbcd6c47c72dc2837bebe074a24892dc58bdda05769"
+    },
+    {
+      "bytes": 1703,
+      "path": "jobs/M1-shape__keys-1000__value_bytes-256__B1-instrumented__r2/provider-state.json",
+      "sha256": "sha256:63dafb636139f0b0476056e6e38de1867a4a0012013d884eb370467c489edc7a"
+    },
+    {
+      "bytes": 16,
+      "path": "jobs/M1-shape__keys-1000__value_bytes-256__B1-instrumented__r3/daemon.log",
+      "sha256": "sha256:6489d6d7a33c5d40e18fc61eeb6c34c341279ee61816394dde5189aa4ad8fae5"
+    },
+    {
+      "bytes": 324,
+      "path": "jobs/M1-shape__keys-1000__value_bytes-256__B1-instrumented__r3/executor-receipt.json",
+      "sha256": "sha256:d8a875d72e05e89c498f7b6040bd00b026f0ff5d06c020a844d18a2ffeaff304"
+    },
+    {
+      "bytes": 22765,
+      "path": "jobs/M1-shape__keys-1000__value_bytes-256__B1-instrumented__r3/memory-baseline-report.json",
+      "sha256": "sha256:9babaaeed970bf9e725080ae68403aacc5709cc79f4fc8c9b1ad66409dad3b23"
+    },
+    {
+      "bytes": 3072,
+      "path": "jobs/M1-shape__keys-1000__value_bytes-256__B1-instrumented__r3/owner-snapshots/cold.json",
+      "sha256": "sha256:5272e1cd1b1d7c1eb092000d56c5b84341e1aeb3147cba7190e34312069c20fc"
+    },
+    {
+      "bytes": 3072,
+      "path": "jobs/M1-shape__keys-1000__value_bytes-256__B1-instrumented__r3/owner-snapshots/expire_or_delete.json",
+      "sha256": "sha256:5272e1cd1b1d7c1eb092000d56c5b84341e1aeb3147cba7190e34312069c20fc"
+    },
+    {
+      "bytes": 3092,
+      "path": "jobs/M1-shape__keys-1000__value_bytes-256__B1-instrumented__r3/owner-snapshots/fill.json",
+      "sha256": "sha256:009c892d2d0562219eb7d00e9a6277ce28900a87d2007384bc3ddbae1f261d93"
+    },
+    {
+      "bytes": 3090,
+      "path": "jobs/M1-shape__keys-1000__value_bytes-256__B1-instrumented__r3/owner-snapshots/post_idle.json",
+      "sha256": "sha256:43700a9eb0f585f3862c0e72b1cd3d5efd2bd311547c1c2b82c3e23cd6c2fe7b"
+    },
+    {
+      "bytes": 3090,
+      "path": "jobs/M1-shape__keys-1000__value_bytes-256__B1-instrumented__r3/owner-snapshots/refill.json",
+      "sha256": "sha256:43700a9eb0f585f3862c0e72b1cd3d5efd2bd311547c1c2b82c3e23cd6c2fe7b"
+    },
+    {
+      "bytes": 3072,
+      "path": "jobs/M1-shape__keys-1000__value_bytes-256__B1-instrumented__r3/owner-snapshots/reset.json",
+      "sha256": "sha256:361cb155cd41440924cf25472d8e5e4a574f4f2c1f330f2bbb269e158f01e5bb"
+    },
+    {
+      "bytes": 3090,
+      "path": "jobs/M1-shape__keys-1000__value_bytes-256__B1-instrumented__r3/owner-snapshots/shutdown.json",
+      "sha256": "sha256:43700a9eb0f585f3862c0e72b1cd3d5efd2bd311547c1c2b82c3e23cd6c2fe7b"
+    },
+    {
+      "bytes": 3092,
+      "path": "jobs/M1-shape__keys-1000__value_bytes-256__B1-instrumented__r3/owner-snapshots/steady.json",
+      "sha256": "sha256:009c892d2d0562219eb7d00e9a6277ce28900a87d2007384bc3ddbae1f261d93"
+    },
+    {
+      "bytes": 530,
+      "path": "jobs/M1-shape__keys-1000__value_bytes-256__B1-instrumented__r3/phase-timeline.jsonl",
+      "sha256": "sha256:01f9650b640e7e9c5b9fefa2571efed26d9cf1d1b2b09bd1738f819e2aa5f51f"
+    },
+    {
+      "bytes": 2757,
+      "path": "jobs/M1-shape__keys-1000__value_bytes-256__B1-instrumented__r3/provider-normalized.json",
+      "sha256": "sha256:1045517734285366a4ec63decc488731cf052a9045ec9ae9641f56ed8fa76d1a"
+    },
+    {
+      "bytes": 66,
+      "path": "jobs/M1-shape__keys-1000__value_bytes-256__B1-instrumented__r3/provider-probe.json",
+      "sha256": "sha256:70ae6ae2c959f51c746fab1f44e83852e8c757082c60aaa9a31f1fbe6e8fecc4"
+    },
+    {
+      "bytes": 1127,
+      "path": "jobs/M1-shape__keys-1000__value_bytes-256__B1-instrumented__r3/provider-raw.jsonl",
+      "sha256": "sha256:99cfb917d190e3ab80eb6fd80d657df45d2bd06164cc7822dfd2934d525ae871"
+    },
+    {
+      "bytes": 1703,
+      "path": "jobs/M1-shape__keys-1000__value_bytes-256__B1-instrumented__r3/provider-state.json",
+      "sha256": "sha256:3af464d422010ef9b4562f7c649bf5697fbce3b1e630a92b485de1523da77114"
+    },
+    {
+      "bytes": 16,
+      "path": "jobs/M1-shape__keys-1000__value_bytes-4096__B1-instrumented__r1/daemon.log",
+      "sha256": "sha256:6489d6d7a33c5d40e18fc61eeb6c34c341279ee61816394dde5189aa4ad8fae5"
+    },
+    {
+      "bytes": 325,
+      "path": "jobs/M1-shape__keys-1000__value_bytes-4096__B1-instrumented__r1/executor-receipt.json",
+      "sha256": "sha256:df1e3d33d5c2977b2c95eb2b7e575507a854d5a0cb51a0fcdbaac6a627035f14"
+    },
+    {
+      "bytes": 22774,
+      "path": "jobs/M1-shape__keys-1000__value_bytes-4096__B1-instrumented__r1/memory-baseline-report.json",
+      "sha256": "sha256:1c642050de7d7bcc3d1c46e74b0b56786acade77e9b7e4dcd1ab3700f2d3617b"
+    },
+    {
+      "bytes": 3072,
+      "path": "jobs/M1-shape__keys-1000__value_bytes-4096__B1-instrumented__r1/owner-snapshots/cold.json",
+      "sha256": "sha256:5272e1cd1b1d7c1eb092000d56c5b84341e1aeb3147cba7190e34312069c20fc"
+    },
+    {
+      "bytes": 3072,
+      "path": "jobs/M1-shape__keys-1000__value_bytes-4096__B1-instrumented__r1/owner-snapshots/expire_or_delete.json",
+      "sha256": "sha256:5272e1cd1b1d7c1eb092000d56c5b84341e1aeb3147cba7190e34312069c20fc"
+    },
+    {
+      "bytes": 3094,
+      "path": "jobs/M1-shape__keys-1000__value_bytes-4096__B1-instrumented__r1/owner-snapshots/fill.json",
+      "sha256": "sha256:488a569440f21ad8ab75fa202b3c8bbfcd90380734068a2e8b5c35fdf875a01f"
+    },
+    {
+      "bytes": 3092,
+      "path": "jobs/M1-shape__keys-1000__value_bytes-4096__B1-instrumented__r1/owner-snapshots/post_idle.json",
+      "sha256": "sha256:e3063f65e6e254ec26cc2115a17be18a32c40d44110c36c784ab6fe0b84320a5"
+    },
+    {
+      "bytes": 3092,
+      "path": "jobs/M1-shape__keys-1000__value_bytes-4096__B1-instrumented__r1/owner-snapshots/refill.json",
+      "sha256": "sha256:e3063f65e6e254ec26cc2115a17be18a32c40d44110c36c784ab6fe0b84320a5"
+    },
+    {
+      "bytes": 3072,
+      "path": "jobs/M1-shape__keys-1000__value_bytes-4096__B1-instrumented__r1/owner-snapshots/reset.json",
+      "sha256": "sha256:361cb155cd41440924cf25472d8e5e4a574f4f2c1f330f2bbb269e158f01e5bb"
+    },
+    {
+      "bytes": 3092,
+      "path": "jobs/M1-shape__keys-1000__value_bytes-4096__B1-instrumented__r1/owner-snapshots/shutdown.json",
+      "sha256": "sha256:e3063f65e6e254ec26cc2115a17be18a32c40d44110c36c784ab6fe0b84320a5"
+    },
+    {
+      "bytes": 3094,
+      "path": "jobs/M1-shape__keys-1000__value_bytes-4096__B1-instrumented__r1/owner-snapshots/steady.json",
+      "sha256": "sha256:488a569440f21ad8ab75fa202b3c8bbfcd90380734068a2e8b5c35fdf875a01f"
+    },
+    {
+      "bytes": 530,
+      "path": "jobs/M1-shape__keys-1000__value_bytes-4096__B1-instrumented__r1/phase-timeline.jsonl",
+      "sha256": "sha256:9f4800e6426322ea37d43a9b848bb15f651053034cd6dfb7f140d8e9f1324bb2"
+    },
+    {
+      "bytes": 2758,
+      "path": "jobs/M1-shape__keys-1000__value_bytes-4096__B1-instrumented__r1/provider-normalized.json",
+      "sha256": "sha256:2efe8dfe5ab88d81ce790dd964f863b2dd471b87867d7fb979fa553fa78dc166"
+    },
+    {
+      "bytes": 66,
+      "path": "jobs/M1-shape__keys-1000__value_bytes-4096__B1-instrumented__r1/provider-probe.json",
+      "sha256": "sha256:70ae6ae2c959f51c746fab1f44e83852e8c757082c60aaa9a31f1fbe6e8fecc4"
+    },
+    {
+      "bytes": 1127,
+      "path": "jobs/M1-shape__keys-1000__value_bytes-4096__B1-instrumented__r1/provider-raw.jsonl",
+      "sha256": "sha256:1e527a8ad9d69799ed83b948e7e7f398cc9aee029a0d121ebe1267181360527b"
+    },
+    {
+      "bytes": 1706,
+      "path": "jobs/M1-shape__keys-1000__value_bytes-4096__B1-instrumented__r1/provider-state.json",
+      "sha256": "sha256:8f5f9a0273143e33b863cbafb4e44c7455dcb3eb8e6fe2e8dea6506839c4bffa"
+    },
+    {
+      "bytes": 16,
+      "path": "jobs/M1-shape__keys-1000__value_bytes-4096__B1-instrumented__r2/daemon.log",
+      "sha256": "sha256:6489d6d7a33c5d40e18fc61eeb6c34c341279ee61816394dde5189aa4ad8fae5"
+    },
+    {
+      "bytes": 325,
+      "path": "jobs/M1-shape__keys-1000__value_bytes-4096__B1-instrumented__r2/executor-receipt.json",
+      "sha256": "sha256:5980e0fe34db8de3f06fa9d366b4c2fae8f8aecc3d9408b7787b4547babe2a87"
+    },
+    {
+      "bytes": 22772,
+      "path": "jobs/M1-shape__keys-1000__value_bytes-4096__B1-instrumented__r2/memory-baseline-report.json",
+      "sha256": "sha256:e768a07d99a15c619631b00775072f0a6e2d935af967f44b937ca8ed277eeb68"
+    },
+    {
+      "bytes": 3072,
+      "path": "jobs/M1-shape__keys-1000__value_bytes-4096__B1-instrumented__r2/owner-snapshots/cold.json",
+      "sha256": "sha256:5272e1cd1b1d7c1eb092000d56c5b84341e1aeb3147cba7190e34312069c20fc"
+    },
+    {
+      "bytes": 3072,
+      "path": "jobs/M1-shape__keys-1000__value_bytes-4096__B1-instrumented__r2/owner-snapshots/expire_or_delete.json",
+      "sha256": "sha256:5272e1cd1b1d7c1eb092000d56c5b84341e1aeb3147cba7190e34312069c20fc"
+    },
+    {
+      "bytes": 3094,
+      "path": "jobs/M1-shape__keys-1000__value_bytes-4096__B1-instrumented__r2/owner-snapshots/fill.json",
+      "sha256": "sha256:488a569440f21ad8ab75fa202b3c8bbfcd90380734068a2e8b5c35fdf875a01f"
+    },
+    {
+      "bytes": 3092,
+      "path": "jobs/M1-shape__keys-1000__value_bytes-4096__B1-instrumented__r2/owner-snapshots/post_idle.json",
+      "sha256": "sha256:e3063f65e6e254ec26cc2115a17be18a32c40d44110c36c784ab6fe0b84320a5"
+    },
+    {
+      "bytes": 3092,
+      "path": "jobs/M1-shape__keys-1000__value_bytes-4096__B1-instrumented__r2/owner-snapshots/refill.json",
+      "sha256": "sha256:e3063f65e6e254ec26cc2115a17be18a32c40d44110c36c784ab6fe0b84320a5"
+    },
+    {
+      "bytes": 3072,
+      "path": "jobs/M1-shape__keys-1000__value_bytes-4096__B1-instrumented__r2/owner-snapshots/reset.json",
+      "sha256": "sha256:361cb155cd41440924cf25472d8e5e4a574f4f2c1f330f2bbb269e158f01e5bb"
+    },
+    {
+      "bytes": 3092,
+      "path": "jobs/M1-shape__keys-1000__value_bytes-4096__B1-instrumented__r2/owner-snapshots/shutdown.json",
+      "sha256": "sha256:e3063f65e6e254ec26cc2115a17be18a32c40d44110c36c784ab6fe0b84320a5"
+    },
+    {
+      "bytes": 3094,
+      "path": "jobs/M1-shape__keys-1000__value_bytes-4096__B1-instrumented__r2/owner-snapshots/steady.json",
+      "sha256": "sha256:488a569440f21ad8ab75fa202b3c8bbfcd90380734068a2e8b5c35fdf875a01f"
+    },
+    {
+      "bytes": 530,
+      "path": "jobs/M1-shape__keys-1000__value_bytes-4096__B1-instrumented__r2/phase-timeline.jsonl",
+      "sha256": "sha256:6a68aa7e4e5b26b9752e6449a72fde8a33a77155b57d3f705ce386c6e3580ff8"
+    },
+    {
+      "bytes": 2762,
+      "path": "jobs/M1-shape__keys-1000__value_bytes-4096__B1-instrumented__r2/provider-normalized.json",
+      "sha256": "sha256:e558803b179672a5846405be87cd2dbad053fd2337fc69b23d5b53f9b3777ede"
+    },
+    {
+      "bytes": 66,
+      "path": "jobs/M1-shape__keys-1000__value_bytes-4096__B1-instrumented__r2/provider-probe.json",
+      "sha256": "sha256:70ae6ae2c959f51c746fab1f44e83852e8c757082c60aaa9a31f1fbe6e8fecc4"
+    },
+    {
+      "bytes": 1127,
+      "path": "jobs/M1-shape__keys-1000__value_bytes-4096__B1-instrumented__r2/provider-raw.jsonl",
+      "sha256": "sha256:8a52fa75990b67014de529f24275dce7599c360e6bbcf98c2375239097efabc0"
+    },
+    {
+      "bytes": 1706,
+      "path": "jobs/M1-shape__keys-1000__value_bytes-4096__B1-instrumented__r2/provider-state.json",
+      "sha256": "sha256:7998d0fe23401bc1893aee7dd0507b2c1c691c7d31ff04ac9f59bee38b30a94e"
+    },
+    {
+      "bytes": 16,
+      "path": "jobs/M1-shape__keys-1000__value_bytes-4096__B1-instrumented__r3/daemon.log",
+      "sha256": "sha256:6489d6d7a33c5d40e18fc61eeb6c34c341279ee61816394dde5189aa4ad8fae5"
+    },
+    {
+      "bytes": 325,
+      "path": "jobs/M1-shape__keys-1000__value_bytes-4096__B1-instrumented__r3/executor-receipt.json",
+      "sha256": "sha256:050d075d112c4305754e69182f1a5c9ef2b4c93f781686326eaf4d601d66c518"
+    },
+    {
+      "bytes": 22770,
+      "path": "jobs/M1-shape__keys-1000__value_bytes-4096__B1-instrumented__r3/memory-baseline-report.json",
+      "sha256": "sha256:362277cf251e23d31131335abcbba78938a77e803862a704755c902048b04ca1"
+    },
+    {
+      "bytes": 3072,
+      "path": "jobs/M1-shape__keys-1000__value_bytes-4096__B1-instrumented__r3/owner-snapshots/cold.json",
+      "sha256": "sha256:5272e1cd1b1d7c1eb092000d56c5b84341e1aeb3147cba7190e34312069c20fc"
+    },
+    {
+      "bytes": 3072,
+      "path": "jobs/M1-shape__keys-1000__value_bytes-4096__B1-instrumented__r3/owner-snapshots/expire_or_delete.json",
+      "sha256": "sha256:5272e1cd1b1d7c1eb092000d56c5b84341e1aeb3147cba7190e34312069c20fc"
+    },
+    {
+      "bytes": 3094,
+      "path": "jobs/M1-shape__keys-1000__value_bytes-4096__B1-instrumented__r3/owner-snapshots/fill.json",
+      "sha256": "sha256:488a569440f21ad8ab75fa202b3c8bbfcd90380734068a2e8b5c35fdf875a01f"
+    },
+    {
+      "bytes": 3092,
+      "path": "jobs/M1-shape__keys-1000__value_bytes-4096__B1-instrumented__r3/owner-snapshots/post_idle.json",
+      "sha256": "sha256:e3063f65e6e254ec26cc2115a17be18a32c40d44110c36c784ab6fe0b84320a5"
+    },
+    {
+      "bytes": 3092,
+      "path": "jobs/M1-shape__keys-1000__value_bytes-4096__B1-instrumented__r3/owner-snapshots/refill.json",
+      "sha256": "sha256:e3063f65e6e254ec26cc2115a17be18a32c40d44110c36c784ab6fe0b84320a5"
+    },
+    {
+      "bytes": 3072,
+      "path": "jobs/M1-shape__keys-1000__value_bytes-4096__B1-instrumented__r3/owner-snapshots/reset.json",
+      "sha256": "sha256:361cb155cd41440924cf25472d8e5e4a574f4f2c1f330f2bbb269e158f01e5bb"
+    },
+    {
+      "bytes": 3092,
+      "path": "jobs/M1-shape__keys-1000__value_bytes-4096__B1-instrumented__r3/owner-snapshots/shutdown.json",
+      "sha256": "sha256:e3063f65e6e254ec26cc2115a17be18a32c40d44110c36c784ab6fe0b84320a5"
+    },
+    {
+      "bytes": 3094,
+      "path": "jobs/M1-shape__keys-1000__value_bytes-4096__B1-instrumented__r3/owner-snapshots/steady.json",
+      "sha256": "sha256:488a569440f21ad8ab75fa202b3c8bbfcd90380734068a2e8b5c35fdf875a01f"
+    },
+    {
+      "bytes": 530,
+      "path": "jobs/M1-shape__keys-1000__value_bytes-4096__B1-instrumented__r3/phase-timeline.jsonl",
+      "sha256": "sha256:a33738f701a3adff440a9375fcdda6001671de9771d3096ceed09bac62a559dd"
+    },
+    {
+      "bytes": 2751,
+      "path": "jobs/M1-shape__keys-1000__value_bytes-4096__B1-instrumented__r3/provider-normalized.json",
+      "sha256": "sha256:abbcc89a7706dbcd6cc2685ec050c3e3cb6d646f9e7d4bc31f6d36a0d4301529"
+    },
+    {
+      "bytes": 66,
+      "path": "jobs/M1-shape__keys-1000__value_bytes-4096__B1-instrumented__r3/provider-probe.json",
+      "sha256": "sha256:70ae6ae2c959f51c746fab1f44e83852e8c757082c60aaa9a31f1fbe6e8fecc4"
+    },
+    {
+      "bytes": 1127,
+      "path": "jobs/M1-shape__keys-1000__value_bytes-4096__B1-instrumented__r3/provider-raw.jsonl",
+      "sha256": "sha256:6fb0a5d43b342e349682d680fb552b669cfcbcee2bd789eb64fef5bbfe7b12ea"
+    },
+    {
+      "bytes": 1706,
+      "path": "jobs/M1-shape__keys-1000__value_bytes-4096__B1-instrumented__r3/provider-state.json",
+      "sha256": "sha256:2496acd90ded6d8cd9755d03f07923ec076ec6ded1eb437ad8c3f58692a03658"
+    },
+    {
+      "bytes": 16,
+      "path": "jobs/M1-shape__keys-1000__value_bytes-64__B1-instrumented__r1/daemon.log",
+      "sha256": "sha256:6489d6d7a33c5d40e18fc61eeb6c34c341279ee61816394dde5189aa4ad8fae5"
+    },
+    {
+      "bytes": 323,
+      "path": "jobs/M1-shape__keys-1000__value_bytes-64__B1-instrumented__r1/executor-receipt.json",
+      "sha256": "sha256:ba573032b69cbcb628e62eab49585daed3c895af1513c96cc390d281e2d4b587"
+    },
+    {
+      "bytes": 22763,
+      "path": "jobs/M1-shape__keys-1000__value_bytes-64__B1-instrumented__r1/memory-baseline-report.json",
+      "sha256": "sha256:ae8f4a3ed230b45ebc290f50d9e05c1b39d4ea0742cf67b862bd985bb1b0aa23"
+    },
+    {
+      "bytes": 3072,
+      "path": "jobs/M1-shape__keys-1000__value_bytes-64__B1-instrumented__r1/owner-snapshots/cold.json",
+      "sha256": "sha256:5272e1cd1b1d7c1eb092000d56c5b84341e1aeb3147cba7190e34312069c20fc"
+    },
+    {
+      "bytes": 3072,
+      "path": "jobs/M1-shape__keys-1000__value_bytes-64__B1-instrumented__r1/owner-snapshots/expire_or_delete.json",
+      "sha256": "sha256:5272e1cd1b1d7c1eb092000d56c5b84341e1aeb3147cba7190e34312069c20fc"
+    },
+    {
+      "bytes": 3091,
+      "path": "jobs/M1-shape__keys-1000__value_bytes-64__B1-instrumented__r1/owner-snapshots/fill.json",
+      "sha256": "sha256:d1a8d73eafb6ef4b111d1ff222c1b563c90ab50126f207c7c19ad49302ca74d1"
+    },
+    {
+      "bytes": 3088,
+      "path": "jobs/M1-shape__keys-1000__value_bytes-64__B1-instrumented__r1/owner-snapshots/post_idle.json",
+      "sha256": "sha256:630e7d0413d3a20506632f791ea857304d2526de87bc8f842de78317e136fe1c"
+    },
+    {
+      "bytes": 3088,
+      "path": "jobs/M1-shape__keys-1000__value_bytes-64__B1-instrumented__r1/owner-snapshots/refill.json",
+      "sha256": "sha256:630e7d0413d3a20506632f791ea857304d2526de87bc8f842de78317e136fe1c"
+    },
+    {
+      "bytes": 3072,
+      "path": "jobs/M1-shape__keys-1000__value_bytes-64__B1-instrumented__r1/owner-snapshots/reset.json",
+      "sha256": "sha256:361cb155cd41440924cf25472d8e5e4a574f4f2c1f330f2bbb269e158f01e5bb"
+    },
+    {
+      "bytes": 3088,
+      "path": "jobs/M1-shape__keys-1000__value_bytes-64__B1-instrumented__r1/owner-snapshots/shutdown.json",
+      "sha256": "sha256:630e7d0413d3a20506632f791ea857304d2526de87bc8f842de78317e136fe1c"
+    },
+    {
+      "bytes": 3091,
+      "path": "jobs/M1-shape__keys-1000__value_bytes-64__B1-instrumented__r1/owner-snapshots/steady.json",
+      "sha256": "sha256:d1a8d73eafb6ef4b111d1ff222c1b563c90ab50126f207c7c19ad49302ca74d1"
+    },
+    {
+      "bytes": 530,
+      "path": "jobs/M1-shape__keys-1000__value_bytes-64__B1-instrumented__r1/phase-timeline.jsonl",
+      "sha256": "sha256:7a1be68f1fe8da1e2bdaf87fc141592f0c2504e2d10f4e2761c662aec88549e6"
+    },
+    {
+      "bytes": 2752,
+      "path": "jobs/M1-shape__keys-1000__value_bytes-64__B1-instrumented__r1/provider-normalized.json",
+      "sha256": "sha256:edb6345ce776224b230d95cfeef8c63b20e0acd0c1317591047c5d34bfdc0820"
+    },
+    {
+      "bytes": 66,
+      "path": "jobs/M1-shape__keys-1000__value_bytes-64__B1-instrumented__r1/provider-probe.json",
+      "sha256": "sha256:70ae6ae2c959f51c746fab1f44e83852e8c757082c60aaa9a31f1fbe6e8fecc4"
+    },
+    {
+      "bytes": 1127,
+      "path": "jobs/M1-shape__keys-1000__value_bytes-64__B1-instrumented__r1/provider-raw.jsonl",
+      "sha256": "sha256:5644d65234cd6e2e9a0dc5826726e9661918fb2311196d9114263ffefe3f0f8d"
+    },
+    {
+      "bytes": 1700,
+      "path": "jobs/M1-shape__keys-1000__value_bytes-64__B1-instrumented__r1/provider-state.json",
+      "sha256": "sha256:2c741c99cfb0ddd1d117d83e5d9b3f8f722a09674b100439b368caeb864c3a09"
+    },
+    {
+      "bytes": 16,
+      "path": "jobs/M1-shape__keys-1000__value_bytes-64__B1-instrumented__r2/daemon.log",
+      "sha256": "sha256:6489d6d7a33c5d40e18fc61eeb6c34c341279ee61816394dde5189aa4ad8fae5"
+    },
+    {
+      "bytes": 323,
+      "path": "jobs/M1-shape__keys-1000__value_bytes-64__B1-instrumented__r2/executor-receipt.json",
+      "sha256": "sha256:d098c07dbb44d9e7476b228b5ed4c790b9bb3225368523b6928bf50163589ed7"
+    },
+    {
+      "bytes": 22764,
+      "path": "jobs/M1-shape__keys-1000__value_bytes-64__B1-instrumented__r2/memory-baseline-report.json",
+      "sha256": "sha256:a14e222e192b49b93cef812c958a7575c9b8ea24836a906142b706570e2b29ee"
+    },
+    {
+      "bytes": 3072,
+      "path": "jobs/M1-shape__keys-1000__value_bytes-64__B1-instrumented__r2/owner-snapshots/cold.json",
+      "sha256": "sha256:5272e1cd1b1d7c1eb092000d56c5b84341e1aeb3147cba7190e34312069c20fc"
+    },
+    {
+      "bytes": 3072,
+      "path": "jobs/M1-shape__keys-1000__value_bytes-64__B1-instrumented__r2/owner-snapshots/expire_or_delete.json",
+      "sha256": "sha256:5272e1cd1b1d7c1eb092000d56c5b84341e1aeb3147cba7190e34312069c20fc"
+    },
+    {
+      "bytes": 3091,
+      "path": "jobs/M1-shape__keys-1000__value_bytes-64__B1-instrumented__r2/owner-snapshots/fill.json",
+      "sha256": "sha256:d1a8d73eafb6ef4b111d1ff222c1b563c90ab50126f207c7c19ad49302ca74d1"
+    },
+    {
+      "bytes": 3088,
+      "path": "jobs/M1-shape__keys-1000__value_bytes-64__B1-instrumented__r2/owner-snapshots/post_idle.json",
+      "sha256": "sha256:630e7d0413d3a20506632f791ea857304d2526de87bc8f842de78317e136fe1c"
+    },
+    {
+      "bytes": 3088,
+      "path": "jobs/M1-shape__keys-1000__value_bytes-64__B1-instrumented__r2/owner-snapshots/refill.json",
+      "sha256": "sha256:630e7d0413d3a20506632f791ea857304d2526de87bc8f842de78317e136fe1c"
+    },
+    {
+      "bytes": 3072,
+      "path": "jobs/M1-shape__keys-1000__value_bytes-64__B1-instrumented__r2/owner-snapshots/reset.json",
+      "sha256": "sha256:361cb155cd41440924cf25472d8e5e4a574f4f2c1f330f2bbb269e158f01e5bb"
+    },
+    {
+      "bytes": 3088,
+      "path": "jobs/M1-shape__keys-1000__value_bytes-64__B1-instrumented__r2/owner-snapshots/shutdown.json",
+      "sha256": "sha256:630e7d0413d3a20506632f791ea857304d2526de87bc8f842de78317e136fe1c"
+    },
+    {
+      "bytes": 3091,
+      "path": "jobs/M1-shape__keys-1000__value_bytes-64__B1-instrumented__r2/owner-snapshots/steady.json",
+      "sha256": "sha256:d1a8d73eafb6ef4b111d1ff222c1b563c90ab50126f207c7c19ad49302ca74d1"
+    },
+    {
+      "bytes": 530,
+      "path": "jobs/M1-shape__keys-1000__value_bytes-64__B1-instrumented__r2/phase-timeline.jsonl",
+      "sha256": "sha256:d4f272ace63511593607d3990159227a6b2978647484b131515bce01f8d28d2a"
+    },
+    {
+      "bytes": 2753,
+      "path": "jobs/M1-shape__keys-1000__value_bytes-64__B1-instrumented__r2/provider-normalized.json",
+      "sha256": "sha256:04f99cf0788c5f412afd7db8d033dfcc08f4aeee8be10901e3039d7084eeb385"
+    },
+    {
+      "bytes": 66,
+      "path": "jobs/M1-shape__keys-1000__value_bytes-64__B1-instrumented__r2/provider-probe.json",
+      "sha256": "sha256:70ae6ae2c959f51c746fab1f44e83852e8c757082c60aaa9a31f1fbe6e8fecc4"
+    },
+    {
+      "bytes": 1127,
+      "path": "jobs/M1-shape__keys-1000__value_bytes-64__B1-instrumented__r2/provider-raw.jsonl",
+      "sha256": "sha256:e5297994ff1ab4735d9fc719fe3d9c1625f81f8b61ae94ddd204ea5e57c54d8d"
+    },
+    {
+      "bytes": 1700,
+      "path": "jobs/M1-shape__keys-1000__value_bytes-64__B1-instrumented__r2/provider-state.json",
+      "sha256": "sha256:aa1e770712f09108ece25923eecc10fe889047c2cb99bae3e238eb1ef2fab48e"
+    },
+    {
+      "bytes": 16,
+      "path": "jobs/M1-shape__keys-1000__value_bytes-64__B1-instrumented__r3/daemon.log",
+      "sha256": "sha256:6489d6d7a33c5d40e18fc61eeb6c34c341279ee61816394dde5189aa4ad8fae5"
+    },
+    {
+      "bytes": 323,
+      "path": "jobs/M1-shape__keys-1000__value_bytes-64__B1-instrumented__r3/executor-receipt.json",
+      "sha256": "sha256:c8c330c4e565ec80d191209c9a758184fc8ce3ac4d1e9714e41d44f228e55c59"
+    },
+    {
+      "bytes": 22766,
+      "path": "jobs/M1-shape__keys-1000__value_bytes-64__B1-instrumented__r3/memory-baseline-report.json",
+      "sha256": "sha256:ddc71c6b59d1bd7eb55a5bb23703f3e3bcf531d384321694b4261667677b596e"
+    },
+    {
+      "bytes": 3072,
+      "path": "jobs/M1-shape__keys-1000__value_bytes-64__B1-instrumented__r3/owner-snapshots/cold.json",
+      "sha256": "sha256:5272e1cd1b1d7c1eb092000d56c5b84341e1aeb3147cba7190e34312069c20fc"
+    },
+    {
+      "bytes": 3072,
+      "path": "jobs/M1-shape__keys-1000__value_bytes-64__B1-instrumented__r3/owner-snapshots/expire_or_delete.json",
+      "sha256": "sha256:5272e1cd1b1d7c1eb092000d56c5b84341e1aeb3147cba7190e34312069c20fc"
+    },
+    {
+      "bytes": 3091,
+      "path": "jobs/M1-shape__keys-1000__value_bytes-64__B1-instrumented__r3/owner-snapshots/fill.json",
+      "sha256": "sha256:d1a8d73eafb6ef4b111d1ff222c1b563c90ab50126f207c7c19ad49302ca74d1"
+    },
+    {
+      "bytes": 3088,
+      "path": "jobs/M1-shape__keys-1000__value_bytes-64__B1-instrumented__r3/owner-snapshots/post_idle.json",
+      "sha256": "sha256:630e7d0413d3a20506632f791ea857304d2526de87bc8f842de78317e136fe1c"
+    },
+    {
+      "bytes": 3088,
+      "path": "jobs/M1-shape__keys-1000__value_bytes-64__B1-instrumented__r3/owner-snapshots/refill.json",
+      "sha256": "sha256:630e7d0413d3a20506632f791ea857304d2526de87bc8f842de78317e136fe1c"
+    },
+    {
+      "bytes": 3072,
+      "path": "jobs/M1-shape__keys-1000__value_bytes-64__B1-instrumented__r3/owner-snapshots/reset.json",
+      "sha256": "sha256:361cb155cd41440924cf25472d8e5e4a574f4f2c1f330f2bbb269e158f01e5bb"
+    },
+    {
+      "bytes": 3088,
+      "path": "jobs/M1-shape__keys-1000__value_bytes-64__B1-instrumented__r3/owner-snapshots/shutdown.json",
+      "sha256": "sha256:630e7d0413d3a20506632f791ea857304d2526de87bc8f842de78317e136fe1c"
+    },
+    {
+      "bytes": 3091,
+      "path": "jobs/M1-shape__keys-1000__value_bytes-64__B1-instrumented__r3/owner-snapshots/steady.json",
+      "sha256": "sha256:d1a8d73eafb6ef4b111d1ff222c1b563c90ab50126f207c7c19ad49302ca74d1"
+    },
+    {
+      "bytes": 530,
+      "path": "jobs/M1-shape__keys-1000__value_bytes-64__B1-instrumented__r3/phase-timeline.jsonl",
+      "sha256": "sha256:d5b80a158234a66c673c4361207de7b9fb8bc68025b2ea2328aca770c60ef9d1"
+    },
+    {
+      "bytes": 2760,
+      "path": "jobs/M1-shape__keys-1000__value_bytes-64__B1-instrumented__r3/provider-normalized.json",
+      "sha256": "sha256:981a9aa85f5c475a8c02bbd9af511e00993d90d65012a2d272df2ad3a60879eb"
+    },
+    {
+      "bytes": 66,
+      "path": "jobs/M1-shape__keys-1000__value_bytes-64__B1-instrumented__r3/provider-probe.json",
+      "sha256": "sha256:70ae6ae2c959f51c746fab1f44e83852e8c757082c60aaa9a31f1fbe6e8fecc4"
+    },
+    {
+      "bytes": 1127,
+      "path": "jobs/M1-shape__keys-1000__value_bytes-64__B1-instrumented__r3/provider-raw.jsonl",
+      "sha256": "sha256:c14552e6e86a76e6577801d4529d56a0620ff3861d367bb009a322ac95f49c70"
+    },
+    {
+      "bytes": 1700,
+      "path": "jobs/M1-shape__keys-1000__value_bytes-64__B1-instrumented__r3/provider-state.json",
+      "sha256": "sha256:c7eaec0cf66ca10f927c9d9fb1919c77a2b3c0abcabd00c4b06d9577f885a231"
+    },
+    {
+      "bytes": 16,
+      "path": "jobs/M1-shape__keys-250000__value_bytes-1024__B1-instrumented__r1/daemon.log",
+      "sha256": "sha256:6489d6d7a33c5d40e18fc61eeb6c34c341279ee61816394dde5189aa4ad8fae5"
+    },
+    {
+      "bytes": 327,
+      "path": "jobs/M1-shape__keys-250000__value_bytes-1024__B1-instrumented__r1/executor-receipt.json",
+      "sha256": "sha256:00d5a5100315b943a06f86018d53c3795b5cb8b9d5ae2daec564556299c3c83a"
+    },
+    {
+      "bytes": 22838,
+      "path": "jobs/M1-shape__keys-250000__value_bytes-1024__B1-instrumented__r1/memory-baseline-report.json",
+      "sha256": "sha256:d32e7a951c0203d1d254862a2e69fe9c86e322433d2c90c0bd316ec3259c39f2"
+    },
+    {
+      "bytes": 3072,
+      "path": "jobs/M1-shape__keys-250000__value_bytes-1024__B1-instrumented__r1/owner-snapshots/cold.json",
+      "sha256": "sha256:5272e1cd1b1d7c1eb092000d56c5b84341e1aeb3147cba7190e34312069c20fc"
+    },
+    {
+      "bytes": 3072,
+      "path": "jobs/M1-shape__keys-250000__value_bytes-1024__B1-instrumented__r1/owner-snapshots/expire_or_delete.json",
+      "sha256": "sha256:5272e1cd1b1d7c1eb092000d56c5b84341e1aeb3147cba7190e34312069c20fc"
+    },
+    {
+      "bytes": 3105,
+      "path": "jobs/M1-shape__keys-250000__value_bytes-1024__B1-instrumented__r1/owner-snapshots/fill.json",
+      "sha256": "sha256:21282bf0148e2197343f1cd7b9f1ab2442f175f8edd526380dca36cde95b9dc4"
+    },
+    {
+      "bytes": 3104,
+      "path": "jobs/M1-shape__keys-250000__value_bytes-1024__B1-instrumented__r1/owner-snapshots/post_idle.json",
+      "sha256": "sha256:e14b45898bc0f81ee7b584c14f0056eaff1f2be5ee3f1a2dac338f40c32cf4dc"
+    },
+    {
+      "bytes": 3104,
+      "path": "jobs/M1-shape__keys-250000__value_bytes-1024__B1-instrumented__r1/owner-snapshots/refill.json",
+      "sha256": "sha256:e14b45898bc0f81ee7b584c14f0056eaff1f2be5ee3f1a2dac338f40c32cf4dc"
+    },
+    {
+      "bytes": 3072,
+      "path": "jobs/M1-shape__keys-250000__value_bytes-1024__B1-instrumented__r1/owner-snapshots/reset.json",
+      "sha256": "sha256:361cb155cd41440924cf25472d8e5e4a574f4f2c1f330f2bbb269e158f01e5bb"
+    },
+    {
+      "bytes": 3104,
+      "path": "jobs/M1-shape__keys-250000__value_bytes-1024__B1-instrumented__r1/owner-snapshots/shutdown.json",
+      "sha256": "sha256:e14b45898bc0f81ee7b584c14f0056eaff1f2be5ee3f1a2dac338f40c32cf4dc"
+    },
+    {
+      "bytes": 3105,
+      "path": "jobs/M1-shape__keys-250000__value_bytes-1024__B1-instrumented__r1/owner-snapshots/steady.json",
+      "sha256": "sha256:21282bf0148e2197343f1cd7b9f1ab2442f175f8edd526380dca36cde95b9dc4"
+    },
+    {
+      "bytes": 530,
+      "path": "jobs/M1-shape__keys-250000__value_bytes-1024__B1-instrumented__r1/phase-timeline.jsonl",
+      "sha256": "sha256:d93f7c8a730b7b3ca4758ab90cfa041f33a191a94b40152f6bbf593649ac1f24"
+    },
+    {
+      "bytes": 2793,
+      "path": "jobs/M1-shape__keys-250000__value_bytes-1024__B1-instrumented__r1/provider-normalized.json",
+      "sha256": "sha256:9da4b3101b0a2b7247f7070745eb89ec4568e34197c77d460b57b493b50fc7be"
+    },
+    {
+      "bytes": 66,
+      "path": "jobs/M1-shape__keys-250000__value_bytes-1024__B1-instrumented__r1/provider-probe.json",
+      "sha256": "sha256:70ae6ae2c959f51c746fab1f44e83852e8c757082c60aaa9a31f1fbe6e8fecc4"
+    },
+    {
+      "bytes": 1148,
+      "path": "jobs/M1-shape__keys-250000__value_bytes-1024__B1-instrumented__r1/provider-raw.jsonl",
+      "sha256": "sha256:9e83b75b79fe31766dbfb4d4dc655c10891ab5ad7da9d753f24ee80346749b4d"
+    },
+    {
+      "bytes": 1712,
+      "path": "jobs/M1-shape__keys-250000__value_bytes-1024__B1-instrumented__r1/provider-state.json",
+      "sha256": "sha256:3e3dc98f0f6b7842131c26bcc9b83796dec3a51b90c5664319b64ea3cc976c41"
+    },
+    {
+      "bytes": 16,
+      "path": "jobs/M1-shape__keys-250000__value_bytes-1024__B1-instrumented__r2/daemon.log",
+      "sha256": "sha256:6489d6d7a33c5d40e18fc61eeb6c34c341279ee61816394dde5189aa4ad8fae5"
+    },
+    {
+      "bytes": 327,
+      "path": "jobs/M1-shape__keys-250000__value_bytes-1024__B1-instrumented__r2/executor-receipt.json",
+      "sha256": "sha256:2a18acc0c3ac838c1ea8281a98eaa58525463391fcca1fe0db0185c0eab6534d"
+    },
+    {
+      "bytes": 22839,
+      "path": "jobs/M1-shape__keys-250000__value_bytes-1024__B1-instrumented__r2/memory-baseline-report.json",
+      "sha256": "sha256:5aeb198aba2c222042cdb7ed454c5d2465aa18f9ef867ea5eaca04b006aa3948"
+    },
+    {
+      "bytes": 3072,
+      "path": "jobs/M1-shape__keys-250000__value_bytes-1024__B1-instrumented__r2/owner-snapshots/cold.json",
+      "sha256": "sha256:5272e1cd1b1d7c1eb092000d56c5b84341e1aeb3147cba7190e34312069c20fc"
+    },
+    {
+      "bytes": 3072,
+      "path": "jobs/M1-shape__keys-250000__value_bytes-1024__B1-instrumented__r2/owner-snapshots/expire_or_delete.json",
+      "sha256": "sha256:5272e1cd1b1d7c1eb092000d56c5b84341e1aeb3147cba7190e34312069c20fc"
+    },
+    {
+      "bytes": 3105,
+      "path": "jobs/M1-shape__keys-250000__value_bytes-1024__B1-instrumented__r2/owner-snapshots/fill.json",
+      "sha256": "sha256:21282bf0148e2197343f1cd7b9f1ab2442f175f8edd526380dca36cde95b9dc4"
+    },
+    {
+      "bytes": 3104,
+      "path": "jobs/M1-shape__keys-250000__value_bytes-1024__B1-instrumented__r2/owner-snapshots/post_idle.json",
+      "sha256": "sha256:e14b45898bc0f81ee7b584c14f0056eaff1f2be5ee3f1a2dac338f40c32cf4dc"
+    },
+    {
+      "bytes": 3104,
+      "path": "jobs/M1-shape__keys-250000__value_bytes-1024__B1-instrumented__r2/owner-snapshots/refill.json",
+      "sha256": "sha256:e14b45898bc0f81ee7b584c14f0056eaff1f2be5ee3f1a2dac338f40c32cf4dc"
+    },
+    {
+      "bytes": 3072,
+      "path": "jobs/M1-shape__keys-250000__value_bytes-1024__B1-instrumented__r2/owner-snapshots/reset.json",
+      "sha256": "sha256:361cb155cd41440924cf25472d8e5e4a574f4f2c1f330f2bbb269e158f01e5bb"
+    },
+    {
+      "bytes": 3104,
+      "path": "jobs/M1-shape__keys-250000__value_bytes-1024__B1-instrumented__r2/owner-snapshots/shutdown.json",
+      "sha256": "sha256:e14b45898bc0f81ee7b584c14f0056eaff1f2be5ee3f1a2dac338f40c32cf4dc"
+    },
+    {
+      "bytes": 3105,
+      "path": "jobs/M1-shape__keys-250000__value_bytes-1024__B1-instrumented__r2/owner-snapshots/steady.json",
+      "sha256": "sha256:21282bf0148e2197343f1cd7b9f1ab2442f175f8edd526380dca36cde95b9dc4"
+    },
+    {
+      "bytes": 530,
+      "path": "jobs/M1-shape__keys-250000__value_bytes-1024__B1-instrumented__r2/phase-timeline.jsonl",
+      "sha256": "sha256:eb37953f144ec4664917b0085d0f37480224df9c2bfee51546aa71bf14a152e1"
+    },
+    {
+      "bytes": 2792,
+      "path": "jobs/M1-shape__keys-250000__value_bytes-1024__B1-instrumented__r2/provider-normalized.json",
+      "sha256": "sha256:c0048a5d533620e6b379f53f1395573a54dda8dfcdec2b5eac0a4f7de8c6e893"
+    },
+    {
+      "bytes": 66,
+      "path": "jobs/M1-shape__keys-250000__value_bytes-1024__B1-instrumented__r2/provider-probe.json",
+      "sha256": "sha256:70ae6ae2c959f51c746fab1f44e83852e8c757082c60aaa9a31f1fbe6e8fecc4"
+    },
+    {
+      "bytes": 1148,
+      "path": "jobs/M1-shape__keys-250000__value_bytes-1024__B1-instrumented__r2/provider-raw.jsonl",
+      "sha256": "sha256:c3ae1b230a6f0f0e1f63300a3386d844b93a6411d437659d04bac4613b69f1d2"
+    },
+    {
+      "bytes": 1712,
+      "path": "jobs/M1-shape__keys-250000__value_bytes-1024__B1-instrumented__r2/provider-state.json",
+      "sha256": "sha256:1f7109be95a54ade8b94ba0d1ba65d25357594270ee327b781b4365b37895b67"
+    },
+    {
+      "bytes": 16,
+      "path": "jobs/M1-shape__keys-250000__value_bytes-1024__B1-instrumented__r3/daemon.log",
+      "sha256": "sha256:6489d6d7a33c5d40e18fc61eeb6c34c341279ee61816394dde5189aa4ad8fae5"
+    },
+    {
+      "bytes": 327,
+      "path": "jobs/M1-shape__keys-250000__value_bytes-1024__B1-instrumented__r3/executor-receipt.json",
+      "sha256": "sha256:e225e7457d5386c54bfc7ec35877f809c9da3ade7a091b3a71a855a3c6102ec3"
+    },
+    {
+      "bytes": 22833,
+      "path": "jobs/M1-shape__keys-250000__value_bytes-1024__B1-instrumented__r3/memory-baseline-report.json",
+      "sha256": "sha256:dd3552121e872a068d87f8a560334c004876d8477e8a849b338143af7cc8712c"
+    },
+    {
+      "bytes": 3072,
+      "path": "jobs/M1-shape__keys-250000__value_bytes-1024__B1-instrumented__r3/owner-snapshots/cold.json",
+      "sha256": "sha256:5272e1cd1b1d7c1eb092000d56c5b84341e1aeb3147cba7190e34312069c20fc"
+    },
+    {
+      "bytes": 3072,
+      "path": "jobs/M1-shape__keys-250000__value_bytes-1024__B1-instrumented__r3/owner-snapshots/expire_or_delete.json",
+      "sha256": "sha256:5272e1cd1b1d7c1eb092000d56c5b84341e1aeb3147cba7190e34312069c20fc"
+    },
+    {
+      "bytes": 3105,
+      "path": "jobs/M1-shape__keys-250000__value_bytes-1024__B1-instrumented__r3/owner-snapshots/fill.json",
+      "sha256": "sha256:21282bf0148e2197343f1cd7b9f1ab2442f175f8edd526380dca36cde95b9dc4"
+    },
+    {
+      "bytes": 3104,
+      "path": "jobs/M1-shape__keys-250000__value_bytes-1024__B1-instrumented__r3/owner-snapshots/post_idle.json",
+      "sha256": "sha256:e14b45898bc0f81ee7b584c14f0056eaff1f2be5ee3f1a2dac338f40c32cf4dc"
+    },
+    {
+      "bytes": 3104,
+      "path": "jobs/M1-shape__keys-250000__value_bytes-1024__B1-instrumented__r3/owner-snapshots/refill.json",
+      "sha256": "sha256:e14b45898bc0f81ee7b584c14f0056eaff1f2be5ee3f1a2dac338f40c32cf4dc"
+    },
+    {
+      "bytes": 3072,
+      "path": "jobs/M1-shape__keys-250000__value_bytes-1024__B1-instrumented__r3/owner-snapshots/reset.json",
+      "sha256": "sha256:361cb155cd41440924cf25472d8e5e4a574f4f2c1f330f2bbb269e158f01e5bb"
+    },
+    {
+      "bytes": 3104,
+      "path": "jobs/M1-shape__keys-250000__value_bytes-1024__B1-instrumented__r3/owner-snapshots/shutdown.json",
+      "sha256": "sha256:e14b45898bc0f81ee7b584c14f0056eaff1f2be5ee3f1a2dac338f40c32cf4dc"
+    },
+    {
+      "bytes": 3105,
+      "path": "jobs/M1-shape__keys-250000__value_bytes-1024__B1-instrumented__r3/owner-snapshots/steady.json",
+      "sha256": "sha256:21282bf0148e2197343f1cd7b9f1ab2442f175f8edd526380dca36cde95b9dc4"
+    },
+    {
+      "bytes": 530,
+      "path": "jobs/M1-shape__keys-250000__value_bytes-1024__B1-instrumented__r3/phase-timeline.jsonl",
+      "sha256": "sha256:652eca4d31b39fcfa34ba72ee6a46d97952cee5d8e9eedeee5ce3bf56cec7aa4"
+    },
+    {
+      "bytes": 2797,
+      "path": "jobs/M1-shape__keys-250000__value_bytes-1024__B1-instrumented__r3/provider-normalized.json",
+      "sha256": "sha256:2c903b5e897213265139a13ff2b3ccb72b25b25066b0fd12b3284a443e560643"
+    },
+    {
+      "bytes": 66,
+      "path": "jobs/M1-shape__keys-250000__value_bytes-1024__B1-instrumented__r3/provider-probe.json",
+      "sha256": "sha256:70ae6ae2c959f51c746fab1f44e83852e8c757082c60aaa9a31f1fbe6e8fecc4"
+    },
+    {
+      "bytes": 1148,
+      "path": "jobs/M1-shape__keys-250000__value_bytes-1024__B1-instrumented__r3/provider-raw.jsonl",
+      "sha256": "sha256:33fe05523c48bdbaf1aa1e2cc164c466ac9cf92c64ab807e1e64f0d00531a623"
+    },
+    {
+      "bytes": 1712,
+      "path": "jobs/M1-shape__keys-250000__value_bytes-1024__B1-instrumented__r3/provider-state.json",
+      "sha256": "sha256:cfcb1dc22243d803f269ad3aa0abf7b71f201d921970bdb99db124915d58d621"
+    },
+    {
+      "bytes": 16,
+      "path": "jobs/M1-shape__keys-250000__value_bytes-256__B1-instrumented__r1/daemon.log",
+      "sha256": "sha256:6489d6d7a33c5d40e18fc61eeb6c34c341279ee61816394dde5189aa4ad8fae5"
+    },
+    {
+      "bytes": 326,
+      "path": "jobs/M1-shape__keys-250000__value_bytes-256__B1-instrumented__r1/executor-receipt.json",
+      "sha256": "sha256:d34415cf7d2cde44f3d6d4f4cbba57b2cebdf6400d0f4b1e0e8a1b475ba457c8"
+    },
+    {
+      "bytes": 22838,
+      "path": "jobs/M1-shape__keys-250000__value_bytes-256__B1-instrumented__r1/memory-baseline-report.json",
+      "sha256": "sha256:73f7f99a97b005e56d6ad9e9a852fe0886cce965224481fbca9bfe77f8c23ef8"
+    },
+    {
+      "bytes": 3072,
+      "path": "jobs/M1-shape__keys-250000__value_bytes-256__B1-instrumented__r1/owner-snapshots/cold.json",
+      "sha256": "sha256:5272e1cd1b1d7c1eb092000d56c5b84341e1aeb3147cba7190e34312069c20fc"
+    },
+    {
+      "bytes": 3072,
+      "path": "jobs/M1-shape__keys-250000__value_bytes-256__B1-instrumented__r1/owner-snapshots/expire_or_delete.json",
+      "sha256": "sha256:5272e1cd1b1d7c1eb092000d56c5b84341e1aeb3147cba7190e34312069c20fc"
+    },
+    {
+      "bytes": 3103,
+      "path": "jobs/M1-shape__keys-250000__value_bytes-256__B1-instrumented__r1/owner-snapshots/fill.json",
+      "sha256": "sha256:e2d6ea86d162f7ec2466f826c55c55753de799eb26a08ca7fc34986a18e8497a"
+    },
+    {
+      "bytes": 3102,
+      "path": "jobs/M1-shape__keys-250000__value_bytes-256__B1-instrumented__r1/owner-snapshots/post_idle.json",
+      "sha256": "sha256:06c382e831cc7a7d250f930284b18d62e4fc5bf0390e0f4fe1fec185af0432e5"
+    },
+    {
+      "bytes": 3102,
+      "path": "jobs/M1-shape__keys-250000__value_bytes-256__B1-instrumented__r1/owner-snapshots/refill.json",
+      "sha256": "sha256:06c382e831cc7a7d250f930284b18d62e4fc5bf0390e0f4fe1fec185af0432e5"
+    },
+    {
+      "bytes": 3072,
+      "path": "jobs/M1-shape__keys-250000__value_bytes-256__B1-instrumented__r1/owner-snapshots/reset.json",
+      "sha256": "sha256:361cb155cd41440924cf25472d8e5e4a574f4f2c1f330f2bbb269e158f01e5bb"
+    },
+    {
+      "bytes": 3102,
+      "path": "jobs/M1-shape__keys-250000__value_bytes-256__B1-instrumented__r1/owner-snapshots/shutdown.json",
+      "sha256": "sha256:06c382e831cc7a7d250f930284b18d62e4fc5bf0390e0f4fe1fec185af0432e5"
+    },
+    {
+      "bytes": 3103,
+      "path": "jobs/M1-shape__keys-250000__value_bytes-256__B1-instrumented__r1/owner-snapshots/steady.json",
+      "sha256": "sha256:e2d6ea86d162f7ec2466f826c55c55753de799eb26a08ca7fc34986a18e8497a"
+    },
+    {
+      "bytes": 530,
+      "path": "jobs/M1-shape__keys-250000__value_bytes-256__B1-instrumented__r1/phase-timeline.jsonl",
+      "sha256": "sha256:b39086b4286b2eeeafc1e27a5a9f14e8f66477a0235e86eeb74dd79736e8d651"
+    },
+    {
+      "bytes": 2795,
+      "path": "jobs/M1-shape__keys-250000__value_bytes-256__B1-instrumented__r1/provider-normalized.json",
+      "sha256": "sha256:629f015c9242b9b26f556f16558bd67399fd2652812dd535ed3efb3679343600"
+    },
+    {
+      "bytes": 66,
+      "path": "jobs/M1-shape__keys-250000__value_bytes-256__B1-instrumented__r1/provider-probe.json",
+      "sha256": "sha256:70ae6ae2c959f51c746fab1f44e83852e8c757082c60aaa9a31f1fbe6e8fecc4"
+    },
+    {
+      "bytes": 1148,
+      "path": "jobs/M1-shape__keys-250000__value_bytes-256__B1-instrumented__r1/provider-raw.jsonl",
+      "sha256": "sha256:3f7aca2f409c54ff4b9521903d33e85bc7115fa2f84d0a408a73fe0924302e85"
+    },
+    {
+      "bytes": 1709,
+      "path": "jobs/M1-shape__keys-250000__value_bytes-256__B1-instrumented__r1/provider-state.json",
+      "sha256": "sha256:04a16c53fc00b1109e628bf12247b86980dd4dee9cd2e0f6ef4a0d4a4ad941a5"
+    },
+    {
+      "bytes": 16,
+      "path": "jobs/M1-shape__keys-250000__value_bytes-256__B1-instrumented__r2/daemon.log",
+      "sha256": "sha256:6489d6d7a33c5d40e18fc61eeb6c34c341279ee61816394dde5189aa4ad8fae5"
+    },
+    {
+      "bytes": 326,
+      "path": "jobs/M1-shape__keys-250000__value_bytes-256__B1-instrumented__r2/executor-receipt.json",
+      "sha256": "sha256:c922f4bc621f709d02562844d145aa0f9d5521180c57dfce316d39bcf1e17b4f"
+    },
+    {
+      "bytes": 22836,
+      "path": "jobs/M1-shape__keys-250000__value_bytes-256__B1-instrumented__r2/memory-baseline-report.json",
+      "sha256": "sha256:5aea0046786a7cce62490a710d150356c8836ab87b29077936476386d2bed2c1"
+    },
+    {
+      "bytes": 3072,
+      "path": "jobs/M1-shape__keys-250000__value_bytes-256__B1-instrumented__r2/owner-snapshots/cold.json",
+      "sha256": "sha256:5272e1cd1b1d7c1eb092000d56c5b84341e1aeb3147cba7190e34312069c20fc"
+    },
+    {
+      "bytes": 3072,
+      "path": "jobs/M1-shape__keys-250000__value_bytes-256__B1-instrumented__r2/owner-snapshots/expire_or_delete.json",
+      "sha256": "sha256:5272e1cd1b1d7c1eb092000d56c5b84341e1aeb3147cba7190e34312069c20fc"
+    },
+    {
+      "bytes": 3103,
+      "path": "jobs/M1-shape__keys-250000__value_bytes-256__B1-instrumented__r2/owner-snapshots/fill.json",
+      "sha256": "sha256:e2d6ea86d162f7ec2466f826c55c55753de799eb26a08ca7fc34986a18e8497a"
+    },
+    {
+      "bytes": 3102,
+      "path": "jobs/M1-shape__keys-250000__value_bytes-256__B1-instrumented__r2/owner-snapshots/post_idle.json",
+      "sha256": "sha256:06c382e831cc7a7d250f930284b18d62e4fc5bf0390e0f4fe1fec185af0432e5"
+    },
+    {
+      "bytes": 3102,
+      "path": "jobs/M1-shape__keys-250000__value_bytes-256__B1-instrumented__r2/owner-snapshots/refill.json",
+      "sha256": "sha256:06c382e831cc7a7d250f930284b18d62e4fc5bf0390e0f4fe1fec185af0432e5"
+    },
+    {
+      "bytes": 3072,
+      "path": "jobs/M1-shape__keys-250000__value_bytes-256__B1-instrumented__r2/owner-snapshots/reset.json",
+      "sha256": "sha256:361cb155cd41440924cf25472d8e5e4a574f4f2c1f330f2bbb269e158f01e5bb"
+    },
+    {
+      "bytes": 3102,
+      "path": "jobs/M1-shape__keys-250000__value_bytes-256__B1-instrumented__r2/owner-snapshots/shutdown.json",
+      "sha256": "sha256:06c382e831cc7a7d250f930284b18d62e4fc5bf0390e0f4fe1fec185af0432e5"
+    },
+    {
+      "bytes": 3103,
+      "path": "jobs/M1-shape__keys-250000__value_bytes-256__B1-instrumented__r2/owner-snapshots/steady.json",
+      "sha256": "sha256:e2d6ea86d162f7ec2466f826c55c55753de799eb26a08ca7fc34986a18e8497a"
+    },
+    {
+      "bytes": 530,
+      "path": "jobs/M1-shape__keys-250000__value_bytes-256__B1-instrumented__r2/phase-timeline.jsonl",
+      "sha256": "sha256:e51c26579422ca4a7d37c63ea4f96cb811e2492eb80015dd5821ef80148d62dd"
+    },
+    {
+      "bytes": 2792,
+      "path": "jobs/M1-shape__keys-250000__value_bytes-256__B1-instrumented__r2/provider-normalized.json",
+      "sha256": "sha256:4bfefdfc3277f0d0f2fa6776758a53a453c511e38e0a44210ea9064efd9ba683"
+    },
+    {
+      "bytes": 66,
+      "path": "jobs/M1-shape__keys-250000__value_bytes-256__B1-instrumented__r2/provider-probe.json",
+      "sha256": "sha256:70ae6ae2c959f51c746fab1f44e83852e8c757082c60aaa9a31f1fbe6e8fecc4"
+    },
+    {
+      "bytes": 1148,
+      "path": "jobs/M1-shape__keys-250000__value_bytes-256__B1-instrumented__r2/provider-raw.jsonl",
+      "sha256": "sha256:b20a56e334ae691b59e4ea49773d4bbfa6bf684e9396b3b7408b3ebf351d69e2"
+    },
+    {
+      "bytes": 1709,
+      "path": "jobs/M1-shape__keys-250000__value_bytes-256__B1-instrumented__r2/provider-state.json",
+      "sha256": "sha256:3a4dd8519e5a90db9d2219fcf5798858bad67b7e123461957f382f787f5f79e7"
+    },
+    {
+      "bytes": 16,
+      "path": "jobs/M1-shape__keys-250000__value_bytes-256__B1-instrumented__r3/daemon.log",
+      "sha256": "sha256:6489d6d7a33c5d40e18fc61eeb6c34c341279ee61816394dde5189aa4ad8fae5"
+    },
+    {
+      "bytes": 326,
+      "path": "jobs/M1-shape__keys-250000__value_bytes-256__B1-instrumented__r3/executor-receipt.json",
+      "sha256": "sha256:26dd2a666c7cd3908d31f816f2d388b6287936622819c05dfa5fa7a2bcb8f1bd"
+    },
+    {
+      "bytes": 22845,
+      "path": "jobs/M1-shape__keys-250000__value_bytes-256__B1-instrumented__r3/memory-baseline-report.json",
+      "sha256": "sha256:f9a365b08154d25e31439557121bdbf626912a8641914fa88c5043c61bd568c2"
+    },
+    {
+      "bytes": 3072,
+      "path": "jobs/M1-shape__keys-250000__value_bytes-256__B1-instrumented__r3/owner-snapshots/cold.json",
+      "sha256": "sha256:5272e1cd1b1d7c1eb092000d56c5b84341e1aeb3147cba7190e34312069c20fc"
+    },
+    {
+      "bytes": 3072,
+      "path": "jobs/M1-shape__keys-250000__value_bytes-256__B1-instrumented__r3/owner-snapshots/expire_or_delete.json",
+      "sha256": "sha256:5272e1cd1b1d7c1eb092000d56c5b84341e1aeb3147cba7190e34312069c20fc"
+    },
+    {
+      "bytes": 3103,
+      "path": "jobs/M1-shape__keys-250000__value_bytes-256__B1-instrumented__r3/owner-snapshots/fill.json",
+      "sha256": "sha256:e2d6ea86d162f7ec2466f826c55c55753de799eb26a08ca7fc34986a18e8497a"
+    },
+    {
+      "bytes": 3102,
+      "path": "jobs/M1-shape__keys-250000__value_bytes-256__B1-instrumented__r3/owner-snapshots/post_idle.json",
+      "sha256": "sha256:06c382e831cc7a7d250f930284b18d62e4fc5bf0390e0f4fe1fec185af0432e5"
+    },
+    {
+      "bytes": 3102,
+      "path": "jobs/M1-shape__keys-250000__value_bytes-256__B1-instrumented__r3/owner-snapshots/refill.json",
+      "sha256": "sha256:06c382e831cc7a7d250f930284b18d62e4fc5bf0390e0f4fe1fec185af0432e5"
+    },
+    {
+      "bytes": 3072,
+      "path": "jobs/M1-shape__keys-250000__value_bytes-256__B1-instrumented__r3/owner-snapshots/reset.json",
+      "sha256": "sha256:361cb155cd41440924cf25472d8e5e4a574f4f2c1f330f2bbb269e158f01e5bb"
+    },
+    {
+      "bytes": 3102,
+      "path": "jobs/M1-shape__keys-250000__value_bytes-256__B1-instrumented__r3/owner-snapshots/shutdown.json",
+      "sha256": "sha256:06c382e831cc7a7d250f930284b18d62e4fc5bf0390e0f4fe1fec185af0432e5"
+    },
+    {
+      "bytes": 3103,
+      "path": "jobs/M1-shape__keys-250000__value_bytes-256__B1-instrumented__r3/owner-snapshots/steady.json",
+      "sha256": "sha256:e2d6ea86d162f7ec2466f826c55c55753de799eb26a08ca7fc34986a18e8497a"
+    },
+    {
+      "bytes": 530,
+      "path": "jobs/M1-shape__keys-250000__value_bytes-256__B1-instrumented__r3/phase-timeline.jsonl",
+      "sha256": "sha256:dd1d88b743f658b233e2c444021b5cb6d64807b8baebb3e0497873cf3515103c"
+    },
+    {
+      "bytes": 2795,
+      "path": "jobs/M1-shape__keys-250000__value_bytes-256__B1-instrumented__r3/provider-normalized.json",
+      "sha256": "sha256:dd0f1ea319f6726bfaf35a92f9670118defc1f1af0df61f763d9862f5812a1a4"
+    },
+    {
+      "bytes": 66,
+      "path": "jobs/M1-shape__keys-250000__value_bytes-256__B1-instrumented__r3/provider-probe.json",
+      "sha256": "sha256:70ae6ae2c959f51c746fab1f44e83852e8c757082c60aaa9a31f1fbe6e8fecc4"
+    },
+    {
+      "bytes": 1148,
+      "path": "jobs/M1-shape__keys-250000__value_bytes-256__B1-instrumented__r3/provider-raw.jsonl",
+      "sha256": "sha256:9932f9157bdb239353b244578d815da5de571d2521411e6198bca64c34de8d93"
+    },
+    {
+      "bytes": 1709,
+      "path": "jobs/M1-shape__keys-250000__value_bytes-256__B1-instrumented__r3/provider-state.json",
+      "sha256": "sha256:efa0babb6b2a6bde865dc5f5d5f3434243889551d96a805c865b1128780cacb0"
+    },
+    {
+      "bytes": 16,
+      "path": "jobs/M1-shape__keys-250000__value_bytes-4096__B1-instrumented__r1/daemon.log",
+      "sha256": "sha256:6489d6d7a33c5d40e18fc61eeb6c34c341279ee61816394dde5189aa4ad8fae5"
+    },
+    {
+      "bytes": 327,
+      "path": "jobs/M1-shape__keys-250000__value_bytes-4096__B1-instrumented__r1/executor-receipt.json",
+      "sha256": "sha256:56f79f84376e4ed1639c79be08d7e8114adbc8c33ca422cdfbc159674a00c722"
+    },
+    {
+      "bytes": 22872,
+      "path": "jobs/M1-shape__keys-250000__value_bytes-4096__B1-instrumented__r1/memory-baseline-report.json",
+      "sha256": "sha256:35ec74730aa6d77151e419e72017f7c35fc15ed003e3281b68cccb9a406f26ec"
+    },
+    {
+      "bytes": 3072,
+      "path": "jobs/M1-shape__keys-250000__value_bytes-4096__B1-instrumented__r1/owner-snapshots/cold.json",
+      "sha256": "sha256:5272e1cd1b1d7c1eb092000d56c5b84341e1aeb3147cba7190e34312069c20fc"
+    },
+    {
+      "bytes": 3072,
+      "path": "jobs/M1-shape__keys-250000__value_bytes-4096__B1-instrumented__r1/owner-snapshots/expire_or_delete.json",
+      "sha256": "sha256:5272e1cd1b1d7c1eb092000d56c5b84341e1aeb3147cba7190e34312069c20fc"
+    },
+    {
+      "bytes": 3107,
+      "path": "jobs/M1-shape__keys-250000__value_bytes-4096__B1-instrumented__r1/owner-snapshots/fill.json",
+      "sha256": "sha256:10b31f62174639e54ece0d43ccf60b438465f5e1a00144ae38b2de54fdabe04c"
+    },
+    {
+      "bytes": 3104,
+      "path": "jobs/M1-shape__keys-250000__value_bytes-4096__B1-instrumented__r1/owner-snapshots/post_idle.json",
+      "sha256": "sha256:ce09d452ce3d307129efe35aab513e04d5c7ed7714f88fd39227bc05e976e235"
+    },
+    {
+      "bytes": 3104,
+      "path": "jobs/M1-shape__keys-250000__value_bytes-4096__B1-instrumented__r1/owner-snapshots/refill.json",
+      "sha256": "sha256:ce09d452ce3d307129efe35aab513e04d5c7ed7714f88fd39227bc05e976e235"
+    },
+    {
+      "bytes": 3072,
+      "path": "jobs/M1-shape__keys-250000__value_bytes-4096__B1-instrumented__r1/owner-snapshots/reset.json",
+      "sha256": "sha256:361cb155cd41440924cf25472d8e5e4a574f4f2c1f330f2bbb269e158f01e5bb"
+    },
+    {
+      "bytes": 3104,
+      "path": "jobs/M1-shape__keys-250000__value_bytes-4096__B1-instrumented__r1/owner-snapshots/shutdown.json",
+      "sha256": "sha256:ce09d452ce3d307129efe35aab513e04d5c7ed7714f88fd39227bc05e976e235"
+    },
+    {
+      "bytes": 3107,
+      "path": "jobs/M1-shape__keys-250000__value_bytes-4096__B1-instrumented__r1/owner-snapshots/steady.json",
+      "sha256": "sha256:10b31f62174639e54ece0d43ccf60b438465f5e1a00144ae38b2de54fdabe04c"
+    },
+    {
+      "bytes": 530,
+      "path": "jobs/M1-shape__keys-250000__value_bytes-4096__B1-instrumented__r1/phase-timeline.jsonl",
+      "sha256": "sha256:f09c2722409a5e5809980b20463bd0e9171ebab8e446a4054b80ecceb2481367"
+    },
+    {
+      "bytes": 2833,
+      "path": "jobs/M1-shape__keys-250000__value_bytes-4096__B1-instrumented__r1/provider-normalized.json",
+      "sha256": "sha256:4351dfdec744f2531f3cfb20f5369cc673e602ffbebaacf9ab65f4ef06b9e412"
+    },
+    {
+      "bytes": 66,
+      "path": "jobs/M1-shape__keys-250000__value_bytes-4096__B1-instrumented__r1/provider-probe.json",
+      "sha256": "sha256:70ae6ae2c959f51c746fab1f44e83852e8c757082c60aaa9a31f1fbe6e8fecc4"
+    },
+    {
+      "bytes": 1169,
+      "path": "jobs/M1-shape__keys-250000__value_bytes-4096__B1-instrumented__r1/provider-raw.jsonl",
+      "sha256": "sha256:8dcdc9ae8df328f481107e0537db65ecc0650516a8714774b321fb3e2d61a42f"
+    },
+    {
+      "bytes": 1712,
+      "path": "jobs/M1-shape__keys-250000__value_bytes-4096__B1-instrumented__r1/provider-state.json",
+      "sha256": "sha256:18e11a54fee26c3a7bdaf9937855f987f506f883f06213992d96a36df0cbf4b9"
+    },
+    {
+      "bytes": 16,
+      "path": "jobs/M1-shape__keys-250000__value_bytes-4096__B1-instrumented__r2/daemon.log",
+      "sha256": "sha256:6489d6d7a33c5d40e18fc61eeb6c34c341279ee61816394dde5189aa4ad8fae5"
+    },
+    {
+      "bytes": 327,
+      "path": "jobs/M1-shape__keys-250000__value_bytes-4096__B1-instrumented__r2/executor-receipt.json",
+      "sha256": "sha256:ecb306193e29d77491cfb1400d12d5334cd6a9f9e658c77db076696422365776"
+    },
+    {
+      "bytes": 22875,
+      "path": "jobs/M1-shape__keys-250000__value_bytes-4096__B1-instrumented__r2/memory-baseline-report.json",
+      "sha256": "sha256:1a2080e50414b1bab2a6a917c02f8afc60ac5cc0a283804d8339810447214719"
+    },
+    {
+      "bytes": 3072,
+      "path": "jobs/M1-shape__keys-250000__value_bytes-4096__B1-instrumented__r2/owner-snapshots/cold.json",
+      "sha256": "sha256:5272e1cd1b1d7c1eb092000d56c5b84341e1aeb3147cba7190e34312069c20fc"
+    },
+    {
+      "bytes": 3072,
+      "path": "jobs/M1-shape__keys-250000__value_bytes-4096__B1-instrumented__r2/owner-snapshots/expire_or_delete.json",
+      "sha256": "sha256:5272e1cd1b1d7c1eb092000d56c5b84341e1aeb3147cba7190e34312069c20fc"
+    },
+    {
+      "bytes": 3107,
+      "path": "jobs/M1-shape__keys-250000__value_bytes-4096__B1-instrumented__r2/owner-snapshots/fill.json",
+      "sha256": "sha256:10b31f62174639e54ece0d43ccf60b438465f5e1a00144ae38b2de54fdabe04c"
+    },
+    {
+      "bytes": 3104,
+      "path": "jobs/M1-shape__keys-250000__value_bytes-4096__B1-instrumented__r2/owner-snapshots/post_idle.json",
+      "sha256": "sha256:ce09d452ce3d307129efe35aab513e04d5c7ed7714f88fd39227bc05e976e235"
+    },
+    {
+      "bytes": 3104,
+      "path": "jobs/M1-shape__keys-250000__value_bytes-4096__B1-instrumented__r2/owner-snapshots/refill.json",
+      "sha256": "sha256:ce09d452ce3d307129efe35aab513e04d5c7ed7714f88fd39227bc05e976e235"
+    },
+    {
+      "bytes": 3072,
+      "path": "jobs/M1-shape__keys-250000__value_bytes-4096__B1-instrumented__r2/owner-snapshots/reset.json",
+      "sha256": "sha256:361cb155cd41440924cf25472d8e5e4a574f4f2c1f330f2bbb269e158f01e5bb"
+    },
+    {
+      "bytes": 3104,
+      "path": "jobs/M1-shape__keys-250000__value_bytes-4096__B1-instrumented__r2/owner-snapshots/shutdown.json",
+      "sha256": "sha256:ce09d452ce3d307129efe35aab513e04d5c7ed7714f88fd39227bc05e976e235"
+    },
+    {
+      "bytes": 3107,
+      "path": "jobs/M1-shape__keys-250000__value_bytes-4096__B1-instrumented__r2/owner-snapshots/steady.json",
+      "sha256": "sha256:10b31f62174639e54ece0d43ccf60b438465f5e1a00144ae38b2de54fdabe04c"
+    },
+    {
+      "bytes": 530,
+      "path": "jobs/M1-shape__keys-250000__value_bytes-4096__B1-instrumented__r2/phase-timeline.jsonl",
+      "sha256": "sha256:3f997e8fc4827734995a1b20cd16ddf91bbe9774cde84f5a7e3f9ac080ec0c2f"
+    },
+    {
+      "bytes": 2829,
+      "path": "jobs/M1-shape__keys-250000__value_bytes-4096__B1-instrumented__r2/provider-normalized.json",
+      "sha256": "sha256:cf262308e5053b1b3e2a417a7f0592748320e3ea5d5aa1080bafdc233565cee5"
+    },
+    {
+      "bytes": 66,
+      "path": "jobs/M1-shape__keys-250000__value_bytes-4096__B1-instrumented__r2/provider-probe.json",
+      "sha256": "sha256:70ae6ae2c959f51c746fab1f44e83852e8c757082c60aaa9a31f1fbe6e8fecc4"
+    },
+    {
+      "bytes": 1169,
+      "path": "jobs/M1-shape__keys-250000__value_bytes-4096__B1-instrumented__r2/provider-raw.jsonl",
+      "sha256": "sha256:3428cecdc904273d7e11a8a4402214d88b47d9948c4fcb43b8977c6c6c269db2"
+    },
+    {
+      "bytes": 1712,
+      "path": "jobs/M1-shape__keys-250000__value_bytes-4096__B1-instrumented__r2/provider-state.json",
+      "sha256": "sha256:acc508529bb846e697235254095762eb3616a69e8a979380048f0db0c3738347"
+    },
+    {
+      "bytes": 16,
+      "path": "jobs/M1-shape__keys-250000__value_bytes-4096__B1-instrumented__r3/daemon.log",
+      "sha256": "sha256:6489d6d7a33c5d40e18fc61eeb6c34c341279ee61816394dde5189aa4ad8fae5"
+    },
+    {
+      "bytes": 327,
+      "path": "jobs/M1-shape__keys-250000__value_bytes-4096__B1-instrumented__r3/executor-receipt.json",
+      "sha256": "sha256:3adcb552c75178d39c1524ea4176dedb9849635b729cf6e5c58f6a1e478e6935"
+    },
+    {
+      "bytes": 22874,
+      "path": "jobs/M1-shape__keys-250000__value_bytes-4096__B1-instrumented__r3/memory-baseline-report.json",
+      "sha256": "sha256:27524bb04d5c592b1e4fe0535856d58a10726c941405cac696a3ccc6b38045ba"
+    },
+    {
+      "bytes": 3072,
+      "path": "jobs/M1-shape__keys-250000__value_bytes-4096__B1-instrumented__r3/owner-snapshots/cold.json",
+      "sha256": "sha256:5272e1cd1b1d7c1eb092000d56c5b84341e1aeb3147cba7190e34312069c20fc"
+    },
+    {
+      "bytes": 3072,
+      "path": "jobs/M1-shape__keys-250000__value_bytes-4096__B1-instrumented__r3/owner-snapshots/expire_or_delete.json",
+      "sha256": "sha256:5272e1cd1b1d7c1eb092000d56c5b84341e1aeb3147cba7190e34312069c20fc"
+    },
+    {
+      "bytes": 3107,
+      "path": "jobs/M1-shape__keys-250000__value_bytes-4096__B1-instrumented__r3/owner-snapshots/fill.json",
+      "sha256": "sha256:10b31f62174639e54ece0d43ccf60b438465f5e1a00144ae38b2de54fdabe04c"
+    },
+    {
+      "bytes": 3104,
+      "path": "jobs/M1-shape__keys-250000__value_bytes-4096__B1-instrumented__r3/owner-snapshots/post_idle.json",
+      "sha256": "sha256:ce09d452ce3d307129efe35aab513e04d5c7ed7714f88fd39227bc05e976e235"
+    },
+    {
+      "bytes": 3104,
+      "path": "jobs/M1-shape__keys-250000__value_bytes-4096__B1-instrumented__r3/owner-snapshots/refill.json",
+      "sha256": "sha256:ce09d452ce3d307129efe35aab513e04d5c7ed7714f88fd39227bc05e976e235"
+    },
+    {
+      "bytes": 3072,
+      "path": "jobs/M1-shape__keys-250000__value_bytes-4096__B1-instrumented__r3/owner-snapshots/reset.json",
+      "sha256": "sha256:361cb155cd41440924cf25472d8e5e4a574f4f2c1f330f2bbb269e158f01e5bb"
+    },
+    {
+      "bytes": 3104,
+      "path": "jobs/M1-shape__keys-250000__value_bytes-4096__B1-instrumented__r3/owner-snapshots/shutdown.json",
+      "sha256": "sha256:ce09d452ce3d307129efe35aab513e04d5c7ed7714f88fd39227bc05e976e235"
+    },
+    {
+      "bytes": 3107,
+      "path": "jobs/M1-shape__keys-250000__value_bytes-4096__B1-instrumented__r3/owner-snapshots/steady.json",
+      "sha256": "sha256:10b31f62174639e54ece0d43ccf60b438465f5e1a00144ae38b2de54fdabe04c"
+    },
+    {
+      "bytes": 530,
+      "path": "jobs/M1-shape__keys-250000__value_bytes-4096__B1-instrumented__r3/phase-timeline.jsonl",
+      "sha256": "sha256:8866266d9cbd8f79c7d12d1aefe6d7bcb81ef25076e7d31b956be94d8bfb3bed"
+    },
+    {
+      "bytes": 2829,
+      "path": "jobs/M1-shape__keys-250000__value_bytes-4096__B1-instrumented__r3/provider-normalized.json",
+      "sha256": "sha256:53c463851aaa02adb816fb843379a6840d605f19ed65da18c2f02939366f8048"
+    },
+    {
+      "bytes": 66,
+      "path": "jobs/M1-shape__keys-250000__value_bytes-4096__B1-instrumented__r3/provider-probe.json",
+      "sha256": "sha256:70ae6ae2c959f51c746fab1f44e83852e8c757082c60aaa9a31f1fbe6e8fecc4"
+    },
+    {
+      "bytes": 1169,
+      "path": "jobs/M1-shape__keys-250000__value_bytes-4096__B1-instrumented__r3/provider-raw.jsonl",
+      "sha256": "sha256:2316d06941ab8f3c53585bdc06a8efb89fcaac159f2ef5781a088440d48aa379"
+    },
+    {
+      "bytes": 1712,
+      "path": "jobs/M1-shape__keys-250000__value_bytes-4096__B1-instrumented__r3/provider-state.json",
+      "sha256": "sha256:493a9421d22912290aa50095ec7f7837d6e2047ecf96d16c7204c94b4dbab615"
+    },
+    {
+      "bytes": 16,
+      "path": "jobs/M1-shape__keys-250000__value_bytes-64__B1-instrumented__r1/daemon.log",
+      "sha256": "sha256:6489d6d7a33c5d40e18fc61eeb6c34c341279ee61816394dde5189aa4ad8fae5"
+    },
+    {
+      "bytes": 325,
+      "path": "jobs/M1-shape__keys-250000__value_bytes-64__B1-instrumented__r1/executor-receipt.json",
+      "sha256": "sha256:06ccb80f0244dcec7286bc9658f19fdbb67d7969e30552172f167f20b6701ba6"
+    },
+    {
+      "bytes": 22839,
+      "path": "jobs/M1-shape__keys-250000__value_bytes-64__B1-instrumented__r1/memory-baseline-report.json",
+      "sha256": "sha256:94280d8c87e5c5854c4b6a6d00d8acf1bbf062b7fe44af39f596d31baf9de1be"
+    },
+    {
+      "bytes": 3072,
+      "path": "jobs/M1-shape__keys-250000__value_bytes-64__B1-instrumented__r1/owner-snapshots/cold.json",
+      "sha256": "sha256:5272e1cd1b1d7c1eb092000d56c5b84341e1aeb3147cba7190e34312069c20fc"
+    },
+    {
+      "bytes": 3072,
+      "path": "jobs/M1-shape__keys-250000__value_bytes-64__B1-instrumented__r1/owner-snapshots/expire_or_delete.json",
+      "sha256": "sha256:5272e1cd1b1d7c1eb092000d56c5b84341e1aeb3147cba7190e34312069c20fc"
+    },
+    {
+      "bytes": 3103,
+      "path": "jobs/M1-shape__keys-250000__value_bytes-64__B1-instrumented__r1/owner-snapshots/fill.json",
+      "sha256": "sha256:b9a6c6fbfa887620173707c9b57e141b4cfd921426b18bb10199353cf125f246"
+    },
+    {
+      "bytes": 3101,
+      "path": "jobs/M1-shape__keys-250000__value_bytes-64__B1-instrumented__r1/owner-snapshots/post_idle.json",
+      "sha256": "sha256:21d3e8bd881b995cffcd6c179e232bfe3c4be10115fd237097c78e4bc64d50a6"
+    },
+    {
+      "bytes": 3101,
+      "path": "jobs/M1-shape__keys-250000__value_bytes-64__B1-instrumented__r1/owner-snapshots/refill.json",
+      "sha256": "sha256:21d3e8bd881b995cffcd6c179e232bfe3c4be10115fd237097c78e4bc64d50a6"
+    },
+    {
+      "bytes": 3072,
+      "path": "jobs/M1-shape__keys-250000__value_bytes-64__B1-instrumented__r1/owner-snapshots/reset.json",
+      "sha256": "sha256:361cb155cd41440924cf25472d8e5e4a574f4f2c1f330f2bbb269e158f01e5bb"
+    },
+    {
+      "bytes": 3101,
+      "path": "jobs/M1-shape__keys-250000__value_bytes-64__B1-instrumented__r1/owner-snapshots/shutdown.json",
+      "sha256": "sha256:21d3e8bd881b995cffcd6c179e232bfe3c4be10115fd237097c78e4bc64d50a6"
+    },
+    {
+      "bytes": 3103,
+      "path": "jobs/M1-shape__keys-250000__value_bytes-64__B1-instrumented__r1/owner-snapshots/steady.json",
+      "sha256": "sha256:b9a6c6fbfa887620173707c9b57e141b4cfd921426b18bb10199353cf125f246"
+    },
+    {
+      "bytes": 530,
+      "path": "jobs/M1-shape__keys-250000__value_bytes-64__B1-instrumented__r1/phase-timeline.jsonl",
+      "sha256": "sha256:b6c95f6fd4fcbd455aa4b7fa0954b9f79f84beec372c2c3ad437e2c3b5239cc7"
+    },
+    {
+      "bytes": 2794,
+      "path": "jobs/M1-shape__keys-250000__value_bytes-64__B1-instrumented__r1/provider-normalized.json",
+      "sha256": "sha256:7bb93c023cc49217e422e1b5f10810a9f21cb4034bb62437ca567f356be2f4fb"
+    },
+    {
+      "bytes": 66,
+      "path": "jobs/M1-shape__keys-250000__value_bytes-64__B1-instrumented__r1/provider-probe.json",
+      "sha256": "sha256:70ae6ae2c959f51c746fab1f44e83852e8c757082c60aaa9a31f1fbe6e8fecc4"
+    },
+    {
+      "bytes": 1148,
+      "path": "jobs/M1-shape__keys-250000__value_bytes-64__B1-instrumented__r1/provider-raw.jsonl",
+      "sha256": "sha256:b86478c64c514454cf4e55ed58898755d571904b83d9b3718165ce9828f12507"
+    },
+    {
+      "bytes": 1706,
+      "path": "jobs/M1-shape__keys-250000__value_bytes-64__B1-instrumented__r1/provider-state.json",
+      "sha256": "sha256:6291213e4ba8ec4aab81e92c5a4bfdac42034448252711cdd8e10d46caf85378"
+    },
+    {
+      "bytes": 16,
+      "path": "jobs/M1-shape__keys-250000__value_bytes-64__B1-instrumented__r2/daemon.log",
+      "sha256": "sha256:6489d6d7a33c5d40e18fc61eeb6c34c341279ee61816394dde5189aa4ad8fae5"
+    },
+    {
+      "bytes": 325,
+      "path": "jobs/M1-shape__keys-250000__value_bytes-64__B1-instrumented__r2/executor-receipt.json",
+      "sha256": "sha256:a50cb8597dc301c9bae41633c312472caf3d4ddeb889c71fb8f0f98a818bb835"
+    },
+    {
+      "bytes": 22839,
+      "path": "jobs/M1-shape__keys-250000__value_bytes-64__B1-instrumented__r2/memory-baseline-report.json",
+      "sha256": "sha256:cd8e068eb31f5eca0f4973b99def3bf5d3fe20d719bdbe3da20ae03557791442"
+    },
+    {
+      "bytes": 3072,
+      "path": "jobs/M1-shape__keys-250000__value_bytes-64__B1-instrumented__r2/owner-snapshots/cold.json",
+      "sha256": "sha256:5272e1cd1b1d7c1eb092000d56c5b84341e1aeb3147cba7190e34312069c20fc"
+    },
+    {
+      "bytes": 3072,
+      "path": "jobs/M1-shape__keys-250000__value_bytes-64__B1-instrumented__r2/owner-snapshots/expire_or_delete.json",
+      "sha256": "sha256:5272e1cd1b1d7c1eb092000d56c5b84341e1aeb3147cba7190e34312069c20fc"
+    },
+    {
+      "bytes": 3103,
+      "path": "jobs/M1-shape__keys-250000__value_bytes-64__B1-instrumented__r2/owner-snapshots/fill.json",
+      "sha256": "sha256:b9a6c6fbfa887620173707c9b57e141b4cfd921426b18bb10199353cf125f246"
+    },
+    {
+      "bytes": 3101,
+      "path": "jobs/M1-shape__keys-250000__value_bytes-64__B1-instrumented__r2/owner-snapshots/post_idle.json",
+      "sha256": "sha256:21d3e8bd881b995cffcd6c179e232bfe3c4be10115fd237097c78e4bc64d50a6"
+    },
+    {
+      "bytes": 3101,
+      "path": "jobs/M1-shape__keys-250000__value_bytes-64__B1-instrumented__r2/owner-snapshots/refill.json",
+      "sha256": "sha256:21d3e8bd881b995cffcd6c179e232bfe3c4be10115fd237097c78e4bc64d50a6"
+    },
+    {
+      "bytes": 3072,
+      "path": "jobs/M1-shape__keys-250000__value_bytes-64__B1-instrumented__r2/owner-snapshots/reset.json",
+      "sha256": "sha256:361cb155cd41440924cf25472d8e5e4a574f4f2c1f330f2bbb269e158f01e5bb"
+    },
+    {
+      "bytes": 3101,
+      "path": "jobs/M1-shape__keys-250000__value_bytes-64__B1-instrumented__r2/owner-snapshots/shutdown.json",
+      "sha256": "sha256:21d3e8bd881b995cffcd6c179e232bfe3c4be10115fd237097c78e4bc64d50a6"
+    },
+    {
+      "bytes": 3103,
+      "path": "jobs/M1-shape__keys-250000__value_bytes-64__B1-instrumented__r2/owner-snapshots/steady.json",
+      "sha256": "sha256:b9a6c6fbfa887620173707c9b57e141b4cfd921426b18bb10199353cf125f246"
+    },
+    {
+      "bytes": 530,
+      "path": "jobs/M1-shape__keys-250000__value_bytes-64__B1-instrumented__r2/phase-timeline.jsonl",
+      "sha256": "sha256:3d7779957da37ea30e4c315c9c6b54bf39a67d22a3a57c892f50d412280b55dd"
+    },
+    {
+      "bytes": 2791,
+      "path": "jobs/M1-shape__keys-250000__value_bytes-64__B1-instrumented__r2/provider-normalized.json",
+      "sha256": "sha256:f931e8a57858e9c6f92587323ff56904dbb56500472108ebbb6661b0ce2fe87b"
+    },
+    {
+      "bytes": 66,
+      "path": "jobs/M1-shape__keys-250000__value_bytes-64__B1-instrumented__r2/provider-probe.json",
+      "sha256": "sha256:70ae6ae2c959f51c746fab1f44e83852e8c757082c60aaa9a31f1fbe6e8fecc4"
+    },
+    {
+      "bytes": 1148,
+      "path": "jobs/M1-shape__keys-250000__value_bytes-64__B1-instrumented__r2/provider-raw.jsonl",
+      "sha256": "sha256:a10648382da5190be2b2e0ddb24dd76e31fe67e6269d133a003612eb014e0c99"
+    },
+    {
+      "bytes": 1706,
+      "path": "jobs/M1-shape__keys-250000__value_bytes-64__B1-instrumented__r2/provider-state.json",
+      "sha256": "sha256:1fbe2d80dbb9703dff28c04335b917e59229ec4a17eff61a77cec6b60e3c02df"
+    },
+    {
+      "bytes": 16,
+      "path": "jobs/M1-shape__keys-250000__value_bytes-64__B1-instrumented__r3/daemon.log",
+      "sha256": "sha256:6489d6d7a33c5d40e18fc61eeb6c34c341279ee61816394dde5189aa4ad8fae5"
+    },
+    {
+      "bytes": 325,
+      "path": "jobs/M1-shape__keys-250000__value_bytes-64__B1-instrumented__r3/executor-receipt.json",
+      "sha256": "sha256:1b75fab8127544c6a7c1ebc4425c315b27e30c51efe2e481374dabade266c205"
+    },
+    {
+      "bytes": 22835,
+      "path": "jobs/M1-shape__keys-250000__value_bytes-64__B1-instrumented__r3/memory-baseline-report.json",
+      "sha256": "sha256:0622feea05294d606bee6b3aec08987ef1eccb3f38162c9cb1ee880473767686"
+    },
+    {
+      "bytes": 3072,
+      "path": "jobs/M1-shape__keys-250000__value_bytes-64__B1-instrumented__r3/owner-snapshots/cold.json",
+      "sha256": "sha256:5272e1cd1b1d7c1eb092000d56c5b84341e1aeb3147cba7190e34312069c20fc"
+    },
+    {
+      "bytes": 3072,
+      "path": "jobs/M1-shape__keys-250000__value_bytes-64__B1-instrumented__r3/owner-snapshots/expire_or_delete.json",
+      "sha256": "sha256:5272e1cd1b1d7c1eb092000d56c5b84341e1aeb3147cba7190e34312069c20fc"
+    },
+    {
+      "bytes": 3103,
+      "path": "jobs/M1-shape__keys-250000__value_bytes-64__B1-instrumented__r3/owner-snapshots/fill.json",
+      "sha256": "sha256:b9a6c6fbfa887620173707c9b57e141b4cfd921426b18bb10199353cf125f246"
+    },
+    {
+      "bytes": 3101,
+      "path": "jobs/M1-shape__keys-250000__value_bytes-64__B1-instrumented__r3/owner-snapshots/post_idle.json",
+      "sha256": "sha256:21d3e8bd881b995cffcd6c179e232bfe3c4be10115fd237097c78e4bc64d50a6"
+    },
+    {
+      "bytes": 3101,
+      "path": "jobs/M1-shape__keys-250000__value_bytes-64__B1-instrumented__r3/owner-snapshots/refill.json",
+      "sha256": "sha256:21d3e8bd881b995cffcd6c179e232bfe3c4be10115fd237097c78e4bc64d50a6"
+    },
+    {
+      "bytes": 3072,
+      "path": "jobs/M1-shape__keys-250000__value_bytes-64__B1-instrumented__r3/owner-snapshots/reset.json",
+      "sha256": "sha256:361cb155cd41440924cf25472d8e5e4a574f4f2c1f330f2bbb269e158f01e5bb"
+    },
+    {
+      "bytes": 3101,
+      "path": "jobs/M1-shape__keys-250000__value_bytes-64__B1-instrumented__r3/owner-snapshots/shutdown.json",
+      "sha256": "sha256:21d3e8bd881b995cffcd6c179e232bfe3c4be10115fd237097c78e4bc64d50a6"
+    },
+    {
+      "bytes": 3103,
+      "path": "jobs/M1-shape__keys-250000__value_bytes-64__B1-instrumented__r3/owner-snapshots/steady.json",
+      "sha256": "sha256:b9a6c6fbfa887620173707c9b57e141b4cfd921426b18bb10199353cf125f246"
+    },
+    {
+      "bytes": 530,
+      "path": "jobs/M1-shape__keys-250000__value_bytes-64__B1-instrumented__r3/phase-timeline.jsonl",
+      "sha256": "sha256:0999ebff4dff8360decef47bd81ca0321b39aa4dba9c79d92c1da38190fe0a81"
+    },
+    {
+      "bytes": 2798,
+      "path": "jobs/M1-shape__keys-250000__value_bytes-64__B1-instrumented__r3/provider-normalized.json",
+      "sha256": "sha256:d4d95eb2ca0ddb5920a99c6a5ac92d9e3b0eea8ed343144f261a2824d21b8081"
+    },
+    {
+      "bytes": 66,
+      "path": "jobs/M1-shape__keys-250000__value_bytes-64__B1-instrumented__r3/provider-probe.json",
+      "sha256": "sha256:70ae6ae2c959f51c746fab1f44e83852e8c757082c60aaa9a31f1fbe6e8fecc4"
+    },
+    {
+      "bytes": 1148,
+      "path": "jobs/M1-shape__keys-250000__value_bytes-64__B1-instrumented__r3/provider-raw.jsonl",
+      "sha256": "sha256:35c0963d79dc093895d941a1a5a80e44e34148724070870e7538a7eae8a2ba73"
+    },
+    {
+      "bytes": 1706,
+      "path": "jobs/M1-shape__keys-250000__value_bytes-64__B1-instrumented__r3/provider-state.json",
+      "sha256": "sha256:83b07cec4ade4736d70f954f3056d4d054f49c7caa7577d6d542e53ac5273bc0"
+    },
+    {
+      "bytes": 16,
+      "path": "jobs/M1-shape__keys-50000__value_bytes-1024__B1-instrumented__r1/daemon.log",
+      "sha256": "sha256:6489d6d7a33c5d40e18fc61eeb6c34c341279ee61816394dde5189aa4ad8fae5"
+    },
+    {
+      "bytes": 326,
+      "path": "jobs/M1-shape__keys-50000__value_bytes-1024__B1-instrumented__r1/executor-receipt.json",
+      "sha256": "sha256:f1e2c1d8777943666e7bd7523f487e116ab97d6e17d04c714baf398f05ae028b"
+    },
+    {
+      "bytes": 22814,
+      "path": "jobs/M1-shape__keys-50000__value_bytes-1024__B1-instrumented__r1/memory-baseline-report.json",
+      "sha256": "sha256:80686fec1499c9fd27222e496d2b644db103769cc4bfe72d4f460e176d1c49f9"
+    },
+    {
+      "bytes": 3072,
+      "path": "jobs/M1-shape__keys-50000__value_bytes-1024__B1-instrumented__r1/owner-snapshots/cold.json",
+      "sha256": "sha256:5272e1cd1b1d7c1eb092000d56c5b84341e1aeb3147cba7190e34312069c20fc"
+    },
+    {
+      "bytes": 3072,
+      "path": "jobs/M1-shape__keys-50000__value_bytes-1024__B1-instrumented__r1/owner-snapshots/expire_or_delete.json",
+      "sha256": "sha256:5272e1cd1b1d7c1eb092000d56c5b84341e1aeb3147cba7190e34312069c20fc"
+    },
+    {
+      "bytes": 3100,
+      "path": "jobs/M1-shape__keys-50000__value_bytes-1024__B1-instrumented__r1/owner-snapshots/fill.json",
+      "sha256": "sha256:8b6748bf00933ac85f4e681c728cd5cabe1a3e8a889f3a0ae5e824f455f01e7a"
+    },
+    {
+      "bytes": 3100,
+      "path": "jobs/M1-shape__keys-50000__value_bytes-1024__B1-instrumented__r1/owner-snapshots/post_idle.json",
+      "sha256": "sha256:0bb773d15c9201487261c05f09f3a822b9422cb8c14c933ec80623792a2a06d6"
+    },
+    {
+      "bytes": 3100,
+      "path": "jobs/M1-shape__keys-50000__value_bytes-1024__B1-instrumented__r1/owner-snapshots/refill.json",
+      "sha256": "sha256:0bb773d15c9201487261c05f09f3a822b9422cb8c14c933ec80623792a2a06d6"
+    },
+    {
+      "bytes": 3072,
+      "path": "jobs/M1-shape__keys-50000__value_bytes-1024__B1-instrumented__r1/owner-snapshots/reset.json",
+      "sha256": "sha256:361cb155cd41440924cf25472d8e5e4a574f4f2c1f330f2bbb269e158f01e5bb"
+    },
+    {
+      "bytes": 3100,
+      "path": "jobs/M1-shape__keys-50000__value_bytes-1024__B1-instrumented__r1/owner-snapshots/shutdown.json",
+      "sha256": "sha256:0bb773d15c9201487261c05f09f3a822b9422cb8c14c933ec80623792a2a06d6"
+    },
+    {
+      "bytes": 3100,
+      "path": "jobs/M1-shape__keys-50000__value_bytes-1024__B1-instrumented__r1/owner-snapshots/steady.json",
+      "sha256": "sha256:8b6748bf00933ac85f4e681c728cd5cabe1a3e8a889f3a0ae5e824f455f01e7a"
+    },
+    {
+      "bytes": 530,
+      "path": "jobs/M1-shape__keys-50000__value_bytes-1024__B1-instrumented__r1/phase-timeline.jsonl",
+      "sha256": "sha256:e6d474b69432bd9682b31fc79f41fd024d26ad488f6622e826daaea503ecaee2"
+    },
+    {
+      "bytes": 2775,
+      "path": "jobs/M1-shape__keys-50000__value_bytes-1024__B1-instrumented__r1/provider-normalized.json",
+      "sha256": "sha256:76060037884b158d35f7bbf12b26b7365f82f077ebf0d1fe905243fb37a4c0c7"
+    },
+    {
+      "bytes": 66,
+      "path": "jobs/M1-shape__keys-50000__value_bytes-1024__B1-instrumented__r1/provider-probe.json",
+      "sha256": "sha256:70ae6ae2c959f51c746fab1f44e83852e8c757082c60aaa9a31f1fbe6e8fecc4"
+    },
+    {
+      "bytes": 1136,
+      "path": "jobs/M1-shape__keys-50000__value_bytes-1024__B1-instrumented__r1/provider-raw.jsonl",
+      "sha256": "sha256:c0d6aadc983cb853a5cabef37e2b2c36484a1f20da775723a4aeefb297ec2821"
+    },
+    {
+      "bytes": 1709,
+      "path": "jobs/M1-shape__keys-50000__value_bytes-1024__B1-instrumented__r1/provider-state.json",
+      "sha256": "sha256:13cc1f2e5982d4fd72ec9a97f1559ed2ac500ce4aecd1ee41b794c29cccdc692"
+    },
+    {
+      "bytes": 16,
+      "path": "jobs/M1-shape__keys-50000__value_bytes-1024__B1-instrumented__r2/daemon.log",
+      "sha256": "sha256:6489d6d7a33c5d40e18fc61eeb6c34c341279ee61816394dde5189aa4ad8fae5"
+    },
+    {
+      "bytes": 326,
+      "path": "jobs/M1-shape__keys-50000__value_bytes-1024__B1-instrumented__r2/executor-receipt.json",
+      "sha256": "sha256:ea7efdca8c572aae3e4f631ecbae686f342d07186b2316c452d58dbafd633a33"
+    },
+    {
+      "bytes": 22816,
+      "path": "jobs/M1-shape__keys-50000__value_bytes-1024__B1-instrumented__r2/memory-baseline-report.json",
+      "sha256": "sha256:76425c48c5047aed4d3653d0e0342e8476b07e963d3801c2465c96898c154696"
+    },
+    {
+      "bytes": 3072,
+      "path": "jobs/M1-shape__keys-50000__value_bytes-1024__B1-instrumented__r2/owner-snapshots/cold.json",
+      "sha256": "sha256:5272e1cd1b1d7c1eb092000d56c5b84341e1aeb3147cba7190e34312069c20fc"
+    },
+    {
+      "bytes": 3072,
+      "path": "jobs/M1-shape__keys-50000__value_bytes-1024__B1-instrumented__r2/owner-snapshots/expire_or_delete.json",
+      "sha256": "sha256:5272e1cd1b1d7c1eb092000d56c5b84341e1aeb3147cba7190e34312069c20fc"
+    },
+    {
+      "bytes": 3100,
+      "path": "jobs/M1-shape__keys-50000__value_bytes-1024__B1-instrumented__r2/owner-snapshots/fill.json",
+      "sha256": "sha256:8b6748bf00933ac85f4e681c728cd5cabe1a3e8a889f3a0ae5e824f455f01e7a"
+    },
+    {
+      "bytes": 3100,
+      "path": "jobs/M1-shape__keys-50000__value_bytes-1024__B1-instrumented__r2/owner-snapshots/post_idle.json",
+      "sha256": "sha256:0bb773d15c9201487261c05f09f3a822b9422cb8c14c933ec80623792a2a06d6"
+    },
+    {
+      "bytes": 3100,
+      "path": "jobs/M1-shape__keys-50000__value_bytes-1024__B1-instrumented__r2/owner-snapshots/refill.json",
+      "sha256": "sha256:0bb773d15c9201487261c05f09f3a822b9422cb8c14c933ec80623792a2a06d6"
+    },
+    {
+      "bytes": 3072,
+      "path": "jobs/M1-shape__keys-50000__value_bytes-1024__B1-instrumented__r2/owner-snapshots/reset.json",
+      "sha256": "sha256:361cb155cd41440924cf25472d8e5e4a574f4f2c1f330f2bbb269e158f01e5bb"
+    },
+    {
+      "bytes": 3100,
+      "path": "jobs/M1-shape__keys-50000__value_bytes-1024__B1-instrumented__r2/owner-snapshots/shutdown.json",
+      "sha256": "sha256:0bb773d15c9201487261c05f09f3a822b9422cb8c14c933ec80623792a2a06d6"
+    },
+    {
+      "bytes": 3100,
+      "path": "jobs/M1-shape__keys-50000__value_bytes-1024__B1-instrumented__r2/owner-snapshots/steady.json",
+      "sha256": "sha256:8b6748bf00933ac85f4e681c728cd5cabe1a3e8a889f3a0ae5e824f455f01e7a"
+    },
+    {
+      "bytes": 530,
+      "path": "jobs/M1-shape__keys-50000__value_bytes-1024__B1-instrumented__r2/phase-timeline.jsonl",
+      "sha256": "sha256:639e44982ac653cc6ba56642f85f16f9834b5bffee1d4b8771230c78ae07c41a"
+    },
+    {
+      "bytes": 2779,
+      "path": "jobs/M1-shape__keys-50000__value_bytes-1024__B1-instrumented__r2/provider-normalized.json",
+      "sha256": "sha256:c50c0d5614f7ee895ad9b3af161f2a1ea7edc478223c7553b093dd84e2ab2d4c"
+    },
+    {
+      "bytes": 66,
+      "path": "jobs/M1-shape__keys-50000__value_bytes-1024__B1-instrumented__r2/provider-probe.json",
+      "sha256": "sha256:70ae6ae2c959f51c746fab1f44e83852e8c757082c60aaa9a31f1fbe6e8fecc4"
+    },
+    {
+      "bytes": 1136,
+      "path": "jobs/M1-shape__keys-50000__value_bytes-1024__B1-instrumented__r2/provider-raw.jsonl",
+      "sha256": "sha256:9446d26de986e2b8fe43dddaff49e380d67734f0328d4592aa6c1dd2c07fd58d"
+    },
+    {
+      "bytes": 1709,
+      "path": "jobs/M1-shape__keys-50000__value_bytes-1024__B1-instrumented__r2/provider-state.json",
+      "sha256": "sha256:2b6bf5d29ace2cdb5614c733c8fc4b33b3290b6c9e681d5df3319e0e127fb95b"
+    },
+    {
+      "bytes": 16,
+      "path": "jobs/M1-shape__keys-50000__value_bytes-1024__B1-instrumented__r3/daemon.log",
+      "sha256": "sha256:6489d6d7a33c5d40e18fc61eeb6c34c341279ee61816394dde5189aa4ad8fae5"
+    },
+    {
+      "bytes": 326,
+      "path": "jobs/M1-shape__keys-50000__value_bytes-1024__B1-instrumented__r3/executor-receipt.json",
+      "sha256": "sha256:cbaf21f53504ff6e34ffdffc67af4862211a8424f84578ff0408e7be16a3a1d3"
+    },
+    {
+      "bytes": 22798,
+      "path": "jobs/M1-shape__keys-50000__value_bytes-1024__B1-instrumented__r3/memory-baseline-report.json",
+      "sha256": "sha256:141e72331a8416a994c32e89f034b4460e9499aa94a2c826640951fd208779d6"
+    },
+    {
+      "bytes": 3072,
+      "path": "jobs/M1-shape__keys-50000__value_bytes-1024__B1-instrumented__r3/owner-snapshots/cold.json",
+      "sha256": "sha256:5272e1cd1b1d7c1eb092000d56c5b84341e1aeb3147cba7190e34312069c20fc"
+    },
+    {
+      "bytes": 3072,
+      "path": "jobs/M1-shape__keys-50000__value_bytes-1024__B1-instrumented__r3/owner-snapshots/expire_or_delete.json",
+      "sha256": "sha256:5272e1cd1b1d7c1eb092000d56c5b84341e1aeb3147cba7190e34312069c20fc"
+    },
+    {
+      "bytes": 3100,
+      "path": "jobs/M1-shape__keys-50000__value_bytes-1024__B1-instrumented__r3/owner-snapshots/fill.json",
+      "sha256": "sha256:8b6748bf00933ac85f4e681c728cd5cabe1a3e8a889f3a0ae5e824f455f01e7a"
+    },
+    {
+      "bytes": 3100,
+      "path": "jobs/M1-shape__keys-50000__value_bytes-1024__B1-instrumented__r3/owner-snapshots/post_idle.json",
+      "sha256": "sha256:0bb773d15c9201487261c05f09f3a822b9422cb8c14c933ec80623792a2a06d6"
+    },
+    {
+      "bytes": 3100,
+      "path": "jobs/M1-shape__keys-50000__value_bytes-1024__B1-instrumented__r3/owner-snapshots/refill.json",
+      "sha256": "sha256:0bb773d15c9201487261c05f09f3a822b9422cb8c14c933ec80623792a2a06d6"
+    },
+    {
+      "bytes": 3072,
+      "path": "jobs/M1-shape__keys-50000__value_bytes-1024__B1-instrumented__r3/owner-snapshots/reset.json",
+      "sha256": "sha256:361cb155cd41440924cf25472d8e5e4a574f4f2c1f330f2bbb269e158f01e5bb"
+    },
+    {
+      "bytes": 3100,
+      "path": "jobs/M1-shape__keys-50000__value_bytes-1024__B1-instrumented__r3/owner-snapshots/shutdown.json",
+      "sha256": "sha256:0bb773d15c9201487261c05f09f3a822b9422cb8c14c933ec80623792a2a06d6"
+    },
+    {
+      "bytes": 3100,
+      "path": "jobs/M1-shape__keys-50000__value_bytes-1024__B1-instrumented__r3/owner-snapshots/steady.json",
+      "sha256": "sha256:8b6748bf00933ac85f4e681c728cd5cabe1a3e8a889f3a0ae5e824f455f01e7a"
+    },
+    {
+      "bytes": 530,
+      "path": "jobs/M1-shape__keys-50000__value_bytes-1024__B1-instrumented__r3/phase-timeline.jsonl",
+      "sha256": "sha256:c9eeb41edea0cd44c0af4180aa4acf69ff55e5cc2fb9d969cd131681771d61ae"
+    },
+    {
+      "bytes": 2759,
+      "path": "jobs/M1-shape__keys-50000__value_bytes-1024__B1-instrumented__r3/provider-normalized.json",
+      "sha256": "sha256:45a98e2db127713ba58404a57b38def8ef5839065a01eb71c3e949d66bdc3f8f"
+    },
+    {
+      "bytes": 66,
+      "path": "jobs/M1-shape__keys-50000__value_bytes-1024__B1-instrumented__r3/provider-probe.json",
+      "sha256": "sha256:70ae6ae2c959f51c746fab1f44e83852e8c757082c60aaa9a31f1fbe6e8fecc4"
+    },
+    {
+      "bytes": 1127,
+      "path": "jobs/M1-shape__keys-50000__value_bytes-1024__B1-instrumented__r3/provider-raw.jsonl",
+      "sha256": "sha256:8126825eebc157fb635d65c5771f3f79bd780b497a0cae71a0761f61775c4878"
+    },
+    {
+      "bytes": 1709,
+      "path": "jobs/M1-shape__keys-50000__value_bytes-1024__B1-instrumented__r3/provider-state.json",
+      "sha256": "sha256:6207785e69895875fdb956a470758c8c7e27fb0b1938478e24a7bf6e184aa445"
+    },
+    {
+      "bytes": 16,
+      "path": "jobs/M1-shape__keys-50000__value_bytes-256__B1-instrumented__r1/daemon.log",
+      "sha256": "sha256:6489d6d7a33c5d40e18fc61eeb6c34c341279ee61816394dde5189aa4ad8fae5"
+    },
+    {
+      "bytes": 325,
+      "path": "jobs/M1-shape__keys-50000__value_bytes-256__B1-instrumented__r1/executor-receipt.json",
+      "sha256": "sha256:200a609f4ee48c65fcc3f9f2c29f4359d7fce160ac25bed90e5eaf2ee13396c3"
+    },
+    {
+      "bytes": 22799,
+      "path": "jobs/M1-shape__keys-50000__value_bytes-256__B1-instrumented__r1/memory-baseline-report.json",
+      "sha256": "sha256:95ddbec810cca861335baf345de3ac02ff6b6208ac030b8153efea06c01330c9"
+    },
+    {
+      "bytes": 3072,
+      "path": "jobs/M1-shape__keys-50000__value_bytes-256__B1-instrumented__r1/owner-snapshots/cold.json",
+      "sha256": "sha256:5272e1cd1b1d7c1eb092000d56c5b84341e1aeb3147cba7190e34312069c20fc"
+    },
+    {
+      "bytes": 3072,
+      "path": "jobs/M1-shape__keys-50000__value_bytes-256__B1-instrumented__r1/owner-snapshots/expire_or_delete.json",
+      "sha256": "sha256:5272e1cd1b1d7c1eb092000d56c5b84341e1aeb3147cba7190e34312069c20fc"
+    },
+    {
+      "bytes": 3100,
+      "path": "jobs/M1-shape__keys-50000__value_bytes-256__B1-instrumented__r1/owner-snapshots/fill.json",
+      "sha256": "sha256:a6cdebd3e9173ca4cf218d20d06ff457dd3aae1dcde7f39f11ca50234df6a9d9"
+    },
+    {
+      "bytes": 3098,
+      "path": "jobs/M1-shape__keys-50000__value_bytes-256__B1-instrumented__r1/owner-snapshots/post_idle.json",
+      "sha256": "sha256:3cba4f8c962455ea657416d8f7f0a52b30777898a7250be5828483351cee5aa8"
+    },
+    {
+      "bytes": 3098,
+      "path": "jobs/M1-shape__keys-50000__value_bytes-256__B1-instrumented__r1/owner-snapshots/refill.json",
+      "sha256": "sha256:3cba4f8c962455ea657416d8f7f0a52b30777898a7250be5828483351cee5aa8"
+    },
+    {
+      "bytes": 3072,
+      "path": "jobs/M1-shape__keys-50000__value_bytes-256__B1-instrumented__r1/owner-snapshots/reset.json",
+      "sha256": "sha256:361cb155cd41440924cf25472d8e5e4a574f4f2c1f330f2bbb269e158f01e5bb"
+    },
+    {
+      "bytes": 3098,
+      "path": "jobs/M1-shape__keys-50000__value_bytes-256__B1-instrumented__r1/owner-snapshots/shutdown.json",
+      "sha256": "sha256:3cba4f8c962455ea657416d8f7f0a52b30777898a7250be5828483351cee5aa8"
+    },
+    {
+      "bytes": 3100,
+      "path": "jobs/M1-shape__keys-50000__value_bytes-256__B1-instrumented__r1/owner-snapshots/steady.json",
+      "sha256": "sha256:a6cdebd3e9173ca4cf218d20d06ff457dd3aae1dcde7f39f11ca50234df6a9d9"
+    },
+    {
+      "bytes": 530,
+      "path": "jobs/M1-shape__keys-50000__value_bytes-256__B1-instrumented__r1/phase-timeline.jsonl",
+      "sha256": "sha256:7bee2c3f4946ef5e2860ecc93f253392f783b57de63d35e596efc55c3591bb9d"
+    },
+    {
+      "bytes": 2763,
+      "path": "jobs/M1-shape__keys-50000__value_bytes-256__B1-instrumented__r1/provider-normalized.json",
+      "sha256": "sha256:6c7fe2625a654ade10dbaaf68ac8fabd6df0c740090635d04b317e363789e91e"
+    },
+    {
+      "bytes": 66,
+      "path": "jobs/M1-shape__keys-50000__value_bytes-256__B1-instrumented__r1/provider-probe.json",
+      "sha256": "sha256:70ae6ae2c959f51c746fab1f44e83852e8c757082c60aaa9a31f1fbe6e8fecc4"
+    },
+    {
+      "bytes": 1127,
+      "path": "jobs/M1-shape__keys-50000__value_bytes-256__B1-instrumented__r1/provider-raw.jsonl",
+      "sha256": "sha256:1c49c44e1f2bfd61892ddda2222c3de859d0d7760b3a40f13a27bfc266f23397"
+    },
+    {
+      "bytes": 1706,
+      "path": "jobs/M1-shape__keys-50000__value_bytes-256__B1-instrumented__r1/provider-state.json",
+      "sha256": "sha256:bd00f9c7604a165b90dd4d9c7d24af1a4ec86988202aadfd01bc0d14666b56c5"
+    },
+    {
+      "bytes": 16,
+      "path": "jobs/M1-shape__keys-50000__value_bytes-256__B1-instrumented__r2/daemon.log",
+      "sha256": "sha256:6489d6d7a33c5d40e18fc61eeb6c34c341279ee61816394dde5189aa4ad8fae5"
+    },
+    {
+      "bytes": 325,
+      "path": "jobs/M1-shape__keys-50000__value_bytes-256__B1-instrumented__r2/executor-receipt.json",
+      "sha256": "sha256:41bef221106c5b55d31a137cf9c8db78918c259ca9032c0f9c3603d86461d04f"
+    },
+    {
+      "bytes": 22799,
+      "path": "jobs/M1-shape__keys-50000__value_bytes-256__B1-instrumented__r2/memory-baseline-report.json",
+      "sha256": "sha256:c0507e89a057d491304008ff0acef747545c6a4878115a92466641bfd309f3f9"
+    },
+    {
+      "bytes": 3072,
+      "path": "jobs/M1-shape__keys-50000__value_bytes-256__B1-instrumented__r2/owner-snapshots/cold.json",
+      "sha256": "sha256:5272e1cd1b1d7c1eb092000d56c5b84341e1aeb3147cba7190e34312069c20fc"
+    },
+    {
+      "bytes": 3072,
+      "path": "jobs/M1-shape__keys-50000__value_bytes-256__B1-instrumented__r2/owner-snapshots/expire_or_delete.json",
+      "sha256": "sha256:5272e1cd1b1d7c1eb092000d56c5b84341e1aeb3147cba7190e34312069c20fc"
+    },
+    {
+      "bytes": 3100,
+      "path": "jobs/M1-shape__keys-50000__value_bytes-256__B1-instrumented__r2/owner-snapshots/fill.json",
+      "sha256": "sha256:a6cdebd3e9173ca4cf218d20d06ff457dd3aae1dcde7f39f11ca50234df6a9d9"
+    },
+    {
+      "bytes": 3098,
+      "path": "jobs/M1-shape__keys-50000__value_bytes-256__B1-instrumented__r2/owner-snapshots/post_idle.json",
+      "sha256": "sha256:3cba4f8c962455ea657416d8f7f0a52b30777898a7250be5828483351cee5aa8"
+    },
+    {
+      "bytes": 3098,
+      "path": "jobs/M1-shape__keys-50000__value_bytes-256__B1-instrumented__r2/owner-snapshots/refill.json",
+      "sha256": "sha256:3cba4f8c962455ea657416d8f7f0a52b30777898a7250be5828483351cee5aa8"
+    },
+    {
+      "bytes": 3072,
+      "path": "jobs/M1-shape__keys-50000__value_bytes-256__B1-instrumented__r2/owner-snapshots/reset.json",
+      "sha256": "sha256:361cb155cd41440924cf25472d8e5e4a574f4f2c1f330f2bbb269e158f01e5bb"
+    },
+    {
+      "bytes": 3098,
+      "path": "jobs/M1-shape__keys-50000__value_bytes-256__B1-instrumented__r2/owner-snapshots/shutdown.json",
+      "sha256": "sha256:3cba4f8c962455ea657416d8f7f0a52b30777898a7250be5828483351cee5aa8"
+    },
+    {
+      "bytes": 3100,
+      "path": "jobs/M1-shape__keys-50000__value_bytes-256__B1-instrumented__r2/owner-snapshots/steady.json",
+      "sha256": "sha256:a6cdebd3e9173ca4cf218d20d06ff457dd3aae1dcde7f39f11ca50234df6a9d9"
+    },
+    {
+      "bytes": 530,
+      "path": "jobs/M1-shape__keys-50000__value_bytes-256__B1-instrumented__r2/phase-timeline.jsonl",
+      "sha256": "sha256:0ad87d8d0a70e3b488bcdf584275e20323840a998301634d0ac96706d8d4e3e6"
+    },
+    {
+      "bytes": 2760,
+      "path": "jobs/M1-shape__keys-50000__value_bytes-256__B1-instrumented__r2/provider-normalized.json",
+      "sha256": "sha256:3b51f6646973532f0195df977671c3552568bdd9e8dba7e9de4b504c67bb4288"
+    },
+    {
+      "bytes": 66,
+      "path": "jobs/M1-shape__keys-50000__value_bytes-256__B1-instrumented__r2/provider-probe.json",
+      "sha256": "sha256:70ae6ae2c959f51c746fab1f44e83852e8c757082c60aaa9a31f1fbe6e8fecc4"
+    },
+    {
+      "bytes": 1127,
+      "path": "jobs/M1-shape__keys-50000__value_bytes-256__B1-instrumented__r2/provider-raw.jsonl",
+      "sha256": "sha256:f140bf172fc57231a0d3268fe7225b04d4311d73b5f3b524cb4a9656e7afa961"
+    },
+    {
+      "bytes": 1706,
+      "path": "jobs/M1-shape__keys-50000__value_bytes-256__B1-instrumented__r2/provider-state.json",
+      "sha256": "sha256:803a2ba5bdb32b053423a573af44b5b61aa8652bf7e393b272abbcc1754cbd07"
+    },
+    {
+      "bytes": 16,
+      "path": "jobs/M1-shape__keys-50000__value_bytes-256__B1-instrumented__r3/daemon.log",
+      "sha256": "sha256:6489d6d7a33c5d40e18fc61eeb6c34c341279ee61816394dde5189aa4ad8fae5"
+    },
+    {
+      "bytes": 325,
+      "path": "jobs/M1-shape__keys-50000__value_bytes-256__B1-instrumented__r3/executor-receipt.json",
+      "sha256": "sha256:c07574baa233511ad96586f14f9a4ce719658efc6febf731b3935eeceb666395"
+    },
+    {
+      "bytes": 22798,
+      "path": "jobs/M1-shape__keys-50000__value_bytes-256__B1-instrumented__r3/memory-baseline-report.json",
+      "sha256": "sha256:0ff4c6ab9b08d3ee7d29d3ec7a633cdb19922a547de34f341eb4cf881781ed26"
+    },
+    {
+      "bytes": 3072,
+      "path": "jobs/M1-shape__keys-50000__value_bytes-256__B1-instrumented__r3/owner-snapshots/cold.json",
+      "sha256": "sha256:5272e1cd1b1d7c1eb092000d56c5b84341e1aeb3147cba7190e34312069c20fc"
+    },
+    {
+      "bytes": 3072,
+      "path": "jobs/M1-shape__keys-50000__value_bytes-256__B1-instrumented__r3/owner-snapshots/expire_or_delete.json",
+      "sha256": "sha256:5272e1cd1b1d7c1eb092000d56c5b84341e1aeb3147cba7190e34312069c20fc"
+    },
+    {
+      "bytes": 3100,
+      "path": "jobs/M1-shape__keys-50000__value_bytes-256__B1-instrumented__r3/owner-snapshots/fill.json",
+      "sha256": "sha256:a6cdebd3e9173ca4cf218d20d06ff457dd3aae1dcde7f39f11ca50234df6a9d9"
+    },
+    {
+      "bytes": 3098,
+      "path": "jobs/M1-shape__keys-50000__value_bytes-256__B1-instrumented__r3/owner-snapshots/post_idle.json",
+      "sha256": "sha256:3cba4f8c962455ea657416d8f7f0a52b30777898a7250be5828483351cee5aa8"
+    },
+    {
+      "bytes": 3098,
+      "path": "jobs/M1-shape__keys-50000__value_bytes-256__B1-instrumented__r3/owner-snapshots/refill.json",
+      "sha256": "sha256:3cba4f8c962455ea657416d8f7f0a52b30777898a7250be5828483351cee5aa8"
+    },
+    {
+      "bytes": 3072,
+      "path": "jobs/M1-shape__keys-50000__value_bytes-256__B1-instrumented__r3/owner-snapshots/reset.json",
+      "sha256": "sha256:361cb155cd41440924cf25472d8e5e4a574f4f2c1f330f2bbb269e158f01e5bb"
+    },
+    {
+      "bytes": 3098,
+      "path": "jobs/M1-shape__keys-50000__value_bytes-256__B1-instrumented__r3/owner-snapshots/shutdown.json",
+      "sha256": "sha256:3cba4f8c962455ea657416d8f7f0a52b30777898a7250be5828483351cee5aa8"
+    },
+    {
+      "bytes": 3100,
+      "path": "jobs/M1-shape__keys-50000__value_bytes-256__B1-instrumented__r3/owner-snapshots/steady.json",
+      "sha256": "sha256:a6cdebd3e9173ca4cf218d20d06ff457dd3aae1dcde7f39f11ca50234df6a9d9"
+    },
+    {
+      "bytes": 530,
+      "path": "jobs/M1-shape__keys-50000__value_bytes-256__B1-instrumented__r3/phase-timeline.jsonl",
+      "sha256": "sha256:54a5ec31f1d3e019e9ce2a6986753721ca45e307aad674aa7b55242861d58753"
+    },
+    {
+      "bytes": 2762,
+      "path": "jobs/M1-shape__keys-50000__value_bytes-256__B1-instrumented__r3/provider-normalized.json",
+      "sha256": "sha256:05f6232eb41342038112638bec765f5b1dc6e26721a86382f07da33f4fe7945c"
+    },
+    {
+      "bytes": 66,
+      "path": "jobs/M1-shape__keys-50000__value_bytes-256__B1-instrumented__r3/provider-probe.json",
+      "sha256": "sha256:70ae6ae2c959f51c746fab1f44e83852e8c757082c60aaa9a31f1fbe6e8fecc4"
+    },
+    {
+      "bytes": 1127,
+      "path": "jobs/M1-shape__keys-50000__value_bytes-256__B1-instrumented__r3/provider-raw.jsonl",
+      "sha256": "sha256:244800d5fd873a4421efb9c5b1344050202f5dba7f7a945b39868b65fae56c24"
+    },
+    {
+      "bytes": 1706,
+      "path": "jobs/M1-shape__keys-50000__value_bytes-256__B1-instrumented__r3/provider-state.json",
+      "sha256": "sha256:743097abeddb4af23c8d8f2c5478250ab682fade4b40f1bcfab78a42b10c3787"
+    },
+    {
+      "bytes": 16,
+      "path": "jobs/M1-shape__keys-50000__value_bytes-4096__B1-instrumented__r1/daemon.log",
+      "sha256": "sha256:6489d6d7a33c5d40e18fc61eeb6c34c341279ee61816394dde5189aa4ad8fae5"
+    },
+    {
+      "bytes": 326,
+      "path": "jobs/M1-shape__keys-50000__value_bytes-4096__B1-instrumented__r1/executor-receipt.json",
+      "sha256": "sha256:ffd908f51c55d74099a33888c933f57ea805c94470085913d59d93a62b1d0a12"
+    },
+    {
+      "bytes": 22836,
+      "path": "jobs/M1-shape__keys-50000__value_bytes-4096__B1-instrumented__r1/memory-baseline-report.json",
+      "sha256": "sha256:a777b84b08d3a32a8a2b314ffef470e0f625add574387238945b1af6808d2179"
+    },
+    {
+      "bytes": 3072,
+      "path": "jobs/M1-shape__keys-50000__value_bytes-4096__B1-instrumented__r1/owner-snapshots/cold.json",
+      "sha256": "sha256:5272e1cd1b1d7c1eb092000d56c5b84341e1aeb3147cba7190e34312069c20fc"
+    },
+    {
+      "bytes": 3072,
+      "path": "jobs/M1-shape__keys-50000__value_bytes-4096__B1-instrumented__r1/owner-snapshots/expire_or_delete.json",
+      "sha256": "sha256:5272e1cd1b1d7c1eb092000d56c5b84341e1aeb3147cba7190e34312069c20fc"
+    },
+    {
+      "bytes": 3102,
+      "path": "jobs/M1-shape__keys-50000__value_bytes-4096__B1-instrumented__r1/owner-snapshots/fill.json",
+      "sha256": "sha256:05c70a156ffb62fd0536a5291fa90e1d70c2562b9b6f22508d9f1ba04efe56ae"
+    },
+    {
+      "bytes": 3102,
+      "path": "jobs/M1-shape__keys-50000__value_bytes-4096__B1-instrumented__r1/owner-snapshots/post_idle.json",
+      "sha256": "sha256:4cb73e9cafd1c761482552ea9301b664d0cc5125b3165707391646b2dd805e98"
+    },
+    {
+      "bytes": 3102,
+      "path": "jobs/M1-shape__keys-50000__value_bytes-4096__B1-instrumented__r1/owner-snapshots/refill.json",
+      "sha256": "sha256:4cb73e9cafd1c761482552ea9301b664d0cc5125b3165707391646b2dd805e98"
+    },
+    {
+      "bytes": 3072,
+      "path": "jobs/M1-shape__keys-50000__value_bytes-4096__B1-instrumented__r1/owner-snapshots/reset.json",
+      "sha256": "sha256:361cb155cd41440924cf25472d8e5e4a574f4f2c1f330f2bbb269e158f01e5bb"
+    },
+    {
+      "bytes": 3102,
+      "path": "jobs/M1-shape__keys-50000__value_bytes-4096__B1-instrumented__r1/owner-snapshots/shutdown.json",
+      "sha256": "sha256:4cb73e9cafd1c761482552ea9301b664d0cc5125b3165707391646b2dd805e98"
+    },
+    {
+      "bytes": 3102,
+      "path": "jobs/M1-shape__keys-50000__value_bytes-4096__B1-instrumented__r1/owner-snapshots/steady.json",
+      "sha256": "sha256:05c70a156ffb62fd0536a5291fa90e1d70c2562b9b6f22508d9f1ba04efe56ae"
+    },
+    {
+      "bytes": 530,
+      "path": "jobs/M1-shape__keys-50000__value_bytes-4096__B1-instrumented__r1/phase-timeline.jsonl",
+      "sha256": "sha256:35d9554fe9c93295a540fe7f4529b22665bcfd8d8a3fede1565d88345a0b323d"
+    },
+    {
+      "bytes": 2800,
+      "path": "jobs/M1-shape__keys-50000__value_bytes-4096__B1-instrumented__r1/provider-normalized.json",
+      "sha256": "sha256:6c733e5bbcbdd1d520aca85de41d8ecd0d24da8c710f247bed1454345c60616b"
+    },
+    {
+      "bytes": 66,
+      "path": "jobs/M1-shape__keys-50000__value_bytes-4096__B1-instrumented__r1/provider-probe.json",
+      "sha256": "sha256:70ae6ae2c959f51c746fab1f44e83852e8c757082c60aaa9a31f1fbe6e8fecc4"
+    },
+    {
+      "bytes": 1148,
+      "path": "jobs/M1-shape__keys-50000__value_bytes-4096__B1-instrumented__r1/provider-raw.jsonl",
+      "sha256": "sha256:5a70f1a6bb80f540f4ee72da4deea5b5a06afac89ab65139073da13f062c98c4"
+    },
+    {
+      "bytes": 1709,
+      "path": "jobs/M1-shape__keys-50000__value_bytes-4096__B1-instrumented__r1/provider-state.json",
+      "sha256": "sha256:6d546fe0c81f44090f43ce6a865d3a1e1d7dcf96266391abc96e1f1f97c360a0"
+    },
+    {
+      "bytes": 16,
+      "path": "jobs/M1-shape__keys-50000__value_bytes-4096__B1-instrumented__r2/daemon.log",
+      "sha256": "sha256:6489d6d7a33c5d40e18fc61eeb6c34c341279ee61816394dde5189aa4ad8fae5"
+    },
+    {
+      "bytes": 326,
+      "path": "jobs/M1-shape__keys-50000__value_bytes-4096__B1-instrumented__r2/executor-receipt.json",
+      "sha256": "sha256:21dd4f12aedd0bcea9d828d8ffd6f5dabafdc39c395e156a76d560dd2332de52"
+    },
+    {
+      "bytes": 22832,
+      "path": "jobs/M1-shape__keys-50000__value_bytes-4096__B1-instrumented__r2/memory-baseline-report.json",
+      "sha256": "sha256:07e4a4a94e9d755663b05b28d1f4624800c56d2a0955353316dc26dcf0cdee4e"
+    },
+    {
+      "bytes": 3072,
+      "path": "jobs/M1-shape__keys-50000__value_bytes-4096__B1-instrumented__r2/owner-snapshots/cold.json",
+      "sha256": "sha256:5272e1cd1b1d7c1eb092000d56c5b84341e1aeb3147cba7190e34312069c20fc"
+    },
+    {
+      "bytes": 3072,
+      "path": "jobs/M1-shape__keys-50000__value_bytes-4096__B1-instrumented__r2/owner-snapshots/expire_or_delete.json",
+      "sha256": "sha256:5272e1cd1b1d7c1eb092000d56c5b84341e1aeb3147cba7190e34312069c20fc"
+    },
+    {
+      "bytes": 3102,
+      "path": "jobs/M1-shape__keys-50000__value_bytes-4096__B1-instrumented__r2/owner-snapshots/fill.json",
+      "sha256": "sha256:05c70a156ffb62fd0536a5291fa90e1d70c2562b9b6f22508d9f1ba04efe56ae"
+    },
+    {
+      "bytes": 3102,
+      "path": "jobs/M1-shape__keys-50000__value_bytes-4096__B1-instrumented__r2/owner-snapshots/post_idle.json",
+      "sha256": "sha256:4cb73e9cafd1c761482552ea9301b664d0cc5125b3165707391646b2dd805e98"
+    },
+    {
+      "bytes": 3102,
+      "path": "jobs/M1-shape__keys-50000__value_bytes-4096__B1-instrumented__r2/owner-snapshots/refill.json",
+      "sha256": "sha256:4cb73e9cafd1c761482552ea9301b664d0cc5125b3165707391646b2dd805e98"
+    },
+    {
+      "bytes": 3072,
+      "path": "jobs/M1-shape__keys-50000__value_bytes-4096__B1-instrumented__r2/owner-snapshots/reset.json",
+      "sha256": "sha256:361cb155cd41440924cf25472d8e5e4a574f4f2c1f330f2bbb269e158f01e5bb"
+    },
+    {
+      "bytes": 3102,
+      "path": "jobs/M1-shape__keys-50000__value_bytes-4096__B1-instrumented__r2/owner-snapshots/shutdown.json",
+      "sha256": "sha256:4cb73e9cafd1c761482552ea9301b664d0cc5125b3165707391646b2dd805e98"
+    },
+    {
+      "bytes": 3102,
+      "path": "jobs/M1-shape__keys-50000__value_bytes-4096__B1-instrumented__r2/owner-snapshots/steady.json",
+      "sha256": "sha256:05c70a156ffb62fd0536a5291fa90e1d70c2562b9b6f22508d9f1ba04efe56ae"
+    },
+    {
+      "bytes": 530,
+      "path": "jobs/M1-shape__keys-50000__value_bytes-4096__B1-instrumented__r2/phase-timeline.jsonl",
+      "sha256": "sha256:2944914d9726cd8e1dea2b9babe37fc44263e58c8b4303c42fde8c169a2e56ce"
+    },
+    {
+      "bytes": 2801,
+      "path": "jobs/M1-shape__keys-50000__value_bytes-4096__B1-instrumented__r2/provider-normalized.json",
+      "sha256": "sha256:79391cbd5d8511560ab8f543759dfcae405896196fea5a911c9c3f0bcc808ccc"
+    },
+    {
+      "bytes": 66,
+      "path": "jobs/M1-shape__keys-50000__value_bytes-4096__B1-instrumented__r2/provider-probe.json",
+      "sha256": "sha256:70ae6ae2c959f51c746fab1f44e83852e8c757082c60aaa9a31f1fbe6e8fecc4"
+    },
+    {
+      "bytes": 1148,
+      "path": "jobs/M1-shape__keys-50000__value_bytes-4096__B1-instrumented__r2/provider-raw.jsonl",
+      "sha256": "sha256:07c31c779d17362cbb7219b2ef923ba93eab3524c1ffbad1be3e304f9c8e1ec4"
+    },
+    {
+      "bytes": 1709,
+      "path": "jobs/M1-shape__keys-50000__value_bytes-4096__B1-instrumented__r2/provider-state.json",
+      "sha256": "sha256:238d3367b35a68de8ead831ddc2de0888ad0f685a32abd87b25fab421d65e57b"
+    },
+    {
+      "bytes": 16,
+      "path": "jobs/M1-shape__keys-50000__value_bytes-4096__B1-instrumented__r3/daemon.log",
+      "sha256": "sha256:6489d6d7a33c5d40e18fc61eeb6c34c341279ee61816394dde5189aa4ad8fae5"
+    },
+    {
+      "bytes": 326,
+      "path": "jobs/M1-shape__keys-50000__value_bytes-4096__B1-instrumented__r3/executor-receipt.json",
+      "sha256": "sha256:00b5fa4c23cff5f70f3c7473d7bfc87ce76e9d87029dbbb4288bebb12d6dc938"
+    },
+    {
+      "bytes": 22834,
+      "path": "jobs/M1-shape__keys-50000__value_bytes-4096__B1-instrumented__r3/memory-baseline-report.json",
+      "sha256": "sha256:9a24e985119a74505574c40e003f326d8f49e0fa9dcce912b3de2c61638de0a2"
+    },
+    {
+      "bytes": 3072,
+      "path": "jobs/M1-shape__keys-50000__value_bytes-4096__B1-instrumented__r3/owner-snapshots/cold.json",
+      "sha256": "sha256:5272e1cd1b1d7c1eb092000d56c5b84341e1aeb3147cba7190e34312069c20fc"
+    },
+    {
+      "bytes": 3072,
+      "path": "jobs/M1-shape__keys-50000__value_bytes-4096__B1-instrumented__r3/owner-snapshots/expire_or_delete.json",
+      "sha256": "sha256:5272e1cd1b1d7c1eb092000d56c5b84341e1aeb3147cba7190e34312069c20fc"
+    },
+    {
+      "bytes": 3102,
+      "path": "jobs/M1-shape__keys-50000__value_bytes-4096__B1-instrumented__r3/owner-snapshots/fill.json",
+      "sha256": "sha256:05c70a156ffb62fd0536a5291fa90e1d70c2562b9b6f22508d9f1ba04efe56ae"
+    },
+    {
+      "bytes": 3102,
+      "path": "jobs/M1-shape__keys-50000__value_bytes-4096__B1-instrumented__r3/owner-snapshots/post_idle.json",
+      "sha256": "sha256:4cb73e9cafd1c761482552ea9301b664d0cc5125b3165707391646b2dd805e98"
+    },
+    {
+      "bytes": 3102,
+      "path": "jobs/M1-shape__keys-50000__value_bytes-4096__B1-instrumented__r3/owner-snapshots/refill.json",
+      "sha256": "sha256:4cb73e9cafd1c761482552ea9301b664d0cc5125b3165707391646b2dd805e98"
+    },
+    {
+      "bytes": 3072,
+      "path": "jobs/M1-shape__keys-50000__value_bytes-4096__B1-instrumented__r3/owner-snapshots/reset.json",
+      "sha256": "sha256:361cb155cd41440924cf25472d8e5e4a574f4f2c1f330f2bbb269e158f01e5bb"
+    },
+    {
+      "bytes": 3102,
+      "path": "jobs/M1-shape__keys-50000__value_bytes-4096__B1-instrumented__r3/owner-snapshots/shutdown.json",
+      "sha256": "sha256:4cb73e9cafd1c761482552ea9301b664d0cc5125b3165707391646b2dd805e98"
+    },
+    {
+      "bytes": 3102,
+      "path": "jobs/M1-shape__keys-50000__value_bytes-4096__B1-instrumented__r3/owner-snapshots/steady.json",
+      "sha256": "sha256:05c70a156ffb62fd0536a5291fa90e1d70c2562b9b6f22508d9f1ba04efe56ae"
+    },
+    {
+      "bytes": 530,
+      "path": "jobs/M1-shape__keys-50000__value_bytes-4096__B1-instrumented__r3/phase-timeline.jsonl",
+      "sha256": "sha256:2592934ad72c643dbe2c0f04ca736390c20f3431b169589b6a8fbe3e8ca43f77"
+    },
+    {
+      "bytes": 2797,
+      "path": "jobs/M1-shape__keys-50000__value_bytes-4096__B1-instrumented__r3/provider-normalized.json",
+      "sha256": "sha256:fcf0fa53db061aad4c8c5c17c8d7e20e0a9e54c6dd447fd9d7189531377ac7ff"
+    },
+    {
+      "bytes": 66,
+      "path": "jobs/M1-shape__keys-50000__value_bytes-4096__B1-instrumented__r3/provider-probe.json",
+      "sha256": "sha256:70ae6ae2c959f51c746fab1f44e83852e8c757082c60aaa9a31f1fbe6e8fecc4"
+    },
+    {
+      "bytes": 1148,
+      "path": "jobs/M1-shape__keys-50000__value_bytes-4096__B1-instrumented__r3/provider-raw.jsonl",
+      "sha256": "sha256:23e4bbfafa7abd65fea55ae1c50961ce4a01551f270efd395647bfb954511b9c"
+    },
+    {
+      "bytes": 1709,
+      "path": "jobs/M1-shape__keys-50000__value_bytes-4096__B1-instrumented__r3/provider-state.json",
+      "sha256": "sha256:395efa003a9e02ec1ea37bd8317630a0fe443f93af244cadf7f91e576346fcdd"
+    },
+    {
+      "bytes": 16,
+      "path": "jobs/M1-shape__keys-50000__value_bytes-64__B1-instrumented__r1/daemon.log",
+      "sha256": "sha256:6489d6d7a33c5d40e18fc61eeb6c34c341279ee61816394dde5189aa4ad8fae5"
+    },
+    {
+      "bytes": 324,
+      "path": "jobs/M1-shape__keys-50000__value_bytes-64__B1-instrumented__r1/executor-receipt.json",
+      "sha256": "sha256:8e76394a28f4cdf1ab6fdb1ed05093675487a4e73a275a99184003bf03b64074"
+    },
+    {
+      "bytes": 22803,
+      "path": "jobs/M1-shape__keys-50000__value_bytes-64__B1-instrumented__r1/memory-baseline-report.json",
+      "sha256": "sha256:036ff51ef8abda66565b7ec62a40138198aa0b4f6080f969e40d45bc724eb766"
+    },
+    {
+      "bytes": 3072,
+      "path": "jobs/M1-shape__keys-50000__value_bytes-64__B1-instrumented__r1/owner-snapshots/cold.json",
+      "sha256": "sha256:5272e1cd1b1d7c1eb092000d56c5b84341e1aeb3147cba7190e34312069c20fc"
+    },
+    {
+      "bytes": 3072,
+      "path": "jobs/M1-shape__keys-50000__value_bytes-64__B1-instrumented__r1/owner-snapshots/expire_or_delete.json",
+      "sha256": "sha256:5272e1cd1b1d7c1eb092000d56c5b84341e1aeb3147cba7190e34312069c20fc"
+    },
+    {
+      "bytes": 3098,
+      "path": "jobs/M1-shape__keys-50000__value_bytes-64__B1-instrumented__r1/owner-snapshots/fill.json",
+      "sha256": "sha256:8392277e2c96f499c2fa842d5ec5872a516b09cca973ad9e31f053b043c05276"
+    },
+    {
+      "bytes": 3098,
+      "path": "jobs/M1-shape__keys-50000__value_bytes-64__B1-instrumented__r1/owner-snapshots/post_idle.json",
+      "sha256": "sha256:c48a933eddc63500e491ba7bc259a6318e92f58a174988f09b1c7be5d97230c7"
+    },
+    {
+      "bytes": 3098,
+      "path": "jobs/M1-shape__keys-50000__value_bytes-64__B1-instrumented__r1/owner-snapshots/refill.json",
+      "sha256": "sha256:c48a933eddc63500e491ba7bc259a6318e92f58a174988f09b1c7be5d97230c7"
+    },
+    {
+      "bytes": 3072,
+      "path": "jobs/M1-shape__keys-50000__value_bytes-64__B1-instrumented__r1/owner-snapshots/reset.json",
+      "sha256": "sha256:361cb155cd41440924cf25472d8e5e4a574f4f2c1f330f2bbb269e158f01e5bb"
+    },
+    {
+      "bytes": 3098,
+      "path": "jobs/M1-shape__keys-50000__value_bytes-64__B1-instrumented__r1/owner-snapshots/shutdown.json",
+      "sha256": "sha256:c48a933eddc63500e491ba7bc259a6318e92f58a174988f09b1c7be5d97230c7"
+    },
+    {
+      "bytes": 3098,
+      "path": "jobs/M1-shape__keys-50000__value_bytes-64__B1-instrumented__r1/owner-snapshots/steady.json",
+      "sha256": "sha256:8392277e2c96f499c2fa842d5ec5872a516b09cca973ad9e31f053b043c05276"
+    },
+    {
+      "bytes": 530,
+      "path": "jobs/M1-shape__keys-50000__value_bytes-64__B1-instrumented__r1/phase-timeline.jsonl",
+      "sha256": "sha256:83f51b9ec39a7ff4ced4c9b8a966a3f3ab930ef0957d7a6bdaf4bdda7741b8b5"
+    },
+    {
+      "bytes": 2755,
+      "path": "jobs/M1-shape__keys-50000__value_bytes-64__B1-instrumented__r1/provider-normalized.json",
+      "sha256": "sha256:d9c3c8438ceeccc4e4d3d4794750eee0c989ac2906c34bfb10ec9ac4f35e8838"
+    },
+    {
+      "bytes": 66,
+      "path": "jobs/M1-shape__keys-50000__value_bytes-64__B1-instrumented__r1/provider-probe.json",
+      "sha256": "sha256:70ae6ae2c959f51c746fab1f44e83852e8c757082c60aaa9a31f1fbe6e8fecc4"
+    },
+    {
+      "bytes": 1127,
+      "path": "jobs/M1-shape__keys-50000__value_bytes-64__B1-instrumented__r1/provider-raw.jsonl",
+      "sha256": "sha256:8a334aafa9487ae4026e2f6108e8afced6b459a7440b4402bf3c99d42fffd79b"
+    },
+    {
+      "bytes": 1703,
+      "path": "jobs/M1-shape__keys-50000__value_bytes-64__B1-instrumented__r1/provider-state.json",
+      "sha256": "sha256:58a7563745f2be811587977e217aec1b2395d7683244e640ad2ade6d4c6a218a"
+    },
+    {
+      "bytes": 16,
+      "path": "jobs/M1-shape__keys-50000__value_bytes-64__B1-instrumented__r2/daemon.log",
+      "sha256": "sha256:6489d6d7a33c5d40e18fc61eeb6c34c341279ee61816394dde5189aa4ad8fae5"
+    },
+    {
+      "bytes": 324,
+      "path": "jobs/M1-shape__keys-50000__value_bytes-64__B1-instrumented__r2/executor-receipt.json",
+      "sha256": "sha256:709112db9e25865daa8ac37203d3825d34e207a57db88b9fc5705bb34150e033"
+    },
+    {
+      "bytes": 22800,
+      "path": "jobs/M1-shape__keys-50000__value_bytes-64__B1-instrumented__r2/memory-baseline-report.json",
+      "sha256": "sha256:b20985e9fc162481c2003f444a783c6e1a0e45a6f36211b6538295b1ed17aa1f"
+    },
+    {
+      "bytes": 3072,
+      "path": "jobs/M1-shape__keys-50000__value_bytes-64__B1-instrumented__r2/owner-snapshots/cold.json",
+      "sha256": "sha256:5272e1cd1b1d7c1eb092000d56c5b84341e1aeb3147cba7190e34312069c20fc"
+    },
+    {
+      "bytes": 3072,
+      "path": "jobs/M1-shape__keys-50000__value_bytes-64__B1-instrumented__r2/owner-snapshots/expire_or_delete.json",
+      "sha256": "sha256:5272e1cd1b1d7c1eb092000d56c5b84341e1aeb3147cba7190e34312069c20fc"
+    },
+    {
+      "bytes": 3098,
+      "path": "jobs/M1-shape__keys-50000__value_bytes-64__B1-instrumented__r2/owner-snapshots/fill.json",
+      "sha256": "sha256:8392277e2c96f499c2fa842d5ec5872a516b09cca973ad9e31f053b043c05276"
+    },
+    {
+      "bytes": 3098,
+      "path": "jobs/M1-shape__keys-50000__value_bytes-64__B1-instrumented__r2/owner-snapshots/post_idle.json",
+      "sha256": "sha256:c48a933eddc63500e491ba7bc259a6318e92f58a174988f09b1c7be5d97230c7"
+    },
+    {
+      "bytes": 3098,
+      "path": "jobs/M1-shape__keys-50000__value_bytes-64__B1-instrumented__r2/owner-snapshots/refill.json",
+      "sha256": "sha256:c48a933eddc63500e491ba7bc259a6318e92f58a174988f09b1c7be5d97230c7"
+    },
+    {
+      "bytes": 3072,
+      "path": "jobs/M1-shape__keys-50000__value_bytes-64__B1-instrumented__r2/owner-snapshots/reset.json",
+      "sha256": "sha256:361cb155cd41440924cf25472d8e5e4a574f4f2c1f330f2bbb269e158f01e5bb"
+    },
+    {
+      "bytes": 3098,
+      "path": "jobs/M1-shape__keys-50000__value_bytes-64__B1-instrumented__r2/owner-snapshots/shutdown.json",
+      "sha256": "sha256:c48a933eddc63500e491ba7bc259a6318e92f58a174988f09b1c7be5d97230c7"
+    },
+    {
+      "bytes": 3098,
+      "path": "jobs/M1-shape__keys-50000__value_bytes-64__B1-instrumented__r2/owner-snapshots/steady.json",
+      "sha256": "sha256:8392277e2c96f499c2fa842d5ec5872a516b09cca973ad9e31f053b043c05276"
+    },
+    {
+      "bytes": 530,
+      "path": "jobs/M1-shape__keys-50000__value_bytes-64__B1-instrumented__r2/phase-timeline.jsonl",
+      "sha256": "sha256:c72af3ef8d56d59366fdd6198cebfe354b51ffb0e347ba63fb918887504a39ea"
+    },
+    {
+      "bytes": 2763,
+      "path": "jobs/M1-shape__keys-50000__value_bytes-64__B1-instrumented__r2/provider-normalized.json",
+      "sha256": "sha256:3887473dbd7ae440e08b653db025c314d7b3f766cde10a0db4b6a3807d5cc95a"
+    },
+    {
+      "bytes": 66,
+      "path": "jobs/M1-shape__keys-50000__value_bytes-64__B1-instrumented__r2/provider-probe.json",
+      "sha256": "sha256:70ae6ae2c959f51c746fab1f44e83852e8c757082c60aaa9a31f1fbe6e8fecc4"
+    },
+    {
+      "bytes": 1127,
+      "path": "jobs/M1-shape__keys-50000__value_bytes-64__B1-instrumented__r2/provider-raw.jsonl",
+      "sha256": "sha256:5d6515301013a95bedf46ad24c0f2242316e46b389ffcbcc09b325d8ff42aa95"
+    },
+    {
+      "bytes": 1703,
+      "path": "jobs/M1-shape__keys-50000__value_bytes-64__B1-instrumented__r2/provider-state.json",
+      "sha256": "sha256:18ac4843e29a2097b323312c3e23e0bd74259fbc419fdacd8edeb0eafce0a928"
+    },
+    {
+      "bytes": 16,
+      "path": "jobs/M1-shape__keys-50000__value_bytes-64__B1-instrumented__r3/daemon.log",
+      "sha256": "sha256:6489d6d7a33c5d40e18fc61eeb6c34c341279ee61816394dde5189aa4ad8fae5"
+    },
+    {
+      "bytes": 324,
+      "path": "jobs/M1-shape__keys-50000__value_bytes-64__B1-instrumented__r3/executor-receipt.json",
+      "sha256": "sha256:36b8e022aee6e719b0ce8d9001d005a63120a933c46daee87c7f428b2bfb5b31"
+    },
+    {
+      "bytes": 22797,
+      "path": "jobs/M1-shape__keys-50000__value_bytes-64__B1-instrumented__r3/memory-baseline-report.json",
+      "sha256": "sha256:7522f557f2c31864bf8a870b3a81e4ae584d0584748a38f28418b7dd9471b9a2"
+    },
+    {
+      "bytes": 3072,
+      "path": "jobs/M1-shape__keys-50000__value_bytes-64__B1-instrumented__r3/owner-snapshots/cold.json",
+      "sha256": "sha256:5272e1cd1b1d7c1eb092000d56c5b84341e1aeb3147cba7190e34312069c20fc"
+    },
+    {
+      "bytes": 3072,
+      "path": "jobs/M1-shape__keys-50000__value_bytes-64__B1-instrumented__r3/owner-snapshots/expire_or_delete.json",
+      "sha256": "sha256:5272e1cd1b1d7c1eb092000d56c5b84341e1aeb3147cba7190e34312069c20fc"
+    },
+    {
+      "bytes": 3098,
+      "path": "jobs/M1-shape__keys-50000__value_bytes-64__B1-instrumented__r3/owner-snapshots/fill.json",
+      "sha256": "sha256:8392277e2c96f499c2fa842d5ec5872a516b09cca973ad9e31f053b043c05276"
+    },
+    {
+      "bytes": 3098,
+      "path": "jobs/M1-shape__keys-50000__value_bytes-64__B1-instrumented__r3/owner-snapshots/post_idle.json",
+      "sha256": "sha256:c48a933eddc63500e491ba7bc259a6318e92f58a174988f09b1c7be5d97230c7"
+    },
+    {
+      "bytes": 3098,
+      "path": "jobs/M1-shape__keys-50000__value_bytes-64__B1-instrumented__r3/owner-snapshots/refill.json",
+      "sha256": "sha256:c48a933eddc63500e491ba7bc259a6318e92f58a174988f09b1c7be5d97230c7"
+    },
+    {
+      "bytes": 3072,
+      "path": "jobs/M1-shape__keys-50000__value_bytes-64__B1-instrumented__r3/owner-snapshots/reset.json",
+      "sha256": "sha256:361cb155cd41440924cf25472d8e5e4a574f4f2c1f330f2bbb269e158f01e5bb"
+    },
+    {
+      "bytes": 3098,
+      "path": "jobs/M1-shape__keys-50000__value_bytes-64__B1-instrumented__r3/owner-snapshots/shutdown.json",
+      "sha256": "sha256:c48a933eddc63500e491ba7bc259a6318e92f58a174988f09b1c7be5d97230c7"
+    },
+    {
+      "bytes": 3098,
+      "path": "jobs/M1-shape__keys-50000__value_bytes-64__B1-instrumented__r3/owner-snapshots/steady.json",
+      "sha256": "sha256:8392277e2c96f499c2fa842d5ec5872a516b09cca973ad9e31f053b043c05276"
+    },
+    {
+      "bytes": 530,
+      "path": "jobs/M1-shape__keys-50000__value_bytes-64__B1-instrumented__r3/phase-timeline.jsonl",
+      "sha256": "sha256:7d2a9f49b4ed825033b9be7298020688be8aa1b79a418335fdf86bda0164c7e7"
+    },
+    {
+      "bytes": 2763,
+      "path": "jobs/M1-shape__keys-50000__value_bytes-64__B1-instrumented__r3/provider-normalized.json",
+      "sha256": "sha256:f371c90110cca6b3d3e509f940b09805bccaa3ad74a14fc5f7fff394412e626a"
+    },
+    {
+      "bytes": 66,
+      "path": "jobs/M1-shape__keys-50000__value_bytes-64__B1-instrumented__r3/provider-probe.json",
+      "sha256": "sha256:70ae6ae2c959f51c746fab1f44e83852e8c757082c60aaa9a31f1fbe6e8fecc4"
+    },
+    {
+      "bytes": 1127,
+      "path": "jobs/M1-shape__keys-50000__value_bytes-64__B1-instrumented__r3/provider-raw.jsonl",
+      "sha256": "sha256:9eb4eaea7d9f2a976892e72e7bcb39dd4a2f244e76f1047f674828998fe83f4a"
+    },
+    {
+      "bytes": 1703,
+      "path": "jobs/M1-shape__keys-50000__value_bytes-64__B1-instrumented__r3/provider-state.json",
+      "sha256": "sha256:086bdf888808d15fe929243ffab6e81375fd8319dae5c4e009f000efe198e616"
+    }
+  ],
+  "campaign_id": "hc071-d0-ax42-20260912-m1-01",
+  "campaign_identity_sha256": "sha256:8a4442aaed3651c4fb6f1682a736ca71ecc91ec129c30127bf2aa565ac06b867",
+  "campaign_role": "baseline",
+  "case_ids": [
+    "M1-shape"
+  ],
+  "completed_jobs": 48,
+  "finalized_at": "2026-09-13T06:01:44.527016+00:00",
+  "job_count": 48,
+  "mode": "evidence",
+  "release": "0.71",
+  "result": "success",
+  "scenario_digest": "sha256:c85fa4fcc8fc87cba85bb710aa96ca60eb0be94136793872064dfc31281b3252",
+  "schema_version": 1,
+  "ship_evidence_eligible": false,
+  "source_sha": "906aa24cc22ad6b50b824120ed6364208484203a",
+  "workflow_sha": "9c533d1de5a25b83bcb294e5b939064737b7d9fc"
+}

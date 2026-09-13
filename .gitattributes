@@ -10,4 +10,11 @@ docs/testing/perf-host-profiles/memory-reference-071-v1.json text eol=lf
 
 # Archived performance evidence is immutable. Do not normalize text files inside
 # these byte-for-byte campaign copies on add or checkout.
-docs/testing/perf-artifacts/** -text
+docs/testing/perf-artifacts/0.71/** -text
+docs/testing/perf-artifacts/0.71/**/*.tar.gz filter=lfs diff=lfs merge=lfs -text
+docs/testing/perf-artifacts/0.71/**/*.zip filter=lfs diff=lfs merge=lfs -text
+docs/testing/perf-artifacts/0.71/**/README.md text eol=lf
+docs/testing/perf-artifacts/0.71/**/manifest.json text eol=lf
+docs/testing/perf-artifacts/0.71/**/SHA256SUMS text eol=lf
+docs/testing/perf-artifacts/0.71/**/verify.ps1 text eol=lf
+docs/testing/perf-artifacts/0.71/**/redaction-receipt.json text eol=lf
