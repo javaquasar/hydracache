@@ -60,6 +60,8 @@ fn decision_gate_rejects_candidate_baseline_and_skipped_transitions() {
         "classification".to_owned(),
         TomlValue::String("live ownership".to_owned()),
     );
+    proposal.insert("baseline_receipts".to_owned(), TomlValue::Array(Vec::new()));
+    proposal.insert("baseline_digests".to_owned(), TomlValue::Array(Vec::new()));
     let problems = xtask::memory_contracts::check_decisions(&decisions, "0.71");
     assert!(problems
         .iter()
@@ -161,6 +163,7 @@ fn compatibility_gate_rejects_mixed_baseline_identity_and_missing_rollback() {
 #[test]
 fn ship_policy_rejects_pending_work_and_unqualified_deferral() {
     let mut policy = load("docs/testing/memory/0.71/release-policy.toml");
+    policy["optional_work"][0]["disposition"] = TomlValue::String("pending-evidence".to_owned());
     let problems = xtask::memory_contracts::check_release_policy(&policy, "0.71", true);
     assert!(problems
         .iter()

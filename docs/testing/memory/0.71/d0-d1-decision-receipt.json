@@ -1,0 +1,43 @@
+{
+  "schema_version": 1,
+  "release": "0.71",
+  "decision": "D1-classified",
+  "baseline_source_sha": "906aa24cc22ad6b50b824120ed6364208484203a",
+  "workflow_sha": "9c533d1de5a25b83bcb294e5b939064737b7d9fc",
+  "host_fingerprint": "sha256:f94e1cca89d22ec8ef2bfbf90c3aef00aadc8f7039e8c514812394ab824bb7c8",
+  "scenario_digest": "sha256:c85fa4fcc8fc87cba85bb710aa96ca60eb0be94136793872064dfc31281b3252",
+  "statistics_contract_digest": "sha256:9eec10e986383aebb2712360a74cf39a7b6a35c3f686643509aa3d5ac7ed5691",
+  "archive_manifest_digest": "sha256:d1e7aafd1928f96094a10877bb09db8a902a8b9f58d3e1cba2fc15e8005c76bd",
+  "archive_checksum_manifest_digest": "sha256:200c4510273069001ed1226865991b36fe10613e3cfe57ff51274b147b8781bd",
+  "campaigns": 8,
+  "completed_jobs": 105,
+  "classifications": [
+    {
+      "surface": "client-surface logical aggregation",
+      "classification": "live ownership with incomplete report aggregation",
+      "decision": "correct mandatory W1/W2a reporting without changing admission or eviction"
+    },
+    {
+      "surface": "client-surface TTL",
+      "classification": "confirmed unbounded live-owner retention",
+      "decision": "authorize W4 bounded active expiry and tenant quota cleanup as a safety fix"
+    },
+    {
+      "surface": "rewrite and reset resident memory",
+      "classification": "allocator high-water after logical reclamation",
+      "decision": "retain evidence; do not authorize a representation or allocator change"
+    },
+    {
+      "surface": "idempotency, audit, event and conditional histories",
+      "classification": "bounded and correct under existing count limits",
+      "decision": "no W3 product change authorized; point 4 supplies the long plateau release tests"
+    },
+    {
+      "surface": "connection and persistence overhead",
+      "classification": "resource-correlated bounded overhead",
+      "decision": "do not authorize W9-W11 without a separately frozen proposal"
+    }
+  ],
+  "candidate_evidence": false,
+  "ship_evidence_eligible": false
+}
