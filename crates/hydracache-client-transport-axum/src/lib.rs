@@ -710,6 +710,14 @@ impl ClientSurfaceState {
         self.retained_state_locked(&idempotency, &store, &lock_service)
     }
 
+    /// Run one bounded active-expiry maintenance tick.
+    ///
+    /// Daemon runtimes call this even when no client reads the expired keys.
+    /// At most [`CLIENT_SURFACE_EXPIRY_SWEEP_SCAN_LIMIT`] entries are examined.
+    pub fn reap_expired_entries_for_maintenance(&self) -> usize {
+        self.sweep_expired_entries(self.now_ms(), false)
+    }
+
     /// Clear cache, idempotency, conditional, lock, and session owners for an
     /// explicitly enabled, quiescent diagnostic run.
     ///
@@ -2919,13 +2927,13 @@ mod retention_tests {
 
         state.advance_cache_time_for_tests(1_001);
         assert_eq!(
-            state.sweep_expired_entries(state.now_ms(), false),
+            state.reap_expired_entries_for_maintenance(),
             CLIENT_SURFACE_EXPIRY_SWEEP_SCAN_LIMIT
         );
         assert_eq!(state.store.lock().expect("store mutex").len(), 44);
 
         state.advance_cache_time_for_tests(CLIENT_SURFACE_EXPIRY_SWEEP_INTERVAL_MS);
-        assert_eq!(state.sweep_expired_entries(state.now_ms(), false), 44);
+        assert_eq!(state.reap_expired_entries_for_maintenance(), 44);
         assert!(state.store.lock().expect("store mutex").is_empty());
     }
 
