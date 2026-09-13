@@ -64,6 +64,9 @@ pub const CLIENT_SURFACE_IDEMPOTENCY_TTL_MS: u64 = 24 * 60 * 60 * 1_000;
 /// Maximum interval between opportunistic expired-entry sweeps while traffic is active.
 pub const CLIENT_SURFACE_EXPIRY_SWEEP_INTERVAL_MS: u64 = 1_000;
 
+/// Maximum entries examined by one opportunistic request-path expiry sweep.
+pub const CLIENT_SURFACE_EXPIRY_SWEEP_SCAN_LIMIT: usize = 256;
+
 /// Mutation kind emitted after a verified client-surface state transition.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum ClientSurfaceMutationKind {
@@ -483,6 +486,49 @@ impl StoredValue {
     }
 }
 
+fn expiry_sweep_candidates(
+    store: &BTreeMap<StoreKey, StoredValue>,
+    now_ms: u64,
+    cursor: Option<&StoreKey>,
+    scan_limit: usize,
+) -> (Vec<StoreKey>, Vec<StoreKey>) {
+    let mut examined = Vec::with_capacity(scan_limit.min(store.len()));
+    if let Some(cursor) = cursor {
+        examined.extend(
+            store
+                .range((
+                    std::ops::Bound::Excluded(cursor),
+                    std::ops::Bound::Unbounded,
+                ))
+                .map(|(key, _)| key.clone())
+                .take(scan_limit),
+        );
+        if examined.len() < scan_limit {
+            examined.extend(
+                store
+                    .range((
+                        std::ops::Bound::Unbounded,
+                        std::ops::Bound::Included(cursor),
+                    ))
+                    .map(|(key, _)| key.clone())
+                    .take(scan_limit - examined.len()),
+            );
+        }
+    } else {
+        examined.extend(store.keys().take(scan_limit).cloned());
+    }
+    let expired = examined
+        .iter()
+        .filter(|key| {
+            store
+                .get(*key)
+                .is_some_and(|value| value.is_expired(now_ms))
+        })
+        .cloned()
+        .collect();
+    (examined, expired)
+}
+
 /// Shared state for the public client surface.
 #[derive(Debug)]
 pub struct ClientSurfaceState {
@@ -498,6 +544,7 @@ pub struct ClientSurfaceState {
     cache_now_ms_for_tests: Mutex<Option<u64>>,
     cache_time_floor_ms: AtomicU64,
     next_expiry_sweep_ms: AtomicU64,
+    expiry_sweep_cursor: Mutex<Option<StoreKey>>,
     idempotency_keys: Mutex<BTreeMap<IdempotencyKey, IdempotencyRecord>>,
     lock_service: Mutex<ClientLockService>,
     audit_sink: Arc<InMemoryAuditSink>,
@@ -524,6 +571,7 @@ impl ClientSurfaceState {
             cache_now_ms_for_tests: Mutex::new(None),
             cache_time_floor_ms: AtomicU64::new(0),
             next_expiry_sweep_ms: AtomicU64::new(0),
+            expiry_sweep_cursor: Mutex::new(None),
             idempotency_keys: Mutex::new(BTreeMap::new()),
             lock_service: Mutex::new(ClientLockService::new()),
             audit: Mutex::new(AuditRecorder::new(Arc::clone(&audit_sink))),
@@ -553,6 +601,7 @@ impl ClientSurfaceState {
             cache_now_ms_for_tests: Mutex::new(None),
             cache_time_floor_ms: AtomicU64::new(0),
             next_expiry_sweep_ms: AtomicU64::new(0),
+            expiry_sweep_cursor: Mutex::new(None),
             idempotency_keys: Mutex::new(BTreeMap::new()),
             lock_service: Mutex::new(ClientLockService::new()),
             audit: Mutex::new(AuditRecorder::new(Arc::clone(&audit_sink))),
@@ -847,25 +896,55 @@ impl ClientSurfaceState {
             );
         }
 
+        let mut cursor = self
+            .expiry_sweep_cursor
+            .lock()
+            .expect("expiry cursor mutex");
         let removed = if let Some(isolation) = &self.isolation {
             let mut isolation = isolation.lock().expect("isolation mutex");
             let mut store = self.store.lock().expect("store mutex");
-            let expired = store
-                .iter()
-                .filter(|(_, value)| value.is_expired(now_ms))
-                .map(|(key, _)| key.clone())
-                .collect::<Vec<_>>();
+            let (examined, expired) = expiry_sweep_candidates(
+                &store,
+                now_ms,
+                if force { None } else { cursor.as_ref() },
+                if force {
+                    usize::MAX
+                } else {
+                    CLIENT_SURFACE_EXPIRY_SWEEP_SCAN_LIMIT
+                },
+            );
             for (tenant, namespace, key) in &expired {
                 let tenant = TenantId::new(tenant).expect("stored tenant identity was validated");
                 isolation.remove_entry_for_tenant(&tenant, namespace, key);
                 store.remove(&(tenant.as_str().to_owned(), namespace.clone(), key.clone()));
             }
+            *cursor = if force {
+                None
+            } else {
+                examined.last().cloned()
+            };
             expired.len()
         } else {
             let mut store = self.store.lock().expect("store mutex");
-            let before = store.len();
-            store.retain(|_, value| !value.is_expired(now_ms));
-            before.saturating_sub(store.len())
+            let (examined, expired) = expiry_sweep_candidates(
+                &store,
+                now_ms,
+                if force { None } else { cursor.as_ref() },
+                if force {
+                    usize::MAX
+                } else {
+                    CLIENT_SURFACE_EXPIRY_SWEEP_SCAN_LIMIT
+                },
+            );
+            for key in &expired {
+                store.remove(key);
+            }
+            *cursor = if force {
+                None
+            } else {
+                examined.last().cloned()
+            };
+            expired.len()
         };
         if removed != 0 {
             self.state_mutations
@@ -2818,6 +2897,36 @@ mod retention_tests {
         assert_eq!(reclaimed.store_entries, 0);
         assert_eq!(reclaimed.value_bytes, 0);
         assert_eq!(reclaimed.store_identity_bytes, 0);
+    }
+
+    #[test]
+    fn request_path_expiry_sweep_has_a_fixed_scan_budget_and_makes_progress() {
+        let state = ClientSurfaceState::new(ClientSurfaceLimits::default()).unwrap();
+        let identity = ClientIdentity::new("client", "tenant").unwrap();
+        state.set_cache_time_for_tests(Some(1_000));
+        let entries = CLIENT_SURFACE_EXPIRY_SWEEP_SCAN_LIMIT + 44;
+        for index in 0..entries {
+            let response = put_for_key_with_ttl(
+                &state,
+                &identity,
+                format!("put-{index}"),
+                format!("ttl-{index:04}"),
+                None,
+                Some(500),
+            );
+            assert!(response.result.is_ok());
+        }
+
+        state.advance_cache_time_for_tests(1_001);
+        assert_eq!(
+            state.sweep_expired_entries(state.now_ms(), false),
+            CLIENT_SURFACE_EXPIRY_SWEEP_SCAN_LIMIT
+        );
+        assert_eq!(state.store.lock().expect("store mutex").len(), 44);
+
+        state.advance_cache_time_for_tests(CLIENT_SURFACE_EXPIRY_SWEEP_INTERVAL_MS);
+        assert_eq!(state.sweep_expired_entries(state.now_ms(), false), 44);
+        assert!(state.store.lock().expect("store mutex").is_empty());
     }
 
     #[test]
