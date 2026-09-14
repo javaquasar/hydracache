@@ -1,7 +1,9 @@
 use std::error::Error;
 use std::sync::Arc;
 
-use hydracache_client_transport_axum::AxumClientSurface;
+use hydracache_client_transport_axum::{
+    AxumClientSurface, CLIENT_SURFACE_EXPIRY_SWEEP_INTERVAL_MS,
+};
 use hydracache_server::{
     serve_hc2_listener, serve_redis_listener, AdminHttpSurface, Hc2ClientPlaneService,
     Hc2ListenerTls, ServerConfig, ServerRuntime,
@@ -60,6 +62,28 @@ async fn main() -> Result<(), Box<dyn Error>> {
     let (failure_tx, mut failure_rx) = mpsc::unbounded_channel::<String>();
     let mut listener_tasks = Vec::new();
     let mut hc2_observer = None;
+
+    if let Some(state) = dispatch_state.as_ref().map(Arc::clone) {
+        let mut shutdown = shutdown_rx.clone();
+        listener_tasks.push(tokio::spawn(async move {
+            let mut interval = tokio::time::interval(std::time::Duration::from_millis(
+                CLIENT_SURFACE_EXPIRY_SWEEP_INTERVAL_MS,
+            ));
+            interval.set_missed_tick_behavior(tokio::time::MissedTickBehavior::Skip);
+            loop {
+                tokio::select! {
+                    _ = interval.tick() => {
+                        state.reap_expired_entries_for_maintenance();
+                    }
+                    changed = shutdown.changed() => {
+                        if changed.is_err() || *shutdown.borrow() {
+                            break;
+                        }
+                    }
+                }
+            }
+        }));
+    }
 
     if let Some(listener) = client_listener {
         let state = dispatch_state

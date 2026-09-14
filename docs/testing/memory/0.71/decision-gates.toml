@@ -8,22 +8,98 @@ required_states = ["D0", "D1", "D2", "D3", "D4"]
 id = "w2a-retained-byte-accounting"
 work_item = "W2a"
 controls = ["S1", "S3", "S4", "S5", "S7", "S10"]
-owner_ids = []
-stack_ids = []
+owner_ids = ["owner-263f70a1cc5b27ea"]
+stack_ids = ["M1-client-surface-owner-snapshots"]
 hypothesis = "Complete retained-byte accounting can be added without changing eviction, admission, or compatibility semantics."
 alternative_explanations = ["allocator high-water", "file/page cache", "instrumentation overhead"]
-baseline_receipts = []
-baseline_digests = []
+baseline_receipts = ["docs/testing/perf-artifacts/0.71/ax42/d0-baseline/manifest.json", "docs/testing/memory/0.71/d0-d1-decision-receipt.json"]
+baseline_digests = ["sha256:d1e7aafd1928f96094a10877bb09db8a902a8b9f58d3e1cba2fc15e8005c76bd", "sha256:200c4510273069001ed1226865991b36fe10613e3cfe57ff51274b147b8781bd"]
 primary_metrics = ["logical_retained_bytes", "unattributed_retained_bytes"]
 minimum_effect = "foundation-only; no efficiency claim"
 allowed_regressions = ["production instrumentation overhead must remain inside the frozen S5 envelope"]
 authorized_files = ["crates/hydracache/src", "crates/hydracache-observability/src", "crates/hydracache-server/src"]
 authorized_surfaces = ["internal accounting", "privileged aggregate diagnostics"]
-state = "planned"
-classification = "inconclusive"
-rejected_alternatives = []
+state = "D2"
+classification = "live ownership with incomplete report aggregation"
+rejected_alternatives = ["allocator high-water cannot explain zero logical counters while client-surface owner snapshots contain entries", "file/page cache cannot explain client-surface key and value byte growth"]
 reviewer = "release-0.71-memory-review"
 candidate_derived_baseline = false
 resulting_receipts = []
-disposition = "pending-evidence"
+disposition = "authorized-foundation-only"
 
+[[proposal.transition]]
+state = "D0"
+receipt = "docs/testing/perf-artifacts/0.71/ax42/d0-baseline/manifest.json"
+source_sha = "906aa24cc22ad6b50b824120ed6364208484203a"
+host_fingerprint = "sha256:f94e1cca89d22ec8ef2bfbf90c3aef00aadc8f7039e8c514812394ab824bb7c8"
+scenario_digest = "sha256:c85fa4fcc8fc87cba85bb710aa96ca60eb0be94136793872064dfc31281b3252"
+contract_digest = "sha256:9eec10e986383aebb2712360a74cf39a7b6a35c3f686643509aa3d5ac7ed5691"
+reviewer = "release-0.71-memory-review"
+
+[[proposal.transition]]
+state = "D1"
+receipt = "docs/testing/memory/0.71/d0-d1-decision-receipt.json"
+source_sha = "906aa24cc22ad6b50b824120ed6364208484203a"
+host_fingerprint = "sha256:f94e1cca89d22ec8ef2bfbf90c3aef00aadc8f7039e8c514812394ab824bb7c8"
+scenario_digest = "sha256:c85fa4fcc8fc87cba85bb710aa96ca60eb0be94136793872064dfc31281b3252"
+contract_digest = "sha256:9eec10e986383aebb2712360a74cf39a7b6a35c3f686643509aa3d5ac7ed5691"
+reviewer = "release-0.71-memory-review"
+
+[[proposal.transition]]
+state = "D2"
+receipt = "docs/testing/memory/0.71/d0-d1-decision-receipt.json#w2a-retained-byte-accounting"
+source_sha = "906aa24cc22ad6b50b824120ed6364208484203a"
+host_fingerprint = "sha256:f94e1cca89d22ec8ef2bfbf90c3aef00aadc8f7039e8c514812394ab824bb7c8"
+scenario_digest = "sha256:c85fa4fcc8fc87cba85bb710aa96ca60eb0be94136793872064dfc31281b3252"
+contract_digest = "sha256:9eec10e986383aebb2712360a74cf39a7b6a35c3f686643509aa3d5ac7ed5691"
+reviewer = "release-0.71-memory-review"
+
+[[proposal]]
+id = "w4-client-surface-active-expiry"
+work_item = "W4"
+controls = ["S1", "S4", "S5", "S7", "S10"]
+owner_ids = ["owner-263f70a1cc5b27ea"]
+stack_ids = ["M3-ttl-expire-or-delete", "M3-ttl-post-idle"]
+hypothesis = "Expired client-surface entries that are never read remain live and continue charging tenant quota until another operation touches the same key."
+alternative_explanations = ["allocator high-water", "file/page cache", "measurement aggregation defect"]
+baseline_receipts = ["docs/testing/perf-artifacts/0.71/ax42/d0-baseline/m3-ttl/github/campaign-receipt.json", "docs/testing/memory/0.71/d0-d1-decision-receipt.json"]
+baseline_digests = ["sha256:3989121d69e5b1c5ccaf5f026532ae8962acfc9aa54e643f8a11682df75cd88f", "sha256:56c66946fa9eca5a90efbe7de47fa64cd46a20b214e396e5d9a12b5140919662"]
+primary_metrics = ["logical_entries_after_expiry", "tenant_quota_entries_after_expiry"]
+minimum_effect = "all expired client-surface entries are absent from a quiescent diagnostic snapshot and release their tenant quota"
+allowed_regressions = ["expiry sweep work is rate-limited to once per second on request paths; correctness and p99 budgets remain unchanged"]
+authorized_files = ["crates/hydracache-client-transport-axum/src/lib.rs", "crates/hydracache/src/multitenancy.rs", "crates/hydracache-server/src/main.rs"]
+authorized_surfaces = ["client-surface expiry maintenance", "daemon maintenance scheduling", "tenant quota ledger cleanup", "privileged aggregate diagnostics"]
+state = "D2"
+classification = "confirmed unbounded live-owner retention"
+rejected_alternatives = ["allocator high-water cannot retain logical entries in owner snapshots", "file/page cache cannot retain tenant quota entries", "aggregation defect was excluded by direct client-surface owner snapshots"]
+reviewer = "release-0.71-memory-review"
+candidate_derived_baseline = false
+resulting_receipts = []
+disposition = "authorized-safety-fix"
+
+[[proposal.transition]]
+state = "D0"
+receipt = "docs/testing/perf-artifacts/0.71/ax42/d0-baseline/m3-ttl/github/campaign-receipt.json"
+source_sha = "906aa24cc22ad6b50b824120ed6364208484203a"
+host_fingerprint = "sha256:f94e1cca89d22ec8ef2bfbf90c3aef00aadc8f7039e8c514812394ab824bb7c8"
+scenario_digest = "sha256:c85fa4fcc8fc87cba85bb710aa96ca60eb0be94136793872064dfc31281b3252"
+contract_digest = "sha256:9eec10e986383aebb2712360a74cf39a7b6a35c3f686643509aa3d5ac7ed5691"
+reviewer = "release-0.71-memory-review"
+
+[[proposal.transition]]
+state = "D1"
+receipt = "docs/testing/memory/0.71/d0-d1-decision-receipt.json"
+source_sha = "906aa24cc22ad6b50b824120ed6364208484203a"
+host_fingerprint = "sha256:f94e1cca89d22ec8ef2bfbf90c3aef00aadc8f7039e8c514812394ab824bb7c8"
+scenario_digest = "sha256:c85fa4fcc8fc87cba85bb710aa96ca60eb0be94136793872064dfc31281b3252"
+contract_digest = "sha256:9eec10e986383aebb2712360a74cf39a7b6a35c3f686643509aa3d5ac7ed5691"
+reviewer = "release-0.71-memory-review"
+
+[[proposal.transition]]
+state = "D2"
+receipt = "docs/testing/memory/0.71/d0-d1-decision-receipt.json#w4-client-surface-active-expiry"
+source_sha = "906aa24cc22ad6b50b824120ed6364208484203a"
+host_fingerprint = "sha256:f94e1cca89d22ec8ef2bfbf90c3aef00aadc8f7039e8c514812394ab824bb7c8"
+scenario_digest = "sha256:c85fa4fcc8fc87cba85bb710aa96ca60eb0be94136793872064dfc31281b3252"
+contract_digest = "sha256:9eec10e986383aebb2712360a74cf39a7b6a35c3f686643509aa3d5ac7ed5691"
+reviewer = "release-0.71-memory-review"

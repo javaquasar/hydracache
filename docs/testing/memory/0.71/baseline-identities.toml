@@ -1,6 +1,6 @@
 schema_version = 1
 release = "0.71"
-state = "planned"
+state = "D1"
 cohort_pooling = false
 candidate_derived_thresholds = false
 
@@ -76,6 +76,10 @@ commit = "dbc2f82f7f303528b3cca7842818730c82232b9c"
 requirements = "docs/testing/memory/0.71/historical-input-requirements.toml"
 
 [d0]
-ready = false
+ready = true
 required_receipts = ["ownership_inventory", "provider_qualification", "phase_timeline", "statistics_contract", "instrumentation_overhead", "admitted_host", "bootstrap_0_67_1", "ci_bounded_dry_run", "historical_mirror"]
-blockers = ["dedicated host receipt not materialized", "committed 0.67.1 archive must be admitted into the D0 historical mirror receipt", "protected historical mirror receipt unavailable"]
+evidence_root = "docs/testing/perf-artifacts/0.71/ax42/d0-baseline"
+evidence_manifest_sha256 = "d1e7aafd1928f96094a10877bb09db8a902a8b9f58d3e1cba2fc15e8005c76bd"
+evidence_sha256sums_sha256 = "200c4510273069001ed1226865991b36fe10613e3cfe57ff51274b147b8781bd"
+classification_receipt = "docs/testing/memory/0.71/d0-d1-decision-receipt.json"
+blockers = []

@@ -19,25 +19,24 @@ mandatory_foundation = [
 
 [[optional_work]]
 id = "W2b"
-disposition = "pending-evidence"
-reason = "Admission-policy work requires a confirmed fail-open surface or D2 authorization."
-next_evidence = "D1 classification and S1 owner"
+disposition = "deferred"
+reason = "bounded and correct: D0 found no fail-open retained-byte admission surface. W2a remains reporting-only, so changing legacy capacity semantics is not justified."
+next_evidence = "A future independently reviewed D2 proposal with pre-change pressure evidence"
 
 [[optional_work]]
 id = "W5-W7"
-disposition = "pending-evidence"
-reason = "Representation and copy changes require an S2 stack and D2 authorization."
-next_evidence = "S2 phase/stack attribution"
+disposition = "deferred"
+reason = "bounded and correct: D0 shape/tag data attributes live bytes but does not isolate a representation or copy change that clears the frozen minimum effect and regression budgets"
+next_evidence = "A separately frozen owner/stack proposal with paired B1/C evidence"
 
 [[optional_work]]
 id = "W8"
-disposition = "pending-evidence"
-reason = "Allocator work requires the S6 capability matrix and same-host W0 comparison."
-next_evidence = "W0 allocator reuse diagnosis"
+disposition = "deferred"
+reason = "bounded and correct: rewrite/reset owner counters plateau or return to zero while RSS remains at allocator high-water; no same-host allocator candidate has qualified"
+next_evidence = "A preregistered same-host system/jemalloc/mimalloc comparison"
 
 [[optional_work]]
 id = "W9-W11"
-disposition = "pending-evidence"
-reason = "Profile, connection, and persistence changes remain evidence-conditional."
-next_evidence = "D1 classification and D2 review"
-
+disposition = "deferred"
+reason = "bounded and correct: D0 connection and persistence deltas scale with enabled resources, and no optional profile or persistence change has qualified against the frozen budgets"
+next_evidence = "A one-factor profile, connection, or persistence proposal reviewed before candidate results"

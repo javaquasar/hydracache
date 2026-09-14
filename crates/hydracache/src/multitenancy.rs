@@ -418,11 +418,30 @@ impl ConsumerIsolation {
             });
         }
 
+        Ok(self.remove_entry_for_tenant(&tenant_id, namespace, key))
+    }
+
+    /// Remove one entry from quota accounting using an already verified tenant.
+    ///
+    /// This is used by bounded background/diagnostic expiry sweeps, where the
+    /// stored owner carries the tenant identity but no longer has the original
+    /// client id that admitted it. The method is bookkeeping-only and never
+    /// consumes a request token.
+    pub fn remove_entry_for_tenant(
+        &mut self,
+        tenant_id: &TenantId,
+        namespace: &str,
+        key: &str,
+    ) -> bool {
+        if self.roster.tenant(tenant_id).is_none() {
+            return false;
+        }
+
         let entry_key = (tenant_id.clone(), namespace.to_owned(), key.to_owned());
         let Some(old_bytes) = self.entries.remove(&entry_key) else {
-            return Ok(false);
+            return false;
         };
-        let usage_key = (tenant_id, namespace.to_owned());
+        let usage_key = (tenant_id.clone(), namespace.to_owned());
         let current = self.usage.get(&usage_key).copied().unwrap_or_default();
         self.usage.insert(
             usage_key,
@@ -431,7 +450,7 @@ impl ConsumerIsolation {
                 entries: current.entries.saturating_sub(1),
             },
         );
-        Ok(true)
+        true
     }
 
     /// Begin a tenant-scoped subscription.

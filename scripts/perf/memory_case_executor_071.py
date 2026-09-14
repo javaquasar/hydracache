@@ -749,11 +749,27 @@ class Workload:
 def logical_snapshot(document: dict[str, Any] | None, workload: Workload) -> dict[str, int]:
     footprint = (document or {}).get("embedded_cache", {})
     external = (document or {}).get("client_surface") or {}
-    entries = int(footprint.get("live_entries", len(workload.live)))
+    embedded_entries = int(footprint.get("live_entries", 0))
+    surface_entries = int(external.get("store_entries", 0))
+    entries = (
+        embedded_entries + surface_entries
+        if document is not None
+        else len(workload.live)
+    )
     return {
         "entries": entries,
-        "key_bytes": int(footprint.get("logical_key_bytes", sum(len(workload.key(item)) for item in workload.live))),
-        "value_bytes": int(footprint.get("logical_value_bytes", entries * workload.value_bytes)),
+        "key_bytes": (
+            int(footprint.get("logical_key_bytes", 0))
+            + int(external.get("store_identity_bytes", 0))
+            if document is not None
+            else sum(len(workload.key(item)) for item in workload.live)
+        ),
+        "value_bytes": (
+            int(footprint.get("logical_value_bytes", 0))
+            + int(external.get("value_bytes", 0))
+            if document is not None
+            else entries * workload.value_bytes
+        ),
         "tag_records": workload.tag_memberships() if workload.job["case_id"] == "M5-tags" else int(footprint.get("tag_memberships", 0)),
         "tag_bytes": workload.tag_bytes(),
         "generation_records": int(footprint.get("tag_generation_records", 0)) + int(footprint.get("key_generation_records", 0)),
