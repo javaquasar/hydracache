@@ -212,6 +212,13 @@ fn validate_transition_history(
             history.len()
         ));
     }
+    let identity_fields = [
+        "source_sha",
+        "host_fingerprint",
+        "scenario_digest",
+        "contract_digest",
+    ];
+    let frozen_identity = history.first();
     for (index, transition) in history.iter().enumerate() {
         let expected = LEGAL_DECISION_STATES[index + 1];
         if string(transition.get("state")) != Some(expected) {
@@ -229,6 +236,16 @@ fn validate_transition_history(
             "reviewer",
         ] {
             require_table_string(transition, id, field, problems);
+        }
+        if let Some(frozen) = frozen_identity {
+            for field in identity_fields {
+                if string(transition.get(field)) != string(frozen.get(field)) {
+                    problems.push(format!(
+                        "proposal {id} transition {} changes frozen {field}",
+                        index + 1
+                    ));
+                }
+            }
         }
     }
 }
@@ -361,10 +378,22 @@ pub fn check_allocators(root: &TomlValue, release: &str) -> Vec<String> {
         ] {
             require_table_string(allocator, id, field, &mut problems);
         }
-        if string_array(allocator.get("targets")).is_empty()
-            || string_array(allocator.get("fields")).is_empty()
-        {
+        let fields = string_array(allocator.get("fields"));
+        if string_array(allocator.get("targets")).is_empty() || fields.is_empty() {
             problems.push(format!("allocator {id} lacks target/field capabilities"));
+        }
+        let required_fields: &[&str] = match id {
+            "system" => &["allocated", "resident", "peak_resident", "page_faults"],
+            "jemalloc" => &["allocated", "active", "mapped", "resident", "retained"],
+            "mimalloc" => &["allocated", "committed", "reserved", "segments", "pages"],
+            _ => &[],
+        };
+        for required in required_fields {
+            if !fields.contains(required) {
+                problems.push(format!(
+                    "allocator {id} lacks required field capability {required}"
+                ));
+            }
         }
         for unavailable in string_array(allocator.get("unavailable_fields")) {
             if !unavailable.contains("unavailable(") {

@@ -898,24 +898,25 @@ the release-evidence registry in the same review.
 
 Each work item also owns a concrete target. These names are part of the plan contract and are
 created with the implementation; renaming one updates this table and release-evidence registry in
-the same review.
+the same review. The concise implementation/status index is
+[`RELEASE_TEST_COVERAGE.md`](../testing/memory/0.71/RELEASE_TEST_COVERAGE.md).
 
 | Work item | Planned target / exact command | Named coverage |
 | --- | --- | --- |
 | W0 | `cargo test -p xtask --test memory_baseline_071 --locked` | `b0_b1_are_distinct_cohorts`, corrected TTL final checkpoint, dirty identity and archive/mirror mismatch rejection |
 | W1 | `cargo test -p hydracache --test memory_footprint_071 --locked -- --test-threads=1` | registered-owner reconciliation, removal/reset lifecycle, off-mode label suppression and bounded aggregates |
-| W2 | `cargo test -p hydracache --test memory_accounting_071 --locked` and `cargo test -p hydracache-client-transport-axum --test memory_admission_071 --locked` | W2a estimator corpus; W2b legacy-limit compatibility, aggregate request admission and fail-loud overflow |
-| W3 | `cargo test -p hydracache-client-transport-axum --test retention_bounds_071 --locked -- --test-threads=1` | million-operation plateau, idempotency outcome retention, replay repair and mandatory-audit pressure |
-| W4 | `cargo test -p hydracache --test reclamation_071 --locked -- --test-threads=1` | 100-cycle TTL/delete/reset exact-zero, bounded backlog and stale-load fencing |
-| W5 | `cargo test -p hydracache --test representation_071 --locked` | old/new differential model, bytes-per-entry corpus, collision and public auto-trait witnesses |
-| W6 | `cargo test -p hydracache --test tag_index_model_071 --locked` | arbitrary interleavings, fanout distributions, ABA and early-generation-retirement canaries |
-| W7 | `cargo test -p xtask --test allocation_copy_071 --locked` | allocation/copied-byte receipts, oversized-buffer release, pool isolation and secret redaction |
+| W2 | `cargo test -p hydracache --test memory_accounting_071 --locked` and `cargo test -p hydracache-client-transport-axum --test memory_admission_071 --locked` | W2a estimator corpus and legacy-capacity compatibility; atomic aggregate request admission, replacement delta, deletion and active-expiry quota release. W2b policy remains evidenced-deferred. |
+| W3 | `cargo test -p hydracache-client-transport-axum --test retention_bounds_071 --locked -- --test-threads=1` | fixed-keyspace plateau/reset, idempotency bound/fail-loud overflow and mandatory-audit fail-closed pressure. The million-operation form is `#[ignore]` and scheduled-only. |
+| W4 | `cargo test -p hydracache --test reclamation_071 --locked -- --test-threads=1` plus the W2 client-surface target | 100-cycle TTL/delete/flush exact-zero, stale-load fencing and active-expiry quota release |
+| W5 | `cargo test -p hydracache --test representation_071 --locked` | public auto-trait witnesses, estimator shape sensitivity and explicit rejection of promotion without D2 evidence |
+| W6 | `cargo test -p hydracache --test tag_index_model_071 --locked` | deterministic membership-model interleavings and high-fanout invalidation/flush reclamation |
+| W7 | `cargo test -p xtask --test allocation_copy_071 --locked` | allocation provider count/byte/phase contract, evidence requirement for promotion and archived-receipt secret redaction |
 | W8 | `cargo test -p xtask --test allocator_matrix_071 --locked` | capability/build matrix, identical-state reuse/purge sequence and RSS-only rejection |
-| W9 | `cargo test -p hydracache-server --test memory_profiles_071 --locked -- --test-threads=1` | one-factor service ablation, effective-config receipt and disabled-service zero-resource proof |
-| W10 | `cargo test -p hydracache-server --test hc2_memory_071 --locked -- --test-threads=1` | idle/slow/reconnect/oversized-frame cases and exact close/cancel/drain owner release |
-| W11 | `cargo test -p hydracache --test persistence_memory_071 --locked -- --test-threads=1` | anon/file classification, buffer bounds, memory-pressure admission and recovery/disk-full/checkpoint release |
-| W12 | `cargo test -p xtask --test memory_campaign_admission_071 --locked` and `cargo run --manifest-path crates\xtask\Cargo.toml --locked -- memory-campaign-check --release 0.71 --require-ship` | scenario/repetition identity, bounded attempt ledger, D4 reproduction and long-run admission |
-| W13 | `cargo test -p xtask --test release_governance_071 --locked` | mandatory foundation, conditional proposal targets, generated claims, no-win ship and safety-defect rejection |
+| W9 | `cargo test -p hydracache-server --test memory_profiles_071 --locked -- --test-threads=1` | disabled-service zero-resource proof, requested-surface materialization and explicit one-factor qualification boundary |
+| W10 | `cargo test -p hydracache-server --test hc2_memory_071 --locked -- --test-threads=1` | idle HC/2 owner accounting, redacted metrics and independent transport/decoded limit contracts |
+| W11 | `cargo test -p hydracache --test persistence_memory_071 --locked -- --test-threads=1` | pre-allocation rejection without storage, bounded metric labels and explicit anon/file qualification boundary |
+| W12 | `cargo test -p xtask --test memory_campaign_admission_071 --locked` and `cargo run --manifest-path crates\xtask\Cargo.toml --locked -- memory-campaign-check --release 0.71 --require-ship` | exact-candidate M10 receipt admission and rejection of incomplete, wrong-release or non-candidate evidence |
+| W13 | `cargo test -p xtask --test release_governance_071 --locked` | mandatory foundation, evidenced deferrals, no-win ship and safety-defect rejection |
 
 After every control commit run its focused target plus:
 
