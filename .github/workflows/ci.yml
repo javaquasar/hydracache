@@ -218,12 +218,14 @@ jobs:
           cargo test -p hydracache-client-transport-axum --test retention_bounds_071 --locked
           cargo test -p hydracache-server --test memory_profiles_071 --locked
           cargo test -p hydracache-server --test hc2_memory_071 --locked
+          cargo test -p hydracache-server --test memory_compat_process_071 --locked
           cargo test -p hydracache memory_footprint::tests --locked
           cargo test -p hydracache-loadgen memory_efficiency --locked
           python scripts/perf/memory-providers/test_provider_contract.py
           python scripts/perf/memory_campaign_071_test.py
           python scripts/perf/memory_case_executor_071_test.py
           python scripts/perf/memory_historical_mirror_071_test.py
+          python scripts/perf/memory_compat_receipt_071_test.py
           for mode in off production profile; do
             cargo run -p hydracache-loadgen --bin hydracache-loadgen --locked -- memory-efficiency --provider system --instrumentation-mode "$mode" --output-dir "target/memory-evidence/0.71/profiles/ci-smoke/$mode"
           done

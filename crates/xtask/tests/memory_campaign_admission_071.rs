@@ -1,4 +1,4 @@
-use serde_json::{Value, json};
+use serde_json::{json, Value};
 use sha2::{Digest, Sha256};
 use std::fs;
 use std::path::{Path, PathBuf};
@@ -8,6 +8,7 @@ const WORKFLOW: &str = "3333333333333333333333333333333333333333";
 const B1: &str = "1111111111111111111111111111111111111111";
 const SCENARIO: &str = "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
 const HOST: &str = "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb";
+const V070: &str = "75719b0bf5de2250cf4eb16a30073dd7429538e3";
 
 fn scratch(name: &str) -> PathBuf {
     let path = std::env::temp_dir().join(format!(
@@ -134,7 +135,43 @@ fn write_campaign(root: &Path, case_id: &str, source: &str, host_fingerprint: &s
         "case_ids": [case_id]
     });
     write_json(&campaign.join("campaign-receipt.json"), &receipt);
+    if case_id == "M10-24h" {
+        write_compatibility_receipt(&campaign, &id, source);
+    }
     campaign
+}
+
+fn write_compatibility_receipt(campaign: &Path, id: &str, source: &str) {
+    let mut receipt = json!({
+        "schema_version": 1,
+        "release": "0.71",
+        "campaign_id": id,
+        "baseline_tag": "v0.70.0",
+        "baseline_commit": V070,
+        "candidate_sha": source,
+        "workflow_sha": WORKFLOW,
+        "result": "success",
+        "generated_at": "2026-09-14T00:00:00+00:00",
+        "driver_sha256": "c".repeat(64),
+        "binary_sha256": {"baseline": "d".repeat(64), "candidate": "e".repeat(64)},
+        "checks": [
+            "baseline-create-candidate-read-mutate-restart",
+            "candidate-create-candidate-restart",
+            "candidate-to-baseline-compatible-rollback",
+            "rolling-baseline-candidate-all-role-orders",
+            "snapshot-empty-max-record-crash-upgrade",
+            "unknown-future-refuse-before-mutation-and-backup-restore",
+            "hc1-hc2-versioned-wire-corpus-both-binaries"
+        ]
+    });
+    let canonical = serde_json::to_vec(&receipt).expect("canonical compatibility receipt");
+    receipt["receipt_sha256"] = Value::String(
+        Sha256::digest(canonical)
+            .iter()
+            .map(|byte| format!("{byte:02x}"))
+            .collect(),
+    );
+    write_json(&campaign.join("compatibility-receipt.json"), &receipt);
 }
 
 fn write_chain(root: &Path) {
@@ -179,16 +216,12 @@ fn mixed_candidate_or_host_identity_is_rejected() {
     );
     let problems =
         xtask::memory_campaign::check_campaigns(&root, "0.71", true).expect("campaign check");
-    assert!(
-        problems
-            .iter()
-            .any(|problem| problem.contains("source_sha"))
-    );
-    assert!(
-        problems
-            .iter()
-            .any(|problem| problem.contains("host_fingerprint"))
-    );
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("source_sha")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("host_fingerprint")));
     fs::remove_dir_all(root).expect("clean scratch directory");
 }
 
@@ -203,11 +236,9 @@ fn exact_release_head_mismatch_is_rejected() {
         Some(&"9".repeat(40)),
     )
     .expect("campaign check");
-    assert!(
-        problems
-            .iter()
-            .any(|problem| problem.contains("exact release HEAD"))
-    );
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("exact release HEAD")));
     fs::remove_dir_all(root).expect("clean scratch directory");
 }
 
@@ -224,16 +255,12 @@ fn incomplete_pair_shape_and_tampered_identity_are_rejected() {
     fs::write(m3.join("campaign-identity.json"), b"{}\n").expect("tamper identity");
     let problems =
         xtask::memory_campaign::check_campaigns(&root, "0.71", true).expect("campaign check");
-    assert!(
-        problems
-            .iter()
-            .any(|problem| problem.contains("identity digest"))
-    );
-    assert!(
-        problems
-            .iter()
-            .any(|problem| problem.contains("wrong job shape"))
-    );
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("identity digest")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("wrong job shape")));
     fs::remove_dir_all(root).expect("clean scratch directory");
 }
 
@@ -249,11 +276,37 @@ fn missing_identity_or_wrong_release_fails_loud() {
     write_json(&receipt_path, &receipt);
     let problems =
         xtask::memory_campaign::check_campaigns(&root, "0.71", true).expect("campaign check");
-    assert!(
-        problems
-            .iter()
-            .any(|problem| problem.contains("wrong release"))
-    );
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("wrong release")));
     assert!(problems.iter().any(|problem| problem.contains("companion")));
+    fs::remove_dir_all(root).expect("clean scratch directory");
+}
+
+#[test]
+fn m10_requires_exact_sealed_real_compatibility_proof() {
+    let root = scratch("compatibility");
+    let campaign = write_campaign(&root, "M10-24h", SOURCE, HOST);
+    fs::remove_file(campaign.join("compatibility-receipt.json")).expect("remove compat receipt");
+    let problems =
+        xtask::memory_campaign::check_campaigns(&root, "0.71", true).expect("campaign check");
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("compatibility-receipt")));
+
+    write_compatibility_receipt(&campaign, "candidate-m10-24h", SOURCE);
+    let path = campaign.join("compatibility-receipt.json");
+    let mut receipt: Value =
+        serde_json::from_slice(&fs::read(&path).expect("compat receipt")).expect("compat json");
+    receipt["candidate_sha"] = Value::String("9".repeat(40));
+    write_json(&path, &receipt);
+    let problems =
+        xtask::memory_campaign::check_campaigns(&root, "0.71", true).expect("campaign check");
+    assert!(problems
+        .iter()
+        .any(|problem| { problem.contains("compatibility receipt mismatches candidate_sha") }));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("compatibility receipt seal")));
     fs::remove_dir_all(root).expect("clean scratch directory");
 }

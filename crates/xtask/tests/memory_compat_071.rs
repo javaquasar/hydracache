@@ -38,3 +38,38 @@ fn missing_rollback_and_wire_generation_are_rejected() {
         .iter()
         .any(|problem| problem.contains("HC/1 and HC/2")));
 }
+
+#[test]
+fn m10_executes_real_binary_compatibility_before_the_long_row() {
+    let workflow = fs::read_to_string(root().join(".github/workflows/memory-reference-071.yml"))
+        .expect("memory workflow");
+    let compat = workflow
+        .find("name: Prove real v0.70 candidate upgrade restart and rollback before M10")
+        .expect("real compatibility step");
+    let long_row = workflow
+        .find("name: Run or resume bounded row")
+        .expect("long row step");
+    assert!(compat < long_row, "S8 must run before the 24-hour workload");
+    for marker in [
+        "inputs.case_id == 'M10-24h'",
+        "scripts/perf/memory_compat_071.sh",
+        "compatibility-receipt.json",
+        "--candidate-sha \"$HYDRACACHE_MEMORY_SOURCE_SHA\"",
+        "--workflow-sha \"$HYDRACACHE_MEMORY_WORKFLOW_SHA\"",
+    ] {
+        assert!(workflow.contains(marker), "workflow omits {marker}");
+    }
+
+    let script = fs::read_to_string(root().join("scripts/perf/memory_compat_071.sh"))
+        .expect("compatibility executor");
+    for marker in [
+        "v0.70.0^{commit}",
+        "verify-and-mutate-candidate",
+        "hold-after-flush",
+        "write-future-and-refuse",
+        "memory_compat_process_071",
+        "--test protocol --test versioned_codec",
+    ] {
+        assert!(script.contains(marker), "compatibility executor omits {marker}");
+    }
+}

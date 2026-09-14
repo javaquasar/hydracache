@@ -892,7 +892,7 @@ the release-evidence registry in the same review.
 | S5 | `cargo test -p hydracache --test memory_footprint_071 --locked -- --test-threads=1` plus `python scripts/perf/memory_instrumentation_overhead_071_test.py` | counter lifecycle, coherent epoch, concurrent mutation, overflow, absent acknowledgement, overhead modes and baseline-only envelope materialization |
 | S6 | `cargo test -p xtask --test allocator_matrix_071 --locked` | capability fixtures, units, mutual exclusion, size classes/arenas, refill/purge classification |
 | S7 | `cargo test -p xtask --test memory_host_profile_071 --locked` | `/proc`/`/sys`/cgroup fixtures, canonical fingerprint, mutable drift, calibration and lease |
-| S8 | `cargo test -p xtask --test memory_compat_071 --locked` | matrix validation, real-binary identities, upgrade, mixed version, rollback or pre-mutation refusal |
+| S8 | `cargo test -p xtask --test memory_compat_071 --locked`, `cargo test -p hydracache-server --test memory_compat_process_071 --locked`, and the M10-only `scripts/perf/memory_compat_071.sh` executor | matrix validation plus an exact-SHA receipt from real v0.70/candidate durable-store and daemon binaries: upgrade, restart, crash recovery, all mixed role orders, rollback, HC/1+HC/2 corpora and unknown-future pre-mutation refusal/backup restore |
 | S9 | `cargo test -p xtask --test ci_reliability_071 --locked` | workflow graph, timeouts, watchdog descendants, heartbeat, artifact identity, one publish producer |
 | S10 | `cargo test -p xtask --test release_governance_071 --locked` | mandatory foundation, all dispositions, generated claims, no-win green and safety-defect red fixtures |
 

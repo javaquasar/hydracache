@@ -30,3 +30,7 @@ unqualified optimization was implemented.
 Run the release-focused suite with the commands in the plan's **Mandatory test targets** table.
 Before shipping, also run the exact-candidate campaign admission with `--require-ship`; ordinary
 pull-request CI checks the contract without claiming that a local checkout is the final candidate.
+Before M10 begins, its protected workflow runs `scripts/perf/memory_compat_071.sh` against the real
+`v0.70.0` and exact-candidate binaries. The resulting sealed `compatibility-receipt.json` is part of
+the M10 artifact and mandatory for final campaign admission; a compiling but skipped process test
+does not count as S8 ship evidence.

@@ -147,7 +147,7 @@ function = "persistence_without_storage_is_rejected_before_allocating_runtime_st
 
 [[work_item]]
 id = "W12"
-required_sources = ["scripts/perf/memory_campaign_071.py", "crates/xtask/src/memory_campaign.rs"]
+required_sources = ["scripts/perf/memory_campaign_071.py", "scripts/perf/memory_compat_071.sh", "scripts/perf/memory_compat_driver_071.rs", "scripts/perf/memory_compat_receipt_071.py", "crates/xtask/src/memory_campaign.rs", "crates/hydracache-server/tests/memory_compat_process_071.rs"]
 required_artifacts = []
 fast_gate_ids = []
 gated_gate_ids = []
@@ -155,6 +155,12 @@ ship_required = true
 [[work_item.required_tests]]
 source = "crates/xtask/tests/memory_campaign_admission_071.rs"
 function = "complete_exact_candidate_chain_is_admitted"
+[[work_item.required_tests]]
+source = "crates/xtask/tests/memory_compat_071.rs"
+function = "m10_executes_real_binary_compatibility_before_the_long_row"
+[[work_item.required_tests]]
+source = "crates/xtask/tests/memory_campaign_admission_071.rs"
+function = "m10_requires_exact_sealed_real_compatibility_proof"
 
 [[work_item]]
 id = "W13"
