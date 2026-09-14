@@ -203,6 +203,51 @@ fn release_071_governance_contract_is_fail_closed() {
 }
 
 #[test]
+fn release_071_work_item_targets_are_wired_into_ci_and_evidence() {
+    let root = root();
+    let workflow = fs::read_to_string(root.join(".github/workflows/ci.yml")).unwrap();
+    let evidence =
+        fs::read_to_string(root.join("docs/testing/release-evidence/0.71.toml")).unwrap();
+    let targets = [
+        "memory_baseline_071",
+        "memory_footprint_071",
+        "memory_accounting_071",
+        "memory_admission_071",
+        "retention_bounds_071",
+        "reclamation_071",
+        "representation_071",
+        "tag_index_model_071",
+        "allocation_copy_071",
+        "allocator_matrix_071",
+        "memory_profiles_071",
+        "hc2_memory_071",
+        "persistence_memory_071",
+        "memory_campaign_admission_071",
+        "release_governance_071",
+    ];
+    for target in targets {
+        assert!(workflow.contains(target), "CI does not run {target}");
+        assert!(
+            evidence.contains(target),
+            "release evidence does not name {target}"
+        );
+    }
+    for item in 0..=13 {
+        assert!(
+            evidence.contains(&format!("id = \"W{item}\"")),
+            "release evidence omits W{item}"
+        );
+    }
+    assert_eq!(
+        evidence
+            .matches("release_071_governance_contract_is_fail_closed")
+            .count(),
+        0,
+        "work items must not use the shared governance smoke test as placeholder evidence"
+    );
+}
+
+#[test]
 fn canary_release_071_accepts_missing_memory_evidence() {
     if let Ok(work_item) = std::env::var("HYDRACACHE_CANARY_DEFECT") {
         panic!("HC-CANARY-RED:{work_item}");

@@ -181,13 +181,16 @@ impl ClientRouteBoundary {
 /// Request and stream limits for the external client surface.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub struct ClientSurfaceLimits {
-    /// Maximum encoded frame bytes accepted before protocol dispatch.
+    /// Maximum encoded HC/1 envelope bytes accepted before protocol dispatch.
+    ///
+    /// RESP and HC/2 apply their own transport-frame limits before using the
+    /// shared decoded operation limits below.
     pub max_frame_bytes: usize,
-    /// Maximum value bytes accepted by future W1 Put operations.
+    /// Maximum decoded value bytes accepted by HC/1, HC/2, and RESP operations.
     pub max_value_bytes: usize,
     /// Maximum batch entries accepted by future W1 batch operations.
     pub max_batch_entries: usize,
-    /// Maximum serialized batch bytes.
+    /// Maximum decoded aggregate batch bytes across client protocols.
     pub max_batch_bytes: usize,
     /// Maximum concurrently active subscription streams per connection.
     pub max_streams_per_connection: usize,

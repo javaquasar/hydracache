@@ -194,15 +194,30 @@ jobs:
         run: |
           cargo test -p xtask --test memory_ownership_071 --locked
           cargo test -p xtask --test memory_contracts_071 --locked
+          cargo test -p xtask --test memory_decision_071 --locked
           cargo test -p xtask --test memory_statistics_071 --locked
           cargo test -p xtask --test memory_profile_071 --locked
           cargo test -p xtask --test memory_baseline_071 --locked
+          cargo test -p xtask --test allocator_matrix_071 --locked
+          cargo test -p xtask --test memory_host_profile_071 --locked
+          cargo test -p xtask --test memory_compat_071 --locked
+          cargo test -p xtask --test allocation_copy_071 --locked
+          cargo test -p xtask --test memory_campaign_admission_071 --locked
+          cargo test -p xtask --test release_governance_071 --locked
           cargo run -p xtask --locked -- memory-baseline-check --release 0.71
 
       - name: Verify coherent snapshots and phase providers
         run: |
           cargo test -p hydracache --test memory_footprint_071 --locked
           cargo test -p hydracache --test memory_accounting_071 --locked -- --test-threads=1
+          cargo test -p hydracache --test reclamation_071 --locked
+          cargo test -p hydracache --test representation_071 --locked
+          cargo test -p hydracache --test tag_index_model_071 --locked
+          cargo test -p hydracache --test persistence_memory_071 --locked
+          cargo test -p hydracache-client-transport-axum --test memory_admission_071 --locked
+          cargo test -p hydracache-client-transport-axum --test retention_bounds_071 --locked
+          cargo test -p hydracache-server --test memory_profiles_071 --locked
+          cargo test -p hydracache-server --test hc2_memory_071 --locked
           cargo test -p hydracache memory_footprint::tests --locked
           cargo test -p hydracache-loadgen memory_efficiency --locked
           python scripts/perf/memory-providers/test_provider_contract.py

@@ -6744,6 +6744,102 @@ platform = "any"
 [gate.command.env]
 
 [[gate]]
+id = "ignored.hydracache-client-transport-axum.retention-bounds-071-million-operation"
+kind = "ignored_test"
+source = "crates/hydracache-client-transport-axum/tests/retention_bounds_071.rs"
+package = "hydracache-client-transport-axum"
+target = "retention_bounds_071"
+test = "million_operation_fixed_keyspace_plateau"
+cfg = ""
+env = ""
+reason = "The million-operation fixed-keyspace plateau is a scheduled stress proof; pull-request CI runs its shorter deterministic equivalent"
+tier = "manual"
+required_features = []
+required_env = []
+required_tools = []
+timeout_seconds = 1800
+owner_release = "0.71.0"
+ship_mandatory = false
+artifacts = []
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "gated-proof-registry"
+step = "Run registered gated proofs"
+
+[gate.command]
+program = "cargo"
+args = ["test", "-p", "hydracache-client-transport-axum", "--test", "retention_bounds_071", "--locked", "million_operation_fixed_keyspace_plateau", "--", "--ignored", "--exact", "--test-threads=1"]
+cwd = "."
+platform = "any"
+
+[gate.command.env]
+
+[[gate]]
+id = "cfg.hydracache.tag-index-model-071"
+kind = "cfg_test_target"
+source = "crates/hydracache/tests/tag_index_model_071.rs"
+package = "hydracache"
+target = "tag_index_model_071"
+test = ""
+cfg = 'not (target_arch = "wasm32")'
+env = ""
+reason = "The tag-index model uses the native Tokio/Moka cache implementation, which is not available on wasm32"
+tier = "nightly"
+required_features = []
+required_env = []
+required_tools = []
+timeout_seconds = 300
+owner_release = "0.71.0"
+ship_mandatory = false
+artifacts = []
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "memory-contracts-071"
+step = "Verify coherent snapshots and phase providers"
+
+[gate.command]
+program = "cargo"
+args = ["test", "-p", "hydracache", "--test", "tag_index_model_071", "--locked"]
+cwd = "."
+platform = "any"
+
+[gate.command.env]
+
+[[gate]]
+id = "cfg.hydracache.reclamation-071"
+kind = "cfg_test_target"
+source = "crates/hydracache/tests/reclamation_071.rs"
+package = "hydracache"
+target = "reclamation_071"
+test = ""
+cfg = 'not (target_arch = "wasm32")'
+env = ""
+reason = "The reclamation proof uses the native Tokio/Moka cache implementation, which is not available on wasm32"
+tier = "nightly"
+required_features = []
+required_env = []
+required_tools = []
+timeout_seconds = 300
+owner_release = "0.71.0"
+ship_mandatory = false
+artifacts = []
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "memory-contracts-071"
+step = "Verify coherent snapshots and phase providers"
+
+[gate.command]
+program = "cargo"
+args = ["test", "-p", "hydracache", "--test", "reclamation_071", "--locked"]
+cwd = "."
+platform = "any"
+
+[gate.command.env]
+
+[[gate]]
 id = "tool.borrowed-hazelcast-069"
 kind = "env_gate"
 source = "crates/xtask/src/migration_conformance.rs"
