@@ -112,9 +112,9 @@ fn public_api_gate_covers_every_publishable_package_and_blocks_release() {
     let workflow =
         fs::read_to_string(root().join(".github/workflows/ci.yml")).expect("CI workflow");
     for marker in [
-        "public-api-compat-071:",
         "cargo install cargo-semver-checks --version 0.49.0 --locked",
-        "API_COMPAT_RESULT: ${{ needs.public-api-compat-071.result }}",
+        "python3 scripts/ci/public_api_compat_071.py --manifest docs/testing/compat/v0.70.0.json --output target/public-api-compat-071/receipt.json",
+        "target/public-api-compat-071/**",
     ] {
         assert!(workflow.contains(marker), "CI workflow omits {marker}");
     }
