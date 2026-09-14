@@ -147,7 +147,7 @@ fn print_usage() {
          cargo xtask memory-baseline-report-check --release 0.71 --report <path> [--allow-diagnostic-source]  # validate one typed memory measurement report\n  \
          cargo xtask memory-baseline-status --release 0.71 --output <path>  # emit a non-promotable local baseline status\n  \
          cargo xtask memory-contract-check --release 0.71 [--require-ship]  # validate the complete static memory contract\n  \
-         cargo xtask memory-campaign-check --release 0.71 [--campaigns <dir>] [--require-ship]  # validate retained campaign receipts, including external evidence roots\n  \
+         cargo xtask memory-campaign-check --release 0.71 [--campaigns <dir>] [--require-through <case> --expected-source-sha <sha>] [--require-ship]  # validate retained campaign receipts and the exact candidate chain\n  \
          cargo xtask postgres-conformance-check --mode <happy|canary>  # execute the real PostgreSQL differential or expected-red sentinel\n  \
          cargo xtask mutants       # validate the Raft mutation-testing baseline, optionally run cargo-mutants\n  \
          cargo xtask perf-runner-preflight --release 0.67 --profile reference-v1  # reject an unstable reference runner before build/measurement\n  \

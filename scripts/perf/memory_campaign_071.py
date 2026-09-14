@@ -33,6 +33,7 @@ RELEASE = "0.71"
 SCHEMA_VERSION = 1
 SCENARIO_RELATIVE = Path("docs/testing/perf-scenarios/0.71/memory-efficiency-v1.toml")
 IDENTITIES_RELATIVE = Path("docs/testing/memory/0.71/baseline-identities.toml")
+STATISTICS_RELATIVE = Path("docs/testing/memory/0.71/memory-statistics-v1.toml")
 PROFILE_RELATIVE = Path("docs/testing/perf-host-profiles/memory-reference-071-v1.json")
 DEFAULT_OUTPUT = Path("target/memory-evidence/0.71/campaigns")
 BUILD_TIMEOUT_SECONDS = 3600
@@ -258,6 +259,7 @@ def build_plan(
     scenario_path = root / SCENARIO_RELATIVE
     scenario = tomllib.loads(scenario_path.read_text(encoding="utf-8"))
     identities = tomllib.loads((root / IDENTITIES_RELATIVE).read_text(encoding="utf-8"))
+    statistics = tomllib.loads((root / STATISTICS_RELATIVE).read_text(encoding="utf-8"))
     selected = selected_cases(scenario, cases)
     if "B0-release" in cohorts and any(case["id"] != "M0-cold" for case in selected):
         raise CampaignError("B0-release is admitted only for the M0 D0 external-signal cohort")
@@ -292,6 +294,12 @@ def build_plan(
     for case in selected:
         case_id = str(case["id"])
         repetitions = repetition_override or int(case["d0_repetitions"])
+        if (
+            not rehearsal
+            and campaign_role == "candidate"
+            and case_id not in {"M8-60m", "M9-6h", "M10-24h"}
+        ):
+            repetitions = max(repetitions, int(statistics["minimum_repetitions"]))
         cells = expand_case(case)
         row_caps[case_id] = 30 if rehearsal else bounded_row_cap_seconds(
             case,

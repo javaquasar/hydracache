@@ -187,6 +187,19 @@ jobs:
         timeout-minutes: 120
         run: |
           set -euo pipefail
+          prerequisite=""
+          case "${{ inputs.case_id }}" in
+            M8-60m) prerequisite="M3-ttl" ;;
+            M9-6h) prerequisite="M8-60m" ;;
+            M10-24h) prerequisite="M9-6h" ;;
+          esac
+          if [[ "$HYDRACACHE_MEMORY_CAMPAIGN_ROLE" == "candidate" && -n "$prerequisite" ]]; then
+            cargo run -p xtask --locked -- memory-campaign-check \
+              --release 0.71 \
+              --campaigns "$CAMPAIGN_ROOT" \
+              --require-through "$prerequisite" \
+              --expected-source-sha "$HYDRACACHE_MEMORY_SOURCE_SHA"
+          fi
           python3 scripts/perf/memory_campaign_071.py --output-root "$CAMPAIGN_ROOT" prepare \
             --campaign-id "${{ inputs.campaign_id }}" \
             --build-root "$BUILD_ROOT"

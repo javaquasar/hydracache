@@ -915,7 +915,7 @@ the same review. The concise implementation/status index is
 | W9 | `cargo test -p hydracache-server --test memory_profiles_071 --locked -- --test-threads=1` | disabled-service zero-resource proof, requested-surface materialization and explicit one-factor qualification boundary |
 | W10 | `cargo test -p hydracache-server --test hc2_memory_071 --locked -- --test-threads=1` | idle HC/2 owner accounting, redacted metrics and independent transport/decoded limit contracts |
 | W11 | `cargo test -p hydracache --test persistence_memory_071 --locked -- --test-threads=1` | pre-allocation rejection without storage, bounded metric labels and explicit anon/file qualification boundary |
-| W12 | `cargo test -p xtask --test memory_campaign_admission_071 --locked` and `cargo run --manifest-path crates\xtask\Cargo.toml --locked -- memory-campaign-check --release 0.71 --require-ship` | exact-candidate M10 receipt admission and rejection of incomplete, wrong-release or non-candidate evidence |
+| W12 | `cargo test -p xtask --test memory_campaign_admission_071 --locked` and `cargo run --manifest-path crates\xtask\Cargo.toml --locked -- memory-campaign-check --release 0.71 --require-ship` | identity-sealed exact-candidate M3/M8/M9/M10 chain admission; five paired M3 repetitions; rejection of incomplete, mixed-SHA, mixed-host, tampered, duplicate or non-candidate evidence |
 | W13 | `cargo test -p xtask --test release_governance_071 --locked` | mandatory foundation, evidenced deferrals, no-win ship and safety-defect rejection |
 
 After every control commit run its focused target plus:
