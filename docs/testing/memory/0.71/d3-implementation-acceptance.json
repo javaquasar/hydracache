@@ -1,0 +1,52 @@
+{
+  "schema_version": 1,
+  "release": "0.71",
+  "stage": "D3",
+  "result": "accepted-for-exact-candidate-qualification",
+  "reviewer": "release-0.71-memory-review",
+  "evidence": {
+    "implementation_pr": 207,
+    "implementation_head_sha": "c9aefcbf33132db032c069e8513782d42cd000c6",
+    "implementation_merge_sha": "396aab663b2bac45fa405f7511bec96d1d218262",
+    "implementation_ci_run_id": 34784732848,
+    "coverage_pr": 208,
+    "coverage_head_sha": "b523a8d6d4092b7188a1689b8e845104c0e299f6",
+    "coverage_merge_sha": "a0ec5ae6989b989eb96e55ecc945f6663c9d054f",
+    "coverage_ci_run_id": 34794090461
+  },
+  "proposals": [
+    {
+      "id": "w2a-retained-byte-accounting",
+      "disposition": "authorized-foundation-only",
+      "implementation_commits": [
+        "3189d35c26b9c1eae3505f4ab3e32a2360fb8ada",
+        "801e439b9d3d17a545852e39952b9c2e8959ecad"
+      ],
+      "required_tests": [
+        "memory_footprint_071",
+        "memory_accounting_071",
+        "memory_admission_071"
+      ],
+      "numerical_claim_authorized": false
+    },
+    {
+      "id": "w4-client-surface-active-expiry",
+      "disposition": "authorized-safety-fix",
+      "implementation_commits": [
+        "effcc7b5d073e43357ba002584c9e4b3dd703933",
+        "4b598dabac41741d76fe43190fd43d00912b8415",
+        "5574640bd31dd847951943a8a1a51029eb2272f6"
+      ],
+      "required_tests": [
+        "reclamation_071",
+        "memory_admission_071",
+        "retention_bounds_071"
+      ],
+      "numerical_claim_authorized": false
+    }
+  ],
+  "notes": [
+    "D3 authorizes exact-candidate qualification only; it does not assert a numerical improvement.",
+    "D4 remains mandatory and must use the immutable source, workflow, scenario and admitted-host identities."
+  ]
+}

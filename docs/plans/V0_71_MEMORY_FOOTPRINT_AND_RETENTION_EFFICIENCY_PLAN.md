@@ -892,7 +892,7 @@ the release-evidence registry in the same review.
 | S5 | `cargo test -p hydracache --test memory_footprint_071 --locked -- --test-threads=1` plus `python scripts/perf/memory_instrumentation_overhead_071_test.py` | counter lifecycle, coherent epoch, concurrent mutation, overflow, absent acknowledgement, overhead modes and baseline-only envelope materialization |
 | S6 | `cargo test -p xtask --test allocator_matrix_071 --locked` | capability fixtures, units, mutual exclusion, size classes/arenas, refill/purge classification |
 | S7 | `cargo test -p xtask --test memory_host_profile_071 --locked` | `/proc`/`/sys`/cgroup fixtures, canonical fingerprint, mutable drift, calibration and lease |
-| S8 | `cargo test -p xtask --test memory_compat_071 --locked` | matrix validation, real-binary identities, upgrade, mixed version, rollback or pre-mutation refusal |
+| S8 | `cargo test -p xtask --test memory_compat_071 --locked`, `cargo test -p hydracache-server --test memory_compat_process_071 --locked`, and the M10-only `scripts/perf/memory_compat_071.sh` executor | matrix validation plus an exact-SHA receipt from real v0.70/candidate durable-store and daemon binaries: upgrade, restart, crash recovery, all mixed role orders, rollback, HC/1+HC/2 corpora and unknown-future pre-mutation refusal/backup restore |
 | S9 | `cargo test -p xtask --test ci_reliability_071 --locked` | workflow graph, timeouts, watchdog descendants, heartbeat, artifact identity, one publish producer |
 | S10 | `cargo test -p xtask --test release_governance_071 --locked` | mandatory foundation, all dispositions, generated claims, no-win green and safety-defect red fixtures |
 
@@ -915,7 +915,7 @@ the same review. The concise implementation/status index is
 | W9 | `cargo test -p hydracache-server --test memory_profiles_071 --locked -- --test-threads=1` | disabled-service zero-resource proof, requested-surface materialization and explicit one-factor qualification boundary |
 | W10 | `cargo test -p hydracache-server --test hc2_memory_071 --locked -- --test-threads=1` | idle HC/2 owner accounting, redacted metrics and independent transport/decoded limit contracts |
 | W11 | `cargo test -p hydracache --test persistence_memory_071 --locked -- --test-threads=1` | pre-allocation rejection without storage, bounded metric labels and explicit anon/file qualification boundary |
-| W12 | `cargo test -p xtask --test memory_campaign_admission_071 --locked` and `cargo run --manifest-path crates\xtask\Cargo.toml --locked -- memory-campaign-check --release 0.71 --require-ship` | exact-candidate M10 receipt admission and rejection of incomplete, wrong-release or non-candidate evidence |
+| W12 | `cargo test -p xtask --test memory_campaign_admission_071 --locked` and `cargo run --manifest-path crates\xtask\Cargo.toml --locked -- memory-campaign-check --release 0.71 --require-ship` | identity-sealed exact-candidate M3/M8/M9/M10 chain admission; five paired M3 repetitions; rejection of incomplete, mixed-SHA, mixed-host, tampered, duplicate or non-candidate evidence |
 | W13 | `cargo test -p xtask --test release_governance_071 --locked` | mandatory foundation, evidenced deferrals, no-win ship and safety-defect rejection |
 
 After every control commit run its focused target plus:

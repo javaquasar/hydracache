@@ -19,7 +19,7 @@ receipt path, while the work-item targets below test the actual behavior or defe
 | W9 | `memory_profiles_071` | Disabled services own no dispatch surface; profile optimization remains deferred |
 | W10 | `hc2_memory_071` | Idle HC/2 ownership and independent transport/decoded limit contracts |
 | W11 | `persistence_memory_071` | Pre-allocation rejection and bounded labels; persistence optimization remains deferred |
-| W12 | `memory_campaign_admission_071` | Only complete exact-candidate M10 evidence can satisfy ship admission |
+| W12 | `memory_campaign_admission_071` | Only an identity-sealed exact-candidate M3/M8/M9/M10 chain can satisfy ship admission |
 | W13 | `release_governance_071` | Mandatory foundation, evidenced deferrals, no-win ship and safety-defect rejection |
 
 The million-operation W3 plateau test is marked ignored in ordinary pull-request CI because it is a
@@ -30,3 +30,7 @@ unqualified optimization was implemented.
 Run the release-focused suite with the commands in the plan's **Mandatory test targets** table.
 Before shipping, also run the exact-candidate campaign admission with `--require-ship`; ordinary
 pull-request CI checks the contract without claiming that a local checkout is the final candidate.
+Before M10 begins, its protected workflow runs `scripts/perf/memory_compat_071.sh` against the real
+`v0.70.0` and exact-candidate binaries. The resulting sealed `compatibility-receipt.json` is part of
+the M10 artifact and mandatory for final campaign admission; a compiling but skipped process test
+does not count as S8 ship evidence.

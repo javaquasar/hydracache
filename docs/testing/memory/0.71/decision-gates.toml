@@ -19,12 +19,12 @@ minimum_effect = "foundation-only; no efficiency claim"
 allowed_regressions = ["production instrumentation overhead must remain inside the frozen S5 envelope"]
 authorized_files = ["crates/hydracache/src", "crates/hydracache-observability/src", "crates/hydracache-server/src"]
 authorized_surfaces = ["internal accounting", "privileged aggregate diagnostics"]
-state = "D2"
+state = "D3"
 classification = "live ownership with incomplete report aggregation"
 rejected_alternatives = ["allocator high-water cannot explain zero logical counters while client-surface owner snapshots contain entries", "file/page cache cannot explain client-surface key and value byte growth"]
 reviewer = "release-0.71-memory-review"
 candidate_derived_baseline = false
-resulting_receipts = []
+resulting_receipts = ["docs/testing/memory/0.71/d3-implementation-acceptance.json#w2a-retained-byte-accounting"]
 disposition = "authorized-foundation-only"
 
 [[proposal.transition]]
@@ -54,6 +54,15 @@ scenario_digest = "sha256:c85fa4fcc8fc87cba85bb710aa96ca60eb0be94136793872064dfc
 contract_digest = "sha256:9eec10e986383aebb2712360a74cf39a7b6a35c3f686643509aa3d5ac7ed5691"
 reviewer = "release-0.71-memory-review"
 
+[[proposal.transition]]
+state = "D3"
+receipt = "docs/testing/memory/0.71/d3-implementation-acceptance.json#w2a-retained-byte-accounting"
+source_sha = "906aa24cc22ad6b50b824120ed6364208484203a"
+host_fingerprint = "sha256:f94e1cca89d22ec8ef2bfbf90c3aef00aadc8f7039e8c514812394ab824bb7c8"
+scenario_digest = "sha256:c85fa4fcc8fc87cba85bb710aa96ca60eb0be94136793872064dfc31281b3252"
+contract_digest = "sha256:9eec10e986383aebb2712360a74cf39a7b6a35c3f686643509aa3d5ac7ed5691"
+reviewer = "release-0.71-memory-review"
+
 [[proposal]]
 id = "w4-client-surface-active-expiry"
 work_item = "W4"
@@ -69,12 +78,12 @@ minimum_effect = "all expired client-surface entries are absent from a quiescent
 allowed_regressions = ["expiry sweep work is rate-limited to once per second on request paths; correctness and p99 budgets remain unchanged"]
 authorized_files = ["crates/hydracache-client-transport-axum/src/lib.rs", "crates/hydracache/src/multitenancy.rs", "crates/hydracache-server/src/main.rs"]
 authorized_surfaces = ["client-surface expiry maintenance", "daemon maintenance scheduling", "tenant quota ledger cleanup", "privileged aggregate diagnostics"]
-state = "D2"
+state = "D3"
 classification = "confirmed unbounded live-owner retention"
 rejected_alternatives = ["allocator high-water cannot retain logical entries in owner snapshots", "file/page cache cannot retain tenant quota entries", "aggregation defect was excluded by direct client-surface owner snapshots"]
 reviewer = "release-0.71-memory-review"
 candidate_derived_baseline = false
-resulting_receipts = []
+resulting_receipts = ["docs/testing/memory/0.71/d3-implementation-acceptance.json#w4-client-surface-active-expiry"]
 disposition = "authorized-safety-fix"
 
 [[proposal.transition]]
@@ -98,6 +107,15 @@ reviewer = "release-0.71-memory-review"
 [[proposal.transition]]
 state = "D2"
 receipt = "docs/testing/memory/0.71/d0-d1-decision-receipt.json#w4-client-surface-active-expiry"
+source_sha = "906aa24cc22ad6b50b824120ed6364208484203a"
+host_fingerprint = "sha256:f94e1cca89d22ec8ef2bfbf90c3aef00aadc8f7039e8c514812394ab824bb7c8"
+scenario_digest = "sha256:c85fa4fcc8fc87cba85bb710aa96ca60eb0be94136793872064dfc31281b3252"
+contract_digest = "sha256:9eec10e986383aebb2712360a74cf39a7b6a35c3f686643509aa3d5ac7ed5691"
+reviewer = "release-0.71-memory-review"
+
+[[proposal.transition]]
+state = "D3"
+receipt = "docs/testing/memory/0.71/d3-implementation-acceptance.json#w4-client-surface-active-expiry"
 source_sha = "906aa24cc22ad6b50b824120ed6364208484203a"
 host_fingerprint = "sha256:f94e1cca89d22ec8ef2bfbf90c3aef00aadc8f7039e8c514812394ab824bb7c8"
 scenario_digest = "sha256:c85fa4fcc8fc87cba85bb710aa96ca60eb0be94136793872064dfc31281b3252"

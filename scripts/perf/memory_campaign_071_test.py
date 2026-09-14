@@ -144,6 +144,32 @@ class MemoryCampaign071Tests(unittest.TestCase):
         self.assertEqual(plan["source_shas"]["C-candidate"], source_sha)
         self.assertEqual(plan["campaign_role"], "candidate")
 
+    def test_candidate_short_row_uses_five_independent_pairs(self) -> None:
+        workflow_sha = campaign.git(self.root, "rev-parse", "HEAD")
+        identities = campaign.tomllib.loads(
+            (self.root / campaign.IDENTITIES_RELATIVE).read_text(encoding="utf-8")
+        )
+        b1_sha = str(identities["b1_instrumented"]["source_sha"])
+        with mock.patch.object(
+            campaign,
+            "resolve_commit",
+            side_effect=lambda _root, value, label: campaign.require_full_sha(value, label),
+        ):
+            plan = campaign.build_plan(
+                self.root,
+                ["M3-ttl"],
+                ["B1-instrumented", "C-candidate"],
+                None,
+                False,
+                workflow_sha,
+                "2" * 40,
+                "candidate",
+            )
+
+        self.assertEqual(plan["job_count"], 10)
+        self.assertEqual({job["repetition"] for job in plan["jobs"]}, set(range(1, 6)))
+        self.assertEqual({job["cohort"] for job in plan["jobs"]}, {"B1-instrumented", "C-candidate"})
+
     def test_baseline_rejects_non_b1_source(self) -> None:
         workflow_sha = campaign.git(self.root, "rev-parse", "HEAD")
         with self.assertRaises(campaign.CampaignError):
@@ -213,6 +239,8 @@ class MemoryCampaign071Tests(unittest.TestCase):
             "verify-identity",
             '--workflow-sha "$HYDRACACHE_MEMORY_WORKFLOW_SHA"',
             '--source-sha "$HYDRACACHE_MEMORY_SOURCE_SHA"',
+            '--require-through "$prerequisite"',
+            '--expected-source-sha "$HYDRACACHE_MEMORY_SOURCE_SHA"',
         ):
             with self.subTest(marker=marker):
                 self.assertIn(marker, workflow)

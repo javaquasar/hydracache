@@ -19,7 +19,7 @@ fn decisions() -> Value {
 }
 
 #[test]
-fn checked_in_d0_d2_decision_chain_is_valid() {
+fn checked_in_d0_d3_decision_chain_is_valid() {
     let problems = xtask::memory_contracts::check_decisions(&decisions(), "0.71");
     assert!(problems.is_empty(), "{problems:?}");
 }

@@ -187,6 +187,19 @@ jobs:
         timeout-minutes: 120
         run: |
           set -euo pipefail
+          prerequisite=""
+          case "${{ inputs.case_id }}" in
+            M8-60m) prerequisite="M3-ttl" ;;
+            M9-6h) prerequisite="M8-60m" ;;
+            M10-24h) prerequisite="M9-6h" ;;
+          esac
+          if [[ "$HYDRACACHE_MEMORY_CAMPAIGN_ROLE" == "candidate" && -n "$prerequisite" ]]; then
+            cargo run -p xtask --locked -- memory-campaign-check \
+              --release 0.71 \
+              --campaigns "$CAMPAIGN_ROOT" \
+              --require-through "$prerequisite" \
+              --expected-source-sha "$HYDRACACHE_MEMORY_SOURCE_SHA"
+          fi
           python3 scripts/perf/memory_campaign_071.py --output-root "$CAMPAIGN_ROOT" prepare \
             --campaign-id "${{ inputs.campaign_id }}" \
             --build-root "$BUILD_ROOT"
@@ -252,6 +265,19 @@ jobs:
               --host-preflight "$RUNNER_TEMP/host-preflight.json"
           fi
 
+      - name: Prove real v0.70 candidate upgrade restart and rollback before M10
+        if: inputs.campaign_role == 'candidate' && inputs.case_id == 'M10-24h'
+        shell: bash
+        timeout-minutes: 180
+        run: |
+          set -euo pipefail
+          campaign_dir="$CAMPAIGN_ROOT/${{ inputs.campaign_id }}"
+          bash scripts/perf/memory_compat_071.sh \
+            --candidate-sha "$HYDRACACHE_MEMORY_SOURCE_SHA" \
+            --workflow-sha "$HYDRACACHE_MEMORY_WORKFLOW_SHA" \
+            --campaign-id "${{ inputs.campaign_id }}" \
+            --output "$campaign_dir/compatibility-receipt.json"
+
       - name: Run or resume bounded row
         shell: bash
         timeout-minutes: 4250
@@ -286,6 +312,7 @@ jobs:
             ${{ env.CAMPAIGN_ROOT }}/${{ inputs.campaign_id }}/events.jsonl
             ${{ env.CAMPAIGN_ROOT }}/${{ inputs.campaign_id }}/watchdog-*
             ${{ env.CAMPAIGN_ROOT }}/${{ inputs.campaign_id }}/campaign-receipt.json
+            ${{ env.CAMPAIGN_ROOT }}/${{ inputs.campaign_id }}/compatibility-receipt.json
             ${{ env.CAMPAIGN_ROOT }}/${{ inputs.campaign_id }}/admission/*.json
           if-no-files-found: error
           retention-days: 90

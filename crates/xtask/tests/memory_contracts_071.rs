@@ -60,6 +60,10 @@ fn decision_gate_rejects_candidate_baseline_and_skipped_transitions() {
         "classification".to_owned(),
         TomlValue::String("live ownership".to_owned()),
     );
+    proposal["transition"]
+        .as_array_mut()
+        .expect("transition history")
+        .remove(1);
     proposal.insert("baseline_receipts".to_owned(), TomlValue::Array(Vec::new()));
     proposal.insert("baseline_digests".to_owned(), TomlValue::Array(Vec::new()));
     let problems = xtask::memory_contracts::check_decisions(&decisions, "0.71");

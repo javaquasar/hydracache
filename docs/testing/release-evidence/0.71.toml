@@ -70,7 +70,7 @@ function = "active_expiry_releases_entry_and_tenant_quota_without_reading_the_ke
 
 [[work_item]]
 id = "W5"
-required_sources = ["docs/testing/memory/0.71/release-policy.toml"]
+required_sources = ["docs/testing/memory/0.71/release-policy.toml", "docs/testing/compat/v0.70.0.json", "scripts/ci/public_api_compat_071.py"]
 required_artifacts = []
 fast_gate_ids = []
 gated_gate_ids = []
@@ -78,6 +78,9 @@ ship_required = true
 [[work_item.required_tests]]
 source = "crates/hydracache/tests/representation_071.rs"
 function = "representation_change_remains_explicitly_deferred_without_d2_evidence"
+[[work_item.required_tests]]
+source = "crates/xtask/tests/memory_compat_071.rs"
+function = "public_api_gate_covers_every_publishable_package_and_blocks_release"
 
 [[work_item]]
 id = "W6"
@@ -147,14 +150,20 @@ function = "persistence_without_storage_is_rejected_before_allocating_runtime_st
 
 [[work_item]]
 id = "W12"
-required_sources = ["scripts/perf/memory_campaign_071.py", "crates/xtask/src/memory_campaign.rs"]
+required_sources = ["scripts/perf/memory_campaign_071.py", "scripts/perf/memory_compat_071.sh", "crates/hydracache/examples/memory_compat_driver_071.rs", "scripts/perf/memory_compat_receipt_071.py", "crates/xtask/src/memory_campaign.rs", "crates/hydracache-server/tests/memory_compat_process_071.rs"]
 required_artifacts = []
 fast_gate_ids = []
 gated_gate_ids = []
 ship_required = true
 [[work_item.required_tests]]
 source = "crates/xtask/tests/memory_campaign_admission_071.rs"
-function = "complete_exact_candidate_m10_receipt_is_admitted"
+function = "complete_exact_candidate_chain_is_admitted"
+[[work_item.required_tests]]
+source = "crates/xtask/tests/memory_compat_071.rs"
+function = "m10_executes_real_binary_compatibility_before_the_long_row"
+[[work_item.required_tests]]
+source = "crates/xtask/tests/memory_campaign_admission_071.rs"
+function = "m10_requires_exact_sealed_real_compatibility_proof"
 
 [[work_item]]
 id = "W13"
