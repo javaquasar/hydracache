@@ -206,7 +206,7 @@ jobs:
           cargo test -p xtask --test release_governance_071 --locked
           cargo run -p xtask --locked -- memory-baseline-check --release 0.71
 
-      - name: Verify 0.71 ownership, retention, and deferred-work boundaries
+      - name: Verify coherent snapshots and phase providers
         run: |
           cargo test -p hydracache --test memory_footprint_071 --locked
           cargo test -p hydracache --test memory_accounting_071 --locked -- --test-threads=1
