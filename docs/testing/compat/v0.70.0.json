@@ -1,0 +1,40 @@
+{
+  "schema_version": 1,
+  "release": "0.71",
+  "baseline_tag": "v0.70.0",
+  "baseline_commit": "75719b0bf5de2250cf4eb16a30073dd7429538e3",
+  "tool": "cargo-semver-checks",
+  "tool_version": "0.49.0",
+  "profiles": ["default", "all-features"],
+  "packages": [
+    "hydracache",
+    "hydracache-actuator-axum",
+    "hydracache-cdc-postgres",
+    "hydracache-client",
+    "hydracache-client-hc2",
+    "hydracache-client-protocol",
+    "hydracache-client-transport-axum",
+    "hydracache-cluster",
+    "hydracache-cluster-chitchat",
+    "hydracache-cluster-raft",
+    "hydracache-cluster-transport-axum",
+    "hydracache-core",
+    "hydracache-db",
+    "hydracache-diesel",
+    "hydracache-macros",
+    "hydracache-observability",
+    "hydracache-redis-compat",
+    "hydracache-seaorm",
+    "hydracache-server",
+    "hydracache-sql-lint",
+    "hydracache-sqlx",
+    "hydracache-transport-nats",
+    "hydracache-transport-redis"
+  ],
+  "exit_codes": {
+    "0": "compatible",
+    "100": "semver-violation",
+    "101": "analysis-or-tool-failure",
+    "other": "analysis-or-tool-failure"
+  }
+}

@@ -55,7 +55,7 @@ git -C "$root" archive 'v0.70.0^{commit}' | tar -x -C "$baseline_src"
 git -C "$root" archive "$candidate_sha" | tar -x -C "$candidate_src"
 for source_root in "$baseline_src" "$candidate_src"; do
   mkdir -p "$source_root/crates/hydracache/examples"
-  cp "$root/scripts/perf/memory_compat_driver_071.rs" \
+  cp "$root/crates/hydracache/examples/memory_compat_driver_071.rs" \
     "$source_root/crates/hydracache/examples/memory_compat_071.rs"
 done
 
@@ -117,7 +117,7 @@ HYDRACACHE_MEMORY_071_CANDIDATE_BINARY="$candidate_server" \
 
 mkdir -p "$(dirname "$output")"
 python3 - "$output" "$campaign_id" "$candidate_sha" "$workflow_sha" \
-  "$(sha256sum "$root/scripts/perf/memory_compat_driver_071.rs" | cut -d' ' -f1)" \
+  "$(sha256sum "$root/crates/hydracache/examples/memory_compat_driver_071.rs" | cut -d' ' -f1)" \
   "$(sha256sum "$baseline_server" | cut -d' ' -f1)" \
   "$(sha256sum "$candidate_server" | cut -d' ' -f1)" <<'PY'
 import datetime

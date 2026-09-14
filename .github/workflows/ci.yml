@@ -249,12 +249,58 @@ jobs:
           if-no-files-found: error
           retention-days: 30
 
+  public-api-compat-071:
+    name: Public API Compatibility 0.71
+    if: github.event_name != 'workflow_dispatch' || inputs.performance_0671_mode == ''
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+
+    steps:
+      - name: Checkout full v0.70 history and exact candidate
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache semver analysis
+        uses: Swatinem/rust-cache@v2
+        with:
+          prefix-key: v1-public-api-compat-071
+          cache-targets: true
+
+      - name: Install reviewed cargo-semver-checks
+        timeout-minutes: 30
+        run: cargo install cargo-semver-checks --version 0.49.0 --locked
+
+      - name: Validate the complete publishable package matrix
+        timeout-minutes: 10
+        run: python3 scripts/ci/public_api_compat_071.py --manifest docs/testing/compat/v0.70.0.json --check
+
+      - name: Compare default and all-feature public APIs with v0.70.0
+        timeout-minutes: 170
+        run: >-
+          python3 scripts/ci/public_api_compat_071.py
+          --manifest docs/testing/compat/v0.70.0.json
+          --output target/public-api-compat-071/receipt.json
+
+      - name: Retain machine-readable API compatibility evidence
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: "public-api-compat-071-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}"
+          path: target/public-api-compat-071/**
+          if-no-files-found: error
+          retention-days: 90
+
   release-071-ci-admission:
     name: Release 0.71 CI Admission
     if: always() && startsWith(github.ref, 'refs/tags/v0.71.')
     needs:
       - ci-topology
       - memory-contracts-071
+      - public-api-compat-071
       - memory-regression-fast
       - docs
       - rust
@@ -267,6 +313,7 @@ jobs:
         env:
           TOPOLOGY_RESULT: ${{ needs.ci-topology.result }}
           CONTRACTS_RESULT: ${{ needs.memory-contracts-071.result }}
+          API_COMPAT_RESULT: ${{ needs.public-api-compat-071.result }}
           MEMORY_RESULT: ${{ needs.memory-regression-fast.result }}
           DOCS_RESULT: ${{ needs.docs.result }}
           RUST_RESULT: ${{ needs.rust.result }}
@@ -274,7 +321,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          for result in "$TOPOLOGY_RESULT" "$CONTRACTS_RESULT" "$MEMORY_RESULT" "$DOCS_RESULT" "$RUST_RESULT" "$MSRV_RESULT"; do
+          for result in "$TOPOLOGY_RESULT" "$CONTRACTS_RESULT" "$API_COMPAT_RESULT" "$MEMORY_RESULT" "$DOCS_RESULT" "$RUST_RESULT" "$MSRV_RESULT"; do
             if [[ "$result" != "success" ]]; then
               echo "Release 0.71 core admission refused result=$result" >&2
               exit 1

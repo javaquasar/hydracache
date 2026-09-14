@@ -1,6 +1,7 @@
 use std::fs;
 use std::path::{Path, PathBuf};
 
+use serde_json::Value as JsonValue;
 use toml::Value;
 
 fn root() -> PathBuf {
@@ -70,6 +71,51 @@ fn m10_executes_real_binary_compatibility_before_the_long_row() {
         "memory_compat_process_071",
         "--test protocol --test versioned_codec",
     ] {
-        assert!(script.contains(marker), "compatibility executor omits {marker}");
+        assert!(
+            script.contains(marker),
+            "compatibility executor omits {marker}"
+        );
+    }
+}
+
+#[test]
+fn public_api_gate_covers_every_publishable_package_and_blocks_release() {
+    let manifest: JsonValue = serde_json::from_str(
+        &fs::read_to_string(root().join("docs/testing/compat/v0.70.0.json"))
+            .expect("public API compatibility manifest"),
+    )
+    .expect("public API JSON");
+    assert_eq!(manifest["baseline_tag"], "v0.70.0");
+    assert_eq!(manifest["tool"], "cargo-semver-checks");
+    assert_eq!(manifest["tool_version"], "0.49.0");
+    assert_eq!(
+        manifest["profiles"],
+        serde_json::json!(["default", "all-features"])
+    );
+
+    let output = std::process::Command::new("python")
+        .current_dir(root())
+        .args([
+            "scripts/ci/public_api_compat_071.py",
+            "--manifest",
+            "docs/testing/compat/v0.70.0.json",
+            "--check",
+        ])
+        .output()
+        .expect("run public API inventory check");
+    assert!(
+        output.status.success(),
+        "{}",
+        String::from_utf8_lossy(&output.stderr)
+    );
+
+    let workflow =
+        fs::read_to_string(root().join(".github/workflows/ci.yml")).expect("CI workflow");
+    for marker in [
+        "public-api-compat-071:",
+        "cargo install cargo-semver-checks --version 0.49.0 --locked",
+        "API_COMPAT_RESULT: ${{ needs.public-api-compat-071.result }}",
+    ] {
+        assert!(workflow.contains(marker), "CI workflow omits {marker}");
     }
 }
