@@ -6,6 +6,21 @@
   "tool": "cargo-semver-checks",
   "tool_version": "0.49.0",
   "profiles": ["default", "all-features"],
+  "profile_overrides": {
+    "hydracache": {
+      "all-features": {
+        "mode": "explicit-features",
+        "features": ["durable-value-store", "durable-values", "tiered-values", "testing"],
+        "reason": "The allocator selectors introduced in 0.71 are mutually exclusive and do not alter the public Rust API; the combined public surface is checked with every non-allocator feature enabled. Each allocator selector is compiled by the allocator capability gate."
+      }
+    }
+  },
+  "excluded_packages": [
+    {
+      "package": "hydracache-macros",
+      "reason": "cargo-semver-checks 0.49.0 cannot analyze a proc-macro-only target; its public macro contract is covered by the workspace trybuild and macro tests."
+    }
+  ],
   "packages": [
     "hydracache",
     "hydracache-actuator-axum",
@@ -21,7 +36,6 @@
     "hydracache-core",
     "hydracache-db",
     "hydracache-diesel",
-    "hydracache-macros",
     "hydracache-observability",
     "hydracache-redis-compat",
     "hydracache-seaorm",

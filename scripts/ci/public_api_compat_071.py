@@ -34,6 +34,41 @@ def validate_manifest(manifest: dict[str, Any]) -> list[str]:
         problems.append("public API manifest package set is empty or duplicated")
     if manifest.get("profiles") != ["default", "all-features"]:
         problems.append("public API manifest must run default and all-features profiles")
+    overrides = manifest.get("profile_overrides", {})
+    if not isinstance(overrides, dict):
+        problems.append("public API manifest profile_overrides must be an object")
+    else:
+        for package, profiles in overrides.items():
+            if package not in (packages or []):
+                problems.append(f"public API profile override references unknown package {package}")
+            if not isinstance(profiles, dict) or set(profiles) - {"all-features"}:
+                problems.append(f"public API profile override is invalid for {package}")
+                continue
+            for profile in profiles.values():
+                if (
+                    not isinstance(profile, dict)
+                    or profile.get("mode") != "explicit-features"
+                    or not isinstance(profile.get("features"), list)
+                    or not profile["features"]
+                    or len(profile["features"]) != len(set(profile["features"]))
+                    or not isinstance(profile.get("reason"), str)
+                    or not profile["reason"].strip()
+                ):
+                    problems.append(f"public API explicit feature profile is invalid for {package}")
+    exclusions = manifest.get("excluded_packages", [])
+    if (
+        not isinstance(exclusions, list)
+        or any(
+            not isinstance(item, dict)
+            or not isinstance(item.get("package"), str)
+            or not isinstance(item.get("reason"), str)
+            or not item["reason"].strip()
+            for item in exclusions
+        )
+        or len([item.get("package") for item in exclusions if isinstance(item, dict)])
+        != len(set(item.get("package") for item in exclusions if isinstance(item, dict)))
+    ):
+        problems.append("public API manifest exclusions must be unique packages with reasons")
     return problems
 
 
@@ -44,6 +79,26 @@ def publishable_packages(metadata: dict[str, Any]) -> set[str]:
         for package in metadata.get("packages", [])
         if package.get("id") in members and package.get("publish") != []
     }
+
+
+def proc_macro_only_packages(metadata: dict[str, Any]) -> set[str]:
+    members = set(metadata.get("workspace_members", []))
+    return {
+        package["name"]
+        for package in metadata.get("packages", [])
+        if package.get("id") in members
+        and package.get("targets")
+        and all("proc-macro" in target.get("kind", []) for target in package["targets"])
+    }
+
+
+def profile_arguments(manifest: dict[str, Any], package: str, profile: str) -> list[str]:
+    if profile == "default":
+        return ["--default-features"]
+    override = manifest.get("profile_overrides", {}).get(package, {}).get(profile)
+    if override is None:
+        return ["--all-features"]
+    return ["--only-explicit-features", "--features", ",".join(override["features"])]
 
 
 def execute(root: pathlib.Path, manifest: dict[str, Any], output: pathlib.Path) -> int:
@@ -62,8 +117,8 @@ def execute(root: pathlib.Path, manifest: dict[str, Any], output: pathlib.Path) 
                 "--baseline-rev",
                 manifest["baseline_tag"],
             ]
-            if profile == "all-features":
-                command.append("--all-features")
+            command.extend(profile_arguments(manifest, package, profile))
+            print(f"checking public API: {package} ({profile})", flush=True)
             completed = subprocess.run(
                 command,
                 cwd=root,
@@ -75,12 +130,20 @@ def execute(root: pathlib.Path, manifest: dict[str, Any], output: pathlib.Path) 
             )
             log = logs / f"{package}-{profile}.log"
             log.write_text(completed.stdout, encoding="utf-8")
+            classification = classify(completed.returncode)
+            print(
+                f"public API result: {package} ({profile}): {classification}",
+                flush=True,
+            )
+            if completed.returncode != 0:
+                tail = "\n".join(completed.stdout.splitlines()[-80:])
+                print(f"--- {log.name} (last 80 lines) ---\n{tail}", file=sys.stderr)
             rows.append(
                 {
                     "package": package,
                     "profile": profile,
                     "returncode": completed.returncode,
-                    "classification": classify(completed.returncode),
+                    "classification": classification,
                     "log": str(log.relative_to(output.parent)).replace("\\", "/"),
                 }
             )
@@ -126,11 +189,21 @@ def main() -> int:
         )
     )
     declared = set(manifest["packages"])
+    exclusions = {item["package"] for item in manifest.get("excluded_packages", [])}
     actual_packages = publishable_packages(metadata)
-    if declared != actual_packages:
+    if declared & exclusions:
+        raise SystemExit("public API package inventory overlaps its exclusions")
+    if declared | exclusions != actual_packages:
         raise SystemExit(
             "public API package inventory mismatch: "
-            f"missing={sorted(actual_packages - declared)} extra={sorted(declared - actual_packages)}"
+            f"missing={sorted(actual_packages - declared - exclusions)} "
+            f"extra={sorted((declared | exclusions) - actual_packages)}"
+        )
+    invalid_exclusions = exclusions - proc_macro_only_packages(metadata)
+    if invalid_exclusions:
+        raise SystemExit(
+            "only proc-macro-only packages may be excluded from cargo-semver-checks: "
+            f"{sorted(invalid_exclusions)}"
         )
     if args.check:
         print("public API compatibility 0.71 manifest: OK")
