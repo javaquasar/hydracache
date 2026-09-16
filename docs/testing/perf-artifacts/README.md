@@ -33,6 +33,14 @@ mark the branch unavailable. Archive branches are publication and checkout isola
 substitute for backup or retention controls. Existing 0.67.1 and 0.71 D0 evidence already merged
 into `main` is grandfathered; do not rewrite its history merely to adopt this layout.
 
+If a not-yet-merged release branch already contains new evidence, audit its commits and paths
+against `main` first. Preserve its old tip under a temporary backup ref, copy and verify the
+evidence in the orphan archive branch, then rebuild the release branch with code and documentation
+only. Compare the resulting non-evidence tree and commit list with the original before replacing
+the remote branch. Never force-rewrite `main`, a merged branch, or a branch with uncoordinated
+contributors. Remove the backup ref only after the archive branch, release branch, and external
+copy have all been verified.
+
 The repository is public. These archives may contain non-secret operational identifiers such as a
 Linux boot ID, a root-filesystem UUID, synthetic test-node identities, internal container network
 details, process IDs, timestamps, and detailed host configuration. The archived AX42 campaign was
