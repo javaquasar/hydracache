@@ -205,6 +205,10 @@ fn publication_keeps_measured_packages_separate_from_finalized_notes() {
     assert!(workflow.contains("ref: ${{ needs.resolve.outputs.source_sha }}"));
     assert!(workflow.contains(".head_branch == \"main\" and .conclusion == \"success\""));
     assert!(workflow.contains("$WORKFLOW_RUN_REF\" != \"$release_tag"));
-    assert!(workflow.contains(".head_branch == $tag and (.conclusion == \"success\" or .conclusion == \"failure\")"));
-    assert!(workflow.contains(".name == \"Release 0.71 CI Admission\" and .conclusion == \"success\""));
+    assert!(workflow.contains(
+        ".head_branch == $tag and (.conclusion == \"success\" or .conclusion == \"failure\")"
+    ));
+    assert!(
+        workflow.contains(".name == \"Release 0.71 CI Admission\" and .conclusion == \"success\"")
+    );
 }
