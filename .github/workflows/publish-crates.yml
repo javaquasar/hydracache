@@ -45,6 +45,7 @@ jobs:
           WORKFLOW_RUN_CONCLUSION: ${{ github.event.workflow_run.conclusion || '' }}
           WORKFLOW_RUN_SHA: ${{ github.event.workflow_run.head_sha || '' }}
           WORKFLOW_RUN_ID: ${{ github.event.workflow_run.id || '' }}
+          WORKFLOW_RUN_REF: ${{ github.event.workflow_run.head_branch || '' }}
           INPUT_TAG: ${{ inputs.tag || '' }}
           GH_TOKEN: ${{ github.token }}
         shell: bash
@@ -52,7 +53,7 @@ jobs:
           set -euo pipefail
 
           if [[ "$EVENT_NAME" == "workflow_run" ]]; then
-            if [[ "$WORKFLOW_RUN_CONCLUSION" != "success" ]]; then
+            if [[ "$WORKFLOW_RUN_CONCLUSION" != "success" && "$WORKFLOW_RUN_CONCLUSION" != "failure" ]]; then
               echo "CI conclusion is $WORKFLOW_RUN_CONCLUSION; publication is not eligible."
               echo "eligible=false" >> "$GITHUB_OUTPUT"
               exit 0
@@ -62,7 +63,7 @@ jobs:
             git fetch --force --tags origin
             mapfile -t tags < <(git tag --points-at "$source_sha" --list 'v*.*.*')
             if [[ "${#tags[@]}" -eq 0 ]]; then
-              echo "Successful CI run $source_sha has no release tag; nothing to publish."
+              echo "CI run $source_sha has no release tag; nothing to publish."
               echo "eligible=false" >> "$GITHUB_OUTPUT"
               exit 0
             fi
@@ -93,13 +94,26 @@ jobs:
           version="${release_tag#v}"
 
           if [[ "$version" == 0.71.* ]]; then
+            if [[ "$EVENT_NAME" == "workflow_run" && "$WORKFLOW_RUN_REF" != "$release_tag" ]]; then
+              echo "CI ref $WORKFLOW_RUN_REF is not release tag $release_tag; nothing to publish."
+              echo "eligible=false" >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
+            # The source commit already has a complete green main-branch CI run.
+            # The tag run adds one exact-tag 0.71 admission; unrelated legacy or
+            # nightly jobs may fail without changing that release decision.
+            ci_runs="$(gh api --paginate "repos/$GITHUB_REPOSITORY/actions/workflows/ci.yml/runs?head_sha=$source_sha&status=completed&per_page=100")"
+            if ! printf '%s' "$ci_runs" | jq -e --arg sha "$source_sha" \
+              '[.workflow_runs[] | select(.head_sha == $sha and .event == "push" and .head_branch == "main" and .conclusion == "success")] | length > 0' >/dev/null; then
+              echo "No complete successful main CI run exists at measured source $source_sha." >&2
+              exit 1
+            fi
             if [[ "$EVENT_NAME" == "workflow_run" ]]; then
               candidate_run_ids=("$WORKFLOW_RUN_ID")
             else
-              ci_runs="$(gh api --paginate "repos/$GITHUB_REPOSITORY/actions/workflows/ci.yml/runs?head_sha=$source_sha&status=completed&per_page=100")"
               mapfile -t candidate_run_ids < <(
-                printf '%s' "$ci_runs" | jq -r --arg sha "$source_sha" \
-                  '.workflow_runs[] | select(.head_sha == $sha and .conclusion == "success") | .id'
+                printf '%s' "$ci_runs" | jq -r --arg sha "$source_sha" --arg tag "$release_tag" \
+                  '.workflow_runs[] | select(.head_sha == $sha and .event == "push" and .head_branch == $tag and (.conclusion == "success" or .conclusion == "failure")) | .id'
               )
             fi
             designated_admission=false
@@ -116,6 +130,10 @@ jobs:
               echo "No designated Release 0.71 CI Admission exists for $release_tag at $source_sha." >&2
               exit 1
             fi
+          elif [[ "$EVENT_NAME" == "workflow_run" && "$WORKFLOW_RUN_CONCLUSION" != "success" ]]; then
+            echo "CI conclusion is $WORKFLOW_RUN_CONCLUSION; publication is not eligible."
+            echo "eligible=false" >> "$GITHUB_OUTPUT"
+            exit 0
           fi
 
           git fetch --force origin main
