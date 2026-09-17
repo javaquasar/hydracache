@@ -70,6 +70,20 @@ fn root() -> PathBuf {
         .to_path_buf()
 }
 
+fn normalize_workflow_line_endings(source: &str) -> String {
+    source.replace("\r\n", "\n")
+}
+
+#[test]
+fn workflow_step_order_check_accepts_crlf() {
+    let workflow = normalize_workflow_line_endings(
+        "- name: Restore and verify full release history\r\n- name: Run exact-candidate fast evidence\r\n",
+    );
+    let checkpoint = workflow.find("- name: Restore and verify full release history");
+    let test = workflow.find("- name: Run exact-candidate fast evidence\n");
+    assert!(matches!((checkpoint, test), (Some(checkpoint), Some(test)) if checkpoint < test));
+}
+
 fn closure_problems(omitted: Option<&str>) -> Vec<String> {
     let root = root();
     let mut problems = Vec::new();
@@ -123,7 +137,9 @@ fn closure_problems(omitted: Option<&str>) -> Vec<String> {
     if !package_script.contains("\"hydracache-client-hc2\"") {
         problems.push("publishable Rust HC/2 client package validation is missing".to_owned());
     }
-    let ci = fs::read_to_string(root.join(".github/workflows/ci.yml")).unwrap_or_default();
+    let ci = normalize_workflow_line_endings(
+        &fs::read_to_string(root.join(".github/workflows/ci.yml")).unwrap_or_default(),
+    );
     let history_checkpoint = ci.find("- name: Restore and verify full release history");
     let workspace_test = ci
         .find("- name: Test\n")
