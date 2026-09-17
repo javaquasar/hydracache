@@ -68,3 +68,9 @@ The complete eight-row D0 memory baseline is archived under
 [`0.71/ax42/d0-baseline`](0.71/ax42/d0-baseline/). Compressed server and mirror copies use Git LFS;
 the downloaded GitHub artifacts remain ordinary Git files so receipts and measurements can be
 searched and reviewed without unpacking a campaign archive.
+
+## 0.71 AX42 D4 candidate chain
+
+The [D4 evidence index](0.71/ax42/d4/README.md) records the immutable M3/M8/M9/M10 campaigns,
+exact source/workflow identity, archive checksums, external raw-copy location, and the separate
+Git LFS evidence commit. Only this small index is merged into `main`; the archive branch is not.
