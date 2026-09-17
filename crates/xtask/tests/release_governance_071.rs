@@ -191,3 +191,16 @@ fn d4_claim_gate_rejects_numeric_or_identity_broadening() {
             .any(|problem| problem.contains("measured_source_sha"))
     );
 }
+
+#[test]
+fn publication_keeps_measured_packages_separate_from_finalized_notes() {
+    let workflow = fs::read_to_string(root().join(".github/workflows/publish-crates.yml"))
+        .expect("crates publication workflow");
+    assert!(workflow.contains("git merge-base --is-ancestor \"$source_sha\" origin/main"));
+    assert!(workflow.contains("origin/main:docs/plans/releases.toml"));
+    assert!(workflow.contains("origin/main:{release_notes}"));
+    assert!(workflow.contains("(output / \"release-notes.md\").write_text(notes_text"));
+    assert!(workflow.contains("name: ${{ needs.resolve.outputs.metadata_artifact }}"));
+    assert!(workflow.contains("RELEASE_NOTES: target/release-publish/release-notes.md"));
+    assert!(workflow.contains("ref: ${{ needs.resolve.outputs.source_sha }}"));
+}
