@@ -25,6 +25,11 @@ because the currently shipped owners are bounded and correct. A future efficienc
 new preregistered evidence. The 0.71 release narrative may state improved accounting, explicit
 bounds, active-expiry cleanup and diagnostic confidence, but no optional numerical memory win.
 
+The historical 0.67.1 prerequisite is an evidence-only milestone, not a package release: it
+intentionally has no `v0.67.1` tag. The 0.71 release gate instead verifies the pinned SHA-256 of
+its committed W0–W7 ship-ready closure receipt and confirms that its measured source is an
+ancestor of this candidate. The 0.70.0 dependency remains a normal tagged release check.
+
 Before ship, complete and review: generated `target/memory-evidence/0.71/release-claims.json`,
 exact-commit fast/gated receipts and `release-evidence --require-ship`, public API compatibility,
 workspace/target checks, final documentation and claim wording, and the exact measured SHA tag.

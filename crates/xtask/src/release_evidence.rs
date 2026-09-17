@@ -307,6 +307,10 @@ pub fn build_report(
         global_reasons.push("current worktree is dirty".to_owned());
     }
     for dependency in &definition.depends_on {
+        if definition.version == "0.71.0" && dependency == "0.67.1" {
+            global_reasons.extend(evidence_only_0671_dependency_problems(root, &source_commit));
+            continue;
+        }
         let tag = format!("v{dependency}");
         if !git_ref_exists(root, &format!("refs/tags/{tag}")) {
             global_reasons.push(format!(
@@ -517,6 +521,46 @@ pub fn build_report(
         reasons: global_reasons,
         work_items,
     })
+}
+
+// 0.67.1 shipped as a dedicated performance-evidence milestone after the
+// product workspace had advanced to 0.70. It deliberately has no package tag.
+fn evidence_only_0671_dependency_problems(root: &Path, source_commit: &str) -> Vec<String> {
+    const RECEIPT: &str = "docs/testing/perf-artifacts/0.67.1/hc0671-ax42-20260911-da/accepted-receipts/release-evidence-0.67.1.json";
+    const SHA256: &str = "22a4b57e791558412d7e397d9226c69e52fbb21c4f2e73183d7ef17cca146eb5";
+    const SOURCE: &str = "7bd31af9a5092466d7a7284995f388d33ed3110f";
+    let bytes = match fs::read(root.join(RECEIPT)) {
+        Ok(bytes) => bytes,
+        Err(error) => return vec![format!("0.67.1 evidence-only receipt is missing: {error}")],
+    };
+    let mut problems = Vec::new();
+    if sha256(&bytes) != SHA256 {
+        problems.push("0.67.1 evidence-only receipt digest mismatch".to_owned());
+    }
+    match serde_json::from_slice::<ReleaseEvidenceReport>(&bytes) {
+        Ok(report) => {
+            if report.schema_version != 1
+                || report.release != "0.67.1"
+                || report.source_commit != SOURCE
+                || report.current_worktree_dirty
+                || !report.receipts_supplied
+                || !report.reasons.is_empty()
+                || report.work_items.len() != 8
+                || report.work_items.iter().enumerate().any(|(index, item)| {
+                    item.id != format!("W{index}")
+                        || item.stage != EvidenceStage::ShipReady
+                        || !item.reasons.is_empty()
+                })
+            {
+                problems.push("0.67.1 evidence-only release closure is not ship-ready".to_owned());
+            }
+        }
+        Err(error) => problems.push(format!("0.67.1 evidence-only receipt is invalid: {error}")),
+    }
+    if !git_is_ancestor(root, SOURCE, source_commit) {
+        problems.push("0.67.1 evidence-only source is not an ancestor".to_owned());
+    }
+    problems
 }
 
 pub fn parse_manifest_text(text: &str) -> Result<EvidenceManifest, Box<dyn Error>> {
@@ -1435,7 +1479,31 @@ impl Options {
 
 #[cfg(test)]
 mod language_selector_tests {
-    use super::{java_test_exists, python_test_exists, rust_test_exists};
+    use super::{
+        evidence_only_0671_dependency_problems, java_test_exists, python_test_exists,
+        rust_test_exists,
+    };
+    use std::path::Path;
+
+    #[test]
+    fn evidence_only_0671_dependency_accepts_the_committed_closure() {
+        let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
+        let source = super::git_identity(&root).expect("git identity").0;
+        assert!(
+            evidence_only_0671_dependency_problems(&root, &source).is_empty(),
+            "the pinned 0.67.1 evidence milestone must remain verifiable"
+        );
+    }
+
+    #[test]
+    fn evidence_only_0671_dependency_rejects_missing_receipt() {
+        let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("nonexistent-evidence-root");
+        assert!(
+            evidence_only_0671_dependency_problems(&root, "not-a-commit")
+                .iter()
+                .any(|reason| reason.contains("receipt is missing"))
+        );
+    }
 
     #[test]
     fn java_selector_requires_a_junit_annotation() {
