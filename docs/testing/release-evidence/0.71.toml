@@ -8,7 +8,7 @@ dynamic_canary_work_items = ["W0", "W1", "W2", "W3", "W4", "W5", "W6", "W7", "W8
 id = "W0"
 required_sources = ["docs/testing/memory/0.71/baseline-identities.toml"]
 required_artifacts = []
-fast_gate_ids = []
+fast_gate_ids = ["fast.workspace-nextest"]
 gated_gate_ids = []
 ship_required = true
 [[work_item.required_tests]]
@@ -19,8 +19,8 @@ function = "b0_b1_are_distinct_cohorts"
 id = "W1"
 required_sources = ["crates/hydracache/src/memory_footprint.rs", "docs/testing/memory/0.71/ownership-registry.toml"]
 required_artifacts = []
-fast_gate_ids = []
-gated_gate_ids = []
+fast_gate_ids = ["fast.workspace-nextest"]
+gated_gate_ids = ["cfg.hydracache.memory-footprint-071"]
 ship_required = true
 [[work_item.required_tests]]
 source = "crates/hydracache/tests/memory_footprint_071.rs"
@@ -30,7 +30,7 @@ function = "insert_replace_delete_tag_expire_and_flush_update_bounded_aggregates
 id = "W2"
 required_sources = ["crates/hydracache/src/memory_footprint.rs", "crates/hydracache-client-transport-axum/src/lib.rs", "docs/testing/memory/0.71/decision-gates.toml"]
 required_artifacts = []
-fast_gate_ids = []
+fast_gate_ids = ["fast.workspace-nextest"]
 gated_gate_ids = []
 ship_required = true
 [[work_item.required_tests]]
@@ -44,8 +44,8 @@ function = "aggregate_batch_quota_is_rejected_before_partial_mutation"
 id = "W3"
 required_sources = ["crates/hydracache-client-transport-axum/src/lib.rs"]
 required_artifacts = []
-fast_gate_ids = []
-gated_gate_ids = []
+fast_gate_ids = ["fast.workspace-nextest"]
+gated_gate_ids = ["ignored.hydracache-client-transport-axum.retention-bounds-071-million-operation"]
 ship_required = true
 [[work_item.required_tests]]
 source = "crates/hydracache-client-transport-axum/tests/retention_bounds_071.rs"
@@ -58,8 +58,8 @@ function = "mandatory_audit_capacity_fails_closed_and_never_exceeds_its_bound"
 id = "W4"
 required_sources = ["crates/hydracache/src/cache.rs", "crates/hydracache-client-transport-axum/src/lib.rs"]
 required_artifacts = []
-fast_gate_ids = []
-gated_gate_ids = []
+fast_gate_ids = ["fast.workspace-nextest"]
+gated_gate_ids = ["cfg.hydracache.reclamation-071"]
 ship_required = true
 [[work_item.required_tests]]
 source = "crates/hydracache/tests/reclamation_071.rs"
@@ -72,7 +72,7 @@ function = "active_expiry_releases_entry_and_tenant_quota_without_reading_the_ke
 id = "W5"
 required_sources = ["docs/testing/memory/0.71/release-policy.toml", "docs/testing/compat/v0.70.0.json", "scripts/ci/public_api_compat_071.py"]
 required_artifacts = []
-fast_gate_ids = []
+fast_gate_ids = ["fast.workspace-nextest"]
 gated_gate_ids = []
 ship_required = true
 [[work_item.required_tests]]
@@ -86,8 +86,8 @@ function = "public_api_gate_covers_every_publishable_package_and_blocks_release"
 id = "W6"
 required_sources = ["crates/hydracache/src/cache.rs"]
 required_artifacts = []
-fast_gate_ids = []
-gated_gate_ids = []
+fast_gate_ids = ["fast.workspace-nextest"]
+gated_gate_ids = ["cfg.hydracache.tag-index-model-071"]
 ship_required = true
 [[work_item.required_tests]]
 source = "crates/hydracache/tests/tag_index_model_071.rs"
@@ -97,7 +97,7 @@ function = "deterministic_interleavings_match_a_reference_membership_model"
 id = "W7"
 required_sources = ["scripts/perf/memory-providers/system.py", "docs/testing/memory/0.71/release-policy.toml"]
 required_artifacts = []
-fast_gate_ids = []
+fast_gate_ids = ["fast.workspace-nextest"]
 gated_gate_ids = []
 ship_required = true
 [[work_item.required_tests]]
@@ -108,7 +108,7 @@ function = "copy_optimization_is_not_promoted_without_paired_evidence"
 id = "W8"
 required_sources = ["docs/testing/memory/0.71/allocator-capabilities.toml", "crates/xtask/src/memory_contracts.rs"]
 required_artifacts = []
-fast_gate_ids = []
+fast_gate_ids = ["fast.workspace-nextest"]
 gated_gate_ids = []
 ship_required = true
 [[work_item.required_tests]]
@@ -119,7 +119,7 @@ function = "checked_in_allocator_capability_and_source_matrix_is_closed"
 id = "W9"
 required_sources = ["crates/hydracache-server/src/main.rs", "docs/testing/memory/0.71/release-policy.toml"]
 required_artifacts = []
-fast_gate_ids = []
+fast_gate_ids = ["fast.workspace-nextest"]
 gated_gate_ids = []
 ship_required = true
 [[work_item.required_tests]]
@@ -130,7 +130,7 @@ function = "disabled_client_and_resp_services_allocate_no_dispatch_surface"
 id = "W10"
 required_sources = ["crates/hydracache-server/src/lib.rs", "docs/testing/memory/0.71/release-policy.toml"]
 required_artifacts = []
-fast_gate_ids = []
+fast_gate_ids = ["fast.workspace-nextest"]
 gated_gate_ids = []
 ship_required = true
 [[work_item.required_tests]]
@@ -141,7 +141,7 @@ function = "hc2_queue_count_and_transport_byte_limits_are_explicit_and_nonzero"
 id = "W11"
 required_sources = ["crates/hydracache/src/builder.rs", "crates/hydracache/src/grid/persistence_config.rs", "docs/testing/memory/0.71/release-policy.toml"]
 required_artifacts = []
-fast_gate_ids = []
+fast_gate_ids = ["fast.workspace-nextest"]
 gated_gate_ids = []
 ship_required = true
 [[work_item.required_tests]]
@@ -152,7 +152,7 @@ function = "persistence_without_storage_is_rejected_before_allocating_runtime_st
 id = "W12"
 required_sources = ["scripts/perf/memory_campaign_071.py", "scripts/perf/memory_compat_071.sh", "crates/hydracache/examples/memory_compat_driver_071.rs", "scripts/perf/memory_compat_receipt_071.py", "crates/xtask/src/memory_campaign.rs", "crates/hydracache-server/tests/memory_compat_process_071.rs"]
 required_artifacts = []
-fast_gate_ids = []
+fast_gate_ids = ["fast.workspace-nextest"]
 gated_gate_ids = []
 ship_required = true
 [[work_item.required_tests]]
@@ -169,7 +169,7 @@ function = "m10_requires_exact_sealed_real_compatibility_proof"
 id = "W13"
 required_sources = ["docs/testing/memory/0.71/release-policy.toml", "crates/xtask/src/memory_contracts.rs"]
 required_artifacts = []
-fast_gate_ids = []
+fast_gate_ids = ["fast.workspace-nextest"]
 gated_gate_ids = []
 ship_required = true
 [[work_item.required_tests]]
