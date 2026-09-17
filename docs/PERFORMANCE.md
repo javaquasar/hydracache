@@ -1,5 +1,10 @@
 # HydraCache Performance Evidence
 
+For the 0.71 memory program, see [memory accounting and repeatable measurements](performance/memory-accounting.md)
+and [scoped memory sizing observations](performance/memory-sizing.md). The accepted AX42 D4
+campaign is indexed [separately](testing/perf-artifacts/0.71/ax42/d4/README.md); it does not
+change the older 0.67.1 performance claim boundary below.
+
 This document defines the performance methodology delivered by release `0.67.0`, the surfaces it
 can measure, and the narrow claim boundary for the reviewed `0.67.1` dedicated reference contract.
 

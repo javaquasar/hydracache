@@ -182,7 +182,12 @@ jobs:
                   f"publishable package versions {sorted(versions)} do not match tag {version}"
               )
 
-          manifest = pathlib.Path("docs/plans/releases.toml").read_text(encoding="utf-8")
+          # Runtime packages come from the measured tag, while finalization
+          # documentation is committed afterwards on main. The ancestry check
+          # above binds the two without silently retagging unmeasured code.
+          manifest = subprocess.check_output(
+              ["git", "show", "origin/main:docs/plans/releases.toml"], text=True
+          )
           blocks = re.split(r"(?m)^\[\[release\]\]\s*$", manifest)
           matching = None
           for block in blocks:
@@ -197,8 +202,12 @@ jobs:
               raise SystemExit(f"release {version} has status {actual!r}, expected shipped")
 
           release_notes = pathlib.Path(f"docs/releases/{version}.md")
-          if not release_notes.is_file():
-              raise SystemExit(f"missing release notes: {release_notes}")
+          try:
+              notes_text = subprocess.check_output(
+                  ["git", "show", f"origin/main:{release_notes}"], text=True
+              )
+          except subprocess.CalledProcessError as exc:
+              raise SystemExit(f"missing release notes on main: {release_notes}") from exc
 
           by_id = {package["id"]: package["name"] for package in packages}
           publishable_ids = {package["id"] for package in publishable}
@@ -228,6 +237,7 @@ jobs:
 
           output = pathlib.Path("target/release-publish")
           output.mkdir(parents=True, exist_ok=True)
+          (output / "release-notes.md").write_text(notes_text, encoding="utf-8")
           (output / "release.env").write_text(
               f"VERSION={version}\nTAG={release_tag}\nSOURCE_SHA={source_sha}\n",
               encoding="utf-8",
@@ -417,12 +427,18 @@ jobs:
           ref: ${{ needs.resolve.outputs.source_sha }}
           fetch-depth: 0
 
+      - name: Download validated release metadata and notes
+        uses: actions/download-artifact@v7
+        with:
+          name: ${{ needs.resolve.outputs.metadata_artifact }}
+          path: target/release-publish
+
       - name: Create or update GitHub Release
         env:
           GH_TOKEN: ${{ github.token }}
           RELEASE_VERSION: ${{ needs.resolve.outputs.version }}
           RELEASE_TAG: ${{ needs.resolve.outputs.tag }}
-          RELEASE_NOTES: docs/releases/${{ needs.resolve.outputs.version }}.md
+          RELEASE_NOTES: target/release-publish/release-notes.md
         shell: bash
         run: |
           set -euo pipefail

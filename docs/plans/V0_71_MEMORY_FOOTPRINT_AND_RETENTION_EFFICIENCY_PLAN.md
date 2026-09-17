@@ -26,7 +26,7 @@
 >   freeze, D4 qualification and ship admission require an admitted dedicated-host lease.
 > - **Unblocks:** defensible memory sizing, a bounded long-lived daemon claim, per-entry/per-client
 >   capacity guidance, and later data-structure tuning without repeating the attribution work.
-> - **Status:** planned.
+> - **Status:** shipped; final claims are limited by the accepted D4 evidence and release policy.
 >
 > Roadmap: [`INDEX.md`](INDEX.md) - rules: [`../RULES.md`](../RULES.md) -
 > gates: [`../GATES.md`](../GATES.md) - performance: [`../PERFORMANCE.md`](../PERFORMANCE.md) -

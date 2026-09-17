@@ -230,6 +230,7 @@ jobs:
           python scripts/perf/memory_case_executor_071_test.py
           python scripts/perf/memory_historical_mirror_071_test.py
           python scripts/perf/memory_compat_receipt_071_test.py
+          python scripts/perf/test_memory_release_claims_071.py
           for mode in off production profile; do
             cargo run -p hydracache-loadgen --bin hydracache-loadgen --locked -- memory-efficiency --provider system --instrumentation-mode "$mode" --output-dir "target/memory-evidence/0.71/profiles/ci-smoke/$mode"
           done
@@ -2932,6 +2933,16 @@ jobs:
         if: contains(inputs.gated_gate_id, 'mutants')
         run: cargo install cargo-mutants --version 27.1.0 --locked
 
+      - name: Install pinned cargo-nextest for fast suite
+        if: startsWith(inputs.gated_gate_id, 'fast.')
+        uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-nextest@0.9.137
+
+      - name: Install cargo-deny for fast suite
+        if: startsWith(inputs.gated_gate_id, 'fast.')
+        uses: taiki-e/install-action@cargo-deny
+
       - name: Install pinned ThreadSanitizer toolchain
         timeout-minutes: 15
         if: startsWith(inputs.gated_gate_id, 'tool.tsan.')
@@ -2945,5 +2956,7 @@ jobs:
         uses: actions/upload-artifact@v6
         with:
           name: "release-evidence-${{ github.sha }}-${{ inputs.gated_gate_id }}"
-          path: target/release-evidence/receipts
+          path: |
+            target/release-evidence/receipts
+            target/nextest/ci/junit.xml
           if-no-files-found: error
