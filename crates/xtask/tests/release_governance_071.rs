@@ -95,6 +95,30 @@ fn every_release_work_item_has_a_registered_fast_receipt_contract() {
 }
 
 #[test]
+fn dispatched_fast_receipt_installs_pinned_nextest_before_running() {
+    let ci = fs::read_to_string(root().join(".github/workflows/ci.yml"))
+        .expect("CI workflow")
+        .replace("\r\n", "\n");
+    let job = ci
+        .split_once("  gated-proof-registry:\n")
+        .expect("registered proof job")
+        .1;
+    let install = job
+        .find("- name: Install pinned cargo-nextest for fast suite\n")
+        .expect("fast suite nextest installer");
+    let run = job
+        .find("- name: Run registered gated proofs\n")
+        .expect("registered proof command");
+    assert!(
+        install < run,
+        "nextest must be installed before the fast gate"
+    );
+    assert!(job[install..run].contains("if: startsWith(inputs.gated_gate_id, 'fast.')"));
+    assert!(job[install..run].contains("tool: cargo-nextest@0.9.137"));
+    assert!(job[run..].contains("target/nextest/ci/junit.xml"));
+}
+
+#[test]
 fn d4_claim_gate_rejects_numeric_or_identity_broadening() {
     let acceptance: serde_json::Value = serde_json::from_str(
         &fs::read_to_string(root().join("docs/testing/memory/0.71/d4-acceptance.json"))

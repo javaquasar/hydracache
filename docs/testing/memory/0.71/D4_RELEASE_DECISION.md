@@ -33,6 +33,10 @@ ancestor of this candidate. The 0.70.0 dependency remains a normal tagged releas
 Before ship, complete and review: generated `target/memory-evidence/0.71/release-claims.json`,
 exact-commit fast/gated receipts and `release-evidence --require-ship`, public API compatibility,
 workspace/target checks, final documentation and claim wording, and the exact measured SHA tag.
+The registered GitHub Actions proof job can produce an exact-commit fast receipt on Linux when
+the Windows linker cannot reliably rebuild the workspace; that job installs pinned
+`cargo-nextest` before executing a `fast.*` gate. Downloaded receipts must still pass the same
+digest, artifact, source-SHA and gate checks during final aggregation.
 The final release tag must point to the measured commit above. The post-campaign
 `release/0.71-finalization` branch adds only documentation and test-governance wiring; it is not a
 new measured runtime candidate. Any runtime-code or scenario change requires a new immutable D4
