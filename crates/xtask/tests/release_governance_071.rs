@@ -93,3 +93,57 @@ fn every_release_work_item_has_a_registered_fast_receipt_contract() {
         }
     }
 }
+
+#[test]
+fn d4_claim_gate_rejects_numeric_or_identity_broadening() {
+    let acceptance: serde_json::Value = serde_json::from_str(
+        &fs::read_to_string(root().join("docs/testing/memory/0.71/d4-acceptance.json"))
+            .expect("D4 acceptance"),
+    )
+    .expect("D4 acceptance JSON");
+    let policy = policy();
+    let dispositions = policy["optional_work"]
+        .as_array()
+        .expect("optional dispositions")
+        .iter()
+        .map(|item| {
+            serde_json::json!({
+                "id": item["id"].as_str(),
+                "disposition": item["disposition"].as_str(),
+                "reason": item["reason"].as_str(),
+                "next_evidence": item["next_evidence"].as_str(),
+            })
+        })
+        .collect::<Vec<_>>();
+    let mut claims = serde_json::json!({
+        "release": "0.71",
+        "measured_source_sha": acceptance["measured_source_sha"],
+        "evidence_branch": acceptance["evidence_branch"],
+        "evidence_commit": acceptance["evidence_commit"],
+        "campaign_ids": acceptance["campaigns"]
+            .as_array()
+            .expect("campaigns")
+            .iter()
+            .map(|item| item["id"].clone())
+            .collect::<Vec<_>>(),
+        "numeric_memory_improvement_claims": [],
+        "negative_result": "No optional numerical memory improvement is claimed.",
+        "optional_dispositions": dispositions,
+    });
+    assert!(
+        xtask::release_evidence::check_071_claim_values(&claims, &acceptance, &policy).is_empty()
+    );
+    claims["numeric_memory_improvement_claims"] = serde_json::json!(["unreviewed RSS win"]);
+    assert!(
+        xtask::release_evidence::check_071_claim_values(&claims, &acceptance, &policy)
+            .iter()
+            .any(|problem| problem.contains("numerical memory claims"))
+    );
+    claims["numeric_memory_improvement_claims"] = serde_json::json!([]);
+    claims["measured_source_sha"] = serde_json::json!("b".repeat(40));
+    assert!(
+        xtask::release_evidence::check_071_claim_values(&claims, &acceptance, &policy)
+            .iter()
+            .any(|problem| problem.contains("measured_source_sha"))
+    );
+}

@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "release": "0.71",
+  "measured_source_sha": "da8d6de409a657e0260e7fbfb4ab31d8d6ad5ca8",
+  "workflow_sha": "da8d6de409a657e0260e7fbfb4ab31d8d6ad5ca8",
+  "evidence_branch": "evidence/0.71/ax42/d4",
+  "evidence_commit": "123bbd135e1db899ea218875aec8c5e6869531e9",
+  "campaigns": [
+    {"stage": "M3", "id": "hc071-d4-ax42-20260914-m3-01", "github_run_id": 34841416735, "github_artifact_id": 10349451463},
+    {"stage": "M8", "id": "hc071-d4-ax42-20260914-m8-01", "github_run_id": 34909454654, "github_artifact_id": 10375653483},
+    {"stage": "M9", "id": "hc071-d4-ax42-20260915-m9-01", "github_run_id": 34915002362, "github_artifact_id": 10398284742},
+    {"stage": "M10", "id": "hc071-d4-ax42-20260915-m10-01", "github_run_id": 34975284094, "github_artifact_id": 10500899819}
+  ]
+}

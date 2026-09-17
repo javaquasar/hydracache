@@ -20,7 +20,7 @@ receipt path, while the work-item targets below test the actual behavior or defe
 | W10 | `hc2_memory_071` | Idle HC/2 ownership and independent transport/decoded limit contracts |
 | W11 | `persistence_memory_071` | Pre-allocation rejection and bounded labels; persistence optimization remains deferred |
 | W12 | `memory_campaign_admission_071` | Only an identity-sealed exact-candidate M3/M8/M9/M10 chain can satisfy ship admission |
-| W13 | `release_governance_071` | Mandatory foundation, evidenced deferrals, no-win ship and safety-defect rejection |
+| W13 | `release_governance_071`, `test_memory_release_claims_071.py` | Mandatory foundation, evidenced deferrals, no-win ship, exact D4 claim identity and safety-defect rejection |
 
 The million-operation W3 plateau test is marked ignored in ordinary pull-request CI because it is a
 scheduled stress test. Its shorter deterministic equivalent is mandatory on every change. W5,
@@ -34,3 +34,13 @@ Before M10 begins, its protected workflow runs `scripts/perf/memory_compat_071.s
 `v0.70.0` and exact-candidate binaries. The resulting sealed `compatibility-receipt.json` is part of
 the M10 artifact and mandatory for final campaign admission; a compiling but skipped process test
 does not count as S8 ship evidence.
+
+After the accepted M3/M8/M9/M10 artifacts have been extracted, generate the no-win claim set
+with `scripts/perf/memory_release_claims_071.py` using the verified evidence-branch checkout
+and the extracted campaign directory. The generator checks the reviewed
+[`d4-acceptance.json`](d4-acceptance.json) against the branch manifest and all four complete
+receipts. `release-evidence --release 0.71 --require-ship` then consumes the generated
+`target/memory-evidence/0.71/release-claims.json`, rejects numerical claims, checks the exact
+campaign chain again, and requires the measured SHA to be an ancestor of the review commit.
+The release tag itself must still point to the measured SHA, not to later documentation/tooling
+commits.

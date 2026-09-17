@@ -32,4 +32,6 @@ The public archives omit test-generated private keys, compiled binaries, and a f
 identity-bearing host files. They are not byte-for-byte substitutes for the raw copies. Claims
 remain limited to the exact host, source/workflow SHA, and measured D4 memory scenarios; they do
 not establish a general Redis/Hazelcast advantage or cross-host result. Release claims must be
-generated only after D4 dispositions and ship gates accept this chain.
+generated only after D4 dispositions and ship gates accept this chain. The current
+[provisional decision](../../../../memory/0.71/D4_RELEASE_DECISION.md) records the no-numerical-win
+scope and remaining release checks.

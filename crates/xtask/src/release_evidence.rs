@@ -153,9 +153,18 @@ pub fn run(args: Vec<String>) -> Result<(), Box<dyn Error>> {
             );
         }
     }
+    let claim_problems = if options.require_ship && options.release == "0.71" {
+        check_071_ship_claims(&options.root)?
+    } else {
+        Vec::new()
+    };
+    for problem in &claim_problems {
+        println!("release-evidence: 0.71 claim: {problem}");
+    }
     if options.require_ship
         && (report.current_worktree_dirty
             || !report.reasons.is_empty()
+            || !claim_problems.is_empty()
             || report
                 .work_items
                 .iter()
@@ -164,6 +173,114 @@ pub fn run(args: Vec<String>) -> Result<(), Box<dyn Error>> {
         return Err("release-evidence: --require-ship rejected non-green evidence".into());
     }
     Ok(())
+}
+
+fn check_071_ship_claims(root: &Path) -> Result<Vec<String>, Box<dyn Error>> {
+    let claims_path = root.join("target/memory-evidence/0.71/release-claims.json");
+    if !claims_path.is_file() {
+        return Ok(vec!["missing generated release-claims.json".to_owned()]);
+    }
+    let acceptance_path = root.join("docs/testing/memory/0.71/d4-acceptance.json");
+    let policy_path = root.join("docs/testing/memory/0.71/release-policy.toml");
+    let claims: serde_json::Value = serde_json::from_slice(&fs::read(claims_path)?)?;
+    let acceptance: serde_json::Value = serde_json::from_slice(&fs::read(acceptance_path)?)?;
+    let policy: toml::Value = toml::from_str(&fs::read_to_string(policy_path)?)?;
+    let mut problems = check_071_claim_values(&claims, &acceptance, &policy);
+    if let Some(source_sha) = claims
+        .get("measured_source_sha")
+        .and_then(serde_json::Value::as_str)
+    {
+        if !git_is_ancestor(root, source_sha, "HEAD") {
+            problems
+                .push("measured source is not an ancestor of the release review commit".to_owned());
+        }
+        problems.extend(crate::memory_campaign::check_campaigns_for_source(
+            &root.join("target/memory-evidence/0.71/campaigns"),
+            "0.71",
+            true,
+            Some(source_sha),
+        )?);
+    }
+    Ok(problems)
+}
+
+pub fn check_071_claim_values(
+    claims: &serde_json::Value,
+    acceptance: &serde_json::Value,
+    policy: &toml::Value,
+) -> Vec<String> {
+    let mut problems = Vec::new();
+    if claims.get("release").and_then(serde_json::Value::as_str) != Some("0.71") {
+        problems.push("wrong claims release".to_owned());
+    }
+    for (claim_field, acceptance_field) in [
+        ("measured_source_sha", "measured_source_sha"),
+        ("evidence_branch", "evidence_branch"),
+        ("evidence_commit", "evidence_commit"),
+    ] {
+        if claims.get(claim_field) != acceptance.get(acceptance_field) {
+            problems.push(format!("claims {claim_field} disagrees with D4 acceptance"));
+        }
+    }
+    let accepted_ids = acceptance
+        .get("campaigns")
+        .and_then(serde_json::Value::as_array)
+        .map(|campaigns| {
+            campaigns
+                .iter()
+                .filter_map(|item| item.get("id").and_then(serde_json::Value::as_str))
+                .collect::<Vec<_>>()
+        });
+    let claimed_ids = claims
+        .get("campaign_ids")
+        .and_then(serde_json::Value::as_array)
+        .map(|ids| {
+            ids.iter()
+                .filter_map(serde_json::Value::as_str)
+                .collect::<Vec<_>>()
+        });
+    if accepted_ids.as_ref().is_none_or(|ids| ids.len() != 4) || claimed_ids != accepted_ids {
+        problems
+            .push("claims campaign IDs disagree with the four accepted D4 campaigns".to_owned());
+    }
+    if claims
+        .get("numeric_memory_improvement_claims")
+        .and_then(serde_json::Value::as_array)
+        .is_none_or(|numeric| !numeric.is_empty())
+    {
+        problems.push("numerical memory claims are not authorized by D3".to_owned());
+    }
+    if claims
+        .get("negative_result")
+        .and_then(serde_json::Value::as_str)
+        .is_none_or(str::is_empty)
+    {
+        problems.push("release claims omit the negative result".to_owned());
+    }
+    let expected_dispositions = policy
+        .get("optional_work")
+        .and_then(toml::Value::as_array)
+        .map(|items| {
+            items
+                .iter()
+                .map(|item| {
+                    serde_json::json!({
+                        "id": item.get("id").and_then(toml::Value::as_str),
+                        "disposition": item.get("disposition").and_then(toml::Value::as_str),
+                        "reason": item.get("reason").and_then(toml::Value::as_str),
+                        "next_evidence": item.get("next_evidence").and_then(toml::Value::as_str),
+                    })
+                })
+                .collect::<Vec<_>>()
+        });
+    if claims
+        .get("optional_dispositions")
+        .and_then(serde_json::Value::as_array)
+        != expected_dispositions.as_ref()
+    {
+        problems.push("optional dispositions disagree with release policy".to_owned());
+    }
+    problems
 }
 
 pub fn build_report(
