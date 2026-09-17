@@ -1,0 +1,6 @@
+{"at": "2026-09-15T00:55:50.437315+00:00", "campaign_role": "candidate", "event": "campaign-planned", "job_count": 2, "source_sha": "da8d6de409a657e0260e7fbfb4ab31d8d6ad5ca8", "workflow_sha": "da8d6de409a657e0260e7fbfb4ab31d8d6ad5ca8"}
+{"at": "2026-09-15T01:00:55.385193+00:00", "attempt": 1, "event": "job-started", "job_id": "M9-6h__B1-instrumented__r1"}
+{"at": "2026-09-15T07:11:01.203848+00:00", "attempt": 1, "event": "job-finished", "job_id": "M9-6h__B1-instrumented__r1", "status": "success"}
+{"at": "2026-09-15T07:11:01.213630+00:00", "attempt": 1, "event": "job-started", "job_id": "M9-6h__C-candidate__r1"}
+{"at": "2026-09-15T13:21:06.968818+00:00", "attempt": 1, "event": "job-finished", "job_id": "M9-6h__C-candidate__r1", "status": "success"}
+{"at": "2026-09-15T13:21:06.984080+00:00", "event": "campaign-finished", "status": "success"}

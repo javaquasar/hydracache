@@ -1,0 +1,21 @@
+{"at": "2026-09-14T13:41:30.011276+00:00", "campaign_role": "candidate", "event": "campaign-planned", "job_count": 8, "source_sha": "da8d6de409a657e0260e7fbfb4ab31d8d6ad5ca8", "workflow_sha": "da8d6de409a657e0260e7fbfb4ab31d8d6ad5ca8"}
+{"at": "2026-09-14T13:46:34.344698+00:00", "attempt": 1, "event": "job-started", "job_id": "M8-60m__sequence-fixed-keyspace__B1-instrumented__r1"}
+{"at": "2026-09-14T14:56:36.643643+00:00", "attempt": 1, "event": "job-finished", "job_id": "M8-60m__sequence-fixed-keyspace__B1-instrumented__r1", "status": "success"}
+{"at": "2026-09-14T14:56:36.653390+00:00", "attempt": 1, "event": "job-started", "job_id": "M8-60m__sequence-fixed-keyspace__C-candidate__r1"}
+{"at": "2026-09-14T16:06:38.964851+00:00", "attempt": 1, "event": "job-finished", "job_id": "M8-60m__sequence-fixed-keyspace__C-candidate__r1", "status": "success"}
+{"at": "2026-09-14T16:06:38.974609+00:00", "attempt": 1, "event": "job-started", "job_id": "M8-60m__sequence-ttl__B1-instrumented__r1"}
+{"at": "2026-09-14T17:16:41.282889+00:00", "attempt": 1, "event": "job-finished", "job_id": "M8-60m__sequence-ttl__B1-instrumented__r1", "status": "success"}
+{"at": "2026-09-14T17:16:41.292838+00:00", "attempt": 1, "event": "job-started", "job_id": "M8-60m__sequence-ttl__C-candidate__r1"}
+{"at": "2026-09-14T18:26:43.587041+00:00", "attempt": 1, "event": "job-finished", "job_id": "M8-60m__sequence-ttl__C-candidate__r1", "status": "success"}
+{"at": "2026-09-14T18:26:43.596892+00:00", "attempt": 1, "event": "job-started", "job_id": "M8-60m__sequence-reset__B1-instrumented__r1"}
+{"at": "2026-09-14T19:36:45.852108+00:00", "attempt": 1, "event": "job-finished", "job_id": "M8-60m__sequence-reset__B1-instrumented__r1", "status": "success"}
+{"at": "2026-09-14T19:36:45.861880+00:00", "attempt": 1, "event": "job-started", "job_id": "M8-60m__sequence-reset__C-candidate__r1"}
+{"at": "2026-09-14T20:46:48.251192+00:00", "attempt": 1, "event": "job-finished", "job_id": "M8-60m__sequence-reset__C-candidate__r1", "status": "success"}
+{"at": "2026-09-14T20:46:48.256619+00:00", "attempt": 1, "event": "job-started", "job_id": "M8-60m__sequence-hc2-churn__B1-instrumented__r1"}
+{"at": "2026-09-14T21:56:49.616505+00:00", "attempt": 1, "event": "job-finished", "job_id": "M8-60m__sequence-hc2-churn__B1-instrumented__r1", "status": "success"}
+{"at": "2026-09-14T21:56:49.621955+00:00", "attempt": 1, "event": "job-started", "job_id": "M8-60m__sequence-hc2-churn__C-candidate__r1"}
+{"at": "2026-09-14T23:17:24.576857+00:00", "attempt": 1, "event": "job-started", "job_id": "M8-60m__sequence-hc2-churn__C-candidate__r1"}
+{"at": "2026-09-14T23:17:24.663115+00:00", "attempt": 1, "event": "job-finished", "job_id": "M8-60m__sequence-hc2-churn__C-candidate__r1", "status": "product-failure"}
+{"at": "2026-09-14T23:36:51.193000+00:00", "attempt": 2, "event": "job-started", "job_id": "M8-60m__sequence-hc2-churn__C-candidate__r1"}
+{"at": "2026-09-15T00:46:52.712360+00:00", "attempt": 2, "event": "job-finished", "job_id": "M8-60m__sequence-hc2-churn__C-candidate__r1", "status": "success"}
+{"at": "2026-09-15T00:46:52.728027+00:00", "event": "campaign-finished", "status": "success"}

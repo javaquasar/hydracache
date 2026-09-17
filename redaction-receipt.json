@@ -1,0 +1,34 @@
+{
+  "schema": "hydracache-evidence-redaction-v1",
+  "raw_copy": "retained outside AX42 and outside this Git repository",
+  "raw_archive_sha256": {
+    "hc071-d4-ax42-20260914-m3-01.campaign.tar.gz": "bc8e105927e6da2e890aed1d27f628f50fbebb5cba4da8b884a763e5f9e2e313",
+    "hc071-d4-ax42-20260914-m3-01.mirror.tar.gz": "6a0d2d1bcd7a1314e2c64a5b9559fa21444ad366a68b8dbb10b5970d924473b6",
+    "hc071-d4-ax42-20260914-m8-01.campaign.tar.gz": "e6606d4f277d2b15a8f1405bad5ff1c77c7afb221d59dfeabaeff8846222e09d",
+    "hc071-d4-ax42-20260914-m8-01.mirror.tar.gz": "4fd2653b0969b0cee0305fe1960cdd46432820cdf086df521e2d6497399d1369",
+    "hc071-d4-ax42-20260915-m9-01.campaign.tar.gz": "fd3b808d306a465c4ac41ef557ee4a27d8388c4498a9750cace5d1ecddfd9ac6",
+    "hc071-d4-ax42-20260915-m9-01.mirror.tar.gz": "61919eaf27aaf348a905c2995fef8b77bed670a31047380f7388101e2654f6cc",
+    "hc071-d4-ax42-20260915-m10-01.campaign.tar.gz": "fb2e4ae6bf64c9a98e9a4fe94e638191b9f79ec8d5aaa81ea50a9a854966e395",
+    "hc071-d4-ax42-20260915-m10-01.mirror.tar.gz": "d413bf3e654a8574e7cb24b6417dff535213022e74b3dd2f466d4cc9c32ee731",
+    "host-state-and-admission.tar.gz": "d7ec0be20dc8f1b576d5a05ac5310a1eb46b13644c8392d2003b251a39ca587c",
+    "host-tuning-frozen-reference.tar.gz": "7026e159b3200c4a057ad77195cab5f7802b4f7b6c47f8c9b758b1876518c525"
+  },
+  "campaign_archive_changes": {
+    "omitted_member_roots": ["*/hc2-pki/", "*/builds/"],
+    "hc2_pki_member_count_by_stage": {"M3": 0, "M8": 18, "M9": 12, "M10": 12},
+    "loopback_address_replacements": 50,
+    "reports_changed": 22
+  },
+  "host_state_archive_changes": {
+    "omitted_members": [
+      "freeze/kernel-command-line.txt",
+      "freeze/packages.tsv",
+      "freeze/host-freeze.json"
+    ],
+    "reason": "machine identifiers or ambiguous address-like package versions"
+  },
+  "not_published": [
+    "protected mirror tarballs with nested job archives",
+    "raw host-state-and-admission archive containing trusted-harness/.env and build tree"
+  ]
+}

@@ -1,0 +1,43 @@
+{
+  "campaign_identity": {
+    "path": "campaign-identity.json",
+    "sha256": "sha256:f3da39bbd066e81b4c5dc9ed5db5debcaf2202739d71fe635720126c7f4da774"
+  },
+  "campaign_role": "candidate",
+  "receipts": [
+    {
+      "bytes": 18365,
+      "id": "host-preflight",
+      "path": "host-preflight.json",
+      "sha256": "sha256:b924f26f814a1adfa24ce294623e33fa27f60d95cebdcfd512b1c3211041499c"
+    },
+    {
+      "bytes": 1289,
+      "id": "reference-activation",
+      "path": "reference-activation.json",
+      "sha256": "sha256:6d71148abd44960f8d5d5b98abf60be1af0f86541c55cf3aeb968ee0260fdedd"
+    },
+    {
+      "bytes": 1617372,
+      "id": "historical-input-receipt",
+      "path": "historical-input-receipt.json",
+      "sha256": "sha256:b439a5ff99da1f23228fa27623db155df7d3e85194c42707c35b3b5bac7d71ee"
+    },
+    {
+      "bytes": 34118,
+      "id": "instrumentation-overhead",
+      "path": "instrumentation-overhead.json",
+      "sha256": "sha256:cb74fe4b42a7b4d4c777887b60c9a0282ed53a4be2c68fd04e261fa119f69088"
+    },
+    {
+      "bytes": 18391,
+      "id": "instrumentation-overhead-host-preflight",
+      "path": "instrumentation-overhead-host-preflight.json",
+      "sha256": "sha256:28e4e1500ceeb6666d6bc17e055db74c812d011fae80bf6511f099592a57cb74"
+    }
+  ],
+  "release": "0.71",
+  "schema_version": 1,
+  "source_sha": "da8d6de409a657e0260e7fbfb4ab31d8d6ad5ca8",
+  "workflow_sha": "da8d6de409a657e0260e7fbfb4ab31d8d6ad5ca8"
+}

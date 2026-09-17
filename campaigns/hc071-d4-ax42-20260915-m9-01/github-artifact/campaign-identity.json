@@ -1,0 +1,17 @@
+{
+  "campaign_id": "hc071-d4-ax42-20260915-m9-01",
+  "campaign_role": "candidate",
+  "case_ids": [
+    "M9-6h"
+  ],
+  "controller_sha": "da8d6de409a657e0260e7fbfb4ab31d8d6ad5ca8",
+  "release": "0.71",
+  "scenario_digest": "sha256:c85fa4fcc8fc87cba85bb710aa96ca60eb0be94136793872064dfc31281b3252",
+  "schema_version": 1,
+  "source_sha": "da8d6de409a657e0260e7fbfb4ab31d8d6ad5ca8",
+  "source_shas": {
+    "B1-instrumented": "906aa24cc22ad6b50b824120ed6364208484203a",
+    "C-candidate": "da8d6de409a657e0260e7fbfb4ab31d8d6ad5ca8"
+  },
+  "workflow_sha": "da8d6de409a657e0260e7fbfb4ab31d8d6ad5ca8"
+}

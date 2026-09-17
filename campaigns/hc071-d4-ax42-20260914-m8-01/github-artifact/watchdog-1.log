@@ -1,0 +1,3 @@
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.20s
+     Running `target/debug/xtask memory-baseline-report-check --release 0.71 --report /var/lib/hydracache-memory/campaigns/hc071-d4-ax42-20260914-m8-01/jobs/M8-60m__sequence-hc2-churn__C-candidate__r1/memory-baseline-report.json`
+memory-baseline-report-check: OK (/var/lib/hydracache-memory/campaigns/hc071-d4-ax42-20260914-m8-01/jobs/M8-60m__sequence-hc2-churn__C-candidate__r1/memory-baseline-report.json)

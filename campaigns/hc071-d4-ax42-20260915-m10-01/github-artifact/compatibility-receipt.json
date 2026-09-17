@@ -1,0 +1,26 @@
+{
+  "baseline_commit": "75719b0bf5de2250cf4eb16a30073dd7429538e3",
+  "baseline_tag": "v0.70.0",
+  "binary_sha256": {
+    "baseline": "c6d10cffa8780c98d93fb69c8ee65363d2a972274f381ecb977871c3a8817af4",
+    "candidate": "99b01d4b51af34ec3405a798eead9dabc9f89a7ec17fc01cd9fd266f2e6e93d7"
+  },
+  "campaign_id": "hc071-d4-ax42-20260915-m10-01",
+  "candidate_sha": "da8d6de409a657e0260e7fbfb4ab31d8d6ad5ca8",
+  "checks": [
+    "baseline-create-candidate-read-mutate-restart",
+    "candidate-create-candidate-restart",
+    "candidate-to-baseline-compatible-rollback",
+    "rolling-baseline-candidate-all-role-orders",
+    "snapshot-empty-max-record-crash-upgrade",
+    "unknown-future-refuse-before-mutation-and-backup-restore",
+    "hc1-hc2-versioned-wire-corpus-both-binaries"
+  ],
+  "driver_sha256": "fe2f8c196ee2bb9b1887608d557846f0b1023361355ee1cc33f2f958bcc687fe",
+  "generated_at": "2026-09-15T13:43:26.134938+00:00",
+  "receipt_sha256": "02f4e354e1ace10d671fd91e597c41aef39aee63c13f8d8f902553762ce51254",
+  "release": "0.71",
+  "result": "success",
+  "schema_version": 1,
+  "workflow_sha": "da8d6de409a657e0260e7fbfb4ab31d8d6ad5ca8"
+}
