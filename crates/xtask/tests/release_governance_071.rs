@@ -33,16 +33,12 @@ fn missing_foundation_or_pending_optional_work_blocks_ship() {
         .retain(|item| item.as_str() != Some("W13-governance"));
     value["optional_work"][0]["disposition"] = Value::String("pending-evidence".to_owned());
     let problems = xtask::memory_contracts::check_release_policy(&value, "0.71", true);
-    assert!(
-        problems
-            .iter()
-            .any(|problem| problem.contains("W13-governance"))
-    );
-    assert!(
-        problems
-            .iter()
-            .any(|problem| problem.contains("refuses pending optional work"))
-    );
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("W13-governance")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("refuses pending optional work")));
 }
 
 #[test]
@@ -51,16 +47,12 @@ fn safety_defect_cannot_be_deferred_or_hidden_as_a_schedule_choice() {
     value["deferred_safety_defects_allowed"] = Value::Boolean(true);
     value["optional_work"][0]["reason"] = Value::String("schedule pressure".to_owned());
     let problems = xtask::memory_contracts::check_release_policy(&value, "0.71", true);
-    assert!(
-        problems
-            .iter()
-            .any(|problem| problem.contains("deferred_safety_defects_allowed"))
-    );
-    assert!(
-        problems
-            .iter()
-            .any(|problem| problem.contains("bounded and correct"))
-    );
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("deferred_safety_defects_allowed")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("bounded and correct")));
 }
 
 #[test]
