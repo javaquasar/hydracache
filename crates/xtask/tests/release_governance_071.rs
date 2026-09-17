@@ -115,6 +115,7 @@ fn dispatched_fast_receipt_installs_pinned_nextest_before_running() {
     );
     assert!(job[install..run].contains("if: startsWith(inputs.gated_gate_id, 'fast.')"));
     assert!(job[install..run].contains("tool: cargo-nextest@0.9.137"));
+    assert!(job[install..run].contains("uses: taiki-e/install-action@cargo-deny"));
     assert!(job[run..].contains("target/nextest/ci/junit.xml"));
 }
 

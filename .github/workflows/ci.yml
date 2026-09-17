@@ -2939,6 +2939,10 @@ jobs:
         with:
           tool: cargo-nextest@0.9.137
 
+      - name: Install cargo-deny for fast suite
+        if: startsWith(inputs.gated_gate_id, 'fast.')
+        uses: taiki-e/install-action@cargo-deny
+
       - name: Install pinned ThreadSanitizer toolchain
         timeout-minutes: 15
         if: startsWith(inputs.gated_gate_id, 'tool.tsan.')
