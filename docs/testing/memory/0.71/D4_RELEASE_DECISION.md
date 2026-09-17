@@ -37,6 +37,8 @@ The registered GitHub Actions proof job can produce an exact-commit fast receipt
 the Windows linker cannot reliably rebuild the workspace; that job installs pinned
 `cargo-nextest` and `cargo-deny` before executing a `fast.*` gate. Downloaded receipts must still
 pass the same digest, artifact, source-SHA and gate checks during final aggregation.
+The registry digest canonicalizes CRLF to LF, so a Windows checkout and a Linux runner bind the
+same committed TOML contract without accepting a substantive registry change.
 The final release tag must point to the measured commit above. The post-campaign
 `release/0.71-finalization` branch adds only documentation and test-governance wiring; it is not a
 new measured runtime candidate. Any runtime-code or scenario change requires a new immutable D4
