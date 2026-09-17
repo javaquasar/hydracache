@@ -168,7 +168,7 @@ function = "m10_requires_exact_sealed_real_compatibility_proof"
 [[work_item]]
 id = "W13"
 required_sources = ["docs/testing/memory/0.71/release-policy.toml", "docs/testing/memory/0.71/d4-acceptance.json", "crates/xtask/src/memory_contracts.rs", "scripts/perf/memory_release_claims_071.py"]
-required_artifacts = []
+required_artifacts = ["docs/releases/0.71.0.md", "docs/testing/memory/0.71/D4_RELEASE_DECISION.md"]
 fast_gate_ids = ["fast.workspace-nextest"]
 gated_gate_ids = []
 ship_required = true

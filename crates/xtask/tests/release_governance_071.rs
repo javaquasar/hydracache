@@ -73,6 +73,25 @@ fn every_release_work_item_has_a_registered_fast_receipt_contract() {
         .expect("release work items");
     assert_eq!(items.len(), 14, "W0-W13 must be registered");
 
+    let governance = items
+        .iter()
+        .find(|item| item["id"].as_str() == Some("W13"))
+        .expect("W13 governance item");
+    let artifacts = governance["required_artifacts"]
+        .as_array()
+        .expect("W13 artifacts");
+    for required in [
+        "docs/releases/0.71.0.md",
+        "docs/testing/memory/0.71/D4_RELEASE_DECISION.md",
+    ] {
+        assert!(
+            artifacts
+                .iter()
+                .any(|artifact| artifact.as_str() == Some(required)),
+            "W13 must require {required}"
+        );
+    }
+
     for item in items {
         let id = item["id"].as_str().expect("work item id");
         let gate_ids = item["fast_gate_ids"].as_array().expect("fast gate IDs");
