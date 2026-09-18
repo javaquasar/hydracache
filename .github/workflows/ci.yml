@@ -729,6 +729,9 @@ jobs:
           cargo test -p xtask --test mutants --locked
           cargo run -p xtask --locked -- mutants
 
+      - name: Install management console dependencies for canaries
+        run: npm ci --prefix console
+
       - name: Canary completeness
         run: |
           cargo test -p xtask --test canary_check --locked

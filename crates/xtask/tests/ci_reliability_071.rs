@@ -343,3 +343,27 @@ fn default_manual_dispatch_runs_core_ci_jobs() {
         );
     }
 }
+
+#[test]
+fn rust_canaries_install_locked_console_dependencies_first() {
+    let workflow = fs::read_to_string(repo_root().join(".github/workflows/ci.yml"))
+        .expect("read CI workflow")
+        .replace("\r\n", "\n");
+    let rust_job = workflow
+        .split("  rust:\n")
+        .nth(1)
+        .expect("Rust job")
+        .split("\n  migration-conformance-fast-evidence-069:")
+        .next()
+        .expect("Rust job body");
+    let install = rust_job
+        .find("run: npm ci --prefix console")
+        .expect("locked console dependency install");
+    let canaries = rust_job
+        .find("- name: Canary completeness")
+        .expect("canary step");
+    assert!(
+        install < canaries,
+        "console dependencies must precede canaries"
+    );
+}
