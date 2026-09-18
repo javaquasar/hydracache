@@ -1838,7 +1838,7 @@ fn release_069_execution_wiring_problems(workflow: &WorkflowShape, text: &str) -
         }
     }
     const ADMISSION_CONDITION: &str =
-        "always() && (github.event_name != 'workflow_dispatch' || inputs.performance_0671_mode == '')";
+        "always() && (github.event_name != 'workflow_dispatch' || inputs.performance_0671_mode == 'off')";
     if workflow
         .conditions
         .get("migration-conformance-admission-069")
