@@ -336,3 +336,12 @@ networked_control_plane = true
 work_items = ["W0", "W1", "W2", "W3", "W4", "W5", "W6", "W7", "W8", "W9", "W10", "W11", "W12", "W13", "W14"]
 theme = "Management Center 2.0 & Operational Visibility - replace the single-page observe-only console with a locally bundled TypeScript/component application and a versioned, bounded, privacy-reviewed management API. Add honest complete/partial and fresh/stale/live/modeled/unavailable semantics; authenticated server-side cluster aggregation; dashboard, members/partitions, HC/1-HC/2-RESP clients, namespaces/caches, deterministic health checks, persistence/operations/audit views; bounded browser-local history; and an optional fixed-query Prometheus adapter. Every new route, field, state, permission, bound and failure branch is mapped to tests, falsifiability canaries, real-process faults, exact-candidate six-hour/24-hour resource evidence, mixed-version upgrade/rollback, packaged-asset identity and fail-closed release receipts. The browser remains read-only: no arbitrary proxy/fan-out, state-changing controls, unbounded history, sensitive identifiers or invented health."
 depends_on = ["0.71.0"]
+
+[[release]]
+version = "0.73.0"
+file = "docs/plans/V0_73_EVIDENCE_DRIVEN_PERFORMANCE_EFFICIENCY_PLAN.md"
+status = "planned"
+networked_control_plane = true
+work_items = ["W0", "W1", "W2", "W3", "W4", "W5", "W6", "W7", "W8", "W9", "W10", "W11"]
+theme = "Evidence-Driven Performance Efficiency - use 0.71's accepted accounting and no-numerical-win result plus the eventual published 0.72 artifact to preregister causal owner/stack hypotheses. Conditionally qualify shared client-store and expiry work, tag-index layout, RESP key/copy paths, HC2 connection buffers, optional-service and Management Center overhead, durable/page-cache attribution, allocators, and an opt-in retained-byte admission policy. Each accepted proposal requires semantic and compatibility proofs, falsifying canaries, independently started paired same-host measurements, long-run boundedness and exact-candidate receipts; zero optional wins remain an honest release outcome."
+depends_on = ["0.72.0"]
