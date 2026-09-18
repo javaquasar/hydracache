@@ -1,0 +1,20 @@
+{
+  "attempt_id": "1",
+  "classification": "success",
+  "command": [
+    "python3",
+    "scripts/perf/memory_campaign_071.py",
+    "--output-root",
+    "/var/lib/hydracache-memory/campaigns",
+    "resume",
+    "--campaign-id",
+    "hc071-d0-ax42-20260913-m7-01"
+  ],
+  "detail": "child exited with code 0",
+  "elapsed_seconds": 3610.418,
+  "exit_code": 0,
+  "finished_at": "2026-09-13T15:44:32.995324Z",
+  "log_file": "/var/lib/hydracache-memory/campaigns/hc071-d0-ax42-20260913-m7-01/watchdog-1.log",
+  "schema_version": 1,
+  "started_at": "2026-09-13T14:44:22.577718Z"
+}

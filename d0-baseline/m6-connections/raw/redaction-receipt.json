@@ -1,0 +1,166 @@
+{
+  "schema_version": 1,
+  "campaign_id": "hc071-d0-ax42-20260913-m6-01",
+  "reason": "remove generated per-job mTLS private keys before publication",
+  "original_archive": {
+    "bytes": 19288362,
+    "sha256": "220fdf1478b5c0e709616629e568bfac3f6ad7508f1100475b3005986f3a1651"
+  },
+  "published_archive": {
+    "path": "hc071-d0-ax42-20260913-m6-01.campaign.sanitized.tar.gz",
+    "bytes": 19095941,
+    "sha256": "65fd85162acbdae972aa17bad6e7efa36028322877528b565f6c204d99221662"
+  },
+  "removed_members": [
+    {
+      "path": "hc071-d0-ax42-20260913-m6-01/jobs/M6-connections__connections-1__slow_consumers-0__tls-true__B1-instrumented__r1/hc2-pki/server.key",
+      "bytes": 241,
+      "sha256": "e7d115529773116a88e3b76d3f9c7a8287bb8e2fd696efd6c883eed63a78f683"
+    },
+    {
+      "path": "hc071-d0-ax42-20260913-m6-01/jobs/M6-connections__connections-1__slow_consumers-0__tls-true__B1-instrumented__r1/hc2-pki/client.key",
+      "bytes": 241,
+      "sha256": "7eef1fe83e8afe5e5805ec7491a9d77c03b736e9dd8ffe284a917ff179af681e"
+    },
+    {
+      "path": "hc071-d0-ax42-20260913-m6-01/jobs/M6-connections__connections-10__slow_consumers-0__tls-true__B1-instrumented__r3/hc2-pki/server.key",
+      "bytes": 241,
+      "sha256": "a38398c3181a2cd0a28207f3c1892f0cf1be53d3ec1c067b130b8db1dfac8037"
+    },
+    {
+      "path": "hc071-d0-ax42-20260913-m6-01/jobs/M6-connections__connections-10__slow_consumers-0__tls-true__B1-instrumented__r3/hc2-pki/client.key",
+      "bytes": 241,
+      "sha256": "e77b7a76f2922e462fcb24e8aabe26cbc86d30826b33db2e0ef9b8c12883257b"
+    },
+    {
+      "path": "hc071-d0-ax42-20260913-m6-01/jobs/M6-connections__connections-100__slow_consumers-0__tls-true__B1-instrumented__r3/hc2-pki/server.key",
+      "bytes": 241,
+      "sha256": "66dfb5aa0c267d053cfb2bb9be8fd4f0107f9fbe02fda34a0162f6d613b5eeaf"
+    },
+    {
+      "path": "hc071-d0-ax42-20260913-m6-01/jobs/M6-connections__connections-100__slow_consumers-0__tls-true__B1-instrumented__r3/hc2-pki/client.key",
+      "bytes": 241,
+      "sha256": "b7de48dfb8153cd1aa37544b91454ba391e5985f4d8f0259b5e5496dfe2df59a"
+    },
+    {
+      "path": "hc071-d0-ax42-20260913-m6-01/jobs/M6-connections__connections-100__slow_consumers-100__tls-true__B1-instrumented__r3/hc2-pki/server.key",
+      "bytes": 241,
+      "sha256": "a9abca20c1fdecd71469f38be470f783142b8edc8ce4fbe94137693e7fbd303c"
+    },
+    {
+      "path": "hc071-d0-ax42-20260913-m6-01/jobs/M6-connections__connections-100__slow_consumers-100__tls-true__B1-instrumented__r3/hc2-pki/client.key",
+      "bytes": 241,
+      "sha256": "0a687d810435f63d3eb77eb80738ec5c4bd412e2110d1a1af88943d8acdaf93e"
+    },
+    {
+      "path": "hc071-d0-ax42-20260913-m6-01/jobs/M6-connections__connections-1__slow_consumers-0__tls-true__B1-instrumented__r2/hc2-pki/server.key",
+      "bytes": 241,
+      "sha256": "3cf7d649c617567da65f22f58d23d85eba3c0556160fec697ea7c6e94b8af39c"
+    },
+    {
+      "path": "hc071-d0-ax42-20260913-m6-01/jobs/M6-connections__connections-1__slow_consumers-0__tls-true__B1-instrumented__r2/hc2-pki/client.key",
+      "bytes": 241,
+      "sha256": "9457f9eef7e2d75cf20fd5845fc402a902cf118c3c51995f96d3448de2577837"
+    },
+    {
+      "path": "hc071-d0-ax42-20260913-m6-01/jobs/M6-connections__connections-100__slow_consumers-100__tls-true__B1-instrumented__r2/hc2-pki/server.key",
+      "bytes": 241,
+      "sha256": "01deeb0d75240fb2b9a0079424b7cb42643f4aa6c4259207e5059d0446464c95"
+    },
+    {
+      "path": "hc071-d0-ax42-20260913-m6-01/jobs/M6-connections__connections-100__slow_consumers-100__tls-true__B1-instrumented__r2/hc2-pki/client.key",
+      "bytes": 241,
+      "sha256": "085b8aad2e43cc59e7771c6eae306420cbce5eff4fb1f250150667627f575155"
+    },
+    {
+      "path": "hc071-d0-ax42-20260913-m6-01/jobs/M6-connections__connections-100__slow_consumers-0__tls-true__B1-instrumented__r1/hc2-pki/server.key",
+      "bytes": 241,
+      "sha256": "473e89047b484a7ac3c1161a763253ba7fda234b8166f71ae6c69f2648b9fdb1"
+    },
+    {
+      "path": "hc071-d0-ax42-20260913-m6-01/jobs/M6-connections__connections-100__slow_consumers-0__tls-true__B1-instrumented__r1/hc2-pki/client.key",
+      "bytes": 241,
+      "sha256": "a94ec120796012c854bc9218f2e603b7eec6b3feb4223c7949f5ad3f7c4a6743"
+    },
+    {
+      "path": "hc071-d0-ax42-20260913-m6-01/jobs/M6-connections__connections-1__slow_consumers-0__tls-true__B1-instrumented__r3/hc2-pki/server.key",
+      "bytes": 241,
+      "sha256": "e5cfd8a27d10c9db6baa7a48d2aa2f57554448307970c5ef4d40f45d56eacbf7"
+    },
+    {
+      "path": "hc071-d0-ax42-20260913-m6-01/jobs/M6-connections__connections-1__slow_consumers-0__tls-true__B1-instrumented__r3/hc2-pki/client.key",
+      "bytes": 241,
+      "sha256": "1d97c3f36fd0e95201bf5b3ee6f6e9b8fba441060257b5893afdf80e487219a9"
+    },
+    {
+      "path": "hc071-d0-ax42-20260913-m6-01/jobs/M6-connections__connections-1000__slow_consumers-0__tls-true__B1-instrumented__r2/hc2-pki/server.key",
+      "bytes": 241,
+      "sha256": "b0fa729b6bdc2a7e907a39597efd39268ae8f0602367e396256644b4d503c58d"
+    },
+    {
+      "path": "hc071-d0-ax42-20260913-m6-01/jobs/M6-connections__connections-1000__slow_consumers-0__tls-true__B1-instrumented__r2/hc2-pki/client.key",
+      "bytes": 241,
+      "sha256": "365318afba9a793619b098f0746da941b6d8a76a9e8123db822b83a56ed209e9"
+    },
+    {
+      "path": "hc071-d0-ax42-20260913-m6-01/jobs/M6-connections__connections-1000__slow_consumers-0__tls-true__B1-instrumented__r1/hc2-pki/server.key",
+      "bytes": 241,
+      "sha256": "3b26c5637c5d7f728edf4ce835d8ddbecc50f1e59f5e44af502bbaeee878ab2e"
+    },
+    {
+      "path": "hc071-d0-ax42-20260913-m6-01/jobs/M6-connections__connections-1000__slow_consumers-0__tls-true__B1-instrumented__r1/hc2-pki/client.key",
+      "bytes": 241,
+      "sha256": "4876a097a1854d894b9b6a766c2fefd389ee1641048df15bf1355c05a8e0481a"
+    },
+    {
+      "path": "hc071-d0-ax42-20260913-m6-01/jobs/M6-connections__connections-10__slow_consumers-0__tls-true__B1-instrumented__r2/hc2-pki/server.key",
+      "bytes": 241,
+      "sha256": "5d1f04d143a31da3de242ea3cf1cd9e43617b0097e8a7db971b357ec023117fc"
+    },
+    {
+      "path": "hc071-d0-ax42-20260913-m6-01/jobs/M6-connections__connections-10__slow_consumers-0__tls-true__B1-instrumented__r2/hc2-pki/client.key",
+      "bytes": 241,
+      "sha256": "fe6d06d9dc40d3078152e98dc798b740ec9cf57af6f3e062adedab838c598631"
+    },
+    {
+      "path": "hc071-d0-ax42-20260913-m6-01/jobs/M6-connections__connections-100__slow_consumers-100__tls-true__B1-instrumented__r1/hc2-pki/server.key",
+      "bytes": 241,
+      "sha256": "1fe1ae8322cd44966c8c77f32a3f2f8ee0690a8fd3fe25e1bb521c95601e7e95"
+    },
+    {
+      "path": "hc071-d0-ax42-20260913-m6-01/jobs/M6-connections__connections-100__slow_consumers-100__tls-true__B1-instrumented__r1/hc2-pki/client.key",
+      "bytes": 241,
+      "sha256": "9d596fada2f3f5fe85215b1f200eec6756234382087284814fb6673f02650d8d"
+    },
+    {
+      "path": "hc071-d0-ax42-20260913-m6-01/jobs/M6-connections__connections-100__slow_consumers-0__tls-true__B1-instrumented__r2/hc2-pki/server.key",
+      "bytes": 241,
+      "sha256": "972c8cbe34ca5792943ae3968fea4f9a6f9ca101f9c1a8213f2730a6e76392ff"
+    },
+    {
+      "path": "hc071-d0-ax42-20260913-m6-01/jobs/M6-connections__connections-100__slow_consumers-0__tls-true__B1-instrumented__r2/hc2-pki/client.key",
+      "bytes": 241,
+      "sha256": "c42013c77220ea03a132e677c0edf4e55a1fe1c597ed5ed7539fe8175184c96d"
+    },
+    {
+      "path": "hc071-d0-ax42-20260913-m6-01/jobs/M6-connections__connections-10__slow_consumers-0__tls-true__B1-instrumented__r1/hc2-pki/server.key",
+      "bytes": 241,
+      "sha256": "935c2f29c3a1ef70c78a21016563e77ab329fb55c51b528f41209579357c9b0b"
+    },
+    {
+      "path": "hc071-d0-ax42-20260913-m6-01/jobs/M6-connections__connections-10__slow_consumers-0__tls-true__B1-instrumented__r1/hc2-pki/client.key",
+      "bytes": 241,
+      "sha256": "658313bf969644767de32cc1e5875df826c7244c9a7eb5f7d30cd9c90ac180c7"
+    },
+    {
+      "path": "hc071-d0-ax42-20260913-m6-01/jobs/M6-connections__connections-1000__slow_consumers-0__tls-true__B1-instrumented__r3/hc2-pki/server.key",
+      "bytes": 241,
+      "sha256": "0e9cec1b9ce94221f6b2d24e3ddf0c0a95a73437b016dbe8d058d0bb101ae8a9"
+    },
+    {
+      "path": "hc071-d0-ax42-20260913-m6-01/jobs/M6-connections__connections-1000__slow_consumers-0__tls-true__B1-instrumented__r3/hc2-pki/client.key",
+      "bytes": 241,
+      "sha256": "37b0558e6894877ace1b62b0dfeaba203772c9b3136095c41dec034d15ba2e98"
+    }
+  ]
+}

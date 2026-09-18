@@ -1,0 +1,561 @@
+{
+  "artifacts": [
+    {
+      "bytes": 16,
+      "path": "jobs/M7-persistence__persistence-off__B1-instrumented__r1/daemon.log",
+      "sha256": "sha256:6489d6d7a33c5d40e18fc61eeb6c34c341279ee61816394dde5189aa4ad8fae5"
+    },
+    {
+      "bytes": 319,
+      "path": "jobs/M7-persistence__persistence-off__B1-instrumented__r1/executor-receipt.json",
+      "sha256": "sha256:8832e565aedef4010cf56631676e8b115145b58101cc07bbecdc7bee749e1b5c"
+    },
+    {
+      "bytes": 22780,
+      "path": "jobs/M7-persistence__persistence-off__B1-instrumented__r1/memory-baseline-report.json",
+      "sha256": "sha256:22a815b8ec6b5c423f24575c315bbe81f67aab6e1900ea7ec644920e2d870026"
+    },
+    {
+      "bytes": 3072,
+      "path": "jobs/M7-persistence__persistence-off__B1-instrumented__r1/owner-snapshots/cold.json",
+      "sha256": "sha256:5272e1cd1b1d7c1eb092000d56c5b84341e1aeb3147cba7190e34312069c20fc"
+    },
+    {
+      "bytes": 3072,
+      "path": "jobs/M7-persistence__persistence-off__B1-instrumented__r1/owner-snapshots/expire_or_delete.json",
+      "sha256": "sha256:5272e1cd1b1d7c1eb092000d56c5b84341e1aeb3147cba7190e34312069c20fc"
+    },
+    {
+      "bytes": 3097,
+      "path": "jobs/M7-persistence__persistence-off__B1-instrumented__r1/owner-snapshots/fill.json",
+      "sha256": "sha256:a62703dbbebf8026e6ef1844d0ead11e4422854be3d1accb2d8eb21fb8d49564"
+    },
+    {
+      "bytes": 3095,
+      "path": "jobs/M7-persistence__persistence-off__B1-instrumented__r1/owner-snapshots/post_idle.json",
+      "sha256": "sha256:d32a4a249ffb24e23310a64f58a9df1957d8e473e7044abed9169a3f8e75d327"
+    },
+    {
+      "bytes": 3095,
+      "path": "jobs/M7-persistence__persistence-off__B1-instrumented__r1/owner-snapshots/refill.json",
+      "sha256": "sha256:d32a4a249ffb24e23310a64f58a9df1957d8e473e7044abed9169a3f8e75d327"
+    },
+    {
+      "bytes": 3072,
+      "path": "jobs/M7-persistence__persistence-off__B1-instrumented__r1/owner-snapshots/reset.json",
+      "sha256": "sha256:361cb155cd41440924cf25472d8e5e4a574f4f2c1f330f2bbb269e158f01e5bb"
+    },
+    {
+      "bytes": 3095,
+      "path": "jobs/M7-persistence__persistence-off__B1-instrumented__r1/owner-snapshots/shutdown.json",
+      "sha256": "sha256:d32a4a249ffb24e23310a64f58a9df1957d8e473e7044abed9169a3f8e75d327"
+    },
+    {
+      "bytes": 3097,
+      "path": "jobs/M7-persistence__persistence-off__B1-instrumented__r1/owner-snapshots/steady.json",
+      "sha256": "sha256:a62703dbbebf8026e6ef1844d0ead11e4422854be3d1accb2d8eb21fb8d49564"
+    },
+    {
+      "bytes": 530,
+      "path": "jobs/M7-persistence__persistence-off__B1-instrumented__r1/phase-timeline.jsonl",
+      "sha256": "sha256:ba0d62107e6f5026883c6f6ebdcd09c60ff97fb8b83923ced82c26a03822c0c4"
+    },
+    {
+      "bytes": 2751,
+      "path": "jobs/M7-persistence__persistence-off__B1-instrumented__r1/provider-normalized.json",
+      "sha256": "sha256:365fb45d85b02e184c91b9a16ab2f524f3e63476b1a2ec28ec534e9dcfef5214"
+    },
+    {
+      "bytes": 66,
+      "path": "jobs/M7-persistence__persistence-off__B1-instrumented__r1/provider-probe.json",
+      "sha256": "sha256:70ae6ae2c959f51c746fab1f44e83852e8c757082c60aaa9a31f1fbe6e8fecc4"
+    },
+    {
+      "bytes": 1127,
+      "path": "jobs/M7-persistence__persistence-off__B1-instrumented__r1/provider-raw.jsonl",
+      "sha256": "sha256:de505c759b45337a7e71b1a4e50b27a7049ab5b3a6819f8ab5ebc0be60de7cbf"
+    },
+    {
+      "bytes": 1688,
+      "path": "jobs/M7-persistence__persistence-off__B1-instrumented__r1/provider-state.json",
+      "sha256": "sha256:05abd6a7506561c3d148d5ff66e197e410ea54645b36339f4569732cefcfa4f2"
+    },
+    {
+      "bytes": 16,
+      "path": "jobs/M7-persistence__persistence-off__B1-instrumented__r2/daemon.log",
+      "sha256": "sha256:6489d6d7a33c5d40e18fc61eeb6c34c341279ee61816394dde5189aa4ad8fae5"
+    },
+    {
+      "bytes": 319,
+      "path": "jobs/M7-persistence__persistence-off__B1-instrumented__r2/executor-receipt.json",
+      "sha256": "sha256:495e907c75ead949388e995e09ce913e80218e8dbf135811abce1b9c294b9019"
+    },
+    {
+      "bytes": 22785,
+      "path": "jobs/M7-persistence__persistence-off__B1-instrumented__r2/memory-baseline-report.json",
+      "sha256": "sha256:6fbea01c27bb1b49f38c00e959c2356a26d27f48d7059bb35cfcf9f941a2ea2d"
+    },
+    {
+      "bytes": 3072,
+      "path": "jobs/M7-persistence__persistence-off__B1-instrumented__r2/owner-snapshots/cold.json",
+      "sha256": "sha256:5272e1cd1b1d7c1eb092000d56c5b84341e1aeb3147cba7190e34312069c20fc"
+    },
+    {
+      "bytes": 3072,
+      "path": "jobs/M7-persistence__persistence-off__B1-instrumented__r2/owner-snapshots/expire_or_delete.json",
+      "sha256": "sha256:5272e1cd1b1d7c1eb092000d56c5b84341e1aeb3147cba7190e34312069c20fc"
+    },
+    {
+      "bytes": 3097,
+      "path": "jobs/M7-persistence__persistence-off__B1-instrumented__r2/owner-snapshots/fill.json",
+      "sha256": "sha256:a62703dbbebf8026e6ef1844d0ead11e4422854be3d1accb2d8eb21fb8d49564"
+    },
+    {
+      "bytes": 3095,
+      "path": "jobs/M7-persistence__persistence-off__B1-instrumented__r2/owner-snapshots/post_idle.json",
+      "sha256": "sha256:d32a4a249ffb24e23310a64f58a9df1957d8e473e7044abed9169a3f8e75d327"
+    },
+    {
+      "bytes": 3095,
+      "path": "jobs/M7-persistence__persistence-off__B1-instrumented__r2/owner-snapshots/refill.json",
+      "sha256": "sha256:d32a4a249ffb24e23310a64f58a9df1957d8e473e7044abed9169a3f8e75d327"
+    },
+    {
+      "bytes": 3072,
+      "path": "jobs/M7-persistence__persistence-off__B1-instrumented__r2/owner-snapshots/reset.json",
+      "sha256": "sha256:361cb155cd41440924cf25472d8e5e4a574f4f2c1f330f2bbb269e158f01e5bb"
+    },
+    {
+      "bytes": 3095,
+      "path": "jobs/M7-persistence__persistence-off__B1-instrumented__r2/owner-snapshots/shutdown.json",
+      "sha256": "sha256:d32a4a249ffb24e23310a64f58a9df1957d8e473e7044abed9169a3f8e75d327"
+    },
+    {
+      "bytes": 3097,
+      "path": "jobs/M7-persistence__persistence-off__B1-instrumented__r2/owner-snapshots/steady.json",
+      "sha256": "sha256:a62703dbbebf8026e6ef1844d0ead11e4422854be3d1accb2d8eb21fb8d49564"
+    },
+    {
+      "bytes": 530,
+      "path": "jobs/M7-persistence__persistence-off__B1-instrumented__r2/phase-timeline.jsonl",
+      "sha256": "sha256:74e6fb6fb1a017698535062113d182fa9ca3fc384b20f63e2b67387014db92b5"
+    },
+    {
+      "bytes": 2757,
+      "path": "jobs/M7-persistence__persistence-off__B1-instrumented__r2/provider-normalized.json",
+      "sha256": "sha256:320988115b78209711550c9c8e0869cb2a9b4177bc4312fa5450c921cca69430"
+    },
+    {
+      "bytes": 66,
+      "path": "jobs/M7-persistence__persistence-off__B1-instrumented__r2/provider-probe.json",
+      "sha256": "sha256:70ae6ae2c959f51c746fab1f44e83852e8c757082c60aaa9a31f1fbe6e8fecc4"
+    },
+    {
+      "bytes": 1127,
+      "path": "jobs/M7-persistence__persistence-off__B1-instrumented__r2/provider-raw.jsonl",
+      "sha256": "sha256:12bc8f932cf7ab34e813fd061e1e8562f71c806520c9d3a91312ad4575bb86c4"
+    },
+    {
+      "bytes": 1688,
+      "path": "jobs/M7-persistence__persistence-off__B1-instrumented__r2/provider-state.json",
+      "sha256": "sha256:a6b94408b0d5b4d516f22f6bc6db0a0e66036b6b286178ab431caec8dc09a0b3"
+    },
+    {
+      "bytes": 16,
+      "path": "jobs/M7-persistence__persistence-off__B1-instrumented__r3/daemon.log",
+      "sha256": "sha256:6489d6d7a33c5d40e18fc61eeb6c34c341279ee61816394dde5189aa4ad8fae5"
+    },
+    {
+      "bytes": 319,
+      "path": "jobs/M7-persistence__persistence-off__B1-instrumented__r3/executor-receipt.json",
+      "sha256": "sha256:eee283d952ae076e00ee63cf74ca441cb045c22349d6edb0a5397b1027e118db"
+    },
+    {
+      "bytes": 22779,
+      "path": "jobs/M7-persistence__persistence-off__B1-instrumented__r3/memory-baseline-report.json",
+      "sha256": "sha256:07fda9ebae674993bd72d9cab75ea22a14f5310909975d71881fc42459ea0528"
+    },
+    {
+      "bytes": 3072,
+      "path": "jobs/M7-persistence__persistence-off__B1-instrumented__r3/owner-snapshots/cold.json",
+      "sha256": "sha256:5272e1cd1b1d7c1eb092000d56c5b84341e1aeb3147cba7190e34312069c20fc"
+    },
+    {
+      "bytes": 3072,
+      "path": "jobs/M7-persistence__persistence-off__B1-instrumented__r3/owner-snapshots/expire_or_delete.json",
+      "sha256": "sha256:5272e1cd1b1d7c1eb092000d56c5b84341e1aeb3147cba7190e34312069c20fc"
+    },
+    {
+      "bytes": 3097,
+      "path": "jobs/M7-persistence__persistence-off__B1-instrumented__r3/owner-snapshots/fill.json",
+      "sha256": "sha256:a62703dbbebf8026e6ef1844d0ead11e4422854be3d1accb2d8eb21fb8d49564"
+    },
+    {
+      "bytes": 3095,
+      "path": "jobs/M7-persistence__persistence-off__B1-instrumented__r3/owner-snapshots/post_idle.json",
+      "sha256": "sha256:d32a4a249ffb24e23310a64f58a9df1957d8e473e7044abed9169a3f8e75d327"
+    },
+    {
+      "bytes": 3095,
+      "path": "jobs/M7-persistence__persistence-off__B1-instrumented__r3/owner-snapshots/refill.json",
+      "sha256": "sha256:d32a4a249ffb24e23310a64f58a9df1957d8e473e7044abed9169a3f8e75d327"
+    },
+    {
+      "bytes": 3072,
+      "path": "jobs/M7-persistence__persistence-off__B1-instrumented__r3/owner-snapshots/reset.json",
+      "sha256": "sha256:361cb155cd41440924cf25472d8e5e4a574f4f2c1f330f2bbb269e158f01e5bb"
+    },
+    {
+      "bytes": 3095,
+      "path": "jobs/M7-persistence__persistence-off__B1-instrumented__r3/owner-snapshots/shutdown.json",
+      "sha256": "sha256:d32a4a249ffb24e23310a64f58a9df1957d8e473e7044abed9169a3f8e75d327"
+    },
+    {
+      "bytes": 3097,
+      "path": "jobs/M7-persistence__persistence-off__B1-instrumented__r3/owner-snapshots/steady.json",
+      "sha256": "sha256:a62703dbbebf8026e6ef1844d0ead11e4422854be3d1accb2d8eb21fb8d49564"
+    },
+    {
+      "bytes": 530,
+      "path": "jobs/M7-persistence__persistence-off__B1-instrumented__r3/phase-timeline.jsonl",
+      "sha256": "sha256:7856bd8d0cec18f3e786bac9c21a72d89c849a5de70d3b0dddce966b973a171b"
+    },
+    {
+      "bytes": 2755,
+      "path": "jobs/M7-persistence__persistence-off__B1-instrumented__r3/provider-normalized.json",
+      "sha256": "sha256:641ee6f55f4d8a765d0e0499c09ac8735b02dc3f56ab8f4532c984a37abee223"
+    },
+    {
+      "bytes": 66,
+      "path": "jobs/M7-persistence__persistence-off__B1-instrumented__r3/provider-probe.json",
+      "sha256": "sha256:70ae6ae2c959f51c746fab1f44e83852e8c757082c60aaa9a31f1fbe6e8fecc4"
+    },
+    {
+      "bytes": 1127,
+      "path": "jobs/M7-persistence__persistence-off__B1-instrumented__r3/provider-raw.jsonl",
+      "sha256": "sha256:981ecb6e49f43cc0f4f4b99e8c9ae02b24f7ca11345d155778702300b2984724"
+    },
+    {
+      "bytes": 1688,
+      "path": "jobs/M7-persistence__persistence-off__B1-instrumented__r3/provider-state.json",
+      "sha256": "sha256:f2a5b1fa75845936155c3a2dd99fd064523989e76c9acde2b851a2f3947bc172"
+    },
+    {
+      "bytes": 16,
+      "path": "jobs/M7-persistence__persistence-supported__B1-instrumented__r1/daemon.log",
+      "sha256": "sha256:6489d6d7a33c5d40e18fc61eeb6c34c341279ee61816394dde5189aa4ad8fae5"
+    },
+    {
+      "bytes": 126,
+      "path": "jobs/M7-persistence__persistence-supported__B1-instrumented__r1/durable-store/node-identity.json",
+      "sha256": "sha256:fe6744930a31adbfe2855c0a2da2b6aba50dc4f56101815211b42040b36e80ad"
+    },
+    {
+      "bytes": 62,
+      "path": "jobs/M7-persistence__persistence-supported__B1-instrumented__r1/durable-store/raft-log/conf",
+      "sha256": "sha256:916d2ae94a3f9440b0db932b60a323e5980da640ec4fb2d07d5cbd74df0497f2"
+    },
+    {
+      "bytes": 842,
+      "path": "jobs/M7-persistence__persistence-supported__B1-instrumented__r1/durable-store/raft-log/db",
+      "sha256": "sha256:cca06572710b6ef2cad5f50bf20cbc1434201b22b1d40fb439cd7bbdb1592f76"
+    },
+    {
+      "bytes": 325,
+      "path": "jobs/M7-persistence__persistence-supported__B1-instrumented__r1/executor-receipt.json",
+      "sha256": "sha256:c5d319eb01a891897176dbb584b08c3d6d3d9577f0a6df02d4ecc0489245e815"
+    },
+    {
+      "bytes": 4171,
+      "path": "jobs/M7-persistence__persistence-supported__B1-instrumented__r1/m7-persistence-receipt.json",
+      "sha256": "sha256:b8a7ce5d578aa255ae697dc3eaf92a0f071dfc0e7bf0fb85e62168dafaf47f83"
+    },
+    {
+      "bytes": 22964,
+      "path": "jobs/M7-persistence__persistence-supported__B1-instrumented__r1/memory-baseline-report.json",
+      "sha256": "sha256:a6729ed493d2de8ea582bf7380005b7992f35af3f59b1266021de61997141f44"
+    },
+    {
+      "bytes": 3067,
+      "path": "jobs/M7-persistence__persistence-supported__B1-instrumented__r1/owner-snapshots/cold.json",
+      "sha256": "sha256:ae511b37f012422e03bbef6a621292a100fc2fd6b711f04b33e0c0c1be0032c7"
+    },
+    {
+      "bytes": 3067,
+      "path": "jobs/M7-persistence__persistence-supported__B1-instrumented__r1/owner-snapshots/expire_or_delete.json",
+      "sha256": "sha256:ae511b37f012422e03bbef6a621292a100fc2fd6b711f04b33e0c0c1be0032c7"
+    },
+    {
+      "bytes": 3092,
+      "path": "jobs/M7-persistence__persistence-supported__B1-instrumented__r1/owner-snapshots/fill.json",
+      "sha256": "sha256:2639e44bece958f485ea266dd931e02c23a357e666a69fb1966958112749ec55"
+    },
+    {
+      "bytes": 3090,
+      "path": "jobs/M7-persistence__persistence-supported__B1-instrumented__r1/owner-snapshots/post_idle.json",
+      "sha256": "sha256:bfc71056e2caa78ea162824b7e3cca8ead0466e26b264b55a4d500f2e268e46f"
+    },
+    {
+      "bytes": 3090,
+      "path": "jobs/M7-persistence__persistence-supported__B1-instrumented__r1/owner-snapshots/refill.json",
+      "sha256": "sha256:bfc71056e2caa78ea162824b7e3cca8ead0466e26b264b55a4d500f2e268e46f"
+    },
+    {
+      "bytes": 3067,
+      "path": "jobs/M7-persistence__persistence-supported__B1-instrumented__r1/owner-snapshots/reset.json",
+      "sha256": "sha256:ae511b37f012422e03bbef6a621292a100fc2fd6b711f04b33e0c0c1be0032c7"
+    },
+    {
+      "bytes": 3090,
+      "path": "jobs/M7-persistence__persistence-supported__B1-instrumented__r1/owner-snapshots/shutdown.json",
+      "sha256": "sha256:bfc71056e2caa78ea162824b7e3cca8ead0466e26b264b55a4d500f2e268e46f"
+    },
+    {
+      "bytes": 3092,
+      "path": "jobs/M7-persistence__persistence-supported__B1-instrumented__r1/owner-snapshots/steady.json",
+      "sha256": "sha256:2639e44bece958f485ea266dd931e02c23a357e666a69fb1966958112749ec55"
+    },
+    {
+      "bytes": 530,
+      "path": "jobs/M7-persistence__persistence-supported__B1-instrumented__r1/phase-timeline.jsonl",
+      "sha256": "sha256:7e12ee8966b13ce869cc7734ac353a9822c473c1f956e63ababea48e264b2fb5"
+    },
+    {
+      "bytes": 2768,
+      "path": "jobs/M7-persistence__persistence-supported__B1-instrumented__r1/provider-normalized.json",
+      "sha256": "sha256:df332205c4c604e21f77c7b8bd5232ec1555610384925800d423f1a101b87bca"
+    },
+    {
+      "bytes": 66,
+      "path": "jobs/M7-persistence__persistence-supported__B1-instrumented__r1/provider-probe.json",
+      "sha256": "sha256:70ae6ae2c959f51c746fab1f44e83852e8c757082c60aaa9a31f1fbe6e8fecc4"
+    },
+    {
+      "bytes": 1130,
+      "path": "jobs/M7-persistence__persistence-supported__B1-instrumented__r1/provider-raw.jsonl",
+      "sha256": "sha256:f50f13d5924644e3ab5d18fae5acabc4b8187d80cf642adf53658b060e9bea5e"
+    },
+    {
+      "bytes": 1706,
+      "path": "jobs/M7-persistence__persistence-supported__B1-instrumented__r1/provider-state.json",
+      "sha256": "sha256:915ea3b3f238b4dd8b8630e7950b609705f6ef16b9b5e5abbb076ebc7ed17c42"
+    },
+    {
+      "bytes": 16,
+      "path": "jobs/M7-persistence__persistence-supported__B1-instrumented__r2/daemon.log",
+      "sha256": "sha256:6489d6d7a33c5d40e18fc61eeb6c34c341279ee61816394dde5189aa4ad8fae5"
+    },
+    {
+      "bytes": 126,
+      "path": "jobs/M7-persistence__persistence-supported__B1-instrumented__r2/durable-store/node-identity.json",
+      "sha256": "sha256:fe6744930a31adbfe2855c0a2da2b6aba50dc4f56101815211b42040b36e80ad"
+    },
+    {
+      "bytes": 62,
+      "path": "jobs/M7-persistence__persistence-supported__B1-instrumented__r2/durable-store/raft-log/conf",
+      "sha256": "sha256:916d2ae94a3f9440b0db932b60a323e5980da640ec4fb2d07d5cbd74df0497f2"
+    },
+    {
+      "bytes": 842,
+      "path": "jobs/M7-persistence__persistence-supported__B1-instrumented__r2/durable-store/raft-log/db",
+      "sha256": "sha256:cca06572710b6ef2cad5f50bf20cbc1434201b22b1d40fb439cd7bbdb1592f76"
+    },
+    {
+      "bytes": 325,
+      "path": "jobs/M7-persistence__persistence-supported__B1-instrumented__r2/executor-receipt.json",
+      "sha256": "sha256:4e9ae59cac1ef08e63135c8a22ad4d715124f4ccd47c69f1370b0206aa1ca27e"
+    },
+    {
+      "bytes": 4171,
+      "path": "jobs/M7-persistence__persistence-supported__B1-instrumented__r2/m7-persistence-receipt.json",
+      "sha256": "sha256:57275355fb40626d4ca3eec837dd6819aa0ea5072114b5b231300183e538f997"
+    },
+    {
+      "bytes": 22965,
+      "path": "jobs/M7-persistence__persistence-supported__B1-instrumented__r2/memory-baseline-report.json",
+      "sha256": "sha256:578a52b14bade205699958241a9e3ca79a29862614710d413f002a8f9ee12a36"
+    },
+    {
+      "bytes": 3067,
+      "path": "jobs/M7-persistence__persistence-supported__B1-instrumented__r2/owner-snapshots/cold.json",
+      "sha256": "sha256:ae511b37f012422e03bbef6a621292a100fc2fd6b711f04b33e0c0c1be0032c7"
+    },
+    {
+      "bytes": 3067,
+      "path": "jobs/M7-persistence__persistence-supported__B1-instrumented__r2/owner-snapshots/expire_or_delete.json",
+      "sha256": "sha256:ae511b37f012422e03bbef6a621292a100fc2fd6b711f04b33e0c0c1be0032c7"
+    },
+    {
+      "bytes": 3092,
+      "path": "jobs/M7-persistence__persistence-supported__B1-instrumented__r2/owner-snapshots/fill.json",
+      "sha256": "sha256:2639e44bece958f485ea266dd931e02c23a357e666a69fb1966958112749ec55"
+    },
+    {
+      "bytes": 3090,
+      "path": "jobs/M7-persistence__persistence-supported__B1-instrumented__r2/owner-snapshots/post_idle.json",
+      "sha256": "sha256:bfc71056e2caa78ea162824b7e3cca8ead0466e26b264b55a4d500f2e268e46f"
+    },
+    {
+      "bytes": 3090,
+      "path": "jobs/M7-persistence__persistence-supported__B1-instrumented__r2/owner-snapshots/refill.json",
+      "sha256": "sha256:bfc71056e2caa78ea162824b7e3cca8ead0466e26b264b55a4d500f2e268e46f"
+    },
+    {
+      "bytes": 3067,
+      "path": "jobs/M7-persistence__persistence-supported__B1-instrumented__r2/owner-snapshots/reset.json",
+      "sha256": "sha256:ae511b37f012422e03bbef6a621292a100fc2fd6b711f04b33e0c0c1be0032c7"
+    },
+    {
+      "bytes": 3090,
+      "path": "jobs/M7-persistence__persistence-supported__B1-instrumented__r2/owner-snapshots/shutdown.json",
+      "sha256": "sha256:bfc71056e2caa78ea162824b7e3cca8ead0466e26b264b55a4d500f2e268e46f"
+    },
+    {
+      "bytes": 3092,
+      "path": "jobs/M7-persistence__persistence-supported__B1-instrumented__r2/owner-snapshots/steady.json",
+      "sha256": "sha256:2639e44bece958f485ea266dd931e02c23a357e666a69fb1966958112749ec55"
+    },
+    {
+      "bytes": 530,
+      "path": "jobs/M7-persistence__persistence-supported__B1-instrumented__r2/phase-timeline.jsonl",
+      "sha256": "sha256:17cac9741da2d571e9d0f8f3278bb0d09953fb0195027a79679475947cb7d0d6"
+    },
+    {
+      "bytes": 2769,
+      "path": "jobs/M7-persistence__persistence-supported__B1-instrumented__r2/provider-normalized.json",
+      "sha256": "sha256:0aeca5c31e30903acf3932742bc32279fd43e6e7c59c9dca13ff3b31e46e0a0e"
+    },
+    {
+      "bytes": 66,
+      "path": "jobs/M7-persistence__persistence-supported__B1-instrumented__r2/provider-probe.json",
+      "sha256": "sha256:70ae6ae2c959f51c746fab1f44e83852e8c757082c60aaa9a31f1fbe6e8fecc4"
+    },
+    {
+      "bytes": 1130,
+      "path": "jobs/M7-persistence__persistence-supported__B1-instrumented__r2/provider-raw.jsonl",
+      "sha256": "sha256:95a75ecbaf04ea1c832b5e7f981996d7acd8efb91e167ac90808b8ccb978d5eb"
+    },
+    {
+      "bytes": 1706,
+      "path": "jobs/M7-persistence__persistence-supported__B1-instrumented__r2/provider-state.json",
+      "sha256": "sha256:332dc07d1aeac566e4baede65230568138279567d7e16612ce5097f37efa24e9"
+    },
+    {
+      "bytes": 16,
+      "path": "jobs/M7-persistence__persistence-supported__B1-instrumented__r3/daemon.log",
+      "sha256": "sha256:6489d6d7a33c5d40e18fc61eeb6c34c341279ee61816394dde5189aa4ad8fae5"
+    },
+    {
+      "bytes": 126,
+      "path": "jobs/M7-persistence__persistence-supported__B1-instrumented__r3/durable-store/node-identity.json",
+      "sha256": "sha256:fe6744930a31adbfe2855c0a2da2b6aba50dc4f56101815211b42040b36e80ad"
+    },
+    {
+      "bytes": 62,
+      "path": "jobs/M7-persistence__persistence-supported__B1-instrumented__r3/durable-store/raft-log/conf",
+      "sha256": "sha256:916d2ae94a3f9440b0db932b60a323e5980da640ec4fb2d07d5cbd74df0497f2"
+    },
+    {
+      "bytes": 842,
+      "path": "jobs/M7-persistence__persistence-supported__B1-instrumented__r3/durable-store/raft-log/db",
+      "sha256": "sha256:cca06572710b6ef2cad5f50bf20cbc1434201b22b1d40fb439cd7bbdb1592f76"
+    },
+    {
+      "bytes": 325,
+      "path": "jobs/M7-persistence__persistence-supported__B1-instrumented__r3/executor-receipt.json",
+      "sha256": "sha256:d3ad42bfb0509548e29d7c0d4e7092da64edc96170934f058576af9260b42639"
+    },
+    {
+      "bytes": 4171,
+      "path": "jobs/M7-persistence__persistence-supported__B1-instrumented__r3/m7-persistence-receipt.json",
+      "sha256": "sha256:9d59ae0a0bcc968e69036abda211a7ff5342b69b27df2a7e1ded3811d3dd11c4"
+    },
+    {
+      "bytes": 22961,
+      "path": "jobs/M7-persistence__persistence-supported__B1-instrumented__r3/memory-baseline-report.json",
+      "sha256": "sha256:c7dae56c1e7a2eb990cd7f488f3f3b7bb76f82712b9f391e85b1f753e92b6344"
+    },
+    {
+      "bytes": 3067,
+      "path": "jobs/M7-persistence__persistence-supported__B1-instrumented__r3/owner-snapshots/cold.json",
+      "sha256": "sha256:ae511b37f012422e03bbef6a621292a100fc2fd6b711f04b33e0c0c1be0032c7"
+    },
+    {
+      "bytes": 3067,
+      "path": "jobs/M7-persistence__persistence-supported__B1-instrumented__r3/owner-snapshots/expire_or_delete.json",
+      "sha256": "sha256:ae511b37f012422e03bbef6a621292a100fc2fd6b711f04b33e0c0c1be0032c7"
+    },
+    {
+      "bytes": 3092,
+      "path": "jobs/M7-persistence__persistence-supported__B1-instrumented__r3/owner-snapshots/fill.json",
+      "sha256": "sha256:2639e44bece958f485ea266dd931e02c23a357e666a69fb1966958112749ec55"
+    },
+    {
+      "bytes": 3090,
+      "path": "jobs/M7-persistence__persistence-supported__B1-instrumented__r3/owner-snapshots/post_idle.json",
+      "sha256": "sha256:bfc71056e2caa78ea162824b7e3cca8ead0466e26b264b55a4d500f2e268e46f"
+    },
+    {
+      "bytes": 3090,
+      "path": "jobs/M7-persistence__persistence-supported__B1-instrumented__r3/owner-snapshots/refill.json",
+      "sha256": "sha256:bfc71056e2caa78ea162824b7e3cca8ead0466e26b264b55a4d500f2e268e46f"
+    },
+    {
+      "bytes": 3067,
+      "path": "jobs/M7-persistence__persistence-supported__B1-instrumented__r3/owner-snapshots/reset.json",
+      "sha256": "sha256:ae511b37f012422e03bbef6a621292a100fc2fd6b711f04b33e0c0c1be0032c7"
+    },
+    {
+      "bytes": 3090,
+      "path": "jobs/M7-persistence__persistence-supported__B1-instrumented__r3/owner-snapshots/shutdown.json",
+      "sha256": "sha256:bfc71056e2caa78ea162824b7e3cca8ead0466e26b264b55a4d500f2e268e46f"
+    },
+    {
+      "bytes": 3092,
+      "path": "jobs/M7-persistence__persistence-supported__B1-instrumented__r3/owner-snapshots/steady.json",
+      "sha256": "sha256:2639e44bece958f485ea266dd931e02c23a357e666a69fb1966958112749ec55"
+    },
+    {
+      "bytes": 530,
+      "path": "jobs/M7-persistence__persistence-supported__B1-instrumented__r3/phase-timeline.jsonl",
+      "sha256": "sha256:2a216d6ceaabf5e1def56e35364d4ede138a47e709d814b78bfcb9b209ac3de8"
+    },
+    {
+      "bytes": 2766,
+      "path": "jobs/M7-persistence__persistence-supported__B1-instrumented__r3/provider-normalized.json",
+      "sha256": "sha256:afd2b5fc25d9d36050bd58f915937a9e84c65f42ee416312d5aded0496da43de"
+    },
+    {
+      "bytes": 66,
+      "path": "jobs/M7-persistence__persistence-supported__B1-instrumented__r3/provider-probe.json",
+      "sha256": "sha256:70ae6ae2c959f51c746fab1f44e83852e8c757082c60aaa9a31f1fbe6e8fecc4"
+    },
+    {
+      "bytes": 1130,
+      "path": "jobs/M7-persistence__persistence-supported__B1-instrumented__r3/provider-raw.jsonl",
+      "sha256": "sha256:0c92603c5c9f63e79fb92aa6f067c9fa3d5cb898c0d2d8c9c88b7e7f827d5a05"
+    },
+    {
+      "bytes": 1706,
+      "path": "jobs/M7-persistence__persistence-supported__B1-instrumented__r3/provider-state.json",
+      "sha256": "sha256:028a9a94cadb069d45ef7758bfb7284c634d616a4ee5c3cd5ff46c838dee77ac"
+    }
+  ],
+  "campaign_id": "hc071-d0-ax42-20260913-m7-01",
+  "campaign_identity_sha256": "sha256:6a2853064fcfb0a4f9d4a6f56c9b45f2248292d24f2c8cf7e815b1e6999ffedd",
+  "campaign_role": "baseline",
+  "case_ids": [
+    "M7-persistence"
+  ],
+  "completed_jobs": 6,
+  "finalized_at": "2026-09-13T15:44:33.053203+00:00",
+  "job_count": 6,
+  "mode": "evidence",
+  "release": "0.71",
+  "result": "success",
+  "scenario_digest": "sha256:c85fa4fcc8fc87cba85bb710aa96ca60eb0be94136793872064dfc31281b3252",
+  "schema_version": 1,
+  "ship_evidence_eligible": false,
+  "source_sha": "906aa24cc22ad6b50b824120ed6364208484203a",
+  "workflow_sha": "9c533d1de5a25b83bcb294e5b939064737b7d9fc"
+}

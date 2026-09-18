@@ -1,0 +1,98 @@
+{"at": "2026-09-12T21:52:40.617544+00:00", "campaign_role": "baseline", "event": "campaign-planned", "job_count": 48, "source_sha": "906aa24cc22ad6b50b824120ed6364208484203a", "workflow_sha": "9c533d1de5a25b83bcb294e5b939064737b7d9fc"}
+{"at": "2026-09-12T21:56:16.906068+00:00", "attempt": 1, "event": "job-started", "job_id": "M1-shape__keys-1000__value_bytes-64__B1-instrumented__r1"}
+{"at": "2026-09-12T22:06:17.902768+00:00", "attempt": 1, "event": "job-finished", "job_id": "M1-shape__keys-1000__value_bytes-64__B1-instrumented__r1", "status": "success"}
+{"at": "2026-09-12T22:06:17.912518+00:00", "attempt": 1, "event": "job-started", "job_id": "M1-shape__keys-1000__value_bytes-64__B1-instrumented__r2"}
+{"at": "2026-09-12T22:16:18.909909+00:00", "attempt": 1, "event": "job-finished", "job_id": "M1-shape__keys-1000__value_bytes-64__B1-instrumented__r2", "status": "success"}
+{"at": "2026-09-12T22:16:18.919676+00:00", "attempt": 1, "event": "job-started", "job_id": "M1-shape__keys-1000__value_bytes-64__B1-instrumented__r3"}
+{"at": "2026-09-12T22:26:19.922257+00:00", "attempt": 1, "event": "job-finished", "job_id": "M1-shape__keys-1000__value_bytes-64__B1-instrumented__r3", "status": "success"}
+{"at": "2026-09-12T22:26:19.935019+00:00", "attempt": 1, "event": "job-started", "job_id": "M1-shape__keys-1000__value_bytes-256__B1-instrumented__r1"}
+{"at": "2026-09-12T22:36:20.924576+00:00", "attempt": 1, "event": "job-finished", "job_id": "M1-shape__keys-1000__value_bytes-256__B1-instrumented__r1", "status": "success"}
+{"at": "2026-09-12T22:36:20.934468+00:00", "attempt": 1, "event": "job-started", "job_id": "M1-shape__keys-1000__value_bytes-256__B1-instrumented__r2"}
+{"at": "2026-09-12T22:46:21.925476+00:00", "attempt": 1, "event": "job-finished", "job_id": "M1-shape__keys-1000__value_bytes-256__B1-instrumented__r2", "status": "success"}
+{"at": "2026-09-12T22:46:21.935318+00:00", "attempt": 1, "event": "job-started", "job_id": "M1-shape__keys-1000__value_bytes-256__B1-instrumented__r3"}
+{"at": "2026-09-12T22:56:22.933706+00:00", "attempt": 1, "event": "job-finished", "job_id": "M1-shape__keys-1000__value_bytes-256__B1-instrumented__r3", "status": "success"}
+{"at": "2026-09-12T22:56:22.944149+00:00", "attempt": 1, "event": "job-started", "job_id": "M1-shape__keys-1000__value_bytes-1024__B1-instrumented__r1"}
+{"at": "2026-09-12T23:06:24.034680+00:00", "attempt": 1, "event": "job-finished", "job_id": "M1-shape__keys-1000__value_bytes-1024__B1-instrumented__r1", "status": "success"}
+{"at": "2026-09-12T23:06:24.044558+00:00", "attempt": 1, "event": "job-started", "job_id": "M1-shape__keys-1000__value_bytes-1024__B1-instrumented__r2"}
+{"at": "2026-09-12T23:16:25.035879+00:00", "attempt": 1, "event": "job-finished", "job_id": "M1-shape__keys-1000__value_bytes-1024__B1-instrumented__r2", "status": "success"}
+{"at": "2026-09-12T23:16:25.045583+00:00", "attempt": 1, "event": "job-started", "job_id": "M1-shape__keys-1000__value_bytes-1024__B1-instrumented__r3"}
+{"at": "2026-09-12T23:26:26.036745+00:00", "attempt": 1, "event": "job-finished", "job_id": "M1-shape__keys-1000__value_bytes-1024__B1-instrumented__r3", "status": "success"}
+{"at": "2026-09-12T23:26:26.046617+00:00", "attempt": 1, "event": "job-started", "job_id": "M1-shape__keys-1000__value_bytes-4096__B1-instrumented__r1"}
+{"at": "2026-09-12T23:36:27.091417+00:00", "attempt": 1, "event": "job-finished", "job_id": "M1-shape__keys-1000__value_bytes-4096__B1-instrumented__r1", "status": "success"}
+{"at": "2026-09-12T23:36:27.101077+00:00", "attempt": 1, "event": "job-started", "job_id": "M1-shape__keys-1000__value_bytes-4096__B1-instrumented__r2"}
+{"at": "2026-09-12T23:46:28.091388+00:00", "attempt": 1, "event": "job-finished", "job_id": "M1-shape__keys-1000__value_bytes-4096__B1-instrumented__r2", "status": "success"}
+{"at": "2026-09-12T23:46:28.101102+00:00", "attempt": 1, "event": "job-started", "job_id": "M1-shape__keys-1000__value_bytes-4096__B1-instrumented__r3"}
+{"at": "2026-09-12T23:56:29.092797+00:00", "attempt": 1, "event": "job-finished", "job_id": "M1-shape__keys-1000__value_bytes-4096__B1-instrumented__r3", "status": "success"}
+{"at": "2026-09-12T23:56:29.102607+00:00", "attempt": 1, "event": "job-started", "job_id": "M1-shape__keys-10000__value_bytes-64__B1-instrumented__r1"}
+{"at": "2026-09-13T00:06:30.850469+00:00", "attempt": 1, "event": "job-finished", "job_id": "M1-shape__keys-10000__value_bytes-64__B1-instrumented__r1", "status": "success"}
+{"at": "2026-09-13T00:06:30.855823+00:00", "attempt": 1, "event": "job-started", "job_id": "M1-shape__keys-10000__value_bytes-64__B1-instrumented__r2"}
+{"at": "2026-09-13T00:16:32.506749+00:00", "attempt": 1, "event": "job-finished", "job_id": "M1-shape__keys-10000__value_bytes-64__B1-instrumented__r2", "status": "success"}
+{"at": "2026-09-13T00:16:32.512083+00:00", "attempt": 1, "event": "job-started", "job_id": "M1-shape__keys-10000__value_bytes-64__B1-instrumented__r3"}
+{"at": "2026-09-13T00:26:34.255623+00:00", "attempt": 1, "event": "job-finished", "job_id": "M1-shape__keys-10000__value_bytes-64__B1-instrumented__r3", "status": "success"}
+{"at": "2026-09-13T00:26:34.261095+00:00", "attempt": 1, "event": "job-started", "job_id": "M1-shape__keys-10000__value_bytes-256__B1-instrumented__r1"}
+{"at": "2026-09-13T00:36:35.907628+00:00", "attempt": 1, "event": "job-finished", "job_id": "M1-shape__keys-10000__value_bytes-256__B1-instrumented__r1", "status": "success"}
+{"at": "2026-09-13T00:36:35.913003+00:00", "attempt": 1, "event": "job-started", "job_id": "M1-shape__keys-10000__value_bytes-256__B1-instrumented__r2"}
+{"at": "2026-09-13T00:46:37.562131+00:00", "attempt": 1, "event": "job-finished", "job_id": "M1-shape__keys-10000__value_bytes-256__B1-instrumented__r2", "status": "success"}
+{"at": "2026-09-13T00:46:37.567569+00:00", "attempt": 1, "event": "job-started", "job_id": "M1-shape__keys-10000__value_bytes-256__B1-instrumented__r3"}
+{"at": "2026-09-13T00:56:39.313910+00:00", "attempt": 1, "event": "job-finished", "job_id": "M1-shape__keys-10000__value_bytes-256__B1-instrumented__r3", "status": "success"}
+{"at": "2026-09-13T00:56:39.323837+00:00", "attempt": 1, "event": "job-started", "job_id": "M1-shape__keys-10000__value_bytes-1024__B1-instrumented__r1"}
+{"at": "2026-09-13T01:06:41.118641+00:00", "attempt": 1, "event": "job-finished", "job_id": "M1-shape__keys-10000__value_bytes-1024__B1-instrumented__r1", "status": "success"}
+{"at": "2026-09-13T01:06:41.128508+00:00", "attempt": 1, "event": "job-started", "job_id": "M1-shape__keys-10000__value_bytes-1024__B1-instrumented__r2"}
+{"at": "2026-09-13T01:16:42.820835+00:00", "attempt": 1, "event": "job-finished", "job_id": "M1-shape__keys-10000__value_bytes-1024__B1-instrumented__r2", "status": "success"}
+{"at": "2026-09-13T01:16:42.830652+00:00", "attempt": 1, "event": "job-started", "job_id": "M1-shape__keys-10000__value_bytes-1024__B1-instrumented__r3"}
+{"at": "2026-09-13T01:26:44.529934+00:00", "attempt": 1, "event": "job-finished", "job_id": "M1-shape__keys-10000__value_bytes-1024__B1-instrumented__r3", "status": "success"}
+{"at": "2026-09-13T01:26:44.539696+00:00", "attempt": 1, "event": "job-started", "job_id": "M1-shape__keys-10000__value_bytes-4096__B1-instrumented__r1"}
+{"at": "2026-09-13T01:36:46.334712+00:00", "attempt": 1, "event": "job-finished", "job_id": "M1-shape__keys-10000__value_bytes-4096__B1-instrumented__r1", "status": "success"}
+{"at": "2026-09-13T01:36:46.344545+00:00", "attempt": 1, "event": "job-started", "job_id": "M1-shape__keys-10000__value_bytes-4096__B1-instrumented__r2"}
+{"at": "2026-09-13T01:46:48.142769+00:00", "attempt": 1, "event": "job-finished", "job_id": "M1-shape__keys-10000__value_bytes-4096__B1-instrumented__r2", "status": "success"}
+{"at": "2026-09-13T01:46:48.152522+00:00", "attempt": 1, "event": "job-started", "job_id": "M1-shape__keys-10000__value_bytes-4096__B1-instrumented__r3"}
+{"at": "2026-09-13T01:56:49.950150+00:00", "attempt": 1, "event": "job-finished", "job_id": "M1-shape__keys-10000__value_bytes-4096__B1-instrumented__r3", "status": "success"}
+{"at": "2026-09-13T01:56:49.959964+00:00", "attempt": 1, "event": "job-started", "job_id": "M1-shape__keys-50000__value_bytes-64__B1-instrumented__r1"}
+{"at": "2026-09-13T02:06:54.355693+00:00", "attempt": 1, "event": "job-finished", "job_id": "M1-shape__keys-50000__value_bytes-64__B1-instrumented__r1", "status": "success"}
+{"at": "2026-09-13T02:06:54.361113+00:00", "attempt": 1, "event": "job-started", "job_id": "M1-shape__keys-50000__value_bytes-64__B1-instrumented__r2"}
+{"at": "2026-09-13T02:16:58.811976+00:00", "attempt": 1, "event": "job-finished", "job_id": "M1-shape__keys-50000__value_bytes-64__B1-instrumented__r2", "status": "success"}
+{"at": "2026-09-13T02:16:58.817456+00:00", "attempt": 1, "event": "job-started", "job_id": "M1-shape__keys-50000__value_bytes-64__B1-instrumented__r3"}
+{"at": "2026-09-13T02:27:03.211830+00:00", "attempt": 1, "event": "job-finished", "job_id": "M1-shape__keys-50000__value_bytes-64__B1-instrumented__r3", "status": "success"}
+{"at": "2026-09-13T02:27:03.217317+00:00", "attempt": 1, "event": "job-started", "job_id": "M1-shape__keys-50000__value_bytes-256__B1-instrumented__r1"}
+{"at": "2026-09-13T02:37:07.771100+00:00", "attempt": 1, "event": "job-finished", "job_id": "M1-shape__keys-50000__value_bytes-256__B1-instrumented__r1", "status": "success"}
+{"at": "2026-09-13T02:37:07.780914+00:00", "attempt": 1, "event": "job-started", "job_id": "M1-shape__keys-50000__value_bytes-256__B1-instrumented__r2"}
+{"at": "2026-09-13T02:47:12.278055+00:00", "attempt": 1, "event": "job-finished", "job_id": "M1-shape__keys-50000__value_bytes-256__B1-instrumented__r2", "status": "success"}
+{"at": "2026-09-13T02:47:12.287795+00:00", "attempt": 1, "event": "job-started", "job_id": "M1-shape__keys-50000__value_bytes-256__B1-instrumented__r3"}
+{"at": "2026-09-13T02:57:16.787009+00:00", "attempt": 1, "event": "job-finished", "job_id": "M1-shape__keys-50000__value_bytes-256__B1-instrumented__r3", "status": "success"}
+{"at": "2026-09-13T02:57:16.796763+00:00", "attempt": 1, "event": "job-started", "job_id": "M1-shape__keys-50000__value_bytes-1024__B1-instrumented__r1"}
+{"at": "2026-09-13T03:07:21.551245+00:00", "attempt": 1, "event": "job-finished", "job_id": "M1-shape__keys-50000__value_bytes-1024__B1-instrumented__r1", "status": "success"}
+{"at": "2026-09-13T03:07:21.561095+00:00", "attempt": 1, "event": "job-started", "job_id": "M1-shape__keys-50000__value_bytes-1024__B1-instrumented__r2"}
+{"at": "2026-09-13T03:17:26.314143+00:00", "attempt": 1, "event": "job-finished", "job_id": "M1-shape__keys-50000__value_bytes-1024__B1-instrumented__r2", "status": "success"}
+{"at": "2026-09-13T03:17:26.323978+00:00", "attempt": 1, "event": "job-started", "job_id": "M1-shape__keys-50000__value_bytes-1024__B1-instrumented__r3"}
+{"at": "2026-09-13T03:27:31.026257+00:00", "attempt": 1, "event": "job-finished", "job_id": "M1-shape__keys-50000__value_bytes-1024__B1-instrumented__r3", "status": "success"}
+{"at": "2026-09-13T03:27:31.035954+00:00", "attempt": 1, "event": "job-started", "job_id": "M1-shape__keys-50000__value_bytes-4096__B1-instrumented__r1"}
+{"at": "2026-09-13T03:37:36.138407+00:00", "attempt": 1, "event": "job-finished", "job_id": "M1-shape__keys-50000__value_bytes-4096__B1-instrumented__r1", "status": "success"}
+{"at": "2026-09-13T03:37:36.148426+00:00", "attempt": 1, "event": "job-started", "job_id": "M1-shape__keys-50000__value_bytes-4096__B1-instrumented__r2"}
+{"at": "2026-09-13T03:47:41.403734+00:00", "attempt": 1, "event": "job-finished", "job_id": "M1-shape__keys-50000__value_bytes-4096__B1-instrumented__r2", "status": "success"}
+{"at": "2026-09-13T03:47:41.413618+00:00", "attempt": 1, "event": "job-started", "job_id": "M1-shape__keys-50000__value_bytes-4096__B1-instrumented__r3"}
+{"at": "2026-09-13T03:57:46.562313+00:00", "attempt": 1, "event": "job-finished", "job_id": "M1-shape__keys-50000__value_bytes-4096__B1-instrumented__r3", "status": "success"}
+{"at": "2026-09-13T03:57:46.572158+00:00", "attempt": 1, "event": "job-started", "job_id": "M1-shape__keys-250000__value_bytes-64__B1-instrumented__r1"}
+{"at": "2026-09-13T04:08:04.896255+00:00", "attempt": 1, "event": "job-finished", "job_id": "M1-shape__keys-250000__value_bytes-64__B1-instrumented__r1", "status": "success"}
+{"at": "2026-09-13T04:08:04.909526+00:00", "attempt": 1, "event": "job-started", "job_id": "M1-shape__keys-250000__value_bytes-64__B1-instrumented__r2"}
+{"at": "2026-09-13T04:18:23.271453+00:00", "attempt": 1, "event": "job-finished", "job_id": "M1-shape__keys-250000__value_bytes-64__B1-instrumented__r2", "status": "success"}
+{"at": "2026-09-13T04:18:23.281489+00:00", "attempt": 1, "event": "job-started", "job_id": "M1-shape__keys-250000__value_bytes-64__B1-instrumented__r3"}
+{"at": "2026-09-13T04:28:41.752624+00:00", "attempt": 1, "event": "job-finished", "job_id": "M1-shape__keys-250000__value_bytes-64__B1-instrumented__r3", "status": "success"}
+{"at": "2026-09-13T04:28:41.762733+00:00", "attempt": 1, "event": "job-started", "job_id": "M1-shape__keys-250000__value_bytes-256__B1-instrumented__r1"}
+{"at": "2026-09-13T04:39:00.934406+00:00", "attempt": 1, "event": "job-finished", "job_id": "M1-shape__keys-250000__value_bytes-256__B1-instrumented__r1", "status": "success"}
+{"at": "2026-09-13T04:39:00.947362+00:00", "attempt": 1, "event": "job-started", "job_id": "M1-shape__keys-250000__value_bytes-256__B1-instrumented__r2"}
+{"at": "2026-09-13T04:49:19.862621+00:00", "attempt": 1, "event": "job-finished", "job_id": "M1-shape__keys-250000__value_bytes-256__B1-instrumented__r2", "status": "success"}
+{"at": "2026-09-13T04:49:19.872370+00:00", "attempt": 1, "event": "job-started", "job_id": "M1-shape__keys-250000__value_bytes-256__B1-instrumented__r3"}
+{"at": "2026-09-13T04:59:38.942905+00:00", "attempt": 1, "event": "job-finished", "job_id": "M1-shape__keys-250000__value_bytes-256__B1-instrumented__r3", "status": "success"}
+{"at": "2026-09-13T04:59:38.952755+00:00", "attempt": 1, "event": "job-started", "job_id": "M1-shape__keys-250000__value_bytes-1024__B1-instrumented__r1"}
+{"at": "2026-09-13T05:09:58.873218+00:00", "attempt": 1, "event": "job-finished", "job_id": "M1-shape__keys-250000__value_bytes-1024__B1-instrumented__r1", "status": "success"}
+{"at": "2026-09-13T05:09:58.883045+00:00", "attempt": 1, "event": "job-started", "job_id": "M1-shape__keys-250000__value_bytes-1024__B1-instrumented__r2"}
+{"at": "2026-09-13T05:20:18.809481+00:00", "attempt": 1, "event": "job-finished", "job_id": "M1-shape__keys-250000__value_bytes-1024__B1-instrumented__r2", "status": "success"}
+{"at": "2026-09-13T05:20:18.819298+00:00", "attempt": 1, "event": "job-started", "job_id": "M1-shape__keys-250000__value_bytes-1024__B1-instrumented__r3"}
+{"at": "2026-09-13T05:30:38.845381+00:00", "attempt": 1, "event": "job-finished", "job_id": "M1-shape__keys-250000__value_bytes-1024__B1-instrumented__r3", "status": "success"}
+{"at": "2026-09-13T05:30:38.855227+00:00", "attempt": 1, "event": "job-started", "job_id": "M1-shape__keys-250000__value_bytes-4096__B1-instrumented__r1"}
+{"at": "2026-09-13T05:41:00.984080+00:00", "attempt": 1, "event": "job-finished", "job_id": "M1-shape__keys-250000__value_bytes-4096__B1-instrumented__r1", "status": "success"}
+{"at": "2026-09-13T05:41:00.993995+00:00", "attempt": 1, "event": "job-started", "job_id": "M1-shape__keys-250000__value_bytes-4096__B1-instrumented__r2"}
+{"at": "2026-09-13T05:51:22.561493+00:00", "attempt": 1, "event": "job-finished", "job_id": "M1-shape__keys-250000__value_bytes-4096__B1-instrumented__r2", "status": "success"}
+{"at": "2026-09-13T05:51:22.571235+00:00", "attempt": 1, "event": "job-started", "job_id": "M1-shape__keys-250000__value_bytes-4096__B1-instrumented__r3"}
+{"at": "2026-09-13T06:01:44.295059+00:00", "attempt": 1, "event": "job-finished", "job_id": "M1-shape__keys-250000__value_bytes-4096__B1-instrumented__r3", "status": "success"}
+{"at": "2026-09-13T06:01:44.311183+00:00", "event": "campaign-finished", "status": "success"}

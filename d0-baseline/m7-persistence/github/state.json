@@ -1,0 +1,293 @@
+{
+  "admission": {
+    "admitted_at": "2026-09-13T14:44:22.539593+00:00",
+    "manifest": "admission/admission-manifest.json",
+    "manifest_sha256": "sha256:a66b946500b6575c3106f984cf3a19021ff860f51b339885e94bdd0f041fe6a9"
+  },
+  "admitted_host_cap_seconds": 21600,
+  "builds": {
+    "B1-instrumented": {
+      "manifest": "builds/B1-instrumented/build-manifest.json",
+      "manifest_sha256": "sha256:1158ea1fc100fe9296ebc32d5bf95e1e15e957f13026428e3e8f10dde3ff4406"
+    }
+  },
+  "campaign_id": "hc071-d0-ax42-20260913-m7-01",
+  "campaign_role": "baseline",
+  "case_ids": [
+    "M7-persistence"
+  ],
+  "cohorts": [
+    "B1-instrumented"
+  ],
+  "completed_at": "2026-09-13T15:44:32.798930+00:00",
+  "controller_sha": "9c533d1de5a25b83bcb294e5b939064737b7d9fc",
+  "controller_tools": {
+    "hc2_helper_manifest": "builds/controller-tools/hc2-helper-manifest.json",
+    "hc2_helper_manifest_sha256": "sha256:5df9e6fc26f7ff982df85e3a6ca5afa9c2294bde8fbe1b919c6b59bf4e6bbf5f"
+  },
+  "created_at": "2026-09-13T14:40:46.819620+00:00",
+  "identity": {
+    "path": "campaign-identity.json",
+    "sha256": "sha256:6a2853064fcfb0a4f9d4a6f56c9b45f2248292d24f2c8cf7e815b1e6999ffedd"
+  },
+  "job_count": 6,
+  "jobs": [
+    {
+      "attempts": [
+        {
+          "attempt": 1,
+          "elapsed_ns": 601622421575,
+          "exact_command": [
+            "/usr/bin/python3",
+            "/opt/actions-runner/_work/hydracache/hydracache/trusted-harness/scripts/perf/memory_case_executor_071.py",
+            "--job",
+            "/var/lib/hydracache-memory/campaigns/hc071-d0-ax42-20260913-m7-01/job-specs/M7-persistence__persistence-off__B1-instrumented__r1.json",
+            "--build-manifest",
+            "/var/lib/hydracache-memory/campaigns/hc071-d0-ax42-20260913-m7-01/builds/B1-instrumented/build-manifest.json",
+            "--output",
+            "/var/lib/hydracache-memory/campaigns/hc071-d0-ax42-20260913-m7-01/jobs/M7-persistence__persistence-off__B1-instrumented__r1",
+            "--scenario-digest",
+            "sha256:c85fa4fcc8fc87cba85bb710aa96ca60eb0be94136793872064dfc31281b3252",
+            "--provider",
+            "system",
+            "--host-preflight",
+            "/var/lib/hydracache-memory/campaigns/hc071-d0-ax42-20260913-m7-01/admission/host-preflight.json"
+          ],
+          "started_at": "2026-09-13T14:54:24.252841+00:00",
+          "status": "success"
+        }
+      ],
+      "case_id": "M7-persistence",
+      "cell_id": "M7-persistence__persistence-off",
+      "cohort": "B1-instrumented",
+      "dimensions": {
+        "persistence": "off"
+      },
+      "job_id": "M7-persistence__persistence-off__B1-instrumented__r1",
+      "repetition": 1,
+      "status": "success"
+    },
+    {
+      "attempts": [
+        {
+          "attempt": 1,
+          "elapsed_ns": 601626729758,
+          "exact_command": [
+            "/usr/bin/python3",
+            "/opt/actions-runner/_work/hydracache/hydracache/trusted-harness/scripts/perf/memory_case_executor_071.py",
+            "--job",
+            "/var/lib/hydracache-memory/campaigns/hc071-d0-ax42-20260913-m7-01/job-specs/M7-persistence__persistence-off__B1-instrumented__r2.json",
+            "--build-manifest",
+            "/var/lib/hydracache-memory/campaigns/hc071-d0-ax42-20260913-m7-01/builds/B1-instrumented/build-manifest.json",
+            "--output",
+            "/var/lib/hydracache-memory/campaigns/hc071-d0-ax42-20260913-m7-01/jobs/M7-persistence__persistence-off__B1-instrumented__r2",
+            "--scenario-digest",
+            "sha256:c85fa4fcc8fc87cba85bb710aa96ca60eb0be94136793872064dfc31281b3252",
+            "--provider",
+            "system",
+            "--host-preflight",
+            "/var/lib/hydracache-memory/campaigns/hc071-d0-ax42-20260913-m7-01/admission/host-preflight.json"
+          ],
+          "started_at": "2026-09-13T15:04:25.910499+00:00",
+          "status": "success"
+        }
+      ],
+      "case_id": "M7-persistence",
+      "cell_id": "M7-persistence__persistence-off",
+      "cohort": "B1-instrumented",
+      "dimensions": {
+        "persistence": "off"
+      },
+      "job_id": "M7-persistence__persistence-off__B1-instrumented__r2",
+      "repetition": 2,
+      "status": "success"
+    },
+    {
+      "attempts": [
+        {
+          "attempt": 1,
+          "elapsed_ns": 601732645353,
+          "exact_command": [
+            "/usr/bin/python3",
+            "/opt/actions-runner/_work/hydracache/hydracache/trusted-harness/scripts/perf/memory_case_executor_071.py",
+            "--job",
+            "/var/lib/hydracache-memory/campaigns/hc071-d0-ax42-20260913-m7-01/job-specs/M7-persistence__persistence-off__B1-instrumented__r3.json",
+            "--build-manifest",
+            "/var/lib/hydracache-memory/campaigns/hc071-d0-ax42-20260913-m7-01/builds/B1-instrumented/build-manifest.json",
+            "--output",
+            "/var/lib/hydracache-memory/campaigns/hc071-d0-ax42-20260913-m7-01/jobs/M7-persistence__persistence-off__B1-instrumented__r3",
+            "--scenario-digest",
+            "sha256:c85fa4fcc8fc87cba85bb710aa96ca60eb0be94136793872064dfc31281b3252",
+            "--provider",
+            "system",
+            "--host-preflight",
+            "/var/lib/hydracache-memory/campaigns/hc071-d0-ax42-20260913-m7-01/admission/host-preflight.json"
+          ],
+          "started_at": "2026-09-13T15:14:27.672556+00:00",
+          "status": "success"
+        }
+      ],
+      "case_id": "M7-persistence",
+      "cell_id": "M7-persistence__persistence-off",
+      "cohort": "B1-instrumented",
+      "dimensions": {
+        "persistence": "off"
+      },
+      "job_id": "M7-persistence__persistence-off__B1-instrumented__r3",
+      "repetition": 3,
+      "status": "success"
+    },
+    {
+      "attempts": [
+        {
+          "attempt": 1,
+          "elapsed_ns": 601668978790,
+          "exact_command": [
+            "/usr/bin/python3",
+            "/opt/actions-runner/_work/hydracache/hydracache/trusted-harness/scripts/perf/memory_case_executor_071.py",
+            "--job",
+            "/var/lib/hydracache-memory/campaigns/hc071-d0-ax42-20260913-m7-01/job-specs/M7-persistence__persistence-supported__B1-instrumented__r1.json",
+            "--build-manifest",
+            "/var/lib/hydracache-memory/campaigns/hc071-d0-ax42-20260913-m7-01/builds/B1-instrumented/build-manifest.json",
+            "--output",
+            "/var/lib/hydracache-memory/campaigns/hc071-d0-ax42-20260913-m7-01/jobs/M7-persistence__persistence-supported__B1-instrumented__r1",
+            "--scenario-digest",
+            "sha256:c85fa4fcc8fc87cba85bb710aa96ca60eb0be94136793872064dfc31281b3252",
+            "--provider",
+            "system",
+            "--host-preflight",
+            "/var/lib/hydracache-memory/campaigns/hc071-d0-ax42-20260913-m7-01/admission/host-preflight.json"
+          ],
+          "started_at": "2026-09-13T15:24:29.376129+00:00",
+          "status": "success"
+        }
+      ],
+      "case_id": "M7-persistence",
+      "cell_id": "M7-persistence__persistence-supported",
+      "cohort": "B1-instrumented",
+      "dimensions": {
+        "persistence": "supported"
+      },
+      "job_id": "M7-persistence__persistence-supported__B1-instrumented__r1",
+      "repetition": 1,
+      "status": "success"
+    },
+    {
+      "attempts": [
+        {
+          "attempt": 1,
+          "elapsed_ns": 601668566817,
+          "exact_command": [
+            "/usr/bin/python3",
+            "/opt/actions-runner/_work/hydracache/hydracache/trusted-harness/scripts/perf/memory_case_executor_071.py",
+            "--job",
+            "/var/lib/hydracache-memory/campaigns/hc071-d0-ax42-20260913-m7-01/job-specs/M7-persistence__persistence-supported__B1-instrumented__r2.json",
+            "--build-manifest",
+            "/var/lib/hydracache-memory/campaigns/hc071-d0-ax42-20260913-m7-01/builds/B1-instrumented/build-manifest.json",
+            "--output",
+            "/var/lib/hydracache-memory/campaigns/hc071-d0-ax42-20260913-m7-01/jobs/M7-persistence__persistence-supported__B1-instrumented__r2",
+            "--scenario-digest",
+            "sha256:c85fa4fcc8fc87cba85bb710aa96ca60eb0be94136793872064dfc31281b3252",
+            "--provider",
+            "system",
+            "--host-preflight",
+            "/var/lib/hydracache-memory/campaigns/hc071-d0-ax42-20260913-m7-01/admission/host-preflight.json"
+          ],
+          "started_at": "2026-09-13T15:34:31.075097+00:00",
+          "status": "success"
+        }
+      ],
+      "case_id": "M7-persistence",
+      "cell_id": "M7-persistence__persistence-supported",
+      "cohort": "B1-instrumented",
+      "dimensions": {
+        "persistence": "supported"
+      },
+      "job_id": "M7-persistence__persistence-supported__B1-instrumented__r2",
+      "repetition": 2,
+      "status": "success"
+    },
+    {
+      "attempts": [
+        {
+          "attempt": 1,
+          "elapsed_ns": 601669333038,
+          "exact_command": [
+            "/usr/bin/python3",
+            "/opt/actions-runner/_work/hydracache/hydracache/trusted-harness/scripts/perf/memory_case_executor_071.py",
+            "--job",
+            "/var/lib/hydracache-memory/campaigns/hc071-d0-ax42-20260913-m7-01/job-specs/M7-persistence__persistence-supported__B1-instrumented__r3.json",
+            "--build-manifest",
+            "/var/lib/hydracache-memory/campaigns/hc071-d0-ax42-20260913-m7-01/builds/B1-instrumented/build-manifest.json",
+            "--output",
+            "/var/lib/hydracache-memory/campaigns/hc071-d0-ax42-20260913-m7-01/jobs/M7-persistence__persistence-supported__B1-instrumented__r3",
+            "--scenario-digest",
+            "sha256:c85fa4fcc8fc87cba85bb710aa96ca60eb0be94136793872064dfc31281b3252",
+            "--provider",
+            "system",
+            "--host-preflight",
+            "/var/lib/hydracache-memory/campaigns/hc071-d0-ax42-20260913-m7-01/admission/host-preflight.json"
+          ],
+          "started_at": "2026-09-13T15:44:32.774466+00:00",
+          "status": "success"
+        }
+      ],
+      "case_id": "M7-persistence",
+      "cell_id": "M7-persistence__persistence-supported",
+      "cohort": "B1-instrumented",
+      "dimensions": {
+        "persistence": "supported"
+      },
+      "job_id": "M7-persistence__persistence-supported__B1-instrumented__r3",
+      "repetition": 3,
+      "status": "success"
+    }
+  ],
+  "mirror_root": "/mnt/hydracache-protected-memory",
+  "mode": "evidence",
+  "published_jobs": {
+    "M7-persistence__persistence-off__B1-instrumented__r1": {
+      "archive": "/mnt/hydracache-protected-memory/hc071-d0-ax42-20260913-m7-01/jobs/M7-persistence__persistence-off__B1-instrumented__r1.tar.gz",
+      "archive_sha256": "sha256:cf3c3fb915877f4bc1c128cb29c740c65e57ae520a18a135fb1d624189cf4713",
+      "receipt": "/mnt/hydracache-protected-memory/hc071-d0-ax42-20260913-m7-01/jobs/M7-persistence__persistence-off__B1-instrumented__r1.json"
+    },
+    "M7-persistence__persistence-off__B1-instrumented__r2": {
+      "archive": "/mnt/hydracache-protected-memory/hc071-d0-ax42-20260913-m7-01/jobs/M7-persistence__persistence-off__B1-instrumented__r2.tar.gz",
+      "archive_sha256": "sha256:fcd86acc2672050113b03dad0ad8d8ade5fce5eabdf8ef3c84bea66928d3ea14",
+      "receipt": "/mnt/hydracache-protected-memory/hc071-d0-ax42-20260913-m7-01/jobs/M7-persistence__persistence-off__B1-instrumented__r2.json"
+    },
+    "M7-persistence__persistence-off__B1-instrumented__r3": {
+      "archive": "/mnt/hydracache-protected-memory/hc071-d0-ax42-20260913-m7-01/jobs/M7-persistence__persistence-off__B1-instrumented__r3.tar.gz",
+      "archive_sha256": "sha256:1e9f0622c1a7d816437812ef4c09582d82b552b054735342b703b9441a35e789",
+      "receipt": "/mnt/hydracache-protected-memory/hc071-d0-ax42-20260913-m7-01/jobs/M7-persistence__persistence-off__B1-instrumented__r3.json"
+    },
+    "M7-persistence__persistence-supported__B1-instrumented__r1": {
+      "archive": "/mnt/hydracache-protected-memory/hc071-d0-ax42-20260913-m7-01/jobs/M7-persistence__persistence-supported__B1-instrumented__r1.tar.gz",
+      "archive_sha256": "sha256:fad730948bd513a2e12b19c1a34e0747057e113b120a7f707913f4c6f77ee5f5",
+      "receipt": "/mnt/hydracache-protected-memory/hc071-d0-ax42-20260913-m7-01/jobs/M7-persistence__persistence-supported__B1-instrumented__r1.json"
+    },
+    "M7-persistence__persistence-supported__B1-instrumented__r2": {
+      "archive": "/mnt/hydracache-protected-memory/hc071-d0-ax42-20260913-m7-01/jobs/M7-persistence__persistence-supported__B1-instrumented__r2.tar.gz",
+      "archive_sha256": "sha256:86bee26125764b7dcfab90944d3fb812b01d348b32a6b0cd6d7b22ef95bd704e",
+      "receipt": "/mnt/hydracache-protected-memory/hc071-d0-ax42-20260913-m7-01/jobs/M7-persistence__persistence-supported__B1-instrumented__r2.json"
+    },
+    "M7-persistence__persistence-supported__B1-instrumented__r3": {
+      "archive": "/mnt/hydracache-protected-memory/hc071-d0-ax42-20260913-m7-01/jobs/M7-persistence__persistence-supported__B1-instrumented__r3.tar.gz",
+      "archive_sha256": "sha256:ba0a5e618dc7f22c823ce6b23e831f8c3c4983d364e1c2001883ba331ab7553a",
+      "receipt": "/mnt/hydracache-protected-memory/hc071-d0-ax42-20260913-m7-01/jobs/M7-persistence__persistence-supported__B1-instrumented__r3.json"
+    }
+  },
+  "release": "0.71",
+  "row_time_caps_seconds": {
+    "M7-persistence": 21600
+  },
+  "scenario": "docs/testing/perf-scenarios/0.71/memory-efficiency-v1.toml",
+  "scenario_digest": "sha256:c85fa4fcc8fc87cba85bb710aa96ca60eb0be94136793872064dfc31281b3252",
+  "schema_version": 1,
+  "source_sha": "906aa24cc22ad6b50b824120ed6364208484203a",
+  "source_shas": {
+    "B1-instrumented": "906aa24cc22ad6b50b824120ed6364208484203a"
+  },
+  "status": "success",
+  "workflow_sha": "9c533d1de5a25b83bcb294e5b939064737b7d9fc"
+}
