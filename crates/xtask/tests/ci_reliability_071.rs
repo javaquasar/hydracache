@@ -307,3 +307,36 @@ fn watchdog_classifies_missing_provisioning_tool() {
     assert_eq!(output.status.code(), Some(127));
     assert_eq!(receipt["classification"], "tool-unavailable");
 }
+
+#[test]
+fn default_manual_dispatch_runs_core_ci_jobs() {
+    let workflow = fs::read_to_string(repo_root().join(".github/workflows/ci.yml"))
+        .expect("read CI workflow")
+        .replace("\r\n", "\n");
+    let input = workflow
+        .split("      performance_0671_mode:\n")
+        .nth(1)
+        .expect("performance dispatch input");
+    assert!(
+        input.lines().take(6).any(|line| line.trim() == "default: \"off\""),
+        "the default manual dispatch mode must remain off"
+    );
+    assert!(
+        !workflow.contains("inputs.performance_0671_mode == ''"),
+        "manual dispatch jobs must not compare a choice input with an empty string"
+    );
+
+    for job in ["ci-topology", "docs", "rust", "msrv"] {
+        let section = workflow
+            .split(&format!("  {job}:\n"))
+            .nth(1)
+            .unwrap_or_else(|| panic!("missing {job} job"));
+        assert!(
+            section.lines().take(5).any(|line| {
+                line.trim()
+                    == "if: github.event_name != 'workflow_dispatch' || inputs.performance_0671_mode == 'off'"
+            }),
+            "default manual dispatch must run {job}"
+        );
+    }
+}
