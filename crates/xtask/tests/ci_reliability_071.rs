@@ -318,7 +318,10 @@ fn default_manual_dispatch_runs_core_ci_jobs() {
         .nth(1)
         .expect("performance dispatch input");
     assert!(
-        input.lines().take(6).any(|line| line.trim() == "default: \"off\""),
+        input
+            .lines()
+            .take(6)
+            .any(|line| line.trim() == "default: \"off\""),
         "the default manual dispatch mode must remain off"
     );
     assert!(
