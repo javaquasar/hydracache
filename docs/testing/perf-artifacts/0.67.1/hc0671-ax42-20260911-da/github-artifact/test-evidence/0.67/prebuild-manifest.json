@@ -1,0 +1,37 @@
+{
+  "schema_version": 1,
+  "source": {
+    "git_commit": "7bd31af9a5092466d7a7284995f388d33ed3110f",
+    "cargo_lock_sha256": "dc480dad8567eda4a4d13b393651d3d1201cc26ba7599e3c8ff822b725569def"
+  },
+  "toolchain_identity": "rustc-1.94.0",
+  "target_set": [
+    "hydracache-loadgen",
+    "hydracache-server"
+  ],
+  "features": [],
+  "cargo_profile": "release",
+  "flags": [
+    "--locked",
+    "--release"
+  ],
+  "build_recipe": [
+    "cargo build -p hydracache-loadgen -p hydracache-server --release --locked"
+  ],
+  "build_contract_digest": "f2caae0689d8b075d2a6d59d6090466365f9a6824c6996d6b92830956831cc55",
+  "runner_profile": "reference-v1",
+  "runner_fingerprint": "25baeec1c9ec75da90b5dd0f29c101897450b96651d7e47570e18684be486ebb",
+  "platform_key": "linux-x86_64",
+  "binaries": [
+    {
+      "id": "hydracache-loadgen",
+      "canonical_path": "/opt/actions-runner/_work/hydracache/hydracache/target/release/hydracache-loadgen",
+      "sha256": "c2c0e14ab40dd5b3c2ee5d71631bdfee81d7d61c0cd2c83c8b927c126aff7bd2"
+    },
+    {
+      "id": "hydracache-server",
+      "canonical_path": "/opt/actions-runner/_work/hydracache/hydracache/target/release/hydracache-server",
+      "sha256": "a17b5148cad43e2193c69a64e3372e2832fa94a47196a7b6bec405128f3633c6"
+    }
+  ]
+}

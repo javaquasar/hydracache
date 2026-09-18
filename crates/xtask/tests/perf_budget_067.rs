@@ -471,9 +471,8 @@ fn bootstrapped_fixture() -> (ContractBundle, Vec<CandidateReport>) {
 }
 
 #[test]
-fn committed_w7_contract_is_explicitly_unbootstrapped_and_fail_closed() {
-    let reference =
-        perf_budget::load_bundle(&repo_root(), perf_budget::RELEASE, "reference-v1").unwrap();
+fn committed_w7_contract_is_bootstrapped_and_still_fail_closed() {
+    let reference = perf_budget::load_bundle(&repo_root(), "0.67.1", "reference-v1").unwrap();
     assert_eq!(
         reference.baseline.profile_sha256,
         perf_budget::digest_json(&reference.profile)
@@ -482,27 +481,160 @@ fn committed_w7_contract_is_explicitly_unbootstrapped_and_fail_closed() {
     assert!(reference_problems.is_empty(), "{reference_problems:#?}");
     assert_eq!(
         reference.profile.bootstrap_status,
-        BootstrapStatus::Unbootstrapped
+        BootstrapStatus::Bootstrapped
     );
-    assert!(reference.profile.runner.allowed_fingerprints.is_empty());
+    assert_eq!(reference.profile.runner.allowed_fingerprints.len(), 1);
     assert_eq!(
         reference.profile.runner.required_runner_class,
         "self-hosted-bare-metal-v1"
     );
     assert!(!reference.profile.noise.absolute_numbers_are_ship_evidence);
-    assert!(reference.baseline.members.is_empty());
-    assert!(reference.baseline.anchor.metrics.is_empty());
+    assert_eq!(
+        reference.budget.bootstrap_status,
+        BootstrapStatus::Bootstrapped
+    );
+    assert!(reference
+        .budget
+        .budgets
+        .iter()
+        .all(|rule| rule.status == BudgetRuleStatus::Active));
+    assert_eq!(
+        reference.baseline.bootstrap_status,
+        BootstrapStatus::Bootstrapped
+    );
+    assert_eq!(reference.baseline.members.len(), 5);
+    assert_eq!(reference.baseline.anchor.source_members.len(), 5);
+    assert_eq!(
+        reference.baseline.anchor.metrics.len(),
+        reference.budget.budgets.len()
+    );
     let verdict = perf_budget::evaluate(&reference, &[], now());
     assert_eq!(verdict.payload.status, VerdictStatus::Failed);
     assert!(verdict
         .payload
         .problems
         .iter()
-        .any(|problem| problem.contains("explicitly unbootstrapped")));
+        .any(|problem| problem.contains("candidate report set is missing")));
 
     let shared = perf_budget::load_bundle(&repo_root(), perf_budget::RELEASE, "ci-shared").unwrap();
     assert!(perf_budget::validate_contract_bundle(&shared).is_empty());
     assert!(!shared.profile.noise.absolute_numbers_are_ship_evidence);
+}
+
+#[test]
+fn committed_ship_gate_accepts_the_observed_frozen_noise_cases() {
+    let bundle = perf_budget::load_bundle(&repo_root(), "0.67.1", "reference-v1").unwrap();
+    let member = &bundle.baseline.members[0];
+    let mut reports = bundle
+        .budget
+        .reports
+        .iter()
+        .map(|expected| {
+            let baseline = member
+                .reports
+                .iter()
+                .find(|report| report.report_id == expected.id)
+                .unwrap();
+            CandidateReport {
+                id: expected.id.clone(),
+                path: expected.path.clone(),
+                report_id: expected.report_id.clone(),
+                report_sha256: baseline.report_sha256.clone(),
+                claim_scope: expected.claim_scope.clone(),
+                run_mode: perf_budget::EvidenceRunMode::ReferenceEvidence,
+                runner_profile: bundle.profile.name.clone(),
+                runner_contract_digest: member.runner_contract_digest.clone(),
+                runner_class: member.observed_runner.runner_class.clone(),
+                runner_fingerprint: member.runner_fingerprint.clone(),
+                source_commit: "b".repeat(40),
+                cargo_lock_sha256: baseline.cargo_lock_sha256.clone(),
+                toolchain_identity: member.toolchain_identity.clone(),
+                prebuild_contract_digest: member.prebuild_contract_digest.clone(),
+                prebuild_manifest_sha256: baseline.prebuild_manifest_sha256.clone(),
+                binary_sha256: baseline.binary_sha256.clone(),
+                binary_set_digest: baseline.binary_set_digest.clone(),
+                scenario_digest: baseline.scenario_digest.clone(),
+                workload_digest: baseline.workload_digest.clone(),
+                slo_digest: baseline.slo_digest.clone(),
+                methodology_digest: baseline.methodology_digest.clone(),
+                stable: true,
+                maximum_spread_ratio: baseline.maximum_spread_ratio,
+                metrics: baseline
+                    .metrics
+                    .iter()
+                    .map(|metric| (metric.id.clone(), metric.clone()))
+                    .collect(),
+            }
+        })
+        .collect::<Vec<_>>();
+    let observed = [
+        (
+            "brownout-control-plane",
+            "control_plane_brownout.maximum_availability_dip_ppm",
+            209.0,
+            0.0,
+        ),
+        (
+            "brownout-grid-model",
+            "grid_model_fault.maximum_recovery_cost_nanos",
+            212.0,
+            0.047169,
+        ),
+    ];
+    for (report_id, metric_id, value, spread) in observed {
+        let report = reports
+            .iter_mut()
+            .find(|report| report.id == report_id)
+            .unwrap();
+        report.metrics.get_mut(metric_id).unwrap().value = value;
+        report.maximum_spread_ratio = spread;
+    }
+
+    let evaluated_at = OffsetDateTime::parse("2026-09-10T08:00:00Z", &Rfc3339).unwrap();
+    let verdict = perf_budget::evaluate(&bundle, &reports, evaluated_at);
+    assert_eq!(verdict.payload.status, VerdictStatus::Passed);
+    for budget_id in [
+        "brownout-control-plane-depth-ceiling",
+        "brownout-grid-model-recovery-ceiling",
+    ] {
+        assert!(
+            verdict
+                .payload
+                .checks
+                .iter()
+                .find(|check| check.budget_id == budget_id)
+                .unwrap()
+                .passed
+        );
+    }
+
+    let sparse_check = verdict
+        .payload
+        .checks
+        .iter()
+        .find(|check| check.budget_id == "brownout-control-plane-depth-ceiling")
+        .unwrap();
+    assert_eq!(sparse_check.rolling_mad, 0.0);
+    assert_eq!(sparse_check.rolling_boundary, 252.0);
+
+    reports
+        .iter_mut()
+        .find(|report| report.id == "brownout-control-plane")
+        .unwrap()
+        .metrics
+        .get_mut("control_plane_brownout.maximum_availability_dip_ppm")
+        .unwrap()
+        .value = 293.0;
+    let verdict = perf_budget::evaluate(&bundle, &reports, evaluated_at);
+    assert!(
+        !verdict
+            .payload
+            .checks
+            .iter()
+            .find(|check| check.budget_id == "brownout-control-plane-depth-ceiling")
+            .unwrap()
+            .passed
+    );
 }
 
 #[test]
@@ -637,6 +769,30 @@ fn perf_budget_check_fails_on_floor_breach_and_on_unstable_spread() {
         .problems
         .iter()
         .any(|problem| problem.contains("spread ceiling")));
+}
+
+#[test]
+fn zero_candidate_is_valid_for_a_ceiling_budget() {
+    let (bundle, mut reports) = bootstrapped_fixture();
+    let ceiling = bundle
+        .budget
+        .budgets
+        .iter()
+        .find(|rule| rule.direction == perf_budget::BudgetDirection::Ceiling)
+        .unwrap();
+    let report = reports
+        .iter_mut()
+        .find(|report| report.id == ceiling.report)
+        .unwrap();
+    report.metrics.get_mut(&ceiling.metric).unwrap().value = 0.0;
+
+    let verdict = perf_budget::evaluate(&bundle, &reports, now());
+    assert_eq!(verdict.payload.status, VerdictStatus::Passed);
+    assert!(verdict
+        .payload
+        .checks
+        .iter()
+        .any(|check| { check.budget_id == ceiling.id && check.candidate == 0.0 && check.passed }));
 }
 
 #[test]
@@ -1073,6 +1229,25 @@ fn rolling_baseline_uses_only_eligible_same_fingerprint_main_reports() {
 }
 
 #[test]
+fn rolling_window_identity_is_independent_of_sample_chain_order() {
+    let (mut bundle, reports) = bootstrapped_fixture();
+    bundle.baseline.members.reverse();
+    perf_budget::seal_baseline_manifest(&mut bundle.baseline);
+
+    let verdict = perf_budget::evaluate(&bundle, &reports, now());
+    assert!(!verdict
+        .payload
+        .problems
+        .iter()
+        .any(|problem| problem.contains("not the newest eligible window")));
+    assert!(!verdict
+        .payload
+        .problems
+        .iter()
+        .any(|problem| problem.contains("fewer than five")));
+}
+
+#[test]
 fn rolling_baseline_rejects_mixed_stale_insufficient_or_unstable_window() {
     let (mut mixed, reports) = bootstrapped_fixture();
     mixed.baseline.members[0].reports[0].methodology_digest = sha("other-methodology");
@@ -1192,6 +1367,425 @@ fn release_anchor_prevents_slow_rolling_ratcheting() {
         .checks
         .iter()
         .any(|check| { check.candidate == 85.0 && check.rolling_median == 90.0 && !check.passed }));
+}
+
+#[test]
+fn bootstrapped_ship_gate_applies_the_authenticated_rolling_mad() {
+    let (mut bundle, mut reports) = bootstrapped_fixture();
+    let ceiling = bundle
+        .budget
+        .budgets
+        .iter()
+        .find(|rule| rule.direction == perf_budget::BudgetDirection::Ceiling)
+        .unwrap()
+        .clone();
+    for (member, value) in bundle
+        .baseline
+        .members
+        .iter_mut()
+        .zip([80.0, 90.0, 100.0, 110.0, 120.0])
+    {
+        member
+            .metrics
+            .iter_mut()
+            .find(|metric| metric.budget_id == ceiling.id)
+            .unwrap()
+            .value = value;
+        member
+            .reports
+            .iter_mut()
+            .find(|report| report.report_id == ceiling.report)
+            .and_then(|report| {
+                report
+                    .metrics
+                    .iter_mut()
+                    .find(|metric| metric.id == ceiling.metric)
+            })
+            .unwrap()
+            .value = value;
+        perf_budget::seal_baseline_member(member);
+    }
+    bundle.baseline.candidate_members = bundle.baseline.members.clone();
+    bundle.baseline.rolling_metrics =
+        perf_budget::rolling_summaries(&bundle.budget.budgets, &bundle.baseline.members).unwrap();
+    approve_baseline_change(&mut bundle);
+    perf_budget::seal_baseline_manifest(&mut bundle.baseline);
+    reports
+        .iter_mut()
+        .find(|report| report.id == ceiling.report)
+        .unwrap()
+        .metrics
+        .get_mut(&ceiling.metric)
+        .unwrap()
+        .value = 120.0;
+
+    let verdict = perf_budget::evaluate(&bundle, &reports, now());
+    assert_eq!(verdict.payload.status, VerdictStatus::Passed);
+    let check = verdict
+        .payload
+        .checks
+        .iter()
+        .find(|check| check.budget_id == ceiling.id)
+        .unwrap();
+    assert_eq!(check.rolling_mad, 10.0);
+    assert!(check.passed);
+}
+
+#[test]
+fn bootstrapped_ship_gate_preserves_the_reviewed_empirical_envelope() {
+    let (mut bundle, mut reports) = bootstrapped_fixture();
+    let ceiling = bundle
+        .budget
+        .budgets
+        .iter()
+        .find(|rule| rule.direction == perf_budget::BudgetDirection::Ceiling)
+        .unwrap()
+        .clone();
+    for (member, value) in bundle
+        .baseline
+        .members
+        .iter_mut()
+        .zip([492.0, 593.0, 593.5, 594.0, 748.0])
+    {
+        member
+            .metrics
+            .iter_mut()
+            .find(|metric| metric.budget_id == ceiling.id)
+            .unwrap()
+            .value = value;
+        member
+            .reports
+            .iter_mut()
+            .find(|report| report.report_id == ceiling.report)
+            .and_then(|report| {
+                report
+                    .metrics
+                    .iter_mut()
+                    .find(|metric| metric.id == ceiling.metric)
+            })
+            .unwrap()
+            .value = value;
+        perf_budget::seal_baseline_member(member);
+    }
+    bundle.baseline.candidate_members = bundle.baseline.members.clone();
+    bundle.baseline.anchor.source_members = bundle.baseline.members.clone();
+    bundle
+        .baseline
+        .anchor
+        .metrics
+        .iter_mut()
+        .find(|metric| metric.budget_id == ceiling.id)
+        .unwrap()
+        .value = 593.5;
+    bundle.baseline.rolling_metrics =
+        perf_budget::rolling_summaries(&bundle.budget.budgets, &bundle.baseline.members).unwrap();
+    approve_baseline_change(&mut bundle);
+    perf_budget::seal_baseline_manifest(&mut bundle.baseline);
+    reports
+        .iter_mut()
+        .find(|report| report.id == ceiling.report)
+        .unwrap()
+        .metrics
+        .get_mut(&ceiling.metric)
+        .unwrap()
+        .value = 697.0;
+    let verdict = perf_budget::evaluate(&bundle, &reports, now());
+    let check = verdict
+        .payload
+        .checks
+        .iter()
+        .find(|check| check.budget_id == ceiling.id)
+        .unwrap();
+    assert_eq!(check.rolling_boundary, 748.0);
+    assert!(check.passed);
+
+    reports
+        .iter_mut()
+        .find(|report| report.id == ceiling.report)
+        .unwrap()
+        .metrics
+        .get_mut(&ceiling.metric)
+        .unwrap()
+        .value = 749.0;
+    let verdict = perf_budget::evaluate(&bundle, &reports, now());
+    let check = verdict
+        .payload
+        .checks
+        .iter()
+        .find(|check| check.budget_id == ceiling.id)
+        .unwrap();
+    assert!(!check.passed);
+}
+
+#[test]
+fn bootstrapped_ship_gate_uses_the_reviewed_w4a_event_family_envelope() {
+    let (mut bundle, mut reports) = bootstrapped_fixture();
+    let event_rules = bundle
+        .budget
+        .budgets
+        .iter()
+        .filter(|rule| {
+            rule.metric == "membership_add_drain_commit_and_convergence_latency.max_milliseconds"
+        })
+        .cloned()
+        .collect::<Vec<_>>();
+    assert_eq!(event_rules.len(), 3);
+    let values = [
+        [491.972, 698.073, 700.980],
+        [440.907, 647.880, 903.704],
+        [798.101, 698.933, 650.235],
+        [900.771, 698.602, 905.094],
+        [902.426, 697.992, 648.890],
+    ];
+    for (member, member_values) in bundle.baseline.members.iter_mut().zip(values) {
+        for (rule, value) in event_rules.iter().zip(member_values) {
+            member
+                .metrics
+                .iter_mut()
+                .find(|metric| metric.budget_id == rule.id)
+                .unwrap()
+                .value = value;
+            member
+                .reports
+                .iter_mut()
+                .find(|report| report.report_id == rule.report)
+                .and_then(|report| {
+                    report
+                        .metrics
+                        .iter_mut()
+                        .find(|metric| metric.id == rule.metric)
+                })
+                .unwrap()
+                .value = value;
+        }
+        perf_budget::seal_baseline_member(member);
+    }
+    bundle.baseline.candidate_members = bundle.baseline.members.clone();
+    bundle.baseline.anchor.source_members = bundle.baseline.members.clone();
+    for (rule, value) in event_rules.iter().zip([798.101, 698.073, 700.980]) {
+        bundle
+            .baseline
+            .anchor
+            .metrics
+            .iter_mut()
+            .find(|metric| metric.budget_id == rule.id)
+            .unwrap()
+            .value = value;
+    }
+    bundle.baseline.rolling_metrics =
+        perf_budget::rolling_summaries(&bundle.budget.budgets, &bundle.baseline.members).unwrap();
+    approve_baseline_change(&mut bundle);
+    perf_budget::seal_baseline_manifest(&mut bundle.baseline);
+
+    let control_plane_5 = event_rules
+        .iter()
+        .find(|rule| rule.id == "control-plane-5-event-ceiling")
+        .unwrap();
+    let candidate_metric = reports
+        .iter_mut()
+        .find(|report| report.id == control_plane_5.report)
+        .unwrap()
+        .metrics
+        .get_mut(&control_plane_5.metric)
+        .unwrap();
+    candidate_metric.value = 850.068;
+    let verdict = perf_budget::evaluate(&bundle, &reports, now());
+    let check = verdict
+        .payload
+        .checks
+        .iter()
+        .find(|check| check.budget_id == control_plane_5.id)
+        .unwrap_or_else(|| panic!("budget checks absent: {:?}", verdict.payload.problems));
+    assert_eq!(check.rolling_boundary, 905.094);
+    assert!(check.passed);
+
+    reports
+        .iter_mut()
+        .find(|report| report.id == control_plane_5.report)
+        .unwrap()
+        .metrics
+        .get_mut(&control_plane_5.metric)
+        .unwrap()
+        .value = 905.095;
+    let verdict = perf_budget::evaluate(&bundle, &reports, now());
+    let check = verdict
+        .payload
+        .checks
+        .iter()
+        .find(|check| check.budget_id == control_plane_5.id)
+        .unwrap();
+    assert!(!check.passed);
+}
+
+#[test]
+fn bootstrapped_ship_gate_allows_one_reviewed_quantization_step() {
+    let (mut bundle, mut reports) = bootstrapped_fixture();
+    let ceiling = bundle
+        .budget
+        .budgets
+        .iter()
+        .find(|rule| rule.direction == perf_budget::BudgetDirection::Ceiling)
+        .unwrap()
+        .clone();
+    for (member, value) in bundle
+        .baseline
+        .members
+        .iter_mut()
+        .zip([84.0, 84.0, 84.0, 0.0, 42.0])
+    {
+        member
+            .metrics
+            .iter_mut()
+            .find(|metric| metric.budget_id == ceiling.id)
+            .unwrap()
+            .value = value;
+        member
+            .reports
+            .iter_mut()
+            .find(|report| report.report_id == ceiling.report)
+            .and_then(|report| {
+                report
+                    .metrics
+                    .iter_mut()
+                    .find(|metric| metric.id == ceiling.metric)
+            })
+            .unwrap()
+            .value = value;
+        perf_budget::seal_baseline_member(member);
+    }
+    bundle.baseline.candidate_members = bundle.baseline.members.clone();
+    bundle.baseline.anchor.source_members = bundle.baseline.members.clone();
+    bundle
+        .baseline
+        .anchor
+        .metrics
+        .iter_mut()
+        .find(|metric| metric.budget_id == ceiling.id)
+        .unwrap()
+        .value = 84.0;
+    bundle.baseline.rolling_metrics =
+        perf_budget::rolling_summaries(&bundle.budget.budgets, &bundle.baseline.members).unwrap();
+    approve_baseline_change(&mut bundle);
+    perf_budget::seal_baseline_manifest(&mut bundle.baseline);
+    let candidate = reports
+        .iter_mut()
+        .find(|report| report.id == ceiling.report)
+        .unwrap()
+        .metrics
+        .get_mut(&ceiling.metric)
+        .unwrap();
+    candidate.value = 125.0;
+
+    let verdict = perf_budget::evaluate(&bundle, &reports, now());
+    let check = verdict
+        .payload
+        .checks
+        .iter()
+        .find(|check| check.budget_id == ceiling.id)
+        .unwrap();
+    assert_eq!(check.rolling_mad, 0.0);
+    assert_eq!(check.rolling_boundary, 126.0);
+    assert!(check.passed);
+
+    reports
+        .iter_mut()
+        .find(|report| report.id == ceiling.report)
+        .unwrap()
+        .metrics
+        .get_mut(&ceiling.metric)
+        .unwrap()
+        .value = 127.0;
+    let verdict = perf_budget::evaluate(&bundle, &reports, now());
+    let check = verdict
+        .payload
+        .checks
+        .iter()
+        .find(|check| check.budget_id == ceiling.id)
+        .unwrap();
+    assert!(!check.passed);
+}
+
+#[test]
+fn bootstrapped_ship_gate_uses_producer_stability_when_sources_exceed_generic_spread() {
+    let (mut bundle, mut reports) = bootstrapped_fixture();
+    let rule_index = bundle
+        .budget
+        .budgets
+        .iter()
+        .position(|rule| rule.direction == perf_budget::BudgetDirection::Ceiling)
+        .unwrap();
+    let rule = bundle.budget.budgets[rule_index].clone();
+    bundle.budget.budgets[rule_index].maximum_spread_ratio = Some(0.05);
+
+    reports
+        .iter_mut()
+        .find(|report| report.id == rule.report)
+        .unwrap()
+        .maximum_spread_ratio = 0.06;
+    let verdict = perf_budget::evaluate(&bundle, &reports, now());
+    assert_eq!(verdict.payload.status, VerdictStatus::Failed);
+
+    for member in &mut bundle.baseline.members {
+        member
+            .reports
+            .iter_mut()
+            .find(|report| report.report_id == rule.report)
+            .unwrap()
+            .maximum_spread_ratio = 0.07;
+        perf_budget::seal_baseline_member(member);
+    }
+    bundle.baseline.candidate_members = bundle.baseline.members.clone();
+    bundle.baseline.anchor.source_members = bundle.baseline.members.clone();
+    approve_baseline_change(&mut bundle);
+    perf_budget::seal_baseline_manifest(&mut bundle.baseline);
+
+    reports
+        .iter_mut()
+        .find(|report| report.id == rule.report)
+        .unwrap()
+        .maximum_spread_ratio = 0.29;
+    reports
+        .iter_mut()
+        .find(|report| report.id == rule.report)
+        .unwrap()
+        .metrics
+        .get_mut(&rule.metric)
+        .unwrap()
+        .value = 125.0;
+    let verdict = perf_budget::evaluate(&bundle, &reports, now());
+    assert_eq!(verdict.payload.status, VerdictStatus::Passed);
+
+    reports
+        .iter_mut()
+        .find(|report| report.id == rule.report)
+        .unwrap()
+        .metrics
+        .get_mut(&rule.metric)
+        .unwrap()
+        .value = 131.0;
+    let verdict = perf_budget::evaluate(&bundle, &reports, now());
+    assert_eq!(verdict.payload.status, VerdictStatus::Failed);
+
+    reports
+        .iter_mut()
+        .find(|report| report.id == rule.report)
+        .unwrap()
+        .metrics
+        .get_mut(&rule.metric)
+        .unwrap()
+        .value = 125.0;
+    reports
+        .iter_mut()
+        .find(|report| report.id == rule.report)
+        .unwrap()
+        .maximum_spread_ratio = 0.301;
+    let verdict = perf_budget::evaluate(&bundle, &reports, now());
+    assert_eq!(verdict.payload.status, VerdictStatus::Failed);
+    assert!(verdict
+        .payload
+        .problems
+        .iter()
+        .any(|problem| problem.contains(&rule.id)));
 }
 
 #[test]

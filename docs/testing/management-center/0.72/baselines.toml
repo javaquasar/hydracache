@@ -11,8 +11,8 @@ receipt = "target/release-evidence/management-center/0.72/pre-feature-baseline.j
 [published_previous]
 version = "0.71.0"
 tag = "v0.71.0"
-status = "unavailable"
-reason = "no published v0.71.x tag or retained artifact exists in the local or origin repository"
+status = "tag_available_receipt_pending"
+reason = "annotated v0.71.0 tag resolves to da8d6de409a657e0260e7fbfb4ab31d8d6ad5ca8; published-baseline measurement receipt is still required"
 required_measurements = ["legacy_console_tests", "bundle_bytes", "endpoint_latency_bytes", "server_retained_owners", "browser_heap_dom", "fd_task_counts", "console_coverage"]
 receipt = "target/release-evidence/management-center/0.72/v0.71-baseline.json"
 
@@ -21,4 +21,3 @@ candidate_may_self_baseline = false
 missing_baseline_blocks_ship = true
 development_branch_may_substitute_for_published_artifact = false
 failed_attempts_are_append_only = true
-

@@ -16,6 +16,7 @@ import json
 import os
 import platform
 import re
+import signal
 import shutil
 import subprocess
 import sys
@@ -32,6 +33,7 @@ RELEASE = "0.71"
 SCHEMA_VERSION = 1
 SCENARIO_RELATIVE = Path("docs/testing/perf-scenarios/0.71/memory-efficiency-v1.toml")
 IDENTITIES_RELATIVE = Path("docs/testing/memory/0.71/baseline-identities.toml")
+STATISTICS_RELATIVE = Path("docs/testing/memory/0.71/memory-statistics-v1.toml")
 PROFILE_RELATIVE = Path("docs/testing/perf-host-profiles/memory-reference-071-v1.json")
 DEFAULT_OUTPUT = Path("target/memory-evidence/0.71/campaigns")
 BUILD_TIMEOUT_SECONDS = 3600
@@ -220,6 +222,30 @@ def selected_cases(scenario: dict[str, Any], requested: list[str]) -> list[dict[
     return selected
 
 
+def bounded_row_cap_seconds(
+    case: dict[str, Any],
+    *,
+    cell_count: int,
+    repetitions: int,
+    cohort_count: int,
+) -> int:
+    """Honor the frozen declaration while reserving time for mandatory waits."""
+    case_id = str(case["id"])
+    if case_id == "M0-cold":
+        passive_floor_per_job = 300
+    elif case_id == "M3-ttl":
+        passive_floor_per_job = 300 + 61 + 61
+    elif case_id in {"M8-60m", "M9-6h", "M10-24h"}:
+        passive_floor_per_job = int(case["duration_seconds"]) + 600
+    else:
+        passive_floor_per_job = 600
+    floor = passive_floor_per_job * cell_count * repetitions * cohort_count
+    # Real fill/reset/TLS work must fit in addition to the contractual sleeps.
+    # Round the 20% reserve up to a half-hour so the advertised budget is stable.
+    reserved = ((floor * 12 // 10 + 1_799) // 1_800) * 1_800
+    return max(int(case["host_time_cap_seconds"]), reserved)
+
+
 def build_plan(
     root: Path,
     cases: list[str],
@@ -233,6 +259,7 @@ def build_plan(
     scenario_path = root / SCENARIO_RELATIVE
     scenario = tomllib.loads(scenario_path.read_text(encoding="utf-8"))
     identities = tomllib.loads((root / IDENTITIES_RELATIVE).read_text(encoding="utf-8"))
+    statistics = tomllib.loads((root / STATISTICS_RELATIVE).read_text(encoding="utf-8"))
     selected = selected_cases(scenario, cases)
     if "B0-release" in cohorts and any(case["id"] != "M0-cold" for case in selected):
         raise CampaignError("B0-release is admitted only for the M0 D0 external-signal cohort")
@@ -263,11 +290,24 @@ def build_plan(
     }
     jobs: list[dict[str, Any]] = []
     row_caps: dict[str, int] = {}
+    cohort_count = len(set(cohorts))
     for case in selected:
         case_id = str(case["id"])
         repetitions = repetition_override or int(case["d0_repetitions"])
-        row_caps[case_id] = 30 if rehearsal else int(case["host_time_cap_seconds"])
-        for cell in expand_case(case):
+        if (
+            not rehearsal
+            and campaign_role == "candidate"
+            and case_id not in {"M8-60m", "M9-6h", "M10-24h"}
+        ):
+            repetitions = max(repetitions, int(statistics["minimum_repetitions"]))
+        cells = expand_case(case)
+        row_caps[case_id] = 30 if rehearsal else bounded_row_cap_seconds(
+            case,
+            cell_count=len(cells),
+            repetitions=repetitions,
+            cohort_count=cohort_count,
+        )
+        for cell in cells:
             for repetition in range(1, repetitions + 1):
                 for cohort in cohorts:
                     job_id = f"{cell.cell_id}__{cohort}__r{repetition}"
@@ -658,6 +698,57 @@ def prepare_builds(root: Path, campaign_dir: Path, build_root: Path) -> None:
                 shutil.rmtree(target_dir, ignore_errors=True)
 
 
+def stable_host_identity(receipt: dict[str, Any]) -> dict[str, Any]:
+    identity = receipt.get("identity_probes")
+    if not isinstance(identity, dict):
+        raise CampaignError("host preflight receipt has no identity probes")
+    stable = json.loads(json.dumps(identity))
+    topology = stable.get("cpu_topology")
+    if isinstance(topology, str):
+        try:
+            parsed = json.loads(topology)
+        except json.JSONDecodeError:
+            parsed = topology
+        if isinstance(parsed, dict) and isinstance(parsed.get("lscpu"), list):
+            parsed["lscpu"] = [
+                row
+                for row in parsed["lscpu"]
+                if not isinstance(row, dict) or row.get("field") != "CPU(s) scaling MHz:"
+            ]
+        stable["cpu_topology"] = parsed
+    filesystem = stable.get("filesystem")
+    if isinstance(filesystem, str):
+        rows = [row.split() for row in filesystem.splitlines() if row.strip()]
+        if rows and len(rows[-1]) >= 3:
+            stable["filesystem"] = {
+                "source": rows[-1][0],
+                "filesystem_type": rows[-1][1],
+                "mountpoint": rows[-1][-1],
+            }
+    return stable
+
+
+def overhead_matches_host(
+    overhead: dict[str, Any],
+    host: dict[str, Any],
+    origin_host: dict[str, Any] | None,
+) -> bool:
+    if overhead.get("host_fingerprint") == host.get("host_fingerprint"):
+        return True
+    if origin_host is None:
+        return False
+    if (
+        origin_host.get("schema_version") != 1
+        or origin_host.get("release") != RELEASE
+        or origin_host.get("profile_id") != host.get("profile_id")
+        or origin_host.get("result") != "success"
+        or origin_host.get("ship_evidence_eligible") is not True
+        or overhead.get("host_fingerprint") != origin_host.get("host_fingerprint")
+    ):
+        return False
+    return stable_host_identity(origin_host) == stable_host_identity(host)
+
+
 def validate_admission_receipts(receipts: dict[str, dict[str, Any]], state: dict[str, Any]) -> None:
     host = receipts["host-preflight"]
     if (
@@ -680,6 +771,8 @@ def validate_admission_receipts(receipts: dict[str, dict[str, Any]], state: dict
         raise CampaignError("0.67.1 reference activation receipt is invalid")
     historical = receipts["historical-input-receipt"]
     mirror = historical.get("mirror", {})
+    bootstrap_history = historical.get("bootstrap_0_67_1", {})
+    bootstrap_mirror = bootstrap_history.get("mirror", {})
     if (
         historical.get("schema_version") != 1
         or historical.get("release") != RELEASE
@@ -687,14 +780,41 @@ def validate_admission_receipts(receipts: dict[str, dict[str, Any]], state: dict
         or historical.get("checkout_clean") is not True
         or not historical.get("files")
         or mirror.get("manifest_sha256") != mirror.get("restored_manifest_sha256")
+        or bootstrap_history.get("source_path")
+        != "docs/testing/perf-artifacts/0.67.1"
+        or not bootstrap_history.get("files")
+        or bootstrap_mirror.get("manifest_sha256")
+        != bootstrap_mirror.get("restored_manifest_sha256")
     ):
         raise CampaignError("historical protected-mirror receipt is invalid")
     overhead = receipts["instrumentation-overhead"]
+    design = overhead.get("measurement_design", {})
+    envelope = overhead.get("frozen_envelope", {})
+    expected_modes = {"off", "production", "profile"}
+    expected_workloads = {"cold", "small-hot", "tag-heavy", "hc2-1000", "reset"}
     if (
         overhead.get("schema_version") != 1
         or overhead.get("release") != RELEASE
         or overhead.get("source_sha") != state["source_shas"].get("B1-instrumented")
-        or overhead.get("host_fingerprint") != host.get("host_fingerprint")
+        or not overhead_matches_host(
+            overhead,
+            host,
+            receipts.get("instrumentation-overhead-host-preflight"),
+        )
+        or overhead.get("scenario_digest") != state.get("scenario_digest")
+        or set(design.get("modes", [])) != expected_modes
+        or set(design.get("workloads", [])) != expected_workloads
+        or int(design.get("repetitions", 0)) < 3
+        or design.get("candidate_data_used") is not False
+        or len(overhead.get("comparisons", [])) != len(expected_workloads)
+        or not overhead.get("samples")
+        or set(envelope) != {
+            "rss_delta_bytes",
+            "rss_regression_fraction",
+            "rps_regression_fraction",
+            "p99_regression_fraction",
+            "cpu_per_request_regression_fraction",
+        }
         or overhead.get("passed") is not True
         or overhead.get("ship_evidence_eligible") is not True
     ):
@@ -707,6 +827,7 @@ def admit_campaign(
     bootstrap: Path,
     historical: Path,
     overhead: Path,
+    overhead_host_preflight: Path | None,
 ) -> None:
     state_path = campaign_dir / "state.json"
     if not state_path.is_file():
@@ -717,6 +838,8 @@ def admit_campaign(
         "historical-input-receipt": historical,
         "instrumentation-overhead": overhead,
     }
+    if overhead_host_preflight is not None:
+        sources["instrumentation-overhead-host-preflight"] = overhead_host_preflight
     documents: dict[str, dict[str, Any]] = {}
     for name, source in sources.items():
         if not source.is_file() or source.stat().st_size > 10 * 1024 * 1024:
@@ -778,7 +901,12 @@ def verify_live_host(campaign_dir: Path, host_preflight: Path) -> None:
         raise CampaignError("live host fingerprint or eligibility drifted from campaign admission")
 
 
-def execute_rehearsal(root: Path, campaign_dir: Path, job: dict[str, Any]) -> tuple[str, list[str]]:
+def execute_rehearsal(
+    root: Path,
+    campaign_dir: Path,
+    job: dict[str, Any],
+    timeout_seconds: int,
+) -> tuple[str, list[str]]:
     output = campaign_dir / "jobs" / job["job_id"]
     command = [
         "cargo",
@@ -809,7 +937,7 @@ def execute_rehearsal(root: Path, campaign_dir: Path, job: dict[str, Any]) -> tu
                 # Rehearsal includes a locked development build when no warm
                 # binary exists. The measured smoke itself remains bounded by
                 # the much smaller row cap recorded in the plan.
-                timeout=180,
+                timeout=min(180, timeout_seconds),
                 check=False,
             )
         except subprocess.TimeoutExpired:
@@ -825,7 +953,36 @@ def unsupported_evidence_reason(job: dict[str, Any]) -> str | None:
     return None
 
 
-def execute_evidence(root: Path, campaign_dir: Path, state: dict[str, Any], job: dict[str, Any]) -> tuple[str, list[str]]:
+def run_bounded_evidence_process(
+    command: list[str],
+    *,
+    cwd: Path,
+    timeout_seconds: int,
+) -> tuple[int, bool]:
+    """Interrupt the executor cooperatively so its daemon cleanup can run."""
+    process = subprocess.Popen(command, cwd=cwd)
+    try:
+        return process.wait(timeout=timeout_seconds), False
+    except subprocess.TimeoutExpired:
+        if os.name == "nt":
+            process.terminate()
+        else:
+            process.send_signal(signal.SIGINT)
+        try:
+            process.wait(timeout=30)
+        except subprocess.TimeoutExpired:
+            process.kill()
+            process.wait()
+        return int(process.returncode or 1), True
+
+
+def execute_evidence(
+    root: Path,
+    campaign_dir: Path,
+    state: dict[str, Any],
+    job: dict[str, Any],
+    timeout_seconds: int,
+) -> tuple[str, list[str]]:
     unsupported = unsupported_evidence_reason(job)
     if unsupported:
         raise CampaignError(unsupported)
@@ -877,12 +1034,16 @@ def execute_evidence(root: Path, campaign_dir: Path, state: dict[str, Any], job:
             raise CampaignError("retained HC/2 helper manifest is missing or drifted")
         command.extend(["--hc2-helper-manifest", str(helper_manifest)])
     try:
-        completed = subprocess.run(command, cwd=root, timeout=state["row_time_caps_seconds"][job["case_id"]], check=False)
-    except subprocess.TimeoutExpired:
-        return "timeout", command
+        returncode, timed_out = run_bounded_evidence_process(
+            command,
+            cwd=root,
+            timeout_seconds=timeout_seconds,
+        )
     except OSError:
         return "tool-unavailable", command
-    if completed.returncode != 0:
+    if timed_out:
+        return "timeout", command
+    if returncode != 0:
         return "product-failure", command
     report = output / "memory-baseline-report.json"
     validation = subprocess.run(
@@ -964,6 +1125,17 @@ def publish_job(campaign_dir: Path, state: dict[str, Any], job: dict[str, Any]) 
     }
 
 
+def remaining_row_budget_seconds(state: dict[str, Any], case_id: str) -> int:
+    consumed_ns = sum(
+        int(attempt.get("elapsed_ns", 0))
+        for job in state["jobs"]
+        if job["case_id"] == case_id
+        for attempt in job.get("attempts", [])
+    )
+    cap_ns = int(state["row_time_caps_seconds"][case_id]) * 1_000_000_000
+    return max(0, (cap_ns - consumed_ns) // 1_000_000_000)
+
+
 def run_campaign(root: Path, campaign_dir: Path) -> None:
     state_path = campaign_dir / "state.json"
     events_path = campaign_dir / "events.jsonl"
@@ -978,11 +1150,15 @@ def run_campaign(root: Path, campaign_dir: Path) -> None:
             attempt = len(job["attempts"]) + 1
             append_event(events_path, {"event": "job-started", "job_id": job["job_id"], "attempt": attempt})
             started = time.monotonic_ns()
-            status, command = (
-                execute_rehearsal(root, campaign_dir, job)
-                if state["mode"] == "rehearsal"
-                else execute_evidence(root, campaign_dir, state, job)
-            )
+            remaining = remaining_row_budget_seconds(state, job["case_id"])
+            if remaining <= 0:
+                status, command = "timeout", ["row-time-budget-exhausted"]
+            else:
+                status, command = (
+                    execute_rehearsal(root, campaign_dir, job, remaining)
+                    if state["mode"] == "rehearsal"
+                    else execute_evidence(root, campaign_dir, state, job, remaining)
+                )
             job["status"] = status
             job["attempts"].append(
                 {
@@ -1050,8 +1226,12 @@ def finalize(campaign_dir: Path) -> dict[str, Any]:
         "scenario_digest": state["scenario_digest"],
         "job_count": state["job_count"],
         "completed_jobs": len(state["jobs"]),
+        "case_ids": sorted({job["case_id"] for job in state["jobs"]}),
         "finalized_at": utc_now(),
-        "ship_evidence_eligible": False,
+        "result": "success",
+        "ship_evidence_eligible": (
+            state["mode"] == "evidence" and identity["campaign_role"] == "candidate"
+        ),
         "artifacts": artifacts,
     }
     atomic_json(campaign_dir / "campaign-receipt.json", receipt)
@@ -1094,6 +1274,7 @@ def parse_args() -> argparse.Namespace:
     admit_parser.add_argument("--bootstrap", type=Path, required=True)
     admit_parser.add_argument("--historical", type=Path, required=True)
     admit_parser.add_argument("--overhead", type=Path, required=True)
+    admit_parser.add_argument("--overhead-host-preflight", type=Path)
     verify_host_parser = commands.add_parser("verify-host")
     verify_host_parser.add_argument("--campaign-id", required=True)
     verify_host_parser.add_argument("--host-preflight", type=Path, required=True)
@@ -1199,6 +1380,7 @@ def main() -> int:
                 args.bootstrap,
                 args.historical,
                 args.overhead,
+                args.overhead_host_preflight,
             )
         elif args.command == "verify-host":
             verify_live_host(campaign_dir, args.host_preflight)

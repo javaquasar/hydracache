@@ -1,0 +1,1383 @@
+{
+  "schema_version": 1,
+  "scenario_id": "resp-external-redis-benchmark-v1",
+  "contract_sha256": "db2916bac4920f45bb2ee8dd65c99534de3eb15839e9e55facfecb789c1479ca",
+  "effective_contract_sha256": "64fea373dacda2fafdb328e22281ab8c792269e4ac2f0501fb12846c1c97a31e",
+  "tool_version": "redis-benchmark 7.2.5",
+  "tool_identity": {
+    "requested_program": "redis-benchmark",
+    "canonical_path": "/opt/actions-runner/_work/_temp/hydracache-perf-tools/redis-7.2.5/src/redis-benchmark",
+    "binary_sha256": "71bf5cbf35038d8ee73379ddcb1d78559bcc88ba70039ed2f55ea9db7521c91f"
+  },
+  "identity": {
+    "measurement_id": "redis_benchmark_get_set_mset_throughput_and_interop",
+    "methodology": "closed-loop",
+    "claim_scope": "supplemental-interop-throughput-no-slo-knee",
+    "state_scope": "node-local",
+    "network_boundary": "selected-daemon-resp-tcp",
+    "scheduled_send_latency": false,
+    "capacity_knee_eligible": false
+  },
+  "endpoint": {
+    "host": "127.0.0.1",
+    "port": 41319
+  },
+  "run_mode": "mandatory_reference",
+  "platform_key": "linux-x86_64-gnu",
+  "provenance_registry_sha256": "760ba8850f4e271577e26d7bdba6f142b6efc2f4ce9c83125efb85d6dd2622d2",
+  "provenance": {
+    "provenance_id": "redis-benchmark-7.2.5-linux-x86_64-gnu-source-v1",
+    "platform_key": "linux-x86_64-gnu",
+    "tool": "redis-benchmark",
+    "version": "redis-benchmark 7.2.5",
+    "approved_for_mandatory": true,
+    "provenance": {
+      "kind": "source_archive_recipe",
+      "archive_url": "https://download.redis.io/releases/redis-7.2.5.tar.gz",
+      "archive_sha256": "5981179706f8391f03be91d951acafaeda91af7fac56beffb2701963103e423d",
+      "archive_size_bytes": 3386454,
+      "build_toolchain": "self-hosted-ubuntu-24.04-bare-metal_gcc_gnu-make_glibc",
+      "recipe_version": 1,
+      "recipe_steps": [
+        "test \"$(uname -s)-$(uname -m)\" = \"Linux-x86_64\"",
+        "printf '%s  redis-7.2.5.tar.gz\\n' '5981179706f8391f03be91d951acafaeda91af7fac56beffb2701963103e423d' | sha256sum --check --strict -",
+        "tar --extract --gzip --file redis-7.2.5.tar.gz",
+        "env -i PATH=/usr/bin:/bin HOME=/tmp CC=gcc MALLOC=libc BUILD_TLS=no make -C redis-7.2.5 -j1 redis-benchmark",
+        "test \"$(redis-7.2.5/src/redis-benchmark --version)\" = \"redis-benchmark 7.2.5\""
+      ],
+      "output_path": "src/redis-benchmark",
+      "expected_version": "redis-benchmark 7.2.5"
+    }
+  },
+  "runner_profile_sha256": "c728014af9fd0aae4c474456e74437a033110940db01caa1577b1b5b5efabfe0",
+  "profile_validation": {
+    "eligible": true,
+    "reasons": []
+  },
+  "run_context": {
+    "runner_profile": {
+      "name": "reference-v1",
+      "required_runner_class": "self-hosted-bare-metal-v1",
+      "allowed_fingerprints": [
+        "25baeec1c9ec75da90b5dd0f29c101897450b96651d7e47570e18684be486ebb"
+      ],
+      "minimum_logical_cores": 4,
+      "required_cpu_affinity": "1-4",
+      "required_cgroup_cpu_quota": "unlimited",
+      "require_dedicated": true,
+      "maximum_calibration_score": 0.25
+    },
+    "observed_runner": {
+      "runner_class": "self-hosted-bare-metal-v1",
+      "fingerprint": "25baeec1c9ec75da90b5dd0f29c101897450b96651d7e47570e18684be486ebb",
+      "cpu_model": "AMD Ryzen 7 PRO 8700GE w/ Radeon 780M Graphics",
+      "logical_cores": 4,
+      "ram_bytes": 66490486784,
+      "os": "linux",
+      "kernel": "6.8.0-138-generic",
+      "cpu_affinity": "1-4",
+      "cgroup_cpu_quota": "unlimited",
+      "governor": "performance",
+      "turbo": "enabled",
+      "shared_hardware": false,
+      "calibration_score": 0.015776637614821176,
+      "attestation": {
+        "schema_version": 5,
+        "contract_version": "hydracache-reference-host-v5",
+        "virtualization": "none",
+        "physical_cores": 8,
+        "measurement_cores": [
+          {
+            "logical_cpu": 1,
+            "package_id": 0,
+            "core_id": 1
+          },
+          {
+            "logical_cpu": 2,
+            "package_id": 0,
+            "core_id": 2
+          },
+          {
+            "logical_cpu": 3,
+            "package_id": 0,
+            "core_id": 3
+          },
+          {
+            "logical_cpu": 4,
+            "package_id": 0,
+            "core_id": 4
+          }
+        ],
+        "cpu_isolation": {
+          "smt_control": "off",
+          "online_cpus": "0-7",
+          "isolated_cpus": "1-4",
+          "nohz_full_cpus": "1-4",
+          "rcu_nocbs_cpus": "1-4",
+          "housekeeping_cpus": "0,5-7",
+          "irq_affinity_policy": "housekeeping-only-v1",
+          "measurement_idle_policy": "latency-cap-us-v1",
+          "measurement_max_idle_latency_us": 1,
+          "housekeeping_idle_policy": "latency-cap-us-v1",
+          "housekeeping_max_idle_latency_us": 1
+        },
+        "host_digest": "571591a534c9894242fc0af0c5f80c31131fe7e4cdb9d0ea63da6d8b56af8932",
+        "storage_class": "local-nvme",
+        "storage_identity_digest": "74ec6d1126c24b7a3899494eef2564aec2d3085056ac200e4a8cc8ca0ae43a50",
+        "os_image": "ubuntu-24.04",
+        "toolchain_identity": "rustc-1.94.0",
+        "prebuild_contract_digest": "f2caae0689d8b075d2a6d59d6090466365f9a6824c6996d6b92830956831cc55"
+      }
+    },
+    "source": {
+      "git_commit": "7bd31af9a5092466d7a7284995f388d33ed3110f",
+      "cargo_lock_sha256": "dc480dad8567eda4a4d13b393651d3d1201cc26ba7599e3c8ff822b725569def",
+      "toolchain": "rustc-1.94.0",
+      "build_flags": [
+        "--locked",
+        "--release"
+      ]
+    },
+    "build": {
+      "prebuild_contract_digest": "f2caae0689d8b075d2a6d59d6090466365f9a6824c6996d6b92830956831cc55",
+      "prebuild_manifest_sha256": "2768ca970a2b3e09c3ee63bbd9bba466c3aee40be8dfca8e06cbe98309e4b296",
+      "binary_sha256": [
+        [
+          "hydracache-loadgen",
+          "c2c0e14ab40dd5b3c2ee5d71631bdfee81d7d61c0cd2c83c8b927c126aff7bd2"
+        ],
+        [
+          "hydracache-server",
+          "a17b5148cad43e2193c69a64e3372e2832fa94a47196a7b6bec405128f3633c6"
+        ]
+      ]
+    },
+    "open_loop_endpoint": {
+      "endpoint": {
+        "host": "127.0.0.1",
+        "port": 41319
+      },
+      "endpoint_capability_sha256": "14b729d15ac097dd368a63519198917497f92dc588e80278b6f16a815bd2f8ab"
+    },
+    "selected_daemon": {
+      "payload": {
+        "schema_version": 1,
+        "node_id": "local-reference-daemon",
+        "endpoint": {
+          "host": "127.0.0.1",
+          "port": 41319
+        },
+        "daemon_binary_id": "hydracache-server",
+        "daemon_binary_sha256": "a17b5148cad43e2193c69a64e3372e2832fa94a47196a7b6bec405128f3633c6",
+        "prebuild_manifest_sha256": "2768ca970a2b3e09c3ee63bbd9bba466c3aee40be8dfca8e06cbe98309e4b296",
+        "open_loop_endpoint_capability_sha256": "14b729d15ac097dd368a63519198917497f92dc588e80278b6f16a815bd2f8ab",
+        "capability_source": "real-daemon-resp-readiness",
+        "daemon_processes": true,
+        "resp_listener_capability": true,
+        "state_scope": "node-local",
+        "selected_endpoint_only": true,
+        "automatic_failover": false
+      },
+      "capability_receipt_sha256": "9282ee9e94a858aa895b75312a1af29478ab51fe18907d639eb66487821e77df"
+    },
+    "external_tool_prebuild": {
+      "payload": {
+        "schema_version": 1,
+        "platform_key": "linux-x86_64-gnu",
+        "provenance_id": "redis-benchmark-7.2.5-linux-x86_64-gnu-source-v1",
+        "provenance_registry_sha256": "760ba8850f4e271577e26d7bdba6f142b6efc2f4ce9c83125efb85d6dd2622d2",
+        "source_archive_sha256": "5981179706f8391f03be91d951acafaeda91af7fac56beffb2701963103e423d",
+        "tool_binary_id": "redis-benchmark",
+        "tool_canonical_path": "/opt/actions-runner/_work/_temp/hydracache-perf-tools/redis-7.2.5/src/redis-benchmark",
+        "tool_binary_sha256": "71bf5cbf35038d8ee73379ddcb1d78559bcc88ba70039ed2f55ea9db7521c91f",
+        "prebuild_manifest_sha256": "2768ca970a2b3e09c3ee63bbd9bba466c3aee40be8dfca8e06cbe98309e4b296"
+      },
+      "receipt_sha256": "32197a3881908e7ef8f5b28b201817312d6a7eb6d7f0a02a925d5d4e28ef42d5"
+    },
+    "committed_contract_sha256": "db2916bac4920f45bb2ee8dd65c99534de3eb15839e9e55facfecb789c1479ca"
+  },
+  "version_probe": {
+    "program": "/opt/actions-runner/_work/_temp/hydracache-perf-tools/redis-7.2.5/src/redis-benchmark",
+    "argv": [
+      "--version"
+    ],
+    "execution_environment": [
+      "LANG=C",
+      "LC_ALL=C",
+      "TZ=UTC"
+    ],
+    "exit_code": 0,
+    "timed_out": false,
+    "stdout": "redis-benchmark 7.2.5\n",
+    "stderr": "",
+    "stdout_bytes": 22,
+    "stderr_bytes": 0,
+    "stdout_sha256": "5291d69fd40678ba66ede16ef46079aa991f0a404f6492a7449689d99ed9455a",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "cases": [
+    {
+      "case_id": "clients-1-pipeline-1",
+      "clients": 1,
+      "pipeline": 1,
+      "requests": 100000,
+      "data_size_bytes": 256,
+      "repeats": [
+        {
+          "repeat": 1,
+          "initial_state": {
+            "method": "del-set-get-exact-redis-benchmark-key",
+            "key": "key:__rand_int__",
+            "payload_bytes": 256,
+            "payload_sha256": "1a1ab528466e36d92ab1d52aa56515c027612c9b1ac6b6f40007d0b9f78fd397",
+            "reset_reply_sha256": "f3b4cb77478ec9e7388d907937dad039f9204482b7038f21ccabce096918ea23",
+            "preload_reply_sha256": "4fe64db76d55e725725c37bcdb91df3266f059510ec44c342a31c426fdd01c5f",
+            "verification_reply_sha256": "71e07b56c631fd83937dabf06405e076961e83dea895c65b615b3738d3487a2a",
+            "state_digest": "4db343a36719ec413105f5986f1722502472106a8ba36b4740509eba80bb8596"
+          },
+          "rows": [
+            {
+              "name": "GET",
+              "requests_per_second": "40567.95",
+              "average_latency_ms": "0.020",
+              "minimum_latency_ms": "0.016",
+              "p50_latency_ms": "0.023",
+              "p95_latency_ms": "0.023",
+              "p99_latency_ms": "0.031",
+              "maximum_latency_ms": "0.095"
+            },
+            {
+              "name": "SET",
+              "requests_per_second": "41152.26",
+              "average_latency_ms": "0.020",
+              "minimum_latency_ms": "0.016",
+              "p50_latency_ms": "0.023",
+              "p95_latency_ms": "0.023",
+              "p99_latency_ms": "0.023",
+              "maximum_latency_ms": "0.063"
+            },
+            {
+              "name": "MSET (10 keys)",
+              "requests_per_second": "29420.42",
+              "average_latency_ms": "0.028",
+              "minimum_latency_ms": "0.024",
+              "p50_latency_ms": "0.031",
+              "p95_latency_ms": "0.031",
+              "p99_latency_ms": "0.039",
+              "maximum_latency_ms": "0.119"
+            }
+          ],
+          "process": {
+            "program": "/opt/actions-runner/_work/_temp/hydracache-perf-tools/redis-7.2.5/src/redis-benchmark",
+            "argv": [
+              "--csv",
+              "-h",
+              "127.0.0.1",
+              "-p",
+              "41319",
+              "-c",
+              "1",
+              "-n",
+              "100000",
+              "-P",
+              "1",
+              "-d",
+              "256",
+              "-t",
+              "get,set,mset"
+            ],
+            "execution_environment": [
+              "LANG=C",
+              "LC_ALL=C",
+              "TZ=UTC"
+            ],
+            "exit_code": 0,
+            "timed_out": false,
+            "stdout": "\"test\",\"rps\",\"avg_latency_ms\",\"min_latency_ms\",\"p50_latency_ms\",\"p95_latency_ms\",\"p99_latency_ms\",\"max_latency_ms\"\n\"SET\",\"41152.26\",\"0.020\",\"0.016\",\"0.023\",\"0.023\",\"0.023\",\"0.063\"\n\"GET\",\"40567.95\",\"0.020\",\"0.016\",\"0.023\",\"0.023\",\"0.031\",\"0.095\"\n\"MSET (10 keys)\",\"29420.42\",\"0.028\",\"0.024\",\"0.031\",\"0.031\",\"0.039\",\"0.119\"\n",
+            "stderr": "WARNING: Could not fetch server CONFIG\n",
+            "stdout_bytes": 321,
+            "stderr_bytes": 39,
+            "stdout_sha256": "cc5edc63f76fa73bba78c9ffef74ec64141a5d65a6c44c1191162a9d4de8e2cc",
+            "stderr_sha256": "1d89c0f26b2039760f8f32c71a04225a99b8a39ea54bd9a886e8db8db521de73"
+          }
+        },
+        {
+          "repeat": 2,
+          "initial_state": {
+            "method": "del-set-get-exact-redis-benchmark-key",
+            "key": "key:__rand_int__",
+            "payload_bytes": 256,
+            "payload_sha256": "1a1ab528466e36d92ab1d52aa56515c027612c9b1ac6b6f40007d0b9f78fd397",
+            "reset_reply_sha256": "6d7dbcb27aa6e24f40bf1f4cb2cc8a36e2f3b7f1ae87edf906578a2936b756d2",
+            "preload_reply_sha256": "4fe64db76d55e725725c37bcdb91df3266f059510ec44c342a31c426fdd01c5f",
+            "verification_reply_sha256": "71e07b56c631fd83937dabf06405e076961e83dea895c65b615b3738d3487a2a",
+            "state_digest": "4db343a36719ec413105f5986f1722502472106a8ba36b4740509eba80bb8596"
+          },
+          "rows": [
+            {
+              "name": "GET",
+              "requests_per_second": "40567.95",
+              "average_latency_ms": "0.020",
+              "minimum_latency_ms": "0.016",
+              "p50_latency_ms": "0.023",
+              "p95_latency_ms": "0.023",
+              "p99_latency_ms": "0.031",
+              "maximum_latency_ms": "0.095"
+            },
+            {
+              "name": "SET",
+              "requests_per_second": "41101.52",
+              "average_latency_ms": "0.020",
+              "minimum_latency_ms": "0.016",
+              "p50_latency_ms": "0.023",
+              "p95_latency_ms": "0.023",
+              "p99_latency_ms": "0.023",
+              "maximum_latency_ms": "0.079"
+            },
+            {
+              "name": "MSET (10 keys)",
+              "requests_per_second": "29726.52",
+              "average_latency_ms": "0.028",
+              "minimum_latency_ms": "0.024",
+              "p50_latency_ms": "0.031",
+              "p95_latency_ms": "0.031",
+              "p99_latency_ms": "0.039",
+              "maximum_latency_ms": "0.087"
+            }
+          ],
+          "process": {
+            "program": "/opt/actions-runner/_work/_temp/hydracache-perf-tools/redis-7.2.5/src/redis-benchmark",
+            "argv": [
+              "--csv",
+              "-h",
+              "127.0.0.1",
+              "-p",
+              "41319",
+              "-c",
+              "1",
+              "-n",
+              "100000",
+              "-P",
+              "1",
+              "-d",
+              "256",
+              "-t",
+              "get,set,mset"
+            ],
+            "execution_environment": [
+              "LANG=C",
+              "LC_ALL=C",
+              "TZ=UTC"
+            ],
+            "exit_code": 0,
+            "timed_out": false,
+            "stdout": "\"test\",\"rps\",\"avg_latency_ms\",\"min_latency_ms\",\"p50_latency_ms\",\"p95_latency_ms\",\"p99_latency_ms\",\"max_latency_ms\"\n\"SET\",\"41101.52\",\"0.020\",\"0.016\",\"0.023\",\"0.023\",\"0.023\",\"0.079\"\n\"GET\",\"40567.95\",\"0.020\",\"0.016\",\"0.023\",\"0.023\",\"0.031\",\"0.095\"\n\"MSET (10 keys)\",\"29726.52\",\"0.028\",\"0.024\",\"0.031\",\"0.031\",\"0.039\",\"0.087\"\n",
+            "stderr": "WARNING: Could not fetch server CONFIG\n",
+            "stdout_bytes": 321,
+            "stderr_bytes": 39,
+            "stdout_sha256": "e375b23b393106ca61fa4841b932677f824a8ca3bdae6373cc98fe77acf61c5f",
+            "stderr_sha256": "1d89c0f26b2039760f8f32c71a04225a99b8a39ea54bd9a886e8db8db521de73"
+          }
+        },
+        {
+          "repeat": 3,
+          "initial_state": {
+            "method": "del-set-get-exact-redis-benchmark-key",
+            "key": "key:__rand_int__",
+            "payload_bytes": 256,
+            "payload_sha256": "1a1ab528466e36d92ab1d52aa56515c027612c9b1ac6b6f40007d0b9f78fd397",
+            "reset_reply_sha256": "6d7dbcb27aa6e24f40bf1f4cb2cc8a36e2f3b7f1ae87edf906578a2936b756d2",
+            "preload_reply_sha256": "4fe64db76d55e725725c37bcdb91df3266f059510ec44c342a31c426fdd01c5f",
+            "verification_reply_sha256": "71e07b56c631fd83937dabf06405e076961e83dea895c65b615b3738d3487a2a",
+            "state_digest": "4db343a36719ec413105f5986f1722502472106a8ba36b4740509eba80bb8596"
+          },
+          "rows": [
+            {
+              "name": "GET",
+              "requests_per_second": "40518.64",
+              "average_latency_ms": "0.020",
+              "minimum_latency_ms": "0.016",
+              "p50_latency_ms": "0.023",
+              "p95_latency_ms": "0.023",
+              "p99_latency_ms": "0.031",
+              "maximum_latency_ms": "0.055"
+            },
+            {
+              "name": "SET",
+              "requests_per_second": "41034.06",
+              "average_latency_ms": "0.020",
+              "minimum_latency_ms": "0.016",
+              "p50_latency_ms": "0.023",
+              "p95_latency_ms": "0.023",
+              "p99_latency_ms": "0.023",
+              "maximum_latency_ms": "0.063"
+            },
+            {
+              "name": "MSET (10 keys)",
+              "requests_per_second": "30238.89",
+              "average_latency_ms": "0.028",
+              "minimum_latency_ms": "0.024",
+              "p50_latency_ms": "0.031",
+              "p95_latency_ms": "0.031",
+              "p99_latency_ms": "0.039",
+              "maximum_latency_ms": "0.119"
+            }
+          ],
+          "process": {
+            "program": "/opt/actions-runner/_work/_temp/hydracache-perf-tools/redis-7.2.5/src/redis-benchmark",
+            "argv": [
+              "--csv",
+              "-h",
+              "127.0.0.1",
+              "-p",
+              "41319",
+              "-c",
+              "1",
+              "-n",
+              "100000",
+              "-P",
+              "1",
+              "-d",
+              "256",
+              "-t",
+              "get,set,mset"
+            ],
+            "execution_environment": [
+              "LANG=C",
+              "LC_ALL=C",
+              "TZ=UTC"
+            ],
+            "exit_code": 0,
+            "timed_out": false,
+            "stdout": "\"test\",\"rps\",\"avg_latency_ms\",\"min_latency_ms\",\"p50_latency_ms\",\"p95_latency_ms\",\"p99_latency_ms\",\"max_latency_ms\"\n\"SET\",\"41034.06\",\"0.020\",\"0.016\",\"0.023\",\"0.023\",\"0.023\",\"0.063\"\n\"GET\",\"40518.64\",\"0.020\",\"0.016\",\"0.023\",\"0.023\",\"0.031\",\"0.055\"\n\"MSET (10 keys)\",\"30238.89\",\"0.028\",\"0.024\",\"0.031\",\"0.031\",\"0.039\",\"0.119\"\n",
+            "stderr": "WARNING: Could not fetch server CONFIG\n",
+            "stdout_bytes": 321,
+            "stderr_bytes": 39,
+            "stdout_sha256": "b882f66b9a9da97a4f5ff7cc40e9efae980012b54dc3a37e01452c1a32e6b334",
+            "stderr_sha256": "1d89c0f26b2039760f8f32c71a04225a99b8a39ea54bd9a886e8db8db521de73"
+          }
+        }
+      ],
+      "operations": [
+        {
+          "operation": "GET",
+          "repeat_count": 3,
+          "requests_per_second_samples": [
+            40567.95,
+            40567.95,
+            40518.64
+          ],
+          "median_requests_per_second": 40567.95,
+          "minimum_requests_per_second": 40518.64,
+          "maximum_requests_per_second": 40567.95,
+          "robust_spread_ratio": 0.0012154915395034178,
+          "stable": true,
+          "stability_reasons": []
+        },
+        {
+          "operation": "SET",
+          "repeat_count": 3,
+          "requests_per_second_samples": [
+            41152.26,
+            41101.52,
+            41034.06
+          ],
+          "median_requests_per_second": 41101.52,
+          "minimum_requests_per_second": 41034.06,
+          "maximum_requests_per_second": 41152.26,
+          "robust_spread_ratio": 0.002875806052914938,
+          "stable": true,
+          "stability_reasons": []
+        },
+        {
+          "operation": "MSET (10 keys)",
+          "repeat_count": 3,
+          "requests_per_second_samples": [
+            29420.42,
+            29726.52,
+            30238.89
+          ],
+          "median_requests_per_second": 29726.52,
+          "minimum_requests_per_second": 29420.42,
+          "maximum_requests_per_second": 30238.89,
+          "robust_spread_ratio": 0.027533327143574194,
+          "stable": true,
+          "stability_reasons": []
+        }
+      ]
+    },
+    {
+      "case_id": "clients-10-pipeline-1",
+      "clients": 10,
+      "pipeline": 1,
+      "requests": 100000,
+      "data_size_bytes": 256,
+      "repeats": [
+        {
+          "repeat": 1,
+          "initial_state": {
+            "method": "del-set-get-exact-redis-benchmark-key",
+            "key": "key:__rand_int__",
+            "payload_bytes": 256,
+            "payload_sha256": "1a1ab528466e36d92ab1d52aa56515c027612c9b1ac6b6f40007d0b9f78fd397",
+            "reset_reply_sha256": "6d7dbcb27aa6e24f40bf1f4cb2cc8a36e2f3b7f1ae87edf906578a2936b756d2",
+            "preload_reply_sha256": "4fe64db76d55e725725c37bcdb91df3266f059510ec44c342a31c426fdd01c5f",
+            "verification_reply_sha256": "71e07b56c631fd83937dabf06405e076961e83dea895c65b615b3738d3487a2a",
+            "state_digest": "4db343a36719ec413105f5986f1722502472106a8ba36b4740509eba80bb8596"
+          },
+          "rows": [
+            {
+              "name": "GET",
+              "requests_per_second": "54083.29",
+              "average_latency_ms": "0.139",
+              "minimum_latency_ms": "0.016",
+              "p50_latency_ms": "0.135",
+              "p95_latency_ms": "0.239",
+              "p99_latency_ms": "0.271",
+              "maximum_latency_ms": "6.279"
+            },
+            {
+              "name": "SET",
+              "requests_per_second": "54764.51",
+              "average_latency_ms": "0.137",
+              "minimum_latency_ms": "0.016",
+              "p50_latency_ms": "0.135",
+              "p95_latency_ms": "0.215",
+              "p99_latency_ms": "0.263",
+              "maximum_latency_ms": "3.719"
+            },
+            {
+              "name": "MSET (10 keys)",
+              "requests_per_second": "35149.38",
+              "average_latency_ms": "0.246",
+              "minimum_latency_ms": "0.024",
+              "p50_latency_ms": "0.247",
+              "p95_latency_ms": "0.319",
+              "p99_latency_ms": "0.423",
+              "maximum_latency_ms": "6.191"
+            }
+          ],
+          "process": {
+            "program": "/opt/actions-runner/_work/_temp/hydracache-perf-tools/redis-7.2.5/src/redis-benchmark",
+            "argv": [
+              "--csv",
+              "-h",
+              "127.0.0.1",
+              "-p",
+              "41319",
+              "-c",
+              "10",
+              "-n",
+              "100000",
+              "-P",
+              "1",
+              "-d",
+              "256",
+              "-t",
+              "get,set,mset"
+            ],
+            "execution_environment": [
+              "LANG=C",
+              "LC_ALL=C",
+              "TZ=UTC"
+            ],
+            "exit_code": 0,
+            "timed_out": false,
+            "stdout": "\"test\",\"rps\",\"avg_latency_ms\",\"min_latency_ms\",\"p50_latency_ms\",\"p95_latency_ms\",\"p99_latency_ms\",\"max_latency_ms\"\n\"SET\",\"54764.51\",\"0.137\",\"0.016\",\"0.135\",\"0.215\",\"0.263\",\"3.719\"\n\"GET\",\"54083.29\",\"0.139\",\"0.016\",\"0.135\",\"0.239\",\"0.271\",\"6.279\"\n\"MSET (10 keys)\",\"35149.38\",\"0.246\",\"0.024\",\"0.247\",\"0.319\",\"0.423\",\"6.191\"\n",
+            "stderr": "WARNING: Could not fetch server CONFIG\n",
+            "stdout_bytes": 321,
+            "stderr_bytes": 39,
+            "stdout_sha256": "fc97ef68d1ecefa1753892c27a1c9ee3a1e26f8ea86e0b2b2e07c6c69d2c9616",
+            "stderr_sha256": "1d89c0f26b2039760f8f32c71a04225a99b8a39ea54bd9a886e8db8db521de73"
+          }
+        },
+        {
+          "repeat": 2,
+          "initial_state": {
+            "method": "del-set-get-exact-redis-benchmark-key",
+            "key": "key:__rand_int__",
+            "payload_bytes": 256,
+            "payload_sha256": "1a1ab528466e36d92ab1d52aa56515c027612c9b1ac6b6f40007d0b9f78fd397",
+            "reset_reply_sha256": "6d7dbcb27aa6e24f40bf1f4cb2cc8a36e2f3b7f1ae87edf906578a2936b756d2",
+            "preload_reply_sha256": "4fe64db76d55e725725c37bcdb91df3266f059510ec44c342a31c426fdd01c5f",
+            "verification_reply_sha256": "71e07b56c631fd83937dabf06405e076961e83dea895c65b615b3738d3487a2a",
+            "state_digest": "4db343a36719ec413105f5986f1722502472106a8ba36b4740509eba80bb8596"
+          },
+          "rows": [
+            {
+              "name": "GET",
+              "requests_per_second": "54259.36",
+              "average_latency_ms": "0.139",
+              "minimum_latency_ms": "0.016",
+              "p50_latency_ms": "0.135",
+              "p95_latency_ms": "0.239",
+              "p99_latency_ms": "0.271",
+              "maximum_latency_ms": "3.351"
+            },
+            {
+              "name": "SET",
+              "requests_per_second": "54914.88",
+              "average_latency_ms": "0.137",
+              "minimum_latency_ms": "0.016",
+              "p50_latency_ms": "0.135",
+              "p95_latency_ms": "0.207",
+              "p99_latency_ms": "0.263",
+              "maximum_latency_ms": "3.439"
+            },
+            {
+              "name": "MSET (10 keys)",
+              "requests_per_second": "35149.38",
+              "average_latency_ms": "0.246",
+              "minimum_latency_ms": "0.024",
+              "p50_latency_ms": "0.247",
+              "p95_latency_ms": "0.319",
+              "p99_latency_ms": "0.415",
+              "maximum_latency_ms": "6.423"
+            }
+          ],
+          "process": {
+            "program": "/opt/actions-runner/_work/_temp/hydracache-perf-tools/redis-7.2.5/src/redis-benchmark",
+            "argv": [
+              "--csv",
+              "-h",
+              "127.0.0.1",
+              "-p",
+              "41319",
+              "-c",
+              "10",
+              "-n",
+              "100000",
+              "-P",
+              "1",
+              "-d",
+              "256",
+              "-t",
+              "get,set,mset"
+            ],
+            "execution_environment": [
+              "LANG=C",
+              "LC_ALL=C",
+              "TZ=UTC"
+            ],
+            "exit_code": 0,
+            "timed_out": false,
+            "stdout": "\"test\",\"rps\",\"avg_latency_ms\",\"min_latency_ms\",\"p50_latency_ms\",\"p95_latency_ms\",\"p99_latency_ms\",\"max_latency_ms\"\n\"SET\",\"54914.88\",\"0.137\",\"0.016\",\"0.135\",\"0.207\",\"0.263\",\"3.439\"\n\"GET\",\"54259.36\",\"0.139\",\"0.016\",\"0.135\",\"0.239\",\"0.271\",\"3.351\"\n\"MSET (10 keys)\",\"35149.38\",\"0.246\",\"0.024\",\"0.247\",\"0.319\",\"0.415\",\"6.423\"\n",
+            "stderr": "WARNING: Could not fetch server CONFIG\n",
+            "stdout_bytes": 321,
+            "stderr_bytes": 39,
+            "stdout_sha256": "b88b35023db55f1c86bb6d558410ed6245eae5be21966bd9dbcf5871db49e419",
+            "stderr_sha256": "1d89c0f26b2039760f8f32c71a04225a99b8a39ea54bd9a886e8db8db521de73"
+          }
+        },
+        {
+          "repeat": 3,
+          "initial_state": {
+            "method": "del-set-get-exact-redis-benchmark-key",
+            "key": "key:__rand_int__",
+            "payload_bytes": 256,
+            "payload_sha256": "1a1ab528466e36d92ab1d52aa56515c027612c9b1ac6b6f40007d0b9f78fd397",
+            "reset_reply_sha256": "6d7dbcb27aa6e24f40bf1f4cb2cc8a36e2f3b7f1ae87edf906578a2936b756d2",
+            "preload_reply_sha256": "4fe64db76d55e725725c37bcdb91df3266f059510ec44c342a31c426fdd01c5f",
+            "verification_reply_sha256": "71e07b56c631fd83937dabf06405e076961e83dea895c65b615b3738d3487a2a",
+            "state_digest": "4db343a36719ec413105f5986f1722502472106a8ba36b4740509eba80bb8596"
+          },
+          "rows": [
+            {
+              "name": "GET",
+              "requests_per_second": "54171.18",
+              "average_latency_ms": "0.139",
+              "minimum_latency_ms": "0.016",
+              "p50_latency_ms": "0.135",
+              "p95_latency_ms": "0.239",
+              "p99_latency_ms": "0.271",
+              "maximum_latency_ms": "3.551"
+            },
+            {
+              "name": "SET",
+              "requests_per_second": "54644.81",
+              "average_latency_ms": "0.137",
+              "minimum_latency_ms": "0.016",
+              "p50_latency_ms": "0.135",
+              "p95_latency_ms": "0.207",
+              "p99_latency_ms": "0.263",
+              "maximum_latency_ms": "3.071"
+            },
+            {
+              "name": "MSET (10 keys)",
+              "requests_per_second": "35260.93",
+              "average_latency_ms": "0.245",
+              "minimum_latency_ms": "0.024",
+              "p50_latency_ms": "0.247",
+              "p95_latency_ms": "0.319",
+              "p99_latency_ms": "0.415",
+              "maximum_latency_ms": "3.799"
+            }
+          ],
+          "process": {
+            "program": "/opt/actions-runner/_work/_temp/hydracache-perf-tools/redis-7.2.5/src/redis-benchmark",
+            "argv": [
+              "--csv",
+              "-h",
+              "127.0.0.1",
+              "-p",
+              "41319",
+              "-c",
+              "10",
+              "-n",
+              "100000",
+              "-P",
+              "1",
+              "-d",
+              "256",
+              "-t",
+              "get,set,mset"
+            ],
+            "execution_environment": [
+              "LANG=C",
+              "LC_ALL=C",
+              "TZ=UTC"
+            ],
+            "exit_code": 0,
+            "timed_out": false,
+            "stdout": "\"test\",\"rps\",\"avg_latency_ms\",\"min_latency_ms\",\"p50_latency_ms\",\"p95_latency_ms\",\"p99_latency_ms\",\"max_latency_ms\"\n\"SET\",\"54644.81\",\"0.137\",\"0.016\",\"0.135\",\"0.207\",\"0.263\",\"3.071\"\n\"GET\",\"54171.18\",\"0.139\",\"0.016\",\"0.135\",\"0.239\",\"0.271\",\"3.551\"\n\"MSET (10 keys)\",\"35260.93\",\"0.245\",\"0.024\",\"0.247\",\"0.319\",\"0.415\",\"3.799\"\n",
+            "stderr": "WARNING: Could not fetch server CONFIG\n",
+            "stdout_bytes": 321,
+            "stderr_bytes": 39,
+            "stdout_sha256": "7671521d52f627f94bda9fab89e5981a0e2fd5cf7770847db11ef59ea0c05f21",
+            "stderr_sha256": "1d89c0f26b2039760f8f32c71a04225a99b8a39ea54bd9a886e8db8db521de73"
+          }
+        }
+      ],
+      "operations": [
+        {
+          "operation": "GET",
+          "repeat_count": 3,
+          "requests_per_second_samples": [
+            54083.29,
+            54259.36,
+            54171.18
+          ],
+          "median_requests_per_second": 54171.18,
+          "minimum_requests_per_second": 54083.29,
+          "maximum_requests_per_second": 54259.36,
+          "robust_spread_ratio": 0.0032502522559043332,
+          "stable": true,
+          "stability_reasons": []
+        },
+        {
+          "operation": "SET",
+          "repeat_count": 3,
+          "requests_per_second_samples": [
+            54764.51,
+            54914.88,
+            54644.81
+          ],
+          "median_requests_per_second": 54764.51,
+          "minimum_requests_per_second": 54644.81,
+          "maximum_requests_per_second": 54914.88,
+          "robust_spread_ratio": 0.004931478433752072,
+          "stable": true,
+          "stability_reasons": []
+        },
+        {
+          "operation": "MSET (10 keys)",
+          "repeat_count": 3,
+          "requests_per_second_samples": [
+            35149.38,
+            35149.38,
+            35260.93
+          ],
+          "median_requests_per_second": 35149.38,
+          "minimum_requests_per_second": 35149.38,
+          "maximum_requests_per_second": 35260.93,
+          "robust_spread_ratio": 0.003173597941130197,
+          "stable": true,
+          "stability_reasons": []
+        }
+      ]
+    },
+    {
+      "case_id": "clients-50-pipeline-1",
+      "clients": 50,
+      "pipeline": 1,
+      "requests": 100000,
+      "data_size_bytes": 256,
+      "repeats": [
+        {
+          "repeat": 1,
+          "initial_state": {
+            "method": "del-set-get-exact-redis-benchmark-key",
+            "key": "key:__rand_int__",
+            "payload_bytes": 256,
+            "payload_sha256": "1a1ab528466e36d92ab1d52aa56515c027612c9b1ac6b6f40007d0b9f78fd397",
+            "reset_reply_sha256": "6d7dbcb27aa6e24f40bf1f4cb2cc8a36e2f3b7f1ae87edf906578a2936b756d2",
+            "preload_reply_sha256": "4fe64db76d55e725725c37bcdb91df3266f059510ec44c342a31c426fdd01c5f",
+            "verification_reply_sha256": "71e07b56c631fd83937dabf06405e076961e83dea895c65b615b3738d3487a2a",
+            "state_digest": "4db343a36719ec413105f5986f1722502472106a8ba36b4740509eba80bb8596"
+          },
+          "rows": [
+            {
+              "name": "GET",
+              "requests_per_second": "56465.27",
+              "average_latency_ms": "0.638",
+              "minimum_latency_ms": "0.024",
+              "p50_latency_ms": "0.639",
+              "p95_latency_ms": "0.735",
+              "p99_latency_ms": "1.223",
+              "maximum_latency_ms": "3.127"
+            },
+            {
+              "name": "SET",
+              "requests_per_second": "57045.07",
+              "average_latency_ms": "0.627",
+              "minimum_latency_ms": "0.024",
+              "p50_latency_ms": "0.631",
+              "p95_latency_ms": "0.727",
+              "p99_latency_ms": "1.031",
+              "maximum_latency_ms": "3.799"
+            },
+            {
+              "name": "MSET (10 keys)",
+              "requests_per_second": "37481.26",
+              "average_latency_ms": "1.097",
+              "minimum_latency_ms": "0.024",
+              "p50_latency_ms": "1.087",
+              "p95_latency_ms": "1.359",
+              "p99_latency_ms": "1.767",
+              "maximum_latency_ms": "4.807"
+            }
+          ],
+          "process": {
+            "program": "/opt/actions-runner/_work/_temp/hydracache-perf-tools/redis-7.2.5/src/redis-benchmark",
+            "argv": [
+              "--csv",
+              "-h",
+              "127.0.0.1",
+              "-p",
+              "41319",
+              "-c",
+              "50",
+              "-n",
+              "100000",
+              "-P",
+              "1",
+              "-d",
+              "256",
+              "-t",
+              "get,set,mset"
+            ],
+            "execution_environment": [
+              "LANG=C",
+              "LC_ALL=C",
+              "TZ=UTC"
+            ],
+            "exit_code": 0,
+            "timed_out": false,
+            "stdout": "\"test\",\"rps\",\"avg_latency_ms\",\"min_latency_ms\",\"p50_latency_ms\",\"p95_latency_ms\",\"p99_latency_ms\",\"max_latency_ms\"\n\"SET\",\"57045.07\",\"0.627\",\"0.024\",\"0.631\",\"0.727\",\"1.031\",\"3.799\"\n\"GET\",\"56465.27\",\"0.638\",\"0.024\",\"0.639\",\"0.735\",\"1.223\",\"3.127\"\n\"MSET (10 keys)\",\"37481.26\",\"1.097\",\"0.024\",\"1.087\",\"1.359\",\"1.767\",\"4.807\"\n",
+            "stderr": "WARNING: Could not fetch server CONFIG\n",
+            "stdout_bytes": 321,
+            "stderr_bytes": 39,
+            "stdout_sha256": "4d44f8fdb20cbe338638e0193a4f9bfda3aac506857f976dfa7d24954f747633",
+            "stderr_sha256": "1d89c0f26b2039760f8f32c71a04225a99b8a39ea54bd9a886e8db8db521de73"
+          }
+        },
+        {
+          "repeat": 2,
+          "initial_state": {
+            "method": "del-set-get-exact-redis-benchmark-key",
+            "key": "key:__rand_int__",
+            "payload_bytes": 256,
+            "payload_sha256": "1a1ab528466e36d92ab1d52aa56515c027612c9b1ac6b6f40007d0b9f78fd397",
+            "reset_reply_sha256": "6d7dbcb27aa6e24f40bf1f4cb2cc8a36e2f3b7f1ae87edf906578a2936b756d2",
+            "preload_reply_sha256": "4fe64db76d55e725725c37bcdb91df3266f059510ec44c342a31c426fdd01c5f",
+            "verification_reply_sha256": "71e07b56c631fd83937dabf06405e076961e83dea895c65b615b3738d3487a2a",
+            "state_digest": "4db343a36719ec413105f5986f1722502472106a8ba36b4740509eba80bb8596"
+          },
+          "rows": [
+            {
+              "name": "GET",
+              "requests_per_second": "56561.09",
+              "average_latency_ms": "0.635",
+              "minimum_latency_ms": "0.016",
+              "p50_latency_ms": "0.639",
+              "p95_latency_ms": "0.743",
+              "p99_latency_ms": "1.127",
+              "maximum_latency_ms": "3.039"
+            },
+            {
+              "name": "SET",
+              "requests_per_second": "57012.54",
+              "average_latency_ms": "0.627",
+              "minimum_latency_ms": "0.024",
+              "p50_latency_ms": "0.623",
+              "p95_latency_ms": "0.727",
+              "p99_latency_ms": "1.031",
+              "maximum_latency_ms": "6.527"
+            },
+            {
+              "name": "MSET (10 keys)",
+              "requests_per_second": "37355.25",
+              "average_latency_ms": "1.103",
+              "minimum_latency_ms": "0.024",
+              "p50_latency_ms": "1.095",
+              "p95_latency_ms": "1.407",
+              "p99_latency_ms": "1.799",
+              "maximum_latency_ms": "4.855"
+            }
+          ],
+          "process": {
+            "program": "/opt/actions-runner/_work/_temp/hydracache-perf-tools/redis-7.2.5/src/redis-benchmark",
+            "argv": [
+              "--csv",
+              "-h",
+              "127.0.0.1",
+              "-p",
+              "41319",
+              "-c",
+              "50",
+              "-n",
+              "100000",
+              "-P",
+              "1",
+              "-d",
+              "256",
+              "-t",
+              "get,set,mset"
+            ],
+            "execution_environment": [
+              "LANG=C",
+              "LC_ALL=C",
+              "TZ=UTC"
+            ],
+            "exit_code": 0,
+            "timed_out": false,
+            "stdout": "\"test\",\"rps\",\"avg_latency_ms\",\"min_latency_ms\",\"p50_latency_ms\",\"p95_latency_ms\",\"p99_latency_ms\",\"max_latency_ms\"\n\"SET\",\"57012.54\",\"0.627\",\"0.024\",\"0.623\",\"0.727\",\"1.031\",\"6.527\"\n\"GET\",\"56561.09\",\"0.635\",\"0.016\",\"0.639\",\"0.743\",\"1.127\",\"3.039\"\n\"MSET (10 keys)\",\"37355.25\",\"1.103\",\"0.024\",\"1.095\",\"1.407\",\"1.799\",\"4.855\"\n",
+            "stderr": "WARNING: Could not fetch server CONFIG\n",
+            "stdout_bytes": 321,
+            "stderr_bytes": 39,
+            "stdout_sha256": "29677d20482227f5f2b7090f34de51de710db5c5534a9f999dacebb9723cc771",
+            "stderr_sha256": "1d89c0f26b2039760f8f32c71a04225a99b8a39ea54bd9a886e8db8db521de73"
+          }
+        },
+        {
+          "repeat": 3,
+          "initial_state": {
+            "method": "del-set-get-exact-redis-benchmark-key",
+            "key": "key:__rand_int__",
+            "payload_bytes": 256,
+            "payload_sha256": "1a1ab528466e36d92ab1d52aa56515c027612c9b1ac6b6f40007d0b9f78fd397",
+            "reset_reply_sha256": "6d7dbcb27aa6e24f40bf1f4cb2cc8a36e2f3b7f1ae87edf906578a2936b756d2",
+            "preload_reply_sha256": "4fe64db76d55e725725c37bcdb91df3266f059510ec44c342a31c426fdd01c5f",
+            "verification_reply_sha256": "71e07b56c631fd83937dabf06405e076961e83dea895c65b615b3738d3487a2a",
+            "state_digest": "4db343a36719ec413105f5986f1722502472106a8ba36b4740509eba80bb8596"
+          },
+          "rows": [
+            {
+              "name": "GET",
+              "requests_per_second": "56593.10",
+              "average_latency_ms": "0.636",
+              "minimum_latency_ms": "0.024",
+              "p50_latency_ms": "0.631",
+              "p95_latency_ms": "0.735",
+              "p99_latency_ms": "1.215",
+              "maximum_latency_ms": "5.799"
+            },
+            {
+              "name": "SET",
+              "requests_per_second": "57045.07",
+              "average_latency_ms": "0.628",
+              "minimum_latency_ms": "0.024",
+              "p50_latency_ms": "0.631",
+              "p95_latency_ms": "0.727",
+              "p99_latency_ms": "1.063",
+              "maximum_latency_ms": "4.103"
+            },
+            {
+              "name": "MSET (10 keys)",
+              "requests_per_second": "37509.38",
+              "average_latency_ms": "1.096",
+              "minimum_latency_ms": "0.024",
+              "p50_latency_ms": "1.087",
+              "p95_latency_ms": "1.367",
+              "p99_latency_ms": "1.791",
+              "maximum_latency_ms": "4.607"
+            }
+          ],
+          "process": {
+            "program": "/opt/actions-runner/_work/_temp/hydracache-perf-tools/redis-7.2.5/src/redis-benchmark",
+            "argv": [
+              "--csv",
+              "-h",
+              "127.0.0.1",
+              "-p",
+              "41319",
+              "-c",
+              "50",
+              "-n",
+              "100000",
+              "-P",
+              "1",
+              "-d",
+              "256",
+              "-t",
+              "get,set,mset"
+            ],
+            "execution_environment": [
+              "LANG=C",
+              "LC_ALL=C",
+              "TZ=UTC"
+            ],
+            "exit_code": 0,
+            "timed_out": false,
+            "stdout": "\"test\",\"rps\",\"avg_latency_ms\",\"min_latency_ms\",\"p50_latency_ms\",\"p95_latency_ms\",\"p99_latency_ms\",\"max_latency_ms\"\n\"SET\",\"57045.07\",\"0.628\",\"0.024\",\"0.631\",\"0.727\",\"1.063\",\"4.103\"\n\"GET\",\"56593.10\",\"0.636\",\"0.024\",\"0.631\",\"0.735\",\"1.215\",\"5.799\"\n\"MSET (10 keys)\",\"37509.38\",\"1.096\",\"0.024\",\"1.087\",\"1.367\",\"1.791\",\"4.607\"\n",
+            "stderr": "WARNING: Could not fetch server CONFIG\n",
+            "stdout_bytes": 321,
+            "stderr_bytes": 39,
+            "stdout_sha256": "8ed75182151ce602435bccb87fc740a43b7cbf4c82f0ad5c7b1dfc1bccca84c9",
+            "stderr_sha256": "1d89c0f26b2039760f8f32c71a04225a99b8a39ea54bd9a886e8db8db521de73"
+          }
+        }
+      ],
+      "operations": [
+        {
+          "operation": "GET",
+          "repeat_count": 3,
+          "requests_per_second_samples": [
+            56465.27,
+            56561.09,
+            56593.1
+          ],
+          "median_requests_per_second": 56561.09,
+          "minimum_requests_per_second": 56465.27,
+          "maximum_requests_per_second": 56593.1,
+          "robust_spread_ratio": 0.002260034239085593,
+          "stable": true,
+          "stability_reasons": []
+        },
+        {
+          "operation": "SET",
+          "repeat_count": 3,
+          "requests_per_second_samples": [
+            57045.07,
+            57012.54,
+            57045.07
+          ],
+          "median_requests_per_second": 57045.07,
+          "minimum_requests_per_second": 57012.54,
+          "maximum_requests_per_second": 57045.07,
+          "robust_spread_ratio": 0.0005702508560336386,
+          "stable": true,
+          "stability_reasons": []
+        },
+        {
+          "operation": "MSET (10 keys)",
+          "repeat_count": 3,
+          "requests_per_second_samples": [
+            37481.26,
+            37355.25,
+            37509.38
+          ],
+          "median_requests_per_second": 37481.26,
+          "minimum_requests_per_second": 37355.25,
+          "maximum_requests_per_second": 37509.38,
+          "robust_spread_ratio": 0.004112188330915166,
+          "stable": true,
+          "stability_reasons": []
+        }
+      ]
+    },
+    {
+      "case_id": "clients-50-pipeline-10",
+      "clients": 50,
+      "pipeline": 10,
+      "requests": 100000,
+      "data_size_bytes": 256,
+      "repeats": [
+        {
+          "repeat": 1,
+          "initial_state": {
+            "method": "del-set-get-exact-redis-benchmark-key",
+            "key": "key:__rand_int__",
+            "payload_bytes": 256,
+            "payload_sha256": "1a1ab528466e36d92ab1d52aa56515c027612c9b1ac6b6f40007d0b9f78fd397",
+            "reset_reply_sha256": "6d7dbcb27aa6e24f40bf1f4cb2cc8a36e2f3b7f1ae87edf906578a2936b756d2",
+            "preload_reply_sha256": "4fe64db76d55e725725c37bcdb91df3266f059510ec44c342a31c426fdd01c5f",
+            "verification_reply_sha256": "71e07b56c631fd83937dabf06405e076961e83dea895c65b615b3738d3487a2a",
+            "state_digest": "4db343a36719ec413105f5986f1722502472106a8ba36b4740509eba80bb8596"
+          },
+          "rows": [
+            {
+              "name": "GET",
+              "requests_per_second": "124378.11",
+              "average_latency_ms": "3.609",
+              "minimum_latency_ms": "0.016",
+              "p50_latency_ms": "3.359",
+              "p95_latency_ms": "6.087",
+              "p99_latency_ms": "7.215",
+              "maximum_latency_ms": "10.983"
+            },
+            {
+              "name": "SET",
+              "requests_per_second": "125000.00",
+              "average_latency_ms": "3.568",
+              "minimum_latency_ms": "0.016",
+              "p50_latency_ms": "3.367",
+              "p95_latency_ms": "5.959",
+              "p99_latency_ms": "7.295",
+              "maximum_latency_ms": "15.063"
+            },
+            {
+              "name": "MSET (10 keys)",
+              "requests_per_second": "55897.15",
+              "average_latency_ms": "8.185",
+              "minimum_latency_ms": "0.032",
+              "p50_latency_ms": "7.695",
+              "p95_latency_ms": "14.783",
+              "p99_latency_ms": "18.319",
+              "maximum_latency_ms": "27.631"
+            }
+          ],
+          "process": {
+            "program": "/opt/actions-runner/_work/_temp/hydracache-perf-tools/redis-7.2.5/src/redis-benchmark",
+            "argv": [
+              "--csv",
+              "-h",
+              "127.0.0.1",
+              "-p",
+              "41319",
+              "-c",
+              "50",
+              "-n",
+              "100000",
+              "-P",
+              "10",
+              "-d",
+              "256",
+              "-t",
+              "get,set,mset"
+            ],
+            "execution_environment": [
+              "LANG=C",
+              "LC_ALL=C",
+              "TZ=UTC"
+            ],
+            "exit_code": 0,
+            "timed_out": false,
+            "stdout": "\"test\",\"rps\",\"avg_latency_ms\",\"min_latency_ms\",\"p50_latency_ms\",\"p95_latency_ms\",\"p99_latency_ms\",\"max_latency_ms\"\n\"SET\",\"125000.00\",\"3.568\",\"0.016\",\"3.367\",\"5.959\",\"7.295\",\"15.063\"\n\"GET\",\"124378.11\",\"3.609\",\"0.016\",\"3.359\",\"6.087\",\"7.215\",\"10.983\"\n\"MSET (10 keys)\",\"55897.15\",\"8.185\",\"0.032\",\"7.695\",\"14.783\",\"18.319\",\"27.631\"\n",
+            "stderr": "WARNING: Could not fetch server CONFIG\n",
+            "stdout_bytes": 328,
+            "stderr_bytes": 39,
+            "stdout_sha256": "f51bda783001b54850feeccccb941931187a9adead5fd678dd0a74d9dac86107",
+            "stderr_sha256": "1d89c0f26b2039760f8f32c71a04225a99b8a39ea54bd9a886e8db8db521de73"
+          }
+        },
+        {
+          "repeat": 2,
+          "initial_state": {
+            "method": "del-set-get-exact-redis-benchmark-key",
+            "key": "key:__rand_int__",
+            "payload_bytes": 256,
+            "payload_sha256": "1a1ab528466e36d92ab1d52aa56515c027612c9b1ac6b6f40007d0b9f78fd397",
+            "reset_reply_sha256": "6d7dbcb27aa6e24f40bf1f4cb2cc8a36e2f3b7f1ae87edf906578a2936b756d2",
+            "preload_reply_sha256": "4fe64db76d55e725725c37bcdb91df3266f059510ec44c342a31c426fdd01c5f",
+            "verification_reply_sha256": "71e07b56c631fd83937dabf06405e076961e83dea895c65b615b3738d3487a2a",
+            "state_digest": "4db343a36719ec413105f5986f1722502472106a8ba36b4740509eba80bb8596"
+          },
+          "rows": [
+            {
+              "name": "GET",
+              "requests_per_second": "123762.38",
+              "average_latency_ms": "3.624",
+              "minimum_latency_ms": "0.016",
+              "p50_latency_ms": "3.359",
+              "p95_latency_ms": "6.239",
+              "p99_latency_ms": "7.551",
+              "maximum_latency_ms": "11.943"
+            },
+            {
+              "name": "SET",
+              "requests_per_second": "125000.00",
+              "average_latency_ms": "3.595",
+              "minimum_latency_ms": "0.016",
+              "p50_latency_ms": "3.391",
+              "p95_latency_ms": "5.815",
+              "p99_latency_ms": "7.439",
+              "maximum_latency_ms": "10.783"
+            },
+            {
+              "name": "MSET (10 keys)",
+              "requests_per_second": "55772.45",
+              "average_latency_ms": "8.201",
+              "minimum_latency_ms": "0.032",
+              "p50_latency_ms": "7.695",
+              "p95_latency_ms": "14.807",
+              "p99_latency_ms": "18.175",
+              "maximum_latency_ms": "26.047"
+            }
+          ],
+          "process": {
+            "program": "/opt/actions-runner/_work/_temp/hydracache-perf-tools/redis-7.2.5/src/redis-benchmark",
+            "argv": [
+              "--csv",
+              "-h",
+              "127.0.0.1",
+              "-p",
+              "41319",
+              "-c",
+              "50",
+              "-n",
+              "100000",
+              "-P",
+              "10",
+              "-d",
+              "256",
+              "-t",
+              "get,set,mset"
+            ],
+            "execution_environment": [
+              "LANG=C",
+              "LC_ALL=C",
+              "TZ=UTC"
+            ],
+            "exit_code": 0,
+            "timed_out": false,
+            "stdout": "\"test\",\"rps\",\"avg_latency_ms\",\"min_latency_ms\",\"p50_latency_ms\",\"p95_latency_ms\",\"p99_latency_ms\",\"max_latency_ms\"\n\"SET\",\"125000.00\",\"3.595\",\"0.016\",\"3.391\",\"5.815\",\"7.439\",\"10.783\"\n\"GET\",\"123762.38\",\"3.624\",\"0.016\",\"3.359\",\"6.239\",\"7.551\",\"11.943\"\n\"MSET (10 keys)\",\"55772.45\",\"8.201\",\"0.032\",\"7.695\",\"14.807\",\"18.175\",\"26.047\"\n",
+            "stderr": "WARNING: Could not fetch server CONFIG\n",
+            "stdout_bytes": 328,
+            "stderr_bytes": 39,
+            "stdout_sha256": "c7a7bfcf59d8892c2a1b215b8d43ee1f5859b19db40711af3115351663ec3eb2",
+            "stderr_sha256": "1d89c0f26b2039760f8f32c71a04225a99b8a39ea54bd9a886e8db8db521de73"
+          }
+        },
+        {
+          "repeat": 3,
+          "initial_state": {
+            "method": "del-set-get-exact-redis-benchmark-key",
+            "key": "key:__rand_int__",
+            "payload_bytes": 256,
+            "payload_sha256": "1a1ab528466e36d92ab1d52aa56515c027612c9b1ac6b6f40007d0b9f78fd397",
+            "reset_reply_sha256": "6d7dbcb27aa6e24f40bf1f4cb2cc8a36e2f3b7f1ae87edf906578a2936b756d2",
+            "preload_reply_sha256": "4fe64db76d55e725725c37bcdb91df3266f059510ec44c342a31c426fdd01c5f",
+            "verification_reply_sha256": "71e07b56c631fd83937dabf06405e076961e83dea895c65b615b3738d3487a2a",
+            "state_digest": "4db343a36719ec413105f5986f1722502472106a8ba36b4740509eba80bb8596"
+          },
+          "rows": [
+            {
+              "name": "GET",
+              "requests_per_second": "124223.60",
+              "average_latency_ms": "3.601",
+              "minimum_latency_ms": "0.016",
+              "p50_latency_ms": "3.407",
+              "p95_latency_ms": "5.911",
+              "p99_latency_ms": "7.375",
+              "maximum_latency_ms": "11.687"
+            },
+            {
+              "name": "SET",
+              "requests_per_second": "125000.00",
+              "average_latency_ms": "3.577",
+              "minimum_latency_ms": "0.016",
+              "p50_latency_ms": "3.399",
+              "p95_latency_ms": "5.551",
+              "p99_latency_ms": "7.255",
+              "maximum_latency_ms": "10.615"
+            },
+            {
+              "name": "MSET (10 keys)",
+              "requests_per_second": "55401.66",
+              "average_latency_ms": "8.260",
+              "minimum_latency_ms": "0.024",
+              "p50_latency_ms": "7.759",
+              "p95_latency_ms": "14.639",
+              "p99_latency_ms": "18.223",
+              "maximum_latency_ms": "27.743"
+            }
+          ],
+          "process": {
+            "program": "/opt/actions-runner/_work/_temp/hydracache-perf-tools/redis-7.2.5/src/redis-benchmark",
+            "argv": [
+              "--csv",
+              "-h",
+              "127.0.0.1",
+              "-p",
+              "41319",
+              "-c",
+              "50",
+              "-n",
+              "100000",
+              "-P",
+              "10",
+              "-d",
+              "256",
+              "-t",
+              "get,set,mset"
+            ],
+            "execution_environment": [
+              "LANG=C",
+              "LC_ALL=C",
+              "TZ=UTC"
+            ],
+            "exit_code": 0,
+            "timed_out": false,
+            "stdout": "\"test\",\"rps\",\"avg_latency_ms\",\"min_latency_ms\",\"p50_latency_ms\",\"p95_latency_ms\",\"p99_latency_ms\",\"max_latency_ms\"\n\"SET\",\"125000.00\",\"3.577\",\"0.016\",\"3.399\",\"5.551\",\"7.255\",\"10.615\"\n\"GET\",\"124223.60\",\"3.601\",\"0.016\",\"3.407\",\"5.911\",\"7.375\",\"11.687\"\n\"MSET (10 keys)\",\"55401.66\",\"8.260\",\"0.024\",\"7.759\",\"14.639\",\"18.223\",\"27.743\"\n",
+            "stderr": "WARNING: Could not fetch server CONFIG\n",
+            "stdout_bytes": 328,
+            "stderr_bytes": 39,
+            "stdout_sha256": "04101395a96e7055e9b26c5725ae459b8620706ab00eb1e22d873527bdaf6762",
+            "stderr_sha256": "1d89c0f26b2039760f8f32c71a04225a99b8a39ea54bd9a886e8db8db521de73"
+          }
+        }
+      ],
+      "operations": [
+        {
+          "operation": "GET",
+          "repeat_count": 3,
+          "requests_per_second_samples": [
+            124378.11,
+            123762.38,
+            124223.6
+          ],
+          "median_requests_per_second": 124223.6,
+          "minimum_requests_per_second": 123762.38,
+          "maximum_requests_per_second": 124378.11,
+          "robust_spread_ratio": 0.004956626599132499,
+          "stable": true,
+          "stability_reasons": []
+        },
+        {
+          "operation": "SET",
+          "repeat_count": 3,
+          "requests_per_second_samples": [
+            125000.0,
+            125000.0,
+            125000.0
+          ],
+          "median_requests_per_second": 125000.0,
+          "minimum_requests_per_second": 125000.0,
+          "maximum_requests_per_second": 125000.0,
+          "robust_spread_ratio": 0.0,
+          "stable": true,
+          "stability_reasons": []
+        },
+        {
+          "operation": "MSET (10 keys)",
+          "repeat_count": 3,
+          "requests_per_second_samples": [
+            55897.15,
+            55772.45,
+            55401.66
+          ],
+          "median_requests_per_second": 55772.45,
+          "minimum_requests_per_second": 55401.66,
+          "maximum_requests_per_second": 55897.15,
+          "robust_spread_ratio": 0.008884135446802104,
+          "stable": true,
+          "stability_reasons": []
+        }
+      ]
+    }
+  ],
+  "measurements_stable": true,
+  "ship_evidence_eligible": true,
+  "stability_reasons": []
+}

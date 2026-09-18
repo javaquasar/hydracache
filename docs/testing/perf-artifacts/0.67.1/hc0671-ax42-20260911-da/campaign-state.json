@@ -1,0 +1,46 @@
+{
+  "boot_id_before_prepare": "dfb39d61-8e57-4fc2-a1a0-33305736cf1a",
+  "branch": "main",
+  "campaign_id": "hc0671-ax42-20260911-da",
+  "created_at": "2026-09-11T08:19:20+00:00",
+  "expected_sha": "7bd31af9a5092466d7a7284995f388d33ed3110f",
+  "host_state_dir": "/var/lib/hydracache-perf/host-tuning-hc0671-ax42-20260911-da",
+  "phase": "closed",
+  "profile": "/opt/hydracache/trusted-main/docs/testing/perf-host-profiles/ubuntu-24.04-reference-v1.json",
+  "profile_sha256": "34e820f7e3ac38df50f8ebc9a839b9aad61ebd04e24d5005063308f2a98475ca",
+  "repository": "javaquasar/hydracache",
+  "schema_version": 1,
+  "stages": {
+    "final_host_archive": "/home/hydracache-admin/hydracache-campaigns/hc0671-ax42-20260911-da/host-state-final.tar.gz",
+    "final_host_archive_sha256": "ff303372fc8735b9569dc4c710e969cbd4d50cb4fee1896fa7a35b1dc05a1d1d",
+    "frozen-candidate": {
+      "aggregate": "/home/hydracache-admin/hydracache-campaigns/hc0671-ax42-20260911-da/accepted-receipts/release-evidence-0.67.1.json",
+      "aggregate_sha256": "22a4b57e791558412d7e397d9226c69e52fbb21c4f2e73183d7ef17cca146eb5",
+      "completed_at": "2026-09-11T11:29:09+00:00",
+      "conclusion": "success",
+      "dispatch_started_at": "2026-09-11T08:48:06+00:00",
+      "receipt": "/home/hydracache-admin/hydracache-campaigns/hc0671-ax42-20260911-da/accepted-receipts/frozen-candidate.json",
+      "receipt_sha256": "0e673a0660e68330e66bebfb664542eb35f2f2e4c34b83ca23b5fd668c326de4",
+      "run_id": 34580969962,
+      "run_url": "https://github.com/javaquasar/hydracache/actions/runs/34580969962",
+      "status": "completed"
+    },
+    "host_admission": {
+      "host_admission_bundle": "/home/hydracache-admin/hydracache-campaigns/hc0671-ax42-20260911-da/reference-campaign-host-admission.tar.gz",
+      "host_admission_bundle_sha256": "f760a8fc9d1c251a2c79ce6676f1a4e64cf2d71cc1445de5ce59efb66bb3b51b",
+      "host_admission_receipt": "/home/hydracache-admin/hydracache-campaigns/hc0671-ax42-20260911-da/reference-campaign-admission.json",
+      "host_admission_receipt_sha256": "8e7bffa6a43af4b4bf790589b13f93721bf5fd0179b4211ed0b15d657e63186e",
+      "host_archive": "/home/hydracache-admin/hydracache-campaigns/hc0671-ax42-20260911-da/host-state-after-freeze.tar.gz",
+      "host_archive_sha256": "d862b5f9e9bcf3f9243efd6a85690b071b763a74bbc733d24103521c4c5d22e9",
+      "irq_burn_in_receipt": "/home/hydracache-admin/hydracache-campaigns/hc0671-ax42-20260911-da/irq-burn-in/irq-burn-in.json",
+      "irq_burn_in_receipt_sha256": "34dba473aa5c49f74e74c44dfe52b0ae499fc26fbc35d070d77de2978e52fea0",
+      "previous_runner_provisioning_receipt": "/home/hydracache-admin/hydracache-campaigns/hc0671-ax42-20260911-da/previous-runner-provisioned.json",
+      "runner_provisioning_receipt": "/var/lib/hydracache-perf/runner-provisioned.json",
+      "runner_provisioning_receipt_sha256": "66fa14436574dd29678fc79fd7e8eb45023a9af8e1687bd6e4fb305a811452f5",
+      "status": "completed"
+    },
+    "retired_canonical_host_admission": "/home/hydracache-admin/hydracache-campaigns/hc0671-ax42-20260911-da/retired-reference-campaign-v1",
+    "runner_fingerprint": "25baeec1c9ec75da90b5dd0f29c101897450b96651d7e47570e18684be486ebb"
+  },
+  "workflow": "ci.yml"
+}

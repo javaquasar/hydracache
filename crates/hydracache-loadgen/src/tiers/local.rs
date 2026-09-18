@@ -2669,7 +2669,7 @@ mod tests {
         assert_eq!(scaling.scenario.robust_spread_tolerance, 0.15);
         assert_eq!(hot_key.local.worker_counts, [1, 2, 4]);
         assert_eq!(hot_key.local.single_flight_bursts_per_repeat, 256);
-        assert_eq!(path_cost.scenario.steady_operations, 1_000_000);
+        assert_eq!(path_cost.scenario.steady_operations, 5_000_000);
         assert_eq!(path_cost.scenario.repeats, 3);
         assert_eq!(path_cost.scenario.robust_spread_tolerance, 0.15);
     }

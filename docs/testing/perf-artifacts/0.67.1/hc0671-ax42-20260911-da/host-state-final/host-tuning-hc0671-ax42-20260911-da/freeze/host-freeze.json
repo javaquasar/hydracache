@@ -1,0 +1,35 @@
+{
+  "schema_version": 1,
+  "frozen_at": "2026-09-11T08:21:25Z",
+  "profile_id": "ubuntu-24.04-reference-v1",
+  "profile_sha256": "34e820f7e3ac38df50f8ebc9a839b9aad61ebd04e24d5005063308f2a98475ca",
+  "source_commit": "7bd31af9a5092466d7a7284995f388d33ed3110f",
+  "operating_system": {
+    "id": "ubuntu",
+    "version_id": "24.04"
+  },
+  "kernel_release": "6.8.0-138-generic",
+  "kernel_command_line": "BOOT_IMAGE=/vmlinuz-6.8.0-138-generic root=UUID=5e18c1e8-f28f-4f39-bfc4-e28c08c52805 ro consoleblank=0 systemd.show_status=true consoleblank=0 nosmt isolcpus=domain,managed_irq,nohz,1-4 nohz_full=1-4 rcu_nocbs=1-4 irqaffinity=0,5-7",
+  "package_manifest_sha256": "3ee03117ec712369a6f3375279edb72622c4820a5c8594a7da1cb14ea6219504",
+  "systemd_unit_files_sha256": "addd74989279c8a638bb33d60eabb9d1af31ca06871408851c44fd724762df3f",
+  "systemd_active_state_sha256": "f9796cd4ee5eb9bc6d7a6f62e28a5795970f39e2272c0373e17e761b913ce38f",
+  "sysctl_manifest_sha256": "3db003e7d011d0f051a0599cd092bbec92507d887d0071d25add7e488411d82f",
+  "provisioning_receipt_sha256": "66fa14436574dd29678fc79fd7e8eb45023a9af8e1687bd6e4fb305a811452f5",
+  "tuning_plan_sha256": "15040a9566e60f50e8163428906287a37cf061190e6c8461eb37c6e43ee00836",
+  "tuning_applied_sha256": "9692008ede039a5fc1ca2760caf85638b2f68a0fa7d39086b6917b9d3fac2c0f",
+  "sample_family_frozen": true,
+  "invalidate_sample_family_on_change": [
+    "source_commit",
+    "profile_sha256",
+    "os_release",
+    "kernel_release",
+    "kernel_command_line",
+    "package_manifest_sha256",
+    "systemd_unit_files_sha256",
+    "systemd_active_state_sha256",
+    "sysctl_manifest_sha256",
+    "cpu_isolation",
+    "runner_contract",
+    "container_image_digests"
+  ]
+}

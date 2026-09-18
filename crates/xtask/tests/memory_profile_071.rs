@@ -1,6 +1,8 @@
 use std::path::PathBuf;
 use std::process::Command;
 
+use serde_json::json;
+
 fn repository_root() -> PathBuf {
     PathBuf::from(env!("CARGO_MANIFEST_DIR"))
         .parent()
@@ -81,4 +83,42 @@ fn profile_output_is_excluded_from_production_sizing() {
     .expect("memory efficiency source");
     assert!(source.contains("promotable: false"));
     assert!(source.contains("workload_epoch_acknowledged"));
+}
+
+#[test]
+fn host_fingerprint_excludes_volatile_admission_observations() {
+    let first = json!({
+        "platform": "linux",
+        "hardware_model": "stable-cpu",
+        "kernel": "stable-kernel",
+        "tools": {"cargo": "cargo 1.88.0"},
+        "cpu_topology": "{\"lscpu\":[{\"field\":\"CPU(s):\",\"data\":\"16\"},{\"field\":\"CPU(s) scaling MHz:\",\"data\":\"34%\"}]}",
+        "filesystem": "Filesystem Type 1K-blocks Used Available Use% Mounted on\n/dev/md2 ext4 1000 100 900 10% /",
+        "competing_load": "0.01 0.02 0.03",
+        "available_memory": "MemAvailable: 1000 kB",
+        "temperature": "42000",
+        "major_faults_and_throttling": "Pid: 10"
+    });
+    let mut second = first.clone();
+    second["competing_load"] = json!("4.00 3.00 2.00");
+    second["available_memory"] = json!("MemAvailable: 900 kB");
+    second["temperature"] = json!("51000");
+    second["major_faults_and_throttling"] = json!("Pid: 99");
+    second["cpu_topology"] = json!("{\"lscpu\":[{\"field\":\"CPU(s):\",\"data\":\"16\"},{\"field\":\"CPU(s) scaling MHz:\",\"data\":\"71%\"}]}");
+    second["filesystem"] = json!("Filesystem Type 1K-blocks Used Available Use% Mounted on\n/dev/md2 ext4 1000 700 300 70% /");
+
+    let first_identity = xtask::memory_contracts::host_identity_probes(&first);
+    let second_identity = xtask::memory_contracts::host_identity_probes(&second);
+    assert_eq!(
+        xtask::memory_contracts::canonical_json_digest(&first_identity),
+        xtask::memory_contracts::canonical_json_digest(&second_identity)
+    );
+
+    second["kernel"] = json!("changed-kernel");
+    assert_ne!(
+        xtask::memory_contracts::canonical_json_digest(&first_identity),
+        xtask::memory_contracts::canonical_json_digest(
+            &xtask::memory_contracts::host_identity_probes(&second)
+        )
+    );
 }

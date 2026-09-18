@@ -13,13 +13,14 @@ use xtask::perf_bootstrap::{
     BootstrapSampleSetReceipt,
 };
 use xtask::perf_budget::{
-    self, BaselineChangeApproval, BootstrapStatus, CandidateReport, ChangeControlStatus,
-    ContractBundle, EvidenceRunMode,
+    self, BaselineChangeApproval, BootstrapStatus, BudgetVerdict, BudgetVerdictPayload,
+    CandidateReport, ChangeControlStatus, ContractBundle, Enforcement, EvidenceRunMode,
+    VerdictStatus,
 };
 use xtask::perf_reference::{
     activation_bundle_problems, activation_receipt_problems, derive_contracts,
-    review_decision_problems, ActivationReceipt, ProposalMetadata, ProposalReceipt,
-    ReferenceSampleInput, ReviewDecision, ReviewDecisionKind, ReviewReceipt,
+    frozen_budget_verdict_problems, review_decision_problems, ActivationReceipt, ProposalMetadata,
+    ProposalReceipt, ReferenceSampleInput, ReviewDecision, ReviewDecisionKind, ReviewReceipt,
 };
 
 const SOURCE_SHA: &str = "0123456789abcdef0123456789abcdef01234567";
@@ -221,6 +222,10 @@ fn frozen_candidate_gate_is_wired_to_full_pipeline() {
         .expect("frozen-candidate job must be bounded");
     let ordered = [
         "Checkout trusted frozen main",
+        "Install Python for final workspace evidence",
+        "Install cargo-deny for final workspace evidence",
+        "Install pinned cargo-nextest for final workspace evidence",
+        "Preflight final workspace evidence toolchain",
         "Prepare tmpfs reference evidence",
         "Import frozen campaign host admission",
         "Revalidate committed five-sample independent review",
@@ -234,6 +239,7 @@ fn frozen_candidate_gate_is_wired_to_full_pipeline() {
         "Check activated 0.67.1 reference budgets and rolling baseline",
         "Materialize tmpfs reference evidence",
         "Execute complete 0.67.1 expected-red canary sweep",
+        "Record exact-candidate fast workspace evidence",
         "Seal exact frozen-candidate reference receipt",
         "Aggregate exact 0.67.1 ship evidence",
         "Upload immutable frozen-candidate evidence",
@@ -253,8 +259,13 @@ fn frozen_candidate_gate_is_wired_to_full_pipeline() {
         "clean: true",
         "persist-credentials: false",
         "--release 0.67.1 --profile reference-v1",
+        "evidence-run --release 0.67.1 --gate fast.workspace-nextest",
+        "python --version",
+        "cargo deny --version",
+        "cargo nextest --version",
         "--release 0.67.1 --receipts-dir target/release-evidence/receipts --require-ship",
         "if-no-files-found: error",
+        "target/nextest/ci/junit.xml",
     ] {
         assert!(
             job.contains(required),
@@ -262,6 +273,39 @@ fn frozen_candidate_gate_is_wired_to_full_pipeline() {
         );
     }
     assert!(!job.contains("perf-budget-check --release 0.67 --profile reference-v1"));
+}
+
+#[test]
+fn frozen_candidate_validates_the_typed_budget_verdict_receipt() {
+    let verdict = BudgetVerdict::new(BudgetVerdictPayload {
+        schema_version: 1,
+        release: "0.67.1".to_owned(),
+        profile: "reference-v1".to_owned(),
+        enforcement: Enforcement::Ship,
+        candidate_commit: CANDIDATE_SHA.to_owned(),
+        status: VerdictStatus::Passed,
+        profile_sha256: sha("profile"),
+        budget_sha256: sha("budget"),
+        baseline_sha256: sha("baseline"),
+        report_set_digest: sha("reports"),
+        reports: Vec::new(),
+        baseline_members: Vec::new(),
+        checks: Vec::new(),
+        problems: Vec::new(),
+    });
+    let bytes = serde_json::to_vec_pretty(&verdict).unwrap();
+    let untyped: serde_json::Value = serde_json::from_slice(&bytes).unwrap();
+    assert_ne!(
+        verdict.receipt_sha256,
+        perf_budget::digest_json(&untyped["payload"]),
+        "the old untyped check must reproduce its object-key ordering defect"
+    );
+    let decoded: BudgetVerdict = serde_json::from_slice(&bytes).unwrap();
+    assert!(frozen_budget_verdict_problems(&decoded, CANDIDATE_SHA).is_empty());
+
+    let mut tampered = decoded;
+    tampered.payload.candidate_commit = SOURCE_SHA.to_owned();
+    assert!(!frozen_budget_verdict_problems(&tampered, CANDIDATE_SHA).is_empty());
 }
 
 #[test]
@@ -416,6 +460,89 @@ fn reference_proposal_rejects_a_broken_five_sample_chain() {
         },
     )
     .is_err());
+}
+
+#[test]
+fn reviewed_reference_accepts_zero_for_a_ceiling_metric() {
+    let (mut bundle, _) = approved_bundle();
+    let budget_id = "brownout-control-plane-depth-ceiling";
+    let rule = bundle
+        .budget
+        .budgets
+        .iter()
+        .find(|rule| rule.id == budget_id)
+        .expect("brownout depth budget")
+        .clone();
+
+    let set_zero = |member: &mut xtask::perf_budget::BaselineMember| {
+        member
+            .metrics
+            .iter_mut()
+            .find(|metric| metric.budget_id == budget_id)
+            .expect("baseline metric")
+            .value = 0.0;
+        member
+            .reports
+            .iter_mut()
+            .find(|report| report.report_id == rule.report)
+            .expect("baseline report")
+            .metrics
+            .iter_mut()
+            .find(|metric| metric.id == rule.metric)
+            .expect("report metric")
+            .value = 0.0;
+    };
+    bundle
+        .baseline
+        .anchor
+        .source_members
+        .iter_mut()
+        .for_each(set_zero);
+    bundle
+        .baseline
+        .candidate_members
+        .iter_mut()
+        .for_each(set_zero);
+    bundle.baseline.members.iter_mut().for_each(set_zero);
+    bundle
+        .baseline
+        .anchor
+        .metrics
+        .iter_mut()
+        .find(|metric| metric.budget_id == budget_id)
+        .expect("anchor metric")
+        .value = 0.0;
+    let rolling = bundle
+        .baseline
+        .rolling_metrics
+        .iter_mut()
+        .find(|metric| metric.budget_id == budget_id)
+        .expect("rolling metric");
+    rolling.median = 0.0;
+    rolling.mad = 0.0;
+
+    perf_budget::seal_baseline_manifest(&mut bundle.baseline);
+    let payload_sha256 = perf_budget::baseline_payload_digest(&bundle.baseline);
+    let proposal = bundle
+        .baseline
+        .change_control
+        .proposal
+        .as_mut()
+        .expect("proposal");
+    proposal.proposed_payload_sha256 = payload_sha256.clone();
+    let proposal_sha256 = perf_budget::digest_json(proposal);
+    let approval = bundle
+        .baseline
+        .change_control
+        .approval
+        .as_mut()
+        .expect("approval");
+    approval.proposal_sha256 = proposal_sha256;
+    approval.approved_payload_sha256 = payload_sha256;
+    perf_budget::seal_baseline_manifest(&mut bundle.baseline);
+
+    let problems = perf_budget::validate_contract_bundle(&bundle);
+    assert!(problems.is_empty(), "{problems:#?}");
 }
 
 #[test]

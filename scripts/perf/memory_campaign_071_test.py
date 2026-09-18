@@ -68,8 +68,49 @@ class MemoryCampaign071Tests(unittest.TestCase):
         self.assertEqual(plan["admitted_host_cap_seconds"], 3_600)
         self.assertEqual(
             plan["source_shas"]["B1-instrumented"],
-            "795f9493bcbb7a56aa229c59e4a717f60c654cdb",
+            "906aa24cc22ad6b50b824120ed6364208484203a",
         )
+
+    def test_row_cap_scales_by_cohort_and_consumes_prior_attempts(self) -> None:
+        scenario = campaign.tomllib.loads(
+            (self.root / campaign.SCENARIO_RELATIVE).read_text(encoding="utf-8")
+        )
+        m10 = next(case for case in scenario["case"] if case["id"] == "M10-24h")
+        self.assertEqual(
+            campaign.bounded_row_cap_seconds(
+                m10, cell_count=1, repetitions=1, cohort_count=2
+            ),
+            208_800,
+        )
+        plan = {
+            "row_time_caps_seconds": {"M10-24h": 100},
+            "jobs": [
+                {"case_id": "M10-24h", "attempts": [{"elapsed_ns": 25_000_000_000}]},
+                {"case_id": "M10-24h", "attempts": [{"elapsed_ns": 15_500_000_000}]},
+            ],
+        }
+        self.assertEqual(
+            campaign.remaining_row_budget_seconds(plan, "M10-24h"), 59
+        )
+
+    def test_evidence_timeout_interrupts_executor_before_forced_kill(self) -> None:
+        process = mock.Mock()
+        process.wait.side_effect = [
+            campaign.subprocess.TimeoutExpired(["executor"], 10),
+            0,
+        ]
+        process.returncode = 130
+        with mock.patch.object(campaign.subprocess, "Popen", return_value=process):
+            returncode, timed_out = campaign.run_bounded_evidence_process(
+                ["executor"], cwd=self.root, timeout_seconds=10
+            )
+        self.assertEqual(returncode, 130)
+        self.assertTrue(timed_out)
+        if campaign.os.name == "nt":
+            process.terminate.assert_called_once_with()
+        else:
+            process.send_signal.assert_called_once_with(campaign.signal.SIGINT)
+        process.kill.assert_not_called()
 
     def test_b0_cannot_be_pooled_into_instrumented_rows(self) -> None:
         with self.assertRaises(campaign.CampaignError):
@@ -103,6 +144,32 @@ class MemoryCampaign071Tests(unittest.TestCase):
         self.assertEqual(plan["source_shas"]["C-candidate"], source_sha)
         self.assertEqual(plan["campaign_role"], "candidate")
 
+    def test_candidate_short_row_uses_five_independent_pairs(self) -> None:
+        workflow_sha = campaign.git(self.root, "rev-parse", "HEAD")
+        identities = campaign.tomllib.loads(
+            (self.root / campaign.IDENTITIES_RELATIVE).read_text(encoding="utf-8")
+        )
+        b1_sha = str(identities["b1_instrumented"]["source_sha"])
+        with mock.patch.object(
+            campaign,
+            "resolve_commit",
+            side_effect=lambda _root, value, label: campaign.require_full_sha(value, label),
+        ):
+            plan = campaign.build_plan(
+                self.root,
+                ["M3-ttl"],
+                ["B1-instrumented", "C-candidate"],
+                None,
+                False,
+                workflow_sha,
+                "2" * 40,
+                "candidate",
+            )
+
+        self.assertEqual(plan["job_count"], 10)
+        self.assertEqual({job["repetition"] for job in plan["jobs"]}, set(range(1, 6)))
+        self.assertEqual({job["cohort"] for job in plan["jobs"]}, {"B1-instrumented", "C-candidate"})
+
     def test_baseline_rejects_non_b1_source(self) -> None:
         workflow_sha = campaign.git(self.root, "rev-parse", "HEAD")
         with self.assertRaises(campaign.CampaignError):
@@ -113,7 +180,7 @@ class MemoryCampaign071Tests(unittest.TestCase):
                 1,
                 False,
                 workflow_sha,
-                workflow_sha,
+                "75719b0bf5de2250cf4eb16a30073dd7429538e3",
                 "baseline",
             )
 
@@ -172,9 +239,33 @@ class MemoryCampaign071Tests(unittest.TestCase):
             "verify-identity",
             '--workflow-sha "$HYDRACACHE_MEMORY_WORKFLOW_SHA"',
             '--source-sha "$HYDRACACHE_MEMORY_SOURCE_SHA"',
+            '--require-through "$prerequisite"',
+            '--expected-source-sha "$HYDRACACHE_MEMORY_SOURCE_SHA"',
         ):
             with self.subTest(marker=marker):
                 self.assertIn(marker, workflow)
+
+    def test_protected_workflow_measures_s5_before_admission_and_execution(self) -> None:
+        workflow = (self.root / ".github/workflows/memory-reference-071.yml").read_text(
+            encoding="utf-8"
+        )
+        build = workflow.index("- name: Build immutable cohorts")
+        overhead = workflow.index("- name: Measure and freeze S5 instrumentation overhead")
+        admission = workflow.index("- name: Admit campaign or verify retained host identity")
+        execution = workflow.index("- name: Run or resume bounded row")
+        self.assertLess(build, overhead)
+        self.assertLess(overhead, admission)
+        self.assertLess(admission, execution)
+        self.assertIn('if [[ "$HYDRACACHE_MEMORY_CAMPAIGN_ROLE" != "baseline" ]]', workflow)
+        self.assertIn("memory_instrumentation_overhead_071.py", workflow)
+        self.assertIn("vars.HYDRACACHE_MEMORY_DAEMON_CPUSET || '5-6'", workflow)
+        self.assertIn("vars.HYDRACACHE_MEMORY_LOADGEN_CPUSET || '7'", workflow)
+        self.assertIn("vars.HYDRACACHE_MEMORY_COLLECTOR_CPUSET || '0'", workflow)
+        self.assertIn(
+            'taskset --cpu-list "$HYDRACACHE_MEMORY_LOADGEN_CPUSET"', workflow
+        )
+        self.assertIn('echo "$rust_bin" >> "$GITHUB_PATH"', workflow)
+        self.assertIn("timeout-minutes: 720", workflow)
 
     def test_campaign_identity_rejects_moved_source_harness_role_and_case(self) -> None:
         workflow_sha = campaign.git(self.root, "rev-parse", "HEAD")
@@ -312,8 +403,9 @@ class MemoryCampaign071Tests(unittest.TestCase):
     def test_admission_rejects_cross_host_overhead(self) -> None:
         state = {
             "source_shas": {
-                "B1-instrumented": "795f9493bcbb7a56aa229c59e4a717f60c654cdb"
-            }
+                "B1-instrumented": "906aa24cc22ad6b50b824120ed6364208484203a"
+            },
+            "scenario_digest": "sha256:scenario",
         }
         receipts = {
             "host-preflight": {
@@ -339,18 +431,70 @@ class MemoryCampaign071Tests(unittest.TestCase):
                 "checkout_clean": True,
                 "files": [{"path": "raw", "bytes": 1}],
                 "mirror": {"manifest_sha256": "same", "restored_manifest_sha256": "same"},
+                "bootstrap_0_67_1": {
+                    "source_path": "docs/testing/perf-artifacts/0.67.1",
+                    "files": [{"path": "bootstrap", "bytes": 1}],
+                    "mirror": {"manifest_sha256": "same", "restored_manifest_sha256": "same"},
+                },
             },
             "instrumentation-overhead": {
                 "schema_version": 1,
                 "release": "0.71",
                 "source_sha": state["source_shas"]["B1-instrumented"],
                 "host_fingerprint": "host-b",
+                "scenario_digest": state["scenario_digest"],
+                "measurement_design": {
+                    "modes": ["off", "production", "profile"],
+                    "workloads": ["cold", "small-hot", "tag-heavy", "hc2-1000", "reset"],
+                    "repetitions": 3,
+                    "candidate_data_used": False,
+                },
+                "samples": [{"sample": 1}],
+                "comparisons": [{"workload": value} for value in ("cold", "small-hot", "tag-heavy", "hc2-1000", "reset")],
+                "frozen_envelope": {
+                    "rss_delta_bytes": 1,
+                    "rss_regression_fraction": 0.1,
+                    "rps_regression_fraction": 0.1,
+                    "p99_regression_fraction": 0.1,
+                    "cpu_per_request_regression_fraction": 0.1,
+                },
                 "passed": True,
                 "ship_evidence_eligible": True,
             },
         }
         with self.assertRaises(campaign.CampaignError):
             campaign.validate_admission_receipts(receipts, state)
+
+    def test_overhead_host_binding_ignores_only_volatile_probe_values(self) -> None:
+        old_identity = {
+            "kernel": "6.8",
+            "hardware_model": "cpu",
+            "cgroup": "runner.service",
+            "cpu_topology": '{"lscpu":[{"field":"CPU(s):","data":"16"},{"field":"CPU(s) scaling MHz:","data":"34%"}]}',
+            "filesystem": "Filesystem Type Blocks Used Available Use% Mounted on\n/dev/md2 ext4 1000 100 900 10% /",
+        }
+        new_identity = dict(old_identity)
+        new_identity["cpu_topology"] = '{"lscpu":[{"field":"CPU(s):","data":"16"},{"field":"CPU(s) scaling MHz:","data":"71%"}]}'
+        new_identity["filesystem"] = "Filesystem Type Blocks Used Available Use% Mounted on\n/dev/md2 ext4 1000 700 300 70% /"
+        overhead = {"host_fingerprint": "legacy-host"}
+        origin = {
+            "schema_version": 1,
+            "release": "0.71",
+            "profile_id": "memory-reference-071-v1",
+            "result": "success",
+            "ship_evidence_eligible": True,
+            "host_fingerprint": "legacy-host",
+            "identity_probes": old_identity,
+        }
+        current = {
+            "profile_id": "memory-reference-071-v1",
+            "host_fingerprint": "normalized-host",
+            "identity_probes": new_identity,
+        }
+        self.assertTrue(campaign.overhead_matches_host(overhead, current, origin))
+
+        current["identity_probes"]["kernel"] = "6.9"
+        self.assertFalse(campaign.overhead_matches_host(overhead, current, origin))
 
     def test_completed_job_is_published_once_and_drift_fails(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
@@ -396,6 +540,43 @@ class MemoryCampaign071Tests(unittest.TestCase):
             )
             with self.assertRaises(campaign.CampaignError):
                 campaign.verify_live_host(campaign_dir, observed)
+
+    def test_finalize_marks_only_complete_admitted_candidate_shape_ship_eligible(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            campaign_dir = Path(directory)
+            jobs = []
+            for index, case_id in enumerate(("M9-6h", "M10-24h"), start=1):
+                job_id = f"job-{index}"
+                jobs.append({"job_id": job_id, "case_id": case_id, "status": "success"})
+                job_dir = campaign_dir / "jobs" / job_id
+                job_dir.mkdir(parents=True)
+                campaign.atomic_json(
+                    job_dir / "executor-receipt.json",
+                    {"pid": index, "fresh_process": True, "stopped": True},
+                )
+            campaign.atomic_json(
+                campaign_dir / "state.json",
+                {
+                    "mode": "evidence",
+                    "campaign_id": "candidate-final",
+                    "identity": {"sha256": "f" * 64},
+                    "scenario_digest": "s" * 64,
+                    "job_count": len(jobs),
+                    "jobs": jobs,
+                },
+            )
+            identity = {
+                "workflow_sha": "1" * 40,
+                "source_sha": "2" * 40,
+                "campaign_role": "candidate",
+            }
+            with mock.patch.object(campaign, "retained_campaign_identity", return_value=identity):
+                receipt = campaign.finalize(campaign_dir)
+
+            self.assertEqual(receipt["result"], "success")
+            self.assertTrue(receipt["ship_evidence_eligible"])
+            self.assertEqual(receipt["case_ids"], ["M10-24h", "M9-6h"])
+            self.assertEqual(receipt["completed_jobs"], receipt["job_count"])
 
 
 if __name__ == "__main__":

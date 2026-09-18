@@ -26,7 +26,7 @@
 >   freeze, D4 qualification and ship admission require an admitted dedicated-host lease.
 > - **Unblocks:** defensible memory sizing, a bounded long-lived daemon claim, per-entry/per-client
 >   capacity guidance, and later data-structure tuning without repeating the attribution work.
-> - **Status:** planned.
+> - **Status:** shipped; final claims are limited by the accepted D4 evidence and release policy.
 >
 > Roadmap: [`INDEX.md`](INDEX.md) - rules: [`../RULES.md`](../RULES.md) -
 > gates: [`../GATES.md`](../GATES.md) - performance: [`../PERFORMANCE.md`](../PERFORMANCE.md) -
@@ -593,6 +593,15 @@ HC/2 1k-connection and reset cases. Freeze maximum production-mode deltas for re
 bytes/owner, allocations/op, CPU, throughput and p99 before optimization work. Profile-mode
 overhead is reported but is not held to production limits.
 
+The RESP control connection must not turn a deliberate passive phase into a harness failure. The
+daemon's production idle timeout remains unchanged: before a five-minute cold/post-idle window the
+executor permits that connection to expire, then opens a fresh connection at the explicit phase
+boundary. The TTL expiry wait follows the same rule. It must not send keepalives (which would
+contaminate the idle workload) or retry an application command after an ambiguous disconnect.
+The minute-cadence M8-M10 duration loop also reconnects after a sleep that reaches the timeout
+safety boundary. Every report records the reconnection policy and count so B0/B1/C comparisons
+prove identical client lifecycle treatment.
+
 **Tests and canaries.** Unit tests cover checked increments/decrements, overflow, replacement
 deltas, double cleanup, cancellation and snapshot retry. A concurrency test mutates two subsystems
 during capture and proves the result is marked non-atomic or retried to a coherent epoch. A
@@ -880,33 +889,34 @@ the release-evidence registry in the same review.
 | S2 | `cargo test -p xtask --test memory_profile_071 --locked` | provider lifecycle, phase alignment, retained/freed/background stacks, symbol mismatch, redaction |
 | S3 | `cargo test -p xtask --test memory_decision_071 --locked` | D0-D4 state machine, frozen digests, unauthorized surface, mixed SHA/host, no-win disposition |
 | S4 | `cargo test -p xtask --test memory_statistics_071 --locked` | golden time series, autocorrelation/bootstrap, missing rows, deterministic precision, manipulation canaries |
-| S5 | `cargo test -p hydracache --test memory_snapshot_071 --locked -- --test-threads=1` | counter lifecycle, coherent epoch, concurrent mutation, overflow, absent acknowledgement, overhead modes |
+| S5 | `cargo test -p hydracache --test memory_footprint_071 --locked -- --test-threads=1` plus `python scripts/perf/memory_instrumentation_overhead_071_test.py` | counter lifecycle, coherent epoch, concurrent mutation, overflow, absent acknowledgement, overhead modes and baseline-only envelope materialization |
 | S6 | `cargo test -p xtask --test allocator_matrix_071 --locked` | capability fixtures, units, mutual exclusion, size classes/arenas, refill/purge classification |
 | S7 | `cargo test -p xtask --test memory_host_profile_071 --locked` | `/proc`/`/sys`/cgroup fixtures, canonical fingerprint, mutable drift, calibration and lease |
-| S8 | `cargo test -p xtask --test memory_compat_071 --locked` | matrix validation, real-binary identities, upgrade, mixed version, rollback or pre-mutation refusal |
+| S8 | `cargo test -p xtask --test memory_compat_071 --locked`, `cargo test -p hydracache-server --test memory_compat_process_071 --locked`, and the M10-only `scripts/perf/memory_compat_071.sh` executor | matrix validation plus an exact-SHA receipt from real v0.70/candidate durable-store and daemon binaries: upgrade, restart, crash recovery, all mixed role orders, rollback, HC/1+HC/2 corpora and unknown-future pre-mutation refusal/backup restore |
 | S9 | `cargo test -p xtask --test ci_reliability_071 --locked` | workflow graph, timeouts, watchdog descendants, heartbeat, artifact identity, one publish producer |
 | S10 | `cargo test -p xtask --test release_governance_071 --locked` | mandatory foundation, all dispositions, generated claims, no-win green and safety-defect red fixtures |
 
 Each work item also owns a concrete target. These names are part of the plan contract and are
 created with the implementation; renaming one updates this table and release-evidence registry in
-the same review.
+the same review. The concise implementation/status index is
+[`RELEASE_TEST_COVERAGE.md`](../testing/memory/0.71/RELEASE_TEST_COVERAGE.md).
 
 | Work item | Planned target / exact command | Named coverage |
 | --- | --- | --- |
 | W0 | `cargo test -p xtask --test memory_baseline_071 --locked` | `b0_b1_are_distinct_cohorts`, corrected TTL final checkpoint, dirty identity and archive/mirror mismatch rejection |
-| W1 | `cargo test -p hydracache --test memory_snapshot_071 --locked -- --test-threads=1` | `exact_snapshot_reconciles_every_registered_owner`, non-atomic rejection, counter overflow and redaction |
-| W2 | `cargo test -p hydracache --test memory_accounting_071 --locked` and `cargo test -p hydracache-client-transport-axum --test memory_admission_071 --locked` | W2a estimator corpus; W2b legacy-limit compatibility, aggregate request admission and fail-loud overflow |
-| W3 | `cargo test -p hydracache-client-transport-axum --test retention_bounds_071 --locked -- --test-threads=1` | million-operation plateau, idempotency outcome retention, replay repair and mandatory-audit pressure |
-| W4 | `cargo test -p hydracache --test reclamation_071 --locked -- --test-threads=1` | 100-cycle TTL/delete/reset exact-zero, bounded backlog and stale-load fencing |
-| W5 | `cargo test -p hydracache --test representation_071 --locked` | old/new differential model, bytes-per-entry corpus, collision and public auto-trait witnesses |
-| W6 | `cargo test -p hydracache --test tag_index_model_071 --locked` | arbitrary interleavings, fanout distributions, ABA and early-generation-retirement canaries |
-| W7 | `cargo test -p xtask --test allocation_copy_071 --locked` | allocation/copied-byte receipts, oversized-buffer release, pool isolation and secret redaction |
+| W1 | `cargo test -p hydracache --test memory_footprint_071 --locked -- --test-threads=1` | registered-owner reconciliation, removal/reset lifecycle, off-mode label suppression and bounded aggregates |
+| W2 | `cargo test -p hydracache --test memory_accounting_071 --locked` and `cargo test -p hydracache-client-transport-axum --test memory_admission_071 --locked` | W2a estimator corpus and legacy-capacity compatibility; atomic aggregate request admission, replacement delta, deletion and active-expiry quota release. W2b policy remains evidenced-deferred. |
+| W3 | `cargo test -p hydracache-client-transport-axum --test retention_bounds_071 --locked -- --test-threads=1` | fixed-keyspace plateau/reset, idempotency bound/fail-loud overflow and mandatory-audit fail-closed pressure. The million-operation form is `#[ignore]` and scheduled-only. |
+| W4 | `cargo test -p hydracache --test reclamation_071 --locked -- --test-threads=1` plus the W2 client-surface target | 100-cycle TTL/delete/flush exact-zero, stale-load fencing and active-expiry quota release |
+| W5 | `cargo test -p hydracache --test representation_071 --locked` | public auto-trait witnesses, estimator shape sensitivity and explicit rejection of promotion without D2 evidence |
+| W6 | `cargo test -p hydracache --test tag_index_model_071 --locked` | deterministic membership-model interleavings and high-fanout invalidation/flush reclamation |
+| W7 | `cargo test -p xtask --test allocation_copy_071 --locked` | allocation provider count/byte/phase contract, evidence requirement for promotion and archived-receipt secret redaction |
 | W8 | `cargo test -p xtask --test allocator_matrix_071 --locked` | capability/build matrix, identical-state reuse/purge sequence and RSS-only rejection |
-| W9 | `cargo test -p hydracache-server --test memory_profiles_071 --locked -- --test-threads=1` | one-factor service ablation, effective-config receipt and disabled-service zero-resource proof |
-| W10 | `cargo test -p hydracache-server --test hc2_memory_071 --locked -- --test-threads=1` | idle/slow/reconnect/oversized-frame cases and exact close/cancel/drain owner release |
-| W11 | `cargo test -p hydracache --test persistence_memory_071 --locked -- --test-threads=1` | anon/file classification, buffer bounds, memory-pressure admission and recovery/disk-full/checkpoint release |
-| W12 | `cargo test -p xtask --test memory_campaign_admission_071 --locked` and `cargo run --manifest-path crates\xtask\Cargo.toml --locked -- memory-campaign-check --release 0.71 --require-ship` | scenario/repetition identity, bounded attempt ledger, D4 reproduction and long-run admission |
-| W13 | `cargo test -p xtask --test release_governance_071 --locked` | mandatory foundation, conditional proposal targets, generated claims, no-win ship and safety-defect rejection |
+| W9 | `cargo test -p hydracache-server --test memory_profiles_071 --locked -- --test-threads=1` | disabled-service zero-resource proof, requested-surface materialization and explicit one-factor qualification boundary |
+| W10 | `cargo test -p hydracache-server --test hc2_memory_071 --locked -- --test-threads=1` | idle HC/2 owner accounting, redacted metrics and independent transport/decoded limit contracts |
+| W11 | `cargo test -p hydracache --test persistence_memory_071 --locked -- --test-threads=1` | pre-allocation rejection without storage, bounded metric labels and explicit anon/file qualification boundary |
+| W12 | `cargo test -p xtask --test memory_campaign_admission_071 --locked` and `cargo run --manifest-path crates\xtask\Cargo.toml --locked -- memory-campaign-check --release 0.71 --require-ship` | identity-sealed exact-candidate M3/M8/M9/M10 chain admission; five paired M3 repetitions; rejection of incomplete, mixed-SHA, mixed-host, tampered, duplicate or non-candidate evidence |
+| W13 | `cargo test -p xtask --test release_governance_071 --locked` | mandatory foundation, evidenced deferrals, no-win ship and safety-defect rejection |
 
 After every control commit run its focused target plus:
 
@@ -961,17 +971,17 @@ its affected owner. The rows are not multiplied into a full Cartesian product.
 
 | ID | Varied factor and fixed boundary | Repetition / duration | Evidence role | Estimated admitted-host time cap |
 | --- | --- | --- | --- | --- |
-| `M0-cold` | empty daemon, canonical services, five-minute idle | three fresh B0 and B1 processes at D0; five alternating B1/C pairs only when a cold-footprint proposal exists | cold floor and instrumentation overhead | `<= 1 h` per D0 cohort; `<= 1 h` optional D4 pair set |
-| `M1-shape` | intentional 4x4 grid: 1k/10k/50k/250k keys x 64/256/1,024/4,096-byte values; other factors canonical | three fresh B1 processes per D0 cell; D4 repeats only proposal-selected cells with five alternating B1/C pairs | bytes/entry and payload amplification | `<= 8 h` D0 screen; `<= 5 h` per selected D4 proposal |
+| `M0-cold` | empty daemon, canonical services, five-minute idle | three fresh B0 and B1 processes at D0; five alternating B1/C pairs only when a cold-footprint proposal exists | cold floor and instrumentation overhead | `<= 1 h` D0 B0/B1 pair |
+| `M1-shape` | intentional 4x4 grid: 1k/10k/50k/250k keys x 64/256/1,024/4,096-byte values; other factors canonical | three fresh B1 processes per D0 cell; D4 repeats only proposal-selected cells with five alternating B1/C pairs | bytes/entry and payload amplification | `<= 10 h` per full-grid cohort; `<= 20 h` for a full B1/C pair |
 | `M2-rewrite` | canonical fixed keyspace; six-cycle focused and sixty-cycle scheduled variants | three fresh D0 runs; five alternating B1/C focused pairs for affected proposals | allocation churn and reuse | `<= 4 h` |
 | `M3-ttl` | canonical fill-expire-idle with final checkpoint covered; sixty cycles | three fresh D0 runs and five alternating B1/C D4 pairs | TTL cleanup/recovery | `<= 6 h` |
 | `M4-reset` | canonical fill-delete and namespace-reset, sixty cycles each | three fresh D0 runs and five alternating B1/C D4 pairs | exact owner zero and allocator reuse | `<= 6 h` |
-| `M5-tags` | 0/1/4/16 tags per entry plus separately declared one-hot/high-fanout cases; other factors canonical | three D0 runs per distribution; D4 only for W5/W6 cells | tag/index amplification | `<= 4 h` D0; `<= 4 h` selected D4 |
+| `M5-tags` | 0/1/4/16 tags per entry plus separately declared one-hot/high-fanout cases; other factors canonical | three D0 runs per distribution; D4 only for W5/W6 cells | tag/index amplification | `<= 4 h` D0; `<= 7.5 h` for a full B1/C pair |
 | `M6-connections` | 1/10/100/1,000 idle HC/2 connections over the contract-mandated gRPC+mTLS transport; 100 slow consumers is a distinct case | three D0 runs per scale; five B1/C pairs for W10-affected cells | per-connection floor/high-water | `<= 6 h` D0; `<= 6 h` selected D4 |
 | `M7-persistence` | persistence off and each supported mode; canonical dataset; anon/file/slab split | three fresh runs per mode; D4 only for W11 changes | durable/page-cache attribution | `<= 6 h` per cohort |
-| `M8-60m` | fixed-keyspace, TTL, reset and HC/2 churn as four serialized cases | one 60-minute B1 and C run per case after five shorter comparison pairs are green | weekly/scheduled boundedness | `<= 8 h` per candidate pair |
-| `M9-6h` | one preregistered multi-scenario sequence, fixed cardinality | one six-hour B1 and one six-hour C run per candidate iteration | candidate soak | `<= 12 h` per candidate pair |
-| `M10-24h` | one preregistered ship sequence on the same admitted fingerprint | one 24-hour B1 run and one 24-hour exact-C run, serialized | final long-tail confirmation | `<= 48 h` plus calibration/preflight |
+| `M8-60m` | fixed-keyspace, TTL, reset and HC/2 churn as four serialized cases | one 60-minute B1 and C run per case after five shorter comparison pairs are green | weekly/scheduled boundedness | `<= 11.5 h` per candidate pair |
+| `M9-6h` | one preregistered multi-scenario sequence, fixed cardinality | one six-hour B1 and one six-hour C run per candidate iteration | candidate soak | `<= 15 h` per candidate pair |
+| `M10-24h` | one preregistered ship sequence on the same admitted fingerprint | one 24-hour B1 run and one 24-hour exact-C run, serialized | final long-tail confirmation | `<= 58 h` per candidate pair, plus calibration/preflight |
 
 The statistical sample unit for D3/D4 improvement decisions is one independently started process
 pair in alternating B1/C order. The `0.67.1` five-sample rule applies to the shorter numerical
@@ -979,7 +989,11 @@ qualification rows selected for a proposal; it does **not** mean five separate 2
 `M10-24h` is a boundedness/recovery confirmation after those five pairs are green, not the sole
 estimator of an improvement. Three fresh processes are the minimum for D0 attribution screens and
 cannot by themselves support an improvement claim. S9 computes the exact runner-hour estimate from
-the selected rows before dispatch and rejects a campaign exceeding these caps unless the plan,
+the selected rows before dispatch. The frozen scenario cap is a lower bound; the controller also
+computes the mandatory idle/duration floor for the expanded cells, repetitions, and cohorts, adds a
+20% execution reserve, and rounds up to a half-hour. It then enforces that aggregate remaining row
+budget across attempts instead of incorrectly granting the whole budget to every child job. A
+campaign exceeding these caps is rejected unless the plan,
 statistics contract and protected-environment approval are reviewed before candidate data exists.
 
 Before using these cases to authorize W2b-W11 implementation, execute and archive the transferred

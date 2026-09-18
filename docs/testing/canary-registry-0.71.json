@@ -1,0 +1,804 @@
+{
+  "version": 2,
+  "release": "0.71",
+  "entries": [
+    {
+      "w_item": "W0",
+      "guard": {
+        "file": "crates/xtask/tests/memory_regression_071.rs",
+        "function": "release_071_governance_contract_is_fail_closed"
+      },
+      "canary": {
+        "file": "crates/xtask/tests/memory_regression_071.rs",
+        "function": "canary_release_071_accepts_missing_memory_evidence"
+      },
+      "guard_command": {
+        "program": "cargo",
+        "args": [
+          "test",
+          "-p",
+          "xtask",
+          "--test",
+          "memory_regression_071",
+          "--locked",
+          "release_071_governance_contract_is_fail_closed",
+          "--",
+          "--exact",
+          "--nocapture"
+        ],
+        "env": {},
+        "cwd": ".",
+        "platform": "any"
+      },
+      "canary_command": {
+        "program": "cargo",
+        "args": [
+          "test",
+          "-p",
+          "xtask",
+          "--test",
+          "memory_regression_071",
+          "--locked",
+          "canary_release_071_accepts_missing_memory_evidence",
+          "--",
+          "--exact",
+          "--nocapture"
+        ],
+        "env": {
+          "HYDRACACHE_CANARY_DEFECT": "W0"
+        },
+        "cwd": ".",
+        "platform": "any"
+      },
+      "defect_id": "hydracache-0.71-W0-missing-memory-evidence",
+      "expected_failure": "HC-CANARY-RED:W0",
+      "timeout_seconds": 300,
+      "tier": "fast",
+      "artifacts": [
+        "target/release-evidence/canaries/0.71-W0.json"
+      ],
+      "red_evidence": "W0 must retain its release-specific memory contract and evidence wiring."
+    },
+    {
+      "w_item": "W1",
+      "guard": {
+        "file": "crates/xtask/tests/memory_regression_071.rs",
+        "function": "release_071_governance_contract_is_fail_closed"
+      },
+      "canary": {
+        "file": "crates/xtask/tests/memory_regression_071.rs",
+        "function": "canary_release_071_accepts_missing_memory_evidence"
+      },
+      "guard_command": {
+        "program": "cargo",
+        "args": [
+          "test",
+          "-p",
+          "xtask",
+          "--test",
+          "memory_regression_071",
+          "--locked",
+          "release_071_governance_contract_is_fail_closed",
+          "--",
+          "--exact",
+          "--nocapture"
+        ],
+        "env": {},
+        "cwd": ".",
+        "platform": "any"
+      },
+      "canary_command": {
+        "program": "cargo",
+        "args": [
+          "test",
+          "-p",
+          "xtask",
+          "--test",
+          "memory_regression_071",
+          "--locked",
+          "canary_release_071_accepts_missing_memory_evidence",
+          "--",
+          "--exact",
+          "--nocapture"
+        ],
+        "env": {
+          "HYDRACACHE_CANARY_DEFECT": "W1"
+        },
+        "cwd": ".",
+        "platform": "any"
+      },
+      "defect_id": "hydracache-0.71-W1-missing-memory-evidence",
+      "expected_failure": "HC-CANARY-RED:W1",
+      "timeout_seconds": 300,
+      "tier": "fast",
+      "artifacts": [
+        "target/release-evidence/canaries/0.71-W1.json"
+      ],
+      "red_evidence": "W1 must retain its release-specific memory contract and evidence wiring."
+    },
+    {
+      "w_item": "W2",
+      "guard": {
+        "file": "crates/xtask/tests/memory_regression_071.rs",
+        "function": "release_071_governance_contract_is_fail_closed"
+      },
+      "canary": {
+        "file": "crates/xtask/tests/memory_regression_071.rs",
+        "function": "canary_release_071_accepts_missing_memory_evidence"
+      },
+      "guard_command": {
+        "program": "cargo",
+        "args": [
+          "test",
+          "-p",
+          "xtask",
+          "--test",
+          "memory_regression_071",
+          "--locked",
+          "release_071_governance_contract_is_fail_closed",
+          "--",
+          "--exact",
+          "--nocapture"
+        ],
+        "env": {},
+        "cwd": ".",
+        "platform": "any"
+      },
+      "canary_command": {
+        "program": "cargo",
+        "args": [
+          "test",
+          "-p",
+          "xtask",
+          "--test",
+          "memory_regression_071",
+          "--locked",
+          "canary_release_071_accepts_missing_memory_evidence",
+          "--",
+          "--exact",
+          "--nocapture"
+        ],
+        "env": {
+          "HYDRACACHE_CANARY_DEFECT": "W2"
+        },
+        "cwd": ".",
+        "platform": "any"
+      },
+      "defect_id": "hydracache-0.71-W2-missing-memory-evidence",
+      "expected_failure": "HC-CANARY-RED:W2",
+      "timeout_seconds": 300,
+      "tier": "fast",
+      "artifacts": [
+        "target/release-evidence/canaries/0.71-W2.json"
+      ],
+      "red_evidence": "W2 must retain its release-specific memory contract and evidence wiring."
+    },
+    {
+      "w_item": "W3",
+      "guard": {
+        "file": "crates/xtask/tests/memory_regression_071.rs",
+        "function": "release_071_governance_contract_is_fail_closed"
+      },
+      "canary": {
+        "file": "crates/xtask/tests/memory_regression_071.rs",
+        "function": "canary_release_071_accepts_missing_memory_evidence"
+      },
+      "guard_command": {
+        "program": "cargo",
+        "args": [
+          "test",
+          "-p",
+          "xtask",
+          "--test",
+          "memory_regression_071",
+          "--locked",
+          "release_071_governance_contract_is_fail_closed",
+          "--",
+          "--exact",
+          "--nocapture"
+        ],
+        "env": {},
+        "cwd": ".",
+        "platform": "any"
+      },
+      "canary_command": {
+        "program": "cargo",
+        "args": [
+          "test",
+          "-p",
+          "xtask",
+          "--test",
+          "memory_regression_071",
+          "--locked",
+          "canary_release_071_accepts_missing_memory_evidence",
+          "--",
+          "--exact",
+          "--nocapture"
+        ],
+        "env": {
+          "HYDRACACHE_CANARY_DEFECT": "W3"
+        },
+        "cwd": ".",
+        "platform": "any"
+      },
+      "defect_id": "hydracache-0.71-W3-missing-memory-evidence",
+      "expected_failure": "HC-CANARY-RED:W3",
+      "timeout_seconds": 300,
+      "tier": "fast",
+      "artifacts": [
+        "target/release-evidence/canaries/0.71-W3.json"
+      ],
+      "red_evidence": "W3 must retain its release-specific memory contract and evidence wiring."
+    },
+    {
+      "w_item": "W4",
+      "guard": {
+        "file": "crates/xtask/tests/memory_regression_071.rs",
+        "function": "release_071_governance_contract_is_fail_closed"
+      },
+      "canary": {
+        "file": "crates/xtask/tests/memory_regression_071.rs",
+        "function": "canary_release_071_accepts_missing_memory_evidence"
+      },
+      "guard_command": {
+        "program": "cargo",
+        "args": [
+          "test",
+          "-p",
+          "xtask",
+          "--test",
+          "memory_regression_071",
+          "--locked",
+          "release_071_governance_contract_is_fail_closed",
+          "--",
+          "--exact",
+          "--nocapture"
+        ],
+        "env": {},
+        "cwd": ".",
+        "platform": "any"
+      },
+      "canary_command": {
+        "program": "cargo",
+        "args": [
+          "test",
+          "-p",
+          "xtask",
+          "--test",
+          "memory_regression_071",
+          "--locked",
+          "canary_release_071_accepts_missing_memory_evidence",
+          "--",
+          "--exact",
+          "--nocapture"
+        ],
+        "env": {
+          "HYDRACACHE_CANARY_DEFECT": "W4"
+        },
+        "cwd": ".",
+        "platform": "any"
+      },
+      "defect_id": "hydracache-0.71-W4-missing-memory-evidence",
+      "expected_failure": "HC-CANARY-RED:W4",
+      "timeout_seconds": 300,
+      "tier": "fast",
+      "artifacts": [
+        "target/release-evidence/canaries/0.71-W4.json"
+      ],
+      "red_evidence": "W4 must retain its release-specific memory contract and evidence wiring."
+    },
+    {
+      "w_item": "W5",
+      "guard": {
+        "file": "crates/xtask/tests/memory_regression_071.rs",
+        "function": "release_071_governance_contract_is_fail_closed"
+      },
+      "canary": {
+        "file": "crates/xtask/tests/memory_regression_071.rs",
+        "function": "canary_release_071_accepts_missing_memory_evidence"
+      },
+      "guard_command": {
+        "program": "cargo",
+        "args": [
+          "test",
+          "-p",
+          "xtask",
+          "--test",
+          "memory_regression_071",
+          "--locked",
+          "release_071_governance_contract_is_fail_closed",
+          "--",
+          "--exact",
+          "--nocapture"
+        ],
+        "env": {},
+        "cwd": ".",
+        "platform": "any"
+      },
+      "canary_command": {
+        "program": "cargo",
+        "args": [
+          "test",
+          "-p",
+          "xtask",
+          "--test",
+          "memory_regression_071",
+          "--locked",
+          "canary_release_071_accepts_missing_memory_evidence",
+          "--",
+          "--exact",
+          "--nocapture"
+        ],
+        "env": {
+          "HYDRACACHE_CANARY_DEFECT": "W5"
+        },
+        "cwd": ".",
+        "platform": "any"
+      },
+      "defect_id": "hydracache-0.71-W5-missing-memory-evidence",
+      "expected_failure": "HC-CANARY-RED:W5",
+      "timeout_seconds": 300,
+      "tier": "fast",
+      "artifacts": [
+        "target/release-evidence/canaries/0.71-W5.json"
+      ],
+      "red_evidence": "W5 must retain its release-specific memory contract and evidence wiring."
+    },
+    {
+      "w_item": "W6",
+      "guard": {
+        "file": "crates/xtask/tests/memory_regression_071.rs",
+        "function": "release_071_governance_contract_is_fail_closed"
+      },
+      "canary": {
+        "file": "crates/xtask/tests/memory_regression_071.rs",
+        "function": "canary_release_071_accepts_missing_memory_evidence"
+      },
+      "guard_command": {
+        "program": "cargo",
+        "args": [
+          "test",
+          "-p",
+          "xtask",
+          "--test",
+          "memory_regression_071",
+          "--locked",
+          "release_071_governance_contract_is_fail_closed",
+          "--",
+          "--exact",
+          "--nocapture"
+        ],
+        "env": {},
+        "cwd": ".",
+        "platform": "any"
+      },
+      "canary_command": {
+        "program": "cargo",
+        "args": [
+          "test",
+          "-p",
+          "xtask",
+          "--test",
+          "memory_regression_071",
+          "--locked",
+          "canary_release_071_accepts_missing_memory_evidence",
+          "--",
+          "--exact",
+          "--nocapture"
+        ],
+        "env": {
+          "HYDRACACHE_CANARY_DEFECT": "W6"
+        },
+        "cwd": ".",
+        "platform": "any"
+      },
+      "defect_id": "hydracache-0.71-W6-missing-memory-evidence",
+      "expected_failure": "HC-CANARY-RED:W6",
+      "timeout_seconds": 300,
+      "tier": "fast",
+      "artifacts": [
+        "target/release-evidence/canaries/0.71-W6.json"
+      ],
+      "red_evidence": "W6 must retain its release-specific memory contract and evidence wiring."
+    },
+    {
+      "w_item": "W7",
+      "guard": {
+        "file": "crates/xtask/tests/memory_regression_071.rs",
+        "function": "release_071_governance_contract_is_fail_closed"
+      },
+      "canary": {
+        "file": "crates/xtask/tests/memory_regression_071.rs",
+        "function": "canary_release_071_accepts_missing_memory_evidence"
+      },
+      "guard_command": {
+        "program": "cargo",
+        "args": [
+          "test",
+          "-p",
+          "xtask",
+          "--test",
+          "memory_regression_071",
+          "--locked",
+          "release_071_governance_contract_is_fail_closed",
+          "--",
+          "--exact",
+          "--nocapture"
+        ],
+        "env": {},
+        "cwd": ".",
+        "platform": "any"
+      },
+      "canary_command": {
+        "program": "cargo",
+        "args": [
+          "test",
+          "-p",
+          "xtask",
+          "--test",
+          "memory_regression_071",
+          "--locked",
+          "canary_release_071_accepts_missing_memory_evidence",
+          "--",
+          "--exact",
+          "--nocapture"
+        ],
+        "env": {
+          "HYDRACACHE_CANARY_DEFECT": "W7"
+        },
+        "cwd": ".",
+        "platform": "any"
+      },
+      "defect_id": "hydracache-0.71-W7-missing-memory-evidence",
+      "expected_failure": "HC-CANARY-RED:W7",
+      "timeout_seconds": 300,
+      "tier": "fast",
+      "artifacts": [
+        "target/release-evidence/canaries/0.71-W7.json"
+      ],
+      "red_evidence": "W7 must retain its release-specific memory contract and evidence wiring."
+    },
+    {
+      "w_item": "W8",
+      "guard": {
+        "file": "crates/xtask/tests/memory_regression_071.rs",
+        "function": "release_071_governance_contract_is_fail_closed"
+      },
+      "canary": {
+        "file": "crates/xtask/tests/memory_regression_071.rs",
+        "function": "canary_release_071_accepts_missing_memory_evidence"
+      },
+      "guard_command": {
+        "program": "cargo",
+        "args": [
+          "test",
+          "-p",
+          "xtask",
+          "--test",
+          "memory_regression_071",
+          "--locked",
+          "release_071_governance_contract_is_fail_closed",
+          "--",
+          "--exact",
+          "--nocapture"
+        ],
+        "env": {},
+        "cwd": ".",
+        "platform": "any"
+      },
+      "canary_command": {
+        "program": "cargo",
+        "args": [
+          "test",
+          "-p",
+          "xtask",
+          "--test",
+          "memory_regression_071",
+          "--locked",
+          "canary_release_071_accepts_missing_memory_evidence",
+          "--",
+          "--exact",
+          "--nocapture"
+        ],
+        "env": {
+          "HYDRACACHE_CANARY_DEFECT": "W8"
+        },
+        "cwd": ".",
+        "platform": "any"
+      },
+      "defect_id": "hydracache-0.71-W8-missing-memory-evidence",
+      "expected_failure": "HC-CANARY-RED:W8",
+      "timeout_seconds": 300,
+      "tier": "fast",
+      "artifacts": [
+        "target/release-evidence/canaries/0.71-W8.json"
+      ],
+      "red_evidence": "W8 must retain its release-specific memory contract and evidence wiring."
+    },
+    {
+      "w_item": "W9",
+      "guard": {
+        "file": "crates/xtask/tests/memory_regression_071.rs",
+        "function": "release_071_governance_contract_is_fail_closed"
+      },
+      "canary": {
+        "file": "crates/xtask/tests/memory_regression_071.rs",
+        "function": "canary_release_071_accepts_missing_memory_evidence"
+      },
+      "guard_command": {
+        "program": "cargo",
+        "args": [
+          "test",
+          "-p",
+          "xtask",
+          "--test",
+          "memory_regression_071",
+          "--locked",
+          "release_071_governance_contract_is_fail_closed",
+          "--",
+          "--exact",
+          "--nocapture"
+        ],
+        "env": {},
+        "cwd": ".",
+        "platform": "any"
+      },
+      "canary_command": {
+        "program": "cargo",
+        "args": [
+          "test",
+          "-p",
+          "xtask",
+          "--test",
+          "memory_regression_071",
+          "--locked",
+          "canary_release_071_accepts_missing_memory_evidence",
+          "--",
+          "--exact",
+          "--nocapture"
+        ],
+        "env": {
+          "HYDRACACHE_CANARY_DEFECT": "W9"
+        },
+        "cwd": ".",
+        "platform": "any"
+      },
+      "defect_id": "hydracache-0.71-W9-missing-memory-evidence",
+      "expected_failure": "HC-CANARY-RED:W9",
+      "timeout_seconds": 300,
+      "tier": "fast",
+      "artifacts": [
+        "target/release-evidence/canaries/0.71-W9.json"
+      ],
+      "red_evidence": "W9 must retain its release-specific memory contract and evidence wiring."
+    },
+    {
+      "w_item": "W10",
+      "guard": {
+        "file": "crates/xtask/tests/memory_regression_071.rs",
+        "function": "release_071_governance_contract_is_fail_closed"
+      },
+      "canary": {
+        "file": "crates/xtask/tests/memory_regression_071.rs",
+        "function": "canary_release_071_accepts_missing_memory_evidence"
+      },
+      "guard_command": {
+        "program": "cargo",
+        "args": [
+          "test",
+          "-p",
+          "xtask",
+          "--test",
+          "memory_regression_071",
+          "--locked",
+          "release_071_governance_contract_is_fail_closed",
+          "--",
+          "--exact",
+          "--nocapture"
+        ],
+        "env": {},
+        "cwd": ".",
+        "platform": "any"
+      },
+      "canary_command": {
+        "program": "cargo",
+        "args": [
+          "test",
+          "-p",
+          "xtask",
+          "--test",
+          "memory_regression_071",
+          "--locked",
+          "canary_release_071_accepts_missing_memory_evidence",
+          "--",
+          "--exact",
+          "--nocapture"
+        ],
+        "env": {
+          "HYDRACACHE_CANARY_DEFECT": "W10"
+        },
+        "cwd": ".",
+        "platform": "any"
+      },
+      "defect_id": "hydracache-0.71-W10-missing-memory-evidence",
+      "expected_failure": "HC-CANARY-RED:W10",
+      "timeout_seconds": 300,
+      "tier": "fast",
+      "artifacts": [
+        "target/release-evidence/canaries/0.71-W10.json"
+      ],
+      "red_evidence": "W10 must retain its release-specific memory contract and evidence wiring."
+    },
+    {
+      "w_item": "W11",
+      "guard": {
+        "file": "crates/xtask/tests/memory_regression_071.rs",
+        "function": "release_071_governance_contract_is_fail_closed"
+      },
+      "canary": {
+        "file": "crates/xtask/tests/memory_regression_071.rs",
+        "function": "canary_release_071_accepts_missing_memory_evidence"
+      },
+      "guard_command": {
+        "program": "cargo",
+        "args": [
+          "test",
+          "-p",
+          "xtask",
+          "--test",
+          "memory_regression_071",
+          "--locked",
+          "release_071_governance_contract_is_fail_closed",
+          "--",
+          "--exact",
+          "--nocapture"
+        ],
+        "env": {},
+        "cwd": ".",
+        "platform": "any"
+      },
+      "canary_command": {
+        "program": "cargo",
+        "args": [
+          "test",
+          "-p",
+          "xtask",
+          "--test",
+          "memory_regression_071",
+          "--locked",
+          "canary_release_071_accepts_missing_memory_evidence",
+          "--",
+          "--exact",
+          "--nocapture"
+        ],
+        "env": {
+          "HYDRACACHE_CANARY_DEFECT": "W11"
+        },
+        "cwd": ".",
+        "platform": "any"
+      },
+      "defect_id": "hydracache-0.71-W11-missing-memory-evidence",
+      "expected_failure": "HC-CANARY-RED:W11",
+      "timeout_seconds": 300,
+      "tier": "fast",
+      "artifacts": [
+        "target/release-evidence/canaries/0.71-W11.json"
+      ],
+      "red_evidence": "W11 must retain its release-specific memory contract and evidence wiring."
+    },
+    {
+      "w_item": "W12",
+      "guard": {
+        "file": "crates/xtask/tests/memory_regression_071.rs",
+        "function": "release_071_governance_contract_is_fail_closed"
+      },
+      "canary": {
+        "file": "crates/xtask/tests/memory_regression_071.rs",
+        "function": "canary_release_071_accepts_missing_memory_evidence"
+      },
+      "guard_command": {
+        "program": "cargo",
+        "args": [
+          "test",
+          "-p",
+          "xtask",
+          "--test",
+          "memory_regression_071",
+          "--locked",
+          "release_071_governance_contract_is_fail_closed",
+          "--",
+          "--exact",
+          "--nocapture"
+        ],
+        "env": {},
+        "cwd": ".",
+        "platform": "any"
+      },
+      "canary_command": {
+        "program": "cargo",
+        "args": [
+          "test",
+          "-p",
+          "xtask",
+          "--test",
+          "memory_regression_071",
+          "--locked",
+          "canary_release_071_accepts_missing_memory_evidence",
+          "--",
+          "--exact",
+          "--nocapture"
+        ],
+        "env": {
+          "HYDRACACHE_CANARY_DEFECT": "W12"
+        },
+        "cwd": ".",
+        "platform": "any"
+      },
+      "defect_id": "hydracache-0.71-W12-missing-memory-evidence",
+      "expected_failure": "HC-CANARY-RED:W12",
+      "timeout_seconds": 300,
+      "tier": "fast",
+      "artifacts": [
+        "target/release-evidence/canaries/0.71-W12.json"
+      ],
+      "red_evidence": "W12 must retain its release-specific memory contract and evidence wiring."
+    },
+    {
+      "w_item": "W13",
+      "guard": {
+        "file": "crates/xtask/tests/memory_regression_071.rs",
+        "function": "release_071_governance_contract_is_fail_closed"
+      },
+      "canary": {
+        "file": "crates/xtask/tests/memory_regression_071.rs",
+        "function": "canary_release_071_accepts_missing_memory_evidence"
+      },
+      "guard_command": {
+        "program": "cargo",
+        "args": [
+          "test",
+          "-p",
+          "xtask",
+          "--test",
+          "memory_regression_071",
+          "--locked",
+          "release_071_governance_contract_is_fail_closed",
+          "--",
+          "--exact",
+          "--nocapture"
+        ],
+        "env": {},
+        "cwd": ".",
+        "platform": "any"
+      },
+      "canary_command": {
+        "program": "cargo",
+        "args": [
+          "test",
+          "-p",
+          "xtask",
+          "--test",
+          "memory_regression_071",
+          "--locked",
+          "canary_release_071_accepts_missing_memory_evidence",
+          "--",
+          "--exact",
+          "--nocapture"
+        ],
+        "env": {
+          "HYDRACACHE_CANARY_DEFECT": "W13"
+        },
+        "cwd": ".",
+        "platform": "any"
+      },
+      "defect_id": "hydracache-0.71-W13-missing-memory-evidence",
+      "expected_failure": "HC-CANARY-RED:W13",
+      "timeout_seconds": 300,
+      "tier": "fast",
+      "artifacts": [
+        "target/release-evidence/canaries/0.71-W13.json"
+      ],
+      "red_evidence": "W13 must retain its release-specific memory contract and evidence wiring."
+    }
+  ]
+}

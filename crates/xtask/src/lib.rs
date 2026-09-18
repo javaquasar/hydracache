@@ -27,6 +27,7 @@ pub mod gated_tests;
 pub mod host_attestation;
 pub mod management_center;
 pub mod memory_baseline;
+pub mod memory_campaign;
 pub mod memory_contracts;
 pub mod memory_ownership;
 pub mod memory_statistics;

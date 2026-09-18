@@ -1,0 +1,231 @@
+{
+  "schema_version": 1,
+  "generated_at": "2026-09-11T08:19:21Z",
+  "profile_id": "ubuntu-24.04-reference-v1",
+  "profile_sha256": "34e820f7e3ac38df50f8ebc9a839b9aad61ebd04e24d5005063308f2a98475ca",
+  "os_release": "ubuntu-24.04",
+  "kernel_release": "6.8.0-138-generic",
+  "source_commit": "7bd31af9a5092466d7a7284995f388d33ed3110f",
+  "cpu_contract": {
+    "measurement_cpus": "1-4",
+    "housekeeping_cpus": "0,5-7"
+  },
+  "actions": [
+    {
+      "unit": "apt-daily.timer",
+      "policy": "disable_if_present",
+      "planned_action": "disable-now",
+      "known": true,
+      "load_state": "loaded",
+      "active_state": "inactive",
+      "unit_file_state": "disabled"
+    },
+    {
+      "unit": "apt-daily-upgrade.timer",
+      "policy": "disable_if_present",
+      "planned_action": "disable-now",
+      "known": true,
+      "load_state": "loaded",
+      "active_state": "inactive",
+      "unit_file_state": "disabled"
+    },
+    {
+      "unit": "e2scrub_all.timer",
+      "policy": "disable_if_present",
+      "planned_action": "disable-now",
+      "known": true,
+      "load_state": "loaded",
+      "active_state": "inactive",
+      "unit_file_state": "disabled"
+    },
+    {
+      "unit": "fstrim.timer",
+      "policy": "disable_if_present",
+      "planned_action": "disable-now",
+      "known": true,
+      "load_state": "loaded",
+      "active_state": "inactive",
+      "unit_file_state": "disabled"
+    },
+    {
+      "unit": "fwupd-refresh.timer",
+      "policy": "disable_if_present",
+      "planned_action": "absent-noop",
+      "known": false,
+      "load_state": "not-found",
+      "active_state": "not-found",
+      "unit_file_state": "not-found"
+    },
+    {
+      "unit": "man-db.timer",
+      "policy": "disable_if_present",
+      "planned_action": "disable-now",
+      "known": true,
+      "load_state": "loaded",
+      "active_state": "inactive",
+      "unit_file_state": "disabled"
+    },
+    {
+      "unit": "motd-news.timer",
+      "policy": "disable_if_present",
+      "planned_action": "disable-now",
+      "known": true,
+      "load_state": "loaded",
+      "active_state": "inactive",
+      "unit_file_state": "disabled"
+    },
+    {
+      "unit": "apt-daily.service",
+      "policy": "mask_if_present",
+      "planned_action": "mask-now",
+      "known": true,
+      "load_state": "masked",
+      "active_state": "inactive",
+      "unit_file_state": "masked"
+    },
+    {
+      "unit": "apt-daily-upgrade.service",
+      "policy": "mask_if_present",
+      "planned_action": "mask-now",
+      "known": true,
+      "load_state": "masked",
+      "active_state": "inactive",
+      "unit_file_state": "masked"
+    },
+    {
+      "unit": "irqbalance.service",
+      "policy": "mask_if_present",
+      "planned_action": "absent-noop",
+      "known": false,
+      "load_state": "not-found",
+      "active_state": "not-found",
+      "unit_file_state": "not-found"
+    },
+    {
+      "unit": "packagekit-offline-update.service",
+      "policy": "mask_if_present",
+      "planned_action": "mask-now",
+      "known": true,
+      "load_state": "masked",
+      "active_state": "inactive",
+      "unit_file_state": "masked"
+    },
+    {
+      "unit": "packagekit.service",
+      "policy": "mask_if_present",
+      "planned_action": "mask-now",
+      "known": true,
+      "load_state": "masked",
+      "active_state": "inactive",
+      "unit_file_state": "masked"
+    },
+    {
+      "unit": "snapd.refresh.timer",
+      "policy": "mask_if_present",
+      "planned_action": "absent-noop",
+      "known": false,
+      "load_state": "not-found",
+      "active_state": "not-found",
+      "unit_file_state": "not-found"
+    },
+    {
+      "unit": "snapd.service",
+      "policy": "mask_if_present",
+      "planned_action": "mask-now",
+      "known": true,
+      "load_state": "masked",
+      "active_state": "inactive",
+      "unit_file_state": "masked"
+    },
+    {
+      "unit": "snapd.socket",
+      "policy": "mask_if_present",
+      "planned_action": "mask-now",
+      "known": true,
+      "load_state": "masked",
+      "active_state": "inactive",
+      "unit_file_state": "masked"
+    },
+    {
+      "unit": "unattended-upgrades.service",
+      "policy": "mask_if_present",
+      "planned_action": "mask-now",
+      "known": true,
+      "load_state": "masked",
+      "active_state": "inactive",
+      "unit_file_state": "masked"
+    },
+    {
+      "unit": "containerd.service",
+      "policy": "require_inactive_if_present",
+      "planned_action": "stop-disable-now",
+      "known": true,
+      "load_state": "loaded",
+      "active_state": "inactive",
+      "unit_file_state": "disabled"
+    },
+    {
+      "unit": "docker.service",
+      "policy": "require_inactive_if_present",
+      "planned_action": "stop-disable-now",
+      "known": true,
+      "load_state": "loaded",
+      "active_state": "inactive",
+      "unit_file_state": "disabled"
+    },
+    {
+      "unit": "docker.socket",
+      "policy": "require_inactive_if_present",
+      "planned_action": "stop-disable-now",
+      "known": true,
+      "load_state": "loaded",
+      "active_state": "inactive",
+      "unit_file_state": "disabled"
+    },
+    {
+      "unit": "ModemManager.service",
+      "policy": "report_only_candidates",
+      "planned_action": "absent-noop",
+      "known": false,
+      "load_state": "not-found",
+      "active_state": "not-found",
+      "unit_file_state": "not-found"
+    },
+    {
+      "unit": "avahi-daemon.service",
+      "policy": "report_only_candidates",
+      "planned_action": "absent-noop",
+      "known": false,
+      "load_state": "not-found",
+      "active_state": "not-found",
+      "unit_file_state": "not-found"
+    },
+    {
+      "unit": "bluetooth.service",
+      "policy": "report_only_candidates",
+      "planned_action": "absent-noop",
+      "known": false,
+      "load_state": "not-found",
+      "active_state": "not-found",
+      "unit_file_state": "not-found"
+    },
+    {
+      "unit": "cups.service",
+      "policy": "report_only_candidates",
+      "planned_action": "absent-noop",
+      "known": false,
+      "load_state": "not-found",
+      "active_state": "not-found",
+      "unit_file_state": "not-found"
+    },
+    {
+      "unit": "multipathd.service",
+      "policy": "report_only_candidates",
+      "planned_action": "report-only",
+      "known": true,
+      "load_state": "loaded",
+      "active_state": "active",
+      "unit_file_state": "enabled"
+    }
+  ]
+}

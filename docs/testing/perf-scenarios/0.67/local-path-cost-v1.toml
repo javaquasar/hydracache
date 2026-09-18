@@ -4,9 +4,13 @@ seed = 6704
 offered_rates_per_second = [5000, 10000, 25000, 50000]
 preload_operations = 4096
 warmup_operations = 5000
-# Keep the fastest path measured for long enough that an isolated-runner
-# scheduling interruption cannot dominate one repeat.
-steady_operations = 1000000
+# Keep the fastest path measured for long enough that the fixed-size
+# housekeeping transients observed on the dedicated AX42 runner cannot
+# dominate one repeat. At 1,000,000 operations, two independent campaigns
+# recorded a single 16-20% low repeat while the adjacent repeats agreed;
+# 5,000,000 operations bounds the same interruption below the committed 15%
+# spread ceiling without discarding or selectively retrying any observation.
+steady_operations = 5000000
 repeats = 3
 p99_slo_us = 10000
 p999_slo_us = 25000

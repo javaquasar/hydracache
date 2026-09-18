@@ -1,0 +1,18 @@
+{
+  "bootstrap_evidence": false,
+  "campaign_id": "hc0671-ax42-20260911-da",
+  "host_admission_bundle_sha256": "f760a8fc9d1c251a2c79ce6676f1a4e64cf2d71cc1445de5ce59efb66bb3b51b",
+  "host_frozen": true,
+  "host_state_archive_sha256": "d862b5f9e9bcf3f9243efd6a85690b071b763a74bbc733d24103521c4c5d22e9",
+  "irq_baseline_sha256": "1729ce090295471397d481e3c495676f15d04996251d319d569be55bf2e58475",
+  "irq_burn_in_passed": true,
+  "irq_burn_in_receipt_sha256": "34dba473aa5c49f74e74c44dfe52b0ae499fc26fbc35d070d77de2978e52fea0",
+  "passed": true,
+  "profile_sha256": "34e820f7e3ac38df50f8ebc9a839b9aad61ebd04e24d5005063308f2a98475ca",
+  "qualification_evidence": false,
+  "release": "0.67.1",
+  "schema_version": 1,
+  "ship_evidence_eligible": false,
+  "source_commit": "7bd31af9a5092466d7a7284995f388d33ed3110f",
+  "stage": "reference-campaign-host-admission"
+}

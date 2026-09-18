@@ -1,4 +1,4 @@
-use hydracache::{ClusterGridCounters, HydraCache, MemoryInstrumentationMode};
+use hydracache::{ClusterGridCounters, HydraCache};
 use hydracache_client_transport_axum::{ClientSurfaceDrain, ClientSurfaceRuntime};
 use hydracache_observability::{
     ClusterMemberView, ClusterOverview, ClusterTopologyOverview, ConsistencyView,
@@ -332,7 +332,7 @@ impl ServerRuntime {
             }
             ServerRole::Local | ServerRole::Client => (
                 HydraCache::local()
-                    .memory_instrumentation_mode(MemoryInstrumentationMode::Production)
+                    .memory_instrumentation_mode(config.memory_instrumentation_mode)
                     .build(),
                 Arc::new(ModeledClusterStatus),
                 None,

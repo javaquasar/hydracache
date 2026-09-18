@@ -1,0 +1,57 @@
+{
+  "schema_version": 1,
+  "release": "0.67.1",
+  "source_commit": "7bd31af9a5092466d7a7284995f388d33ed3110f",
+  "current_worktree_dirty": false,
+  "receipts_supplied": true,
+  "counts": {
+    "fast-green": 0,
+    "gated-green": 0,
+    "implemented": 0,
+    "planned": 0,
+    "ship-ready": 8
+  },
+  "reasons": [],
+  "work_items": [
+    {
+      "id": "W0",
+      "stage": "ship-ready",
+      "reasons": []
+    },
+    {
+      "id": "W1",
+      "stage": "ship-ready",
+      "reasons": []
+    },
+    {
+      "id": "W2",
+      "stage": "ship-ready",
+      "reasons": []
+    },
+    {
+      "id": "W3",
+      "stage": "ship-ready",
+      "reasons": []
+    },
+    {
+      "id": "W4",
+      "stage": "ship-ready",
+      "reasons": []
+    },
+    {
+      "id": "W5",
+      "stage": "ship-ready",
+      "reasons": []
+    },
+    {
+      "id": "W6",
+      "stage": "ship-ready",
+      "reasons": []
+    },
+    {
+      "id": "W7",
+      "stage": "ship-ready",
+      "reasons": []
+    }
+  ]
+}

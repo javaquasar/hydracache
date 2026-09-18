@@ -1,0 +1,8 @@
+reference runtime IRQ guard passed: phase=attestation-pre measurement=1-4 irq_files=68 dormant-unmapped-nvme=8
+reference runtime IRQ guard passed: phase=attestation-post measurement=1-4 irq_files=68 dormant-unmapped-nvme=8
+reference runtime IRQ guard passed: phase=control-plane-pre measurement=1-4 irq_files=68 dormant-unmapped-nvme=8
+reference runtime IRQ guard passed: phase=control-plane-post measurement=1-4 irq_files=68 dormant-unmapped-nvme=8
+reference runtime IRQ guard passed: phase=core-pre measurement=1-4 irq_files=68 dormant-unmapped-nvme=8
+reference runtime IRQ guard passed: phase=core-post measurement=1-4 irq_files=68 dormant-unmapped-nvme=8
+reference runtime IRQ guard passed: phase=resp-pre measurement=1-4 irq_files=68 dormant-unmapped-nvme=8
+reference runtime IRQ guard passed: phase=resp-post measurement=1-4 irq_files=68 dormant-unmapped-nvme=8

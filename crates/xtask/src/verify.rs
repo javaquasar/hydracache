@@ -116,6 +116,7 @@ fn gates_for_platform(is_windows: bool) -> Vec<Gate> {
             ],
             None,
         ),
+        gate("dependency bans", ["deny", "check", "bans"], None),
         gate("dependency policy", ["deny", "check"], None),
         gate(
             "DST fast budget",
@@ -159,7 +160,55 @@ fn gates_for_platform(is_windows: bool) -> Vec<Gate> {
         ),
     ];
 
+    let clippy = if is_windows {
+        gate(
+            "clippy",
+            [
+                "clippy",
+                "--workspace",
+                "--all-targets",
+                "--locked",
+                "--",
+                "-D",
+                "warnings",
+            ],
+            None,
+        )
+    } else {
+        gate(
+            "clippy",
+            [
+                "clippy",
+                "--workspace",
+                "--all-targets",
+                "--all-features",
+                "--locked",
+                "--",
+                "-D",
+                "warnings",
+            ],
+            None,
+        )
+    };
+    gates.insert(1, clippy);
+
     if is_windows {
+        gates.push(gate(
+            "clippy (Windows allocator)",
+            [
+                "clippy",
+                "-p",
+                "hydracache",
+                "--lib",
+                "--features",
+                "allocator-mimalloc",
+                "--locked",
+                "--",
+                "-D",
+                "warnings",
+            ],
+            None,
+        ));
         // A running `target/debug/xtask.exe` cannot be overwritten on Windows.
         // Test the rest of the workspace first, then run xtask lib/integration
         // tests without rebuilding the xtask binary target. Serializing the
@@ -451,6 +500,27 @@ mod tests {
         assert!(!gates
             .iter()
             .any(|gate| gate.label == "tests" && gate.args == ["test", "--workspace", "--locked"]));
+    }
+
+    #[test]
+    fn windows_clippy_uses_only_supported_allocator_features() {
+        let gates = gates_for_platform(true);
+        assert!(!args_for(&gates, "clippy").contains(&"--all-features"));
+        assert_eq!(
+            args_for(&gates, "clippy (Windows allocator)"),
+            [
+                "clippy",
+                "-p",
+                "hydracache",
+                "--lib",
+                "--features",
+                "allocator-mimalloc",
+                "--locked",
+                "--",
+                "-D",
+                "warnings"
+            ]
+        );
     }
 
     #[test]

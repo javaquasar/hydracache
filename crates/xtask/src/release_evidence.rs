@@ -168,9 +168,18 @@ pub fn run(args: Vec<String>) -> Result<(), Box<dyn Error>> {
             );
         }
     }
+    let claim_problems = if options.require_ship && options.release == "0.71" {
+        check_071_ship_claims(&options.root)?
+    } else {
+        Vec::new()
+    };
+    for problem in &claim_problems {
+        println!("release-evidence: 0.71 claim: {problem}");
+    }
     if options.require_ship
         && (report.current_worktree_dirty
             || !report.reasons.is_empty()
+            || !claim_problems.is_empty()
             || report
                 .work_items
                 .iter()
@@ -179,6 +188,114 @@ pub fn run(args: Vec<String>) -> Result<(), Box<dyn Error>> {
         return Err("release-evidence: --require-ship rejected non-green evidence".into());
     }
     Ok(())
+}
+
+fn check_071_ship_claims(root: &Path) -> Result<Vec<String>, Box<dyn Error>> {
+    let claims_path = root.join("target/memory-evidence/0.71/release-claims.json");
+    if !claims_path.is_file() {
+        return Ok(vec!["missing generated release-claims.json".to_owned()]);
+    }
+    let acceptance_path = root.join("docs/testing/memory/0.71/d4-acceptance.json");
+    let policy_path = root.join("docs/testing/memory/0.71/release-policy.toml");
+    let claims: serde_json::Value = serde_json::from_slice(&fs::read(claims_path)?)?;
+    let acceptance: serde_json::Value = serde_json::from_slice(&fs::read(acceptance_path)?)?;
+    let policy: toml::Value = toml::from_str(&fs::read_to_string(policy_path)?)?;
+    let mut problems = check_071_claim_values(&claims, &acceptance, &policy);
+    if let Some(source_sha) = claims
+        .get("measured_source_sha")
+        .and_then(serde_json::Value::as_str)
+    {
+        if !git_is_ancestor(root, source_sha, "HEAD") {
+            problems
+                .push("measured source is not an ancestor of the release review commit".to_owned());
+        }
+        problems.extend(crate::memory_campaign::check_campaigns_for_source(
+            &root.join("target/memory-evidence/0.71/campaigns"),
+            "0.71",
+            true,
+            Some(source_sha),
+        )?);
+    }
+    Ok(problems)
+}
+
+pub fn check_071_claim_values(
+    claims: &serde_json::Value,
+    acceptance: &serde_json::Value,
+    policy: &toml::Value,
+) -> Vec<String> {
+    let mut problems = Vec::new();
+    if claims.get("release").and_then(serde_json::Value::as_str) != Some("0.71") {
+        problems.push("wrong claims release".to_owned());
+    }
+    for (claim_field, acceptance_field) in [
+        ("measured_source_sha", "measured_source_sha"),
+        ("evidence_branch", "evidence_branch"),
+        ("evidence_commit", "evidence_commit"),
+    ] {
+        if claims.get(claim_field) != acceptance.get(acceptance_field) {
+            problems.push(format!("claims {claim_field} disagrees with D4 acceptance"));
+        }
+    }
+    let accepted_ids = acceptance
+        .get("campaigns")
+        .and_then(serde_json::Value::as_array)
+        .map(|campaigns| {
+            campaigns
+                .iter()
+                .filter_map(|item| item.get("id").and_then(serde_json::Value::as_str))
+                .collect::<Vec<_>>()
+        });
+    let claimed_ids = claims
+        .get("campaign_ids")
+        .and_then(serde_json::Value::as_array)
+        .map(|ids| {
+            ids.iter()
+                .filter_map(serde_json::Value::as_str)
+                .collect::<Vec<_>>()
+        });
+    if accepted_ids.as_ref().is_none_or(|ids| ids.len() != 4) || claimed_ids != accepted_ids {
+        problems
+            .push("claims campaign IDs disagree with the four accepted D4 campaigns".to_owned());
+    }
+    if claims
+        .get("numeric_memory_improvement_claims")
+        .and_then(serde_json::Value::as_array)
+        .is_none_or(|numeric| !numeric.is_empty())
+    {
+        problems.push("numerical memory claims are not authorized by D3".to_owned());
+    }
+    if claims
+        .get("negative_result")
+        .and_then(serde_json::Value::as_str)
+        .is_none_or(str::is_empty)
+    {
+        problems.push("release claims omit the negative result".to_owned());
+    }
+    let expected_dispositions = policy
+        .get("optional_work")
+        .and_then(toml::Value::as_array)
+        .map(|items| {
+            items
+                .iter()
+                .map(|item| {
+                    serde_json::json!({
+                        "id": item.get("id").and_then(toml::Value::as_str),
+                        "disposition": item.get("disposition").and_then(toml::Value::as_str),
+                        "reason": item.get("reason").and_then(toml::Value::as_str),
+                        "next_evidence": item.get("next_evidence").and_then(toml::Value::as_str),
+                    })
+                })
+                .collect::<Vec<_>>()
+        });
+    if claims
+        .get("optional_dispositions")
+        .and_then(serde_json::Value::as_array)
+        != expected_dispositions.as_ref()
+    {
+        problems.push("optional dispositions disagree with release policy".to_owned());
+    }
+    problems
 }
 
 pub fn build_report(
@@ -205,6 +322,10 @@ pub fn build_report(
         global_reasons.push("current worktree is dirty".to_owned());
     }
     for dependency in &definition.depends_on {
+        if definition.version == "0.71.0" && dependency == "0.67.1" {
+            global_reasons.extend(evidence_only_0671_dependency_problems(root, &source_commit));
+            continue;
+        }
         let tag = format!("v{dependency}");
         if !git_ref_exists(root, &format!("refs/tags/{tag}")) {
             global_reasons.push(format!(
@@ -418,6 +539,46 @@ pub fn build_report(
         reasons: global_reasons,
         work_items,
     })
+}
+
+// 0.67.1 shipped as a dedicated performance-evidence milestone after the
+// product workspace had advanced to 0.70. It deliberately has no package tag.
+fn evidence_only_0671_dependency_problems(root: &Path, source_commit: &str) -> Vec<String> {
+    const RECEIPT: &str = "docs/testing/perf-artifacts/0.67.1/hc0671-ax42-20260911-da/accepted-receipts/release-evidence-0.67.1.json";
+    const SHA256: &str = "22a4b57e791558412d7e397d9226c69e52fbb21c4f2e73183d7ef17cca146eb5";
+    const SOURCE: &str = "7bd31af9a5092466d7a7284995f388d33ed3110f";
+    let bytes = match fs::read(root.join(RECEIPT)) {
+        Ok(bytes) => bytes,
+        Err(error) => return vec![format!("0.67.1 evidence-only receipt is missing: {error}")],
+    };
+    let mut problems = Vec::new();
+    if sha256(&bytes) != SHA256 {
+        problems.push("0.67.1 evidence-only receipt digest mismatch".to_owned());
+    }
+    match serde_json::from_slice::<ReleaseEvidenceReport>(&bytes) {
+        Ok(report) => {
+            if report.schema_version != 1
+                || report.release != "0.67.1"
+                || report.source_commit != SOURCE
+                || report.current_worktree_dirty
+                || !report.receipts_supplied
+                || !report.reasons.is_empty()
+                || report.work_items.len() != 8
+                || report.work_items.iter().enumerate().any(|(index, item)| {
+                    item.id != format!("W{index}")
+                        || item.stage != EvidenceStage::ShipReady
+                        || !item.reasons.is_empty()
+                })
+            {
+                problems.push("0.67.1 evidence-only release closure is not ship-ready".to_owned());
+            }
+        }
+        Err(error) => problems.push(format!("0.67.1 evidence-only receipt is invalid: {error}")),
+    }
+    if !git_is_ancestor(root, SOURCE, source_commit) {
+        problems.push("0.67.1 evidence-only source is not an ancestor".to_owned());
+    }
+    problems
 }
 
 pub fn parse_manifest_text(text: &str) -> Result<EvidenceManifest, Box<dyn Error>> {
@@ -1555,9 +1716,31 @@ impl Options {
 #[cfg(test)]
 mod language_selector_tests {
     use super::{
-        java_test_exists, management_mixed_artifact_problems, management_soak_artifact_problems,
-        python_test_exists, rust_test_exists,
+        evidence_only_0671_dependency_problems, java_test_exists,
+        management_mixed_artifact_problems, management_soak_artifact_problems, python_test_exists,
+        rust_test_exists,
     };
+    use std::path::Path;
+
+    #[test]
+    fn evidence_only_0671_dependency_accepts_the_committed_closure() {
+        let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
+        let source = super::git_identity(&root).expect("git identity").0;
+        assert!(
+            evidence_only_0671_dependency_problems(&root, &source).is_empty(),
+            "the pinned 0.67.1 evidence milestone must remain verifiable"
+        );
+    }
+
+    #[test]
+    fn evidence_only_0671_dependency_rejects_missing_receipt() {
+        let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("nonexistent-evidence-root");
+        assert!(
+            evidence_only_0671_dependency_problems(&root, "not-a-commit")
+                .iter()
+                .any(|reason| reason.contains("receipt is missing"))
+        );
+    }
 
     #[test]
     fn java_selector_requires_a_junit_annotation() {

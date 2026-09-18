@@ -14,6 +14,7 @@ This directory contains external-facing article drafts for HydraCache.
 - 2026-08-05 - [003 - TTL Is Not Enough](https://medium.com/@artur.buzov/ttl-is-not-enough-ec4e96d89546) - Medium
 - 2026-08-06 - [004 - Local-first Distributed Invalidation](https://medium.com/@artur.buzov/local-first-distributed-invalidation-87bf0249e935) - Medium
 - 2026-08-10 - [005 - Typed Query Caching in Rust](https://medium.com/@artur.buzov/typed-query-caching-in-rust-aac4352599f0) - Medium
+- 2026-09-11 - [006 - How to Measure Cache Performance Without Measuring Noise](https://medium.com/@artur.buzov/how-to-measure-cache-performance-without-measuring-noise-926c10d713f5) - Medium
 
 ## Medium Drafting
 
@@ -44,9 +45,17 @@ node scripts/medium-draft.mjs --clipboard-title --article docs/articles/001-why-
 node scripts/medium-draft.mjs --clipboard-body --article docs/articles/001-why-rust-needs-cache-semantics.md
 ```
 
+The clipboard converter renders Markdown tables as labelled bullet lists because Medium's editor
+does not provide a native table block. This preserves every cell without leaving raw pipe-delimited
+Markdown in the story.
+
 Article drafts should include a short series/resources block near the top with the current publication state, planned series entries, GitHub, and crates.io links. Bare `https://` links are converted to clickable links by the Medium draft script.
 
 Draft and planned entries stay unnumbered in generated series blocks until they are published. Running `--set-url` records the public URL and promotes that draft to the next numbered series part.
+
+A reviewed article may use `status: "ready"` with its reserved `part` immediately before copying it
+to the publishing platform. This renders the final part number without inventing a public URL;
+`--set-url` removes the temporary status after publication.
 
 Refresh the generated series block after changing the series manifest at [hydracache-runtime-series.json](hydracache-runtime-series.json):
 
@@ -86,5 +95,8 @@ npx --prefix console playwright install chromium
 - [005 - Typed Query Caching in Rust](005-typed-query-caching-in-rust.md)
   - Cover: [005-typed-query-caching-in-rust-cover.png](005-typed-query-caching-in-rust-cover.png)
   - Prompt: [005-typed-query-caching-in-rust-cover.prompt.md](005-typed-query-caching-in-rust-cover.prompt.md)
+- [006 - How to Measure Cache Performance Without Measuring Noise](006-measuring-cache-performance-on-bare-metal.md)
+  - Cover: [006-measuring-cache-performance-on-bare-metal-cover.png](006-measuring-cache-performance-on-bare-metal-cover.png)
+  - Prompt: [006-measuring-cache-performance-on-bare-metal-cover.prompt.md](006-measuring-cache-performance-on-bare-metal-cover.prompt.md)
 - [Draft - Raft Snapshot Bugs, AI Agents, and the Cost of Ignoring Contradictions](002-raft-snapshot-agent-bug.md)
   - Cover: [002-raft-snapshot-agent-bug-cover.jpg](002-raft-snapshot-agent-bug-cover.jpg)

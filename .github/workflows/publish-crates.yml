@@ -45,6 +45,7 @@ jobs:
           WORKFLOW_RUN_CONCLUSION: ${{ github.event.workflow_run.conclusion || '' }}
           WORKFLOW_RUN_SHA: ${{ github.event.workflow_run.head_sha || '' }}
           WORKFLOW_RUN_ID: ${{ github.event.workflow_run.id || '' }}
+          WORKFLOW_RUN_REF: ${{ github.event.workflow_run.head_branch || '' }}
           INPUT_TAG: ${{ inputs.tag || '' }}
           GH_TOKEN: ${{ github.token }}
         shell: bash
@@ -52,7 +53,7 @@ jobs:
           set -euo pipefail
 
           if [[ "$EVENT_NAME" == "workflow_run" ]]; then
-            if [[ "$WORKFLOW_RUN_CONCLUSION" != "success" ]]; then
+            if [[ "$WORKFLOW_RUN_CONCLUSION" != "success" && "$WORKFLOW_RUN_CONCLUSION" != "failure" ]]; then
               echo "CI conclusion is $WORKFLOW_RUN_CONCLUSION; publication is not eligible."
               echo "eligible=false" >> "$GITHUB_OUTPUT"
               exit 0
@@ -62,7 +63,7 @@ jobs:
             git fetch --force --tags origin
             mapfile -t tags < <(git tag --points-at "$source_sha" --list 'v*.*.*')
             if [[ "${#tags[@]}" -eq 0 ]]; then
-              echo "Successful CI run $source_sha has no release tag; nothing to publish."
+              echo "CI run $source_sha has no release tag; nothing to publish."
               echo "eligible=false" >> "$GITHUB_OUTPUT"
               exit 0
             fi
@@ -93,13 +94,26 @@ jobs:
           version="${release_tag#v}"
 
           if [[ "$version" == 0.71.* ]]; then
+            if [[ "$EVENT_NAME" == "workflow_run" && "$WORKFLOW_RUN_REF" != "$release_tag" ]]; then
+              echo "CI ref $WORKFLOW_RUN_REF is not release tag $release_tag; nothing to publish."
+              echo "eligible=false" >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
+            # The source commit already has a complete green main-branch CI run.
+            # The tag run adds one exact-tag 0.71 admission; unrelated legacy or
+            # nightly jobs may fail without changing that release decision.
+            ci_runs="$(gh api --paginate "repos/$GITHUB_REPOSITORY/actions/workflows/ci.yml/runs?head_sha=$source_sha&status=completed&per_page=100")"
+            if ! printf '%s' "$ci_runs" | jq -e --arg sha "$source_sha" \
+              '[.workflow_runs[] | select(.head_sha == $sha and .event == "push" and .head_branch == "main" and .conclusion == "success")] | length > 0' >/dev/null; then
+              echo "No complete successful main CI run exists at measured source $source_sha." >&2
+              exit 1
+            fi
             if [[ "$EVENT_NAME" == "workflow_run" ]]; then
               candidate_run_ids=("$WORKFLOW_RUN_ID")
             else
-              ci_runs="$(gh api --paginate "repos/$GITHUB_REPOSITORY/actions/workflows/ci.yml/runs?head_sha=$source_sha&status=completed&per_page=100")"
               mapfile -t candidate_run_ids < <(
-                printf '%s' "$ci_runs" | jq -r --arg sha "$source_sha" \
-                  '.workflow_runs[] | select(.head_sha == $sha and .conclusion == "success") | .id'
+                printf '%s' "$ci_runs" | jq -r --arg sha "$source_sha" --arg tag "$release_tag" \
+                  '.workflow_runs[] | select(.head_sha == $sha and .event == "push" and .head_branch == $tag and (.conclusion == "success" or .conclusion == "failure")) | .id'
               )
             fi
             designated_admission=false
@@ -116,6 +130,10 @@ jobs:
               echo "No designated Release 0.71 CI Admission exists for $release_tag at $source_sha." >&2
               exit 1
             fi
+          elif [[ "$EVENT_NAME" == "workflow_run" && "$WORKFLOW_RUN_CONCLUSION" != "success" ]]; then
+            echo "CI conclusion is $WORKFLOW_RUN_CONCLUSION; publication is not eligible."
+            echo "eligible=false" >> "$GITHUB_OUTPUT"
+            exit 0
           fi
 
           git fetch --force origin main
@@ -182,7 +200,12 @@ jobs:
                   f"publishable package versions {sorted(versions)} do not match tag {version}"
               )
 
-          manifest = pathlib.Path("docs/plans/releases.toml").read_text(encoding="utf-8")
+          # Runtime packages come from the measured tag, while finalization
+          # documentation is committed afterwards on main. The ancestry check
+          # above binds the two without silently retagging unmeasured code.
+          manifest = subprocess.check_output(
+              ["git", "show", "origin/main:docs/plans/releases.toml"], text=True
+          )
           blocks = re.split(r"(?m)^\[\[release\]\]\s*$", manifest)
           matching = None
           for block in blocks:
@@ -197,8 +220,12 @@ jobs:
               raise SystemExit(f"release {version} has status {actual!r}, expected shipped")
 
           release_notes = pathlib.Path(f"docs/releases/{version}.md")
-          if not release_notes.is_file():
-              raise SystemExit(f"missing release notes: {release_notes}")
+          try:
+              notes_text = subprocess.check_output(
+                  ["git", "show", f"origin/main:{release_notes}"], text=True
+              )
+          except subprocess.CalledProcessError as exc:
+              raise SystemExit(f"missing release notes on main: {release_notes}") from exc
 
           by_id = {package["id"]: package["name"] for package in packages}
           publishable_ids = {package["id"] for package in publishable}
@@ -228,6 +255,7 @@ jobs:
 
           output = pathlib.Path("target/release-publish")
           output.mkdir(parents=True, exist_ok=True)
+          (output / "release-notes.md").write_text(notes_text, encoding="utf-8")
           (output / "release.env").write_text(
               f"VERSION={version}\nTAG={release_tag}\nSOURCE_SHA={source_sha}\n",
               encoding="utf-8",
@@ -417,12 +445,18 @@ jobs:
           ref: ${{ needs.resolve.outputs.source_sha }}
           fetch-depth: 0
 
+      - name: Download validated release metadata and notes
+        uses: actions/download-artifact@v7
+        with:
+          name: ${{ needs.resolve.outputs.metadata_artifact }}
+          path: target/release-publish
+
       - name: Create or update GitHub Release
         env:
           GH_TOKEN: ${{ github.token }}
           RELEASE_VERSION: ${{ needs.resolve.outputs.version }}
           RELEASE_TAG: ${{ needs.resolve.outputs.tag }}
-          RELEASE_NOTES: docs/releases/${{ needs.resolve.outputs.version }}.md
+          RELEASE_NOTES: target/release-publish/release-notes.md
         shell: bash
         run: |
           set -euo pipefail

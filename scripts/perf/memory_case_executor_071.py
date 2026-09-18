@@ -15,11 +15,14 @@ import sys
 import time
 import urllib.error
 import urllib.request
+from contextlib import ExitStack
 from pathlib import Path
-from typing import Any
+from typing import Any, Callable
 
 
 PHASES = ["cold", "fill", "steady", "expire_or_delete", "reset", "refill", "post_idle", "shutdown"]
+RESP_IDLE_TIMEOUT_SECONDS = 60.0
+RESP_IDLE_RECONNECT_MARGIN_SECONDS = 5.0
 ADMIN_HEADERS = {
     "x-hydracache-client-id": "memory-campaign-071",
     "x-hydracache-tenant": "memory-campaign-071",
@@ -50,6 +53,61 @@ def free_port() -> int:
     with socket.socket() as listener:
         listener.bind(("127.0.0.1", 0))
         return int(listener.getsockname()[1])
+
+
+def parse_cpu_set(value: str) -> set[int]:
+    cpus: set[int] = set()
+    for item in value.split(","):
+        item = item.strip()
+        if not item:
+            raise ExecutionError("CPU set contains an empty item")
+        if "-" in item:
+            first, last = item.split("-", 1)
+            start, stop = int(first), int(last)
+            if start < 0 or stop < start:
+                raise ExecutionError(f"invalid CPU range: {item}")
+            cpus.update(range(start, stop + 1))
+        else:
+            cpu = int(item)
+            if cpu < 0:
+                raise ExecutionError(f"invalid CPU number: {item}")
+            cpus.add(cpu)
+    if not cpus:
+        raise ExecutionError("CPU set cannot be empty")
+    return cpus
+
+
+def configure_affinity(rehearsal: bool) -> dict[str, set[int]]:
+    if os.name == "nt" or rehearsal:
+        return {}
+    names = {
+        "daemon": "HYDRACACHE_MEMORY_DAEMON_CPUSET",
+        "loadgen": "HYDRACACHE_MEMORY_LOADGEN_CPUSET",
+        "collector": "HYDRACACHE_MEMORY_COLLECTOR_CPUSET",
+    }
+    values: dict[str, set[int]] = {}
+    available = set(os.sched_getaffinity(0))
+    for role, name in names.items():
+        raw = os.environ.get(name)
+        if not raw:
+            raise ExecutionError(f"evidence execution requires {name}")
+        values[role] = parse_cpu_set(raw)
+        if not values[role].issubset(available):
+            raise ExecutionError(f"{name} contains CPUs outside runner affinity")
+    if values["daemon"] & (values["loadgen"] | values["collector"]):
+        raise ExecutionError("daemon CPU set must not overlap loadgen or collector CPU sets")
+    os.sched_setaffinity(0, values["loadgen"])
+    return values
+
+
+def affinity_preexec(cpus: set[int] | None) -> Any:
+    if not cpus or os.name == "nt":
+        return None
+
+    def apply() -> None:
+        os.sched_setaffinity(0, cpus)
+
+    return apply
 
 
 def resp_command(stream: socket.socket, *parts: bytes) -> Any:
@@ -250,6 +308,31 @@ def process_snapshot(pid: int) -> dict[str, Any]:
     }
 
 
+def parse_process_cpu_seconds(stat_line: str, clock_ticks: int) -> float:
+    """Return user+system CPU from one Linux /proc/<pid>/stat record."""
+    if clock_ticks <= 0:
+        raise ValueError("clock_ticks must be positive")
+    marker = stat_line.rfind(") ")
+    if marker < 0:
+        raise ValueError("invalid /proc stat record")
+    fields = stat_line[marker + 2 :].split()
+    if len(fields) <= 12:
+        raise ValueError("truncated /proc stat record")
+    return (int(fields[11]) + int(fields[12])) / clock_ticks
+
+
+def process_usage(pid: int) -> dict[str, float | int]:
+    status = key_values(Path(f"/proc/{pid}/status"))
+    stat_line = Path(f"/proc/{pid}/stat").read_text(encoding="ascii")
+    return {
+        "cpu_seconds": parse_process_cpu_seconds(
+            stat_line, int(os.sysconf("SC_CLK_TCK"))
+        ),
+        "context_switches": int(status.get("voluntary_ctxt_switches", "0"))
+        + int(status.get("nonvoluntary_ctxt_switches", "0")),
+    }
+
+
 def cgroup_directory(pid: int) -> Path | None:
     path = Path(f"/proc/{pid}/cgroup")
     if not path.is_file():
@@ -305,6 +388,44 @@ def percentile(values: list[int], fraction: float) -> int:
     return ordered[min(len(ordered) - 1, max(0, math.ceil(len(ordered) * fraction) - 1))]
 
 
+def elide_passive_wait_after(selected_phase: str | None, current_phase: str) -> bool:
+    """Elide only waits that occur after an already-captured S5 checkpoint."""
+    if selected_phase is None:
+        return False
+    return PHASES.index(current_phase) > PHASES.index(selected_phase)
+
+
+def passive_wait_exceeds_resp_idle_timeout(
+    case_id: str,
+    phase: str,
+    *,
+    rehearsal: bool,
+    elide_passive_wait: bool,
+) -> bool:
+    """Return whether a completed phase requires a fresh RESP connection.
+
+    Production evidence deliberately includes passive waits that are longer than
+    the daemon's 60-second RESP idle timeout.  Reconnect at that explicit phase
+    boundary rather than sending keepalives that would contaminate the idle
+    measurement or retrying an application command whose outcome may be unknown.
+    """
+    if rehearsal or elide_passive_wait or case_id == "M0-cold":
+        return False
+    if phase in {"cold", "post_idle"}:
+        return True
+    return case_id == "M3-ttl" and phase == "expire_or_delete"
+
+
+def duration_sleep_needs_resp_reconnect(
+    sleep_seconds: float, *, rehearsal: bool
+) -> bool:
+    return (
+        not rehearsal
+        and sleep_seconds
+        >= RESP_IDLE_TIMEOUT_SECONDS - RESP_IDLE_RECONNECT_MARGIN_SECONDS
+    )
+
+
 class Workload:
     def __init__(self, stream: socket.socket, job: dict[str, Any], rehearsal: bool):
         self.stream = stream
@@ -318,9 +439,15 @@ class Workload:
         self.latencies: list[int] = []
         self.requests = 0
         self.errors = 0
+        self.resp_reconnections = 0
         self.value_bytes = int(self.dimensions.get("value_bytes", 256))
         requested_keys = int(self.dimensions.get("keys", 10_000))
         self.keys = min(requested_keys, 32) if rehearsal else requested_keys
+
+    def replace_stream(self, stream: socket.socket) -> None:
+        self.stream.close()
+        self.stream = stream
+        self.resp_reconnections += 1
 
     def call(self, *parts: bytes) -> Any:
         started = time.monotonic_ns()
@@ -397,6 +524,7 @@ class Workload:
         process_pid: int,
         output: Path,
         fleet: Hc2Fleet | None,
+        reconnect_resp: Callable[[], None],
     ) -> dict[str, Any]:
         configured_sequence = self.dimensions["sequence"]
         schedule = (
@@ -468,6 +596,10 @@ class Workload:
             sleep_for = min(max(0.0, interval - (time.monotonic() - iteration_started)), max(0.0, deadline - time.monotonic()))
             if sleep_for:
                 time.sleep(sleep_for)
+                if duration_sleep_needs_resp_reconnect(
+                    sleep_for, rehearsal=self.rehearsal
+                ):
+                    reconnect_resp()
             if sequence == "ttl":
                 self.live.clear()
             now = time.monotonic()
@@ -503,14 +635,24 @@ class Workload:
             "hc2_churn": churn,
         }
 
-    def run_phase(self, phase: str, admin_port: int) -> None:
+    def run_phase(
+        self,
+        phase: str,
+        admin_port: int,
+        *,
+        elide_passive_wait: bool = False,
+    ) -> None:
         case_id = self.job["case_id"]
         if case_id == "M0-cold":
-            time.sleep(0.01 if self.rehearsal else (300 if phase == "cold" else 0))
+            time.sleep(
+                0.01
+                if self.rehearsal
+                else (300 if phase == "cold" and not elide_passive_wait else 0)
+            )
             return
         if phase in {"cold", "post_idle", "shutdown"}:
             if case_id == "M3-ttl" and phase == "post_idle":
-                time.sleep(0.3 if self.rehearsal else 61)
+                time.sleep(0.3 if self.rehearsal else (0 if elide_passive_wait else 61))
                 self.live.clear()
                 self.live_tags.clear()
                 return
@@ -521,7 +663,15 @@ class Workload:
                 self.live.clear()
                 self.live_tags.clear()
                 return
-            delay = 0.01 if self.rehearsal else (300 if phase in {"cold", "post_idle"} else 0)
+            delay = (
+                0.01
+                if self.rehearsal
+                else (
+                    300
+                    if phase in {"cold", "post_idle"} and not elide_passive_wait
+                    else 0
+                )
+            )
             time.sleep(delay)
             return
         if phase == "fill":
@@ -569,8 +719,14 @@ class Workload:
                 self.live.add(index)
                 self.apply_tags(index)
 
-    def performance(self, elapsed_ns: int) -> dict[str, Any]:
+    def performance(
+        self,
+        elapsed_ns: int,
+        usage: dict[str, float | int],
+        initial_usage: dict[str, float | int],
+    ) -> dict[str, Any]:
         return {
+            "request_count": self.requests,
             "rps": 0.0 if elapsed_ns <= 0 else self.requests / (elapsed_ns / 1_000_000_000),
             "p50_ns": percentile(self.latencies, 0.50),
             "p95_ns": percentile(self.latencies, 0.95),
@@ -579,19 +735,41 @@ class Workload:
             "errors": self.errors,
             "timeouts": 0,
             "retries": 0,
-            "cpu_seconds": 0.0,
-            "context_switches": 0,
+            "cpu_seconds": max(
+                0.0, float(usage["cpu_seconds"]) - float(initial_usage["cpu_seconds"])
+            ),
+            "context_switches": max(
+                0,
+                int(usage["context_switches"])
+                - int(initial_usage["context_switches"]),
+            ),
         }
 
 
 def logical_snapshot(document: dict[str, Any] | None, workload: Workload) -> dict[str, int]:
     footprint = (document or {}).get("embedded_cache", {})
     external = (document or {}).get("client_surface") or {}
-    entries = int(footprint.get("live_entries", len(workload.live)))
+    embedded_entries = int(footprint.get("live_entries", 0))
+    surface_entries = int(external.get("store_entries", 0))
+    entries = (
+        embedded_entries + surface_entries
+        if document is not None
+        else len(workload.live)
+    )
     return {
         "entries": entries,
-        "key_bytes": int(footprint.get("logical_key_bytes", sum(len(workload.key(item)) for item in workload.live))),
-        "value_bytes": int(footprint.get("logical_value_bytes", entries * workload.value_bytes)),
+        "key_bytes": (
+            int(footprint.get("logical_key_bytes", 0))
+            + int(external.get("store_identity_bytes", 0))
+            if document is not None
+            else sum(len(workload.key(item)) for item in workload.live)
+        ),
+        "value_bytes": (
+            int(footprint.get("logical_value_bytes", 0))
+            + int(external.get("value_bytes", 0))
+            if document is not None
+            else entries * workload.value_bytes
+        ),
         "tag_records": workload.tag_memberships() if workload.job["case_id"] == "M5-tags" else int(footprint.get("tag_memberships", 0)),
         "tag_bytes": workload.tag_bytes(),
         "generation_records": int(footprint.get("tag_generation_records", 0)) + int(footprint.get("key_generation_records", 0)),
@@ -608,8 +786,17 @@ def logical_snapshot(document: dict[str, Any] | None, workload: Workload) -> dic
     }
 
 
-def provider_command(adapter: Path, *arguments: str, allow_unavailable: bool = False) -> None:
-    completed = subprocess.run([sys.executable, str(adapter), *arguments], check=False)
+def provider_command(
+    adapter: Path,
+    *arguments: str,
+    allow_unavailable: bool = False,
+    cpus: set[int] | None = None,
+) -> None:
+    completed = subprocess.run(
+        [sys.executable, str(adapter), *arguments],
+        check=False,
+        preexec_fn=affinity_preexec(cpus),
+    )
     if completed.returncode != 0 and not (allow_unavailable and completed.returncode == 3):
         raise ExecutionError(f"provider command failed ({completed.returncode}): {' '.join(arguments)}")
 
@@ -655,10 +842,12 @@ def execute(args: argparse.Namespace) -> None:
         if not helper.is_file() or sha256(helper) != helper_manifest["binary_sha256"]:
             raise ExecutionError("retained HC/2 helper is missing or drifted")
         subprocess.run([str(helper), "pki", "--output", str(pki)], check=True)
+    affinity = configure_affinity(args.rehearsal)
     environment = os.environ.copy()
     environment.update(
         {
             "HYDRACACHE_ROLE": "local",
+            "HYDRACACHE_MEMORY_INSTRUMENTATION_MODE": args.instrumentation_mode,
             "HYDRACACHE_REDIS_API_ENABLED": "true",
             "HYDRACACHE_REDIS_ADDR": f"127.0.0.1:{redis_port}",
             "HYDRACACHE_ADMIN_API_ENABLED": "true",
@@ -704,6 +893,7 @@ def execute(args: argparse.Namespace) -> None:
         stderr=subprocess.STDOUT,
         start_new_session=True,
         creationflags=subprocess.CREATE_NEW_PROCESS_GROUP if os.name == "nt" else 0,
+        preexec_fn=affinity_preexec(affinity.get("daemon")),
     )
     adapter = Path(__file__).with_name("memory-providers") / f"{args.provider}.py"
     provider_state = output / "provider-state.json"
@@ -718,7 +908,14 @@ def execute(args: argparse.Namespace) -> None:
     completed = False
     try:
         wait_ready(process, redis_port)
-        provider_command(adapter, "probe", "--output", str(output / "provider-probe.json"))
+        initial_usage = process_usage(process.pid)
+        provider_command(
+            adapter,
+            "probe",
+            "--output",
+            str(output / "provider-probe.json"),
+            cpus=affinity.get("collector"),
+        )
         provider_command(
             adapter,
             "start",
@@ -730,10 +927,22 @@ def execute(args: argparse.Namespace) -> None:
             str(process.pid),
             "--binary",
             str(binary),
+            cpus=affinity.get("collector"),
         )
-        with socket.create_connection(("127.0.0.1", redis_port), timeout=5) as stream:
+        with ExitStack() as resp_streams:
+            stream = resp_streams.enter_context(
+                socket.create_connection(("127.0.0.1", redis_port), timeout=5)
+            )
             stream.settimeout(30)
             workload = Workload(stream, job, args.rehearsal)
+
+            def reconnect_resp() -> None:
+                replacement = resp_streams.enter_context(
+                    socket.create_connection(("127.0.0.1", redis_port), timeout=5)
+                )
+                replacement.settimeout(30)
+                workload.replace_stream(replacement)
+
             started = time.monotonic_ns()
             for sequence, phase in enumerate(PHASES, 1):
                 if job["case_id"] == "M6-connections" and fleet and phase in {"fill", "refill"}:
@@ -747,13 +956,43 @@ def execute(args: argparse.Namespace) -> None:
                     fleet.stop()
                 if job["case_id"] in {"M8-60m", "M9-6h", "M10-24h"} and phase == "steady":
                     duration_receipt = workload.run_duration_sequence(
-                        admin_port, process.pid, output, fleet
+                        admin_port, process.pid, output, fleet, reconnect_resp
                     )
                 else:
-                    workload.run_phase(phase, admin_port)
+                    elide_passive_wait = elide_passive_wait_after(
+                        args.selected_measurement_phase, phase
+                    )
+                    workload.run_phase(
+                        phase,
+                        admin_port,
+                        elide_passive_wait=elide_passive_wait,
+                    )
+                    if passive_wait_exceeds_resp_idle_timeout(
+                        job["case_id"],
+                        phase,
+                        rehearsal=args.rehearsal,
+                        elide_passive_wait=elide_passive_wait,
+                    ):
+                        reconnect_resp()
                 workload.observe_distribution(phase)
-                provider_command(adapter, "mark", "--state", str(provider_state), "--phase", phase)
-                provider_command(adapter, "snapshot", "--state", str(provider_state), "--phase", phase)
+                provider_command(
+                    adapter,
+                    "mark",
+                    "--state",
+                    str(provider_state),
+                    "--phase",
+                    phase,
+                    cpus=affinity.get("collector"),
+                )
+                provider_command(
+                    adapter,
+                    "snapshot",
+                    "--state",
+                    str(provider_state),
+                    "--phase",
+                    phase,
+                    cpus=affinity.get("collector"),
+                )
                 monotonic_ns = time.monotonic_ns() - started
                 owner = http_json(admin_port, "/admin/memory-footprint")
                 if job["case_id"] == "M6-connections" and fleet:
@@ -784,7 +1023,9 @@ def execute(args: argparse.Namespace) -> None:
                         name: available(None, f"{args.provider} adapter does not expose comparable {name}")
                         for name in ("allocated_bytes", "active_bytes", "resident_bytes", "retained_bytes", "mapped_bytes")
                     },
-                    "performance": workload.performance(monotonic_ns),
+                    "performance": workload.performance(
+                        monotonic_ns, process_usage(process.pid), initial_usage
+                    ),
                 }
                 checkpoints.append(checkpoint)
                 if durable_store:
@@ -844,7 +1085,13 @@ def execute(args: argparse.Namespace) -> None:
                         "observations": persistence_observations,
                     },
                 )
-        provider_command(adapter, "stop", "--state", str(provider_state))
+        provider_command(
+            adapter,
+            "stop",
+            "--state",
+            str(provider_state),
+            cpus=affinity.get("collector"),
+        )
         provider_command(
             adapter,
             "normalize",
@@ -854,11 +1101,20 @@ def execute(args: argparse.Namespace) -> None:
             str(timeline_path),
             "--output",
             str(output / "provider-normalized.json"),
+            cpus=affinity.get("collector"),
         )
         host = json.loads(args.host_preflight.read_text(encoding="utf-8")) if args.host_preflight else {}
         eligible = not args.rehearsal and host.get("ship_evidence_eligible") is True
         exact_command = [
             f"HYDRACACHE_ROLE={environment['HYDRACACHE_ROLE']}",
+            "HYDRACACHE_MEMORY_INSTRUMENTATION_MODE="
+            f"{environment['HYDRACACHE_MEMORY_INSTRUMENTATION_MODE']}",
+            "HYDRACACHE_MEMORY_DAEMON_CPUSET="
+            f"{environment.get('HYDRACACHE_MEMORY_DAEMON_CPUSET', 'unbound-diagnostic')}",
+            "HYDRACACHE_MEMORY_LOADGEN_CPUSET="
+            f"{environment.get('HYDRACACHE_MEMORY_LOADGEN_CPUSET', 'unbound-diagnostic')}",
+            "HYDRACACHE_MEMORY_COLLECTOR_CPUSET="
+            f"{environment.get('HYDRACACHE_MEMORY_COLLECTOR_CPUSET', 'unbound-diagnostic')}",
             f"HYDRACACHE_REDIS_API_ENABLED={environment['HYDRACACHE_REDIS_API_ENABLED']}",
             f"HYDRACACHE_REDIS_ADDR={environment['HYDRACACHE_REDIS_ADDR']}",
             f"HYDRACACHE_ADMIN_API_ENABLED={environment['HYDRACACHE_ADMIN_API_ENABLED']}",
@@ -884,6 +1140,10 @@ def execute(args: argparse.Namespace) -> None:
                     "HYDRACACHE_STORAGE_DIR=durable-store",
                 ]
             )
+        if args.selected_measurement_phase:
+            exact_command.append(
+                f"S5_SELECTED_MEASUREMENT_PHASE={args.selected_measurement_phase}"
+            )
         exact_command.append(str(binary))
         report = {
             "schema_version": 1,
@@ -900,10 +1160,18 @@ def execute(args: argparse.Namespace) -> None:
                 "image_digest": None,
                 "kernel": os.uname().release if hasattr(os, "uname") else sys.platform,
                 "service_profile": "memory-reference-071-v1",
-                "affinity": environment.get("HYDRACACHE_MEMORY_DAEMON_CPUSET", "unbound-diagnostic"),
+                "affinity": ";".join(
+                    f"{role}={','.join(str(cpu) for cpu in sorted(cpus))}"
+                    for role, cpus in affinity.items()
+                ) if affinity else "unbound-diagnostic",
                 "cgroup_limit": None,
             },
             "allocator": {"name": manifest["allocator"], "provider": args.provider, "provider_version": "provider-protocol-v1"},
+            "instrumentation_mode": args.instrumentation_mode,
+            "selected_measurement_phase": args.selected_measurement_phase,
+            "post_measurement_passive_wait_elision_enabled": bool(
+                args.selected_measurement_phase
+            ),
             "exact_command": exact_command,
             "unique_keys": 0 if job["case_id"] == "M0-cold" else workload.keys,
             "unique_key_verification": {
@@ -913,6 +1181,10 @@ def execute(args: argparse.Namespace) -> None:
             "request_count": workload.requests + sum(
                 int(receipt.get("pressure_events", 0)) for receipt in hc2_helper_receipts
             ),
+            "resp_connection_lifecycle": {
+                "policy": "reconnect-after-passive-wait-exceeding-idle-timeout",
+                "reconnections": workload.resp_reconnections,
+            },
             "diagnostic_only": not eligible,
             "ship_evidence_eligible": eligible,
             "checkpoints": checkpoints,
@@ -948,8 +1220,14 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--scenario-digest", required=True)
     parser.add_argument("--provider", choices=["system", "jemalloc", "mimalloc"], default="system")
+    parser.add_argument(
+        "--instrumentation-mode",
+        choices=["off", "production", "profile"],
+        default="production",
+    )
     parser.add_argument("--host-preflight", type=Path)
     parser.add_argument("--hc2-helper-manifest", type=Path)
+    parser.add_argument("--selected-measurement-phase", choices=PHASES)
     parser.add_argument("--rehearsal", action="store_true")
     return parser.parse_args()
 

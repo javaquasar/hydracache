@@ -1,0 +1,261 @@
+{
+  "artifacts": [
+    {
+      "bytes": 16,
+      "path": "jobs/M3-ttl__cycles-60__B1-instrumented__r1/daemon.log",
+      "sha256": "sha256:6489d6d7a33c5d40e18fc61eeb6c34c341279ee61816394dde5189aa4ad8fae5"
+    },
+    {
+      "bytes": 305,
+      "path": "jobs/M3-ttl__cycles-60__B1-instrumented__r1/executor-receipt.json",
+      "sha256": "sha256:b4ecd51958a9350133ecc903567b6f1186012d0ec94475d9007604156cb25633"
+    },
+    {
+      "bytes": 22793,
+      "path": "jobs/M3-ttl__cycles-60__B1-instrumented__r1/memory-baseline-report.json",
+      "sha256": "sha256:3989121d69e5b1c5ccaf5f026532ae8962acfc9aa54e643f8a11682df75cd88f"
+    },
+    {
+      "bytes": 3072,
+      "path": "jobs/M3-ttl__cycles-60__B1-instrumented__r1/owner-snapshots/cold.json",
+      "sha256": "sha256:5272e1cd1b1d7c1eb092000d56c5b84341e1aeb3147cba7190e34312069c20fc"
+    },
+    {
+      "bytes": 3097,
+      "path": "jobs/M3-ttl__cycles-60__B1-instrumented__r1/owner-snapshots/expire_or_delete.json",
+      "sha256": "sha256:a62703dbbebf8026e6ef1844d0ead11e4422854be3d1accb2d8eb21fb8d49564"
+    },
+    {
+      "bytes": 3097,
+      "path": "jobs/M3-ttl__cycles-60__B1-instrumented__r1/owner-snapshots/fill.json",
+      "sha256": "sha256:a62703dbbebf8026e6ef1844d0ead11e4422854be3d1accb2d8eb21fb8d49564"
+    },
+    {
+      "bytes": 3095,
+      "path": "jobs/M3-ttl__cycles-60__B1-instrumented__r1/owner-snapshots/post_idle.json",
+      "sha256": "sha256:d32a4a249ffb24e23310a64f58a9df1957d8e473e7044abed9169a3f8e75d327"
+    },
+    {
+      "bytes": 3095,
+      "path": "jobs/M3-ttl__cycles-60__B1-instrumented__r1/owner-snapshots/refill.json",
+      "sha256": "sha256:d32a4a249ffb24e23310a64f58a9df1957d8e473e7044abed9169a3f8e75d327"
+    },
+    {
+      "bytes": 3072,
+      "path": "jobs/M3-ttl__cycles-60__B1-instrumented__r1/owner-snapshots/reset.json",
+      "sha256": "sha256:361cb155cd41440924cf25472d8e5e4a574f4f2c1f330f2bbb269e158f01e5bb"
+    },
+    {
+      "bytes": 3095,
+      "path": "jobs/M3-ttl__cycles-60__B1-instrumented__r1/owner-snapshots/shutdown.json",
+      "sha256": "sha256:d32a4a249ffb24e23310a64f58a9df1957d8e473e7044abed9169a3f8e75d327"
+    },
+    {
+      "bytes": 3097,
+      "path": "jobs/M3-ttl__cycles-60__B1-instrumented__r1/owner-snapshots/steady.json",
+      "sha256": "sha256:a62703dbbebf8026e6ef1844d0ead11e4422854be3d1accb2d8eb21fb8d49564"
+    },
+    {
+      "bytes": 530,
+      "path": "jobs/M3-ttl__cycles-60__B1-instrumented__r1/phase-timeline.jsonl",
+      "sha256": "sha256:d2745a2722d9c4262fcb869ed37a0cc96462d6b571d94a16e6c3e6fb8900c3f0"
+    },
+    {
+      "bytes": 2755,
+      "path": "jobs/M3-ttl__cycles-60__B1-instrumented__r1/provider-normalized.json",
+      "sha256": "sha256:c9dac92c48a6064249596ffda1dfa87a95518ac8f910d4dc3e7b953d152364cd"
+    },
+    {
+      "bytes": 66,
+      "path": "jobs/M3-ttl__cycles-60__B1-instrumented__r1/provider-probe.json",
+      "sha256": "sha256:70ae6ae2c959f51c746fab1f44e83852e8c757082c60aaa9a31f1fbe6e8fecc4"
+    },
+    {
+      "bytes": 1127,
+      "path": "jobs/M3-ttl__cycles-60__B1-instrumented__r1/provider-raw.jsonl",
+      "sha256": "sha256:c1d69ad23dc5df3fd4d84fcc0653d98eb9d31e27400ed6577a50a0bf43336c84"
+    },
+    {
+      "bytes": 1646,
+      "path": "jobs/M3-ttl__cycles-60__B1-instrumented__r1/provider-state.json",
+      "sha256": "sha256:e71249a393d310af77ec7d7a51af71892148f3856c70ee05cc0e78bbf426a3d7"
+    },
+    {
+      "bytes": 16,
+      "path": "jobs/M3-ttl__cycles-60__B1-instrumented__r2/daemon.log",
+      "sha256": "sha256:6489d6d7a33c5d40e18fc61eeb6c34c341279ee61816394dde5189aa4ad8fae5"
+    },
+    {
+      "bytes": 305,
+      "path": "jobs/M3-ttl__cycles-60__B1-instrumented__r2/executor-receipt.json",
+      "sha256": "sha256:59802ca9fe0c7adb2fb7cd244d11d5deba5af41c1eaffa35f6e384f6599f9f3a"
+    },
+    {
+      "bytes": 22796,
+      "path": "jobs/M3-ttl__cycles-60__B1-instrumented__r2/memory-baseline-report.json",
+      "sha256": "sha256:2705fda73c8458eb93d9484d6f2a226267268801d71303f6c652c2b96ba17063"
+    },
+    {
+      "bytes": 3072,
+      "path": "jobs/M3-ttl__cycles-60__B1-instrumented__r2/owner-snapshots/cold.json",
+      "sha256": "sha256:5272e1cd1b1d7c1eb092000d56c5b84341e1aeb3147cba7190e34312069c20fc"
+    },
+    {
+      "bytes": 3097,
+      "path": "jobs/M3-ttl__cycles-60__B1-instrumented__r2/owner-snapshots/expire_or_delete.json",
+      "sha256": "sha256:a62703dbbebf8026e6ef1844d0ead11e4422854be3d1accb2d8eb21fb8d49564"
+    },
+    {
+      "bytes": 3097,
+      "path": "jobs/M3-ttl__cycles-60__B1-instrumented__r2/owner-snapshots/fill.json",
+      "sha256": "sha256:a62703dbbebf8026e6ef1844d0ead11e4422854be3d1accb2d8eb21fb8d49564"
+    },
+    {
+      "bytes": 3095,
+      "path": "jobs/M3-ttl__cycles-60__B1-instrumented__r2/owner-snapshots/post_idle.json",
+      "sha256": "sha256:d32a4a249ffb24e23310a64f58a9df1957d8e473e7044abed9169a3f8e75d327"
+    },
+    {
+      "bytes": 3095,
+      "path": "jobs/M3-ttl__cycles-60__B1-instrumented__r2/owner-snapshots/refill.json",
+      "sha256": "sha256:d32a4a249ffb24e23310a64f58a9df1957d8e473e7044abed9169a3f8e75d327"
+    },
+    {
+      "bytes": 3072,
+      "path": "jobs/M3-ttl__cycles-60__B1-instrumented__r2/owner-snapshots/reset.json",
+      "sha256": "sha256:361cb155cd41440924cf25472d8e5e4a574f4f2c1f330f2bbb269e158f01e5bb"
+    },
+    {
+      "bytes": 3095,
+      "path": "jobs/M3-ttl__cycles-60__B1-instrumented__r2/owner-snapshots/shutdown.json",
+      "sha256": "sha256:d32a4a249ffb24e23310a64f58a9df1957d8e473e7044abed9169a3f8e75d327"
+    },
+    {
+      "bytes": 3097,
+      "path": "jobs/M3-ttl__cycles-60__B1-instrumented__r2/owner-snapshots/steady.json",
+      "sha256": "sha256:a62703dbbebf8026e6ef1844d0ead11e4422854be3d1accb2d8eb21fb8d49564"
+    },
+    {
+      "bytes": 530,
+      "path": "jobs/M3-ttl__cycles-60__B1-instrumented__r2/phase-timeline.jsonl",
+      "sha256": "sha256:dfa0f3fa78b217da928be944b3e1de5dc7f3fe9eabac6d38494a2917172ce264"
+    },
+    {
+      "bytes": 2761,
+      "path": "jobs/M3-ttl__cycles-60__B1-instrumented__r2/provider-normalized.json",
+      "sha256": "sha256:c013bb9156ee2f48fd04f236934e5ae4401afce1e9dea9892fc9112dd25ea748"
+    },
+    {
+      "bytes": 66,
+      "path": "jobs/M3-ttl__cycles-60__B1-instrumented__r2/provider-probe.json",
+      "sha256": "sha256:70ae6ae2c959f51c746fab1f44e83852e8c757082c60aaa9a31f1fbe6e8fecc4"
+    },
+    {
+      "bytes": 1127,
+      "path": "jobs/M3-ttl__cycles-60__B1-instrumented__r2/provider-raw.jsonl",
+      "sha256": "sha256:b2aad1823364b53eb63305a0961d6c82fad24908f8030614a71d4c9e64c15d9e"
+    },
+    {
+      "bytes": 1646,
+      "path": "jobs/M3-ttl__cycles-60__B1-instrumented__r2/provider-state.json",
+      "sha256": "sha256:f2b005d19d7fbf9410fcd29ebf83a59f18e99011aaa71a1ad56aa6be5e03c04c"
+    },
+    {
+      "bytes": 16,
+      "path": "jobs/M3-ttl__cycles-60__B1-instrumented__r3/daemon.log",
+      "sha256": "sha256:6489d6d7a33c5d40e18fc61eeb6c34c341279ee61816394dde5189aa4ad8fae5"
+    },
+    {
+      "bytes": 305,
+      "path": "jobs/M3-ttl__cycles-60__B1-instrumented__r3/executor-receipt.json",
+      "sha256": "sha256:6e8f90d3f82b31fb5f491113bc8e36b71a95d702b7e6352c5a31f7f10371bf84"
+    },
+    {
+      "bytes": 22794,
+      "path": "jobs/M3-ttl__cycles-60__B1-instrumented__r3/memory-baseline-report.json",
+      "sha256": "sha256:56c66946fa9eca5a90efbe7de47fa64cd46a20b214e396e5d9a12b5140919662"
+    },
+    {
+      "bytes": 3072,
+      "path": "jobs/M3-ttl__cycles-60__B1-instrumented__r3/owner-snapshots/cold.json",
+      "sha256": "sha256:5272e1cd1b1d7c1eb092000d56c5b84341e1aeb3147cba7190e34312069c20fc"
+    },
+    {
+      "bytes": 3097,
+      "path": "jobs/M3-ttl__cycles-60__B1-instrumented__r3/owner-snapshots/expire_or_delete.json",
+      "sha256": "sha256:a62703dbbebf8026e6ef1844d0ead11e4422854be3d1accb2d8eb21fb8d49564"
+    },
+    {
+      "bytes": 3097,
+      "path": "jobs/M3-ttl__cycles-60__B1-instrumented__r3/owner-snapshots/fill.json",
+      "sha256": "sha256:a62703dbbebf8026e6ef1844d0ead11e4422854be3d1accb2d8eb21fb8d49564"
+    },
+    {
+      "bytes": 3095,
+      "path": "jobs/M3-ttl__cycles-60__B1-instrumented__r3/owner-snapshots/post_idle.json",
+      "sha256": "sha256:d32a4a249ffb24e23310a64f58a9df1957d8e473e7044abed9169a3f8e75d327"
+    },
+    {
+      "bytes": 3095,
+      "path": "jobs/M3-ttl__cycles-60__B1-instrumented__r3/owner-snapshots/refill.json",
+      "sha256": "sha256:d32a4a249ffb24e23310a64f58a9df1957d8e473e7044abed9169a3f8e75d327"
+    },
+    {
+      "bytes": 3072,
+      "path": "jobs/M3-ttl__cycles-60__B1-instrumented__r3/owner-snapshots/reset.json",
+      "sha256": "sha256:361cb155cd41440924cf25472d8e5e4a574f4f2c1f330f2bbb269e158f01e5bb"
+    },
+    {
+      "bytes": 3095,
+      "path": "jobs/M3-ttl__cycles-60__B1-instrumented__r3/owner-snapshots/shutdown.json",
+      "sha256": "sha256:d32a4a249ffb24e23310a64f58a9df1957d8e473e7044abed9169a3f8e75d327"
+    },
+    {
+      "bytes": 3097,
+      "path": "jobs/M3-ttl__cycles-60__B1-instrumented__r3/owner-snapshots/steady.json",
+      "sha256": "sha256:a62703dbbebf8026e6ef1844d0ead11e4422854be3d1accb2d8eb21fb8d49564"
+    },
+    {
+      "bytes": 530,
+      "path": "jobs/M3-ttl__cycles-60__B1-instrumented__r3/phase-timeline.jsonl",
+      "sha256": "sha256:ee04ffc4f2387cfad9d8e00ea415908c2bbecb4f29ebeef7e086263520567831"
+    },
+    {
+      "bytes": 2754,
+      "path": "jobs/M3-ttl__cycles-60__B1-instrumented__r3/provider-normalized.json",
+      "sha256": "sha256:8fc99cede54c1a42e8d194afffc84e732b6d18215c1c60c8d5ec86f3ded4f703"
+    },
+    {
+      "bytes": 66,
+      "path": "jobs/M3-ttl__cycles-60__B1-instrumented__r3/provider-probe.json",
+      "sha256": "sha256:70ae6ae2c959f51c746fab1f44e83852e8c757082c60aaa9a31f1fbe6e8fecc4"
+    },
+    {
+      "bytes": 1127,
+      "path": "jobs/M3-ttl__cycles-60__B1-instrumented__r3/provider-raw.jsonl",
+      "sha256": "sha256:2edcefd8edfe3ec59deaae815165e376f58a9163253a204140468b795cce2cc2"
+    },
+    {
+      "bytes": 1646,
+      "path": "jobs/M3-ttl__cycles-60__B1-instrumented__r3/provider-state.json",
+      "sha256": "sha256:95dd1d1fbc7139b94af631723f9f07e48e4e32d3f2994de688953b38291ab12a"
+    }
+  ],
+  "campaign_id": "hc071-d0-ax42-20260913-m3-01",
+  "campaign_identity_sha256": "sha256:e348c4fc57314f22cdf6ccd6ab22a6efc8c582f89573ee10643b8739a4a1c0bb",
+  "campaign_role": "baseline",
+  "case_ids": [
+    "M3-ttl"
+  ],
+  "completed_jobs": 3,
+  "finalized_at": "2026-09-13T07:51:24.987220+00:00",
+  "job_count": 3,
+  "mode": "evidence",
+  "release": "0.71",
+  "result": "success",
+  "scenario_digest": "sha256:c85fa4fcc8fc87cba85bb710aa96ca60eb0be94136793872064dfc31281b3252",
+  "schema_version": 1,
+  "ship_evidence_eligible": false,
+  "source_sha": "906aa24cc22ad6b50b824120ed6364208484203a",
+  "workflow_sha": "9c533d1de5a25b83bcb294e5b939064737b7d9fc"
+}

@@ -1,0 +1,43 @@
+{
+  "schema_version": 1,
+  "release": "0.67.1",
+  "gate_id": "tool.perf-attestation-v5-0671",
+  "source_commit": "7bd31af9a5092466d7a7284995f388d33ed3110f",
+  "dirty_worktree": false,
+  "command_digest": "8de3e2d8fea44ccb3da46716abdebbe5d7b5437bc6b5edd6de66212cb4fdc907",
+  "registry_digest": "e4b3b756e74d9d301d612e460c72516f2afcfab2ba5635a750e1c2ac98e2888f",
+  "input_digest": "01c354f96e4e5cf1acd3ff72569b113050ad4f132009af16b641e838b7d7f777",
+  "toolchain": "rustc 1.94.0 (4a4ef493e 2026-03-02)",
+  "container_identity": {
+    "CI": "true",
+    "GITHUB_ACTIONS": "true",
+    "GITHUB_RUN_ATTEMPT": "1",
+    "GITHUB_RUN_ID": "34580969962",
+    "GITHUB_SHA": "7bd31af9a5092466d7a7284995f388d33ed3110f",
+    "HYDRACACHE_EVIDENCE_BASE_SHA": "7bd31af9a5092466d7a7284995f388d33ed3110f",
+    "HYDRACACHE_EVIDENCE_HEAD_SHA": "7bd31af9a5092466d7a7284995f388d33ed3110f",
+    "HYDRACACHE_EVIDENCE_TESTED_SHA": "7bd31af9a5092466d7a7284995f388d33ed3110f"
+  },
+  "platform": "linux-x86_64",
+  "started_at": "2026-09-11T08:51:39.508918787Z",
+  "ended_at": "2026-09-11T08:51:39.982194241Z",
+  "duration_ms": 484,
+  "outcome": "pass",
+  "exit_code": 0,
+  "normalized_result": {
+    "outcome": "pass",
+    "exit_code": 0,
+    "stdout_sha256": "07bef74f965c0366880b8c627be649d06e71831f3a71f186b5fedbdc1502e01f",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "stdout": "reference evidence tmpfs verified: root=/dev/shm/hydracache-reference-evidence-v1\nreference runtime IRQ guard passed: phase=attestation-pre measurement=1-4 irq_files=68 dormant-unmapped-nvme=8\n0.67 runner preflight passed: spread=0.0000 samples=7 output=/opt/actions-runner/_work/hydracache/hydracache/target/test-evidence/0.67/runner-preflight.json\nreference runtime IRQ guard passed: phase=attestation-post measurement=1-4 irq_files=68 dormant-unmapped-nvme=8\n",
+  "stderr": "",
+  "artifacts": [
+    {
+      "path": "target/test-evidence/0.67.1/attestation-v5.json",
+      "sha256": "28004ad6b9f0a2d42d809b3918005445fc660d0d1a4aa7e978204d8d29d53ac0",
+      "bytes": 2169
+    }
+  ],
+  "missing_artifacts": []
+}

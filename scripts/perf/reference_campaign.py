@@ -20,6 +20,7 @@ import shutil
 import stat
 import subprocess
 import sys
+import tempfile
 import threading
 import time
 from contextlib import contextmanager
@@ -139,10 +140,20 @@ def run_visible(
         reader_error: list[BaseException] = []
 
         def stream_output() -> None:
+            console_enabled = True
             try:
                 for line in process.stdout:
-                    sys.stdout.write(line)
-                    sys.stdout.flush()
+                    if console_enabled:
+                        try:
+                            sys.stdout.write(line)
+                            sys.stdout.flush()
+                        except (OSError, ValueError):
+                            # A detached controller can outlive the SSH pipe
+                            # that originally owned stdout. Keep draining the
+                            # child and writing the durable log; otherwise a
+                            # verbose `gh run watch` fills its pipe and both
+                            # processes deadlock after the GitHub run ends.
+                            console_enabled = False
                     log.write(line)
                     log.flush()
             except BaseException as error:
@@ -2413,7 +2424,7 @@ def validate_host_admission_state(campaign_dir: Path, state: dict[str, Any]) -> 
             raise CampaignError(f"canonical host admission drift: {name}")
 
 
-def select_sample_set_cargo() -> list[str]:
+def select_sample_set_cargo(cargo_target_dir: Path) -> list[str]:
     runner_cargo = "/home/github-runner/.cargo/bin/cargo"
     try:
         runner_probe = subprocess.run(
@@ -2428,51 +2439,98 @@ def select_sample_set_cargo() -> list[str]:
     except (OSError, subprocess.TimeoutExpired):
         runner_probe = None
     if runner_probe is not None and runner_probe.returncode == 0:
-        return runner_command(runner_cargo)
+        return runner_command(
+            "env", f"CARGO_TARGET_DIR={cargo_target_dir}", runner_cargo
+        )
 
     found = shutil.which("cargo")
     if found is None or Path(found) == Path(runner_cargo):
         raise CampaignError("cargo is unavailable for final sample-set validation")
-    return [found]
+    return ["env", f"CARGO_TARGET_DIR={cargo_target_dir}", found]
+
+
+def cleanup_runner_cargo_target(cargo_target_dir: Path) -> None:
+    workspace = cargo_target_dir.parent.resolve()
+    temporary_root = Path(tempfile.gettempdir()).resolve()
+    if (
+        workspace.parent != temporary_root
+        or not workspace.name.startswith("hydracache-controller-sample-set-")
+        or cargo_target_dir.name != "cargo-target"
+        or cargo_target_dir.is_symlink()
+    ):
+        raise CampaignError("refusing to clean an unexpected runner cargo target")
+    # The controller owns the target root while github-runner owns its nested
+    # build directories. A bounded non-interactive root cleanup is required to
+    # remove both ownership domains without weakening the temporary tree mode.
+    run_capture(
+        sudo_command("rm", "-rf", "--", str(cargo_target_dir)),
+        cwd=repo_root(),
+        timeout_seconds=GITHUB_CONTROL_TIMEOUT_SECONDS,
+    )
+    if cargo_target_dir.exists():
+        raise CampaignError("runner cargo target cleanup did not remove the directory")
 
 
 def cargo_sample_set(campaign_dir: Path) -> Path:
-    output = (
-        repo_root()
-        / "target/test-evidence/0.67.1/controller-sample-sets"
-        / f"{campaign_dir.name}-{time.time_ns()}.json"
-    )
-    command = select_sample_set_cargo()
-    command.extend(
-        [
-            "run",
-            "-p",
-            "xtask",
-            "--locked",
-            "--offline",
-            "--",
-            "perf-bootstrap",
-            "--release",
-            "0.67.1",
-            "--profile",
-            "reference-v1",
-            "--phase",
-            "sample-set",
-            "--samples-dir",
-            str(campaign_dir / "accepted-receipts/bootstrap-samples"),
-            "--output",
-            str(output),
-        ]
-    )
-    result = run_visible(
-        command,
-        cwd=repo_root(),
-        log_path=campaign_dir / "sample-set-validation.log",
-        timeout_seconds=SAMPLE_SET_VALIDATION_TIMEOUT_SECONDS,
-    )
-    if result != 0 or not output.is_file():
-        raise CampaignError("Rust sample-set validator rejected the five-sample chain")
-    data = output.read_bytes()
+    source_dir = campaign_dir / "accepted-receipts/bootstrap-samples"
+    with tempfile.TemporaryDirectory(
+        prefix="hydracache-controller-sample-set-"
+    ) as temporary:
+        workspace = Path(temporary)
+        samples_dir = workspace / "samples"
+        output_dir = workspace / "output"
+        cargo_target_dir = workspace / "cargo-target"
+        samples_dir.mkdir(mode=0o755)
+        output_dir.mkdir(mode=0o733)
+        cargo_target_dir.mkdir(mode=0o733)
+        output_dir.chmod(0o733)
+        cargo_target_dir.chmod(0o733)
+        for index in range(1, 6):
+            source = source_dir / f"sample-{index}.json"
+            if not source.is_file() or source.is_symlink():
+                raise CampaignError(f"accepted bootstrap sample {index} is unavailable")
+            staged = samples_dir / source.name
+            shutil.copyfile(source, staged)
+            staged.chmod(0o444)
+        workspace.chmod(0o711)
+
+        output = output_dir / f"{campaign_dir.name}-{time.time_ns()}.json"
+        command = select_sample_set_cargo(cargo_target_dir)
+        command.extend(
+            [
+                "run",
+                "-p",
+                "xtask",
+                "--locked",
+                "--offline",
+                "--",
+                "perf-bootstrap",
+                "--release",
+                "0.67.1",
+                "--profile",
+                "reference-v1",
+                "--phase",
+                "sample-set",
+                "--samples-dir",
+                str(samples_dir),
+                "--output",
+                str(output),
+            ]
+        )
+        try:
+            result = run_visible(
+                command,
+                cwd=repo_root(),
+                log_path=campaign_dir / "sample-set-validation.log",
+                timeout_seconds=SAMPLE_SET_VALIDATION_TIMEOUT_SECONDS,
+            )
+            if result != 0 or not output.is_file():
+                raise CampaignError("Rust sample-set validator rejected the five-sample chain")
+            data = output.read_bytes()
+        finally:
+            # The validator normally runs as github-runner, so its nested target
+            # directories are not removable by the unprivileged controller user.
+            cleanup_runner_cargo_target(cargo_target_dir)
     return retain_receipt(campaign_dir, "bootstrap-sample-set.json", data)
 
 

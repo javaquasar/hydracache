@@ -8,6 +8,7 @@ import sys
 import tempfile
 import threading
 import unittest
+from unittest import mock
 from pathlib import Path
 
 
@@ -53,6 +54,39 @@ class MemoryCaseExecutor071Tests(unittest.TestCase):
         self.assertEqual(snapshot["tag_records"], 32)
         self.assertEqual(snapshot["tag_bytes"], workload.tag_bytes())
 
+    def test_logical_accounting_combines_embedded_and_client_surface_owners(self) -> None:
+        workload = self.workload("one-hot", 1, 1)
+        document = {
+            "embedded_cache": {
+                "live_entries": 2,
+                "logical_key_bytes": 20,
+                "logical_value_bytes": 200,
+            },
+            "client_surface": {
+                "store_entries": 3,
+                "store_identity_bytes": 30,
+                "value_bytes": 300,
+            },
+        }
+
+        snapshot = executor.logical_snapshot(document, workload)
+
+        self.assertEqual(snapshot["entries"], 5)
+        self.assertEqual(snapshot["key_bytes"], 50)
+        self.assertEqual(snapshot["value_bytes"], 500)
+
+    def test_logical_accounting_does_not_replace_observed_zero_with_ledger(self) -> None:
+        workload = self.workload("one-hot", 1, 1)
+        workload.live.update({0, 1})
+
+        snapshot = executor.logical_snapshot(
+            {"embedded_cache": {}, "client_surface": {}}, workload
+        )
+
+        self.assertEqual(snapshot["entries"], 0)
+        self.assertEqual(snapshot["key_bytes"], 0)
+        self.assertEqual(snapshot["value_bytes"], 0)
+
     def test_resp_round_trip_parser(self) -> None:
         client, server = socket.socketpair()
 
@@ -75,6 +109,32 @@ class MemoryCaseExecutor071Tests(unittest.TestCase):
         self.assertEqual(executor.percentile(values, 0.50), 50)
         self.assertEqual(executor.percentile(values, 0.95), 95)
         self.assertEqual(executor.percentile(values, 0.99), 99)
+
+    def test_cpu_set_parser_accepts_ranges_and_rejects_invalid_values(self) -> None:
+        self.assertEqual(executor.parse_cpu_set("0,5-7"), {0, 5, 6, 7})
+        for value in ("", "2-1", "-1"):
+            with self.subTest(value=value), self.assertRaises(
+                (executor.ExecutionError, ValueError)
+            ):
+                executor.parse_cpu_set(value)
+
+    def test_proc_stat_cpu_parser_handles_spaces_and_parentheses_in_name(self) -> None:
+        fields = ["S"] + ["0"] * 10 + ["125", "75"] + ["0"] * 20
+        stat = "42 (hydra cache (worker)) " + " ".join(fields)
+        self.assertEqual(executor.parse_process_cpu_seconds(stat, 100), 2.0)
+
+    def test_performance_reports_process_usage_delta(self) -> None:
+        workload = self.workload("one-hot", 1, 1)
+        workload.requests = 10
+        workload.latencies = [10, 20]
+        report = workload.performance(
+            1_000_000_000,
+            {"cpu_seconds": 3.25, "context_switches": 21},
+            {"cpu_seconds": 1.0, "context_switches": 8},
+        )
+        self.assertEqual(report["rps"], 10.0)
+        self.assertEqual(report["cpu_seconds"], 2.25)
+        self.assertEqual(report["context_switches"], 13)
 
     def test_unavailable_is_explicit(self) -> None:
         self.assertEqual(
@@ -101,6 +161,80 @@ class MemoryCaseExecutor071Tests(unittest.TestCase):
             snapshot = executor.directory_snapshot(root)
             self.assertEqual(snapshot["logical_bytes"], 7)
             self.assertEqual(snapshot["files"][0]["path"], "raft-log/segment")
+
+    def test_s5_elides_only_passive_waits_after_selected_checkpoint(self) -> None:
+        self.assertFalse(executor.elide_passive_wait_after(None, "post_idle"))
+        self.assertFalse(executor.elide_passive_wait_after("steady", "cold"))
+        self.assertFalse(executor.elide_passive_wait_after("steady", "steady"))
+        self.assertTrue(executor.elide_passive_wait_after("steady", "post_idle"))
+        workload = self.workload("one-hot", 1, 1)
+        with mock.patch.object(executor.time, "sleep") as sleep:
+            workload.run_phase("post_idle", 1, elide_passive_wait=True)
+            sleep.assert_called_once_with(0)
+
+    def test_production_passive_waits_require_explicit_resp_reconnect(self) -> None:
+        self.assertTrue(
+            executor.passive_wait_exceeds_resp_idle_timeout(
+                "M1-shape", "cold", rehearsal=False, elide_passive_wait=False
+            )
+        )
+        self.assertTrue(
+            executor.passive_wait_exceeds_resp_idle_timeout(
+                "M3-ttl",
+                "expire_or_delete",
+                rehearsal=False,
+                elide_passive_wait=False,
+            )
+        )
+        self.assertTrue(
+            executor.passive_wait_exceeds_resp_idle_timeout(
+                "M5-tags", "post_idle", rehearsal=False, elide_passive_wait=False
+            )
+        )
+        for case_id, phase, rehearsal, elided in (
+            ("M0-cold", "cold", False, False),
+            ("M1-shape", "cold", True, False),
+            ("M1-shape", "post_idle", False, True),
+            ("M1-shape", "steady", False, False),
+        ):
+            with self.subTest(case_id=case_id, phase=phase):
+                self.assertFalse(
+                    executor.passive_wait_exceeds_resp_idle_timeout(
+                        case_id,
+                        phase,
+                        rehearsal=rehearsal,
+                        elide_passive_wait=elided,
+                    )
+                )
+
+    def test_resp_reconnect_closes_stale_stream_and_records_boundary(self) -> None:
+        old_stream = mock.Mock()
+        replacement = mock.Mock()
+        workload = executor.Workload(
+            old_stream,
+            {"case_id": "M1-shape", "dimensions": {"keys": 10}},
+            False,
+        )
+
+        workload.replace_stream(replacement)
+
+        old_stream.close.assert_called_once_with()
+        self.assertIs(workload.stream, replacement)
+        self.assertEqual(workload.resp_reconnections, 1)
+
+    def test_duration_sleep_reconnects_before_idle_timeout_race(self) -> None:
+        self.assertTrue(
+            executor.duration_sleep_needs_resp_reconnect(55.0, rehearsal=False)
+        )
+        self.assertTrue(
+            executor.duration_sleep_needs_resp_reconnect(60.0, rehearsal=False)
+        )
+        self.assertFalse(
+            executor.duration_sleep_needs_resp_reconnect(54.999, rehearsal=False)
+        )
+        self.assertFalse(
+            executor.duration_sleep_needs_resp_reconnect(60.0, rehearsal=True)
+        )
 
 
 if __name__ == "__main__":

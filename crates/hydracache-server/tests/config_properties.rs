@@ -22,6 +22,7 @@ const CONFIG_ENV_VARS: &[&str] = &[
     "HYDRACACHE_NODE_ID",
     "HYDRACACHE_STORAGE_DIR",
     "HYDRACACHE_SEEDS",
+    "HYDRACACHE_MEMORY_INSTRUMENTATION_MODE",
     "HYDRACACHE_JOIN_TIMEOUT_MS",
     "HYDRACACHE_TLS_ACK_INSECURE",
     "HYDRACACHE_TLS_ENABLED",
@@ -202,6 +203,7 @@ fn generated_server_configs_preserve_precedence_validation_and_secure_defaults()
         ("HYDRACACHE_BOOTSTRAP_REPLICAS", "3"),
         ("HYDRACACHE_STORAGE_DIR", "target/config-properties/member"),
         ("HYDRACACHE_SEEDS", "matrix-0.matrix-headless:7000"),
+        ("HYDRACACHE_MEMORY_INSTRUMENTATION_MODE", "profile"),
         ("HYDRACACHE_ADMIN_API_ENABLED", "false"),
         ("HYDRACACHE_RAFT_COMPACTION", "true"),
         ("HOSTNAME", "matrix-4"),
@@ -213,6 +215,18 @@ fn generated_server_configs_preserve_precedence_validation_and_secure_defaults()
     assert_eq!(env_config.node_id.as_deref(), Some("matrix-4"));
     assert!(!env_config.admin_api.enabled);
     assert!(env_config.raft_compaction_enabled);
+    assert_eq!(
+        env_config.memory_instrumentation_mode,
+        hydracache::MemoryInstrumentationMode::Profile
+    );
+
+    let _invalid_mode =
+        ConfigEnvGuard::new(&[("HYDRACACHE_MEMORY_INSTRUMENTATION_MODE", "silent-unbounded")]);
+    assert!(matches!(
+        ServerConfig::from_env(),
+        Err(ServerConfigError::InvalidMemoryInstrumentationMode(value))
+            if value == "silent-unbounded"
+    ));
 
     let insecure = ServerConfig {
         listen_addr: "192.0.2.20:8080".parse().unwrap(),

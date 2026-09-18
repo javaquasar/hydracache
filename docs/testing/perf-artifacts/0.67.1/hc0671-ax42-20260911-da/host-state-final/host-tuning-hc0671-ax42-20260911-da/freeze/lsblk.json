@@ -1,0 +1,205 @@
+{
+   "blockdevices": [
+      {
+         "name": "nvme0n1",
+         "kname": "nvme0n1",
+         "path": "/dev/nvme0n1",
+         "type": "disk",
+         "tran": "nvme",
+         "size": 512110190592,
+         "rota": false,
+         "mountpoints": [
+             null
+         ],
+         "children": [
+            {
+               "name": "nvme0n1p1",
+               "kname": "nvme0n1p1",
+               "path": "/dev/nvme0n1p1",
+               "type": "part",
+               "tran": "nvme",
+               "size": 268435456,
+               "rota": false,
+               "mountpoints": [
+                   "/boot/efi"
+               ]
+            },{
+               "name": "nvme0n1p2",
+               "kname": "nvme0n1p2",
+               "path": "/dev/nvme0n1p2",
+               "type": "part",
+               "tran": "nvme",
+               "size": 33285996544,
+               "rota": false,
+               "mountpoints": [
+                   null
+               ],
+               "children": [
+                  {
+                     "name": "md0",
+                     "kname": "md0",
+                     "path": "/dev/md0",
+                     "type": "raid1",
+                     "tran": null,
+                     "size": 33268170752,
+                     "rota": false,
+                     "mountpoints": [
+                         "[SWAP]"
+                     ]
+                  }
+               ]
+            },{
+               "name": "nvme0n1p3",
+               "kname": "nvme0n1p3",
+               "path": "/dev/nvme0n1p3",
+               "type": "part",
+               "tran": "nvme",
+               "size": 1073741824,
+               "rota": false,
+               "mountpoints": [
+                   null
+               ],
+               "children": [
+                  {
+                     "name": "md1",
+                     "kname": "md1",
+                     "path": "/dev/md1",
+                     "type": "raid1",
+                     "tran": null,
+                     "size": 1071644672,
+                     "rota": false,
+                     "mountpoints": [
+                         "/boot"
+                     ]
+                  }
+               ]
+            },{
+               "name": "nvme0n1p4",
+               "kname": "nvme0n1p4",
+               "path": "/dev/nvme0n1p4",
+               "type": "part",
+               "tran": "nvme",
+               "size": 477479902720,
+               "rota": false,
+               "mountpoints": [
+                   null
+               ],
+               "children": [
+                  {
+                     "name": "md2",
+                     "kname": "md2",
+                     "path": "/dev/md2",
+                     "type": "raid1",
+                     "tran": null,
+                     "size": 477344628736,
+                     "rota": false,
+                     "mountpoints": [
+                         "/"
+                     ]
+                  }
+               ]
+            }
+         ]
+      },{
+         "name": "nvme1n1",
+         "kname": "nvme1n1",
+         "path": "/dev/nvme1n1",
+         "type": "disk",
+         "tran": "nvme",
+         "size": 512110190592,
+         "rota": false,
+         "mountpoints": [
+             null
+         ],
+         "children": [
+            {
+               "name": "nvme1n1p1",
+               "kname": "nvme1n1p1",
+               "path": "/dev/nvme1n1p1",
+               "type": "part",
+               "tran": "nvme",
+               "size": 268435456,
+               "rota": false,
+               "mountpoints": [
+                   null
+               ]
+            },{
+               "name": "nvme1n1p2",
+               "kname": "nvme1n1p2",
+               "path": "/dev/nvme1n1p2",
+               "type": "part",
+               "tran": "nvme",
+               "size": 33285996544,
+               "rota": false,
+               "mountpoints": [
+                   null
+               ],
+               "children": [
+                  {
+                     "name": "md0",
+                     "kname": "md0",
+                     "path": "/dev/md0",
+                     "type": "raid1",
+                     "tran": null,
+                     "size": 33268170752,
+                     "rota": false,
+                     "mountpoints": [
+                         "[SWAP]"
+                     ]
+                  }
+               ]
+            },{
+               "name": "nvme1n1p3",
+               "kname": "nvme1n1p3",
+               "path": "/dev/nvme1n1p3",
+               "type": "part",
+               "tran": "nvme",
+               "size": 1073741824,
+               "rota": false,
+               "mountpoints": [
+                   null
+               ],
+               "children": [
+                  {
+                     "name": "md1",
+                     "kname": "md1",
+                     "path": "/dev/md1",
+                     "type": "raid1",
+                     "tran": null,
+                     "size": 1071644672,
+                     "rota": false,
+                     "mountpoints": [
+                         "/boot"
+                     ]
+                  }
+               ]
+            },{
+               "name": "nvme1n1p4",
+               "kname": "nvme1n1p4",
+               "path": "/dev/nvme1n1p4",
+               "type": "part",
+               "tran": "nvme",
+               "size": 477479902720,
+               "rota": false,
+               "mountpoints": [
+                   null
+               ],
+               "children": [
+                  {
+                     "name": "md2",
+                     "kname": "md2",
+                     "path": "/dev/md2",
+                     "type": "raid1",
+                     "tran": null,
+                     "size": 477344628736,
+                     "rota": false,
+                     "mountpoints": [
+                         "/"
+                     ]
+                  }
+               ]
+            }
+         ]
+      }
+   ]
+}

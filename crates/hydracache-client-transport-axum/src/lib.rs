@@ -61,6 +61,12 @@ pub const CLIENT_SURFACE_IDEMPOTENCY_CAPACITY: usize = 4_096;
 /// Retention window for a successful idempotent outcome.
 pub const CLIENT_SURFACE_IDEMPOTENCY_TTL_MS: u64 = 24 * 60 * 60 * 1_000;
 
+/// Maximum interval between opportunistic expired-entry sweeps while traffic is active.
+pub const CLIENT_SURFACE_EXPIRY_SWEEP_INTERVAL_MS: u64 = 1_000;
+
+/// Maximum entries examined by one opportunistic request-path expiry sweep.
+pub const CLIENT_SURFACE_EXPIRY_SWEEP_SCAN_LIMIT: usize = 256;
+
 /// Mutation kind emitted after a verified client-surface state transition.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum ClientSurfaceMutationKind {
@@ -175,13 +181,16 @@ impl ClientRouteBoundary {
 /// Request and stream limits for the external client surface.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub struct ClientSurfaceLimits {
-    /// Maximum encoded frame bytes accepted before protocol dispatch.
+    /// Maximum encoded HC/1 envelope bytes accepted before protocol dispatch.
+    ///
+    /// RESP and HC/2 apply their own transport-frame limits before using the
+    /// shared decoded operation limits below.
     pub max_frame_bytes: usize,
-    /// Maximum value bytes accepted by future W1 Put operations.
+    /// Maximum decoded value bytes accepted by HC/1, HC/2, and RESP operations.
     pub max_value_bytes: usize,
     /// Maximum batch entries accepted by future W1 batch operations.
     pub max_batch_entries: usize,
-    /// Maximum serialized batch bytes.
+    /// Maximum decoded aggregate batch bytes across client protocols.
     pub max_batch_bytes: usize,
     /// Maximum concurrently active subscription streams per connection.
     pub max_streams_per_connection: usize,
@@ -481,6 +490,49 @@ impl StoredValue {
     }
 }
 
+fn expiry_sweep_candidates(
+    store: &BTreeMap<StoreKey, StoredValue>,
+    now_ms: u64,
+    cursor: Option<&StoreKey>,
+    scan_limit: usize,
+) -> (Vec<StoreKey>, Vec<StoreKey>) {
+    let mut examined = Vec::with_capacity(scan_limit.min(store.len()));
+    if let Some(cursor) = cursor {
+        examined.extend(
+            store
+                .range((
+                    std::ops::Bound::Excluded(cursor),
+                    std::ops::Bound::Unbounded,
+                ))
+                .map(|(key, _)| key.clone())
+                .take(scan_limit),
+        );
+        if examined.len() < scan_limit {
+            examined.extend(
+                store
+                    .range((
+                        std::ops::Bound::Unbounded,
+                        std::ops::Bound::Included(cursor),
+                    ))
+                    .map(|(key, _)| key.clone())
+                    .take(scan_limit - examined.len()),
+            );
+        }
+    } else {
+        examined.extend(store.keys().take(scan_limit).cloned());
+    }
+    let expired = examined
+        .iter()
+        .filter(|key| {
+            store
+                .get(*key)
+                .is_some_and(|value| value.is_expired(now_ms))
+        })
+        .cloned()
+        .collect();
+    (examined, expired)
+}
+
 /// Shared state for the public client surface.
 #[derive(Debug)]
 pub struct ClientSurfaceState {
@@ -495,6 +547,8 @@ pub struct ClientSurfaceState {
     store: Mutex<BTreeMap<StoreKey, StoredValue>>,
     cache_now_ms_for_tests: Mutex<Option<u64>>,
     cache_time_floor_ms: AtomicU64,
+    next_expiry_sweep_ms: AtomicU64,
+    expiry_sweep_cursor: Mutex<Option<StoreKey>>,
     idempotency_keys: Mutex<BTreeMap<IdempotencyKey, IdempotencyRecord>>,
     lock_service: Mutex<ClientLockService>,
     audit_sink: Arc<InMemoryAuditSink>,
@@ -520,6 +574,8 @@ impl ClientSurfaceState {
             store: Mutex::new(BTreeMap::new()),
             cache_now_ms_for_tests: Mutex::new(None),
             cache_time_floor_ms: AtomicU64::new(0),
+            next_expiry_sweep_ms: AtomicU64::new(0),
+            expiry_sweep_cursor: Mutex::new(None),
             idempotency_keys: Mutex::new(BTreeMap::new()),
             lock_service: Mutex::new(ClientLockService::new()),
             audit: Mutex::new(AuditRecorder::new(Arc::clone(&audit_sink))),
@@ -548,6 +604,8 @@ impl ClientSurfaceState {
             store: Mutex::new(BTreeMap::new()),
             cache_now_ms_for_tests: Mutex::new(None),
             cache_time_floor_ms: AtomicU64::new(0),
+            next_expiry_sweep_ms: AtomicU64::new(0),
+            expiry_sweep_cursor: Mutex::new(None),
             idempotency_keys: Mutex::new(BTreeMap::new()),
             lock_service: Mutex::new(ClientLockService::new()),
             audit: Mutex::new(AuditRecorder::new(Arc::clone(&audit_sink))),
@@ -649,10 +707,19 @@ impl ClientSurfaceState {
     /// fields momentarily non-atomic, so release evidence must quiesce clients
     /// before calling this method.
     pub fn retained_state_for_diagnostics(&self) -> ClientSurfaceRetainedState {
+        self.sweep_expired_entries(self.now_ms(), true);
         let idempotency = self.idempotency_keys.lock().expect("idempotency mutex");
         let store = self.store.lock().expect("store mutex");
         let lock_service = self.lock_service.lock().expect("lock service mutex");
         self.retained_state_locked(&idempotency, &store, &lock_service)
+    }
+
+    /// Run one bounded active-expiry maintenance tick.
+    ///
+    /// Daemon runtimes call this even when no client reads the expired keys.
+    /// At most [`CLIENT_SURFACE_EXPIRY_SWEEP_SCAN_LIMIT`] entries are examined.
+    pub fn reap_expired_entries_for_maintenance(&self) -> usize {
+        self.sweep_expired_entries(self.now_ms(), false)
     }
 
     /// Clear cache, idempotency, conditional, lock, and session owners for an
@@ -825,6 +892,88 @@ impl ClientSurfaceState {
         candidate.max(previous)
     }
 
+    fn sweep_expired_entries(&self, now_ms: u64, force: bool) -> usize {
+        let next = self.next_expiry_sweep_ms.load(Ordering::SeqCst);
+        if !force && now_ms < next {
+            return 0;
+        }
+        if !force
+            && self
+                .next_expiry_sweep_ms
+                .compare_exchange(
+                    next,
+                    now_ms.saturating_add(CLIENT_SURFACE_EXPIRY_SWEEP_INTERVAL_MS),
+                    Ordering::SeqCst,
+                    Ordering::SeqCst,
+                )
+                .is_err()
+        {
+            return 0;
+        }
+        if force {
+            self.next_expiry_sweep_ms.store(
+                now_ms.saturating_add(CLIENT_SURFACE_EXPIRY_SWEEP_INTERVAL_MS),
+                Ordering::SeqCst,
+            );
+        }
+
+        let mut cursor = self
+            .expiry_sweep_cursor
+            .lock()
+            .expect("expiry cursor mutex");
+        let removed = if let Some(isolation) = &self.isolation {
+            let mut isolation = isolation.lock().expect("isolation mutex");
+            let mut store = self.store.lock().expect("store mutex");
+            let (examined, expired) = expiry_sweep_candidates(
+                &store,
+                now_ms,
+                if force { None } else { cursor.as_ref() },
+                if force {
+                    usize::MAX
+                } else {
+                    CLIENT_SURFACE_EXPIRY_SWEEP_SCAN_LIMIT
+                },
+            );
+            for (tenant, namespace, key) in &expired {
+                let tenant = TenantId::new(tenant).expect("stored tenant identity was validated");
+                isolation.remove_entry_for_tenant(&tenant, namespace, key);
+                store.remove(&(tenant.as_str().to_owned(), namespace.clone(), key.clone()));
+            }
+            *cursor = if force {
+                None
+            } else {
+                examined.last().cloned()
+            };
+            expired.len()
+        } else {
+            let mut store = self.store.lock().expect("store mutex");
+            let (examined, expired) = expiry_sweep_candidates(
+                &store,
+                now_ms,
+                if force { None } else { cursor.as_ref() },
+                if force {
+                    usize::MAX
+                } else {
+                    CLIENT_SURFACE_EXPIRY_SWEEP_SCAN_LIMIT
+                },
+            );
+            for key in &expired {
+                store.remove(key);
+            }
+            *cursor = if force {
+                None
+            } else {
+                examined.last().cloned()
+            };
+            expired.len()
+        };
+        if removed != 0 {
+            self.state_mutations
+                .fetch_add(removed as u64, Ordering::SeqCst);
+        }
+        removed
+    }
+
     fn begin_subscription(&self) {
         self.active_subscriptions.fetch_add(1, Ordering::SeqCst);
     }
@@ -889,6 +1038,7 @@ impl ClientSurfaceState {
             )
             .with_protocol_version(response_protocol_version);
         }
+        self.sweep_expired_entries(self.now_ms(), false);
 
         let response = match envelope.request {
             ClientRequest::Get { ns, key } => {
@@ -2719,18 +2869,123 @@ mod retention_tests {
         key: String,
         idempotency_key: Option<String>,
     ) -> ClientResponseEnvelope {
+        put_for_key_with_ttl(state, identity, request_id, key, idempotency_key, None)
+    }
+
+    fn put_for_key_with_ttl(
+        state: &ClientSurfaceState,
+        identity: &ClientIdentity,
+        request_id: String,
+        key: String,
+        idempotency_key: Option<String>,
+        ttl_ms: Option<u64>,
+    ) -> ClientResponseEnvelope {
         let mut request = ClientRequestEnvelope::new(
             request_id,
             ClientRequest::Put {
                 ns: Namespace::new("retention").unwrap(),
                 key: StructuredKey::new(vec![key]).unwrap(),
                 value: b"value".to_vec(),
-                ttl_ms: None,
+                ttl_ms,
                 dimensions: Vec::new(),
             },
         );
         request.idempotency_key = idempotency_key;
         state.dispatch_verified_request(identity, request)
+    }
+
+    #[test]
+    fn expired_entries_are_reaped_without_key_access() {
+        let state = ClientSurfaceState::new(ClientSurfaceLimits::default()).unwrap();
+        let identity = ClientIdentity::new("client", "tenant").unwrap();
+        state.set_cache_time_for_tests(Some(1_000));
+        for index in 0..128 {
+            let response = put_for_key_with_ttl(
+                &state,
+                &identity,
+                format!("put-{index}"),
+                format!("ttl-{index}"),
+                None,
+                Some(500),
+            );
+            assert!(response.result.is_ok());
+        }
+        assert_eq!(state.retained_state_for_diagnostics().store_entries, 128);
+
+        state.advance_cache_time_for_tests(501);
+        let reclaimed = state.retained_state_for_diagnostics();
+
+        assert_eq!(reclaimed.store_entries, 0);
+        assert_eq!(reclaimed.value_bytes, 0);
+        assert_eq!(reclaimed.store_identity_bytes, 0);
+    }
+
+    #[test]
+    fn request_path_expiry_sweep_has_a_fixed_scan_budget_and_makes_progress() {
+        let state = ClientSurfaceState::new(ClientSurfaceLimits::default()).unwrap();
+        let identity = ClientIdentity::new("client", "tenant").unwrap();
+        state.set_cache_time_for_tests(Some(1_000));
+        let entries = CLIENT_SURFACE_EXPIRY_SWEEP_SCAN_LIMIT + 44;
+        for index in 0..entries {
+            let response = put_for_key_with_ttl(
+                &state,
+                &identity,
+                format!("put-{index}"),
+                format!("ttl-{index:04}"),
+                None,
+                Some(500),
+            );
+            assert!(response.result.is_ok());
+        }
+
+        state.advance_cache_time_for_tests(1_001);
+        assert_eq!(
+            state.reap_expired_entries_for_maintenance(),
+            CLIENT_SURFACE_EXPIRY_SWEEP_SCAN_LIMIT
+        );
+        assert_eq!(state.store.lock().expect("store mutex").len(), 44);
+
+        state.advance_cache_time_for_tests(CLIENT_SURFACE_EXPIRY_SWEEP_INTERVAL_MS);
+        assert_eq!(state.reap_expired_entries_for_maintenance(), 44);
+        assert!(state.store.lock().expect("store mutex").is_empty());
+    }
+
+    #[test]
+    fn expiry_reaper_releases_tenant_quota_accounting() {
+        let roster = hydracache::TenantRoster::new(vec![hydracache::Tenant::new("tenant")
+            .unwrap()
+            .allow_client("client")
+            .namespace("retention", hydracache::NamespaceQuota::new(5, 1))])
+        .unwrap();
+        let state = ClientSurfaceState::with_isolation(
+            ClientSurfaceLimits::default(),
+            ConsumerIsolation::new(roster, hydracache::ConsumerIsolationConfig::default()),
+        )
+        .unwrap();
+        let identity = ClientIdentity::new("client", "tenant").unwrap();
+        state.set_cache_time_for_tests(Some(1_000));
+        assert!(put_for_key_with_ttl(
+            &state,
+            &identity,
+            "first".to_owned(),
+            "first".to_owned(),
+            None,
+            Some(500),
+        )
+        .result
+        .is_ok());
+
+        state.advance_cache_time_for_tests(501);
+        assert_eq!(state.retained_state_for_diagnostics().store_entries, 0);
+        assert!(put_for_key(
+            &state,
+            &identity,
+            "replacement".to_owned(),
+            "replacement".to_owned(),
+            None,
+        )
+        .result
+        .is_ok());
     }
 
     #[test]

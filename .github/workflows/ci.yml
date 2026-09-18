@@ -178,7 +178,7 @@ jobs:
     name: 0.71 Memory Contracts
     if: github.event_name != 'workflow_dispatch' || inputs.performance_0671_mode == ''
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 240
 
     steps:
       - name: Checkout
@@ -190,47 +190,83 @@ jobs:
         uses: dtolnay/rust-toolchain@stable
 
       - name: Generate and close the ownership inventory
+        timeout-minutes: 15
         run: |
           cargo run -p xtask --locked -- memory-owner-inventory --release 0.71
+          cargo run -p xtask --locked -- memory-owner-inventory --release 0.71 --check
           cargo run -p xtask --locked -- memory-ownership-check --release 0.71
 
       - name: Validate decision, statistics, allocator, compatibility, and release contracts
+        timeout-minutes: 15
         run: |
           cargo run -p xtask --locked -- memory-decision-check --release 0.71
           cargo run -p xtask --locked -- memory-statistics-check --release 0.71
           cargo run -p xtask --locked -- allocator-capability-check --release 0.71
           cargo run -p xtask --locked -- memory-compat-check --release 0.71
           cargo run -p xtask --locked -- memory-release-policy-check --release 0.71
+          cargo run -p xtask --locked -- memory-contract-check --release 0.71
+          cargo run -p xtask --locked -- memory-campaign-check --release 0.71
 
       - name: Run 0.71 contract canaries
+        timeout-minutes: 30
         run: |
           cargo test -p xtask --test memory_ownership_071 --locked
           cargo test -p xtask --test memory_contracts_071 --locked
+          cargo test -p xtask --test memory_decision_071 --locked
           cargo test -p xtask --test memory_statistics_071 --locked
           cargo test -p xtask --test memory_profile_071 --locked
           cargo test -p xtask --test memory_baseline_071 --locked
+          cargo test -p xtask --test allocator_matrix_071 --locked
+          cargo test -p xtask --test memory_host_profile_071 --locked
+          cargo test -p xtask --test memory_compat_071 --locked
+          cargo test -p xtask --test allocation_copy_071 --locked
+          cargo test -p xtask --test memory_campaign_admission_071 --locked
+          cargo test -p xtask --test release_governance_071 --locked
           cargo run -p xtask --locked -- memory-baseline-check --release 0.71
 
       - name: Verify coherent snapshots and phase providers
+        timeout-minutes: 60
         run: |
           cargo test -p hydracache --test memory_footprint_071 --locked
           cargo test -p hydracache --test memory_accounting_071 --locked -- --test-threads=1
+          cargo test -p hydracache --test reclamation_071 --locked
+          cargo test -p hydracache --test representation_071 --locked
+          cargo test -p hydracache --test tag_index_model_071 --locked
+          cargo test -p hydracache --test persistence_memory_071 --locked
+          cargo test -p hydracache-client-transport-axum --test memory_admission_071 --locked
+          cargo test -p hydracache-client-transport-axum --test retention_bounds_071 --locked
+          cargo test -p hydracache-server --test memory_profiles_071 --locked
+          cargo test -p hydracache-server --test hc2_memory_071 --locked
+          cargo test -p hydracache-server --test memory_compat_process_071 --locked
           cargo test -p hydracache memory_footprint::tests --locked
           cargo test -p hydracache-loadgen memory_efficiency --locked
           python scripts/perf/memory-providers/test_provider_contract.py
           python scripts/perf/memory_campaign_071_test.py
           python scripts/perf/memory_case_executor_071_test.py
           python scripts/perf/memory_historical_mirror_071_test.py
+          python scripts/perf/memory_compat_receipt_071_test.py
+          python scripts/perf/test_memory_release_claims_071.py
           for mode in off production profile; do
             cargo run -p hydracache-loadgen --bin hydracache-loadgen --locked -- memory-efficiency --provider system --instrumentation-mode "$mode" --output-dir "target/memory-evidence/0.71/profiles/ci-smoke/$mode"
           done
 
       - name: Prove bounded campaign resume and finalization
+        timeout-minutes: 15
         run: |
           python scripts/perf/memory_campaign_071.py plan --campaign-id ci-bounded-${{ github.run_id }}-${{ github.run_attempt }} --case M0-cold --repetitions 1 --rehearsal
           python scripts/perf/memory_campaign_071.py run --campaign-id ci-bounded-${{ github.run_id }}-${{ github.run_attempt }}
           python scripts/perf/memory_campaign_071.py resume --campaign-id ci-bounded-${{ github.run_id }}-${{ github.run_attempt }}
           python scripts/perf/memory_campaign_071.py finalize --campaign-id ci-bounded-${{ github.run_id }}-${{ github.run_attempt }}
+
+      - name: Install reviewed cargo-semver-checks
+        timeout-minutes: 30
+        run: cargo install cargo-semver-checks --version 0.49.0 --locked
+
+      - name: Validate every publishable package against v0.70.0
+        timeout-minutes: 180
+        run: |
+          python3 scripts/ci/public_api_compat_071.py --manifest docs/testing/compat/v0.70.0.json --check
+          python3 scripts/ci/public_api_compat_071.py --manifest docs/testing/compat/v0.70.0.json --output target/public-api-compat-071/receipt.json
 
       - name: Retain ownership inventory
         if: always()
@@ -241,6 +277,7 @@ jobs:
             target/memory-evidence/0.71/ownership-inventory.json
             target/memory-evidence/0.71/profiles/ci-smoke/**
             target/memory-evidence/0.71/campaigns/ci-bounded-*/**
+            target/public-api-compat-071/**
           if-no-files-found: error
           retention-days: 30
 
@@ -300,6 +337,8 @@ jobs:
         run: |
           cargo run -p xtask --locked -- canary-check --release 0.70
           cargo run -p xtask --locked -- canary-sweep --release 0.70 --tier fast
+          cargo run -p xtask --locked -- canary-check --release 0.71
+          cargo run -p xtask --locked -- canary-sweep --release 0.71 --tier fast
 
       - name: Run exact-candidate memory regression evidence
         id: memory_fast
@@ -707,6 +746,8 @@ jobs:
           cargo run -p xtask --locked -- canary-sweep --release 0.68 --tier fast
           cargo run -p xtask --locked -- canary-check --release 0.70
           cargo run -p xtask --locked -- canary-sweep --release 0.70 --tier fast
+          cargo run -p xtask --locked -- canary-check --release 0.71
+          cargo run -p xtask --locked -- canary-sweep --release 0.71 --tier fast
           cargo run -p xtask --locked -- canary-check --release 0.72
           cargo run -p xtask --locked -- canary-sweep --release 0.72 --tier fast
 
@@ -2447,6 +2488,28 @@ jobs:
       - name: Install pinned Rust 1.94.0
         uses: dtolnay/rust-toolchain@1.94.0
 
+      # The final workspace gate executes tests which invoke both `python` and
+      # `cargo deny`. Provision and probe its complete toolchain before any
+      # multi-hour performance measurements so a missing helper fails early.
+      - name: Install Python for final workspace evidence
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Install cargo-deny for final workspace evidence
+        uses: taiki-e/install-action@cargo-deny
+
+      - name: Install pinned cargo-nextest for final workspace evidence
+        uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-nextest@0.9.137
+
+      - name: Preflight final workspace evidence toolchain
+        run: |
+          python --version
+          cargo deny --version
+          cargo nextest --version
+
       - name: Clear only prior frozen-candidate evidence scratch
         shell: bash
         run: |
@@ -2526,6 +2589,9 @@ jobs:
       - name: Execute complete 0.67.1 expected-red canary sweep
         run: cargo run -p xtask --locked -- canary-sweep --release 0.67.1 --tier all
 
+      - name: Record exact-candidate fast workspace evidence
+        run: cargo run -p xtask --locked -- evidence-run --release 0.67.1 --gate fast.workspace-nextest
+
       - name: Seal exact frozen-candidate reference receipt
         run: cargo run -p xtask --locked -- evidence-run --release 0.67.1 --gate tool.perf-frozen-candidate-0671
 
@@ -2543,6 +2609,7 @@ jobs:
             target/release-evidence/canaries/0.67.1-*.json
             target/release-evidence/receipts/**
             target/release-evidence/0.67.1.json
+            target/nextest/ci/junit.xml
           if-no-files-found: error
 
   raft-loom:
@@ -3054,6 +3121,16 @@ jobs:
         if: contains(inputs.gated_gate_id, 'mutants')
         run: cargo install cargo-mutants --version 27.1.0 --locked
 
+      - name: Install pinned cargo-nextest for fast suite
+        if: startsWith(inputs.gated_gate_id, 'fast.')
+        uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-nextest@0.9.137
+
+      - name: Install cargo-deny for fast suite
+        if: startsWith(inputs.gated_gate_id, 'fast.')
+        uses: taiki-e/install-action@cargo-deny
+
       - name: Install pinned ThreadSanitizer toolchain
         timeout-minutes: 15
         if: startsWith(inputs.gated_gate_id, 'tool.tsan.')
@@ -3067,5 +3144,7 @@ jobs:
         uses: actions/upload-artifact@v6
         with:
           name: "release-evidence-${{ github.sha }}-${{ inputs.gated_gate_id }}"
-          path: target/release-evidence/receipts
+          path: |
+            target/release-evidence/receipts
+            target/nextest/ci/junit.xml
           if-no-files-found: error

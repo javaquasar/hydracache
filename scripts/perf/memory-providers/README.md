@@ -5,6 +5,35 @@ Each adapter implements `probe`, `start`, `mark`, `snapshot`, `stop`, and
 fixed phase names, and sanitized folded stack names. A run is invalid unless
 all eight phases occur exactly once and in canonical order.
 
+S5 calibration is orchestrated by
+`memory_instrumentation_overhead_071.py`. It uses the retained B1 server and
+HC/2 helper manifests, runs `off`, `production`, and `profile` modes in cyclic
+order, and freezes a baseline-only production-versus-off envelope. Its final
+receipt is atomic and is rejected if any report, binary, scenario, or host
+identity differs.
+
+Each S5 sample still emits the canonical eight provider phases. Once its
+preregistered measurement checkpoint has been captured, later passive idle
+waits are elided because they cannot affect that sample; later actions and
+snapshots still run so provider normalization remains fail-closed. Every sample
+emits start/completion progress, while the workflow gives the complete
+45-sample calibration a bounded 12-hour window.
+
+Campaign row budgets are aggregate across completed attempts. If the remaining
+budget expires inside an evidence executor, the controller first sends a
+cooperative interrupt so the executor can stop its daemon and HC/2 fleet; only
+an executor that ignores the cleanup grace period is force-killed.
+
+The protected runner must install Rust under `$HOME/.cargo/bin`. The workflow
+publishes that directory through `GITHUB_PATH` and verifies both `cargo` and
+`rustc` before preflight, rather than depending on the runner service's cached
+PATH.
+
+On evidence hosts, the executor requires explicit daemon, load-generator, and
+collector CPU sets. It applies affinity rather than merely recording a label;
+provider protocol commands execute on the collector set and cannot overlap the
+daemon set.
+
 The 0.71 campaign controller expands the finite M0-M10 matrix, applies row
 time caps, journals every attempt, and resumes without repeating successful
 jobs. Run a bounded orchestration rehearsal before allocating a reference

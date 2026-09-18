@@ -116,9 +116,25 @@ operability surface, and soak mileage), not missing core capability.
 
 Release `0.67.0` delivers performance measurement infrastructure, not official performance numbers. It must not be presented as capacity validation, sizing guidance, a Redis comparison result, or a bootstrapped numerical baseline.
 
-The methodology preserves strict surface labels: embedded-cache, in-process client router, one selected node-local RESP endpoint, daemon control-plane, and library/model primitives are separate. GitHub-hosted results are tripwires only. Dedicated `reference-v1` evidence is deferred by [`TD-0013`](technical-debt/TD-0013-dedicated-performance-runner-and-baseline-bootstrap.md) and remains unbootstrapped.
+The methodology preserves strict surface labels: embedded-cache, in-process client router, one
+selected node-local RESP endpoint, daemon control-plane, and library/model primitives are separate.
+GitHub-hosted results are tripwires only. The later 0.67.1 campaign resolved
+[`TD-0013`](technical-debt/TD-0013-dedicated-performance-runner-and-baseline-bootstrap.md) with an
+independently reviewed, narrowly scoped five-sample bare-metal baseline. Its frozen-candidate W7
+release verdict passed on 2026-09-11. The resulting numbers remain limited to the exact host,
+scenario, commit, and same-box method documented in the anonymized
+[`0.67.1` AX42 report](testing/perf-scenarios/0.67/results/ax42-reference-0.67.1-20260911.md).
 
-The existing statement still applies: HydraCache is not marketed as a Redis throughput replacement. The W8 harness is tooling for a future pinned same-box observation, not a released superiority claim.
+Within that exact paired method, HydraCache reached 67.9%/67.6% of Redis for GET/SET at pipeline 1
+and 18.1%/18.0% at pipeline 10. The result supports one engineering conclusion: the current
+node-local RESP path gains much less from pipelining than Redis and is a clear optimization target.
+It does not support a portable ratio, a distributed-cache comparison, or a Redis-replacement claim.
+The preparation, noise-control, and interpretation method is documented in
+[`How to Measure Cache Performance Without Measuring Noise`](articles/006-measuring-cache-performance-on-bare-metal.md).
+
+The existing statement still applies: HydraCache is not marketed as a Redis throughput
+replacement. The pinned Redis observation is a same-box comparison for one exact scenario and
+cannot support a released superiority claim.
 
 ## Maintaining the position
 

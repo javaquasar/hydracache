@@ -286,10 +286,10 @@ depends_on = ["0.66.0"]
 [[release]]
 version = "0.67.1"
 file = "docs/plans/V0_67_1_DEDICATED_PERFORMANCE_REFERENCE_BOOTSTRAP_PLAN.md"
-status = "in-progress"
+status = "shipped"
 networked_control_plane = true
 work_items = ["W0", "W1", "W2", "W3", "W4", "W5", "W6", "W7"]
-theme = "Dedicated Performance Reference Bootstrap - implementation and orchestration hardening are complete, while authoritative bare-metal qualification is explicitly deferred until suitable rented hardware is available. The unchanged evidence campaign must still qualify one protected non-shared bare-metal runner, collect at least five stable pre-candidate main runs from one fingerprint/contract family, independently review immutable anchor/rolling baseline/budgets, activate reference-v1 without candidate self-baselining, close TD-0013, and pass the full frozen-candidate pipeline. No failed run, numerical claim, product optimization, or surface change is promoted."
+theme = "Dedicated Performance Reference Bootstrap - one protected non-shared bare-metal fingerprint passed qualification and two-run full-dress admission; exactly five stable chained pre-candidate main runs from one contract family were retained; the immutable anchor, rolling baseline, budgets, and reference-v1 profile were independently reviewed and activated without candidate self-baselining, closing TD-0013; and the separate exact-SHA frozen-candidate pipeline passed with W0-W7 ship-ready. The anonymized report, methodology article, and byte-exact raw campaign archive complete publication closeout. No failed run, portable sizing statement, universal comparison, product optimization, or surface change is promoted."
 depends_on = ["0.67.0"]
 
 [[release]]
@@ -298,7 +298,7 @@ file = "docs/plans/V0_68_GENERATED_CLIENT_PLANE_FOUNDATION_PLAN.md"
 status = "shipped"
 networked_control_plane = true
 work_items = ["W0", "W1", "W2", "W3", "W4", "W5", "W6", "W7", "W8", "W9", "W10", "W11", "W12"]
-theme = "Generated Client Plane Foundation - release the Rust 0.68 library set, including the Rust HC/2 client crate, from one exact candidate after hosted Linux, digest-pinned Docker interop, fuzz, package, conformance, canary, and normal CI evidence. The generated Java and Python clients remain tested source previews and are not published to Maven or PyPI; their later external promotion retains the labelled Ubuntu 24.04 fixed-host soak. The accepted HC/2 design provides generated schemas, bounded connection/invocation/listener/topology/session machinery, Redis event integration, security/resource bounds, observability, compatibility fixtures, and fail-closed governance without Hazelcast wire/full-CP/smart-routing claims or numerical performance claims. The deferred 0.67.1 evidence campaign remains in-progress and is not a code dependency for this release."
+theme = "Generated Client Plane Foundation - release the Rust 0.68 library set, including the Rust HC/2 client crate, from one exact candidate after hosted Linux, digest-pinned Docker interop, fuzz, package, conformance, canary, and normal CI evidence. The generated Java and Python clients remain tested source previews and are not published to Maven or PyPI; their later external promotion retains the labelled Ubuntu 24.04 fixed-host soak. The accepted HC/2 design provides generated schemas, bounded connection/invocation/listener/topology/session machinery, Redis event integration, security/resource bounds, observability, compatibility fixtures, and fail-closed governance without Hazelcast wire/full-CP/smart-routing claims or numerical performance claims. The 0.67.1 evidence campaign was still deferred when 0.68 shipped and was not a code dependency for this release; it completed later."
 depends_on = ["0.67.0"]
 
 [[release]]
@@ -322,7 +322,7 @@ depends_on = ["0.69.0"]
 [[release]]
 version = "0.71.0"
 file = "docs/plans/V0_71_MEMORY_FOOTPRINT_AND_RETENTION_EFFICIENCY_PLAN.md"
-status = "planned"
+status = "shipped"
 networked_control_plane = true
 work_items = ["W0", "W1", "W2", "W3", "W4", "W5", "W6", "W7", "W8", "W9", "W10", "W11", "W12", "W13"]
 theme = "Memory Footprint & Retention Efficiency - consume the 0.70 owner inventory and bounded-lifecycle proof plus the completed 0.67.1 dedicated-reference bootstrap, then turn the 0.67 exploratory memory screens into causal exact-candidate optimization. Keep the unmodified 0.70 release baseline separate from the pre-optimization instrumented 0.71 baseline, correct byte accounting without silently reinterpreting legacy capacity, compact only measured representations, reduce copies, compare allocators and profiles, separate durable page cache, and pass a finite fixed-cardinality long-duration matrix without weakening semantics, workload, SLOs or fail-closed behavior. A fully evidenced no-win release may ship with accounting/bounds claims and no numerical improvement claim."

@@ -1,0 +1,372 @@
+{
+  "report": {
+    "schema_version": 1,
+    "scenario_id": "brownout-resp-endpoint-v1",
+    "scenario_sha256": "244b6870d07ea2454bbe87f6e34119c02e879b87d5abaa9cd073952f0289876f",
+    "evidence_class": "w5b-selected-node-local-resp-brownout",
+    "run_mode": "reference",
+    "predecessor": {
+      "evidence_class": "w3-node-local-resp-open-loop",
+      "artifact_sha256": "d238c95d42d42f5065ce7e41a83a8a88b9211ff6d37b436a45e4efb666bb0b5e",
+      "reference_receipt_sha256": "14b729d15ac097dd368a63519198917497f92dc588e80278b6f16a815bd2f8ab",
+      "knee_rate_per_second": 50000,
+      "offered_rate_per_second": 30000,
+      "rate_fraction_millionths": 600000
+    },
+    "reference_provenance": {
+      "selected_predecessor_artifact_sha256": "d238c95d42d42f5065ce7e41a83a8a88b9211ff6d37b436a45e4efb666bb0b5e",
+      "selected_predecessor_lifecycle_sha256": "be3791c4c2b72cd17734595f796efae9bd8c23134cc02fb52514adc6291bd9d6",
+      "archived_process_receipt_sha256": "14b729d15ac097dd368a63519198917497f92dc588e80278b6f16a815bd2f8ab",
+      "selected_capacity": {
+        "measurement_id": "resp_open_loop_get_set_knee_at_slo_workload_a",
+        "scenario_digest": "f6202f07439e5a44ba2a88220dfcececfa91ec6a2b1dfa26a366230a63befcda",
+        "workload": {
+          "generator": "hydracache-cache-sim-key-schedule",
+          "generator_version": "1",
+          "seed": 670301,
+          "key_distribution": {
+            "kind": "uniform",
+            "theta": null
+          },
+          "key_count": 10000,
+          "operation_mix": [
+            {
+              "operation": "get",
+              "weight": 0.45
+            },
+            {
+              "operation": "set",
+              "weight": 0.45
+            },
+            {
+              "operation": "mget",
+              "weight": 0.05
+            },
+            {
+              "operation": "mset",
+              "weight": 0.05
+            }
+          ],
+          "payload_mix": [
+            {
+              "bytes": 256,
+              "weight": 1.0
+            }
+          ],
+          "digest": "1712aa3d5e8d498cee350d096bd625552f62672802f24b610cae9eeb7a567010"
+        },
+        "workload_contract_sha256": "982dadc59ae26cf12e3237715175ecee57e2a7140b4f8d69eab42870677ce6fc",
+        "connections": 10,
+        "pipeline_depth": 1,
+        "preload_operations": 10000,
+        "warmup_operations": 10000,
+        "steady_operations": 100000,
+        "repeats": 5,
+        "key_count": 10000,
+        "multi_key_width": 10,
+        "reset_batch_entries": 128
+      },
+      "capacity_matrix_sha256": "5991c21c5424229f9778a3eac7f2a2bf9a861348270f2f5f1b23f7a10f672992",
+      "predecessor_scenario_digest": "35691a7517dd36047dd5d3b02d984e277585207318d8fa0efab2da5c1a7fad6a",
+      "predecessor_workload_digest": "9655bdd6868a69ee44a138896da03e3be4dc9fcc506cc78f4b537ae1b628af50",
+      "fresh_selected_execution_receipt_sha256": "b81a2da1bbe4cbfe1550f4e18f64324c67cbf0db9961f16678aaf2b8856004a2",
+      "fresh_control_execution_receipt_sha256": [
+        "68985ecbeefd25ca96402c6ab97a82cb40f165b8b3ff9292e568bf3ddad41fdb"
+      ],
+      "scenario_sha256": "244b6870d07ea2454bbe87f6e34119c02e879b87d5abaa9cd073952f0289876f",
+      "receipt_sha256": "329f837621d21197b737bcc261527876d7d22473d07fb380db34a93671dce524"
+    },
+    "selected_endpoint_recovery_millis": 1213,
+    "event": {
+      "origin": "observed",
+      "selected_endpoint": "127.0.0.1:35391",
+      "original": {
+        "node_id": "resp-selected",
+        "pid": 30570,
+        "binary_path": "/opt/actions-runner/_work/hydracache/hydracache/target/release/hydracache-server",
+        "binary_sha256": "a17b5148cad43e2193c69a64e3372e2832fa94a47196a7b6bec405128f3633c6",
+        "config_path": "/dev/shm/hydracache-reference-evidence-v1/0.67/w5b-run-artifacts/w5b-selected-pid-27970-nanos-1789125393847994543-seq-0/direct-launch-config.json",
+        "config_sha256": "8d8880e8ae2647f40b60d038248f2c4553bcc7ed02c8be9e0e6c78f3d2d7e5a1",
+        "receipt_sha256": "21ee74718f6675c0a2685d8ca089c96f6a427fb258f3b53b79389a91e2330395"
+      },
+      "termination": {
+        "pid": 30570,
+        "exit_status": "ExitStatus(unix_wait_status(9))",
+        "receipt_sha256": "5f03cc7fda41556b11202b41e7942aeaf71e0ec036f6bcb862384c014ce032fe"
+      },
+      "restarted": {
+        "node_id": "resp-selected",
+        "pid": 30581,
+        "binary_path": "/opt/actions-runner/_work/hydracache/hydracache/target/release/hydracache-server",
+        "binary_sha256": "a17b5148cad43e2193c69a64e3372e2832fa94a47196a7b6bec405128f3633c6",
+        "config_path": "/dev/shm/hydracache-reference-evidence-v1/0.67/w5b-run-artifacts/w5b-selected-pid-27970-nanos-1789125393847994543-seq-0/direct-launch-config.json",
+        "config_sha256": "8d8880e8ae2647f40b60d038248f2c4553bcc7ed02c8be9e0e6c78f3d2d7e5a1",
+        "receipt_sha256": "3fca748330f8444228e1f4f4bc7250c00e3ca990a4187e1c338c03bb82d1e911"
+      },
+      "restarted_cleanup": {
+        "pid": 30581,
+        "exit_status": "ExitStatus(unix_wait_status(9))",
+        "receipt_sha256": "9a9926540e25e19c8ef98923c9b2e1461d3e75da6f12f2040a7149fc80f86b59"
+      },
+      "socket_unavailable": {
+        "endpoint": "127.0.0.1:35391",
+        "error_kind": "ConnectionRefused",
+        "receipt_sha256": "0b2271e5a13209a7027c7f0df3e3e0cd2748c5960963695a73d59c143d982f39"
+      },
+      "before_window": {
+        "offered": 300000,
+        "started": 300000,
+        "completed": 300000,
+        "successes": 300000,
+        "errors": 0,
+        "timeouts": 0,
+        "rejections": 0,
+        "backlog_high_water": 61,
+        "backlog_drained": true,
+        "drain_ms": 0,
+        "elapsed_ms": 10001,
+        "offered_rate_per_second": 30000.0,
+        "achieved_rate_per_second": 29995.001446989867,
+        "latency": {
+          "samples": 300000,
+          "p50_us": 1376,
+          "p90_us": 2085,
+          "p99_us": 2813,
+          "p999_us": 3207,
+          "p999_min_samples": 1,
+          "p999_reportable": true,
+          "max_us": 3977,
+          "overflow_count": 0
+        }
+      },
+      "disruption_window": {
+        "offered": 300000,
+        "started": 300000,
+        "completed": 300000,
+        "successes": 296555,
+        "errors": 3445,
+        "timeouts": 0,
+        "rejections": 0,
+        "backlog_high_water": 209557,
+        "backlog_drained": true,
+        "drain_ms": 12128,
+        "elapsed_ms": 22129,
+        "offered_rate_per_second": 30000.0,
+        "achieved_rate_per_second": 13556.7699678159,
+        "latency": {
+          "samples": 300000,
+          "p50_us": 8814591,
+          "p90_us": 11689983,
+          "p99_us": 11870207,
+          "p999_us": 11902975,
+          "p999_min_samples": 1,
+          "p999_reportable": true,
+          "max_us": 11919359,
+          "overflow_count": 0
+        }
+      },
+      "recovered_window": {
+        "offered": 300000,
+        "started": 300000,
+        "completed": 300000,
+        "successes": 300000,
+        "errors": 0,
+        "timeouts": 0,
+        "rejections": 0,
+        "backlog_high_water": 206311,
+        "backlog_drained": true,
+        "drain_ms": 11228,
+        "elapsed_ms": 21228,
+        "offered_rate_per_second": 30000.0,
+        "achieved_rate_per_second": 14131.959501070814,
+        "latency": {
+          "samples": 300000,
+          "p50_us": 8577023,
+          "p90_us": 11075583,
+          "p99_us": 11173887,
+          "p999_us": 11190271,
+          "p999_min_samples": 1,
+          "p999_reportable": true,
+          "max_us": 11190271,
+          "overflow_count": 0
+        }
+      },
+      "independent_controls": [
+        {
+          "endpoint": "127.0.0.1:38319",
+          "process": {
+            "node_id": "resp-control-0",
+            "pid": 30575,
+            "binary_path": "/opt/actions-runner/_work/hydracache/hydracache/target/release/hydracache-server",
+            "binary_sha256": "a17b5148cad43e2193c69a64e3372e2832fa94a47196a7b6bec405128f3633c6",
+            "config_path": "/dev/shm/hydracache-reference-evidence-v1/0.67/w5b-run-artifacts/w5b-control-0-pid-27970-nanos-1789125393930871480-seq-1/direct-launch-config.json",
+            "config_sha256": "e32a546595ae940502b7554b55a1361f1556f028ce9034e8fc4a9383f1d8cb6e",
+            "receipt_sha256": "926b0736cbea0c8fef4cec0f9a10ed328208228705ae08ead19fac1ad35bc9a0"
+          },
+          "cleanup": {
+            "pid": 30575,
+            "exit_status": "ExitStatus(unix_wait_status(9))",
+            "receipt_sha256": "62ff16e91d90b8eb61152ffd61f08e36217bc0da590b1987328e2531cb189b06"
+          },
+          "window": {
+            "offered": 300000,
+            "started": 300000,
+            "completed": 300000,
+            "successes": 300000,
+            "errors": 0,
+            "timeouts": 0,
+            "rejections": 0,
+            "backlog_high_water": 187187,
+            "backlog_drained": true,
+            "drain_ms": 9446,
+            "elapsed_ms": 19446,
+            "offered_rate_per_second": 30000.0,
+            "achieved_rate_per_second": 15427.305074796279,
+            "latency": {
+              "samples": 300000,
+              "p50_us": 6905855,
+              "p90_us": 8740863,
+              "p99_us": 9191423,
+              "p999_us": 9248767,
+              "p999_min_samples": 1,
+              "p999_reportable": true,
+              "max_us": 9256959,
+              "overflow_count": 0
+            }
+          }
+        }
+      ],
+      "timeline": {
+        "commit_latency_nanos": 2030845,
+        "recovery_latency_nanos": 1212831954,
+        "receipt_sha256": "17489b69c64356c39349c1d900fa07b336c2a0b935d12b65ba161e58e1eeb222"
+      }
+    },
+    "node_local_state": true,
+    "automatic_failover": false,
+    "neighbor_visibility_claim": false,
+    "value_survival_claim": false,
+    "cross_node_failover_claim": false,
+    "aggregate_goodput": false
+  },
+  "budget_receipt": {
+    "schema_version": 1,
+    "release": "0.67.0",
+    "report_id": "brownout-resp-endpoint-reference-v1",
+    "source_report_sha256": "942288d7e01346caf9124e9ee84fe5d3834cc027b8dd8a5c1f77756178d662bf",
+    "claim_scope": "w5b-selected-node-local-resp-brownout",
+    "run_mode": "reference_evidence",
+    "runner_profile": "reference-v1",
+    "runner_contract": {
+      "name": "reference-v1",
+      "required_runner_class": "self-hosted-bare-metal-v1",
+      "allowed_fingerprints": [
+        "25baeec1c9ec75da90b5dd0f29c101897450b96651d7e47570e18684be486ebb"
+      ],
+      "minimum_logical_cores": 4,
+      "required_cpu_affinity": "1-4",
+      "required_cgroup_cpu_quota": "unlimited",
+      "require_dedicated": true,
+      "maximum_calibration_score": 0.25
+    },
+    "runner_contract_digest": "c728014af9fd0aae4c474456e74437a033110940db01caa1577b1b5b5efabfe0",
+    "observed_runner": {
+      "runner_class": "self-hosted-bare-metal-v1",
+      "fingerprint": "25baeec1c9ec75da90b5dd0f29c101897450b96651d7e47570e18684be486ebb",
+      "cpu_model": "AMD Ryzen 7 PRO 8700GE w/ Radeon 780M Graphics",
+      "logical_cores": 4,
+      "ram_bytes": 66490486784,
+      "os": "linux",
+      "kernel": "6.8.0-138-generic",
+      "cpu_affinity": "1-4",
+      "cgroup_cpu_quota": "unlimited",
+      "governor": "performance",
+      "turbo": "enabled",
+      "shared_hardware": false,
+      "calibration_score": 0.015776637614821176,
+      "attestation": {
+        "schema_version": 5,
+        "contract_version": "hydracache-reference-host-v5",
+        "virtualization": "none",
+        "physical_cores": 8,
+        "measurement_cores": [
+          {
+            "logical_cpu": 1,
+            "package_id": 0,
+            "core_id": 1
+          },
+          {
+            "logical_cpu": 2,
+            "package_id": 0,
+            "core_id": 2
+          },
+          {
+            "logical_cpu": 3,
+            "package_id": 0,
+            "core_id": 3
+          },
+          {
+            "logical_cpu": 4,
+            "package_id": 0,
+            "core_id": 4
+          }
+        ],
+        "cpu_isolation": {
+          "smt_control": "off",
+          "online_cpus": "0-7",
+          "isolated_cpus": "1-4",
+          "nohz_full_cpus": "1-4",
+          "rcu_nocbs_cpus": "1-4",
+          "housekeeping_cpus": "0,5-7",
+          "irq_affinity_policy": "housekeeping-only-v1",
+          "measurement_idle_policy": "latency-cap-us-v1",
+          "measurement_max_idle_latency_us": 1,
+          "housekeeping_idle_policy": "latency-cap-us-v1",
+          "housekeeping_max_idle_latency_us": 1
+        },
+        "host_digest": "571591a534c9894242fc0af0c5f80c31131fe7e4cdb9d0ea63da6d8b56af8932",
+        "storage_class": "local-nvme",
+        "storage_identity_digest": "74ec6d1126c24b7a3899494eef2564aec2d3085056ac200e4a8cc8ca0ae43a50",
+        "os_image": "ubuntu-24.04",
+        "toolchain_identity": "rustc-1.94.0",
+        "prebuild_contract_digest": "f2caae0689d8b075d2a6d59d6090466365f9a6824c6996d6b92830956831cc55"
+      }
+    },
+    "runner_fingerprint": "25baeec1c9ec75da90b5dd0f29c101897450b96651d7e47570e18684be486ebb",
+    "source_commit": "7bd31af9a5092466d7a7284995f388d33ed3110f",
+    "cargo_lock_sha256": "dc480dad8567eda4a4d13b393651d3d1201cc26ba7599e3c8ff822b725569def",
+    "toolchain_identity": "rustc-1.94.0",
+    "prebuild_contract_digest": "f2caae0689d8b075d2a6d59d6090466365f9a6824c6996d6b92830956831cc55",
+    "prebuild_manifest_sha256": "2768ca970a2b3e09c3ee63bbd9bba466c3aee40be8dfca8e06cbe98309e4b296",
+    "binary_sha256": [
+      {
+        "id": "hydracache-loadgen",
+        "sha256": "c2c0e14ab40dd5b3c2ee5d71631bdfee81d7d61c0cd2c83c8b927c126aff7bd2"
+      },
+      {
+        "id": "hydracache-server",
+        "sha256": "a17b5148cad43e2193c69a64e3372e2832fa94a47196a7b6bec405128f3633c6"
+      }
+    ],
+    "binary_set_digest": "226175eeacd19e16f15bf8af6e9da5253aef1330c5583c73bf039920fa8abf61",
+    "scenario_digest": "244b6870d07ea2454bbe87f6e34119c02e879b87d5abaa9cd073952f0289876f",
+    "workload_digest": "09e0179f1f3a576a4edd40eb00c13bc25e652272408d955dedc45804eae68424",
+    "slo_digest": "257f0cbbdb6c59d954690b5e491c05759fded9ba7889b82f331beecd8541ad90",
+    "methodology_digest": "6209da0741592c22fa3747741e8d4ee2bde45b5c4e7fbbdf6b0761cd50451a6c",
+    "stable": true,
+    "maximum_spread_ratio": 0.0,
+    "metric": [
+      {
+        "id": "resp_endpoint_brownout.recovery_milliseconds",
+        "value": 1213.0,
+        "unit": "milliseconds"
+      },
+      {
+        "id": "resp_endpoint_brownout.availability_dip_ppm",
+        "value": 11484.0,
+        "unit": "parts_per_million"
+      }
+    ],
+    "receipt_sha256": "7b3c98fe9365c97d24951be2b27a692982bddb4bbd08388761c466bccfe20322"
+  }
+}

@@ -270,8 +270,36 @@ class ReferenceCampaignTests(unittest.TestCase):
                     timeout_seconds=0.05,
                 )
 
+    def test_visible_command_keeps_draining_after_console_disconnect(self) -> None:
+        class DisconnectedConsole:
+            def write(self, _text: str) -> None:
+                raise BrokenPipeError("detached SSH stdout")
+
+            def flush(self) -> None:
+                raise BrokenPipeError("detached SSH stdout")
+
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            log_path = root / "detached.log"
+            payload_size = 256 * 1024
+            with mock.patch.object(campaign.sys, "stdout", DisconnectedConsole()):
+                result = campaign.run_visible(
+                    [
+                        sys.executable,
+                        "-c",
+                        f"import sys; sys.stdout.write('x' * {payload_size})",
+                    ],
+                    cwd=root,
+                    log_path=log_path,
+                    timeout_seconds=5,
+                )
+
+            self.assertEqual(result, 0)
+            self.assertTrue(log_path.read_text(encoding="utf-8").endswith("x" * payload_size))
+
     def test_sample_set_cargo_is_probed_as_the_runner_user(self) -> None:
         runner_cargo = "/home/github-runner/.cargo/bin/cargo"
+        cargo_target = Path("/tmp/controller-cargo-target")
         with (
             mock.patch.object(
                 campaign.subprocess,
@@ -282,8 +310,10 @@ class ReferenceCampaignTests(unittest.TestCase):
             mock.patch.object(campaign.shutil, "which", return_value=runner_cargo),
         ):
             self.assertEqual(
-                campaign.select_sample_set_cargo(),
-                campaign.runner_command(runner_cargo),
+                campaign.select_sample_set_cargo(cargo_target),
+                campaign.runner_command(
+                    "env", f"CARGO_TARGET_DIR={cargo_target}", runner_cargo
+                ),
             )
 
         run.assert_called_once_with(
@@ -298,6 +328,7 @@ class ReferenceCampaignTests(unittest.TestCase):
 
     def test_sample_set_cargo_rejects_inaccessible_runner_path_fallback(self) -> None:
         runner_cargo = "/home/github-runner/.cargo/bin/cargo"
+        cargo_target = Path("/tmp/controller-cargo-target")
         with (
             mock.patch.object(
                 campaign.subprocess,
@@ -307,7 +338,7 @@ class ReferenceCampaignTests(unittest.TestCase):
             mock.patch.object(campaign.shutil, "which", return_value=runner_cargo),
             self.assertRaisesRegex(campaign.CampaignError, "cargo is unavailable"),
         ):
-            campaign.select_sample_set_cargo()
+            campaign.select_sample_set_cargo(cargo_target)
 
     def test_sample_set_validator_uses_unique_bounded_output(self) -> None:
         data = b'{"bootstrap_eligible":true}\n'
@@ -317,11 +348,20 @@ class ReferenceCampaignTests(unittest.TestCase):
             campaign_dir = root / "hc0671-test-campaign"
             repo.mkdir()
             campaign_dir.mkdir()
+            samples = campaign_dir / "accepted-receipts/bootstrap-samples"
+            samples.mkdir(parents=True)
+            for index in range(1, 6):
+                (samples / f"sample-{index}.json").write_bytes(b"{}\n")
 
             def run_validator(command: list[str], **kwargs: object) -> int:
                 output = Path(command[command.index("--output") + 1])
-                output.parent.mkdir(parents=True)
                 output.write_bytes(data)
+                staged = Path(command[command.index("--samples-dir") + 1])
+                self.assertNotEqual(staged, samples)
+                self.assertEqual(
+                    sorted(path.name for path in staged.iterdir()),
+                    [f"sample-{index}.json" for index in range(1, 6)],
+                )
                 self.assertEqual(
                     kwargs.get("timeout_seconds"),
                     campaign.SAMPLE_SET_VALIDATION_TIMEOUT_SECONDS,
@@ -336,17 +376,56 @@ class ReferenceCampaignTests(unittest.TestCase):
                 mock.patch.object(
                     campaign, "run_visible", side_effect=run_validator
                 ) as run,
+                mock.patch.object(
+                    campaign,
+                    "cleanup_runner_cargo_target",
+                    side_effect=lambda path: campaign.shutil.rmtree(path),
+                ) as cleanup,
             ):
                 retained = campaign.cargo_sample_set(campaign_dir)
 
             self.assertEqual(retained.read_bytes(), data)
             command = run.call_args.args[0]
             output = Path(command[command.index("--output") + 1])
-            self.assertIn("controller-sample-sets", output.parts)
+            self.assertTrue(
+                any(
+                    part.startswith("hydracache-controller-sample-set-")
+                    for part in output.parts
+                )
+            )
+            self.assertFalse(output.exists())
             self.assertNotEqual(
                 output,
                 repo / "target/test-evidence/0.67.1/bootstrap-sample-set.json",
             )
+            cleanup.assert_called_once()
+
+    def test_runner_cargo_target_cleanup_is_bounded_to_sample_set_workspace(self) -> None:
+        with tempfile.TemporaryDirectory(
+            prefix="hydracache-controller-sample-set-"
+        ) as temporary:
+            cargo_target = Path(temporary) / "cargo-target"
+            cargo_target.mkdir()
+
+            def remove_target(command: list[str], **kwargs: object) -> str:
+                self.assertEqual(
+                    command,
+                    campaign.sudo_command("rm", "-rf", "--", str(cargo_target)),
+                )
+                self.assertEqual(
+                    kwargs.get("timeout_seconds"),
+                    campaign.GITHUB_CONTROL_TIMEOUT_SECONDS,
+                )
+                campaign.shutil.rmtree(cargo_target)
+                return ""
+
+            with mock.patch.object(
+                campaign, "run_capture", side_effect=remove_target
+            ) as run:
+                campaign.cleanup_runner_cargo_target(cargo_target)
+
+            run.assert_called_once()
+            self.assertFalse(cargo_target.exists())
 
     def test_privileged_commands_are_non_interactive_after_sudo_lease(self) -> None:
         with mock.patch.object(campaign.os, "geteuid", return_value=1000, create=True):

@@ -1,0 +1,18 @@
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.19s
+     Running `target/debug/xtask memory-baseline-report-check --release 0.71 --report /var/lib/hydracache-memory/campaigns/hc071-d0-ax42-20260912-m0-07/jobs/M0-cold__B0-release__r1/memory-baseline-report.json`
+memory-baseline-report-check: OK (/var/lib/hydracache-memory/campaigns/hc071-d0-ax42-20260912-m0-07/jobs/M0-cold__B0-release__r1/memory-baseline-report.json)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.20s
+     Running `target/debug/xtask memory-baseline-report-check --release 0.71 --report /var/lib/hydracache-memory/campaigns/hc071-d0-ax42-20260912-m0-07/jobs/M0-cold__B1-instrumented__r1/memory-baseline-report.json`
+memory-baseline-report-check: OK (/var/lib/hydracache-memory/campaigns/hc071-d0-ax42-20260912-m0-07/jobs/M0-cold__B1-instrumented__r1/memory-baseline-report.json)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.19s
+     Running `target/debug/xtask memory-baseline-report-check --release 0.71 --report /var/lib/hydracache-memory/campaigns/hc071-d0-ax42-20260912-m0-07/jobs/M0-cold__B0-release__r2/memory-baseline-report.json`
+memory-baseline-report-check: OK (/var/lib/hydracache-memory/campaigns/hc071-d0-ax42-20260912-m0-07/jobs/M0-cold__B0-release__r2/memory-baseline-report.json)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.19s
+     Running `target/debug/xtask memory-baseline-report-check --release 0.71 --report /var/lib/hydracache-memory/campaigns/hc071-d0-ax42-20260912-m0-07/jobs/M0-cold__B1-instrumented__r2/memory-baseline-report.json`
+memory-baseline-report-check: OK (/var/lib/hydracache-memory/campaigns/hc071-d0-ax42-20260912-m0-07/jobs/M0-cold__B1-instrumented__r2/memory-baseline-report.json)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.20s
+     Running `target/debug/xtask memory-baseline-report-check --release 0.71 --report /var/lib/hydracache-memory/campaigns/hc071-d0-ax42-20260912-m0-07/jobs/M0-cold__B0-release__r3/memory-baseline-report.json`
+memory-baseline-report-check: OK (/var/lib/hydracache-memory/campaigns/hc071-d0-ax42-20260912-m0-07/jobs/M0-cold__B0-release__r3/memory-baseline-report.json)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.19s
+     Running `target/debug/xtask memory-baseline-report-check --release 0.71 --report /var/lib/hydracache-memory/campaigns/hc071-d0-ax42-20260912-m0-07/jobs/M0-cold__B1-instrumented__r3/memory-baseline-report.json`
+memory-baseline-report-check: OK (/var/lib/hydracache-memory/campaigns/hc071-d0-ax42-20260912-m0-07/jobs/M0-cold__B1-instrumented__r3/memory-baseline-report.json)

@@ -11,3 +11,5 @@ require_restored_mirror_match = true
 required_mirror_fields = ["provider", "object_id", "archive_sha256", "byte_length", "verified_at", "retention_deadline"]
 ordinary_clone_is_protected_mirror = false
 missing_mirror_blocks_d0 = true
+bootstrap_archive_path = "docs/testing/perf-artifacts/0.67.1"
+require_bootstrap_archive_in_protected_mirror = true

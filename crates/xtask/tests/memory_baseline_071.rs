@@ -36,6 +36,24 @@ fn valid_historical_receipt() -> JsonValue {
             "restored_manifest_sha256": format!("sha256:{}", "3".repeat(64)),
             "verified_at": "2026-08-20T12:00:00Z",
             "retention_deadline": "2027-08-20T12:00:00Z"
+        },
+        "bootstrap_0_67_1": {
+            "source_path": "docs/testing/perf-artifacts/0.67.1",
+            "files": [{
+                "path": "docs/testing/perf-artifacts/0.67.1/receipt.json",
+                "bytes": 0,
+                "sha256": format!("sha256:{}", "4".repeat(64))
+            }],
+            "mirror": {
+                "provider": "protected-object-store",
+                "object_id": "memory-0671/full.tar.gz",
+                "archive_sha256": format!("sha256:{}", "5".repeat(64)),
+                "byte_length": 789,
+                "manifest_sha256": format!("sha256:{}", "6".repeat(64)),
+                "restored_manifest_sha256": format!("sha256:{}", "6".repeat(64)),
+                "verified_at": "2026-09-12T12:00:00Z",
+                "retention_deadline": "2027-09-12T12:00:00Z"
+            }
         }
     })
 }
@@ -73,7 +91,7 @@ fn corrected_ttl_requires_final_checkpoint() {
 
 #[test]
 fn dirty_identity_and_reused_process_are_rejected() {
-    let expected = "795f9493bcbb7a56aa229c59e4a717f60c654cdb";
+    let expected = "906aa24cc22ad6b50b824120ed6364208484203a";
     let problems = xtask::memory_baseline::validate_worktree_identity(
         expected,
         "0000000000000000000000000000000000000000",
@@ -127,6 +145,42 @@ fn typed_report_rejects_identity_unique_key_allocator_and_unavailable_lies() {
         assert!(
             problems.iter().any(|problem| problem.contains(expected)),
             "missing {expected}: {problems:#?}"
+        );
+    }
+}
+
+#[test]
+fn typed_report_requires_executor_instrumentation_and_request_fields() {
+    let report = xtask::memory_baseline::diagnostic_fixture_report();
+    assert!(
+        xtask::memory_baseline::validate_baseline_report(&report).is_empty(),
+        "executor-shaped fixture must satisfy the strict report schema"
+    );
+
+    for path in [
+        vec!["instrumentation_mode"],
+        vec!["resp_connection_lifecycle"],
+        vec!["checkpoints", "0", "performance", "request_count"],
+    ] {
+        let mut mutated = report.clone();
+        let mut value = &mut mutated;
+        for component in &path[..path.len() - 1] {
+            value = if let Ok(index) = component.parse::<usize>() {
+                &mut value[index]
+            } else {
+                &mut value[*component]
+            };
+        }
+        value
+            .as_object_mut()
+            .expect("parent object")
+            .remove(*path.last().expect("field"));
+        let problems = xtask::memory_baseline::validate_baseline_report(&mutated);
+        assert!(
+            problems
+                .iter()
+                .any(|problem| problem.contains("schema violation")),
+            "missing {path:?} was accepted: {problems:#?}"
         );
     }
 }

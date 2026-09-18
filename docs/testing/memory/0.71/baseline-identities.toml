@@ -1,6 +1,6 @@
 schema_version = 1
 release = "0.71"
-state = "planned"
+state = "D1"
 cohort_pooling = false
 candidate_derived_thresholds = false
 
@@ -12,7 +12,7 @@ instrumentation = "external-signals-only"
 
 [b1_instrumented]
 identity = "B1-instrumented"
-source_sha = "795f9493bcbb7a56aa229c59e4a717f60c654cdb"
+source_sha = "906aa24cc22ad6b50b824120ed6364208484203a"
 instrumentation = "W1-S5-production-and-profile"
 forbidden_product_work = ["W2b", "W3", "W4", "W5", "W6", "W7", "W8", "W9", "W10", "W11"]
 
@@ -50,19 +50,23 @@ sha256 = "0e5989af80317d395d33dc71edaad2ff42e1ccb20c0989c2798a2783f22d4222"
 
 [[scenario.input]]
 path = "docs/testing/memory/0.71/historical-input-requirements.toml"
-sha256 = "3fdff1886e8458f3b2df81583944015d056c0a84faebe7398b2e12de33a2778b"
+sha256 = "c2eaa45ec042a16f67b67cafacd1284316c01bc90da41ab012a6600eabaa2b67"
 
 [[scenario.input]]
 path = "docs/testing/memory/0.71/memory-baseline-report-v1.schema.json"
-sha256 = "78d8fe47f941b1129aa090b59df8b3deac210c487770e9b11a1465bde10c117c"
+sha256 = "9e89f3c34f66679831a5a0ddf965df416d38356c71bf73debc9f6ffc37cf0887"
 
 [[scenario.input]]
 path = "docs/testing/memory/0.71/historical-input-receipt-v1.schema.json"
-sha256 = "c06ef23ada025f85912d2cf983c3ed3f1432342f0eda715d933440bfdf42325a"
+sha256 = "1ea67ae69382914ad2fb6b7f43adf1630f89b1e70fcb8b5fe7ef0944e5c2c080"
 
 [[scenario.input]]
 path = "docs/testing/memory/0.71/memory-baseline-status-v1.schema.json"
-sha256 = "d634c8ff1aff8e402008dc5c475e27b221bfb5454e6ffc0aa71d6a2d746c528f"
+sha256 = "d07ba4561e172affbba63c2812a27a728c87ba63c0a3ff170c7cfcea76eb2eec"
+
+[[scenario.input]]
+path = "docs/testing/memory/0.71/instrumentation-overhead-v1.schema.json"
+sha256 = "cbb81cd97081292eebc55c8609555c4490f93b7d1de8c1062e860397311d8214"
 
 [historical]
 branch = "explore/0.67-telemetry-hazelcast"
@@ -72,6 +76,10 @@ commit = "dbc2f82f7f303528b3cca7842818730c82232b9c"
 requirements = "docs/testing/memory/0.71/historical-input-requirements.toml"
 
 [d0]
-ready = false
+ready = true
 required_receipts = ["ownership_inventory", "provider_qualification", "phase_timeline", "statistics_contract", "instrumentation_overhead", "admitted_host", "bootstrap_0_67_1", "ci_bounded_dry_run", "historical_mirror"]
-blockers = ["dedicated host receipt not checked in", "0.67.1 bootstrap evidence unavailable in this checkout", "protected historical mirror receipt unavailable"]
+evidence_root = "docs/testing/perf-artifacts/0.71/ax42/d0-baseline"
+evidence_manifest_sha256 = "d1e7aafd1928f96094a10877bb09db8a902a8b9f58d3e1cba2fc15e8005c76bd"
+evidence_sha256sums_sha256 = "200c4510273069001ed1226865991b36fe10613e3cfe57ff51274b147b8781bd"
+classification_receipt = "docs/testing/memory/0.71/d0-d1-decision-receipt.json"
+blockers = []

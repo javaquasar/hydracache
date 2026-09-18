@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "release": "0.67.1",
+  "w_item": "W5",
+  "source_commit": "7bd31af9a5092466d7a7284995f388d33ed3110f",
+  "dirty_worktree": false,
+  "defect_id": "hydracache-0.67.1-W5",
+  "command_digest": "fb8a6cc2d9fba1e881dd8c9dd24f3bcda7464244f4bdf0c41a5c099e9a878940",
+  "registry_digest": "67ad930998f16cda39e36213287a11bd7d591b50f7c9102ffeb20163a23976ba",
+  "expected_failure": "HC-CANARY-RED:W5",
+  "started_at": "2026-09-11T11:18:51.932723451Z",
+  "ended_at": "2026-09-11T11:18:52.987961453Z",
+  "duration_ms": 1055,
+  "exit_code": 101,
+  "outcome": "expected_red",
+  "output_sha256": "6468ffb5b7ad1f0510e23e9d2a536eff4530e45dd1755cc5df83bb63e89ce1ad"
+}

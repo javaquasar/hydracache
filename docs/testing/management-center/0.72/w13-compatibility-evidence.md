@@ -1,7 +1,9 @@
 # W13 compatibility, packaging and publication evidence
 
 This is development evidence, not a ship receipt. Exact-candidate admission remains fail closed until
-W14 validates an annotated candidate and the shipped 0.71 predecessor artifact.
+W14 validates an annotated candidate and the shipped 0.71 predecessor artifact. The published
+`v0.71.0` tag became available after the original W13 execution; this note retains historical
+results and records the changed prerequisite below.
 
 ## Implemented and exercised
 
@@ -20,13 +22,13 @@ W14 validates an annotated candidate and the shipped 0.71 predecessor artifact.
 | Supply chain | pass | `cargo deny check`: advisories, bans, licenses and sources green after upgrading `h2`, `chacha20` and `spin` |
 | Real mixed-binary machinery | implemented, receipt pending | dedicated ship-mandatory gate accepts only the full-history `v0.71.0` tag, starts real 0.71/0.72 daemons, exercises all five scenarios, and retains binary/provenance/observation digests |
 
-## Required evidence that is unavailable
+## Published predecessor now available; required proof still pending
 
-`git tag --list "v0.71*"` and `git ls-remote --tags origin "refs/tags/v0.71*"` both return no
-artifact. The available `feat/0.71-memory-footprint-retention-efficiency` branch still declares
-workspace version `0.70.0`; it is not a substitute for a shipped 0.71 binary. Consequently the
-implemented `env.hydracache-run-management-mixed-072` gate is **blocked and non-promotable**, not
-skipped or passed. Its executable scenario covers:
+The earlier no-tag observation is superseded. The annotated `v0.71.0` tag resolves to
+`da8d6de409a657e0260e7fbfb4ab31d8d6ad5ca8` and is an ancestor of the merged 0.72
+candidate branch. The tag is unsigned; no cryptographic tag-signature claim is made. The
+implemented `env.hydracache-run-management-mixed-072` gate is now runnable, but remains
+**non-promotable until its real-binary receipt is produced and validated**. Its executable scenario covers:
 
 - old leader/new followers and new leader/old follower with actual 0.71/0.72 executables;
 - leader change and old-peer restart during the mixed window;

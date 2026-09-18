@@ -1347,7 +1347,13 @@ private modules or infer Redis/HC/2 wire compatibility from the local API.
 
 ## Release 0.67 performance characterization
 
-The canonical methodology and claim boundary are in [`PERFORMANCE.md`](PERFORMANCE.md). Release 0.67 ships the W0-W10 testing infrastructure, not official capacity, sizing, Redis-comparison, metrics-agreement, or numerical baseline results. The missing dedicated-runner evidence is explicit debt: [`TD-0013`](technical-debt/TD-0013-dedicated-performance-runner-and-baseline-bootstrap.md).
+The canonical methodology and claim boundary are in [`PERFORMANCE.md`](PERFORMANCE.md). Release
+0.67 shipped the W0-W10 testing infrastructure without official capacity, sizing,
+Redis-comparison, metrics-agreement, or numerical baseline results. Release 0.67.1 resolved
+the missing dedicated-runner bootstrap debt, [`TD-0013`](technical-debt/TD-0013-dedicated-performance-runner-and-baseline-bootstrap.md),
+through an independently reviewed five-sample activation. Its separate frozen-candidate W7 ship
+gate also passed; the anonymized result is
+[`testing/perf-scenarios/0.67/results/ax42-reference-0.67.1-20260911.md`](testing/perf-scenarios/0.67/results/ax42-reference-0.67.1-20260911.md).
 
 The profile-selection rules, evidence hierarchy, and prohibition on promoting a
 weaker result into a stronger claim are defined in
@@ -1365,8 +1371,7 @@ Its contract, workloads, raw artifacts, and local reproduction procedure are in
 
 The reference jobs start only through an explicit trusted-`main` workflow dispatch with
 `performance_0671_mode` set to `qualify`, `full-dress`, `bootstrap`, or `frozen-candidate`. Runs
-serialize through `release-067-performance-reference-v1`; the runner may remain offline while
-TD-0013 is open. Provisioning/bootstrap steps are in
+serialize through `release-067-performance-reference-v1`. Provisioning/bootstrap steps are in
 [`testing/PERF_RUNNER_0_67_1.md`](testing/PERF_RUNNER_0_67_1.md), and deterministic review,
 activation, and the separate frozen campaign are in
 [`testing/PERF_REFERENCE_0_67_1_REVIEW_AND_ACTIVATION.md`](testing/PERF_REFERENCE_0_67_1_REVIEW_AND_ACTIVATION.md).
@@ -1378,7 +1383,7 @@ tier is always non-authoritative, non-capacity-bearing, and ineligible for
 qualification, bootstrap, or ship evidence. Its optional RAM-only storage mode
 is diagnostic only and does not change the protected reference contract.
 
-The eventual host-side sequence remains:
+The underlying host-side measurement sequence remains:
 
 ```bash
 export HYDRACACHE_RUN_PERF_REFERENCE=1
@@ -1397,12 +1402,20 @@ cargo run -p xtask --locked -- evidence-run --release 0.67 --gate tool.perf-budg
 unset HYDRACACHE_PERF_RUNNER_CLASS HYDRACACHE_RUN_PERF_REFERENCE HYDRACACHE_RUN_PERF_CORE HYDRACACHE_RUN_PERF_RESP HYDRACACHE_RUN_PERF_CONTROL_PLANE
 ```
 
-These commands are deliberately fail-closed and are not expected to pass before bootstrap. Closing TD-0013 requires at least five eligible, stable, successful `main` runs from one fingerprint/contract family, independent review of the anchor, rolling window, and budget, activation of `reference-v1`, and a complete green frozen-candidate reference run. Candidate, failed, quarantined, unstable, stale, mixed-fingerprint, or self-baselining runs remain ineligible.
+These commands remain deliberately fail-closed. TD-0013 is resolved by the completed qualification,
+two-run full-dress admission, five eligible chained `main` samples, independent contract review,
+and `reference-v1` activation. W7 subsequently passed on the separate exact-SHA frozen candidate.
+Candidate, failed, quarantined, unstable, stale, mixed-fingerprint, or self-baselining runs remain
+ineligible.
 
 The campaign controller retains every original GitHub ZIP and also materializes a digest-verified
 W5 input tree. `prepare-review` can reconstruct that tree from retained ZIPs; `run-frozen` controls
 the separate post-activation dispatch and leaves the runner offline afterward. Neither command
 creates, deletes, or powers off provider resources.
+
+The frozen-candidate job provisions and probes Python, `cargo-deny`, and the pinned
+`cargo-nextest` before starting the long measurements. The final workspace receipt therefore cannot
+discover a missing helper only after otherwise successful performance evidence has completed.
 
 The RESP gate describes one selected node-local endpoint and a method-scoped same-box Redis comparison. The control-plane gate describes real daemon metadata/admin behavior. Neither may be converted into a distributed value-plane or general Redis-replacement claim.
 

@@ -1,0 +1,1 @@
+{"role":"local","listen_addr":"127.0.0.1:0","cluster_addr":"127.0.0.1:0","storage_dir":"/dev/shm/hydracache-reference-evidence-v1/0.67/w5b-run-artifacts/w5b-control-0-pid-27970-nanos-1789125393930871480-seq-1/data","admin_enabled":true,"admin_addr":"127.0.0.1:38387","redis_enabled":true,"redis_addr":"127.0.0.1:38319","redis_auth_required":false,"rediss_enabled":false}

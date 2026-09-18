@@ -1,0 +1,109 @@
+{
+  "prerequisites": {
+    "profile": {
+      "name": "reference-v1",
+      "required_runner_class": "self-hosted-bare-metal-v1",
+      "allowed_fingerprints": [
+        "25baeec1c9ec75da90b5dd0f29c101897450b96651d7e47570e18684be486ebb"
+      ],
+      "minimum_logical_cores": 4,
+      "required_cpu_affinity": "1-4",
+      "required_cgroup_cpu_quota": "unlimited",
+      "require_dedicated": true,
+      "maximum_calibration_score": 0.25
+    },
+    "observed_runner": {
+      "runner_class": "self-hosted-bare-metal-v1",
+      "fingerprint": "25baeec1c9ec75da90b5dd0f29c101897450b96651d7e47570e18684be486ebb",
+      "cpu_model": "AMD Ryzen 7 PRO 8700GE w/ Radeon 780M Graphics",
+      "logical_cores": 4,
+      "ram_bytes": 66490486784,
+      "os": "linux",
+      "kernel": "6.8.0-138-generic",
+      "cpu_affinity": "1-4",
+      "cgroup_cpu_quota": "unlimited",
+      "governor": "performance",
+      "turbo": "enabled",
+      "shared_hardware": false,
+      "calibration_score": 0.015776637614821176,
+      "attestation": {
+        "schema_version": 5,
+        "contract_version": "hydracache-reference-host-v5",
+        "virtualization": "none",
+        "physical_cores": 8,
+        "measurement_cores": [
+          {
+            "logical_cpu": 1,
+            "package_id": 0,
+            "core_id": 1
+          },
+          {
+            "logical_cpu": 2,
+            "package_id": 0,
+            "core_id": 2
+          },
+          {
+            "logical_cpu": 3,
+            "package_id": 0,
+            "core_id": 3
+          },
+          {
+            "logical_cpu": 4,
+            "package_id": 0,
+            "core_id": 4
+          }
+        ],
+        "cpu_isolation": {
+          "smt_control": "off",
+          "online_cpus": "0-7",
+          "isolated_cpus": "1-4",
+          "nohz_full_cpus": "1-4",
+          "rcu_nocbs_cpus": "1-4",
+          "housekeeping_cpus": "0,5-7",
+          "irq_affinity_policy": "housekeeping-only-v1",
+          "measurement_idle_policy": "latency-cap-us-v1",
+          "measurement_max_idle_latency_us": 1,
+          "housekeeping_idle_policy": "latency-cap-us-v1",
+          "housekeeping_max_idle_latency_us": 1
+        },
+        "host_digest": "571591a534c9894242fc0af0c5f80c31131fe7e4cdb9d0ea63da6d8b56af8932",
+        "storage_class": "local-nvme",
+        "storage_identity_digest": "74ec6d1126c24b7a3899494eef2564aec2d3085056ac200e4a8cc8ca0ae43a50",
+        "os_image": "ubuntu-24.04",
+        "toolchain_identity": "rustc-1.94.0",
+        "prebuild_contract_digest": "f2caae0689d8b075d2a6d59d6090466365f9a6824c6996d6b92830956831cc55"
+      }
+    },
+    "expected_build_contract": {
+      "schema_version": 1,
+      "toolchain_identity": "rustc-1.94.0",
+      "target_set": [
+        "hydracache-loadgen",
+        "hydracache-server"
+      ],
+      "features": [],
+      "cargo_profile": "release",
+      "flags": [
+        "--locked",
+        "--release"
+      ],
+      "build_recipe": [
+        "cargo build -p hydracache-loadgen -p hydracache-server --release --locked"
+      ]
+    }
+  },
+  "external_tool_prebuild": {
+    "payload": {
+      "schema_version": 1,
+      "platform_key": "linux-x86_64-gnu",
+      "provenance_id": "redis-benchmark-7.2.5-linux-x86_64-gnu-source-v1",
+      "provenance_registry_sha256": "760ba8850f4e271577e26d7bdba6f142b6efc2f4ce9c83125efb85d6dd2622d2",
+      "source_archive_sha256": "5981179706f8391f03be91d951acafaeda91af7fac56beffb2701963103e423d",
+      "tool_binary_id": "redis-benchmark",
+      "tool_canonical_path": "/opt/actions-runner/_work/_temp/hydracache-perf-tools/redis-7.2.5/src/redis-benchmark",
+      "tool_binary_sha256": "71bf5cbf35038d8ee73379ddcb1d78559bcc88ba70039ed2f55ea9db7521c91f",
+      "prebuild_manifest_sha256": "2768ca970a2b3e09c3ee63bbd9bba466c3aee40be8dfca8e06cbe98309e4b296"
+    },
+    "receipt_sha256": "32197a3881908e7ef8f5b28b201817312d6a7eb6d7f0a02a925d5d4e28ef42d5"
+  }
+}

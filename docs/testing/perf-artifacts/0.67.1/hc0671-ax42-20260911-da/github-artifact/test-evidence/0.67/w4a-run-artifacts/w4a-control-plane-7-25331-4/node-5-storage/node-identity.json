@@ -1,0 +1,6 @@
+{
+  "format_version": 1,
+  "cluster": "hydracache",
+  "node_id": "member-127-0-0-1-42441",
+  "raft_node_id": 100193905317517236
+}

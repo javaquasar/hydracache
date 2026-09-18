@@ -212,6 +212,13 @@ fn validate_transition_history(
             history.len()
         ));
     }
+    let identity_fields = [
+        "source_sha",
+        "host_fingerprint",
+        "scenario_digest",
+        "contract_digest",
+    ];
+    let frozen_identity = history.first();
     for (index, transition) in history.iter().enumerate() {
         let expected = LEGAL_DECISION_STATES[index + 1];
         if string(transition.get("state")) != Some(expected) {
@@ -229,6 +236,16 @@ fn validate_transition_history(
             "reviewer",
         ] {
             require_table_string(transition, id, field, problems);
+        }
+        if let Some(frozen) = frozen_identity {
+            for field in identity_fields {
+                if string(transition.get(field)) != string(frozen.get(field)) {
+                    problems.push(format!(
+                        "proposal {id} transition {} changes frozen {field}",
+                        index + 1
+                    ));
+                }
+            }
         }
     }
 }
@@ -361,10 +378,22 @@ pub fn check_allocators(root: &TomlValue, release: &str) -> Vec<String> {
         ] {
             require_table_string(allocator, id, field, &mut problems);
         }
-        if string_array(allocator.get("targets")).is_empty()
-            || string_array(allocator.get("fields")).is_empty()
-        {
+        let fields = string_array(allocator.get("fields"));
+        if string_array(allocator.get("targets")).is_empty() || fields.is_empty() {
             problems.push(format!("allocator {id} lacks target/field capabilities"));
+        }
+        let required_fields: &[&str] = match id {
+            "system" => &["allocated", "resident", "peak_resident", "page_faults"],
+            "jemalloc" => &["allocated", "active", "mapped", "resident", "retained"],
+            "mimalloc" => &["allocated", "committed", "reserved", "segments", "pages"],
+            _ => &[],
+        };
+        for required in required_fields {
+            if !fields.contains(required) {
+                problems.push(format!(
+                    "allocator {id} lacks required field capability {required}"
+                ));
+            }
         }
         for unavailable in string_array(allocator.get("unavailable_fields")) {
             if !unavailable.contains("unavailable(") {
@@ -593,6 +622,11 @@ pub fn run_host_preflight(args: Vec<String>) -> Result<(), Box<dyn Error>> {
             "MALLOC_CONF": std::env::var("MALLOC_CONF").ok(),
             "MIMALLOC_OPTIONS": std::env::var("MIMALLOC_OPTIONS").ok()
         },
+        "affinity_policy": {
+            "daemon": std::env::var("HYDRACACHE_MEMORY_DAEMON_CPUSET").ok(),
+            "loadgen": std::env::var("HYDRACACHE_MEMORY_LOADGEN_CPUSET").ok(),
+            "collector": std::env::var("HYDRACACHE_MEMORY_COLLECTOR_CPUSET").ok()
+        },
         "competing_load": read_optional("/proc/loadavg"),
         "available_memory": first_matching_line("/proc/meminfo", "MemAvailable"),
         "major_faults_and_throttling": read_optional("/proc/self/status"),
@@ -607,12 +641,20 @@ pub fn run_host_preflight(args: Vec<String>) -> Result<(), Box<dyn Error>> {
         .get("relative_spread")
         .and_then(JsonValue::as_f64)
         .is_some_and(|spread| spread <= calibration_limit);
-    let fingerprint = canonical_json_digest(&probes);
+    let identity_probes = host_identity_probes(&probes);
+    let fingerprint = canonical_json_digest(&identity_probes);
     let toolchain = format!(
         "rustc={};cargo={}",
         command_optional("rustc", &["--version"]).unwrap_or_else(|| "unavailable".to_owned()),
         command_optional("cargo", &["--version"]).unwrap_or_else(|| "unavailable".to_owned())
     );
+    let affinity_declared = [
+        "HYDRACACHE_MEMORY_DAEMON_CPUSET",
+        "HYDRACACHE_MEMORY_LOADGEN_CPUSET",
+        "HYDRACACHE_MEMORY_COLLECTOR_CPUSET",
+    ]
+    .iter()
+    .all(|name| std::env::var(name).is_ok_and(|value| !value.trim().is_empty()));
     let eligible = cfg!(target_os = "linux")
         && dedicated
         && protected_environment.as_deref() == Some("memory-reference-071")
@@ -621,6 +663,7 @@ pub fn run_host_preflight(args: Vec<String>) -> Result<(), Box<dyn Error>> {
             .is_some_and(|value| !value.is_empty())
         && lease_end.as_deref().is_some_and(|value| !value.is_empty())
         && calibration_green
+        && affinity_declared
         && tools
             .values()
             .all(|value| value.as_str() != Some("unavailable"));
@@ -642,6 +685,7 @@ pub fn run_host_preflight(args: Vec<String>) -> Result<(), Box<dyn Error>> {
         "protected_environment": protected_environment,
         "lease": {"owner": lease_owner, "end": lease_end},
         "pre_probes": probes,
+        "identity_probes": identity_probes,
         "calibration": calibration,
         "calibration_limit": calibration_limit,
         "post_probes_required": true,
@@ -721,6 +765,93 @@ pub fn canonical_json_digest(value: &JsonValue) -> String {
     let canonical = canonical_json(value);
     let bytes = serde_json::to_vec(&canonical).expect("canonical JSON serialization");
     format!("sha256:{}", hex(&Sha256::digest(bytes)))
+}
+
+/// Select the stable host identity and held policy values from a full
+/// preflight observation. Volatile admission observations remain in the
+/// receipt but cannot make the same machine acquire a new fingerprint merely
+/// because free memory, load, temperature, or the probing process changed.
+pub fn host_identity_probes(probes: &JsonValue) -> JsonValue {
+    const IDENTITY_FIELDS: &[&str] = &[
+        "platform",
+        "protected_environment",
+        "dedicated_bare_metal",
+        "tools",
+        "logical_cpus",
+        "hardware_model",
+        "cpu_topology",
+        "numa_topology",
+        "ram",
+        "firmware",
+        "microcode",
+        "page_size",
+        "kernel",
+        "distro",
+        "cpu_governor",
+        "turbo_policy",
+        "transparent_huge_pages",
+        "swap",
+        "overcommit",
+        "ksm",
+        "cgroup",
+        "cgroup_memory_limit",
+        "container_runtime",
+        "clock_source",
+        "filesystem",
+        "allocator_knobs",
+        "affinity_policy",
+    ];
+    let mut identity = JsonMap::new();
+    if let Some(values) = probes.as_object() {
+        for field in IDENTITY_FIELDS {
+            let value = match *field {
+                "cpu_topology" => values
+                    .get(*field)
+                    .map(stable_cpu_topology)
+                    .unwrap_or(JsonValue::Null),
+                "filesystem" => values
+                    .get(*field)
+                    .map(stable_filesystem_identity)
+                    .unwrap_or(JsonValue::Null),
+                _ => values.get(*field).cloned().unwrap_or(JsonValue::Null),
+            };
+            identity.insert((*field).to_owned(), value);
+        }
+    }
+    JsonValue::Object(identity)
+}
+
+fn stable_cpu_topology(value: &JsonValue) -> JsonValue {
+    let Some(raw) = value.as_str() else {
+        return value.clone();
+    };
+    let Ok(mut topology) = serde_json::from_str::<JsonValue>(raw) else {
+        return value.clone();
+    };
+    if let Some(rows) = topology.get_mut("lscpu").and_then(JsonValue::as_array_mut) {
+        rows.retain(|row| {
+            row.get("field").and_then(JsonValue::as_str) != Some("CPU(s) scaling MHz:")
+        });
+    }
+    topology
+}
+
+fn stable_filesystem_identity(value: &JsonValue) -> JsonValue {
+    let Some(raw) = value.as_str() else {
+        return value.clone();
+    };
+    let Some(row) = raw.lines().rfind(|line| !line.trim().is_empty()) else {
+        return value.clone();
+    };
+    let columns: Vec<_> = row.split_whitespace().collect();
+    if columns.len() < 3 {
+        return value.clone();
+    }
+    json!({
+        "source": columns[0],
+        "filesystem_type": columns[1],
+        "mountpoint": columns[columns.len() - 1],
+    })
 }
 
 fn canonical_json(value: &JsonValue) -> JsonValue {
@@ -870,16 +1001,35 @@ fn first_matching_line(path: &str, prefix: &str) -> Option<String> {
 }
 
 fn calibration_samples() -> JsonValue {
-    let mut durations = Vec::new();
-    for sample in 0..5_u64 {
-        let started = std::time::Instant::now();
-        let mut value = sample.wrapping_add(1);
-        for index in 0..2_000_000_u64 {
-            value = std::hint::black_box(value.rotate_left(7) ^ index).wrapping_mul(0x9e37_79b9);
-        }
-        std::hint::black_box(value);
-        durations.push(started.elapsed().as_secs_f64());
+    const WARMUP_SAMPLES: u64 = 1;
+    const MEASURED_SAMPLES: u64 = 5;
+    const ITERATIONS_PER_SAMPLE: u64 = 20_000_000;
+
+    for sample in 0..WARMUP_SAMPLES {
+        run_calibration_sample(sample, ITERATIONS_PER_SAMPLE);
     }
+    let durations = (0..MEASURED_SAMPLES)
+        .map(|sample| run_calibration_sample(WARMUP_SAMPLES + sample, ITERATIONS_PER_SAMPLE))
+        .collect::<Vec<_>>();
+    summarize_calibration(&durations, WARMUP_SAMPLES, ITERATIONS_PER_SAMPLE)
+}
+
+fn run_calibration_sample(sample: u64, iterations: u64) -> f64 {
+    let started = std::time::Instant::now();
+    let mut value = sample.wrapping_add(1);
+    for index in 0..iterations {
+        value = std::hint::black_box(value.rotate_left(7) ^ index).wrapping_mul(0x9e37_79b9);
+    }
+    std::hint::black_box(value);
+    started.elapsed().as_secs_f64()
+}
+
+fn summarize_calibration(
+    durations: &[f64],
+    warmup_samples_discarded: u64,
+    iterations_per_sample: u64,
+) -> JsonValue {
+    debug_assert!(!durations.is_empty());
     let minimum = durations.iter().copied().fold(f64::INFINITY, f64::min);
     let maximum = durations.iter().copied().fold(0.0_f64, f64::max);
     let mean = durations.iter().sum::<f64>() / durations.len() as f64;
@@ -889,7 +1039,9 @@ fn calibration_samples() -> JsonValue {
         f64::INFINITY
     };
     json!({
-        "algorithm": "integer-mix-v1",
+        "algorithm": "integer-mix-v3-warmed-20m",
+        "warmup_samples_discarded": warmup_samples_discarded,
+        "iterations_per_sample": iterations_per_sample,
         "samples_seconds": durations,
         "minimum_seconds": minimum,
         "maximum_seconds": maximum,
@@ -958,4 +1110,23 @@ fn take(args: &[String], index: &mut usize, flag: &str) -> Result<String, Box<dy
     args.get(*index)
         .cloned()
         .ok_or_else(|| format!("{flag} requires a value").into())
+}
+
+#[cfg(test)]
+mod calibration_tests {
+    use super::summarize_calibration;
+
+    #[test]
+    fn summary_records_discarded_warmup_and_measured_spread() {
+        let summary = summarize_calibration(&[10.0, 10.1, 9.9, 10.0, 10.0], 1, 20_000_000);
+
+        assert_eq!(summary["warmup_samples_discarded"], 1);
+        assert_eq!(summary["iterations_per_sample"], 20_000_000);
+        assert_eq!(summary["algorithm"], "integer-mix-v3-warmed-20m");
+        assert_eq!(summary["samples_seconds"].as_array().unwrap().len(), 5);
+        assert_eq!(summary["minimum_seconds"], 9.9);
+        assert_eq!(summary["maximum_seconds"], 10.1);
+        let spread = summary["relative_spread"].as_f64().unwrap();
+        assert!((spread - 0.02).abs() < f64::EPSILON);
+    }
 }

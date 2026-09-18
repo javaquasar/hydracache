@@ -11,7 +11,8 @@
 > - **Depends on:** shipped `0.67.0`.
 > - **Unblocks:** official, narrowly scoped reference evidence and future numerical capacity
 >   claims. It is no longer a source-code prerequisite for the `0.68.0` Rust release.
-> - **Status:** in-progress; implementation complete, authoritative qualification deferred.
+> - **Status:** shipped; W0-W7 evidence passed, the final frozen candidate was closed and
+>   preserved off-host, and publication closeout completed on 2026-09-11.
 >
 > Roadmap: [`INDEX.md`](INDEX.md) - parent plan:
 > [`V0_67_PERFORMANCE_CHARACTERIZATION_PLAN.md`](V0_67_PERFORMANCE_CHARACTERIZATION_PLAN.md)
@@ -24,11 +25,15 @@ Read [`CLAUDE.md`](../../CLAUDE.md), [`docs/RULES.md`](../RULES.md),
 [`docs/PERFORMANCE.md`](../PERFORMANCE.md), and [`docs/GATES.md`](../GATES.md) first.
 This is an evidence/bootstrap patch, not an optimization or product-surface release.
 
-**Preparation state:** W0-W4 acquisition/aggregation and W5-W7 deterministic
-proposal/review/activation/frozen-candidate machinery are prepared. Live evidence is still required;
-this does not mark 0.67.1 shipped, resolve TD-0013, satisfy any runtime stage receipt, or authorize a
-numerical claim. ADR-0020 permits the separately scoped 0.68 Rust release to proceed while this
-evidence-only campaign remains `in-progress`.
+**Execution state:** W1 qualification, two-run full-dress admission, W4's exact five chained
+bootstrap samples, W5 independent review, W6 activation, and W7's clean frozen-candidate run are
+complete. TD-0013 is resolved. The exact-SHA final evidence is preserved off-host and mirrored
+byte-for-byte in the public repository under its immutable campaign ID. The anonymized verdict is
+[`../testing/perf-scenarios/0.67/results/ax42-reference-0.67.1-20260911.md`](../testing/perf-scenarios/0.67/results/ax42-reference-0.67.1-20260911.md),
+the reusable method is recorded in
+[`../articles/006-measuring-cache-performance-on-bare-metal.md`](../articles/006-measuring-cache-performance-on-bare-metal.md),
+and the raw evidence inventory starts at
+[`../testing/perf-artifacts/README.md`](../testing/perf-artifacts/README.md).
 
 **Non-ship readiness additions:** a separate `indicative-exploratory-v1` tier
 provides reproducible same-host characterization without capacity or sizing
@@ -121,16 +126,16 @@ spread, calibration, affinity, quota, privacy, IRQ, or fail-closed threshold.
 tooling and methodology release without capacity, sizing, Redis-comparison, metrics-agreement, or
 numerical baseline claims.
 
-This patch may publish numerical reference evidence only after every work item below is complete.
-Until W6 activates the reviewed contracts and W7 passes on the frozen candidate:
+This evidence milestone publishes numerical reference evidence only because every work item below
+is complete. Before W6 activated the reviewed contracts and W7 passed on the frozen candidate:
 
-- `reference-v1` remains `unbootstrapped`;
-- every bootstrap sample is non-ship exploratory evidence;
-- no number may be quoted as a capacity floor, sizing recommendation, Redis advantage, portable
+- `reference-v1` remained `unbootstrapped`;
+- every bootstrap sample was non-ship exploratory evidence;
+- no number could be quoted as a capacity floor, sizing recommendation, Redis advantage, portable
   baseline, or general cluster-capacity claim;
 - the existing open-loop schedule, SLOs, repeat counts, zero-error rules, and 15% scenario spread
-  rule must not be weakened;
-- GitHub-hosted `ci-shared` results remain tripwire-only.
+  rule could not be weakened;
+- GitHub-hosted `ci-shared` results remained tripwire-only.
 
 The reference surfaces remain exactly those defined by `0.67.0`: embedded cache, in-process client
 surface, one selected node-local RESP endpoint, real daemon control-plane, and library/model
@@ -444,6 +449,11 @@ cargo run -p xtask --locked -- release-evidence --release 0.67.1 `
   --receipts-dir target/release-evidence/receipts --require-ship
 ```
 
+Completed on campaign `hc0671-ax42-20260911-da` at exact commit
+`7bd31af9a5092466d7a7284995f388d33ed3110f`: the GitHub run completed successfully, all W0-W7
+items aggregated as `ship-ready`, the immutable campaign was closed, and its original artifacts
+and host-state archives were verified and retained off-host.
+
 ## Execution Order
 
 1. Land W0 governance.
@@ -454,7 +464,9 @@ cargo run -p xtask --locked -- release-evidence --release 0.67.1 `
 6. Generate and independently review W5 payloads.
 7. Land W6 activation as a dedicated reviewable commit.
 8. Run W7 on the frozen candidate.
-9. Tag and publish `0.67.1` only after ordinary CI and the full reference pipeline are green.
+9. Close the `0.67.1` evidence milestone only after ordinary CI and the full reference pipeline
+   are green. Because the campaign completed after the workspace had advanced to `0.70.0`, do not
+   create a misleading `v0.67.1` crates tag from the later source tree.
 10. Archive evidence, take the runner offline, and delete hourly infrastructure when retention is
     no longer needed.
 

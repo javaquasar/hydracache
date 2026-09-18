@@ -33,15 +33,15 @@ class HistoricalMirror071Tests(unittest.TestCase):
             self.assertEqual(source, restored)
             self.assertEqual(mirror.manifest_digest(source), mirror.manifest_digest(restored))
 
-    def test_empty_raw_file_is_rejected(self) -> None:
+    def test_empty_raw_file_is_preserved_in_complete_manifest(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             archive_path = Path(directory) / "history.tar.gz"
             with tarfile.open(archive_path, "w:gz") as archive:
                 member = tarfile.TarInfo("results/empty.jsonl")
                 member.size = 0
                 archive.addfile(member, io.BytesIO())
-            with self.assertRaises(mirror.MirrorError):
-                mirror.manifest_from_archive(archive_path)
+            accepted = mirror.manifest_from_archive(archive_path, allow_empty=True)
+            self.assertEqual(accepted[0]["bytes"], 0)
 
     def test_path_traversal_is_rejected(self) -> None:
         with tempfile.TemporaryDirectory() as directory:

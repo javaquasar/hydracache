@@ -1,0 +1,1 @@
+BOOT_IMAGE=/vmlinuz-6.8.0-138-generic root=UUID=5e18c1e8-f28f-4f39-bfc4-e28c08c52805 ro consoleblank=0 systemd.show_status=true consoleblank=0 nosmt isolcpus=domain,managed_irq,nohz,1-4 nohz_full=1-4 rcu_nocbs=1-4 irqaffinity=0,5-7

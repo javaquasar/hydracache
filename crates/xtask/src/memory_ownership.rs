@@ -309,6 +309,21 @@ impl<'ast> Visit<'ast> for CandidateCollector<'_> {
 
 pub fn run_inventory(args: Vec<String>) -> Result<(), Box<dyn Error>> {
     let options = Options::parse(args)?;
+    if options.check {
+        let problems = check(&options.root, &options.release)?;
+        if problems.is_empty() {
+            println!(
+                "memory-owner-inventory: OK (release {}; reviewed inventory is current)",
+                options.release
+            );
+            return Ok(());
+        }
+        return Err(format!(
+            "memory-owner-inventory --check failed:\n- {}",
+            problems.join("\n- ")
+        )
+        .into());
+    }
     let started_at = now();
     let candidates = scan_repo(&options.root)?;
     let output = options
@@ -813,6 +828,7 @@ struct Options {
     root: PathBuf,
     release: String,
     output: Option<PathBuf>,
+    check: bool,
 }
 
 impl Options {
@@ -820,22 +836,28 @@ impl Options {
         let mut root = None;
         let mut release = None;
         let mut output = None;
+        let mut check = false;
         let mut index = 0;
         while index < args.len() {
             match args[index].as_str() {
                 "--root" => root = Some(PathBuf::from(take(&args, &mut index, "--root")?)),
                 "--release" => release = Some(take(&args, &mut index, "--release")?),
                 "--output" => output = Some(PathBuf::from(take(&args, &mut index, "--output")?)),
+                "--check" => check = true,
                 other => {
                     return Err(format!("unsupported memory ownership argument: {other}").into())
                 }
             }
             index += 1;
         }
+        if check && output.is_some() {
+            return Err("memory-owner-inventory --check cannot be combined with --output".into());
+        }
         Ok(Self {
             root: root.unwrap_or(crate::doc_check::find_repo_root()?),
             release: release.ok_or("memory ownership command requires --release")?,
             output,
+            check,
         })
     }
 }
@@ -845,4 +867,30 @@ fn take(args: &[String], index: &mut usize, flag: &str) -> Result<String, Box<dy
     args.get(*index)
         .cloned()
         .ok_or_else(|| format!("{flag} requires a value").into())
+}
+
+#[cfg(test)]
+mod option_tests {
+    use super::Options;
+
+    #[test]
+    fn inventory_check_is_read_only_and_excludes_output() {
+        let options = Options::parse(vec![
+            "--release".to_owned(),
+            "0.71".to_owned(),
+            "--check".to_owned(),
+        ])
+        .unwrap();
+        assert!(options.check);
+        assert!(options.output.is_none());
+
+        assert!(Options::parse(vec![
+            "--release".to_owned(),
+            "0.71".to_owned(),
+            "--check".to_owned(),
+            "--output".to_owned(),
+            "inventory.json".to_owned(),
+        ])
+        .is_err());
+    }
 }

@@ -1,0 +1,4779 @@
+{
+  "report": {
+    "schema_version": 1,
+    "scenario_id": "control-plane-real-daemon-v1",
+    "evidence_class": "w4a-real-daemon-control-plane",
+    "execution_mode": "real-daemon-admin-http",
+    "capability_receipt_sha256": "fbb1e2283c5cfcd8d6c139f44cf2ff79edc9dcc571e153415f4dd3afb40ac2ae",
+    "capability": {
+      "payload": {
+        "receipt_kind": "hydracache-real-daemon-cluster-v1",
+        "receipt_source": "observed_process_harness",
+        "execution_mode": "real-daemon-admin-http",
+        "profile": "reference-v1",
+        "source_commit": "7bd31af9a5092466d7a7284995f388d33ed3110f",
+        "runner_fingerprint_sha256": "f18a64abb0ed0bf5a48f5cfd4557a9f90cfd30bfd082e64a7592fbee8322b91f",
+        "prebuild_manifest_canonical_path": "/dev/shm/hydracache-reference-evidence-v1/0.67/prebuild-manifest.json",
+        "prebuild_manifest_sha256": "2768ca970a2b3e09c3ee63bbd9bba466c3aee40be8dfca8e06cbe98309e4b296",
+        "prebuild_contract_sha256": "f2caae0689d8b075d2a6d59d6090466365f9a6824c6996d6b92830956831cc55",
+        "provisioner": "daemon-cluster-process-harness",
+        "direct_prebuilt_exec": true,
+        "server_binary": {
+          "canonical_path": "/opt/actions-runner/_work/hydracache/hydracache/target/release/hydracache-server",
+          "sha256": "a17b5148cad43e2193c69a64e3372e2832fa94a47196a7b6bec405128f3633c6"
+        },
+        "node_count": 3,
+        "nodes": [
+          {
+            "node_id": "member-127-0-0-1-39133",
+            "pid": 25348,
+            "direct_prebuilt_exec": true,
+            "observed_executable_path": "/opt/actions-runner/_work/hydracache/hydracache/target/release/hydracache-server",
+            "observed_executable_sha256": "a17b5148cad43e2193c69a64e3372e2832fa94a47196a7b6bec405128f3633c6",
+            "config": {
+              "canonical_path": "/dev/shm/hydracache-reference-evidence-v1/0.67/w4a-run-artifacts/w4a-control-plane-3-25331-0/node-0-launch-config.json",
+              "sha256": "6a1e99e415e1c57720c9be3b0ea45065e487ea289c0aff0b3332a248bc6e16b8",
+              "launch_config": {
+                "receipt_kind": "hydracache-daemon-launch-config-v1",
+                "node_id": "member-127-0-0-1-39133",
+                "client_addr": "127.0.0.1:43083",
+                "cluster_addr": "127.0.0.1:39133",
+                "admin_addr": "127.0.0.1:39025",
+                "redis_addr": null,
+                "storage_dir": "/dev/shm/hydracache-reference-evidence-v1/0.67/w4a-run-artifacts/w4a-control-plane-3-25331-0/node-0-storage",
+                "cluster_start": "bootstrap",
+                "seed_cluster_addrs": [
+                  "127.0.0.1:41229"
+                ]
+              }
+            }
+          },
+          {
+            "node_id": "member-127-0-0-1-39507",
+            "pid": 25378,
+            "direct_prebuilt_exec": true,
+            "observed_executable_path": "/opt/actions-runner/_work/hydracache/hydracache/target/release/hydracache-server",
+            "observed_executable_sha256": "a17b5148cad43e2193c69a64e3372e2832fa94a47196a7b6bec405128f3633c6",
+            "config": {
+              "canonical_path": "/dev/shm/hydracache-reference-evidence-v1/0.67/w4a-run-artifacts/w4a-control-plane-3-25331-0/node-2-launch-config.json",
+              "sha256": "b738ea91c2ec609b4d628414597f258d570ad66162578a0173129a7adbe5170a",
+              "launch_config": {
+                "receipt_kind": "hydracache-daemon-launch-config-v1",
+                "node_id": "member-127-0-0-1-39507",
+                "client_addr": "127.0.0.1:45171",
+                "cluster_addr": "127.0.0.1:39507",
+                "admin_addr": "127.0.0.1:46105",
+                "redis_addr": null,
+                "storage_dir": "/dev/shm/hydracache-reference-evidence-v1/0.67/w4a-run-artifacts/w4a-control-plane-3-25331-0/node-2-storage",
+                "cluster_start": "join",
+                "seed_cluster_addrs": [
+                  "127.0.0.1:39133",
+                  "127.0.0.1:41229"
+                ]
+              }
+            }
+          },
+          {
+            "node_id": "member-127-0-0-1-41229",
+            "pid": 25363,
+            "direct_prebuilt_exec": true,
+            "observed_executable_path": "/opt/actions-runner/_work/hydracache/hydracache/target/release/hydracache-server",
+            "observed_executable_sha256": "a17b5148cad43e2193c69a64e3372e2832fa94a47196a7b6bec405128f3633c6",
+            "config": {
+              "canonical_path": "/dev/shm/hydracache-reference-evidence-v1/0.67/w4a-run-artifacts/w4a-control-plane-3-25331-0/node-1-launch-config.json",
+              "sha256": "197189346274e8c449e7f9b0de98d510e49d9d4005dc9ea8513f9ba061b8b0d5",
+              "launch_config": {
+                "receipt_kind": "hydracache-daemon-launch-config-v1",
+                "node_id": "member-127-0-0-1-41229",
+                "client_addr": "127.0.0.1:42933",
+                "cluster_addr": "127.0.0.1:41229",
+                "admin_addr": "127.0.0.1:33437",
+                "redis_addr": null,
+                "storage_dir": "/dev/shm/hydracache-reference-evidence-v1/0.67/w4a-run-artifacts/w4a-control-plane-3-25331-0/node-1-storage",
+                "cluster_start": "bootstrap",
+                "seed_cluster_addrs": [
+                  "127.0.0.1:39133"
+                ]
+              }
+            }
+          }
+        ]
+      },
+      "receipt_sha256": "fbb1e2283c5cfcd8d6c139f44cf2ff79edc9dcc571e153415f4dd3afb40ac2ae"
+    },
+    "node_count": 3,
+    "capacity_scope": "per-selected-admin-endpoint-and-role-no-sum",
+    "aggregate_cluster_capacity": false,
+    "product_data_plane": false,
+    "live_reshard_measured": false,
+    "steady_reads": [
+      {
+        "target_node_id": "member-127-0-0-1-39133",
+        "target_node_role": "leader",
+        "complete_endpoint_set": [
+          {
+            "node_id": "member-127-0-0-1-39133",
+            "admin_addr": "127.0.0.1:39025"
+          },
+          {
+            "node_id": "member-127-0-0-1-39507",
+            "admin_addr": "127.0.0.1:46105"
+          },
+          {
+            "node_id": "member-127-0-0-1-41229",
+            "admin_addr": "127.0.0.1:33437"
+          }
+        ],
+        "start": {
+          "endpoint": {
+            "node_id": "member-127-0-0-1-39133",
+            "admin_addr": "127.0.0.1:39025"
+          },
+          "admin_status": {
+            "source": "live",
+            "leader": "member-127-0-0-1-39133",
+            "term": 1,
+            "epoch": 3,
+            "quorum_ok": true,
+            "members": 3,
+            "member_ids": [
+              "member-127-0-0-1-39133",
+              "member-127-0-0-1-39507",
+              "member-127-0-0-1-41229"
+            ],
+            "voters": 3,
+            "voter_ids": [
+              5458616142184900020,
+              7615017127281426443,
+              7925621168074873603
+            ],
+            "reshard_phase": "idle",
+            "draining": false
+          },
+          "cluster_overview": {
+            "source": "live",
+            "members": [
+              {
+                "node_id": "member-127-0-0-1-39133",
+                "role": "member",
+                "reachable": true,
+                "reachability": "reachable",
+                "generation": 1
+              },
+              {
+                "node_id": "member-127-0-0-1-39507",
+                "role": "member",
+                "reachable": true,
+                "reachability": "reachable",
+                "generation": 1
+              },
+              {
+                "node_id": "member-127-0-0-1-41229",
+                "role": "member",
+                "reachable": true,
+                "reachability": "reachable",
+                "generation": 1
+              }
+            ],
+            "leader": {
+              "node_id": "member-127-0-0-1-39133",
+              "term": 1,
+              "epoch": 3
+            },
+            "partitions": {
+              "under_replicated": 0,
+              "count": 0
+            },
+            "consistency": {
+              "configured_default": null,
+              "op_counts_by_level": []
+            },
+            "backup_age_seconds": null,
+            "lifecycle": {
+              "reshard_phase": "idle",
+              "upgrade_phase": "idle"
+            }
+          }
+        },
+        "end": {
+          "endpoint": {
+            "node_id": "member-127-0-0-1-39133",
+            "admin_addr": "127.0.0.1:39025"
+          },
+          "admin_status": {
+            "source": "live",
+            "leader": "member-127-0-0-1-39133",
+            "term": 1,
+            "epoch": 3,
+            "quorum_ok": true,
+            "members": 3,
+            "member_ids": [
+              "member-127-0-0-1-39133",
+              "member-127-0-0-1-39507",
+              "member-127-0-0-1-41229"
+            ],
+            "voters": 3,
+            "voter_ids": [
+              5458616142184900020,
+              7615017127281426443,
+              7925621168074873603
+            ],
+            "reshard_phase": "idle",
+            "draining": false
+          },
+          "cluster_overview": {
+            "source": "live",
+            "members": [
+              {
+                "node_id": "member-127-0-0-1-39133",
+                "role": "member",
+                "reachable": true,
+                "reachability": "reachable",
+                "generation": 1
+              },
+              {
+                "node_id": "member-127-0-0-1-39507",
+                "role": "member",
+                "reachable": true,
+                "reachability": "reachable",
+                "generation": 1
+              },
+              {
+                "node_id": "member-127-0-0-1-41229",
+                "role": "member",
+                "reachable": true,
+                "reachability": "reachable",
+                "generation": 1
+              }
+            ],
+            "leader": {
+              "node_id": "member-127-0-0-1-39133",
+              "term": 1,
+              "epoch": 3
+            },
+            "partitions": {
+              "under_replicated": 0,
+              "count": 0
+            },
+            "consistency": {
+              "configured_default": null,
+              "op_counts_by_level": []
+            },
+            "backup_age_seconds": null,
+            "lifecycle": {
+              "reshard_phase": "idle",
+              "upgrade_phase": "idle"
+            }
+          }
+        },
+        "criteria": {
+          "p99_slo_us": 50000,
+          "p999_slo_us": 100000,
+          "min_achieved_ratio": 0.95,
+          "max_error_ratio": 0.0,
+          "max_timeout_ratio": 0.0,
+          "max_rejection_ratio": 0.0,
+          "max_drain_ms": 10000,
+          "max_robust_spread_ratio": 0.15
+        },
+        "knee": {
+          "sustainable_rate_per_second": 4000.0,
+          "evaluated": [
+            {
+              "sample": {
+                "offered_rate_per_second": 250.0,
+                "achieved_rate_per_second": 250.03040792311734,
+                "achieved_rate_min_per_second": 250.0275455221888,
+                "achieved_rate_max_per_second": 250.04462437641834,
+                "offered": 5000,
+                "started": 5000,
+                "completed": 5000,
+                "successes": 5000,
+                "errors": 0,
+                "timeouts": 0,
+                "rejections": 0,
+                "backlog_drained": true,
+                "drain_ms": 0,
+                "robust_spread_ratio": 0.00006830710860892567,
+                "latency": {
+                  "samples": 5000,
+                  "p50_us": 1287,
+                  "p90_us": 1708,
+                  "p99_us": 1798,
+                  "p999_us": 1840,
+                  "p999_min_samples": 1000,
+                  "p999_reportable": true,
+                  "max_us": 1931,
+                  "overflow_count": 0
+                }
+              },
+              "repeats": [
+                {
+                  "reset_state_digest": "sha256:d4d54998656fa6cd1777b198ba4c68ab0724c01df7db3509c78c00fc2e3cf9e3",
+                  "preloaded_state_digest": "sha256:d4d54998656fa6cd1777b198ba4c68ab0724c01df7db3509c78c00fc2e3cf9e3",
+                  "state_digest": "sha256:d4d54998656fa6cd1777b198ba4c68ab0724c01df7db3509c78c00fc2e3cf9e3",
+                  "phase": {
+                    "reset_operations": 1,
+                    "preload_operations": 2,
+                    "warmup_operations": 1000,
+                    "steady_operations": 5000,
+                    "reset_ms": 0,
+                    "preload_ms": 0,
+                    "warmup_ms": 152,
+                    "warmup_successes": 1000,
+                    "warmup_errors": 0,
+                    "warmup_timeouts": 0,
+                    "warmup_rejections": 0,
+                    "steady_ms": 19997,
+                    "warmup_samples_in_steady_histogram": 0
+                  },
+                  "steady": {
+                    "offered": 5000,
+                    "started": 5000,
+                    "completed": 5000,
+                    "successes": 5000,
+                    "errors": 0,
+                    "timeouts": 0,
+                    "rejections": 0,
+                    "backlog_high_water": 1,
+                    "backlog_drained": true,
+                    "drain_ms": 0,
+                    "elapsed_ms": 19997,
+                    "offered_rate_per_second": 250.0,
+                    "achieved_rate_per_second": 250.0293187504533,
+                    "latency": {
+                      "samples": 5000,
+                      "p50_us": 1159,
+                      "p90_us": 1582,
+                      "p99_us": 1674,
+                      "p999_us": 1707,
+                      "p999_min_samples": 1000,
+                      "p999_reportable": true,
+                      "max_us": 1774,
+                      "overflow_count": 0
+                    }
+                  }
+                },
+                {
+                  "reset_state_digest": "sha256:d4d54998656fa6cd1777b198ba4c68ab0724c01df7db3509c78c00fc2e3cf9e3",
+                  "preloaded_state_digest": "sha256:d4d54998656fa6cd1777b198ba4c68ab0724c01df7db3509c78c00fc2e3cf9e3",
+                  "state_digest": "sha256:d4d54998656fa6cd1777b198ba4c68ab0724c01df7db3509c78c00fc2e3cf9e3",
+                  "phase": {
+                    "reset_operations": 1,
+                    "preload_operations": 2,
+                    "warmup_operations": 1000,
+                    "steady_operations": 5000,
+                    "reset_ms": 0,
+                    "preload_ms": 0,
+                    "warmup_ms": 154,
+                    "warmup_successes": 1000,
+                    "warmup_errors": 0,
+                    "warmup_timeouts": 0,
+                    "warmup_rejections": 0,
+                    "steady_ms": 19997,
+                    "warmup_samples_in_steady_histogram": 0
+                  },
+                  "steady": {
+                    "offered": 5000,
+                    "started": 5000,
+                    "completed": 5000,
+                    "successes": 5000,
+                    "errors": 0,
+                    "timeouts": 0,
+                    "rejections": 0,
+                    "backlog_high_water": 1,
+                    "backlog_drained": true,
+                    "drain_ms": 0,
+                    "elapsed_ms": 19997,
+                    "offered_rate_per_second": 250.0,
+                    "achieved_rate_per_second": 250.0313312636003,
+                    "latency": {
+                      "samples": 5000,
+                      "p50_us": 1699,
+                      "p90_us": 2123,
+                      "p99_us": 2211,
+                      "p999_us": 2241,
+                      "p999_min_samples": 1000,
+                      "p999_reportable": true,
+                      "max_us": 2339,
+                      "overflow_count": 0
+                    }
+                  }
+                },
+                {
+                  "reset_state_digest": "sha256:d4d54998656fa6cd1777b198ba4c68ab0724c01df7db3509c78c00fc2e3cf9e3",
+                  "preloaded_state_digest": "sha256:d4d54998656fa6cd1777b198ba4c68ab0724c01df7db3509c78c00fc2e3cf9e3",
+                  "state_digest": "sha256:d4d54998656fa6cd1777b198ba4c68ab0724c01df7db3509c78c00fc2e3cf9e3",
+                  "phase": {
+                    "reset_operations": 1,
+                    "preload_operations": 2,
+                    "warmup_operations": 1000,
+                    "steady_operations": 5000,
+                    "reset_ms": 0,
+                    "preload_ms": 0,
+                    "warmup_ms": 154,
+                    "warmup_successes": 1000,
+                    "warmup_errors": 0,
+                    "warmup_timeouts": 0,
+                    "warmup_rejections": 0,
+                    "steady_ms": 19997,
+                    "warmup_samples_in_steady_histogram": 0
+                  },
+                  "steady": {
+                    "offered": 5000,
+                    "started": 5000,
+                    "completed": 5000,
+                    "successes": 5000,
+                    "errors": 0,
+                    "timeouts": 0,
+                    "rejections": 0,
+                    "backlog_high_water": 1,
+                    "backlog_drained": true,
+                    "drain_ms": 0,
+                    "elapsed_ms": 19997,
+                    "offered_rate_per_second": 250.0,
+                    "achieved_rate_per_second": 250.0275455221888,
+                    "latency": {
+                      "samples": 5000,
+                      "p50_us": 1656,
+                      "p90_us": 2077,
+                      "p99_us": 2175,
+                      "p999_us": 2385,
+                      "p999_min_samples": 1000,
+                      "p999_reportable": true,
+                      "max_us": 2503,
+                      "overflow_count": 0
+                    }
+                  }
+                },
+                {
+                  "reset_state_digest": "sha256:d4d54998656fa6cd1777b198ba4c68ab0724c01df7db3509c78c00fc2e3cf9e3",
+                  "preloaded_state_digest": "sha256:d4d54998656fa6cd1777b198ba4c68ab0724c01df7db3509c78c00fc2e3cf9e3",
+                  "state_digest": "sha256:d4d54998656fa6cd1777b198ba4c68ab0724c01df7db3509c78c00fc2e3cf9e3",
+                  "phase": {
+                    "reset_operations": 1,
+                    "preload_operations": 2,
+                    "warmup_operations": 1000,
+                    "steady_operations": 5000,
+                    "reset_ms": 0,
+                    "preload_ms": 0,
+                    "warmup_ms": 154,
+                    "warmup_successes": 1000,
+                    "warmup_errors": 0,
+                    "warmup_timeouts": 0,
+                    "warmup_rejections": 0,
+                    "steady_ms": 19996,
+                    "warmup_samples_in_steady_histogram": 0
+                  },
+                  "steady": {
+                    "offered": 5000,
+                    "started": 5000,
+                    "completed": 5000,
+                    "successes": 5000,
+                    "errors": 0,
+                    "timeouts": 0,
+                    "rejections": 0,
+                    "backlog_high_water": 1,
+                    "backlog_drained": true,
+                    "drain_ms": 0,
+                    "elapsed_ms": 19996,
+                    "offered_rate_per_second": 250.0,
+                    "achieved_rate_per_second": 250.04462437641834,
+                    "latency": {
+                      "samples": 5000,
+                      "p50_us": 834,
+                      "p90_us": 1256,
+                      "p99_us": 1348,
+                      "p999_us": 1383,
+                      "p999_min_samples": 1000,
+                      "p999_reportable": true,
+                      "max_us": 1473,
+                      "overflow_count": 0
+                    }
+                  }
+                },
+                {
+                  "reset_state_digest": "sha256:d4d54998656fa6cd1777b198ba4c68ab0724c01df7db3509c78c00fc2e3cf9e3",
+                  "preloaded_state_digest": "sha256:d4d54998656fa6cd1777b198ba4c68ab0724c01df7db3509c78c00fc2e3cf9e3",
+                  "state_digest": "sha256:d4d54998656fa6cd1777b198ba4c68ab0724c01df7db3509c78c00fc2e3cf9e3",
+                  "phase": {
+                    "reset_operations": 1,
+                    "preload_operations": 2,
+                    "warmup_operations": 1000,
+                    "steady_operations": 5000,
+                    "reset_ms": 0,
+                    "preload_ms": 0,
+                    "warmup_ms": 155,
+                    "warmup_successes": 1000,
+                    "warmup_errors": 0,
+                    "warmup_timeouts": 0,
+                    "warmup_rejections": 0,
+                    "steady_ms": 19997,
+                    "warmup_samples_in_steady_histogram": 0
+                  },
+                  "steady": {
+                    "offered": 5000,
+                    "started": 5000,
+                    "completed": 5000,
+                    "successes": 5000,
+                    "errors": 0,
+                    "timeouts": 0,
+                    "rejections": 0,
+                    "backlog_high_water": 1,
+                    "backlog_drained": true,
+                    "drain_ms": 0,
+                    "elapsed_ms": 19997,
+                    "offered_rate_per_second": 250.0,
+                    "achieved_rate_per_second": 250.03040792311734,
+                    "latency": {
+                      "samples": 5000,
+                      "p50_us": 1287,
+                      "p90_us": 1708,
+                      "p99_us": 1798,
+                      "p999_us": 1840,
+                      "p999_min_samples": 1000,
+                      "p999_reportable": true,
+                      "max_us": 1931,
+                      "overflow_count": 0
+                    }
+                  }
+                }
+              ],
+              "verdict": {
+                "sustainable": true,
+                "reasons": []
+              }
+            },
+            {
+              "sample": {
+                "offered_rate_per_second": 500.0,
+                "achieved_rate_per_second": 500.04890228239867,
+                "achieved_rate_min_per_second": 500.02195191373073,
+                "achieved_rate_max_per_second": 500.0600220044172,
+                "offered": 5000,
+                "started": 5000,
+                "completed": 5000,
+                "successes": 5000,
+                "errors": 0,
+                "timeouts": 0,
+                "rejections": 0,
+                "backlog_drained": true,
+                "drain_ms": 0,
+                "robust_spread_ratio": 0.00007613273524388342,
+                "latency": {
+                  "samples": 5000,
+                  "p50_us": 1027,
+                  "p90_us": 1433,
+                  "p99_us": 1545,
+                  "p999_us": 1736,
+                  "p999_min_samples": 1000,
+                  "p999_reportable": true,
+                  "max_us": 1829,
+                  "overflow_count": 0
+                }
+              },
+              "repeats": [
+                {
+                  "reset_state_digest": "sha256:d4d54998656fa6cd1777b198ba4c68ab0724c01df7db3509c78c00fc2e3cf9e3",
+                  "preloaded_state_digest": "sha256:d4d54998656fa6cd1777b198ba4c68ab0724c01df7db3509c78c00fc2e3cf9e3",
+                  "state_digest": "sha256:d4d54998656fa6cd1777b198ba4c68ab0724c01df7db3509c78c00fc2e3cf9e3",
+                  "phase": {
+                    "reset_operations": 1,
+                    "preload_operations": 2,
+                    "warmup_operations": 1000,
+                    "steady_operations": 5000,
+                    "reset_ms": 0,
+                    "preload_ms": 0,
+                    "warmup_ms": 154,
+                    "warmup_successes": 1000,
+                    "warmup_errors": 0,
+                    "warmup_timeouts": 0,
+                    "warmup_rejections": 0,
+                    "steady_ms": 9999,
+                    "warmup_samples_in_steady_histogram": 0
+                  },
+                  "steady": {
+                    "offered": 5000,
+                    "started": 5000,
+                    "completed": 5000,
+                    "successes": 5000,
+                    "errors": 0,
+                    "timeouts": 0,
+                    "rejections": 0,
+                    "backlog_high_water": 1,
+                    "backlog_drained": true,
+                    "drain_ms": 0,
+                    "elapsed_ms": 9999,
+                    "offered_rate_per_second": 500.0,
+                    "achieved_rate_per_second": 500.04890228239867,
+                    "latency": {
+                      "samples": 5000,
+                      "p50_us": 1027,
+                      "p90_us": 1433,
+                      "p99_us": 1545,
+                      "p999_us": 1736,
+                      "p999_min_samples": 1000,
+                      "p999_reportable": true,
+                      "max_us": 1829,
+                      "overflow_count": 0
+                    }
+                  }
+                },
+                {
+                  "reset_state_digest": "sha256:d4d54998656fa6cd1777b198ba4c68ab0724c01df7db3509c78c00fc2e3cf9e3",
+                  "preloaded_state_digest": "sha256:d4d54998656fa6cd1777b198ba4c68ab0724c01df7db3509c78c00fc2e3cf9e3",
+                  "state_digest": "sha256:d4d54998656fa6cd1777b198ba4c68ab0724c01df7db3509c78c00fc2e3cf9e3",
+                  "phase": {
+                    "reset_operations": 1,
+                    "preload_operations": 2,
+                    "warmup_operations": 1000,
+                    "steady_operations": 5000,
+                    "reset_ms": 0,
+                    "preload_ms": 0,
+                    "warmup_ms": 154,
+                    "warmup_successes": 1000,
+                    "warmup_errors": 0,
+                    "warmup_timeouts": 0,
+                    "warmup_rejections": 0,
+                    "steady_ms": 9998,
+                    "warmup_samples_in_steady_histogram": 0
+                  },
+                  "steady": {
+                    "offered": 5000,
+                    "started": 5000,
+                    "completed": 5000,
+                    "successes": 5000,
+                    "errors": 0,
+                    "timeouts": 0,
+                    "rejections": 0,
+                    "backlog_high_water": 1,
+                    "backlog_drained": true,
+                    "drain_ms": 0,
+                    "elapsed_ms": 9998,
+                    "offered_rate_per_second": 500.0,
+                    "achieved_rate_per_second": 500.0600220044172,
+                    "latency": {
+                      "samples": 5000,
+                      "p50_us": 1048,
+                      "p90_us": 1472,
+                      "p99_us": 1567,
+                      "p999_us": 1601,
+                      "p999_min_samples": 1000,
+                      "p999_reportable": true,
+                      "max_us": 1699,
+                      "overflow_count": 0
+                    }
+                  }
+                },
+                {
+                  "reset_state_digest": "sha256:d4d54998656fa6cd1777b198ba4c68ab0724c01df7db3509c78c00fc2e3cf9e3",
+                  "preloaded_state_digest": "sha256:d4d54998656fa6cd1777b198ba4c68ab0724c01df7db3509c78c00fc2e3cf9e3",
+                  "state_digest": "sha256:d4d54998656fa6cd1777b198ba4c68ab0724c01df7db3509c78c00fc2e3cf9e3",
+                  "phase": {
+                    "reset_operations": 1,
+                    "preload_operations": 2,
+                    "warmup_operations": 1000,
+                    "steady_operations": 5000,
+                    "reset_ms": 0,
+                    "preload_ms": 0,
+                    "warmup_ms": 154,
+                    "warmup_successes": 1000,
+                    "warmup_errors": 0,
+                    "warmup_timeouts": 0,
+                    "warmup_rejections": 0,
+                    "steady_ms": 9999,
+                    "warmup_samples_in_steady_histogram": 0
+                  },
+                  "steady": {
+                    "offered": 5000,
+                    "started": 5000,
+                    "completed": 5000,
+                    "successes": 5000,
+                    "errors": 0,
+                    "timeouts": 0,
+                    "rejections": 0,
+                    "backlog_high_water": 1,
+                    "backlog_drained": true,
+                    "drain_ms": 0,
+                    "elapsed_ms": 9999,
+                    "offered_rate_per_second": 500.0,
+                    "achieved_rate_per_second": 500.03374937788726,
+                    "latency": {
+                      "samples": 5000,
+                      "p50_us": 1217,
+                      "p90_us": 1648,
+                      "p99_us": 1744,
+                      "p999_us": 1982,
+                      "p999_min_samples": 1000,
+                      "p999_reportable": true,
+                      "max_us": 2111,
+                      "overflow_count": 0
+                    }
+                  }
+                },
+                {
+                  "reset_state_digest": "sha256:d4d54998656fa6cd1777b198ba4c68ab0724c01df7db3509c78c00fc2e3cf9e3",
+                  "preloaded_state_digest": "sha256:d4d54998656fa6cd1777b198ba4c68ab0724c01df7db3509c78c00fc2e3cf9e3",
+                  "state_digest": "sha256:d4d54998656fa6cd1777b198ba4c68ab0724c01df7db3509c78c00fc2e3cf9e3",
+                  "phase": {
+                    "reset_operations": 1,
+                    "preload_operations": 2,
+                    "warmup_operations": 1000,
+                    "steady_operations": 5000,
+                    "reset_ms": 0,
+                    "preload_ms": 0,
+                    "warmup_ms": 154,
+                    "warmup_successes": 1000,
+                    "warmup_errors": 0,
+                    "warmup_timeouts": 0,
+                    "warmup_rejections": 0,
+                    "steady_ms": 9998,
+                    "warmup_samples_in_steady_histogram": 0
+                  },
+                  "steady": {
+                    "offered": 5000,
+                    "started": 5000,
+                    "completed": 5000,
+                    "successes": 5000,
+                    "errors": 0,
+                    "timeouts": 0,
+                    "rejections": 0,
+                    "backlog_high_water": 1,
+                    "backlog_drained": true,
+                    "drain_ms": 0,
+                    "elapsed_ms": 9998,
+                    "offered_rate_per_second": 500.0,
+                    "achieved_rate_per_second": 500.0565029344417,
+                    "latency": {
+                      "samples": 5000,
+                      "p50_us": 881,
+                      "p90_us": 1283,
+                      "p99_us": 1400,
+                      "p999_us": 1429,
+                      "p999_min_samples": 1000,
+                      "p999_reportable": true,
+                      "max_us": 1549,
+                      "overflow_count": 0
+                    }
+                  }
+                },
+                {
+                  "reset_state_digest": "sha256:d4d54998656fa6cd1777b198ba4c68ab0724c01df7db3509c78c00fc2e3cf9e3",
+                  "preloaded_state_digest": "sha256:d4d54998656fa6cd1777b198ba4c68ab0724c01df7db3509c78c00fc2e3cf9e3",
+                  "state_digest": "sha256:d4d54998656fa6cd1777b198ba4c68ab0724c01df7db3509c78c00fc2e3cf9e3",
+                  "phase": {
+                    "reset_operations": 1,
+                    "preload_operations": 2,
+                    "warmup_operations": 1000,
+                    "steady_operations": 5000,
+                    "reset_ms": 0,
+                    "preload_ms": 0,
+                    "warmup_ms": 155,
+                    "warmup_successes": 1000,
+                    "warmup_errors": 0,
+                    "warmup_timeouts": 0,
+                    "warmup_rejections": 0,
+                    "steady_ms": 9999,
+                    "warmup_samples_in_steady_histogram": 0
+                  },
+                  "steady": {
+                    "offered": 5000,
+                    "started": 5000,
+                    "completed": 5000,
+                    "successes": 5000,
+                    "errors": 0,
+                    "timeouts": 0,
+                    "rejections": 0,
+                    "backlog_high_water": 1,
+                    "backlog_drained": true,
+                    "drain_ms": 0,
+                    "elapsed_ms": 9999,
+                    "offered_rate_per_second": 500.0,
+                    "achieved_rate_per_second": 500.02195191373073,
+                    "latency": {
+                      "samples": 5000,
+                      "p50_us": 1682,
+                      "p90_us": 2115,
+                      "p99_us": 2207,
+                      "p999_us": 2263,
+                      "p999_min_samples": 1000,
+                      "p999_reportable": true,
+                      "max_us": 2351,
+                      "overflow_count": 0
+                    }
+                  }
+                }
+              ],
+              "verdict": {
+                "sustainable": true,
+                "reasons": []
+              }
+            },
+            {
+              "sample": {
+                "offered_rate_per_second": 1000.0,
+                "achieved_rate_per_second": 999.896195576477,
+                "achieved_rate_min_per_second": 999.8395151595181,
+                "achieved_rate_max_per_second": 999.9210228378847,
+                "offered": 5000,
+                "started": 5000,
+                "completed": 5000,
+                "successes": 5000,
+                "errors": 0,
+                "timeouts": 0,
+                "rejections": 0,
+                "backlog_drained": true,
+                "drain_ms": 0,
+                "robust_spread_ratio": 0.00008151614010255115,
+                "latency": {
+                  "samples": 5000,
+                  "p50_us": 1272,
+                  "p90_us": 1798,
+                  "p99_us": 1977,
+                  "p999_us": 2187,
+                  "p999_min_samples": 1000,
+                  "p999_reportable": true,
+                  "max_us": 2269,
+                  "overflow_count": 0
+                }
+              },
+              "repeats": [
+                {
+                  "reset_state_digest": "sha256:d4d54998656fa6cd1777b198ba4c68ab0724c01df7db3509c78c00fc2e3cf9e3",
+                  "preloaded_state_digest": "sha256:d4d54998656fa6cd1777b198ba4c68ab0724c01df7db3509c78c00fc2e3cf9e3",
+                  "state_digest": "sha256:d4d54998656fa6cd1777b198ba4c68ab0724c01df7db3509c78c00fc2e3cf9e3",
+                  "phase": {
+                    "reset_operations": 1,
+                    "preload_operations": 2,
+                    "warmup_operations": 1000,
+                    "steady_operations": 5000,
+                    "reset_ms": 0,
+                    "preload_ms": 0,
+                    "warmup_ms": 155,
+                    "warmup_successes": 1000,
+                    "warmup_errors": 0,
+                    "warmup_timeouts": 0,
+                    "warmup_rejections": 0,
+                    "steady_ms": 5000,
+                    "warmup_samples_in_steady_histogram": 0
+                  },
+                  "steady": {
+                    "offered": 5000,
+                    "started": 5000,
+                    "completed": 5000,
+                    "successes": 5000,
+                    "errors": 0,
+                    "timeouts": 0,
+                    "rejections": 0,
+                    "backlog_high_water": 2,
+                    "backlog_drained": true,
+                    "drain_ms": 0,
+                    "elapsed_ms": 5000,
+                    "offered_rate_per_second": 1000.0,
+                    "achieved_rate_per_second": 999.9210228378847,
+                    "latency": {
+                      "samples": 5000,
+                      "p50_us": 1509,
+                      "p90_us": 2027,
+                      "p99_us": 2213,
+                      "p999_us": 2291,
+                      "p999_min_samples": 1000,
+                      "p999_reportable": true,
+                      "max_us": 2459,
+                      "overflow_count": 0
+                    }
+                  }
+                },
+                {
+                  "reset_state_digest": "sha256:d4d54998656fa6cd1777b198ba4c68ab0724c01df7db3509c78c00fc2e3cf9e3",
+                  "preloaded_state_digest": "sha256:d4d54998656fa6cd1777b198ba4c68ab0724c01df7db3509c78c00fc2e3cf9e3",
+                  "state_digest": "sha256:d4d54998656fa6cd1777b198ba4c68ab0724c01df7db3509c78c00fc2e3cf9e3",
+                  "phase": {
+                    "reset_operations": 1,
+                    "preload_operations": 2,
+                    "warmup_operations": 1000,
+                    "steady_operations": 5000,
+                    "reset_ms": 0,
+                    "preload_ms": 0,
+                    "warmup_ms": 155,
+                    "warmup_successes": 1000,
+                    "warmup_errors": 0,
+                    "warmup_timeouts": 0,
+                    "warmup_rejections": 0,
+                    "steady_ms": 5000,
+                    "warmup_samples_in_steady_histogram": 0
+                  },
+                  "steady": {
+                    "offered": 5000,
+                    "started": 5000,
+                    "completed": 5000,
+                    "successes": 5000,
+                    "errors": 0,
+                    "timeouts": 0,
+                    "rejections": 0,
+                    "backlog_high_water": 2,
+                    "backlog_drained": true,
+                    "drain_ms": 0,
+                    "elapsed_ms": 5000,
+                    "offered_rate_per_second": 1000.0,
+                    "achieved_rate_per_second": 999.8395151595181,
+                    "latency": {
+                      "samples": 5000,
+                      "p50_us": 1670,
+                      "p90_us": 2175,
+                      "p99_us": 2361,
+                      "p999_us": 2409,
+                      "p999_min_samples": 1000,
+                      "p999_reportable": true,
+                      "max_us": 2541,
+                      "overflow_count": 0
+                    }
+                  }
+                },
+                {
+                  "reset_state_digest": "sha256:d4d54998656fa6cd1777b198ba4c68ab0724c01df7db3509c78c00fc2e3cf9e3",
+                  "preloaded_state_digest": "sha256:d4d54998656fa6cd1777b198ba4c68ab0724c01df7db3509c78c00fc2e3cf9e3",
+                  "state_digest": "sha256:d4d54998656fa6cd1777b198ba4c68ab0724c01df7db3509c78c00fc2e3cf9e3",
+                  "phase": {
+                    "reset_operations": 1,
+                    "preload_operations": 2,
+                    "warmup_operations": 1000,
+                    "steady_operations": 5000,
+                    "reset_ms": 0,
+                    "preload_ms": 0,
+                    "warmup_ms": 154,
+                    "warmup_successes": 1000,
+                    "warmup_errors": 0,
+                    "warmup_timeouts": 0,
+                    "warmup_rejections": 0,
+                    "steady_ms": 5000,
+                    "warmup_samples_in_steady_histogram": 0
+                  },
+                  "steady": {
+                    "offered": 5000,
+                    "started": 5000,
+                    "completed": 5000,
+                    "successes": 5000,
+                    "errors": 0,
+                    "timeouts": 0,
+                    "rejections": 0,
+                    "backlog_high_water": 2,
+                    "backlog_drained": true,
+                    "drain_ms": 0,
+                    "elapsed_ms": 5000,
+                    "offered_rate_per_second": 1000.0,
+                    "achieved_rate_per_second": 999.8488020642728,
+                    "latency": {
+                      "samples": 5000,
+                      "p50_us": 1423,
+                      "p90_us": 1947,
+                      "p99_us": 2127,
+                      "p999_us": 2339,
+                      "p999_min_samples": 1000,
+                      "p999_reportable": true,
+                      "max_us": 2469,
+                      "overflow_count": 0
+                    }
+                  }
+                },
+                {
+                  "reset_state_digest": "sha256:d4d54998656fa6cd1777b198ba4c68ab0724c01df7db3509c78c00fc2e3cf9e3",
+                  "preloaded_state_digest": "sha256:d4d54998656fa6cd1777b198ba4c68ab0724c01df7db3509c78c00fc2e3cf9e3",
+                  "state_digest": "sha256:d4d54998656fa6cd1777b198ba4c68ab0724c01df7db3509c78c00fc2e3cf9e3",
+                  "phase": {
+                    "reset_operations": 1,
+                    "preload_operations": 2,
+                    "warmup_operations": 1000,
+                    "steady_operations": 5000,
+                    "reset_ms": 0,
+                    "preload_ms": 0,
+                    "warmup_ms": 156,
+                    "warmup_successes": 1000,
+                    "warmup_errors": 0,
+                    "warmup_timeouts": 0,
+                    "warmup_rejections": 0,
+                    "steady_ms": 5000,
+                    "warmup_samples_in_steady_histogram": 0
+                  },
+                  "steady": {
+                    "offered": 5000,
+                    "started": 5000,
+                    "completed": 5000,
+                    "successes": 5000,
+                    "errors": 0,
+                    "timeouts": 0,
+                    "rejections": 0,
+                    "backlog_high_water": 2,
+                    "backlog_drained": true,
+                    "drain_ms": 0,
+                    "elapsed_ms": 5000,
+                    "offered_rate_per_second": 1000.0,
+                    "achieved_rate_per_second": 999.9177665628943,
+                    "latency": {
+                      "samples": 5000,
+                      "p50_us": 1160,
+                      "p90_us": 1669,
+                      "p99_us": 1864,
+                      "p999_us": 1959,
+                      "p999_min_samples": 1000,
+                      "p999_reportable": true,
+                      "max_us": 2159,
+                      "overflow_count": 0
+                    }
+                  }
+                },
+                {
+                  "reset_state_digest": "sha256:d4d54998656fa6cd1777b198ba4c68ab0724c01df7db3509c78c00fc2e3cf9e3",
+                  "preloaded_state_digest": "sha256:d4d54998656fa6cd1777b198ba4c68ab0724c01df7db3509c78c00fc2e3cf9e3",
+                  "state_digest": "sha256:d4d54998656fa6cd1777b198ba4c68ab0724c01df7db3509c78c00fc2e3cf9e3",
+                  "phase": {
+                    "reset_operations": 1,
+                    "preload_operations": 2,
+                    "warmup_operations": 1000,
+                    "steady_operations": 5000,
+                    "reset_ms": 0,
+                    "preload_ms": 0,
+                    "warmup_ms": 155,
+                    "warmup_successes": 1000,
+                    "warmup_errors": 0,
+                    "warmup_timeouts": 0,
+                    "warmup_rejections": 0,
+                    "steady_ms": 5000,
+                    "warmup_samples_in_steady_histogram": 0
+                  },
+                  "steady": {
+                    "offered": 5000,
+                    "started": 5000,
+                    "completed": 5000,
+                    "successes": 5000,
+                    "errors": 0,
+                    "timeouts": 0,
+                    "rejections": 0,
+                    "backlog_high_water": 2,
+                    "backlog_drained": true,
+                    "drain_ms": 0,
+                    "elapsed_ms": 5000,
+                    "offered_rate_per_second": 1000.0,
+                    "achieved_rate_per_second": 999.896195576477,
+                    "latency": {
+                      "samples": 5000,
+                      "p50_us": 1272,
+                      "p90_us": 1798,
+                      "p99_us": 1977,
+                      "p999_us": 2187,
+                      "p999_min_samples": 1000,
+                      "p999_reportable": true,
+                      "max_us": 2269,
+                      "overflow_count": 0
+                    }
+                  }
+                }
+              ],
+              "verdict": {
+                "sustainable": true,
+                "reasons": []
+              }
+            },
+            {
+              "sample": {
+                "offered_rate_per_second": 2000.0,
+                "achieved_rate_per_second": 1999.6900216507358,
+                "achieved_rate_min_per_second": 1998.9047497152312,
+                "achieved_rate_max_per_second": 2000.109049945621,
+                "offered": 5000,
+                "started": 5000,
+                "completed": 5000,
+                "successes": 5000,
+                "errors": 0,
+                "timeouts": 0,
+                "rejections": 0,
+                "backlog_drained": true,
+                "drain_ms": 0,
+                "robust_spread_ratio": 0.0006022434564111819,
+                "latency": {
+                  "samples": 5000,
+                  "p50_us": 1119,
+                  "p90_us": 1742,
+                  "p99_us": 2039,
+                  "p999_us": 2135,
+                  "p999_min_samples": 1000,
+                  "p999_reportable": true,
+                  "max_us": 2171,
+                  "overflow_count": 0
+                }
+              },
+              "repeats": [
+                {
+                  "reset_state_digest": "sha256:d4d54998656fa6cd1777b198ba4c68ab0724c01df7db3509c78c00fc2e3cf9e3",
+                  "preloaded_state_digest": "sha256:d4d54998656fa6cd1777b198ba4c68ab0724c01df7db3509c78c00fc2e3cf9e3",
+                  "state_digest": "sha256:d4d54998656fa6cd1777b198ba4c68ab0724c01df7db3509c78c00fc2e3cf9e3",
+                  "phase": {
+                    "reset_operations": 1,
+                    "preload_operations": 2,
+                    "warmup_operations": 1000,
+                    "steady_operations": 5000,
+                    "reset_ms": 0,
+                    "preload_ms": 0,
+                    "warmup_ms": 155,
+                    "warmup_successes": 1000,
+                    "warmup_errors": 0,
+                    "warmup_timeouts": 0,
+                    "warmup_rejections": 0,
+                    "steady_ms": 2499,
+                    "warmup_samples_in_steady_histogram": 0
+                  },
+                  "steady": {
+                    "offered": 5000,
+                    "started": 5000,
+                    "completed": 5000,
+                    "successes": 5000,
+                    "errors": 0,
+                    "timeouts": 0,
+                    "rejections": 0,
+                    "backlog_high_water": 4,
+                    "backlog_drained": true,
+                    "drain_ms": 0,
+                    "elapsed_ms": 2499,
+                    "offered_rate_per_second": 2000.0,
+                    "achieved_rate_per_second": 2000.0252747194018,
+                    "latency": {
+                      "samples": 5000,
+                      "p50_us": 1097,
+                      "p90_us": 1706,
+                      "p99_us": 2063,
+                      "p999_us": 2197,
+                      "p999_min_samples": 1000,
+                      "p999_reportable": true,
+                      "max_us": 2311,
+                      "overflow_count": 0
+                    }
+                  }
+                },
+                {
+                  "reset_state_digest": "sha256:d4d54998656fa6cd1777b198ba4c68ab0724c01df7db3509c78c00fc2e3cf9e3",
+                  "preloaded_state_digest": "sha256:d4d54998656fa6cd1777b198ba4c68ab0724c01df7db3509c78c00fc2e3cf9e3",
+                  "state_digest": "sha256:d4d54998656fa6cd1777b198ba4c68ab0724c01df7db3509c78c00fc2e3cf9e3",
+                  "phase": {
+                    "reset_operations": 1,
+                    "preload_operations": 2,
+                    "warmup_operations": 1000,
+                    "steady_operations": 5000,
+                    "reset_ms": 0,
+                    "preload_ms": 0,
+                    "warmup_ms": 156,
+                    "warmup_successes": 1000,
+                    "warmup_errors": 0,
+                    "warmup_timeouts": 0,
+                    "warmup_rejections": 0,
+                    "steady_ms": 2501,
+                    "warmup_samples_in_steady_histogram": 0
+                  },
+                  "steady": {
+                    "offered": 5000,
+                    "started": 5000,
+                    "completed": 5000,
+                    "successes": 5000,
+                    "errors": 0,
+                    "timeouts": 0,
+                    "rejections": 0,
+                    "backlog_high_water": 4,
+                    "backlog_drained": true,
+                    "drain_ms": 0,
+                    "elapsed_ms": 2501,
+                    "offered_rate_per_second": 2000.0,
+                    "achieved_rate_per_second": 1998.9047497152312,
+                    "latency": {
+                      "samples": 5000,
+                      "p50_us": 1348,
+                      "p90_us": 1959,
+                      "p99_us": 2285,
+                      "p999_us": 2447,
+                      "p999_min_samples": 1000,
+                      "p999_reportable": true,
+                      "max_us": 2535,
+                      "overflow_count": 0
+                    }
+                  }
+                },
+                {
+                  "reset_state_digest": "sha256:d4d54998656fa6cd1777b198ba4c68ab0724c01df7db3509c78c00fc2e3cf9e3",
+                  "preloaded_state_digest": "sha256:d4d54998656fa6cd1777b198ba4c68ab0724c01df7db3509c78c00fc2e3cf9e3",
+                  "state_digest": "sha256:d4d54998656fa6cd1777b198ba4c68ab0724c01df7db3509c78c00fc2e3cf9e3",
+                  "phase": {
+                    "reset_operations": 1,
+                    "preload_operations": 2,
+                    "warmup_operations": 1000,
+                    "steady_operations": 5000,
+                    "reset_ms": 0,
+                    "preload_ms": 0,
+                    "warmup_ms": 155,
+                    "warmup_successes": 1000,
+                    "warmup_errors": 0,
+                    "warmup_timeouts": 0,
+                    "warmup_rejections": 0,
+                    "steady_ms": 2500,
+                    "warmup_samples_in_steady_histogram": 0
+                  },
+                  "steady": {
+                    "offered": 5000,
+                    "started": 5000,
+                    "completed": 5000,
+                    "successes": 5000,
+                    "errors": 0,
+                    "timeouts": 0,
+                    "rejections": 0,
+                    "backlog_high_water": 4,
+                    "backlog_drained": true,
+                    "drain_ms": 0,
+                    "elapsed_ms": 2500,
+                    "offered_rate_per_second": 2000.0,
+                    "achieved_rate_per_second": 1999.6900216507358,
+                    "latency": {
+                      "samples": 5000,
+                      "p50_us": 1119,
+                      "p90_us": 1742,
+                      "p99_us": 2039,
+                      "p999_us": 2135,
+                      "p999_min_samples": 1000,
+                      "p999_reportable": true,
+                      "max_us": 2171,
+                      "overflow_count": 0
+                    }
+                  }
+                },
+                {
+                  "reset_state_digest": "sha256:d4d54998656fa6cd1777b198ba4c68ab0724c01df7db3509c78c00fc2e3cf9e3",
+                  "preloaded_state_digest": "sha256:d4d54998656fa6cd1777b198ba4c68ab0724c01df7db3509c78c00fc2e3cf9e3",
+                  "state_digest": "sha256:d4d54998656fa6cd1777b198ba4c68ab0724c01df7db3509c78c00fc2e3cf9e3",
+                  "phase": {
+                    "reset_operations": 1,
+                    "preload_operations": 2,
+                    "warmup_operations": 1000,
+                    "steady_operations": 5000,
+                    "reset_ms": 0,
+                    "preload_ms": 0,
+                    "warmup_ms": 154,
+                    "warmup_successes": 1000,
+                    "warmup_errors": 0,
+                    "warmup_timeouts": 0,
+                    "warmup_rejections": 0,
+                    "steady_ms": 2499,
+                    "warmup_samples_in_steady_histogram": 0
+                  },
+                  "steady": {
+                    "offered": 5000,
+                    "started": 5000,
+                    "completed": 5000,
+                    "successes": 5000,
+                    "errors": 0,
+                    "timeouts": 0,
+                    "rejections": 0,
+                    "backlog_high_water": 4,
+                    "backlog_drained": true,
+                    "drain_ms": 0,
+                    "elapsed_ms": 2499,
+                    "offered_rate_per_second": 2000.0,
+                    "achieved_rate_per_second": 2000.109049945621,
+                    "latency": {
+                      "samples": 5000,
+                      "p50_us": 1065,
+                      "p90_us": 1683,
+                      "p99_us": 1980,
+                      "p999_us": 2113,
+                      "p999_min_samples": 1000,
+                      "p999_reportable": true,
+                      "max_us": 2189,
+                      "overflow_count": 0
+                    }
+                  }
+                },
+                {
+                  "reset_state_digest": "sha256:d4d54998656fa6cd1777b198ba4c68ab0724c01df7db3509c78c00fc2e3cf9e3",
+                  "preloaded_state_digest": "sha256:d4d54998656fa6cd1777b198ba4c68ab0724c01df7db3509c78c00fc2e3cf9e3",
+                  "state_digest": "sha256:d4d54998656fa6cd1777b198ba4c68ab0724c01df7db3509c78c00fc2e3cf9e3",
+                  "phase": {
+                    "reset_operations": 1,
+                    "preload_operations": 2,
+                    "warmup_operations": 1000,
+                    "steady_operations": 5000,
+                    "reset_ms": 0,
+                    "preload_ms": 0,
+                    "warmup_ms": 154,
+                    "warmup_successes": 1000,
+                    "warmup_errors": 0,
+                    "warmup_timeouts": 0,
+                    "warmup_rejections": 0,
+                    "steady_ms": 2500,
+                    "warmup_samples_in_steady_histogram": 0
+                  },
+                  "steady": {
+                    "offered": 5000,
+                    "started": 5000,
+                    "completed": 5000,
+                    "successes": 5000,
+                    "errors": 0,
+                    "timeouts": 0,
+                    "rejections": 0,
+                    "backlog_high_water": 4,
+                    "backlog_drained": true,
+                    "drain_ms": 0,
+                    "elapsed_ms": 2500,
+                    "offered_rate_per_second": 2000.0,
+                    "achieved_rate_per_second": 1999.4309891327541,
+                    "latency": {
+                      "samples": 5000,
+                      "p50_us": 1153,
+                      "p90_us": 1784,
+                      "p99_us": 2079,
+                      "p999_us": 2189,
+                      "p999_min_samples": 1000,
+                      "p999_reportable": true,
+                      "max_us": 2331,
+                      "overflow_count": 0
+                    }
+                  }
+                }
+              ],
+              "verdict": {
+                "sustainable": true,
+                "reasons": []
+              }
+            },
+            {
+              "sample": {
+                "offered_rate_per_second": 4000.0,
+                "achieved_rate_per_second": 3996.8733323245865,
+                "achieved_rate_min_per_second": 3995.8589219747396,
+                "achieved_rate_max_per_second": 3997.9783087256087,
+                "offered": 5000,
+                "started": 5000,
+                "completed": 5000,
+                "successes": 5000,
+                "errors": 0,
+                "timeouts": 0,
+                "rejections": 0,
+                "backlog_drained": true,
+                "drain_ms": 0,
+                "robust_spread_ratio": 0.0005302611753363941,
+                "latency": {
+                  "samples": 5000,
+                  "p50_us": 1464,
+                  "p90_us": 2149,
+                  "p99_us": 2661,
+                  "p999_us": 2867,
+                  "p999_min_samples": 1000,
+                  "p999_reportable": true,
+                  "max_us": 3289,
+                  "overflow_count": 0
+                }
+              },
+              "repeats": [
+                {
+                  "reset_state_digest": "sha256:d4d54998656fa6cd1777b198ba4c68ab0724c01df7db3509c78c00fc2e3cf9e3",
+                  "preloaded_state_digest": "sha256:d4d54998656fa6cd1777b198ba4c68ab0724c01df7db3509c78c00fc2e3cf9e3",
+                  "state_digest": "sha256:d4d54998656fa6cd1777b198ba4c68ab0724c01df7db3509c78c00fc2e3cf9e3",
+                  "phase": {
+                    "reset_operations": 1,
+                    "preload_operations": 2,
+                    "warmup_operations": 1000,
+                    "steady_operations": 5000,
+                    "reset_ms": 0,
+                    "preload_ms": 0,
+                    "warmup_ms": 155,
+                    "warmup_successes": 1000,
+                    "warmup_errors": 0,
+                    "warmup_timeouts": 0,
+                    "warmup_rejections": 0,
+                    "steady_ms": 1251,
+                    "warmup_samples_in_steady_histogram": 0
+                  },
+                  "steady": {
+                    "offered": 5000,
+                    "started": 5000,
+                    "completed": 5000,
+                    "successes": 5000,
+                    "errors": 0,
+                    "timeouts": 0,
+                    "rejections": 0,
+                    "backlog_high_water": 9,
+                    "backlog_drained": true,
+                    "drain_ms": 0,
+                    "elapsed_ms": 1251,
+                    "offered_rate_per_second": 4000.0,
+                    "achieved_rate_per_second": 3996.581407393009,
+                    "latency": {
+                      "samples": 5000,
+                      "p50_us": 1422,
+                      "p90_us": 2099,
+                      "p99_us": 2561,
+                      "p999_us": 2789,
+                      "p999_min_samples": 1000,
+                      "p999_reportable": true,
+                      "max_us": 3549,
+                      "overflow_count": 0
+                    }
+                  }
+                },
+                {
+                  "reset_state_digest": "sha256:d4d54998656fa6cd1777b198ba4c68ab0724c01df7db3509c78c00fc2e3cf9e3",
+                  "preloaded_state_digest": "sha256:d4d54998656fa6cd1777b198ba4c68ab0724c01df7db3509c78c00fc2e3cf9e3",
+                  "state_digest": "sha256:d4d54998656fa6cd1777b198ba4c68ab0724c01df7db3509c78c00fc2e3cf9e3",
+                  "phase": {
+                    "reset_operations": 1,
+                    "preload_operations": 2,
+                    "warmup_operations": 1000,
+                    "steady_operations": 5000,
+                    "reset_ms": 0,
+                    "preload_ms": 0,
+                    "warmup_ms": 154,
+                    "warmup_successes": 1000,
+                    "warmup_errors": 0,
+                    "warmup_timeouts": 0,
+                    "warmup_rejections": 0,
+                    "steady_ms": 1250,
+                    "warmup_samples_in_steady_histogram": 0
+                  },
+                  "steady": {
+                    "offered": 5000,
+                    "started": 5000,
+                    "completed": 5000,
+                    "successes": 5000,
+                    "errors": 0,
+                    "timeouts": 0,
+                    "rejections": 0,
+                    "backlog_high_water": 9,
+                    "backlog_drained": true,
+                    "drain_ms": 0,
+                    "elapsed_ms": 1250,
+                    "offered_rate_per_second": 4000.0,
+                    "achieved_rate_per_second": 3996.8733323245865,
+                    "latency": {
+                      "samples": 5000,
+                      "p50_us": 1464,
+                      "p90_us": 2149,
+                      "p99_us": 2661,
+                      "p999_us": 2867,
+                      "p999_min_samples": 1000,
+                      "p999_reportable": true,
+                      "max_us": 3289,
+                      "overflow_count": 0
+                    }
+                  }
+                },
+                {
+                  "reset_state_digest": "sha256:d4d54998656fa6cd1777b198ba4c68ab0724c01df7db3509c78c00fc2e3cf9e3",
+                  "preloaded_state_digest": "sha256:d4d54998656fa6cd1777b198ba4c68ab0724c01df7db3509c78c00fc2e3cf9e3",
+                  "state_digest": "sha256:d4d54998656fa6cd1777b198ba4c68ab0724c01df7db3509c78c00fc2e3cf9e3",
+                  "phase": {
+                    "reset_operations": 1,
+                    "preload_operations": 2,
+                    "warmup_operations": 1000,
+                    "steady_operations": 5000,
+                    "reset_ms": 0,
+                    "preload_ms": 0,
+                    "warmup_ms": 149,
+                    "warmup_successes": 1000,
+                    "warmup_errors": 0,
+                    "warmup_timeouts": 0,
+                    "warmup_rejections": 0,
+                    "steady_ms": 1250,
+                    "warmup_samples_in_steady_histogram": 0
+                  },
+                  "steady": {
+                    "offered": 5000,
+                    "started": 5000,
+                    "completed": 5000,
+                    "successes": 5000,
+                    "errors": 0,
+                    "timeouts": 0,
+                    "rejections": 0,
+                    "backlog_high_water": 8,
+                    "backlog_drained": true,
+                    "drain_ms": 0,
+                    "elapsed_ms": 1250,
+                    "offered_rate_per_second": 4000.0,
+                    "achieved_rate_per_second": 3997.203287967677,
+                    "latency": {
+                      "samples": 5000,
+                      "p50_us": 1410,
+                      "p90_us": 2075,
+                      "p99_us": 2557,
+                      "p999_us": 2755,
+                      "p999_min_samples": 1000,
+                      "p999_reportable": true,
+                      "max_us": 2819,
+                      "overflow_count": 0
+                    }
+                  }
+                },
+                {
+                  "reset_state_digest": "sha256:d4d54998656fa6cd1777b198ba4c68ab0724c01df7db3509c78c00fc2e3cf9e3",
+                  "preloaded_state_digest": "sha256:d4d54998656fa6cd1777b198ba4c68ab0724c01df7db3509c78c00fc2e3cf9e3",
+                  "state_digest": "sha256:d4d54998656fa6cd1777b198ba4c68ab0724c01df7db3509c78c00fc2e3cf9e3",
+                  "phase": {
+                    "reset_operations": 1,
+                    "preload_operations": 2,
+                    "warmup_operations": 1000,
+                    "steady_operations": 5000,
+                    "reset_ms": 0,
+                    "preload_ms": 0,
+                    "warmup_ms": 149,
+                    "warmup_successes": 1000,
+                    "warmup_errors": 0,
+                    "warmup_timeouts": 0,
+                    "warmup_rejections": 0,
+                    "steady_ms": 1251,
+                    "warmup_samples_in_steady_histogram": 0
+                  },
+                  "steady": {
+                    "offered": 5000,
+                    "started": 5000,
+                    "completed": 5000,
+                    "successes": 5000,
+                    "errors": 0,
+                    "timeouts": 0,
+                    "rejections": 0,
+                    "backlog_high_water": 8,
+                    "backlog_drained": true,
+                    "drain_ms": 0,
+                    "elapsed_ms": 1251,
+                    "offered_rate_per_second": 4000.0,
+                    "achieved_rate_per_second": 3995.8589219747396,
+                    "latency": {
+                      "samples": 5000,
+                      "p50_us": 1448,
+                      "p90_us": 2139,
+                      "p99_us": 2601,
+                      "p999_us": 2805,
+                      "p999_min_samples": 1000,
+                      "p999_reportable": true,
+                      "max_us": 2907,
+                      "overflow_count": 0
+                    }
+                  }
+                },
+                {
+                  "reset_state_digest": "sha256:d4d54998656fa6cd1777b198ba4c68ab0724c01df7db3509c78c00fc2e3cf9e3",
+                  "preloaded_state_digest": "sha256:d4d54998656fa6cd1777b198ba4c68ab0724c01df7db3509c78c00fc2e3cf9e3",
+                  "state_digest": "sha256:d4d54998656fa6cd1777b198ba4c68ab0724c01df7db3509c78c00fc2e3cf9e3",
+                  "phase": {
+                    "reset_operations": 1,
+                    "preload_operations": 2,
+                    "warmup_operations": 1000,
+                    "steady_operations": 5000,
+                    "reset_ms": 0,
+                    "preload_ms": 0,
+                    "warmup_ms": 149,
+                    "warmup_successes": 1000,
+                    "warmup_errors": 0,
+                    "warmup_timeouts": 0,
+                    "warmup_rejections": 0,
+                    "steady_ms": 1250,
+                    "warmup_samples_in_steady_histogram": 0
+                  },
+                  "steady": {
+                    "offered": 5000,
+                    "started": 5000,
+                    "completed": 5000,
+                    "successes": 5000,
+                    "errors": 0,
+                    "timeouts": 0,
+                    "rejections": 0,
+                    "backlog_high_water": 8,
+                    "backlog_drained": true,
+                    "drain_ms": 0,
+                    "elapsed_ms": 1250,
+                    "offered_rate_per_second": 4000.0,
+                    "achieved_rate_per_second": 3997.9783087256087,
+                    "latency": {
+                      "samples": 5000,
+                      "p50_us": 1349,
+                      "p90_us": 2039,
+                      "p99_us": 2511,
+                      "p999_us": 2775,
+                      "p999_min_samples": 1000,
+                      "p999_reportable": true,
+                      "max_us": 2947,
+                      "overflow_count": 0
+                    }
+                  }
+                }
+              ],
+              "verdict": {
+                "sustainable": true,
+                "reasons": []
+              }
+            }
+          ]
+        },
+        "repeat_wire_evidence": [
+          {
+            "offered_rate_per_second": 250,
+            "repeat_index": 1,
+            "counter_scope": "loadgen-observed-warmup-and-steady-admin-http-wire-v1",
+            "successful_requests": 6000,
+            "failed_requests": 0,
+            "admin_status_requests": 3000,
+            "cluster_overview_requests": 3000,
+            "request_network_bytes": 990000,
+            "response_network_bytes": 3594000
+          },
+          {
+            "offered_rate_per_second": 250,
+            "repeat_index": 2,
+            "counter_scope": "loadgen-observed-warmup-and-steady-admin-http-wire-v1",
+            "successful_requests": 6000,
+            "failed_requests": 0,
+            "admin_status_requests": 3000,
+            "cluster_overview_requests": 3000,
+            "request_network_bytes": 990000,
+            "response_network_bytes": 3594000
+          },
+          {
+            "offered_rate_per_second": 250,
+            "repeat_index": 3,
+            "counter_scope": "loadgen-observed-warmup-and-steady-admin-http-wire-v1",
+            "successful_requests": 6000,
+            "failed_requests": 0,
+            "admin_status_requests": 3000,
+            "cluster_overview_requests": 3000,
+            "request_network_bytes": 990000,
+            "response_network_bytes": 3594000
+          },
+          {
+            "offered_rate_per_second": 250,
+            "repeat_index": 4,
+            "counter_scope": "loadgen-observed-warmup-and-steady-admin-http-wire-v1",
+            "successful_requests": 6000,
+            "failed_requests": 0,
+            "admin_status_requests": 3000,
+            "cluster_overview_requests": 3000,
+            "request_network_bytes": 990000,
+            "response_network_bytes": 3594000
+          },
+          {
+            "offered_rate_per_second": 250,
+            "repeat_index": 5,
+            "counter_scope": "loadgen-observed-warmup-and-steady-admin-http-wire-v1",
+            "successful_requests": 6000,
+            "failed_requests": 0,
+            "admin_status_requests": 3000,
+            "cluster_overview_requests": 3000,
+            "request_network_bytes": 990000,
+            "response_network_bytes": 3594000
+          },
+          {
+            "offered_rate_per_second": 500,
+            "repeat_index": 1,
+            "counter_scope": "loadgen-observed-warmup-and-steady-admin-http-wire-v1",
+            "successful_requests": 6000,
+            "failed_requests": 0,
+            "admin_status_requests": 3000,
+            "cluster_overview_requests": 3000,
+            "request_network_bytes": 990000,
+            "response_network_bytes": 3594000
+          },
+          {
+            "offered_rate_per_second": 500,
+            "repeat_index": 2,
+            "counter_scope": "loadgen-observed-warmup-and-steady-admin-http-wire-v1",
+            "successful_requests": 6000,
+            "failed_requests": 0,
+            "admin_status_requests": 3000,
+            "cluster_overview_requests": 3000,
+            "request_network_bytes": 990000,
+            "response_network_bytes": 3594000
+          },
+          {
+            "offered_rate_per_second": 500,
+            "repeat_index": 3,
+            "counter_scope": "loadgen-observed-warmup-and-steady-admin-http-wire-v1",
+            "successful_requests": 6000,
+            "failed_requests": 0,
+            "admin_status_requests": 3000,
+            "cluster_overview_requests": 3000,
+            "request_network_bytes": 990000,
+            "response_network_bytes": 3594000
+          },
+          {
+            "offered_rate_per_second": 500,
+            "repeat_index": 4,
+            "counter_scope": "loadgen-observed-warmup-and-steady-admin-http-wire-v1",
+            "successful_requests": 6000,
+            "failed_requests": 0,
+            "admin_status_requests": 3000,
+            "cluster_overview_requests": 3000,
+            "request_network_bytes": 990000,
+            "response_network_bytes": 3594000
+          },
+          {
+            "offered_rate_per_second": 500,
+            "repeat_index": 5,
+            "counter_scope": "loadgen-observed-warmup-and-steady-admin-http-wire-v1",
+            "successful_requests": 6000,
+            "failed_requests": 0,
+            "admin_status_requests": 3000,
+            "cluster_overview_requests": 3000,
+            "request_network_bytes": 990000,
+            "response_network_bytes": 3594000
+          },
+          {
+            "offered_rate_per_second": 1000,
+            "repeat_index": 1,
+            "counter_scope": "loadgen-observed-warmup-and-steady-admin-http-wire-v1",
+            "successful_requests": 6000,
+            "failed_requests": 0,
+            "admin_status_requests": 3000,
+            "cluster_overview_requests": 3000,
+            "request_network_bytes": 990000,
+            "response_network_bytes": 3594000
+          },
+          {
+            "offered_rate_per_second": 1000,
+            "repeat_index": 2,
+            "counter_scope": "loadgen-observed-warmup-and-steady-admin-http-wire-v1",
+            "successful_requests": 6000,
+            "failed_requests": 0,
+            "admin_status_requests": 3000,
+            "cluster_overview_requests": 3000,
+            "request_network_bytes": 990000,
+            "response_network_bytes": 3594000
+          },
+          {
+            "offered_rate_per_second": 1000,
+            "repeat_index": 3,
+            "counter_scope": "loadgen-observed-warmup-and-steady-admin-http-wire-v1",
+            "successful_requests": 6000,
+            "failed_requests": 0,
+            "admin_status_requests": 3000,
+            "cluster_overview_requests": 3000,
+            "request_network_bytes": 990000,
+            "response_network_bytes": 3594000
+          },
+          {
+            "offered_rate_per_second": 1000,
+            "repeat_index": 4,
+            "counter_scope": "loadgen-observed-warmup-and-steady-admin-http-wire-v1",
+            "successful_requests": 6000,
+            "failed_requests": 0,
+            "admin_status_requests": 3000,
+            "cluster_overview_requests": 3000,
+            "request_network_bytes": 990000,
+            "response_network_bytes": 3594000
+          },
+          {
+            "offered_rate_per_second": 1000,
+            "repeat_index": 5,
+            "counter_scope": "loadgen-observed-warmup-and-steady-admin-http-wire-v1",
+            "successful_requests": 6000,
+            "failed_requests": 0,
+            "admin_status_requests": 3000,
+            "cluster_overview_requests": 3000,
+            "request_network_bytes": 990000,
+            "response_network_bytes": 3594000
+          },
+          {
+            "offered_rate_per_second": 2000,
+            "repeat_index": 1,
+            "counter_scope": "loadgen-observed-warmup-and-steady-admin-http-wire-v1",
+            "successful_requests": 6000,
+            "failed_requests": 0,
+            "admin_status_requests": 3000,
+            "cluster_overview_requests": 3000,
+            "request_network_bytes": 990000,
+            "response_network_bytes": 3594000
+          },
+          {
+            "offered_rate_per_second": 2000,
+            "repeat_index": 2,
+            "counter_scope": "loadgen-observed-warmup-and-steady-admin-http-wire-v1",
+            "successful_requests": 6000,
+            "failed_requests": 0,
+            "admin_status_requests": 3000,
+            "cluster_overview_requests": 3000,
+            "request_network_bytes": 990000,
+            "response_network_bytes": 3594000
+          },
+          {
+            "offered_rate_per_second": 2000,
+            "repeat_index": 3,
+            "counter_scope": "loadgen-observed-warmup-and-steady-admin-http-wire-v1",
+            "successful_requests": 6000,
+            "failed_requests": 0,
+            "admin_status_requests": 3000,
+            "cluster_overview_requests": 3000,
+            "request_network_bytes": 990000,
+            "response_network_bytes": 3594000
+          },
+          {
+            "offered_rate_per_second": 2000,
+            "repeat_index": 4,
+            "counter_scope": "loadgen-observed-warmup-and-steady-admin-http-wire-v1",
+            "successful_requests": 6000,
+            "failed_requests": 0,
+            "admin_status_requests": 3000,
+            "cluster_overview_requests": 3000,
+            "request_network_bytes": 990000,
+            "response_network_bytes": 3594000
+          },
+          {
+            "offered_rate_per_second": 2000,
+            "repeat_index": 5,
+            "counter_scope": "loadgen-observed-warmup-and-steady-admin-http-wire-v1",
+            "successful_requests": 6000,
+            "failed_requests": 0,
+            "admin_status_requests": 3000,
+            "cluster_overview_requests": 3000,
+            "request_network_bytes": 990000,
+            "response_network_bytes": 3594000
+          },
+          {
+            "offered_rate_per_second": 4000,
+            "repeat_index": 1,
+            "counter_scope": "loadgen-observed-warmup-and-steady-admin-http-wire-v1",
+            "successful_requests": 6000,
+            "failed_requests": 0,
+            "admin_status_requests": 3000,
+            "cluster_overview_requests": 3000,
+            "request_network_bytes": 990000,
+            "response_network_bytes": 3594000
+          },
+          {
+            "offered_rate_per_second": 4000,
+            "repeat_index": 2,
+            "counter_scope": "loadgen-observed-warmup-and-steady-admin-http-wire-v1",
+            "successful_requests": 6000,
+            "failed_requests": 0,
+            "admin_status_requests": 3000,
+            "cluster_overview_requests": 3000,
+            "request_network_bytes": 990000,
+            "response_network_bytes": 3594000
+          },
+          {
+            "offered_rate_per_second": 4000,
+            "repeat_index": 3,
+            "counter_scope": "loadgen-observed-warmup-and-steady-admin-http-wire-v1",
+            "successful_requests": 6000,
+            "failed_requests": 0,
+            "admin_status_requests": 3000,
+            "cluster_overview_requests": 3000,
+            "request_network_bytes": 990000,
+            "response_network_bytes": 3594000
+          },
+          {
+            "offered_rate_per_second": 4000,
+            "repeat_index": 4,
+            "counter_scope": "loadgen-observed-warmup-and-steady-admin-http-wire-v1",
+            "successful_requests": 6000,
+            "failed_requests": 0,
+            "admin_status_requests": 3000,
+            "cluster_overview_requests": 3000,
+            "request_network_bytes": 990000,
+            "response_network_bytes": 3594000
+          },
+          {
+            "offered_rate_per_second": 4000,
+            "repeat_index": 5,
+            "counter_scope": "loadgen-observed-warmup-and-steady-admin-http-wire-v1",
+            "successful_requests": 6000,
+            "failed_requests": 0,
+            "admin_status_requests": 3000,
+            "cluster_overview_requests": 3000,
+            "request_network_bytes": 990000,
+            "response_network_bytes": 3594000
+          }
+        ],
+        "role_changed": false
+      },
+      {
+        "target_node_id": "member-127-0-0-1-39507",
+        "target_node_role": "follower",
+        "complete_endpoint_set": [
+          {
+            "node_id": "member-127-0-0-1-39133",
+            "admin_addr": "127.0.0.1:39025"
+          },
+          {
+            "node_id": "member-127-0-0-1-39507",
+            "admin_addr": "127.0.0.1:46105"
+          },
+          {
+            "node_id": "member-127-0-0-1-41229",
+            "admin_addr": "127.0.0.1:33437"
+          }
+        ],
+        "start": {
+          "endpoint": {
+            "node_id": "member-127-0-0-1-39507",
+            "admin_addr": "127.0.0.1:46105"
+          },
+          "admin_status": {
+            "source": "live",
+            "leader": "member-127-0-0-1-39133",
+            "term": 1,
+            "epoch": 3,
+            "quorum_ok": true,
+            "members": 3,
+            "member_ids": [
+              "member-127-0-0-1-39133",
+              "member-127-0-0-1-39507",
+              "member-127-0-0-1-41229"
+            ],
+            "voters": 3,
+            "voter_ids": [
+              5458616142184900020,
+              7615017127281426443,
+              7925621168074873603
+            ],
+            "reshard_phase": "idle",
+            "draining": false
+          },
+          "cluster_overview": {
+            "source": "live",
+            "members": [
+              {
+                "node_id": "member-127-0-0-1-39133",
+                "role": "member",
+                "reachable": true,
+                "reachability": "reachable",
+                "generation": 1
+              },
+              {
+                "node_id": "member-127-0-0-1-39507",
+                "role": "member",
+                "reachable": true,
+                "reachability": "reachable",
+                "generation": 1
+              },
+              {
+                "node_id": "member-127-0-0-1-41229",
+                "role": "member",
+                "reachable": true,
+                "reachability": "reachable",
+                "generation": 1
+              }
+            ],
+            "leader": {
+              "node_id": "member-127-0-0-1-39133",
+              "term": 1,
+              "epoch": 3
+            },
+            "partitions": {
+              "under_replicated": 0,
+              "count": 0
+            },
+            "consistency": {
+              "configured_default": null,
+              "op_counts_by_level": []
+            },
+            "backup_age_seconds": null,
+            "lifecycle": {
+              "reshard_phase": "idle",
+              "upgrade_phase": "idle"
+            }
+          }
+        },
+        "end": {
+          "endpoint": {
+            "node_id": "member-127-0-0-1-39507",
+            "admin_addr": "127.0.0.1:46105"
+          },
+          "admin_status": {
+            "source": "live",
+            "leader": "member-127-0-0-1-39133",
+            "term": 1,
+            "epoch": 3,
+            "quorum_ok": true,
+            "members": 3,
+            "member_ids": [
+              "member-127-0-0-1-39133",
+              "member-127-0-0-1-39507",
+              "member-127-0-0-1-41229"
+            ],
+            "voters": 3,
+            "voter_ids": [
+              5458616142184900020,
+              7615017127281426443,
+              7925621168074873603
+            ],
+            "reshard_phase": "idle",
+            "draining": false
+          },
+          "cluster_overview": {
+            "source": "live",
+            "members": [
+              {
+                "node_id": "member-127-0-0-1-39133",
+                "role": "member",
+                "reachable": true,
+                "reachability": "reachable",
+                "generation": 1
+              },
+              {
+                "node_id": "member-127-0-0-1-39507",
+                "role": "member",
+                "reachable": true,
+                "reachability": "reachable",
+                "generation": 1
+              },
+              {
+                "node_id": "member-127-0-0-1-41229",
+                "role": "member",
+                "reachable": true,
+                "reachability": "reachable",
+                "generation": 1
+              }
+            ],
+            "leader": {
+              "node_id": "member-127-0-0-1-39133",
+              "term": 1,
+              "epoch": 3
+            },
+            "partitions": {
+              "under_replicated": 0,
+              "count": 0
+            },
+            "consistency": {
+              "configured_default": null,
+              "op_counts_by_level": []
+            },
+            "backup_age_seconds": null,
+            "lifecycle": {
+              "reshard_phase": "idle",
+              "upgrade_phase": "idle"
+            }
+          }
+        },
+        "criteria": {
+          "p99_slo_us": 50000,
+          "p999_slo_us": 100000,
+          "min_achieved_ratio": 0.95,
+          "max_error_ratio": 0.0,
+          "max_timeout_ratio": 0.0,
+          "max_rejection_ratio": 0.0,
+          "max_drain_ms": 10000,
+          "max_robust_spread_ratio": 0.15
+        },
+        "knee": {
+          "sustainable_rate_per_second": 4000.0,
+          "evaluated": [
+            {
+              "sample": {
+                "offered_rate_per_second": 250.0,
+                "achieved_rate_per_second": 250.03338549526987,
+                "achieved_rate_min_per_second": 250.03127773769796,
+                "achieved_rate_max_per_second": 250.03502895742383,
+                "offered": 5000,
+                "started": 5000,
+                "completed": 5000,
+                "successes": 5000,
+                "errors": 0,
+                "timeouts": 0,
+                "rejections": 0,
+                "backlog_drained": true,
+                "drain_ms": 0,
+                "robust_spread_ratio": 0.000015002875389781237,
+                "latency": {
+                  "samples": 5000,
+                  "p50_us": 892,
+                  "p90_us": 1311,
+                  "p99_us": 1407,
+                  "p999_us": 1578,
+                  "p999_min_samples": 1000,
+                  "p999_reportable": true,
+                  "max_us": 1665,
+                  "overflow_count": 0
+                }
+              },
+              "repeats": [
+                {
+                  "reset_state_digest": "sha256:78be6c064a78d7e4903bfd604dec47b4a863c4469cfc4d253f76b3ddbe740a5a",
+                  "preloaded_state_digest": "sha256:78be6c064a78d7e4903bfd604dec47b4a863c4469cfc4d253f76b3ddbe740a5a",
+                  "state_digest": "sha256:78be6c064a78d7e4903bfd604dec47b4a863c4469cfc4d253f76b3ddbe740a5a",
+                  "phase": {
+                    "reset_operations": 1,
+                    "preload_operations": 2,
+                    "warmup_operations": 1000,
+                    "steady_operations": 5000,
+                    "reset_ms": 0,
+                    "preload_ms": 0,
+                    "warmup_ms": 147,
+                    "warmup_successes": 1000,
+                    "warmup_errors": 0,
+                    "warmup_timeouts": 0,
+                    "warmup_rejections": 0,
+                    "steady_ms": 19997,
+                    "warmup_samples_in_steady_histogram": 0
+                  },
+                  "steady": {
+                    "offered": 5000,
+                    "started": 5000,
+                    "completed": 5000,
+                    "successes": 5000,
+                    "errors": 0,
+                    "timeouts": 0,
+                    "rejections": 0,
+                    "backlog_high_water": 1,
+                    "backlog_drained": true,
+                    "drain_ms": 0,
+                    "elapsed_ms": 19997,
+                    "offered_rate_per_second": 250.0,
+                    "achieved_rate_per_second": 250.03502895742383,
+                    "latency": {
+                      "samples": 5000,
+                      "p50_us": 1368,
+                      "p90_us": 1785,
+                      "p99_us": 1886,
+                      "p999_us": 1990,
+                      "p999_min_samples": 1000,
+                      "p999_reportable": true,
+                      "max_us": 2028,
+                      "overflow_count": 0
+                    }
+                  }
+                },
+                {
+                  "reset_state_digest": "sha256:78be6c064a78d7e4903bfd604dec47b4a863c4469cfc4d253f76b3ddbe740a5a",
+                  "preloaded_state_digest": "sha256:78be6c064a78d7e4903bfd604dec47b4a863c4469cfc4d253f76b3ddbe740a5a",
+                  "state_digest": "sha256:78be6c064a78d7e4903bfd604dec47b4a863c4469cfc4d253f76b3ddbe740a5a",
+                  "phase": {
+                    "reset_operations": 1,
+                    "preload_operations": 2,
+                    "warmup_operations": 1000,
+                    "steady_operations": 5000,
+                    "reset_ms": 0,
+                    "preload_ms": 0,
+                    "warmup_ms": 148,
+                    "warmup_successes": 1000,
+                    "warmup_errors": 0,
+                    "warmup_timeouts": 0,
+                    "warmup_rejections": 0,
+                    "steady_ms": 19997,
+                    "warmup_samples_in_steady_histogram": 0
+                  },
+                  "steady": {
+                    "offered": 5000,
+                    "started": 5000,
+                    "completed": 5000,
+                    "successes": 5000,
+                    "errors": 0,
+                    "timeouts": 0,
+                    "rejections": 0,
+                    "backlog_high_water": 1,
+                    "backlog_drained": true,
+                    "drain_ms": 0,
+                    "elapsed_ms": 19997,
+                    "offered_rate_per_second": 250.0,
+                    "achieved_rate_per_second": 250.0334726435715,
+                    "latency": {
+                      "samples": 5000,
+                      "p50_us": 875,
+                      "p90_us": 1291,
+                      "p99_us": 1390,
+                      "p999_us": 1435,
+                      "p999_min_samples": 1000,
+                      "p999_reportable": true,
+                      "max_us": 1514,
+                      "overflow_count": 0
+                    }
+                  }
+                },
+                {
+                  "reset_state_digest": "sha256:78be6c064a78d7e4903bfd604dec47b4a863c4469cfc4d253f76b3ddbe740a5a",
+                  "preloaded_state_digest": "sha256:78be6c064a78d7e4903bfd604dec47b4a863c4469cfc4d253f76b3ddbe740a5a",
+                  "state_digest": "sha256:78be6c064a78d7e4903bfd604dec47b4a863c4469cfc4d253f76b3ddbe740a5a",
+                  "phase": {
+                    "reset_operations": 1,
+                    "preload_operations": 2,
+                    "warmup_operations": 1000,
+                    "steady_operations": 5000,
+                    "reset_ms": 0,
+                    "preload_ms": 0,
+                    "warmup_ms": 149,
+                    "warmup_successes": 1000,
+                    "warmup_errors": 0,
+                    "warmup_timeouts": 0,
+                    "warmup_rejections": 0,
+                    "steady_ms": 19997,
+                    "warmup_samples_in_steady_histogram": 0
+                  },
+                  "steady": {
+                    "offered": 5000,
+                    "started": 5000,
+                    "completed": 5000,
+                    "successes": 5000,
+                    "errors": 0,
+                    "timeouts": 0,
+                    "rejections": 0,
+                    "backlog_high_water": 1,
+                    "backlog_drained": true,
+                    "drain_ms": 0,
+                    "elapsed_ms": 19997,
+                    "offered_rate_per_second": 250.0,
+                    "achieved_rate_per_second": 250.03127773769796,
+                    "latency": {
+                      "samples": 5000,
+                      "p50_us": 1276,
+                      "p90_us": 1693,
+                      "p99_us": 1787,
+                      "p999_us": 1813,
+                      "p999_min_samples": 1000,
+                      "p999_reportable": true,
+                      "max_us": 1939,
+                      "overflow_count": 0
+                    }
+                  }
+                },
+                {
+                  "reset_state_digest": "sha256:78be6c064a78d7e4903bfd604dec47b4a863c4469cfc4d253f76b3ddbe740a5a",
+                  "preloaded_state_digest": "sha256:78be6c064a78d7e4903bfd604dec47b4a863c4469cfc4d253f76b3ddbe740a5a",
+                  "state_digest": "sha256:78be6c064a78d7e4903bfd604dec47b4a863c4469cfc4d253f76b3ddbe740a5a",
+                  "phase": {
+                    "reset_operations": 1,
+                    "preload_operations": 2,
+                    "warmup_operations": 1000,
+                    "steady_operations": 5000,
+                    "reset_ms": 0,
+                    "preload_ms": 0,
+                    "warmup_ms": 148,
+                    "warmup_successes": 1000,
+                    "warmup_errors": 0,
+                    "warmup_timeouts": 0,
+                    "warmup_rejections": 0,
+                    "steady_ms": 19997,
+                    "warmup_samples_in_steady_histogram": 0
+                  },
+                  "steady": {
+                    "offered": 5000,
+                    "started": 5000,
+                    "completed": 5000,
+                    "successes": 5000,
+                    "errors": 0,
+                    "timeouts": 0,
+                    "rejections": 0,
+                    "backlog_high_water": 1,
+                    "backlog_drained": true,
+                    "drain_ms": 0,
+                    "elapsed_ms": 19997,
+                    "offered_rate_per_second": 250.0,
+                    "achieved_rate_per_second": 250.03338549526987,
+                    "latency": {
+                      "samples": 5000,
+                      "p50_us": 892,
+                      "p90_us": 1311,
+                      "p99_us": 1407,
+                      "p999_us": 1578,
+                      "p999_min_samples": 1000,
+                      "p999_reportable": true,
+                      "max_us": 1665,
+                      "overflow_count": 0
+                    }
+                  }
+                },
+                {
+                  "reset_state_digest": "sha256:78be6c064a78d7e4903bfd604dec47b4a863c4469cfc4d253f76b3ddbe740a5a",
+                  "preloaded_state_digest": "sha256:78be6c064a78d7e4903bfd604dec47b4a863c4469cfc4d253f76b3ddbe740a5a",
+                  "state_digest": "sha256:78be6c064a78d7e4903bfd604dec47b4a863c4469cfc4d253f76b3ddbe740a5a",
+                  "phase": {
+                    "reset_operations": 1,
+                    "preload_operations": 2,
+                    "warmup_operations": 1000,
+                    "steady_operations": 5000,
+                    "reset_ms": 0,
+                    "preload_ms": 0,
+                    "warmup_ms": 148,
+                    "warmup_successes": 1000,
+                    "warmup_errors": 0,
+                    "warmup_timeouts": 0,
+                    "warmup_rejections": 0,
+                    "steady_ms": 19997,
+                    "warmup_samples_in_steady_histogram": 0
+                  },
+                  "steady": {
+                    "offered": 5000,
+                    "started": 5000,
+                    "completed": 5000,
+                    "successes": 5000,
+                    "errors": 0,
+                    "timeouts": 0,
+                    "rejections": 0,
+                    "backlog_high_water": 1,
+                    "backlog_drained": true,
+                    "drain_ms": 0,
+                    "elapsed_ms": 19997,
+                    "offered_rate_per_second": 250.0,
+                    "achieved_rate_per_second": 250.03330368595107,
+                    "latency": {
+                      "samples": 5000,
+                      "p50_us": 808,
+                      "p90_us": 1229,
+                      "p99_us": 1319,
+                      "p999_us": 1390,
+                      "p999_min_samples": 1000,
+                      "p999_reportable": true,
+                      "max_us": 1460,
+                      "overflow_count": 0
+                    }
+                  }
+                }
+              ],
+              "verdict": {
+                "sustainable": true,
+                "reasons": []
+              }
+            },
+            {
+              "sample": {
+                "offered_rate_per_second": 500.0,
+                "achieved_rate_per_second": 500.0413579706805,
+                "achieved_rate_min_per_second": 500.0226580267258,
+                "achieved_rate_max_per_second": 500.049488497738,
+                "offered": 5000,
+                "started": 5000,
+                "completed": 5000,
+                "successes": 5000,
+                "errors": 0,
+                "timeouts": 0,
+                "rejections": 0,
+                "backlog_drained": true,
+                "drain_ms": 0,
+                "robust_spread_ratio": 0.000053656503776187645,
+                "latency": {
+                  "samples": 5000,
+                  "p50_us": 1374,
+                  "p90_us": 1799,
+                  "p99_us": 1896,
+                  "p999_us": 2093,
+                  "p999_min_samples": 1000,
+                  "p999_reportable": true,
+                  "max_us": 2175,
+                  "overflow_count": 0
+                }
+              },
+              "repeats": [
+                {
+                  "reset_state_digest": "sha256:78be6c064a78d7e4903bfd604dec47b4a863c4469cfc4d253f76b3ddbe740a5a",
+                  "preloaded_state_digest": "sha256:78be6c064a78d7e4903bfd604dec47b4a863c4469cfc4d253f76b3ddbe740a5a",
+                  "state_digest": "sha256:78be6c064a78d7e4903bfd604dec47b4a863c4469cfc4d253f76b3ddbe740a5a",
+                  "phase": {
+                    "reset_operations": 1,
+                    "preload_operations": 2,
+                    "warmup_operations": 1000,
+                    "steady_operations": 5000,
+                    "reset_ms": 0,
+                    "preload_ms": 0,
+                    "warmup_ms": 148,
+                    "warmup_successes": 1000,
+                    "warmup_errors": 0,
+                    "warmup_timeouts": 0,
+                    "warmup_rejections": 0,
+                    "steady_ms": 9999,
+                    "warmup_samples_in_steady_histogram": 0
+                  },
+                  "steady": {
+                    "offered": 5000,
+                    "started": 5000,
+                    "completed": 5000,
+                    "successes": 5000,
+                    "errors": 0,
+                    "timeouts": 0,
+                    "rejections": 0,
+                    "backlog_high_water": 1,
+                    "backlog_drained": true,
+                    "drain_ms": 0,
+                    "elapsed_ms": 9999,
+                    "offered_rate_per_second": 500.0,
+                    "achieved_rate_per_second": 500.02758022125323,
+                    "latency": {
+                      "samples": 5000,
+                      "p50_us": 987,
+                      "p90_us": 1401,
+                      "p99_us": 1506,
+                      "p999_us": 1664,
+                      "p999_min_samples": 1000,
+                      "p999_reportable": true,
+                      "max_us": 1930,
+                      "overflow_count": 0
+                    }
+                  }
+                },
+                {
+                  "reset_state_digest": "sha256:78be6c064a78d7e4903bfd604dec47b4a863c4469cfc4d253f76b3ddbe740a5a",
+                  "preloaded_state_digest": "sha256:78be6c064a78d7e4903bfd604dec47b4a863c4469cfc4d253f76b3ddbe740a5a",
+                  "state_digest": "sha256:78be6c064a78d7e4903bfd604dec47b4a863c4469cfc4d253f76b3ddbe740a5a",
+                  "phase": {
+                    "reset_operations": 1,
+                    "preload_operations": 2,
+                    "warmup_operations": 1000,
+                    "steady_operations": 5000,
+                    "reset_ms": 0,
+                    "preload_ms": 0,
+                    "warmup_ms": 148,
+                    "warmup_successes": 1000,
+                    "warmup_errors": 0,
+                    "warmup_timeouts": 0,
+                    "warmup_rejections": 0,
+                    "steady_ms": 9999,
+                    "warmup_samples_in_steady_histogram": 0
+                  },
+                  "steady": {
+                    "offered": 5000,
+                    "started": 5000,
+                    "completed": 5000,
+                    "successes": 5000,
+                    "errors": 0,
+                    "timeouts": 0,
+                    "rejections": 0,
+                    "backlog_high_water": 1,
+                    "backlog_drained": true,
+                    "drain_ms": 0,
+                    "elapsed_ms": 9999,
+                    "offered_rate_per_second": 500.0,
+                    "achieved_rate_per_second": 500.049488497738,
+                    "latency": {
+                      "samples": 5000,
+                      "p50_us": 811,
+                      "p90_us": 1269,
+                      "p99_us": 1333,
+                      "p999_us": 1406,
+                      "p999_min_samples": 1000,
+                      "p999_reportable": true,
+                      "max_us": 1529,
+                      "overflow_count": 0
+                    }
+                  }
+                },
+                {
+                  "reset_state_digest": "sha256:78be6c064a78d7e4903bfd604dec47b4a863c4469cfc4d253f76b3ddbe740a5a",
+                  "preloaded_state_digest": "sha256:78be6c064a78d7e4903bfd604dec47b4a863c4469cfc4d253f76b3ddbe740a5a",
+                  "state_digest": "sha256:78be6c064a78d7e4903bfd604dec47b4a863c4469cfc4d253f76b3ddbe740a5a",
+                  "phase": {
+                    "reset_operations": 1,
+                    "preload_operations": 2,
+                    "warmup_operations": 1000,
+                    "steady_operations": 5000,
+                    "reset_ms": 0,
+                    "preload_ms": 0,
+                    "warmup_ms": 149,
+                    "warmup_successes": 1000,
+                    "warmup_errors": 0,
+                    "warmup_timeouts": 0,
+                    "warmup_rejections": 0,
+                    "steady_ms": 9999,
+                    "warmup_samples_in_steady_histogram": 0
+                  },
+                  "steady": {
+                    "offered": 5000,
+                    "started": 5000,
+                    "completed": 5000,
+                    "successes": 5000,
+                    "errors": 0,
+                    "timeouts": 0,
+                    "rejections": 0,
+                    "backlog_high_water": 1,
+                    "backlog_drained": true,
+                    "drain_ms": 0,
+                    "elapsed_ms": 9999,
+                    "offered_rate_per_second": 500.0,
+                    "achieved_rate_per_second": 500.0486783387,
+                    "latency": {
+                      "samples": 5000,
+                      "p50_us": 1447,
+                      "p90_us": 1892,
+                      "p99_us": 1974,
+                      "p999_us": 2065,
+                      "p999_min_samples": 1000,
+                      "p999_reportable": true,
+                      "max_us": 2097,
+                      "overflow_count": 0
+                    }
+                  }
+                },
+                {
+                  "reset_state_digest": "sha256:78be6c064a78d7e4903bfd604dec47b4a863c4469cfc4d253f76b3ddbe740a5a",
+                  "preloaded_state_digest": "sha256:78be6c064a78d7e4903bfd604dec47b4a863c4469cfc4d253f76b3ddbe740a5a",
+                  "state_digest": "sha256:78be6c064a78d7e4903bfd604dec47b4a863c4469cfc4d253f76b3ddbe740a5a",
+                  "phase": {
+                    "reset_operations": 1,
+                    "preload_operations": 2,
+                    "warmup_operations": 1000,
+                    "steady_operations": 5000,
+                    "reset_ms": 0,
+                    "preload_ms": 0,
+                    "warmup_ms": 148,
+                    "warmup_successes": 1000,
+                    "warmup_errors": 0,
+                    "warmup_timeouts": 0,
+                    "warmup_rejections": 0,
+                    "steady_ms": 9999,
+                    "warmup_samples_in_steady_histogram": 0
+                  },
+                  "steady": {
+                    "offered": 5000,
+                    "started": 5000,
+                    "completed": 5000,
+                    "successes": 5000,
+                    "errors": 0,
+                    "timeouts": 0,
+                    "rejections": 0,
+                    "backlog_high_water": 1,
+                    "backlog_drained": true,
+                    "drain_ms": 0,
+                    "elapsed_ms": 9999,
+                    "offered_rate_per_second": 500.0,
+                    "achieved_rate_per_second": 500.0413579706805,
+                    "latency": {
+                      "samples": 5000,
+                      "p50_us": 1374,
+                      "p90_us": 1799,
+                      "p99_us": 1896,
+                      "p999_us": 2093,
+                      "p999_min_samples": 1000,
+                      "p999_reportable": true,
+                      "max_us": 2175,
+                      "overflow_count": 0
+                    }
+                  }
+                },
+                {
+                  "reset_state_digest": "sha256:78be6c064a78d7e4903bfd604dec47b4a863c4469cfc4d253f76b3ddbe740a5a",
+                  "preloaded_state_digest": "sha256:78be6c064a78d7e4903bfd604dec47b4a863c4469cfc4d253f76b3ddbe740a5a",
+                  "state_digest": "sha256:78be6c064a78d7e4903bfd604dec47b4a863c4469cfc4d253f76b3ddbe740a5a",
+                  "phase": {
+                    "reset_operations": 1,
+                    "preload_operations": 2,
+                    "warmup_operations": 1000,
+                    "steady_operations": 5000,
+                    "reset_ms": 0,
+                    "preload_ms": 0,
+                    "warmup_ms": 149,
+                    "warmup_successes": 1000,
+                    "warmup_errors": 0,
+                    "warmup_timeouts": 0,
+                    "warmup_rejections": 0,
+                    "steady_ms": 9999,
+                    "warmup_samples_in_steady_histogram": 0
+                  },
+                  "steady": {
+                    "offered": 5000,
+                    "started": 5000,
+                    "completed": 5000,
+                    "successes": 5000,
+                    "errors": 0,
+                    "timeouts": 0,
+                    "rejections": 0,
+                    "backlog_high_water": 1,
+                    "backlog_drained": true,
+                    "drain_ms": 0,
+                    "elapsed_ms": 9999,
+                    "offered_rate_per_second": 500.0,
+                    "achieved_rate_per_second": 500.0226580267258,
+                    "latency": {
+                      "samples": 5000,
+                      "p50_us": 1344,
+                      "p90_us": 1763,
+                      "p99_us": 1866,
+                      "p999_us": 2016,
+                      "p999_min_samples": 1000,
+                      "p999_reportable": true,
+                      "max_us": 2109,
+                      "overflow_count": 0
+                    }
+                  }
+                }
+              ],
+              "verdict": {
+                "sustainable": true,
+                "reasons": []
+              }
+            },
+            {
+              "sample": {
+                "offered_rate_per_second": 1000.0,
+                "achieved_rate_per_second": 999.9400405953457,
+                "achieved_rate_min_per_second": 999.8395681425108,
+                "achieved_rate_max_per_second": 1000.0400636050282,
+                "offered": 5000,
+                "started": 5000,
+                "completed": 5000,
+                "successes": 5000,
+                "errors": 0,
+                "timeouts": 0,
+                "rejections": 0,
+                "backlog_drained": true,
+                "drain_ms": 0,
+                "robust_spread_ratio": 0.00020050748482685672,
+                "latency": {
+                  "samples": 5000,
+                  "p50_us": 1124,
+                  "p90_us": 1627,
+                  "p99_us": 1815,
+                  "p999_us": 1919,
+                  "p999_min_samples": 1000,
+                  "p999_reportable": true,
+                  "max_us": 2025,
+                  "overflow_count": 0
+                }
+              },
+              "repeats": [
+                {
+                  "reset_state_digest": "sha256:78be6c064a78d7e4903bfd604dec47b4a863c4469cfc4d253f76b3ddbe740a5a",
+                  "preloaded_state_digest": "sha256:78be6c064a78d7e4903bfd604dec47b4a863c4469cfc4d253f76b3ddbe740a5a",
+                  "state_digest": "sha256:78be6c064a78d7e4903bfd604dec47b4a863c4469cfc4d253f76b3ddbe740a5a",
+                  "phase": {
+                    "reset_operations": 1,
+                    "preload_operations": 2,
+                    "warmup_operations": 1000,
+                    "steady_operations": 5000,
+                    "reset_ms": 0,
+                    "preload_ms": 0,
+                    "warmup_ms": 148,
+                    "warmup_successes": 1000,
+                    "warmup_errors": 0,
+                    "warmup_timeouts": 0,
+                    "warmup_rejections": 0,
+                    "steady_ms": 5000,
+                    "warmup_samples_in_steady_histogram": 0
+                  },
+                  "steady": {
+                    "offered": 5000,
+                    "started": 5000,
+                    "completed": 5000,
+                    "successes": 5000,
+                    "errors": 0,
+                    "timeouts": 0,
+                    "rejections": 0,
+                    "backlog_high_water": 2,
+                    "backlog_drained": true,
+                    "drain_ms": 0,
+                    "elapsed_ms": 5000,
+                    "offered_rate_per_second": 1000.0,
+                    "achieved_rate_per_second": 999.8395681425108,
+                    "latency": {
+                      "samples": 5000,
+                      "p50_us": 1627,
+                      "p90_us": 2121,
+                      "p99_us": 2313,
+                      "p999_us": 2447,
+                      "p999_min_samples": 1000,
+                      "p999_reportable": true,
+                      "max_us": 2647,
+                      "overflow_count": 0
+                    }
+                  }
+                },
+                {
+                  "reset_state_digest": "sha256:78be6c064a78d7e4903bfd604dec47b4a863c4469cfc4d253f76b3ddbe740a5a",
+                  "preloaded_state_digest": "sha256:78be6c064a78d7e4903bfd604dec47b4a863c4469cfc4d253f76b3ddbe740a5a",
+                  "state_digest": "sha256:78be6c064a78d7e4903bfd604dec47b4a863c4469cfc4d253f76b3ddbe740a5a",
+                  "phase": {
+                    "reset_operations": 1,
+                    "preload_operations": 2,
+                    "warmup_operations": 1000,
+                    "steady_operations": 5000,
+                    "reset_ms": 0,
+                    "preload_ms": 0,
+                    "warmup_ms": 148,
+                    "warmup_successes": 1000,
+                    "warmup_errors": 0,
+                    "warmup_timeouts": 0,
+                    "warmup_rejections": 0,
+                    "steady_ms": 5000,
+                    "warmup_samples_in_steady_histogram": 0
+                  },
+                  "steady": {
+                    "offered": 5000,
+                    "started": 5000,
+                    "completed": 5000,
+                    "successes": 5000,
+                    "errors": 0,
+                    "timeouts": 0,
+                    "rejections": 0,
+                    "backlog_high_water": 2,
+                    "backlog_drained": true,
+                    "drain_ms": 0,
+                    "elapsed_ms": 5000,
+                    "offered_rate_per_second": 1000.0,
+                    "achieved_rate_per_second": 999.8554227056165,
+                    "latency": {
+                      "samples": 5000,
+                      "p50_us": 1204,
+                      "p90_us": 1702,
+                      "p99_us": 1887,
+                      "p999_us": 1928,
+                      "p999_min_samples": 1000,
+                      "p999_reportable": true,
+                      "max_us": 2127,
+                      "overflow_count": 0
+                    }
+                  }
+                },
+                {
+                  "reset_state_digest": "sha256:78be6c064a78d7e4903bfd604dec47b4a863c4469cfc4d253f76b3ddbe740a5a",
+                  "preloaded_state_digest": "sha256:78be6c064a78d7e4903bfd604dec47b4a863c4469cfc4d253f76b3ddbe740a5a",
+                  "state_digest": "sha256:78be6c064a78d7e4903bfd604dec47b4a863c4469cfc4d253f76b3ddbe740a5a",
+                  "phase": {
+                    "reset_operations": 1,
+                    "preload_operations": 2,
+                    "warmup_operations": 1000,
+                    "steady_operations": 5000,
+                    "reset_ms": 0,
+                    "preload_ms": 0,
+                    "warmup_ms": 149,
+                    "warmup_successes": 1000,
+                    "warmup_errors": 0,
+                    "warmup_timeouts": 0,
+                    "warmup_rejections": 0,
+                    "steady_ms": 5000,
+                    "warmup_samples_in_steady_histogram": 0
+                  },
+                  "steady": {
+                    "offered": 5000,
+                    "started": 5000,
+                    "completed": 5000,
+                    "successes": 5000,
+                    "errors": 0,
+                    "timeouts": 0,
+                    "rejections": 0,
+                    "backlog_high_water": 2,
+                    "backlog_drained": true,
+                    "drain_ms": 0,
+                    "elapsed_ms": 5000,
+                    "offered_rate_per_second": 1000.0,
+                    "achieved_rate_per_second": 999.9400405953457,
+                    "latency": {
+                      "samples": 5000,
+                      "p50_us": 1124,
+                      "p90_us": 1627,
+                      "p99_us": 1815,
+                      "p999_us": 1919,
+                      "p999_min_samples": 1000,
+                      "p999_reportable": true,
+                      "max_us": 2025,
+                      "overflow_count": 0
+                    }
+                  }
+                },
+                {
+                  "reset_state_digest": "sha256:78be6c064a78d7e4903bfd604dec47b4a863c4469cfc4d253f76b3ddbe740a5a",
+                  "preloaded_state_digest": "sha256:78be6c064a78d7e4903bfd604dec47b4a863c4469cfc4d253f76b3ddbe740a5a",
+                  "state_digest": "sha256:78be6c064a78d7e4903bfd604dec47b4a863c4469cfc4d253f76b3ddbe740a5a",
+                  "phase": {
+                    "reset_operations": 1,
+                    "preload_operations": 2,
+                    "warmup_operations": 1000,
+                    "steady_operations": 5000,
+                    "reset_ms": 0,
+                    "preload_ms": 0,
+                    "warmup_ms": 148,
+                    "warmup_successes": 1000,
+                    "warmup_errors": 0,
+                    "warmup_timeouts": 0,
+                    "warmup_rejections": 0,
+                    "steady_ms": 4999,
+                    "warmup_samples_in_steady_histogram": 0
+                  },
+                  "steady": {
+                    "offered": 5000,
+                    "started": 5000,
+                    "completed": 5000,
+                    "successes": 5000,
+                    "errors": 0,
+                    "timeouts": 0,
+                    "rejections": 0,
+                    "backlog_high_water": 2,
+                    "backlog_drained": true,
+                    "drain_ms": 0,
+                    "elapsed_ms": 4999,
+                    "offered_rate_per_second": 1000.0,
+                    "achieved_rate_per_second": 1000.0400636050282,
+                    "latency": {
+                      "samples": 5000,
+                      "p50_us": 1087,
+                      "p90_us": 1580,
+                      "p99_us": 1779,
+                      "p999_us": 1878,
+                      "p999_min_samples": 1000,
+                      "p999_reportable": true,
+                      "max_us": 2149,
+                      "overflow_count": 0
+                    }
+                  }
+                },
+                {
+                  "reset_state_digest": "sha256:78be6c064a78d7e4903bfd604dec47b4a863c4469cfc4d253f76b3ddbe740a5a",
+                  "preloaded_state_digest": "sha256:78be6c064a78d7e4903bfd604dec47b4a863c4469cfc4d253f76b3ddbe740a5a",
+                  "state_digest": "sha256:78be6c064a78d7e4903bfd604dec47b4a863c4469cfc4d253f76b3ddbe740a5a",
+                  "phase": {
+                    "reset_operations": 1,
+                    "preload_operations": 2,
+                    "warmup_operations": 1000,
+                    "steady_operations": 5000,
+                    "reset_ms": 0,
+                    "preload_ms": 0,
+                    "warmup_ms": 149,
+                    "warmup_successes": 1000,
+                    "warmup_errors": 0,
+                    "warmup_timeouts": 0,
+                    "warmup_rejections": 0,
+                    "steady_ms": 4999,
+                    "warmup_samples_in_steady_histogram": 0
+                  },
+                  "steady": {
+                    "offered": 5000,
+                    "started": 5000,
+                    "completed": 5000,
+                    "successes": 5000,
+                    "errors": 0,
+                    "timeouts": 0,
+                    "rejections": 0,
+                    "backlog_high_water": 2,
+                    "backlog_drained": true,
+                    "drain_ms": 0,
+                    "elapsed_ms": 4999,
+                    "offered_rate_per_second": 1000.0,
+                    "achieved_rate_per_second": 1000.038731500071,
+                    "latency": {
+                      "samples": 5000,
+                      "p50_us": 837,
+                      "p90_us": 1346,
+                      "p99_us": 1528,
+                      "p999_us": 1660,
+                      "p999_min_samples": 1000,
+                      "p999_reportable": true,
+                      "max_us": 1927,
+                      "overflow_count": 0
+                    }
+                  }
+                }
+              ],
+              "verdict": {
+                "sustainable": true,
+                "reasons": []
+              }
+            },
+            {
+              "sample": {
+                "offered_rate_per_second": 2000.0,
+                "achieved_rate_per_second": 1999.538832762136,
+                "achieved_rate_min_per_second": 1999.0623925600169,
+                "achieved_rate_max_per_second": 1999.7346800020207,
+                "offered": 5000,
+                "started": 5000,
+                "completed": 5000,
+                "successes": 5000,
+                "errors": 0,
+                "timeouts": 0,
+                "rejections": 0,
+                "backlog_drained": true,
+                "drain_ms": 0,
+                "robust_spread_ratio": 0.00033622124811406954,
+                "latency": {
+                  "samples": 5000,
+                  "p50_us": 1243,
+                  "p90_us": 1850,
+                  "p99_us": 2219,
+                  "p999_us": 2437,
+                  "p999_min_samples": 1000,
+                  "p999_reportable": true,
+                  "max_us": 2563,
+                  "overflow_count": 0
+                }
+              },
+              "repeats": [
+                {
+                  "reset_state_digest": "sha256:78be6c064a78d7e4903bfd604dec47b4a863c4469cfc4d253f76b3ddbe740a5a",
+                  "preloaded_state_digest": "sha256:78be6c064a78d7e4903bfd604dec47b4a863c4469cfc4d253f76b3ddbe740a5a",
+                  "state_digest": "sha256:78be6c064a78d7e4903bfd604dec47b4a863c4469cfc4d253f76b3ddbe740a5a",
+                  "phase": {
+                    "reset_operations": 1,
+                    "preload_operations": 2,
+                    "warmup_operations": 1000,
+                    "steady_operations": 5000,
+                    "reset_ms": 0,
+                    "preload_ms": 0,
+                    "warmup_ms": 149,
+                    "warmup_successes": 1000,
+                    "warmup_errors": 0,
+                    "warmup_timeouts": 0,
+                    "warmup_rejections": 0,
+                    "steady_ms": 2500,
+                    "warmup_samples_in_steady_histogram": 0
+                  },
+                  "steady": {
+                    "offered": 5000,
+                    "started": 5000,
+                    "completed": 5000,
+                    "successes": 5000,
+                    "errors": 0,
+                    "timeouts": 0,
+                    "rejections": 0,
+                    "backlog_high_water": 4,
+                    "backlog_drained": true,
+                    "drain_ms": 0,
+                    "elapsed_ms": 2500,
+                    "offered_rate_per_second": 2000.0,
+                    "achieved_rate_per_second": 1999.7346800020207,
+                    "latency": {
+                      "samples": 5000,
+                      "p50_us": 1454,
+                      "p90_us": 2057,
+                      "p99_us": 2429,
+                      "p999_us": 2585,
+                      "p999_min_samples": 1000,
+                      "p999_reportable": true,
+                      "max_us": 2929,
+                      "overflow_count": 0
+                    }
+                  }
+                },
+                {
+                  "reset_state_digest": "sha256:78be6c064a78d7e4903bfd604dec47b4a863c4469cfc4d253f76b3ddbe740a5a",
+                  "preloaded_state_digest": "sha256:78be6c064a78d7e4903bfd604dec47b4a863c4469cfc4d253f76b3ddbe740a5a",
+                  "state_digest": "sha256:78be6c064a78d7e4903bfd604dec47b4a863c4469cfc4d253f76b3ddbe740a5a",
+                  "phase": {
+                    "reset_operations": 1,
+                    "preload_operations": 2,
+                    "warmup_operations": 1000,
+                    "steady_operations": 5000,
+                    "reset_ms": 0,
+                    "preload_ms": 0,
+                    "warmup_ms": 149,
+                    "warmup_successes": 1000,
+                    "warmup_errors": 0,
+                    "warmup_timeouts": 0,
+                    "warmup_rejections": 0,
+                    "steady_ms": 2500,
+                    "warmup_samples_in_steady_histogram": 0
+                  },
+                  "steady": {
+                    "offered": 5000,
+                    "started": 5000,
+                    "completed": 5000,
+                    "successes": 5000,
+                    "errors": 0,
+                    "timeouts": 0,
+                    "rejections": 0,
+                    "backlog_high_water": 4,
+                    "backlog_drained": true,
+                    "drain_ms": 0,
+                    "elapsed_ms": 2500,
+                    "offered_rate_per_second": 2000.0,
+                    "achieved_rate_per_second": 1999.655700881147,
+                    "latency": {
+                      "samples": 5000,
+                      "p50_us": 1135,
+                      "p90_us": 1741,
+                      "p99_us": 2093,
+                      "p999_us": 2265,
+                      "p999_min_samples": 1000,
+                      "p999_reportable": true,
+                      "max_us": 2559,
+                      "overflow_count": 0
+                    }
+                  }
+                },
+                {
+                  "reset_state_digest": "sha256:78be6c064a78d7e4903bfd604dec47b4a863c4469cfc4d253f76b3ddbe740a5a",
+                  "preloaded_state_digest": "sha256:78be6c064a78d7e4903bfd604dec47b4a863c4469cfc4d253f76b3ddbe740a5a",
+                  "state_digest": "sha256:78be6c064a78d7e4903bfd604dec47b4a863c4469cfc4d253f76b3ddbe740a5a",
+                  "phase": {
+                    "reset_operations": 1,
+                    "preload_operations": 2,
+                    "warmup_operations": 1000,
+                    "steady_operations": 5000,
+                    "reset_ms": 0,
+                    "preload_ms": 0,
+                    "warmup_ms": 150,
+                    "warmup_successes": 1000,
+                    "warmup_errors": 0,
+                    "warmup_timeouts": 0,
+                    "warmup_rejections": 0,
+                    "steady_ms": 2500,
+                    "warmup_samples_in_steady_histogram": 0
+                  },
+                  "steady": {
+                    "offered": 5000,
+                    "started": 5000,
+                    "completed": 5000,
+                    "successes": 5000,
+                    "errors": 0,
+                    "timeouts": 0,
+                    "rejections": 0,
+                    "backlog_high_water": 4,
+                    "backlog_drained": true,
+                    "drain_ms": 0,
+                    "elapsed_ms": 2500,
+                    "offered_rate_per_second": 2000.0,
+                    "achieved_rate_per_second": 1999.538832762136,
+                    "latency": {
+                      "samples": 5000,
+                      "p50_us": 1243,
+                      "p90_us": 1850,
+                      "p99_us": 2219,
+                      "p999_us": 2437,
+                      "p999_min_samples": 1000,
+                      "p999_reportable": true,
+                      "max_us": 2563,
+                      "overflow_count": 0
+                    }
+                  }
+                },
+                {
+                  "reset_state_digest": "sha256:78be6c064a78d7e4903bfd604dec47b4a863c4469cfc4d253f76b3ddbe740a5a",
+                  "preloaded_state_digest": "sha256:78be6c064a78d7e4903bfd604dec47b4a863c4469cfc4d253f76b3ddbe740a5a",
+                  "state_digest": "sha256:78be6c064a78d7e4903bfd604dec47b4a863c4469cfc4d253f76b3ddbe740a5a",
+                  "phase": {
+                    "reset_operations": 1,
+                    "preload_operations": 2,
+                    "warmup_operations": 1000,
+                    "steady_operations": 5000,
+                    "reset_ms": 0,
+                    "preload_ms": 0,
+                    "warmup_ms": 149,
+                    "warmup_successes": 1000,
+                    "warmup_errors": 0,
+                    "warmup_timeouts": 0,
+                    "warmup_rejections": 0,
+                    "steady_ms": 2501,
+                    "warmup_samples_in_steady_histogram": 0
+                  },
+                  "steady": {
+                    "offered": 5000,
+                    "started": 5000,
+                    "completed": 5000,
+                    "successes": 5000,
+                    "errors": 0,
+                    "timeouts": 0,
+                    "rejections": 0,
+                    "backlog_high_water": 4,
+                    "backlog_drained": true,
+                    "drain_ms": 0,
+                    "elapsed_ms": 2501,
+                    "offered_rate_per_second": 2000.0,
+                    "achieved_rate_per_second": 1999.0623925600169,
+                    "latency": {
+                      "samples": 5000,
+                      "p50_us": 1491,
+                      "p90_us": 2095,
+                      "p99_us": 2471,
+                      "p999_us": 2649,
+                      "p999_min_samples": 1000,
+                      "p999_reportable": true,
+                      "max_us": 2715,
+                      "overflow_count": 0
+                    }
+                  }
+                },
+                {
+                  "reset_state_digest": "sha256:78be6c064a78d7e4903bfd604dec47b4a863c4469cfc4d253f76b3ddbe740a5a",
+                  "preloaded_state_digest": "sha256:78be6c064a78d7e4903bfd604dec47b4a863c4469cfc4d253f76b3ddbe740a5a",
+                  "state_digest": "sha256:78be6c064a78d7e4903bfd604dec47b4a863c4469cfc4d253f76b3ddbe740a5a",
+                  "phase": {
+                    "reset_operations": 1,
+                    "preload_operations": 2,
+                    "warmup_operations": 1000,
+                    "steady_operations": 5000,
+                    "reset_ms": 0,
+                    "preload_ms": 0,
+                    "warmup_ms": 149,
+                    "warmup_successes": 1000,
+                    "warmup_errors": 0,
+                    "warmup_timeouts": 0,
+                    "warmup_rejections": 0,
+                    "steady_ms": 2501,
+                    "warmup_samples_in_steady_histogram": 0
+                  },
+                  "steady": {
+                    "offered": 5000,
+                    "started": 5000,
+                    "completed": 5000,
+                    "successes": 5000,
+                    "errors": 0,
+                    "timeouts": 0,
+                    "rejections": 0,
+                    "backlog_high_water": 4,
+                    "backlog_drained": true,
+                    "drain_ms": 0,
+                    "elapsed_ms": 2501,
+                    "offered_rate_per_second": 2000.0,
+                    "achieved_rate_per_second": 1999.1351461478844,
+                    "latency": {
+                      "samples": 5000,
+                      "p50_us": 1483,
+                      "p90_us": 2083,
+                      "p99_us": 2465,
+                      "p999_us": 2673,
+                      "p999_min_samples": 1000,
+                      "p999_reportable": true,
+                      "max_us": 2855,
+                      "overflow_count": 0
+                    }
+                  }
+                }
+              ],
+              "verdict": {
+                "sustainable": true,
+                "reasons": []
+              }
+            },
+            {
+              "sample": {
+                "offered_rate_per_second": 4000.0,
+                "achieved_rate_per_second": 3997.0987746045525,
+                "achieved_rate_min_per_second": 3994.8775698340314,
+                "achieved_rate_max_per_second": 3997.6100464232304,
+                "offered": 5000,
+                "started": 5000,
+                "completed": 5000,
+                "successes": 5000,
+                "errors": 0,
+                "timeouts": 0,
+                "rejections": 0,
+                "backlog_drained": true,
+                "drain_ms": 0,
+                "robust_spread_ratio": 0.000683614977583167,
+                "latency": {
+                  "samples": 5000,
+                  "p50_us": 1330,
+                  "p90_us": 1995,
+                  "p99_us": 2509,
+                  "p999_us": 2713,
+                  "p999_min_samples": 1000,
+                  "p999_reportable": true,
+                  "max_us": 2781,
+                  "overflow_count": 0
+                }
+              },
+              "repeats": [
+                {
+                  "reset_state_digest": "sha256:78be6c064a78d7e4903bfd604dec47b4a863c4469cfc4d253f76b3ddbe740a5a",
+                  "preloaded_state_digest": "sha256:78be6c064a78d7e4903bfd604dec47b4a863c4469cfc4d253f76b3ddbe740a5a",
+                  "state_digest": "sha256:78be6c064a78d7e4903bfd604dec47b4a863c4469cfc4d253f76b3ddbe740a5a",
+                  "phase": {
+                    "reset_operations": 1,
+                    "preload_operations": 2,
+                    "warmup_operations": 1000,
+                    "steady_operations": 5000,
+                    "reset_ms": 0,
+                    "preload_ms": 0,
+                    "warmup_ms": 148,
+                    "warmup_successes": 1000,
+                    "warmup_errors": 0,
+                    "warmup_timeouts": 0,
+                    "warmup_rejections": 0,
+                    "steady_ms": 1250,
+                    "warmup_samples_in_steady_histogram": 0
+                  },
+                  "steady": {
+                    "offered": 5000,
+                    "started": 5000,
+                    "completed": 5000,
+                    "successes": 5000,
+                    "errors": 0,
+                    "timeouts": 0,
+                    "rejections": 0,
+                    "backlog_high_water": 10,
+                    "backlog_drained": true,
+                    "drain_ms": 0,
+                    "elapsed_ms": 1250,
+                    "offered_rate_per_second": 4000.0,
+                    "achieved_rate_per_second": 3997.0987746045525,
+                    "latency": {
+                      "samples": 5000,
+                      "p50_us": 1330,
+                      "p90_us": 1995,
+                      "p99_us": 2509,
+                      "p999_us": 2713,
+                      "p999_min_samples": 1000,
+                      "p999_reportable": true,
+                      "max_us": 2781,
+                      "overflow_count": 0
+                    }
+                  }
+                },
+                {
+                  "reset_state_digest": "sha256:78be6c064a78d7e4903bfd604dec47b4a863c4469cfc4d253f76b3ddbe740a5a",
+                  "preloaded_state_digest": "sha256:78be6c064a78d7e4903bfd604dec47b4a863c4469cfc4d253f76b3ddbe740a5a",
+                  "state_digest": "sha256:78be6c064a78d7e4903bfd604dec47b4a863c4469cfc4d253f76b3ddbe740a5a",
+                  "phase": {
+                    "reset_operations": 1,
+                    "preload_operations": 2,
+                    "warmup_operations": 1000,
+                    "steady_operations": 5000,
+                    "reset_ms": 0,
+                    "preload_ms": 0,
+                    "warmup_ms": 148,
+                    "warmup_successes": 1000,
+                    "warmup_errors": 0,
+                    "warmup_timeouts": 0,
+                    "warmup_rejections": 0,
+                    "steady_ms": 1250,
+                    "warmup_samples_in_steady_histogram": 0
+                  },
+                  "steady": {
+                    "offered": 5000,
+                    "started": 5000,
+                    "completed": 5000,
+                    "successes": 5000,
+                    "errors": 0,
+                    "timeouts": 0,
+                    "rejections": 0,
+                    "backlog_high_water": 8,
+                    "backlog_drained": true,
+                    "drain_ms": 0,
+                    "elapsed_ms": 1250,
+                    "offered_rate_per_second": 4000.0,
+                    "achieved_rate_per_second": 3997.5879321954017,
+                    "latency": {
+                      "samples": 5000,
+                      "p50_us": 1359,
+                      "p90_us": 2051,
+                      "p99_us": 2563,
+                      "p999_us": 2729,
+                      "p999_min_samples": 1000,
+                      "p999_reportable": true,
+                      "max_us": 2759,
+                      "overflow_count": 0
+                    }
+                  }
+                },
+                {
+                  "reset_state_digest": "sha256:78be6c064a78d7e4903bfd604dec47b4a863c4469cfc4d253f76b3ddbe740a5a",
+                  "preloaded_state_digest": "sha256:78be6c064a78d7e4903bfd604dec47b4a863c4469cfc4d253f76b3ddbe740a5a",
+                  "state_digest": "sha256:78be6c064a78d7e4903bfd604dec47b4a863c4469cfc4d253f76b3ddbe740a5a",
+                  "phase": {
+                    "reset_operations": 1,
+                    "preload_operations": 2,
+                    "warmup_operations": 1000,
+                    "steady_operations": 5000,
+                    "reset_ms": 0,
+                    "preload_ms": 0,
+                    "warmup_ms": 150,
+                    "warmup_successes": 1000,
+                    "warmup_errors": 0,
+                    "warmup_timeouts": 0,
+                    "warmup_rejections": 0,
+                    "steady_ms": 1251,
+                    "warmup_samples_in_steady_histogram": 0
+                  },
+                  "steady": {
+                    "offered": 5000,
+                    "started": 5000,
+                    "completed": 5000,
+                    "successes": 5000,
+                    "errors": 0,
+                    "timeouts": 0,
+                    "rejections": 0,
+                    "backlog_high_water": 8,
+                    "backlog_drained": true,
+                    "drain_ms": 0,
+                    "elapsed_ms": 1251,
+                    "offered_rate_per_second": 4000.0,
+                    "achieved_rate_per_second": 3994.8775698340314,
+                    "latency": {
+                      "samples": 5000,
+                      "p50_us": 1485,
+                      "p90_us": 2161,
+                      "p99_us": 2657,
+                      "p999_us": 2859,
+                      "p999_min_samples": 1000,
+                      "p999_reportable": true,
+                      "max_us": 2973,
+                      "overflow_count": 0
+                    }
+                  }
+                },
+                {
+                  "reset_state_digest": "sha256:78be6c064a78d7e4903bfd604dec47b4a863c4469cfc4d253f76b3ddbe740a5a",
+                  "preloaded_state_digest": "sha256:78be6c064a78d7e4903bfd604dec47b4a863c4469cfc4d253f76b3ddbe740a5a",
+                  "state_digest": "sha256:78be6c064a78d7e4903bfd604dec47b4a863c4469cfc4d253f76b3ddbe740a5a",
+                  "phase": {
+                    "reset_operations": 1,
+                    "preload_operations": 2,
+                    "warmup_operations": 1000,
+                    "steady_operations": 5000,
+                    "reset_ms": 0,
+                    "preload_ms": 0,
+                    "warmup_ms": 149,
+                    "warmup_successes": 1000,
+                    "warmup_errors": 0,
+                    "warmup_timeouts": 0,
+                    "warmup_rejections": 0,
+                    "steady_ms": 1251,
+                    "warmup_samples_in_steady_histogram": 0
+                  },
+                  "steady": {
+                    "offered": 5000,
+                    "started": 5000,
+                    "completed": 5000,
+                    "successes": 5000,
+                    "errors": 0,
+                    "timeouts": 0,
+                    "rejections": 0,
+                    "backlog_high_water": 8,
+                    "backlog_drained": true,
+                    "drain_ms": 0,
+                    "elapsed_ms": 1251,
+                    "offered_rate_per_second": 4000.0,
+                    "achieved_rate_per_second": 3995.226816225756,
+                    "latency": {
+                      "samples": 5000,
+                      "p50_us": 1496,
+                      "p90_us": 2185,
+                      "p99_us": 2667,
+                      "p999_us": 2875,
+                      "p999_min_samples": 1000,
+                      "p999_reportable": true,
+                      "max_us": 2977,
+                      "overflow_count": 0
+                    }
+                  }
+                },
+                {
+                  "reset_state_digest": "sha256:78be6c064a78d7e4903bfd604dec47b4a863c4469cfc4d253f76b3ddbe740a5a",
+                  "preloaded_state_digest": "sha256:78be6c064a78d7e4903bfd604dec47b4a863c4469cfc4d253f76b3ddbe740a5a",
+                  "state_digest": "sha256:78be6c064a78d7e4903bfd604dec47b4a863c4469cfc4d253f76b3ddbe740a5a",
+                  "phase": {
+                    "reset_operations": 1,
+                    "preload_operations": 2,
+                    "warmup_operations": 1000,
+                    "steady_operations": 5000,
+                    "reset_ms": 0,
+                    "preload_ms": 0,
+                    "warmup_ms": 149,
+                    "warmup_successes": 1000,
+                    "warmup_errors": 0,
+                    "warmup_timeouts": 0,
+                    "warmup_rejections": 0,
+                    "steady_ms": 1250,
+                    "warmup_samples_in_steady_histogram": 0
+                  },
+                  "steady": {
+                    "offered": 5000,
+                    "started": 5000,
+                    "completed": 5000,
+                    "successes": 5000,
+                    "errors": 0,
+                    "timeouts": 0,
+                    "rejections": 0,
+                    "backlog_high_water": 8,
+                    "backlog_drained": true,
+                    "drain_ms": 0,
+                    "elapsed_ms": 1250,
+                    "offered_rate_per_second": 4000.0,
+                    "achieved_rate_per_second": 3997.6100464232304,
+                    "latency": {
+                      "samples": 5000,
+                      "p50_us": 1401,
+                      "p90_us": 2071,
+                      "p99_us": 2537,
+                      "p999_us": 2791,
+                      "p999_min_samples": 1000,
+                      "p999_reportable": true,
+                      "max_us": 2867,
+                      "overflow_count": 0
+                    }
+                  }
+                }
+              ],
+              "verdict": {
+                "sustainable": true,
+                "reasons": []
+              }
+            }
+          ]
+        },
+        "repeat_wire_evidence": [
+          {
+            "offered_rate_per_second": 250,
+            "repeat_index": 1,
+            "counter_scope": "loadgen-observed-warmup-and-steady-admin-http-wire-v1",
+            "successful_requests": 6000,
+            "failed_requests": 0,
+            "admin_status_requests": 3000,
+            "cluster_overview_requests": 3000,
+            "request_network_bytes": 990000,
+            "response_network_bytes": 3594000
+          },
+          {
+            "offered_rate_per_second": 250,
+            "repeat_index": 2,
+            "counter_scope": "loadgen-observed-warmup-and-steady-admin-http-wire-v1",
+            "successful_requests": 6000,
+            "failed_requests": 0,
+            "admin_status_requests": 3000,
+            "cluster_overview_requests": 3000,
+            "request_network_bytes": 990000,
+            "response_network_bytes": 3594000
+          },
+          {
+            "offered_rate_per_second": 250,
+            "repeat_index": 3,
+            "counter_scope": "loadgen-observed-warmup-and-steady-admin-http-wire-v1",
+            "successful_requests": 6000,
+            "failed_requests": 0,
+            "admin_status_requests": 3000,
+            "cluster_overview_requests": 3000,
+            "request_network_bytes": 990000,
+            "response_network_bytes": 3594000
+          },
+          {
+            "offered_rate_per_second": 250,
+            "repeat_index": 4,
+            "counter_scope": "loadgen-observed-warmup-and-steady-admin-http-wire-v1",
+            "successful_requests": 6000,
+            "failed_requests": 0,
+            "admin_status_requests": 3000,
+            "cluster_overview_requests": 3000,
+            "request_network_bytes": 990000,
+            "response_network_bytes": 3594000
+          },
+          {
+            "offered_rate_per_second": 250,
+            "repeat_index": 5,
+            "counter_scope": "loadgen-observed-warmup-and-steady-admin-http-wire-v1",
+            "successful_requests": 6000,
+            "failed_requests": 0,
+            "admin_status_requests": 3000,
+            "cluster_overview_requests": 3000,
+            "request_network_bytes": 990000,
+            "response_network_bytes": 3594000
+          },
+          {
+            "offered_rate_per_second": 500,
+            "repeat_index": 1,
+            "counter_scope": "loadgen-observed-warmup-and-steady-admin-http-wire-v1",
+            "successful_requests": 6000,
+            "failed_requests": 0,
+            "admin_status_requests": 3000,
+            "cluster_overview_requests": 3000,
+            "request_network_bytes": 990000,
+            "response_network_bytes": 3594000
+          },
+          {
+            "offered_rate_per_second": 500,
+            "repeat_index": 2,
+            "counter_scope": "loadgen-observed-warmup-and-steady-admin-http-wire-v1",
+            "successful_requests": 6000,
+            "failed_requests": 0,
+            "admin_status_requests": 3000,
+            "cluster_overview_requests": 3000,
+            "request_network_bytes": 990000,
+            "response_network_bytes": 3594000
+          },
+          {
+            "offered_rate_per_second": 500,
+            "repeat_index": 3,
+            "counter_scope": "loadgen-observed-warmup-and-steady-admin-http-wire-v1",
+            "successful_requests": 6000,
+            "failed_requests": 0,
+            "admin_status_requests": 3000,
+            "cluster_overview_requests": 3000,
+            "request_network_bytes": 990000,
+            "response_network_bytes": 3594000
+          },
+          {
+            "offered_rate_per_second": 500,
+            "repeat_index": 4,
+            "counter_scope": "loadgen-observed-warmup-and-steady-admin-http-wire-v1",
+            "successful_requests": 6000,
+            "failed_requests": 0,
+            "admin_status_requests": 3000,
+            "cluster_overview_requests": 3000,
+            "request_network_bytes": 990000,
+            "response_network_bytes": 3594000
+          },
+          {
+            "offered_rate_per_second": 500,
+            "repeat_index": 5,
+            "counter_scope": "loadgen-observed-warmup-and-steady-admin-http-wire-v1",
+            "successful_requests": 6000,
+            "failed_requests": 0,
+            "admin_status_requests": 3000,
+            "cluster_overview_requests": 3000,
+            "request_network_bytes": 990000,
+            "response_network_bytes": 3594000
+          },
+          {
+            "offered_rate_per_second": 1000,
+            "repeat_index": 1,
+            "counter_scope": "loadgen-observed-warmup-and-steady-admin-http-wire-v1",
+            "successful_requests": 6000,
+            "failed_requests": 0,
+            "admin_status_requests": 3000,
+            "cluster_overview_requests": 3000,
+            "request_network_bytes": 990000,
+            "response_network_bytes": 3594000
+          },
+          {
+            "offered_rate_per_second": 1000,
+            "repeat_index": 2,
+            "counter_scope": "loadgen-observed-warmup-and-steady-admin-http-wire-v1",
+            "successful_requests": 6000,
+            "failed_requests": 0,
+            "admin_status_requests": 3000,
+            "cluster_overview_requests": 3000,
+            "request_network_bytes": 990000,
+            "response_network_bytes": 3594000
+          },
+          {
+            "offered_rate_per_second": 1000,
+            "repeat_index": 3,
+            "counter_scope": "loadgen-observed-warmup-and-steady-admin-http-wire-v1",
+            "successful_requests": 6000,
+            "failed_requests": 0,
+            "admin_status_requests": 3000,
+            "cluster_overview_requests": 3000,
+            "request_network_bytes": 990000,
+            "response_network_bytes": 3594000
+          },
+          {
+            "offered_rate_per_second": 1000,
+            "repeat_index": 4,
+            "counter_scope": "loadgen-observed-warmup-and-steady-admin-http-wire-v1",
+            "successful_requests": 6000,
+            "failed_requests": 0,
+            "admin_status_requests": 3000,
+            "cluster_overview_requests": 3000,
+            "request_network_bytes": 990000,
+            "response_network_bytes": 3594000
+          },
+          {
+            "offered_rate_per_second": 1000,
+            "repeat_index": 5,
+            "counter_scope": "loadgen-observed-warmup-and-steady-admin-http-wire-v1",
+            "successful_requests": 6000,
+            "failed_requests": 0,
+            "admin_status_requests": 3000,
+            "cluster_overview_requests": 3000,
+            "request_network_bytes": 990000,
+            "response_network_bytes": 3594000
+          },
+          {
+            "offered_rate_per_second": 2000,
+            "repeat_index": 1,
+            "counter_scope": "loadgen-observed-warmup-and-steady-admin-http-wire-v1",
+            "successful_requests": 6000,
+            "failed_requests": 0,
+            "admin_status_requests": 3000,
+            "cluster_overview_requests": 3000,
+            "request_network_bytes": 990000,
+            "response_network_bytes": 3594000
+          },
+          {
+            "offered_rate_per_second": 2000,
+            "repeat_index": 2,
+            "counter_scope": "loadgen-observed-warmup-and-steady-admin-http-wire-v1",
+            "successful_requests": 6000,
+            "failed_requests": 0,
+            "admin_status_requests": 3000,
+            "cluster_overview_requests": 3000,
+            "request_network_bytes": 990000,
+            "response_network_bytes": 3594000
+          },
+          {
+            "offered_rate_per_second": 2000,
+            "repeat_index": 3,
+            "counter_scope": "loadgen-observed-warmup-and-steady-admin-http-wire-v1",
+            "successful_requests": 6000,
+            "failed_requests": 0,
+            "admin_status_requests": 3000,
+            "cluster_overview_requests": 3000,
+            "request_network_bytes": 990000,
+            "response_network_bytes": 3594000
+          },
+          {
+            "offered_rate_per_second": 2000,
+            "repeat_index": 4,
+            "counter_scope": "loadgen-observed-warmup-and-steady-admin-http-wire-v1",
+            "successful_requests": 6000,
+            "failed_requests": 0,
+            "admin_status_requests": 3000,
+            "cluster_overview_requests": 3000,
+            "request_network_bytes": 990000,
+            "response_network_bytes": 3594000
+          },
+          {
+            "offered_rate_per_second": 2000,
+            "repeat_index": 5,
+            "counter_scope": "loadgen-observed-warmup-and-steady-admin-http-wire-v1",
+            "successful_requests": 6000,
+            "failed_requests": 0,
+            "admin_status_requests": 3000,
+            "cluster_overview_requests": 3000,
+            "request_network_bytes": 990000,
+            "response_network_bytes": 3594000
+          },
+          {
+            "offered_rate_per_second": 4000,
+            "repeat_index": 1,
+            "counter_scope": "loadgen-observed-warmup-and-steady-admin-http-wire-v1",
+            "successful_requests": 6000,
+            "failed_requests": 0,
+            "admin_status_requests": 3000,
+            "cluster_overview_requests": 3000,
+            "request_network_bytes": 990000,
+            "response_network_bytes": 3594000
+          },
+          {
+            "offered_rate_per_second": 4000,
+            "repeat_index": 2,
+            "counter_scope": "loadgen-observed-warmup-and-steady-admin-http-wire-v1",
+            "successful_requests": 6000,
+            "failed_requests": 0,
+            "admin_status_requests": 3000,
+            "cluster_overview_requests": 3000,
+            "request_network_bytes": 990000,
+            "response_network_bytes": 3594000
+          },
+          {
+            "offered_rate_per_second": 4000,
+            "repeat_index": 3,
+            "counter_scope": "loadgen-observed-warmup-and-steady-admin-http-wire-v1",
+            "successful_requests": 6000,
+            "failed_requests": 0,
+            "admin_status_requests": 3000,
+            "cluster_overview_requests": 3000,
+            "request_network_bytes": 990000,
+            "response_network_bytes": 3594000
+          },
+          {
+            "offered_rate_per_second": 4000,
+            "repeat_index": 4,
+            "counter_scope": "loadgen-observed-warmup-and-steady-admin-http-wire-v1",
+            "successful_requests": 6000,
+            "failed_requests": 0,
+            "admin_status_requests": 3000,
+            "cluster_overview_requests": 3000,
+            "request_network_bytes": 990000,
+            "response_network_bytes": 3594000
+          },
+          {
+            "offered_rate_per_second": 4000,
+            "repeat_index": 5,
+            "counter_scope": "loadgen-observed-warmup-and-steady-admin-http-wire-v1",
+            "successful_requests": 6000,
+            "failed_requests": 0,
+            "admin_status_requests": 3000,
+            "cluster_overview_requests": 3000,
+            "request_network_bytes": 990000,
+            "response_network_bytes": 3594000
+          }
+        ],
+        "role_changed": false
+      }
+    ],
+    "membership_events": [
+      {
+        "action": "add",
+        "target_node_id": "member-127-0-0-1-39507",
+        "authority_node_id": "member-127-0-0-1-39133",
+        "action_receipt": {
+          "kind": "daemon_add",
+          "receipt": {
+            "canonical_action_receipt_path": "/dev/shm/hydracache-reference-evidence-v1/0.67/w4a-run-artifacts/w4a-control-plane-3-25331-0/daemon-add-action.json",
+            "action_receipt_sha256": "7755cd34203aebcb32e1bf45346c2bc4c0715f7e394256325fdcf0227ab9f16b",
+            "payload": {
+              "receipt_kind": "hydracache-daemon-add-action-v1",
+              "provisioner": "daemon-cluster-process-harness",
+              "authority_node_id": "member-127-0-0-1-39133",
+              "target_node_id": "member-127-0-0-1-39507",
+              "outcome": "process-started-and-admission-requested"
+            },
+            "target_process": {
+              "node_id": "member-127-0-0-1-39507",
+              "pid": 25378,
+              "direct_prebuilt_exec": true,
+              "observed_executable_path": "/opt/actions-runner/_work/hydracache/hydracache/target/release/hydracache-server",
+              "observed_executable_sha256": "a17b5148cad43e2193c69a64e3372e2832fa94a47196a7b6bec405128f3633c6",
+              "config": {
+                "canonical_path": "/dev/shm/hydracache-reference-evidence-v1/0.67/w4a-run-artifacts/w4a-control-plane-3-25331-0/node-2-launch-config.json",
+                "sha256": "b738ea91c2ec609b4d628414597f258d570ad66162578a0173129a7adbe5170a",
+                "launch_config": {
+                  "receipt_kind": "hydracache-daemon-launch-config-v1",
+                  "node_id": "member-127-0-0-1-39507",
+                  "client_addr": "127.0.0.1:45171",
+                  "cluster_addr": "127.0.0.1:39507",
+                  "admin_addr": "127.0.0.1:46105",
+                  "redis_addr": null,
+                  "storage_dir": "/dev/shm/hydracache-reference-evidence-v1/0.67/w4a-run-artifacts/w4a-control-plane-3-25331-0/node-2-storage",
+                  "cluster_start": "join",
+                  "seed_cluster_addrs": [
+                    "127.0.0.1:39133",
+                    "127.0.0.1:41229"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "pre_transition_snapshots": [
+          {
+            "endpoint": {
+              "node_id": "member-127-0-0-1-39133",
+              "admin_addr": "127.0.0.1:39025"
+            },
+            "admin_status": {
+              "source": "live",
+              "leader": "member-127-0-0-1-39133",
+              "term": 1,
+              "epoch": 2,
+              "quorum_ok": true,
+              "members": 2,
+              "member_ids": [
+                "member-127-0-0-1-39133",
+                "member-127-0-0-1-41229"
+              ],
+              "voters": 2,
+              "voter_ids": [
+                5458616142184900020,
+                7615017127281426443
+              ],
+              "reshard_phase": "idle",
+              "draining": false
+            },
+            "cluster_overview": {
+              "source": "live",
+              "members": [
+                {
+                  "node_id": "member-127-0-0-1-39133",
+                  "role": "member",
+                  "reachable": true,
+                  "reachability": "reachable",
+                  "generation": 1
+                },
+                {
+                  "node_id": "member-127-0-0-1-41229",
+                  "role": "member",
+                  "reachable": true,
+                  "reachability": "reachable",
+                  "generation": 1
+                }
+              ],
+              "leader": {
+                "node_id": "member-127-0-0-1-39133",
+                "term": 1,
+                "epoch": 2
+              },
+              "partitions": {
+                "under_replicated": 0,
+                "count": 0
+              },
+              "consistency": {
+                "configured_default": null,
+                "op_counts_by_level": []
+              },
+              "backup_age_seconds": null,
+              "lifecycle": {
+                "reshard_phase": "idle",
+                "upgrade_phase": "idle"
+              }
+            }
+          },
+          {
+            "endpoint": {
+              "node_id": "member-127-0-0-1-41229",
+              "admin_addr": "127.0.0.1:33437"
+            },
+            "admin_status": {
+              "source": "live",
+              "leader": "member-127-0-0-1-39133",
+              "term": 1,
+              "epoch": 2,
+              "quorum_ok": true,
+              "members": 2,
+              "member_ids": [
+                "member-127-0-0-1-39133",
+                "member-127-0-0-1-41229"
+              ],
+              "voters": 2,
+              "voter_ids": [
+                5458616142184900020,
+                7615017127281426443
+              ],
+              "reshard_phase": "idle",
+              "draining": false
+            },
+            "cluster_overview": {
+              "source": "live",
+              "members": [
+                {
+                  "node_id": "member-127-0-0-1-39133",
+                  "role": "member",
+                  "reachable": true,
+                  "reachability": "reachable",
+                  "generation": 1
+                },
+                {
+                  "node_id": "member-127-0-0-1-41229",
+                  "role": "member",
+                  "reachable": true,
+                  "reachability": "reachable",
+                  "generation": 1
+                }
+              ],
+              "leader": {
+                "node_id": "member-127-0-0-1-39133",
+                "term": 1,
+                "epoch": 2
+              },
+              "partitions": {
+                "under_replicated": 0,
+                "count": 0
+              },
+              "consistency": {
+                "configured_default": null,
+                "op_counts_by_level": []
+              },
+              "backup_age_seconds": null,
+              "lifecycle": {
+                "reshard_phase": "idle",
+                "upgrade_phase": "idle"
+              }
+            }
+          }
+        ],
+        "authority_commit_snapshot": {
+          "endpoint": {
+            "node_id": "member-127-0-0-1-39133",
+            "admin_addr": "127.0.0.1:39025"
+          },
+          "admin_status": {
+            "source": "live",
+            "leader": "member-127-0-0-1-39133",
+            "term": 1,
+            "epoch": 3,
+            "quorum_ok": true,
+            "members": 3,
+            "member_ids": [
+              "member-127-0-0-1-39133",
+              "member-127-0-0-1-39507",
+              "member-127-0-0-1-41229"
+            ],
+            "voters": 3,
+            "voter_ids": [
+              5458616142184900020,
+              7615017127281426443,
+              7925621168074873603
+            ],
+            "reshard_phase": "idle",
+            "draining": false
+          },
+          "cluster_overview": {
+            "source": "live",
+            "members": [
+              {
+                "node_id": "member-127-0-0-1-39133",
+                "role": "member",
+                "reachable": true,
+                "reachability": "reachable",
+                "generation": 1
+              },
+              {
+                "node_id": "member-127-0-0-1-39507",
+                "role": "member",
+                "reachable": true,
+                "reachability": "reachable",
+                "generation": 1
+              },
+              {
+                "node_id": "member-127-0-0-1-41229",
+                "role": "member",
+                "reachable": true,
+                "reachability": "reachable",
+                "generation": 1
+              }
+            ],
+            "leader": {
+              "node_id": "member-127-0-0-1-39133",
+              "term": 1,
+              "epoch": 3
+            },
+            "partitions": {
+              "under_replicated": 0,
+              "count": 0
+            },
+            "consistency": {
+              "configured_default": null,
+              "op_counts_by_level": []
+            },
+            "backup_age_seconds": null,
+            "lifecycle": {
+              "reshard_phase": "idle",
+              "upgrade_phase": "idle"
+            }
+          }
+        },
+        "post_transition_snapshots": [
+          {
+            "endpoint": {
+              "node_id": "member-127-0-0-1-39133",
+              "admin_addr": "127.0.0.1:39025"
+            },
+            "admin_status": {
+              "source": "live",
+              "leader": "member-127-0-0-1-39133",
+              "term": 1,
+              "epoch": 3,
+              "quorum_ok": true,
+              "members": 3,
+              "member_ids": [
+                "member-127-0-0-1-39133",
+                "member-127-0-0-1-39507",
+                "member-127-0-0-1-41229"
+              ],
+              "voters": 3,
+              "voter_ids": [
+                5458616142184900020,
+                7615017127281426443,
+                7925621168074873603
+              ],
+              "reshard_phase": "idle",
+              "draining": false
+            },
+            "cluster_overview": {
+              "source": "live",
+              "members": [
+                {
+                  "node_id": "member-127-0-0-1-39133",
+                  "role": "member",
+                  "reachable": true,
+                  "reachability": "reachable",
+                  "generation": 1
+                },
+                {
+                  "node_id": "member-127-0-0-1-39507",
+                  "role": "member",
+                  "reachable": true,
+                  "reachability": "reachable",
+                  "generation": 1
+                },
+                {
+                  "node_id": "member-127-0-0-1-41229",
+                  "role": "member",
+                  "reachable": true,
+                  "reachability": "reachable",
+                  "generation": 1
+                }
+              ],
+              "leader": {
+                "node_id": "member-127-0-0-1-39133",
+                "term": 1,
+                "epoch": 3
+              },
+              "partitions": {
+                "under_replicated": 0,
+                "count": 0
+              },
+              "consistency": {
+                "configured_default": null,
+                "op_counts_by_level": []
+              },
+              "backup_age_seconds": null,
+              "lifecycle": {
+                "reshard_phase": "idle",
+                "upgrade_phase": "idle"
+              }
+            }
+          },
+          {
+            "endpoint": {
+              "node_id": "member-127-0-0-1-39507",
+              "admin_addr": "127.0.0.1:46105"
+            },
+            "admin_status": {
+              "source": "live",
+              "leader": "member-127-0-0-1-39133",
+              "term": 1,
+              "epoch": 3,
+              "quorum_ok": true,
+              "members": 3,
+              "member_ids": [
+                "member-127-0-0-1-39133",
+                "member-127-0-0-1-39507",
+                "member-127-0-0-1-41229"
+              ],
+              "voters": 3,
+              "voter_ids": [
+                5458616142184900020,
+                7615017127281426443,
+                7925621168074873603
+              ],
+              "reshard_phase": "idle",
+              "draining": false
+            },
+            "cluster_overview": {
+              "source": "live",
+              "members": [
+                {
+                  "node_id": "member-127-0-0-1-39133",
+                  "role": "member",
+                  "reachable": true,
+                  "reachability": "reachable",
+                  "generation": 1
+                },
+                {
+                  "node_id": "member-127-0-0-1-39507",
+                  "role": "member",
+                  "reachable": true,
+                  "reachability": "reachable",
+                  "generation": 1
+                },
+                {
+                  "node_id": "member-127-0-0-1-41229",
+                  "role": "member",
+                  "reachable": true,
+                  "reachability": "reachable",
+                  "generation": 1
+                }
+              ],
+              "leader": {
+                "node_id": "member-127-0-0-1-39133",
+                "term": 1,
+                "epoch": 3
+              },
+              "partitions": {
+                "under_replicated": 0,
+                "count": 0
+              },
+              "consistency": {
+                "configured_default": null,
+                "op_counts_by_level": []
+              },
+              "backup_age_seconds": null,
+              "lifecycle": {
+                "reshard_phase": "idle",
+                "upgrade_phase": "idle"
+              }
+            }
+          },
+          {
+            "endpoint": {
+              "node_id": "member-127-0-0-1-41229",
+              "admin_addr": "127.0.0.1:33437"
+            },
+            "admin_status": {
+              "source": "live",
+              "leader": "member-127-0-0-1-39133",
+              "term": 1,
+              "epoch": 3,
+              "quorum_ok": true,
+              "members": 3,
+              "member_ids": [
+                "member-127-0-0-1-39133",
+                "member-127-0-0-1-39507",
+                "member-127-0-0-1-41229"
+              ],
+              "voters": 3,
+              "voter_ids": [
+                5458616142184900020,
+                7615017127281426443,
+                7925621168074873603
+              ],
+              "reshard_phase": "idle",
+              "draining": false
+            },
+            "cluster_overview": {
+              "source": "live",
+              "members": [
+                {
+                  "node_id": "member-127-0-0-1-39133",
+                  "role": "member",
+                  "reachable": true,
+                  "reachability": "reachable",
+                  "generation": 1
+                },
+                {
+                  "node_id": "member-127-0-0-1-39507",
+                  "role": "member",
+                  "reachable": true,
+                  "reachability": "reachable",
+                  "generation": 1
+                },
+                {
+                  "node_id": "member-127-0-0-1-41229",
+                  "role": "member",
+                  "reachable": true,
+                  "reachability": "reachable",
+                  "generation": 1
+                }
+              ],
+              "leader": {
+                "node_id": "member-127-0-0-1-39133",
+                "term": 1,
+                "epoch": 3
+              },
+              "partitions": {
+                "under_replicated": 0,
+                "count": 0
+              },
+              "consistency": {
+                "configured_default": null,
+                "op_counts_by_level": []
+              },
+              "backup_age_seconds": null,
+              "lifecycle": {
+                "reshard_phase": "idle",
+                "upgrade_phase": "idle"
+              }
+            }
+          }
+        ],
+        "prior_epoch": 2,
+        "new_epoch": 3,
+        "timer_kind": "monotonic-elapsed",
+        "commit_latency_nanos": 848586516,
+        "convergence_latency_nanos": 848589556,
+        "wire": {
+          "counter_scope": "loadgen-observed-membership-admin-http-wire-v1",
+          "action_request_network_bytes": 0,
+          "action_response_network_bytes": 0,
+          "successful_snapshot_request_network_bytes": 1980,
+          "successful_snapshot_response_network_bytes": 6874,
+          "observation_rounds": 2,
+          "snapshot_probe_attempts": 6,
+          "complete_snapshot_observations": 1
+        }
+      },
+      {
+        "action": "drain",
+        "target_node_id": "member-127-0-0-1-39507",
+        "authority_node_id": "member-127-0-0-1-39133",
+        "action_receipt": {
+          "kind": "admin_drain",
+          "receipt": {
+            "target_node_id": "member-127-0-0-1-39507",
+            "path": "/admin/drain",
+            "action": "drain",
+            "outcome": "accepted",
+            "started_with": 0,
+            "remaining": 0,
+            "timed_out": false,
+            "response_sha256": "b7ee82eb5ff441c1ad2ccc68f6ae2a671417b06449180d7f54fef96f78f027be",
+            "request_network_bytes": 208,
+            "response_network_bytes": 225
+          }
+        },
+        "pre_transition_snapshots": [
+          {
+            "endpoint": {
+              "node_id": "member-127-0-0-1-39133",
+              "admin_addr": "127.0.0.1:39025"
+            },
+            "admin_status": {
+              "source": "live",
+              "leader": "member-127-0-0-1-39133",
+              "term": 1,
+              "epoch": 3,
+              "quorum_ok": true,
+              "members": 3,
+              "member_ids": [
+                "member-127-0-0-1-39133",
+                "member-127-0-0-1-39507",
+                "member-127-0-0-1-41229"
+              ],
+              "voters": 3,
+              "voter_ids": [
+                5458616142184900020,
+                7615017127281426443,
+                7925621168074873603
+              ],
+              "reshard_phase": "idle",
+              "draining": false
+            },
+            "cluster_overview": {
+              "source": "live",
+              "members": [
+                {
+                  "node_id": "member-127-0-0-1-39133",
+                  "role": "member",
+                  "reachable": true,
+                  "reachability": "reachable",
+                  "generation": 1
+                },
+                {
+                  "node_id": "member-127-0-0-1-39507",
+                  "role": "member",
+                  "reachable": true,
+                  "reachability": "reachable",
+                  "generation": 1
+                },
+                {
+                  "node_id": "member-127-0-0-1-41229",
+                  "role": "member",
+                  "reachable": true,
+                  "reachability": "reachable",
+                  "generation": 1
+                }
+              ],
+              "leader": {
+                "node_id": "member-127-0-0-1-39133",
+                "term": 1,
+                "epoch": 3
+              },
+              "partitions": {
+                "under_replicated": 0,
+                "count": 0
+              },
+              "consistency": {
+                "configured_default": null,
+                "op_counts_by_level": []
+              },
+              "backup_age_seconds": null,
+              "lifecycle": {
+                "reshard_phase": "idle",
+                "upgrade_phase": "idle"
+              }
+            }
+          },
+          {
+            "endpoint": {
+              "node_id": "member-127-0-0-1-39507",
+              "admin_addr": "127.0.0.1:46105"
+            },
+            "admin_status": {
+              "source": "live",
+              "leader": "member-127-0-0-1-39133",
+              "term": 1,
+              "epoch": 3,
+              "quorum_ok": true,
+              "members": 3,
+              "member_ids": [
+                "member-127-0-0-1-39133",
+                "member-127-0-0-1-39507",
+                "member-127-0-0-1-41229"
+              ],
+              "voters": 3,
+              "voter_ids": [
+                5458616142184900020,
+                7615017127281426443,
+                7925621168074873603
+              ],
+              "reshard_phase": "idle",
+              "draining": false
+            },
+            "cluster_overview": {
+              "source": "live",
+              "members": [
+                {
+                  "node_id": "member-127-0-0-1-39133",
+                  "role": "member",
+                  "reachable": true,
+                  "reachability": "reachable",
+                  "generation": 1
+                },
+                {
+                  "node_id": "member-127-0-0-1-39507",
+                  "role": "member",
+                  "reachable": true,
+                  "reachability": "reachable",
+                  "generation": 1
+                },
+                {
+                  "node_id": "member-127-0-0-1-41229",
+                  "role": "member",
+                  "reachable": true,
+                  "reachability": "reachable",
+                  "generation": 1
+                }
+              ],
+              "leader": {
+                "node_id": "member-127-0-0-1-39133",
+                "term": 1,
+                "epoch": 3
+              },
+              "partitions": {
+                "under_replicated": 0,
+                "count": 0
+              },
+              "consistency": {
+                "configured_default": null,
+                "op_counts_by_level": []
+              },
+              "backup_age_seconds": null,
+              "lifecycle": {
+                "reshard_phase": "idle",
+                "upgrade_phase": "idle"
+              }
+            }
+          },
+          {
+            "endpoint": {
+              "node_id": "member-127-0-0-1-41229",
+              "admin_addr": "127.0.0.1:33437"
+            },
+            "admin_status": {
+              "source": "live",
+              "leader": "member-127-0-0-1-39133",
+              "term": 1,
+              "epoch": 3,
+              "quorum_ok": true,
+              "members": 3,
+              "member_ids": [
+                "member-127-0-0-1-39133",
+                "member-127-0-0-1-39507",
+                "member-127-0-0-1-41229"
+              ],
+              "voters": 3,
+              "voter_ids": [
+                5458616142184900020,
+                7615017127281426443,
+                7925621168074873603
+              ],
+              "reshard_phase": "idle",
+              "draining": false
+            },
+            "cluster_overview": {
+              "source": "live",
+              "members": [
+                {
+                  "node_id": "member-127-0-0-1-39133",
+                  "role": "member",
+                  "reachable": true,
+                  "reachability": "reachable",
+                  "generation": 1
+                },
+                {
+                  "node_id": "member-127-0-0-1-39507",
+                  "role": "member",
+                  "reachable": true,
+                  "reachability": "reachable",
+                  "generation": 1
+                },
+                {
+                  "node_id": "member-127-0-0-1-41229",
+                  "role": "member",
+                  "reachable": true,
+                  "reachability": "reachable",
+                  "generation": 1
+                }
+              ],
+              "leader": {
+                "node_id": "member-127-0-0-1-39133",
+                "term": 1,
+                "epoch": 3
+              },
+              "partitions": {
+                "under_replicated": 0,
+                "count": 0
+              },
+              "consistency": {
+                "configured_default": null,
+                "op_counts_by_level": []
+              },
+              "backup_age_seconds": null,
+              "lifecycle": {
+                "reshard_phase": "idle",
+                "upgrade_phase": "idle"
+              }
+            }
+          }
+        ],
+        "authority_commit_snapshot": {
+          "endpoint": {
+            "node_id": "member-127-0-0-1-39133",
+            "admin_addr": "127.0.0.1:39025"
+          },
+          "admin_status": {
+            "source": "live",
+            "leader": "member-127-0-0-1-39133",
+            "term": 1,
+            "epoch": 4,
+            "quorum_ok": true,
+            "members": 2,
+            "member_ids": [
+              "member-127-0-0-1-39133",
+              "member-127-0-0-1-41229"
+            ],
+            "voters": 2,
+            "voter_ids": [
+              5458616142184900020,
+              7615017127281426443
+            ],
+            "reshard_phase": "idle",
+            "draining": false
+          },
+          "cluster_overview": {
+            "source": "live",
+            "members": [
+              {
+                "node_id": "member-127-0-0-1-39133",
+                "role": "member",
+                "reachable": true,
+                "reachability": "reachable",
+                "generation": 1
+              },
+              {
+                "node_id": "member-127-0-0-1-41229",
+                "role": "member",
+                "reachable": true,
+                "reachability": "reachable",
+                "generation": 1
+              }
+            ],
+            "leader": {
+              "node_id": "member-127-0-0-1-39133",
+              "term": 1,
+              "epoch": 4
+            },
+            "partitions": {
+              "under_replicated": 0,
+              "count": 0
+            },
+            "consistency": {
+              "configured_default": null,
+              "op_counts_by_level": []
+            },
+            "backup_age_seconds": null,
+            "lifecycle": {
+              "reshard_phase": "idle",
+              "upgrade_phase": "idle"
+            }
+          }
+        },
+        "post_transition_snapshots": [
+          {
+            "endpoint": {
+              "node_id": "member-127-0-0-1-39133",
+              "admin_addr": "127.0.0.1:39025"
+            },
+            "admin_status": {
+              "source": "live",
+              "leader": "member-127-0-0-1-39133",
+              "term": 1,
+              "epoch": 4,
+              "quorum_ok": true,
+              "members": 2,
+              "member_ids": [
+                "member-127-0-0-1-39133",
+                "member-127-0-0-1-41229"
+              ],
+              "voters": 2,
+              "voter_ids": [
+                5458616142184900020,
+                7615017127281426443
+              ],
+              "reshard_phase": "idle",
+              "draining": false
+            },
+            "cluster_overview": {
+              "source": "live",
+              "members": [
+                {
+                  "node_id": "member-127-0-0-1-39133",
+                  "role": "member",
+                  "reachable": true,
+                  "reachability": "reachable",
+                  "generation": 1
+                },
+                {
+                  "node_id": "member-127-0-0-1-41229",
+                  "role": "member",
+                  "reachable": true,
+                  "reachability": "reachable",
+                  "generation": 1
+                }
+              ],
+              "leader": {
+                "node_id": "member-127-0-0-1-39133",
+                "term": 1,
+                "epoch": 4
+              },
+              "partitions": {
+                "under_replicated": 0,
+                "count": 0
+              },
+              "consistency": {
+                "configured_default": null,
+                "op_counts_by_level": []
+              },
+              "backup_age_seconds": null,
+              "lifecycle": {
+                "reshard_phase": "idle",
+                "upgrade_phase": "idle"
+              }
+            }
+          },
+          {
+            "endpoint": {
+              "node_id": "member-127-0-0-1-41229",
+              "admin_addr": "127.0.0.1:33437"
+            },
+            "admin_status": {
+              "source": "live",
+              "leader": "member-127-0-0-1-39133",
+              "term": 1,
+              "epoch": 4,
+              "quorum_ok": true,
+              "members": 2,
+              "member_ids": [
+                "member-127-0-0-1-39133",
+                "member-127-0-0-1-41229"
+              ],
+              "voters": 2,
+              "voter_ids": [
+                5458616142184900020,
+                7615017127281426443
+              ],
+              "reshard_phase": "idle",
+              "draining": false
+            },
+            "cluster_overview": {
+              "source": "live",
+              "members": [
+                {
+                  "node_id": "member-127-0-0-1-39133",
+                  "role": "member",
+                  "reachable": true,
+                  "reachability": "reachable",
+                  "generation": 1
+                },
+                {
+                  "node_id": "member-127-0-0-1-41229",
+                  "role": "member",
+                  "reachable": true,
+                  "reachability": "reachable",
+                  "generation": 1
+                }
+              ],
+              "leader": {
+                "node_id": "member-127-0-0-1-39133",
+                "term": 1,
+                "epoch": 4
+              },
+              "partitions": {
+                "under_replicated": 0,
+                "count": 0
+              },
+              "consistency": {
+                "configured_default": null,
+                "op_counts_by_level": []
+              },
+              "backup_age_seconds": null,
+              "lifecycle": {
+                "reshard_phase": "idle",
+                "upgrade_phase": "idle"
+              }
+            }
+          }
+        ],
+        "prior_epoch": 3,
+        "new_epoch": 4,
+        "timer_kind": "monotonic-elapsed",
+        "commit_latency_nanos": 13636723,
+        "convergence_latency_nanos": 13638143,
+        "wire": {
+          "counter_scope": "loadgen-observed-membership-admin-http-wire-v1",
+          "action_request_network_bytes": 208,
+          "action_response_network_bytes": 225,
+          "successful_snapshot_request_network_bytes": 660,
+          "successful_snapshot_response_network_bytes": 2082,
+          "observation_rounds": 1,
+          "snapshot_probe_attempts": 2,
+          "complete_snapshot_observations": 1
+        }
+      }
+    ],
+    "lifecycle": {
+      "payload": {
+        "receipt_kind": "hydracache-daemon-cluster-lifecycle-v2",
+        "receipt_source": "observed_process_harness",
+        "capability_receipt_sha256": "fbb1e2283c5cfcd8d6c139f44cf2ff79edc9dcc571e153415f4dd3afb40ac2ae",
+        "nodes": [
+          {
+            "node_id": "member-127-0-0-1-39133",
+            "pid": 25348,
+            "termination_kind": "explicit_kill",
+            "kill_requested": true,
+            "wait_completed": true,
+            "process_no_longer_running": true,
+            "exit_success": false,
+            "exit_status": "terminated-without-exit-code",
+            "stdout_log": {
+              "canonical_path": "/dev/shm/hydracache-reference-evidence-v1/0.67/w4a-run-artifacts/w4a-control-plane-3-25331-0/node-0.stdout.log",
+              "sha256": "6489d6d7a33c5d40e18fc61eeb6c34c341279ee61816394dde5189aa4ad8fae5",
+              "bytes": 16
+            },
+            "stderr_log": {
+              "canonical_path": "/dev/shm/hydracache-reference-evidence-v1/0.67/w4a-run-artifacts/w4a-control-plane-3-25331-0/node-0.stderr.log",
+              "sha256": "94e5372bf134295373220076c9ebc18d5978aefd41dddacd2acf1a97056481cd",
+              "bytes": 390
+            },
+            "server_binary_path_after": "/opt/actions-runner/_work/hydracache/hydracache/target/release/hydracache-server",
+            "server_binary_sha256_after": "a17b5148cad43e2193c69a64e3372e2832fa94a47196a7b6bec405128f3633c6",
+            "node_config_path_after": "/dev/shm/hydracache-reference-evidence-v1/0.67/w4a-run-artifacts/w4a-control-plane-3-25331-0/node-0-launch-config.json",
+            "node_config_sha256_after": "6a1e99e415e1c57720c9be3b0ea45065e487ea289c0aff0b3332a248bc6e16b8"
+          },
+          {
+            "node_id": "member-127-0-0-1-39507",
+            "pid": 25378,
+            "termination_kind": "graceful_drain",
+            "kill_requested": false,
+            "wait_completed": true,
+            "process_no_longer_running": true,
+            "exit_success": true,
+            "exit_status": "exit:0",
+            "stdout_log": {
+              "canonical_path": "/dev/shm/hydracache-reference-evidence-v1/0.67/w4a-run-artifacts/w4a-control-plane-3-25331-0/node-2.stdout.log",
+              "sha256": "6489d6d7a33c5d40e18fc61eeb6c34c341279ee61816394dde5189aa4ad8fae5",
+              "bytes": 16
+            },
+            "stderr_log": {
+              "canonical_path": "/dev/shm/hydracache-reference-evidence-v1/0.67/w4a-run-artifacts/w4a-control-plane-3-25331-0/node-2.stderr.log",
+              "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+              "bytes": 0
+            },
+            "server_binary_path_after": "/opt/actions-runner/_work/hydracache/hydracache/target/release/hydracache-server",
+            "server_binary_sha256_after": "a17b5148cad43e2193c69a64e3372e2832fa94a47196a7b6bec405128f3633c6",
+            "node_config_path_after": "/dev/shm/hydracache-reference-evidence-v1/0.67/w4a-run-artifacts/w4a-control-plane-3-25331-0/node-2-launch-config.json",
+            "node_config_sha256_after": "b738ea91c2ec609b4d628414597f258d570ad66162578a0173129a7adbe5170a"
+          },
+          {
+            "node_id": "member-127-0-0-1-41229",
+            "pid": 25363,
+            "termination_kind": "explicit_kill",
+            "kill_requested": true,
+            "wait_completed": true,
+            "process_no_longer_running": true,
+            "exit_success": false,
+            "exit_status": "terminated-without-exit-code",
+            "stdout_log": {
+              "canonical_path": "/dev/shm/hydracache-reference-evidence-v1/0.67/w4a-run-artifacts/w4a-control-plane-3-25331-0/node-1.stdout.log",
+              "sha256": "6489d6d7a33c5d40e18fc61eeb6c34c341279ee61816394dde5189aa4ad8fae5",
+              "bytes": 16
+            },
+            "stderr_log": {
+              "canonical_path": "/dev/shm/hydracache-reference-evidence-v1/0.67/w4a-run-artifacts/w4a-control-plane-3-25331-0/node-1.stderr.log",
+              "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+              "bytes": 0
+            },
+            "server_binary_path_after": "/opt/actions-runner/_work/hydracache/hydracache/target/release/hydracache-server",
+            "server_binary_sha256_after": "a17b5148cad43e2193c69a64e3372e2832fa94a47196a7b6bec405128f3633c6",
+            "node_config_path_after": "/dev/shm/hydracache-reference-evidence-v1/0.67/w4a-run-artifacts/w4a-control-plane-3-25331-0/node-1-launch-config.json",
+            "node_config_sha256_after": "197189346274e8c449e7f9b0de98d510e49d9d4005dc9ea8513f9ba061b8b0d5"
+          }
+        ]
+      },
+      "receipt_sha256": "957d5adacecc404724d977502c1b4185c36f9387e35501b10dd82897708394f4"
+    },
+    "deferred_claims": [
+      "live-rebalance-reshard-performance"
+    ]
+  },
+  "budget_receipt": {
+    "schema_version": 1,
+    "release": "0.67.0",
+    "report_id": "control-plane-3-reference-v1",
+    "source_report_sha256": "e9c0b3109bcd5fe696c29c60164733fcb54c7cd00554e0f33526f3e9024cccac",
+    "claim_scope": "w4a-real-daemon-control-plane",
+    "run_mode": "reference_evidence",
+    "runner_profile": "reference-v1",
+    "runner_contract": {
+      "name": "reference-v1",
+      "required_runner_class": "self-hosted-bare-metal-v1",
+      "allowed_fingerprints": [
+        "25baeec1c9ec75da90b5dd0f29c101897450b96651d7e47570e18684be486ebb"
+      ],
+      "minimum_logical_cores": 4,
+      "required_cpu_affinity": "1-4",
+      "required_cgroup_cpu_quota": "unlimited",
+      "require_dedicated": true,
+      "maximum_calibration_score": 0.25
+    },
+    "runner_contract_digest": "c728014af9fd0aae4c474456e74437a033110940db01caa1577b1b5b5efabfe0",
+    "observed_runner": {
+      "runner_class": "self-hosted-bare-metal-v1",
+      "fingerprint": "25baeec1c9ec75da90b5dd0f29c101897450b96651d7e47570e18684be486ebb",
+      "cpu_model": "AMD Ryzen 7 PRO 8700GE w/ Radeon 780M Graphics",
+      "logical_cores": 4,
+      "ram_bytes": 66490486784,
+      "os": "linux",
+      "kernel": "6.8.0-138-generic",
+      "cpu_affinity": "1-4",
+      "cgroup_cpu_quota": "unlimited",
+      "governor": "performance",
+      "turbo": "enabled",
+      "shared_hardware": false,
+      "calibration_score": 0.015776637614821176,
+      "attestation": {
+        "schema_version": 5,
+        "contract_version": "hydracache-reference-host-v5",
+        "virtualization": "none",
+        "physical_cores": 8,
+        "measurement_cores": [
+          {
+            "logical_cpu": 1,
+            "package_id": 0,
+            "core_id": 1
+          },
+          {
+            "logical_cpu": 2,
+            "package_id": 0,
+            "core_id": 2
+          },
+          {
+            "logical_cpu": 3,
+            "package_id": 0,
+            "core_id": 3
+          },
+          {
+            "logical_cpu": 4,
+            "package_id": 0,
+            "core_id": 4
+          }
+        ],
+        "cpu_isolation": {
+          "smt_control": "off",
+          "online_cpus": "0-7",
+          "isolated_cpus": "1-4",
+          "nohz_full_cpus": "1-4",
+          "rcu_nocbs_cpus": "1-4",
+          "housekeeping_cpus": "0,5-7",
+          "irq_affinity_policy": "housekeeping-only-v1",
+          "measurement_idle_policy": "latency-cap-us-v1",
+          "measurement_max_idle_latency_us": 1,
+          "housekeeping_idle_policy": "latency-cap-us-v1",
+          "housekeeping_max_idle_latency_us": 1
+        },
+        "host_digest": "571591a534c9894242fc0af0c5f80c31131fe7e4cdb9d0ea63da6d8b56af8932",
+        "storage_class": "local-nvme",
+        "storage_identity_digest": "74ec6d1126c24b7a3899494eef2564aec2d3085056ac200e4a8cc8ca0ae43a50",
+        "os_image": "ubuntu-24.04",
+        "toolchain_identity": "rustc-1.94.0",
+        "prebuild_contract_digest": "f2caae0689d8b075d2a6d59d6090466365f9a6824c6996d6b92830956831cc55"
+      }
+    },
+    "runner_fingerprint": "25baeec1c9ec75da90b5dd0f29c101897450b96651d7e47570e18684be486ebb",
+    "source_commit": "7bd31af9a5092466d7a7284995f388d33ed3110f",
+    "cargo_lock_sha256": "dc480dad8567eda4a4d13b393651d3d1201cc26ba7599e3c8ff822b725569def",
+    "toolchain_identity": "rustc-1.94.0",
+    "prebuild_contract_digest": "f2caae0689d8b075d2a6d59d6090466365f9a6824c6996d6b92830956831cc55",
+    "prebuild_manifest_sha256": "2768ca970a2b3e09c3ee63bbd9bba466c3aee40be8dfca8e06cbe98309e4b296",
+    "binary_sha256": [
+      {
+        "id": "hydracache-loadgen",
+        "sha256": "c2c0e14ab40dd5b3c2ee5d71631bdfee81d7d61c0cd2c83c8b927c126aff7bd2"
+      },
+      {
+        "id": "hydracache-server",
+        "sha256": "a17b5148cad43e2193c69a64e3372e2832fa94a47196a7b6bec405128f3633c6"
+      }
+    ],
+    "binary_set_digest": "226175eeacd19e16f15bf8af6e9da5253aef1330c5583c73bf039920fa8abf61",
+    "scenario_digest": "c9570d61946ba50b48cbc54af7d1f4ff0e49e740bcbf73e54b83873342c15d69",
+    "workload_digest": "6e8f8cbe73811afcaf794f795650cfb85cf347dbd822e7e94c7e138f4ef7486f",
+    "slo_digest": "d04a7a3fa59a167dfbd8ca4e205cc38accd6864f12035785797e5056beb34f85",
+    "methodology_digest": "94005eea779aa38393f67d2adcfd28695d7cdf26a4e7c7319ef8eccd2950329b",
+    "stable": true,
+    "maximum_spread_ratio": 0.000683614977583167,
+    "metric": [
+      {
+        "id": "membership_add_drain_commit_and_convergence_latency.max_milliseconds",
+        "value": 848.589556,
+        "unit": "milliseconds"
+      }
+    ],
+    "receipt_sha256": "ef387ae36a2cefa85252d7afe5f34035cd368fe2dee548c75350af190c177c14"
+  }
+}

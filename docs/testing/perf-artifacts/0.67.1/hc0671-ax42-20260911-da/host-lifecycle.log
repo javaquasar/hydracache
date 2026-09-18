@@ -1,0 +1,140 @@
+[2026-09-11T08:19:20+00:00] command: sudo -n /opt/hydracache/trusted-main/scripts/perf/runner-service.sh offline
+[2026-09-11T08:19:20+00:00] command: sudo -u github-runner -H /opt/hydracache/trusted-main/scripts/perf/rootless-docker.sh stop
+[2026-09-11T08:19:20+00:00] command: sudo -n /opt/hydracache/trusted-main/scripts/perf/prepare-reference-host.sh preflight --profile /opt/hydracache/trusted-main/docs/testing/perf-host-profiles/ubuntu-24.04-reference-v1.json --state-dir /var/lib/hydracache-perf/host-tuning-hc0671-ax42-20260911-da
+/var/lib/hydracache-perf/host-tuning-hc0671-ax42-20260911-da/plan.json
+PRE_FLIGHT_ONLY=true
+[2026-09-11T08:19:20+00:00] command: sudo -n /opt/hydracache/trusted-main/scripts/perf/prepare-reference-host.sh apply-services --profile /opt/hydracache/trusted-main/docs/testing/perf-host-profiles/ubuntu-24.04-reference-v1.json --state-dir /var/lib/hydracache-perf/host-tuning-hc0671-ax42-20260911-da
+Synchronizing state of docker.service with SysV service script with /usr/lib/systemd/systemd-sysv-install.
+Executing: /usr/lib/systemd/systemd-sysv-install disable docker
+/var/lib/hydracache-perf/host-tuning-hc0671-ax42-20260911-da/applied.json
+SERVICE_POLICY_APPLIED=true
+[2026-09-11T08:19:24+00:00] command: sudo -n /opt/hydracache/trusted-main/scripts/perf/prepare-reference-host.sh install-isolation --profile /opt/hydracache/trusted-main/docs/testing/perf-host-profiles/ubuntu-24.04-reference-v1.json --state-dir /var/lib/hydracache-perf/host-tuning-hc0671-ax42-20260911-da
+Sourcing file `/etc/default/grub'
+Sourcing file `/etc/default/grub.d/hetzner.cfg'
+Sourcing file `/etc/default/grub.d/zz-hydracache-perf-isolation.cfg'
+Generating grub configuration file ...
+Found linux image: /boot/vmlinuz-6.8.0-138-generic
+Found initrd image: /boot/initrd.img-6.8.0-138-generic
+Found linux image: /boot/vmlinuz-6.8.0-137-generic
+Found initrd image: /boot/initrd.img-6.8.0-137-generic
+Adding boot menu entry for UEFI Firmware Settings ...
+done
+reference CPU isolation and idle policy installed; current kernel isolation is already active
+REBOOT_REQUIRED=true
+[2026-09-11T08:21:23+00:00] command: sudo -n /opt/hydracache/trusted-main/scripts/perf/runner-service.sh offline
+[2026-09-11T08:21:23+00:00] command: sudo -u github-runner -H /opt/hydracache/trusted-main/scripts/perf/rootless-docker.sh stop
+[2026-09-11T08:21:23+00:00] command: sudo -n /opt/hydracache/trusted-main/scripts/perf/prepare-reference-host.sh verify --profile /opt/hydracache/trusted-main/docs/testing/perf-host-profiles/ubuntu-24.04-reference-v1.json --state-dir /var/lib/hydracache-perf/host-tuning-hc0671-ax42-20260911-da
+reference CPU isolation verified: measurement=1-4 housekeeping=0,5-7 smt=off irq=housekeeping-only measurement-idle=latency-cap-us-v1:1us housekeeping-idle=latency-cap-us-v1:1us dormant-unmapped-nvme=8
+REFERENCE_HOST_VERIFIED=true
+[2026-09-11T08:21:23+00:00] command: sudo -n /opt/hydracache/trusted-main/scripts/perf/prepare-reference-host.sh freeze --profile /opt/hydracache/trusted-main/docs/testing/perf-host-profiles/ubuntu-24.04-reference-v1.json --state-dir /var/lib/hydracache-perf/host-tuning-hc0671-ax42-20260911-da
+reference CPU isolation verified: measurement=1-4 housekeeping=0,5-7 smt=off irq=housekeeping-only measurement-idle=latency-cap-us-v1:1us housekeeping-idle=latency-cap-us-v1:1us dormant-unmapped-nvme=8
+reference CPU isolation verified: measurement=1-4 housekeeping=0,5-7 smt=off irq=housekeeping-only measurement-idle=latency-cap-us-v1:1us housekeeping-idle=latency-cap-us-v1:1us dormant-unmapped-nvme=8
+runner provisioning audit passed: /opt/hydracache/trusted-main/target/test-evidence/0.67.1/runner-provisioned.json
+/var/lib/hydracache-perf/host-tuning-hc0671-ax42-20260911-da/freeze/host-freeze.json
+SAMPLE_FAMILY_FROZEN=true
+[2026-09-11T08:21:25+00:00] command: sudo -n /opt/hydracache/trusted-main/scripts/perf/prepare-reference-host.sh check-frozen --profile /opt/hydracache/trusted-main/docs/testing/perf-host-profiles/ubuntu-24.04-reference-v1.json --state-dir /var/lib/hydracache-perf/host-tuning-hc0671-ax42-20260911-da
+reference CPU isolation verified: measurement=1-4 housekeeping=0,5-7 smt=off irq=housekeeping-only measurement-idle=latency-cap-us-v1:1us housekeeping-idle=latency-cap-us-v1:1us dormant-unmapped-nvme=8
+frozen host contract verified
+[2026-09-11T08:21:26+00:00] command: sudo -n tar --create --gzip --numeric-owner --file /home/hydracache-admin/hydracache-campaigns/hc0671-ax42-20260911-da/host-state-after-freeze.tar.gz --directory /var/lib/hydracache-perf host-tuning-hc0671-ax42-20260911-da
+[2026-09-11T08:21:26+00:00] command: sudo -n chmod 0444 /home/hydracache-admin/hydracache-campaigns/hc0671-ax42-20260911-da/host-state-after-freeze.tar.gz
+[2026-09-11T08:21:26+00:00] command: sudo -n /opt/hydracache/trusted-main/scripts/perf/reference-host-irq-burn-in.sh --output-dir /home/hydracache-admin/hydracache-campaigns/hc0671-ax42-20260911-da/irq-burn-in --profile /opt/hydracache/trusted-main/docs/testing/perf-host-profiles/ubuntu-24.04-reference-v1.json --duration-seconds 900 --read-mebibytes 256
+reference runtime IRQ guard passed: phase=burn-in-preflight measurement=1-4 irq_files=68 dormant-unmapped-nvme=8
+reference runtime IRQ delta baseline captured: phase=baseline measurement=1-4 file=/home/hydracache-admin/hydracache-campaigns/hc0671-ax42-20260911-da/irq-burn-in/irq-baseline.tsv
+PING 37.27.115.65 (37.27.115.65) 56(84) bytes of data.
+PING 37.27.115.65 (37.27.115.65) 56(84) bytes of data.
+PING 37.27.115.65 (37.27.115.65) 56(84) bytes of data.
+PING 37.27.115.65 (37.27.115.65) 56(84) bytes of data.
+
+
+--- 37.27.115.65 ping statistics ---
+32 packets transmitted, 32 received, 0% packet loss, time 666ms
+rtt min/avg/max/mdev = 0.490/1.445/10.102/2.199 ms
+--- 37.27.115.65 ping statistics ---
+32 packets transmitted, 32 received, 0% packet loss, time 667ms
+rtt min/avg/max/mdev = 0.432/1.445/10.102/2.209 ms
+
+--- 37.27.115.65 ping statistics ---
+32 packets transmitted, 32 received, 0% packet loss, time 668ms
+rtt min/avg/max/mdev = 0.420/1.412/9.144/2.093 ms
+
+--- 37.27.115.65 ping statistics ---
+32 packets transmitted, 32 received, 0% packet loss, time 667ms
+rtt min/avg/max/mdev = 0.425/1.407/9.143/2.091 ms
+reference runtime IRQ delta guard passed: phase=post-stimulus measurement=1-4 monitored=8
+reference IRQ burn-in idle progress: 60/900s
+reference IRQ burn-in idle progress: 120/900s
+reference IRQ burn-in idle progress: 180/900s
+reference IRQ burn-in idle progress: 240/900s
+reference IRQ burn-in idle progress: 300/900s
+reference IRQ burn-in idle progress: 360/900s
+reference IRQ burn-in idle progress: 420/900s
+reference IRQ burn-in idle progress: 480/900s
+reference IRQ burn-in idle progress: 540/900s
+reference IRQ burn-in idle progress: 600/900s
+reference IRQ burn-in idle progress: 660/900s
+reference IRQ burn-in idle progress: 720/900s
+reference IRQ burn-in idle progress: 780/900s
+reference IRQ burn-in idle progress: 840/900s
+reference IRQ burn-in idle progress: 900/900s
+reference runtime IRQ guard passed: phase=burn-in-post-idle measurement=1-4 irq_files=68 dormant-unmapped-nvme=8
+reference runtime IRQ delta guard passed: phase=post-idle measurement=1-4 monitored=8
+reference IRQ burn-in passed: receipt=/home/hydracache-admin/hydracache-campaigns/hc0671-ax42-20260911-da/irq-burn-in/irq-burn-in.json
+[2026-09-11T08:36:27+00:00] command: sudo -n /opt/hydracache/trusted-main/scripts/perf/prepare-reference-host.sh check-frozen --profile /opt/hydracache/trusted-main/docs/testing/perf-host-profiles/ubuntu-24.04-reference-v1.json --state-dir /var/lib/hydracache-perf/host-tuning-hc0671-ax42-20260911-da
+reference CPU isolation verified: measurement=1-4 housekeeping=0,5-7 smt=off irq=housekeeping-only measurement-idle=latency-cap-us-v1:1us housekeeping-idle=latency-cap-us-v1:1us dormant-unmapped-nvme=8
+frozen host contract verified
+[2026-09-11T08:36:28+00:00] command: sudo -n mv /var/lib/hydracache-perf/runner-provisioned.json /home/hydracache-admin/hydracache-campaigns/hc0671-ax42-20260911-da/previous-runner-provisioned.json
+[2026-09-11T08:36:28+00:00] command: sudo -n install --mode=0444 --owner=root --group=root /opt/hydracache/trusted-main/target/test-evidence/0.67.1/runner-provisioned.json /var/lib/hydracache-perf/.runner-provisioned-hc0671-ax42-20260911-da.tmp
+[2026-09-11T08:36:28+00:00] command: sudo -n mv /var/lib/hydracache-perf/.runner-provisioned-hc0671-ax42-20260911-da.tmp /var/lib/hydracache-perf/runner-provisioned.json
+[2026-09-11T08:36:28+00:00] command: sudo -n tar --create --gzip --numeric-owner --file /home/hydracache-admin/hydracache-campaigns/hc0671-ax42-20260911-da/reference-campaign-host-admission.tar.gz --directory /home/hydracache-admin/hydracache-campaigns/hc0671-ax42-20260911-da host-state-after-freeze.tar.gz irq-burn-in
+[2026-09-11T08:36:28+00:00] command: sudo -n chmod 0444 /home/hydracache-admin/hydracache-campaigns/hc0671-ax42-20260911-da/reference-campaign-host-admission.tar.gz
+[2026-09-11T08:36:28+00:00] command: sudo -n install --directory --mode=0755 /var/lib/hydracache-perf/reference-campaign-v1
+[2026-09-11T08:36:28+00:00] command: sudo -n install --mode=0444 --owner=root --group=root /home/hydracache-admin/hydracache-campaigns/hc0671-ax42-20260911-da/reference-campaign-host-admission.tar.gz /var/lib/hydracache-perf/reference-campaign-v1/reference-campaign-host-admission.tar.gz
+[2026-09-11T08:36:28+00:00] command: sudo -n install --mode=0444 --owner=root --group=root /home/hydracache-admin/hydracache-campaigns/hc0671-ax42-20260911-da/reference-campaign-admission.json /var/lib/hydracache-perf/reference-campaign-v1/reference-campaign-admission.json
+[2026-09-11T08:36:28+00:00] command: sudo -n chmod 0555 /var/lib/hydracache-perf/reference-campaign-v1
+[2026-09-11T08:48:00+00:00] command: sudo -n /opt/hydracache/trusted-main/scripts/perf/runner-service.sh offline
+[2026-09-11T08:48:00+00:00] command: sudo -u github-runner -H /opt/hydracache/trusted-main/scripts/perf/rootless-docker.sh stop
+[2026-09-11T08:48:01+00:00] command: sudo -n /opt/hydracache/trusted-main/scripts/perf/prepare-reference-host.sh check-frozen --profile /opt/hydracache/trusted-main/docs/testing/perf-host-profiles/ubuntu-24.04-reference-v1.json --state-dir /var/lib/hydracache-perf/host-tuning-hc0671-ax42-20260911-da
+reference CPU isolation verified: measurement=1-4 housekeeping=0,5-7 smt=off irq=housekeeping-only measurement-idle=latency-cap-us-v1:1us housekeeping-idle=latency-cap-us-v1:1us dormant-unmapped-nvme=8
+frozen host contract verified
+[2026-09-11T08:48:02+00:00] command: sudo -n /opt/hydracache/trusted-main/scripts/perf/reference-runtime-irq-guard.sh campaign-pre-frozen-candidate
+reference runtime IRQ guard passed: phase=campaign-pre-frozen-candidate measurement=1-4 irq_files=68 dormant-unmapped-nvme=8
+[2026-09-11T08:48:06+00:00] command: sudo -n systemd-run --collect --unit=hydracache-runner-lease-hc0671-ax42-20260911-da-frozen-candidate --on-active=370m /opt/hydracache/trusted-main/scripts/perf/runner-service.sh offline
+Running timer as unit: hydracache-runner-lease-hc0671-ax42-20260911-da-frozen-candidate.timer
+Will run service as unit: hydracache-runner-lease-hc0671-ax42-20260911-da-frozen-candidate.service
+[2026-09-11T08:48:06+00:00] command: sudo -n /opt/hydracache/trusted-main/scripts/perf/runner-service.sh online
+[2026-09-11T08:48:18+00:00] command: sudo -n systemctl stop hydracache-runner-lease-hc0671-ax42-20260911-da-frozen-candidate.timer
+[2026-09-11T08:48:18+00:00] command: sudo -n systemctl reset-failed hydracache-runner-lease-hc0671-ax42-20260911-da-frozen-candidate.service
+Failed to reset failed state of unit hydracache-runner-lease-hc0671-ax42-20260911-da-frozen-candidate.service: Unit hydracache-runner-lease-hc0671-ax42-20260911-da-frozen-candidate.service not loaded.
+[2026-09-11T08:48:18+00:00] command: sudo -n systemctl reset-failed hydracache-runner-lease-hc0671-ax42-20260911-da-frozen-candidate.timer
+Failed to reset failed state of unit hydracache-runner-lease-hc0671-ax42-20260911-da-frozen-candidate.timer: Unit hydracache-runner-lease-hc0671-ax42-20260911-da-frozen-candidate.timer not loaded.
+[2026-09-11T08:48:18+00:00] command: sudo -n systemctl daemon-reload
+[2026-09-11T08:48:18+00:00] command: sudo -n systemd-run --collect --unit=hydracache-runner-lease-hc0671-ax42-20260911-da-frozen-candidate --on-active=370m /opt/hydracache/trusted-main/scripts/perf/runner-service.sh offline
+Running timer as unit: hydracache-runner-lease-hc0671-ax42-20260911-da-frozen-candidate.timer
+Will run service as unit: hydracache-runner-lease-hc0671-ax42-20260911-da-frozen-candidate.service
+[2026-09-11T08:48:18+00:00] command: sudo -n /opt/hydracache/trusted-main/scripts/perf/runner-service.sh online
+[2026-09-11T11:29:05+00:00] command: sudo -n /opt/hydracache/trusted-main/scripts/perf/runner-service.sh offline
+[2026-09-11T11:29:06+00:00] command: sudo -u github-runner -H /opt/hydracache/trusted-main/scripts/perf/rootless-docker.sh stop
+[2026-09-11T11:29:06+00:00] command: sudo -n systemctl stop hydracache-runner-lease-hc0671-ax42-20260911-da-frozen-candidate.timer
+[2026-09-11T11:29:06+00:00] command: sudo -n systemctl reset-failed hydracache-runner-lease-hc0671-ax42-20260911-da-frozen-candidate.service
+Failed to reset failed state of unit hydracache-runner-lease-hc0671-ax42-20260911-da-frozen-candidate.service: Unit hydracache-runner-lease-hc0671-ax42-20260911-da-frozen-candidate.service not loaded.
+[2026-09-11T11:29:06+00:00] command: sudo -n systemctl reset-failed hydracache-runner-lease-hc0671-ax42-20260911-da-frozen-candidate.timer
+Failed to reset failed state of unit hydracache-runner-lease-hc0671-ax42-20260911-da-frozen-candidate.timer: Unit hydracache-runner-lease-hc0671-ax42-20260911-da-frozen-candidate.timer not loaded.
+[2026-09-11T11:29:06+00:00] command: sudo -n systemctl daemon-reload
+[2026-09-11T11:29:08+00:00] command: sudo -n /opt/hydracache/trusted-main/scripts/perf/prepare-reference-host.sh check-frozen --profile /opt/hydracache/trusted-main/docs/testing/perf-host-profiles/ubuntu-24.04-reference-v1.json --state-dir /var/lib/hydracache-perf/host-tuning-hc0671-ax42-20260911-da
+reference CPU isolation verified: measurement=1-4 housekeeping=0,5-7 smt=off irq=housekeeping-only measurement-idle=latency-cap-us-v1:1us housekeeping-idle=latency-cap-us-v1:1us dormant-unmapped-nvme=8
+frozen host contract verified
+[2026-09-11T11:29:09+00:00] command: sudo -n /opt/hydracache/trusted-main/scripts/perf/reference-runtime-irq-guard.sh campaign-post-frozen-candidate
+reference runtime IRQ guard passed: phase=campaign-post-frozen-candidate measurement=1-4 irq_files=68 dormant-unmapped-nvme=8
+[2026-09-11T11:29:09+00:00] command: sudo -n /opt/hydracache/trusted-main/scripts/perf/runner-service.sh offline
+[2026-09-11T11:29:09+00:00] command: sudo -u github-runner -H /opt/hydracache/trusted-main/scripts/perf/rootless-docker.sh stop
+[2026-09-11T11:29:09+00:00] command: sudo -n /opt/hydracache/trusted-main/scripts/perf/prepare-reference-host.sh check-frozen --profile /opt/hydracache/trusted-main/docs/testing/perf-host-profiles/ubuntu-24.04-reference-v1.json --state-dir /var/lib/hydracache-perf/host-tuning-hc0671-ax42-20260911-da
+reference CPU isolation verified: measurement=1-4 housekeeping=0,5-7 smt=off irq=housekeeping-only measurement-idle=latency-cap-us-v1:1us housekeeping-idle=latency-cap-us-v1:1us dormant-unmapped-nvme=8
+frozen host contract verified
+[2026-09-11T11:35:40+00:00] command: sudo -n /opt/hydracache/trusted-main/scripts/perf/runner-service.sh offline
+[2026-09-11T11:35:40+00:00] command: sudo -u github-runner -H /opt/hydracache/trusted-main/scripts/perf/rootless-docker.sh stop
+[2026-09-11T11:35:41+00:00] command: sudo -n /opt/hydracache/trusted-main/scripts/perf/prepare-reference-host.sh check-frozen --profile /opt/hydracache/trusted-main/docs/testing/perf-host-profiles/ubuntu-24.04-reference-v1.json --state-dir /var/lib/hydracache-perf/host-tuning-hc0671-ax42-20260911-da
+reference CPU isolation verified: measurement=1-4 housekeeping=0,5-7 smt=off irq=housekeeping-only measurement-idle=latency-cap-us-v1:1us housekeeping-idle=latency-cap-us-v1:1us dormant-unmapped-nvme=8
+frozen host contract verified
+[2026-09-11T11:35:42+00:00] command: sudo -n tar --create --gzip --numeric-owner --file /home/hydracache-admin/hydracache-campaigns/hc0671-ax42-20260911-da/host-state-final.tar.gz --directory /var/lib/hydracache-perf host-tuning-hc0671-ax42-20260911-da
+[2026-09-11T11:35:42+00:00] command: sudo -n chmod 0444 /home/hydracache-admin/hydracache-campaigns/hc0671-ax42-20260911-da/host-state-final.tar.gz
+[2026-09-11T11:35:42+00:00] command: sudo -n mv /var/lib/hydracache-perf/reference-campaign-v1 /home/hydracache-admin/hydracache-campaigns/hc0671-ax42-20260911-da/retired-reference-campaign-v1

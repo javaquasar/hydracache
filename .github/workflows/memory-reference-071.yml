@@ -74,9 +74,13 @@ jobs:
       HYDRACACHE_MEMORY_WORKFLOW_SHA: ${{ github.sha }}
       HYDRACACHE_MEMORY_SOURCE_SHA: ${{ inputs.source_sha }}
       HYDRACACHE_MEMORY_CAMPAIGN_ROLE: ${{ inputs.campaign_role }}
+      HYDRACACHE_MEMORY_DAEMON_CPUSET: ${{ vars.HYDRACACHE_MEMORY_DAEMON_CPUSET || '5-6' }}
+      HYDRACACHE_MEMORY_LOADGEN_CPUSET: ${{ vars.HYDRACACHE_MEMORY_LOADGEN_CPUSET || '7' }}
+      HYDRACACHE_MEMORY_COLLECTOR_CPUSET: ${{ vars.HYDRACACHE_MEMORY_COLLECTOR_CPUSET || '0' }}
       BOOTSTRAP_RECEIPT: /var/lib/hydracache-memory/admission/reference-activation.json
       HISTORICAL_RECEIPT: /var/lib/hydracache-memory/admission/historical-input-receipt.json
       OVERHEAD_RECEIPT: /var/lib/hydracache-memory/admission/instrumentation-overhead.json
+      OVERHEAD_HOST_PREFLIGHT: /var/lib/hydracache-memory/admission/instrumentation-overhead-host-preflight.json
 
     steps:
       - name: Checkout trusted campaign harness from main
@@ -104,6 +108,18 @@ jobs:
           fi
           test "$(git rev-parse HEAD)" = "$WORKFLOW_SHA"
 
+      - name: Expose and verify the runner Rust toolchain
+        shell: bash
+        timeout-minutes: 1
+        run: |
+          set -euo pipefail
+          rust_bin="$HOME/.cargo/bin"
+          test -x "$rust_bin/cargo"
+          test -x "$rust_bin/rustc"
+          echo "$rust_bin" >> "$GITHUB_PATH"
+          "$rust_bin/cargo" --version
+          "$rust_bin/rustc" --version
+
       - name: Checkout exact candidate source without persisted credentials
         uses: actions/checkout@v5
         with:
@@ -126,7 +142,7 @@ jobs:
           test "$(git rev-parse 'FETCH_HEAD^{commit}')" = "$SOURCE_SHA"
           git cat-file -e "$SOURCE_SHA^{commit}"
 
-      - name: Admit host and freeze campaign plan
+      - name: Preflight host and freeze campaign plan
         shell: bash
         timeout-minutes: 15
         run: |
@@ -134,9 +150,9 @@ jobs:
           test -n "${{ inputs.campaign_id }}"
           test -f "$BOOTSTRAP_RECEIPT"
           test -f "$HISTORICAL_RECEIPT"
-          test -f "$OVERHEAD_RECEIPT"
           python3 scripts/perf/memory_campaign_071.py doctor --evidence
-          cargo run -p xtask --locked -- perf-memory-preflight \
+          taskset --cpu-list "$HYDRACACHE_MEMORY_LOADGEN_CPUSET" \
+            cargo run -p xtask --locked -- perf-memory-preflight \
             --release 0.71 \
             --profile memory-reference-071-v1 \
             --output "$RUNNER_TEMP/host-preflight.json"
@@ -165,27 +181,102 @@ jobs:
             --workflow-sha "$HYDRACACHE_MEMORY_WORKFLOW_SHA" \
             --source-sha "$HYDRACACHE_MEMORY_SOURCE_SHA" \
             --campaign-role "$HYDRACACHE_MEMORY_CAMPAIGN_ROLE"
-          if [[ ! -f "$campaign_dir/admission/admission-manifest.json" ]]; then
-            python3 scripts/perf/memory_campaign_071.py --output-root "$CAMPAIGN_ROOT" admit \
-              --campaign-id "${{ inputs.campaign_id }}" \
-              --host-preflight "$RUNNER_TEMP/host-preflight.json" \
-              --bootstrap "$BOOTSTRAP_RECEIPT" \
-              --historical "$HISTORICAL_RECEIPT" \
-              --overhead "$OVERHEAD_RECEIPT"
-          else
-            python3 scripts/perf/memory_campaign_071.py --output-root "$CAMPAIGN_ROOT" verify-host \
-              --campaign-id "${{ inputs.campaign_id }}" \
-              --host-preflight "$RUNNER_TEMP/host-preflight.json"
-          fi
 
       - name: Build immutable cohorts
         shell: bash
         timeout-minutes: 120
         run: |
           set -euo pipefail
+          prerequisite=""
+          case "${{ inputs.case_id }}" in
+            M8-60m) prerequisite="M3-ttl" ;;
+            M9-6h) prerequisite="M8-60m" ;;
+            M10-24h) prerequisite="M9-6h" ;;
+          esac
+          if [[ "$HYDRACACHE_MEMORY_CAMPAIGN_ROLE" == "candidate" && -n "$prerequisite" ]]; then
+            cargo run -p xtask --locked -- memory-campaign-check \
+              --release 0.71 \
+              --campaigns "$CAMPAIGN_ROOT" \
+              --require-through "$prerequisite" \
+              --expected-source-sha "$HYDRACACHE_MEMORY_SOURCE_SHA"
+          fi
           python3 scripts/perf/memory_campaign_071.py --output-root "$CAMPAIGN_ROOT" prepare \
             --campaign-id "${{ inputs.campaign_id }}" \
             --build-root "$BUILD_ROOT"
+
+      - name: Measure and freeze S5 instrumentation overhead
+        shell: bash
+        timeout-minutes: 720
+        run: |
+          set -euo pipefail
+          campaign_dir="$CAMPAIGN_ROOT/${{ inputs.campaign_id }}"
+          if [[ ! -f "$OVERHEAD_RECEIPT" ]]; then
+            if [[ "$HYDRACACHE_MEMORY_CAMPAIGN_ROLE" != "baseline" ]]; then
+              echo "candidate campaigns require the frozen baseline-only S5 receipt" >&2
+              exit 1
+            fi
+            readarray -t retained < <(python3 - "$campaign_dir/state.json" <<'PY'
+          import json
+          import pathlib
+          import sys
+          state_path = pathlib.Path(sys.argv[1])
+          state = json.loads(state_path.read_text(encoding="utf-8"))
+          root = state_path.parent
+          print(root / state["builds"]["B1-instrumented"]["manifest"])
+          print(root / state["controller_tools"]["hc2_helper_manifest"])
+          print(state["scenario_digest"])
+          PY
+            )
+            overhead_tmp="${OVERHEAD_RECEIPT}.${{ github.run_id }}.${{ github.run_attempt }}.tmp"
+            trap 'rm -f -- "$overhead_tmp"' EXIT
+            python3 scripts/perf/memory_instrumentation_overhead_071.py \
+              --build-manifest "${retained[0]}" \
+              --hc2-helper-manifest "${retained[1]}" \
+              --scenario-digest "${retained[2]}" \
+              --host-preflight "$RUNNER_TEMP/host-preflight.json" \
+              --work-root "$CAMPAIGN_ROOT/_s5/${{ inputs.campaign_id }}-${{ github.run_id }}-${{ github.run_attempt }}" \
+              --output "$overhead_tmp"
+            cp --no-clobber "$RUNNER_TEMP/host-preflight.json" "$OVERHEAD_HOST_PREFLIGHT"
+            chmod 0444 "$OVERHEAD_HOST_PREFLIGHT"
+            mv --no-clobber "$overhead_tmp" "$OVERHEAD_RECEIPT"
+            chmod 0444 "$OVERHEAD_RECEIPT"
+            trap - EXIT
+          fi
+
+      - name: Admit campaign or verify retained host identity
+        shell: bash
+        timeout-minutes: 5
+        run: |
+          set -euo pipefail
+          campaign_dir="$CAMPAIGN_ROOT/${{ inputs.campaign_id }}"
+          test -f "$OVERHEAD_RECEIPT"
+          test -f "$OVERHEAD_HOST_PREFLIGHT"
+          if [[ ! -f "$campaign_dir/admission/admission-manifest.json" ]]; then
+            python3 scripts/perf/memory_campaign_071.py --output-root "$CAMPAIGN_ROOT" admit \
+              --campaign-id "${{ inputs.campaign_id }}" \
+              --host-preflight "$RUNNER_TEMP/host-preflight.json" \
+              --bootstrap "$BOOTSTRAP_RECEIPT" \
+              --historical "$HISTORICAL_RECEIPT" \
+              --overhead "$OVERHEAD_RECEIPT" \
+              --overhead-host-preflight "$OVERHEAD_HOST_PREFLIGHT"
+          else
+            python3 scripts/perf/memory_campaign_071.py --output-root "$CAMPAIGN_ROOT" verify-host \
+              --campaign-id "${{ inputs.campaign_id }}" \
+              --host-preflight "$RUNNER_TEMP/host-preflight.json"
+          fi
+
+      - name: Prove real v0.70 candidate upgrade restart and rollback before M10
+        if: inputs.campaign_role == 'candidate' && inputs.case_id == 'M10-24h'
+        shell: bash
+        timeout-minutes: 180
+        run: |
+          set -euo pipefail
+          campaign_dir="$CAMPAIGN_ROOT/${{ inputs.campaign_id }}"
+          bash scripts/perf/memory_compat_071.sh \
+            --candidate-sha "$HYDRACACHE_MEMORY_SOURCE_SHA" \
+            --workflow-sha "$HYDRACACHE_MEMORY_WORKFLOW_SHA" \
+            --campaign-id "${{ inputs.campaign_id }}" \
+            --output "$campaign_dir/compatibility-receipt.json"
 
       - name: Run or resume bounded row
         shell: bash
@@ -221,6 +312,7 @@ jobs:
             ${{ env.CAMPAIGN_ROOT }}/${{ inputs.campaign_id }}/events.jsonl
             ${{ env.CAMPAIGN_ROOT }}/${{ inputs.campaign_id }}/watchdog-*
             ${{ env.CAMPAIGN_ROOT }}/${{ inputs.campaign_id }}/campaign-receipt.json
+            ${{ env.CAMPAIGN_ROOT }}/${{ inputs.campaign_id }}/compatibility-receipt.json
             ${{ env.CAMPAIGN_ROOT }}/${{ inputs.campaign_id }}/admission/*.json
           if-no-files-found: error
           retention-days: 90

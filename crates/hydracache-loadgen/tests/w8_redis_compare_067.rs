@@ -150,10 +150,14 @@ fn w8_applies_the_same_exact_stderr_policy_live_and_when_revalidating_evidence()
 #[test]
 fn docker_cleanup_is_armed_before_run_and_report_publication_is_atomic_last() {
     let source = include_str!("../src/compare_redis.rs");
-    let start = source.split_once("fn start_redis_container(").unwrap().1;
-    let guard = start.find("PendingRedisContainer::new").unwrap();
-    let run = start.find("let container_run = execute_checked").unwrap();
+    let retry = source
+        .split_once("fn run_redis_container_with_port_collision_retry(")
+        .unwrap()
+        .1;
+    let guard = retry.find("PendingRedisContainer::new").unwrap();
+    let run = retry.find("match execute_checked").unwrap();
     assert!(guard < run);
+    assert!(retry.contains("drop(pending)"));
     assert!(source.contains("fs::hard_link(&temporary, path)"));
     assert!(source.contains("refusing to overwrite stale W8 evidence"));
     assert!(source.contains("no {} artifact was produced"));

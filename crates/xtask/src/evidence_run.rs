@@ -1,4 +1,3 @@
-use std::borrow::Cow;
 use std::collections::BTreeMap;
 use std::error::Error;
 use std::ffi::OsStr;
@@ -265,8 +264,10 @@ fn expected_digests_for(
     id: &str,
     command_spec: &CommandSpec,
 ) -> Result<ExpectedDigests, Box<dyn Error>> {
-    let registry_bytes = fs::read(root.join(registry_path))?;
-    let registry = sha256(canonical_registry_bytes(&registry_bytes).as_ref());
+    // Git stores these text registries with LF, while Windows checkouts may use
+    // CRLF. Bind receipts to the same committed contract on both platforms.
+    let registry_text = fs::read_to_string(root.join(registry_path))?;
+    let registry = registry_digest(&registry_text);
     let command = sha256(&serde_json::to_vec(command_spec)?);
     let input = sha256(format!("{id}\n{registry}\n{command}").as_bytes());
     Ok(ExpectedDigests {
@@ -276,23 +277,8 @@ fn expected_digests_for(
     })
 }
 
-fn canonical_registry_bytes(bytes: &[u8]) -> Cow<'_, [u8]> {
-    if !bytes.windows(2).any(|pair| pair == b"\r\n") {
-        return Cow::Borrowed(bytes);
-    }
-
-    let mut canonical = Vec::with_capacity(bytes.len());
-    let mut index = 0;
-    while index < bytes.len() {
-        if bytes[index] == b'\r' && bytes.get(index + 1) == Some(&b'\n') {
-            canonical.push(b'\n');
-            index += 2;
-        } else {
-            canonical.push(bytes[index]);
-            index += 1;
-        }
-    }
-    Cow::Owned(canonical)
+fn registry_digest(text: &str) -> String {
+    sha256(text.replace("\r\n", "\n").as_bytes())
 }
 
 pub fn exit_code_for(receipt: &EvidenceReceipt) -> i32 {
@@ -806,5 +792,21 @@ impl Options {
             gate_id: gate_id.ok_or("evidence-run requires --gate")?,
             receipts_dir,
         })
+    }
+}
+
+#[cfg(test)]
+mod registry_digest_tests {
+    use super::registry_digest;
+
+    #[test]
+    fn registry_digest_is_stable_across_checkout_line_endings() {
+        let lf = "[[suite]]\nid = \"fast.workspace-nextest\"\n";
+        let crlf = lf.replace('\n', "\r\n");
+        assert_eq!(registry_digest(lf), registry_digest(&crlf));
+        assert_ne!(
+            registry_digest(lf),
+            registry_digest("[[suite]]\nid = \"different\"\n")
+        );
     }
 }

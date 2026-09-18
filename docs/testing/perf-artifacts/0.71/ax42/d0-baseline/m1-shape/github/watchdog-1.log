@@ -1,0 +1,144 @@
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.19s
+     Running `target/debug/xtask memory-baseline-report-check --release 0.71 --report /var/lib/hydracache-memory/campaigns/hc071-d0-ax42-20260912-m1-01/jobs/M1-shape__keys-1000__value_bytes-64__B1-instrumented__r1/memory-baseline-report.json`
+memory-baseline-report-check: OK (/var/lib/hydracache-memory/campaigns/hc071-d0-ax42-20260912-m1-01/jobs/M1-shape__keys-1000__value_bytes-64__B1-instrumented__r1/memory-baseline-report.json)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.20s
+     Running `target/debug/xtask memory-baseline-report-check --release 0.71 --report /var/lib/hydracache-memory/campaigns/hc071-d0-ax42-20260912-m1-01/jobs/M1-shape__keys-1000__value_bytes-64__B1-instrumented__r2/memory-baseline-report.json`
+memory-baseline-report-check: OK (/var/lib/hydracache-memory/campaigns/hc071-d0-ax42-20260912-m1-01/jobs/M1-shape__keys-1000__value_bytes-64__B1-instrumented__r2/memory-baseline-report.json)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.20s
+     Running `target/debug/xtask memory-baseline-report-check --release 0.71 --report /var/lib/hydracache-memory/campaigns/hc071-d0-ax42-20260912-m1-01/jobs/M1-shape__keys-1000__value_bytes-64__B1-instrumented__r3/memory-baseline-report.json`
+memory-baseline-report-check: OK (/var/lib/hydracache-memory/campaigns/hc071-d0-ax42-20260912-m1-01/jobs/M1-shape__keys-1000__value_bytes-64__B1-instrumented__r3/memory-baseline-report.json)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.19s
+     Running `target/debug/xtask memory-baseline-report-check --release 0.71 --report /var/lib/hydracache-memory/campaigns/hc071-d0-ax42-20260912-m1-01/jobs/M1-shape__keys-1000__value_bytes-256__B1-instrumented__r1/memory-baseline-report.json`
+memory-baseline-report-check: OK (/var/lib/hydracache-memory/campaigns/hc071-d0-ax42-20260912-m1-01/jobs/M1-shape__keys-1000__value_bytes-256__B1-instrumented__r1/memory-baseline-report.json)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.19s
+     Running `target/debug/xtask memory-baseline-report-check --release 0.71 --report /var/lib/hydracache-memory/campaigns/hc071-d0-ax42-20260912-m1-01/jobs/M1-shape__keys-1000__value_bytes-256__B1-instrumented__r2/memory-baseline-report.json`
+memory-baseline-report-check: OK (/var/lib/hydracache-memory/campaigns/hc071-d0-ax42-20260912-m1-01/jobs/M1-shape__keys-1000__value_bytes-256__B1-instrumented__r2/memory-baseline-report.json)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.20s
+     Running `target/debug/xtask memory-baseline-report-check --release 0.71 --report /var/lib/hydracache-memory/campaigns/hc071-d0-ax42-20260912-m1-01/jobs/M1-shape__keys-1000__value_bytes-256__B1-instrumented__r3/memory-baseline-report.json`
+memory-baseline-report-check: OK (/var/lib/hydracache-memory/campaigns/hc071-d0-ax42-20260912-m1-01/jobs/M1-shape__keys-1000__value_bytes-256__B1-instrumented__r3/memory-baseline-report.json)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.19s
+     Running `target/debug/xtask memory-baseline-report-check --release 0.71 --report /var/lib/hydracache-memory/campaigns/hc071-d0-ax42-20260912-m1-01/jobs/M1-shape__keys-1000__value_bytes-1024__B1-instrumented__r1/memory-baseline-report.json`
+memory-baseline-report-check: OK (/var/lib/hydracache-memory/campaigns/hc071-d0-ax42-20260912-m1-01/jobs/M1-shape__keys-1000__value_bytes-1024__B1-instrumented__r1/memory-baseline-report.json)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.19s
+     Running `target/debug/xtask memory-baseline-report-check --release 0.71 --report /var/lib/hydracache-memory/campaigns/hc071-d0-ax42-20260912-m1-01/jobs/M1-shape__keys-1000__value_bytes-1024__B1-instrumented__r2/memory-baseline-report.json`
+memory-baseline-report-check: OK (/var/lib/hydracache-memory/campaigns/hc071-d0-ax42-20260912-m1-01/jobs/M1-shape__keys-1000__value_bytes-1024__B1-instrumented__r2/memory-baseline-report.json)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.20s
+     Running `target/debug/xtask memory-baseline-report-check --release 0.71 --report /var/lib/hydracache-memory/campaigns/hc071-d0-ax42-20260912-m1-01/jobs/M1-shape__keys-1000__value_bytes-1024__B1-instrumented__r3/memory-baseline-report.json`
+memory-baseline-report-check: OK (/var/lib/hydracache-memory/campaigns/hc071-d0-ax42-20260912-m1-01/jobs/M1-shape__keys-1000__value_bytes-1024__B1-instrumented__r3/memory-baseline-report.json)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.20s
+     Running `target/debug/xtask memory-baseline-report-check --release 0.71 --report /var/lib/hydracache-memory/campaigns/hc071-d0-ax42-20260912-m1-01/jobs/M1-shape__keys-1000__value_bytes-4096__B1-instrumented__r1/memory-baseline-report.json`
+memory-baseline-report-check: OK (/var/lib/hydracache-memory/campaigns/hc071-d0-ax42-20260912-m1-01/jobs/M1-shape__keys-1000__value_bytes-4096__B1-instrumented__r1/memory-baseline-report.json)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.19s
+     Running `target/debug/xtask memory-baseline-report-check --release 0.71 --report /var/lib/hydracache-memory/campaigns/hc071-d0-ax42-20260912-m1-01/jobs/M1-shape__keys-1000__value_bytes-4096__B1-instrumented__r2/memory-baseline-report.json`
+memory-baseline-report-check: OK (/var/lib/hydracache-memory/campaigns/hc071-d0-ax42-20260912-m1-01/jobs/M1-shape__keys-1000__value_bytes-4096__B1-instrumented__r2/memory-baseline-report.json)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.19s
+     Running `target/debug/xtask memory-baseline-report-check --release 0.71 --report /var/lib/hydracache-memory/campaigns/hc071-d0-ax42-20260912-m1-01/jobs/M1-shape__keys-1000__value_bytes-4096__B1-instrumented__r3/memory-baseline-report.json`
+memory-baseline-report-check: OK (/var/lib/hydracache-memory/campaigns/hc071-d0-ax42-20260912-m1-01/jobs/M1-shape__keys-1000__value_bytes-4096__B1-instrumented__r3/memory-baseline-report.json)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.20s
+     Running `target/debug/xtask memory-baseline-report-check --release 0.71 --report /var/lib/hydracache-memory/campaigns/hc071-d0-ax42-20260912-m1-01/jobs/M1-shape__keys-10000__value_bytes-64__B1-instrumented__r1/memory-baseline-report.json`
+memory-baseline-report-check: OK (/var/lib/hydracache-memory/campaigns/hc071-d0-ax42-20260912-m1-01/jobs/M1-shape__keys-10000__value_bytes-64__B1-instrumented__r1/memory-baseline-report.json)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.20s
+     Running `target/debug/xtask memory-baseline-report-check --release 0.71 --report /var/lib/hydracache-memory/campaigns/hc071-d0-ax42-20260912-m1-01/jobs/M1-shape__keys-10000__value_bytes-64__B1-instrumented__r2/memory-baseline-report.json`
+memory-baseline-report-check: OK (/var/lib/hydracache-memory/campaigns/hc071-d0-ax42-20260912-m1-01/jobs/M1-shape__keys-10000__value_bytes-64__B1-instrumented__r2/memory-baseline-report.json)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.19s
+     Running `target/debug/xtask memory-baseline-report-check --release 0.71 --report /var/lib/hydracache-memory/campaigns/hc071-d0-ax42-20260912-m1-01/jobs/M1-shape__keys-10000__value_bytes-64__B1-instrumented__r3/memory-baseline-report.json`
+memory-baseline-report-check: OK (/var/lib/hydracache-memory/campaigns/hc071-d0-ax42-20260912-m1-01/jobs/M1-shape__keys-10000__value_bytes-64__B1-instrumented__r3/memory-baseline-report.json)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.19s
+     Running `target/debug/xtask memory-baseline-report-check --release 0.71 --report /var/lib/hydracache-memory/campaigns/hc071-d0-ax42-20260912-m1-01/jobs/M1-shape__keys-10000__value_bytes-256__B1-instrumented__r1/memory-baseline-report.json`
+memory-baseline-report-check: OK (/var/lib/hydracache-memory/campaigns/hc071-d0-ax42-20260912-m1-01/jobs/M1-shape__keys-10000__value_bytes-256__B1-instrumented__r1/memory-baseline-report.json)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.19s
+     Running `target/debug/xtask memory-baseline-report-check --release 0.71 --report /var/lib/hydracache-memory/campaigns/hc071-d0-ax42-20260912-m1-01/jobs/M1-shape__keys-10000__value_bytes-256__B1-instrumented__r2/memory-baseline-report.json`
+memory-baseline-report-check: OK (/var/lib/hydracache-memory/campaigns/hc071-d0-ax42-20260912-m1-01/jobs/M1-shape__keys-10000__value_bytes-256__B1-instrumented__r2/memory-baseline-report.json)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.19s
+     Running `target/debug/xtask memory-baseline-report-check --release 0.71 --report /var/lib/hydracache-memory/campaigns/hc071-d0-ax42-20260912-m1-01/jobs/M1-shape__keys-10000__value_bytes-256__B1-instrumented__r3/memory-baseline-report.json`
+memory-baseline-report-check: OK (/var/lib/hydracache-memory/campaigns/hc071-d0-ax42-20260912-m1-01/jobs/M1-shape__keys-10000__value_bytes-256__B1-instrumented__r3/memory-baseline-report.json)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.20s
+     Running `target/debug/xtask memory-baseline-report-check --release 0.71 --report /var/lib/hydracache-memory/campaigns/hc071-d0-ax42-20260912-m1-01/jobs/M1-shape__keys-10000__value_bytes-1024__B1-instrumented__r1/memory-baseline-report.json`
+memory-baseline-report-check: OK (/var/lib/hydracache-memory/campaigns/hc071-d0-ax42-20260912-m1-01/jobs/M1-shape__keys-10000__value_bytes-1024__B1-instrumented__r1/memory-baseline-report.json)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.19s
+     Running `target/debug/xtask memory-baseline-report-check --release 0.71 --report /var/lib/hydracache-memory/campaigns/hc071-d0-ax42-20260912-m1-01/jobs/M1-shape__keys-10000__value_bytes-1024__B1-instrumented__r2/memory-baseline-report.json`
+memory-baseline-report-check: OK (/var/lib/hydracache-memory/campaigns/hc071-d0-ax42-20260912-m1-01/jobs/M1-shape__keys-10000__value_bytes-1024__B1-instrumented__r2/memory-baseline-report.json)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.20s
+     Running `target/debug/xtask memory-baseline-report-check --release 0.71 --report /var/lib/hydracache-memory/campaigns/hc071-d0-ax42-20260912-m1-01/jobs/M1-shape__keys-10000__value_bytes-1024__B1-instrumented__r3/memory-baseline-report.json`
+memory-baseline-report-check: OK (/var/lib/hydracache-memory/campaigns/hc071-d0-ax42-20260912-m1-01/jobs/M1-shape__keys-10000__value_bytes-1024__B1-instrumented__r3/memory-baseline-report.json)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.19s
+     Running `target/debug/xtask memory-baseline-report-check --release 0.71 --report /var/lib/hydracache-memory/campaigns/hc071-d0-ax42-20260912-m1-01/jobs/M1-shape__keys-10000__value_bytes-4096__B1-instrumented__r1/memory-baseline-report.json`
+memory-baseline-report-check: OK (/var/lib/hydracache-memory/campaigns/hc071-d0-ax42-20260912-m1-01/jobs/M1-shape__keys-10000__value_bytes-4096__B1-instrumented__r1/memory-baseline-report.json)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.20s
+     Running `target/debug/xtask memory-baseline-report-check --release 0.71 --report /var/lib/hydracache-memory/campaigns/hc071-d0-ax42-20260912-m1-01/jobs/M1-shape__keys-10000__value_bytes-4096__B1-instrumented__r2/memory-baseline-report.json`
+memory-baseline-report-check: OK (/var/lib/hydracache-memory/campaigns/hc071-d0-ax42-20260912-m1-01/jobs/M1-shape__keys-10000__value_bytes-4096__B1-instrumented__r2/memory-baseline-report.json)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.19s
+     Running `target/debug/xtask memory-baseline-report-check --release 0.71 --report /var/lib/hydracache-memory/campaigns/hc071-d0-ax42-20260912-m1-01/jobs/M1-shape__keys-10000__value_bytes-4096__B1-instrumented__r3/memory-baseline-report.json`
+memory-baseline-report-check: OK (/var/lib/hydracache-memory/campaigns/hc071-d0-ax42-20260912-m1-01/jobs/M1-shape__keys-10000__value_bytes-4096__B1-instrumented__r3/memory-baseline-report.json)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.19s
+     Running `target/debug/xtask memory-baseline-report-check --release 0.71 --report /var/lib/hydracache-memory/campaigns/hc071-d0-ax42-20260912-m1-01/jobs/M1-shape__keys-50000__value_bytes-64__B1-instrumented__r1/memory-baseline-report.json`
+memory-baseline-report-check: OK (/var/lib/hydracache-memory/campaigns/hc071-d0-ax42-20260912-m1-01/jobs/M1-shape__keys-50000__value_bytes-64__B1-instrumented__r1/memory-baseline-report.json)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.19s
+     Running `target/debug/xtask memory-baseline-report-check --release 0.71 --report /var/lib/hydracache-memory/campaigns/hc071-d0-ax42-20260912-m1-01/jobs/M1-shape__keys-50000__value_bytes-64__B1-instrumented__r2/memory-baseline-report.json`
+memory-baseline-report-check: OK (/var/lib/hydracache-memory/campaigns/hc071-d0-ax42-20260912-m1-01/jobs/M1-shape__keys-50000__value_bytes-64__B1-instrumented__r2/memory-baseline-report.json)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.19s
+     Running `target/debug/xtask memory-baseline-report-check --release 0.71 --report /var/lib/hydracache-memory/campaigns/hc071-d0-ax42-20260912-m1-01/jobs/M1-shape__keys-50000__value_bytes-64__B1-instrumented__r3/memory-baseline-report.json`
+memory-baseline-report-check: OK (/var/lib/hydracache-memory/campaigns/hc071-d0-ax42-20260912-m1-01/jobs/M1-shape__keys-50000__value_bytes-64__B1-instrumented__r3/memory-baseline-report.json)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.20s
+     Running `target/debug/xtask memory-baseline-report-check --release 0.71 --report /var/lib/hydracache-memory/campaigns/hc071-d0-ax42-20260912-m1-01/jobs/M1-shape__keys-50000__value_bytes-256__B1-instrumented__r1/memory-baseline-report.json`
+memory-baseline-report-check: OK (/var/lib/hydracache-memory/campaigns/hc071-d0-ax42-20260912-m1-01/jobs/M1-shape__keys-50000__value_bytes-256__B1-instrumented__r1/memory-baseline-report.json)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.19s
+     Running `target/debug/xtask memory-baseline-report-check --release 0.71 --report /var/lib/hydracache-memory/campaigns/hc071-d0-ax42-20260912-m1-01/jobs/M1-shape__keys-50000__value_bytes-256__B1-instrumented__r2/memory-baseline-report.json`
+memory-baseline-report-check: OK (/var/lib/hydracache-memory/campaigns/hc071-d0-ax42-20260912-m1-01/jobs/M1-shape__keys-50000__value_bytes-256__B1-instrumented__r2/memory-baseline-report.json)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.20s
+     Running `target/debug/xtask memory-baseline-report-check --release 0.71 --report /var/lib/hydracache-memory/campaigns/hc071-d0-ax42-20260912-m1-01/jobs/M1-shape__keys-50000__value_bytes-256__B1-instrumented__r3/memory-baseline-report.json`
+memory-baseline-report-check: OK (/var/lib/hydracache-memory/campaigns/hc071-d0-ax42-20260912-m1-01/jobs/M1-shape__keys-50000__value_bytes-256__B1-instrumented__r3/memory-baseline-report.json)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.19s
+     Running `target/debug/xtask memory-baseline-report-check --release 0.71 --report /var/lib/hydracache-memory/campaigns/hc071-d0-ax42-20260912-m1-01/jobs/M1-shape__keys-50000__value_bytes-1024__B1-instrumented__r1/memory-baseline-report.json`
+memory-baseline-report-check: OK (/var/lib/hydracache-memory/campaigns/hc071-d0-ax42-20260912-m1-01/jobs/M1-shape__keys-50000__value_bytes-1024__B1-instrumented__r1/memory-baseline-report.json)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.20s
+     Running `target/debug/xtask memory-baseline-report-check --release 0.71 --report /var/lib/hydracache-memory/campaigns/hc071-d0-ax42-20260912-m1-01/jobs/M1-shape__keys-50000__value_bytes-1024__B1-instrumented__r2/memory-baseline-report.json`
+memory-baseline-report-check: OK (/var/lib/hydracache-memory/campaigns/hc071-d0-ax42-20260912-m1-01/jobs/M1-shape__keys-50000__value_bytes-1024__B1-instrumented__r2/memory-baseline-report.json)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.19s
+     Running `target/debug/xtask memory-baseline-report-check --release 0.71 --report /var/lib/hydracache-memory/campaigns/hc071-d0-ax42-20260912-m1-01/jobs/M1-shape__keys-50000__value_bytes-1024__B1-instrumented__r3/memory-baseline-report.json`
+memory-baseline-report-check: OK (/var/lib/hydracache-memory/campaigns/hc071-d0-ax42-20260912-m1-01/jobs/M1-shape__keys-50000__value_bytes-1024__B1-instrumented__r3/memory-baseline-report.json)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.19s
+     Running `target/debug/xtask memory-baseline-report-check --release 0.71 --report /var/lib/hydracache-memory/campaigns/hc071-d0-ax42-20260912-m1-01/jobs/M1-shape__keys-50000__value_bytes-4096__B1-instrumented__r1/memory-baseline-report.json`
+memory-baseline-report-check: OK (/var/lib/hydracache-memory/campaigns/hc071-d0-ax42-20260912-m1-01/jobs/M1-shape__keys-50000__value_bytes-4096__B1-instrumented__r1/memory-baseline-report.json)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.19s
+     Running `target/debug/xtask memory-baseline-report-check --release 0.71 --report /var/lib/hydracache-memory/campaigns/hc071-d0-ax42-20260912-m1-01/jobs/M1-shape__keys-50000__value_bytes-4096__B1-instrumented__r2/memory-baseline-report.json`
+memory-baseline-report-check: OK (/var/lib/hydracache-memory/campaigns/hc071-d0-ax42-20260912-m1-01/jobs/M1-shape__keys-50000__value_bytes-4096__B1-instrumented__r2/memory-baseline-report.json)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.20s
+     Running `target/debug/xtask memory-baseline-report-check --release 0.71 --report /var/lib/hydracache-memory/campaigns/hc071-d0-ax42-20260912-m1-01/jobs/M1-shape__keys-50000__value_bytes-4096__B1-instrumented__r3/memory-baseline-report.json`
+memory-baseline-report-check: OK (/var/lib/hydracache-memory/campaigns/hc071-d0-ax42-20260912-m1-01/jobs/M1-shape__keys-50000__value_bytes-4096__B1-instrumented__r3/memory-baseline-report.json)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.20s
+     Running `target/debug/xtask memory-baseline-report-check --release 0.71 --report /var/lib/hydracache-memory/campaigns/hc071-d0-ax42-20260912-m1-01/jobs/M1-shape__keys-250000__value_bytes-64__B1-instrumented__r1/memory-baseline-report.json`
+memory-baseline-report-check: OK (/var/lib/hydracache-memory/campaigns/hc071-d0-ax42-20260912-m1-01/jobs/M1-shape__keys-250000__value_bytes-64__B1-instrumented__r1/memory-baseline-report.json)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.19s
+     Running `target/debug/xtask memory-baseline-report-check --release 0.71 --report /var/lib/hydracache-memory/campaigns/hc071-d0-ax42-20260912-m1-01/jobs/M1-shape__keys-250000__value_bytes-64__B1-instrumented__r2/memory-baseline-report.json`
+memory-baseline-report-check: OK (/var/lib/hydracache-memory/campaigns/hc071-d0-ax42-20260912-m1-01/jobs/M1-shape__keys-250000__value_bytes-64__B1-instrumented__r2/memory-baseline-report.json)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.20s
+     Running `target/debug/xtask memory-baseline-report-check --release 0.71 --report /var/lib/hydracache-memory/campaigns/hc071-d0-ax42-20260912-m1-01/jobs/M1-shape__keys-250000__value_bytes-64__B1-instrumented__r3/memory-baseline-report.json`
+memory-baseline-report-check: OK (/var/lib/hydracache-memory/campaigns/hc071-d0-ax42-20260912-m1-01/jobs/M1-shape__keys-250000__value_bytes-64__B1-instrumented__r3/memory-baseline-report.json)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.20s
+     Running `target/debug/xtask memory-baseline-report-check --release 0.71 --report /var/lib/hydracache-memory/campaigns/hc071-d0-ax42-20260912-m1-01/jobs/M1-shape__keys-250000__value_bytes-256__B1-instrumented__r1/memory-baseline-report.json`
+memory-baseline-report-check: OK (/var/lib/hydracache-memory/campaigns/hc071-d0-ax42-20260912-m1-01/jobs/M1-shape__keys-250000__value_bytes-256__B1-instrumented__r1/memory-baseline-report.json)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.19s
+     Running `target/debug/xtask memory-baseline-report-check --release 0.71 --report /var/lib/hydracache-memory/campaigns/hc071-d0-ax42-20260912-m1-01/jobs/M1-shape__keys-250000__value_bytes-256__B1-instrumented__r2/memory-baseline-report.json`
+memory-baseline-report-check: OK (/var/lib/hydracache-memory/campaigns/hc071-d0-ax42-20260912-m1-01/jobs/M1-shape__keys-250000__value_bytes-256__B1-instrumented__r2/memory-baseline-report.json)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.19s
+     Running `target/debug/xtask memory-baseline-report-check --release 0.71 --report /var/lib/hydracache-memory/campaigns/hc071-d0-ax42-20260912-m1-01/jobs/M1-shape__keys-250000__value_bytes-256__B1-instrumented__r3/memory-baseline-report.json`
+memory-baseline-report-check: OK (/var/lib/hydracache-memory/campaigns/hc071-d0-ax42-20260912-m1-01/jobs/M1-shape__keys-250000__value_bytes-256__B1-instrumented__r3/memory-baseline-report.json)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.20s
+     Running `target/debug/xtask memory-baseline-report-check --release 0.71 --report /var/lib/hydracache-memory/campaigns/hc071-d0-ax42-20260912-m1-01/jobs/M1-shape__keys-250000__value_bytes-1024__B1-instrumented__r1/memory-baseline-report.json`
+memory-baseline-report-check: OK (/var/lib/hydracache-memory/campaigns/hc071-d0-ax42-20260912-m1-01/jobs/M1-shape__keys-250000__value_bytes-1024__B1-instrumented__r1/memory-baseline-report.json)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.20s
+     Running `target/debug/xtask memory-baseline-report-check --release 0.71 --report /var/lib/hydracache-memory/campaigns/hc071-d0-ax42-20260912-m1-01/jobs/M1-shape__keys-250000__value_bytes-1024__B1-instrumented__r2/memory-baseline-report.json`
+memory-baseline-report-check: OK (/var/lib/hydracache-memory/campaigns/hc071-d0-ax42-20260912-m1-01/jobs/M1-shape__keys-250000__value_bytes-1024__B1-instrumented__r2/memory-baseline-report.json)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.20s
+     Running `target/debug/xtask memory-baseline-report-check --release 0.71 --report /var/lib/hydracache-memory/campaigns/hc071-d0-ax42-20260912-m1-01/jobs/M1-shape__keys-250000__value_bytes-1024__B1-instrumented__r3/memory-baseline-report.json`
+memory-baseline-report-check: OK (/var/lib/hydracache-memory/campaigns/hc071-d0-ax42-20260912-m1-01/jobs/M1-shape__keys-250000__value_bytes-1024__B1-instrumented__r3/memory-baseline-report.json)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.20s
+     Running `target/debug/xtask memory-baseline-report-check --release 0.71 --report /var/lib/hydracache-memory/campaigns/hc071-d0-ax42-20260912-m1-01/jobs/M1-shape__keys-250000__value_bytes-4096__B1-instrumented__r1/memory-baseline-report.json`
+memory-baseline-report-check: OK (/var/lib/hydracache-memory/campaigns/hc071-d0-ax42-20260912-m1-01/jobs/M1-shape__keys-250000__value_bytes-4096__B1-instrumented__r1/memory-baseline-report.json)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.19s
+     Running `target/debug/xtask memory-baseline-report-check --release 0.71 --report /var/lib/hydracache-memory/campaigns/hc071-d0-ax42-20260912-m1-01/jobs/M1-shape__keys-250000__value_bytes-4096__B1-instrumented__r2/memory-baseline-report.json`
+memory-baseline-report-check: OK (/var/lib/hydracache-memory/campaigns/hc071-d0-ax42-20260912-m1-01/jobs/M1-shape__keys-250000__value_bytes-4096__B1-instrumented__r2/memory-baseline-report.json)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.19s
+     Running `target/debug/xtask memory-baseline-report-check --release 0.71 --report /var/lib/hydracache-memory/campaigns/hc071-d0-ax42-20260912-m1-01/jobs/M1-shape__keys-250000__value_bytes-4096__B1-instrumented__r3/memory-baseline-report.json`
+memory-baseline-report-check: OK (/var/lib/hydracache-memory/campaigns/hc071-d0-ax42-20260912-m1-01/jobs/M1-shape__keys-250000__value_bytes-4096__B1-instrumented__r3/memory-baseline-report.json)

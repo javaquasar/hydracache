@@ -177,7 +177,11 @@ impl PrebuildHost for FakeHost {
     ) -> Result<RunnerFingerprint, String> {
         Ok(RunnerFingerprint {
             runner_class: profile.required_runner_class.clone(),
-            fingerprint: FINGERPRINT.to_owned(),
+            fingerprint: profile
+                .allowed_fingerprints
+                .first()
+                .cloned()
+                .unwrap_or_else(|| FINGERPRINT.to_owned()),
             cpu_model: "fixture-cpu".to_owned(),
             logical_cores: 16,
             ram_bytes: 64 * 1024 * 1024 * 1024,

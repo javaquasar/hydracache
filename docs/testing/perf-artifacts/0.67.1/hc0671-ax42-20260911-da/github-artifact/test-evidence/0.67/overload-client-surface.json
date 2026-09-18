@@ -1,0 +1,1973 @@
+{
+  "report": {
+    "schema_version": 1,
+    "release": "0.67.0",
+    "report_id": "overload-client-surface-v1",
+    "scenario_id": "overload-capacity-v1",
+    "scenario_digest_sha256": "23737b7a83647d596829d0f0207feccb441c4d2782e0dd7ef74cebd378ec7279",
+    "evidence_class": "w6-capacity-bound-overload-goodput-recovery",
+    "claim_scope": "capacity-bound-overload-goodput-recovery",
+    "run_mode": "reference",
+    "surface": "client-surface",
+    "surface_identity": {
+      "surface_kind": "client-surface",
+      "execution_mode": "in-process-axum-router",
+      "state_scope": "process-local",
+      "network_boundary": "none",
+      "claim_scope": "capacity-bound-overload-goodput-recovery"
+    },
+    "predecessor": {
+      "evidence_class": "w2-client-surface-in-process-capacity",
+      "surface": "client-surface",
+      "surface_identity": {
+        "surface_kind": "client-surface",
+        "execution_mode": "in-process-axum-router",
+        "state_scope": "process-local",
+        "network_boundary": "none",
+        "claim_scope": "in-process-client-surface-capacity"
+      },
+      "claim": "capacity_knee",
+      "profile": "reference-v1",
+      "stable_capacity_evidence": true,
+      "stable_surface_capability_sha256": "5ea97b399b35808dfe04537ddc6128d651cc76349b682d84dda198af3ec7be3e",
+      "workload_identity_sha256": "5c203bf84eed76656a675bd3283d90b4175d17977380d3f1653caef7c84b080b",
+      "criteria": {
+        "p99_slo_us": 10000,
+        "p999_slo_us": 25000,
+        "min_achieved_ratio": 0.95,
+        "max_error_ratio": 0.0,
+        "max_timeout_ratio": 0.0,
+        "max_rejection_ratio": 0.0,
+        "max_drain_ms": 2000,
+        "max_robust_spread_ratio": 0.15
+      },
+      "knee": {
+        "sustainable_rate_per_second": 25000.0,
+        "evaluated": [
+          {
+            "sample": {
+              "offered_rate_per_second": 1000.0,
+              "achieved_rate_per_second": 999.9991897506565,
+              "achieved_rate_min_per_second": 999.9988619012953,
+              "achieved_rate_max_per_second": 1000.0046488416117,
+              "offered": 100000,
+              "started": 100000,
+              "completed": 100000,
+              "successes": 100000,
+              "errors": 0,
+              "timeouts": 0,
+              "rejections": 0,
+              "backlog_drained": true,
+              "drain_ms": 0,
+              "robust_spread_ratio": 5.7869450052660955e-6,
+              "latency": {
+                "samples": 100000,
+                "p50_us": 602,
+                "p90_us": 1030,
+                "p99_us": 1123,
+                "p999_us": 1151,
+                "p999_min_samples": 10000,
+                "p999_reportable": true,
+                "max_us": 1209,
+                "overflow_count": 0
+              }
+            },
+            "repeats": [
+              {
+                "reset_state_digest": "9a2d31cc7749d53399aa765a23d6720fc9101ae5a7c63441a74936eaded27760",
+                "preloaded_state_digest": "1163c5b94b5236ff57fda62f31e79bde1637354189928643f690269c26ac13ee",
+                "state_digest": "2c6aa46c123917f28dcfe3693cec57add4908f341076cf4a761468e849b4861f",
+                "phase": {
+                  "reset_operations": 1,
+                  "preload_operations": 10000,
+                  "warmup_operations": 10000,
+                  "steady_operations": 100000,
+                  "reset_ms": 49,
+                  "preload_ms": 216,
+                  "warmup_ms": 84,
+                  "warmup_successes": 10000,
+                  "warmup_errors": 0,
+                  "warmup_timeouts": 0,
+                  "warmup_rejections": 0,
+                  "steady_ms": 100000,
+                  "warmup_samples_in_steady_histogram": 0
+                },
+                "steady": {
+                  "offered": 100000,
+                  "started": 100000,
+                  "completed": 100000,
+                  "successes": 100000,
+                  "errors": 0,
+                  "timeouts": 0,
+                  "rejections": 0,
+                  "backlog_high_water": 2,
+                  "backlog_drained": true,
+                  "drain_ms": 0,
+                  "elapsed_ms": 100000,
+                  "offered_rate_per_second": 1000.0,
+                  "achieved_rate_per_second": 999.9988619012953,
+                  "latency": {
+                    "samples": 100000,
+                    "p50_us": 1419,
+                    "p90_us": 1847,
+                    "p99_us": 1940,
+                    "p999_us": 1970,
+                    "p999_min_samples": 10000,
+                    "p999_reportable": true,
+                    "max_us": 2012,
+                    "overflow_count": 0
+                  }
+                }
+              },
+              {
+                "reset_state_digest": "9a2d31cc7749d53399aa765a23d6720fc9101ae5a7c63441a74936eaded27760",
+                "preloaded_state_digest": "1163c5b94b5236ff57fda62f31e79bde1637354189928643f690269c26ac13ee",
+                "state_digest": "2c6aa46c123917f28dcfe3693cec57add4908f341076cf4a761468e849b4861f",
+                "phase": {
+                  "reset_operations": 1,
+                  "preload_operations": 10000,
+                  "warmup_operations": 10000,
+                  "steady_operations": 100000,
+                  "reset_ms": 51,
+                  "preload_ms": 215,
+                  "warmup_ms": 83,
+                  "warmup_successes": 10000,
+                  "warmup_errors": 0,
+                  "warmup_timeouts": 0,
+                  "warmup_rejections": 0,
+                  "steady_ms": 100000,
+                  "warmup_samples_in_steady_histogram": 0
+                },
+                "steady": {
+                  "offered": 100000,
+                  "started": 100000,
+                  "completed": 100000,
+                  "successes": 100000,
+                  "errors": 0,
+                  "timeouts": 0,
+                  "rejections": 0,
+                  "backlog_high_water": 2,
+                  "backlog_drained": true,
+                  "drain_ms": 0,
+                  "elapsed_ms": 100000,
+                  "offered_rate_per_second": 1000.0,
+                  "achieved_rate_per_second": 999.9991897506565,
+                  "latency": {
+                    "samples": 100000,
+                    "p50_us": 602,
+                    "p90_us": 1030,
+                    "p99_us": 1123,
+                    "p999_us": 1151,
+                    "p999_min_samples": 10000,
+                    "p999_reportable": true,
+                    "max_us": 1209,
+                    "overflow_count": 0
+                  }
+                }
+              },
+              {
+                "reset_state_digest": "9a2d31cc7749d53399aa765a23d6720fc9101ae5a7c63441a74936eaded27760",
+                "preloaded_state_digest": "1163c5b94b5236ff57fda62f31e79bde1637354189928643f690269c26ac13ee",
+                "state_digest": "2c6aa46c123917f28dcfe3693cec57add4908f341076cf4a761468e849b4861f",
+                "phase": {
+                  "reset_operations": 1,
+                  "preload_operations": 10000,
+                  "warmup_operations": 10000,
+                  "steady_operations": 100000,
+                  "reset_ms": 51,
+                  "preload_ms": 216,
+                  "warmup_ms": 84,
+                  "warmup_successes": 10000,
+                  "warmup_errors": 0,
+                  "warmup_timeouts": 0,
+                  "warmup_rejections": 0,
+                  "steady_ms": 99999,
+                  "warmup_samples_in_steady_histogram": 0
+                },
+                "steady": {
+                  "offered": 100000,
+                  "started": 100000,
+                  "completed": 100000,
+                  "successes": 100000,
+                  "errors": 0,
+                  "timeouts": 0,
+                  "rejections": 0,
+                  "backlog_high_water": 2,
+                  "backlog_drained": true,
+                  "drain_ms": 0,
+                  "elapsed_ms": 99999,
+                  "offered_rate_per_second": 1000.0,
+                  "achieved_rate_per_second": 1000.0046488416117,
+                  "latency": {
+                    "samples": 100000,
+                    "p50_us": 720,
+                    "p90_us": 1149,
+                    "p99_us": 1241,
+                    "p999_us": 1270,
+                    "p999_min_samples": 10000,
+                    "p999_reportable": true,
+                    "max_us": 1293,
+                    "overflow_count": 0
+                  }
+                }
+              }
+            ],
+            "verdict": {
+              "sustainable": true,
+              "reasons": []
+            }
+          },
+          {
+            "sample": {
+              "offered_rate_per_second": 5000.0,
+              "achieved_rate_per_second": 4999.744412315681,
+              "achieved_rate_min_per_second": 4999.658537570911,
+              "achieved_rate_max_per_second": 4999.773956469598,
+              "offered": 100000,
+              "started": 100000,
+              "completed": 100000,
+              "successes": 100000,
+              "errors": 0,
+              "timeouts": 0,
+              "rejections": 0,
+              "backlog_drained": true,
+              "drain_ms": 0,
+              "robust_spread_ratio": 0.00002308495978359968,
+              "latency": {
+                "samples": 100000,
+                "p50_us": 1054,
+                "p90_us": 1614,
+                "p99_us": 1919,
+                "p999_us": 1976,
+                "p999_min_samples": 10000,
+                "p999_reportable": true,
+                "max_us": 2209,
+                "overflow_count": 0
+              }
+            },
+            "repeats": [
+              {
+                "reset_state_digest": "9a2d31cc7749d53399aa765a23d6720fc9101ae5a7c63441a74936eaded27760",
+                "preloaded_state_digest": "1163c5b94b5236ff57fda62f31e79bde1637354189928643f690269c26ac13ee",
+                "state_digest": "2c6aa46c123917f28dcfe3693cec57add4908f341076cf4a761468e849b4861f",
+                "phase": {
+                  "reset_operations": 1,
+                  "preload_operations": 10000,
+                  "warmup_operations": 10000,
+                  "steady_operations": 100000,
+                  "reset_ms": 52,
+                  "preload_ms": 216,
+                  "warmup_ms": 84,
+                  "warmup_successes": 10000,
+                  "warmup_errors": 0,
+                  "warmup_timeouts": 0,
+                  "warmup_rejections": 0,
+                  "steady_ms": 20001,
+                  "warmup_samples_in_steady_histogram": 0
+                },
+                "steady": {
+                  "offered": 100000,
+                  "started": 100000,
+                  "completed": 100000,
+                  "successes": 100000,
+                  "errors": 0,
+                  "timeouts": 0,
+                  "rejections": 0,
+                  "backlog_high_water": 10,
+                  "backlog_drained": true,
+                  "drain_ms": 0,
+                  "elapsed_ms": 20001,
+                  "offered_rate_per_second": 5000.0,
+                  "achieved_rate_per_second": 4999.658537570911,
+                  "latency": {
+                    "samples": 100000,
+                    "p50_us": 1099,
+                    "p90_us": 1659,
+                    "p99_us": 1964,
+                    "p999_us": 2022,
+                    "p999_min_samples": 10000,
+                    "p999_reportable": true,
+                    "max_us": 2255,
+                    "overflow_count": 0
+                  }
+                }
+              },
+              {
+                "reset_state_digest": "9a2d31cc7749d53399aa765a23d6720fc9101ae5a7c63441a74936eaded27760",
+                "preloaded_state_digest": "1163c5b94b5236ff57fda62f31e79bde1637354189928643f690269c26ac13ee",
+                "state_digest": "2c6aa46c123917f28dcfe3693cec57add4908f341076cf4a761468e849b4861f",
+                "phase": {
+                  "reset_operations": 1,
+                  "preload_operations": 10000,
+                  "warmup_operations": 10000,
+                  "steady_operations": 100000,
+                  "reset_ms": 52,
+                  "preload_ms": 216,
+                  "warmup_ms": 84,
+                  "warmup_successes": 10000,
+                  "warmup_errors": 0,
+                  "warmup_timeouts": 0,
+                  "warmup_rejections": 0,
+                  "steady_ms": 20001,
+                  "warmup_samples_in_steady_histogram": 0
+                },
+                "steady": {
+                  "offered": 100000,
+                  "started": 100000,
+                  "completed": 100000,
+                  "successes": 100000,
+                  "errors": 0,
+                  "timeouts": 0,
+                  "rejections": 0,
+                  "backlog_high_water": 10,
+                  "backlog_drained": true,
+                  "drain_ms": 0,
+                  "elapsed_ms": 20001,
+                  "offered_rate_per_second": 5000.0,
+                  "achieved_rate_per_second": 4999.744412315681,
+                  "latency": {
+                    "samples": 100000,
+                    "p50_us": 1054,
+                    "p90_us": 1614,
+                    "p99_us": 1919,
+                    "p999_us": 1976,
+                    "p999_min_samples": 10000,
+                    "p999_reportable": true,
+                    "max_us": 2209,
+                    "overflow_count": 0
+                  }
+                }
+              },
+              {
+                "reset_state_digest": "9a2d31cc7749d53399aa765a23d6720fc9101ae5a7c63441a74936eaded27760",
+                "preloaded_state_digest": "1163c5b94b5236ff57fda62f31e79bde1637354189928643f690269c26ac13ee",
+                "state_digest": "2c6aa46c123917f28dcfe3693cec57add4908f341076cf4a761468e849b4861f",
+                "phase": {
+                  "reset_operations": 1,
+                  "preload_operations": 10000,
+                  "warmup_operations": 10000,
+                  "steady_operations": 100000,
+                  "reset_ms": 51,
+                  "preload_ms": 215,
+                  "warmup_ms": 83,
+                  "warmup_successes": 10000,
+                  "warmup_errors": 0,
+                  "warmup_timeouts": 0,
+                  "warmup_rejections": 0,
+                  "steady_ms": 20000,
+                  "warmup_samples_in_steady_histogram": 0
+                },
+                "steady": {
+                  "offered": 100000,
+                  "started": 100000,
+                  "completed": 100000,
+                  "successes": 100000,
+                  "errors": 0,
+                  "timeouts": 0,
+                  "rejections": 0,
+                  "backlog_high_water": 10,
+                  "backlog_drained": true,
+                  "drain_ms": 0,
+                  "elapsed_ms": 20000,
+                  "offered_rate_per_second": 5000.0,
+                  "achieved_rate_per_second": 4999.773956469598,
+                  "latency": {
+                    "samples": 100000,
+                    "p50_us": 1048,
+                    "p90_us": 1608,
+                    "p99_us": 1912,
+                    "p999_us": 1970,
+                    "p999_min_samples": 10000,
+                    "p999_reportable": true,
+                    "max_us": 2233,
+                    "overflow_count": 0
+                  }
+                }
+              }
+            ],
+            "verdict": {
+              "sustainable": true,
+              "reasons": []
+            }
+          },
+          {
+            "sample": {
+              "offered_rate_per_second": 10000.0,
+              "achieved_rate_per_second": 9998.614078104574,
+              "achieved_rate_min_per_second": 9998.489608162812,
+              "achieved_rate_max_per_second": 9998.729159524079,
+              "offered": 100000,
+              "started": 100000,
+              "completed": 100000,
+              "successes": 100000,
+              "errors": 0,
+              "timeouts": 0,
+              "rejections": 0,
+              "backlog_drained": true,
+              "drain_ms": 0,
+              "robust_spread_ratio": 0.000023958456581597878,
+              "latency": {
+                "samples": 100000,
+                "p50_us": 1052,
+                "p90_us": 1616,
+                "p99_us": 1943,
+                "p999_us": 2161,
+                "p999_min_samples": 10000,
+                "p999_reportable": true,
+                "max_us": 2371,
+                "overflow_count": 0
+              }
+            },
+            "repeats": [
+              {
+                "reset_state_digest": "9a2d31cc7749d53399aa765a23d6720fc9101ae5a7c63441a74936eaded27760",
+                "preloaded_state_digest": "1163c5b94b5236ff57fda62f31e79bde1637354189928643f690269c26ac13ee",
+                "state_digest": "2c6aa46c123917f28dcfe3693cec57add4908f341076cf4a761468e849b4861f",
+                "phase": {
+                  "reset_operations": 1,
+                  "preload_operations": 10000,
+                  "warmup_operations": 10000,
+                  "steady_operations": 100000,
+                  "reset_ms": 51,
+                  "preload_ms": 216,
+                  "warmup_ms": 84,
+                  "warmup_successes": 10000,
+                  "warmup_errors": 0,
+                  "warmup_timeouts": 0,
+                  "warmup_rejections": 0,
+                  "steady_ms": 10001,
+                  "warmup_samples_in_steady_histogram": 0
+                },
+                "steady": {
+                  "offered": 100000,
+                  "started": 100000,
+                  "completed": 100000,
+                  "successes": 100000,
+                  "errors": 0,
+                  "timeouts": 0,
+                  "rejections": 0,
+                  "backlog_high_water": 20,
+                  "backlog_drained": true,
+                  "drain_ms": 0,
+                  "elapsed_ms": 10001,
+                  "offered_rate_per_second": 10000.0,
+                  "achieved_rate_per_second": 9998.489608162812,
+                  "latency": {
+                    "samples": 100000,
+                    "p50_us": 1090,
+                    "p90_us": 1653,
+                    "p99_us": 1974,
+                    "p999_us": 2177,
+                    "p999_min_samples": 10000,
+                    "p999_reportable": true,
+                    "max_us": 2423,
+                    "overflow_count": 0
+                  }
+                }
+              },
+              {
+                "reset_state_digest": "9a2d31cc7749d53399aa765a23d6720fc9101ae5a7c63441a74936eaded27760",
+                "preloaded_state_digest": "1163c5b94b5236ff57fda62f31e79bde1637354189928643f690269c26ac13ee",
+                "state_digest": "2c6aa46c123917f28dcfe3693cec57add4908f341076cf4a761468e849b4861f",
+                "phase": {
+                  "reset_operations": 1,
+                  "preload_operations": 10000,
+                  "warmup_operations": 10000,
+                  "steady_operations": 100000,
+                  "reset_ms": 51,
+                  "preload_ms": 216,
+                  "warmup_ms": 84,
+                  "warmup_successes": 10000,
+                  "warmup_errors": 0,
+                  "warmup_timeouts": 0,
+                  "warmup_rejections": 0,
+                  "steady_ms": 10001,
+                  "warmup_samples_in_steady_histogram": 0
+                },
+                "steady": {
+                  "offered": 100000,
+                  "started": 100000,
+                  "completed": 100000,
+                  "successes": 100000,
+                  "errors": 0,
+                  "timeouts": 0,
+                  "rejections": 0,
+                  "backlog_high_water": 20,
+                  "backlog_drained": true,
+                  "drain_ms": 0,
+                  "elapsed_ms": 10001,
+                  "offered_rate_per_second": 10000.0,
+                  "achieved_rate_per_second": 9998.729159524079,
+                  "latency": {
+                    "samples": 100000,
+                    "p50_us": 1073,
+                    "p90_us": 1642,
+                    "p99_us": 1966,
+                    "p999_us": 2185,
+                    "p999_min_samples": 10000,
+                    "p999_reportable": true,
+                    "max_us": 2401,
+                    "overflow_count": 0
+                  }
+                }
+              },
+              {
+                "reset_state_digest": "9a2d31cc7749d53399aa765a23d6720fc9101ae5a7c63441a74936eaded27760",
+                "preloaded_state_digest": "1163c5b94b5236ff57fda62f31e79bde1637354189928643f690269c26ac13ee",
+                "state_digest": "2c6aa46c123917f28dcfe3693cec57add4908f341076cf4a761468e849b4861f",
+                "phase": {
+                  "reset_operations": 1,
+                  "preload_operations": 10000,
+                  "warmup_operations": 10000,
+                  "steady_operations": 100000,
+                  "reset_ms": 50,
+                  "preload_ms": 215,
+                  "warmup_ms": 82,
+                  "warmup_successes": 10000,
+                  "warmup_errors": 0,
+                  "warmup_timeouts": 0,
+                  "warmup_rejections": 0,
+                  "steady_ms": 10001,
+                  "warmup_samples_in_steady_histogram": 0
+                },
+                "steady": {
+                  "offered": 100000,
+                  "started": 100000,
+                  "completed": 100000,
+                  "successes": 100000,
+                  "errors": 0,
+                  "timeouts": 0,
+                  "rejections": 0,
+                  "backlog_high_water": 20,
+                  "backlog_drained": true,
+                  "drain_ms": 0,
+                  "elapsed_ms": 10001,
+                  "offered_rate_per_second": 10000.0,
+                  "achieved_rate_per_second": 9998.614078104574,
+                  "latency": {
+                    "samples": 100000,
+                    "p50_us": 1052,
+                    "p90_us": 1616,
+                    "p99_us": 1943,
+                    "p999_us": 2161,
+                    "p999_min_samples": 10000,
+                    "p999_reportable": true,
+                    "max_us": 2371,
+                    "overflow_count": 0
+                  }
+                }
+              }
+            ],
+            "verdict": {
+              "sustainable": true,
+              "reasons": []
+            }
+          },
+          {
+            "sample": {
+              "offered_rate_per_second": 25000.0,
+              "achieved_rate_per_second": 24991.80535571855,
+              "achieved_rate_min_per_second": 24991.394606881586,
+              "achieved_rate_max_per_second": 24992.033533142963,
+              "offered": 100000,
+              "started": 100000,
+              "completed": 100000,
+              "successes": 100000,
+              "errors": 0,
+              "timeouts": 0,
+              "rejections": 0,
+              "backlog_drained": true,
+              "drain_ms": 0,
+              "robust_spread_ratio": 0.000025565430439433805,
+              "latency": {
+                "samples": 100000,
+                "p50_us": 1104,
+                "p90_us": 1672,
+                "p99_us": 2022,
+                "p999_us": 2351,
+                "p999_min_samples": 10000,
+                "p999_reportable": true,
+                "max_us": 2763,
+                "overflow_count": 0
+              }
+            },
+            "repeats": [
+              {
+                "reset_state_digest": "9a2d31cc7749d53399aa765a23d6720fc9101ae5a7c63441a74936eaded27760",
+                "preloaded_state_digest": "1163c5b94b5236ff57fda62f31e79bde1637354189928643f690269c26ac13ee",
+                "state_digest": "2c6aa46c123917f28dcfe3693cec57add4908f341076cf4a761468e849b4861f",
+                "phase": {
+                  "reset_operations": 1,
+                  "preload_operations": 10000,
+                  "warmup_operations": 10000,
+                  "steady_operations": 100000,
+                  "reset_ms": 51,
+                  "preload_ms": 215,
+                  "warmup_ms": 83,
+                  "warmup_successes": 10000,
+                  "warmup_errors": 0,
+                  "warmup_timeouts": 0,
+                  "warmup_rejections": 0,
+                  "steady_ms": 4001,
+                  "warmup_samples_in_steady_histogram": 0
+                },
+                "steady": {
+                  "offered": 100000,
+                  "started": 100000,
+                  "completed": 100000,
+                  "successes": 100000,
+                  "errors": 0,
+                  "timeouts": 0,
+                  "rejections": 0,
+                  "backlog_high_water": 50,
+                  "backlog_drained": true,
+                  "drain_ms": 0,
+                  "elapsed_ms": 4001,
+                  "offered_rate_per_second": 25000.0,
+                  "achieved_rate_per_second": 24992.033533142963,
+                  "latency": {
+                    "samples": 100000,
+                    "p50_us": 1129,
+                    "p90_us": 1689,
+                    "p99_us": 2033,
+                    "p999_us": 2293,
+                    "p999_min_samples": 10000,
+                    "p999_reportable": true,
+                    "max_us": 2709,
+                    "overflow_count": 0
+                  }
+                }
+              },
+              {
+                "reset_state_digest": "9a2d31cc7749d53399aa765a23d6720fc9101ae5a7c63441a74936eaded27760",
+                "preloaded_state_digest": "1163c5b94b5236ff57fda62f31e79bde1637354189928643f690269c26ac13ee",
+                "state_digest": "2c6aa46c123917f28dcfe3693cec57add4908f341076cf4a761468e849b4861f",
+                "phase": {
+                  "reset_operations": 1,
+                  "preload_operations": 10000,
+                  "warmup_operations": 10000,
+                  "steady_operations": 100000,
+                  "reset_ms": 50,
+                  "preload_ms": 216,
+                  "warmup_ms": 84,
+                  "warmup_successes": 10000,
+                  "warmup_errors": 0,
+                  "warmup_timeouts": 0,
+                  "warmup_rejections": 0,
+                  "steady_ms": 4001,
+                  "warmup_samples_in_steady_histogram": 0
+                },
+                "steady": {
+                  "offered": 100000,
+                  "started": 100000,
+                  "completed": 100000,
+                  "successes": 100000,
+                  "errors": 0,
+                  "timeouts": 0,
+                  "rejections": 0,
+                  "backlog_high_water": 50,
+                  "backlog_drained": true,
+                  "drain_ms": 0,
+                  "elapsed_ms": 4001,
+                  "offered_rate_per_second": 25000.0,
+                  "achieved_rate_per_second": 24991.394606881586,
+                  "latency": {
+                    "samples": 100000,
+                    "p50_us": 1130,
+                    "p90_us": 1689,
+                    "p99_us": 2061,
+                    "p999_us": 2393,
+                    "p999_min_samples": 10000,
+                    "p999_reportable": true,
+                    "max_us": 2779,
+                    "overflow_count": 0
+                  }
+                }
+              },
+              {
+                "reset_state_digest": "9a2d31cc7749d53399aa765a23d6720fc9101ae5a7c63441a74936eaded27760",
+                "preloaded_state_digest": "1163c5b94b5236ff57fda62f31e79bde1637354189928643f690269c26ac13ee",
+                "state_digest": "2c6aa46c123917f28dcfe3693cec57add4908f341076cf4a761468e849b4861f",
+                "phase": {
+                  "reset_operations": 1,
+                  "preload_operations": 10000,
+                  "warmup_operations": 10000,
+                  "steady_operations": 100000,
+                  "reset_ms": 50,
+                  "preload_ms": 215,
+                  "warmup_ms": 83,
+                  "warmup_successes": 10000,
+                  "warmup_errors": 0,
+                  "warmup_timeouts": 0,
+                  "warmup_rejections": 0,
+                  "steady_ms": 4001,
+                  "warmup_samples_in_steady_histogram": 0
+                },
+                "steady": {
+                  "offered": 100000,
+                  "started": 100000,
+                  "completed": 100000,
+                  "successes": 100000,
+                  "errors": 0,
+                  "timeouts": 0,
+                  "rejections": 0,
+                  "backlog_high_water": 50,
+                  "backlog_drained": true,
+                  "drain_ms": 0,
+                  "elapsed_ms": 4001,
+                  "offered_rate_per_second": 25000.0,
+                  "achieved_rate_per_second": 24991.80535571855,
+                  "latency": {
+                    "samples": 100000,
+                    "p50_us": 1104,
+                    "p90_us": 1672,
+                    "p99_us": 2022,
+                    "p999_us": 2351,
+                    "p999_min_samples": 10000,
+                    "p999_reportable": true,
+                    "max_us": 2763,
+                    "overflow_count": 0
+                  }
+                }
+              }
+            ],
+            "verdict": {
+              "sustainable": true,
+              "reasons": []
+            }
+          }
+        ]
+      },
+      "reference_receipt": {
+        "profile": "reference-v1",
+        "predecessor_report_path": "/dev/shm/hydracache-reference-evidence-v1/0.67/client-surface.json",
+        "predecessor_report_sha256": "158b5d659a1acf754475f2d31a4de805d0e0a7ae6145346d8f8f73f7c42981a7",
+        "predecessor_measurement_id": "client_surface_in_process_knee_at_slo_workload_a",
+        "predecessor_scenario_sha256": "c93761dd8d3fc86998f9b3c3e3fb5d9d01ffebcfd7cf200420693882456d2cee",
+        "predecessor_payload_sha256": "61a06f18373fb796d14461cb87d27053d9b044fa7e7f10f58b423bfb45338d95",
+        "predecessor_lifecycle_path": null,
+        "predecessor_lifecycle_sha256": null,
+        "source_commit": "7bd31af9a5092466d7a7284995f388d33ed3110f",
+        "cargo_lock_sha256": "dc480dad8567eda4a4d13b393651d3d1201cc26ba7599e3c8ff822b725569def",
+        "runner_fingerprint_sha256": "a9df9a2de7fcf01850789aa3307d4b5a00f884c084e43b92b969840c61d3f70d",
+        "prebuild_manifest_path": "/dev/shm/hydracache-reference-evidence-v1/0.67/prebuild-manifest.json",
+        "prebuild_receipt_sha256": "2768ca970a2b3e09c3ee63bbd9bba466c3aee40be8dfca8e06cbe98309e4b296",
+        "stable_surface_capability_sha256": "5ea97b399b35808dfe04537ddc6128d651cc76349b682d84dda198af3ec7be3e",
+        "workload_identity_sha256": "5c203bf84eed76656a675bd3283d90b4175d17977380d3f1653caef7c84b080b",
+        "archived_execution_receipt_sha256": "97a01e31f625e10dce049bdb4f5b5e67ebc9f27345208116cb5c33f94e47b1b3",
+        "archived_execution_pid": 26512,
+        "receipt_sha256": "8f98865863e5836dbe93e74e8770925c2ea55ce63345150d50c33dca3405598d"
+      }
+    },
+    "target_binding": {
+      "contract": {
+        "surface": "client-surface",
+        "surface_identity": {
+          "surface_kind": "client-surface",
+          "execution_mode": "in-process-axum-router",
+          "state_scope": "process-local",
+          "network_boundary": "none",
+          "claim_scope": "in-process-client-surface-capacity"
+        },
+        "stable_surface_capability_sha256": "5ea97b399b35808dfe04537ddc6128d651cc76349b682d84dda198af3ec7be3e",
+        "workload_identity_sha256": "5c203bf84eed76656a675bd3283d90b4175d17977380d3f1653caef7c84b080b",
+        "source_commit": "7bd31af9a5092466d7a7284995f388d33ed3110f",
+        "cargo_lock_sha256": "dc480dad8567eda4a4d13b393651d3d1201cc26ba7599e3c8ff822b725569def",
+        "prebuild_manifest_sha256": "2768ca970a2b3e09c3ee63bbd9bba466c3aee40be8dfca8e06cbe98309e4b296"
+      },
+      "execution": {
+        "schema_version": 1,
+        "surface": "client-surface",
+        "kind": "in_process",
+        "instance_sequence": 2,
+        "owning_pid": 26512,
+        "started_unix_nanos": 1789120036299980127,
+        "direct_prebuilt_exec": true,
+        "stable_surface_capability_sha256": "5ea97b399b35808dfe04537ddc6128d651cc76349b682d84dda198af3ec7be3e",
+        "runtime_capability_sha256": null,
+        "selected_endpoint": null,
+        "receipt_sha256": "50b75eeb9182ba7ad425776123b9bebeabc776f43564ee97d7c2c2a21e394634"
+      },
+      "resp_runtime_capability": null
+    },
+    "daemon_lifecycle": null,
+    "admission_control_mode": "enabled",
+    "baseline_goodput_per_second": 24991.805355718552,
+    "baseline_scheduled_p99_us": 2022,
+    "points": [
+      {
+        "factor_millionths": 1200000,
+        "offered_rate_per_second": 30000,
+        "repeats": [
+          {
+            "reset_state_digest": "9a2d31cc7749d53399aa765a23d6720fc9101ae5a7c63441a74936eaded27760",
+            "preloaded_state_digest": "1163c5b94b5236ff57fda62f31e79bde1637354189928643f690269c26ac13ee",
+            "steady_state_digest": "2c6aa46c123917f28dcfe3693cec57add4908f341076cf4a761468e849b4861f",
+            "preload_operations": 10000,
+            "warmup_operations": 10000,
+            "admission_control": {
+              "mode": "enabled",
+              "factor_millionths": 1200000,
+              "authority": "loadgen-capacity-bound-admission",
+              "configuration_sha256": "cdf21536beff111b221d570a27e98f36b6657b6c26700b5cc72414cd8b9e8476",
+              "receipt_sha256": "8ac223bb30de54a3526bd4fa27a4611c85533456e423ccdcf63393f54e5154d8"
+            },
+            "overload": {
+              "offered": 120000,
+              "started": 120000,
+              "completed": 120000,
+              "successes": 100000,
+              "errors": 0,
+              "timeouts": 0,
+              "rejections": 20000,
+              "backlog_high_water": 61,
+              "backlog_drained": true,
+              "drain_ms": 0,
+              "elapsed_ms": 4001,
+              "offered_rate_per_second": 30000.0,
+              "achieved_rate_per_second": 29990.71323319145,
+              "latency": {
+                "samples": 120000,
+                "p50_us": 1132,
+                "p90_us": 1683,
+                "p99_us": 2065,
+                "p999_us": 2453,
+                "p999_min_samples": 10000,
+                "p999_reportable": true,
+                "max_us": 2763,
+                "overflow_count": 0
+              }
+            },
+            "metrics": {
+              "successful_goodput_per_second": 24992.261027659544,
+              "scheduled_p99_us": 2065,
+              "rejection_ratio": 0.16666666666666666,
+              "error_timeout_ratio": 0.0,
+              "backlog_high_water": 61,
+              "backlog_drained": true
+            },
+            "recovery": {
+              "transition_duration_ms": 0,
+              "windows": [
+                {
+                  "offered": 100000,
+                  "started": 100000,
+                  "completed": 100000,
+                  "successes": 100000,
+                  "errors": 0,
+                  "timeouts": 0,
+                  "rejections": 0,
+                  "backlog_high_water": 50,
+                  "backlog_drained": true,
+                  "drain_ms": 0,
+                  "elapsed_ms": 4000,
+                  "offered_rate_per_second": 25000.0,
+                  "achieved_rate_per_second": 24995.968787631762,
+                  "latency": {
+                    "samples": 100000,
+                    "p50_us": 1133,
+                    "p90_us": 1686,
+                    "p99_us": 2099,
+                    "p999_us": 2403,
+                    "p999_min_samples": 10000,
+                    "p999_reportable": true,
+                    "max_us": 2779,
+                    "overflow_count": 0
+                  }
+                },
+                {
+                  "offered": 100000,
+                  "started": 100000,
+                  "completed": 100000,
+                  "successes": 100000,
+                  "errors": 0,
+                  "timeouts": 0,
+                  "rejections": 0,
+                  "backlog_high_water": 50,
+                  "backlog_drained": true,
+                  "drain_ms": 0,
+                  "elapsed_ms": 4001,
+                  "offered_rate_per_second": 25000.0,
+                  "achieved_rate_per_second": 24991.815767643766,
+                  "latency": {
+                    "samples": 100000,
+                    "p50_us": 1137,
+                    "p90_us": 1693,
+                    "p99_us": 2069,
+                    "p999_us": 2391,
+                    "p999_min_samples": 10000,
+                    "p999_reportable": true,
+                    "max_us": 2773,
+                    "overflow_count": 0
+                  }
+                }
+              ],
+              "recovered_at_window": 2,
+              "consecutive_passing_windows": 2,
+              "observed_recovery_ms": 8001,
+              "time_to_baseline_ms": 8001,
+              "final_state_digest": "e35d2931b390ee9f06f881b0ae5c1f72a273beedbd48aeb7a8a5db00ac89fb35"
+            }
+          },
+          {
+            "reset_state_digest": "9a2d31cc7749d53399aa765a23d6720fc9101ae5a7c63441a74936eaded27760",
+            "preloaded_state_digest": "1163c5b94b5236ff57fda62f31e79bde1637354189928643f690269c26ac13ee",
+            "steady_state_digest": "2c6aa46c123917f28dcfe3693cec57add4908f341076cf4a761468e849b4861f",
+            "preload_operations": 10000,
+            "warmup_operations": 10000,
+            "admission_control": {
+              "mode": "enabled",
+              "factor_millionths": 1200000,
+              "authority": "loadgen-capacity-bound-admission",
+              "configuration_sha256": "cdf21536beff111b221d570a27e98f36b6657b6c26700b5cc72414cd8b9e8476",
+              "receipt_sha256": "8ac223bb30de54a3526bd4fa27a4611c85533456e423ccdcf63393f54e5154d8"
+            },
+            "overload": {
+              "offered": 120000,
+              "started": 120000,
+              "completed": 120000,
+              "successes": 100000,
+              "errors": 0,
+              "timeouts": 0,
+              "rejections": 20000,
+              "backlog_high_water": 60,
+              "backlog_drained": true,
+              "drain_ms": 0,
+              "elapsed_ms": 4001,
+              "offered_rate_per_second": 30000.0,
+              "achieved_rate_per_second": 29989.909999745272,
+              "latency": {
+                "samples": 120000,
+                "p50_us": 1124,
+                "p90_us": 1675,
+                "p99_us": 2061,
+                "p999_us": 2453,
+                "p999_min_samples": 10000,
+                "p999_reportable": true,
+                "max_us": 2767,
+                "overflow_count": 0
+              }
+            },
+            "metrics": {
+              "successful_goodput_per_second": 24991.591666454395,
+              "scheduled_p99_us": 2061,
+              "rejection_ratio": 0.16666666666666666,
+              "error_timeout_ratio": 0.0,
+              "backlog_high_water": 60,
+              "backlog_drained": true
+            },
+            "recovery": {
+              "transition_duration_ms": 0,
+              "windows": [
+                {
+                  "offered": 100000,
+                  "started": 100000,
+                  "completed": 100000,
+                  "successes": 100000,
+                  "errors": 0,
+                  "timeouts": 0,
+                  "rejections": 0,
+                  "backlog_high_water": 50,
+                  "backlog_drained": true,
+                  "drain_ms": 0,
+                  "elapsed_ms": 4001,
+                  "offered_rate_per_second": 25000.0,
+                  "achieved_rate_per_second": 24991.745944827122,
+                  "latency": {
+                    "samples": 100000,
+                    "p50_us": 1122,
+                    "p90_us": 1673,
+                    "p99_us": 2083,
+                    "p999_us": 2391,
+                    "p999_min_samples": 10000,
+                    "p999_reportable": true,
+                    "max_us": 2771,
+                    "overflow_count": 0
+                  }
+                },
+                {
+                  "offered": 100000,
+                  "started": 100000,
+                  "completed": 100000,
+                  "successes": 100000,
+                  "errors": 0,
+                  "timeouts": 0,
+                  "rejections": 0,
+                  "backlog_high_water": 50,
+                  "backlog_drained": true,
+                  "drain_ms": 0,
+                  "elapsed_ms": 4001,
+                  "offered_rate_per_second": 25000.0,
+                  "achieved_rate_per_second": 24991.44855109203,
+                  "latency": {
+                    "samples": 100000,
+                    "p50_us": 1087,
+                    "p90_us": 1645,
+                    "p99_us": 2013,
+                    "p999_us": 2343,
+                    "p999_min_samples": 10000,
+                    "p999_reportable": true,
+                    "max_us": 2759,
+                    "overflow_count": 0
+                  }
+                }
+              ],
+              "recovered_at_window": 2,
+              "consecutive_passing_windows": 2,
+              "observed_recovery_ms": 8002,
+              "time_to_baseline_ms": 8002,
+              "final_state_digest": "3504f35fae86c3f27958689cad83b04f7e5cae19442e5298ebb08bfd9d7ecdf2"
+            }
+          },
+          {
+            "reset_state_digest": "9a2d31cc7749d53399aa765a23d6720fc9101ae5a7c63441a74936eaded27760",
+            "preloaded_state_digest": "1163c5b94b5236ff57fda62f31e79bde1637354189928643f690269c26ac13ee",
+            "steady_state_digest": "2c6aa46c123917f28dcfe3693cec57add4908f341076cf4a761468e849b4861f",
+            "preload_operations": 10000,
+            "warmup_operations": 10000,
+            "admission_control": {
+              "mode": "enabled",
+              "factor_millionths": 1200000,
+              "authority": "loadgen-capacity-bound-admission",
+              "configuration_sha256": "cdf21536beff111b221d570a27e98f36b6657b6c26700b5cc72414cd8b9e8476",
+              "receipt_sha256": "8ac223bb30de54a3526bd4fa27a4611c85533456e423ccdcf63393f54e5154d8"
+            },
+            "overload": {
+              "offered": 120000,
+              "started": 120000,
+              "completed": 120000,
+              "successes": 100000,
+              "errors": 0,
+              "timeouts": 0,
+              "rejections": 20000,
+              "backlog_high_water": 60,
+              "backlog_drained": true,
+              "drain_ms": 0,
+              "elapsed_ms": 4001,
+              "offered_rate_per_second": 30000.0,
+              "achieved_rate_per_second": 29992.258885510677,
+              "latency": {
+                "samples": 120000,
+                "p50_us": 1122,
+                "p90_us": 1674,
+                "p99_us": 2069,
+                "p999_us": 2437,
+                "p999_min_samples": 10000,
+                "p999_reportable": true,
+                "max_us": 2751,
+                "overflow_count": 0
+              }
+            },
+            "metrics": {
+              "successful_goodput_per_second": 24993.549071258898,
+              "scheduled_p99_us": 2069,
+              "rejection_ratio": 0.16666666666666666,
+              "error_timeout_ratio": 0.0,
+              "backlog_high_water": 60,
+              "backlog_drained": true
+            },
+            "recovery": {
+              "transition_duration_ms": 0,
+              "windows": [
+                {
+                  "offered": 100000,
+                  "started": 100000,
+                  "completed": 100000,
+                  "successes": 100000,
+                  "errors": 0,
+                  "timeouts": 0,
+                  "rejections": 0,
+                  "backlog_high_water": 50,
+                  "backlog_drained": true,
+                  "drain_ms": 0,
+                  "elapsed_ms": 4001,
+                  "offered_rate_per_second": 25000.0,
+                  "achieved_rate_per_second": 24991.906208726912,
+                  "latency": {
+                    "samples": 100000,
+                    "p50_us": 1123,
+                    "p90_us": 1669,
+                    "p99_us": 2049,
+                    "p999_us": 2371,
+                    "p999_min_samples": 10000,
+                    "p999_reportable": true,
+                    "max_us": 2767,
+                    "overflow_count": 0
+                  }
+                },
+                {
+                  "offered": 100000,
+                  "started": 100000,
+                  "completed": 100000,
+                  "successes": 100000,
+                  "errors": 0,
+                  "timeouts": 0,
+                  "rejections": 0,
+                  "backlog_high_water": 50,
+                  "backlog_drained": true,
+                  "drain_ms": 0,
+                  "elapsed_ms": 4000,
+                  "offered_rate_per_second": 25000.0,
+                  "achieved_rate_per_second": 24995.673617582983,
+                  "latency": {
+                    "samples": 100000,
+                    "p50_us": 1103,
+                    "p90_us": 1661,
+                    "p99_us": 2065,
+                    "p999_us": 2403,
+                    "p999_min_samples": 10000,
+                    "p999_reportable": true,
+                    "max_us": 2769,
+                    "overflow_count": 0
+                  }
+                }
+              ],
+              "recovered_at_window": 2,
+              "consecutive_passing_windows": 2,
+              "observed_recovery_ms": 8001,
+              "time_to_baseline_ms": 8001,
+              "final_state_digest": "f56fb8c587d9f6117e52b46166953d428e0566bcfa13089843ad2275d9cf3b2b"
+            }
+          }
+        ],
+        "aggregate": {
+          "representative_repeat_index": 0,
+          "successful_goodput_per_second": 24992.261027659544,
+          "goodput_min_per_second": 24991.591666454395,
+          "goodput_max_per_second": 24993.549071258898,
+          "robust_goodput_spread_ratio": 0.00007832043696794799,
+          "scheduled_p99_us": 2065,
+          "rejection_ratio": 0.16666666666666666,
+          "error_timeout_ratio": 0.0,
+          "backlog_high_water": 61,
+          "backlog_drained": true,
+          "recovered_at_window": 2,
+          "time_to_baseline_ms": 8001
+        }
+      },
+      {
+        "factor_millionths": 1500000,
+        "offered_rate_per_second": 37500,
+        "repeats": [
+          {
+            "reset_state_digest": "9a2d31cc7749d53399aa765a23d6720fc9101ae5a7c63441a74936eaded27760",
+            "preloaded_state_digest": "1163c5b94b5236ff57fda62f31e79bde1637354189928643f690269c26ac13ee",
+            "steady_state_digest": "2c6aa46c123917f28dcfe3693cec57add4908f341076cf4a761468e849b4861f",
+            "preload_operations": 10000,
+            "warmup_operations": 10000,
+            "admission_control": {
+              "mode": "enabled",
+              "factor_millionths": 1500000,
+              "authority": "loadgen-capacity-bound-admission",
+              "configuration_sha256": "cdf21536beff111b221d570a27e98f36b6657b6c26700b5cc72414cd8b9e8476",
+              "receipt_sha256": "df2a560238fbce6f64930f57e386d3d85b506a37f4a893e4ea32c5d2087eb344"
+            },
+            "overload": {
+              "offered": 150000,
+              "started": 150000,
+              "completed": 150000,
+              "successes": 100000,
+              "errors": 0,
+              "timeouts": 0,
+              "rejections": 50000,
+              "backlog_high_water": 75,
+              "backlog_drained": true,
+              "drain_ms": 0,
+              "elapsed_ms": 4001,
+              "offered_rate_per_second": 37500.0,
+              "achieved_rate_per_second": 37488.668028522174,
+              "latency": {
+                "samples": 150000,
+                "p50_us": 1129,
+                "p90_us": 1678,
+                "p99_us": 2101,
+                "p999_us": 2457,
+                "p999_min_samples": 10000,
+                "p999_reportable": true,
+                "max_us": 2757,
+                "overflow_count": 0
+              }
+            },
+            "metrics": {
+              "successful_goodput_per_second": 24992.445352348113,
+              "scheduled_p99_us": 2101,
+              "rejection_ratio": 0.3333333333333333,
+              "error_timeout_ratio": 0.0,
+              "backlog_high_water": 75,
+              "backlog_drained": true
+            },
+            "recovery": {
+              "transition_duration_ms": 0,
+              "windows": [
+                {
+                  "offered": 100000,
+                  "started": 100000,
+                  "completed": 100000,
+                  "successes": 100000,
+                  "errors": 0,
+                  "timeouts": 0,
+                  "rejections": 0,
+                  "backlog_high_water": 50,
+                  "backlog_drained": true,
+                  "drain_ms": 0,
+                  "elapsed_ms": 4001,
+                  "offered_rate_per_second": 25000.0,
+                  "achieved_rate_per_second": 24993.07326971559,
+                  "latency": {
+                    "samples": 100000,
+                    "p50_us": 1118,
+                    "p90_us": 1680,
+                    "p99_us": 2051,
+                    "p999_us": 2413,
+                    "p999_min_samples": 10000,
+                    "p999_reportable": true,
+                    "max_us": 2781,
+                    "overflow_count": 0
+                  }
+                },
+                {
+                  "offered": 100000,
+                  "started": 100000,
+                  "completed": 100000,
+                  "successes": 100000,
+                  "errors": 0,
+                  "timeouts": 0,
+                  "rejections": 0,
+                  "backlog_high_water": 50,
+                  "backlog_drained": true,
+                  "drain_ms": 0,
+                  "elapsed_ms": 4001,
+                  "offered_rate_per_second": 25000.0,
+                  "achieved_rate_per_second": 24991.201141636655,
+                  "latency": {
+                    "samples": 100000,
+                    "p50_us": 1120,
+                    "p90_us": 1677,
+                    "p99_us": 2033,
+                    "p999_us": 2363,
+                    "p999_min_samples": 10000,
+                    "p999_reportable": true,
+                    "max_us": 2771,
+                    "overflow_count": 0
+                  }
+                }
+              ],
+              "recovered_at_window": 2,
+              "consecutive_passing_windows": 2,
+              "observed_recovery_ms": 8002,
+              "time_to_baseline_ms": 8002,
+              "final_state_digest": "e56c7163a98dd1093a0fbc6e1b6d6db0ef99366525c7c247f9a35b25215bc59a"
+            }
+          },
+          {
+            "reset_state_digest": "9a2d31cc7749d53399aa765a23d6720fc9101ae5a7c63441a74936eaded27760",
+            "preloaded_state_digest": "1163c5b94b5236ff57fda62f31e79bde1637354189928643f690269c26ac13ee",
+            "steady_state_digest": "2c6aa46c123917f28dcfe3693cec57add4908f341076cf4a761468e849b4861f",
+            "preload_operations": 10000,
+            "warmup_operations": 10000,
+            "admission_control": {
+              "mode": "enabled",
+              "factor_millionths": 1500000,
+              "authority": "loadgen-capacity-bound-admission",
+              "configuration_sha256": "cdf21536beff111b221d570a27e98f36b6657b6c26700b5cc72414cd8b9e8476",
+              "receipt_sha256": "df2a560238fbce6f64930f57e386d3d85b506a37f4a893e4ea32c5d2087eb344"
+            },
+            "overload": {
+              "offered": 150000,
+              "started": 150000,
+              "completed": 150000,
+              "successes": 100000,
+              "errors": 0,
+              "timeouts": 0,
+              "rejections": 50000,
+              "backlog_high_water": 75,
+              "backlog_drained": true,
+              "drain_ms": 0,
+              "elapsed_ms": 4001,
+              "offered_rate_per_second": 37500.0,
+              "achieved_rate_per_second": 37488.50040250153,
+              "latency": {
+                "samples": 150000,
+                "p50_us": 1130,
+                "p90_us": 1677,
+                "p99_us": 2093,
+                "p999_us": 2423,
+                "p999_min_samples": 10000,
+                "p999_reportable": true,
+                "max_us": 2731,
+                "overflow_count": 0
+              }
+            },
+            "metrics": {
+              "successful_goodput_per_second": 24992.333601667688,
+              "scheduled_p99_us": 2093,
+              "rejection_ratio": 0.3333333333333333,
+              "error_timeout_ratio": 0.0,
+              "backlog_high_water": 75,
+              "backlog_drained": true
+            },
+            "recovery": {
+              "transition_duration_ms": 0,
+              "windows": [
+                {
+                  "offered": 100000,
+                  "started": 100000,
+                  "completed": 100000,
+                  "successes": 100000,
+                  "errors": 0,
+                  "timeouts": 0,
+                  "rejections": 0,
+                  "backlog_high_water": 50,
+                  "backlog_drained": true,
+                  "drain_ms": 0,
+                  "elapsed_ms": 4001,
+                  "offered_rate_per_second": 25000.0,
+                  "achieved_rate_per_second": 24990.20879246225,
+                  "latency": {
+                    "samples": 100000,
+                    "p50_us": 1123,
+                    "p90_us": 1667,
+                    "p99_us": 2081,
+                    "p999_us": 2339,
+                    "p999_min_samples": 10000,
+                    "p999_reportable": true,
+                    "max_us": 2757,
+                    "overflow_count": 0
+                  }
+                },
+                {
+                  "offered": 100000,
+                  "started": 100000,
+                  "completed": 100000,
+                  "successes": 100000,
+                  "errors": 0,
+                  "timeouts": 0,
+                  "rejections": 0,
+                  "backlog_high_water": 50,
+                  "backlog_drained": true,
+                  "drain_ms": 0,
+                  "elapsed_ms": 4001,
+                  "offered_rate_per_second": 25000.0,
+                  "achieved_rate_per_second": 24990.56138359507,
+                  "latency": {
+                    "samples": 100000,
+                    "p50_us": 1123,
+                    "p90_us": 1681,
+                    "p99_us": 2029,
+                    "p999_us": 2345,
+                    "p999_min_samples": 10000,
+                    "p999_reportable": true,
+                    "max_us": 2747,
+                    "overflow_count": 0
+                  }
+                }
+              ],
+              "recovered_at_window": 2,
+              "consecutive_passing_windows": 2,
+              "observed_recovery_ms": 8002,
+              "time_to_baseline_ms": 8002,
+              "final_state_digest": "db4475ef81a3bd333063dacdbbcd69b291bf7d9528ad9a9bf6c9eea930bb3966"
+            }
+          },
+          {
+            "reset_state_digest": "9a2d31cc7749d53399aa765a23d6720fc9101ae5a7c63441a74936eaded27760",
+            "preloaded_state_digest": "1163c5b94b5236ff57fda62f31e79bde1637354189928643f690269c26ac13ee",
+            "steady_state_digest": "2c6aa46c123917f28dcfe3693cec57add4908f341076cf4a761468e849b4861f",
+            "preload_operations": 10000,
+            "warmup_operations": 10000,
+            "admission_control": {
+              "mode": "enabled",
+              "factor_millionths": 1500000,
+              "authority": "loadgen-capacity-bound-admission",
+              "configuration_sha256": "cdf21536beff111b221d570a27e98f36b6657b6c26700b5cc72414cd8b9e8476",
+              "receipt_sha256": "df2a560238fbce6f64930f57e386d3d85b506a37f4a893e4ea32c5d2087eb344"
+            },
+            "overload": {
+              "offered": 150000,
+              "started": 150000,
+              "completed": 150000,
+              "successes": 100000,
+              "errors": 0,
+              "timeouts": 0,
+              "rejections": 50000,
+              "backlog_high_water": 75,
+              "backlog_drained": true,
+              "drain_ms": 0,
+              "elapsed_ms": 4000,
+              "offered_rate_per_second": 37500.0,
+              "achieved_rate_per_second": 37490.80754454384,
+              "latency": {
+                "samples": 150000,
+                "p50_us": 1124,
+                "p90_us": 1672,
+                "p99_us": 2075,
+                "p999_us": 2405,
+                "p999_min_samples": 10000,
+                "p999_reportable": true,
+                "max_us": 2725,
+                "overflow_count": 0
+              }
+            },
+            "metrics": {
+              "successful_goodput_per_second": 24993.87169636256,
+              "scheduled_p99_us": 2075,
+              "rejection_ratio": 0.3333333333333333,
+              "error_timeout_ratio": 0.0,
+              "backlog_high_water": 75,
+              "backlog_drained": true
+            },
+            "recovery": {
+              "transition_duration_ms": 0,
+              "windows": [
+                {
+                  "offered": 100000,
+                  "started": 100000,
+                  "completed": 100000,
+                  "successes": 100000,
+                  "errors": 0,
+                  "timeouts": 0,
+                  "rejections": 0,
+                  "backlog_high_water": 50,
+                  "backlog_drained": true,
+                  "drain_ms": 0,
+                  "elapsed_ms": 4001,
+                  "offered_rate_per_second": 25000.0,
+                  "achieved_rate_per_second": 24993.587713868495,
+                  "latency": {
+                    "samples": 100000,
+                    "p50_us": 1106,
+                    "p90_us": 1665,
+                    "p99_us": 2021,
+                    "p999_us": 2311,
+                    "p999_min_samples": 10000,
+                    "p999_reportable": true,
+                    "max_us": 2773,
+                    "overflow_count": 0
+                  }
+                },
+                {
+                  "offered": 100000,
+                  "started": 100000,
+                  "completed": 100000,
+                  "successes": 100000,
+                  "errors": 0,
+                  "timeouts": 0,
+                  "rejections": 0,
+                  "backlog_high_water": 50,
+                  "backlog_drained": true,
+                  "drain_ms": 0,
+                  "elapsed_ms": 4001,
+                  "offered_rate_per_second": 25000.0,
+                  "achieved_rate_per_second": 24989.790983164123,
+                  "latency": {
+                    "samples": 100000,
+                    "p50_us": 1112,
+                    "p90_us": 1678,
+                    "p99_us": 2033,
+                    "p999_us": 2353,
+                    "p999_min_samples": 10000,
+                    "p999_reportable": true,
+                    "max_us": 2741,
+                    "overflow_count": 0
+                  }
+                }
+              ],
+              "recovered_at_window": 2,
+              "consecutive_passing_windows": 2,
+              "observed_recovery_ms": 8002,
+              "time_to_baseline_ms": 8002,
+              "final_state_digest": "63ad524e5f7a8b17c467ce9e823e262ebd497c2db4c48b0f442e925ad51f58f1"
+            }
+          }
+        ],
+        "aggregate": {
+          "representative_repeat_index": 0,
+          "successful_goodput_per_second": 24992.445352348113,
+          "goodput_min_per_second": 24992.333601667688,
+          "goodput_max_per_second": 24993.87169636256,
+          "robust_goodput_spread_ratio": 0.00006154238503625176,
+          "scheduled_p99_us": 2101,
+          "rejection_ratio": 0.3333333333333333,
+          "error_timeout_ratio": 0.0,
+          "backlog_high_water": 75,
+          "backlog_drained": true,
+          "recovered_at_window": 2,
+          "time_to_baseline_ms": 8002
+        }
+      },
+      {
+        "factor_millionths": 2000000,
+        "offered_rate_per_second": 50000,
+        "repeats": [
+          {
+            "reset_state_digest": "9a2d31cc7749d53399aa765a23d6720fc9101ae5a7c63441a74936eaded27760",
+            "preloaded_state_digest": "1163c5b94b5236ff57fda62f31e79bde1637354189928643f690269c26ac13ee",
+            "steady_state_digest": "2c6aa46c123917f28dcfe3693cec57add4908f341076cf4a761468e849b4861f",
+            "preload_operations": 10000,
+            "warmup_operations": 10000,
+            "admission_control": {
+              "mode": "enabled",
+              "factor_millionths": 2000000,
+              "authority": "loadgen-capacity-bound-admission",
+              "configuration_sha256": "cdf21536beff111b221d570a27e98f36b6657b6c26700b5cc72414cd8b9e8476",
+              "receipt_sha256": "8a79f56352f33ac8ec14234190aeb3d15356da8ba8e31cbc735c8043a54ac143"
+            },
+            "overload": {
+              "offered": 200000,
+              "started": 200000,
+              "completed": 200000,
+              "successes": 100000,
+              "errors": 0,
+              "timeouts": 0,
+              "rejections": 100000,
+              "backlog_high_water": 100,
+              "backlog_drained": true,
+              "drain_ms": 0,
+              "elapsed_ms": 4001,
+              "offered_rate_per_second": 50000.0,
+              "achieved_rate_per_second": 49982.17333306794,
+              "latency": {
+                "samples": 200000,
+                "p50_us": 1133,
+                "p90_us": 1689,
+                "p99_us": 2055,
+                "p999_us": 2337,
+                "p999_min_samples": 10000,
+                "p999_reportable": true,
+                "max_us": 2715,
+                "overflow_count": 0
+              }
+            },
+            "metrics": {
+              "successful_goodput_per_second": 24991.08666653397,
+              "scheduled_p99_us": 2055,
+              "rejection_ratio": 0.5,
+              "error_timeout_ratio": 0.0,
+              "backlog_high_water": 100,
+              "backlog_drained": true
+            },
+            "recovery": {
+              "transition_duration_ms": 0,
+              "windows": [
+                {
+                  "offered": 100000,
+                  "started": 100000,
+                  "completed": 100000,
+                  "successes": 100000,
+                  "errors": 0,
+                  "timeouts": 0,
+                  "rejections": 0,
+                  "backlog_high_water": 50,
+                  "backlog_drained": true,
+                  "drain_ms": 0,
+                  "elapsed_ms": 4001,
+                  "offered_rate_per_second": 25000.0,
+                  "achieved_rate_per_second": 24990.974878039677,
+                  "latency": {
+                    "samples": 100000,
+                    "p50_us": 1126,
+                    "p90_us": 1675,
+                    "p99_us": 2067,
+                    "p999_us": 2371,
+                    "p999_min_samples": 10000,
+                    "p999_reportable": true,
+                    "max_us": 2759,
+                    "overflow_count": 0
+                  }
+                },
+                {
+                  "offered": 100000,
+                  "started": 100000,
+                  "completed": 100000,
+                  "successes": 100000,
+                  "errors": 0,
+                  "timeouts": 0,
+                  "rejections": 0,
+                  "backlog_high_water": 50,
+                  "backlog_drained": true,
+                  "drain_ms": 0,
+                  "elapsed_ms": 4001,
+                  "offered_rate_per_second": 25000.0,
+                  "achieved_rate_per_second": 24992.42696348041,
+                  "latency": {
+                    "samples": 100000,
+                    "p50_us": 1080,
+                    "p90_us": 1642,
+                    "p99_us": 2015,
+                    "p999_us": 2339,
+                    "p999_min_samples": 10000,
+                    "p999_reportable": true,
+                    "max_us": 2757,
+                    "overflow_count": 0
+                  }
+                }
+              ],
+              "recovered_at_window": 2,
+              "consecutive_passing_windows": 2,
+              "observed_recovery_ms": 8002,
+              "time_to_baseline_ms": 8002,
+              "final_state_digest": "453a606929cb177de56bb438e80217797946070525730c618e32c072033c20ab"
+            }
+          },
+          {
+            "reset_state_digest": "9a2d31cc7749d53399aa765a23d6720fc9101ae5a7c63441a74936eaded27760",
+            "preloaded_state_digest": "1163c5b94b5236ff57fda62f31e79bde1637354189928643f690269c26ac13ee",
+            "steady_state_digest": "2c6aa46c123917f28dcfe3693cec57add4908f341076cf4a761468e849b4861f",
+            "preload_operations": 10000,
+            "warmup_operations": 10000,
+            "admission_control": {
+              "mode": "enabled",
+              "factor_millionths": 2000000,
+              "authority": "loadgen-capacity-bound-admission",
+              "configuration_sha256": "cdf21536beff111b221d570a27e98f36b6657b6c26700b5cc72414cd8b9e8476",
+              "receipt_sha256": "8a79f56352f33ac8ec14234190aeb3d15356da8ba8e31cbc735c8043a54ac143"
+            },
+            "overload": {
+              "offered": 200000,
+              "started": 200000,
+              "completed": 200000,
+              "successes": 100000,
+              "errors": 0,
+              "timeouts": 0,
+              "rejections": 100000,
+              "backlog_high_water": 100,
+              "backlog_drained": true,
+              "drain_ms": 0,
+              "elapsed_ms": 4001,
+              "offered_rate_per_second": 50000.0,
+              "achieved_rate_per_second": 49978.123800551584,
+              "latency": {
+                "samples": 200000,
+                "p50_us": 1135,
+                "p90_us": 1693,
+                "p99_us": 2063,
+                "p999_us": 2353,
+                "p999_min_samples": 10000,
+                "p999_reportable": true,
+                "max_us": 2701,
+                "overflow_count": 0
+              }
+            },
+            "metrics": {
+              "successful_goodput_per_second": 24989.061900275792,
+              "scheduled_p99_us": 2063,
+              "rejection_ratio": 0.5,
+              "error_timeout_ratio": 0.0,
+              "backlog_high_water": 100,
+              "backlog_drained": true
+            },
+            "recovery": {
+              "transition_duration_ms": 0,
+              "windows": [
+                {
+                  "offered": 100000,
+                  "started": 100000,
+                  "completed": 100000,
+                  "successes": 100000,
+                  "errors": 0,
+                  "timeouts": 0,
+                  "rejections": 0,
+                  "backlog_high_water": 50,
+                  "backlog_drained": true,
+                  "drain_ms": 0,
+                  "elapsed_ms": 4001,
+                  "offered_rate_per_second": 25000.0,
+                  "achieved_rate_per_second": 24993.674657053558,
+                  "latency": {
+                    "samples": 100000,
+                    "p50_us": 1113,
+                    "p90_us": 1671,
+                    "p99_us": 2030,
+                    "p999_us": 2305,
+                    "p999_min_samples": 10000,
+                    "p999_reportable": true,
+                    "max_us": 2699,
+                    "overflow_count": 0
+                  }
+                },
+                {
+                  "offered": 100000,
+                  "started": 100000,
+                  "completed": 100000,
+                  "successes": 100000,
+                  "errors": 0,
+                  "timeouts": 0,
+                  "rejections": 0,
+                  "backlog_high_water": 50,
+                  "backlog_drained": true,
+                  "drain_ms": 0,
+                  "elapsed_ms": 4001,
+                  "offered_rate_per_second": 25000.0,
+                  "achieved_rate_per_second": 24988.118811690187,
+                  "latency": {
+                    "samples": 100000,
+                    "p50_us": 1090,
+                    "p90_us": 1652,
+                    "p99_us": 2011,
+                    "p999_us": 2333,
+                    "p999_min_samples": 10000,
+                    "p999_reportable": true,
+                    "max_us": 2739,
+                    "overflow_count": 0
+                  }
+                }
+              ],
+              "recovered_at_window": 2,
+              "consecutive_passing_windows": 2,
+              "observed_recovery_ms": 8002,
+              "time_to_baseline_ms": 8002,
+              "final_state_digest": "bce6632c3aa5ca610503a33cce82134b5af04ebc7007ce27fad9dc635b710c92"
+            }
+          },
+          {
+            "reset_state_digest": "9a2d31cc7749d53399aa765a23d6720fc9101ae5a7c63441a74936eaded27760",
+            "preloaded_state_digest": "1163c5b94b5236ff57fda62f31e79bde1637354189928643f690269c26ac13ee",
+            "steady_state_digest": "2c6aa46c123917f28dcfe3693cec57add4908f341076cf4a761468e849b4861f",
+            "preload_operations": 10000,
+            "warmup_operations": 10000,
+            "admission_control": {
+              "mode": "enabled",
+              "factor_millionths": 2000000,
+              "authority": "loadgen-capacity-bound-admission",
+              "configuration_sha256": "cdf21536beff111b221d570a27e98f36b6657b6c26700b5cc72414cd8b9e8476",
+              "receipt_sha256": "8a79f56352f33ac8ec14234190aeb3d15356da8ba8e31cbc735c8043a54ac143"
+            },
+            "overload": {
+              "offered": 200000,
+              "started": 200000,
+              "completed": 200000,
+              "successes": 100000,
+              "errors": 0,
+              "timeouts": 0,
+              "rejections": 100000,
+              "backlog_high_water": 100,
+              "backlog_drained": true,
+              "drain_ms": 0,
+              "elapsed_ms": 4001,
+              "offered_rate_per_second": 50000.0,
+              "achieved_rate_per_second": 49982.80620206762,
+              "latency": {
+                "samples": 200000,
+                "p50_us": 1135,
+                "p90_us": 1686,
+                "p99_us": 2101,
+                "p999_us": 2375,
+                "p999_min_samples": 10000,
+                "p999_reportable": true,
+                "max_us": 2707,
+                "overflow_count": 0
+              }
+            },
+            "metrics": {
+              "successful_goodput_per_second": 24991.40310103381,
+              "scheduled_p99_us": 2101,
+              "rejection_ratio": 0.5,
+              "error_timeout_ratio": 0.0,
+              "backlog_high_water": 100,
+              "backlog_drained": true
+            },
+            "recovery": {
+              "transition_duration_ms": 0,
+              "windows": [
+                {
+                  "offered": 100000,
+                  "started": 100000,
+                  "completed": 100000,
+                  "successes": 100000,
+                  "errors": 0,
+                  "timeouts": 0,
+                  "rejections": 0,
+                  "backlog_high_water": 50,
+                  "backlog_drained": true,
+                  "drain_ms": 0,
+                  "elapsed_ms": 4001,
+                  "offered_rate_per_second": 25000.0,
+                  "achieved_rate_per_second": 24993.339905996883,
+                  "latency": {
+                    "samples": 100000,
+                    "p50_us": 1091,
+                    "p90_us": 1654,
+                    "p99_us": 2025,
+                    "p999_us": 2337,
+                    "p999_min_samples": 10000,
+                    "p999_reportable": true,
+                    "max_us": 2709,
+                    "overflow_count": 0
+                  }
+                },
+                {
+                  "offered": 100000,
+                  "started": 100000,
+                  "completed": 100000,
+                  "successes": 100000,
+                  "errors": 0,
+                  "timeouts": 0,
+                  "rejections": 0,
+                  "backlog_high_water": 50,
+                  "backlog_drained": true,
+                  "drain_ms": 0,
+                  "elapsed_ms": 4001,
+                  "offered_rate_per_second": 25000.0,
+                  "achieved_rate_per_second": 24990.659947017746,
+                  "latency": {
+                    "samples": 100000,
+                    "p50_us": 1091,
+                    "p90_us": 1657,
+                    "p99_us": 2013,
+                    "p999_us": 2285,
+                    "p999_min_samples": 10000,
+                    "p999_reportable": true,
+                    "max_us": 2687,
+                    "overflow_count": 0
+                  }
+                }
+              ],
+              "recovered_at_window": 2,
+              "consecutive_passing_windows": 2,
+              "observed_recovery_ms": 8002,
+              "time_to_baseline_ms": 8002,
+              "final_state_digest": "095c47ac17219f38b711710229ba70f761b468fca194c0de771700f0189b3530"
+            }
+          }
+        ],
+        "aggregate": {
+          "representative_repeat_index": 0,
+          "successful_goodput_per_second": 24991.08666653397,
+          "goodput_min_per_second": 24989.061900275792,
+          "goodput_max_per_second": 24991.40310103381,
+          "robust_goodput_spread_ratio": 0.00009368143087408274,
+          "scheduled_p99_us": 2055,
+          "rejection_ratio": 0.5,
+          "error_timeout_ratio": 0.0,
+          "backlog_high_water": 100,
+          "backlog_drained": true,
+          "recovered_at_window": 2,
+          "time_to_baseline_ms": 8002
+        }
+      }
+    ],
+    "generic_cluster_capacity_claim": false,
+    "node_native_wire_claim": false,
+    "library_model_capacity_claim": false,
+    "deferred_claims": [
+      "generic-cluster-capacity",
+      "library-model-overload",
+      "node-native-wire"
+    ]
+  },
+  "budget_receipt": {
+    "schema_version": 1,
+    "release": "0.67.0",
+    "report_id": "overload-client-surface-v1",
+    "source_report_sha256": "a52d63d1cbb57c7b5399bd556db4178842c291b6a7ad65118df01fd4aa63b075",
+    "claim_scope": "capacity-bound-overload-goodput-recovery",
+    "run_mode": "reference_evidence",
+    "runner_profile": "reference-v1",
+    "runner_contract": {
+      "name": "reference-v1",
+      "required_runner_class": "self-hosted-bare-metal-v1",
+      "allowed_fingerprints": [
+        "25baeec1c9ec75da90b5dd0f29c101897450b96651d7e47570e18684be486ebb"
+      ],
+      "minimum_logical_cores": 4,
+      "required_cpu_affinity": "1-4",
+      "required_cgroup_cpu_quota": "unlimited",
+      "require_dedicated": true,
+      "maximum_calibration_score": 0.25
+    },
+    "runner_contract_digest": "c728014af9fd0aae4c474456e74437a033110940db01caa1577b1b5b5efabfe0",
+    "observed_runner": {
+      "runner_class": "self-hosted-bare-metal-v1",
+      "fingerprint": "25baeec1c9ec75da90b5dd0f29c101897450b96651d7e47570e18684be486ebb",
+      "cpu_model": "AMD Ryzen 7 PRO 8700GE w/ Radeon 780M Graphics",
+      "logical_cores": 4,
+      "ram_bytes": 66490486784,
+      "os": "linux",
+      "kernel": "6.8.0-138-generic",
+      "cpu_affinity": "1-4",
+      "cgroup_cpu_quota": "unlimited",
+      "governor": "performance",
+      "turbo": "enabled",
+      "shared_hardware": false,
+      "calibration_score": 0.015776637614821176,
+      "attestation": {
+        "schema_version": 5,
+        "contract_version": "hydracache-reference-host-v5",
+        "virtualization": "none",
+        "physical_cores": 8,
+        "measurement_cores": [
+          {
+            "logical_cpu": 1,
+            "package_id": 0,
+            "core_id": 1
+          },
+          {
+            "logical_cpu": 2,
+            "package_id": 0,
+            "core_id": 2
+          },
+          {
+            "logical_cpu": 3,
+            "package_id": 0,
+            "core_id": 3
+          },
+          {
+            "logical_cpu": 4,
+            "package_id": 0,
+            "core_id": 4
+          }
+        ],
+        "cpu_isolation": {
+          "smt_control": "off",
+          "online_cpus": "0-7",
+          "isolated_cpus": "1-4",
+          "nohz_full_cpus": "1-4",
+          "rcu_nocbs_cpus": "1-4",
+          "housekeeping_cpus": "0,5-7",
+          "irq_affinity_policy": "housekeeping-only-v1",
+          "measurement_idle_policy": "latency-cap-us-v1",
+          "measurement_max_idle_latency_us": 1,
+          "housekeeping_idle_policy": "latency-cap-us-v1",
+          "housekeeping_max_idle_latency_us": 1
+        },
+        "host_digest": "571591a534c9894242fc0af0c5f80c31131fe7e4cdb9d0ea63da6d8b56af8932",
+        "storage_class": "local-nvme",
+        "storage_identity_digest": "74ec6d1126c24b7a3899494eef2564aec2d3085056ac200e4a8cc8ca0ae43a50",
+        "os_image": "ubuntu-24.04",
+        "toolchain_identity": "rustc-1.94.0",
+        "prebuild_contract_digest": "f2caae0689d8b075d2a6d59d6090466365f9a6824c6996d6b92830956831cc55"
+      }
+    },
+    "runner_fingerprint": "25baeec1c9ec75da90b5dd0f29c101897450b96651d7e47570e18684be486ebb",
+    "source_commit": "7bd31af9a5092466d7a7284995f388d33ed3110f",
+    "cargo_lock_sha256": "dc480dad8567eda4a4d13b393651d3d1201cc26ba7599e3c8ff822b725569def",
+    "toolchain_identity": "rustc-1.94.0",
+    "prebuild_contract_digest": "f2caae0689d8b075d2a6d59d6090466365f9a6824c6996d6b92830956831cc55",
+    "prebuild_manifest_sha256": "2768ca970a2b3e09c3ee63bbd9bba466c3aee40be8dfca8e06cbe98309e4b296",
+    "binary_sha256": [
+      {
+        "id": "hydracache-loadgen",
+        "sha256": "c2c0e14ab40dd5b3c2ee5d71631bdfee81d7d61c0cd2c83c8b927c126aff7bd2"
+      },
+      {
+        "id": "hydracache-server",
+        "sha256": "a17b5148cad43e2193c69a64e3372e2832fa94a47196a7b6bec405128f3633c6"
+      }
+    ],
+    "binary_set_digest": "226175eeacd19e16f15bf8af6e9da5253aef1330c5583c73bf039920fa8abf61",
+    "scenario_digest": "23737b7a83647d596829d0f0207feccb441c4d2782e0dd7ef74cebd378ec7279",
+    "workload_digest": "b5f9537eafa6b5e04cacbdd7511d0479f9ea2275dc12703483ecbd4c3e80447f",
+    "slo_digest": "7d56c986b9aebc9c66b6f61be0aaf67cd73b45aaecb3f834d2c5977aee4d3a46",
+    "methodology_digest": "99190c8f41d0c68cf4722e8a4a30ee9ca956f5ec0d82785d183407e274471336",
+    "stable": true,
+    "maximum_spread_ratio": 0.00009368143087408274,
+    "metric": [
+      {
+        "id": "overload_goodput_curve_1_2x_1_5x_2x_knee_per_eligible_surface.minimum_goodput_per_second",
+        "value": 24991.08666653397,
+        "unit": "operations_per_second"
+      }
+    ],
+    "receipt_sha256": "cc6c9b278b6ee052a52283a554dea7dc1333033772a4d4f1261b62a82181daa3"
+  }
+}
