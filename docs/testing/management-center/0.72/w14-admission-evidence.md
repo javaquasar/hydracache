@@ -84,8 +84,8 @@ from a clean checkout after the tag candidate is frozen.
 
 `--require-ship` currently rejects promotion for real reasons:
 
-1. origin contains no shipped `v0.71.x` tag/artifact, so the mandatory real 0.71/0.72 mixed-binary
-   upgrade, leadership-change, peer-restart and rollback scenarios cannot be executed honestly;
+1. the annotated `v0.71.0` predecessor is available, but the mandatory real 0.71/0.72
+   mixed-binary upgrade, leadership-change, peer-restart and rollback receipt is still missing;
 2. the six-hour candidate and 24-hour ship-confirmation runs require a frozen SHA and admitted host;
 3. Linux FD/RSS and full workspace LLVM coverage receipts must be generated for that same SHA;
 4. the covered `bounded-resource-pressure` row still requires the dedicated Linux resource gate

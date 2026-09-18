@@ -39,7 +39,8 @@ tests, bounds, changed-module branch review, NATS-derived failure taxonomy and f
 canaries are registered in the 0.72 evidence manifests. The ordinary verify and CI paths execute
 the structural admission and all 15 work-item canaries. W13 local compatibility/package/publication
 rehearsal is green, while real mixed-binary and candidate/ship soak lanes remain fail-closed external
-inputs because no shipped `v0.71.x` artifact or frozen 0.72 candidate exists yet.
+inputs because the published `v0.71.0` predecessor has not yet been exercised by the real
+mixed-binary gate and no frozen 0.72 candidate receipts exist.
 
 The latest complete development contour runs every workspace and `xtask` test binary, all doc-tests,
 strict `-D warnings` rustdoc, the four decoder corpus regressions, 16 console unit tests, four
