@@ -10,6 +10,7 @@ Use this checklist before publishing a crate release or updating the public docs
 - Versioning page matches the release branch and GitHub Pages target.
 - Adapter pages match current SQLx, Diesel, and SeaORM helper names.
 - Production Checklist and Anti-patterns still describe current behavior.
+- Release 0.72 Verification matches the executable gate registry and preserves campaign findings.
 
 ## Checks
 
@@ -28,3 +29,5 @@ node scripts/docs-visual-smoke.mjs
 - Confirm no other workflow replaces the docs Pages artifact for the same release.
 - Confirm favicon, logo, static diagrams, search, and mobile navigation after deploy.
 - Keep article links on the home page only.
+- Confirm the Release 0.72 Verification page appears in navigation and search.
+- Do not describe an in-progress or historical exact-SHA attempt as evidence for a newer commit.

@@ -30,3 +30,8 @@ cargo test -p hydracache --test cluster_load_stability --locked -- --ignored --n
 ```
 
 Coverage is tracked with `cargo-llvm-cov`. The current target is `95%+` line coverage for reusable library crates and a workspace trend toward `95%+`, including the manual sandbox.
+
+Release 0.72 adds exact-candidate process, compatibility, soak, resource, fuzz and canary admission
+on top of this general development gate. See [Release 0.72 Verification](release-0.72-verification.md)
+for the complete public contract. Passing the commands on this page alone does not satisfy the
+0.72 ship gate.

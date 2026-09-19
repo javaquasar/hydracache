@@ -41,6 +41,7 @@
 - [Local Cache API](reference/local-cache-api.md)
 - [Crate Map](reference/crate-map.md)
 - [Quality Gate](reference/quality-gate.md)
+- [Release 0.72 Verification](reference/release-0.72-verification.md)
 - [Workspace Layout](reference/workspace-layout.md)
 - [API Links](reference/api-links.md)
 - [Publishing Docs](reference/publishing-docs.md)

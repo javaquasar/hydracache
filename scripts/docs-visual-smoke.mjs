@@ -9,6 +9,7 @@ const pages = [
   "/production-checklist.html",
   "/guides/database-query-caching.html",
   "/reference/api-links.html",
+  "/reference/release-0.72-verification.html",
 ];
 
 const viewports = [

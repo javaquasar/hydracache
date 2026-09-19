@@ -79,3 +79,28 @@ snapshot_corruption --test durable_recovery_corpus --test failpoints_crash_safet
 tests were non-empty and green. Running those files without their declared features yields an empty
 binary and is not acceptable evidence; candidate automation must keep the feature set and reject an
 empty shard.
+
+## Candidate-campaign hardening record (2026-09-19)
+
+The first dedicated-host attempts exposed four harness defects. They were fixed in the test
+machinery rather than waived, and each failed attempt remains historical evidence. These changes
+do not weaken any release threshold:
+
+| Commit | Observed failure | Permanent correction | Required proof after correction |
+| --- | --- | --- | --- |
+| `9d980f6c` | A combined startup probe reported only a generic readiness timeout. | Dashboard, HC/1 and RESP readiness are established independently and retain the last protocol-specific error. | All three surfaces must become ready; failure of any one surface fails the gate with actionable diagnostics. |
+| `bedb712a` | The soak topology generated HC/1 traffic without enabling the production HC/1 listener. | The three-daemon soak fixture explicitly enables the HC/1 listener on the observer. | Readiness and every-second HC/1 writes must use the listener started by the exact candidate binary. |
+| `3b7b25f8` | The raw socket probe used half-close behavior that was not a faithful long-running HTTP client. | One bounded, reusable `reqwest::Client` now drives HC/1 traffic and consumes complete responses. | The same client must pass readiness and sustained writes for the entire soak; transport errors fail the run. |
+| `ad9fd2b8` | Chaos Mesh could retain an IOChaos deletion finalizer beyond the former 60-second cleanup window on the admitted host. | Cleanup keeps the same exact-object and recovered-pod assertions but permits a bounded 120-second controller reconciliation window. | The IOChaos object must disappear and the replacement target must become ready inside 120 seconds; timeout remains a hard failure. |
+
+The readiness split is intentionally not a retry mask: every surface has its own bounded deadline,
+last error and hard failure. The HTTP-client change proves production protocol behavior instead of
+accepting a TCP connect. The IOChaos change adjusts only the observation window; it does not accept
+an uncleared finalizer, a stale target, a different pod or an unobserved recovery.
+
+The candidate run started from `ad9fd2b813b55fe44e70c2cea692495496e50ff2` is evidence for that
+exact source commit only. A later documentation commit must not relabel or transplant its receipt.
+If the release candidate includes later documentation changes, all exact-SHA admission receipts
+required by W14 must be regenerated for the new clean commit. Attempt IDs, workflow URLs, runner
+identity, logs and artifacts belong in the generated receipt chain rather than being copied into
+this durable design note.

@@ -97,3 +97,25 @@ from a clean checkout after the tag candidate is frozen.
 These are release-admission inputs, not missing feature implementations. Quiet skip, a development
 branch standing in for v0.71, a dirty receipt, a stale commit, or a retry that overwrites a failed
 attempt remains non-evidence.
+
+## Documentation and campaign-result rule
+
+The public documentation summarizes the release contract in
+`docs-site/src/reference/release-0.72-verification.md`; this engineering record, the registries and
+the executable verifiers remain authoritative. A documentation page can explain a gate but cannot
+satisfy it.
+
+Every dedicated-host attempt must preserve the following chain:
+
+1. workflow run ID and attempt number;
+2. clean 40-hex source commit and exact candidate binary/UI/schema digests;
+3. gate ID, normalized command digest, fixed seed and admitted host fingerprint;
+4. start/end timestamps, protocol sample counts, fault/recovery observations and resource series;
+5. final outcome plus immutable links or digests for logs and uploaded artifacts;
+6. predecessor receipt when the attempt is a retry.
+
+Failures found during the 2026-09-19 campaign and their corrections are retained in the W12
+hardening record. They are not converted to passes. In particular, the six-hour run on
+`ad9fd2b813b55fe44e70c2cea692495496e50ff2` can support only that commit. Any subsequent source or
+documentation commit creates a new candidate SHA and therefore requires fresh exact-SHA receipts
+before promotion.
