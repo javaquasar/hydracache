@@ -58,6 +58,27 @@ fn scenario(id: &str, observation: &Value) -> ScenarioReceipt {
     }
 }
 
+fn wait_for_management_json(
+    cluster: &mut DaemonCluster,
+    index: usize,
+    path: &'static str,
+    label: &'static str,
+) -> TestResult<Value> {
+    cluster.wait_for(label.to_owned(), |cluster| {
+        cluster.management_json(index, path).ok()
+    })
+}
+
+fn wait_for_cluster_overview(
+    cluster: &mut DaemonCluster,
+    index: usize,
+    label: &'static str,
+) -> TestResult<Value> {
+    cluster.wait_for(label.to_owned(), |cluster| {
+        cluster.cluster_overview(index).ok()
+    })
+}
+
 #[test]
 fn real_071_072_upgrade_leadership_restart_and_rollback_are_capability_safe() -> TestResult {
     if std::env::var(RUN_ENV).as_deref() != Ok("1") {
@@ -100,7 +121,11 @@ fn real_071_072_upgrade_leadership_restart_and_rollback_are_capability_safe() ->
     let observer = upgraded_followers[0];
     let mut scenarios = Vec::new();
 
-    let old_overview = cluster.cluster_overview(old)?;
+    let old_overview = wait_for_cluster_overview(
+        &mut cluster,
+        old,
+        "old leader legacy overview after follower upgrades",
+    )?;
     let old_node_id = cluster.node_ids()[old].clone();
     let mixed_leader = cluster
         .statuses()
@@ -111,7 +136,12 @@ fn real_071_072_upgrade_leadership_restart_and_rollback_are_capability_safe() ->
         mixed_leader, old_node_id,
         "old-leader scenario was not activated"
     );
-    let mixed = cluster.management_json(observer, "/management/v1/dashboard")?;
+    let mixed = wait_for_management_json(
+        &mut cluster,
+        observer,
+        "/management/v1/dashboard",
+        "new follower management dashboard with old leader",
+    )?;
     assert_eq!(mixed["completeness"], "partial");
     assert!(mixed["warnings"]
         .as_array()
@@ -128,7 +158,13 @@ fn real_071_072_upgrade_leadership_restart_and_rollback_are_capability_safe() ->
         .and_then(|status| status.leader.clone())
         .ok_or("new mixed cluster leader")?;
     assert_ne!(new_leader, old_node_id);
-    let after_leadership_change = cluster.management_json(observer, "/management/v1/dashboard")?;
+    cluster.wait_for_responsive_shape(2, 3, 3)?;
+    let after_leadership_change = wait_for_management_json(
+        &mut cluster,
+        observer,
+        "/management/v1/dashboard",
+        "management dashboard after mixed leadership change",
+    )?;
     assert_eq!(after_leadership_change["completeness"], "partial");
     scenarios.push(scenario(
         "leadership-change-during-aggregation",
@@ -142,7 +178,12 @@ fn real_071_072_upgrade_leadership_restart_and_rollback_are_capability_safe() ->
         .and_then(|status| status.leader.clone())
         .ok_or("leader after old follower restart")?;
     assert_ne!(restarted_leader, old_node_id);
-    let new_leader_old_follower = cluster.management_json(observer, "/management/v1/dashboard")?;
+    let new_leader_old_follower = wait_for_management_json(
+        &mut cluster,
+        observer,
+        "/management/v1/dashboard",
+        "management dashboard with new leader and old follower",
+    )?;
     assert_eq!(new_leader_old_follower["completeness"], "partial");
     scenarios.push(scenario(
         "new-leader-old-follower",
@@ -150,11 +191,21 @@ fn real_071_072_upgrade_leadership_restart_and_rollback_are_capability_safe() ->
     ));
 
     let trace_path = "/management/v1/cluster/placement-traces/trace-opaque-mixed";
-    let trace_before = cluster.management_json(observer, trace_path)?;
+    let trace_before = wait_for_management_json(
+        &mut cluster,
+        observer,
+        trace_path,
+        "placement trace before old peer restart",
+    )?;
     cluster.kill(old)?;
     cluster.restart(old)?;
-    cluster.wait_for_shape(3, 3)?;
-    let trace_after = cluster.management_json(observer, trace_path)?;
+    cluster.wait_for_responsive_shape(3, 3, 3)?;
+    let trace_after = wait_for_management_json(
+        &mut cluster,
+        observer,
+        trace_path,
+        "placement trace after old peer restart",
+    )?;
     assert!(
         (trace_before["completeness"] == "unavailable"
             && trace_after["completeness"] == "unavailable")
@@ -168,14 +219,23 @@ fn real_071_072_upgrade_leadership_restart_and_rollback_are_capability_safe() ->
 
     cluster.kill(old)?;
     cluster.restart_with_binary(old, current.clone())?;
-    cluster.wait_for_shape(3, 3)?;
-    let upgraded = cluster.management_json(observer, "/management/v1/dashboard")?;
+    cluster.wait_for_responsive_shape(3, 3, 3)?;
+    let upgraded = wait_for_management_json(
+        &mut cluster,
+        observer,
+        "/management/v1/dashboard",
+        "management dashboard after full upgrade",
+    )?;
     assert_eq!(upgraded["data"]["cluster"]["quorum_ok"], true);
 
     cluster.kill(old)?;
     cluster.restart_with_binary(old, previous.path.clone())?;
-    cluster.wait_for_shape(3, 3)?;
-    let rollback_overview = cluster.cluster_overview(old)?;
+    cluster.wait_for_responsive_shape(3, 3, 3)?;
+    let rollback_overview = wait_for_cluster_overview(
+        &mut cluster,
+        old,
+        "legacy overview after same-disk rollback",
+    )?;
     let (bookmark_status, _) =
         public_text_status(cluster.admin_addr(old), "/management/v1/dashboard")?;
     assert_eq!(bookmark_status, 404);
