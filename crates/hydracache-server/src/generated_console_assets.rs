@@ -4,8 +4,8 @@
 pub(crate) fn get(path: &str) -> Option<(&'static str, &'static [u8])> {
     match path {
         "app.js" => Some(("text/javascript; charset=utf-8", include_bytes!(concat!(env!("CARGO_MANIFEST_DIR"), "/console/app.js")))),
-        "assets/index-10J6KuuK.js" => Some(("text/javascript; charset=utf-8", include_bytes!(concat!(env!("CARGO_MANIFEST_DIR"), "/console/assets/index-10J6KuuK.js")))),
-        "assets/index-Dg4XNZzw.css" => Some(("text/css; charset=utf-8", include_bytes!(concat!(env!("CARGO_MANIFEST_DIR"), "/console/assets/index-Dg4XNZzw.css")))),
+        "assets/index-6Gybws3b.js" => Some(("text/javascript; charset=utf-8", include_bytes!(concat!(env!("CARGO_MANIFEST_DIR"), "/console/assets/index-6Gybws3b.js")))),
+        "assets/index-DlttOFoF.css" => Some(("text/css; charset=utf-8", include_bytes!(concat!(env!("CARGO_MANIFEST_DIR"), "/console/assets/index-DlttOFoF.css")))),
         "history.js" => Some(("text/javascript; charset=utf-8", include_bytes!(concat!(env!("CARGO_MANIFEST_DIR"), "/console/history.js")))),
         "index.html" => Some(("text/html; charset=utf-8", include_bytes!(concat!(env!("CARGO_MANIFEST_DIR"), "/console/index.html")))),
         "manifest.json" => Some(("application/json; charset=utf-8", include_bytes!(concat!(env!("CARGO_MANIFEST_DIR"), "/console/manifest.json")))),

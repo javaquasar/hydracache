@@ -21,7 +21,7 @@
 * { box-sizing: border-box; }
 html { max-width: 100vw; overflow-x: hidden; scroll-behavior: smooth; }
 a:focus-visible, input:focus-visible, select:focus-visible, .table-scroll:focus-visible { outline: 3px solid var(--cyan); outline-offset: 3px; }
-body { margin: 0; min-width: 320px; background: var(--bg); color: var(--text); }
+body { margin: 0; width: 100%; min-width: 320px; max-width: 100vw; overflow-x: clip; background: var(--bg); color: var(--text); }
 h1, h2, p, figure { margin: 0; }
 h1 { font-size: 1.06rem; }
 h2 { font-size: .96rem; }
@@ -40,7 +40,7 @@ h2 { font-size: .96rem; }
 .source-badge[data-source="modeled"], .truth-chip.warning, .truth-chip.behind, .truth-chip.partial, .truth-chip.suspect, .truth-chip.proposed, .truth-chip.stale { border-color: #efcf87; color: var(--amber); background: var(--amber-soft); }
 .source-badge[data-source="unavailable"], .truth-chip.blocked, .truth-chip.failed, .truth-chip.corrupt, .truth-chip.unreachable, .truth-chip.rejected { border-color: #edabb8; color: var(--red); background: var(--red-soft); }
 .readonly-badge { border-color: #aaa0dd; color: #ddd7ff; background: #302954; }
-.app-shell { display: grid; grid-template-columns: 190px minmax(0, 1fr); width: 100%; min-width: 0; min-height: calc(100vh - 68px); }
+.app-shell { display: grid; grid-template-columns: 190px minmax(0, 1fr); width: 100%; min-width: 0; min-height: calc(100vh - 68px); overflow-x: clip; }
 .sidebar { position: sticky; top: 68px; align-self: start; display: grid; gap: .15rem; min-height: calc(100vh - 68px); padding: 1rem .6rem; background: var(--navy); }
 .sidebar a { padding: .65rem .8rem; border-radius: 7px; color: #b8cad5; font-size: .84rem; text-decoration: none; }
 .sidebar a:hover, .sidebar a.active { color: #65daf0; background: var(--navy-soft); }
@@ -87,6 +87,6 @@ figure svg text { fill: var(--muted); font-size: 12px; }
 .fatal-console-error { width: min(720px, calc(100% - 2rem)); margin: 3rem auto; padding: 1.5rem; border: 1px solid var(--red); border-radius: 8px; background: var(--red-soft); }
 .fatal-console-error p { margin: .7rem 0; }
 @media (max-width: 1000px) { .summary-grid { grid-template-columns: repeat(2, 1fr); } .two-column { grid-template-columns: 1fr; } .chart-grid { grid-template-columns: 1fr; } }
-@media (max-width: 700px) { .topbar { position: static; grid-template-columns: 1fr auto; } .cluster-picker { grid-column: 1 / -1; grid-row: 2; } .app-shell { grid-template-columns: minmax(0, 1fr); } .sidebar { position: static; display: flex; flex-wrap: wrap; width: 100%; min-width: 0; max-width: 100vw; min-height: auto; overflow-x: hidden; padding: .45rem; } .sidebar a { flex: 0 1 auto; white-space: nowrap; } .section-heading { flex-wrap: wrap; } .summary-grid { grid-template-columns: 1fr 1fr; } .metrics-strip, .facts { grid-template-columns: repeat(2, minmax(0, 1fr)); } .outcome-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } .page-shell { min-width: 0; max-width: 100vw; padding: .55rem; } }
+@media (max-width: 700px) { .topbar { position: static; grid-template-columns: minmax(0, 1fr); } .status-strip { justify-content: flex-start; flex-wrap: wrap; min-width: 0; } .cluster-picker { grid-column: 1; grid-row: auto; min-width: 0; } .app-shell { grid-template-columns: minmax(0, 1fr); } .sidebar { position: static; display: flex; flex-wrap: wrap; width: 100%; min-width: 0; max-width: 100vw; min-height: auto; overflow-x: hidden; padding: .45rem; } .sidebar a { flex: 0 1 auto; white-space: nowrap; } .section-heading { flex-wrap: wrap; } .summary-grid { grid-template-columns: 1fr 1fr; } .metrics-strip, .facts { grid-template-columns: repeat(2, minmax(0, 1fr)); } .outcome-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } .page-shell { min-width: 0; max-width: 100vw; padding: .55rem; } }
 @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; } }
 @media (forced-colors: active) { .truth-chip, .source-badge, .readonly-badge, .trust-note, .metric-pill { border: 1px solid CanvasText; forced-color-adjust: auto; } .health-dot { background: CanvasText; box-shadow: none; } }
