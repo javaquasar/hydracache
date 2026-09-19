@@ -359,6 +359,17 @@ fn rust_canaries_install_locked_console_dependencies_first() {
     let install = rust_job
         .find("run: npm ci --prefix console")
         .expect("locked console dependency install");
+    let install_step = rust_job
+        .split("- name: Install management console dependencies for canaries\n")
+        .nth(1)
+        .expect("console install step");
+    assert!(
+        install_step
+            .lines()
+            .take(3)
+            .any(|line| line.trim() == "timeout-minutes: 15"),
+        "console install step needs an explicit bounded timeout"
+    );
     let canaries = rust_job
         .find("- name: Canary completeness")
         .expect("canary step");

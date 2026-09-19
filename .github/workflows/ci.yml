@@ -730,6 +730,7 @@ jobs:
           cargo run -p xtask --locked -- mutants
 
       - name: Install management console dependencies for canaries
+        timeout-minutes: 15
         run: npm ci --prefix console
 
       - name: Canary completeness
