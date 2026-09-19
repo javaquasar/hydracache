@@ -119,9 +119,11 @@ fn real_071_072_upgrade_leadership_restart_and_rollback_are_capability_safe() ->
     scenarios.push(scenario("old-leader-new-followers", &mixed));
 
     cluster.kill(old)?;
-    cluster.wait_for_responsive_shape(2, 3, 3)?;
-    let new_leader = cluster
-        .statuses()
+    // Two responsive followers can briefly retain the stopped leader in
+    // their last published status. Wait for an observed leadership change,
+    // rather than accepting that transient but internally consistent view.
+    let changed = cluster.wait_for_leader_not(&old_node_id, 3, 3)?;
+    let new_leader = changed
         .first()
         .and_then(|status| status.leader.clone())
         .ok_or("new mixed cluster leader")?;
@@ -133,7 +135,7 @@ fn real_071_072_upgrade_leadership_restart_and_rollback_are_capability_safe() ->
         &after_leadership_change,
     ));
     cluster.restart(old)?;
-    cluster.wait_for_shape(3, 3)?;
+    cluster.wait_for_responsive_shape(3, 3, 3)?;
     let restarted_leader = cluster
         .statuses()
         .first()
