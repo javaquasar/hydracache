@@ -249,17 +249,67 @@ fn run_management_soak(tier: &str, required_duration: Duration, output: &Path) -
     let observer = (0..3).find(|index| *index != victim).ok_or("observer")?;
     let redis = cluster.redis_addr(observer).ok_or("RESP listener")?;
     let hc1 = cluster.client_addr(observer);
-    cluster.wait_for("management soak surfaces ready".to_owned(), |cluster| {
-        let dashboard = cluster
-            .management_json(observer, "/management/v1/dashboard")
-            .ok()?;
-        if dashboard["data"]["cluster"]["quorum_ok"] != true {
-            return None;
-        }
-        hc1_put(hc1, 0).ok()?;
-        resp_ping(redis).ok()?;
-        Some(())
-    })?;
+    let mut dashboard_error = None;
+    cluster
+        .wait_for(
+            "management dashboard ready".to_owned(),
+            |cluster| match cluster.management_json(observer, "/management/v1/dashboard") {
+                Ok(dashboard) if dashboard["data"]["cluster"]["quorum_ok"] == true => Some(()),
+                Ok(dashboard) => {
+                    dashboard_error = Some(format!(
+                        "dashboard quorum was not true: {:?}",
+                        dashboard["data"]["cluster"]["quorum_ok"]
+                    ));
+                    None
+                }
+                Err(error) => {
+                    dashboard_error = Some(error.to_string());
+                    None
+                }
+            },
+        )
+        .map_err(|error| {
+            format!(
+                "management dashboard readiness failed: {error}; last_error={}",
+                dashboard_error
+                    .as_deref()
+                    .unwrap_or("probe was not executed")
+            )
+        })?;
+
+    let mut hc1_error = None;
+    cluster
+        .wait_for("HC/1 surface ready".to_owned(), |_| match hc1_put(hc1, 0) {
+            Ok(()) => Some(()),
+            Err(error) => {
+                hc1_error = Some(error.to_string());
+                None
+            }
+        })
+        .map_err(|error| {
+            format!(
+                "HC/1 readiness failed: {error}; last_error={}",
+                hc1_error.as_deref().unwrap_or("probe was not executed")
+            )
+        })?;
+
+    let mut resp_error = None;
+    cluster
+        .wait_for("RESP surface ready".to_owned(), |_| {
+            match resp_ping(redis) {
+                Ok(()) => Some(()),
+                Err(error) => {
+                    resp_error = Some(error.to_string());
+                    None
+                }
+            }
+        })
+        .map_err(|error| {
+            format!(
+                "RESP readiness failed: {error}; last_error={}",
+                resp_error.as_deref().unwrap_or("probe was not executed")
+            )
+        })?;
     let baseline = cluster
         .os_resource_totals()
         .map(ResourceReceipt::from)
