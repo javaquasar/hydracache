@@ -73,24 +73,42 @@ fn real_071_072_upgrade_leadership_restart_and_rollback_are_capability_safe() ->
     )?;
     let current = current_server_binary()?;
     ensure_distinct_daemon_binaries(&previous.path, &current)?;
+    // Elect the shipped version first, then upgrade both followers. Starting
+    // one old and two new daemons concurrently does not define which member
+    // wins the initial election and therefore cannot prove the required
+    // old-leader/new-followers scenario deterministically.
     let mut cluster = DaemonCluster::start_bootstrap_with_binaries(
-        vec![previous.path.clone(), current.clone(), current.clone()],
+        vec![previous.path.clone(); 3],
         "management-mixed-071-072",
     )?;
-    cluster.wait_for_shape(3, 3)?;
-    let old = 0_usize;
-    let observer = 1_usize;
+    let initial = cluster.wait_for_responsive_shape(3, 3, 3)?;
+    let initial_leader = initial[0]
+        .leader
+        .clone()
+        .ok_or("initial shipped-version leader")?;
+    let old = cluster
+        .node_ids()
+        .iter()
+        .position(|node_id| node_id == &initial_leader)
+        .ok_or("initial leader belongs to mixed cluster")?;
+    let upgraded_followers = (0..3).filter(|index| *index != old).collect::<Vec<_>>();
+    for index in &upgraded_followers {
+        cluster.kill(*index)?;
+        cluster.restart_with_binary(*index, current.clone())?;
+        cluster.wait_for_responsive_shape(3, 3, 3)?;
+    }
+    let observer = upgraded_followers[0];
     let mut scenarios = Vec::new();
 
     let old_overview = cluster.cluster_overview(old)?;
     let old_node_id = cluster.node_ids()[old].clone();
-    let initial_leader = cluster
+    let mixed_leader = cluster
         .statuses()
         .first()
         .and_then(|status| status.leader.clone())
         .ok_or("initial mixed cluster leader")?;
     assert_eq!(
-        initial_leader, old_node_id,
+        mixed_leader, old_node_id,
         "old-leader scenario was not activated"
     );
     let mixed = cluster.management_json(observer, "/management/v1/dashboard")?;
