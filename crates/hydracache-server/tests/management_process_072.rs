@@ -3,7 +3,7 @@ mod support;
 use std::collections::{BTreeMap, BTreeSet};
 use std::fs;
 use std::io::{Read, Write};
-use std::net::{Shutdown, SocketAddr, TcpStream};
+use std::net::{SocketAddr, TcpStream};
 use std::path::{Path, PathBuf};
 use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
 
@@ -11,7 +11,9 @@ use hydracache_client_protocol::{
     ClientFrame, ClientRequest, ClientRequestEnvelope, ClientResponse, ClientWireMessage,
     Namespace, StructuredKey,
 };
-use hydracache_client_transport_axum::CLIENT_DATA_PATH;
+use hydracache_client_transport_axum::{
+    CLIENT_DATA_PATH, HYDRACACHE_CLIENT_ID_HEADER, HYDRACACHE_TENANT_HEADER,
+};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use sha2::{Digest, Sha256};
@@ -175,47 +177,67 @@ fn resp_ping(addr: SocketAddr) -> TestResult {
     Ok(())
 }
 
-fn hc1_put(addr: SocketAddr, sequence: u64) -> TestResult {
-    let namespace = Namespace::new("management-soak")?;
-    let key = StructuredKey::new(vec![format!("{sequence:016x}")])?;
-    let frame =
-        ClientFrame::from_message(&ClientWireMessage::Request(ClientRequestEnvelope::new(
-            format!("soak-{sequence}"),
-            ClientRequest::Put {
-                ns: namespace,
-                key,
-                value: sequence.to_be_bytes().to_vec(),
-                ttl_ms: Some(60_000),
-                dimensions: Vec::new(),
-            },
-        )))?
-        .encode()?;
-    let mut stream = TcpStream::connect_timeout(&addr, Duration::from_secs(3))?;
-    stream.set_read_timeout(Some(Duration::from_secs(3)))?;
-    stream.set_write_timeout(Some(Duration::from_secs(3)))?;
-    let request = format!(
-        "POST {CLIENT_DATA_PATH} HTTP/1.1\r\nHost: {addr}\r\nx-hydracache-client-id: management-soak\r\nx-hydracache-tenant: system\r\nContent-Length: {}\r\nConnection: close\r\n\r\n",
-        frame.len()
-    );
-    stream.write_all(request.as_bytes())?;
-    stream.write_all(&frame)?;
-    stream.shutdown(Shutdown::Write)?;
-    let mut response = Vec::new();
-    stream.read_to_end(&mut response)?;
-    let marker = b"\r\n\r\n";
-    let body = response
-        .windows(marker.len())
-        .position(|window| window == marker)
-        .map(|index| &response[index + marker.len()..])
-        .ok_or("HC/1 response has no header boundary")?;
-    let decoded = ClientFrame::decode(body, 1024 * 1024)?.decode_message()?;
-    match decoded {
-        ClientWireMessage::Response(response)
-            if matches!(response.result, Ok(ClientResponse::Stored)) =>
-        {
-            Ok(())
+struct Hc1Probe {
+    addr: SocketAddr,
+    client: reqwest::Client,
+    runtime: tokio::runtime::Runtime,
+}
+
+impl Hc1Probe {
+    fn new(addr: SocketAddr) -> TestResult<Self> {
+        Ok(Self {
+            addr,
+            client: reqwest::Client::builder()
+                .connect_timeout(Duration::from_secs(3))
+                .timeout(Duration::from_secs(3))
+                .build()?,
+            runtime: tokio::runtime::Builder::new_current_thread()
+                .enable_all()
+                .build()?,
+        })
+    }
+
+    fn put(&mut self, sequence: u64) -> TestResult {
+        let namespace = Namespace::new("management-soak")?;
+        let key = StructuredKey::new(vec![format!("{sequence:016x}")])?;
+        let frame =
+            ClientFrame::from_message(&ClientWireMessage::Request(ClientRequestEnvelope::new(
+                format!("soak-{sequence}"),
+                ClientRequest::Put {
+                    ns: namespace,
+                    key,
+                    value: sequence.to_be_bytes().to_vec(),
+                    ttl_ms: Some(60_000),
+                    dimensions: Vec::new(),
+                },
+            )))?
+            .encode()?;
+        let body = self.runtime.block_on(async {
+            let response = self
+                .client
+                .post(format!("http://{}{CLIENT_DATA_PATH}", self.addr))
+                .header(HYDRACACHE_CLIENT_ID_HEADER, "management-soak")
+                .header(HYDRACACHE_TENANT_HEADER, "system")
+                .body(frame)
+                .send()
+                .await
+                .map_err(|error| error.to_string())?;
+            let status = response.status();
+            let body = response.bytes().await.map_err(|error| error.to_string())?;
+            if !status.is_success() {
+                return Err(format!("HC/1 returned HTTP {status}: {body:?}"));
+            }
+            Ok::<_, String>(body)
+        })?;
+        let decoded = ClientFrame::decode(&body, 1024 * 1024)?.decode_message()?;
+        match decoded {
+            ClientWireMessage::Response(response)
+                if matches!(response.result, Ok(ClientResponse::Stored)) =>
+            {
+                Ok(())
+            }
+            other => Err(format!("unexpected HC/1 response: {other:?}").into()),
         }
-        other => Err(format!("unexpected HC/1 response: {other:?}").into()),
     }
 }
 
@@ -248,7 +270,7 @@ fn run_management_soak(tier: &str, required_duration: Duration, output: &Path) -
         .ok_or("follower victim")?;
     let observer = (0..3).find(|index| *index != victim).ok_or("observer")?;
     let redis = cluster.redis_addr(observer).ok_or("RESP listener")?;
-    let hc1 = cluster.client_addr(observer);
+    let mut hc1 = Hc1Probe::new(cluster.client_addr(observer))?;
     let mut dashboard_error = None;
     cluster
         .wait_for(
@@ -279,7 +301,7 @@ fn run_management_soak(tier: &str, required_duration: Duration, output: &Path) -
 
     let mut hc1_error = None;
     cluster
-        .wait_for("HC/1 surface ready".to_owned(), |_| match hc1_put(hc1, 0) {
+        .wait_for("HC/1 surface ready".to_owned(), |_| match hc1.put(0) {
             Ok(()) => Some(()),
             Err(error) => {
                 hc1_error = Some(error.to_string());
@@ -334,7 +356,8 @@ fn run_management_soak(tier: &str, required_duration: Duration, output: &Path) -
         latencies.push(request_start.elapsed().as_millis() as u64);
         assert_eq!(dashboard["data"]["cluster"]["quorum_ok"], true);
         management_samples += 1;
-        hc1_put(hc1, management_samples).map_err(|error| format!("HC/1 sample failed: {error}"))?;
+        hc1.put(management_samples)
+            .map_err(|error| format!("HC/1 sample failed: {error}"))?;
         hc1_samples += 1;
         resp_ping(redis).map_err(|error| format!("RESP sample failed: {error}"))?;
         resp_samples += 1;
