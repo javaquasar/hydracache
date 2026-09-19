@@ -138,6 +138,7 @@ pub struct DaemonNodeSpec {
     pub cluster_addr: SocketAddr,
     pub admin_addr: SocketAddr,
     pub redis_addr: Option<SocketAddr>,
+    pub client_api_enabled: bool,
     pub storage_dir: PathBuf,
     pub cluster_start: &'static str,
     test_raft_snapshot_handler_delay_ms: Option<u64>,
@@ -213,22 +214,26 @@ impl PreviousDaemonBinary {
 
 impl DaemonCluster {
     pub fn start_bootstrap(count: usize, name: &str) -> TestResult<Self> {
-        Self::start_bootstrap_inner(count, name, false, false, false)
+        Self::start_bootstrap_inner(count, name, false, false, false, false)
     }
 
     pub fn start_bootstrap_with_redis(count: usize, name: &str) -> TestResult<Self> {
-        Self::start_bootstrap_inner(count, name, true, false, false)
+        Self::start_bootstrap_inner(count, name, false, true, false, false)
+    }
+
+    pub fn start_bootstrap_with_client_and_redis(count: usize, name: &str) -> TestResult<Self> {
+        Self::start_bootstrap_inner(count, name, true, true, false, false)
     }
 
     pub fn start_bootstrap_with_raft_compaction(count: usize, name: &str) -> TestResult<Self> {
-        Self::start_bootstrap_inner(count, name, false, true, false)
+        Self::start_bootstrap_inner(count, name, false, false, true, false)
     }
 
     pub fn start_bootstrap_with_raft_compaction_and_outbound_faults(
         count: usize,
         name: &str,
     ) -> TestResult<Self> {
-        Self::start_bootstrap_inner(count, name, false, true, true)
+        Self::start_bootstrap_inner(count, name, false, false, true, true)
     }
 
     pub fn start_bootstrap_with_binaries(binaries: Vec<PathBuf>, name: &str) -> TestResult<Self> {
@@ -245,6 +250,7 @@ impl DaemonCluster {
     fn start_bootstrap_inner(
         count: usize,
         name: &str,
+        client_api_enabled: bool,
         redis_enabled: bool,
         raft_compaction_enabled: bool,
         raft_faults_enabled: bool,
@@ -255,6 +261,7 @@ impl DaemonCluster {
             binaries,
             current_binary,
             name,
+            client_api_enabled,
             redis_enabled,
             raft_compaction_enabled,
             raft_faults_enabled,
@@ -275,6 +282,7 @@ impl DaemonCluster {
             binaries,
             current_binary,
             name,
+            false,
             redis_enabled,
             raft_compaction_enabled,
             raft_faults_enabled,
@@ -285,6 +293,7 @@ impl DaemonCluster {
         binaries: Vec<PathBuf>,
         current_binary: PathBuf,
         name: &str,
+        client_api_enabled: bool,
         redis_enabled: bool,
         raft_compaction_enabled: bool,
         raft_faults_enabled: bool,
@@ -335,6 +344,7 @@ impl DaemonCluster {
                 cluster_addr,
                 admin_addr,
                 redis_addr,
+                client_api_enabled,
                 storage_dir,
                 cluster_start: "bootstrap",
                 test_raft_snapshot_handler_delay_ms: None,
@@ -1024,6 +1034,9 @@ impl DaemonNode {
             command
                 .env("HYDRACACHE_REDIS_API_ENABLED", "true")
                 .env("HYDRACACHE_REDIS_ADDR", redis_addr.to_string());
+        }
+        if self.spec.client_api_enabled {
+            command.env("HYDRACACHE_CLIENT_API_ENABLED", "true");
         }
         let child = spawn_with_would_block_retry(|| command.spawn(), std::thread::sleep)?;
         self.child = Some(child);

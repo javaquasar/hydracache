@@ -234,7 +234,7 @@ fn host_fingerprint() -> String {
 }
 
 fn run_management_soak(tier: &str, required_duration: Duration, output: &Path) -> TestResult {
-    let mut cluster = DaemonCluster::start_bootstrap_with_redis(3, tier)?;
+    let mut cluster = DaemonCluster::start_bootstrap_with_client_and_redis(3, tier)?;
     // Authoritative membership can become visible before every daemon has
     // finished binding its client and RESP listeners. A long-running release
     // proof must not race that startup boundary and fail before its first
