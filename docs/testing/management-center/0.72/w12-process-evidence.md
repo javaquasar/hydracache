@@ -92,11 +92,17 @@ do not weaken any release threshold:
 | `bedb712a` | The soak topology generated HC/1 traffic without enabling the production HC/1 listener. | The three-daemon soak fixture explicitly enables the HC/1 listener on the observer. | Readiness and every-second HC/1 writes must use the listener started by the exact candidate binary. |
 | `3b7b25f8` | The raw socket probe used half-close behavior that was not a faithful long-running HTTP client. | One bounded, reusable `reqwest::Client` now drives HC/1 traffic and consumes complete responses. | The same client must pass readiness and sustained writes for the entire soak; transport errors fail the run. |
 | `ad9fd2b8` | Chaos Mesh could retain an IOChaos deletion finalizer beyond the former 60-second cleanup window on the admitted host. | Cleanup keeps the same exact-object and recovered-pod assertions but permits a bounded 120-second controller reconciliation window. | The IOChaos object must disappear and the replacement target must become ready inside 120 seconds; timeout remains a hard failure. |
+| Run `35457057202` | The six-hour workload completed, but the final assertion expected a recovery at the exact exclusive deadline (`6h`) even though the loop executes only events strictly before that deadline. Five hourly recovery cycles completed; the assertion incorrectly required six and discarded the receipt. | The expected-cycle calculation now derives the number of scheduled fault instants strictly before the deadline and has boundary tests for zero, one, six and 24 hours. | Candidate requires five completed hourly cycles at hours 1-5; ship requires 23 at hours 1-23. A missed scheduled cycle still fails, and no event after the wall-clock deadline is counted. |
 
 The readiness split is intentionally not a retry mask: every surface has its own bounded deadline,
 last error and hard failure. The HTTP-client change proves production protocol behavior instead of
 accepting a TCP connect. The IOChaos change adjusts only the observation window; it does not accept
 an uncleared finalizer, a stale target, a different pod or an unobserved recovery.
+
+The recovery-count correction likewise does not shorten either soak or remove a fault. The loop's
+deadline is exclusive: for an exact six-hour interval, the scheduled instants inside the run are
+hours 1-5; hour 6 is the deadline itself. For 24 hours they are hours 1-23. The receipt still
+requires the full observed duration and every scheduled pre-deadline recovery.
 
 The candidate run started from `ad9fd2b813b55fe44e70c2cea692495496e50ff2` is evidence for that
 exact source commit only. A later documentation commit must not relabel or transplant its receipt.

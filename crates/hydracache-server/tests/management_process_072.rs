@@ -255,6 +255,35 @@ fn host_fingerprint() -> String {
     ))
 }
 
+fn scheduled_faults_before_deadline(required_duration: Duration, fault_interval: Duration) -> u64 {
+    if fault_interval.is_zero() {
+        return 0;
+    }
+    let Some(strict_window) = required_duration.checked_sub(Duration::from_nanos(1)) else {
+        return 0;
+    };
+    u64::try_from(strict_window.as_nanos() / fault_interval.as_nanos()).unwrap_or(u64::MAX)
+}
+
+#[test]
+fn soak_fault_schedule_counts_only_events_strictly_before_deadline() {
+    let hour = Duration::from_secs(60 * 60);
+    assert_eq!(scheduled_faults_before_deadline(Duration::ZERO, hour), 0);
+    assert_eq!(scheduled_faults_before_deadline(hour, hour), 0);
+    assert_eq!(
+        scheduled_faults_before_deadline(hour + Duration::from_nanos(1), hour),
+        1
+    );
+    assert_eq!(
+        scheduled_faults_before_deadline(Duration::from_secs(6 * 60 * 60), hour),
+        5
+    );
+    assert_eq!(
+        scheduled_faults_before_deadline(Duration::from_secs(24 * 60 * 60), hour),
+        23
+    );
+}
+
 fn run_management_soak(tier: &str, required_duration: Duration, output: &Path) -> TestResult {
     let mut cluster = DaemonCluster::start_bootstrap_with_client_and_redis(3, tier)?;
     // Authoritative membership can become visible before every daemon has
@@ -379,7 +408,12 @@ fn run_management_soak(tier: &str, required_duration: Duration, output: &Path) -
     }
     let observed_duration_seconds = start.elapsed().as_secs();
     assert!(observed_duration_seconds >= required_duration.as_secs());
-    assert!(recovery_cycles >= required_duration.as_secs() / fault_interval.as_secs());
+    let expected_recovery_cycles =
+        scheduled_faults_before_deadline(required_duration, fault_interval);
+    assert!(
+        recovery_cycles >= expected_recovery_cycles,
+        "scheduled recovery cycles below strict-deadline contract: observed={recovery_cycles}, expected={expected_recovery_cycles}"
+    );
     let final_sample = cluster
         .os_resource_totals()
         .map(ResourceReceipt::from)

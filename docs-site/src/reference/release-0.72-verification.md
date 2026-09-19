@@ -64,6 +64,9 @@ Dedicated-host execution hardened the harness in four places:
 - Chaos Mesh IOChaos deletion has a bounded 120-second controller-reconciliation window. The
   object must still be deleted and the replacement pod must become ready; an uncleared finalizer,
   stale target or timeout remains a hard failure.
+- Hourly fault counts use the soak's exclusive deadline. A six-hour run therefore requires the
+  five scheduled recoveries at hours 1-5, and a 24-hour run requires the 23 recoveries at hours
+  1-23. The endpoint at hour 6 or 24 is the completed duration, not another event inside the run.
 
 These corrections improve fidelity and diagnostics. They do not reduce traffic, recovery or
 resource thresholds, and failed earlier attempts are preserved rather than overwritten.
