@@ -7,8 +7,8 @@ use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use sha2::{Digest, Sha256};
 use support::daemon_cluster::{
-    current_server_binary, ensure_distinct_daemon_binaries, public_text_status,
-    resolve_shipped_daemon_binary, DaemonCluster, TestResult,
+    current_server_binary, ensure_distinct_daemon_binaries, management_text_status,
+    public_text_status, resolve_shipped_daemon_binary, DaemonCluster, TestResult,
 };
 
 const RUN_ENV: &str = "HYDRACACHE_RUN_MANAGEMENT_MIXED_072";
@@ -191,30 +191,29 @@ fn real_071_072_upgrade_leadership_restart_and_rollback_are_capability_safe() ->
     ));
 
     let trace_path = "/management/v1/cluster/placement-traces/trace-opaque-mixed";
-    let trace_before = wait_for_management_json(
-        &mut cluster,
-        observer,
-        trace_path,
-        "placement trace before old peer restart",
-    )?;
+    let (trace_status_before, trace_body_before) =
+        management_text_status(cluster.admin_addr(observer), trace_path)?;
+    assert!(
+        matches!(trace_status_before, 200 | 404),
+        "placement trace returned unexpected status {trace_status_before}"
+    );
     cluster.kill(old)?;
     cluster.restart(old)?;
     cluster.wait_for_responsive_shape(3, 3, 3)?;
-    let trace_after = wait_for_management_json(
-        &mut cluster,
-        observer,
-        trace_path,
-        "placement trace after old peer restart",
-    )?;
-    assert!(
-        (trace_before["completeness"] == "unavailable"
-            && trace_after["completeness"] == "unavailable")
-            || trace_before["data"] == trace_after["data"],
+    let (trace_status_after, trace_body_after) =
+        management_text_status(cluster.admin_addr(observer), trace_path)?;
+    assert_eq!(trace_status_after, trace_status_before);
+    assert_eq!(
+        trace_body_after, trace_body_before,
         "old-peer restart recomputed an existing placement trace"
     );
+    let trace_observation = serde_json::json!({
+        "status": trace_status_after,
+        "body_sha256": sha256(trace_body_after),
+    });
     scenarios.push(scenario(
         "old-peer-restart-during-placement-trace",
-        &trace_after,
+        &trace_observation,
     ));
 
     cluster.kill(old)?;

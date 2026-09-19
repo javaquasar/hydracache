@@ -1779,6 +1779,19 @@ pub fn management_json_status(addr: SocketAddr, path: &str) -> TestResult<(u16, 
     )
 }
 
+/// Read one authenticated management endpoint without requiring a JSON body.
+///
+/// Some capability-safe negative results, such as an unknown opaque placement
+/// trace, intentionally return an empty `404` response.
+pub fn management_text_status(addr: SocketAddr, path: &str) -> TestResult<(u16, String)> {
+    http_response(
+        addr,
+        "GET",
+        path,
+        Some("x-hydracache-management-read: true\r\n"),
+    )
+}
+
 /// Read a public text asset from the real daemon without weakening management authorization.
 pub fn public_text_status(addr: SocketAddr, path: &str) -> TestResult<(u16, String)> {
     http_response(addr, "GET", path, None)
