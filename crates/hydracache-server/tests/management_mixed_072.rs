@@ -79,6 +79,19 @@ fn wait_for_cluster_overview(
     })
 }
 
+fn assert_legacy_overview_usable(overview: &Value) {
+    assert_eq!(overview["source"], "live");
+    assert_eq!(
+        overview["members"].as_array().map(Vec::len),
+        Some(3),
+        "legacy overview did not retain all three members"
+    );
+    assert!(
+        overview["leader"]["node_id"].as_str().is_some(),
+        "legacy overview did not expose the elected leader"
+    );
+}
+
 #[test]
 fn real_071_072_upgrade_leadership_restart_and_rollback_are_capability_safe() -> TestResult {
     if std::env::var(RUN_ENV).as_deref() != Ok("1") {
@@ -126,6 +139,7 @@ fn real_071_072_upgrade_leadership_restart_and_rollback_are_capability_safe() ->
         old,
         "old leader legacy overview after follower upgrades",
     )?;
+    assert_legacy_overview_usable(&old_overview);
     let old_node_id = cluster.node_ids()[old].clone();
     let mixed_leader = cluster
         .statuses()
@@ -238,13 +252,12 @@ fn real_071_072_upgrade_leadership_restart_and_rollback_are_capability_safe() ->
     let (bookmark_status, _) =
         public_text_status(cluster.admin_addr(old), "/management/v1/dashboard")?;
     assert_eq!(bookmark_status, 404);
-    assert_eq!(rollback_overview["quorum_ok"], true);
+    assert_legacy_overview_usable(&rollback_overview);
     scenarios.push(scenario(
         "rollback-after-ui-observation",
         &rollback_overview,
     ));
     assert_eq!(scenarios.len(), 5);
-    assert_eq!(old_overview["quorum_ok"], true);
 
     let receipt = MixedReceipt {
         schema_version: 1,
