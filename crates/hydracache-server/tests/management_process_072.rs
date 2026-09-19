@@ -235,7 +235,11 @@ fn host_fingerprint() -> String {
 
 fn run_management_soak(tier: &str, required_duration: Duration, output: &Path) -> TestResult {
     let mut cluster = DaemonCluster::start_bootstrap_with_redis(3, tier)?;
-    let statuses = cluster.wait_for_shape(3, 3)?;
+    // Authoritative membership can become visible before every daemon has
+    // finished binding its client and RESP listeners. A long-running release
+    // proof must not race that startup boundary and fail before its first
+    // sample, so require all three admin surfaces to be responsive first.
+    let statuses = cluster.wait_for_responsive_shape(3, 3, 3)?;
     let leader = statuses[0].leader.clone().ok_or("leader before soak")?;
     let victim = cluster
         .node_ids()
@@ -245,6 +249,17 @@ fn run_management_soak(tier: &str, required_duration: Duration, output: &Path) -
     let observer = (0..3).find(|index| *index != victim).ok_or("observer")?;
     let redis = cluster.redis_addr(observer).ok_or("RESP listener")?;
     let hc1 = cluster.client_addr(observer);
+    cluster.wait_for("management soak surfaces ready".to_owned(), |cluster| {
+        let dashboard = cluster
+            .management_json(observer, "/management/v1/dashboard")
+            .ok()?;
+        if dashboard["data"]["cluster"]["quorum_ok"] != true {
+            return None;
+        }
+        hc1_put(hc1, 0).ok()?;
+        resp_ping(redis).ok()?;
+        Some(())
+    })?;
     let baseline = cluster
         .os_resource_totals()
         .map(ResourceReceipt::from)
@@ -263,13 +278,15 @@ fn run_management_soak(tier: &str, required_duration: Duration, output: &Path) -
     let mut next_sample = start;
     while Instant::now() < deadline {
         let request_start = Instant::now();
-        let dashboard = cluster.management_json(observer, "/management/v1/dashboard")?;
+        let dashboard = cluster
+            .management_json(observer, "/management/v1/dashboard")
+            .map_err(|error| format!("management dashboard sample failed: {error}"))?;
         latencies.push(request_start.elapsed().as_millis() as u64);
         assert_eq!(dashboard["data"]["cluster"]["quorum_ok"], true);
         management_samples += 1;
-        hc1_put(hc1, management_samples)?;
+        hc1_put(hc1, management_samples).map_err(|error| format!("HC/1 sample failed: {error}"))?;
         hc1_samples += 1;
-        resp_ping(redis)?;
+        resp_ping(redis).map_err(|error| format!("RESP sample failed: {error}"))?;
         resp_samples += 1;
         if Instant::now() >= next_fault {
             cluster.kill(victim)?;
@@ -277,7 +294,7 @@ fn run_management_soak(tier: &str, required_duration: Duration, output: &Path) -
             let partial = cluster.management_json(observer, "/management/v1/dashboard")?;
             assert_eq!(partial["completeness"], "partial");
             cluster.restart(victim)?;
-            cluster.wait_for_shape(3, 3)?;
+            cluster.wait_for_responsive_shape(3, 3, 3)?;
             recovery_cycles += 1;
             events.push(format!("recovery:{recovery_cycles}"));
             next_fault += fault_interval;
