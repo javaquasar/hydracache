@@ -63,6 +63,11 @@ const STATEFULSET_REVISION_LABEL: &str = "controller-revision-hash";
 // minutes so the assertion observes a settled quorum rather than a transient
 // `leader=None` status.
 const KIND_WAIT_ATTEMPTS: usize = 150;
+// Chaos Mesh can keep an IOChaos finalizer while a liveness-triggered target
+// restart converges. The admitted hosted lane has observed valid recovery just
+// after the old 60-second window, so allow two minutes without weakening the
+// required AllRecovered/deleted terminal state.
+const IOCHAOS_RECOVERY_WAIT_ATTEMPTS: usize = 60;
 static SCALE_ADMIN_PROBE_SEQUENCE: AtomicU64 = AtomicU64::new(0);
 const NETWORK_POLICY_SKIP: &str =
     "CNI does not enforce NetworkPolicy; install calico/cilium in the kind config";
@@ -1665,7 +1670,7 @@ impl KindHarness {
         let name = slow_disk_chaos_name(&self.cluster, ordinal);
         let _ = iochaos.delete(&name, &DeleteParams::default()).await;
         let mut latest = None;
-        for _ in 0..30 {
+        for _ in 0..IOCHAOS_RECOVERY_WAIT_ATTEMPTS {
             match iochaos.get(&name).await {
                 Ok(object) => {
                     let value = serde_json::to_value(&object)
