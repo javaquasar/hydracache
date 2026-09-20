@@ -44,8 +44,10 @@ release evidence. Missing capabilities produce a loud blocking result.
 The candidate gate runs for exactly six hours. The ship gate first repeats the candidate gate and
 then runs for exactly 24 hours on the same labelled self-hosted Linux runner. Both use three
 production daemons and a fixed seed. They poll the typed dashboard every second, send HC/1 writes
-and RESP traffic every second, restart a follower hourly, require visible partial truth followed by
-full recovery, and enforce latency, file-descriptor and RSS ceilings.
+over a declared 64-key ring and RESP traffic every second, restart a follower hourly, require
+visible partial truth followed by full recovery, and enforce latency, file-descriptor and RSS
+ceilings. The receipt is persisted before terminal budget assertions so a failed ceiling retains
+the measured baseline and final values.
 
 The protocol-coexistence gate separately proves HC/1 and mTLS HC/2 against the same exact candidate.
 The compatibility gate uses the full-history `v0.71.0` predecessor and exercises all five registered
@@ -67,6 +69,9 @@ Dedicated-host execution hardened the harness in four places:
 - Hourly fault counts use the soak's exclusive deadline. A six-hour run therefore requires the
   five scheduled recoveries at hours 1-5, and a 24-hour run requires the 23 recoveries at hours
   1-23. The endpoint at hour 6 or 24 is the completed duration, not another event inside the run.
+- HC/1 writes use a fixed 64-key ring. This preserves one real write per second while keeping the
+  Management Center endurance workload cardinality-bounded; dedicated retention campaigns own
+  unbounded-cardinality and expiry-churn claims.
 
 These corrections improve fidelity and diagnostics. They do not reduce traffic, recovery or
 resource thresholds, and failed earlier attempts are preserved rather than overwritten.

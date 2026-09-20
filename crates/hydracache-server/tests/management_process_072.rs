@@ -26,6 +26,7 @@ const SEED: u64 = 0x0720_1200_0000_0001;
 const MAX_ENDPOINT_P95_MS: u64 = 2_500;
 const MAX_FD_GROWTH: u64 = 12;
 const MAX_RSS_GROWTH_KIB: u64 = 65_536;
+const MANAGEMENT_SOAK_KEYSPACE: u64 = 64;
 const MANAGEMENT_PROCESS_ENV: &str = "HYDRACACHE_RUN_MANAGEMENT_PROCESS_072";
 const MANAGEMENT_RESOURCE_ENV: &str = "HYDRACACHE_RUN_MANAGEMENT_RESOURCE_LINUX_072";
 const MANAGEMENT_CANDIDATE_SOAK_ENV: &str = "HYDRACACHE_RUN_MANAGEMENT_CANDIDATE_SOAK_072";
@@ -95,6 +96,7 @@ struct SoakReceipt {
     seed: u64,
     management_samples: u64,
     hc1_samples: u64,
+    hc1_keyspace_size: u64,
     resp_samples: u64,
     recovery_cycles: u64,
     endpoint_p95_ms: u64,
@@ -199,7 +201,7 @@ impl Hc1Probe {
 
     fn put(&mut self, sequence: u64) -> TestResult {
         let namespace = Namespace::new("management-soak")?;
-        let key = StructuredKey::new(vec![format!("{sequence:016x}")])?;
+        let key = StructuredKey::new(vec![management_soak_key(sequence)])?;
         let frame =
             ClientFrame::from_message(&ClientWireMessage::Request(ClientRequestEnvelope::new(
                 format!("soak-{sequence}"),
@@ -239,6 +241,10 @@ impl Hc1Probe {
             other => Err(format!("unexpected HC/1 response: {other:?}").into()),
         }
     }
+}
+
+fn management_soak_key(sequence: u64) -> String {
+    format!("{:016x}", sequence % MANAGEMENT_SOAK_KEYSPACE)
 }
 
 fn management_soak_enabled(name: &str) -> bool {
@@ -281,6 +287,23 @@ fn soak_fault_schedule_counts_only_events_strictly_before_deadline() {
     assert_eq!(
         scheduled_faults_before_deadline(Duration::from_secs(24 * 60 * 60), hour),
         23
+    );
+}
+
+#[test]
+fn management_soak_uses_a_fixed_keyspace_under_sustained_traffic() {
+    assert_eq!(management_soak_key(0), "0000000000000000");
+    assert_eq!(
+        management_soak_key(MANAGEMENT_SOAK_KEYSPACE - 1),
+        "000000000000003f"
+    );
+    assert_eq!(
+        management_soak_key(MANAGEMENT_SOAK_KEYSPACE),
+        "0000000000000000"
+    );
+    assert_eq!(
+        management_soak_key(MANAGEMENT_SOAK_KEYSPACE * 100 + 7),
+        "0000000000000007"
     );
 }
 
@@ -418,19 +441,16 @@ fn run_management_soak(tier: &str, required_duration: Duration, output: &Path) -
         .os_resource_totals()
         .map(ResourceReceipt::from)
         .ok_or("Linux /proc resource final sample is unavailable")?;
-    assert!(final_sample.open_fds <= baseline.open_fds.saturating_add(MAX_FD_GROWTH));
-    assert!(final_sample.rss_kib <= baseline.rss_hwm_kib.saturating_add(MAX_RSS_GROWTH_KIB));
     let endpoint_p95_ms = p95(latencies);
-    assert!(endpoint_p95_ms <= MAX_ENDPOINT_P95_MS);
     let schedule = vec![
         format!("duration:{}", required_duration.as_secs()),
         "poll:management-dashboard:1s".to_owned(),
-        "traffic:hc1-put:1s".to_owned(),
+        format!("traffic:hc1-put:1s:keyspace:{MANAGEMENT_SOAK_KEYSPACE}:ttl:60s"),
         "traffic:resp-ping:1s".to_owned(),
         "fault:follower-restart:1h".to_owned(),
     ];
     let receipt = SoakReceipt {
-        schema_version: 1,
+        schema_version: 2,
         release: "0.72.0".to_owned(),
         tier: tier.to_owned(),
         required_duration_seconds: required_duration.as_secs(),
@@ -442,6 +462,7 @@ fn run_management_soak(tier: &str, required_duration: Duration, output: &Path) -
         seed: SEED,
         management_samples,
         hc1_samples,
+        hc1_keyspace_size: MANAGEMENT_SOAK_KEYSPACE,
         resp_samples,
         recovery_cycles,
         endpoint_p95_ms,
@@ -456,6 +477,22 @@ fn run_management_soak(tier: &str, required_duration: Duration, output: &Path) -
     fs::write(output, serde_json::to_vec_pretty(&receipt)?)?;
     let reread: SoakReceipt = serde_json::from_slice(&fs::read(output)?)?;
     assert_eq!(reread, receipt);
+    assert!(
+        final_sample.open_fds <= baseline.open_fds.saturating_add(MAX_FD_GROWTH),
+        "open fd budget exceeded: baseline={}, final={}, allowed_growth={MAX_FD_GROWTH}",
+        baseline.open_fds,
+        final_sample.open_fds
+    );
+    assert!(
+        final_sample.rss_kib <= baseline.rss_hwm_kib.saturating_add(MAX_RSS_GROWTH_KIB),
+        "RSS budget exceeded: baseline_hwm_kib={}, final_rss_kib={}, allowed_growth_kib={MAX_RSS_GROWTH_KIB}",
+        baseline.rss_hwm_kib,
+        final_sample.rss_kib
+    );
+    assert!(
+        endpoint_p95_ms <= MAX_ENDPOINT_P95_MS,
+        "endpoint p95 budget exceeded: observed_ms={endpoint_p95_ms}, allowed_ms={MAX_ENDPOINT_P95_MS}"
+    );
     Ok(())
 }
 

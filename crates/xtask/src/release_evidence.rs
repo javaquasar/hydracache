@@ -836,6 +836,7 @@ struct ManagementSoakArtifact {
     seed: u64,
     management_samples: u64,
     hc1_samples: u64,
+    hc1_keyspace_size: u64,
     resp_samples: u64,
     recovery_cycles: u64,
     endpoint_p95_ms: u64,
@@ -868,7 +869,7 @@ fn management_soak_artifact_problems(artifact: &str, bytes: &[u8]) -> Vec<String
         ("ship-twenty-four-hour", 86_400)
     };
     let mut problems = Vec::new();
-    if receipt.schema_version != 1
+    if receipt.schema_version != 2
         || receipt.release != "0.72.0"
         || receipt.tier != tier
         || receipt.required_duration_seconds != duration
@@ -883,10 +884,16 @@ fn management_soak_artifact_problems(artifact: &str, bytes: &[u8]) -> Vec<String
             "{artifact} wall-clock timestamps are shorter than the tier"
         ));
     }
+    if receipt.hc1_keyspace_size != 64 {
+        problems.push(format!(
+            "{artifact} does not use the reviewed 64-key HC/1 soak keyspace"
+        ));
+    }
+    let expected_recovery_cycles = duration.saturating_sub(1) / 3_600;
     if receipt.management_samples < duration.saturating_sub(300)
         || receipt.hc1_samples != receipt.management_samples
         || receipt.resp_samples != receipt.management_samples
-        || receipt.recovery_cycles < duration / 3_600
+        || receipt.recovery_cycles < expected_recovery_cycles
     {
         problems.push(format!(
             "{artifact} lacks fixed-rate traffic or hourly recovery samples"
@@ -1767,7 +1774,7 @@ mod language_selector_tests {
     #[test]
     fn management_soak_artifact_requires_real_duration_traffic_recovery_and_bounds() {
         let artifact = serde_json::json!({
-            "schema_version": 1,
+            "schema_version": 2,
             "release": "0.72.0",
             "tier": "candidate-six-hour",
             "required_duration_seconds": 21600,
@@ -1779,8 +1786,9 @@ mod language_selector_tests {
             "seed": 0x0720_1200_0000_0001_u64,
             "management_samples": 21600,
             "hc1_samples": 21600,
+            "hc1_keyspace_size": 64,
             "resp_samples": 21600,
-            "recovery_cycles": 6,
+            "recovery_cycles": 5,
             "endpoint_p95_ms": 100,
             "schedule_digest": "c".repeat(64),
             "event_digest": "d".repeat(64),
@@ -1798,6 +1806,7 @@ mod language_selector_tests {
         shortened["observed_duration_seconds"] = 60.into();
         shortened["ended_unix_seconds"] = 160.into();
         shortened["hc1_samples"] = 0.into();
+        shortened["hc1_keyspace_size"] = 0.into();
         shortened["endpoint_p95_ms"] = 2501.into();
         let problems = management_soak_artifact_problems(
             "target/test-evidence/0.72/management-candidate-soak.json",
@@ -1805,6 +1814,7 @@ mod language_selector_tests {
         );
         assert!(problems.iter().any(|problem| problem.contains("duration")));
         assert!(problems.iter().any(|problem| problem.contains("traffic")));
+        assert!(problems.iter().any(|problem| problem.contains("64-key")));
         assert!(problems.iter().any(|problem| problem.contains("bounds")));
     }
 
