@@ -9,6 +9,25 @@ slab. A logical counter returning to zero does not require RSS to return to the 
 bounded allocator high-water mark is possible. Conversely, a low RSS sample cannot prove an owner
 was released.
 
+## Public API added in 0.71
+
+Memory accounting is opt-in through `CacheBuilder::memory_instrumentation_mode`. The default
+`MemoryInstrumentationMode::Disabled` keeps the request path free from accounting updates;
+`Production` enables bounded counters, and `Profiling` adds the correlation data used by controlled
+measurement runs.
+
+Use `Cache::memory_footprint_snapshot` for a bounded aggregate observation. When an exact snapshot
+is required, first stop mutations, obtain `Cache::memory_snapshot_barrier`, and pass the acknowledged
+epoch back through `MemorySnapshotRequest::Exact`. An epoch mismatch or a non-quiescent cache fails
+loudly instead of being reported as an exact result. `Cache::reconcile_memory_footprint` performs the
+more expensive map walk intended for tests and scheduled verification, not request-path diagnostics.
+
+`RetainedByteEstimate` is deliberately reporting-only in 0.71. It estimates the logical ownership
+of encoded keys, values, cache entries, tag data and expiry metadata. It does not replace Moka's
+legacy value-byte capacity, change eviction, or promise that the estimate equals RSS. Exact Rust
+signatures and error variants remain authoritative in
+[`hydracache` Rustdoc](https://docs.rs/hydracache/latest/hydracache/).
+
 | Field | Meaning | How to use it |
 | --- | --- | --- |
 | `logical.entries`, `logical.*_records`, `logical.*_bytes` | Application-owned counts and conservative retained bytes | Check exact reconciliation after delete, expiry, reset, close, and drain. |
@@ -17,9 +36,9 @@ was released.
 | `cgroup` memory fields | Container-accounted memory, including relevant file/slab pages | Diagnose cgroup pressure; do not silently substitute for process RSS. |
 | Phase timeline and provider probes | Timestamped workload/collector state | Reject missing windows, provider drift, mixed identities, or workload errors before statistics. |
 
-Use the [frozen statistics contract](../testing/memory/0.71/memory-statistics-v1.toml) for
+Use the [frozen statistics contract](https://github.com/javaquasar/hydracache/blob/main/docs/testing/memory/0.71/memory-statistics-v1.toml) for
 five independent paired starts, alternating B1/C order, warmup, cadence, settling, and the
-predeclared slope/effect/regression budgets. The [S7 host profile](../testing/perf-host-profiles/memory-reference-071-v1.json)
+predeclared slope/effect/regression budgets. The [S7 host profile](https://github.com/javaquasar/hydracache/blob/main/docs/testing/perf-host-profiles/memory-reference-071-v1.json)
 and admission receipts pin the host, CPU/IRQ policy, kernel, instrumentation overhead, binary
 identity, scenario digest, source and workflow SHA. Run only one long cell at a time. Reboot and
 re-admit after host drift; do not splice measurements from a partial 6- or 24-hour cell into an
@@ -33,7 +52,7 @@ latency, errors, thermal state, IRQ distribution, background daemons and disk ac
 Do not discard a slow sample merely because it is inconvenient: the frozen rejection policy only
 permits identity mismatch, telemetry gap, runner instability, or a non-zero workload error.
 
-The accepted AX42 D4 chain is indexed [here](../testing/perf-artifacts/0.71/ax42/d4/README.md).
+The accepted AX42 D4 chain is indexed [here](https://github.com/javaquasar/hydracache/blob/evidence/0.71/ax42/d4/README.md).
 It used the exact measured commit `da8d6de409a657e0260e7fbfb4ab31d8d6ad5ca8`; M3, M8, M9
 and both serialized M10 24-hour cells completed. The original archives are retained outside the
 server; the public branch contains sanitized derivatives. To verify a materialized evidence

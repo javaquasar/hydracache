@@ -5,6 +5,7 @@ const root = process.cwd();
 const docsRoot = path.join(root, "docs-site", "src");
 const checkedRoots = [path.join(root, "README.md"), path.join(root, "docs-site", "README.md")];
 const markdownFiles = [];
+const includedFiles = new Set();
 
 async function collectMarkdown(dir) {
   for (const entry of await readdir(dir, { withFileTypes: true })) {
@@ -43,6 +44,9 @@ async function exists(file) {
 
 for (const file of markdownFiles) {
   const text = await readFile(file, "utf8");
+  const includes = [...text.matchAll(/\{\{#include\s+([^}:]+)(?::[^}]*)?\}\}/g)].map(
+    (match) => match[1].trim(),
+  );
   const links = [...text.matchAll(/\[[^\]]+\]\(([^)]+)\)/g)].map((match) => match[1]);
   const images = [...text.matchAll(/<img\s+[^>]*src="([^"]+)"/g)].map((match) => match[1]);
 
@@ -57,6 +61,15 @@ for (const file of markdownFiles) {
       failures.push(`${path.relative(root, file)} -> ${raw}`);
     }
   }
+
+  for (const raw of includes) {
+    const resolved = path.resolve(path.dirname(file), raw);
+    if (!(await exists(resolved))) {
+      failures.push(`${path.relative(root, file)} -> missing include ${raw}`);
+    } else {
+      includedFiles.add(path.relative(root, resolved));
+    }
+  }
 }
 
 if (failures.length > 0) {
@@ -67,4 +80,6 @@ if (failures.length > 0) {
   process.exit(1);
 }
 
-console.log(`Checked ${markdownFiles.length} markdown files for local links.`);
+console.log(
+  `Checked ${markdownFiles.length} markdown files and ${includedFiles.size} external includes for local links.`,
+);

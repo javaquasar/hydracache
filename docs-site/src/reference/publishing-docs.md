@@ -36,9 +36,25 @@ Documentation snippets are included from checked Rust files:
 cargo fmt --manifest-path docs-site/examples/Cargo.toml --check
 cargo check --manifest-path docs-site/examples/Cargo.toml --all-targets --locked
 node scripts/docs-link-check.mjs
+node --test scripts/docs-release-check.test.mjs
+node scripts/docs-release-check.mjs
 ```
 
 When an API changes, update the Rust example and the Markdown page in the same branch.
+
+## Release notes: one source of truth
+
+Release notes are authored once under `docs/releases/<version>.md`. For releases from 0.71 onward,
+the public site adds a one-line wrapper at `docs-site/src/releases/<version>.md`:
+
+```text
+&#123;&#123;#include ../../../docs/releases/&lt;version&gt;.md&#125;&#125;
+```
+
+Add the wrapper to `SUMMARY.md` and the release archive. `docs-release-check.mjs` rejects missing,
+copied or incorrectly wired pages. Because the canonical file is expanded by mdBook, its content is
+also indexed by site search. Use absolute URLs inside an externally included canonical file so that
+links mean the same thing on GitHub, in GitHub release notes and on the generated site.
 
 ## Rust Playground
 

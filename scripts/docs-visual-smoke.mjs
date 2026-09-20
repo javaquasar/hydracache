@@ -8,6 +8,8 @@ const pages = [
   "/architecture.html",
   "/production-checklist.html",
   "/guides/database-query-caching.html",
+  "/guides/memory-accounting.html",
+  "/releases/0.71.0.html",
   "/reference/api-links.html",
   "/reference/release-0.72-verification.html",
 ];

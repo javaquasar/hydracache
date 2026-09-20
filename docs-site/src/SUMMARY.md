@@ -33,8 +33,15 @@
 - [SeaORM Adapter](guides/seaorm-adapter.md)
 - [Redis API](guides/redis-api.md)
 - [Diagnostics and Events](guides/diagnostics-and-events.md)
+- [Memory Accounting](guides/memory-accounting.md)
+- [Memory Sizing](guides/memory-sizing.md)
 - [Distributed Invalidation](guides/distributed-invalidation.md)
 - [Client and Member Cluster](guides/client-member-cluster.md)
+
+# Releases
+
+- [Release Archive](releases/index.md)
+  - [HydraCache 0.71.0](releases/0.71.0.md)
 
 # Reference
 

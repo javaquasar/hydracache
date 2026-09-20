@@ -652,6 +652,11 @@ jobs:
       - name: Check documentation links
         run: node scripts/docs-link-check.mjs
 
+      - name: Check release documentation synchronization
+        run: |
+          node --test scripts/docs-release-check.test.mjs
+          node scripts/docs-release-check.mjs
+
   rust:
     name: Rust
     if: github.event_name != 'workflow_dispatch' || inputs.performance_0671_mode == 'off'
