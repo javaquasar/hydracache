@@ -47,7 +47,9 @@ production daemons and a fixed seed. They poll the typed dashboard every second,
 over a declared 64-key ring and RESP traffic every second, restart a follower hourly, require
 visible partial truth followed by full recovery, and enforce latency, file-descriptor and RSS
 ceilings. The receipt is persisted before terminal budget assertions so a failed ceiling retains
-the measured baseline and final values.
+the measured baseline and final values. Receipt schema v3 additionally records every daemon's node
+index/id, pid, RSS, process-lifetime high-water mark and open file descriptors every 60 seconds, so
+a cluster total can always be traced to one process and follower restarts remain visible.
 
 The protocol-coexistence gate separately proves HC/1 and mTLS HC/2 against the same exact candidate.
 The compatibility gate uses the full-history `v0.71.0` predecessor and exercises all five registered
@@ -72,6 +74,11 @@ Dedicated-host execution hardened the harness in four places:
 - HC/1 writes use a fixed 64-key ring. This preserves one real write per second while keeping the
   Management Center endurance workload cardinality-bounded; dedicated retention campaigns own
   unbounded-cardinality and expiry-churn claims.
+- The bounded-key campaign still exposed linear RSS growth. Linux isolation profiles reproduced it
+  with an entirely idle cluster, excluding dashboard, HC/1, RESP and restart traffic. The cause was
+  an unbounded admission-decision journal updated by the 50 ms grid loop. Detailed history is now a
+  1,024-entry FIFO; lifetime counters remain monotonic and report evictions. Single-node and
+  three-node idle profiles verify that RSS reaches a plateau before the full soak is admitted.
 
 These corrections improve fidelity and diagnostics. They do not reduce traffic, recovery or
 resource thresholds, and failed earlier attempts are preserved rather than overwritten.

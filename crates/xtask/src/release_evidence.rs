@@ -844,11 +844,31 @@ struct ManagementSoakArtifact {
     event_digest: String,
     baseline: ManagementSoakResource,
     final_sample: ManagementSoakResource,
+    resource_sample_interval_seconds: u64,
+    resource_timeline: Vec<ManagementSoakTimelinePoint>,
 }
 
 #[derive(Debug, Deserialize)]
 #[serde(deny_unknown_fields)]
 struct ManagementSoakResource {
+    rss_kib: u64,
+    rss_hwm_kib: u64,
+    open_fds: u64,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
+struct ManagementSoakTimelinePoint {
+    elapsed_seconds: u64,
+    processes: Vec<ManagementSoakProcessResource>,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
+struct ManagementSoakProcessResource {
+    node_index: usize,
+    node_id: String,
+    pid: u32,
     rss_kib: u64,
     rss_hwm_kib: u64,
     open_fds: u64,
@@ -869,7 +889,7 @@ fn management_soak_artifact_problems(artifact: &str, bytes: &[u8]) -> Vec<String
         ("ship-twenty-four-hour", 86_400)
     };
     let mut problems = Vec::new();
-    if receipt.schema_version != 2
+    if receipt.schema_version != 3
         || receipt.release != "0.72.0"
         || receipt.tier != tier
         || receipt.required_duration_seconds != duration
@@ -887,6 +907,42 @@ fn management_soak_artifact_problems(artifact: &str, bytes: &[u8]) -> Vec<String
     if receipt.hc1_keyspace_size != 64 {
         problems.push(format!(
             "{artifact} does not use the reviewed 64-key HC/1 soak keyspace"
+        ));
+    }
+    let timeline_is_complete = receipt.resource_sample_interval_seconds == 60
+        && receipt.resource_timeline.len() >= (duration / 60 + 1) as usize
+        && receipt
+            .resource_timeline
+            .first()
+            .is_some_and(|point| point.elapsed_seconds == 0)
+        && receipt
+            .resource_timeline
+            .last()
+            .is_some_and(|point| point.elapsed_seconds >= duration)
+        && receipt
+            .resource_timeline
+            .windows(2)
+            .all(|points| points[0].elapsed_seconds <= points[1].elapsed_seconds)
+        && receipt.resource_timeline.iter().all(|point| {
+            let mut indices = point
+                .processes
+                .iter()
+                .map(|process| process.node_index)
+                .collect::<Vec<_>>();
+            indices.sort_unstable();
+            indices.dedup();
+            indices.len() == 3
+                && point.processes.iter().all(|process| {
+                    !process.node_id.is_empty()
+                        && process.pid != 0
+                        && process.rss_kib != 0
+                        && process.rss_hwm_kib >= process.rss_kib
+                        && process.open_fds != 0
+                })
+        });
+    if !timeline_is_complete {
+        problems.push(format!(
+            "{artifact} lacks complete per-process 60-second resource evidence"
         ));
     }
     let expected_recovery_cycles = duration.saturating_sub(1) / 3_600;
@@ -1774,7 +1830,7 @@ mod language_selector_tests {
     #[test]
     fn management_soak_artifact_requires_real_duration_traffic_recovery_and_bounds() {
         let artifact = serde_json::json!({
-            "schema_version": 2,
+            "schema_version": 3,
             "release": "0.72.0",
             "tier": "candidate-six-hour",
             "required_duration_seconds": 21600,
@@ -1793,7 +1849,19 @@ mod language_selector_tests {
             "schedule_digest": "c".repeat(64),
             "event_digest": "d".repeat(64),
             "baseline": {"rss_kib": 1000, "rss_hwm_kib": 1100, "open_fds": 20},
-            "final_sample": {"rss_kib": 1200, "rss_hwm_kib": 1250, "open_fds": 24}
+            "final_sample": {"rss_kib": 1200, "rss_hwm_kib": 1250, "open_fds": 24},
+            "resource_sample_interval_seconds": 60,
+            "resource_timeline": (0..=360).map(|minute| serde_json::json!({
+                "elapsed_seconds": minute * 60,
+                "processes": (0..3).map(|node_index| serde_json::json!({
+                    "node_index": node_index,
+                    "node_id": format!("member-{node_index}"),
+                    "pid": 100 + node_index,
+                    "rss_kib": 400,
+                    "rss_hwm_kib": 450,
+                    "open_fds": 8
+                })).collect::<Vec<_>>()
+            })).collect::<Vec<_>>()
         });
         let bytes = serde_json::to_vec(&artifact).unwrap();
         assert!(management_soak_artifact_problems(
@@ -1808,6 +1876,7 @@ mod language_selector_tests {
         shortened["hc1_samples"] = 0.into();
         shortened["hc1_keyspace_size"] = 0.into();
         shortened["endpoint_p95_ms"] = 2501.into();
+        shortened["resource_timeline"] = serde_json::json!([]);
         let problems = management_soak_artifact_problems(
             "target/test-evidence/0.72/management-candidate-soak.json",
             &serde_json::to_vec(&shortened).unwrap(),
@@ -1816,6 +1885,9 @@ mod language_selector_tests {
         assert!(problems.iter().any(|problem| problem.contains("traffic")));
         assert!(problems.iter().any(|problem| problem.contains("64-key")));
         assert!(problems.iter().any(|problem| problem.contains("bounds")));
+        assert!(problems
+            .iter()
+            .any(|problem| problem.contains("per-process")));
     }
 
     #[test]

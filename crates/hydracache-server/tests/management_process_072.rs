@@ -19,7 +19,7 @@ use serde_json::Value;
 use sha2::{Digest, Sha256};
 use support::daemon_cluster::{
     daemon_process_e2e_enabled, management_json_status, public_text_status, DaemonCluster,
-    OsResourceTotals, TestResult,
+    OsProcessResourceSample, OsResourceTotals, TestResult,
 };
 
 const SEED: u64 = 0x0720_1200_0000_0001;
@@ -83,6 +83,22 @@ struct ResourceReceipt {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+struct ProcessResourceReceipt {
+    node_index: usize,
+    node_id: String,
+    pid: u32,
+    rss_kib: u64,
+    rss_hwm_kib: u64,
+    open_fds: u64,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+struct ResourceTimelinePoint {
+    elapsed_seconds: u64,
+    processes: Vec<ProcessResourceReceipt>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 struct SoakReceipt {
     schema_version: u32,
     release: String,
@@ -104,6 +120,8 @@ struct SoakReceipt {
     event_digest: String,
     baseline: ResourceReceipt,
     final_sample: ResourceReceipt,
+    resource_sample_interval_seconds: u64,
+    resource_timeline: Vec<ResourceTimelinePoint>,
 }
 
 impl From<OsResourceTotals> for ResourceReceipt {
@@ -114,6 +132,35 @@ impl From<OsResourceTotals> for ResourceReceipt {
             open_fds: value.open_fds,
         }
     }
+}
+
+impl From<OsProcessResourceSample> for ProcessResourceReceipt {
+    fn from(value: OsProcessResourceSample) -> Self {
+        Self {
+            node_index: value.node_index,
+            node_id: value.node_id,
+            pid: value.pid,
+            rss_kib: value.rss_kib,
+            rss_hwm_kib: value.rss_hwm_kib,
+            open_fds: value.open_fds,
+        }
+    }
+}
+
+fn resource_timeline_point(
+    cluster: &mut DaemonCluster,
+    elapsed_seconds: u64,
+) -> TestResult<ResourceTimelinePoint> {
+    let processes = cluster
+        .os_process_resource_samples()
+        .ok_or("Linux /proc per-process sample is unavailable")?
+        .into_iter()
+        .map(ProcessResourceReceipt::from)
+        .collect();
+    Ok(ResourceTimelinePoint {
+        elapsed_seconds,
+        processes,
+    })
 }
 
 fn defect(id: &str) -> bool {
@@ -398,8 +445,11 @@ fn run_management_soak(tier: &str, required_duration: Duration, output: &Path) -
     let mut latencies = Vec::new();
     let mut events = Vec::new();
     let fault_interval = Duration::from_secs(60 * 60);
+    let resource_sample_interval = Duration::from_secs(60);
     let mut next_fault = start + fault_interval;
     let mut next_sample = start;
+    let mut next_resource_sample = start + resource_sample_interval;
+    let mut resource_timeline = vec![resource_timeline_point(&mut cluster, 0)?];
     while Instant::now() < deadline {
         let request_start = Instant::now();
         let dashboard = cluster
@@ -424,6 +474,13 @@ fn run_management_soak(tier: &str, required_duration: Duration, output: &Path) -
             events.push(format!("recovery:{recovery_cycles}"));
             next_fault += fault_interval;
         }
+        if Instant::now() >= next_resource_sample {
+            resource_timeline.push(resource_timeline_point(
+                &mut cluster,
+                start.elapsed().as_secs(),
+            )?);
+            next_resource_sample += resource_sample_interval;
+        }
         next_sample += Duration::from_secs(1);
         if let Some(delay) = next_sample.checked_duration_since(Instant::now()) {
             std::thread::sleep(delay);
@@ -441,6 +498,10 @@ fn run_management_soak(tier: &str, required_duration: Duration, output: &Path) -
         .os_resource_totals()
         .map(ResourceReceipt::from)
         .ok_or("Linux /proc resource final sample is unavailable")?;
+    resource_timeline.push(resource_timeline_point(
+        &mut cluster,
+        observed_duration_seconds,
+    )?);
     let endpoint_p95_ms = p95(latencies);
     let schedule = vec![
         format!("duration:{}", required_duration.as_secs()),
@@ -450,7 +511,7 @@ fn run_management_soak(tier: &str, required_duration: Duration, output: &Path) -
         "fault:follower-restart:1h".to_owned(),
     ];
     let receipt = SoakReceipt {
-        schema_version: 2,
+        schema_version: 3,
         release: "0.72.0".to_owned(),
         tier: tier.to_owned(),
         required_duration_seconds: required_duration.as_secs(),
@@ -470,6 +531,8 @@ fn run_management_soak(tier: &str, required_duration: Duration, output: &Path) -
         event_digest: canonical_digest(&events),
         baseline,
         final_sample,
+        resource_sample_interval_seconds: resource_sample_interval.as_secs(),
+        resource_timeline,
     };
     if let Some(parent) = output.parent() {
         fs::create_dir_all(parent)?;
@@ -529,6 +592,83 @@ fn soak_tiers_have_non_overridable_release_durations_and_distinct_artifacts() {
     assert_eq!(CANDIDATE_SOAK_SECONDS, 21_600);
     assert_eq!(SHIP_SOAK_SECONDS, 86_400);
     assert_ne!(MANAGEMENT_CANDIDATE_SOAK_ENV, MANAGEMENT_SHIP_SOAK_ENV);
+}
+
+#[test]
+fn diagnostic_idle_cluster_resource_slope() -> TestResult {
+    if !management_soak_enabled(MANAGEMENT_RESOURCE_ENV) {
+        eprintln!("skipped: set {MANAGEMENT_RESOURCE_ENV}=1 to run idle resource diagnostics");
+        return Ok(());
+    }
+    let mut cluster = DaemonCluster::start_bootstrap_with_client_and_redis(3, "diagnostic-idle")?;
+    cluster.wait_for_responsive_shape(3, 3, 3)?;
+    let start = Instant::now();
+    let mut timeline = Vec::new();
+    for checkpoint in 0..=6 {
+        if checkpoint != 0 {
+            std::thread::sleep(Duration::from_secs(30));
+        }
+        let samples = cluster
+            .os_process_resource_samples()
+            .ok_or("Linux /proc per-process sample is unavailable")?;
+        eprintln!(
+            "diagnostic-idle elapsed_seconds={} samples={samples:?}",
+            start.elapsed().as_secs()
+        );
+        timeline.push(samples);
+    }
+    assert_resource_plateau(&timeline[2], &timeline[6], 4_096);
+    Ok(())
+}
+
+#[test]
+fn diagnostic_single_node_idle_resource_slope() -> TestResult {
+    if !management_soak_enabled(MANAGEMENT_RESOURCE_ENV) {
+        eprintln!("skipped: set {MANAGEMENT_RESOURCE_ENV}=1 to run idle resource diagnostics");
+        return Ok(());
+    }
+    let mut cluster =
+        DaemonCluster::start_bootstrap_with_client_and_redis(1, "diagnostic-idle-single")?;
+    cluster.wait_for_responsive_shape(1, 1, 1)?;
+    let start = Instant::now();
+    let mut timeline = Vec::new();
+    for checkpoint in 0..=3 {
+        if checkpoint != 0 {
+            std::thread::sleep(Duration::from_secs(30));
+        }
+        let samples = cluster
+            .os_process_resource_samples()
+            .ok_or("Linux /proc per-process sample is unavailable")?;
+        eprintln!(
+            "diagnostic-idle-single elapsed_seconds={} samples={samples:?}",
+            start.elapsed().as_secs()
+        );
+        timeline.push(samples);
+    }
+    assert_resource_plateau(&timeline[1], &timeline[3], 2_048);
+    Ok(())
+}
+
+fn assert_resource_plateau(
+    plateau_start: &[OsProcessResourceSample],
+    plateau_end: &[OsProcessResourceSample],
+    allowed_cluster_growth_kib: u64,
+) {
+    assert_eq!(plateau_start.len(), plateau_end.len());
+    let start_total = plateau_start
+        .iter()
+        .map(|sample| sample.rss_kib)
+        .sum::<u64>();
+    let end_total = plateau_end.iter().map(|sample| sample.rss_kib).sum::<u64>();
+    assert!(
+        end_total <= start_total.saturating_add(allowed_cluster_growth_kib),
+        "idle cluster RSS did not plateau: start={plateau_start:?}, end={plateau_end:?}, allowed_growth_kib={allowed_cluster_growth_kib}"
+    );
+    for (start, end) in plateau_start.iter().zip(plateau_end) {
+        assert_eq!(start.node_index, end.node_index);
+        assert_eq!(start.node_id, end.node_id);
+        assert_eq!(start.pid, end.pid);
+    }
 }
 
 fn validate_attempt_chain(

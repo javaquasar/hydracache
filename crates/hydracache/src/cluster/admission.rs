@@ -1,4 +1,9 @@
 use super::*;
+use std::collections::VecDeque;
+
+/// Maximum number of detailed admission decisions retained in memory.
+/// Aggregate diagnostics remain monotonic after older details are evicted.
+pub const CLUSTER_ADMISSION_EVENT_CAPACITY: usize = 1_024;
 
 /// Reason why the admission bridge ignored a discovered candidate.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -90,6 +95,8 @@ pub struct ClusterAdmissionBridgeDiagnostics {
     pub last_admitted: Option<ClusterNodeId>,
     /// Last error message, if any.
     pub last_error: Option<String>,
+    /// Detailed events evicted from the bounded diagnostic history.
+    pub event_history_evicted: u64,
 }
 
 impl ClusterAdmissionBridgeDiagnostics {
@@ -201,7 +208,7 @@ struct ClusterAdmissionSnapshot {
 #[derive(Debug)]
 struct ClusterAdmissionBridgeState {
     admitted: BTreeMap<ClusterNodeId, ClusterAdmissionSnapshot>,
-    events: Vec<ClusterAdmissionBridgeEvent>,
+    events: VecDeque<ClusterAdmissionBridgeEvent>,
     diagnostics: ClusterAdmissionBridgeDiagnostics,
     lifecycle: ClusterLifecycleDiagnostics,
 }
@@ -210,7 +217,7 @@ impl Default for ClusterAdmissionBridgeState {
     fn default() -> Self {
         Self {
             admitted: BTreeMap::new(),
-            events: Vec::new(),
+            events: VecDeque::with_capacity(CLUSTER_ADMISSION_EVENT_CAPACITY),
             diagnostics: ClusterAdmissionBridgeDiagnostics::default(),
             lifecycle: ClusterLifecycleDiagnostics::idle("cluster-admission-bridge"),
         }
@@ -347,7 +354,9 @@ impl ClusterAdmissionBridge {
             .lock()
             .expect("cluster admission bridge state poisoned")
             .events
-            .clone()
+            .iter()
+            .cloned()
+            .collect()
     }
 
     /// Poll discovery once and try to admit every latest candidate snapshot.
@@ -495,7 +504,7 @@ impl ClusterAdmissionBridge {
         );
         let event = ClusterAdmissionBridgeEvent::CandidateAdmitted(member);
         state.diagnostics.record_event(&event);
-        state.events.push(event);
+        retain_event(&mut state, event);
     }
 
     fn record_event(&self, event: ClusterAdmissionBridgeEvent) {
@@ -505,7 +514,7 @@ impl ClusterAdmissionBridge {
             .lock()
             .expect("cluster admission bridge state poisoned");
         state.diagnostics.record_event(&event);
-        state.events.push(event);
+        retain_event(&mut state, event);
     }
 
     fn record_lifecycle_start(&self) {
@@ -543,6 +552,15 @@ impl ClusterAdmissionBridge {
             .lifecycle
             .record_failure(error);
     }
+}
+
+fn retain_event(state: &mut ClusterAdmissionBridgeState, event: ClusterAdmissionBridgeEvent) {
+    if state.events.len() == CLUSTER_ADMISSION_EVENT_CAPACITY {
+        state.events.pop_front();
+        state.diagnostics.event_history_evicted =
+            state.diagnostics.event_history_evicted.saturating_add(1);
+    }
+    state.events.push_back(event);
 }
 
 /// Handle for a background [`ClusterAdmissionBridge`] polling task.

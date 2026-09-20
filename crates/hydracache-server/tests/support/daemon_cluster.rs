@@ -185,6 +185,20 @@ pub struct OsResourceTotals {
     pub open_fds: u64,
 }
 
+/// One live daemon's operating-system resource counters.
+///
+/// Keeping the process identity beside the counters is important for restart
+/// evidence: an index and node id remain stable while the pid changes.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct OsProcessResourceSample {
+    pub node_index: usize,
+    pub node_id: String,
+    pub pid: u32,
+    pub rss_kib: u64,
+    pub rss_hwm_kib: u64,
+    pub open_fds: u64,
+}
+
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct PreviousDaemonBinary {
     pub path: PathBuf,
@@ -905,16 +919,35 @@ impl DaemonCluster {
     }
 
     pub fn os_resource_totals(&mut self) -> Option<OsResourceTotals> {
-        let running = self.running_indices();
-        let samples = running
-            .iter()
-            .filter_map(|index| self.nodes[*index].resource_sample())
-            .collect::<Vec<_>>();
-        (samples.len() == running.len() && !samples.is_empty()).then(|| OsResourceTotals {
+        let samples = self.os_process_resource_samples()?;
+        Some(OsResourceTotals {
             rss_kib: samples.iter().map(|sample| sample.rss_kib).sum(),
             rss_hwm_kib: samples.iter().map(|sample| sample.rss_hwm_kib).sum(),
             open_fds: samples.iter().map(|sample| sample.open_fds).sum(),
         })
+    }
+
+    /// Sample every currently running daemon, failing closed when `/proc`
+    /// evidence is unavailable for any member.
+    pub fn os_process_resource_samples(&mut self) -> Option<Vec<OsProcessResourceSample>> {
+        let running = self.running_indices();
+        let samples = running
+            .iter()
+            .filter_map(|index| {
+                let node = &self.nodes[*index];
+                let pid = node.pid()?;
+                let sample = node.resource_sample()?;
+                Some(OsProcessResourceSample {
+                    node_index: *index,
+                    node_id: node.spec.node_id.clone(),
+                    pid,
+                    rss_kib: sample.rss_kib,
+                    rss_hwm_kib: sample.rss_hwm_kib,
+                    open_fds: sample.open_fds,
+                })
+            })
+            .collect::<Vec<_>>();
+        (samples.len() == running.len() && !samples.is_empty()).then_some(samples)
     }
 
     pub fn replay_evidence(&mut self, bounded_send_error: Option<String>) -> DaemonReplayEvidence {
@@ -1076,6 +1109,10 @@ impl DaemonNode {
 
     fn resource_sample(&self) -> Option<ProcessResourceSample> {
         ProcessResourceSample::for_pid(self.child.as_ref()?.id())
+    }
+
+    fn pid(&self) -> Option<u32> {
+        self.child.as_ref().map(Child::id)
     }
 
     #[cfg(target_os = "linux")]
