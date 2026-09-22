@@ -110,6 +110,7 @@ jobs:
             cargo add "$package@${{ inputs.version }}"
           done
           cargo add serde --features derive
+          cargo add serde_json --dev
           cargo add tokio --features macros,rt-multi-thread
 
       - name: Install smoke test fixture
