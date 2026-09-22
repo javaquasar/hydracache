@@ -264,8 +264,23 @@ async function capture(options) {
     env: { ...process.env, HYDRACACHE_CONSOLE_PORT: String(port) },
     stdio: ["ignore", "pipe", "pipe"],
   });
+  let serverStdout = "";
+  let serverStderr = "";
+  server.stdout.on("data", (chunk) => {
+    serverStdout += chunk.toString();
+  });
+  server.stderr.on("data", (chunk) => {
+    serverStderr += chunk.toString();
+  });
   try {
-    await waitForHttp(`http://127.0.0.1:${port}/console/`);
+    try {
+      await waitForHttp(`http://127.0.0.1:${port}/console/`);
+    } catch (error) {
+      throw new Error(
+        `${error.message}; origin exit=${server.exitCode ?? "running"}; stdout=${serverStdout.trim() || "<empty>"}; stderr=${serverStderr.trim() || "<empty>"}`,
+        { cause: error },
+      );
+    }
     const before = processCounts(server.pid);
     const browser = await captureBrowser(consoleRoot, port);
     await new Promise((resolvePromise) => setTimeout(resolvePromise, 1_000));
