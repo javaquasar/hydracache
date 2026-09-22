@@ -86,7 +86,7 @@ fn management_registry_rejects_missing_or_tampered_proof() {
     assert!(ship_problems.iter().any(|problem| problem
         .contains("receipt target/release-evidence/management-center/0.72")
         && problem.contains("is missing")));
-    let partial_taxonomy = taxonomy.replace(
+    let partial_taxonomy = taxonomy.replace("\r\n", "\n").replace(
         "id = \"bounded-resource-pressure\"\nwork_item = \"W12\"\nstatus = \"covered\"",
         "id = \"bounded-resource-pressure\"\nwork_item = \"W12\"\nstatus = \"partial\"",
     );

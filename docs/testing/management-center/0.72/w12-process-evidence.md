@@ -99,6 +99,14 @@ do not weaken any release threshold:
 | Run `35475692994`, attempts 1-2 | Two complete six-hour runs reproducibly exceeded the 64 MiB RSS-growth ceiling, while the harness discarded the resource values by asserting before serializing the receipt. The traffic generator used a never-repeated key even though the 0.71 retention contract and the intended management endurance workload require bounded cardinality. | HC/1 traffic remains one write per second but now cycles over an explicit 64-key ring, matching the fixed-keyspace retention proof. The receipt records the keyspace and is written and reread before terminal p95/FD/RSS assertions, so a red budget always preserves the measured values. | The 64 MiB ceiling, six/24-hour durations, request rate, TTL, hourly faults and recovery requirements are unchanged. The next exact-SHA campaign must prove that the bounded workload plateaus and must upload a diagnostic receipt even on a terminal budget failure. |
 | Run `35509690180` | The bounded 64-key workload still grew from 158,128 KiB to 5,693,464 KiB in six hours. A local Linux isolation run then reproduced the same linear slope with no dashboard, HC/1, RESP or restart traffic: each idle daemon retained about 3.5 MiB per 30 seconds. | `ClusterAdmissionBridge` retained every `CandidateSeen` and `AlreadyCurrent` decision from the 50 ms grid loop in an unbounded vector. The detailed journal is now a 1,024-entry FIFO while lifetime counters remain monotonic and expose the eviction count. Single-node and three-node idle profiles isolate background ownership; the three-node profile changed from linear growth to a stable RSS plateau after 30 seconds. | Unit proof drives more than the journal capacity and checks eviction, newest-event retention and lifetime counters. Linux process proof samples every daemon by node id/pid. Candidate/ship receipts use schema v3 per-process 60-second timelines; the original 64 MiB threshold and all workload/fault parameters remain unchanged. |
 
+The corrected exact candidate passed both retained long runs. Campaign `35537203094` recorded
+21,600 management, HC/1 and RESP samples, five scheduled recoveries and cluster RSS from 157,976
+to 162,568 KiB over exactly 21,600 seconds. Ship campaign `35556487047` recorded 86,400 samples
+per surface, 23 scheduled recoveries and RSS from 158,272 to 163,284 KiB over exactly 86,400
+seconds. Open file descriptors ended at 72 in both runs, below their respective 96 and 94
+baselines. These host-scoped observations prove the frozen bounds; they are not portable sizing
+claims.
+
 The readiness split is intentionally not a retry mask: every surface has its own bounded deadline,
 last error and hard failure. The HTTP-client change proves production protocol behavior instead of
 accepting a TCP connect. The IOChaos change adjusts only the observation window; it does not accept

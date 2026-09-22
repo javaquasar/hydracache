@@ -1,9 +1,9 @@
 # W13 compatibility, packaging and publication evidence
 
-This is development evidence, not a ship receipt. Exact-candidate admission remains fail closed until
-W14 validates an annotated candidate and the shipped 0.71 predecessor artifact. The published
-`v0.71.0` tag became available after the original W13 execution; this note retains historical
-results and records the changed prerequisite below.
+This record combines the original development evidence with the accepted exact-candidate ship
+receipt. W14 validated candidate `24927c28c279c6c34ad90111ee6470b4065e0815` against the shipped
+0.71 predecessor. Historical pre-admission findings remain below rather than being rewritten as if
+the external proof had existed during development.
 
 ## Implemented and exercised
 
@@ -20,15 +20,15 @@ results and records the changed prerequisite below.
 | Partial publication recovery | pass | injected interruption after `hydracache-macros` retained a two-item prefix; `-Resume` continued from item 3 and completed all 23 |
 | Bootstrap archive verification | pass | `hydracache-core` and `hydracache-macros` both pass `cargo package --locked` archive build and clean unpacked verification |
 | Supply chain | pass | `cargo deny check`: advisories, bans, licenses and sources green after upgrading `h2`, `chacha20` and `spin` |
-| Real mixed-binary machinery | implemented, receipt pending | dedicated ship-mandatory gate accepts only the full-history `v0.71.0` tag, starts real 0.71/0.72 daemons, exercises all five scenarios, and retains binary/provenance/observation digests |
+| Real mixed-binary machinery | pass | full campaign `35537203094` ran shipped `v0.71.0` and exact 0.72 daemons through all five scenarios and retained binary/provenance/observation digests |
 
-## Published predecessor now available; required proof still pending
+## Accepted published-predecessor proof
 
 The earlier no-tag observation is superseded. The annotated `v0.71.0` tag resolves to
 `da8d6de409a657e0260e7fbfb4ab31d8d6ad5ca8` and is an ancestor of the merged 0.72
 candidate branch. The tag is unsigned; no cryptographic tag-signature claim is made. The
-implemented `env.hydracache-run-management-mixed-072` gate is now runnable, but remains
-**non-promotable until its real-binary receipt is produced and validated**. Its executable scenario covers:
+implemented `env.hydracache-run-management-mixed-072` gate ran successfully in campaign
+`35537203094`; its accepted receipt is bound to the exact candidate. Its executable scenario covers:
 
 - old leader/new followers and new leader/old follower with actual 0.71/0.72 executables;
 - leader change and old-peer restart during the mixed window;

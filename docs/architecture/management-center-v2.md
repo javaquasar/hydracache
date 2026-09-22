@@ -155,9 +155,9 @@ bounded.
 
 The pre-feature branch point is commit
 `8d205fa302d81a07c19147cb4431e16390d256c3`. The machine-readable baseline declaration is
-`docs/testing/management-center/0.72/baselines.toml`. It deliberately records the published
-`v0.71.0` baseline as unavailable because neither that tag nor a retained artifact exists in the
-repository/remote. No development branch may impersonate it.
+`docs/testing/management-center/0.72/baselines.toml`. The published `v0.71.0` and pre-feature
+measurements were captured by run `35723493297`, validated against their exact source commits and
+retained with the 0.72 evidence archive. No development branch may impersonate either baseline.
 
 Structural/unit/process evidence may be produced before candidate freeze. Numerical baseline,
 mixed-binary, six-hour candidate, 24-hour ship-confirmation, Linux FD/RSS, full LLVM coverage, and

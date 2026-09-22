@@ -103,7 +103,14 @@ commands or registries; mismatched artifacts; overwritten retries; and expected-
 do not fail for the registered reason.
 
 Documentation explains the contract but never grants a pass. Only validated artifacts from the
-frozen candidate can move 0.72 to ship status.
+frozen candidate can move 0.72 to ship status. Candidate
+`24927c28c279c6c34ad90111ee6470b4065e0815` passed the 50-job full campaign, six-hour candidate
+soak, mixed 0.71/0.72 compatibility proof and separate 24-hour ship confirmation. After the two
+external baselines were supplied, final admission reported 15 of 15 work items `ship-ready`.
+
+The compact accepted archive, original key Actions ZIPs and `SHA256SUMS` are retained on the
+separate `evidence/0.72/management-center-ship` branch. Release documentation may advance after
+qualification, but the runtime tag remains bound to the exact measured candidate.
 
 ## Documentation-site checks
 

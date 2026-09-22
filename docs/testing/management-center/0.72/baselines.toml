@@ -11,8 +11,8 @@ receipt = "target/release-evidence/management-center/0.72/pre-feature-baseline.j
 [published_previous]
 version = "0.71.0"
 tag = "v0.71.0"
-status = "tag_available_receipt_pending"
-reason = "annotated v0.71.0 tag resolves to da8d6de409a657e0260e7fbfb4ab31d8d6ad5ca8; published-baseline measurement receipt is still required"
+status = "accepted"
+reason = "run 35723493297 measured annotated v0.71.0 at da8d6de409a657e0260e7fbfb4ab31d8d6ad5ca8 and bound the accepted receipt to candidate 24927c28c279c6c34ad90111ee6470b4065e0815"
 required_measurements = ["legacy_console_tests", "bundle_bytes", "endpoint_latency_bytes", "server_retained_owners", "browser_heap_dom", "fd_task_counts", "console_coverage"]
 receipt = "target/release-evidence/management-center/0.72/v0.71-baseline.json"
 

@@ -2055,7 +2055,7 @@ Final admission is deliberately stricter:
 
 ```powershell
 cargo xtask management-center-check --release 0.72 --require-evidence
-cargo xtask release-evidence --release 0.72 --require-ship
+cargo xtask release-evidence --release 0.72 --receipts-dir target/release-evidence/receipts --require-ship
 ```
 
 It requires clean exact-candidate gate and canary receipts, the shipped `v0.71.0` ancestor and real

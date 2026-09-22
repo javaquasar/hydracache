@@ -1,10 +1,10 @@
 # HydraCache Management Center
 
-HydraCache 0.57 adds a read-only Management Center for operating a running
-daemon. It is served from the internal admin surface at `/console/` and reads the
-same-origin endpoints `/cluster/overview` and `/metrics`. Granular per-cache
-diagnostics are served on the same internal listener under
-`/actuator/hydracache/*`.
+HydraCache 0.57 introduced a read-only Management Center for operating a running daemon. HydraCache
+0.72 replaces that single-page view with a routed, locally bundled TypeScript application backed by
+the versioned, bounded `/management/v1` API. It is served from the internal admin surface at
+`/console/`; legacy `/cluster/overview`, `/metrics`, and granular
+`/actuator/hydracache/*` diagnostics remain available on the same internal listener.
 
 The console is an observe-only surface. It does not call the authz-gated write
 API. Operational actions still flow through the Kubernetes operator or the admin
@@ -57,7 +57,7 @@ cache, so `/cluster/overview` can report a real elected leader and quorum from
 reachable raft voters. `local` and `client` roles stay `modeled`.
 
 The historical W6b follow-up is closed as
-[`TD-0008`](technical-debt/TD-0008-networked-daemon-grid-hosting.md). The
+[`TD-0008`](https://github.com/javaquasar/hydracache/blob/main/docs/technical-debt/TD-0008-networked-daemon-grid-hosting.md). The
 `HYDRACACHE_GRID_INPROC=1` path remains only as an explicit test/development
 fallback.
 
@@ -126,7 +126,7 @@ cluster-grid, topology, and backup-age series.
 ## Grafana Dashboard
 
 Import
-[`docs/observability/dashboards/hydracache-overview.json`](observability/dashboards/hydracache-overview.json)
+[`docs/observability/dashboards/hydracache-overview.json`](https://github.com/javaquasar/hydracache/blob/main/docs/observability/dashboards/hydracache-overview.json)
 into Grafana with Prometheus as the datasource. The dashboard covers hit ratio,
 cache traffic, admission pressure, topology, replication/repair, and backup age.
 `cargo xtask verify` includes a drift guard that parses every PromQL `expr` in

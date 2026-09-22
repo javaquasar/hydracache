@@ -20,8 +20,8 @@
 > - **Unblocks:** an operator-grade, evidence-backed management experience; supportable production
 >   diagnostics; and the final 1.0 operations/distribution rehearsal without adding a write-capable
 >   control plane.
-> - **Status:** planned (W0-W14 implementation complete; promotion remains fail-closed until the
->   shipped 0.71 baseline, exact-candidate mixed-binary, coverage and long-soak receipts exist).
+> - **Status:** shipped. W0-W14 are complete and the exact candidate passed the published-0.71
+>   baseline, mixed-binary, coverage, six-hour candidate and 24-hour ship gates.
 >
 > Roadmap: [`INDEX.md`](INDEX.md) - rules: [`../RULES.md`](../RULES.md) -
 > gates: [`../GATES.md`](../GATES.md) - compatibility: [`../COMPAT.md`](../COMPAT.md) -
@@ -34,19 +34,19 @@ bundled UI assets. It must not add an unreviewed state-changing browser action, 
 distributed authority, widen metric label cardinality, expose cache keys or authentication
 material, or silently turn missing evidence into a green state.
 
-Implementation progress: W0-W14 are implemented on `feat/0.72-management-center-2`; their source,
-tests, bounds, changed-module branch review, NATS-derived failure taxonomy and falsifiability
-canaries are registered in the 0.72 evidence manifests. The ordinary verify and CI paths execute
-the structural admission and all 15 work-item canaries. W13 local compatibility/package/publication
-rehearsal is green, while real mixed-binary and candidate/ship soak lanes remain fail-closed external
-inputs because the published `v0.71.0` predecessor has not yet been exercised by the real
-mixed-binary gate and no frozen 0.72 candidate receipts exist.
+Implementation and promotion are complete for W0-W14 on exact candidate
+`24927c28c279c6c34ad90111ee6470b4065e0815`. Their source, tests, bounds, changed-module branch
+review, NATS-derived failure taxonomy and falsifiability canaries are registered in the 0.72
+evidence manifests. Full campaign `35537203094` completed 50 jobs with no failure, including the
+real `v0.71.0` mixed-binary proof and six-hour candidate soak. Ship campaign `35556487047` passed
+the separate 24-hour confirmation without weakening duration, workload, TTL, fault schedule or
+resource ceilings. External baseline run `35723493297` supplied both required baseline receipts.
 
-The latest complete development contour runs every workspace and `xtask` test binary, all doc-tests,
-strict `-D warnings` rustdoc, the four decoder corpus regressions, 16 console unit tests, four
-deterministic package/supply-chain tests and 46 desktop/mobile Playwright executions. Required Linux
-coverage/resource receipts, the real shipped-0.71 mixed-binary proof and the non-shortenable six-hour
-and 24-hour soaks remain candidate admission evidence; they are not represented as locally green.
+The complete contour runs every workspace and `xtask` test binary, all doc-tests, strict
+`-D warnings` rustdoc, four decoder fuzz/corpus gates, 16 console unit tests, four deterministic
+package/supply-chain tests and 46 desktop/mobile Playwright executions. Linux coverage/resource,
+real shipped-0.71 mixed-binary and non-shortenable six-hour/24-hour receipts are preserved as
+external exact-candidate evidence. Final admission reported all 15 work items `ship-ready`.
 
 ## Existing baseline and evidence boundary
 
@@ -1170,7 +1170,7 @@ cargo +nightly fuzz run fuzz_management_envelope -- -max_total_time=60
 cargo +nightly fuzz run fuzz_management_recovery -- -max_total_time=60
 cargo +nightly fuzz run fuzz_management_placement -- -max_total_time=60
 cargo +nightly fuzz run fuzz_management_cursor -- -max_total_time=60
-cargo xtask release-evidence --release 0.72 --require-ship
+cargo xtask release-evidence --release 0.72 --receipts-dir target/release-evidence/receipts --require-ship
 ```
 
 **Evidence contract.** Each receipt records candidate commit/tree, dirty-state rejection, toolchain
@@ -1477,7 +1477,8 @@ route, enum variant, async owner, collection, permission, UI state or error with
    no external runtime assets are present.
 9. Security review finds no unauthorized tenant/member detail, key/token/address leakage, XSS,
    arbitrary proxy/fan-out or browser mutation route.
-10. `cargo xtask release-evidence --release 0.72 --require-ship` is green for the annotated tag's
+10. `cargo xtask release-evidence --release 0.72 --receipts-dir
+    target/release-evidence/receipts --require-ship` is green for the annotated tag's
     exact commit, with no missing/expired/quietly skipped row.
 11. Formation evidence proves discovery, transport authentication, admission, learner/voter,
     catch-up and serving remain distinct under restart, partition, identity mismatch and mixed

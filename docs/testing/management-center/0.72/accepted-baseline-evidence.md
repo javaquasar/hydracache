@@ -27,3 +27,7 @@ The final aggregate contained 15 `ship-ready` work items, zero lower-stage work 
 `current_worktree_dirty = false`, and `receipts_supplied = true`. No product source, threshold,
 duration, rate, TTL or fault schedule changed after the long-running qualification campaigns.
 
+The retained archive is commit
+[`351766af9241399306a385298f0cc252aca6036c`](https://github.com/javaquasar/hydracache/tree/evidence/0.72/management-center-ship/docs/testing/perf-artifacts/0.72/management-center-ship-20260922)
+on branch `evidence/0.72/management-center-ship`. Its `SHA256SUMS` file covers the normalized
+receipts and original baseline/candidate/ship/compatibility/fuzz/coverage artifacts.

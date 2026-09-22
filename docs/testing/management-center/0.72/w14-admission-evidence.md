@@ -37,7 +37,8 @@ candidate command remains intentionally red until all external exact-candidate i
   scheduled/tag CI. The fast corpus gate replays committed valid and hostile seeds and asserts the
   oversize short-circuit; scheduled candidate runs retain four distinct time-bounded libFuzzer
   receipts, so one green decoder cannot stand in for another.
-- `release-evidence --release 0.72 --require-ship` invokes strict management admission before it can
+- `release-evidence --release 0.72 --receipts-dir target/release-evidence/receipts --require-ship`
+  invokes strict management admission before it can
   aggregate ordinary gate receipts. The `MC72-W14-PAPER-GREEN` test proves this path cannot bypass
   missing semantic evidence.
 - `cargo xtask verify` and the Linux CI Rust job run the structural management check; CI also runs
@@ -76,27 +77,30 @@ This development contour proves source, schema, integration, process, fuzz-corpu
 and browser compatibility on Windows. It does not replace the separately registered Linux
 coverage/resource gates, the shipped-predecessor mixed-binary gate or either wall-clock soak tier.
 
-The canary receipts are generated under `target/release-evidence/canaries/` and are intentionally
-not committed: any later source commit makes them stale. The final candidate must regenerate them
-from a clean checkout after the tag candidate is frozen.
+The canary receipts are generated under `target/release-evidence/canaries/`; writing them into the
+runtime branch would make that checkout dirty and invalidate admission. The accepted clean-SHA
+copies are therefore retained only on the separate evidence archive branch together with their
+registry and command digests.
 
-## Deliberately open promotion evidence
+## Completed promotion evidence
 
-`--require-ship` currently rejects promotion for real reasons:
+Exact candidate `24927c28c279c6c34ad90111ee6470b4065e0815` supplied every previously open input:
 
-1. the annotated `v0.71.0` predecessor is available, but the mandatory real 0.71/0.72
-   mixed-binary upgrade, leadership-change, peer-restart and rollback receipt is still missing;
-2. the six-hour candidate and 24-hour ship-confirmation runs require a frozen SHA and admitted host;
-3. Linux FD/RSS and full workspace LLVM coverage receipts must be generated for that same SHA;
-4. the covered `bounded-resource-pressure` row still requires the dedicated Linux resource gate
-   receipt; its source-tree status cannot substitute for execution;
-5. claim source status remains `implemented`: promotion is derived exclusively from validated
-   exact-candidate receipts, so generating evidence never requires a post-freeze source edit that
-   would invalidate the candidate SHA.
+1. full campaign `35537203094` completed 50 jobs without failure, including the mandatory real
+   0.71/0.72 mixed-binary upgrade, leadership-change, peer-restart and rollback proof;
+2. the same campaign passed the non-shortenable six-hour candidate soak on the admitted host;
+3. Linux FD/RSS, full workspace LLVM coverage and all four decoder fuzz receipts were validated for
+   that SHA;
+4. ship campaign `35556487047` passed the separate 24-hour confirmation with the original resource,
+   traffic, TTL and hourly-fault contract;
+5. baseline campaign `35723493297` supplied the clean pre-feature and published-0.71 measurements;
+6. strict `management-center-check --require-evidence` and `release-evidence --receipts-dir
+   target/release-evidence/receipts --require-ship` accepted all 15 work items as `ship-ready`.
 
-These are release-admission inputs, not missing feature implementations. Quiet skip, a development
-branch standing in for v0.71, a dirty receipt, a stale commit, or a retry that overwrites a failed
-attempt remains non-evidence.
+Quiet skip, a development branch standing in for v0.71, a dirty receipt, a stale commit, or a retry
+that overwrites a failed attempt remains non-evidence. The accepted receipts and original key
+artifacts are retained on `evidence/0.72/management-center-ship` at
+`351766af9241399306a385298f0cc252aca6036c`.
 
 ## Documentation and campaign-result rule
 
