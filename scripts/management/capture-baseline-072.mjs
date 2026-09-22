@@ -248,7 +248,11 @@ async function capture(options) {
   run(executable("npm"), ["run", "build"], consoleRoot);
   const testJson = run(executable("npx"), ["playwright", "test", "--reporter=json"], consoleRoot, {
     capture: true,
-    env: { CI: "1", HYDRACACHE_CONSOLE_PORT: "55171" },
+    env: {
+      CI: "1",
+      HYDRACACHE_CONSOLE_PORT: "55171",
+      HYDRACACHE_CONSOLE_URL: "http://127.0.0.1:55171/console/",
+    },
   });
   const testReport = JSON.parse(testJson);
   const failed = testReport.stats?.unexpected ?? 0;
