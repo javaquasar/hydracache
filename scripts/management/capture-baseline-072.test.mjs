@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { createServer } from "node:http";
 import test from "node:test";
 
 import {
@@ -7,6 +8,7 @@ import {
   coveragePercent,
   sha256,
   stableJson,
+  waitForHttp,
 } from "./capture-baseline-072.mjs";
 
 test("stable JSON and hashes are independent of object insertion order", () => {
@@ -55,3 +57,16 @@ test("receipt refuses incomplete or non-finite evidence", () => {
   );
 });
 
+test("readiness probe completes an HTTP request", async () => {
+  const server = createServer((_request, response) => {
+    response.writeHead(200);
+    response.end("ready");
+  });
+  await new Promise((resolve) => server.listen(0, "127.0.0.1", resolve));
+  try {
+    const address = server.address();
+    await waitForHttp(`http://127.0.0.1:${address.port}/`, 1_000);
+  } finally {
+    await new Promise((resolve, reject) => server.close((error) => (error ? reject(error) : resolve())));
+  }
+});

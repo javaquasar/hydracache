@@ -171,7 +171,7 @@ function processCounts(pid) {
   };
 }
 
-function waitForHttp(url, timeoutMs = 30_000) {
+export function waitForHttp(url, timeoutMs = 30_000) {
   const deadline = Date.now() + timeoutMs;
   return new Promise((resolvePromise, rejectPromise) => {
     const attempt = () => {
@@ -182,6 +182,7 @@ function waitForHttp(url, timeoutMs = 30_000) {
       });
       req.on("error", retry);
       req.setTimeout(1_000, () => req.destroy());
+      req.end();
     };
     const retry = () => {
       if (Date.now() >= deadline) rejectPromise(new Error(`server did not become ready: ${url}`));
