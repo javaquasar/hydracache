@@ -32,9 +32,12 @@ uploads receipts and raw records as one immutable artifact. The artifact is then
 
 ```text
 cargo xtask management-center-check --release 0.72 --require-evidence
-cargo xtask release-evidence --release 0.72 --require-ship
+cargo xtask release-evidence --release 0.72 --receipts-dir target/release-evidence/receipts --require-ship
 ```
 
 This is evidence acquisition, not a substitute candidate. Product, threshold, soak, fault schedule,
 TTL and load parameters remain those already exercised by the qualified SHA.
+
+Omitting `--receipts-dir` requests a structural report with no runtime receipts; it is not the
+release-closing invocation.
 
