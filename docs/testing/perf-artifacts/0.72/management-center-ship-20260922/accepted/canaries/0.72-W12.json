@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "release": "0.72.0",
+  "w_item": "W12",
+  "source_commit": "24927c28c279c6c34ad90111ee6470b4065e0815",
+  "dirty_worktree": false,
+  "defect_id": "MC72-W12-FAULT-MASKED",
+  "command_digest": "3263debbcbe15f0007028ff4efafced9d0eea3b8126ea8bebc6e381456971f49",
+  "registry_digest": "ff8de61bfb7632f7ffa5c6f1a9b21ce4c51d1ec5e6f3a78a7ebadbcd516cd304",
+  "expected_failure": "HC-CANARY-RED:MC72-W12-FAULT-MASKED",
+  "started_at": "2026-09-20T21:26:32.258175274Z",
+  "ended_at": "2026-09-20T21:26:34.418011624Z",
+  "duration_ms": 2159,
+  "exit_code": 101,
+  "outcome": "expected_red",
+  "output_sha256": "4168b62aa8bd8a6d72240bae01cc7349bdad28a3108aab477fe998f0701996e7"
+}

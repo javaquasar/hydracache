@@ -1,0 +1,38 @@
+{
+  "schema_version": 1,
+  "release": "0.72.0",
+  "claim_id": "MC72-RECOVERY-TRUTH",
+  "work_item": "W10",
+  "source_commit": "24927c28c279c6c34ad90111ee6470b4065e0815",
+  "dirty_worktree": false,
+  "claim_registry_sha256": "005e5baae8aff238f324fc471bed39843fe71efe5131403c64d7a7d644318a5b",
+  "implementation": [
+    "crates/hydracache-server/src/management_http.rs#async fn persistence"
+  ],
+  "behavior_tests": [
+    "crates/hydracache-server/tests/management_operations_072.rs#recovery_remains_unknown_when_runtime_does_not_retain_report",
+    "console/tests/console_readonly.spec.js#recovery_contract_renders_all_five_outcomes_and_bounded_evidence",
+    "console/tests/console_readonly.spec.js#persistence_keeps_runtime_backup_age_separate_from_verified_artifacts"
+  ],
+  "canaries": [
+    "MC72-W10-LIVENESS-IS-CLEAN",
+    "MC72-W10-LOSS-HIDDEN",
+    "MC72-W10-ILLEGAL-REPAIR-COMPLETE"
+  ],
+  "proof_inputs": [
+    {
+      "kind": "fast_gate",
+      "id": "fast.workspace-nextest",
+      "path": "target/release-evidence/receipts/fast.workspace-nextest-1789938620556839883.json",
+      "bytes": 7072,
+      "sha256": "9d7ace7c6b779a830667aa6fa1432182f7fe5a00cd6e04de7cdf5b3005e464ce"
+    },
+    {
+      "kind": "canary",
+      "id": "MC72-W10-WRITE-FROM-UI",
+      "path": "target/release-evidence/canaries/0.72-W10.json",
+      "bytes": 694,
+      "sha256": "8c812efedaa52d464650a53a71b6730dd47fa0625f85dc889c2f2cdbf781ac6d"
+    }
+  ]
+}

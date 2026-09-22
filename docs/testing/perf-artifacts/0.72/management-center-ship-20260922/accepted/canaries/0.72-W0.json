@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "release": "0.72.0",
+  "w_item": "W0",
+  "source_commit": "24927c28c279c6c34ad90111ee6470b4065e0815",
+  "dirty_worktree": false,
+  "defect_id": "MC72-W0-BASELINE-DRIFT",
+  "command_digest": "034849e0b0352e4b183a49fdd990f59db34bd09fe5d7d8775de156d455015073",
+  "registry_digest": "ff8de61bfb7632f7ffa5c6f1a9b21ce4c51d1ec5e6f3a78a7ebadbcd516cd304",
+  "expected_failure": "HC-CANARY-RED:MC72-W0-BASELINE-DRIFT",
+  "started_at": "2026-09-20T21:25:44.051842006Z",
+  "ended_at": "2026-09-20T21:26:19.196354686Z",
+  "duration_ms": 35144,
+  "exit_code": 101,
+  "outcome": "expected_red",
+  "output_sha256": "64ee45c4d46560fe459b3e1e2e3f8442018ba44d7a515c7f29612306874fa53f"
+}

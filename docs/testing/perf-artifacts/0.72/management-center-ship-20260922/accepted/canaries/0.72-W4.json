@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "release": "0.72.0",
+  "w_item": "W4",
+  "source_commit": "24927c28c279c6c34ad90111ee6470b4065e0815",
+  "dirty_worktree": false,
+  "defect_id": "MC72-W4",
+  "command_digest": "ede4c116150144d2c0d4175171fde26fb5657c79d32b8360eb2c1e85d9a72ccd",
+  "registry_digest": "ff8de61bfb7632f7ffa5c6f1a9b21ce4c51d1ec5e6f3a78a7ebadbcd516cd304",
+  "expected_failure": "HC-CANARY-RED:MC72-W4",
+  "started_at": "2026-09-20T21:26:21.841784918Z",
+  "ended_at": "2026-09-20T21:26:23.274107769Z",
+  "duration_ms": 1432,
+  "exit_code": 1,
+  "outcome": "expected_red",
+  "output_sha256": "02c95f1ab68fd726bf54403e1a3937ae630fec6c0e75106c0f083c07de58dd5a"
+}

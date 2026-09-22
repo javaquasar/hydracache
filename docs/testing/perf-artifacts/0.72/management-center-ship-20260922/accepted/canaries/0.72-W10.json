@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "release": "0.72.0",
+  "w_item": "W10",
+  "source_commit": "24927c28c279c6c34ad90111ee6470b4065e0815",
+  "dirty_worktree": false,
+  "defect_id": "MC72-W10-WRITE-FROM-UI",
+  "command_digest": "0486751cb203fdb3e66ec3300c71966a7f7764540e8296cf31540dd00ff027cf",
+  "registry_digest": "ff8de61bfb7632f7ffa5c6f1a9b21ce4c51d1ec5e6f3a78a7ebadbcd516cd304",
+  "expected_failure": "HC-CANARY-RED:MC72-W10-WRITE-FROM-UI",
+  "started_at": "2026-09-20T21:26:29.817371074Z",
+  "ended_at": "2026-09-20T21:26:31.050445258Z",
+  "duration_ms": 1233,
+  "exit_code": 101,
+  "outcome": "expected_red",
+  "output_sha256": "f4e6cbbd64228388545f507433a0b709f76f455d771e822f5833c2f743135f0e"
+}

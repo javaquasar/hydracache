@@ -1,0 +1,34 @@
+{
+  "schema_version": 1,
+  "release": "0.72.0",
+  "claim_id": "MC72-HISTORY-GUARD",
+  "work_item": "W9",
+  "source_commit": "24927c28c279c6c34ad90111ee6470b4065e0815",
+  "dirty_worktree": false,
+  "claim_registry_sha256": "005e5baae8aff238f324fc471bed39843fe71efe5131403c64d7a7d644318a5b",
+  "implementation": [
+    "crates/hydracache-server/src/management_history.rs#ManagementHistoryService"
+  ],
+  "behavior_tests": [
+    "crates/hydracache-server/tests/management_history_072.rs#resolver_rejects_private_link_local_metadata_and_mixed_rebinding_sets"
+  ],
+  "canaries": [
+    "MC72-W9-ARBITRARY-PROXY"
+  ],
+  "proof_inputs": [
+    {
+      "kind": "fast_gate",
+      "id": "fast.workspace-nextest",
+      "path": "target/release-evidence/receipts/fast.workspace-nextest-1789938620556839883.json",
+      "bytes": 7072,
+      "sha256": "9d7ace7c6b779a830667aa6fa1432182f7fe5a00cd6e04de7cdf5b3005e464ce"
+    },
+    {
+      "kind": "canary",
+      "id": "MC72-W9-ARBITRARY-PROXY",
+      "path": "target/release-evidence/canaries/0.72-W9.json",
+      "bytes": 695,
+      "sha256": "ae8ed2cbb431a68f228fcb0e389b2e03ec83bbb2a28b6b6ea1f6e6ef1f03ca76"
+    }
+  ]
+}

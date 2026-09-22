@@ -1,0 +1,34 @@
+{
+  "schema_version": 1,
+  "release": "0.72.0",
+  "claim_id": "MC72-AGGREGATION-FENCING",
+  "work_item": "W3",
+  "source_commit": "24927c28c279c6c34ad90111ee6470b4065e0815",
+  "dirty_worktree": false,
+  "claim_registry_sha256": "005e5baae8aff238f324fc471bed39843fe71efe5131403c64d7a7d644318a5b",
+  "implementation": [
+    "crates/hydracache-server/src/management_aggregation.rs#ManagementSnapshotAggregator"
+  ],
+  "behavior_tests": [
+    "crates/hydracache-server/tests/management_aggregation_072.rs#three_member_http_aggregate_recovers_from_partial_to_complete"
+  ],
+  "canaries": [
+    "MC72-W3-CONFUSED-FANOUT"
+  ],
+  "proof_inputs": [
+    {
+      "kind": "fast_gate",
+      "id": "fast.workspace-nextest",
+      "path": "target/release-evidence/receipts/fast.workspace-nextest-1789938620556839883.json",
+      "bytes": 7072,
+      "sha256": "9d7ace7c6b779a830667aa6fa1432182f7fe5a00cd6e04de7cdf5b3005e464ce"
+    },
+    {
+      "kind": "canary",
+      "id": "MC72-W3",
+      "path": "target/release-evidence/canaries/0.72-W3.json",
+      "bytes": 662,
+      "sha256": "1a0a6f1961e67fc1f8c99be6c97b905aba78b250a375db8f040642264a5f6c29"
+    }
+  ]
+}

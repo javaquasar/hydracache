@@ -1,0 +1,72 @@
+{
+  "schema_version": 1,
+  "release": "0.72.0",
+  "claim_id": "MC72-MANAGEMENT-DECODER-FUZZ",
+  "work_item": "W14",
+  "source_commit": "24927c28c279c6c34ad90111ee6470b4065e0815",
+  "dirty_worktree": false,
+  "claim_registry_sha256": "005e5baae8aff238f324fc471bed39843fe71efe5131403c64d7a7d644318a5b",
+  "implementation": [
+    "fuzz/src/lib.rs#fuzz_management_envelope",
+    "fuzz/src/lib.rs#fuzz_management_recovery",
+    "fuzz/src/lib.rs#fuzz_management_placement",
+    "fuzz/src/lib.rs#fuzz_management_cursor"
+  ],
+  "behavior_tests": [
+    "fuzz/tests/fuzz_corpus_regression.rs#management_decoder_corpora_cover_valid_invalid_and_oversize_boundaries"
+  ],
+  "canaries": [
+    "MC72-W14-PAPER-GREEN"
+  ],
+  "proof_inputs": [
+    {
+      "kind": "fast_gate",
+      "id": "fast.workspace-nextest",
+      "path": "target/release-evidence/receipts/fast.workspace-nextest-1789938620556839883.json",
+      "bytes": 7072,
+      "sha256": "9d7ace7c6b779a830667aa6fa1432182f7fe5a00cd6e04de7cdf5b3005e464ce"
+    },
+    {
+      "kind": "gated_gate",
+      "id": "tool.coverage-ratchet",
+      "path": "target/release-evidence/receipts/tool.coverage-ratchet-1789938982059170898.json",
+      "bytes": 457934,
+      "sha256": "f9a7014aa39be06ae7133fb15e620454caf441e8e3d7c07a1f0915531bf28d38"
+    },
+    {
+      "kind": "gated_gate",
+      "id": "tool.cargo-fuzz.management-envelope-072",
+      "path": "target/release-evidence/receipts/tool.cargo-fuzz.management-envelope-072-1789938917505082822.json",
+      "bytes": 2692602,
+      "sha256": "c60b261b07df3c5fca461528a05813ab95511da4f9602a2a75a7a793b3014540"
+    },
+    {
+      "kind": "gated_gate",
+      "id": "tool.cargo-fuzz.management-recovery-072",
+      "path": "target/release-evidence/receipts/tool.cargo-fuzz.management-recovery-072-1789938980362322251.json",
+      "bytes": 3846914,
+      "sha256": "ad58f264d15e4a65c500063d8ac94b4977d3d58460aa799683a1ec412351195b"
+    },
+    {
+      "kind": "gated_gate",
+      "id": "tool.cargo-fuzz.management-placement-072",
+      "path": "target/release-evidence/receipts/tool.cargo-fuzz.management-placement-072-1789939043267341890.json",
+      "bytes": 3453443,
+      "sha256": "e59d027246b4eb3514b8598dcb3b499ad9ed2e2e47f298953884e54dbd6131d1"
+    },
+    {
+      "kind": "gated_gate",
+      "id": "tool.cargo-fuzz.management-cursor-072",
+      "path": "target/release-evidence/receipts/tool.cargo-fuzz.management-cursor-072-1789939106098284307.json",
+      "bytes": 644461,
+      "sha256": "5e4360104a302c27337f54a645ac9cef37f00410ff82e35d049e0405845d58c7"
+    },
+    {
+      "kind": "canary",
+      "id": "MC72-W14-PAPER-GREEN",
+      "path": "target/release-evidence/canaries/0.72-W14.json",
+      "bytes": 688,
+      "sha256": "028989ac0b4f7385bb86847f765b7db466bb38d678903c3be96769fb362ceff0"
+    }
+  ]
+}

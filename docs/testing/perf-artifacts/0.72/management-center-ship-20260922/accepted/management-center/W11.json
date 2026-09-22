@@ -1,0 +1,35 @@
+{
+  "schema_version": 1,
+  "release": "0.72.0",
+  "claim_id": "MC72-SECURITY-ACCESSIBILITY",
+  "work_item": "W11",
+  "source_commit": "24927c28c279c6c34ad90111ee6470b4065e0815",
+  "dirty_worktree": false,
+  "claim_registry_sha256": "005e5baae8aff238f324fc471bed39843fe71efe5131403c64d7a7d644318a5b",
+  "implementation": [
+    "crates/hydracache-server/src/management_security.rs#ManagementReadLimiter",
+    "console/scripts/check-static.mjs#unsafe or write-capable"
+  ],
+  "behavior_tests": [
+    "crates/hydracache-server/tests/management_security_072.rs#authorization_matrix_separates_management_read_tenant_read_and_write_admin"
+  ],
+  "canaries": [
+    "MC72-W11-XSS-AUTH-BYPASS"
+  ],
+  "proof_inputs": [
+    {
+      "kind": "fast_gate",
+      "id": "fast.workspace-nextest",
+      "path": "target/release-evidence/receipts/fast.workspace-nextest-1789938620556839883.json",
+      "bytes": 7072,
+      "sha256": "9d7ace7c6b779a830667aa6fa1432182f7fe5a00cd6e04de7cdf5b3005e464ce"
+    },
+    {
+      "kind": "canary",
+      "id": "MC72-W11-XSS-AUTH-BYPASS",
+      "path": "target/release-evidence/canaries/0.72-W11.json",
+      "bytes": 698,
+      "sha256": "1e89cc571a37a74be93cca014fdfd559b1f2910bb5a1381d0bffc986b81b84df"
+    }
+  ]
+}

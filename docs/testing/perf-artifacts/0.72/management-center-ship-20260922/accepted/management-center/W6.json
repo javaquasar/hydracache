@@ -1,0 +1,35 @@
+{
+  "schema_version": 1,
+  "release": "0.72.0",
+  "claim_id": "MC72-CLIENT-LIFECYCLE",
+  "work_item": "W6",
+  "source_commit": "24927c28c279c6c34ad90111ee6470b4065e0815",
+  "dirty_worktree": false,
+  "claim_registry_sha256": "005e5baae8aff238f324fc471bed39843fe71efe5131403c64d7a7d644318a5b",
+  "implementation": [
+    "crates/hydracache-server/src/management_http.rs#async fn clients"
+  ],
+  "behavior_tests": [
+    "crates/hydracache-server/tests/management_clients_072.rs#client_lifecycle_route_is_admin_only_bounded_and_protocol_complete_without_identity",
+    "console/tests/console_readonly.spec.js#console_renders_typed_dashboard_and_all_truth_states"
+  ],
+  "canaries": [
+    "MC72-W6-CLOSED-CLIENT-LEAK"
+  ],
+  "proof_inputs": [
+    {
+      "kind": "fast_gate",
+      "id": "fast.workspace-nextest",
+      "path": "target/release-evidence/receipts/fast.workspace-nextest-1789938620556839883.json",
+      "bytes": 7072,
+      "sha256": "9d7ace7c6b779a830667aa6fa1432182f7fe5a00cd6e04de7cdf5b3005e464ce"
+    },
+    {
+      "kind": "canary",
+      "id": "MC72-W6-CLOSED-CLIENT-LEAK",
+      "path": "target/release-evidence/canaries/0.72-W6.json",
+      "bytes": 700,
+      "sha256": "36f1195f1d11234bdece0facf4995d5b2a470776e39a3e3eb7ceb330bc9a8beb"
+    }
+  ]
+}

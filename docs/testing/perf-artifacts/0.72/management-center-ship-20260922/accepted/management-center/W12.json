@@ -1,0 +1,72 @@
+{
+  "schema_version": 1,
+  "release": "0.72.0",
+  "claim_id": "MC72-PROCESS-FAULTS",
+  "work_item": "W12",
+  "source_commit": "24927c28c279c6c34ad90111ee6470b4065e0815",
+  "dirty_worktree": false,
+  "claim_registry_sha256": "005e5baae8aff238f324fc471bed39843fe71efe5131403c64d7a7d644318a5b",
+  "implementation": [
+    "crates/hydracache-server/tests/management_process_072.rs#three_daemon_fault_recovery_retains_partial_truth_and_resource_bounds"
+  ],
+  "behavior_tests": [
+    "crates/hydracache-server/tests/management_process_072.rs#three_daemon_fault_recovery_retains_partial_truth_and_resource_bounds"
+  ],
+  "canaries": [
+    "MC72-W12-FAULT-MASKED",
+    "MC72-W12-FAULT-NOT-ACTIVATED",
+    "MC72-W12-RESURRECTION",
+    "MC72-W12-RETRY-ERASES-RED"
+  ],
+  "proof_inputs": [
+    {
+      "kind": "fast_gate",
+      "id": "fast.workspace-nextest",
+      "path": "target/release-evidence/receipts/fast.workspace-nextest-1789938620556839883.json",
+      "bytes": 7072,
+      "sha256": "9d7ace7c6b779a830667aa6fa1432182f7fe5a00cd6e04de7cdf5b3005e464ce"
+    },
+    {
+      "kind": "gated_gate",
+      "id": "env.hydracache-run-management-process-072",
+      "path": "target/release-evidence/receipts/env.hydracache-run-management-process-072-1789938486314379318.json",
+      "bytes": 2031,
+      "sha256": "8a0739651f811e5ef6f4c84d7a8227a51f1134f392623ed27412875bb8a24cd3"
+    },
+    {
+      "kind": "gated_gate",
+      "id": "env.hydracache-run-management-resource-linux-072",
+      "path": "target/release-evidence/receipts/env.hydracache-run-management-resource-linux-072-1789938490166177475.json",
+      "bytes": 1912,
+      "sha256": "d4cf10850841866344c265899920e374c56890d2d2afbd611c11ec623fac0778"
+    },
+    {
+      "kind": "gated_gate",
+      "id": "tool.hydracache-server.management-hc1-hc2-coexistence-072",
+      "path": "target/release-evidence/receipts/tool.hydracache-server.management-hc1-hc2-coexistence-072-1789938019687780608.json",
+      "bytes": 10569,
+      "sha256": "6736469afcef9ad79806da21aee59a810d97a5e423557d9393fb27c0d568c1c8"
+    },
+    {
+      "kind": "gated_gate",
+      "id": "env.hydracache-run-management-candidate-soak-072",
+      "path": "target/release-evidence/receipts/env.hydracache-run-management-candidate-soak-072-1789959622753605265.json",
+      "bytes": 2247,
+      "sha256": "310f36610c8b1f05cd6ca217b1c8333a9f49da25e05129d668a5accb6af8cc6a"
+    },
+    {
+      "kind": "gated_gate",
+      "id": "env.hydracache-run-management-ship-soak-072",
+      "path": "target/release-evidence/receipts/env.hydracache-run-management-ship-soak-072-1790068242030560475.json",
+      "bytes": 2097,
+      "sha256": "256573a29476af61407cf94338c62f4ca729ca347487393f2f455f2c1a680b66"
+    },
+    {
+      "kind": "canary",
+      "id": "MC72-W12-FAULT-MASKED",
+      "path": "target/release-evidence/canaries/0.72-W12.json",
+      "bytes": 692,
+      "sha256": "d7ff295610f5ec6c6b160342dfe868681b6b40176acf7f7d0e8f877d49ead5a4"
+    }
+  ]
+}

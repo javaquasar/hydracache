@@ -1,0 +1,36 @@
+{
+  "schema_version": 1,
+  "release": "0.72.0",
+  "claim_id": "MC72-HEALTH-TRUTH",
+  "work_item": "W8",
+  "source_commit": "24927c28c279c6c34ad90111ee6470b4065e0815",
+  "dirty_worktree": false,
+  "claim_registry_sha256": "005e5baae8aff238f324fc471bed39843fe71efe5131403c64d7a7d644318a5b",
+  "implementation": [
+    "crates/hydracache-observability/src/management_health.rs#evaluate_management_health"
+  ],
+  "behavior_tests": [
+    "crates/hydracache-observability/tests/management_health_072.rs#missing_modeled_and_partial_inputs_are_unknown_not_pass"
+  ],
+  "canaries": [
+    "MC72-W8-UNKNOWN-AS-PASS",
+    "MC72-W8-STALE-RECOVERY-WINS",
+    "MC72-W8-TRUNCATED-PLACEMENT-PASS"
+  ],
+  "proof_inputs": [
+    {
+      "kind": "fast_gate",
+      "id": "fast.workspace-nextest",
+      "path": "target/release-evidence/receipts/fast.workspace-nextest-1789938620556839883.json",
+      "bytes": 7072,
+      "sha256": "9d7ace7c6b779a830667aa6fa1432182f7fe5a00cd6e04de7cdf5b3005e464ce"
+    },
+    {
+      "kind": "canary",
+      "id": "MC72-W8-UNKNOWN-AS-PASS",
+      "path": "target/release-evidence/canaries/0.72-W8.json",
+      "bytes": 695,
+      "sha256": "d409fac8e48b7aa3d33badb8ad94a17c090d329913b504224e087a9644a02903"
+    }
+  ]
+}

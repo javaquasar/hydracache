@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "release": "0.72.0",
+  "w_item": "W5",
+  "source_commit": "24927c28c279c6c34ad90111ee6470b4065e0815",
+  "dirty_worktree": false,
+  "defect_id": "MC72-W5-MIXED-EPOCH",
+  "command_digest": "8caead3d83fcfc63fd59905958fbd9af8750d443d628ebb4b685542b10c56558",
+  "registry_digest": "ff8de61bfb7632f7ffa5c6f1a9b21ce4c51d1ec5e6f3a78a7ebadbcd516cd304",
+  "expected_failure": "HC-CANARY-RED:MC72-W5-MIXED-EPOCH",
+  "started_at": "2026-09-20T21:26:23.287420905Z",
+  "ended_at": "2026-09-20T21:26:24.547448211Z",
+  "duration_ms": 1260,
+  "exit_code": 101,
+  "outcome": "expected_red",
+  "output_sha256": "5cb4abda23e1af774b2897e384e78b516b59f364f55a477b92aed355e53e96b3"
+}

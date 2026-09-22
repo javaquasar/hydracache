@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "release": "0.72.0",
+  "w_item": "W7",
+  "source_commit": "24927c28c279c6c34ad90111ee6470b4065e0815",
+  "dirty_worktree": false,
+  "defect_id": "MC72-W7-CROSS-TENANT",
+  "command_digest": "675c5cd66d0f95f9d1d5fc419a1144b1169a8b8adff9890daa32f4745936f5ac",
+  "registry_digest": "ff8de61bfb7632f7ffa5c6f1a9b21ce4c51d1ec5e6f3a78a7ebadbcd516cd304",
+  "expected_failure": "HC-CANARY-RED:MC72-W7-CROSS-TENANT",
+  "started_at": "2026-09-20T21:26:25.730556557Z",
+  "ended_at": "2026-09-20T21:26:26.937661552Z",
+  "duration_ms": 1207,
+  "exit_code": 101,
+  "outcome": "expected_red",
+  "output_sha256": "31f9dc87d306eea5fa04199fdac1faffe0a3e5f9a036b617d9319473cf1c6098"
+}

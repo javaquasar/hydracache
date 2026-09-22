@@ -1,0 +1,35 @@
+{
+  "schema_version": 1,
+  "release": "0.72.0",
+  "claim_id": "MC72-BASELINE-BOUNDS",
+  "work_item": "W0",
+  "source_commit": "24927c28c279c6c34ad90111ee6470b4065e0815",
+  "dirty_worktree": false,
+  "claim_registry_sha256": "005e5baae8aff238f324fc471bed39843fe71efe5131403c64d7a7d644318a5b",
+  "implementation": [
+    "docs/testing/management-center/0.72/bounds.toml#max_response_bytes"
+  ],
+  "behavior_tests": [
+    "crates/hydracache-server/tests/management_http.rs#source_and_bound_registries_match_executable_contract"
+  ],
+  "canaries": [
+    "MC72-W0-BASELINE-DRIFT",
+    "MC72-W0-UNOWNED-FIELD"
+  ],
+  "proof_inputs": [
+    {
+      "kind": "fast_gate",
+      "id": "fast.workspace-nextest",
+      "path": "target/release-evidence/receipts/fast.workspace-nextest-1789938620556839883.json",
+      "bytes": 7072,
+      "sha256": "9d7ace7c6b779a830667aa6fa1432182f7fe5a00cd6e04de7cdf5b3005e464ce"
+    },
+    {
+      "kind": "canary",
+      "id": "MC72-W0-BASELINE-DRIFT",
+      "path": "target/release-evidence/canaries/0.72-W0.json",
+      "bytes": 694,
+      "sha256": "a20ad6ed7aecdd163d5f237bbe51295b069f3c4aaa28da7094eb0d8d9b9f0a2b"
+    }
+  ]
+}

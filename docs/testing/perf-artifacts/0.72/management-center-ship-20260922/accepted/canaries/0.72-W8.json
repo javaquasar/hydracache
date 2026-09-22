@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "release": "0.72.0",
+  "w_item": "W8",
+  "source_commit": "24927c28c279c6c34ad90111ee6470b4065e0815",
+  "dirty_worktree": false,
+  "defect_id": "MC72-W8-UNKNOWN-AS-PASS",
+  "command_digest": "89df48416617520c23a94706e17f84226b6f5c31987f86d567c72a0b37fd166c",
+  "registry_digest": "ff8de61bfb7632f7ffa5c6f1a9b21ce4c51d1ec5e6f3a78a7ebadbcd516cd304",
+  "expected_failure": "HC-CANARY-RED:MC72-W8-UNKNOWN-AS-PASS",
+  "started_at": "2026-09-20T21:26:26.950872338Z",
+  "ended_at": "2026-09-20T21:26:28.157563577Z",
+  "duration_ms": 1206,
+  "exit_code": 101,
+  "outcome": "expected_red",
+  "output_sha256": "90ac856328c3e90dacfbcedf9263aaabecc9601bb1bf962bfbc6c0f127516f83"
+}

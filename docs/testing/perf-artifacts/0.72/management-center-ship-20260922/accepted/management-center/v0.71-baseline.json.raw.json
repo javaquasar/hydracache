@@ -1,0 +1,61 @@
+{
+  "command": {
+    "tool": "capture-baseline-072.mjs",
+    "tool_sha256": "d3dc7342b0acd58672d505a2af728fa0d66c183c27e50f4113863e353cf78964",
+    "baseline": "published_previous",
+    "source_ref": "v0.71.0",
+    "source_commit": "da8d6de409a657e0260e7fbfb4ab31d8d6ad5ca8",
+    "candidate_commit": "24927c28c279c6c34ad90111ee6470b4065e0815",
+    "node": "v22.23.2",
+    "platform": "linux-x64"
+  },
+  "measurements": {
+    "bundle_bytes": {
+      "value": 20915,
+      "unit": "bytes",
+      "samples": 1
+    },
+    "endpoint_latency_bytes": {
+      "value": 558.4623,
+      "unit": "milliseconds",
+      "samples": 5,
+      "response_bytes": 1184
+    },
+    "server_retained_owners": {
+      "value": 0,
+      "unit": "count",
+      "samples": 5,
+      "before": {
+        "fd": 20,
+        "tasks": 11
+      },
+      "after": {
+        "fd": 20,
+        "tasks": 11
+      }
+    },
+    "browser_heap_dom": {
+      "value": 10000000,
+      "unit": "bytes",
+      "samples": 1,
+      "dom_nodes": 105
+    },
+    "fd_task_counts": {
+      "value": 31,
+      "unit": "count",
+      "samples": 1,
+      "fd": 20,
+      "tasks": 11
+    },
+    "console_coverage": {
+      "value": 93.1142,
+      "unit": "percent",
+      "samples": 1
+    },
+    "legacy_console_tests": {
+      "value": 12,
+      "unit": "count",
+      "samples": 1
+    }
+  }
+}

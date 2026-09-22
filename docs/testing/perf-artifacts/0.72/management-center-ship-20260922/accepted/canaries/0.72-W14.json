@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "release": "0.72.0",
+  "w_item": "W14",
+  "source_commit": "24927c28c279c6c34ad90111ee6470b4065e0815",
+  "dirty_worktree": false,
+  "defect_id": "MC72-W14-PAPER-GREEN",
+  "command_digest": "c3d6fd30d24e56f6622b756e075499331f8ba3d4c05cdb5158fe1e8308c27bde",
+  "registry_digest": "ff8de61bfb7632f7ffa5c6f1a9b21ce4c51d1ec5e6f3a78a7ebadbcd516cd304",
+  "expected_failure": "HC-CANARY-RED:MC72-W14-PAPER-GREEN",
+  "started_at": "2026-09-20T21:26:34.99816452Z",
+  "ended_at": "2026-09-20T21:26:35.652303054Z",
+  "duration_ms": 654,
+  "exit_code": 101,
+  "outcome": "expected_red",
+  "output_sha256": "6f9ede23e0cdcae11a8e1c4412ca0aa6a4ae769fc3c6dfa5a76c349aaf528599"
+}

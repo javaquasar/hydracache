@@ -1,0 +1,43 @@
+{
+  "schema_version": 1,
+  "release": "0.72.0",
+  "gate_id": "fast.workspace-nextest",
+  "source_commit": "24927c28c279c6c34ad90111ee6470b4065e0815",
+  "dirty_worktree": false,
+  "command_digest": "c5dcee3e2ec9668589f44d012e3b0a902fe342bbb44402f14cfda5ded4283c3c",
+  "registry_digest": "f72107ef748567c4c8a950cf99f0762917edea975fdc0562c4d5da5b36afdc82",
+  "input_digest": "2f7afdf4bdbbdfd6e9f6cbf187340eeb797c8c5cd055b4afd8a12830f96c5bcb",
+  "toolchain": "rustc 1.94.0 (4a4ef493e 2026-03-02)",
+  "container_identity": {
+    "CI": "true",
+    "GITHUB_ACTIONS": "true",
+    "GITHUB_RUN_ATTEMPT": "1",
+    "GITHUB_RUN_ID": "35537203094",
+    "GITHUB_SHA": "24927c28c279c6c34ad90111ee6470b4065e0815",
+    "HYDRACACHE_EVIDENCE_BASE_SHA": "24927c28c279c6c34ad90111ee6470b4065e0815",
+    "HYDRACACHE_EVIDENCE_HEAD_SHA": "24927c28c279c6c34ad90111ee6470b4065e0815",
+    "HYDRACACHE_EVIDENCE_TESTED_SHA": "24927c28c279c6c34ad90111ee6470b4065e0815"
+  },
+  "platform": "linux-x86_64",
+  "started_at": "2026-09-20T21:03:47.071809364Z",
+  "ended_at": "2026-09-20T21:10:20.546487581Z",
+  "duration_ms": 393484,
+  "outcome": "pass",
+  "exit_code": 0,
+  "normalized_result": {
+    "outcome": "pass",
+    "exit_code": 0,
+    "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "stderr_sha256": "e825826b981b6089b911a64637324bcedc68cdaa9b4916e1c2fbe1147abcbe9d"
+  },
+  "stdout": "",
+  "stderr": "\u001b[1m\u001b[92m   Compiling\u001b[0m hydracache-core v0.72.0 (/home/runner/work/hydracache/hydracache/crates/hydracache-core)\n\u001b[1m\u001b[92m   Compiling\u001b[0m hydracache-client-protocol v0.72.0 (/home/runner/work/hydracache/hydracache/crates/hydracache-client-protocol)\n\u001b[1m\u001b[92m   Compiling\u001b[0m hydracache v0.72.0 (/home/runner/work/hydracache/hydracache/crates/hydracache)\n\u001b[1m\u001b[92m   Compiling\u001b[0m hydracache-client-hc2 v0.72.0 (/home/runner/work/hydracache/hydracache/crates/hydracache-client-hc2)\n\u001b[1m\u001b[92m   Compiling\u001b[0m hydracache-client-plane-spike v0.72.0 (/home/runner/work/hydracache/hydracache/crates/hydracache-client-plane-spike)\n\u001b[1m\u001b[92m   Compiling\u001b[0m hydracache-operator v0.72.0 (/home/runner/work/hydracache/hydracache/crates/hydracache-operator)\n\u001b[1m\u001b[92m   Compiling\u001b[0m hydracache-observability v0.72.0 (/home/runner/work/hydracache/hydracache/crates/hydracache-observability)\n\u001b[1m\u001b[92m   Compiling\u001b[0m hydracache-cluster-raft v0.72.0 (/home/runner/work/hydracache/hydracache/crates/hydracache-cluster-raft)\n\u001b[1m\u001b[92m   Compiling\u001b[0m hydracache-client-transport-axum v0.72.0 (/home/runner/work/hydracache/hydracache/crates/hydracache-client-transport-axum)\n\u001b[1m\u001b[92m   Compiling\u001b[0m hydracache-redis-compat v0.72.0 (/home/runner/work/hydracache/hydracache/crates/hydracache-redis-compat)\n\u001b[1m\u001b[92m   Compiling\u001b[0m hydracache-cluster-testkit v0.72.0 (/home/runner/work/hydracache/hydracache/crates/hydracache-cluster-testkit)\n\u001b[1m\u001b[92m   Compiling\u001b[0m hydracache-cluster-transport-axum v0.72.0 (/home/runner/work/hydracache/hydracache/crates/hydracache-cluster-transport-axum)\n\u001b[1m\u001b[92m   Compiling\u001b[0m hydracache-cluster-chitchat v0.72.0 (/home/runner/work/hydracache/hydracache/crates/hydracache-cluster-chitchat)\n\u001b[1m\u001b[92m   Compiling\u001b[0m hydracache-sim v0.72.0 (/home/runner/work/hydracache/hydracache/crates/hydracache-sim)\n\u001b[1m\u001b[92m   Compiling\u001b[0m hydracache-actuator-axum v0.72.0 (/home/runner/work/hydracache/hydracache/crates/hydracache-actuator-axum)\n\u001b[1m\u001b[92m   Compiling\u001b[0m hydracache-loadgen v0.72.0 (/home/runner/work/hydracache/hydracache/crates/hydracache-loadgen)\n\u001b[1m\u001b[92m   Compiling\u001b[0m hydracache-server v0.72.0 (/home/runner/work/hydracache/hydracache/crates/hydracache-server)\n\u001b[1m\u001b[92m   Compiling\u001b[0m hydracache-db v0.72.0 (/home/runner/work/hydracache/hydracache/crates/hydracache-db)\n\u001b[1m\u001b[92m   Compiling\u001b[0m hydracache-sqlx v0.72.0 (/home/runner/work/hydracache/hydracache/crates/hydracache-sqlx)\n\u001b[1m\u001b[92m   Compiling\u001b[0m hydracache-seaorm v0.72.0 (/home/runner/work/hydracache/hydracache/crates/hydracache-seaorm)\n\u001b[1m\u001b[92m   Compiling\u001b[0m hydracache-diesel v0.72.0 (/home/runner/work/hydracache/hydracache/crates/hydracache-diesel)\n\u001b[1m\u001b[92m   Compiling\u001b[0m hydracache-fuzz v0.0.0 (/home/runner/work/hydracache/hydracache/fuzz)\n\u001b[1m\u001b[92m   Compiling\u001b[0m hydracache-sql-lint v0.72.0 (/home/runner/work/hydracache/hydracache/crates/hydracache-sql-lint)\n\u001b[1m\u001b[92m   Compiling\u001b[0m hydracache-sandbox v0.72.0 (/home/runner/work/hydracache/hydracache/crates/hydracache-sandbox)\n\u001b[1m\u001b[92m   Compiling\u001b[0m xtask v0.72.0 (/home/runner/work/hydracache/hydracache/crates/xtask)\n\u001b[1m\u001b[92m   Compiling\u001b[0m hydracache-cluster v0.72.0 (/home/runner/work/hydracache/hydracache/crates/hydracache-cluster)\n\u001b[1m\u001b[92m   Compiling\u001b[0m hydracache-transport-nats v0.72.0 (/home/runner/work/hydracache/hydracache/crates/hydracache-transport-nats)\n\u001b[1m\u001b[92m   Compiling\u001b[0m hydracache-sim-wasm v0.72.0 (/home/runner/work/hydracache/hydracache/crates/hydracache-sim-wasm)\n\u001b[1m\u001b[92m   Compiling\u001b[0m hydracache-cdc-postgres v0.72.0 (/home/runner/work/hydracache/hydracache/crates/hydracache-cdc-postgres)\n\u001b[1m\u001b[92m   Compiling\u001b[0m hydracache-transport-redis v0.72.0 (/home/runner/work/hydracache/hydracache/crates/hydracache-transport-redis)\n\u001b[1m\u001b[92m   Compiling\u001b[0m hydracache-client v0.72.0 (/home/runner/work/hydracache/hydracache/crates/hydracache-client)\n\u001b[1m\u001b[92m   Compiling\u001b[0m hydracache-post-publish-consumer v0.72.0 (/home/runner/work/hydracache/hydracache/tests/post-publish-consumer)\n\u001b[1m\u001b[92m   Compiling\u001b[0m hydracache-cache-sim v0.72.0 (/home/runner/work/hydracache/hydracache/crates/hydracache-cache-sim)\n\u001b[1m\u001b[92m   Compiling\u001b[0m hydracache-macros v0.72.0 (/home/runner/work/hydracache/hydracache/crates/hydracache-macros)\n\u001b[1m\u001b[92m    Finished\u001b[0m `test` profile [unoptimized] target(s) in 3m 06s\n────────────\n\u001b[32;1m Nextest run\u001b[0m ID \u001b[1ma8c93cfe-9dbf-4103-8220-31456c5205b9\u001b[0m with nextest profile: \u001b[1mci\u001b[0m\n\u001b[32;1m    Starting\u001b[0m \u001b[1m3303\u001b[0m tests across \u001b[1m429\u001b[0m binaries (\u001b[1m84\u001b[0m tests \u001b[33;1mskipped\u001b[0m)\n────────────\n\u001b[32;1m     Summary\u001b[0m [ 205.418s] \u001b[1m3303\u001b[0m tests run: \u001b[1m3303\u001b[0m \u001b[32;1mpassed\u001b[0m, \u001b[1m84\u001b[0m \u001b[33;1mskipped\u001b[0m\n",
+  "artifacts": [
+    {
+      "path": "target/nextest/ci/junit.xml",
+      "sha256": "dd165f0fe64ec8da0725f33b35e95fc503b6be6dcc67f9801254cddbfcc1f402",
+      "bytes": 723440
+    }
+  ],
+  "missing_artifacts": []
+}

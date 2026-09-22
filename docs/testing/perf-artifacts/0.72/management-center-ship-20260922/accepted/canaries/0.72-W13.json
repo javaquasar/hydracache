@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "release": "0.72.0",
+  "w_item": "W13",
+  "source_commit": "24927c28c279c6c34ad90111ee6470b4065e0815",
+  "dirty_worktree": false,
+  "defect_id": "MC72-W13-MIXED-ARTIFACT",
+  "command_digest": "e8ac6eca9a851ed311d34fc863d0c6841d3880fcb3eec8c2639b9d40695f7a23",
+  "registry_digest": "ff8de61bfb7632f7ffa5c6f1a9b21ce4c51d1ec5e6f3a78a7ebadbcd516cd304",
+  "expected_failure": "HC-CANARY-RED:MC72-W13-MIXED-ARTIFACT",
+  "started_at": "2026-09-20T21:26:34.431160034Z",
+  "ended_at": "2026-09-20T21:26:34.985089933Z",
+  "duration_ms": 553,
+  "exit_code": 101,
+  "outcome": "expected_red",
+  "output_sha256": "5bbc766816f07297910d158db59e49a749a5204f35f14dc03748998f97a4beb7"
+}

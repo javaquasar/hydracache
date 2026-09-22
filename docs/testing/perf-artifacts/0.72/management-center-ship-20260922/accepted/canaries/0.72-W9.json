@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "release": "0.72.0",
+  "w_item": "W9",
+  "source_commit": "24927c28c279c6c34ad90111ee6470b4065e0815",
+  "dirty_worktree": false,
+  "defect_id": "MC72-W9-ARBITRARY-PROXY",
+  "command_digest": "11936a05b261978c06360343ad431421555958848a1aab9eab37623b448aee0b",
+  "registry_digest": "ff8de61bfb7632f7ffa5c6f1a9b21ce4c51d1ec5e6f3a78a7ebadbcd516cd304",
+  "expected_failure": "HC-CANARY-RED:MC72-W9-ARBITRARY-PROXY",
+  "started_at": "2026-09-20T21:26:28.171100534Z",
+  "ended_at": "2026-09-20T21:26:29.804122741Z",
+  "duration_ms": 1633,
+  "exit_code": 101,
+  "outcome": "expected_red",
+  "output_sha256": "1f9d2314ad88ea2ea93036dcb21710e0e51b8f4dbaaa78dafc11514df443cdcd"
+}

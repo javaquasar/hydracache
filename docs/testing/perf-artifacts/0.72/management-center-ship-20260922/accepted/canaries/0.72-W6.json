@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "release": "0.72.0",
+  "w_item": "W6",
+  "source_commit": "24927c28c279c6c34ad90111ee6470b4065e0815",
+  "dirty_worktree": false,
+  "defect_id": "MC72-W6-CLOSED-CLIENT-LEAK",
+  "command_digest": "f230673dd0c1b37b650d9e1f00b552bcb1c11f93a7edb20e5be6acff347fd19e",
+  "registry_digest": "ff8de61bfb7632f7ffa5c6f1a9b21ce4c51d1ec5e6f3a78a7ebadbcd516cd304",
+  "expected_failure": "HC-CANARY-RED:MC72-W6-CLOSED-CLIENT-LEAK",
+  "started_at": "2026-09-20T21:26:24.56075875Z",
+  "ended_at": "2026-09-20T21:26:25.717130233Z",
+  "duration_ms": 1156,
+  "exit_code": 101,
+  "outcome": "expected_red",
+  "output_sha256": "e97b82f6d36f2fd9f3ed3ef46f05637b9e5022181f13ae788b48531f9cfbc183"
+}

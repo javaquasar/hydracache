@@ -1,0 +1,35 @@
+{
+  "schema_version": 1,
+  "release": "0.72.0",
+  "previous_tag": "v0.71.0",
+  "previous_commit": "da8d6de409a657e0260e7fbfb4ab31d8d6ad5ca8",
+  "previous_binary_sha256": "94ffdc9e72808c584036a84c43f164bc8cf71c2b3b1d5878c1c0e535bc6cc65b",
+  "candidate_binary_sha256": "2eda1872f5e9e5530b1740f5528620dbd14152e857863036519230d6a199b556",
+  "scenarios": [
+    {
+      "id": "old-leader-new-followers",
+      "outcome": "pass",
+      "observation_sha256": "a4d6242fbc8f884a3dbfe4ef2a4268be0a5513f834f5d54558237901b5ba55da"
+    },
+    {
+      "id": "leadership-change-during-aggregation",
+      "outcome": "pass",
+      "observation_sha256": "d663511b647969bbbfe8a6df2a381ce72f14ab4760d1458faf4952911b367a8a"
+    },
+    {
+      "id": "new-leader-old-follower",
+      "outcome": "pass",
+      "observation_sha256": "6168fbeff059b13ce62f82eed81677d850257f89489534c101f6a2c3c7ac4fda"
+    },
+    {
+      "id": "old-peer-restart-during-placement-trace",
+      "outcome": "pass",
+      "observation_sha256": "a609b156f5df9fc0af989c254e862893b73761a1d6136535408bf4a4a53c122b"
+    },
+    {
+      "id": "rollback-after-ui-observation",
+      "outcome": "pass",
+      "observation_sha256": "b2e28761272b440d02b077429b08dad28f256504f4c58604d256bd9a98d86cc4"
+    }
+  ]
+}

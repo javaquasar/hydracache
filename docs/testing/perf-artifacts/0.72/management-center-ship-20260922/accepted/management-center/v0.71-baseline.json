@@ -1,0 +1,68 @@
+{
+  "schema_version": 1,
+  "release": "0.72.0",
+  "baseline": "published_previous",
+  "source_ref": "v0.71.0",
+  "source_commit": "da8d6de409a657e0260e7fbfb4ab31d8d6ad5ca8",
+  "candidate_commit": "24927c28c279c6c34ad90111ee6470b4065e0815",
+  "dirty_worktree": false,
+  "outcome": "pass",
+  "measurements": [
+    {
+      "id": "legacy_console_tests",
+      "value": 12,
+      "unit": "count",
+      "samples": 1,
+      "command_sha256": "5f7f88b5d4a99e0dea923e78da6884b9803d27597a5b3dac70d431e857ec0993",
+      "output_sha256": "e881c337c682c5d7443ec930d2d9cdbfb82a8b10db024478504767d81f191670"
+    },
+    {
+      "id": "bundle_bytes",
+      "value": 20915,
+      "unit": "bytes",
+      "samples": 1,
+      "command_sha256": "5f7f88b5d4a99e0dea923e78da6884b9803d27597a5b3dac70d431e857ec0993",
+      "output_sha256": "0608be5a0d43bcc1d55c292cd79440536da7be5a70e54ee3d54678d0bc06ca92"
+    },
+    {
+      "id": "endpoint_latency_bytes",
+      "value": 558.4623,
+      "unit": "milliseconds",
+      "samples": 5,
+      "command_sha256": "5f7f88b5d4a99e0dea923e78da6884b9803d27597a5b3dac70d431e857ec0993",
+      "output_sha256": "db37d17e35ed438060b9e7e6a389079781260cfc4349edad5f4cfc571efec0b1"
+    },
+    {
+      "id": "server_retained_owners",
+      "value": 0,
+      "unit": "count",
+      "samples": 5,
+      "command_sha256": "5f7f88b5d4a99e0dea923e78da6884b9803d27597a5b3dac70d431e857ec0993",
+      "output_sha256": "5bcaf3630312302c7b6626462cebec4212387a8902be8779108156bd1e0687a5"
+    },
+    {
+      "id": "browser_heap_dom",
+      "value": 10000000,
+      "unit": "bytes",
+      "samples": 1,
+      "command_sha256": "5f7f88b5d4a99e0dea923e78da6884b9803d27597a5b3dac70d431e857ec0993",
+      "output_sha256": "d29c32a24c373184414713df5c17254945c5753aea41d3a0d4a4ea6eec93e83b"
+    },
+    {
+      "id": "fd_task_counts",
+      "value": 31,
+      "unit": "count",
+      "samples": 1,
+      "command_sha256": "5f7f88b5d4a99e0dea923e78da6884b9803d27597a5b3dac70d431e857ec0993",
+      "output_sha256": "b27ade6961b63fffcdc70ce2882f3af25322f5f929ef9257b58eb8f073cc727d"
+    },
+    {
+      "id": "console_coverage",
+      "value": 93.1142,
+      "unit": "percent",
+      "samples": 1,
+      "command_sha256": "5f7f88b5d4a99e0dea923e78da6884b9803d27597a5b3dac70d431e857ec0993",
+      "output_sha256": "b377b10c8cec71677505922ad0e44330bc004bf9ba13d2e37ccd75b8c2fed11c"
+    }
+  ]
+}

@@ -1,0 +1,34 @@
+{
+  "schema_version": 1,
+  "release": "0.72.0",
+  "gate_id": "fast.workspace-nextest",
+  "source_commit": "24927c28c279c6c34ad90111ee6470b4065e0815",
+  "dirty_worktree": false,
+  "command_digest": "c5dcee3e2ec9668589f44d012e3b0a902fe342bbb44402f14cfda5ded4283c3c",
+  "registry_digest": "f72107ef748567c4c8a950cf99f0762917edea975fdc0562c4d5da5b36afdc82",
+  "input_digest": "2f7afdf4bdbbdfd6e9f6cbf187340eeb797c8c5cd055b4afd8a12830f96c5bcb",
+  "toolchain": "rustc 1.94.0 (4a4ef493e 2026-03-02)",
+  "container_identity": {},
+  "platform": "windows-x86_64",
+  "started_at": "2026-09-22T10:23:05.6875311Z",
+  "ended_at": "2026-09-22T10:42:04.8027816Z",
+  "duration_ms": 1139211,
+  "outcome": "fail",
+  "exit_code": 100,
+  "normalized_result": {
+    "outcome": "fail",
+    "exit_code": 100,
+    "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "stderr_sha256": "a517476a2ca12e32b71b272b1bcba2294864657bf07dbb010c5061ecc81d2bfe"
+  },
+  "stdout": "",
+  "stderr": "   Compiling hydracache-cluster v0.72.0 (C:\\Workspace\\prj\\jq\\cashe\\hydracache-072-implementation\\crates\\hydracache-cluster)\n   Compiling hydracache-cluster-transport-axum v0.72.0 (C:\\Workspace\\prj\\jq\\cashe\\hydracache-072-implementation\\crates\\hydracache-cluster-transport-axum)\n   Compiling hydracache-client-transport-axum v0.72.0 (C:\\Workspace\\prj\\jq\\cashe\\hydracache-072-implementation\\crates\\hydracache-client-transport-axum)\n   Compiling hydracache-cluster-testkit v0.72.0 (C:\\Workspace\\prj\\jq\\cashe\\hydracache-072-implementation\\crates\\hydracache-cluster-testkit)\n   Compiling hydracache-sim v0.72.0 (C:\\Workspace\\prj\\jq\\cashe\\hydracache-072-implementation\\crates\\hydracache-sim)\n   Compiling hydracache-client v0.72.0 (C:\\Workspace\\prj\\jq\\cashe\\hydracache-072-implementation\\crates\\hydracache-client)\n   Compiling hydracache-cluster-chitchat v0.72.0 (C:\\Workspace\\prj\\jq\\cashe\\hydracache-072-implementation\\crates\\hydracache-cluster-chitchat)\n   Compiling hydracache-observability v0.72.0 (C:\\Workspace\\prj\\jq\\cashe\\hydracache-072-implementation\\crates\\hydracache-observability)\n   Compiling hydracache-actuator-axum v0.72.0 (C:\\Workspace\\prj\\jq\\cashe\\hydracache-072-implementation\\crates\\hydracache-actuator-axum)\n   Compiling hydracache-cache-sim v0.72.0 (C:\\Workspace\\prj\\jq\\cashe\\hydracache-072-implementation\\crates\\hydracache-cache-sim)\n   Compiling hydracache-client-protocol v0.72.0 (C:\\Workspace\\prj\\jq\\cashe\\hydracache-072-implementation\\crates\\hydracache-client-protocol)\n   Compiling hydracache-macros v0.72.0 (C:\\Workspace\\prj\\jq\\cashe\\hydracache-072-implementation\\crates\\hydracache-macros)\n   Compiling hydracache-core v0.72.0 (C:\\Workspace\\prj\\jq\\cashe\\hydracache-072-implementation\\crates\\hydracache-core)\n    Finished `test` profile [unoptimized + debuginfo] target(s) in 1m 38s\n────────────\n Nextest run ID 50c8c6df-c809-40a0-b293-3d31cf33113d with nextest profile: ci\n    Starting 3300 tests across 429 binaries (82 tests skipped)\n        FAIL [  12.294s] (1602/3300) hydracache-loadgen::performance_contract_067 resp_connection_and_pipeline_sweep_is_exact_and_scheduled_send_based\n  stdout ───\n\n    running 1 test\n    test resp_connection_and_pipeline_sweep_is_exact_and_scheduled_send_based ... FAILED\n\n    failures:\n\n    failures:\n        resp_connection_and_pipeline_sweep_is_exact_and_scheduled_send_based\n\n    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 54 filtered out; finished in 12.14s\n\n  stderr ───\n\n    thread 'resp_connection_and_pipeline_sweep_is_exact_and_scheduled_send_based' (23676) panicked at crates\\hydracache-loadgen\\tests\\performance_contract_067.rs:1571:18:\n    called `Result::unwrap()` on an `Err` value: Runtime(\"scheduled-send latency failed to expose the injected RESP delay\")\n    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\n\n────────────\n     Summary [ 763.458s] 3300 tests run: 3299 passed (2 slow), 1 failed, 82 skipped\n        SLOW [ 301.322s] ( 256/3300) hydracache::cacheable_ui cacheable_macro_compile_tests\n        SLOW [ 263.665s] (1346/3300) hydracache-db::derive_ui proc_macro_compile_tests\n        FAIL [  12.294s] (1602/3300) hydracache-loadgen::performance_contract_067 resp_connection_and_pipeline_sweep_is_exact_and_scheduled_send_based\nerror: test run failed\n",
+  "artifacts": [
+    {
+      "path": "target/nextest/ci/junit.xml",
+      "sha256": "6c4dd58c3d3b614ea076f8cdb480f9266a904f6925397e868380b543753fc0da",
+      "bytes": 724205
+    }
+  ],
+  "missing_artifacts": []
+}

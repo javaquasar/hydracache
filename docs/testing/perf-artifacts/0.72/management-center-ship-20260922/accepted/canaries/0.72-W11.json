@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "release": "0.72.0",
+  "w_item": "W11",
+  "source_commit": "24927c28c279c6c34ad90111ee6470b4065e0815",
+  "dirty_worktree": false,
+  "defect_id": "MC72-W11-XSS-AUTH-BYPASS",
+  "command_digest": "45cb1d622b22f78d1285cc7634ef0a3260fba6c24f030c6a2fdf46dfc57fe17d",
+  "registry_digest": "ff8de61bfb7632f7ffa5c6f1a9b21ce4c51d1ec5e6f3a78a7ebadbcd516cd304",
+  "expected_failure": "HC-CANARY-RED:MC72-W11-XSS-AUTH-BYPASS",
+  "started_at": "2026-09-20T21:26:31.063597563Z",
+  "ended_at": "2026-09-20T21:26:32.245061764Z",
+  "duration_ms": 1181,
+  "exit_code": 101,
+  "outcome": "expected_red",
+  "output_sha256": "584e5eea2c65f46375d5d2de50476887dc55f4acf44637bf83a2d14e058bfff9"
+}
