@@ -137,13 +137,24 @@ function executable(name) {
 }
 
 function run(program, args, cwd, options = {}) {
-  return execFileSync(program, args, {
-    cwd,
-    encoding: "utf8",
-    stdio: options.capture ? ["ignore", "pipe", "pipe"] : "inherit",
-    env: { ...process.env, ...options.env },
-    maxBuffer: 64 * 1024 * 1024,
-  });
+  try {
+    return execFileSync(program, args, {
+      cwd,
+      encoding: "utf8",
+      stdio: options.capture ? ["ignore", "pipe", "pipe"] : "inherit",
+      env: { ...process.env, ...options.env },
+      maxBuffer: 64 * 1024 * 1024,
+    });
+  } catch (error) {
+    const stdout = error.stdout?.toString().trim();
+    const stderr = error.stderr?.toString().trim();
+    throw new Error(
+      [`command failed: ${program} ${args.join(" ")}`, stdout && `stdout:\n${stdout}`, stderr && `stderr:\n${stderr}`]
+        .filter(Boolean)
+        .join("\n"),
+      { cause: error },
+    );
+  }
 }
 
 function bundleBytes(consoleRoot) {
@@ -235,7 +246,10 @@ async function capture(options) {
   const consoleRoot = join(sourceRoot, "console");
   run(executable("npm"), ["ci"], consoleRoot);
   run(executable("npm"), ["run", "build"], consoleRoot);
-  const testJson = run(executable("npx"), ["playwright", "test", "--reporter=json"], consoleRoot, { capture: true });
+  const testJson = run(executable("npx"), ["playwright", "test", "--reporter=json"], consoleRoot, {
+    capture: true,
+    env: { CI: "1", HYDRACACHE_CONSOLE_PORT: "55171" },
+  });
   const testReport = JSON.parse(testJson);
   const failed = testReport.stats?.unexpected ?? 0;
   if (failed !== 0) throw new Error(`legacy console tests failed: ${failed}`);
