@@ -15,6 +15,7 @@ use crate::doc_check;
 use crate::evidence_run::{self, EvidenceOutcome, EvidenceReceipt};
 use crate::fast_suite::{self, FastSuiteEntry};
 use crate::gated_tests::{self, GateEntry};
+use crate::management_center;
 use crate::quarantine;
 
 const RELEASES_PATH: &str = "docs/plans/releases.toml";
@@ -127,6 +128,20 @@ pub fn run(args: Vec<String>) -> Result<(), Box<dyn Error>> {
         fs::write(&path, toml::to_string_pretty(&manifest)?)?;
         println!("release-evidence: wrote template to {}", path.display());
         return Ok(());
+    }
+
+    if normalize_release(&options.release) == "0.72.0" {
+        let management_problems = management_center::check(&options.root, options.require_ship)?;
+        if !management_problems.is_empty() {
+            for problem in &management_problems {
+                eprintln!("release-evidence: management-center: {problem}");
+            }
+            return Err(format!(
+                "release-evidence: management-center admission found {} problem(s)",
+                management_problems.len()
+            )
+            .into());
+        }
     }
 
     let report = build_report(
@@ -323,6 +338,9 @@ pub fn build_report(
         }
     }
     let receipts = load_receipts(root, receipts_dir, &mut global_reasons)?;
+    if receipts_dir.is_some() && normalize_release(release) == "0.72.0" {
+        global_reasons.extend(management_soak_pair_problems(root));
+    }
     let quarantine_report = quarantine::check_at(root, release, time::OffsetDateTime::now_utc())?;
     if !quarantine_report.problems.is_empty() {
         return Err(quarantine_report.problems.join("; ").into());
@@ -737,6 +755,21 @@ fn referenced_runtime_artifact_problems(
 ) -> Vec<String> {
     const EVIDENCE_PREFIX: &str = "target/test-evidence/0.67/";
 
+    if normalize_release(release) == "0.72.0"
+        && matches!(
+            artifact,
+            "target/test-evidence/0.72/management-candidate-soak.json"
+                | "target/test-evidence/0.72/management-ship-soak.json"
+        )
+    {
+        return management_soak_artifact_problems(artifact, bytes);
+    }
+    if normalize_release(release) == "0.72.0"
+        && artifact == "target/test-evidence/0.72/management-mixed-071-072.json"
+    {
+        return management_mixed_artifact_problems(artifact, bytes);
+    }
+
     if normalize_release(release) != "0.67.0"
         || !artifact.replace('\\', "/").starts_with(EVIDENCE_PREFIX)
         || !artifact.ends_with(".json")
@@ -784,6 +817,272 @@ fn referenced_runtime_artifact_problems(
                 "archived file {relative} referenced by {artifact} is missing: {error}"
             )),
         }
+    }
+    problems
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
+struct ManagementSoakArtifact {
+    schema_version: u32,
+    release: String,
+    tier: String,
+    required_duration_seconds: u64,
+    observed_duration_seconds: u64,
+    started_unix_seconds: u64,
+    ended_unix_seconds: u64,
+    host_fingerprint_sha256: String,
+    binary_sha256: String,
+    seed: u64,
+    management_samples: u64,
+    hc1_samples: u64,
+    hc1_keyspace_size: u64,
+    resp_samples: u64,
+    recovery_cycles: u64,
+    endpoint_p95_ms: u64,
+    schedule_digest: String,
+    event_digest: String,
+    baseline: ManagementSoakResource,
+    final_sample: ManagementSoakResource,
+    resource_sample_interval_seconds: u64,
+    resource_timeline: Vec<ManagementSoakTimelinePoint>,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
+struct ManagementSoakResource {
+    rss_kib: u64,
+    rss_hwm_kib: u64,
+    open_fds: u64,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
+struct ManagementSoakTimelinePoint {
+    elapsed_seconds: u64,
+    processes: Vec<ManagementSoakProcessResource>,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
+struct ManagementSoakProcessResource {
+    node_index: usize,
+    node_id: String,
+    pid: u32,
+    rss_kib: u64,
+    rss_hwm_kib: u64,
+    open_fds: u64,
+}
+
+fn management_soak_artifact_problems(artifact: &str, bytes: &[u8]) -> Vec<String> {
+    let receipt: ManagementSoakArtifact = match serde_json::from_slice(bytes) {
+        Ok(receipt) => receipt,
+        Err(error) => {
+            return vec![format!(
+                "invalid management soak artifact {artifact}: {error}"
+            )]
+        }
+    };
+    let (tier, duration) = if artifact.ends_with("management-candidate-soak.json") {
+        ("candidate-six-hour", 21_600)
+    } else {
+        ("ship-twenty-four-hour", 86_400)
+    };
+    let mut problems = Vec::new();
+    if receipt.schema_version != 3
+        || receipt.release != "0.72.0"
+        || receipt.tier != tier
+        || receipt.required_duration_seconds != duration
+        || receipt.observed_duration_seconds < duration
+    {
+        problems.push(format!(
+            "{artifact} has wrong schema, tier or wall-clock duration"
+        ));
+    }
+    if receipt.ended_unix_seconds < receipt.started_unix_seconds.saturating_add(duration) {
+        problems.push(format!(
+            "{artifact} wall-clock timestamps are shorter than the tier"
+        ));
+    }
+    if receipt.hc1_keyspace_size != 64 {
+        problems.push(format!(
+            "{artifact} does not use the reviewed 64-key HC/1 soak keyspace"
+        ));
+    }
+    let timeline_is_complete = receipt.resource_sample_interval_seconds == 60
+        && receipt.resource_timeline.len() >= (duration / 60 + 1) as usize
+        && receipt
+            .resource_timeline
+            .first()
+            .is_some_and(|point| point.elapsed_seconds == 0)
+        && receipt
+            .resource_timeline
+            .last()
+            .is_some_and(|point| point.elapsed_seconds >= duration)
+        && receipt
+            .resource_timeline
+            .windows(2)
+            .all(|points| points[0].elapsed_seconds <= points[1].elapsed_seconds)
+        && receipt.resource_timeline.iter().all(|point| {
+            let mut indices = point
+                .processes
+                .iter()
+                .map(|process| process.node_index)
+                .collect::<Vec<_>>();
+            indices.sort_unstable();
+            indices.dedup();
+            indices.len() == 3
+                && point.processes.iter().all(|process| {
+                    !process.node_id.is_empty()
+                        && process.pid != 0
+                        && process.rss_kib != 0
+                        && process.rss_hwm_kib >= process.rss_kib
+                        && process.open_fds != 0
+                })
+        });
+    if !timeline_is_complete {
+        problems.push(format!(
+            "{artifact} lacks complete per-process 60-second resource evidence"
+        ));
+    }
+    let expected_recovery_cycles = duration.saturating_sub(1) / 3_600;
+    if receipt.management_samples < duration.saturating_sub(300)
+        || receipt.hc1_samples != receipt.management_samples
+        || receipt.resp_samples != receipt.management_samples
+        || receipt.recovery_cycles < expected_recovery_cycles
+    {
+        problems.push(format!(
+            "{artifact} lacks fixed-rate traffic or hourly recovery samples"
+        ));
+    }
+    if receipt.endpoint_p95_ms > 2_500
+        || receipt.final_sample.open_fds > receipt.baseline.open_fds.saturating_add(12)
+        || receipt.final_sample.rss_kib > receipt.baseline.rss_hwm_kib.saturating_add(65_536)
+    {
+        problems.push(format!("{artifact} exceeds latency, FD or RSS bounds"));
+    }
+    for (name, digest) in [
+        ("host fingerprint", &receipt.host_fingerprint_sha256),
+        ("binary", &receipt.binary_sha256),
+        ("schedule", &receipt.schedule_digest),
+        ("event", &receipt.event_digest),
+    ] {
+        if digest.len() != 64 || !digest.bytes().all(|byte| byte.is_ascii_hexdigit()) {
+            problems.push(format!("{artifact} has invalid {name} digest"));
+        }
+    }
+    if receipt.seed != 0x0720_1200_0000_0001 {
+        problems.push(format!("{artifact} has an unreviewed seed"));
+    }
+    problems
+}
+
+fn management_soak_pair_problems(root: &Path) -> Vec<String> {
+    let candidate_path = root.join("target/test-evidence/0.72/management-candidate-soak.json");
+    let ship_path = root.join("target/test-evidence/0.72/management-ship-soak.json");
+    let candidate = fs::read(&candidate_path)
+        .ok()
+        .and_then(|bytes| serde_json::from_slice::<ManagementSoakArtifact>(&bytes).ok());
+    let ship = fs::read(&ship_path)
+        .ok()
+        .and_then(|bytes| serde_json::from_slice::<ManagementSoakArtifact>(&bytes).ok());
+    match (candidate, ship) {
+        (Some(candidate), Some(ship))
+            if candidate.host_fingerprint_sha256 == ship.host_fingerprint_sha256
+                && candidate.binary_sha256 == ship.binary_sha256 =>
+        {
+            Vec::new()
+        }
+        (Some(_), Some(_)) => vec![
+            "0.72 candidate and ship soak artifacts use different host or binary fingerprints"
+                .to_owned(),
+        ],
+        _ => vec!["0.72 candidate/ship soak artifact pair is incomplete".to_owned()],
+    }
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
+struct ManagementMixedArtifact {
+    schema_version: u32,
+    release: String,
+    previous_tag: String,
+    previous_commit: String,
+    previous_binary_sha256: String,
+    candidate_binary_sha256: String,
+    scenarios: Vec<ManagementMixedScenario>,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
+struct ManagementMixedScenario {
+    id: String,
+    outcome: String,
+    observation_sha256: String,
+}
+
+fn management_mixed_artifact_problems(artifact: &str, bytes: &[u8]) -> Vec<String> {
+    let receipt: ManagementMixedArtifact = match serde_json::from_slice(bytes) {
+        Ok(receipt) => receipt,
+        Err(error) => {
+            return vec![format!(
+                "invalid management mixed artifact {artifact}: {error}"
+            )]
+        }
+    };
+    let mut problems = Vec::new();
+    if receipt.schema_version != 1
+        || receipt.release != "0.72.0"
+        || receipt.previous_tag != "v0.71.0"
+        || receipt.previous_commit.len() != 40
+        || !receipt
+            .previous_commit
+            .bytes()
+            .all(|byte| byte.is_ascii_hexdigit())
+    {
+        problems.push(format!(
+            "{artifact} has wrong schema, release or v0.71.0 provenance"
+        ));
+    }
+    for (name, digest) in [
+        ("previous binary", &receipt.previous_binary_sha256),
+        ("candidate binary", &receipt.candidate_binary_sha256),
+    ] {
+        if digest.len() != 64 || !digest.bytes().all(|byte| byte.is_ascii_hexdigit()) {
+            problems.push(format!("{artifact} has invalid {name} digest"));
+        }
+    }
+    if receipt.previous_binary_sha256 == receipt.candidate_binary_sha256 {
+        problems.push(format!(
+            "{artifact} used byte-identical old and new binaries"
+        ));
+    }
+    let expected = BTreeSet::from([
+        "old-leader-new-followers",
+        "new-leader-old-follower",
+        "leadership-change-during-aggregation",
+        "old-peer-restart-during-placement-trace",
+        "rollback-after-ui-observation",
+    ]);
+    let observed = receipt
+        .scenarios
+        .iter()
+        .map(|scenario| scenario.id.as_str())
+        .collect::<BTreeSet<_>>();
+    if receipt.scenarios.len() != expected.len()
+        || observed != expected
+        || receipt.scenarios.iter().any(|scenario| {
+            scenario.outcome != "pass"
+                || scenario.observation_sha256.len() != 64
+                || !scenario
+                    .observation_sha256
+                    .bytes()
+                    .all(|byte| byte.is_ascii_hexdigit())
+        })
+    {
+        problems.push(format!(
+            "{artifact} lacks the exact five passing mixed scenarios"
+        ));
     }
     problems
 }
@@ -1480,7 +1779,8 @@ impl Options {
 #[cfg(test)]
 mod language_selector_tests {
     use super::{
-        evidence_only_0671_dependency_problems, java_test_exists, python_test_exists,
+        evidence_only_0671_dependency_problems, java_test_exists,
+        management_mixed_artifact_problems, management_soak_artifact_problems, python_test_exists,
         rust_test_exists,
     };
     use std::path::Path;
@@ -1525,5 +1825,111 @@ mod language_selector_tests {
     fn rust_selector_still_requires_a_test_attribute() {
         assert!(rust_test_exists("#[test]\nfn contract() {}", "contract").unwrap());
         assert!(!rust_test_exists("fn contract() {}", "contract").unwrap());
+    }
+
+    #[test]
+    fn management_soak_artifact_requires_real_duration_traffic_recovery_and_bounds() {
+        let artifact = serde_json::json!({
+            "schema_version": 3,
+            "release": "0.72.0",
+            "tier": "candidate-six-hour",
+            "required_duration_seconds": 21600,
+            "observed_duration_seconds": 21600,
+            "started_unix_seconds": 100,
+            "ended_unix_seconds": 21700,
+            "host_fingerprint_sha256": "a".repeat(64),
+            "binary_sha256": "b".repeat(64),
+            "seed": 0x0720_1200_0000_0001_u64,
+            "management_samples": 21600,
+            "hc1_samples": 21600,
+            "hc1_keyspace_size": 64,
+            "resp_samples": 21600,
+            "recovery_cycles": 5,
+            "endpoint_p95_ms": 100,
+            "schedule_digest": "c".repeat(64),
+            "event_digest": "d".repeat(64),
+            "baseline": {"rss_kib": 1000, "rss_hwm_kib": 1100, "open_fds": 20},
+            "final_sample": {"rss_kib": 1200, "rss_hwm_kib": 1250, "open_fds": 24},
+            "resource_sample_interval_seconds": 60,
+            "resource_timeline": (0..=360).map(|minute| serde_json::json!({
+                "elapsed_seconds": minute * 60,
+                "processes": (0..3).map(|node_index| serde_json::json!({
+                    "node_index": node_index,
+                    "node_id": format!("member-{node_index}"),
+                    "pid": 100 + node_index,
+                    "rss_kib": 400,
+                    "rss_hwm_kib": 450,
+                    "open_fds": 8
+                })).collect::<Vec<_>>()
+            })).collect::<Vec<_>>()
+        });
+        let bytes = serde_json::to_vec(&artifact).unwrap();
+        assert!(management_soak_artifact_problems(
+            "target/test-evidence/0.72/management-candidate-soak.json",
+            &bytes
+        )
+        .is_empty());
+
+        let mut shortened = artifact;
+        shortened["observed_duration_seconds"] = 60.into();
+        shortened["ended_unix_seconds"] = 160.into();
+        shortened["hc1_samples"] = 0.into();
+        shortened["hc1_keyspace_size"] = 0.into();
+        shortened["endpoint_p95_ms"] = 2501.into();
+        shortened["resource_timeline"] = serde_json::json!([]);
+        let problems = management_soak_artifact_problems(
+            "target/test-evidence/0.72/management-candidate-soak.json",
+            &serde_json::to_vec(&shortened).unwrap(),
+        );
+        assert!(problems.iter().any(|problem| problem.contains("duration")));
+        assert!(problems.iter().any(|problem| problem.contains("traffic")));
+        assert!(problems.iter().any(|problem| problem.contains("64-key")));
+        assert!(problems.iter().any(|problem| problem.contains("bounds")));
+        assert!(problems
+            .iter()
+            .any(|problem| problem.contains("per-process")));
+    }
+
+    #[test]
+    fn management_mixed_artifact_requires_distinct_binaries_and_all_scenarios() {
+        let scenario = |id: &str| {
+            serde_json::json!({
+                "id": id,
+                "outcome": "pass",
+                "observation_sha256": "c".repeat(64)
+            })
+        };
+        let artifact = serde_json::json!({
+            "schema_version": 1,
+            "release": "0.72.0",
+            "previous_tag": "v0.71.0",
+            "previous_commit": "a".repeat(40),
+            "previous_binary_sha256": "a".repeat(64),
+            "candidate_binary_sha256": "b".repeat(64),
+            "scenarios": [
+                scenario("old-leader-new-followers"),
+                scenario("new-leader-old-follower"),
+                scenario("leadership-change-during-aggregation"),
+                scenario("old-peer-restart-during-placement-trace"),
+                scenario("rollback-after-ui-observation")
+            ]
+        });
+        let path = "target/test-evidence/0.72/management-mixed-071-072.json";
+        assert!(
+            management_mixed_artifact_problems(path, &serde_json::to_vec(&artifact).unwrap())
+                .is_empty()
+        );
+
+        let mut tampered = artifact;
+        tampered["candidate_binary_sha256"] = "a".repeat(64).into();
+        tampered["scenarios"].as_array_mut().unwrap().pop();
+        let problems =
+            management_mixed_artifact_problems(path, &serde_json::to_vec(&tampered).unwrap());
+        assert!(problems
+            .iter()
+            .any(|problem| problem.contains("byte-identical")));
+        assert!(problems
+            .iter()
+            .any(|problem| problem.contains("five passing")));
     }
 }

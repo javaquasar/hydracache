@@ -86,6 +86,8 @@ fn live_status() -> ClusterStatus {
         leader: Some("node-2".to_owned()),
         term: 7,
         epoch: 42,
+        observation_seq: 9,
+        metadata_authoritative: true,
         quorum_ok: true,
         members: vec![
             member("node-1", Reachability::Reachable, 1),
@@ -96,6 +98,7 @@ fn live_status() -> ClusterStatus {
         voter_ids: vec![1, 2, 3],
         reshard_phase: ReshardPhase::Moving,
         draining: false,
+        local_consensus: None,
     }
 }
 

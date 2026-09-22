@@ -72,6 +72,7 @@ fn main() -> Result<(), Box<dyn Error>> {
             xtask::memory_baseline::run_report_check(args.collect())?
         }
         Some("memory-baseline-status") => xtask::memory_baseline::run_status(args.collect())?,
+        Some("management-center-check") => xtask::management_center::run(args.collect())?,
         Some("memory-contract-check") => xtask::memory_campaign::run_contracts(args.collect())?,
         Some("memory-campaign-check") => xtask::memory_campaign::run_campaign(args.collect())?,
         Some("postgres-conformance-check") => {

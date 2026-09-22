@@ -147,6 +147,39 @@ jobs:
 }
 
 #[test]
+fn topology_rejects_install_step_without_a_bounded_timeout() {
+    let temp = TempDir::new("install-step-timeout");
+    let workflow = r#"
+name: fixture
+on: workflow_dispatch
+concurrency:
+  group: fixture-${{ github.sha }}
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Install management console dependencies
+        run: npm ci --prefix console
+"#;
+    let path = write_fixture(
+        &temp,
+        workflow,
+        topology(
+            classes(&["check"], &[], &[]),
+            ".github/workflows/fixture.yml#check",
+            &["workflow_dispatch"],
+        ),
+    );
+    let error = xtask::ci_topology::check_with_path(temp.path(), "0.71", &path)
+        .expect_err("unbounded install step must fail")
+        .to_string();
+    assert!(error.contains(
+        "Install management console dependencies\") needs a positive timeout-minutes smaller than job timeout 10"
+    ));
+}
+
+#[test]
 fn topology_rejects_mixed_artifact_identity() {
     let temp = TempDir::new("artifact");
     let workflow = r#"
@@ -273,4 +306,75 @@ fn watchdog_classifies_missing_provisioning_tool() {
     let (output, receipt) = run_watchdog(&temp, 5.0, &[missing.as_str()]);
     assert_eq!(output.status.code(), Some(127));
     assert_eq!(receipt["classification"], "tool-unavailable");
+}
+
+#[test]
+fn default_manual_dispatch_runs_core_ci_jobs() {
+    let workflow = fs::read_to_string(repo_root().join(".github/workflows/ci.yml"))
+        .expect("read CI workflow")
+        .replace("\r\n", "\n");
+    let input = workflow
+        .split("      performance_0671_mode:\n")
+        .nth(1)
+        .expect("performance dispatch input");
+    assert!(
+        input
+            .lines()
+            .take(6)
+            .any(|line| line.trim() == "default: \"off\""),
+        "the default manual dispatch mode must remain off"
+    );
+    assert!(
+        !workflow.contains("inputs.performance_0671_mode == ''"),
+        "manual dispatch jobs must not compare a choice input with an empty string"
+    );
+
+    for job in ["ci-topology", "docs", "rust", "msrv"] {
+        let section = workflow
+            .split(&format!("  {job}:\n"))
+            .nth(1)
+            .unwrap_or_else(|| panic!("missing {job} job"));
+        assert!(
+            section.lines().take(5).any(|line| {
+                line.trim()
+                    == "if: github.event_name != 'workflow_dispatch' || inputs.performance_0671_mode == 'off'"
+            }),
+            "default manual dispatch must run {job}"
+        );
+    }
+}
+
+#[test]
+fn rust_canaries_install_locked_console_dependencies_first() {
+    let workflow = fs::read_to_string(repo_root().join(".github/workflows/ci.yml"))
+        .expect("read CI workflow")
+        .replace("\r\n", "\n");
+    let rust_job = workflow
+        .split("  rust:\n")
+        .nth(1)
+        .expect("Rust job")
+        .split("\n  migration-conformance-fast-evidence-069:")
+        .next()
+        .expect("Rust job body");
+    let install = rust_job
+        .find("run: npm ci --prefix console")
+        .expect("locked console dependency install");
+    let install_step = rust_job
+        .split("- name: Install management console dependencies for canaries\n")
+        .nth(1)
+        .expect("console install step");
+    assert!(
+        install_step
+            .lines()
+            .take(3)
+            .any(|line| line.trim() == "timeout-minutes: 15"),
+        "console install step needs an explicit bounded timeout"
+    );
+    let canaries = rust_job
+        .find("- name: Canary completeness")
+        .expect("canary step");
+    assert!(
+        install < canaries,
+        "console dependencies must precede canaries"
+    );
 }

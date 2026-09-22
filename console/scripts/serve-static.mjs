@@ -3,7 +3,7 @@ import { createServer } from "node:http";
 import { extname, join, normalize, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
-const consoleRoot = resolve(fileURLToPath(new URL("..", import.meta.url)));
+const consoleRoot = resolve(fileURLToPath(new URL("../dist/", import.meta.url)));
 const host = "127.0.0.1";
 const port = Number.parseInt(process.env.HYDRACACHE_CONSOLE_PORT ?? "5174", 10);
 

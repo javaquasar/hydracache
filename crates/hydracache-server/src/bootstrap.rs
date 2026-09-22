@@ -7,6 +7,7 @@ use hydracache_observability::{
 };
 use hydracache_redis_compat::{RedisListenerConfig, RedisRespServer, RedisServeError};
 use serde::Serialize;
+use sha2::{Digest, Sha256};
 use std::net::SocketAddr;
 use std::sync::Arc;
 use std::time::Instant;
@@ -18,6 +19,10 @@ use crate::cluster_status::{
     Reachability, ReshardPhase, StatusSource,
 };
 use crate::config::{ServerConfig, ServerConfigError, ServerRole};
+use crate::management_operations::{
+    ManagementAuditSnapshot, ManagementOperationJournal, ManagementOperationKind,
+    ManagementOperationSnapshot, ManagementOperationState,
+};
 use crate::redis_tcp::{RedisTlsAcceptor, RedisTlsError};
 use crate::services::{DrainOutcome, GracefulShutdown, ServiceSet};
 
@@ -104,6 +109,9 @@ pub struct ServerAdminAction {
 pub struct RedisSurfaceRuntime {
     accepting: bool,
     active_connections: u64,
+    accepted_connections: u64,
+    closed_connections: u64,
+    rejected_connections: u64,
 }
 
 impl RedisSurfaceRuntime {
@@ -111,6 +119,9 @@ impl RedisSurfaceRuntime {
         Self {
             accepting: false,
             active_connections: 0,
+            accepted_connections: 0,
+            closed_connections: 0,
+            rejected_connections: 0,
         }
     }
 
@@ -124,13 +135,18 @@ impl RedisSurfaceRuntime {
 
     fn begin_connection(&mut self) -> bool {
         if !self.accepting {
+            self.rejected_connections = self.rejected_connections.saturating_add(1);
             return false;
         }
         self.active_connections = self.active_connections.saturating_add(1);
+        self.accepted_connections = self.accepted_connections.saturating_add(1);
         true
     }
 
     fn finish_connection(&mut self) {
+        if self.active_connections > 0 {
+            self.closed_connections = self.closed_connections.saturating_add(1);
+        }
         self.active_connections = self.active_connections.saturating_sub(1);
     }
 
@@ -141,6 +157,7 @@ impl RedisSurfaceRuntime {
     fn shutdown(&mut self) -> RedisSurfaceDrain {
         self.accepting = false;
         let started_with = self.active_connections;
+        self.closed_connections = self.closed_connections.saturating_add(started_with);
         self.active_connections = 0;
         RedisSurfaceDrain {
             started_with,
@@ -238,6 +255,13 @@ pub enum ServerAdminActionError {
     RaftCompaction(#[from] RaftCompactionError),
 }
 
+#[derive(Debug, Clone)]
+struct ManagementSnapshotOverride {
+    local: crate::management_aggregation::ManagementMemberSnapshot,
+    committed_targets: Vec<crate::management_aggregation::ManagementPeerTarget>,
+    transport: Arc<dyn crate::management_aggregation::ManagementPeerTransport>,
+}
+
 /// Standalone server runtime.
 #[derive(Debug, Clone)]
 pub struct ServerRuntime {
@@ -251,14 +275,42 @@ pub struct ServerRuntime {
     flushed: bool,
     client_surface: Option<ClientSurfaceRuntime>,
     client_dispatch_state: Option<Arc<hydracache_client_transport_axum::ClientSurfaceState>>,
+    management_client_state: Option<Arc<hydracache_client_transport_axum::ClientSurfaceState>>,
     redis_listener_config: Option<RedisListenerConfig>,
     redis_surface: Option<RedisSurfaceRuntime>,
     cluster_status: Arc<dyn ClusterStatusProvider>,
     grid_control: Option<Arc<dyn GridControlPlaneHandle>>,
+    management_snapshot_override: Option<ManagementSnapshotOverride>,
+    management_topology: crate::management_topology::ManagementTopologyModel,
+    management_operations: ManagementOperationJournal,
     observability: ServerObservabilityModel,
     last_client_surface_drain: Option<ClientSurfaceDrain>,
     last_redis_surface_drain: Option<RedisSurfaceDrain>,
     last_drain: Option<DrainOutcome>,
+    started_at: Instant,
+}
+
+/// Secret-free local process facts used by the authenticated management surface.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub(crate) struct LocalManagementDiagnostics {
+    pub(crate) product_version: String,
+    pub(crate) uptime_seconds: u64,
+    pub(crate) rss_bytes: Option<u64>,
+    pub(crate) open_fds: Option<u64>,
+    pub(crate) thread_count: Option<u64>,
+    pub(crate) client_count: u64,
+    pub(crate) config_digest: String,
+}
+
+/// Node-local protocol accounting; unavailable dimensions stay optional.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub(crate) struct ClientLifecycleDiagnostics {
+    pub(crate) hc1_rejected_total: Option<u64>,
+    pub(crate) hc1_active_subscriptions: Option<u64>,
+    pub(crate) resp_active: Option<u64>,
+    pub(crate) resp_accepted: Option<u64>,
+    pub(crate) resp_closed: Option<u64>,
+    pub(crate) resp_rejected: Option<u64>,
 }
 
 impl ServerRuntime {
@@ -328,14 +380,19 @@ impl ServerRuntime {
             flushed: false,
             client_surface,
             client_dispatch_state,
+            management_client_state: None,
             redis_listener_config,
             redis_surface,
             cluster_status,
             grid_control,
+            management_snapshot_override: None,
+            management_topology: crate::management_topology::ManagementTopologyModel::default(),
+            management_operations: ManagementOperationJournal::default(),
             observability: ServerObservabilityModel::default(),
             last_client_surface_drain: None,
             last_redis_surface_drain: None,
             last_drain: None,
+            started_at: Instant::now(),
         })
     }
 
@@ -353,6 +410,15 @@ impl ServerRuntime {
     /// Override additional read-only observability signals.
     pub fn with_observability_model(mut self, observability: ServerObservabilityModel) -> Self {
         self.observability = observability;
+        self
+    }
+
+    /// Override the tenant-scoped read source used by Management Center embeddings and tests.
+    pub fn with_management_client_state(
+        mut self,
+        state: Arc<hydracache_client_transport_axum::ClientSurfaceState>,
+    ) -> Self {
+        self.management_client_state = Some(state);
         self
     }
 
@@ -546,13 +612,34 @@ impl ServerRuntime {
 
     /// Accept an operator/admin drain request without stopping the daemon process.
     pub fn request_admin_drain(&mut self) -> DrainOutcome {
+        let operation_id = self
+            .management_operations
+            .request(ManagementOperationKind::Drain, "node");
+        let _ = self.management_operations.transition(
+            &operation_id,
+            ManagementOperationState::Accepted,
+            None,
+            None,
+        );
         if self.state == ServerState::Stopped {
+            let _ = self.management_operations.transition(
+                &operation_id,
+                ManagementOperationState::Failed,
+                Some("runtime_stopped"),
+                Some("start_runtime"),
+            );
             return self.last_drain.unwrap_or(DrainOutcome {
                 started_with: 0,
                 remaining: 0,
                 timed_out: false,
             });
         }
+        let _ = self.management_operations.transition(
+            &operation_id,
+            ManagementOperationState::Running,
+            None,
+            None,
+        );
         self.begin_local_drain();
         let drain_timeout = self.config.drain_timeout();
         let started = Instant::now();
@@ -561,6 +648,16 @@ impl ServerRuntime {
             .drain(&mut self.services);
         outcome.timed_out |= !control_plane_drained;
         self.last_drain = Some(outcome);
+        let _ = self.management_operations.transition(
+            &operation_id,
+            if outcome.timed_out {
+                ManagementOperationState::Failed
+            } else {
+                ManagementOperationState::Completed
+            },
+            outcome.timed_out.then_some("drain_timeout"),
+            outcome.timed_out.then_some("inspect_inflight_and_retry"),
+        );
         outcome
     }
 
@@ -669,17 +766,61 @@ impl ServerRuntime {
 
     /// Explicitly compact the durable Raft log at current applied progress.
     pub fn request_raft_compaction(&self) -> Result<RaftCompactionStatus, ServerAdminActionError> {
+        let operation_id = self
+            .management_operations
+            .request(ManagementOperationKind::RaftCompaction, "raft_metadata");
         if !self.can_serve() {
+            let _ = self.management_operations.transition(
+                &operation_id,
+                ManagementOperationState::Failed,
+                Some("not_ready"),
+                Some("retry_when_ready"),
+            );
             return Err(ServerAdminActionError::NotReady("raft compaction"));
         }
         if !matches!(self.config.role, ServerRole::Member) {
+            let _ = self.management_operations.transition(
+                &operation_id,
+                ManagementOperationState::Failed,
+                Some("member_role_required"),
+                Some("run_on_member"),
+            );
             return Err(ServerAdminActionError::RequiresMember("raft compaction"));
         }
-        self.grid_control
-            .as_ref()
-            .ok_or(RaftCompactionError::Unavailable)?
-            .compact_raft_log_at_applied()
-            .map_err(ServerAdminActionError::from)
+        let _ = self.management_operations.transition(
+            &operation_id,
+            ManagementOperationState::Accepted,
+            None,
+            None,
+        );
+        let _ = self.management_operations.transition(
+            &operation_id,
+            ManagementOperationState::Running,
+            None,
+            None,
+        );
+        let result = self.grid_control.as_ref().map_or_else(
+            || {
+                Err(ServerAdminActionError::from(
+                    RaftCompactionError::Unavailable,
+                ))
+            },
+            |grid| {
+                grid.compact_raft_log_at_applied()
+                    .map_err(ServerAdminActionError::from)
+            },
+        );
+        let _ = self.management_operations.transition(
+            &operation_id,
+            if result.is_ok() {
+                ManagementOperationState::Completed
+            } else {
+                ManagementOperationState::Failed
+            },
+            result.as_ref().err().map(|_| "raft_compaction_failed"),
+            result.as_ref().err().map(|_| "inspect_raft_storage"),
+        );
+        result
     }
 
     /// Build a metrics registry snapshot for the admin surface.
@@ -738,20 +879,179 @@ impl ServerRuntime {
         )
     }
 
-    fn cluster_status_snapshot(&self) -> ClusterStatus {
+    pub(crate) fn cluster_status_snapshot(&self) -> ClusterStatus {
         let cluster_ready = self.cluster_ready && self.state != ServerState::Stopped;
         self.cluster_status
             .cluster_status(ClusterStatusRuntime::new(cluster_ready, self.is_draining()))
     }
 
+    /// Override the read-only management aggregation source for embedding and tests.
+    pub fn with_management_snapshot_source(
+        mut self,
+        local: crate::management_aggregation::ManagementMemberSnapshot,
+        committed_targets: Vec<crate::management_aggregation::ManagementPeerTarget>,
+        transport: Arc<dyn crate::management_aggregation::ManagementPeerTransport>,
+    ) -> Self {
+        self.management_snapshot_override = Some(ManagementSnapshotOverride {
+            local,
+            committed_targets,
+            transport,
+        });
+        self
+    }
+
+    /// Attach validated immutable partition and placement evidence.
+    pub fn with_management_topology_model(
+        mut self,
+        model: crate::management_topology::ManagementTopologyModel,
+    ) -> Self {
+        self.management_topology = model;
+        self
+    }
+
+    pub(crate) fn management_topology_model(
+        &self,
+    ) -> crate::management_topology::ManagementTopologyModel {
+        self.management_topology.clone()
+    }
+
+    pub(crate) fn management_local_diagnostics(&self) -> LocalManagementDiagnostics {
+        let (rss_bytes, open_fds, thread_count) = process_resource_counts();
+        let mut hasher = Sha256::new();
+        hasher.update(b"hydracache-management-config-v1\0");
+        hasher.update(format!(
+            "role={:?};tls={};client={};hc2={};admin={};redis={};backup={};partitions={}",
+            self.config.role,
+            self.config.tls.enabled,
+            self.config.client_api.enabled,
+            self.config.hc2_client_plane.enabled,
+            self.config.admin_api.enabled,
+            self.config.redis_api.enabled,
+            self.config.backup.enabled,
+            self.observability.partition_count,
+        ));
+        let digest = hasher.finalize();
+        LocalManagementDiagnostics {
+            product_version: env!("CARGO_PKG_VERSION").to_owned(),
+            uptime_seconds: self.started_at.elapsed().as_secs(),
+            rss_bytes,
+            open_fds,
+            thread_count,
+            client_count: self
+                .client_active_subscriptions()
+                .saturating_add(self.redis_active_connections()),
+            config_digest: format!(
+                "sha256-v1:{}",
+                digest[..12]
+                    .iter()
+                    .map(|byte| format!("{byte:02x}"))
+                    .collect::<String>()
+            ),
+        }
+    }
+
+    pub(crate) fn management_cache(&self) -> HydraCache {
+        self.cache.clone()
+    }
+
+    pub(crate) fn management_client_lifecycle(&self) -> ClientLifecycleDiagnostics {
+        let hc1 = self
+            .config
+            .client_api
+            .enabled
+            .then(|| self.client_dispatch_state())
+            .flatten();
+        ClientLifecycleDiagnostics {
+            hc1_rejected_total: hc1.as_ref().map(|state| {
+                state
+                    .rejected_anonymous()
+                    .saturating_add(state.rejected_oversized())
+            }),
+            hc1_active_subscriptions: hc1.as_ref().map(|state| state.active_subscriptions()),
+            resp_active: self
+                .redis_surface
+                .as_ref()
+                .map(RedisSurfaceRuntime::active_connections),
+            resp_accepted: self
+                .redis_surface
+                .as_ref()
+                .map(|surface| surface.accepted_connections),
+            resp_closed: self
+                .redis_surface
+                .as_ref()
+                .map(|surface| surface.closed_connections),
+            resp_rejected: self
+                .redis_surface
+                .as_ref()
+                .map(|surface| surface.rejected_connections),
+        }
+    }
+
+    pub(crate) fn management_client_state(
+        &self,
+    ) -> Option<Arc<hydracache_client_transport_axum::ClientSurfaceState>> {
+        self.management_client_state
+            .as_ref()
+            .map(Arc::clone)
+            .or_else(|| self.client_dispatch_state())
+    }
+
+    pub(crate) fn management_snapshot_input(
+        &self,
+    ) -> Option<(
+        crate::management_aggregation::ManagementMemberSnapshot,
+        Vec<crate::management_aggregation::ManagementPeerTarget>,
+    )> {
+        if let Some(source) = &self.management_snapshot_override {
+            return Some((source.local.clone(), source.committed_targets.clone()));
+        }
+        let grid = self.grid_control.as_ref()?;
+        Some((
+            grid.local_management_snapshot()?,
+            grid.management_peer_targets(),
+        ))
+    }
+
+    pub(crate) fn management_peer_transport(
+        &self,
+    ) -> Option<Arc<dyn crate::management_aggregation::ManagementPeerTransport>> {
+        if let Some(source) = &self.management_snapshot_override {
+            return Some(Arc::clone(&source.transport));
+        }
+        self.grid_control
+            .as_ref()
+            .and_then(|grid| grid.management_peer_transport())
+    }
+
     /// Request an online reshard through the current runtime model.
     pub fn request_reshard(&self) -> Result<ServerAdminAction, ServerAdminActionError> {
+        let operation_id = self
+            .management_operations
+            .request(ManagementOperationKind::Reshard, "cluster");
         if !self.can_serve() {
+            let _ = self.management_operations.transition(
+                &operation_id,
+                ManagementOperationState::Failed,
+                Some("not_ready"),
+                Some("retry_when_ready"),
+            );
             return Err(ServerAdminActionError::NotReady("reshard"));
         }
         if !matches!(self.config.role, ServerRole::Member) {
+            let _ = self.management_operations.transition(
+                &operation_id,
+                ManagementOperationState::Failed,
+                Some("member_role_required"),
+                Some("run_on_member"),
+            );
             return Err(ServerAdminActionError::RequiresMember("reshard"));
         }
+        let _ = self.management_operations.transition(
+            &operation_id,
+            ManagementOperationState::Accepted,
+            None,
+            None,
+        );
         Ok(ServerAdminAction {
             action: "reshard",
             outcome: "accepted",
@@ -761,7 +1061,16 @@ impl ServerRuntime {
 
     /// Request a backup through the current runtime model.
     pub fn request_backup(&self) -> Result<ServerAdminAction, ServerAdminActionError> {
+        let operation_id = self
+            .management_operations
+            .request(ManagementOperationKind::Backup, "cluster");
         if !self.can_serve() {
+            let _ = self.management_operations.transition(
+                &operation_id,
+                ManagementOperationState::Failed,
+                Some("not_ready"),
+                Some("retry_when_ready"),
+            );
             return Err(ServerAdminActionError::NotReady("backup"));
         }
         if !self.config.backup.enabled
@@ -774,8 +1083,20 @@ impl ServerRuntime {
                 .trim()
                 .is_empty()
         {
+            let _ = self.management_operations.transition(
+                &operation_id,
+                ManagementOperationState::Failed,
+                Some("backup_disabled"),
+                Some("configure_backup"),
+            );
             return Err(ServerAdminActionError::BackupDisabled);
         }
+        let _ = self.management_operations.transition(
+            &operation_id,
+            ManagementOperationState::Accepted,
+            None,
+            None,
+        );
         Ok(ServerAdminAction {
             action: "backup",
             outcome: "accepted",
@@ -788,6 +1109,21 @@ impl ServerRuntime {
         self.flushed
     }
 
+    /// Return a bounded snapshot of operations owned by this process generation.
+    pub fn management_operations(&self) -> ManagementOperationSnapshot {
+        self.management_operations.snapshot()
+    }
+
+    /// Return redacted audit metadata derived from management operation transitions.
+    pub fn management_audit(&self) -> ManagementAuditSnapshot {
+        self.management_operations.audit_snapshot()
+    }
+
+    /// Return the worst verified backup age signal, without implying an artifact identity.
+    pub fn management_backup_age_seconds(&self) -> Option<u64> {
+        self.observability.backup_age_seconds
+    }
+
     /// Return cache handle used by embedded tests/adapters.
     pub fn cache(&self) -> &HydraCache {
         &self.cache
@@ -797,6 +1133,37 @@ impl ServerRuntime {
     pub fn config(&self) -> &ServerConfig {
         &self.config
     }
+}
+
+#[cfg(target_os = "linux")]
+fn process_resource_counts() -> (Option<u64>, Option<u64>, Option<u64>) {
+    let open_fds = std::fs::read_dir("/proc/self/fd")
+        .ok()
+        .map(|entries| entries.filter_map(Result::ok).count() as u64);
+    let status = std::fs::read_to_string("/proc/self/status").ok();
+    let rss_bytes = status.as_deref().and_then(|status| {
+        status.lines().find_map(|line| {
+            line.strip_prefix("VmRSS:").and_then(|value| {
+                value
+                    .split_whitespace()
+                    .next()
+                    .and_then(|kilobytes| kilobytes.parse::<u64>().ok())
+                    .and_then(|kilobytes| kilobytes.checked_mul(1024))
+            })
+        })
+    });
+    let thread_count = status.as_deref().and_then(|status| {
+        status.lines().find_map(|line| {
+            line.strip_prefix("Threads:")
+                .and_then(|value| value.trim().parse().ok())
+        })
+    });
+    (rss_bytes, open_fds, thread_count)
+}
+
+#[cfg(not(target_os = "linux"))]
+fn process_resource_counts() -> (Option<u64>, Option<u64>, Option<u64>) {
+    (None, None, None)
 }
 
 fn topology_status_source(source: StatusSource) -> TopologyStatusSource {

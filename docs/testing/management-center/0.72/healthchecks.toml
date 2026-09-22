@@ -1,0 +1,183 @@
+schema_version = 1
+release = "0.72.0"
+evaluation_version = 1
+
+[[check]]
+id = "HC-AUDIT-001"
+evaluator = "evaluate_audit"
+remediation = "inspect-audit-sink"
+truth_table = "operational_optional_source_matrix"
+golden_fixture = "healthy_operational"
+browser_state = "healthEnvelope"
+canary = "MC72-W8-UNKNOWN-AS-PASS"
+evidence = "W8-health-engine"
+
+[[check]]
+id = "HC-AUTH-001"
+evaluator = "evaluate_authority"
+remediation = "inspect-authority"
+truth_table = "operational_adverse_signal_matrix"
+golden_fixture = "healthy_operational"
+browser_state = "healthEnvelope"
+canary = "MC72-W8-UNKNOWN-AS-PASS"
+evidence = "W8-health-engine"
+
+[[check]]
+id = "HC-CLIENT-001"
+evaluator = "evaluate_clients"
+remediation = "inspect-client-pressure"
+truth_table = "operational_limit_rules_cover_boundary_minus_one_equal_and_plus_one"
+golden_fixture = "healthy_operational"
+browser_state = "healthEnvelope"
+canary = "MC72-W8-UNKNOWN-AS-PASS"
+evidence = "W8-health-engine"
+
+[[check]]
+id = "HC-EXPIRY-001"
+evaluator = "evaluate_expiry"
+remediation = "inspect-expiry-backlog"
+truth_table = "operational_limit_rules_cover_boundary_minus_one_equal_and_plus_one"
+golden_fixture = "healthy_operational"
+browser_state = "healthEnvelope"
+canary = "MC72-W8-UNKNOWN-AS-PASS"
+evidence = "W8-health-engine"
+
+[[check]]
+id = "HC-FORM-001"
+evaluator = "evaluate_formation"
+remediation = "inspect-formation-blockers"
+truth_table = "discovered_or_reachable_does_not_imply_formation_pass + rejected_identity_or_authentication_is_formation_fail"
+golden_fixture = "healthy_input"
+browser_state = "healthEnvelope"
+canary = "MC72-W8-UNKNOWN-AS-PASS"
+evidence = "W8-health-engine"
+
+[[check]]
+id = "HC-HISTORY-001"
+evaluator = "evaluate_history"
+remediation = "inspect-history-source"
+truth_table = "explicit_optional_disable_is_distinct_from_missing_source"
+golden_fixture = "healthy_operational"
+browser_state = "healthEnvelope"
+canary = "MC72-W8-UNKNOWN-AS-PASS"
+evidence = "W8-health-engine"
+
+[[check]]
+id = "HC-MEMBER-001"
+evaluator = "evaluate_membership"
+remediation = "inspect-member-skew"
+truth_table = "operational_adverse_signal_matrix"
+golden_fixture = "healthy_operational"
+browser_state = "healthEnvelope"
+canary = "MC72-W8-UNKNOWN-AS-PASS"
+evidence = "W8-health-engine"
+
+[[check]]
+id = "HC-MEM-001"
+evaluator = "evaluate_memory"
+remediation = "inspect-memory-admission"
+truth_table = "operational_limit_rules_cover_boundary_minus_one_equal_and_plus_one"
+golden_fixture = "healthy_operational"
+browser_state = "healthEnvelope"
+canary = "MC72-W8-UNKNOWN-AS-PASS"
+evidence = "W8-health-engine"
+
+[[check]]
+id = "HC-PART-001"
+evaluator = "evaluate_partitions"
+remediation = "inspect-partitions"
+truth_table = "operational_adverse_signal_matrix"
+golden_fixture = "healthy_operational"
+browser_state = "healthEnvelope"
+canary = "MC72-W8-UNKNOWN-AS-PASS"
+evidence = "W8-health-engine"
+
+[[check]]
+id = "HC-PERSIST-001"
+evaluator = "evaluate_persistence"
+remediation = "inspect-persistence"
+truth_table = "operational_limit_rules_cover_boundary_minus_one_equal_and_plus_one"
+golden_fixture = "healthy_operational"
+browser_state = "healthEnvelope"
+canary = "MC72-W8-UNKNOWN-AS-PASS"
+evidence = "W8-health-engine"
+
+[[check]]
+id = "HC-PLACE-001"
+evaluator = "evaluate_placement"
+remediation = "inspect-placement-trace"
+truth_table = "truncated_unknown_placement_cannot_pass"
+golden_fixture = "healthy_input"
+browser_state = "healthEnvelope"
+canary = "MC72-W8-TRUNCATED-PLACEMENT-PASS"
+evidence = "W8-health-engine"
+
+[[check]]
+id = "HC-RAFT-001"
+evaluator = "evaluate_raft"
+remediation = "inspect-raft-apply-lag"
+truth_table = "raft_thresholds_cover_boundary_minus_one_equal_and_plus_one"
+golden_fixture = "healthy_input"
+browser_state = "healthEnvelope"
+canary = "MC72-W8-UNKNOWN-AS-PASS"
+evidence = "W8-health-engine"
+
+[[check]]
+id = "HC-REPAIR-001"
+evaluator = "evaluate_repair"
+remediation = "inspect-repair-debt"
+truth_table = "operational_adverse_signal_matrix"
+golden_fixture = "healthy_operational"
+browser_state = "healthEnvelope"
+canary = "MC72-W8-UNKNOWN-AS-PASS"
+evidence = "W8-health-engine"
+
+[[check]]
+id = "HC-REPL-001"
+evaluator = "evaluate_replication"
+remediation = "inspect-replication"
+truth_table = "operational_adverse_signal_matrix"
+golden_fixture = "healthy_operational"
+browser_state = "healthEnvelope"
+canary = "MC72-W8-UNKNOWN-AS-PASS"
+evidence = "W8-health-engine"
+
+[[check]]
+id = "HC-RECOVERY-001"
+evaluator = "evaluate_recovery_outcome"
+remediation = "inspect-durable-recovery"
+truth_table = "repaired_recovery_warns_and_verified_corruption_fails"
+golden_fixture = "healthy_input"
+browser_state = "healthEnvelope"
+canary = "MC72-W8-STALE-RECOVERY-WINS"
+evidence = "W8-health-engine"
+
+[[check]]
+id = "HC-RECOVERY-002"
+evaluator = "evaluate_recovery_corruption"
+remediation = "inspect-corruption-evidence"
+truth_table = "truncated_recovery_counts_are_unknown_not_clean"
+golden_fixture = "healthy_input"
+browser_state = "healthEnvelope"
+canary = "MC72-W8-UNKNOWN-AS-PASS"
+evidence = "W8-health-engine"
+
+[[check]]
+id = "HC-RECOVERY-003"
+evaluator = "evaluate_reconciliation"
+remediation = "inspect-reconciliation"
+truth_table = "repaired_recovery_warns_and_verified_corruption_fails"
+golden_fixture = "healthy_input"
+browser_state = "healthEnvelope"
+canary = "MC72-W8-STALE-RECOVERY-WINS"
+evidence = "W8-health-engine"
+
+[[check]]
+id = "HC-RESHARD-001"
+evaluator = "evaluate_reshard"
+remediation = "inspect-reshard-progress"
+truth_table = "operational_limit_rules_cover_boundary_minus_one_equal_and_plus_one"
+golden_fixture = "healthy_operational"
+browser_state = "healthEnvelope"
+canary = "MC72-W8-UNKNOWN-AS-PASS"
+evidence = "W8-health-engine"

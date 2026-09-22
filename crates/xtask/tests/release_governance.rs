@@ -20,6 +20,35 @@ fn release_governance_check_accepts_current_structural_meta_gates() {
 }
 
 #[test]
+fn release_governance_requires_complete_072_dynamic_canary_wiring() {
+    let root = xtask::doc_check::find_repo_root().unwrap();
+    let workflow = read_ci_workflow(&root);
+    let broken = workflow.replacen(
+        "cargo run -p xtask --locked -- canary-sweep --release 0.72 --tier all",
+        "cargo run -p xtask --locked -- canary-sweep --release 0.72 --tier omitted",
+        1,
+    );
+    let problems = xtask::release_governance::canary_sweep_wiring_problems(&broken);
+    assert!(problems.iter().any(|problem| {
+        problem.contains("dynamic canary sweep")
+            && problem.contains("canary-sweep --release 0.72 --tier all")
+    }));
+
+    let dynamic_start = workflow
+        .find("  dynamic-canary-sweep:")
+        .expect("dynamic canary job");
+    let missing_node_modules = format!(
+        "{}{}",
+        &workflow[..dynamic_start],
+        workflow[dynamic_start..].replacen("npm ci --prefix console", "npm --version", 1)
+    );
+    let problems = xtask::release_governance::canary_sweep_wiring_problems(&missing_node_modules);
+    assert!(problems.iter().any(|problem| {
+        problem.contains("dynamic canary sweep") && problem.contains("npm ci --prefix console")
+    }));
+}
+
+#[test]
 fn release_governance_check_accepts_the_explicit_0_66_fast_wiring() {
     let root = xtask::doc_check::find_repo_root().unwrap();
     let report = xtask::release_governance::check(&root, "0.66").unwrap();
@@ -549,8 +578,52 @@ fn performance_lane_requires_protected_self_hosted_labels_and_serial_concurrency
 }
 
 #[test]
+fn release_governance_rejects_coverage_receipts_bound_to_an_older_release() {
+    let root = xtask::doc_check::find_repo_root().unwrap();
+    let workflow = read_ci_workflow(&root);
+    assert!(xtask::release_governance::coverage_ratchet_wiring_problems(&workflow).is_empty());
+
+    let candidate =
+        r#"evidence-run --release "$HYDRACACHE_CANDIDATE_RELEASE" --gate tool.coverage-ratchet"#;
+    let broken = workflow.replacen(
+        candidate,
+        "evidence-run --release 0.64 --gate tool.coverage-ratchet",
+        1,
+    );
+    assert_ne!(broken, workflow, "coverage candidate command was not found");
+    let problems = xtask::release_governance::coverage_ratchet_wiring_problems(&broken);
+    assert_eq!(
+        problems,
+        vec!["coverage ratchet must bind its receipt to HYDRACACHE_CANDIDATE_RELEASE"]
+    );
+}
+
+#[test]
 fn runtime_reports_are_gate_artifacts_not_committed_manifest_artifacts() {
     let root = xtask::doc_check::find_repo_root().unwrap();
+    let workflow = read_ci_workflow(&root);
+    let gitignore = std::fs::read_to_string(root.join(".gitignore")).unwrap();
+    assert!(
+        xtask::release_governance::runtime_evidence_hygiene_problems(&workflow, &gitignore)
+            .is_empty()
+    );
+    let broken_ignore = gitignore.replace("/SOAK_REPORT.json", "/different-report.json");
+    let problems =
+        xtask::release_governance::runtime_evidence_hygiene_problems(&workflow, &broken_ignore);
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("SOAK_REPORT.json")));
+
+    let broken_fuzz_cleanup = workflow.replacen("git clean -fd -- fuzz/corpus", "true", 1);
+    let problems = xtask::release_governance::runtime_evidence_hygiene_problems(
+        &broken_fuzz_cleanup,
+        &gitignore,
+    );
+    assert!(problems.iter().any(|problem| {
+        problem.contains("Raft wire fuzz release proof")
+            && problem.contains("untracked fuzz corpus additions")
+    }));
+
     let manifest_text =
         std::fs::read_to_string(root.join("docs/testing/release-evidence/0.67.toml")).unwrap();
     let manifest = xtask::release_evidence::parse_manifest_text(&manifest_text).unwrap();

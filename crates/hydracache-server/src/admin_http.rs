@@ -1,6 +1,6 @@
 use std::sync::{Arc, Mutex};
 
-use axum::extract::State;
+use axum::extract::{Path as AxumPath, State};
 use axum::http::header::CONTENT_TYPE;
 use axum::http::{HeaderMap, StatusCode};
 use axum::response::{IntoResponse, Response};
@@ -17,6 +17,7 @@ use thiserror::Error;
 use crate::bootstrap::{ServerAdminActionError, ServerRuntime};
 use crate::cluster_status::RaftCompactionError;
 use crate::hc2::Hc2ClientPlaneService;
+use crate::management_security::ManagementReadLimiter;
 use crate::services::DrainOutcome;
 use hydracache_observability::PrometheusExporter;
 
@@ -46,6 +47,8 @@ pub const ADMIN_RAFT_COMPACTION_PATH: &str = "/admin/raft/compaction";
 pub const ADMIN_DIAGNOSTIC_RESET_PATH: &str = "/admin/diagnostics/reset";
 /// Privileged, read-only aggregate memory-footprint path.
 pub const ADMIN_MEMORY_FOOTPRINT_PATH: &str = "/admin/memory-footprint";
+/// Explicit read-only management capability header used after identity verification.
+pub const HYDRACACHE_MANAGEMENT_READ_HEADER: &str = "x-hydracache-management-read";
 
 /// Shared runtime state for the admin HTTP surface.
 pub type SharedServerRuntime = Arc<Mutex<ServerRuntime>>;
@@ -55,22 +58,57 @@ pub type SharedServerRuntime = Arc<Mutex<ServerRuntime>>;
 pub struct AdminHttpSurface {
     runtime: SharedServerRuntime,
     hc2_metrics: Option<Hc2ClientPlaneService>,
+    management_cursors: Arc<Mutex<crate::management_http::ManagementCursorStore>>,
+    management_aggregator: Option<Arc<crate::management_aggregation::ManagementSnapshotAggregator>>,
+    management_history: Option<crate::management_history::ManagementHistoryService>,
+    management_read_limiter: ManagementReadLimiter,
 }
 
 impl AdminHttpSurface {
     /// Create an admin surface from a server runtime.
     pub fn new(runtime: ServerRuntime) -> Self {
+        let management_aggregator = runtime.management_peer_transport().map(|transport| {
+            Arc::new(crate::management_aggregation::ManagementSnapshotAggregator::new(transport))
+        });
+        let management_history = crate::management_history::ManagementHistoryService::from_config(
+            &runtime.config().management_history,
+        )
+        .expect("validated management history config");
         Self {
             runtime: Arc::new(Mutex::new(runtime)),
             hc2_metrics: None,
+            management_cursors: Arc::new(Mutex::new(Default::default())),
+            management_aggregator,
+            management_history,
+            management_read_limiter: ManagementReadLimiter::default(),
         }
     }
 
     /// Create an admin surface from shared runtime state.
     pub fn from_shared(runtime: SharedServerRuntime) -> Self {
+        let management_aggregator = runtime
+            .lock()
+            .expect("server runtime mutex")
+            .management_peer_transport()
+            .map(|transport| {
+                Arc::new(
+                    crate::management_aggregation::ManagementSnapshotAggregator::new(transport),
+                )
+            });
+        let management_history = {
+            let runtime = runtime.lock().expect("server runtime mutex");
+            crate::management_history::ManagementHistoryService::from_config(
+                &runtime.config().management_history,
+            )
+            .expect("validated management history config")
+        };
         Self {
             runtime,
             hc2_metrics: None,
+            management_cursors: Arc::new(Mutex::new(Default::default())),
+            management_aggregator,
+            management_history,
+            management_read_limiter: ManagementReadLimiter::default(),
         }
     }
 
@@ -86,22 +124,21 @@ impl AdminHttpSurface {
         Arc::clone(&self.runtime)
     }
 
+    /// Return the independent management-read limiter for diagnostics and cleanup proofs.
+    pub fn management_read_limiter(&self) -> ManagementReadLimiter {
+        self.management_read_limiter.clone()
+    }
+
     /// Return the axum router for `/healthz`, `/readyz`, and `/admin/*`.
     pub fn routes(&self) -> Router {
-        let actuator_registry = self
-            .runtime
-            .lock()
-            .expect("server runtime mutex")
-            .metrics_registry();
-        let routes = Router::new()
+        let runtime = self.runtime.lock().expect("server runtime mutex");
+        let actuator_registry = runtime.metrics_registry();
+        let management_api_enabled = runtime.config().management_api_enabled;
+        drop(runtime);
+        let mut routes = Router::new()
             .route(ADMIN_HEALTHZ_PATH, get(healthz))
             .route(ADMIN_READYZ_PATH, get(readyz))
             .route(ADMIN_METRICS_PATH, get(metrics))
-            .route(ADMIN_CONSOLE_PATH, get(console_index))
-            .route("/console/", get(console_index))
-            .route("/console/index.html", get(console_index))
-            .route("/console/app.js", get(console_app))
-            .route("/console/style.css", get(console_style))
             .route(ADMIN_CLUSTER_OVERVIEW_PATH, get(cluster_overview))
             .route(ADMIN_STATUS_PATH, get(admin_status))
             .route(ADMIN_DRAIN_PATH, get(admin_drain).post(admin_drain))
@@ -118,6 +155,21 @@ impl AdminHttpSurface {
                 ADMIN_ACTUATOR_PATH,
                 HydraCacheActuator::routes_for(actuator_registry),
             );
+        if management_api_enabled {
+            routes = routes
+                .route(ADMIN_CONSOLE_PATH, get(console_index))
+                .route("/console/", get(console_index))
+                .route("/console/index.html", get(console_index))
+                .route("/console/{*asset}", get(console_dist_asset))
+                .merge(crate::management_http::routes(
+                    Arc::clone(&self.runtime),
+                    Arc::clone(&self.management_cursors),
+                    self.management_aggregator.clone(),
+                    self.hc2_metrics.clone(),
+                    self.management_history.clone(),
+                    self.management_read_limiter.clone(),
+                ));
+        }
         if let Some(service) = self.hc2_metrics.clone() {
             routes.layer(Extension(service))
         } else {
@@ -157,27 +209,38 @@ async fn metrics(
 }
 
 async fn console_index() -> Response {
-    (
-        [(CONTENT_TYPE, "text/html; charset=utf-8")],
-        include_str!("../console/index.html"),
-    )
-        .into_response()
+    console_asset_response("index.html")
 }
 
-async fn console_app() -> Response {
-    (
-        [(CONTENT_TYPE, "text/javascript; charset=utf-8")],
-        include_str!("../console/app.js"),
-    )
-        .into_response()
+async fn console_dist_asset(AxumPath(asset): AxumPath<String>) -> Response {
+    console_asset_response(&asset)
 }
 
-async fn console_style() -> Response {
-    (
-        [(CONTENT_TYPE, "text/css; charset=utf-8")],
-        include_str!("../console/style.css"),
-    )
-        .into_response()
+fn console_asset_response(path: &str) -> Response {
+    let Some((content_type, body)) = crate::generated_console_assets::get(path) else {
+        return StatusCode::NOT_FOUND.into_response();
+    };
+    let mut response = ([(CONTENT_TYPE, content_type)], body).into_response();
+    let headers = response.headers_mut();
+    headers.insert(
+        "content-security-policy",
+        "default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self'; font-src 'self'; base-uri 'none'; frame-ancestors 'none'; form-action 'none'; object-src 'none'"
+            .parse()
+            .expect("static CSP is valid"),
+    );
+    headers.insert("x-content-type-options", "nosniff".parse().unwrap());
+    headers.insert("x-frame-options", "DENY".parse().unwrap());
+    headers.insert("referrer-policy", "no-referrer".parse().unwrap());
+    headers.insert(
+        "permissions-policy",
+        "camera=(), microphone=(), geolocation=()".parse().unwrap(),
+    );
+    headers.insert(
+        "cross-origin-resource-policy",
+        "same-origin".parse().unwrap(),
+    );
+    headers.insert("cache-control", "no-store".parse().unwrap());
+    response
 }
 
 async fn cluster_overview(State(runtime): State<SharedServerRuntime>) -> Response {
@@ -442,7 +505,7 @@ struct AdminBackupRequestAcceptance {
     restore_point_available: bool,
 }
 
-fn require_admin(headers: &HeaderMap) -> Result<(), AdminHttpError> {
+pub(crate) fn require_admin(headers: &HeaderMap) -> Result<(), AdminHttpError> {
     let has_identity = header_value(headers, HYDRACACHE_CLIENT_ID_HEADER).is_some()
         && header_value(headers, HYDRACACHE_TENANT_HEADER).is_some();
     if !has_identity {
@@ -453,6 +516,26 @@ fn require_admin(headers: &HeaderMap) -> Result<(), AdminHttpError> {
         .and_then(|value| value.to_str().ok())
         .is_some_and(|value| matches!(value, "true" | "1"));
     if !admin {
+        return Err(AdminHttpError::Unauthorized);
+    }
+    Ok(())
+}
+
+pub(crate) fn require_management_read(headers: &HeaderMap) -> Result<(), AdminHttpError> {
+    let has_identity = header_value(headers, HYDRACACHE_CLIENT_ID_HEADER).is_some()
+        && header_value(headers, HYDRACACHE_TENANT_HEADER).is_some();
+    if !has_identity {
+        return Err(AdminHttpError::Unauthenticated);
+    }
+    let reader = headers
+        .get(HYDRACACHE_MANAGEMENT_READ_HEADER)
+        .and_then(|value| value.to_str().ok())
+        .is_some_and(|value| matches!(value, "true" | "1"));
+    let write_admin = headers
+        .get(HYDRACACHE_ADMIN_HEADER)
+        .and_then(|value| value.to_str().ok())
+        .is_some_and(|value| matches!(value, "true" | "1"));
+    if !reader && !write_admin {
         return Err(AdminHttpError::Unauthorized);
     }
     Ok(())

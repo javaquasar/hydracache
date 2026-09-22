@@ -4631,6 +4631,202 @@ platform = "any"
 HYDRACACHE_RUN_DAEMON_PROCESS_E2E = "1"
 
 [[gate]]
+id = "env.hydracache-run-management-process-072"
+kind = "env_gate"
+source = "crates/hydracache-server/tests/management_process_072.rs"
+package = "hydracache-server"
+target = "management_process_072"
+test = "one_daemon_production_management_surface_is_typed_and_honest"
+cfg = ""
+env = "HYDRACACHE_RUN_MANAGEMENT_PROCESS_072"
+reason = "Production daemon and embedded Management Center 0.72 must be exercised through the typed read-only surface"
+tier = "nightly"
+required_features = []
+required_env = ["HYDRACACHE_RUN_MANAGEMENT_PROCESS_072"]
+required_tools = []
+timeout_seconds = 1800
+owner_release = "0.72.0"
+ship_mandatory = true
+artifacts = []
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "dst-nightly-soak"
+step = "Run 0.72 production management process proof"
+
+[gate.command]
+program = "cargo"
+args = ["test", "-p", "hydracache-server", "--test", "management_process_072", "--locked", "one_daemon_production_management_surface_is_typed_and_honest", "--", "--exact", "--nocapture", "--test-threads=1"]
+cwd = "."
+platform = "any"
+
+[gate.command.env]
+HYDRACACHE_RUN_MANAGEMENT_PROCESS_072 = "1"
+
+[[gate]]
+id = "env.hydracache-run-management-resource-linux-072"
+kind = "env_gate"
+source = "crates/hydracache-server/tests/management_process_072.rs"
+package = "hydracache-server"
+target = "management_process_072"
+test = "three_daemon_fault_recovery_retains_partial_truth_and_resource_bounds"
+cfg = "target_os=linux"
+env = "HYDRACACHE_RUN_MANAGEMENT_RESOURCE_LINUX_072"
+reason = "Linux process proof must retain bounded Management Center endpoint, FD and RSS evidence after fault recovery"
+tier = "nightly"
+required_features = []
+required_env = ["HYDRACACHE_RUN_MANAGEMENT_RESOURCE_LINUX_072"]
+required_tools = []
+timeout_seconds = 1800
+owner_release = "0.72.0"
+ship_mandatory = true
+artifacts = []
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "dst-nightly-soak"
+step = "Run 0.72 management Linux resource proof"
+
+[gate.command]
+program = "cargo"
+args = ["test", "-p", "hydracache-server", "--test", "management_process_072", "--locked", "three_daemon_fault_recovery_retains_partial_truth_and_resource_bounds", "--", "--exact", "--nocapture", "--test-threads=1"]
+cwd = "."
+platform = "linux"
+
+[gate.command.env]
+HYDRACACHE_RUN_MANAGEMENT_RESOURCE_LINUX_072 = "1"
+
+[[gate]]
+id = "env.hydracache-run-management-candidate-soak-072"
+kind = "env_gate"
+source = "crates/hydracache-server/tests/management_process_072.rs"
+package = "hydracache-server"
+target = "management_process_072"
+test = "candidate_six_hour_management_soak_is_bounded_and_recovers"
+cfg = "target_os=linux"
+env = "HYDRACACHE_RUN_MANAGEMENT_CANDIDATE_SOAK_072"
+reason = "The frozen 0.72 candidate must sustain six hours of fixed-rate management polling, RESP traffic and hourly follower recovery on an admitted Linux host"
+tier = "external"
+required_features = []
+required_env = ["HYDRACACHE_RUN_MANAGEMENT_CANDIDATE_SOAK_072", "HYDRACACHE_RELEASE_HOST_ID"]
+required_tools = []
+timeout_seconds = 23400
+owner_release = "0.72.0"
+ship_mandatory = true
+artifacts = ["target/test-evidence/0.72/management-candidate-soak.json"]
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "management-candidate-soak-072"
+step = "Run exact six-hour 0.72 management candidate soak"
+
+[gate.command]
+program = "cargo"
+args = ["test", "-p", "hydracache-server", "--test", "management_process_072", "--locked", "candidate_six_hour_management_soak_is_bounded_and_recovers", "--", "--exact", "--nocapture", "--test-threads=1"]
+cwd = "."
+platform = "linux"
+
+[gate.command.env]
+HYDRACACHE_RUN_MANAGEMENT_CANDIDATE_SOAK_072 = "1"
+
+[[gate]]
+id = "tool.hydracache-server.management-hc1-hc2-coexistence-072"
+kind = "external_tool"
+source = "crates/hydracache-server/tests/hc2_daemon_process.rs"
+package = "hydracache-server"
+target = "hc2_daemon_process"
+test = "real_daemon_shares_hc1_hc2_dispatch_and_exits_on_drain"
+cfg = "target_os=linux"
+env = ""
+reason = "The exact 0.72 candidate must prove real HC/1 and mTLS HC/2 traffic share dispatch and remain observable before the long management soak"
+tier = "external"
+required_features = []
+required_env = []
+required_tools = ["cargo"]
+timeout_seconds = 600
+owner_release = "0.72.0"
+ship_mandatory = true
+artifacts = []
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "management-candidate-soak-072"
+step = "Prove exact-candidate HC1 and HC2 coexistence"
+
+[gate.command]
+program = "cargo"
+args = ["test", "-p", "hydracache-server", "--test", "hc2_daemon_process", "--locked", "real_daemon_shares_hc1_hc2_dispatch_and_exits_on_drain", "--", "--exact", "--nocapture", "--test-threads=1"]
+cwd = "."
+platform = "linux"
+
+[[gate]]
+id = "env.hydracache-run-management-ship-soak-072"
+kind = "env_gate"
+source = "crates/hydracache-server/tests/management_process_072.rs"
+package = "hydracache-server"
+target = "management_process_072"
+test = "ship_twenty_four_hour_management_soak_is_bounded_and_recovers"
+cfg = "target_os=linux"
+env = "HYDRACACHE_RUN_MANAGEMENT_SHIP_SOAK_072"
+reason = "The exact 0.72 candidate must sustain 24 hours of fixed-rate management polling, RESP traffic and hourly follower recovery on the same admitted Linux host"
+tier = "external"
+required_features = []
+required_env = ["HYDRACACHE_RUN_MANAGEMENT_SHIP_SOAK_072", "HYDRACACHE_RELEASE_HOST_ID"]
+required_tools = []
+timeout_seconds = 90000
+owner_release = "0.72.0"
+ship_mandatory = true
+artifacts = ["target/test-evidence/0.72/management-ship-soak.json"]
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "management-ship-soak-072"
+step = "Run exact 24-hour 0.72 management ship soak"
+
+[gate.command]
+program = "cargo"
+args = ["test", "-p", "hydracache-server", "--test", "management_process_072", "--locked", "ship_twenty_four_hour_management_soak_is_bounded_and_recovers", "--", "--exact", "--nocapture", "--test-threads=1"]
+cwd = "."
+platform = "linux"
+
+[gate.command.env]
+HYDRACACHE_RUN_MANAGEMENT_SHIP_SOAK_072 = "1"
+
+[[gate]]
+id = "env.hydracache-run-management-mixed-072"
+kind = "env_gate"
+source = "crates/hydracache-server/tests/management_mixed_072.rs"
+package = "hydracache-server"
+target = "management_mixed_072"
+test = "real_071_072_upgrade_leadership_restart_and_rollback_are_capability_safe"
+cfg = "target_os=linux"
+env = "HYDRACACHE_RUN_MANAGEMENT_MIXED_072"
+reason = "Ship admission requires actual shipped v0.71.0 and exact v0.72 daemons through mixed leadership, restart, rolling upgrade and same-disk rollback"
+tier = "external"
+required_features = []
+required_env = ["HYDRACACHE_RUN_MANAGEMENT_MIXED_072", "HYDRACACHE_BUILD_071_DAEMON"]
+required_tools = []
+timeout_seconds = 6600
+owner_release = "0.72.0"
+ship_mandatory = true
+artifacts = ["target/test-evidence/0.72/management-mixed-071-072.json"]
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "management-mixed-072"
+step = "Run real 0.71 and 0.72 management upgrade rollback proof"
+
+[gate.command]
+program = "cargo"
+args = ["test", "-p", "hydracache-server", "--test", "management_mixed_072", "--locked", "real_071_072_upgrade_leadership_restart_and_rollback_are_capability_safe", "--", "--exact", "--nocapture", "--test-threads=1"]
+cwd = "."
+platform = "linux"
+
+[gate.command.env]
+HYDRACACHE_RUN_MANAGEMENT_MIXED_072 = "1"
+HYDRACACHE_BUILD_071_DAEMON = "1"
+
+[[gate]]
 id = "env.hydracache-run-redis-resp-multinode-e2e"
 kind = "env_gate"
 source = "crates/hydracache-server/tests/support/daemon_cluster.rs"
@@ -5638,6 +5834,134 @@ args = [
     "--",
     "-max_total_time=60",
 ]
+cwd = "fuzz"
+platform = "linux"
+
+[gate.command.env]
+
+[[gate]]
+id = "tool.cargo-fuzz.management-envelope-072"
+kind = "external_tool"
+source = "fuzz/fuzz_targets/fuzz_management_envelope.rs"
+package = "hydracache-fuzz"
+target = "fuzz_management_envelope"
+test = ""
+cfg = ""
+env = ""
+reason = "Pinned nightly cargo-fuzz mutates the bounded Management Center envelope decoder"
+tier = "nightly"
+required_features = []
+required_env = []
+required_tools = ["nightly", "cargo-fuzz=0.13.2"]
+timeout_seconds = 300
+owner_release = "0.72.0"
+ship_mandatory = true
+artifacts = []
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "fuzz-nightly"
+step = "Run 0.72 management envelope fuzz proof"
+
+[gate.command]
+program = "cargo"
+args = ["+nightly", "fuzz", "run", "fuzz_management_envelope", "--", "-max_total_time=60"]
+cwd = "fuzz"
+platform = "linux"
+
+[gate.command.env]
+
+[[gate]]
+id = "tool.cargo-fuzz.management-recovery-072"
+kind = "external_tool"
+source = "fuzz/fuzz_targets/fuzz_management_recovery.rs"
+package = "hydracache-fuzz"
+target = "fuzz_management_recovery"
+test = ""
+cfg = ""
+env = ""
+reason = "Pinned nightly cargo-fuzz mutates the bounded durable recovery status decoder"
+tier = "nightly"
+required_features = []
+required_env = []
+required_tools = ["nightly", "cargo-fuzz=0.13.2"]
+timeout_seconds = 300
+owner_release = "0.72.0"
+ship_mandatory = true
+artifacts = []
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "fuzz-nightly"
+step = "Run 0.72 management recovery fuzz proof"
+
+[gate.command]
+program = "cargo"
+args = ["+nightly", "fuzz", "run", "fuzz_management_recovery", "--", "-max_total_time=60"]
+cwd = "fuzz"
+platform = "linux"
+
+[gate.command.env]
+
+[[gate]]
+id = "tool.cargo-fuzz.management-placement-072"
+kind = "external_tool"
+source = "fuzz/fuzz_targets/fuzz_management_placement.rs"
+package = "hydracache-fuzz"
+target = "fuzz_management_placement"
+test = ""
+cfg = ""
+env = ""
+reason = "Pinned nightly cargo-fuzz mutates the bounded deterministic placement trace decoder"
+tier = "nightly"
+required_features = []
+required_env = []
+required_tools = ["nightly", "cargo-fuzz=0.13.2"]
+timeout_seconds = 300
+owner_release = "0.72.0"
+ship_mandatory = true
+artifacts = []
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "fuzz-nightly"
+step = "Run 0.72 management placement fuzz proof"
+
+[gate.command]
+program = "cargo"
+args = ["+nightly", "fuzz", "run", "fuzz_management_placement", "--", "-max_total_time=60"]
+cwd = "fuzz"
+platform = "linux"
+
+[gate.command.env]
+
+[[gate]]
+id = "tool.cargo-fuzz.management-cursor-072"
+kind = "external_tool"
+source = "fuzz/fuzz_targets/fuzz_management_cursor.rs"
+package = "hydracache-fuzz"
+target = "fuzz_management_cursor"
+test = ""
+cfg = ""
+env = ""
+reason = "Pinned nightly cargo-fuzz mutates the bounded opaque management cursor decoder"
+tier = "nightly"
+required_features = []
+required_env = []
+required_tools = ["nightly", "cargo-fuzz=0.13.2"]
+timeout_seconds = 300
+owner_release = "0.72.0"
+ship_mandatory = true
+artifacts = []
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "fuzz-nightly"
+step = "Run 0.72 management cursor fuzz proof"
+
+[gate.command]
+program = "cargo"
+args = ["+nightly", "fuzz", "run", "fuzz_management_cursor", "--", "-max_total_time=60"]
 cwd = "fuzz"
 platform = "linux"
 

@@ -47,6 +47,8 @@ use serde::Serialize;
 pub mod audit;
 pub mod consumer;
 pub mod exporter;
+pub mod management;
+pub mod management_health;
 
 pub use audit::{
     AuditEnvelope, AuditError, AuditEvent, AuditHealth, AuditKey, AuditKeyPolicy, AuditOutcome,
@@ -58,6 +60,34 @@ pub use consumer::{
     TenantNamespaceStatus, TenantRateLimitStatus, TenantStatus, TENANT_STATUS_SCHEMA_VERSION,
 };
 pub use exporter::{registered_metric_names, PrometheusExporter};
+pub use management::{
+    AdmissionState, BoundedCount, BoundedPage, BoundedPlacementConstraints, CatchUpState,
+    ClientProtocolLifecycle, ClusterFormationSnapshot, ConsensusProgressSnapshot, DiscoveryState,
+    DurableRecoveryStatus, FormationReasonCode, ManagementCacheDetail, ManagementCapabilities,
+    ManagementCapability, ManagementCapabilityAvailability, ManagementCapabilityId,
+    ManagementClientProtocol, ManagementClientsSnapshot, ManagementCompleteness,
+    ManagementConsensusRole, ManagementContractError, ManagementEnvelope,
+    ManagementMeasurementQuality, ManagementMemberDetail, ManagementNamespaceSummary,
+    ManagementObservationSource, ManagementPartitionSnapshot, ManagementWarning,
+    ManagementWarningCode, MemberFormationTransition, MemberReachabilityReason, OpaqueCursor,
+    OpaqueNodeIdentity, PartitionMemberCount, PlacementCandidateDecision, PlacementCandidatePage,
+    PlacementDecisionTrace, PlacementOutcome, PlacementReasonCode, RecoveryArtifactKind,
+    RecoveryOutcome, RecoveryPhase, RecoveryReasonCode, RecoveryScope, RecoveryWatermark,
+    RepairState, ServingState, TransportState, MANAGEMENT_API_SCHEMA_VERSION,
+    MAX_MANAGEMENT_CLIENT_PROTOCOLS, MAX_MANAGEMENT_CURSOR_BYTES,
+    MAX_MANAGEMENT_DIAGNOSTIC_STRING_BYTES, MAX_MANAGEMENT_MEMBERS, MAX_MANAGEMENT_NODE_ID_BYTES,
+    MAX_MANAGEMENT_OPAQUE_ID_BYTES, MAX_MANAGEMENT_PAGE_ITEMS, MAX_MANAGEMENT_WARNINGS,
+    MAX_MEMBER_FORMATION_TRANSITIONS, MAX_PLACEMENT_CANDIDATES, MAX_PLACEMENT_LABELS,
+    MAX_PLACEMENT_LABEL_BYTES, MAX_PLACEMENT_REASONS_PER_CANDIDATE, MAX_PLACEMENT_SELECTED,
+};
+pub use management_health::{
+    evaluate_management_health, retain_newer_recovery_observation, HealthThresholdSource,
+    ManagementHealthCategory, ManagementHealthCheck, ManagementHealthCounts,
+    ManagementHealthEvidence, ManagementHealthEvidenceCode, ManagementHealthInput,
+    ManagementHealthReport, ManagementHealthStatus, ManagementHealthThresholds,
+    OperationalHealthSignals, RecoveryHealthObservation, MANAGEMENT_HEALTH_EVALUATION_VERSION,
+    MAX_MANAGEMENT_HEALTH_CHECKS, MAX_MANAGEMENT_HEALTH_EVIDENCE,
+};
 
 /// Serializable snapshot of [`CacheStats`].
 ///

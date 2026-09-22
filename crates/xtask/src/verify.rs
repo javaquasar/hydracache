@@ -6,11 +6,12 @@
 //! The browser console gate runs only when Node and npm are available; otherwise
 //! it logs an explicit skip.
 
+use std::collections::BTreeSet;
 use std::error::Error;
 use std::path::{Path, PathBuf};
 use std::process::{Command, Stdio};
 
-use crate::{doc_check, feature_leak};
+use crate::{doc_check, feature_leak, management_center};
 
 /// A release gate: a human label, the `cargo` arguments, and optional env vars.
 #[derive(Clone, Debug, Eq, PartialEq)]
@@ -21,6 +22,7 @@ struct Gate {
 }
 
 const CONSOLE_GATE_LABEL: &str = "management console";
+const XTASK_TEST_GATE_LABEL: &str = "tests (xtask lib/integration)";
 
 fn gate(
     label: &'static str,
@@ -47,8 +49,75 @@ fn console_npm_steps() -> [(&'static str, Vec<&'static str>); 3] {
 
 fn gates_for_platform(is_windows: bool) -> Vec<Gate> {
     let mut gates = vec![
-        gate("format", ["fmt", "--all", "--", "--check"], None),
+        gate(
+            "clippy workspace",
+            [
+                "clippy",
+                "--workspace",
+                "--all-targets",
+                "--all-features",
+                "--exclude",
+                "hydracache",
+                "--locked",
+                "--",
+                "-D",
+                "warnings",
+            ],
+            None,
+        ),
+        gate(
+            "clippy hydracache common",
+            [
+                "clippy",
+                "-p",
+                "hydracache",
+                "--all-targets",
+                "--no-default-features",
+                "--features",
+                "durable-value-store,durable-values,tiered-values,testing",
+                "--locked",
+                "--",
+                "-D",
+                "warnings",
+            ],
+            None,
+        ),
+        gate(
+            "clippy hydracache system allocator",
+            [
+                "clippy",
+                "-p",
+                "hydracache",
+                "--all-targets",
+                "--no-default-features",
+                "--features",
+                "durable-value-store,durable-values,tiered-values,testing,allocator-system",
+                "--locked",
+                "--",
+                "-D",
+                "warnings",
+            ],
+            None,
+        ),
+        gate(
+            "clippy hydracache mimalloc",
+            [
+                "clippy",
+                "-p",
+                "hydracache",
+                "--lib",
+                "--no-default-features",
+                "--features",
+                "durable-value-store,durable-values,tiered-values,testing,allocator-mimalloc",
+                "--locked",
+                "--",
+                "-D",
+                "warnings",
+            ],
+            None,
+        ),
         gate("dependency bans", ["deny", "check", "bans"], None),
+        gate("dependency policy", ["deny", "check"], None),
         gate(
             "DST fast budget",
             [
@@ -165,6 +234,23 @@ fn gates_for_platform(is_windows: bool) -> Vec<Gate> {
             None,
         ));
     } else {
+        gates.push(gate(
+            "clippy hydracache jemalloc",
+            [
+                "clippy",
+                "-p",
+                "hydracache",
+                "--lib",
+                "--no-default-features",
+                "--features",
+                "durable-value-store,durable-values,tiered-values,testing,allocator-jemalloc",
+                "--locked",
+                "--",
+                "-D",
+                "warnings",
+            ],
+            None,
+        ));
         gates.push(gate("tests", ["test", "--workspace", "--locked"], None));
     }
 
@@ -193,11 +279,14 @@ fn windows_verify_target_dir_for_process(root: &Path, process_id: u32) -> PathBu
         .join(format!("xtask-verify-{process_id}"))
 }
 
-fn needs_windows_target_dir(label: &str) -> bool {
-    // `cargo fmt` does not build or replace the running xtask binary. Giving it
-    // a process-specific target directory makes rustfmt discover generated
-    // paths and can exceed MAX_PATH on Windows.
-    label != "format"
+fn target_dir_for_gate<'a>(
+    is_windows: bool,
+    gate_label: &str,
+    windows_target_dir: Option<&'a Path>,
+) -> Option<&'a Path> {
+    (is_windows && gate_label == XTASK_TEST_GATE_LABEL)
+        .then_some(windows_target_dir)
+        .flatten()
 }
 
 pub fn run(_args: Vec<String>) -> Result<(), Box<dyn Error>> {
@@ -213,6 +302,20 @@ pub fn run(_args: Vec<String>) -> Result<(), Box<dyn Error>> {
         return Err(format!("doc-check found {} problem(s)", problems.len()).into());
     }
     println!("doc-check: OK");
+
+    println!("== management-center-check 0.72 ==");
+    let management_problems = management_center::check(&root, false)?;
+    if !management_problems.is_empty() {
+        for problem in &management_problems {
+            eprintln!("management-center-check: {problem}");
+        }
+        return Err(format!(
+            "management-center-check found {} problem(s)",
+            management_problems.len()
+        )
+        .into());
+    }
+    println!("management-center-check: OK");
 
     println!("== release feature leak ==");
     let leaks = feature_leak::check(&root)?;
@@ -230,18 +333,20 @@ pub fn run(_args: Vec<String>) -> Result<(), Box<dyn Error>> {
     let is_windows = cfg!(windows);
     let windows_target_dir = is_windows.then(|| windows_verify_target_dir(&root));
 
+    run_format_gate(&root, is_windows)?;
+
     for Gate { label, args, env } in gates_for_platform(is_windows) {
         println!("== {label} ==");
-        if is_windows && label == "format" {
-            run_windows_format(&root)?;
-            continue;
-        }
         let mut cmd = Command::new("cargo");
         cmd.args(args).current_dir(&root);
-        if needs_windows_target_dir(label) {
-            if let Some(target_dir) = &windows_target_dir {
-                cmd.env("CARGO_TARGET_DIR", target_dir);
-            }
+        // Only the xtask test gate can try to replace the currently running
+        // target/debug/xtask.exe on Windows. Keeping every other gate on the
+        // shared target avoids rebuilding the whole workspace into a
+        // per-process directory and exhausting disk space.
+        if let Some(target_dir) =
+            target_dir_for_gate(is_windows, label, windows_target_dir.as_deref())
+        {
+            cmd.env("CARGO_TARGET_DIR", target_dir);
         }
         if let Some((key, value)) = env {
             cmd.env(key, value);
@@ -260,31 +365,47 @@ pub fn run(_args: Vec<String>) -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
-fn run_windows_format(root: &Path) -> Result<(), Box<dyn Error>> {
+fn run_format_gate(root: &Path, is_windows: bool) -> Result<(), Box<dyn Error>> {
+    println!("== format ==");
+    if !is_windows {
+        let status = Command::new("cargo")
+            .args(["fmt", "--all", "--", "--check"])
+            .current_dir(root)
+            .status()?;
+        return status
+            .success()
+            .then_some(())
+            .ok_or_else(|| "gate 'format' failed".into());
+    }
+
+    // `cargo fmt --all` expands every Rust source onto one rustfmt command and
+    // exceeds CreateProcess' command-line limit in this workspace. Formatting
+    // each unique workspace manifest preserves identical coverage without the
+    // Windows-only os error 206.
     let output = Command::new("cargo")
         .args(["metadata", "--no-deps", "--format-version", "1"])
         .current_dir(root)
         .output()?;
     if !output.status.success() {
-        return Err("gate 'format' could not read cargo metadata".into());
+        return Err("format gate could not enumerate workspace packages".into());
     }
     let metadata: serde_json::Value = serde_json::from_slice(&output.stdout)?;
-    let mut packages = metadata
-        .get("packages")
-        .and_then(serde_json::Value::as_array)
-        .ok_or("cargo metadata omitted packages")?
+    let manifests = metadata["packages"]
+        .as_array()
+        .ok_or("cargo metadata packages is not an array")?
         .iter()
-        .filter_map(|package| package.get("name").and_then(serde_json::Value::as_str))
-        .collect::<Vec<_>>();
-    packages.sort_unstable();
-    packages.dedup();
-    for package in packages {
+        .filter_map(|package| package["manifest_path"].as_str())
+        .collect::<BTreeSet<_>>();
+    if manifests.is_empty() {
+        return Err("format gate found no workspace package manifests".into());
+    }
+    for manifest in manifests {
         let status = Command::new("cargo")
-            .args(["fmt", "--package", package, "--", "--check"])
+            .args(["fmt", "--manifest-path", manifest, "--", "--check"])
             .current_dir(root)
             .status()?;
         if !status.success() {
-            return Err(format!("gate 'format' failed for package {package}").into());
+            return Err(format!("format gate failed for {manifest}").into());
         }
     }
     Ok(())
@@ -331,8 +452,8 @@ mod tests {
     use std::path::{Path, PathBuf};
 
     use super::{
-        console_npm_steps, gates_for_platform, needs_windows_target_dir,
-        windows_verify_target_dir_for_process, Gate, CONSOLE_GATE_LABEL,
+        console_npm_steps, gates_for_platform, target_dir_for_gate,
+        windows_verify_target_dir_for_process, Gate, CONSOLE_GATE_LABEL, XTASK_TEST_GATE_LABEL,
     };
 
     fn args_for<'a>(gates: &'a [Gate], label: &str) -> &'a [&'static str] {
@@ -413,6 +534,25 @@ mod tests {
     }
 
     #[test]
+    fn windows_isolates_only_the_xtask_test_gate() {
+        let root = Path::new("C:/repo");
+        let isolated = windows_verify_target_dir_for_process(root, 42);
+
+        assert_eq!(
+            target_dir_for_gate(true, XTASK_TEST_GATE_LABEL, Some(&isolated)),
+            Some(isolated.as_path())
+        );
+        assert_eq!(
+            target_dir_for_gate(true, "tests (workspace excluding xtask)", Some(&isolated)),
+            None
+        );
+        assert_eq!(
+            target_dir_for_gate(false, XTASK_TEST_GATE_LABEL, Some(&isolated)),
+            None
+        );
+    }
+
+    #[test]
     fn verify_includes_dst_fast_budget_gate() {
         let gates = gates_for_platform(false);
 
@@ -447,13 +587,6 @@ mod tests {
     }
 
     #[test]
-    fn windows_format_does_not_receive_the_build_target_override() {
-        assert!(!needs_windows_target_dir("format"));
-        assert!(needs_windows_target_dir("clippy"));
-        assert!(needs_windows_target_dir("tests (xtask lib/integration)"));
-    }
-
-    #[test]
     fn verify_includes_raft_failpoint_crash_safety_gate() {
         let gates = gates_for_platform(false);
 
@@ -472,6 +605,28 @@ mod tests {
                 "--test-threads=1"
             ]
         );
+    }
+
+    #[test]
+    fn verify_enforces_full_dependency_policy() {
+        let gates = gates_for_platform(false);
+        assert_eq!(args_for(&gates, "dependency policy"), ["deny", "check"]);
+    }
+
+    #[test]
+    fn windows_clippy_uses_only_supported_allocator_matrix() {
+        let windows = gates_for_platform(true);
+        assert!(windows
+            .iter()
+            .any(|gate| gate.label == "clippy hydracache mimalloc"));
+        assert!(!windows
+            .iter()
+            .any(|gate| gate.label == "clippy hydracache jemalloc"));
+
+        let non_windows = gates_for_platform(false);
+        assert!(non_windows
+            .iter()
+            .any(|gate| gate.label == "clippy hydracache jemalloc"));
     }
 
     #[test]

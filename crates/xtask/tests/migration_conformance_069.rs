@@ -154,7 +154,7 @@ fn release_069_ci_admission_is_independent_fail_loud_and_sha_bound() {
     let admission_job = &workflow[admission_start..admission_end];
     assert!(
         admission_job.contains(
-            "if: always() && (github.event_name != 'workflow_dispatch' || inputs.performance_0671_mode == '')"
+            "if: always() && (github.event_name != 'workflow_dispatch' || inputs.performance_0671_mode == 'off')"
         ),
         "release 0.69 admission must aggregate every normal CI outcome without running during a performance dispatch"
     );

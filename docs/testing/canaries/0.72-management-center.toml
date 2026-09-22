@@ -1,0 +1,292 @@
+schema_version = 1
+release = "0.72.0"
+
+[[canary]]
+id = "MC72-W0-BASELINE-DRIFT"
+status = "active"
+test = "canary_w0_missing_baseline_is_rejected"
+command = "cargo test -p xtask --test management_center_072 --locked canary_w0_missing_baseline_is_rejected -- --nocapture"
+defect_env = "HYDRACACHE_CANARY_DEFECT=MC72-W0-BASELINE-DRIFT"
+expected_failure = "HC-CANARY-RED:MC72-W0-BASELINE-DRIFT"
+green_evidence = "Frozen management bounds are present and structurally valid."
+red_evidence = "The mutant removes the baseline and the same registry oracle turns red."
+
+[[canary]]
+id = "MC72-W1-FALSE-SOURCE"
+status = "active"
+test = "canary_w1_false_source_mapping_is_rejected"
+command = "cargo test -p xtask --test management_center_072 --locked canary_w1_false_source_mapping_is_rejected -- --nocapture"
+defect_env = "HYDRACACHE_CANARY_DEFECT=MC72-W1-FALSE-SOURCE"
+expected_failure = "HC-CANARY-RED:MC72-W1-FALSE-SOURCE"
+green_evidence = "Every source-map row contains an owner and honest fallback."
+red_evidence = "The mutant removes source ownership and the same registry oracle turns red."
+
+[[canary]]
+id = "MC72-W0-UNOWNED-FIELD"
+status = "active"
+test = "canary_w0_unowned_field_is_rejected"
+command = "cargo test -p xtask --test management_center_072 --locked canary_w0_unowned_field_is_rejected -- --nocapture"
+defect_env = "HYDRACACHE_CANARY_DEFECT=MC72-W0-UNOWNED-FIELD"
+expected_failure = "HC-CANARY-RED:MC72-W0-UNOWNED-FIELD"
+green_evidence = "A source-map route without an owning claim is rejected by management-center-check."
+red_evidence = "The mutant attempts to render a field with no producer, privacy or test ownership row."
+
+[[canary]]
+id = "MC72-W1-ASSET-DRIFT"
+status = "active"
+test = "canary_w1_asset_drift_is_rejected"
+command = "cargo test -p xtask --test management_center_072 --locked canary_w1_asset_drift_is_rejected -- --nocapture"
+defect_env = "HYDRACACHE_CANARY_DEFECT=MC72-W1-ASSET-DRIFT"
+expected_failure = "HC-CANARY-RED:MC72-W1-ASSET-DRIFT"
+green_evidence = "The deterministic package verifier hashes every source and embedded asset."
+red_evidence = "The mutant changes one embedded byte and package verification refuses the candidate."
+
+[[canary]]
+id = "MC72-W2-LEAK-OR-OVERSIZE"
+status = "active"
+test = "canary_management_api_detects_internal_identity_leak_or_oversize_payload"
+command = "cargo test -p hydracache-server --test management_http --locked canary_management_api_detects_internal_identity_leak_or_oversize_payload -- --nocapture"
+defect_env = "HYDRACACHE_CANARY_DEFECT=MC72-W2"
+expected_failure = "HC-CANARY-RED:MC72-W2"
+green_evidence = "The real route remains within its byte ceiling and never serializes internal node identities."
+red_evidence = "The mutant serializes ClusterStatus directly; the same oracle detects the leaked identity."
+
+[[canary]]
+id = "MC72-W3-CONFUSED-FANOUT"
+status = "active"
+test = "canary_management_fanout_*"
+command = "cargo test -p hydracache-server --lib --locked canary_management_fanout -- --nocapture"
+defect_env = "HYDRACACHE_CANARY_DEFECT=MC72-W3"
+expected_failure = "HC-CANARY-RED:MC72-W3"
+green_evidence = "Only the committed roster is resolved and a cached epoch/sequence never regresses."
+red_evidence = "The mutant fans out to an injected metadata-service address or publishes a late older epoch."
+
+[[canary]]
+id = "MC72-W4-UNBOUNDED-HISTORY"
+status = "active"
+test = "ring evicts oldest points by per-series point and byte budgets"
+command = "npm --prefix console run unit"
+defect_env = "HYDRACACHE_CANARY_DEFECT=MC72-W4"
+expected_failure = "HC-CANARY-RED:MC72-W4"
+green_evidence = "A twelve-hour accelerated soak stays below frozen series, point and encoded-byte budgets; hidden/offline browser tests pause polling and abort obsolete requests."
+red_evidence = "The mutant disables eviction and the same budget oracle fails with the reviewed marker."
+
+[[canary]]
+id = "MC72-W5-MIXED-EPOCH"
+status = "active"
+test = "canary_mixed_epoch_partition_evidence_is_never_published_as_current"
+command = "cargo test -p hydracache-server --test management_topology_072 --locked canary_mixed_epoch_partition_evidence_is_never_published_as_current -- --nocapture"
+defect_env = "HYDRACACHE_CANARY_DEFECT=MC72-W5-MIXED-EPOCH"
+expected_failure = "HC-CANARY-RED:MC72-W5-MIXED-EPOCH"
+green_evidence = "A partition observation must match both the current authority epoch and observation sequence; stale ownership becomes unavailable."
+red_evidence = "The mutant presents an epoch-70 ownership snapshot as current under epoch 71 and the same oracle rejects it."
+
+[[canary]]
+id = "MC72-W5-DISCOVERED-IS-READY"
+status = "active"
+test = "canary_discovered_or_reachable_member_is_not_inferred_ready"
+command = "cargo test -p hydracache-server --test management_topology_072 --locked canary_discovered_or_reachable_member_is_not_inferred_ready -- --nocapture"
+defect_env = "HYDRACACHE_CANARY_DEFECT=MC72-W5-DISCOVERED-IS-READY"
+expected_failure = "HC-CANARY-RED:MC72-W5-DISCOVERED-IS-READY"
+green_evidence = "An unreachable discovered member remains blocked until authenticated, admitted, consensus-current evidence exists."
+red_evidence = "The mutant promotes the discovered member to serving and the readiness oracle turns red."
+
+[[canary]]
+id = "MC72-W5-NONDETERMINISTIC-PLACEMENT"
+status = "active"
+test = "canary_placement_normalization_is_permutation_invariant"
+command = "cargo test -p hydracache-server --test management_topology_072 --locked canary_placement_normalization_is_permutation_invariant -- --nocapture"
+defect_env = "HYDRACACHE_CANARY_DEFECT=MC72-W5-NONDETERMINISTIC-PLACEMENT"
+expected_failure = "HC-CANARY-RED:MC72-W5-NONDETERMINISTIC-PLACEMENT"
+green_evidence = "Candidate input permutations normalize to identical selected-first wire evidence."
+red_evidence = "The mutant reverses normalized candidates and the byte-for-byte determinism oracle fails."
+
+[[canary]]
+id = "MC72-W5-COMMIT-IS-APPLY"
+status = "active"
+test = "canary_committed_placement_is_not_reported_as_applied"
+command = "cargo test -p hydracache-server --test management_topology_072 --locked canary_committed_placement_is_not_reported_as_applied -- --nocapture"
+defect_env = "HYDRACACHE_CANARY_DEFECT=MC72-W5-COMMIT-IS-APPLY"
+expected_failure = "HC-CANARY-RED:MC72-W5-COMMIT-IS-APPLY"
+green_evidence = "Committed outcome retains an applied index below commit and is not painted applied."
+red_evidence = "The mutant copies commit into apply and changes the outcome; the same oracle turns red."
+
+[[canary]]
+id = "MC72-W6-CLOSED-CLIENT-LEAK"
+status = "active"
+test = "canary_closed_client_owner_cannot_survive_cleanup"
+command = "cargo test -p hydracache-server --test management_clients_072 --locked canary_closed_client_owner_cannot_survive_cleanup -- --nocapture"
+defect_env = "HYDRACACHE_CANARY_DEFECT=MC72-W6-CLOSED-CLIENT-LEAK"
+expected_failure = "HC-CANARY-RED:MC72-W6-CLOSED-CLIENT-LEAK"
+green_evidence = "Accepted minus closed reconciles exactly to the live connection owners and detail serialization is disabled without a safe bounded source."
+red_evidence = "The mutant retains one active owner after the only accepted client closes; lifecycle validation and the same cleanup oracle fail."
+
+[[canary]]
+id = "MC72-W7-CROSS-TENANT"
+status = "active"
+test = "canary_cross_tenant_source_never_changes_authorized_body"
+command = "cargo test -p hydracache-server --test management_namespaces_072 --locked canary_cross_tenant_source_never_changes_authorized_body -- --nocapture"
+defect_env = "HYDRACACHE_CANARY_DEFECT=MC72-W7-CROSS-TENANT"
+expected_failure = "HC-CANARY-RED:MC72-W7-CROSS-TENANT"
+green_evidence = "The tenant roster authorizes the caller before namespace totals are computed; hidden names, keys and payloads never enter the DTO."
+red_evidence = "The mutant switches the authorized source to tenant B and the same body scanner detects its distinctive namespace."
+
+[[canary]]
+id = "MC72-W8-UNKNOWN-AS-PASS"
+status = "active"
+test = "canary_missing_required_input_is_never_promoted_to_pass"
+command = "cargo test -p hydracache-observability --test management_health_072 --locked canary_missing_required_input_is_never_promoted_to_pass -- --nocapture"
+defect_env = "HYDRACACHE_CANARY_DEFECT=MC72-W8-UNKNOWN-AS-PASS"
+expected_failure = "HC-CANARY-RED:MC72-W8-UNKNOWN-AS-PASS"
+green_evidence = "A missing required placement input evaluates UNKNOWN and remains counted separately."
+red_evidence = "The mutant paints missing evidence PASS and the same status oracle turns red."
+
+[[canary]]
+id = "MC72-W8-STALE-RECOVERY-WINS"
+status = "active"
+test = "canary_stale_clean_recovery_cannot_replace_newer_degraded"
+command = "cargo test -p hydracache-observability --test management_health_072 --locked canary_stale_clean_recovery_cannot_replace_newer_degraded -- --nocapture"
+defect_env = "HYDRACACHE_CANARY_DEFECT=MC72-W8-STALE-RECOVERY-WINS"
+expected_failure = "HC-CANARY-RED:MC72-W8-STALE-RECOVERY-WINS"
+green_evidence = "The sequence/epoch reducer retains the newer Degraded recovery observation."
+red_evidence = "The mutant replaces it with an older Clean result and the timeline oracle turns red."
+
+[[canary]]
+id = "MC72-W8-TRUNCATED-PLACEMENT-PASS"
+status = "active"
+test = "canary_truncated_unknown_placement_cannot_pass"
+command = "cargo test -p hydracache-observability --test management_health_072 --locked canary_truncated_unknown_placement_cannot_pass -- --nocapture"
+defect_env = "HYDRACACHE_CANARY_DEFECT=MC72-W8-TRUNCATED-PLACEMENT-PASS"
+expected_failure = "HC-CANARY-RED:MC72-W8-TRUNCATED-PLACEMENT-PASS"
+green_evidence = "A truncated placement trace whose outcome is unknown evaluates UNKNOWN."
+red_evidence = "The mutant paints the truncated unknown outcome PASS and the same truth-table oracle turns red."
+
+[[canary]]
+id = "MC72-W9-ARBITRARY-PROXY"
+status = "active"
+test = "canary_arbitrary_proxy_and_amplification_are_rejected_before_socket_open"
+command = "cargo test -p hydracache-server --test management_history_072 --locked canary_arbitrary_proxy_and_amplification_are_rejected_before_socket_open -- --nocapture"
+defect_env = "HYDRACACHE_CANARY_DEFECT=MC72-W9-ARBITRARY-PROXY"
+expected_failure = "HC-CANARY-RED:MC72-W9-ARBITRARY-PROXY"
+green_evidence = "Range amplification and metadata-service addresses are rejected by pure validation before the adapter constructs a client."
+red_evidence = "The mutant bypasses both pre-socket guards and the same security oracle turns red."
+
+[[canary]]
+id = "MC72-W10-WRITE-FROM-UI"
+status = "active"
+test = "operation_canary_rejects_accepted_as_completed_and_ui_write_assumptions"
+command = "cargo test -p hydracache-server --test management_operations_072 --locked operation_canary_rejects_accepted_as_completed_and_ui_write_assumptions -- --nocapture"
+defect_env = "HYDRACACHE_CANARY_DEFECT=MC72-W10-WRITE-FROM-UI"
+expected_failure = "HC-CANARY-RED:MC72-W10-WRITE-FROM-UI"
+green_evidence = "The operation journal and browser preserve accepted as a non-terminal state, and browser network tests permit GET only."
+red_evidence = "The mutant promotes accepted backup to completed and the same state oracle turns red."
+
+[[canary]]
+id = "MC72-W10-LIVENESS-IS-CLEAN"
+status = "active"
+test = "recovery_canary_liveness_is_never_clean_without_retained_report"
+command = "cargo test -p hydracache-server --test management_operations_072 --locked recovery_canary_liveness_is_never_clean_without_retained_report -- --nocapture"
+defect_env = "HYDRACACHE_CANARY_DEFECT=MC72-W10-LIVENESS-IS-CLEAN"
+expected_failure = "HC-CANARY-RED:MC72-W10-LIVENESS-IS-CLEAN"
+green_evidence = "A live process without a retained recovery owner reports unknown/status-not-retained."
+red_evidence = "The mutant promotes process liveness to clean recovery and the same endpoint oracle turns red."
+
+[[canary]]
+id = "MC72-W10-LOSS-HIDDEN"
+status = "active"
+test = "recovery_canary_preserves_nonzero_loss_evidence"
+command = "cargo test -p hydracache-server --test management_operations_072 --locked recovery_canary_preserves_nonzero_loss_evidence -- --nocapture"
+defect_env = "HYDRACACHE_CANARY_DEFECT=MC72-W10-LOSS-HIDDEN"
+expected_failure = "HC-CANARY-RED:MC72-W10-LOSS-HIDDEN"
+green_evidence = "Nonzero discarded/corrupt evidence remains nonzero through the recovery presentation oracle."
+red_evidence = "The mutant zeroes a known discarded count and the same loss oracle turns red."
+
+[[canary]]
+id = "MC72-W10-ILLEGAL-REPAIR-COMPLETE"
+status = "active"
+test = "recovery_canary_rejects_repaired_before_terminal_verification"
+command = "cargo test -p hydracache-server --test management_operations_072 --locked recovery_canary_rejects_repaired_before_terminal_verification -- --nocapture"
+defect_env = "HYDRACACHE_CANARY_DEFECT=MC72-W10-ILLEGAL-REPAIR-COMPLETE"
+expected_failure = "HC-CANARY-RED:MC72-W10-ILLEGAL-REPAIR-COMPLETE"
+green_evidence = "Repaired is rejected while the recovery report remains in validation."
+red_evidence = "The mutant marks the unverified repair complete and the same report validator turns red."
+
+[[canary]]
+id = "MC72-W11-XSS-AUTH-BYPASS"
+status = "active"
+test = "canary_xss_and_management_auth_bypass_are_both_rejected"
+command = "cargo test -p hydracache-server --test management_security_072 --locked canary_xss_and_management_auth_bypass_are_both_rejected -- --nocapture"
+defect_env = "HYDRACACHE_CANARY_DEFECT=MC72-W11-XSS-AUTH-BYPASS"
+expected_failure = "HC-CANARY-RED:MC72-W11-XSS-AUTH-BYPASS"
+green_evidence = "All management routes require management.read (write-admin implies it), hostile identifiers are pseudonymized, and the browser uses text-only DOM construction under restrictive CSP."
+red_evidence = "The reversible mutant represents the combined XSS/auth bypass class and makes the same guard oracle fail with the registered marker."
+
+[[canary]]
+id = "MC72-W12-FAULT-MASKED"
+status = "active"
+test = "canary_fault_masked_is_detected"
+command = "cargo test -p hydracache-server --test management_process_072 --locked canary_fault_masked_is_detected -- --nocapture"
+defect_env = "HYDRACACHE_CANARY_DEFECT=MC72-W12-FAULT-MASKED"
+expected_failure = "HC-CANARY-RED:MC72-W12-FAULT-MASKED"
+green_evidence = "A killed committed peer produces explicit partial management truth while the surviving quorum remains available."
+red_evidence = "The mutant paints that partial observation complete and the projection oracle turns red."
+
+[[canary]]
+id = "MC72-W12-FAULT-NOT-ACTIVATED"
+status = "active"
+test = "canary_fault_activation_receipt_is_required"
+command = "cargo test -p hydracache-server --test management_process_072 --locked canary_fault_activation_receipt_is_required -- --nocapture"
+defect_env = "HYDRACACHE_CANARY_DEFECT=MC72-W12-FAULT-NOT-ACTIVATED"
+expected_failure = "HC-CANARY-RED:MC72-W12-FAULT-NOT-ACTIVATED"
+green_evidence = "Fault attempts require a positive observed-hit receipt before their result can be admitted."
+red_evidence = "The mutant removes activation and the receipt validator turns red."
+
+[[canary]]
+id = "MC72-W12-RESURRECTION"
+status = "active"
+test = "canary_authoritative_deletion_cannot_be_resurrected"
+command = "cargo test -p hydracache-server --test management_process_072 --locked canary_authoritative_deletion_cannot_be_resurrected -- --nocapture"
+defect_env = "HYDRACACHE_CANARY_DEFECT=MC72-W12-RESURRECTION"
+expected_failure = "HC-CANARY-RED:MC72-W12-RESURRECTION"
+green_evidence = "Observed post-catch-up objects must be a subset of authoritative desired state."
+red_evidence = "The mutant reintroduces a deleted stale-disk object and the subset oracle turns red."
+
+[[canary]]
+id = "MC72-W12-RETRY-ERASES-RED"
+status = "active"
+test = "canary_retry_chain_cannot_erase_red_attempt"
+command = "cargo test -p hydracache-server --test management_process_072 --locked canary_retry_chain_cannot_erase_red_attempt -- --nocapture"
+defect_env = "HYDRACACHE_CANARY_DEFECT=MC72-W12-RETRY-ERASES-RED"
+expected_failure = "HC-CANARY-RED:MC72-W12-RETRY-ERASES-RED"
+green_evidence = "Every retry links to and retains its earlier failed attempt with seed and digests."
+red_evidence = "The mutant replaces the two-attempt chain with the green retry and the cardinality/link oracle turns red."
+
+[[canary]]
+id = "MC72-W13-MIXED-ARTIFACT"
+status = "active"
+test = "canary_w13_mixed_artifact_is_rejected"
+command = "cargo test -p xtask --test management_center_072 --locked canary_w13_mixed_artifact_is_rejected -- --nocapture"
+defect_env = "HYDRACACHE_CANARY_DEFECT=MC72-W13-MIXED-ARTIFACT"
+expected_failure = "HC-CANARY-RED:MC72-W13-MIXED-ARTIFACT"
+green_evidence = "The package test substitutes one console asset and requires digest verification to reject it."
+red_evidence = "The mutant accepts the mixed artifact and the package oracle turns red."
+
+[[canary]]
+id = "MC72-W14-EVIDENCE-TAMPER"
+status = "active"
+test = "canary_w14_tampered_evidence_is_rejected"
+command = "cargo test -p xtask --test management_center_072 --locked canary_w14_tampered_evidence_is_rejected -- --nocapture"
+defect_env = "HYDRACACHE_CANARY_DEFECT=MC72-W14-EVIDENCE-TAMPER"
+expected_failure = "HC-CANARY-RED:MC72-W14-EVIDENCE-TAMPER"
+green_evidence = "A missing or altered claim/test/canary/evidence mapping rejects admission."
+red_evidence = "The mutant ignores one tampered mapping and the same meta-oracle turns red."
+
+[[canary]]
+id = "MC72-W14-PAPER-GREEN"
+status = "active"
+test = "canary_w14_paper_green_release_is_rejected"
+command = "cargo test -p xtask --test management_center_072 --locked canary_w14_paper_green_release_is_rejected -- --nocapture"
+defect_env = "HYDRACACHE_CANARY_DEFECT=MC72-W14-PAPER-GREEN"
+expected_failure = "HC-CANARY-RED:MC72-W14-PAPER-GREEN"
+green_evidence = "Ship admission rejects a candidate with missing exact-candidate receipts or incomplete taxonomy."
+red_evidence = "The paper-green mutant attempts to credit source-tree success without its exact red/green evidence pair."

@@ -156,26 +156,19 @@ pub fn check(root: &Path, release: &str) -> Result<GovernanceReport, Box<dyn Err
         .problems
         .extend(release_execution_wiring_problems(&workflow, release)?);
     report.completed_checks += 1;
-    for required in [
-        "canary-sweep --release 0.64 --tier fast",
-        "dynamic-canary-sweep:",
-        "canary-sweep --release 0.64 --tier all",
-        "canary-sweep --release 0.65 --tier all",
-        "canary-sweep --release 0.66 --tier all",
-        "canary-sweep --release 0.67 --tier all",
-        "canary-sweep --release 0.67.1 --tier fast",
-        "canary-sweep --release 0.67.1 --tier all",
-        "canary-sweep --release 0.68 --tier fast",
-        "canary-sweep --release 0.68 --tier all",
-        "canary-sweep --release 0.69 --tier fast",
-        "canary-sweep --release 0.69 --tier all",
-    ] {
-        if !workflow.contains(required) {
-            report
-                .problems
-                .push(format!("canary-sweep CI wiring is missing `{required}`"));
-        }
-    }
+    let gitignore = fs::read_to_string(root.join(".gitignore"))?;
+    report.problems.extend(prefix(
+        "runtime-evidence-hygiene",
+        runtime_evidence_hygiene_problems(&workflow, &gitignore),
+    ));
+    report.completed_checks += 1;
+    report
+        .problems
+        .extend(canary_sweep_wiring_problems(&workflow));
+    report.completed_checks += 1;
+    report
+        .problems
+        .extend(coverage_ratchet_wiring_problems(&workflow));
     report.completed_checks += 1;
 
     let publish_workflow = fs::read_to_string(root.join(".github/workflows/publish-crates.yml"))?;
@@ -195,6 +188,110 @@ pub fn check(root: &Path, release: &str) -> Result<GovernanceReport, Box<dyn Err
     ));
     report.completed_checks += 1;
     Ok(report)
+}
+
+pub fn canary_sweep_wiring_problems(workflow: &str) -> Vec<String> {
+    let mut problems = Vec::new();
+    for required in [
+        "canary-sweep --release 0.64 --tier fast",
+        "dynamic-canary-sweep:",
+        "canary-sweep --release 0.67.1 --tier fast",
+        "canary-sweep --release 0.68 --tier fast",
+        "canary-sweep --release 0.69 --tier fast",
+        "canary-sweep --release 0.72 --tier fast",
+    ] {
+        if !workflow.contains(required) {
+            problems.push(format!("canary-sweep CI wiring is missing `{required}`"));
+        }
+    }
+    let dynamic_job = workflow
+        .split_once("  dynamic-canary-sweep:")
+        .and_then(|(_, suffix)| {
+            suffix
+                .split_once("\n  coverage-ratchet:")
+                .map(|(job, _)| job)
+        })
+        .unwrap_or_default();
+    for required in [
+        "actions/setup-node@v5",
+        "npm ci --prefix console",
+        "canary-sweep --release 0.64 --tier all",
+        "canary-sweep --release 0.65 --tier all",
+        "canary-sweep --release 0.66 --tier all",
+        "canary-sweep --release 0.67 --tier all",
+        "canary-sweep --release 0.67.1 --tier all",
+        "canary-sweep --release 0.68 --tier all",
+        "canary-sweep --release 0.69 --tier all",
+        "canary-sweep --release 0.72 --tier all",
+    ] {
+        if !dynamic_job.contains(required) {
+            problems.push(format!(
+                "dynamic canary sweep is missing required runtime or command `{required}`"
+            ));
+        }
+    }
+    problems
+}
+
+pub fn coverage_ratchet_wiring_problems(workflow: &str) -> Vec<String> {
+    const CANDIDATE_COMMAND: &str =
+        "evidence-run --release \"$HYDRACACHE_CANDIDATE_RELEASE\" --gate tool.coverage-ratchet";
+    let coverage_job = workflow
+        .split_once("  coverage-ratchet:")
+        .and_then(|(_, suffix)| suffix.split_once("\n  msrv:").map(|(job, _)| job))
+        .unwrap_or_default();
+    if coverage_job.contains(CANDIDATE_COMMAND) {
+        Vec::new()
+    } else {
+        vec!["coverage ratchet must bind its receipt to HYDRACACHE_CANDIDATE_RELEASE".to_owned()]
+    }
+}
+
+pub fn runtime_evidence_hygiene_problems(workflow: &str, gitignore: &str) -> Vec<String> {
+    let mut problems = Vec::new();
+    if workflow.contains("tee SOAK_REPORT.json")
+        && !gitignore
+            .lines()
+            .any(|line| line.trim() == "/SOAK_REPORT.json")
+    {
+        problems.push(
+            "SOAK_REPORT.json is written before exact-commit evidence gates and must be root-ignored"
+                .to_owned(),
+        );
+    }
+    const FUZZ_CLEANUP: &str = "git clean -fd -- fuzz/corpus";
+    for (cleanup_step, proof_step) in [
+        (
+            "Clean corpus before 0.66 Raft wire fuzz evidence",
+            "Run 0.66 Raft wire fuzz release proof",
+        ),
+        (
+            "Clean corpus before 0.72 management envelope fuzz evidence",
+            "Run 0.72 management envelope fuzz proof",
+        ),
+        (
+            "Clean corpus before 0.72 management recovery fuzz evidence",
+            "Run 0.72 management recovery fuzz proof",
+        ),
+        (
+            "Clean corpus before 0.72 management placement fuzz evidence",
+            "Run 0.72 management placement fuzz proof",
+        ),
+        (
+            "Clean corpus before 0.72 management cursor fuzz evidence",
+            "Run 0.72 management cursor fuzz proof",
+        ),
+    ] {
+        let expected = format!(
+            "- name: {cleanup_step}\n        run: {FUZZ_CLEANUP}\n\n      - name: {proof_step}"
+        );
+        if !workflow.contains(&expected) {
+            problems.push(format!(
+                "{proof_step} must be immediately preceded by removal of untracked fuzz corpus additions"
+            ));
+        }
+    }
+    problems
 }
 
 pub fn publish_workflow_problems(text: &str) -> Vec<String> {
@@ -1741,7 +1838,7 @@ fn release_069_execution_wiring_problems(workflow: &WorkflowShape, text: &str) -
         }
     }
     const ADMISSION_CONDITION: &str =
-        "always() && (github.event_name != 'workflow_dispatch' || inputs.performance_0671_mode == '')";
+        "always() && (github.event_name != 'workflow_dispatch' || inputs.performance_0671_mode == 'off')";
     if workflow
         .conditions
         .get("migration-conformance-admission-069")

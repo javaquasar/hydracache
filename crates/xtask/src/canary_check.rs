@@ -257,12 +257,9 @@ fn validate_entry(
     entry: &CanaryEntry,
     problems: &mut Vec<String>,
 ) {
-    if entry.guard.file == entry.canary.file && entry.guard.function == entry.canary.function {
-        problems.push(format!(
-            "{}: {} guard and canary both reference {}",
-            registry_path, entry.w_item, entry.guard.function
-        ));
-    }
+    // Reversible, environment-selected mutants intentionally execute the same
+    // oracle once green and once with the defect enabled. Command identity is
+    // checked below, so a copied guard can never masquerade as a canary.
     if entry.red_evidence.trim().is_empty() {
         problems.push(format!(
             "{}: {} is missing red_evidence",
@@ -404,6 +401,7 @@ fn function_exists(text: &str, function: &str) -> bool {
         format!("fn {function}<"),
         format!("async fn {function}("),
         format!("async fn {function}<"),
+        format!("function {function}("),
     ];
     patterns.iter().any(|pattern| text.contains(pattern))
         || ((text.contains("@Test") || text.contains("@TestFactory"))

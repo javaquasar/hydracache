@@ -1,0 +1,97 @@
+schema_version = 1
+release = "0.72.0"
+
+# `source_test` proves the underlying invariant. `projection_test` proves the management contract.
+# Recovery classes remain explicitly unknown until ServerRuntime retains a real RecoveryReport;
+# this is a covered fail-closed projection, not a claim that the UI diagnoses the exact disk fault.
+
+[[fault]]
+id = "clean-reopen"
+source_test = "crates/hydracache-cluster-raft/tests/durable_runtime.rs::durable_runtime_recovers_committed_metadata_after_reopen"
+projection_test = "crates/hydracache-server/tests/management_process_072.rs::fault_matrix_projection_contract_never_promotes_absent_or_partial_truth"
+projection = "unknown-until-retained-source"
+tier = ["fast", "process"]
+
+[[fault]]
+id = "missing-rebuildable-derivative"
+source_test = "crates/hydracache/tests/session_lifecycle.rs::failover_recovery_preserves_empty_repairs_nonempty_or_rebuilds_loudly"
+projection_test = "crates/hydracache-server/tests/management_process_072.rs::fault_matrix_projection_contract_never_promotes_absent_or_partial_truth"
+projection = "unknown-until-retained-source"
+tier = ["fast", "process"]
+
+[[fault]]
+id = "bit-rot"
+source_test = "crates/hydracache-cluster-raft/tests/snapshot_corruption.rs::snapshot_bitflip_fails_loud_checksum"
+projection_test = "crates/hydracache-server/tests/management_process_072.rs::fault_matrix_projection_contract_never_promotes_absent_or_partial_truth"
+projection = "unknown-until-retained-source"
+tier = ["fast", "fuzz-corpus"]
+
+[[fault]]
+id = "torn-artifact"
+source_test = "crates/hydracache-cluster-raft/tests/snapshot_corruption.rs::snapshot_truncated_bytes_fail_loud_without_partial_apply"
+projection_test = "crates/hydracache-server/tests/management_process_072.rs::fault_matrix_projection_contract_never_promotes_absent_or_partial_truth"
+projection = "unknown-until-retained-source"
+tier = ["fast", "failpoint"]
+
+[[fault]]
+id = "enospc-write-error"
+source_test = "crates/hydracache-cluster-raft/tests/failpoints_crash_safety.rs::disk_full_on_append_fails_loud_not_silent"
+projection_test = "crates/hydracache-server/tests/management_process_072.rs::fault_matrix_projection_contract_never_promotes_absent_or_partial_truth"
+projection = "unknown-until-retained-source"
+tier = ["scheduled", "process"]
+
+[[fault]]
+id = "uncommitted-wal"
+source_test = "crates/hydracache-cluster-raft/tests/persistent_log.rs::persistent_log_truncate_suffix_drops_conflicting_tail"
+projection_test = "crates/hydracache-server/tests/management_process_072.rs::fault_matrix_projection_contract_never_promotes_absent_or_partial_truth"
+projection = "explicit-partial"
+tier = ["fast", "process"]
+
+[[fault]]
+id = "corrupt-authoritative-snapshot"
+source_test = "crates/hydracache-cluster-raft/tests/durable_recovery_corpus.rs::failed_recovery_leaves_last_good_snapshot_reopenable"
+projection_test = "crates/hydracache-server/tests/management_process_072.rs::fault_matrix_projection_contract_never_promotes_absent_or_partial_truth"
+projection = "unknown-until-retained-source"
+tier = ["fast", "process"]
+
+[[fault]]
+id = "commit-blocked-before-apply"
+source_test = "crates/hydracache-server/src/grid_host.rs::metadata_authority_requires_committed_state_to_be_fully_applied"
+projection_test = "crates/hydracache-server/tests/management_process_072.rs::fault_matrix_projection_contract_never_promotes_absent_or_partial_truth"
+projection = "consensus-lag"
+tier = ["fast", "process"]
+
+[[fault]]
+id = "deletion-during-stale-peer-partition"
+source_test = "crates/hydracache-server/tests/daemon_process_cluster.rs::drained_node_restart_does_not_silently_resurrect_voter"
+projection_test = "crates/hydracache-server/tests/management_process_072.rs::fault_matrix_projection_contract_never_promotes_absent_or_partial_truth"
+projection = "removed-never-reappears"
+tier = ["scheduled", "ship"]
+
+[[fault]]
+id = "foreign-identity-disk"
+source_test = "crates/hydracache-server/src/grid_host.rs::persisted_identity_rejects_wrong_cluster_hash_and_malformed_files"
+projection_test = "crates/hydracache-server/tests/management_process_072.rs::fault_matrix_projection_contract_never_promotes_absent_or_partial_truth"
+projection = "unknown-until-retained-source"
+tier = ["fast", "process"]
+
+[[fault]]
+id = "interrupted-reconciliation"
+source_test = "crates/hydracache-cluster-raft/src/lib.rs::raft_snapshot_install_rejects_late_error_without_partial_publish"
+projection_test = "crates/hydracache-server/tests/management_process_072.rs::fault_matrix_projection_contract_never_promotes_absent_or_partial_truth"
+projection = "explicit-partial"
+tier = ["fast", "process"]
+
+[[fault]]
+id = "concurrent-snapshot-aggregation"
+source_test = "crates/hydracache-server/src/management_aggregation.rs::canary_management_fanout_coalesces_and_late_epoch_cannot_replace_cache"
+projection_test = "crates/hydracache-server/tests/management_process_072.rs::fault_matrix_projection_contract_never_promotes_absent_or_partial_truth"
+projection = "explicit-partial"
+tier = ["scheduled"]
+
+[[fault]]
+id = "bounded-resource-pressure"
+source_test = "crates/hydracache-server/tests/snapshot_resource_budget.rs::slow_receiver_applies_bounded_backpressure_without_unbounded_tasks_or_rss"
+projection_test = "crates/hydracache-server/tests/management_process_072.rs::fault_matrix_projection_contract_never_promotes_absent_or_partial_truth"
+projection = "bounded-overload"
+tier = ["scheduled", "candidate"]

@@ -38,6 +38,7 @@ The core idea is simple: a cache key identifies one value, and tags describe whi
 | Cache repository or query results | [Database Query Caching](guides/database-query-caching.md) |
 | Pick SQLx, Diesel, or SeaORM integration | [SQLx](guides/sqlx-adapter.md), [Diesel](guides/diesel-adapter.md), [SeaORM](guides/seaorm-adapter.md) |
 | Expose a Redis-compatible RESP edge | [Redis API](guides/redis-api.md) |
+| Inspect logical memory ownership and retained-byte estimates | [Memory Accounting](guides/memory-accounting.md) |
 | Review production readiness | [Production Checklist](production-checklist.md) |
 | Avoid common cache mistakes | [Anti-patterns](anti-patterns.md) |
 

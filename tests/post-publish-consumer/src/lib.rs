@@ -17,7 +17,11 @@ mod tests {
     };
     use hydracache_db::DbCache;
     use hydracache_diesel::{DieselCache, DieselQueryExt};
-    use hydracache_observability::HydraCacheRegistry;
+    use hydracache_observability::{
+        ClusterFormationSnapshot, ConsensusProgressSnapshot, DurableRecoveryStatus,
+        HydraCacheRegistry, ManagementHealthReport, ManagementObservationSource,
+        ManagementWarningCode, PlacementDecisionTrace, MANAGEMENT_API_SCHEMA_VERSION,
+    };
     use hydracache_seaorm::{SeaOrmCache, SeaOrmQueryExt};
     use hydracache_sqlx::SqlxCache;
     use serde::{Deserialize, Serialize};
@@ -35,6 +39,25 @@ mod tests {
         assert!(is_supported_hc2_generation(HC2_GENERATION));
         assert!(!is_supported_hc2_generation(HC2_MINIMUM_GENERATION - 1));
         assert!(!is_supported_hc2_generation(HC2_GENERATION + 1));
+    }
+
+    #[test]
+    fn published_management_v1_contract_smoke_test() {
+        assert_eq!(MANAGEMENT_API_SCHEMA_VERSION, 1);
+        for public_type in [
+            std::any::type_name::<ClusterFormationSnapshot>(),
+            std::any::type_name::<PlacementDecisionTrace>(),
+            std::any::type_name::<DurableRecoveryStatus>(),
+            std::any::type_name::<ManagementHealthReport>(),
+            std::any::type_name::<ConsensusProgressSnapshot>(),
+        ] {
+            assert!(public_type.starts_with("hydracache_observability::"));
+        }
+        let source: ManagementObservationSource =
+            serde_json::from_str("\"future_source\"").unwrap();
+        let warning: ManagementWarningCode = serde_json::from_str("\"future_warning\"").unwrap();
+        assert_eq!(source, ManagementObservationSource::Unknown);
+        assert_eq!(warning, ManagementWarningCode::Unknown);
     }
 
     #[tokio::test]

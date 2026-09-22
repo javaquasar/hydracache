@@ -34,6 +34,7 @@ HydraCache's current direction is:
 
 - [Groupcache reread](../groupcache/GROUPCACHE_HYDRACACHE_REREAD.md)
 - [Hazelcast reread](../hazelcast/HAZELCAST_HYDRACACHE_REREAD.md)
+- [NATS reread](../nats-server/NATS_HYDRACACHE_REREAD.md)
 - [Olric reread](../olric/OLRIC_HYDRACACHE_REREAD.md)
 - [Coerce-rs reread](../coerce-rs/COERCE_RS_HYDRACACHE_REREAD.md)
 
@@ -50,6 +51,7 @@ HydraCache's current direction is:
 |---|---|---|
 | `groupcache` | ownership, peer fetch, cross-node dedup, hot-cache patterns | [groupcache](../groupcache) |
 | `hazelcast` | `member` / `client` model, service layering, cluster lifecycle | [hazelcast](../hazelcast) |
+| `nats-server` | recoverable storage, discovery/authority split, Raft snapshots, placement diagnostics and failure testing | [nats-server](../nats-server) |
 | `moka` | default local backend constraints and extension seams | [moka](../moka) |
 | `caffeine` | policy design, deferred maintenance, ergonomic local cache API | [caffeine](../caffeine) |
 | `olric` | embedded + standalone duality, clustering, pub/sub invalidation | [olric](../olric) |
@@ -66,17 +68,20 @@ If revisiting the references later, use this order:
 
 1. `groupcache`
 2. `hazelcast`
-3. `olric`
-4. `coerce-rs`
-5. `moka`
-6. `caffeine`
-7. `sqlx`
-8. `hikaricp`
-9. `readyset`
+3. `nats-server`
+4. `olric`
+5. `coerce-rs`
+6. `moka`
+7. `caffeine`
+8. `sqlx`
+9. `hikaricp`
+10. `readyset`
 
 Reasoning:
 
-- `groupcache` and `hazelcast` most directly affect the future cluster model
+- `groupcache`, `hazelcast`, and `nats-server` most directly affect the future
+  cluster model; NATS is the strongest of the three for storage recovery,
+  snapshot lifecycle, placement explanations, and failure-test taxonomy
 - `olric` and `coerce-rs` help refine embedded/clustered runtime boundaries
 - `moka` and `caffeine` most directly affect the quality of the local product
 - `sqlx` determines whether DB adapters stay clean instead of leaking into the core
@@ -90,6 +95,7 @@ Each reread doc builds on the project's deeper knowledge base and points back to
 
 - [Groupcache KB](../groupcache/GROUPCACHE_KNOWLEDGE_BASE.md)
 - [Hazelcast KB](../hazelcast/HAZELCAST_KNOWLEDGE_BASE.md)
+- [NATS KB](../nats-server/NATS_KNOWLEDGE_BASE.md)
 - [Moka KB](../moka/MOKA_KNOWLEDGE_BASE.md)
 - [Caffeine KB](../caffeine/CAFFEINE_KNOWLEDGE_BASE.md)
 - [Olric KB](../olric/OLRIC_KNOWLEDGE_BASE.md)

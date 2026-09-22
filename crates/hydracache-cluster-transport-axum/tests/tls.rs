@@ -27,6 +27,7 @@ fn tls_mtls_handshake_required_for_cluster_routes() {
         Err(TlsError::ClientCertificateRequired)
     );
     assert!(route_requires_mtls(ClusterRoute::PeerFetch));
+    assert!(route_requires_mtls(ClusterRoute::ManagementSnapshot));
     assert!(!route_requires_mtls(ClusterRoute::Admin));
 }
 

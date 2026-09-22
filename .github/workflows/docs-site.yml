@@ -7,12 +7,16 @@ on:
     paths:
       - "README.md"
       - "docs-site/**"
+      - "docs/releases/**"
+      - "docs/performance/memory-*.md"
       - "scripts/docs-*.mjs"
       - ".github/workflows/docs-site.yml"
   pull_request:
     paths:
       - "README.md"
       - "docs-site/**"
+      - "docs/releases/**"
+      - "docs/performance/memory-*.md"
       - "scripts/docs-*.mjs"
       - ".github/workflows/docs-site.yml"
   workflow_dispatch:
@@ -70,6 +74,11 @@ jobs:
 
       - name: Check documentation links
         run: node scripts/docs-link-check.mjs
+
+      - name: Check release documentation synchronization
+        run: |
+          node --test scripts/docs-release-check.test.mjs
+          node scripts/docs-release-check.mjs
 
       - name: Install browser dependencies
         timeout-minutes: 10

@@ -49,9 +49,15 @@ It keeps shared storage, stats, single-flight, tags, and invalidation behavior, 
 | --- | --- |
 | `stats` | Return lightweight counters for hits, misses, loads, single-flight joins, invalidations, stale load discards, events, and transport diagnostics. |
 | `diagnostics().await` | Return stats plus local backend approximate entry count for smoke checks. |
+| `memory_footprint_snapshot` | Return the bounded aggregate memory-accounting snapshot introduced in 0.71. |
+| `memory_snapshot_barrier` | Acknowledge a quiescent epoch before requesting an exact snapshot. |
+| `reconcile_memory_footprint` | Perform the expensive exact walk used by tests and scheduled verification. |
 | `subscribe` and tag/key filtered variants | Observe cache behavior through event streams. |
 | callback listeners | Register callback-style mutation/access listeners while the returned handle is alive. |
 
 Use diagnostics to prove basic cache behavior locally: the first call should miss and load, and the second same-key call should hit.
+
+See [Memory Accounting](../guides/memory-accounting.md) for instrumentation modes, consistency
+requirements, retained-byte semantics and the difference between logical ownership and RSS.
 
 For exact signatures, see [API Links](api-links.md).

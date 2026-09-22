@@ -1,0 +1,74 @@
+schema_version = 1
+release = "0.72.0"
+previous_release = "0.71.0"
+previous_release_ref = "refs/tags/v0.71.0"
+previous_release_artifact_required = true
+legacy_overview_path = "/cluster/overview"
+management_disable_env = "HYDRACACHE_MANAGEMENT_API_ENABLED=false"
+snapshot_capability_path = "/cluster/management/capabilities"
+snapshot_rpc_path = "/cluster/management/v1/snapshot"
+
+[[artifact]]
+id = "management-v1-formation-v1"
+schema_version = 1
+writer = "hydracache-observability::ClusterFormationSnapshot"
+reader_versions = ["0.72.0"]
+persisted = false
+unknown_policy = "explicit-unknown-or-reject"
+
+[[artifact]]
+id = "management-v1-placement-trace-v1"
+schema_version = 1
+writer = "hydracache-observability::PlacementDecisionTrace"
+reader_versions = ["0.72.0"]
+persisted = false
+unknown_policy = "explicit-unknown-or-reject"
+
+[[artifact]]
+id = "management-v1-durable-recovery-v1"
+schema_version = 1
+writer = "hydracache-observability::DurableRecoveryStatus"
+reader_versions = ["0.72.0"]
+persisted = false
+unknown_policy = "explicit-unknown-or-reject"
+
+[[artifact]]
+id = "management-v1-health-catalogue-v1"
+schema_version = 1
+writer = "hydracache-observability::ManagementHealthReport"
+reader_versions = ["0.72.0"]
+persisted = false
+unknown_policy = "unknown-never-pass"
+
+[[artifact]]
+id = "management-v1-consensus-progress-v1"
+schema_version = 1
+writer = "hydracache-observability::ConsensusProgressSnapshot"
+reader_versions = ["0.72.0"]
+persisted = false
+unknown_policy = "explicit-unknown-or-reject"
+
+[[mixed_scenario]]
+id = "old-leader-new-followers"
+required = true
+expected = "old member is capability-limited and aggregate is partial"
+
+[[mixed_scenario]]
+id = "new-leader-old-follower"
+required = true
+expected = "capability probe returns unsupported and snapshot POST is not sent"
+
+[[mixed_scenario]]
+id = "leadership-change-during-aggregation"
+required = true
+expected = "epoch-fenced partial or coherent current-epoch result"
+
+[[mixed_scenario]]
+id = "old-peer-restart-during-placement-trace"
+required = true
+expected = "trace is unchanged or unavailable; never recomputed by the reader"
+
+[[mixed_scenario]]
+id = "rollback-after-ui-observation"
+required = true
+expected = "legacy overview remains usable and management bookmarks return 404"

@@ -1,0 +1,259 @@
+schema_version = 1
+release = "0.72.0"
+
+[[source]]
+id = "capabilities"
+route = "/management/v1/capabilities"
+field_group = "capability availability and stable reason"
+producer = "ServerRuntime + Management API route registry"
+authority = "observational"
+lifetime = "request"
+consistency = "one local runtime snapshot"
+max_cardinality = 3
+privacy = "cluster-safe; no internal identities"
+fallback = "unavailable with stable reason"
+test_owner = "crates/hydracache-server/tests/management_http.rs"
+
+[[source]]
+id = "persistence-summary"
+route = "/management/v1/persistence"
+field_group = "backup configuration, storage-open observation, backup age, verified artifact and recovery availability"
+producer = "ServerRuntime configuration and observability model"
+authority = "local runtime observation; no durable artifact authority retained"
+lifetime = "request"
+consistency = "configuration and observation are separate from verification"
+max_cardinality = 1
+privacy = "destination, paths, object identity, credentials and raw errors omitted"
+fallback = "verification unavailable and recovery unknown/status-not-retained"
+test_owner = "crates/hydracache-server/tests/management_operations_072.rs"
+
+[[source]]
+id = "management-operations"
+route = "/management/v1/operations"
+field_group = "bounded requested, accepted, running and terminal operation transitions"
+producer = "process-local ManagementOperationJournal"
+authority = "actual runtime method transitions only"
+lifetime = "current process generation; oldest-first eviction"
+consistency = "cursor bound to generation and latest transition sequence"
+max_cardinality = 128
+privacy = "opaque operation IDs, stable types/scopes/reasons; no caller identity or payload"
+fallback = "empty current-generation page; evicted count remains explicit"
+test_owner = "crates/hydracache-server/src/management_operations.rs + crates/hydracache-server/tests/management_operations_072.rs"
+
+[[source]]
+id = "management-audit"
+route = "/management/v1/audit"
+field_group = "redacted management operation transition metadata"
+producer = "process-local ManagementOperationJournal"
+authority = "partial audit coverage; management operations only"
+lifetime = "current process generation; oldest-first eviction"
+consistency = "cursor bound to generation and latest audit sequence"
+max_cardinality = 256
+privacy = "no keys, values, paths, credentials, tenant/client identity or raw errors"
+fallback = "empty partial page with explicit coverage and eviction metadata"
+test_owner = "crates/hydracache-server/src/management_operations.rs + crates/hydracache-server/tests/management_operations_072.rs + console/tests/console_readonly.spec.js"
+
+[[source]]
+id = "cluster-formation-compat-alias"
+route = "/management/v1/formation"
+field_group = "compatibility alias of cluster formation"
+producer = "same handler and evidence as cluster-formation"
+authority = "committed Raft roster joined to authenticated per-member snapshots"
+lifetime = "request plus bounded 30-second cursor"
+consistency = "authority epoch + observation sequence"
+max_cardinality = 100
+privacy = "node ids SHA-256 pseudonymized before wire serialization"
+fallback = "identical to /management/v1/cluster/formation"
+test_owner = "crates/hydracache-server/tests/management_http.rs"
+
+[[source]]
+id = "dashboard"
+route = "/management/v1/dashboard"
+field_group = "cluster, replication, reshard, cache, local consensus and bounded member summary"
+producer = "ClusterStatusProvider + HydraCacheRegistry typed overview"
+authority = "committed local control-plane snapshot plus local cache counters"
+lifetime = "request; browser retains only its bounded per-tab ring"
+consistency = "one authority epoch; unavailable resource fields stay null"
+max_cardinality = 100
+privacy = "node ids SHA-256 pseudonymized; no keys, endpoints, paths or raw errors"
+fallback = "partial with explicit unavailable_fields and stable warnings; never zero-filled"
+test_owner = "crates/hydracache-server/tests/management_http.rs + console/tests"
+
+[[source]]
+id = "cluster-formation"
+route = "/management/v1/cluster/formation"
+field_group = "committed roster, generation, reachability, local admission and catch-up"
+producer = "ClusterStatusProvider backed by GridControlPlaneHandle"
+authority = "committed Raft roster joined to authenticated per-member snapshots"
+lifetime = "one-second immutable aggregate cache and 30-second cursor"
+consistency = "authority epoch + observation sequence"
+max_cardinality = 100
+privacy = "member diagnostic; node ids SHA-256 pseudonymized before wire serialization"
+fallback = "partial; unknown dimensions remain unknown and serving remains blocked"
+test_owner = "crates/hydracache-server/tests/management_http.rs"
+
+[[source]]
+id = "cluster-members"
+route = "/management/v1/cluster/members"
+field_group = "committed identity generation, raft role, reachability, local resources and current-generation formation timeline"
+producer = "ClusterStatusProvider + authenticated member aggregation + local process/cache diagnostics"
+authority = "committed Raft roster at one authority epoch; resources are local-only unless a peer proves them"
+lifetime = "request plus bounded 30-second cursor"
+consistency = "authority epoch + observation sequence + node generation"
+max_cardinality = 100
+privacy = "node ids pseudonymized; configuration represented only by an allowlisted non-reversible digest"
+fallback = "partial with null unavailable resource fields; discovery never implies readiness"
+test_owner = "crates/hydracache-server/tests/management_topology_072.rs"
+
+[[source]]
+id = "cluster-partitions"
+route = "/management/v1/cluster/partitions"
+field_group = "partition counts, ownership distribution, under-replication, zone spread, repair, reshard and backfill"
+producer = "validated ManagementTopologyModel plus real local cluster counters"
+authority = "exact authority epoch and observation sequence"
+lifetime = "one immutable runtime observation"
+consistency = "ownership is returned only when both epoch and sequence match; otherwise counts remain unavailable"
+max_cardinality = 100
+privacy = "aggregate counts and pseudonymous members only"
+fallback = "real aggregate repair counters with assigned/distribution null and stale/source warning"
+test_owner = "crates/hydracache-server/tests/management_topology_072.rs"
+
+[[source]]
+id = "placement-trace"
+route = "/management/v1/cluster/placement-traces/{opaque_id}"
+field_group = "selected and rejected candidates, stable reasons, constraints, commit and apply progress"
+producer = "validated ManagementTopologyModel placement observation"
+authority = "current topology epoch"
+lifetime = "bounded immutable runtime evidence addressed by a server-issued opaque id"
+consistency = "selected first, deterministic pseudonymous ordering; commit and apply stay distinct"
+max_cardinality = 512
+privacy = "admin-only non-enumerable id; no endpoints, keys, tokens, paths or raw errors"
+fallback = "unknown, malformed and stale ids return the same 404"
+test_owner = "crates/hydracache-server/tests/management_topology_072.rs"
+
+[[source]]
+id = "consensus-progress"
+route = "/management/v1/consensus/progress"
+field_group = "local commit, apply, snapshot and catch-up positions"
+producer = "GridControlPlaneHandle local and peer management snapshots"
+authority = "live local and authenticated committed-member raft-rs observations"
+lifetime = "one-second immutable aggregate cache"
+consistency = "one node generation and authority epoch"
+max_cardinality = 100
+privacy = "cluster-safe counters; node id pseudonymized"
+fallback = "empty partial page with source-unavailable warning"
+test_owner = "crates/hydracache-server/tests/management_http.rs"
+
+[[source]]
+id = "client-lifecycle"
+route = "/management/v1/clients"
+field_group = "node-local protocol connection lifecycle, pending work, subscriptions, sessions and rejected work"
+producer = "HC/1 dispatch accounting + HC/2 stream accounting + RESP listener lifecycle"
+authority = "node-local runtime counters; no cluster-complete claim"
+lifetime = "process lifetime counters and live-owner gauges"
+consistency = "one local request snapshot; accepted minus closed reconciles to active where all three dimensions exist"
+max_cardinality = 3
+privacy = "closed protocol domain only; no address, identity, tenant, certificate, token, key, payload or session token"
+fallback = "unavailable dimensions are null and response is partial; optional detail remains disabled"
+test_owner = "crates/hydracache-server/tests/management_clients_072.rs"
+
+[[source]]
+id = "cluster-member-snapshot-rpc"
+route = "/cluster/management/v1/snapshot"
+field_group = "node generation, authority epoch, observation sequence and local consensus positions"
+producer = "GridControlPlaneHandle local immutable snapshot"
+authority = "read-only local raft-rs observation fenced by requested epoch"
+lifetime = "request; retained only inside one-second aggregate cache"
+consistency = "exact schema, node id, generation, authority epoch and monotone observation sequence"
+max_cardinality = 1
+privacy = "cluster-internal authenticated route; raw identity is pseudonymized before admin serialization"
+fallback = "fail loud; caller records bounded partial evidence"
+test_owner = "crates/hydracache-server/tests/management_aggregation_072.rs"
+
+[[source]]
+id = "authorized-namespaces"
+route = "/management/v1/namespaces"
+field_group = "authorized namespace entry/logical-byte usage, quotas, fair-share, admission and subscription state"
+producer = "ClientSurfaceState tenant roster and TenantMetricsSnapshot"
+authority = "caller tenant scope resolved server-side before aggregation"
+lifetime = "request plus 30-second epoch/sequence-bound cursor"
+consistency = "one tenant metrics snapshot; exact usage fields and explicit unavailable owner fields"
+max_cardinality = 100
+privacy = "tenant is not repeated; no hidden namespace, keys, values, tags, payloads or raw policy"
+fallback = "source absent returns empty partial; identity mismatch returns 403"
+test_owner = "crates/hydracache-server/tests/management_namespaces_072.rs"
+
+[[source]]
+id = "authorized-namespace-caches"
+route = "/management/v1/namespaces/{namespace}/caches"
+field_group = "single client-surface cache usage/quota detail and explicit unavailable diagnostics"
+producer = "authorized TenantNamespaceStatus"
+authority = "same caller tenant scope as namespace summary"
+lifetime = "request"
+consistency = "authorization precedes lookup and serialization"
+max_cardinality = 1
+privacy = "hidden and nonexistent namespace both 404; no cross-scope count oracle"
+fallback = "unknown or hidden namespace returns 404; unavailable measurements remain null"
+test_owner = "crates/hydracache-server/tests/management_namespaces_072.rs"
+
+[[source]]
+id = "deterministic-healthchecks"
+route = "/management/v1/healthchecks"
+field_group = "stable server-evaluated health status, bounded evidence, thresholds and remediation codes"
+producer = "hydracache-observability deterministic health evaluators over typed management inputs"
+authority = "same authority epoch and observation sequence as source formation, consensus, placement and recovery evidence"
+lifetime = "request plus 30-second epoch/sequence-bound cursor"
+consistency = "status may improve only on a newer coherent observation; UNKNOWN remains separate"
+max_cardinality = 64
+privacy = "stable codes, pseudonymous identities and bounded numeric evidence only"
+fallback = "required missing, partial, modeled, stale, incoherent or truncated evidence is UNKNOWN"
+test_owner = "crates/hydracache-observability/tests/management_health_072.rs + crates/hydracache-server/tests/management_health_072.rs"
+
+[[source]]
+id = "prometheus-fixed-history"
+route = "/management/v1/history"
+field_group = "bounded historical samples for four reviewed query IDs"
+producer = "single configured Prometheus origin through DNS-fenced reqwest adapter"
+authority = "external observational metrics source; never control-plane authority"
+lifetime = "one deadline-bound request; browser keeps server history separate from its local ring"
+consistency = "one fixed query/range; labels discarded; no cross-source splicing"
+max_cardinality = 24
+privacy = "no PromQL, URL, headers, credentials, labels, or upstream error bodies cross the browser boundary"
+fallback = "no_adapter/no_data/timeout/partial/malformed/oversize states; local history remains available"
+test_owner = "crates/hydracache-server/tests/management_history_072.rs + console/tests/console_readonly.spec.js"
+
+[[source]]
+id = "persistence-recovery"
+route = "/management/v1/persistence/recovery"
+field_group = "durable recovery outcome and bounded evidence counts"
+producer = "absent in current slice"
+authority = "unavailable"
+lifetime = "request"
+consistency = "no retained recovery status"
+max_cardinality = 1
+privacy = "no paths, keys, raw errors or checksums"
+fallback = "unknown/status-not-retained"
+test_owner = "crates/hydracache-server/tests/management_http.rs"
+
+[[security_control]]
+id = "management-read-boundary"
+routes = "/management/v1/**"
+authority = "verified internal identity plus management.read capability; write-admin implies read, tenant scope does not"
+default_boundary = "internal administration listener"
+remote_boundary = "TLS/mTLS reverse proxy replaces all x-hydracache identity and capability headers"
+concurrency_owner = "ManagementReadLimiter"
+max_concurrency = 16
+overload = "429 without entering management collection; write administration remains independently admitted"
+browser_policy = "same-origin GET only, text-only DOM, restrictive CSP, no CDN/runtime third party"
+test_owner = "crates/hydracache-server/tests/management_security_072.rs + console/tests/console_readonly.spec.js"
+
+[[proof]]
+id = "real-process-fault-projection"
+registry = "docs/testing/management-center/0.72/fault-matrix.toml"
+producer = "production hydracache-server binary through DaemonCluster"
+shapes = [1, 3]
+fault = "kill one committed follower, observe partial, pressure with 32 readers, restart same disk, observe recovery"
+consistency = "one typed response retains authority epoch/sequence; absence and peer failure never become complete/healthy"
+resource_contract = "p95, RSS/HWM and FD bounds from frozen bounds.toml"
+evidence = "binary SHA-256 plus seed, length-framed schedule/event digests, resources and append-only attempts"
+test_owner = "crates/hydracache-server/tests/management_process_072.rs"

@@ -20,6 +20,21 @@ on:
         required: false
         default: false
         type: boolean
+      run_management_candidate_soak_072:
+        description: "Run the exact six-hour 0.72 Management Center candidate soak"
+        required: false
+        default: false
+        type: boolean
+      run_management_ship_soak_072:
+        description: "Run six-hour candidate plus 24-hour 0.72 ship confirmation on one release host"
+        required: false
+        default: false
+        type: boolean
+      run_management_mixed_072:
+        description: "Build shipped v0.71.0 and run the exact 0.71/0.72 upgrade/rollback proof"
+        required: false
+        default: false
+        type: boolean
       run_reference_performance:
         description: "Run 0.67 ship evidence on the authorized self-hosted bare-metal runner"
         required: false
@@ -128,7 +143,7 @@ env:
 jobs:
   ci-topology:
     name: 0.71 CI topology safety gate
-    if: github.event_name != 'workflow_dispatch' || inputs.performance_0671_mode == ''
+    if: github.event_name != 'workflow_dispatch' || inputs.performance_0671_mode == 'off'
     runs-on: ubuntu-latest
     timeout-minutes: 15
 
@@ -161,7 +176,7 @@ jobs:
 
   memory-contracts-071:
     name: 0.71 Memory Contracts
-    if: github.event_name != 'workflow_dispatch' || inputs.performance_0671_mode == ''
+    if: github.event_name != 'workflow_dispatch' || inputs.performance_0671_mode == 'off'
     runs-on: ubuntu-latest
     timeout-minutes: 240
 
@@ -301,7 +316,7 @@ jobs:
 
   memory-regression-fast:
     name: Memory Regression Fast
-    if: github.event_name != 'workflow_dispatch' || inputs.performance_0671_mode == ''
+    if: github.event_name != 'workflow_dispatch' || inputs.performance_0671_mode == 'off'
     runs-on: ubuntu-24.04
     timeout-minutes: 30
 
@@ -596,7 +611,7 @@ jobs:
 
   docs:
     name: Docs
-    if: github.event_name != 'workflow_dispatch' || inputs.performance_0671_mode == ''
+    if: github.event_name != 'workflow_dispatch' || inputs.performance_0671_mode == 'off'
     runs-on: ubuntu-latest
     timeout-minutes: 30
 
@@ -637,9 +652,14 @@ jobs:
       - name: Check documentation links
         run: node scripts/docs-link-check.mjs
 
+      - name: Check release documentation synchronization
+        run: |
+          node --test scripts/docs-release-check.test.mjs
+          node scripts/docs-release-check.mjs
+
   rust:
     name: Rust
-    if: github.event_name != 'workflow_dispatch' || inputs.performance_0671_mode == ''
+    if: github.event_name != 'workflow_dispatch' || inputs.performance_0671_mode == 'off'
     runs-on: ubuntu-latest
     timeout-minutes: 120
     env:
@@ -701,8 +721,8 @@ jobs:
           PIP_DISABLE_PIP_VERSION_CHECK: "1"
         run: cargo run -p xtask --locked -- client-plane-spike-check
 
-      - name: Dependency bans
-        run: cargo deny check bans
+      - name: Dependency policy
+        run: cargo deny check
 
       - name: Docs consistency
         run: |
@@ -713,6 +733,10 @@ jobs:
         run: |
           cargo test -p xtask --test mutants --locked
           cargo run -p xtask --locked -- mutants
+
+      - name: Install management console dependencies for canaries
+        timeout-minutes: 15
+        run: npm ci --prefix console
 
       - name: Canary completeness
         run: |
@@ -733,6 +757,14 @@ jobs:
           cargo run -p xtask --locked -- canary-sweep --release 0.70 --tier fast
           cargo run -p xtask --locked -- canary-check --release 0.71
           cargo run -p xtask --locked -- canary-sweep --release 0.71 --tier fast
+          cargo run -p xtask --locked -- canary-check --release 0.72
+          cargo run -p xtask --locked -- canary-sweep --release 0.72 --tier fast
+
+      - name: Management Center 0.72 admission contract
+        run: |
+          cargo test -p xtask --test management_center_072 --locked
+          cargo run -p xtask --locked -- management-center-check --release 0.72
+          cargo run -p xtask --locked -- release-evidence --release 0.72
 
       - name: Fuzz corpus regression
         run: cargo run -p xtask --locked -- evidence-run --release "$HYDRACACHE_CANDIDATE_RELEASE" --gate fast.fuzz-corpus-regression
@@ -864,7 +896,7 @@ jobs:
 
   migration-conformance-fast-evidence-069:
     name: Migration Conformance Fast Evidence 0.69
-    if: github.event_name != 'workflow_dispatch' || inputs.performance_0671_mode == ''
+    if: github.event_name != 'workflow_dispatch' || inputs.performance_0671_mode == 'off'
     runs-on: ubuntu-latest
     timeout-minutes: 50
 
@@ -938,7 +970,7 @@ jobs:
 
   migration-conformance-069:
     name: Migration Conformance 0.69
-    if: github.event_name != 'workflow_dispatch' || inputs.performance_0671_mode == ''
+    if: github.event_name != 'workflow_dispatch' || inputs.performance_0671_mode == 'off'
     runs-on: ubuntu-latest
     timeout-minutes: 60
 
@@ -1008,7 +1040,7 @@ jobs:
 
   migration-conformance-postgres-069:
     name: Migration Conformance PostgreSQL 0.69 (${{ matrix.postgres.series }})
-    if: github.event_name != 'workflow_dispatch' || inputs.performance_0671_mode == ''
+    if: github.event_name != 'workflow_dispatch' || inputs.performance_0671_mode == 'off'
     runs-on: ubuntu-latest
     timeout-minutes: 45
     strategy:
@@ -1119,7 +1151,7 @@ jobs:
     name: Migration Conformance Admission 0.69
     runs-on: ubuntu-latest
     timeout-minutes: 15
-    if: always() && (github.event_name != 'workflow_dispatch' || inputs.performance_0671_mode == '')
+    if: always() && (github.event_name != 'workflow_dispatch' || inputs.performance_0671_mode == 'off')
     needs:
       - migration-conformance-fast-evidence-069
       - migration-conformance-069
@@ -1201,7 +1233,7 @@ jobs:
       - migration-conformance-postgres-069
       - migration-conformance-admission-069
       - msrv
-    if: always() && (github.event_name != 'workflow_dispatch' || inputs.performance_0671_mode == '')
+    if: always() && (github.event_name != 'workflow_dispatch' || inputs.performance_0671_mode == 'off')
 
     steps:
       - name: Require Linux checks
@@ -1226,7 +1258,7 @@ jobs:
     timeout-minutes: 60
     needs:
       - rust
-    if: always() && (github.event_name != 'workflow_dispatch' || inputs.performance_0671_mode == '')
+    if: always() && (github.event_name != 'workflow_dispatch' || inputs.performance_0671_mode == 'off')
 
     steps:
       - name: Require Rust gate
@@ -1368,6 +1400,12 @@ jobs:
       - name: Run daemon-process cluster tier
         run: cargo run -p xtask --locked -- evidence-run --release 0.64 --gate env.hydracache-run-daemon-process-e2e
 
+      - name: Run 0.72 production management process proof
+        run: cargo run -p xtask --locked -- evidence-run --release 0.72 --gate env.hydracache-run-management-process-072
+
+      - name: Run 0.72 management Linux resource proof
+        run: cargo run -p xtask --locked -- evidence-run --release 0.72 --gate env.hydracache-run-management-resource-linux-072
+
       - name: Redis RESP multinode debt sentinels
         run: cargo run -p xtask --locked -- evidence-run --release 0.65 --gate env.hydracache-run-redis-resp-multinode-e2e
 
@@ -1410,6 +1448,115 @@ jobs:
         with:
           name: SOAK_REPORT
           path: SOAK_REPORT.json
+
+  management-mixed-072:
+    name: 0.71 to 0.72 Management Compatibility
+    runs-on: [self-hosted, linux, x64, hydracache-release]
+    timeout-minutes: 120
+    if: (github.event_name == 'workflow_dispatch' && inputs.run_management_mixed_072) || startsWith(github.ref, 'refs/tags/v0.72.')
+
+    steps:
+      - name: Checkout full release history
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Verify shipped v0.71.0 provenance
+        run: |
+          git rev-parse --verify refs/tags/v0.71.0
+          git merge-base --is-ancestor refs/tags/v0.71.0 HEAD
+
+      - name: Run real 0.71 and 0.72 management upgrade rollback proof
+        timeout-minutes: 105
+        run: cargo run -p xtask --locked -- evidence-run --release 0.72 --gate env.hydracache-run-management-mixed-072
+
+      - name: Upload mixed release evidence
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: "management-mixed-071-072-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}-${{ runner.name }}"
+          path: |
+            target/test-evidence/0.72/management-mixed-071-072.json
+            target/release-evidence/receipts/**
+          if-no-files-found: error
+
+  management-candidate-soak-072:
+    name: 0.72 Management Candidate Soak
+    runs-on: [self-hosted, linux, x64, hydracache-release]
+    timeout-minutes: 420
+    if: github.event_name == 'workflow_dispatch' && inputs.run_management_candidate_soak_072
+
+    steps:
+      - name: Checkout exact candidate
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Prove exact-candidate HC1 and HC2 coexistence
+        run: cargo run -p xtask --locked -- evidence-run --release 0.72 --gate tool.hydracache-server.management-hc1-hc2-coexistence-072
+
+      - name: Run exact six-hour 0.72 management candidate soak
+        timeout-minutes: 390
+        env:
+          HYDRACACHE_RELEASE_HOST_ID: ${{ runner.name }}
+        run: cargo run -p xtask --locked -- evidence-run --release 0.72 --gate env.hydracache-run-management-candidate-soak-072
+
+      - name: Upload exact candidate soak evidence
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: "management-candidate-soak-072-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}-${{ runner.name }}"
+          path: |
+            target/test-evidence/0.72/management-candidate-soak.json
+            target/release-evidence/receipts/**
+          if-no-files-found: error
+
+  management-ship-soak-072:
+    name: 0.72 Management Ship Confirmation
+    runs-on: [self-hosted, linux, x64, hydracache-release]
+    timeout-minutes: 1900
+    if: github.event_name == 'workflow_dispatch' && inputs.run_management_ship_soak_072
+
+    steps:
+      - name: Checkout exact candidate
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Prove exact-candidate HC1 and HC2 coexistence
+        run: cargo run -p xtask --locked -- evidence-run --release 0.72 --gate tool.hydracache-server.management-hc1-hc2-coexistence-072
+
+      - name: Re-run exact six-hour candidate soak on ship host
+        timeout-minutes: 390
+        env:
+          HYDRACACHE_RELEASE_HOST_ID: ${{ runner.name }}
+        run: cargo run -p xtask --locked -- evidence-run --release 0.72 --gate env.hydracache-run-management-candidate-soak-072
+
+      - name: Run exact 24-hour 0.72 management ship soak
+        timeout-minutes: 1500
+        env:
+          HYDRACACHE_RELEASE_HOST_ID: ${{ runner.name }}
+        run: cargo run -p xtask --locked -- evidence-run --release 0.72 --gate env.hydracache-run-management-ship-soak-072
+
+      - name: Upload exact ship soak evidence
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: "management-ship-soak-072-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}-${{ runner.name }}"
+          path: |
+            target/test-evidence/0.72/management-candidate-soak.json
+            target/test-evidence/0.72/management-ship-soak.json
+            target/release-evidence/receipts/**
+          if-no-files-found: error
 
   raft-corner-case-nightly:
     name: Raft Corner-Case Nightly
@@ -2533,8 +2680,35 @@ jobs:
           cargo +nightly fuzz run fuzz_resp_command -- -max_total_time=60
           cargo +nightly fuzz run fuzz_snapshot_decode -- -max_total_time=60
 
+      - name: Clean corpus before 0.66 Raft wire fuzz evidence
+        run: git clean -fd -- fuzz/corpus
+
       - name: Run 0.66 Raft wire fuzz release proof
         run: cargo run -p xtask --locked -- evidence-run --release 0.66 --gate tool.cargo-fuzz.raft-wire-frame-066
+
+      - name: Clean corpus before 0.72 management envelope fuzz evidence
+        run: git clean -fd -- fuzz/corpus
+
+      - name: Run 0.72 management envelope fuzz proof
+        run: cargo run -p xtask --locked -- evidence-run --release 0.72 --gate tool.cargo-fuzz.management-envelope-072
+
+      - name: Clean corpus before 0.72 management recovery fuzz evidence
+        run: git clean -fd -- fuzz/corpus
+
+      - name: Run 0.72 management recovery fuzz proof
+        run: cargo run -p xtask --locked -- evidence-run --release 0.72 --gate tool.cargo-fuzz.management-recovery-072
+
+      - name: Clean corpus before 0.72 management placement fuzz evidence
+        run: git clean -fd -- fuzz/corpus
+
+      - name: Run 0.72 management placement fuzz proof
+        run: cargo run -p xtask --locked -- evidence-run --release 0.72 --gate tool.cargo-fuzz.management-placement-072
+
+      - name: Clean corpus before 0.72 management cursor fuzz evidence
+        run: git clean -fd -- fuzz/corpus
+
+      - name: Run 0.72 management cursor fuzz proof
+        run: cargo run -p xtask --locked -- evidence-run --release 0.72 --gate tool.cargo-fuzz.management-cursor-072
 
       - name: Upload 0.66 fuzz evidence
         if: always()
@@ -2544,6 +2718,17 @@ jobs:
           path: |
             fuzz/artifacts/raft_wire_frame/**
             fuzz/corpus/raft_wire_frame/**
+            target/release-evidence/receipts/**
+          if-no-files-found: error
+
+      - name: Upload 0.72 management fuzz evidence
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: "management-fuzz-072-${{ github.sha }}"
+          path: |
+            fuzz/artifacts/fuzz_management_*/**
+            fuzz/corpus/fuzz_management_*/**
             target/release-evidence/receipts/**
           if-no-files-found: error
 
@@ -2739,6 +2924,17 @@ jobs:
         timeout-minutes: 15
         run: rustup toolchain install nightly-2026-07-01 --component rust-src
 
+      - name: Install Node for management canaries
+        uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: console/package-lock.json
+
+      - name: Install management console dependencies
+        timeout-minutes: 15
+        run: npm ci --prefix console
+
       - name: Cache Rust dependencies
         uses: Swatinem/rust-cache@v2
         with:
@@ -2764,6 +2960,7 @@ jobs:
           cargo run -p xtask --locked -- canary-sweep --release 0.67.1 --tier all
           cargo run -p xtask --locked -- canary-sweep --release 0.68 --tier all
           cargo run -p xtask --locked -- canary-sweep --release 0.69 --tier all
+          cargo run -p xtask --locked -- canary-sweep --release 0.72 --tier all
 
       - name: Run deterministic suite sweep
         run: cargo run -p xtask --locked -- evidence-run --release 0.64 --gate tool.determinism-sweep
@@ -2829,7 +3026,7 @@ jobs:
         uses: taiki-e/install-action@cargo-deny
 
       - name: Run commit-bound coverage ratchet
-        run: cargo run -p xtask --locked -- evidence-run --release 0.64 --gate tool.coverage-ratchet
+        run: cargo run -p xtask --locked -- evidence-run --release "$HYDRACACHE_CANDIDATE_RELEASE" --gate tool.coverage-ratchet
 
       - name: Generate coverage artifacts on failure
         if: failure()
@@ -2856,7 +3053,7 @@ jobs:
 
   msrv:
     name: MSRV 1.88.0
-    if: github.event_name != 'workflow_dispatch' || inputs.performance_0671_mode == ''
+    if: github.event_name != 'workflow_dispatch' || inputs.performance_0671_mode == 'off'
     runs-on: ubuntu-latest
     timeout-minutes: 120
 

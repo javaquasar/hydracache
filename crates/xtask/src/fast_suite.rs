@@ -175,6 +175,52 @@ pub fn validate_registry(
             "{NEXTTEST_CONFIG_PATH} trybuild override must use bounded slow-timeout 120s x 3"
         ));
     }
+    if trybuild_override
+        .and_then(|entry| entry.get("threads-required"))
+        .and_then(toml::Value::as_str)
+        != Some("num-test-threads")
+    {
+        problems.push(format!(
+            "{NEXTTEST_CONFIG_PATH} trybuild override must reserve num-test-threads"
+        ));
+    }
+
+    let ownership_override = ci_profile
+        .and_then(|profile| profile.get("overrides"))
+        .and_then(toml::Value::as_array)
+        .and_then(|overrides| {
+            overrides.iter().find(|entry| {
+                entry
+                    .get("filter")
+                    .and_then(toml::Value::as_str)
+                    .is_some_and(|filter| {
+                        filter.contains("checked_in_registry_closes_current_production_inventory")
+                    })
+            })
+        });
+    if ownership_override
+        .and_then(|entry| entry.get("threads-required"))
+        .and_then(toml::Value::as_str)
+        != Some("num-test-threads")
+    {
+        problems.push(format!(
+            "{NEXTTEST_CONFIG_PATH} ownership inventory override must reserve num-test-threads"
+        ));
+    }
+    let ownership_timeout = ownership_override.and_then(|entry| entry.get("slow-timeout"));
+    if ownership_timeout
+        .and_then(|timeout| timeout.get("period"))
+        .and_then(toml::Value::as_str)
+        != Some("120s")
+        || ownership_timeout
+            .and_then(|timeout| timeout.get("terminate-after"))
+            .and_then(toml::Value::as_integer)
+            != Some(2)
+    {
+        problems.push(format!(
+            "{NEXTTEST_CONFIG_PATH} ownership inventory override must use bounded slow-timeout 120s x 2"
+        ));
+    }
 
     let mut ids = BTreeSet::new();
     let mut previous = None;

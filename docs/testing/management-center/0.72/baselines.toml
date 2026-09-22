@@ -1,0 +1,23 @@
+schema_version = 1
+release = "0.72.0"
+
+[pre_feature]
+source_commit = "8d205fa302d81a07c19147cb4431e16390d256c3"
+status = "declared"
+relationship = "first parent of the initial 0.72 plan commit"
+required_measurements = ["bundle_bytes", "endpoint_latency_bytes", "server_retained_owners", "browser_heap_dom", "fd_task_counts", "console_coverage"]
+receipt = "target/release-evidence/management-center/0.72/pre-feature-baseline.json"
+
+[published_previous]
+version = "0.71.0"
+tag = "v0.71.0"
+status = "accepted"
+reason = "run 35723493297 measured annotated v0.71.0 at da8d6de409a657e0260e7fbfb4ab31d8d6ad5ca8 and bound the accepted receipt to candidate 24927c28c279c6c34ad90111ee6470b4065e0815"
+required_measurements = ["legacy_console_tests", "bundle_bytes", "endpoint_latency_bytes", "server_retained_owners", "browser_heap_dom", "fd_task_counts", "console_coverage"]
+receipt = "target/release-evidence/management-center/0.72/v0.71-baseline.json"
+
+[policy]
+candidate_may_self_baseline = false
+missing_baseline_blocks_ship = true
+development_branch_may_substitute_for_published_artifact = false
+failed_attempts_are_append_only = true

@@ -128,6 +128,35 @@ fn cluster_auth_raft_transport_requires_identity() {
 }
 
 #[test]
+fn cluster_auth_management_snapshot_requires_identity_and_route_authorization() {
+    let missing = ClusterRouteAuth::missing_provider();
+    let error = missing
+        .verify(ClusterRoute::ManagementSnapshot, &HeaderMap::new())
+        .unwrap_err();
+    assert_eq!(error.status, StatusCode::UNAUTHORIZED);
+    assert_eq!(
+        missing.rejected_total_for_route(ClusterRoute::ManagementSnapshot),
+        1
+    );
+
+    let denied = ClusterRouteAuth::secure(
+        Arc::new(StaticNodeIdentityProvider::new(
+            ClusterNodeId::from("member-a"),
+            "k1",
+            "secret",
+        )),
+        Arc::new(DenyRouteAuthorizer::new(ClusterRoute::ManagementSnapshot)),
+    );
+    let error = denied
+        .verify(
+            ClusterRoute::ManagementSnapshot,
+            &headers_for("k1", "secret"),
+        )
+        .unwrap_err();
+    assert_eq!(error.status, StatusCode::FORBIDDEN);
+}
+
+#[test]
 fn cluster_auth_outbound_headers_present_current_credential() {
     let auth = secure_auth();
     let mut headers = HeaderMap::new();

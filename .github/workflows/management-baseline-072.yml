@@ -1,0 +1,111 @@
+name: Management Baselines 0.72
+
+on:
+  push:
+    branches:
+      - evidence/0.72-baseline-capture
+    paths:
+      - "scripts/management/capture-baseline-072.mjs"
+      - "scripts/management/capture-baseline-072.test.mjs"
+      - ".github/workflows/management-baseline-072.yml"
+  workflow_dispatch:
+    inputs:
+      candidate_sha:
+        description: "Already-qualified 0.72 candidate SHA"
+        required: true
+        default: "24927c28c279c6c34ad90111ee6470b4065e0815"
+        type: string
+
+concurrency:
+  group: management-baseline-072-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  capture:
+    name: Capture immutable pre-feature and v0.71 baselines
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    container:
+      image: mcr.microsoft.com/playwright:v1.57.0-noble
+      options: --ipc=host
+    env:
+      CANDIDATE_SHA: ${{ inputs.candidate_sha || '24927c28c279c6c34ad90111ee6470b4065e0815' }}
+      PLAYWRIGHT_BROWSERS_PATH: /ms-playwright
+
+    steps:
+      - name: Checkout evidence tooling
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          path: tooling
+
+      - name: Checkout exact qualified candidate
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          ref: ${{ env.CANDIDATE_SHA }}
+          path: candidate
+
+      - name: Checkout exact pre-feature baseline
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          ref: 8d205fa302d81a07c19147cb4431e16390d256c3
+          path: baseline-pre-feature
+
+      - name: Checkout published v0.71.0 baseline
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          ref: v0.71.0
+          path: baseline-v071
+
+      - name: Install Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: |
+            baseline-pre-feature/console/package-lock.json
+            baseline-v071/console/package-lock.json
+
+      - name: Verify capture unit and tamper tests
+        working-directory: tooling
+        run: node --test scripts/management/capture-baseline-072.test.mjs
+
+      - name: Capture pre-feature baseline
+        working-directory: tooling
+        run: >-
+          node scripts/management/capture-baseline-072.mjs
+          --baseline pre_feature
+          --source-root ../baseline-pre-feature
+          --candidate-root ../candidate
+          --output ../candidate/target/release-evidence/management-center/0.72/pre-feature-baseline.json
+
+      - name: Capture published v0.71.0 baseline
+        working-directory: tooling
+        run: >-
+          node scripts/management/capture-baseline-072.mjs
+          --baseline published_previous
+          --source-root ../baseline-v071
+          --candidate-root ../candidate
+          --output ../candidate/target/release-evidence/management-center/0.72/v0.71-baseline.json
+
+      - name: Refuse candidate or source mutation
+        run: |
+          test "$(git -C candidate rev-parse HEAD)" = "$CANDIDATE_SHA"
+          test -z "$(git -C candidate status --porcelain --untracked-files=normal)"
+          test -z "$(git -C baseline-pre-feature status --porcelain --untracked-files=normal)"
+          test -z "$(git -C baseline-v071 status --porcelain --untracked-files=normal)"
+
+      - name: Upload immutable baseline evidence
+        uses: actions/upload-artifact@v6
+        with:
+          name: management-baselines-072-${{ env.CANDIDATE_SHA }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            candidate/target/release-evidence/management-center/0.72/pre-feature-baseline.json
+            candidate/target/release-evidence/management-center/0.72/pre-feature-baseline.json.raw.json
+            candidate/target/release-evidence/management-center/0.72/v0.71-baseline.json
+            candidate/target/release-evidence/management-center/0.72/v0.71-baseline.json.raw.json
+          if-no-files-found: error
+          retention-days: 90

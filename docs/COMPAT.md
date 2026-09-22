@@ -430,3 +430,165 @@ This matrix is the declared 0.69 evidence boundary; other PostgreSQL majors are 
 HC/1 client compatibility is executed for the library commits behind `v0.62.0`, `v0.62.1`, and
 `v0.63.0`. HC/2 is not reimplemented in 0.69: the complete retained nine-row 0.68 compatibility
 artifact remains a required prerequisite.
+
+## 0.72 Management Center 2.0
+
+The read-only `/management/v1` JSON contract starts at schema version `1`. The first registered
+runtime DTOs are `ClusterFormationSnapshot`, `PlacementDecisionTrace`, `DurableRecoveryStatus`,
+and `ConsensusProgressSnapshot` from `hydracache-observability`. They are observations only and do
+not admit members, choose/commit placement, repair storage, or advance Raft state.
+
+Readers accept schema version `1` and reject any other top-level schema version through
+`validate()` before publication or rendering. Unknown future enum/reason values deserialize to an
+explicit `unknown` variant and must remain unavailable/partial; they never fall through to serving,
+applied, clean, repaired, or PASS. Cross-field validation rejects discovery-as-authority,
+serving without live authenticated/admitted/current state, unstable placement order, placement
+progress contradictions, clean recovery with loss/corruption/partial evidence, and Raft progress
+where snapshot/applied/commit/catch-up positions are incoherent.
+
+Candidate, reason, label, identity, and selected-peer collections have exported hard limits.
+Changing a limit or field meaning is a compatibility change and requires new goldens plus a
+documented reader window. These DTOs are not persisted in 0.72; if a later work item retains
+recovery or placement status on disk, that artifact receives a separate format registration and
+crash-recovery contract before use.
+
+The first server-backed routes are `/management/v1/capabilities`, `/management/v1/dashboard`, `/management/v1/formation`,
+`/management/v1/consensus/progress`, and `/management/v1/persistence/recovery`. They are available
+only on the internal admin listener and currently reuse its verified privileged identity boundary.
+The routes accept GET and body-free HEAD; mutation methods are not registered. Formation reads the
+committed roster and Raft progress through `GridControlPlaneHandle`, hashes node identities before
+serialization, and joins remote progress only through the authenticated
+`/cluster/management/v1/snapshot` route. Recovery deliberately returns
+`unknown/status-not-retained` until a real retained source is connected; process liveness is never
+upgraded to a clean recovery claim.
+
+The W3 cluster snapshot RPC uses schema version `1` and is unavailable on public client listeners.
+Targets are resolved only from the current committed roster; browser URLs and discovery-only
+candidates are never inputs. Collection is capped at 100 members, concurrency 8, 500 ms per peer,
+1.5 seconds per refresh, 256 KiB per peer response and one coalesced in-flight refresh. Its
+one-second immutable cache rejects authority-epoch or observation-sequence regression. Missing,
+late, incompatible, duplicate and identity-mismatched observations remain bounded partial evidence;
+they are never zero-filled or retried until shown green.
+
+List responses are capped at 100 items and 256 KiB. Continuations are 30-second opaque server-side
+cursors bound to route class, authority epoch, and observation sequence; a changed snapshot returns
+`snapshot-changed` instead of merging pages. The cursor registry retains at most 1,024 records.
+These limits and source ownership are mirrored in the machine-checked 0.72 source and bounds
+registries under `docs/testing/management-center/0.72`.
+
+The W4 dashboard consumes typed management snapshots and does not parse the Prometheus endpoint.
+Its charts are explicitly browser-local history since the page opened: at most 24 series, 360
+points per series, 4,320 points overall and 256 KiB of encoded ring state. Oldest samples are
+evicted, hidden/offline tabs pause collection, obsolete fetches are aborted, and retry delay is
+bounded with jitter. A new authority epoch resets all series; a counter reset produces a gap while
+gauges remain point values. Missing, non-finite, partial, stale and modeled observations are never
+coerced to zero or live. The dashboard currently reports CPU, RSS, retained bytes, uptime and TTL
+backlog as unavailable because no authoritative source is connected; later work items may fill
+those fields without changing their null/unavailable meaning.
+
+W5 adds `/management/v1/cluster/members`, `/management/v1/cluster/formation`,
+`/management/v1/cluster/partitions`, and the non-enumerable
+`/management/v1/cluster/placement-traces/{opaque_id}` resource. The original
+`/management/v1/formation` path remains a compatibility alias. Member and ownership rows are bound
+to one authority epoch, observation sequence, and node generation. Only the local member exposes
+proved process/cache facts; unavailable remote CPU, RSS, file descriptor, task, client, and
+partition measurements remain null. Configuration is represented by a non-reversible digest over
+an explicit secret-free field allowlist.
+
+Partition ownership and placement traces are published only from a validated runtime topology
+observation matching the request's exact epoch (and, for ownership, sequence). In runtimes without
+that source, real repair/reshard counters remain visible while assigned, unassigned, distribution,
+and trace link stay unavailable. Placement candidates have deterministic selected-first order and
+stable reason order. `committed` and `applied` are distinct outcomes with distinct progress indexes;
+unknown, malformed, and stale opaque trace identifiers return the same 404 response.
+
+W6 adds the admin-only `/management/v1/clients` schema version `1`. It reports a fixed, sorted
+protocol domain (`hc1`, `hc2`, `resp`) from node-local runtime accounting. HC/2 and RESP retain
+process-lifetime accepted/closed counters and live-owner gauges; where lifecycle dimensions are
+available, `accepted - closed = active` is a validated invariant. HC/1 exposes only counters its
+request-oriented transport can prove, so connection totals remain null and the response remains
+partial. Missing buffered-byte, reconnect, slow-client, cleanup-lag, or quota sources are null,
+never zero-filled. Per-client detail is not advertised until a bounded process-scoped opaque
+registry exists, preventing remote address, identity, certificate, token, tenant, key, payload,
+and session-token disclosure.
+
+W7 adds caller-scoped `/management/v1/namespaces` and
+`/management/v1/namespaces/{namespace}/caches` resources. The verified client/tenant headers are
+resolved against the server-side tenant roster before totals are computed. An identity/tenant
+mismatch returns 403; both a hidden namespace and a nonexistent namespace return the same 404 on
+the detail route. The DTO never repeats tenant identity and never exposes keys, values, tags,
+loader errors, raw policy, request payloads, or listener data.
+
+Namespace entry/logical-byte usage and quota values come from the exact 0.71 tenant accounting.
+Physical retained bytes, hit/miss/load, TTL backlog, tag/index, conditional, idempotency, audit,
+backup, and breaker values remain null until a tenant-scoped owner source can prove them. The
+single `client-surface` cache row is therefore partial and explicitly quality-tagged. Subscription
+status for isolated tenants no longer reuses the global process gauge, preventing a cross-tenant
+count oracle.
+
+W8 adds the admin-only `/management/v1/healthchecks` catalogue. Stable check IDs, status/category
+enums, remediation codes, evidence codes, threshold units and evaluation version are compatibility
+artifacts. The server evaluates checks from immutable typed inputs; the browser only filters and
+renders returned verdicts. Missing, partial, modeled, mixed-epoch, incoherent, or required truncated
+evidence is `UNKNOWN`, never `PASS`; `DISABLED` requires explicit configuration. The headline is
+the worst known status while UNKNOWN remains a separate count. Recovery improvement is accepted
+only from a strictly newer coherent observation in the current authority epoch, so stale `Clean`
+cannot overwrite newer `Degraded` evidence.
+
+W9 adds the opt-in `/management/v1/history` fixed-query adapter. The browser can select only the
+registered `replication_success`, `replication_failure`, `cache_entries`, or
+`admission_queue_depth` query
+ID plus bounded start/end/step values; PromQL, origin, headers, redirects, and credentials are not
+wire fields. The configured origin contains scheme/host/port only. HTTPS is required unless HTTP
+is explicitly allowed, and private/loopback destinations require a separate explicit allowance.
+Every DNS answer is checked before a socket opens and the reviewed address is pinned for the
+request. Range, point, series, response-byte, concurrency, token-file and deadline limits are
+compatibility-visible. Labels and upstream error bodies are discarded. Disabled or failed history
+never replaces the bounded browser-local W4 ring, and remote/local series are not spliced.
+
+W10 adds authenticated GET-only `/management/v1/persistence`, `/management/v1/operations`, and
+`/management/v1/audit` resources. Persistence configuration never exposes its destination and a
+backup-age observation is not a verified artifact. Verified backup/restore identity, size and
+capacity remain null until a durable owner retains that proof. Recovery remains
+`unknown/status-not-retained` when no `RecoveryReport` survives startup.
+
+The operation journal retains at most 128 newest records for the current process generation;
+audit metadata retains at most 256 transitions. Eviction and generation are explicit. `requested`,
+`accepted`, `running`, `completed`, `failed`, and `unknown` are distinct wire states; only legal
+forward transitions are accepted and terminal records cannot change. The audit view covers only
+these management transitions and contains no keys, values, paths, credentials, tenant/client
+identity, or raw error text. The console issues only GET requests for all three views.
+
+W11 changes the management authorization contract from the legacy write-admin marker to a distinct
+`management.read` capability on every `/management/v1/**` route. Write-admin identities continue to
+imply read; a tenant-scoped reader does not. This is an internal-admin-listener header contract, not
+a public bearer credential: any remote reverse proxy must authenticate the caller, strip inbound
+`x-hydracache-*` headers and install verified identity/capability headers. The console now emits
+`x-hydracache-management-read: true` and no write-admin header.
+
+Management reads have a separate frozen concurrency ceiling of 16 and fail fast with HTTP 429 when
+saturated. Static and JSON responses add restrictive CSP/no-sniff/no-referrer/no-store headers;
+assets remain same-origin with no runtime CDN dependency. These protections and the exact npm/SBOM
+inputs are package-visible behavior for 0.72 and may only be relaxed through a reviewed compatibility
+change with replacement security evidence.
+
+W13 freezes five separately named compatibility artifacts in
+`docs/testing/management-center/0.72/compatibility.toml`: formation, placement trace, durable
+recovery, health catalogue/evaluation, and consensus progress, all at schema version `1`. They are
+read models and are not persisted. A 0.72 reader accepts only the registered schema, maps supported
+future enum values to explicit `unknown`, and rejects an unknown top-level schema before rendering.
+
+Before a 0.72 member sends `/cluster/management/v1/snapshot`, it authenticates and reads the bounded
+`/cluster/management/capabilities` endpoint. A 0.71 peer has no such endpoint, so it is recorded as
+`incompatible`/partial and never receives the unsupported snapshot POST. This is intentionally not
+zero-filled: apply lag, recovery cleanliness, membership admission, and serving state remain
+unknown. The capability is part of the aggregation cache key, so a peer upgrade invalidates the
+cached partial observation.
+
+`HYDRACACHE_MANAGEMENT_API_ENABLED=false` removes both `/management/v1/**` and the embedded
+`/console` assets while preserving `/cluster/overview`. This is the rollback and old-bookmark
+window; callers must treat 404 as absence of the 0.72 capability, not as an empty healthy cluster.
+The exact console, its server-embedded copy, source registries, and CycloneDX SBOM are packaged in
+one deterministic bundle whose manifest records every file SHA-256, a set digest, and the exact
+40-character candidate commit. Verification rejects dirty-tree release packaging, an altered
+file, a rebuilt substitute, or a source-commit mismatch.

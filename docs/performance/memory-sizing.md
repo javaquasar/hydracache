@@ -2,7 +2,7 @@
 
 This page gives *observed* AX42 reference slopes, not a portable memory reservation formula.
 The D0 baseline used source `906aa24cc22ad6b50b824120ed6364208484203a` and workflow
-`9c533d1de5a25b83bcb294e5b939064737b7d9fc`; its [complete archived grid](../testing/perf-artifacts/0.71/ax42/d0-baseline/README.md)
+`9c533d1de5a25b83bcb294e5b939064737b7d9fc`; its [complete archived grid](https://github.com/javaquasar/hydracache/blob/main/docs/testing/perf-artifacts/0.71/ax42/d0-baseline/README.md)
 contains three independent processes per shape. The D4 candidate has a different SHA and may not
 inherit a D0 numerical improvement claim. Keep the workload, allocator, protocol, TLS setting,
 instrumentation, host admission and exact phase fixed before comparing numbers.
@@ -22,7 +22,7 @@ The D0 M6 TLS-enabled HC/2 connection grid, with no slow consumers, had median s
 22.4 MiB at 100 connections and 62.0 MiB at 1,000 connections. The *observed* marginal slope
 over that interval was 46,171 RSS bytes per additional connection. The 100-connection/100-slow-
 consumer cell had 22.4 MiB median RSS; this does not establish that slow clients are free under
-other traffic or queue pressure. See the [M6 raw evidence and redaction receipt](../testing/perf-artifacts/0.71/ax42/d0-baseline/m6-connections/raw/).
+other traffic or queue pressure. See the [M6 raw evidence and redaction receipt](https://github.com/javaquasar/hydracache/tree/main/docs/testing/perf-artifacts/0.71/ax42/d0-baseline/m6-connections/raw).
 
 Do not extrapolate either slope to a different value distribution, connection protocol, TLS
 profile, service mix, persistence mode, allocator or host. For a deployment estimate, start from
@@ -33,9 +33,9 @@ cgroup under the expected peak cardinality and pressure; the conservative W2a re
 estimate is an accounting signal, not a replacement for a process/cgroup memory limit. Do not
 turn these D0 observations into a universal per-key budget or a 0.71 candidate RSS claim.
 
-The D4 [evidence index](../testing/perf-artifacts/0.71/ax42/d4/README.md) proves exact-source
+The D4 [evidence index](https://github.com/javaquasar/hydracache/blob/evidence/0.71/ax42/d4/README.md) proves exact-source
 qualification of the memory scenarios. It does **not** claim a numerical RSS win: the D3
 foundation and safety proposals explicitly forbid that claim, and optional efficiency work is
-deferred under the [release policy](../testing/memory/0.71/release-policy.toml). A future profile
+deferred under the [release policy](https://github.com/javaquasar/hydracache/blob/main/docs/testing/memory/0.71/release-policy.toml). A future profile
 or allocator change needs its own preregistered paired campaign before this guidance can be
 updated for that candidate.

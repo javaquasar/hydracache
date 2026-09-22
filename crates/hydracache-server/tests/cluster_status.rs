@@ -15,8 +15,8 @@ use hydracache_client_transport_axum::{
 use hydracache_server::{
     AdminApiConfig, AdminHttpSurface, BackupConfig, ClientApiConfig, ClusterAuthConfig,
     ClusterStatusProvider, ClusterStatusRuntime, GridControlPlaneHandle, LiveClusterStatus,
-    Reachability, ReshardPhase, ServerConfig, ServerRole, ServerRuntime, StatusSource, TlsConfig,
-    ADMIN_STATUS_PATH,
+    LocalConsensusStatus, Reachability, ReshardPhase, ServerConfig, ServerRole, ServerRuntime,
+    StatusSource, TlsConfig, ADMIN_STATUS_PATH,
 };
 use serde_json::Value;
 use tower::ServiceExt;
@@ -175,6 +175,23 @@ mod cluster_status {
         );
     }
 
+    #[test]
+    fn progress_from_a_different_commit_cannot_share_metadata_authority() {
+        let mut grid = FakeGrid::three_members();
+        grid.local_progress.as_mut().unwrap().commit_index = 10;
+        grid.local_progress.as_mut().unwrap().applied_index = 10;
+        grid.local_progress.as_mut().unwrap().catch_up_target = 10;
+        let provider = live_provider(grid);
+
+        let status = provider.cluster_status(ClusterStatusRuntime::new(true, false));
+
+        assert_eq!(status.observation_seq, 9);
+        assert_eq!(status.local_consensus.unwrap().commit_index, 10);
+        assert!(!status.metadata_authoritative);
+        assert!(!status.quorum_ok);
+        assert_eq!(status.leader, None);
+    }
+
     #[tokio::test]
     async fn admin_status_json_includes_source_field() {
         let surface = AdminHttpSurface::new(ServerRuntime::new(local_config()).unwrap().start());
@@ -208,6 +225,7 @@ struct FakeGrid {
     authority_matches: bool,
     phase: ReshardPhase,
     draining: bool,
+    local_progress: Option<LocalConsensusStatus>,
 }
 
 impl FakeGrid {
@@ -232,6 +250,15 @@ impl FakeGrid {
             authority_matches: true,
             phase: ReshardPhase::Moving,
             draining: false,
+            local_progress: Some(LocalConsensusStatus {
+                node_id: "node-1".to_owned(),
+                generation: 1,
+                voter: true,
+                commit_index: 9,
+                applied_index: 9,
+                last_snapshot_index: Some(4),
+                catch_up_target: 9,
+            }),
         }
     }
 }
@@ -257,6 +284,10 @@ impl GridControlPlaneHandle for FakeGrid {
 
     fn metadata_authority_matches(&self, observed: &RaftMetadataSnapshot) -> bool {
         self.authority_matches && observed == &self.snapshot
+    }
+
+    fn local_consensus_status(&self) -> Option<LocalConsensusStatus> {
+        self.local_progress.clone()
     }
 
     fn voter_count(&self) -> u32 {

@@ -13,7 +13,13 @@ trybuild = { max-threads = 1 }
 [[profile.ci.overrides]]
 filter = "test(cacheable_macro_compile_tests) | test(proc_macro_compile_tests)"
 test-group = "trybuild"
+threads-required = "num-test-threads"
 slow-timeout = { period = "120s", terminate-after = 3 }
+
+[[profile.ci.overrides]]
+filter = "test(checked_in_registry_closes_current_production_inventory)"
+threads-required = "num-test-threads"
+slow-timeout = { period = "120s", terminate-after = 2 }
 
 [[profile.ci.overrides]]
 filter = """

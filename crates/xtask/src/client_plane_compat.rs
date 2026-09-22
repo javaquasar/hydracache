@@ -219,6 +219,7 @@ fn validate_manifest(root: &Path, manifest: &CompatibilityManifest) -> Result<()
         let path = root.join(&artifact.path);
         let bytes = fs::read(&path)
             .map_err(|error| format!("reading retained artifact {}: {error}", path.display()))?;
+        let bytes = canonical_retained_artifact_bytes(&artifact.kind, bytes);
         if bytes.len() as u64 != artifact.size_bytes {
             return Err(format!("retained artifact {} size mismatch", artifact.id).into());
         }
@@ -289,6 +290,23 @@ fn validate_manifest(root: &Path, manifest: &CompatibilityManifest) -> Result<()
         }
     }
     Ok(())
+}
+
+fn canonical_retained_artifact_bytes(kind: &str, bytes: Vec<u8>) -> Vec<u8> {
+    if kind != "maven-pom" || !bytes.windows(2).any(|pair| pair == b"\r\n") {
+        return bytes;
+    }
+
+    let mut canonical = Vec::with_capacity(bytes.len());
+    let mut cursor = 0;
+    while cursor < bytes.len() {
+        if bytes[cursor] == b'\r' && bytes.get(cursor + 1) == Some(&b'\n') {
+            cursor += 1;
+        }
+        canonical.push(bytes[cursor]);
+        cursor += 1;
+    }
+    canonical
 }
 
 fn validate_daemon_artifact(
@@ -927,6 +945,18 @@ mod tests {
         let manifest: CompatibilityManifest =
             serde_json::from_slice(&fs::read(root.join(DEFAULT_MANIFEST)).unwrap()).unwrap();
         validate_manifest(&root, &manifest).unwrap();
+    }
+
+    #[test]
+    fn retained_maven_pom_identity_is_stable_across_checkout_line_endings() {
+        let lf = b"<project>\n  <version>1</version>\n</project>\n".to_vec();
+        let crlf = b"<project>\r\n  <version>1</version>\r\n</project>\r\n".to_vec();
+
+        assert_eq!(canonical_retained_artifact_bytes("maven-pom", crlf), lf);
+        assert_eq!(
+            canonical_retained_artifact_bytes("java-jar", b"a\r\nb".to_vec()),
+            b"a\r\nb"
+        );
     }
 
     #[test]

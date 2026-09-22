@@ -138,6 +138,7 @@ pub struct DaemonNodeSpec {
     pub cluster_addr: SocketAddr,
     pub admin_addr: SocketAddr,
     pub redis_addr: Option<SocketAddr>,
+    pub client_api_enabled: bool,
     pub storage_dir: PathBuf,
     pub cluster_start: &'static str,
     test_raft_snapshot_handler_delay_ms: Option<u64>,
@@ -184,6 +185,20 @@ pub struct OsResourceTotals {
     pub open_fds: u64,
 }
 
+/// One live daemon's operating-system resource counters.
+///
+/// Keeping the process identity beside the counters is important for restart
+/// evidence: an index and node id remain stable while the pid changes.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct OsProcessResourceSample {
+    pub node_index: usize,
+    pub node_id: String,
+    pub pid: u32,
+    pub rss_kib: u64,
+    pub rss_hwm_kib: u64,
+    pub open_fds: u64,
+}
+
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct PreviousDaemonBinary {
     pub path: PathBuf,
@@ -213,22 +228,26 @@ impl PreviousDaemonBinary {
 
 impl DaemonCluster {
     pub fn start_bootstrap(count: usize, name: &str) -> TestResult<Self> {
-        Self::start_bootstrap_inner(count, name, false, false, false)
+        Self::start_bootstrap_inner(count, name, false, false, false, false)
     }
 
     pub fn start_bootstrap_with_redis(count: usize, name: &str) -> TestResult<Self> {
-        Self::start_bootstrap_inner(count, name, true, false, false)
+        Self::start_bootstrap_inner(count, name, false, true, false, false)
+    }
+
+    pub fn start_bootstrap_with_client_and_redis(count: usize, name: &str) -> TestResult<Self> {
+        Self::start_bootstrap_inner(count, name, true, true, false, false)
     }
 
     pub fn start_bootstrap_with_raft_compaction(count: usize, name: &str) -> TestResult<Self> {
-        Self::start_bootstrap_inner(count, name, false, true, false)
+        Self::start_bootstrap_inner(count, name, false, false, true, false)
     }
 
     pub fn start_bootstrap_with_raft_compaction_and_outbound_faults(
         count: usize,
         name: &str,
     ) -> TestResult<Self> {
-        Self::start_bootstrap_inner(count, name, false, true, true)
+        Self::start_bootstrap_inner(count, name, false, false, true, true)
     }
 
     pub fn start_bootstrap_with_binaries(binaries: Vec<PathBuf>, name: &str) -> TestResult<Self> {
@@ -245,6 +264,7 @@ impl DaemonCluster {
     fn start_bootstrap_inner(
         count: usize,
         name: &str,
+        client_api_enabled: bool,
         redis_enabled: bool,
         raft_compaction_enabled: bool,
         raft_faults_enabled: bool,
@@ -255,6 +275,7 @@ impl DaemonCluster {
             binaries,
             current_binary,
             name,
+            client_api_enabled,
             redis_enabled,
             raft_compaction_enabled,
             raft_faults_enabled,
@@ -275,6 +296,7 @@ impl DaemonCluster {
             binaries,
             current_binary,
             name,
+            false,
             redis_enabled,
             raft_compaction_enabled,
             raft_faults_enabled,
@@ -285,6 +307,7 @@ impl DaemonCluster {
         binaries: Vec<PathBuf>,
         current_binary: PathBuf,
         name: &str,
+        client_api_enabled: bool,
         redis_enabled: bool,
         raft_compaction_enabled: bool,
         raft_faults_enabled: bool,
@@ -335,6 +358,7 @@ impl DaemonCluster {
                 cluster_addr,
                 admin_addr,
                 redis_addr,
+                client_api_enabled,
                 storage_dir,
                 cluster_start: "bootstrap",
                 test_raft_snapshot_handler_delay_ms: None,
@@ -388,6 +412,10 @@ impl DaemonCluster {
         self.nodes[index].spec.admin_addr
     }
 
+    pub fn client_addr(&self, index: usize) -> SocketAddr {
+        self.nodes[index].spec.listen_addr
+    }
+
     pub fn redis_addr(&self, index: usize) -> Option<SocketAddr> {
         self.nodes[index].spec.redis_addr
     }
@@ -432,6 +460,16 @@ impl DaemonCluster {
             "GET",
             "/cluster/overview",
             false,
+        )
+    }
+
+    /// Read one authenticated management endpoint from the real daemon process.
+    pub fn management_json(&self, index: usize, path: &str) -> TestResult<Value> {
+        http_json_with_capability(
+            self.nodes[index].spec.admin_addr,
+            "GET",
+            path,
+            Some("x-hydracache-management-read: true\r\n"),
         )
     }
 
@@ -881,16 +919,35 @@ impl DaemonCluster {
     }
 
     pub fn os_resource_totals(&mut self) -> Option<OsResourceTotals> {
-        let running = self.running_indices();
-        let samples = running
-            .iter()
-            .filter_map(|index| self.nodes[*index].resource_sample())
-            .collect::<Vec<_>>();
-        (samples.len() == running.len() && !samples.is_empty()).then(|| OsResourceTotals {
+        let samples = self.os_process_resource_samples()?;
+        Some(OsResourceTotals {
             rss_kib: samples.iter().map(|sample| sample.rss_kib).sum(),
             rss_hwm_kib: samples.iter().map(|sample| sample.rss_hwm_kib).sum(),
             open_fds: samples.iter().map(|sample| sample.open_fds).sum(),
         })
+    }
+
+    /// Sample every currently running daemon, failing closed when `/proc`
+    /// evidence is unavailable for any member.
+    pub fn os_process_resource_samples(&mut self) -> Option<Vec<OsProcessResourceSample>> {
+        let running = self.running_indices();
+        let samples = running
+            .iter()
+            .filter_map(|index| {
+                let node = &self.nodes[*index];
+                let pid = node.pid()?;
+                let sample = node.resource_sample()?;
+                Some(OsProcessResourceSample {
+                    node_index: *index,
+                    node_id: node.spec.node_id.clone(),
+                    pid,
+                    rss_kib: sample.rss_kib,
+                    rss_hwm_kib: sample.rss_hwm_kib,
+                    open_fds: sample.open_fds,
+                })
+            })
+            .collect::<Vec<_>>();
+        (samples.len() == running.len() && !samples.is_empty()).then_some(samples)
     }
 
     pub fn replay_evidence(&mut self, bounded_send_error: Option<String>) -> DaemonReplayEvidence {
@@ -1011,6 +1068,9 @@ impl DaemonNode {
                 .env("HYDRACACHE_REDIS_API_ENABLED", "true")
                 .env("HYDRACACHE_REDIS_ADDR", redis_addr.to_string());
         }
+        if self.spec.client_api_enabled {
+            command.env("HYDRACACHE_CLIENT_API_ENABLED", "true");
+        }
         let child = spawn_with_would_block_retry(|| command.spawn(), std::thread::sleep)?;
         self.child = Some(child);
         self.suspended = false;
@@ -1049,6 +1109,10 @@ impl DaemonNode {
 
     fn resource_sample(&self) -> Option<ProcessResourceSample> {
         ProcessResourceSample::for_pid(self.child.as_ref()?.id())
+    }
+
+    fn pid(&self) -> Option<u32> {
+        self.child.as_ref().map(Child::id)
     }
 
     #[cfg(target_os = "linux")]
@@ -1218,6 +1282,52 @@ pub fn resolve_previous_daemon_binary() -> TestResult<Option<PreviousDaemonBinar
         Ok(binary) => Ok(binary.clone()),
         Err(error) => Err(error.clone().into()),
     }
+}
+
+pub fn resolve_shipped_daemon_binary(
+    tag: &str,
+    binary_env: &str,
+    source_ref_env: &str,
+    source_commit_env: &str,
+    build_env: &str,
+) -> TestResult<PreviousDaemonBinary> {
+    let root = workspace_root();
+    let tag_commit = git_resolve_commit(&root, tag)?
+        .ok_or_else(|| format!("full-history shipped tag {tag} is required"))?;
+    if !git_is_ancestor(&root, &tag_commit, "HEAD")? {
+        return Err(format!("shipped tag {tag} ({tag_commit}) is not an ancestor of HEAD").into());
+    }
+    let path = if let Some(path) = std::env::var_os(binary_env) {
+        let source_ref = required_environment(source_ref_env)?;
+        let source_commit = required_environment(source_commit_env)?;
+        validate_commit_id(&source_commit)?;
+        if source_ref != tag || source_commit != tag_commit {
+            return Err(format!(
+                "explicit shipped daemon provenance mismatch: expected {tag}@{tag_commit}, got {source_ref}@{source_commit}"
+            )
+            .into());
+        }
+        let path = fs::canonicalize(PathBuf::from(path))
+            .map_err(|error| format!("{binary_env} is not a readable binary: {error}"))?;
+        if !path.is_file() {
+            return Err(format!("{binary_env} is not a file: {}", path.display()).into());
+        }
+        path
+    } else {
+        if !environment_flag(build_env) {
+            return Err(format!(
+                "shipped compatibility proof requires {binary_env} with provenance or {build_env}=1"
+            )
+            .into());
+        }
+        build_previous_daemon(&root, tag, &tag_commit)?
+    };
+    Ok(PreviousDaemonBinary {
+        path,
+        source_ref: tag.to_owned(),
+        source_commit: tag_commit,
+        shipped_tag: true,
+    })
 }
 
 fn resolve_previous_daemon_binary_uncached() -> TestResult<Option<PreviousDaemonBinary>> {
@@ -1692,6 +1802,67 @@ fn member_node_id_for_addr(addr: SocketAddr) -> String {
 }
 
 fn http_json(addr: SocketAddr, method: &str, path: &str, admin: bool) -> TestResult<Value> {
+    let capability = admin.then_some("x-hydracache-admin: true\r\n");
+    http_json_with_capability(addr, method, path, capability)
+}
+
+fn http_json_with_capability(
+    addr: SocketAddr,
+    method: &str,
+    path: &str,
+    capability: Option<&str>,
+) -> TestResult<Value> {
+    let (status, body) = http_json_response(addr, method, path, capability)?;
+    if status != 200 && status != 202 {
+        return Err(format!("HTTP {method} {path} returned {status}: {body}").into());
+    }
+    Ok(body)
+}
+
+/// Read a management endpoint while retaining its status for concurrency/backpressure proofs.
+pub fn management_json_status(addr: SocketAddr, path: &str) -> TestResult<(u16, Value)> {
+    http_json_response(
+        addr,
+        "GET",
+        path,
+        Some("x-hydracache-management-read: true\r\n"),
+    )
+}
+
+/// Read one authenticated management endpoint without requiring a JSON body.
+///
+/// Some capability-safe negative results, such as an unknown opaque placement
+/// trace, intentionally return an empty `404` response.
+pub fn management_text_status(addr: SocketAddr, path: &str) -> TestResult<(u16, String)> {
+    http_response(
+        addr,
+        "GET",
+        path,
+        Some("x-hydracache-management-read: true\r\n"),
+    )
+}
+
+/// Read a public text asset from the real daemon without weakening management authorization.
+pub fn public_text_status(addr: SocketAddr, path: &str) -> TestResult<(u16, String)> {
+    http_response(addr, "GET", path, None)
+}
+
+fn http_json_response(
+    addr: SocketAddr,
+    method: &str,
+    path: &str,
+    capability: Option<&str>,
+) -> TestResult<(u16, Value)> {
+    let (status, body) = http_response(addr, method, path, capability)?;
+    Ok((status, serde_json::from_str(&body)?))
+}
+
+fn http_response(
+    addr: SocketAddr,
+    method: &str,
+    path: &str,
+    capability: Option<&str>,
+) -> TestResult<(u16, String)> {
     let mut stream = TcpStream::connect_timeout(&addr, Duration::from_secs(2))?;
     stream.set_read_timeout(Some(Duration::from_secs(5)))?;
     stream.set_write_timeout(Some(Duration::from_secs(5)))?;
@@ -1699,10 +1870,11 @@ fn http_json(addr: SocketAddr, method: &str, path: &str, admin: bool) -> TestRes
     let mut request = format!(
         "{method} {path} HTTP/1.1\r\nHost: {addr}\r\nConnection: close\r\nContent-Length: 0\r\n"
     );
-    if admin {
+    if let Some(capability) = capability {
         request.push_str(
-            "x-hydracache-client-id: daemon-process-test\r\nx-hydracache-tenant: system\r\nx-hydracache-admin: true\r\n",
+            "x-hydracache-client-id: daemon-process-test\r\nx-hydracache-tenant: system\r\n",
         );
+        request.push_str(capability);
     }
     request.push_str("\r\n");
     stream.write_all(request.as_bytes())?;
@@ -1715,11 +1887,9 @@ fn http_json(addr: SocketAddr, method: &str, path: &str, admin: bool) -> TestRes
     let status = head
         .split_whitespace()
         .nth(1)
-        .ok_or("HTTP response missing status")?;
-    if status != "200" && status != "202" {
-        return Err(format!("HTTP {method} {path} returned {status}: {body}").into());
-    }
-    Ok(serde_json::from_str(body)?)
+        .ok_or("HTTP response missing status")?
+        .parse::<u16>()?;
+    Ok((status, body.to_owned()))
 }
 
 fn u32_field(value: &Value, field: &'static str) -> TestResult<u32> {

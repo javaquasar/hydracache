@@ -40,7 +40,10 @@
           "release-0671-performance-qualification",
           "release-0671-performance-full-dress",
           "release-0671-performance-bootstrap",
-          "release-0671-frozen-candidate"
+          "release-0671-frozen-candidate",
+          "management-mixed-072",
+          "management-candidate-soak-072",
+          "management-ship-soak-072"
         ],
         "scheduled-diagnostic": [
           "memory-diagnostic-hosted",
@@ -176,6 +179,30 @@
         "max_bytes_per_artifact": 1073741824
       },
       "watchdog_jobs": ["campaign"]
+    },
+    {
+      "path": ".github/workflows/management-baseline-072.yml",
+      "purpose": "Capture immutable pre-feature and published 0.71 Management Center baselines for the exact qualified 0.72 candidate",
+      "triggers": ["push_branch", "workflow_dispatch"],
+      "concurrency_markers": ["github.ref"],
+      "classes": {
+        "core": [],
+        "release-only": [],
+        "scheduled-diagnostic": [],
+        "manual-protected": ["capture"],
+        "publish": []
+      },
+      "artifact_budget": {
+        "max_retention_days": 90,
+        "max_uploads_per_job": 1,
+        "max_bytes_per_artifact": 1073741824
+      },
+      "artifact_identity_exemptions": {
+        "capture": {
+          "reason": "baseline artifacts are bound to the validated candidate SHA input rather than the tooling branch SHA",
+          "expires_after_release": "0.72"
+        }
+      }
     },
     {
       "path": ".github/workflows/post-publish.yml",

@@ -13,7 +13,8 @@ use super::{
     ClusterOwnershipResolver, ClusterPeerFetch, ClusterPeerFetchGenerationMismatch,
     ClusterPeerFetchRequest, ClusterPeerFetchResponse, ClusterRole, ClusterStagingCounters,
     ClusterStagingHealth, InMemoryCluster, InMemoryClusterDiscovery, InMemoryPeerFetch,
-    RendezvousClusterOwnership, CLUSTER_PEER_FETCH_BASE_URL_METADATA_KEY,
+    RendezvousClusterOwnership, CLUSTER_ADMISSION_EVENT_CAPACITY,
+    CLUSTER_PEER_FETCH_BASE_URL_METADATA_KEY,
 };
 use crate::HydraCache;
 use bytes::Bytes;
@@ -672,6 +673,38 @@ async fn admission_bridge_run_once_admits_candidates_and_deduplicates_generation
     assert_eq!(diagnostics.total_decisions(), 2);
     assert!(matches!(
         bridge.events().last(),
+        Some(ClusterAdmissionBridgeEvent::CandidateIgnored {
+            reason: ClusterAdmissionIgnoreReason::AlreadyCurrent,
+            ..
+        })
+    ));
+}
+
+#[tokio::test]
+async fn admission_bridge_event_history_is_bounded_without_resetting_totals() {
+    let discovery = Arc::new(InMemoryClusterDiscovery::new());
+    let control_plane = Arc::new(InMemoryCluster::new("orders"));
+    let bridge = ClusterAdmissionBridge::new(discovery.clone(), control_plane);
+    discovery.announce(ClusterCandidate::member("member-a"));
+
+    let polls = CLUSTER_ADMISSION_EVENT_CAPACITY + 100;
+    for _ in 0..polls {
+        assert_eq!(bridge.run_once().await, 1);
+    }
+
+    let events = bridge.events();
+    let diagnostics = bridge.diagnostics();
+    let total_events = polls * 2;
+    assert_eq!(events.len(), CLUSTER_ADMISSION_EVENT_CAPACITY);
+    assert_eq!(
+        diagnostics.event_history_evicted,
+        (total_events - CLUSTER_ADMISSION_EVENT_CAPACITY) as u64
+    );
+    assert_eq!(diagnostics.candidates_seen, polls as u64);
+    assert_eq!(diagnostics.candidates_admitted, 1);
+    assert_eq!(diagnostics.candidates_ignored, (polls - 1) as u64);
+    assert!(matches!(
+        events.last(),
         Some(ClusterAdmissionBridgeEvent::CandidateIgnored {
             reason: ClusterAdmissionIgnoreReason::AlreadyCurrent,
             ..

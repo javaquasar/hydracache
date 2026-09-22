@@ -1,0 +1,121 @@
+schema_version = 1
+release = "0.72.0"
+
+[http]
+max_page_items = 100
+max_response_bytes = 262144
+stale_after_ms = 2000
+
+[cursor]
+max_encoded_bytes = 256
+ttl_ms = 30000
+max_retained_records = 1024
+snapshot_binding = ["route_kind", "authority_epoch", "observation_seq"]
+
+[identity]
+max_source_node_id_bytes = 256
+wire_scheme = "sha256-prefix-v1"
+wire_digest_bytes = 16
+
+[envelope]
+max_warnings = 32
+
+[cluster_aggregation]
+max_committed_peers = 100
+max_concurrency = 8
+per_peer_timeout_ms = 500
+whole_refresh_timeout_ms = 1500
+cache_ttl_ms = 1000
+max_rpc_request_bytes = 4096
+max_rpc_response_bytes = 262144
+deduplication_key = ["node_id", "generation", "authority_epoch", "observation_seq"]
+
+[browser_history]
+max_series = 24
+max_points_per_series = 360
+max_total_points = 4320
+max_encoded_bytes = 262144
+retention = "per-tab since page opened; oldest-first eviction"
+pause_conditions = ["document_hidden", "navigator_offline"]
+epoch_policy = "clear all series before accepting a different authority epoch"
+counter_reset_policy = "emit a gap; never a negative rate"
+
+[placement]
+max_candidates = 512
+max_selected = 64
+max_reasons_per_candidate = 16
+max_labels_per_constraint_set = 64
+max_label_bytes = 128
+
+[topology]
+max_members = 100
+max_current_generation_transitions_per_member = 64
+max_diagnostic_string_bytes = 128
+unknown_trace_status = 404
+ownership_binding = ["authority_epoch", "observation_seq"]
+
+[clients]
+max_protocol_rows = 3
+protocol_domain = ["hc1", "hc2", "resp"]
+detail_available = false
+closed_reconciliation = "accepted_total - closed_total = active_connections when all dimensions are available"
+
+[namespaces]
+max_page_items = 100
+max_caches_per_client_namespace = 1
+max_identifier_bytes = 128
+hidden_scope_status = 404
+authorization = "server-side before totals and serialization"
+
+[healthchecks]
+max_checks = 64
+max_evidence_per_check = 16
+evaluation_version = 1
+raft_apply_lag_warn_entries = 100
+raft_apply_lag_fail_entries = 1000
+unknown_policy = "retained separately; never promoted to pass"
+
+[prometheus_history]
+max_range_ms = 86400000
+min_step_ms = 10000
+max_points = 1000
+max_series = 24
+max_response_bytes = 262144
+max_resolved_addresses = 16
+max_token_bytes = 4096
+max_concurrency = 2
+deadline_ms = 2000
+redirects = false
+query_ids = ["replication_success", "replication_failure", "cache_entries", "admission_queue_depth"]
+
+[operations]
+max_retained_records = 128
+retention = "current process generation only; oldest-first eviction"
+states = ["requested", "accepted", "running", "completed", "failed", "unknown"]
+terminal_records_are_immutable = true
+
+[management_audit]
+max_retained_records = 256
+retention = "current process generation only; oldest-first eviction"
+coverage = "management operation transitions only"
+forbidden_fields = ["keys", "values", "paths", "credentials", "actor_identity"]
+
+[management_security]
+authorization_capability = "management.read"
+write_admin_implies_read = true
+max_concurrent_reads = 16
+overload_status = 429
+admission = "fail-fast, independently owned semaphore; permit released on response, cancellation, or panic unwind"
+remote_exposure = "disabled by topology: internal admin listener only; remote use requires TLS/mTLS reverse proxy with trusted identity-header replacement"
+runtime_dependencies = "same-origin embedded assets only; no CDN"
+
+[process_proof]
+fixed_seed = 513430148729536513
+concurrent_management_readers = 32
+max_endpoint_p95_ms = 2500
+max_open_fd_growth = 12
+max_rss_growth_kib_above_process_hwm = 65536
+required_process_shapes = [1, 3]
+fault_schedule = ["kill follower", "observe partial", "32 concurrent reads", "restart same disk", "observe recovery"]
+receipt_fields = ["binary_sha256", "seed", "schedule_digest", "event_digest", "endpoint_p95_ms", "baseline", "final_sample"]
+retry_policy = "append-only linked attempts; failed attempt cannot be replaced by retry"
