@@ -38,6 +38,15 @@ goodput and 3% CPU/request and p99 regression ceilings. Profile mode remains cla
 Allocation and RSS limits are deliberately unmeasured blockers: baseline-only evidence must freeze
 them before five admitted qualification pairs can authorize `I73`.
 
+A bounded plumbing pilot can exercise each mode locally without producing an overhead claim:
+
+```text
+cargo run -p hydracache-loadgen --locked -- memory-efficiency --profile memory-efficiency-v1 --provider system --instrumentation-mode <off|production|profile> --output-dir target/performance-evidence/0.73/local/instrumentation-pilot/<mode>
+```
+
+This pilot proves the mode adapters, ordered phase timeline and artifact writing only. Its debug-build
+elapsed time is not a stable rate, threshold, qualification pair, or input to an `I73` freeze.
+
 Validate a generated receipt:
 
 ```text

@@ -5,6 +5,7 @@ edition.workspace = true
 rust-version.workspace = true
 license.workspace = true
 description = "Development-only open-loop performance characterization tool for HydraCache."
+default-run = "hydracache-loadgen"
 authors.workspace = true
 repository.workspace = true
 homepage.workspace = true
