@@ -89,6 +89,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         Some("performance-contract-check") => xtask::performance_contract::run(args.collect())?,
         Some("performance-local-context") => xtask::performance_local::run_context(args.collect())?,
         Some("performance-local-receipt") => xtask::performance_local::run_receipt(args.collect())?,
+        Some("performance-overhead-screen") => xtask::performance_overhead::run(args.collect())?,
         Some("quarantine-check") => xtask::quarantine::run(args.collect())?,
         Some("raft-spec-check") => xtask::raft_spec_check::run(args.collect())?,
         Some("release-evidence") => xtask::release_evidence::run(args.collect())?,
@@ -164,6 +165,7 @@ fn print_usage() {
          cargo xtask performance-contract-check --release 0.73 [--receipt <path>] [--require-ship]  # validate non-promotable local screening identity and receipts\n  \
          cargo xtask performance-local-context --release 0.73 [--output <path>]  # capture a privacy-safe local host/source fingerprint\n  \
          cargo xtask performance-local-receipt --release 0.73 --context <path> --binary <path> --scenario <path> --raw-series <path> --outcomes <path> --output <path> --attempt-id <id> --instrumentation-mode <mode> --run-order-seed <u64> --pair-index <n> --block-order <baseline_candidate|candidate_baseline> --candidate-role <baseline|candidate> --candidate-id <id> --started-at-utc <RFC3339> --result <success|failed|invalidated>  # hash inputs and emit a validated local receipt\n  \
+         cargo xtask performance-overhead-screen --release 0.73 --context <path> --binary <path> --output <new-dir> --pairs <n> --seed <u64>  # run append-only counterbalanced off/production local screening\n  \
          cargo xtask quarantine-check --release 0.64  # validate temporary test quarantines\n  \
          cargo xtask raft-spec-check --structural|--scope <fast|canary|nightly>  # validate/run the pinned TLA+ model\n  \
          cargo xtask release-evidence --release 0.64  # derive the per-W release evidence matrix\n  \

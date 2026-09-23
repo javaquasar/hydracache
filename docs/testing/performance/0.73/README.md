@@ -50,6 +50,12 @@ With profile `instrumentation-overhead-073-v1`, each phase also emits a schema-v
 `resource-series.jsonl` containing gross allocation bytes per operation and self-process RSS/peak
 RSS. The legacy `memory-efficiency-v1` output shape remains unchanged.
 
+After building the loadgen once and generating a clean context, run three local counterbalanced
+pairs with `cargo xtask performance-overhead-screen --release 0.73 --context <context> --binary
+<loadgen> --output <new-directory> --pairs 3 --seed <seed>`. The output directory is append-only;
+every subprocess retains stdout, stderr, receipt and resource-series digests. `screening.json`
+contains the per-mode distributions but explicitly marks thresholds `screening_only_unqualified`.
+
 Validate a generated receipt:
 
 ```text
