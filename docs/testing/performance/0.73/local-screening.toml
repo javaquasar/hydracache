@@ -11,6 +11,7 @@ instrumentation_overhead = "docs/testing/performance/0.73/instrumentation-overhe
 local_overhead_screening = "docs/testing/performance/0.73/local-overhead-screening-307b3500.toml"
 local_overhead_isolation = "docs/testing/performance/0.73/local-overhead-isolation-5264d96c.toml"
 local_overhead_listener_noop = "docs/testing/performance/0.73/local-overhead-listener-noop-5e101e69.toml"
+proposal_registry = "docs/testing/performance/0.73/proposal-registry.toml"
 promotable = false
 numerical_claims_allowed = false
 candidate_thresholds_allowed = false

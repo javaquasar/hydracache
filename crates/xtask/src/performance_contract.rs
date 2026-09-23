@@ -20,6 +20,7 @@ const LOCAL_OVERHEAD_ISOLATION: &str =
     "docs/testing/performance/0.73/local-overhead-isolation-5264d96c.toml";
 const LOCAL_OVERHEAD_LISTENER_NOOP: &str =
     "docs/testing/performance/0.73/local-overhead-listener-noop-5e101e69.toml";
+const PROPOSAL_REGISTRY: &str = "docs/testing/performance/0.73/proposal-registry.toml";
 const RELEASE: &str = "0.73";
 const PROFILE: &str = "local-screening-073-v1";
 const ENVIRONMENT_CLASS: &str = "local_screening";
@@ -57,6 +58,8 @@ pub fn check_at_root(
     let local_listener_noop: TomlValue = toml::from_str(&fs::read_to_string(
         root.join(LOCAL_OVERHEAD_LISTENER_NOOP),
     )?)?;
+    let proposal_registry: TomlValue =
+        toml::from_str(&fs::read_to_string(root.join(PROPOSAL_REGISTRY))?)?;
     let mut problems = check_contract(&contract, release);
     problems.extend(check_baseline_identities(root, &identities, release)?);
     problems.extend(check_post_tag_delta(root, &delta, release)?);
@@ -68,6 +71,7 @@ pub fn check_at_root(
         &local_listener_noop,
         release,
     ));
+    problems.extend(check_proposal_registry(&proposal_registry, release));
     problems.extend(check_schema(
         &schema,
         &example,
@@ -126,6 +130,7 @@ pub fn check_contract(root: &TomlValue, release: &str) -> Vec<String> {
         ("local_overhead_screening", LOCAL_OVERHEAD_SCREENING),
         ("local_overhead_isolation", LOCAL_OVERHEAD_ISOLATION),
         ("local_overhead_listener_noop", LOCAL_OVERHEAD_LISTENER_NOOP),
+        ("proposal_registry", PROPOSAL_REGISTRY),
     ] {
         if text(root, field) != Some(expected) {
             problems.push(format!("local screening {field} must be {expected}"));
@@ -435,6 +440,71 @@ pub fn check_local_overhead_listener_noop(value: &TomlValue, release: &str) -> V
     for field in ["isolated_factor", "conclusion", "next_evidence"] {
         if text(value, field).is_none_or(str::is_empty) {
             problems.push(format!("local no-op listener screening requires {field}"));
+        }
+    }
+    problems
+}
+
+pub fn check_proposal_registry(value: &TomlValue, release: &str) -> Vec<String> {
+    let mut problems = Vec::new();
+    if integer(value, "schema_version") != Some(1)
+        || text(value, "release") != Some(release)
+        || text(value, "registry_state") != Some("pre_i73")
+    {
+        problems.push("0.73 proposal registry identity mismatch".to_owned());
+    }
+    if boolean(value, "candidate_measurements_allowed") != Some(false)
+        || boolean(value, "product_mutations_allowed") != Some(false)
+    {
+        problems.push("pre-I73 registry must forbid candidate measurement and mutation".to_owned());
+    }
+    let proposals = value
+        .get("proposals")
+        .and_then(TomlValue::as_array)
+        .cloned()
+        .unwrap_or_default();
+    let Some(proposal) = proposals.iter().find(|proposal| {
+        text(proposal, "proposal_id") == Some("P73-INSTRUMENTATION-NONBLOCKING-REMOVAL")
+    }) else {
+        problems.push("proposal registry omits instrumentation redesign".to_owned());
+        return problems;
+    };
+    if text(proposal, "state") != Some("d1_classified")
+        || boolean(proposal, "d2_authorized") != Some(false)
+        || boolean(proposal, "product_mutation_allowed") != Some(false)
+        || boolean(proposal, "candidate_measurements_allowed") != Some(false)
+        || text(proposal, "practical_minimum_effect") != Some("unfrozen-blocker")
+        || text(proposal, "review_status") != Some("required-before-d2")
+    {
+        problems.push(
+            "instrumentation redesign must remain D1-only until review and thresholds freeze"
+                .to_owned(),
+        );
+    }
+    for field in [
+        "owner",
+        "hypothesis",
+        "primary_metric",
+        "threshold_status",
+        "compatibility_outcome",
+        "rollback_class",
+        "dependency_delta",
+        "next_evidence",
+    ] {
+        if text(proposal, field).is_none_or(str::is_empty) {
+            problems.push(format!("instrumentation proposal requires {field}"));
+        }
+    }
+    for (field, minimum) in [
+        ("baseline_evidence", 3),
+        ("source_findings", 4),
+        ("rejected_approaches", 5),
+        ("candidate_options_requiring_d2", 2),
+        ("required_correctness_tests", 6),
+        ("required_regression_guards", 4),
+    ] {
+        if string_array(proposal.get(field)).len() < minimum {
+            problems.push(format!("instrumentation proposal has incomplete {field}"));
         }
     }
     problems

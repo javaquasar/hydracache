@@ -88,6 +88,13 @@ while steady reads remained unchanged. The callback is not free, but optimizing 
 clear the blocker: the production redesign must avoid enabling Moka's listener-backed mutation path
 while preserving exact automatic-removal and tag-cleanup semantics.
 
+`proposal-registry.toml` records the resulting redesign as `D1 classified`, not `D2 authorized`.
+The locked Moka 0.12.15 source shows that enabling the future-cache notifier activates per-key
+locking on insertion and shared boxed notification futures on removal/update paths. The current
+0.12.16 API still has no nonblocking post-removal observer. Product mutation and candidate
+measurement therefore remain forbidden until a lab-only feasibility spike, independent review, and
+pre-candidate allocation/RSS limits select or reject an exact alternative.
+
 Validate a generated receipt:
 
 ```text
