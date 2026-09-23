@@ -86,6 +86,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         Some("perf-reference") => xtask::perf_reference::run(args.collect())?,
         Some("perf-runner-preflight") => xtask::perf::run_preflight(args.collect())?,
         Some("perf-budget-check") => xtask::perf_budget::run(args.collect())?,
+        Some("performance-contract-check") => xtask::performance_contract::run(args.collect())?,
         Some("quarantine-check") => xtask::quarantine::run(args.collect())?,
         Some("raft-spec-check") => xtask::raft_spec_check::run(args.collect())?,
         Some("release-evidence") => xtask::release_evidence::run(args.collect())?,
@@ -158,6 +159,7 @@ fn print_usage() {
          cargo xtask perf-qualification --release 0.67.1 --profile reference-v1 --phase <context|finalize>  # validate a non-promotable dedicated host\n  \
          cargo xtask perf-reference --release 0.67.1 --profile reference-v1 --phase <propose|review|reviewed|activate|frozen-candidate>  # derive, review, activate, and prove the reference contract\n  \
          cargo xtask perf-budget-check --release <0.67|0.67.1> --profile <reference-v1|ci-shared>  # validate receipt-bound macro budgets\n  \
+         cargo xtask performance-contract-check --release 0.73 [--receipt <path>] [--require-ship]  # validate non-promotable local screening identity and receipts\n  \
          cargo xtask quarantine-check --release 0.64  # validate temporary test quarantines\n  \
          cargo xtask raft-spec-check --structural|--scope <fast|canary|nightly>  # validate/run the pinned TLA+ model\n  \
          cargo xtask release-evidence --release 0.64  # derive the per-W release evidence matrix\n  \

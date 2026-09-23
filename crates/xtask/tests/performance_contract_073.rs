@@ -1,0 +1,122 @@
+use serde_json::json;
+use std::fs;
+use std::path::{Path, PathBuf};
+use toml::Value as TomlValue;
+
+fn root() -> PathBuf {
+    Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("../..")
+        .canonicalize()
+        .expect("repository root")
+}
+
+fn contract() -> TomlValue {
+    toml::from_str(
+        &fs::read_to_string(root().join("docs/testing/performance/0.73/local-screening.toml"))
+            .expect("local screening contract"),
+    )
+    .expect("valid contract TOML")
+}
+
+fn receipt() -> serde_json::Value {
+    serde_json::from_slice(
+        &fs::read(
+            root().join("docs/testing/performance/0.73/local-screening-receipt.example.json"),
+        )
+        .expect("example receipt"),
+    )
+    .expect("valid receipt JSON")
+}
+
+#[test]
+fn checked_in_local_screening_contract_and_receipt_pass() {
+    assert!(xtask::performance_contract::check_contract(&contract(), "0.73").is_empty());
+    assert!(xtask::performance_contract::check_receipt(&receipt(), &contract()).is_empty());
+    assert!(
+        xtask::performance_contract::check_at_root(&root(), "0.73", None)
+            .expect("check contract")
+            .is_empty()
+    );
+}
+
+#[test]
+fn local_receipt_can_never_be_promoted_or_claim_eligible() {
+    let mut value = receipt();
+    value["promotable"] = json!(true);
+    value["numerical_claim_eligible"] = json!(true);
+    let problems = xtask::performance_contract::check_receipt(&value, &contract());
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("never be promotable")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("must not be numerical-claim eligible")));
+}
+
+#[test]
+fn local_receipt_requires_exact_identity_and_complete_outcomes() {
+    let mut value = receipt();
+    value["source_sha"] = json!("main");
+    value["scenario_sha256"] = json!("ABC");
+    value["environment_class"] = json!("dedicated_reference");
+    value["instrumentation_mode"] = json!("mystery");
+    value["outcomes"]["incomplete"] = json!(1);
+    let problems = xtask::performance_contract::check_receipt(&value, &contract());
+    for expected in [
+        "environment_class",
+        "source_sha",
+        "scenario_sha256",
+        "instrumentation_mode",
+        "account for every attempted operation",
+    ] {
+        assert!(
+            problems.iter().any(|problem| problem.contains(expected)),
+            "missing {expected}: {problems:?}"
+        );
+    }
+}
+
+#[test]
+fn contract_rejects_weakened_pair_load_and_promotion_rules() {
+    let mut value = contract();
+    value["promotable"] = TomlValue::Boolean(true);
+    value["minimum_pairs"] = TomlValue::Integer(1);
+    value["offered_load_fractions"] = TomlValue::Array(vec![TomlValue::Float(0.25)]);
+    value["allowed_promotion_targets"] =
+        TomlValue::Array(vec![TomlValue::String("ship".to_owned())]);
+    value["allowed_instrumentation_modes"] =
+        TomlValue::Array(vec![TomlValue::String("anything".to_owned())]);
+    let problems = xtask::performance_contract::check_contract(&value, "0.73");
+    for expected in [
+        "promotable",
+        "at least three pairs",
+        "offered_load_fractions",
+        "must not declare promotion targets",
+        "allowed_instrumentation_modes",
+    ] {
+        assert!(
+            problems.iter().any(|problem| problem.contains(expected)),
+            "missing {expected}: {problems:?}"
+        );
+    }
+}
+
+#[test]
+fn receipt_schema_rejects_unregistered_fields() {
+    let mut value = receipt();
+    value["ship_evidence_eligible"] = json!(true);
+    let path = std::env::temp_dir().join(format!(
+        "hydracache-performance-073-schema-canary-{}.json",
+        std::process::id()
+    ));
+    fs::write(&path, serde_json::to_vec_pretty(&value).unwrap()).unwrap();
+    let problems = xtask::performance_contract::check_at_root(&root(), "0.73", Some(&path))
+        .expect("check mutated receipt");
+    let _ = fs::remove_file(path);
+    assert!(
+        problems
+            .iter()
+            .any(|problem| problem.contains("schema violation")),
+        "unexpected schema result: {problems:?}"
+    );
+}

@@ -340,8 +340,8 @@ depends_on = ["0.71.0"]
 [[release]]
 version = "0.73.0"
 file = "docs/plans/V0_73_EVIDENCE_DRIVEN_PERFORMANCE_EFFICIENCY_PLAN.md"
-status = "planned"
+status = "in-progress"
 networked_control_plane = true
 work_items = ["W0", "W1", "W2", "W3", "W4", "W5", "W6", "W7", "W8", "W9", "W10", "W11"]
-theme = "Evidence-Driven Performance Efficiency - use 0.71's accepted accounting and no-numerical-win result plus the published 0.72 exact-candidate artifact and bounded Management Center evidence to preregister causal owner/stack hypotheses. Conditionally qualify shared client-store and expiry work, tag-index layout, RESP key/copy paths, HC2 connection buffers, optional-service and Management Center overhead, durable/page-cache attribution, allocators, and an opt-in retained-byte admission policy. Each accepted proposal requires semantic and compatibility proofs, falsifying canaries, independently started paired same-host measurements, long-run boundedness and exact-candidate receipts; zero optional wins remain an honest release outcome."
+theme = "Evidence-Driven Performance Efficiency - use 0.71's accepted accounting and no-numerical-win result plus the published 0.72 exact-candidate artifact and bounded Management Center evidence to preregister causal owner/stack hypotheses. Every W2-W9 surface receives mandatory D1 analysis and a terminal evidenced disposition; only product mutation is conditional on D2. Qualify shared client-store and expiry work, tag-index layout, RESP key/copy paths, HC2 connection buffers, optional-service and Management Center overhead, durable/page-cache attribution, allocators, and an opt-in retained-byte admission policy under frozen offered-load/goodput, integrated-workload, rollback, platform, dependency, evidence-retention and publication contracts. Each accepted proposal requires semantic and compatibility proofs, falsifying canaries, independently started paired same-host measurements, long-run boundedness and exact-candidate receipts; zero optional wins remain an honest release outcome."
 depends_on = ["0.72.0"]

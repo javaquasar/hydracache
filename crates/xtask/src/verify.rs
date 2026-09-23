@@ -11,7 +11,7 @@ use std::error::Error;
 use std::path::{Path, PathBuf};
 use std::process::{Command, Stdio};
 
-use crate::{doc_check, feature_leak, management_center};
+use crate::{doc_check, feature_leak, management_center, performance_contract};
 
 /// A release gate: a human label, the `cargo` arguments, and optional env vars.
 #[derive(Clone, Debug, Eq, PartialEq)]
@@ -316,6 +316,20 @@ pub fn run(_args: Vec<String>) -> Result<(), Box<dyn Error>> {
         .into());
     }
     println!("management-center-check: OK");
+
+    println!("== performance-contract-check 0.73 ==");
+    let performance_problems = performance_contract::check_at_root(&root, "0.73", None)?;
+    if !performance_problems.is_empty() {
+        for problem in &performance_problems {
+            eprintln!("performance-contract-check: {problem}");
+        }
+        return Err(format!(
+            "performance-contract-check found {} problem(s)",
+            performance_problems.len()
+        )
+        .into());
+    }
+    println!("performance-contract-check: OK (local screening only)");
 
     println!("== release feature leak ==");
     let leaks = feature_leak::check(&root)?;

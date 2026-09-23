@@ -766,6 +766,11 @@ jobs:
           cargo run -p xtask --locked -- management-center-check --release 0.72
           cargo run -p xtask --locked -- release-evidence --release 0.72
 
+      - name: Release 0.73 local performance screening contract
+        run: |
+          cargo test -p xtask --test performance_contract_073 --locked
+          cargo run -p xtask --locked -- performance-contract-check --release 0.73
+
       - name: Fuzz corpus regression
         run: cargo run -p xtask --locked -- evidence-run --release "$HYDRACACHE_CANDIDATE_RELEASE" --gate fast.fuzz-corpus-regression
 
