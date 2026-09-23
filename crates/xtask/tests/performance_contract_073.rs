@@ -28,6 +28,14 @@ fn receipt() -> serde_json::Value {
     .expect("valid receipt JSON")
 }
 
+fn manifest(name: &str) -> TomlValue {
+    toml::from_str(
+        &fs::read_to_string(root().join("docs/testing/performance/0.73").join(name))
+            .expect("performance manifest"),
+    )
+    .expect("valid performance TOML")
+}
+
 #[test]
 fn checked_in_local_screening_contract_and_receipt_pass() {
     assert!(xtask::performance_contract::check_contract(&contract(), "0.73").is_empty());
@@ -119,4 +127,29 @@ fn receipt_schema_rejects_unregistered_fields() {
             .any(|problem| problem.contains("schema violation")),
         "unexpected schema result: {problems:?}"
     );
+}
+
+#[test]
+fn baseline_identity_rejects_a_wrong_annotated_tag_object() {
+    let mut value = manifest("baseline-identities.toml");
+    value["published_baseline"]["tag_object_sha"] = TomlValue::String("f".repeat(40));
+    let problems = xtask::performance_contract::check_baseline_identities(&root(), &value, "0.73")
+        .expect("check baseline identities");
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("tag object SHA")));
+}
+
+#[test]
+fn post_tag_delta_rejects_an_unclassified_path() {
+    let mut value = manifest("post-tag-delta.toml");
+    value["paths"]
+        .as_array_mut()
+        .expect("path ledger")
+        .remove(0);
+    let problems = xtask::performance_contract::check_post_tag_delta(&root(), &value, "0.73")
+        .expect("check post-tag delta");
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("unclassified")));
 }

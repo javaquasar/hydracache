@@ -1,0 +1,162 @@
+schema_version = 1
+release = "0.73"
+from = "v0.72.0"
+to = "1f63494889d50a4e41018159710e5286a887ebf7"
+allowed_classifications = ["documentation", "ci", "test", "tooling", "dependency-bootstrap", "instrumentation", "runtime"]
+runtime_paths = []
+instrumentation_paths = []
+
+[[paths]]
+status = "A"
+path = ".github/workflows/management-baseline-072.yml"
+classification = "ci"
+
+[[paths]]
+status = "M"
+path = ".github/workflows/post-publish.yml"
+classification = "ci"
+
+[[paths]]
+status = "M"
+path = "crates/xtask/src/migration_conformance.rs"
+classification = "dependency-bootstrap"
+
+[[paths]]
+status = "M"
+path = "crates/xtask/src/release_governance.rs"
+classification = "tooling"
+
+[[paths]]
+status = "M"
+path = "crates/xtask/tests/management_center_072.rs"
+classification = "test"
+
+[[paths]]
+status = "M"
+path = "crates/xtask/tests/migration_conformance_069.rs"
+classification = "test"
+
+[[paths]]
+status = "M"
+path = "crates/xtask/tests/release_governance.rs"
+classification = "test"
+
+[[paths]]
+status = "M"
+path = "docs-site/src/SUMMARY.md"
+classification = "documentation"
+
+[[paths]]
+status = "A"
+path = "docs-site/src/guides/management-center.md"
+classification = "documentation"
+
+[[paths]]
+status = "M"
+path = "docs-site/src/reference/release-0.72-verification.md"
+classification = "documentation"
+
+[[paths]]
+status = "A"
+path = "docs-site/src/releases/0.72.0.md"
+classification = "documentation"
+
+[[paths]]
+status = "M"
+path = "docs-site/src/releases/index.md"
+classification = "documentation"
+
+[[paths]]
+status = "M"
+path = "docs/GATES.md"
+classification = "documentation"
+
+[[paths]]
+status = "M"
+path = "docs/TESTING.md"
+classification = "documentation"
+
+[[paths]]
+status = "M"
+path = "docs/architecture/management-center-v2.md"
+classification = "documentation"
+
+[[paths]]
+status = "M"
+path = "docs/management-center.md"
+classification = "documentation"
+
+[[paths]]
+status = "M"
+path = "docs/plans/INDEX.md"
+classification = "documentation"
+
+[[paths]]
+status = "M"
+path = "docs/plans/V0_72_MANAGEMENT_CENTER_2_OPERATIONAL_VISIBILITY_PLAN.md"
+classification = "documentation"
+
+[[paths]]
+status = "M"
+path = "docs/plans/releases.toml"
+classification = "documentation"
+
+[[paths]]
+status = "A"
+path = "docs/releases/0.72.0.md"
+classification = "documentation"
+
+[[paths]]
+status = "A"
+path = "docs/testing/management-center/0.72/accepted-baseline-evidence.md"
+classification = "documentation"
+
+[[paths]]
+status = "A"
+path = "docs/testing/management-center/0.72/baseline-capture.md"
+classification = "documentation"
+
+[[paths]]
+status = "M"
+path = "docs/testing/management-center/0.72/baselines.toml"
+classification = "documentation"
+
+[[paths]]
+status = "M"
+path = "docs/testing/management-center/0.72/w12-process-evidence.md"
+classification = "documentation"
+
+[[paths]]
+status = "M"
+path = "docs/testing/management-center/0.72/w13-compatibility-evidence.md"
+classification = "documentation"
+
+[[paths]]
+status = "M"
+path = "docs/testing/management-center/0.72/w14-admission-evidence.md"
+classification = "documentation"
+
+[[paths]]
+status = "M"
+path = "docs/testing/memory/0.71/baseline-identities.toml"
+classification = "documentation"
+
+[[paths]]
+status = "M"
+path = "docs/testing/memory/0.71/ci-topology.json"
+classification = "ci"
+
+[[paths]]
+status = "M"
+path = "scripts/docs-visual-smoke.mjs"
+classification = "tooling"
+
+[[paths]]
+status = "A"
+path = "scripts/management/capture-baseline-072.mjs"
+classification = "tooling"
+
+[[paths]]
+status = "A"
+path = "scripts/management/capture-baseline-072.test.mjs"
+classification = "test"

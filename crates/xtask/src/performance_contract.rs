@@ -1,5 +1,5 @@
 use serde_json::Value as JsonValue;
-use std::collections::BTreeSet;
+use std::collections::{BTreeMap, BTreeSet};
 use std::error::Error;
 use std::fs;
 use std::path::{Path, PathBuf};
@@ -9,6 +9,8 @@ const CONTRACT: &str = "docs/testing/performance/0.73/local-screening.toml";
 const RECEIPT_SCHEMA: &str = "docs/testing/performance/0.73/local-screening-receipt-v1.schema.json";
 const CONTEXT_SCHEMA: &str = "docs/testing/performance/0.73/local-screening-context-v1.schema.json";
 const EXAMPLE_RECEIPT: &str = "docs/testing/performance/0.73/local-screening-receipt.example.json";
+const BASELINE_IDENTITIES: &str = "docs/testing/performance/0.73/baseline-identities.toml";
+const POST_TAG_DELTA: &str = "docs/testing/performance/0.73/post-tag-delta.toml";
 const RELEASE: &str = "0.73";
 const PROFILE: &str = "local-screening-073-v1";
 const ENVIRONMENT_CLASS: &str = "local_screening";
@@ -33,7 +35,12 @@ pub fn check_at_root(
     let contract: TomlValue = toml::from_str(&fs::read_to_string(root.join(CONTRACT))?)?;
     let schema: JsonValue = serde_json::from_slice(&fs::read(root.join(RECEIPT_SCHEMA))?)?;
     let example: JsonValue = serde_json::from_slice(&fs::read(root.join(EXAMPLE_RECEIPT))?)?;
+    let identities: TomlValue =
+        toml::from_str(&fs::read_to_string(root.join(BASELINE_IDENTITIES))?)?;
+    let delta: TomlValue = toml::from_str(&fs::read_to_string(root.join(POST_TAG_DELTA))?)?;
     let mut problems = check_contract(&contract, release);
+    problems.extend(check_baseline_identities(root, &identities, release)?);
+    problems.extend(check_post_tag_delta(root, &delta, release)?);
     problems.extend(check_schema(
         &schema,
         &example,
@@ -74,6 +81,8 @@ pub fn check_contract(root: &TomlValue, release: &str) -> Vec<String> {
         ("environment_class", ENVIRONMENT_CLASS),
         ("receipt_schema", RECEIPT_SCHEMA),
         ("context_schema", CONTEXT_SCHEMA),
+        ("baseline_identities", BASELINE_IDENTITIES),
+        ("post_tag_delta", POST_TAG_DELTA),
     ] {
         if text(root, field) != Some(expected) {
             problems.push(format!("local screening {field} must be {expected}"));
@@ -152,6 +161,168 @@ pub fn check_contract(root: &TomlValue, release: &str) -> Vec<String> {
         problems.push("local screening outcome accounting is incomplete".to_owned());
     }
     problems
+}
+
+pub fn check_baseline_identities(
+    root: &Path,
+    value: &TomlValue,
+    release: &str,
+) -> Result<Vec<String>, Box<dyn Error>> {
+    let mut problems = Vec::new();
+    if integer(value, "schema_version") != Some(1) || text(value, "release") != Some(release) {
+        problems.push("baseline identity schema/release mismatch".to_owned());
+        return Ok(problems);
+    }
+    let baseline = value
+        .get("published_baseline")
+        .unwrap_or(&TomlValue::Boolean(false));
+    let branch_root = value
+        .get("branch_root")
+        .unwrap_or(&TomlValue::Boolean(false));
+    let instrumented = value
+        .get("instrumented_baseline")
+        .unwrap_or(&TomlValue::Boolean(false));
+    let tag = text(baseline, "tag").unwrap_or_default();
+    let tag_object = text(baseline, "tag_object_sha").unwrap_or_default();
+    let peeled = text(baseline, "peeled_commit_sha").unwrap_or_default();
+    let root_sha = text(branch_root, "commit_sha").unwrap_or_default();
+    for (label, value) in [
+        ("tag_object_sha", tag_object),
+        ("peeled_commit_sha", peeled),
+        ("branch_root commit_sha", root_sha),
+    ] {
+        if !full_sha(value) {
+            problems.push(format!(
+                "baseline {label} must be a full lowercase commit SHA"
+            ));
+        }
+    }
+    if tag.is_empty() || git(root, &["cat-file", "-t", tag]).ok().as_deref() != Some("tag") {
+        problems.push("B72 must resolve through an annotated tag object".to_owned());
+    }
+    if !tag.is_empty() && git(root, &["rev-parse", tag]).ok().as_deref() != Some(tag_object) {
+        problems.push("B72 tag object SHA does not match the repository".to_owned());
+    }
+    let peeled_ref = format!("{tag}^{{}}");
+    if !tag.is_empty() && git(root, &["rev-parse", &peeled_ref]).ok().as_deref() != Some(peeled) {
+        problems.push("B72 peeled commit SHA does not match the repository".to_owned());
+    }
+    if !root_sha.is_empty() && git(root, &["rev-parse", root_sha]).ok().as_deref() != Some(root_sha)
+    {
+        problems.push("R73 branch root is absent from the repository".to_owned());
+    }
+    if text(instrumented, "state") != Some("unfrozen")
+        || text(instrumented, "source_sha") != Some("")
+    {
+        problems.push("I73 must remain explicitly unfrozen until W0 admission closes".to_owned());
+    }
+    Ok(problems)
+}
+
+pub fn check_post_tag_delta(
+    root: &Path,
+    value: &TomlValue,
+    release: &str,
+) -> Result<Vec<String>, Box<dyn Error>> {
+    let mut problems = Vec::new();
+    if integer(value, "schema_version") != Some(1) || text(value, "release") != Some(release) {
+        problems.push("post-tag delta schema/release mismatch".to_owned());
+        return Ok(problems);
+    }
+    let from = text(value, "from").unwrap_or_default();
+    let to = text(value, "to").unwrap_or_default();
+    let allowed: BTreeSet<_> = string_array(value.get("allowed_classifications"))
+        .into_iter()
+        .collect();
+    let mut declared = BTreeMap::new();
+    for item in value
+        .get("paths")
+        .and_then(TomlValue::as_array)
+        .into_iter()
+        .flatten()
+    {
+        let path = text(item, "path").unwrap_or_default();
+        let status = text(item, "status").unwrap_or_default();
+        let classification = text(item, "classification").unwrap_or_default();
+        if path.is_empty() || !allowed.contains(classification) {
+            problems.push(format!(
+                "post-tag delta has invalid path/classification for {path}"
+            ));
+            continue;
+        }
+        if declared
+            .insert(
+                path.to_owned(),
+                (status.to_owned(), classification.to_owned()),
+            )
+            .is_some()
+        {
+            problems.push(format!("post-tag delta declares {path} more than once"));
+        }
+    }
+    let range = format!("{from}..{to}");
+    let observed_text = git(root, &["diff", "--name-status", &range])?;
+    let observed: BTreeMap<_, _> = observed_text
+        .lines()
+        .filter_map(|line| {
+            let mut fields = line.split('\t');
+            Some((fields.next()?.to_owned(), fields.next()?.to_owned()))
+        })
+        .map(|(status, path)| (path, status))
+        .collect();
+    for (path, status) in &observed {
+        match declared.get(path) {
+            Some((declared_status, _)) if declared_status == status => {}
+            Some((declared_status, _)) => problems.push(format!(
+                "post-tag delta status mismatch for {path}: declared {declared_status}, observed {status}"
+            )),
+            None => problems.push(format!("post-tag delta leaves {path} unclassified")),
+        }
+    }
+    for path in declared.keys() {
+        if !observed.contains_key(path) {
+            problems.push(format!("post-tag delta declares stale path {path}"));
+        }
+    }
+    let runtime: BTreeSet<_> = string_array(value.get("runtime_paths"))
+        .into_iter()
+        .collect();
+    let instrumentation: BTreeSet<_> = string_array(value.get("instrumentation_paths"))
+        .into_iter()
+        .collect();
+    let declared_runtime: BTreeSet<_> = declared
+        .iter()
+        .filter(|(_, (_, class))| class == "runtime")
+        .map(|(path, _)| path.as_str())
+        .collect();
+    let declared_instrumentation: BTreeSet<_> = declared
+        .iter()
+        .filter(|(_, (_, class))| class == "instrumentation")
+        .map(|(path, _)| path.as_str())
+        .collect();
+    if runtime != declared_runtime || instrumentation != declared_instrumentation {
+        problems.push(
+            "post-tag runtime/instrumentation summaries do not match path classifications"
+                .to_owned(),
+        );
+    }
+    Ok(problems)
+}
+
+fn git(root: &Path, args: &[&str]) -> Result<String, Box<dyn Error>> {
+    let output = std::process::Command::new("git")
+        .args(args)
+        .current_dir(root)
+        .output()?;
+    if !output.status.success() {
+        return Err(format!(
+            "git {} failed: {}",
+            args.join(" "),
+            String::from_utf8_lossy(&output.stderr).trim()
+        )
+        .into());
+    }
+    Ok(String::from_utf8(output.stdout)?.trim().to_owned())
 }
 
 pub fn check_receipt(value: &JsonValue, contract: &TomlValue) -> Vec<String> {

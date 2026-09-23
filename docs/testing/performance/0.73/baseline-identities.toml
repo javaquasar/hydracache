@@ -1,0 +1,30 @@
+schema_version = 1
+release = "0.73"
+
+[published_baseline]
+id = "B72"
+tag = "v0.72.0"
+tag_object_sha = "5aafc92ebeb160eda94a79916683e0a1030b8b1a"
+peeled_commit_sha = "24927c28c279c6c34ad90111ee6470b4065e0815"
+purpose = "external regression and compatibility baseline only"
+
+[branch_root]
+id = "R73"
+commit_sha = "1f63494889d50a4e41018159710e5286a887ebf7"
+purpose = "development lineage only; not B72 and not I73"
+
+[instrumented_baseline]
+id = "I73"
+state = "unfrozen"
+source_sha = ""
+required_before_freeze = [
+  "post-tag delta ledger closed",
+  "production instrumentation overhead accepted",
+  "toolchain and scenario matrix frozen"
+]
+
+[retained_evidence]
+six_hour_run = "35537203094"
+twenty_four_hour_run = "35556487047"
+archive_commit_sha = "351766af9241399306a385298f0cc252aca6036c"
+external_baseline_run = "35723493297"

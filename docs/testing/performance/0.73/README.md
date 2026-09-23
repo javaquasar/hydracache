@@ -22,6 +22,12 @@ model text, hostname, username, home path, serial numbers, and network addresses
 The fingerprint covers only stable identity: timestamps and source state do not silently turn the
 same host into a different machine.
 
+`baseline-identities.toml` distinguishes the annotated/peeled published `B72`, the post-publish
+branch root `R73`, and the still-unfrozen `I73`. `post-tag-delta.toml` classifies every path between
+`v0.72.0` and `R73`; the checker recomputes that Git diff and rejects missing, stale, or status-mismatched
+entries. The current ledger has no product-runtime or production-instrumentation path, so none of the
+post-tag changes is silently treated as an optimization baseline.
+
 Validate a generated receipt:
 
 ```text
