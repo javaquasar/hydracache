@@ -41,6 +41,7 @@ pub mod perf_full_dress;
 pub mod perf_qualification;
 pub mod perf_reference;
 pub mod performance_contract;
+pub mod performance_local;
 pub mod quarantine;
 pub mod raft_spec_check;
 pub mod release_evidence;

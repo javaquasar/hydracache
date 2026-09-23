@@ -1,0 +1,78 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://javaquasar.github.io/hydracache/schemas/local-screening-context-073-v1.json",
+  "title": "HydraCache 0.73 privacy-safe local screening context",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "release",
+    "profile_id",
+    "environment_class",
+    "promotable",
+    "numerical_claim_eligible",
+    "generated_at_utc",
+    "source",
+    "host_fingerprint_sha256",
+    "identity",
+    "privacy",
+    "limitations"
+  ],
+  "properties": {
+    "schema_version": { "const": 1 },
+    "release": { "const": "0.73" },
+    "profile_id": { "const": "local-screening-073-v1" },
+    "environment_class": { "const": "local_screening" },
+    "promotable": { "const": false },
+    "numerical_claim_eligible": { "const": false },
+    "generated_at_utc": { "type": "string", "format": "date-time" },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["sha", "dirty_worktree"],
+      "properties": {
+        "sha": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
+        "dirty_worktree": { "type": "boolean" }
+      }
+    },
+    "host_fingerprint_sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "identity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["os", "arch", "logical_cpus", "cpu_model_sha256", "rustc_vv_sha256", "cargo_version_sha256"],
+      "properties": {
+        "os": { "type": "string", "minLength": 1 },
+        "arch": { "type": "string", "minLength": 1 },
+        "logical_cpus": { "type": "integer", "minimum": 1 },
+        "cpu_model_sha256": {
+          "oneOf": [
+            { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+            { "type": "null" }
+          ]
+        },
+        "rustc_vv_sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+        "cargo_version_sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" }
+      }
+    },
+    "privacy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["raw_hardware_values_retained", "excluded_fields"],
+      "properties": {
+        "raw_hardware_values_retained": { "const": false },
+        "excluded_fields": {
+          "type": "array",
+          "items": { "type": "string" },
+          "minItems": 5,
+          "uniqueItems": true
+        }
+      }
+    },
+    "limitations": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 },
+      "minItems": 1,
+      "uniqueItems": true
+    }
+  }
+}

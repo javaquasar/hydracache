@@ -3,6 +3,7 @@ release = "0.73"
 profile_id = "local-screening-073-v1"
 environment_class = "local_screening"
 receipt_schema = "docs/testing/performance/0.73/local-screening-receipt-v1.schema.json"
+context_schema = "docs/testing/performance/0.73/local-screening-context-v1.schema.json"
 promotable = false
 numerical_claims_allowed = false
 candidate_thresholds_allowed = false

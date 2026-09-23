@@ -7,6 +7,7 @@ use toml::Value as TomlValue;
 
 const CONTRACT: &str = "docs/testing/performance/0.73/local-screening.toml";
 const RECEIPT_SCHEMA: &str = "docs/testing/performance/0.73/local-screening-receipt-v1.schema.json";
+const CONTEXT_SCHEMA: &str = "docs/testing/performance/0.73/local-screening-context-v1.schema.json";
 const EXAMPLE_RECEIPT: &str = "docs/testing/performance/0.73/local-screening-receipt.example.json";
 const RELEASE: &str = "0.73";
 const PROFILE: &str = "local-screening-073-v1";
@@ -72,6 +73,7 @@ pub fn check_contract(root: &TomlValue, release: &str) -> Vec<String> {
         ("profile_id", PROFILE),
         ("environment_class", ENVIRONMENT_CLASS),
         ("receipt_schema", RECEIPT_SCHEMA),
+        ("context_schema", CONTEXT_SCHEMA),
     ] {
         if text(root, field) != Some(expected) {
             problems.push(format!("local screening {field} must be {expected}"));

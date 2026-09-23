@@ -768,7 +768,7 @@ jobs:
 
       - name: Release 0.73 local performance screening contract
         run: |
-          cargo test -p xtask --test performance_contract_073 --locked
+          cargo test -p xtask --test performance_contract_073 --test performance_local_073 --locked
           cargo run -p xtask --locked -- performance-contract-check --release 0.73
 
       - name: Fuzz corpus regression

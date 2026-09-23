@@ -10,6 +10,18 @@ Validate the checked-in contract and example:
 cargo xtask performance-contract-check --release 0.73
 ```
 
+Capture a privacy-safe local context before screening a candidate:
+
+```text
+cargo xtask performance-local-context --release 0.73
+```
+
+The generated `target/performance-evidence/0.73/local/context.json` binds the exact source SHA,
+dirty-tree state, OS/architecture, logical CPU count, and hashed CPU/toolchain identities. Raw CPU
+model text, hostname, username, home path, serial numbers, and network addresses are not retained.
+The fingerprint covers only stable identity: timestamps and source state do not silently turn the
+same host into a different machine.
+
 Validate a generated receipt:
 
 ```text
