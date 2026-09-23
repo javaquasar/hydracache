@@ -21,6 +21,7 @@ durable-value-store = ["dep:sled"]
 durable-values = []
 tiered-values = []
 testing = []
+instrumentation-lab = []
 
 [dependencies]
 serde.workspace = true

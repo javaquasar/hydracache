@@ -56,6 +56,13 @@ pairs with `cargo xtask performance-overhead-screen --release 0.73 --context <co
 every subprocess retains stdout, stderr, receipt and resource-series digests. `screening.json`
 contains the per-mode distributions but explicitly marks thresholds `screening_only_unqualified`.
 
+To attribute the mutation/RSS deltas without paying for a dedicated-host run, repeat the same local
+screen with `--profile instrumentation-overhead-counters-only-073-v1`. This development-only
+variant retains the production counters but omits the async eviction listener. Its receipts are
+marked `diagnostic_only: true` and `counter_correctness_eligible: false`: removal accounting is
+intentionally incomplete, so the result may locate overhead but cannot prove correctness, freeze
+thresholds, or contribute to `I73`.
+
 The first three-pair release-build screen is retained in
 `local-overhead-screening-307b3500.toml`. It found no elapsed-time regression and no steady-read
 allocation delta, but it did find material mutation allocation and RSS deltas. The result is a

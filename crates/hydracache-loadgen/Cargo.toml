@@ -17,7 +17,7 @@ axum.workspace = true
 bytes.workspace = true
 futures-util.workspace = true
 hdrhistogram.workspace = true
-hydracache.workspace = true
+hydracache = { workspace = true, features = ["instrumentation-lab"] }
 hydracache-cache-sim.workspace = true
 hydracache-client-hc2.workspace = true
 hydracache-client-protocol.workspace = true

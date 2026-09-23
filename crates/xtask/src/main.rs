@@ -165,7 +165,7 @@ fn print_usage() {
          cargo xtask performance-contract-check --release 0.73 [--receipt <path>] [--require-ship]  # validate non-promotable local screening identity and receipts\n  \
          cargo xtask performance-local-context --release 0.73 [--output <path>]  # capture a privacy-safe local host/source fingerprint\n  \
          cargo xtask performance-local-receipt --release 0.73 --context <path> --binary <path> --scenario <path> --raw-series <path> --outcomes <path> --output <path> --attempt-id <id> --instrumentation-mode <mode> --run-order-seed <u64> --pair-index <n> --block-order <baseline_candidate|candidate_baseline> --candidate-role <baseline|candidate> --candidate-id <id> --started-at-utc <RFC3339> --result <success|failed|invalidated>  # hash inputs and emit a validated local receipt\n  \
-         cargo xtask performance-overhead-screen --release 0.73 --context <path> --binary <path> --output <new-dir> --pairs <n> --seed <u64>  # run append-only counterbalanced off/production local screening\n  \
+         cargo xtask performance-overhead-screen --release 0.73 --context <path> --binary <path> --output <new-dir> --pairs <n> --seed <u64> [--profile <instrumentation-overhead-073-v1|instrumentation-overhead-counters-only-073-v1>]  # run append-only counterbalanced off/production local screening\n  \
          cargo xtask quarantine-check --release 0.64  # validate temporary test quarantines\n  \
          cargo xtask raft-spec-check --structural|--scope <fast|canary|nightly>  # validate/run the pinned TLA+ model\n  \
          cargo xtask release-evidence --release 0.64  # derive the per-W release evidence matrix\n  \

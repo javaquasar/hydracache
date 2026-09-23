@@ -11,6 +11,7 @@ use sha2::{Digest, Sha256};
 use crate::allocation::{measure_allocations, AllocationMeasurement};
 
 const OVERHEAD_PROFILE_073: &str = "instrumentation-overhead-073-v1";
+const COUNTERS_ONLY_PROFILE_073: &str = "instrumentation-overhead-counters-only-073-v1";
 
 pub const MEMORY_PHASES: [MemoryPhase; 8] = [
     MemoryPhase::Cold,
@@ -74,6 +75,10 @@ pub struct MemoryEfficiencyReceipt {
     pub timeline: PathBuf,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub resource_series: Option<PathBuf>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub diagnostic_variant: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub counter_correctness_eligible: Option<bool>,
     pub promotable: bool,
 }
 
@@ -105,14 +110,18 @@ pub async fn run_and_write_memory_efficiency(
 
     eprintln!("hydracache-loadgen: initializing memory profile cache");
     let instrumentation_mode = parse_instrumentation_mode(instrumentation_mode)?;
-    let cache = HydraCache::local()
+    let mut builder = HydraCache::local()
         .max_capacity(8 * 1024 * 1024)
-        .memory_instrumentation_mode(instrumentation_mode)
-        .build();
+        .memory_instrumentation_mode(instrumentation_mode);
+    let counters_only = profile == COUNTERS_ONLY_PROFILE_073;
+    if counters_only {
+        builder = builder.instrumentation_lab_eviction_listener(false);
+    }
+    let cache = builder.build();
     eprintln!("hydracache-loadgen: initialized memory profile cache");
     let run_started = std::time::Instant::now();
     let mut timeline = Vec::with_capacity(MEMORY_PHASES.len());
-    let collect_resources = profile == OVERHEAD_PROFILE_073;
+    let collect_resources = matches!(profile, OVERHEAD_PROFILE_073 | COUNTERS_ONLY_PROFILE_073);
     let mut resource_series = Vec::with_capacity(MEMORY_PHASES.len());
     for (index, phase) in MEMORY_PHASES.into_iter().enumerate() {
         eprintln!("hydracache-loadgen: memory phase {}", phase.file_stem());
@@ -176,7 +185,7 @@ pub async fn run_and_write_memory_efficiency(
             "memory phase timeline",
         )?;
     }
-    if instrumentation_mode != MemoryInstrumentationMode::Off {
+    if instrumentation_mode != MemoryInstrumentationMode::Off && !counters_only {
         cache
             .reconcile_memory_footprint()
             .await
@@ -225,6 +234,15 @@ pub async fn run_and_write_memory_efficiency(
         elapsed_ns: u64::try_from(run_started.elapsed().as_nanos()).unwrap_or(u64::MAX),
         timeline: timeline_path,
         resource_series: resource_series_path,
+        diagnostic_variant: collect_resources.then(|| {
+            if counters_only {
+                "production_counters_without_eviction_listener"
+            } else {
+                "full"
+            }
+            .to_owned()
+        }),
+        counter_correctness_eligible: collect_resources.then_some(!counters_only),
         promotable: false,
     };
     let receipt_bytes = serde_json::to_vec_pretty(&receipt)
