@@ -48,6 +48,11 @@
       "title": "How to Measure Cache Performance Without Measuring Noise",
       "file": "006-measuring-cache-performance-on-bare-metal.md",
       "url": "https://medium.com/@artur.buzov/how-to-measure-cache-performance-without-measuring-noise-926c10d713f5"
+    },
+    {
+      "title": "Optimization Starts With Measurement: Reading Allocations, RSS, and Runtime Together",
+      "file": "007-optimization-starts-with-measurement.md",
+      "status": "draft"
     }
   ]
 }

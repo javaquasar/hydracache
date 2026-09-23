@@ -98,5 +98,6 @@ npx --prefix console playwright install chromium
 - [006 - How to Measure Cache Performance Without Measuring Noise](006-measuring-cache-performance-on-bare-metal.md)
   - Cover: [006-measuring-cache-performance-on-bare-metal-cover.png](006-measuring-cache-performance-on-bare-metal-cover.png)
   - Prompt: [006-measuring-cache-performance-on-bare-metal-cover.prompt.md](006-measuring-cache-performance-on-bare-metal-cover.prompt.md)
+- [Draft - Optimization Starts With Measurement: Reading Allocations, RSS, and Runtime Together](007-optimization-starts-with-measurement.md)
 - [Draft - Raft Snapshot Bugs, AI Agents, and the Cost of Ignoring Contradictions](002-raft-snapshot-agent-bug.md)
   - Cover: [002-raft-snapshot-agent-bug-cover.jpg](002-raft-snapshot-agent-bug-cover.jpg)
