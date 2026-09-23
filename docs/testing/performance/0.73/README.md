@@ -33,6 +33,11 @@ lanes, mixed-runtime weights and evidence invariants. It intentionally remains i
 stable rates and measurement windows marked `unmeasured`; candidate measurement is forbidden until
 baseline-only calibration and production-instrumentation overhead evidence freeze `I73`.
 
+`instrumentation-overhead.toml` freezes the off-versus-production design and inherits the 2%
+goodput and 3% CPU/request and p99 regression ceilings. Profile mode remains classification-only.
+Allocation and RSS limits are deliberately unmeasured blockers: baseline-only evidence must freeze
+them before five admitted qualification pairs can authorize `I73`.
+
 Validate a generated receipt:
 
 ```text

@@ -12,6 +12,8 @@ const EXAMPLE_RECEIPT: &str = "docs/testing/performance/0.73/local-screening-rec
 const BASELINE_IDENTITIES: &str = "docs/testing/performance/0.73/baseline-identities.toml";
 const POST_TAG_DELTA: &str = "docs/testing/performance/0.73/post-tag-delta.toml";
 const SCENARIO_MATRIX: &str = "docs/testing/performance/0.73/scenario-matrix.toml";
+const INSTRUMENTATION_OVERHEAD: &str =
+    "docs/testing/performance/0.73/instrumentation-overhead.toml";
 const RELEASE: &str = "0.73";
 const PROFILE: &str = "local-screening-073-v1";
 const ENVIRONMENT_CLASS: &str = "local_screening";
@@ -40,10 +42,13 @@ pub fn check_at_root(
         toml::from_str(&fs::read_to_string(root.join(BASELINE_IDENTITIES))?)?;
     let delta: TomlValue = toml::from_str(&fs::read_to_string(root.join(POST_TAG_DELTA))?)?;
     let matrix: TomlValue = toml::from_str(&fs::read_to_string(root.join(SCENARIO_MATRIX))?)?;
+    let overhead: TomlValue =
+        toml::from_str(&fs::read_to_string(root.join(INSTRUMENTATION_OVERHEAD))?)?;
     let mut problems = check_contract(&contract, release);
     problems.extend(check_baseline_identities(root, &identities, release)?);
     problems.extend(check_post_tag_delta(root, &delta, release)?);
     problems.extend(check_scenario_matrix(&matrix, release));
+    problems.extend(check_instrumentation_overhead(&overhead, release));
     problems.extend(check_schema(
         &schema,
         &example,
@@ -98,6 +103,7 @@ pub fn check_contract(root: &TomlValue, release: &str) -> Vec<String> {
         ("baseline_identities", BASELINE_IDENTITIES),
         ("post_tag_delta", POST_TAG_DELTA),
         ("scenario_matrix", SCENARIO_MATRIX),
+        ("instrumentation_overhead", INSTRUMENTATION_OVERHEAD),
     ] {
         if text(root, field) != Some(expected) {
             problems.push(format!("local screening {field} must be {expected}"));
@@ -174,6 +180,92 @@ pub fn check_contract(root: &TomlValue, release: &str) -> Vec<String> {
     .collect();
     if outcomes != expected {
         problems.push("local screening outcome accounting is incomplete".to_owned());
+    }
+    problems
+}
+
+pub fn check_instrumentation_overhead(value: &TomlValue, release: &str) -> Vec<String> {
+    let mut problems = Vec::new();
+    if integer(value, "schema_version") != Some(1) || text(value, "release") != Some(release) {
+        problems.push("instrumentation overhead schema/release mismatch".to_owned());
+        return problems;
+    }
+    if text(value, "contract_id") != Some("instrumentation-overhead-073-v1")
+        || text(value, "state") != Some("pilot")
+        || boolean(value, "i73_freeze_allowed") != Some(false)
+        || boolean(value, "candidate_data_allowed") != Some(false)
+    {
+        problems.push("instrumentation overhead must remain a candidate-blocking pilot".to_owned());
+    }
+    if text(value, "comparison") != Some("off_vs_production")
+        || text(value, "classification_only_mode") != Some("profile")
+    {
+        problems.push(
+            "instrumentation overhead must compare off/production and isolate profile".to_owned(),
+        );
+    }
+    for field in [
+        "same_source_required",
+        "same_binary_required",
+        "same_toolchain_required",
+        "same_host_required",
+        "same_scenario_required",
+        "same_trace_required",
+        "counterbalanced_order_required",
+        "independent_processes_required",
+        "complete_outcome_accounting_required",
+        "raw_series_required",
+        "failed_attempts_preserved",
+    ] {
+        if boolean(value, field) != Some(true) {
+            problems.push(format!("instrumentation overhead requires {field}=true"));
+        }
+    }
+    if integer(value, "minimum_screening_pairs").is_none_or(|count| count < 3)
+        || integer(value, "minimum_qualification_pairs").is_none_or(|count| count < 5)
+        || float(value, "throughput_regression_limit") != Some(0.02)
+        || float(value, "cpu_per_request_regression_limit") != Some(0.03)
+        || float(value, "p99_regression_limit") != Some(0.03)
+        || integer(value, "unexpected_failures_allowed") != Some(0)
+    {
+        problems.push("instrumentation overhead weakens inherited regression limits".to_owned());
+    }
+    if text(value, "allocation_regression_limit_state") != Some("unmeasured")
+        || text(value, "rss_delta_limit_state") != Some("unmeasured")
+    {
+        problems.push(
+            "allocation/RSS limits must remain unmeasured until baseline-only evidence".to_owned(),
+        );
+    }
+    let metrics: BTreeSet<_> = string_array(value.get("required_metrics"))
+        .into_iter()
+        .collect();
+    for metric in [
+        "goodput",
+        "cpu_per_request",
+        "p99",
+        "allocations_per_request",
+        "allocated_bytes_per_request",
+        "rss_delta_bytes",
+    ] {
+        if !metrics.contains(metric) {
+            problems.push(format!(
+                "instrumentation overhead omits required metric {metric}"
+            ));
+        }
+    }
+    let workloads: BTreeSet<_> = string_array(value.get("required_workloads"))
+        .into_iter()
+        .collect();
+    for workload in ["cold", "small-hot", "tag-heavy", "hc2-1000", "reset"] {
+        if !workloads.contains(workload) {
+            problems.push(format!(
+                "instrumentation overhead omits workload {workload}"
+            ));
+        }
+    }
+    if string_array(value.get("blocking_before_i73")).len() < 5 {
+        problems.push("instrumentation overhead does not enumerate all I73 blockers".to_owned());
     }
     problems
 }

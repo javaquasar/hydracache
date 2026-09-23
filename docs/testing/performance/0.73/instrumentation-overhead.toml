@@ -1,0 +1,52 @@
+schema_version = 1
+release = "0.73"
+contract_id = "instrumentation-overhead-073-v1"
+state = "pilot"
+i73_freeze_allowed = false
+candidate_data_allowed = false
+comparison = "off_vs_production"
+classification_only_mode = "profile"
+same_source_required = true
+same_binary_required = true
+same_toolchain_required = true
+same_host_required = true
+same_scenario_required = true
+same_trace_required = true
+counterbalanced_order_required = true
+independent_processes_required = true
+minimum_screening_pairs = 3
+minimum_qualification_pairs = 5
+throughput_regression_limit = 0.02
+cpu_per_request_regression_limit = 0.03
+p99_regression_limit = 0.03
+allocation_regression_limit_state = "unmeasured"
+rss_delta_limit_state = "unmeasured"
+unexpected_failures_allowed = 0
+complete_outcome_accounting_required = true
+raw_series_required = true
+failed_attempts_preserved = true
+
+required_metrics = [
+  "goodput",
+  "cpu_per_request",
+  "p99",
+  "allocations_per_request",
+  "allocated_bytes_per_request",
+  "rss_delta_bytes"
+]
+
+required_workloads = [
+  "cold",
+  "small-hot",
+  "tag-heavy",
+  "hc2-1000",
+  "reset"
+]
+
+blocking_before_i73 = [
+  "freeze allocation regression limit from baseline-only evidence",
+  "freeze RSS delta limit from baseline-only evidence",
+  "freeze measurement windows in scenario-matrix.toml",
+  "freeze stable offered rates in scenario-matrix.toml",
+  "retain at least five admitted off/production counterbalanced pairs"
+]

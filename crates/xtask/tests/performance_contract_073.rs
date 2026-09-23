@@ -194,3 +194,25 @@ fn scenario_matrix_rejects_reweighted_mixed_workload() {
         .iter()
         .any(|problem| problem.contains("do not total 100%")));
 }
+
+#[test]
+fn instrumentation_overhead_rejects_weakened_limits() {
+    let mut value = manifest("instrumentation-overhead.toml");
+    value["throughput_regression_limit"] = TomlValue::Float(0.05);
+    value["minimum_qualification_pairs"] = TomlValue::Integer(2);
+    let problems = xtask::performance_contract::check_instrumentation_overhead(&value, "0.73");
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("weakens inherited regression limits")));
+}
+
+#[test]
+fn instrumentation_overhead_cannot_freeze_i73_with_unmeasured_limits() {
+    let mut value = manifest("instrumentation-overhead.toml");
+    value["state"] = TomlValue::String("qualified".to_owned());
+    value["i73_freeze_allowed"] = TomlValue::Boolean(true);
+    let problems = xtask::performance_contract::check_instrumentation_overhead(&value, "0.73");
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("candidate-blocking pilot")));
+}
