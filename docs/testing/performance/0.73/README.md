@@ -34,6 +34,13 @@ Validate a generated receipt:
 cargo xtask performance-contract-check --release 0.73 --receipt target/performance-evidence/0.73/local/<attempt>/receipt.json
 ```
 
+Generate that receipt with `cargo xtask performance-local-receipt`. The command takes the context,
+prebuilt binary, frozen scenario, raw-series and outcome JSON paths plus the pair metadata shown by
+`cargo xtask --help`; it hashes all file inputs and refuses schema or accounting violations before
+writing the receipt. This keeps manual hashes and copied host/source identities out of the workflow.
+`local-screening-outcomes.example.json` provides the required accounting shape for runner adapters;
+real attempts replace its counts and retain every non-success outcome.
+
 Every receipt binds the exact source, prebuilt binary, scenario, host fingerprint, raw series,
 instrumentation mode, pair order, and complete operation outcomes. Failed and invalidated attempts
 remain append-only. Local receipts always carry `promotable: false` and

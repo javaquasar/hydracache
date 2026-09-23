@@ -13,7 +13,7 @@ const ENVIRONMENT_CLASS: &str = "local_screening";
 const CONTEXT_SCHEMA: &str = "docs/testing/performance/0.73/local-screening-context-v1.schema.json";
 
 pub fn run_context(args: Vec<String>) -> Result<(), Box<dyn Error>> {
-    let options = Options::parse(args)?;
+    let options = ContextOptions::parse(args)?;
     if options.release != RELEASE {
         return Err(format!("unsupported local performance release {}", options.release).into());
     }
@@ -47,6 +47,68 @@ pub fn run_context(args: Vec<String>) -> Result<(), Box<dyn Error>> {
     fs::write(&output, serde_json::to_vec_pretty(&context)?)?;
     println!(
         "performance-local-context: OK ({}, non-promotable)",
+        output.display()
+    );
+    Ok(())
+}
+
+pub fn run_receipt(args: Vec<String>) -> Result<(), Box<dyn Error>> {
+    let options = ReceiptOptions::parse(args)?;
+    if options.release != RELEASE {
+        return Err(format!("unsupported local performance release {}", options.release).into());
+    }
+    let context_path = resolve(&options.root, &options.context);
+    let context: JsonValue = serde_json::from_slice(&fs::read(&context_path)?)?;
+    let context_problems = check_context_at_root(&options.root, &context)?;
+    if !context_problems.is_empty() {
+        return Err(format!(
+            "invalid local context:\n- {}",
+            context_problems.join("\n- ")
+        )
+        .into());
+    }
+    let outcomes_path = resolve(&options.root, &options.outcomes);
+    let outcomes: JsonValue = serde_json::from_slice(&fs::read(&outcomes_path)?)?;
+    let receipt = json!({
+        "schema_version": 1,
+        "release": RELEASE,
+        "profile_id": PROFILE,
+        "attempt_id": options.attempt_id,
+        "source_sha": context.pointer("/source/sha").and_then(JsonValue::as_str).unwrap_or_default(),
+        "dirty_worktree": context.pointer("/source/dirty_worktree").and_then(JsonValue::as_bool).unwrap_or(true),
+        "binary_sha256": digest_file(&resolve(&options.root, &options.binary))?,
+        "scenario_sha256": digest_file(&resolve(&options.root, &options.scenario))?,
+        "host_fingerprint_sha256": context.get("host_fingerprint_sha256").and_then(JsonValue::as_str).unwrap_or_default(),
+        "raw_series_sha256": digest_file(&resolve(&options.root, &options.raw_series))?,
+        "environment_class": ENVIRONMENT_CLASS,
+        "promotable": false,
+        "numerical_claim_eligible": false,
+        "non_promotion_reason": "Local screening can reject a candidate but cannot establish a host-qualified numerical release claim.",
+        "instrumentation_mode": options.instrumentation_mode,
+        "run_order_seed": options.run_order_seed,
+        "pair_index": options.pair_index,
+        "block_order": options.block_order,
+        "candidate_role": options.candidate_role,
+        "candidate_id": options.candidate_id,
+        "started_at_utc": options.started_at_utc,
+        "result": options.result,
+        "outcomes": outcomes
+    });
+    let problems = crate::performance_contract::check_receipt_at_root(&options.root, &receipt)?;
+    if !problems.is_empty() {
+        return Err(format!(
+            "performance-local-receipt refused invalid output:\n- {}",
+            problems.join("\n- ")
+        )
+        .into());
+    }
+    let output = resolve(&options.root, &options.output);
+    if let Some(parent) = output.parent() {
+        fs::create_dir_all(parent)?;
+    }
+    fs::write(&output, serde_json::to_vec_pretty(&receipt)?)?;
+    println!(
+        "performance-local-receipt: OK ({}, non-promotable)",
         output.display()
     );
     Ok(())
@@ -188,8 +250,24 @@ fn observed_cpu_model() -> Option<String> {
 }
 
 fn digest_text(value: &str) -> String {
-    let digest = Sha256::digest(value.as_bytes());
+    digest_bytes(value.as_bytes())
+}
+
+fn digest_file(path: &Path) -> Result<String, Box<dyn Error>> {
+    Ok(digest_bytes(&fs::read(path)?))
+}
+
+fn digest_bytes(value: &[u8]) -> String {
+    let digest = Sha256::digest(value);
     digest.iter().map(|byte| format!("{byte:02x}")).collect()
+}
+
+fn resolve(root: &Path, path: &Path) -> PathBuf {
+    if path.is_absolute() {
+        path.to_owned()
+    } else {
+        root.join(path)
+    }
 }
 
 fn command_text(root: &Path, program: &str, args: &[&str]) -> Result<String, Box<dyn Error>> {
@@ -208,13 +286,13 @@ fn command_text(root: &Path, program: &str, args: &[&str]) -> Result<String, Box
     Ok(String::from_utf8(output.stdout)?.trim().to_owned())
 }
 
-struct Options {
+struct ContextOptions {
     root: PathBuf,
     release: String,
     output: Option<PathBuf>,
 }
 
-impl Options {
+impl ContextOptions {
     fn parse(args: Vec<String>) -> Result<Self, Box<dyn Error>> {
         let mut root = crate::doc_check::find_repo_root()?;
         let mut release = None;
@@ -238,6 +316,94 @@ impl Options {
             root,
             release: release.ok_or("performance-local-context requires --release")?,
             output,
+        })
+    }
+}
+
+struct ReceiptOptions {
+    root: PathBuf,
+    release: String,
+    context: PathBuf,
+    binary: PathBuf,
+    scenario: PathBuf,
+    raw_series: PathBuf,
+    outcomes: PathBuf,
+    output: PathBuf,
+    attempt_id: String,
+    instrumentation_mode: String,
+    run_order_seed: u64,
+    pair_index: u64,
+    block_order: String,
+    candidate_role: String,
+    candidate_id: String,
+    started_at_utc: String,
+    result: String,
+}
+
+impl ReceiptOptions {
+    fn parse(args: Vec<String>) -> Result<Self, Box<dyn Error>> {
+        let mut root = crate::doc_check::find_repo_root()?;
+        let mut values = std::collections::BTreeMap::new();
+        let mut args = args.into_iter();
+        while let Some(arg) = args.next() {
+            if arg == "--root" {
+                root = PathBuf::from(args.next().ok_or("--root requires a path")?);
+            } else if let Some(name) = arg.strip_prefix("--") {
+                values.insert(
+                    name.to_owned(),
+                    args.next()
+                        .ok_or_else(|| format!("{arg} requires a value"))?,
+                );
+            } else {
+                return Err(format!("unsupported performance receipt argument: {arg}").into());
+            }
+        }
+        let mut take = |name: &str| {
+            values
+                .remove(name)
+                .ok_or_else(|| format!("performance-local-receipt requires --{name}"))
+        };
+        let release = take("release")?;
+        let context = PathBuf::from(take("context")?);
+        let binary = PathBuf::from(take("binary")?);
+        let scenario = PathBuf::from(take("scenario")?);
+        let raw_series = PathBuf::from(take("raw-series")?);
+        let outcomes = PathBuf::from(take("outcomes")?);
+        let output = PathBuf::from(take("output")?);
+        let attempt_id = take("attempt-id")?;
+        let instrumentation_mode = take("instrumentation-mode")?;
+        let run_order_seed = take("run-order-seed")?.parse()?;
+        let pair_index = take("pair-index")?.parse()?;
+        let block_order = take("block-order")?;
+        let candidate_role = take("candidate-role")?;
+        let candidate_id = take("candidate-id")?;
+        let started_at_utc = take("started-at-utc")?;
+        let result = take("result")?;
+        if !values.is_empty() {
+            return Err(format!(
+                "unsupported performance receipt arguments: {:?}",
+                values.keys()
+            )
+            .into());
+        }
+        Ok(Self {
+            root,
+            release,
+            context,
+            binary,
+            scenario,
+            raw_series,
+            outcomes,
+            output,
+            attempt_id,
+            instrumentation_mode,
+            run_order_seed,
+            pair_index,
+            block_order,
+            candidate_role,
+            candidate_id,
+            started_at_utc,
+            result,
         })
     }
 }

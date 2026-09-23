@@ -64,6 +64,17 @@ pub fn check_at_root(
     Ok(problems)
 }
 
+pub fn check_receipt_at_root(
+    root: &Path,
+    value: &JsonValue,
+) -> Result<Vec<String>, Box<dyn Error>> {
+    let contract: TomlValue = toml::from_str(&fs::read_to_string(root.join(CONTRACT))?)?;
+    let schema: JsonValue = serde_json::from_slice(&fs::read(root.join(RECEIPT_SCHEMA))?)?;
+    let mut problems = check_schema(&schema, value, "generated local screening receipt");
+    problems.extend(check_receipt(value, &contract));
+    Ok(problems)
+}
+
 pub fn check_contract(root: &TomlValue, release: &str) -> Vec<String> {
     let mut problems = Vec::new();
     if release != RELEASE {
