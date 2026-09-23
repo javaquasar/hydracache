@@ -129,6 +129,25 @@ fn release_069_w1_canary_builds_its_maven_reactor_dependencies() {
 }
 
 #[test]
+fn release_069_borrowed_hazelcast_suite_builds_its_maven_reactor_dependencies() {
+    let source =
+        fs::read_to_string(root().join("crates/xtask/src/migration_conformance.rs")).unwrap();
+    let start = source
+        .find("\"hydracache-hazelcast-facade\",")
+        .expect("borrowed Hazelcast Maven module is missing");
+    let end = source[start..]
+        .find("let session_status")
+        .map(|offset| start + offset)
+        .expect("borrowed Hazelcast Maven invocation boundary is missing");
+    let invocation = &source[start..end];
+    assert!(
+        invocation.contains("\"-am\"")
+            && invocation.contains("\"-Dsurefire.failIfNoSpecifiedTests=false\""),
+        "borrowed Hazelcast Maven invocation must build reactor dependencies without failing on their intentionally unmatched test selectors"
+    );
+}
+
+#[test]
 fn release_069_ci_admission_is_independent_fail_loud_and_sha_bound() {
     let workflow = read_ci_workflow();
     for required in [

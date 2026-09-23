@@ -172,6 +172,8 @@ pub fn run_borrowed(args: Vec<String>) -> Result<(), Box<dyn Error>> {
             "sdks/java/pom.xml",
             "-pl",
             "hydracache-hazelcast-facade",
+            "-am",
+            "-Dsurefire.failIfNoSpecifiedTests=false",
             "-Dtest=BorrowedHazelcastExpectationsTest,BorrowedHazelcastLiveInteropTest",
             "test",
         ])

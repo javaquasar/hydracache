@@ -963,4 +963,13 @@ fn post_publish_consumer_tracks_the_current_public_api() {
     assert!(problems
         .iter()
         .any(|problem| problem.contains("fixture wiring")));
+
+    let missing_test_dependency = workflow.replacen("cargo add serde_json --dev", "", 1);
+    let problems = xtask::release_governance::post_publish_contract_problems(
+        &missing_test_dependency,
+        &fixture,
+    );
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("cargo add serde_json --dev")));
 }

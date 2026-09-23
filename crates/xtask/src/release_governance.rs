@@ -329,6 +329,7 @@ pub fn post_publish_contract_problems(workflow: &str, fixture: &str) -> Vec<Stri
         "actions/checkout@v5",
         "tests/post-publish-consumer/src/lib.rs",
         "hydracache-client-hc2",
+        "cargo add serde_json --dev",
     ] {
         if !workflow.contains(required) {
             problems.push(format!(
