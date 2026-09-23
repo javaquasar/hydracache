@@ -81,6 +81,13 @@ elapsed median moved +7.4%, but one fast production sample makes three short loc
 for a timing claim. The result attributes the large mutation/RSS cost to the listener and directs
 the next implementation step; it does not validate removal-counter correctness or unblock `I73`.
 
+The follow-up no-op-listener screen is retained in
+`local-overhead-listener-noop-5e101e69.toml`. Merely registering the backend listener reproduced
+fill allocation +23.9%, expire/delete allocation +25.8%, post-idle RSS +27.4%, and peak RSS +21.3%
+while steady reads remained unchanged. The callback is not free, but optimizing it alone cannot
+clear the blocker: the production redesign must avoid enabling Moka's listener-backed mutation path
+while preserving exact automatic-removal and tag-cleanup semantics.
+
 Validate a generated receipt:
 
 ```text

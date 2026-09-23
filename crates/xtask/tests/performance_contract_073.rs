@@ -238,3 +238,14 @@ fn local_overhead_isolation_cannot_claim_correctness_or_promotion() {
         .iter()
         .any(|problem| problem.contains("diagnostic and non-promotable")));
 }
+
+#[test]
+fn local_noop_listener_screen_cannot_claim_correctness_or_promotion() {
+    let mut value = manifest("local-overhead-listener-noop-5e101e69.toml");
+    value["counter_correctness_eligible"] = TomlValue::Boolean(true);
+    value["promotable"] = TomlValue::Boolean(true);
+    let problems = xtask::performance_contract::check_local_overhead_listener_noop(&value, "0.73");
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("diagnostic and non-promotable")));
+}

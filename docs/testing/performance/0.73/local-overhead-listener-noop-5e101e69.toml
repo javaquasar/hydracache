@@ -1,0 +1,63 @@
+schema_version = 1
+release = "0.73"
+evidence_class = "local_screening"
+profile_id = "instrumentation-overhead-listener-noop-073-v1"
+diagnostic_only = true
+counter_correctness_eligible = false
+promotable = false
+numerical_claim_eligible = false
+source_sha = "5e101e697a3dd931a2749db5615c0d6c8b8645cc"
+binary_sha256 = "86f3a9534825b263b1c043dabac244f81ab440591fc6e1de53d83b6bba242712"
+host_fingerprint_sha256 = "6925691d8e0ce5d649fb02ae0f4c91f7be667aede4d0d23f62b24ac8cd34cc65"
+screening_sha256 = "04bcb2e0ae64513697cb1ef06ed3b4d3490c94ddd01969079e2f288046fcb802"
+run_order_seed = 73005
+pair_count = 3
+counterbalanced = true
+failed_attempts = 0
+thresholds_status = "screening_only_unqualified"
+decision = "backend-notification-cost-attributed-local-diagnostic"
+isolated_factor = "registered backend eviction listener with an empty HydraCache callback"
+conclusion = "Listener registration alone reproduces most fill, mutation, and RSS overhead; callback-only optimization cannot clear the blocker."
+next_evidence = "Design exact removal and tag cleanup accounting without enabling Moka future-cache listener machinery on every mutation, then rerun correctness and full production screening."
+
+[[median_observations]]
+metric = "elapsed_ns"
+off = 35376200.0
+production = 37921500.0
+regression_fraction = 0.0719495028
+
+[[median_observations]]
+metric = "fill_allocated_bytes_per_operation"
+off = 2467.875
+production = 3057.5
+regression_fraction = 0.2389201236
+
+[[median_observations]]
+metric = "steady_allocated_bytes_per_operation"
+off = 315.1875
+production = 315.1875
+regression_fraction = 0.0
+
+[[median_observations]]
+metric = "expire_delete_allocated_bytes_per_operation"
+off = 2267.125
+production = 2852.125
+regression_fraction = 0.2580360589
+
+[[median_observations]]
+metric = "refill_allocated_bytes_per_operation"
+off = 1035.34375
+production = 1350.96875
+regression_fraction = 0.3048504422
+
+[[median_observations]]
+metric = "post_idle_rss_delta_bytes"
+off = 552960.0
+production = 704512.0
+regression_fraction = 0.2740740741
+
+[[median_observations]]
+metric = "peak_rss_delta_bytes"
+off = 671744.0
+production = 815104.0
+regression_fraction = 0.2134146341

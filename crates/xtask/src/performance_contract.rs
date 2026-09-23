@@ -18,6 +18,8 @@ const LOCAL_OVERHEAD_SCREENING: &str =
     "docs/testing/performance/0.73/local-overhead-screening-307b3500.toml";
 const LOCAL_OVERHEAD_ISOLATION: &str =
     "docs/testing/performance/0.73/local-overhead-isolation-5264d96c.toml";
+const LOCAL_OVERHEAD_LISTENER_NOOP: &str =
+    "docs/testing/performance/0.73/local-overhead-listener-noop-5e101e69.toml";
 const RELEASE: &str = "0.73";
 const PROFILE: &str = "local-screening-073-v1";
 const ENVIRONMENT_CLASS: &str = "local_screening";
@@ -52,6 +54,9 @@ pub fn check_at_root(
         toml::from_str(&fs::read_to_string(root.join(LOCAL_OVERHEAD_SCREENING))?)?;
     let local_isolation: TomlValue =
         toml::from_str(&fs::read_to_string(root.join(LOCAL_OVERHEAD_ISOLATION))?)?;
+    let local_listener_noop: TomlValue = toml::from_str(&fs::read_to_string(
+        root.join(LOCAL_OVERHEAD_LISTENER_NOOP),
+    )?)?;
     let mut problems = check_contract(&contract, release);
     problems.extend(check_baseline_identities(root, &identities, release)?);
     problems.extend(check_post_tag_delta(root, &delta, release)?);
@@ -59,6 +64,10 @@ pub fn check_at_root(
     problems.extend(check_instrumentation_overhead(&overhead, release));
     problems.extend(check_local_overhead_screening(&local_overhead, release));
     problems.extend(check_local_overhead_isolation(&local_isolation, release));
+    problems.extend(check_local_overhead_listener_noop(
+        &local_listener_noop,
+        release,
+    ));
     problems.extend(check_schema(
         &schema,
         &example,
@@ -116,6 +125,7 @@ pub fn check_contract(root: &TomlValue, release: &str) -> Vec<String> {
         ("instrumentation_overhead", INSTRUMENTATION_OVERHEAD),
         ("local_overhead_screening", LOCAL_OVERHEAD_SCREENING),
         ("local_overhead_isolation", LOCAL_OVERHEAD_ISOLATION),
+        ("local_overhead_listener_noop", LOCAL_OVERHEAD_LISTENER_NOOP),
     ] {
         if text(root, field) != Some(expected) {
             problems.push(format!("local screening {field} must be {expected}"));
@@ -345,6 +355,86 @@ pub fn check_local_overhead_isolation(value: &TomlValue, release: &str) -> Vec<S
     for field in ["isolated_factor", "conclusion", "next_evidence"] {
         if text(value, field).is_none_or(str::is_empty) {
             problems.push(format!("local overhead isolation requires {field}"));
+        }
+    }
+    problems
+}
+
+pub fn check_local_overhead_listener_noop(value: &TomlValue, release: &str) -> Vec<String> {
+    let mut problems = Vec::new();
+    if integer(value, "schema_version") != Some(1)
+        || text(value, "release") != Some(release)
+        || text(value, "evidence_class") != Some("local_screening")
+        || text(value, "profile_id") != Some("instrumentation-overhead-listener-noop-073-v1")
+    {
+        problems.push("local no-op listener screening identity mismatch".to_owned());
+    }
+    if boolean(value, "diagnostic_only") != Some(true)
+        || boolean(value, "counter_correctness_eligible") != Some(false)
+        || boolean(value, "promotable") != Some(false)
+        || boolean(value, "numerical_claim_eligible") != Some(false)
+        || text(value, "thresholds_status") != Some("screening_only_unqualified")
+        || text(value, "decision") != Some("backend-notification-cost-attributed-local-diagnostic")
+    {
+        problems.push(
+            "local no-op listener screening must remain diagnostic and non-promotable".to_owned(),
+        );
+    }
+    if text(value, "source_sha").is_none_or(|sha| !full_sha(sha)) {
+        problems.push("local no-op listener source_sha is not a full SHA".to_owned());
+    }
+    for field in [
+        "binary_sha256",
+        "host_fingerprint_sha256",
+        "screening_sha256",
+    ] {
+        if text(value, field).is_none_or(|digest| !sha256(digest)) {
+            problems.push(format!("local no-op listener {field} is not SHA-256"));
+        }
+    }
+    if integer(value, "pair_count").is_none_or(|count| count < 3)
+        || boolean(value, "counterbalanced") != Some(true)
+        || integer(value, "failed_attempts") != Some(0)
+    {
+        problems.push(
+            "local no-op listener screening lacks three successful counterbalanced pairs"
+                .to_owned(),
+        );
+    }
+    let observations = value
+        .get("median_observations")
+        .and_then(TomlValue::as_array)
+        .cloned()
+        .unwrap_or_default();
+    let metrics: BTreeSet<_> = observations
+        .iter()
+        .filter_map(|item| text(item, "metric"))
+        .collect();
+    for required in [
+        "elapsed_ns",
+        "fill_allocated_bytes_per_operation",
+        "steady_allocated_bytes_per_operation",
+        "expire_delete_allocated_bytes_per_operation",
+        "refill_allocated_bytes_per_operation",
+        "post_idle_rss_delta_bytes",
+        "peak_rss_delta_bytes",
+    ] {
+        if !metrics.contains(required) {
+            problems.push(format!("local no-op listener screening omits {required}"));
+        }
+    }
+    for item in &observations {
+        for field in ["off", "production", "regression_fraction"] {
+            if float(item, field).is_none_or(|number| !number.is_finite()) {
+                problems.push(format!(
+                    "local no-op listener screening has invalid {field}"
+                ));
+            }
+        }
+    }
+    for field in ["isolated_factor", "conclusion", "next_evidence"] {
+        if text(value, field).is_none_or(str::is_empty) {
+            problems.push(format!("local no-op listener screening requires {field}"));
         }
     }
     problems

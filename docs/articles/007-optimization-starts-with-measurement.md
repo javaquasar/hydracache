@@ -222,7 +222,7 @@ cache routes eviction notifications through listener/notifier infrastructure and
 callback as a boxed future. Our callback also clones shared state and awaits tag-index cleanup when
 it is invoked.
 
-The experiment does not yet split the cost among:
+The first ablation did not yet split the cost among:
 
 - enabling the backend removal-notification machinery;
 - constructing and scheduling boxed listener futures;
@@ -231,9 +231,35 @@ The experiment does not yet split the cost among:
 - computing and subtracting the retained-byte estimate;
 - draining background maintenance before a phase ends.
 
-But it rules out a much broader and less useful explanation such as “atomic counters are generally
-expensive.” Steady reads stayed unchanged in both experiments, and mutation overhead disappeared
-when the listener path was removed while the counters remained.
+We therefore added a second ablation. This time the backend listener remained registered, but its
+HydraCache callback was empty: no counter subtraction, no retained-byte calculation, no shared-state
+clones in our closure, and no tag-index cleanup. The result still reproduced most of the original
+cost:
+
+| Metric | Registered no-op listener: change |
+| --- | ---: |
+| Fill allocation per operation | +23.9% |
+| Steady-read allocation per operation | 0.0% |
+| Expire/delete allocation per operation | +25.8% |
+| Refill allocation per operation | +30.5% |
+| Post-idle RSS growth from cold | +27.4% |
+| Peak RSS growth from cold | +21.3% |
+
+The refill result moved more than in the earlier screen, so three local pairs are not enough to
+decompose that phase numerically across separate source identities. The broader pattern is clear:
+an empty callback did not make listener-enabled mutations cheap. Fill remained close to the
+original +26.8%, and the RSS deltas remained material.
+
+This narrows the owner again. Most of the blocker belongs to enabling the future cache's removal
+notification path, not to the business logic inside our callback. The callback still adds work,
+especially when a removal actually occurs, but a callback-only rewrite cannot remove the fill cost
+and is therefore not a sufficient production fix.
+
+Together, the two ablations rule out a much broader and less useful explanation such as “atomic
+counters are generally expensive.” Steady reads stayed unchanged in every experiment. Mutation
+overhead disappeared when listener registration was removed while counters remained, then returned
+when an empty listener was registered. That is a causal sequence, not merely a hot-looking source
+line.
 
 ### Why the ablation must not become the fix
 
