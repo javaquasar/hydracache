@@ -10,6 +10,7 @@ pub mod histogram;
 pub mod knee;
 pub mod memory_efficiency;
 pub mod metrics_honesty;
+pub mod notification_feasibility;
 pub mod overload;
 pub mod profile;
 pub mod rate;

@@ -2386,6 +2386,7 @@ dependencies = [
  "hydracache-client-transport-axum",
  "hydracache-redis-compat",
  "jsonschema",
+ "moka",
  "rcgen",
  "serde",
  "serde_json",

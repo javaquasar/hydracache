@@ -1,0 +1,198 @@
+use std::path::{Path, PathBuf};
+use std::time::Instant;
+
+use serde::Serialize;
+
+use crate::allocation::{measure_allocations, AllocationMeasurement};
+
+const OPERATIONS: u64 = 1_024;
+const CAPACITY: u64 = 16_384;
+
+#[derive(Debug, Clone, Serialize)]
+pub struct NotificationFeasibilityReceipt {
+    pub schema_version: &'static str,
+    pub release: &'static str,
+    pub experiment: &'static str,
+    pub operations_per_case: u64,
+    pub cases: Vec<NotificationFeasibilityCase>,
+    pub diagnostic_only: bool,
+    pub product_semantics_eligible: bool,
+    pub promotable: bool,
+}
+
+#[derive(Debug, Clone, Serialize)]
+pub struct NotificationFeasibilityCase {
+    pub backend: &'static str,
+    pub operation: &'static str,
+    pub listener: &'static str,
+    pub gross_allocated_bytes: u64,
+    pub gross_allocated_bytes_per_operation: f64,
+    pub elapsed_ns: u64,
+}
+
+pub async fn run_and_write(output: &Path) -> Result<NotificationFeasibilityReceipt, String> {
+    if output.exists() {
+        return Err(format!(
+            "append-only feasibility output already exists: {}",
+            output.display()
+        ));
+    }
+    if let Some(parent) = output.parent() {
+        std::fs::create_dir_all(parent).map_err(|error| error.to_string())?;
+    }
+
+    let cases = vec![
+        future_insert(false).await,
+        future_insert(true).await,
+        future_remove(false).await,
+        future_remove(true).await,
+        sync_insert(false).await,
+        sync_insert(true).await,
+        sync_remove(false).await,
+        sync_remove(true).await,
+    ];
+    let receipt = NotificationFeasibilityReceipt {
+        schema_version: "hydracache-notification-feasibility-073-v1",
+        release: "0.73",
+        experiment: "moka-future-vs-sync-noop-listener",
+        operations_per_case: OPERATIONS,
+        cases,
+        diagnostic_only: true,
+        product_semantics_eligible: false,
+        promotable: false,
+    };
+    std::fs::write(
+        output,
+        serde_json::to_vec_pretty(&receipt).map_err(|error| error.to_string())?,
+    )
+    .map_err(|error| error.to_string())?;
+    Ok(receipt)
+}
+
+async fn future_insert(listener: bool) -> NotificationFeasibilityCase {
+    let cache = future_cache(listener);
+    let started = Instant::now();
+    let (_, allocation) = measure_allocations(OPERATIONS, async {
+        for key in 0..OPERATIONS {
+            cache.insert(key, [key as u8; 64]).await;
+        }
+        cache.run_pending_tasks().await;
+    })
+    .await;
+    case("moka-future", "insert", listener, allocation, started)
+}
+
+async fn future_remove(listener: bool) -> NotificationFeasibilityCase {
+    let cache = future_cache(listener);
+    for key in 0..OPERATIONS {
+        cache.insert(key, [key as u8; 64]).await;
+    }
+    cache.run_pending_tasks().await;
+    let started = Instant::now();
+    let (_, allocation) = measure_allocations(OPERATIONS, async {
+        for key in 0..OPERATIONS {
+            cache.invalidate(&key).await;
+        }
+        cache.run_pending_tasks().await;
+    })
+    .await;
+    case("moka-future", "remove", listener, allocation, started)
+}
+
+async fn sync_insert(listener: bool) -> NotificationFeasibilityCase {
+    let cache = sync_cache(listener);
+    let started = Instant::now();
+    let (_, allocation) = measure_allocations(OPERATIONS, async {
+        for key in 0..OPERATIONS {
+            cache.insert(key, [key as u8; 64]);
+        }
+        cache.run_pending_tasks();
+    })
+    .await;
+    case("moka-sync", "insert", listener, allocation, started)
+}
+
+async fn sync_remove(listener: bool) -> NotificationFeasibilityCase {
+    let cache = sync_cache(listener);
+    for key in 0..OPERATIONS {
+        cache.insert(key, [key as u8; 64]);
+    }
+    cache.run_pending_tasks();
+    let started = Instant::now();
+    let (_, allocation) = measure_allocations(OPERATIONS, async {
+        for key in 0..OPERATIONS {
+            cache.invalidate(&key);
+        }
+        cache.run_pending_tasks();
+    })
+    .await;
+    case("moka-sync", "remove", listener, allocation, started)
+}
+
+fn future_cache(listener: bool) -> moka::future::Cache<u64, [u8; 64]> {
+    let builder = moka::future::Cache::builder().max_capacity(CAPACITY);
+    if listener {
+        builder.eviction_listener(|_key, _value, _cause| {}).build()
+    } else {
+        builder.build()
+    }
+}
+
+fn sync_cache(listener: bool) -> moka::sync::Cache<u64, [u8; 64]> {
+    let builder = moka::sync::Cache::builder().max_capacity(CAPACITY);
+    if listener {
+        builder.eviction_listener(|_key, _value, _cause| {}).build()
+    } else {
+        builder.build()
+    }
+}
+
+fn case(
+    backend: &'static str,
+    operation: &'static str,
+    listener: bool,
+    allocation: AllocationMeasurement,
+    started: Instant,
+) -> NotificationFeasibilityCase {
+    NotificationFeasibilityCase {
+        backend,
+        operation,
+        listener: if listener { "noop" } else { "off" },
+        gross_allocated_bytes: allocation.gross_allocated_bytes,
+        gross_allocated_bytes_per_operation: allocation.gross_allocated_bytes_per_operation,
+        elapsed_ns: u64::try_from(started.elapsed().as_nanos()).unwrap_or(u64::MAX),
+    }
+}
+
+pub fn default_output() -> PathBuf {
+    PathBuf::from("target/performance-evidence/0.73/local/notification-feasibility.json")
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[tokio::test]
+    async fn experiment_covers_both_backends_operations_and_listener_states() {
+        let cases = vec![
+            future_insert(false).await,
+            future_insert(true).await,
+            future_remove(false).await,
+            future_remove(true).await,
+            sync_insert(false).await,
+            sync_insert(true).await,
+            sync_remove(false).await,
+            sync_remove(true).await,
+        ];
+        assert_eq!(cases.len(), 8);
+        for backend in ["moka-future", "moka-sync"] {
+            for operation in ["insert", "remove"] {
+                for listener in ["off", "noop"] {
+                    assert!(cases.iter().any(|case| case.backend == backend
+                        && case.operation == operation
+                        && case.listener == listener));
+                }
+            }
+        }
+    }
+}

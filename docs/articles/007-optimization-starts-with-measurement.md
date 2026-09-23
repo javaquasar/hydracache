@@ -261,6 +261,42 @@ overhead disappeared when listener registration was removed while counters remai
 when an empty listener was registered. That is a causal sequence, not merely a hot-looking source
 line.
 
+Source inspection then explained the shape of the result. In the Moka future cache used by
+HydraCache, enabling a removal notifier also enables a per-key lock path. An insert attempts to
+acquire that optional lock before the backend knows whether it is creating or replacing an entry.
+Update and invalidation paths additionally protect listener delivery with shared boxed futures and
+cancellation guards. This is useful for immediate, ordered notification semantics, but it means an
+empty callback is not a free callback.
+
+We also checked the next Moka patch release rather than assuming an upgrade would solve the problem.
+Its public future-cache API still exposes synchronous and asynchronous eviction listeners, but no
+nonblocking post-removal observer. An opportunistic dependency bump therefore cannot be presented as
+the fix; an upstream seam, a reviewed backend change, or a different exact ownership design would
+each be a separate proposal.
+
+### The result changed governance, not just code direction
+
+At this point the responsible next action was not to start editing the production cache. We recorded
+the owner as D1-classified and explicitly left D2 unauthorized. The proposal registry now prevents
+candidate measurements and product mutation until four things exist:
+
+- a lab-only feasibility result for the viable backend designs;
+- an independent reviewer for the selected proposal;
+- allocation and RSS rejection limits frozen before candidate data;
+- exact correctness tests for every automatic and explicit removal path.
+
+We also froze the parts of the measurement method that were already inherited and defensible: at
+least five independently started admitted pairs, a 95% interval, Hodges-Lehmann paired estimates,
+moving-block bootstrap, Holm correction across primary claims, and the existing 2% goodput and 3%
+CPU/p99 regression guards. Allocation and RSS limits remained named blockers instead of being
+chosen from the numbers we had just observed.
+
+Finally, we created an unadmitted host-profile template. It describes the immutable and mutable host
+probes, serialized lease, CPU/NUMA/power policies, and pre/post calibration required for later
+qualification. It does not contain a convenient local-machine fingerprint and cannot authorize a
+release claim. This separation lets local work continue without allowing local evidence to promote
+itself.
+
 ### Why the ablation must not become the fix
 
 It would be easy to stop here and ship production counters without the listener. That would make the
