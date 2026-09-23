@@ -1,0 +1,60 @@
+schema_version = 1
+release = "0.73"
+contract_id = "notification-observer-requirements-073-v1"
+state = "d1-design-requirements"
+proposal_id = "P73-INSTRUMENTATION-NONBLOCKING-REMOVAL"
+prototype_scope = "lab-only"
+d2_authorized = false
+product_mutation_allowed = false
+candidate_measurements_allowed = false
+independent_review_status = "required-before-d2"
+selected_direction = "post-removal observer with version-conditional deferred cleanup"
+
+owner_split = [
+  "memory counters are decremented synchronously from immutable removed-entry metadata",
+  "tag membership cleanup is deferred and conditional on the removed entry version",
+  "an exact quiescent snapshot drains through an acknowledged observer epoch or fails closed",
+]
+
+callback_constraints = [
+  "must run only after a logical removal wins",
+  "must not await or return a future",
+  "must not acquire Moka's listener-enabled per-key lock",
+  "must not allocate a boxed future or spawn one task per removal",
+  "must perform only bounded atomic accounting and bounded notification publication",
+]
+
+ordering_invariants = [
+  "every inserted entry carries an immutable monotonically unique entry version",
+  "a removal notification identifies the exact removed entry version",
+  "deferred cleanup removes a tag membership only when its recorded version matches the removed version",
+  "a delayed removal for version N cannot remove membership or accounting owned by version N+1",
+  "duplicate delivery is detected and cannot decrement counters twice",
+]
+
+delivery_invariants = [
+  "explicit remove, replacement, invalidation, flush, TTL expiry, and capacity eviction are observable",
+  "no acknowledged removal may be silently dropped",
+  "bounded queue saturation marks the observer epoch dirty and makes exact snapshot fail closed",
+  "shutdown either drains all acknowledged removals or reports an incomplete epoch",
+  "panic or cancellation cannot convert incomplete accounting into an exact snapshot",
+]
+
+required_falsifiers = [
+  "delay cleanup for version N until after version N+1 is inserted under the same key",
+  "deliver the same removal twice",
+  "saturate the cleanup queue",
+  "cancel during removal publication and during drain",
+  "expire and capacity-evict tagged entries without an explicit HydraCache remove call",
+  "request an exact snapshot while the observer epoch is dirty or not fully acknowledged",
+]
+
+compatibility_invariants = [
+  "public cache configuration and default behavior remain unchanged",
+  "value-byte capacity, expiry, invalidation, tag cleanup, snapshot, and reconciliation semantics remain unchanged",
+  "the observer is not exposed as a general public event API",
+  "a Moka fork, patch, upgrade, or replacement remains a separately reviewed dependency delta",
+]
+
+prototype_exit = "A lab-only prototype must make every falsifier fail for the intended reason and demonstrate that the observer-disabled mutation path remains identical before independent review may authorize D2."
+next_evidence = "Build a lab-only observer adapter or upstream patch spike with version-conditional cleanup, then measure its isolated allocation cost without using the result as product or release evidence."

@@ -12,6 +12,7 @@ local_overhead_screening = "docs/testing/performance/0.73/local-overhead-screeni
 local_overhead_isolation = "docs/testing/performance/0.73/local-overhead-isolation-5264d96c.toml"
 local_overhead_listener_noop = "docs/testing/performance/0.73/local-overhead-listener-noop-5e101e69.toml"
 notification_feasibility = "docs/testing/performance/0.73/notification-feasibility-bf9f1382.toml"
+notification_observer_requirements = "docs/testing/performance/0.73/notification-observer-requirements.toml"
 proposal_registry = "docs/testing/performance/0.73/proposal-registry.toml"
 statistics_contract = "docs/testing/performance/0.73/statistics.toml"
 host_profile = "docs/testing/performance/0.73/host-profile.toml"

@@ -46,7 +46,7 @@ rejected_approaches = [
 ]
 
 candidate_options_requiring_d2 = [
-  "prototype an upstream-compatible nonblocking post-removal observer plus bounded cleanup/drain lifecycle",
+  "prototype an upstream-compatible nonblocking post-removal observer plus version-conditional bounded cleanup/drain lifecycle",
   "prototype a backend strategy that provides exact removal ownership without listener-enabled mutation locking",
 ]
 
@@ -66,4 +66,4 @@ required_regression_guards = [
   "allocation and RSS limits frozen before candidate data",
 ]
 
-next_evidence = "Choose an independent reviewer, evaluate an exact nonblocking removal-observation or replacement-ownership design in the lab, freeze the practical effect and allocation/RSS rejection limits, then authorize or reject D2 before any production-path candidate measurement."
+next_evidence = "Build the lab-only version-conditional observer spike defined by notification-observer-requirements.toml, choose an independent reviewer, freeze the practical effect and allocation/RSS rejection limits, then authorize or reject D2 before any production-path candidate measurement."

@@ -22,6 +22,8 @@ const LOCAL_OVERHEAD_LISTENER_NOOP: &str =
     "docs/testing/performance/0.73/local-overhead-listener-noop-5e101e69.toml";
 const NOTIFICATION_FEASIBILITY: &str =
     "docs/testing/performance/0.73/notification-feasibility-bf9f1382.toml";
+const NOTIFICATION_OBSERVER_REQUIREMENTS: &str =
+    "docs/testing/performance/0.73/notification-observer-requirements.toml";
 const PROPOSAL_REGISTRY: &str = "docs/testing/performance/0.73/proposal-registry.toml";
 const STATISTICS: &str = "docs/testing/performance/0.73/statistics.toml";
 const HOST_PROFILE: &str = "docs/testing/performance/0.73/host-profile.toml";
@@ -64,6 +66,9 @@ pub fn check_at_root(
     )?)?;
     let notification_feasibility: TomlValue =
         toml::from_str(&fs::read_to_string(root.join(NOTIFICATION_FEASIBILITY))?)?;
+    let notification_observer_requirements: TomlValue = toml::from_str(&fs::read_to_string(
+        root.join(NOTIFICATION_OBSERVER_REQUIREMENTS),
+    )?)?;
     let proposal_registry: TomlValue =
         toml::from_str(&fs::read_to_string(root.join(PROPOSAL_REGISTRY))?)?;
     let statistics: TomlValue = toml::from_str(&fs::read_to_string(root.join(STATISTICS))?)?;
@@ -81,6 +86,10 @@ pub fn check_at_root(
     ));
     problems.extend(check_notification_feasibility(
         &notification_feasibility,
+        release,
+    ));
+    problems.extend(check_notification_observer_requirements(
+        &notification_observer_requirements,
         release,
     ));
     problems.extend(check_proposal_registry(&proposal_registry, release));
@@ -145,6 +154,10 @@ pub fn check_contract(root: &TomlValue, release: &str) -> Vec<String> {
         ("local_overhead_isolation", LOCAL_OVERHEAD_ISOLATION),
         ("local_overhead_listener_noop", LOCAL_OVERHEAD_LISTENER_NOOP),
         ("notification_feasibility", NOTIFICATION_FEASIBILITY),
+        (
+            "notification_observer_requirements",
+            NOTIFICATION_OBSERVER_REQUIREMENTS,
+        ),
         ("proposal_registry", PROPOSAL_REGISTRY),
         ("statistics_contract", STATISTICS),
         ("host_profile", HOST_PROFILE),
@@ -533,6 +546,50 @@ pub fn check_notification_feasibility(value: &TomlValue, release: &str) -> Vec<S
     for field in ["conclusion", "next_evidence"] {
         if text(value, field).is_none_or(str::is_empty) {
             problems.push(format!("notification feasibility requires {field}"));
+        }
+    }
+    problems
+}
+
+pub fn check_notification_observer_requirements(value: &TomlValue, release: &str) -> Vec<String> {
+    let mut problems = Vec::new();
+    if integer(value, "schema_version") != Some(1)
+        || text(value, "release") != Some(release)
+        || text(value, "contract_id") != Some("notification-observer-requirements-073-v1")
+        || text(value, "state") != Some("d1-design-requirements")
+        || text(value, "proposal_id") != Some("P73-INSTRUMENTATION-NONBLOCKING-REMOVAL")
+        || text(value, "prototype_scope") != Some("lab-only")
+    {
+        problems.push("notification observer requirements identity mismatch".to_owned());
+    }
+    if boolean(value, "d2_authorized") != Some(false)
+        || boolean(value, "product_mutation_allowed") != Some(false)
+        || boolean(value, "candidate_measurements_allowed") != Some(false)
+        || text(value, "independent_review_status") != Some("required-before-d2")
+    {
+        problems.push(
+            "notification observer requirements must remain D1 lab-only before review".to_owned(),
+        );
+    }
+    for field in ["selected_direction", "prototype_exit", "next_evidence"] {
+        if text(value, field).is_none_or(str::is_empty) {
+            problems.push(format!(
+                "notification observer requirements require {field}"
+            ));
+        }
+    }
+    for (field, minimum) in [
+        ("owner_split", 3),
+        ("callback_constraints", 5),
+        ("ordering_invariants", 5),
+        ("delivery_invariants", 5),
+        ("required_falsifiers", 6),
+        ("compatibility_invariants", 4),
+    ] {
+        if string_array(value.get(field)).len() < minimum {
+            problems.push(format!(
+                "notification observer requirements have incomplete {field}"
+            ));
         }
     }
     problems

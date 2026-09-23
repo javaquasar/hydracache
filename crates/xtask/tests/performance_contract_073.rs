@@ -263,6 +263,22 @@ fn notification_feasibility_cannot_authorize_product_semantics_or_promotion() {
 }
 
 #[test]
+fn observer_requirements_cannot_skip_d2_or_drop_ordering_falsifiers() {
+    let mut value = manifest("notification-observer-requirements.toml");
+    value["d2_authorized"] = TomlValue::Boolean(true);
+    value["product_mutation_allowed"] = TomlValue::Boolean(true);
+    value["required_falsifiers"] = TomlValue::Array(Vec::new());
+    let problems =
+        xtask::performance_contract::check_notification_observer_requirements(&value, "0.73");
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("must remain D1 lab-only")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("incomplete required_falsifiers")));
+}
+
+#[test]
 fn pre_i73_proposal_cannot_skip_d2_review_and_threshold_freeze() {
     let mut value = manifest("proposal-registry.toml");
     value["proposals"][0]["state"] = TomlValue::String("d2_authorized".to_owned());

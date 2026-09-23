@@ -104,6 +104,15 @@ insert penalty and would change the backend's asynchronous semantics. The result
 migration as the instrumentation fix; it remains a diagnostic microprobe, not product evidence or
 authorization for D2.
 
+`notification-observer-requirements.toml` freezes the next lab step before implementation. A
+nonblocking callback is not sufficient by itself: delayed cleanup for an old entry must not remove
+tag membership belonging to a newer value under the same key. The prototype must therefore carry
+an immutable entry version, perform only bounded synchronous accounting in the observer, apply
+deferred tag cleanup conditionally by version, reject duplicate decrements, and make queue overflow,
+cancellation, or an incomplete drain fail an exact snapshot closed. The contract still forbids
+product mutation and candidate measurement until independent review and threshold freeze authorize
+D2.
+
 `statistics.toml` freezes the inherited paired estimator, confidence, Holm correction, failure
 retention, five-pair minimum, and throughput/CPU/p99 regression guards before candidate data. Its
 allocation and RSS limits remain explicit unfrozen blockers. `host-profile.toml` is a requirement
