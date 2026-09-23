@@ -11,6 +11,7 @@ const CONTEXT_SCHEMA: &str = "docs/testing/performance/0.73/local-screening-cont
 const EXAMPLE_RECEIPT: &str = "docs/testing/performance/0.73/local-screening-receipt.example.json";
 const BASELINE_IDENTITIES: &str = "docs/testing/performance/0.73/baseline-identities.toml";
 const POST_TAG_DELTA: &str = "docs/testing/performance/0.73/post-tag-delta.toml";
+const SCENARIO_MATRIX: &str = "docs/testing/performance/0.73/scenario-matrix.toml";
 const RELEASE: &str = "0.73";
 const PROFILE: &str = "local-screening-073-v1";
 const ENVIRONMENT_CLASS: &str = "local_screening";
@@ -38,9 +39,11 @@ pub fn check_at_root(
     let identities: TomlValue =
         toml::from_str(&fs::read_to_string(root.join(BASELINE_IDENTITIES))?)?;
     let delta: TomlValue = toml::from_str(&fs::read_to_string(root.join(POST_TAG_DELTA))?)?;
+    let matrix: TomlValue = toml::from_str(&fs::read_to_string(root.join(SCENARIO_MATRIX))?)?;
     let mut problems = check_contract(&contract, release);
     problems.extend(check_baseline_identities(root, &identities, release)?);
     problems.extend(check_post_tag_delta(root, &delta, release)?);
+    problems.extend(check_scenario_matrix(&matrix, release));
     problems.extend(check_schema(
         &schema,
         &example,
@@ -94,6 +97,7 @@ pub fn check_contract(root: &TomlValue, release: &str) -> Vec<String> {
         ("context_schema", CONTEXT_SCHEMA),
         ("baseline_identities", BASELINE_IDENTITIES),
         ("post_tag_delta", POST_TAG_DELTA),
+        ("scenario_matrix", SCENARIO_MATRIX),
     ] {
         if text(root, field) != Some(expected) {
             problems.push(format!("local screening {field} must be {expected}"));
@@ -170,6 +174,174 @@ pub fn check_contract(root: &TomlValue, release: &str) -> Vec<String> {
     .collect();
     if outcomes != expected {
         problems.push("local screening outcome accounting is incomplete".to_owned());
+    }
+    problems
+}
+
+pub fn check_scenario_matrix(value: &TomlValue, release: &str) -> Vec<String> {
+    let mut problems = Vec::new();
+    if integer(value, "schema_version") != Some(1) || text(value, "release") != Some(release) {
+        problems.push("scenario matrix schema/release mismatch".to_owned());
+        return problems;
+    }
+    if text(value, "matrix_id") != Some("performance-073-v1")
+        || text(value, "state") != Some("pilot")
+        || boolean(value, "candidate_measurement_allowed") != Some(false)
+    {
+        problems.push("scenario matrix must remain a candidate-blocking 0.73 pilot".to_owned());
+    }
+    if text(value, "baseline_identity") != Some("I73")
+        || text(value, "baseline_source_sha") != Some("")
+        || text(value, "external_baseline_identity") != Some("B72")
+    {
+        problems.push("scenario matrix must distinguish unfrozen I73 from external B72".to_owned());
+    }
+    for field in [
+        "calibration_state",
+        "measurement_windows_state",
+        "stable_rates_state",
+    ] {
+        if text(value, field) != Some("unmeasured") {
+            problems.push(format!(
+                "scenario matrix {field} must remain unmeasured before I73 freeze"
+            ));
+        }
+    }
+    if integer_array(value.get("concurrency_lanes")) != [1, 8, 32, 128]
+        || float_array(value.get("offered_load_fractions")) != [0.25, 0.60, 0.85]
+    {
+        problems.push("scenario matrix changed the frozen concurrency/load lanes".to_owned());
+    }
+    if float(value, "maximum_goodput_regression") != Some(0.02)
+        || integer(value, "unexpected_failures_allowed") != Some(0)
+        || integer(value, "minimum_screening_pairs").is_none_or(|value| value < 3)
+        || integer(value, "minimum_claim_pairs").is_none_or(|value| value < 5)
+    {
+        problems.push("scenario matrix weakened comparison admission".to_owned());
+    }
+    let expected_modes = ["off", "production", "profile"];
+    if string_array(value.get("instrumentation_modes")) != expected_modes
+        || text(value, "candidate_comparison_instrumentation_mode") != Some("production")
+        || boolean(value, "profile_samples_classification_only") != Some(true)
+    {
+        problems.push("scenario matrix conflates production and profile identities".to_owned());
+    }
+    for field in [
+        "counterbalanced_pair_order_required",
+        "raw_series_required",
+        "complete_outcome_accounting_required",
+    ] {
+        if boolean(value, field) != Some(true) {
+            problems.push(format!("scenario matrix requires {field}=true"));
+        }
+    }
+    let trace = value.get("trace").unwrap_or(&TomlValue::Boolean(false));
+    if text(trace, "format") != Some("length-framed-v1") {
+        problems.push("scenario matrix requires the length-framed-v1 request trace".to_owned());
+    }
+    for field in [
+        "byte_identical_between_roles",
+        "seed_frozen_before_candidate",
+        "pacing_frozen_before_candidate",
+        "warmup_frozen_before_candidate",
+        "duration_frozen_before_candidate",
+        "shutdown_and_drain_frozen_before_candidate",
+    ] {
+        if boolean(trace, field) != Some(true) {
+            problems.push(format!("scenario matrix trace requires {field}=true"));
+        }
+    }
+    let pilot = value.get("pilot").unwrap_or(&TomlValue::Boolean(false));
+    if text(pilot, "evidence_class") != Some("local_screening")
+        || boolean(pilot, "promotable") != Some(false)
+        || boolean(pilot, "numerical_claim_eligible") != Some(false)
+    {
+        problems
+            .push("scenario matrix pilot evidence must remain local and non-promotable".to_owned());
+    }
+    let mut surfaces = BTreeMap::new();
+    for surface in value
+        .get("surfaces")
+        .and_then(TomlValue::as_array)
+        .into_iter()
+        .flatten()
+    {
+        let work_item = text(surface, "work_item").unwrap_or_default();
+        if surfaces.insert(work_item, surface).is_some() {
+            problems.push(format!("scenario matrix duplicates {work_item}"));
+        }
+        if boolean(surface, "d1_analysis_required") != Some(true)
+            || boolean(surface, "local_screening_required") != Some(true)
+            || string_array(surface.get("protocols")).is_empty()
+            || string_array(surface.get("persistence_modes")).is_empty()
+            || string_array(surface.get("primary_observations")).is_empty()
+        {
+            problems.push(format!(
+                "scenario matrix has incomplete surface {work_item}"
+            ));
+        }
+    }
+    let expected_surfaces = [
+        ("W2", "shared-store-expiry", "A"),
+        ("W3", "tag-index", "B"),
+        ("W4", "resp-translation", "B"),
+        ("W5", "hc2-connection-state", "A"),
+        ("W6", "management-service-overhead", "A"),
+        ("W7", "durability-page-cache", "B"),
+        ("W8", "allocator", "B"),
+        ("W9", "retained-byte-admission", "C"),
+    ];
+    for (work_item, id, wave) in expected_surfaces {
+        match surfaces.get(work_item) {
+            Some(surface)
+                if text(surface, "id") == Some(id) && text(surface, "wave") == Some(wave) => {}
+            Some(_) => problems.push(format!(
+                "scenario matrix changes {work_item} identity or wave"
+            )),
+            None => problems.push(format!("scenario matrix omits mandatory {work_item}")),
+        }
+    }
+    if surfaces.get("W7").is_none_or(|surface| {
+        !string_array(surface.get("persistence_modes")).contains(&"all-supported-separate")
+    }) || surfaces.get("W9").is_none_or(|surface| {
+        !string_array(surface.get("persistence_modes")).contains(&"all-supported-separate")
+    }) {
+        problems.push("W7/W9 must keep supported persistence modes in separate cells".to_owned());
+    }
+    let mixed = value
+        .get("mixed_runtime")
+        .unwrap_or(&TomlValue::Boolean(false));
+    let weights = mixed
+        .get("weights_percent")
+        .unwrap_or(&TomlValue::Boolean(false));
+    let expected_weights = [
+        ("hc2_key_and_subscription", 35),
+        ("resp", 30),
+        ("hc1_native_client", 15),
+        ("direct_local_client_surface", 10),
+        ("tag_invalidation", 5),
+        ("ttl_expire_refill", 5),
+    ];
+    let weight_total: i64 = expected_weights
+        .iter()
+        .map(|(field, expected)| {
+            let actual = integer(weights, field).unwrap_or_default();
+            if actual != *expected {
+                problems.push(format!("mixed-runtime weight {field} must be {expected}%"));
+            }
+            actual
+        })
+        .sum();
+    if text(mixed, "id") != Some("mixed-runtime-073-v1")
+        || text(mixed, "state") != Some("unmeasured")
+        || integer(mixed, "management_reads_per_second") != Some(1)
+        || boolean(mixed, "persistence_modes_separate") != Some(true)
+        || boolean(mixed, "aggregate_cannot_hide_surface_regression") != Some(true)
+        || weight_total != 100
+    {
+        problems.push(
+            "mixed-runtime pilot contract is incomplete or weights do not total 100%".to_owned(),
+        );
     }
     problems
 }

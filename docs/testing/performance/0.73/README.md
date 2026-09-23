@@ -28,6 +28,11 @@ branch root `R73`, and the still-unfrozen `I73`. `post-tag-delta.toml` classifie
 entries. The current ledger has no product-runtime or production-instrumentation path, so none of the
 post-tag changes is silently treated as an optimization baseline.
 
+`scenario-matrix.toml` preregisters the complete W2-W9 surface and wave coverage, concurrency/load
+lanes, mixed-runtime weights and evidence invariants. It intentionally remains in `pilot` state with
+stable rates and measurement windows marked `unmeasured`; candidate measurement is forbidden until
+baseline-only calibration and production-instrumentation overhead evidence freeze `I73`.
+
 Validate a generated receipt:
 
 ```text

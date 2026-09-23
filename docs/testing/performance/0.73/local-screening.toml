@@ -6,6 +6,7 @@ receipt_schema = "docs/testing/performance/0.73/local-screening-receipt-v1.schem
 context_schema = "docs/testing/performance/0.73/local-screening-context-v1.schema.json"
 baseline_identities = "docs/testing/performance/0.73/baseline-identities.toml"
 post_tag_delta = "docs/testing/performance/0.73/post-tag-delta.toml"
+scenario_matrix = "docs/testing/performance/0.73/scenario-matrix.toml"
 promotable = false
 numerical_claims_allowed = false
 candidate_thresholds_allowed = false

@@ -153,3 +153,44 @@ fn post_tag_delta_rejects_an_unclassified_path() {
         .iter()
         .any(|problem| problem.contains("unclassified")));
 }
+
+#[test]
+fn scenario_matrix_requires_every_w2_through_w9_surface() {
+    let mut value = manifest("scenario-matrix.toml");
+    value["surfaces"]
+        .as_array_mut()
+        .expect("surface matrix")
+        .retain(|surface| surface["work_item"].as_str() != Some("W9"));
+    let problems = xtask::performance_contract::check_scenario_matrix(&value, "0.73");
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("omits mandatory W9")));
+}
+
+#[test]
+fn scenario_matrix_rejects_candidate_data_before_i73_freeze() {
+    let mut value = manifest("scenario-matrix.toml");
+    value["state"] = TomlValue::String("frozen".to_owned());
+    value["candidate_measurement_allowed"] = TomlValue::Boolean(true);
+    value["stable_rates_state"] = TomlValue::String("selected".to_owned());
+    let problems = xtask::performance_contract::check_scenario_matrix(&value, "0.73");
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("candidate-blocking")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("stable_rates_state")));
+}
+
+#[test]
+fn scenario_matrix_rejects_reweighted_mixed_workload() {
+    let mut value = manifest("scenario-matrix.toml");
+    value["mixed_runtime"]["weights_percent"]["resp"] = TomlValue::Integer(25);
+    let problems = xtask::performance_contract::check_scenario_matrix(&value, "0.73");
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("weight resp must be 30%")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("do not total 100%")));
+}

@@ -1,0 +1,133 @@
+schema_version = 1
+release = "0.73"
+matrix_id = "performance-073-v1"
+state = "pilot"
+candidate_measurement_allowed = false
+baseline_identity = "I73"
+baseline_source_sha = ""
+external_baseline_identity = "B72"
+instrumentation_modes = ["off", "production", "profile"]
+candidate_comparison_instrumentation_mode = "production"
+profile_samples_classification_only = true
+concurrency_lanes = [1, 8, 32, 128]
+offered_load_fractions = [0.25, 0.60, 0.85]
+maximum_goodput_regression = 0.02
+unexpected_failures_allowed = 0
+calibration_state = "unmeasured"
+measurement_windows_state = "unmeasured"
+stable_rates_state = "unmeasured"
+counterbalanced_pair_order_required = true
+minimum_screening_pairs = 3
+minimum_claim_pairs = 5
+raw_series_required = true
+complete_outcome_accounting_required = true
+
+[trace]
+format = "length-framed-v1"
+byte_identical_between_roles = true
+seed_frozen_before_candidate = true
+pacing_frozen_before_candidate = true
+warmup_frozen_before_candidate = true
+duration_frozen_before_candidate = true
+shutdown_and_drain_frozen_before_candidate = true
+
+[pilot]
+evidence_class = "local_screening"
+promotable = false
+numerical_claim_eligible = false
+purpose = "derive I73-only stable rates, validate adapters, and reject broken candidates"
+
+[mixed_runtime]
+id = "mixed-runtime-073-v1"
+state = "unmeasured"
+management_reads_per_second = 1
+persistence_modes_separate = true
+aggregate_cannot_hide_surface_regression = true
+
+[mixed_runtime.weights_percent]
+hc2_key_and_subscription = 35
+resp = 30
+hc1_native_client = 15
+direct_local_client_surface = 10
+tag_invalidation = 5
+ttl_expire_refill = 5
+
+[[surfaces]]
+work_item = "W2"
+id = "shared-store-expiry"
+wave = "A"
+d1_analysis_required = true
+local_screening_required = true
+protocols = ["direct", "hc1", "hc2", "resp"]
+persistence_modes = ["off"]
+primary_observations = ["live-bytes", "allocated-bytes", "copy-churn", "expiry-backlog", "goodput", "p99"]
+
+[[surfaces]]
+work_item = "W3"
+id = "tag-index"
+wave = "B"
+d1_analysis_required = true
+local_screening_required = true
+protocols = ["direct", "hc1", "hc2"]
+persistence_modes = ["off"]
+primary_observations = ["tag-index-bytes", "tag-copy-churn", "invalidation-cost", "goodput", "p99"]
+
+[[surfaces]]
+work_item = "W4"
+id = "resp-translation"
+wave = "B"
+d1_analysis_required = true
+local_screening_required = true
+protocols = ["resp"]
+persistence_modes = ["off"]
+primary_observations = ["translation-allocations", "buffer-capacity", "goodput", "p99"]
+
+[[surfaces]]
+work_item = "W5"
+id = "hc2-connection-state"
+wave = "A"
+d1_analysis_required = true
+local_screening_required = true
+protocols = ["hc2", "tls"]
+persistence_modes = ["off"]
+primary_observations = ["connection-bytes", "subscription-bytes", "mutex-wait", "goodput", "p99"]
+
+[[surfaces]]
+work_item = "W6"
+id = "management-service-overhead"
+wave = "A"
+d1_analysis_required = true
+local_screening_required = true
+protocols = ["management-http"]
+persistence_modes = ["off"]
+primary_observations = ["service-bytes", "history-bytes", "poll-cost", "goodput", "p99"]
+
+[[surfaces]]
+work_item = "W7"
+id = "durability-page-cache"
+wave = "B"
+d1_analysis_required = true
+local_screening_required = true
+protocols = ["direct", "hc1", "hc2", "resp"]
+persistence_modes = ["all-supported-separate"]
+primary_observations = ["anonymous-bytes", "file-bytes", "dirty-pages", "write-amplification", "goodput", "p99"]
+
+[[surfaces]]
+work_item = "W8"
+id = "allocator"
+wave = "B"
+d1_analysis_required = true
+local_screening_required = true
+protocols = ["direct", "hc2", "resp"]
+persistence_modes = ["off"]
+primary_observations = ["allocated", "active", "resident", "retained", "faults", "goodput", "p99"]
+
+[[surfaces]]
+work_item = "W9"
+id = "retained-byte-admission"
+wave = "C"
+d1_analysis_required = true
+local_screening_required = true
+protocols = ["direct", "hc1", "hc2", "resp"]
+persistence_modes = ["off", "all-supported-separate"]
+primary_observations = ["admitted-bytes", "rejections", "timeouts", "late", "goodput", "p99"]
