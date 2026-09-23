@@ -21,6 +21,8 @@ const LOCAL_OVERHEAD_ISOLATION: &str =
 const LOCAL_OVERHEAD_LISTENER_NOOP: &str =
     "docs/testing/performance/0.73/local-overhead-listener-noop-5e101e69.toml";
 const PROPOSAL_REGISTRY: &str = "docs/testing/performance/0.73/proposal-registry.toml";
+const STATISTICS: &str = "docs/testing/performance/0.73/statistics.toml";
+const HOST_PROFILE: &str = "docs/testing/performance/0.73/host-profile.toml";
 const RELEASE: &str = "0.73";
 const PROFILE: &str = "local-screening-073-v1";
 const ENVIRONMENT_CLASS: &str = "local_screening";
@@ -60,6 +62,8 @@ pub fn check_at_root(
     )?)?;
     let proposal_registry: TomlValue =
         toml::from_str(&fs::read_to_string(root.join(PROPOSAL_REGISTRY))?)?;
+    let statistics: TomlValue = toml::from_str(&fs::read_to_string(root.join(STATISTICS))?)?;
+    let host_profile: TomlValue = toml::from_str(&fs::read_to_string(root.join(HOST_PROFILE))?)?;
     let mut problems = check_contract(&contract, release);
     problems.extend(check_baseline_identities(root, &identities, release)?);
     problems.extend(check_post_tag_delta(root, &delta, release)?);
@@ -72,6 +76,8 @@ pub fn check_at_root(
         release,
     ));
     problems.extend(check_proposal_registry(&proposal_registry, release));
+    problems.extend(check_statistics(&statistics, release));
+    problems.extend(check_host_profile(&host_profile, release));
     problems.extend(check_schema(
         &schema,
         &example,
@@ -131,6 +137,8 @@ pub fn check_contract(root: &TomlValue, release: &str) -> Vec<String> {
         ("local_overhead_isolation", LOCAL_OVERHEAD_ISOLATION),
         ("local_overhead_listener_noop", LOCAL_OVERHEAD_LISTENER_NOOP),
         ("proposal_registry", PROPOSAL_REGISTRY),
+        ("statistics_contract", STATISTICS),
+        ("host_profile", HOST_PROFILE),
     ] {
         if text(root, field) != Some(expected) {
             problems.push(format!("local screening {field} must be {expected}"));
@@ -505,6 +513,120 @@ pub fn check_proposal_registry(value: &TomlValue, release: &str) -> Vec<String> 
     ] {
         if string_array(proposal.get(field)).len() < minimum {
             problems.push(format!("instrumentation proposal has incomplete {field}"));
+        }
+    }
+    problems
+}
+
+pub fn check_statistics(value: &TomlValue, release: &str) -> Vec<String> {
+    let mut problems = Vec::new();
+    if integer(value, "schema_version") != Some(1)
+        || text(value, "release") != Some(release)
+        || text(value, "contract_id") != Some("performance-statistics-073-v1")
+        || text(value, "state") != Some("baseline-only-unfrozen")
+    {
+        problems.push("0.73 statistics identity/state mismatch".to_owned());
+    }
+    if boolean(value, "baseline_only_derivation") != Some(true)
+        || boolean(value, "candidate_may_amend") != Some(false)
+        || boolean(value, "candidate_measurements_allowed") != Some(false)
+        || boolean(value, "silent_retry_allowed") != Some(false)
+    {
+        problems.push("statistics must remain baseline-only before I73".to_owned());
+    }
+    for (field, expected) in [
+        ("process_model", "independently-started"),
+        ("pairing_method", "counterbalanced-seeded-v1"),
+        ("multiple_comparison", "holm-bonferroni"),
+        ("paired_estimator", "hodges-lehmann-v1"),
+        ("slope_estimator", "theil-sen-v1"),
+        ("bootstrap_method", "moving-block-v1"),
+        ("allocation_limit_state", "unfrozen-blocker"),
+        ("rss_limit_state", "unfrozen-blocker"),
+    ] {
+        if text(value, field) != Some(expected) {
+            problems.push(format!("statistics {field} must be {expected}"));
+        }
+    }
+    if integer(value, "minimum_admitted_pairs").is_none_or(|count| count < 5)
+        || integer(value, "bootstrap_iterations").is_none_or(|count| count < 1000)
+        || integer(value, "bootstrap_block_samples").is_none_or(|count| count < 2)
+        || float(value, "confidence_level").is_none_or(|level| !(0.95..1.0).contains(&level))
+    {
+        problems.push("statistics weakens sample or confidence requirements".to_owned());
+    }
+    let budgets = value
+        .get("regression_budget")
+        .and_then(TomlValue::as_array)
+        .cloned()
+        .unwrap_or_default();
+    for (metric, maximum) in [
+        ("goodput_operations_per_second", 0.02),
+        ("cpu_seconds_per_operation", 0.03),
+        ("p99_latency_seconds", 0.03),
+    ] {
+        let valid = budgets.iter().any(|budget| {
+            text(budget, "metric") == Some(metric)
+                && float(budget, "maximum_relative_regression") == Some(maximum)
+        });
+        if !valid {
+            problems.push(format!("statistics weakens or omits {metric} budget"));
+        }
+    }
+    let invalidating = value
+        .get("invalidating_condition")
+        .and_then(TomlValue::as_array)
+        .map_or(0, Vec::len);
+    if invalidating < 4 {
+        problems.push("statistics requires all four invalidating conditions".to_owned());
+    }
+    problems
+}
+
+pub fn check_host_profile(value: &TomlValue, release: &str) -> Vec<String> {
+    let mut problems = Vec::new();
+    if integer(value, "schema_version") != Some(1)
+        || text(value, "release") != Some(release)
+        || text(value, "profile_id") != Some("performance-reference-073-v1")
+        || text(value, "state") != Some("template-unadmitted")
+    {
+        problems.push("0.73 host profile identity/state mismatch".to_owned());
+    }
+    for field in [
+        "eligible",
+        "candidate_measurements_allowed",
+        "identity_reuse_from_071_allowed",
+        "local_or_shared_runner_promotable",
+    ] {
+        if boolean(value, field) != Some(false) {
+            problems.push(format!("unadmitted host profile {field} must be false"));
+        }
+    }
+    for field in [
+        "dedicated_bare_metal_required",
+        "serialized_lease_required",
+        "pre_calibration_required",
+        "post_calibration_required",
+        "completed_bootstrap_admission_required",
+    ] {
+        if boolean(value, field) != Some(true) {
+            problems.push(format!("host profile {field} must be true"));
+        }
+    }
+    if float(value, "calibration_max_relative_spread")
+        .is_none_or(|spread| spread <= 0.0 || spread > 0.10)
+    {
+        problems.push("host profile calibration spread must be in (0, 0.10]".to_owned());
+    }
+    for (field, minimum) in [
+        ("immutable_probes", 8),
+        ("mutable_probes", 8),
+        ("required_tools", 6),
+        ("companion_platforms", 2),
+        ("admission_blockers", 5),
+    ] {
+        if string_array(value.get(field)).len() < minimum {
+            problems.push(format!("host profile has incomplete {field}"));
         }
     }
     problems

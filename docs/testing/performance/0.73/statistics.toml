@@ -1,0 +1,54 @@
+schema_version = 1
+release = "0.73"
+contract_id = "performance-statistics-073-v1"
+state = "baseline-only-unfrozen"
+baseline_only_derivation = true
+candidate_may_amend = false
+candidate_measurements_allowed = false
+process_model = "independently-started"
+pairing_method = "counterbalanced-seeded-v1"
+minimum_admitted_pairs = 5
+confidence_level = 0.95
+multiple_comparison = "holm-bonferroni"
+primary_decision_scope = "one-primary-claim-per-proposal"
+missing_row_policy = "fail-preflight-no-interpolation"
+failed_attempt_policy = "retain-and-exclude-from-estimator"
+silent_retry_allowed = false
+slope_estimator = "theil-sen-v1"
+paired_estimator = "hodges-lehmann-v1"
+bootstrap_method = "moving-block-v1"
+bootstrap_seed = 730073
+bootstrap_iterations = 10000
+bootstrap_block_samples = 12
+numeric_precision_decimals = 6
+host_eligibility = "admitted-dedicated-host-only"
+allocation_limit_state = "unfrozen-blocker"
+rss_limit_state = "unfrozen-blocker"
+
+[[regression_budget]]
+metric = "goodput_operations_per_second"
+maximum_relative_regression = 0.02
+
+[[regression_budget]]
+metric = "cpu_seconds_per_operation"
+maximum_relative_regression = 0.03
+
+[[regression_budget]]
+metric = "p99_latency_seconds"
+maximum_relative_regression = 0.03
+
+[[invalidating_condition]]
+id = "unexpected-operation-outcome"
+rule = "any unexpected error, timeout, rejection, late completion, or incomplete operation invalidates the pair"
+
+[[invalidating_condition]]
+id = "identity-drift"
+rule = "source, binary, scenario, host, allocator, instrumentation, cardinality, or run-order mismatch invalidates the pair"
+
+[[invalidating_condition]]
+id = "calibration-drift"
+rule = "failed pre/post calibration or mutable-host drift invalidates the pair"
+
+[[invalidating_condition]]
+id = "missing-final-checkpoint"
+rule = "missing drain, reconciliation, owner, or final-cardinality checkpoint invalidates the pair"

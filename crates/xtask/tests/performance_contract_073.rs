@@ -260,3 +260,31 @@ fn pre_i73_proposal_cannot_skip_d2_review_and_threshold_freeze() {
         .iter()
         .any(|problem| problem.contains("must remain D1-only")));
 }
+
+#[test]
+fn statistics_cannot_weaken_pairs_confidence_or_goodput_guard() {
+    let mut value = manifest("statistics.toml");
+    value["minimum_admitted_pairs"] = TomlValue::Integer(3);
+    value["regression_budget"][0]["maximum_relative_regression"] = TomlValue::Float(0.05);
+    let problems = xtask::performance_contract::check_statistics(&value, "0.73");
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("sample or confidence")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("goodput_operations_per_second")));
+}
+
+#[test]
+fn unadmitted_host_cannot_enable_candidate_measurement() {
+    let mut value = manifest("host-profile.toml");
+    value["candidate_measurements_allowed"] = TomlValue::Boolean(true);
+    value["eligible"] = TomlValue::Boolean(true);
+    let problems = xtask::performance_contract::check_host_profile(&value, "0.73");
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("candidate_measurements_allowed must be false")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("eligible must be false")));
+}

@@ -95,6 +95,12 @@ locking on insertion and shared boxed notification futures on removal/update pat
 measurement therefore remain forbidden until a lab-only feasibility spike, independent review, and
 pre-candidate allocation/RSS limits select or reject an exact alternative.
 
+`statistics.toml` freezes the inherited paired estimator, confidence, Holm correction, failure
+retention, five-pair minimum, and throughput/CPU/p99 regression guards before candidate data. Its
+allocation and RSS limits remain explicit unfrozen blockers. `host-profile.toml` is a requirement
+template, not an admitted machine: it forbids candidate measurement until a new dedicated-host
+fingerprint, serialized lease, pre/post calibration, and the unresolved instrumentation gates pass.
+
 Validate a generated receipt:
 
 ```text

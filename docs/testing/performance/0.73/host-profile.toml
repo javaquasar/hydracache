@@ -1,0 +1,61 @@
+schema_version = 1
+release = "0.73"
+profile_id = "performance-reference-073-v1"
+state = "template-unadmitted"
+eligible = false
+candidate_measurements_allowed = false
+protected_environment = "performance-reference-073"
+dedicated_bare_metal_required = true
+serialized_lease_required = true
+pre_calibration_required = true
+post_calibration_required = true
+calibration_max_relative_spread = 0.05
+completed_bootstrap_admission_required = true
+identity_reuse_from_071_allowed = false
+local_or_shared_runner_promotable = false
+
+required_platform = "linux-x86_64"
+companion_platforms = ["windows-x86_64", "linux-aarch64"]
+immutable_probes = [
+  "cpu-model",
+  "logical-cpus",
+  "physical-memory",
+  "kernel",
+  "microcode",
+  "rustc-vv",
+  "cargo-version",
+  "allocator",
+  "filesystem",
+]
+mutable_probes = [
+  "cpu-governor",
+  "cpu-frequency",
+  "transparent-huge-pages",
+  "swap",
+  "cgroup-limits",
+  "competing-load",
+  "temperature",
+  "free-memory",
+  "page-cache",
+]
+required_tools = [
+  "git",
+  "cargo",
+  "rustc",
+  "perf",
+  "pidstat",
+  "numactl",
+]
+cpu_binding_policy = "fixed-reviewed-cpu-set"
+numa_policy = "fixed-reviewed-node-policy"
+power_policy = "fixed-performance-policy"
+network_policy = "fixed-reviewed-loopback-or-dedicated-link"
+filesystem_policy = "fixed-mount-and-free-space-floor"
+
+admission_blockers = [
+  "no admitted host fingerprint",
+  "no serialized lease receipt",
+  "no pre/post calibration receipt",
+  "I73 instrumentation overhead is unresolved",
+  "allocation and RSS rejection limits are unfrozen",
+]
