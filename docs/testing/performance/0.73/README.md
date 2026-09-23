@@ -63,6 +63,11 @@ marked `diagnostic_only: true` and `counter_correctness_eligible: false`: remova
 intentionally incomplete, so the result may locate overhead but cannot prove correctness, freeze
 thresholds, or contribute to `I73`.
 
+The narrower `instrumentation-overhead-listener-noop-073-v1` diagnostic keeps the backend listener
+registered but replaces HydraCache's callback with a no-op. Comparing it with the counters-only
+profile separates backend notification cost from retained-byte accounting and async tag cleanup.
+It is likewise ineligible for correctness, thresholds, or promotion.
+
 The first three-pair release-build screen is retained in
 `local-overhead-screening-307b3500.toml`. It found no elapsed-time regression and no steady-read
 allocation delta, but it did find material mutation allocation and RSS deltas. The result is a

@@ -9,6 +9,7 @@ use std::process::Command;
 const RELEASE: &str = "0.73";
 const FULL_PROFILE: &str = "instrumentation-overhead-073-v1";
 const COUNTERS_ONLY_PROFILE: &str = "instrumentation-overhead-counters-only-073-v1";
+const LISTENER_NOOP_PROFILE: &str = "instrumentation-overhead-listener-noop-073-v1";
 
 pub fn run(args: Vec<String>) -> Result<(), Box<dyn Error>> {
     let options = Options::parse(args)?;
@@ -19,7 +20,7 @@ pub fn run(args: Vec<String>) -> Result<(), Box<dyn Error>> {
     }
     if !matches!(
         options.profile.as_str(),
-        FULL_PROFILE | COUNTERS_ONLY_PROFILE
+        FULL_PROFILE | COUNTERS_ONLY_PROFILE | LISTENER_NOOP_PROFILE
     ) {
         return Err(format!(
             "unsupported overhead screening profile: {}",
@@ -27,7 +28,16 @@ pub fn run(args: Vec<String>) -> Result<(), Box<dyn Error>> {
         )
         .into());
     }
-    let diagnostic_only = options.profile == COUNTERS_ONLY_PROFILE;
+    let diagnostic_only = options.profile != FULL_PROFILE;
+    let diagnostic_limitation = match options.profile.as_str() {
+        COUNTERS_ONLY_PROFILE => {
+            "counters-only diagnostics deliberately omit removal accounting and cannot support counter-correctness claims"
+        }
+        LISTENER_NOOP_PROFILE => {
+            "no-op-listener diagnostics retain backend notification machinery but deliberately omit removal accounting and tag cleanup"
+        }
+        _ => "full production instrumentation is required for counter-correctness claims",
+    };
     let context_path = resolve(&options.root, &options.context);
     let context: JsonValue = serde_json::from_slice(&fs::read(&context_path)?)?;
     let context_problems =
@@ -175,11 +185,7 @@ pub fn run(args: Vec<String>) -> Result<(), Box<dyn Error>> {
             "local debug or release screening cannot freeze I73 thresholds",
             "three local pairs validate collection and expose gross regressions only",
             "dedicated-host qualification still requires at least five admitted pairs",
-            if diagnostic_only {
-                "counters-only diagnostics deliberately omit removal accounting and cannot support counter-correctness claims"
-            } else {
-                "full production instrumentation is required for counter-correctness claims"
-            }
+            diagnostic_limitation
         ]
     });
     fs::write(

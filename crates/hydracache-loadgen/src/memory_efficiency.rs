@@ -12,6 +12,7 @@ use crate::allocation::{measure_allocations, AllocationMeasurement};
 
 const OVERHEAD_PROFILE_073: &str = "instrumentation-overhead-073-v1";
 const COUNTERS_ONLY_PROFILE_073: &str = "instrumentation-overhead-counters-only-073-v1";
+const LISTENER_NOOP_PROFILE_073: &str = "instrumentation-overhead-listener-noop-073-v1";
 
 pub const MEMORY_PHASES: [MemoryPhase; 8] = [
     MemoryPhase::Cold,
@@ -114,14 +115,20 @@ pub async fn run_and_write_memory_efficiency(
         .max_capacity(8 * 1024 * 1024)
         .memory_instrumentation_mode(instrumentation_mode);
     let counters_only = profile == COUNTERS_ONLY_PROFILE_073;
+    let listener_noop = profile == LISTENER_NOOP_PROFILE_073;
     if counters_only {
         builder = builder.instrumentation_lab_eviction_listener(false);
+    } else if listener_noop {
+        builder = builder.instrumentation_lab_noop_eviction_listener(true);
     }
     let cache = builder.build();
     eprintln!("hydracache-loadgen: initialized memory profile cache");
     let run_started = std::time::Instant::now();
     let mut timeline = Vec::with_capacity(MEMORY_PHASES.len());
-    let collect_resources = matches!(profile, OVERHEAD_PROFILE_073 | COUNTERS_ONLY_PROFILE_073);
+    let collect_resources = matches!(
+        profile,
+        OVERHEAD_PROFILE_073 | COUNTERS_ONLY_PROFILE_073 | LISTENER_NOOP_PROFILE_073
+    );
     let mut resource_series = Vec::with_capacity(MEMORY_PHASES.len());
     for (index, phase) in MEMORY_PHASES.into_iter().enumerate() {
         eprintln!("hydracache-loadgen: memory phase {}", phase.file_stem());
@@ -185,7 +192,7 @@ pub async fn run_and_write_memory_efficiency(
             "memory phase timeline",
         )?;
     }
-    if instrumentation_mode != MemoryInstrumentationMode::Off && !counters_only {
+    if instrumentation_mode != MemoryInstrumentationMode::Off && !counters_only && !listener_noop {
         cache
             .reconcile_memory_footprint()
             .await
@@ -235,14 +242,14 @@ pub async fn run_and_write_memory_efficiency(
         timeline: timeline_path,
         resource_series: resource_series_path,
         diagnostic_variant: collect_resources.then(|| {
-            if counters_only {
-                "production_counters_without_eviction_listener"
-            } else {
-                "full"
+            match profile {
+                COUNTERS_ONLY_PROFILE_073 => "production_counters_without_eviction_listener",
+                LISTENER_NOOP_PROFILE_073 => "registered_noop_eviction_listener",
+                _ => "full",
             }
             .to_owned()
         }),
-        counter_correctness_eligible: collect_resources.then_some(!counters_only),
+        counter_correctness_eligible: collect_resources.then_some(!counters_only && !listener_noop),
         promotable: false,
     };
     let receipt_bytes = serde_json::to_vec_pretty(&receipt)
