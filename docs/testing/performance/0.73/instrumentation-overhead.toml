@@ -1,6 +1,8 @@
 schema_version = 1
 release = "0.73"
 contract_id = "instrumentation-overhead-073-v1"
+measurement_profile = "instrumentation-overhead-073-v1"
+resource_phase_schema = "docs/testing/performance/0.73/resource-phase-v1.schema.json"
 state = "pilot"
 i73_freeze_allowed = false
 candidate_data_allowed = false

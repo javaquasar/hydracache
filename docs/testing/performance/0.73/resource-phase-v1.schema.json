@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://javaquasar.github.io/hydracache/schemas/resource-phase-073-v1.json",
+  "title": "HydraCache 0.73 local instrumentation resource phase",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version", "sequence", "phase", "operations",
+    "gross_allocated_bytes", "gross_allocated_bytes_per_operation",
+    "rss_bytes", "peak_rss_bytes", "process_memory_available",
+    "process_memory_unavailable_reason"
+  ],
+  "properties": {
+    "schema_version": { "const": "hydracache-performance-resource-phase-073-v1" },
+    "sequence": { "type": "integer", "minimum": 1, "maximum": 8 },
+    "phase": { "enum": ["cold", "fill", "steady", "expire_or_delete", "reset", "refill", "post_idle", "shutdown"] },
+    "operations": { "type": "integer", "minimum": 0 },
+    "gross_allocated_bytes": { "oneOf": [{ "type": "integer", "minimum": 0 }, { "type": "null" }] },
+    "gross_allocated_bytes_per_operation": { "oneOf": [{ "type": "number", "minimum": 0 }, { "type": "null" }] },
+    "rss_bytes": { "oneOf": [{ "type": "integer", "minimum": 1 }, { "type": "null" }] },
+    "peak_rss_bytes": { "oneOf": [{ "type": "integer", "minimum": 1 }, { "type": "null" }] },
+    "process_memory_available": { "type": "boolean" },
+    "process_memory_unavailable_reason": { "oneOf": [{ "type": "string", "minLength": 1 }, { "type": "null" }] }
+  }
+}

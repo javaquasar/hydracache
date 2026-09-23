@@ -191,6 +191,9 @@ pub fn check_instrumentation_overhead(value: &TomlValue, release: &str) -> Vec<S
         return problems;
     }
     if text(value, "contract_id") != Some("instrumentation-overhead-073-v1")
+        || text(value, "measurement_profile") != Some("instrumentation-overhead-073-v1")
+        || text(value, "resource_phase_schema")
+            != Some("docs/testing/performance/0.73/resource-phase-v1.schema.json")
         || text(value, "state") != Some("pilot")
         || boolean(value, "i73_freeze_allowed") != Some(false)
         || boolean(value, "candidate_data_allowed") != Some(false)

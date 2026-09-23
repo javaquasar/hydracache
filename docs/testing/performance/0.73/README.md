@@ -46,6 +46,9 @@ cargo run -p hydracache-loadgen --locked -- memory-efficiency --profile memory-e
 
 This pilot proves the mode adapters, ordered phase timeline and artifact writing only. Its debug-build
 elapsed time is not a stable rate, threshold, qualification pair, or input to an `I73` freeze.
+With profile `instrumentation-overhead-073-v1`, each phase also emits a schema-validated
+`resource-series.jsonl` containing gross allocation bytes per operation and self-process RSS/peak
+RSS. The legacy `memory-efficiency-v1` output shape remains unchanged.
 
 Validate a generated receipt:
 

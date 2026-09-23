@@ -8,6 +8,10 @@ use hydracache::{
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 
+use crate::allocation::{measure_allocations, AllocationMeasurement};
+
+const OVERHEAD_PROFILE_073: &str = "instrumentation-overhead-073-v1";
+
 pub const MEMORY_PHASES: [MemoryPhase; 8] = [
     MemoryPhase::Cold,
     MemoryPhase::Fill,
@@ -68,7 +72,23 @@ pub struct MemoryEfficiencyReceipt {
     pub phase_count: usize,
     pub elapsed_ns: u64,
     pub timeline: PathBuf,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub resource_series: Option<PathBuf>,
     pub promotable: bool,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct MemoryPhaseResourceRecord {
+    pub schema_version: String,
+    pub sequence: u64,
+    pub phase: MemoryPhase,
+    pub operations: u64,
+    pub gross_allocated_bytes: Option<u64>,
+    pub gross_allocated_bytes_per_operation: Option<f64>,
+    pub rss_bytes: Option<u64>,
+    pub peak_rss_bytes: Option<u64>,
+    pub process_memory_available: bool,
+    pub process_memory_unavailable_reason: Option<String>,
 }
 
 pub async fn run_and_write_memory_efficiency(
@@ -92,9 +112,20 @@ pub async fn run_and_write_memory_efficiency(
     eprintln!("hydracache-loadgen: initialized memory profile cache");
     let run_started = std::time::Instant::now();
     let mut timeline = Vec::with_capacity(MEMORY_PHASES.len());
+    let collect_resources = profile == OVERHEAD_PROFILE_073;
+    let mut resource_series = Vec::with_capacity(MEMORY_PHASES.len());
     for (index, phase) in MEMORY_PHASES.into_iter().enumerate() {
         eprintln!("hydracache-loadgen: memory phase {}", phase.file_stem());
-        run_phase_workload(&cache, phase).await?;
+        let operations = phase.operations();
+        let allocation = if collect_resources && operations > 0 {
+            let (result, measurement) =
+                measure_allocations(operations, run_phase_workload(&cache, phase)).await;
+            result?;
+            Some(measurement)
+        } else {
+            run_phase_workload(&cache, phase).await?;
+            None
+        };
         cache.diagnostics().await;
         let barrier = cache
             .memory_snapshot_barrier()
@@ -133,6 +164,9 @@ pub async fn run_and_write_memory_efficiency(
             telemetry_checkpoint: format!("memory.phase.{}", phase.file_stem()),
             provider_mark: format!("{provider}:{}", phase.file_stem()),
         });
+        if collect_resources {
+            resource_series.push(resource_record(index, phase, operations, allocation));
+        }
     }
     validate_timeline(&timeline)?;
     for record in &timeline {
@@ -158,6 +192,30 @@ pub async fn run_and_write_memory_efficiency(
         .join("\n")
         + "\n";
     write_bytes(&timeline_path, timeline_jsonl.as_bytes())?;
+    let resource_series_path = if collect_resources {
+        validate_resource_series(&resource_series)?;
+        for record in &resource_series {
+            validate_schema(
+                record,
+                include_str!(
+                    "../../../docs/testing/performance/0.73/resource-phase-v1.schema.json"
+                ),
+                "0.73 resource phase",
+            )?;
+        }
+        let path = output_dir.join("resource-series.jsonl");
+        let bytes = resource_series
+            .iter()
+            .map(serde_json::to_string)
+            .collect::<Result<Vec<_>, _>>()
+            .map_err(|error| format!("resource series serialization failed: {error}"))?
+            .join("\n")
+            + "\n";
+        write_bytes(&path, bytes.as_bytes())?;
+        Some(path)
+    } else {
+        None
+    };
     let receipt = MemoryEfficiencyReceipt {
         schema_version: "hydracache-memory-efficiency-receipt-v1".to_owned(),
         profile: profile.to_owned(),
@@ -166,12 +224,159 @@ pub async fn run_and_write_memory_efficiency(
         phase_count: timeline.len(),
         elapsed_ns: u64::try_from(run_started.elapsed().as_nanos()).unwrap_or(u64::MAX),
         timeline: timeline_path,
+        resource_series: resource_series_path,
         promotable: false,
     };
     let receipt_bytes = serde_json::to_vec_pretty(&receipt)
         .map_err(|error| format!("receipt serialization failed: {error}"))?;
     write_bytes(&output_dir.join("receipt.json"), &receipt_bytes)?;
     Ok(receipt)
+}
+
+impl MemoryPhase {
+    fn operations(self) -> u64 {
+        match self {
+            Self::Cold | Self::PostIdle => 0,
+            Self::Fill | Self::Steady => 128,
+            Self::ExpireOrDelete | Self::Refill => 64,
+            Self::Reset | Self::Shutdown => 1,
+        }
+    }
+}
+
+fn resource_record(
+    index: usize,
+    phase: MemoryPhase,
+    operations: u64,
+    allocation: Option<AllocationMeasurement>,
+) -> MemoryPhaseResourceRecord {
+    let process = process_memory();
+    MemoryPhaseResourceRecord {
+        schema_version: "hydracache-performance-resource-phase-073-v1".to_owned(),
+        sequence: (index + 1) as u64,
+        phase,
+        operations,
+        gross_allocated_bytes: allocation.map(|value| value.gross_allocated_bytes),
+        gross_allocated_bytes_per_operation: allocation
+            .map(|value| value.gross_allocated_bytes_per_operation),
+        rss_bytes: process.as_ref().ok().map(|value| value.0),
+        peak_rss_bytes: process.as_ref().ok().map(|value| value.1),
+        process_memory_available: process.is_ok(),
+        process_memory_unavailable_reason: process.err(),
+    }
+}
+
+fn validate_resource_series(records: &[MemoryPhaseResourceRecord]) -> Result<(), String> {
+    if records.len() != MEMORY_PHASES.len() {
+        return Err("resource series must contain every memory phase".to_owned());
+    }
+    for (index, (record, phase)) in records.iter().zip(MEMORY_PHASES).enumerate() {
+        if record.sequence != (index + 1) as u64 || record.phase != phase {
+            return Err("resource series phase is missing or reordered".to_owned());
+        }
+        if record.operations == 0
+            && (record.gross_allocated_bytes.is_some()
+                || record.gross_allocated_bytes_per_operation.is_some())
+        {
+            return Err("idle resource phase must not invent per-operation allocation".to_owned());
+        }
+        if record.operations > 0
+            && (record.gross_allocated_bytes.is_none()
+                || record.gross_allocated_bytes_per_operation.is_none())
+        {
+            return Err("active resource phase is missing allocation accounting".to_owned());
+        }
+        if record.process_memory_available
+            != (record.rss_bytes.is_some()
+                && record.peak_rss_bytes.is_some()
+                && record.process_memory_unavailable_reason.is_none())
+        {
+            return Err("resource series process-memory availability is inconsistent".to_owned());
+        }
+    }
+    Ok(())
+}
+
+#[cfg(target_os = "linux")]
+fn process_memory() -> Result<(u64, u64), String> {
+    let status = std::fs::read_to_string("/proc/self/status")
+        .map_err(|error| format!("cannot read /proc/self/status: {error}"))?;
+    let value = |name: &str| {
+        status.lines().find_map(|line| {
+            let rest = line.strip_prefix(name)?.trim();
+            let kib = rest.split_whitespace().next()?.parse::<u64>().ok()?;
+            kib.checked_mul(1024)
+        })
+    };
+    Ok((
+        value("VmRSS:").ok_or("VmRSS is unavailable")?,
+        value("VmHWM:").ok_or("VmHWM is unavailable")?,
+    ))
+}
+
+#[cfg(target_os = "windows")]
+fn process_memory() -> Result<(u64, u64), String> {
+    #[repr(C)]
+    struct ProcessMemoryCounters {
+        cb: u32,
+        page_fault_count: u32,
+        peak_working_set_size: usize,
+        working_set_size: usize,
+        quota_peak_paged_pool_usage: usize,
+        quota_paged_pool_usage: usize,
+        quota_peak_non_paged_pool_usage: usize,
+        quota_non_paged_pool_usage: usize,
+        pagefile_usage: usize,
+        peak_pagefile_usage: usize,
+    }
+    #[link(name = "kernel32")]
+    unsafe extern "system" {
+        fn GetCurrentProcess() -> isize;
+    }
+    #[link(name = "psapi")]
+    unsafe extern "system" {
+        fn GetProcessMemoryInfo(
+            process: isize,
+            counters: *mut ProcessMemoryCounters,
+            size: u32,
+        ) -> i32;
+    }
+    let mut counters = ProcessMemoryCounters {
+        cb: std::mem::size_of::<ProcessMemoryCounters>() as u32,
+        page_fault_count: 0,
+        peak_working_set_size: 0,
+        working_set_size: 0,
+        quota_peak_paged_pool_usage: 0,
+        quota_paged_pool_usage: 0,
+        quota_peak_non_paged_pool_usage: 0,
+        quota_non_paged_pool_usage: 0,
+        pagefile_usage: 0,
+        peak_pagefile_usage: 0,
+    };
+    // SAFETY: The pseudo-handle is valid for the current process and the
+    // writable structure has the exact size reported in its `cb` field.
+    let success = unsafe {
+        GetProcessMemoryInfo(
+            GetCurrentProcess(),
+            &mut counters,
+            std::mem::size_of::<ProcessMemoryCounters>() as u32,
+        )
+    };
+    if success == 0 {
+        return Err(format!(
+            "GetProcessMemoryInfo failed: {}",
+            std::io::Error::last_os_error()
+        ));
+    }
+    Ok((
+        counters.working_set_size as u64,
+        counters.peak_working_set_size as u64,
+    ))
+}
+
+#[cfg(not(any(target_os = "linux", target_os = "windows")))]
+fn process_memory() -> Result<(u64, u64), String> {
+    Err("process RSS probe is unsupported on this platform".to_owned())
 }
 
 fn parse_instrumentation_mode(value: &str) -> Result<MemoryInstrumentationMode, String> {
@@ -318,5 +523,32 @@ mod tests {
         let mut reordered = records;
         reordered.swap(1, 2);
         assert!(validate_timeline(&reordered).is_err());
+    }
+
+    #[test]
+    fn resource_series_requires_allocations_only_for_active_phases() {
+        let records = MEMORY_PHASES
+            .into_iter()
+            .enumerate()
+            .map(|(index, phase)| {
+                let operations = phase.operations();
+                MemoryPhaseResourceRecord {
+                    schema_version: "hydracache-performance-resource-phase-073-v1".to_owned(),
+                    sequence: (index + 1) as u64,
+                    phase,
+                    operations,
+                    gross_allocated_bytes: (operations > 0).then_some(operations * 10),
+                    gross_allocated_bytes_per_operation: (operations > 0).then_some(10.0),
+                    rss_bytes: Some(1),
+                    peak_rss_bytes: Some(2),
+                    process_memory_available: true,
+                    process_memory_unavailable_reason: None,
+                }
+            })
+            .collect::<Vec<_>>();
+        assert!(validate_resource_series(&records).is_ok());
+        let mut invalid = records;
+        invalid[0].gross_allocated_bytes = Some(1);
+        assert!(validate_resource_series(&invalid).is_err());
     }
 }
