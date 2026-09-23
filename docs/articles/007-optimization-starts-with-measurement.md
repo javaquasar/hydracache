@@ -163,7 +163,29 @@ asynchronous eviction listener used for eviction accounting and tag-index cleanu
 absent when instrumentation is off. Its lifecycle and queued asynchronous work are plausible owners
 for additional allocations during fill, expiry, deletion, reset, and refill.
 
-That remains a hypothesis until an isolating experiment separates:
+We then ran that isolating experiment. A development-only build retained the production counters
+but disabled the listener. It was deliberately marked ineligible for counter-correctness evidence,
+because removals were no longer fully accounted. Across three new counterbalanced local pairs, the
+median changes versus instrumentation-off were:
+
+| Metric | Counters without listener: change |
+| --- | ---: |
+| Fill allocation per operation | 0.0% |
+| Steady-read allocation per operation | 0.0% |
+| Expire/delete allocation per operation | 0.0% |
+| Refill allocation per operation | +3.3% |
+| Post-idle RSS growth from cold | +1.4% |
+| Peak RSS growth from cold | -1.8% |
+
+The elapsed median moved +7.4%, but one production sample was much faster than the other two. Three
+short local pairs cannot turn that distribution into a timing claim. Allocation and RSS tell the
+useful story: removing the listener eliminated the large fill and expire/delete deltas and nearly
+eliminated the RSS deltas. That attributes the original mutation-specific cost to the listener path,
+while leaving a small refill residual to investigate.
+
+The experiment does not prove that counters without the listener are a valid product design. They
+are not: removal accounting is intentionally incomplete. It separates ownership so the production
+implementation can now target:
 
 - atomic counter updates;
 - retained-byte estimation;
@@ -171,8 +193,8 @@ That remains a hypothesis until an isolating experiment separates:
 - tag-index cleanup;
 - background eviction completion.
 
-The next experiment should change one of these factors at a time while keeping source, binary,
-scenario, order, and instrumentation outputs otherwise equivalent.
+The next implementation experiment should reduce listener-path allocation and retained-memory cost
+without weakening removal accounting, then repeat the full production-mode comparison.
 
 ## Do not move the threshold after seeing the result
 

@@ -227,3 +227,14 @@ fn local_overhead_screening_cannot_be_promoted_or_erase_the_blocker() {
         .iter()
         .any(|problem| problem.contains("non-promotable blocker")));
 }
+
+#[test]
+fn local_overhead_isolation_cannot_claim_correctness_or_promotion() {
+    let mut value = manifest("local-overhead-isolation-5264d96c.toml");
+    value["counter_correctness_eligible"] = TomlValue::Boolean(true);
+    value["promotable"] = TomlValue::Boolean(true);
+    let problems = xtask::performance_contract::check_local_overhead_isolation(&value, "0.73");
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("diagnostic and non-promotable")));
+}

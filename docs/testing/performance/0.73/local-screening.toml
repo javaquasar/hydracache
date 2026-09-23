@@ -9,6 +9,7 @@ post_tag_delta = "docs/testing/performance/0.73/post-tag-delta.toml"
 scenario_matrix = "docs/testing/performance/0.73/scenario-matrix.toml"
 instrumentation_overhead = "docs/testing/performance/0.73/instrumentation-overhead.toml"
 local_overhead_screening = "docs/testing/performance/0.73/local-overhead-screening-307b3500.toml"
+local_overhead_isolation = "docs/testing/performance/0.73/local-overhead-isolation-5264d96c.toml"
 promotable = false
 numerical_claims_allowed = false
 candidate_thresholds_allowed = false

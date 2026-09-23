@@ -69,6 +69,13 @@ allocation delta, but it did find material mutation allocation and RSS deltas. T
 negative, non-promotable blocker—not a threshold proposal. The next step is to isolate the
 production-only async eviction-listener cost before repeating the screen.
 
+That isolation is retained in `local-overhead-isolation-5264d96c.toml`. With production counters
+enabled and only the listener removed, median fill and expire/delete allocation deltas fell to zero;
+post-idle and peak RSS deltas fell to +1.4% and -1.8%. Refill retained a small +3.3% delta. The
+elapsed median moved +7.4%, but one fast production sample makes three short local pairs inadequate
+for a timing claim. The result attributes the large mutation/RSS cost to the listener and directs
+the next implementation step; it does not validate removal-counter correctness or unblock `I73`.
+
 Validate a generated receipt:
 
 ```text
