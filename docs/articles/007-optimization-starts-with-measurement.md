@@ -163,10 +163,30 @@ asynchronous eviction listener used for eviction accounting and tag-index cleanu
 absent when instrumentation is off. Its lifecycle and queued asynchronous work are plausible owners
 for additional allocations during fill, expiry, deletion, reset, and refill.
 
-We then ran that isolating experiment. A development-only build retained the production counters
-but disabled the listener. It was deliberately marked ineligible for counter-correctness evidence,
-because removals were no longer fully accounted. Across three new counterbalanced local pairs, the
-median changes versus instrumentation-off were:
+## The isolation experiment we actually built
+
+We did not immediately rewrite the listener or raise the budget. First, we added a deliberately
+narrow development-only seam that could remove exactly one factor from the experiment: listener
+registration.
+
+The normal public builder and server configuration were left unchanged. The seam was enabled only
+in the unpublished load generator and produced a new diagnostic profile. In that profile:
+
+- production atomic counters and retained-byte estimation stayed enabled;
+- the async eviction listener was not attached to the underlying cache;
+- the same eight workload phases and resource probes were used;
+- control and treatment still came from one optimized binary;
+- subprocess order remained counterbalanced;
+- every receipt declared `diagnostic_only: true` and
+  `counter_correctness_eligible: false`.
+
+That last marker matters. Without the listener, automatic eviction and removal accounting is
+incomplete. The treatment is therefore not a candidate implementation. It is an ablation: an
+intentionally incomplete configuration used to answer one ownership question.
+
+We built the release binary once, captured a source- and host-bound local context, and ran three new
+independent `off`/`production-counters-without-listener` pairs. Across those pairs, the median
+changes versus instrumentation-off were:
 
 | Metric | Counters without listener: change |
 | --- | ---: |
@@ -178,23 +198,85 @@ median changes versus instrumentation-off were:
 | Peak RSS growth from cold | -1.8% |
 
 The elapsed median moved +7.4%, but one production sample was much faster than the other two. Three
-short local pairs cannot turn that distribution into a timing claim. Allocation and RSS tell the
-useful story: removing the listener eliminated the large fill and expire/delete deltas and nearly
-eliminated the RSS deltas. That attributes the original mutation-specific cost to the listener path,
-while leaving a small refill residual to investigate.
+short local pairs cannot turn that distribution into a timing claim. We recorded the elapsed result
+as noisy rather than choosing the two convenient samples or reporting an apparent regression.
 
-The experiment does not prove that counters without the listener are a valid product design. They
-are not: removal accounting is intentionally incomplete. It separates ownership so the production
-implementation can now target:
+Allocation and RSS tell the useful story. Removing listener registration eliminated the large fill
+and expire/delete allocation deltas and nearly eliminated the RSS deltas. A small refill residual
+remained, so we cannot claim that every byte of production-instrumentation cost belongs to the
+listener. We can say that the listener path owns the large effect that blocked the baseline.
 
-- atomic counter updates;
-- retained-byte estimation;
-- listener registration and notification delivery;
-- tag-index cleanup;
-- background eviction completion.
+### The fill phase was the strongest clue
 
-The next implementation experiment should reduce listener-path allocation and retained-memory cost
-without weakening removal accounting, then repeat the full production-mode comparison.
+The most informative result was not the delete phase. It was fill.
+
+The fill phase inserted 128 small entries into an empty cache whose capacity was far larger than the
+test dataset. It performed no explicit deletes and should not have needed capacity eviction. Yet the
+original production mode allocated 26.8% more bytes per operation during fill. When we retained the
+counters but did not register the listener, that delta fell to zero.
+
+This changes the hypothesis. The cost cannot be explained only as useful work performed after an
+entry is removed. Listener registration changes the backend's mutation machinery even on a phase
+that does not expect removal callbacks. Source inspection supports that interpretation: the future
+cache routes eviction notifications through listener/notifier infrastructure and represents the
+callback as a boxed future. Our callback also clones shared state and awaits tag-index cleanup when
+it is invoked.
+
+The experiment does not yet split the cost among:
+
+- enabling the backend removal-notification machinery;
+- constructing and scheduling boxed listener futures;
+- cloning the counter and tag-index handles;
+- acquiring the tag-index lock and deleting memberships;
+- computing and subtracting the retained-byte estimate;
+- draining background maintenance before a phase ends.
+
+But it rules out a much broader and less useful explanation such as “atomic counters are generally
+expensive.” Steady reads stayed unchanged in both experiments, and mutation overhead disappeared
+when the listener path was removed while the counters remained.
+
+### Why the ablation must not become the fix
+
+It would be easy to stop here and ship production counters without the listener. That would make the
+benchmark green by deleting required work.
+
+The listener currently observes removals that are not all initiated by the public `remove` method:
+capacity eviction, expiry, replacement, invalidation, and backend maintenance can all affect live
+ownership. It also participates in tag-index cleanup. A cheaper design is acceptable only if it
+continues to account for every removal path and releases every secondary owner.
+
+The production replacement therefore needs deterministic proofs for at least:
+
+- explicit remove, overwrite, invalidate, flush, TTL expiry, and capacity eviction;
+- exact counter reconciliation at a quiescent barrier;
+- complete tag-membership cleanup and bounded generation state;
+- concurrent mutation snapshots being marked non-atomic rather than presented as exact;
+- cancellation and shutdown draining all acknowledged work;
+- unchanged public configuration, capacity semantics, and default behavior.
+
+Only after those tests pass should the full production profile be rerun locally. If the large
+allocation and RSS deltas remain gone, the candidate earns an expensive dedicated-host comparison.
+If they return, the design goes back to local attribution instead of consuming a qualification run.
+
+### What this step taught us about profiling
+
+An ablation does not have to be a valid product configuration to be a valid diagnostic. It must,
+however, state exactly which guarantees it breaks. Here, disabling the listener answered an
+ownership question while the receipt explicitly prohibited counter-correctness and release claims.
+
+The sequence was more valuable than a profiler screenshot alone:
+
+1. Measure the complete production behavior against an off control.
+2. Find the phases where the cost appears.
+3. Form an owner hypothesis from phase behavior and source inspection.
+4. Remove one factor without pretending the result is shippable.
+5. Re-run the same process-level comparison and retain the negative evidence.
+6. Turn the result into correctness constraints for the real redesign.
+
+This is how cheap local work protects expensive performance work. The first screen stopped us from
+freezing an instrumented baseline with a hidden cost. The second screen stopped us from optimizing
+the atomic counters that were not the main owner. Neither screen produced a release number, but both
+removed a large amount of uncertainty before dedicated-host qualification.
 
 ## Do not move the threshold after seeing the result
 
