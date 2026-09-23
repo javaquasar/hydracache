@@ -14,6 +14,8 @@ const POST_TAG_DELTA: &str = "docs/testing/performance/0.73/post-tag-delta.toml"
 const SCENARIO_MATRIX: &str = "docs/testing/performance/0.73/scenario-matrix.toml";
 const INSTRUMENTATION_OVERHEAD: &str =
     "docs/testing/performance/0.73/instrumentation-overhead.toml";
+const LOCAL_OVERHEAD_SCREENING: &str =
+    "docs/testing/performance/0.73/local-overhead-screening-307b3500.toml";
 const RELEASE: &str = "0.73";
 const PROFILE: &str = "local-screening-073-v1";
 const ENVIRONMENT_CLASS: &str = "local_screening";
@@ -44,11 +46,14 @@ pub fn check_at_root(
     let matrix: TomlValue = toml::from_str(&fs::read_to_string(root.join(SCENARIO_MATRIX))?)?;
     let overhead: TomlValue =
         toml::from_str(&fs::read_to_string(root.join(INSTRUMENTATION_OVERHEAD))?)?;
+    let local_overhead: TomlValue =
+        toml::from_str(&fs::read_to_string(root.join(LOCAL_OVERHEAD_SCREENING))?)?;
     let mut problems = check_contract(&contract, release);
     problems.extend(check_baseline_identities(root, &identities, release)?);
     problems.extend(check_post_tag_delta(root, &delta, release)?);
     problems.extend(check_scenario_matrix(&matrix, release));
     problems.extend(check_instrumentation_overhead(&overhead, release));
+    problems.extend(check_local_overhead_screening(&local_overhead, release));
     problems.extend(check_schema(
         &schema,
         &example,
@@ -104,6 +109,7 @@ pub fn check_contract(root: &TomlValue, release: &str) -> Vec<String> {
         ("post_tag_delta", POST_TAG_DELTA),
         ("scenario_matrix", SCENARIO_MATRIX),
         ("instrumentation_overhead", INSTRUMENTATION_OVERHEAD),
+        ("local_overhead_screening", LOCAL_OVERHEAD_SCREENING),
     ] {
         if text(root, field) != Some(expected) {
             problems.push(format!("local screening {field} must be {expected}"));
@@ -180,6 +186,84 @@ pub fn check_contract(root: &TomlValue, release: &str) -> Vec<String> {
     .collect();
     if outcomes != expected {
         problems.push("local screening outcome accounting is incomplete".to_owned());
+    }
+    problems
+}
+
+pub fn check_local_overhead_screening(value: &TomlValue, release: &str) -> Vec<String> {
+    let mut problems = Vec::new();
+    if integer(value, "schema_version") != Some(1)
+        || text(value, "release") != Some(release)
+        || text(value, "evidence_class") != Some("local_screening")
+    {
+        problems.push("local overhead screening identity mismatch".to_owned());
+    }
+    if boolean(value, "promotable") != Some(false)
+        || boolean(value, "numerical_claim_eligible") != Some(false)
+        || text(value, "thresholds_status") != Some("screening_only_unqualified")
+        || text(value, "decision") != Some("blocked-instrumentation-overhead")
+    {
+        problems.push("local overhead screening must remain a non-promotable blocker".to_owned());
+    }
+    for field in ["source_sha"] {
+        if text(value, field).is_none_or(|sha| !full_sha(sha)) {
+            problems.push(format!(
+                "local overhead screening {field} is not a full SHA"
+            ));
+        }
+    }
+    for field in [
+        "binary_sha256",
+        "host_fingerprint_sha256",
+        "screening_sha256",
+    ] {
+        if text(value, field).is_none_or(|digest| !sha256(digest)) {
+            problems.push(format!("local overhead screening {field} is not SHA-256"));
+        }
+    }
+    if integer(value, "pair_count").is_none_or(|count| count < 3)
+        || boolean(value, "counterbalanced") != Some(true)
+        || integer(value, "failed_attempts") != Some(0)
+    {
+        problems.push(
+            "local overhead screening lacks three successful counterbalanced pairs".to_owned(),
+        );
+    }
+    let observations = value
+        .get("median_observations")
+        .and_then(TomlValue::as_array)
+        .cloned()
+        .unwrap_or_default();
+    let metrics: BTreeSet<_> = observations
+        .iter()
+        .filter_map(|item| text(item, "metric"))
+        .collect();
+    for required in [
+        "elapsed_ns",
+        "fill_allocated_bytes_per_operation",
+        "steady_allocated_bytes_per_operation",
+        "expire_delete_allocated_bytes_per_operation",
+        "refill_allocated_bytes_per_operation",
+        "post_idle_rss_delta_bytes",
+        "peak_rss_delta_bytes",
+    ] {
+        if !metrics.contains(required) {
+            problems.push(format!("local overhead screening omits {required}"));
+        }
+    }
+    for item in &observations {
+        for field in ["off", "production", "regression_fraction"] {
+            if float(item, field).is_none_or(|number| !number.is_finite()) {
+                problems.push(format!("local overhead observation has invalid {field}"));
+            }
+        }
+    }
+    if text(value, "suspected_owner").is_none_or(str::is_empty)
+        || text(value, "next_evidence").is_none_or(str::is_empty)
+    {
+        problems.push(
+            "local overhead screening requires owner hypothesis and next evidence".to_owned(),
+        );
     }
     problems
 }

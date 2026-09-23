@@ -8,6 +8,7 @@ baseline_identities = "docs/testing/performance/0.73/baseline-identities.toml"
 post_tag_delta = "docs/testing/performance/0.73/post-tag-delta.toml"
 scenario_matrix = "docs/testing/performance/0.73/scenario-matrix.toml"
 instrumentation_overhead = "docs/testing/performance/0.73/instrumentation-overhead.toml"
+local_overhead_screening = "docs/testing/performance/0.73/local-overhead-screening-307b3500.toml"
 promotable = false
 numerical_claims_allowed = false
 candidate_thresholds_allowed = false

@@ -216,3 +216,14 @@ fn instrumentation_overhead_cannot_freeze_i73_with_unmeasured_limits() {
         .iter()
         .any(|problem| problem.contains("candidate-blocking pilot")));
 }
+
+#[test]
+fn local_overhead_screening_cannot_be_promoted_or_erase_the_blocker() {
+    let mut value = manifest("local-overhead-screening-307b3500.toml");
+    value["promotable"] = TomlValue::Boolean(true);
+    value["decision"] = TomlValue::String("accepted".to_owned());
+    let problems = xtask::performance_contract::check_local_overhead_screening(&value, "0.73");
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("non-promotable blocker")));
+}

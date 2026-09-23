@@ -56,6 +56,12 @@ pairs with `cargo xtask performance-overhead-screen --release 0.73 --context <co
 every subprocess retains stdout, stderr, receipt and resource-series digests. `screening.json`
 contains the per-mode distributions but explicitly marks thresholds `screening_only_unqualified`.
 
+The first three-pair release-build screen is retained in
+`local-overhead-screening-307b3500.toml`. It found no elapsed-time regression and no steady-read
+allocation delta, but it did find material mutation allocation and RSS deltas. The result is a
+negative, non-promotable blocker—not a threshold proposal. The next step is to isolate the
+production-only async eviction-listener cost before repeating the screen.
+
 Validate a generated receipt:
 
 ```text
