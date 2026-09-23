@@ -274,13 +274,39 @@ nonblocking post-removal observer. An opportunistic dependency bump therefore ca
 the fix; an upstream seam, a reviewed backend change, or a different exact ownership design would
 each be a separate proposal.
 
+We then tested the cheapest-looking architectural shortcut: whether Moka's synchronous cache made
+the notification machinery cheap enough to justify a backend migration. This was deliberately a
+small allocation probe, not a HydraCache benchmark. It compared future and sync caches with the
+listener disabled and with a no-op listener, used 1,024 inserts or removals per case, repeated every
+case three times, and alternated `off/noop` order to reduce first-position bias.
+
+| Backend | Operation | Listener off, B/op | No-op listener, B/op | Increase |
+| --- | --- | ---: | ---: | ---: |
+| Moka future | Insert | 398.4 | 756.7 | +89.9% |
+| Moka future | Remove | 2,281.3 | 3,041.1 | +33.3% |
+| Moka sync | Insert | 372.7 | 644.0 | +72.8% |
+| Moka sync | Remove | 2,246.7 | 2,502.7 | +11.4% |
+
+The sync backend reduced the listener's incremental allocation by 24.3% on insert and 66.3% on
+remove. That is useful attribution, but not a solution. The no-op listener still added 271 bytes per
+insert and a 72.8% relative penalty. More importantly, replacing the future cache with the sync
+cache changes the backend and its asynchronous interaction model; the microprobe did not exercise
+HydraCache correctness, concurrency, expiry, tag cleanup, or production load.
+
+So the negative result saved a much more expensive experiment. We rejected “migrate to sync” as
+the instrumentation fix before building a product candidate or reserving a qualification host. The
+remaining design space is narrower: an exact nonblocking removal-observation seam or a replacement
+ownership design that avoids enabling listener-backed mutation locking. Either still needs review,
+pre-frozen allocation/RSS limits, and the full removal-correctness matrix before D2.
+
 ### The result changed governance, not just code direction
 
 At this point the responsible next action was not to start editing the production cache. We recorded
 the owner as D1-classified and explicitly left D2 unauthorized. The proposal registry now prevents
 candidate measurements and product mutation until four things exist:
 
-- a lab-only feasibility result for the viable backend designs;
+- a lab-only feasibility result for the viable backend designs (the sync shortcut is now rejected,
+  while the exact nonblocking designs remain to be evaluated);
 - an independent reviewer for the selected proposal;
 - allocation and RSS rejection limits frozen before candidate data;
 - exact correctness tests for every automatic and explicit removal path.

@@ -95,6 +95,15 @@ locking on insertion and shared boxed notification futures on removal/update pat
 measurement therefore remain forbidden until a lab-only feasibility spike, independent review, and
 pre-candidate allocation/RSS limits select or reject an exact alternative.
 
+The first backend feasibility result is retained in
+`notification-feasibility-bf9f1382.toml`. In three counterbalanced repetitions, registering a
+no-op listener increased median allocation per insert by 89.9% on Moka future and 72.8% on Moka
+sync; per remove it increased allocation by 33.3% and 11.4%, respectively. Sync reduced the
+incremental listener allocation by 24.3% for insert and 66.3% for remove, but did not eliminate the
+insert penalty and would change the backend's asynchronous semantics. The result rejects a sync
+migration as the instrumentation fix; it remains a diagnostic microprobe, not product evidence or
+authorization for D2.
+
 `statistics.toml` freezes the inherited paired estimator, confidence, Holm correction, failure
 retention, five-pair minimum, and throughput/CPU/p99 regression guards before candidate data. Its
 allocation and RSS limits remain explicit unfrozen blockers. `host-profile.toml` is a requirement

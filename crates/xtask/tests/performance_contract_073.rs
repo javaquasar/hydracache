@@ -251,6 +251,18 @@ fn local_noop_listener_screen_cannot_claim_correctness_or_promotion() {
 }
 
 #[test]
+fn notification_feasibility_cannot_authorize_product_semantics_or_promotion() {
+    let mut value = manifest("notification-feasibility-bf9f1382.toml");
+    value["product_semantics_eligible"] = TomlValue::Boolean(true);
+    value["promotable"] = TomlValue::Boolean(true);
+    value["decision"] = TomlValue::String("migrate-to-sync".to_owned());
+    let problems = xtask::performance_contract::check_notification_feasibility(&value, "0.73");
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("must remain diagnostic")));
+}
+
+#[test]
 fn pre_i73_proposal_cannot_skip_d2_review_and_threshold_freeze() {
     let mut value = manifest("proposal-registry.toml");
     value["proposals"][0]["state"] = TomlValue::String("d2_authorized".to_owned());

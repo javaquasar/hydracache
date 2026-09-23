@@ -20,6 +20,8 @@ const LOCAL_OVERHEAD_ISOLATION: &str =
     "docs/testing/performance/0.73/local-overhead-isolation-5264d96c.toml";
 const LOCAL_OVERHEAD_LISTENER_NOOP: &str =
     "docs/testing/performance/0.73/local-overhead-listener-noop-5e101e69.toml";
+const NOTIFICATION_FEASIBILITY: &str =
+    "docs/testing/performance/0.73/notification-feasibility-bf9f1382.toml";
 const PROPOSAL_REGISTRY: &str = "docs/testing/performance/0.73/proposal-registry.toml";
 const STATISTICS: &str = "docs/testing/performance/0.73/statistics.toml";
 const HOST_PROFILE: &str = "docs/testing/performance/0.73/host-profile.toml";
@@ -60,6 +62,8 @@ pub fn check_at_root(
     let local_listener_noop: TomlValue = toml::from_str(&fs::read_to_string(
         root.join(LOCAL_OVERHEAD_LISTENER_NOOP),
     )?)?;
+    let notification_feasibility: TomlValue =
+        toml::from_str(&fs::read_to_string(root.join(NOTIFICATION_FEASIBILITY))?)?;
     let proposal_registry: TomlValue =
         toml::from_str(&fs::read_to_string(root.join(PROPOSAL_REGISTRY))?)?;
     let statistics: TomlValue = toml::from_str(&fs::read_to_string(root.join(STATISTICS))?)?;
@@ -73,6 +77,10 @@ pub fn check_at_root(
     problems.extend(check_local_overhead_isolation(&local_isolation, release));
     problems.extend(check_local_overhead_listener_noop(
         &local_listener_noop,
+        release,
+    ));
+    problems.extend(check_notification_feasibility(
+        &notification_feasibility,
         release,
     ));
     problems.extend(check_proposal_registry(&proposal_registry, release));
@@ -136,6 +144,7 @@ pub fn check_contract(root: &TomlValue, release: &str) -> Vec<String> {
         ("local_overhead_screening", LOCAL_OVERHEAD_SCREENING),
         ("local_overhead_isolation", LOCAL_OVERHEAD_ISOLATION),
         ("local_overhead_listener_noop", LOCAL_OVERHEAD_LISTENER_NOOP),
+        ("notification_feasibility", NOTIFICATION_FEASIBILITY),
         ("proposal_registry", PROPOSAL_REGISTRY),
         ("statistics_contract", STATISTICS),
         ("host_profile", HOST_PROFILE),
@@ -448,6 +457,82 @@ pub fn check_local_overhead_listener_noop(value: &TomlValue, release: &str) -> V
     for field in ["isolated_factor", "conclusion", "next_evidence"] {
         if text(value, field).is_none_or(str::is_empty) {
             problems.push(format!("local no-op listener screening requires {field}"));
+        }
+    }
+    problems
+}
+
+pub fn check_notification_feasibility(value: &TomlValue, release: &str) -> Vec<String> {
+    let mut problems = Vec::new();
+    if integer(value, "schema_version") != Some(1)
+        || text(value, "release") != Some(release)
+        || text(value, "evidence_class") != Some("local_feasibility")
+        || text(value, "experiment") != Some("moka-future-vs-sync-noop-listener")
+    {
+        problems.push("notification feasibility identity mismatch".to_owned());
+    }
+    if boolean(value, "diagnostic_only") != Some(true)
+        || boolean(value, "product_semantics_eligible") != Some(false)
+        || boolean(value, "promotable") != Some(false)
+        || text(value, "decision") != Some("sync-backend-insufficient")
+    {
+        problems.push(
+            "notification feasibility must remain diagnostic, non-promotable, and insufficient for sync migration"
+                .to_owned(),
+        );
+    }
+    if text(value, "source_sha").is_none_or(|sha| !full_sha(sha)) {
+        problems.push("notification feasibility source_sha is not a full SHA".to_owned());
+    }
+    for field in ["binary_sha256", "receipt_sha256"] {
+        if text(value, field).is_none_or(|digest| !sha256(digest)) {
+            problems.push(format!("notification feasibility {field} is not SHA-256"));
+        }
+    }
+    if integer(value, "operations_per_case").is_none_or(|count| count < 1024)
+        || integer(value, "repetitions").is_none_or(|count| count < 3)
+        || boolean(value, "counterbalanced") != Some(true)
+    {
+        problems.push(
+            "notification feasibility requires three counterbalanced repetitions of at least 1024 operations"
+                .to_owned(),
+        );
+    }
+
+    let observations = value
+        .get("median_observations")
+        .and_then(TomlValue::as_array)
+        .cloned()
+        .unwrap_or_default();
+    for (backend, operation) in [
+        ("moka-future", "insert"),
+        ("moka-future", "remove"),
+        ("moka-sync", "insert"),
+        ("moka-sync", "remove"),
+    ] {
+        if !observations.iter().any(|item| {
+            text(item, "backend") == Some(backend) && text(item, "operation") == Some(operation)
+        }) {
+            problems.push(format!(
+                "notification feasibility omits {backend} {operation}"
+            ));
+        }
+    }
+    for item in &observations {
+        for field in [
+            "listener_off_bytes_per_operation",
+            "listener_noop_bytes_per_operation",
+            "incremental_bytes_per_operation",
+            "regression_fraction",
+        ] {
+            if float(item, field).is_none_or(|number| !number.is_finite() || number < 0.0) {
+                problems.push(format!("notification feasibility has invalid {field}"));
+            }
+        }
+    }
+    for field in ["conclusion", "next_evidence"] {
+        if text(value, field).is_none_or(str::is_empty) {
+            problems.push(format!("notification feasibility requires {field}"));
         }
     }
     problems
