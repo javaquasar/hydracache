@@ -1,51 +1,16 @@
-use std::alloc::{GlobalAlloc, Layout, System};
 use std::path::PathBuf;
-use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
 use std::sync::{Arc, Mutex};
 use std::time::{Duration, Instant};
 
+use hydracache_loadgen::allocation::measure_allocations;
+use hydracache_loadgen::notification_observer::{
+    PublishOutcome, RemovalKind, RemovalObserver, VersionedEntry,
+};
 use moka::notification::RemovalCause;
 use serde::Serialize;
 
 const OPERATIONS: u64 = 1_024;
 const REPETITIONS: u64 = 3;
-
-struct CountingAllocator;
-static COUNTING: AtomicBool = AtomicBool::new(false);
-static ALLOCATED: AtomicU64 = AtomicU64::new(0);
-
-#[global_allocator]
-static ALLOCATOR: CountingAllocator = CountingAllocator;
-
-unsafe impl GlobalAlloc for CountingAllocator {
-    unsafe fn alloc(&self, layout: Layout) -> *mut u8 {
-        let pointer = unsafe { System.alloc(layout) };
-        if !pointer.is_null() && COUNTING.load(Ordering::Acquire) {
-            ALLOCATED.fetch_add(layout.size() as u64, Ordering::Relaxed);
-        }
-        pointer
-    }
-
-    unsafe fn alloc_zeroed(&self, layout: Layout) -> *mut u8 {
-        let pointer = unsafe { System.alloc_zeroed(layout) };
-        if !pointer.is_null() && COUNTING.load(Ordering::Acquire) {
-            ALLOCATED.fetch_add(layout.size() as u64, Ordering::Relaxed);
-        }
-        pointer
-    }
-
-    unsafe fn dealloc(&self, pointer: *mut u8, layout: Layout) {
-        unsafe { System.dealloc(pointer, layout) };
-    }
-
-    unsafe fn realloc(&self, pointer: *mut u8, layout: Layout, new_size: usize) -> *mut u8 {
-        let new_pointer = unsafe { System.realloc(pointer, layout, new_size) };
-        if !new_pointer.is_null() && COUNTING.load(Ordering::Acquire) {
-            ALLOCATED.fetch_add(new_size as u64, Ordering::Relaxed);
-        }
-        new_pointer
-    }
-}
 
 #[derive(Clone, Copy)]
 enum Mode {
@@ -110,6 +75,7 @@ async fn run() -> Result<(), String> {
     }
 
     verify_removal_causes().await?;
+    verify_versioned_adapter().await?;
     let mut cases = Vec::with_capacity((REPETITIONS * 6) as usize);
     for repetition in 1..=REPETITIONS {
         for (position, mode) in order(repetition).into_iter().enumerate() {
@@ -147,14 +113,21 @@ fn cache(mode: Mode) -> moka::future::Cache<u64, [u8; 64]> {
 async fn measure_insert(mode: Mode, repetition: u64, position: u64) -> Case {
     let cache = cache(mode);
     let started = Instant::now();
-    let allocated = measure(async {
+    let (_, allocation) = measure_allocations(OPERATIONS, async {
         for key in 0..OPERATIONS {
             cache.insert(key, [key as u8; 64]).await;
         }
         cache.run_pending_tasks().await;
     })
     .await;
-    case(mode, "insert", repetition, position, allocated, started)
+    case(
+        mode,
+        "insert",
+        repetition,
+        position,
+        allocation.gross_allocated_bytes,
+        started,
+    )
 }
 
 async fn measure_remove(mode: Mode, repetition: u64, position: u64) -> Case {
@@ -164,22 +137,21 @@ async fn measure_remove(mode: Mode, repetition: u64, position: u64) -> Case {
     }
     cache.run_pending_tasks().await;
     let started = Instant::now();
-    let allocated = measure(async {
+    let (_, allocation) = measure_allocations(OPERATIONS, async {
         for key in 0..OPERATIONS {
             cache.invalidate(&key).await;
         }
         cache.run_pending_tasks().await;
     })
     .await;
-    case(mode, "remove", repetition, position, allocated, started)
-}
-
-async fn measure(future: impl std::future::Future<Output = ()>) -> u64 {
-    ALLOCATED.store(0, Ordering::Relaxed);
-    COUNTING.store(true, Ordering::Release);
-    future.await;
-    COUNTING.store(false, Ordering::Release);
-    ALLOCATED.load(Ordering::Acquire)
+    case(
+        mode,
+        "remove",
+        repetition,
+        position,
+        allocation.gross_allocated_bytes,
+        started,
+    )
 }
 
 fn case(
@@ -231,6 +203,42 @@ async fn verify_removal_causes() -> Result<(), String> {
         if !causes.contains(&required) {
             return Err(format!("observer did not receive {required:?}: {causes:?}"));
         }
+    }
+    Ok(())
+}
+
+async fn verify_versioned_adapter() -> Result<(), String> {
+    let lifecycle = Arc::new(RemovalObserver::new(8));
+    let observed = lifecycle.clone();
+    let cache = moka::future::Cache::builder()
+        .max_capacity(8)
+        .post_removal_observer(move |_, entry: VersionedEntry, cause| {
+            let kind = match cause {
+                RemovalCause::Explicit => RemovalKind::Explicit,
+                RemovalCause::Replaced => RemovalKind::Replaced,
+                RemovalCause::Expired => RemovalKind::Expired,
+                RemovalCause::Size => RemovalKind::Capacity,
+            };
+            assert_eq!(observed.publish(entry, kind), PublishOutcome::Accepted);
+        })
+        .build();
+
+    let old = VersionedEntry::new("key", 41, vec!["blue".to_owned()], 100);
+    lifecycle.register(&old);
+    cache.insert("key", old).await;
+    let new = VersionedEntry::new("key", 42, vec!["blue".to_owned()], 120);
+    cache.insert("key", new.clone()).await;
+    lifecycle.register(&new);
+    lifecycle.drain_available();
+
+    if !lifecycle.contains_membership("blue", "key", 42) {
+        return Err("delayed Moka replacement cleanup removed the new membership".to_owned());
+    }
+    let snapshot = lifecycle
+        .exact_snapshot()
+        .map_err(|error| format!("versioned adapter snapshot failed: {error:?}"))?;
+    if snapshot.retained_bytes != 120 || snapshot.memberships != 1 {
+        return Err(format!("versioned adapter mismatch: {snapshot:?}"));
     }
     Ok(())
 }
