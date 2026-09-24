@@ -643,3 +643,21 @@ fn removal_queue_contract_cannot_block_grow_or_skip_local_gates() {
         problem.contains("dedicated_host_run_allowed_before_local_gates must be false")
     }));
 }
+
+#[test]
+fn removal_queue_product_cannot_claim_performance_or_relax_exactness() {
+    let mut value = manifest("removal-queue-product-daffd71b.toml");
+    value["queue_capacity"] = TomlValue::Integer(8_192);
+    value["accepted_acknowledged_barrier_preserved"] = TomlValue::Boolean(false);
+    value["numerical_claim_eligible"] = TomlValue::Boolean(true);
+    let problems = xtask::performance_contract::check_removal_queue_product(&value, "0.73");
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("identity or bound changed")));
+    assert!(problems.iter().any(|problem| {
+        problem.contains("accepted_acknowledged_barrier_preserved must be true")
+    }));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("numerical_claim_eligible must be false")));
+}

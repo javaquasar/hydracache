@@ -313,3 +313,17 @@ its async receiver mutex with the already-locked `crossbeam-queue 0.3.12` `Array
 the 4,096-ticket bound, nonblocking callback, duplicate/version rules, dirty-on-overflow behavior,
 and accepted/acknowledged barrier. No host repeat is allowed until all local correctness,
 reconciliation, clippy, standalone-harness, and supply-chain gates pass.
+
+Commit `daffd71b` implements that contract. Publication now uses a preallocated bounded
+`ArrayQueue`; draining uses a single atomic consumer claim whose RAII guard releases the claim even
+when the future is dropped. A busy consumer never acknowledges another consumer's work, so the
+accepted/acknowledged exactness check continues to fail closed. The queue capacity, overflow and
+slot-collision dirty behavior, version-conditional tag cleanup, and reconciliation path are
+unchanged. Focused observer, memory-footprint, accounting, formatting, Clippy, standalone-harness,
+and supply-chain checks passed.
+
+`removal-queue-product-daffd71b.toml` records the implementation and one scope variance: the
+standalone harness lockfile also had to record the exact dependency because it resolves the
+workspace crate under `--locked`. This is local correctness admission, not performance evidence.
+It authorizes only another run of the unchanged baseline-only contract; the 3% CPU ceiling and the
+minimum of three stable offered rates remain frozen.

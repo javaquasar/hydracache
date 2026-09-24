@@ -32,6 +32,7 @@ cpu_attribution_evidence = "docs/testing/performance/0.73/cpu-attribution-ed3398
 removal_drain_fast_path = "docs/testing/performance/0.73/removal-drain-fast-path-affe4390.toml"
 baseline_pilot_fast_path_evidence = "docs/testing/performance/0.73/baseline-pilot-insufficient-9bba762c.toml"
 removal_queue_contract = "docs/testing/performance/0.73/removal-queue-contract.toml"
+removal_queue_product = "docs/testing/performance/0.73/removal-queue-product-daffd71b.toml"
 promotable = false
 numerical_claims_allowed = false
 candidate_thresholds_allowed = false

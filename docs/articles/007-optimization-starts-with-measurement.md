@@ -712,6 +712,44 @@ policy answers “what cost is acceptable?”
 
 The measurement cannot be allowed to rewrite the policy that judges it.
 
+## What the first dedicated runs changed
+
+The first admitted-host baseline did not validate the production observer. All four offered rates
+exceeded the preregistered 3% CPU-per-operation ceiling, even though every attempt completed and the
+host stayed inside its calibration envelope. A four-mode attribution run then split the cost into
+three layers: counters alone had no detected CPU penalty, registering an empty backend observer
+added about 1.4%, and HydraCache's real callback and cleanup added about another 2.0%. That result
+gave us an owner, not permission to relax the ceiling.
+
+The first code change removed an async receiver-lock acquisition from empty drains. Repeating the
+same baseline contract moved the 10,000 and 20,000 operations/second points below the ceiling, at
+2.80% and 2.08%, but the 2,500 and 5,000 points both remained at about 3.52%. Two stable rates were
+progress; the frozen contract required three. We retained the failed campaign and did not average
+the passing high-load points into an acceptance claim.
+
+The shape of the result matters. When a percentage penalty falls as offered load rises, a fixed
+per-drain or synchronization cost is a stronger suspect than work proportional to every request.
+That is an inference to test, not proof. It led to a second, narrowly preregistered change: replace
+the bounded Tokio channel and async receiver mutex with a preallocated bounded `ArrayQueue` and an
+atomic single-consumer claim.
+
+The implementation preserves the safety properties that performance work is most likely to erode:
+
+- capacity remains 4,096 tickets rather than becoming an unbounded queue;
+- publication still cannot await or block;
+- a full queue or version-slot collision marks the observer dirty;
+- accepted and acknowledged sequences remain the exactness barrier;
+- delayed cleanup remains conditional on entry version;
+- reconciliation still repairs a dirty epoch;
+- an RAII guard releases the consumer claim if a drain future is dropped.
+
+Local tests establish those properties, but they do not establish that the change is faster. Even
+an intuitively cheaper primitive can lose because of cache-line contention, retry behavior, or a
+different workload mix. The next legitimate performance statement must therefore come from another
+unchanged baseline-only run on the admitted host. If it still fails, the failure remains evidence;
+if at least three rates pass, only then may the release freeze its integrated baseline and proceed
+to candidate qualification.
+
 ## A profiling ladder that avoids expensive runs
 
 Not every development iteration needs a dedicated bare-metal campaign. A useful workflow has several

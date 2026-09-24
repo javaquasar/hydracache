@@ -56,6 +56,8 @@ const REMOVAL_DRAIN_FAST_PATH: &str =
 const BASELINE_PILOT_FAST_PATH_EVIDENCE: &str =
     "docs/testing/performance/0.73/baseline-pilot-insufficient-9bba762c.toml";
 const REMOVAL_QUEUE_CONTRACT: &str = "docs/testing/performance/0.73/removal-queue-contract.toml";
+const REMOVAL_QUEUE_PRODUCT: &str =
+    "docs/testing/performance/0.73/removal-queue-product-daffd71b.toml";
 const RELEASE: &str = "0.73";
 const PROFILE: &str = "local-screening-073-v1";
 const ENVIRONMENT_CLASS: &str = "local_screening";
@@ -140,6 +142,8 @@ pub fn check_at_root(
     )?)?;
     let removal_queue_contract: TomlValue =
         toml::from_str(&fs::read_to_string(root.join(REMOVAL_QUEUE_CONTRACT))?)?;
+    let removal_queue_product: TomlValue =
+        toml::from_str(&fs::read_to_string(root.join(REMOVAL_QUEUE_PRODUCT))?)?;
     let mut problems = check_contract(&contract, release);
     if !root.join(MOKA_OBSERVER_UPSTREAM_DRAFT).is_file() {
         problems.push("notification observer dependency review draft is missing".to_owned());
@@ -217,6 +221,7 @@ pub fn check_at_root(
         &removal_queue_contract,
         release,
     ));
+    problems.extend(check_removal_queue_product(&removal_queue_product, release));
     problems.extend(check_schema(
         &schema,
         &example,
@@ -317,6 +322,7 @@ pub fn check_contract(root: &TomlValue, release: &str) -> Vec<String> {
             BASELINE_PILOT_FAST_PATH_EVIDENCE,
         ),
         ("removal_queue_contract", REMOVAL_QUEUE_CONTRACT),
+        ("removal_queue_product", REMOVAL_QUEUE_PRODUCT),
     ] {
         if text(root, field) != Some(expected) {
             problems.push(format!("local screening {field} must be {expected}"));
@@ -2347,6 +2353,88 @@ pub fn check_removal_queue_contract(value: &TomlValue, release: &str) -> Vec<Str
         || text(value, "success_rule").is_none_or(str::is_empty)
     {
         problems.push("removal queue contract omits local gates or rollback".to_owned());
+    }
+    problems
+}
+
+pub fn check_removal_queue_product(value: &TomlValue, release: &str) -> Vec<String> {
+    let mut problems = Vec::new();
+    if integer(value, "schema_version") != Some(1)
+        || text(value, "release") != Some(release)
+        || text(value, "evidence_id") != Some("removal-queue-product-daffd71b-v1")
+        || text(value, "state") != Some("local-correctness-passed-awaiting-baseline-repeat")
+        || text(value, "contract") != Some(REMOVAL_QUEUE_CONTRACT)
+        || text(value, "triggering_evidence") != Some(BASELINE_PILOT_FAST_PATH_EVIDENCE)
+        || text(value, "implementation_commit") != Some("daffd71bf71e3640f33c9ddfd190e5cbce61a0c8")
+        || text(value, "implementation_parent") != Some("3d1d9018cee87c76ffa0fcb7bfcec1ff4cd40e4b")
+        || text(value, "selected_dependency") != Some("crossbeam-queue 0.3.12")
+        || text(value, "queue_type") != Some("crossbeam_queue::ArrayQueue")
+        || integer(value, "queue_capacity") != Some(4_096)
+    {
+        problems.push("removal queue product identity or bound changed".to_owned());
+    }
+    for field in [
+        "capacity_changed",
+        "callback_may_block",
+        "callback_may_await",
+        "callback_may_allocate_queue_nodes",
+        "correctness_surface_changed",
+        "public_api_changed",
+        "thresholds_changed",
+        "promotable",
+        "numerical_claim_eligible",
+        "candidate_measurement_authorized",
+    ] {
+        if boolean(value, field) != Some(false) {
+            problems.push(format!("removal queue product {field} must be false"));
+        }
+    }
+    for field in [
+        "duplicate_delivery_remains_idempotent",
+        "overflow_marks_observer_dirty",
+        "slot_collision_marks_observer_dirty",
+        "accepted_acknowledged_barrier_preserved",
+        "version_conditional_tag_cleanup_preserved",
+        "reconciliation_recovery_preserved",
+        "consumer_claim_cancellation_safe",
+        "baseline_only_repeat_allowed",
+    ] {
+        if boolean(value, field) != Some(true) {
+            problems.push(format!("removal queue product {field} must be true"));
+        }
+    }
+    let expected_files: BTreeSet<_> = [
+        "Cargo.lock",
+        "Cargo.toml",
+        "crates/hydracache/Cargo.toml",
+        "crates/hydracache/src/removal_observer.rs",
+        "tools/performance-observer-073/Cargo.lock",
+    ]
+    .into_iter()
+    .collect();
+    let changed_files: BTreeSet<_> = string_array(value.get("changed_files"))
+        .into_iter()
+        .collect();
+    if changed_files != expected_files {
+        problems.push("removal queue product changed-file ledger is incomplete".to_owned());
+    }
+    if string_array(value.get("validation")).len() < 12
+        || value
+            .get("falsifier")
+            .and_then(TomlValue::as_array)
+            .is_none_or(|falsifiers| falsifiers.len() < 7)
+    {
+        problems.push("removal queue product validation or falsifiers are incomplete".to_owned());
+    }
+    for field in [
+        "scope_variance",
+        "race_argument",
+        "decision",
+        "next_evidence",
+    ] {
+        if text(value, field).is_none_or(str::is_empty) {
+            problems.push(format!("removal queue product requires {field}"));
+        }
     }
     problems
 }
