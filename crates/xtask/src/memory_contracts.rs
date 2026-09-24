@@ -991,8 +991,13 @@ fn observed_tools(programs: &[&str]) -> JsonMap<String, JsonValue> {
     programs
         .iter()
         .map(|program| {
-            let version = command_optional(program, &["--version"])
-                .unwrap_or_else(|| "unavailable".to_owned());
+            let version_args: &[&str] = if *program == "pidstat" {
+                &["-V"]
+            } else {
+                &["--version"]
+            };
+            let version =
+                command_optional(program, version_args).unwrap_or_else(|| "unavailable".to_owned());
             ((*program).to_owned(), JsonValue::String(version))
         })
         .collect()
