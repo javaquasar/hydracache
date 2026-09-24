@@ -70,6 +70,10 @@ const BASELINE_PILOT_V2_CONTRACT: &str =
     "docs/testing/performance/0.73/baseline-pilot-v2-contract.toml";
 const BASELINE_PILOT_V2_PRODUCT: &str =
     "docs/testing/performance/0.73/baseline-pilot-v2-product-4979e2e1.toml";
+const BASELINE_PILOT_V2_EVIDENCE: &str =
+    "docs/testing/performance/0.73/baseline-pilot-v2-insufficient-72d491ac.toml";
+const MEMORY_COUNTER_ATOMIC_CONTRACT: &str =
+    "docs/testing/performance/0.73/memory-counter-atomic-contract.toml";
 const RELEASE: &str = "0.73";
 const PROFILE: &str = "local-screening-073-v1";
 const ENVIRONMENT_CLASS: &str = "local_screening";
@@ -170,6 +174,11 @@ pub fn check_at_root(
         toml::from_str(&fs::read_to_string(root.join(BASELINE_PILOT_V2_CONTRACT))?)?;
     let baseline_pilot_v2_product: TomlValue =
         toml::from_str(&fs::read_to_string(root.join(BASELINE_PILOT_V2_PRODUCT))?)?;
+    let baseline_pilot_v2_evidence: TomlValue =
+        toml::from_str(&fs::read_to_string(root.join(BASELINE_PILOT_V2_EVIDENCE))?)?;
+    let memory_counter_atomic_contract: TomlValue = toml::from_str(&fs::read_to_string(
+        root.join(MEMORY_COUNTER_ATOMIC_CONTRACT),
+    )?)?;
     let mut problems = check_contract(&contract, release);
     if !root.join(MOKA_OBSERVER_UPSTREAM_DRAFT).is_file() {
         problems.push("notification observer dependency review draft is missing".to_owned());
@@ -270,6 +279,14 @@ pub fn check_at_root(
     ));
     problems.extend(check_baseline_pilot_v2_product(
         &baseline_pilot_v2_product,
+        release,
+    ));
+    problems.extend(check_baseline_pilot_v2_evidence(
+        &baseline_pilot_v2_evidence,
+        release,
+    ));
+    problems.extend(check_memory_counter_atomic_contract(
+        &memory_counter_atomic_contract,
         release,
     ));
     problems.extend(check_schema(
@@ -385,6 +402,11 @@ pub fn check_contract(root: &TomlValue, release: &str) -> Vec<String> {
         ),
         ("baseline_pilot_v2_contract", BASELINE_PILOT_V2_CONTRACT),
         ("baseline_pilot_v2_product", BASELINE_PILOT_V2_PRODUCT),
+        ("baseline_pilot_v2_evidence", BASELINE_PILOT_V2_EVIDENCE),
+        (
+            "memory_counter_atomic_contract",
+            MEMORY_COUNTER_ATOMIC_CONTRACT,
+        ),
     ] {
         if text(root, field) != Some(expected) {
             problems.push(format!("local screening {field} must be {expected}"));
@@ -2833,6 +2855,124 @@ pub fn check_baseline_pilot_v2_product(value: &TomlValue, release: &str) -> Vec<
             .is_none_or(|falsifiers| falsifiers.len() < 4)
     {
         problems.push("baseline pilot v2 product volume or validation is incomplete".to_owned());
+    }
+    problems
+}
+
+pub fn check_baseline_pilot_v2_evidence(value: &TomlValue, release: &str) -> Vec<String> {
+    let mut problems = Vec::new();
+    if integer(value, "schema_version") != Some(1)
+        || text(value, "release") != Some(release)
+        || text(value, "evidence_id") != Some("observer-baseline-pilot-v2-insufficient-72d491ac-v1")
+        || text(value, "contract_id") != Some("observer-baseline-pilot-073-v2")
+        || text(value, "state") != Some("executed-insufficient-baseline-two-stable-rates")
+        || integer(value, "workflow_run_id") != Some(36_072_021_641)
+        || integer(value, "cancelled_auto_admission_run_id") != Some(36_072_022_062)
+        || text(value, "cancelled_auto_admission_state")
+            != Some("cancelled-before-environment-approval")
+        || text(value, "source_sha") != Some("72d491acefff4233b80b208833056b3bfee4779d")
+        || integer(value, "artifact_id") != Some(10_838_049_240)
+        || text(value, "paired_estimator") != Some("hodges-lehmann-v1")
+    {
+        problems.push("baseline pilot v2 evidence identity changed".to_owned());
+    }
+    for field in [
+        "artifact_sha256",
+        "campaign_manifest_sha256",
+        "preflight_sha256",
+        "postflight_sha256",
+        "baseline_pilot_sha256",
+        "binary_sha256",
+    ] {
+        if text(value, field).is_none_or(|digest| !sha256(digest)) {
+            problems.push(format!("baseline pilot v2 evidence {field} is not SHA-256"));
+        }
+    }
+    for field in [
+        "candidate_data_present",
+        "candidate_measurement_authorized",
+        "i73_freeze_eligible",
+        "thresholds_changed",
+        "silent_retry_allowed",
+        "code_effect_claimed",
+    ] {
+        if boolean(value, field) != Some(false) {
+            problems.push(format!("baseline pilot v2 evidence {field} must be false"));
+        }
+    }
+    if integer(value, "attempts") != Some(40)
+        || integer(value, "failed_attempts") != Some(0)
+        || integer_array(value.get("stable_rates")) != [5_000, 20_000]
+    {
+        problems.push("baseline pilot v2 evidence must retain exactly two stable rates".to_owned());
+    }
+    let rates = value
+        .get("rate")
+        .and_then(TomlValue::as_array)
+        .cloned()
+        .unwrap_or_default();
+    if rates.len() != 4
+        || rates
+            .iter()
+            .filter(|rate| boolean(rate, "stable") == Some(true))
+            .count()
+            != 2
+    {
+        problems.push("baseline pilot v2 rate ledger changed".to_owned());
+    }
+    problems
+}
+
+pub fn check_memory_counter_atomic_contract(value: &TomlValue, release: &str) -> Vec<String> {
+    let mut problems = Vec::new();
+    if integer(value, "schema_version") != Some(1)
+        || text(value, "release") != Some(release)
+        || text(value, "contract_id") != Some("memory-counter-single-atomic-073-v1")
+        || text(value, "state") != Some("preregistered-before-implementation")
+        || text(value, "triggering_evidence") != Some(BASELINE_PILOT_V2_EVIDENCE)
+    {
+        problems.push("memory counter atomic contract identity changed".to_owned());
+    }
+    for field in [
+        "active_mutation_algorithm_changed",
+        "version_algorithm_changed",
+        "epoch_algorithm_changed",
+        "counter_set_changed",
+        "public_estimator_changed",
+        "callback_may_block",
+        "callback_may_await",
+        "thresholds_changed",
+        "candidate_data_allowed",
+        "dedicated_host_run_allowed_before_local_gates",
+    ] {
+        if boolean(value, field) != Some(false) {
+            problems.push(format!(
+                "memory counter atomic contract {field} must be false"
+            ));
+        }
+    }
+    for field in [
+        "counter_updates_inside_mutation_guard",
+        "fault_recorded_before_guard_release",
+        "overflow_must_fault",
+        "underflow_must_fault",
+        "exact_snapshot_must_fail_after_fault",
+    ] {
+        if boolean(value, field) != Some(true) {
+            problems.push(format!(
+                "memory counter atomic contract {field} must be true"
+            ));
+        }
+    }
+    if string_array(value.get("implementation_scope"))
+        != ["crates/hydracache/src/memory_footprint.rs"]
+        || string_array(value.get("local_gates")).len() < 6
+        || text(value, "optimization").is_none_or(str::is_empty)
+        || text(value, "rollback").is_none_or(str::is_empty)
+        || text(value, "success_rule").is_none_or(str::is_empty)
+    {
+        problems
+            .push("memory counter atomic contract scope or local gates are incomplete".to_owned());
     }
     problems
 }

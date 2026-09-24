@@ -750,3 +750,40 @@ fn baseline_pilot_v2_product_cannot_restore_push_or_independent_medians() {
         problem.contains("independent_mode_medians_used_for_decision must be false")
     }));
 }
+
+#[test]
+fn baseline_pilot_v2_evidence_cannot_freeze_i73_with_two_rates() {
+    let mut value = manifest("baseline-pilot-v2-insufficient-72d491ac.toml");
+    value["i73_freeze_eligible"] = TomlValue::Boolean(true);
+    value["stable_rates"] = TomlValue::Array(vec![
+        TomlValue::Integer(2_500),
+        TomlValue::Integer(5_000),
+        TomlValue::Integer(20_000),
+    ]);
+    let problems = xtask::performance_contract::check_baseline_pilot_v2_evidence(&value, "0.73");
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("i73_freeze_eligible must be false")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("exactly two stable rates")));
+}
+
+#[test]
+fn memory_counter_contract_cannot_touch_epoch_or_hide_underflow() {
+    let mut value = manifest("memory-counter-atomic-contract.toml");
+    value["epoch_algorithm_changed"] = TomlValue::Boolean(true);
+    value["underflow_must_fault"] = TomlValue::Boolean(false);
+    value["dedicated_host_run_allowed_before_local_gates"] = TomlValue::Boolean(true);
+    let problems =
+        xtask::performance_contract::check_memory_counter_atomic_contract(&value, "0.73");
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("epoch_algorithm_changed must be false")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("underflow_must_fault must be true")));
+    assert!(problems.iter().any(|problem| {
+        problem.contains("dedicated_host_run_allowed_before_local_gates must be false")
+    }));
+}

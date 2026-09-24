@@ -796,6 +796,25 @@ Hodges-Lehmann estimate, so a reviewer can reconstruct the decision and see whet
 was influential. Improving measurement here is part of the optimization: it prevents us from
 spending code complexity on a fluctuation the benchmark cannot reproduce.
 
+The first strengthened run still rejected the baseline, but with a much clearer shape. Five paired
+ten-second observations produced Hodges-Lehmann CPU overhead estimates of 3.85%, 1.23%, 3.86%, and
+0.94%. Goodput and p99 passed, all 40 processes completed, and calibration stayed within 1.44%.
+Only two rates passed. This is stronger evidence than the earlier short runs: the residual cost is
+small, workload-dependent, and still real enough to keep I73 unfrozen.
+
+The paired samples also prevent overreacting to one anomaly. One 10,000-rate pair measured 13.61%
+CPU overhead, while the other four measured roughly 1.99%, 2.26%, 3.86%, and 3.94%. The robust
+estimate was 3.86%. Removing the outlier because it is inconvenient would be wrong; letting it
+single-handedly set the answer would also be wrong. Retaining both the samples and the estimator
+makes that distinction reviewable.
+
+The next code target follows directly from attribution and code structure. Each removal updates
+eight retained-memory counters, and every update is a checked compare-and-swap loop. Those counters
+are already protected by an active-mutation epoch. A single `fetch_add` or `fetch_sub` can detect
+wrap from its returned old value and set the fault bit before the guard releases quiescence. That
+removes retry loops without weakening exact snapshots. The active-mutation, version, and epoch
+algorithms remain unchanged because their overflow windows have different synchronization risks.
+
 ## A profiling ladder that avoids expensive runs
 
 Not every development iteration needs a dedicated bare-metal campaign. A useful workflow has several

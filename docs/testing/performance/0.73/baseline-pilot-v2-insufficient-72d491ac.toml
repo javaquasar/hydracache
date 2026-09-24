@@ -1,0 +1,67 @@
+schema_version = 1
+release = "0.73"
+evidence_id = "observer-baseline-pilot-v2-insufficient-72d491ac-v1"
+contract_id = "observer-baseline-pilot-073-v2"
+state = "executed-insufficient-baseline-two-stable-rates"
+evidence_class = "dedicated_host_baseline_only"
+workflow_run_id = 36072021641
+workflow_run_url = "https://github.com/javaquasar/hydracache/actions/runs/36072021641"
+cancelled_auto_admission_run_id = 36072022062
+cancelled_auto_admission_state = "cancelled-before-environment-approval"
+source_sha = "72d491acefff4233b80b208833056b3bfee4779d"
+binary_sha256 = "34ee007d3070a4897a6bb1735d5ccb99fa1cfb801ffc1d37c2fd800c3cf3c521"
+host_fingerprint = "sha256:702282650a14db1fd52ae9f326cadc8909aff5046a18827ffd82ed0ddbfc465d"
+artifact_id = 10838049240
+artifact_name = "performance-baseline-pilot-v2-073-72d491acefff4233b80b208833056b3bfee4779d-36072021641-1"
+artifact_sha256 = "3b7da53a89a3275630aea0896f44263f0f1a6380ed82061f065b91dddab662fc"
+campaign_manifest_sha256 = "109e4aa46294cfd3193809a5ee242d670c7360830372236e1cea307152e0d923"
+preflight_sha256 = "f290213773db7a968a13f8e804a0258853a18bdf8410eda92565e6bcee7de0bd"
+postflight_sha256 = "bcf180b5bc7c4944ca81772aaf301953fe8f4ad216ade8d8634ec71a013c2041"
+baseline_pilot_sha256 = "c63d4065cf27f3ec9e16e7041fed65935a22c5bc9f4b5bff5e3a8966a67fdbfe"
+pre_calibration_relative_spread = 0.014385585291450302
+post_calibration_relative_spread = 0.00984681327228437
+attempts = 40
+failed_attempts = 0
+paired_estimator = "hodges-lehmann-v1"
+stable_rates = [5000, 20000]
+candidate_data_present = false
+candidate_measurement_authorized = false
+i73_freeze_eligible = false
+thresholds_changed = false
+silent_retry_allowed = false
+code_effect_claimed = false
+decision = "optimize-guarded-memory-counter-updates-locally"
+conclusion = "The strengthened pilot passed 5000 and 20000 operations/second at paired CPU overhead estimates of 1.23% and 0.94%. The 2500 and 10000 rates remained above the unchanged 3% ceiling at 3.85% and 3.86%. Forty attempts completed, p99 and goodput gates passed, and host calibration stayed within 1.44%, leaving exactly two stable rates."
+next_evidence = "Preregister replacement of only the eight guarded retained-memory checked_add and checked_sub CAS loops with single atomic fetch operations plus fail-closed wrap detection. Keep active-mutation, version, epoch, queue, workload, and thresholds unchanged; run local overflow, underflow, exactness, and reconciliation gates before another v2 campaign."
+
+[[rate]]
+offered_per_second = 2500
+cpu_per_operation_regression = 0.0385152185865535
+allocation_overhead_bytes_per_operation = 20.322879999999714
+p99_relative_regression = -0.01995798319327731
+goodput_relative_regression = -0.000029683898271034988
+stable = false
+
+[[rate]]
+offered_per_second = 5000
+cpu_per_operation_regression = 0.012339369936227406
+allocation_overhead_bytes_per_operation = 20.38108000000011
+p99_relative_regression = -0.00015044376816041732
+goodput_relative_regression = -0.000018218936499178686
+stable = true
+
+[[rate]]
+offered_per_second = 10000
+cpu_per_operation_regression = 0.03860446887277125
+allocation_overhead_bytes_per_operation = 20.599059999999554
+p99_relative_regression = -0.0030481458669362367
+goodput_relative_regression = 0.0000311918414896739
+stable = false
+
+[[rate]]
+offered_per_second = 20000
+cpu_per_operation_regression = 0.009427878679587366
+allocation_overhead_bytes_per_operation = 20.55643999999984
+p99_relative_regression = 0.00597696089221513
+goodput_relative_regression = -0.000002540431244613078
+stable = true

@@ -1,0 +1,33 @@
+schema_version = 1
+release = "0.73"
+contract_id = "memory-counter-single-atomic-073-v1"
+state = "preregistered-before-implementation"
+triggering_evidence = "docs/testing/performance/0.73/baseline-pilot-v2-insufficient-72d491ac.toml"
+proposal_id = "P73-INSTRUMENTATION-NONBLOCKING-REMOVAL"
+implementation_scope = ["crates/hydracache/src/memory_footprint.rs"]
+optimization = "Replace only MemoryFootprintCounters::checked_add and checked_sub fetch_update CAS loops with one fetch_add or fetch_sub and detect overflow or underflow from the returned previous value."
+counter_updates_inside_mutation_guard = true
+fault_recorded_before_guard_release = true
+overflow_must_fault = true
+underflow_must_fault = true
+exact_snapshot_must_fail_after_fault = true
+active_mutation_algorithm_changed = false
+version_algorithm_changed = false
+epoch_algorithm_changed = false
+counter_set_changed = false
+public_estimator_changed = false
+callback_may_block = false
+callback_may_await = false
+thresholds_changed = false
+candidate_data_allowed = false
+dedicated_host_run_allowed_before_local_gates = false
+rollback = "Restore checked_add and checked_sub from 549fbaeb; do not change observer, active-mutation, version, epoch, workload, or thresholds."
+local_gates = [
+  "forced counter overflow and underflow remain fail-closed for exact capture",
+  "memory_footprint unit and integration suites",
+  "memory_accounting_071 retained-total reconciliation suite",
+  "hydracache check, formatting, and clippy with instrumentation-lab",
+  "standalone observer harness check and clippy",
+  "performance contract and documentation checks",
+]
+success_rule = "Every local gate passes and counter faults become visible before the enclosing mutation guard can release quiescence. Local success authorizes only one unchanged v2 baseline repeat."

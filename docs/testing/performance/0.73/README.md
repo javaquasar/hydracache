@@ -369,3 +369,22 @@ estimator. It hard-rejects reduced repeats, windows, rates, warmup, or a differe
 unit tests cover estimator construction and regression signs; workflow/contract tests require the
 protected lane and absence of a push trigger. `baseline-pilot-v2-product-4979e2e1.toml` admits one
 first v2 run and no candidate measurement.
+
+Run `36072021641` executed v2 at exact source `72d491ac`. All 40 attempts completed. Paired CPU
+overhead was 3.85%, 1.23%, 3.86%, and 0.94%; only 5,000 and 20,000 operations/second passed. The
+10,000 cell contained one 13.61% pair, but the Hodges-Lehmann result remained 3.86%, close to three
+other positive pairs, so the outlier did not decide the cell alone. P99, goodput, and calibration
+passed. `baseline-pilot-v2-insufficient-72d491ac.toml` therefore retains a higher-power negative
+result with I73 still unfrozen.
+
+The next local target is now narrower and evidence-backed. Removal accounting updates eight
+retained-memory atomics; each currently uses a checked compare-and-swap loop while enclosed by an
+active mutation guard. `memory-counter-atomic-contract.toml` permits replacing only those additions
+and subtractions with one atomic operation plus wrap detection. Overflow or underflow must fault
+before the guard releases quiescence, so an exact snapshot cannot observe a wrapped value as clean.
+Active-mutation, version, epoch, public estimates, workload, and thresholds remain untouched.
+
+The same push exposed a separate cost-control issue: the host-admission workflow still had an
+automatic path and queued run `36072022062` behind the shared performance concurrency group. It was
+cancelled before environment approval and ran no job. Commit `e0dc4df5` makes host admission, like
+pilot v2, manual-only; a subsequent ordinary push created no performance run.
