@@ -618,6 +618,16 @@ and every exact snapshot and later mutation drains again or fails closed on uneq
 optimization can therefore remove repeated empty locks without weakening delivery, version checks,
 saturation handling, or exact reconciliation.
 
+That change was deliberately small. The drain path first loads the accepted and acknowledged
+sequences with acquire ordering and returns when they are equal. It does not advance either
+sequence, consume a ticket speculatively, or treat equality as proof for a later snapshot. Tests
+instrument the lock acquisition itself: an empty observer takes no lock, a published removal takes
+exactly one and reaches a clean acknowledged state, and the next empty drain again takes none. The
+broader observer and memory-accounting suites then re-prove duplicate handling, saturation,
+version-conditional tag cleanup, capacity eviction, expiry, and exact reconciliation. This is the
+kind of optimization a local machine can close completely at the mechanism/correctness layer before
+spending another admitted-host run on the quantitative question.
+
 ### Why the ablation must not become the fix
 
 It would be easy to stop here and ship production counters without the listener. That would make the

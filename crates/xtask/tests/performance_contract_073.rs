@@ -589,3 +589,24 @@ fn cpu_attribution_evidence_cannot_authorize_measurement_or_rewrite_the_result()
         .iter()
         .any(|problem| problem.contains("off_to_production")));
 }
+
+#[test]
+fn removal_drain_fast_path_can_only_authorize_the_unchanged_baseline_repeat() {
+    let mut value = manifest("removal-drain-fast-path-affe4390.toml");
+    value["candidate_measurement_authorized"] = TomlValue::Boolean(true);
+    value["baseline_only_repeat_allowed"] = TomlValue::Boolean(false);
+    value["falsifier"]
+        .as_array_mut()
+        .expect("falsifiers")
+        .remove(0);
+    let problems = xtask::performance_contract::check_removal_drain_fast_path(&value, "0.73");
+    assert!(problems
+        .iter()
+        .any(|problem| { problem.contains("candidate_measurement_authorized must be false") }));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("bounded repeat decision")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("empty-drain-lock-elision")));
+}

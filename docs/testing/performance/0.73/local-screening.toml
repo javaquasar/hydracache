@@ -29,6 +29,7 @@ baseline_pilot_contract = "docs/testing/performance/0.73/baseline-pilot-contract
 baseline_pilot_evidence = "docs/testing/performance/0.73/baseline-pilot-insufficient-4ba93a1a.toml"
 cpu_attribution_contract = "docs/testing/performance/0.73/cpu-attribution-contract.toml"
 cpu_attribution_evidence = "docs/testing/performance/0.73/cpu-attribution-ed339846.toml"
+removal_drain_fast_path = "docs/testing/performance/0.73/removal-drain-fast-path-affe4390.toml"
 promotable = false
 numerical_claims_allowed = false
 candidate_thresholds_allowed = false

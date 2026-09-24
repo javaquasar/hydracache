@@ -1,0 +1,53 @@
+schema_version = 1
+release = "0.73"
+evidence_id = "removal-drain-fast-path-affe4390-v1"
+state = "local-correctness-passed-awaiting-baseline-repeat"
+triggering_evidence = "docs/testing/performance/0.73/cpu-attribution-ed339846.toml"
+implementation_commit = "affe4390b6b941f520b9bdb46d65d84d48c0a735"
+implementation_parent = "00fc9c9fdf272d2e092ea74753f6b8cf28cbc896"
+changed_file = "crates/hydracache/src/removal_observer.rs"
+optimization = "Return from RemovalObserver::drain before acquiring the async receiver mutex when the Acquire-loaded accepted and acknowledged sequences are equal."
+race_argument = "The equality check is a no-work hint, not an acknowledgement. Publication after the loads can already occur after an empty try_recv in the old implementation; later mutations drain again, while exact snapshots compare accepted and acknowledged and fail closed if work remains."
+correctness_surface_changed = false
+public_api_changed = false
+thresholds_changed = false
+promotable = false
+numerical_claim_eligible = false
+candidate_measurement_authorized = false
+baseline_only_repeat_allowed = true
+decision = "repeat-unchanged-baseline-only-contract"
+next_evidence = "Run observer-baseline-pilot-073-v1 unchanged on the admitted host. Freeze I73 only if at least three rates pass every original stability and overhead guard."
+validation = [
+  "cargo test -p hydracache removal_observer --lib --locked: 4 passed",
+  "cargo test -p hydracache --test memory_footprint_071 --features instrumentation-lab --locked: 6 passed",
+  "cargo test -p hydracache --test memory_accounting_071 --features instrumentation-lab --locked: 4 passed",
+  "cargo check -p hydracache --lib --tests --features instrumentation-lab --locked: passed",
+  "cargo clippy -p hydracache --lib --tests --features instrumentation-lab --locked -- -D warnings: passed",
+  "cargo check --manifest-path tools/performance-observer-073/Cargo.toml --all-targets --locked: passed",
+  "cargo clippy --manifest-path tools/performance-observer-073/Cargo.toml --all-targets --locked -- -D warnings: passed",
+]
+
+[[falsifier]]
+id = "empty-drain-lock-elision"
+status = "passed"
+evidence = "A fresh observer and a post-drain observer both retain zero/add no receiver-lock acquisitions; a published ticket forces exactly one acquisition and is acknowledged."
+
+[[falsifier]]
+id = "pending-work-not-hidden"
+status = "passed"
+evidence = "The pending-cleanup test still rejects an exact clean state until drain acknowledges the queued ticket."
+
+[[falsifier]]
+id = "duplicate-and-saturation-fail-closed"
+status = "passed"
+evidence = "Duplicate delivery remains idempotent and a one-slot collision/saturation still marks the observer dirty."
+
+[[falsifier]]
+id = "versioned-cleanup"
+status = "passed"
+evidence = "Delayed cleanup of an older version still preserves the newer same-tag membership."
+
+[[falsifier]]
+id = "exact-reconciliation"
+status = "passed"
+evidence = "The full memory-footprint and memory-accounting suites preserve exact production reconciliation across explicit and automatic removals."

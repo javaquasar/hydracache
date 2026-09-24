@@ -51,6 +51,8 @@ const CPU_ATTRIBUTION_CONTRACT: &str =
     "docs/testing/performance/0.73/cpu-attribution-contract.toml";
 const CPU_ATTRIBUTION_EVIDENCE: &str =
     "docs/testing/performance/0.73/cpu-attribution-ed339846.toml";
+const REMOVAL_DRAIN_FAST_PATH: &str =
+    "docs/testing/performance/0.73/removal-drain-fast-path-affe4390.toml";
 const RELEASE: &str = "0.73";
 const PROFILE: &str = "local-screening-073-v1";
 const ENVIRONMENT_CLASS: &str = "local_screening";
@@ -128,6 +130,8 @@ pub fn check_at_root(
         toml::from_str(&fs::read_to_string(root.join(CPU_ATTRIBUTION_CONTRACT))?)?;
     let cpu_attribution_evidence: TomlValue =
         toml::from_str(&fs::read_to_string(root.join(CPU_ATTRIBUTION_EVIDENCE))?)?;
+    let removal_drain_fast_path: TomlValue =
+        toml::from_str(&fs::read_to_string(root.join(REMOVAL_DRAIN_FAST_PATH))?)?;
     let mut problems = check_contract(&contract, release);
     if !root.join(MOKA_OBSERVER_UPSTREAM_DRAFT).is_file() {
         problems.push("notification observer dependency review draft is missing".to_owned());
@@ -191,6 +195,10 @@ pub fn check_at_root(
     ));
     problems.extend(check_cpu_attribution_evidence(
         &cpu_attribution_evidence,
+        release,
+    ));
+    problems.extend(check_removal_drain_fast_path(
+        &removal_drain_fast_path,
         release,
     ));
     problems.extend(check_schema(
@@ -287,6 +295,7 @@ pub fn check_contract(root: &TomlValue, release: &str) -> Vec<String> {
         ("baseline_pilot_evidence", BASELINE_PILOT_EVIDENCE),
         ("cpu_attribution_contract", CPU_ATTRIBUTION_CONTRACT),
         ("cpu_attribution_evidence", CPU_ATTRIBUTION_EVIDENCE),
+        ("removal_drain_fast_path", REMOVAL_DRAIN_FAST_PATH),
     ] {
         if text(root, field) != Some(expected) {
             problems.push(format!("local screening {field} must be {expected}"));
@@ -2147,6 +2156,67 @@ pub fn check_cpu_attribution_evidence(value: &TomlValue, release: &str) -> Vec<S
         || text(value, "next_evidence").is_none_or(str::is_empty)
     {
         problems.push("CPU attribution evidence omits its bounded local decision".to_owned());
+    }
+    problems
+}
+
+pub fn check_removal_drain_fast_path(value: &TomlValue, release: &str) -> Vec<String> {
+    let mut problems = Vec::new();
+    if integer(value, "schema_version") != Some(1)
+        || text(value, "release") != Some(release)
+        || text(value, "evidence_id") != Some("removal-drain-fast-path-affe4390-v1")
+        || text(value, "state") != Some("local-correctness-passed-awaiting-baseline-repeat")
+        || text(value, "triggering_evidence") != Some(CPU_ATTRIBUTION_EVIDENCE)
+        || text(value, "implementation_commit") != Some("affe4390b6b941f520b9bdb46d65d84d48c0a735")
+        || text(value, "implementation_parent") != Some("00fc9c9fdf272d2e092ea74753f6b8cf28cbc896")
+        || text(value, "changed_file") != Some("crates/hydracache/src/removal_observer.rs")
+    {
+        problems.push("removal drain fast-path identity mismatch".to_owned());
+    }
+    for field in [
+        "correctness_surface_changed",
+        "public_api_changed",
+        "thresholds_changed",
+        "promotable",
+        "numerical_claim_eligible",
+        "candidate_measurement_authorized",
+    ] {
+        if boolean(value, field) != Some(false) {
+            problems.push(format!("removal drain fast path {field} must be false"));
+        }
+    }
+    if boolean(value, "baseline_only_repeat_allowed") != Some(true)
+        || text(value, "decision") != Some("repeat-unchanged-baseline-only-contract")
+        || text(value, "optimization").is_none_or(str::is_empty)
+        || text(value, "race_argument").is_none_or(str::is_empty)
+        || text(value, "next_evidence").is_none_or(str::is_empty)
+    {
+        problems.push("removal drain fast path omits its bounded repeat decision".to_owned());
+    }
+    if string_array(value.get("validation")).len() < 7 {
+        problems.push("removal drain fast path validation matrix is incomplete".to_owned());
+    }
+    let falsifiers = value
+        .get("falsifier")
+        .and_then(TomlValue::as_array)
+        .cloned()
+        .unwrap_or_default();
+    for id in [
+        "empty-drain-lock-elision",
+        "pending-work-not-hidden",
+        "duplicate-and-saturation-fail-closed",
+        "versioned-cleanup",
+        "exact-reconciliation",
+    ] {
+        if !falsifiers.iter().any(|item| {
+            text(item, "id") == Some(id)
+                && text(item, "status") == Some("passed")
+                && text(item, "evidence").is_some_and(|evidence| !evidence.is_empty())
+        }) {
+            problems.push(format!(
+                "removal drain fast path omits passing {id} falsifier"
+            ));
+        }
     }
     problems
 }

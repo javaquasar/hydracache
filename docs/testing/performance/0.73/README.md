@@ -294,3 +294,11 @@ callback/cleanup path added a further 1.99%. The complete production path was 3.
 allocated 20.23 additional bytes per operation. `cpu-attribution-ed339846.toml` binds the raw
 packet. The result authorizes only a local optimization of the empty-drain fast path; it does not
 accept production overhead or reopen candidate measurement.
+
+Commit `affe4390` implements the bounded local follow-up: `RemovalObserver::drain` now compares its
+accepted and acknowledged sequences before taking the async receiver mutex. A test-only acquisition
+counter proves that empty drains skip the lock, pending work still forces one acquisition, and the
+next empty drain skips it again. The existing duplicate, saturation, pending-barrier, versioned-tag,
+memory-footprint, and exact-reconciliation suites remain green. The checked-in
+`removal-drain-fast-path-affe4390.toml` receipt authorizes only a repeat of the unchanged
+baseline-only contract; it does not authorize candidate data or change the 3% CPU ceiling.
