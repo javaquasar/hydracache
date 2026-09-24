@@ -531,23 +531,15 @@ impl MemoryFootprintCounters {
     }
 
     fn checked_add(&self, counter: &AtomicU64, delta: u64) {
-        if counter
-            .fetch_update(Ordering::AcqRel, Ordering::Acquire, |value| {
-                value.checked_add(delta)
-            })
-            .is_err()
-        {
+        let previous = counter.fetch_add(delta, Ordering::AcqRel);
+        if previous.checked_add(delta).is_none() {
             self.faulted.store(true, Ordering::Release);
         }
     }
 
     fn checked_sub(&self, counter: &AtomicU64, delta: u64) {
-        if counter
-            .fetch_update(Ordering::AcqRel, Ordering::Acquire, |value| {
-                value.checked_sub(delta)
-            })
-            .is_err()
-        {
+        let previous = counter.fetch_sub(delta, Ordering::AcqRel);
+        if previous < delta {
             self.faulted.store(true, Ordering::Release);
         }
     }
@@ -814,6 +806,39 @@ mod tests {
             MemorySnapshotConsistency::ObservedNonAtomic
         );
         drop(mutation);
+    }
+
+    #[test]
+    fn counter_overflow_faults_before_mutation_releases() {
+        let counters = MemoryFootprintCounters::new(MemoryInstrumentationMode::Production);
+        let mutation = counters.mutation();
+        counters.entries.store(u64::MAX, Ordering::Release);
+
+        counters.checked_add(&counters.entries, 1);
+
+        assert_eq!(counters.barrier(), Err(MemoryFootprintError::CounterFault));
+        assert_eq!(
+            counters.capture(MemorySnapshotRequest::Admin, MemoryCaptureInput::default()),
+            Err(MemoryFootprintError::CounterFault)
+        );
+        drop(mutation);
+        assert_eq!(counters.barrier(), Err(MemoryFootprintError::CounterFault));
+    }
+
+    #[test]
+    fn counter_underflow_faults_before_mutation_releases() {
+        let counters = MemoryFootprintCounters::new(MemoryInstrumentationMode::Production);
+        let mutation = counters.mutation();
+
+        counters.checked_sub(&counters.entries, 1);
+
+        assert_eq!(counters.barrier(), Err(MemoryFootprintError::CounterFault));
+        assert_eq!(
+            counters.capture(MemorySnapshotRequest::Admin, MemoryCaptureInput::default()),
+            Err(MemoryFootprintError::CounterFault)
+        );
+        drop(mutation);
+        assert_eq!(counters.barrier(), Err(MemoryFootprintError::CounterFault));
     }
 
     #[test]
