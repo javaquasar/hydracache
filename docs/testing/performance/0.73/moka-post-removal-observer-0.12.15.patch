@@ -1,0 +1,144 @@
+diff --git a/src/future/base_cache.rs b/src/future/base_cache.rs
+index 04b69fc..79dee52 100644
+--- a/src/future/base_cache.rs
++++ b/src/future/base_cache.rs
+@@ -167,6 +167,7 @@ where
+         weigher: Option<Weigher<K, V>>,
+         eviction_policy: EvictionPolicy,
+         eviction_listener: Option<AsyncEvictionListener<K, V>>,
++        eviction_listener_requires_key_lock: bool,
+         expiration_policy: ExpirationPolicy<K, V>,
+         housekeeper_config: HousekeeperConfig,
+         invalidator_enabled: bool,
+@@ -192,6 +193,7 @@ where
+             weigher,
+             eviction_policy,
+             eviction_listener,
++            eviction_listener_requires_key_lock,
+             r_rcv,
+             w_rcv,
+             expiration_policy,
+@@ -1155,6 +1157,7 @@ where
+         weigher: Option<Weigher<K, V>>,
+         eviction_policy: EvictionPolicy,
+         eviction_listener: Option<AsyncEvictionListener<K, V>>,
++        eviction_listener_requires_key_lock: bool,
+         read_op_ch: Receiver<ReadOp<K, V>>,
+         write_op_ch: Receiver<WriteOp<K, V>>,
+         expiration_policy: ExpirationPolicy<K, V>,
+@@ -1182,8 +1185,9 @@ where
+ 
+         let (removal_notifier, key_locks) = if let Some(listener) = eviction_listener {
+             let rn = Arc::new(RemovalNotifier::new(listener, name.clone()));
+-            let kl = KeyLockMap::with_hasher(build_hasher.clone());
+-            (Some(rn), Some(kl))
++            let key_locks = eviction_listener_requires_key_lock
++                .then(|| KeyLockMap::with_hasher(build_hasher.clone()));
++            (Some(rn), key_locks)
+         } else {
+             (None, None)
+         };
+diff --git a/src/future/builder.rs b/src/future/builder.rs
+index 9ed212b..9a9eba7 100644
+--- a/src/future/builder.rs
++++ b/src/future/builder.rs
+@@ -62,6 +62,7 @@ pub struct CacheBuilder<K, V, C> {
+     weigher: Option<Weigher<K, V>>,
+     eviction_policy: EvictionPolicy,
+     eviction_listener: Option<AsyncEvictionListener<K, V>>,
++    eviction_listener_requires_key_lock: bool,
+     expiration_policy: ExpirationPolicy<K, V>,
+     housekeeper_config: HousekeeperConfig,
+     invalidator_enabled: bool,
+@@ -82,6 +83,7 @@ where
+             weigher: None,
+             eviction_policy: EvictionPolicy::default(),
+             eviction_listener: None,
++            eviction_listener_requires_key_lock: false,
+             expiration_policy: ExpirationPolicy::default(),
+             housekeeper_config: HousekeeperConfig::default(),
+             invalidator_enabled: false,
+@@ -124,6 +126,7 @@ where
+             self.weigher,
+             self.eviction_policy,
+             self.eviction_listener,
++            self.eviction_listener_requires_key_lock,
+             self.expiration_policy,
+             self.housekeeper_config,
+             self.invalidator_enabled,
+@@ -223,6 +226,7 @@ where
+             self.weigher,
+             self.eviction_policy,
+             self.eviction_listener,
++            self.eviction_listener_requires_key_lock,
+             self.expiration_policy,
+             self.housekeeper_config,
+             self.invalidator_enabled,
+@@ -318,7 +322,30 @@ impl<K, V, C> CacheBuilder<K, V, C> {
+             .boxed()
+         };
+ 
+-        self.async_eviction_listener(async_listener)
++        Self {
++            eviction_listener: Some(Box::new(async_listener)),
++            eviction_listener_requires_key_lock: true,
++            ..self
++        }
++    }
++
++    /// Lab-only post-removal observer that does not enable the listener key-lock map.
++    pub fn post_removal_observer<F>(self, observer: F) -> Self
++    where
++        F: Fn(Arc<K>, V, RemovalCause) + Send + Sync + 'static,
++    {
++        let async_observer = move |k, v, c| {
++            {
++                observer(k, v, c);
++                std::future::ready(())
++            }
++            .boxed()
++        };
++        Self {
++            eviction_listener: Some(Box::new(async_observer)),
++            eviction_listener_requires_key_lock: false,
++            ..self
++        }
+     }
+ 
+     /// Sets the eviction listener closure to the cache. The closure should take
+@@ -353,6 +380,7 @@ impl<K, V, C> CacheBuilder<K, V, C> {
+     {
+         Self {
+             eviction_listener: Some(Box::new(listener)),
++            eviction_listener_requires_key_lock: true,
+             ..self
+         }
+     }
+diff --git a/src/future/cache.rs b/src/future/cache.rs
+index 8a97ee4..462f4cd 100644
+--- a/src/future/cache.rs
++++ b/src/future/cache.rs
+@@ -789,6 +789,7 @@ where
+             None,
+             EvictionPolicy::default(),
+             None,
++            false,
+             ExpirationPolicy::default(),
+             HousekeeperConfig::default(),
+             false,
+@@ -821,6 +822,7 @@ where
+         weigher: Option<Weigher<K, V>>,
+         eviction_policy: EvictionPolicy,
+         eviction_listener: Option<AsyncEvictionListener<K, V>>,
++        eviction_listener_requires_key_lock: bool,
+         expiration_policy: ExpirationPolicy<K, V>,
+         housekeeper_config: HousekeeperConfig,
+         invalidator_enabled: bool,
+@@ -835,6 +837,7 @@ where
+                 weigher,
+                 eviction_policy,
+                 eviction_listener,
++                eviction_listener_requires_key_lock,
+                 expiration_policy,
+                 housekeeper_config,
+                 invalidator_enabled,
