@@ -1,0 +1,56 @@
+schema_version = 1
+release = "0.73"
+evidence_class = "local_feasibility"
+experiment = "moka-direct-observer-with-versioned-cleanup"
+source_sha = "779849b67c085d076366c170a99cc950c0169a7b"
+binary_sha256 = "6e4b8b69a7ae6d8029779754fb9083feaa1a8e3e8b29c639d35f2f57eb1a238a"
+receipt_sha256 = "7154131ac53c5ddf671f7007a58e6ca6298d40d76d374f69262eb32285559a57"
+patch_sha256 = "863666a7d03ed938b4f52505f0b8c20c80ebb4d7e0407ebe46a399ee98b95266"
+operations_per_case = 1024
+repetitions = 3
+counterbalanced = true
+verified_causes = ["explicit", "replaced", "expired", "size"]
+versioned_replacement_ordering_verified = true
+diagnostic_only = true
+product_semantics_eligible = false
+promotable = false
+d2_authorized = false
+decision = "direct-observer-lab-feasible-d2-still-required"
+conclusion = "The direct synchronous Moka observer matched listener-off insert allocation exactly at 400.6875 B/op. Its remove median was 2275.4063 B/op versus 2287.7813 off, which is treated as no detected allocation penalty rather than an improvement. The patched backend delivered all four removal causes, and the integrated version-41/version-42 cleanup falsifier preserved the newer membership."
+next_evidence = "Obtain independent review, freeze allocation/RSS rejection limits from baseline-only evidence, and either authorize D2 for an upstream/fork dependency proposal plus product integration or retain this as a negative lab-only result."
+
+[[median_observations]]
+mode = "off"
+operation = "insert"
+gross_allocated_bytes_per_operation = 400.6875
+elapsed_ns = 629900.0
+
+[[median_observations]]
+mode = "listener"
+operation = "insert"
+gross_allocated_bytes_per_operation = 748.734375
+elapsed_ns = 1016400.0
+
+[[median_observations]]
+mode = "observer"
+operation = "insert"
+gross_allocated_bytes_per_operation = 400.6875
+elapsed_ns = 627500.0
+
+[[median_observations]]
+mode = "off"
+operation = "remove"
+gross_allocated_bytes_per_operation = 2287.78125
+elapsed_ns = 568100.0
+
+[[median_observations]]
+mode = "listener"
+operation = "remove"
+gross_allocated_bytes_per_operation = 3053.71875
+elapsed_ns = 1389400.0
+
+[[median_observations]]
+mode = "observer"
+operation = "remove"
+gross_allocated_bytes_per_operation = 2275.40625
+elapsed_ns = 598900.0

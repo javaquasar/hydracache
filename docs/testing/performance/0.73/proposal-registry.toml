@@ -28,6 +28,7 @@ baseline_evidence = [
   "docs/testing/performance/0.73/notification-feasibility-bf9f1382.toml",
   "docs/testing/performance/0.73/notification-observer-prototype-9a2ca114.toml",
   "docs/testing/performance/0.73/moka-observer-spike-5d560170.toml",
+  "docs/testing/performance/0.73/moka-observer-direct-779849b6.toml",
 ]
 
 source_findings = [
@@ -38,6 +39,7 @@ source_findings = [
   "a counterbalanced future-versus-sync microprobe found that sync reduced but did not eliminate no-op-listener allocation overhead",
   "a lab-only versioned observer reference model passes ordering, duplicate, saturation, reconciliation, shutdown, and removal-cause falsifiers without changing the product cache",
   "an isolated Moka patch proved that omitting listener key locks removes the insert allocation penalty while boxed removal delivery remains a separate cost",
+  "a direct synchronous Moka observer matched listener-off allocation, delivered every removal cause, and passed the integrated versioned replacement cleanup falsifier",
 ]
 
 rejected_approaches = [
@@ -70,4 +72,4 @@ required_regression_guards = [
   "allocation and RSS limits frozen before candidate data",
 ]
 
-next_evidence = "Complete the direct synchronous Moka observer spike without boxed futures, then choose an independent reviewer and freeze the practical effect and allocation/RSS rejection limits before authorizing or rejecting D2."
+next_evidence = "Choose an independent reviewer and freeze the practical effect and allocation/RSS rejection limits from baseline-only evidence, then authorize or reject D2 for the upstream/fork dependency proposal and product integration."

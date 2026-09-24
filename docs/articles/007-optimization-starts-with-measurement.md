@@ -353,6 +353,26 @@ cancellation guards. That residual became the next isolated factor. The same spi
 delivery for explicit removal, replacement, expiry, and capacity eviction, so the lower insert cost
 was not obtained by silently dropping an automatic-removal class.
 
+The second patch stopped representing the observer as an async listener at all. It called the
+synchronous observer directly at replacement, invalidation, expiry, and capacity-removal sites;
+ordinary listeners retained their existing locks, futures, cancellation safety, and behavior. The
+observer then matched listener-off insert allocation exactly at 400.69 B/op. Its remove median was
+2,275.41 B/op versus 2,287.78 off. We interpret the small negative difference as no detected
+allocation penalty, not as a speedup from observing removals.
+
+Finally, the harness connected those real Moka callbacks to the versioned bounded-cleanup model.
+It inserted key version 41, replaced it with version 42, delayed cleanup of 41 until after 42 was
+registered, and proved that version 42's membership and retained-byte accounting survived. At that
+point the local spike had implemented and falsified the complete proposed lifecycle: automatic
+delivery, immediate bounded accounting, duplicate suppression, conditional deferred cleanup,
+saturation/dirty epochs, reconciliation, shutdown drain, and fail-closed exact snapshots.
+
+That still does not authorize a product change. The successful code is an isolated patch against a
+development copy of Moka, not HydraCache's locked production dependency. The remaining work is
+governance and qualification: independent review, baseline-only allocation/RSS rejection limits,
+an explicit dependency decision (upstream API or reviewed pinned fork), D2 authorization, and only
+then product integration plus the full local and dedicated-host matrices.
+
 ### The result changed governance, not just code direction
 
 At this point the responsible next action was not to start editing the production cache. We recorded

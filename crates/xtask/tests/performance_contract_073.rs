@@ -307,6 +307,21 @@ fn moka_observer_spike_cannot_hide_unresolved_removal_cost() {
 }
 
 #[test]
+fn direct_moka_observer_cannot_self_authorize_d2_or_drop_ordering_proof() {
+    let mut value = manifest("moka-observer-direct-779849b6.toml");
+    value["d2_authorized"] = TomlValue::Boolean(true);
+    value["promotable"] = TomlValue::Boolean(true);
+    value["versioned_replacement_ordering_verified"] = TomlValue::Boolean(false);
+    let problems = xtask::performance_contract::check_moka_observer_direct(&value, "0.73");
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("must remain lab-only")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("versioned replacement ordering")));
+}
+
+#[test]
 fn pre_i73_proposal_cannot_skip_d2_review_and_threshold_freeze() {
     let mut value = manifest("proposal-registry.toml");
     value["proposals"][0]["state"] = TomlValue::String("d2_authorized".to_owned());

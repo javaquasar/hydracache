@@ -27,6 +27,8 @@ const NOTIFICATION_OBSERVER_REQUIREMENTS: &str =
 const NOTIFICATION_OBSERVER_PROTOTYPE: &str =
     "docs/testing/performance/0.73/notification-observer-prototype-9a2ca114.toml";
 const MOKA_OBSERVER_SPIKE: &str = "docs/testing/performance/0.73/moka-observer-spike-5d560170.toml";
+const MOKA_OBSERVER_DIRECT: &str =
+    "docs/testing/performance/0.73/moka-observer-direct-779849b6.toml";
 const PROPOSAL_REGISTRY: &str = "docs/testing/performance/0.73/proposal-registry.toml";
 const STATISTICS: &str = "docs/testing/performance/0.73/statistics.toml";
 const HOST_PROFILE: &str = "docs/testing/performance/0.73/host-profile.toml";
@@ -77,6 +79,8 @@ pub fn check_at_root(
     )?)?;
     let moka_observer_spike: TomlValue =
         toml::from_str(&fs::read_to_string(root.join(MOKA_OBSERVER_SPIKE))?)?;
+    let moka_observer_direct: TomlValue =
+        toml::from_str(&fs::read_to_string(root.join(MOKA_OBSERVER_DIRECT))?)?;
     let proposal_registry: TomlValue =
         toml::from_str(&fs::read_to_string(root.join(PROPOSAL_REGISTRY))?)?;
     let statistics: TomlValue = toml::from_str(&fs::read_to_string(root.join(STATISTICS))?)?;
@@ -105,6 +109,7 @@ pub fn check_at_root(
         release,
     ));
     problems.extend(check_moka_observer_spike(&moka_observer_spike, release));
+    problems.extend(check_moka_observer_direct(&moka_observer_direct, release));
     problems.extend(check_proposal_registry(&proposal_registry, release));
     problems.extend(check_statistics(&statistics, release));
     problems.extend(check_host_profile(&host_profile, release));
@@ -176,6 +181,7 @@ pub fn check_contract(root: &TomlValue, release: &str) -> Vec<String> {
             NOTIFICATION_OBSERVER_PROTOTYPE,
         ),
         ("moka_observer_spike", MOKA_OBSERVER_SPIKE),
+        ("moka_observer_direct", MOKA_OBSERVER_DIRECT),
         ("proposal_registry", PROPOSAL_REGISTRY),
         ("statistics_contract", STATISTICS),
         ("host_profile", HOST_PROFILE),
@@ -749,6 +755,82 @@ pub fn check_moka_observer_spike(value: &TomlValue, release: &str) -> Vec<String
     for field in ["conclusion", "next_evidence"] {
         if text(value, field).is_none_or(str::is_empty) {
             problems.push(format!("Moka observer spike requires {field}"));
+        }
+    }
+    problems
+}
+
+pub fn check_moka_observer_direct(value: &TomlValue, release: &str) -> Vec<String> {
+    let mut problems = Vec::new();
+    if integer(value, "schema_version") != Some(1)
+        || text(value, "release") != Some(release)
+        || text(value, "evidence_class") != Some("local_feasibility")
+        || text(value, "experiment") != Some("moka-direct-observer-with-versioned-cleanup")
+    {
+        problems.push("direct Moka observer identity mismatch".to_owned());
+    }
+    if boolean(value, "diagnostic_only") != Some(true)
+        || boolean(value, "product_semantics_eligible") != Some(false)
+        || boolean(value, "promotable") != Some(false)
+        || boolean(value, "d2_authorized") != Some(false)
+        || text(value, "decision") != Some("direct-observer-lab-feasible-d2-still-required")
+    {
+        problems
+            .push("direct Moka observer must remain lab-only until D2 is authorized".to_owned());
+    }
+    if text(value, "source_sha").is_none_or(|sha| !full_sha(sha)) {
+        problems.push("direct Moka observer source_sha is not a full SHA".to_owned());
+    }
+    for field in ["binary_sha256", "receipt_sha256", "patch_sha256"] {
+        if text(value, field).is_none_or(|digest| !sha256(digest)) {
+            problems.push(format!("direct Moka observer {field} is not SHA-256"));
+        }
+    }
+    if integer(value, "operations_per_case").is_none_or(|count| count < 1024)
+        || integer(value, "repetitions").is_none_or(|count| count < 3)
+        || boolean(value, "counterbalanced") != Some(true)
+    {
+        problems.push(
+            "direct Moka observer requires three counterbalanced repetitions of at least 1024 operations"
+                .to_owned(),
+        );
+    }
+    let causes: BTreeSet<_> = string_array(value.get("verified_causes"))
+        .into_iter()
+        .collect();
+    for cause in ["explicit", "replaced", "expired", "size"] {
+        if !causes.contains(cause) {
+            problems.push(format!("direct Moka observer omits {cause} cause"));
+        }
+    }
+    if boolean(value, "versioned_replacement_ordering_verified") != Some(true) {
+        problems
+            .push("direct Moka observer requires versioned replacement ordering proof".to_owned());
+    }
+    let observations = value
+        .get("median_observations")
+        .and_then(TomlValue::as_array)
+        .cloned()
+        .unwrap_or_default();
+    for mode in ["off", "listener", "observer"] {
+        for operation in ["insert", "remove"] {
+            if !observations.iter().any(|item| {
+                text(item, "mode") == Some(mode) && text(item, "operation") == Some(operation)
+            }) {
+                problems.push(format!("direct Moka observer omits {mode} {operation}"));
+            }
+        }
+    }
+    for item in &observations {
+        for field in ["gross_allocated_bytes_per_operation", "elapsed_ns"] {
+            if float(item, field).is_none_or(|number| !number.is_finite() || number < 0.0) {
+                problems.push(format!("direct Moka observer has invalid {field}"));
+            }
+        }
+    }
+    for field in ["conclusion", "next_evidence"] {
+        if text(value, field).is_none_or(str::is_empty) {
+            problems.push(format!("direct Moka observer requires {field}"));
         }
     }
     problems

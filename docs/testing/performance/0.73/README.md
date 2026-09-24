@@ -148,6 +148,14 @@ direct observer that bypasses both key locks and listener futures. The standalon
 `tools/moka-observer-spike` keeps this dependency experiment outside the workspace and product
 `Cargo.lock`.
 
+The cumulative direct-observer result is retained in `moka-observer-direct-779849b6.toml`. The
+observer matched off at 400.69 B/op for insert. For remove it measured 2,275.41 B/op against
+2,287.78 off; this small negative delta is treated as no detected allocation penalty, not as an
+improvement. The harness also connected real Moka replacement callbacks to the versioned cleanup
+model and proved that delayed cleanup for version 41 cannot remove version 42's membership. The lab
+implementation is complete; independent review, baseline-only allocation/RSS limits, and explicit
+D2 authorization remain mandatory before changing HydraCache's production dependency or path.
+
 `statistics.toml` freezes the inherited paired estimator, confidence, Holm correction, failure
 retention, five-pair minimum, and throughput/CPU/p99 regression guards before candidate data. Its
 allocation and RSS limits remain explicit unfrozen blockers. `host-profile.toml` is a requirement
