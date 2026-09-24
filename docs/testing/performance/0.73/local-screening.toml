@@ -35,6 +35,7 @@ removal_queue_contract = "docs/testing/performance/0.73/removal-queue-contract.t
 removal_queue_product = "docs/testing/performance/0.73/removal-queue-product-daffd71b.toml"
 baseline_pilot_array_queue_evidence = "docs/testing/performance/0.73/baseline-pilot-insufficient-90a40510.toml"
 removal_sequence_contract = "docs/testing/performance/0.73/removal-sequence-contract.toml"
+removal_sequence_product = "docs/testing/performance/0.73/removal-sequence-product-549fbaeb.toml"
 promotable = false
 numerical_claims_allowed = false
 candidate_thresholds_allowed = false

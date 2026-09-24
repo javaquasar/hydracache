@@ -1,0 +1,63 @@
+schema_version = 1
+release = "0.73"
+evidence_id = "removal-sequence-product-549fbaeb-v1"
+state = "local-correctness-passed-awaiting-baseline-repeat"
+contract = "docs/testing/performance/0.73/removal-sequence-contract.toml"
+triggering_evidence = "docs/testing/performance/0.73/baseline-pilot-insufficient-90a40510.toml"
+implementation_commit = "549fbaeb1d35a9a4ca54aa86344dac275ea0650e"
+implementation_parent = "f8d706a32140cba4c4cb1b5087966a387f3d30d4"
+reviewed_at = "2026-09-25"
+changed_file = "crates/hydracache/src/removal_observer.rs"
+optimization = "Replace each checked AtomicU64 fetch_update CAS loop with one fetch_add and detect wrap from the returned previous value."
+accepted_increment_before_publication_preserved = true
+acknowledged_increment_after_cleanup_preserved = true
+overflow_marks_observer_dirty = true
+overflow_recovery_requires_reconciliation = true
+accepted_acknowledged_barrier_preserved = true
+queue_capacity = 4096
+capacity_changed = false
+callback_may_block = false
+callback_may_await = false
+correctness_surface_changed = false
+public_api_changed = false
+thresholds_changed = false
+promotable = false
+numerical_claim_eligible = false
+candidate_measurement_authorized = false
+baseline_only_repeat_allowed = true
+race_argument = "fetch_add is the linearization point for each sequence. A previous value of u64::MAX wraps the counter but atomically marks the epoch dirty before returning; ensure_clean checks dirty first, so equal wrapped sequences cannot be reported exact. Reconciliation exclusively claims the consumer, aligns acknowledged with accepted, clears slots, and only then clears dirty."
+decision = "repeat-unchanged-baseline-only-contract"
+next_evidence = "Run observer-baseline-pilot-073-v1 unchanged. Freeze I73 only if at least three offered rates pass all original stability and overhead guards."
+
+validation = [
+  "cargo test -p hydracache removal_observer --lib --locked: 6 passed",
+  "cargo test -p hydracache --test memory_footprint_071 --features instrumentation-lab --locked: 6 passed",
+  "cargo test -p hydracache --test memory_accounting_071 --features instrumentation-lab --locked: 4 passed",
+  "cargo check -p hydracache --lib --tests --features instrumentation-lab --locked: passed",
+  "cargo clippy -p hydracache --lib --tests --features instrumentation-lab --locked -- -D warnings: passed",
+  "cargo check --manifest-path tools/performance-observer-073/Cargo.toml --all-targets --locked: passed",
+  "cargo clippy --manifest-path tools/performance-observer-073/Cargo.toml --all-targets --locked -- -D warnings: passed",
+  "cargo fmt -p hydracache -- --check: passed",
+  "cargo xtask performance-contract-check --release 0.73: passed before receipt registration",
+  "cargo xtask doc-check: passed before receipt registration",
+]
+
+[[falsifier]]
+id = "accepted-overflow"
+status = "passed"
+evidence = "The unit test forces accepted from u64::MAX to zero and proves exactness fails with RemovalObserverDirty."
+
+[[falsifier]]
+id = "acknowledged-overflow"
+status = "passed"
+evidence = "The unit test forces acknowledged from u64::MAX to zero and proves equal wrapped sequences cannot hide the dirty epoch."
+
+[[falsifier]]
+id = "overflow-reconciliation"
+status = "passed"
+evidence = "The same test proves reset_after_reconcile restores an exact clean state only after exclusive queue and slot reconciliation."
+
+[[falsifier]]
+id = "existing-removal-semantics"
+status = "passed"
+evidence = "Duplicate, saturation, pending, empty-drain, RAII-claim, versioned-cleanup, memory-footprint, and accounting suites remain green."

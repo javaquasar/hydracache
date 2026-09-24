@@ -764,6 +764,13 @@ important constraint is semantic: overflow must still make the observer dirty an
 must remain unavailable until reconciliation. This optimization is preregistered and tested locally
 before another host minute is spent.
 
+The implementation made the atomic operation itself the sequence linearization point. If
+`fetch_add` returns `u64::MAX`, the counter has wrapped, but the observer marks the epoch dirty before
+returning. Exactness checks consult that dirty bit before comparing the counters, so two equal zeros
+cannot masquerade as a clean state. A forced-overflow test covers both publication and
+acknowledgement and verifies that reconciliation is the only recovery path. This is a useful pattern
+for micro-optimization: remove mechanism, not the invariant that mechanism was protecting.
+
 ## A profiling ladder that avoids expensive runs
 
 Not every development iteration needs a dedicated bare-metal campaign. A useful workflow has several

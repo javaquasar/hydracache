@@ -694,3 +694,17 @@ fn removal_sequence_contract_cannot_hide_overflow_or_skip_local_gates() {
         problem.contains("dedicated_host_run_allowed_before_local_gates must be false")
     }));
 }
+
+#[test]
+fn removal_sequence_product_cannot_claim_performance_or_weaken_overflow_recovery() {
+    let mut value = manifest("removal-sequence-product-549fbaeb.toml");
+    value["overflow_recovery_requires_reconciliation"] = TomlValue::Boolean(false);
+    value["numerical_claim_eligible"] = TomlValue::Boolean(true);
+    let problems = xtask::performance_contract::check_removal_sequence_product(&value, "0.73");
+    assert!(problems.iter().any(|problem| {
+        problem.contains("overflow_recovery_requires_reconciliation must be true")
+    }));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("numerical_claim_eligible must be false")));
+}

@@ -340,3 +340,10 @@ change or justify dropping low rates. `removal-sequence-contract.toml` preregist
 local step: replace two checked atomic CAS loops with single `fetch_add` operations while preserving
 dirty-on-overflow and every exactness rule. No further host run is allowed until those local gates
 pass.
+
+Commit `549fbaeb` implements that micro-optimization. The returned pre-increment value detects
+`u64::MAX`; wrap immediately marks the epoch dirty, and `ensure_clean` checks dirty before comparing
+the now-wrapped sequences. A new test forces overflow on both accepted and acknowledged counters,
+proves that equal wrapped values cannot look exact, and proves that only reconciliation restores a
+clean state. All preregistered local gates passed. `removal-sequence-product-549fbaeb.toml` therefore
+authorizes one unchanged baseline-only repeat, not a candidate campaign or numerical claim.

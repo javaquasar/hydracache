@@ -62,6 +62,8 @@ const BASELINE_PILOT_ARRAY_QUEUE_EVIDENCE: &str =
     "docs/testing/performance/0.73/baseline-pilot-insufficient-90a40510.toml";
 const REMOVAL_SEQUENCE_CONTRACT: &str =
     "docs/testing/performance/0.73/removal-sequence-contract.toml";
+const REMOVAL_SEQUENCE_PRODUCT: &str =
+    "docs/testing/performance/0.73/removal-sequence-product-549fbaeb.toml";
 const RELEASE: &str = "0.73";
 const PROFILE: &str = "local-screening-073-v1";
 const ENVIRONMENT_CLASS: &str = "local_screening";
@@ -153,6 +155,8 @@ pub fn check_at_root(
     )?)?;
     let removal_sequence_contract: TomlValue =
         toml::from_str(&fs::read_to_string(root.join(REMOVAL_SEQUENCE_CONTRACT))?)?;
+    let removal_sequence_product: TomlValue =
+        toml::from_str(&fs::read_to_string(root.join(REMOVAL_SEQUENCE_PRODUCT))?)?;
     let mut problems = check_contract(&contract, release);
     if !root.join(MOKA_OBSERVER_UPSTREAM_DRAFT).is_file() {
         problems.push("notification observer dependency review draft is missing".to_owned());
@@ -237,6 +241,10 @@ pub fn check_at_root(
     ));
     problems.extend(check_removal_sequence_contract(
         &removal_sequence_contract,
+        release,
+    ));
+    problems.extend(check_removal_sequence_product(
+        &removal_sequence_product,
         release,
     ));
     problems.extend(check_schema(
@@ -345,6 +353,7 @@ pub fn check_contract(root: &TomlValue, release: &str) -> Vec<String> {
             BASELINE_PILOT_ARRAY_QUEUE_EVIDENCE,
         ),
         ("removal_sequence_contract", REMOVAL_SEQUENCE_CONTRACT),
+        ("removal_sequence_product", REMOVAL_SEQUENCE_PRODUCT),
     ] {
         if text(root, field) != Some(expected) {
             problems.push(format!("local screening {field} must be {expected}"));
@@ -2569,6 +2578,63 @@ pub fn check_removal_sequence_contract(value: &TomlValue, release: &str) -> Vec<
         || text(value, "success_rule").is_none_or(str::is_empty)
     {
         problems.push("removal sequence contract scope or local gates are incomplete".to_owned());
+    }
+    problems
+}
+
+pub fn check_removal_sequence_product(value: &TomlValue, release: &str) -> Vec<String> {
+    let mut problems = Vec::new();
+    if integer(value, "schema_version") != Some(1)
+        || text(value, "release") != Some(release)
+        || text(value, "evidence_id") != Some("removal-sequence-product-549fbaeb-v1")
+        || text(value, "state") != Some("local-correctness-passed-awaiting-baseline-repeat")
+        || text(value, "contract") != Some(REMOVAL_SEQUENCE_CONTRACT)
+        || text(value, "triggering_evidence") != Some(BASELINE_PILOT_ARRAY_QUEUE_EVIDENCE)
+        || text(value, "implementation_commit") != Some("549fbaeb1d35a9a4ca54aa86344dac275ea0650e")
+        || text(value, "implementation_parent") != Some("f8d706a32140cba4c4cb1b5087966a387f3d30d4")
+        || text(value, "changed_file") != Some("crates/hydracache/src/removal_observer.rs")
+        || integer(value, "queue_capacity") != Some(4_096)
+    {
+        problems.push("removal sequence product identity or bound changed".to_owned());
+    }
+    for field in [
+        "capacity_changed",
+        "callback_may_block",
+        "callback_may_await",
+        "correctness_surface_changed",
+        "public_api_changed",
+        "thresholds_changed",
+        "promotable",
+        "numerical_claim_eligible",
+        "candidate_measurement_authorized",
+    ] {
+        if boolean(value, field) != Some(false) {
+            problems.push(format!("removal sequence product {field} must be false"));
+        }
+    }
+    for field in [
+        "accepted_increment_before_publication_preserved",
+        "acknowledged_increment_after_cleanup_preserved",
+        "overflow_marks_observer_dirty",
+        "overflow_recovery_requires_reconciliation",
+        "accepted_acknowledged_barrier_preserved",
+        "baseline_only_repeat_allowed",
+    ] {
+        if boolean(value, field) != Some(true) {
+            problems.push(format!("removal sequence product {field} must be true"));
+        }
+    }
+    if string_array(value.get("validation")).len() < 10
+        || value
+            .get("falsifier")
+            .and_then(TomlValue::as_array)
+            .is_none_or(|falsifiers| falsifiers.len() < 4)
+        || text(value, "optimization").is_none_or(str::is_empty)
+        || text(value, "race_argument").is_none_or(str::is_empty)
+        || text(value, "decision").is_none_or(str::is_empty)
+        || text(value, "next_evidence").is_none_or(str::is_empty)
+    {
+        problems.push("removal sequence product validation is incomplete".to_owned());
     }
     problems
 }
