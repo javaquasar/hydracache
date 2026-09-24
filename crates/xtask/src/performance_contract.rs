@@ -64,6 +64,10 @@ const REMOVAL_SEQUENCE_CONTRACT: &str =
     "docs/testing/performance/0.73/removal-sequence-contract.toml";
 const REMOVAL_SEQUENCE_PRODUCT: &str =
     "docs/testing/performance/0.73/removal-sequence-product-549fbaeb.toml";
+const BASELINE_PILOT_SEQUENCE_EVIDENCE: &str =
+    "docs/testing/performance/0.73/baseline-pilot-insufficient-862c9015.toml";
+const BASELINE_PILOT_V2_CONTRACT: &str =
+    "docs/testing/performance/0.73/baseline-pilot-v2-contract.toml";
 const RELEASE: &str = "0.73";
 const PROFILE: &str = "local-screening-073-v1";
 const ENVIRONMENT_CLASS: &str = "local_screening";
@@ -157,6 +161,11 @@ pub fn check_at_root(
         toml::from_str(&fs::read_to_string(root.join(REMOVAL_SEQUENCE_CONTRACT))?)?;
     let removal_sequence_product: TomlValue =
         toml::from_str(&fs::read_to_string(root.join(REMOVAL_SEQUENCE_PRODUCT))?)?;
+    let baseline_pilot_sequence_evidence: TomlValue = toml::from_str(&fs::read_to_string(
+        root.join(BASELINE_PILOT_SEQUENCE_EVIDENCE),
+    )?)?;
+    let baseline_pilot_v2_contract: TomlValue =
+        toml::from_str(&fs::read_to_string(root.join(BASELINE_PILOT_V2_CONTRACT))?)?;
     let mut problems = check_contract(&contract, release);
     if !root.join(MOKA_OBSERVER_UPSTREAM_DRAFT).is_file() {
         problems.push("notification observer dependency review draft is missing".to_owned());
@@ -245,6 +254,14 @@ pub fn check_at_root(
     ));
     problems.extend(check_removal_sequence_product(
         &removal_sequence_product,
+        release,
+    ));
+    problems.extend(check_baseline_pilot_sequence_evidence(
+        &baseline_pilot_sequence_evidence,
+        release,
+    ));
+    problems.extend(check_baseline_pilot_v2_contract(
+        &baseline_pilot_v2_contract,
         release,
     ));
     problems.extend(check_schema(
@@ -354,6 +371,11 @@ pub fn check_contract(root: &TomlValue, release: &str) -> Vec<String> {
         ),
         ("removal_sequence_contract", REMOVAL_SEQUENCE_CONTRACT),
         ("removal_sequence_product", REMOVAL_SEQUENCE_PRODUCT),
+        (
+            "baseline_pilot_sequence_evidence",
+            BASELINE_PILOT_SEQUENCE_EVIDENCE,
+        ),
+        ("baseline_pilot_v2_contract", BASELINE_PILOT_V2_CONTRACT),
     ] {
         if text(root, field) != Some(expected) {
             problems.push(format!("local screening {field} must be {expected}"));
@@ -2635,6 +2657,121 @@ pub fn check_removal_sequence_product(value: &TomlValue, release: &str) -> Vec<S
         || text(value, "next_evidence").is_none_or(str::is_empty)
     {
         problems.push("removal sequence product validation is incomplete".to_owned());
+    }
+    problems
+}
+
+pub fn check_baseline_pilot_sequence_evidence(value: &TomlValue, release: &str) -> Vec<String> {
+    let mut problems = Vec::new();
+    if integer(value, "schema_version") != Some(1)
+        || text(value, "release") != Some(release)
+        || text(value, "evidence_id") != Some("observer-baseline-pilot-insufficient-862c9015-v1")
+        || text(value, "contract_id") != Some("observer-baseline-pilot-073-v1")
+        || text(value, "state") != Some("executed-insufficient-baseline-one-stable-rate")
+        || integer(value, "workflow_run_id") != Some(36_070_743_841)
+        || integer(value, "invalid_dispatch_run_id") != Some(36_070_717_512)
+        || text(value, "invalid_dispatch_state") != Some("cancelled-before-environment-approval")
+        || text(value, "source_sha") != Some("862c9015ebde08025c21458d3421be6277d2ca7c")
+        || integer(value, "artifact_id") != Some(10_838_825_744)
+    {
+        problems.push("sequence baseline evidence identity changed".to_owned());
+    }
+    for field in [
+        "artifact_sha256",
+        "campaign_manifest_sha256",
+        "preflight_sha256",
+        "postflight_sha256",
+        "baseline_pilot_sha256",
+        "binary_sha256",
+    ] {
+        if text(value, field).is_none_or(|digest| !sha256(digest)) {
+            problems.push(format!("sequence baseline evidence {field} is not SHA-256"));
+        }
+    }
+    for field in [
+        "candidate_data_present",
+        "candidate_measurement_authorized",
+        "i73_freeze_eligible",
+        "thresholds_changed",
+        "silent_retry_allowed",
+        "code_effect_claimed",
+    ] {
+        if boolean(value, field) != Some(false) {
+            problems.push(format!("sequence baseline evidence {field} must be false"));
+        }
+    }
+    if integer(value, "attempts") != Some(24)
+        || integer(value, "failed_attempts") != Some(0)
+        || integer_array(value.get("stable_rates")) != [20_000]
+    {
+        problems.push("sequence baseline evidence must retain exactly one stable rate".to_owned());
+    }
+    let rates = value
+        .get("rate")
+        .and_then(TomlValue::as_array)
+        .cloned()
+        .unwrap_or_default();
+    if rates.len() != 4
+        || rates
+            .iter()
+            .filter(|rate| boolean(rate, "stable") == Some(true))
+            .count()
+            != 1
+    {
+        problems.push("sequence baseline rate ledger changed".to_owned());
+    }
+    problems
+}
+
+pub fn check_baseline_pilot_v2_contract(value: &TomlValue, release: &str) -> Vec<String> {
+    let mut problems = Vec::new();
+    if integer(value, "schema_version") != Some(1)
+        || text(value, "release") != Some(release)
+        || text(value, "contract_id") != Some("observer-baseline-pilot-073-v2")
+        || text(value, "state") != Some("preregistered-unmeasured")
+        || text(value, "supersedes") != Some(BASELINE_PILOT_CONTRACT)
+        || text(value, "triggering_evidence") != Some(BASELINE_PILOT_SEQUENCE_EVIDENCE)
+        || text(value, "paired_estimator") != Some("hodges-lehmann-v1")
+        || text(value, "workflow_trigger") != Some("manual-only-protected-environment")
+    {
+        problems.push("baseline pilot v2 identity or estimator changed".to_owned());
+    }
+    for field in [
+        "candidate_data_allowed",
+        "promotable",
+        "numerical_claim_eligible",
+        "thresholds_changed",
+        "workload_changed",
+        "offered_rates_changed",
+    ] {
+        if boolean(value, field) != Some(false) {
+            problems.push(format!("baseline pilot v2 {field} must be false"));
+        }
+    }
+    for field in [
+        "counterbalanced_order_required",
+        "independent_processes_required",
+        "complete_outcome_accounting_required",
+        "exact_reconciliation_required",
+    ] {
+        if boolean(value, field) != Some(true) {
+            problems.push(format!("baseline pilot v2 {field} must be true"));
+        }
+    }
+    if integer_array(value.get("offered_rates_per_second")) != [2_500, 5_000, 10_000, 20_000]
+        || integer(value, "repeats_per_rate_and_mode") != Some(5)
+        || integer(value, "window_seconds") != Some(10)
+        || integer(value, "minimum_stable_rates") != Some(3)
+        || float(value, "maximum_goodput_regression") != Some(0.02)
+        || float(value, "maximum_cpu_per_operation_regression") != Some(0.03)
+        || float(value, "maximum_p99_regression") != Some(0.03)
+    {
+        problems.push("baseline pilot v2 volume, rates, or unchanged ceilings changed".to_owned());
+    }
+    if text(value, "selection_rule").is_none_or(str::is_empty)
+        || text(value, "failure_rule").is_none_or(str::is_empty)
+    {
+        problems.push("baseline pilot v2 decision rules are missing".to_owned());
     }
     problems
 }

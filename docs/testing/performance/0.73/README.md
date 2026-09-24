@@ -347,3 +347,17 @@ the now-wrapped sequences. A new test forces overflow on both accepted and ackno
 proves that equal wrapped values cannot look exact, and proves that only reconciliation restores a
 clean state. All preregistered local gates passed. `removal-sequence-product-549fbaeb.toml` therefore
 authorizes one unchanged baseline-only repeat, not a candidate campaign or numerical claim.
+
+Run `36070743841` retained a third insufficient v1 packet. Only 20,000 operations/second passed;
+CPU overhead was 6.62%, 10.13%, 5.46%, and 1.63% across the four rates. All attempts completed and
+pre/post calibration spreads remained below 1.21%. The immediately preceding run had measured
+3.23% at 5,000 and 2.48% at 10,000, so the new packet does not support a causal regression claim for
+the two-instruction sequence change. The v1 estimator uses a ratio of independently summarized mode
+medians from only three pairs; its observed repeatability is now a falsified assumption.
+
+`baseline-pilot-v2-contract.toml` corrects the method without relaxing it. The workload, offered
+rates, seed, outcome rules, 2% goodput ceiling, 3% CPU and p99 ceilings, and three-stable-rate rule
+remain unchanged. V2 increases each cell from three five-second pairs to five ten-second pairs and
+aggregates within-pair differences with the already-frozen Hodges-Lehmann estimator. Its workflow is
+manual-only, so ordinary branch pushes cannot spend the dedicated-host budget. The incorrect-SHA
+dispatch `36070717512` was cancelled before environment approval and executed no job.

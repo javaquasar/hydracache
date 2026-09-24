@@ -1,0 +1,62 @@
+schema_version = 1
+release = "0.73"
+evidence_id = "observer-baseline-pilot-insufficient-862c9015-v1"
+contract_id = "observer-baseline-pilot-073-v1"
+state = "executed-insufficient-baseline-one-stable-rate"
+evidence_class = "dedicated_host_baseline_only"
+workflow_run_id = 36070743841
+workflow_run_url = "https://github.com/javaquasar/hydracache/actions/runs/36070743841"
+invalid_dispatch_run_id = 36070717512
+invalid_dispatch_state = "cancelled-before-environment-approval"
+source_sha = "862c9015ebde08025c21458d3421be6277d2ca7c"
+binary_sha256 = "34ee007d3070a4897a6bb1735d5ccb99fa1cfb801ffc1d37c2fd800c3cf3c521"
+host_fingerprint = "sha256:702282650a14db1fd52ae9f326cadc8909aff5046a18827ffd82ed0ddbfc465d"
+artifact_id = 10838825744
+artifact_name = "performance-baseline-pilot-073-862c9015ebde08025c21458d3421be6277d2ca7c-36070743841-1"
+artifact_sha256 = "78b31185cad608c4ea28d7310ca2fed0407de7b8599ff872c3d3d89478db9622"
+campaign_manifest_sha256 = "66cf7cc02041e60d8ec79e951be805758b8e1c3bc12c6a8650143103d6b3f211"
+preflight_sha256 = "135d32d0bb00eb5a67b7567b71752f55bf67edbd7b3294ac68f49094c76a9cb5"
+postflight_sha256 = "75bcf78792f8e0841ff7ec0b963f1fd193a24881f38eda2dcf7848ed02e0d49c"
+baseline_pilot_sha256 = "1f79ad854359888c9d2e87926643462371953b177405cd625376bd54fabbaa8d"
+pre_calibration_relative_spread = 0.00946641013790533
+post_calibration_relative_spread = 0.01203070693953453
+attempts = 24
+failed_attempts = 0
+stable_rates = [20000]
+candidate_data_present = false
+candidate_measurement_authorized = false
+i73_freeze_eligible = false
+thresholds_changed = false
+silent_retry_allowed = false
+code_effect_claimed = false
+decision = "supersede-underpowered-pilot-estimator-with-preregistered-v2"
+conclusion = "Only 20000 operations/second passed. CPU overhead was 6.62%, 10.13%, 5.46%, and 1.63%. The same host and contract had produced materially different 5000 and 10000 results in the immediately preceding run, while calibration remained inside 1.21%; three pairs summarized as a ratio of independent mode medians are not sufficiently repeatable for another code decision."
+next_evidence = "Preregister pilot v2 with the same workload, rates, and ceilings but five counterbalanced pairs, ten-second windows, and a paired Hodges-Lehmann estimator. Do not infer a code regression or dispatch another v1 run."
+
+[[rate]]
+offered_per_second = 2500
+cpu_per_operation_regression = 0.06624629358555739
+cpu_microseconds_per_operation_delta = 0.5648000000000018
+allocation_overhead_bytes_per_operation = 22.550239999999576
+stable = false
+
+[[rate]]
+offered_per_second = 5000
+cpu_per_operation_regression = 0.10133819010315955
+cpu_microseconds_per_operation_delta = 0.5764400000000004
+allocation_overhead_bytes_per_operation = 20.472160000000258
+stable = false
+
+[[rate]]
+offered_per_second = 10000
+cpu_per_operation_regression = 0.05456761190531969
+cpu_microseconds_per_operation_delta = 0.2328399999999991
+allocation_overhead_bytes_per_operation = 20.56876000000011
+stable = false
+
+[[rate]]
+offered_per_second = 20000
+cpu_per_operation_regression = 0.016296987561028393
+cpu_microseconds_per_operation_delta = 0.05728000000000015
+allocation_overhead_bytes_per_operation = 20.34922000000006
+stable = true

@@ -771,6 +771,24 @@ cannot masquerade as a clean state. A forced-overflow test covers both publicati
 acknowledgement and verifies that reconciliation is the only recovery path. This is a useful pattern
 for micro-optimization: remove mechanism, not the invariant that mechanism was protecting.
 
+The next dedicated repeat invalidated a different assumption: the pilot itself was not repeatable
+enough to steer another micro-optimization. At 5,000 operations/second, successive admitted runs
+reported 3.23% and 10.13% CPU overhead; at 10,000 they reported 2.48% and 5.46%. The host calibration
+spread stayed below 1.21%, every operation completed, and the intervening code change only replaced
+two atomic increment loops. Calling that change a regression would be as unjustified as calling the
+earlier result an improvement.
+
+Counterbalancing alone does not make an estimator paired. The first pilot launched off and
+production in alternating order, but then calculated a median for each mode independently and took
+their ratio. With three short pairs, one expensive production process could move the decision while
+its adjacent control observation was discarded as a pair. The corrected pilot keeps the same
+workload, rates, and ceilings, but uses five ten-second pairs and applies Hodges-Lehmann to the five
+within-pair differences. This increases measurement volume; it does not widen the acceptance gate.
+
+We also removed the workflow's push trigger. Dedicated-host qualification is now manual-only behind
+the protected environment. Cheap correctness and contract checks still run locally, while a normal
+documentation or implementation push cannot accidentally start an expensive campaign.
+
 ## A profiling ladder that avoids expensive runs
 
 Not every development iteration needs a dedicated bare-metal campaign. A useful workflow has several

@@ -708,3 +708,31 @@ fn removal_sequence_product_cannot_claim_performance_or_weaken_overflow_recovery
         .iter()
         .any(|problem| problem.contains("numerical_claim_eligible must be false")));
 }
+
+#[test]
+fn sequence_baseline_cannot_claim_a_code_effect_or_hide_its_single_stable_rate() {
+    let mut value = manifest("baseline-pilot-insufficient-862c9015.toml");
+    value["code_effect_claimed"] = TomlValue::Boolean(true);
+    value["stable_rates"] =
+        TomlValue::Array(vec![TomlValue::Integer(10_000), TomlValue::Integer(20_000)]);
+    let problems =
+        xtask::performance_contract::check_baseline_pilot_sequence_evidence(&value, "0.73");
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("code_effect_claimed must be false")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("exactly one stable rate")));
+}
+
+#[test]
+fn baseline_pilot_v2_cannot_reduce_volume_or_relax_the_original_ceilings() {
+    let mut value = manifest("baseline-pilot-v2-contract.toml");
+    value["repeats_per_rate_and_mode"] = TomlValue::Integer(3);
+    value["window_seconds"] = TomlValue::Integer(5);
+    value["maximum_cpu_per_operation_regression"] = TomlValue::Float(0.10);
+    let problems = xtask::performance_contract::check_baseline_pilot_v2_contract(&value, "0.73");
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("volume, rates, or unchanged ceilings changed")));
+}
