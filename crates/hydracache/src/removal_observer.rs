@@ -26,6 +26,8 @@ pub(crate) struct RemovalObserver {
     acknowledged: AtomicU64,
     dirty: AtomicBool,
     inflight_versions: Box<[AtomicU64]>,
+    #[cfg(test)]
+    drain_lock_acquisitions: AtomicU64,
 }
 
 impl RemovalObserver {
@@ -47,6 +49,8 @@ impl RemovalObserver {
                 .map(|_| AtomicU64::new(0))
                 .collect::<Vec<_>>()
                 .into_boxed_slice(),
+            #[cfg(test)]
+            drain_lock_acquisitions: AtomicU64::new(0),
         }
     }
 
@@ -103,7 +107,13 @@ impl RemovalObserver {
     }
 
     pub(crate) async fn drain(&self, tag_index: &TagIndex) {
+        let accepted = self.accepted.load(Ordering::Acquire);
+        if accepted == self.acknowledged.load(Ordering::Acquire) {
+            return;
+        }
         let mut receiver = self.receiver.lock().await;
+        #[cfg(test)]
+        self.drain_lock_acquisitions.fetch_add(1, Ordering::Relaxed);
         while let Ok(ticket) = receiver.try_recv() {
             tag_index
                 .unregister_if_version(&ticket.key, &ticket.tags, ticket.version)
@@ -252,5 +262,28 @@ mod tests {
 
         observer.drain(&index).await;
         assert!(observer.ensure_clean().is_ok());
+    }
+
+    #[tokio::test]
+    async fn empty_drain_skips_receiver_lock_without_hiding_pending_work() {
+        let memory = Arc::new(MemoryFootprintCounters::new(
+            MemoryInstrumentationMode::Production,
+        ));
+        let observer = RemovalObserver::with_capacity(memory.clone(), 1);
+        let index = TagIndex::default();
+
+        observer.drain(&index).await;
+        assert_eq!(observer.drain_lock_acquisitions.load(Ordering::Relaxed), 0);
+
+        let removed = entry(11, 8, &["tag"]);
+        memory.insert(EntryMemoryDelta::new("key", 8, &removed.tags, true).unwrap());
+        index.register("key", &removed.tags, removed.version).await;
+        observer.observe(Arc::new("key".to_owned()), removed, RemovalCause::Explicit);
+        observer.drain(&index).await;
+        assert_eq!(observer.drain_lock_acquisitions.load(Ordering::Relaxed), 1);
+        assert!(observer.ensure_clean().is_ok());
+
+        observer.drain(&index).await;
+        assert_eq!(observer.drain_lock_acquisitions.load(Ordering::Relaxed), 1);
     }
 }
