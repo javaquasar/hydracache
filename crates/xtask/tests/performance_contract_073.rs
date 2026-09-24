@@ -828,3 +828,22 @@ fn counter_fast_path_baseline_cannot_freeze_or_authorize_a_repeat() {
         .iter()
         .any(|problem| problem.contains("exactly one stable rate")));
 }
+
+#[test]
+fn allocation_attribution_cannot_reduce_volume_or_claim_cpu() {
+    let mut value = manifest("observer-allocation-attribution-contract.toml");
+    value["repeats_per_scenario_and_mode"] = TomlValue::Integer(3);
+    value["cpu_claims_allowed"] = TomlValue::Boolean(true);
+    value["dedicated_host_run_allowed"] = TomlValue::Boolean(true);
+    let problems =
+        xtask::performance_contract::check_observer_allocation_attribution_contract(&value, "0.73");
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("cpu_claims_allowed must be false")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("dedicated_host_run_allowed must be false")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("volume or interpretation changed")));
+}

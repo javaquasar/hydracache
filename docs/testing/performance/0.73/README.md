@@ -407,6 +407,13 @@ itself prove that allocation owns the CPU gap, but it is a concrete owner candid
 is diagnostic-only local isolation of observer delivery and cleanup allocation; no further product
 micro-optimization or dedicated-host repeat is authorized until that cost has an owner.
 
+`observer-allocation-attribution-contract.toml` preregisters that local experiment. It keeps the
+mixed workload intact and adds five isolated operation families, runs five counterbalanced repeats
+of the existing four modes, and retains 120 process receipts. Only gross allocation is interpreted;
+Windows-local CPU and RSS are explicitly unavailable, and the incomplete counters-only/noop modes
+cannot support correctness or release claims. The experiment may identify an owner, but cannot
+authorize its own product change or another reference-host run.
+
 The same push exposed a separate cost-control issue: the host-admission workflow still had an
 automatic path and queued run `36072022062` behind the shared performance concurrency group. It was
 cancelled before environment approval and ran no job. Commit `e0dc4df5` makes host admission, like

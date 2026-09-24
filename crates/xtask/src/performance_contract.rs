@@ -78,6 +78,8 @@ const MEMORY_COUNTER_ATOMIC_PRODUCT: &str =
     "docs/testing/performance/0.73/memory-counter-atomic-product-a205ce0a.toml";
 const BASELINE_PILOT_V2_COUNTER_EVIDENCE: &str =
     "docs/testing/performance/0.73/baseline-pilot-v2-insufficient-2daccb47.toml";
+const OBSERVER_ALLOCATION_ATTRIBUTION_CONTRACT: &str =
+    "docs/testing/performance/0.73/observer-allocation-attribution-contract.toml";
 const RELEASE: &str = "0.73";
 const PROFILE: &str = "local-screening-073-v1";
 const ENVIRONMENT_CLASS: &str = "local_screening";
@@ -188,6 +190,9 @@ pub fn check_at_root(
     )?)?;
     let baseline_pilot_v2_counter_evidence: TomlValue = toml::from_str(&fs::read_to_string(
         root.join(BASELINE_PILOT_V2_COUNTER_EVIDENCE),
+    )?)?;
+    let observer_allocation_attribution_contract: TomlValue = toml::from_str(&fs::read_to_string(
+        root.join(OBSERVER_ALLOCATION_ATTRIBUTION_CONTRACT),
     )?)?;
     let mut problems = check_contract(&contract, release);
     if !root.join(MOKA_OBSERVER_UPSTREAM_DRAFT).is_file() {
@@ -305,6 +310,10 @@ pub fn check_at_root(
     ));
     problems.extend(check_baseline_pilot_v2_counter_evidence(
         &baseline_pilot_v2_counter_evidence,
+        release,
+    ));
+    problems.extend(check_observer_allocation_attribution_contract(
+        &observer_allocation_attribution_contract,
         release,
     ));
     problems.extend(check_schema(
@@ -432,6 +441,10 @@ pub fn check_contract(root: &TomlValue, release: &str) -> Vec<String> {
         (
             "baseline_pilot_v2_counter_evidence",
             BASELINE_PILOT_V2_COUNTER_EVIDENCE,
+        ),
+        (
+            "observer_allocation_attribution_contract",
+            OBSERVER_ALLOCATION_ATTRIBUTION_CONTRACT,
         ),
     ] {
         if text(root, field) != Some(expected) {
@@ -3141,6 +3154,80 @@ pub fn check_baseline_pilot_v2_counter_evidence(value: &TomlValue, release: &str
         || text(value, "next_evidence").is_none_or(str::is_empty)
     {
         problems.push("counter fast-path baseline decision is incomplete".to_owned());
+    }
+    problems
+}
+
+pub fn check_observer_allocation_attribution_contract(
+    value: &TomlValue,
+    release: &str,
+) -> Vec<String> {
+    let mut problems = Vec::new();
+    if integer(value, "schema_version") != Some(1)
+        || text(value, "release") != Some(release)
+        || text(value, "contract_id") != Some("observer-allocation-attribution-073-v1")
+        || text(value, "state") != Some("preregistered-before-tooling")
+        || text(value, "triggering_evidence") != Some(BASELINE_PILOT_V2_COUNTER_EVIDENCE)
+        || text(value, "evidence_class") != Some("local_diagnostic_only")
+    {
+        problems.push("observer allocation attribution contract identity changed".to_owned());
+    }
+    for field in [
+        "cpu_claims_allowed",
+        "rss_claims_allowed",
+        "correctness_claims_from_ablation_modes_allowed",
+        "candidate_data_allowed",
+        "numerical_release_claims_allowed",
+        "promotable",
+        "dedicated_host_run_allowed",
+        "product_source_changes_allowed",
+        "thresholds_changed",
+    ] {
+        if boolean(value, field) != Some(false) {
+            problems.push(format!(
+                "observer allocation attribution contract {field} must be false"
+            ));
+        }
+    }
+    for field in [
+        "counterbalanced_order_required",
+        "independent_processes_required",
+        "prebuilt_binary_required",
+        "binary_sha256_required",
+        "raw_attempts_retained",
+        "failed_attempts_retained",
+        "allocation_measurement_only",
+    ] {
+        if boolean(value, field) != Some(true) {
+            problems.push(format!(
+                "observer allocation attribution contract {field} must be true"
+            ));
+        }
+    }
+    if string_array(value.get("implementation_scope")).len() != 3
+        || string_array(value.get("instrumentation_modes"))
+            != ["off", "counters-only", "observer-noop", "production"]
+        || string_array(value.get("scenarios"))
+            != [
+                "mixed",
+                "get",
+                "replace",
+                "remove-refill",
+                "tag-invalidate-refill",
+                "ttl-put",
+            ]
+        || integer(value, "repeats_per_scenario_and_mode") != Some(5)
+        || integer(value, "operations_per_attempt") != Some(8_192)
+        || integer(value, "offered_rate_per_second") != Some(20_000)
+        || integer(value, "warmup_operations") != Some(4_096)
+        || integer(value, "run_order_seed") != Some(73_074)
+        || text(value, "question").is_none_or(str::is_empty)
+        || text(value, "interpretation_rule").is_none_or(str::is_empty)
+        || text(value, "success_rule").is_none_or(str::is_empty)
+        || text(value, "next_decision").is_none_or(str::is_empty)
+    {
+        problems
+            .push("observer allocation attribution volume or interpretation changed".to_owned());
     }
     problems
 }
