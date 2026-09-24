@@ -21,10 +21,11 @@ const PAYLOAD_BYTES: usize = 128;
 #[derive(Debug)]
 struct ObserverTarget {
     cache: HydraCache,
+    scenario: Scenario,
 }
 
 impl ObserverTarget {
-    fn new(mode: &str) -> Result<Self, Box<dyn Error>> {
+    fn new(mode: &str, scenario: Scenario) -> Result<Self, Box<dyn Error>> {
         let mut builder = HydraCache::local().max_capacity(16 * 1024 * 1024);
         builder = match mode {
             "off" => builder.memory_instrumentation_mode(MemoryInstrumentationMode::Off),
@@ -41,6 +42,7 @@ impl ObserverTarget {
         };
         Ok(Self {
             cache: builder.build(),
+            scenario,
         })
     }
 
@@ -55,6 +57,57 @@ impl ObserverTarget {
             .put(&key, vec![(sequence & 0xff) as u8; PAYLOAD_BYTES], options)
             .await
             .map_err(|error| error.to_string())
+    }
+
+    async fn get(&self, sequence: u64) -> Result<(), String> {
+        let key = format!("observer-073:key:{}", sequence % KEY_COUNT);
+        self.cache
+            .get::<Vec<u8>>(&key)
+            .await
+            .map(|_| ())
+            .map_err(|error| error.to_string())
+    }
+
+    async fn remove_refill(&self, sequence: u64) -> Result<(), String> {
+        let key = format!("observer-073:key:{}", sequence % KEY_COUNT);
+        self.cache
+            .remove(&key)
+            .await
+            .map_err(|error| error.to_string())?;
+        self.put(sequence, None).await
+    }
+
+    async fn tag_invalidate_refill(&self, sequence: u64) -> Result<(), String> {
+        let tag = format!("observer-073:tag:{}", sequence % TAG_COUNT);
+        self.cache
+            .invalidate_tag(&tag)
+            .await
+            .map_err(|error| error.to_string())?;
+        self.put(sequence, None).await
+    }
+
+    async fn execute_scenario(&self, sequence: u64) -> Result<(), String> {
+        match self.scenario {
+            Scenario::Mixed => {
+                let percentile = sequence % 100;
+                if percentile < 40 {
+                    self.get(sequence).await
+                } else if percentile < 65 {
+                    self.put(sequence, None).await
+                } else if percentile < 80 {
+                    self.remove_refill(sequence).await
+                } else if percentile < 90 {
+                    self.tag_invalidate_refill(sequence).await
+                } else {
+                    self.put(sequence, Some(Duration::from_millis(5))).await
+                }
+            }
+            Scenario::Get => self.get(sequence).await,
+            Scenario::Replace => self.put(sequence, None).await,
+            Scenario::RemoveRefill => self.remove_refill(sequence).await,
+            Scenario::TagInvalidateRefill => self.tag_invalidate_refill(sequence).await,
+            Scenario::TtlPut => self.put(sequence, Some(Duration::from_millis(5))).await,
+        }
     }
 }
 
@@ -89,32 +142,7 @@ impl Target for ObserverTarget {
     }
 
     async fn execute(&self, request: TargetRequest) -> TargetOutcome {
-        let sequence = request.sequence;
-        let percentile = sequence % 100;
-        let result = if percentile < 40 {
-            let key = format!("observer-073:key:{}", sequence % KEY_COUNT);
-            self.cache
-                .get::<Vec<u8>>(&key)
-                .await
-                .map(|_| ())
-                .map_err(|error| error.to_string())
-        } else if percentile < 65 {
-            self.put(sequence, None).await
-        } else if percentile < 80 {
-            let key = format!("observer-073:key:{}", sequence % KEY_COUNT);
-            match self.cache.remove(&key).await {
-                Ok(_) => self.put(sequence, None).await,
-                Err(error) => Err(error.to_string()),
-            }
-        } else if percentile < 90 {
-            let tag = format!("observer-073:tag:{}", sequence % TAG_COUNT);
-            match self.cache.invalidate_tag(&tag).await {
-                Ok(_) => self.put(sequence, None).await,
-                Err(error) => Err(error.to_string()),
-            }
-        } else {
-            self.put(sequence, Some(Duration::from_millis(5))).await
-        };
+        let result = self.execute_scenario(request.sequence).await;
         if result.is_ok() {
             TargetOutcome::Success
         } else {
@@ -129,6 +157,9 @@ struct Receipt {
     release: &'static str,
     profile_id: String,
     instrumentation_mode: String,
+    scenario: String,
+    allocation_only: bool,
+    resource_measurement_available: bool,
     offered_rate_per_second: u64,
     operations: u64,
     warmup_operations: u64,
@@ -152,7 +183,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
     let options = Options::parse()?;
     let production_exact = options.mode == "production";
     let correctness_complete = matches!(options.mode.as_str(), "off" | "production");
-    let target = Arc::new(ObserverTarget::new(&options.mode)?);
+    let target = Arc::new(ObserverTarget::new(&options.mode, options.scenario)?);
     target.preload().await?;
     for sequence in 0..options.warmup_operations {
         if target.execute(TargetRequest { sequence }).await != TargetOutcome::Success {
@@ -160,8 +191,11 @@ async fn main() -> Result<(), Box<dyn Error>> {
         }
     }
 
-    let rss_before = process_memory()?;
-    let cpu_before = process_cpu_seconds()?;
+    let (rss_before, cpu_before) = if options.allocation_only {
+        ((0, 0), 0.0)
+    } else {
+        (process_memory()?, process_cpu_seconds()?)
+    };
     let config = OpenLoopConfig {
         offered_rate_per_second: options.rate,
         operations: options.operations,
@@ -176,8 +210,14 @@ async fn main() -> Result<(), Box<dyn Error>> {
     )
     .await;
     let observation = observation?;
-    let cpu_seconds = (process_cpu_seconds()? - cpu_before).max(0.0);
-    let rss_after = process_memory()?;
+    let (cpu_seconds, rss_after) = if options.allocation_only {
+        (0.0, (0, 0))
+    } else {
+        (
+            (process_cpu_seconds()? - cpu_before).max(0.0),
+            process_memory()?,
+        )
+    };
 
     let reconciliation_exact = if production_exact {
         target.cache.reconcile_memory_footprint().await?.matched
@@ -214,16 +254,13 @@ async fn main() -> Result<(), Box<dyn Error>> {
         release: "0.73",
         profile_id: options.profile_id,
         instrumentation_mode: options.mode,
+        scenario: options.scenario.name().to_owned(),
+        allocation_only: options.allocation_only,
+        resource_measurement_available: !options.allocation_only,
         offered_rate_per_second: options.rate,
         operations: options.operations,
         warmup_operations: options.warmup_operations,
-        workload_mix_percent: BTreeMap::from([
-            ("get", 40),
-            ("tagged_put", 25),
-            ("remove_refill", 15),
-            ("tag_invalidate_refill", 10),
-            ("ttl_put", 10),
-        ]),
+        workload_mix_percent: options.scenario.workload_mix_percent(),
         observation,
         gross_allocated_bytes: allocation.gross_allocated_bytes,
         gross_allocated_bytes_per_operation: allocation.gross_allocated_bytes_per_operation,
@@ -285,6 +322,8 @@ fn process_memory() -> Result<(u64, u64), Box<dyn Error>> {
 struct Options {
     profile_id: String,
     mode: String,
+    scenario: Scenario,
+    allocation_only: bool,
     rate: u64,
     operations: u64,
     warmup_operations: u64,
@@ -308,6 +347,15 @@ impl Options {
         let profile_id = values
             .remove("profile-id")
             .unwrap_or_else(|| "observer-baseline-pilot-073-v1".to_owned());
+        let scenario = Scenario::parse(
+            &values
+                .remove("scenario")
+                .unwrap_or_else(|| "mixed".to_owned()),
+        )?;
+        let allocation_only = values
+            .remove("allocation-only")
+            .unwrap_or_else(|| "false".to_owned())
+            .parse()?;
         let mut take = |name: &str| {
             values
                 .remove(name)
@@ -316,6 +364,8 @@ impl Options {
         let options = Self {
             profile_id,
             mode: take("mode")?,
+            scenario,
+            allocation_only,
             rate: take("rate")?.parse()?,
             operations: take("operations")?.parse()?,
             warmup_operations: take("warmup-operations")?.parse()?,
@@ -325,5 +375,57 @@ impl Options {
             return Err("unsupported arguments or zero rate/operations".into());
         }
         Ok(options)
+    }
+}
+
+#[derive(Debug, Clone, Copy)]
+enum Scenario {
+    Mixed,
+    Get,
+    Replace,
+    RemoveRefill,
+    TagInvalidateRefill,
+    TtlPut,
+}
+
+impl Scenario {
+    fn parse(value: &str) -> Result<Self, Box<dyn Error>> {
+        match value {
+            "mixed" => Ok(Self::Mixed),
+            "get" => Ok(Self::Get),
+            "replace" => Ok(Self::Replace),
+            "remove-refill" => Ok(Self::RemoveRefill),
+            "tag-invalidate-refill" => Ok(Self::TagInvalidateRefill),
+            "ttl-put" => Ok(Self::TtlPut),
+            _ => Err(format!("unsupported --scenario {value}").into()),
+        }
+    }
+
+    fn name(self) -> &'static str {
+        match self {
+            Self::Mixed => "mixed",
+            Self::Get => "get",
+            Self::Replace => "replace",
+            Self::RemoveRefill => "remove-refill",
+            Self::TagInvalidateRefill => "tag-invalidate-refill",
+            Self::TtlPut => "ttl-put",
+        }
+    }
+
+    fn workload_mix_percent(self) -> BTreeMap<&'static str, u64> {
+        match self {
+            Self::Mixed => BTreeMap::from([
+                ("get", 40),
+                ("tagged_put", 25),
+                ("remove_refill", 15),
+                ("tag_invalidate_refill", 10),
+                ("ttl_put", 10),
+            ]),
+            Self::Get => BTreeMap::from([("get", 100)]),
+            Self::Replace => BTreeMap::from([("tagged_put", 100)]),
+            Self::RemoveRefill => BTreeMap::from([("remove_refill", 100)]),
+            Self::TagInvalidateRefill => BTreeMap::from([("tag_invalidate_refill", 100)]),
+            Self::TtlPut => BTreeMap::from([("ttl_put", 100)]),
+        }
     }
 }
