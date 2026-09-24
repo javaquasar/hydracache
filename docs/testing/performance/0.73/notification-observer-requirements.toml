@@ -1,12 +1,13 @@
 schema_version = 1
 release = "0.73"
 contract_id = "notification-observer-requirements-073-v1"
-state = "d2-authorized-requirements"
+state = "product-integrated-local-screening-admitted"
 proposal_id = "P73-INSTRUMENTATION-NONBLOCKING-REMOVAL"
 prototype_scope = "completed-lab-prototype"
 d2_authorized = true
 product_mutation_allowed = true
 candidate_measurements_allowed = false
+local_candidate_screening_allowed = true
 review_status = "d2-authorized-pinned-fork"
 selected_direction = "post-removal observer with version-conditional deferred cleanup"
 
@@ -57,4 +58,6 @@ compatibility_invariants = [
 ]
 
 prototype_exit = "The exact-SHA reference model and isolated Moka implementation passed the ordering, delivery, panic, feature, package, supply-chain, and supported-target gates required to authorize D2."
-next_evidence = "Integrate the exact pinned fork revision into HydraCache and make the product-level removal, reconciliation, cancellation, shutdown, compatibility, and rollback falsifiers pass before candidate measurement."
+implementation_commit = "73fc38a131d26e78b246fe93d5edd71d33796bbf"
+implementation_receipt = "docs/testing/performance/0.73/notification-observer-product-73fc38a1.toml"
+next_evidence = "Run append-only local I73-versus-C73 screening as non-promotable rejection evidence. Dedicated-host candidate measurement and every numerical release claim remain disabled until host admission."

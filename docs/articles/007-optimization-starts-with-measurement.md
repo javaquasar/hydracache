@@ -314,10 +314,12 @@ gives every entry an immutable version and stores that version with each tag mem
 cleanup becomes `unregister_if_version(key, removed_version)`: a late notification can clean its own
 state but cannot mutate its successor.
 
-Duplicate accounting is also tied to the entry rather than to an ever-growing event set. Clones of
-one entry share a single atomic removal-accounted flag. The first observer call owns the decrement;
-repeated delivery becomes a no-op. This keeps duplicate detection bounded by live notification
-state instead of accumulating identifiers for the lifetime of the process.
+Duplicate accounting is also bounded rather than tied to an ever-growing event set. The production
+observer uses a fixed array of atomic version slots indexed by the immutable entry version. The
+first in-flight delivery claims its slot; a repeated delivery of the same version becomes a no-op.
+A collision with another in-flight version does not guess: it marks the observer epoch dirty so an
+exact snapshot requires reconciliation. This trades an impossible promise of collision-free
+deduplication for fixed memory and fail-closed semantics.
 
 The cleanup channel is bounded and never fails open. Saturation or closure marks the current
 observer epoch dirty. Lightweight snapshots may disclose that state, while an exact snapshot must
@@ -425,6 +427,64 @@ forbidden until explicit removal, replacement, expiry, capacity eviction, duplic
 saturation, reconciliation, cancellation, shutdown, reentrancy, panic, compatibility, and rollback
 tests pass in HydraCache. Local evidence will still be non-promotable, and the numerical claim still
 requires the admitted dedicated-host pairs frozen earlier.
+
+### What changed when the observer entered the product
+
+The product integration landed as commit
+`73fc38a131d26e78b246fe93d5edd71d33796bbf`. HydraCache now pins the reviewed Moka revision in both
+the manifest and lockfile, and the source policy allowlists only the project fork URL. The revision
+itself remains fixed by `Cargo.toml` and `Cargo.lock`; changing it still requires a new dependency
+receipt rather than moving a branch or tag.
+
+The callback does only work that must happen at logical removal time. It computes the already
+defined entry-memory delta, decrements the atomic counters, claims a bounded version slot, and uses
+`try_send` on a 4,096-ticket channel. It does not await, perform I/O, call back into HydraCache, or
+spawn a task per removal. Tag-index cleanup is performed later by ordinary cache operations,
+diagnostics, snapshot, or reconciliation drains. A membership is now `(key, entry_version)`, so a
+late ticket can remove version 41 without removing version 42.
+
+The queue is bounded, but the production implementation is intentionally not described as
+allocation-free before measurement. It uses Tokio's bounded MPSC channel rather than copying the
+laboratory ring into the product. The important correctness property is that saturation or a
+version-slot collision marks the epoch dirty. Admin snapshots become non-atomic and exact snapshots
+return an error until authoritative reconciliation rebuilds tag membership from the live cache.
+The local allocation screen must now determine whether this concrete integration preserves the
+observer seam's fill-path win and whether mutation costs stay inside the frozen guards.
+
+Adding an eight-byte entry version initially looked like it would invalidate the retained-memory
+baseline. We avoided changing the frozen 72-byte inline `CacheEntry` size by replacing the tag
+container's 24-byte `Vec` header with a 16-byte boxed slice and using the recovered eight bytes for
+the version. This is a useful optimization lesson in miniature: a new correctness field does not
+have to become a new retained-memory tax, but the layout claim must be checked by the existing
+golden estimator rather than inferred from source.
+
+The most valuable failure happened in a compatibility test. An early integration attached the
+observer even when memory instrumentation was `Off`. The cache concurrency matrix then showed a
+different capacity-pressure survivor, because merely enabling Moka's removal path can alter backend
+maintenance behavior. We changed the builder so `Off` attaches no observer at all. The default path
+therefore remains the previous path, while `Production` and the explicit instrumentation profiles
+receive exact removal accounting. This is precisely why performance refactors need behavioral tests
+that appear unrelated to the target metric.
+
+The admission run covered the full HydraCache test suite, compile-fail UI cases, focused memory,
+reclamation, tag-model, cancellation, capacity, replacement, duplicate, saturation, and pending
+barrier falsifiers, Clippy in normal and instrumentation-lab configurations, feature leakage,
+documentation contracts, and the repository supply-chain policy. A detached worktree at the parent
+commit also compiled against crates.io Moka 0.12.15 and passed the previous memory-footprint suite,
+so rollback is executable rather than aspirational.
+
+The implementation review found one governance defect rather than hiding it: the preliminary D2
+file list named the authorized surfaces but omitted several support files required to implement
+them, including `cache.rs`, `entry.rs`, the module declaration, the new observer module, and the
+source-policy file. We recorded that variance and the exact changed-file set in a separate admission
+receipt before running candidate measurements. The thresholds and public API did not change. This
+is another practical reason to separate implementation from measurement: the boundary can still be
+audited and corrected without contaminating the candidate result.
+
+At this point local screening is open only as rejection evidence. It can tell us that the integrated
+candidate is still too expensive and should return to design. It cannot support a published
+numerical improvement. That still requires the admitted Linux host, serialized lease, calibration,
+and five counterbalanced pairs frozen in the D3 contract.
 
 ### The result changed governance, not just code direction
 

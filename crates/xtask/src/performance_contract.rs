@@ -36,6 +36,8 @@ const MOKA_OBSERVER_UPSTREAM_DRAFT: &str =
 const SINGLE_MAINTAINER_REVIEW_POLICY: &str =
     "docs/testing/performance/0.73/single-maintainer-review-policy.toml";
 const MOKA_FORK_DECISION: &str = "docs/testing/performance/0.73/moka-fork-decision-352e53fa.toml";
+const NOTIFICATION_OBSERVER_PRODUCT: &str =
+    "docs/testing/performance/0.73/notification-observer-product-73fc38a1.toml";
 const PROPOSAL_REGISTRY: &str = "docs/testing/performance/0.73/proposal-registry.toml";
 const STATISTICS: &str = "docs/testing/performance/0.73/statistics.toml";
 const HOST_PROFILE: &str = "docs/testing/performance/0.73/host-profile.toml";
@@ -96,6 +98,9 @@ pub fn check_at_root(
     )?)?;
     let moka_fork_decision: TomlValue =
         toml::from_str(&fs::read_to_string(root.join(MOKA_FORK_DECISION))?)?;
+    let notification_observer_product: TomlValue = toml::from_str(&fs::read_to_string(
+        root.join(NOTIFICATION_OBSERVER_PRODUCT),
+    )?)?;
     let proposal_registry: TomlValue =
         toml::from_str(&fs::read_to_string(root.join(PROPOSAL_REGISTRY))?)?;
     let statistics: TomlValue = toml::from_str(&fs::read_to_string(root.join(STATISTICS))?)?;
@@ -137,6 +142,10 @@ pub fn check_at_root(
         release,
     ));
     problems.extend(check_moka_fork_decision(&moka_fork_decision, release));
+    problems.extend(check_notification_observer_product(
+        &notification_observer_product,
+        release,
+    ));
     problems.extend(check_proposal_registry(&proposal_registry, release));
     problems.extend(check_statistics(&statistics, release));
     problems.extend(check_host_profile(&host_profile, release));
@@ -218,6 +227,10 @@ pub fn check_contract(root: &TomlValue, release: &str) -> Vec<String> {
             SINGLE_MAINTAINER_REVIEW_POLICY,
         ),
         ("moka_fork_decision", MOKA_FORK_DECISION),
+        (
+            "notification_observer_product",
+            NOTIFICATION_OBSERVER_PRODUCT,
+        ),
         ("proposal_registry", PROPOSAL_REGISTRY),
         ("statistics_contract", STATISTICS),
         ("host_profile", HOST_PROFILE),
@@ -616,7 +629,7 @@ pub fn check_notification_observer_requirements(value: &TomlValue, release: &str
     if integer(value, "schema_version") != Some(1)
         || text(value, "release") != Some(release)
         || text(value, "contract_id") != Some("notification-observer-requirements-073-v1")
-        || text(value, "state") != Some("d2-authorized-requirements")
+        || text(value, "state") != Some("product-integrated-local-screening-admitted")
         || text(value, "proposal_id") != Some("P73-INSTRUMENTATION-NONBLOCKING-REMOVAL")
         || text(value, "prototype_scope") != Some("completed-lab-prototype")
     {
@@ -625,11 +638,18 @@ pub fn check_notification_observer_requirements(value: &TomlValue, release: &str
     if boolean(value, "d2_authorized") != Some(true)
         || boolean(value, "product_mutation_allowed") != Some(true)
         || boolean(value, "candidate_measurements_allowed") != Some(false)
+        || boolean(value, "local_candidate_screening_allowed") != Some(true)
         || text(value, "review_status") != Some("d2-authorized-pinned-fork")
     {
         problems.push("notification observer requirements must bind D2 to the pinned fork while candidate measurement remains disabled".to_owned());
     }
-    for field in ["selected_direction", "prototype_exit", "next_evidence"] {
+    for field in [
+        "selected_direction",
+        "prototype_exit",
+        "implementation_commit",
+        "implementation_receipt",
+        "next_evidence",
+    ] {
         if text(value, field).is_none_or(str::is_empty) {
             problems.push(format!(
                 "notification observer requirements require {field}"
@@ -939,6 +959,8 @@ pub fn check_notification_observer_d2_review(value: &TomlValue, release: &str) -
         "rollback_class",
         "threshold_derivation",
         "reviewer_action",
+        "implementation_scope_adjudication",
+        "implementation_receipt",
     ] {
         if text(value, field).is_none_or(str::is_empty) {
             problems.push(format!("notification observer D2 review requires {field}"));
@@ -1207,19 +1229,122 @@ pub fn check_moka_fork_decision(value: &TomlValue, release: &str) -> Vec<String>
     problems
 }
 
+pub fn check_notification_observer_product(value: &TomlValue, release: &str) -> Vec<String> {
+    let mut problems = Vec::new();
+    if integer(value, "schema_version") != Some(1)
+        || text(value, "release") != Some(release)
+        || text(value, "evidence_id") != Some("notification-observer-product-73fc38a1-v1")
+        || text(value, "proposal_id") != Some("P73-INSTRUMENTATION-NONBLOCKING-REMOVAL")
+        || text(value, "state") != Some("local-correctness-admitted")
+        || text(value, "implementation_commit") != Some("73fc38a131d26e78b246fe93d5edd71d33796bbf")
+        || text(value, "implementation_parent") != Some("03f893541f6386cbf026c496250e28950c05e0ab")
+        || text(value, "dependency_revision") != Some("352e53faa480c9997272b9c70798dd5b5c15d581")
+    {
+        problems.push("notification observer product admission identity mismatch".to_owned());
+    }
+    if text(value, "review_mode") != Some("single-maintainer-with-compensating-controls")
+        || boolean(value, "promotable") != Some(false)
+        || boolean(value, "numerical_claim_eligible") != Some(false)
+        || boolean(value, "local_candidate_screening_allowed") != Some(true)
+        || boolean(value, "dedicated_candidate_measurement_allowed") != Some(false)
+        || boolean(value, "thresholds_changed") != Some(false)
+        || boolean(value, "public_api_changed") != Some(false)
+        || boolean(value, "instrumentation_off_observer_attached") != Some(false)
+        || boolean(value, "rollback_verified") != Some(true)
+    {
+        problems.push(
+            "product admission must open only non-promotable local screening without changing thresholds or public behavior"
+                .to_owned(),
+        );
+    }
+    if integer(value, "observer_queue_capacity") != Some(4_096)
+        || integer(value, "cache_entry_inline_bytes") != Some(72)
+    {
+        problems
+            .push("product admission observer bounds or frozen entry layout changed".to_owned());
+    }
+    for field in [
+        "scope_variance",
+        "shutdown_conclusion",
+        "reentrancy_conclusion",
+        "next_evidence",
+    ] {
+        if text(value, field).is_none_or(str::is_empty) {
+            problems.push(format!("product admission requires {field}"));
+        }
+    }
+    let expected_files: BTreeSet<_> = [
+        "Cargo.lock",
+        "Cargo.toml",
+        "crates/hydracache/src/builder.rs",
+        "crates/hydracache/src/cache.rs",
+        "crates/hydracache/src/entry.rs",
+        "crates/hydracache/src/lib.rs",
+        "crates/hydracache/src/memory_footprint.rs",
+        "crates/hydracache/src/removal_observer.rs",
+        "crates/hydracache/src/tag_index.rs",
+        "crates/hydracache/src/tests/local_cache.rs",
+        "crates/hydracache/tests/memory_footprint_071.rs",
+        "deny.toml",
+    ]
+    .into_iter()
+    .collect();
+    let changed_files: BTreeSet<_> = string_array(value.get("changed_files"))
+        .into_iter()
+        .collect();
+    if changed_files != expected_files {
+        problems.push(
+            "product admission changed-file ledger does not match implementation commit".to_owned(),
+        );
+    }
+    if string_array(value.get("validation")).len() < 15 {
+        problems.push("product admission validation matrix is incomplete".to_owned());
+    }
+    let falsifiers = value
+        .get("falsifier")
+        .and_then(TomlValue::as_array)
+        .cloned()
+        .unwrap_or_default();
+    for id in [
+        "explicit-replace-invalidate-flush",
+        "ttl-expiry",
+        "capacity-eviction",
+        "delayed-replacement-cleanup",
+        "duplicate-delivery",
+        "queue-saturation",
+        "pending-exact-barrier",
+        "cancellation-gap",
+        "panic-containment",
+        "reentrancy",
+        "shutdown",
+        "default-compatibility",
+        "rollback",
+    ] {
+        if !falsifiers.iter().any(|item| {
+            text(item, "id") == Some(id)
+                && text(item, "status") == Some("passed")
+                && text(item, "evidence").is_some_and(|evidence| !evidence.is_empty())
+        }) {
+            problems.push(format!("product admission omits passing {id} falsifier"));
+        }
+    }
+    problems
+}
+
 pub fn check_proposal_registry(value: &TomlValue, release: &str) -> Vec<String> {
     let mut problems = Vec::new();
     if integer(value, "schema_version") != Some(1)
         || text(value, "release") != Some(release)
-        || text(value, "registry_state") != Some("d2_authorized_pre_i73")
+        || text(value, "registry_state") != Some("product_integrated_local_screening_admitted")
     {
         problems.push("0.73 proposal registry identity mismatch".to_owned());
     }
     if boolean(value, "candidate_measurements_allowed") != Some(false)
+        || boolean(value, "local_candidate_screening_allowed") != Some(true)
         || boolean(value, "product_mutations_allowed") != Some(true)
     {
         problems.push(
-            "pre-I73 D2 registry must allow product mutation but forbid candidate measurement"
+            "integrated registry must allow only local non-promotable screening while dedicated candidate measurement remains disabled"
                 .to_owned(),
         );
     }
@@ -1234,10 +1359,11 @@ pub fn check_proposal_registry(value: &TomlValue, release: &str) -> Vec<String> 
         problems.push("proposal registry omits instrumentation redesign".to_owned());
         return problems;
     };
-    if text(proposal, "state") != Some("d2_authorized")
+    if text(proposal, "state") != Some("product_integrated_local_screening_admitted")
         || boolean(proposal, "d2_authorized") != Some(true)
         || boolean(proposal, "product_mutation_allowed") != Some(true)
         || boolean(proposal, "candidate_measurements_allowed") != Some(false)
+        || boolean(proposal, "local_candidate_screening_allowed") != Some(true)
         || text(proposal, "practical_minimum_effect")
             != Some("fill allocations improve by at least 15%")
         || text(proposal, "threshold_status")
@@ -1259,6 +1385,8 @@ pub fn check_proposal_registry(value: &TomlValue, release: &str) -> Vec<String> 
         "compatibility_outcome",
         "rollback_class",
         "dependency_delta",
+        "implementation_commit",
+        "implementation_receipt",
         "next_evidence",
     ] {
         if text(proposal, field).is_none_or(str::is_empty) {
@@ -1271,6 +1399,14 @@ pub fn check_proposal_registry(value: &TomlValue, release: &str) -> Vec<String> 
     if text(proposal, "dependency_decision") != Some(MOKA_FORK_DECISION) {
         problems
             .push("instrumentation proposal must reference the pinned fork decision".to_owned());
+    }
+    if text(proposal, "implementation_receipt") != Some(NOTIFICATION_OBSERVER_PRODUCT)
+        || text(proposal, "implementation_commit")
+            != Some("73fc38a131d26e78b246fe93d5edd71d33796bbf")
+    {
+        problems.push(
+            "instrumentation proposal must bind the admitted product implementation".to_owned(),
+        );
     }
     for (field, minimum) in [
         ("baseline_evidence", 3),

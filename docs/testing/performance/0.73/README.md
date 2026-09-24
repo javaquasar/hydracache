@@ -187,6 +187,23 @@ proposal without posting anything externally. The dependency receipt explicitly 
 The hardened fork contains panic containment and an explicit nonblocking/non-reentrant callback
 contract; HydraCache still has to prove its own product-level reentrancy and shutdown behavior.
 
+`notification-observer-product-73fc38a1.toml` records that product admission. Implementation commit
+`73fc38a131d26e78b246fe93d5edd71d33796bbf` pins the fork, replaces the async eviction listener with
+a synchronous post-removal observer only when memory instrumentation is enabled, versions entries
+and tag memberships, defers conditional cleanup through a bounded 4,096-ticket queue, and makes
+dirty or pending epochs fail exact snapshots closed. The existing 72-byte `CacheEntry` estimate is
+preserved by storing tags as a boxed slice. Full tests, focused memory/concurrency/model tests,
+normal and instrumentation-lab Clippy, feature-leak checking, `cargo deny`, documentation contracts,
+and the load-generator observer model passed. A detached worktree at parent commit `03f89354` also
+passed the pre-observer check and memory-footprint suite, demonstrating the crates.io-Moka rollback.
+
+The receipt also discloses a preliminary D2 file-ledger omission: several support files required by
+the already-authorized surfaces were not listed before implementation. The exact changed-file set
+and scope adjudication were recorded before any candidate measurement; thresholds and public API
+were unchanged. Product correctness admission now allows append-only local candidate screening as
+non-promotable rejection evidence. `candidate_measurements_allowed` remains false for dedicated or
+promotable evidence until the host profile is admitted and the full D3 campaign runs.
+
 `statistics.toml` freezes the inherited paired estimator, confidence, Holm correction, failure
 retention, five-pair minimum, throughput/CPU/p99 guards, and the single-maintainer-reviewed
 allocation/RSS proposal before product mutation. `host-profile.toml` is a requirement template,

@@ -19,6 +19,7 @@ moka_observer_direct = "docs/testing/performance/0.73/moka-observer-direct-77984
 notification_observer_d2_review = "docs/testing/performance/0.73/notification-observer-d2-review.toml"
 single_maintainer_review_policy = "docs/testing/performance/0.73/single-maintainer-review-policy.toml"
 moka_fork_decision = "docs/testing/performance/0.73/moka-fork-decision-352e53fa.toml"
+notification_observer_product = "docs/testing/performance/0.73/notification-observer-product-73fc38a1.toml"
 proposal_registry = "docs/testing/performance/0.73/proposal-registry.toml"
 statistics_contract = "docs/testing/performance/0.73/statistics.toml"
 host_profile = "docs/testing/performance/0.73/host-profile.toml"

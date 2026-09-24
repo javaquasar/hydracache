@@ -415,6 +415,29 @@ fn moka_fork_decision_requires_exact_revision_and_keeps_measurement_closed() {
 }
 
 #[test]
+fn product_admission_cannot_promote_local_results_or_hide_scope_and_falsifier_gaps() {
+    let mut value = manifest("notification-observer-product-73fc38a1.toml");
+    value["promotable"] = TomlValue::Boolean(true);
+    value["dedicated_candidate_measurement_allowed"] = TomlValue::Boolean(true);
+    value["thresholds_changed"] = TomlValue::Boolean(true);
+    value["changed_files"] = TomlValue::Array(Vec::new());
+    value["falsifier"]
+        .as_array_mut()
+        .expect("falsifier array")
+        .retain(|item| item["id"].as_str() != Some("rollback"));
+    let problems = xtask::performance_contract::check_notification_observer_product(&value, "0.73");
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("only non-promotable local screening")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("changed-file ledger")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("rollback falsifier")));
+}
+
+#[test]
 fn statistics_cannot_weaken_pairs_confidence_or_goodput_guard() {
     let mut value = manifest("statistics.toml");
     value["minimum_admitted_pairs"] = TomlValue::Integer(3);

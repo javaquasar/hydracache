@@ -1,0 +1,123 @@
+schema_version = 1
+release = "0.73"
+evidence_id = "notification-observer-product-73fc38a1-v1"
+proposal_id = "P73-INSTRUMENTATION-NONBLOCKING-REMOVAL"
+state = "local-correctness-admitted"
+implementation_commit = "73fc38a131d26e78b246fe93d5edd71d33796bbf"
+implementation_parent = "03f893541f6386cbf026c496250e28950c05e0ab"
+dependency_revision = "352e53faa480c9997272b9c70798dd5b5c15d581"
+review_mode = "single-maintainer-with-compensating-controls"
+reviewed_at = "2026-09-24"
+promotable = false
+numerical_claim_eligible = false
+local_candidate_screening_allowed = true
+dedicated_candidate_measurement_allowed = false
+thresholds_changed = false
+public_api_changed = false
+instrumentation_off_observer_attached = false
+observer_queue_capacity = 4096
+cache_entry_inline_bytes = 72
+rollback_verified = true
+
+scope_variance = "The pre-implementation D2 file ledger omitted cache.rs, entry.rs, lib.rs, removal_observer.rs, tests/local_cache.rs, and deny.toml. Those files implement or admit only the already-authorized observer, accounting, versioned tag cleanup, tests, and exact dependency source. This receipt records the variance before any candidate measurement; no threshold or public surface changed."
+shutdown_conclusion = "The observer owns no detached worker and publication has no await/cancellation point. Exact barriers drain accepted tickets or fail closed; at final cache drop, the queue, tag index, counters, and entries are destroyed under the same final Arc owner, so no acknowledged cleanup can outlive product state."
+reentrancy_conclusion = "The Moka callback captures only RemovalObserver, whose synchronous observe method has no HydraCache handle, await, I/O, or cache operation; same-cache reentry is structurally unavailable."
+next_evidence = "Run append-only, non-promotable local I73-versus-C73 screening on the exact integrated source. A numerical release claim remains blocked on an admitted dedicated host and five preregistered pairs."
+
+changed_files = [
+  "Cargo.lock",
+  "Cargo.toml",
+  "crates/hydracache/src/builder.rs",
+  "crates/hydracache/src/cache.rs",
+  "crates/hydracache/src/entry.rs",
+  "crates/hydracache/src/lib.rs",
+  "crates/hydracache/src/memory_footprint.rs",
+  "crates/hydracache/src/removal_observer.rs",
+  "crates/hydracache/src/tag_index.rs",
+  "crates/hydracache/src/tests/local_cache.rs",
+  "crates/hydracache/tests/memory_footprint_071.rs",
+  "deny.toml",
+]
+
+validation = [
+  "cargo test -p hydracache --tests --locked: passed, including compile-pass and compile-fail UI cases",
+  "cargo test -p hydracache --lib --locked: 214 passed, 1 ignored",
+  "cargo test -p hydracache --test memory_footprint_071 --locked: 5 passed",
+  "cargo test -p hydracache --test memory_accounting_071 --locked: 4 passed and the frozen 72-byte entry estimator remained unchanged",
+  "cargo test -p hydracache --test cache_core_concurrency_matrix --locked: 5 passed",
+  "cargo test -p hydracache --test reclamation_071 --locked: 2 passed",
+  "cargo test -p hydracache --test tag_index_model_071 --locked: 2 passed",
+  "cargo test -p hydracache-loadgen notification_observer --lib --locked: 7 passed",
+  "cargo clippy -p hydracache --lib --tests --locked -- -D warnings: passed",
+  "cargo clippy -p hydracache --lib --tests --features instrumentation-lab --locked -- -D warnings: passed",
+  "cargo check -p hydracache-loadgen --locked: passed",
+  "cargo run -p xtask --locked -- verify-no-test-features: passed",
+  "cargo deny check: advisories, bans, licenses, and sources passed with only the exact project fork URL allowlisted",
+  "cargo run -p xtask --locked -- performance-contract-check --release 0.73: passed before admission update",
+  "cargo run -p xtask --locked -- doc-check: passed",
+]
+
+[[falsifier]]
+id = "explicit-replace-invalidate-flush"
+status = "passed"
+evidence = "memory_footprint_071 and memory_accounting_071 exercise insert, replacement, explicit removal, tag invalidation, and flush with exact reconciliation"
+
+[[falsifier]]
+id = "ttl-expiry"
+status = "passed"
+evidence = "memory_footprint_071 expires a tagged entry and observes zero live entries and released generation state"
+
+[[falsifier]]
+id = "capacity-eviction"
+status = "passed"
+evidence = "memory_footprint_071 forces capacity eviction and exact reconciliation"
+
+[[falsifier]]
+id = "delayed-replacement-cleanup"
+status = "passed"
+evidence = "a delayed old-version cleanup cannot remove the new same-tag membership"
+
+[[falsifier]]
+id = "duplicate-delivery"
+status = "passed"
+evidence = "RemovalObserver unit test proves duplicate in-flight delivery cannot decrement twice"
+
+[[falsifier]]
+id = "queue-saturation"
+status = "passed"
+evidence = "RemovalObserver unit test saturates a one-slot observer, requires dirty exact state, and recovers only by reconciliation"
+
+[[falsifier]]
+id = "pending-exact-barrier"
+status = "passed"
+evidence = "RemovalObserver unit test rejects exactness until accepted cleanup is acknowledged"
+
+[[falsifier]]
+id = "cancellation-gap"
+status = "passed"
+evidence = "publication is synchronous with no await; cancellation_safety and memory_footprint_071 cancellation cases pass"
+
+[[falsifier]]
+id = "panic-containment"
+status = "passed"
+evidence = "the exact pinned Moka revision catches the observer panic, disables later callbacks, and keeps the cache usable; its full test suite passed before pinning"
+
+[[falsifier]]
+id = "reentrancy"
+status = "passed"
+evidence = "the product callback captures only RemovalObserver and cannot access or reenter HydraCache"
+
+[[falsifier]]
+id = "shutdown"
+status = "passed"
+evidence = "there is no detached cleanup task or cancellable publication future; exact drains are owned by the cache and final drop destroys the queue and all dependent ownership state together"
+
+[[falsifier]]
+id = "default-compatibility"
+status = "passed"
+evidence = "instrumentation Off attaches no observer; the full test suite and cache concurrency matrix pass on the unchanged default path"
+
+[[falsifier]]
+id = "rollback"
+status = "passed"
+evidence = "detached worktree at 03f893541f6386cbf026c496250e28950c05e0ab passed cargo check -p hydracache --locked and all four pre-observer memory_footprint_071 tests"

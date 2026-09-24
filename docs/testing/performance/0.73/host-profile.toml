@@ -56,6 +56,6 @@ admission_blockers = [
   "no admitted host fingerprint",
   "no serialized lease receipt",
   "no pre/post calibration receipt",
-  "I73 instrumentation overhead is unresolved",
-  "notification observer product integration and local correctness admission are pending",
+  "local I73-versus-C73 screening has not yet shown that the integrated observer clears the frozen rejection thresholds",
+  "no dedicated-host candidate evidence exists for the integrated observer",
 ]

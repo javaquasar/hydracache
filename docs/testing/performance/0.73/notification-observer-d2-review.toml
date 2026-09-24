@@ -43,12 +43,21 @@ candidate_evidence_excluded_from_threshold_derivation = [
 authorized_files_if_d2_approved = [
   "Cargo.toml",
   "Cargo.lock",
+  "deny.toml",
   "crates/hydracache/src/builder.rs",
+  "crates/hydracache/src/cache.rs",
+  "crates/hydracache/src/entry.rs",
+  "crates/hydracache/src/lib.rs",
   "crates/hydracache/src/memory_footprint.rs",
+  "crates/hydracache/src/removal_observer.rs",
   "crates/hydracache/src/tag_index.rs",
+  "crates/hydracache/src/tests/local_cache.rs",
   "crates/hydracache/tests",
   "crates/hydracache-loadgen",
 ]
+
+implementation_scope_adjudication = "Implementation commit 73fc38a131d26e78b246fe93d5edd71d33796bbf exposed omissions in the preliminary file ledger. The added files are support files required by the already-authorized observer, immutable entry version, conditional tag cleanup, dependency policy, and tests. This adjudication was recorded before candidate measurement; authorized surfaces and frozen thresholds did not change."
+implementation_receipt = "docs/testing/performance/0.73/notification-observer-product-73fc38a1.toml"
 
 authorized_surfaces_if_d2_approved = [
   "Moka future-cache post-removal observation seam",
