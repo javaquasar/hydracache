@@ -57,4 +57,4 @@ compatibility_invariants = [
 ]
 
 prototype_exit = "A lab-only prototype must make every falsifier fail for the intended reason and demonstrate that the observer-disabled mutation path remains identical before independent review may authorize D2."
-next_evidence = "Build a lab-only observer adapter or upstream patch spike with version-conditional cleanup, then measure its isolated allocation cost without using the result as product or release evidence."
+next_evidence = "Retain the exact-SHA reference-model receipt, then build an upstream-compatible Moka patch spike that invokes the same version-conditional contract for automatic removals without enabling listener key locks."

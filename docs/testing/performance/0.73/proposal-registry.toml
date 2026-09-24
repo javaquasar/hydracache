@@ -34,6 +34,7 @@ source_findings = [
   "updates and invalidations add shared boxed notification futures and cancellation guards",
   "moka 0.12.16 retains blocking synchronous/asynchronous eviction-listener APIs and exposes no nonblocking post-removal observer",
   "a counterbalanced future-versus-sync microprobe found that sync reduced but did not eliminate no-op-listener allocation overhead",
+  "a lab-only versioned observer reference model passes ordering, duplicate, saturation, reconciliation, shutdown, and removal-cause falsifiers without changing the product cache",
 ]
 
 rejected_approaches = [
@@ -66,4 +67,4 @@ required_regression_guards = [
   "allocation and RSS limits frozen before candidate data",
 ]
 
-next_evidence = "Build the lab-only version-conditional observer spike defined by notification-observer-requirements.toml, choose an independent reviewer, freeze the practical effect and allocation/RSS rejection limits, then authorize or reject D2 before any production-path candidate measurement."
+next_evidence = "Retain the exact-SHA reference-model receipt, build the upstream-compatible Moka observer patch spike, choose an independent reviewer, and freeze the practical effect and allocation/RSS rejection limits before authorizing or rejecting D2."

@@ -11,6 +11,7 @@ pub mod knee;
 pub mod memory_efficiency;
 pub mod metrics_honesty;
 pub mod notification_feasibility;
+pub mod notification_observer;
 pub mod overload;
 pub mod profile;
 pub mod rate;

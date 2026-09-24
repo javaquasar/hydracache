@@ -299,6 +299,38 @@ remaining design space is narrower: an exact nonblocking removal-observation sea
 ownership design that avoids enabling listener-backed mutation locking. Either still needs review,
 pre-frozen allocation/RSS limits, and the full removal-correctness matrix before D2.
 
+### Turning the result into an implementable observer
+
+The chosen direction is a separate post-removal observer, not a faster implementation of the same
+async listener. The distinction matters. The observer must run only after a logical removal wins,
+must not return a future, acquire the listener-enabled per-key lock, allocate a boxed future, or
+spawn one task per removal. Its synchronous work is limited to atomic accounting and publication
+into a preallocated bounded cleanup channel.
+
+Removing the await point creates an ordering problem that the old listener previously hid. Suppose
+entry version 41 is removed, version 42 is inserted under the same key, and cleanup for 41 runs
+late. A key-only cleanup could delete version 42's tag membership. The replacement design therefore
+gives every entry an immutable version and stores that version with each tag membership. Deferred
+cleanup becomes `unregister_if_version(key, removed_version)`: a late notification can clean its own
+state but cannot mutate its successor.
+
+Duplicate accounting is also tied to the entry rather than to an ever-growing event set. Clones of
+one entry share a single atomic removal-accounted flag. The first observer call owns the decrement;
+repeated delivery becomes a no-op. This keeps duplicate detection bounded by live notification
+state instead of accumulating identifiers for the lifetime of the process.
+
+The cleanup channel is bounded and never fails open. Saturation or closure marks the current
+observer epoch dirty. Lightweight snapshots may disclose that state, while an exact snapshot must
+either wait for every accepted cleanup, rebuild from an authoritative quiescent entry list, or
+return an error. It must never label incomplete counters or tag ownership as exact. Reconciliation
+also drains stale queued work before rebuilding, so an old ticket cannot mutate the rebuilt index.
+
+We first implemented these rules as a development-only reference model rather than altering the
+production cache. Its falsifiers cover delayed old-version cleanup, duplicate delivery, queue
+saturation, pending cleanup at an exact barrier, cancellation, and explicit, replacement, expiry,
+and capacity-removal causes. This separates proof of the lifecycle contract from the later Moka API
+spike and ensures that a low allocation number cannot excuse incorrect cleanup.
+
 ### The result changed governance, not just code direction
 
 At this point the responsible next action was not to start editing the production cache. We recorded

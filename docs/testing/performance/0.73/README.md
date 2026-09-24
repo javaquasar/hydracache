@@ -113,6 +113,18 @@ cancellation, or an incomplete drain fail an exact snapshot closed. The contract
 product mutation and candidate measurement until independent review and threshold freeze authorize
 D2.
 
+The executable reference model lives in `hydracache-loadgen::notification_observer`. It implements
+the version-conditional index, shared per-entry duplicate guard, preallocated bounded queue, dirty
+epoch, fail-closed exact snapshot, reconciliation, and shutdown drain without touching the product
+cache. Its local allocation probe can be run with:
+
+```text
+cargo run -p hydracache-loadgen --release --locked --bin hydracache-notification-observer-prototype -- --output target/performance-evidence/0.73/local/<new-receipt>.json
+```
+
+The receipt is diagnostic and non-promotable. It measures the reference publication/drain
+mechanism, not Moka automatic eviction or HydraCache product semantics.
+
 `statistics.toml` freezes the inherited paired estimator, confidence, Holm correction, failure
 retention, five-pair minimum, and throughput/CPU/p99 regression guards before candidate data. Its
 allocation and RSS limits remain explicit unfrozen blockers. `host-profile.toml` is a requirement
