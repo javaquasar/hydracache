@@ -1,14 +1,15 @@
 schema_version = 1
 release = "0.73"
-registry_state = "product_integrated_local_screening_admitted"
+registry_state = "local_screening_passed_awaiting_d3"
 candidate_measurements_allowed = false
 local_candidate_screening_allowed = true
+local_candidate_screening_completed = true
 product_mutations_allowed = true
 
 [[proposals]]
 proposal_id = "P73-INSTRUMENTATION-NONBLOCKING-REMOVAL"
 work_item = "W0-W1"
-state = "product_integrated_local_screening_admitted"
+state = "local_screening_passed_awaiting_d3"
 d2_authorized = true
 product_mutation_allowed = true
 owner = "Moka future-cache removal notification path"
@@ -22,10 +23,12 @@ dependency_delta = "exact git revision 352e53faa480c9997272b9c70798dd5b5c15d581 
 review_status = "d2-authorized-pinned-fork"
 candidate_measurements_allowed = false
 local_candidate_screening_allowed = true
+local_candidate_screening_completed = true
 d2_review_candidate = "docs/testing/performance/0.73/notification-observer-d2-review.toml"
 dependency_decision = "docs/testing/performance/0.73/moka-fork-decision-352e53fa.toml"
 implementation_commit = "73fc38a131d26e78b246fe93d5edd71d33796bbf"
 implementation_receipt = "docs/testing/performance/0.73/notification-observer-product-73fc38a1.toml"
+local_screening_evidence = "docs/testing/performance/0.73/local-observer-product-screening-06a8bd95.toml"
 
 baseline_evidence = [
   "docs/testing/performance/0.73/local-overhead-screening-307b3500.toml",
@@ -78,4 +81,4 @@ required_regression_guards = [
   "allocation and RSS limits frozen before candidate data",
 ]
 
-next_evidence = "Run local candidate screening without changing the frozen thresholds. Keep every local result non-promotable and require admitted dedicated-host evidence for a numerical release claim."
+next_evidence = "Admit the dedicated Linux host and run the preregistered D3 campaign. Keep the successful local screen non-promotable and outside numerical release claims."

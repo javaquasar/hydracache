@@ -438,6 +438,44 @@ fn product_admission_cannot_promote_local_results_or_hide_scope_and_falsifier_ga
 }
 
 #[test]
+fn local_product_screen_cannot_be_promoted_or_weaken_the_frozen_fill_gate() {
+    let mut value = manifest("local-observer-product-screening-06a8bd95.toml");
+    value["promotable"] = TomlValue::Boolean(true);
+    value["thresholds_changed"] = TomlValue::Boolean(true);
+    value["candidate_screening_sha256"] = TomlValue::String("f".repeat(64));
+    let fill = value["metric"]
+        .as_array_mut()
+        .expect("metric array")
+        .iter_mut()
+        .find(|metric| metric["name"].as_str() == Some("fill_allocated_bytes_per_operation"))
+        .expect("fill metric");
+    fill["relative_change"] = TomlValue::Float(-0.10);
+    fill["minimum_relative_improvement"] = TomlValue::Float(0.10);
+    let peak = value["metric"]
+        .as_array_mut()
+        .expect("metric array")
+        .iter_mut()
+        .find(|metric| metric["name"].as_str() == Some("peak_rss_delta_bytes"))
+        .expect("peak RSS metric");
+    peak["candidate_production_over_off"] = TomlValue::Float(0.10);
+    peak["candidate_absolute_over_off"] = TomlValue::Float(2_097_152.0);
+    let problems =
+        xtask::performance_contract::check_local_observer_product_screening(&value, "0.73");
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("must remain non-promotable")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("does not match retained evidence")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("frozen 15% fill gate")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("peak_rss_delta_bytes guard")));
+}
+
+#[test]
 fn statistics_cannot_weaken_pairs_confidence_or_goodput_guard() {
     let mut value = manifest("statistics.toml");
     value["minimum_admitted_pairs"] = TomlValue::Integer(3);

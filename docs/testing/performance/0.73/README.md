@@ -204,6 +204,17 @@ were unchanged. Product correctness admission now allows append-only local candi
 non-promotable rejection evidence. `candidate_measurements_allowed` remains false for dedicated or
 promotable evidence until the host profile is admitted and the full D3 campaign runs.
 
+`local-observer-product-screening-06a8bd95.toml` retains the resulting local comparison. We rebuilt
+the pre-observer control at exact commit `03f89354` and the admitted candidate at `06a8bd95`, then
+ran five counterbalanced off/production pairs for each source on the same privacy-safe host
+fingerprint with seed 7302. Candidate production fill allocation fell from 3,040.38 to 2,479.31
+B/op (`-18.45%`), clearing the frozen 15% local rejection minimum, while the within-candidate fill
+overhead was approximately zero. Expire/delete fell 26.23%, refill 24.95%, post-idle RSS 23.89%,
+and peak RSS 19.50%; steady-read allocation increased by only 1.25 B/op (0.40%). The summary binds
+both clean source contexts, binaries, raw `screening.json` digests, and the unchanged thresholds.
+It is still `promotable: false`: the campaigns were sequential on a local Windows workstation and
+do not replace admitted-host calibration, confidence intervals, CPU/p99 gates, or D3 qualification.
+
 `statistics.toml` freezes the inherited paired estimator, confidence, Holm correction, failure
 retention, five-pair minimum, throughput/CPU/p99 guards, and the single-maintainer-reviewed
 allocation/RSS proposal before product mutation. `host-profile.toml` is a requirement template,
@@ -216,6 +227,11 @@ Validate a generated receipt:
 ```text
 cargo xtask performance-contract-check --release 0.73 --receipt target/performance-evidence/0.73/local/<attempt>/receipt.json
 ```
+
+This command validates receipts produced by `performance-local-receipt`. The per-attempt
+`receipt.json` written by `performance-overhead-screen` is a loadgen memory-efficiency receipt with
+a different schema; the screen command validates that receipt internally and binds its digest in
+`screening.json`. Do not pass the loadgen receipt to `performance-contract-check --receipt`.
 
 Generate that receipt with `cargo xtask performance-local-receipt`. The command takes the context,
 prebuilt binary, frozen scenario, raw-series and outcome JSON paths plus the pair metadata shown by

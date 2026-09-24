@@ -486,6 +486,47 @@ candidate is still too expensive and should return to design. It cannot support 
 numerical improvement. That still requires the admitted Linux host, serialized lease, calibration,
 and five counterbalanced pairs frozen in the D3 contract.
 
+### What the integrated local screen found
+
+We did not compare the new candidate only with an old table. We rebuilt the exact pre-observer
+commit and the admitted candidate, captured a clean privacy-safe context for each, and ran five
+counterbalanced off/production pairs per source on the same local host with the same seed. The two
+source campaigns were sequential rather than interleaved, so the result remains a screen, not a
+qualification experiment.
+
+The primary allocation result nevertheless became clear enough for a local go/no-go decision:
+
+| Metric | Pre-observer production | Observer production | Change |
+| --- | ---: | ---: | ---: |
+| Fill allocation per operation | 3,040.38 B | 2,479.31 B | -18.45% |
+| Steady-read allocation per operation | 315.19 B | 316.44 B | +0.40% |
+| Expire/delete allocation per operation | 3,139.13 B | 2,315.63 B | -26.23% |
+| Refill allocation per operation | 1,402.34 B | 1,052.47 B | -24.95% |
+| Post-idle RSS growth from cold | 720 KiB | 548 KiB | -23.89% |
+| Peak RSS growth from cold | 800 KiB | 644 KiB | -19.50% |
+
+The fill result clears the preregistered 15% local rejection minimum without moving the threshold.
+More importantly, the within-candidate off/production medians were 2,480.88 and 2,479.31 B/op: the
+old listener's 581.06 B/op fill overhead was no longer visible. That normalized comparison matters
+because the absolute off floor moved slightly between source builds.
+
+The mutation result did not come from deleting accounting work. The same candidate passed exact
+reconciliation for explicit removal, replacement, expiry, capacity eviction, tag invalidation, and
+flush. Expire/delete still cost 48.5 B/op more in production than off, but that is 2.14%, inside the
+frozen 3% guard and far below the old 872 B/op listener overhead. Steady reads moved by 1.25 B/op,
+also inside both the 3% and 16-byte guard. The candidate's post-idle and peak RSS deltas were 20 KiB
+above its off mode, inside the 5%/1 MiB local envelope.
+
+Elapsed time is the least trustworthy part of this screen. Candidate production was 1.5% faster
+than the pre-observer production median, while individual within-source pairs varied widely. We
+record this as “no local slowdown detected,” not as a speedup. CPU per operation, p99, the 95%
+Hodges-Lehmann interval, host calibration, and stable offered-rate windows still belong to the
+dedicated D3 run.
+
+This is the desired role of local performance work: the candidate has earned the expensive run,
+not the conclusion. Had fill failed the 15% minimum or an allocation/RSS guard, we would have gone
+back to the design without consuming dedicated-host time.
+
 ### The result changed governance, not just code direction
 
 Before the fork decision, the responsible next action was not to start editing the production cache.

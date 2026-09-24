@@ -1,0 +1,111 @@
+schema_version = 1
+release = "0.73"
+evidence_id = "local-observer-product-screening-06a8bd95-v1"
+evidence_class = "local_screening"
+state = "passed-local-rejection-gates-awaiting-d3"
+proposal_id = "P73-INSTRUMENTATION-NONBLOCKING-REMOVAL"
+implementation_commit = "73fc38a131d26e78b246fe93d5edd71d33796bbf"
+baseline_source_sha = "03f893541f6386cbf026c496250e28950c05e0ab"
+candidate_source_sha = "06a8bd95c9650abd5a77aa480bc1cf1b58d1fd05"
+dependency_revision = "352e53faa480c9997272b9c70798dd5b5c15d581"
+host_fingerprint_sha256 = "6925691d8e0ce5d649fb02ae0f4c91f7be667aede4d0d23f62b24ac8cd34cc65"
+baseline_context_sha256 = "1158e0b5c29415f83615727a702a798cbd66d44ca0ff2c215f936c078dd4262d"
+candidate_context_sha256 = "568ce7ff03154a0445d4d1e3d059ccb28be61349578e2821f8e9c45858339d9b"
+baseline_binary_sha256 = "f520e953254f8668b6fecb4fc0e249d4667ee69f22642c5af235cb36c52ef445"
+candidate_binary_sha256 = "aaa1577bfd153b05860fe9e2466fddeefb0d46cdb1fd2ce57c99792449941180"
+baseline_screening_sha256 = "a85ca96f470957d3e5895be566d1d2ea1f2b71d767e19ad351b4794116b73e25"
+candidate_screening_sha256 = "b48c91d2717c93cdcbff4bb341c2d64718970634942b7d58fa3192856a50fe03"
+run_order_seed = 7302
+baseline_pair_count = 5
+candidate_pair_count = 5
+counterbalanced_within_each_source = true
+same_host_fingerprint = true
+clean_source_contexts = true
+failed_attempts = 0
+promotable = false
+numerical_claim_eligible = false
+thresholds_status = "screening_only_unqualified"
+thresholds_changed = false
+decision = "local-screening-passed-awaiting-dedicated-host-qualification"
+primary_conclusion = "Candidate production fill allocation fell 18.45% from the fresh pre-observer production control and recovered essentially all of the 581.06 B/op listener overhead, clearing the preregistered 15% local rejection minimum."
+limitations = "The two exact-source campaigns ran sequentially on a non-admitted Windows workstation. Five pairs improve local screening stability but do not provide the preregistered dedicated-host confidence interval, calibration, CPU, p99, or publication evidence."
+next_evidence = "Admit the dedicated Linux host, freeze scenario windows and stable offered rates, then run at least five counterbalanced I73/C73 pairs with the preregistered Hodges-Lehmann interval and complete goodput, CPU, p99, allocation, RSS, reconciliation, and failure accounting."
+
+[[metric]]
+name = "elapsed_ns"
+baseline_production_median = 29766700.0
+candidate_production_median = 29317900.0
+relative_change = -0.0150772508
+candidate_off_median = 30045500.0
+candidate_production_over_off = -0.0242166048
+local_gate = "no-regression-detected-timing-not-promotable"
+passed = true
+
+[[metric]]
+name = "fill_allocated_bytes_per_operation"
+baseline_off_median = 2459.3125
+baseline_production_median = 3040.375
+baseline_overhead = 581.0625
+candidate_off_median = 2480.875
+candidate_production_median = 2479.3125
+candidate_overhead = -1.5625
+relative_change = -0.1845372693
+overhead_recovered_fraction = 1.0026890395
+minimum_relative_improvement = 0.15
+passed = true
+
+[[metric]]
+name = "steady_allocated_bytes_per_operation"
+baseline_production_median = 315.1875
+candidate_production_median = 316.4375
+absolute_change = 1.25
+relative_change = 0.0039658933
+maximum_relative_regression = 0.03
+absolute_noise_floor = 16.0
+passed = true
+
+[[metric]]
+name = "expire_delete_allocated_bytes_per_operation"
+baseline_production_median = 3139.125
+candidate_off_median = 2267.125
+candidate_production_median = 2315.625
+relative_change = -0.2623342492
+candidate_production_over_off = 0.0213927331
+candidate_absolute_over_off = 48.5
+maximum_relative_regression = 0.03
+absolute_noise_floor = 16.0
+passed = true
+
+[[metric]]
+name = "refill_allocated_bytes_per_operation"
+baseline_production_median = 1402.34375
+candidate_off_median = 1069.59375
+candidate_production_median = 1052.46875
+relative_change = -0.2494930362
+candidate_production_over_off = -0.0160107517
+candidate_absolute_over_off = -17.125
+maximum_relative_regression = 0.03
+absolute_noise_floor = 16.0
+passed = true
+
+[[metric]]
+name = "post_idle_rss_delta_bytes"
+baseline_production_median = 737280.0
+candidate_production_median = 561152.0
+relative_change = -0.2388888889
+candidate_production_over_off = 0.0378787879
+candidate_absolute_over_off = 20480.0
+maximum_relative_regression = 0.05
+absolute_noise_floor = 1048576.0
+passed = true
+
+[[metric]]
+name = "peak_rss_delta_bytes"
+baseline_production_median = 819200.0
+candidate_production_median = 659456.0
+relative_change = -0.195
+candidate_production_over_off = 0.0320512821
+candidate_absolute_over_off = 20480.0
+maximum_relative_regression = 0.05
+absolute_noise_floor = 1048576.0
+passed = true

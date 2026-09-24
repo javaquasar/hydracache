@@ -38,6 +38,8 @@ const SINGLE_MAINTAINER_REVIEW_POLICY: &str =
 const MOKA_FORK_DECISION: &str = "docs/testing/performance/0.73/moka-fork-decision-352e53fa.toml";
 const NOTIFICATION_OBSERVER_PRODUCT: &str =
     "docs/testing/performance/0.73/notification-observer-product-73fc38a1.toml";
+const LOCAL_OBSERVER_PRODUCT_SCREENING: &str =
+    "docs/testing/performance/0.73/local-observer-product-screening-06a8bd95.toml";
 const PROPOSAL_REGISTRY: &str = "docs/testing/performance/0.73/proposal-registry.toml";
 const STATISTICS: &str = "docs/testing/performance/0.73/statistics.toml";
 const HOST_PROFILE: &str = "docs/testing/performance/0.73/host-profile.toml";
@@ -101,6 +103,9 @@ pub fn check_at_root(
     let notification_observer_product: TomlValue = toml::from_str(&fs::read_to_string(
         root.join(NOTIFICATION_OBSERVER_PRODUCT),
     )?)?;
+    let local_observer_product_screening: TomlValue = toml::from_str(&fs::read_to_string(
+        root.join(LOCAL_OBSERVER_PRODUCT_SCREENING),
+    )?)?;
     let proposal_registry: TomlValue =
         toml::from_str(&fs::read_to_string(root.join(PROPOSAL_REGISTRY))?)?;
     let statistics: TomlValue = toml::from_str(&fs::read_to_string(root.join(STATISTICS))?)?;
@@ -144,6 +149,10 @@ pub fn check_at_root(
     problems.extend(check_moka_fork_decision(&moka_fork_decision, release));
     problems.extend(check_notification_observer_product(
         &notification_observer_product,
+        release,
+    ));
+    problems.extend(check_local_observer_product_screening(
+        &local_observer_product_screening,
         release,
     ));
     problems.extend(check_proposal_registry(&proposal_registry, release));
@@ -230,6 +239,10 @@ pub fn check_contract(root: &TomlValue, release: &str) -> Vec<String> {
         (
             "notification_observer_product",
             NOTIFICATION_OBSERVER_PRODUCT,
+        ),
+        (
+            "local_observer_product_screening",
+            LOCAL_OBSERVER_PRODUCT_SCREENING,
         ),
         ("proposal_registry", PROPOSAL_REGISTRY),
         ("statistics_contract", STATISTICS),
@@ -629,7 +642,7 @@ pub fn check_notification_observer_requirements(value: &TomlValue, release: &str
     if integer(value, "schema_version") != Some(1)
         || text(value, "release") != Some(release)
         || text(value, "contract_id") != Some("notification-observer-requirements-073-v1")
-        || text(value, "state") != Some("product-integrated-local-screening-admitted")
+        || text(value, "state") != Some("local-screening-passed-awaiting-d3")
         || text(value, "proposal_id") != Some("P73-INSTRUMENTATION-NONBLOCKING-REMOVAL")
         || text(value, "prototype_scope") != Some("completed-lab-prototype")
     {
@@ -639,6 +652,7 @@ pub fn check_notification_observer_requirements(value: &TomlValue, release: &str
         || boolean(value, "product_mutation_allowed") != Some(true)
         || boolean(value, "candidate_measurements_allowed") != Some(false)
         || boolean(value, "local_candidate_screening_allowed") != Some(true)
+        || boolean(value, "local_candidate_screening_completed") != Some(true)
         || text(value, "review_status") != Some("d2-authorized-pinned-fork")
     {
         problems.push("notification observer requirements must bind D2 to the pinned fork while candidate measurement remains disabled".to_owned());
@@ -648,6 +662,7 @@ pub fn check_notification_observer_requirements(value: &TomlValue, release: &str
         "prototype_exit",
         "implementation_commit",
         "implementation_receipt",
+        "local_screening_evidence",
         "next_evidence",
     ] {
         if text(value, field).is_none_or(str::is_empty) {
@@ -1331,16 +1346,190 @@ pub fn check_notification_observer_product(value: &TomlValue, release: &str) -> 
     problems
 }
 
+pub fn check_local_observer_product_screening(value: &TomlValue, release: &str) -> Vec<String> {
+    let mut problems = Vec::new();
+    if integer(value, "schema_version") != Some(1)
+        || text(value, "release") != Some(release)
+        || text(value, "evidence_id") != Some("local-observer-product-screening-06a8bd95-v1")
+        || text(value, "evidence_class") != Some("local_screening")
+        || text(value, "state") != Some("passed-local-rejection-gates-awaiting-d3")
+        || text(value, "proposal_id") != Some("P73-INSTRUMENTATION-NONBLOCKING-REMOVAL")
+        || text(value, "implementation_commit") != Some("73fc38a131d26e78b246fe93d5edd71d33796bbf")
+        || text(value, "baseline_source_sha") != Some("03f893541f6386cbf026c496250e28950c05e0ab")
+        || text(value, "candidate_source_sha") != Some("06a8bd95c9650abd5a77aa480bc1cf1b58d1fd05")
+        || text(value, "dependency_revision") != Some("352e53faa480c9997272b9c70798dd5b5c15d581")
+    {
+        problems.push("local observer product screening identity mismatch".to_owned());
+    }
+    for (field, expected) in [
+        (
+            "host_fingerprint_sha256",
+            "6925691d8e0ce5d649fb02ae0f4c91f7be667aede4d0d23f62b24ac8cd34cc65",
+        ),
+        (
+            "baseline_context_sha256",
+            "1158e0b5c29415f83615727a702a798cbd66d44ca0ff2c215f936c078dd4262d",
+        ),
+        (
+            "candidate_context_sha256",
+            "568ce7ff03154a0445d4d1e3d059ccb28be61349578e2821f8e9c45858339d9b",
+        ),
+        (
+            "baseline_binary_sha256",
+            "f520e953254f8668b6fecb4fc0e249d4667ee69f22642c5af235cb36c52ef445",
+        ),
+        (
+            "candidate_binary_sha256",
+            "aaa1577bfd153b05860fe9e2466fddeefb0d46cdb1fd2ce57c99792449941180",
+        ),
+        (
+            "baseline_screening_sha256",
+            "a85ca96f470957d3e5895be566d1d2ea1f2b71d767e19ad351b4794116b73e25",
+        ),
+        (
+            "candidate_screening_sha256",
+            "b48c91d2717c93cdcbff4bb341c2d64718970634942b7d58fa3192856a50fe03",
+        ),
+    ] {
+        if text(value, field) != Some(expected) {
+            problems.push(format!(
+                "local observer product screening {field} does not match retained evidence"
+            ));
+        }
+    }
+    for field in [
+        "host_fingerprint_sha256",
+        "baseline_context_sha256",
+        "candidate_context_sha256",
+        "baseline_binary_sha256",
+        "candidate_binary_sha256",
+        "baseline_screening_sha256",
+        "candidate_screening_sha256",
+    ] {
+        if text(value, field).is_none_or(|digest| !sha256(digest)) {
+            problems.push(format!(
+                "local observer product screening {field} is not SHA-256"
+            ));
+        }
+    }
+    if integer(value, "run_order_seed") != Some(7_302)
+        || integer(value, "baseline_pair_count").is_none_or(|count| count < 5)
+        || integer(value, "candidate_pair_count").is_none_or(|count| count < 5)
+        || integer(value, "failed_attempts") != Some(0)
+        || boolean(value, "counterbalanced_within_each_source") != Some(true)
+        || boolean(value, "same_host_fingerprint") != Some(true)
+        || boolean(value, "clean_source_contexts") != Some(true)
+    {
+        problems.push(
+            "local observer product screening identity or attempt set is incomplete".to_owned(),
+        );
+    }
+    if boolean(value, "promotable") != Some(false)
+        || boolean(value, "numerical_claim_eligible") != Some(false)
+        || boolean(value, "thresholds_changed") != Some(false)
+        || text(value, "thresholds_status") != Some("screening_only_unqualified")
+        || text(value, "decision")
+            != Some("local-screening-passed-awaiting-dedicated-host-qualification")
+    {
+        problems.push(
+            "local observer product screening must remain non-promotable with frozen thresholds"
+                .to_owned(),
+        );
+    }
+    for field in ["primary_conclusion", "limitations", "next_evidence"] {
+        if text(value, field).is_none_or(str::is_empty) {
+            problems.push(format!("local observer product screening requires {field}"));
+        }
+    }
+    let metrics = value
+        .get("metric")
+        .and_then(TomlValue::as_array)
+        .cloned()
+        .unwrap_or_default();
+    for name in [
+        "elapsed_ns",
+        "fill_allocated_bytes_per_operation",
+        "steady_allocated_bytes_per_operation",
+        "expire_delete_allocated_bytes_per_operation",
+        "refill_allocated_bytes_per_operation",
+        "post_idle_rss_delta_bytes",
+        "peak_rss_delta_bytes",
+    ] {
+        if !metrics.iter().any(|metric| {
+            text(metric, "name") == Some(name) && boolean(metric, "passed") == Some(true)
+        }) {
+            problems.push(format!(
+                "local observer product screening omits passing {name} metric"
+            ));
+        }
+    }
+    let fill = metrics
+        .iter()
+        .find(|metric| text(metric, "name") == Some("fill_allocated_bytes_per_operation"));
+    if fill.is_none_or(|metric| {
+        float(metric, "relative_change").is_none_or(|change| change > -0.15)
+            || float(metric, "minimum_relative_improvement") != Some(0.15)
+    }) {
+        problems.push(
+            "local observer product screening does not clear the frozen 15% fill gate".to_owned(),
+        );
+    }
+    let steady = metrics
+        .iter()
+        .find(|metric| text(metric, "name") == Some("steady_allocated_bytes_per_operation"));
+    if steady.is_none_or(|metric| {
+        float(metric, "relative_change").is_none_or(|change| change > 0.03)
+            || float(metric, "absolute_change").is_none_or(|change| change > 16.0)
+    }) {
+        problems.push(
+            "local observer product screening exceeds the frozen steady-read guard".to_owned(),
+        );
+    }
+    for name in [
+        "expire_delete_allocated_bytes_per_operation",
+        "refill_allocated_bytes_per_operation",
+    ] {
+        let metric = metrics
+            .iter()
+            .find(|metric| text(metric, "name") == Some(name));
+        if metric.is_none_or(|metric| {
+            let relative = float(metric, "candidate_production_over_off").unwrap_or(f64::INFINITY);
+            let absolute = float(metric, "candidate_absolute_over_off").unwrap_or(f64::INFINITY);
+            relative > 0.03 && absolute > 16.0
+        }) {
+            problems.push(format!(
+                "local observer product screening exceeds the frozen {name} guard"
+            ));
+        }
+    }
+    for name in ["post_idle_rss_delta_bytes", "peak_rss_delta_bytes"] {
+        let metric = metrics
+            .iter()
+            .find(|metric| text(metric, "name") == Some(name));
+        if metric.is_none_or(|metric| {
+            let relative = float(metric, "candidate_production_over_off").unwrap_or(f64::INFINITY);
+            let absolute = float(metric, "candidate_absolute_over_off").unwrap_or(f64::INFINITY);
+            relative > 0.05 && absolute > 1_048_576.0
+        }) {
+            problems.push(format!(
+                "local observer product screening exceeds the frozen {name} guard"
+            ));
+        }
+    }
+    problems
+}
+
 pub fn check_proposal_registry(value: &TomlValue, release: &str) -> Vec<String> {
     let mut problems = Vec::new();
     if integer(value, "schema_version") != Some(1)
         || text(value, "release") != Some(release)
-        || text(value, "registry_state") != Some("product_integrated_local_screening_admitted")
+        || text(value, "registry_state") != Some("local_screening_passed_awaiting_d3")
     {
         problems.push("0.73 proposal registry identity mismatch".to_owned());
     }
     if boolean(value, "candidate_measurements_allowed") != Some(false)
         || boolean(value, "local_candidate_screening_allowed") != Some(true)
+        || boolean(value, "local_candidate_screening_completed") != Some(true)
         || boolean(value, "product_mutations_allowed") != Some(true)
     {
         problems.push(
@@ -1359,11 +1548,12 @@ pub fn check_proposal_registry(value: &TomlValue, release: &str) -> Vec<String> 
         problems.push("proposal registry omits instrumentation redesign".to_owned());
         return problems;
     };
-    if text(proposal, "state") != Some("product_integrated_local_screening_admitted")
+    if text(proposal, "state") != Some("local_screening_passed_awaiting_d3")
         || boolean(proposal, "d2_authorized") != Some(true)
         || boolean(proposal, "product_mutation_allowed") != Some(true)
         || boolean(proposal, "candidate_measurements_allowed") != Some(false)
         || boolean(proposal, "local_candidate_screening_allowed") != Some(true)
+        || boolean(proposal, "local_candidate_screening_completed") != Some(true)
         || text(proposal, "practical_minimum_effect")
             != Some("fill allocations improve by at least 15%")
         || text(proposal, "threshold_status")
@@ -1387,6 +1577,7 @@ pub fn check_proposal_registry(value: &TomlValue, release: &str) -> Vec<String> 
         "dependency_delta",
         "implementation_commit",
         "implementation_receipt",
+        "local_screening_evidence",
         "next_evidence",
     ] {
         if text(proposal, field).is_none_or(str::is_empty) {
@@ -1407,6 +1598,9 @@ pub fn check_proposal_registry(value: &TomlValue, release: &str) -> Vec<String> 
         problems.push(
             "instrumentation proposal must bind the admitted product implementation".to_owned(),
         );
+    }
+    if text(proposal, "local_screening_evidence") != Some(LOCAL_OBSERVER_PRODUCT_SCREENING) {
+        problems.push("instrumentation proposal must bind the local product screen".to_owned());
     }
     for (field, minimum) in [
         ("baseline_evidence", 3),

@@ -1,13 +1,14 @@
 schema_version = 1
 release = "0.73"
 contract_id = "notification-observer-requirements-073-v1"
-state = "product-integrated-local-screening-admitted"
+state = "local-screening-passed-awaiting-d3"
 proposal_id = "P73-INSTRUMENTATION-NONBLOCKING-REMOVAL"
 prototype_scope = "completed-lab-prototype"
 d2_authorized = true
 product_mutation_allowed = true
 candidate_measurements_allowed = false
 local_candidate_screening_allowed = true
+local_candidate_screening_completed = true
 review_status = "d2-authorized-pinned-fork"
 selected_direction = "post-removal observer with version-conditional deferred cleanup"
 
@@ -60,4 +61,5 @@ compatibility_invariants = [
 prototype_exit = "The exact-SHA reference model and isolated Moka implementation passed the ordering, delivery, panic, feature, package, supply-chain, and supported-target gates required to authorize D2."
 implementation_commit = "73fc38a131d26e78b246fe93d5edd71d33796bbf"
 implementation_receipt = "docs/testing/performance/0.73/notification-observer-product-73fc38a1.toml"
-next_evidence = "Run append-only local I73-versus-C73 screening as non-promotable rejection evidence. Dedicated-host candidate measurement and every numerical release claim remain disabled until host admission."
+local_screening_evidence = "docs/testing/performance/0.73/local-observer-product-screening-06a8bd95.toml"
+next_evidence = "Admit the dedicated Linux host, freeze scenario windows and stable offered rates, and run the preregistered D3 qualification. Every local result remains non-promotable."
