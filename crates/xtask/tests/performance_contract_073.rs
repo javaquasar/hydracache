@@ -279,6 +279,19 @@ fn observer_requirements_cannot_skip_d2_or_drop_ordering_falsifiers() {
 }
 
 #[test]
+fn observer_prototype_cannot_be_promoted_as_a_moka_result() {
+    let mut value = manifest("notification-observer-prototype-9a2ca114.toml");
+    value["product_semantics_eligible"] = TomlValue::Boolean(true);
+    value["promotable"] = TomlValue::Boolean(true);
+    value["decision"] = TomlValue::String("moka-seam-proven".to_owned());
+    let problems =
+        xtask::performance_contract::check_notification_observer_prototype(&value, "0.73");
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("must remain diagnostic")));
+}
+
+#[test]
 fn pre_i73_proposal_cannot_skip_d2_review_and_threshold_freeze() {
     let mut value = manifest("proposal-registry.toml");
     value["proposals"][0]["state"] = TomlValue::String("d2_authorized".to_owned());

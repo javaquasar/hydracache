@@ -24,6 +24,8 @@ const NOTIFICATION_FEASIBILITY: &str =
     "docs/testing/performance/0.73/notification-feasibility-bf9f1382.toml";
 const NOTIFICATION_OBSERVER_REQUIREMENTS: &str =
     "docs/testing/performance/0.73/notification-observer-requirements.toml";
+const NOTIFICATION_OBSERVER_PROTOTYPE: &str =
+    "docs/testing/performance/0.73/notification-observer-prototype-9a2ca114.toml";
 const PROPOSAL_REGISTRY: &str = "docs/testing/performance/0.73/proposal-registry.toml";
 const STATISTICS: &str = "docs/testing/performance/0.73/statistics.toml";
 const HOST_PROFILE: &str = "docs/testing/performance/0.73/host-profile.toml";
@@ -69,6 +71,9 @@ pub fn check_at_root(
     let notification_observer_requirements: TomlValue = toml::from_str(&fs::read_to_string(
         root.join(NOTIFICATION_OBSERVER_REQUIREMENTS),
     )?)?;
+    let notification_observer_prototype: TomlValue = toml::from_str(&fs::read_to_string(
+        root.join(NOTIFICATION_OBSERVER_PROTOTYPE),
+    )?)?;
     let proposal_registry: TomlValue =
         toml::from_str(&fs::read_to_string(root.join(PROPOSAL_REGISTRY))?)?;
     let statistics: TomlValue = toml::from_str(&fs::read_to_string(root.join(STATISTICS))?)?;
@@ -90,6 +95,10 @@ pub fn check_at_root(
     ));
     problems.extend(check_notification_observer_requirements(
         &notification_observer_requirements,
+        release,
+    ));
+    problems.extend(check_notification_observer_prototype(
+        &notification_observer_prototype,
         release,
     ));
     problems.extend(check_proposal_registry(&proposal_registry, release));
@@ -157,6 +166,10 @@ pub fn check_contract(root: &TomlValue, release: &str) -> Vec<String> {
         (
             "notification_observer_requirements",
             NOTIFICATION_OBSERVER_REQUIREMENTS,
+        ),
+        (
+            "notification_observer_prototype",
+            NOTIFICATION_OBSERVER_PROTOTYPE,
         ),
         ("proposal_registry", PROPOSAL_REGISTRY),
         ("statistics_contract", STATISTICS),
@@ -590,6 +603,74 @@ pub fn check_notification_observer_requirements(value: &TomlValue, release: &str
             problems.push(format!(
                 "notification observer requirements have incomplete {field}"
             ));
+        }
+    }
+    problems
+}
+
+pub fn check_notification_observer_prototype(value: &TomlValue, release: &str) -> Vec<String> {
+    let mut problems = Vec::new();
+    if integer(value, "schema_version") != Some(1)
+        || text(value, "release") != Some(release)
+        || text(value, "evidence_class") != Some("local_feasibility")
+        || text(value, "experiment") != Some("versioned-bounded-post-removal-observer")
+    {
+        problems.push("notification observer prototype identity mismatch".to_owned());
+    }
+    if boolean(value, "diagnostic_only") != Some(true)
+        || boolean(value, "product_semantics_eligible") != Some(false)
+        || boolean(value, "promotable") != Some(false)
+        || text(value, "decision") != Some("reference-model-feasible-moka-seam-unproven")
+    {
+        problems.push(
+            "notification observer prototype must remain diagnostic with the Moka seam unproven"
+                .to_owned(),
+        );
+    }
+    if text(value, "source_sha").is_none_or(|sha| !full_sha(sha)) {
+        problems.push("notification observer prototype source_sha is not a full SHA".to_owned());
+    }
+    for field in ["binary_sha256", "receipt_sha256"] {
+        if text(value, field).is_none_or(|digest| !sha256(digest)) {
+            problems.push(format!(
+                "notification observer prototype {field} is not SHA-256"
+            ));
+        }
+    }
+    if integer(value, "operations_per_case").is_none_or(|count| count < 1024)
+        || integer(value, "repetitions").is_none_or(|count| count < 3)
+        || boolean(value, "counterbalanced") != Some(true)
+    {
+        problems.push(
+            "notification observer prototype requires three counterbalanced repetitions of at least 1024 operations"
+                .to_owned(),
+        );
+    }
+    let observations = value
+        .get("median_observations")
+        .and_then(TomlValue::as_array)
+        .cloned()
+        .unwrap_or_default();
+    for path in ["atomic-counter-only", "versioned-observer"] {
+        if !observations
+            .iter()
+            .any(|item| text(item, "path") == Some(path))
+        {
+            problems.push(format!("notification observer prototype omits {path}"));
+        }
+    }
+    for item in &observations {
+        for field in ["gross_allocated_bytes_per_operation", "elapsed_ns"] {
+            if float(item, field).is_none_or(|number| !number.is_finite() || number < 0.0) {
+                problems.push(format!(
+                    "notification observer prototype has invalid {field}"
+                ));
+            }
+        }
+    }
+    for field in ["conclusion", "next_evidence"] {
+        if text(value, field).is_none_or(str::is_empty) {
+            problems.push(format!("notification observer prototype requires {field}"));
         }
     }
     problems

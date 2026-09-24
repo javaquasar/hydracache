@@ -125,6 +125,13 @@ cargo run -p hydracache-loadgen --release --locked --bin hydracache-notification
 The receipt is diagnostic and non-promotable. It measures the reference publication/drain
 mechanism, not Moka automatic eviction or HydraCache product semantics.
 
+The exact-SHA reference run is retained in `notification-observer-prototype-9a2ca114.toml`. Both
+the atomic-counter control and the preallocated versioned observer recorded 0 gross allocated bytes
+per operation in all three repetitions. Elapsed values are retained for diagnostics but are not a
+timing claim: this tiny reference model does not include Moka automatic removal delivery. The result
+establishes that the HydraCache-side lifecycle can be allocation-free; the next uncertainty is the
+Moka observer seam itself.
+
 `statistics.toml` freezes the inherited paired estimator, confidence, Holm correction, failure
 retention, five-pair minimum, and throughput/CPU/p99 regression guards before candidate data. Its
 allocation and RSS limits remain explicit unfrozen blockers. `host-profile.toml` is a requirement

@@ -331,6 +331,15 @@ saturation, pending cleanup at an exact barrier, cancellation, and explicit, rep
 and capacity-removal causes. This separates proof of the lifecycle contract from the later Moka API
 spike and ensures that a low allocation number cannot excuse incorrect cleanup.
 
+The first implementation used a bounded Tokio channel and immediately demonstrated why this stage
+belongs on a local machine: although correctness passed, publication and drain allocated a median
+78.47 bytes per removal. Replacing it with a preallocated bounded ring removed those allocations.
+On the exact committed reference-model binary, both the atomic-counter control and the versioned
+observer reported 0 gross allocated bytes per operation in all three counterbalanced repetitions.
+The tiny-run elapsed values were retained but not promoted; the model does not yet contain Moka's
+automatic-removal delivery. The result proves feasibility of the HydraCache-side lifecycle, not the
+backend integration.
+
 ### The result changed governance, not just code direction
 
 At this point the responsible next action was not to start editing the production cache. We recorded
