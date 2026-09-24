@@ -24,6 +24,7 @@ numeric_precision_decimals = 6
 host_eligibility = "admitted-dedicated-host-only"
 allocation_limit_state = "unfrozen-blocker"
 rss_limit_state = "unfrozen-blocker"
+threshold_review_candidate = "docs/testing/performance/0.73/notification-observer-d2-review.toml"
 
 [[regression_budget]]
 metric = "goodput_operations_per_second"

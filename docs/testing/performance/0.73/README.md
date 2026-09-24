@@ -156,6 +156,15 @@ model and proved that delayed cleanup for version 41 cannot remove version 42's 
 implementation is complete; independent review, baseline-only allocation/RSS limits, and explicit
 D2 authorization remain mandatory before changing HydraCache's production dependency or path.
 
+`notification-observer-d2-review.toml` is the machine-checked review candidate. It proposes a 15%
+minimum reduction in the primary fill-allocation metric from the smallest baseline-only observed
+listener overhead of 23.892%. Unaffected allocation cells use `max(3%, 16 B/op)` and post-idle/peak
+RSS use `max(5%, 1 MiB)` as conservative guards inherited from the reviewed 0.71 practical-effect
+contract. Candidate observer measurements are listed separately and are explicitly excluded from
+threshold derivation. The packet remains `awaiting-independent-review`: it cannot authorize D2,
+candidate measurement, a dependency change, or product mutation until a distinct reviewer records
+an accepted decision.
+
 `statistics.toml` freezes the inherited paired estimator, confidence, Holm correction, failure
 retention, five-pair minimum, and throughput/CPU/p99 regression guards before candidate data. Its
 allocation and RSS limits remain explicit unfrozen blockers. `host-profile.toml` is a requirement

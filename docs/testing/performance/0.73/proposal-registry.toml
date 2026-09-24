@@ -20,6 +20,7 @@ rollback_class = "remove isolated implementation and restore the exact I73 instr
 dependency_delta = "none authorized; a Moka patch, upgrade, fork, or backend replacement requires separate dependency review"
 review_status = "required-before-d2"
 candidate_measurements_allowed = false
+d2_review_candidate = "docs/testing/performance/0.73/notification-observer-d2-review.toml"
 
 baseline_evidence = [
   "docs/testing/performance/0.73/local-overhead-screening-307b3500.toml",
@@ -72,4 +73,4 @@ required_regression_guards = [
   "allocation and RSS limits frozen before candidate data",
 ]
 
-next_evidence = "Choose an independent reviewer and freeze the practical effect and allocation/RSS rejection limits from baseline-only evidence, then authorize or reject D2 for the upstream/fork dependency proposal and product integration."
+next_evidence = "Have an independent reviewer accept or reject notification-observer-d2-review.toml, including its baseline-only threshold proposal and upstream-first/pinned-fork dependency decision; only an accepted review may authorize D2."

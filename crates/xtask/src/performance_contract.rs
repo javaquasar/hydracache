@@ -29,6 +29,8 @@ const NOTIFICATION_OBSERVER_PROTOTYPE: &str =
 const MOKA_OBSERVER_SPIKE: &str = "docs/testing/performance/0.73/moka-observer-spike-5d560170.toml";
 const MOKA_OBSERVER_DIRECT: &str =
     "docs/testing/performance/0.73/moka-observer-direct-779849b6.toml";
+const NOTIFICATION_OBSERVER_D2_REVIEW: &str =
+    "docs/testing/performance/0.73/notification-observer-d2-review.toml";
 const PROPOSAL_REGISTRY: &str = "docs/testing/performance/0.73/proposal-registry.toml";
 const STATISTICS: &str = "docs/testing/performance/0.73/statistics.toml";
 const HOST_PROFILE: &str = "docs/testing/performance/0.73/host-profile.toml";
@@ -81,6 +83,9 @@ pub fn check_at_root(
         toml::from_str(&fs::read_to_string(root.join(MOKA_OBSERVER_SPIKE))?)?;
     let moka_observer_direct: TomlValue =
         toml::from_str(&fs::read_to_string(root.join(MOKA_OBSERVER_DIRECT))?)?;
+    let notification_observer_d2_review: TomlValue = toml::from_str(&fs::read_to_string(
+        root.join(NOTIFICATION_OBSERVER_D2_REVIEW),
+    )?)?;
     let proposal_registry: TomlValue =
         toml::from_str(&fs::read_to_string(root.join(PROPOSAL_REGISTRY))?)?;
     let statistics: TomlValue = toml::from_str(&fs::read_to_string(root.join(STATISTICS))?)?;
@@ -110,6 +115,10 @@ pub fn check_at_root(
     ));
     problems.extend(check_moka_observer_spike(&moka_observer_spike, release));
     problems.extend(check_moka_observer_direct(&moka_observer_direct, release));
+    problems.extend(check_notification_observer_d2_review(
+        &notification_observer_d2_review,
+        release,
+    ));
     problems.extend(check_proposal_registry(&proposal_registry, release));
     problems.extend(check_statistics(&statistics, release));
     problems.extend(check_host_profile(&host_profile, release));
@@ -182,6 +191,10 @@ pub fn check_contract(root: &TomlValue, release: &str) -> Vec<String> {
         ),
         ("moka_observer_spike", MOKA_OBSERVER_SPIKE),
         ("moka_observer_direct", MOKA_OBSERVER_DIRECT),
+        (
+            "notification_observer_d2_review",
+            NOTIFICATION_OBSERVER_D2_REVIEW,
+        ),
         ("proposal_registry", PROPOSAL_REGISTRY),
         ("statistics_contract", STATISTICS),
         ("host_profile", HOST_PROFILE),
@@ -836,6 +849,124 @@ pub fn check_moka_observer_direct(value: &TomlValue, release: &str) -> Vec<Strin
     problems
 }
 
+pub fn check_notification_observer_d2_review(value: &TomlValue, release: &str) -> Vec<String> {
+    let mut problems = Vec::new();
+    if integer(value, "schema_version") != Some(1)
+        || text(value, "release") != Some(release)
+        || text(value, "proposal_id") != Some("P73-INSTRUMENTATION-NONBLOCKING-REMOVAL")
+        || text(value, "review_packet_id") != Some("notification-observer-d2-review-v1")
+        || text(value, "state") != Some("awaiting-independent-review")
+    {
+        problems.push("notification observer D2 review candidate identity mismatch".to_owned());
+    }
+    if text(value, "reviewer") != Some("unassigned")
+        || boolean(value, "reviewer_independent") != Some(false)
+        || boolean(value, "d2_authorized") != Some(false)
+        || boolean(value, "thresholds_frozen") != Some(false)
+        || boolean(value, "candidate_measurements_allowed") != Some(false)
+        || boolean(value, "product_mutation_allowed") != Some(false)
+        || boolean(value, "candidate_data_used_for_thresholds") != Some(false)
+    {
+        problems.push(
+            "notification observer D2 review candidate cannot self-authorize or freeze thresholds"
+                .to_owned(),
+        );
+    }
+    if text(value, "primary_metric") != Some("fill_allocated_bytes_per_operation")
+        || float(value, "minimum_practical_improvement_fraction")
+            .is_none_or(|number| (number - 0.15).abs() > f64::EPSILON)
+    {
+        problems.push("notification observer D2 review primary threshold changed".to_owned());
+    }
+    for (field, expected) in [
+        ("dependency_preference", "upstream-first"),
+        ("dependency_fallback", "reviewed-pinned-fork"),
+        ("dependency_decision", "pending-independent-review"),
+    ] {
+        if text(value, field) != Some(expected) {
+            problems.push(format!(
+                "notification observer D2 review {field} must be {expected}"
+            ));
+        }
+    }
+    for field in [
+        "author_role",
+        "compatibility_outcome",
+        "rollback_class",
+        "threshold_derivation",
+        "reviewer_action",
+    ] {
+        if text(value, field).is_none_or(str::is_empty) {
+            problems.push(format!("notification observer D2 review requires {field}"));
+        }
+    }
+    for (field, minimum) in [
+        ("baseline_evidence", 4),
+        ("candidate_evidence_excluded_from_threshold_derivation", 3),
+        ("authorized_files_if_d2_approved", 6),
+        ("authorized_surfaces_if_d2_approved", 4),
+        ("required_correctness_falsifiers", 8),
+        ("required_dependency_review", 4),
+        ("required_d3_measurements", 7),
+    ] {
+        if string_array(value.get(field)).len() < minimum {
+            problems.push(format!(
+                "notification observer D2 review has incomplete {field}"
+            ));
+        }
+    }
+    let baseline: BTreeSet<_> = string_array(value.get("baseline_evidence"))
+        .into_iter()
+        .collect();
+    let excluded: BTreeSet<_> =
+        string_array(value.get("candidate_evidence_excluded_from_threshold_derivation"))
+            .into_iter()
+            .collect();
+    if !baseline.is_disjoint(&excluded) {
+        problems.push(
+            "notification observer D2 review mixes candidate evidence into threshold derivation"
+                .to_owned(),
+        );
+    }
+    let thresholds = value
+        .get("threshold_proposal")
+        .and_then(TomlValue::as_array)
+        .cloned()
+        .unwrap_or_default();
+    let fill = thresholds
+        .iter()
+        .find(|item| text(item, "metric") == Some("fill_allocated_bytes_per_operation"));
+    if fill.is_none_or(|item| {
+        text(item, "role") != Some("primary")
+            || text(item, "direction") != Some("lower")
+            || float(item, "minimum_relative_improvement")
+                .is_none_or(|number| (number - 0.15).abs() > f64::EPSILON)
+    }) {
+        problems.push("notification observer D2 review has invalid fill threshold".to_owned());
+    }
+    let allocations = thresholds
+        .iter()
+        .find(|item| text(item, "metric") == Some("unaffected_allocated_bytes_per_operation"));
+    if allocations.is_none_or(|item| {
+        float(item, "maximum_relative_regression")
+            .is_none_or(|number| (number - 0.03).abs() > f64::EPSILON)
+            || integer(item, "absolute_noise_floor_bytes_per_operation") != Some(16)
+    }) {
+        problems.push("notification observer D2 review has invalid allocation guard".to_owned());
+    }
+    let rss = thresholds
+        .iter()
+        .find(|item| text(item, "metric") == Some("post_idle_and_peak_rss_delta_bytes"));
+    if rss.is_none_or(|item| {
+        float(item, "maximum_relative_regression")
+            .is_none_or(|number| (number - 0.05).abs() > f64::EPSILON)
+            || integer(item, "absolute_noise_floor_bytes") != Some(1_048_576)
+    }) {
+        problems.push("notification observer D2 review has invalid RSS guard".to_owned());
+    }
+    problems
+}
+
 pub fn check_proposal_registry(value: &TomlValue, release: &str) -> Vec<String> {
     let mut problems = Vec::new();
     if integer(value, "schema_version") != Some(1)
@@ -886,6 +1017,9 @@ pub fn check_proposal_registry(value: &TomlValue, release: &str) -> Vec<String> 
             problems.push(format!("instrumentation proposal requires {field}"));
         }
     }
+    if text(proposal, "d2_review_candidate") != Some(NOTIFICATION_OBSERVER_D2_REVIEW) {
+        problems.push("instrumentation proposal must reference its D2 review candidate".to_owned());
+    }
     for (field, minimum) in [
         ("baseline_evidence", 3),
         ("source_findings", 4),
@@ -926,6 +1060,10 @@ pub fn check_statistics(value: &TomlValue, release: &str) -> Vec<String> {
         ("bootstrap_method", "moving-block-v1"),
         ("allocation_limit_state", "unfrozen-blocker"),
         ("rss_limit_state", "unfrozen-blocker"),
+        (
+            "threshold_review_candidate",
+            NOTIFICATION_OBSERVER_D2_REVIEW,
+        ),
     ] {
         if text(value, field) != Some(expected) {
             problems.push(format!("statistics {field} must be {expected}"));

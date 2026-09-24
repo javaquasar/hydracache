@@ -1,0 +1,104 @@
+schema_version = 1
+release = "0.73"
+proposal_id = "P73-INSTRUMENTATION-NONBLOCKING-REMOVAL"
+review_packet_id = "notification-observer-d2-review-v1"
+state = "awaiting-independent-review"
+author_role = "release-0.73-performance-author"
+reviewer = "unassigned"
+reviewer_independent = false
+d2_authorized = false
+thresholds_frozen = false
+candidate_measurements_allowed = false
+product_mutation_allowed = false
+candidate_data_used_for_thresholds = false
+primary_metric = "fill_allocated_bytes_per_operation"
+minimum_practical_improvement_fraction = 0.15
+dependency_preference = "upstream-first"
+dependency_fallback = "reviewed-pinned-fork"
+dependency_decision = "pending-independent-review"
+compatibility_outcome = "No public configuration, capacity, expiry, invalidation, tag, snapshot, reconciliation, or shutdown semantics change."
+rollback_class = "Restore Moka 0.12.15 from crates.io and the existing async eviction-listener wiring; discard observer-specific state."
+threshold_derivation = "The 15% primary minimum is below the smallest baseline-only listener fill overhead (23.892%) while still requiring recovery of a material majority of that observed cost. The allocation guard inherits the reviewed 0.71 3%/16-byte practical envelope. RSS remains a separate guard using the reviewed 0.71 5%/1 MiB practical envelope because the three local RSS deltas are too small and noisy to establish a tighter portable limit."
+reviewer_action = "Verify derivation and scope, replace reviewer=unassigned with an independent identity, choose upstream or pinned-fork dependency handling, and either authorize D2 in a dedicated review commit or reject the proposal."
+
+baseline_evidence = [
+  "docs/testing/performance/0.73/local-overhead-screening-307b3500.toml",
+  "docs/testing/performance/0.73/local-overhead-isolation-5264d96c.toml",
+  "docs/testing/performance/0.73/local-overhead-listener-noop-5e101e69.toml",
+  "docs/testing/memory/0.71/memory-statistics-v1.toml",
+]
+
+candidate_evidence_excluded_from_threshold_derivation = [
+  "docs/testing/performance/0.73/notification-observer-prototype-9a2ca114.toml",
+  "docs/testing/performance/0.73/moka-observer-spike-5d560170.toml",
+  "docs/testing/performance/0.73/moka-observer-direct-779849b6.toml",
+]
+
+authorized_files_if_d2_approved = [
+  "Cargo.toml",
+  "Cargo.lock",
+  "crates/hydracache/src/builder.rs",
+  "crates/hydracache/src/memory_footprint.rs",
+  "crates/hydracache/src/tag_index.rs",
+  "crates/hydracache/tests",
+  "crates/hydracache-loadgen",
+]
+
+authorized_surfaces_if_d2_approved = [
+  "Moka future-cache post-removal observation seam",
+  "HydraCache retained-byte removal accounting",
+  "HydraCache version-conditional tag cleanup",
+  "bounded reconciliation and shutdown drain",
+  "0.73 performance and correctness harnesses",
+]
+
+required_correctness_falsifiers = [
+  "explicit removal reconciles exactly",
+  "replacement cannot let delayed old-version cleanup remove the new membership",
+  "TTL expiry reconciles exactly",
+  "capacity eviction reconciles exactly",
+  "duplicate delivery cannot decrement accounting twice",
+  "queue saturation marks the epoch dirty and exact snapshots fail closed until reconciliation",
+  "shutdown drains every acknowledged removal without a cancellation gap",
+  "default and all-feature public compatibility remain unchanged",
+]
+
+required_dependency_review = [
+  "upstream API proposal and maintainer disposition recorded",
+  "if a fork is required, exact revision, patch digest, repository ownership, update cadence, advisory monitoring, license, MSRV, and rollback are recorded",
+  "Cargo.lock, SBOM, cargo-deny, feature-leak, package, and supported-target gates pass",
+  "observer-disabled Moka behavior remains byte-for-byte source compatible with the selected dependency revision",
+]
+
+required_d3_measurements = [
+  "at least five independently started counterbalanced I73/C73 pairs on an admitted dedicated host",
+  "95% Hodges-Lehmann interval with the preregistered 15% fill-allocation minimum",
+  "goodput regression no greater than 2%",
+  "CPU per operation and p99 latency regressions no greater than 3%",
+  "unaffected allocation cells stay within max(3%, 16 bytes/op)",
+  "post-idle and peak RSS stay within max(5%, 1 MiB) and are reported separately from logical cleanup",
+  "all failed and invalidated attempts remain append-only",
+]
+
+[[threshold_proposal]]
+metric = "fill_allocated_bytes_per_operation"
+role = "primary"
+direction = "lower"
+minimum_relative_improvement = 0.15
+derivation = "baseline-only lower observed listener overhead was 0.2389201236"
+
+[[threshold_proposal]]
+metric = "unaffected_allocated_bytes_per_operation"
+role = "regression_guard"
+direction = "not-higher"
+maximum_relative_regression = 0.03
+absolute_noise_floor_bytes_per_operation = 16
+derivation = "reviewed 0.71 practical per-owner envelope, applied as a conservative per-operation guard"
+
+[[threshold_proposal]]
+metric = "post_idle_and_peak_rss_delta_bytes"
+role = "regression_guard"
+direction = "not-higher"
+maximum_relative_regression = 0.05
+absolute_noise_floor_bytes = 1048576
+derivation = "reviewed 0.71 RSS practical envelope; local 0.73 screening is insufficient for a tighter portable bound"

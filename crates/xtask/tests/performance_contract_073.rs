@@ -322,6 +322,29 @@ fn direct_moka_observer_cannot_self_authorize_d2_or_drop_ordering_proof() {
 }
 
 #[test]
+fn d2_review_candidate_cannot_self_authorize_or_use_candidate_thresholds() {
+    let mut value = manifest("notification-observer-d2-review.toml");
+    value["reviewer"] = TomlValue::String("proposal-author".to_owned());
+    value["reviewer_independent"] = TomlValue::Boolean(true);
+    value["d2_authorized"] = TomlValue::Boolean(true);
+    value["thresholds_frozen"] = TomlValue::Boolean(true);
+    value["candidate_data_used_for_thresholds"] = TomlValue::Boolean(true);
+    let candidate = value["candidate_evidence_excluded_from_threshold_derivation"][0].clone();
+    value["baseline_evidence"]
+        .as_array_mut()
+        .expect("baseline evidence")
+        .push(candidate);
+    let problems =
+        xtask::performance_contract::check_notification_observer_d2_review(&value, "0.73");
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("cannot self-authorize")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("mixes candidate evidence")));
+}
+
+#[test]
 fn pre_i73_proposal_cannot_skip_d2_review_and_threshold_freeze() {
     let mut value = manifest("proposal-registry.toml");
     value["proposals"][0]["state"] = TomlValue::String("d2_authorized".to_owned());

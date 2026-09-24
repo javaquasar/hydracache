@@ -373,6 +373,15 @@ governance and qualification: independent review, baseline-only allocation/RSS r
 an explicit dependency decision (upstream API or reviewed pinned fork), D2 authorization, and only
 then product integration plus the full local and dedicated-host matrices.
 
+We turned that boundary into data rather than leaving it as a sentence in a plan. The D2 review
+candidate names the exact authorized surfaces, upstream-first and pinned-fork dependency choices,
+rollback, correctness falsifiers, and D3 measurements. Its proposed 15% fill-allocation minimum is
+derived from the smaller baseline-only listener overhead, not from the successful observer spike.
+Candidate evidence is kept in a separate exclusion list. Allocation and RSS guards reuse the
+previously reviewed practical envelopes, but remain explicitly unfrozen until a different reviewer
+accepts them. In other words, completing a convincing prototype prepares the decision; it does not
+grant the prototype permission to become the product.
+
 ### The result changed governance, not just code direction
 
 At this point the responsible next action was not to start editing the production cache. We recorded
