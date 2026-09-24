@@ -90,14 +90,7 @@ impl RemovalObserver {
             }
         }
 
-        if self
-            .accepted
-            .fetch_update(Ordering::AcqRel, Ordering::Acquire, |value| {
-                value.checked_add(1)
-            })
-            .is_err()
-        {
-            self.dirty.store(true, Ordering::Release);
+        if !self.accept_one() {
             return;
         }
 
@@ -129,15 +122,7 @@ impl RemovalObserver {
             tag_index
                 .unregister_if_version(&ticket.key, &ticket.tags, ticket.version)
                 .await;
-            if self
-                .acknowledged
-                .fetch_update(Ordering::AcqRel, Ordering::Acquire, |value| {
-                    value.checked_add(1)
-                })
-                .is_err()
-            {
-                self.dirty.store(true, Ordering::Release);
-            }
+            self.acknowledge_one();
             let slot_index = (ticket.version % self.inflight_versions.len() as u64) as usize;
             let slot = &self.inflight_versions[slot_index];
             if slot
@@ -195,6 +180,24 @@ impl RemovalObserver {
                 return guard;
             }
             tokio::task::yield_now().await;
+        }
+    }
+
+    fn accept_one(&self) -> bool {
+        self.increment_sequence(&self.accepted)
+    }
+
+    fn acknowledge_one(&self) {
+        self.increment_sequence(&self.acknowledged);
+    }
+
+    fn increment_sequence(&self, sequence: &AtomicU64) -> bool {
+        let previous = sequence.fetch_add(1, Ordering::AcqRel);
+        if previous == u64::MAX {
+            self.dirty.store(true, Ordering::Release);
+            false
+        } else {
+            true
         }
     }
 }
@@ -327,5 +330,33 @@ mod tests {
         assert!(observer.try_claim_drain().is_none());
         drop(guard);
         assert!(observer.try_claim_drain().is_some());
+    }
+
+    #[tokio::test]
+    async fn sequence_overflow_fails_closed_until_reconciliation() {
+        let memory = Arc::new(MemoryFootprintCounters::new(
+            MemoryInstrumentationMode::Production,
+        ));
+        let observer = RemovalObserver::with_capacity(memory, 1);
+
+        observer.accepted.store(u64::MAX, Ordering::Release);
+        assert!(!observer.accept_one());
+        assert_eq!(observer.accepted.load(Ordering::Acquire), 0);
+        assert_eq!(
+            observer.ensure_clean(),
+            Err(MemoryFootprintError::RemovalObserverDirty)
+        );
+
+        observer.dirty.store(false, Ordering::Release);
+        observer.acknowledged.store(u64::MAX, Ordering::Release);
+        observer.acknowledge_one();
+        assert_eq!(observer.acknowledged.load(Ordering::Acquire), 0);
+        assert_eq!(
+            observer.ensure_clean(),
+            Err(MemoryFootprintError::RemovalObserverDirty)
+        );
+
+        observer.reset_after_reconcile().await;
+        assert!(observer.ensure_clean().is_ok());
     }
 }
