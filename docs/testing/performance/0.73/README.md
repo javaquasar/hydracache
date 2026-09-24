@@ -262,3 +262,10 @@ inside the frozen 5% ceiling. `host-admission-3ba09fcc.toml` binds the raw packe
 two earlier failed run IDs: both exposed an unsupported `pidstat --version` probe and neither
 started candidate measurement. The host is now eligible, but candidate measurement remains closed
 until baseline-only pilots freeze scenario windows and stable offered rates.
+
+`baseline-pilot-contract.toml` preregisters the first such pilot. It uses the standalone
+`tools/performance-observer-073` harness to run the same 40% get / 25% tagged-put / 15%
+remove-refill / 10% tag-invalidate-refill / 10% TTL-put workload in off and production modes.
+Four offered rates receive three counterbalanced, independently started five-second windows each.
+The pilot can select an I73 knee and the 25%/60%/85% D3 rates, but it carries no candidate role,
+cannot change thresholds, and remains non-promotable.

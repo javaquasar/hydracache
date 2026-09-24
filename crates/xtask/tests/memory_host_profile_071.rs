@@ -76,6 +76,42 @@ fn checked_in_performance_profile_073_is_complete_and_fresh() {
 }
 
 #[test]
+fn baseline_pilot_073_is_baseline_only_and_uses_the_admitted_lane() {
+    let contract = fs::read_to_string(
+        root().join("docs/testing/performance/0.73/baseline-pilot-contract.toml"),
+    )
+    .expect("baseline pilot contract");
+    for required in [
+        "state = \"preregistered-unmeasured\"",
+        "candidate_data_allowed = false",
+        "offered_rates_per_second = [2500, 5000, 10000, 20000]",
+        "window_seconds = 5",
+        "minimum_stable_rates = 3",
+    ] {
+        assert!(
+            contract.contains(required),
+            "pilot contract omitted {required}"
+        );
+    }
+
+    let workflow =
+        fs::read_to_string(root().join(".github/workflows/performance-baseline-pilot-073.yml"))
+            .expect("baseline pilot workflow");
+    for required in [
+        "environment: performance-reference-073",
+        "group: performance-reference-073-host",
+        "Baseline-only I73 rate and window pilot",
+        "candidate_data_present",
+        "performance_baseline_pilot_073.py",
+    ] {
+        assert!(
+            workflow.contains(required),
+            "pilot workflow omitted {required}"
+        );
+    }
+}
+
+#[test]
 fn fingerprint_is_order_stable_and_sensitive_to_mutable_drift() {
     let before = json!({"kernel":"6.8", "governor":"performance", "thp":"never"});
     let reordered = json!({"thp":"never", "kernel":"6.8", "governor":"performance"});

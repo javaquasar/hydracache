@@ -520,3 +520,21 @@ fn host_admission_cannot_hide_failed_attempts_or_authorize_candidate_measurement
         .iter()
         .any(|problem| problem.contains("retain both failed attempts")));
 }
+
+#[test]
+fn baseline_pilot_cannot_observe_candidate_or_move_the_rate_grid() {
+    let mut value = manifest("baseline-pilot-contract.toml");
+    value["candidate_data_allowed"] = TomlValue::Boolean(true);
+    value["offered_rates_per_second"] = TomlValue::Array(vec![TomlValue::Integer(20_000)]);
+    value["maximum_goodput_regression"] = TomlValue::Float(0.10);
+    let problems = xtask::performance_contract::check_baseline_pilot_contract(&value, "0.73");
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("candidate_data_allowed must be false")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("sample or rate grid")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("maximum_goodput_regression")));
+}

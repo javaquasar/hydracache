@@ -44,6 +44,7 @@ const PROPOSAL_REGISTRY: &str = "docs/testing/performance/0.73/proposal-registry
 const STATISTICS: &str = "docs/testing/performance/0.73/statistics.toml";
 const HOST_PROFILE: &str = "docs/testing/performance/0.73/host-profile.toml";
 const HOST_ADMISSION: &str = "docs/testing/performance/0.73/host-admission-3ba09fcc.toml";
+const BASELINE_PILOT_CONTRACT: &str = "docs/testing/performance/0.73/baseline-pilot-contract.toml";
 const RELEASE: &str = "0.73";
 const PROFILE: &str = "local-screening-073-v1";
 const ENVIRONMENT_CLASS: &str = "local_screening";
@@ -113,6 +114,8 @@ pub fn check_at_root(
     let host_profile: TomlValue = toml::from_str(&fs::read_to_string(root.join(HOST_PROFILE))?)?;
     let host_admission: TomlValue =
         toml::from_str(&fs::read_to_string(root.join(HOST_ADMISSION))?)?;
+    let baseline_pilot_contract: TomlValue =
+        toml::from_str(&fs::read_to_string(root.join(BASELINE_PILOT_CONTRACT))?)?;
     let mut problems = check_contract(&contract, release);
     if !root.join(MOKA_OBSERVER_UPSTREAM_DRAFT).is_file() {
         problems.push("notification observer dependency review draft is missing".to_owned());
@@ -162,6 +165,10 @@ pub fn check_at_root(
     problems.extend(check_statistics(&statistics, release));
     problems.extend(check_host_profile(&host_profile, release));
     problems.extend(check_host_admission(&host_admission, release));
+    problems.extend(check_baseline_pilot_contract(
+        &baseline_pilot_contract,
+        release,
+    ));
     problems.extend(check_schema(
         &schema,
         &example,
@@ -252,6 +259,7 @@ pub fn check_contract(root: &TomlValue, release: &str) -> Vec<String> {
         ("statistics_contract", STATISTICS),
         ("host_profile", HOST_PROFILE),
         ("host_admission", HOST_ADMISSION),
+        ("baseline_pilot_contract", BASELINE_PILOT_CONTRACT),
     ] {
         if text(root, field) != Some(expected) {
             problems.push(format!("local screening {field} must be {expected}"));
@@ -1835,6 +1843,68 @@ pub fn check_host_admission(value: &TomlValue, release: &str) -> Vec<String> {
         problems.push(
             "host admission must retain both failed attempts before the admitted run".to_owned(),
         );
+    }
+    problems
+}
+
+pub fn check_baseline_pilot_contract(value: &TomlValue, release: &str) -> Vec<String> {
+    let mut problems = Vec::new();
+    if integer(value, "schema_version") != Some(1)
+        || text(value, "release") != Some(release)
+        || text(value, "contract_id") != Some("observer-baseline-pilot-073-v1")
+        || text(value, "state") != Some("preregistered-unmeasured")
+        || text(value, "evidence_class") != Some("dedicated_host_baseline_only")
+        || text(value, "profile_id") != Some("performance-reference-073-v1")
+        || text(value, "host_admission") != Some(HOST_ADMISSION)
+    {
+        problems.push("0.73 baseline pilot contract identity mismatch".to_owned());
+    }
+    for field in [
+        "candidate_data_allowed",
+        "promotable",
+        "numerical_claim_eligible",
+        "thresholds_changed",
+    ] {
+        if boolean(value, field) != Some(false) {
+            problems.push(format!("baseline pilot {field} must be false"));
+        }
+    }
+    for field in [
+        "counterbalanced_order_required",
+        "independent_processes_required",
+        "complete_outcome_accounting_required",
+        "exact_reconciliation_required",
+    ] {
+        if boolean(value, field) != Some(true) {
+            problems.push(format!("baseline pilot {field} must be true"));
+        }
+    }
+    if string_array(value.get("instrumentation_modes")) != ["off", "production"]
+        || integer_array(value.get("offered_rates_per_second")) != [2_500, 5_000, 10_000, 20_000]
+        || integer(value, "repeats_per_rate_and_mode") != Some(3)
+        || integer(value, "window_seconds") != Some(5)
+        || integer(value, "warmup_operations") != Some(5_000)
+        || integer(value, "run_order_seed") != Some(73_073)
+        || integer(value, "minimum_stable_rates") != Some(3)
+    {
+        problems.push("baseline pilot changes the preregistered sample or rate grid".to_owned());
+    }
+    for (field, expected) in [
+        ("minimum_achieved_ratio", 0.98),
+        ("maximum_goodput_relative_spread", 0.15),
+        ("maximum_goodput_regression", 0.02),
+        ("maximum_cpu_per_operation_regression", 0.03),
+        ("maximum_p99_regression", 0.03),
+    ] {
+        if float(value, field) != Some(expected) {
+            problems.push(format!("baseline pilot changes frozen {field}"));
+        }
+    }
+    if integer(value, "p99_slo_microseconds") != Some(10_000)
+        || text(value, "selection_rule").is_none_or(str::is_empty)
+        || text(value, "failure_rule").is_none_or(str::is_empty)
+    {
+        problems.push("baseline pilot omits its p99 or fail-loud selection rule".to_owned());
     }
     problems
 }
