@@ -393,6 +393,20 @@ their checked CAS algorithms because their synchronization windows are not inter
 data-counter accounting. `memory-counter-atomic-product-a205ce0a.toml` retains the full local gate
 receipt and authorizes one unchanged, manual v2 baseline repeat; it makes no speed claim itself.
 
+Run `36073786075` executed that repeat at exact source `2daccb47`. All 40 attempts succeeded and
+pre/post calibration spreads were 2.67% and 2.08%, but only 20,000 operations/second passed. The
+paired CPU estimates were 3.53%, 4.69%, 4.44%, and 1.80%; the unchanged gate therefore keeps I73
+unfrozen. The apparent loss of the previously stable 5,000 cell is not attributed to the counter
+change because the two campaigns are not a paired code comparison. It is nevertheless a complete
+negative result and is not rerun. `baseline-pilot-v2-insufficient-2daccb47.toml` retains the packet
+identity, all pair-level CPU deltas, and the decision to return to local attribution.
+
+The allocation signal is more repeatable than the cross-run CPU differences: production remained
+about 20.1--20.5 bytes per operation above off at every offered rate. That observation does not by
+itself prove that allocation owns the CPU gap, but it is a concrete owner candidate. The next step
+is diagnostic-only local isolation of observer delivery and cleanup allocation; no further product
+micro-optimization or dedicated-host repeat is authorized until that cost has an owner.
+
 The same push exposed a separate cost-control issue: the host-admission workflow still had an
 automatic path and queued run `36072022062` behind the shared performance concurrency group. It was
 cancelled before environment approval and ran no job. Commit `e0dc4df5` makes host admission, like

@@ -842,6 +842,24 @@ reference host. The receipt therefore authorizes exactly one unchanged manual v2
 If three rates pass, we can freeze I73. If they do not, the packet becomes another retained
 falsifier instead of an invitation to move the threshold.
 
+The repeat did not pass. With the single-atomic counter implementation, paired CPU overhead was
+3.53%, 4.69%, 4.44%, and 1.80% across the four rates; only 20,000 operations/second stayed below the
+3% ceiling. All 40 attempts completed, goodput remained essentially unchanged, and calibration
+spread stayed below 2.68%. This is a valid negative measurement, not an infrastructure failure.
+
+It would also be incorrect to call the counter change a regression. The preceding V2 campaign had
+two stable rates, but the old and new binaries were measured in separate campaigns rather than as
+paired treatments inside one schedule. Cross-run movement describes repeatability; it does not
+isolate causality. The new campaign alone is enough to reject the baseline freeze, while the code
+change remains acceptable only on its independently proven simplicity and correctness merits.
+
+One signal repeated across every cell: production allocated roughly 20.1--20.5 more bytes per
+operation than off. Unlike the CPU estimate, that delta barely changed with offered rate. It does
+not prove that allocation causes all CPU overhead, but it gives the next local investigation a
+specific target. We stop spending reference-host minutes and return to allocation attribution:
+observer delivery, queue publication, cleanup, and tag-index work must be separated before another
+product optimization is selected.
+
 ## A profiling ladder that avoids expensive runs
 
 Not every development iteration needs a dedicated bare-metal campaign. A useful workflow has several

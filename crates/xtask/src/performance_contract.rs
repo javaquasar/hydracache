@@ -76,6 +76,8 @@ const MEMORY_COUNTER_ATOMIC_CONTRACT: &str =
     "docs/testing/performance/0.73/memory-counter-atomic-contract.toml";
 const MEMORY_COUNTER_ATOMIC_PRODUCT: &str =
     "docs/testing/performance/0.73/memory-counter-atomic-product-a205ce0a.toml";
+const BASELINE_PILOT_V2_COUNTER_EVIDENCE: &str =
+    "docs/testing/performance/0.73/baseline-pilot-v2-insufficient-2daccb47.toml";
 const RELEASE: &str = "0.73";
 const PROFILE: &str = "local-screening-073-v1";
 const ENVIRONMENT_CLASS: &str = "local_screening";
@@ -183,6 +185,9 @@ pub fn check_at_root(
     )?)?;
     let memory_counter_atomic_product: TomlValue = toml::from_str(&fs::read_to_string(
         root.join(MEMORY_COUNTER_ATOMIC_PRODUCT),
+    )?)?;
+    let baseline_pilot_v2_counter_evidence: TomlValue = toml::from_str(&fs::read_to_string(
+        root.join(BASELINE_PILOT_V2_COUNTER_EVIDENCE),
     )?)?;
     let mut problems = check_contract(&contract, release);
     if !root.join(MOKA_OBSERVER_UPSTREAM_DRAFT).is_file() {
@@ -296,6 +301,10 @@ pub fn check_at_root(
     ));
     problems.extend(check_memory_counter_atomic_product(
         &memory_counter_atomic_product,
+        release,
+    ));
+    problems.extend(check_baseline_pilot_v2_counter_evidence(
+        &baseline_pilot_v2_counter_evidence,
         release,
     ));
     problems.extend(check_schema(
@@ -419,6 +428,10 @@ pub fn check_contract(root: &TomlValue, release: &str) -> Vec<String> {
         (
             "memory_counter_atomic_product",
             MEMORY_COUNTER_ATOMIC_PRODUCT,
+        ),
+        (
+            "baseline_pilot_v2_counter_evidence",
+            BASELINE_PILOT_V2_COUNTER_EVIDENCE,
         ),
     ] {
         if text(root, field) != Some(expected) {
@@ -3048,6 +3061,86 @@ pub fn check_memory_counter_atomic_product(value: &TomlValue, release: &str) -> 
         || text(value, "next_evidence").is_none_or(str::is_empty)
     {
         problems.push("memory counter atomic product evidence is incomplete".to_owned());
+    }
+    problems
+}
+
+pub fn check_baseline_pilot_v2_counter_evidence(value: &TomlValue, release: &str) -> Vec<String> {
+    let mut problems = Vec::new();
+    if integer(value, "schema_version") != Some(1)
+        || text(value, "release") != Some(release)
+        || text(value, "evidence_id") != Some("observer-baseline-pilot-v2-insufficient-2daccb47-v1")
+        || text(value, "contract_id") != Some("observer-baseline-pilot-073-v2")
+        || text(value, "state") != Some("executed-insufficient-baseline-one-stable-rate")
+        || integer(value, "workflow_run_id") != Some(36_073_786_075)
+        || text(value, "source_sha") != Some("2daccb47a854dee245d84c9fac238130ff7298b4")
+        || text(value, "implementation_commit") != Some("a205ce0ab8e3b76bcb9341483694587fb5e85838")
+        || integer(value, "artifact_id") != Some(10_839_591_990)
+        || text(value, "paired_estimator") != Some("hodges-lehmann-v1")
+    {
+        problems.push("counter fast-path baseline evidence identity changed".to_owned());
+    }
+    for field in [
+        "artifact_sha256",
+        "campaign_manifest_sha256",
+        "preflight_sha256",
+        "postflight_sha256",
+        "baseline_pilot_sha256",
+        "binary_sha256",
+    ] {
+        if text(value, field).is_none_or(|digest| !sha256(digest)) {
+            problems.push(format!(
+                "counter fast-path baseline evidence {field} is not SHA-256"
+            ));
+        }
+    }
+    for field in [
+        "candidate_data_present",
+        "candidate_measurement_authorized",
+        "i73_freeze_eligible",
+        "derived_d3_rates_admitted",
+        "thresholds_changed",
+        "silent_retry_allowed",
+        "code_effect_claimed",
+        "manual_repeat_authorized",
+    ] {
+        if boolean(value, field) != Some(false) {
+            problems.push(format!(
+                "counter fast-path baseline evidence {field} must be false"
+            ));
+        }
+    }
+    let rates = value
+        .get("rate")
+        .and_then(TomlValue::as_array)
+        .cloned()
+        .unwrap_or_default();
+    if integer(value, "attempts") != Some(40)
+        || integer(value, "failed_attempts") != Some(0)
+        || integer(value, "packet_file_count") != Some(164)
+        || integer_array(value.get("stable_rates")) != [20_000]
+        || rates.len() != 4
+        || rates
+            .iter()
+            .filter(|rate| boolean(rate, "stable") == Some(true))
+            .count()
+            != 1
+        || rates.iter().any(|rate| {
+            rate.get("cpu_pair_regressions")
+                .and_then(TomlValue::as_array)
+                .is_none_or(|pairs| pairs.len() != 5)
+        })
+    {
+        problems.push(
+            "counter fast-path baseline must retain 40 attempts and exactly one stable rate"
+                .to_owned(),
+        );
+    }
+    if text(value, "decision") != Some("attribute-persistent-allocation-and-observer-cost-locally")
+        || text(value, "cross_run_interpretation").is_none_or(str::is_empty)
+        || text(value, "next_evidence").is_none_or(str::is_empty)
+    {
+        problems.push("counter fast-path baseline decision is incomplete".to_owned());
     }
     problems
 }

@@ -805,3 +805,26 @@ fn memory_counter_product_cannot_claim_performance_or_weaken_faults() {
         .iter()
         .any(|problem| problem.contains("version_algorithm_changed must be false")));
 }
+
+#[test]
+fn counter_fast_path_baseline_cannot_freeze_or_authorize_a_repeat() {
+    let mut value = manifest("baseline-pilot-v2-insufficient-2daccb47.toml");
+    value["i73_freeze_eligible"] = TomlValue::Boolean(true);
+    value["manual_repeat_authorized"] = TomlValue::Boolean(true);
+    value["stable_rates"] = TomlValue::Array(vec![
+        TomlValue::Integer(5_000),
+        TomlValue::Integer(10_000),
+        TomlValue::Integer(20_000),
+    ]);
+    let problems =
+        xtask::performance_contract::check_baseline_pilot_v2_counter_evidence(&value, "0.73");
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("i73_freeze_eligible must be false")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("manual_repeat_authorized must be false")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("exactly one stable rate")));
+}
