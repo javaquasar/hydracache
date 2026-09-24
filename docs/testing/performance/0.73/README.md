@@ -286,3 +286,11 @@ second it runs five independent, Williams-counterbalanced blocks across `off`, `
 registration/delivery, and the real HydraCache callback. The two ablations are deliberately
 incorrect configurations, so the workflow has no numerical acceptance threshold and cannot freeze
 I73; it succeeds only when all attempts and the admitted-host calibration envelope are complete.
+
+Run `36066691730` completed all 20 attempts at exact source `ed339846`; pre/post calibration
+spread was 4.27% and 2.09%, inside the unchanged 5% bound. Counter-only CPU was 0.20% below off,
+which is classified as no detected counter cost. Empty observer delivery added 1.42%, and the full
+callback/cleanup path added a further 1.99%. The complete production path was 3.24% above off and
+allocated 20.23 additional bytes per operation. `cpu-attribution-ed339846.toml` binds the raw
+packet. The result authorizes only a local optimization of the empty-drain fast path; it does not
+accept production overhead or reopen candidate measurement.

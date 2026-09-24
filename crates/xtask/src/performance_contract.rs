@@ -49,6 +49,8 @@ const BASELINE_PILOT_EVIDENCE: &str =
     "docs/testing/performance/0.73/baseline-pilot-insufficient-4ba93a1a.toml";
 const CPU_ATTRIBUTION_CONTRACT: &str =
     "docs/testing/performance/0.73/cpu-attribution-contract.toml";
+const CPU_ATTRIBUTION_EVIDENCE: &str =
+    "docs/testing/performance/0.73/cpu-attribution-ed339846.toml";
 const RELEASE: &str = "0.73";
 const PROFILE: &str = "local-screening-073-v1";
 const ENVIRONMENT_CLASS: &str = "local_screening";
@@ -124,6 +126,8 @@ pub fn check_at_root(
         toml::from_str(&fs::read_to_string(root.join(BASELINE_PILOT_EVIDENCE))?)?;
     let cpu_attribution_contract: TomlValue =
         toml::from_str(&fs::read_to_string(root.join(CPU_ATTRIBUTION_CONTRACT))?)?;
+    let cpu_attribution_evidence: TomlValue =
+        toml::from_str(&fs::read_to_string(root.join(CPU_ATTRIBUTION_EVIDENCE))?)?;
     let mut problems = check_contract(&contract, release);
     if !root.join(MOKA_OBSERVER_UPSTREAM_DRAFT).is_file() {
         problems.push("notification observer dependency review draft is missing".to_owned());
@@ -183,6 +187,10 @@ pub fn check_at_root(
     ));
     problems.extend(check_cpu_attribution_contract(
         &cpu_attribution_contract,
+        release,
+    ));
+    problems.extend(check_cpu_attribution_evidence(
+        &cpu_attribution_evidence,
         release,
     ));
     problems.extend(check_schema(
@@ -278,6 +286,7 @@ pub fn check_contract(root: &TomlValue, release: &str) -> Vec<String> {
         ("baseline_pilot_contract", BASELINE_PILOT_CONTRACT),
         ("baseline_pilot_evidence", BASELINE_PILOT_EVIDENCE),
         ("cpu_attribution_contract", CPU_ATTRIBUTION_CONTRACT),
+        ("cpu_attribution_evidence", CPU_ATTRIBUTION_EVIDENCE),
     ] {
         if text(root, field) != Some(expected) {
             problems.push(format!("local screening {field} must be {expected}"));
@@ -2051,6 +2060,93 @@ pub fn check_cpu_attribution_contract(value: &TomlValue, release: &str) -> Vec<S
         || text(value, "next_decision").is_none_or(str::is_empty)
     {
         problems.push("CPU attribution omits its diagnostic-only interpretation rules".to_owned());
+    }
+    problems
+}
+
+pub fn check_cpu_attribution_evidence(value: &TomlValue, release: &str) -> Vec<String> {
+    let mut problems = Vec::new();
+    if integer(value, "schema_version") != Some(1)
+        || text(value, "release") != Some(release)
+        || text(value, "evidence_id") != Some("observer-cpu-attribution-ed339846-v1")
+        || text(value, "contract_id") != Some("observer-cpu-attribution-073-v1")
+        || text(value, "state") != Some("complete-diagnostic")
+        || text(value, "evidence_class") != Some("dedicated_host_diagnostic_only")
+        || text(value, "source_sha") != Some("ed3398469c6a6eb4920a9d89831ded0dba470115")
+        || integer(value, "workflow_run_id") != Some(36_066_691_730)
+        || integer(value, "artifact_id") != Some(10_836_294_071)
+    {
+        problems.push("0.73 CPU attribution evidence identity mismatch".to_owned());
+    }
+    for field in [
+        "artifact_sha256",
+        "campaign_manifest_sha256",
+        "preflight_sha256",
+        "postflight_sha256",
+        "cpu_attribution_sha256",
+        "binary_sha256",
+    ] {
+        if text(value, field).is_none_or(|digest| !sha256(digest)) {
+            problems.push(format!("CPU attribution evidence {field} is not SHA-256"));
+        }
+    }
+    for field in [
+        "candidate_data_present",
+        "candidate_measurement_authorized",
+        "promotable",
+        "numerical_claim_eligible",
+        "acceptance_decision_allowed",
+        "thresholds_changed",
+        "silent_retry_allowed",
+    ] {
+        if boolean(value, field) != Some(false) {
+            problems.push(format!("CPU attribution evidence {field} must be false"));
+        }
+    }
+    if boolean(value, "diagnostic_complete") != Some(true)
+        || integer(value, "attempts") != Some(20)
+        || integer(value, "failed_attempts") != Some(0)
+    {
+        problems
+            .push("CPU attribution evidence must retain one complete 20-attempt block".to_owned());
+    }
+    let modes = value
+        .get("mode")
+        .and_then(TomlValue::as_array)
+        .map(|items| {
+            items
+                .iter()
+                .filter_map(|item| text(item, "name"))
+                .collect::<Vec<_>>()
+        })
+        .unwrap_or_default();
+    if modes != ["off", "counters-only", "observer-noop", "production"] {
+        problems.push("CPU attribution evidence mode ledger changed".to_owned());
+    }
+    let comparisons = value
+        .get("comparison")
+        .and_then(TomlValue::as_array)
+        .cloned()
+        .unwrap_or_default();
+    let expected = [
+        ("off_to_counters_only", -0.0019503437774635217),
+        ("counters_only_to_observer_noop", 0.014187636555413205),
+        ("observer_noop_to_production", 0.019927477354084042),
+        ("off_to_production", 0.03238040632945276),
+    ];
+    for (name, relative_delta) in expected {
+        if !comparisons.iter().any(|item| {
+            text(item, "name") == Some(name)
+                && float(item, "cpu_relative_delta") == Some(relative_delta)
+        }) {
+            problems.push(format!("CPU attribution evidence changed {name}"));
+        }
+    }
+    if text(value, "decision") != Some("optimize-empty-removal-drain-fast-path-locally")
+        || text(value, "conclusion").is_none_or(str::is_empty)
+        || text(value, "next_evidence").is_none_or(str::is_empty)
+    {
+        problems.push("CPU attribution evidence omits its bounded local decision".to_owned());
     }
     problems
 }

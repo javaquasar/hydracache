@@ -601,6 +601,23 @@ plumbing, and HydraCache cleanup/accounting work. That diagnostic remains non-pr
 configurations deliberately break removal correctness. Its job is to tell us where to optimize; the
 unchanged off-versus-production contract must still make the eventual acceptance decision.
 
+The four-mode run made that distinction concrete. Counter-only instrumentation measured 0.20%
+below off, so the experiment detected no CPU cost attributable to the counters themselves. Adding
+an empty post-removal observer increased median CPU per operation by 1.42%; replacing it with the
+complete callback and cleanup path added another 1.99%. End to end, production was 3.24% above off,
+with about 20.23 additional allocated bytes per operation. All 20 processes completed, and the
+host's 4.27%/2.09% pre/post calibration spreads stayed inside the frozen 5% envelope.
+
+This result changes the implementation question from “are atomics expensive?” to “why do calls
+with no cleanup work still enter async coordination?” HydraCache asks the observer to drain before
+and after many mutations. Most of those calls find an empty channel, yet they still acquire the
+receiver's async mutex. The observer already maintains accepted and acknowledged sequence counters,
+so equality provides a cheap no-work hint. Checking that hint before locking is race-safe: the old
+implementation could also observe an empty receiver immediately before a concurrent publication,
+and every exact snapshot and later mutation drains again or fails closed on unequal sequences. The
+optimization can therefore remove repeated empty locks without weakening delivery, version checks,
+saturation handling, or exact reconciliation.
+
 ### Why the ablation must not become the fix
 
 It would be easy to stop here and ship production counters without the listener. That would make the

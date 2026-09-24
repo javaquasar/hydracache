@@ -571,3 +571,21 @@ fn cpu_attribution_cannot_be_promoted_or_change_its_modes() {
         .iter()
         .any(|problem| problem.contains("modes or sample grid")));
 }
+
+#[test]
+fn cpu_attribution_evidence_cannot_authorize_measurement_or_rewrite_the_result() {
+    let mut value = manifest("cpu-attribution-ed339846.toml");
+    value["candidate_measurement_authorized"] = TomlValue::Boolean(true);
+    value["attempts"] = TomlValue::Integer(19);
+    value["comparison"][3]["cpu_relative_delta"] = TomlValue::Float(0.0);
+    let problems = xtask::performance_contract::check_cpu_attribution_evidence(&value, "0.73");
+    assert!(problems
+        .iter()
+        .any(|problem| { problem.contains("candidate_measurement_authorized must be false") }));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("complete 20-attempt block")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("off_to_production")));
+}
