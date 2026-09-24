@@ -367,11 +367,11 @@ point the local spike had implemented and falsified the complete proposed lifecy
 delivery, immediate bounded accounting, duplicate suppression, conditional deferred cleanup,
 saturation/dirty epochs, reconciliation, shutdown drain, and fail-closed exact snapshots.
 
-That still does not authorize a product change. The successful code is an isolated patch against a
-development copy of Moka, not HydraCache's locked production dependency. The remaining work is
-governance and qualification: recorded review, baseline-only allocation/RSS rejection limits,
-an explicit dependency decision (upstream API or reviewed pinned fork), D2 authorization, and only
-then product integration plus the full local and dedicated-host matrices.
+At that point the result still did not authorize a product change. The successful code was an
+isolated patch against a development copy of Moka, not HydraCache's locked production dependency.
+The remaining boundary was governance and qualification: recorded review, baseline-only
+allocation/RSS rejection limits, an explicit dependency decision, D2 authorization, and only then
+product integration plus the full local and dedicated-host matrices.
 
 We turned that boundary into data rather than leaving it as a sentence in a plan. The D2 review
 candidate names the exact authorized surfaces, upstream-first and pinned-fork dependency choices,
@@ -386,17 +386,62 @@ qualification, and requires later publication to say “self-reviewed”. Comple
 prototype still only prepares the decision; it does not grant the prototype permission to become
 the product.
 
+### Turning a successful patch into an owned dependency
+
+We chose the pinned-fork path for the 0.73 integration window. That choice is narrower than “use
+our branch”: HydraCache may consume only commit
+`352e53faa480c9997272b9c70798dd5b5c15d581` from the project-owned `javaquasar/moka` fork. A
+branch name is useful for humans but mutable, so the contract rejects it as a dependency identity.
+The fork is one focused commit over Moka `v0.12.15`; the receipt also records both source-tree ids,
+a stable patch id, and the digest of the earlier checked-in prototype patch. These identities make
+it possible to distinguish a reviewed source change from a later force-push or unrelated fork edit.
+
+Owning the repository does not make the dependency trustworthy by itself. We ran Moka's complete
+all-feature tests and doctests, denied every Clippy warning, verified the publishable package with
+the `future` feature, checked the declared Rust 1.71.1 MSRV using upstream-compatible dependency
+pins, and applied HydraCache's `cargo-deny` policy. We generated a CycloneDX 1.5 inventory and bound
+its SHA-256 to the decision. A feature-powerset run checked all 80 valid combinations containing
+`sync` or `future`, while target checks covered Windows x86_64 plus Linux x86_64 and aarch64. The
+isolated HydraCache harness then re-proved every removal cause and the delayed old-version cleanup
+case against the exact fork code.
+
+The review also changed the prototype in a safety-relevant way before it was pinned. An observer
+panic is caught; the observer is disabled after its first panic, and later cache operations remain
+usable. The API documentation prohibits blocking, I/O, and reentering the same cache. This does not
+prove that HydraCache's integration is correct—it makes the dependency contract precise enough for
+product tests to try to falsify it.
+
+We deliberately did not send an upstream pull request as part of this decision. The receipt says
+`not-submitted` and `not-requested`, rather than implying that the Moka maintainers reviewed the API.
+An external review has an unbounded schedule, while a fork we own has explicit maintenance and
+rollback costs. We accepted those costs: recheck upstream and advisories at least monthly and before
+each release candidate, never move the pinned revision in place, and require a new receipt,
+lockfile diff, SBOM, and full dependency gate for every revision change. Rollback is one product
+commit restoring crates.io Moka 0.12.15 and the previous listener wiring.
+
+D2 therefore opens exactly one door: a later product-integration commit may use the pinned observer
+seam on the pre-authorized files and surfaces. It does not open measurement. Candidate runs remain
+forbidden until explicit removal, replacement, expiry, capacity eviction, duplicate delivery,
+saturation, reconciliation, cancellation, shutdown, reentrancy, panic, compatibility, and rollback
+tests pass in HydraCache. Local evidence will still be non-promotable, and the numerical claim still
+requires the admitted dedicated-host pairs frozen earlier.
+
 ### The result changed governance, not just code direction
 
-At this point the responsible next action was not to start editing the production cache. We recorded
-the owner as D1-classified and explicitly left D2 unauthorized. The proposal registry now prevents
-candidate measurements and product mutation until four things exist:
+Before the fork decision, the responsible next action was not to start editing the production cache.
+We recorded the owner as D1-classified and explicitly left D2 unauthorized. The proposal registry
+prevented candidate measurements and product mutation until four things existed:
 
 - a lab-only feasibility result for the viable backend designs (the sync shortcut is now rejected,
   while the exact nonblocking designs remain to be evaluated);
 - a recorded independent or single-maintainer review policy for the selected proposal;
 - allocation and RSS rejection limits frozen in an earlier commit before product mutation;
 - exact correctness tests for every automatic and explicit removal path.
+
+Those prerequisites are now separated in time and commits. The threshold/review prerequisites and
+exact dependency decision are complete, so D2 permits implementation. The correctness prerequisite
+now gates the transition from implementation to measurement; it was not silently reclassified as
+already passing merely because the dependency itself passed its tests.
 
 We also froze the parts of the measurement method that were already inherited and defensible: at
 least five independently started admitted pairs, a 95% interval, Hodges-Lehmann paired estimates,

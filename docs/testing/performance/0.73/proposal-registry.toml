@@ -1,15 +1,15 @@
 schema_version = 1
 release = "0.73"
-registry_state = "pre_i73"
+registry_state = "d2_authorized_pre_i73"
 candidate_measurements_allowed = false
-product_mutations_allowed = false
+product_mutations_allowed = true
 
 [[proposals]]
 proposal_id = "P73-INSTRUMENTATION-NONBLOCKING-REMOVAL"
 work_item = "W0-W1"
-state = "d1_classified"
-d2_authorized = false
-product_mutation_allowed = false
+state = "d2_authorized"
+d2_authorized = true
+product_mutation_allowed = true
 owner = "Moka future-cache removal notification path"
 hypothesis = "Exact removal accounting can avoid listener-enabled per-mutation key locking only through a nonblocking post-removal observation seam or an equally exact replacement ownership design."
 primary_metric = "fill_allocated_bytes_per_operation"
@@ -17,10 +17,11 @@ practical_minimum_effect = "fill allocations improve by at least 15%"
 threshold_status = "frozen by single-maintainer review at commit 1e9fd748f1a234967e9303c7071dd0816fb7ac28"
 compatibility_outcome = "public configuration, value-byte capacity, expiry, invalidation, tag cleanup, snapshot, and reconciliation semantics remain unchanged"
 rollback_class = "remove isolated implementation and restore the exact I73 instrumentation path"
-dependency_delta = "none authorized; a Moka patch, upgrade, fork, or backend replacement requires separate dependency review"
-review_status = "single-maintainer-threshold-review-complete-dependency-pending"
+dependency_delta = "exact git revision 352e53faa480c9997272b9c70798dd5b5c15d581 from https://github.com/javaquasar/moka.git; no branch or floating tag is authorized"
+review_status = "d2-authorized-pinned-fork"
 candidate_measurements_allowed = false
 d2_review_candidate = "docs/testing/performance/0.73/notification-observer-d2-review.toml"
+dependency_decision = "docs/testing/performance/0.73/moka-fork-decision-352e53fa.toml"
 
 baseline_evidence = [
   "docs/testing/performance/0.73/local-overhead-screening-307b3500.toml",
@@ -73,4 +74,4 @@ required_regression_guards = [
   "allocation and RSS limits frozen before candidate data",
 ]
 
-next_evidence = "Choose and pin an upstream Moka release containing the observer API or a reviewed fork revision; record license, MSRV, advisory, SBOM, target, and rollback results in a separate dependency-decision commit before authorizing D2."
+next_evidence = "Integrate only the authorized Moka revision, make the product correctness and rollback falsifiers pass, then admit local candidate screening without changing the frozen thresholds."

@@ -1,13 +1,13 @@
 schema_version = 1
 release = "0.73"
 contract_id = "notification-observer-requirements-073-v1"
-state = "d1-design-requirements"
+state = "d2-authorized-requirements"
 proposal_id = "P73-INSTRUMENTATION-NONBLOCKING-REMOVAL"
-prototype_scope = "lab-only"
-d2_authorized = false
-product_mutation_allowed = false
+prototype_scope = "completed-lab-prototype"
+d2_authorized = true
+product_mutation_allowed = true
 candidate_measurements_allowed = false
-review_status = "single-maintainer-threshold-review-complete-dependency-pending"
+review_status = "d2-authorized-pinned-fork"
 selected_direction = "post-removal observer with version-conditional deferred cleanup"
 
 owner_split = [
@@ -56,5 +56,5 @@ compatibility_invariants = [
   "a Moka fork, patch, upgrade, or replacement remains a separately reviewed dependency delta",
 ]
 
-prototype_exit = "A lab-only prototype must make every falsifier fail for the intended reason and demonstrate that the observer-disabled mutation path remains identical before the recorded review process may authorize D2."
-next_evidence = "Retain the exact-SHA reference-model receipt, then build an upstream-compatible Moka patch spike that invokes the same version-conditional contract for automatic removals without enabling listener key locks."
+prototype_exit = "The exact-SHA reference model and isolated Moka implementation passed the ordering, delivery, panic, feature, package, supply-chain, and supported-target gates required to authorize D2."
+next_evidence = "Integrate the exact pinned fork revision into HydraCache and make the product-level removal, reconciliation, cancellation, shutdown, compatibility, and rollback falsifiers pass before candidate measurement."

@@ -153,8 +153,8 @@ observer matched off at 400.69 B/op for insert. For remove it measured 2,275.41 
 2,287.78 off; this small negative delta is treated as no detected allocation penalty, not as an
 improvement. The harness also connected real Moka replacement callbacks to the versioned cleanup
 model and proved that delayed cleanup for version 41 cannot remove version 42's membership. The lab
-implementation is complete; reviewed baseline-only allocation/RSS limits and explicit D2
-authorization remain mandatory before changing HydraCache's production dependency or path.
+implementation is complete. This remains historical lab evidence: it did not authorize itself and
+does not become a numerical claim after the later D2 decision.
 
 `notification-observer-d2-review.toml` is the machine-checked review candidate. It proposes a 15%
 minimum reduction in the primary fill-allocation metric from the smallest baseline-only observed
@@ -162,9 +162,8 @@ listener overhead of 23.892%. Unaffected allocation cells use `max(3%, 16 B/op)`
 RSS use `max(5%, 1 MiB)` as conservative guards inherited from the reviewed 0.71 practical-effect
 contract. Candidate observer measurements are listed separately and are explicitly excluded from
 threshold derivation. The project selected the proposal-scoped single-maintainer path. Thresholds
-are frozen against the earlier `1e9fd748` commit, but the packet still cannot authorize D2,
-candidate measurement, a dependency change, or product mutation until a concrete upstream release
-or pinned fork is selected in a separate commit.
+are frozen against the earlier `1e9fd748` commit. The later dependency decision authorizes product
+integration but still does not authorize candidate measurement.
 
 `single-maintainer-review-policy.toml` records the exception and its compensating controls. It
 requires separate governance, dependency, implementation, and measurement commits; append-only
@@ -172,11 +171,21 @@ attempt retention; dedicated-host qualification; explicit self-review wording; p
 falsifiers; and a demonstrated rollback. It does not permit describing the result as independently
 reviewed.
 
+`moka-fork-decision-352e53fa.toml` records the resolved dependency choice. The project-owned fork
+is pinned to full revision `352e53faa480c9997272b9c70798dd5b5c15d581`, based on upstream Moka
+`v0.12.15` at `616473ee923f4cd1429b3d8eb3be7df3eb9906b1`. The receipt binds the source tree,
+stable patch id, checked-in prototype-patch digest, fork `Cargo.lock`, CycloneDX 1.5 SBOM, license,
+MSRV, maintenance cadence, advisory policy, and one-commit crates.io rollback. Full Moka tests,
+Clippy, package verification, all 80 valid feature combinations, `cargo deny`, the isolated
+HydraCache harness, panic containment, and Windows/Linux x86_64/Linux aarch64 checks passed. D2 now
+allows the separately committed production integration; measurements remain closed until that
+integration passes product-level correctness and local admission.
+
 `moka-post-removal-observer-upstream-draft.md` turns the dependency choice into a concrete API
-proposal without posting anything externally. It also records a gap found during review: the lab
-patch invokes the observer directly, so production authorization additionally requires a panic
-containment falsifier and an explicit reentrancy policy. The same document defines what a pinned
-fork must record if upstream does not accept the API in the release window.
+proposal without posting anything externally. The dependency receipt explicitly records
+`not-submitted`/`not-requested`, so neither the fork nor D2 can be mistaken for upstream acceptance.
+The hardened fork contains panic containment and an explicit nonblocking/non-reentrant callback
+contract; HydraCache still has to prove its own product-level reentrancy and shutdown behavior.
 
 `statistics.toml` freezes the inherited paired estimator, confidence, Holm correction, failure
 retention, five-pair minimum, throughput/CPU/p99 guards, and the single-maintainer-reviewed

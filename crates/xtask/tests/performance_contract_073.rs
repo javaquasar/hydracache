@@ -263,16 +263,16 @@ fn notification_feasibility_cannot_authorize_product_semantics_or_promotion() {
 }
 
 #[test]
-fn observer_requirements_cannot_skip_d2_or_drop_ordering_falsifiers() {
+fn observer_requirements_cannot_detach_from_d2_or_drop_ordering_falsifiers() {
     let mut value = manifest("notification-observer-requirements.toml");
-    value["d2_authorized"] = TomlValue::Boolean(true);
-    value["product_mutation_allowed"] = TomlValue::Boolean(true);
+    value["d2_authorized"] = TomlValue::Boolean(false);
+    value["candidate_measurements_allowed"] = TomlValue::Boolean(true);
     value["required_falsifiers"] = TomlValue::Array(Vec::new());
     let problems =
         xtask::performance_contract::check_notification_observer_requirements(&value, "0.73");
     assert!(problems
         .iter()
-        .any(|problem| problem.contains("must remain D1 lab-only")));
+        .any(|problem| problem.contains("must bind D2 to the pinned fork")));
     assert!(problems
         .iter()
         .any(|problem| problem.contains("incomplete required_falsifiers")));
@@ -322,11 +322,12 @@ fn direct_moka_observer_cannot_self_authorize_d2_or_drop_ordering_proof() {
 }
 
 #[test]
-fn single_maintainer_threshold_review_cannot_preapprove_dependency_or_use_candidate_thresholds() {
+fn d2_review_cannot_enable_measurement_or_use_candidate_thresholds() {
     let mut value = manifest("notification-observer-d2-review.toml");
     value["reviewer"] = TomlValue::String("proposal-author".to_owned());
     value["reviewer_independent"] = TomlValue::Boolean(true);
-    value["d2_authorized"] = TomlValue::Boolean(true);
+    value["d2_authorized"] = TomlValue::Boolean(false);
+    value["candidate_measurements_allowed"] = TomlValue::Boolean(true);
     value["threshold_freeze_commit"] = TomlValue::String("rewritten".to_owned());
     value["candidate_data_used_for_thresholds"] = TomlValue::Boolean(true);
     let candidate = value["candidate_evidence_excluded_from_threshold_derivation"][0].clone();
@@ -343,7 +344,7 @@ fn single_maintainer_threshold_review_cannot_preapprove_dependency_or_use_candid
         xtask::performance_contract::check_notification_observer_d2_review(&value, "0.73");
     assert!(problems
         .iter()
-        .any(|problem| problem.contains("cannot authorize D2")));
+        .any(|problem| problem.contains("authorize only product integration")));
     assert!(problems
         .iter()
         .any(|problem| problem.contains("threshold_freeze_commit")));
@@ -359,31 +360,58 @@ fn single_maintainer_threshold_review_cannot_preapprove_dependency_or_use_candid
 }
 
 #[test]
-fn single_maintainer_policy_cannot_claim_independence_or_skip_dependency_decision() {
+fn single_maintainer_policy_cannot_claim_independence_or_unpin_dependency() {
     let mut value = manifest("single-maintainer-review-policy.toml");
     value["independent_review_claim_allowed"] = TomlValue::Boolean(true);
-    value["d2_authorized"] = TomlValue::Boolean(true);
-    value["product_mutation_allowed"] = TomlValue::Boolean(true);
+    value["dependency_decision"] = TomlValue::String("pending".to_owned());
+    value["d2_authorized"] = TomlValue::Boolean(false);
     value["threshold_freeze_commit"] = TomlValue::String("main".to_owned());
     let problems =
         xtask::performance_contract::check_single_maintainer_review_policy(&value, "0.73");
     assert!(problems
         .iter()
-        .any(|problem| problem.contains("without claiming independence or authorizing D2")));
+        .any(|problem| problem.contains("bind D2 to the reviewed dependency")));
     assert!(problems
         .iter()
         .any(|problem| problem.contains("threshold_freeze_commit")));
 }
 
 #[test]
-fn pre_i73_proposal_cannot_skip_d2_review_and_threshold_freeze() {
+fn pre_i73_proposal_cannot_enable_measurement_or_unpin_d2_dependency() {
     let mut value = manifest("proposal-registry.toml");
-    value["proposals"][0]["state"] = TomlValue::String("d2_authorized".to_owned());
-    value["proposals"][0]["d2_authorized"] = TomlValue::Boolean(true);
+    value["proposals"][0]["candidate_measurements_allowed"] = TomlValue::Boolean(true);
+    value["proposals"][0]["dependency_decision"] =
+        TomlValue::String("hydracache/post-removal-observer-0.12.15".to_owned());
     let problems = xtask::performance_contract::check_proposal_registry(&value, "0.73");
     assert!(problems
         .iter()
-        .any(|problem| problem.contains("must remain D1-only")));
+        .any(|problem| problem.contains("bound to the authorized D2 dependency")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("must reference the pinned fork decision")));
+}
+
+#[test]
+fn moka_fork_decision_requires_exact_revision_and_keeps_measurement_closed() {
+    let mut value = manifest("moka-fork-decision-352e53fa.toml");
+    value["candidate_measurements_allowed"] = TomlValue::Boolean(true);
+    value["source"]["revision"] =
+        TomlValue::String("hydracache/post-removal-observer-0.12.15".to_owned());
+    value["source"]["remote_revision_verified"] = TomlValue::Boolean(false);
+    value["upstream"]["submission_state"] = TomlValue::String("submitted".to_owned());
+    let problems = xtask::performance_contract::check_moka_fork_decision(&value, "0.73");
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("not candidate measurement")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("source revision must be")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("source integrity")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("absent upstream review")));
 }
 
 #[test]

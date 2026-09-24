@@ -1,6 +1,7 @@
 # Moka post-removal observer proposal draft
 
-Status: local review draft; not submitted upstream and not authorized for the HydraCache product.
+Status: local review draft; not submitted upstream. A separately recorded project-owned pinned-fork
+decision authorizes HydraCache D2 integration but does not claim upstream review or acceptance.
 
 ## Problem
 
@@ -76,9 +77,10 @@ If upstream does not accept an API in the 0.73 window, a fork remains a separate
 automatic consequence. It must pin one exact upstream commit, carry the reviewed patch digest,
 name a repository owner, define an upstream-sync and advisory cadence, preserve Moka's license and
 MSRV, pass `cargo deny`, SBOM, feature, package, and supported-target gates, and retain a one-commit
-rollback to crates.io Moka plus the existing listener path. The current patch digest and experiment
-belong in the evidence packet; the fork repository, revision, owner, and maintenance commitment are
-intentionally unresolved until the recorded review process chooses this fallback.
+rollback to crates.io Moka plus the existing listener path. The patch digest and experiment belong
+in the evidence packet. For release 0.73 the recorded review selected the project-owned fork and
+resolved its repository, exact revision, owner, maintenance cadence, validation, and rollback in
+`moka-fork-decision-352e53fa.toml`.
 
 Upstream references:
 

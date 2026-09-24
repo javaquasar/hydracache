@@ -35,6 +35,7 @@ const MOKA_OBSERVER_UPSTREAM_DRAFT: &str =
     "docs/testing/performance/0.73/moka-post-removal-observer-upstream-draft.md";
 const SINGLE_MAINTAINER_REVIEW_POLICY: &str =
     "docs/testing/performance/0.73/single-maintainer-review-policy.toml";
+const MOKA_FORK_DECISION: &str = "docs/testing/performance/0.73/moka-fork-decision-352e53fa.toml";
 const PROPOSAL_REGISTRY: &str = "docs/testing/performance/0.73/proposal-registry.toml";
 const STATISTICS: &str = "docs/testing/performance/0.73/statistics.toml";
 const HOST_PROFILE: &str = "docs/testing/performance/0.73/host-profile.toml";
@@ -93,6 +94,8 @@ pub fn check_at_root(
     let single_maintainer_review_policy: TomlValue = toml::from_str(&fs::read_to_string(
         root.join(SINGLE_MAINTAINER_REVIEW_POLICY),
     )?)?;
+    let moka_fork_decision: TomlValue =
+        toml::from_str(&fs::read_to_string(root.join(MOKA_FORK_DECISION))?)?;
     let proposal_registry: TomlValue =
         toml::from_str(&fs::read_to_string(root.join(PROPOSAL_REGISTRY))?)?;
     let statistics: TomlValue = toml::from_str(&fs::read_to_string(root.join(STATISTICS))?)?;
@@ -133,6 +136,7 @@ pub fn check_at_root(
         &single_maintainer_review_policy,
         release,
     ));
+    problems.extend(check_moka_fork_decision(&moka_fork_decision, release));
     problems.extend(check_proposal_registry(&proposal_registry, release));
     problems.extend(check_statistics(&statistics, release));
     problems.extend(check_host_profile(&host_profile, release));
@@ -213,6 +217,7 @@ pub fn check_contract(root: &TomlValue, release: &str) -> Vec<String> {
             "single_maintainer_review_policy",
             SINGLE_MAINTAINER_REVIEW_POLICY,
         ),
+        ("moka_fork_decision", MOKA_FORK_DECISION),
         ("proposal_registry", PROPOSAL_REGISTRY),
         ("statistics_contract", STATISTICS),
         ("host_profile", HOST_PROFILE),
@@ -611,21 +616,18 @@ pub fn check_notification_observer_requirements(value: &TomlValue, release: &str
     if integer(value, "schema_version") != Some(1)
         || text(value, "release") != Some(release)
         || text(value, "contract_id") != Some("notification-observer-requirements-073-v1")
-        || text(value, "state") != Some("d1-design-requirements")
+        || text(value, "state") != Some("d2-authorized-requirements")
         || text(value, "proposal_id") != Some("P73-INSTRUMENTATION-NONBLOCKING-REMOVAL")
-        || text(value, "prototype_scope") != Some("lab-only")
+        || text(value, "prototype_scope") != Some("completed-lab-prototype")
     {
         problems.push("notification observer requirements identity mismatch".to_owned());
     }
-    if boolean(value, "d2_authorized") != Some(false)
-        || boolean(value, "product_mutation_allowed") != Some(false)
+    if boolean(value, "d2_authorized") != Some(true)
+        || boolean(value, "product_mutation_allowed") != Some(true)
         || boolean(value, "candidate_measurements_allowed") != Some(false)
-        || text(value, "review_status")
-            != Some("single-maintainer-threshold-review-complete-dependency-pending")
+        || text(value, "review_status") != Some("d2-authorized-pinned-fork")
     {
-        problems.push(
-            "notification observer requirements must remain D1 lab-only before review".to_owned(),
-        );
+        problems.push("notification observer requirements must bind D2 to the pinned fork while candidate measurement remains disabled".to_owned());
     }
     for field in ["selected_direction", "prototype_exit", "next_evidence"] {
         if text(value, field).is_none_or(str::is_empty) {
@@ -874,20 +876,20 @@ pub fn check_notification_observer_d2_review(value: &TomlValue, release: &str) -
         || text(value, "release") != Some(release)
         || text(value, "proposal_id") != Some("P73-INSTRUMENTATION-NONBLOCKING-REMOVAL")
         || text(value, "review_packet_id") != Some("notification-observer-d2-review-v1")
-        || text(value, "state") != Some("single-maintainer-threshold-review-complete")
+        || text(value, "state") != Some("d2-authorized-pinned-fork")
     {
         problems.push("notification observer D2 review candidate identity mismatch".to_owned());
     }
     if text(value, "reviewer") != Some("project-maintainer-self-review")
         || boolean(value, "reviewer_independent") != Some(false)
-        || boolean(value, "d2_authorized") != Some(false)
+        || boolean(value, "d2_authorized") != Some(true)
         || boolean(value, "thresholds_frozen") != Some(true)
         || boolean(value, "candidate_measurements_allowed") != Some(false)
-        || boolean(value, "product_mutation_allowed") != Some(false)
+        || boolean(value, "product_mutation_allowed") != Some(true)
         || boolean(value, "candidate_data_used_for_thresholds") != Some(false)
     {
         problems.push(
-            "notification observer single-maintainer review cannot authorize D2 before dependency selection"
+            "notification observer single-maintainer review must authorize only product integration and keep candidate measurement disabled"
                 .to_owned(),
         );
     }
@@ -902,7 +904,10 @@ pub fn check_notification_observer_d2_review(value: &TomlValue, release: &str) -
             "1e9fd748f1a234967e9303c7071dd0816fb7ac28",
         ),
         ("reviewed_at", "2026-09-24"),
-        ("review_decision", "thresholds-accepted-dependency-pending"),
+        (
+            "review_decision",
+            "thresholds-accepted-pinned-fork-authorized",
+        ),
     ] {
         if text(value, field) != Some(expected) {
             problems.push(format!(
@@ -919,7 +924,7 @@ pub fn check_notification_observer_d2_review(value: &TomlValue, release: &str) -
     for (field, expected) in [
         ("dependency_preference", "upstream-first"),
         ("dependency_fallback", "reviewed-pinned-fork"),
-        ("dependency_decision", "pending-single-maintainer-decision"),
+        ("dependency_decision", MOKA_FORK_DECISION),
         ("dependency_review_draft", MOKA_OBSERVER_UPSTREAM_DRAFT),
     ] {
         if text(value, field) != Some(expected) {
@@ -1028,12 +1033,12 @@ pub fn check_single_maintainer_review_policy(value: &TomlValue, release: &str) -
     if boolean(value, "independent_reviewer_required") != Some(false)
         || boolean(value, "independent_review_claim_allowed") != Some(false)
         || boolean(value, "thresholds_accepted") != Some(true)
-        || text(value, "dependency_decision") != Some("pending")
-        || boolean(value, "d2_authorized") != Some(false)
-        || boolean(value, "product_mutation_allowed") != Some(false)
+        || text(value, "dependency_decision") != Some(MOKA_FORK_DECISION)
+        || boolean(value, "d2_authorized") != Some(true)
+        || boolean(value, "product_mutation_allowed") != Some(true)
     {
         problems.push(
-            "single-maintainer policy must freeze thresholds without claiming independence or authorizing D2"
+            "single-maintainer policy must bind D2 to the reviewed dependency without claiming independence"
                 .to_owned(),
         );
     }
@@ -1085,18 +1090,138 @@ pub fn check_single_maintainer_review_policy(value: &TomlValue, release: &str) -
     problems
 }
 
+pub fn check_moka_fork_decision(value: &TomlValue, release: &str) -> Vec<String> {
+    let mut problems = Vec::new();
+    if integer(value, "schema_version") != Some(1)
+        || text(value, "release") != Some(release)
+        || text(value, "decision_id") != Some("moka-fork-352e53fa-073-v1")
+        || text(value, "proposal_id") != Some("P73-INSTRUMENTATION-NONBLOCKING-REMOVAL")
+        || text(value, "state") != Some("d2-authorized")
+        || text(value, "decision") != Some("reviewed-pinned-fork")
+        || text(value, "review_mode") != Some("single-maintainer-with-compensating-controls")
+        || text(value, "review_policy") != Some(SINGLE_MAINTAINER_REVIEW_POLICY)
+    {
+        problems.push("Moka fork decision identity mismatch".to_owned());
+    }
+    if boolean(value, "d2_authorized") != Some(true)
+        || boolean(value, "product_mutation_allowed") != Some(true)
+        || boolean(value, "candidate_measurements_allowed") != Some(false)
+    {
+        problems.push(
+            "Moka fork decision must authorize product integration but not candidate measurement"
+                .to_owned(),
+        );
+    }
+
+    let missing = TomlValue::Boolean(false);
+    let source = value.get("source").unwrap_or(&missing);
+    for (field, expected) in [
+        ("repository", "https://github.com/javaquasar/moka.git"),
+        ("branch", "hydracache/post-removal-observer-0.12.15"),
+        ("revision", "352e53faa480c9997272b9c70798dd5b5c15d581"),
+        (
+            "upstream_revision",
+            "616473ee923f4cd1429b3d8eb3be7df3eb9906b1",
+        ),
+        (
+            "prototype_patch",
+            "docs/testing/performance/0.73/moka-post-removal-observer-direct-0.12.15.patch",
+        ),
+    ] {
+        if text(source, field) != Some(expected) {
+            problems.push(format!(
+                "Moka fork decision source {field} must be {expected}"
+            ));
+        }
+    }
+    for field in [
+        "revision",
+        "tree",
+        "upstream_revision",
+        "upstream_tree",
+        "stable_patch_id",
+    ] {
+        if text(source, field).is_none_or(|digest| !full_sha(digest)) {
+            problems.push(format!(
+                "Moka fork decision source {field} is not a full digest"
+            ));
+        }
+    }
+    if text(source, "prototype_patch_sha256").is_none_or(|digest| !sha256(digest))
+        || boolean(source, "remote_revision_verified") != Some(true)
+    {
+        problems.push("Moka fork decision source integrity is incomplete".to_owned());
+    }
+
+    let upstream = value.get("upstream").unwrap_or(&missing);
+    if text(upstream, "proposal") != Some(MOKA_OBSERVER_UPSTREAM_DRAFT)
+        || text(upstream, "submission_state") != Some("not-submitted")
+        || text(upstream, "maintainer_disposition") != Some("not-requested")
+        || text(upstream, "decision").is_none_or(str::is_empty)
+        || text(upstream, "rationale").is_none_or(str::is_empty)
+    {
+        problems.push("Moka fork decision must disclose the absent upstream review".to_owned());
+    }
+
+    let maintenance = value.get("maintenance").unwrap_or(&missing);
+    for field in [
+        "repository_owner",
+        "integration_owner",
+        "upstream_sync_cadence",
+        "advisory_cadence",
+        "update_policy",
+        "rollback",
+    ] {
+        if text(maintenance, field).is_none_or(str::is_empty) {
+            problems.push(format!("Moka fork decision maintenance requires {field}"));
+        }
+    }
+
+    let compatibility = value.get("compatibility").unwrap_or(&missing);
+    if text(compatibility, "license_expression") != Some("(MIT OR Apache-2.0) AND Apache-2.0")
+        || text(compatibility, "msrv") != Some("1.71.1")
+        || string_array(compatibility.get("selected_features")) != ["future"]
+        || boolean(compatibility, "observer_public_api_exposed_by_hydracache") != Some(false)
+        || boolean(compatibility, "default_hydracache_behavior_changed") != Some(false)
+    {
+        problems.push("Moka fork decision compatibility contract changed".to_owned());
+    }
+
+    let supply_chain = value.get("supply_chain").unwrap_or(&missing);
+    for field in ["cargo_lock_sha256", "sbom_sha256"] {
+        if text(supply_chain, field).is_none_or(|digest| !sha256(digest)) {
+            problems.push(format!("Moka fork decision {field} is not SHA-256"));
+        }
+    }
+    if text(supply_chain, "cargo_deny_result")
+        != Some("advisories ok, bans ok, licenses ok, sources ok")
+        || text(supply_chain, "sbom_format") != Some("CycloneDX 1.5 JSON")
+    {
+        problems.push("Moka fork decision supply-chain gate is incomplete".to_owned());
+    }
+    if string_array(value.get("validation")).len() < 9
+        || string_array(value.get("authorization_limits")).len() < 4
+    {
+        problems.push("Moka fork decision omits validation or authorization limits".to_owned());
+    }
+    problems
+}
+
 pub fn check_proposal_registry(value: &TomlValue, release: &str) -> Vec<String> {
     let mut problems = Vec::new();
     if integer(value, "schema_version") != Some(1)
         || text(value, "release") != Some(release)
-        || text(value, "registry_state") != Some("pre_i73")
+        || text(value, "registry_state") != Some("d2_authorized_pre_i73")
     {
         problems.push("0.73 proposal registry identity mismatch".to_owned());
     }
     if boolean(value, "candidate_measurements_allowed") != Some(false)
-        || boolean(value, "product_mutations_allowed") != Some(false)
+        || boolean(value, "product_mutations_allowed") != Some(true)
     {
-        problems.push("pre-I73 registry must forbid candidate measurement and mutation".to_owned());
+        problems.push(
+            "pre-I73 D2 registry must allow product mutation but forbid candidate measurement"
+                .to_owned(),
+        );
     }
     let proposals = value
         .get("proposals")
@@ -1109,9 +1234,9 @@ pub fn check_proposal_registry(value: &TomlValue, release: &str) -> Vec<String> 
         problems.push("proposal registry omits instrumentation redesign".to_owned());
         return problems;
     };
-    if text(proposal, "state") != Some("d1_classified")
-        || boolean(proposal, "d2_authorized") != Some(false)
-        || boolean(proposal, "product_mutation_allowed") != Some(false)
+    if text(proposal, "state") != Some("d2_authorized")
+        || boolean(proposal, "d2_authorized") != Some(true)
+        || boolean(proposal, "product_mutation_allowed") != Some(true)
         || boolean(proposal, "candidate_measurements_allowed") != Some(false)
         || text(proposal, "practical_minimum_effect")
             != Some("fill allocations improve by at least 15%")
@@ -1119,11 +1244,10 @@ pub fn check_proposal_registry(value: &TomlValue, release: &str) -> Vec<String> 
             != Some(
                 "frozen by single-maintainer review at commit 1e9fd748f1a234967e9303c7071dd0816fb7ac28",
             )
-        || text(proposal, "review_status")
-            != Some("single-maintainer-threshold-review-complete-dependency-pending")
+        || text(proposal, "review_status") != Some("d2-authorized-pinned-fork")
     {
         problems.push(
-            "instrumentation redesign must remain D1-only until the dependency decision authorizes D2"
+            "instrumentation redesign must remain bound to the authorized D2 dependency while candidate measurement is disabled"
                 .to_owned(),
         );
     }
@@ -1143,6 +1267,10 @@ pub fn check_proposal_registry(value: &TomlValue, release: &str) -> Vec<String> 
     }
     if text(proposal, "d2_review_candidate") != Some(NOTIFICATION_OBSERVER_D2_REVIEW) {
         problems.push("instrumentation proposal must reference its D2 review candidate".to_owned());
+    }
+    if text(proposal, "dependency_decision") != Some(MOKA_FORK_DECISION) {
+        problems
+            .push("instrumentation proposal must reference the pinned fork decision".to_owned());
     }
     for (field, minimum) in [
         ("baseline_evidence", 3),

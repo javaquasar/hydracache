@@ -35,9 +35,9 @@ $patch = Join-Path $repositoryRoot $PatchFile
 if (-not (Test-Path -LiteralPath $patch -PathType Leaf)) {
     throw "patch file does not exist: $patch"
 }
-git -C $destination apply --check $patch
+git -C $destination apply --unidiff-zero --check $patch
 if ($LASTEXITCODE -ne 0) { throw "Moka observer patch does not apply" }
-git -C $destination apply $patch
+git -C $destination apply --unidiff-zero $patch
 if ($LASTEXITCODE -ne 0) { throw "Moka observer patch failed" }
 
 cargo check --manifest-path $manifest --features future --locked

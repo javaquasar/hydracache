@@ -57,5 +57,5 @@ admission_blockers = [
   "no serialized lease receipt",
   "no pre/post calibration receipt",
   "I73 instrumentation overhead is unresolved",
-  "notification observer dependency decision and D2 authorization are pending",
+  "notification observer product integration and local correctness admission are pending",
 ]

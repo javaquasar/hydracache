@@ -10,9 +10,9 @@ independent_review_claim_allowed = false
 threshold_freeze_commit = "1e9fd748f1a234967e9303c7071dd0816fb7ac28"
 dependency_review_draft_commit = "fb1e850d536c0ed970f5043f09ad3ce3582704f0"
 thresholds_accepted = true
-dependency_decision = "pending"
-d2_authorized = false
-product_mutation_allowed = false
+dependency_decision = "docs/testing/performance/0.73/moka-fork-decision-352e53fa.toml"
+d2_authorized = true
+product_mutation_allowed = true
 
 compensating_controls = [
   "thresholds and candidate-evidence exclusions were committed before any production dependency or product mutation",

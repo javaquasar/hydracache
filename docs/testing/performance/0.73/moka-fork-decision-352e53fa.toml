@@ -1,0 +1,79 @@
+schema_version = 1
+release = "0.73"
+decision_id = "moka-fork-352e53fa-073-v1"
+proposal_id = "P73-INSTRUMENTATION-NONBLOCKING-REMOVAL"
+state = "d2-authorized"
+decision = "reviewed-pinned-fork"
+decided_at = "2026-09-24"
+review_mode = "single-maintainer-with-compensating-controls"
+review_policy = "docs/testing/performance/0.73/single-maintainer-review-policy.toml"
+d2_authorized = true
+product_mutation_allowed = true
+candidate_measurements_allowed = false
+
+validation = [
+  "cargo test --all-features: 154 unit tests passed, 6 ignored; integration tests and 67 doctests passed, 2 doctests ignored",
+  "cargo clippy --all-features --all-targets -- -D warnings: passed",
+  "cargo package --allow-dirty --features future: package and tarball verification passed",
+  "cargo +1.71.1 check --features future with upstream-compatible dependency pins: passed",
+  "cargo deny check --config <HydraCache>/deny.toml: advisories, bans, licenses, and sources passed",
+  "cargo hack --feature-powerset --at-least-one-of sync,future check: all 80 valid feature combinations passed",
+  "cargo check --no-default-features --features future: passed on x86_64-pc-windows-msvc, x86_64-unknown-linux-gnu, and aarch64-unknown-linux-gnu",
+  "HydraCache isolated Moka observer harness: all removal causes and versioned replacement cleanup passed",
+  "panic containment falsifier: first panic disables the observer and later cache operations remain usable",
+]
+
+authorization_limits = [
+  "D2 authorizes only the files and surfaces listed in notification-observer-d2-review.toml",
+  "candidate measurements remain forbidden until the exact product integration passes local correctness and contract gates",
+  "local results remain non-promotable and cannot support a numerical release claim",
+  "the final publication must describe this as a single-maintainer decision, not independent review",
+]
+
+[source]
+repository = "https://github.com/javaquasar/moka.git"
+branch = "hydracache/post-removal-observer-0.12.15"
+revision = "352e53faa480c9997272b9c70798dd5b5c15d581"
+revision_url = "https://github.com/javaquasar/moka/commit/352e53faa480c9997272b9c70798dd5b5c15d581"
+tree = "092d3a04b064a650688812330b47d40db077ebf9"
+upstream_repository = "https://github.com/moka-rs/moka.git"
+upstream_tag = "v0.12.15"
+upstream_revision = "616473ee923f4cd1429b3d8eb3be7df3eb9906b1"
+upstream_tree = "98759fbe98a1980ad417526b02a05b4499cd0c02"
+stable_patch_id = "ac5cff9f4d4fd8cce48d5ebfe703792ddec5fd43"
+prototype_patch = "docs/testing/performance/0.73/moka-post-removal-observer-direct-0.12.15.patch"
+prototype_patch_sha256 = "863666a7d03ed938b4f52505f0b8c20c80ebb4d7e0407ebe46a399ee98b95266"
+remote_revision_verified = true
+
+[upstream]
+proposal = "docs/testing/performance/0.73/moka-post-removal-observer-upstream-draft.md"
+submission_state = "not-submitted"
+maintainer_disposition = "not-requested"
+decision = "Use the owned pinned fork for the 0.73 integration window; do not claim upstream review or acceptance. Upstream submission remains a separate post-integration action."
+rationale = "The release needs a reproducible dependency seam now, while an external API review has an unbounded schedule. The fork is exact-SHA pinned, carries one focused commit, and has a one-commit crates.io rollback."
+
+[maintenance]
+repository_owner = "javaquasar"
+integration_owner = "HydraCache project maintainer"
+upstream_sync_cadence = "Review Moka upstream and re-run the complete dependency gate before every HydraCache release candidate and at least monthly while the fork remains selected."
+advisory_cadence = "Run cargo deny on every dependency change and release candidate; triage a newly applicable advisory before merge."
+update_policy = "Never move the revision in place. A new revision requires a new decision receipt, lockfile diff, SBOM, and full dependency gate."
+rollback = "In one product commit, restore crates.io Moka 0.12.15 and the previous async eviction-listener wiring, regenerate Cargo.lock, and run the same correctness and package gates."
+
+[compatibility]
+license_expression = "(MIT OR Apache-2.0) AND Apache-2.0"
+license_files = ["LICENSE-APACHE", "LICENSE-MIT"]
+msrv = "1.71.1"
+selected_features = ["future"]
+observer_public_api_exposed_by_hydracache = false
+default_hydracache_behavior_changed = false
+
+[supply_chain]
+cargo_lock_sha256 = "28157c82d1c4cc2c28592c3dce230836b6b1d5dc0545f667d1a2d27e3bc87c86"
+sbom_format = "CycloneDX 1.5 JSON"
+sbom_scope = "Moka fork revision with feature future and target all"
+sbom_sha256 = "9b231afa7552c95389d448c6bdb4be226137fdedb8d7a2fbb45ee25db0fe0226"
+sbom_retention = "regenerable ignored artifact target/performance-evidence/0.73/moka-352e53fa.cdx.json in the validated fork checkout"
+cargo_deny_policy = "HydraCache deny.toml"
+cargo_deny_result = "advisories ok, bans ok, licenses ok, sources ok"
+sbom_warning = "tagptr 0.2.0 uses the deprecated MIT/Apache-2.0 spelling; cargo-deny accepted its licenses under the project policy."
