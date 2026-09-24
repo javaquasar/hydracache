@@ -1,0 +1,66 @@
+schema_version = 1
+release = "0.73"
+evidence_id = "memory-counter-atomic-product-a205ce0a-v1"
+state = "local-correctness-passed-awaiting-baseline-v2-repeat"
+contract = "docs/testing/performance/0.73/memory-counter-atomic-contract.toml"
+triggering_evidence = "docs/testing/performance/0.73/baseline-pilot-v2-insufficient-72d491ac.toml"
+implementation_commit = "a205ce0ab8e3b76bcb9341483694587fb5e85838"
+implementation_parent = "fbb9fec1df92a88c32411e47cf7623abaa298193"
+reviewed_at = "2026-09-25"
+changed_file = "crates/hydracache/src/memory_footprint.rs"
+optimization = "Replace only retained-memory checked_add and checked_sub CAS loops with one fetch_add or fetch_sub and detect wrap from the returned previous value."
+counter_updates_inside_mutation_guard = true
+fault_recorded_before_guard_release = true
+overflow_faults_exact_capture = true
+underflow_faults_exact_capture = true
+fault_is_permanent = true
+active_mutation_algorithm_changed = false
+version_algorithm_changed = false
+epoch_algorithm_changed = false
+counter_set_changed = false
+public_estimator_changed = false
+callback_may_block = false
+callback_may_await = false
+thresholds_changed = false
+promotable = false
+numerical_claim_eligible = false
+candidate_measurement_authorized = false
+baseline_v2_repeat_allowed = true
+safety_argument = "The retained counter atomic operation linearizes inside an already-active mutation guard. If the returned previous value proves overflow or underflow, the permanent fault bit is published before that guard can release quiescence. barrier and capture check the fault first, so neither a wrapped counter nor a transiently quiescent state can be admitted as exact."
+scope_argument = "The active-mutation, version, and epoch algorithms retain their checked CAS loops because their wrap and release windows participate directly in synchronization. This optimization removes retries only from the eight data counters covered by the preregistered contract."
+decision = "run-one-unchanged-manual-baseline-v2-repeat"
+next_evidence = "Run observer-baseline-pilot-073-v2 unchanged at exact source containing this receipt. Freeze I73 only if at least three offered rates pass every original stability and overhead guard."
+
+validation = [
+  "cargo fmt -p hydracache -- --check: passed",
+  "cargo test -p hydracache memory_footprint --lib --locked: 6 passed",
+  "cargo test -p hydracache --test memory_footprint_071 --features instrumentation-lab --locked: 6 passed",
+  "cargo test -p hydracache --test memory_accounting_071 --features instrumentation-lab --locked: 4 passed",
+  "cargo check -p hydracache --lib --tests --features instrumentation-lab --locked: passed",
+  "cargo clippy -p hydracache --lib --tests --features instrumentation-lab --locked -- -D warnings: passed",
+  "cargo check --manifest-path tools/performance-observer-073/Cargo.toml --all-targets --locked: passed",
+  "cargo clippy --manifest-path tools/performance-observer-073/Cargo.toml --all-targets --locked -- -D warnings: passed",
+  "cargo xtask performance-contract-check --release 0.73: passed before receipt registration",
+  "cargo xtask doc-check: passed before receipt registration",
+  "git diff --check: passed before receipt registration",
+]
+
+[[falsifier]]
+id = "overflow-before-release"
+status = "passed"
+evidence = "A unit test holds the mutation guard, forces entries to u64::MAX, adds one, and observes CounterFault rather than NotQuiescent from barrier before releasing the guard."
+
+[[falsifier]]
+id = "underflow-before-release"
+status = "passed"
+evidence = "A unit test holds the mutation guard, subtracts one from zero, and observes CounterFault rather than NotQuiescent from barrier before releasing the guard."
+
+[[falsifier]]
+id = "wrapped-value-not-exposed"
+status = "passed"
+evidence = "Both forced-fault tests prove admin capture fails with CounterFault while mutation is active and barrier remains faulted after the guard drops."
+
+[[falsifier]]
+id = "existing-accounting-semantics"
+status = "passed"
+evidence = "Memory-footprint and retained-total reconciliation integration suites remain green with the standalone observer harness."

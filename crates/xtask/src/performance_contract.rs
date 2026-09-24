@@ -74,6 +74,8 @@ const BASELINE_PILOT_V2_EVIDENCE: &str =
     "docs/testing/performance/0.73/baseline-pilot-v2-insufficient-72d491ac.toml";
 const MEMORY_COUNTER_ATOMIC_CONTRACT: &str =
     "docs/testing/performance/0.73/memory-counter-atomic-contract.toml";
+const MEMORY_COUNTER_ATOMIC_PRODUCT: &str =
+    "docs/testing/performance/0.73/memory-counter-atomic-product-a205ce0a.toml";
 const RELEASE: &str = "0.73";
 const PROFILE: &str = "local-screening-073-v1";
 const ENVIRONMENT_CLASS: &str = "local_screening";
@@ -178,6 +180,9 @@ pub fn check_at_root(
         toml::from_str(&fs::read_to_string(root.join(BASELINE_PILOT_V2_EVIDENCE))?)?;
     let memory_counter_atomic_contract: TomlValue = toml::from_str(&fs::read_to_string(
         root.join(MEMORY_COUNTER_ATOMIC_CONTRACT),
+    )?)?;
+    let memory_counter_atomic_product: TomlValue = toml::from_str(&fs::read_to_string(
+        root.join(MEMORY_COUNTER_ATOMIC_PRODUCT),
     )?)?;
     let mut problems = check_contract(&contract, release);
     if !root.join(MOKA_OBSERVER_UPSTREAM_DRAFT).is_file() {
@@ -287,6 +292,10 @@ pub fn check_at_root(
     ));
     problems.extend(check_memory_counter_atomic_contract(
         &memory_counter_atomic_contract,
+        release,
+    ));
+    problems.extend(check_memory_counter_atomic_product(
+        &memory_counter_atomic_product,
         release,
     ));
     problems.extend(check_schema(
@@ -406,6 +415,10 @@ pub fn check_contract(root: &TomlValue, release: &str) -> Vec<String> {
         (
             "memory_counter_atomic_contract",
             MEMORY_COUNTER_ATOMIC_CONTRACT,
+        ),
+        (
+            "memory_counter_atomic_product",
+            MEMORY_COUNTER_ATOMIC_PRODUCT,
         ),
     ] {
         if text(root, field) != Some(expected) {
@@ -2973,6 +2986,68 @@ pub fn check_memory_counter_atomic_contract(value: &TomlValue, release: &str) ->
     {
         problems
             .push("memory counter atomic contract scope or local gates are incomplete".to_owned());
+    }
+    problems
+}
+
+pub fn check_memory_counter_atomic_product(value: &TomlValue, release: &str) -> Vec<String> {
+    let mut problems = Vec::new();
+    if integer(value, "schema_version") != Some(1)
+        || text(value, "release") != Some(release)
+        || text(value, "evidence_id") != Some("memory-counter-atomic-product-a205ce0a-v1")
+        || text(value, "state") != Some("local-correctness-passed-awaiting-baseline-v2-repeat")
+        || text(value, "contract") != Some(MEMORY_COUNTER_ATOMIC_CONTRACT)
+        || text(value, "triggering_evidence") != Some(BASELINE_PILOT_V2_EVIDENCE)
+        || text(value, "implementation_commit") != Some("a205ce0ab8e3b76bcb9341483694587fb5e85838")
+        || text(value, "implementation_parent") != Some("fbb9fec1df92a88c32411e47cf7623abaa298193")
+        || text(value, "changed_file") != Some("crates/hydracache/src/memory_footprint.rs")
+    {
+        problems.push("memory counter atomic product identity changed".to_owned());
+    }
+    for field in [
+        "active_mutation_algorithm_changed",
+        "version_algorithm_changed",
+        "epoch_algorithm_changed",
+        "counter_set_changed",
+        "public_estimator_changed",
+        "callback_may_block",
+        "callback_may_await",
+        "thresholds_changed",
+        "promotable",
+        "numerical_claim_eligible",
+        "candidate_measurement_authorized",
+    ] {
+        if boolean(value, field) != Some(false) {
+            problems.push(format!(
+                "memory counter atomic product {field} must be false"
+            ));
+        }
+    }
+    for field in [
+        "counter_updates_inside_mutation_guard",
+        "fault_recorded_before_guard_release",
+        "overflow_faults_exact_capture",
+        "underflow_faults_exact_capture",
+        "fault_is_permanent",
+        "baseline_v2_repeat_allowed",
+    ] {
+        if boolean(value, field) != Some(true) {
+            problems.push(format!(
+                "memory counter atomic product {field} must be true"
+            ));
+        }
+    }
+    if string_array(value.get("validation")).len() < 10
+        || value
+            .get("falsifier")
+            .and_then(TomlValue::as_array)
+            .is_none_or(|falsifiers| falsifiers.len() < 4)
+        || text(value, "safety_argument").is_none_or(str::is_empty)
+        || text(value, "scope_argument").is_none_or(str::is_empty)
+        || text(value, "decision") != Some("run-one-unchanged-manual-baseline-v2-repeat")
+        || text(value, "next_evidence").is_none_or(str::is_empty)
+    {
+        problems.push("memory counter atomic product evidence is incomplete".to_owned());
     }
     problems
 }

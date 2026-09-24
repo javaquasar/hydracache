@@ -787,3 +787,21 @@ fn memory_counter_contract_cannot_touch_epoch_or_hide_underflow() {
         problem.contains("dedicated_host_run_allowed_before_local_gates must be false")
     }));
 }
+
+#[test]
+fn memory_counter_product_cannot_claim_performance_or_weaken_faults() {
+    let mut value = manifest("memory-counter-atomic-product-a205ce0a.toml");
+    value["numerical_claim_eligible"] = TomlValue::Boolean(true);
+    value["underflow_faults_exact_capture"] = TomlValue::Boolean(false);
+    value["version_algorithm_changed"] = TomlValue::Boolean(true);
+    let problems = xtask::performance_contract::check_memory_counter_atomic_product(&value, "0.73");
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("numerical_claim_eligible must be false")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("underflow_faults_exact_capture must be true")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("version_algorithm_changed must be false")));
+}

@@ -815,6 +815,33 @@ wrap from its returned old value and set the fault bit before the guard releases
 removes retry loops without weakening exact snapshots. The active-mutation, version, and epoch
 algorithms remain unchanged because their overflow windows have different synchronization risks.
 
+We implemented that narrower change and resisted the tempting global rewrite. The eight data
+counters now perform one atomic read-modify-write each. Overflow and underflow do modify the raw
+counter by wrapping, unlike the old failed compare-and-swap update, but that value is never allowed
+to become evidence: the same operation's old value exposes the fault, the permanent fault flag is
+published while the mutation is still active, and both barrier and capture reject the subsystem
+before reading it as exact. There is no recovery path that silently blesses the wrapped number.
+
+This distinction matters. A data counter lives inside a wider mutation protocol, so fail-closed
+wrap detection after its linearization point is sufficient. The active-mutation count, version,
+and epoch *are* that protocol; changing them to wrapping operations would create different windows
+where quiescence or snapshot identity could be misreported. Similar-looking atomics therefore do
+not automatically have the same safe optimization. We removed retry machinery only where the
+surrounding invariant already supplied the safety boundary.
+
+The local proof deliberately targets the dangerous ordering, not just the happy path. Tests hold
+the mutation guard, force overflow or underflow, and ask for a barrier before releasing the guard.
+Receiving `CounterFault` instead of `NotQuiescent` demonstrates that the permanent fault became
+visible first. Capture is rejected while the guard is active, and the barrier remains rejected
+after it drops. Existing reconciliation and memory-accounting suites then show that ordinary
+insert, replace, delete, expiry, and flush behavior did not move.
+
+That is still not a performance result. Local tests prove that the proposed cheaper mechanism
+preserves failure semantics; they cannot prove that fewer possible CAS retries reduce CPU on the
+reference host. The receipt therefore authorizes exactly one unchanged manual v2 baseline repeat.
+If three rates pass, we can freeze I73. If they do not, the packet becomes another retained
+falsifier instead of an invitation to move the threshold.
+
 ## A profiling ladder that avoids expensive runs
 
 Not every development iteration needs a dedicated bare-metal campaign. A useful workflow has several

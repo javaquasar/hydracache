@@ -384,6 +384,15 @@ and subtractions with one atomic operation plus wrap detection. Overflow or unde
 before the guard releases quiescence, so an exact snapshot cannot observe a wrapped value as clean.
 Active-mutation, version, epoch, public estimates, workload, and thresholds remain untouched.
 
+Commit `a205ce0a` implements that boundary exactly. Each retained counter now uses one `fetch_add`
+or `fetch_sub`; the returned old value decides whether the permanent fault bit must be set. Forced
+overflow and underflow tests keep the mutation guard alive and prove that `barrier` sees
+`CounterFault`, not merely `NotQuiescent`, before guard release. Capture also refuses the wrapped
+state, and the fault remains after release. The active-mutation, version, and epoch counters keep
+their checked CAS algorithms because their synchronization windows are not interchangeable with
+data-counter accounting. `memory-counter-atomic-product-a205ce0a.toml` retains the full local gate
+receipt and authorizes one unchanged, manual v2 baseline repeat; it makes no speed claim itself.
+
 The same push exposed a separate cost-control issue: the host-admission workflow still had an
 automatic path and queued run `36072022062` behind the shared performance concurrency group. It was
 cancelled before environment approval and ran no job. Commit `e0dc4df5` makes host admission, like
