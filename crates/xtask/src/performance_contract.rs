@@ -43,6 +43,7 @@ const LOCAL_OBSERVER_PRODUCT_SCREENING: &str =
 const PROPOSAL_REGISTRY: &str = "docs/testing/performance/0.73/proposal-registry.toml";
 const STATISTICS: &str = "docs/testing/performance/0.73/statistics.toml";
 const HOST_PROFILE: &str = "docs/testing/performance/0.73/host-profile.toml";
+const HOST_ADMISSION: &str = "docs/testing/performance/0.73/host-admission-3ba09fcc.toml";
 const RELEASE: &str = "0.73";
 const PROFILE: &str = "local-screening-073-v1";
 const ENVIRONMENT_CLASS: &str = "local_screening";
@@ -110,6 +111,8 @@ pub fn check_at_root(
         toml::from_str(&fs::read_to_string(root.join(PROPOSAL_REGISTRY))?)?;
     let statistics: TomlValue = toml::from_str(&fs::read_to_string(root.join(STATISTICS))?)?;
     let host_profile: TomlValue = toml::from_str(&fs::read_to_string(root.join(HOST_PROFILE))?)?;
+    let host_admission: TomlValue =
+        toml::from_str(&fs::read_to_string(root.join(HOST_ADMISSION))?)?;
     let mut problems = check_contract(&contract, release);
     if !root.join(MOKA_OBSERVER_UPSTREAM_DRAFT).is_file() {
         problems.push("notification observer dependency review draft is missing".to_owned());
@@ -158,6 +161,7 @@ pub fn check_at_root(
     problems.extend(check_proposal_registry(&proposal_registry, release));
     problems.extend(check_statistics(&statistics, release));
     problems.extend(check_host_profile(&host_profile, release));
+    problems.extend(check_host_admission(&host_admission, release));
     problems.extend(check_schema(
         &schema,
         &example,
@@ -247,6 +251,7 @@ pub fn check_contract(root: &TomlValue, release: &str) -> Vec<String> {
         ("proposal_registry", PROPOSAL_REGISTRY),
         ("statistics_contract", STATISTICS),
         ("host_profile", HOST_PROFILE),
+        ("host_admission", HOST_ADMISSION),
     ] {
         if text(root, field) != Some(expected) {
             problems.push(format!("local screening {field} must be {expected}"));
@@ -1691,18 +1696,28 @@ pub fn check_host_profile(value: &TomlValue, release: &str) -> Vec<String> {
     if integer(value, "schema_version") != Some(1)
         || text(value, "release") != Some(release)
         || text(value, "profile_id") != Some("performance-reference-073-v1")
-        || text(value, "state") != Some("template-unadmitted")
+        || text(value, "state") != Some("admitted-awaiting-baseline-freeze")
     {
         problems.push("0.73 host profile identity/state mismatch".to_owned());
     }
+    if boolean(value, "eligible") != Some(true) {
+        problems.push("admitted host profile eligible must be true".to_owned());
+    }
+    if text(value, "admission_receipt") != Some(HOST_ADMISSION)
+        || text(value, "admitted_source_sha") != Some("3ba09fcc1b48b0b1cc2e1b8e29c941b42993ffa3")
+        || text(value, "admitted_host_fingerprint")
+            != Some("sha256:702282650a14db1fd52ae9f326cadc8909aff5046a18827ffd82ed0ddbfc465d")
+        || integer(value, "admission_workflow_run_id") != Some(36_060_837_195)
+    {
+        problems.push("admitted host profile does not bind the reviewed admission".to_owned());
+    }
     for field in [
-        "eligible",
         "candidate_measurements_allowed",
         "identity_reuse_from_071_allowed",
         "local_or_shared_runner_promotable",
     ] {
         if boolean(value, field) != Some(false) {
-            problems.push(format!("unadmitted host profile {field} must be false"));
+            problems.push(format!("admitted host profile {field} must be false"));
         }
     }
     for field in [
@@ -1726,11 +1741,100 @@ pub fn check_host_profile(value: &TomlValue, release: &str) -> Vec<String> {
         ("mutable_probes", 8),
         ("required_tools", 6),
         ("companion_platforms", 2),
-        ("admission_blockers", 5),
+        ("admission_blockers", 2),
     ] {
         if string_array(value.get(field)).len() < minimum {
             problems.push(format!("host profile has incomplete {field}"));
         }
+    }
+    problems
+}
+
+pub fn check_host_admission(value: &TomlValue, release: &str) -> Vec<String> {
+    let mut problems = Vec::new();
+    if integer(value, "schema_version") != Some(1)
+        || text(value, "release") != Some(release)
+        || text(value, "evidence_id") != Some("performance-host-admission-3ba09fcc-v1")
+        || text(value, "profile_id") != Some("performance-reference-073-v1")
+        || text(value, "state") != Some("admitted-host-candidate-measurement-closed")
+        || integer(value, "workflow_run_id") != Some(36_060_837_195)
+        || text(value, "source_sha") != Some("3ba09fcc1b48b0b1cc2e1b8e29c941b42993ffa3")
+        || text(value, "host_fingerprint")
+            != Some("sha256:702282650a14db1fd52ae9f326cadc8909aff5046a18827ffd82ed0ddbfc465d")
+    {
+        problems.push("0.73 host admission identity mismatch".to_owned());
+    }
+    for (field, expected) in [
+        (
+            "artifact_sha256",
+            "1d64b40c5ddd1f8e6f2ffa6a8a405750369b05d21c78f5a72c70d22fddb38469",
+        ),
+        (
+            "admission_manifest_sha256",
+            "dd4613fde6f3e78f432493811d987293bde762d819e83c6f6a4347813d12e98e",
+        ),
+        (
+            "preflight_sha256",
+            "8f728fc9e20187c35945abc28094a9ab20022730bdac2ee54c25858af781fe7a",
+        ),
+        (
+            "postflight_sha256",
+            "7396792103e636c0274e285f3551794b4a643e8ca41cdde8add5825dda0c8c55",
+        ),
+    ] {
+        if text(value, field) != Some(expected) {
+            problems.push(format!(
+                "host admission {field} does not bind the retained packet"
+            ));
+        }
+    }
+    if float(value, "calibration_limit") != Some(0.05)
+        || float(value, "pre_calibration_relative_spread").is_none_or(|spread| spread > 0.05)
+        || float(value, "post_calibration_relative_spread").is_none_or(|spread| spread > 0.05)
+    {
+        problems
+            .push("host admission calibration exceeds or changes the frozen 5% limit".to_owned());
+    }
+    for field in [
+        "same_fingerprint_before_after",
+        "same_identity_probes_before_after",
+        "same_lease_before_after",
+        "dedicated_bare_metal",
+        "failed_attempts_retained",
+        "self_reviewed",
+    ] {
+        if boolean(value, field) != Some(true) {
+            problems.push(format!("host admission {field} must be true"));
+        }
+    }
+    for field in [
+        "silent_retry_allowed",
+        "identity_reuse_from_071",
+        "candidate_measurement_authorized",
+    ] {
+        if boolean(value, field) != Some(false) {
+            problems.push(format!("host admission {field} must remain false"));
+        }
+    }
+    let attempts = value
+        .get("attempt")
+        .and_then(TomlValue::as_array)
+        .cloned()
+        .unwrap_or_default();
+    let run_ids = attempts
+        .iter()
+        .filter_map(|attempt| integer(attempt, "run_id"))
+        .collect::<Vec<_>>();
+    if run_ids != [36_060_427_773, 36_060_688_889, 36_060_837_195]
+        || attempts
+            .iter()
+            .filter(|attempt| text(attempt, "result") != Some("admitted"))
+            .count()
+            != 2
+    {
+        problems.push(
+            "host admission must retain both failed attempts before the admitted run".to_owned(),
+        );
     }
     problems
 }

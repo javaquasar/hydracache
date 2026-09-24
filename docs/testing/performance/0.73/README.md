@@ -255,3 +255,10 @@ and uploads an immutable admission packet. The packet explicitly keeps
 `candidate_measurement_authorized: false`: it must be reviewed and bound into the checked-in host
 contract before the five-pair observer qualification is dispatched. The old 0.71 admission is not
 reused even when both workflows happen to land on the same physical machine.
+
+Run `36060837195` completed that admission at source `3ba09fcc`. The pre/post fingerprint was
+`sha256:702282...465d`; calibration spread was 3.05% before and 1.49% after the release build,
+inside the frozen 5% ceiling. `host-admission-3ba09fcc.toml` binds the raw packet and retains the
+two earlier failed run IDs: both exposed an unsupported `pidstat --version` probe and neither
+started candidate measurement. The host is now eligible, but candidate measurement remains closed
+until baseline-only pilots freeze scenario windows and stable offered rates.

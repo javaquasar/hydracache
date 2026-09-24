@@ -557,6 +557,22 @@ qualification. It does not contain a convenient local-machine fingerprint and ca
 release claim. This separation lets local work continue without allowing local evidence to promote
 itself.
 
+The first account-backed admission then converted that template into a real, separately identified
+host without converting it into a result. The workflow held a protected serialized lease, captured
+the same Linux x86_64 fingerprint before and after a cold release build, and ran five warmed
+calibration samples at each boundary. Relative spread was 3.05% before the build and 1.49% after it,
+below the preregistered 5% ceiling. Two earlier attempts remain in the ledger: a generic version
+probe called `pidstat --version`, which this implementation rejects in favor of `-V`. Treating that
+as an unavailable required tool made the lane red before any candidate work. Fixing the probe,
+rather than deleting the requirement or silently retrying, demonstrated why admission belongs ahead
+of expensive measurement.
+
+Host admission still did not authorize D3. It proved that the machine, toolchain, affinity policy,
+lease and short calibration boundary were reproducible. It did not yet establish stable offered
+rates or measurement-window length for I73. Those values must come from baseline-only pilots; only
+after they are frozen can the observer candidate be observed on this host. This is another useful
+separation: qualifying the laboratory is not the same as accepting an experiment performed in it.
+
 ### Why the ablation must not become the fix
 
 It would be easy to stop here and ship production counters without the listener. That would make the

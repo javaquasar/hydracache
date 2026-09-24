@@ -1,8 +1,8 @@
 schema_version = 1
 release = "0.73"
 profile_id = "performance-reference-073-v1"
-state = "template-unadmitted"
-eligible = false
+state = "admitted-awaiting-baseline-freeze"
+eligible = true
 candidate_measurements_allowed = false
 protected_environment = "performance-reference-073"
 dedicated_bare_metal_required = true
@@ -13,6 +13,10 @@ calibration_max_relative_spread = 0.05
 completed_bootstrap_admission_required = true
 identity_reuse_from_071_allowed = false
 local_or_shared_runner_promotable = false
+admission_receipt = "docs/testing/performance/0.73/host-admission-3ba09fcc.toml"
+admitted_source_sha = "3ba09fcc1b48b0b1cc2e1b8e29c941b42993ffa3"
+admitted_host_fingerprint = "sha256:702282650a14db1fd52ae9f326cadc8909aff5046a18827ffd82ed0ddbfc465d"
+admission_workflow_run_id = 36060837195
 
 required_platform = "linux-x86_64"
 companion_platforms = ["windows-x86_64", "linux-aarch64"]
@@ -53,9 +57,6 @@ network_policy = "fixed-reviewed-loopback-or-dedicated-link"
 filesystem_policy = "fixed-mount-and-free-space-floor"
 
 admission_blockers = [
-  "no admitted host fingerprint",
-  "no serialized lease receipt",
-  "no pre/post calibration receipt",
   "scenario windows and stable offered rates are not yet frozen for D3",
   "no dedicated-host candidate evidence exists for the integrated observer",
 ]

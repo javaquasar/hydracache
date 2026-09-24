@@ -490,15 +490,33 @@ fn statistics_cannot_weaken_pairs_confidence_or_goodput_guard() {
 }
 
 #[test]
-fn unadmitted_host_cannot_enable_candidate_measurement() {
+fn admitted_host_cannot_enable_candidate_measurement_before_baseline_freeze() {
     let mut value = manifest("host-profile.toml");
     value["candidate_measurements_allowed"] = TomlValue::Boolean(true);
-    value["eligible"] = TomlValue::Boolean(true);
+    value["identity_reuse_from_071_allowed"] = TomlValue::Boolean(true);
     let problems = xtask::performance_contract::check_host_profile(&value, "0.73");
     assert!(problems
         .iter()
         .any(|problem| problem.contains("candidate_measurements_allowed must be false")));
     assert!(problems
         .iter()
-        .any(|problem| problem.contains("eligible must be false")));
+        .any(|problem| problem.contains("identity_reuse_from_071_allowed must be false")));
+}
+
+#[test]
+fn host_admission_cannot_hide_failed_attempts_or_authorize_candidate_measurement() {
+    let mut value = manifest("host-admission-3ba09fcc.toml");
+    value["candidate_measurement_authorized"] = TomlValue::Boolean(true);
+    value["preflight_sha256"] = TomlValue::String("f".repeat(64));
+    value["attempt"].as_array_mut().expect("attempts").remove(0);
+    let problems = xtask::performance_contract::check_host_admission(&value, "0.73");
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("candidate_measurement_authorized must remain false")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("retained packet")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("retain both failed attempts")));
 }

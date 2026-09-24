@@ -24,6 +24,7 @@ local_observer_product_screening = "docs/testing/performance/0.73/local-observer
 proposal_registry = "docs/testing/performance/0.73/proposal-registry.toml"
 statistics_contract = "docs/testing/performance/0.73/statistics.toml"
 host_profile = "docs/testing/performance/0.73/host-profile.toml"
+host_admission = "docs/testing/performance/0.73/host-admission-3ba09fcc.toml"
 promotable = false
 numerical_claims_allowed = false
 candidate_thresholds_allowed = false
