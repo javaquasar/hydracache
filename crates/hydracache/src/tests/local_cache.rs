@@ -555,7 +555,11 @@ async fn invalidate_tag_ignores_stale_tag_index_entries() {
     let cache = HydraCache::local().build();
     let tags = vec!["ghosts".to_owned()];
 
-    cache.inner.tag_index.register("missing:key", &tags).await;
+    cache
+        .inner
+        .tag_index
+        .register("missing:key", &tags, u64::MAX)
+        .await;
 
     assert_eq!(cache.invalidate_tag("ghosts").await.unwrap(), 0);
 }

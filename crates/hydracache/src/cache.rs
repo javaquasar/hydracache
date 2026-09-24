@@ -36,6 +36,7 @@ use crate::memory_footprint::{
     MemorySnapshotRequest,
 };
 use crate::refresh::RefreshOptions;
+use crate::removal_observer::RemovalObserver;
 use crate::stats::StatsCounters;
 use crate::tag_index::{LoadGenerationSnapshot, TagIndex};
 use crate::typed::TypedCache;
@@ -101,6 +102,8 @@ where
     pub(crate) replicated_value_security: ReplicatedValueSecurityPosture,
     pub(crate) load_breaker: LoadBreakerRegistry,
     pub(crate) memory: Arc<MemoryFootprintCounters>,
+    pub(crate) removal_observer: Option<Arc<RemovalObserver>>,
+    pub(crate) next_entry_version: AtomicU64,
 }
 
 impl<C> Drop for HydraCacheInner<C>
@@ -1485,6 +1488,7 @@ where
     }
 
     async fn invalidate_tag_with_origin(&self, tag: &str, origin: CacheEventOrigin) -> Result<u64> {
+        self.drain_removal_cleanup().await;
         let _mutation = self.inner.memory.mutation();
         let keys = self.inner.tag_index.take_tag(tag).await;
         let mut removed = 0;
@@ -1519,7 +1523,11 @@ where
         let estimated_entries = self.inner.store.entry_count();
         self.inner.store.invalidate_all();
         self.inner.store.run_pending_tasks().await;
+        self.drain_removal_cleanup().await;
         self.inner.tag_index.clear().await;
+        if let Some(observer) = &self.inner.removal_observer {
+            observer.reset_after_reconcile().await;
+        }
         self.publish_cache_event(CacheEventKind::Flushed, Some(estimated_entries), origin);
         Ok(())
     }
@@ -1586,6 +1594,7 @@ where
     /// ```
     pub async fn diagnostics(&self) -> CacheDiagnostics {
         self.inner.store.run_pending_tasks().await;
+        self.drain_removal_cleanup().await;
         CacheDiagnostics {
             stats: self.stats(),
             estimated_entries: self.inner.store.entry_count(),
@@ -1596,6 +1605,9 @@ where
     pub fn memory_snapshot_barrier(
         &self,
     ) -> std::result::Result<MemorySnapshotBarrier, MemoryFootprintError> {
+        if let Some(observer) = &self.inner.removal_observer {
+            observer.ensure_clean()?;
+        }
         self.inner.memory.barrier()
     }
 
@@ -1604,6 +1616,19 @@ where
         &self,
         request: MemorySnapshotRequest,
     ) -> std::result::Result<MemoryFootprintSnapshot, MemoryFootprintError> {
+        self.drain_removal_cleanup().await;
+        let removal_observer_stable = self
+            .inner
+            .removal_observer
+            .as_ref()
+            .is_none_or(|observer| observer.is_clean());
+        if matches!(request, MemorySnapshotRequest::Exact { .. }) && !removal_observer_stable {
+            self.inner
+                .removal_observer
+                .as_ref()
+                .expect("unstable observer must exist")
+                .ensure_clean()?;
+        }
         let tag_before = self.inner.tag_index.memory_state();
         let pending_loads = self.inner.in_flight.len().await as u64;
         let event_state = self.inner.events.retained_state();
@@ -1623,6 +1648,7 @@ where
                 tag_version_after: tag_after.version,
                 tag_generation_records: tag_after.tag_generation_records,
                 key_generation_records: tag_after.key_generation_records,
+                removal_observer_stable,
             },
         )
     }
@@ -1635,7 +1661,9 @@ where
         &self,
     ) -> std::result::Result<MemoryReconciliationReport, MemoryFootprintError> {
         self.inner.store.run_pending_tasks().await;
+        self.drain_removal_cleanup().await;
         let mut exact = EntryMemoryDelta::default();
+        let mut memberships = Vec::new();
         for (key, entry) in self.inner.store.iter() {
             let delta = EntryMemoryDelta::new(
                 &key,
@@ -1645,6 +1673,14 @@ where
             )
             .map_err(|_| MemoryFootprintError::CounterFault)?;
             exact.checked_accumulate(delta)?;
+            memberships.push((key.to_string(), entry.version, entry.tags.to_vec()));
+        }
+        if let Some(observer) = &self.inner.removal_observer {
+            self.inner
+                .tag_index
+                .reconcile_memberships(&memberships)
+                .await;
+            observer.reset_after_reconcile().await;
         }
         self.inner.memory.reconcile(exact)
     }
@@ -1763,6 +1799,7 @@ where
         options: CacheOptions,
         origin: CacheEventOrigin,
     ) -> Result<()> {
+        self.drain_removal_cleanup().await;
         if self.exceeds_max_entry_bytes(value.len()) {
             return Err(self.oversize_rejection_error(value.len()));
         }
@@ -1772,21 +1809,21 @@ where
         let tags = options.tags_value().to_vec();
         let value_len = value.len();
         let expires_at = Instant::now().checked_add(ttl);
+        let version = self.next_entry_version()?;
         let memory_delta = EntryMemoryDelta::new(key, value_len, &tags, expires_at.is_some())
             .map_err(|error| CacheError::Backend(error.to_string()))?;
-        let entry = CacheEntry {
-            value,
-            tags: tags.clone(),
-            expires_at,
-        };
+        let entry = CacheEntry::new(value, tags.clone(), expires_at, version);
 
-        if let Some(old_entry) = self.inner.store.get(key).await {
-            self.inner.tag_index.unregister(key, &old_entry.tags).await;
+        if self.inner.removal_observer.is_none() {
+            if let Some(old_entry) = self.inner.store.get(key).await {
+                self.inner.tag_index.unregister(key, &old_entry.tags).await;
+            }
         }
 
         self.inner.store.insert(key.to_owned(), entry).await;
-        self.inner.tag_index.register(key, &tags).await;
+        self.inner.tag_index.register(key, &tags, version).await;
         self.inner.memory.insert(memory_delta);
+        self.drain_removal_cleanup().await;
         self.publish_key_event(CacheEventKind::Stored, key, origin, tags);
         Ok(())
     }
@@ -1993,7 +2030,26 @@ where
     async fn remove_entry(&self, key: &str, entry: &CacheEntry) {
         let _mutation = self.inner.memory.mutation();
         self.inner.store.invalidate(key).await;
-        self.inner.tag_index.unregister(key, &entry.tags).await;
+        if self.inner.removal_observer.is_some() {
+            self.drain_removal_cleanup().await;
+        } else {
+            self.inner.tag_index.unregister(key, &entry.tags).await;
+        }
+    }
+
+    async fn drain_removal_cleanup(&self) {
+        if let Some(observer) = &self.inner.removal_observer {
+            observer.drain(&self.inner.tag_index).await;
+        }
+    }
+
+    fn next_entry_version(&self) -> Result<u64> {
+        self.inner
+            .next_entry_version
+            .fetch_update(Ordering::AcqRel, Ordering::Acquire, |version| {
+                version.checked_add(1)
+            })
+            .map_err(|_| CacheError::Backend("cache entry version overflow".to_owned()))
     }
 
     async fn remove_with_event(

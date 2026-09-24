@@ -5,11 +5,26 @@ use bytes::Bytes;
 #[derive(Debug, Clone)]
 pub(crate) struct CacheEntry {
     pub(crate) value: Bytes,
-    pub(crate) tags: Vec<String>,
+    pub(crate) tags: Box<[String]>,
     pub(crate) expires_at: Option<Instant>,
+    pub(crate) version: u64,
 }
 
 impl CacheEntry {
+    pub(crate) fn new(
+        value: Bytes,
+        tags: Vec<String>,
+        expires_at: Option<Instant>,
+        version: u64,
+    ) -> Self {
+        Self {
+            value,
+            tags: tags.into_boxed_slice(),
+            expires_at,
+            version,
+        }
+    }
+
     pub(crate) fn is_expired(&self) -> bool {
         self.expires_at
             .map(|expires_at| Instant::now() >= expires_at)

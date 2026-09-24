@@ -17,6 +17,7 @@ use crate::inflight::InFlightMap;
 use crate::invalidation_bus::CacheInvalidationBus;
 use crate::load_breaker::{LoadBreakerPolicy, LoadBreakerRegistry};
 use crate::memory_footprint::{MemoryFootprintCounters, MemoryInstrumentationMode};
+use crate::removal_observer::RemovalObserver;
 use crate::stats::StatsCounters;
 use crate::tag_index::TagIndex;
 
@@ -390,8 +391,7 @@ where
             self.memory_instrumentation_mode,
         ));
         let tag_index = Arc::new(TagIndex::default());
-        let eviction_memory = memory.clone();
-        let eviction_tag_index = tag_index.clone();
+        let mut removal_observer = None;
         let mut store_builder = Cache::<String, CacheEntry>::builder()
             .max_capacity(self.max_capacity)
             .weigher(move |_key, entry: &CacheEntry| {
@@ -403,25 +403,12 @@ where
             store_builder = if noop_memory_eviction_listener {
                 store_builder.eviction_listener(|_key, _entry, _cause| {})
             } else {
-                store_builder.async_eviction_listener(
-                    move |key: Arc<String>, entry: CacheEntry, _cause| {
-                        let memory = eviction_memory.clone();
-                        let tag_index = eviction_tag_index.clone();
-                        Box::pin(async move {
-                            let _mutation = memory.mutation();
-                            tag_index.unregister(&key, &entry.tags).await;
-                            match crate::memory_footprint::EntryMemoryDelta::new(
-                                &key,
-                                entry.value.len(),
-                                &entry.tags,
-                                entry.expires_at.is_some(),
-                            ) {
-                                Ok(delta) => memory.remove(delta),
-                                Err(_) => memory.mark_fault(),
-                            }
-                        })
-                    },
-                )
+                let observer = Arc::new(RemovalObserver::new(memory.clone()));
+                let callback = observer.clone();
+                removal_observer = Some(observer);
+                store_builder.post_removal_observer(move |key, entry, cause| {
+                    callback.observe(key, entry, cause);
+                })
             };
         }
         let store = store_builder.build();
@@ -459,6 +446,8 @@ where
                 replicated_value_security: self.replicated_value_security,
                 load_breaker: LoadBreakerRegistry::new(self.load_breaker_policy),
                 memory,
+                removal_observer,
+                next_entry_version: AtomicU64::new(1),
             }),
         };
 
