@@ -573,6 +573,34 @@ rates or measurement-window length for I73. Those values must come from baseline
 after they are frozen can the observer candidate be observed on this host. This is another useful
 separation: qualifying the laboratory is not the same as accepting an experiment performed in it.
 
+The first baseline-only pilot then produced exactly the kind of inconvenient result this separation
+was designed to preserve. Across four offered rates, all 24 processes completed without an outcome
+or reconciliation failure. Both modes delivered at least 99.96% of offered load, p99 stayed below
+two milliseconds, and goodput regression was effectively zero. On those dimensions the selected
+windows looked comfortably stable.
+
+The run still failed its preregistered decision rule. Production instrumentation consumed 4.14%,
+6.46%, 10.01%, and 5.27% more CPU per operation at 2,500, 5,000, 10,000, and 20,000 operations per
+second. The aggregate result was not created by one bad process: production used more CPU in all 12
+counterbalanced pairs, whether it ran first or second. Expressed as an absolute cost, the observed
+paired deltas ranged from roughly 0.08 to 0.62 microseconds per operation. Allocation supplied a
+second repeatable signal: production added about 19.4-20.4 bytes per operation at every rate.
+
+This is a useful example of why “the server kept up” is not the same statement as “the baseline is
+acceptable.” An open-loop workload can meet its offered rate while spending more CPU headroom to do
+so. That headroom matters before saturation and is exactly what the independent CPU gate protects.
+Because the 3% ceiling was frozen before the run, zero rates qualified and I73 remained unfrozen.
+The failed workflow is therefore retained evidence, not infrastructure noise and not permission to
+raise the limit.
+
+The right follow-up is narrower than repeating the entire scan. The existing laboratory seams can
+separate four configurations: instrumentation off; counters with backend removal observation
+disabled; a registered backend observer with an empty callback; and complete production accounting.
+Their adjacent differences attribute the cost respectively to counters, backend notification
+plumbing, and HydraCache cleanup/accounting work. That diagnostic remains non-promotable because two
+configurations deliberately break removal correctness. Its job is to tell us where to optimize; the
+unchanged off-versus-production contract must still make the eventual acceptance decision.
+
 ### Why the ablation must not become the fix
 
 It would be easy to stop here and ship production counters without the listener. That would make the

@@ -269,3 +269,13 @@ remove-refill / 10% tag-invalidate-refill / 10% TTL-put workload in off and prod
 Four offered rates receive three counterbalanced, independently started five-second windows each.
 The pilot can select an I73 knee and the 25%/60%/85% D3 rates, but it carries no candidate role,
 cannot change thresholds, and remains non-promotable.
+
+Run `36064788229` executed that contract at exact source `4ba93a1a`. All 24 attempts completed,
+both instrumentation modes sustained at least 99.96% of every offered rate, p99 remained below two
+milliseconds, and the host passed its pre/post calibration boundary. Nevertheless, none of the four
+rates was eligible: production exceeded the frozen 3% CPU-per-operation ceiling by 4.14%, 6.46%,
+10.01%, and 5.27%. Production was slower in CPU time in all 12 paired observations, independent of
+which mode ran first, while its allocation cost was consistently about 20 bytes per operation.
+`baseline-pilot-insufficient-4ba93a1a.toml` binds the retained artifact and records the result as
+negative baseline evidence. I73 remains unfrozen, candidate measurement remains closed, and the
+ceiling is unchanged. The next step is a short four-mode attribution run, not an unrecorded retry.
