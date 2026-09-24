@@ -27,6 +27,7 @@ baseline_evidence = [
   "docs/testing/performance/0.73/local-overhead-listener-noop-5e101e69.toml",
   "docs/testing/performance/0.73/notification-feasibility-bf9f1382.toml",
   "docs/testing/performance/0.73/notification-observer-prototype-9a2ca114.toml",
+  "docs/testing/performance/0.73/moka-observer-spike-5d560170.toml",
 ]
 
 source_findings = [
@@ -36,6 +37,7 @@ source_findings = [
   "moka 0.12.16 retains blocking synchronous/asynchronous eviction-listener APIs and exposes no nonblocking post-removal observer",
   "a counterbalanced future-versus-sync microprobe found that sync reduced but did not eliminate no-op-listener allocation overhead",
   "a lab-only versioned observer reference model passes ordering, duplicate, saturation, reconciliation, shutdown, and removal-cause falsifiers without changing the product cache",
+  "an isolated Moka patch proved that omitting listener key locks removes the insert allocation penalty while boxed removal delivery remains a separate cost",
 ]
 
 rejected_approaches = [
@@ -68,4 +70,4 @@ required_regression_guards = [
   "allocation and RSS limits frozen before candidate data",
 ]
 
-next_evidence = "Retain the exact-SHA reference-model receipt, build the upstream-compatible Moka observer patch spike, choose an independent reviewer, and freeze the practical effect and allocation/RSS rejection limits before authorizing or rejecting D2."
+next_evidence = "Complete the direct synchronous Moka observer spike without boxed futures, then choose an independent reviewer and freeze the practical effect and allocation/RSS rejection limits before authorizing or rejecting D2."

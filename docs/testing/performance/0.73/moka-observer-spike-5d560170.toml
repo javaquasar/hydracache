@@ -1,0 +1,66 @@
+schema_version = 1
+release = "0.73"
+evidence_class = "local_feasibility"
+experiment = "moka-future-listener-vs-observer-key-lock-ablation"
+source_sha = "5d5601706bf35bab61bd84c45cae9a744449ec02"
+binary_sha256 = "9fd704207abfa56f00df995786d650e7e2a041222a5c20c8466ff40699d14570"
+receipt_sha256 = "2de1f28a329d67b470633408b46a057e3801ba293971a4d42f9c0e3116f9c4bf"
+patch_sha256 = "d22380283faa988e4a5fc3912669eb4bbb7f6aa8a7517c8b6038ccfce7a5fd52"
+operations_per_case = 1024
+repetitions = 3
+counterbalanced = true
+verified_causes = ["explicit", "replaced", "expired", "size"]
+diagnostic_only = true
+product_semantics_eligible = false
+promotable = false
+decision = "key-lock-owner-confirmed-boxed-removal-cost-remains"
+conclusion = "The isolated Moka observer patch removed the listener allocation penalty from insert: observer and off both measured 400.4375 B/op while listener measured 755.7422 B/op. Removal retained 423.9297 incremental B/op because the first patch deliberately reused boxed listener futures and cancellation machinery."
+next_evidence = "Add a second isolated patch that invokes a synchronous post-removal observer directly at every removal site without constructing listener futures or cancellation guards, while retaining all four removal causes."
+
+[[median_observations]]
+mode = "off"
+operation = "insert"
+gross_allocated_bytes_per_operation = 400.4375
+elapsed_ns = 634300.0
+
+[[median_observations]]
+mode = "listener"
+operation = "insert"
+gross_allocated_bytes_per_operation = 755.7421875
+elapsed_ns = 1045900.0
+
+[[median_observations]]
+mode = "observer"
+operation = "insert"
+gross_allocated_bytes_per_operation = 400.4375
+elapsed_ns = 575800.0
+
+[[median_observations]]
+mode = "off"
+operation = "remove"
+gross_allocated_bytes_per_operation = 2276.2265625
+elapsed_ns = 634800.0
+
+[[median_observations]]
+mode = "listener"
+operation = "remove"
+gross_allocated_bytes_per_operation = 3044.1875
+elapsed_ns = 1386400.0
+
+[[median_observations]]
+mode = "observer"
+operation = "remove"
+gross_allocated_bytes_per_operation = 2700.15625
+elapsed_ns = 1008200.0
+
+[[comparisons]]
+metric = "insert_observer_vs_off_regression_fraction"
+value = 0.0
+
+[[comparisons]]
+metric = "remove_observer_vs_off_regression_fraction"
+value = 0.18624230754709858
+
+[[comparisons]]
+metric = "remove_incremental_cost_reduction_vs_listener_fraction"
+value = 0.4479801422191477

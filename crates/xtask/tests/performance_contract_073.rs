@@ -292,6 +292,21 @@ fn observer_prototype_cannot_be_promoted_as_a_moka_result() {
 }
 
 #[test]
+fn moka_observer_spike_cannot_hide_unresolved_removal_cost() {
+    let mut value = manifest("moka-observer-spike-5d560170.toml");
+    value["product_semantics_eligible"] = TomlValue::Boolean(true);
+    value["promotable"] = TomlValue::Boolean(true);
+    value["verified_causes"] = TomlValue::Array(Vec::new());
+    let problems = xtask::performance_contract::check_moka_observer_spike(&value, "0.73");
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("must remain diagnostic")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("omits explicit cause")));
+}
+
+#[test]
 fn pre_i73_proposal_cannot_skip_d2_review_and_threshold_freeze() {
     let mut value = manifest("proposal-registry.toml");
     value["proposals"][0]["state"] = TomlValue::String("d2_authorized".to_owned());

@@ -340,6 +340,19 @@ The tiny-run elapsed values were retained but not promoted; the model does not y
 automatic-removal delivery. The result proves feasibility of the HydraCache-side lifecycle, not the
 backend integration.
 
+The first isolated Moka patch then separated key locking from removal delivery. It added a
+lab-only observer builder mode that reused the existing delivery machinery but did not create the
+listener key-lock map. Median insert allocation became identical to listener-off: 400.44 B/op for
+both, versus 755.74 B/op with the ordinary listener. This directly confirmed that the key-lock path
+owned the fill penalty rather than merely correlating with it.
+
+Removal did not fall all the way to off. The observer measured 2,700.16 B/op, compared with
+2,276.23 off and 3,044.19 with the listener. Removing key locks cut 44.8% of the listener's
+incremental removal allocation, but the patch deliberately retained boxed listener futures and
+cancellation guards. That residual became the next isolated factor. The same spike verified real
+delivery for explicit removal, replacement, expiry, and capacity eviction, so the lower insert cost
+was not obtained by silently dropping an automatic-removal class.
+
 ### The result changed governance, not just code direction
 
 At this point the responsible next action was not to start editing the production cache. We recorded

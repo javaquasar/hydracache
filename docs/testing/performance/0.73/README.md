@@ -132,6 +132,15 @@ timing claim: this tiny reference model does not include Moka automatic removal 
 establishes that the HydraCache-side lifecycle can be allocation-free; the next uncertainty is the
 Moka observer seam itself.
 
+The first isolated Moka patch and its exact-SHA result are retained as
+`moka-post-removal-observer-0.12.15.patch` and `moka-observer-spike-5d560170.toml`. The patch adds a
+lab-only observer mode that keeps Moka's existing removal delivery but does not create the listener
+key-lock map. Insert allocation matched listener-off exactly at 400.44 B/op, compared with 755.74
+B/op for the listener. This confirms the fill owner. Observer removal still cost 2,700.16 B/op
+versus 2,276.23 off because this first patch intentionally retained boxed listener futures and
+cancellation delivery. All Explicit, Replaced, Expired, and Size causes were observed. The next
+spike removes that second mechanism without altering the production dependency.
+
 `statistics.toml` freezes the inherited paired estimator, confidence, Holm correction, failure
 retention, five-pair minimum, and throughput/CPU/p99 regression guards before candidate data. Its
 allocation and RSS limits remain explicit unfrozen blockers. `host-profile.toml` is a requirement

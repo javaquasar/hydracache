@@ -14,6 +14,7 @@ local_overhead_listener_noop = "docs/testing/performance/0.73/local-overhead-lis
 notification_feasibility = "docs/testing/performance/0.73/notification-feasibility-bf9f1382.toml"
 notification_observer_requirements = "docs/testing/performance/0.73/notification-observer-requirements.toml"
 notification_observer_prototype = "docs/testing/performance/0.73/notification-observer-prototype-9a2ca114.toml"
+moka_observer_spike = "docs/testing/performance/0.73/moka-observer-spike-5d560170.toml"
 proposal_registry = "docs/testing/performance/0.73/proposal-registry.toml"
 statistics_contract = "docs/testing/performance/0.73/statistics.toml"
 host_profile = "docs/testing/performance/0.73/host-profile.toml"
