@@ -64,6 +64,7 @@ fn checked_in_performance_profile_073_is_complete_and_fresh() {
         "runs-on: [self-hosted, linux, x64, hydracache-release]",
         "environment: performance-reference-073",
         "group: performance-reference-073-host",
+        "apt-get install --yes sysstat",
         "preflight.json",
         "postflight.json",
         "host fingerprint drifted across admission",

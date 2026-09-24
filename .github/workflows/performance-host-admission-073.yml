@@ -18,6 +18,12 @@ on:
   push:
     branches:
       - docs/0.73-evidence-driven-performance-plan
+    paths:
+      - .github/workflows/performance-host-admission-073.yml
+      - crates/xtask/src/main.rs
+      - crates/xtask/src/memory_contracts.rs
+      - crates/xtask/tests/memory_host_profile_071.rs
+      - docs/testing/perf-host-profiles/performance-reference-073-v1.json
 
 permissions:
   contents: read
@@ -79,6 +85,16 @@ jobs:
           echo "$rust_bin" >> "$GITHUB_PATH"
           "$rust_bin/cargo" --version
           "$rust_bin/rustc" --version
+
+      - name: Provision required host diagnostics before fingerprinting
+        shell: bash
+        run: |
+          set -euo pipefail
+          if ! command -v pidstat >/dev/null 2>&1; then
+            sudo apt-get update
+            sudo DEBIAN_FRONTEND=noninteractive apt-get install --yes sysstat
+          fi
+          pidstat --version
 
       - name: Capture pre-build host identity and calibration
         shell: bash
