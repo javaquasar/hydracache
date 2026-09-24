@@ -11,6 +11,8 @@ import statistics
 import subprocess
 import sys
 
+PROFILE_ID = "observer-baseline-pilot-073-v2"
+
 
 def sha256(path: pathlib.Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
@@ -29,6 +31,17 @@ def relative_regression(control: float, treatment: float) -> float:
     return (treatment - control) / control if control else float("inf")
 
 
+def hodges_lehmann(samples: list[float]) -> float:
+    if not samples:
+        return float("inf")
+    walsh_averages = [
+        (left + right) / 2.0
+        for index, left in enumerate(samples)
+        for right in samples[index:]
+    ]
+    return median(walsh_averages)
+
+
 def run_attempt(
     binary: pathlib.Path,
     output: pathlib.Path,
@@ -37,6 +50,7 @@ def run_attempt(
     rate: int,
     operations: int,
     warmup_operations: int,
+    profile_id: str,
 ) -> dict:
     output.mkdir(parents=True)
     receipt_path = output / "receipt.json"
@@ -45,6 +59,8 @@ def run_attempt(
         "--cpu-list",
         cpu_set,
         str(binary),
+        "--profile-id",
+        profile_id,
         "--mode",
         mode,
         "--rate",
@@ -78,12 +94,14 @@ def run_attempt(
     return attempt
 
 
-def validate_receipt(receipt: dict, mode: str, rate: int, operations: int) -> None:
+def validate_receipt(
+    receipt: dict, profile_id: str, mode: str, rate: int, operations: int
+) -> None:
     observation = receipt["observation"]
     if (
         receipt["schema_version"] != 1
         or receipt["release"] != "0.73"
-        or receipt["profile_id"] != "observer-baseline-pilot-073-v1"
+        or receipt["profile_id"] != profile_id
         or receipt["instrumentation_mode"] != mode
         or receipt["offered_rate_per_second"] != rate
         or receipt["operations"] != operations
@@ -128,6 +146,40 @@ def summarize(receipts: list[dict]) -> dict:
     }
 
 
+def paired_overhead(off_receipt: dict, production_receipt: dict) -> dict:
+    off_goodput = off_receipt["observation"]["achieved_rate_per_second"]
+    production_goodput = production_receipt["observation"][
+        "achieved_rate_per_second"
+    ]
+    off_cpu = off_receipt["cpu_seconds_per_operation"]
+    production_cpu = production_receipt["cpu_seconds_per_operation"]
+    off_p99 = float(off_receipt["observation"]["latency"]["p99_us"])
+    production_p99 = float(production_receipt["observation"]["latency"]["p99_us"])
+    return {
+        "goodput_relative_regression": -relative_regression(
+            off_goodput, production_goodput
+        ),
+        "cpu_per_operation_relative_regression": relative_regression(
+            off_cpu, production_cpu
+        ),
+        "p99_relative_regression": relative_regression(off_p99, production_p99),
+        "allocation_absolute_overhead": production_receipt[
+            "gross_allocated_bytes_per_operation"
+        ]
+        - off_receipt["gross_allocated_bytes_per_operation"],
+        "rss_delta_absolute_overhead": (
+            production_receipt["rss_after_bytes"]
+            - production_receipt["rss_before_bytes"]
+        )
+        - (off_receipt["rss_after_bytes"] - off_receipt["rss_before_bytes"]),
+        "peak_rss_delta_absolute_overhead": (
+            production_receipt["peak_rss_bytes"]
+            - production_receipt["rss_before_bytes"]
+        )
+        - (off_receipt["peak_rss_bytes"] - off_receipt["rss_before_bytes"]),
+    }
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--binary", type=pathlib.Path, required=True)
@@ -139,15 +191,18 @@ def main() -> int:
     parser.add_argument("--seed", type=int, required=True)
     parser.add_argument("--cpu-set", required=True)
     parser.add_argument("--source-sha", required=True)
+    parser.add_argument("--profile-id", required=True)
     options = parser.parse_args()
     rates = [int(value) for value in options.rates.split(",")]
     if (
         not options.binary.is_file()
         or options.output.exists()
-        or options.repeats < 3
-        or options.window_seconds < 5
-        or len(rates) < 4
-        or rates != sorted(set(rates))
+        or options.repeats != 5
+        or options.window_seconds != 10
+        or options.warmup_operations != 5000
+        or options.seed != 73073
+        or rates != [2500, 5000, 10000, 20000]
+        or options.profile_id != PROFILE_ID
     ):
         raise SystemExit("invalid pilot binary, output, repeats, window, or rates")
     options.output.mkdir(parents=True)
@@ -155,6 +210,7 @@ def main() -> int:
     attempts = []
     failed = []
     receipts: dict[tuple[int, str], list[dict]] = {}
+    paired_receipts: dict[tuple[int, int, str], dict] = {}
     for rate_index, rate in enumerate(rates):
         operations = rate * options.window_seconds
         for repeat in range(1, options.repeats + 1):
@@ -171,6 +227,7 @@ def main() -> int:
                     rate,
                     operations,
                     options.warmup_operations,
+                    options.profile_id,
                 )
                 attempt.update(
                     {
@@ -184,8 +241,9 @@ def main() -> int:
                     failed.append(attempt_id)
                     continue
                 receipt = json.loads((attempt_dir / "receipt.json").read_text(encoding="utf-8"))
-                validate_receipt(receipt, mode, rate, operations)
+                validate_receipt(receipt, options.profile_id, mode, rate, operations)
                 receipts.setdefault((rate, mode), []).append(receipt)
+                paired_receipts[(rate, repeat, mode)] = receipt
 
     rate_results = []
     stable_rates = []
@@ -196,33 +254,31 @@ def main() -> int:
         if complete:
             off = summarize(off_receipts)
             production = summarize(production_receipts)
-            overhead = {
-                "goodput_relative_regression": relative_regression(
-                    off["goodput_median"], production["goodput_median"]
+            pair_results = []
+            for repeat in range(1, options.repeats + 1):
+                off_receipt = paired_receipts[(rate, repeat, "off")]
+                production_receipt = paired_receipts[(rate, repeat, "production")]
+                pair_results.append(
+                    {"repeat": repeat, **paired_overhead(off_receipt, production_receipt)}
                 )
-                * -1.0,
-                "cpu_per_operation_relative_regression": relative_regression(
-                    off["cpu_seconds_per_operation_median"],
-                    production["cpu_seconds_per_operation_median"],
-                ),
-                "p99_relative_regression": relative_regression(
-                    off["p99_us_median"], production["p99_us_median"]
-                ),
-                "allocation_absolute_overhead": production[
-                    "allocated_bytes_per_operation_median"
+            overhead = {
+                metric: hodges_lehmann(
+                    [float(pair[metric]) for pair in pair_results]
+                )
+                for metric in [
+                    "goodput_relative_regression",
+                    "cpu_per_operation_relative_regression",
+                    "p99_relative_regression",
+                    "allocation_absolute_overhead",
+                    "rss_delta_absolute_overhead",
+                    "peak_rss_delta_absolute_overhead",
                 ]
-                - off["allocated_bytes_per_operation_median"],
-                "rss_delta_absolute_overhead": production["rss_delta_bytes_median"]
-                - off["rss_delta_bytes_median"],
-                "peak_rss_delta_absolute_overhead": production[
-                    "peak_rss_delta_bytes_median"
-                ]
-                - off["peak_rss_delta_bytes_median"],
             }
         else:
             off = None
             production = None
             overhead = None
+            pair_results = []
         stable = (
             complete
             and off is not None
@@ -246,6 +302,7 @@ def main() -> int:
                 "off": off,
                 "production": production,
                 "overhead": overhead,
+                "pair_results": pair_results,
                 "stable": stable,
             }
         )
@@ -262,7 +319,7 @@ def main() -> int:
     aggregate = {
         "schema_version": 1,
         "release": "0.73",
-        "profile_id": "observer-baseline-pilot-073-v1",
+        "profile_id": options.profile_id,
         "evidence_class": "dedicated_host_baseline_only",
         "source_sha": options.source_sha,
         "binary_sha256": sha256(options.binary),
@@ -273,6 +330,7 @@ def main() -> int:
         "warmup_operations": options.warmup_operations,
         "attempts": attempts,
         "failed_attempts": failed,
+        "paired_estimator": "hodges-lehmann-v1",
         "rate_results": rate_results,
         "stable_rates": stable_rates,
         "selected_knee_rate_per_second": selected_knee,

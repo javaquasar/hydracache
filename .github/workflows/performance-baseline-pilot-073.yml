@@ -1,4 +1,4 @@
-name: Performance Baseline Pilot 0.73
+name: Performance Baseline Pilot V2 0.73
 
 on:
   workflow_dispatch:
@@ -15,14 +15,6 @@ on:
         description: "Approved lease end in RFC3339 form"
         required: true
         type: string
-  push:
-    branches:
-      - docs/0.73-evidence-driven-performance-plan
-    paths:
-      - .github/workflows/performance-baseline-pilot-073.yml
-      - scripts/perf/performance_baseline_pilot_073.py
-      - tools/performance-observer-073/**
-      - docs/testing/performance/0.73/baseline-pilot-contract.toml
 
 permissions:
   contents: read
@@ -33,7 +25,7 @@ concurrency:
 
 jobs:
   pilot:
-    name: Baseline-only I73 rate and window pilot
+    name: Paired baseline-only I73 rate and window pilot
     runs-on: [self-hosted, linux, x64, hydracache-release]
     environment: performance-reference-073
     timeout-minutes: 120
@@ -43,7 +35,7 @@ jobs:
       HYDRACACHE_PERFORMANCE_DAEMON_CPUSET: ${{ vars.HYDRACACHE_MEMORY_DAEMON_CPUSET || '5-6' }}
       HYDRACACHE_PERFORMANCE_LOADGEN_CPUSET: ${{ vars.HYDRACACHE_MEMORY_LOADGEN_CPUSET || '7' }}
       HYDRACACHE_PERFORMANCE_COLLECTOR_CPUSET: ${{ vars.HYDRACACHE_MEMORY_COLLECTOR_CPUSET || '0' }}
-      EVIDENCE_DIR: target/performance-evidence/0.73/reference/baseline-pilot
+      EVIDENCE_DIR: target/performance-evidence/0.73/reference/baseline-pilot-v2
 
     steps:
       - name: Checkout exact baseline-only source
@@ -105,9 +97,10 @@ jobs:
           python3 scripts/perf/performance_baseline_pilot_073.py \
             --binary tools/performance-observer-073/target/release/performance-observer-073 \
             --output "$EVIDENCE_DIR/campaign" \
+            --profile-id observer-baseline-pilot-073-v2 \
             --rates 2500,5000,10000,20000 \
-            --repeats 3 \
-            --window-seconds 5 \
+            --repeats 5 \
+            --window-seconds 10 \
             --warmup-operations 5000 \
             --seed 73073 \
             --cpu-set "$HYDRACACHE_PERFORMANCE_LOADGEN_CPUSET" \
@@ -155,13 +148,18 @@ jobs:
               raise SystemExit("host receipts do not bind the baseline source")
           if before["result"] != "success" or after["result"] != "success":
               raise SystemExit("pre/post host calibration did not pass")
-          if pilot["source_sha"] != source_sha or pilot["candidate_data_present"]:
+          if (
+              pilot["source_sha"] != source_sha
+              or pilot["candidate_data_present"]
+              or pilot["profile_id"] != "observer-baseline-pilot-073-v2"
+              or pilot["paired_estimator"] != "hodges-lehmann-v1"
+          ):
               raise SystemExit("pilot is not baseline-only")
           digest = lambda path: hashlib.sha256(path.read_bytes()).hexdigest()
           manifest = {
               "schema_version": 1,
               "release": "0.73",
-              "profile_id": "observer-baseline-pilot-073-v1",
+              "profile_id": "observer-baseline-pilot-073-v2",
               "source_sha": source_sha,
               "result": "passed" if pilot["i73_freeze_eligible"] else "insufficient-baseline",
               "host_fingerprint": before["host_fingerprint"],
@@ -183,7 +181,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v6
         with:
-          name: performance-baseline-pilot-073-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
-          path: target/performance-evidence/0.73/reference/baseline-pilot/**
+          name: performance-baseline-pilot-v2-073-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: target/performance-evidence/0.73/reference/baseline-pilot-v2/**
           if-no-files-found: error
           retention-days: 90

@@ -100,15 +100,20 @@ fn baseline_pilot_073_is_baseline_only_and_uses_the_admitted_lane() {
     for required in [
         "environment: performance-reference-073",
         "group: performance-reference-073-host",
-        "Baseline-only I73 rate and window pilot",
+        "Paired baseline-only I73 rate and window pilot",
         "candidate_data_present",
         "performance_baseline_pilot_073.py",
+        "--profile-id observer-baseline-pilot-073-v2",
+        "--repeats 5",
+        "--window-seconds 10",
+        "hodges-lehmann-v1",
     ] {
         assert!(
             workflow.contains(required),
             "pilot workflow omitted {required}"
         );
     }
+    assert!(!workflow.contains("push:"), "pilot v2 must be manual-only");
 }
 
 #[test]
