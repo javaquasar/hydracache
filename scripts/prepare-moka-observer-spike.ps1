@@ -1,5 +1,6 @@
 param(
-    [string]$OutputDirectory = "target/moka-observer-spike/moka"
+    [string]$OutputDirectory = "target/moka-observer-spike/moka",
+    [string]$PatchFile = "docs/testing/performance/0.73/moka-post-removal-observer-0.12.15.patch"
 )
 
 $ErrorActionPreference = "Stop"
@@ -30,7 +31,10 @@ $manifest = Join-Path $destination "Cargo.toml"
 $manifestText = [IO.File]::ReadAllText($manifest)
 [IO.File]::WriteAllText($manifest, "[workspace]`n`n" + $manifestText)
 
-$patch = Join-Path $repositoryRoot "docs/testing/performance/0.73/moka-post-removal-observer-0.12.15.patch"
+$patch = Join-Path $repositoryRoot $PatchFile
+if (-not (Test-Path -LiteralPath $patch -PathType Leaf)) {
+    throw "patch file does not exist: $patch"
+}
 git -C $destination apply --check $patch
 if ($LASTEXITCODE -ne 0) { throw "Moka observer patch does not apply" }
 git -C $destination apply $patch

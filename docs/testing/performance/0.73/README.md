@@ -141,6 +141,13 @@ versus 2,276.23 off because this first patch intentionally retained boxed listen
 cancellation delivery. All Explicit, Replaced, Expired, and Size causes were observed. The next
 spike removes that second mechanism without altering the production dependency.
 
+Prepare either patch in a fresh ignored directory with
+`scripts/prepare-moka-observer-spike.ps1`. The first patch is the default; pass
+`-PatchFile docs/testing/performance/0.73/moka-post-removal-observer-direct-0.12.15.patch` for the
+direct observer that bypasses both key locks and listener futures. The standalone locked harness in
+`tools/moka-observer-spike` keeps this dependency experiment outside the workspace and product
+`Cargo.lock`.
+
 `statistics.toml` freezes the inherited paired estimator, confidence, Holm correction, failure
 retention, five-pair minimum, and throughput/CPU/p99 regression guards before candidate data. Its
 allocation and RSS limits remain explicit unfrozen blockers. `host-profile.toml` is a requirement
