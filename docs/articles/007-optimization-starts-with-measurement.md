@@ -750,6 +750,20 @@ unchanged baseline-only run on the admitted host. If it still fails, the failure
 if at least three rates pass, only then may the release freeze its integrated baseline and proceed
 to candidate qualification.
 
+That repeat produced another useful rejection. The two high rates improved to 2.48% and 0.99% CPU
+overhead, but 5,000 operations/second remained just outside the ceiling at 3.23%, and 2,500 measured
+7.04%. All 24 attempts completed, throughput and p99 did not regress, and host calibration was
+tighter than 0.3%, so this was not dismissed as an infrastructure failure. The `ArrayQueue` change
+was retained for its simpler bounded publication path and green correctness proof, but the run did
+not establish a performance improvement: cross-run differences are diagnostic, not paired evidence.
+
+The next suspected cost is smaller and more mechanical. Both publication and acknowledgement use a
+checked atomic update expressed as a compare-and-swap loop. Replacing each with one `fetch_add` can
+remove retries and branching while still detecting wrap from the returned previous value. The
+important constraint is semantic: overflow must still make the observer dirty and exact snapshots
+must remain unavailable until reconciliation. This optimization is preregistered and tested locally
+before another host minute is spent.
+
 ## A profiling ladder that avoids expensive runs
 
 Not every development iteration needs a dedicated bare-metal campaign. A useful workflow has several

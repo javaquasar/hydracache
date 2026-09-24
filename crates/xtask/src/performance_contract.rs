@@ -58,6 +58,10 @@ const BASELINE_PILOT_FAST_PATH_EVIDENCE: &str =
 const REMOVAL_QUEUE_CONTRACT: &str = "docs/testing/performance/0.73/removal-queue-contract.toml";
 const REMOVAL_QUEUE_PRODUCT: &str =
     "docs/testing/performance/0.73/removal-queue-product-daffd71b.toml";
+const BASELINE_PILOT_ARRAY_QUEUE_EVIDENCE: &str =
+    "docs/testing/performance/0.73/baseline-pilot-insufficient-90a40510.toml";
+const REMOVAL_SEQUENCE_CONTRACT: &str =
+    "docs/testing/performance/0.73/removal-sequence-contract.toml";
 const RELEASE: &str = "0.73";
 const PROFILE: &str = "local-screening-073-v1";
 const ENVIRONMENT_CLASS: &str = "local_screening";
@@ -144,6 +148,11 @@ pub fn check_at_root(
         toml::from_str(&fs::read_to_string(root.join(REMOVAL_QUEUE_CONTRACT))?)?;
     let removal_queue_product: TomlValue =
         toml::from_str(&fs::read_to_string(root.join(REMOVAL_QUEUE_PRODUCT))?)?;
+    let baseline_pilot_array_queue_evidence: TomlValue = toml::from_str(&fs::read_to_string(
+        root.join(BASELINE_PILOT_ARRAY_QUEUE_EVIDENCE),
+    )?)?;
+    let removal_sequence_contract: TomlValue =
+        toml::from_str(&fs::read_to_string(root.join(REMOVAL_SEQUENCE_CONTRACT))?)?;
     let mut problems = check_contract(&contract, release);
     if !root.join(MOKA_OBSERVER_UPSTREAM_DRAFT).is_file() {
         problems.push("notification observer dependency review draft is missing".to_owned());
@@ -222,6 +231,14 @@ pub fn check_at_root(
         release,
     ));
     problems.extend(check_removal_queue_product(&removal_queue_product, release));
+    problems.extend(check_baseline_pilot_array_queue_evidence(
+        &baseline_pilot_array_queue_evidence,
+        release,
+    ));
+    problems.extend(check_removal_sequence_contract(
+        &removal_sequence_contract,
+        release,
+    ));
     problems.extend(check_schema(
         &schema,
         &example,
@@ -323,6 +340,11 @@ pub fn check_contract(root: &TomlValue, release: &str) -> Vec<String> {
         ),
         ("removal_queue_contract", REMOVAL_QUEUE_CONTRACT),
         ("removal_queue_product", REMOVAL_QUEUE_PRODUCT),
+        (
+            "baseline_pilot_array_queue_evidence",
+            BASELINE_PILOT_ARRAY_QUEUE_EVIDENCE,
+        ),
+        ("removal_sequence_contract", REMOVAL_SEQUENCE_CONTRACT),
     ] {
         if text(root, field) != Some(expected) {
             problems.push(format!("local screening {field} must be {expected}"));
@@ -2435,6 +2457,118 @@ pub fn check_removal_queue_product(value: &TomlValue, release: &str) -> Vec<Stri
         if text(value, field).is_none_or(str::is_empty) {
             problems.push(format!("removal queue product requires {field}"));
         }
+    }
+    problems
+}
+
+pub fn check_baseline_pilot_array_queue_evidence(value: &TomlValue, release: &str) -> Vec<String> {
+    let mut problems = Vec::new();
+    if integer(value, "schema_version") != Some(1)
+        || text(value, "release") != Some(release)
+        || text(value, "evidence_id") != Some("observer-baseline-pilot-insufficient-90a40510-v1")
+        || text(value, "contract_id") != Some("observer-baseline-pilot-073-v1")
+        || text(value, "state") != Some("executed-insufficient-baseline-two-stable-rates")
+        || integer(value, "workflow_run_id") != Some(36_069_607_878)
+        || integer(value, "duplicate_dispatch_run_id") != Some(36_069_619_626)
+        || text(value, "duplicate_dispatch_state") != Some("cancelled-before-job")
+        || text(value, "source_sha") != Some("90a405109e6f0a57474fb2c0ece1f6d6454d44ea")
+        || integer(value, "artifact_id") != Some(10_837_672_645)
+    {
+        problems.push("array-queue baseline evidence identity changed".to_owned());
+    }
+    for field in [
+        "artifact_sha256",
+        "campaign_manifest_sha256",
+        "preflight_sha256",
+        "postflight_sha256",
+        "baseline_pilot_sha256",
+        "binary_sha256",
+    ] {
+        if text(value, field).is_none_or(|digest| !sha256(digest)) {
+            problems.push(format!(
+                "array-queue baseline evidence {field} is not SHA-256"
+            ));
+        }
+    }
+    for field in [
+        "candidate_data_present",
+        "candidate_measurement_authorized",
+        "i73_freeze_eligible",
+        "thresholds_changed",
+        "silent_retry_allowed",
+    ] {
+        if boolean(value, field) != Some(false) {
+            problems.push(format!(
+                "array-queue baseline evidence {field} must be false"
+            ));
+        }
+    }
+    if integer(value, "attempts") != Some(24)
+        || integer(value, "failed_attempts") != Some(0)
+        || integer_array(value.get("stable_rates")) != [10_000, 20_000]
+    {
+        problems
+            .push("array-queue baseline evidence must retain exactly two stable rates".to_owned());
+    }
+    let rates = value
+        .get("rate")
+        .and_then(TomlValue::as_array)
+        .cloned()
+        .unwrap_or_default();
+    if rates.len() != 4
+        || rates
+            .iter()
+            .filter(|rate| boolean(rate, "stable") == Some(true))
+            .count()
+            != 2
+    {
+        problems.push("array-queue baseline rate ledger changed".to_owned());
+    }
+    problems
+}
+
+pub fn check_removal_sequence_contract(value: &TomlValue, release: &str) -> Vec<String> {
+    let mut problems = Vec::new();
+    if integer(value, "schema_version") != Some(1)
+        || text(value, "release") != Some(release)
+        || text(value, "contract_id") != Some("removal-observer-sequence-fetch-add-073-v1")
+        || text(value, "state") != Some("preregistered-before-implementation")
+        || text(value, "triggering_evidence") != Some(BASELINE_PILOT_ARRAY_QUEUE_EVIDENCE)
+        || integer(value, "queue_capacity") != Some(4_096)
+    {
+        problems.push("removal sequence contract identity or bound changed".to_owned());
+    }
+    for field in [
+        "capacity_changed",
+        "callback_may_block",
+        "callback_may_await",
+        "overflow_may_be_silently_accepted",
+        "thresholds_changed",
+        "candidate_data_allowed",
+        "dedicated_host_run_allowed_before_local_gates",
+    ] {
+        if boolean(value, field) != Some(false) {
+            problems.push(format!("removal sequence contract {field} must be false"));
+        }
+    }
+    for field in [
+        "accepted_increment_before_publication_preserved",
+        "acknowledged_increment_after_cleanup_preserved",
+        "overflow_must_mark_observer_dirty",
+        "accepted_acknowledged_barrier_preserved",
+    ] {
+        if boolean(value, field) != Some(true) {
+            problems.push(format!("removal sequence contract {field} must be true"));
+        }
+    }
+    if string_array(value.get("implementation_scope"))
+        != ["crates/hydracache/src/removal_observer.rs"]
+        || string_array(value.get("local_gates")).len() < 6
+        || text(value, "optimization").is_none_or(str::is_empty)
+        || text(value, "rollback").is_none_or(str::is_empty)
+        || text(value, "success_rule").is_none_or(str::is_empty)
+    {
+        problems.push("removal sequence contract scope or local gates are incomplete".to_owned());
     }
     problems
 }

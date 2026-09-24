@@ -1,0 +1,30 @@
+schema_version = 1
+release = "0.73"
+contract_id = "removal-observer-sequence-fetch-add-073-v1"
+state = "preregistered-before-implementation"
+triggering_evidence = "docs/testing/performance/0.73/baseline-pilot-insufficient-90a40510.toml"
+proposal_id = "P73-INSTRUMENTATION-NONBLOCKING-REMOVAL"
+implementation_scope = ["crates/hydracache/src/removal_observer.rs"]
+optimization = "Replace the accepted and acknowledged AtomicU64 fetch_update checked-increment CAS loops with one fetch_add each and mark the observer dirty when the returned previous value is u64::MAX."
+accepted_increment_before_publication_preserved = true
+acknowledged_increment_after_cleanup_preserved = true
+overflow_must_mark_observer_dirty = true
+overflow_may_be_silently_accepted = false
+accepted_acknowledged_barrier_preserved = true
+queue_capacity = 4096
+capacity_changed = false
+callback_may_block = false
+callback_may_await = false
+thresholds_changed = false
+candidate_data_allowed = false
+dedicated_host_run_allowed_before_local_gates = false
+rollback = "Restore both checked fetch_update calls from daffd71b without changing queue, cleanup, accounting, or exactness behavior."
+local_gates = [
+  "observer duplicate, saturation, pending, empty, versioned cleanup, and sequence-overflow unit tests",
+  "memory_footprint_071 exact removal and reconciliation suite",
+  "memory_accounting_071 retained-total reconciliation suite",
+  "hydracache check, formatting, and clippy with instrumentation-lab",
+  "standalone observer harness check and clippy",
+  "cargo deny supply-chain policy",
+]
+success_rule = "Every local correctness gate passes, overflow remains permanently dirty until reconciliation, and no public API, capacity, threshold, or workload changes. Local success authorizes only an unchanged baseline-only repeat."

@@ -327,3 +327,16 @@ standalone harness lockfile also had to record the exact dependency because it r
 workspace crate under `--locked`. This is local correctness admission, not performance evidence.
 It authorizes only another run of the unchanged baseline-only contract; the 3% CPU ceiling and the
 minimum of three stable offered rates remain frozen.
+
+Run `36069607878` executed that repeat at exact source `90a40510`. All 24 attempts completed and
+pre/post calibration spreads were only 0.23% and 0.15%. The 10,000 and 20,000 rates passed at 2.48%
+and 0.99% CPU overhead, but 5,000 narrowly missed at 3.23% and 2,500 measured 7.04%. The result
+therefore retains exactly two stable rates and remains insufficient. A duplicate manual dispatch,
+run `36069619626`, was cancelled before its job started; it is not a hidden measurement retry.
+
+`baseline-pilot-insufficient-90a40510.toml` binds the full packet. The stronger high-rate result is
+consistent with less drain synchronization work, but it does not prove that the queue caused the
+change or justify dropping low rates. `removal-sequence-contract.toml` preregisters the next bounded
+local step: replace two checked atomic CAS loops with single `fetch_add` operations while preserving
+dirty-on-overflow and every exactness rule. No further host run is allowed until those local gates
+pass.

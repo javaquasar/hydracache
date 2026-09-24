@@ -661,3 +661,36 @@ fn removal_queue_product_cannot_claim_performance_or_relax_exactness() {
         .iter()
         .any(|problem| problem.contains("numerical_claim_eligible must be false")));
 }
+
+#[test]
+fn array_queue_baseline_cannot_freeze_i73_or_hide_the_cancelled_duplicate() {
+    let mut value = manifest("baseline-pilot-insufficient-90a40510.toml");
+    value["i73_freeze_eligible"] = TomlValue::Boolean(true);
+    value["duplicate_dispatch_state"] = TomlValue::String("completed".to_owned());
+    let problems =
+        xtask::performance_contract::check_baseline_pilot_array_queue_evidence(&value, "0.73");
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("identity changed")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("i73_freeze_eligible must be false")));
+}
+
+#[test]
+fn removal_sequence_contract_cannot_hide_overflow_or_skip_local_gates() {
+    let mut value = manifest("removal-sequence-contract.toml");
+    value["overflow_may_be_silently_accepted"] = TomlValue::Boolean(true);
+    value["overflow_must_mark_observer_dirty"] = TomlValue::Boolean(false);
+    value["dedicated_host_run_allowed_before_local_gates"] = TomlValue::Boolean(true);
+    let problems = xtask::performance_contract::check_removal_sequence_contract(&value, "0.73");
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("overflow_may_be_silently_accepted must be false")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("overflow_must_mark_observer_dirty must be true")));
+    assert!(problems.iter().any(|problem| {
+        problem.contains("dedicated_host_run_allowed_before_local_gates must be false")
+    }));
+}
