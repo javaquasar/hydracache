@@ -68,6 +68,8 @@ const BASELINE_PILOT_SEQUENCE_EVIDENCE: &str =
     "docs/testing/performance/0.73/baseline-pilot-insufficient-862c9015.toml";
 const BASELINE_PILOT_V2_CONTRACT: &str =
     "docs/testing/performance/0.73/baseline-pilot-v2-contract.toml";
+const BASELINE_PILOT_V2_PRODUCT: &str =
+    "docs/testing/performance/0.73/baseline-pilot-v2-product-4979e2e1.toml";
 const RELEASE: &str = "0.73";
 const PROFILE: &str = "local-screening-073-v1";
 const ENVIRONMENT_CLASS: &str = "local_screening";
@@ -166,6 +168,8 @@ pub fn check_at_root(
     )?)?;
     let baseline_pilot_v2_contract: TomlValue =
         toml::from_str(&fs::read_to_string(root.join(BASELINE_PILOT_V2_CONTRACT))?)?;
+    let baseline_pilot_v2_product: TomlValue =
+        toml::from_str(&fs::read_to_string(root.join(BASELINE_PILOT_V2_PRODUCT))?)?;
     let mut problems = check_contract(&contract, release);
     if !root.join(MOKA_OBSERVER_UPSTREAM_DRAFT).is_file() {
         problems.push("notification observer dependency review draft is missing".to_owned());
@@ -262,6 +266,10 @@ pub fn check_at_root(
     ));
     problems.extend(check_baseline_pilot_v2_contract(
         &baseline_pilot_v2_contract,
+        release,
+    ));
+    problems.extend(check_baseline_pilot_v2_product(
+        &baseline_pilot_v2_product,
         release,
     ));
     problems.extend(check_schema(
@@ -376,6 +384,7 @@ pub fn check_contract(root: &TomlValue, release: &str) -> Vec<String> {
             BASELINE_PILOT_SEQUENCE_EVIDENCE,
         ),
         ("baseline_pilot_v2_contract", BASELINE_PILOT_V2_CONTRACT),
+        ("baseline_pilot_v2_product", BASELINE_PILOT_V2_PRODUCT),
     ] {
         if text(root, field) != Some(expected) {
             problems.push(format!("local screening {field} must be {expected}"));
@@ -2772,6 +2781,58 @@ pub fn check_baseline_pilot_v2_contract(value: &TomlValue, release: &str) -> Vec
         || text(value, "failure_rule").is_none_or(str::is_empty)
     {
         problems.push("baseline pilot v2 decision rules are missing".to_owned());
+    }
+    problems
+}
+
+pub fn check_baseline_pilot_v2_product(value: &TomlValue, release: &str) -> Vec<String> {
+    let mut problems = Vec::new();
+    if integer(value, "schema_version") != Some(1)
+        || text(value, "release") != Some(release)
+        || text(value, "evidence_id") != Some("baseline-pilot-v2-product-4979e2e1-v1")
+        || text(value, "state") != Some("local-tooling-passed-awaiting-first-run")
+        || text(value, "contract") != Some(BASELINE_PILOT_V2_CONTRACT)
+        || text(value, "implementation_commit") != Some("4979e2e1ec2616ef8f6eddd53045500385600f61")
+        || text(value, "implementation_parent") != Some("b2f133ca982564f8db2e9c46791c4e4fc39fb9d9")
+        || text(value, "profile_id") != Some("observer-baseline-pilot-073-v2")
+        || text(value, "paired_estimator") != Some("hodges-lehmann-v1")
+    {
+        problems.push("baseline pilot v2 product identity changed".to_owned());
+    }
+    for field in [
+        "thresholds_changed",
+        "workload_changed",
+        "offered_rates_changed",
+        "candidate_data_allowed",
+        "promotable",
+        "numerical_claim_eligible",
+        "push_trigger_present",
+        "independent_mode_medians_used_for_decision",
+    ] {
+        if boolean(value, field) != Some(false) {
+            problems.push(format!("baseline pilot v2 product {field} must be false"));
+        }
+    }
+    for field in [
+        "manual_dispatch_only",
+        "within_pair_differences_used_for_decision",
+        "failed_attempts_retained",
+    ] {
+        if boolean(value, field) != Some(true) {
+            problems.push(format!("baseline pilot v2 product {field} must be true"));
+        }
+    }
+    if integer(value, "repeats_per_rate_and_mode") != Some(5)
+        || integer(value, "window_seconds") != Some(10)
+        || integer_array(value.get("offered_rates_per_second")) != [2_500, 5_000, 10_000, 20_000]
+        || string_array(value.get("changed_files")).len() != 4
+        || string_array(value.get("validation")).len() < 7
+        || value
+            .get("falsifier")
+            .and_then(TomlValue::as_array)
+            .is_none_or(|falsifiers| falsifiers.len() < 4)
+    {
+        problems.push("baseline pilot v2 product volume or validation is incomplete".to_owned());
     }
     problems
 }

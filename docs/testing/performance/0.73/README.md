@@ -361,3 +361,11 @@ remain unchanged. V2 increases each cell from three five-second pairs to five te
 aggregates within-pair differences with the already-frozen Hodges-Lehmann estimator. Its workflow is
 manual-only, so ordinary branch pushes cannot spend the dedicated-host budget. The incorrect-SHA
 dispatch `36070717512` was cancelled before environment approval and executed no job.
+
+Commit `4979e2e1` implements v2 without touching product code. The harness passes its profile id to
+every independently started process, retains pair/repeat identity, computes each relative or
+absolute overhead inside the pair, and then applies the one-sample Walsh-average Hodges-Lehmann
+estimator. It hard-rejects reduced repeats, windows, rates, warmup, or a different seed. Synthetic
+unit tests cover estimator construction and regression signs; workflow/contract tests require the
+protected lane and absence of a push trigger. `baseline-pilot-v2-product-4979e2e1.toml` admits one
+first v2 run and no candidate measurement.

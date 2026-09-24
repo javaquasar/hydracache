@@ -736,3 +736,17 @@ fn baseline_pilot_v2_cannot_reduce_volume_or_relax_the_original_ceilings() {
         .iter()
         .any(|problem| problem.contains("volume, rates, or unchanged ceilings changed")));
 }
+
+#[test]
+fn baseline_pilot_v2_product_cannot_restore_push_or_independent_medians() {
+    let mut value = manifest("baseline-pilot-v2-product-4979e2e1.toml");
+    value["push_trigger_present"] = TomlValue::Boolean(true);
+    value["independent_mode_medians_used_for_decision"] = TomlValue::Boolean(true);
+    let problems = xtask::performance_contract::check_baseline_pilot_v2_product(&value, "0.73");
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("push_trigger_present must be false")));
+    assert!(problems.iter().any(|problem| {
+        problem.contains("independent_mode_medians_used_for_decision must be false")
+    }));
+}

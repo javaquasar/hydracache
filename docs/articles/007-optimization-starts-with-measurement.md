@@ -789,6 +789,13 @@ We also removed the workflow's push trigger. Dedicated-host qualification is now
 the protected environment. Cheap correctness and contract checks still run locally, while a normal
 documentation or implementation push cannot accidentally start an expensive campaign.
 
+The tool enforces those choices rather than relying on operator memory. It refuses fewer than five
+pairs, shorter than ten-second windows, a changed rate grid, warmup, or seed. Every raw attempt still
+has its own directory and digest. The aggregate carries both the per-pair deltas and their
+Hodges-Lehmann estimate, so a reviewer can reconstruct the decision and see whether a single pair
+was influential. Improving measurement here is part of the optimization: it prevents us from
+spending code complexity on a fluctuation the benchmark cannot reproduce.
+
 ## A profiling ladder that avoids expensive runs
 
 Not every development iteration needs a dedicated bare-metal campaign. A useful workflow has several
