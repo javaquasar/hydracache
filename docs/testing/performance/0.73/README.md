@@ -245,3 +245,13 @@ instrumentation mode, pair order, and complete operation outcomes. Failed and in
 remain append-only. Local receipts always carry `promotable: false` and
 `numerical_claim_eligible: false`; `--require-ship` therefore fails until later W0/W10 contracts
 add dedicated-host and integrated-candidate evidence.
+
+The first account-backed step is intentionally cheaper than D3. The manual
+`Performance Host Admission 0.73` workflow targets the repository's Linux x86_64 self-hosted
+runner through the `hydracache-release` label and the protected `performance-reference-073`
+environment. It captures fresh pre/post host fingerprints and five-sample calibrations around an
+exact-source release load-generator build, holds one serialized lease through workflow concurrency,
+and uploads an immutable admission packet. The packet explicitly keeps
+`candidate_measurement_authorized: false`: it must be reviewed and bound into the checked-in host
+contract before the five-pair observer qualification is dispatched. The old 0.71 admission is not
+reused even when both workflows happen to land on the same physical machine.

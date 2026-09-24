@@ -582,13 +582,40 @@ pub fn run_host_preflight(args: Vec<String>) -> Result<(), Box<dyn Error>> {
 
     let started_at = now();
     let source_sha = command_text(&options.root, "git", &["rev-parse", "HEAD"])?;
-    let baseline_sha = command_text(&options.root, "git", &["rev-list", "-n", "1", "v0.70.0"])?;
+    let baseline_tag = match options.release.as_str() {
+        "0.71" => "v0.70.0",
+        "0.73" => "v0.72.0",
+        release => {
+            return Err(format!(
+                "perf-memory-preflight does not define a baseline tag for release {release}"
+            )
+            .into())
+        }
+    };
+    let baseline_sha = command_text(&options.root, "git", &["rev-list", "-n", "1", baseline_tag])?;
     let platform = observed_platform();
-    let protected_environment = std::env::var("HYDRACACHE_MEMORY_PROTECTED_ENV").ok();
-    let lease_owner = std::env::var("HYDRACACHE_MEMORY_LEASE_OWNER").ok();
-    let lease_end = std::env::var("HYDRACACHE_MEMORY_LEASE_END").ok();
-    let dedicated = std::env::var("HYDRACACHE_MEMORY_DEDICATED_BARE_METAL").as_deref() == Ok("1");
-    let tools = observed_tools(&["git", "cargo", "rustc", "python3", "perf", "numactl"]);
+    let environment_prefix = if options.release == "0.73" {
+        "HYDRACACHE_PERFORMANCE"
+    } else {
+        "HYDRACACHE_MEMORY"
+    };
+    let environment = |suffix: &str| std::env::var(format!("{environment_prefix}_{suffix}")).ok();
+    let protected_environment = environment("PROTECTED_ENV");
+    let lease_owner = environment("LEASE_OWNER");
+    let lease_end = environment("LEASE_END");
+    let dedicated = environment("DEDICATED_BARE_METAL").as_deref() == Some("1");
+    let required_tools = profile
+        .get("required_tools")
+        .and_then(JsonValue::as_array)
+        .ok_or("host profile required_tools must be an array")?
+        .iter()
+        .map(|value| {
+            value
+                .as_str()
+                .ok_or("host profile required_tools entries must be strings")
+        })
+        .collect::<Result<Vec<_>, _>>()?;
+    let tools = observed_tools(&required_tools);
     let probes = json!({
         "platform": platform,
         "protected_environment": protected_environment,
@@ -623,9 +650,9 @@ pub fn run_host_preflight(args: Vec<String>) -> Result<(), Box<dyn Error>> {
             "MIMALLOC_OPTIONS": std::env::var("MIMALLOC_OPTIONS").ok()
         },
         "affinity_policy": {
-            "daemon": std::env::var("HYDRACACHE_MEMORY_DAEMON_CPUSET").ok(),
-            "loadgen": std::env::var("HYDRACACHE_MEMORY_LOADGEN_CPUSET").ok(),
-            "collector": std::env::var("HYDRACACHE_MEMORY_COLLECTOR_CPUSET").ok()
+            "daemon": environment("DAEMON_CPUSET"),
+            "loadgen": environment("LOADGEN_CPUSET"),
+            "collector": environment("COLLECTOR_CPUSET")
         },
         "competing_load": read_optional("/proc/loadavg"),
         "available_memory": first_matching_line("/proc/meminfo", "MemAvailable"),
@@ -648,16 +675,15 @@ pub fn run_host_preflight(args: Vec<String>) -> Result<(), Box<dyn Error>> {
         command_optional("rustc", &["--version"]).unwrap_or_else(|| "unavailable".to_owned()),
         command_optional("cargo", &["--version"]).unwrap_or_else(|| "unavailable".to_owned())
     );
-    let affinity_declared = [
-        "HYDRACACHE_MEMORY_DAEMON_CPUSET",
-        "HYDRACACHE_MEMORY_LOADGEN_CPUSET",
-        "HYDRACACHE_MEMORY_COLLECTOR_CPUSET",
-    ]
-    .iter()
-    .all(|name| std::env::var(name).is_ok_and(|value| !value.trim().is_empty()));
+    let affinity_declared = ["DAEMON_CPUSET", "LOADGEN_CPUSET", "COLLECTOR_CPUSET"]
+        .iter()
+        .all(|suffix| environment(suffix).is_some_and(|value| !value.trim().is_empty()));
+    let expected_environment = profile
+        .get("protected_environment")
+        .and_then(JsonValue::as_str);
     let eligible = cfg!(target_os = "linux")
         && dedicated
-        && protected_environment.as_deref() == Some("memory-reference-071")
+        && protected_environment.as_deref() == expected_environment
         && lease_owner
             .as_deref()
             .is_some_and(|value| !value.is_empty())
@@ -692,9 +718,16 @@ pub fn run_host_preflight(args: Vec<String>) -> Result<(), Box<dyn Error>> {
         "silent_retry_allowed": false
     });
     let output = options.output.unwrap_or_else(|| {
-        options
-            .root
-            .join("target/memory-evidence/0.71/host-preflight.json")
+        if options.release == "0.71" {
+            options
+                .root
+                .join("target/memory-evidence/0.71/host-preflight.json")
+        } else {
+            options.root.join(format!(
+                "target/performance-evidence/{}/reference/host-preflight.json",
+                options.release
+            ))
+        }
     });
     if let Some(parent) = output.parent() {
         fs::create_dir_all(parent)?;

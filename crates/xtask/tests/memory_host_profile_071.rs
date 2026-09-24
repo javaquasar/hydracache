@@ -18,11 +18,59 @@ fn profile() -> Value {
     .expect("profile JSON")
 }
 
+fn performance_profile_073() -> Value {
+    serde_json::from_slice(
+        &fs::read(root().join("docs/testing/perf-host-profiles/performance-reference-073-v1.json"))
+            .expect("0.73 host profile"),
+    )
+    .expect("0.73 profile JSON")
+}
+
 #[test]
 fn checked_in_host_profile_is_complete() {
     let problems =
         xtask::memory_contracts::check_host_profile(&profile(), "0.71", "memory-reference-071-v1");
     assert!(problems.is_empty(), "{problems:?}");
+}
+
+#[test]
+fn checked_in_performance_profile_073_is_complete_and_fresh() {
+    let profile = performance_profile_073();
+    let problems = xtask::memory_contracts::check_host_profile(
+        &profile,
+        "0.73",
+        "performance-reference-073-v1",
+    );
+    assert!(problems.is_empty(), "{problems:?}");
+    assert_eq!(
+        profile["completed_bootstrap_admission"],
+        "fresh-0.73-admission-required"
+    );
+    assert!(profile["ineligible_platforms"]
+        .as_array()
+        .expect("ineligible platforms")
+        .iter()
+        .any(|value| value == "shared-self-hosted"));
+    assert!(profile["required_tools"]
+        .as_array()
+        .expect("required tools")
+        .iter()
+        .any(|value| value == "pidstat"));
+
+    let workflow =
+        fs::read_to_string(root().join(".github/workflows/performance-host-admission-073.yml"))
+            .expect("0.73 host admission workflow");
+    for required in [
+        "runs-on: [self-hosted, linux, x64, hydracache-release]",
+        "environment: performance-reference-073",
+        "group: performance-reference-073-host",
+        "preflight.json",
+        "postflight.json",
+        "host fingerprint drifted across admission",
+        "candidate_measurement_authorized\": False",
+    ] {
+        assert!(workflow.contains(required), "workflow omitted {required}");
+    }
 }
 
 #[test]

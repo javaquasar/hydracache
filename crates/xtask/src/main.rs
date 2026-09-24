@@ -145,7 +145,7 @@ fn print_usage() {
          cargo xtask memory-decision-check --release 0.71  # validate immutable D0-D4 proposal transitions\n  \
          cargo xtask memory-statistics-check --release 0.71  # validate the preregistered numerical decision contract\n  \
          cargo xtask allocator-capability-check --release 0.71  # validate allocator capability and portability claims\n  \
-         cargo xtask perf-memory-preflight --release 0.71 --profile memory-reference-071-v1  # fingerprint or block the numerical evidence host\n  \
+         cargo xtask perf-memory-preflight --release <0.71|0.73> --profile <memory-reference-071-v1|performance-reference-073-v1> [--output <path>]  # fingerprint or block the numerical evidence host\n  \
          cargo xtask memory-compat-check --release 0.71  # validate the 0.70/0.71 runtime and durable compatibility matrix\n  \
          cargo xtask memory-release-policy-check --release 0.71  # validate mandatory/no-win/deferred release dispositions\n  \
          cargo xtask memory-baseline-check --release 0.71 [--require-d0]  # validate B0/B1, scenario, archive, and D0 admission\n  \

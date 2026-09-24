@@ -1,0 +1,168 @@
+name: Performance Host Admission 0.73
+
+on:
+  workflow_dispatch:
+    inputs:
+      source_sha:
+        description: "Exact lowercase 40-character source commit"
+        required: true
+        type: string
+      lease_owner:
+        description: "Operator holding the serialized performance-host lease"
+        required: true
+        type: string
+      lease_end:
+        description: "Approved lease end in RFC3339 form"
+        required: true
+        type: string
+  push:
+    branches:
+      - docs/0.73-evidence-driven-performance-plan
+
+permissions:
+  contents: read
+
+concurrency:
+  group: performance-reference-073-host
+  cancel-in-progress: false
+
+jobs:
+  admit:
+    name: Fresh 0.73 host admission
+    runs-on: [self-hosted, linux, x64, hydracache-release]
+    environment: performance-reference-073
+    timeout-minutes: 120
+    env:
+      HYDRACACHE_PERFORMANCE_PROTECTED_ENV: performance-reference-073
+      HYDRACACHE_PERFORMANCE_DEDICATED_BARE_METAL: "1"
+      HYDRACACHE_PERFORMANCE_DAEMON_CPUSET: ${{ vars.HYDRACACHE_MEMORY_DAEMON_CPUSET || '5-6' }}
+      HYDRACACHE_PERFORMANCE_LOADGEN_CPUSET: ${{ vars.HYDRACACHE_MEMORY_LOADGEN_CPUSET || '7' }}
+      HYDRACACHE_PERFORMANCE_COLLECTOR_CPUSET: ${{ vars.HYDRACACHE_MEMORY_COLLECTOR_CPUSET || '0' }}
+      EVIDENCE_DIR: target/performance-evidence/0.73/reference/host-admission
+
+    steps:
+      - name: Checkout exact source
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Resolve dispatch identity and serialized lease
+        shell: bash
+        env:
+          INPUT_SOURCE_SHA: ${{ inputs.source_sha }}
+          INPUT_LEASE_OWNER: ${{ inputs.lease_owner }}
+          INPUT_LEASE_END: ${{ inputs.lease_end }}
+        run: |
+          set -euo pipefail
+          source_sha="${INPUT_SOURCE_SHA:-$GITHUB_SHA}"
+          lease_owner="${INPUT_LEASE_OWNER:-$GITHUB_ACTOR}"
+          lease_end="${INPUT_LEASE_END:-$(date --utc --date='+2 hours' --iso-8601=seconds)}"
+          [[ "$source_sha" =~ ^[0-9a-f]{40}$ ]]
+          test "$(git rev-parse HEAD)" = "$source_sha"
+          test -n "$lease_owner"
+          date --date="$lease_end" >/dev/null
+          mkdir -p "$EVIDENCE_DIR"
+          {
+            echo "HYDRACACHE_PERFORMANCE_LEASE_OWNER=$lease_owner"
+            echo "HYDRACACHE_PERFORMANCE_LEASE_END=$lease_end"
+            echo "EXPECTED_SOURCE_SHA=$source_sha"
+          } >> "$GITHUB_ENV"
+
+      - name: Expose runner Rust toolchain
+        shell: bash
+        run: |
+          set -euo pipefail
+          rust_bin="$HOME/.cargo/bin"
+          test -x "$rust_bin/cargo"
+          test -x "$rust_bin/rustc"
+          echo "$rust_bin" >> "$GITHUB_PATH"
+          "$rust_bin/cargo" --version
+          "$rust_bin/rustc" --version
+
+      - name: Capture pre-build host identity and calibration
+        shell: bash
+        run: |
+          set -euo pipefail
+          cargo run -p xtask --locked -- perf-memory-preflight \
+            --release 0.73 \
+            --profile performance-reference-073-v1 \
+            --output "$EVIDENCE_DIR/preflight.json"
+
+      - name: Build the exact release load generator
+        shell: bash
+        run: cargo build -p hydracache-loadgen --release --locked
+
+      - name: Capture post-build host identity and calibration
+        shell: bash
+        run: |
+          set -euo pipefail
+          cargo run -p xtask --locked -- perf-memory-preflight \
+            --release 0.73 \
+            --profile performance-reference-073-v1 \
+            --output "$EVIDENCE_DIR/postflight.json"
+
+      - name: Seal admission manifest
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - "$EVIDENCE_DIR" "$EXPECTED_SOURCE_SHA" <<'PY'
+          import hashlib
+          import json
+          import pathlib
+          import sys
+
+          evidence = pathlib.Path(sys.argv[1])
+          expected_sha = sys.argv[2]
+          before_path = evidence / "preflight.json"
+          after_path = evidence / "postflight.json"
+          before = json.loads(before_path.read_text(encoding="utf-8"))
+          after = json.loads(after_path.read_text(encoding="utf-8"))
+
+          for name, receipt in (("preflight", before), ("postflight", after)):
+              if receipt["release"] != "0.73" or receipt["profile_id"] != "performance-reference-073-v1":
+                  raise SystemExit(f"{name} receipt identity mismatch")
+              if receipt["source_sha"] != expected_sha or receipt["result"] != "success":
+                  raise SystemExit(f"{name} receipt did not admit exact source")
+              if not receipt["ship_evidence_eligible"]:
+                  raise SystemExit(f"{name} receipt is not host eligible")
+              if receipt["calibration"]["relative_spread"] > receipt["calibration_limit"]:
+                  raise SystemExit(f"{name} calibration exceeded the frozen limit")
+
+          if before["host_fingerprint"] != after["host_fingerprint"]:
+              raise SystemExit("host fingerprint drifted across admission")
+          if before["identity_probes"] != after["identity_probes"]:
+              raise SystemExit("identity or held host policy drifted across admission")
+          if before["lease"] != after["lease"]:
+              raise SystemExit("serialized lease changed across admission")
+
+          digest = lambda path: hashlib.sha256(path.read_bytes()).hexdigest()
+          manifest = {
+              "schema_version": 1,
+              "release": "0.73",
+              "profile_id": "performance-reference-073-v1",
+              "source_sha": expected_sha,
+              "result": "admitted",
+              "host_fingerprint": before["host_fingerprint"],
+              "lease": before["lease"],
+              "calibration_limit": before["calibration_limit"],
+              "pre_calibration_relative_spread": before["calibration"]["relative_spread"],
+              "post_calibration_relative_spread": after["calibration"]["relative_spread"],
+              "preflight_sha256": digest(before_path),
+              "postflight_sha256": digest(after_path),
+              "silent_retry_allowed": False,
+              "candidate_measurement_authorized": False,
+          }
+          (evidence / "admission-manifest.json").write_text(
+              json.dumps(manifest, indent=2) + "\n", encoding="utf-8"
+          )
+          PY
+
+      - name: Retain host admission packet
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: performance-host-admission-073-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: target/performance-evidence/0.73/reference/host-admission/*.json
+          if-no-files-found: error
+          retention-days: 90

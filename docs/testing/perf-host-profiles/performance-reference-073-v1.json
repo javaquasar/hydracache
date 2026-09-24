@@ -1,0 +1,29 @@
+{
+  "schema_version": 1,
+  "profile_id": "performance-reference-073-v1",
+  "release": "0.73",
+  "protected_environment": "performance-reference-073",
+  "lease_required": true,
+  "calibration_max_relative_spread": 0.05,
+  "completed_bootstrap_admission": "fresh-0.73-admission-required",
+  "ship_evidence_platforms": ["dedicated-bare-metal-linux-x86_64"],
+  "ineligible_platforms": ["wsl2", "docker-desktop", "github-hosted", "shared-self-hosted"],
+  "immutable_probes": ["hardware_model", "sockets", "physical_cores", "smt", "numa_topology", "ram_bytes", "firmware", "microcode", "kernel", "distro", "page_size", "clock_source", "filesystem", "cgroup_version", "rust_toolchain"],
+  "mutable_probes": ["cpu_governor", "turbo_policy", "thermal_state", "transparent_huge_pages", "swap", "overcommit", "ksm", "cgroup_limits", "competing_load", "available_memory", "major_faults", "throttling", "temperature"],
+  "required_tools": ["git", "cargo", "rustc", "python3", "perf", "pidstat", "numactl"],
+  "cpu_binding": {
+    "daemon": "reviewed-performance-daemon-cpuset",
+    "load_generator": "reviewed-performance-loadgen-cpuset",
+    "collectors": "reviewed-performance-collector-cpuset",
+    "collectors_must_not_overlap_daemon": true
+  },
+  "policies": {
+    "transparent_huge_pages": "record-and-hold",
+    "swap": "record-and-hold",
+    "turbo": "record-and-hold",
+    "numa": "single-reviewed-node-or-explicit-interleave",
+    "calibration": "before-and-after-every-measurement-block",
+    "case_order": "counterbalanced-I73-C73",
+    "drift": "invalidate-pair-and-retain-attempt"
+  }
+}
