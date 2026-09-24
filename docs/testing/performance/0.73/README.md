@@ -302,3 +302,14 @@ next empty drain skips it again. The existing duplicate, saturation, pending-bar
 memory-footprint, and exact-reconciliation suites remain green. The checked-in
 `removal-drain-fast-path-affe4390.toml` receipt authorizes only a repeat of the unchanged
 baseline-only contract; it does not authorize candidate data or change the 3% CPU ceiling.
+
+Run `36067885432` repeated that unchanged contract. The fast path moved the 10,000 and 20,000
+rates inside the CPU ceiling at 2.80% and 2.08%, while 2,500 and 5,000 both remained at 3.52%.
+With two stable rates instead of the required three, the workflow correctly retained another
+`insufficient-baseline` packet and left I73 unfrozen. The result is progress, not acceptance.
+
+`removal-queue-contract.toml` freezes the next local step. It replaces the bounded Tokio mpsc and
+its async receiver mutex with the already-locked `crossbeam-queue 0.3.12` `ArrayQueue`, preserving
+the 4,096-ticket bound, nonblocking callback, duplicate/version rules, dirty-on-overflow behavior,
+and accepted/acknowledged barrier. No host repeat is allowed until all local correctness,
+reconciliation, clippy, standalone-harness, and supply-chain gates pass.

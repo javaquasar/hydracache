@@ -610,3 +610,36 @@ fn removal_drain_fast_path_can_only_authorize_the_unchanged_baseline_repeat() {
         .iter()
         .any(|problem| problem.contains("empty-drain-lock-elision")));
 }
+
+#[test]
+fn fast_path_baseline_cannot_freeze_i73_with_only_two_rates() {
+    let mut value = manifest("baseline-pilot-insufficient-9bba762c.toml");
+    value["i73_freeze_eligible"] = TomlValue::Boolean(true);
+    value["stable_rates"] = TomlValue::Array(vec![TomlValue::Integer(20_000)]);
+    let problems =
+        xtask::performance_contract::check_baseline_pilot_fast_path_evidence(&value, "0.73");
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("i73_freeze_eligible must be false")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("exactly two stable rates")));
+}
+
+#[test]
+fn removal_queue_contract_cannot_block_grow_or_skip_local_gates() {
+    let mut value = manifest("removal-queue-contract.toml");
+    value["queue_capacity"] = TomlValue::Integer(8_192);
+    value["callback_may_block"] = TomlValue::Boolean(true);
+    value["dedicated_host_run_allowed_before_local_gates"] = TomlValue::Boolean(true);
+    let problems = xtask::performance_contract::check_removal_queue_contract(&value, "0.73");
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("identity or bound changed")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("callback_may_block must be false")));
+    assert!(problems.iter().any(|problem| {
+        problem.contains("dedicated_host_run_allowed_before_local_gates must be false")
+    }));
+}

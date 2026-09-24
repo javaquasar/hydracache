@@ -1,0 +1,34 @@
+schema_version = 1
+release = "0.73"
+contract_id = "removal-observer-array-queue-073-v1"
+state = "preregistered-before-implementation"
+triggering_evidence = "docs/testing/performance/0.73/baseline-pilot-insufficient-9bba762c.toml"
+proposal_id = "P73-INSTRUMENTATION-NONBLOCKING-REMOVAL"
+implementation_scope = ["Cargo.toml", "Cargo.lock", "crates/hydracache/Cargo.toml", "crates/hydracache/src/removal_observer.rs"]
+selected_dependency = "crossbeam-queue 0.3.12"
+dependency_already_present_in_lockfile = true
+queue_type = "crossbeam_queue::ArrayQueue"
+queue_capacity = 4096
+capacity_changed = false
+callback_may_block = false
+callback_may_await = false
+callback_may_allocate_queue_nodes = false
+duplicate_delivery_must_remain_idempotent = true
+overflow_must_mark_observer_dirty = true
+slot_collision_must_mark_observer_dirty = true
+accepted_acknowledged_barrier_preserved = true
+version_conditional_tag_cleanup_preserved = true
+reconciliation_recovery_preserved = true
+thresholds_changed = false
+candidate_data_allowed = false
+dedicated_host_run_allowed_before_local_gates = false
+rollback = "Restore the Tokio bounded mpsc sender/receiver and async mutex from affe4390 without changing the observer callback or accounting semantics."
+local_gates = [
+  "observer duplicate, saturation, pending, empty, and versioned cleanup unit tests",
+  "memory_footprint_071 exact removal and reconciliation suite",
+  "memory_accounting_071 retained-total reconciliation suite",
+  "hydracache check and clippy with instrumentation-lab",
+  "standalone observer harness check and clippy",
+  "cargo deny supply-chain policy",
+]
+success_rule = "Every local correctness and supply-chain gate passes with the same 4096-ticket bound and no public API change. Performance is not inferred locally; only then may the unchanged baseline-only contract be repeated."

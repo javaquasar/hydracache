@@ -628,6 +628,22 @@ version-conditional tag cleanup, capacity eviction, expiry, and exact reconcilia
 kind of optimization a local machine can close completely at the mechanism/correctness layer before
 spending another admitted-host run on the quantitative question.
 
+The next unchanged baseline run showed both the value and the limit of that tactic. CPU overhead at
+10,000 and 20,000 operations per second fell inside the 3% ceiling, to 2.80% and 2.08%. At 2,500 and
+5,000 it was still 3.52%. Two rates therefore passed, but the preregistered rule required three.
+Calling that “close enough” would erase the purpose of the rate grid: fixed coordination costs are
+most visible when useful work is sparse.
+
+That shape points to the remaining coordination primitive. A Tokio bounded channel is appropriate
+when producers and consumers need asynchronous waiting; this callback is forbidden to wait, uses
+`try_send`, and is drained opportunistically by a caller already in async context. A bounded
+lock-free array queue better matches those semantics: fixed capacity, no per-ticket node allocation,
+nonblocking push, and direct pop without an async receiver mutex. The dependency was already in the
+resolved graph, but making it direct still requires an explicit supply-chain check. Most
+importantly, changing the container must not change the protocol around it: slot-based duplicate
+detection, dirty-on-overflow, accepted/acknowledged barriers, version-conditional tag cleanup, and
+reconciliation recovery remain the actual correctness contract.
+
 ### Why the ablation must not become the fix
 
 It would be easy to stop here and ship production counters without the listener. That would make the

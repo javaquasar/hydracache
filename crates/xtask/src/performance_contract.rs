@@ -53,6 +53,9 @@ const CPU_ATTRIBUTION_EVIDENCE: &str =
     "docs/testing/performance/0.73/cpu-attribution-ed339846.toml";
 const REMOVAL_DRAIN_FAST_PATH: &str =
     "docs/testing/performance/0.73/removal-drain-fast-path-affe4390.toml";
+const BASELINE_PILOT_FAST_PATH_EVIDENCE: &str =
+    "docs/testing/performance/0.73/baseline-pilot-insufficient-9bba762c.toml";
+const REMOVAL_QUEUE_CONTRACT: &str = "docs/testing/performance/0.73/removal-queue-contract.toml";
 const RELEASE: &str = "0.73";
 const PROFILE: &str = "local-screening-073-v1";
 const ENVIRONMENT_CLASS: &str = "local_screening";
@@ -132,6 +135,11 @@ pub fn check_at_root(
         toml::from_str(&fs::read_to_string(root.join(CPU_ATTRIBUTION_EVIDENCE))?)?;
     let removal_drain_fast_path: TomlValue =
         toml::from_str(&fs::read_to_string(root.join(REMOVAL_DRAIN_FAST_PATH))?)?;
+    let baseline_pilot_fast_path_evidence: TomlValue = toml::from_str(&fs::read_to_string(
+        root.join(BASELINE_PILOT_FAST_PATH_EVIDENCE),
+    )?)?;
+    let removal_queue_contract: TomlValue =
+        toml::from_str(&fs::read_to_string(root.join(REMOVAL_QUEUE_CONTRACT))?)?;
     let mut problems = check_contract(&contract, release);
     if !root.join(MOKA_OBSERVER_UPSTREAM_DRAFT).is_file() {
         problems.push("notification observer dependency review draft is missing".to_owned());
@@ -199,6 +207,14 @@ pub fn check_at_root(
     ));
     problems.extend(check_removal_drain_fast_path(
         &removal_drain_fast_path,
+        release,
+    ));
+    problems.extend(check_baseline_pilot_fast_path_evidence(
+        &baseline_pilot_fast_path_evidence,
+        release,
+    ));
+    problems.extend(check_removal_queue_contract(
+        &removal_queue_contract,
         release,
     ));
     problems.extend(check_schema(
@@ -296,6 +312,11 @@ pub fn check_contract(root: &TomlValue, release: &str) -> Vec<String> {
         ("cpu_attribution_contract", CPU_ATTRIBUTION_CONTRACT),
         ("cpu_attribution_evidence", CPU_ATTRIBUTION_EVIDENCE),
         ("removal_drain_fast_path", REMOVAL_DRAIN_FAST_PATH),
+        (
+            "baseline_pilot_fast_path_evidence",
+            BASELINE_PILOT_FAST_PATH_EVIDENCE,
+        ),
+        ("removal_queue_contract", REMOVAL_QUEUE_CONTRACT),
     ] {
         if text(root, field) != Some(expected) {
             problems.push(format!("local screening {field} must be {expected}"));
@@ -2217,6 +2238,115 @@ pub fn check_removal_drain_fast_path(value: &TomlValue, release: &str) -> Vec<St
                 "removal drain fast path omits passing {id} falsifier"
             ));
         }
+    }
+    problems
+}
+
+pub fn check_baseline_pilot_fast_path_evidence(value: &TomlValue, release: &str) -> Vec<String> {
+    let mut problems = Vec::new();
+    if integer(value, "schema_version") != Some(1)
+        || text(value, "release") != Some(release)
+        || text(value, "evidence_id") != Some("observer-baseline-pilot-insufficient-9bba762c-v1")
+        || text(value, "state") != Some("executed-insufficient-baseline-two-stable-rates")
+        || text(value, "source_sha") != Some("9bba762c27e4dd108d08651b6b7443a50957bce9")
+        || integer(value, "workflow_run_id") != Some(36_067_885_432)
+        || integer(value, "artifact_id") != Some(10_837_029_100)
+    {
+        problems.push("fast-path baseline evidence identity mismatch".to_owned());
+    }
+    for field in [
+        "artifact_sha256",
+        "campaign_manifest_sha256",
+        "preflight_sha256",
+        "postflight_sha256",
+        "baseline_pilot_sha256",
+        "binary_sha256",
+    ] {
+        if text(value, field).is_none_or(|digest| !sha256(digest)) {
+            problems.push(format!(
+                "fast-path baseline evidence {field} is not SHA-256"
+            ));
+        }
+    }
+    for field in [
+        "candidate_data_present",
+        "candidate_measurement_authorized",
+        "i73_freeze_eligible",
+        "thresholds_changed",
+        "silent_retry_allowed",
+    ] {
+        if boolean(value, field) != Some(false) {
+            problems.push(format!("fast-path baseline evidence {field} must be false"));
+        }
+    }
+    if integer(value, "attempts") != Some(24)
+        || integer(value, "failed_attempts") != Some(0)
+        || integer_array(value.get("stable_rates")) != [10_000, 20_000]
+    {
+        problems
+            .push("fast-path baseline evidence must retain exactly two stable rates".to_owned());
+    }
+    let rates = value
+        .get("rate")
+        .and_then(TomlValue::as_array)
+        .cloned()
+        .unwrap_or_default();
+    if rates.len() != 4
+        || rates
+            .iter()
+            .filter(|rate| boolean(rate, "stable") == Some(true))
+            .count()
+            != 2
+    {
+        problems.push("fast-path baseline rate ledger changed".to_owned());
+    }
+    problems
+}
+
+pub fn check_removal_queue_contract(value: &TomlValue, release: &str) -> Vec<String> {
+    let mut problems = Vec::new();
+    if integer(value, "schema_version") != Some(1)
+        || text(value, "release") != Some(release)
+        || text(value, "contract_id") != Some("removal-observer-array-queue-073-v1")
+        || text(value, "state") != Some("preregistered-before-implementation")
+        || text(value, "triggering_evidence") != Some(BASELINE_PILOT_FAST_PATH_EVIDENCE)
+        || text(value, "selected_dependency") != Some("crossbeam-queue 0.3.12")
+        || text(value, "queue_type") != Some("crossbeam_queue::ArrayQueue")
+        || integer(value, "queue_capacity") != Some(4_096)
+    {
+        problems.push("removal queue contract identity or bound changed".to_owned());
+    }
+    for field in [
+        "capacity_changed",
+        "callback_may_block",
+        "callback_may_await",
+        "callback_may_allocate_queue_nodes",
+        "thresholds_changed",
+        "candidate_data_allowed",
+        "dedicated_host_run_allowed_before_local_gates",
+    ] {
+        if boolean(value, field) != Some(false) {
+            problems.push(format!("removal queue contract {field} must be false"));
+        }
+    }
+    for field in [
+        "dependency_already_present_in_lockfile",
+        "duplicate_delivery_must_remain_idempotent",
+        "overflow_must_mark_observer_dirty",
+        "slot_collision_must_mark_observer_dirty",
+        "accepted_acknowledged_barrier_preserved",
+        "version_conditional_tag_cleanup_preserved",
+        "reconciliation_recovery_preserved",
+    ] {
+        if boolean(value, field) != Some(true) {
+            problems.push(format!("removal queue contract {field} must be true"));
+        }
+    }
+    if string_array(value.get("local_gates")).len() < 6
+        || text(value, "rollback").is_none_or(str::is_empty)
+        || text(value, "success_rule").is_none_or(str::is_empty)
+    {
+        problems.push("removal queue contract omits local gates or rollback".to_owned());
     }
     problems
 }
