@@ -92,7 +92,7 @@ while preserving exact automatic-removal and tag-cleanup semantics.
 The locked Moka 0.12.15 source shows that enabling the future-cache notifier activates per-key
 locking on insertion and shared boxed notification futures on removal/update paths. The current
 0.12.16 API still has no nonblocking post-removal observer. Product mutation and candidate
-measurement therefore remain forbidden until a lab-only feasibility spike, independent review, and
+measurement therefore remain forbidden until a lab-only feasibility spike, recorded review, and
 pre-candidate allocation/RSS limits select or reject an exact alternative.
 
 The first backend feasibility result is retained in
@@ -110,7 +110,7 @@ tag membership belonging to a newer value under the same key. The prototype must
 an immutable entry version, perform only bounded synchronous accounting in the observer, apply
 deferred tag cleanup conditionally by version, reject duplicate decrements, and make queue overflow,
 cancellation, or an incomplete drain fail an exact snapshot closed. The contract still forbids
-product mutation and candidate measurement until independent review and threshold freeze authorize
+product mutation and candidate measurement until the recorded review and threshold freeze authorize
 D2.
 
 The executable reference model lives in `hydracache-loadgen::notification_observer`. It implements
@@ -153,17 +153,24 @@ observer matched off at 400.69 B/op for insert. For remove it measured 2,275.41 
 2,287.78 off; this small negative delta is treated as no detected allocation penalty, not as an
 improvement. The harness also connected real Moka replacement callbacks to the versioned cleanup
 model and proved that delayed cleanup for version 41 cannot remove version 42's membership. The lab
-implementation is complete; independent review, baseline-only allocation/RSS limits, and explicit
-D2 authorization remain mandatory before changing HydraCache's production dependency or path.
+implementation is complete; reviewed baseline-only allocation/RSS limits and explicit D2
+authorization remain mandatory before changing HydraCache's production dependency or path.
 
 `notification-observer-d2-review.toml` is the machine-checked review candidate. It proposes a 15%
 minimum reduction in the primary fill-allocation metric from the smallest baseline-only observed
 listener overhead of 23.892%. Unaffected allocation cells use `max(3%, 16 B/op)` and post-idle/peak
 RSS use `max(5%, 1 MiB)` as conservative guards inherited from the reviewed 0.71 practical-effect
 contract. Candidate observer measurements are listed separately and are explicitly excluded from
-threshold derivation. The packet remains `awaiting-independent-review`: it cannot authorize D2,
-candidate measurement, a dependency change, or product mutation until a distinct reviewer records
-an accepted decision.
+threshold derivation. The project selected the proposal-scoped single-maintainer path. Thresholds
+are frozen against the earlier `1e9fd748` commit, but the packet still cannot authorize D2,
+candidate measurement, a dependency change, or product mutation until a concrete upstream release
+or pinned fork is selected in a separate commit.
+
+`single-maintainer-review-policy.toml` records the exception and its compensating controls. It
+requires separate governance, dependency, implementation, and measurement commits; append-only
+attempt retention; dedicated-host qualification; explicit self-review wording; panic/reentrancy
+falsifiers; and a demonstrated rollback. It does not permit describing the result as independently
+reviewed.
 
 `moka-post-removal-observer-upstream-draft.md` turns the dependency choice into a concrete API
 proposal without posting anything externally. It also records a gap found during review: the lab
@@ -172,10 +179,11 @@ containment falsifier and an explicit reentrancy policy. The same document defin
 fork must record if upstream does not accept the API in the release window.
 
 `statistics.toml` freezes the inherited paired estimator, confidence, Holm correction, failure
-retention, five-pair minimum, and throughput/CPU/p99 regression guards before candidate data. Its
-allocation and RSS limits remain explicit unfrozen blockers. `host-profile.toml` is a requirement
-template, not an admitted machine: it forbids candidate measurement until a new dedicated-host
-fingerprint, serialized lease, pre/post calibration, and the unresolved instrumentation gates pass.
+retention, five-pair minimum, throughput/CPU/p99 guards, and the single-maintainer-reviewed
+allocation/RSS proposal before product mutation. `host-profile.toml` is a requirement template,
+not an admitted machine: it forbids candidate measurement until a new dedicated-host fingerprint,
+serialized lease, pre/post calibration, dependency decision, and production-instrumentation gates
+pass.
 
 Validate a generated receipt:
 

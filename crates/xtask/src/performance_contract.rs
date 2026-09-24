@@ -33,6 +33,8 @@ const NOTIFICATION_OBSERVER_D2_REVIEW: &str =
     "docs/testing/performance/0.73/notification-observer-d2-review.toml";
 const MOKA_OBSERVER_UPSTREAM_DRAFT: &str =
     "docs/testing/performance/0.73/moka-post-removal-observer-upstream-draft.md";
+const SINGLE_MAINTAINER_REVIEW_POLICY: &str =
+    "docs/testing/performance/0.73/single-maintainer-review-policy.toml";
 const PROPOSAL_REGISTRY: &str = "docs/testing/performance/0.73/proposal-registry.toml";
 const STATISTICS: &str = "docs/testing/performance/0.73/statistics.toml";
 const HOST_PROFILE: &str = "docs/testing/performance/0.73/host-profile.toml";
@@ -88,6 +90,9 @@ pub fn check_at_root(
     let notification_observer_d2_review: TomlValue = toml::from_str(&fs::read_to_string(
         root.join(NOTIFICATION_OBSERVER_D2_REVIEW),
     )?)?;
+    let single_maintainer_review_policy: TomlValue = toml::from_str(&fs::read_to_string(
+        root.join(SINGLE_MAINTAINER_REVIEW_POLICY),
+    )?)?;
     let proposal_registry: TomlValue =
         toml::from_str(&fs::read_to_string(root.join(PROPOSAL_REGISTRY))?)?;
     let statistics: TomlValue = toml::from_str(&fs::read_to_string(root.join(STATISTICS))?)?;
@@ -122,6 +127,10 @@ pub fn check_at_root(
     problems.extend(check_moka_observer_direct(&moka_observer_direct, release));
     problems.extend(check_notification_observer_d2_review(
         &notification_observer_d2_review,
+        release,
+    ));
+    problems.extend(check_single_maintainer_review_policy(
+        &single_maintainer_review_policy,
         release,
     ));
     problems.extend(check_proposal_registry(&proposal_registry, release));
@@ -199,6 +208,10 @@ pub fn check_contract(root: &TomlValue, release: &str) -> Vec<String> {
         (
             "notification_observer_d2_review",
             NOTIFICATION_OBSERVER_D2_REVIEW,
+        ),
+        (
+            "single_maintainer_review_policy",
+            SINGLE_MAINTAINER_REVIEW_POLICY,
         ),
         ("proposal_registry", PROPOSAL_REGISTRY),
         ("statistics_contract", STATISTICS),
@@ -607,7 +620,8 @@ pub fn check_notification_observer_requirements(value: &TomlValue, release: &str
     if boolean(value, "d2_authorized") != Some(false)
         || boolean(value, "product_mutation_allowed") != Some(false)
         || boolean(value, "candidate_measurements_allowed") != Some(false)
-        || text(value, "independent_review_status") != Some("required-before-d2")
+        || text(value, "review_status")
+            != Some("single-maintainer-threshold-review-complete-dependency-pending")
     {
         problems.push(
             "notification observer requirements must remain D1 lab-only before review".to_owned(),
@@ -860,22 +874,41 @@ pub fn check_notification_observer_d2_review(value: &TomlValue, release: &str) -
         || text(value, "release") != Some(release)
         || text(value, "proposal_id") != Some("P73-INSTRUMENTATION-NONBLOCKING-REMOVAL")
         || text(value, "review_packet_id") != Some("notification-observer-d2-review-v1")
-        || text(value, "state") != Some("awaiting-independent-review")
+        || text(value, "state") != Some("single-maintainer-threshold-review-complete")
     {
         problems.push("notification observer D2 review candidate identity mismatch".to_owned());
     }
-    if text(value, "reviewer") != Some("unassigned")
+    if text(value, "reviewer") != Some("project-maintainer-self-review")
         || boolean(value, "reviewer_independent") != Some(false)
         || boolean(value, "d2_authorized") != Some(false)
-        || boolean(value, "thresholds_frozen") != Some(false)
+        || boolean(value, "thresholds_frozen") != Some(true)
         || boolean(value, "candidate_measurements_allowed") != Some(false)
         || boolean(value, "product_mutation_allowed") != Some(false)
         || boolean(value, "candidate_data_used_for_thresholds") != Some(false)
     {
         problems.push(
-            "notification observer D2 review candidate cannot self-authorize or freeze thresholds"
+            "notification observer single-maintainer review cannot authorize D2 before dependency selection"
                 .to_owned(),
         );
+    }
+    for (field, expected) in [
+        (
+            "review_mode",
+            "single-maintainer-with-compensating-controls",
+        ),
+        ("review_policy", SINGLE_MAINTAINER_REVIEW_POLICY),
+        (
+            "threshold_freeze_commit",
+            "1e9fd748f1a234967e9303c7071dd0816fb7ac28",
+        ),
+        ("reviewed_at", "2026-09-24"),
+        ("review_decision", "thresholds-accepted-dependency-pending"),
+    ] {
+        if text(value, field) != Some(expected) {
+            problems.push(format!(
+                "notification observer single-maintainer review {field} must be {expected}"
+            ));
+        }
     }
     if text(value, "primary_metric") != Some("fill_allocated_bytes_per_operation")
         || float(value, "minimum_practical_improvement_fraction")
@@ -886,7 +919,7 @@ pub fn check_notification_observer_d2_review(value: &TomlValue, release: &str) -
     for (field, expected) in [
         ("dependency_preference", "upstream-first"),
         ("dependency_fallback", "reviewed-pinned-fork"),
-        ("dependency_decision", "pending-independent-review"),
+        ("dependency_decision", "pending-single-maintainer-decision"),
         ("dependency_review_draft", MOKA_OBSERVER_UPSTREAM_DRAFT),
     ] {
         if text(value, field) != Some(expected) {
@@ -981,6 +1014,77 @@ pub fn check_notification_observer_d2_review(value: &TomlValue, release: &str) -
     problems
 }
 
+pub fn check_single_maintainer_review_policy(value: &TomlValue, release: &str) -> Vec<String> {
+    let mut problems = Vec::new();
+    if integer(value, "schema_version") != Some(1)
+        || text(value, "release") != Some(release)
+        || text(value, "policy_id") != Some("single-maintainer-review-073-v1")
+        || text(value, "state") != Some("active")
+        || text(value, "scope") != Some("P73-INSTRUMENTATION-NONBLOCKING-REMOVAL")
+        || text(value, "review_mode") != Some("single-maintainer-with-compensating-controls")
+    {
+        problems.push("single-maintainer review policy identity mismatch".to_owned());
+    }
+    if boolean(value, "independent_reviewer_required") != Some(false)
+        || boolean(value, "independent_review_claim_allowed") != Some(false)
+        || boolean(value, "thresholds_accepted") != Some(true)
+        || text(value, "dependency_decision") != Some("pending")
+        || boolean(value, "d2_authorized") != Some(false)
+        || boolean(value, "product_mutation_allowed") != Some(false)
+    {
+        problems.push(
+            "single-maintainer policy must freeze thresholds without claiming independence or authorizing D2"
+                .to_owned(),
+        );
+    }
+    for (field, expected) in [
+        (
+            "threshold_freeze_commit",
+            "1e9fd748f1a234967e9303c7071dd0816fb7ac28",
+        ),
+        (
+            "dependency_review_draft_commit",
+            "fb1e850d536c0ed970f5043f09ad3ce3582704f0",
+        ),
+    ] {
+        if text(value, field) != Some(expected) {
+            problems.push(format!(
+                "single-maintainer policy {field} must be {expected}"
+            ));
+        }
+    }
+    if text(value, "authorization_source").is_none_or(str::is_empty) {
+        problems.push("single-maintainer policy requires authorization_source".to_owned());
+    }
+    for (field, minimum) in [
+        ("compensating_controls", 10),
+        ("decision_sequence", 6),
+        ("forbidden_shortcuts", 5),
+    ] {
+        if string_array(value.get(field)).len() < minimum {
+            problems.push(format!("single-maintainer policy has incomplete {field}"));
+        }
+    }
+    let controls = string_array(value.get("compensating_controls"));
+    for required in [
+        "threshold",
+        "candidate evidence",
+        "separate",
+        "append-only",
+        "dedicated host",
+        "independently reviewed",
+        "panic",
+        "rollback",
+    ] {
+        if !controls.iter().any(|item| item.contains(required)) {
+            problems.push(format!(
+                "single-maintainer policy omits {required} compensating control"
+            ));
+        }
+    }
+    problems
+}
+
 pub fn check_proposal_registry(value: &TomlValue, release: &str) -> Vec<String> {
     let mut problems = Vec::new();
     if integer(value, "schema_version") != Some(1)
@@ -1009,11 +1113,17 @@ pub fn check_proposal_registry(value: &TomlValue, release: &str) -> Vec<String> 
         || boolean(proposal, "d2_authorized") != Some(false)
         || boolean(proposal, "product_mutation_allowed") != Some(false)
         || boolean(proposal, "candidate_measurements_allowed") != Some(false)
-        || text(proposal, "practical_minimum_effect") != Some("unfrozen-blocker")
-        || text(proposal, "review_status") != Some("required-before-d2")
+        || text(proposal, "practical_minimum_effect")
+            != Some("fill allocations improve by at least 15%")
+        || text(proposal, "threshold_status")
+            != Some(
+                "frozen by single-maintainer review at commit 1e9fd748f1a234967e9303c7071dd0816fb7ac28",
+            )
+        || text(proposal, "review_status")
+            != Some("single-maintainer-threshold-review-complete-dependency-pending")
     {
         problems.push(
-            "instrumentation redesign must remain D1-only until review and thresholds freeze"
+            "instrumentation redesign must remain D1-only until the dependency decision authorizes D2"
                 .to_owned(),
         );
     }
@@ -1054,7 +1164,7 @@ pub fn check_statistics(value: &TomlValue, release: &str) -> Vec<String> {
     if integer(value, "schema_version") != Some(1)
         || text(value, "release") != Some(release)
         || text(value, "contract_id") != Some("performance-statistics-073-v1")
-        || text(value, "state") != Some("baseline-only-unfrozen")
+        || text(value, "state") != Some("baseline-only-thresholds-frozen")
     {
         problems.push("0.73 statistics identity/state mismatch".to_owned());
     }
@@ -1072,8 +1182,8 @@ pub fn check_statistics(value: &TomlValue, release: &str) -> Vec<String> {
         ("paired_estimator", "hodges-lehmann-v1"),
         ("slope_estimator", "theil-sen-v1"),
         ("bootstrap_method", "moving-block-v1"),
-        ("allocation_limit_state", "unfrozen-blocker"),
-        ("rss_limit_state", "unfrozen-blocker"),
+        ("allocation_limit_state", "frozen-single-maintainer-review"),
+        ("rss_limit_state", "frozen-single-maintainer-review"),
         (
             "threshold_review_candidate",
             NOTIFICATION_OBSERVER_D2_REVIEW,
@@ -1216,11 +1326,12 @@ pub fn check_instrumentation_overhead(value: &TomlValue, release: &str) -> Vec<S
     {
         problems.push("instrumentation overhead weakens inherited regression limits".to_owned());
     }
-    if text(value, "allocation_regression_limit_state") != Some("unmeasured")
-        || text(value, "rss_delta_limit_state") != Some("unmeasured")
+    if text(value, "allocation_regression_limit_state") != Some("frozen-single-maintainer-review")
+        || text(value, "rss_delta_limit_state") != Some("frozen-single-maintainer-review")
     {
         problems.push(
-            "allocation/RSS limits must remain unmeasured until baseline-only evidence".to_owned(),
+            "allocation/RSS limits must remain bound to the single-maintainer threshold review"
+                .to_owned(),
         );
     }
     let metrics: BTreeSet<_> = string_array(value.get("required_metrics"))

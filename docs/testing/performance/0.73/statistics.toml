@@ -1,7 +1,7 @@
 schema_version = 1
 release = "0.73"
 contract_id = "performance-statistics-073-v1"
-state = "baseline-only-unfrozen"
+state = "baseline-only-thresholds-frozen"
 baseline_only_derivation = true
 candidate_may_amend = false
 candidate_measurements_allowed = false
@@ -22,8 +22,8 @@ bootstrap_iterations = 10000
 bootstrap_block_samples = 12
 numeric_precision_decimals = 6
 host_eligibility = "admitted-dedicated-host-only"
-allocation_limit_state = "unfrozen-blocker"
-rss_limit_state = "unfrozen-blocker"
+allocation_limit_state = "frozen-single-maintainer-review"
+rss_limit_state = "frozen-single-maintainer-review"
 threshold_review_candidate = "docs/testing/performance/0.73/notification-observer-d2-review.toml"
 
 [[regression_budget]]

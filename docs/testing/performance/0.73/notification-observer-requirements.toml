@@ -7,7 +7,7 @@ prototype_scope = "lab-only"
 d2_authorized = false
 product_mutation_allowed = false
 candidate_measurements_allowed = false
-independent_review_status = "required-before-d2"
+review_status = "single-maintainer-threshold-review-complete-dependency-pending"
 selected_direction = "post-removal observer with version-conditional deferred cleanup"
 
 owner_split = [
@@ -56,5 +56,5 @@ compatibility_invariants = [
   "a Moka fork, patch, upgrade, or replacement remains a separately reviewed dependency delta",
 ]
 
-prototype_exit = "A lab-only prototype must make every falsifier fail for the intended reason and demonstrate that the observer-disabled mutation path remains identical before independent review may authorize D2."
+prototype_exit = "A lab-only prototype must make every falsifier fail for the intended reason and demonstrate that the observer-disabled mutation path remains identical before the recorded review process may authorize D2."
 next_evidence = "Retain the exact-SHA reference-model receipt, then build an upstream-compatible Moka patch spike that invokes the same version-conditional contract for automatic removals without enabling listener key locks."

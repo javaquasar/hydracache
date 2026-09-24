@@ -21,8 +21,8 @@ minimum_qualification_pairs = 5
 throughput_regression_limit = 0.02
 cpu_per_request_regression_limit = 0.03
 p99_regression_limit = 0.03
-allocation_regression_limit_state = "unmeasured"
-rss_delta_limit_state = "unmeasured"
+allocation_regression_limit_state = "frozen-single-maintainer-review"
+rss_delta_limit_state = "frozen-single-maintainer-review"
 unexpected_failures_allowed = 0
 complete_outcome_accounting_required = true
 raw_series_required = true
@@ -46,8 +46,8 @@ required_workloads = [
 ]
 
 blocking_before_i73 = [
-  "freeze allocation regression limit from baseline-only evidence",
-  "freeze RSS delta limit from baseline-only evidence",
+  "choose and review the notification observer dependency revision before D2",
+  "prove production observer instrumentation stays inside the frozen allocation and RSS limits",
   "freeze measurement windows in scenario-matrix.toml",
   "freeze stable offered rates in scenario-matrix.toml",
   "retain at least five admitted off/production counterbalanced pairs"

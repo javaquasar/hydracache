@@ -13,12 +13,12 @@ product_mutation_allowed = false
 owner = "Moka future-cache removal notification path"
 hypothesis = "Exact removal accounting can avoid listener-enabled per-mutation key locking only through a nonblocking post-removal observation seam or an equally exact replacement ownership design."
 primary_metric = "fill_allocated_bytes_per_operation"
-practical_minimum_effect = "unfrozen-blocker"
-threshold_status = "must be independently reviewed and frozen before D2"
+practical_minimum_effect = "fill allocations improve by at least 15%"
+threshold_status = "frozen by single-maintainer review at commit 1e9fd748f1a234967e9303c7071dd0816fb7ac28"
 compatibility_outcome = "public configuration, value-byte capacity, expiry, invalidation, tag cleanup, snapshot, and reconciliation semantics remain unchanged"
 rollback_class = "remove isolated implementation and restore the exact I73 instrumentation path"
 dependency_delta = "none authorized; a Moka patch, upgrade, fork, or backend replacement requires separate dependency review"
-review_status = "required-before-d2"
+review_status = "single-maintainer-threshold-review-complete-dependency-pending"
 candidate_measurements_allowed = false
 d2_review_candidate = "docs/testing/performance/0.73/notification-observer-d2-review.toml"
 
@@ -73,4 +73,4 @@ required_regression_guards = [
   "allocation and RSS limits frozen before candidate data",
 ]
 
-next_evidence = "Have an independent reviewer accept or reject notification-observer-d2-review.toml, including its baseline-only threshold proposal and upstream-first/pinned-fork dependency decision; only an accepted review may authorize D2."
+next_evidence = "Choose and pin an upstream Moka release containing the observer API or a reviewed fork revision; record license, MSRV, advisory, SBOM, target, and rollback results in a separate dependency-decision commit before authorizing D2."

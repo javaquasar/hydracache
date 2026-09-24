@@ -2,25 +2,30 @@ schema_version = 1
 release = "0.73"
 proposal_id = "P73-INSTRUMENTATION-NONBLOCKING-REMOVAL"
 review_packet_id = "notification-observer-d2-review-v1"
-state = "awaiting-independent-review"
+state = "single-maintainer-threshold-review-complete"
 author_role = "release-0.73-performance-author"
-reviewer = "unassigned"
+reviewer = "project-maintainer-self-review"
 reviewer_independent = false
 d2_authorized = false
-thresholds_frozen = false
+thresholds_frozen = true
 candidate_measurements_allowed = false
 product_mutation_allowed = false
 candidate_data_used_for_thresholds = false
+review_mode = "single-maintainer-with-compensating-controls"
+review_policy = "docs/testing/performance/0.73/single-maintainer-review-policy.toml"
+threshold_freeze_commit = "1e9fd748f1a234967e9303c7071dd0816fb7ac28"
+reviewed_at = "2026-09-24"
+review_decision = "thresholds-accepted-dependency-pending"
 primary_metric = "fill_allocated_bytes_per_operation"
 minimum_practical_improvement_fraction = 0.15
 dependency_preference = "upstream-first"
 dependency_fallback = "reviewed-pinned-fork"
-dependency_decision = "pending-independent-review"
+dependency_decision = "pending-single-maintainer-decision"
 dependency_review_draft = "docs/testing/performance/0.73/moka-post-removal-observer-upstream-draft.md"
 compatibility_outcome = "No public configuration, capacity, expiry, invalidation, tag, snapshot, reconciliation, or shutdown semantics change."
 rollback_class = "Restore Moka 0.12.15 from crates.io and the existing async eviction-listener wiring; discard observer-specific state."
 threshold_derivation = "The 15% primary minimum is below the smallest baseline-only listener fill overhead (23.892%) while still requiring recovery of a material majority of that observed cost. The allocation guard inherits the reviewed 0.71 3%/16-byte practical envelope. RSS remains a separate guard using the reviewed 0.71 5%/1 MiB practical envelope because the three local RSS deltas are too small and noisy to establish a tighter portable limit."
-reviewer_action = "Verify derivation and scope, replace reviewer=unassigned with an independent identity, choose upstream or pinned-fork dependency handling, and either authorize D2 in a dedicated review commit or reject the proposal."
+reviewer_action = "Choose a concrete upstream release or reviewed pinned fork in a separate commit; only that dependency decision may authorize D2 and product mutation."
 
 baseline_evidence = [
   "docs/testing/performance/0.73/local-overhead-screening-307b3500.toml",

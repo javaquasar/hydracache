@@ -369,7 +369,7 @@ saturation/dirty epochs, reconciliation, shutdown drain, and fail-closed exact s
 
 That still does not authorize a product change. The successful code is an isolated patch against a
 development copy of Moka, not HydraCache's locked production dependency. The remaining work is
-governance and qualification: independent review, baseline-only allocation/RSS rejection limits,
+governance and qualification: recorded review, baseline-only allocation/RSS rejection limits,
 an explicit dependency decision (upstream API or reviewed pinned fork), D2 authorization, and only
 then product integration plus the full local and dedicated-host matrices.
 
@@ -378,9 +378,13 @@ candidate names the exact authorized surfaces, upstream-first and pinned-fork de
 rollback, correctness falsifiers, and D3 measurements. Its proposed 15% fill-allocation minimum is
 derived from the smaller baseline-only listener overhead, not from the successful observer spike.
 Candidate evidence is kept in a separate exclusion list. Allocation and RSS guards reuse the
-previously reviewed practical envelopes, but remain explicitly unfrozen until a different reviewer
-accepts them. In other words, completing a convincing prototype prepares the decision; it does not
-grant the prototype permission to become the product.
+previously reviewed practical envelopes. Because this is a single-maintainer project, we recorded a
+proposal-scoped exception instead of pretending that automation was an independent reviewer. The
+exception binds the earlier threshold commit by full SHA, separates governance, dependency,
+implementation, and measurement commits, retains every attempt, preserves dedicated-host
+qualification, and requires later publication to say “self-reviewed”. Completing a convincing
+prototype still only prepares the decision; it does not grant the prototype permission to become
+the product.
 
 ### The result changed governance, not just code direction
 
@@ -390,15 +394,16 @@ candidate measurements and product mutation until four things exist:
 
 - a lab-only feasibility result for the viable backend designs (the sync shortcut is now rejected,
   while the exact nonblocking designs remain to be evaluated);
-- an independent reviewer for the selected proposal;
-- allocation and RSS rejection limits frozen before candidate data;
+- a recorded independent or single-maintainer review policy for the selected proposal;
+- allocation and RSS rejection limits frozen in an earlier commit before product mutation;
 - exact correctness tests for every automatic and explicit removal path.
 
 We also froze the parts of the measurement method that were already inherited and defensible: at
 least five independently started admitted pairs, a 95% interval, Hodges-Lehmann paired estimates,
 moving-block bootstrap, Holm correction across primary claims, and the existing 2% goodput and 3%
-CPU/p99 regression guards. Allocation and RSS limits remained named blockers instead of being
-chosen from the numbers we had just observed.
+CPU/p99 regression guards. Allocation and RSS limits first remained named blockers instead of being
+chosen from the numbers we had just observed; the later single-maintainer review froze them against
+that earlier commit and kept the observer measurements explicitly outside their derivation.
 
 Finally, we created an unadmitted host-profile template. It describes the immutable and mutable host
 probes, serialized lease, CPU/NUMA/power policies, and pre/post calibration required for later

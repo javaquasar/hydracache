@@ -207,7 +207,7 @@ fn instrumentation_overhead_rejects_weakened_limits() {
 }
 
 #[test]
-fn instrumentation_overhead_cannot_freeze_i73_with_unmeasured_limits() {
+fn instrumentation_overhead_cannot_freeze_i73_before_production_qualification() {
     let mut value = manifest("instrumentation-overhead.toml");
     value["state"] = TomlValue::String("qualified".to_owned());
     value["i73_freeze_allowed"] = TomlValue::Boolean(true);
@@ -322,12 +322,12 @@ fn direct_moka_observer_cannot_self_authorize_d2_or_drop_ordering_proof() {
 }
 
 #[test]
-fn d2_review_candidate_cannot_self_authorize_or_use_candidate_thresholds() {
+fn single_maintainer_threshold_review_cannot_preapprove_dependency_or_use_candidate_thresholds() {
     let mut value = manifest("notification-observer-d2-review.toml");
     value["reviewer"] = TomlValue::String("proposal-author".to_owned());
     value["reviewer_independent"] = TomlValue::Boolean(true);
     value["d2_authorized"] = TomlValue::Boolean(true);
-    value["thresholds_frozen"] = TomlValue::Boolean(true);
+    value["threshold_freeze_commit"] = TomlValue::String("rewritten".to_owned());
     value["candidate_data_used_for_thresholds"] = TomlValue::Boolean(true);
     let candidate = value["candidate_evidence_excluded_from_threshold_derivation"][0].clone();
     value["baseline_evidence"]
@@ -343,7 +343,10 @@ fn d2_review_candidate_cannot_self_authorize_or_use_candidate_thresholds() {
         xtask::performance_contract::check_notification_observer_d2_review(&value, "0.73");
     assert!(problems
         .iter()
-        .any(|problem| problem.contains("cannot self-authorize")));
+        .any(|problem| problem.contains("cannot authorize D2")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("threshold_freeze_commit")));
     assert!(problems
         .iter()
         .any(|problem| problem.contains("mixes candidate evidence")));
@@ -353,6 +356,23 @@ fn d2_review_candidate_cannot_self_authorize_or_use_candidate_thresholds() {
     assert!(problems
         .iter()
         .any(|problem| problem.contains("omits reentrancy falsifier")));
+}
+
+#[test]
+fn single_maintainer_policy_cannot_claim_independence_or_skip_dependency_decision() {
+    let mut value = manifest("single-maintainer-review-policy.toml");
+    value["independent_review_claim_allowed"] = TomlValue::Boolean(true);
+    value["d2_authorized"] = TomlValue::Boolean(true);
+    value["product_mutation_allowed"] = TomlValue::Boolean(true);
+    value["threshold_freeze_commit"] = TomlValue::String("main".to_owned());
+    let problems =
+        xtask::performance_contract::check_single_maintainer_review_policy(&value, "0.73");
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("without claiming independence or authorizing D2")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("threshold_freeze_commit")));
 }
 
 #[test]

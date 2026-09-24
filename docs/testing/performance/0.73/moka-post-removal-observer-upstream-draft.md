@@ -78,7 +78,7 @@ name a repository owner, define an upstream-sync and advisory cadence, preserve 
 MSRV, pass `cargo deny`, SBOM, feature, package, and supported-target gates, and retain a one-commit
 rollback to crates.io Moka plus the existing listener path. The current patch digest and experiment
 belong in the evidence packet; the fork repository, revision, owner, and maintenance commitment are
-intentionally unresolved until independent review chooses this fallback.
+intentionally unresolved until the recorded review process chooses this fallback.
 
 Upstream references:
 

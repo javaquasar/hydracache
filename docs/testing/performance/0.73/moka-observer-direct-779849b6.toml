@@ -17,7 +17,7 @@ promotable = false
 d2_authorized = false
 decision = "direct-observer-lab-feasible-d2-still-required"
 conclusion = "The direct synchronous Moka observer matched listener-off insert allocation exactly at 400.6875 B/op. Its remove median was 2275.4063 B/op versus 2287.7813 off, which is treated as no detected allocation penalty rather than an improvement. The patched backend delivered all four removal causes, and the integrated version-41/version-42 cleanup falsifier preserved the newer membership."
-next_evidence = "Obtain independent review, freeze allocation/RSS rejection limits from baseline-only evidence, and either authorize D2 for an upstream/fork dependency proposal plus product integration or retain this as a negative lab-only result."
+next_evidence = "Use the recorded single-maintainer review policy to choose and pin an upstream release or reviewed fork, then authorize D2 for product integration or retain this as a negative lab-only result."
 
 [[median_observations]]
 mode = "off"

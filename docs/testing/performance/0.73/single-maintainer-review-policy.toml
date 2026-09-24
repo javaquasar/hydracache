@@ -1,0 +1,45 @@
+schema_version = 1
+release = "0.73"
+policy_id = "single-maintainer-review-073-v1"
+state = "active"
+scope = "P73-INSTRUMENTATION-NONBLOCKING-REMOVAL"
+authorization_source = "explicit project-maintainer decision recorded 2026-09-24"
+review_mode = "single-maintainer-with-compensating-controls"
+independent_reviewer_required = false
+independent_review_claim_allowed = false
+threshold_freeze_commit = "1e9fd748f1a234967e9303c7071dd0816fb7ac28"
+dependency_review_draft_commit = "fb1e850d536c0ed970f5043f09ad3ce3582704f0"
+thresholds_accepted = true
+dependency_decision = "pending"
+d2_authorized = false
+product_mutation_allowed = false
+
+compensating_controls = [
+  "thresholds and candidate-evidence exclusions were committed before any production dependency or product mutation",
+  "the threshold-freeze commit is recorded by full SHA and cannot be rewritten by the authorization commit",
+  "candidate evidence remains mechanically disjoint from threshold derivation evidence",
+  "governance, dependency selection, product implementation, and measurement are separate reviewable commits",
+  "all failed, invalidated, and negative attempts remain append-only",
+  "local measurements cannot support a numerical release claim",
+  "D3 still requires five independently started counterbalanced pairs on an admitted dedicated host",
+  "the final publication must state single-maintainer review and must not call the result independently reviewed",
+  "panic containment, reentrancy, cancellation, shutdown, duplicate, saturation, and replacement-order falsifiers are mandatory",
+  "rollback to crates.io Moka and the previous listener path must be demonstrated before candidate acceptance",
+]
+
+decision_sequence = [
+  "freeze baseline-only thresholds",
+  "record single-maintainer exception",
+  "choose upstream release or reviewed pinned fork",
+  "authorize D2 in a dedicated governance commit",
+  "implement production integration in a later commit",
+  "run local gates before dedicated-host measurements",
+]
+
+forbidden_shortcuts = [
+  "changing thresholds after product implementation or candidate measurement",
+  "calling self-review independent review",
+  "using the laboratory observer result as threshold derivation",
+  "authorizing an unpinned fork or an unresolved upstream dependency",
+  "publishing a numerical claim from local screening",
+]
