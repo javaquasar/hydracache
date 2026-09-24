@@ -73,6 +73,10 @@ fn checked_in_performance_profile_073_is_complete_and_fresh() {
     ] {
         assert!(workflow.contains(required), "workflow omitted {required}");
     }
+    assert!(
+        !workflow.contains("push:"),
+        "host admission must be manual-only"
+    );
 }
 
 #[test]
