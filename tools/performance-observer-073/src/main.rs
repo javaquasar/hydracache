@@ -24,13 +24,24 @@ struct ObserverTarget {
 }
 
 impl ObserverTarget {
-    fn new(mode: MemoryInstrumentationMode) -> Self {
-        Self {
-            cache: HydraCache::local()
-                .max_capacity(16 * 1024 * 1024)
-                .memory_instrumentation_mode(mode)
-                .build(),
-        }
+    fn new(mode: &str) -> Result<Self, Box<dyn Error>> {
+        let mut builder = HydraCache::local().max_capacity(16 * 1024 * 1024);
+        builder = match mode {
+            "off" => builder.memory_instrumentation_mode(MemoryInstrumentationMode::Off),
+            "production" => {
+                builder.memory_instrumentation_mode(MemoryInstrumentationMode::Production)
+            }
+            "counters-only" => builder
+                .memory_instrumentation_mode(MemoryInstrumentationMode::Production)
+                .instrumentation_lab_eviction_listener(false),
+            "observer-noop" => builder
+                .memory_instrumentation_mode(MemoryInstrumentationMode::Production)
+                .instrumentation_lab_noop_removal_observer(true),
+            value => return Err(format!("unsupported --mode {value}").into()),
+        };
+        Ok(Self {
+            cache: builder.build(),
+        })
     }
 
     async fn put(&self, sequence: u64, ttl: Option<Duration>) -> Result<(), String> {
@@ -116,8 +127,8 @@ impl Target for ObserverTarget {
 struct Receipt {
     schema_version: u32,
     release: &'static str,
-    profile_id: &'static str,
-    instrumentation_mode: &'static str,
+    profile_id: String,
+    instrumentation_mode: String,
     offered_rate_per_second: u64,
     operations: u64,
     warmup_operations: u64,
@@ -131,6 +142,7 @@ struct Receipt {
     rss_after_bytes: u64,
     peak_rss_bytes: u64,
     reconciliation_exact: bool,
+    correctness_complete: bool,
     final_estimated_entries: u64,
     promotable: bool,
 }
@@ -138,12 +150,9 @@ struct Receipt {
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
     let options = Options::parse()?;
-    let mode = match options.mode.as_str() {
-        "off" => MemoryInstrumentationMode::Off,
-        "production" => MemoryInstrumentationMode::Production,
-        value => return Err(format!("unsupported --mode {value}").into()),
-    };
-    let target = Arc::new(ObserverTarget::new(mode));
+    let production_exact = options.mode == "production";
+    let correctness_complete = matches!(options.mode.as_str(), "off" | "production");
+    let target = Arc::new(ObserverTarget::new(&options.mode)?);
     target.preload().await?;
     for sequence in 0..options.warmup_operations {
         if target.execute(TargetRequest { sequence }).await != TargetOutcome::Success {
@@ -170,10 +179,10 @@ async fn main() -> Result<(), Box<dyn Error>> {
     let cpu_seconds = (process_cpu_seconds()? - cpu_before).max(0.0);
     let rss_after = process_memory()?;
 
-    let reconciliation_exact = if mode == MemoryInstrumentationMode::Production {
+    let reconciliation_exact = if production_exact {
         target.cache.reconcile_memory_footprint().await?.matched
     } else {
-        true
+        options.mode == "off"
     };
     let diagnostics = target.cache.diagnostics().await;
     if observation.started != observation.offered
@@ -183,11 +192,11 @@ async fn main() -> Result<(), Box<dyn Error>> {
         || observation.timeouts != 0
         || observation.rejections != 0
         || !observation.backlog_drained
-        || !reconciliation_exact
+        || (production_exact && !reconciliation_exact)
     {
         return Err("incomplete outcome accounting or reconciliation failure".into());
     }
-    if mode == MemoryInstrumentationMode::Production {
+    if production_exact {
         let barrier = target.cache.memory_snapshot_barrier()?;
         let snapshot = target
             .cache
@@ -203,12 +212,8 @@ async fn main() -> Result<(), Box<dyn Error>> {
     let receipt = Receipt {
         schema_version: 1,
         release: "0.73",
-        profile_id: "observer-baseline-pilot-073-v1",
-        instrumentation_mode: if mode == MemoryInstrumentationMode::Off {
-            "off"
-        } else {
-            "production"
-        },
+        profile_id: options.profile_id,
+        instrumentation_mode: options.mode,
         offered_rate_per_second: options.rate,
         operations: options.operations,
         warmup_operations: options.warmup_operations,
@@ -228,6 +233,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
         rss_after_bytes: rss_after.0,
         peak_rss_bytes: rss_after.1.max(rss_before.1),
         reconciliation_exact,
+        correctness_complete,
         final_estimated_entries: diagnostics.estimated_entries,
         promotable: false,
     };
@@ -277,6 +283,7 @@ fn process_memory() -> Result<(u64, u64), Box<dyn Error>> {
 }
 
 struct Options {
+    profile_id: String,
     mode: String,
     rate: u64,
     operations: u64,
@@ -298,12 +305,16 @@ impl Options {
                     .ok_or_else(|| format!("{name} requires a value"))?,
             );
         }
+        let profile_id = values
+            .remove("profile-id")
+            .unwrap_or_else(|| "observer-baseline-pilot-073-v1".to_owned());
         let mut take = |name: &str| {
             values
                 .remove(name)
                 .ok_or_else(|| format!("--{name} is required"))
         };
         let options = Self {
+            profile_id,
             mode: take("mode")?,
             rate: take("rate")?.parse()?,
             operations: take("operations")?.parse()?,

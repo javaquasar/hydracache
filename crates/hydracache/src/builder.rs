@@ -70,6 +70,8 @@ where
     memory_eviction_listener_enabled: bool,
     #[cfg(feature = "instrumentation-lab")]
     memory_eviction_listener_noop: bool,
+    #[cfg(feature = "instrumentation-lab")]
+    memory_removal_observer_noop: bool,
     codec: C,
 }
 
@@ -118,6 +120,18 @@ where
     #[doc(hidden)]
     pub fn instrumentation_lab_noop_eviction_listener(mut self, enabled: bool) -> Self {
         self.memory_eviction_listener_noop = enabled;
+        self
+    }
+
+    /// Development-only seam that registers the nonblocking backend observer
+    /// while removing all HydraCache callback work.
+    ///
+    /// This makes removal accounting and tag cleanup incomplete. It exists only
+    /// to separate backend observer delivery cost from callback cost.
+    #[cfg(feature = "instrumentation-lab")]
+    #[doc(hidden)]
+    pub fn instrumentation_lab_noop_removal_observer(mut self, enabled: bool) -> Self {
+        self.memory_removal_observer_noop = enabled;
         self
     }
 
@@ -228,6 +242,8 @@ where
             memory_eviction_listener_enabled: self.memory_eviction_listener_enabled,
             #[cfg(feature = "instrumentation-lab")]
             memory_eviction_listener_noop: self.memory_eviction_listener_noop,
+            #[cfg(feature = "instrumentation-lab")]
+            memory_removal_observer_noop: self.memory_removal_observer_noop,
             codec,
         }
     }
@@ -387,6 +403,10 @@ where
         let noop_memory_eviction_listener = self.memory_eviction_listener_noop;
         #[cfg(not(feature = "instrumentation-lab"))]
         let noop_memory_eviction_listener = false;
+        #[cfg(feature = "instrumentation-lab")]
+        let noop_memory_removal_observer = self.memory_removal_observer_noop;
+        #[cfg(not(feature = "instrumentation-lab"))]
+        let noop_memory_removal_observer = false;
         let memory = Arc::new(MemoryFootprintCounters::new(
             self.memory_instrumentation_mode,
         ));
@@ -400,7 +420,9 @@ where
         if self.memory_instrumentation_mode != MemoryInstrumentationMode::Off
             && attach_memory_eviction_listener
         {
-            store_builder = if noop_memory_eviction_listener {
+            store_builder = if noop_memory_removal_observer {
+                store_builder.post_removal_observer(|_key, _entry, _cause| {})
+            } else if noop_memory_eviction_listener {
                 store_builder.eviction_listener(|_key, _entry, _cause| {})
             } else {
                 let observer = Arc::new(RemovalObserver::new(memory.clone()));
@@ -483,6 +505,8 @@ impl Default for HydraCacheBuilder<PostcardCodec> {
             memory_eviction_listener_enabled: true,
             #[cfg(feature = "instrumentation-lab")]
             memory_eviction_listener_noop: false,
+            #[cfg(feature = "instrumentation-lab")]
+            memory_removal_observer_noop: false,
             codec: PostcardCodec,
         }
     }

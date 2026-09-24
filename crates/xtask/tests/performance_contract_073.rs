@@ -538,3 +538,36 @@ fn baseline_pilot_cannot_observe_candidate_or_move_the_rate_grid() {
         .iter()
         .any(|problem| problem.contains("maximum_goodput_regression")));
 }
+
+#[test]
+fn insufficient_baseline_cannot_freeze_i73_or_hide_the_retained_attempts() {
+    let mut value = manifest("baseline-pilot-insufficient-4ba93a1a.toml");
+    value["i73_freeze_eligible"] = TomlValue::Boolean(true);
+    value["attempts"] = TomlValue::Integer(20);
+    value["artifact_sha256"] = TomlValue::String("missing".to_owned());
+    let problems = xtask::performance_contract::check_baseline_pilot_evidence(&value, "0.73");
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("i73_freeze_eligible must be false")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("24 attempts and zero stable rates")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("artifact_sha256 is not SHA-256")));
+}
+
+#[test]
+fn cpu_attribution_cannot_be_promoted_or_change_its_modes() {
+    let mut value = manifest("cpu-attribution-contract.toml");
+    value["acceptance_decision_allowed"] = TomlValue::Boolean(true);
+    value["instrumentation_modes"] =
+        TomlValue::Array(vec![TomlValue::String("production".to_owned())]);
+    let problems = xtask::performance_contract::check_cpu_attribution_contract(&value, "0.73");
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("acceptance_decision_allowed must be false")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("modes or sample grid")));
+}

@@ -45,6 +45,10 @@ const STATISTICS: &str = "docs/testing/performance/0.73/statistics.toml";
 const HOST_PROFILE: &str = "docs/testing/performance/0.73/host-profile.toml";
 const HOST_ADMISSION: &str = "docs/testing/performance/0.73/host-admission-3ba09fcc.toml";
 const BASELINE_PILOT_CONTRACT: &str = "docs/testing/performance/0.73/baseline-pilot-contract.toml";
+const BASELINE_PILOT_EVIDENCE: &str =
+    "docs/testing/performance/0.73/baseline-pilot-insufficient-4ba93a1a.toml";
+const CPU_ATTRIBUTION_CONTRACT: &str =
+    "docs/testing/performance/0.73/cpu-attribution-contract.toml";
 const RELEASE: &str = "0.73";
 const PROFILE: &str = "local-screening-073-v1";
 const ENVIRONMENT_CLASS: &str = "local_screening";
@@ -116,6 +120,10 @@ pub fn check_at_root(
         toml::from_str(&fs::read_to_string(root.join(HOST_ADMISSION))?)?;
     let baseline_pilot_contract: TomlValue =
         toml::from_str(&fs::read_to_string(root.join(BASELINE_PILOT_CONTRACT))?)?;
+    let baseline_pilot_evidence: TomlValue =
+        toml::from_str(&fs::read_to_string(root.join(BASELINE_PILOT_EVIDENCE))?)?;
+    let cpu_attribution_contract: TomlValue =
+        toml::from_str(&fs::read_to_string(root.join(CPU_ATTRIBUTION_CONTRACT))?)?;
     let mut problems = check_contract(&contract, release);
     if !root.join(MOKA_OBSERVER_UPSTREAM_DRAFT).is_file() {
         problems.push("notification observer dependency review draft is missing".to_owned());
@@ -167,6 +175,14 @@ pub fn check_at_root(
     problems.extend(check_host_admission(&host_admission, release));
     problems.extend(check_baseline_pilot_contract(
         &baseline_pilot_contract,
+        release,
+    ));
+    problems.extend(check_baseline_pilot_evidence(
+        &baseline_pilot_evidence,
+        release,
+    ));
+    problems.extend(check_cpu_attribution_contract(
+        &cpu_attribution_contract,
         release,
     ));
     problems.extend(check_schema(
@@ -260,6 +276,8 @@ pub fn check_contract(root: &TomlValue, release: &str) -> Vec<String> {
         ("host_profile", HOST_PROFILE),
         ("host_admission", HOST_ADMISSION),
         ("baseline_pilot_contract", BASELINE_PILOT_CONTRACT),
+        ("baseline_pilot_evidence", BASELINE_PILOT_EVIDENCE),
+        ("cpu_attribution_contract", CPU_ATTRIBUTION_CONTRACT),
     ] {
         if text(root, field) != Some(expected) {
             problems.push(format!("local screening {field} must be {expected}"));
@@ -1905,6 +1923,134 @@ pub fn check_baseline_pilot_contract(value: &TomlValue, release: &str) -> Vec<St
         || text(value, "failure_rule").is_none_or(str::is_empty)
     {
         problems.push("baseline pilot omits its p99 or fail-loud selection rule".to_owned());
+    }
+    problems
+}
+
+pub fn check_baseline_pilot_evidence(value: &TomlValue, release: &str) -> Vec<String> {
+    let mut problems = Vec::new();
+    if integer(value, "schema_version") != Some(1)
+        || text(value, "release") != Some(release)
+        || text(value, "evidence_id") != Some("observer-baseline-pilot-insufficient-4ba93a1a-v1")
+        || text(value, "contract_id") != Some("observer-baseline-pilot-073-v1")
+        || text(value, "state") != Some("executed-insufficient-baseline")
+        || text(value, "source_sha") != Some("4ba93a1a1334799f94974a7dcadcda62dae7b587")
+        || integer(value, "workflow_run_id") != Some(36_064_788_229)
+        || integer(value, "artifact_id") != Some(10_836_226_123)
+    {
+        problems.push("0.73 insufficient baseline evidence identity mismatch".to_owned());
+    }
+    for field in [
+        "artifact_sha256",
+        "campaign_manifest_sha256",
+        "preflight_sha256",
+        "postflight_sha256",
+        "baseline_pilot_sha256",
+        "binary_sha256",
+    ] {
+        if text(value, field).is_none_or(|digest| !sha256(digest)) {
+            problems.push(format!(
+                "insufficient baseline evidence {field} is not SHA-256"
+            ));
+        }
+    }
+    for field in [
+        "candidate_data_present",
+        "candidate_measurement_authorized",
+        "i73_freeze_eligible",
+        "thresholds_changed",
+        "silent_retry_allowed",
+    ] {
+        if boolean(value, field) != Some(false) {
+            problems.push(format!(
+                "insufficient baseline evidence {field} must be false"
+            ));
+        }
+    }
+    if integer(value, "attempts") != Some(24)
+        || integer(value, "failed_attempts") != Some(0)
+        || integer(value, "stable_rates") != Some(0)
+        || value
+            .get("rate")
+            .and_then(TomlValue::as_array)
+            .is_none_or(|rates| {
+                rates.len() != 4
+                    || rates
+                        .iter()
+                        .any(|rate| boolean(rate, "stable") != Some(false))
+            })
+    {
+        problems.push(
+            "insufficient baseline evidence must retain 24 attempts and zero stable rates"
+                .to_owned(),
+        );
+    }
+    if text(value, "conclusion").is_none_or(str::is_empty)
+        || text(value, "next_evidence").is_none_or(str::is_empty)
+    {
+        problems.push(
+            "insufficient baseline evidence requires conclusion and next evidence".to_owned(),
+        );
+    }
+    problems
+}
+
+pub fn check_cpu_attribution_contract(value: &TomlValue, release: &str) -> Vec<String> {
+    let mut problems = Vec::new();
+    if integer(value, "schema_version") != Some(1)
+        || text(value, "release") != Some(release)
+        || text(value, "contract_id") != Some("observer-cpu-attribution-073-v1")
+        || text(value, "state") != Some("preregistered-unmeasured")
+        || text(value, "evidence_class") != Some("dedicated_host_diagnostic_only")
+        || text(value, "profile_id") != Some("performance-reference-073-v1")
+        || text(value, "host_admission") != Some(HOST_ADMISSION)
+        || text(value, "triggering_evidence") != Some(BASELINE_PILOT_EVIDENCE)
+    {
+        problems.push("0.73 CPU attribution contract identity mismatch".to_owned());
+    }
+    for field in [
+        "candidate_data_allowed",
+        "candidate_measurement_authorized",
+        "promotable",
+        "numerical_claim_eligible",
+        "thresholds_changed",
+        "acceptance_decision_allowed",
+    ] {
+        if boolean(value, field) != Some(false) {
+            problems.push(format!("CPU attribution {field} must be false"));
+        }
+    }
+    for field in [
+        "counterbalanced_order_required",
+        "independent_processes_required",
+        "complete_outcome_accounting_required",
+    ] {
+        if boolean(value, field) != Some(true) {
+            problems.push(format!("CPU attribution {field} must be true"));
+        }
+    }
+    if integer(value, "offered_rate_per_second") != Some(10_000)
+        || integer(value, "repeats_per_mode") != Some(5)
+        || integer(value, "window_seconds") != Some(5)
+        || integer(value, "warmup_operations") != Some(5_000)
+        || integer(value, "run_order_seed") != Some(73_110)
+        || string_array(value.get("instrumentation_modes"))
+            != ["off", "counters-only", "observer-noop", "production"]
+    {
+        problems.push("CPU attribution changes the preregistered modes or sample grid".to_owned());
+    }
+    if string_array(value.get("comparison_chain"))
+        != [
+            "off_to_counters_only",
+            "counters_only_to_observer_noop",
+            "observer_noop_to_production",
+            "off_to_production",
+        ]
+        || text(value, "interpretation_rule").is_none_or(str::is_empty)
+        || text(value, "completion_rule").is_none_or(str::is_empty)
+        || text(value, "next_decision").is_none_or(str::is_empty)
+    {
+        problems.push("CPU attribution omits its diagnostic-only interpretation rules".to_owned());
     }
     problems
 }

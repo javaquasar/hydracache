@@ -8,7 +8,7 @@ publish = false
 
 [dependencies]
 async-trait = "0.1"
-hydracache = { path = "../../crates/hydracache" }
+hydracache = { path = "../../crates/hydracache", features = ["instrumentation-lab"] }
 hydracache-loadgen = { path = "../../crates/hydracache-loadgen" }
 libc = "0.2"
 serde = { version = "1", features = ["derive"] }

@@ -279,3 +279,10 @@ which mode ran first, while its allocation cost was consistently about 20 bytes 
 `baseline-pilot-insufficient-4ba93a1a.toml` binds the retained artifact and records the result as
 negative baseline evidence. I73 remains unfrozen, candidate measurement remains closed, and the
 ceiling is unchanged. The next step is a short four-mode attribution run, not an unrecorded retry.
+
+`cpu-attribution-contract.toml` freezes that diagnostic before execution. At 10,000 operations per
+second it runs five independent, Williams-counterbalanced blocks across `off`, `counters-only`,
+`observer-noop`, and `production`. The adjacent deltas distinguish counter work, backend observer
+registration/delivery, and the real HydraCache callback. The two ablations are deliberately
+incorrect configurations, so the workflow has no numerical acceptance threshold and cannot freeze
+I73; it succeeds only when all attempts and the admitted-host calibration envelope are complete.

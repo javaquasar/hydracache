@@ -255,3 +255,29 @@ async fn delayed_replacement_cleanup_preserves_new_same_tag_membership() {
             .matched
     );
 }
+
+#[cfg(feature = "instrumentation-lab")]
+#[tokio::test]
+async fn noop_removal_observer_is_an_explicit_incorrect_diagnostic_ablation() {
+    let cache = HydraCache::local()
+        .memory_instrumentation_mode(MemoryInstrumentationMode::Production)
+        .instrumentation_lab_noop_removal_observer(true)
+        .build();
+    cache
+        .put("replaced", 1_u64, CacheOptions::new().tag("shared"))
+        .await
+        .expect("first version");
+    cache
+        .put("replaced", 2_u64, CacheOptions::new().tag("shared"))
+        .await
+        .expect("replacement version");
+    cache.diagnostics().await;
+
+    assert!(
+        matches!(
+            cache.reconcile_memory_footprint().await,
+            Err(hydracache::MemoryFootprintError::ReconciliationMismatch)
+        ),
+        "the noop observer must never masquerade as correctness evidence"
+    );
+}
