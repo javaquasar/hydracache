@@ -334,6 +334,11 @@ fn d2_review_candidate_cannot_self_authorize_or_use_candidate_thresholds() {
         .as_array_mut()
         .expect("baseline evidence")
         .push(candidate);
+    value["required_correctness_falsifiers"] = TomlValue::Array(
+        (0..10)
+            .map(|index| TomlValue::String(format!("generic falsifier {index}")))
+            .collect(),
+    );
     let problems =
         xtask::performance_contract::check_notification_observer_d2_review(&value, "0.73");
     assert!(problems
@@ -342,6 +347,12 @@ fn d2_review_candidate_cannot_self_authorize_or_use_candidate_thresholds() {
     assert!(problems
         .iter()
         .any(|problem| problem.contains("mixes candidate evidence")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("omits panic falsifier")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("omits reentrancy falsifier")));
 }
 
 #[test]

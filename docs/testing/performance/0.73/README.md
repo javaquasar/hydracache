@@ -165,6 +165,12 @@ threshold derivation. The packet remains `awaiting-independent-review`: it canno
 candidate measurement, a dependency change, or product mutation until a distinct reviewer records
 an accepted decision.
 
+`moka-post-removal-observer-upstream-draft.md` turns the dependency choice into a concrete API
+proposal without posting anything externally. It also records a gap found during review: the lab
+patch invokes the observer directly, so production authorization additionally requires a panic
+containment falsifier and an explicit reentrancy policy. The same document defines what a pinned
+fork must record if upstream does not accept the API in the release window.
+
 `statistics.toml` freezes the inherited paired estimator, confidence, Holm correction, failure
 retention, five-pair minimum, and throughput/CPU/p99 regression guards before candidate data. Its
 allocation and RSS limits remain explicit unfrozen blockers. `host-profile.toml` is a requirement

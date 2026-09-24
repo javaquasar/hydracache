@@ -16,6 +16,7 @@ minimum_practical_improvement_fraction = 0.15
 dependency_preference = "upstream-first"
 dependency_fallback = "reviewed-pinned-fork"
 dependency_decision = "pending-independent-review"
+dependency_review_draft = "docs/testing/performance/0.73/moka-post-removal-observer-upstream-draft.md"
 compatibility_outcome = "No public configuration, capacity, expiry, invalidation, tag, snapshot, reconciliation, or shutdown semantics change."
 rollback_class = "Restore Moka 0.12.15 from crates.io and the existing async eviction-listener wiring; discard observer-specific state."
 threshold_derivation = "The 15% primary minimum is below the smallest baseline-only listener fill overhead (23.892%) while still requiring recovery of a material majority of that observed cost. The allocation guard inherits the reviewed 0.71 3%/16-byte practical envelope. RSS remains a separate guard using the reviewed 0.71 5%/1 MiB practical envelope because the three local RSS deltas are too small and noisy to establish a tighter portable limit."
@@ -60,6 +61,8 @@ required_correctness_falsifiers = [
   "duplicate delivery cannot decrement accounting twice",
   "queue saturation marks the epoch dirty and exact snapshots fail closed until reconciliation",
   "shutdown drains every acknowledged removal without a cancellation gap",
+  "observer panic containment preserves cache integrity and follows the reviewed disable-or-fail policy",
+  "observer reentrancy is forbidden or proven safe under the reviewed callback contract",
   "default and all-feature public compatibility remain unchanged",
 ]
 

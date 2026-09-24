@@ -31,6 +31,8 @@ const MOKA_OBSERVER_DIRECT: &str =
     "docs/testing/performance/0.73/moka-observer-direct-779849b6.toml";
 const NOTIFICATION_OBSERVER_D2_REVIEW: &str =
     "docs/testing/performance/0.73/notification-observer-d2-review.toml";
+const MOKA_OBSERVER_UPSTREAM_DRAFT: &str =
+    "docs/testing/performance/0.73/moka-post-removal-observer-upstream-draft.md";
 const PROPOSAL_REGISTRY: &str = "docs/testing/performance/0.73/proposal-registry.toml";
 const STATISTICS: &str = "docs/testing/performance/0.73/statistics.toml";
 const HOST_PROFILE: &str = "docs/testing/performance/0.73/host-profile.toml";
@@ -91,6 +93,9 @@ pub fn check_at_root(
     let statistics: TomlValue = toml::from_str(&fs::read_to_string(root.join(STATISTICS))?)?;
     let host_profile: TomlValue = toml::from_str(&fs::read_to_string(root.join(HOST_PROFILE))?)?;
     let mut problems = check_contract(&contract, release);
+    if !root.join(MOKA_OBSERVER_UPSTREAM_DRAFT).is_file() {
+        problems.push("notification observer dependency review draft is missing".to_owned());
+    }
     problems.extend(check_baseline_identities(root, &identities, release)?);
     problems.extend(check_post_tag_delta(root, &delta, release)?);
     problems.extend(check_scenario_matrix(&matrix, release));
@@ -882,6 +887,7 @@ pub fn check_notification_observer_d2_review(value: &TomlValue, release: &str) -
         ("dependency_preference", "upstream-first"),
         ("dependency_fallback", "reviewed-pinned-fork"),
         ("dependency_decision", "pending-independent-review"),
+        ("dependency_review_draft", MOKA_OBSERVER_UPSTREAM_DRAFT),
     ] {
         if text(value, field) != Some(expected) {
             problems.push(format!(
@@ -905,7 +911,7 @@ pub fn check_notification_observer_d2_review(value: &TomlValue, release: &str) -
         ("candidate_evidence_excluded_from_threshold_derivation", 3),
         ("authorized_files_if_d2_approved", 6),
         ("authorized_surfaces_if_d2_approved", 4),
-        ("required_correctness_falsifiers", 8),
+        ("required_correctness_falsifiers", 10),
         ("required_dependency_review", 4),
         ("required_d3_measurements", 7),
     ] {
@@ -927,6 +933,14 @@ pub fn check_notification_observer_d2_review(value: &TomlValue, release: &str) -
             "notification observer D2 review mixes candidate evidence into threshold derivation"
                 .to_owned(),
         );
+    }
+    let falsifiers = string_array(value.get("required_correctness_falsifiers"));
+    for required in ["panic", "reentrancy"] {
+        if !falsifiers.iter().any(|item| item.contains(required)) {
+            problems.push(format!(
+                "notification observer D2 review omits {required} falsifier"
+            ));
+        }
     }
     let thresholds = value
         .get("threshold_proposal")
