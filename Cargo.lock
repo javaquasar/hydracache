@@ -2086,6 +2086,7 @@ dependencies = [
  "async-trait",
  "bytes",
  "criterion",
+ "crossbeam-queue",
  "futures-util",
  "hydracache-core",
  "hydracache-macros",

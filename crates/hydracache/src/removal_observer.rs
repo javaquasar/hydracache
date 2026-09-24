@@ -1,8 +1,8 @@
 use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
 use std::sync::Arc;
 
+use crossbeam_queue::ArrayQueue;
 use moka::notification::RemovalCause;
-use tokio::sync::{mpsc, Mutex};
 
 use crate::entry::CacheEntry;
 use crate::memory_footprint::{EntryMemoryDelta, MemoryFootprintCounters, MemoryFootprintError};
@@ -19,15 +19,25 @@ struct CleanupTicket {
 
 #[derive(Debug)]
 pub(crate) struct RemovalObserver {
-    sender: mpsc::Sender<CleanupTicket>,
-    receiver: Mutex<mpsc::Receiver<CleanupTicket>>,
+    queue: ArrayQueue<CleanupTicket>,
+    draining: AtomicBool,
     memory: Arc<MemoryFootprintCounters>,
     accepted: AtomicU64,
     acknowledged: AtomicU64,
     dirty: AtomicBool,
     inflight_versions: Box<[AtomicU64]>,
     #[cfg(test)]
-    drain_lock_acquisitions: AtomicU64,
+    drain_claims: AtomicU64,
+}
+
+struct DrainGuard<'a> {
+    draining: &'a AtomicBool,
+}
+
+impl Drop for DrainGuard<'_> {
+    fn drop(&mut self) {
+        self.draining.store(false, Ordering::Release);
+    }
 }
 
 impl RemovalObserver {
@@ -37,10 +47,9 @@ impl RemovalObserver {
 
     fn with_capacity(memory: Arc<MemoryFootprintCounters>, capacity: usize) -> Self {
         assert!(capacity > 0, "removal cleanup queue must be non-empty");
-        let (sender, receiver) = mpsc::channel(capacity);
         Self {
-            sender,
-            receiver: Mutex::new(receiver),
+            queue: ArrayQueue::new(capacity),
+            draining: AtomicBool::new(false),
             memory,
             accepted: AtomicU64::new(0),
             acknowledged: AtomicU64::new(0),
@@ -50,7 +59,7 @@ impl RemovalObserver {
                 .collect::<Vec<_>>()
                 .into_boxed_slice(),
             #[cfg(test)]
-            drain_lock_acquisitions: AtomicU64::new(0),
+            drain_claims: AtomicU64::new(0),
         }
     }
 
@@ -101,7 +110,7 @@ impl RemovalObserver {
             tags: entry.tags,
             version: entry.version,
         };
-        if self.sender.try_send(ticket).is_err() {
+        if self.queue.push(ticket).is_err() {
             self.dirty.store(true, Ordering::Release);
         }
     }
@@ -111,10 +120,12 @@ impl RemovalObserver {
         if accepted == self.acknowledged.load(Ordering::Acquire) {
             return;
         }
-        let mut receiver = self.receiver.lock().await;
+        let Some(_guard) = self.try_claim_drain() else {
+            return;
+        };
         #[cfg(test)]
-        self.drain_lock_acquisitions.fetch_add(1, Ordering::Relaxed);
-        while let Ok(ticket) = receiver.try_recv() {
+        self.drain_claims.fetch_add(1, Ordering::Relaxed);
+        while let Some(ticket) = self.queue.pop() {
             tag_index
                 .unregister_if_version(&ticket.key, &ticket.tags, ticket.version)
                 .await;
@@ -159,14 +170,32 @@ impl RemovalObserver {
     }
 
     pub(crate) async fn reset_after_reconcile(&self) {
-        let mut receiver = self.receiver.lock().await;
-        while receiver.try_recv().is_ok() {}
+        let _guard = self.claim_drain().await;
+        while self.queue.pop().is_some() {}
         for slot in &self.inflight_versions {
             slot.store(0, Ordering::Release);
         }
         let accepted = self.accepted.load(Ordering::Acquire);
         self.acknowledged.store(accepted, Ordering::Release);
         self.dirty.store(false, Ordering::Release);
+    }
+
+    fn try_claim_drain(&self) -> Option<DrainGuard<'_>> {
+        self.draining
+            .compare_exchange(false, true, Ordering::AcqRel, Ordering::Acquire)
+            .ok()
+            .map(|_| DrainGuard {
+                draining: &self.draining,
+            })
+    }
+
+    async fn claim_drain(&self) -> DrainGuard<'_> {
+        loop {
+            if let Some(guard) = self.try_claim_drain() {
+                return guard;
+            }
+            tokio::task::yield_now().await;
+        }
     }
 }
 
@@ -265,7 +294,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn empty_drain_skips_receiver_lock_without_hiding_pending_work() {
+    async fn empty_drain_skips_consumer_claim_without_hiding_pending_work() {
         let memory = Arc::new(MemoryFootprintCounters::new(
             MemoryInstrumentationMode::Production,
         ));
@@ -273,17 +302,30 @@ mod tests {
         let index = TagIndex::default();
 
         observer.drain(&index).await;
-        assert_eq!(observer.drain_lock_acquisitions.load(Ordering::Relaxed), 0);
+        assert_eq!(observer.drain_claims.load(Ordering::Relaxed), 0);
 
         let removed = entry(11, 8, &["tag"]);
         memory.insert(EntryMemoryDelta::new("key", 8, &removed.tags, true).unwrap());
         index.register("key", &removed.tags, removed.version).await;
         observer.observe(Arc::new("key".to_owned()), removed, RemovalCause::Explicit);
         observer.drain(&index).await;
-        assert_eq!(observer.drain_lock_acquisitions.load(Ordering::Relaxed), 1);
+        assert_eq!(observer.drain_claims.load(Ordering::Relaxed), 1);
         assert!(observer.ensure_clean().is_ok());
 
         observer.drain(&index).await;
-        assert_eq!(observer.drain_lock_acquisitions.load(Ordering::Relaxed), 1);
+        assert_eq!(observer.drain_claims.load(Ordering::Relaxed), 1);
+    }
+
+    #[test]
+    fn consumer_claim_is_released_by_raii() {
+        let memory = Arc::new(MemoryFootprintCounters::new(
+            MemoryInstrumentationMode::Production,
+        ));
+        let observer = RemovalObserver::with_capacity(memory, 1);
+
+        let guard = observer.try_claim_drain().expect("first claim");
+        assert!(observer.try_claim_drain().is_none());
+        drop(guard);
+        assert!(observer.try_claim_drain().is_some());
     }
 }
