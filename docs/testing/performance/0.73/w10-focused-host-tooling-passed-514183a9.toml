@@ -6,8 +6,8 @@ contract = "docs/testing/performance/0.73/w10-focused-host-comparison-contract.t
 tooling_implementation_commit = "514183a9971d7f9cbb9b40d0c07acfb6e4a81ab5"
 tooling_implementation_tree = "c283d24c5fb8bccd05e200b7a36b66a2d485fb20"
 harness_implementation_commit = "c6e14fa9dbc969fa171470c8ef8ce49184fcd36f"
-dispatch_adapter_commit = "007a15b213711dc48f3eb235bf019a94af396d43"
-dispatch_adapter_tree = "9838ff69bc3bdf35487336f9737dd3094abd9a92"
+dispatch_adapter_commit = "377a1a1418ca5027f83a3b26f4a4321e0dc12e40"
+dispatch_adapter_tree = "1795bf0538590fea42ebb27b233098e967c1d3ec"
 baseline_source_commit = "e757556d3a31d565f52a9561d6d4e555bb1cc373"
 candidate_source_commit = "7e3070894aa51af96cdcb3e350eff923a309e1fa"
 candidate_tree_oid = "e2c438b9a248586a4f72d3eca3d1c5369fff440b"
@@ -21,7 +21,7 @@ harness_manifest_sha256 = "aba0578cd5e6680db412fdb737fdb5d634eb8392aaec8db1a9346
 harness_lock_sha256 = "3c2e8a20a26c6105fec6f449ce6cad43ba4a9a65f78516f5c0110ff0a9ca4953"
 runner_sha256 = "f2e629e888dc664b304520449bf0626649a9c153c56ae341f5be00791e8e5a40"
 runner_test_sha256 = "50e3740692866b31e7c4183f6ac510900ebc039fcf18cd1232f184f0a8ca5ecf"
-workflow_sha256 = "3503609b2a2cdbd45fdf0cf153b945d323a8c86775f6a70d45e3efe99f582523"
+workflow_sha256 = "a48ca7c3e2c54c083e1978392a460c05c2cc7ecdf4a26991dd99bbc0e6d4c456"
 dispatch_entry_workflow_sha256 = "7fbb6d8950b04457a923055edaedfd5ce5458415088fb391d1ef232b316a2a6f"
 candidate_receipt_sha256 = "5f26f5785d4e79d6a11c5ff90c289776d3a977317887dc3804f6ff85b23c0cd7"
 canary_packet_sha256 = "ed627f98649453b56caa0a02aff1c5e12149910fbc0b639d806330645802affb"
@@ -74,7 +74,7 @@ canary_receipt_absent = true
 
 decision = "pass-local-tooling-open-one-manual-protected-host-dispatch"
 claim_boundary = "This receipt qualifies only the harness, runner, workflow, exact role binding, and fail-closed accounting. It makes no performance claim. The protected campaign must still complete all thirty independent role processes and pass pre/post host calibration plus every frozen primary guard."
-dispatch_rule = "Dispatch the existing manual baseline workflow entry on this branch with source_sha bound to a clean descendant of adapter commit 007a15b2. Its outer workflow holds the shared host concurrency group; the nested reusable call uses a run-unique group and declares daemon, loadgen, and collector placement before host preflight while still building exact I73 and C73 product commits."
+dispatch_rule = "Dispatch the existing manual baseline workflow entry on this branch with source_sha bound to a clean descendant of adapter commit 377a1a14. Its outer workflow holds the shared host concurrency group; staging binds each byte-identical harness overlay to the exact role's crates and root workspace manifest by symlink, without copying or changing product files."
 next_evidence = "Run the manual protected workflow once under the serialized lease, retain all attempts even on failure, import its immutable artifact, and decide whether published-0.72 compatibility and rollback qualification may open."
 
 [[invalid_attempt]]
@@ -118,3 +118,9 @@ id = "missing-collector-affinity"
 outcome = "workflow-run-36195862332-blocked-host-before-build"
 reason = "Pre/post calibration spreads passed at 1.45% and 2.32%, but the new workflow omitted HYDRACACHE_PERFORMANCE_COLLECTOR_CPUSET. Both host receipts recorded collector null, result blocked-host, and ship_evidence_eligible false."
 correction = "Declare the frozen collector CPU set 0 alongside daemon 5-6 and loadgen 7 before preflight. The failed run retained artifact 10889958395 (zip SHA-256 57e0feab4666ebe4daf2784ae0b6a2b20424a61f6d87f2a27dfafa22b5dda2d1), including preflight 9197e8f776f3a169d45de0b87178069c2bf892dd48b70c57051fd1dbb0d463ae and postflight 4187a46722ff02155d87b7aeec5a56c7d21675680f0dc4546f9b4217d7ea2296. No role build, canary, or benchmark process started."
+
+[[invalid_attempt]]
+id = "overlay-missing-workspace-root"
+outcome = "workflow-run-36196189494-build-failed-before-canary"
+reason = "Both exact server binaries built and host pre/post calibration passed, but the I73 harness dependency manifest could not inherit workspace.package fields because staging linked crates without the exact role root Cargo.toml."
+correction = "Add read-only symlinks from each staging root to that role's exact root Cargo.toml. This restores Cargo workspace inheritance without copying or patching a product manifest. Artifact 10889882901 retained both host receipts (zip SHA-256 b8191ccd86c9d642b98bfa53dc7dce387652caebfb7feadc3175b2dc6482b9fc); no canary or benchmark process started."
