@@ -985,3 +985,22 @@ fn w2_expiry_sweep_profile_cannot_enable_product_or_host_work() {
         .iter()
         .any(|problem| problem.contains("volume or metrics changed")));
 }
+
+#[test]
+fn w2_expiry_sweep_evidence_cannot_promote_or_change_copy_volume() {
+    let mut value = manifest("w2-expiry-sweep-profile-e4a61d9f.toml");
+    value["promotable"] = TomlValue::Boolean(true);
+    value["candidate_implementation_allowed"] = TomlValue::Boolean(true);
+    value["scenario"][0]["gross_allocated_bytes"] = TomlValue::Integer(1);
+    let problems =
+        xtask::performance_contract::check_w2_expiry_sweep_profile_evidence(&value, "0.73");
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("promotable must be false")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("candidate_implementation_allowed must be false")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("none-expired result changed")));
+}

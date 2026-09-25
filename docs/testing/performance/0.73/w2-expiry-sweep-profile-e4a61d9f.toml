@@ -1,0 +1,86 @@
+schema_version = 1
+release = "0.73"
+evidence_id = "w2-expiry-sweep-profile-e4a61d9f-v1"
+state = "local-owner-attributed-candidate-contract-required"
+contract = "docs/testing/performance/0.73/w2-expiry-sweep-profile-contract.toml"
+parent_contract = "docs/testing/performance/0.73/w1-owner-classification-contract.toml"
+profile_source_commit = "e4a61d9fbbd3fa3fa5eb3b12e39b2ca5b5872404"
+baseline_identity = "I73"
+baseline_source_sha = "e757556d3a31d565f52a9561d6d4e555bb1cc373"
+profile_feature = "performance-profile"
+profile_tool = "tools/expiry-sweep-profile-073"
+binary_sha256 = "5f6897910d10ba9b4d89d738d381b29fc71df5621b5ba66393636ea3444a97f1"
+contract_sha256 = "73d80bc09137fe922f393e669e7dddf54cb1f0609829caa910a6c2b84e2b0f7b"
+tool_lock_sha256 = "6a11ba1baf9148929a9d7df4374157661176d9f5e5988c13da345dfb38607013"
+tool_source_sha256 = "6b7ae6026339d821ee9bb480f0c468cd2e07988250d867c6f474e8ff8732629f"
+raw_result_sha256 = "37cc7385ed11f24a88b318d42d2883bfa9d6287c5b6c95fed6b0e0331a5d3670"
+rustc = "rustc 1.94.0 (4a4ef493e 2026-03-02)"
+cargo = "cargo 1.94.0 (85eff7c80 2026-01-15)"
+attempts = 20
+failed_attempts = 0
+repeats_per_scenario = 5
+fixture_entries = 512
+scan_limit = 256
+identity_bytes_per_key = 96
+production_feature_enabled = false
+product_mutation_present = false
+candidate_implementation_allowed = false
+dedicated_host_run_allowed = false
+promotable = false
+cpu_claims_allowed = false
+latency_claims_allowed = false
+rss_claims_allowed = false
+numerical_release_claims_allowed = false
+owner = "expiry_sweep_candidates clones all examined StoreKey tuples under the ClientSurfaceState store lock, clones every expired tuple again into the removal list, and clones the final examined tuple into the next cursor"
+allocation_model = "A StoreKey contains three owned Strings. With the frozen 96-byte identity, every tuple clone performs three allocations and copies 96 payload bytes. The examined Vec reserves 256 * 72 = 18,432 bytes. Filtered expired collection grows geometrically, and gross realloc accounting charges every complete new buffer."
+falsifier_result = "passed: every process examined exactly 256 entries; logical clone bytes matched the fixed identity; cursor wrap matched the no-expiry result exactly; allocation and byte counts were identical across all five processes per scenario"
+interpretation = "The unavoidable owned removal list scales with expired cardinality, but the 18,432-byte examined vector and 24,576 bytes of examined-key string copies are paid even when no key expires. All of this allocation occurs while the store mutex is held. Lock-duration improvement is plausible but unmeasured and is not claimed."
+decision = "preregister-d2-borrowed-scan-candidate"
+next_evidence = "Preregister and implement a candidate that scans borrowed BTreeMap entries, owns only expired keys and one next cursor, preserves the 256-entry budget and wrap semantics, and proves tenant quota release before any dedicated-host run."
+
+validation = [
+  "cargo fmt -p hydracache-client-transport-axum -p xtask -- --check: passed",
+  "cargo check -p hydracache-client-transport-axum --features performance-profile --locked: passed",
+  "cargo clippy -p hydracache-client-transport-axum --lib --tests --features performance-profile --locked -- -D warnings: passed",
+  "cargo check --manifest-path tools/expiry-sweep-profile-073/Cargo.toml --all-targets --locked: passed",
+  "cargo clippy --manifest-path tools/expiry-sweep-profile-073/Cargo.toml --all-targets --locked -- -D warnings: passed",
+  "cargo test -p hydracache-client-transport-axum request_path_expiry_sweep_has_a_fixed_scan_budget_and_makes_progress --features performance-profile --locked: passed",
+  "cargo test -p xtask --test performance_contract_073 w2_expiry_sweep_profile --locked: passed",
+  "cargo xtask performance-contract-check --release 0.73: passed",
+]
+
+[[scenario]]
+name = "none-expired"
+examined_keys = 256
+expired_keys = 0
+cloned_keys = 257
+cloned_identity_bytes = 24672
+allocation_count = 772
+gross_allocated_bytes = 43104
+
+[[scenario]]
+name = "half-expired"
+examined_keys = 256
+expired_keys = 128
+cloned_keys = 385
+cloned_identity_bytes = 36960
+allocation_count = 1162
+gross_allocated_bytes = 73536
+
+[[scenario]]
+name = "all-expired"
+examined_keys = 256
+expired_keys = 256
+cloned_keys = 513
+cloned_identity_bytes = 49248
+allocation_count = 1547
+gross_allocated_bytes = 104256
+
+[[scenario]]
+name = "cursor-wrap-none-expired"
+examined_keys = 256
+expired_keys = 0
+cloned_keys = 257
+cloned_identity_bytes = 24672
+allocation_count = 772
+gross_allocated_bytes = 43104

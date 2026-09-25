@@ -941,6 +941,34 @@ counters, some in allocation probes, and some only in OS or allocator-native tel
 every unknown as a new hot-path counter would confuse observability with ownership—and could recreate
 the overhead problem we just removed.
 
+The first follow-up probe demonstrates why the measurement layer matters. The shared client store's
+bounded expiry sweep used an owned `Vec<StoreKey>` for every examined entry, then cloned expired
+keys into a second vector and cloned the final examined key once more into the cursor. Because a
+`StoreKey` contains three owned strings, this is not a cheap tuple copy. It is three allocations and
+all identity bytes copied for every clone, while the store mutex remains held.
+
+A profile-only feature called the real sweep from a standalone release binary; it added no counters
+or timers to the frozen production path. The fixed fixture contained 512 entries, a 256-entry scan
+budget, and 96 identity bytes per tuple key. Five independent processes per shape produced identical
+results. With no expired entries, the sweep made 772 allocations and allocated 43,104 gross bytes.
+Of those bytes, 18,432 are the reserved 256-element examined vector and 24,672 are the three strings
+in 256 examined-key clones plus one cursor clone. Crossing the ordered-map boundary produced exactly
+the same result, which is evidence that wraparound itself is not a separate owner.
+
+When half the examined entries were expired, the result rose to 1,162 allocations and 73,536 bytes;
+when all were expired, it reached 1,547 allocations and 104,256 bytes. The increase is explained by
+the necessary owned removal keys plus geometric growth of the filtered expired vector. Gross
+allocation deliberately counts the full destination size of every reallocation, so this is churn,
+not retained memory. The decomposition predicts every observed byte: it is a much stronger basis for
+a change than an RSS correlation.
+
+The candidate boundary is now narrow. Removal still needs owned expired keys because the map is
+mutated after scanning, and bounded progress still needs one owned cursor. The examined keys need
+neither. A borrowed scan can retain only expired tuples and the final cursor, eliminating the fixed
+43,104-byte no-expiry cost while preserving the 256-entry budget, wrap semantics, and quota cleanup.
+We do not yet claim shorter lock duration: the allocation is under the mutex, so that outcome is
+plausible, but it requires a separate measurement rather than inference.
+
 ## A profiling ladder that avoids expensive runs
 
 Not every development iteration needs a dedicated bare-metal campaign. A useful workflow has several

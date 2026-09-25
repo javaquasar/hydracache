@@ -50,6 +50,7 @@ shared_entry_tags_product = "docs/testing/performance/0.73/shared-entry-tags-pro
 baseline_pilot_v2_freeze_evidence = "docs/testing/performance/0.73/baseline-pilot-v2-passed-e757556d.toml"
 w1_owner_classification_contract = "docs/testing/performance/0.73/w1-owner-classification-contract.toml"
 w2_expiry_sweep_profile_contract = "docs/testing/performance/0.73/w2-expiry-sweep-profile-contract.toml"
+w2_expiry_sweep_profile_evidence = "docs/testing/performance/0.73/w2-expiry-sweep-profile-e4a61d9f.toml"
 promotable = false
 numerical_claims_allowed = false
 candidate_thresholds_allowed = false
