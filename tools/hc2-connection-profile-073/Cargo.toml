@@ -7,6 +7,7 @@ edition = "2021"
 publish = false
 
 [dependencies]
+bytes = "1"
 hydracache-client-hc2 = { path = "../../crates/hydracache-client-hc2" }
 hydracache-client-transport-axum = { path = "../../crates/hydracache-client-transport-axum" }
 hydracache-loadgen = { path = "../../crates/hydracache-loadgen" }

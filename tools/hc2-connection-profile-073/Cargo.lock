@@ -906,6 +906,7 @@ dependencies = [
 name = "hc2-connection-profile-073"
 version = "0.0.0"
 dependencies = [
+ "bytes",
  "hydracache-client-hc2",
  "hydracache-client-transport-axum",
  "hydracache-loadgen",
