@@ -1042,3 +1042,22 @@ fn w2_borrowed_expiry_scan_evidence_cannot_promote_or_change_result() {
         .iter()
         .any(|problem| problem.contains("none-expired result changed")));
 }
+
+#[test]
+fn w5_hc2_event_copy_profile_cannot_enable_product_or_host_work() {
+    let mut value = manifest("w5-hc2-event-copy-profile-contract.toml");
+    value["product_mutation_allowed"] = TomlValue::Boolean(true);
+    value["dedicated_host_run_allowed"] = TomlValue::Boolean(true);
+    value["fanouts"] = TomlValue::Array(vec![TomlValue::Integer(1)]);
+    let problems =
+        xtask::performance_contract::check_w5_hc2_event_copy_profile_contract(&value, "0.73");
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("product_mutation_allowed must be false")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("dedicated_host_run_allowed must be false")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("volume changed")));
+}

@@ -98,6 +98,8 @@ const W2_BORROWED_EXPIRY_SCAN_CONTRACT: &str =
     "docs/testing/performance/0.73/w2-borrowed-expiry-scan-contract.toml";
 const W2_BORROWED_EXPIRY_SCAN_EVIDENCE: &str =
     "docs/testing/performance/0.73/w2-borrowed-expiry-scan-a80839fd.toml";
+const W5_HC2_EVENT_COPY_PROFILE_CONTRACT: &str =
+    "docs/testing/performance/0.73/w5-hc2-event-copy-profile-contract.toml";
 const RELEASE: &str = "0.73";
 const PROFILE: &str = "local-screening-073-v1";
 const ENVIRONMENT_CLASS: &str = "local_screening";
@@ -236,6 +238,9 @@ pub fn check_at_root(
     )?)?;
     let w2_borrowed_expiry_scan_evidence: TomlValue = toml::from_str(&fs::read_to_string(
         root.join(W2_BORROWED_EXPIRY_SCAN_EVIDENCE),
+    )?)?;
+    let w5_hc2_event_copy_profile_contract: TomlValue = toml::from_str(&fs::read_to_string(
+        root.join(W5_HC2_EVENT_COPY_PROFILE_CONTRACT),
     )?)?;
     let mut problems = check_contract(&contract, release);
     if !root.join(MOKA_OBSERVER_UPSTREAM_DRAFT).is_file() {
@@ -393,6 +398,10 @@ pub fn check_at_root(
     ));
     problems.extend(check_w2_borrowed_expiry_scan_evidence(
         &w2_borrowed_expiry_scan_evidence,
+        release,
+    ));
+    problems.extend(check_w5_hc2_event_copy_profile_contract(
+        &w5_hc2_event_copy_profile_contract,
         release,
     ));
     problems.extend(check_schema(
@@ -554,6 +563,10 @@ pub fn check_contract(root: &TomlValue, release: &str) -> Vec<String> {
         (
             "w2_borrowed_expiry_scan_evidence",
             W2_BORROWED_EXPIRY_SCAN_EVIDENCE,
+        ),
+        (
+            "w5_hc2_event_copy_profile_contract",
+            W5_HC2_EVENT_COPY_PROFILE_CONTRACT,
         ),
     ] {
         if text(root, field) != Some(expected) {
@@ -4064,6 +4077,61 @@ pub fn check_w2_borrowed_expiry_scan_evidence(value: &TomlValue, release: &str) 
         || text(value, "next_evidence").is_none_or(str::is_empty)
     {
         problems.push("W2 borrowed expiry scan evidence decision is incomplete".to_owned());
+    }
+    problems
+}
+
+pub fn check_w5_hc2_event_copy_profile_contract(value: &TomlValue, release: &str) -> Vec<String> {
+    let mut problems = Vec::new();
+    if integer(value, "schema_version") != Some(1)
+        || text(value, "release") != Some(release)
+        || text(value, "contract_id") != Some("w5-hc2-event-copy-profile-073-v1")
+        || text(value, "state") != Some("preregistered-awaiting-local-profile")
+        || text(value, "parent_contract") != Some(W1_OWNER_CLASSIFICATION_CONTRACT)
+        || text(value, "source_parent") != Some("9bcafa654281a4ba56d93972e8d5db16096a99ee")
+        || text(value, "source_owner")
+            != Some("crates/hydracache-server/src/hc2.rs::emit_matching_events")
+        || text(value, "profile_tool") != Some("tools/hc2-event-copy-profile-073")
+    {
+        problems.push("W5 HC/2 event copy profile identity changed".to_owned());
+    }
+    for field in [
+        "production_counter_addition",
+        "product_mutation_allowed",
+        "candidate_data_allowed",
+        "dedicated_host_run_allowed",
+        "local_results_promotable",
+    ] {
+        if boolean(value, field) != Some(false) {
+            problems.push(format!("W5 HC/2 event copy profile {field} must be false"));
+        }
+    }
+    if boolean(value, "independent_processes_required") != Some(true)
+        || integer(value, "repeats_per_scenario") != Some(5)
+        || integer(value, "key_bytes") != Some(64)
+        || integer_array(value.get("fanouts")) != [1, 8, 16]
+        || integer_array(value.get("value_bytes")) != [128, 4_096]
+        || string_array(value.get("scenarios"))
+            != [
+                "fanout-1-value-128",
+                "fanout-8-value-128",
+                "fanout-16-value-128",
+                "fanout-16-value-4096",
+            ]
+    {
+        problems.push("W5 HC/2 event copy profile volume changed".to_owned());
+    }
+    for field in [
+        "queue_capacity_owner",
+        "copy_owner",
+        "hypothesis",
+        "falsifier",
+        "interpretation_limit",
+        "next_decision",
+    ] {
+        if text(value, field).is_none_or(str::is_empty) {
+            problems.push(format!("W5 HC/2 event copy profile {field} is missing"));
+        }
     }
     problems
 }
