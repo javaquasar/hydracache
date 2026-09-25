@@ -1199,3 +1199,23 @@ fn w5_split_connection_evidence_cannot_promote_or_rewrite_endpoint_results() {
         .iter()
         .any(|problem| problem.contains("1000-connection result changed")));
 }
+
+#[test]
+fn w5_slow_consumer_profile_cannot_promote_or_weaken_the_workload() {
+    let mut value = manifest("w5-hc2-slow-consumer-profile-contract.toml");
+    value["promotable"] = TomlValue::Boolean(true);
+    value["server_queued_byte_claim_allowed"] = TomlValue::Boolean(true);
+    value["connections"] = TomlValue::Integer(1);
+    value["total_mutations"] = TomlValue::Integer(1_100);
+    let problems =
+        xtask::performance_contract::check_w5_hc2_slow_consumer_profile_contract(&value, "0.73");
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("promotable must be false")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("server_queued_byte_claim_allowed must be false")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("workload changed")));
+}

@@ -65,6 +65,7 @@ w5_hc2_connection_profile_contract = "docs/testing/performance/0.73/w5-hc2-conne
 w5_hc2_connection_profile_evidence = "docs/testing/performance/0.73/w5-hc2-connection-profile-ff657fc5.toml"
 w5_hc2_split_connection_profile_contract = "docs/testing/performance/0.73/w5-hc2-split-connection-profile-contract.toml"
 w5_hc2_split_connection_profile_evidence = "docs/testing/performance/0.73/w5-hc2-split-connection-profile-19a440d4.toml"
+w5_hc2_slow_consumer_profile_contract = "docs/testing/performance/0.73/w5-hc2-slow-consumer-profile-contract.toml"
 promotable = false
 numerical_claims_allowed = false
 candidate_thresholds_allowed = false

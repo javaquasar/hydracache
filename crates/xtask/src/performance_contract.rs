@@ -114,6 +114,8 @@ const W5_HC2_SPLIT_CONNECTION_PROFILE_CONTRACT: &str =
     "docs/testing/performance/0.73/w5-hc2-split-connection-profile-contract.toml";
 const W5_HC2_SPLIT_CONNECTION_PROFILE_EVIDENCE: &str =
     "docs/testing/performance/0.73/w5-hc2-split-connection-profile-19a440d4.toml";
+const W5_HC2_SLOW_CONSUMER_PROFILE_CONTRACT: &str =
+    "docs/testing/performance/0.73/w5-hc2-slow-consumer-profile-contract.toml";
 const RELEASE: &str = "0.73";
 const PROFILE: &str = "local-screening-073-v1";
 const ENVIRONMENT_CLASS: &str = "local_screening";
@@ -276,6 +278,9 @@ pub fn check_at_root(
     )?)?;
     let w5_hc2_split_connection_profile_evidence: TomlValue = toml::from_str(&fs::read_to_string(
         root.join(W5_HC2_SPLIT_CONNECTION_PROFILE_EVIDENCE),
+    )?)?;
+    let w5_hc2_slow_consumer_profile_contract: TomlValue = toml::from_str(&fs::read_to_string(
+        root.join(W5_HC2_SLOW_CONSUMER_PROFILE_CONTRACT),
     )?)?;
     let mut problems = check_contract(&contract, release);
     if !root.join(MOKA_OBSERVER_UPSTREAM_DRAFT).is_file() {
@@ -465,6 +470,10 @@ pub fn check_at_root(
     ));
     problems.extend(check_w5_hc2_split_connection_profile_evidence(
         &w5_hc2_split_connection_profile_evidence,
+        release,
+    ));
+    problems.extend(check_w5_hc2_slow_consumer_profile_contract(
+        &w5_hc2_slow_consumer_profile_contract,
         release,
     ));
     problems.extend(check_schema(
@@ -658,6 +667,10 @@ pub fn check_contract(root: &TomlValue, release: &str) -> Vec<String> {
         (
             "w5_hc2_split_connection_profile_evidence",
             W5_HC2_SPLIT_CONNECTION_PROFILE_EVIDENCE,
+        ),
+        (
+            "w5_hc2_slow_consumer_profile_contract",
+            W5_HC2_SLOW_CONSUMER_PROFILE_CONTRACT,
         ),
     ] {
         if text(root, field) != Some(expected) {
@@ -4761,6 +4774,80 @@ pub fn check_w5_hc2_split_connection_profile_evidence(
         || text(value, "next_evidence").is_none_or(str::is_empty)
     {
         problems.push("W5 HC/2 split connection evidence decision is incomplete".to_owned());
+    }
+    problems
+}
+
+pub fn check_w5_hc2_slow_consumer_profile_contract(
+    value: &TomlValue,
+    release: &str,
+) -> Vec<String> {
+    let mut problems = Vec::new();
+    if integer(value, "schema_version") != Some(1)
+        || text(value, "release") != Some(release)
+        || text(value, "contract_id") != Some("w5-hc2-slow-consumer-profile-073-v1")
+        || text(value, "state") != Some("preregistered-awaiting-local-drained-vs-unread-pairs")
+        || text(value, "triggering_evidence") != Some(W5_HC2_SPLIT_CONNECTION_PROFILE_EVIDENCE)
+        || text(value, "source_parent") != Some("a653dddf4d694e15917862763ff49417b1ad44fc")
+        || text(value, "profile_tool") != Some("tools/hc2-connection-profile-073")
+    {
+        problems.push("W5 HC/2 slow-consumer profile identity changed".to_owned());
+    }
+    for field in [
+        "production_counter_addition",
+        "product_mutation_allowed",
+        "candidate_data_allowed",
+        "dedicated_host_run_allowed",
+        "promotable",
+        "server_queued_byte_claim_allowed",
+        "release_numerical_claim_allowed",
+    ] {
+        if boolean(value, field) != Some(false) {
+            problems.push(format!(
+                "W5 HC/2 slow-consumer profile {field} must be false"
+            ));
+        }
+    }
+    for field in [
+        "independent_process_pairs_required",
+        "unique_prefix_per_connection_required",
+        "same_mutation_volume_required",
+        "transport_reader_remains_active",
+    ] {
+        if boolean(value, field) != Some(true) {
+            problems.push(format!(
+                "W5 HC/2 slow-consumer profile {field} must be true"
+            ));
+        }
+    }
+    if integer(value, "connections") != Some(100)
+        || integer(value, "subscriptions_per_connection") != Some(1)
+        || integer(value, "mutations_per_connection") != Some(1_100)
+        || integer(value, "total_mutations") != Some(110_000)
+        || integer(value, "value_bytes") != Some(128)
+        || integer(value, "client_subscription_item_capacity") != Some(1_024)
+        || integer(value, "server_outbound_item_capacity") != Some(16)
+        || integer(value, "pairs") != Some(5)
+        || string_array(value.get("scenarios"))
+            != [
+                "drained-application-consumers",
+                "unread-application-consumers",
+            ]
+        || string_array(value.get("counterbalanced_order")).len() != 5
+    {
+        problems.push("W5 HC/2 slow-consumer profile workload changed".to_owned());
+    }
+    for field in [
+        "control_invariant",
+        "treatment_invariant",
+        "close_invariant",
+        "falsifier",
+        "interpretation_limit",
+        "next_decision",
+    ] {
+        if text(value, field).is_none_or(str::is_empty) {
+            problems.push(format!("W5 HC/2 slow-consumer profile {field} is missing"));
+        }
     }
     problems
 }
