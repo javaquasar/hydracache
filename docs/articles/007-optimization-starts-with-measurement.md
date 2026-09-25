@@ -860,6 +860,28 @@ specific target. We stop spending reference-host minutes and return to allocatio
 observer delivery, queue publication, cleanup, and tag-index work must be separated before another
 product optimization is selected.
 
+The local split found the owner without another bare-metal campaign. Counter updates changed gross
+allocation by only a few bytes per operation, and get-only traffic was neutral. Enabling an empty
+post-removal observer, however, added about 79 B/op to replacement, 81 B/op to remove/refill,
+118 B/op to tag invalidation/refill, and 76 B/op to TTL puts. The complete production callback did
+not add the positive adjacent delta; remove and tag invalidation retained +76 and +86 B/op versus
+off, which combined into +24.80 B/op in the original mixed workload.
+
+The code explains the shape. Moka must deliver an owned value to the observer and calls
+`entry.value.clone()`. HydraCache's value derives `Clone` and stores tags as `Box<[String]>`, so
+cloning a removed entry copies the slice and every tag string before the callback can move that copy
+into its bounded cleanup ticket. Reads do not invoke the observer, and counters do not clone the
+entry, matching the two neutral ablations. This is stronger attribution than merely noticing that
+allocations correlate with CPU: the metric, operation family, ablation boundary, and source-level
+ownership all agree.
+
+The next optimization therefore changes ownership rather than shaving another atomic instruction.
+Sharing immutable tags between the stored entry, Moka's observer clone, and the cleanup ticket can
+turn the deep clone into a refcount increment. That proposal still needs its own safety contract:
+versioned tag cleanup, bounded queue behavior, retained-memory estimates, and public APIs must stay
+unchanged, and the exact 120-process local matrix must show that the identified allocation moved
+before any dedicated-host run is considered.
+
 ## A profiling ladder that avoids expensive runs
 
 Not every development iteration needs a dedicated bare-metal campaign. A useful workflow has several

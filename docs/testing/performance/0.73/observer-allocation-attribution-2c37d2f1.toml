@@ -1,0 +1,66 @@
+schema_version = 1
+release = "0.73"
+evidence_id = "observer-allocation-attribution-2c37d2f1-v1"
+state = "local-diagnostic-complete-owner-identified"
+contract = "docs/testing/performance/0.73/observer-allocation-attribution-contract.toml"
+triggering_evidence = "docs/testing/performance/0.73/baseline-pilot-v2-insufficient-2daccb47.toml"
+source_sha = "2c37d2f167163a364a71cf24fee21eaaf839bd27"
+binary_sha256 = "8ba49fb83f492a51fcc01cbc1f61e7376aaa083e90881ee014c08d07683a080b"
+result_sha256 = "e2a96c5f3ef8f263b017b24713b38b5431ffc9f234b9d316145938df56dcdcdd"
+packet_file_count = 361
+attempts = 120
+failed_attempts = 0
+repeats_per_scenario_and_mode = 5
+operations_per_attempt = 8192
+offered_rate_per_second = 20000
+warmup_operations = 4096
+run_order_seed = 73074
+allocation_measurement_only = true
+cpu_claims_allowed = false
+rss_claims_allowed = false
+correctness_claims_from_ablation_modes_allowed = false
+candidate_data_present = false
+numerical_release_claims_allowed = false
+promotable = false
+dedicated_host_repeat_authorized = false
+owner = "Moka post-removal observer delivery clones CacheEntry; CacheEntry::clone deeply clones Box<[String]> tags before the HydraCache callback can move those tags into its bounded cleanup ticket."
+source_argument = "Pinned Moka 352e53fa calls observer.observe(key, entry.value.clone(), cause). HydraCache CacheEntry derives Clone and stores tags as Box<[String]>. Counters-only stays near off, get stays near off, and mutation scenarios acquire the allocation only when the observer is enabled."
+interpretation = "The noop observer adds 76--118 B/op to isolated mutation families. Production callback work has a negative or near-zero adjacent allocation delta, so it is not the positive gross-allocation owner. Remove/refill and tag-invalidate/refill retain 76.17 and 85.71 B/op off-to-production and explain the mixed +24.80 B/op result."
+decision = "preregister-shared-immutable-entry-tags"
+next_evidence = "Replace only CacheEntry and CleanupTicket tag ownership with a shared immutable representation so Moka value cloning and queue publication do not deep-clone tag strings. Preserve versioned cleanup, retained estimates, bounded queue behavior, and every public API; rerun correctness and this exact local matrix before any dedicated-host run."
+
+[[scenario]]
+name = "mixed"
+mode_medians = [4941.8548583984375, 4943.03271484375, 4993.015625, 4966.656005859375]
+adjacent_deltas = [1.1778564453125, 49.98291015625, -26.359619140625]
+off_to_production_delta = 24.8011474609375
+
+[[scenario]]
+name = "get"
+mode_medians = [2716.27734375, 2714.501953125, 2715.078125, 2716.775390625]
+adjacent_deltas = [-1.775390625, 0.576171875, 1.697265625]
+off_to_production_delta = 0.498046875
+
+[[scenario]]
+name = "replace"
+mode_medians = [6010.93603515625, 6011.56005859375, 6090.18115234375, 5954.42919921875]
+adjacent_deltas = [0.6240234375, 78.62109375, -135.751953125]
+off_to_production_delta = -56.5068359375
+
+[[scenario]]
+name = "remove-refill"
+mode_medians = [6501.03857421875, 6498.92529296875, 6579.94873046875, 6577.20556640625]
+adjacent_deltas = [-2.11328125, 81.0234375, -2.7431640625]
+off_to_production_delta = 76.1669921875
+
+[[scenario]]
+name = "tag-invalidate-refill"
+mode_medians = [6557.0631103515625, 6550.361083984375, 6668.20703125, 6642.771728515625]
+adjacent_deltas = [-6.7020263671875, 117.845947265625, -25.435302734375]
+off_to_production_delta = 85.7086181640625
+
+[[scenario]]
+name = "ttl-put"
+mode_medians = [6007.55908203125, 6011.30908203125, 6087.33740234375, 5955.41552734375]
+adjacent_deltas = [3.75, 76.0283203125, -131.921875]
+off_to_production_delta = -52.1435546875

@@ -414,6 +414,16 @@ Windows-local CPU and RSS are explicitly unavailable, and the incomplete counter
 cannot support correctness or release claims. The experiment may identify an owner, but cannot
 authorize its own product change or another reference-host run.
 
+The exact-source local run completed all 120 attempts. Counters-only and get stayed near off. The
+noop observer added 79 B/op on replacement, 81 B/op on remove/refill, 118 B/op on tag invalidation,
+and 76 B/op on TTL puts. Production callback work did not own that positive delta; the remaining
+off-to-production costs were concentrated in remove/refill (+76 B/op) and tag invalidation/refill
+(+86 B/op), producing +24.80 B/op in mixed. Source inspection closes the attribution loop: pinned
+Moka invokes the observer with `entry.value.clone()`, while `CacheEntry::clone` deeply clones its
+`Box<[String]>` tags. `observer-allocation-attribution-2c37d2f1.toml` retains exact medians, binary
+and result hashes, and prohibits a host repeat. The next candidate is shared immutable entry tags,
+validated locally before another reference-host minute is authorized.
+
 The same push exposed a separate cost-control issue: the host-admission workflow still had an
 automatic path and queued run `36072022062` behind the shared performance concurrency group. It was
 cancelled before environment approval and ran no job. Commit `e0dc4df5` makes host admission, like

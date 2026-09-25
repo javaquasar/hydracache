@@ -80,6 +80,8 @@ const BASELINE_PILOT_V2_COUNTER_EVIDENCE: &str =
     "docs/testing/performance/0.73/baseline-pilot-v2-insufficient-2daccb47.toml";
 const OBSERVER_ALLOCATION_ATTRIBUTION_CONTRACT: &str =
     "docs/testing/performance/0.73/observer-allocation-attribution-contract.toml";
+const OBSERVER_ALLOCATION_ATTRIBUTION_EVIDENCE: &str =
+    "docs/testing/performance/0.73/observer-allocation-attribution-2c37d2f1.toml";
 const RELEASE: &str = "0.73";
 const PROFILE: &str = "local-screening-073-v1";
 const ENVIRONMENT_CLASS: &str = "local_screening";
@@ -193,6 +195,9 @@ pub fn check_at_root(
     )?)?;
     let observer_allocation_attribution_contract: TomlValue = toml::from_str(&fs::read_to_string(
         root.join(OBSERVER_ALLOCATION_ATTRIBUTION_CONTRACT),
+    )?)?;
+    let observer_allocation_attribution_evidence: TomlValue = toml::from_str(&fs::read_to_string(
+        root.join(OBSERVER_ALLOCATION_ATTRIBUTION_EVIDENCE),
     )?)?;
     let mut problems = check_contract(&contract, release);
     if !root.join(MOKA_OBSERVER_UPSTREAM_DRAFT).is_file() {
@@ -314,6 +319,10 @@ pub fn check_at_root(
     ));
     problems.extend(check_observer_allocation_attribution_contract(
         &observer_allocation_attribution_contract,
+        release,
+    ));
+    problems.extend(check_observer_allocation_attribution_evidence(
+        &observer_allocation_attribution_evidence,
         release,
     ));
     problems.extend(check_schema(
@@ -445,6 +454,10 @@ pub fn check_contract(root: &TomlValue, release: &str) -> Vec<String> {
         (
             "observer_allocation_attribution_contract",
             OBSERVER_ALLOCATION_ATTRIBUTION_CONTRACT,
+        ),
+        (
+            "observer_allocation_attribution_evidence",
+            OBSERVER_ALLOCATION_ATTRIBUTION_EVIDENCE,
         ),
     ] {
         if text(root, field) != Some(expected) {
@@ -3228,6 +3241,78 @@ pub fn check_observer_allocation_attribution_contract(
     {
         problems
             .push("observer allocation attribution volume or interpretation changed".to_owned());
+    }
+    problems
+}
+
+pub fn check_observer_allocation_attribution_evidence(
+    value: &TomlValue,
+    release: &str,
+) -> Vec<String> {
+    let mut problems = Vec::new();
+    if integer(value, "schema_version") != Some(1)
+        || text(value, "release") != Some(release)
+        || text(value, "evidence_id") != Some("observer-allocation-attribution-2c37d2f1-v1")
+        || text(value, "state") != Some("local-diagnostic-complete-owner-identified")
+        || text(value, "contract") != Some(OBSERVER_ALLOCATION_ATTRIBUTION_CONTRACT)
+        || text(value, "triggering_evidence") != Some(BASELINE_PILOT_V2_COUNTER_EVIDENCE)
+        || text(value, "source_sha") != Some("2c37d2f167163a364a71cf24fee21eaaf839bd27")
+    {
+        problems.push("observer allocation attribution evidence identity changed".to_owned());
+    }
+    for field in ["binary_sha256", "result_sha256"] {
+        if text(value, field).is_none_or(|digest| !sha256(digest)) {
+            problems.push(format!(
+                "observer allocation attribution evidence {field} is not SHA-256"
+            ));
+        }
+    }
+    for field in [
+        "cpu_claims_allowed",
+        "rss_claims_allowed",
+        "correctness_claims_from_ablation_modes_allowed",
+        "candidate_data_present",
+        "numerical_release_claims_allowed",
+        "promotable",
+        "dedicated_host_repeat_authorized",
+    ] {
+        if boolean(value, field) != Some(false) {
+            problems.push(format!(
+                "observer allocation attribution evidence {field} must be false"
+            ));
+        }
+    }
+    let scenarios = value
+        .get("scenario")
+        .and_then(TomlValue::as_array)
+        .cloned()
+        .unwrap_or_default();
+    if boolean(value, "allocation_measurement_only") != Some(true)
+        || integer(value, "attempts") != Some(120)
+        || integer(value, "failed_attempts") != Some(0)
+        || integer(value, "packet_file_count") != Some(361)
+        || integer(value, "repeats_per_scenario_and_mode") != Some(5)
+        || scenarios.len() != 6
+        || scenarios.iter().any(|scenario| {
+            scenario
+                .get("mode_medians")
+                .and_then(TomlValue::as_array)
+                .is_none_or(|values| values.len() != 4)
+                || scenario
+                    .get("adjacent_deltas")
+                    .and_then(TomlValue::as_array)
+                    .is_none_or(|values| values.len() != 3)
+        })
+    {
+        problems.push("observer allocation attribution evidence volume changed".to_owned());
+    }
+    if text(value, "owner").is_none_or(str::is_empty)
+        || text(value, "source_argument").is_none_or(str::is_empty)
+        || text(value, "interpretation").is_none_or(str::is_empty)
+        || text(value, "decision") != Some("preregister-shared-immutable-entry-tags")
+        || text(value, "next_evidence").is_none_or(str::is_empty)
+    {
+        problems.push("observer allocation attribution evidence decision is incomplete".to_owned());
     }
     problems
 }

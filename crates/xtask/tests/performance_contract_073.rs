@@ -847,3 +847,22 @@ fn allocation_attribution_cannot_reduce_volume_or_claim_cpu() {
         .iter()
         .any(|problem| problem.contains("volume or interpretation changed")));
 }
+
+#[test]
+fn allocation_attribution_evidence_cannot_promote_or_authorize_host_repeat() {
+    let mut value = manifest("observer-allocation-attribution-2c37d2f1.toml");
+    value["promotable"] = TomlValue::Boolean(true);
+    value["dedicated_host_repeat_authorized"] = TomlValue::Boolean(true);
+    value["attempts"] = TomlValue::Integer(119);
+    let problems =
+        xtask::performance_contract::check_observer_allocation_attribution_evidence(&value, "0.73");
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("promotable must be false")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("dedicated_host_repeat_authorized must be false")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("evidence volume changed")));
+}
