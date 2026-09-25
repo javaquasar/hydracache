@@ -384,7 +384,6 @@ fn native_snapshot() -> Result<NativeSnapshot, Box<dyn Error>> {
     let raw: Value = serde_json::from_str(stats.to_str()?)?;
     let committed = stat_current(&raw, "committed")?;
     let reserved = stat_current(&raw, "reserved")?;
-    let resident = raw_u64(&raw, &["process", "rss_current"])?;
     Ok(NativeSnapshot {
         provider: "mimalloc",
         status: "partial-native-statistics",
@@ -394,12 +393,7 @@ fn native_snapshot() -> Result<NativeSnapshot, Box<dyn Error>> {
             source: "mi_stats_get_json.committed.current",
             semantics: "current bytes committed by mimalloc",
         }),
-        resident: Some(NativeMetric {
-            bytes: resident,
-            source: "mi_stats_get_json.process.rss_current",
-            semantics:
-                "process RSS reported by mimalloc process information; not allocator-owned RSS",
-        }),
+        resident: None,
         retained_or_reserved: Some(NativeMetric {
             bytes: reserved,
             source: "mi_stats_get_json.reserved.current",
@@ -414,6 +408,10 @@ fn native_snapshot() -> Result<NativeSnapshot, Box<dyn Error>> {
             (
                 "allocated_or_live",
                 "release mimalloc v3 JSON reports malloc_requested.current as zero without a supported process merge API; zero is retained only in raw evidence",
+            ),
+            (
+                "resident",
+                "mimalloc release JSON exposes process RSS, not allocator-owned resident bytes; process RSS remains in the OS snapshot and raw evidence",
             ),
             (
                 "thread_caches",
@@ -490,19 +488,6 @@ fn stat_current(raw: &Value, field: &str) -> Result<u64, Box<dyn Error>> {
         .and_then(Value::as_i64)
         .and_then(|value| u64::try_from(value).ok())
         .ok_or_else(|| format!("mimalloc field {field}.current is unavailable").into())
-}
-
-#[cfg(feature = "allocator-mimalloc")]
-fn raw_u64(raw: &Value, path: &[&str]) -> Result<u64, Box<dyn Error>> {
-    let mut value = raw;
-    for field in path {
-        value = value
-            .get(*field)
-            .ok_or_else(|| format!("mimalloc field {} is unavailable", path.join(".")))?;
-    }
-    value
-        .as_u64()
-        .ok_or_else(|| format!("mimalloc field {} is not u64", path.join(".")).into())
 }
 
 #[cfg(feature = "allocator-mimalloc")]
@@ -599,9 +584,10 @@ mod tests {
         assert_eq!(snapshot.status, "partial-native-statistics");
         assert!(snapshot.allocated_or_live.is_none());
         assert!(snapshot.active_or_committed.is_some());
-        assert!(snapshot.resident.is_some());
+        assert!(snapshot.resident.is_none());
         assert!(snapshot.retained_or_reserved.is_some());
         assert!(snapshot.unavailable.contains_key("allocated_or_live"));
+        assert!(snapshot.unavailable.contains_key("resident"));
         assert!(snapshot.raw.is_some());
     }
 
