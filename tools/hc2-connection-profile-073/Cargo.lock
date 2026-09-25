@@ -1213,6 +1213,7 @@ dependencies = [
  "hydracache-cluster-transport-axum",
  "hydracache-observability",
  "hydracache-redis-compat",
+ "prost",
  "reqwest",
  "rustls",
  "serde",

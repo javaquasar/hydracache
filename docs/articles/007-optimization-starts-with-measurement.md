@@ -1168,6 +1168,42 @@ the point where tonic polls the item: HTTP/2, TLS, and socket retention are down
 need their own controls. That narrower statement turns “add a byte cap” from a slogan into a
 falsifiable ownership change.
 
+The candidate used a one-MiB semaphore per connection and charged each `ServerEnvelope` by its
+protobuf encoded length before the existing sixteen-item channel. The queued wrapper owns the
+weighted permit until tonic polls that item. A legal envelope larger than the budget consumes the
+whole budget rather than being rejected, so one oversize frame can always progress; the single
+connection producer means only one already-constructed frame can wait outside the admitted queue.
+This preserves protocol semantics while making the application-owned queue express both an item and
+a byte bound.
+
+The correctness proof targets the awkward edges, not only the happy path. Unit tests observe the
+exact encoded charge, show a second oversize frame blocking, then prove permit release on poll, on a
+closed receiver, and on disconnect. The real-mTLS test still preserves event ordering and shared
+payload bytes and reconciles connections, subscriptions, sessions, and invocations to zero. The
+complete server suite and strict clippy gate also pass; no public configuration, client API, or wire
+contract changed.
+
+Repeating the frozen twenty-process matrix separated the two active bounds. At 4 KiB, median stalled
+dispatch barely moved, from 4,160 to 4,152 total mutations, because the sixteen-item limit remains
+tighter than one MiB. Its paired working-set ranges overlapped, and the median moved from 9,216,000
+to 9,863,168 bytes; this is not a small-frame memory win. At 256 KiB, median stalled dispatch fell
+from 128 to 104, exactly the direction expected when the application tail changes from roughly eight
+value-bearing frames per peer to roughly four plus the producer-held frame.
+
+The high-payload retained-memory result moved with that dispatch bound. Median unpolled-minus-drained
+server working set fell from 22,667,264 to 15,949,824 bytes, a local reduction of 6,717,440 bytes or
+29.6%. Pagefile fell from 22,663,168 to 15,167,488 bytes, or 33.1%. Every one of the five candidate
+pairs was below every one of the five retained baseline pairs. All controls completed, all treatments
+were stable for the frozen interval with zero response polls, and every process closed eight of eight
+connections with no live server resources.
+
+The remaining roughly sixteen megabytes are as informative as the reduction. The new admission gate
+cannot reclaim a frame already polled by tonic, Hyper/h2's peer-advertised receive window, protobuf or
+TLS work buffers, socket ownership, or allocator high-water pages. The candidate is therefore
+accepted locally as an application-queue bound and retained for the later integrated W5/W2 campaign;
+the percentages are diagnostic, not release claims, and do not justify a dedicated-host run for this
+subproblem alone.
+
 ## A profiling ladder that avoids expensive runs
 
 Not every development iteration needs a dedicated bare-metal campaign. A useful workflow has several

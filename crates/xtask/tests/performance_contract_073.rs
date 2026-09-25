@@ -1300,3 +1300,24 @@ fn w5_outbound_byte_admission_cannot_change_scope_or_skip_progress() {
         .iter()
         .any(|problem| problem.contains("design changed")));
 }
+
+#[test]
+fn w5_outbound_byte_admission_evidence_cannot_promote_or_rewrite_result() {
+    let mut value = manifest("w5-hc2-outbound-byte-admission-2846e936.toml");
+    value["promotable"] = TomlValue::Boolean(true);
+    value["frame_rejection_added"] = TomlValue::Boolean(true);
+    value["candidate_median_unpolled_dispatch_262144"] = TomlValue::Integer(128);
+    value["candidate_median_paired_server_working_set_delta_262144_bytes"] =
+        TomlValue::Integer(22_667_264);
+    let problems =
+        xtask::performance_contract::check_w5_hc2_outbound_byte_admission_evidence(&value, "0.73");
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("promotable must be false")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("frame_rejection_added must be false")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("result changed")));
+}

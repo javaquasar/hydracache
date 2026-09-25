@@ -124,6 +124,8 @@ const W5_HC2_RAW_TRANSPORT_STALL_EVIDENCE: &str =
     "docs/testing/performance/0.73/w5-hc2-raw-transport-stall-25cdfb61.toml";
 const W5_HC2_OUTBOUND_BYTE_ADMISSION_CONTRACT: &str =
     "docs/testing/performance/0.73/w5-hc2-outbound-byte-admission-contract.toml";
+const W5_HC2_OUTBOUND_BYTE_ADMISSION_EVIDENCE: &str =
+    "docs/testing/performance/0.73/w5-hc2-outbound-byte-admission-2846e936.toml";
 const RELEASE: &str = "0.73";
 const PROFILE: &str = "local-screening-073-v1";
 const ENVIRONMENT_CLASS: &str = "local_screening";
@@ -301,6 +303,9 @@ pub fn check_at_root(
     )?)?;
     let w5_hc2_outbound_byte_admission_contract: TomlValue = toml::from_str(&fs::read_to_string(
         root.join(W5_HC2_OUTBOUND_BYTE_ADMISSION_CONTRACT),
+    )?)?;
+    let w5_hc2_outbound_byte_admission_evidence: TomlValue = toml::from_str(&fs::read_to_string(
+        root.join(W5_HC2_OUTBOUND_BYTE_ADMISSION_EVIDENCE),
     )?)?;
     let mut problems = check_contract(&contract, release);
     if !root.join(MOKA_OBSERVER_UPSTREAM_DRAFT).is_file() {
@@ -510,6 +515,10 @@ pub fn check_at_root(
     ));
     problems.extend(check_w5_hc2_outbound_byte_admission_contract(
         &w5_hc2_outbound_byte_admission_contract,
+        release,
+    ));
+    problems.extend(check_w5_hc2_outbound_byte_admission_evidence(
+        &w5_hc2_outbound_byte_admission_evidence,
         release,
     ));
     problems.extend(check_schema(
@@ -723,6 +732,10 @@ pub fn check_contract(root: &TomlValue, release: &str) -> Vec<String> {
         (
             "w5_hc2_outbound_byte_admission_contract",
             W5_HC2_OUTBOUND_BYTE_ADMISSION_CONTRACT,
+        ),
+        (
+            "w5_hc2_outbound_byte_admission_evidence",
+            W5_HC2_OUTBOUND_BYTE_ADMISSION_EVIDENCE,
         ),
     ] {
         if text(root, field) != Some(expected) {
@@ -5274,6 +5287,145 @@ pub fn check_w5_hc2_outbound_byte_admission_contract(
                 "W5 HC/2 outbound byte-admission contract {field} is missing"
             ));
         }
+    }
+    problems
+}
+
+pub fn check_w5_hc2_outbound_byte_admission_evidence(
+    value: &TomlValue,
+    release: &str,
+) -> Vec<String> {
+    let mut problems = Vec::new();
+    if integer(value, "schema_version") != Some(1)
+        || text(value, "release") != Some(release)
+        || text(value, "evidence_id") != Some("w5-hc2-outbound-byte-admission-2846e936-v1")
+        || text(value, "state") != Some("local-candidate-accepted-for-integrated-campaign")
+        || text(value, "contract") != Some(W5_HC2_OUTBOUND_BYTE_ADMISSION_CONTRACT)
+        || text(value, "triggering_evidence") != Some(W5_HC2_RAW_TRANSPORT_STALL_EVIDENCE)
+        || text(value, "implementation_commit") != Some("2846e93633cc14dea5c00b2f742e27260c794875")
+        || text(value, "profile_tool") != Some("tools/hc2-connection-profile-073")
+    {
+        problems.push("W5 HC/2 outbound byte-admission evidence identity changed".to_owned());
+    }
+    for field in [
+        "binary_sha256",
+        "contract_sha256",
+        "server_source_sha256",
+        "root_lock_sha256",
+        "tool_lock_sha256",
+    ] {
+        if text(value, field).is_none_or(|digest| !sha256(digest)) {
+            problems.push(format!(
+                "W5 HC/2 outbound byte-admission evidence {field} is not SHA-256"
+            ));
+        }
+    }
+    let raw_results = string_array(value.get("raw_results"));
+    if raw_results.len() != 20
+        || raw_results.iter().any(|entry| {
+            entry
+                .rsplit_once(':')
+                .is_none_or(|(_, digest)| !sha256(digest))
+        })
+    {
+        problems.push("W5 HC/2 outbound byte-admission raw result manifest changed".to_owned());
+    }
+    for field in [
+        "public_configuration_changed",
+        "wire_contract_changed",
+        "frame_rejection_added",
+        "dedicated_host_run_allowed",
+        "dedicated_host_repeat_authorized",
+        "release_numerical_claim_allowed",
+        "promotable",
+    ] {
+        if boolean(value, field) != Some(false) {
+            problems.push(format!(
+                "W5 HC/2 outbound byte-admission evidence {field} must be false"
+            ));
+        }
+    }
+    for field in [
+        "product_mutation_present",
+        "candidate_data_present",
+        "candidate_accepted_locally",
+        "unit_invariants_passed",
+        "real_mtls_invariant_passed",
+        "full_server_suite_passed",
+        "strict_clippy_passed",
+        "control_invariant_passed",
+        "treatment_invariant_passed",
+        "stability_invariant_passed",
+        "close_invariant_passed",
+        "stderr_empty",
+    ] {
+        if boolean(value, field) != Some(true) {
+            problems.push(format!(
+                "W5 HC/2 outbound byte-admission evidence {field} must be true"
+            ));
+        }
+    }
+    if integer(value, "application_queue_byte_budget") != Some(1_048_576)
+        || integer(value, "application_queue_item_capacity") != Some(16)
+        || integer(value, "pairs_per_value_size") != Some(5)
+        || integer(value, "attempts") != Some(20)
+        || integer(value, "failed_attempts") != Some(0)
+        || integer(value, "connections") != Some(8)
+        || integer(value, "subscriptions") != Some(8)
+        || integer(value, "offered_value_bytes_per_connection") != Some(8_388_608)
+        || integer_array(value.get("value_bytes")) != [4_096, 262_144]
+        || integer_array(value.get("mutations_per_connection")) != [2_048, 32]
+        || value
+            .get("pair")
+            .and_then(TomlValue::as_array)
+            .is_none_or(|pairs| pairs.len() != 10)
+    {
+        problems.push("W5 HC/2 outbound byte-admission evidence volume changed".to_owned());
+    }
+    if integer(value, "baseline_median_unpolled_dispatch_4096") != Some(4_160)
+        || integer(value, "candidate_median_unpolled_dispatch_4096") != Some(4_152)
+        || integer(value, "baseline_median_unpolled_dispatch_262144") != Some(128)
+        || integer(value, "candidate_median_unpolled_dispatch_262144") != Some(104)
+        || integer(
+            value,
+            "baseline_median_paired_server_working_set_delta_4096_bytes",
+        ) != Some(9_216_000)
+        || integer(
+            value,
+            "candidate_median_paired_server_working_set_delta_4096_bytes",
+        ) != Some(9_863_168)
+        || integer(
+            value,
+            "baseline_median_paired_server_working_set_delta_262144_bytes",
+        ) != Some(22_667_264)
+        || integer(
+            value,
+            "candidate_median_paired_server_working_set_delta_262144_bytes",
+        ) != Some(15_949_824)
+        || integer(value, "high_payload_working_set_reduction_bytes") != Some(6_717_440)
+        || integer(
+            value,
+            "candidate_median_paired_server_pagefile_delta_262144_bytes",
+        ) != Some(15_167_488)
+        || integer(value, "high_payload_pagefile_reduction_bytes") != Some(7_495_680)
+    {
+        problems.push("W5 HC/2 outbound byte-admission evidence result changed".to_owned());
+    }
+    for field in [
+        "interpretation",
+        "correctness",
+        "claim_boundary",
+        "small_payload_result",
+        "next_evidence",
+    ] {
+        if text(value, field).is_none_or(str::is_empty) {
+            problems.push(format!(
+                "W5 HC/2 outbound byte-admission evidence {field} is missing"
+            ));
+        }
+    }
+    if text(value, "decision") != Some("retain-byte-admission-for-integrated-w5-w2-campaign") {
+        problems.push("W5 HC/2 outbound byte-admission evidence decision changed".to_owned());
     }
     problems
 }
