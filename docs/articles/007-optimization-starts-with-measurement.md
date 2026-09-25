@@ -1422,6 +1422,58 @@ W4 therefore keeps the two-line candidate for integration, defers RESP3 decode a
 as separately measured owners, and does not spend a dedicated-host campaign on an isolated copy whose
 semantic controls and allocation mechanism are already explicit.
 
+W7 started with a terminology trap: durable memory is not one owner. It includes short-lived record
+encoding and decoding buffers, Sled's own process state, allocator high-water pages, operating-system
+file cache, logical bytes charged to the durable budget, and bytes written through the process. RSS
+cannot separate those categories. The local profile therefore measured allocation phases, exact
+logical bytes, directory length, process IO transfer, working set, and private commit independently.
+On Linux it can additionally read anonymous and file PSS from `smaps_rollup`; on this Windows run that
+split was explicitly unavailable in all 120 attempts. We recorded `null`, not an invented file-cache
+number. Consequently, this run cannot support a page-cache residency claim.
+
+The source audit found a more direct owner before any OS-memory interpretation was needed. Every
+`DurableValueStore::upsert` asks `would_fit` whether the budget permits the record. `would_fit` reads
+the existing record and calls `total_bytes()`. That method scans the complete Sled prefix and decodes
+every durable record. Upsert then reads the existing record again, merges, encodes into a payload
+vector and a second framed vector, inserts, and flushes. The sync coordinator flushes again; the
+async coordinator queues cheaply, but drain calls the same flushing upsert for every item and then
+performs one final flush. These are distinct candidate owners and must be measured separately.
+
+The frozen matrix used 24 scenarios and five fresh processes each: store lifecycle at 1/16/64/256
+records and 64/4,096-byte payloads; RAM-only, sync, and async-bounded write paths; and repair-pending
+versus repair-confirmed tombstone GC. All 120 processes exited cleanly, reopened content matched,
+logical-byte accounting reconciled, async lag returned to zero, GC cardinality was exact, and every
+temporary store was removed.
+
+Steady reads supplied the control. A 64-byte record cost roughly 167--185 gross bytes per read across
+all cardinalities; a 4 KiB record cost roughly 4.20 KiB. Fill did not stay flat. For 64-byte payloads,
+median gross allocation per upsert rose from 9.24 KiB at 16 records to 40.23 KiB at 256, a 4.35-times
+increase. For 4 KiB payloads it rose from 67.84 KiB to 597.37 KiB, or 8.81 times. Overwrite grew even
+faster: 7.43 and 10.02 times over the same cardinality interval. At 256 records, updating one 4 KiB
+logical value allocated about 1.147 MB gross. Required record bytes are constant within each series;
+the changing term is the full-store decode scan.
+
+The durability modes showed where work moves. RAM-only admission stayed exactly flat at 114 gross
+bytes for a 64-byte payload and 4,146 for a 4 KiB payload. Async admission performed zero write
+transfer and cost only about 329--333 or 4,361--4,365 gross bytes while lag grew to the registered
+64 or 256 entries. Drain then reproduced almost exactly the sync allocation and IO shape, and lag
+returned to zero. That does not prove device-level write amplification: the Windows transfer counter
+observes process IO above the storage stack. It does show that the current async queue defers the
+full scan-and-flush work rather than batching it away.
+
+GC preserved the safety boundary. With repair pending, it removed zero records and issued zero write
+transfer. Once repair was confirmed, it removed and reclaimed exactly 64 or 256 tombstones. The
+roughly 4.5 KiB gross allocation per removal and per-record writes identify the remove-and-flush loop,
+but do not by themselves authorize weakening repair fencing or batching durability semantics.
+
+The first W7 candidate is therefore narrower than “optimize Sled.” Cache only the logical byte total
+used by admission, initialize it from one validated scan at open, and update it after successful
+ownership changes. Keep the public validation scan, format and checksum behavior, budget rejection,
+recovery, sync-before-ack, async backpressure, and repair-fenced GC unchanged. A candidate must flatten
+the fill/overwrite cardinality slope in both payload series and rerun all 120 scenarios. File-cache
+ownership and redundant flush work remain separately measured follow-ups rather than being bundled
+into that counter change.
+
 ## A profiling ladder that avoids expensive runs
 
 Not every development iteration needs a dedicated bare-metal campaign. A useful workflow has several

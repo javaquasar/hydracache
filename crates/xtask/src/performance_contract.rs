@@ -148,6 +148,8 @@ const W4_ZERO_COPY_ENCODE_EVIDENCE: &str =
     "docs/testing/performance/0.73/w4-zero-copy-encode-accepted-d98f2afc.toml";
 const W7_DURABILITY_PAGE_CACHE_PROFILE_CONTRACT: &str =
     "docs/testing/performance/0.73/w7-durability-page-cache-profile-contract.toml";
+const W7_DURABILITY_PAGE_CACHE_PROFILE_EVIDENCE: &str =
+    "docs/testing/performance/0.73/w7-durability-page-cache-profile-b5a327ce.toml";
 const RELEASE: &str = "0.73";
 const PROFILE: &str = "local-screening-073-v1";
 const ENVIRONMENT_CLASS: &str = "local_screening";
@@ -361,6 +363,9 @@ pub fn check_at_root(
     )?)?;
     let w7_durability_page_cache_profile_contract: TomlValue = toml::from_str(
         &fs::read_to_string(root.join(W7_DURABILITY_PAGE_CACHE_PROFILE_CONTRACT))?,
+    )?;
+    let w7_durability_page_cache_profile_evidence: TomlValue = toml::from_str(
+        &fs::read_to_string(root.join(W7_DURABILITY_PAGE_CACHE_PROFILE_EVIDENCE))?,
     )?;
     let mut problems = check_contract(&contract, release);
     if !root.join(MOKA_OBSERVER_UPSTREAM_DRAFT).is_file() {
@@ -620,6 +625,10 @@ pub fn check_at_root(
         &w7_durability_page_cache_profile_contract,
         release,
     ));
+    problems.extend(check_w7_durability_page_cache_profile_evidence(
+        &w7_durability_page_cache_profile_evidence,
+        release,
+    ));
     problems.extend(check_schema(
         &schema,
         &example,
@@ -873,6 +882,10 @@ pub fn check_contract(root: &TomlValue, release: &str) -> Vec<String> {
         (
             "w7_durability_page_cache_profile_contract",
             W7_DURABILITY_PAGE_CACHE_PROFILE_CONTRACT,
+        ),
+        (
+            "w7_durability_page_cache_profile_evidence",
+            W7_DURABILITY_PAGE_CACHE_PROFILE_EVIDENCE,
         ),
     ] {
         if text(root, field) != Some(expected) {
@@ -6686,6 +6699,132 @@ pub fn check_w7_durability_page_cache_profile_contract(
                 "W7 durability page-cache profile {field} is missing"
             ));
         }
+    }
+    problems
+}
+
+pub fn check_w7_durability_page_cache_profile_evidence(
+    value: &TomlValue,
+    release: &str,
+) -> Vec<String> {
+    let mut problems = Vec::new();
+    if integer(value, "schema_version") != Some(1)
+        || text(value, "release") != Some(release)
+        || text(value, "evidence_id") != Some("w7-durability-page-cache-profile-b5a327ce-v1")
+        || text(value, "state") != Some("local-profile-passed-candidate-owner-found")
+        || text(value, "contract") != Some(W7_DURABILITY_PAGE_CACHE_PROFILE_CONTRACT)
+        || text(value, "source_commit") != Some("b5a327cee100d02208e892f90beb4cc672be9c5d")
+    {
+        problems.push("W7 durability page-cache evidence identity changed".to_owned());
+    }
+    for field in [
+        "binary_sha256",
+        "contract_sha256",
+        "durable_store_source_sha256",
+        "durability_source_sha256",
+        "tool_source_sha256",
+        "tool_lock_sha256",
+        "raw_manifest_sha256",
+    ] {
+        if text(value, field).is_none_or(|digest| !sha256(digest)) {
+            problems.push(format!(
+                "W7 durability page-cache evidence {field} is not SHA-256"
+            ));
+        }
+    }
+    for field in [
+        "independent_processes",
+        "prebuilt_release_binary",
+        "temporary_stores_removed",
+        "exact_logical_bytes_passed",
+        "reopen_content_equality_passed",
+        "async_lag_reconciliation_passed",
+        "gc_cardinality_reconciliation_passed",
+    ] {
+        if boolean(value, field) != Some(true) {
+            problems.push(format!(
+                "W7 durability page-cache evidence {field} must be true"
+            ));
+        }
+    }
+    for field in [
+        "page_cache_residency_claim_allowed",
+        "product_mutation_present",
+        "production_counter_addition",
+        "dedicated_host_run_allowed",
+        "promotable",
+        "release_numerical_claim_allowed",
+        "elapsed_time_used_for_decision",
+    ] {
+        if boolean(value, field) != Some(false) {
+            problems.push(format!(
+                "W7 durability page-cache evidence {field} must be false"
+            ));
+        }
+    }
+    if integer(value, "attempts") != Some(120)
+        || integer(value, "failed_processes") != Some(0)
+        || integer(value, "nonempty_stderr") != Some(0)
+        || integer(value, "invariant_failures") != Some(0)
+        || integer(value, "scenario_count") != Some(24)
+        || integer(value, "repeats_per_scenario") != Some(5)
+        || integer(value, "anon_file_split_available_attempts") != Some(0)
+        || integer(value, "anon_file_split_unavailable_attempts") != Some(120)
+    {
+        problems.push("W7 durability page-cache evidence volume changed".to_owned());
+    }
+    if integer_array(value.get("store_cardinalities")) != [1, 16, 64, 256]
+        || integer_array(value.get("payload_bytes")) != [64, 4_096]
+        || float_array(value.get("payload64_fill_median_gross_bytes_per_operation"))
+            != [6_953.0, 9_241.75, 15_671.844, 40_225.449]
+        || float_array(value.get("payload4096_fill_median_gross_bytes_per_operation"))
+            != [35_308.0, 67_836.75, 179_295.297, 597_367.723]
+        || float_array(value.get("payload64_steady_read_median_gross_bytes_per_operation"))
+            != [167.0, 167.0, 184.875, 183.844]
+        || float(value, "payload64_fill_growth_16_to_256") != Some(4.352579)
+        || float(value, "payload4096_fill_growth_16_to_256") != Some(8.805960)
+        || float(value, "payload64_overwrite_growth_16_to_256") != Some(7.429751)
+        || float(value, "payload4096_overwrite_growth_16_to_256") != Some(10.024831)
+    {
+        problems.push("W7 durability page-cache evidence store result changed".to_owned());
+    }
+    if float_array(value.get("ram_only_admit_median_gross_bytes_per_operation_payload64"))
+        != [114.0, 114.0]
+        || float_array(value.get("async_admit_median_gross_bytes_per_operation_payload64"))
+            != [328.5, 333.375]
+        || float_array(value.get("async_drain_median_gross_bytes_per_operation_payload64"))
+            != [15_667.844, 40_221.449]
+        || integer_array(value.get("async_lag_after_admit")) != [64, 256]
+        || integer_array(value.get("async_lag_after_drain")) != [0, 0]
+    {
+        problems.push("W7 durability page-cache evidence mode result changed".to_owned());
+    }
+    if integer_array(value.get("pending_gc_removed")) != [0, 0]
+        || integer_array(value.get("pending_gc_remaining")) != [64, 256]
+        || integer_array(value.get("confirmed_gc_removed")) != [64, 256]
+        || integer_array(value.get("confirmed_gc_remaining")) != [0, 0]
+        || integer_array(value.get("confirmed_gc_reclaimed_bytes")) != [64, 256]
+    {
+        problems.push("W7 durability page-cache evidence GC result changed".to_owned());
+    }
+    for field in [
+        "raw_manifest_canonicalization",
+        "os_memory_source",
+        "os_io_source",
+        "allocation_interpretation",
+        "durability_interpretation",
+        "gc_interpretation",
+        "memory_interpretation",
+        "next_evidence",
+    ] {
+        if text(value, field).is_none_or(str::is_empty) {
+            problems.push(format!(
+                "W7 durability page-cache evidence {field} is missing"
+            ));
+        }
+    }
+    if text(value, "decision") != Some("authorize-cached-durable-budget-total-candidate") {
+        problems.push("W7 durability page-cache evidence decision changed".to_owned());
     }
     problems
 }

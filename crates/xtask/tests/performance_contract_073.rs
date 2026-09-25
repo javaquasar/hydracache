@@ -1363,6 +1363,34 @@ fn w7_durability_profile_cannot_invent_file_residency_or_skip_modes() {
 }
 
 #[test]
+fn w7_durability_evidence_cannot_promote_or_hide_platform_limit() {
+    let mut value = manifest("w7-durability-page-cache-profile-b5a327ce.toml");
+    value["promotable"] = TomlValue::Boolean(true);
+    value["attempts"] = TomlValue::Integer(5);
+    value["page_cache_residency_claim_allowed"] = TomlValue::Boolean(true);
+    value["payload64_fill_median_gross_bytes_per_operation"] = TomlValue::Array(Vec::new());
+    value["decision"] = TomlValue::String("close-w7".to_owned());
+    let problems = xtask::performance_contract::check_w7_durability_page_cache_profile_evidence(
+        &value, "0.73",
+    );
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("promotable must be false")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("page_cache_residency_claim_allowed must be false")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("volume changed")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("store result changed")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("decision changed")));
+}
+
+#[test]
 fn w5_connection_profile_cannot_promote_claim_server_bytes_or_skip_samples() {
     let mut value = manifest("w5-hc2-connection-profile-contract.toml");
     value["promotable"] = TomlValue::Boolean(true);
