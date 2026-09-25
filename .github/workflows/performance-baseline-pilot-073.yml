@@ -194,4 +194,5 @@ jobs:
       tooling_sha: ${{ inputs.source_sha }}
       lease_owner: ${{ inputs.lease_owner }}
       lease_end: ${{ inputs.lease_end }}
+      entry_serializes_host: true
     secrets: inherit

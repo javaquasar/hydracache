@@ -29,12 +29,17 @@ on:
         description: "Approved lease end in RFC3339 form"
         required: true
         type: string
+      entry_serializes_host:
+        description: "The registered caller already holds the shared host concurrency group"
+        required: false
+        default: false
+        type: boolean
 
 permissions:
   contents: read
 
 concurrency:
-  group: performance-reference-073-host
+  group: ${{ inputs.entry_serializes_host && format('performance-reference-073-host-nested-{0}', github.run_id) || 'performance-reference-073-host' }}
   cancel-in-progress: false
 
 jobs:
