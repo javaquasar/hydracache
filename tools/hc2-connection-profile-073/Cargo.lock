@@ -917,6 +917,8 @@ dependencies = [
  "serde_json",
  "tempfile",
  "tokio",
+ "tokio-stream",
+ "tonic",
  "windows-sys 0.61.2",
 ]
 
