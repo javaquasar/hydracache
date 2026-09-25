@@ -170,6 +170,8 @@ const W10_STATIC_QUALIFICATION_AMENDMENT: &str =
     "docs/testing/performance/0.73/w10-static-qualification-amendment-a725077d.toml";
 const W10_LOCAL_QUALIFICATION_EVIDENCE: &str =
     "docs/testing/performance/0.73/w10-local-qualification-passed-132917fd.toml";
+const W10_INTEGRATED_PROCESS_SMOKE_CONTRACT: &str =
+    "docs/testing/performance/0.73/w10-integrated-process-smoke-contract.toml";
 const RELEASE: &str = "0.73";
 const PROFILE: &str = "local-screening-073-v1";
 const ENVIRONMENT_CLASS: &str = "local_screening";
@@ -416,6 +418,9 @@ pub fn check_at_root(
     )?)?;
     let w10_local_qualification_evidence: TomlValue = toml::from_str(&fs::read_to_string(
         root.join(W10_LOCAL_QUALIFICATION_EVIDENCE),
+    )?)?;
+    let w10_integrated_process_smoke_contract: TomlValue = toml::from_str(&fs::read_to_string(
+        root.join(W10_INTEGRATED_PROCESS_SMOKE_CONTRACT),
     )?)?;
     let mut problems = check_contract(&contract, release);
     if !root.join(MOKA_OBSERVER_UPSTREAM_DRAFT).is_file() {
@@ -719,6 +724,10 @@ pub fn check_at_root(
         &w10_local_qualification_evidence,
         release,
     ));
+    problems.extend(check_w10_integrated_process_smoke_contract(
+        &w10_integrated_process_smoke_contract,
+        release,
+    ));
     problems.extend(check_schema(
         &schema,
         &example,
@@ -1016,6 +1025,10 @@ pub fn check_contract(root: &TomlValue, release: &str) -> Vec<String> {
         (
             "w10_local_qualification_evidence",
             W10_LOCAL_QUALIFICATION_EVIDENCE,
+        ),
+        (
+            "w10_integrated_process_smoke_contract",
+            W10_INTEGRATED_PROCESS_SMOKE_CONTRACT,
         ),
     ] {
         if text(root, field) != Some(expected) {
@@ -8053,6 +8066,108 @@ pub fn check_w10_local_qualification_evidence(value: &TomlValue, release: &str) 
         != Some("pass-local-correctness-and-static-admission-design-integrated-process-contract")
     {
         problems.push("W10 local qualification evidence decision changed".to_owned());
+    }
+    problems
+}
+
+pub fn check_w10_integrated_process_smoke_contract(
+    value: &TomlValue,
+    release: &str,
+) -> Vec<String> {
+    let mut problems = Vec::new();
+    if integer(value, "schema_version") != Some(1)
+        || text(value, "release") != Some(release)
+        || text(value, "contract_id") != Some("w10-integrated-process-smoke-073-v1")
+        || text(value, "state") != Some("preregistered-before-smoke-implementation")
+        || text(value, "source_parent") != Some("5556d174979c903c30e70f18da55b7271437bbb1")
+        || text(value, "candidate_identity") != Some("C73-provisional-1")
+        || text(value, "candidate_source_commit")
+            != Some("7e3070894aa51af96cdcb3e350eff923a309e1fa")
+        || text(value, "candidate_ledger") != Some(W10_INTEGRATED_CANDIDATE_CONTRACT)
+        || text(value, "local_qualification") != Some(W10_LOCAL_QUALIFICATION_EVIDENCE)
+        || text(value, "scenario")
+            != Some("docs/testing/performance/0.73/w10-integrated-smoke-scenario.toml")
+        || text(value, "test_file")
+            != Some("crates/hydracache-server/tests/performance_integrated_073.rs")
+        || text(value, "runner") != Some("scripts/perf/performance_integrated_smoke_073.py")
+        || text(value, "profile_id") != Some("integrated-smoke-073-v1")
+    {
+        problems.push("W10 integrated process smoke contract identity changed".to_owned());
+    }
+    for field in [
+        "product_mutation_allowed",
+        "public_api_change_allowed",
+        "configuration_change_allowed",
+        "wire_change_allowed",
+        "durable_format_change_allowed",
+        "performance_threshold_allowed",
+        "host_dispatch_allowed",
+        "long_run_allowed",
+        "local_results_promotable",
+        "release_numerical_claim_allowed",
+    ] {
+        if boolean(value, field) != Some(false) {
+            problems.push(format!(
+                "W10 integrated process smoke contract {field} must be false"
+            ));
+        }
+    }
+    for field in [
+        "real_daemon_required",
+        "real_hc1_required",
+        "real_mtls_hc2_required",
+        "real_resp_required",
+        "direct_surface_required",
+        "management_truth_required",
+        "durable_feature_required",
+        "independent_process_per_cell_required",
+        "prebuilt_binary_required",
+        "complete_outcome_accounting_required",
+        "failed_attempt_retention_required",
+        "stderr_retention_required",
+        "final_owner_reconciliation_required",
+        "explicit_ignored_or_skipped_rejection_required",
+        "canary_required",
+    ] {
+        if boolean(value, field) != Some(true) {
+            problems.push(format!(
+                "W10 integrated process smoke contract {field} must be true"
+            ));
+        }
+    }
+    if string_array(value.get("cell_ids"))
+        != [
+            "event-delivery",
+            "expiry-tag-accounting",
+            "mixed-protocol",
+            "durable-companion",
+        ]
+        || integer(value, "required_processes") != Some(4)
+        || integer(value, "operations") != Some(1_000)
+        || integer(value, "payload_bytes") != Some(4_096)
+        || integer(value, "key_cardinality") != Some(256)
+        || integer(value, "tag_cardinality") != Some(16)
+        || integer(value, "seed") != Some(731_001)
+        || integer_array(value.get("mixed_weights_percent")) != [35, 30, 15, 10, 5, 5]
+        || string_array(value.get("persistence_cells")) != ["off", "sync-acknowledged"]
+    {
+        problems.push("W10 integrated process smoke contract matrix changed".to_owned());
+    }
+    for field in [
+        "event_interaction",
+        "expiry_tag_interaction",
+        "mixed_protocol_interaction",
+        "durable_interaction",
+        "canary",
+        "success_rule",
+        "falsifier",
+        "next_decision",
+    ] {
+        if text(value, field).is_none_or(str::is_empty) {
+            problems.push(format!(
+                "W10 integrated process smoke contract {field} is missing"
+            ));
+        }
     }
     problems
 }

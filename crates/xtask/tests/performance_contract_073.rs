@@ -1654,6 +1654,33 @@ fn w10_local_evidence_cannot_hide_attempts_or_open_expensive_tiers() {
 }
 
 #[test]
+fn w10_integrated_smoke_cannot_replace_real_surfaces_or_open_host_claims() {
+    let mut value = manifest("w10-integrated-process-smoke-contract.toml");
+    value["real_mtls_hc2_required"] = TomlValue::Boolean(false);
+    value["real_resp_required"] = TomlValue::Boolean(false);
+    value["host_dispatch_allowed"] = TomlValue::Boolean(true);
+    value["performance_threshold_allowed"] = TomlValue::Boolean(true);
+    value["mixed_weights_percent"] = TomlValue::Array(vec![TomlValue::Integer(100)]);
+    let problems =
+        xtask::performance_contract::check_w10_integrated_process_smoke_contract(&value, "0.73");
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("real_mtls_hc2_required must be true")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("real_resp_required must be true")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("host_dispatch_allowed must be false")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("performance_threshold_allowed must be false")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("matrix changed")));
+}
+
+#[test]
 fn w5_connection_profile_cannot_promote_claim_server_bytes_or_skip_samples() {
     let mut value = manifest("w5-hc2-connection-profile-contract.toml");
     value["promotable"] = TomlValue::Boolean(true);
