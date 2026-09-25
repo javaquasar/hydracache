@@ -1,0 +1,69 @@
+schema_version = 1
+release = "0.73"
+contract_id = "w9-retained-byte-admission-decision-073-v1"
+state = "preregistered-before-terminal-decision"
+source_parent = "9f84c3c354548f5a355498e82be1ca4217793e8b"
+baseline_identity = "I73"
+owner_contract = "docs/testing/performance/0.73/w1-owner-classification-contract.toml"
+scenario_matrix = "docs/testing/performance/0.73/scenario-matrix.toml"
+historical_policy = "docs/testing/memory/0.71/release-policy.toml"
+retained_estimator = "docs/testing/memory/0.71/retained-byte-estimator-v1.json"
+
+scope = "Decide whether W2--W8 produced new pressure evidence that authorizes a separate opt-in retained-byte admission policy. This audit does not design or implement that policy."
+decision_unit = "one measured, still-unbounded owner whose retained bytes can be reserved and released at the same semantic boundary"
+required_terminal_dispositions = ["authorize-d2", "not-applicable"]
+
+product_mutation_allowed = false
+configuration_change_allowed = false
+api_change_allowed = false
+legacy_max_capacity_reinterpretation_allowed = false
+retained_estimator_policy_change_allowed = false
+dedicated_host_run_allowed = false
+local_results_promotable = false
+release_numerical_claim_allowed = false
+
+required_pressure_evidence = true
+owner_identity_required = true
+reservation_lifecycle_required = true
+checked_replacement_delta_required = true
+atomic_batch_rollback_required = true
+pre_decode_oversize_rejection_required = true
+absent_setting_preserves_legacy_behavior_required = true
+global_tenant_namespace_isolation_required = true
+retry_idempotency_required = true
+overflow_fail_loud_required = true
+moka_u32_boundary_required = true
+
+audit_inputs = [
+  "docs/testing/performance/0.73/w2-expiry-sweep-profile-e4a61d9f.toml",
+  "docs/testing/performance/0.73/w2-borrowed-expiry-scan-a80839fd.toml",
+  "docs/testing/performance/0.73/w3-tag-index-profile-f8b90ef0.toml",
+  "docs/testing/performance/0.73/w3-shared-event-tags-accepted-82f46245.toml",
+  "docs/testing/performance/0.73/w4-resp-translation-profile-f8c968a5.toml",
+  "docs/testing/performance/0.73/w4-zero-copy-encode-accepted-d98f2afc.toml",
+  "docs/testing/performance/0.73/w5-hc2-connection-profile-ff657fc5.toml",
+  "docs/testing/performance/0.73/w5-hc2-raw-transport-stall-25cdfb61.toml",
+  "docs/testing/performance/0.73/w5-hc2-outbound-byte-admission-2846e936.toml",
+  "docs/testing/performance/0.73/w6-management-overhead-316961e0.toml",
+  "docs/testing/performance/0.73/w7-durability-page-cache-profile-b5a327ce.toml",
+  "docs/testing/performance/0.73/w7-cached-budget-total-accepted-8bcd55e1.toml",
+  "docs/testing/performance/0.73/w8-allocator-profile-deferred-ea12f68a.toml",
+]
+
+eligible_pressure_classes = [
+  "live cache entries attributable to the retained estimator",
+  "queued, inflight, or output reservations not already bounded at their owner",
+]
+
+ineligible_substitutes = [
+  "allocator committed, reserved, resident, arena, or thread-cache high-water",
+  "process RSS or private commit without logical-owner reconciliation",
+  "file-backed page cache",
+  "transient gross allocation or copied bytes",
+  "a queue, durable store, request, batch, entry, tenant, or namespace already bounded at its owner",
+]
+
+authorize_d2_rule = "Authorize a separately reviewed D2 proposal only if an audit input demonstrates pressure at an eligible owner, the owner remains unbounded after W2--W8, and the proposed retained-byte reservation lifecycle covers replacement, batch rollback, retry, isolation, and release without changing legacy max_capacity."
+not_applicable_rule = "Classify W9 not-applicable when no eligible unbounded pressure owner survives the audit. An estimator, a high RSS value, allocator retention, or the existence of admission primitives is not pressure evidence."
+falsifier = "Any decision that substitutes RSS or allocator state for logical retained ownership, double-limits an already bounded owner, or changes behavior when the new setting is absent must fail the contract."
+next_decision = "Audit every input, run existing accounting/admission/quota tests, and publish one terminal evidence document. Do not implement max_retained_bytes unless the terminal result is authorize-d2."

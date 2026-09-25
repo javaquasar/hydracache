@@ -1495,6 +1495,30 @@ fn w8_allocator_evidence_cannot_promote_hide_retention_or_claim_completion() {
 }
 
 #[test]
+fn w9_decision_contract_cannot_authorize_without_pressure_or_change_legacy_semantics() {
+    let mut value = manifest("w9-retained-byte-admission-decision-contract.toml");
+    value["product_mutation_allowed"] = TomlValue::Boolean(true);
+    value["required_pressure_evidence"] = TomlValue::Boolean(false);
+    value["legacy_max_capacity_reinterpretation_allowed"] = TomlValue::Boolean(true);
+    value["ineligible_substitutes"] = TomlValue::Array(Vec::new());
+    let problems = xtask::performance_contract::check_w9_retained_byte_admission_decision_contract(
+        &value, "0.73",
+    );
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("product_mutation_allowed must be false")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("required_pressure_evidence must be true")));
+    assert!(problems.iter().any(|problem| {
+        problem.contains("legacy_max_capacity_reinterpretation_allowed must be false")
+    }));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("audit matrix changed")));
+}
+
+#[test]
 fn w5_connection_profile_cannot_promote_claim_server_bytes_or_skip_samples() {
     let mut value = manifest("w5-hc2-connection-profile-contract.toml");
     value["promotable"] = TomlValue::Boolean(true);
