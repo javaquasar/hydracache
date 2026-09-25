@@ -138,6 +138,8 @@ const W3_SHARED_EVENT_TAGS_CONTRACT: &str =
     "docs/testing/performance/0.73/w3-shared-event-tags-contract.toml";
 const W3_SHARED_EVENT_TAGS_EVIDENCE: &str =
     "docs/testing/performance/0.73/w3-shared-event-tags-accepted-82f46245.toml";
+const W4_RESP_TRANSLATION_PROFILE_CONTRACT: &str =
+    "docs/testing/performance/0.73/w4-resp-translation-profile-contract.toml";
 const RELEASE: &str = "0.73";
 const PROFILE: &str = "local-screening-073-v1";
 const ENVIRONMENT_CLASS: &str = "local_screening";
@@ -336,6 +338,9 @@ pub fn check_at_root(
     )?)?;
     let w3_shared_event_tags_evidence: TomlValue = toml::from_str(&fs::read_to_string(
         root.join(W3_SHARED_EVENT_TAGS_EVIDENCE),
+    )?)?;
+    let w4_resp_translation_profile_contract: TomlValue = toml::from_str(&fs::read_to_string(
+        root.join(W4_RESP_TRANSLATION_PROFILE_CONTRACT),
     )?)?;
     let mut problems = check_contract(&contract, release);
     if !root.join(MOKA_OBSERVER_UPSTREAM_DRAFT).is_file() {
@@ -573,6 +578,10 @@ pub fn check_at_root(
     ));
     problems.extend(check_w3_shared_event_tags_evidence(
         &w3_shared_event_tags_evidence,
+        release,
+    ));
+    problems.extend(check_w4_resp_translation_profile_contract(
+        &w4_resp_translation_profile_contract,
         release,
     ));
     problems.extend(check_schema(
@@ -814,6 +823,10 @@ pub fn check_contract(root: &TomlValue, release: &str) -> Vec<String> {
         (
             "w3_shared_event_tags_evidence",
             W3_SHARED_EVENT_TAGS_EVIDENCE,
+        ),
+        (
+            "w4_resp_translation_profile_contract",
+            W4_RESP_TRANSLATION_PROFILE_CONTRACT,
         ),
     ] {
         if text(root, field) != Some(expected) {
@@ -6086,6 +6099,93 @@ pub fn check_w3_shared_event_tags_evidence(value: &TomlValue, release: &str) -> 
         != Some("retain-shared-cache-event-tags-for-integrated-w3-w5-confirmation")
     {
         problems.push("W3 shared event tags evidence decision changed".to_owned());
+    }
+    problems
+}
+
+pub fn check_w4_resp_translation_profile_contract(value: &TomlValue, release: &str) -> Vec<String> {
+    let mut problems = Vec::new();
+    if integer(value, "schema_version") != Some(1)
+        || text(value, "release") != Some(release)
+        || text(value, "contract_id") != Some("w4-resp-translation-profile-073-v1")
+        || text(value, "state") != Some("preregistered-after-source-audit-before-profile-tooling")
+        || text(value, "parent_contract") != Some(W1_OWNER_CLASSIFICATION_CONTRACT)
+        || text(value, "source_parent") != Some("cfe3d4ab991010bb72ec66fe60a7be298d51e12a")
+        || text(value, "profile_tool") != Some("tools/resp-translation-profile-073")
+    {
+        problems.push("W4 RESP translation profile identity changed".to_owned());
+    }
+    for field in [
+        "independent_processes_required",
+        "prebuilt_release_binary_required",
+        "binary_safe_roundtrip_required",
+        "resp2_resp3_semantic_equality_required",
+        "duplicate_del_semantics_required",
+    ] {
+        if boolean(value, field) != Some(true) {
+            problems.push(format!("W4 RESP translation profile {field} must be true"));
+        }
+    }
+    for field in [
+        "production_counter_addition",
+        "product_mutation_allowed",
+        "candidate_data_allowed",
+        "dedicated_host_run_allowed",
+        "promotable",
+        "release_numerical_claim_allowed",
+    ] {
+        if boolean(value, field) != Some(false) {
+            problems.push(format!("W4 RESP translation profile {field} must be false"));
+        }
+    }
+    if string_array(value.get("stages")) != ["decode", "translate", "encode", "roundtrip"]
+        || string_array(value.get("dialects")) != ["resp2", "resp3"]
+        || integer_array(value.get("key_bytes")) != [0, 16, 64, 256]
+        || string_array(value.get("key_shapes")) != ["ascii", "binary"]
+        || integer_array(value.get("batch_sizes")) != [1, 16, 256]
+        || string_array(value.get("batch_topologies")) != ["distinct", "all-duplicate"]
+        || integer_array(value.get("response_payload_bytes")) != [0, 64, 4_096, 1_048_576]
+        || integer(value, "repeats_per_scenario") != Some(5)
+        || integer(value, "scenario_count") != Some(92)
+        || integer(value, "attempts") != Some(460)
+        || integer(value, "default_operations_per_process") != Some(256)
+        || integer(value, "large_response_operations_per_process") != Some(16)
+    {
+        problems.push("W4 RESP translation profile sampling matrix changed".to_owned());
+    }
+    if value
+        .get("scenario_group")
+        .and_then(TomlValue::as_array)
+        .is_none_or(|groups| groups.len() != 5)
+    {
+        problems.push("W4 RESP translation profile scenario groups changed".to_owned());
+    }
+    if string_array(value.get("metrics"))
+        != [
+            "gross_allocated_bytes",
+            "live_allocated_bytes",
+            "elapsed_nanoseconds",
+            "wire_input_bytes",
+            "decoded_argument_bytes",
+            "structured_key_bytes",
+            "execution_plan_request_count",
+            "response_payload_bytes",
+            "wire_output_bytes",
+        ]
+    {
+        problems.push("W4 RESP translation profile metrics changed".to_owned());
+    }
+    for field in [
+        "ownership_scope",
+        "source_audit",
+        "falsifier",
+        "interpretation_limit",
+        "decision_rule",
+        "next_decision",
+    ] {
+        if text(value, field).is_none_or(str::is_empty) {
+            problems.push(format!("W4 RESP translation profile {field} is missing"));
+        }
     }
     problems
 }

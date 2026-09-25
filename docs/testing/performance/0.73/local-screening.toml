@@ -77,6 +77,7 @@ w3_tag_index_profile_contract = "docs/testing/performance/0.73/w3-tag-index-prof
 w3_tag_index_profile_evidence = "docs/testing/performance/0.73/w3-tag-index-profile-f8b90ef0.toml"
 w3_shared_event_tags_contract = "docs/testing/performance/0.73/w3-shared-event-tags-contract.toml"
 w3_shared_event_tags_evidence = "docs/testing/performance/0.73/w3-shared-event-tags-accepted-82f46245.toml"
+w4_resp_translation_profile_contract = "docs/testing/performance/0.73/w4-resp-translation-profile-contract.toml"
 promotable = false
 numerical_claims_allowed = false
 candidate_thresholds_allowed = false

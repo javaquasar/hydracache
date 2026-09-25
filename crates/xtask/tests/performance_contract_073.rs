@@ -1251,6 +1251,26 @@ fn w3_shared_event_tags_evidence_cannot_promote_or_rewrite_acceptance() {
 }
 
 #[test]
+fn w4_resp_profile_cannot_mutate_product_or_drop_copy_cells() {
+    let mut value = manifest("w4-resp-translation-profile-contract.toml");
+    value["product_mutation_allowed"] = TomlValue::Boolean(true);
+    value["promotable"] = TomlValue::Boolean(true);
+    value["scenario_count"] = TomlValue::Integer(1);
+    value["key_bytes"] = TomlValue::Array(vec![TomlValue::Integer(16)]);
+    let problems =
+        xtask::performance_contract::check_w4_resp_translation_profile_contract(&value, "0.73");
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("product_mutation_allowed must be false")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("promotable must be false")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("sampling matrix changed")));
+}
+
+#[test]
 fn w5_connection_profile_cannot_promote_claim_server_bytes_or_skip_samples() {
     let mut value = manifest("w5-hc2-connection-profile-contract.toml");
     value["promotable"] = TomlValue::Boolean(true);
