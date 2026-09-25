@@ -5489,6 +5489,7 @@ pub fn check_w6_management_overhead_profile_contract(
     }
     if integer(value, "polls_per_second") != Some(1)
         || integer(value, "polling_requests") != Some(60)
+        || integer(value, "idle_observation_milliseconds") != Some(2_000)
         || integer(value, "cursor_records") != Some(1_024)
         || integer(value, "idle_pairs") != Some(5)
         || integer(value, "repeats_per_request_scenario") != Some(5)

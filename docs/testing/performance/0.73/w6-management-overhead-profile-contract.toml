@@ -9,6 +9,7 @@ ownership_scope = "single-process management router and request-owned work"
 scenarios = ["management-off-idle", "management-on-idle", "dashboard-poll", "aggregate-cold", "aggregate-cache-hit", "cursor-saturation", "history-disabled"]
 polls_per_second = 1
 polling_requests = 60
+idle_observation_milliseconds = 2000
 cursor_records = 1024
 idle_pairs = 5
 repeats_per_request_scenario = 5
