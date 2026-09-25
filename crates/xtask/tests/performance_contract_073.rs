@@ -1120,6 +1120,29 @@ fn w5_connection_census_cannot_claim_memory_or_skip_cardinalities() {
 }
 
 #[test]
+fn w6_management_profile_cannot_mutate_product_promote_or_skip_owner_cells() {
+    let mut value = manifest("w6-management-overhead-profile-contract.toml");
+    value["product_mutation_allowed"] = TomlValue::Boolean(true);
+    value["promotable"] = TomlValue::Boolean(true);
+    value["scenarios"] = TomlValue::Array(vec![TomlValue::String("management-on-idle".to_owned())]);
+    value["polling_requests"] = TomlValue::Integer(1);
+    let problems =
+        xtask::performance_contract::check_w6_management_overhead_profile_contract(&value, "0.73");
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("product_mutation_allowed must be false")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("promotable must be false")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("sampling matrix changed")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("scenario or metric set changed")));
+}
+
+#[test]
 fn w5_connection_profile_cannot_promote_claim_server_bytes_or_skip_samples() {
     let mut value = manifest("w5-hc2-connection-profile-contract.toml");
     value["promotable"] = TomlValue::Boolean(true);
