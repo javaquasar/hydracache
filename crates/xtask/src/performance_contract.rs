@@ -118,6 +118,8 @@ const W5_HC2_SLOW_CONSUMER_PROFILE_CONTRACT: &str =
     "docs/testing/performance/0.73/w5-hc2-slow-consumer-profile-contract.toml";
 const W5_HC2_SLOW_CONSUMER_PROFILE_EVIDENCE: &str =
     "docs/testing/performance/0.73/w5-hc2-slow-consumer-profile-ff432801.toml";
+const W5_HC2_RAW_TRANSPORT_STALL_CONTRACT: &str =
+    "docs/testing/performance/0.73/w5-hc2-raw-transport-stall-contract.toml";
 const RELEASE: &str = "0.73";
 const PROFILE: &str = "local-screening-073-v1";
 const ENVIRONMENT_CLASS: &str = "local_screening";
@@ -286,6 +288,9 @@ pub fn check_at_root(
     )?)?;
     let w5_hc2_slow_consumer_profile_evidence: TomlValue = toml::from_str(&fs::read_to_string(
         root.join(W5_HC2_SLOW_CONSUMER_PROFILE_EVIDENCE),
+    )?)?;
+    let w5_hc2_raw_transport_stall_contract: TomlValue = toml::from_str(&fs::read_to_string(
+        root.join(W5_HC2_RAW_TRANSPORT_STALL_CONTRACT),
     )?)?;
     let mut problems = check_contract(&contract, release);
     if !root.join(MOKA_OBSERVER_UPSTREAM_DRAFT).is_file() {
@@ -483,6 +488,10 @@ pub fn check_at_root(
     ));
     problems.extend(check_w5_hc2_slow_consumer_profile_evidence(
         &w5_hc2_slow_consumer_profile_evidence,
+        release,
+    ));
+    problems.extend(check_w5_hc2_raw_transport_stall_contract(
+        &w5_hc2_raw_transport_stall_contract,
         release,
     ));
     problems.extend(check_schema(
@@ -684,6 +693,10 @@ pub fn check_contract(root: &TomlValue, release: &str) -> Vec<String> {
         (
             "w5_hc2_slow_consumer_profile_evidence",
             W5_HC2_SLOW_CONSUMER_PROFILE_EVIDENCE,
+        ),
+        (
+            "w5_hc2_raw_transport_stall_contract",
+            W5_HC2_RAW_TRANSPORT_STALL_CONTRACT,
         ),
     ] {
         if text(root, field) != Some(expected) {
@@ -4961,6 +4974,80 @@ pub fn check_w5_hc2_slow_consumer_profile_evidence(
         || text(value, "next_evidence").is_none_or(str::is_empty)
     {
         problems.push("W5 HC/2 slow-consumer evidence decision is incomplete".to_owned());
+    }
+    problems
+}
+
+pub fn check_w5_hc2_raw_transport_stall_contract(value: &TomlValue, release: &str) -> Vec<String> {
+    let mut problems = Vec::new();
+    if integer(value, "schema_version") != Some(1)
+        || text(value, "release") != Some(release)
+        || text(value, "contract_id") != Some("w5-hc2-raw-transport-stall-073-v1")
+        || text(value, "state") != Some("preregistered-before-raw-transport-tooling")
+        || text(value, "triggering_evidence") != Some(W5_HC2_SLOW_CONSUMER_PROFILE_EVIDENCE)
+        || text(value, "source_parent") != Some("c77e0febbb70203b0257f26b9ee6079e3c600545")
+        || text(value, "profile_tool") != Some("tools/hc2-connection-profile-073")
+    {
+        problems.push("W5 HC/2 raw transport-stall contract identity changed".to_owned());
+    }
+    for field in [
+        "production_counter_addition",
+        "product_mutation_allowed",
+        "candidate_data_allowed",
+        "dedicated_host_run_allowed",
+        "promotable",
+        "exact_server_queued_byte_claim_allowed",
+        "release_numerical_claim_allowed",
+    ] {
+        if boolean(value, field) != Some(false) {
+            problems.push(format!(
+                "W5 HC/2 raw transport-stall contract {field} must be false"
+            ));
+        }
+    }
+    for field in [
+        "independent_process_pairs_required",
+        "same_encoded_inputs_within_pair_required",
+        "handshake_ack_required_before_stall",
+        "subscription_ack_required_before_stall",
+        "request_stream_remains_open_at_snapshot",
+        "response_stream_object_retained_at_snapshot",
+    ] {
+        if boolean(value, field) != Some(true) {
+            problems.push(format!(
+                "W5 HC/2 raw transport-stall contract {field} must be true"
+            ));
+        }
+    }
+    if integer(value, "connections") != Some(8)
+        || integer(value, "subscriptions_per_connection") != Some(1)
+        || integer(value, "offered_value_bytes_per_connection") != Some(8_388_608)
+        || integer_array(value.get("value_bytes")) != [4_096, 262_144]
+        || integer_array(value.get("mutations_per_connection")) != [2_048, 32]
+        || integer(value, "server_outbound_item_capacity") != Some(16)
+        || integer(value, "settle_milliseconds") != Some(2_000)
+        || integer(value, "stability_window_milliseconds") != Some(500)
+        || integer(value, "pairs_per_value_size") != Some(5)
+        || string_array(value.get("counterbalanced_order")).len() != 5
+        || string_array(value.get("scenarios"))
+            != ["drained-transport-reader", "unpolled-transport-reader"]
+    {
+        problems.push("W5 HC/2 raw transport-stall workload changed".to_owned());
+    }
+    for field in [
+        "control_invariant",
+        "treatment_invariant",
+        "payload_invariant",
+        "close_invariant",
+        "falsifier",
+        "interpretation_limit",
+        "decision_rule",
+    ] {
+        if text(value, field).is_none_or(str::is_empty) {
+            problems.push(format!(
+                "W5 HC/2 raw transport-stall contract {field} is missing"
+            ));
+        }
     }
     problems
 }

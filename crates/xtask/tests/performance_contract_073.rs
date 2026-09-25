@@ -1238,3 +1238,23 @@ fn w5_slow_consumer_evidence_cannot_promote_or_move_retention_to_server() {
         .iter()
         .any(|problem| problem.contains("result changed")));
 }
+
+#[test]
+fn w5_raw_transport_stall_cannot_promote_or_weaken_the_matrix() {
+    let mut value = manifest("w5-hc2-raw-transport-stall-contract.toml");
+    value["promotable"] = TomlValue::Boolean(true);
+    value["exact_server_queued_byte_claim_allowed"] = TomlValue::Boolean(true);
+    value["connections"] = TomlValue::Integer(1);
+    value["value_bytes"] = TomlValue::Array(vec![TomlValue::Integer(4_096)]);
+    let problems =
+        xtask::performance_contract::check_w5_hc2_raw_transport_stall_contract(&value, "0.73");
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("promotable must be false")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("exact_server_queued_byte_claim_allowed must be false")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("workload changed")));
+}
