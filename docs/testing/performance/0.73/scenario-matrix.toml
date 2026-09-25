@@ -1,10 +1,11 @@
 schema_version = 1
 release = "0.73"
 matrix_id = "performance-073-v1"
-state = "pilot"
-candidate_measurement_allowed = false
+state = "i73-frozen"
+candidate_measurement_allowed = true
 baseline_identity = "I73"
-baseline_source_sha = ""
+baseline_source_sha = "e757556d3a31d565f52a9561d6d4e555bb1cc373"
+baseline_freeze_evidence = "docs/testing/performance/0.73/baseline-pilot-v2-passed-e757556d.toml"
 external_baseline_identity = "B72"
 instrumentation_modes = ["off", "production", "profile"]
 candidate_comparison_instrumentation_mode = "production"
@@ -13,9 +14,12 @@ concurrency_lanes = [1, 8, 32, 128]
 offered_load_fractions = [0.25, 0.60, 0.85]
 maximum_goodput_regression = 0.02
 unexpected_failures_allowed = 0
-calibration_state = "unmeasured"
-measurement_windows_state = "unmeasured"
-stable_rates_state = "unmeasured"
+calibration_state = "admitted-pre-and-post"
+measurement_windows_state = "frozen-10-seconds"
+stable_rates_state = "frozen"
+stable_rates_per_second = [2500, 5000, 10000, 20000]
+selected_knee_rate_per_second = 20000
+frozen_d3_rates_per_second = [5000, 12000, 17000]
 counterbalanced_pair_order_required = true
 minimum_screening_pairs = 3
 minimum_claim_pairs = 5
@@ -31,11 +35,12 @@ warmup_frozen_before_candidate = true
 duration_frozen_before_candidate = true
 shutdown_and_drain_frozen_before_candidate = true
 
-[pilot]
-evidence_class = "local_screening"
+[baseline_freeze]
+evidence_class = "dedicated_host_baseline_only"
 promotable = false
 numerical_claim_eligible = false
-purpose = "derive I73-only stable rates, validate adapters, and reject broken candidates"
+candidate_data_present = false
+purpose = "freeze exact I73 identity, measurement windows, stable rates, and derived D3 cells before candidate observation"
 
 [mixed_runtime]
 id = "mixed-runtime-073-v1"

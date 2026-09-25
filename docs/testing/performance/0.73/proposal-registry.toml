@@ -1,6 +1,6 @@
 schema_version = 1
 release = "0.73"
-registry_state = "local_screening_passed_awaiting_d3"
+registry_state = "i73_frozen_w1_classification_open"
 candidate_measurements_allowed = false
 local_candidate_screening_allowed = true
 local_candidate_screening_completed = true
@@ -9,7 +9,7 @@ product_mutations_allowed = true
 [[proposals]]
 proposal_id = "P73-INSTRUMENTATION-NONBLOCKING-REMOVAL"
 work_item = "W0-W1"
-state = "local_screening_passed_awaiting_d3"
+state = "absorbed-into-frozen-i73"
 d2_authorized = true
 product_mutation_allowed = true
 owner = "Moka future-cache removal notification path"
@@ -22,6 +22,7 @@ rollback_class = "remove isolated implementation and restore the exact I73 instr
 dependency_delta = "exact git revision 352e53faa480c9997272b9c70798dd5b5c15d581 from https://github.com/javaquasar/moka.git; no branch or floating tag is authorized"
 review_status = "d2-authorized-pinned-fork"
 candidate_measurements_allowed = false
+d3_measurement_required = false
 local_candidate_screening_allowed = true
 local_candidate_screening_completed = true
 d2_review_candidate = "docs/testing/performance/0.73/notification-observer-d2-review.toml"
@@ -29,6 +30,7 @@ dependency_decision = "docs/testing/performance/0.73/moka-fork-decision-352e53fa
 implementation_commit = "73fc38a131d26e78b246fe93d5edd71d33796bbf"
 implementation_receipt = "docs/testing/performance/0.73/notification-observer-product-73fc38a1.toml"
 local_screening_evidence = "docs/testing/performance/0.73/local-observer-product-screening-06a8bd95.toml"
+baseline_freeze_evidence = "docs/testing/performance/0.73/baseline-pilot-v2-passed-e757556d.toml"
 
 baseline_evidence = [
   "docs/testing/performance/0.73/local-overhead-screening-307b3500.toml",
@@ -81,4 +83,4 @@ required_regression_guards = [
   "allocation and RSS limits frozen before candidate data",
 ]
 
-next_evidence = "Use the admitted Linux host for baseline-only I73 pilots that freeze measurement windows and stable offered rates, then run the preregistered D3 campaign. Keep the successful local screen non-promotable and outside numerical release claims."
+next_evidence = "Treat the observer and shared-tag implementation as part of frozen I73, then complete W1 owner classification for every W2--W9 surface. Register a new D2 candidate before any candidate-host observation."

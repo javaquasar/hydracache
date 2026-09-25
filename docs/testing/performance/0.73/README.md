@@ -440,6 +440,18 @@ deep-clone cost moved, not that CPU or RSS improved. The receipt separately auth
 unchanged manual baseline-v2 repeat at the exact source containing the receipt; it does not permit
 an automatic run, altered thresholds, or a retry selected after seeing the result.
 
+That one authorized repeat is run `36077381099` at exact source `e757556d`. All 40 attempts passed,
+and pre/post calibration spread was 0.20%/0.44%. Unlike the earlier negative campaigns, every rate
+passed: paired CPU overhead was 0.052%, 0.090%, 0.167%, and 0.594% at 2,500/5,000/10,000/20,000
+operations per second. Production allocation was 25.80--26.95 B/op below off at every rate, while
+goodput and p99 remained inside their frozen guards. `baseline-pilot-v2-passed-e757556d.toml`
+retains the run, artifact, binary, host, manifest, calibration, and pair identities. I73 is now
+frozen at `e757556d`; the selected knee is 20,000 operations/second and the preregistered 25/60/85%
+D3 cells are 5,000/12,000/17,000. Candidate measurement is open only for separately sealed D2
+proposals using this exact baseline, the unchanged thresholds, and at least five counterbalanced
+I73/C73 pairs. Earlier negative packets remain in the ledger and are not rewritten as code-effect
+comparisons.
+
 The same push exposed a separate cost-control issue: the host-admission workflow still had an
 automatic path and queued run `36072022062` behind the shared performance concurrency group. It was
 cancelled before environment approval and ran no job. Commit `e0dc4df5` makes host admission, like

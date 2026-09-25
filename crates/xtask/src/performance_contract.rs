@@ -86,6 +86,8 @@ const SHARED_ENTRY_TAGS_CONTRACT: &str =
     "docs/testing/performance/0.73/shared-entry-tags-contract.toml";
 const SHARED_ENTRY_TAGS_PRODUCT: &str =
     "docs/testing/performance/0.73/shared-entry-tags-product-947e624d.toml";
+const BASELINE_PILOT_V2_FREEZE_EVIDENCE: &str =
+    "docs/testing/performance/0.73/baseline-pilot-v2-passed-e757556d.toml";
 const RELEASE: &str = "0.73";
 const PROFILE: &str = "local-screening-073-v1";
 const ENVIRONMENT_CLASS: &str = "local_screening";
@@ -207,6 +209,9 @@ pub fn check_at_root(
         toml::from_str(&fs::read_to_string(root.join(SHARED_ENTRY_TAGS_CONTRACT))?)?;
     let shared_entry_tags_product: TomlValue =
         toml::from_str(&fs::read_to_string(root.join(SHARED_ENTRY_TAGS_PRODUCT))?)?;
+    let baseline_pilot_v2_freeze_evidence: TomlValue = toml::from_str(&fs::read_to_string(
+        root.join(BASELINE_PILOT_V2_FREEZE_EVIDENCE),
+    )?)?;
     let mut problems = check_contract(&contract, release);
     if !root.join(MOKA_OBSERVER_UPSTREAM_DRAFT).is_file() {
         problems.push("notification observer dependency review draft is missing".to_owned());
@@ -339,6 +344,10 @@ pub fn check_at_root(
     ));
     problems.extend(check_shared_entry_tags_product(
         &shared_entry_tags_product,
+        release,
+    ));
+    problems.extend(check_baseline_pilot_v2_freeze_evidence(
+        &baseline_pilot_v2_freeze_evidence,
         release,
     ));
     problems.extend(check_schema(
@@ -477,6 +486,10 @@ pub fn check_contract(root: &TomlValue, release: &str) -> Vec<String> {
         ),
         ("shared_entry_tags_contract", SHARED_ENTRY_TAGS_CONTRACT),
         ("shared_entry_tags_product", SHARED_ENTRY_TAGS_PRODUCT),
+        (
+            "baseline_pilot_v2_freeze_evidence",
+            BASELINE_PILOT_V2_FREEZE_EVIDENCE,
+        ),
     ] {
         if text(root, field) != Some(expected) {
             problems.push(format!("local screening {field} must be {expected}"));
@@ -1753,7 +1766,7 @@ pub fn check_proposal_registry(value: &TomlValue, release: &str) -> Vec<String> 
     let mut problems = Vec::new();
     if integer(value, "schema_version") != Some(1)
         || text(value, "release") != Some(release)
-        || text(value, "registry_state") != Some("local_screening_passed_awaiting_d3")
+        || text(value, "registry_state") != Some("i73_frozen_w1_classification_open")
     {
         problems.push("0.73 proposal registry identity mismatch".to_owned());
     }
@@ -1763,7 +1776,7 @@ pub fn check_proposal_registry(value: &TomlValue, release: &str) -> Vec<String> 
         || boolean(value, "product_mutations_allowed") != Some(true)
     {
         problems.push(
-            "integrated registry must allow only local non-promotable screening while dedicated candidate measurement remains disabled"
+            "integrated registry must require a new D2 proposal while W1 classification is open"
                 .to_owned(),
         );
     }
@@ -1778,10 +1791,11 @@ pub fn check_proposal_registry(value: &TomlValue, release: &str) -> Vec<String> 
         problems.push("proposal registry omits instrumentation redesign".to_owned());
         return problems;
     };
-    if text(proposal, "state") != Some("local_screening_passed_awaiting_d3")
+    if text(proposal, "state") != Some("absorbed-into-frozen-i73")
         || boolean(proposal, "d2_authorized") != Some(true)
         || boolean(proposal, "product_mutation_allowed") != Some(true)
         || boolean(proposal, "candidate_measurements_allowed") != Some(false)
+        || boolean(proposal, "d3_measurement_required") != Some(false)
         || boolean(proposal, "local_candidate_screening_allowed") != Some(true)
         || boolean(proposal, "local_candidate_screening_completed") != Some(true)
         || text(proposal, "practical_minimum_effect")
@@ -1793,7 +1807,7 @@ pub fn check_proposal_registry(value: &TomlValue, release: &str) -> Vec<String> 
         || text(proposal, "review_status") != Some("d2-authorized-pinned-fork")
     {
         problems.push(
-            "instrumentation redesign must remain bound to the authorized D2 dependency while candidate measurement is disabled"
+            "instrumentation redesign must remain bound inside frozen I73 rather than become a candidate"
                 .to_owned(),
         );
     }
@@ -1808,6 +1822,7 @@ pub fn check_proposal_registry(value: &TomlValue, release: &str) -> Vec<String> 
         "implementation_commit",
         "implementation_receipt",
         "local_screening_evidence",
+        "baseline_freeze_evidence",
         "next_evidence",
     ] {
         if text(proposal, field).is_none_or(str::is_empty) {
@@ -1831,6 +1846,9 @@ pub fn check_proposal_registry(value: &TomlValue, release: &str) -> Vec<String> 
     }
     if text(proposal, "local_screening_evidence") != Some(LOCAL_OBSERVER_PRODUCT_SCREENING) {
         problems.push("instrumentation proposal must bind the local product screen".to_owned());
+    }
+    if text(proposal, "baseline_freeze_evidence") != Some(BASELINE_PILOT_V2_FREEZE_EVIDENCE) {
+        problems.push("instrumentation proposal must bind the I73 freeze evidence".to_owned());
     }
     for (field, minimum) in [
         ("baseline_evidence", 3),
@@ -1858,10 +1876,15 @@ pub fn check_statistics(value: &TomlValue, release: &str) -> Vec<String> {
     }
     if boolean(value, "baseline_only_derivation") != Some(true)
         || boolean(value, "candidate_may_amend") != Some(false)
-        || boolean(value, "candidate_measurements_allowed") != Some(false)
+        || boolean(value, "candidate_measurements_allowed") != Some(true)
         || boolean(value, "silent_retry_allowed") != Some(false)
+        || text(value, "baseline_source_sha") != Some("e757556d3a31d565f52a9561d6d4e555bb1cc373")
+        || text(value, "baseline_freeze_evidence") != Some(BASELINE_PILOT_V2_FREEZE_EVIDENCE)
     {
-        problems.push("statistics must remain baseline-only before I73".to_owned());
+        problems.push(
+            "statistics must bind frozen I73 while remaining immutable to candidate data"
+                .to_owned(),
+        );
     }
     for (field, expected) in [
         ("process_model", "independently-started"),
@@ -1921,7 +1944,7 @@ pub fn check_host_profile(value: &TomlValue, release: &str) -> Vec<String> {
     if integer(value, "schema_version") != Some(1)
         || text(value, "release") != Some(release)
         || text(value, "profile_id") != Some("performance-reference-073-v1")
-        || text(value, "state") != Some("admitted-awaiting-baseline-freeze")
+        || text(value, "state") != Some("admitted-i73-frozen-candidate-ready")
     {
         problems.push("0.73 host profile identity/state mismatch".to_owned());
     }
@@ -1936,8 +1959,12 @@ pub fn check_host_profile(value: &TomlValue, release: &str) -> Vec<String> {
     {
         problems.push("admitted host profile does not bind the reviewed admission".to_owned());
     }
+    if boolean(value, "candidate_measurements_allowed") != Some(true)
+        || text(value, "baseline_freeze_evidence") != Some(BASELINE_PILOT_V2_FREEZE_EVIDENCE)
+    {
+        problems.push("admitted host profile must bind the I73 freeze".to_owned());
+    }
     for field in [
-        "candidate_measurements_allowed",
         "identity_reuse_from_071_allowed",
         "local_or_shared_runner_promotable",
     ] {
@@ -1966,7 +1993,7 @@ pub fn check_host_profile(value: &TomlValue, release: &str) -> Vec<String> {
         ("mutable_probes", 8),
         ("required_tools", 6),
         ("companion_platforms", 2),
-        ("admission_blockers", 2),
+        ("candidate_constraints", 3),
     ] {
         if string_array(value.get(field)).len() < minimum {
             problems.push(format!("host profile has incomplete {field}"));
@@ -3478,6 +3505,91 @@ pub fn check_shared_entry_tags_product(value: &TomlValue, release: &str) -> Vec<
     problems
 }
 
+pub fn check_baseline_pilot_v2_freeze_evidence(value: &TomlValue, release: &str) -> Vec<String> {
+    let mut problems = Vec::new();
+    if integer(value, "schema_version") != Some(1)
+        || text(value, "release") != Some(release)
+        || text(value, "evidence_id") != Some("observer-baseline-pilot-v2-passed-e757556d-v1")
+        || text(value, "contract_id") != Some("observer-baseline-pilot-073-v2")
+        || text(value, "state") != Some("executed-passed-four-stable-rates-i73-frozen")
+        || text(value, "evidence_class") != Some("dedicated_host_baseline_only")
+        || integer(value, "workflow_run_id") != Some(36_077_381_099)
+        || text(value, "source_sha") != Some("e757556d3a31d565f52a9561d6d4e555bb1cc373")
+        || text(value, "implementation_commit") != Some("947e624ddcf388a86fba61601118e2f078d8bbe1")
+    {
+        problems.push("baseline v2 freeze evidence identity changed".to_owned());
+    }
+    for field in [
+        "binary_sha256",
+        "artifact_sha256",
+        "campaign_manifest_sha256",
+        "preflight_sha256",
+        "postflight_sha256",
+        "baseline_pilot_sha256",
+    ] {
+        if text(value, field).is_none_or(|digest| !sha256(digest)) {
+            problems.push(format!(
+                "baseline v2 freeze evidence {field} is not SHA-256"
+            ));
+        }
+    }
+    if text(value, "host_fingerprint")
+        .is_none_or(|digest| !digest.strip_prefix("sha256:").is_some_and(sha256))
+    {
+        problems.push("baseline v2 freeze host fingerprint is not SHA-256".to_owned());
+    }
+    for field in [
+        "candidate_data_present",
+        "thresholds_changed",
+        "silent_retry_allowed",
+    ] {
+        if boolean(value, field) != Some(false) {
+            problems.push(format!("baseline v2 freeze evidence {field} must be false"));
+        }
+    }
+    for field in [
+        "candidate_measurement_authorized",
+        "i73_freeze_eligible",
+        "derived_d3_rates_admitted",
+    ] {
+        if boolean(value, field) != Some(true) {
+            problems.push(format!("baseline v2 freeze evidence {field} must be true"));
+        }
+    }
+    let rates = value
+        .get("rate")
+        .and_then(TomlValue::as_array)
+        .cloned()
+        .unwrap_or_default();
+    if integer(value, "attempts") != Some(40)
+        || integer(value, "failed_attempts") != Some(0)
+        || integer(value, "packet_file_count") != Some(164)
+        || text(value, "paired_estimator") != Some("hodges-lehmann-v1")
+        || integer_array(value.get("stable_rates")) != [2_500, 5_000, 10_000, 20_000]
+        || integer(value, "selected_knee_rate_per_second") != Some(20_000)
+        || integer_array(value.get("frozen_d3_rates_per_second")) != [5_000, 12_000, 17_000]
+        || rates.len() != 4
+        || rates.iter().any(|rate| {
+            boolean(rate, "stable") != Some(true)
+                || float(rate, "cpu_per_operation_regression").is_none()
+                || float(rate, "allocation_overhead_bytes_per_operation").is_none()
+                || float(rate, "p99_relative_regression").is_none()
+                || float(rate, "goodput_relative_regression").is_none()
+                || float_array(rate.get("cpu_pair_regressions")).len() != 5
+        })
+    {
+        problems.push("baseline v2 freeze evidence volume or rate decision changed".to_owned());
+    }
+    if text(value, "decision") != Some("freeze-i73-and-open-preregistered-d3-candidate-measurement")
+        || text(value, "conclusion").is_none_or(str::is_empty)
+        || text(value, "cross_run_interpretation").is_none_or(str::is_empty)
+        || text(value, "next_evidence").is_none_or(str::is_empty)
+    {
+        problems.push("baseline v2 freeze decision is incomplete".to_owned());
+    }
+    problems
+}
+
 pub fn check_instrumentation_overhead(value: &TomlValue, release: &str) -> Vec<String> {
     let mut problems = Vec::new();
     if integer(value, "schema_version") != Some(1) || text(value, "release") != Some(release) {
@@ -3575,27 +3687,28 @@ pub fn check_scenario_matrix(value: &TomlValue, release: &str) -> Vec<String> {
         return problems;
     }
     if text(value, "matrix_id") != Some("performance-073-v1")
-        || text(value, "state") != Some("pilot")
-        || boolean(value, "candidate_measurement_allowed") != Some(false)
+        || text(value, "state") != Some("i73-frozen")
+        || boolean(value, "candidate_measurement_allowed") != Some(true)
     {
-        problems.push("scenario matrix must remain a candidate-blocking 0.73 pilot".to_owned());
+        problems.push("scenario matrix must retain the admitted I73 freeze".to_owned());
     }
     if text(value, "baseline_identity") != Some("I73")
-        || text(value, "baseline_source_sha") != Some("")
+        || text(value, "baseline_source_sha") != Some("e757556d3a31d565f52a9561d6d4e555bb1cc373")
+        || text(value, "baseline_freeze_evidence") != Some(BASELINE_PILOT_V2_FREEZE_EVIDENCE)
         || text(value, "external_baseline_identity") != Some("B72")
     {
-        problems.push("scenario matrix must distinguish unfrozen I73 from external B72".to_owned());
+        problems
+            .push("scenario matrix must bind frozen I73 separately from external B72".to_owned());
     }
-    for field in [
-        "calibration_state",
-        "measurement_windows_state",
-        "stable_rates_state",
-    ] {
-        if text(value, field) != Some("unmeasured") {
-            problems.push(format!(
-                "scenario matrix {field} must remain unmeasured before I73 freeze"
-            ));
-        }
+    if text(value, "calibration_state") != Some("admitted-pre-and-post")
+        || text(value, "measurement_windows_state") != Some("frozen-10-seconds")
+        || text(value, "stable_rates_state") != Some("frozen")
+        || integer_array(value.get("stable_rates_per_second")) != [2_500, 5_000, 10_000, 20_000]
+        || integer(value, "selected_knee_rate_per_second") != Some(20_000)
+        || integer_array(value.get("frozen_d3_rates_per_second")) != [5_000, 12_000, 17_000]
+    {
+        problems
+            .push("scenario matrix changed the admitted calibration, window, or rates".to_owned());
     }
     if integer_array(value.get("concurrency_lanes")) != [1, 8, 32, 128]
         || float_array(value.get("offered_load_fractions")) != [0.25, 0.60, 0.85]
@@ -3641,13 +3754,18 @@ pub fn check_scenario_matrix(value: &TomlValue, release: &str) -> Vec<String> {
             problems.push(format!("scenario matrix trace requires {field}=true"));
         }
     }
-    let pilot = value.get("pilot").unwrap_or(&TomlValue::Boolean(false));
-    if text(pilot, "evidence_class") != Some("local_screening")
-        || boolean(pilot, "promotable") != Some(false)
-        || boolean(pilot, "numerical_claim_eligible") != Some(false)
+    let baseline_freeze = value
+        .get("baseline_freeze")
+        .unwrap_or(&TomlValue::Boolean(false));
+    if text(baseline_freeze, "evidence_class") != Some("dedicated_host_baseline_only")
+        || boolean(baseline_freeze, "promotable") != Some(false)
+        || boolean(baseline_freeze, "numerical_claim_eligible") != Some(false)
+        || boolean(baseline_freeze, "candidate_data_present") != Some(false)
     {
-        problems
-            .push("scenario matrix pilot evidence must remain local and non-promotable".to_owned());
+        problems.push(
+            "scenario matrix baseline freeze must remain baseline-only and non-promotable"
+                .to_owned(),
+        );
     }
     let mut surfaces = BTreeMap::new();
     for surface in value
@@ -3784,10 +3902,18 @@ pub fn check_baseline_identities(
     {
         problems.push("R73 branch root is absent from the repository".to_owned());
     }
-    if text(instrumented, "state") != Some("unfrozen")
-        || text(instrumented, "source_sha") != Some("")
+    if text(instrumented, "state") != Some("frozen")
+        || text(instrumented, "source_sha") != Some("e757556d3a31d565f52a9561d6d4e555bb1cc373")
+        || text(instrumented, "binary_sha256").is_none_or(|digest| !sha256(digest))
+        || text(instrumented, "host_fingerprint")
+            .is_none_or(|digest| !digest.strip_prefix("sha256:").is_some_and(sha256))
+        || text(instrumented, "freeze_evidence") != Some(BASELINE_PILOT_V2_FREEZE_EVIDENCE)
+        || integer_array(instrumented.get("stable_rates_per_second"))
+            != [2_500, 5_000, 10_000, 20_000]
+        || integer(instrumented, "selected_knee_rate_per_second") != Some(20_000)
+        || integer_array(instrumented.get("frozen_d3_rates_per_second")) != [5_000, 12_000, 17_000]
     {
-        problems.push("I73 must remain explicitly unfrozen until W0 admission closes".to_owned());
+        problems.push("I73 identity must retain the admitted exact-source freeze".to_owned());
     }
     Ok(problems)
 }

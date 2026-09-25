@@ -910,6 +910,22 @@ reference-host campaign. It still cannot establish CPU overhead. The next expens
 justified as confirmation of a specific mechanism, so the evidence receipt permits one unchanged,
 manual paired V2 repeat and no automatic or post-result retry.
 
+The confirmation passed decisively. The exact-source reference-host run completed all 40 attempts,
+with pre/post calibration spread of 0.20% and 0.44%. All four offered rates were stable. Paired CPU
+overhead was 0.052%, 0.090%, 0.167%, and 0.594% from 2,500 through 20,000 operations per second;
+goodput and p99 stayed inside their unchanged guards. Production allocation was consistently about
+26 B/op below off, reversing the earlier roughly +20 B/op signal without changing the workload or
+thresholds.
+
+The local and hosted results answer different questions. The 120-process local ablation explains
+*why* the allocation moved: the noop-observer boundary lost its deep tag clone. The dedicated-host
+paired campaign establishes that the integrated production instrumentation now fits its frozen CPU,
+latency, allocation, and stability budget. Neither result should be stretched into a claim that this
+commit caused a particular CPU improvement versus an older campaign; those campaigns were not a
+paired code comparison. Together they are sufficient for the intended governance decision: freeze
+`I73` at the measured source, select the 20,000 ops/s knee, derive 5,000/12,000/17,000 ops/s D3
+cells, and permit candidate observation only under separately preregistered comparisons.
+
 ## A profiling ladder that avoids expensive runs
 
 Not every development iteration needs a dedicated bare-metal campaign. A useful workflow has several

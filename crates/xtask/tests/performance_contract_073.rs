@@ -141,6 +141,19 @@ fn baseline_identity_rejects_a_wrong_annotated_tag_object() {
 }
 
 #[test]
+fn baseline_identity_rejects_a_changed_i73_freeze() {
+    let mut value = manifest("baseline-identities.toml");
+    value["instrumented_baseline"]["source_sha"] = TomlValue::String("f".repeat(40));
+    value["instrumented_baseline"]["frozen_d3_rates_per_second"] =
+        TomlValue::Array(vec![TomlValue::Integer(5_000)]);
+    let problems = xtask::performance_contract::check_baseline_identities(&root(), &value, "0.73")
+        .expect("check baseline identities");
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("exact-source freeze")));
+}
+
+#[test]
 fn post_tag_delta_rejects_an_unclassified_path() {
     let mut value = manifest("post-tag-delta.toml");
     value["paths"]
@@ -168,18 +181,22 @@ fn scenario_matrix_requires_every_w2_through_w9_surface() {
 }
 
 #[test]
-fn scenario_matrix_rejects_candidate_data_before_i73_freeze() {
+fn scenario_matrix_rejects_reopening_the_admitted_i73_freeze() {
     let mut value = manifest("scenario-matrix.toml");
-    value["state"] = TomlValue::String("frozen".to_owned());
-    value["candidate_measurement_allowed"] = TomlValue::Boolean(true);
-    value["stable_rates_state"] = TomlValue::String("selected".to_owned());
+    value["state"] = TomlValue::String("pilot".to_owned());
+    value["candidate_measurement_allowed"] = TomlValue::Boolean(false);
+    value["baseline_source_sha"] = TomlValue::String(String::new());
+    value["stable_rates_state"] = TomlValue::String("unmeasured".to_owned());
     let problems = xtask::performance_contract::check_scenario_matrix(&value, "0.73");
     assert!(problems
         .iter()
-        .any(|problem| problem.contains("candidate-blocking")));
+        .any(|problem| problem.contains("admitted I73 freeze")));
     assert!(problems
         .iter()
-        .any(|problem| problem.contains("stable_rates_state")));
+        .any(|problem| problem.contains("bind frozen I73")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("calibration, window, or rates")));
 }
 
 #[test]
@@ -377,15 +394,16 @@ fn single_maintainer_policy_cannot_claim_independence_or_unpin_dependency() {
 }
 
 #[test]
-fn pre_i73_proposal_cannot_enable_measurement_or_unpin_d2_dependency() {
+fn frozen_i73_instrumentation_cannot_be_reopened_as_a_candidate() {
     let mut value = manifest("proposal-registry.toml");
     value["proposals"][0]["candidate_measurements_allowed"] = TomlValue::Boolean(true);
+    value["proposals"][0]["d3_measurement_required"] = TomlValue::Boolean(true);
     value["proposals"][0]["dependency_decision"] =
         TomlValue::String("hydracache/post-removal-observer-0.12.15".to_owned());
     let problems = xtask::performance_contract::check_proposal_registry(&value, "0.73");
     assert!(problems
         .iter()
-        .any(|problem| problem.contains("bound to the authorized D2 dependency")));
+        .any(|problem| problem.contains("inside frozen I73")));
     assert!(problems
         .iter()
         .any(|problem| problem.contains("must reference the pinned fork decision")));
@@ -490,14 +508,15 @@ fn statistics_cannot_weaken_pairs_confidence_or_goodput_guard() {
 }
 
 #[test]
-fn admitted_host_cannot_enable_candidate_measurement_before_baseline_freeze() {
+fn admitted_host_cannot_drop_the_i73_freeze_or_reuse_an_old_identity() {
     let mut value = manifest("host-profile.toml");
-    value["candidate_measurements_allowed"] = TomlValue::Boolean(true);
+    value["candidate_measurements_allowed"] = TomlValue::Boolean(false);
+    value["baseline_freeze_evidence"] = TomlValue::String("pending".to_owned());
     value["identity_reuse_from_071_allowed"] = TomlValue::Boolean(true);
     let problems = xtask::performance_contract::check_host_profile(&value, "0.73");
     assert!(problems
         .iter()
-        .any(|problem| problem.contains("candidate_measurements_allowed must be false")));
+        .any(|problem| problem.contains("bind the I73 freeze")));
     assert!(problems
         .iter()
         .any(|problem| problem.contains("identity_reuse_from_071_allowed must be false")));
@@ -901,4 +920,24 @@ fn shared_entry_tags_product_cannot_promote_or_weaken_local_evidence() {
     assert!(problems
         .iter()
         .any(|problem| problem.contains("allocation evidence changed")));
+}
+
+#[test]
+fn baseline_v2_freeze_cannot_admit_candidate_data_or_drop_stable_rates() {
+    let mut value = manifest("baseline-pilot-v2-passed-e757556d.toml");
+    value["candidate_data_present"] = TomlValue::Boolean(true);
+    value["stable_rates"] =
+        TomlValue::Array(vec![TomlValue::Integer(5_000), TomlValue::Integer(10_000)]);
+    value["silent_retry_allowed"] = TomlValue::Boolean(true);
+    let problems =
+        xtask::performance_contract::check_baseline_pilot_v2_freeze_evidence(&value, "0.73");
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("candidate_data_present must be false")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("silent_retry_allowed must be false")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("volume or rate decision changed")));
 }

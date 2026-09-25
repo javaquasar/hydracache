@@ -15,12 +15,18 @@ purpose = "development lineage only; not B72 and not I73"
 
 [instrumented_baseline]
 id = "I73"
-state = "unfrozen"
-source_sha = ""
-required_before_freeze = [
+state = "frozen"
+source_sha = "e757556d3a31d565f52a9561d6d4e555bb1cc373"
+binary_sha256 = "29d22e7c476e7285846016b7326d88990190188b938f4c7d3c6776a37c47f162"
+host_fingerprint = "sha256:702282650a14db1fd52ae9f326cadc8909aff5046a18827ffd82ed0ddbfc465d"
+freeze_evidence = "docs/testing/performance/0.73/baseline-pilot-v2-passed-e757556d.toml"
+stable_rates_per_second = [2500, 5000, 10000, 20000]
+selected_knee_rate_per_second = 20000
+frozen_d3_rates_per_second = [5000, 12000, 17000]
+freeze_conditions = [
   "post-tag delta ledger closed",
-  "production instrumentation overhead accepted",
-  "toolchain and scenario matrix frozen"
+  "production instrumentation overhead accepted at four stable rates",
+  "toolchain, host, workload, thresholds, and scenario matrix frozen",
 ]
 
 [retained_evidence]
