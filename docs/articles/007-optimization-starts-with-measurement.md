@@ -1267,6 +1267,58 @@ are justified for this surface. The useful output is a protected baseline and a 
 future changes must not introduce a background collector, bypass the aggregate cache, weaken the
 cursor bound, or make disabled history contact an upstream service.
 
+W3, the tag index, required a different decomposition. A tag participates in at least three kinds
+of ownership: the immutable tag slice retained by a cache entry, the reverse index from a tag to
+versioned keys, and the metadata copied into public cache events. Measuring only total process RSS
+would merge those owners. We instead ran 215 independent release processes: 256 entries with
+0/1/4/16/64 fixed-width tags, both a shared tag set and a unique tag set, 0/1/8 event subscribers,
+and invalidation fan-outs of 1/64/1,024. Each cell had five repeats, exact memory reconciliation,
+content checks for every delivered event, and its own stdout, stderr, and exit record. All attempts
+completed, stderr stayed empty, and every invariant passed.
+
+The exact retained-byte estimate grew by 184 bytes per logical membership and reached 3,014,656
+bytes at 16,384 memberships. It was deliberately identical for shared and unique topologies. That
+does not mean both layouts retain the same allocator memory: the estimator prices one logical
+membership from known lengths and versioned constants; it does not inspect `HashMap` capacity or
+deduplicate repeated strings. At 64 tags, the shared topology added about 154.8 live allocator bytes
+per membership over its zero-tag cell, while the unique topology added about 413.9. The extra cost is
+consistent with 16,384 distinct outer tag identities and their one-key maps. It identifies a real
+topology cost, but not a safe optimization: global string interning would add synchronization,
+reclamation, and adversarial-cardinality behavior to save memory only when names repeat.
+
+Gross allocation told a related but separate story. Shared tags cost about 490.1 gross bytes per
+membership and unique tags about 796.9. Some of that is unavoidable construction of entry and index
+state; some is transient, such as forming an owned key for a `HashMap::entry` lookup. These numbers
+are useful for later work, but changing index ownership first would mix several mechanisms and put
+generation fencing at risk. The stale-load test therefore remained an explicit gate: invalidating a
+tag while a load is in flight still discarded the stale store.
+
+The event cells produced a much cleaner owner. After subtracting the corresponding zero-tag event
+cost, one subscriber allocated 55.87 bytes per delivered 32-byte tag and eight subscribers allocated
+56.00 bytes. The arithmetic explains the result: cloning one `String` needs its 24-byte header and a
+new 32-byte payload allocation. `CacheEvent` currently stores `Vec<String>` and derives `Clone`, so
+Tokio broadcast delivery repeats that deep copy for each receiver. With 64 tags and eight
+subscribers, the shared-topology cell delivered 4,194,304 logical tag bytes and added 7,412,728 gross
+allocation bytes relative to no subscribers; 7,340,064 of those bytes were the tag-dependent part.
+The allocation owner scales with both tag count and subscriber fan-out while live retained memory
+after delivery remains essentially unchanged. This is allocation churn, not a leak.
+
+Invalidation did not expose another candidate. Every run removed exactly the requested 1, 64, or
+1,024 entries, exact reconciliation ended with zero memberships, and one bounded generation record
+remained to fence stale work. Median gross allocation at fan-out 1,024 was about 2.36 MB and elapsed
+time about 1.23 ms locally, both consistent with required per-key removal. Optimizing that loop
+without changing the removal contract would need a more specific owner than “linear in the work it
+must perform.”
+
+The W3 decision is therefore narrow: preserve the index and generation model, and preregister a
+candidate that changes only event tag ownership from a deeply cloned vector to an immutable shared
+slice. The public accessor can still return `&[String]`, event equality can remain content-based, and
+`Clone` can become an atomic reference-count increment instead of duplicating every tag. Acceptance
+must come from rerunning all 215 cells, not only the favorable 64-tag/eight-subscriber point; no-tag,
+zero-subscriber, single-subscriber, shared/unique, invalidation, exact-memory, and stale-load controls
+must stay green. These local figures locate the owner and authorize the experiment, but remain
+non-promotable release evidence.
+
 ## A profiling ladder that avoids expensive runs
 
 Not every development iteration needs a dedicated bare-metal campaign. A useful workflow has several

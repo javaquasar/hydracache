@@ -132,6 +132,8 @@ const W6_MANAGEMENT_OVERHEAD_PROFILE_EVIDENCE: &str =
     "docs/testing/performance/0.73/w6-management-overhead-316961e0.toml";
 const W3_TAG_INDEX_PROFILE_CONTRACT: &str =
     "docs/testing/performance/0.73/w3-tag-index-profile-contract.toml";
+const W3_TAG_INDEX_PROFILE_EVIDENCE: &str =
+    "docs/testing/performance/0.73/w3-tag-index-profile-f8b90ef0.toml";
 const RELEASE: &str = "0.73";
 const PROFILE: &str = "local-screening-073-v1";
 const ENVIRONMENT_CLASS: &str = "local_screening";
@@ -321,6 +323,9 @@ pub fn check_at_root(
     )?)?;
     let w3_tag_index_profile_contract: TomlValue = toml::from_str(&fs::read_to_string(
         root.join(W3_TAG_INDEX_PROFILE_CONTRACT),
+    )?)?;
+    let w3_tag_index_profile_evidence: TomlValue = toml::from_str(&fs::read_to_string(
+        root.join(W3_TAG_INDEX_PROFILE_EVIDENCE),
     )?)?;
     let mut problems = check_contract(&contract, release);
     if !root.join(MOKA_OBSERVER_UPSTREAM_DRAFT).is_file() {
@@ -546,6 +551,10 @@ pub fn check_at_root(
     ));
     problems.extend(check_w3_tag_index_profile_contract(
         &w3_tag_index_profile_contract,
+        release,
+    ));
+    problems.extend(check_w3_tag_index_profile_evidence(
+        &w3_tag_index_profile_evidence,
         release,
     ));
     problems.extend(check_schema(
@@ -775,6 +784,10 @@ pub fn check_contract(root: &TomlValue, release: &str) -> Vec<String> {
         (
             "w3_tag_index_profile_contract",
             W3_TAG_INDEX_PROFILE_CONTRACT,
+        ),
+        (
+            "w3_tag_index_profile_evidence",
+            W3_TAG_INDEX_PROFILE_EVIDENCE,
         ),
     ] {
         if text(root, field) != Some(expected) {
@@ -5746,6 +5759,117 @@ pub fn check_w3_tag_index_profile_contract(value: &TomlValue, release: &str) -> 
         if text(value, field).is_none_or(str::is_empty) {
             problems.push(format!("W3 tag-index profile {field} is missing"));
         }
+    }
+    problems
+}
+
+pub fn check_w3_tag_index_profile_evidence(value: &TomlValue, release: &str) -> Vec<String> {
+    let mut problems = Vec::new();
+    if integer(value, "schema_version") != Some(1)
+        || text(value, "release") != Some(release)
+        || text(value, "evidence_id") != Some("w3-tag-index-profile-f8b90ef0-v1")
+        || text(value, "state") != Some("local-profile-passed-candidate-owner-found")
+        || text(value, "contract") != Some(W3_TAG_INDEX_PROFILE_CONTRACT)
+        || text(value, "source_commit") != Some("f8b90ef0f6c9d7bfc42dbd367c87cce4a2ef2cf8")
+        || text(value, "profile_tool") != Some("tools/tag-index-profile-073")
+    {
+        problems.push("W3 tag-index profile evidence identity changed".to_owned());
+    }
+    for field in [
+        "binary_sha256",
+        "contract_sha256",
+        "tool_source_sha256",
+        "tool_lock_sha256",
+        "raw_manifest_sha256",
+    ] {
+        if text(value, field).is_none_or(|digest| !sha256(digest)) {
+            problems.push(format!(
+                "W3 tag-index profile evidence {field} is not SHA-256"
+            ));
+        }
+    }
+    for field in [
+        "production_counter_addition",
+        "product_mutation_present",
+        "candidate_data_present",
+        "dedicated_host_run_allowed",
+        "promotable",
+        "release_numerical_claim_allowed",
+    ] {
+        if boolean(value, field) != Some(false) {
+            problems.push(format!(
+                "W3 tag-index profile evidence {field} must be false"
+            ));
+        }
+    }
+    for field in [
+        "independent_processes",
+        "prebuilt_release_binary",
+        "exact_memory_reconciliation_passed",
+        "event_content_equality_passed",
+        "generation_fence_passed",
+    ] {
+        if boolean(value, field) != Some(true) {
+            problems.push(format!(
+                "W3 tag-index profile evidence {field} must be true"
+            ));
+        }
+    }
+    if integer(value, "attempts") != Some(215)
+        || integer(value, "raw_stdout_results") != Some(215)
+        || integer(value, "raw_stderr_results") != Some(215)
+        || integer(value, "raw_exit_results") != Some(215)
+        || integer(value, "failed_attempts") != Some(0)
+        || integer(value, "nonempty_stderr") != Some(0)
+        || integer(value, "invariant_failures") != Some(0)
+        || integer(value, "repeats_per_scenario") != Some(5)
+        || integer(value, "index_scenarios") != Some(10)
+        || integer(value, "event_scenarios") != Some(30)
+        || integer(value, "invalidation_scenarios") != Some(3)
+    {
+        problems.push("W3 tag-index profile evidence volume changed".to_owned());
+    }
+    if integer_array(value.get("tag_cardinalities")) != [0, 1, 4, 16, 64]
+        || integer_array(value.get("estimated_tag_retained_bytes"))
+            != [0, 47_104, 188_416, 753_664, 3_014_656]
+        || integer_array(value.get("index_shared_median_gross_allocated_bytes"))
+            != [183_424, 308_944, 684_924, 2_191_876, 8_213_340]
+        || integer_array(value.get("index_unique_median_gross_allocated_bytes"))
+            != [185_520, 388_228, 999_452, 3_449_996, 13_241_308]
+        || integer_array(value.get("event_shared_s8_median_gross_allocated_bytes"))
+            != [256_992, 498_232, 1_218_436, 4_100_548, 15_628_164]
+        || integer_array(value.get("event_unique_s8_median_gross_allocated_bytes"))
+            != [259_152, 576_708, 1_532_836, 5_357_572, 20_656_068]
+        || integer_array(value.get("invalidation_fanouts")) != [1, 64, 1_024]
+        || integer_array(value.get("invalidation_removed_keys")) != [1, 64, 1_024]
+        || integer_array(value.get("invalidation_post_tag_memberships")) != [0, 0, 0]
+        || integer_array(value.get("invalidation_post_generation_records")) != [1, 1, 1]
+    {
+        problems.push("W3 tag-index profile evidence result vectors changed".to_owned());
+    }
+    if float(value, "event_s1_tag_churn_bytes_per_delivery_tag") != Some(55.8701)
+        || float(value, "event_s8_tag_churn_bytes_per_delivery_tag") != Some(56.0002)
+        || integer(value, "event_shared_64_s8_payload_bytes") != Some(4_194_304)
+        || integer(value, "event_shared_64_s8_gross_increment_bytes") != Some(7_412_728)
+        || integer(value, "event_shared_64_s8_tag_only_gross_increment_bytes") != Some(7_340_064)
+    {
+        problems.push("W3 tag-index profile event owner result changed".to_owned());
+    }
+    for field in [
+        "raw_manifest_canonicalization",
+        "source_audit",
+        "estimator_interpretation",
+        "index_interpretation",
+        "event_interpretation",
+        "invalidation_interpretation",
+        "next_evidence",
+    ] {
+        if text(value, field).is_none_or(str::is_empty) {
+            problems.push(format!("W3 tag-index profile evidence {field} is missing"));
+        }
+    }
+    if text(value, "decision") != Some("preregister-shared-cache-event-tags-candidate") {
+        problems.push("W3 tag-index profile evidence decision changed".to_owned());
     }
     problems
 }

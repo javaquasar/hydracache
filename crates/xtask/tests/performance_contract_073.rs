@@ -1185,6 +1185,28 @@ fn w3_tag_index_profile_cannot_mutate_product_or_drop_fanout_cells() {
 }
 
 #[test]
+fn w3_tag_index_evidence_cannot_promote_shrink_or_hide_event_owner() {
+    let mut value = manifest("w3-tag-index-profile-f8b90ef0.toml");
+    value["promotable"] = TomlValue::Boolean(true);
+    value["attempts"] = TomlValue::Integer(5);
+    value["event_s8_tag_churn_bytes_per_delivery_tag"] = TomlValue::Float(0.0);
+    value["decision"] = TomlValue::String("close-w3".to_owned());
+    let problems = xtask::performance_contract::check_w3_tag_index_profile_evidence(&value, "0.73");
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("promotable must be false")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("volume changed")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("event owner result changed")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("decision changed")));
+}
+
+#[test]
 fn w5_connection_profile_cannot_promote_claim_server_bytes_or_skip_samples() {
     let mut value = manifest("w5-hc2-connection-profile-contract.toml");
     value["promotable"] = TomlValue::Boolean(true);
