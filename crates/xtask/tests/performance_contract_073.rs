@@ -1391,6 +1391,29 @@ fn w7_durability_evidence_cannot_promote_or_hide_platform_limit() {
 }
 
 #[test]
+fn w7_cached_budget_contract_cannot_replace_validation_or_weaken_thresholds() {
+    let mut value = manifest("w7-cached-budget-total-contract.toml");
+    value["candidate_attempts"] = TomlValue::Integer(5);
+    value["promotable"] = TomlValue::Boolean(true);
+    value["public_total_bytes_validation_scan_required"] = TomlValue::Boolean(false);
+    value["minimum_primary_gross_reduction_fraction"] = TomlValue::Float(0.0);
+    let problems =
+        xtask::performance_contract::check_w7_cached_budget_total_contract(&value, "0.73");
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("scope or matrix changed")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("promotable must be false")));
+    assert!(problems.iter().any(
+        |problem| problem.contains("public_total_bytes_validation_scan_required must be true")
+    ));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("thresholds changed")));
+}
+
+#[test]
 fn w5_connection_profile_cannot_promote_claim_server_bytes_or_skip_samples() {
     let mut value = manifest("w5-hc2-connection-profile-contract.toml");
     value["promotable"] = TomlValue::Boolean(true);

@@ -150,6 +150,8 @@ const W7_DURABILITY_PAGE_CACHE_PROFILE_CONTRACT: &str =
     "docs/testing/performance/0.73/w7-durability-page-cache-profile-contract.toml";
 const W7_DURABILITY_PAGE_CACHE_PROFILE_EVIDENCE: &str =
     "docs/testing/performance/0.73/w7-durability-page-cache-profile-b5a327ce.toml";
+const W7_CACHED_BUDGET_TOTAL_CONTRACT: &str =
+    "docs/testing/performance/0.73/w7-cached-budget-total-contract.toml";
 const RELEASE: &str = "0.73";
 const PROFILE: &str = "local-screening-073-v1";
 const ENVIRONMENT_CLASS: &str = "local_screening";
@@ -367,6 +369,9 @@ pub fn check_at_root(
     let w7_durability_page_cache_profile_evidence: TomlValue = toml::from_str(
         &fs::read_to_string(root.join(W7_DURABILITY_PAGE_CACHE_PROFILE_EVIDENCE))?,
     )?;
+    let w7_cached_budget_total_contract: TomlValue = toml::from_str(&fs::read_to_string(
+        root.join(W7_CACHED_BUDGET_TOTAL_CONTRACT),
+    )?)?;
     let mut problems = check_contract(&contract, release);
     if !root.join(MOKA_OBSERVER_UPSTREAM_DRAFT).is_file() {
         problems.push("notification observer dependency review draft is missing".to_owned());
@@ -629,6 +634,10 @@ pub fn check_at_root(
         &w7_durability_page_cache_profile_evidence,
         release,
     ));
+    problems.extend(check_w7_cached_budget_total_contract(
+        &w7_cached_budget_total_contract,
+        release,
+    ));
     problems.extend(check_schema(
         &schema,
         &example,
@@ -886,6 +895,10 @@ pub fn check_contract(root: &TomlValue, release: &str) -> Vec<String> {
         (
             "w7_durability_page_cache_profile_evidence",
             W7_DURABILITY_PAGE_CACHE_PROFILE_EVIDENCE,
+        ),
+        (
+            "w7_cached_budget_total_contract",
+            W7_CACHED_BUDGET_TOTAL_CONTRACT,
         ),
     ] {
         if text(root, field) != Some(expected) {
@@ -6825,6 +6838,100 @@ pub fn check_w7_durability_page_cache_profile_evidence(
     }
     if text(value, "decision") != Some("authorize-cached-durable-budget-total-candidate") {
         problems.push("W7 durability page-cache evidence decision changed".to_owned());
+    }
+    problems
+}
+
+pub fn check_w7_cached_budget_total_contract(value: &TomlValue, release: &str) -> Vec<String> {
+    let mut problems = Vec::new();
+    if integer(value, "schema_version") != Some(1)
+        || text(value, "release") != Some(release)
+        || text(value, "contract_id") != Some("w7-cached-budget-total-073-v1")
+        || text(value, "state") != Some("preregistered-before-product-mutation")
+        || text(value, "parent_contract") != Some(W7_DURABILITY_PAGE_CACHE_PROFILE_CONTRACT)
+        || text(value, "baseline_evidence") != Some(W7_DURABILITY_PAGE_CACHE_PROFILE_EVIDENCE)
+        || text(value, "source_parent") != Some("005740414939caf814801d09dff7003d00117ac9")
+    {
+        problems.push("W7 cached budget total contract identity changed".to_owned());
+    }
+    for field in [
+        "independent_processes_required",
+        "prebuilt_release_binary_required",
+        "same_tool_source_required",
+        "same_tool_lock_required",
+        "all_profile_invariants_required",
+        "format_and_checksum_tests_required",
+        "budget_rejection_tests_required",
+        "recovery_tests_required",
+        "sync_before_ack_required",
+        "async_backpressure_required",
+        "repair_fenced_gc_required",
+        "public_total_bytes_validation_scan_required",
+        "product_mutation_allowed",
+    ] {
+        if boolean(value, field) != Some(true) {
+            problems.push(format!(
+                "W7 cached budget total contract {field} must be true"
+            ));
+        }
+    }
+    for field in [
+        "production_counter_addition",
+        "dedicated_host_run_allowed",
+        "promotable",
+        "release_numerical_claim_allowed",
+        "elapsed_time_is_acceptance_metric",
+    ] {
+        if boolean(value, field) != Some(false) {
+            problems.push(format!(
+                "W7 cached budget total contract {field} must be false"
+            ));
+        }
+    }
+    if integer(value, "scenario_count") != Some(24)
+        || integer(value, "repeats_per_scenario") != Some(5)
+        || integer(value, "candidate_attempts") != Some(120)
+        || string_array(value.get("primary_cells"))
+            != [
+                "store-lifecycle/256/64/fill",
+                "store-lifecycle/256/4096/fill",
+                "store-lifecycle/256/64/overwrite",
+                "store-lifecycle/256/4096/overwrite",
+            ]
+        || value
+            .get("required_design")
+            .and_then(TomlValue::as_array)
+            .is_none_or(|items| items.len() != 5)
+    {
+        problems.push("W7 cached budget total contract scope or matrix changed".to_owned());
+    }
+    if float_array(value.get("baseline_primary_median_gross_bytes_per_operation"))
+        != [40_225.449, 597_367.723, 70_229.719, 1_146_996.004]
+        || float(value, "minimum_primary_gross_reduction_fraction") != Some(0.50)
+        || float(value, "maximum_fill_growth_16_to_256") != Some(2.0)
+        || float(value, "maximum_overwrite_growth_16_to_256") != Some(2.0)
+        || float(value, "maximum_steady_read_gross_regression_fraction") != Some(0.05)
+        || float(
+            value,
+            "maximum_reopen_open_plus_read_gross_regression_fraction",
+        ) != Some(0.10)
+        || float(value, "maximum_ram_only_gross_regression_fraction") != Some(0.05)
+        || float(value, "maximum_gc_gross_regression_fraction") != Some(0.05)
+    {
+        problems.push("W7 cached budget total contract thresholds changed".to_owned());
+    }
+    for field in [
+        "candidate_scope",
+        "falsifier",
+        "interpretation_limit",
+        "decision_rule",
+        "next_decision",
+    ] {
+        if text(value, field).is_none_or(str::is_empty) {
+            problems.push(format!(
+                "W7 cached budget total contract {field} is missing"
+            ));
+        }
     }
     problems
 }

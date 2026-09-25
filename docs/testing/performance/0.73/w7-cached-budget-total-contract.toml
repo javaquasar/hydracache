@@ -1,0 +1,52 @@
+schema_version = 1
+release = "0.73"
+contract_id = "w7-cached-budget-total-073-v1"
+state = "preregistered-before-product-mutation"
+parent_contract = "docs/testing/performance/0.73/w7-durability-page-cache-profile-contract.toml"
+baseline_evidence = "docs/testing/performance/0.73/w7-durability-page-cache-profile-b5a327ce.toml"
+source_parent = "005740414939caf814801d09dff7003d00117ac9"
+candidate_scope = "add one private cached logical total used only by durable budget admission; initialize it from one checksum-validating scan at open and update it after insert/remove ownership changes; retain the public total_bytes validation scan and all durable semantics"
+candidate_files = ["crates/hydracache/src/grid/durable_store.rs"]
+required_design = [
+  "DurableValueStore stores private budget_used_bytes initialized by scanning and decoding all existing records during open",
+  "would_fit uses budget_used_bytes plus the same existing/incoming approx-byte arithmetic instead of calling public total_bytes",
+  "upsert updates budget_used_bytes only after Sled accepts the merged record insertion and keeps it correct if flush later fails",
+  "remove subtracts only a successfully removed decodable record and keeps missing-key removal at zero",
+  "public total_bytes continues to scan and checksum-validate records rather than returning the cache",
+]
+scenario_count = 24
+repeats_per_scenario = 5
+candidate_attempts = 120
+independent_processes_required = true
+prebuilt_release_binary_required = true
+same_tool_source_required = true
+same_tool_lock_required = true
+all_profile_invariants_required = true
+format_and_checksum_tests_required = true
+budget_rejection_tests_required = true
+recovery_tests_required = true
+sync_before_ack_required = true
+async_backpressure_required = true
+repair_fenced_gc_required = true
+public_total_bytes_validation_scan_required = true
+product_mutation_allowed = true
+production_counter_addition = false
+dedicated_host_run_allowed = false
+promotable = false
+release_numerical_claim_allowed = false
+elapsed_time_is_acceptance_metric = false
+
+primary_cells = ["store-lifecycle/256/64/fill", "store-lifecycle/256/4096/fill", "store-lifecycle/256/64/overwrite", "store-lifecycle/256/4096/overwrite"]
+baseline_primary_median_gross_bytes_per_operation = [40225.449, 597367.723, 70229.719, 1146996.004]
+minimum_primary_gross_reduction_fraction = 0.50
+maximum_fill_growth_16_to_256 = 2.0
+maximum_overwrite_growth_16_to_256 = 2.0
+maximum_steady_read_gross_regression_fraction = 0.05
+maximum_reopen_open_plus_read_gross_regression_fraction = 0.10
+maximum_ram_only_gross_regression_fraction = 0.05
+maximum_gc_gross_regression_fraction = 0.05
+
+falsifier = "Reject and retain the candidate if any of 120 processes fails, stderr is non-empty, any exact-byte/reopen/lag/GC/temp-store invariant fails, format/checksum/budget/recovery/durability tests regress, public total_bytes stops validating stored records, any primary reduction is below 50%, either cardinality-growth ratio exceeds 2.0, or a steady-read/reopen/RAM-only/GC control crosses its frozen bound."
+interpretation_limit = "The candidate targets repeated logical-budget decoding only. It does not claim page-cache residency, physical-device write amplification, flush batching, portable latency, server goodput, p99, or release-grade percentages. Windows anon/file residency remains unavailable."
+decision_rule = "Retain locally only if all correctness and control gates pass and both fill and overwrite flatten in both payload series. Otherwise revert the cached counter and retain the failed evidence."
+next_decision = "Implement the private budget counter with focused valid, replace, remove, missing-remove, reopen, budget, and corruption tests; rerun the complete 120-process matrix; then accept or reject before examining the separate flush owner."

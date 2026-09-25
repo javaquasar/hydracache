@@ -83,6 +83,7 @@ w4_zero_copy_encode_contract = "docs/testing/performance/0.73/w4-zero-copy-encod
 w4_zero_copy_encode_evidence = "docs/testing/performance/0.73/w4-zero-copy-encode-accepted-d98f2afc.toml"
 w7_durability_page_cache_profile_contract = "docs/testing/performance/0.73/w7-durability-page-cache-profile-contract.toml"
 w7_durability_page_cache_profile_evidence = "docs/testing/performance/0.73/w7-durability-page-cache-profile-b5a327ce.toml"
+w7_cached_budget_total_contract = "docs/testing/performance/0.73/w7-cached-budget-total-contract.toml"
 promotable = false
 numerical_claims_allowed = false
 candidate_thresholds_allowed = false
