@@ -1294,6 +1294,28 @@ fn w4_resp_profile_evidence_cannot_hide_rejected_attempt_or_rewrite_owner() {
 }
 
 #[test]
+fn w4_zero_copy_encode_contract_cannot_expand_scope_or_weaken_thresholds() {
+    let mut value = manifest("w4-zero-copy-encode-contract.toml");
+    value["candidate_attempts"] = TomlValue::Integer(5);
+    value["promotable"] = TomlValue::Boolean(true);
+    value["encode_wire_bytes_identical_required"] = TomlValue::Boolean(false);
+    value["minimum_large_response_gross_reduction_fraction"] = TomlValue::Float(0.0);
+    let problems = xtask::performance_contract::check_w4_zero_copy_encode_contract(&value, "0.73");
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("scope or matrix changed")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("promotable must be false")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("encode_wire_bytes_identical_required must be true")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("thresholds changed")));
+}
+
+#[test]
 fn w5_connection_profile_cannot_promote_claim_server_bytes_or_skip_samples() {
     let mut value = manifest("w5-hc2-connection-profile-contract.toml");
     value["promotable"] = TomlValue::Boolean(true);

@@ -142,6 +142,8 @@ const W4_RESP_TRANSLATION_PROFILE_CONTRACT: &str =
     "docs/testing/performance/0.73/w4-resp-translation-profile-contract.toml";
 const W4_RESP_TRANSLATION_PROFILE_EVIDENCE: &str =
     "docs/testing/performance/0.73/w4-resp-translation-profile-f8c968a5.toml";
+const W4_ZERO_COPY_ENCODE_CONTRACT: &str =
+    "docs/testing/performance/0.73/w4-zero-copy-encode-contract.toml";
 const RELEASE: &str = "0.73";
 const PROFILE: &str = "local-screening-073-v1";
 const ENVIRONMENT_CLASS: &str = "local_screening";
@@ -346,6 +348,9 @@ pub fn check_at_root(
     )?)?;
     let w4_resp_translation_profile_evidence: TomlValue = toml::from_str(&fs::read_to_string(
         root.join(W4_RESP_TRANSLATION_PROFILE_EVIDENCE),
+    )?)?;
+    let w4_zero_copy_encode_contract: TomlValue = toml::from_str(&fs::read_to_string(
+        root.join(W4_ZERO_COPY_ENCODE_CONTRACT),
     )?)?;
     let mut problems = check_contract(&contract, release);
     if !root.join(MOKA_OBSERVER_UPSTREAM_DRAFT).is_file() {
@@ -591,6 +596,10 @@ pub fn check_at_root(
     ));
     problems.extend(check_w4_resp_translation_profile_evidence(
         &w4_resp_translation_profile_evidence,
+        release,
+    ));
+    problems.extend(check_w4_zero_copy_encode_contract(
+        &w4_zero_copy_encode_contract,
         release,
     ));
     problems.extend(check_schema(
@@ -841,6 +850,7 @@ pub fn check_contract(root: &TomlValue, release: &str) -> Vec<String> {
             "w4_resp_translation_profile_evidence",
             W4_RESP_TRANSLATION_PROFILE_EVIDENCE,
         ),
+        ("w4_zero_copy_encode_contract", W4_ZERO_COPY_ENCODE_CONTRACT),
     ] {
         if text(root, field) != Some(expected) {
             problems.push(format!("local screening {field} must be {expected}"));
@@ -6320,6 +6330,104 @@ pub fn check_w4_resp_translation_profile_evidence(value: &TomlValue, release: &s
     }
     if text(value, "decision") != Some("authorize-zero-copy-bytesmut-to-vec-encode-candidate") {
         problems.push("W4 RESP translation profile evidence decision changed".to_owned());
+    }
+    problems
+}
+
+pub fn check_w4_zero_copy_encode_contract(value: &TomlValue, release: &str) -> Vec<String> {
+    let mut problems = Vec::new();
+    if integer(value, "schema_version") != Some(1)
+        || text(value, "release") != Some(release)
+        || text(value, "contract_id") != Some("w4-zero-copy-encode-073-v1")
+        || text(value, "state") != Some("preregistered-before-product-mutation")
+        || text(value, "parent_contract") != Some(W4_RESP_TRANSLATION_PROFILE_CONTRACT)
+        || text(value, "baseline_evidence") != Some(W4_RESP_TRANSLATION_PROFILE_EVIDENCE)
+        || text(value, "source_parent") != Some("0a091e58b1749006ecd4d6c4106dff5d27fd240a")
+        || text(value, "bytes_version") != Some("1.12.1")
+    {
+        problems.push("W4 zero-copy encode contract identity changed".to_owned());
+    }
+    for field in [
+        "independent_processes_required",
+        "prebuilt_release_binary_required",
+        "same_tool_source_required",
+        "same_tool_lock_required",
+        "all_invariants_required",
+        "encode_wire_bytes_identical_required",
+        "roundtrip_wire_bytes_identical_required",
+        "binary_key_roundtrip_required",
+        "resp2_resp3_semantic_equality_required",
+        "duplicate_del_semantics_required",
+        "product_mutation_allowed",
+    ] {
+        if boolean(value, field) != Some(true) {
+            problems.push(format!("W4 zero-copy encode contract {field} must be true"));
+        }
+    }
+    for field in [
+        "production_counter_addition",
+        "dedicated_host_run_allowed",
+        "promotable",
+        "release_numerical_claim_allowed",
+        "elapsed_time_is_acceptance_metric",
+    ] {
+        if boolean(value, field) != Some(false) {
+            problems.push(format!(
+                "W4 zero-copy encode contract {field} must be false"
+            ));
+        }
+    }
+    if integer(value, "scenario_count") != Some(92)
+        || integer(value, "repeats_per_scenario") != Some(5)
+        || integer(value, "candidate_attempts") != Some(460)
+        || string_array(value.get("large_response_cells"))
+            != [
+                "resp2/bulk/1048576",
+                "resp2/array-16/1048576",
+                "resp3/bulk/1048576",
+                "resp3/array-16/1048576",
+            ]
+        || string_array(value.get("candidate_edits"))
+            != [
+                "encode_resp2_value: Ok(output.to_vec()) -> Ok(Vec::from(output))",
+                "encode_resp3_value: Ok(output.to_vec()) -> Ok(Vec::from(output))",
+            ]
+    {
+        problems.push("W4 zero-copy encode contract scope or matrix changed".to_owned());
+    }
+    if float(value, "minimum_large_response_gross_reduction_fraction") != Some(0.40)
+        || float(value, "maximum_non_encode_gross_regression_fraction") != Some(0.05)
+        || float(value, "maximum_small_encode_gross_regression_fraction") != Some(0.05)
+        || integer(
+            value,
+            "baseline_resp2_bulk_1m_median_gross_bytes_per_operation",
+        ) != Some(2_097_176)
+        || integer(
+            value,
+            "baseline_resp2_array16_1m_median_gross_bytes_per_operation",
+        ) != Some(2_098_122)
+        || integer(
+            value,
+            "baseline_resp3_bulk_1m_median_gross_bytes_per_operation",
+        ) != Some(2_097_176)
+        || integer(
+            value,
+            "baseline_resp3_array16_1m_median_gross_bytes_per_operation",
+        ) != Some(2_099_146)
+    {
+        problems.push("W4 zero-copy encode contract thresholds changed".to_owned());
+    }
+    for field in [
+        "candidate_scope",
+        "bytes_conversion_basis",
+        "falsifier",
+        "interpretation_limit",
+        "decision_rule",
+        "next_decision",
+    ] {
+        if text(value, field).is_none_or(str::is_empty) {
+            problems.push(format!("W4 zero-copy encode contract {field} is missing"));
+        }
     }
     problems
 }
