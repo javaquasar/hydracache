@@ -884,3 +884,21 @@ fn shared_entry_tags_cannot_change_estimator_or_authorize_host() {
         .iter()
         .any(|problem| problem.contains("cleanup_ticket_shares_same_tags must be true")));
 }
+
+#[test]
+fn shared_entry_tags_product_cannot_promote_or_weaken_local_evidence() {
+    let mut value = manifest("shared-entry-tags-product-947e624d.toml");
+    value["promotable"] = TomlValue::Boolean(true);
+    value["cpu_claims_allowed"] = TomlValue::Boolean(true);
+    value["attempts"] = TomlValue::Integer(119);
+    let problems = xtask::performance_contract::check_shared_entry_tags_product(&value, "0.73");
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("promotable must be false")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("cpu_claims_allowed must be false")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("allocation evidence changed")));
+}

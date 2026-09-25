@@ -882,6 +882,34 @@ versioned tag cleanup, bounded queue behavior, retained-memory estimates, and pu
 unchanged, and the exact 120-process local matrix must show that the identified allocation moved
 before any dedicated-host run is considered.
 
+That ownership change produced the local result the hypothesis predicted. The entry and cleanup
+ticket now share immutable tags through `Arc<[String]>`. Moka can still clone and deliver an owned
+entry, but cloning the tag field increments a reference count instead of allocating a new slice and
+copying every string. Public events deliberately remain unchanged: when an event is actually
+published, HydraCache materializes owned strings at that boundary.
+
+The important comparison is not the absolute allocation level, which also includes the workload
+and allocator, but the same adjacent ablation boundary before and after the change. Replacement
+moved from +78.62 to +1.68 B/op when enabling the noop observer; remove/refill moved from +81.02 to
+-1.94 B/op; tag invalidation/refill moved from +117.85 to -6.47 B/op; and TTL puts moved from
++76.03 to +0.24 B/op. Reads remained neutral. In other words, the allocation appeared exactly when
+observer delivery began before the change and disappeared at that boundary after ownership became
+shared.
+
+Production results add a useful nuance. Remove/refill fell from +76.17 to -1.99 B/op relative to
+off, while tag invalidation/refill fell from +85.71 to +14.83 B/op. The remaining positive tag cost
+is downstream of the noop observer boundary and is consistent with constructing the intentionally
+owned public event payload. We do not call negative local deltas speedups: independent short
+processes and allocator reuse can move medians by tens of bytes. The defensible claim is narrower
+and stronger—the 76--118 B/op deep-clone owner was removed, and the remaining allocation belongs to
+a different, explicit API boundary.
+
+This is also the point where a local profiler has done its job. It selected a candidate, predicted
+which cells should move, and falsified the unwanted ownership pattern without consuming another
+reference-host campaign. It still cannot establish CPU overhead. The next expensive run is now
+justified as confirmation of a specific mechanism, so the evidence receipt permits one unchanged,
+manual paired V2 repeat and no automatic or post-result retry.
+
 ## A profiling ladder that avoids expensive runs
 
 Not every development iteration needs a dedicated bare-metal campaign. A useful workflow has several

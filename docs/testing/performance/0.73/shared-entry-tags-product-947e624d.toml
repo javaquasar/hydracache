@@ -1,0 +1,90 @@
+schema_version = 1
+release = "0.73"
+evidence_id = "shared-entry-tags-product-947e624d-v1"
+state = "local-allocation-passed-awaiting-baseline-v2-repeat"
+contract = "docs/testing/performance/0.73/shared-entry-tags-contract.toml"
+triggering_evidence = "docs/testing/performance/0.73/observer-allocation-attribution-2c37d2f1.toml"
+implementation_commit = "947e624ddcf388a86fba61601118e2f078d8bbe1"
+implementation_parent = "609b73e2898740fa28cb86755ba3b3a928138ce3"
+reviewed_at = "2026-09-25"
+binary_sha256 = "3d3d53ec818ec931207293c4a8cb7176d0b3e21bcd29c6e6a63040c77e2fc2be"
+result_sha256 = "d73434e7f125d15f0e209d7e7e6a29a8f02be2b2e9db392079b63ede4aec8bd6"
+packet_file_count = 361
+attempts = 120
+failed_attempts = 0
+repeats_per_scenario_and_mode = 5
+operations_per_attempt = 8192
+offered_rate_per_second = 20000
+warmup_operations = 4096
+run_order_seed = 73074
+allocation_measurement_only = true
+cpu_claims_allowed = false
+rss_claims_allowed = false
+numerical_release_claims_allowed = false
+promotable = false
+candidate_measurement_authorized = false
+baseline_v2_repeat_allowed = true
+optimization = "Share immutable CacheEntry tags and CleanupTicket tags as Arc<[String]> so Moka observer delivery increments a reference count instead of deep-cloning the tag slice and strings."
+interpretation = "The positive counters-only-to-observer-noop mutation delta collapsed from 76--118 B/op to values between -6.48 and +1.69 B/op. The get scenario remains neutral. Remove/refill off-to-production fell from +76.17 to -1.99 B/op, tag-invalidate/refill fell from +85.71 to +14.83 B/op, and mixed fell from +24.80 to -25.85 B/op. This local allocation-only evidence confirms that the intended clone cost moved; it does not establish CPU, RSS, or release-grade numerical claims."
+remaining_cost = "The tag-invalidate/refill production delta of +14.83 B/op is consistent with materializing owned public event tags after the noop observer boundary. Replace and ttl-put negative production deltas are not treated as improvements because this allocator probe is diagnostic and medians from independent processes include allocator noise."
+safety_argument = "Tags are immutable after CacheEntry construction. Moka's entry clone and the bounded CleanupTicket share the same Arc allocation, while event publication still clones each String into an owned public payload. Versioned cleanup, queue capacity, overflow/dirty handling, tag-index behavior, and retained estimator values remain unchanged."
+decision = "run-one-unchanged-manual-baseline-v2-repeat"
+next_evidence = "Run observer-baseline-pilot-073-v2 unchanged at the exact source commit containing this receipt. Freeze I73 only if at least three offered rates pass every original stability, goodput, latency, allocation, and CPU guard."
+
+validation = [
+  "cargo fmt -p hydracache -- --check: passed",
+  "cargo test -p hydracache entry --lib --locked: 11 passed",
+  "cargo test -p hydracache removal_observer --lib --locked: 6 passed",
+  "cargo test -p hydracache --test memory_footprint_071 --features instrumentation-lab --locked: 6 passed",
+  "cargo test -p hydracache --test memory_accounting_071 --features instrumentation-lab --locked: 4 passed",
+  "cargo test -p hydracache tests::events --lib --locked: 16 passed",
+  "cargo test -p hydracache tag_index --lib --locked: 6 passed",
+  "cargo test -p hydracache --lib --locked: 220 passed, 1 ignored",
+  "cargo check -p hydracache --lib --tests --features instrumentation-lab --locked: passed",
+  "cargo clippy -p hydracache --lib --tests --features instrumentation-lab --locked -- -D warnings: passed",
+  "cargo check --manifest-path tools/performance-observer-073/Cargo.toml --all-targets --locked: passed",
+  "cargo clippy --manifest-path tools/performance-observer-073/Cargo.toml --all-targets --locked -- -D warnings: passed",
+  "unchanged local allocation attribution matrix: 120 passed, 0 failed",
+]
+
+[[scenario]]
+name = "mixed"
+before_observer_noop_delta = 49.98291015625
+after_observer_noop_delta = -4.03466796875
+before_off_to_production_delta = 24.8011474609375
+after_off_to_production_delta = -25.85205078125
+
+[[scenario]]
+name = "get"
+before_observer_noop_delta = 0.576171875
+after_observer_noop_delta = -0.119140625
+before_off_to_production_delta = 0.498046875
+after_off_to_production_delta = 2.1533203125
+
+[[scenario]]
+name = "replace"
+before_observer_noop_delta = 78.62109375
+after_observer_noop_delta = 1.681640625
+before_off_to_production_delta = -56.5068359375
+after_off_to_production_delta = -48.8134765625
+
+[[scenario]]
+name = "remove-refill"
+before_observer_noop_delta = 81.0234375
+after_observer_noop_delta = -1.939453125
+before_off_to_production_delta = 76.1669921875
+after_off_to_production_delta = -1.9931640625
+
+[[scenario]]
+name = "tag-invalidate-refill"
+before_observer_noop_delta = 117.845947265625
+after_observer_noop_delta = -6.47314453125
+before_off_to_production_delta = 85.7086181640625
+after_off_to_production_delta = 14.83447265625
+
+[[scenario]]
+name = "ttl-put"
+before_observer_noop_delta = 76.0283203125
+after_observer_noop_delta = 0.240234375
+before_off_to_production_delta = -52.1435546875
+after_off_to_production_delta = -45.3310546875

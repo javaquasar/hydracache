@@ -430,6 +430,16 @@ and values remain frozen, queue capacity and dirty/overflow behavior cannot move
 still cannot await or block. Correctness gates and the exact 120-process local matrix are required;
 even a successful local result does not automatically authorize another host run.
 
+Implementation `947e624d` passed those correctness gates and the unchanged 120-process matrix.
+The mutation-only `counters-only -> observer-noop` deltas moved from +76--118 B/op to -6.48--+1.69
+B/op, while get remained neutral. Remove/refill moved from +76.17 to -1.99 B/op off-to-production,
+tag-invalidate/refill moved from +85.71 to +14.83 B/op, and mixed moved from +24.80 to -25.85
+B/op. `shared-entry-tags-product-947e624d.toml` retains the exact implementation parent, binary and
+result hashes, all scenario deltas, and the interpretation boundary: this proves locally that the
+deep-clone cost moved, not that CPU or RSS improved. The receipt separately authorizes exactly one
+unchanged manual baseline-v2 repeat at the exact source containing the receipt; it does not permit
+an automatic run, altered thresholds, or a retry selected after seeing the result.
+
 The same push exposed a separate cost-control issue: the host-admission workflow still had an
 automatic path and queued run `36072022062` behind the shared performance concurrency group. It was
 cancelled before environment approval and ran no job. Commit `e0dc4df5` makes host admission, like

@@ -46,6 +46,7 @@ baseline_pilot_v2_counter_evidence = "docs/testing/performance/0.73/baseline-pil
 observer_allocation_attribution_contract = "docs/testing/performance/0.73/observer-allocation-attribution-contract.toml"
 observer_allocation_attribution_evidence = "docs/testing/performance/0.73/observer-allocation-attribution-2c37d2f1.toml"
 shared_entry_tags_contract = "docs/testing/performance/0.73/shared-entry-tags-contract.toml"
+shared_entry_tags_product = "docs/testing/performance/0.73/shared-entry-tags-product-947e624d.toml"
 promotable = false
 numerical_claims_allowed = false
 candidate_thresholds_allowed = false

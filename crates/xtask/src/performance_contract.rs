@@ -84,6 +84,8 @@ const OBSERVER_ALLOCATION_ATTRIBUTION_EVIDENCE: &str =
     "docs/testing/performance/0.73/observer-allocation-attribution-2c37d2f1.toml";
 const SHARED_ENTRY_TAGS_CONTRACT: &str =
     "docs/testing/performance/0.73/shared-entry-tags-contract.toml";
+const SHARED_ENTRY_TAGS_PRODUCT: &str =
+    "docs/testing/performance/0.73/shared-entry-tags-product-947e624d.toml";
 const RELEASE: &str = "0.73";
 const PROFILE: &str = "local-screening-073-v1";
 const ENVIRONMENT_CLASS: &str = "local_screening";
@@ -203,6 +205,8 @@ pub fn check_at_root(
     )?)?;
     let shared_entry_tags_contract: TomlValue =
         toml::from_str(&fs::read_to_string(root.join(SHARED_ENTRY_TAGS_CONTRACT))?)?;
+    let shared_entry_tags_product: TomlValue =
+        toml::from_str(&fs::read_to_string(root.join(SHARED_ENTRY_TAGS_PRODUCT))?)?;
     let mut problems = check_contract(&contract, release);
     if !root.join(MOKA_OBSERVER_UPSTREAM_DRAFT).is_file() {
         problems.push("notification observer dependency review draft is missing".to_owned());
@@ -331,6 +335,10 @@ pub fn check_at_root(
     ));
     problems.extend(check_shared_entry_tags_contract(
         &shared_entry_tags_contract,
+        release,
+    ));
+    problems.extend(check_shared_entry_tags_product(
+        &shared_entry_tags_product,
         release,
     ));
     problems.extend(check_schema(
@@ -468,6 +476,7 @@ pub fn check_contract(root: &TomlValue, release: &str) -> Vec<String> {
             OBSERVER_ALLOCATION_ATTRIBUTION_EVIDENCE,
         ),
         ("shared_entry_tags_contract", SHARED_ENTRY_TAGS_CONTRACT),
+        ("shared_entry_tags_product", SHARED_ENTRY_TAGS_PRODUCT),
     ] {
         if text(root, field) != Some(expected) {
             problems.push(format!("local screening {field} must be {expected}"));
@@ -3376,6 +3385,95 @@ pub fn check_shared_entry_tags_contract(value: &TomlValue, release: &str) -> Vec
         || text(value, "success_rule").is_none_or(str::is_empty)
     {
         problems.push("shared entry tags contract scope or gates changed".to_owned());
+    }
+    problems
+}
+
+pub fn check_shared_entry_tags_product(value: &TomlValue, release: &str) -> Vec<String> {
+    let mut problems = Vec::new();
+    if integer(value, "schema_version") != Some(1)
+        || text(value, "release") != Some(release)
+        || text(value, "evidence_id") != Some("shared-entry-tags-product-947e624d-v1")
+        || text(value, "state") != Some("local-allocation-passed-awaiting-baseline-v2-repeat")
+        || text(value, "contract") != Some(SHARED_ENTRY_TAGS_CONTRACT)
+        || text(value, "triggering_evidence") != Some(OBSERVER_ALLOCATION_ATTRIBUTION_EVIDENCE)
+        || text(value, "implementation_commit") != Some("947e624ddcf388a86fba61601118e2f078d8bbe1")
+        || text(value, "implementation_parent") != Some("609b73e2898740fa28cb86755ba3b3a928138ce3")
+    {
+        problems.push("shared entry tags product identity changed".to_owned());
+    }
+    for field in ["binary_sha256", "result_sha256"] {
+        if text(value, field).is_none_or(|digest| !sha256(digest)) {
+            problems.push(format!("shared entry tags product {field} is not SHA-256"));
+        }
+    }
+    for field in [
+        "cpu_claims_allowed",
+        "rss_claims_allowed",
+        "numerical_release_claims_allowed",
+        "promotable",
+        "candidate_measurement_authorized",
+    ] {
+        if boolean(value, field) != Some(false) {
+            problems.push(format!("shared entry tags product {field} must be false"));
+        }
+    }
+    let scenarios = value
+        .get("scenario")
+        .and_then(TomlValue::as_array)
+        .cloned()
+        .unwrap_or_default();
+    let scenario_names = scenarios
+        .iter()
+        .filter_map(|scenario| text(scenario, "name"))
+        .collect::<Vec<_>>();
+    if boolean(value, "allocation_measurement_only") != Some(true)
+        || boolean(value, "baseline_v2_repeat_allowed") != Some(true)
+        || integer(value, "attempts") != Some(120)
+        || integer(value, "failed_attempts") != Some(0)
+        || integer(value, "packet_file_count") != Some(361)
+        || integer(value, "repeats_per_scenario_and_mode") != Some(5)
+        || integer(value, "operations_per_attempt") != Some(8_192)
+        || integer(value, "offered_rate_per_second") != Some(20_000)
+        || integer(value, "warmup_operations") != Some(4_096)
+        || integer(value, "run_order_seed") != Some(73_074)
+        || scenario_names
+            != [
+                "mixed",
+                "get",
+                "replace",
+                "remove-refill",
+                "tag-invalidate-refill",
+                "ttl-put",
+            ]
+        || scenarios.iter().any(|scenario| {
+            [
+                "before_observer_noop_delta",
+                "after_observer_noop_delta",
+                "before_off_to_production_delta",
+                "after_off_to_production_delta",
+            ]
+            .iter()
+            .any(|field| scenario.get(*field).and_then(TomlValue::as_float).is_none())
+        })
+    {
+        problems.push("shared entry tags product allocation evidence changed".to_owned());
+    }
+    for field in [
+        "optimization",
+        "interpretation",
+        "remaining_cost",
+        "safety_argument",
+        "next_evidence",
+    ] {
+        if text(value, field).is_none_or(str::is_empty) {
+            problems.push(format!("shared entry tags product {field} is missing"));
+        }
+    }
+    if text(value, "decision") != Some("run-one-unchanged-manual-baseline-v2-repeat")
+        || string_array(value.get("validation")).len() < 10
+    {
+        problems.push("shared entry tags product decision or validation is incomplete".to_owned());
     }
     problems
 }
