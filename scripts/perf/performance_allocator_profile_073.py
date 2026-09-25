@@ -81,7 +81,9 @@ def validate_receipt(receipt: dict[str, Any], allocator: str, mode: str) -> None
             require(native.get("status") == "partial-native-statistics", "mimalloc native status changed")
             require(native.get("allocated_or_live") is None, "mimalloc zero live counter was accepted")
             require(native.get("unavailable", {}).get("allocated_or_live"), "mimalloc live reason missing")
-            for field in ["active_or_committed", "resident", "retained_or_reserved"]:
+            require(native.get("resident") is None, "mimalloc process RSS was accepted as allocator resident")
+            require(native.get("unavailable", {}).get("resident"), "mimalloc resident reason missing")
+            for field in ["active_or_committed", "retained_or_reserved"]:
                 metric = native.get(field)
                 require(isinstance(metric, dict), f"mimalloc {field} missing")
                 require(isinstance(metric.get("bytes"), int) and metric["bytes"] >= 0, f"mimalloc {field} units invalid")
@@ -165,7 +167,6 @@ def medians(receipts: list[dict[str, Any]], phases: list[str]) -> dict[str, Any]
         if receipts[0]["allocator"] == "mimalloc":
             for name, path in {
                 "native_committed_bytes": ("allocator_native", "active_or_committed", "bytes"),
-                "native_resident_bytes": ("allocator_native", "resident", "bytes"),
                 "native_reserved_bytes": ("allocator_native", "retained_or_reserved", "bytes"),
             }.items():
                 phase_result[name] = int(statistics.median(metric(receipt, phase, path) for receipt in receipts))
