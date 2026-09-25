@@ -1,0 +1,67 @@
+schema_version = 1
+release = "0.73"
+profile_id = "published-072-compatibility-073-v1"
+contract = "docs/testing/performance/0.73/w10-published-072-compatibility-contract.toml"
+state = "local-wire-and-durable-screen-passed-rolling-still-closed"
+observed_on = "2026-09-26"
+platform = "windows-local-non-promotable"
+published_tag = "v0.72.0"
+published_source_commit = "24927c28c279c6c34ad90111ee6470b4065e0815"
+candidate_source_commit = "7e3070894aa51af96cdcb3e350eff923a309e1fa"
+candidate_tree_oid = "e2c438b9a248586a4f72d3eca3d1c5369fff440b"
+baseline_lockfile_sha256 = "819c5d994a0805e2ad6c113263817d0d6fc6d3b34dcfb5e990ce522b3353ed33"
+candidate_lockfile_sha256 = "c93b9426c576b220f056bda92430d1fa0e6d162f846568ab122b9dd49b63fffc"
+canary_sha256 = "85c3164eeb1992f7d430bf13154cb79ece1eb55f30d75f974411b6bac8593f17"
+campaign_sha256 = "cf3cd57cd29135c3bba6e534ac102f05b4222170e19cf6ddc0242f8efc4e93e2"
+canary_marker = "HC-CANARY-RED:W10-COMPAT"
+canary_defect = "removed-C73-client--B72-server"
+canary_marker_observed = true
+canary_pass_receipt_absent = true
+wire_cells_passed = 4
+wire_assertions_per_cell = 18
+durable_transitions_passed = 3
+rolling_scenarios_passed = 0
+rolling_complete = false
+promotable = false
+long_run_allowed = false
+host_performance_claim_allowed = false
+conclusion = "Exact published B72 and frozen C73 client/server overlays passed the complete local wire matrix, and the same store survived B72 write, C73 read/write/reopen, and B72 rollback read. This rejects obvious protocol and durable-format incompatibility but cannot replace the six real rolling-cluster scenarios or Linux retained campaign."
+
+[[wire_cell]]
+role = "B72-client--B72-server"
+client_source_commit = "24927c28c279c6c34ad90111ee6470b4065e0815"
+server_source_commit = "24927c28c279c6c34ad90111ee6470b4065e0815"
+receipt_sha256 = "634d73848d932216c3c95ba1d7b92ad6f15e41d990683de746fec1e60b29ede8"
+
+[[wire_cell]]
+role = "B72-client--C73-server"
+client_source_commit = "24927c28c279c6c34ad90111ee6470b4065e0815"
+server_source_commit = "7e3070894aa51af96cdcb3e350eff923a309e1fa"
+receipt_sha256 = "4d82af48b40b751ca7ed4809afb3d806bdc88ec80c5f5ae628b0dbfb193ac13c"
+
+[[wire_cell]]
+role = "C73-client--B72-server"
+client_source_commit = "7e3070894aa51af96cdcb3e350eff923a309e1fa"
+server_source_commit = "24927c28c279c6c34ad90111ee6470b4065e0815"
+receipt_sha256 = "d0a1007a86e6f0e4d880bf5b329133ac04300cd12ccb09674423084f585ec369"
+
+[[wire_cell]]
+role = "C73-client--C73-server"
+client_source_commit = "7e3070894aa51af96cdcb3e350eff923a309e1fa"
+server_source_commit = "7e3070894aa51af96cdcb3e350eff923a309e1fa"
+receipt_sha256 = "0c9def2b757b8892f576571266337525e16751854a62287d72142541230b359e"
+
+[[durable_transition]]
+mode = "B72-create-and-write"
+source_commit = "24927c28c279c6c34ad90111ee6470b4065e0815"
+receipt_sha256 = "e284f0c47d15a13e19c679bd41a604d2918ad2be4a14563db02638b01fa93d9d"
+
+[[durable_transition]]
+mode = "C73-read-old-write-new-and-reopen"
+source_commit = "7e3070894aa51af96cdcb3e350eff923a309e1fa"
+receipt_sha256 = "95ce3ea99cb6a651daa3ded0abf52ff13e1a6b6225b4895eb02ce9c8dfd0e72a"
+
+[[durable_transition]]
+mode = "B72-same-disk-read-after-candidate-write"
+source_commit = "24927c28c279c6c34ad90111ee6470b4065e0815"
+receipt_sha256 = "c610ee15533324c415fe94578da95e9e0a9b405df6d0ffa095192081cdab2414"

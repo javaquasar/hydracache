@@ -8764,6 +8764,10 @@ pub fn check_w10_published_072_compatibility_contract(
         || text(value, "candidate_source_commit")
             != Some("7e3070894aa51af96cdcb3e350eff923a309e1fa")
         || text(value, "candidate_tree_oid") != Some("e2c438b9a248586a4f72d3eca3d1c5369fff440b")
+        || text(value, "harness") != Some("tools/compatibility-073")
+        || text(value, "baseline_lockfile") != Some("tools/compatibility-073/Cargo.b72.lock")
+        || text(value, "candidate_lockfile") != Some("tools/compatibility-073/Cargo.lock")
+        || text(value, "orchestrator") != Some("scripts/perf/compatibility_073.py")
     {
         problems.push("W10 published-0.72 compatibility identity changed".to_owned());
     }
@@ -8797,6 +8801,12 @@ pub fn check_w10_published_072_compatibility_contract(
         problems.push("W10 published-0.72 compatibility matrix changed".to_owned());
     }
     if string_array(value.get("wire_cases")).len() != 7
+        || string_array(value.get("wire_case_applicability"))
+            != [
+                "HC1:empty-read,put-read-structured-key-and-binary-value,ttl-visible-before-expiry-and-absent-after-expiry,tenant-a-write-invisible-to-tenant-b,malformed-frame-rejected-before-mutation,drain-reconciles-live-owners",
+                "HC2:empty-read,put-read-binary-key-and-value,ttl-visible-before-expiry-and-absent-after-expiry,tenant-a-write-invisible-to-tenant-b,malformed-client-input-rejected-before-mutation,drain-reconciles-live-owners",
+                "RESP:empty-read,put-read-binary-key-and-value,tagged-put-read-invalidate,ttl-visible-before-expiry-and-absent-after-expiry,malformed-frame-rejected-before-mutation,drain-reconciles-live-owners",
+            ]
         || string_array(value.get("management_routes")).len() != 8
         || string_array(value.get("asset_cases")).len() != 4
         || string_array(value.get("durable_cases")).len() != 5
@@ -8825,6 +8835,7 @@ pub fn check_w10_published_072_compatibility_contract(
         "silent_retry_allowed",
         "host_performance_claim_allowed",
         "long_run_allowed_before_pass",
+        "unsupported_cross_surface_substitution_allowed",
     ] {
         if boolean(value, field) != Some(false) {
             problems.push(format!(

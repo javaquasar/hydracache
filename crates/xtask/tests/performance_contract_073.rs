@@ -1838,6 +1838,9 @@ fn w10_published_072_compatibility_cannot_substitute_or_shrink_the_matrix() {
     value["wire_cells_required"] = TomlValue::Integer(3);
     value["rolling_scenarios"] = TomlValue::Array(Vec::new());
     value["same_disk_rollback_required"] = TomlValue::Boolean(false);
+    value["unsupported_cross_surface_substitution_allowed"] = TomlValue::Boolean(true);
+    value["wire_case_applicability"] = TomlValue::Array(Vec::new());
+    value["orchestrator"] = TomlValue::String("manual-command".to_owned());
     value["canary_marker"] = TomlValue::String("green".to_owned());
     let problems =
         xtask::performance_contract::check_w10_published_072_compatibility_contract(&value, "0.73");
@@ -1853,6 +1856,15 @@ fn w10_published_072_compatibility_cannot_substitute_or_shrink_the_matrix() {
     assert!(problems
         .iter()
         .any(|problem| problem.contains("same_disk_rollback_required must be true")));
+    assert!(problems.iter().any(|problem| {
+        problem.contains("unsupported_cross_surface_substitution_allowed must be false")
+    }));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("case coverage changed")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("identity changed")));
     assert!(problems
         .iter()
         .any(|problem| problem.contains("canary changed")));

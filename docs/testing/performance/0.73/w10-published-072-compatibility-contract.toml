@@ -8,6 +8,10 @@ published_tag_object = "5aafc92ebeb160eda94a79916683e0a1030b8b1a"
 published_source_commit = "24927c28c279c6c34ad90111ee6470b4065e0815"
 candidate_source_commit = "7e3070894aa51af96cdcb3e350eff923a309e1fa"
 candidate_tree_oid = "e2c438b9a248586a4f72d3eca3d1c5369fff440b"
+harness = "tools/compatibility-073"
+baseline_lockfile = "tools/compatibility-073/Cargo.b72.lock"
+candidate_lockfile = "tools/compatibility-073/Cargo.lock"
+orchestrator = "scripts/perf/compatibility_073.py"
 
 wire_matrix = [
   "B72-client--B72-server",
@@ -25,6 +29,12 @@ wire_cases = [
   "malformed-frame-rejected-before-mutation",
   "drain-reconciles-live-owners",
 ]
+wire_case_applicability = [
+  "HC1:empty-read,put-read-structured-key-and-binary-value,ttl-visible-before-expiry-and-absent-after-expiry,tenant-a-write-invisible-to-tenant-b,malformed-frame-rejected-before-mutation,drain-reconciles-live-owners",
+  "HC2:empty-read,put-read-binary-key-and-value,ttl-visible-before-expiry-and-absent-after-expiry,tenant-a-write-invisible-to-tenant-b,malformed-client-input-rejected-before-mutation,drain-reconciles-live-owners",
+  "RESP:empty-read,put-read-binary-key-and-value,tagged-put-read-invalidate,ttl-visible-before-expiry-and-absent-after-expiry,malformed-frame-rejected-before-mutation,drain-reconciles-live-owners",
+]
+unsupported_cross_surface_substitution_allowed = false
 management_routes = [
   "/management/v1/capabilities",
   "/management/v1/dashboard",

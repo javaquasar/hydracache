@@ -1771,6 +1771,42 @@ correct conclusion is therefore narrower: the focused integrated guard passed an
 published-0.72 compatibility and rollback matrix. It does not promote RSS, establish allocator
 improvement, finalize `C73`, or authorize six-hour and 24-hour runs before compatibility is proved.
 
+The next local screen made that compatibility boundary executable rather than rhetorical. We built
+one standalone harness twice: once against the exact commit referenced by the published `v0.72.0`
+tag, and once against the frozen C73 commit. Those two client binaries were crossed with the two real
+server binaries, producing four independent process cells. Every cell ran 18 assertions across
+HC/1, HC/2, RESP, management routes, console assets, protocol-appropriate keys and binary values,
+TTL expiry, tenant isolation, malformed input, tag invalidation where RESP exposes it, and live-owner
+cleanup. All four
+cells passed. The surface-applicability table matters: claiming an HC/2 tag test when HC/2 does not
+offer that operation would be fake coverage, so the contract assigns each behavior only to the
+surface that owns it and forbids substituting one surface for another.
+
+Durable compatibility used the same discipline but, critically, not a fresh directory per phase.
+The B72-linked binary created a live record and tombstone and reopened the store. The C73-linked
+binary then read those exact old bytes, wrote a new record, flushed, and reopened. Finally the B72
+binary reopened the same directory and read both the old record and the candidate-written record.
+Separate fault stores proved repair-confirmed tombstone collection, rejection before a one-byte
+budget could be exceeded, and loud checksum-corruption refusal followed by restoration from the
+preserved raw record. This is stronger than serializing equivalent structs in two unit tests: the
+actual old and new libraries took turns owning the same on-disk database.
+
+We also falsified the orchestrator, not just the product. The canary deliberately removed the
+`C73 client -> B72 server` cell. The matrix validator emitted the preregistered
+`HC-CANARY-RED:W10-COMPAT` marker and produced no campaign pass receipt. The real local campaign then
+recorded SHA-256 identities for both harnesses, both servers, every per-cell receipt, and every
+durable transition. Two frozen lockfiles are retained because B72 and C73 resolve different product
+dependency graphs; silently regenerating a single convenient lockfile would make the builds less
+reproducible, not more.
+
+This result is intentionally non-promotable. It rejects obvious client/server and durable-format
+incompatibility cheaply on a developer machine, but it does not exercise leadership transfer,
+mixed-version quorum behavior, follower restart, or same-disk daemon rollback. Those six rolling
+scenarios remain the next gate, and long-duration performance runs remain closed until that gate is
+complete. This is the purpose of a profiling ladder: spend seconds or minutes locally to eliminate
+bad candidates and broken evidence logic, then reserve the expensive environment for the failure
+modes that only a real cluster can reveal.
+
 ## A profiling ladder that avoids expensive runs
 
 Not every development iteration needs a dedicated bare-metal campaign. A useful workflow has several
