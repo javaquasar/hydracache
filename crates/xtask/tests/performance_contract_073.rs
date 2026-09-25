@@ -1099,3 +1099,22 @@ fn w5_shared_event_bytes_contract_cannot_admit_data_or_host_run() {
         .iter()
         .any(|problem| problem.contains("candidate bounds changed")));
 }
+
+#[test]
+fn w5_connection_census_cannot_claim_memory_or_skip_cardinalities() {
+    let mut value = manifest("w5-hc2-connection-census-contract.toml");
+    value["allocation_claims_allowed"] = TomlValue::Boolean(true);
+    value["rss_claims_allowed"] = TomlValue::Boolean(true);
+    value["cardinalities"] = TomlValue::Array(vec![TomlValue::Integer(1)]);
+    let problems =
+        xtask::performance_contract::check_w5_hc2_connection_census_contract(&value, "0.73");
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("allocation_claims_allowed must be false")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("rss_claims_allowed must be false")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("cardinalities changed")));
+}

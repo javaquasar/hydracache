@@ -104,6 +104,8 @@ const W5_HC2_EVENT_COPY_PROFILE_EVIDENCE: &str =
     "docs/testing/performance/0.73/w5-hc2-event-copy-profile-02777da6.toml";
 const W5_SHARED_EVENT_BYTES_CONTRACT: &str =
     "docs/testing/performance/0.73/w5-shared-event-bytes-contract.toml";
+const W5_HC2_CONNECTION_CENSUS_CONTRACT: &str =
+    "docs/testing/performance/0.73/w5-hc2-connection-census-contract.toml";
 const RELEASE: &str = "0.73";
 const PROFILE: &str = "local-screening-073-v1";
 const ENVIRONMENT_CLASS: &str = "local_screening";
@@ -251,6 +253,9 @@ pub fn check_at_root(
     )?)?;
     let w5_shared_event_bytes_contract: TomlValue = toml::from_str(&fs::read_to_string(
         root.join(W5_SHARED_EVENT_BYTES_CONTRACT),
+    )?)?;
+    let w5_hc2_connection_census_contract: TomlValue = toml::from_str(&fs::read_to_string(
+        root.join(W5_HC2_CONNECTION_CENSUS_CONTRACT),
     )?)?;
     let mut problems = check_contract(&contract, release);
     if !root.join(MOKA_OBSERVER_UPSTREAM_DRAFT).is_file() {
@@ -420,6 +425,10 @@ pub fn check_at_root(
     ));
     problems.extend(check_w5_shared_event_bytes_contract(
         &w5_shared_event_bytes_contract,
+        release,
+    ));
+    problems.extend(check_w5_hc2_connection_census_contract(
+        &w5_hc2_connection_census_contract,
         release,
     ));
     problems.extend(check_schema(
@@ -593,6 +602,10 @@ pub fn check_contract(root: &TomlValue, release: &str) -> Vec<String> {
         (
             "w5_shared_event_bytes_contract",
             W5_SHARED_EVENT_BYTES_CONTRACT,
+        ),
+        (
+            "w5_hc2_connection_census_contract",
+            W5_HC2_CONNECTION_CENSUS_CONTRACT,
         ),
     ] {
         if text(root, field) != Some(expected) {
@@ -4284,6 +4297,49 @@ pub fn check_w5_shared_event_bytes_contract(value: &TomlValue, release: &str) ->
     ] {
         if text(value, field).is_none_or(str::is_empty) {
             problems.push(format!("W5 shared event bytes {field} is missing"));
+        }
+    }
+    problems
+}
+
+pub fn check_w5_hc2_connection_census_contract(value: &TomlValue, release: &str) -> Vec<String> {
+    let mut problems = Vec::new();
+    if integer(value, "schema_version") != Some(1)
+        || text(value, "release") != Some(release)
+        || text(value, "contract_id") != Some("w5-hc2-connection-census-073-v1")
+        || text(value, "state") != Some("preregistered-awaiting-local-census")
+        || text(value, "parent_contract") != Some(W1_OWNER_CLASSIFICATION_CONTRACT)
+        || text(value, "source_parent") != Some("bd246207bc1b4f01e0800193abca17958fb96b58")
+        || text(value, "environment") != Some("local-real-mtls")
+    {
+        problems.push("W5 HC/2 connection census identity changed".to_owned());
+    }
+    for field in [
+        "production_counter_addition",
+        "product_semantics_change_allowed",
+        "dedicated_host_run_allowed",
+        "promotable",
+        "cpu_claims_allowed",
+        "allocation_claims_allowed",
+        "rss_claims_allowed",
+    ] {
+        if boolean(value, field) != Some(false) {
+            problems.push(format!("W5 HC/2 connection census {field} must be false"));
+        }
+    }
+    if integer_array(value.get("cardinalities")) != [1, 10, 100, 1_000] {
+        problems.push("W5 HC/2 connection census cardinalities changed".to_owned());
+    }
+    for field in [
+        "required_active_invariant",
+        "required_close_invariant",
+        "required_client_invariant",
+        "falsifier",
+        "interpretation_limit",
+        "next_decision",
+    ] {
+        if text(value, field).is_none_or(str::is_empty) {
+            problems.push(format!("W5 HC/2 connection census {field} is missing"));
         }
     }
     problems

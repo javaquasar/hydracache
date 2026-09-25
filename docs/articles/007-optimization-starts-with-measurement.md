@@ -1017,6 +1017,23 @@ continued to deliver the event and reconcile all connection-owned resources to z
 Thus the event-copy subproblem is accepted locally. W5 itself remains open for channel storage,
 connection-task allocation, and transport buffers.
 
+There is a broader lesson in the failed 48-byte run. Two values can have the same Rust type and
+different allocation behavior because their internal ownership state differs. A `Bytes` created
+from a unique `Vec` has not yet paid the transition to shared ownership; a `Bytes` cloned from a
+decoded request has. A benchmark that recreates the type but not the ownership history can charge a
+setup transition to the operation under test. The corrected fixture therefore retained both the
+original and cloned owners before opening the allocation window. This was not a statistical
+adjustment: the threshold stayed at zero, the failed packet remained in the ledger, and the new
+fixture encoded a source-level fact that can be falsified.
+
+The queue model also constrains what we can claim. Each HC/2 connection has a bounded Tokio channel
+whose capacity equals `max_streams_per_connection` (16 by default), and `send().await` stops the
+single connection producer when that channel is full. A blocked send can retain its producer-held
+frame in addition to queued frames. Sharing payload buffers removes multiplicative copies across
+those frames, but it does not remove the channel slots, protobuf encode buffers, HTTP/2 flow-control
+state, TLS records, or the connection task itself. Those owners need a connection census with exact
+logical reconciliation before process memory can be divided by connection count.
+
 ## A profiling ladder that avoids expensive runs
 
 Not every development iteration needs a dedicated bare-metal campaign. A useful workflow has several
