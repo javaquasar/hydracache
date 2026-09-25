@@ -452,13 +452,19 @@ fn key(index: usize, bytes: usize, shape: &str) -> Vec<u8> {
     if bytes == 0 {
         return Vec::new();
     }
-    (0..bytes)
-        .map(|offset| match shape {
-            "ascii" => b'a' + ((index + offset) % 26) as u8,
-            "binary" => ((index * 131 + offset * 17) % 256) as u8,
-            _ => panic!("unknown key shape {shape}"),
-        })
-        .collect()
+    match shape {
+        "ascii" => {
+            let mut value = vec![b'a'; bytes];
+            let identity = format!("{index:016x}");
+            let copied = bytes.min(identity.len());
+            value[..copied].copy_from_slice(&identity.as_bytes()[..copied]);
+            value
+        }
+        "binary" => (0..bytes)
+            .map(|offset| ((index * 131 + offset * 17) % 256) as u8)
+            .collect(),
+        _ => panic!("unknown key shape {shape}"),
+    }
 }
 
 fn corpus_args(case: &str) -> Result<Vec<Vec<u8>>, Box<dyn Error>> {
@@ -685,5 +691,15 @@ mod tests {
     #[test]
     fn frozen_group_count_is_ninety_two() {
         assert_eq!(2 * 8 + 4 * 2 * 3 + 3 * 2 * 5 + 2 * 4 * 2 + 2 * 3, 92);
+    }
+
+    #[test]
+    fn batch_key_fixtures_are_distinct_for_both_shapes() {
+        for shape in ["ascii", "binary"] {
+            let keys = (0..256)
+                .map(|index| key(index, 64, shape))
+                .collect::<std::collections::HashSet<_>>();
+            assert_eq!(keys.len(), 256, "{shape}");
+        }
     }
 }
