@@ -68,6 +68,7 @@ w5_hc2_split_connection_profile_evidence = "docs/testing/performance/0.73/w5-hc2
 w5_hc2_slow_consumer_profile_contract = "docs/testing/performance/0.73/w5-hc2-slow-consumer-profile-contract.toml"
 w5_hc2_slow_consumer_profile_evidence = "docs/testing/performance/0.73/w5-hc2-slow-consumer-profile-ff432801.toml"
 w5_hc2_raw_transport_stall_contract = "docs/testing/performance/0.73/w5-hc2-raw-transport-stall-contract.toml"
+w5_hc2_raw_transport_stall_evidence = "docs/testing/performance/0.73/w5-hc2-raw-transport-stall-25cdfb61.toml"
 promotable = false
 numerical_claims_allowed = false
 candidate_thresholds_allowed = false

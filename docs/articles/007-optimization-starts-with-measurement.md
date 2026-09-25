@@ -1128,6 +1128,46 @@ item limit is not a byte limit when frames vary in size. A raw transport-stall p
 legitimate way to decide whether byte admission is needed. The 21 MB client result cannot be used as
 evidence for changing the server queue.
 
+The raw probe made that hostile boundary real without changing product counters. Eight wire-level
+clients completed mTLS, handshake, and subscription acknowledgement. Controls kept polling the
+response stream; treatments retained the same `Streaming` objects and request senders but made no
+response poll during the pressure window. Each peer offered exactly 8 MiB of values in both cells:
+2,048 mutations at 4 KiB or 32 mutations at 256 KiB. A server-side dispatch counter sampled after a
+two-second settle and again 500 milliseconds later proved that every treatment had actually stopped,
+while every control completed its full volume.
+
+Across five counterbalanced pairs per payload, unpolled-minus-drained server working-set deltas were
+positive in all ten pairs. Their median rose from 9,216,000 bytes at 4 KiB to 22,667,264 bytes at
+256 KiB; pagefile medians moved from 9,461,760 to 22,663,168 bytes. This is repeatable payload-size
+sensitivity, but still a process-level result. It does not tell us that those bytes all occupy the
+Tokio channel: protobuf encoding, Hyper/h2 send state, rustls, socket handoff, and allocator pages
+remain in the same server process.
+
+Source and measurement together give a stronger boundedness model. The locked Hyper 1.11.1 client
+uses a 2 MiB default stream receive window and a 5 MiB connection window. Median stalled dispatch
+was 4,160 mutations in the 4 KiB cell, or 520 per peer. That is approximately 512 value-bearing
+events admitted by a 2 MiB stream window plus a small bounded tail. At 256 KiB, the median was 128,
+or sixteen per peer: approximately eight events in the stream window plus a similar tail. Invocation
+responses and global-watermark gap frames share the path, so this is a source-supported decomposition,
+not an exact queue-occupancy equation. It does explain why an item bound alone cannot express the
+memory exposure.
+
+The fixture produced two useful red smoke tests before the frozen matrix. The first classified
+legitimate gap frames as unexpected; the second showed that merely dropping a stalled tonic stream
+did not reconcile quickly enough for a deterministic close proof. The final fixture counts gaps,
+takes its pressure snapshot while the stream remains completely unpolled, then resumes reading only
+to drain the already offered frames before closing. Snapshot response counts remain zero, and every
+run finishes with accepted equal to closed and all server-owned live resources at zero. Neither red
+smoke result was silently replaced in the twenty-attempt matrix.
+
+This evidence is enough to preregister an application outbound-byte-admission candidate, not to
+declare it successful. The candidate must retain the existing 16-item limit, charge the encoded
+`ServerEnvelope` while it waits in the application queue, avoid deadlock for one legal frame larger
+than the byte budget, and release every permit on send failure or disconnect. Its claim must stop at
+the point where tonic polls the item: HTTP/2, TLS, and socket retention are downstream owners and
+need their own controls. That narrower statement turns “add a byte cap” from a slogan into a
+falsifiable ownership change.
+
 ## A profiling ladder that avoids expensive runs
 
 Not every development iteration needs a dedicated bare-metal campaign. A useful workflow has several

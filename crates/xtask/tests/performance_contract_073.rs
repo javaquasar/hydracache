@@ -1258,3 +1258,22 @@ fn w5_raw_transport_stall_cannot_promote_or_weaken_the_matrix() {
         .iter()
         .any(|problem| problem.contains("workload changed")));
 }
+
+#[test]
+fn w5_raw_transport_stall_evidence_cannot_promote_or_rewrite_retention() {
+    let mut value = manifest("w5-hc2-raw-transport-stall-25cdfb61.toml");
+    value["promotable"] = TomlValue::Boolean(true);
+    value["exact_server_queued_byte_claim_allowed"] = TomlValue::Boolean(true);
+    value["median_paired_server_working_set_delta_262144_bytes"] = TomlValue::Integer(9_216_000);
+    let problems =
+        xtask::performance_contract::check_w5_hc2_raw_transport_stall_evidence(&value, "0.73");
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("promotable must be false")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("exact_server_queued_byte_claim_allowed must be false")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("result changed")));
+}
