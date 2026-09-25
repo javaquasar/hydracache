@@ -1,0 +1,57 @@
+schema_version = 1
+release = "0.73"
+evidence_id = "w5-hc2-event-copy-profile-02777da6-v1"
+state = "local-owner-attributed-candidate-contract-required"
+contract = "docs/testing/performance/0.73/w5-hc2-event-copy-profile-contract.toml"
+source_commit = "02777da68210d166bf3d072d71bbff6975bd51b4"
+source_owner = "crates/hydracache-server/src/hc2.rs::emit_matching_events"
+binary_sha256 = "b4d64196439281ec80bac0c871d54473a30ad0138b382a3fca0b9a4562827701"
+contract_sha256 = "bbe21eb83377f5314a2a4acec7cbd453cb55edc7f1a20dc7cd13364bdb4f04d5"
+tool_source_sha256 = "919d689ae4d1fd9fc0472e6521afaf4d8419b26c6bd0e1d9692d26acc7230b67"
+tool_lock_sha256 = "4666823085f7d9f15e8a107a31a00d02367b939e4a4d1edf3f41a5b9caa44419"
+raw_result_sha256 = "da36ae2d9922567a3c2baa23d2026864b7837035a4b7024d9abff3bb46dc86b3"
+attempts = 20
+failed_attempts = 0
+repeats_per_scenario = 5
+production_counter_addition = false
+product_mutation_present = false
+candidate_implementation_allowed = false
+dedicated_host_run_allowed = false
+promotable = false
+cpu_claims_allowed = false
+latency_claims_allowed = false
+rss_claims_allowed = false
+numerical_release_claims_allowed = false
+owner = "emit_matching_events deep-copies immutable Bytes key and value into every matching CacheEvent; mutation_event already holds reference-counted Bytes and outbound send provides bounded backpressure"
+queue_bound = "The per-connection tokio mpsc capacity is max_streams_per_connection (default 16). One producer-held frame may be blocked on send, but a single mutation has at most 16 matching subscriptions, so at most 16 event payload copies from that mutation are live in queue plus producer. Tonic and TLS buffers remain external to this probe."
+falsifier_result = "passed: every process retained exactly fanout frames; allocation count was exactly 2 * fanout; gross allocated bytes exactly equaled fanout * (64 + value_bytes); all repeats were identical"
+decision = "preregister-d2-shared-bytes-event-candidate"
+next_evidence = "Change emit_matching_events to receive immutable Bytes and shallow-clone key/value into CacheEvent. Preserve event bytes, order, watermark behavior, bounded send backpressure, and connection resource reconciliation; then repeat the same 20-process matrix."
+
+[[scenario]]
+name = "fanout-1-value-128"
+fanout = 1
+value_bytes = 128
+allocation_count = 2
+gross_allocated_bytes = 192
+
+[[scenario]]
+name = "fanout-8-value-128"
+fanout = 8
+value_bytes = 128
+allocation_count = 16
+gross_allocated_bytes = 1536
+
+[[scenario]]
+name = "fanout-16-value-128"
+fanout = 16
+value_bytes = 128
+allocation_count = 32
+gross_allocated_bytes = 3072
+
+[[scenario]]
+name = "fanout-16-value-4096"
+fanout = 16
+value_bytes = 4096
+allocation_count = 32
+gross_allocated_bytes = 66560

@@ -1061,3 +1061,22 @@ fn w5_hc2_event_copy_profile_cannot_enable_product_or_host_work() {
         .iter()
         .any(|problem| problem.contains("volume changed")));
 }
+
+#[test]
+fn w5_hc2_event_copy_evidence_cannot_promote_or_change_result() {
+    let mut value = manifest("w5-hc2-event-copy-profile-02777da6.toml");
+    value["promotable"] = TomlValue::Boolean(true);
+    value["candidate_implementation_allowed"] = TomlValue::Boolean(true);
+    value["scenario"][3]["gross_allocated_bytes"] = TomlValue::Integer(1);
+    let problems =
+        xtask::performance_contract::check_w5_hc2_event_copy_profile_evidence(&value, "0.73");
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("promotable must be false")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("candidate_implementation_allowed must be false")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("fanout-16-value-4096 changed")));
+}

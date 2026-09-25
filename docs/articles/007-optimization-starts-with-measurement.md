@@ -983,6 +983,25 @@ cleanup, and tenant quota release. That combination lets us accept W2 locally wi
 dedicated-host run. CPU and mutex-wait claims remain open; W2 will join a later integrated candidate
 rather than receiving a bespoke expensive campaign.
 
+The next owner appeared at a transport boundary. HC/2 already represents the mutation key and value
+as immutable reference-counted `Bytes`, but event fan-out converted them back to slices and called
+`Bytes::copy_from_slice` for every matching subscription. The outbound channel is bounded and awaits
+capacity, so this is not an unbounded queue bug. It is bounded amplification: every queued event owns
+another complete key and value allocation.
+
+A standalone allocation probe reproduced only those two constructor calls, with its frame vector
+reserved before measurement. The result was exact in 20 independent processes: two allocations per
+subscriber and gross bytes equal to `fanout × (key bytes + value bytes)`. A 64-byte key plus 128-byte
+value cost 192 bytes at fan-out one, 1,536 bytes at fan-out eight, and 3,072 bytes at fan-out sixteen.
+With a 4,096-byte value and sixteen subscribers, one event created 66,560 bytes of payload copies
+before protobuf, HTTP/2, or TLS buffering was considered.
+
+This decomposition keeps the candidate small. Passing `Bytes` through the fan-out function and
+shallow-cloning it into each immutable wire message should remove the payload allocations while the
+last queued event still owns the backing storage. Ordering, watermarks, bounded `send().await`
+backpressure, and disconnect reconciliation remain the falsifiers. Tonic and TLS buffer ownership is
+a separate W5 subproblem and must not be inferred from this result.
+
 ## A profiling ladder that avoids expensive runs
 
 Not every development iteration needs a dedicated bare-metal campaign. A useful workflow has several

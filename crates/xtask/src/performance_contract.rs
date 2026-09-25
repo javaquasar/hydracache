@@ -100,6 +100,8 @@ const W2_BORROWED_EXPIRY_SCAN_EVIDENCE: &str =
     "docs/testing/performance/0.73/w2-borrowed-expiry-scan-a80839fd.toml";
 const W5_HC2_EVENT_COPY_PROFILE_CONTRACT: &str =
     "docs/testing/performance/0.73/w5-hc2-event-copy-profile-contract.toml";
+const W5_HC2_EVENT_COPY_PROFILE_EVIDENCE: &str =
+    "docs/testing/performance/0.73/w5-hc2-event-copy-profile-02777da6.toml";
 const RELEASE: &str = "0.73";
 const PROFILE: &str = "local-screening-073-v1";
 const ENVIRONMENT_CLASS: &str = "local_screening";
@@ -241,6 +243,9 @@ pub fn check_at_root(
     )?)?;
     let w5_hc2_event_copy_profile_contract: TomlValue = toml::from_str(&fs::read_to_string(
         root.join(W5_HC2_EVENT_COPY_PROFILE_CONTRACT),
+    )?)?;
+    let w5_hc2_event_copy_profile_evidence: TomlValue = toml::from_str(&fs::read_to_string(
+        root.join(W5_HC2_EVENT_COPY_PROFILE_EVIDENCE),
     )?)?;
     let mut problems = check_contract(&contract, release);
     if !root.join(MOKA_OBSERVER_UPSTREAM_DRAFT).is_file() {
@@ -402,6 +407,10 @@ pub fn check_at_root(
     ));
     problems.extend(check_w5_hc2_event_copy_profile_contract(
         &w5_hc2_event_copy_profile_contract,
+        release,
+    ));
+    problems.extend(check_w5_hc2_event_copy_profile_evidence(
+        &w5_hc2_event_copy_profile_evidence,
         release,
     ));
     problems.extend(check_schema(
@@ -567,6 +576,10 @@ pub fn check_contract(root: &TomlValue, release: &str) -> Vec<String> {
         (
             "w5_hc2_event_copy_profile_contract",
             W5_HC2_EVENT_COPY_PROFILE_CONTRACT,
+        ),
+        (
+            "w5_hc2_event_copy_profile_evidence",
+            W5_HC2_EVENT_COPY_PROFILE_EVIDENCE,
         ),
     ] {
         if text(root, field) != Some(expected) {
@@ -4132,6 +4145,94 @@ pub fn check_w5_hc2_event_copy_profile_contract(value: &TomlValue, release: &str
         if text(value, field).is_none_or(str::is_empty) {
             problems.push(format!("W5 HC/2 event copy profile {field} is missing"));
         }
+    }
+    problems
+}
+
+pub fn check_w5_hc2_event_copy_profile_evidence(value: &TomlValue, release: &str) -> Vec<String> {
+    let mut problems = Vec::new();
+    if integer(value, "schema_version") != Some(1)
+        || text(value, "release") != Some(release)
+        || text(value, "evidence_id") != Some("w5-hc2-event-copy-profile-02777da6-v1")
+        || text(value, "state") != Some("local-owner-attributed-candidate-contract-required")
+        || text(value, "contract") != Some(W5_HC2_EVENT_COPY_PROFILE_CONTRACT)
+        || text(value, "source_commit") != Some("02777da68210d166bf3d072d71bbff6975bd51b4")
+        || text(value, "source_owner")
+            != Some("crates/hydracache-server/src/hc2.rs::emit_matching_events")
+    {
+        problems.push("W5 HC/2 event copy evidence identity changed".to_owned());
+    }
+    for field in [
+        "binary_sha256",
+        "contract_sha256",
+        "tool_source_sha256",
+        "tool_lock_sha256",
+        "raw_result_sha256",
+    ] {
+        if text(value, field).is_none_or(|digest| !sha256(digest)) {
+            problems.push(format!(
+                "W5 HC/2 event copy evidence {field} is not SHA-256"
+            ));
+        }
+    }
+    for field in [
+        "production_counter_addition",
+        "product_mutation_present",
+        "candidate_implementation_allowed",
+        "dedicated_host_run_allowed",
+        "promotable",
+        "cpu_claims_allowed",
+        "latency_claims_allowed",
+        "rss_claims_allowed",
+        "numerical_release_claims_allowed",
+    ] {
+        if boolean(value, field) != Some(false) {
+            problems.push(format!("W5 HC/2 event copy evidence {field} must be false"));
+        }
+    }
+    if integer(value, "attempts") != Some(20)
+        || integer(value, "failed_attempts") != Some(0)
+        || integer(value, "repeats_per_scenario") != Some(5)
+    {
+        problems.push("W5 HC/2 event copy evidence volume changed".to_owned());
+    }
+    let scenarios = value
+        .get("scenario")
+        .and_then(TomlValue::as_array)
+        .cloned()
+        .unwrap_or_default();
+    let expected = [
+        ("fanout-1-value-128", 1, 128, 2, 192),
+        ("fanout-8-value-128", 8, 128, 16, 1_536),
+        ("fanout-16-value-128", 16, 128, 32, 3_072),
+        ("fanout-16-value-4096", 16, 4_096, 32, 66_560),
+    ];
+    for (name, fanout, value_bytes, allocations, gross_bytes) in expected {
+        let matches = scenarios
+            .iter()
+            .filter(|scenario| text(scenario, "name") == Some(name))
+            .collect::<Vec<_>>();
+        if matches.len() != 1 {
+            problems.push(format!("W5 HC/2 event copy evidence requires one {name}"));
+            continue;
+        }
+        let scenario = matches[0];
+        if integer(scenario, "fanout") != Some(fanout)
+            || integer(scenario, "value_bytes") != Some(value_bytes)
+            || integer(scenario, "allocation_count") != Some(allocations)
+            || integer(scenario, "gross_allocated_bytes") != Some(gross_bytes)
+        {
+            problems.push(format!("W5 HC/2 event copy evidence {name} changed"));
+        }
+    }
+    if scenarios.len() != expected.len()
+        || text(value, "owner").is_none_or(str::is_empty)
+        || text(value, "queue_bound").is_none_or(str::is_empty)
+        || text(value, "falsifier_result").is_none_or(str::is_empty)
+        || text(value, "decision") != Some("preregister-d2-shared-bytes-event-candidate")
+        || text(value, "next_evidence").is_none_or(str::is_empty)
+    {
+        problems.push("W5 HC/2 event copy evidence decision is incomplete".to_owned());
     }
     problems
 }
