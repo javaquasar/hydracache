@@ -491,6 +491,7 @@ impl StoredValue {
 }
 
 struct ExpirySweepCandidates {
+    #[cfg_attr(not(any(test, feature = "performance-profile")), allow(dead_code))]
     examined: usize,
     expired: Vec<StoreKey>,
     next_cursor: Option<StoreKey>,
