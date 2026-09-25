@@ -1047,6 +1047,36 @@ RSS by 1,000 and call the quotient a connection cost: allocator arenas, shared T
 HTTP/2 buffers, task stacks, and nonlinear capacity growth must be separated through independent
 processes and multiple cardinalities.
 
+The independent-process profile then supplied the missing shape, while also showing why that warning
+matters. Across three fresh processes at each cardinality, cumulative allocation during connection
+creation was almost perfectly linear: the median stayed between 278,280 and 278,316 gross bytes per
+local client/server pair from one through 1,000 connections. That number is allocation churn, not
+retained memory. It includes both endpoints, certificate and TLS setup, HTTP/2 state, runtime work,
+and anything freed before the plateau. Its stability makes it a useful decomposition target, but it
+does not make it a server-side bytes-per-connection result.
+
+Working set told a different story. Median plateau deltas were 2,699,264 bytes at one connection,
+4,198,400 at ten, 15,675,392 at one hundred, and 122,925,056 at one thousand. The marginal change
+from 100 to 1,000 was about 119,166 bytes per additional local pair, far below the gross-allocation
+figure and different from the older D0 slope. That is expected: gross allocation counts churn, while
+working set is a noisy retained-page snapshot with fixed process warm-up, allocator size classes,
+shared runtime state, and both sides of the loopback connection. A single straight line through all
+four points would hide the fixed floor and manufacture false precision.
+
+After close, median working set still sat 2,748,416, 3,489,792, 4,358,144, and 6,656,000 bytes above
+the corresponding baselines. Yet accepted equaled closed, the server reported no live connection,
+invocation, subscription, or session owner, and every client map and permit set reconciled. The
+residual is therefore evidence of process high-water behavior, not evidence of a logical leak. It
+may be reusable allocator or runtime capacity, and W8 must test that reuse explicitly before anyone
+proposes trimming it.
+
+This local result closes one question and opens a narrower one. Scaling is material enough to justify
+separating the endpoints, but the combined process cannot tell us whether the dominant owner is the
+client, HydraCache server state, tonic/HTTP2, TLS, or allocator bookkeeping. The next probe must keep
+the same protocol and cardinalities while placing server and clients in different processes and
+sampling both. Only then is it responsible to choose among initial-buffer sizing, queue-byte caps,
+or idle buffer release; RSS alone still does not authorize any of them.
+
 ## A profiling ladder that avoids expensive runs
 
 Not every development iteration needs a dedicated bare-metal campaign. A useful workflow has several

@@ -62,6 +62,7 @@ w5_shared_event_bytes_evidence = "docs/testing/performance/0.73/w5-shared-event-
 w5_hc2_connection_census_contract = "docs/testing/performance/0.73/w5-hc2-connection-census-contract.toml"
 w5_hc2_connection_census_evidence = "docs/testing/performance/0.73/w5-hc2-connection-census-e673f9cd.toml"
 w5_hc2_connection_profile_contract = "docs/testing/performance/0.73/w5-hc2-connection-profile-contract.toml"
+w5_hc2_connection_profile_evidence = "docs/testing/performance/0.73/w5-hc2-connection-profile-ff657fc5.toml"
 promotable = false
 numerical_claims_allowed = false
 candidate_thresholds_allowed = false

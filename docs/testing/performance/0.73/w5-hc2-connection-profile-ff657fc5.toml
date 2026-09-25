@@ -1,0 +1,92 @@
+schema_version = 1
+release = "0.73"
+evidence_id = "w5-hc2-connection-profile-ff657fc5-v1"
+state = "local-combined-process-profile-passed-split-required"
+contract = "docs/testing/performance/0.73/w5-hc2-connection-profile-contract.toml"
+source_commit = "ff657fc5c462ef67d1fe28c3e0bdd6d61f3cf9f4"
+profile_tool = "tools/hc2-connection-profile-073"
+ownership_scope = "combined-local-client-server-process"
+binary_sha256 = "53d59b0078273b563fc8916697d3402820046bc44d69a19b44692467de38b337"
+contract_sha256 = "819b970afd93b00614f1bb989a58930a0c3b5c64f9028d5ab3bc20a922c521a7"
+tool_source_sha256 = "d9b4ba0268b69210c6941f31c01e9ec2ab15d9849d6fb9f51414fae23c417e9e"
+tool_lock_sha256 = "03b0216e2ae6b9717faf1afccbdd9e7cb9841bffe72c834009c380802a51bfc5"
+rustc = "rustc 1.94.0 (4a4ef493e 2026-03-02)"
+cargo = "cargo 1.94.0 (85eff7c80 2026-01-15)"
+host = "ASUS EXPERTBOOK P5405CSA; Intel Core Ultra 7 258V; 8 cores/8 logical processors; 33,634,439,168 bytes physical memory; Windows NT 10.0.26200.0"
+attempts = 12
+failed_attempts = 0
+repeats_per_cardinality = 3
+independent_processes = true
+production_counter_addition = false
+product_mutation_present = false
+candidate_data_present = false
+dedicated_host_run_allowed = false
+promotable = false
+per_server_connection_claim_allowed = false
+release_numerical_claim_allowed = false
+logical_accounting_passed = true
+client_resource_reconciliation_passed = true
+close_reconciliation_passed = true
+stderr_empty = true
+raw_results = [
+  "n1-r1.json:7525247f0e5b72e7f3830ee69a371648d61af90946a6625bb010eb445f934aa7",
+  "n1-r2.json:98dd98db645c0eefbf2a84e22afb7aef989bb9d856a99cd41d03ad4dfc89f0cc",
+  "n1-r3.json:99e52aafa91943e41886c8eedecbbb1a957dd0ef4610c3d5be390b58abae6b12",
+  "n10-r1.json:ba5bf1a379b15141af365d389c11dbf11cdb43a130e4ade89d623324bd14ce49",
+  "n10-r2.json:95710d09f16e9a8a7393aaf5dff276dc86e5910385ae6a4bc3ca79e9deb45f16",
+  "n10-r3.json:42943adcf2baf32631740b7c12dbe12997970908259ff688e84cfc9a2026bfdb",
+  "n100-r1.json:e24ac2fb96ecfabbcd405f47f835d5aa77133f5df6f9114e4650feb432ac03c9",
+  "n100-r2.json:01a51acced86f70ec41b23bd934676bdf3d021e4ec9c5e3cf76941798fe931aa",
+  "n100-r3.json:b9c0629d22f57a3238ae3956da7b440595da0127a73a895c299baa494f30d80d",
+  "n1000-r1.json:f8fee3d709addae99c43d4df082c2d46db9a99a862d264a65d8478e0acaac3e3",
+  "n1000-r2.json:ef1b2552b757568208d6ed6808e12afa2616f611d1f3a63b73ecd44115f2fca5",
+  "n1000-r3.json:79c5bd81ece8e71254ec90a18e8794a1a6ea834073dc2b2bc7a80c8a66c241d2",
+]
+allocation_interpretation = "Gross allocation measures cumulative churn while creating both local client and server endpoints. Its nearly constant per-pair value is not retained bytes and cannot identify which endpoint owns the allocation."
+rss_interpretation = "Working-set deltas contain a fixed startup/warmup component and a lower marginal slope at larger cardinalities. Post-close working set remains above baseline even though all logical owners reconcile, so the residual is allocator/runtime high-water evidence rather than leak evidence."
+decision = "preregister-split-client-server-process-profile"
+next_evidence = "Run server and load-generating clients in separate local processes at the same frozen cardinalities. Record both process snapshots and server logical counters, retain TLS and protocol settings, and keep all results local/non-promotable before selecting any HC/2 buffer candidate."
+
+[[cardinality]]
+connections = 1
+median_gross_allocated_bytes = 278316
+median_gross_allocated_bytes_per_connection = 278316.0
+median_working_set_delta_bytes = 2699264
+median_peak_working_set_delta_bytes = 2699264
+median_post_close_working_set_delta_bytes = 2748416
+median_pagefile_delta_bytes = 319488
+median_peak_pagefile_delta_bytes = 319488
+median_post_close_pagefile_delta_bytes = 212992
+
+[[cardinality]]
+connections = 10
+median_gross_allocated_bytes = 2782807
+median_gross_allocated_bytes_per_connection = 278280.7
+median_working_set_delta_bytes = 4198400
+median_peak_working_set_delta_bytes = 4198400
+median_post_close_working_set_delta_bytes = 3489792
+median_pagefile_delta_bytes = 2478080
+median_peak_pagefile_delta_bytes = 2478080
+median_post_close_pagefile_delta_bytes = 1441792
+
+[[cardinality]]
+connections = 100
+median_gross_allocated_bytes = 27828312
+median_gross_allocated_bytes_per_connection = 278283.12
+median_working_set_delta_bytes = 15675392
+median_peak_working_set_delta_bytes = 15675392
+median_post_close_working_set_delta_bytes = 4358144
+median_pagefile_delta_bytes = 19435520
+median_peak_pagefile_delta_bytes = 19435520
+median_post_close_pagefile_delta_bytes = 2482176
+
+[[cardinality]]
+connections = 1000
+median_gross_allocated_bytes = 278280142
+median_gross_allocated_bytes_per_connection = 278280.142
+median_working_set_delta_bytes = 122925056
+median_peak_working_set_delta_bytes = 122925056
+median_post_close_working_set_delta_bytes = 6656000
+median_pagefile_delta_bytes = 181301248
+median_peak_pagefile_delta_bytes = 181301248
+median_post_close_pagefile_delta_bytes = 4939776

@@ -1138,3 +1138,22 @@ fn w5_connection_profile_cannot_promote_claim_server_bytes_or_skip_samples() {
         .iter()
         .any(|problem| problem.contains("sampling matrix changed")));
 }
+
+#[test]
+fn w5_connection_profile_evidence_cannot_promote_or_rewrite_results() {
+    let mut value = manifest("w5-hc2-connection-profile-ff657fc5.toml");
+    value["promotable"] = TomlValue::Boolean(true);
+    value["per_server_connection_claim_allowed"] = TomlValue::Boolean(true);
+    value["cardinality"][3]["median_working_set_delta_bytes"] = TomlValue::Integer(1);
+    let problems =
+        xtask::performance_contract::check_w5_hc2_connection_profile_evidence(&value, "0.73");
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("promotable must be false")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("per_server_connection_claim_allowed must be false")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("1000-connection result changed")));
+}

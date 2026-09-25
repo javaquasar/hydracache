@@ -108,6 +108,8 @@ const W5_HC2_CONNECTION_CENSUS_CONTRACT: &str =
     "docs/testing/performance/0.73/w5-hc2-connection-census-contract.toml";
 const W5_HC2_CONNECTION_PROFILE_CONTRACT: &str =
     "docs/testing/performance/0.73/w5-hc2-connection-profile-contract.toml";
+const W5_HC2_CONNECTION_PROFILE_EVIDENCE: &str =
+    "docs/testing/performance/0.73/w5-hc2-connection-profile-ff657fc5.toml";
 const RELEASE: &str = "0.73";
 const PROFILE: &str = "local-screening-073-v1";
 const ENVIRONMENT_CLASS: &str = "local_screening";
@@ -261,6 +263,9 @@ pub fn check_at_root(
     )?)?;
     let w5_hc2_connection_profile_contract: TomlValue = toml::from_str(&fs::read_to_string(
         root.join(W5_HC2_CONNECTION_PROFILE_CONTRACT),
+    )?)?;
+    let w5_hc2_connection_profile_evidence: TomlValue = toml::from_str(&fs::read_to_string(
+        root.join(W5_HC2_CONNECTION_PROFILE_EVIDENCE),
     )?)?;
     let mut problems = check_contract(&contract, release);
     if !root.join(MOKA_OBSERVER_UPSTREAM_DRAFT).is_file() {
@@ -438,6 +443,10 @@ pub fn check_at_root(
     ));
     problems.extend(check_w5_hc2_connection_profile_contract(
         &w5_hc2_connection_profile_contract,
+        release,
+    ));
+    problems.extend(check_w5_hc2_connection_profile_evidence(
+        &w5_hc2_connection_profile_evidence,
         release,
     ));
     problems.extend(check_schema(
@@ -619,6 +628,10 @@ pub fn check_contract(root: &TomlValue, release: &str) -> Vec<String> {
         (
             "w5_hc2_connection_profile_contract",
             W5_HC2_CONNECTION_PROFILE_CONTRACT,
+        ),
+        (
+            "w5_hc2_connection_profile_evidence",
+            W5_HC2_CONNECTION_PROFILE_EVIDENCE,
         ),
     ] {
         if text(root, field) != Some(expected) {
@@ -4405,6 +4418,134 @@ pub fn check_w5_hc2_connection_profile_contract(value: &TomlValue, release: &str
         if text(value, field).is_none_or(str::is_empty) {
             problems.push(format!("W5 HC/2 connection profile {field} is missing"));
         }
+    }
+    problems
+}
+
+pub fn check_w5_hc2_connection_profile_evidence(value: &TomlValue, release: &str) -> Vec<String> {
+    let mut problems = Vec::new();
+    if integer(value, "schema_version") != Some(1)
+        || text(value, "release") != Some(release)
+        || text(value, "evidence_id") != Some("w5-hc2-connection-profile-ff657fc5-v1")
+        || text(value, "state") != Some("local-combined-process-profile-passed-split-required")
+        || text(value, "contract") != Some(W5_HC2_CONNECTION_PROFILE_CONTRACT)
+        || text(value, "source_commit") != Some("ff657fc5c462ef67d1fe28c3e0bdd6d61f3cf9f4")
+        || text(value, "profile_tool") != Some("tools/hc2-connection-profile-073")
+        || text(value, "ownership_scope") != Some("combined-local-client-server-process")
+    {
+        problems.push("W5 HC/2 connection profile evidence identity changed".to_owned());
+    }
+    for field in [
+        "binary_sha256",
+        "contract_sha256",
+        "tool_source_sha256",
+        "tool_lock_sha256",
+    ] {
+        if text(value, field).is_none_or(|digest| !sha256(digest)) {
+            problems.push(format!(
+                "W5 HC/2 connection profile evidence {field} is not SHA-256"
+            ));
+        }
+    }
+    let raw_results = string_array(value.get("raw_results"));
+    if raw_results.len() != 12
+        || raw_results.iter().any(|entry| {
+            entry
+                .rsplit_once(':')
+                .is_none_or(|(_, digest)| !sha256(digest))
+        })
+    {
+        problems.push("W5 HC/2 connection profile raw result manifest changed".to_owned());
+    }
+    for field in [
+        "production_counter_addition",
+        "product_mutation_present",
+        "candidate_data_present",
+        "dedicated_host_run_allowed",
+        "promotable",
+        "per_server_connection_claim_allowed",
+        "release_numerical_claim_allowed",
+    ] {
+        if boolean(value, field) != Some(false) {
+            problems.push(format!(
+                "W5 HC/2 connection profile evidence {field} must be false"
+            ));
+        }
+    }
+    for field in [
+        "independent_processes",
+        "logical_accounting_passed",
+        "client_resource_reconciliation_passed",
+        "close_reconciliation_passed",
+        "stderr_empty",
+    ] {
+        if boolean(value, field) != Some(true) {
+            problems.push(format!(
+                "W5 HC/2 connection profile evidence {field} must be true"
+            ));
+        }
+    }
+    if integer(value, "attempts") != Some(12)
+        || integer(value, "failed_attempts") != Some(0)
+        || integer(value, "repeats_per_cardinality") != Some(3)
+    {
+        problems.push("W5 HC/2 connection profile evidence volume changed".to_owned());
+    }
+    let cardinalities = value
+        .get("cardinality")
+        .and_then(TomlValue::as_array)
+        .cloned()
+        .unwrap_or_default();
+    let expected = [
+        (1, 278_316, 2_699_264, 2_748_416, 319_488, 212_992),
+        (10, 2_782_807, 4_198_400, 3_489_792, 2_478_080, 1_441_792),
+        (
+            100, 27_828_312, 15_675_392, 4_358_144, 19_435_520, 2_482_176,
+        ),
+        (
+            1_000,
+            278_280_142,
+            122_925_056,
+            6_656_000,
+            181_301_248,
+            4_939_776,
+        ),
+    ];
+    for (connections, allocation, working_set, post_working_set, pagefile, post_pagefile) in
+        expected
+    {
+        let matches = cardinalities
+            .iter()
+            .filter(|row| integer(row, "connections") == Some(connections))
+            .collect::<Vec<_>>();
+        if matches.len() != 1 {
+            problems.push(format!(
+                "W5 HC/2 connection profile evidence requires one {connections}-connection row"
+            ));
+            continue;
+        }
+        let row = matches[0];
+        if integer(row, "median_gross_allocated_bytes") != Some(allocation)
+            || float(row, "median_gross_allocated_bytes_per_connection").is_none()
+            || integer(row, "median_working_set_delta_bytes") != Some(working_set)
+            || integer(row, "median_peak_working_set_delta_bytes") != Some(working_set)
+            || integer(row, "median_post_close_working_set_delta_bytes") != Some(post_working_set)
+            || integer(row, "median_pagefile_delta_bytes") != Some(pagefile)
+            || integer(row, "median_peak_pagefile_delta_bytes") != Some(pagefile)
+            || integer(row, "median_post_close_pagefile_delta_bytes") != Some(post_pagefile)
+        {
+            problems.push(format!(
+                "W5 HC/2 connection profile evidence {connections}-connection result changed"
+            ));
+        }
+    }
+    if cardinalities.len() != expected.len()
+        || text(value, "allocation_interpretation").is_none_or(str::is_empty)
+        || text(value, "rss_interpretation").is_none_or(str::is_empty)
+        || text(value, "decision") != Some("preregister-split-client-server-process-profile")
+        || text(value, "next_evidence").is_none_or(str::is_empty)
+    {
+        problems.push("W5 HC/2 connection profile evidence decision is incomplete".to_owned());
     }
     problems
 }
