@@ -1796,6 +1796,41 @@ fn w10_focused_host_tooling_cannot_promote_local_data_or_relax_dispatch() {
 }
 
 #[test]
+fn w10_focused_host_comparison_only_opens_compatibility_and_rollback() {
+    let mut value = manifest("w10-focused-host-comparison-passed-7e307089.toml");
+    value["attempt_count"] = TomlValue::Integer(29);
+    value["all_primary_guards_passed"] = TomlValue::Boolean(false);
+    value["published_072_compatibility_satisfied"] = TomlValue::Boolean(true);
+    value["long_run_allowed"] = TomlValue::Boolean(true);
+    value["release_numerical_claim_allowed"] = TomlValue::Boolean(true);
+    value["allocation_or_rss_promotion_allowed"] = TomlValue::Boolean(true);
+    value["decision"] = TomlValue::String("finalize-c73".to_owned());
+    let problems =
+        xtask::performance_contract::check_w10_focused_host_comparison_evidence(&value, "0.73");
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("volume or outcome changed")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("all_primary_guards_passed must be true")));
+    assert!(problems.iter().any(|problem| {
+        problem.contains("published_072_compatibility_satisfied must be false")
+    }));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("long_run_allowed must be false")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("release_numerical_claim_allowed must be false")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("allocation_or_rss_promotion_allowed must be false")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("decision changed")));
+}
+
+#[test]
 fn w5_connection_profile_cannot_promote_claim_server_bytes_or_skip_samples() {
     let mut value = manifest("w5-hc2-connection-profile-contract.toml");
     value["promotable"] = TomlValue::Boolean(true);

@@ -1748,6 +1748,29 @@ writes an explicit incomplete manifest when canary or campaign artifacts do not 
 lesson is that fail-closed evidence must cover orchestration too: partial packets need a machine-
 readable reason, and cleanup residue must never be mistaken for a product regression.
 
+Once those orchestration defects were removed, the protected campaign finally crossed the boundary
+into measurement. It completed all thirty independent processes: five counterbalanced `I73/C73`
+pairs at 5,000, 12,000, and 17,000 operations per second. Across the matrix, 3.4 million offered
+operations all completed successfully, with no errors, timeouts, or rejections; 1.19 million HC/2
+events reconciled exactly, and all 30,000 durability-companion operations passed. The pre/post
+calibration spreads were 1.33% and 2.26%, below the frozen 5% limit, with the same host identity,
+policy, and lease on both sides.
+
+The Hodges-Lehmann paired estimates passed every primary guard. Candidate CPU per completed
+operation changed by +0.32%, +0.49%, and +0.12% across the three rates, against a +3% regression
+budget. Goodput changes rounded to +0.005%, +0.0002%, and -0.004%, against a 2% budget. P99 changed
+by -3.55%, -0.11%, and +0.14%, against a +3% budget. These are best read as “the integrated
+optimizations did not create a material throughput, CPU, or tail-latency regression,” not as three
+portable improvement claims. The low-rate p99 reduction is welcome, but five pairs on one admitted
+profile do not make it a universal speedup.
+
+Post-run RSS estimates ranged from -0.01% to +0.39%, and peak RSS from -0.01% to +0.33%. We retain
+them as diagnostics only. The frozen product roles did not contain a combined-process allocation
+counter, and patching one in after candidate freeze would have changed the compared objects. The
+correct conclusion is therefore narrower: the focused integrated guard passed and opens the real
+published-0.72 compatibility and rollback matrix. It does not promote RSS, establish allocator
+improvement, finalize `C73`, or authorize six-hour and 24-hour runs before compatibility is proved.
+
 ## A profiling ladder that avoids expensive runs
 
 Not every development iteration needs a dedicated bare-metal campaign. A useful workflow has several

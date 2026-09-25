@@ -178,6 +178,8 @@ const W10_FOCUSED_HOST_COMPARISON_CONTRACT: &str =
     "docs/testing/performance/0.73/w10-focused-host-comparison-contract.toml";
 const W10_FOCUSED_HOST_TOOLING_EVIDENCE: &str =
     "docs/testing/performance/0.73/w10-focused-host-tooling-passed-514183a9.toml";
+const W10_FOCUSED_HOST_COMPARISON_EVIDENCE: &str =
+    "docs/testing/performance/0.73/w10-focused-host-comparison-passed-7e307089.toml";
 const RELEASE: &str = "0.73";
 const PROFILE: &str = "local-screening-073-v1";
 const ENVIRONMENT_CLASS: &str = "local_screening";
@@ -436,6 +438,9 @@ pub fn check_at_root(
     )?)?;
     let w10_focused_host_tooling_evidence: TomlValue = toml::from_str(&fs::read_to_string(
         root.join(W10_FOCUSED_HOST_TOOLING_EVIDENCE),
+    )?)?;
+    let w10_focused_host_comparison_evidence: TomlValue = toml::from_str(&fs::read_to_string(
+        root.join(W10_FOCUSED_HOST_COMPARISON_EVIDENCE),
     )?)?;
     let mut problems = check_contract(&contract, release);
     if !root.join(MOKA_OBSERVER_UPSTREAM_DRAFT).is_file() {
@@ -755,6 +760,10 @@ pub fn check_at_root(
         &w10_focused_host_tooling_evidence,
         release,
     ));
+    problems.extend(check_w10_focused_host_comparison_evidence(
+        &w10_focused_host_comparison_evidence,
+        release,
+    ));
     problems.extend(check_schema(
         &schema,
         &example,
@@ -1068,6 +1077,10 @@ pub fn check_contract(root: &TomlValue, release: &str) -> Vec<String> {
         (
             "w10_focused_host_tooling_evidence",
             W10_FOCUSED_HOST_TOOLING_EVIDENCE,
+        ),
+        (
+            "w10_focused_host_comparison_evidence",
+            W10_FOCUSED_HOST_COMPARISON_EVIDENCE,
         ),
     ] {
         if text(root, field) != Some(expected) {
@@ -8573,6 +8586,149 @@ pub fn check_w10_focused_host_tooling_evidence(value: &TomlValue, release: &str)
     if text(value, "decision") != Some("pass-local-tooling-open-one-manual-protected-host-dispatch")
     {
         problems.push("W10 focused host tooling evidence decision changed".to_owned());
+    }
+    problems
+}
+
+pub fn check_w10_focused_host_comparison_evidence(value: &TomlValue, release: &str) -> Vec<String> {
+    let mut problems = Vec::new();
+    if integer(value, "schema_version") != Some(1)
+        || text(value, "release") != Some(release)
+        || text(value, "evidence_id") != Some("w10-focused-host-comparison-passed-7e307089-v1")
+        || text(value, "state") != Some("focused-host-passed-compatibility-and-rollback-open")
+        || text(value, "contract") != Some(W10_FOCUSED_HOST_COMPARISON_CONTRACT)
+        || text(value, "tooling_source_commit") != Some("52968f73d8c8b66fcf51e140c7548386e43078a4")
+        || text(value, "baseline_source_commit") != Some("e757556d3a31d565f52a9561d6d4e555bb1cc373")
+        || text(value, "candidate_source_commit")
+            != Some("7e3070894aa51af96cdcb3e350eff923a309e1fa")
+        || text(value, "candidate_tree_oid") != Some("e2c438b9a248586a4f72d3eca3d1c5369fff440b")
+        || text(value, "result") != Some("passed")
+    {
+        problems.push("W10 focused host comparison evidence identity changed".to_owned());
+    }
+    for field in [
+        "artifact_zip_sha256",
+        "manifest_sha256",
+        "preflight_sha256",
+        "postflight_sha256",
+        "canary_sha256",
+        "campaign_sha256",
+        "scenario_sha256",
+        "overlay_sha256",
+        "runner_sha256",
+        "i73_server_sha256",
+        "c73_server_sha256",
+        "i73_harness_sha256",
+        "c73_harness_sha256",
+    ] {
+        if text(value, field).is_none_or(|digest| !sha256(digest)) {
+            problems.push(format!(
+                "W10 focused host comparison evidence {field} is not SHA-256"
+            ));
+        }
+    }
+    if integer(value, "github_run_id") != Some(36_197_196_983)
+        || integer(value, "github_job_id") != Some(108_275_635_511)
+        || integer(value, "artifact_id") != Some(10_890_687_645)
+        || integer(value, "attempt_count") != Some(30)
+        || integer(value, "failed_attempt_count") != Some(0)
+        || integer(value, "pairs_per_rate") != Some(5)
+        || integer(value, "window_seconds") != Some(10)
+        || integer(value, "warmup_operations") != Some(5_000)
+        || integer(value, "total_operations") != Some(3_400_000)
+        || integer(value, "total_successes") != Some(3_400_000)
+        || integer(value, "total_errors") != Some(0)
+        || integer(value, "total_timeouts") != Some(0)
+        || integer(value, "total_rejections") != Some(0)
+        || integer(value, "total_hc2_events") != Some(1_190_000)
+        || integer(value, "total_durable_operations") != Some(30_000)
+        || integer(value, "total_durable_successes") != Some(30_000)
+        || integer_array(value.get("rates_per_second")) != [5_000, 12_000, 17_000]
+        || integer_array(value.get("weights_percent")) != [35, 30, 15, 10, 5, 5]
+    {
+        problems.push("W10 focused host comparison volume or outcome changed".to_owned());
+    }
+    for field in [
+        "host_identity_stable",
+        "lease_stable",
+        "exact_role_identity_passed",
+        "all_attempt_hashes_verified",
+        "all_attempt_stderr_empty",
+        "all_primary_guards_passed",
+        "canary_marker_observed",
+        "canary_receipt_absent",
+        "host_primary_guards_qualified",
+        "host_dispatch_completed",
+        "compatibility_and_rollback_allowed",
+    ] {
+        if boolean(value, field) != Some(true) {
+            problems.push(format!(
+                "W10 focused host comparison evidence {field} must be true"
+            ));
+        }
+    }
+    for field in [
+        "published_072_compatibility_satisfied",
+        "long_run_allowed",
+        "candidate_is_final_c73",
+        "release_numerical_claim_allowed",
+        "allocation_or_rss_promotion_allowed",
+        "immutable_archive_complete",
+        "silent_retry_allowed",
+    ] {
+        if boolean(value, field) != Some(false) {
+            problems.push(format!(
+                "W10 focused host comparison evidence {field} must be false"
+            ));
+        }
+    }
+    if float(value, "pre_calibration_relative_spread") != Some(0.0133055339816793)
+        || float(value, "post_calibration_relative_spread") != Some(0.0226173345422594)
+        || float(value, "calibration_limit") != Some(0.05)
+        || text(value, "canary_marker") != Some("HC-CANARY-RED:W10-HOST")
+    {
+        problems.push("W10 focused host comparison calibration or canary changed".to_owned());
+    }
+    let expected_rates = [
+        (5_000, 50_000, 0.000049, 0.003223, -0.035530),
+        (12_000, 120_000, 0.000002, 0.004931, -0.001112),
+        (17_000, 170_000, -0.000044, 0.001237, 0.001430),
+    ];
+    let rates = value
+        .get("rate_result")
+        .and_then(TomlValue::as_array)
+        .cloned()
+        .unwrap_or_default();
+    if rates.len() != expected_rates.len()
+        || rates.iter().zip(expected_rates).any(|(rate, expected)| {
+            integer(rate, "rate") != Some(expected.0)
+                || integer(rate, "complete_pairs") != Some(5)
+                || integer(rate, "operations_per_role") != Some(expected.1)
+                || float(rate, "goodput_relative_regression") != Some(expected.2)
+                || float(rate, "cpu_per_operation_relative_regression") != Some(expected.3)
+                || float(rate, "p99_relative_regression") != Some(expected.4)
+                || boolean(rate, "passed") != Some(true)
+        })
+    {
+        problems.push("W10 focused host comparison rate results changed".to_owned());
+    }
+    for field in [
+        "artifact_name",
+        "host_fingerprint",
+        "claim_boundary",
+        "archive_boundary",
+        "next_evidence",
+    ] {
+        if text(value, field).is_none_or(str::is_empty) {
+            problems.push(format!(
+                "W10 focused host comparison evidence {field} is missing"
+            ));
+        }
+    }
+    if text(value, "decision")
+        != Some("pass-focused-host-open-published-072-compatibility-and-rollback")
+    {
+        problems.push("W10 focused host comparison decision changed".to_owned());
     }
     problems
 }
