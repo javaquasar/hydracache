@@ -1,0 +1,106 @@
+schema_version = 1
+release = "0.73"
+evidence_id = "w8-allocator-profile-deferred-ea12f68a-v1"
+state = "local-screening-complete-w8-terminal-deferred"
+terminal_disposition = "deferred"
+contract = "docs/testing/performance/0.73/w8-allocator-profile-contract.toml"
+source_commit = "ea12f68a7b509786f76b4c91555ed46c64a3f0e9"
+profile_tool_commit = "9251b0dc6638bf3e2ecff66ebb2cc0fdc9c74b12"
+raw_evidence = "target/performance-evidence/0.73/w8-allocator-profile-ea12f68a"
+raw_manifest_sha256 = "e27746f3f314343f1c5001cdaf9f0ec887f733c76229965d8c57a658a06b66f2"
+raw_summary_sha256 = "58034646ac0a1159a39e2ba659bedbf9d0431265088d48522741ec7b2c191bd4"
+contract_sha256 = "e3efd789258935149a05d71d9ae354010e944e9b071fa9162d66e236eabb96ea"
+tool_source_sha256 = "2067f5eb945f2b1fa90df18def532a99f80c9a60592d230ba341ef00b5b0a551"
+tool_lock_sha256 = "ac4014c6f95f733e27dd2c8c5c3d76e1c79403d8fc0a1f7a9236f0a101ae879c"
+system_binary_sha256 = "736c436bf95a0a17acbbe228ad86e1bca1bd5ab63ca4468f96b270ba0d7085af"
+mimalloc_binary_sha256 = "537a59f62acd3e46ea3c89bf911e115c8f3ddd9980f6c0566c5b3c30f457a81d"
+
+target = "x86_64-windows"
+attempts = 15
+no_purge_attempts = 10
+purge_attempts = 5
+repeats_per_allocator = 5
+failed_processes = 0
+nonempty_stderr = 0
+invariant_failures = 0
+independent_processes = true
+counterbalanced_no_purge_order = true
+prebuilt_release_binaries = true
+identical_trace = true
+identical_payload = true
+identical_runtime = true
+failed_attempts_retained = true
+raw_native_payload_retained = true
+rss_used_as_native_substitute = false
+promotable = false
+release_numerical_claim_allowed = false
+product_mutation_present = false
+allocator_default_changed = false
+allocator_tuning_changed = false
+
+cardinality = 16384
+payload_bytes = 4096
+steady_read_operations = 65536
+idle_milliseconds = 2000
+no_purge_phases = ["cold", "fill", "steady_read", "delete", "refill", "post_idle"]
+purge_phases = ["cold", "fill", "steady_read", "delete", "refill", "post_idle", "pre_purge", "post_purge", "second_refill"]
+
+system_native_status = "unavailable-with-reason"
+mimalloc_native_status = "partial-native-statistics"
+mimalloc_native_version = 30302
+jemalloc_windows_status = "not-applicable-target"
+mimalloc_allocated_or_live_status = "unavailable-release-v3-zero-counter-retained-only-in-raw"
+mimalloc_available_native_fields = ["committed", "reserved", "arena_count", "page_faults", "purge_calls", "purged_bytes"]
+mimalloc_native_process_rss_is_allocator_owned = false
+
+system_elapsed_ns_median = 2477240100
+mimalloc_elapsed_ns_median = 2374930400
+mimalloc_elapsed_delta_fraction = -0.041300
+
+system_delete_working_set_bytes_median = 8294400
+mimalloc_delete_working_set_bytes_median = 148922368
+mimalloc_to_system_delete_working_set_ratio = 17.954568
+system_delete_private_commit_bytes_median = 4915200
+mimalloc_delete_private_commit_bytes_median = 162041856
+mimalloc_to_system_delete_private_commit_ratio = 32.967500
+
+system_post_idle_working_set_bytes_median = 148828160
+mimalloc_post_idle_working_set_bytes_median = 161857536
+mimalloc_post_idle_working_set_delta_fraction = 0.087546
+system_post_idle_private_commit_bytes_median = 151928832
+mimalloc_post_idle_private_commit_bytes_median = 169721856
+mimalloc_post_idle_private_commit_delta_fraction = 0.117114
+
+system_refill_incremental_page_faults_median = 34333
+mimalloc_refill_incremental_page_faults_median = 3158
+mimalloc_refill_page_fault_reduction_fraction = 0.908019
+
+mimalloc_post_idle_native_committed_bytes_median = 167968768
+mimalloc_post_idle_native_reserved_bytes_median = 1076166656
+mimalloc_reserved_interpretation = "Virtual address reservation is not RSS, private commit, or live application bytes and cannot be compared numerically with an unavailable system-native retained field."
+
+mimalloc_purge_calls_delta_median = 3
+mimalloc_purged_bytes_delta_median = 1179648
+mimalloc_purge_working_set_delta_fraction = -0.005501
+mimalloc_purge_private_commit_delta_fraction = 0.000828
+mimalloc_purge_native_committed_delta_fraction = 0.000838
+mimalloc_second_refill_working_set_bytes_median = 291188736
+mimalloc_second_refill_native_committed_bytes_median = 301170688
+
+tradeoff_interpretation = "On this Windows trace mimalloc completes 4.13% sooner and incurs 90.80% fewer new page faults during refill, consistent with reuse of retained committed pages. The same reuse keeps much more memory after the exact empty delete checkpoint and leaves post-idle working set and private commit 8.75% and 11.71% above system. Neither direction dominates."
+purge_interpretation = "The reviewed mimalloc force-collect path advances purge_calls and reports 1.125 MiB purged, but median working set falls only 0.55% while private and native committed bytes rise by about 0.08%. Purge therefore does not repair the tradeoff in this trace and is not authorized as runtime policy."
+telemetry_interpretation = "The historical 0.71 adapter capability was too broad: enabling MIMALLOC_SHOW_STATS does not itself produce phase-native metrics, and an omitted metrics file falls back to RSS. The W8 profiler reads native JSON in-process, preserves the raw payload, and represents both the unavailable release-v3 live counter and allocator-owned resident bytes as null with reasons; process RSS remains an OS metric."
+claim_boundary = "Local Windows screening can reject a default change and qualify system/mimalloc build paths. It cannot measure jemalloc, establish portable allocator rankings, equate committed/reserved/RSS concepts, or publish release-grade percentages."
+external_blocker = "The current target is Windows, where the reviewed HydraCache jemalloc feature is unsupported. A complete system/mimalloc/jemalloc comparison with jemalloc allocated/active/resident/retained requires a separately admitted Linux host; system mallinfo2 availability and mimalloc release live accounting must remain explicit there."
+decision = "retain-system-default-close-w8-deferred-linux-allocator-matrix"
+next_evidence = "Run the same locked trace on an admitted x86_64 Linux host only if a release decision seeks an allocator default or target-specific allocator change; require all three allocators, allocator-native fields with reasons for gaps, an ADR, and the full compatibility/latency matrix before any product mutation."
+
+validation = [
+  "cargo test --manifest-path tools/allocator-profile-073/Cargo.toml --features allocator-system --locked: 2 passed",
+  "cargo test --manifest-path tools/allocator-profile-073/Cargo.toml --features allocator-mimalloc --locked: 3 passed",
+  "cargo clippy --manifest-path tools/allocator-profile-073/Cargo.toml --features allocator-system --all-targets --locked -- -D warnings: passed",
+  "cargo clippy --manifest-path tools/allocator-profile-073/Cargo.toml --features allocator-mimalloc --all-targets --locked -- -D warnings: passed",
+  "allocator-system plus allocator-mimalloc compile-fail canary: rejected by mutual-exclusion guard",
+  "allocator-jemalloc Windows build: failed before product compilation because tikv-jemalloc-sys requires an unavailable Unix configure shell; HydraCache also declares this target unsupported",
+  "15-process Windows matrix: passed with empty stderr, zero exit failures, and no invariant failure",
+]

@@ -1504,6 +1504,61 @@ change durability timing and was outside the one-candidate W7 authorization. Lea
 explicitly deferred is part of the optimization result: removing one proven owner does not grant
 permission to redesign every adjacent subsystem.
 
+W8 tested the allocator-high-water hypothesis without treating RSS as an allocator counter. The
+existing 0.71 provider protocol had a subtle gap: setting `MIMALLOC_SHOW_STATS` proved only that a
+provider was nominally enabled. Unless a separate metrics document was supplied, its snapshot path
+fell back to process RSS and normalized that value into allocation-shaped fields. That fallback is
+useful for old process-level diagnostics, but it cannot answer whether memory is live, committed,
+reserved, resident, or reusable. The W8 contract therefore rejects RSS substitution and requires
+every unavailable native field to carry a reason.
+
+The profiling build selected exactly one of the existing `allocator-system`, `allocator-mimalloc`,
+or `allocator-jemalloc` features. On Windows, system and mimalloc are applicable and jemalloc is an
+explicit target-level non-applicability, not a failed candidate. The fixed trace used 16,384 entries
+with 4 KiB payloads, 65,536 steady reads, exact full deletion, refill, and a two-second no-purge idle.
+Five independent system/mimalloc pairs ran in alternating order. Five additional mimalloc processes
+performed a force-collect checkpoint followed by a second refill. All 15 processes passed the exact
+phase, cardinality, payload, stderr, and raw-evidence checks.
+
+The native API audit itself produced a result. In the release mimalloc 3.3.2 build,
+`mi_stats_get_json` exposed committed and reserved bytes, process information, arenas, faults and
+purge counters. Its `malloc_requested.current` field remained zero because v3 provides no supported
+process merge API in this binding; the older `mi_stats_merge` declaration has no linked v3 symbol,
+and the main-heap JSON route returned no usable snapshot. We treated those probes as invalid and
+recorded live/requested bytes as unavailable. The JSON's `process.rss_current` is likewise process
+RSS, not allocator-owned resident memory, so resident remains unavailable and RSS stays in the
+separate OS snapshot. Enabling mimalloc's debug mode would have changed the measured allocator build,
+while copying RSS into either native field would have changed the meaning of the metric. Neither is
+a valid repair.
+
+The Windows comparison exposed a real tradeoff rather than a winner. Mimalloc's median trace time
+was 4.13% lower, and refill incurred 3,158 new page faults versus 34,333 for system, a 90.80%
+reduction. That is consistent with fast reuse of pages that remained committed. At the exact empty
+checkpoint after deleting every entry, however, system working set was about 8.29 MiB and private
+commit 4.92 MiB, while mimalloc remained at 148.92 MiB and 162.04 MiB: 17.95 and 32.97 times the
+system values. After equal-cardinality refill and idle, mimalloc still used 8.75% more working set
+and 11.71% more private commit. Faster reuse and lower idle footprint point in opposite directions;
+choosing one number would hide the cost paid by the other.
+
+Mimalloc also reserved roughly 1.076 GB throughout the run. That is virtual address space, not a
+gigabyte of resident or live application data. It cannot be compared with the system allocator's
+missing native retained field. This is why an allocator table must carry source and semantics beside
+every byte count: identical units do not imply identical concepts.
+
+The purge experiment did not resolve the tradeoff. Force collect advanced the native purge-call
+counter by three and reported 1.125 MiB purged. Median working set fell only 0.55%; private commit
+and native committed bytes rose by about 0.08%, and the second refill expanded working set to about
+291.19 MiB. A positive purge counter proves that the API ran, not that the operating system recovered
+useful capacity or that calling it in production is free. No purge policy was authorized.
+
+W8 therefore retains the system default and records a terminal deferral for the Linux-only part of
+the allocator matrix. This Windows screen is enough to reject a mimalloc default change, but not to
+rank jemalloc or make a portable claim. A future allocator proposal must justify the expense of an
+admitted Linux system/mimalloc/jemalloc run, preserve native missing-field semantics, and add an ADR
+plus the complete compatibility, CPU, and latency matrix before changing any default. A measured
+tradeoff is a valid optimization outcome: no product mutation is safer than selecting the faster
+allocator while hiding its retention behavior.
+
 ## A profiling ladder that avoids expensive runs
 
 Not every development iteration needs a dedicated bare-metal campaign. A useful workflow has several

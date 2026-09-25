@@ -156,6 +156,8 @@ const W7_CACHED_BUDGET_TOTAL_EVIDENCE: &str =
     "docs/testing/performance/0.73/w7-cached-budget-total-accepted-8bcd55e1.toml";
 const W8_ALLOCATOR_PROFILE_CONTRACT: &str =
     "docs/testing/performance/0.73/w8-allocator-profile-contract.toml";
+const W8_ALLOCATOR_PROFILE_EVIDENCE: &str =
+    "docs/testing/performance/0.73/w8-allocator-profile-deferred-ea12f68a.toml";
 const RELEASE: &str = "0.73";
 const PROFILE: &str = "local-screening-073-v1";
 const ENVIRONMENT_CLASS: &str = "local_screening";
@@ -381,6 +383,9 @@ pub fn check_at_root(
     )?)?;
     let w8_allocator_profile_contract: TomlValue = toml::from_str(&fs::read_to_string(
         root.join(W8_ALLOCATOR_PROFILE_CONTRACT),
+    )?)?;
+    let w8_allocator_profile_evidence: TomlValue = toml::from_str(&fs::read_to_string(
+        root.join(W8_ALLOCATOR_PROFILE_EVIDENCE),
     )?)?;
     let mut problems = check_contract(&contract, release);
     if !root.join(MOKA_OBSERVER_UPSTREAM_DRAFT).is_file() {
@@ -656,6 +661,10 @@ pub fn check_at_root(
         &w8_allocator_profile_contract,
         release,
     ));
+    problems.extend(check_w8_allocator_profile_evidence(
+        &w8_allocator_profile_evidence,
+        release,
+    ));
     problems.extend(check_schema(
         &schema,
         &example,
@@ -925,6 +934,10 @@ pub fn check_contract(root: &TomlValue, release: &str) -> Vec<String> {
         (
             "w8_allocator_profile_contract",
             W8_ALLOCATOR_PROFILE_CONTRACT,
+        ),
+        (
+            "w8_allocator_profile_evidence",
+            W8_ALLOCATOR_PROFILE_EVIDENCE,
         ),
     ] {
         if text(root, field) != Some(expected) {
@@ -7201,6 +7214,167 @@ pub fn check_w8_allocator_profile_contract(value: &TomlValue, release: &str) -> 
             ]
     {
         problems.push("W8 allocator profile contract required telemetry changed".to_owned());
+    }
+    problems
+}
+
+pub fn check_w8_allocator_profile_evidence(value: &TomlValue, release: &str) -> Vec<String> {
+    let mut problems = Vec::new();
+    if integer(value, "schema_version") != Some(1)
+        || text(value, "release") != Some(release)
+        || text(value, "evidence_id") != Some("w8-allocator-profile-deferred-ea12f68a-v1")
+        || text(value, "state") != Some("local-screening-complete-w8-terminal-deferred")
+        || text(value, "terminal_disposition") != Some("deferred")
+        || text(value, "contract") != Some(W8_ALLOCATOR_PROFILE_CONTRACT)
+        || text(value, "source_commit") != Some("ea12f68a7b509786f76b4c91555ed46c64a3f0e9")
+        || text(value, "profile_tool_commit") != Some("9251b0dc6638bf3e2ecff66ebb2cc0fdc9c74b12")
+        || text(value, "target") != Some("x86_64-windows")
+    {
+        problems.push("W8 allocator profile evidence identity changed".to_owned());
+    }
+    for field in [
+        "raw_manifest_sha256",
+        "raw_summary_sha256",
+        "contract_sha256",
+        "tool_source_sha256",
+        "tool_lock_sha256",
+        "system_binary_sha256",
+        "mimalloc_binary_sha256",
+    ] {
+        if text(value, field).is_none_or(|digest| !sha256(digest)) {
+            problems.push(format!(
+                "W8 allocator profile evidence {field} is not SHA-256"
+            ));
+        }
+    }
+    for field in [
+        "independent_processes",
+        "counterbalanced_no_purge_order",
+        "prebuilt_release_binaries",
+        "identical_trace",
+        "identical_payload",
+        "identical_runtime",
+        "failed_attempts_retained",
+        "raw_native_payload_retained",
+    ] {
+        if boolean(value, field) != Some(true) {
+            problems.push(format!(
+                "W8 allocator profile evidence {field} must be true"
+            ));
+        }
+    }
+    for field in [
+        "rss_used_as_native_substitute",
+        "promotable",
+        "release_numerical_claim_allowed",
+        "product_mutation_present",
+        "allocator_default_changed",
+        "allocator_tuning_changed",
+        "mimalloc_native_process_rss_is_allocator_owned",
+    ] {
+        if boolean(value, field) != Some(false) {
+            problems.push(format!(
+                "W8 allocator profile evidence {field} must be false"
+            ));
+        }
+    }
+    if integer(value, "attempts") != Some(15)
+        || integer(value, "no_purge_attempts") != Some(10)
+        || integer(value, "purge_attempts") != Some(5)
+        || integer(value, "repeats_per_allocator") != Some(5)
+        || integer(value, "failed_processes") != Some(0)
+        || integer(value, "nonempty_stderr") != Some(0)
+        || integer(value, "invariant_failures") != Some(0)
+        || integer(value, "cardinality") != Some(16_384)
+        || integer(value, "payload_bytes") != Some(4_096)
+        || integer(value, "steady_read_operations") != Some(65_536)
+        || integer(value, "idle_milliseconds") != Some(2_000)
+        || string_array(value.get("no_purge_phases"))
+            != [
+                "cold",
+                "fill",
+                "steady_read",
+                "delete",
+                "refill",
+                "post_idle",
+            ]
+        || string_array(value.get("purge_phases"))
+            != [
+                "cold",
+                "fill",
+                "steady_read",
+                "delete",
+                "refill",
+                "post_idle",
+                "pre_purge",
+                "post_purge",
+                "second_refill",
+            ]
+    {
+        problems.push("W8 allocator profile evidence matrix changed".to_owned());
+    }
+    if text(value, "system_native_status") != Some("unavailable-with-reason")
+        || text(value, "mimalloc_native_status") != Some("partial-native-statistics")
+        || integer(value, "mimalloc_native_version") != Some(30_302)
+        || text(value, "jemalloc_windows_status") != Some("not-applicable-target")
+        || text(value, "mimalloc_allocated_or_live_status")
+            != Some("unavailable-release-v3-zero-counter-retained-only-in-raw")
+        || string_array(value.get("mimalloc_available_native_fields"))
+            != [
+                "committed",
+                "reserved",
+                "arena_count",
+                "page_faults",
+                "purge_calls",
+                "purged_bytes",
+            ]
+    {
+        problems.push("W8 allocator profile evidence native capability changed".to_owned());
+    }
+    if integer(value, "system_elapsed_ns_median") != Some(2_477_240_100)
+        || integer(value, "mimalloc_elapsed_ns_median") != Some(2_374_930_400)
+        || float(value, "mimalloc_elapsed_delta_fraction") != Some(-0.041300)
+        || integer(value, "system_delete_working_set_bytes_median") != Some(8_294_400)
+        || integer(value, "mimalloc_delete_working_set_bytes_median") != Some(148_922_368)
+        || float(value, "mimalloc_to_system_delete_working_set_ratio") != Some(17.954568)
+        || integer(value, "system_delete_private_commit_bytes_median") != Some(4_915_200)
+        || integer(value, "mimalloc_delete_private_commit_bytes_median") != Some(162_041_856)
+        || float(value, "mimalloc_to_system_delete_private_commit_ratio") != Some(32.967500)
+        || float(value, "mimalloc_post_idle_working_set_delta_fraction") != Some(0.087546)
+        || float(value, "mimalloc_post_idle_private_commit_delta_fraction") != Some(0.117114)
+        || integer(value, "system_refill_incremental_page_faults_median") != Some(34_333)
+        || integer(value, "mimalloc_refill_incremental_page_faults_median") != Some(3_158)
+        || float(value, "mimalloc_refill_page_fault_reduction_fraction") != Some(0.908019)
+    {
+        problems.push("W8 allocator profile evidence comparison changed".to_owned());
+    }
+    if integer(value, "mimalloc_purge_calls_delta_median") != Some(3)
+        || integer(value, "mimalloc_purged_bytes_delta_median") != Some(1_179_648)
+        || float(value, "mimalloc_purge_working_set_delta_fraction") != Some(-0.005501)
+        || float(value, "mimalloc_purge_private_commit_delta_fraction") != Some(0.000828)
+        || float(value, "mimalloc_purge_native_committed_delta_fraction") != Some(0.000838)
+        || integer(value, "mimalloc_second_refill_working_set_bytes_median") != Some(291_188_736)
+    {
+        problems.push("W8 allocator profile evidence purge result changed".to_owned());
+    }
+    for field in [
+        "raw_evidence",
+        "mimalloc_reserved_interpretation",
+        "tradeoff_interpretation",
+        "purge_interpretation",
+        "telemetry_interpretation",
+        "claim_boundary",
+        "external_blocker",
+        "next_evidence",
+    ] {
+        if text(value, field).is_none_or(str::is_empty) {
+            problems.push(format!("W8 allocator profile evidence {field} is missing"));
+        }
+    }
+    if text(value, "decision")
+        != Some("retain-system-default-close-w8-deferred-linux-allocator-matrix")
+    {
+        problems.push("W8 allocator profile evidence decision changed".to_owned());
     }
     problems
 }

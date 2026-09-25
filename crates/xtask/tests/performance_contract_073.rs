@@ -1465,6 +1465,36 @@ fn w8_allocator_contract_cannot_substitute_rss_or_change_defaults() {
 }
 
 #[test]
+fn w8_allocator_evidence_cannot_promote_hide_retention_or_claim_completion() {
+    let mut value = manifest("w8-allocator-profile-deferred-ea12f68a.toml");
+    value["promotable"] = TomlValue::Boolean(true);
+    value["allocator_default_changed"] = TomlValue::Boolean(true);
+    value["mimalloc_to_system_delete_working_set_ratio"] = TomlValue::Float(1.0);
+    value["mimalloc_purge_calls_delta_median"] = TomlValue::Integer(0);
+    value["terminal_disposition"] = TomlValue::String("accepted".to_owned());
+    value["decision"] = TomlValue::String("switch-default-to-mimalloc".to_owned());
+    let problems = xtask::performance_contract::check_w8_allocator_profile_evidence(&value, "0.73");
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("identity changed")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("promotable must be false")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("allocator_default_changed must be false")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("comparison changed")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("purge result changed")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("decision changed")));
+}
+
+#[test]
 fn w5_connection_profile_cannot_promote_claim_server_bytes_or_skip_samples() {
     let mut value = manifest("w5-hc2-connection-profile-contract.toml");
     value["promotable"] = TomlValue::Boolean(true);
