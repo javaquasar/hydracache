@@ -125,6 +125,8 @@ jobs:
           mkdir -p "$i73_stage/tools" "$c73_stage/tools"
           cp -a tools/performance-integrated-073 "$i73_stage/tools/"
           cp -a tools/performance-integrated-073 "$c73_stage/tools/"
+          ln -s "$i73_root/Cargo.toml" "$i73_stage/Cargo.toml"
+          ln -s "$c73_root/Cargo.toml" "$c73_stage/Cargo.toml"
           ln -s "$i73_root/crates" "$i73_stage/crates"
           ln -s "$c73_root/crates" "$c73_stage/crates"
           {
