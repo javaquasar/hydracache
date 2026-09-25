@@ -1002,6 +1002,13 @@ last queued event still owns the backing storage. Ordering, watermarks, bounded 
 backpressure, and disconnect reconciliation remain the falsifiers. Tonic and TLS buffer ownership is
 a separate W5 subproblem and must not be inferred from this result.
 
+The first candidate probe correctly failed its zero-allocation contract. Every shape reported two
+allocations and 48 bytes, independent of fan-out and payload size. The invariant exposed a fixture
+error: cloning `Bytes` created directly from a unique `Vec` performs a one-time promotion to shared
+ownership. The real server already performs that promotion in `mutation_event`, before entering the
+fan-out function. The red result is retained; the fixture must reproduce that ownership state before
+we can judge the per-subscriber clones.
+
 ## A profiling ladder that avoids expensive runs
 
 Not every development iteration needs a dedicated bare-metal campaign. A useful workflow has several
