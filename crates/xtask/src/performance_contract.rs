@@ -102,6 +102,8 @@ const W5_HC2_EVENT_COPY_PROFILE_CONTRACT: &str =
     "docs/testing/performance/0.73/w5-hc2-event-copy-profile-contract.toml";
 const W5_HC2_EVENT_COPY_PROFILE_EVIDENCE: &str =
     "docs/testing/performance/0.73/w5-hc2-event-copy-profile-02777da6.toml";
+const W5_SHARED_EVENT_BYTES_CONTRACT: &str =
+    "docs/testing/performance/0.73/w5-shared-event-bytes-contract.toml";
 const RELEASE: &str = "0.73";
 const PROFILE: &str = "local-screening-073-v1";
 const ENVIRONMENT_CLASS: &str = "local_screening";
@@ -246,6 +248,9 @@ pub fn check_at_root(
     )?)?;
     let w5_hc2_event_copy_profile_evidence: TomlValue = toml::from_str(&fs::read_to_string(
         root.join(W5_HC2_EVENT_COPY_PROFILE_EVIDENCE),
+    )?)?;
+    let w5_shared_event_bytes_contract: TomlValue = toml::from_str(&fs::read_to_string(
+        root.join(W5_SHARED_EVENT_BYTES_CONTRACT),
     )?)?;
     let mut problems = check_contract(&contract, release);
     if !root.join(MOKA_OBSERVER_UPSTREAM_DRAFT).is_file() {
@@ -411,6 +416,10 @@ pub fn check_at_root(
     ));
     problems.extend(check_w5_hc2_event_copy_profile_evidence(
         &w5_hc2_event_copy_profile_evidence,
+        release,
+    ));
+    problems.extend(check_w5_shared_event_bytes_contract(
+        &w5_shared_event_bytes_contract,
         release,
     ));
     problems.extend(check_schema(
@@ -580,6 +589,10 @@ pub fn check_contract(root: &TomlValue, release: &str) -> Vec<String> {
         (
             "w5_hc2_event_copy_profile_evidence",
             W5_HC2_EVENT_COPY_PROFILE_EVIDENCE,
+        ),
+        (
+            "w5_shared_event_bytes_contract",
+            W5_SHARED_EVENT_BYTES_CONTRACT,
         ),
     ] {
         if text(root, field) != Some(expected) {
@@ -4233,6 +4246,45 @@ pub fn check_w5_hc2_event_copy_profile_evidence(value: &TomlValue, release: &str
         || text(value, "next_evidence").is_none_or(str::is_empty)
     {
         problems.push("W5 HC/2 event copy evidence decision is incomplete".to_owned());
+    }
+    problems
+}
+
+pub fn check_w5_shared_event_bytes_contract(value: &TomlValue, release: &str) -> Vec<String> {
+    let mut problems = Vec::new();
+    if integer(value, "schema_version") != Some(1)
+        || text(value, "release") != Some(release)
+        || text(value, "contract_id") != Some("w5-shared-event-bytes-073-v1")
+        || text(value, "state") != Some("preregistered-candidate-implementation-authorized")
+        || text(value, "triggering_evidence") != Some(W5_HC2_EVENT_COPY_PROFILE_EVIDENCE)
+        || text(value, "candidate_source_parent") != Some("a792df8e")
+    {
+        problems.push("W5 shared event bytes contract identity changed".to_owned());
+    }
+    for field in [
+        "candidate_data_present",
+        "dedicated_host_run_allowed",
+        "local_results_promotable",
+    ] {
+        if boolean(value, field) != Some(false) {
+            problems.push(format!("W5 shared event bytes {field} must be false"));
+        }
+    }
+    if boolean(value, "product_mutation_allowed") != Some(true)
+        || string_array(value.get("forbidden_changes")).len() != 7
+    {
+        problems.push("W5 shared event bytes candidate bounds changed".to_owned());
+    }
+    for field in [
+        "candidate",
+        "acceptance",
+        "rejection",
+        "interpretation_limit",
+        "next_decision",
+    ] {
+        if text(value, field).is_none_or(str::is_empty) {
+            problems.push(format!("W5 shared event bytes {field} is missing"));
+        }
     }
     problems
 }

@@ -55,6 +55,7 @@ w2_borrowed_expiry_scan_contract = "docs/testing/performance/0.73/w2-borrowed-ex
 w2_borrowed_expiry_scan_evidence = "docs/testing/performance/0.73/w2-borrowed-expiry-scan-a80839fd.toml"
 w5_hc2_event_copy_profile_contract = "docs/testing/performance/0.73/w5-hc2-event-copy-profile-contract.toml"
 w5_hc2_event_copy_profile_evidence = "docs/testing/performance/0.73/w5-hc2-event-copy-profile-02777da6.toml"
+w5_shared_event_bytes_contract = "docs/testing/performance/0.73/w5-shared-event-bytes-contract.toml"
 promotable = false
 numerical_claims_allowed = false
 candidate_thresholds_allowed = false

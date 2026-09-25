@@ -1080,3 +1080,22 @@ fn w5_hc2_event_copy_evidence_cannot_promote_or_change_result() {
         .iter()
         .any(|problem| problem.contains("fanout-16-value-4096 changed")));
 }
+
+#[test]
+fn w5_shared_event_bytes_contract_cannot_admit_data_or_host_run() {
+    let mut value = manifest("w5-shared-event-bytes-contract.toml");
+    value["candidate_data_present"] = TomlValue::Boolean(true);
+    value["dedicated_host_run_allowed"] = TomlValue::Boolean(true);
+    value["forbidden_changes"] = TomlValue::Array(Vec::new());
+    let problems =
+        xtask::performance_contract::check_w5_shared_event_bytes_contract(&value, "0.73");
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("candidate_data_present must be false")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("dedicated_host_run_allowed must be false")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("candidate bounds changed")));
+}
