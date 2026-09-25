@@ -533,6 +533,148 @@ fn expiry_sweep_candidates(
     (examined, expired)
 }
 
+/// Profile-only fixtures for attributing expiry-sweep allocation without
+/// adding counters or timers to the production request path.
+#[cfg(feature = "performance-profile")]
+pub mod performance_profile {
+    use super::{expiry_sweep_candidates, StoreKey, StoredValue};
+    use std::collections::BTreeMap;
+
+    const FIXTURE_ENTRIES: usize = 512;
+    const SCAN_LIMIT: usize = 256;
+    const NOW_MS: u64 = 1_000;
+    const TENANT_BYTES: usize = 16;
+    const NAMESPACE_BYTES: usize = 16;
+    const KEY_BYTES: usize = 64;
+
+    /// Frozen expiry shape used by the W2 local profile process.
+    #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+    pub enum ExpirySweepProfileScenario {
+        /// No examined entry is expired.
+        NoneExpired,
+        /// Every other examined entry is expired.
+        HalfExpired,
+        /// Every examined entry is expired.
+        AllExpired,
+        /// The scan crosses the end of the ordered map without expired entries.
+        CursorWrapNoneExpired,
+    }
+
+    impl ExpirySweepProfileScenario {
+        /// Parse the stable command-line spelling used by the profile tool.
+        pub fn parse(value: &str) -> Option<Self> {
+            match value {
+                "none-expired" => Some(Self::NoneExpired),
+                "half-expired" => Some(Self::HalfExpired),
+                "all-expired" => Some(Self::AllExpired),
+                "cursor-wrap-none-expired" => Some(Self::CursorWrapNoneExpired),
+                _ => None,
+            }
+        }
+
+        /// Return the stable command-line spelling.
+        pub const fn as_str(self) -> &'static str {
+            match self {
+                Self::NoneExpired => "none-expired",
+                Self::HalfExpired => "half-expired",
+                Self::AllExpired => "all-expired",
+                Self::CursorWrapNoneExpired => "cursor-wrap-none-expired",
+            }
+        }
+    }
+
+    /// Logical copy volume observed while executing one frozen W2 scan.
+    #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+    pub struct ExpirySweepProfileObservation {
+        /// Entries inspected by the bounded scan.
+        pub examined_keys: usize,
+        /// Inspected entries copied into the expired work list.
+        pub expired_keys: usize,
+        /// Tuple-key clones, including the next cursor clone.
+        pub cloned_keys: usize,
+        /// String payload bytes copied by all tuple-key clones.
+        pub cloned_identity_bytes: usize,
+        /// Whether the scan retained a cursor for the next bounded pass.
+        pub next_cursor_present: bool,
+    }
+
+    /// Prebuilt store and cursor. Fixture construction is intentionally outside
+    /// the allocation measurement window.
+    pub struct ExpirySweepProfileFixture {
+        scenario: ExpirySweepProfileScenario,
+        store: BTreeMap<StoreKey, StoredValue>,
+        cursor: Option<StoreKey>,
+    }
+
+    impl ExpirySweepProfileFixture {
+        /// Build the fixed-cardinality W2 fixture.
+        pub fn new(scenario: ExpirySweepProfileScenario) -> Self {
+            let mut store = BTreeMap::new();
+            for index in 0..FIXTURE_ENTRIES {
+                let expires_at_ms = match scenario {
+                    ExpirySweepProfileScenario::HalfExpired if index % 2 == 0 => NOW_MS,
+                    ExpirySweepProfileScenario::AllExpired => NOW_MS,
+                    _ => NOW_MS + 1,
+                };
+                store.insert(
+                    fixed_store_key(index),
+                    StoredValue {
+                        value: Vec::new(),
+                        expires_at_ms: Some(expires_at_ms),
+                    },
+                );
+            }
+            let cursor = (scenario == ExpirySweepProfileScenario::CursorWrapNoneExpired)
+                .then(|| fixed_store_key(400));
+            Self {
+                scenario,
+                store,
+                cursor,
+            }
+        }
+
+        /// Execute the real candidate selection and the request-path cursor
+        /// clone, returning only allocation-free aggregate observations.
+        pub fn run(&self) -> ExpirySweepProfileObservation {
+            let (examined, expired) =
+                expiry_sweep_candidates(&self.store, NOW_MS, self.cursor.as_ref(), SCAN_LIMIT);
+            let next_cursor = examined.last().cloned();
+            let examined_identity_bytes = examined.iter().map(identity_bytes).sum::<usize>();
+            let expired_identity_bytes = expired.iter().map(identity_bytes).sum::<usize>();
+            let cursor_identity_bytes = next_cursor.as_ref().map_or(0, identity_bytes);
+            let observation = ExpirySweepProfileObservation {
+                examined_keys: examined.len(),
+                expired_keys: expired.len(),
+                cloned_keys: examined.len() + expired.len() + usize::from(next_cursor.is_some()),
+                cloned_identity_bytes: examined_identity_bytes
+                    + expired_identity_bytes
+                    + cursor_identity_bytes,
+                next_cursor_present: next_cursor.is_some(),
+            };
+            std::hint::black_box((&expired, &examined, &next_cursor, self.scenario));
+            observation
+        }
+    }
+
+    fn fixed_store_key(index: usize) -> StoreKey {
+        (
+            fixed_component("tenant", 0, TENANT_BYTES),
+            fixed_component("ns", 0, NAMESPACE_BYTES),
+            fixed_component("key", index, KEY_BYTES),
+        )
+    }
+
+    fn fixed_component(prefix: &str, index: usize, bytes: usize) -> String {
+        let mut value = format!("{prefix}-{index:08}");
+        value.extend(std::iter::repeat_n('x', bytes - value.len()));
+        value
+    }
+
+    fn identity_bytes((tenant, namespace, key): &StoreKey) -> usize {
+        tenant.len() + namespace.len() + key.len()
+    }
+}
+
 /// Shared state for the public client surface.
 #[derive(Debug)]
 pub struct ClientSurfaceState {

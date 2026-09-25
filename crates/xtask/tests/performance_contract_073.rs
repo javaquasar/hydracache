@@ -966,3 +966,22 @@ fn w1_owner_classification_cannot_skip_a_surface_or_authorize_product_work() {
         .iter()
         .any(|problem| problem.contains("exactly one W8/allocator")));
 }
+
+#[test]
+fn w2_expiry_sweep_profile_cannot_enable_product_or_host_work() {
+    let mut value = manifest("w2-expiry-sweep-profile-contract.toml");
+    value["product_mutation_allowed"] = TomlValue::Boolean(true);
+    value["dedicated_host_run_allowed"] = TomlValue::Boolean(true);
+    value["scan_limit"] = TomlValue::Integer(512);
+    let problems =
+        xtask::performance_contract::check_w2_expiry_sweep_profile_contract(&value, "0.73");
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("product_mutation_allowed must be false")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("dedicated_host_run_allowed must be false")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("volume or metrics changed")));
+}

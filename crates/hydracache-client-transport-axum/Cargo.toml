@@ -11,6 +11,10 @@ keywords.workspace = true
 categories.workspace = true
 description = "Axum route boundary for HydraCache external client traffic."
 
+[features]
+default = []
+performance-profile = []
+
 [dependencies]
 axum.workspace = true
 bytes.workspace = true

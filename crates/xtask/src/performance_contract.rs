@@ -90,6 +90,8 @@ const BASELINE_PILOT_V2_FREEZE_EVIDENCE: &str =
     "docs/testing/performance/0.73/baseline-pilot-v2-passed-e757556d.toml";
 const W1_OWNER_CLASSIFICATION_CONTRACT: &str =
     "docs/testing/performance/0.73/w1-owner-classification-contract.toml";
+const W2_EXPIRY_SWEEP_PROFILE_CONTRACT: &str =
+    "docs/testing/performance/0.73/w2-expiry-sweep-profile-contract.toml";
 const RELEASE: &str = "0.73";
 const PROFILE: &str = "local-screening-073-v1";
 const ENVIRONMENT_CLASS: &str = "local_screening";
@@ -216,6 +218,9 @@ pub fn check_at_root(
     )?)?;
     let w1_owner_classification_contract: TomlValue = toml::from_str(&fs::read_to_string(
         root.join(W1_OWNER_CLASSIFICATION_CONTRACT),
+    )?)?;
+    let w2_expiry_sweep_profile_contract: TomlValue = toml::from_str(&fs::read_to_string(
+        root.join(W2_EXPIRY_SWEEP_PROFILE_CONTRACT),
     )?)?;
     let mut problems = check_contract(&contract, release);
     if !root.join(MOKA_OBSERVER_UPSTREAM_DRAFT).is_file() {
@@ -357,6 +362,10 @@ pub fn check_at_root(
     ));
     problems.extend(check_w1_owner_classification_contract(
         &w1_owner_classification_contract,
+        release,
+    ));
+    problems.extend(check_w2_expiry_sweep_profile_contract(
+        &w2_expiry_sweep_profile_contract,
         release,
     ));
     problems.extend(check_schema(
@@ -502,6 +511,10 @@ pub fn check_contract(root: &TomlValue, release: &str) -> Vec<String> {
         (
             "w1_owner_classification_contract",
             W1_OWNER_CLASSIFICATION_CONTRACT,
+        ),
+        (
+            "w2_expiry_sweep_profile_contract",
+            W2_EXPIRY_SWEEP_PROFILE_CONTRACT,
         ),
     ] {
         if text(root, field) != Some(expected) {
@@ -3689,6 +3702,66 @@ pub fn check_w1_owner_classification_contract(value: &TomlValue, release: &str) 
             problems.push(format!(
                 "W1 owner classification has incomplete {work_item}/{id}"
             ));
+        }
+    }
+    problems
+}
+
+pub fn check_w2_expiry_sweep_profile_contract(value: &TomlValue, release: &str) -> Vec<String> {
+    let mut problems = Vec::new();
+    if integer(value, "schema_version") != Some(1)
+        || text(value, "release") != Some(release)
+        || text(value, "contract_id") != Some("w2-expiry-sweep-profile-073-v1")
+        || text(value, "state") != Some("preregistered-awaiting-local-profile")
+        || text(value, "parent_contract") != Some(W1_OWNER_CLASSIFICATION_CONTRACT)
+        || text(value, "baseline_identity") != Some("I73")
+        || text(value, "baseline_source_sha") != Some("e757556d3a31d565f52a9561d6d4e555bb1cc373")
+        || text(value, "profile_source_parent") != Some("f471d1964a2f5cd650ada3dc720c077b9168b71b")
+        || text(value, "profile_feature") != Some("performance-profile")
+        || text(value, "profile_tool") != Some("tools/expiry-sweep-profile-073")
+    {
+        problems.push("W2 expiry sweep profile identity changed".to_owned());
+    }
+    for field in [
+        "production_feature_enabled",
+        "product_mutation_allowed",
+        "candidate_data_allowed",
+        "dedicated_host_run_allowed",
+        "local_results_promotable",
+    ] {
+        if boolean(value, field) != Some(false) {
+            problems.push(format!("W2 expiry sweep profile {field} must be false"));
+        }
+    }
+    if boolean(value, "independent_processes_required") != Some(true)
+        || integer(value, "repeats_per_scenario") != Some(5)
+        || integer(value, "fixture_entries") != Some(512)
+        || integer(value, "scan_limit") != Some(256)
+        || integer(value, "identity_bytes_per_key") != Some(96)
+        || string_array(value.get("scenarios"))
+            != [
+                "none-expired",
+                "half-expired",
+                "all-expired",
+                "cursor-wrap-none-expired",
+            ]
+        || string_array(value.get("primary_metrics"))
+            != [
+                "allocation_count",
+                "gross_allocated_bytes",
+                "cloned_identity_bytes",
+            ]
+    {
+        problems.push("W2 expiry sweep profile volume or metrics changed".to_owned());
+    }
+    for field in [
+        "hypothesis",
+        "falsifier",
+        "interpretation_limit",
+        "next_decision",
+    ] {
+        if text(value, field).is_none_or(str::is_empty) {
+            problems.push(format!("W2 expiry sweep profile {field} is missing"));
         }
     }
     problems
