@@ -6,6 +6,8 @@ contract = "docs/testing/performance/0.73/w10-focused-host-comparison-contract.t
 tooling_implementation_commit = "514183a9971d7f9cbb9b40d0c07acfb6e4a81ab5"
 tooling_implementation_tree = "c283d24c5fb8bccd05e200b7a36b66a2d485fb20"
 harness_implementation_commit = "c6e14fa9dbc969fa171470c8ef8ce49184fcd36f"
+dispatch_adapter_commit = "79bc7bdc07c4207a43d4646c6e20544353e81d31"
+dispatch_adapter_tree = "cc6c948229da5a559e2e5f792efb4faef9dc97db"
 baseline_source_commit = "e757556d3a31d565f52a9561d6d4e555bb1cc373"
 candidate_source_commit = "7e3070894aa51af96cdcb3e350eff923a309e1fa"
 candidate_tree_oid = "e2c438b9a248586a4f72d3eca3d1c5369fff440b"
@@ -19,7 +21,8 @@ harness_manifest_sha256 = "aba0578cd5e6680db412fdb737fdb5d634eb8392aaec8db1a9346
 harness_lock_sha256 = "3c2e8a20a26c6105fec6f449ce6cad43ba4a9a65f78516f5c0110ff0a9ca4953"
 runner_sha256 = "f2e629e888dc664b304520449bf0626649a9c153c56ae341f5be00791e8e5a40"
 runner_test_sha256 = "50e3740692866b31e7c4183f6ac510900ebc039fcf18cd1232f184f0a8ca5ecf"
-workflow_sha256 = "3399e592b9bbe34c087739b9a4430abf15064f2cd173c66862fd9e05a32e1f14"
+workflow_sha256 = "d6cca848f3509857894f8e3de96cc7fa9a1c45c46a33654f40b539af4b50f612"
+dispatch_entry_workflow_sha256 = "f0ee84661a9bf5a1ac81b31d7e6691250589e7cf5fe9c6a5ce7b89f5614d8637"
 candidate_receipt_sha256 = "5f26f5785d4e79d6a11c5ff90c289776d3a977317887dc3804f6ff85b23c0cd7"
 canary_packet_sha256 = "ed627f98649453b56caa0a02aff1c5e12149910fbc0b639d806330645802affb"
 local_harness_binary_sha256 = "c7a20c013ab1df3aac9da392f724b274f5011e5d9a67379e20c3233fdcd9bab7"
@@ -71,7 +74,7 @@ canary_receipt_absent = true
 
 decision = "pass-local-tooling-open-one-manual-protected-host-dispatch"
 claim_boundary = "This receipt qualifies only the harness, runner, workflow, exact role binding, and fail-closed accounting. It makes no performance claim. The protected campaign must still complete all thirty independent role processes and pass pre/post host calibration plus every frozen primary guard."
-dispatch_rule = "Dispatch from a clean descendant of tooling commit 514183a9 that changes only governance evidence/checks for this qualification. The workflow must still build exact I73 and C73 product commits and hash the byte-identical overlay before running."
+dispatch_rule = "Dispatch the existing manual baseline workflow entry on this branch with source_sha bound to a clean descendant of adapter commit 79bc7bdc. Its non-I73 route must call the reusable integrated workflow, which still builds exact I73 and C73 product commits and hashes the byte-identical overlay before running."
 next_evidence = "Run the manual protected workflow once under the serialized lease, retain all attempts even on failure, import its immutable artifact, and decide whether published-0.72 compatibility and rollback qualification may open."
 
 [[invalid_attempt]]
@@ -97,3 +100,9 @@ id = "reduced-host-volume"
 outcome = "arguments-rejected"
 reason = "Host mode was deliberately invoked with 49,999 rather than 50,000 operations at 5,000 operations/second."
 correction = "Host mode rejected the reduced cell; only rate multiplied by the frozen ten-second window is accepted."
+
+[[invalid_attempt]]
+id = "unregistered-default-branch-workflow"
+outcome = "dispatch-api-404-no-job-created"
+reason = "GitHub refused direct workflow_dispatch because the new workflow file is not yet registered on the default branch."
+correction = "Keep the new workflow reusable and route the non-I73 source through the existing manual baseline workflow already registered on main; the protected environment, serialized concurrency, full matrix, and exact role identities remain unchanged."
