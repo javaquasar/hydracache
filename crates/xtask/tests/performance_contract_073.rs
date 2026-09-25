@@ -1004,3 +1004,22 @@ fn w2_expiry_sweep_evidence_cannot_promote_or_change_copy_volume() {
         .iter()
         .any(|problem| problem.contains("none-expired result changed")));
 }
+
+#[test]
+fn w2_borrowed_expiry_scan_contract_cannot_admit_candidate_data_or_host_run() {
+    let mut value = manifest("w2-borrowed-expiry-scan-contract.toml");
+    value["candidate_data_present"] = TomlValue::Boolean(true);
+    value["dedicated_host_run_allowed"] = TomlValue::Boolean(true);
+    value["repeats_per_scenario"] = TomlValue::Integer(1);
+    let problems =
+        xtask::performance_contract::check_w2_borrowed_expiry_scan_contract(&value, "0.73");
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("candidate_data_present must be false")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("dedicated_host_run_allowed must be false")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("candidate bounds changed")));
+}
