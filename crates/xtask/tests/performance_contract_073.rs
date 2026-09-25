@@ -1713,6 +1713,42 @@ fn w10_integrated_smoke_evidence_cannot_hide_outcomes_or_authorize_host() {
 }
 
 #[test]
+fn w10_focused_host_contract_cannot_shrink_or_patch_product_roles() {
+    let mut value = manifest("w10-focused-host-comparison-contract.toml");
+    value["candidate_source_commit"] = TomlValue::String("0".repeat(40));
+    value["pairs_per_rate"] = TomlValue::Integer(1);
+    value["mixed_weights_percent"] = TomlValue::Array(vec![TomlValue::Integer(100)]);
+    value["overlay_may_change_product_sources"] = TomlValue::Boolean(true);
+    value["host_dispatch_allowed_before_harness_local_receipt"] = TomlValue::Boolean(true);
+    value["push_trigger_allowed"] = TomlValue::Boolean(true);
+    value["allocation_or_rss_promotion_allowed"] = TomlValue::Boolean(true);
+    value["regression_budget"][0]["maximum_relative_regression"] = TomlValue::Float(0.20);
+    let problems =
+        xtask::performance_contract::check_w10_focused_host_comparison_contract(&value, "0.73");
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("identity changed")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("matrix changed")));
+    assert!(problems
+        .iter()
+        .any(|problem| { problem.contains("overlay_may_change_product_sources must be false") }));
+    assert!(problems.iter().any(|problem| {
+        problem.contains("host_dispatch_allowed_before_harness_local_receipt must be false")
+    }));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("push_trigger_allowed must be false")));
+    assert!(problems
+        .iter()
+        .any(|problem| { problem.contains("allocation_or_rss_promotion_allowed must be false") }));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("budgets changed")));
+}
+
+#[test]
 fn w5_connection_profile_cannot_promote_claim_server_bytes_or_skip_samples() {
     let mut value = manifest("w5-hc2-connection-profile-contract.toml");
     value["promotable"] = TomlValue::Boolean(true);

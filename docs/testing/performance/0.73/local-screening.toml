@@ -95,6 +95,7 @@ w10_static_qualification_amendment = "docs/testing/performance/0.73/w10-static-q
 w10_local_qualification_evidence = "docs/testing/performance/0.73/w10-local-qualification-passed-132917fd.toml"
 w10_integrated_process_smoke_contract = "docs/testing/performance/0.73/w10-integrated-process-smoke-contract.toml"
 w10_integrated_process_smoke_evidence = "docs/testing/performance/0.73/w10-integrated-process-smoke-passed-e192e615.toml"
+w10_focused_host_comparison_contract = "docs/testing/performance/0.73/w10-focused-host-comparison-contract.toml"
 promotable = false
 numerical_claims_allowed = false
 candidate_thresholds_allowed = false
