@@ -211,7 +211,7 @@ struct Daemon {
 }
 
 impl Daemon {
-    fn start(server_binary: &Path) -> Result<Self, Box<dyn Error>> {
+    fn start(server_binary: &Path, daemon_cpu_set: &str) -> Result<Self, Box<dyn Error>> {
         let root = temp_root("daemon");
         fs::create_dir_all(&root)?;
         let material = pki();
@@ -223,7 +223,8 @@ impl Daemon {
         fs::write(&ca, &material.ca)?;
         let ([client_addr, admin_addr, hc2_addr, redis_addr], reservations) = reserve_addrs::<4>();
         drop(reservations);
-        let mut child = Command::new(server_binary)
+        let mut command = daemon_command(server_binary, daemon_cpu_set);
+        let mut child = command
             .env("HYDRACACHE_CLIENT_API_ENABLED", "true")
             .env("HYDRACACHE_LISTEN_ADDR", client_addr.to_string())
             .env("HYDRACACHE_ADMIN_API_ENABLED", "true")
@@ -622,6 +623,8 @@ struct Receipt {
     operations: u64,
     warmup_operations: u64,
     weights_percent: [u64; 6],
+    daemon_cpu_set: String,
+    loadgen_cpu_set: String,
     observation: OpenLoopObservation,
     surfaces: BTreeMap<&'static str, SurfaceReceipt>,
     resources: ResourceDelta,
@@ -635,7 +638,7 @@ struct Receipt {
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
     let options = Options::parse()?;
-    let daemon = Daemon::start(&options.server_binary)?;
+    let daemon = Daemon::start(&options.server_binary, &options.daemon_cpu_set)?;
     let daemon_pid = daemon.child.id();
     let target = MixedTarget::new(&daemon).await?;
     target.preload().await?;
@@ -739,6 +742,8 @@ async fn main() -> Result<(), Box<dyn Error>> {
         operations: options.operations,
         warmup_operations: options.warmup_operations,
         weights_percent: [35, 30, 15, 10, 5, 5],
+        daemon_cpu_set: options.daemon_cpu_set,
+        loadgen_cpu_set: options.loadgen_cpu_set,
         observation,
         surfaces,
         resources,
@@ -892,6 +897,8 @@ struct Options {
     rate: u64,
     operations: u64,
     warmup_operations: u64,
+    daemon_cpu_set: String,
+    loadgen_cpu_set: String,
     server_binary: PathBuf,
     output: PathBuf,
     allow_unavailable_resources: bool,
@@ -925,6 +932,8 @@ impl Options {
             rate: take("rate")?.parse()?,
             operations: take("operations")?.parse()?,
             warmup_operations: take("warmup-operations")?.parse()?,
+            daemon_cpu_set: take("daemon-cpu-set")?,
+            loadgen_cpu_set: take("loadgen-cpu-set")?,
             server_binary: PathBuf::from(take("server-binary")?),
             output: PathBuf::from(take("output")?),
             allow_unavailable_resources: take("allow-unavailable-resources")?.parse()?,
@@ -942,6 +951,9 @@ impl Options {
             || !host_shape_valid
             || options.rate == 0
             || options.operations == 0
+            || options.daemon_cpu_set.is_empty()
+            || options.loadgen_cpu_set.is_empty()
+            || options.daemon_cpu_set == options.loadgen_cpu_set
             || !options.server_binary.is_file()
             || options.output.exists()
         {
@@ -949,4 +961,19 @@ impl Options {
         }
         Ok(options)
     }
+}
+
+#[cfg(target_os = "linux")]
+fn daemon_command(server_binary: &Path, daemon_cpu_set: &str) -> Command {
+    let mut command = Command::new("taskset");
+    command
+        .arg("--cpu-list")
+        .arg(daemon_cpu_set)
+        .arg(server_binary);
+    command
+}
+
+#[cfg(not(target_os = "linux"))]
+fn daemon_command(server_binary: &Path, _daemon_cpu_set: &str) -> Command {
+    Command::new(server_binary)
 }
