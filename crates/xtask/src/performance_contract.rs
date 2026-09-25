@@ -164,6 +164,8 @@ const W9_RETAINED_BYTE_ADMISSION_EVIDENCE: &str =
     "docs/testing/performance/0.73/w9-retained-byte-admission-not-applicable-49ae52e8.toml";
 const W10_INTEGRATED_CANDIDATE_CONTRACT: &str =
     "docs/testing/performance/0.73/w10-integrated-candidate-contract.toml";
+const W10_LOCAL_QUALIFICATION_AMENDMENT: &str =
+    "docs/testing/performance/0.73/w10-local-qualification-amendment-6c107abf.toml";
 const RELEASE: &str = "0.73";
 const PROFILE: &str = "local-screening-073-v1";
 const ENVIRONMENT_CLASS: &str = "local_screening";
@@ -401,6 +403,9 @@ pub fn check_at_root(
     )?)?;
     let w10_integrated_candidate_contract: TomlValue = toml::from_str(&fs::read_to_string(
         root.join(W10_INTEGRATED_CANDIDATE_CONTRACT),
+    )?)?;
+    let w10_local_qualification_amendment: TomlValue = toml::from_str(&fs::read_to_string(
+        root.join(W10_LOCAL_QUALIFICATION_AMENDMENT),
     )?)?;
     let mut problems = check_contract(&contract, release);
     if !root.join(MOKA_OBSERVER_UPSTREAM_DRAFT).is_file() {
@@ -692,6 +697,10 @@ pub fn check_at_root(
         &w10_integrated_candidate_contract,
         release,
     ));
+    problems.extend(check_w10_local_qualification_amendment(
+        &w10_local_qualification_amendment,
+        release,
+    ));
     problems.extend(check_schema(
         &schema,
         &example,
@@ -977,6 +986,10 @@ pub fn check_contract(root: &TomlValue, release: &str) -> Vec<String> {
         (
             "w10_integrated_candidate_contract",
             W10_INTEGRATED_CANDIDATE_CONTRACT,
+        ),
+        (
+            "w10_local_qualification_amendment",
+            W10_LOCAL_QUALIFICATION_AMENDMENT,
         ),
     ] {
         if text(root, field) != Some(expected) {
@@ -7786,6 +7799,61 @@ pub fn check_w10_integrated_candidate_contract(value: &TomlValue, release: &str)
         if text(value, field).is_none_or(str::is_empty) {
             problems.push(format!(
                 "W10 integrated candidate contract {field} is missing"
+            ));
+        }
+    }
+    problems
+}
+
+pub fn check_w10_local_qualification_amendment(value: &TomlValue, release: &str) -> Vec<String> {
+    let mut problems = Vec::new();
+    if integer(value, "schema_version") != Some(1)
+        || text(value, "release") != Some(release)
+        || text(value, "amendment_id") != Some("w10-local-qualification-amendment-6c107abf-v1")
+        || text(value, "state")
+            != Some("preregistered-after-zero-test-discovery-before-corrected-run")
+        || text(value, "source_commit") != Some("6c107abfcec60160c9aec13b17d7f92bb71fc043")
+        || text(value, "contract") != Some(W10_INTEGRATED_CANDIDATE_CONTRACT)
+        || text(value, "candidate_identity") != Some("C73-provisional-1")
+        || text(value, "candidate_source_commit")
+            != Some("7e3070894aa51af96cdcb3e350eff923a309e1fa")
+    {
+        problems.push("W10 local qualification amendment identity changed".to_owned());
+    }
+    if boolean(value, "invalid_attempt_retained") != Some(true) {
+        problems.push(
+            "W10 local qualification amendment invalid_attempt_retained must be true".to_owned(),
+        );
+    }
+    for field in [
+        "invalid_attempt_passed",
+        "threshold_changed",
+        "candidate_changed",
+        "product_changed",
+        "other_commands_changed",
+        "host_run_allowed",
+        "local_results_promotable",
+        "release_numerical_claim_allowed",
+    ] {
+        if boolean(value, field) != Some(false) {
+            problems.push(format!(
+                "W10 local qualification amendment {field} must be false"
+            ));
+        }
+    }
+    if integer(value, "invalid_attempt_test_count") != Some(0)
+        || integer(value, "minimum_replacement_tests") != Some(5)
+        || text(value, "replacement_command")
+            != Some(
+                "cargo test -p hydracache --features durable-value-store --test durable_value_store --locked",
+            )
+    {
+        problems.push("W10 local qualification amendment correction changed".to_owned());
+    }
+    for field in ["trigger", "decision_rule", "next_decision"] {
+        if text(value, field).is_none_or(str::is_empty) {
+            problems.push(format!(
+                "W10 local qualification amendment {field} is missing"
             ));
         }
     }

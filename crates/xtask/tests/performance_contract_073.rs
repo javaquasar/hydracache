@@ -1573,6 +1573,29 @@ fn w10_integration_contract_cannot_skip_local_gates_or_add_isolated_gains() {
 }
 
 #[test]
+fn w10_local_amendment_cannot_hide_zero_tests_or_open_the_host_gate() {
+    let mut value = manifest("w10-local-qualification-amendment-6c107abf.toml");
+    value["invalid_attempt_retained"] = TomlValue::Boolean(false);
+    value["invalid_attempt_passed"] = TomlValue::Boolean(true);
+    value["host_run_allowed"] = TomlValue::Boolean(true);
+    value["minimum_replacement_tests"] = TomlValue::Integer(0);
+    let problems =
+        xtask::performance_contract::check_w10_local_qualification_amendment(&value, "0.73");
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("invalid_attempt_retained must be true")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("invalid_attempt_passed must be false")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("host_run_allowed must be false")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("correction changed")));
+}
+
+#[test]
 fn w5_connection_profile_cannot_promote_claim_server_bytes_or_skip_samples() {
     let mut value = manifest("w5-hc2-connection-profile-contract.toml");
     value["promotable"] = TomlValue::Boolean(true);
