@@ -1009,6 +1009,14 @@ ownership. The real server already performs that promotion in `mutation_event`, 
 fan-out function. The red result is retained; the fixture must reproduce that ownership state before
 we can judge the per-subscriber clones.
 
+The corrected fixture retained both owners before measurement, exactly as the server does after
+`mutation_event`. Under that preregistered rerun, all 20 processes reported zero allocation in the
+fan-out window while retaining every frame. An actual server test additionally verified that two
+event frames preserved their bytes and shared the original backing pointers; the real-mTLS test
+continued to deliver the event and reconcile all connection-owned resources to zero after close.
+Thus the event-copy subproblem is accepted locally. W5 itself remains open for channel storage,
+connection-task allocation, and transport buffers.
+
 ## A profiling ladder that avoids expensive runs
 
 Not every development iteration needs a dedicated bare-metal campaign. A useful workflow has several
