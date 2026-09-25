@@ -13,7 +13,7 @@ const DEFAULT_CLEANUP_CAPACITY: usize = 4_096;
 #[derive(Debug)]
 struct CleanupTicket {
     key: Arc<String>,
-    tags: Box<[String]>,
+    tags: Arc<[String]>,
     version: u64,
 }
 

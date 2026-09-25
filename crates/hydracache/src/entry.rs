@@ -1,3 +1,4 @@
+use std::sync::Arc;
 use std::time::{Duration, Instant};
 
 use bytes::Bytes;
@@ -5,7 +6,7 @@ use bytes::Bytes;
 #[derive(Debug, Clone)]
 pub(crate) struct CacheEntry {
     pub(crate) value: Bytes,
-    pub(crate) tags: Box<[String]>,
+    pub(crate) tags: Arc<[String]>,
     pub(crate) expires_at: Option<Instant>,
     pub(crate) version: u64,
 }
@@ -19,7 +20,7 @@ impl CacheEntry {
     ) -> Self {
         Self {
             value,
-            tags: tags.into_boxed_slice(),
+            tags: tags.into(),
             expires_at,
             version,
         }
@@ -45,5 +46,25 @@ impl CacheEntry {
                 expires_at <= now || expires_at.duration_since(now) <= threshold
             })
             .unwrap_or(false)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn clone_shares_immutable_tags() {
+        let entry = CacheEntry::new(
+            Bytes::from_static(b"value"),
+            vec!["blue".to_owned(), "tenant:1".to_owned()],
+            None,
+            1,
+        );
+
+        let cloned = entry.clone();
+
+        assert!(Arc::ptr_eq(&entry.tags, &cloned.tags));
+        assert_eq!(&*cloned.tags, &["blue".to_owned(), "tenant:1".to_owned()]);
     }
 }

@@ -997,7 +997,7 @@ where
                     CacheEventKind::Miss,
                     key,
                     CacheEventOrigin::LocalApi,
-                    || entry.tags.clone(),
+                    || entry.tags.iter().cloned(),
                 );
                 Ok(None)
             }
@@ -1008,7 +1008,7 @@ where
                         CacheEventKind::Hit,
                         key,
                         CacheEventOrigin::LocalApi,
-                        || entry.tags.clone(),
+                        || entry.tags.iter().cloned(),
                     );
                     Ok(Some(value))
                 }
@@ -1019,7 +1019,7 @@ where
                         CacheEventKind::Miss,
                         key,
                         CacheEventOrigin::LocalApi,
-                        || entry.tags.clone(),
+                        || entry.tags.iter().cloned(),
                     );
                     Err(error)
                 }
@@ -1072,7 +1072,7 @@ where
                     CacheEventKind::Miss,
                     key,
                     CacheEventOrigin::LocalApi,
-                    || entry.tags.clone(),
+                    || entry.tags.iter().cloned(),
                 );
                 Ok(None)
             }
@@ -1082,7 +1082,7 @@ where
                     CacheEventKind::Hit,
                     key,
                     CacheEventOrigin::LocalApi,
-                    || entry.tags.clone(),
+                    || entry.tags.iter().cloned(),
                 );
                 Ok(Some(entry.value))
             }
@@ -1343,7 +1343,7 @@ where
                 self.remove_expired(key, &entry).await;
             }
 
-            self.record_miss(key, || entry.tags.clone());
+            self.record_miss(key, || entry.tags.iter().cloned());
 
             let fallback = refresh_options
                 .serve_stale_on_loader_error_value()
@@ -1696,13 +1696,13 @@ where
                     CacheEventKind::Hit,
                     key,
                     CacheEventOrigin::LocalApi,
-                    || entry.tags.clone(),
+                    || entry.tags.iter().cloned(),
                 );
                 Ok(value)
             }
             Err(error) => {
                 self.remove_entry(key, entry).await;
-                self.record_miss(key, || entry.tags.clone());
+                self.record_miss(key, || entry.tags.iter().cloned());
                 Err(error)
             }
         }
@@ -2023,7 +2023,7 @@ where
             CacheEventKind::Expired,
             key,
             CacheEventOrigin::Backend,
-            || entry.tags.clone(),
+            || entry.tags.iter().cloned(),
         );
     }
 
@@ -2069,7 +2069,7 @@ where
             .stats
             .invalidations
             .fetch_add(1, Ordering::Relaxed);
-        self.publish_key_event_with_tags(kind, key, origin, || entry.tags.clone());
+        self.publish_key_event_with_tags(kind, key, origin, || entry.tags.iter().cloned());
         Ok(true)
     }
 
