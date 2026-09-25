@@ -1,0 +1,99 @@
+schema_version = 1
+release = "0.73"
+evidence_id = "w10-focused-host-tooling-passed-514183a9-v1"
+state = "local-tooling-qualified-host-dispatch-open"
+contract = "docs/testing/performance/0.73/w10-focused-host-comparison-contract.toml"
+tooling_implementation_commit = "514183a9971d7f9cbb9b40d0c07acfb6e4a81ab5"
+tooling_implementation_tree = "c283d24c5fb8bccd05e200b7a36b66a2d485fb20"
+harness_implementation_commit = "c6e14fa9dbc969fa171470c8ef8ce49184fcd36f"
+baseline_source_commit = "e757556d3a31d565f52a9561d6d4e555bb1cc373"
+candidate_source_commit = "7e3070894aa51af96cdcb3e350eff923a309e1fa"
+candidate_tree_oid = "e2c438b9a248586a4f72d3eca3d1c5369fff440b"
+raw_candidate_receipt = "target/performance-evidence/0.73/integrated-host-tooling-local/candidate-receipt-v6.json"
+raw_canary_packet = "target/performance-evidence/0.73/integrated-host-runner-canary-v2"
+
+contract_sha256 = "95fa6c7188ff648e6710c52e876671115b99a24481eb78c9160e3d044da81696"
+overlay_sha256 = "2c2431a7e779598fe3442faeccd452151d839287e7b7a0ee09cf74b200ddf294"
+harness_source_sha256 = "da1fe5adf044397f446dad056458b932386696900b21a23446c8b484ffbb4b82"
+harness_manifest_sha256 = "aba0578cd5e6680db412fdb737fdb5d634eb8392aaec8db1a9346a62c24738c1"
+harness_lock_sha256 = "3c2e8a20a26c6105fec6f449ce6cad43ba4a9a65f78516f5c0110ff0a9ca4953"
+runner_sha256 = "f2e629e888dc664b304520449bf0626649a9c153c56ae341f5be00791e8e5a40"
+runner_test_sha256 = "50e3740692866b31e7c4183f6ac510900ebc039fcf18cd1232f184f0a8ca5ecf"
+workflow_sha256 = "3399e592b9bbe34c087739b9a4430abf15064f2cd173c66862fd9e05a32e1f14"
+candidate_receipt_sha256 = "5f26f5785d4e79d6a11c5ff90c289776d3a977317887dc3804f6ff85b23c0cd7"
+canary_packet_sha256 = "ed627f98649453b56caa0a02aff1c5e12149910fbc0b639d806330645802affb"
+local_harness_binary_sha256 = "c7a20c013ab1df3aac9da392f724b274f5011e5d9a67379e20c3233fdcd9bab7"
+local_server_binary_sha256 = "dc5d3a16d702e978ee13fa876044d25faed67b67ed8315836b589903a0ef3405"
+
+working_tree_dirty = false
+runner_unit_tests_passed = 6
+harness_clippy_warnings_denied = true
+candidate_local_process_passed = true
+i73_overlay_compile_passed = true
+i73_product_tree_modified = false
+c73_product_tree_modified = false
+overlay_identical_between_roles_enforced = true
+manual_workflow_only = true
+protected_environment_required = true
+serialized_concurrency_required = true
+pre_post_calibration_required = true
+full_host_matrix_frozen = true
+full_host_volume_reduction_allowed = false
+host_attempts_required = 30
+host_dispatch_allowed = true
+host_dispatch_completed = false
+local_results_promotable = false
+release_numerical_claim_allowed = false
+allocation_or_rss_promotion_allowed = false
+published_072_compatibility_satisfied = false
+long_run_allowed = false
+candidate_is_final_c73 = false
+
+local_operations = 1000
+local_warmup_operations = 100
+local_success = 1000
+local_hc2_success = 350
+local_resp_success = 300
+local_hc1_success = 150
+local_direct_success = 100
+local_tag_success = 50
+local_ttl_success = 50
+local_events_received = 350
+local_durable_success = 1000
+local_resources_available = false
+local_resource_reason = "Combined process CPU/RSS is intentionally unavailable on the Windows development host; no local resource number is promoted."
+host_allocation_diagnostic = "The runner records combined allocation as explicitly unavailable because neither exact product role may be patched with an allocator counter. RSS remains paired diagnostic-only and cannot rescue a failed primary guard."
+
+canary_exit_code = 1
+canary_marker = "HC-CANARY-RED:W10-HOST"
+canary_marker_observed = true
+canary_receipt_absent = true
+
+decision = "pass-local-tooling-open-one-manual-protected-host-dispatch"
+claim_boundary = "This receipt qualifies only the harness, runner, workflow, exact role binding, and fail-closed accounting. It makes no performance claim. The protected campaign must still complete all thirty independent role processes and pass pre/post host calibration plus every frozen primary guard."
+dispatch_rule = "Dispatch from a clean descendant of tooling commit 514183a9 that changes only governance evidence/checks for this qualification. The workflow must still build exact I73 and C73 product commits and hash the byte-identical overlay before running."
+next_evidence = "Run the manual protected workflow once under the serialized lease, retain all attempts even on failure, import its immutable artifact, and decide whether published-0.72 compatibility and rollback qualification may open."
+
+[[invalid_attempt]]
+id = "management-metrics-anonymous"
+outcome = "candidate-process-failed-401"
+reason = "The first owner checkpoint queried protected metrics without the operator identity headers."
+correction = "Use the same explicit operator client, tenant, and admin headers required by the management contract."
+
+[[invalid_attempt]]
+id = "management-metrics-wrong-path"
+outcome = "candidate-process-failed-404"
+reason = "The authenticated retry used /admin/metrics, but the protected metrics endpoint is /metrics on the admin listener."
+correction = "Keep the authenticated request and use the production /metrics route."
+
+[[invalid_attempt]]
+id = "role-source-identity-mismatch"
+outcome = "arguments-rejected"
+reason = "The I73 role was deliberately paired with the C73 source SHA."
+correction = "The harness rejected the process before measurement and continues to accept only the two frozen role/SHA pairs."
+
+[[invalid_attempt]]
+id = "reduced-host-volume"
+outcome = "arguments-rejected"
+reason = "Host mode was deliberately invoked with 49,999 rather than 50,000 operations at 5,000 operations/second."
+correction = "Host mode rejected the reduced cell; only rate multiplied by the frozen ten-second window is accepted."

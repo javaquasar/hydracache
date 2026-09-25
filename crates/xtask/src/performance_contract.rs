@@ -176,6 +176,8 @@ const W10_INTEGRATED_PROCESS_SMOKE_EVIDENCE: &str =
     "docs/testing/performance/0.73/w10-integrated-process-smoke-passed-e192e615.toml";
 const W10_FOCUSED_HOST_COMPARISON_CONTRACT: &str =
     "docs/testing/performance/0.73/w10-focused-host-comparison-contract.toml";
+const W10_FOCUSED_HOST_TOOLING_EVIDENCE: &str =
+    "docs/testing/performance/0.73/w10-focused-host-tooling-passed-514183a9.toml";
 const RELEASE: &str = "0.73";
 const PROFILE: &str = "local-screening-073-v1";
 const ENVIRONMENT_CLASS: &str = "local_screening";
@@ -431,6 +433,9 @@ pub fn check_at_root(
     )?)?;
     let w10_focused_host_comparison_contract: TomlValue = toml::from_str(&fs::read_to_string(
         root.join(W10_FOCUSED_HOST_COMPARISON_CONTRACT),
+    )?)?;
+    let w10_focused_host_tooling_evidence: TomlValue = toml::from_str(&fs::read_to_string(
+        root.join(W10_FOCUSED_HOST_TOOLING_EVIDENCE),
     )?)?;
     let mut problems = check_contract(&contract, release);
     if !root.join(MOKA_OBSERVER_UPSTREAM_DRAFT).is_file() {
@@ -746,6 +751,10 @@ pub fn check_at_root(
         &w10_focused_host_comparison_contract,
         release,
     ));
+    problems.extend(check_w10_focused_host_tooling_evidence(
+        &w10_focused_host_tooling_evidence,
+        release,
+    ));
     problems.extend(check_schema(
         &schema,
         &example,
@@ -1055,6 +1064,10 @@ pub fn check_contract(root: &TomlValue, release: &str) -> Vec<String> {
         (
             "w10_focused_host_comparison_contract",
             W10_FOCUSED_HOST_COMPARISON_CONTRACT,
+        ),
+        (
+            "w10_focused_host_tooling_evidence",
+            W10_FOCUSED_HOST_TOOLING_EVIDENCE,
         ),
     ] {
         if text(root, field) != Some(expected) {
@@ -8429,6 +8442,133 @@ pub fn check_w10_focused_host_comparison_contract(value: &TomlValue, release: &s
                 "W10 focused host comparison contract {field} is missing"
             ));
         }
+    }
+    problems
+}
+
+pub fn check_w10_focused_host_tooling_evidence(value: &TomlValue, release: &str) -> Vec<String> {
+    let mut problems = Vec::new();
+    if integer(value, "schema_version") != Some(1)
+        || text(value, "release") != Some(release)
+        || text(value, "evidence_id") != Some("w10-focused-host-tooling-passed-514183a9-v1")
+        || text(value, "state") != Some("local-tooling-qualified-host-dispatch-open")
+        || text(value, "contract") != Some(W10_FOCUSED_HOST_COMPARISON_CONTRACT)
+        || text(value, "tooling_implementation_commit")
+            != Some("514183a9971d7f9cbb9b40d0c07acfb6e4a81ab5")
+        || text(value, "tooling_implementation_tree")
+            != Some("c283d24c5fb8bccd05e200b7a36b66a2d485fb20")
+        || text(value, "harness_implementation_commit")
+            != Some("c6e14fa9dbc969fa171470c8ef8ce49184fcd36f")
+        || text(value, "baseline_source_commit") != Some("e757556d3a31d565f52a9561d6d4e555bb1cc373")
+        || text(value, "candidate_source_commit")
+            != Some("7e3070894aa51af96cdcb3e350eff923a309e1fa")
+        || text(value, "candidate_tree_oid") != Some("e2c438b9a248586a4f72d3eca3d1c5369fff440b")
+    {
+        problems.push("W10 focused host tooling evidence identity changed".to_owned());
+    }
+    for field in [
+        "contract_sha256",
+        "overlay_sha256",
+        "harness_source_sha256",
+        "harness_manifest_sha256",
+        "harness_lock_sha256",
+        "runner_sha256",
+        "runner_test_sha256",
+        "workflow_sha256",
+        "candidate_receipt_sha256",
+        "canary_packet_sha256",
+        "local_harness_binary_sha256",
+        "local_server_binary_sha256",
+    ] {
+        if text(value, field).is_none_or(|digest| !sha256(digest)) {
+            problems.push(format!(
+                "W10 focused host tooling evidence {field} is not SHA-256"
+            ));
+        }
+    }
+    for field in [
+        "working_tree_dirty",
+        "i73_product_tree_modified",
+        "c73_product_tree_modified",
+        "full_host_volume_reduction_allowed",
+        "host_dispatch_completed",
+        "local_results_promotable",
+        "release_numerical_claim_allowed",
+        "allocation_or_rss_promotion_allowed",
+        "published_072_compatibility_satisfied",
+        "long_run_allowed",
+        "candidate_is_final_c73",
+        "local_resources_available",
+    ] {
+        if boolean(value, field) != Some(false) {
+            problems.push(format!(
+                "W10 focused host tooling evidence {field} must be false"
+            ));
+        }
+    }
+    for field in [
+        "harness_clippy_warnings_denied",
+        "candidate_local_process_passed",
+        "i73_overlay_compile_passed",
+        "overlay_identical_between_roles_enforced",
+        "manual_workflow_only",
+        "protected_environment_required",
+        "serialized_concurrency_required",
+        "pre_post_calibration_required",
+        "full_host_matrix_frozen",
+        "host_dispatch_allowed",
+        "canary_marker_observed",
+        "canary_receipt_absent",
+    ] {
+        if boolean(value, field) != Some(true) {
+            problems.push(format!(
+                "W10 focused host tooling evidence {field} must be true"
+            ));
+        }
+    }
+    if integer(value, "runner_unit_tests_passed") != Some(6)
+        || integer(value, "host_attempts_required") != Some(30)
+        || integer(value, "local_operations") != Some(1_000)
+        || integer(value, "local_warmup_operations") != Some(100)
+        || integer(value, "local_success") != Some(1_000)
+        || integer(value, "local_hc2_success") != Some(350)
+        || integer(value, "local_resp_success") != Some(300)
+        || integer(value, "local_hc1_success") != Some(150)
+        || integer(value, "local_direct_success") != Some(100)
+        || integer(value, "local_tag_success") != Some(50)
+        || integer(value, "local_ttl_success") != Some(50)
+        || integer(value, "local_events_received") != Some(350)
+        || integer(value, "local_durable_success") != Some(1_000)
+        || integer(value, "canary_exit_code") != Some(1)
+        || text(value, "canary_marker") != Some("HC-CANARY-RED:W10-HOST")
+    {
+        problems.push("W10 focused host tooling evidence result changed".to_owned());
+    }
+    if value
+        .get("invalid_attempt")
+        .and_then(TomlValue::as_array)
+        .is_none_or(|attempts| attempts.len() != 4)
+    {
+        problems.push("W10 focused host tooling evidence invalid attempts changed".to_owned());
+    }
+    for field in [
+        "raw_candidate_receipt",
+        "raw_canary_packet",
+        "local_resource_reason",
+        "host_allocation_diagnostic",
+        "claim_boundary",
+        "dispatch_rule",
+        "next_evidence",
+    ] {
+        if text(value, field).is_none_or(str::is_empty) {
+            problems.push(format!(
+                "W10 focused host tooling evidence {field} is missing"
+            ));
+        }
+    }
+    if text(value, "decision") != Some("pass-local-tooling-open-one-manual-protected-host-dispatch")
+    {
+        problems.push("W10 focused host tooling evidence decision changed".to_owned());
     }
     problems
 }

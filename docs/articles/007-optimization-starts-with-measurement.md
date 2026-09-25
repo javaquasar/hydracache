@@ -1687,6 +1687,51 @@ runner can reject incomplete work instead of merely recording it. This result ad
 focused protected-host comparison. It still supplies no throughput, latency, allocation, RSS,
 capacity or release-improvement number and does not itself authorize an expensive dispatch.
 
+The next step was not to start that expensive comparison immediately. We first made the host harness
+prove that it could preserve the preregistered experiment. The standalone overlay compiles against
+both exact product identities without editing either tree: frozen `I73` and provisional `C73` keep
+their own server binaries, while byte-identical harness sources bind to each checkout through path
+dependencies. The workflow verifies the candidate tree object, hashes both role binaries, both
+harness binaries, the common overlay, the scenario, and the runner, then checks that neither product
+worktree changed during the build. This turns “we probably tested the right revisions” into a
+machine-rejectable identity condition.
+
+Process placement needed the same treatment. The first harness measured the combined CPU of daemon
+and load generator, but the daemon inherited the load generator's CPU affinity. A total CPU number
+can still be arithmetically correct while the experiment violates its isolation policy. The corrected
+harness accepts two distinct CPU sets, starts the daemon through its own `taskset` boundary, records
+both sets in every receipt, and lets the runner reject a mismatch. This is a useful general lesson:
+resource accounting and resource placement are separate assertions, and a benchmark needs both.
+
+We also tightened event accounting between warm-up and measurement. Merely requiring at least as many
+HC/2 events as successful puts allowed delayed warm-up events to mask a missing measured event. The
+harness now waits for the exact warm-up event count, resets the event counter only after that drain,
+and then requires exact equality for the measured 35% HC/2 share. At 1,000 local operations the
+receipt therefore contains exactly 350 HC/2 events—not “350 or more.” This small change illustrates
+why reconciliation should be phase-scoped: a correct lifetime total can hide a wrong measurement
+window.
+
+The campaign runner freezes the full expensive matrix instead of accepting convenient command-line
+reductions: 5,000, 12,000, and 17,000 operations per second, ten-second windows, five pairs per rate,
+and 5,000 warm-up operations. That is thirty independently started role processes. Order is derived
+from the preregistered seed; missing roles invalidate a pair; every attempt retains stdout, stderr,
+receipt hash, exit code, and actual command. For every rate it calculates within-pair C73-versus-I73
+differences and only then applies the frozen Walsh-average Hodges-Lehmann estimator. Goodput, CPU per
+completed operation, and p99 retain their 2%/3%/3% guards. RSS stays diagnostic, and combined-process
+allocation is explicitly unavailable because adding an allocator counter to either frozen product
+role would mutate the objects being compared. “Unavailable” is safer evidence than a precise-looking
+partial allocation number.
+
+Finally, the workflow is manual-only, protected by the admitted environment, and serialized with the
+same host lease as the earlier campaigns. It captures calibration before and after the complete
+block, refuses host-identity or lease drift, and uploads the packet even when a primary guard fails.
+Before any real pair, it runs a defect-injection canary. The local canary removed one HC/2 success,
+exited with `HC-CANARY-RED:W10-HOST`, and emitted no receipt. The normal local composition run
+completed 1,000/1,000 mixed operations, all six exact surface shares, 350 measured events, owner
+reconciliation, and the 1,000-operation durable companion. These local facts qualify the tooling and
+open one manual host dispatch; they are deliberately not performance evidence and cannot finalize
+`C73`, authorize a long run, or support a release claim.
+
 ## A profiling ladder that avoids expensive runs
 
 Not every development iteration needs a dedicated bare-metal campaign. A useful workflow has several

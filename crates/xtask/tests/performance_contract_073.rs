@@ -1749,6 +1749,53 @@ fn w10_focused_host_contract_cannot_shrink_or_patch_product_roles() {
 }
 
 #[test]
+fn w10_focused_host_tooling_cannot_promote_local_data_or_relax_dispatch() {
+    let mut value = manifest("w10-focused-host-tooling-passed-514183a9.toml");
+    value["overlay_sha256"] = TomlValue::String("not-a-digest".to_owned());
+    value["working_tree_dirty"] = TomlValue::Boolean(true);
+    value["full_host_volume_reduction_allowed"] = TomlValue::Boolean(true);
+    value["local_results_promotable"] = TomlValue::Boolean(true);
+    value["release_numerical_claim_allowed"] = TomlValue::Boolean(true);
+    value["manual_workflow_only"] = TomlValue::Boolean(false);
+    value["host_dispatch_allowed"] = TomlValue::Boolean(false);
+    value["local_hc2_success"] = TomlValue::Integer(349);
+    value["invalid_attempt"] = TomlValue::Array(Vec::new());
+    value["decision"] = TomlValue::String("promote-local-result".to_owned());
+    let problems =
+        xtask::performance_contract::check_w10_focused_host_tooling_evidence(&value, "0.73");
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("overlay_sha256 is not SHA-256")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("working_tree_dirty must be false")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("full_host_volume_reduction_allowed must be false")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("local_results_promotable must be false")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("release_numerical_claim_allowed must be false")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("manual_workflow_only must be true")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("host_dispatch_allowed must be true")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("result changed")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("invalid attempts changed")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("decision changed")));
+}
+
+#[test]
 fn w5_connection_profile_cannot_promote_claim_server_bytes_or_skip_samples() {
     let mut value = manifest("w5-hc2-connection-profile-contract.toml");
     value["promotable"] = TomlValue::Boolean(true);
