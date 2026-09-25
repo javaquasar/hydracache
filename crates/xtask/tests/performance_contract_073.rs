@@ -1157,3 +1157,26 @@ fn w5_connection_profile_evidence_cannot_promote_or_rewrite_results() {
         .iter()
         .any(|problem| problem.contains("1000-connection result changed")));
 }
+
+#[test]
+fn w5_split_connection_profile_cannot_promote_or_merge_endpoints() {
+    let mut value = manifest("w5-hc2-split-connection-profile-contract.toml");
+    value["promotable"] = TomlValue::Boolean(true);
+    value["universal_per_connection_claim_allowed"] = TomlValue::Boolean(true);
+    value["server_scope"] = TomlValue::String("combined".to_owned());
+    value["cardinalities"] = TomlValue::Array(vec![TomlValue::Integer(1)]);
+    let problems =
+        xtask::performance_contract::check_w5_hc2_split_connection_profile_contract(&value, "0.73");
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("promotable must be false")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("universal_per_connection_claim_allowed must be false")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("identity changed")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("sampling matrix changed")));
+}

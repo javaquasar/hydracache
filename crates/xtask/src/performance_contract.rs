@@ -110,6 +110,8 @@ const W5_HC2_CONNECTION_PROFILE_CONTRACT: &str =
     "docs/testing/performance/0.73/w5-hc2-connection-profile-contract.toml";
 const W5_HC2_CONNECTION_PROFILE_EVIDENCE: &str =
     "docs/testing/performance/0.73/w5-hc2-connection-profile-ff657fc5.toml";
+const W5_HC2_SPLIT_CONNECTION_PROFILE_CONTRACT: &str =
+    "docs/testing/performance/0.73/w5-hc2-split-connection-profile-contract.toml";
 const RELEASE: &str = "0.73";
 const PROFILE: &str = "local-screening-073-v1";
 const ENVIRONMENT_CLASS: &str = "local_screening";
@@ -266,6 +268,9 @@ pub fn check_at_root(
     )?)?;
     let w5_hc2_connection_profile_evidence: TomlValue = toml::from_str(&fs::read_to_string(
         root.join(W5_HC2_CONNECTION_PROFILE_EVIDENCE),
+    )?)?;
+    let w5_hc2_split_connection_profile_contract: TomlValue = toml::from_str(&fs::read_to_string(
+        root.join(W5_HC2_SPLIT_CONNECTION_PROFILE_CONTRACT),
     )?)?;
     let mut problems = check_contract(&contract, release);
     if !root.join(MOKA_OBSERVER_UPSTREAM_DRAFT).is_file() {
@@ -447,6 +452,10 @@ pub fn check_at_root(
     ));
     problems.extend(check_w5_hc2_connection_profile_evidence(
         &w5_hc2_connection_profile_evidence,
+        release,
+    ));
+    problems.extend(check_w5_hc2_split_connection_profile_contract(
+        &w5_hc2_split_connection_profile_contract,
         release,
     ));
     problems.extend(check_schema(
@@ -632,6 +641,10 @@ pub fn check_contract(root: &TomlValue, release: &str) -> Vec<String> {
         (
             "w5_hc2_connection_profile_evidence",
             W5_HC2_CONNECTION_PROFILE_EVIDENCE,
+        ),
+        (
+            "w5_hc2_split_connection_profile_contract",
+            W5_HC2_SPLIT_CONNECTION_PROFILE_CONTRACT,
         ),
     ] {
         if text(root, field) != Some(expected) {
@@ -4546,6 +4559,73 @@ pub fn check_w5_hc2_connection_profile_evidence(value: &TomlValue, release: &str
         || text(value, "next_evidence").is_none_or(str::is_empty)
     {
         problems.push("W5 HC/2 connection profile evidence decision is incomplete".to_owned());
+    }
+    problems
+}
+
+pub fn check_w5_hc2_split_connection_profile_contract(
+    value: &TomlValue,
+    release: &str,
+) -> Vec<String> {
+    let mut problems = Vec::new();
+    if integer(value, "schema_version") != Some(1)
+        || text(value, "release") != Some(release)
+        || text(value, "contract_id") != Some("w5-hc2-split-connection-profile-073-v1")
+        || text(value, "state") != Some("preregistered-awaiting-local-split-process-matrix")
+        || text(value, "triggering_evidence") != Some(W5_HC2_CONNECTION_PROFILE_EVIDENCE)
+        || text(value, "source_parent") != Some("241e1c8a57218614490515089239f2d5659ea5e1")
+        || text(value, "profile_tool") != Some("tools/hc2-connection-profile-073")
+        || text(value, "profile_mode") != Some("split")
+        || text(value, "server_scope") != Some("dedicated-local-server-process")
+        || text(value, "client_scope") != Some("dedicated-local-client-controller-process")
+    {
+        problems.push("W5 HC/2 split connection profile identity changed".to_owned());
+    }
+    for field in [
+        "production_counter_addition",
+        "product_mutation_allowed",
+        "candidate_data_allowed",
+        "dedicated_host_run_allowed",
+        "promotable",
+        "universal_per_connection_claim_allowed",
+        "release_numerical_claim_allowed",
+    ] {
+        if boolean(value, field) != Some(false) {
+            problems.push(format!(
+                "W5 HC/2 split connection profile {field} must be false"
+            ));
+        }
+    }
+    if boolean(value, "independent_process_pairs_required") != Some(true)
+        || integer(value, "repeats_per_cardinality") != Some(3)
+        || integer_array(value.get("cardinalities")) != [1, 10, 100, 1_000]
+    {
+        problems.push("W5 HC/2 split connection profile sampling matrix changed".to_owned());
+    }
+    if string_array(value.get("metrics"))
+        != [
+            "client_gross_allocated_bytes",
+            "server_gross_allocated_bytes",
+            "client_working_set_bytes",
+            "server_working_set_bytes",
+            "client_pagefile_bytes",
+            "server_pagefile_bytes",
+        ]
+    {
+        problems.push("W5 HC/2 split connection profile metrics changed".to_owned());
+    }
+    for field in [
+        "server_allocation_window",
+        "client_allocation_window",
+        "falsifier",
+        "interpretation_limit",
+        "next_decision",
+    ] {
+        if text(value, field).is_none_or(str::is_empty) {
+            problems.push(format!(
+                "W5 HC/2 split connection profile {field} is missing"
+            ));
+        }
     }
     problems
 }
