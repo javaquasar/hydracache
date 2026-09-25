@@ -27,6 +27,7 @@ hydracache-cluster-raft = { workspace = true, features = ["sled-log-store"] }
 hydracache-cluster-transport-axum.workspace = true
 hydracache-observability.workspace = true
 hydracache-redis-compat.workspace = true
+prost.workspace = true
 reqwest.workspace = true
 rustls.workspace = true
 serde.workspace = true

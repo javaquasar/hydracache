@@ -6,7 +6,7 @@ use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::Arc;
 
 use bytes::Bytes;
-use futures_util::Stream;
+use futures_util::{Stream, StreamExt};
 use hydracache_client_hc2::wire::client_envelope;
 use hydracache_client_hc2::wire::client_plane_alpha_server::{
     ClientPlaneAlpha, ClientPlaneAlphaServer,
@@ -25,10 +25,11 @@ use hydracache_client_protocol::{
     ClientResponseEnvelope, LockConsistency, Namespace, StructuredKey,
 };
 use hydracache_client_transport_axum::{ClientIdentity, ClientSurfaceState};
+use prost::Message;
 use sha2::{Digest, Sha256};
 use thiserror::Error;
 use tokio::net::TcpListener;
-use tokio::sync::{mpsc, watch};
+use tokio::sync::{mpsc, watch, OwnedSemaphorePermit, Semaphore};
 use tokio_stream::wrappers::{ReceiverStream, TcpListenerStream};
 use tonic::transport::server::{TcpConnectInfo, TlsConnectInfo};
 use tonic::transport::{Certificate, Identity, Server, ServerTlsConfig};
@@ -171,6 +172,60 @@ impl Hc2ClientPlaneService {
 
 type ResponseStream = Pin<Box<dyn Stream<Item = Result<ServerEnvelope, Status>> + Send + 'static>>;
 
+const HC2_OUTBOUND_QUEUE_BYTE_BUDGET: usize = 1024 * 1024;
+
+struct QueuedResponse {
+    frame: Result<ServerEnvelope, Status>,
+    _byte_permit: Option<OwnedSemaphorePermit>,
+}
+
+type OutboundSender = mpsc::Sender<QueuedResponse>;
+
+#[derive(Clone)]
+struct OutboundQueue {
+    sender: OutboundSender,
+    byte_budget: Arc<Semaphore>,
+}
+
+impl OutboundQueue {
+    fn new(item_capacity: usize) -> (Self, mpsc::Receiver<QueuedResponse>) {
+        let (sender, receiver) = mpsc::channel(item_capacity);
+        (
+            Self {
+                sender,
+                byte_budget: Arc::new(Semaphore::new(HC2_OUTBOUND_QUEUE_BYTE_BUDGET)),
+            },
+            receiver,
+        )
+    }
+
+    async fn send(&self, frame: Result<ServerEnvelope, Status>) -> Result<(), Status> {
+        let byte_permit = match frame.as_ref() {
+            Ok(envelope) => {
+                let charge = envelope
+                    .encoded_len()
+                    .clamp(1, HC2_OUTBOUND_QUEUE_BYTE_BUDGET);
+                let charge =
+                    u32::try_from(charge).expect("HC/2 outbound queue byte budget must fit in u32");
+                Some(
+                    Arc::clone(&self.byte_budget)
+                        .acquire_many_owned(charge)
+                        .await
+                        .map_err(|_| Status::cancelled("HC/2 response stream closed"))?,
+                )
+            }
+            Err(_) => None,
+        };
+        self.sender
+            .send(QueuedResponse {
+                frame,
+                _byte_permit: byte_permit,
+            })
+            .await
+            .map_err(|_| Status::cancelled("HC/2 response stream closed"))
+    }
+}
+
 #[tonic::async_trait]
 impl ClientPlaneAlpha for Hc2ClientPlaneService {
     type OpenStream = ResponseStream;
@@ -181,7 +236,8 @@ impl ClientPlaneAlpha for Hc2ClientPlaneService {
     ) -> Result<Response<Self::OpenStream>, Status> {
         let peer_id = verified_peer_id(&request)?;
         let mut inbound = request.into_inner();
-        let (outbound, receiver) = mpsc::channel(self.state.limits().max_streams_per_connection);
+        let (outbound, receiver) =
+            OutboundQueue::new(self.state.limits().max_streams_per_connection);
         let service = self.clone();
         tokio::spawn(async move {
             let guard = ConnectionGuard::new(Arc::clone(&service.accounting));
@@ -191,7 +247,9 @@ impl ClientPlaneAlpha for Hc2ClientPlaneService {
             }
             drop(guard);
         });
-        Ok(Response::new(Box::pin(ReceiverStream::new(receiver))))
+        Ok(Response::new(Box::pin(
+            ReceiverStream::new(receiver).map(|queued| queued.frame),
+        )))
     }
 }
 
@@ -285,7 +343,7 @@ async fn serve_connection(
     service: &Hc2ClientPlaneService,
     peer_id: &str,
     inbound: &mut Streaming<ClientEnvelope>,
-    outbound: &mpsc::Sender<Result<ServerEnvelope, Status>>,
+    outbound: &OutboundQueue,
 ) -> Result<(), Status> {
     let first = inbound
         .message()
@@ -322,8 +380,7 @@ async fn serve_connection(
                 negotiated_generation_deprecated: identity.protocol_generation < HC2_GENERATION,
             }),
         )))
-        .await
-        .map_err(|_| Status::cancelled("HC/2 response stream closed"))?;
+        .await?;
 
     let mut subscriptions = BTreeMap::<u64, (Bytes, u64)>::new();
     let mut sessions = BTreeMap::<Bytes, u64>::new();
@@ -355,8 +412,7 @@ async fn serve_connection(
                         envelope.correlation_id,
                         server_envelope::Message::Invocation(response),
                     )))
-                    .await
-                    .map_err(|_| Status::cancelled("HC/2 response stream closed"))?;
+                    .await?;
                 if let Some((key, value, removed)) = event.filter(|_| mutation_applied) {
                     emit_matching_events(
                         service,
@@ -393,8 +449,7 @@ async fn serve_connection(
                             watermark: subscribe.resume_watermark,
                         }),
                     )))
-                    .await
-                    .map_err(|_| Status::cancelled("HC/2 response stream closed"))?;
+                    .await?;
             }
             Some(client_envelope::Message::Unsubscribe(unsubscribe)) => {
                 if subscriptions.remove(&unsubscribe.subscription_id).is_some() {
@@ -419,8 +474,7 @@ async fn serve_connection(
                             fence: 1,
                         }),
                     )))
-                    .await
-                    .map_err(|_| Status::cancelled("HC/2 response stream closed"))?;
+                    .await?;
             }
             Some(client_envelope::Message::SessionHeartbeat(heartbeat)) => {
                 let message = if sessions.get(&heartbeat.session_id) == Some(&heartbeat.fence) {
@@ -437,8 +491,7 @@ async fn serve_connection(
                         envelope.correlation_id,
                         message,
                     )))
-                    .await
-                    .map_err(|_| Status::cancelled("HC/2 response stream closed"))?;
+                    .await?;
             }
             Some(client_envelope::Message::SessionClose(close)) => {
                 if sessions.remove(&close.session_id).is_some() {
@@ -716,7 +769,7 @@ async fn emit_matching_events(
     value: &Bytes,
     removed: bool,
     subscriptions: &mut BTreeMap<u64, (Bytes, u64)>,
-    outbound: &mpsc::Sender<Result<ServerEnvelope, Status>>,
+    outbound: &OutboundQueue,
 ) -> Result<(), Status> {
     for (subscription_id, (prefix, watermark)) in subscriptions.iter_mut() {
         if key.starts_with(prefix) {
@@ -735,8 +788,7 @@ async fn emit_matching_events(
                             after_watermark: *watermark,
                         }),
                     )))
-                    .await
-                    .map_err(|_| Status::cancelled("HC/2 response stream closed"))?;
+                    .await?;
             }
             *watermark = next;
             outbound
@@ -751,8 +803,7 @@ async fn emit_matching_events(
                         removed,
                     }),
                 )))
-                .await
-                .map_err(|_| Status::cancelled("HC/2 response stream closed"))?;
+                .await?;
         }
     }
     Ok(())
@@ -926,7 +977,7 @@ mod tests {
             (1, (Bytes::from_static(b"event/"), 0)),
             (2, (Bytes::from_static(b"event/"), 0)),
         ]);
-        let (outbound, mut receiver) = mpsc::channel(2);
+        let (outbound, mut receiver) = OutboundQueue::new(2);
 
         emit_matching_events(
             &service,
@@ -941,7 +992,7 @@ mod tests {
         .unwrap();
 
         for expected_subscription in [1, 2] {
-            let envelope = receiver.recv().await.unwrap().unwrap();
+            let envelope = receiver.recv().await.unwrap().frame.unwrap();
             let Some(server_envelope::Message::Event(event)) = envelope.message else {
                 panic!("expected event frame");
             };
@@ -951,6 +1002,90 @@ mod tests {
             assert_eq!(event.key.as_ptr(), key.as_ptr());
             assert_eq!(event.value.as_ptr(), value.as_ptr());
         }
+        assert_eq!(
+            outbound.byte_budget.available_permits(),
+            HC2_OUTBOUND_QUEUE_BYTE_BUDGET
+        );
+    }
+
+    #[tokio::test]
+    async fn outbound_byte_admission_charges_encoded_length_and_releases_on_poll() {
+        let (outbound, mut receiver) = OutboundQueue::new(16);
+        let envelope = server_envelope(
+            SessionIdentity {
+                protocol_generation: HC2_GENERATION,
+                connection_generation: 1,
+            },
+            7,
+            server_envelope::Message::Event(CacheEvent {
+                subscription_id: 1,
+                watermark: 1,
+                key: Bytes::from_static(b"key"),
+                value: Bytes::from(vec![0x5a; 4_096]),
+                removed: false,
+            }),
+        );
+        let encoded_len = envelope.encoded_len();
+
+        outbound.send(Ok(envelope)).await.unwrap();
+        assert_eq!(
+            outbound.byte_budget.available_permits(),
+            HC2_OUTBOUND_QUEUE_BYTE_BUDGET - encoded_len
+        );
+        drop(receiver.recv().await.unwrap());
+        assert_eq!(
+            outbound.byte_budget.available_permits(),
+            HC2_OUTBOUND_QUEUE_BYTE_BUDGET
+        );
+    }
+
+    #[tokio::test]
+    async fn outbound_byte_admission_allows_one_oversize_and_releases_on_disconnect() {
+        let (outbound, mut receiver) = OutboundQueue::new(16);
+        let oversized = || {
+            server_envelope(
+                SessionIdentity {
+                    protocol_generation: HC2_GENERATION,
+                    connection_generation: 1,
+                },
+                9,
+                server_envelope::Message::Event(CacheEvent {
+                    subscription_id: 1,
+                    watermark: 1,
+                    key: Bytes::from_static(b"key"),
+                    value: Bytes::from(vec![0x5a; HC2_OUTBOUND_QUEUE_BYTE_BUDGET + 128]),
+                    removed: false,
+                }),
+            )
+        };
+
+        outbound.send(Ok(oversized())).await.unwrap();
+        assert_eq!(outbound.byte_budget.available_permits(), 0);
+
+        let second_outbound = outbound.clone();
+        let second_frame = oversized();
+        let mut second = tokio::spawn(async move { second_outbound.send(Ok(second_frame)).await });
+        assert!(tokio::time::timeout(Duration::from_millis(20), &mut second)
+            .await
+            .is_err());
+
+        drop(receiver.recv().await.unwrap());
+        second.await.unwrap().unwrap();
+        assert_eq!(outbound.byte_budget.available_permits(), 0);
+        drop(receiver);
+        tokio::task::yield_now().await;
+        assert_eq!(
+            outbound.byte_budget.available_permits(),
+            HC2_OUTBOUND_QUEUE_BYTE_BUDGET
+        );
+
+        let (closed_outbound, closed_receiver) = OutboundQueue::new(1);
+        drop(closed_receiver);
+        assert!(closed_outbound.send(Ok(oversized())).await.is_err());
+        assert_eq!(
+            closed_outbound.byte_budget.available_permits(),
+            HC2_OUTBOUND_QUEUE_BYTE_BUDGET
+        );
     }
 
     #[test]
