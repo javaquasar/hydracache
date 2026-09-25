@@ -1352,7 +1352,7 @@ mod tests {
         }
         assert!(observed.accounting().live_resources_zero());
 
-        for cardinality in [1_usize, 10, 100] {
+        for cardinality in [1_usize, 10, 100, 1_000] {
             let mut clients = Vec::with_capacity(cardinality);
             for index in 0..cardinality {
                 let client = Hc2Client::connect(
@@ -1374,6 +1374,12 @@ mod tests {
             }
             let active = observed.accounting();
             assert_eq!(active.active_connections, cardinality as u64);
+            assert_eq!(
+                active
+                    .accepted_connections
+                    .saturating_sub(active.closed_connections),
+                active.active_connections
+            );
             assert_eq!(active.active_subscriptions, 0);
             assert_eq!(active.active_sessions, 0);
             assert_eq!(active.pending_invocations, 0);
@@ -1394,6 +1400,8 @@ mod tests {
                 tokio::time::sleep(Duration::from_millis(10)).await;
             }
             assert!(observed.accounting().live_resources_zero());
+            let closed = observed.accounting();
+            assert_eq!(closed.accepted_connections, closed.closed_connections);
         }
         shutdown_tx.send(true).unwrap();
         serving.await.unwrap().unwrap();
