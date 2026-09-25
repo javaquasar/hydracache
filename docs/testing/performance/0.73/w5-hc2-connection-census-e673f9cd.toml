@@ -1,0 +1,29 @@
+schema_version = 1
+release = "0.73"
+evidence_id = "w5-hc2-connection-census-e673f9cd-v1"
+state = "local-logical-census-passed-memory-probe-pending"
+contract = "docs/testing/performance/0.73/w5-hc2-connection-census-contract.toml"
+source_commit = "e673f9cda87a10ab3e859504a07381e4e13763df"
+environment = "local-real-mtls"
+cardinalities = [1, 10, 100, 1000]
+failed_cardinalities = []
+production_counter_addition = false
+product_semantics_changed = false
+dedicated_host_run_allowed = false
+promotable = false
+cpu_claims_allowed = false
+allocation_claims_allowed = false
+rss_claims_allowed = false
+active_invariant_passed = true
+close_invariant_passed = true
+client_invariant_passed = true
+mtls_required = true
+event_delivery_passed = true
+disconnect_reconciliation_passed = true
+validation = [
+  "cargo test -p hydracache-server hc2::tests::real_socket_requires_mtls_dispatches_pushes_and_drains_to_zero --lib --locked -- --exact --nocapture: passed in 6.69 s",
+  "cargo clippy -p hydracache-server --lib --tests --locked -- -D warnings: passed",
+]
+interpretation = "Existing production accounting is sufficient to prove logical connection ownership at 1/10/100/1000 active real-mTLS clients. For every active group, accepted minus closed equaled active; after close, accepted equaled closed and connections, subscriptions, sessions, and pending invocations were zero."
+decision = "accept-logical-census-as-denominator-only"
+next_evidence = "Use independent local server processes at the frozen cardinalities to measure process allocation and working-set deltas, keeping allocator/RSS results non-promotable and separating TLS/HTTP2 external ownership from HydraCache logical owners."

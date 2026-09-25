@@ -1034,6 +1034,19 @@ those frames, but it does not remove the channel slots, protobuf encode buffers,
 state, TLS records, or the connection task itself. Those owners need a connection census with exact
 logical reconciliation before process memory can be divided by connection count.
 
+That census used the real mTLS listener and client, not a mocked channel. Groups of 1, 10, 100, and
+1,000 clients were opened in sequence. At every plateau, `active_connections` equaled the requested
+cardinality and `accepted_connections - closed_connections` equaled the live count; subscriptions,
+sessions, and pending invocations stayed at zero. Every client also reported empty pending maps and
+restored permits. After each group closed, accepted equaled closed and every server-side live owner
+returned to zero. The 1,000-connection group completed inside the same local test in 6.69 seconds.
+
+This is a denominator, not a memory result. We now know that a process-level delta at 1,000 clients
+cannot be explained by silently missing or already-closed logical connections. We still cannot divide
+RSS by 1,000 and call the quotient a connection cost: allocator arenas, shared TLS state, code pages,
+HTTP/2 buffers, task stacks, and nonlinear capacity growth must be separated through independent
+processes and multiple cardinalities.
+
 ## A profiling ladder that avoids expensive runs
 
 Not every development iteration needs a dedicated bare-metal campaign. A useful workflow has several
