@@ -8460,8 +8460,8 @@ pub fn check_w10_focused_host_tooling_evidence(value: &TomlValue, release: &str)
         || text(value, "harness_implementation_commit")
             != Some("c6e14fa9dbc969fa171470c8ef8ce49184fcd36f")
         || text(value, "dispatch_adapter_commit")
-            != Some("c65365b1e3cc437845424390f0d050b97f6ca892")
-        || text(value, "dispatch_adapter_tree") != Some("9c1b19a9a6b14beed8803c3c11be81bae3dfc9c9")
+            != Some("007a15b213711dc48f3eb235bf019a94af396d43")
+        || text(value, "dispatch_adapter_tree") != Some("9838ff69bc3bdf35487336f9737dd3094abd9a92")
         || text(value, "baseline_source_commit") != Some("e757556d3a31d565f52a9561d6d4e555bb1cc373")
         || text(value, "candidate_source_commit")
             != Some("7e3070894aa51af96cdcb3e350eff923a309e1fa")
@@ -8551,7 +8551,7 @@ pub fn check_w10_focused_host_tooling_evidence(value: &TomlValue, release: &str)
     if value
         .get("invalid_attempt")
         .and_then(TomlValue::as_array)
-        .is_none_or(|attempts| attempts.len() != 6)
+        .is_none_or(|attempts| attempts.len() != 7)
     {
         problems.push("W10 focused host tooling evidence invalid attempts changed".to_owned());
     }
