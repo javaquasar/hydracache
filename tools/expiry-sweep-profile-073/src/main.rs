@@ -125,7 +125,7 @@ fn validate_observation(
         ExpirySweepProfileScenario::HalfExpired => 128,
         ExpirySweepProfileScenario::AllExpired => 256,
     };
-    let expected_clones = 256 + expected_expired + 1;
+    let expected_clones = expected_expired + 1;
     if observation.examined_keys != 256
         || observation.expired_keys != expected_expired
         || observation.cloned_keys != expected_clones

@@ -490,47 +490,69 @@ impl StoredValue {
     }
 }
 
+struct ExpirySweepCandidates {
+    examined: usize,
+    expired: Vec<StoreKey>,
+    next_cursor: Option<StoreKey>,
+}
+
 fn expiry_sweep_candidates(
     store: &BTreeMap<StoreKey, StoredValue>,
     now_ms: u64,
     cursor: Option<&StoreKey>,
     scan_limit: usize,
-) -> (Vec<StoreKey>, Vec<StoreKey>) {
-    let mut examined = Vec::with_capacity(scan_limit.min(store.len()));
+    capture_cursor: bool,
+) -> ExpirySweepCandidates {
+    let mut examined = 0;
+    let mut expired = Vec::new();
+    let mut last_examined = None;
     if let Some(cursor) = cursor {
-        examined.extend(
-            store
+        for (key, value) in store
+            .range((
+                std::ops::Bound::Excluded(cursor),
+                std::ops::Bound::Unbounded,
+            ))
+            .take(scan_limit)
+        {
+            examined += 1;
+            if value.is_expired(now_ms) {
+                expired.push(key.clone());
+            }
+            last_examined = Some(key);
+        }
+        if examined < scan_limit {
+            for (key, value) in store
                 .range((
-                    std::ops::Bound::Excluded(cursor),
                     std::ops::Bound::Unbounded,
+                    std::ops::Bound::Included(cursor),
                 ))
-                .map(|(key, _)| key.clone())
-                .take(scan_limit),
-        );
-        if examined.len() < scan_limit {
-            examined.extend(
-                store
-                    .range((
-                        std::ops::Bound::Unbounded,
-                        std::ops::Bound::Included(cursor),
-                    ))
-                    .map(|(key, _)| key.clone())
-                    .take(scan_limit - examined.len()),
-            );
+                .take(scan_limit - examined)
+            {
+                examined += 1;
+                if value.is_expired(now_ms) {
+                    expired.push(key.clone());
+                }
+                last_examined = Some(key);
+            }
         }
     } else {
-        examined.extend(store.keys().take(scan_limit).cloned());
+        for (key, value) in store.iter().take(scan_limit) {
+            examined += 1;
+            if value.is_expired(now_ms) {
+                expired.push(key.clone());
+            }
+            last_examined = Some(key);
+        }
     }
-    let expired = examined
-        .iter()
-        .filter(|key| {
-            store
-                .get(*key)
-                .is_some_and(|value| value.is_expired(now_ms))
-        })
-        .cloned()
-        .collect();
-    (examined, expired)
+    ExpirySweepCandidates {
+        examined,
+        expired,
+        next_cursor: if capture_cursor {
+            last_examined.cloned()
+        } else {
+            None
+        },
+    }
 }
 
 /// Profile-only fixtures for attributing expiry-sweep allocation without
@@ -636,22 +658,25 @@ pub mod performance_profile {
         /// Execute the real candidate selection and the request-path cursor
         /// clone, returning only allocation-free aggregate observations.
         pub fn run(&self) -> ExpirySweepProfileObservation {
-            let (examined, expired) =
-                expiry_sweep_candidates(&self.store, NOW_MS, self.cursor.as_ref(), SCAN_LIMIT);
-            let next_cursor = examined.last().cloned();
-            let examined_identity_bytes = examined.iter().map(identity_bytes).sum::<usize>();
-            let expired_identity_bytes = expired.iter().map(identity_bytes).sum::<usize>();
-            let cursor_identity_bytes = next_cursor.as_ref().map_or(0, identity_bytes);
+            let candidates = expiry_sweep_candidates(
+                &self.store,
+                NOW_MS,
+                self.cursor.as_ref(),
+                SCAN_LIMIT,
+                true,
+            );
+            let expired_identity_bytes =
+                candidates.expired.iter().map(identity_bytes).sum::<usize>();
+            let cursor_identity_bytes = candidates.next_cursor.as_ref().map_or(0, identity_bytes);
             let observation = ExpirySweepProfileObservation {
-                examined_keys: examined.len(),
-                expired_keys: expired.len(),
-                cloned_keys: examined.len() + expired.len() + usize::from(next_cursor.is_some()),
-                cloned_identity_bytes: examined_identity_bytes
-                    + expired_identity_bytes
-                    + cursor_identity_bytes,
-                next_cursor_present: next_cursor.is_some(),
+                examined_keys: candidates.examined,
+                expired_keys: candidates.expired.len(),
+                cloned_keys: candidates.expired.len()
+                    + usize::from(candidates.next_cursor.is_some()),
+                cloned_identity_bytes: expired_identity_bytes + cursor_identity_bytes,
+                next_cursor_present: candidates.next_cursor.is_some(),
             };
-            std::hint::black_box((&expired, &examined, &next_cursor, self.scenario));
+            std::hint::black_box((&candidates, self.scenario));
             observation
         }
     }
@@ -1066,7 +1091,7 @@ impl ClientSurfaceState {
         let removed = if let Some(isolation) = &self.isolation {
             let mut isolation = isolation.lock().expect("isolation mutex");
             let mut store = self.store.lock().expect("store mutex");
-            let (examined, expired) = expiry_sweep_candidates(
+            let candidates = expiry_sweep_candidates(
                 &store,
                 now_ms,
                 if force { None } else { cursor.as_ref() },
@@ -1075,21 +1100,19 @@ impl ClientSurfaceState {
                 } else {
                     CLIENT_SURFACE_EXPIRY_SWEEP_SCAN_LIMIT
                 },
+                !force,
             );
-            for (tenant, namespace, key) in &expired {
-                let tenant = TenantId::new(tenant).expect("stored tenant identity was validated");
-                isolation.remove_entry_for_tenant(&tenant, namespace, key);
-                store.remove(&(tenant.as_str().to_owned(), namespace.clone(), key.clone()));
+            for expired_key @ (tenant, namespace, key) in &candidates.expired {
+                let tenant_id =
+                    TenantId::new(tenant).expect("stored tenant identity was validated");
+                isolation.remove_entry_for_tenant(&tenant_id, namespace, key);
+                store.remove(expired_key);
             }
-            *cursor = if force {
-                None
-            } else {
-                examined.last().cloned()
-            };
-            expired.len()
+            *cursor = candidates.next_cursor;
+            candidates.expired.len()
         } else {
             let mut store = self.store.lock().expect("store mutex");
-            let (examined, expired) = expiry_sweep_candidates(
+            let candidates = expiry_sweep_candidates(
                 &store,
                 now_ms,
                 if force { None } else { cursor.as_ref() },
@@ -1098,16 +1121,13 @@ impl ClientSurfaceState {
                 } else {
                     CLIENT_SURFACE_EXPIRY_SWEEP_SCAN_LIMIT
                 },
+                !force,
             );
-            for key in &expired {
+            for key in &candidates.expired {
                 store.remove(key);
             }
-            *cursor = if force {
-                None
-            } else {
-                examined.last().cloned()
-            };
-            expired.len()
+            *cursor = candidates.next_cursor;
+            candidates.expired.len()
         };
         if removed != 0 {
             self.state_mutations
@@ -3090,6 +3110,41 @@ mod retention_tests {
         state.advance_cache_time_for_tests(CLIENT_SURFACE_EXPIRY_SWEEP_INTERVAL_MS);
         assert_eq!(state.reap_expired_entries_for_maintenance(), 44);
         assert!(state.store.lock().expect("store mutex").is_empty());
+
+        state.advance_cache_time_for_tests(CLIENT_SURFACE_EXPIRY_SWEEP_INTERVAL_MS);
+        assert_eq!(state.reap_expired_entries_for_maintenance(), 0);
+        assert!(state
+            .expiry_sweep_cursor
+            .lock()
+            .expect("expiry cursor mutex")
+            .is_none());
+    }
+
+    #[test]
+    fn expiry_sweep_candidate_wraps_once_and_full_scan_retains_no_cursor() {
+        let store = ["a", "b", "c", "d"]
+            .into_iter()
+            .map(|key| {
+                (
+                    ("tenant".to_owned(), "namespace".to_owned(), key.to_owned()),
+                    StoredValue::persistent(Vec::new()),
+                )
+            })
+            .collect::<BTreeMap<_, _>>();
+        let cursor = ("tenant".to_owned(), "namespace".to_owned(), "c".to_owned());
+
+        let bounded = expiry_sweep_candidates(&store, 1_000, Some(&cursor), 3, true);
+        assert_eq!(bounded.examined, 3);
+        assert!(bounded.expired.is_empty());
+        assert_eq!(
+            bounded.next_cursor.as_ref().map(|(_, _, key)| key.as_str()),
+            Some("b")
+        );
+
+        let full = expiry_sweep_candidates(&store, 1_000, None, usize::MAX, false);
+        assert_eq!(full.examined, store.len());
+        assert!(full.expired.is_empty());
+        assert!(full.next_cursor.is_none());
     }
 
     #[test]
