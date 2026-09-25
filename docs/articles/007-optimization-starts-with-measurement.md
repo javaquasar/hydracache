@@ -1474,6 +1474,36 @@ the fill/overwrite cardinality slope in both payload series and rerun all 120 sc
 ownership and redundant flush work remain separately measured follow-ups rather than being bundled
 into that counter change.
 
+The implementation added a private `budget_used_bytes` value to the durable store. Opening a store
+performs one checksum-validating scan to initialize it. Admission then combines that total with the
+same existing-record and incoming-record byte arithmetic as before; a successful insert updates the
+counter before flush, and remove subtracts only an actually removed record. The public
+`total_bytes()` method still scans and validates every record, so the optimization does not turn a
+cached admission value into an observability claim. A focused test exercises replacement shrinkage,
+budget release after remove, missing-key remove, reopen reconstruction, and rejection at the restored
+limit. Corruption, recovery, sync-before-ack, async backpressure, scrub, and repair-fenced GC suites
+remained green.
+
+The unchanged 120-process matrix passed again. At 256 records, fill gross allocation fell from
+40.23 KiB to 7.78 KiB per 64-byte record, an 80.7% reduction, and from 597.37 KiB to 50.84 KiB per
+4 KiB record, a 91.5% reduction. Overwrite fell from 70.23 KiB to 5.25 KiB and from 1.147 MB to
+45.79 KiB, reductions of 92.5% and 96.0%. More important than any one endpoint, the 16-to-256
+cardinality growth collapsed from 4.35--8.81 times to 1.11--1.43 for fill, and from 7.43--10.02
+times to 1.01--1.10 for overwrite. The term proportional to all existing records is gone.
+
+The tradeoff also appeared where preregistration predicted it. Combined reopen plus reopen-read
+allocation increased by at most 4.68%, below the 10% ceiling, because reconstruction now validates
+the store once. That one-time cost replaces a validation scan before every future write. Steady reads
+and RAM-only admission did not regress, and maximum GC allocation regression was 0.114%. Exact logical
+bytes, content after reopen, queue lag, GC removal, and temporary-directory cleanup all reconciled.
+
+W7 therefore closes as accepted with one narrow product change. The local allocation percentages are
+not release-grade performance claims, and the Windows run still says nothing about anonymous versus
+file-backed residency. The per-record flush behavior remains a measured owner, but batching it would
+change durability timing and was outside the one-candidate W7 authorization. Leaving that work
+explicitly deferred is part of the optimization result: removing one proven owner does not grant
+permission to redesign every adjacent subsystem.
+
 ## A profiling ladder that avoids expensive runs
 
 Not every development iteration needs a dedicated bare-metal campaign. A useful workflow has several

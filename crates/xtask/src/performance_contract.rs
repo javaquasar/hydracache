@@ -152,6 +152,8 @@ const W7_DURABILITY_PAGE_CACHE_PROFILE_EVIDENCE: &str =
     "docs/testing/performance/0.73/w7-durability-page-cache-profile-b5a327ce.toml";
 const W7_CACHED_BUDGET_TOTAL_CONTRACT: &str =
     "docs/testing/performance/0.73/w7-cached-budget-total-contract.toml";
+const W7_CACHED_BUDGET_TOTAL_EVIDENCE: &str =
+    "docs/testing/performance/0.73/w7-cached-budget-total-accepted-8bcd55e1.toml";
 const RELEASE: &str = "0.73";
 const PROFILE: &str = "local-screening-073-v1";
 const ENVIRONMENT_CLASS: &str = "local_screening";
@@ -371,6 +373,9 @@ pub fn check_at_root(
     )?;
     let w7_cached_budget_total_contract: TomlValue = toml::from_str(&fs::read_to_string(
         root.join(W7_CACHED_BUDGET_TOTAL_CONTRACT),
+    )?)?;
+    let w7_cached_budget_total_evidence: TomlValue = toml::from_str(&fs::read_to_string(
+        root.join(W7_CACHED_BUDGET_TOTAL_EVIDENCE),
     )?)?;
     let mut problems = check_contract(&contract, release);
     if !root.join(MOKA_OBSERVER_UPSTREAM_DRAFT).is_file() {
@@ -638,6 +643,10 @@ pub fn check_at_root(
         &w7_cached_budget_total_contract,
         release,
     ));
+    problems.extend(check_w7_cached_budget_total_evidence(
+        &w7_cached_budget_total_evidence,
+        release,
+    ));
     problems.extend(check_schema(
         &schema,
         &example,
@@ -899,6 +908,10 @@ pub fn check_contract(root: &TomlValue, release: &str) -> Vec<String> {
         (
             "w7_cached_budget_total_contract",
             W7_CACHED_BUDGET_TOTAL_CONTRACT,
+        ),
+        (
+            "w7_cached_budget_total_evidence",
+            W7_CACHED_BUDGET_TOTAL_EVIDENCE,
         ),
     ] {
         if text(root, field) != Some(expected) {
@@ -6932,6 +6945,129 @@ pub fn check_w7_cached_budget_total_contract(value: &TomlValue, release: &str) -
                 "W7 cached budget total contract {field} is missing"
             ));
         }
+    }
+    problems
+}
+
+pub fn check_w7_cached_budget_total_evidence(value: &TomlValue, release: &str) -> Vec<String> {
+    let mut problems = Vec::new();
+    if integer(value, "schema_version") != Some(1)
+        || text(value, "release") != Some(release)
+        || text(value, "evidence_id") != Some("w7-cached-budget-total-accepted-8bcd55e1-v1")
+        || text(value, "state") != Some("local-candidate-accepted-w7-terminal")
+        || text(value, "contract") != Some(W7_CACHED_BUDGET_TOTAL_CONTRACT)
+        || text(value, "baseline_evidence") != Some(W7_DURABILITY_PAGE_CACHE_PROFILE_EVIDENCE)
+        || text(value, "source_commit") != Some("8bcd55e1c8143a3c976685162fae8376b9b70410")
+    {
+        problems.push("W7 cached budget total evidence identity changed".to_owned());
+    }
+    for field in [
+        "binary_sha256",
+        "contract_sha256",
+        "baseline_evidence_sha256",
+        "product_source_sha256",
+        "tool_source_sha256",
+        "tool_lock_sha256",
+        "raw_manifest_sha256",
+    ] {
+        if text(value, field).is_none_or(|digest| !sha256(digest)) {
+            problems.push(format!(
+                "W7 cached budget total evidence {field} is not SHA-256"
+            ));
+        }
+    }
+    for field in [
+        "independent_processes",
+        "prebuilt_release_binary",
+        "same_tool_source",
+        "same_tool_lock",
+        "temporary_stores_removed",
+        "exact_logical_bytes_passed",
+        "reopen_content_equality_passed",
+        "async_lag_reconciliation_passed",
+        "gc_cardinality_reconciliation_passed",
+        "format_and_checksum_tests_passed",
+        "budget_rejection_tests_passed",
+        "recovery_tests_passed",
+        "sync_before_ack_passed",
+        "async_backpressure_passed",
+        "repair_fenced_gc_passed",
+        "public_total_bytes_validation_scan_preserved",
+        "product_mutation_present",
+        "all_thresholds_passed",
+    ] {
+        if boolean(value, field) != Some(true) {
+            problems.push(format!(
+                "W7 cached budget total evidence {field} must be true"
+            ));
+        }
+    }
+    for field in [
+        "production_counter_addition",
+        "page_cache_residency_claim_allowed",
+        "dedicated_host_run_allowed",
+        "promotable",
+        "release_numerical_claim_allowed",
+        "elapsed_time_used_for_acceptance",
+    ] {
+        if boolean(value, field) != Some(false) {
+            problems.push(format!(
+                "W7 cached budget total evidence {field} must be false"
+            ));
+        }
+    }
+    if integer(value, "attempts") != Some(120)
+        || integer(value, "failed_processes") != Some(0)
+        || integer(value, "nonempty_stderr") != Some(0)
+        || integer(value, "invariant_failures") != Some(0)
+        || integer(value, "scenario_count") != Some(24)
+        || integer(value, "repeats_per_scenario") != Some(5)
+    {
+        problems.push("W7 cached budget total evidence volume changed".to_owned());
+    }
+    if integer_array(value.get("store_cardinalities")) != [1, 16, 64, 256]
+        || integer_array(value.get("payload_bytes")) != [64, 4_096]
+        || float_array(value.get("candidate_payload64_fill_median_gross_bytes_per_operation"))
+            != [6_807.0, 7_006.75, 7_539.594, 7_782.449]
+        || float_array(value.get("candidate_payload4096_fill_median_gross_bytes_per_operation"))
+            != [30_786.0, 35_491.25, 44_155.047, 50_844.723]
+        || float_array(value.get("candidate_payload64_overwrite_median_gross_bytes_per_operation"))
+            != [6_723.0, 5_217.5, 5_233.812, 5_252.562]
+        || float_array(
+            value.get("candidate_payload4096_overwrite_median_gross_bytes_per_operation"),
+        ) != [43_142.0, 41_636.5, 41_652.812, 45_794.504]
+    {
+        problems.push("W7 cached budget total evidence allocation result changed".to_owned());
+    }
+    if float_array(value.get("primary_gross_reduction_fractions"))
+        != [0.806529, 0.914885, 0.925209, 0.960074]
+        || float(value, "minimum_observed_primary_gross_reduction_fraction") != Some(0.806529)
+        || float(value, "minimum_required_primary_gross_reduction_fraction") != Some(0.50)
+        || float_array(value.get("candidate_fill_growth_16_to_256")) != [1.110707, 1.432599]
+        || float_array(value.get("candidate_overwrite_growth_16_to_256")) != [1.006720, 1.099864]
+        || float(
+            value,
+            "maximum_observed_reopen_open_plus_read_gross_regression_fraction",
+        ) != Some(0.046845)
+        || float(value, "maximum_observed_gc_gross_regression_fraction") != Some(0.001137)
+    {
+        problems.push("W7 cached budget total evidence threshold result changed".to_owned());
+    }
+    for field in [
+        "raw_manifest_canonicalization",
+        "ownership_interpretation",
+        "control_interpretation",
+        "claim_boundary",
+        "next_evidence",
+    ] {
+        if text(value, field).is_none_or(str::is_empty) {
+            problems.push(format!(
+                "W7 cached budget total evidence {field} is missing"
+            ));
+        }
+    }
+    if text(value, "decision") != Some("retain-cached-durable-budget-total-and-close-w7-accepted") {
+        problems.push("W7 cached budget total evidence decision changed".to_owned());
     }
     problems
 }

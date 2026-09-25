@@ -1414,6 +1414,34 @@ fn w7_cached_budget_contract_cannot_replace_validation_or_weaken_thresholds() {
 }
 
 #[test]
+fn w7_cached_budget_evidence_cannot_promote_or_rewrite_acceptance() {
+    let mut value = manifest("w7-cached-budget-total-accepted-8bcd55e1.toml");
+    value["promotable"] = TomlValue::Boolean(true);
+    value["attempts"] = TomlValue::Integer(5);
+    value["candidate_payload64_fill_median_gross_bytes_per_operation"] =
+        TomlValue::Array(Vec::new());
+    value["minimum_observed_primary_gross_reduction_fraction"] = TomlValue::Float(0.0);
+    value["decision"] = TomlValue::String("close-w7-measured-no-win".to_owned());
+    let problems =
+        xtask::performance_contract::check_w7_cached_budget_total_evidence(&value, "0.73");
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("promotable must be false")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("volume changed")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("allocation result changed")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("threshold result changed")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("decision changed")));
+}
+
+#[test]
 fn w5_connection_profile_cannot_promote_claim_server_bytes_or_skip_samples() {
     let mut value = manifest("w5-hc2-connection-profile-contract.toml");
     value["promotable"] = TomlValue::Boolean(true);
