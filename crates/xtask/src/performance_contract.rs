@@ -82,6 +82,8 @@ const OBSERVER_ALLOCATION_ATTRIBUTION_CONTRACT: &str =
     "docs/testing/performance/0.73/observer-allocation-attribution-contract.toml";
 const OBSERVER_ALLOCATION_ATTRIBUTION_EVIDENCE: &str =
     "docs/testing/performance/0.73/observer-allocation-attribution-2c37d2f1.toml";
+const SHARED_ENTRY_TAGS_CONTRACT: &str =
+    "docs/testing/performance/0.73/shared-entry-tags-contract.toml";
 const RELEASE: &str = "0.73";
 const PROFILE: &str = "local-screening-073-v1";
 const ENVIRONMENT_CLASS: &str = "local_screening";
@@ -199,6 +201,8 @@ pub fn check_at_root(
     let observer_allocation_attribution_evidence: TomlValue = toml::from_str(&fs::read_to_string(
         root.join(OBSERVER_ALLOCATION_ATTRIBUTION_EVIDENCE),
     )?)?;
+    let shared_entry_tags_contract: TomlValue =
+        toml::from_str(&fs::read_to_string(root.join(SHARED_ENTRY_TAGS_CONTRACT))?)?;
     let mut problems = check_contract(&contract, release);
     if !root.join(MOKA_OBSERVER_UPSTREAM_DRAFT).is_file() {
         problems.push("notification observer dependency review draft is missing".to_owned());
@@ -323,6 +327,10 @@ pub fn check_at_root(
     ));
     problems.extend(check_observer_allocation_attribution_evidence(
         &observer_allocation_attribution_evidence,
+        release,
+    ));
+    problems.extend(check_shared_entry_tags_contract(
+        &shared_entry_tags_contract,
         release,
     ));
     problems.extend(check_schema(
@@ -459,6 +467,7 @@ pub fn check_contract(root: &TomlValue, release: &str) -> Vec<String> {
             "observer_allocation_attribution_evidence",
             OBSERVER_ALLOCATION_ATTRIBUTION_EVIDENCE,
         ),
+        ("shared_entry_tags_contract", SHARED_ENTRY_TAGS_CONTRACT),
     ] {
         if text(root, field) != Some(expected) {
             problems.push(format!("local screening {field} must be {expected}"));
@@ -3313,6 +3322,60 @@ pub fn check_observer_allocation_attribution_evidence(
         || text(value, "next_evidence").is_none_or(str::is_empty)
     {
         problems.push("observer allocation attribution evidence decision is incomplete".to_owned());
+    }
+    problems
+}
+
+pub fn check_shared_entry_tags_contract(value: &TomlValue, release: &str) -> Vec<String> {
+    let mut problems = Vec::new();
+    if integer(value, "schema_version") != Some(1)
+        || text(value, "release") != Some(release)
+        || text(value, "contract_id") != Some("shared-entry-tags-073-v1")
+        || text(value, "state") != Some("preregistered-before-implementation")
+        || text(value, "triggering_evidence") != Some(OBSERVER_ALLOCATION_ATTRIBUTION_EVIDENCE)
+    {
+        problems.push("shared entry tags contract identity changed".to_owned());
+    }
+    for field in [
+        "callback_may_block",
+        "callback_may_await",
+        "public_api_changed",
+        "retained_estimator_schema_changed",
+        "retained_estimator_values_changed",
+        "tag_index_schema_changed",
+        "workload_changed",
+        "thresholds_changed",
+        "candidate_data_allowed",
+        "dedicated_host_run_allowed",
+    ] {
+        if boolean(value, field) != Some(false) {
+            problems.push(format!("shared entry tags contract {field} must be false"));
+        }
+    }
+    for field in [
+        "cache_entry_tags_shared_immutable",
+        "cleanup_ticket_shares_same_tags",
+        "event_payload_remains_owned_strings",
+        "versioned_cleanup_preserved",
+        "queue_capacity_preserved",
+        "overflow_and_dirty_semantics_preserved",
+    ] {
+        if boolean(value, field) != Some(true) {
+            problems.push(format!("shared entry tags contract {field} must be true"));
+        }
+    }
+    if string_array(value.get("implementation_scope"))
+        != [
+            "crates/hydracache/src/entry.rs",
+            "crates/hydracache/src/cache.rs",
+            "crates/hydracache/src/removal_observer.rs",
+        ]
+        || string_array(value.get("local_gates")).len() < 8
+        || text(value, "optimization").is_none_or(str::is_empty)
+        || text(value, "rollback").is_none_or(str::is_empty)
+        || text(value, "success_rule").is_none_or(str::is_empty)
+    {
+        problems.push("shared entry tags contract scope or gates changed".to_owned());
     }
     problems
 }

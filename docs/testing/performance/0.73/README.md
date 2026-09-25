@@ -424,6 +424,12 @@ Moka invokes the observer with `entry.value.clone()`, while `CacheEntry::clone` 
 and result hashes, and prohibits a host repeat. The next candidate is shared immutable entry tags,
 validated locally before another reference-host minute is authorized.
 
+`shared-entry-tags-contract.toml` preregisters that ownership change. The internal entry and cleanup
+ticket may share `Arc<[String]>`, but public event payloads remain owned strings, estimator schema
+and values remain frozen, queue capacity and dirty/overflow behavior cannot move, and the callback
+still cannot await or block. Correctness gates and the exact 120-process local matrix are required;
+even a successful local result does not automatically authorize another host run.
+
 The same push exposed a separate cost-control issue: the host-admission workflow still had an
 automatic path and queued run `36072022062` behind the shared performance concurrency group. It was
 cancelled before environment approval and ran no job. Commit `e0dc4df5` makes host admission, like

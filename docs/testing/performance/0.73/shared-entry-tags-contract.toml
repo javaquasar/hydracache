@@ -1,0 +1,40 @@
+schema_version = 1
+release = "0.73"
+contract_id = "shared-entry-tags-073-v1"
+state = "preregistered-before-implementation"
+triggering_evidence = "docs/testing/performance/0.73/observer-allocation-attribution-2c37d2f1.toml"
+proposal_id = "P73-INSTRUMENTATION-NONBLOCKING-REMOVAL"
+implementation_scope = [
+  "crates/hydracache/src/entry.rs",
+  "crates/hydracache/src/cache.rs",
+  "crates/hydracache/src/removal_observer.rs",
+]
+optimization = "Store immutable CacheEntry tags and CleanupTicket tags as Arc<[String]> so Moka observer value cloning and queue publication share tag ownership instead of deep-cloning the slice and strings."
+cache_entry_tags_shared_immutable = true
+cleanup_ticket_shares_same_tags = true
+event_payload_remains_owned_strings = true
+versioned_cleanup_preserved = true
+queue_capacity_preserved = true
+overflow_and_dirty_semantics_preserved = true
+callback_may_block = false
+callback_may_await = false
+public_api_changed = false
+retained_estimator_schema_changed = false
+retained_estimator_values_changed = false
+tag_index_schema_changed = false
+workload_changed = false
+thresholds_changed = false
+candidate_data_allowed = false
+dedicated_host_run_allowed = false
+rollback = "Restore Box<[String]> ownership in CacheEntry and CleanupTicket and restore lazy event tag clones; do not change Moka, observer sequences, queue bounds, workload, or thresholds."
+local_gates = [
+  "CacheEntry clone shares tag allocation while preserving tag values",
+  "memory_footprint and memory_accounting retained-total suites",
+  "removal observer duplicate, saturation, pending, overflow, cancellation, and versioned cleanup suites",
+  "event payload and tag invalidation suites",
+  "hydracache check, formatting, and clippy with instrumentation-lab",
+  "standalone observer harness check and clippy",
+  "unchanged 120-process local allocation attribution matrix",
+  "performance contract and documentation checks",
+]
+success_rule = "Every correctness gate passes and the exact local matrix reduces the positive observer-noop mutation allocation while preserving complete production reconciliation. Local success may authorize a separate decision about one baseline v2 repeat but cannot authorize it automatically."

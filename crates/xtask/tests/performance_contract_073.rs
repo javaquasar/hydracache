@@ -866,3 +866,21 @@ fn allocation_attribution_evidence_cannot_promote_or_authorize_host_repeat() {
         .iter()
         .any(|problem| problem.contains("evidence volume changed")));
 }
+
+#[test]
+fn shared_entry_tags_cannot_change_estimator_or_authorize_host() {
+    let mut value = manifest("shared-entry-tags-contract.toml");
+    value["retained_estimator_values_changed"] = TomlValue::Boolean(true);
+    value["dedicated_host_run_allowed"] = TomlValue::Boolean(true);
+    value["cleanup_ticket_shares_same_tags"] = TomlValue::Boolean(false);
+    let problems = xtask::performance_contract::check_shared_entry_tags_contract(&value, "0.73");
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("retained_estimator_values_changed must be false")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("dedicated_host_run_allowed must be false")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("cleanup_ticket_shares_same_tags must be true")));
+}
