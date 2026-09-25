@@ -113,10 +113,12 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          i73_root="$RUNNER_TEMP/hydracache-i73"
-          c73_root="$RUNNER_TEMP/hydracache-c73"
-          i73_stage="$RUNNER_TEMP/integrated-i73-stage"
-          c73_stage="$RUNNER_TEMP/integrated-c73-stage"
+          run_key="${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+          i73_root="$RUNNER_TEMP/hydracache-i73-$run_key"
+          c73_root="$RUNNER_TEMP/hydracache-c73-$run_key"
+          i73_stage="$RUNNER_TEMP/integrated-i73-stage-$run_key"
+          c73_stage="$RUNNER_TEMP/integrated-c73-stage-$run_key"
+          git worktree prune
           git worktree add --detach "$i73_root" "$I73_SHA"
           git worktree add --detach "$c73_root" "$C73_SHA"
           test "$(git -C "$i73_root" rev-parse HEAD)" = "$I73_SHA"
@@ -214,6 +216,29 @@ jobs:
           post_path = root / "postflight.json"
           canary_path = root / "canary" / "canary.json"
           campaign_path = root / "campaign" / "integrated-host-campaign.json"
+          required = (pre_path, post_path, canary_path, campaign_path)
+          missing = [str(path.relative_to(root)) for path in required if not path.is_file()]
+          if missing:
+              digest = lambda path: hashlib.sha256(path.read_bytes()).hexdigest()
+              incomplete = {
+                  "schema_version": 1,
+                  "release": "0.73",
+                  "profile_id": "integrated-focused-host-073-v1",
+                  "tooling_sha": tooling_sha,
+                  "result": "incomplete",
+                  "missing": missing,
+                  "available_sha256": {
+                      str(path.relative_to(root)): digest(path)
+                      for path in required
+                      if path.is_file()
+                  },
+                  "allocation_and_rss_promotable": False,
+                  "silent_retry_allowed": False,
+              }
+              (root / "manifest.json").write_text(
+                  json.dumps(incomplete, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+              )
+              raise SystemExit("campaign packet is incomplete: " + ", ".join(missing))
           pre = json.loads(pre_path.read_text(encoding="utf-8"))
           post = json.loads(post_path.read_text(encoding="utf-8"))
           canary = json.loads(canary_path.read_text(encoding="utf-8"))
