@@ -1,0 +1,90 @@
+schema_version = 1
+release = "0.73"
+evidence_id = "w9-retained-byte-admission-not-applicable-49ae52e8-v1"
+state = "source-audit-complete-w9-terminal-not-applicable"
+terminal_disposition = "not-applicable"
+contract = "docs/testing/performance/0.73/w9-retained-byte-admission-decision-contract.toml"
+contract_source_commit = "49ae52e81796ac730d4d9666c8ea205ebef674ff"
+contract_sha256 = "d8977b7f8faeb2f2acbcc3a675da672fcb11ae0fbf54a9fee667c5ed7858b713"
+baseline_identity = "I73"
+
+audit_inputs = 13
+eligible_unbounded_pressure_owners = 0
+focused_test_suites = 5
+focused_tests_passed = 32
+focused_tests_failed = 0
+product_mutation_present = false
+configuration_change_present = false
+api_change_present = false
+legacy_max_capacity_changed = false
+retained_estimator_policy_changed = false
+global_retained_limit_added = false
+tenant_retained_limit_added = false
+namespace_retained_limit_added = false
+dedicated_host_run_used = false
+promotable = false
+release_numerical_claim_allowed = false
+
+builder_source_sha256 = "0db440436646773a5db0372426ad4e4c1b9d41b81b5149a0ffb0cad6809cbb33"
+memory_footprint_source_sha256 = "c647d55c30ee2744798e0f3d127fe05ce2e83c0c92efa76ed23ededb31e5f6eb"
+request_admission_source_sha256 = "95ad0e57cc937839157d29a0559d06a6baac8d1a5572a4ab9bc09f8aaf514105"
+multitenancy_source_sha256 = "b5c8c3a673fc901c03c3c43c29d3bfe6466e3752c82e251da79ec938073faddc"
+hc2_source_sha256 = "57ef93bee2a4ebe54c3e372e9d8cedf3b346c5a423a1e817f88fe6cb8104f9be"
+
+historical_policy_finding = "Release 0.71 deferred W2b because D0 found no fail-open retained-byte admission surface and W2a was deliberately reporting-only. W9 found no new pressure owner that invalidates that boundary."
+legacy_capacity_finding = "HydraCacheBuilder::max_capacity remains Moka encoded-value-byte weight capped by max_entry_bytes. The retained estimator's try_moka_weight adapter is tested but is not installed in the builder."
+existing_admission_finding = "AdmissionController bounds concurrent request count, admitted request bytes, and FIFO depth. Multitenancy enforces request/value limits plus tenant/namespace logical-value quotas with prevalidation, commit-aware accounting, rollback, replacement deltas, and idempotent release. These are owner-specific controls, not a global retained-cache policy."
+pressure_reconciliation = "W2--W4 removed proven allocation/copy owners without demonstrating a remaining live-byte pressure owner. W5 found queued HC/2 output pressure and bounded the exact application queue at one MiB; the residual producer, tonic/h2, TLS, socket, and allocator retention is not one global logical retained owner. W6 retained existing bounded services after a measured-no-win result. W7 already enforces a separate durable logical-byte budget. W8 measured allocator retention, which logical admission cannot map to or guarantee returning to the OS."
+semantic_risk = "A new max_retained_bytes control would add rejection, reservation, replacement, batch, retry, tenant, namespace, and compatibility semantics. Installing it without an evidenced unbounded owner would double-limit some paths, leave external retention untouched, and risk silently changing legacy eviction behavior."
+decision = "close-w9-not-applicable-no-retained-byte-admission-candidate"
+next_evidence = "Reopen W9 only when an equal-workload process or cgroup pressure incident reconciles to a still-unbounded logical retained owner after existing owner-specific limits. Preregister the owner, reservation lifecycle, scopes, rollback, absent-setting compatibility, and D2 thresholds before implementing or observing a candidate."
+
+validation = [
+  "cargo test -p hydracache --test memory_accounting_071 --locked: 4 passed",
+  "cargo test -p hydracache --test memory_footprint_071 --locked: 5 passed",
+  "cargo test -p hydracache --test admission --locked: 4 passed",
+  "cargo test -p hydracache --test multitenancy --locked: 15 passed",
+  "cargo test -p hydracache --test sustained_overload --locked: 4 passed",
+]
+
+[[owner_finding]]
+work_item = "W2"
+owner = "shared store and expiry scan"
+classification = "bounded-no-retained-pressure"
+reason = "The accepted change removed borrowed-key scan allocations while exact cardinality and quota release stayed correct; it did not reveal an unbounded retained owner."
+
+[[owner_finding]]
+work_item = "W3"
+owner = "tag index and event tags"
+classification = "layout-copy-win-no-retained-pressure"
+reason = "Shared immutable tags removed clone churn while logical membership accounting remained exact; the estimator intentionally does not claim allocator capacity."
+
+[[owner_finding]]
+work_item = "W4"
+owner = "RESP translation"
+classification = "transient-copy-win-no-retained-pressure"
+reason = "Zero-copy response encoding removes a transient allocation and does not create a live cache-byte admission owner."
+
+[[owner_finding]]
+work_item = "W5"
+owner = "HC/2 connection and outbound queue"
+classification = "pressure-owner-already-bounded"
+reason = "The application queue now has a one-MiB encoded-envelope budget. Remaining transport and allocator retention cannot be truthfully charged to a global retained estimator."
+
+[[owner_finding]]
+work_item = "W6"
+owner = "management services"
+classification = "bounded-measured-no-win"
+reason = "Existing concurrency, response, cursor, history, and cache bounds remain; the local profile did not authorize a product candidate."
+
+[[owner_finding]]
+work_item = "W7"
+owner = "durable store and page cache"
+classification = "separate-logical-budget-external-residency"
+reason = "Durable logical bytes already have a budget; file-backed residency and write buffers are not the in-memory retained estimator's owner."
+
+[[owner_finding]]
+work_item = "W8"
+owner = "allocator arenas and retained pages"
+classification = "external-not-logically-admissible"
+reason = "Committed, reserved, resident, and reusable pages are allocator/OS concepts. A logical retained limit cannot guarantee purge or RSS reduction."

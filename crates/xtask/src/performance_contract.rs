@@ -160,6 +160,8 @@ const W8_ALLOCATOR_PROFILE_EVIDENCE: &str =
     "docs/testing/performance/0.73/w8-allocator-profile-deferred-ea12f68a.toml";
 const W9_RETAINED_BYTE_ADMISSION_DECISION_CONTRACT: &str =
     "docs/testing/performance/0.73/w9-retained-byte-admission-decision-contract.toml";
+const W9_RETAINED_BYTE_ADMISSION_EVIDENCE: &str =
+    "docs/testing/performance/0.73/w9-retained-byte-admission-not-applicable-49ae52e8.toml";
 const RELEASE: &str = "0.73";
 const PROFILE: &str = "local-screening-073-v1";
 const ENVIRONMENT_CLASS: &str = "local_screening";
@@ -392,6 +394,9 @@ pub fn check_at_root(
     let w9_retained_byte_admission_decision_contract: TomlValue = toml::from_str(
         &fs::read_to_string(root.join(W9_RETAINED_BYTE_ADMISSION_DECISION_CONTRACT))?,
     )?;
+    let w9_retained_byte_admission_evidence: TomlValue = toml::from_str(&fs::read_to_string(
+        root.join(W9_RETAINED_BYTE_ADMISSION_EVIDENCE),
+    )?)?;
     let mut problems = check_contract(&contract, release);
     if !root.join(MOKA_OBSERVER_UPSTREAM_DRAFT).is_file() {
         problems.push("notification observer dependency review draft is missing".to_owned());
@@ -674,6 +679,10 @@ pub fn check_at_root(
         &w9_retained_byte_admission_decision_contract,
         release,
     ));
+    problems.extend(check_w9_retained_byte_admission_evidence(
+        &w9_retained_byte_admission_evidence,
+        release,
+    ));
     problems.extend(check_schema(
         &schema,
         &example,
@@ -951,6 +960,10 @@ pub fn check_contract(root: &TomlValue, release: &str) -> Vec<String> {
         (
             "w9_retained_byte_admission_decision_contract",
             W9_RETAINED_BYTE_ADMISSION_DECISION_CONTRACT,
+        ),
+        (
+            "w9_retained_byte_admission_evidence",
+            W9_RETAINED_BYTE_ADMISSION_EVIDENCE,
         ),
     ] {
         if text(root, field) != Some(expected) {
@@ -7468,6 +7481,113 @@ pub fn check_w9_retained_byte_admission_decision_contract(
                 "W9 retained-byte decision contract {field} is missing"
             ));
         }
+    }
+    problems
+}
+
+pub fn check_w9_retained_byte_admission_evidence(value: &TomlValue, release: &str) -> Vec<String> {
+    let mut problems = Vec::new();
+    if integer(value, "schema_version") != Some(1)
+        || text(value, "release") != Some(release)
+        || text(value, "evidence_id")
+            != Some("w9-retained-byte-admission-not-applicable-49ae52e8-v1")
+        || text(value, "state") != Some("source-audit-complete-w9-terminal-not-applicable")
+        || text(value, "terminal_disposition") != Some("not-applicable")
+        || text(value, "contract") != Some(W9_RETAINED_BYTE_ADMISSION_DECISION_CONTRACT)
+        || text(value, "contract_source_commit") != Some("49ae52e81796ac730d4d9666c8ea205ebef674ff")
+        || text(value, "baseline_identity") != Some("I73")
+    {
+        problems.push("W9 retained-byte admission evidence identity changed".to_owned());
+    }
+    for field in [
+        "contract_sha256",
+        "builder_source_sha256",
+        "memory_footprint_source_sha256",
+        "request_admission_source_sha256",
+        "multitenancy_source_sha256",
+        "hc2_source_sha256",
+    ] {
+        if text(value, field).is_none_or(|digest| !sha256(digest)) {
+            problems.push(format!(
+                "W9 retained-byte admission evidence {field} is not SHA-256"
+            ));
+        }
+    }
+    for field in [
+        "product_mutation_present",
+        "configuration_change_present",
+        "api_change_present",
+        "legacy_max_capacity_changed",
+        "retained_estimator_policy_changed",
+        "global_retained_limit_added",
+        "tenant_retained_limit_added",
+        "namespace_retained_limit_added",
+        "dedicated_host_run_used",
+        "promotable",
+        "release_numerical_claim_allowed",
+    ] {
+        if boolean(value, field) != Some(false) {
+            problems.push(format!(
+                "W9 retained-byte admission evidence {field} must be false"
+            ));
+        }
+    }
+    if integer(value, "audit_inputs") != Some(13)
+        || integer(value, "eligible_unbounded_pressure_owners") != Some(0)
+        || integer(value, "focused_test_suites") != Some(5)
+        || integer(value, "focused_tests_passed") != Some(32)
+        || integer(value, "focused_tests_failed") != Some(0)
+    {
+        problems.push("W9 retained-byte admission evidence audit result changed".to_owned());
+    }
+    let expected_findings = [
+        ("W2", "bounded-no-retained-pressure"),
+        ("W3", "layout-copy-win-no-retained-pressure"),
+        ("W4", "transient-copy-win-no-retained-pressure"),
+        ("W5", "pressure-owner-already-bounded"),
+        ("W6", "bounded-measured-no-win"),
+        ("W7", "separate-logical-budget-external-residency"),
+        ("W8", "external-not-logically-admissible"),
+    ];
+    let findings = value
+        .get("owner_finding")
+        .and_then(TomlValue::as_array)
+        .map(Vec::as_slice)
+        .unwrap_or_default();
+    if findings.len() != expected_findings.len()
+        || findings
+            .iter()
+            .zip(expected_findings)
+            .any(|(finding, (work_item, classification))| {
+                text(finding, "work_item") != Some(work_item)
+                    || text(finding, "classification") != Some(classification)
+                    || text(finding, "owner").is_none_or(str::is_empty)
+                    || text(finding, "reason").is_none_or(str::is_empty)
+            })
+    {
+        problems.push("W9 retained-byte admission evidence owner audit changed".to_owned());
+    }
+    if string_array(value.get("validation")).len() != 5 {
+        problems.push("W9 retained-byte admission evidence validation changed".to_owned());
+    }
+    for field in [
+        "historical_policy_finding",
+        "legacy_capacity_finding",
+        "existing_admission_finding",
+        "pressure_reconciliation",
+        "semantic_risk",
+        "next_evidence",
+    ] {
+        if text(value, field).is_none_or(str::is_empty) {
+            problems.push(format!(
+                "W9 retained-byte admission evidence {field} is missing"
+            ));
+        }
+    }
+    if text(value, "decision")
+        != Some("close-w9-not-applicable-no-retained-byte-admission-candidate")
+    {
+        problems.push("W9 retained-byte admission evidence decision changed".to_owned());
     }
     problems
 }

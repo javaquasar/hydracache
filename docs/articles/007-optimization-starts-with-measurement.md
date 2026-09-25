@@ -1559,6 +1559,58 @@ plus the complete compatibility, CPU, and latency matrix before changing any def
 tradeoff is a valid optimization outcome: no product mutation is safer than selecting the faster
 allocator while hiding its retention behavior.
 
+W9 asked a deliberately different question: do the preceding measurements justify a new opt-in
+limit on retained cache bytes? The existence of a retained-byte estimator does not answer it. An
+estimator is a ruler; admission is a behavioral policy. The latter decides whether an operation is
+accepted, which scope pays for it, how replacement deltas are reserved, how a failed batch rolls
+back, what a retry observes, and when the reservation is released. Turning reporting into rejection
+without a demonstrated pressure owner would be a semantic change disguised as instrumentation.
+
+We preregistered two possible terminal outcomes before making that decision. `authorize-d2` required
+one measured owner that was both attributable to logical retained bytes and still unbounded after
+W2--W8. `not-applicable` was required when no such owner survived. RSS, private commit, allocator
+arenas, virtual reservations, file-backed page cache, transient copied bytes, and an already bounded
+queue were forbidden substitutes. These quantities matter, but a logical retained-byte limit cannot
+promise to control them.
+
+The owner-by-owner audit found no qualifying gap. W2's expiry work and W3/W4's tag and RESP changes
+removed allocation or copy churn without discovering unbounded live retention. W6 kept already
+bounded management services after a measured-no-win result. W7 already has a separate durable
+logical-byte budget; conflating that on-disk owner with in-memory retained estimates would charge the
+same application value for different lifecycles. W8's committed and reusable allocator pages are
+external state: rejecting the next cache write cannot guarantee that an allocator purges old pages
+or that the operating system lowers RSS.
+
+W5 was the one real pressure finding, and it demonstrates why owner-specific admission comes first.
+The HC/2 application queue now charges the encoded envelope against a one-MiB budget and holds the
+permit until the item is polled or dropped. That closes the exact unbounded owner we measured. The
+remaining producer frame, tonic/h2 flow-control window, protobuf/TLS buffers, socket state, and
+allocator high-water do not share one logical retained-byte lifecycle. Adding a global cache limit
+would double-limit the queue-adjacent request while leaving several of those external owners
+untouched.
+
+Existing controls also cover different, explicit contracts. The generic admission controller bounds
+in-flight request bytes and FIFO depth. Multitenancy enforces request and value ceilings plus
+tenant/namespace logical-value quotas. Its batch path prevalidates the final last-write-wins state,
+commits accounting only after the mutation commits, and leaves the old usage intact on abort. These
+properties are useful building blocks, but their existence is not evidence that another global
+policy is needed.
+
+We reran five local suites containing 32 focused tests. They covered estimator overflow and Moka's
+`u32` boundary, exact replace/delete/flush reconciliation, capacity eviction accounting, request
+permit release, retryable overload, tenant isolation, pre-mutation oversize rejection, duplicate-key
+batch accounting, aborted-batch rollback, and idempotent quota release. The legacy builder still
+weighs encoded value bytes for `max_capacity`; the reporting estimator's `try_moka_weight` adapter is
+deliberately not installed. Thus no absent configuration silently changes behavior.
+
+W9 closes as `not-applicable`, with no product or configuration change. This does not claim that
+HydraCache can never need retained-byte admission. It defines the evidence needed to reopen the
+question: equal-workload process or cgroup pressure must reconcile to a specific still-unbounded
+logical owner after existing limits, and a new D2 contract must freeze scopes, reservation/release
+semantics, rollback, retry behavior, absent-setting compatibility, and thresholds before candidate
+code or measurements. Refusing an unevidenced feature is part of optimization discipline: every
+limit consumes compatibility and operational complexity, even when its default is “off.”
+
 ## A profiling ladder that avoids expensive runs
 
 Not every development iteration needs a dedicated bare-metal campaign. A useful workflow has several

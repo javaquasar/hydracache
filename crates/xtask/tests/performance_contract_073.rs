@@ -1519,6 +1519,33 @@ fn w9_decision_contract_cannot_authorize_without_pressure_or_change_legacy_seman
 }
 
 #[test]
+fn w9_evidence_cannot_invent_pressure_or_add_a_hidden_limit() {
+    let mut value = manifest("w9-retained-byte-admission-not-applicable-49ae52e8.toml");
+    value["terminal_disposition"] = TomlValue::String("accepted".to_owned());
+    value["eligible_unbounded_pressure_owners"] = TomlValue::Integer(1);
+    value["legacy_max_capacity_changed"] = TomlValue::Boolean(true);
+    value["owner_finding"] = TomlValue::Array(Vec::new());
+    value["decision"] = TomlValue::String("add-global-retained-limit".to_owned());
+    let problems =
+        xtask::performance_contract::check_w9_retained_byte_admission_evidence(&value, "0.73");
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("identity changed")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("audit result changed")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("legacy_max_capacity_changed must be false")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("owner audit changed")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("decision changed")));
+}
+
+#[test]
 fn w5_connection_profile_cannot_promote_claim_server_bytes_or_skip_samples() {
     let mut value = manifest("w5-hc2-connection-profile-contract.toml");
     value["promotable"] = TomlValue::Boolean(true);
