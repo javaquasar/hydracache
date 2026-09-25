@@ -1732,6 +1732,22 @@ reconciliation, and the 1,000-operation durable companion. These local facts qua
 open one manual host dispatch; they are deliberately not performance evidence and cannot finalize
 `C73`, authorize a long run, or support a release claim.
 
+The first protected-host attempts also exposed an important boundary: an expensive run starts only
+when the first measured process starts. A dispatch rejected before a runner, a nested concurrency
+deadlock, a missing collector CPU assignment, a Cargo overlay that cannot resolve its workspace, or
+a stale worktree registration consumes engineering time, but none of them is a performance sample.
+We retained every such attempt with its run and artifact identity instead of relabelling a later retry
+as “the first run.” This keeps infrastructure selection out of the candidate result: a failed setup
+cannot vote against the product, and a convenient retry cannot vote for it.
+
+Persistent performance hosts make lifecycle state part of experiment design. Fixed temporary paths
+look deterministic, but after cancellation Git may remember a worktree whose directory no longer
+exists. Reusing that name then fails before compilation. The corrected workflow prunes missing
+registrations and derives all product and overlay paths from `run_id` plus `run_attempt`; it also
+writes an explicit incomplete manifest when canary or campaign artifacts do not exist. The broader
+lesson is that fail-closed evidence must cover orchestration too: partial packets need a machine-
+readable reason, and cleanup residue must never be mistaken for a product regression.
+
 ## A profiling ladder that avoids expensive runs
 
 Not every development iteration needs a dedicated bare-metal campaign. A useful workflow has several
