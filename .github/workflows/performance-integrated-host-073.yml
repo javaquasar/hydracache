@@ -1,0 +1,248 @@
+name: Performance Integrated Host 0.73
+
+on:
+  workflow_dispatch:
+    inputs:
+      tooling_sha:
+        description: "Exact lowercase 40-character commit containing the reviewed harness and runner"
+        required: true
+        type: string
+      lease_owner:
+        description: "Operator holding the serialized performance-host lease"
+        required: true
+        type: string
+      lease_end:
+        description: "Approved lease end in RFC3339 form"
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: performance-reference-073-host
+  cancel-in-progress: false
+
+jobs:
+  compare:
+    name: Exact I73 versus focused C73 integrated comparison
+    runs-on: [self-hosted, linux, x64, hydracache-release]
+    environment: performance-reference-073
+    timeout-minutes: 180
+    env:
+      HYDRACACHE_PERFORMANCE_PROTECTED_ENV: performance-reference-073
+      HYDRACACHE_PERFORMANCE_DEDICATED_BARE_METAL: "1"
+      HYDRACACHE_PERFORMANCE_DAEMON_CPUSET: ${{ vars.HYDRACACHE_MEMORY_DAEMON_CPUSET || '5-6' }}
+      HYDRACACHE_PERFORMANCE_LOADGEN_CPUSET: ${{ vars.HYDRACACHE_MEMORY_LOADGEN_CPUSET || '7' }}
+      I73_SHA: e757556d3a31d565f52a9561d6d4e555bb1cc373
+      C73_SHA: 7e3070894aa51af96cdcb3e350eff923a309e1fa
+      C73_TREE_OID: e2c438b9a248586a4f72d3eca3d1c5369fff440b
+      EVIDENCE_DIR: ${{ github.workspace }}/target/performance-evidence/0.73/integrated-host-${{ github.run_id }}-${{ github.run_attempt }}
+
+    steps:
+      - name: Check out reviewed tooling revision
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ inputs.tooling_sha }}
+
+      - name: Resolve tooling identity and serialized lease
+        shell: bash
+        env:
+          INPUT_TOOLING_SHA: ${{ inputs.tooling_sha }}
+          INPUT_LEASE_OWNER: ${{ inputs.lease_owner }}
+          INPUT_LEASE_END: ${{ inputs.lease_end }}
+        run: |
+          set -euo pipefail
+          [[ "$INPUT_TOOLING_SHA" =~ ^[0-9a-f]{40}$ ]]
+          test "$(git rev-parse HEAD)" = "$INPUT_TOOLING_SHA"
+          test -n "$INPUT_LEASE_OWNER"
+          date --date="$INPUT_LEASE_END" >/dev/null
+          test -z "$(git status --porcelain=v1 --untracked-files=normal)"
+          mkdir -p "$EVIDENCE_DIR"
+          {
+            echo "HYDRACACHE_PERFORMANCE_LEASE_OWNER=$INPUT_LEASE_OWNER"
+            echo "HYDRACACHE_PERFORMANCE_LEASE_END=$INPUT_LEASE_END"
+            echo "EXPECTED_TOOLING_SHA=$INPUT_TOOLING_SHA"
+          } >> "$GITHUB_ENV"
+
+      - name: Expose and verify required host tools
+        shell: bash
+        run: |
+          set -euo pipefail
+          rust_bin="$HOME/.cargo/bin"
+          test -x "$rust_bin/cargo"
+          test -x "$rust_bin/rustc"
+          echo "$rust_bin" >> "$GITHUB_PATH"
+          cargo --version
+          rustc --version
+          python3 --version
+          taskset --version
+          pidstat -V
+
+      - name: Capture pre-campaign calibration
+        shell: bash
+        run: |
+          set -euo pipefail
+          cargo run -p xtask --locked -- perf-memory-preflight \
+            --release 0.73 \
+            --profile performance-reference-073-v1 \
+            --output "$EVIDENCE_DIR/preflight.json"
+
+      - name: Materialize exact product trees and identical overlays
+        shell: bash
+        run: |
+          set -euo pipefail
+          i73_root="$RUNNER_TEMP/hydracache-i73"
+          c73_root="$RUNNER_TEMP/hydracache-c73"
+          i73_stage="$RUNNER_TEMP/integrated-i73-stage"
+          c73_stage="$RUNNER_TEMP/integrated-c73-stage"
+          git worktree add --detach "$i73_root" "$I73_SHA"
+          git worktree add --detach "$c73_root" "$C73_SHA"
+          test "$(git -C "$i73_root" rev-parse HEAD)" = "$I73_SHA"
+          test "$(git -C "$c73_root" rev-parse HEAD)" = "$C73_SHA"
+          test "$(git -C "$c73_root" rev-parse 'HEAD^{tree}')" = "$C73_TREE_OID"
+          mkdir -p "$i73_stage/tools" "$c73_stage/tools"
+          cp -a tools/performance-integrated-073 "$i73_stage/tools/"
+          cp -a tools/performance-integrated-073 "$c73_stage/tools/"
+          ln -s "$i73_root/crates" "$i73_stage/crates"
+          ln -s "$c73_root/crates" "$c73_stage/crates"
+          {
+            echo "I73_ROOT=$i73_root"
+            echo "C73_ROOT=$c73_root"
+            echo "I73_OVERLAY=$i73_stage/tools/performance-integrated-073"
+            echo "C73_OVERLAY=$c73_stage/tools/performance-integrated-073"
+          } >> "$GITHUB_ENV"
+
+      - name: Build exact role servers and standalone harnesses
+        shell: bash
+        run: |
+          set -euo pipefail
+          cargo build --manifest-path "$I73_ROOT/Cargo.toml" --release --locked -p hydracache-server
+          cargo build --manifest-path "$C73_ROOT/Cargo.toml" --release --locked -p hydracache-server
+          cargo build --manifest-path "$I73_OVERLAY/Cargo.toml" --release --locked
+          cargo build --manifest-path "$C73_OVERLAY/Cargo.toml" --release --locked
+          test -z "$(git -C "$I73_ROOT" status --porcelain=v1 --untracked-files=normal)"
+          test -z "$(git -C "$C73_ROOT" status --porcelain=v1 --untracked-files=normal)"
+          {
+            echo "I73_SERVER=$I73_ROOT/target/release/hydracache-server"
+            echo "C73_SERVER=$C73_ROOT/target/release/hydracache-server"
+            echo "I73_HARNESS=$I73_OVERLAY/target/release/performance-integrated-073"
+            echo "C73_HARNESS=$C73_OVERLAY/target/release/performance-integrated-073"
+          } >> "$GITHUB_ENV"
+
+      - name: Falsify the integrated accounting guard
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 scripts/perf/performance_integrated_host_073.py \
+            --mode canary \
+            --i73-harness "$I73_HARNESS" \
+            --c73-harness "$C73_HARNESS" \
+            --i73-server "$I73_SERVER" \
+            --c73-server "$C73_SERVER" \
+            --i73-overlay "$I73_OVERLAY" \
+            --c73-overlay "$C73_OVERLAY" \
+            --scenario docs/testing/performance/0.73/w10-focused-host-comparison-contract.toml \
+            --output "$EVIDENCE_DIR/canary" \
+            --daemon-cpu-set "$HYDRACACHE_PERFORMANCE_DAEMON_CPUSET" \
+            --loadgen-cpu-set "$HYDRACACHE_PERFORMANCE_LOADGEN_CPUSET"
+
+      - name: Run all frozen counterbalanced pairs
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 scripts/perf/performance_integrated_host_073.py \
+            --mode campaign \
+            --i73-harness "$I73_HARNESS" \
+            --c73-harness "$C73_HARNESS" \
+            --i73-server "$I73_SERVER" \
+            --c73-server "$C73_SERVER" \
+            --i73-overlay "$I73_OVERLAY" \
+            --c73-overlay "$C73_OVERLAY" \
+            --scenario docs/testing/performance/0.73/w10-focused-host-comparison-contract.toml \
+            --output "$EVIDENCE_DIR/campaign" \
+            --daemon-cpu-set "$HYDRACACHE_PERFORMANCE_DAEMON_CPUSET" \
+            --loadgen-cpu-set "$HYDRACACHE_PERFORMANCE_LOADGEN_CPUSET"
+
+      - name: Capture post-campaign calibration
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          cargo run -p xtask --locked -- perf-memory-preflight \
+            --release 0.73 \
+            --profile performance-reference-073-v1 \
+            --output "$EVIDENCE_DIR/postflight.json"
+
+      - name: Seal campaign packet
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - "$EVIDENCE_DIR" "$EXPECTED_TOOLING_SHA" <<'PY'
+          import hashlib
+          import json
+          import pathlib
+          import sys
+
+          root = pathlib.Path(sys.argv[1])
+          tooling_sha = sys.argv[2]
+          pre_path = root / "preflight.json"
+          post_path = root / "postflight.json"
+          canary_path = root / "canary" / "canary.json"
+          campaign_path = root / "campaign" / "integrated-host-campaign.json"
+          pre = json.loads(pre_path.read_text(encoding="utf-8"))
+          post = json.loads(post_path.read_text(encoding="utf-8"))
+          canary = json.loads(canary_path.read_text(encoding="utf-8"))
+          campaign = json.loads(campaign_path.read_text(encoding="utf-8"))
+          for label, receipt in (("pre", pre), ("post", post)):
+              if receipt["source_sha"] != tooling_sha or receipt["result"] != "success":
+                  raise SystemExit(f"{label} calibration did not admit the tooling revision")
+              if not receipt["ship_evidence_eligible"]:
+                  raise SystemExit(f"{label} host receipt is not promotable")
+              if receipt["calibration"]["relative_spread"] > receipt["calibration_limit"]:
+                  raise SystemExit(f"{label} calibration exceeded its frozen limit")
+          if pre["host_fingerprint"] != post["host_fingerprint"]:
+              raise SystemExit("host fingerprint drifted across campaign")
+          if pre["identity_probes"] != post["identity_probes"] or pre["lease"] != post["lease"]:
+              raise SystemExit("host policy or serialized lease drifted across campaign")
+          if canary["result"] != "passed" or not canary["marker_observed"] or not canary["receipt_absent"]:
+              raise SystemExit("accounting canary did not fail closed")
+          expected_attempts = 3 * 5 * 2
+          if campaign["attempt_count"] != expected_attempts or campaign["failed_attempts"]:
+              raise SystemExit("campaign does not contain thirty valid independent attempts")
+          digest = lambda path: hashlib.sha256(path.read_bytes()).hexdigest()
+          manifest = {
+              "schema_version": 1,
+              "release": "0.73",
+              "profile_id": "integrated-focused-host-073-v1",
+              "tooling_sha": tooling_sha,
+              "baseline_source_sha": campaign["baseline_source_sha"],
+              "candidate_source_sha": campaign["candidate_source_sha"],
+              "result": campaign["result"],
+              "host_fingerprint": pre["host_fingerprint"],
+              "lease": pre["lease"],
+              "preflight_sha256": digest(pre_path),
+              "postflight_sha256": digest(post_path),
+              "canary_sha256": digest(canary_path),
+              "campaign_sha256": digest(campaign_path),
+              "identity": campaign["identity"],
+              "allocation_and_rss_promotable": False,
+              "silent_retry_allowed": False,
+          }
+          (root / "manifest.json").write_text(
+              json.dumps(manifest, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+          )
+          if campaign["result"] != "passed":
+              raise SystemExit("focused integrated candidate failed a primary guard")
+          PY
+
+      - name: Upload complete campaign packet
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: performance-integrated-host-073-${{ inputs.tooling_sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ env.EVIDENCE_DIR }}
+          if-no-files-found: error
+          retention-days: 30
