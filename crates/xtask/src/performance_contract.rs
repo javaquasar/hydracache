@@ -122,6 +122,8 @@ const W5_HC2_RAW_TRANSPORT_STALL_CONTRACT: &str =
     "docs/testing/performance/0.73/w5-hc2-raw-transport-stall-contract.toml";
 const W5_HC2_RAW_TRANSPORT_STALL_EVIDENCE: &str =
     "docs/testing/performance/0.73/w5-hc2-raw-transport-stall-25cdfb61.toml";
+const W5_HC2_OUTBOUND_BYTE_ADMISSION_CONTRACT: &str =
+    "docs/testing/performance/0.73/w5-hc2-outbound-byte-admission-contract.toml";
 const RELEASE: &str = "0.73";
 const PROFILE: &str = "local-screening-073-v1";
 const ENVIRONMENT_CLASS: &str = "local_screening";
@@ -296,6 +298,9 @@ pub fn check_at_root(
     )?)?;
     let w5_hc2_raw_transport_stall_evidence: TomlValue = toml::from_str(&fs::read_to_string(
         root.join(W5_HC2_RAW_TRANSPORT_STALL_EVIDENCE),
+    )?)?;
+    let w5_hc2_outbound_byte_admission_contract: TomlValue = toml::from_str(&fs::read_to_string(
+        root.join(W5_HC2_OUTBOUND_BYTE_ADMISSION_CONTRACT),
     )?)?;
     let mut problems = check_contract(&contract, release);
     if !root.join(MOKA_OBSERVER_UPSTREAM_DRAFT).is_file() {
@@ -501,6 +506,10 @@ pub fn check_at_root(
     ));
     problems.extend(check_w5_hc2_raw_transport_stall_evidence(
         &w5_hc2_raw_transport_stall_evidence,
+        release,
+    ));
+    problems.extend(check_w5_hc2_outbound_byte_admission_contract(
+        &w5_hc2_outbound_byte_admission_contract,
         release,
     ));
     problems.extend(check_schema(
@@ -710,6 +719,10 @@ pub fn check_contract(root: &TomlValue, release: &str) -> Vec<String> {
         (
             "w5_hc2_raw_transport_stall_evidence",
             W5_HC2_RAW_TRANSPORT_STALL_EVIDENCE,
+        ),
+        (
+            "w5_hc2_outbound_byte_admission_contract",
+            W5_HC2_OUTBOUND_BYTE_ADMISSION_CONTRACT,
         ),
     ] {
         if text(root, field) != Some(expected) {
@@ -5170,6 +5183,97 @@ pub fn check_w5_hc2_raw_transport_stall_evidence(value: &TomlValue, release: &st
     }
     if text(value, "decision") != Some("preregister-hc2-outbound-byte-admission-candidate") {
         problems.push("W5 HC/2 raw transport-stall evidence decision changed".to_owned());
+    }
+    problems
+}
+
+pub fn check_w5_hc2_outbound_byte_admission_contract(
+    value: &TomlValue,
+    release: &str,
+) -> Vec<String> {
+    let mut problems = Vec::new();
+    if integer(value, "schema_version") != Some(1)
+        || text(value, "release") != Some(release)
+        || text(value, "contract_id") != Some("w5-hc2-outbound-byte-admission-073-v1")
+        || text(value, "state") != Some("preregistered-before-candidate-implementation")
+        || text(value, "triggering_evidence") != Some(W5_HC2_RAW_TRANSPORT_STALL_EVIDENCE)
+        || text(value, "source_parent") != Some("d715a87d0f1e52eda1417887f622f3ceafc2642f")
+    {
+        problems.push("W5 HC/2 outbound byte-admission contract identity changed".to_owned());
+    }
+    if string_array(value.get("implementation_scope"))
+        != [
+            "crates/hydracache-server/src/hc2.rs",
+            "crates/hydracache-server/Cargo.toml",
+        ]
+        || integer(value, "application_queue_byte_budget") != Some(1_048_576)
+        || text(value, "application_queue_item_capacity_source")
+            != Some("ClientSurfaceLimits.max_streams_per_connection")
+        || integer(value, "default_application_queue_item_capacity") != Some(16)
+        || text(value, "charge_measure") != Some("prost::Message::encoded_len(ServerEnvelope)")
+    {
+        problems.push("W5 HC/2 outbound byte-admission design changed".to_owned());
+    }
+    for field in [
+        "public_configuration_changed",
+        "wire_contract_changed",
+        "client_api_changed",
+        "production_counter_addition",
+        "item_capacity_changed",
+        "dispatch_semantics_changed",
+        "frame_rejection_added",
+        "http2_window_claimed",
+        "tls_or_socket_bytes_claimed",
+        "dedicated_host_run_allowed",
+        "release_numerical_claim_allowed",
+        "promotable",
+    ] {
+        if boolean(value, field) != Some(false) {
+            problems.push(format!(
+                "W5 HC/2 outbound byte-admission contract {field} must be false"
+            ));
+        }
+    }
+    for field in [
+        "candidate_implementation_allowed",
+        "encoded_length_charging_required",
+        "oversize_progress_required",
+        "permit_release_on_send_failure_required",
+        "permit_release_on_disconnect_required",
+        "existing_item_bound_required",
+        "existing_ordering_required",
+        "existing_backpressure_required",
+        "existing_close_reconciliation_required",
+        "local_raw_matrix_required",
+    ] {
+        if boolean(value, field) != Some(true) {
+            problems.push(format!(
+                "W5 HC/2 outbound byte-admission contract {field} must be true"
+            ));
+        }
+    }
+    if integer_array(value.get("value_bytes")) != [4_096, 262_144]
+        || integer(value, "pairs_per_value_size") != Some(5)
+        || integer(value, "connections") != Some(8)
+        || integer(value, "offered_value_bytes_per_connection") != Some(8_388_608)
+    {
+        problems.push("W5 HC/2 outbound byte-admission validation matrix changed".to_owned());
+    }
+    for field in [
+        "oversize_policy",
+        "permit_lifetime",
+        "single_producer_bound",
+        "candidate_success_rule",
+        "candidate_falsifier",
+        "claim_boundary",
+        "rollback",
+        "next_decision",
+    ] {
+        if text(value, field).is_none_or(str::is_empty) {
+            problems.push(format!(
+                "W5 HC/2 outbound byte-admission contract {field} is missing"
+            ));
+        }
     }
     problems
 }

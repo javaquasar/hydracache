@@ -1277,3 +1277,26 @@ fn w5_raw_transport_stall_evidence_cannot_promote_or_rewrite_retention() {
         .iter()
         .any(|problem| problem.contains("result changed")));
 }
+
+#[test]
+fn w5_outbound_byte_admission_cannot_change_scope_or_skip_progress() {
+    let mut value = manifest("w5-hc2-outbound-byte-admission-contract.toml");
+    value["promotable"] = TomlValue::Boolean(true);
+    value["frame_rejection_added"] = TomlValue::Boolean(true);
+    value["oversize_progress_required"] = TomlValue::Boolean(false);
+    value["application_queue_byte_budget"] = TomlValue::Integer(8 * 1024 * 1024);
+    let problems =
+        xtask::performance_contract::check_w5_hc2_outbound_byte_admission_contract(&value, "0.73");
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("promotable must be false")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("frame_rejection_added must be false")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("oversize_progress_required must be true")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("design changed")));
+}
