@@ -1271,6 +1271,29 @@ fn w4_resp_profile_cannot_mutate_product_or_drop_copy_cells() {
 }
 
 #[test]
+fn w4_resp_profile_evidence_cannot_hide_rejected_attempt_or_rewrite_owner() {
+    let mut value = manifest("w4-resp-translation-profile-f8c968a5.toml");
+    value["promotable"] = TomlValue::Boolean(true);
+    value["rejected_attempts"] = TomlValue::Integer(0);
+    value["resp2_bulk_median_gross_bytes_per_operation"] = TomlValue::Array(Vec::new());
+    value["decision"] = TomlValue::String("close-w4".to_owned());
+    let problems =
+        xtask::performance_contract::check_w4_resp_translation_profile_evidence(&value, "0.73");
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("promotable must be false")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("attempt ledger changed")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("encode result changed")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("decision changed")));
+}
+
+#[test]
 fn w5_connection_profile_cannot_promote_claim_server_bytes_or_skip_samples() {
     let mut value = manifest("w5-hc2-connection-profile-contract.toml");
     value["promotable"] = TomlValue::Boolean(true);

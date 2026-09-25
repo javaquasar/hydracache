@@ -140,6 +140,8 @@ const W3_SHARED_EVENT_TAGS_EVIDENCE: &str =
     "docs/testing/performance/0.73/w3-shared-event-tags-accepted-82f46245.toml";
 const W4_RESP_TRANSLATION_PROFILE_CONTRACT: &str =
     "docs/testing/performance/0.73/w4-resp-translation-profile-contract.toml";
+const W4_RESP_TRANSLATION_PROFILE_EVIDENCE: &str =
+    "docs/testing/performance/0.73/w4-resp-translation-profile-f8c968a5.toml";
 const RELEASE: &str = "0.73";
 const PROFILE: &str = "local-screening-073-v1";
 const ENVIRONMENT_CLASS: &str = "local_screening";
@@ -341,6 +343,9 @@ pub fn check_at_root(
     )?)?;
     let w4_resp_translation_profile_contract: TomlValue = toml::from_str(&fs::read_to_string(
         root.join(W4_RESP_TRANSLATION_PROFILE_CONTRACT),
+    )?)?;
+    let w4_resp_translation_profile_evidence: TomlValue = toml::from_str(&fs::read_to_string(
+        root.join(W4_RESP_TRANSLATION_PROFILE_EVIDENCE),
     )?)?;
     let mut problems = check_contract(&contract, release);
     if !root.join(MOKA_OBSERVER_UPSTREAM_DRAFT).is_file() {
@@ -582,6 +587,10 @@ pub fn check_at_root(
     ));
     problems.extend(check_w4_resp_translation_profile_contract(
         &w4_resp_translation_profile_contract,
+        release,
+    ));
+    problems.extend(check_w4_resp_translation_profile_evidence(
+        &w4_resp_translation_profile_evidence,
         release,
     ));
     problems.extend(check_schema(
@@ -827,6 +836,10 @@ pub fn check_contract(root: &TomlValue, release: &str) -> Vec<String> {
         (
             "w4_resp_translation_profile_contract",
             W4_RESP_TRANSLATION_PROFILE_CONTRACT,
+        ),
+        (
+            "w4_resp_translation_profile_evidence",
+            W4_RESP_TRANSLATION_PROFILE_EVIDENCE,
         ),
     ] {
         if text(root, field) != Some(expected) {
@@ -6186,6 +6199,127 @@ pub fn check_w4_resp_translation_profile_contract(value: &TomlValue, release: &s
         if text(value, field).is_none_or(str::is_empty) {
             problems.push(format!("W4 RESP translation profile {field} is missing"));
         }
+    }
+    problems
+}
+
+pub fn check_w4_resp_translation_profile_evidence(value: &TomlValue, release: &str) -> Vec<String> {
+    let mut problems = Vec::new();
+    if integer(value, "schema_version") != Some(1)
+        || text(value, "release") != Some(release)
+        || text(value, "evidence_id") != Some("w4-resp-translation-profile-f8c968a5-v1")
+        || text(value, "state") != Some("local-profile-passed-candidate-owner-found")
+        || text(value, "contract") != Some(W4_RESP_TRANSLATION_PROFILE_CONTRACT)
+        || text(value, "source_commit") != Some("f8c968a5f2d342bf563dd25fdc3b4d64bc2e5cc0")
+    {
+        problems.push("W4 RESP translation profile evidence identity changed".to_owned());
+    }
+    for field in [
+        "binary_sha256",
+        "contract_sha256",
+        "product_source_sha256",
+        "tool_source_sha256",
+        "tool_lock_sha256",
+        "accepted_raw_manifest_sha256",
+        "rejected_raw_manifest_sha256",
+    ] {
+        if text(value, field).is_none_or(|digest| !sha256(digest)) {
+            problems.push(format!(
+                "W4 RESP translation profile evidence {field} is not SHA-256"
+            ));
+        }
+    }
+    for field in [
+        "independent_processes",
+        "prebuilt_release_binary",
+        "complete_frame_consumption_passed",
+        "binary_key_roundtrip_passed",
+        "resp2_resp3_semantic_equality_passed",
+        "duplicate_del_semantics_passed",
+        "response_wire_passed",
+    ] {
+        if boolean(value, field) != Some(true) {
+            problems.push(format!(
+                "W4 RESP translation profile evidence {field} must be true"
+            ));
+        }
+    }
+    for field in [
+        "production_counter_addition",
+        "product_mutation_present",
+        "dedicated_host_run_allowed",
+        "promotable",
+        "release_numerical_claim_allowed",
+        "elapsed_time_used_for_decision",
+    ] {
+        if boolean(value, field) != Some(false) {
+            problems.push(format!(
+                "W4 RESP translation profile evidence {field} must be false"
+            ));
+        }
+    }
+    if integer(value, "accepted_attempts") != Some(460)
+        || integer(value, "accepted_failed_processes") != Some(0)
+        || integer(value, "accepted_nonempty_stderr") != Some(0)
+        || integer(value, "accepted_invariant_failures") != Some(0)
+        || integer(value, "rejected_attempts") != Some(460)
+        || integer(value, "rejected_failed_processes") != Some(0)
+        || integer(value, "rejected_nonempty_stderr") != Some(0)
+        || integer(value, "rejected_invariant_failed_processes") != Some(5)
+        || integer(value, "rejected_invariant_false_fields") != Some(10)
+        || integer(value, "repeats_per_scenario") != Some(5)
+        || integer(value, "scenario_count") != Some(92)
+        || text(value, "rejected_cell") != Some("batch-translation/del-distinct/256/ascii")
+    {
+        problems.push("W4 RESP translation profile evidence attempt ledger changed".to_owned());
+    }
+    if integer_array(value.get("single_get_binary_key_bytes")) != [0, 16, 64, 256]
+        || integer_array(value.get("single_get_binary_median_gross_bytes_per_operation"))
+            != [308, 335, 431, 815]
+        || integer_array(value.get("single_get_binary_structured_bytes_per_operation"))
+            != [21, 48, 144, 528]
+        || integer_array(value.get("batch_256_binary_median_gross_bytes_per_operation"))
+            != [55_782, 116_838, 55_479, 55_463, 43_271]
+        || integer_array(value.get("batch_256_binary_structured_bytes_per_operation"))
+            != [144, 36_864, 36_864, 36_864, 36_864]
+    {
+        problems.push("W4 RESP translation profile evidence translation result changed".to_owned());
+    }
+    if integer_array(value.get("encode_payload_bytes")) != [0, 64, 4_096, 1_048_576]
+        || integer_array(value.get("resp2_bulk_median_gross_bytes_per_operation"))
+            != [14, 142, 8_210, 2_097_176]
+        || integer_array(value.get("resp2_bulk_wire_bytes_per_operation"))
+            != [6, 71, 4_105, 1_048_588]
+        || integer_array(value.get("resp3_array16_median_gross_bytes_per_operation"))
+            != [1_866, 1_994, 10_122, 2_099_146]
+        || integer_array(value.get("resp3_array16_wire_bytes_per_operation"))
+            != [101, 165, 4_229, 1_048_741]
+    {
+        problems.push("W4 RESP translation profile evidence encode result changed".to_owned());
+    }
+    if float_array(value.get("resp3_decode_median_gross_to_wire_ratio"))
+        != [
+            12.1293, 14.4048, 51.9957, 11.7524, 12.1288, 13.1871, 2.2714, 9.3484,
+        ]
+    {
+        problems.push("W4 RESP translation profile evidence decode result changed".to_owned());
+    }
+    for field in [
+        "raw_manifest_canonicalization",
+        "rejected_reason",
+        "translation_interpretation",
+        "decode_interpretation",
+        "encode_interpretation",
+        "next_evidence",
+    ] {
+        if text(value, field).is_none_or(str::is_empty) {
+            problems.push(format!(
+                "W4 RESP translation profile evidence {field} is missing"
+            ));
+        }
+    }
+    if text(value, "decision") != Some("authorize-zero-copy-bytesmut-to-vec-encode-candidate") {
+        problems.push("W4 RESP translation profile evidence decision changed".to_owned());
     }
     problems
 }

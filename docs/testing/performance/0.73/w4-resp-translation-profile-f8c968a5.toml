@@ -1,0 +1,79 @@
+schema_version = 1
+release = "0.73"
+evidence_id = "w4-resp-translation-profile-f8c968a5-v1"
+state = "local-profile-passed-candidate-owner-found"
+contract = "docs/testing/performance/0.73/w4-resp-translation-profile-contract.toml"
+source_commit = "f8c968a5f2d342bf563dd25fdc3b4d64bc2e5cc0"
+binary_sha256 = "47a5b15dbf4bd6630ddae920d920a073fca5bb4bc38c1838117986d3c70cb287"
+contract_sha256 = "bd53ce14b15f697a062c668253407027b27e22bbc954df34ef776753327a8e29"
+product_source_sha256 = "e6ce30be9b4c0457f752d0a87743269ecd2187b85986692a6ebf724690e30d6a"
+tool_source_sha256 = "1cd6506966fb6420a502bd3af49717cb665ced677c0a6b4e20bbc584314350af"
+tool_lock_sha256 = "b4e209a13bee34e343dbcbf31b8e436bbffafd03cd2d09730d3d9d17d379ef1e"
+accepted_raw_manifest_sha256 = "4b1545279ec4eb3c30020da3e95293650845d3c43f32eb40406c12fba9528621"
+rejected_raw_manifest_sha256 = "d2f4958159b71446bc4a7684f897c067e98e5945a96406fb44062261e57d8bbe"
+raw_manifest_canonicalization = "stdout filenames ordinal-sorted; each line is two spaces, quoted filename:lowercase-sha256, comma, LF; UTF-8 without BOM"
+rustc = "rustc 1.94.0 (4a4ef493e 2026-03-02)"
+cargo = "cargo 1.94.0 (85eff7c80e 2026-01-15)"
+
+accepted_attempts = 460
+accepted_failed_processes = 0
+accepted_nonempty_stderr = 0
+accepted_invariant_failures = 0
+rejected_attempts = 460
+rejected_failed_processes = 0
+rejected_nonempty_stderr = 0
+rejected_invariant_failed_processes = 5
+rejected_invariant_false_fields = 10
+rejected_cell = "batch-translation/del-distinct/256/ascii"
+rejected_reason = "The first ASCII fixture repeated after 26 bytes, so the nominally distinct 256-key DEL cell contained only 26 identities and failed both structured-key-size and batch-cardinality invariants in all five repeats. The raw attempt is retained; it is not baseline data."
+repeats_per_scenario = 5
+scenario_count = 92
+independent_processes = true
+prebuilt_release_binary = true
+complete_frame_consumption_passed = true
+binary_key_roundtrip_passed = true
+resp2_resp3_semantic_equality_passed = true
+duplicate_del_semantics_passed = true
+response_wire_passed = true
+production_counter_addition = false
+product_mutation_present = false
+dedicated_host_run_allowed = false
+promotable = false
+release_numerical_claim_allowed = false
+elapsed_time_used_for_decision = false
+
+single_get_binary_key_bytes = [0, 16, 64, 256]
+single_get_binary_median_gross_bytes_per_operation = [308, 335, 431, 815]
+single_get_binary_structured_bytes_per_operation = [21, 48, 144, 528]
+
+batch_256_binary_cells = ["del-all-duplicate", "del-distinct", "exists-distinct", "mget-distinct", "mset-distinct"]
+batch_256_binary_median_gross_bytes_per_operation = [55782, 116838, 55479, 55463, 43271]
+batch_256_binary_structured_bytes_per_operation = [144, 36864, 36864, 36864, 36864]
+
+encode_payload_bytes = [0, 64, 4096, 1048576]
+resp2_bulk_median_gross_bytes_per_operation = [14, 142, 8210, 2097176]
+resp2_bulk_wire_bytes_per_operation = [6, 71, 4105, 1048588]
+resp2_array16_median_gross_bytes_per_operation = [842, 970, 9098, 2098122]
+resp2_array16_wire_bytes_per_operation = [101, 165, 4229, 1048741]
+resp3_bulk_median_gross_bytes_per_operation = [14, 142, 8210, 2097176]
+resp3_bulk_wire_bytes_per_operation = [6, 71, 4105, 1048588]
+resp3_array16_median_gross_bytes_per_operation = [1866, 1994, 10122, 2099146]
+resp3_array16_wire_bytes_per_operation = [101, 165, 4229, 1048741]
+
+decode_commands = ["del-256-duplicate", "get-64", "hc-tag-64", "mget-16", "mget-256", "mset-16", "set-64-4096", "set-64-64"]
+resp2_decode_median_gross_to_wire_ratio = [3.3712, 4.5, 6.187, 3.4466, 3.3712, 4.0643, 2.0461, 3.2581]
+resp3_decode_median_gross_to_wire_ratio = [12.1293, 14.4048, 51.9957, 11.7524, 12.1288, 13.1871, 2.2714, 9.3484]
+
+translation_interpretation = "Binary-key translation produces the required redis-binary-v1- representation: 21 bytes for the empty sentinel and 16+2N bytes otherwise. Distinct 256-key batches therefore carry 36,864 logical structured bytes per operation. DEL distinct adds about 61 KB gross per operation over the other lookup batches, but changing its ownership or deduplication has greater semantic risk and is not the first candidate."
+decode_interpretation = "RESP3 decode allocation ranges from 2.27 to 52.00 times input wire bytes in the frozen corpus and materially exceeds RESP2 for small and array-heavy shapes. The owner crosses external parser/value types, so the profile records it for later isolation rather than authorizing a broad parser rewrite."
+encode_interpretation = "For 1 MiB responses, median gross allocation is almost exactly twice wire output. The encoder first fills a unique local BytesMut and then output.to_vec() allocates and copies a second full buffer. bytes 1.12.1 provides From<BytesMut> for Vec<u8>, which transfers the unique backing allocation instead of copying it."
+decision = "authorize-zero-copy-bytesmut-to-vec-encode-candidate"
+next_evidence = "Preregister a two-line ownership-transfer candidate for RESP2 and RESP3, rerun the same 92-scenario/460-process matrix, require byte-identical encode and roundtrip outputs, require at least 40% gross reduction in every 1 MiB encode cell, and bound decode/translation regression to 5%."
+
+validation = [
+  "cargo check --manifest-path tools/resp-translation-profile-073/Cargo.toml --locked: passed",
+  "cargo clippy --manifest-path tools/resp-translation-profile-073/Cargo.toml --locked --all-targets -- -D warnings: passed",
+  "cargo test --manifest-path tools/resp-translation-profile-073/Cargo.toml --locked: passed",
+  "rejected 460-process matrix retained: 460 exits zero, empty stderr, five processes with two failed invariants each",
+  "accepted 460-process matrix: 460 exits zero, empty stderr, no invariant failure",
+]

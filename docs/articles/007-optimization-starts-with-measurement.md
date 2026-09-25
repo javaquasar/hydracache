@@ -1343,6 +1343,56 @@ therefore retained for integrated W3/W5 confirmation. It is a demonstrated local
 a published latency or capacity claim; elapsed time remained diagnostic and no dedicated-host run
 was spent on the isolated field change.
 
+W4 applied the same method to the Redis compatibility path, but split the path into four stages before
+looking for a change: wire decode, command translation, response encode, and complete roundtrip. The
+frozen matrix covered both RESP dialects, ASCII and binary keys, key sizes from zero to 256 bytes,
+batches from one to 256 arguments, distinct and duplicate topology, response payloads up to 1 MiB,
+and six end-to-end controls. Ninety-two scenarios with five independent process repeats produced 460
+attempts. Gross allocation was the ownership signal; elapsed time remained diagnostic because short
+single-process timings on a developer workstation cannot support a throughput claim.
+
+The first 460-process attempt was rejected, and retaining it exposed a useful profiling lesson. The
+nominally distinct ASCII generator repeated after 26 bytes. Consequently, the 256-key DEL fixture
+contained only 26 identities. Five processes exited successfully and wrote clean stderr, but both the
+expected structured-byte invariant and command-cardinality invariant failed in every repeat: ten
+false invariant fields across five attempts. A profiler that checked only exit codes would have turned
+a fixture defect into a product conclusion. We fixed the generator to include a fixed-width unique
+prefix, added a 256-key distinctness test, rebuilt the binary, and ran a second complete matrix. The
+rejected raw manifest remains bound into the evidence alongside the accepted one.
+
+The clean matrix confirmed that binary-key expansion itself is required compatibility work. A
+non-empty key becomes `redis-binary-v1-` plus two lowercase hexadecimal characters per source byte,
+so its structured length is exactly `16 + 2N`; the empty sentinel is 21 bytes. The measured GET cells
+followed that identity at 16, 64, and 256 source bytes, and a distinct 256-key batch carried 36,864
+logical structured bytes per operation. Those bytes cannot be optimized away without changing key
+identity. Separating logical output from gross allocation prevents us from calling required data an
+accidental copy.
+
+Batch translation still exposed a secondary owner. At 256 binary keys, MGET and EXISTS allocated
+about 55.5 KiB gross per operation, MSET about 43.3 KiB, while distinct DEL allocated about 116.8 KiB.
+Duplicate DEL fell back to 55.8 KiB because it produced only one structured key. The additional
+distinct-DEL work is consistent with follow-up ownership and linear deduplication, but changing it
+first would touch order, duplicate semantics, and execution planning. It is now a measured follow-up,
+not a license for an unfocused collection rewrite.
+
+Decode showed an even larger but less isolated signal. RESP2 gross allocation ranged from roughly
+2.05 to 6.19 times wire input in the frozen corpus. RESP3 ranged from 2.27 times for a large SET to
+52.00 times for the small, array-heavy HC.TAG command; GET-64 was 14.40 times and the 256-key MGET and
+DEL shapes were about 12.13 times. This deserves further ownership work, but the cost spans parser
+frames and external value types. A broad parser change would combine lifetime, protocol, and API
+risk, so those ratios are recorded rather than immediately “optimized.”
+
+Encode provided the clean owner. A 1 MiB bulk response emitted 1,048,588 wire bytes but allocated
+2,097,176 bytes gross per operation; array responses showed the same near-two-times relationship in
+both dialects. The implementation fills a local `BytesMut`, then calls `to_vec()`, which allocates a
+second buffer and copies the complete frame. In the pinned `bytes` implementation,
+`Vec::from(BytesMut)` transfers a unique backing allocation and copies only when the buffer is shared.
+The encoder's buffer is local and unique. That gives W4 a narrow candidate: replace the two final
+copies with ownership transfer, keep every public response byte identical, and rerun all 460 cells.
+The preregistered bar is at least 40% less gross allocation in every 1 MiB encode cell, zero wire or
+roundtrip changes, and no more than 5% gross regression in decode or translation. Only that evidence,
+not the attractiveness of the source diff, decides whether the change stays.
+
 ## A profiling ladder that avoids expensive runs
 
 Not every development iteration needs a dedicated bare-metal campaign. A useful workflow has several
