@@ -106,6 +106,8 @@ const W5_SHARED_EVENT_BYTES_CONTRACT: &str =
     "docs/testing/performance/0.73/w5-shared-event-bytes-contract.toml";
 const W5_HC2_CONNECTION_CENSUS_CONTRACT: &str =
     "docs/testing/performance/0.73/w5-hc2-connection-census-contract.toml";
+const W5_HC2_CONNECTION_PROFILE_CONTRACT: &str =
+    "docs/testing/performance/0.73/w5-hc2-connection-profile-contract.toml";
 const RELEASE: &str = "0.73";
 const PROFILE: &str = "local-screening-073-v1";
 const ENVIRONMENT_CLASS: &str = "local_screening";
@@ -256,6 +258,9 @@ pub fn check_at_root(
     )?)?;
     let w5_hc2_connection_census_contract: TomlValue = toml::from_str(&fs::read_to_string(
         root.join(W5_HC2_CONNECTION_CENSUS_CONTRACT),
+    )?)?;
+    let w5_hc2_connection_profile_contract: TomlValue = toml::from_str(&fs::read_to_string(
+        root.join(W5_HC2_CONNECTION_PROFILE_CONTRACT),
     )?)?;
     let mut problems = check_contract(&contract, release);
     if !root.join(MOKA_OBSERVER_UPSTREAM_DRAFT).is_file() {
@@ -429,6 +434,10 @@ pub fn check_at_root(
     ));
     problems.extend(check_w5_hc2_connection_census_contract(
         &w5_hc2_connection_census_contract,
+        release,
+    ));
+    problems.extend(check_w5_hc2_connection_profile_contract(
+        &w5_hc2_connection_profile_contract,
         release,
     ));
     problems.extend(check_schema(
@@ -606,6 +615,10 @@ pub fn check_contract(root: &TomlValue, release: &str) -> Vec<String> {
         (
             "w5_hc2_connection_census_contract",
             W5_HC2_CONNECTION_CENSUS_CONTRACT,
+        ),
+        (
+            "w5_hc2_connection_profile_contract",
+            W5_HC2_CONNECTION_PROFILE_CONTRACT,
         ),
     ] {
         if text(root, field) != Some(expected) {
@@ -4340,6 +4353,57 @@ pub fn check_w5_hc2_connection_census_contract(value: &TomlValue, release: &str)
     ] {
         if text(value, field).is_none_or(str::is_empty) {
             problems.push(format!("W5 HC/2 connection census {field} is missing"));
+        }
+    }
+    problems
+}
+
+pub fn check_w5_hc2_connection_profile_contract(value: &TomlValue, release: &str) -> Vec<String> {
+    let mut problems = Vec::new();
+    if integer(value, "schema_version") != Some(1)
+        || text(value, "release") != Some(release)
+        || text(value, "contract_id") != Some("w5-hc2-connection-profile-073-v1")
+        || text(value, "state") != Some("preregistered-awaiting-local-process-matrix")
+        || text(value, "triggering_evidence")
+            != Some("docs/testing/performance/0.73/w5-hc2-connection-census-e673f9cd.toml")
+        || text(value, "source_parent") != Some("b77d061c72a51eaae17e87bc16dbccde4b4e2862")
+        || text(value, "profile_tool") != Some("tools/hc2-connection-profile-073")
+        || text(value, "ownership_scope") != Some("combined-local-client-server-process")
+    {
+        problems.push("W5 HC/2 connection profile identity changed".to_owned());
+    }
+    for field in [
+        "production_counter_addition",
+        "candidate_data_allowed",
+        "dedicated_host_run_allowed",
+        "promotable",
+        "per_server_connection_claim_allowed",
+        "release_numerical_claim_allowed",
+    ] {
+        if boolean(value, field) != Some(false) {
+            problems.push(format!("W5 HC/2 connection profile {field} must be false"));
+        }
+    }
+    if boolean(value, "independent_processes_required") != Some(true)
+        || integer(value, "repeats_per_cardinality") != Some(3)
+        || integer_array(value.get("cardinalities")) != [1, 10, 100, 1_000]
+    {
+        problems.push("W5 HC/2 connection profile sampling matrix changed".to_owned());
+    }
+    if string_array(value.get("metrics"))
+        != [
+            "gross_allocated_bytes",
+            "working_set_bytes",
+            "peak_working_set_bytes",
+            "pagefile_bytes",
+            "peak_pagefile_bytes",
+        ]
+    {
+        problems.push("W5 HC/2 connection profile metrics changed".to_owned());
+    }
+    for field in ["falsifier", "interpretation_limit", "next_decision"] {
+        if text(value, field).is_none_or(str::is_empty) {
+            problems.push(format!("W5 HC/2 connection profile {field} is missing"));
         }
     }
     problems

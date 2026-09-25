@@ -1118,3 +1118,23 @@ fn w5_connection_census_cannot_claim_memory_or_skip_cardinalities() {
         .iter()
         .any(|problem| problem.contains("cardinalities changed")));
 }
+
+#[test]
+fn w5_connection_profile_cannot_promote_claim_server_bytes_or_skip_samples() {
+    let mut value = manifest("w5-hc2-connection-profile-contract.toml");
+    value["promotable"] = TomlValue::Boolean(true);
+    value["per_server_connection_claim_allowed"] = TomlValue::Boolean(true);
+    value["cardinalities"] = TomlValue::Array(vec![TomlValue::Integer(1)]);
+    value["repeats_per_cardinality"] = TomlValue::Integer(1);
+    let problems =
+        xtask::performance_contract::check_w5_hc2_connection_profile_contract(&value, "0.73");
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("promotable must be false")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("per_server_connection_claim_allowed must be false")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("sampling matrix changed")));
+}
