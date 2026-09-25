@@ -1596,6 +1596,33 @@ fn w10_local_amendment_cannot_hide_zero_tests_or_open_the_host_gate() {
 }
 
 #[test]
+fn w10_static_amendment_cannot_hide_failure_or_drop_targets() {
+    let mut value = manifest("w10-static-qualification-amendment-a725077d.toml");
+    value["failed_attempt_retained"] = TomlValue::Boolean(false);
+    value["failed_attempt_passed"] = TomlValue::Boolean(true);
+    value["target_set_changed"] = TomlValue::Boolean(true);
+    value["host_run_allowed"] = TomlValue::Boolean(true);
+    value["replacement_command"] = TomlValue::String("cargo clippy".to_owned());
+    let problems =
+        xtask::performance_contract::check_w10_static_qualification_amendment(&value, "0.73");
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("failed_attempt_retained must be true")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("failed_attempt_passed must be false")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("target_set_changed must be false")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("host_run_allowed must be false")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("correction changed")));
+}
+
+#[test]
 fn w5_connection_profile_cannot_promote_claim_server_bytes_or_skip_samples() {
     let mut value = manifest("w5-hc2-connection-profile-contract.toml");
     value["promotable"] = TomlValue::Boolean(true);
