@@ -1342,6 +1342,27 @@ fn w4_zero_copy_encode_evidence_cannot_promote_or_rewrite_acceptance() {
 }
 
 #[test]
+fn w7_durability_profile_cannot_invent_file_residency_or_skip_modes() {
+    let mut value = manifest("w7-durability-page-cache-profile-contract.toml");
+    value["promotable"] = TomlValue::Boolean(true);
+    value["attempts"] = TomlValue::Integer(5);
+    value["durability_modes"] = TomlValue::Array(vec![TomlValue::String("sync".to_owned())]);
+    value["unsupported_anon_file_split_must_be_explicit"] = TomlValue::Boolean(false);
+    let problems = xtask::performance_contract::check_w7_durability_page_cache_profile_contract(
+        &value, "0.73",
+    );
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("promotable must be false")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("sampling matrix changed")));
+    assert!(problems.iter().any(
+        |problem| problem.contains("unsupported_anon_file_split_must_be_explicit must be true")
+    ));
+}
+
+#[test]
 fn w5_connection_profile_cannot_promote_claim_server_bytes_or_skip_samples() {
     let mut value = manifest("w5-hc2-connection-profile-contract.toml");
     value["promotable"] = TomlValue::Boolean(true);

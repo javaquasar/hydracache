@@ -146,6 +146,8 @@ const W4_ZERO_COPY_ENCODE_CONTRACT: &str =
     "docs/testing/performance/0.73/w4-zero-copy-encode-contract.toml";
 const W4_ZERO_COPY_ENCODE_EVIDENCE: &str =
     "docs/testing/performance/0.73/w4-zero-copy-encode-accepted-d98f2afc.toml";
+const W7_DURABILITY_PAGE_CACHE_PROFILE_CONTRACT: &str =
+    "docs/testing/performance/0.73/w7-durability-page-cache-profile-contract.toml";
 const RELEASE: &str = "0.73";
 const PROFILE: &str = "local-screening-073-v1";
 const ENVIRONMENT_CLASS: &str = "local_screening";
@@ -357,6 +359,9 @@ pub fn check_at_root(
     let w4_zero_copy_encode_evidence: TomlValue = toml::from_str(&fs::read_to_string(
         root.join(W4_ZERO_COPY_ENCODE_EVIDENCE),
     )?)?;
+    let w7_durability_page_cache_profile_contract: TomlValue = toml::from_str(
+        &fs::read_to_string(root.join(W7_DURABILITY_PAGE_CACHE_PROFILE_CONTRACT))?,
+    )?;
     let mut problems = check_contract(&contract, release);
     if !root.join(MOKA_OBSERVER_UPSTREAM_DRAFT).is_file() {
         problems.push("notification observer dependency review draft is missing".to_owned());
@@ -611,6 +616,10 @@ pub fn check_at_root(
         &w4_zero_copy_encode_evidence,
         release,
     ));
+    problems.extend(check_w7_durability_page_cache_profile_contract(
+        &w7_durability_page_cache_profile_contract,
+        release,
+    ));
     problems.extend(check_schema(
         &schema,
         &example,
@@ -861,6 +870,10 @@ pub fn check_contract(root: &TomlValue, release: &str) -> Vec<String> {
         ),
         ("w4_zero_copy_encode_contract", W4_ZERO_COPY_ENCODE_CONTRACT),
         ("w4_zero_copy_encode_evidence", W4_ZERO_COPY_ENCODE_EVIDENCE),
+        (
+            "w7_durability_page_cache_profile_contract",
+            W7_DURABILITY_PAGE_CACHE_PROFILE_CONTRACT,
+        ),
     ] {
         if text(root, field) != Some(expected) {
             problems.push(format!("local screening {field} must be {expected}"));
@@ -6566,6 +6579,113 @@ pub fn check_w4_zero_copy_encode_evidence(value: &TomlValue, release: &str) -> V
         != Some("retain-zero-copy-resp-encode-for-integrated-w4-confirmation")
     {
         problems.push("W4 zero-copy encode evidence decision changed".to_owned());
+    }
+    problems
+}
+
+pub fn check_w7_durability_page_cache_profile_contract(
+    value: &TomlValue,
+    release: &str,
+) -> Vec<String> {
+    let mut problems = Vec::new();
+    if integer(value, "schema_version") != Some(1)
+        || text(value, "release") != Some(release)
+        || text(value, "contract_id") != Some("w7-durability-page-cache-profile-073-v1")
+        || text(value, "state") != Some("preregistered-after-source-audit-before-profile-tooling")
+        || text(value, "parent_contract") != Some(W1_OWNER_CLASSIFICATION_CONTRACT)
+        || text(value, "source_parent") != Some("fc10d9572bfde8a080177ace583c47c9a1bd19e6")
+        || text(value, "profile_tool") != Some("tools/durability-page-cache-profile-073")
+    {
+        problems.push("W7 durability page-cache profile identity changed".to_owned());
+    }
+    for field in [
+        "independent_processes_required",
+        "prebuilt_release_binary_required",
+        "temporary_store_per_process_required",
+        "store_removed_after_measurement_required",
+        "exact_logical_bytes_required",
+        "reopen_content_equality_required",
+        "async_lag_reconciliation_required",
+        "gc_cardinality_reconciliation_required",
+        "os_memory_source_required",
+        "os_io_source_required",
+        "unsupported_anon_file_split_must_be_explicit",
+    ] {
+        if boolean(value, field) != Some(true) {
+            problems.push(format!(
+                "W7 durability page-cache profile {field} must be true"
+            ));
+        }
+    }
+    for field in [
+        "product_mutation_allowed",
+        "production_counter_addition",
+        "dedicated_host_run_allowed",
+        "promotable",
+        "release_numerical_claim_allowed",
+        "elapsed_time_is_acceptance_metric",
+    ] {
+        if boolean(value, field) != Some(false) {
+            problems.push(format!(
+                "W7 durability page-cache profile {field} must be false"
+            ));
+        }
+    }
+    if string_array(value.get("durability_modes")) != ["ram-only", "sync", "async-bounded"]
+        || integer_array(value.get("store_cardinalities")) != [1, 16, 64, 256]
+        || integer_array(value.get("write_path_cardinalities")) != [64, 256]
+        || integer_array(value.get("gc_cardinalities")) != [64, 256]
+        || integer_array(value.get("payload_bytes")) != [64, 4_096]
+        || string_array(value.get("gc_repair_states")) != ["pending", "confirmed"]
+        || integer(value, "repeats_per_scenario") != Some(5)
+        || integer(value, "scenario_count") != Some(24)
+        || integer(value, "attempts") != Some(120)
+    {
+        problems.push("W7 durability page-cache profile sampling matrix changed".to_owned());
+    }
+    if value
+        .get("scenario_group")
+        .and_then(TomlValue::as_array)
+        .is_none_or(|groups| groups.len() != 3)
+    {
+        problems.push("W7 durability page-cache profile scenario groups changed".to_owned());
+    }
+    if string_array(value.get("metrics"))
+        != [
+            "phase_gross_allocated_bytes",
+            "phase_live_allocated_delta_bytes",
+            "phase_elapsed_nanoseconds",
+            "logical_durable_bytes",
+            "record_count",
+            "directory_logical_bytes",
+            "process_read_transfer_bytes",
+            "process_write_transfer_bytes",
+            "working_set_bytes",
+            "private_commit_bytes",
+            "resident_anonymous_bytes",
+            "resident_file_bytes",
+            "async_lag",
+            "gc_scanned",
+            "gc_removed",
+            "gc_reclaimed_bytes",
+        ]
+    {
+        problems.push("W7 durability page-cache profile metrics changed".to_owned());
+    }
+    for field in [
+        "ownership_scope",
+        "source_audit",
+        "platform_attribution",
+        "falsifier",
+        "candidate_rule",
+        "interpretation_limit",
+        "next_decision",
+    ] {
+        if text(value, field).is_none_or(str::is_empty) {
+            problems.push(format!(
+                "W7 durability page-cache profile {field} is missing"
+            ));
+        }
     }
     problems
 }
