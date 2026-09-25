@@ -1611,6 +1611,42 @@ semantics, rollback, retry behavior, absent-setting compatibility, and threshold
 code or measurements. Refusing an unevidenced feature is part of optimization discipline: every
 limit consumes compatibility and operational complexity, even when its default is “off.”
 
+W10 changes the unit of reasoning from isolated patches to one provisional integrated candidate.
+Six product changes survived local screening: borrowed expiry keys, shared HC/2 event bytes, an
+encoded-byte HC/2 outbound budget, shared event tags, RESP buffer ownership transfer, and the cached
+durable budget total. Their percentages cannot be added. Three changes meet in the event-delivery
+pipeline; expiry and tags share cleanup/accounting outcomes; RESP joins them in the mixed-protocol
+workload; durability must remain a separate persistence companion. The integration ledger records
+that composition order and those interaction groups before any combined measurement.
+
+The first local qualification pass also caught two examples of a dangerous testing failure mode:
+green or red commands that do not exercise the intended configuration. The initial durable command
+exited successfully but ran zero tests because `durable_value_store` is feature-gated. We marked the
+attempt invalid, added `--features durable-value-store` in a separate pre-rerun amendment, and then
+executed all five durability tests. The original all-targets Clippy command failed for the inverse
+reason: it tried to compile a durable compatibility example while the exports it imports were still
+disabled. A second amendment kept the same packages and targets but enabled the required package
+feature; the corrected warnings-denied run passed.
+
+This is why exit status alone is not a test result. A gate needs a minimum executed-test count and a
+declared feature/target matrix. Zero tests is not success, and a configuration error is not evidence
+of a product regression. Both invalid attempts remain in the ledger instead of disappearing behind
+their corrected reruns.
+
+After correction, the integrated branch ran 342 tests with no failures. Another 25 tests remained
+explicitly gated scheduled soaks, external Redis client/oracle checks, or resource smokes; we did not
+silently count them as passes. The executed set covered client-surface compatibility and quota
+release, event bytes/tags/order, HC/2 byte permits and real-mTLS drain, RESP2/RESP3 golden bytes,
+memory and tag reconciliation, and durable reopen/corruption/budget behavior. All targets of the five
+affected crates then passed Clippy with warnings denied, and 93 evidence-canary tests kept the
+candidate, amendments, and non-promotion boundary immutable.
+
+That local result opens only the next cheap step: an integrated process smoke for the four declared
+interaction groups. It does not open a dedicated host, freeze final `C73`, prove compatibility with
+the published 0.72 binaries, or justify six- and 24-hour runs. Expensive qualification begins only
+after the combined process scenario can account for every outcome and can fail its own interaction
+canaries locally.
+
 ## A profiling ladder that avoids expensive runs
 
 Not every development iteration needs a dedicated bare-metal campaign. A useful workflow has several

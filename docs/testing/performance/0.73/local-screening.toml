@@ -92,6 +92,7 @@ w9_retained_byte_admission_evidence = "docs/testing/performance/0.73/w9-retained
 w10_integrated_candidate_contract = "docs/testing/performance/0.73/w10-integrated-candidate-contract.toml"
 w10_local_qualification_amendment = "docs/testing/performance/0.73/w10-local-qualification-amendment-6c107abf.toml"
 w10_static_qualification_amendment = "docs/testing/performance/0.73/w10-static-qualification-amendment-a725077d.toml"
+w10_local_qualification_evidence = "docs/testing/performance/0.73/w10-local-qualification-passed-132917fd.toml"
 promotable = false
 numerical_claims_allowed = false
 candidate_thresholds_allowed = false

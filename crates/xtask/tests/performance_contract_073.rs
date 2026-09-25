@@ -1623,6 +1623,37 @@ fn w10_static_amendment_cannot_hide_failure_or_drop_targets() {
 }
 
 #[test]
+fn w10_local_evidence_cannot_hide_attempts_or_open_expensive_tiers() {
+    let mut value = manifest("w10-local-qualification-passed-132917fd.toml");
+    value["tests_failed"] = TomlValue::Integer(1);
+    value["failed_attempt_hidden"] = TomlValue::Boolean(true);
+    value["host_dispatch_allowed"] = TomlValue::Boolean(true);
+    value["integrated_process_contract_present"] = TomlValue::Boolean(true);
+    value["invalid_attempt"] = TomlValue::Array(Vec::new());
+    value["decision"] = TomlValue::String("dispatch-host".to_owned());
+    let problems =
+        xtask::performance_contract::check_w10_local_qualification_evidence(&value, "0.73");
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("result changed")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("failed_attempt_hidden must be false")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("host_dispatch_allowed must be false")));
+    assert!(problems
+        .iter()
+        .any(|problem| { problem.contains("integrated_process_contract_present must be false") }));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("invalid attempts changed")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("decision changed")));
+}
+
+#[test]
 fn w5_connection_profile_cannot_promote_claim_server_bytes_or_skip_samples() {
     let mut value = manifest("w5-hc2-connection-profile-contract.toml");
     value["promotable"] = TomlValue::Boolean(true);
