@@ -95,8 +95,8 @@ fn main() -> Result<(), Box<dyn Error>> {
             frames.push(CacheEvent {
                 subscription_id: subscription_id as u64,
                 watermark: 1,
-                key: Bytes::copy_from_slice(&key),
-                value: Bytes::copy_from_slice(&value),
+                key: key.clone(),
+                value: value.clone(),
                 removed: false,
             });
         }

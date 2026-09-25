@@ -712,8 +712,8 @@ fn wire_error(code: StableErrorCode, detail: &'static str) -> InvocationResponse
 async fn emit_matching_events(
     service: &Hc2ClientPlaneService,
     identity: SessionIdentity,
-    key: &[u8],
-    value: &[u8],
+    key: &Bytes,
+    value: &Bytes,
     removed: bool,
     subscriptions: &mut BTreeMap<u64, (Bytes, u64)>,
     outbound: &mpsc::Sender<Result<ServerEnvelope, Status>>,
@@ -746,8 +746,8 @@ async fn emit_matching_events(
                     server_envelope::Message::Event(CacheEvent {
                         subscription_id: *subscription_id,
                         watermark: next,
-                        key: Bytes::copy_from_slice(key),
-                        value: Bytes::copy_from_slice(value),
+                        key: key.clone(),
+                        value: value.clone(),
                         removed,
                     }),
                 )))
@@ -910,6 +910,46 @@ mod tests {
             idempotency_key: Bytes::new(),
             tenant: "tenant-a".to_owned(),
             topology_epoch: 1,
+        }
+    }
+
+    #[tokio::test]
+    async fn event_fanout_shares_immutable_payload_and_preserves_frames() {
+        let service = service();
+        let identity = SessionIdentity {
+            protocol_generation: HC2_GENERATION,
+            connection_generation: 1,
+        };
+        let key = Bytes::from_static(b"event/key");
+        let value = Bytes::from_static(b"event-value");
+        let mut subscriptions = BTreeMap::from([
+            (1, (Bytes::from_static(b"event/"), 0)),
+            (2, (Bytes::from_static(b"event/"), 0)),
+        ]);
+        let (outbound, mut receiver) = mpsc::channel(2);
+
+        emit_matching_events(
+            &service,
+            identity,
+            &key,
+            &value,
+            false,
+            &mut subscriptions,
+            &outbound,
+        )
+        .await
+        .unwrap();
+
+        for expected_subscription in [1, 2] {
+            let envelope = receiver.recv().await.unwrap().unwrap();
+            let Some(server_envelope::Message::Event(event)) = envelope.message else {
+                panic!("expected event frame");
+            };
+            assert_eq!(event.subscription_id, expected_subscription);
+            assert_eq!(event.key, key);
+            assert_eq!(event.value, value);
+            assert_eq!(event.key.as_ptr(), key.as_ptr());
+            assert_eq!(event.value.as_ptr(), value.as_ptr());
         }
     }
 
