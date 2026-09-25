@@ -15,6 +15,20 @@ on:
         description: "Approved lease end in RFC3339 form"
         required: true
         type: string
+  workflow_call:
+    inputs:
+      tooling_sha:
+        description: "Exact lowercase 40-character commit containing the reviewed harness and runner"
+        required: true
+        type: string
+      lease_owner:
+        description: "Operator holding the serialized performance-host lease"
+        required: true
+        type: string
+      lease_end:
+        description: "Approved lease end in RFC3339 form"
+        required: true
+        type: string
 
 permissions:
   contents: read

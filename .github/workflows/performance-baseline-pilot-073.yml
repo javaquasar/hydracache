@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       source_sha:
-        description: "Exact lowercase 40-character baseline-only source commit"
+        description: "Exact lowercase 40-character baseline or integrated-tooling source commit"
         required: true
         type: string
       lease_owner:
@@ -25,6 +25,7 @@ concurrency:
 
 jobs:
   pilot:
+    if: inputs.source_sha == 'e757556d3a31d565f52a9561d6d4e555bb1cc373'
     name: Paired baseline-only I73 rate and window pilot
     runs-on: [self-hosted, linux, x64, hydracache-release]
     environment: performance-reference-073
@@ -185,3 +186,12 @@ jobs:
           path: target/performance-evidence/0.73/reference/baseline-pilot-v2/**
           if-no-files-found: error
           retention-days: 90
+
+  integrated:
+    if: inputs.source_sha != 'e757556d3a31d565f52a9561d6d4e555bb1cc373'
+    uses: ./.github/workflows/performance-integrated-host-073.yml
+    with:
+      tooling_sha: ${{ inputs.source_sha }}
+      lease_owner: ${{ inputs.lease_owner }}
+      lease_end: ${{ inputs.lease_end }}
+    secrets: inherit
