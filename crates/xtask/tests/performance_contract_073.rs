@@ -1546,6 +1546,33 @@ fn w9_evidence_cannot_invent_pressure_or_add_a_hidden_limit() {
 }
 
 #[test]
+fn w10_integration_contract_cannot_skip_local_gates_or_add_isolated_gains() {
+    let mut value = manifest("w10-integrated-candidate-contract.toml");
+    value["candidate_is_final_d4"] = TomlValue::Boolean(true);
+    value["host_qualification_allowed_before_local_pass"] = TomlValue::Boolean(true);
+    value["isolated_gains_may_be_added"] = TomlValue::Boolean(true);
+    value["composition"] = TomlValue::Array(Vec::new());
+    value["interaction"] = TomlValue::Array(Vec::new());
+    let problems =
+        xtask::performance_contract::check_w10_integrated_candidate_contract(&value, "0.73");
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("candidate_is_final_d4 must be false")));
+    assert!(problems.iter().any(|problem| {
+        problem.contains("host_qualification_allowed_before_local_pass must be false")
+    }));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("isolated_gains_may_be_added must be false")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("composition changed")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("interactions changed")));
+}
+
+#[test]
 fn w5_connection_profile_cannot_promote_claim_server_bytes_or_skip_samples() {
     let mut value = manifest("w5-hc2-connection-profile-contract.toml");
     value["promotable"] = TomlValue::Boolean(true);

@@ -1,0 +1,192 @@
+schema_version = 1
+release = "0.73"
+contract_id = "w10-integrated-candidate-073-v1"
+state = "preregistered-before-integrated-local-qualification"
+baseline_identity = "I73"
+baseline_source_commit = "e757556d3a31d565f52a9561d6d4e555bb1cc373"
+candidate_identity = "C73-provisional-1"
+candidate_source_commit = "7e3070894aa51af96cdcb3e350eff923a309e1fa"
+candidate_tree_oid = "e2c438b9a248586a4f72d3eca3d1c5369fff440b"
+runtime_patch_id = "9beb1a0e4891a25d7db939bc7d92953e393d7a0c"
+root_lock_sha256 = "740c0b011a871d4578d596db8c8071edb0bb594ca56e2153dcfe431371bae294"
+accepted_product_changes = 6
+terminal_work_items = 8
+interaction_groups = 4
+
+candidate_is_provisional = true
+candidate_is_final_d4 = false
+local_qualification_required = true
+host_qualification_allowed_before_local_pass = false
+long_run_allowed_before_focused_pass = false
+isolated_gains_may_be_added = false
+failed_attempts_must_be_retained = true
+equal_work_required = true
+complete_outcome_accounting_required = true
+published_072_compatibility_required = true
+rollback_required = true
+supported_platform_correctness_required = true
+local_results_promotable = false
+release_numerical_claim_allowed = false
+
+runtime_changed_paths = [
+  "Cargo.lock",
+  "crates/hydracache-client-transport-axum/Cargo.toml",
+  "crates/hydracache-client-transport-axum/src/lib.rs",
+  "crates/hydracache-core/src/events.rs",
+  "crates/hydracache-redis-compat/src/lib.rs",
+  "crates/hydracache-server/Cargo.toml",
+  "crates/hydracache-server/src/hc2.rs",
+  "crates/hydracache/src/grid/durable_store.rs",
+  "crates/hydracache/tests/durable_value_store.rs",
+]
+
+local_correctness_commands = [
+  "cargo test -p hydracache-client-transport-axum --locked",
+  "cargo test -p hydracache-core --locked",
+  "cargo test -p hydracache-redis-compat --locked",
+  "cargo test -p hydracache-server --lib --locked",
+  "cargo test -p hydracache-server --test hc2_memory_071 --locked",
+  "cargo test -p hydracache-server --test hc2_daemon_process --locked",
+  "cargo test -p hydracache --test memory_footprint_071 --locked",
+  "cargo test -p hydracache --test tag_index_model_071 --locked",
+  "cargo test -p hydracache --test native_event_listeners --locked",
+  "cargo test -p hydracache --test durable_value_store --locked",
+]
+
+local_static_commands = [
+  "cargo clippy -p hydracache-client-transport-axum -p hydracache-core -p hydracache-redis-compat -p hydracache-server -p hydracache --all-targets --locked -- -D warnings",
+  "cargo test -p xtask --test performance_contract_073 --locked",
+  "cargo xtask performance-contract-check --release 0.73",
+]
+
+host_gate = "After the local correctness/static receipt and an integrated measurement contract are checked in, the same protected serialized host may run at least five counterbalanced I73/C73 pairs. No isolated local percentage is promoted."
+long_run_gate = "Six-hour and 24-hour work remain closed until focused integrated pairs pass goodput, CPU, p99, correctness, and resource guards. Any slope or plateau claim requires equal-duration I73 and C73 runs."
+compatibility_gate = "Use the real published 0.72 cohort and exact candidate for protocol, tenant, TTL/tag, durable, management, restart, rolling, and rollback cells. No local source substitute may be called the published binary."
+falsifier = "A changed runtime path outside the ledger, a lost accepted semantic test, a W3/W5 event interaction regression, a pooled persistence result, a favorable retry selection, or an isolated gain added to another gain invalidates C73-provisional-1."
+next_decision = "Run the frozen local commands, retain their exact result, then design only the missing integrated process cells before spending the protected host or long-run budget."
+
+[[composition]]
+order = 1
+proposal_id = "P73-W2-BORROWED-EXPIRY-SCAN"
+work_item = "W2"
+product_commit = "df88c28cdd4f068a315959b141d42cee4f31d4b0"
+product_tree_oid = "8c7d8256c2a1903e2902c73b2301a904901cddc2"
+evidence = "docs/testing/performance/0.73/w2-borrowed-expiry-scan-a80839fd.toml"
+activation_mode = "always-on-internal-representation"
+compatibility_impact = "none; borrowed expiry scan preserves keys, order, quota release, and public behavior"
+rollback = "revert the isolated scan change; no wire, API, configuration, or durable data migration"
+
+[[composition]]
+order = 2
+proposal_id = "P73-W5-SHARED-EVENT-BYTES"
+work_item = "W5"
+product_commit = "8a7449542cb937ccf89065e6ee6c56278dfe3495"
+product_tree_oid = "6c1e6611ea49e87cf7cdd09dc2b88a6e1d2fdff2"
+evidence = "docs/testing/performance/0.73/w5-shared-event-bytes-accepted-1bc3cad2.toml"
+activation_mode = "always-on-internal-shared-bytes"
+compatibility_impact = "none; encoded frame bytes and order are unchanged"
+rollback = "revert internal Bytes ownership; no wire or configuration change"
+
+[[composition]]
+order = 3
+proposal_id = "P73-W5-HC2-OUTBOUND-BYTE-ADMISSION"
+work_item = "W5"
+product_commit = "2846e93633cc14dea5c00b2f742e27260c794875"
+product_tree_oid = "158c4d87f7a0e6fc44bfdf7f65f04f72653eb483"
+evidence = "docs/testing/performance/0.73/w5-hc2-outbound-byte-admission-2846e936.toml"
+activation_mode = "always-on-internal-one-mib-queue-budget"
+compatibility_impact = "backpressure occurs before the existing bounded channel; no frame rejection, wire change, or public setting"
+rollback = "close and drain connections before reverting queue permits; acknowledged event bytes and order must remain unchanged"
+
+[[composition]]
+order = 4
+proposal_id = "P73-W3-SHARED-EVENT-TAGS"
+work_item = "W3"
+product_commit = "82f46245af235536a6dac93a8fbc59ecaeb6cc7d"
+product_tree_oid = "bf3547f3c9a290fedfb0f5a3a24c7cbf1f99f658"
+evidence = "docs/testing/performance/0.73/w3-shared-event-tags-accepted-82f46245.toml"
+activation_mode = "always-on-internal-shared-tags"
+compatibility_impact = "none; public event payloads remain owned strings and tag order/content are unchanged"
+rollback = "revert internal Arc tag ownership; estimator, wire, API, configuration, and durable bytes stay unchanged"
+
+[[composition]]
+order = 5
+proposal_id = "P73-W4-ZERO-COPY-RESP-ENCODE"
+work_item = "W4"
+product_commit = "d98f2afca33576f7cb89a0c816b248379dacbed3"
+product_tree_oid = "b8e8a9f063acadc23d02650a887cf9ddbf88b014"
+evidence = "docs/testing/performance/0.73/w4-zero-copy-encode-accepted-d98f2afc.toml"
+activation_mode = "always-on-buffer-ownership-transfer"
+compatibility_impact = "none; RESP2/RESP3 encoded bytes and binary-key identity remain golden-compatible"
+rollback = "restore the redundant output copy; no persisted, wire, API, or configuration migration"
+
+[[composition]]
+order = 6
+proposal_id = "P73-W7-CACHED-DURABLE-BUDGET-TOTAL"
+work_item = "W7"
+product_commit = "8bcd55e1c8143a3c976685162fae8376b9b70410"
+product_tree_oid = "aaa11eb818271a2c1c6287850a27496ee743aed0"
+evidence = "docs/testing/performance/0.73/w7-cached-budget-total-accepted-8bcd55e1.toml"
+activation_mode = "always-on-internal-budget-cache"
+compatibility_impact = "none; public total_bytes still scans and validates, and record/checksum/fsync formats are unchanged"
+rollback = "restart an old binary on the same store; rebuild is in-memory and no durable format changed"
+
+[[disposition]]
+work_item = "W2"
+terminal = "accepted"
+product_changes = ["P73-W2-BORROWED-EXPIRY-SCAN"]
+
+[[disposition]]
+work_item = "W3"
+terminal = "accepted"
+product_changes = ["P73-W3-SHARED-EVENT-TAGS"]
+
+[[disposition]]
+work_item = "W4"
+terminal = "accepted"
+product_changes = ["P73-W4-ZERO-COPY-RESP-ENCODE"]
+
+[[disposition]]
+work_item = "W5"
+terminal = "accepted"
+product_changes = ["P73-W5-SHARED-EVENT-BYTES", "P73-W5-HC2-OUTBOUND-BYTE-ADMISSION"]
+
+[[disposition]]
+work_item = "W6"
+terminal = "measured-no-win"
+product_changes = []
+
+[[disposition]]
+work_item = "W7"
+terminal = "accepted"
+product_changes = ["P73-W7-CACHED-DURABLE-BUDGET-TOTAL"]
+
+[[disposition]]
+work_item = "W8"
+terminal = "deferred-external-blocker"
+product_changes = []
+
+[[disposition]]
+work_item = "W9"
+terminal = "not-applicable"
+product_changes = []
+
+[[interaction]]
+id = "event-delivery"
+proposals = ["P73-W3-SHARED-EVENT-TAGS", "P73-W5-SHARED-EVENT-BYTES", "P73-W5-HC2-OUTBOUND-BYTE-ADMISSION"]
+required_cell = "HC2 tagged mutation/invalidation with drained and stalled consumers; exact bytes, order, cleanup, queue budget, goodput, and p99"
+
+[[interaction]]
+id = "expiry-tag-accounting"
+proposals = ["P73-W2-BORROWED-EXPIRY-SCAN", "P73-W3-SHARED-EVENT-TAGS"]
+required_cell = "TTL fill/expire/idle/refill with tags; exact final cardinality, quota release, membership cleanup, allocations, goodput, and p99"
+
+[[interaction]]
+id = "mixed-protocol"
+proposals = ["P73-W2-BORROWED-EXPIRY-SCAN", "P73-W3-SHARED-EVENT-TAGS", "P73-W4-ZERO-COPY-RESP-ENCODE", "P73-W5-SHARED-EVENT-BYTES", "P73-W5-HC2-OUTBOUND-BYTE-ADMISSION"]
+required_cell = "frozen mixed-runtime-073-v1 persistence-off with per-protocol outcomes visible"
+
+[[interaction]]
+id = "durable-companion"
+proposals = ["P73-W7-CACHED-DURABLE-BUDGET-TOTAL"]
+required_cell = "the same mixed and durability write/read/reopen/GC traces in each supported persistence mode as separate cells"

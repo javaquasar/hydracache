@@ -162,6 +162,8 @@ const W9_RETAINED_BYTE_ADMISSION_DECISION_CONTRACT: &str =
     "docs/testing/performance/0.73/w9-retained-byte-admission-decision-contract.toml";
 const W9_RETAINED_BYTE_ADMISSION_EVIDENCE: &str =
     "docs/testing/performance/0.73/w9-retained-byte-admission-not-applicable-49ae52e8.toml";
+const W10_INTEGRATED_CANDIDATE_CONTRACT: &str =
+    "docs/testing/performance/0.73/w10-integrated-candidate-contract.toml";
 const RELEASE: &str = "0.73";
 const PROFILE: &str = "local-screening-073-v1";
 const ENVIRONMENT_CLASS: &str = "local_screening";
@@ -396,6 +398,9 @@ pub fn check_at_root(
     )?;
     let w9_retained_byte_admission_evidence: TomlValue = toml::from_str(&fs::read_to_string(
         root.join(W9_RETAINED_BYTE_ADMISSION_EVIDENCE),
+    )?)?;
+    let w10_integrated_candidate_contract: TomlValue = toml::from_str(&fs::read_to_string(
+        root.join(W10_INTEGRATED_CANDIDATE_CONTRACT),
     )?)?;
     let mut problems = check_contract(&contract, release);
     if !root.join(MOKA_OBSERVER_UPSTREAM_DRAFT).is_file() {
@@ -683,6 +688,10 @@ pub fn check_at_root(
         &w9_retained_byte_admission_evidence,
         release,
     ));
+    problems.extend(check_w10_integrated_candidate_contract(
+        &w10_integrated_candidate_contract,
+        release,
+    ));
     problems.extend(check_schema(
         &schema,
         &example,
@@ -964,6 +973,10 @@ pub fn check_contract(root: &TomlValue, release: &str) -> Vec<String> {
         (
             "w9_retained_byte_admission_evidence",
             W9_RETAINED_BYTE_ADMISSION_EVIDENCE,
+        ),
+        (
+            "w10_integrated_candidate_contract",
+            W10_INTEGRATED_CANDIDATE_CONTRACT,
         ),
     ] {
         if text(root, field) != Some(expected) {
@@ -7588,6 +7601,193 @@ pub fn check_w9_retained_byte_admission_evidence(value: &TomlValue, release: &st
         != Some("close-w9-not-applicable-no-retained-byte-admission-candidate")
     {
         problems.push("W9 retained-byte admission evidence decision changed".to_owned());
+    }
+    problems
+}
+
+pub fn check_w10_integrated_candidate_contract(value: &TomlValue, release: &str) -> Vec<String> {
+    let mut problems = Vec::new();
+    if integer(value, "schema_version") != Some(1)
+        || text(value, "release") != Some(release)
+        || text(value, "contract_id") != Some("w10-integrated-candidate-073-v1")
+        || text(value, "state") != Some("preregistered-before-integrated-local-qualification")
+        || text(value, "baseline_identity") != Some("I73")
+        || text(value, "baseline_source_commit") != Some("e757556d3a31d565f52a9561d6d4e555bb1cc373")
+        || text(value, "candidate_identity") != Some("C73-provisional-1")
+        || text(value, "candidate_source_commit")
+            != Some("7e3070894aa51af96cdcb3e350eff923a309e1fa")
+        || text(value, "candidate_tree_oid") != Some("e2c438b9a248586a4f72d3eca3d1c5369fff440b")
+        || text(value, "runtime_patch_id") != Some("9beb1a0e4891a25d7db939bc7d92953e393d7a0c")
+    {
+        problems.push("W10 integrated candidate contract identity changed".to_owned());
+    }
+    if text(value, "root_lock_sha256").is_none_or(|digest| !sha256(digest)) {
+        problems.push("W10 integrated candidate contract lock hash is not SHA-256".to_owned());
+    }
+    for field in [
+        "candidate_is_provisional",
+        "local_qualification_required",
+        "failed_attempts_must_be_retained",
+        "equal_work_required",
+        "complete_outcome_accounting_required",
+        "published_072_compatibility_required",
+        "rollback_required",
+        "supported_platform_correctness_required",
+    ] {
+        if boolean(value, field) != Some(true) {
+            problems.push(format!(
+                "W10 integrated candidate contract {field} must be true"
+            ));
+        }
+    }
+    for field in [
+        "candidate_is_final_d4",
+        "host_qualification_allowed_before_local_pass",
+        "long_run_allowed_before_focused_pass",
+        "isolated_gains_may_be_added",
+        "local_results_promotable",
+        "release_numerical_claim_allowed",
+    ] {
+        if boolean(value, field) != Some(false) {
+            problems.push(format!(
+                "W10 integrated candidate contract {field} must be false"
+            ));
+        }
+    }
+    if integer(value, "accepted_product_changes") != Some(6)
+        || integer(value, "terminal_work_items") != Some(8)
+        || integer(value, "interaction_groups") != Some(4)
+        || string_array(value.get("runtime_changed_paths")).len() != 9
+        || string_array(value.get("local_correctness_commands")).len() != 10
+        || string_array(value.get("local_static_commands")).len() != 3
+    {
+        problems.push("W10 integrated candidate contract matrix changed".to_owned());
+    }
+    let expected_composition = [
+        (
+            1,
+            "P73-W2-BORROWED-EXPIRY-SCAN",
+            "W2",
+            "df88c28cdd4f068a315959b141d42cee4f31d4b0",
+        ),
+        (
+            2,
+            "P73-W5-SHARED-EVENT-BYTES",
+            "W5",
+            "8a7449542cb937ccf89065e6ee6c56278dfe3495",
+        ),
+        (
+            3,
+            "P73-W5-HC2-OUTBOUND-BYTE-ADMISSION",
+            "W5",
+            "2846e93633cc14dea5c00b2f742e27260c794875",
+        ),
+        (
+            4,
+            "P73-W3-SHARED-EVENT-TAGS",
+            "W3",
+            "82f46245af235536a6dac93a8fbc59ecaeb6cc7d",
+        ),
+        (
+            5,
+            "P73-W4-ZERO-COPY-RESP-ENCODE",
+            "W4",
+            "d98f2afca33576f7cb89a0c816b248379dacbed3",
+        ),
+        (
+            6,
+            "P73-W7-CACHED-DURABLE-BUDGET-TOTAL",
+            "W7",
+            "8bcd55e1c8143a3c976685162fae8376b9b70410",
+        ),
+    ];
+    let composition = value
+        .get("composition")
+        .and_then(TomlValue::as_array)
+        .map(Vec::as_slice)
+        .unwrap_or_default();
+    if composition.len() != expected_composition.len()
+        || composition.iter().zip(expected_composition).any(
+            |(entry, (order, proposal, work_item, commit))| {
+                integer(entry, "order") != Some(order)
+                    || text(entry, "proposal_id") != Some(proposal)
+                    || text(entry, "work_item") != Some(work_item)
+                    || text(entry, "product_commit") != Some(commit)
+                    || text(entry, "product_tree_oid").is_none_or(str::is_empty)
+                    || text(entry, "evidence").is_none_or(str::is_empty)
+                    || text(entry, "activation_mode").is_none_or(str::is_empty)
+                    || text(entry, "compatibility_impact").is_none_or(str::is_empty)
+                    || text(entry, "rollback").is_none_or(str::is_empty)
+            },
+        )
+    {
+        problems.push("W10 integrated candidate composition changed".to_owned());
+    }
+    let expected_dispositions = [
+        ("W2", "accepted"),
+        ("W3", "accepted"),
+        ("W4", "accepted"),
+        ("W5", "accepted"),
+        ("W6", "measured-no-win"),
+        ("W7", "accepted"),
+        ("W8", "deferred-external-blocker"),
+        ("W9", "not-applicable"),
+    ];
+    let dispositions = value
+        .get("disposition")
+        .and_then(TomlValue::as_array)
+        .map(Vec::as_slice)
+        .unwrap_or_default();
+    if dispositions.len() != expected_dispositions.len()
+        || dispositions
+            .iter()
+            .zip(expected_dispositions)
+            .any(|(entry, (work_item, terminal))| {
+                text(entry, "work_item") != Some(work_item)
+                    || text(entry, "terminal") != Some(terminal)
+                    || entry
+                        .get("product_changes")
+                        .and_then(TomlValue::as_array)
+                        .is_none()
+            })
+    {
+        problems.push("W10 integrated candidate dispositions changed".to_owned());
+    }
+    let expected_interactions = [
+        "event-delivery",
+        "expiry-tag-accounting",
+        "mixed-protocol",
+        "durable-companion",
+    ];
+    let interactions = value
+        .get("interaction")
+        .and_then(TomlValue::as_array)
+        .map(Vec::as_slice)
+        .unwrap_or_default();
+    if interactions.len() != expected_interactions.len()
+        || interactions
+            .iter()
+            .zip(expected_interactions)
+            .any(|(entry, id)| {
+                text(entry, "id") != Some(id)
+                    || string_array(entry.get("proposals")).is_empty()
+                    || text(entry, "required_cell").is_none_or(str::is_empty)
+            })
+    {
+        problems.push("W10 integrated candidate interactions changed".to_owned());
+    }
+    for field in [
+        "host_gate",
+        "long_run_gate",
+        "compatibility_gate",
+        "falsifier",
+        "next_decision",
+    ] {
+        if text(value, field).is_none_or(str::is_empty) {
+            problems.push(format!(
+                "W10 integrated candidate contract {field} is missing"
+            ));
+        }
     }
     problems
 }
