@@ -1229,6 +1229,28 @@ fn w3_shared_event_tags_contract_cannot_weaken_matrix_or_thresholds() {
 }
 
 #[test]
+fn w3_shared_event_tags_evidence_cannot_promote_or_rewrite_acceptance() {
+    let mut value = manifest("w3-shared-event-tags-accepted-82f46245.toml");
+    value["promotable"] = TomlValue::Boolean(true);
+    value["attempts"] = TomlValue::Integer(5);
+    value["candidate_primary_median_gross_allocated_bytes"] = TomlValue::Integer(1);
+    value["invalidation_removed_keys"] = TomlValue::Array(Vec::new());
+    let problems = xtask::performance_contract::check_w3_shared_event_tags_evidence(&value, "0.73");
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("promotable must be false")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("volume changed")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("primary result changed")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("control result changed")));
+}
+
+#[test]
 fn w5_connection_profile_cannot_promote_claim_server_bytes_or_skip_samples() {
     let mut value = manifest("w5-hc2-connection-profile-contract.toml");
     value["promotable"] = TomlValue::Boolean(true);

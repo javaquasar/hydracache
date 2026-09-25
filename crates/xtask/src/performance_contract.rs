@@ -136,6 +136,8 @@ const W3_TAG_INDEX_PROFILE_EVIDENCE: &str =
     "docs/testing/performance/0.73/w3-tag-index-profile-f8b90ef0.toml";
 const W3_SHARED_EVENT_TAGS_CONTRACT: &str =
     "docs/testing/performance/0.73/w3-shared-event-tags-contract.toml";
+const W3_SHARED_EVENT_TAGS_EVIDENCE: &str =
+    "docs/testing/performance/0.73/w3-shared-event-tags-accepted-82f46245.toml";
 const RELEASE: &str = "0.73";
 const PROFILE: &str = "local-screening-073-v1";
 const ENVIRONMENT_CLASS: &str = "local_screening";
@@ -331,6 +333,9 @@ pub fn check_at_root(
     )?)?;
     let w3_shared_event_tags_contract: TomlValue = toml::from_str(&fs::read_to_string(
         root.join(W3_SHARED_EVENT_TAGS_CONTRACT),
+    )?)?;
+    let w3_shared_event_tags_evidence: TomlValue = toml::from_str(&fs::read_to_string(
+        root.join(W3_SHARED_EVENT_TAGS_EVIDENCE),
     )?)?;
     let mut problems = check_contract(&contract, release);
     if !root.join(MOKA_OBSERVER_UPSTREAM_DRAFT).is_file() {
@@ -564,6 +569,10 @@ pub fn check_at_root(
     ));
     problems.extend(check_w3_shared_event_tags_contract(
         &w3_shared_event_tags_contract,
+        release,
+    ));
+    problems.extend(check_w3_shared_event_tags_evidence(
+        &w3_shared_event_tags_evidence,
         release,
     ));
     problems.extend(check_schema(
@@ -801,6 +810,10 @@ pub fn check_contract(root: &TomlValue, release: &str) -> Vec<String> {
         (
             "w3_shared_event_tags_contract",
             W3_SHARED_EVENT_TAGS_CONTRACT,
+        ),
+        (
+            "w3_shared_event_tags_evidence",
+            W3_SHARED_EVENT_TAGS_EVIDENCE,
         ),
     ] {
         if text(root, field) != Some(expected) {
@@ -5962,6 +5975,117 @@ pub fn check_w3_shared_event_tags_contract(value: &TomlValue, release: &str) -> 
         if text(value, field).is_none_or(str::is_empty) {
             problems.push(format!("W3 shared event tags contract {field} is missing"));
         }
+    }
+    problems
+}
+
+pub fn check_w3_shared_event_tags_evidence(value: &TomlValue, release: &str) -> Vec<String> {
+    let mut problems = Vec::new();
+    if integer(value, "schema_version") != Some(1)
+        || text(value, "release") != Some(release)
+        || text(value, "evidence_id") != Some("w3-shared-event-tags-accepted-82f46245-v1")
+        || text(value, "state") != Some("local-candidate-accepted-for-integration")
+        || text(value, "contract") != Some(W3_SHARED_EVENT_TAGS_CONTRACT)
+        || text(value, "baseline_evidence") != Some(W3_TAG_INDEX_PROFILE_EVIDENCE)
+        || text(value, "source_commit") != Some("82f46245af235536a6dac93a8fbc59ecaeb6cc7d")
+    {
+        problems.push("W3 shared event tags evidence identity changed".to_owned());
+    }
+    for field in [
+        "binary_sha256",
+        "contract_sha256",
+        "product_source_sha256",
+        "tool_source_sha256",
+        "tool_lock_sha256",
+        "raw_manifest_sha256",
+    ] {
+        if text(value, field).is_none_or(|digest| !sha256(digest)) {
+            problems.push(format!(
+                "W3 shared event tags evidence {field} is not SHA-256"
+            ));
+        }
+    }
+    for field in [
+        "independent_processes",
+        "prebuilt_release_binary",
+        "exact_memory_reconciliation_passed",
+        "event_content_equality_passed",
+        "generation_fence_passed",
+        "public_tags_accessor_unchanged",
+        "event_equality_semantics_unchanged",
+        "product_mutation_present",
+        "all_thresholds_passed",
+    ] {
+        if boolean(value, field) != Some(true) {
+            problems.push(format!(
+                "W3 shared event tags evidence {field} must be true"
+            ));
+        }
+    }
+    for field in [
+        "production_counter_addition",
+        "dedicated_host_run_allowed",
+        "promotable",
+        "release_numerical_claim_allowed",
+        "elapsed_time_used_for_acceptance",
+    ] {
+        if boolean(value, field) != Some(false) {
+            problems.push(format!(
+                "W3 shared event tags evidence {field} must be false"
+            ));
+        }
+    }
+    if integer(value, "attempts") != Some(215)
+        || integer(value, "failed_attempts") != Some(0)
+        || integer(value, "nonempty_stderr") != Some(0)
+        || integer(value, "invariant_failures") != Some(0)
+        || integer(value, "repeats_per_scenario") != Some(5)
+        || integer_array(value.get("tag_cardinalities")) != [0, 1, 4, 16, 64]
+    {
+        problems.push("W3 shared event tags evidence volume changed".to_owned());
+    }
+    if integer(value, "baseline_primary_median_gross_allocated_bytes") != Some(15_628_164)
+        || integer(value, "candidate_primary_median_gross_allocated_bytes") != Some(8_686_476)
+        || float(value, "primary_total_gross_reduction_fraction") != Some(0.444178)
+        || float(value, "minimum_primary_total_gross_reduction_fraction") != Some(0.30)
+        || float(value, "baseline_s8_tag_churn_bytes_per_delivery_tag") != Some(56.0002)
+        || float(value, "candidate_s8_tag_churn_bytes_per_delivery_tag") != Some(3.0084)
+        || float(value, "maximum_candidate_tag_churn_bytes_per_delivery_tag") != Some(12.0)
+    {
+        problems.push("W3 shared event tags evidence primary result changed".to_owned());
+    }
+    if float(
+        value,
+        "maximum_observed_no_subscriber_gross_regression_fraction",
+    ) != Some(0.011079)
+        || float(
+            value,
+            "maximum_observed_index_live_delta_regression_fraction",
+        ) != Some(0.014056)
+        || float(
+            value,
+            "maximum_observed_invalidation_gross_regression_fraction",
+        ) != Some(0.0)
+        || integer_array(value.get("invalidation_removed_keys")) != [1, 64, 1_024]
+        || integer_array(value.get("invalidation_post_tag_memberships")) != [0, 0, 0]
+        || integer_array(value.get("invalidation_post_generation_records")) != [1, 1, 1]
+    {
+        problems.push("W3 shared event tags evidence control result changed".to_owned());
+    }
+    for field in [
+        "raw_manifest_canonicalization",
+        "ownership_interpretation",
+        "control_interpretation",
+        "next_evidence",
+    ] {
+        if text(value, field).is_none_or(str::is_empty) {
+            problems.push(format!("W3 shared event tags evidence {field} is missing"));
+        }
+    }
+    if text(value, "decision")
+        != Some("retain-shared-cache-event-tags-for-integrated-w3-w5-confirmation")
+    {
+        problems.push("W3 shared event tags evidence decision changed".to_owned());
     }
     problems
 }

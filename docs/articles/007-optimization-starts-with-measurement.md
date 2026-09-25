@@ -1319,6 +1319,30 @@ zero-subscriber, single-subscriber, shared/unique, invalidation, exact-memory, a
 must stay green. These local figures locate the owner and authorize the experiment, but remain
 non-promotable release evidence.
 
+The preregistered experiment then changed one private field: `CacheEvent.tags` became an
+`Arc<[String]>`. Constructors still accept the same inputs, `tags()` still returns `&[String]`, and
+equality still compares contents. The important behavioral change is inside `Clone`: broadcast
+receivers now increment a reference count instead of cloning the slice and allocating every string
+payload. A focused unit test checks pointer identity after clone, while the existing public event,
+slow-subscriber, tag-index model, exact-memory, and stale-load tests protect observable semantics.
+
+The full candidate matrix again completed 215 of 215 attempts with empty stderr and no invariant
+failure. In the primary shared-topology cell with 64 tags and eight subscribers, median gross
+allocation fell from 15,628,164 to 8,686,476 bytes, a local reduction of 44.4% against a frozen 30%
+acceptance threshold. More revealing than the total is the slope: tag-dependent churn fell from
+56.00 to 3.01 bytes per delivered tag. With one subscriber it fell to exactly 24 bytes per tag. The
+remaining 24 bytes are the `String` headers copied once while converting the constructed vector into
+an immutable shared slice; with eight receivers that one-time cost amortizes to roughly three bytes
+per delivery. The 32-byte string payload is no longer reallocated by each receiver.
+
+The controls kept the conclusion narrow. Maximum no-subscriber gross regression was 1.11% against a
+5% limit, maximum index live-delta regression was 1.41% against 10%, and invalidation gross allocation
+did not regress. Logical membership counts, retained-byte estimates, fan-out removal, generation
+records, exact reconciliation, event contents, and delivery counts were unchanged. The candidate is
+therefore retained for integrated W3/W5 confirmation. It is a demonstrated local allocation win, not
+a published latency or capacity claim; elapsed time remained diagnostic and no dedicated-host run
+was spent on the isolated field change.
+
 ## A profiling ladder that avoids expensive runs
 
 Not every development iteration needs a dedicated bare-metal campaign. A useful workflow has several
