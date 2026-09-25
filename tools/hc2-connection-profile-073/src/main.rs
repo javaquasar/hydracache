@@ -159,6 +159,7 @@ struct RawTransportProfileResult {
     dispatched_after_stability: u64,
     response_invocations: u64,
     response_events: u64,
+    response_gaps: u64,
     final_closed_connections: u64,
     client_connection_profile: EndpointProfile,
     client_pressure: PressureProfile,
@@ -199,6 +200,7 @@ impl RawTransportScenario {
 struct RawReadCounters {
     invocations: AtomicU64,
     events: AtomicU64,
+    gaps: AtomicU64,
     unexpected: AtomicU64,
     errors: AtomicU64,
 }
@@ -713,6 +715,16 @@ async fn run_raw_transport_stall(
     fs::write(temp.path().join("pressure-complete"), [])?;
     wait_for_path(&temp.path().join("server-pressure"), &mut child).await?;
     let pressure = process_memory()?;
+    let response_invocations_at_snapshot = counters.invocations.load(Ordering::Acquire);
+    let response_events_at_snapshot = counters.events.load(Ordering::Acquire);
+    let response_gaps_at_snapshot = counters.gaps.load(Ordering::Acquire);
+
+    if matches!(scenario, RawTransportScenario::Unpolled) {
+        for peer in &mut peers {
+            peer.start_reader(Arc::clone(&counters))?;
+        }
+        wait_for_raw_responses(&counters, total_mutations).await?;
+    }
 
     for peer in &mut peers {
         peer.stop_reader();
@@ -722,7 +734,12 @@ async fn run_raw_transport_stall(
     let post_close = process_memory()?;
     let status = child.wait_for_exit().await?;
     if !status.success() {
-        return Err(format!("raw pressure server exited with {status}").into());
+        let child_stdout = fs::read_to_string(&stdout_path).unwrap_or_default();
+        let child_stderr = fs::read_to_string(&stderr_path).unwrap_or_default();
+        return Err(format!(
+            "raw pressure server exited with {status}; stdout={child_stdout:?}; stderr={child_stderr:?}"
+        )
+        .into());
     }
     if fs::metadata(&stdout_path)?.len() != 0 || fs::metadata(&stderr_path)?.len() != 0 {
         return Err("raw pressure server emitted unexpected stdout or stderr".into());
@@ -740,8 +757,8 @@ async fn run_raw_transport_stall(
     match scenario {
         RawTransportScenario::Drained => {
             if server.dispatched_at_snapshot != total_mutations
-                || counters.invocations.load(Ordering::Acquire) != total_mutations
-                || counters.events.load(Ordering::Acquire) != total_mutations
+                || response_invocations_at_snapshot != total_mutations
+                || response_events_at_snapshot != total_mutations
             {
                 return Err("drained raw transport control did not complete".into());
             }
@@ -772,8 +789,9 @@ async fn run_raw_transport_stall(
             total_offered_mutations: total_mutations,
             dispatched_at_snapshot: server.dispatched_at_snapshot,
             dispatched_after_stability: server.dispatched_after_stability,
-            response_invocations: counters.invocations.load(Ordering::Acquire),
-            response_events: counters.events.load(Ordering::Acquire),
+            response_invocations: response_invocations_at_snapshot,
+            response_events: response_events_at_snapshot,
+            response_gaps: response_gaps_at_snapshot,
             final_closed_connections: server.final_closed_connections,
             client_connection_profile: EndpointProfile {
                 gross_allocated_bytes: connection_allocation.gross_allocated_bytes,
@@ -890,6 +908,9 @@ impl RawPeer {
                         Some(server_envelope::Message::Event(_)) => {
                             counters.events.fetch_add(1, Ordering::AcqRel);
                         }
+                        Some(server_envelope::Message::Gap(_)) => {
+                            counters.gaps.fetch_add(1, Ordering::AcqRel);
+                        }
                         _ => {
                             counters.unexpected.fetch_add(1, Ordering::AcqRel);
                         }
@@ -967,7 +988,15 @@ async fn wait_for_raw_responses(
         if counters.unexpected.load(Ordering::Acquire) != 0
             || counters.errors.load(Ordering::Acquire) != 0
         {
-            return Err("raw response reader failed before completion".into());
+            return Err(format!(
+                "raw response reader failed before completion: invocations={}, events={}, gaps={}, unexpected={}, errors={}",
+                counters.invocations.load(Ordering::Acquire),
+                counters.events.load(Ordering::Acquire),
+                counters.gaps.load(Ordering::Acquire),
+                counters.unexpected.load(Ordering::Acquire),
+                counters.errors.load(Ordering::Acquire),
+            )
+            .into());
         }
         tokio::time::sleep(Duration::from_millis(10)).await;
     }
