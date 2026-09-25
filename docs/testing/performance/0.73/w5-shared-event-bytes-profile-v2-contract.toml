@@ -1,0 +1,16 @@
+schema_version = 1
+release = "0.73"
+contract_id = "w5-shared-event-bytes-profile-073-v2"
+state = "preregistered-corrected-fixture-awaiting-rerun"
+failed_evidence = "docs/testing/performance/0.73/w5-shared-event-bytes-insufficient-8a744954.toml"
+candidate_source_commit = "8a7449542cb937ccf89065e6ee6c56278dfe3495"
+contract_source_parent = "4ec95937"
+fixture_correction = "Clone key and value once before measurement and retain both owners, matching mutation_event ownership before emit_matching_events begins."
+threshold_changed = false
+required_allocation_count = 0
+required_gross_allocated_bytes = 0
+attempts = 20
+silent_retry_allowed = false
+dedicated_host_run_allowed = false
+promotable = false
+falsifier = "Any measured allocation, changed frame count, failed process, or non-identical repeat rejects the candidate."

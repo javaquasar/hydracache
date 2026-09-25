@@ -87,8 +87,10 @@ fn main() -> Result<(), Box<dyn Error>> {
         return Err("unsupported frozen W5 profile shape".into());
     }
 
-    let key = Bytes::from(vec![0x6b; KEY_BYTES]);
-    let value = Bytes::from(vec![0x76; value_bytes]);
+    let key_owner = Bytes::from(vec![0x6b; KEY_BYTES]);
+    let value_owner = Bytes::from(vec![0x76; value_bytes]);
+    let key = key_owner.clone();
+    let value = value_owner.clone();
     let mut frames = Vec::with_capacity(fanout);
     let ((), allocation_count, gross_allocated_bytes) = measure(|| {
         for subscription_id in 0..fanout {
@@ -101,7 +103,7 @@ fn main() -> Result<(), Box<dyn Error>> {
             });
         }
     });
-    std::hint::black_box(&frames);
+    std::hint::black_box((&frames, &key_owner, &value_owner));
 
     let result = ProfileResult {
         schema_version: 1,

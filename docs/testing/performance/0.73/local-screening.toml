@@ -57,6 +57,7 @@ w5_hc2_event_copy_profile_contract = "docs/testing/performance/0.73/w5-hc2-event
 w5_hc2_event_copy_profile_evidence = "docs/testing/performance/0.73/w5-hc2-event-copy-profile-02777da6.toml"
 w5_shared_event_bytes_contract = "docs/testing/performance/0.73/w5-shared-event-bytes-contract.toml"
 w5_shared_event_bytes_insufficient = "docs/testing/performance/0.73/w5-shared-event-bytes-insufficient-8a744954.toml"
+w5_shared_event_bytes_profile_v2_contract = "docs/testing/performance/0.73/w5-shared-event-bytes-profile-v2-contract.toml"
 promotable = false
 numerical_claims_allowed = false
 candidate_thresholds_allowed = false
