@@ -1099,6 +1099,35 @@ therefore accepts the endpoint attribution without authorizing a buffer change. 
 is one hundred slow consumers: it can test the bounded queue/frame-retention model and exact cleanup,
 which is the remaining application-level W5 hypothesis, while leaving generic TLS tuning alone.
 
+The slow-consumer fixture itself needed correction before it could answer that question. The older
+helper opened one subscription on each of one hundred clients but issued all 1,100 mutations through
+the first client. HC/2 subscription maps are stream-local, so ninety-nine nominal slow consumers saw
+no events. The corrected profile gave every connection a unique prefix and made every client produce
+1,100 matching mutations. Both drained and unread sides therefore completed the same 110,000 real
+mTLS mutations while retaining exactly one hundred active subscriptions.
+
+Five counterbalanced process pairs isolated the unread receiver. Relative to continuously drained
+receivers, it added a median 20,037,582 gross allocation bytes and 21,204,992 working-set bytes in
+the client process. The paired server medians were -1,829 allocation bytes and -57,344 working-set
+bytes: noise around zero under the same mutation load. All controls delivered 110,000 events with
+zero drops. Every unread run accepted exactly 51,300 events and recorded 117,493 to 117,495 drops.
+The repeatability and endpoint separation identify the retained owner much more strongly than a
+whole-process RSS difference could.
+
+The apparently surprising 51,300 count follows the protocol model. The server watermark is global,
+while each unique-prefix subscription sees only its matching mutations, so gap notifications share
+the client's 1,024-item subscription queue with events. Once that bounded queue fills, subsequent
+gap/event delivery attempts are rejected and coalesced into repair state instead of growing memory
+without limit. This is honest bounded degradation: the application must repair after the gap, but
+the transport reader and server are not blocked by an application that stopped calling `next()`.
+
+That last distinction prevents another overclaim. This experiment closes the normal application
+slow-consumer hypothesis as client-owned and bounded; it does not simulate a hostile peer that stops
+polling the HTTP/2 response stream itself. The server still has a 16-item outbound channel, but an
+item limit is not a byte limit when frames vary in size. A raw transport-stall probe is the next
+legitimate way to decide whether byte admission is needed. The 21 MB client result cannot be used as
+evidence for changing the server queue.
+
 ## A profiling ladder that avoids expensive runs
 
 Not every development iteration needs a dedicated bare-metal campaign. A useful workflow has several

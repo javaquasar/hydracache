@@ -116,6 +116,8 @@ const W5_HC2_SPLIT_CONNECTION_PROFILE_EVIDENCE: &str =
     "docs/testing/performance/0.73/w5-hc2-split-connection-profile-19a440d4.toml";
 const W5_HC2_SLOW_CONSUMER_PROFILE_CONTRACT: &str =
     "docs/testing/performance/0.73/w5-hc2-slow-consumer-profile-contract.toml";
+const W5_HC2_SLOW_CONSUMER_PROFILE_EVIDENCE: &str =
+    "docs/testing/performance/0.73/w5-hc2-slow-consumer-profile-ff432801.toml";
 const RELEASE: &str = "0.73";
 const PROFILE: &str = "local-screening-073-v1";
 const ENVIRONMENT_CLASS: &str = "local_screening";
@@ -281,6 +283,9 @@ pub fn check_at_root(
     )?)?;
     let w5_hc2_slow_consumer_profile_contract: TomlValue = toml::from_str(&fs::read_to_string(
         root.join(W5_HC2_SLOW_CONSUMER_PROFILE_CONTRACT),
+    )?)?;
+    let w5_hc2_slow_consumer_profile_evidence: TomlValue = toml::from_str(&fs::read_to_string(
+        root.join(W5_HC2_SLOW_CONSUMER_PROFILE_EVIDENCE),
     )?)?;
     let mut problems = check_contract(&contract, release);
     if !root.join(MOKA_OBSERVER_UPSTREAM_DRAFT).is_file() {
@@ -474,6 +479,10 @@ pub fn check_at_root(
     ));
     problems.extend(check_w5_hc2_slow_consumer_profile_contract(
         &w5_hc2_slow_consumer_profile_contract,
+        release,
+    ));
+    problems.extend(check_w5_hc2_slow_consumer_profile_evidence(
+        &w5_hc2_slow_consumer_profile_evidence,
         release,
     ));
     problems.extend(check_schema(
@@ -671,6 +680,10 @@ pub fn check_contract(root: &TomlValue, release: &str) -> Vec<String> {
         (
             "w5_hc2_slow_consumer_profile_contract",
             W5_HC2_SLOW_CONSUMER_PROFILE_CONTRACT,
+        ),
+        (
+            "w5_hc2_slow_consumer_profile_evidence",
+            W5_HC2_SLOW_CONSUMER_PROFILE_EVIDENCE,
         ),
     ] {
         if text(root, field) != Some(expected) {
@@ -4848,6 +4861,106 @@ pub fn check_w5_hc2_slow_consumer_profile_contract(
         if text(value, field).is_none_or(str::is_empty) {
             problems.push(format!("W5 HC/2 slow-consumer profile {field} is missing"));
         }
+    }
+    problems
+}
+
+pub fn check_w5_hc2_slow_consumer_profile_evidence(
+    value: &TomlValue,
+    release: &str,
+) -> Vec<String> {
+    let mut problems = Vec::new();
+    if integer(value, "schema_version") != Some(1)
+        || text(value, "release") != Some(release)
+        || text(value, "evidence_id") != Some("w5-hc2-slow-consumer-profile-ff432801-v1")
+        || text(value, "state") != Some("local-application-slow-consumer-client-owned-and-bounded")
+        || text(value, "contract") != Some(W5_HC2_SLOW_CONSUMER_PROFILE_CONTRACT)
+        || text(value, "source_commit") != Some("ff43280136644d887053b8f3a7642d54329e0756")
+        || text(value, "profile_tool") != Some("tools/hc2-connection-profile-073")
+    {
+        problems.push("W5 HC/2 slow-consumer evidence identity changed".to_owned());
+    }
+    for field in [
+        "binary_sha256",
+        "contract_sha256",
+        "tool_source_sha256",
+        "tool_lock_sha256",
+    ] {
+        if text(value, field).is_none_or(|digest| !sha256(digest)) {
+            problems.push(format!(
+                "W5 HC/2 slow-consumer evidence {field} is not SHA-256"
+            ));
+        }
+    }
+    let raw_results = string_array(value.get("raw_results"));
+    if raw_results.len() != 10
+        || raw_results.iter().any(|entry| {
+            entry
+                .rsplit_once(':')
+                .is_none_or(|(_, digest)| !sha256(digest))
+        })
+    {
+        problems.push("W5 HC/2 slow-consumer raw result manifest changed".to_owned());
+    }
+    for field in [
+        "production_counter_addition",
+        "product_mutation_present",
+        "candidate_data_present",
+        "dedicated_host_run_allowed",
+        "promotable",
+        "server_queued_byte_claim_allowed",
+        "release_numerical_claim_allowed",
+    ] {
+        if boolean(value, field) != Some(false) {
+            problems.push(format!(
+                "W5 HC/2 slow-consumer evidence {field} must be false"
+            ));
+        }
+    }
+    for field in [
+        "control_invariant_passed",
+        "treatment_invariant_passed",
+        "close_invariant_passed",
+        "stderr_empty",
+    ] {
+        if boolean(value, field) != Some(true) {
+            problems.push(format!(
+                "W5 HC/2 slow-consumer evidence {field} must be true"
+            ));
+        }
+    }
+    if integer(value, "pairs") != Some(5)
+        || integer(value, "attempts") != Some(10)
+        || integer(value, "failed_attempts") != Some(0)
+        || integer(value, "connections") != Some(100)
+        || integer(value, "subscriptions") != Some(100)
+        || integer(value, "mutations_per_attempt") != Some(110_000)
+    {
+        problems.push("W5 HC/2 slow-consumer evidence volume changed".to_owned());
+    }
+    if integer(value, "median_paired_client_gross_allocated_delta_bytes") != Some(20_037_582)
+        || integer(value, "median_paired_server_gross_allocated_delta_bytes") != Some(-1_829)
+        || integer(value, "median_paired_client_working_set_delta_bytes") != Some(21_204_992)
+        || integer(value, "median_paired_server_working_set_delta_bytes") != Some(-57_344)
+        || integer(value, "median_unread_events") != Some(51_300)
+        || integer(value, "median_unread_dropped_events") != Some(117_494)
+        || integer(value, "control_events") != Some(110_000)
+        || integer(value, "control_dropped_events") != Some(0)
+    {
+        problems.push("W5 HC/2 slow-consumer evidence result changed".to_owned());
+    }
+    if value
+        .get("pair")
+        .and_then(TomlValue::as_array)
+        .is_none_or(|pairs| pairs.len() != 5)
+        || text(value, "interpretation").is_none_or(str::is_empty)
+        || text(value, "fixture_correction").is_none_or(str::is_empty)
+        || text(value, "boundedness").is_none_or(str::is_empty)
+        || text(value, "decision")
+            != Some("accept-application-slow-consumer-as-client-owned-no-server-candidate")
+        || text(value, "next_evidence").is_none_or(str::is_empty)
+    {
+        problems.push("W5 HC/2 slow-consumer evidence decision is incomplete".to_owned());
     }
     problems
 }

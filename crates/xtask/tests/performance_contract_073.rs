@@ -1219,3 +1219,22 @@ fn w5_slow_consumer_profile_cannot_promote_or_weaken_the_workload() {
         .iter()
         .any(|problem| problem.contains("workload changed")));
 }
+
+#[test]
+fn w5_slow_consumer_evidence_cannot_promote_or_move_retention_to_server() {
+    let mut value = manifest("w5-hc2-slow-consumer-profile-ff432801.toml");
+    value["promotable"] = TomlValue::Boolean(true);
+    value["server_queued_byte_claim_allowed"] = TomlValue::Boolean(true);
+    value["median_paired_server_working_set_delta_bytes"] = TomlValue::Integer(21_204_992);
+    let problems =
+        xtask::performance_contract::check_w5_hc2_slow_consumer_profile_evidence(&value, "0.73");
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("promotable must be false")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("server_queued_byte_claim_allowed must be false")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("result changed")));
+}
