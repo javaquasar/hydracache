@@ -1442,6 +1442,29 @@ fn w7_cached_budget_evidence_cannot_promote_or_rewrite_acceptance() {
 }
 
 #[test]
+fn w8_allocator_contract_cannot_substitute_rss_or_change_defaults() {
+    let mut value = manifest("w8-allocator-profile-contract.toml");
+    value["rss_substitution_for_native_fields_allowed"] = TomlValue::Boolean(true);
+    value["allocator_default_change_allowed"] = TomlValue::Boolean(true);
+    value["windows_applicable_allocators"] =
+        TomlValue::Array(vec![TomlValue::String("system".to_owned())]);
+    value["required_native_concepts"] = TomlValue::Array(Vec::new());
+    let problems = xtask::performance_contract::check_w8_allocator_profile_contract(&value, "0.73");
+    assert!(problems.iter().any(
+        |problem| problem.contains("rss_substitution_for_native_fields_allowed must be false")
+    ));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("allocator_default_change_allowed must be false")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("matrix changed")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("required telemetry changed")));
+}
+
+#[test]
 fn w5_connection_profile_cannot_promote_claim_server_bytes_or_skip_samples() {
     let mut value = manifest("w5-hc2-connection-profile-contract.toml");
     value["promotable"] = TomlValue::Boolean(true);

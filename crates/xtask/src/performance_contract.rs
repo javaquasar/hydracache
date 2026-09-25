@@ -154,6 +154,8 @@ const W7_CACHED_BUDGET_TOTAL_CONTRACT: &str =
     "docs/testing/performance/0.73/w7-cached-budget-total-contract.toml";
 const W7_CACHED_BUDGET_TOTAL_EVIDENCE: &str =
     "docs/testing/performance/0.73/w7-cached-budget-total-accepted-8bcd55e1.toml";
+const W8_ALLOCATOR_PROFILE_CONTRACT: &str =
+    "docs/testing/performance/0.73/w8-allocator-profile-contract.toml";
 const RELEASE: &str = "0.73";
 const PROFILE: &str = "local-screening-073-v1";
 const ENVIRONMENT_CLASS: &str = "local_screening";
@@ -376,6 +378,9 @@ pub fn check_at_root(
     )?)?;
     let w7_cached_budget_total_evidence: TomlValue = toml::from_str(&fs::read_to_string(
         root.join(W7_CACHED_BUDGET_TOTAL_EVIDENCE),
+    )?)?;
+    let w8_allocator_profile_contract: TomlValue = toml::from_str(&fs::read_to_string(
+        root.join(W8_ALLOCATOR_PROFILE_CONTRACT),
     )?)?;
     let mut problems = check_contract(&contract, release);
     if !root.join(MOKA_OBSERVER_UPSTREAM_DRAFT).is_file() {
@@ -647,6 +652,10 @@ pub fn check_at_root(
         &w7_cached_budget_total_evidence,
         release,
     ));
+    problems.extend(check_w8_allocator_profile_contract(
+        &w8_allocator_profile_contract,
+        release,
+    ));
     problems.extend(check_schema(
         &schema,
         &example,
@@ -912,6 +921,10 @@ pub fn check_contract(root: &TomlValue, release: &str) -> Vec<String> {
         (
             "w7_cached_budget_total_evidence",
             W7_CACHED_BUDGET_TOTAL_EVIDENCE,
+        ),
+        (
+            "w8_allocator_profile_contract",
+            W8_ALLOCATOR_PROFILE_CONTRACT,
         ),
     ] {
         if text(root, field) != Some(expected) {
@@ -7068,6 +7081,126 @@ pub fn check_w7_cached_budget_total_evidence(value: &TomlValue, release: &str) -
     }
     if text(value, "decision") != Some("retain-cached-durable-budget-total-and-close-w7-accepted") {
         problems.push("W7 cached budget total evidence decision changed".to_owned());
+    }
+    problems
+}
+
+pub fn check_w8_allocator_profile_contract(value: &TomlValue, release: &str) -> Vec<String> {
+    let mut problems = Vec::new();
+    if integer(value, "schema_version") != Some(1)
+        || text(value, "release") != Some(release)
+        || text(value, "contract_id") != Some("w8-allocator-profile-073-v1")
+        || text(value, "state") != Some("preregistered-before-profiler-implementation")
+        || text(value, "source_parent") != Some("669be78b1e71b0d303c7a01e1a807c4c5dd9bf64")
+        || text(value, "historical_capabilities")
+            != Some("docs/testing/memory/0.71/allocator-capabilities.toml")
+        || text(value, "profile_tool") != Some("tools/allocator-profile-073")
+    {
+        problems.push("W8 allocator profile contract identity changed".to_owned());
+    }
+    for field in [
+        "mutually_exclusive_features_required",
+        "locked_release_builds_required",
+        "independent_processes_required",
+        "identical_trace_required",
+        "identical_payload_required",
+        "identical_runtime_required",
+        "binary_sha256_required",
+        "tool_source_sha256_required",
+        "lock_sha256_required",
+        "attempt_manifest_required",
+        "failed_attempt_retention_required",
+        "native_unavailable_requires_reason",
+        "raw_native_payload_required",
+        "units_must_be_bytes",
+        "counter_semantics_required",
+        "purge_activation_proof_required",
+        "no_purge_run_required",
+        "second_refill_required_when_purge_runs",
+        "adr_required_for_default_change",
+        "full_compatibility_latency_matrix_required_for_default_change",
+    ] {
+        if boolean(value, field) != Some(true) {
+            problems.push(format!(
+                "W8 allocator profile contract {field} must be true"
+            ));
+        }
+    }
+    for field in [
+        "rss_substitution_for_native_fields_allowed",
+        "missing_native_field_imputation_allowed",
+        "cross_allocator_native_name_equivalence_allowed",
+        "product_mutation_allowed",
+        "allocator_default_change_allowed",
+        "allocator_tuning_change_allowed",
+        "local_host_promotable",
+        "release_numerical_claim_allowed",
+    ] {
+        if boolean(value, field) != Some(false) {
+            problems.push(format!(
+                "W8 allocator profile contract {field} must be false"
+            ));
+        }
+    }
+    if string_array(value.get("allocators")) != ["system", "mimalloc", "jemalloc"]
+        || string_array(value.get("windows_applicable_allocators")) != ["system", "mimalloc"]
+        || string_array(value.get("windows_not_applicable_allocators")) != ["jemalloc"]
+        || string_array(value.get("linux_required_allocators"))
+            != ["system", "mimalloc", "jemalloc"]
+        || string_array(value.get("phases"))
+            != [
+                "cold",
+                "fill",
+                "steady_read",
+                "delete",
+                "refill",
+                "post_idle",
+            ]
+        || string_array(value.get("optional_purge_phases"))
+            != ["pre_purge", "post_purge", "second_refill"]
+        || integer(value, "cardinality") != Some(16_384)
+        || integer(value, "payload_bytes") != Some(4_096)
+        || integer(value, "steady_read_operations") != Some(65_536)
+        || integer(value, "idle_milliseconds") != Some(2_000)
+        || integer(value, "repeats_per_allocator") != Some(5)
+        || integer(value, "minimum_windows_attempts") != Some(10)
+        || integer(value, "minimum_linux_attempts") != Some(15)
+    {
+        problems.push("W8 allocator profile contract matrix changed".to_owned());
+    }
+    for field in [
+        "scope",
+        "windows_system_native_status",
+        "windows_mimalloc_native_status",
+        "windows_jemalloc_status",
+        "linux_system_native_status",
+        "linux_mimalloc_native_status",
+        "linux_jemalloc_native_status",
+        "falsifier",
+        "interpretation_limit",
+        "decision_rule",
+        "next_decision",
+    ] {
+        if text(value, field).is_none_or(str::is_empty) {
+            problems.push(format!("W8 allocator profile contract {field} is missing"));
+        }
+    }
+    if string_array(value.get("required_native_concepts"))
+        != [
+            "allocated_or_live",
+            "active_or_committed",
+            "resident",
+            "retained_or_reserved",
+        ]
+        || string_array(value.get("required_process_fields"))
+            != [
+                "working_set_bytes",
+                "peak_working_set_bytes",
+                "private_commit_bytes",
+                "page_fault_count",
+            ]
+    {
+        problems.push("W8 allocator profile contract required telemetry changed".to_owned());
     }
     problems
 }

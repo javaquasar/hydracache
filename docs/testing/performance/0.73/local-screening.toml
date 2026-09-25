@@ -85,6 +85,7 @@ w7_durability_page_cache_profile_contract = "docs/testing/performance/0.73/w7-du
 w7_durability_page_cache_profile_evidence = "docs/testing/performance/0.73/w7-durability-page-cache-profile-b5a327ce.toml"
 w7_cached_budget_total_contract = "docs/testing/performance/0.73/w7-cached-budget-total-contract.toml"
 w7_cached_budget_total_evidence = "docs/testing/performance/0.73/w7-cached-budget-total-accepted-8bcd55e1.toml"
+w8_allocator_profile_contract = "docs/testing/performance/0.73/w8-allocator-profile-contract.toml"
 promotable = false
 numerical_claims_allowed = false
 candidate_thresholds_allowed = false
