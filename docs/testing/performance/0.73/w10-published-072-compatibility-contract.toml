@@ -1,0 +1,81 @@
+schema_version = 1
+release = "0.73"
+contract_id = "w10-published-072-compatibility-073-v1"
+state = "preregistered-after-focused-host-pass-before-compatibility-observation"
+focused_host_evidence = "docs/testing/performance/0.73/w10-focused-host-comparison-passed-7e307089.toml"
+published_tag = "v0.72.0"
+published_tag_object = "5aafc92ebeb160eda94a79916683e0a1030b8b1a"
+published_source_commit = "24927c28c279c6c34ad90111ee6470b4065e0815"
+candidate_source_commit = "7e3070894aa51af96cdcb3e350eff923a309e1fa"
+candidate_tree_oid = "e2c438b9a248586a4f72d3eca3d1c5369fff440b"
+
+wire_matrix = [
+  "B72-client--B72-server",
+  "B72-client--C73-server",
+  "C73-client--B72-server",
+  "C73-client--C73-server",
+]
+wire_surfaces = ["HC1", "HC2", "RESP"]
+wire_cases = [
+  "empty-read",
+  "put-read-binary-key-and-value",
+  "tagged-put-read-invalidate",
+  "ttl-visible-before-expiry-and-absent-after-expiry",
+  "tenant-a-write-invisible-to-tenant-b",
+  "malformed-frame-rejected-before-mutation",
+  "drain-reconciles-live-owners",
+]
+management_routes = [
+  "/management/v1/capabilities",
+  "/management/v1/dashboard",
+  "/management/v1/formation",
+  "/management/v1/cluster/members",
+  "/management/v1/cluster/partitions",
+  "/management/v1/persistence",
+  "/management/v1/operations",
+  "/management/v1/audit",
+]
+asset_cases = ["console-index", "hashed-css", "hashed-javascript", "unknown-asset-404"]
+durable_sequence = [
+  "B72-create-and-write",
+  "C73-read-old-write-new-and-reopen",
+  "B72-same-disk-read-after-candidate-write",
+]
+durable_cases = [
+  "live-value",
+  "tombstone",
+  "repair-confirmed-gc",
+  "budget-rejection",
+  "checksum-corruption-refusal",
+]
+rolling_scenarios = [
+  "B72-leader-C73-followers",
+  "leadership-change-during-mixed-cluster",
+  "C73-leader-B72-follower",
+  "B72-follower-same-disk-restart",
+  "full-C73-cluster",
+  "same-disk-rollback-to-B72",
+]
+
+wire_cells_required = 4
+rolling_scenarios_required = 6
+durable_transitions_required = 3
+published_binary_must_come_from_tag = true
+published_source_substitute_allowed = false
+candidate_binary_must_match_exact_sha = true
+empty_store_required = true
+old_write_new_read_required = true
+new_restart_required = true
+same_disk_rollback_required = true
+pre_mutation_loud_refusal_allowed = true
+restore_after_refusal_required = true
+all_attempts_retained = true
+silent_retry_allowed = false
+host_performance_claim_allowed = false
+long_run_allowed_before_pass = false
+
+canary_marker = "HC-CANARY-RED:W10-COMPAT"
+canary = "HYDRACACHE_CANARY_DEFECT=W10-COMPAT removes the C73-client--B72-server wire cell; the orchestrator must fail without a pass receipt."
+success_rule = "All four client/server wire cells pass every HC/1, HC/2, RESP, tag, TTL, tenant, malformed-input, management, asset and owner-cleanup case; the three durable transitions preserve compatible records or refuse before mutation and restore; all six rolling scenarios pass with the real published B72 and exact C73 binaries; the canary fails closed."
+failure_rule = "Any missing cell, substituted post-tag source, binary/source mismatch, incompatible read, silent data loss, cross-tenant visibility, management truth drift, asset route drift, failed restart, non-restorable refusal, incomplete rolling scenario, secret-bearing artifact or favorable retry keeps compatibility and long runs closed."
+next_evidence = "Implement and locally falsify the standalone dual-overlay harness and rolling driver, then execute one serialized Linux compatibility campaign with exact B72/C73 binaries and retain its complete packet."

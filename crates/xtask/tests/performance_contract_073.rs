@@ -1831,6 +1831,34 @@ fn w10_focused_host_comparison_only_opens_compatibility_and_rollback() {
 }
 
 #[test]
+fn w10_published_072_compatibility_cannot_substitute_or_shrink_the_matrix() {
+    let mut value = manifest("w10-published-072-compatibility-contract.toml");
+    value["published_source_substitute_allowed"] = TomlValue::Boolean(true);
+    value["long_run_allowed_before_pass"] = TomlValue::Boolean(true);
+    value["wire_cells_required"] = TomlValue::Integer(3);
+    value["rolling_scenarios"] = TomlValue::Array(Vec::new());
+    value["same_disk_rollback_required"] = TomlValue::Boolean(false);
+    value["canary_marker"] = TomlValue::String("green".to_owned());
+    let problems =
+        xtask::performance_contract::check_w10_published_072_compatibility_contract(&value, "0.73");
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("matrix changed")));
+    assert!(problems
+        .iter()
+        .any(|problem| { problem.contains("published_source_substitute_allowed must be false") }));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("long_run_allowed_before_pass must be false")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("same_disk_rollback_required must be true")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("canary changed")));
+}
+
+#[test]
 fn w5_connection_profile_cannot_promote_claim_server_bytes_or_skip_samples() {
     let mut value = manifest("w5-hc2-connection-profile-contract.toml");
     value["promotable"] = TomlValue::Boolean(true);

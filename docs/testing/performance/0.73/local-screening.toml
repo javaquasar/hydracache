@@ -98,6 +98,7 @@ w10_integrated_process_smoke_evidence = "docs/testing/performance/0.73/w10-integ
 w10_focused_host_comparison_contract = "docs/testing/performance/0.73/w10-focused-host-comparison-contract.toml"
 w10_focused_host_tooling_evidence = "docs/testing/performance/0.73/w10-focused-host-tooling-passed-514183a9.toml"
 w10_focused_host_comparison_evidence = "docs/testing/performance/0.73/w10-focused-host-comparison-passed-7e307089.toml"
+w10_published_072_compatibility_contract = "docs/testing/performance/0.73/w10-published-072-compatibility-contract.toml"
 promotable = false
 numerical_claims_allowed = false
 candidate_thresholds_allowed = false
