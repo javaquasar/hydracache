@@ -96,6 +96,8 @@ const W2_EXPIRY_SWEEP_PROFILE_EVIDENCE: &str =
     "docs/testing/performance/0.73/w2-expiry-sweep-profile-e4a61d9f.toml";
 const W2_BORROWED_EXPIRY_SCAN_CONTRACT: &str =
     "docs/testing/performance/0.73/w2-borrowed-expiry-scan-contract.toml";
+const W2_BORROWED_EXPIRY_SCAN_EVIDENCE: &str =
+    "docs/testing/performance/0.73/w2-borrowed-expiry-scan-a80839fd.toml";
 const RELEASE: &str = "0.73";
 const PROFILE: &str = "local-screening-073-v1";
 const ENVIRONMENT_CLASS: &str = "local_screening";
@@ -231,6 +233,9 @@ pub fn check_at_root(
     )?)?;
     let w2_borrowed_expiry_scan_contract: TomlValue = toml::from_str(&fs::read_to_string(
         root.join(W2_BORROWED_EXPIRY_SCAN_CONTRACT),
+    )?)?;
+    let w2_borrowed_expiry_scan_evidence: TomlValue = toml::from_str(&fs::read_to_string(
+        root.join(W2_BORROWED_EXPIRY_SCAN_EVIDENCE),
     )?)?;
     let mut problems = check_contract(&contract, release);
     if !root.join(MOKA_OBSERVER_UPSTREAM_DRAFT).is_file() {
@@ -384,6 +389,10 @@ pub fn check_at_root(
     ));
     problems.extend(check_w2_borrowed_expiry_scan_contract(
         &w2_borrowed_expiry_scan_contract,
+        release,
+    ));
+    problems.extend(check_w2_borrowed_expiry_scan_evidence(
+        &w2_borrowed_expiry_scan_evidence,
         release,
     ));
     problems.extend(check_schema(
@@ -541,6 +550,10 @@ pub fn check_contract(root: &TomlValue, release: &str) -> Vec<String> {
         (
             "w2_borrowed_expiry_scan_contract",
             W2_BORROWED_EXPIRY_SCAN_CONTRACT,
+        ),
+        (
+            "w2_borrowed_expiry_scan_evidence",
+            W2_BORROWED_EXPIRY_SCAN_EVIDENCE,
         ),
     ] {
         if text(root, field) != Some(expected) {
@@ -3934,6 +3947,123 @@ pub fn check_w2_borrowed_expiry_scan_contract(value: &TomlValue, release: &str) 
         if text(value, field).is_none_or(str::is_empty) {
             problems.push(format!("W2 borrowed expiry scan {field} is missing"));
         }
+    }
+    problems
+}
+
+pub fn check_w2_borrowed_expiry_scan_evidence(value: &TomlValue, release: &str) -> Vec<String> {
+    let mut problems = Vec::new();
+    if integer(value, "schema_version") != Some(1)
+        || text(value, "release") != Some(release)
+        || text(value, "evidence_id") != Some("w2-borrowed-expiry-scan-a80839fd-v1")
+        || text(value, "state") != Some("local-candidate-accepted-no-dedicated-run")
+        || text(value, "contract") != Some(W2_BORROWED_EXPIRY_SCAN_CONTRACT)
+        || text(value, "triggering_evidence") != Some(W2_EXPIRY_SWEEP_PROFILE_EVIDENCE)
+        || text(value, "implementation_commit") != Some("df88c28cdd4f068a315959b141d42cee4f31d4b0")
+        || text(value, "candidate_source_commit")
+            != Some("a80839fd67aad086a9881375d19964dcc3449498")
+        || text(value, "baseline_profile_source")
+            != Some("e4a61d9fbbd3fa3fa5eb3b12e39b2ca5b5872404")
+        || text(value, "baseline_identity") != Some("I73")
+    {
+        problems.push("W2 borrowed expiry scan evidence identity changed".to_owned());
+    }
+    for field in [
+        "binary_sha256",
+        "contract_sha256",
+        "tool_lock_sha256",
+        "tool_source_sha256",
+        "raw_result_sha256",
+    ] {
+        if text(value, field).is_none_or(|digest| !sha256(digest)) {
+            problems.push(format!(
+                "W2 borrowed expiry scan evidence {field} is not SHA-256"
+            ));
+        }
+    }
+    for field in [
+        "production_feature_enabled",
+        "dedicated_host_run_allowed",
+        "promotable",
+        "cpu_claims_allowed",
+        "mutex_wait_claims_allowed",
+        "latency_claims_allowed",
+        "rss_claims_allowed",
+        "numerical_release_claims_allowed",
+    ] {
+        if boolean(value, field) != Some(false) {
+            problems.push(format!(
+                "W2 borrowed expiry scan evidence {field} must be false"
+            ));
+        }
+    }
+    if boolean(value, "candidate_local_accepted") != Some(true)
+        || integer(value, "attempts") != Some(20)
+        || integer(value, "failed_attempts") != Some(0)
+        || integer(value, "repeats_per_scenario") != Some(5)
+        || integer(value, "fixture_entries") != Some(512)
+        || integer(value, "scan_limit") != Some(256)
+        || integer(value, "identity_bytes_per_key") != Some(96)
+        || integer(value, "gross_allocated_bytes_removed_per_bounded_scan") != Some(43_008)
+        || integer(value, "allocations_removed_per_bounded_scan") != Some(769)
+        || integer(value, "cloned_identity_bytes_removed_per_bounded_scan") != Some(24_576)
+        || text(value, "w1_disposition") != Some("accepted")
+    {
+        problems.push("W2 borrowed expiry scan evidence volume or disposition changed".to_owned());
+    }
+    let scenarios = value
+        .get("scenario")
+        .and_then(TomlValue::as_array)
+        .cloned()
+        .unwrap_or_default();
+    let expected = [
+        ("none-expired", 43_104, 96, 772, 3, 1, 96),
+        ("half-expired", 73_536, 30_528, 1_162, 393, 129, 12_384),
+        ("all-expired", 104_256, 61_248, 1_547, 778, 257, 24_672),
+        ("cursor-wrap-none-expired", 43_104, 96, 772, 3, 1, 96),
+    ];
+    for (
+        name,
+        baseline_bytes,
+        candidate_bytes,
+        baseline_count,
+        candidate_count,
+        clones,
+        clone_bytes,
+    ) in expected
+    {
+        let matches = scenarios
+            .iter()
+            .filter(|scenario| text(scenario, "name") == Some(name))
+            .collect::<Vec<_>>();
+        if matches.len() != 1 {
+            problems.push(format!(
+                "W2 borrowed expiry scan evidence requires one {name} scenario"
+            ));
+            continue;
+        }
+        let scenario = matches[0];
+        if integer(scenario, "baseline_gross_allocated_bytes") != Some(baseline_bytes)
+            || integer(scenario, "candidate_gross_allocated_bytes") != Some(candidate_bytes)
+            || integer(scenario, "baseline_allocation_count") != Some(baseline_count)
+            || integer(scenario, "candidate_allocation_count") != Some(candidate_count)
+            || integer(scenario, "candidate_cloned_keys") != Some(clones)
+            || integer(scenario, "candidate_cloned_identity_bytes") != Some(clone_bytes)
+            || float(scenario, "relative_change").is_none()
+        {
+            problems.push(format!(
+                "W2 borrowed expiry scan evidence {name} result changed"
+            ));
+        }
+    }
+    if scenarios.len() != expected.len()
+        || text(value, "correctness").is_none_or(str::is_empty)
+        || text(value, "allocation_model").is_none_or(str::is_empty)
+        || text(value, "interpretation").is_none_or(str::is_empty)
+        || text(value, "decision") != Some("accept-w2-locally-and-continue-owner-classification")
+        || text(value, "next_evidence").is_none_or(str::is_empty)
+    {
+        problems.push("W2 borrowed expiry scan evidence decision is incomplete".to_owned());
     }
     problems
 }

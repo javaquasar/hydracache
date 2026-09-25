@@ -964,10 +964,24 @@ a change than an RSS correlation.
 
 The candidate boundary is now narrow. Removal still needs owned expired keys because the map is
 mutated after scanning, and bounded progress still needs one owned cursor. The examined keys need
-neither. A borrowed scan can retain only expired tuples and the final cursor, eliminating the fixed
-43,104-byte no-expiry cost while preserving the 256-entry budget, wrap semantics, and quota cleanup.
+neither. A borrowed scan can retain only expired tuples and the final cursor, reducing the fixed
+43,104-byte no-expiry cost to the cursor's 96 bytes while preserving the 256-entry budget, wrap
+semantics, and quota cleanup.
 We do not yet claim shorter lock duration: the allocation is under the mutex, so that outcome is
 plausible, but it requires a separate measurement rather than inference.
+
+The candidate matched that byte model exactly. In all four shapes it removed 43,008 gross bytes,
+769 allocations, and 24,576 copied identity bytes per bounded scan. No-expiry and cursor-wrap both
+fell from 43,104 bytes and 772 allocations to 96 bytes and three allocations: precisely one owned
+three-string cursor. Half-expired fell from 73,536 to 30,528 bytes, and all-expired from 104,256 to
+61,248 bytes. Five fresh processes per shape returned identical results.
+
+The percentage is deliberately secondary to the decomposition. Depending on how many keys expired,
+the reduction is 99.78%, 58.49%, or 41.25%, but the removed owner is invariant. Correctness tests
+also retained the scan budget, explicit wraparound, full sweep without a cursor, empty-store cursor
+cleanup, and tenant quota release. That combination lets us accept W2 locally without buying a
+dedicated-host run. CPU and mutex-wait claims remain open; W2 will join a later integrated candidate
+rather than receiving a bespoke expensive campaign.
 
 ## A profiling ladder that avoids expensive runs
 

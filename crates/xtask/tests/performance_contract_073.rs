@@ -1023,3 +1023,22 @@ fn w2_borrowed_expiry_scan_contract_cannot_admit_candidate_data_or_host_run() {
         .iter()
         .any(|problem| problem.contains("candidate bounds changed")));
 }
+
+#[test]
+fn w2_borrowed_expiry_scan_evidence_cannot_promote_or_change_result() {
+    let mut value = manifest("w2-borrowed-expiry-scan-a80839fd.toml");
+    value["promotable"] = TomlValue::Boolean(true);
+    value["dedicated_host_run_allowed"] = TomlValue::Boolean(true);
+    value["scenario"][0]["candidate_gross_allocated_bytes"] = TomlValue::Integer(97);
+    let problems =
+        xtask::performance_contract::check_w2_borrowed_expiry_scan_evidence(&value, "0.73");
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("promotable must be false")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("dedicated_host_run_allowed must be false")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("none-expired result changed")));
+}
