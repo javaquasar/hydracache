@@ -5490,7 +5490,8 @@ pub fn check_w6_management_overhead_profile_contract(
     if integer(value, "polls_per_second") != Some(1)
         || integer(value, "polling_requests") != Some(60)
         || integer(value, "cursor_records") != Some(1_024)
-        || integer(value, "pairs_per_scenario") != Some(5)
+        || integer(value, "idle_pairs") != Some(5)
+        || integer(value, "repeats_per_request_scenario") != Some(5)
         || string_array(value.get("counterbalanced_order"))
             != ["off/on", "on/off", "off/on", "on/off", "off/on"]
     {
@@ -5500,8 +5501,9 @@ pub fn check_w6_management_overhead_profile_contract(
         != [
             "management-off-idle",
             "management-on-idle",
-            "dashboard-cold",
-            "dashboard-cache-hit",
+            "dashboard-poll",
+            "aggregate-cold",
+            "aggregate-cache-hit",
             "cursor-saturation",
             "history-disabled",
         ]
