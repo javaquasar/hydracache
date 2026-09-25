@@ -112,6 +112,8 @@ const W5_HC2_CONNECTION_PROFILE_EVIDENCE: &str =
     "docs/testing/performance/0.73/w5-hc2-connection-profile-ff657fc5.toml";
 const W5_HC2_SPLIT_CONNECTION_PROFILE_CONTRACT: &str =
     "docs/testing/performance/0.73/w5-hc2-split-connection-profile-contract.toml";
+const W5_HC2_SPLIT_CONNECTION_PROFILE_EVIDENCE: &str =
+    "docs/testing/performance/0.73/w5-hc2-split-connection-profile-19a440d4.toml";
 const RELEASE: &str = "0.73";
 const PROFILE: &str = "local-screening-073-v1";
 const ENVIRONMENT_CLASS: &str = "local_screening";
@@ -271,6 +273,9 @@ pub fn check_at_root(
     )?)?;
     let w5_hc2_split_connection_profile_contract: TomlValue = toml::from_str(&fs::read_to_string(
         root.join(W5_HC2_SPLIT_CONNECTION_PROFILE_CONTRACT),
+    )?)?;
+    let w5_hc2_split_connection_profile_evidence: TomlValue = toml::from_str(&fs::read_to_string(
+        root.join(W5_HC2_SPLIT_CONNECTION_PROFILE_EVIDENCE),
     )?)?;
     let mut problems = check_contract(&contract, release);
     if !root.join(MOKA_OBSERVER_UPSTREAM_DRAFT).is_file() {
@@ -456,6 +461,10 @@ pub fn check_at_root(
     ));
     problems.extend(check_w5_hc2_split_connection_profile_contract(
         &w5_hc2_split_connection_profile_contract,
+        release,
+    ));
+    problems.extend(check_w5_hc2_split_connection_profile_evidence(
+        &w5_hc2_split_connection_profile_evidence,
         release,
     ));
     problems.extend(check_schema(
@@ -645,6 +654,10 @@ pub fn check_contract(root: &TomlValue, release: &str) -> Vec<String> {
         (
             "w5_hc2_split_connection_profile_contract",
             W5_HC2_SPLIT_CONNECTION_PROFILE_CONTRACT,
+        ),
+        (
+            "w5_hc2_split_connection_profile_evidence",
+            W5_HC2_SPLIT_CONNECTION_PROFILE_EVIDENCE,
         ),
     ] {
         if text(root, field) != Some(expected) {
@@ -4626,6 +4639,128 @@ pub fn check_w5_hc2_split_connection_profile_contract(
                 "W5 HC/2 split connection profile {field} is missing"
             ));
         }
+    }
+    problems
+}
+
+pub fn check_w5_hc2_split_connection_profile_evidence(
+    value: &TomlValue,
+    release: &str,
+) -> Vec<String> {
+    let mut problems = Vec::new();
+    if integer(value, "schema_version") != Some(1)
+        || text(value, "release") != Some(release)
+        || text(value, "evidence_id") != Some("w5-hc2-split-connection-profile-19a440d4-v1")
+        || text(value, "state")
+            != Some("local-endpoints-separated-idle-server-owner-still-composite")
+        || text(value, "contract") != Some(W5_HC2_SPLIT_CONNECTION_PROFILE_CONTRACT)
+        || text(value, "source_commit") != Some("19a440d4224bad928230d1bb7cf2923457381fe6")
+        || text(value, "profile_tool") != Some("tools/hc2-connection-profile-073")
+        || text(value, "profile_mode") != Some("split")
+    {
+        problems.push("W5 HC/2 split connection evidence identity changed".to_owned());
+    }
+    for field in [
+        "binary_sha256",
+        "contract_sha256",
+        "tool_source_sha256",
+        "tool_lock_sha256",
+    ] {
+        if text(value, field).is_none_or(|digest| !sha256(digest)) {
+            problems.push(format!(
+                "W5 HC/2 split connection evidence {field} is not SHA-256"
+            ));
+        }
+    }
+    let raw_results = string_array(value.get("raw_results"));
+    if raw_results.len() != 12
+        || raw_results.iter().any(|entry| {
+            entry
+                .rsplit_once(':')
+                .is_none_or(|(_, digest)| !sha256(digest))
+        })
+    {
+        problems.push("W5 HC/2 split connection raw result manifest changed".to_owned());
+    }
+    for field in [
+        "production_counter_addition",
+        "product_mutation_present",
+        "candidate_data_present",
+        "dedicated_host_run_allowed",
+        "promotable",
+        "universal_per_connection_claim_allowed",
+        "release_numerical_claim_allowed",
+    ] {
+        if boolean(value, field) != Some(false) {
+            problems.push(format!(
+                "W5 HC/2 split connection evidence {field} must be false"
+            ));
+        }
+    }
+    for field in [
+        "independent_process_pairs",
+        "logical_accounting_passed",
+        "client_resource_reconciliation_passed",
+        "close_reconciliation_passed",
+        "stderr_empty",
+    ] {
+        if boolean(value, field) != Some(true) {
+            problems.push(format!(
+                "W5 HC/2 split connection evidence {field} must be true"
+            ));
+        }
+    }
+    if integer(value, "attempts") != Some(12)
+        || integer(value, "failed_attempts") != Some(0)
+        || integer(value, "repeats_per_cardinality") != Some(3)
+    {
+        problems.push("W5 HC/2 split connection evidence volume changed".to_owned());
+    }
+    let cardinalities = value
+        .get("cardinality")
+        .and_then(TomlValue::as_array)
+        .cloned()
+        .unwrap_or_default();
+    let expected = [
+        (1, 181_421, 97_336, 2_756_608, 1_667_072),
+        (10, 1_813_232, 970_503, 3_624_960, 2_322_432),
+        (100, 18_132_352, 9_703_054, 10_383_360, 7_176_192),
+        (1_000, 181_324_189, 97_024_116, 73_859_072, 51_838_976),
+    ];
+    for (connections, client_alloc, server_alloc, client_ws, server_ws) in expected {
+        let matches = cardinalities
+            .iter()
+            .filter(|row| integer(row, "connections") == Some(connections))
+            .collect::<Vec<_>>();
+        if matches.len() != 1 {
+            problems.push(format!(
+                "W5 HC/2 split connection evidence requires one {connections}-connection row"
+            ));
+            continue;
+        }
+        let row = matches[0];
+        if integer(row, "median_client_gross_allocated_bytes") != Some(client_alloc)
+            || integer(row, "median_server_gross_allocated_bytes") != Some(server_alloc)
+            || integer(row, "median_client_working_set_delta_bytes") != Some(client_ws)
+            || integer(row, "median_server_working_set_delta_bytes") != Some(server_ws)
+        {
+            problems.push(format!(
+                "W5 HC/2 split connection evidence {connections}-connection result changed"
+            ));
+        }
+    }
+    if cardinalities.len() != expected.len()
+        || float(value, "client_allocation_marginal_100_to_1000_bytes").is_none()
+        || float(value, "server_allocation_marginal_100_to_1000_bytes").is_none()
+        || float(value, "client_working_set_marginal_100_to_1000_bytes").is_none()
+        || float(value, "server_working_set_marginal_100_to_1000_bytes").is_none()
+        || text(value, "comparison").is_none_or(str::is_empty)
+        || text(value, "interpretation").is_none_or(str::is_empty)
+        || text(value, "decision")
+            != Some("accept-idle-endpoint-attribution-and-preregister-slow-consumer-bound")
+        || text(value, "next_evidence").is_none_or(str::is_empty)
+    {
+        problems.push("W5 HC/2 split connection evidence decision is incomplete".to_owned());
     }
     problems
 }

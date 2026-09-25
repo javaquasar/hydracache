@@ -1180,3 +1180,22 @@ fn w5_split_connection_profile_cannot_promote_or_merge_endpoints() {
         .iter()
         .any(|problem| problem.contains("sampling matrix changed")));
 }
+
+#[test]
+fn w5_split_connection_evidence_cannot_promote_or_rewrite_endpoint_results() {
+    let mut value = manifest("w5-hc2-split-connection-profile-19a440d4.toml");
+    value["promotable"] = TomlValue::Boolean(true);
+    value["universal_per_connection_claim_allowed"] = TomlValue::Boolean(true);
+    value["cardinality"][3]["median_server_working_set_delta_bytes"] = TomlValue::Integer(1);
+    let problems =
+        xtask::performance_contract::check_w5_hc2_split_connection_profile_evidence(&value, "0.73");
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("promotable must be false")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("universal_per_connection_claim_allowed must be false")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("1000-connection result changed")));
+}

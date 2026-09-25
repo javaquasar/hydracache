@@ -1,0 +1,95 @@
+schema_version = 1
+release = "0.73"
+evidence_id = "w5-hc2-split-connection-profile-19a440d4-v1"
+state = "local-endpoints-separated-idle-server-owner-still-composite"
+contract = "docs/testing/performance/0.73/w5-hc2-split-connection-profile-contract.toml"
+source_commit = "19a440d4224bad928230d1bb7cf2923457381fe6"
+profile_tool = "tools/hc2-connection-profile-073"
+profile_mode = "split"
+binary_sha256 = "8877a7caabe7bf02fc75ba4186a5f42e88e9fb3195c563973175936ed7daf1f9"
+contract_sha256 = "d1921e56d4c338abbccc6463827fafd3e8d8e277159006e31a6ebd1b8cd8eaff"
+tool_source_sha256 = "f355cf0c2f3d7fcaf327e0a4db27cd10d153836c29a0c306ec21d2f566268768"
+tool_lock_sha256 = "03b0216e2ae6b9717faf1afccbdd9e7cb9841bffe72c834009c380802a51bfc5"
+attempts = 12
+failed_attempts = 0
+repeats_per_cardinality = 3
+independent_process_pairs = true
+production_counter_addition = false
+product_mutation_present = false
+candidate_data_present = false
+dedicated_host_run_allowed = false
+promotable = false
+universal_per_connection_claim_allowed = false
+release_numerical_claim_allowed = false
+logical_accounting_passed = true
+client_resource_reconciliation_passed = true
+close_reconciliation_passed = true
+stderr_empty = true
+raw_results = [
+  "n1-r1.json:9db35f1a226bc3a6a8381e9c44bb84923de1610b02e4677ebe154e8287e39578",
+  "n1-r2.json:f530c44f75a3a59b572d39eea80b12ca74c14beffbcafe4b3bdf1a10d5800bd4",
+  "n1-r3.json:f9de8e54fa7fe6c7c24c94b7155cbd6b001894367080d3534d95ab47a6e83010",
+  "n10-r1.json:0b26fa8eb12be8faac20cfeb42225d5b18d5c1d8c4f6c9278c41db7b1b1297c9",
+  "n10-r2.json:d60ec4159e59fec12bb578525e366259bbd6fc5b9042eead3e8cb34a72f8700d",
+  "n10-r3.json:1e37ae7cccfcd263d2f0c89b3f05bdb7da1c0c798162b2802de1b5d19f046b81",
+  "n100-r1.json:726557e16e442badf5166109c1842edc2a04eb540ae3a92f0cff0f290e51cd4f",
+  "n100-r2.json:1786de6b6e7d69eb198b548614e1e4f983c3286e148f59e77a7fb291ee724a6c",
+  "n100-r3.json:94f4e8730ac36d9d5b995d15d74e84838b25028ee53b252db3e2e818ab429180",
+  "n1000-r1.json:a0712e1f09eceb8334861d09744e3cbacd613bb8fa3bd2d4b82a98c387f4e358",
+  "n1000-r2.json:363922b13a9a9dfcbef1336da4fad5f427bebf2fada0589ade59a859f293af50",
+  "n1000-r3.json:711488c505f1ead79306825b9ee0defb6b4f5647acaa1c178c9299af244b5595",
+]
+client_allocation_marginal_100_to_1000_bytes = 181324.26333333334
+server_allocation_marginal_100_to_1000_bytes = 97023.40222222223
+client_working_set_marginal_100_to_1000_bytes = 70528.56888888888
+server_working_set_marginal_100_to_1000_bytes = 49625.31555555556
+client_allocation_marginal_share = 0.6514308750225273
+client_working_set_marginal_share = 0.5869853414643385
+comparison = "At 100-to-1,000 connections, the split allocation slopes sum to 278,347.67 bytes/pair versus 278,279.81 in the combined process (0.024% apart). Split working-set slopes sum to 120,153.88 bytes/pair versus 119,166.29 combined (0.83% apart). The server-only local slope is 49,625.32 bytes/connection, 7.48% above the older D0 observation of 46,171 under a different harness."
+interpretation = "Endpoint separation attributes about 65.1% of connection-creation allocation churn and 58.7% of high-cardinality working-set growth to the local client process. The server share remains material and its high-cardinality working-set slope independently resembles D0, but the server process still combines HydraCache stream state, tonic/HTTP2, TLS, Tokio, and allocator ownership."
+decision = "accept-idle-endpoint-attribution-and-preregister-slow-consumer-bound"
+next_evidence = "Run the frozen 100-slow-consumer cell with exact subscription/event production and close reconciliation. Attribute bounded queue/frame retention without adding a production hot-path counter, and do not select a buffer candidate from idle RSS alone."
+
+[[cardinality]]
+connections = 1
+median_client_gross_allocated_bytes = 181421
+median_server_gross_allocated_bytes = 97336
+median_client_working_set_delta_bytes = 2756608
+median_server_working_set_delta_bytes = 1667072
+median_client_post_close_working_set_delta_bytes = 2801664
+median_server_post_close_working_set_delta_bytes = 1732608
+median_client_pagefile_delta_bytes = 233472
+median_server_pagefile_delta_bytes = 102400
+
+[[cardinality]]
+connections = 10
+median_client_gross_allocated_bytes = 1813232
+median_server_gross_allocated_bytes = 970503
+median_client_working_set_delta_bytes = 3624960
+median_server_working_set_delta_bytes = 2322432
+median_client_post_close_working_set_delta_bytes = 3190784
+median_server_post_close_working_set_delta_bytes = 2125824
+median_client_pagefile_delta_bytes = 1343488
+median_server_pagefile_delta_bytes = 966656
+
+[[cardinality]]
+connections = 100
+median_client_gross_allocated_bytes = 18132352
+median_server_gross_allocated_bytes = 9703054
+median_client_working_set_delta_bytes = 10383360
+median_server_working_set_delta_bytes = 7176192
+median_client_post_close_working_set_delta_bytes = 4018176
+median_server_post_close_working_set_delta_bytes = 3080192
+median_client_pagefile_delta_bytes = 11599872
+median_server_pagefile_delta_bytes = 8351744
+
+[[cardinality]]
+connections = 1000
+median_client_gross_allocated_bytes = 181324189
+median_server_gross_allocated_bytes = 97024116
+median_client_working_set_delta_bytes = 73859072
+median_server_working_set_delta_bytes = 51838976
+median_client_post_close_working_set_delta_bytes = 5644288
+median_server_post_close_working_set_delta_bytes = 4575232
+median_client_pagefile_delta_bytes = 105689088
+median_server_pagefile_delta_bytes = 76255232

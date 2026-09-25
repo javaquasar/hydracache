@@ -1077,6 +1077,28 @@ the same protocol and cardinalities while placing server and clients in differen
 sampling both. Only then is it responsible to choose among initial-buffer sizing, queue-byte caps,
 or idle buffer release; RSS alone still does not authorize any of them.
 
+Separating the endpoints made the decomposition much sharper. Over the 100-to-1,000 interval, the
+client process contributed about 181,324 gross allocation bytes and 70,529 working-set bytes per
+additional connection; the server contributed about 97,023 gross allocation bytes and 49,625
+working-set bytes. The allocation slopes sum to 278,348 bytes per pair, only 0.024% away from the
+combined-process slope. The working-set slopes sum to 120,154 bytes, 0.83% above the combined result.
+Those close reconstructions are a useful consistency check: process separation changed fixed floors,
+but did not invent a different scaling phenomenon.
+
+The server-only working-set slope is especially informative. Its local 49,625 bytes per connection
+is 7.48% above the older D0 observation of 46,171, despite a different harness and measurement date.
+That resemblance increases confidence that the original signal was real, while the difference is a
+warning against turning either number into a universal constant. Client process state accounts for
+roughly 65.1% of allocation churn and 58.7% of split working-set growth, but it was absent from the
+old server RSS slope. Endpoint scope explains why both measurements can be correct.
+
+Even the server number is not yet an application-owner number. One process contains the HydraCache
+subscription/session maps and bounded channel, but also tonic, HTTP/2 flow control, rustls records,
+Tokio tasks, socket buffers charged into the process, and allocator bookkeeping. The idle matrix
+therefore accepts the endpoint attribution without authorizing a buffer change. The next frozen cell
+is one hundred slow consumers: it can test the bounded queue/frame-retention model and exact cleanup,
+which is the remaining application-level W5 hypothesis, while leaving generic TLS tuning alone.
+
 ## A profiling ladder that avoids expensive runs
 
 Not every development iteration needs a dedicated bare-metal campaign. A useful workflow has several
