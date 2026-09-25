@@ -941,3 +941,28 @@ fn baseline_v2_freeze_cannot_admit_candidate_data_or_drop_stable_rates() {
         .iter()
         .any(|problem| problem.contains("volume or rate decision changed")));
 }
+
+#[test]
+fn w1_owner_classification_cannot_skip_a_surface_or_authorize_product_work() {
+    let mut value = manifest("w1-owner-classification-contract.toml");
+    value["product_mutation_allowed"] = TomlValue::Boolean(true);
+    value["dedicated_host_run_allowed"] = TomlValue::Boolean(true);
+    value["surface"]
+        .as_array_mut()
+        .expect("W1 surface array")
+        .retain(|surface| surface["work_item"].as_str() != Some("W8"));
+    let problems =
+        xtask::performance_contract::check_w1_owner_classification_contract(&value, "0.73");
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("product_mutation_allowed must be false")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("dedicated_host_run_allowed must be false")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("all W2--W9 surfaces")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("exactly one W8/allocator")));
+}

@@ -452,6 +452,14 @@ proposals using this exact baseline, the unchanged thresholds, and at least five
 I73/C73 pairs. Earlier negative packets remain in the ledger and are not rewritten as code-effect
 comparisons.
 
+`w1-owner-classification-contract.toml` opens the next release step without opening a candidate. It
+maps W2--W9 to concrete owners and existing evidence, then records only the missing signals. Exact
+retained snapshots, HC/2 live-owner counters, durable logical bytes, and management bounds are
+reused; allocator and anon/file page ownership stay external; profile stacks stay under the
+separate `I73-profile` identity. The contract forbids product mutation and dedicated-host runs. A
+surface reaches D1 only with a reproducible local probe and falsifier, and a later D2 proposal must
+still name one owner, one primary metric, exact files, and rollback before observing candidate data.
+
 The same push exposed a separate cost-control issue: the host-admission workflow still had an
 automatic path and queued run `36072022062` behind the shared performance concurrency group. It was
 cancelled before environment approval and ran no job. Commit `e0dc4df5` makes host admission, like

@@ -88,6 +88,8 @@ const SHARED_ENTRY_TAGS_PRODUCT: &str =
     "docs/testing/performance/0.73/shared-entry-tags-product-947e624d.toml";
 const BASELINE_PILOT_V2_FREEZE_EVIDENCE: &str =
     "docs/testing/performance/0.73/baseline-pilot-v2-passed-e757556d.toml";
+const W1_OWNER_CLASSIFICATION_CONTRACT: &str =
+    "docs/testing/performance/0.73/w1-owner-classification-contract.toml";
 const RELEASE: &str = "0.73";
 const PROFILE: &str = "local-screening-073-v1";
 const ENVIRONMENT_CLASS: &str = "local_screening";
@@ -211,6 +213,9 @@ pub fn check_at_root(
         toml::from_str(&fs::read_to_string(root.join(SHARED_ENTRY_TAGS_PRODUCT))?)?;
     let baseline_pilot_v2_freeze_evidence: TomlValue = toml::from_str(&fs::read_to_string(
         root.join(BASELINE_PILOT_V2_FREEZE_EVIDENCE),
+    )?)?;
+    let w1_owner_classification_contract: TomlValue = toml::from_str(&fs::read_to_string(
+        root.join(W1_OWNER_CLASSIFICATION_CONTRACT),
     )?)?;
     let mut problems = check_contract(&contract, release);
     if !root.join(MOKA_OBSERVER_UPSTREAM_DRAFT).is_file() {
@@ -348,6 +353,10 @@ pub fn check_at_root(
     ));
     problems.extend(check_baseline_pilot_v2_freeze_evidence(
         &baseline_pilot_v2_freeze_evidence,
+        release,
+    ));
+    problems.extend(check_w1_owner_classification_contract(
+        &w1_owner_classification_contract,
         release,
     ));
     problems.extend(check_schema(
@@ -489,6 +498,10 @@ pub fn check_contract(root: &TomlValue, release: &str) -> Vec<String> {
         (
             "baseline_pilot_v2_freeze_evidence",
             BASELINE_PILOT_V2_FREEZE_EVIDENCE,
+        ),
+        (
+            "w1_owner_classification_contract",
+            W1_OWNER_CLASSIFICATION_CONTRACT,
         ),
     ] {
         if text(root, field) != Some(expected) {
@@ -3586,6 +3599,97 @@ pub fn check_baseline_pilot_v2_freeze_evidence(value: &TomlValue, release: &str)
         || text(value, "next_evidence").is_none_or(str::is_empty)
     {
         problems.push("baseline v2 freeze decision is incomplete".to_owned());
+    }
+    problems
+}
+
+pub fn check_w1_owner_classification_contract(value: &TomlValue, release: &str) -> Vec<String> {
+    let mut problems = Vec::new();
+    if integer(value, "schema_version") != Some(1)
+        || text(value, "release") != Some(release)
+        || text(value, "contract_id") != Some("w1-owner-classification-073-v1")
+        || text(value, "state") != Some("preregistered-source-audit-complete-probes-pending")
+        || text(value, "baseline_identity") != Some("I73")
+        || text(value, "baseline_source_sha") != Some("e757556d3a31d565f52a9561d6d4e555bb1cc373")
+        || text(value, "baseline_freeze_evidence") != Some(BASELINE_PILOT_V2_FREEZE_EVIDENCE)
+    {
+        problems.push("W1 owner classification identity changed".to_owned());
+    }
+    for field in [
+        "candidate_data_allowed",
+        "product_mutation_allowed",
+        "dedicated_host_run_allowed",
+        "local_results_promotable",
+    ] {
+        if boolean(value, field) != Some(false) {
+            problems.push(format!("W1 owner classification {field} must be false"));
+        }
+    }
+    for field in [
+        "production_counter_addition_requires_missing_owner",
+        "profile_identity_separate",
+    ] {
+        if boolean(value, field) != Some(true) {
+            problems.push(format!("W1 owner classification {field} must be true"));
+        }
+    }
+    if string_array(value.get("required_terminal_dispositions"))
+        != [
+            "accepted",
+            "measured-no-win",
+            "not-applicable",
+            "rejected",
+            "deferred-external-blocker",
+        ]
+        || string_array(value.get("probe_order")).len() < 5
+        || text(value, "success_rule").is_none_or(str::is_empty)
+    {
+        problems.push("W1 owner classification process or terminal states changed".to_owned());
+    }
+    let surfaces = value
+        .get("surface")
+        .and_then(TomlValue::as_array)
+        .cloned()
+        .unwrap_or_default();
+    let expected = [
+        ("W2", "shared-store-expiry"),
+        ("W3", "tag-index"),
+        ("W4", "resp-translation"),
+        ("W5", "hc2-connection-state"),
+        ("W6", "management-service-overhead"),
+        ("W7", "durability-page-cache"),
+        ("W8", "allocator"),
+        ("W9", "retained-byte-admission"),
+    ];
+    if surfaces.len() != expected.len() {
+        problems.push("W1 owner classification must retain all W2--W9 surfaces".to_owned());
+    }
+    for (work_item, id) in expected {
+        let matches = surfaces
+            .iter()
+            .filter(|surface| {
+                text(surface, "work_item") == Some(work_item) && text(surface, "id") == Some(id)
+            })
+            .collect::<Vec<_>>();
+        if matches.len() != 1 {
+            problems.push(format!(
+                "W1 owner classification requires exactly one {work_item}/{id}"
+            ));
+            continue;
+        }
+        let surface = matches[0];
+        if boolean(surface, "candidate_authorized") != Some(false)
+            || text(surface, "owner").is_none_or(str::is_empty)
+            || text(surface, "current_visibility").is_none_or(str::is_empty)
+            || text(surface, "next_probe").is_none_or(str::is_empty)
+            || text(surface, "falsifier").is_none_or(str::is_empty)
+            || string_array(surface.get("source_files")).is_empty()
+            || string_array(surface.get("missing_signals")).is_empty()
+        {
+            problems.push(format!(
+                "W1 owner classification has incomplete {work_item}/{id}"
+            ));
+        }
     }
     problems
 }

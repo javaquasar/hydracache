@@ -48,6 +48,7 @@ observer_allocation_attribution_evidence = "docs/testing/performance/0.73/observ
 shared_entry_tags_contract = "docs/testing/performance/0.73/shared-entry-tags-contract.toml"
 shared_entry_tags_product = "docs/testing/performance/0.73/shared-entry-tags-product-947e624d.toml"
 baseline_pilot_v2_freeze_evidence = "docs/testing/performance/0.73/baseline-pilot-v2-passed-e757556d.toml"
+w1_owner_classification_contract = "docs/testing/performance/0.73/w1-owner-classification-contract.toml"
 promotable = false
 numerical_claims_allowed = false
 candidate_thresholds_allowed = false

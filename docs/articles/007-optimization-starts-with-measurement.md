@@ -926,6 +926,21 @@ paired code comparison. Together they are sufficient for the intended governance
 `I73` at the measured source, select the 20,000 ops/s knee, derive 5,000/12,000/17,000 ops/s D3
 cells, and permit candidate observation only under separately preregistered comparisons.
 
+The next source audit also changed how we plan instrumentation. The cache already has an exact
+retained-byte snapshot split by entries, values, keys, tags, tag-index memberships, expiry metadata,
+and generation metadata. HC/2 already reconciles live connections, invocations, subscriptions, and
+sessions; the durable store exposes logical bytes and GC reclamation; management paths already have
+hard concurrency and response bounds. Adding parallel counters for those owners would increase the
+cost of the baseline while producing duplicate evidence.
+
+The real gaps are narrower: lock wait and cloned expiry keys in the shared client store; copied
+bytes at RESP and HC/2 boundaries; queued HC/2 bytes; management collector wakeups and retained
+cursor/history bytes; durable staging buffers versus file-backed pages; and allocator
+allocated/active/resident/retained state. Some of those belong in focused test-only or production
+counters, some in allocation probes, and some only in OS or allocator-native telemetry. Treating
+every unknown as a new hot-path counter would confuse observability with ownership—and could recreate
+the overhead problem we just removed.
+
 ## A profiling ladder that avoids expensive runs
 
 Not every development iteration needs a dedicated bare-metal campaign. A useful workflow has several
