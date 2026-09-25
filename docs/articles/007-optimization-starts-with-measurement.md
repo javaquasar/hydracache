@@ -1647,6 +1647,46 @@ the published 0.72 binaries, or justify six- and 24-hour runs. Expensive qualifi
 after the combined process scenario can account for every outcome and can fail its own interaction
 canaries locally.
 
+The integrated smoke turned that boundary into executable code rather than another checklist. One
+test binary is built once and then invoked as four independent processes: event delivery,
+expiry/tag accounting, the frozen mixed-protocol workload, and a sync-acknowledged durable
+companion. Every cell schedules exactly 1,000 operations and emits the same complete outcome vector.
+The runner rejects a zero-test process, a missing receipt, a second receipt, any nonzero rejection,
+timeout, late or incomplete count, or any change to the 35/30/15/10/5/5 mixed allocation. It keeps
+stdout and stderr hashes per process and records the source tree and binary hash.
+
+This local layer exercises real boundaries without pretending to be a benchmark host. The event
+cell starts the production daemon and a real mTLS HC/2 stream. Three hundred concurrent puts are
+allowed to fill the subscriber side before reads resume, so shared event tags and bytes meet the
+encoded-byte queue budget under backpressure; the cell then proves monotone watermarks, zero drops,
+and zero client and server owners after close. The mixed cell uses the same real daemon for 350 HC/2,
+300 RESP and 150 HC/1 operations, adds 100 direct-cache, 50 tag-invalidation and 50 TTL operations,
+and checks the management endpoint rather than trusting only client success.
+
+The expiry/tag cell revealed why “local” should not mean “mocked.” Exact cache reconciliation proves
+that entries, tag memberships and estimated retained bytes return to zero, but HydraCache's local
+cache has no tenant quota. A real isolated `ClientSurfaceState` therefore fills a one-entry/value
+quota, advances the active-expiry clock without reading the key, observes zero retained quota owners,
+and refills successfully. The durable process similarly uses the feature-gated sled store rather
+than an in-memory substitute: it covers overwrite, read, tombstone, repair-confirmed GC, reopen,
+budget rejection and corrupt-envelope refusal while making no local timing or page-residency claim.
+
+The failed attempts were as informative as the green run. A two-record durable GC scan repeatedly
+visited the sorted live prefix and never reached later tombstones; increasing the number of calls
+could not repair the wrong scan model. The first runner parser missed valid receipts because libtest
+placed the JSON after its test-name prefix. The first stalled-event design assumed subscriptions
+cross HC/2 streams, and a longer timeout merely confirmed that the semantic assumption was wrong.
+All three failures remain in the evidence ledger with their corrections. This is the practical
+difference between retaining failed evidence and silently retrying until green.
+
+On the clean implementation commit, all four processes reported 4,000 attempted and 4,000 successful
+operations in total, with zero rejected, timed out, late or incomplete outcomes. A fifth process
+enabled `HYDRACACHE_CANARY_DEFECT=W10`, deliberately removed one success from accounting, and failed
+with `HC-CANARY-RED:W10`. The canary matters more than the all-green summary: it proves that the
+runner can reject incomplete work instead of merely recording it. This result admits design of a
+focused protected-host comparison. It still supplies no throughput, latency, allocation, RSS,
+capacity or release-improvement number and does not itself authorize an expensive dispatch.
+
 ## A profiling ladder that avoids expensive runs
 
 Not every development iteration needs a dedicated bare-metal campaign. A useful workflow has several

@@ -172,6 +172,8 @@ const W10_LOCAL_QUALIFICATION_EVIDENCE: &str =
     "docs/testing/performance/0.73/w10-local-qualification-passed-132917fd.toml";
 const W10_INTEGRATED_PROCESS_SMOKE_CONTRACT: &str =
     "docs/testing/performance/0.73/w10-integrated-process-smoke-contract.toml";
+const W10_INTEGRATED_PROCESS_SMOKE_EVIDENCE: &str =
+    "docs/testing/performance/0.73/w10-integrated-process-smoke-passed-e192e615.toml";
 const RELEASE: &str = "0.73";
 const PROFILE: &str = "local-screening-073-v1";
 const ENVIRONMENT_CLASS: &str = "local_screening";
@@ -421,6 +423,9 @@ pub fn check_at_root(
     )?)?;
     let w10_integrated_process_smoke_contract: TomlValue = toml::from_str(&fs::read_to_string(
         root.join(W10_INTEGRATED_PROCESS_SMOKE_CONTRACT),
+    )?)?;
+    let w10_integrated_process_smoke_evidence: TomlValue = toml::from_str(&fs::read_to_string(
+        root.join(W10_INTEGRATED_PROCESS_SMOKE_EVIDENCE),
     )?)?;
     let mut problems = check_contract(&contract, release);
     if !root.join(MOKA_OBSERVER_UPSTREAM_DRAFT).is_file() {
@@ -728,6 +733,10 @@ pub fn check_at_root(
         &w10_integrated_process_smoke_contract,
         release,
     ));
+    problems.extend(check_w10_integrated_process_smoke_evidence(
+        &w10_integrated_process_smoke_evidence,
+        release,
+    ));
     problems.extend(check_schema(
         &schema,
         &example,
@@ -1029,6 +1038,10 @@ pub fn check_contract(root: &TomlValue, release: &str) -> Vec<String> {
         (
             "w10_integrated_process_smoke_contract",
             W10_INTEGRATED_PROCESS_SMOKE_CONTRACT,
+        ),
+        (
+            "w10_integrated_process_smoke_evidence",
+            W10_INTEGRATED_PROCESS_SMOKE_EVIDENCE,
         ),
     ] {
         if text(root, field) != Some(expected) {
@@ -8168,6 +8181,117 @@ pub fn check_w10_integrated_process_smoke_contract(
                 "W10 integrated process smoke contract {field} is missing"
             ));
         }
+    }
+    problems
+}
+
+pub fn check_w10_integrated_process_smoke_evidence(
+    value: &TomlValue,
+    release: &str,
+) -> Vec<String> {
+    let mut problems = Vec::new();
+    if integer(value, "schema_version") != Some(1)
+        || text(value, "release") != Some(release)
+        || text(value, "evidence_id") != Some("w10-integrated-process-smoke-passed-e192e615-v1")
+        || text(value, "state") != Some("local-integrated-smoke-passed-host-contract-pending")
+        || text(value, "contract") != Some(W10_INTEGRATED_PROCESS_SMOKE_CONTRACT)
+        || text(value, "scenario")
+            != Some("docs/testing/performance/0.73/w10-integrated-smoke-scenario.toml")
+        || text(value, "implementation_commit") != Some("e192e61506f5e2d921aa6fc4bc77543e9b23c062")
+        || text(value, "implementation_tree") != Some("65c0dfc89f7bcf3a66e168279e00bb6ff5b1f33a")
+    {
+        problems.push("W10 integrated process smoke evidence identity changed".to_owned());
+    }
+    for field in [
+        "raw_manifest_sha256",
+        "contract_sha256",
+        "scenario_sha256",
+        "test_file_sha256",
+        "runner_sha256",
+        "binary_sha256",
+    ] {
+        if text(value, field).is_none_or(|digest| !sha256(digest)) {
+            problems.push(format!(
+                "W10 integrated process smoke evidence {field} is not SHA-256"
+            ));
+        }
+    }
+    for field in [
+        "working_tree_dirty",
+        "product_mutation_present",
+        "performance_threshold_applied",
+        "local_results_promotable",
+        "release_numerical_claim_allowed",
+        "host_dispatch_allowed",
+        "long_run_allowed",
+        "candidate_is_final_c73",
+    ] {
+        if boolean(value, field) != Some(false) {
+            problems.push(format!(
+                "W10 integrated process smoke evidence {field} must be false"
+            ));
+        }
+    }
+    for field in [
+        "prebuilt_binary_used",
+        "stdout_stderr_retained",
+        "receipt_hashes_retained",
+        "final_owner_reconciliation_passed",
+        "management_truth_checked",
+        "real_daemon_checked",
+        "real_hc1_checked",
+        "real_mtls_hc2_checked",
+        "real_resp_checked",
+        "direct_surface_checked",
+        "durable_feature_checked",
+        "canary_red",
+    ] {
+        if boolean(value, field) != Some(true) {
+            problems.push(format!(
+                "W10 integrated process smoke evidence {field} must be true"
+            ));
+        }
+    }
+    if integer(value, "independent_processes") != Some(4)
+        || integer(value, "cells_passed") != Some(4)
+        || integer(value, "cells_failed") != Some(0)
+        || integer(value, "operations_per_cell") != Some(1_000)
+        || integer(value, "attempted_total") != Some(4_000)
+        || integer(value, "success_total") != Some(4_000)
+        || integer(value, "rejected_total") != Some(0)
+        || integer(value, "timeout_total") != Some(0)
+        || integer(value, "late_total") != Some(0)
+        || integer(value, "incomplete_total") != Some(0)
+        || integer(value, "canary_exit_code") != Some(101)
+        || text(value, "canary_marker") != Some("HC-CANARY-RED:W10")
+    {
+        problems.push("W10 integrated process smoke evidence result changed".to_owned());
+    }
+    if integer(value, "invalid_attempts_retained") != Some(3)
+        || value
+            .get("invalid_attempt")
+            .and_then(TomlValue::as_array)
+            .is_none_or(|attempts| attempts.len() != 3)
+    {
+        problems.push("W10 integrated process smoke evidence invalid attempts changed".to_owned());
+    }
+    for field in [
+        "raw_evidence",
+        "event_delivery_result",
+        "expiry_tag_result",
+        "mixed_protocol_result",
+        "durable_result",
+        "claim_boundary",
+        "next_evidence",
+    ] {
+        if text(value, field).is_none_or(str::is_empty) {
+            problems.push(format!(
+                "W10 integrated process smoke evidence {field} is missing"
+            ));
+        }
+    }
+    if text(value, "decision") != Some("pass-local-integrated-smoke-design-focused-host-contract") {
+        problems.push("W10 integrated process smoke evidence decision changed".to_owned());
     }
     problems
 }

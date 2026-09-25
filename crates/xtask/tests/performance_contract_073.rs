@@ -1681,6 +1681,38 @@ fn w10_integrated_smoke_cannot_replace_real_surfaces_or_open_host_claims() {
 }
 
 #[test]
+fn w10_integrated_smoke_evidence_cannot_hide_outcomes_or_authorize_host() {
+    let mut value = manifest("w10-integrated-process-smoke-passed-e192e615.toml");
+    value["success_total"] = TomlValue::Integer(3_999);
+    value["incomplete_total"] = TomlValue::Integer(1);
+    value["working_tree_dirty"] = TomlValue::Boolean(true);
+    value["canary_red"] = TomlValue::Boolean(false);
+    value["host_dispatch_allowed"] = TomlValue::Boolean(true);
+    value["invalid_attempt"] = TomlValue::Array(Vec::new());
+    value["decision"] = TomlValue::String("dispatch-host".to_owned());
+    let problems =
+        xtask::performance_contract::check_w10_integrated_process_smoke_evidence(&value, "0.73");
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("result changed")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("working_tree_dirty must be false")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("canary_red must be true")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("host_dispatch_allowed must be false")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("invalid attempts changed")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("decision changed")));
+}
+
+#[test]
 fn w5_connection_profile_cannot_promote_claim_server_bytes_or_skip_samples() {
     let mut value = manifest("w5-hc2-connection-profile-contract.toml");
     value["promotable"] = TomlValue::Boolean(true);
