@@ -86,6 +86,18 @@ impl Surface {
             Self::Ttl => "ttl_expire_refill",
         }
     }
+
+    fn expected_count(self, operations: u64) -> u64 {
+        let (start, width) = match self {
+            Self::Hc2 => (0, 35),
+            Self::Resp => (35, 30),
+            Self::Hc1 => (65, 15),
+            Self::Direct => (80, 10),
+            Self::Tag => (90, 5),
+            Self::Ttl => (95, 5),
+        };
+        operations / 100 * width + (operations % 100).saturating_sub(start).min(width)
+    }
 }
 
 #[derive(Default)]
@@ -386,6 +398,29 @@ impl MixedTarget {
         self.measured.store(true, Ordering::Release);
     }
 
+    async fn wait_for_events(&self, expected: u64) -> Result<(), Box<dyn Error>> {
+        let deadline = tokio::time::Instant::now() + Duration::from_secs(10);
+        loop {
+            let observed = self.events.load(Ordering::Acquire);
+            if observed == expected {
+                return Ok(());
+            }
+            if observed > expected {
+                return Err(format!(
+                    "HC2 event accounting exceeded expectation: expected {expected}, observed {observed}"
+                )
+                .into());
+            }
+            if tokio::time::Instant::now() >= deadline {
+                return Err(format!(
+                    "HC2 event drain timeout: expected {expected}, observed {observed}"
+                )
+                .into());
+            }
+            tokio::time::sleep(Duration::from_millis(10)).await;
+        }
+    }
+
     async fn operation(
         &self,
         surface: Surface,
@@ -609,6 +644,10 @@ async fn main() -> Result<(), Box<dyn Error>> {
             return Err("warmup failed".into());
         }
     }
+    target
+        .wait_for_events(Surface::Hc2.expected_count(options.warmup_operations))
+        .await?;
+    target.events.store(0, Ordering::Release);
     target.begin_measurement();
     let before = process_resources(std::process::id(), daemon_pid).ok();
     if before.is_none() && !options.allow_unavailable_resources {
@@ -660,10 +699,12 @@ async fn main() -> Result<(), Box<dyn Error>> {
         return Err("direct reconciliation failed".into());
     }
     let durable = durable_companion()?;
+    let expected_events = Surface::Hc2.expected_count(options.operations);
+    target.wait_for_events(expected_events).await?;
     let events_received = target.events.load(Ordering::Acquire);
     let hc2_success = surfaces["hc2"].success;
-    if events_received < hc2_success {
-        return Err("HC2 event drain incomplete".into());
+    if events_received != expected_events || events_received != hc2_success {
+        return Err("HC2 event accounting mismatch".into());
     }
     target.hc2.close();
     drop(target);
