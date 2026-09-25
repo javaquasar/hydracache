@@ -130,6 +130,8 @@ const W6_MANAGEMENT_OVERHEAD_PROFILE_CONTRACT: &str =
     "docs/testing/performance/0.73/w6-management-overhead-profile-contract.toml";
 const W6_MANAGEMENT_OVERHEAD_PROFILE_EVIDENCE: &str =
     "docs/testing/performance/0.73/w6-management-overhead-316961e0.toml";
+const W3_TAG_INDEX_PROFILE_CONTRACT: &str =
+    "docs/testing/performance/0.73/w3-tag-index-profile-contract.toml";
 const RELEASE: &str = "0.73";
 const PROFILE: &str = "local-screening-073-v1";
 const ENVIRONMENT_CLASS: &str = "local_screening";
@@ -316,6 +318,9 @@ pub fn check_at_root(
     )?)?;
     let w6_management_overhead_profile_evidence: TomlValue = toml::from_str(&fs::read_to_string(
         root.join(W6_MANAGEMENT_OVERHEAD_PROFILE_EVIDENCE),
+    )?)?;
+    let w3_tag_index_profile_contract: TomlValue = toml::from_str(&fs::read_to_string(
+        root.join(W3_TAG_INDEX_PROFILE_CONTRACT),
     )?)?;
     let mut problems = check_contract(&contract, release);
     if !root.join(MOKA_OBSERVER_UPSTREAM_DRAFT).is_file() {
@@ -537,6 +542,10 @@ pub fn check_at_root(
     ));
     problems.extend(check_w6_management_overhead_profile_evidence(
         &w6_management_overhead_profile_evidence,
+        release,
+    ));
+    problems.extend(check_w3_tag_index_profile_contract(
+        &w3_tag_index_profile_contract,
         release,
     ));
     problems.extend(check_schema(
@@ -762,6 +771,10 @@ pub fn check_contract(root: &TomlValue, release: &str) -> Vec<String> {
         (
             "w6_management_overhead_profile_evidence",
             W6_MANAGEMENT_OVERHEAD_PROFILE_EVIDENCE,
+        ),
+        (
+            "w3_tag_index_profile_contract",
+            W3_TAG_INDEX_PROFILE_CONTRACT,
         ),
     ] {
         if text(root, field) != Some(expected) {
@@ -5659,6 +5672,80 @@ pub fn check_w6_management_overhead_profile_evidence(
     }
     if text(value, "decision") != Some("close-w6-local-measured-no-win") {
         problems.push("W6 management overhead evidence decision changed".to_owned());
+    }
+    problems
+}
+
+pub fn check_w3_tag_index_profile_contract(value: &TomlValue, release: &str) -> Vec<String> {
+    let mut problems = Vec::new();
+    if integer(value, "schema_version") != Some(1)
+        || text(value, "release") != Some(release)
+        || text(value, "contract_id") != Some("w3-tag-index-profile-073-v1")
+        || text(value, "state") != Some("preregistered-before-profile-tooling")
+        || text(value, "parent_contract") != Some(W1_OWNER_CLASSIFICATION_CONTRACT)
+        || text(value, "source_parent") != Some("188aeda1512ca8e9afe60ff03797aa3616aa9f22")
+        || text(value, "profile_tool") != Some("tools/tag-index-profile-073")
+    {
+        problems.push("W3 tag-index profile identity changed".to_owned());
+    }
+    for field in [
+        "production_counter_addition",
+        "product_mutation_allowed",
+        "candidate_data_allowed",
+        "dedicated_host_run_allowed",
+        "promotable",
+        "release_numerical_claim_allowed",
+    ] {
+        if boolean(value, field) != Some(false) {
+            problems.push(format!("W3 tag-index profile {field} must be false"));
+        }
+    }
+    for field in [
+        "independent_processes_required",
+        "prebuilt_release_binary_required",
+        "exact_memory_reconciliation_required",
+        "event_content_equality_required",
+        "generation_fence_required",
+    ] {
+        if boolean(value, field) != Some(true) {
+            problems.push(format!("W3 tag-index profile {field} must be true"));
+        }
+    }
+    if integer(value, "entry_count") != Some(256)
+        || integer(value, "key_bytes") != Some(32)
+        || integer(value, "tag_bytes") != Some(32)
+        || integer(value, "repeats_per_scenario") != Some(5)
+        || integer_array(value.get("tag_cardinalities")) != [0, 1, 4, 16, 64]
+        || integer_array(value.get("event_subscriber_counts")) != [0, 1, 8]
+        || integer_array(value.get("invalidation_fanouts")) != [1, 64, 1_024]
+        || string_array(value.get("tag_topologies")) != ["shared-tag-set", "unique-tag-set"]
+    {
+        problems.push("W3 tag-index profile sampling matrix changed".to_owned());
+    }
+    if string_array(value.get("metrics"))
+        != [
+            "gross_allocated_bytes",
+            "live_allocated_bytes",
+            "estimated_tag_retained_bytes",
+            "tag_memberships",
+            "event_tag_payload_bytes",
+            "event_delivery_count",
+            "invalidation_removed_keys",
+            "elapsed_nanoseconds",
+        ]
+    {
+        problems.push("W3 tag-index profile metric set changed".to_owned());
+    }
+    for field in [
+        "ownership_scope",
+        "falsifier",
+        "interpretation_limit",
+        "decision_rule",
+        "next_decision",
+    ] {
+        if text(value, field).is_none_or(str::is_empty) {
+            problems.push(format!("W3 tag-index profile {field} is missing"));
+        }
     }
     problems
 }

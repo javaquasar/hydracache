@@ -1166,6 +1166,25 @@ fn w6_management_evidence_cannot_promote_hide_outlier_or_rewrite_result() {
 }
 
 #[test]
+fn w3_tag_index_profile_cannot_mutate_product_or_drop_fanout_cells() {
+    let mut value = manifest("w3-tag-index-profile-contract.toml");
+    value["product_mutation_allowed"] = TomlValue::Boolean(true);
+    value["promotable"] = TomlValue::Boolean(true);
+    value["tag_cardinalities"] = TomlValue::Array(vec![TomlValue::Integer(1)]);
+    value["event_subscriber_counts"] = TomlValue::Array(vec![TomlValue::Integer(0)]);
+    let problems = xtask::performance_contract::check_w3_tag_index_profile_contract(&value, "0.73");
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("product_mutation_allowed must be false")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("promotable must be false")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("sampling matrix changed")));
+}
+
+#[test]
 fn w5_connection_profile_cannot_promote_claim_server_bytes_or_skip_samples() {
     let mut value = manifest("w5-hc2-connection-profile-contract.toml");
     value["promotable"] = TomlValue::Boolean(true);
