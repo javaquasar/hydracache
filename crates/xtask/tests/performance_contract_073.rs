@@ -1316,6 +1316,32 @@ fn w4_zero_copy_encode_contract_cannot_expand_scope_or_weaken_thresholds() {
 }
 
 #[test]
+fn w4_zero_copy_encode_evidence_cannot_promote_or_rewrite_acceptance() {
+    let mut value = manifest("w4-zero-copy-encode-accepted-d98f2afc.toml");
+    value["promotable"] = TomlValue::Boolean(true);
+    value["attempts"] = TomlValue::Integer(5);
+    value["candidate_resp2_bulk_median_gross_bytes_per_operation"] = TomlValue::Array(Vec::new());
+    value["minimum_observed_large_response_gross_reduction_fraction"] = TomlValue::Float(0.0);
+    value["decision"] = TomlValue::String("close-w4".to_owned());
+    let problems = xtask::performance_contract::check_w4_zero_copy_encode_evidence(&value, "0.73");
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("promotable must be false")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("volume or controls changed")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("allocation result changed")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("threshold result changed")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("decision changed")));
+}
+
+#[test]
 fn w5_connection_profile_cannot_promote_claim_server_bytes_or_skip_samples() {
     let mut value = manifest("w5-hc2-connection-profile-contract.toml");
     value["promotable"] = TomlValue::Boolean(true);

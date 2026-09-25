@@ -144,6 +144,8 @@ const W4_RESP_TRANSLATION_PROFILE_EVIDENCE: &str =
     "docs/testing/performance/0.73/w4-resp-translation-profile-f8c968a5.toml";
 const W4_ZERO_COPY_ENCODE_CONTRACT: &str =
     "docs/testing/performance/0.73/w4-zero-copy-encode-contract.toml";
+const W4_ZERO_COPY_ENCODE_EVIDENCE: &str =
+    "docs/testing/performance/0.73/w4-zero-copy-encode-accepted-d98f2afc.toml";
 const RELEASE: &str = "0.73";
 const PROFILE: &str = "local-screening-073-v1";
 const ENVIRONMENT_CLASS: &str = "local_screening";
@@ -351,6 +353,9 @@ pub fn check_at_root(
     )?)?;
     let w4_zero_copy_encode_contract: TomlValue = toml::from_str(&fs::read_to_string(
         root.join(W4_ZERO_COPY_ENCODE_CONTRACT),
+    )?)?;
+    let w4_zero_copy_encode_evidence: TomlValue = toml::from_str(&fs::read_to_string(
+        root.join(W4_ZERO_COPY_ENCODE_EVIDENCE),
     )?)?;
     let mut problems = check_contract(&contract, release);
     if !root.join(MOKA_OBSERVER_UPSTREAM_DRAFT).is_file() {
@@ -602,6 +607,10 @@ pub fn check_at_root(
         &w4_zero_copy_encode_contract,
         release,
     ));
+    problems.extend(check_w4_zero_copy_encode_evidence(
+        &w4_zero_copy_encode_evidence,
+        release,
+    ));
     problems.extend(check_schema(
         &schema,
         &example,
@@ -851,6 +860,7 @@ pub fn check_contract(root: &TomlValue, release: &str) -> Vec<String> {
             W4_RESP_TRANSLATION_PROFILE_EVIDENCE,
         ),
         ("w4_zero_copy_encode_contract", W4_ZERO_COPY_ENCODE_CONTRACT),
+        ("w4_zero_copy_encode_evidence", W4_ZERO_COPY_ENCODE_EVIDENCE),
     ] {
         if text(root, field) != Some(expected) {
             problems.push(format!("local screening {field} must be {expected}"));
@@ -6428,6 +6438,134 @@ pub fn check_w4_zero_copy_encode_contract(value: &TomlValue, release: &str) -> V
         if text(value, field).is_none_or(str::is_empty) {
             problems.push(format!("W4 zero-copy encode contract {field} is missing"));
         }
+    }
+    problems
+}
+
+pub fn check_w4_zero_copy_encode_evidence(value: &TomlValue, release: &str) -> Vec<String> {
+    let mut problems = Vec::new();
+    if integer(value, "schema_version") != Some(1)
+        || text(value, "release") != Some(release)
+        || text(value, "evidence_id") != Some("w4-zero-copy-encode-accepted-d98f2afc-v1")
+        || text(value, "state") != Some("local-candidate-accepted-for-integration")
+        || text(value, "contract") != Some(W4_ZERO_COPY_ENCODE_CONTRACT)
+        || text(value, "baseline_evidence") != Some(W4_RESP_TRANSLATION_PROFILE_EVIDENCE)
+        || text(value, "source_commit") != Some("d98f2afca33576f7cb89a0c816b248379dacbed3")
+    {
+        problems.push("W4 zero-copy encode evidence identity changed".to_owned());
+    }
+    for field in [
+        "binary_sha256",
+        "contract_sha256",
+        "baseline_evidence_sha256",
+        "product_source_sha256",
+        "tool_source_sha256",
+        "tool_lock_sha256",
+        "raw_manifest_sha256",
+    ] {
+        if text(value, field).is_none_or(|digest| !sha256(digest)) {
+            problems.push(format!(
+                "W4 zero-copy encode evidence {field} is not SHA-256"
+            ));
+        }
+    }
+    for field in [
+        "independent_processes",
+        "prebuilt_release_binary",
+        "same_tool_source",
+        "same_tool_lock",
+        "all_invariants_passed",
+        "encode_wire_bytes_identical",
+        "roundtrip_wire_bytes_identical",
+        "binary_key_roundtrip_passed",
+        "resp2_resp3_semantic_equality_passed",
+        "duplicate_del_semantics_passed",
+        "product_mutation_present",
+        "all_thresholds_passed",
+    ] {
+        if boolean(value, field) != Some(true) {
+            problems.push(format!("W4 zero-copy encode evidence {field} must be true"));
+        }
+    }
+    for field in [
+        "production_counter_addition",
+        "dedicated_host_run_allowed",
+        "promotable",
+        "release_numerical_claim_allowed",
+        "elapsed_time_used_for_acceptance",
+    ] {
+        if boolean(value, field) != Some(false) {
+            problems.push(format!(
+                "W4 zero-copy encode evidence {field} must be false"
+            ));
+        }
+    }
+    if integer(value, "attempts") != Some(460)
+        || integer(value, "failed_processes") != Some(0)
+        || integer(value, "nonempty_stderr") != Some(0)
+        || integer(value, "invariant_failures") != Some(0)
+        || integer(value, "scenario_count") != Some(92)
+        || integer(value, "repeats_per_scenario") != Some(5)
+        || integer(value, "unchanged_decode_translation_cells") != Some(70)
+        || integer(value, "encode_and_roundtrip_wire_differences") != Some(0)
+    {
+        problems.push("W4 zero-copy encode evidence volume or controls changed".to_owned());
+    }
+    if integer_array(value.get("encode_payload_bytes")) != [0, 64, 4_096, 1_048_576]
+        || integer_array(value.get("candidate_resp2_bulk_median_gross_bytes_per_operation"))
+            != [8, 71, 4_105, 1_048_588]
+        || integer_array(value.get("candidate_resp2_array16_median_gross_bytes_per_operation"))
+            != [741, 805, 4_869, 1_049_381]
+        || integer_array(value.get("candidate_resp3_bulk_median_gross_bytes_per_operation"))
+            != [8, 71, 4_105, 1_048_588]
+        || integer_array(value.get("candidate_resp3_array16_median_gross_bytes_per_operation"))
+            != [1_765, 1_829, 5_893, 1_050_405]
+    {
+        problems.push("W4 zero-copy encode evidence allocation result changed".to_owned());
+    }
+    if float_array(value.get("large_response_gross_reduction_fractions"))
+        != [0.500000, 0.499847, 0.500000, 0.499604]
+        || float(
+            value,
+            "minimum_observed_large_response_gross_reduction_fraction",
+        ) != Some(0.499604)
+        || float(
+            value,
+            "minimum_required_large_response_gross_reduction_fraction",
+        ) != Some(0.40)
+        || float(
+            value,
+            "maximum_observed_non_encode_gross_regression_fraction",
+        ) != Some(0.0)
+        || float(
+            value,
+            "maximum_allowed_non_encode_gross_regression_fraction",
+        ) != Some(0.05)
+        || float(
+            value,
+            "maximum_observed_small_encode_gross_regression_fraction",
+        ) != Some(0.0)
+        || float(
+            value,
+            "maximum_allowed_small_encode_gross_regression_fraction",
+        ) != Some(0.05)
+    {
+        problems.push("W4 zero-copy encode evidence threshold result changed".to_owned());
+    }
+    for field in [
+        "raw_manifest_canonicalization",
+        "ownership_interpretation",
+        "control_interpretation",
+        "next_evidence",
+    ] {
+        if text(value, field).is_none_or(str::is_empty) {
+            problems.push(format!("W4 zero-copy encode evidence {field} is missing"));
+        }
+    }
+    if text(value, "decision")
+        != Some("retain-zero-copy-resp-encode-for-integrated-w4-confirmation")
+    {
+        problems.push("W4 zero-copy encode evidence decision changed".to_owned());
     }
     problems
 }

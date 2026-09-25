@@ -80,6 +80,7 @@ w3_shared_event_tags_evidence = "docs/testing/performance/0.73/w3-shared-event-t
 w4_resp_translation_profile_contract = "docs/testing/performance/0.73/w4-resp-translation-profile-contract.toml"
 w4_resp_translation_profile_evidence = "docs/testing/performance/0.73/w4-resp-translation-profile-f8c968a5.toml"
 w4_zero_copy_encode_contract = "docs/testing/performance/0.73/w4-zero-copy-encode-contract.toml"
+w4_zero_copy_encode_evidence = "docs/testing/performance/0.73/w4-zero-copy-encode-accepted-d98f2afc.toml"
 promotable = false
 numerical_claims_allowed = false
 candidate_thresholds_allowed = false

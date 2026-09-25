@@ -1,0 +1,79 @@
+schema_version = 1
+release = "0.73"
+evidence_id = "w4-zero-copy-encode-accepted-d98f2afc-v1"
+state = "local-candidate-accepted-for-integration"
+contract = "docs/testing/performance/0.73/w4-zero-copy-encode-contract.toml"
+baseline_evidence = "docs/testing/performance/0.73/w4-resp-translation-profile-f8c968a5.toml"
+source_commit = "d98f2afca33576f7cb89a0c816b248379dacbed3"
+binary_sha256 = "f8807c0695db6dc3354d7168191a31f175709fd8f8e90379f2b3ec1386d8f53b"
+contract_sha256 = "13c01bdf0b08dd178fc3b627a5b18e49db4f0d4411f7ec916552ff2eeaae022b"
+baseline_evidence_sha256 = "86c435034d387cac90fd9fbb9b02525407c41412da8cbc8b09baeba1f4b95b12"
+product_source_sha256 = "4e33dc5f58aa5d7921f3255224d79d5e17c01880c83cb7e1759bc615905747d4"
+tool_source_sha256 = "1cd6506966fb6420a502bd3af49717cb665ced677c0a6b4e20bbc584314350af"
+tool_lock_sha256 = "b4e209a13bee34e343dbcbf31b8e436bbffafd03cd2d09730d3d9d17d379ef1e"
+raw_manifest_sha256 = "b01c13b8d8420edd942dc0d5f54221e290a07b353270f1b159d83b829f5f8a1c"
+raw_manifest_canonicalization = "stdout filenames ordinal-sorted; each line is two spaces, quoted filename:lowercase-sha256, comma, LF; UTF-8 without BOM"
+rustc = "rustc 1.94.0 (4a4ef493e 2026-03-02)"
+cargo = "cargo 1.94.0 (85eff7c80e 2026-01-15)"
+
+attempts = 460
+failed_processes = 0
+nonempty_stderr = 0
+invariant_failures = 0
+scenario_count = 92
+repeats_per_scenario = 5
+independent_processes = true
+prebuilt_release_binary = true
+same_tool_source = true
+same_tool_lock = true
+all_invariants_passed = true
+encode_wire_bytes_identical = true
+roundtrip_wire_bytes_identical = true
+binary_key_roundtrip_passed = true
+resp2_resp3_semantic_equality_passed = true
+duplicate_del_semantics_passed = true
+product_mutation_present = true
+production_counter_addition = false
+dedicated_host_run_allowed = false
+promotable = false
+release_numerical_claim_allowed = false
+elapsed_time_used_for_acceptance = false
+all_thresholds_passed = true
+
+encode_payload_bytes = [0, 64, 4096, 1048576]
+baseline_resp2_bulk_median_gross_bytes_per_operation = [14, 142, 8210, 2097176]
+candidate_resp2_bulk_median_gross_bytes_per_operation = [8, 71, 4105, 1048588]
+wire_resp2_bulk_bytes_per_operation = [6, 71, 4105, 1048588]
+baseline_resp2_array16_median_gross_bytes_per_operation = [842, 970, 9098, 2098122]
+candidate_resp2_array16_median_gross_bytes_per_operation = [741, 805, 4869, 1049381]
+wire_resp2_array16_bytes_per_operation = [101, 165, 4229, 1048741]
+baseline_resp3_bulk_median_gross_bytes_per_operation = [14, 142, 8210, 2097176]
+candidate_resp3_bulk_median_gross_bytes_per_operation = [8, 71, 4105, 1048588]
+wire_resp3_bulk_bytes_per_operation = [6, 71, 4105, 1048588]
+baseline_resp3_array16_median_gross_bytes_per_operation = [1866, 1994, 10122, 2099146]
+candidate_resp3_array16_median_gross_bytes_per_operation = [1765, 1829, 5893, 1050405]
+wire_resp3_array16_bytes_per_operation = [101, 165, 4229, 1048741]
+
+large_response_cells = ["resp2/bulk/1048576", "resp2/array-16/1048576", "resp3/bulk/1048576", "resp3/array-16/1048576"]
+large_response_gross_reduction_fractions = [0.500000, 0.499847, 0.500000, 0.499604]
+minimum_observed_large_response_gross_reduction_fraction = 0.499604
+minimum_required_large_response_gross_reduction_fraction = 0.40
+maximum_observed_non_encode_gross_regression_fraction = 0.0
+maximum_allowed_non_encode_gross_regression_fraction = 0.05
+maximum_observed_small_encode_gross_regression_fraction = 0.0
+maximum_allowed_small_encode_gross_regression_fraction = 0.05
+unchanged_decode_translation_cells = 70
+encode_and_roundtrip_wire_differences = 0
+large_response_elapsed_change_fractions_diagnostic_only = [-0.389230, -0.327128, -0.414416, -0.376836]
+
+ownership_interpretation = "Bulk responses now allocate exactly the final Vec capacity represented by the wire length for non-empty payload cells; the second full-frame allocation is gone. Array responses retain 640 bytes per RESP2 operation and 1,664 bytes per RESP3 operation above final wire length at 1 MiB, attributable to per-element frame construction rather than a second 1 MiB output buffer."
+control_interpretation = "All 70 decode and translation medians were byte-for-byte unchanged. Smaller encode cells improved by 5.4% to 50%, all encode and roundtrip wire byte counts matched baseline, and all frozen semantic invariants passed. Local elapsed reductions of 32.7% to 41.4% in the four large cells are diagnostic only."
+decision = "retain-zero-copy-resp-encode-for-integrated-w4-confirmation"
+next_evidence = "Keep the two-line candidate in the integrated release branch, retain all percentages as non-promotable local evidence, record the RESP3 decode and distinct-DEL owners as deferred work, and move to the next unresolved release-0.73 work item without spending a dedicated-host run on this isolated copy removal."
+
+validation = [
+  "cargo test -p hydracache-redis-compat --locked: 97 unit, 39 active integration, and all doc tests passed; 23 environment-gated tests remained ignored",
+  "cargo clippy -p hydracache-redis-compat --all-targets --locked -- -D warnings: passed",
+  "cargo check --workspace --locked: passed",
+  "460-process frozen candidate matrix: passed with empty stderr, zero exit failures, and no invariant failure",
+]

@@ -1393,6 +1393,35 @@ The preregistered bar is at least 40% less gross allocation in every 1 MiB encod
 roundtrip changes, and no more than 5% gross regression in decode or translation. Only that evidence,
 not the attractiveness of the source diff, decides whether the change stays.
 
+The implementation changed exactly the two registered return expressions. The RESP2 and RESP3
+encoders now consume their `BytesMut` with `Vec::from(output)`. Compatibility tests still covered
+golden scalar, array, binary, error, null, pipeline, boundary, listener, and mined-corpus behavior;
+97 unit tests and 39 active integration tests passed, as did `clippy` and the full workspace check.
+That test layer matters before measurement: a faster encoder with one changed byte is a protocol bug,
+not an optimization.
+
+The candidate matrix then completed 460 of 460 independent processes with empty stderr, zero failed
+invariants, and no wire difference in any encode or roundtrip cell. All 70 pure decode and translation
+medians were byte-for-byte unchanged in gross allocation. The four 1 MiB encode cells reduced gross
+allocation by 49.96% to 50.00%, clearing the frozen 40% threshold. Bulk frames made the mechanism
+especially visible: a 1,048,588-byte response went from 2,097,176 gross bytes per operation to exactly
+1,048,588. At 4,096 payload bytes, bulk allocation likewise fell from 8,210 to the 4,105-byte frame.
+The removed allocation is the full-frame copy, not a statistical inference.
+
+Array encoding did not fall all the way to its wire length, which is the next useful distinction. At
+1 MiB, RESP2 retained 640 gross bytes above its 1,048,741-byte wire frame; RESP3 retained 1,664. Those
+small fixed residuals correspond to array-element frame construction and RESP3-specific structure,
+not a second payload-sized buffer. They should not be folded into the same claim or chased without a
+new size-scaling profile. Even the small encode controls improved rather than regressed, from 5.4%
+for the empty RESP3 array to 50% for bulk payloads.
+
+Local elapsed medians in the four large cells also fell by 32.7% to 41.4%, but those figures remain
+diagnostic. Allocation identity is deterministic enough to accept the ownership change locally;
+portable latency and capacity still require a qualified host and representative server workload.
+W4 therefore keeps the two-line candidate for integration, defers RESP3 decode and distinct-DEL work
+as separately measured owners, and does not spend a dedicated-host campaign on an isolated copy whose
+semantic controls and allocation mechanism are already explicit.
+
 ## A profiling ladder that avoids expensive runs
 
 Not every development iteration needs a dedicated bare-metal campaign. A useful workflow has several
