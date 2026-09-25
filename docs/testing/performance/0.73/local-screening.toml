@@ -72,6 +72,7 @@ w5_hc2_raw_transport_stall_evidence = "docs/testing/performance/0.73/w5-hc2-raw-
 w5_hc2_outbound_byte_admission_contract = "docs/testing/performance/0.73/w5-hc2-outbound-byte-admission-contract.toml"
 w5_hc2_outbound_byte_admission_evidence = "docs/testing/performance/0.73/w5-hc2-outbound-byte-admission-2846e936.toml"
 w6_management_overhead_profile_contract = "docs/testing/performance/0.73/w6-management-overhead-profile-contract.toml"
+w6_management_overhead_profile_evidence = "docs/testing/performance/0.73/w6-management-overhead-316961e0.toml"
 promotable = false
 numerical_claims_allowed = false
 candidate_thresholds_allowed = false

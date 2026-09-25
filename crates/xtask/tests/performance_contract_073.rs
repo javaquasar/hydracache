@@ -1143,6 +1143,29 @@ fn w6_management_profile_cannot_mutate_product_promote_or_skip_owner_cells() {
 }
 
 #[test]
+fn w6_management_evidence_cannot_promote_hide_outlier_or_rewrite_result() {
+    let mut value = manifest("w6-management-overhead-316961e0.toml");
+    value["promotable"] = TomlValue::Boolean(true);
+    value["idle_working_set_outlier_retained"] = TomlValue::String(String::new());
+    value["aggregate_cache_hit_transport_calls"] = TomlValue::Integer(60);
+    value["raw_results"] = TomlValue::Array(Vec::new());
+    let problems =
+        xtask::performance_contract::check_w6_management_overhead_profile_evidence(&value, "0.73");
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("promotable must be false")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("outlier_retained is missing")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("result changed")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("raw result manifest changed")));
+}
+
+#[test]
 fn w5_connection_profile_cannot_promote_claim_server_bytes_or_skip_samples() {
     let mut value = manifest("w5-hc2-connection-profile-contract.toml");
     value["promotable"] = TomlValue::Boolean(true);

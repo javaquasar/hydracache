@@ -1,0 +1,110 @@
+schema_version = 1
+release = "0.73"
+evidence_id = "w6-management-overhead-316961e0-v1"
+state = "local-profile-passed-measured-no-win"
+contract = "docs/testing/performance/0.73/w6-management-overhead-profile-contract.toml"
+source_commit = "316961e0148a814020db179c543c3e7e01af21b0"
+profile_tool = "tools/management-overhead-profile-073"
+binary_sha256 = "ed1584392b24c82f4632469170bf56b0956b475b2a2266893c00baff65d14aa9"
+contract_sha256 = "427db3e0860e22c929ef77d3f4b0f2f4ddd8b9ccf55c54f3c52dd30ffebe15d8"
+tool_source_sha256 = "246bae87c6fb384d2781e8fd898af57341b5c29f31815b464f03b21243408e55"
+tool_lock_sha256 = "a87b93cb7031ccc5d54ef09cad9d95fbdee99544c99cb52ec5a0f6e337170661"
+rustc = "rustc 1.94.0 (4a4ef493e 2026-03-02)"
+cargo = "cargo 1.94.0 (85eff7c80 2026-01-15)"
+host = "ASUS EXPERTBOOK P5405CSA; Intel Core Ultra 7 258V; 8 cores/8 logical processors; 33,634,439,168 bytes physical memory; Windows NT 10.0.26200.0"
+attempts = 35
+failed_attempts = 0
+idle_pairs = 5
+request_repeats_per_scenario = 5
+polling_requests = 60
+polls_per_second = 1
+cursor_issue_requests = 1025
+independent_processes = true
+counterbalanced_idle_order = true
+stderr_empty = true
+all_invariants_passed = true
+production_counter_addition = false
+product_mutation_present = false
+candidate_data_present = false
+dedicated_host_run_allowed = false
+promotable = false
+release_numerical_claim_allowed = false
+fixed_task_cost_claim_allowed = false
+management_source_spawn_sites = 0
+idle_transport_calls = 0
+
+raw_results = [
+  "aggregate-cache-hit-r1.json:4597724da7c99199a0850743f7d477b79bc9bb9f7ab2ea6b6679c7105ee01d0b",
+  "aggregate-cache-hit-r2.json:80a32eee38c6c9158d0e418c77cf6e9ef46e1aef94e026e9d8fef8c22ddc239b",
+  "aggregate-cache-hit-r3.json:a66847c43b5e1f262b1ee37f63391c5fe6f8d895bbc9696b222a53e616c8c9b3",
+  "aggregate-cache-hit-r4.json:68ad6d9ba51ca32a208d316e1fe9763d0e5f2828dc559b28aa10982f129d02e6",
+  "aggregate-cache-hit-r5.json:ca5a2f0c86761b13041fd5e09fcf9e1582b70f858826607167725ba32e5d4a6a",
+  "aggregate-cold-r1.json:a15c88ceb4179e22dcaeb7878163406eeb1da3c7a8cf092843859b8d6076045c",
+  "aggregate-cold-r2.json:9c7efb5fb3d7ae1fb9b6f2e1017600908881950f1a96997ba14b4ec9783449b3",
+  "aggregate-cold-r3.json:ffb0b7151378bf0c8d78439a3a67afe1b06d53b4a56ef9cfa0c18f2488b4cc54",
+  "aggregate-cold-r4.json:13c1e58ee7990ad49b200de37e85cf274b03733f35c2974b86622afbd5db844e",
+  "aggregate-cold-r5.json:ab0001cb42bd26cca28199911d1fcd30b0c0872a8c774060bb8d4ca4323b92b2",
+  "cursor-saturation-r1.json:3c767ad5a40ee395b337874512b098bb5c75dea652d20797127c80b59bc7f857",
+  "cursor-saturation-r2.json:e8a91aa6a00b70bc6fdafdc90a460a473697f97395254e159a102bf93db72f61",
+  "cursor-saturation-r3.json:fa993f34b559587a915a9a5cd78c68ca7c7665b898c204781349ded0bd797905",
+  "cursor-saturation-r4.json:7efbe111c852c59172a6c2490cfa031014da1fed1f4e03e2e91f92c1610150e7",
+  "cursor-saturation-r5.json:4bd7aa87dbe5e332db4784fdf22db6d10b38229c649a0e419fbf3c6c608669e4",
+  "dashboard-poll-r1.json:e0b99e6c9aa2c2cdb3badceca881f8255480c79e131c3dd67ffe12ae4517d339",
+  "dashboard-poll-r2.json:016714868eb539e8cb4c5c8273e6a5119ea924993a108f7e6f142210e86a2928",
+  "dashboard-poll-r3.json:dba273d6a56ce8724230b1f52ef51ff47518439b75bf465f8ae283e022373793",
+  "dashboard-poll-r4.json:d3bd9c20ba995ff7ce966806382725893cbc783097cd1095f6cf1e89b095dbca",
+  "dashboard-poll-r5.json:e1493af9ea4831e8da1bc600d835cfb2df9c4212cade12d04dafbca6fa73d8c1",
+  "history-disabled-r1.json:e237cf46b9153c9aeaaf183608462c11f08e6f4bc77470b42132d00d0e80b2a3",
+  "history-disabled-r2.json:ea57592f6d2b5f6d9af8fdabaee44412a8542fc5147d9406d0a878d62051ecb0",
+  "history-disabled-r3.json:a5daf60b722abd430effaa1f0674582b323f3e4c4451c51e0db8fb8af033200e",
+  "history-disabled-r4.json:610696621b020047dc3a3fa7842bf98301a581517c864bc2993461a4869f4005",
+  "history-disabled-r5.json:80a9b2877666790e07dccb9b9a14e0eb4ecb95a72a433d223297a25b0bf36995",
+  "idle-p1-o1-management-off-idle.json:4acda3f9125f0806b9b24321bcfae6cafe06133e2989ad63c8ed8be33cb9dbcc",
+  "idle-p1-o2-management-on-idle.json:4709a43f5fa1cd855ae30e8a7a05118dbd42973098f3f30e9c62e8a8017f7f66",
+  "idle-p2-o1-management-on-idle.json:00541be38309869391e41d6d610f052e1673281f77cf2678e394a5d4273851a0",
+  "idle-p2-o2-management-off-idle.json:3872523179d2b255a5f94ecca13fa12f8bb557b1e79d9ec786676d38d40a0330",
+  "idle-p3-o1-management-off-idle.json:795b17ca245151da2d0ce19712f7fa45f604630229524c8f47a5155438137590",
+  "idle-p3-o2-management-on-idle.json:7e02cdd2307442c019d2b310200d5007e6363c0602b525c02022d9eb34ec721b",
+  "idle-p4-o1-management-on-idle.json:37245bd1a86740aa04715b17d774503ee8c2810f4f267535c9dcffd896d315e9",
+  "idle-p4-o2-management-off-idle.json:1b86a6cfccd7a05a8896ba20d776cff641e944e70919ef1be9b85c2158156d20",
+  "idle-p5-o1-management-off-idle.json:3faa94e84c300820ef3a62980be6c63d6c80ffa84367b8d84a0a4173a3f501d1",
+  "idle-p5-o2-management-on-idle.json:870022a36a84c568f6d8c6927aec76ba1e7383c15e78424c63a4c0d39fc5539a",
+]
+
+idle_median_paired_gross_delta_bytes = 95261
+idle_median_paired_live_delta_bytes = 21797
+idle_median_paired_working_set_delta_bytes = 143360
+idle_median_paired_pagefile_delta_bytes = 65536
+idle_working_set_outlier_retained = "pair 1 on-minus-off was -13,709,312 bytes; the other four paired deltas were 8,192 through 274,432 bytes, so no RSS ownership claim is made"
+dashboard_median_gross_allocated_bytes = 927564
+dashboard_gross_allocated_bytes_per_read = 15459.4
+dashboard_serialized_bytes_per_read = 1901
+history_disabled_median_gross_allocated_bytes = 536520
+history_disabled_gross_allocated_bytes_per_read = 8942.0
+history_disabled_serialized_bytes_per_read = 351
+aggregate_cold_median_gross_allocated_bytes = 599684
+aggregate_cache_hit_median_gross_allocated_bytes = 362949
+aggregate_cache_gross_reduction_percent = 39.4766
+aggregate_cold_median_elapsed_nanoseconds = 604200
+aggregate_cache_hit_median_elapsed_nanoseconds = 410900
+aggregate_cache_elapsed_reduction_percent = 31.9927
+aggregate_cold_transport_calls = 60
+aggregate_cache_hit_transport_calls = 1
+cursor_median_gross_allocated_bytes = 53105466
+cursor_gross_allocated_bytes_per_operation = 51759.7135
+cursor_retained_records = 1024
+cursor_oldest_eviction_passed = true
+
+source_audit = "Management aggregation and history are request-scoped. The management source files contain no periodic spawn/interval collector; disabling management leaves the legacy admin surface mounted but does not mount management routes."
+allocation_interpretation = "Gross allocation is cumulative churn. Absolute live allocation and live deltas are process-wide allocator observations; negative cursor deltas show why they cannot be reinterpreted as retained cursor bytes. The exact cursor claim is record cardinality and oldest-entry eviction, not allocator bytes per record."
+memory_interpretation = "The first idle pair contains a large negative on-minus-off working-set outlier while allocation results remain tight. All raw attempts are retained; medians are diagnostic only and no RSS ownership or release claim is made."
+decision = "close-w6-local-measured-no-win"
+next_evidence = "Keep the existing request-scoped aggregation cache and hard cursor/history bounds. Do not create a W6 product candidate or dedicated-host run. Move to Wave B owner classification, starting with W3 tag-index allocation and fan-out."
+
+validation = [
+  "cargo check --manifest-path tools/management-overhead-profile-073/Cargo.toml --locked: passed",
+  "cargo clippy --manifest-path tools/management-overhead-profile-073/Cargo.toml --locked -- -D warnings: passed",
+  "cargo test --manifest-path tools/management-overhead-profile-073/Cargo.toml --locked: passed",
+  "seven-scenario release-binary smoke: passed",
+  "35-process frozen local matrix: passed with empty stderr and no invariant failure",
+]

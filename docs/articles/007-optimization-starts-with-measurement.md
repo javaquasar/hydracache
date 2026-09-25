@@ -1204,6 +1204,69 @@ accepted locally as an application-queue bound and retained for the later integr
 the percentages are diagnostic, not release claims, and do not justify a dedicated-host run for this
 subproblem alone.
 
+The remaining Wave A surface was management overhead. Here the source audit prevented us from
+building the wrong benchmark. Management aggregation is not a periodic collector: it runs when a
+formation, consensus, health, or related snapshot is requested, and its one-second cache is populated
+by that request. The optional Prometheus history adapter is request-scoped as well. The management
+source files contain no `spawn` or `interval` loop. A generic “server idle” comparison would mostly
+measure the common expiry-maintenance task and Tokio runtime, then incorrectly charge them to the
+management API.
+
+We therefore split W6 into seven ownership cells in one standalone release binary. Five
+counterbalanced process pairs compared construction with management routes off and on. Five fresh
+processes each then measured sixty dashboard reads at one read per second, sixty cold aggregate
+refreshes, sixty hits against one retained aggregate, cursor saturation, and sixty valid history
+reads with the adapter disabled. Every process reported gross allocation, process-wide live
+allocation, working set, pagefile, response bytes, elapsed time, transport calls, and logical cursor
+cardinality. The full matrix completed 35 of 35 attempts with empty stderr and every route, cache,
+cursor, and history falsifier green.
+
+Mounting the management route graph added a median 95,261 gross allocation bytes and 21,797 live
+allocator bytes relative to the disabled route graph. Those numbers describe one-time construction,
+not a per-second tax. No idle process made an aggregate transport call, a disabled surface returned
+404 for the management route, and the source audit found no management-owned background task. This
+closes the feared “collector wakes even when nobody is reading” branch: there is no collector to
+optimize. Lazily replacing a small one-time route cost would add lifecycle complexity without
+addressing a recurring owner.
+
+The ordinary polling cells also put their scale in context. Sixty dashboard reads allocated exactly
+927,564 gross bytes in every repeat, or 15,459.4 bytes per read, while serializing 1,901 bytes per
+response. At one read per second that is roughly 15 KiB/s of allocation churn, not retained growth.
+A disabled-history read allocated 8,942 bytes and returned 351 bytes; its process-wide live delta was
+zero in every repeat, and every response said `no_adapter`. Constructing an upstream client or
+running DNS while history is disabled would have failed this cell, but neither happened.
+
+The aggregate cache, by contrast, proved that an existing optimization is doing real work. Sixty
+cold refreshes caused exactly sixty transport calls and a median 599,684 gross allocated bytes.
+Sixty reads of the same valid snapshot caused one transport call and 362,949 bytes. Cache reuse
+therefore removed about 39.5% of gross allocation and 32.0% of elapsed time in this local fixture,
+while returning the same 29,400 serialized bytes. This is not evidence for a new candidate; it is
+evidence to preserve the current epoch-, observation-, roster-, and TTL-bound cache semantics.
+
+Cursor saturation shows why logical bounds and allocator snapshots must be reported separately. The
+fixture issued 1,025 truncated formation pages against a 250-member snapshot, then retried the first
+cursor. All five processes rejected that oldest token and reported exactly 1,024 retained records,
+proving the hard eviction bound. The sequence allocated about 53.1 MB gross across 1,026 operations,
+roughly 51.8 KiB per response-and-cursor operation, mostly repeated formation projection and JSON
+work. Yet the process-wide live allocation delta was negative because unrelated earlier allocations
+were reclaimed during the window. Reporting that negative value as “negative cursor memory” would
+be nonsense. The defensible retained claim is the exact record count and eviction behavior, not a
+byte estimate reverse-engineered from allocator motion.
+
+Working set delivered a similar warning. Four idle pairs placed the on-minus-off delta between 8 KiB
+and 274 KiB, while the first pair produced a negative 13.7 MB outlier. We retained that attempt. The
+paired median was 143,360 bytes, but a five-pair local Windows working-set median cannot override the
+tight allocation decomposition or identify a management owner. Startup page faults, runtime
+warm-up, and allocator reuse can dominate a short process snapshot; this is exactly the sort of
+result that should block an RSS claim rather than be edited away.
+
+W6 therefore ends as measured-no-win. The request paths are bounded, disabled history is inert,
+idle management has no periodic owner, cache reuse already removes most repeated aggregation work,
+and cursors enforce both TTL and cardinality limits. No product mutation and no dedicated-host run
+are justified for this surface. The useful output is a protected baseline and a preservation rule:
+future changes must not introduce a background collector, bypass the aggregate cache, weaken the
+cursor bound, or make disabled history contact an upstream service.
+
 ## A profiling ladder that avoids expensive runs
 
 Not every development iteration needs a dedicated bare-metal campaign. A useful workflow has several
