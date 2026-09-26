@@ -1884,6 +1884,39 @@ incomplete outcomes, nonzero final owners, host or lease drift, an oversized pac
 canary, or a favorable retry all fail the phase. This is how a long test remains an auditable
 experiment instead of becoming twelve or forty-eight hours of terminal output.
 
+We implemented and exercised that measurement path locally before spending the host lease. The
+same integrated harness now has an exact long-run profile and writes append-only JSONL checkpoints
+before work, once per interval, at the end of offered work, and after the idle/reconciliation phase.
+On Linux each checkpoint samples the harness and daemon together: CPU time, RSS, peak RSS,
+anonymous/file PSS, faults, threads and file descriptors. The runner validates sequence numbers,
+time gaps, final owner reconciliation, exact operations and per-surface outcomes before it computes
+any slope. I73's bounds are written before C73 can start, and the workflow statically contains one
+I73 role, one C73 role and no confirmation command.
+
+The local falsifier deliberately suppressed the final checkpoint. It completed the product work
+but was still rejected because the receipt and checkpoint series were incomplete, and no campaign
+receipt was admitted. A subsequent two-second I73-then-C73 screen produced five and four checkpoints
+respectively and a compact 23,979-byte packet. Those counts are useful evidence about plumbing, not
+about performance: Windows resource sampling was intentionally unavailable, the load was only 1,000
+operations/second, and the phase explicitly sets both performance claims and confirmation to false.
+The correct conclusion is that the expensive experiment is now runnable and falsifiable—not that
+C73 is faster, smaller, or stable for six hours.
+
+This cheap screen also paid for itself by finding an orchestration defect before host time was
+booked. An input-verification refactor had left the identity-map return behind an earlier return, so
+the first canary failed in the runner with `None` rather than reaching the harness. Moving validation
+back onto the live path and adding a regression test fixed the class of error. Three earlier Windows
+staging attempts likewise exposed package aliasing, symlink privilege, and missing root `docs`/lock
+inputs. None was hidden by retrying the benchmark; each failure refined the reproducible build
+fixture while product commits and release thresholds remained unchanged.
+
+There is one more boundary before the six-hour pair. A new workflow file on a feature branch is not
+automatically a registered GitHub `workflow_dispatch` endpoint. The local tooling receipt therefore
+does not claim that host dispatch is open. It requires a reviewed adapter through an already
+registered manual entry, preserving the protected environment and the shared serialized lease.
+Only after that route is validated should the single 15-hour-capped qualification consume the
+dedicated host.
+
 ## A profiling ladder that avoids expensive runs
 
 Not every development iteration needs a dedicated bare-metal campaign. A useful workflow has several

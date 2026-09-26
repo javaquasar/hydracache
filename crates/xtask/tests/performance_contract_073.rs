@@ -2019,6 +2019,32 @@ fn w10_long_run_qualification_workflow_is_serial_bounded_and_fail_closed() {
 }
 
 #[test]
+fn w10_long_run_tooling_cannot_promote_local_data_or_hide_failed_attempts() {
+    let mut value = manifest("w10-long-run-tooling-passed-c3769d3e.toml");
+    value["local_results_promotable"] = TomlValue::Boolean(true);
+    value["host_dispatch_route_registered"] = TomlValue::Boolean(true);
+    value["local_resources_available"] = TomlValue::Boolean(true);
+    value["local_operations_per_role"] = TomlValue::Integer(259_200_000);
+    value["invalid_attempt"] = TomlValue::Array(Vec::new());
+    let problems = xtask::performance_contract::check_w10_long_run_tooling_evidence(&value, "0.73");
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("local_results_promotable must be false")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("host_dispatch_route_registered must be false")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("local_resources_available must be false")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("local screen changed")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("invalid attempt ledger changed")));
+}
+
+#[test]
 fn w5_connection_profile_cannot_promote_claim_server_bytes_or_skip_samples() {
     let mut value = manifest("w5-hc2-connection-profile-contract.toml");
     value["promotable"] = TomlValue::Boolean(true);

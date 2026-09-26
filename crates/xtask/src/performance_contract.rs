@@ -186,6 +186,8 @@ const W10_PUBLISHED_072_COMPATIBILITY_EVIDENCE: &str =
     "docs/testing/performance/0.73/w10-published-072-compatibility-passed-9508330b.toml";
 const W10_LONG_RUN_QUALIFICATION_CONTRACT: &str =
     "docs/testing/performance/0.73/w10-long-run-qualification-contract.toml";
+const W10_LONG_RUN_TOOLING_EVIDENCE: &str =
+    "docs/testing/performance/0.73/w10-long-run-tooling-passed-c3769d3e.toml";
 const RELEASE: &str = "0.73";
 const PROFILE: &str = "local-screening-073-v1";
 const ENVIRONMENT_CLASS: &str = "local_screening";
@@ -456,6 +458,9 @@ pub fn check_at_root(
     )?)?;
     let w10_long_run_qualification_contract: TomlValue = toml::from_str(&fs::read_to_string(
         root.join(W10_LONG_RUN_QUALIFICATION_CONTRACT),
+    )?)?;
+    let w10_long_run_tooling_evidence: TomlValue = toml::from_str(&fs::read_to_string(
+        root.join(W10_LONG_RUN_TOOLING_EVIDENCE),
     )?)?;
     let mut problems = check_contract(&contract, release);
     if !root.join(MOKA_OBSERVER_UPSTREAM_DRAFT).is_file() {
@@ -791,6 +796,10 @@ pub fn check_at_root(
         &w10_long_run_qualification_contract,
         release,
     ));
+    problems.extend(check_w10_long_run_tooling_evidence(
+        &w10_long_run_tooling_evidence,
+        release,
+    ));
     problems.extend(check_schema(
         &schema,
         &example,
@@ -1120,6 +1129,10 @@ pub fn check_contract(root: &TomlValue, release: &str) -> Vec<String> {
         (
             "w10_long_run_qualification_contract",
             W10_LONG_RUN_QUALIFICATION_CONTRACT,
+        ),
+        (
+            "w10_long_run_tooling_evidence",
+            W10_LONG_RUN_TOOLING_EVIDENCE,
         ),
     ] {
         if text(root, field) != Some(expected) {
@@ -9172,6 +9185,142 @@ pub fn check_w10_long_run_qualification_contract(value: &TomlValue, release: &st
     ] {
         if text(value, field).is_none_or(str::is_empty) {
             problems.push(format!("W10 long-run qualification {field} is missing"));
+        }
+    }
+    problems
+}
+
+pub fn check_w10_long_run_tooling_evidence(value: &TomlValue, release: &str) -> Vec<String> {
+    let mut problems = Vec::new();
+    if integer(value, "schema_version") != Some(1)
+        || text(value, "release") != Some(release)
+        || text(value, "evidence_id") != Some("w10-long-run-tooling-passed-c3769d3e-v1")
+        || text(value, "state") != Some("local-tooling-qualified-dispatch-route-pending")
+        || text(value, "contract") != Some(W10_LONG_RUN_QUALIFICATION_CONTRACT)
+        || text(value, "tooling_implementation_commit")
+            != Some("c3769d3e986c574365112fea47fd0de01019b4c7")
+        || text(value, "tooling_implementation_tree")
+            != Some("5baaec6f01995d179ce780c339cb64e25b8d92e7")
+        || text(value, "baseline_source_commit") != Some("e757556d3a31d565f52a9561d6d4e555bb1cc373")
+        || text(value, "candidate_source_commit")
+            != Some("7e3070894aa51af96cdcb3e350eff923a309e1fa")
+        || text(value, "candidate_tree_oid") != Some("e2c438b9a248586a4f72d3eca3d1c5369fff440b")
+    {
+        problems.push("W10 long-run tooling identity changed".to_owned());
+    }
+    for field in [
+        "harness_clippy_warnings_denied",
+        "harness_rustfmt_passed",
+        "i73_overlay_compile_passed",
+        "c73_overlay_compile_passed",
+        "overlay_identical_between_roles_enforced",
+        "exact_role_sources_enforced",
+        "manual_workflow_only",
+        "protected_environment_required",
+        "serialized_concurrency_required",
+        "pre_post_calibration_per_role_required",
+        "role_order_enforced",
+        "baseline_bounds_sealed_before_candidate",
+        "canary_marker_observed",
+        "canary_campaign_receipt_absent",
+    ] {
+        if boolean(value, field) != Some(true) {
+            problems.push(format!("W10 long-run tooling {field} must be true"));
+        }
+    }
+    for field in [
+        "working_tree_dirty",
+        "automatic_retry_allowed",
+        "confirmation_in_qualification_workflow",
+        "local_results_promotable",
+        "release_numerical_claim_allowed",
+        "allocation_or_capacity_claim_allowed",
+        "candidate_is_final_c73",
+        "host_dispatch_route_registered",
+        "host_dispatch_completed",
+        "local_resources_available",
+        "local_performance_claim_allowed",
+        "local_confirmation_allowed",
+    ] {
+        if boolean(value, field) != Some(false) {
+            problems.push(format!("W10 long-run tooling {field} must be false"));
+        }
+    }
+    if integer(value, "runner_unit_tests_passed") != Some(11)
+        || integer(value, "performance_contract_tests_passed") != Some(103)
+        || text(value, "canary_result") != Some("passed")
+        || text(value, "canary_marker") != Some("HC-CANARY-RED:W10-LONG")
+        || text(value, "local_result") != Some("passed")
+        || string_array(value.get("local_role_order")) != ["I73", "C73"]
+        || integer(value, "local_operations_per_role") != Some(2_000)
+        || integer(value, "local_duration_seconds_per_role") != Some(2)
+        || integer(value, "local_i73_checkpoints") != Some(5)
+        || integer(value, "local_c73_checkpoints") != Some(4)
+        || integer(value, "local_packet_bytes") != Some(23_979)
+    {
+        problems.push("W10 long-run tooling local screen changed".to_owned());
+    }
+    let attempts = value
+        .get("invalid_attempt")
+        .and_then(TomlValue::as_array)
+        .cloned()
+        .unwrap_or_default();
+    let expected_attempts = [
+        "windows-junction-package-collision",
+        "windows-symbolic-link-privilege",
+        "copied-overlay-missing-root-inputs",
+        "input-verifier-missing-return",
+    ];
+    if attempts.len() != expected_attempts.len()
+        || attempts
+            .iter()
+            .zip(expected_attempts)
+            .any(|(attempt, expected)| {
+                text(attempt, "id") != Some(expected)
+                    || text(attempt, "outcome").is_none_or(str::is_empty)
+                    || text(attempt, "reason").is_none_or(str::is_empty)
+                    || text(attempt, "correction").is_none_or(str::is_empty)
+            })
+    {
+        problems.push("W10 long-run tooling invalid attempt ledger changed".to_owned());
+    }
+    for field in [
+        "contract_sha256",
+        "harness_source_sha256",
+        "harness_manifest_sha256",
+        "harness_lock_sha256",
+        "runner_sha256",
+        "runner_test_sha256",
+        "workflow_sha256",
+        "canary_receipt_sha256",
+        "local_campaign_sha256",
+        "i73_receipt_sha256",
+        "i73_checkpoints_sha256",
+        "c73_receipt_sha256",
+        "c73_checkpoints_sha256",
+        "overlay_sha256",
+        "i73_local_harness_sha256",
+        "c73_local_harness_sha256",
+        "i73_local_server_sha256",
+        "c73_local_server_sha256",
+    ] {
+        if text(value, field).is_none_or(|digest| {
+            digest.len() != 64 || !digest.bytes().all(|byte| byte.is_ascii_hexdigit())
+        }) {
+            problems.push(format!("W10 long-run tooling {field} must be SHA-256"));
+        }
+    }
+    for field in [
+        "raw_canary_packet",
+        "raw_local_screen_packet",
+        "canary_rejection",
+        "decision",
+        "claim_boundary",
+        "dispatch_rule",
+        "next_evidence",
+    ] {
+        if text(value, field).is_none_or(str::is_empty) {
+            problems.push(format!("W10 long-run tooling {field} is missing"));
         }
     }
     problems
