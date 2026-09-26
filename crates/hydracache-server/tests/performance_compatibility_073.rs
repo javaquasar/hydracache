@@ -322,6 +322,7 @@ fn rolling_contract_requires_exact_published_candidate_and_six_scenarios() {
 #[test]
 fn workflow_builds_exact_products_falsifies_and_seals_every_matrix() {
     let workflow = include_str!("../../../.github/workflows/compatibility-073.yml");
+    let entry = include_str!("../../../.github/workflows/performance-host-admission-073.yml");
     for required in [
         "git worktree add --detach \"$b72_root\" \"$B72_SHA\"",
         "git worktree add --detach \"$c73_root\" \"$C73_SHA\"",
@@ -338,4 +339,8 @@ fn workflow_builds_exact_products_falsifies_and_seals_every_matrix() {
     }
     assert!(workflow.contains("if: always()"));
     assert!(workflow.contains("result\": \"incomplete"));
+    assert!(entry.contains("inputs.lease_owner != 'compatibility-073'"));
+    assert!(entry.contains("inputs.lease_owner == 'compatibility-073'"));
+    assert!(entry.contains("uses: ./.github/workflows/compatibility-073.yml"));
+    assert!(entry.contains("tooling_sha: ${{ inputs.source_sha }}"));
 }

@@ -19,11 +19,12 @@ permissions:
   contents: read
 
 concurrency:
-  group: performance-reference-073-host
+  group: ${{ inputs.lease_owner == 'compatibility-073' && 'compatibility-073' || 'performance-reference-073-host' }}
   cancel-in-progress: false
 
 jobs:
   admit:
+    if: inputs.lease_owner != 'compatibility-073'
     name: Fresh 0.73 host admission
     runs-on: [self-hosted, linux, x64, hydracache-release]
     environment: performance-reference-073
@@ -172,3 +173,9 @@ jobs:
           path: target/performance-evidence/0.73/reference/host-admission/*.json
           if-no-files-found: error
           retention-days: 90
+
+  compatibility:
+    if: inputs.lease_owner == 'compatibility-073'
+    uses: ./.github/workflows/compatibility-073.yml
+    with:
+      tooling_sha: ${{ inputs.source_sha }}
