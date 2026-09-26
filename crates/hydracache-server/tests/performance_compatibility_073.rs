@@ -41,6 +41,7 @@ struct RollingReceipt {
     candidate_commit: String,
     published_binary_sha256: String,
     candidate_binary_sha256: String,
+    topology_setup: Vec<String>,
     scenarios: Vec<ScenarioReceipt>,
     result: String,
 }
@@ -64,6 +65,39 @@ fn sha256(bytes: impl AsRef<[u8]>) -> String {
         .iter()
         .map(|byte| format!("{byte:02x}"))
         .collect()
+}
+
+fn stable_raft_id(value: &str) -> u64 {
+    const FNV_OFFSET: u64 = 0xcbf2_9ce4_8422_2325;
+    const FNV_PRIME: u64 = 0x0000_0100_0000_01b3;
+
+    let mut hash = FNV_OFFSET;
+    for byte in value.as_bytes() {
+        hash ^= u64::from(*byte);
+        hash = hash.wrapping_mul(FNV_PRIME);
+    }
+    hash.max(1)
+}
+
+fn wait_for_leader(
+    cluster: &mut DaemonCluster,
+    expected_leader: &str,
+    expected_statuses: usize,
+) -> TestResult {
+    cluster.wait_for(
+        format!("leader {expected_leader} with {expected_statuses} responsive nodes"),
+        |cluster| {
+            let statuses = cluster.statuses();
+            (statuses.len() == expected_statuses
+                && statuses.iter().all(|status| {
+                    status.leader.as_deref() == Some(expected_leader)
+                        && status.members == 3
+                        && status.voters == 3
+                        && status.quorum_ok
+                }))
+            .then_some(())
+        },
+    )
 }
 
 fn scenario(id: &str, observation: &Value) -> ScenarioReceipt {
@@ -148,11 +182,28 @@ fn real_published_072_candidate_upgrade_restart_and_same_disk_rollback() -> Test
     )?;
     let initial = cluster.wait_for_responsive_shape(3, 3, 3)?;
     let initial_leader = initial[0].leader.clone().ok_or("initial B72 leader")?;
-    let baseline_index = cluster
-        .node_ids()
+    let node_ids = cluster.node_ids();
+    let initial_leader_index = node_ids
         .iter()
         .position(|node_id| node_id == &initial_leader)
         .ok_or("initial leader belongs to cluster")?;
+    let baseline_index = node_ids
+        .iter()
+        .enumerate()
+        .min_by_key(|(_, node_id)| stable_raft_id(node_id))
+        .map(|(index, _)| index)
+        .ok_or("cluster has a lowest-rank B72 node")?;
+    let baseline_node_id = node_ids[baseline_index].clone();
+    let mut topology_setup = Vec::new();
+    if initial_leader_index == baseline_index {
+        topology_setup.push("lowest-rank-B72-was-bootstrap-leader".to_owned());
+    } else {
+        cluster.kill(initial_leader_index)?;
+        wait_for_leader(&mut cluster, &baseline_node_id, 2)?;
+        cluster.restart(initial_leader_index)?;
+        wait_for_leader(&mut cluster, &baseline_node_id, 3)?;
+        topology_setup.push("stopped-bootstrap-leader-to-elect-lowest-rank-B72".to_owned());
+    }
     let candidate_indices = (0..3)
         .filter(|index| *index != baseline_index)
         .collect::<Vec<_>>();
@@ -162,7 +213,6 @@ fn real_published_072_candidate_upgrade_restart_and_same_disk_rollback() -> Test
         cluster.wait_for_responsive_shape(3, 3, 3)?;
     }
     let observer = candidate_indices[0];
-    let baseline_node_id = cluster.node_ids()[baseline_index].clone();
     let mut scenarios = Vec::new();
 
     let mixed_leader = cluster
@@ -284,6 +334,7 @@ fn real_published_072_candidate_upgrade_restart_and_same_disk_rollback() -> Test
         candidate_commit: C73_COMMIT.to_owned(),
         published_binary_sha256: sha256(fs::read(baseline.path)?),
         candidate_binary_sha256: sha256(fs::read(candidate)?),
+        topology_setup,
         scenarios,
         result: "passed".to_owned(),
     };
