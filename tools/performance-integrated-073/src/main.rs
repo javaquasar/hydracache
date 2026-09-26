@@ -1,13 +1,16 @@
 use std::collections::BTreeMap;
 use std::error::Error;
 use std::fs;
+use std::fs::OpenOptions;
+use std::io::Write;
 use std::net::{SocketAddr, TcpListener as StdTcpListener};
 use std::path::{Path, PathBuf};
 use std::process::{Child, Command, Stdio};
 use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
+use std::sync::mpsc;
 use std::sync::Arc;
 use std::thread;
-use std::time::{Duration, SystemTime, UNIX_EPOCH};
+use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
 
 use async_trait::async_trait;
 use bytes::Bytes;
@@ -35,7 +38,8 @@ use serde::Serialize;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::sync::Mutex;
 
-const PROFILE_ID: &str = "integrated-focused-host-073-v1";
+const FOCUSED_PROFILE_ID: &str = "integrated-focused-host-073-v1";
+const LONG_PROFILE_ID: &str = "integrated-long-run-073-v1";
 const I73_SHA: &str = "e757556d3a31d565f52a9561d6d4e555bb1cc373";
 const C73_SHA: &str = "7e3070894aa51af96cdcb3e350eff923a309e1fa";
 const CANARY_MARKER: &str = "HC-CANARY-RED:W10-HOST";
@@ -110,7 +114,7 @@ struct SurfaceCounter {
     incomplete: AtomicU64,
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Clone, Serialize)]
 struct SurfaceReceipt {
     attempted: u64,
     success: u64,
@@ -600,6 +604,71 @@ struct ResourceDelta {
     rss_before_bytes: Option<u64>,
     rss_after_bytes: Option<u64>,
     peak_rss_after_bytes: Option<u64>,
+    anonymous_pss_before_bytes: Option<u64>,
+    anonymous_pss_after_bytes: Option<u64>,
+    file_pss_before_bytes: Option<u64>,
+    file_pss_after_bytes: Option<u64>,
+}
+
+#[derive(Debug, Clone, Copy, Serialize)]
+struct ProcessResources {
+    available: bool,
+    cpu_seconds: f64,
+    rss_bytes: u64,
+    peak_rss_bytes: u64,
+    anonymous_pss_bytes: u64,
+    file_pss_bytes: u64,
+    minor_faults: u64,
+    major_faults: u64,
+    threads: u64,
+    file_descriptors: u64,
+}
+
+impl ProcessResources {
+    fn unavailable() -> Self {
+        Self {
+            available: false,
+            cpu_seconds: 0.0,
+            rss_bytes: 0,
+            peak_rss_bytes: 0,
+            anonymous_pss_bytes: 0,
+            file_pss_bytes: 0,
+            minor_faults: 0,
+            major_faults: 0,
+            threads: 0,
+            file_descriptors: 0,
+        }
+    }
+
+    #[cfg(target_os = "linux")]
+    fn combine(self, other: Self) -> Self {
+        Self {
+            available: self.available && other.available,
+            cpu_seconds: self.cpu_seconds + other.cpu_seconds,
+            rss_bytes: self.rss_bytes + other.rss_bytes,
+            peak_rss_bytes: self.peak_rss_bytes + other.peak_rss_bytes,
+            anonymous_pss_bytes: self.anonymous_pss_bytes + other.anonymous_pss_bytes,
+            file_pss_bytes: self.file_pss_bytes + other.file_pss_bytes,
+            minor_faults: self.minor_faults + other.minor_faults,
+            major_faults: self.major_faults + other.major_faults,
+            threads: self.threads + other.threads,
+            file_descriptors: self.file_descriptors + other.file_descriptors,
+        }
+    }
+}
+
+#[derive(Serialize)]
+struct ResourceCheckpoint {
+    schema_version: u32,
+    sequence: u64,
+    kind: &'static str,
+    elapsed_seconds: f64,
+    unix_time_milliseconds: u128,
+    completed_operations: u64,
+    events_received: u64,
+    owner_reconciled: bool,
+    surfaces: BTreeMap<&'static str, SurfaceReceipt>,
+    resources: ProcessResources,
 }
 
 #[derive(Serialize)]
@@ -616,7 +685,7 @@ struct DurableReceipt {
 struct Receipt {
     schema_version: u32,
     release: &'static str,
-    profile_id: &'static str,
+    profile_id: String,
     role: String,
     source_sha: String,
     offered_rate_per_second: u64,
@@ -632,7 +701,114 @@ struct Receipt {
     reconciliation_exact: bool,
     management_truth_zero: bool,
     durable: DurableReceipt,
+    checkpoint_interval_seconds: u64,
+    post_work_idle_seconds: u64,
+    checkpoint_count: u64,
+    final_checkpoint_present: bool,
     promotable: bool,
+}
+
+fn completed_operations(surfaces: &BTreeMap<&'static str, SurfaceReceipt>) -> u64 {
+    surfaces.values().map(|surface| surface.success).sum()
+}
+
+fn checkpoint(
+    sequence: u64,
+    kind: &'static str,
+    started: Instant,
+    target: &MixedTarget,
+    resources: ProcessResources,
+    owner_reconciled: bool,
+) -> ResourceCheckpoint {
+    let surfaces = target.surface_receipts();
+    checkpoint_from_state(
+        sequence,
+        kind,
+        started,
+        surfaces,
+        target.events.load(Ordering::Acquire),
+        resources,
+        owner_reconciled,
+    )
+}
+
+fn checkpoint_from_state(
+    sequence: u64,
+    kind: &'static str,
+    started: Instant,
+    surfaces: BTreeMap<&'static str, SurfaceReceipt>,
+    events_received: u64,
+    resources: ProcessResources,
+    owner_reconciled: bool,
+) -> ResourceCheckpoint {
+    ResourceCheckpoint {
+        schema_version: 1,
+        sequence,
+        kind,
+        elapsed_seconds: started.elapsed().as_secs_f64(),
+        unix_time_milliseconds: SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .expect("system time after epoch")
+            .as_millis(),
+        completed_operations: completed_operations(&surfaces),
+        events_received,
+        owner_reconciled,
+        surfaces,
+        resources,
+    }
+}
+
+fn append_checkpoint(path: &Path, checkpoint: &ResourceCheckpoint) -> Result<(), Box<dyn Error>> {
+    let mut output = OpenOptions::new().create(true).append(true).open(path)?;
+    serde_json::to_writer(&mut output, checkpoint)?;
+    output.write_all(b"\n")?;
+    output.flush()?;
+    Ok(())
+}
+
+fn spawn_checkpoint_sampler(
+    path: PathBuf,
+    target: Arc<MixedTarget>,
+    self_pid: u32,
+    daemon_pid: u32,
+    interval: Duration,
+    started: Instant,
+    allow_unavailable_resources: bool,
+) -> (mpsc::Sender<()>, thread::JoinHandle<Result<u64, String>>) {
+    let (stop_tx, stop_rx) = mpsc::channel();
+    let handle = thread::spawn(move || {
+        let mut sequence = 1_u64;
+        loop {
+            match stop_rx.recv_timeout(interval) {
+                Ok(()) | Err(mpsc::RecvTimeoutError::Disconnected) => return Ok(sequence - 1),
+                Err(mpsc::RecvTimeoutError::Timeout) => {
+                    let resources = match process_resources(self_pid, daemon_pid) {
+                        Ok(resources) => resources,
+                        Err(_) if allow_unavailable_resources => ProcessResources::unavailable(),
+                        Err(error) => return Err(error.to_string()),
+                    };
+                    append_checkpoint(
+                        &path,
+                        &checkpoint(
+                            sequence,
+                            "periodic-work",
+                            started,
+                            &target,
+                            resources,
+                            false,
+                        ),
+                    )
+                    .map_err(|error| error.to_string())?;
+                    println!(
+                        "LONG073_HEARTBEAT sequence={sequence} elapsed_seconds={:.3}",
+                        started.elapsed().as_secs_f64()
+                    );
+                    sequence += 1;
+                }
+            }
+        }
+    });
+    (stop_tx, handle)
 }
 
 #[tokio::main]
@@ -652,10 +828,41 @@ async fn main() -> Result<(), Box<dyn Error>> {
         .await?;
     target.events.store(0, Ordering::Release);
     target.begin_measurement();
+    let measurement_started = Instant::now();
     let before = process_resources(std::process::id(), daemon_pid).ok();
     if before.is_none() && !options.allow_unavailable_resources {
         return Err("combined resources unavailable".into());
     }
+    let mut checkpoint_count = 0_u64;
+    let sampler = if let Some(path) = options.checkpoint_output.as_ref() {
+        if let Some(parent) = path.parent() {
+            fs::create_dir_all(parent)?;
+        }
+        let resources = before.unwrap_or_else(ProcessResources::unavailable);
+        append_checkpoint(
+            path,
+            &checkpoint(
+                0,
+                "pre-work",
+                measurement_started,
+                &target,
+                resources,
+                false,
+            ),
+        )?;
+        checkpoint_count = 1;
+        Some(spawn_checkpoint_sampler(
+            path.clone(),
+            Arc::clone(&target),
+            std::process::id(),
+            daemon_pid,
+            Duration::from_secs(options.checkpoint_interval_seconds),
+            measurement_started,
+            options.allow_unavailable_resources,
+        ))
+    } else {
+        None
+    };
     let observation = run_open_loop(
         Arc::clone(&target),
         &OpenLoopConfig {
@@ -668,7 +875,17 @@ async fn main() -> Result<(), Box<dyn Error>> {
         },
     )
     .await?;
+    if let Some((stop, handle)) = sampler {
+        let _ = stop.send(());
+        checkpoint_count += handle
+            .join()
+            .map_err(|_| "resource checkpoint sampler panicked")?
+            .map_err(|error| format!("resource checkpoint sampler failed: {error}"))?;
+    }
     let after = process_resources(std::process::id(), daemon_pid).ok();
+    if after.is_none() && !options.allow_unavailable_resources {
+        return Err("combined resources unavailable after workload".into());
+    }
     if observation.started != observation.offered
         || observation.completed != observation.started
         || observation.successes != observation.completed
@@ -709,19 +926,69 @@ async fn main() -> Result<(), Box<dyn Error>> {
     if events_received != expected_events || events_received != hc2_success {
         return Err("HC2 event accounting mismatch".into());
     }
+    if let Some(path) = options.checkpoint_output.as_ref() {
+        let resources = after.unwrap_or_else(ProcessResources::unavailable);
+        append_checkpoint(
+            path,
+            &checkpoint_from_state(
+                checkpoint_count,
+                "final-work",
+                measurement_started,
+                surfaces.clone(),
+                events_received,
+                resources,
+                false,
+            ),
+        )?;
+        checkpoint_count += 1;
+    }
     target.hc2.close();
     drop(target);
     daemon.wait_for_hc2_owners_zero().await?;
+    if options.post_work_idle_seconds > 0 {
+        tokio::time::sleep(Duration::from_secs(options.post_work_idle_seconds)).await;
+    }
+    let final_checkpoint_present = if let Some(path) = options.checkpoint_output.as_ref() {
+        if std::env::var("HYDRACACHE_CANARY_DEFECT").as_deref() == Ok("LONG073-MISSING-FINAL") {
+            false
+        } else {
+            let resources = match process_resources(std::process::id(), daemon_pid) {
+                Ok(resources) => resources,
+                Err(_) if options.allow_unavailable_resources => ProcessResources::unavailable(),
+                Err(error) => return Err(error),
+            };
+            append_checkpoint(
+                path,
+                &checkpoint_from_state(
+                    checkpoint_count,
+                    "post-idle-reconciled",
+                    measurement_started,
+                    surfaces.clone(),
+                    events_received,
+                    resources,
+                    true,
+                ),
+            )?;
+            checkpoint_count += 1;
+            true
+        }
+    } else {
+        false
+    };
     let resources = match (before, after) {
         (Some(before), Some(after)) => ResourceDelta {
             available: true,
-            cpu_seconds: Some((after.0 - before.0).max(0.0)),
+            cpu_seconds: Some((after.cpu_seconds - before.cpu_seconds).max(0.0)),
             cpu_seconds_per_completed_operation: Some(
-                (after.0 - before.0).max(0.0) / observation.completed as f64,
+                (after.cpu_seconds - before.cpu_seconds).max(0.0) / observation.completed as f64,
             ),
-            rss_before_bytes: Some(before.1),
-            rss_after_bytes: Some(after.1),
-            peak_rss_after_bytes: Some(after.2.max(before.2)),
+            rss_before_bytes: Some(before.rss_bytes),
+            rss_after_bytes: Some(after.rss_bytes),
+            peak_rss_after_bytes: Some(after.peak_rss_bytes.max(before.peak_rss_bytes)),
+            anonymous_pss_before_bytes: Some(before.anonymous_pss_bytes),
+            anonymous_pss_after_bytes: Some(after.anonymous_pss_bytes),
+            file_pss_before_bytes: Some(before.file_pss_bytes),
+            file_pss_after_bytes: Some(after.file_pss_bytes),
         },
         _ => ResourceDelta {
             available: false,
@@ -730,12 +997,16 @@ async fn main() -> Result<(), Box<dyn Error>> {
             rss_before_bytes: None,
             rss_after_bytes: None,
             peak_rss_after_bytes: None,
+            anonymous_pss_before_bytes: None,
+            anonymous_pss_after_bytes: None,
+            file_pss_before_bytes: None,
+            file_pss_after_bytes: None,
         },
     };
     let receipt = Receipt {
         schema_version: 1,
         release: "0.73",
-        profile_id: PROFILE_ID,
+        profile_id: options.profile_id,
         role: options.role,
         source_sha: options.source_sha,
         offered_rate_per_second: options.rate,
@@ -751,6 +1022,10 @@ async fn main() -> Result<(), Box<dyn Error>> {
         reconciliation_exact,
         management_truth_zero: true,
         durable,
+        checkpoint_interval_seconds: options.checkpoint_interval_seconds,
+        post_work_idle_seconds: options.post_work_idle_seconds,
+        checkpoint_count,
+        final_checkpoint_present,
         promotable: false,
     };
     if let Some(parent) = options.output.parent() {
@@ -858,8 +1133,8 @@ fn hex_key(prefix: &str, index: u64) -> String {
 }
 
 #[cfg(target_os = "linux")]
-fn process_resources(self_pid: u32, daemon_pid: u32) -> Result<(f64, u64, u64), Box<dyn Error>> {
-    fn one(pid: u32) -> Result<(f64, u64, u64), Box<dyn Error>> {
+fn process_resources(self_pid: u32, daemon_pid: u32) -> Result<ProcessResources, Box<dyn Error>> {
+    fn one(pid: u32) -> Result<ProcessResources, Box<dyn Error>> {
         let stat = fs::read_to_string(format!("/proc/{pid}/stat"))?;
         let after = stat
             .rsplit_once(')')
@@ -868,6 +1143,8 @@ fn process_resources(self_pid: u32, daemon_pid: u32) -> Result<(f64, u64, u64), 
             .split_whitespace()
             .collect::<Vec<_>>();
         let ticks = after[11].parse::<f64>()? + after[12].parse::<f64>()?;
+        let minor_faults = after[7].parse::<u64>()?;
+        let major_faults = after[9].parse::<u64>()?;
         let ticks_per_second = unsafe { libc::sysconf(libc::_SC_CLK_TCK) } as f64;
         let status = fs::read_to_string(format!("/proc/{pid}/status"))?;
         let kib = |name: &str| -> Result<u64, Box<dyn Error>> {
@@ -879,19 +1156,48 @@ fn process_resources(self_pid: u32, daemon_pid: u32) -> Result<(f64, u64, u64), 
                 .parse::<u64>()?
                 * 1024)
         };
-        Ok((ticks / ticks_per_second, kib("VmRSS:")?, kib("VmHWM:")?))
+        let count = |name: &str| -> Result<u64, Box<dyn Error>> {
+            Ok(status
+                .lines()
+                .find_map(|line| line.strip_prefix(name))
+                .and_then(|value| value.split_whitespace().next())
+                .ok_or("missing proc status count")?
+                .parse::<u64>()?)
+        };
+        let smaps = fs::read_to_string(format!("/proc/{pid}/smaps_rollup"))?;
+        let smaps_kib = |name: &str| -> Result<u64, Box<dyn Error>> {
+            Ok(smaps
+                .lines()
+                .find_map(|line| line.strip_prefix(name))
+                .and_then(|value| value.split_whitespace().next())
+                .ok_or("missing smaps rollup field")?
+                .parse::<u64>()?
+                * 1024)
+        };
+        let file_descriptors = fs::read_dir(format!("/proc/{pid}/fd"))?.count() as u64;
+        Ok(ProcessResources {
+            available: true,
+            cpu_seconds: ticks / ticks_per_second,
+            rss_bytes: kib("VmRSS:")?,
+            peak_rss_bytes: kib("VmHWM:")?,
+            anonymous_pss_bytes: smaps_kib("Pss_Anon:")?,
+            file_pss_bytes: smaps_kib("Pss_File:")?,
+            minor_faults,
+            major_faults,
+            threads: count("Threads:")?,
+            file_descriptors,
+        })
     }
-    let left = one(self_pid)?;
-    let right = one(daemon_pid)?;
-    Ok((left.0 + right.0, left.1 + right.1, left.2 + right.2))
+    Ok(one(self_pid)?.combine(one(daemon_pid)?))
 }
 
 #[cfg(not(target_os = "linux"))]
-fn process_resources(_self_pid: u32, _daemon_pid: u32) -> Result<(f64, u64, u64), Box<dyn Error>> {
+fn process_resources(_self_pid: u32, _daemon_pid: u32) -> Result<ProcessResources, Box<dyn Error>> {
     Err("combined resources require Linux".into())
 }
 
 struct Options {
+    profile_id: String,
     role: String,
     source_sha: String,
     rate: u64,
@@ -902,6 +1208,9 @@ struct Options {
     server_binary: PathBuf,
     output: PathBuf,
     allow_unavailable_resources: bool,
+    checkpoint_output: Option<PathBuf>,
+    checkpoint_interval_seconds: u64,
+    post_work_idle_seconds: u64,
 }
 
 impl Options {
@@ -917,16 +1226,23 @@ impl Options {
                 args.next().ok_or("argument value missing")?,
             );
         }
+        let checkpoint_output = values.remove("checkpoint-output").map(PathBuf::from);
+        let checkpoint_interval_seconds = values
+            .remove("checkpoint-interval-seconds")
+            .unwrap_or_else(|| "0".to_owned())
+            .parse()?;
+        let post_work_idle_seconds = values
+            .remove("post-work-idle-seconds")
+            .unwrap_or_else(|| "0".to_owned())
+            .parse()?;
         let mut take = |name: &str| {
             values
                 .remove(name)
                 .ok_or_else(|| format!("--{name} required"))
         };
-        let profile = take("profile-id")?;
-        if profile != PROFILE_ID {
-            return Err("profile mismatch".into());
-        }
+        let profile_id = take("profile-id")?;
         let options = Self {
+            profile_id,
             role: take("role")?,
             source_sha: take("source-sha")?,
             rate: take("rate")?.parse()?,
@@ -937,18 +1253,37 @@ impl Options {
             server_binary: PathBuf::from(take("server-binary")?),
             output: PathBuf::from(take("output")?),
             allow_unavailable_resources: take("allow-unavailable-resources")?.parse()?,
+            checkpoint_output,
+            checkpoint_interval_seconds,
+            post_work_idle_seconds,
         };
         let identity_valid = matches!(
             (options.role.as_str(), options.source_sha.as_str()),
             ("I73", I73_SHA) | ("C73", C73_SHA)
         );
-        let host_shape_valid = options.allow_unavailable_resources
-            || ([5_000, 12_000, 17_000].contains(&options.rate)
-                && options.operations == options.rate * 10
-                && options.warmup_operations == 5_000);
+        let focused_profile = options.profile_id == FOCUSED_PROFILE_ID;
+        let long_profile = options.profile_id == LONG_PROFILE_ID;
+        let focused_host_shape = [5_000, 12_000, 17_000].contains(&options.rate)
+            && options.operations == options.rate * 10
+            && options.warmup_operations == 5_000
+            && options.checkpoint_output.is_none()
+            && options.checkpoint_interval_seconds == 0
+            && options.post_work_idle_seconds == 0;
+        let long_host_shape = options.rate == 12_000
+            && [259_200_000, 1_036_800_000].contains(&options.operations)
+            && options.warmup_operations == 5_000
+            && options.checkpoint_output.is_some()
+            && options.checkpoint_interval_seconds == 60
+            && options.post_work_idle_seconds == 300;
+        let profile_shape_valid = (focused_profile
+            && (options.allow_unavailable_resources || focused_host_shape))
+            || (long_profile
+                && options.checkpoint_output.is_some()
+                && options.checkpoint_interval_seconds > 0
+                && (options.allow_unavailable_resources || long_host_shape));
         if !values.is_empty()
             || !identity_valid
-            || !host_shape_valid
+            || !profile_shape_valid
             || options.rate == 0
             || options.operations == 0
             || options.daemon_cpu_set.is_empty()
@@ -956,6 +1291,10 @@ impl Options {
             || options.daemon_cpu_set == options.loadgen_cpu_set
             || !options.server_binary.is_file()
             || options.output.exists()
+            || options
+                .checkpoint_output
+                .as_ref()
+                .is_some_and(|path| path.exists())
         {
             return Err("invalid integrated harness arguments".into());
         }

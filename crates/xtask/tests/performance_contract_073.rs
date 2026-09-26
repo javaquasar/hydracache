@@ -1948,6 +1948,77 @@ fn w10_long_run_contract_cannot_shorten_roles_or_use_candidate_only_growth() {
 }
 
 #[test]
+fn w10_long_run_qualification_workflow_is_serial_bounded_and_fail_closed() {
+    let workflow = fs::read_to_string(
+        root().join(".github/workflows/performance-long-run-qualification-073.yml"),
+    )
+    .expect("long-run qualification workflow");
+    serde_yaml::from_str::<serde_yaml::Value>(&workflow).expect("valid workflow YAML");
+
+    for required in [
+        "workflow_dispatch:",
+        "workflow_call:",
+        "runs-on: [self-hosted, linux, x64, hydracache-release]",
+        "environment: performance-reference-073",
+        "timeout-minutes: 900",
+        "--mode canary --phase qualification",
+        "--mode role --role I73 --phase qualification",
+        "--mode role --role C73 --phase qualification",
+        "--mode seal --phase qualification",
+        "if: always()",
+        "actions/upload-artifact@v4",
+        "retention-days: 30",
+    ] {
+        assert!(workflow.contains(required), "workflow omitted {required}");
+    }
+    assert!(
+        !workflow.contains("push:"),
+        "long-run workflow must not run on push"
+    );
+    assert!(
+        !workflow.contains("schedule:"),
+        "long-run workflow must not run on a schedule"
+    );
+    assert!(
+        !workflow.contains("--phase confirmation"),
+        "qualification workflow must not run the 24-hour confirmation"
+    );
+    assert_eq!(
+        workflow.matches("--mode role --role I73").count(),
+        1,
+        "I73 must run exactly once"
+    );
+    assert_eq!(
+        workflow.matches("--mode role --role C73").count(),
+        1,
+        "C73 must run exactly once"
+    );
+    for calibration in ["pre-i73", "post-i73", "pre-c73", "post-c73"] {
+        assert!(
+            workflow.contains(&format!("calibration/{calibration}.json")),
+            "workflow omitted {calibration} calibration"
+        );
+    }
+
+    let baseline = workflow
+        .find("--mode role --role I73")
+        .expect("I73 role command");
+    let sealed_bounds = workflow
+        .find("test -f \"$EVIDENCE_DIR/i73/baseline-bounds.json\"")
+        .expect("sealed baseline bound guard");
+    let candidate = workflow
+        .find("--mode role --role C73")
+        .expect("C73 role command");
+    let seal = workflow
+        .find("--mode seal --phase qualification")
+        .expect("campaign seal command");
+    assert!(
+        baseline < sealed_bounds && sealed_bounds < candidate && candidate < seal,
+        "workflow must seal I73 bounds before C73 and seal only after both roles"
+    );
+}
+
+#[test]
 fn w5_connection_profile_cannot_promote_claim_server_bytes_or_skip_samples() {
     let mut value = manifest("w5-hc2-connection-profile-contract.toml");
     value["promotable"] = TomlValue::Boolean(true);

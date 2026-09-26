@@ -1,0 +1,243 @@
+name: Performance Long-Run Qualification 0.73
+
+on:
+  workflow_dispatch:
+    inputs:
+      tooling_sha:
+        description: "Exact reviewed commit containing the preregistered long-run tooling"
+        required: true
+        type: string
+      lease_owner:
+        description: "Operator holding the serialized performance-host lease"
+        required: true
+        type: string
+      lease_end:
+        description: "Approved lease end in RFC3339 form covering the full 15-hour cap"
+        required: true
+        type: string
+  workflow_call:
+    inputs:
+      tooling_sha:
+        required: true
+        type: string
+      lease_owner:
+        required: true
+        type: string
+      lease_end:
+        required: true
+        type: string
+      entry_serializes_host:
+        required: false
+        default: false
+        type: boolean
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ inputs.entry_serializes_host && format('performance-reference-073-host-nested-{0}', github.run_id) || 'performance-reference-073-host' }}
+  cancel-in-progress: false
+
+jobs:
+  qualify:
+    name: Exact I73/C73 six-hour-per-role qualification
+    runs-on: [self-hosted, linux, x64, hydracache-release]
+    environment: performance-reference-073
+    timeout-minutes: 900
+    env:
+      HYDRACACHE_PERFORMANCE_PROTECTED_ENV: performance-reference-073
+      HYDRACACHE_PERFORMANCE_DEDICATED_BARE_METAL: "1"
+      HYDRACACHE_PERFORMANCE_DAEMON_CPUSET: ${{ vars.HYDRACACHE_MEMORY_DAEMON_CPUSET || '5-6' }}
+      HYDRACACHE_PERFORMANCE_LOADGEN_CPUSET: ${{ vars.HYDRACACHE_MEMORY_LOADGEN_CPUSET || '7' }}
+      I73_SHA: e757556d3a31d565f52a9561d6d4e555bb1cc373
+      C73_SHA: 7e3070894aa51af96cdcb3e350eff923a309e1fa
+      C73_TREE_OID: e2c438b9a248586a4f72d3eca3d1c5369fff440b
+      EVIDENCE_DIR: ${{ github.workspace }}/target/performance-evidence/0.73/long-run-qualification-${{ github.run_id }}-${{ github.run_attempt }}
+
+    steps:
+      - name: Check out reviewed tooling revision
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ inputs.tooling_sha }}
+
+      - name: Resolve tooling identity and serialized lease
+        shell: bash
+        env:
+          INPUT_TOOLING_SHA: ${{ inputs.tooling_sha }}
+          INPUT_LEASE_OWNER: ${{ inputs.lease_owner }}
+          INPUT_LEASE_END: ${{ inputs.lease_end }}
+        run: |
+          set -euo pipefail
+          [[ "$INPUT_TOOLING_SHA" =~ ^[0-9a-f]{40}$ ]]
+          test "$(git rev-parse HEAD)" = "$INPUT_TOOLING_SHA"
+          test -n "$INPUT_LEASE_OWNER"
+          date --date="$INPUT_LEASE_END" >/dev/null
+          test "$(date --date="$INPUT_LEASE_END" +%s)" -gt "$(date +%s)"
+          test -z "$(git status --porcelain=v1 --untracked-files=normal)"
+          mkdir -p "$EVIDENCE_DIR/calibration"
+          {
+            echo "HYDRACACHE_PERFORMANCE_LEASE_OWNER=$INPUT_LEASE_OWNER"
+            echo "HYDRACACHE_PERFORMANCE_LEASE_END=$INPUT_LEASE_END"
+            echo "EXPECTED_TOOLING_SHA=$INPUT_TOOLING_SHA"
+          } >> "$GITHUB_ENV"
+
+      - name: Expose and verify required host tools
+        shell: bash
+        run: |
+          set -euo pipefail
+          rust_bin="$HOME/.cargo/bin"
+          test -x "$rust_bin/cargo"
+          test -x "$rust_bin/rustc"
+          echo "$rust_bin" >> "$GITHUB_PATH"
+          cargo --version
+          rustc --version
+          python3 --version
+          taskset --version
+          pidstat -V
+
+      - name: Materialize exact product trees and identical overlays
+        shell: bash
+        run: |
+          set -euo pipefail
+          run_key="${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+          i73_root="$RUNNER_TEMP/hydracache-long-i73-$run_key"
+          c73_root="$RUNNER_TEMP/hydracache-long-c73-$run_key"
+          i73_stage="$RUNNER_TEMP/long-i73-stage-$run_key"
+          c73_stage="$RUNNER_TEMP/long-c73-stage-$run_key"
+          git worktree prune
+          git worktree add --detach "$i73_root" "$I73_SHA"
+          git worktree add --detach "$c73_root" "$C73_SHA"
+          test "$(git -C "$i73_root" rev-parse HEAD)" = "$I73_SHA"
+          test "$(git -C "$c73_root" rev-parse HEAD)" = "$C73_SHA"
+          test "$(git -C "$c73_root" rev-parse 'HEAD^{tree}')" = "$C73_TREE_OID"
+          mkdir -p "$i73_stage/tools" "$c73_stage/tools"
+          cp -a tools/performance-integrated-073 "$i73_stage/tools/"
+          cp -a tools/performance-integrated-073 "$c73_stage/tools/"
+          ln -s "$i73_root/Cargo.toml" "$i73_stage/Cargo.toml"
+          ln -s "$c73_root/Cargo.toml" "$c73_stage/Cargo.toml"
+          ln -s "$i73_root/crates" "$i73_stage/crates"
+          ln -s "$c73_root/crates" "$c73_stage/crates"
+          {
+            echo "I73_ROOT=$i73_root"
+            echo "C73_ROOT=$c73_root"
+            echo "I73_OVERLAY=$i73_stage/tools/performance-integrated-073"
+            echo "C73_OVERLAY=$c73_stage/tools/performance-integrated-073"
+          } >> "$GITHUB_ENV"
+
+      - name: Build exact role servers and standalone harnesses
+        shell: bash
+        run: |
+          set -euo pipefail
+          cargo build --manifest-path "$I73_ROOT/Cargo.toml" --release --locked -p hydracache-server
+          cargo build --manifest-path "$C73_ROOT/Cargo.toml" --release --locked -p hydracache-server
+          cargo build --manifest-path "$I73_OVERLAY/Cargo.toml" --release --locked
+          cargo build --manifest-path "$C73_OVERLAY/Cargo.toml" --release --locked
+          test -z "$(git -C "$I73_ROOT" status --porcelain=v1 --untracked-files=normal)"
+          test -z "$(git -C "$C73_ROOT" status --porcelain=v1 --untracked-files=normal)"
+          {
+            echo "I73_SERVER=$I73_ROOT/target/release/hydracache-server"
+            echo "C73_SERVER=$C73_ROOT/target/release/hydracache-server"
+            echo "I73_HARNESS=$I73_OVERLAY/target/release/performance-integrated-073"
+            echo "C73_HARNESS=$C73_OVERLAY/target/release/performance-integrated-073"
+          } >> "$GITHUB_ENV"
+
+      - name: Falsify missing-final-checkpoint admission
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 scripts/perf/performance_long_run_073.py \
+            --mode canary --phase qualification \
+            --i73-harness "$I73_HARNESS" --c73-harness "$C73_HARNESS" \
+            --i73-server "$I73_SERVER" --c73-server "$C73_SERVER" \
+            --i73-overlay "$I73_OVERLAY" --c73-overlay "$C73_OVERLAY" \
+            --scenario docs/testing/performance/0.73/w10-long-run-qualification-contract.toml \
+            --output "$EVIDENCE_DIR/canary" \
+            --daemon-cpu-set "$HYDRACACHE_PERFORMANCE_DAEMON_CPUSET" \
+            --loadgen-cpu-set "$HYDRACACHE_PERFORMANCE_LOADGEN_CPUSET"
+
+      - name: Capture I73 pre-role calibration
+        shell: bash
+        run: |
+          set -euo pipefail
+          cargo run -p xtask --locked -- perf-memory-preflight --release 0.73 \
+            --profile performance-reference-073-v1 \
+            --output "$EVIDENCE_DIR/calibration/pre-i73.json"
+
+      - name: Run exact six-hour I73 role
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 scripts/perf/performance_long_run_073.py \
+            --mode role --role I73 --phase qualification \
+            --i73-harness "$I73_HARNESS" --c73-harness "$C73_HARNESS" \
+            --i73-server "$I73_SERVER" --c73-server "$C73_SERVER" \
+            --i73-overlay "$I73_OVERLAY" --c73-overlay "$C73_OVERLAY" \
+            --scenario docs/testing/performance/0.73/w10-long-run-qualification-contract.toml \
+            --output "$EVIDENCE_DIR/i73" \
+            --daemon-cpu-set "$HYDRACACHE_PERFORMANCE_DAEMON_CPUSET" \
+            --loadgen-cpu-set "$HYDRACACHE_PERFORMANCE_LOADGEN_CPUSET"
+
+      - name: Capture I73 post-role calibration
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          cargo run -p xtask --locked -- perf-memory-preflight --release 0.73 \
+            --profile performance-reference-073-v1 \
+            --output "$EVIDENCE_DIR/calibration/post-i73.json"
+
+      - name: Capture C73 pre-role calibration
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -f "$EVIDENCE_DIR/i73/baseline-bounds.json"
+          cargo run -p xtask --locked -- perf-memory-preflight --release 0.73 \
+            --profile performance-reference-073-v1 \
+            --output "$EVIDENCE_DIR/calibration/pre-c73.json"
+
+      - name: Run exact six-hour C73 role
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 scripts/perf/performance_long_run_073.py \
+            --mode role --role C73 --phase qualification \
+            --i73-harness "$I73_HARNESS" --c73-harness "$C73_HARNESS" \
+            --i73-server "$I73_SERVER" --c73-server "$C73_SERVER" \
+            --i73-overlay "$I73_OVERLAY" --c73-overlay "$C73_OVERLAY" \
+            --scenario docs/testing/performance/0.73/w10-long-run-qualification-contract.toml \
+            --output "$EVIDENCE_DIR/c73" \
+            --daemon-cpu-set "$HYDRACACHE_PERFORMANCE_DAEMON_CPUSET" \
+            --loadgen-cpu-set "$HYDRACACHE_PERFORMANCE_LOADGEN_CPUSET"
+
+      - name: Capture C73 post-role calibration
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          cargo run -p xtask --locked -- perf-memory-preflight --release 0.73 \
+            --profile performance-reference-073-v1 \
+            --output "$EVIDENCE_DIR/calibration/post-c73.json"
+
+      - name: Seal the complete qualification packet
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 scripts/perf/performance_long_run_073.py \
+            --mode seal --phase qualification --tooling-sha "$EXPECTED_TOOLING_SHA" \
+            --i73-harness "$I73_HARNESS" --c73-harness "$C73_HARNESS" \
+            --i73-server "$I73_SERVER" --c73-server "$C73_SERVER" \
+            --i73-overlay "$I73_OVERLAY" --c73-overlay "$C73_OVERLAY" \
+            --scenario docs/testing/performance/0.73/w10-long-run-qualification-contract.toml \
+            --output "$EVIDENCE_DIR" \
+            --daemon-cpu-set "$HYDRACACHE_PERFORMANCE_DAEMON_CPUSET" \
+            --loadgen-cpu-set "$HYDRACACHE_PERFORMANCE_LOADGEN_CPUSET"
+
+      - name: Upload complete or incomplete qualification packet
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: performance-long-run-qualification-073-${{ inputs.tooling_sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ env.EVIDENCE_DIR }}
+          if-no-files-found: error
+          retention-days: 30
