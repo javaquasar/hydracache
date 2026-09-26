@@ -1961,6 +1961,7 @@ fn w10_long_run_qualification_workflow_is_serial_bounded_and_fail_closed() {
         "runs-on: [self-hosted, linux, x64, hydracache-release]",
         "environment: performance-reference-073",
         "timeout-minutes: 900",
+        "HYDRACACHE_PERFORMANCE_COLLECTOR_CPUSET:",
         "--mode canary --phase qualification",
         "--mode role --role I73 --phase qualification",
         "--mode role --role C73 --phase qualification",
@@ -2015,6 +2016,29 @@ fn w10_long_run_qualification_workflow_is_serial_bounded_and_fail_closed() {
     assert!(
         baseline < sealed_bounds && sealed_bounds < candidate && candidate < seal,
         "workflow must seal I73 bounds before C73 and seal only after both roles"
+    );
+
+    let entry =
+        fs::read_to_string(root().join(".github/workflows/performance-host-admission-073.yml"))
+            .expect("registered host admission entry");
+    serde_yaml::from_str::<serde_yaml::Value>(&entry).expect("valid entry workflow YAML");
+    for required in [
+        "startsWith(inputs.lease_owner, 'long-run-073@')",
+        "uses: ./.github/workflows/performance-long-run-qualification-073.yml",
+        "tooling_sha: ${{ inputs.source_sha }}",
+        "lease_owner: ${{ inputs.lease_owner }}",
+        "lease_end: ${{ inputs.lease_end }}",
+        "entry_serializes_host: true",
+    ] {
+        assert!(
+            entry.contains(required),
+            "registered entry omitted {required}"
+        );
+    }
+    assert_eq!(
+        entry.matches("performance-reference-073-host").count(),
+        1,
+        "the registered entry must remain the sole owner of the shared host concurrency group"
     );
 }
 

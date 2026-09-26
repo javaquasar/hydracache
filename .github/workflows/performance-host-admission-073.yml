@@ -24,7 +24,7 @@ concurrency:
 
 jobs:
   admit:
-    if: inputs.lease_owner != 'compatibility-073'
+    if: inputs.lease_owner != 'compatibility-073' && !startsWith(inputs.lease_owner, 'long-run-073@')
     name: Fresh 0.73 host admission
     runs-on: [self-hosted, linux, x64, hydracache-release]
     environment: performance-reference-073
@@ -205,3 +205,13 @@ jobs:
           path: ${{ github.workspace }}/target/compatibility-evidence/0.73/${{ github.run_id }}-${{ github.run_attempt }}
           if-no-files-found: error
           retention-days: 30
+
+  long-run-qualification:
+    if: startsWith(inputs.lease_owner, 'long-run-073@')
+    name: Integrated I73/C73 long-run qualification bootstrap
+    uses: ./.github/workflows/performance-long-run-qualification-073.yml
+    with:
+      tooling_sha: ${{ inputs.source_sha }}
+      lease_owner: ${{ inputs.lease_owner }}
+      lease_end: ${{ inputs.lease_end }}
+      entry_serializes_host: true
