@@ -182,6 +182,8 @@ const W10_FOCUSED_HOST_COMPARISON_EVIDENCE: &str =
     "docs/testing/performance/0.73/w10-focused-host-comparison-passed-7e307089.toml";
 const W10_PUBLISHED_072_COMPATIBILITY_CONTRACT: &str =
     "docs/testing/performance/0.73/w10-published-072-compatibility-contract.toml";
+const W10_PUBLISHED_072_COMPATIBILITY_EVIDENCE: &str =
+    "docs/testing/performance/0.73/w10-published-072-compatibility-passed-9508330b.toml";
 const RELEASE: &str = "0.73";
 const PROFILE: &str = "local-screening-073-v1";
 const ENVIRONMENT_CLASS: &str = "local_screening";
@@ -446,6 +448,9 @@ pub fn check_at_root(
     )?)?;
     let w10_published_072_compatibility_contract: TomlValue = toml::from_str(&fs::read_to_string(
         root.join(W10_PUBLISHED_072_COMPATIBILITY_CONTRACT),
+    )?)?;
+    let w10_published_072_compatibility_evidence: TomlValue = toml::from_str(&fs::read_to_string(
+        root.join(W10_PUBLISHED_072_COMPATIBILITY_EVIDENCE),
     )?)?;
     let mut problems = check_contract(&contract, release);
     if !root.join(MOKA_OBSERVER_UPSTREAM_DRAFT).is_file() {
@@ -773,6 +778,10 @@ pub fn check_at_root(
         &w10_published_072_compatibility_contract,
         release,
     ));
+    problems.extend(check_w10_published_072_compatibility_evidence(
+        &w10_published_072_compatibility_evidence,
+        release,
+    ));
     problems.extend(check_schema(
         &schema,
         &example,
@@ -1094,6 +1103,10 @@ pub fn check_contract(root: &TomlValue, release: &str) -> Vec<String> {
         (
             "w10_published_072_compatibility_contract",
             W10_PUBLISHED_072_COMPATIBILITY_CONTRACT,
+        ),
+        (
+            "w10_published_072_compatibility_linux_evidence",
+            W10_PUBLISHED_072_COMPATIBILITY_EVIDENCE,
         ),
     ] {
         if text(root, field) != Some(expected) {
@@ -8855,6 +8868,140 @@ pub fn check_w10_published_072_compatibility_contract(
     }
     if text(value, "canary_marker") != Some("HC-CANARY-RED:W10-COMPAT") {
         problems.push("W10 published-0.72 compatibility canary changed".to_owned());
+    }
+    problems
+}
+
+pub fn check_w10_published_072_compatibility_evidence(
+    value: &TomlValue,
+    release: &str,
+) -> Vec<String> {
+    let mut problems = Vec::new();
+    if integer(value, "schema_version") != Some(1)
+        || text(value, "release") != Some(release)
+        || text(value, "evidence_id") != Some("w10-published-072-compatibility-passed-9508330b-v1")
+        || text(value, "state") != Some("linux-compatibility-passed-long-run-contract-open")
+        || text(value, "contract") != Some(W10_PUBLISHED_072_COMPATIBILITY_CONTRACT)
+        || text(value, "published_tag") != Some("v0.72.0")
+        || text(value, "published_source_commit")
+            != Some("24927c28c279c6c34ad90111ee6470b4065e0815")
+        || text(value, "candidate_source_commit")
+            != Some("7e3070894aa51af96cdcb3e350eff923a309e1fa")
+        || text(value, "candidate_tree_oid") != Some("e2c438b9a248586a4f72d3eca3d1c5369fff440b")
+        || text(value, "tooling_source_commit") != Some("9508330bc1fdd4477b57575091b4501a6e96257f")
+        || text(value, "result") != Some("passed")
+    {
+        problems.push("W10 published-0.72 compatibility evidence identity changed".to_owned());
+    }
+    for field in [
+        "artifact_zip_sha256",
+        "manifest_sha256",
+        "canary_sha256",
+        "campaign_sha256",
+        "rolling_sha256",
+        "ci_log_sha256",
+        "published_server_sha256",
+        "candidate_server_sha256",
+        "published_harness_sha256",
+        "candidate_harness_sha256",
+    ] {
+        if text(value, field).is_none_or(|digest| !sha256(digest)) {
+            problems.push(format!(
+                "W10 published-0.72 compatibility evidence {field} is not SHA-256"
+            ));
+        }
+    }
+    if integer(value, "github_run_id") != Some(36_230_831_497)
+        || integer(value, "github_job_id") != Some(108_373_549_759)
+        || integer(value, "github_run_attempt") != Some(1)
+        || integer(value, "artifact_id") != Some(10_902_900_160)
+        || integer(value, "artifact_size_bytes") != Some(17_739)
+        || integer(value, "wire_cells_passed") != Some(4)
+        || integer(value, "wire_assertions_per_cell") != Some(18)
+        || integer(value, "durable_transitions_passed") != Some(3)
+        || integer(value, "rolling_scenarios_passed") != Some(6)
+        || text(value, "rolling_topology_setup") != Some("lowest-rank-B72-was-bootstrap-leader")
+    {
+        problems.push("W10 published-0.72 compatibility evidence matrix changed".to_owned());
+    }
+    for field in [
+        "canary_marker_observed",
+        "canary_receipt_absent",
+        "all_nested_hashes_verified_after_download",
+        "long_run_allowed",
+    ] {
+        if boolean(value, field) != Some(true) {
+            problems.push(format!(
+                "W10 published-0.72 compatibility evidence {field} must be true"
+            ));
+        }
+    }
+    for field in [
+        "host_performance_claim_allowed",
+        "candidate_is_final_c73",
+        "release_numerical_claim_allowed",
+        "immutable_archive_complete",
+        "silent_retry_allowed",
+    ] {
+        if boolean(value, field) != Some(false) {
+            problems.push(format!(
+                "W10 published-0.72 compatibility evidence {field} must be false"
+            ));
+        }
+    }
+    if text(value, "canary_marker") != Some("HC-CANARY-RED:W10-COMPAT")
+        || text(value, "decision")
+            != Some("pass-published-072-compatibility-open-long-run-contract")
+        || string_array(value.get("scenarios"))
+            != [
+                "B72-leader-C73-followers",
+                "leadership-change-during-mixed-cluster",
+                "C73-leader-B72-follower",
+                "B72-follower-same-disk-restart",
+                "full-C73-cluster",
+                "same-disk-rollback-to-B72",
+            ]
+    {
+        problems.push(
+            "W10 published-0.72 compatibility evidence decision or scenarios changed".to_owned(),
+        );
+    }
+    let attempts = value
+        .get("attempt")
+        .and_then(TomlValue::as_array)
+        .cloned()
+        .unwrap_or_default();
+    let expected = [
+        (1, 36_229_814_807, "workflow-bootstrap-failure", false),
+        (2, 36_229_930_600, "workflow-bootstrap-failure", false),
+        (3, 36_230_061_957, "incomplete-test-topology", true),
+        (4, 36_230_831_497, "passed", true),
+    ];
+    if attempts.len() != expected.len()
+        || attempts.iter().zip(expected).any(|(attempt, expected)| {
+            integer(attempt, "sequence") != Some(expected.0)
+                || integer(attempt, "github_run_id") != Some(expected.1)
+                || text(attempt, "outcome") != Some(expected.2)
+                || boolean(attempt, "product_campaign_started") != Some(expected.3)
+        })
+        || boolean(&attempts[2], "long_run_allowed") != Some(false)
+        || boolean(&attempts[3], "long_run_allowed") != Some(true)
+    {
+        problems.push("W10 published-0.72 compatibility attempt chain changed".to_owned());
+    }
+    for field in [
+        "artifact_name",
+        "runner_image",
+        "runner_image_version",
+        "claim_boundary",
+        "archive_boundary",
+        "next_evidence",
+    ] {
+        if text(value, field).is_none_or(str::is_empty) {
+            problems.push(format!(
+                "W10 published-0.72 compatibility evidence {field} is missing"
+            ));
+        }
     }
     problems
 }

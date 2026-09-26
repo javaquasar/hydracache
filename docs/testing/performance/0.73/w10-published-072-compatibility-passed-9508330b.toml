@@ -1,0 +1,122 @@
+schema_version = 1
+release = "0.73"
+evidence_id = "w10-published-072-compatibility-passed-9508330b-v1"
+state = "linux-compatibility-passed-long-run-contract-open"
+observed_on = "2026-09-26"
+contract = "docs/testing/performance/0.73/w10-published-072-compatibility-contract.toml"
+workflow = ".github/workflows/performance-host-admission-073.yml"
+driver = "scripts/perf/run_compatibility_073_ci.sh"
+rolling_driver = "crates/hydracache-server/tests/performance_compatibility_073.rs"
+
+published_tag = "v0.72.0"
+published_source_commit = "24927c28c279c6c34ad90111ee6470b4065e0815"
+candidate_source_commit = "7e3070894aa51af96cdcb3e350eff923a309e1fa"
+candidate_tree_oid = "e2c438b9a248586a4f72d3eca3d1c5369fff440b"
+tooling_source_commit = "9508330bc1fdd4477b57575091b4501a6e96257f"
+
+github_run_id = 36230831497
+github_job_id = 108373549759
+github_run_attempt = 1
+github_run_created_at = "2026-09-26T08:47:19Z"
+github_run_completed_at = "2026-09-26T09:00:07Z"
+runner_image = "ubuntu-24.04"
+runner_image_version = "20260920.314.1"
+runner_version = "2.337.0"
+
+artifact_id = 10902900160
+artifact_name = "compatibility-073-9508330bc1fdd4477b57575091b4501a6e96257f-36230831497-1"
+artifact_size_bytes = 17739
+artifact_zip_sha256 = "632cd408f483258099df114771159aa818a5a400856907bfb68a6317d319945a"
+artifact_expires_at = "2026-10-26T09:00:02Z"
+manifest_sha256 = "0e3048854d750c18bf26a04c9f722b8b04b3653e6b5aadda0e03bd305f9c6938"
+canary_sha256 = "f2b39e551ce4a028619b5dcbb3be4354cd72b1b71d04f5a5410ef768c217346e"
+campaign_sha256 = "660ec9e29a2987452564909a029d8e2c9eb4ed776d856c7b3f531ad9cd62c3cd"
+rolling_sha256 = "f9bd59725cb027ef7de90934bf91ea12306998e6948382b8e3b34fc8c89496e7"
+ci_log_sha256 = "a833aaf2e4bf9820dd3267379047a2dca55fe405f2a283bb16cc14eb09f2496a"
+
+published_server_sha256 = "6f83d209b168654ff839429193b2590df18c8fd24453b45bc3a042e85bd84b4f"
+candidate_server_sha256 = "14571c7bba64bec4dccf8d2d53f0fda29d2609b77dd7e3311e37d2bf8355e4dc"
+published_harness_sha256 = "44e2840e0e6e42f52bfe7fe41b80db403bd0f3f50261b039583ee9199da8f94d"
+candidate_harness_sha256 = "d47c4e0fdfc0025a6079316c49b64d48da95fa2ab6fd3b0e7985362413b68ffb"
+
+result = "passed"
+canary_marker = "HC-CANARY-RED:W10-COMPAT"
+canary_marker_observed = true
+canary_receipt_absent = true
+wire_cells_passed = 4
+wire_assertions_per_cell = 18
+durable_transitions_passed = 3
+rolling_scenarios_passed = 6
+rolling_topology_setup = "lowest-rank-B72-was-bootstrap-leader"
+all_nested_hashes_verified_after_download = true
+host_performance_claim_allowed = false
+long_run_allowed = true
+candidate_is_final_c73 = false
+release_numerical_claim_allowed = false
+immutable_archive_complete = false
+silent_retry_allowed = false
+
+decision = "pass-published-072-compatibility-open-long-run-contract"
+claim_boundary = "Exact published B72 and frozen C73 binaries passed the four crossed HC/1, HC/2, RESP, management and asset wire cells, all three same-directory durable transitions, and all six mixed-version rolling/restart/rollback scenarios on retained Linux evidence. This proves the preregistered compatibility boundary only; it supplies no host-performance, allocator, RSS, capacity or final-release claim."
+archive_boundary = "The provider artifact and downloaded files are digest-bound, but GitHub retention expires on 2026-10-26. Immutable release-archive materialization remains mandatory before tagging."
+next_evidence = "Preregister and locally falsify the exact equal-duration I73/C73 six-hour qualification contract. Do not start a long run until its phase schedule, offered work, resource checkpoints, failure policy, artifact budget and 24-hour promotion rule are frozen."
+
+scenarios = [
+  "B72-leader-C73-followers",
+  "leadership-change-during-mixed-cluster",
+  "C73-leader-B72-follower",
+  "B72-follower-same-disk-restart",
+  "full-C73-cluster",
+  "same-disk-rollback-to-B72",
+]
+
+[[attempt]]
+sequence = 1
+github_run_id = 36229814807
+tooling_source_commit = "6c0d6845a83bfee45bb8a511d9c831a21121424a"
+outcome = "workflow-bootstrap-failure"
+product_campaign_started = false
+artifact_written = false
+reason = "The registered entry referenced a branch-local reusable workflow that GitHub could not resolve for dispatch."
+
+[[attempt]]
+sequence = 2
+github_run_id = 36229930600
+tooling_source_commit = "2e16901e4a8a08ce842e633688246c56976a58d9"
+outcome = "workflow-bootstrap-failure"
+product_campaign_started = false
+artifact_written = false
+reason = "An explicit feature-ref reusable-workflow reference was still unavailable to the registered workflow."
+
+[[attempt]]
+sequence = 3
+github_run_id = 36230061957
+tooling_source_commit = "9ba6311d32f52a89b5639f8c9fad872fb07d7d88"
+outcome = "incomplete-test-topology"
+product_campaign_started = true
+artifact_written = true
+artifact_id = 10902268506
+artifact_name = "compatibility-073-9ba6311d32f52a89b5639f8c9fad872fb07d7d88-36230061957-1"
+artifact_zip_sha256 = "98244f73de8b53140358d04e9262f3ec7f1014d2219229de6b607959c88c9dce"
+manifest_sha256 = "b267dca9355faeb660ace0585982da415dbfaa9313287d775bdbed976d726822"
+wire_cells_passed = 4
+durable_transitions_passed = 3
+rolling_receipt_written = false
+long_run_allowed = false
+reason = "The rolling driver assumed the initial B72 bootstrap winner would retain leadership after both followers became C73; Linux elected a C73 follower."
+correction = "Select the B72 node with the lowest stable Raft election rank before upgrades and record any controlled pre-scenario leader transfer. Product binaries and compatibility assertions remained unchanged."
+
+[[attempt]]
+sequence = 4
+github_run_id = 36230831497
+tooling_source_commit = "9508330bc1fdd4477b57575091b4501a6e96257f"
+outcome = "passed"
+product_campaign_started = true
+artifact_written = true
+artifact_id = 10902900160
+manifest_sha256 = "0e3048854d750c18bf26a04c9f722b8b04b3653e6b5aadda0e03bd305f9c6938"
+wire_cells_passed = 4
+durable_transitions_passed = 3
+rolling_scenarios_passed = 6
+rolling_receipt_written = true
+long_run_allowed = true

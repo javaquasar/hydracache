@@ -1811,7 +1811,7 @@ The local rolling driver then exercised exactly those six transitions. It bootst
 processes so the initial leader was unambiguously old, upgraded both followers to C73, forced a
 leadership change, restored a B72 follower on its existing storage, restarted that follower again,
 completed the C73 rollout, and finally replaced one C73 process with B72 on the same disk. The third
-attempt passed all six states with a healthy quorum and readable old and new management views.
+local attempt passed all six states with a healthy quorum and readable old and new management views.
 
 Why the third attempt? The first two failures were useful failures of the proof. The first demanded
 `completeness=complete` after full upgrade even though the established management contract permits a
@@ -1822,6 +1822,44 @@ both failed attempts, narrowed the assertions to actual B72/C73 guarantees, and 
 important distinction in profiling and release testing: weakening a product invariant to obtain
 green is unacceptable, but correcting a version-inapplicable oracle is necessary. The audit trail
 must make the difference visible.
+
+The first retained Linux campaign then found a different weakness. All four crossed wire cells and
+all three durable transitions passed, but the first rolling assertion failed: after the two follower
+upgrades, a C73 follower had won an election instead of the original B72 bootstrap leader. That did
+not demonstrate an incompatible message or disk format. It demonstrated that the test had confused
+the leader observed after startup with a leader guaranteed to remain elected. Faster or differently
+scheduled Linux process startup exposed the distinction that the local Windows sequence had hidden.
+The packet was sealed as incomplete, with its successful wire and durable results still retained;
+the missing rolling receipt prevented it from opening long runs.
+
+The correction was topology control, not a product retry. Before upgrading any follower, the driver
+now selects the B72 node with the lowest stable Raft election rank. If another B72 node happened to
+win bootstrap, the driver stops that winner once, waits for the preferred B72 node to become leader,
+restarts the stopped old node, and verifies that all three old nodes converge under the preferred
+leader. Only then does it begin the six preregistered compatibility states. The receipt records
+whether bootstrap already supplied that topology or the controlled precondition was needed. The
+fourth local attempt passed with unchanged product binaries.
+
+This is a broader profiling lesson: scheduling is part of the test fixture whenever a result depends
+on role ownership. “Start the old binary first” is not a deterministic mixed-version topology, and
+repeating until the desired leader appears would silently select a favorable attempt. Establish the
+role through a declared deterministic rule, record the setup separately from the measured or
+compatibility scenario, and let every subsequent transition fail without an automatic retry.
+
+The next serialized Linux run passed. Its downloaded manifest binds tooling commit `9508330b`, the
+published B72 commit, the frozen C73 commit and tree, and SHA-256 digests for the canary, wire/durable
+campaign, and rolling receipt. The negative canary still removed one crossed wire cell and failed
+without a pass receipt. The real packet contains four of four wire cells, three of three durable
+transitions, and six of six rolling scenarios; the rolling receipt also says that the lowest-rank
+B72 node was already the bootstrap leader in this attempt. We independently rehashed every nested
+receipt after download instead of treating the green Actions badge as evidence.
+
+Compatibility therefore opens the *contract* for the six-hour qualification; it does not justify
+starting an improvised soak. The long run must first freeze equal I73/C73 duration, phase schedule,
+offered work, resource checkpoints, complete outcome accounting, failure policy, artifact budget,
+and the rule that decides whether a 24-hour confirmation may start. Nor does the compatibility pass
+turn diagnostic RSS or allocation observations into performance claims. A gate should authorize
+exactly one next decision, not erase the boundaries of every later gate.
 
 ## A profiling ladder that avoids expensive runs
 

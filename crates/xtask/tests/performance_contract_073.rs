@@ -1873,6 +1873,41 @@ fn w10_published_072_compatibility_cannot_substitute_or_shrink_the_matrix() {
 }
 
 #[test]
+fn w10_published_072_compatibility_evidence_cannot_hide_attempts_or_promote_claims() {
+    let mut value = manifest("w10-published-072-compatibility-passed-9508330b.toml");
+    value["rolling_scenarios_passed"] = TomlValue::Integer(5);
+    value["all_nested_hashes_verified_after_download"] = TomlValue::Boolean(false);
+    value["host_performance_claim_allowed"] = TomlValue::Boolean(true);
+    value["candidate_is_final_c73"] = TomlValue::Boolean(true);
+    value["silent_retry_allowed"] = TomlValue::Boolean(true);
+    value["attempt"] = TomlValue::Array(Vec::new());
+    value["decision"] = TomlValue::String("ship".to_owned());
+    let problems =
+        xtask::performance_contract::check_w10_published_072_compatibility_evidence(&value, "0.73");
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("matrix changed")));
+    assert!(problems.iter().any(|problem| {
+        problem.contains("all_nested_hashes_verified_after_download must be true")
+    }));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("host_performance_claim_allowed must be false")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("candidate_is_final_c73 must be false")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("silent_retry_allowed must be false")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("attempt chain changed")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("decision or scenarios changed")));
+}
+
+#[test]
 fn w5_connection_profile_cannot_promote_claim_server_bytes_or_skip_samples() {
     let mut value = manifest("w5-hc2-connection-profile-contract.toml");
     value["promotable"] = TomlValue::Boolean(true);

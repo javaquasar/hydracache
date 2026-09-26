@@ -3,7 +3,7 @@ release = "0.73"
 profile_id = "published-072-compatibility-073-v1"
 contract = "docs/testing/performance/0.73/w10-published-072-compatibility-contract.toml"
 driver = "crates/hydracache-server/tests/performance_compatibility_073.rs"
-state = "local-six-scenario-rolling-screen-passed-linux-retention-still-required"
+state = "local-six-scenario-rolling-screen-repassed-after-linux-topology-falsifier"
 observed_on = "2026-09-26"
 platform = "windows-local-non-promotable"
 published_tag = "v0.72.0"
@@ -11,14 +11,15 @@ published_source_commit = "24927c28c279c6c34ad90111ee6470b4065e0815"
 candidate_source_commit = "7e3070894aa51af96cdcb3e350eff923a309e1fa"
 published_binary_sha256 = "0281267435edd228c9d86aac866f214181fbc3c34122bf1a4201c2dde8fae12a"
 candidate_binary_sha256 = "dfe30e681fee2565bd156be406f629618ae1b9cbc1e9a91c655b7819f448162b"
-passed_receipt_sha256 = "3c9b60224f14ad3f70fb93049fc64f21634179ce3a8c9ef9b7bd8fb3569b8394"
-attempt_count = 3
-passed_attempt = 3
+passed_receipt_sha256 = "8eec2512c89a32666d76de67d7ee20f1ad8975255760ad1a48fbf3f699d0dcb4"
+attempt_count = 4
+passed_attempt = 4
 scenarios_passed = 6
 promotable = false
 linux_retained_campaign_required = true
 long_run_allowed = false
-conclusion = "All six rolling topologies passed locally with exact published B72 and frozen C73 binaries, including same-disk B72 restart and C73-to-B72 rollback. The result rejects the planned rolling compatibility failure modes on Windows but remains non-promotable until an equivalent retained Linux packet passes."
+topology_setup = "lowest-rank-B72-was-bootstrap-leader"
+conclusion = "All six rolling topologies passed locally with exact published B72 and frozen C73 binaries, including same-disk B72 restart and C73-to-B72 rollback. After Linux falsified the assumption that the bootstrap winner would retain leadership while followers were upgraded, attempt 4 selected the B72 node with the deterministic lowest Raft election rank and recorded any controlled pre-upgrade leader transfer. The Windows result remains non-promotable until an equivalent retained Linux packet passes."
 
 scenarios = [
   "B72-leader-C73-followers",
@@ -51,3 +52,13 @@ outcome = "passed"
 product_binary_changed_after = false
 receipt_written = true
 receipt_sha256 = "3c9b60224f14ad3f70fb93049fc64f21634179ce3a8c9ef9b7bd8fb3569b8394"
+
+[[attempt]]
+id = 4
+outcome = "passed-after-linux-topology-falsifier"
+product_binary_changed_after = false
+receipt_written = true
+receipt_sha256 = "8eec2512c89a32666d76de67d7ee20f1ad8975255760ad1a48fbf3f699d0dcb4"
+failure_that_opened_attempt = "GitHub run 36230061957 passed all four wire cells and three durable transitions but exposed an election-timing assumption in the first rolling state: a C73 follower could win after the two follower upgrades."
+correction = "Choose the B72 node with the stable lowest Raft election rank before any upgrade. If it was not the bootstrap winner, stop the winner once, wait for the preferred B72 leader, restart the stopped B72 node, and record that setup in the receipt. This prepares the requested topology deterministically; it is not a retry of the compatibility scenario."
+topology_setup = "lowest-rank-B72-was-bootstrap-leader"
