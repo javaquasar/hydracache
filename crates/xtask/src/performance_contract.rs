@@ -9033,6 +9033,10 @@ pub fn check_w10_long_run_qualification_contract(value: &TomlValue, release: &st
         || text(value, "candidate_tree_oid") != Some("e2c438b9a248586a4f72d3eca3d1c5369fff440b")
         || text(value, "focused_host_evidence") != Some(W10_FOCUSED_HOST_COMPARISON_EVIDENCE)
         || text(value, "compatibility_evidence") != Some(W10_PUBLISHED_072_COMPATIBILITY_EVIDENCE)
+        || text(value, "harness_overlay") != Some("tools/performance-integrated-073")
+        || text(value, "runner") != Some("scripts/perf/performance_long_run_073.py")
+        || text(value, "qualification_workflow")
+            != Some(".github/workflows/performance-long-run-qualification-073.yml")
         || text(value, "profile_id") != Some("integrated-long-run-073-v1")
         || text(value, "instrumentation_mode") != Some("production")
     {

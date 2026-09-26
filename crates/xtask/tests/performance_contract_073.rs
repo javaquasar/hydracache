@@ -1917,6 +1917,7 @@ fn w10_long_run_contract_cannot_shorten_roles_or_use_candidate_only_growth() {
     value["equal_duration_roles_required"] = TomlValue::Boolean(false);
     value["final_checkpoint_required"] = TomlValue::Boolean(false);
     value["automatic_retry_allowed"] = TomlValue::Boolean(true);
+    value["runner"] = TomlValue::String("manual-command".to_owned());
     value["regression_budget"] = TomlValue::Array(Vec::new());
     let problems =
         xtask::performance_contract::check_w10_long_run_qualification_contract(&value, "0.73");
@@ -1941,6 +1942,9 @@ fn w10_long_run_contract_cannot_shorten_roles_or_use_candidate_only_growth() {
     assert!(problems
         .iter()
         .any(|problem| problem.contains("regression budgets changed")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("identity changed")));
 }
 
 #[test]
