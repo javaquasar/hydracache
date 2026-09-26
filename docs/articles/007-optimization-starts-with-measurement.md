@@ -1917,6 +1917,31 @@ registered manual entry, preserving the protected environment and the shared ser
 Only after that route is validated should the single 15-hour-capped qualification consume the
 dedicated host.
 
+The adapter is intentionally narrow. The already registered
+`performance-host-admission-073.yml` remains the public manual entry and the sole owner of the
+shared `performance-reference-073-host` concurrency group. A lease owner beginning with
+`long-run-073@` selects exactly one reusable qualification job; the entry forwards the exact
+tooling commit, lease owner and lease end, while the nested workflow uses a run-unique technical
+group. This split avoids the nested-concurrency self-deadlock seen in an earlier campaign without
+allowing two performance campaigns onto the host. The ordinary admission and published-0.72
+compatibility modes remain separate branches of the same registered entry.
+
+The protected environment approval is also part of the evidence chain, not an inconvenient click
+to automate away. Dispatch first created a waiting deployment for the exact reviewed commit. The
+same authenticated repository account approved that deployment, after GitHub confirmed it was an
+allowed reviewer, and only then did the self-hosted job begin. The job subsequently verified the
+tooling SHA, lease, required host tools and clean exact worktrees before compilation. This gives us
+three distinct identities to audit later: who requested the run, who approved use of the protected
+host, and which immutable bytes the runner checked out.
+
+The first protected attempt is run `36278780653`, bound to tooling commit `8f8d4457`, with a lease
+that covers the full qualification cap. At the time of writing its setup, identity, tooling and
+exact I73/C73 materialization steps have passed and its four binaries are compiling. That is not a
+partial performance result. It only says the registered dispatch path reached the intended host
+without bypassing admission. Canary, pre-I73 calibration, both six-hour roles, post-role
+calibrations and packet sealing still have to pass in that single attempt; no replacement run is
+created merely because a later stage might fail.
+
 ## A profiling ladder that avoids expensive runs
 
 Not every development iteration needs a dedicated bare-metal campaign. A useful workflow has several
