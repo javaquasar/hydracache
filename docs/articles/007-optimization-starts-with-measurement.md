@@ -1935,12 +1935,20 @@ three distinct identities to audit later: who requested the run, who approved us
 host, and which immutable bytes the runner checked out.
 
 The first protected attempt is run `36278780653`, bound to tooling commit `8f8d4457`, with a lease
-that covers the full qualification cap. At the time of writing its setup, identity, tooling and
-exact I73/C73 materialization steps have passed and its four binaries are compiling. That is not a
-partial performance result. It only says the registered dispatch path reached the intended host
-without bypassing admission. Canary, pre-I73 calibration, both six-hour roles, post-role
-calibrations and packet sealing still have to pass in that single attempt; no replacement run is
-created merely because a later stage might fail.
+that covers the full qualification cap. Its setup, identity, tooling, exact I73/C73 materialization
+and four release builds passed. The injected missing-final-checkpoint canary was rejected, then the
+pre-I73 host calibration passed, so the first six-hour I73 process started. That is still not a
+partial performance result: it proves only that the registered path reached the admitted host and
+that the measurement pipeline rejected its known defect before accepting real work. I73 completion,
+its post-calibration, C73 pre-calibration, the equal-duration C73 role, its post-calibration and final
+packet sealing must all pass in this same attempt. No replacement run is created merely because a
+later stage might fail.
+
+This ordering keeps the meaning of green steps monotonic. A successful build says the intended
+bytes are executable; a successful canary says a known-invalid packet is rejected; a successful
+calibration says the host is admissible at that boundary. None of those statements predicts the
+next one, and none can be combined into an early claim about C73. Long-running evidence becomes
+valid only when the final sealer can point backward to every required boundary receipt.
 
 ## A profiling ladder that avoids expensive runs
 
