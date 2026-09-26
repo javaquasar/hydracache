@@ -13,6 +13,7 @@ baseline_lockfile = "tools/compatibility-073/Cargo.b72.lock"
 candidate_lockfile = "tools/compatibility-073/Cargo.lock"
 orchestrator = "scripts/perf/compatibility_073.py"
 rolling_driver = "crates/hydracache-server/tests/performance_compatibility_073.rs"
+ci_runner = "scripts/perf/run_compatibility_073_ci.sh"
 
 wire_matrix = [
   "B72-client--B72-server",

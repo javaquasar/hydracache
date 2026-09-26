@@ -176,6 +176,32 @@ jobs:
 
   compatibility:
     if: inputs.lease_owner == 'compatibility-073'
-    uses: javaquasar/hydracache/.github/workflows/compatibility-073.yml@docs/0.73-evidence-driven-performance-plan
-    with:
-      tooling_sha: ${{ inputs.source_sha }}
+    name: Published B72/C73 compatibility bootstrap
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - name: Check out exact compatibility tooling
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ inputs.source_sha }}
+
+      - name: Run exact wire, durable, and rolling campaign
+        shell: bash
+        env:
+          INPUT_SOURCE_SHA: ${{ inputs.source_sha }}
+          EVIDENCE_DIR: ${{ github.workspace }}/target/compatibility-evidence/0.73/${{ github.run_id }}-${{ github.run_attempt }}
+        run: |
+          set -o pipefail
+          mkdir -p "$EVIDENCE_DIR"
+          bash scripts/perf/run_compatibility_073_ci.sh \
+            "$INPUT_SOURCE_SHA" "$EVIDENCE_DIR" 2>&1 | tee "$EVIDENCE_DIR/ci.log"
+
+      - name: Upload complete or incomplete compatibility packet
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: compatibility-073-${{ inputs.source_sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ github.workspace }}/target/compatibility-evidence/0.73/${{ github.run_id }}-${{ github.run_attempt }}
+          if-no-files-found: error
+          retention-days: 30

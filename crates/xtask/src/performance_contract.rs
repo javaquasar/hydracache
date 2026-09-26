@@ -8770,6 +8770,7 @@ pub fn check_w10_published_072_compatibility_contract(
         || text(value, "orchestrator") != Some("scripts/perf/compatibility_073.py")
         || text(value, "rolling_driver")
             != Some("crates/hydracache-server/tests/performance_compatibility_073.rs")
+        || text(value, "ci_runner") != Some("scripts/perf/run_compatibility_073_ci.sh")
     {
         problems.push("W10 published-0.72 compatibility identity changed".to_owned());
     }
