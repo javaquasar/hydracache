@@ -176,6 +176,6 @@ jobs:
 
   compatibility:
     if: inputs.lease_owner == 'compatibility-073'
-    uses: ./.github/workflows/compatibility-073.yml
+    uses: javaquasar/hydracache/.github/workflows/compatibility-073.yml@docs/0.73-evidence-driven-performance-plan
     with:
       tooling_sha: ${{ inputs.source_sha }}

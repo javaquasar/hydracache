@@ -341,6 +341,8 @@ fn workflow_builds_exact_products_falsifies_and_seals_every_matrix() {
     assert!(workflow.contains("result\": \"incomplete"));
     assert!(entry.contains("inputs.lease_owner != 'compatibility-073'"));
     assert!(entry.contains("inputs.lease_owner == 'compatibility-073'"));
-    assert!(entry.contains("uses: ./.github/workflows/compatibility-073.yml"));
+    assert!(entry.contains(
+        "uses: javaquasar/hydracache/.github/workflows/compatibility-073.yml@docs/0.73-evidence-driven-performance-plan"
+    ));
     assert!(entry.contains("tooling_sha: ${{ inputs.source_sha }}"));
 }
