@@ -1,0 +1,53 @@
+schema_version = 1
+release = "0.73"
+profile_id = "published-072-compatibility-073-v1"
+contract = "docs/testing/performance/0.73/w10-published-072-compatibility-contract.toml"
+driver = "crates/hydracache-server/tests/performance_compatibility_073.rs"
+state = "local-six-scenario-rolling-screen-passed-linux-retention-still-required"
+observed_on = "2026-09-26"
+platform = "windows-local-non-promotable"
+published_tag = "v0.72.0"
+published_source_commit = "24927c28c279c6c34ad90111ee6470b4065e0815"
+candidate_source_commit = "7e3070894aa51af96cdcb3e350eff923a309e1fa"
+published_binary_sha256 = "0281267435edd228c9d86aac866f214181fbc3c34122bf1a4201c2dde8fae12a"
+candidate_binary_sha256 = "dfe30e681fee2565bd156be406f629618ae1b9cbc1e9a91c655b7819f448162b"
+passed_receipt_sha256 = "3c9b60224f14ad3f70fb93049fc64f21634179ce3a8c9ef9b7bd8fb3569b8394"
+attempt_count = 3
+passed_attempt = 3
+scenarios_passed = 6
+promotable = false
+linux_retained_campaign_required = true
+long_run_allowed = false
+conclusion = "All six rolling topologies passed locally with exact published B72 and frozen C73 binaries, including same-disk B72 restart and C73-to-B72 rollback. The result rejects the planned rolling compatibility failure modes on Windows but remains non-promotable until an equivalent retained Linux packet passes."
+
+scenarios = [
+  "B72-leader-C73-followers",
+  "leadership-change-during-mixed-cluster",
+  "C73-leader-B72-follower",
+  "B72-follower-same-disk-restart",
+  "full-C73-cluster",
+  "same-disk-rollback-to-B72",
+]
+
+[[attempt]]
+id = 1
+outcome = "failed-test-oracle"
+product_binary_changed_after = false
+receipt_written = false
+failure = "The full-C73 step required management completeness=complete, but the observed dashboard remained partial with quorum_ok=true; the established 0.72 rolling proof never treated aggregation completeness as a full-upgrade invariant."
+correction = "Require all three selected binary paths to be exact C73 and quorum_ok=true; retain completeness as an observation rather than a compatibility verdict."
+
+[[attempt]]
+id = 2
+outcome = "failed-test-oracle"
+product_binary_changed_after = false
+receipt_written = false
+failure = "The rollback step inherited the 0.71-era expectation that /management/v1/dashboard returns 404, but published B72 already exposes Management Center and an unauthenticated request correctly returned 401."
+correction = "Use the authenticated B72 management client and require schema_version=1 plus quorum_ok=true alongside the legacy overview."
+
+[[attempt]]
+id = 3
+outcome = "passed"
+product_binary_changed_after = false
+receipt_written = true
+receipt_sha256 = "3c9b60224f14ad3f70fb93049fc64f21634179ce3a8c9ef9b7bd8fb3569b8394"

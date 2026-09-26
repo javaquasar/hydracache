@@ -1841,6 +1841,7 @@ fn w10_published_072_compatibility_cannot_substitute_or_shrink_the_matrix() {
     value["unsupported_cross_surface_substitution_allowed"] = TomlValue::Boolean(true);
     value["wire_case_applicability"] = TomlValue::Array(Vec::new());
     value["orchestrator"] = TomlValue::String("manual-command".to_owned());
+    value["rolling_driver"] = TomlValue::String("manual-command".to_owned());
     value["canary_marker"] = TomlValue::String("green".to_owned());
     let problems =
         xtask::performance_contract::check_w10_published_072_compatibility_contract(&value, "0.73");

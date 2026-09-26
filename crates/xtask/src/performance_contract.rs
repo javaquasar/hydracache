@@ -8768,6 +8768,8 @@ pub fn check_w10_published_072_compatibility_contract(
         || text(value, "baseline_lockfile") != Some("tools/compatibility-073/Cargo.b72.lock")
         || text(value, "candidate_lockfile") != Some("tools/compatibility-073/Cargo.lock")
         || text(value, "orchestrator") != Some("scripts/perf/compatibility_073.py")
+        || text(value, "rolling_driver")
+            != Some("crates/hydracache-server/tests/performance_compatibility_073.rs")
     {
         problems.push("W10 published-0.72 compatibility identity changed".to_owned());
     }

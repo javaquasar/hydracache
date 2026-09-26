@@ -1807,6 +1807,22 @@ complete. This is the purpose of a profiling ladder: spend seconds or minutes lo
 bad candidates and broken evidence logic, then reserve the expensive environment for the failure
 modes that only a real cluster can reveal.
 
+The local rolling driver then exercised exactly those six transitions. It bootstrapped three B72
+processes so the initial leader was unambiguously old, upgraded both followers to C73, forced a
+leadership change, restored a B72 follower on its existing storage, restarted that follower again,
+completed the C73 rollout, and finally replaced one C73 process with B72 on the same disk. The third
+attempt passed all six states with a healthy quorum and readable old and new management views.
+
+Why the third attempt? The first two failures were useful failures of the proof. The first demanded
+`completeness=complete` after full upgrade even though the established management contract permits a
+partial aggregate while quorum remains healthy. The second copied a 0.71-era expectation that the
+management route disappears after rollback; B72 already contains that route, so an unauthenticated
+probe correctly returned 401 instead of 404. Neither correction changed a product binary. We kept
+both failed attempts, narrowed the assertions to actual B72/C73 guarantees, and reran. This is an
+important distinction in profiling and release testing: weakening a product invariant to obtain
+green is unacceptable, but correcting a version-inapplicable oracle is necessary. The audit trail
+must make the difference visible.
+
 ## A profiling ladder that avoids expensive runs
 
 Not every development iteration needs a dedicated bare-metal campaign. A useful workflow has several
