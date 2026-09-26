@@ -184,6 +184,8 @@ const W10_PUBLISHED_072_COMPATIBILITY_CONTRACT: &str =
     "docs/testing/performance/0.73/w10-published-072-compatibility-contract.toml";
 const W10_PUBLISHED_072_COMPATIBILITY_EVIDENCE: &str =
     "docs/testing/performance/0.73/w10-published-072-compatibility-passed-9508330b.toml";
+const W10_LONG_RUN_QUALIFICATION_CONTRACT: &str =
+    "docs/testing/performance/0.73/w10-long-run-qualification-contract.toml";
 const RELEASE: &str = "0.73";
 const PROFILE: &str = "local-screening-073-v1";
 const ENVIRONMENT_CLASS: &str = "local_screening";
@@ -451,6 +453,9 @@ pub fn check_at_root(
     )?)?;
     let w10_published_072_compatibility_evidence: TomlValue = toml::from_str(&fs::read_to_string(
         root.join(W10_PUBLISHED_072_COMPATIBILITY_EVIDENCE),
+    )?)?;
+    let w10_long_run_qualification_contract: TomlValue = toml::from_str(&fs::read_to_string(
+        root.join(W10_LONG_RUN_QUALIFICATION_CONTRACT),
     )?)?;
     let mut problems = check_contract(&contract, release);
     if !root.join(MOKA_OBSERVER_UPSTREAM_DRAFT).is_file() {
@@ -782,6 +787,10 @@ pub fn check_at_root(
         &w10_published_072_compatibility_evidence,
         release,
     ));
+    problems.extend(check_w10_long_run_qualification_contract(
+        &w10_long_run_qualification_contract,
+        release,
+    ));
     problems.extend(check_schema(
         &schema,
         &example,
@@ -1107,6 +1116,10 @@ pub fn check_contract(root: &TomlValue, release: &str) -> Vec<String> {
         (
             "w10_published_072_compatibility_linux_evidence",
             W10_PUBLISHED_072_COMPATIBILITY_EVIDENCE,
+        ),
+        (
+            "w10_long_run_qualification_contract",
+            W10_LONG_RUN_QUALIFICATION_CONTRACT,
         ),
     ] {
         if text(root, field) != Some(expected) {
@@ -9001,6 +9014,160 @@ pub fn check_w10_published_072_compatibility_evidence(
             problems.push(format!(
                 "W10 published-0.72 compatibility evidence {field} is missing"
             ));
+        }
+    }
+    problems
+}
+
+pub fn check_w10_long_run_qualification_contract(value: &TomlValue, release: &str) -> Vec<String> {
+    let mut problems = Vec::new();
+    if integer(value, "schema_version") != Some(1)
+        || text(value, "release") != Some(release)
+        || text(value, "contract_id") != Some("w10-long-run-qualification-073-v1")
+        || text(value, "state") != Some("preregistered-after-compatibility-before-long-run-tooling")
+        || text(value, "candidate_identity") != Some("C73-provisional-1")
+        || text(value, "baseline_identity") != Some("I73")
+        || text(value, "baseline_source_commit") != Some("e757556d3a31d565f52a9561d6d4e555bb1cc373")
+        || text(value, "candidate_source_commit")
+            != Some("7e3070894aa51af96cdcb3e350eff923a309e1fa")
+        || text(value, "candidate_tree_oid") != Some("e2c438b9a248586a4f72d3eca3d1c5369fff440b")
+        || text(value, "focused_host_evidence") != Some(W10_FOCUSED_HOST_COMPARISON_EVIDENCE)
+        || text(value, "compatibility_evidence") != Some(W10_PUBLISHED_072_COMPATIBILITY_EVIDENCE)
+        || text(value, "profile_id") != Some("integrated-long-run-073-v1")
+        || text(value, "instrumentation_mode") != Some("production")
+    {
+        problems.push("W10 long-run qualification identity changed".to_owned());
+    }
+    if integer(value, "offered_rate_per_second") != Some(12_000)
+        || integer(value, "warmup_operations") != Some(5_000)
+        || integer_array(value.get("mixed_weights_percent")) != [35, 30, 15, 10, 5, 5]
+        || string_array(value.get("surfaces"))
+            != [
+                "hc2",
+                "resp",
+                "hc1",
+                "direct",
+                "tag_invalidation",
+                "ttl_expire_refill",
+            ]
+        || integer(value, "key_cardinality") != Some(256)
+        || integer(value, "tag_cardinality") != Some(16)
+        || integer(value, "payload_bytes") != Some(4_096)
+        || integer(value, "ttl_milliseconds") != Some(50)
+        || integer(value, "resp_connections") != Some(16)
+        || integer(value, "checkpoint_interval_seconds") != Some(60)
+        || integer(value, "post_work_idle_seconds") != Some(300)
+    {
+        problems.push("W10 long-run qualification workload changed".to_owned());
+    }
+    if string_array(value.get("phase_order"))
+        != ["six-hour-qualification", "twenty-four-hour-confirmation"]
+        || string_array(value.get("role_order")) != ["I73", "C73"]
+        || integer(value, "qualification_duration_seconds_per_role") != Some(21_600)
+        || integer(value, "qualification_operations_per_role") != Some(259_200_000)
+        || integer(value, "qualification_timeout_minutes") != Some(900)
+        || integer(value, "confirmation_duration_seconds_per_role") != Some(86_400)
+        || integer(value, "confirmation_operations_per_role") != Some(1_036_800_000)
+        || integer(value, "confirmation_timeout_minutes") != Some(3_480)
+        || integer(value, "qualification_minimum_checkpoints_per_role") != Some(360)
+        || integer(value, "confirmation_minimum_checkpoints_per_role") != Some(1_440)
+        || integer(value, "maximum_checkpoint_gap_seconds") != Some(90)
+        || integer(value, "maximum_role_artifact_bytes") != Some(67_108_864)
+        || integer(value, "maximum_packet_artifact_bytes") != Some(268_435_456)
+        || integer(value, "unexpected_failures_allowed") != Some(0)
+    {
+        problems.push("W10 long-run qualification duration or artifact budget changed".to_owned());
+    }
+    if integer(value, "bootstrap_block_samples") != Some(12)
+        || integer(value, "bootstrap_iterations") != Some(10_000)
+        || integer(value, "bootstrap_seed") != Some(730_073)
+        || text(value, "slope_estimator") != Some("theil-sen-v1")
+        || float(value, "confidence_level") != Some(0.95)
+        || integer(value, "numeric_precision_decimals") != Some(6)
+    {
+        problems.push("W10 long-run qualification statistics changed".to_owned());
+    }
+    for field in [
+        "dedicated_admitted_host_required",
+        "protected_environment_required",
+        "serialized_lease_required",
+        "common_harness_overlay_required",
+        "overlay_identical_between_roles",
+        "prebuilt_role_binaries_required",
+        "binary_sha256_required",
+        "scenario_sha256_required",
+        "pre_post_calibration_per_role_required",
+        "independent_process_per_role_required",
+        "equal_duration_roles_required",
+        "complete_outcome_accounting_required",
+        "per_surface_accounting_required",
+        "fixed_final_cardinality_required",
+        "final_owner_reconciliation_required",
+        "raw_checkpoint_series_required",
+        "final_checkpoint_required",
+        "failed_attempt_retention_required",
+        "heartbeat_required",
+        "canary_required_before_dispatch",
+    ] {
+        if boolean(value, field) != Some(true) {
+            problems.push(format!("W10 long-run qualification {field} must be true"));
+        }
+    }
+    for field in [
+        "product_mutation_allowed",
+        "candidate_identity_change_allowed",
+        "baseline_identity_change_allowed",
+        "workload_change_allowed",
+        "threshold_change_after_baseline_start_allowed",
+        "push_trigger_allowed",
+        "automatic_retry_allowed",
+        "parallel_role_execution_allowed",
+        "candidate_only_slope_claim_allowed",
+        "allocation_claim_allowed",
+        "absolute_capacity_claim_allowed",
+        "candidate_is_final_c73",
+        "release_numerical_claim_allowed",
+        "immutable_archive_complete",
+    ] {
+        if boolean(value, field) != Some(false) {
+            problems.push(format!("W10 long-run qualification {field} must be false"));
+        }
+    }
+    let budgets = value
+        .get("regression_budget")
+        .and_then(TomlValue::as_array)
+        .cloned()
+        .unwrap_or_default();
+    let expected_budgets = [
+        ("goodput_operations_per_second", 0.02),
+        ("cpu_seconds_per_completed_operation", 0.03),
+        ("p99_latency_seconds", 0.03),
+    ];
+    if budgets.len() != expected_budgets.len()
+        || budgets
+            .iter()
+            .zip(expected_budgets)
+            .any(|(budget, expected)| {
+                text(budget, "metric") != Some(expected.0)
+                    || float(budget, "maximum_relative_regression") != Some(expected.1)
+            })
+    {
+        problems.push("W10 long-run qualification regression budgets changed".to_owned());
+    }
+    for field in [
+        "primary_guard",
+        "baseline_bound_rule",
+        "candidate_slope_rule",
+        "comparison_guard",
+        "checkpoint_rule",
+        "phase_rule",
+        "promotion_rule",
+        "artifact_rule",
+        "failure_rule",
+        "next_evidence",
+    ] {
+        if text(value, field).is_none_or(str::is_empty) {
+            problems.push(format!("W10 long-run qualification {field} is missing"));
         }
     }
     problems

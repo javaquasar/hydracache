@@ -1861,6 +1861,29 @@ and the rule that decides whether a 24-hour confirmation may start. Nor does the
 turn diagnostic RSS or allocation observations into performance claims. A gate should authorize
 exactly one next decision, not erase the boundaries of every later gate.
 
+For this release the frozen long-run shape is deliberately finite. I73 runs first and C73 second as
+independent continuous processes, each for six measured hours at the already qualified 12,000
+operations/second mixed workload; a later confirmation repeats the same identities for 24 hours per
+role only if the six-hour pair passes. Both roles keep the 35/30/15/10/5/5 HC/2, RESP, HC/1, direct,
+tag-invalidation and TTL/refill mix, 256-key cardinality, 4 KiB payload, production instrumentation,
+CPU placement, and five-minute post-work idle. The six-hour pair is capped at 15 runner-hours and
+the 24-hour pair at 58, so a configuration mistake cannot consume an unbounded lease.
+
+One-minute checkpoints cover outcomes, surface counters, owner state, RSS, anonymous and file PSS,
+CPU, faults, threads and file descriptors. I73's post-warmup Theil-Sen slopes and moving-block 95%
+upper bounds are sealed before C73 starts; the candidate cannot redefine them after observation.
+Both combined RSS and anonymous PSS must stay within those baseline-only bounds. Peak RSS and page
+faults remain diagnostics, and the long pair retains the earlier 2% goodput, 3% CPU/op and 3% p99
+regression ceilings. This single pair confirms endurance; it is not counted as five independent
+samples and cannot manufacture a new improvement estimate.
+
+The artifact policy is part of the experiment, too. Minute series and compact receipts are kept,
+while values, credentials and raw payloads are not. A role may emit at most 64 MiB and the whole
+packet at most 256 MiB. Missing or more-than-90-second-gapped checkpoints, a restarted process,
+incomplete outcomes, nonzero final owners, host or lease drift, an oversized packet, a surviving
+canary, or a favorable retry all fail the phase. This is how a long test remains an auditable
+experiment instead of becoming twelve or forty-eight hours of terminal output.
+
 ## A profiling ladder that avoids expensive runs
 
 Not every development iteration needs a dedicated bare-metal campaign. A useful workflow has several

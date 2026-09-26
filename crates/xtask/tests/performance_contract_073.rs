@@ -1908,6 +1908,42 @@ fn w10_published_072_compatibility_evidence_cannot_hide_attempts_or_promote_clai
 }
 
 #[test]
+fn w10_long_run_contract_cannot_shorten_roles_or_use_candidate_only_growth() {
+    let mut value = manifest("w10-long-run-qualification-contract.toml");
+    value["qualification_duration_seconds_per_role"] = TomlValue::Integer(3_600);
+    value["confirmation_operations_per_role"] = TomlValue::Integer(1);
+    value["candidate_only_slope_claim_allowed"] = TomlValue::Boolean(true);
+    value["threshold_change_after_baseline_start_allowed"] = TomlValue::Boolean(true);
+    value["equal_duration_roles_required"] = TomlValue::Boolean(false);
+    value["final_checkpoint_required"] = TomlValue::Boolean(false);
+    value["automatic_retry_allowed"] = TomlValue::Boolean(true);
+    value["regression_budget"] = TomlValue::Array(Vec::new());
+    let problems =
+        xtask::performance_contract::check_w10_long_run_qualification_contract(&value, "0.73");
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("duration or artifact budget changed")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("candidate_only_slope_claim_allowed must be false")));
+    assert!(problems.iter().any(|problem| {
+        problem.contains("threshold_change_after_baseline_start_allowed must be false")
+    }));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("equal_duration_roles_required must be true")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("final_checkpoint_required must be true")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("automatic_retry_allowed must be false")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("regression budgets changed")));
+}
+
+#[test]
 fn w5_connection_profile_cannot_promote_claim_server_bytes_or_skip_samples() {
     let mut value = manifest("w5-hc2-connection-profile-contract.toml");
     value["promotable"] = TomlValue::Boolean(true);

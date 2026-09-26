@@ -102,6 +102,7 @@ w10_published_072_compatibility_contract = "docs/testing/performance/0.73/w10-pu
 w10_published_072_compatibility_local_evidence = "docs/testing/performance/0.73/w10-published-072-compatibility-local-screen.toml"
 w10_published_072_compatibility_rolling_local_evidence = "docs/testing/performance/0.73/w10-published-072-compatibility-rolling-local-screen.toml"
 w10_published_072_compatibility_linux_evidence = "docs/testing/performance/0.73/w10-published-072-compatibility-passed-9508330b.toml"
+w10_long_run_qualification_contract = "docs/testing/performance/0.73/w10-long-run-qualification-contract.toml"
 promotable = false
 numerical_claims_allowed = false
 candidate_thresholds_allowed = false
