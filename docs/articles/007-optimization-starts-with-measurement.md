@@ -1944,6 +1944,28 @@ its post-calibration, C73 pre-calibration, the equal-duration C73 role, its post
 packet sealing must all pass in this same attempt. No replacement run is created merely because a
 later stage might fail.
 
+The attempt eventually completed both six-hour roles rather than failing early. Each role executed
+259.2 million operations, produced 362 checkpoints, drained its backlog, reported zero errors,
+timeouts, and rejections, reconciled all observed events and management owners, and passed the
+durable reopen/corruption checks. Independent verification of the downloaded packet matched all
+twelve embedded receipt, checkpoint, stdout/stderr, and calibration SHA-256 values. Goodput was
+effectively unchanged, CPU per operation improved by 0.20%, and p99 increased by 1.43%; all three
+stayed inside their frozen regression budgets.
+
+The final qualification still failed, correctly and narrowly. C73's moving-block 95% upper slope
+bound was 3.7926 bytes/s, above I73's already sealed 3.2508 bytes/s bound, for both combined RSS and
+anonymous PSS. The raw Theil-Sen point estimate moved in the favorable direction (34.13 to 9.84
+bytes/s), but the contract explicitly makes the upper-bound comparison decisive; a favorable point
+estimate cannot rescue it. This is why a job may perform twelve hours of healthy work and then exit
+red at sealing: successful execution is not the same thing as passing a preregistered decision.
+
+No tooling or orchestration fault was found. Changing the estimator after seeing these values,
+rounding away the 0.54 bytes/s gap, loosening the bound, or selecting a retry would convert a
+qualification into post-hoc threshold fitting. Run `36278780653` is therefore retained as a
+complete failed attempt, automatic retry remains forbidden, and the 24-hour confirmation is not
+opened. The result supports correctness and bounded-work observations for these exact processes;
+it does not authorize a C73 performance claim, final candidate identity, or release promotion.
+
 This ordering keeps the meaning of green steps monotonic. A successful build says the intended
 bytes are executable; a successful canary says a known-invalid packet is rejected; a successful
 calibration says the host is admissible at that boundary. None of those statements predicts the

@@ -2069,6 +2069,53 @@ fn w10_long_run_tooling_cannot_promote_local_data_or_hide_failed_attempts() {
 }
 
 #[test]
+fn w10_failed_six_hour_qualification_keeps_confirmation_and_claims_closed() {
+    let value = manifest("w10-long-run-qualification-failed-8f8d4457.toml");
+    assert_eq!(value["workflow_run"].as_integer(), Some(36_278_780_653));
+    assert_eq!(
+        value["tooling_commit"].as_str(),
+        Some("8f8d44570eb984a37f38a6b8dafeaebbd54d3d11")
+    );
+    assert_eq!(value["operations_per_role"].as_integer(), Some(259_200_000));
+    assert_eq!(value["checkpoint_count_per_role"].as_integer(), Some(362));
+    for field in [
+        "nested_sha256_verified",
+        "backlog_drained",
+        "reconciliation_exact",
+        "management_truth_zero",
+        "goodput_guard_passed",
+        "cpu_guard_passed",
+        "p99_guard_passed",
+    ] {
+        assert_eq!(value[field].as_bool(), Some(true), "{field} changed");
+    }
+    for field in [
+        "rss_slope_guard_passed",
+        "anonymous_pss_slope_guard_passed",
+        "automatic_retry_allowed",
+        "confirmation_allowed",
+        "performance_claim_allowed",
+        "candidate_is_final_c73",
+        "tooling_or_orchestration_fault_found",
+    ] {
+        assert_eq!(value[field].as_bool(), Some(false), "{field} changed");
+    }
+    assert_eq!(value["result"].as_str(), Some("failed"));
+    assert_eq!(
+        value["decision"].as_str(),
+        Some("retain-failed-attempt-and-stop-before-confirmation")
+    );
+    assert!(
+        value["c73_rss_upper_95_bytes_per_second"]
+            .as_float()
+            .expect("candidate upper bound")
+            > value["i73_rss_upper_95_bytes_per_second"]
+                .as_float()
+                .expect("baseline upper bound")
+    );
+}
+
+#[test]
 fn w5_connection_profile_cannot_promote_claim_server_bytes_or_skip_samples() {
     let mut value = manifest("w5-hc2-connection-profile-contract.toml");
     value["promotable"] = TomlValue::Boolean(true);
