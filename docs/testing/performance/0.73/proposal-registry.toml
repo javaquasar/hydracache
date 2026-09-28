@@ -19,7 +19,7 @@ practical_minimum_effect = "fill allocations improve by at least 15%"
 threshold_status = "frozen by single-maintainer review at commit 1e9fd748f1a234967e9303c7071dd0816fb7ac28"
 compatibility_outcome = "public configuration, value-byte capacity, expiry, invalidation, tag cleanup, snapshot, and reconciliation semantics remain unchanged"
 rollback_class = "remove isolated implementation and restore the exact I73 instrumentation path"
-dependency_delta = "exact git revision 352e53faa480c9997272b9c70798dd5b5c15d581 from https://github.com/javaquasar/moka.git; no branch or floating tag is authorized"
+dependency_delta = "exact crates.io package hydra-moka =0.12.15-hydra.1 with registry checksum 7ad8a0701236306b753373994b7077769ad5c2d6dbc60ae31c6258937ab6165a; runtime observer source remains revision 352e53faa480c9997272b9c70798dd5b5c15d581; no range, branch, or floating tag is authorized"
 review_status = "d2-authorized-pinned-fork"
 candidate_measurements_allowed = false
 d3_measurement_required = false

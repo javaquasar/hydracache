@@ -42,7 +42,6 @@ reason = "SQL parsing is allowed only through the HydraCache CI/build-time lint 
 unknown-registry = "deny"
 unknown-git = "deny"
 allow-registry = ["https://github.com/rust-lang/crates.io-index"]
-# Release 0.73 D2 uses the reviewed Moka observer fork. Cargo.toml and Cargo.lock
-# pin commit 352e53faa480c9997272b9c70798dd5b5c15d581; the decision receipt records
-# the upstream base, patch identity, SBOM, MSRV, feature, and target checks.
-allow-git = ["https://github.com/javaquasar/moka.git"]
+# Release 0.73 consumes the reviewed observer fork as the exact crates.io package
+# hydra-moka 0.12.15-hydra.1. The dependency receipt binds its registry checksum
+# to the underlying reviewed source revision and upstream base.

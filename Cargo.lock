@@ -2080,6 +2080,26 @@ dependencies = [
 ]
 
 [[package]]
+name = "hydra-moka"
+version = "0.12.15-hydra.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7ad8a0701236306b753373994b7077769ad5c2d6dbc60ae31c6258937ab6165a"
+dependencies = [
+ "async-lock",
+ "crossbeam-channel",
+ "crossbeam-epoch",
+ "crossbeam-utils",
+ "equivalent",
+ "event-listener",
+ "futures-util",
+ "parking_lot 0.12.5",
+ "portable-atomic",
+ "smallvec",
+ "tagptr",
+ "uuid",
+]
+
+[[package]]
 name = "hydracache"
 version = "0.72.0"
 dependencies = [
@@ -2088,12 +2108,12 @@ dependencies = [
  "criterion",
  "crossbeam-queue",
  "futures-util",
+ "hydra-moka",
  "hydracache-core",
  "hydracache-macros",
  "jsonschema",
  "loom",
  "mimalloc",
- "moka",
  "proptest",
  "serde",
  "serde_json",
@@ -2380,6 +2400,7 @@ dependencies = [
  "bytes",
  "futures-util",
  "hdrhistogram",
+ "hydra-moka",
  "hydracache",
  "hydracache-cache-sim",
  "hydracache-client-hc2",
@@ -2387,7 +2408,6 @@ dependencies = [
  "hydracache-client-transport-axum",
  "hydracache-redis-compat",
  "jsonschema",
- "moka",
  "rcgen",
  "serde",
  "serde_json",
@@ -3464,25 +3484,6 @@ dependencies = [
  "libc",
  "wasi",
  "windows-sys 0.61.2",
-]
-
-[[package]]
-name = "moka"
-version = "0.12.15"
-source = "git+https://github.com/javaquasar/moka.git?rev=352e53faa480c9997272b9c70798dd5b5c15d581#352e53faa480c9997272b9c70798dd5b5c15d581"
-dependencies = [
- "async-lock",
- "crossbeam-channel",
- "crossbeam-epoch",
- "crossbeam-utils",
- "equivalent",
- "event-listener",
- "futures-util",
- "parking_lot 0.12.5",
- "portable-atomic",
- "smallvec",
- "tagptr",
- "uuid",
 ]
 
 [[package]]

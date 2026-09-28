@@ -417,6 +417,11 @@ fn moka_fork_decision_requires_exact_revision_and_keeps_measurement_closed() {
         TomlValue::String("hydracache/post-removal-observer-0.12.15".to_owned());
     value["source"]["remote_revision_verified"] = TomlValue::Boolean(false);
     value["upstream"]["submission_state"] = TomlValue::String("submitted".to_owned());
+    value["distribution"]["version_requirement"] = TomlValue::String("^0.12.15-hydra.1".to_owned());
+    value["distribution"]["registry_sha256"] = TomlValue::String("wrong".to_owned());
+    value["distribution"]["runtime_source_revision"] =
+        TomlValue::String("616473ee923f4cd1429b3d8eb3be7df3eb9906b1".to_owned());
+    value["distribution"]["yanked"] = TomlValue::Boolean(true);
     let problems = xtask::performance_contract::check_moka_fork_decision(&value, "0.73");
     assert!(problems
         .iter()
@@ -429,7 +434,19 @@ fn moka_fork_decision_requires_exact_revision_and_keeps_measurement_closed() {
         .any(|problem| problem.contains("source integrity")));
     assert!(problems
         .iter()
-        .any(|problem| problem.contains("absent upstream review")));
+        .any(|problem| problem.contains("pending upstream review")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("distribution version_requirement")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("distribution registry_sha256")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("distribution runtime_source_revision")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("distribution is not available")));
 }
 
 #[test]

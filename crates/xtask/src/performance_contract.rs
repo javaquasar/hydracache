@@ -2079,12 +2079,49 @@ pub fn check_moka_fork_decision(value: &TomlValue, release: &str) -> Vec<String>
 
     let upstream = value.get("upstream").unwrap_or(&missing);
     if text(upstream, "proposal") != Some(MOKA_OBSERVER_UPSTREAM_DRAFT)
-        || text(upstream, "submission_state") != Some("not-submitted")
-        || text(upstream, "maintainer_disposition") != Some("not-requested")
+        || text(upstream, "submission_state") != Some("discussion-and-draft-pr-open")
+        || text(upstream, "discussion_url")
+            != Some("https://github.com/moka-rs/moka/discussions/606")
+        || text(upstream, "pull_request_url") != Some("https://github.com/moka-rs/moka/pull/607")
+        || text(upstream, "maintainer_disposition") != Some("pending")
         || text(upstream, "decision").is_none_or(str::is_empty)
         || text(upstream, "rationale").is_none_or(str::is_empty)
     {
-        problems.push("Moka fork decision must disclose the absent upstream review".to_owned());
+        problems.push("Moka fork decision must disclose the pending upstream review".to_owned());
+    }
+
+    let distribution = value.get("distribution").unwrap_or(&missing);
+    for (field, expected) in [
+        ("registry", "crates.io"),
+        ("package", "hydra-moka"),
+        ("version", "0.12.15-hydra.1"),
+        ("version_requirement", "=0.12.15-hydra.1"),
+        ("library_name", "moka"),
+        (
+            "crate_url",
+            "https://crates.io/crates/hydra-moka/0.12.15-hydra.1",
+        ),
+        (
+            "registry_sha256",
+            "7ad8a0701236306b753373994b7077769ad5c2d6dbc60ae31c6258937ab6165a",
+        ),
+        ("release_commit", "2e358c5135a2649818dc1890ac96929d92e86424"),
+        ("release_tag", "hydra-moka-v0.12.15-hydra.1"),
+        (
+            "runtime_source_revision",
+            "352e53faa480c9997272b9c70798dd5b5c15d581",
+        ),
+    ] {
+        if text(distribution, field) != Some(expected) {
+            problems.push(format!(
+                "Moka fork decision distribution {field} must be {expected}"
+            ));
+        }
+    }
+    if text(distribution, "published_at").is_none_or(str::is_empty)
+        || boolean(distribution, "yanked") != Some(false)
+    {
+        problems.push("Moka fork decision distribution is not available for use".to_owned());
     }
 
     let maintenance = value.get("maintenance").unwrap_or(&missing);

@@ -172,7 +172,9 @@ falsifiers; and a demonstrated rollback. It does not permit describing the resul
 reviewed.
 
 `moka-fork-decision-352e53fa.toml` records the resolved dependency choice. The project-owned fork
-is pinned to full revision `352e53faa480c9997272b9c70798dd5b5c15d581`, based on upstream Moka
+is distributed as exact crates.io package `hydra-moka =0.12.15-hydra.1` with registry checksum
+`7ad8a0701236306b753373994b7077769ad5c2d6dbc60ae31c6258937ab6165a`. Its runtime observer source
+remains full revision `352e53faa480c9997272b9c70798dd5b5c15d581`, based on upstream Moka
 `v0.12.15` at `616473ee923f4cd1429b3d8eb3be7df3eb9906b1`. The receipt binds the source tree,
 stable patch id, checked-in prototype-patch digest, fork `Cargo.lock`, CycloneDX 1.5 SBOM, license,
 MSRV, maintenance cadence, advisory policy, and one-commit crates.io rollback. Full Moka tests,
@@ -181,9 +183,10 @@ HydraCache harness, panic containment, and Windows/Linux x86_64/Linux aarch64 ch
 allows the separately committed production integration; measurements remain closed until that
 integration passes product-level correctness and local admission.
 
-`moka-post-removal-observer-upstream-draft.md` turns the dependency choice into a concrete API
-proposal without posting anything externally. The dependency receipt explicitly records
-`not-submitted`/`not-requested`, so neither the fork nor D2 can be mistaken for upstream acceptance.
+`moka-post-removal-observer-upstream-draft.md` supplied the concrete API proposal later posted as
+discussion `moka-rs/moka#606` and draft pull request `#607`. The dependency receipt explicitly
+records their disposition as pending, so neither the fork nor D2 can be mistaken for upstream
+acceptance.
 The hardened fork contains panic containment and an explicit nonblocking/non-reentrant callback
 contract; HydraCache still has to prove its own product-level reentrancy and shutdown behavior.
 

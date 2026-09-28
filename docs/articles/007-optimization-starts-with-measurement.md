@@ -391,10 +391,13 @@ the product.
 ### Turning a successful patch into an owned dependency
 
 We chose the pinned-fork path for the 0.73 integration window. That choice is narrower than “use
-our branch”: HydraCache may consume only commit
-`352e53faa480c9997272b9c70798dd5b5c15d581` from the project-owned `javaquasar/moka` fork. A
-branch name is useful for humans but mutable, so the contract rejects it as a dependency identity.
-The fork is one focused commit over Moka `v0.12.15`; the receipt also records both source-tree ids,
+our branch”: HydraCache consumes only the exact crates.io package
+`hydra-moka =0.12.15-hydra.1`, whose registry checksum is
+`7ad8a0701236306b753373994b7077769ad5c2d6dbc60ae31c6258937ab6165a`. The package preserves the
+Rust library name `moka`, while its provenance binds the runtime observer code to commit
+`352e53faa480c9997272b9c70798dd5b5c15d581` in the project-owned fork. A branch name is useful for
+humans but mutable, so the contract rejects it as a dependency identity. The fork is one focused
+runtime commit over Moka `v0.12.15`; the receipt also records both source-tree ids,
 a stable patch id, and the digest of the earlier checked-in prototype patch. These identities make
 it possible to distinguish a reviewed source change from a later force-push or unrelated fork edit.
 
@@ -413,12 +416,14 @@ usable. The API documentation prohibits blocking, I/O, and reentering the same c
 prove that HydraCache's integration is correct—it makes the dependency contract precise enough for
 product tests to try to falsify it.
 
-We deliberately did not send an upstream pull request as part of this decision. The receipt says
-`not-submitted` and `not-requested`, rather than implying that the Moka maintainers reviewed the API.
-An external review has an unbounded schedule, while a fork we own has explicit maintenance and
-rollback costs. We accepted those costs: recheck upstream and advisories at least monthly and before
-each release candidate, never move the pinned revision in place, and require a new receipt,
-lockfile diff, SBOM, and full dependency gate for every revision change. Rollback is one product
+We later opened upstream discussion `moka-rs/moka#606` and draft pull request `#607`, but their
+review remains independent of the HydraCache release clock. The receipt says `pending`, rather than
+implying that the Moka maintainers reviewed or accepted the API. An external review has an unbounded
+schedule, while a fork we own has explicit maintenance and rollback costs. We accepted those costs:
+recheck upstream and advisories at least monthly and before
+each release candidate, never broaden or move the exact package version in place, and require a new
+receipt, registry checksum, lockfile diff, SBOM, and full dependency gate for every version change.
+Rollback is one product
 commit restoring crates.io Moka 0.12.15 and the previous listener wiring.
 
 D2 therefore opens exactly one door: a later product-integration commit may use the pinned observer
@@ -431,10 +436,12 @@ requires the admitted dedicated-host pairs frozen earlier.
 ### What changed when the observer entered the product
 
 The product integration landed as commit
-`73fc38a131d26e78b246fe93d5edd71d33796bbf`. HydraCache now pins the reviewed Moka revision in both
-the manifest and lockfile, and the source policy allowlists only the project fork URL. The revision
-itself remains fixed by `Cargo.toml` and `Cargo.lock`; changing it still requires a new dependency
-receipt rather than moving a branch or tag.
+`73fc38a131d26e78b246fe93d5edd71d33796bbf`. It originally pinned the reviewed Moka revision in the
+manifest and lockfile. Before publication we packaged that same runtime source as
+`hydra-moka 0.12.15-hydra.1`, verified the registry checksum, and replaced the Git source with an
+exact crates.io dependency. `Cargo.toml` and `Cargo.lock` now bind the immutable version and
+checksum; changing either still requires a new dependency receipt rather than moving a branch or
+tag.
 
 The callback does only work that must happen at logical removal time. It computes the already
 defined entry-memory delta, decrements the atomic counters, claims a bounded version slot, and uses
