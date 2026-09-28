@@ -496,3 +496,10 @@ commit `16d2e98b`, its tree and root-lock digest, plus the exact registry checks
 threshold and failure policy through a machine-checked normalization; only the candidate identity
 changes. The runner now targets this final registry candidate, while the offline reanalyzer retains
 an explicit old-C73 constant so run `36278780653` remains independently reproducible.
+
+The first v2 dispatch, run `36404123541`, was rejected before product checkout because the manually
+submitted tooling SHA had been incorrectly reconstructed from a short prefix. No product worktree,
+build, canary, or long-running role started. The always-path retained two blocked-host calibration
+diagnostics from the stale self-hosted checkout; they are not measurement evidence. Receipt
+`w10-long-run-v2-dispatch-rejected-36404123541.toml` binds the artifact and both files by SHA-256
+and permits one corrected pre-product dispatch using the exact value returned by `git rev-parse`.
