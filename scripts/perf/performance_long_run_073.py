@@ -108,25 +108,30 @@ def moving_block_upper_bound(
     if len(points) < block_samples * 2:
         raise ValueError("moving-block slope requires at least two complete blocks")
     point_slope = theil_sen(points)
-    values = [value for _, value in points]
-    block_count = len(values) // block_samples
+    # Resample contiguous adjacent-rate blocks, preserving the slope statistic's
+    # time direction. Resampling absolute levels and assigning each selected
+    # block a new time coordinate destroys the trend and is not a slope bound.
+    adjacent_slopes = [
+        (right[1] - left[1]) / (right[0] - left[0])
+        for left, right in zip(points, points[1:])
+        if right[0] > left[0]
+    ]
+    effective_block = min(block_samples, len(adjacent_slopes))
+    starts = len(adjacent_slopes) - effective_block + 1
     random_source = random.Random(seed)
     bootstrap_slopes = []
     for _ in range(iterations):
-        medians = []
-        for _block in range(block_count):
-            start = random_source.randrange(0, len(values) - block_samples + 1)
-            medians.append(float(statistics.median(values[start : start + block_samples])))
-        aggregated = [
-            (float(index * block_samples * CHECKPOINT_INTERVAL_SECONDS), value)
-            for index, value in enumerate(medians)
-        ]
-        bootstrap_slopes.append(theil_sen(aggregated))
+        resampled = []
+        while len(resampled) < len(adjacent_slopes):
+            start = random_source.randrange(0, starts)
+            resampled.extend(adjacent_slopes[start : start + effective_block])
+        bootstrap_slopes.append(float(statistics.mean(resampled[: len(adjacent_slopes)])))
     return {
         "samples": len(points),
         "block_samples": block_samples,
         "bootstrap_iterations": iterations,
         "bootstrap_seed": seed,
+        "bootstrap_method": "moving-block-adjacent-slope-v1",
         "theil_sen_bytes_per_second": point_slope,
         "upper_95_bytes_per_second": percentile(bootstrap_slopes, 0.95),
     }

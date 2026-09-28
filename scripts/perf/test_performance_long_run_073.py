@@ -55,6 +55,11 @@ class PerformanceLongRun073Tests(unittest.TestCase):
         right = MODULE.moving_block_upper_bound(points, block_samples=12, iterations=25, seed=7)
         self.assertEqual(left, right)
         self.assertEqual(left["samples"], 36)
+        self.assertEqual(left["bootstrap_method"], "moving-block-adjacent-slope-v1")
+        self.assertAlmostEqual(left["upper_95_bytes_per_second"], 1.0 / 6.0)
+        self.assertGreaterEqual(
+            left["upper_95_bytes_per_second"], left["theil_sen_bytes_per_second"]
+        )
 
     def test_checkpoint_validator_rejects_missing_reconciled_final(self) -> None:
         rows = [
