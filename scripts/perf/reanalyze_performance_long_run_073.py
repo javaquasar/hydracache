@@ -77,11 +77,13 @@ def reanalyze(packet: pathlib.Path) -> dict:
             == original_role["analysis"]["checkpoints_sha256"],
             f"{role} checkpoint digest changed",
         )
+        original_role_bytes = sum(
+            (role_dir / name).stat().st_size
+            for name in ["receipt.json", "checkpoints.jsonl", "stdout.txt", "stderr.txt"]
+        )
         require(
-            analysis["artifact_bytes"]
-            == original_role["analysis"]["artifact_bytes"]
-            + (role_dir / "attempt.json").stat().st_size,
-            f"{role} artifact size changed beyond the retained attempt receipt",
+            original_role_bytes == original_role["analysis"]["artifact_bytes"],
+            f"{role} original artifact size changed",
         )
         analysis["artifact_bytes"] = original_role["analysis"]["artifact_bytes"]
         receipt = json.loads((role_dir / "receipt.json").read_text(encoding="utf-8"))
