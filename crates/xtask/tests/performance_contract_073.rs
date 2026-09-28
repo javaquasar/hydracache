@@ -1986,6 +1986,9 @@ fn w10_long_run_qualification_workflow_is_serial_bounded_and_fail_closed() {
         "if: always()",
         "actions/upload-artifact@v4",
         "retention-days: 30",
+        "C73_SHA: 16d2e98b6cc9e22d9ccf95eb26fe28bbbcf80f2b",
+        "C73_TREE_OID: 92336607f21a68f563e65dc0fccccd8efaa14f7b",
+        "w10-long-run-qualification-v2-contract.toml",
     ] {
         assert!(workflow.contains(required), "workflow omitted {required}");
     }
@@ -2188,6 +2191,27 @@ fn w10_registry_transition_cannot_transfer_old_evidence_or_skip_new_long_runs() 
             "missing problem containing {required:?}: {problems:?}"
         );
     }
+}
+
+#[test]
+fn w10_long_run_v2_cannot_drift_from_the_final_registry_candidate() {
+    let mut value = manifest("w10-long-run-qualification-v2-contract.toml");
+    assert!(
+        xtask::performance_contract::check_w10_long_run_qualification_v2_contract(&value, "0.73")
+            .is_empty()
+    );
+    value["candidate_source_commit"] = TomlValue::String("0".repeat(40));
+    value["candidate_root_lock_sha256"] = TomlValue::String("1".repeat(64));
+    value["hydra_moka_registry_checksum"] = TomlValue::String("2".repeat(64));
+    value["qualification_duration_seconds_per_role"] = TomlValue::Integer(3_600);
+    let problems =
+        xtask::performance_contract::check_w10_long_run_qualification_v2_contract(&value, "0.73");
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("final registry identity changed")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("duration or artifact budget changed")));
 }
 
 #[test]

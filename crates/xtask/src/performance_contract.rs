@@ -192,6 +192,8 @@ const W10_LONG_RUN_ANALYZER_CORRECTION: &str =
     "docs/testing/performance/0.73/w10-long-run-analyzer-correction-36278780653.toml";
 const W10_D4_REGISTRY_TRANSITION: &str =
     "docs/testing/performance/0.73/w10-d4-registry-transition-9f13ee15.toml";
+const W10_LONG_RUN_QUALIFICATION_V2_CONTRACT: &str =
+    "docs/testing/performance/0.73/w10-long-run-qualification-v2-contract.toml";
 const RELEASE: &str = "0.73";
 const PROFILE: &str = "local-screening-073-v1";
 const ENVIRONMENT_CLASS: &str = "local_screening";
@@ -471,6 +473,9 @@ pub fn check_at_root(
     )?)?;
     let w10_d4_registry_transition: TomlValue =
         toml::from_str(&fs::read_to_string(root.join(W10_D4_REGISTRY_TRANSITION))?)?;
+    let w10_long_run_qualification_v2_contract: TomlValue = toml::from_str(&fs::read_to_string(
+        root.join(W10_LONG_RUN_QUALIFICATION_V2_CONTRACT),
+    )?)?;
     let mut problems = check_contract(&contract, release);
     if !root.join(MOKA_OBSERVER_UPSTREAM_DRAFT).is_file() {
         problems.push("notification observer dependency review draft is missing".to_owned());
@@ -815,6 +820,10 @@ pub fn check_at_root(
     ));
     problems.extend(check_w10_d4_registry_transition(
         &w10_d4_registry_transition,
+        release,
+    ));
+    problems.extend(check_w10_long_run_qualification_v2_contract(
+        &w10_long_run_qualification_v2_contract,
         release,
     ));
     problems.extend(check_schema(
@@ -9581,6 +9590,39 @@ pub fn check_w10_d4_registry_transition(value: &TomlValue, release: &str) -> Vec
         || string_array(value.get("validation")).len() < 5
     {
         problems.push("W10 D4 registry transition audit coverage is incomplete".to_owned());
+    }
+    problems
+}
+
+pub fn check_w10_long_run_qualification_v2_contract(
+    value: &TomlValue,
+    release: &str,
+) -> Vec<String> {
+    let mut normalized = value.clone();
+    normalized["contract_id"] = TomlValue::String("w10-long-run-qualification-073-v1".to_owned());
+    normalized["state"] =
+        TomlValue::String("preregistered-after-compatibility-before-long-run-tooling".to_owned());
+    normalized["candidate_identity"] = TomlValue::String("C73-provisional-1".to_owned());
+    normalized["candidate_source_commit"] =
+        TomlValue::String("7e3070894aa51af96cdcb3e350eff923a309e1fa".to_owned());
+    normalized["candidate_tree_oid"] =
+        TomlValue::String("e2c438b9a248586a4f72d3eca3d1c5369fff440b".to_owned());
+    let mut problems = check_w10_long_run_qualification_contract(&normalized, release);
+    if text(value, "contract_id") != Some("w10-long-run-qualification-073-v2")
+        || text(value, "state") != Some("preregistered-final-registry-candidate-before-dispatch")
+        || text(value, "supersedes_for_new_dispatch") != Some(W10_LONG_RUN_QUALIFICATION_CONTRACT)
+        || text(value, "registry_transition_review") != Some(W10_D4_REGISTRY_TRANSITION)
+        || text(value, "candidate_identity") != Some("C73-final-registry-1")
+        || text(value, "candidate_source_commit")
+            != Some("16d2e98b6cc9e22d9ccf95eb26fe28bbbcf80f2b")
+        || text(value, "candidate_tree_oid") != Some("92336607f21a68f563e65dc0fccccd8efaa14f7b")
+        || text(value, "candidate_root_lock_sha256")
+            != Some("91e142067f52ab4f86bf2b0e94110371d5d053b3c2cfc41f585e74befe480f63")
+        || text(value, "hydra_moka_version") != Some("0.12.15-hydra.1")
+        || text(value, "hydra_moka_registry_checksum")
+            != Some("7ad8a0701236306b753373994b7077769ad5c2d6dbc60ae31c6258937ab6165a")
+    {
+        problems.push("W10 long-run v2 final registry identity changed".to_owned());
     }
     problems
 }

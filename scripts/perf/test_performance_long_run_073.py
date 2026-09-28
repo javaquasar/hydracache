@@ -29,6 +29,18 @@ def resource(value: int = 1) -> dict:
 
 
 class PerformanceLongRun073Tests(unittest.TestCase):
+    def test_final_candidate_and_historical_reanalysis_identities_are_separate(self) -> None:
+        self.assertEqual(
+            MODULE.C73_SHA, "16d2e98b6cc9e22d9ccf95eb26fe28bbbcf80f2b"
+        )
+        reanalyzer = SCRIPT.with_name("reanalyze_performance_long_run_073.py").read_text(
+            encoding="utf-8"
+        )
+        self.assertIn(
+            'ORIGINAL_C73_SHA = "7e3070894aa51af96cdcb3e350eff923a309e1fa"',
+            reanalyzer,
+        )
+
     def test_verify_inputs_returns_identity_and_rejects_overlay_drift(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             root = pathlib.Path(temporary)

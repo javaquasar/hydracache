@@ -51,8 +51,8 @@ jobs:
       HYDRACACHE_PERFORMANCE_LOADGEN_CPUSET: ${{ vars.HYDRACACHE_MEMORY_LOADGEN_CPUSET || '7' }}
       HYDRACACHE_PERFORMANCE_COLLECTOR_CPUSET: ${{ vars.HYDRACACHE_MEMORY_COLLECTOR_CPUSET || '0' }}
       I73_SHA: e757556d3a31d565f52a9561d6d4e555bb1cc373
-      C73_SHA: 7e3070894aa51af96cdcb3e350eff923a309e1fa
-      C73_TREE_OID: e2c438b9a248586a4f72d3eca3d1c5369fff440b
+      C73_SHA: 16d2e98b6cc9e22d9ccf95eb26fe28bbbcf80f2b
+      C73_TREE_OID: 92336607f21a68f563e65dc0fccccd8efaa14f7b
       EVIDENCE_DIR: ${{ github.workspace }}/target/performance-evidence/0.73/long-run-qualification-${{ github.run_id }}-${{ github.run_attempt }}
 
     steps:
@@ -152,7 +152,7 @@ jobs:
             --i73-harness "$I73_HARNESS" --c73-harness "$C73_HARNESS" \
             --i73-server "$I73_SERVER" --c73-server "$C73_SERVER" \
             --i73-overlay "$I73_OVERLAY" --c73-overlay "$C73_OVERLAY" \
-            --scenario docs/testing/performance/0.73/w10-long-run-qualification-contract.toml \
+            --scenario docs/testing/performance/0.73/w10-long-run-qualification-v2-contract.toml \
             --output "$EVIDENCE_DIR/canary" \
             --daemon-cpu-set "$HYDRACACHE_PERFORMANCE_DAEMON_CPUSET" \
             --loadgen-cpu-set "$HYDRACACHE_PERFORMANCE_LOADGEN_CPUSET"
@@ -174,7 +174,7 @@ jobs:
             --i73-harness "$I73_HARNESS" --c73-harness "$C73_HARNESS" \
             --i73-server "$I73_SERVER" --c73-server "$C73_SERVER" \
             --i73-overlay "$I73_OVERLAY" --c73-overlay "$C73_OVERLAY" \
-            --scenario docs/testing/performance/0.73/w10-long-run-qualification-contract.toml \
+            --scenario docs/testing/performance/0.73/w10-long-run-qualification-v2-contract.toml \
             --output "$EVIDENCE_DIR/i73" \
             --daemon-cpu-set "$HYDRACACHE_PERFORMANCE_DAEMON_CPUSET" \
             --loadgen-cpu-set "$HYDRACACHE_PERFORMANCE_LOADGEN_CPUSET"
@@ -206,7 +206,7 @@ jobs:
             --i73-harness "$I73_HARNESS" --c73-harness "$C73_HARNESS" \
             --i73-server "$I73_SERVER" --c73-server "$C73_SERVER" \
             --i73-overlay "$I73_OVERLAY" --c73-overlay "$C73_OVERLAY" \
-            --scenario docs/testing/performance/0.73/w10-long-run-qualification-contract.toml \
+            --scenario docs/testing/performance/0.73/w10-long-run-qualification-v2-contract.toml \
             --output "$EVIDENCE_DIR/c73" \
             --daemon-cpu-set "$HYDRACACHE_PERFORMANCE_DAEMON_CPUSET" \
             --loadgen-cpu-set "$HYDRACACHE_PERFORMANCE_LOADGEN_CPUSET"
@@ -229,7 +229,7 @@ jobs:
             --i73-harness "$I73_HARNESS" --c73-harness "$C73_HARNESS" \
             --i73-server "$I73_SERVER" --c73-server "$C73_SERVER" \
             --i73-overlay "$I73_OVERLAY" --c73-overlay "$C73_OVERLAY" \
-            --scenario docs/testing/performance/0.73/w10-long-run-qualification-contract.toml \
+            --scenario docs/testing/performance/0.73/w10-long-run-qualification-v2-contract.toml \
             --output "$EVIDENCE_DIR" \
             --daemon-cpu-set "$HYDRACACHE_PERFORMANCE_DAEMON_CPUSET" \
             --loadgen-cpu-set "$HYDRACACHE_PERFORMANCE_LOADGEN_CPUSET"

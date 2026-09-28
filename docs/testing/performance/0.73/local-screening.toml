@@ -106,6 +106,7 @@ w10_long_run_qualification_contract = "docs/testing/performance/0.73/w10-long-ru
 w10_long_run_tooling_evidence = "docs/testing/performance/0.73/w10-long-run-tooling-passed-c3769d3e.toml"
 w10_long_run_analyzer_correction = "docs/testing/performance/0.73/w10-long-run-analyzer-correction-36278780653.toml"
 w10_d4_registry_transition = "docs/testing/performance/0.73/w10-d4-registry-transition-9f13ee15.toml"
+w10_long_run_qualification_v2_contract = "docs/testing/performance/0.73/w10-long-run-qualification-v2-contract.toml"
 promotable = false
 numerical_claims_allowed = false
 candidate_thresholds_allowed = false

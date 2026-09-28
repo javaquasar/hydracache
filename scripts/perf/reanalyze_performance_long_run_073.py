@@ -13,7 +13,8 @@ import performance_long_run_073 as runner
 
 ORIGINAL_CAMPAIGN_SHA256 = "21050af401193774e20564af989bed27a6af2ea4e2f2f8ba367abe05b8153470"
 ORIGINAL_TOOLING_SHA = "8f8d44570eb984a37f38a6b8dafeaebbd54d3d11"
-EXPECTED_SOURCES = {"I73": runner.I73_SHA, "C73": runner.C73_SHA}
+ORIGINAL_C73_SHA = "7e3070894aa51af96cdcb3e350eff923a309e1fa"
+EXPECTED_SOURCES = {"I73": runner.I73_SHA, "C73": ORIGINAL_C73_SHA}
 EXPECTED_OPERATIONS = 259_200_000
 MINIMUM_PERIODIC_CHECKPOINTS = 359
 
@@ -37,7 +38,7 @@ def reanalyze(packet: pathlib.Path) -> dict:
     require(original.get("automatic_retry_allowed") is False, "retry boundary changed")
     require(original.get("confirmation_allowed") is False, "confirmation boundary changed")
     require(original.get("baseline_source_sha") == runner.I73_SHA, "I73 identity changed")
-    require(original.get("candidate_source_sha") == runner.C73_SHA, "C73 identity changed")
+    require(original.get("candidate_source_sha") == ORIGINAL_C73_SHA, "C73 identity changed")
 
     analyses = {}
     nested_sha256 = {}
@@ -110,7 +111,7 @@ def reanalyze(packet: pathlib.Path) -> dict:
         "original_campaign_sha256": ORIGINAL_CAMPAIGN_SHA256,
         "original_tooling_sha": ORIGINAL_TOOLING_SHA,
         "baseline_source_sha": runner.I73_SHA,
-        "candidate_source_sha": runner.C73_SHA,
+        "candidate_source_sha": ORIGINAL_C73_SHA,
         "analyzer_sha256": runner.sha256_file(pathlib.Path(runner.__file__).resolve()),
         "bootstrap_method": "moving-block-adjacent-slope-v1",
         "nested_sha256_verified": True,

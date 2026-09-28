@@ -19,7 +19,7 @@ from datetime import datetime, timezone
 
 PROFILE_ID = "integrated-long-run-073-v1"
 I73_SHA = "e757556d3a31d565f52a9561d6d4e555bb1cc373"
-C73_SHA = "7e3070894aa51af96cdcb3e350eff923a309e1fa"
+C73_SHA = "16d2e98b6cc9e22d9ccf95eb26fe28bbbcf80f2b"
 RATE = 12_000
 WARMUP_OPERATIONS = 5_000
 WEIGHTS = [35, 30, 15, 10, 5, 5]

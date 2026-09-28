@@ -489,3 +489,10 @@ therefore preserves the corrected old qualification without transferring it, kee
 archive claims closed, and requires a new six-hour plus 24-hour campaign only after every remaining
 publication input has been frozen. Protected-host dispatch before that final freeze is rejected as
 avoidable spend.
+
+`w10-long-run-qualification-v2-contract.toml` binds the replacement campaign to publication-freeze
+commit `16d2e98b`, its tree and root-lock digest, plus the exact registry checksum for
+`hydra-moka 0.12.15-hydra.1`. It inherits the complete v1 workload, duration, estimator, seed,
+threshold and failure policy through a machine-checked normalization; only the candidate identity
+changes. The runner now targets this final registry candidate, while the offline reanalyzer retains
+an explicit old-C73 constant so run `36278780653` remains independently reproducible.
