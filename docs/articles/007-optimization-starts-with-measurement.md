@@ -2027,6 +2027,31 @@ assets, features, SBOM inputs, and lockfiles before renting the host again. Only
 final candidate receive one six-hour qualification and, if green, one 24-hour confirmation. This
 avoids both dishonest evidence reuse and a second invalidation caused by late release packaging.
 
+The first dispatch of that final registry candidate exposed one more orchestration boundary before
+any performance sample was taken. The standalone harness overlay was byte-identical for I73 and
+C73, but its single `Cargo.lock` encoded I73's local packages as 0.72.0 and Moka as the frozen Git
+revision. I73 compiled; C73 presented the same path packages as 0.73.0 and `hydra-moka` as a registry
+package, so Cargo refused to rewrite the lock under `--locked`. That red build is useful evidence:
+both product servers and the baseline harness were buildable, while the candidate harness was never
+created, the canary never started, and no timing or memory observation exists. Treating it as a
+performance loss—or silently rerunning it—would be a category error.
+
+The correction keeps the comparison symmetric without pretending that different product identities
+have the same dependency graph. The overlay now carries two reviewed lockfiles: the original I73
+lock and a C73 lock derived for the frozen registry candidate. The workflow verifies both SHA-256
+values, builds each harness with its matching lock under `--locked`, restores the canonical overlay
+tree, and performs a recursive equality check before the canary or either role can run. Thus the
+harness source and workload remain byte-identical, dependency resolution remains reproducible, and
+the temporary role-specific build input cannot leak into the measured overlay identity. The failed
+artifact and its two post-calibration files remain append-only evidence; the frozen product commits,
+workload, durations, estimator and thresholds were not changed.
+
+This incident generalizes beyond Rust. “Use the same harness” and “use one lockfile” are not the
+same requirement when the harness deliberately links two released product graphs. Reproducibility
+means pinning each graph explicitly and proving that all non-product inputs return to the same state
+before measurement. A locked failure during setup is cheaper and more trustworthy than allowing a
+package manager to resolve dependencies online during a rented-host campaign.
+
 This ordering keeps the meaning of green steps monotonic. A successful build says the intended
 bytes are executable; a successful canary says a known-invalid packet is rejected; a successful
 calibration says the host is admissible at that boundary. None of those statements predicts the

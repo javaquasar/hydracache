@@ -1989,6 +1989,11 @@ fn w10_long_run_qualification_workflow_is_serial_bounded_and_fail_closed() {
         "C73_SHA: 16d2e98b6cc9e22d9ccf95eb26fe28bbbcf80f2b",
         "C73_TREE_OID: 92336607f21a68f563e65dc0fccccd8efaa14f7b",
         "w10-long-run-qualification-v2-contract.toml",
+        "Cargo.lock.c73",
+        "35b7ab4f62cee2ce41aa0547cc632a11d90e0d89861b87158bbcf7b184767630",
+        "cp \"$C73_OVERLAY/Cargo.lock.c73\" \"$C73_OVERLAY/Cargo.lock\"",
+        "cp \"$I73_OVERLAY/Cargo.lock\" \"$C73_OVERLAY/Cargo.lock\"",
+        "diff -qr --exclude=target \"$I73_OVERLAY\" \"$C73_OVERLAY\"",
     ] {
         assert!(workflow.contains(required), "workflow omitted {required}");
     }
@@ -2060,6 +2065,43 @@ fn w10_long_run_qualification_workflow_is_serial_bounded_and_fail_closed() {
         1,
         "the registered entry must remain the sole owner of the shared host concurrency group"
     );
+}
+
+#[test]
+fn w10_integrated_workflows_pin_role_specific_harness_locks_and_restore_overlay_identity() {
+    for relative in [
+        ".github/workflows/performance-integrated-host-073.yml",
+        ".github/workflows/performance-long-run-qualification-073.yml",
+    ] {
+        let workflow = fs::read_to_string(root().join(relative)).expect("integrated workflow");
+        serde_yaml::from_str::<serde_yaml::Value>(&workflow).expect("valid workflow YAML");
+        for required in [
+            "3c2e8a20a26c6105fec6f449ce6cad43ba4a9a65f78516f5c0110ff0a9ca4953",
+            "35b7ab4f62cee2ce41aa0547cc632a11d90e0d89861b87158bbcf7b184767630",
+            "cp \"$C73_OVERLAY/Cargo.lock.c73\" \"$C73_OVERLAY/Cargo.lock\"",
+            "cargo build --manifest-path \"$C73_OVERLAY/Cargo.toml\" --release --locked",
+            "cp \"$I73_OVERLAY/Cargo.lock\" \"$C73_OVERLAY/Cargo.lock\"",
+            "diff -qr --exclude=target \"$I73_OVERLAY\" \"$C73_OVERLAY\"",
+        ] {
+            assert!(workflow.contains(required), "{relative} omitted {required}");
+        }
+        let select = workflow
+            .find("cp \"$C73_OVERLAY/Cargo.lock.c73\"")
+            .expect("C73 lock selection");
+        let build = workflow
+            .find("cargo build --manifest-path \"$C73_OVERLAY/Cargo.toml\"")
+            .expect("C73 harness build");
+        let restore = workflow
+            .find("cp \"$I73_OVERLAY/Cargo.lock\" \"$C73_OVERLAY/Cargo.lock\"")
+            .expect("canonical overlay restoration");
+        let compare = workflow
+            .find("diff -qr --exclude=target \"$I73_OVERLAY\" \"$C73_OVERLAY\"")
+            .expect("overlay identity guard");
+        assert!(
+            select < build && build < restore && restore < compare,
+            "{relative} must select, build, restore, then compare overlays"
+        );
+    }
 }
 
 #[test]

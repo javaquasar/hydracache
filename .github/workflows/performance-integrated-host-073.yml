@@ -144,8 +144,13 @@ jobs:
           set -euo pipefail
           cargo build --manifest-path "$I73_ROOT/Cargo.toml" --release --locked -p hydracache-server
           cargo build --manifest-path "$C73_ROOT/Cargo.toml" --release --locked -p hydracache-server
+          test "$(sha256sum "$I73_OVERLAY/Cargo.lock" | cut -d' ' -f1)" = "3c2e8a20a26c6105fec6f449ce6cad43ba4a9a65f78516f5c0110ff0a9ca4953"
+          test "$(sha256sum "$C73_OVERLAY/Cargo.lock.c73" | cut -d' ' -f1)" = "35b7ab4f62cee2ce41aa0547cc632a11d90e0d89861b87158bbcf7b184767630"
           cargo build --manifest-path "$I73_OVERLAY/Cargo.toml" --release --locked
+          cp "$C73_OVERLAY/Cargo.lock.c73" "$C73_OVERLAY/Cargo.lock"
           cargo build --manifest-path "$C73_OVERLAY/Cargo.toml" --release --locked
+          cp "$I73_OVERLAY/Cargo.lock" "$C73_OVERLAY/Cargo.lock"
+          diff -qr --exclude=target "$I73_OVERLAY" "$C73_OVERLAY"
           test -z "$(git -C "$I73_ROOT" status --porcelain=v1 --untracked-files=normal)"
           test -z "$(git -C "$C73_ROOT" status --porcelain=v1 --untracked-files=normal)"
           {
