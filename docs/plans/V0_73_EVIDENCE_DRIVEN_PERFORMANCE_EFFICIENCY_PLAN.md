@@ -5,9 +5,13 @@
 > - **Why:** 0.71 shipped correct accounting and active TTL reclamation, but its accepted D4 evidence did not demonstrate a numerical RSS win. The deferred W2b/W5-W11 ideas need new owner/stack attribution and same-host comparisons before product changes are justified.
 > - **After (depends on):** published `0.72.0`. The external baseline and compatibility binary are bound to annotated tag `v0.72.0` (peeled runtime candidate `24927c28c279c6c34ad90111ee6470b4065e0815`); the 0.73 instrumentation baseline and release candidate remain separate exact commits. The 0.71 AX42 campaign is historical hypothesis evidence, not a substitute baseline.
 > - **Unblocks:** defensible per-profile sizing and efficiency claims, or an explicit measured no-win result without weakening correctness, durability, security, or release gates.
-> - **Status:** W10 six-hour qualification run `36278780653` completed both roles but failed the
->   frozen RSS and anonymous-PSS upper-slope guards; the 24-hour confirmation remains closed. No
->   0.73 numerical benefit, final candidate, or release promotion is claimed.
+> - **Status:** in-progress — W10 six-hour run `36278780653` completed both roles. Its original analyzer failed,
+>   but append-only offline reanalysis corrected a trend-destroying bootstrap defect and passes every
+>   frozen guard for the old Git-backed candidate. The later move to registry package
+>   `hydra-moka 0.12.15-hydra.1` has byte-equivalent runtime sources but a different Cargo/build
+>   identity, so that qualification is not transferred. Publication inputs must be frozen before one
+>   new six-hour qualification and, if green, the required 24-hour confirmation. No 0.73 numerical
+>   benefit, final candidate, or release promotion is claimed.
 
 Roadmap: [`INDEX.md`](INDEX.md) · rules: [`../RULES.md`](../RULES.md) · gates: [`../GATES.md`](../GATES.md) · 0.71 decision: [`../testing/memory/0.71/D4_RELEASE_DECISION.md`](../testing/memory/0.71/D4_RELEASE_DECISION.md) · 0.72 dependency: [`V0_72_MANAGEMENT_CENTER_2_OPERATIONAL_VISIBILITY_PLAN.md`](V0_72_MANAGEMENT_CENTER_2_OPERATIONAL_VISIBILITY_PLAN.md).
 

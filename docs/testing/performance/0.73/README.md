@@ -479,3 +479,13 @@ The same push exposed a separate cost-control issue: the host-admission workflow
 automatic path and queued run `36072022062` behind the shared performance concurrency group. It was
 cancelled before environment approval and ran no job. Commit `e0dc4df5` makes host admission, like
 pilot v2, manual-only; a subsequent ordinary push created no performance run.
+
+`w10-d4-registry-transition-9f13ee15.toml` closes the supply-chain review raised by the corrected
+six-hour analysis. The measured Moka Git revision and published `hydra-moka 0.12.15-hydra.1` have
+identical canonical manifests for all 52 runtime source files, and the release manifest equals the
+registry `Cargo.toml.orig`. That is strong source-equivalence evidence, but it is not an exact
+binary-identity proof: the Cargo package/source identity and root lockfile changed. The receipt
+therefore preserves the corrected old qualification without transferring it, keeps numerical and
+archive claims closed, and requires a new six-hour plus 24-hour campaign only after every remaining
+publication input has been frozen. Protected-host dispatch before that final freeze is rejected as
+avoidable spend.

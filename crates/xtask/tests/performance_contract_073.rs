@@ -2163,6 +2163,34 @@ fn w10_analyzer_correction_cannot_change_raw_data_or_open_confirmation() {
 }
 
 #[test]
+fn w10_registry_transition_cannot_transfer_old_evidence_or_skip_new_long_runs() {
+    let mut value = manifest("w10-d4-registry-transition-9f13ee15.toml");
+    assert!(
+        xtask::performance_contract::check_w10_d4_registry_transition(&value, "0.73").is_empty()
+    );
+    value["binary_identity_proven_equal"] = TomlValue::Boolean(true);
+    value["old_six_hour_evidence_transfer_allowed"] = TomlValue::Boolean(true);
+    value["old_confirmation_allowed"] = TomlValue::Boolean(true);
+    value["new_six_hour_qualification_required"] = TomlValue::Boolean(false);
+    value["new_twenty_four_hour_confirmation_required"] = TomlValue::Boolean(false);
+    value["server_dispatch_allowed_before_final_candidate_freeze"] = TomlValue::Boolean(true);
+    let problems = xtask::performance_contract::check_w10_d4_registry_transition(&value, "0.73");
+    for required in [
+        "binary_identity_proven_equal must be false",
+        "old_six_hour_evidence_transfer_allowed must be false",
+        "old_confirmation_allowed must be false",
+        "new_six_hour_qualification_required must be true",
+        "new_twenty_four_hour_confirmation_required must be true",
+        "server_dispatch_allowed_before_final_candidate_freeze must be false",
+    ] {
+        assert!(
+            problems.iter().any(|problem| problem.contains(required)),
+            "missing problem containing {required:?}: {problems:?}"
+        );
+    }
+}
+
+#[test]
 fn w5_connection_profile_cannot_promote_claim_server_bytes_or_skip_samples() {
     let mut value = manifest("w5-hc2-connection-profile-contract.toml");
     value["promotable"] = TomlValue::Boolean(true);

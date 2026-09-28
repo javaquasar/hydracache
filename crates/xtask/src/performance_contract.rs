@@ -190,6 +190,8 @@ const W10_LONG_RUN_TOOLING_EVIDENCE: &str =
     "docs/testing/performance/0.73/w10-long-run-tooling-passed-c3769d3e.toml";
 const W10_LONG_RUN_ANALYZER_CORRECTION: &str =
     "docs/testing/performance/0.73/w10-long-run-analyzer-correction-36278780653.toml";
+const W10_D4_REGISTRY_TRANSITION: &str =
+    "docs/testing/performance/0.73/w10-d4-registry-transition-9f13ee15.toml";
 const RELEASE: &str = "0.73";
 const PROFILE: &str = "local-screening-073-v1";
 const ENVIRONMENT_CLASS: &str = "local_screening";
@@ -467,6 +469,8 @@ pub fn check_at_root(
     let w10_long_run_analyzer_correction: TomlValue = toml::from_str(&fs::read_to_string(
         root.join(W10_LONG_RUN_ANALYZER_CORRECTION),
     )?)?;
+    let w10_d4_registry_transition: TomlValue =
+        toml::from_str(&fs::read_to_string(root.join(W10_D4_REGISTRY_TRANSITION))?)?;
     let mut problems = check_contract(&contract, release);
     if !root.join(MOKA_OBSERVER_UPSTREAM_DRAFT).is_file() {
         problems.push("notification observer dependency review draft is missing".to_owned());
@@ -807,6 +811,10 @@ pub fn check_at_root(
     ));
     problems.extend(check_w10_long_run_analyzer_correction(
         &w10_long_run_analyzer_correction,
+        release,
+    ));
+    problems.extend(check_w10_d4_registry_transition(
+        &w10_d4_registry_transition,
         release,
     ));
     problems.extend(check_schema(
@@ -9476,6 +9484,103 @@ pub fn check_w10_long_run_analyzer_correction(value: &TomlValue, release: &str) 
     }
     if string_array(value.get("validation")).len() < 4 {
         problems.push("W10 long-run analyzer correction validation is incomplete".to_owned());
+    }
+    problems
+}
+
+pub fn check_w10_d4_registry_transition(value: &TomlValue, release: &str) -> Vec<String> {
+    let mut problems = Vec::new();
+    if integer(value, "schema_version") != Some(1)
+        || text(value, "release") != Some(release)
+        || text(value, "evidence_id") != Some("w10-d4-registry-transition-9f13ee15-v1")
+        || text(value, "state") != Some("d4-supply-chain-review-complete-new-campaign-required")
+        || text(value, "analyzer_correction") != Some(W10_LONG_RUN_ANALYZER_CORRECTION)
+        || text(value, "long_run_contract") != Some(W10_LONG_RUN_QUALIFICATION_CONTRACT)
+        || text(value, "measured_candidate_source_commit")
+            != Some("7e3070894aa51af96cdcb3e350eff923a309e1fa")
+        || text(value, "measured_moka_git_revision")
+            != Some("352e53faa480c9997272b9c70798dd5b5c15d581")
+        || text(value, "registry_transition_commit")
+            != Some("9f13ee154a7db513abdf348825ec19dfbf733519")
+        || text(value, "registry_transition_tree_oid")
+            != Some("10171ddeee535fad73aa46941a686e24ff135f56")
+    {
+        problems.push("W10 D4 registry transition identity changed".to_owned());
+    }
+    if text(value, "hydra_moka_package") != Some("hydra-moka")
+        || text(value, "hydra_moka_version") != Some("0.12.15-hydra.1")
+        || text(value, "hydra_moka_registry_checksum")
+            != Some("7ad8a0701236306b753373994b7077769ad5c2d6dbc60ae31c6258937ab6165a")
+        || integer(value, "runtime_source_file_count") != Some(52)
+    {
+        problems.push("W10 D4 registry package identity changed".to_owned());
+    }
+    for field in [
+        "root_lock_sha256",
+        "git_runtime_source_manifest_sha256",
+        "registry_runtime_source_manifest_sha256",
+        "release_manifest_sha256",
+        "registry_original_manifest_sha256",
+    ] {
+        if text(value, field).is_none_or(|digest| !sha256(digest)) {
+            problems.push(format!(
+                "W10 D4 registry transition {field} must be SHA-256"
+            ));
+        }
+    }
+    if text(value, "git_runtime_source_manifest_sha256")
+        != text(value, "registry_runtime_source_manifest_sha256")
+        || text(value, "release_manifest_sha256")
+            != text(value, "registry_original_manifest_sha256")
+    {
+        problems.push("W10 D4 registry source/manifests are not equivalent".to_owned());
+    }
+    for field in [
+        "runtime_sources_equal",
+        "dependency_and_feature_graph_equal",
+        "library_target_equal",
+        "runtime_package_environment_reads_absent",
+        "new_six_hour_qualification_required",
+        "new_twenty_four_hour_confirmation_required",
+    ] {
+        if boolean(value, field) != Some(true) {
+            problems.push(format!("W10 D4 registry transition {field} must be true"));
+        }
+    }
+    for field in [
+        "readme_include_runtime_reachable",
+        "package_identity_equal",
+        "source_identity_equal",
+        "binary_identity_proven_equal",
+        "old_six_hour_evidence_transfer_allowed",
+        "old_confirmation_allowed",
+        "numerical_claim_allowed",
+        "release_archive_allowed",
+        "server_dispatch_allowed_before_final_candidate_freeze",
+    ] {
+        if boolean(value, field) != Some(false) {
+            problems.push(format!("W10 D4 registry transition {field} must be false"));
+        }
+    }
+    if text(value, "decision")
+        != Some("retain-corrected-old-qualification-but-do-not-transfer-to-registry-candidate")
+    {
+        problems.push("W10 D4 registry transition decision changed".to_owned());
+    }
+    for field in [
+        "review",
+        "identity_boundary",
+        "cost_control",
+        "next_evidence",
+    ] {
+        if text(value, field).is_none_or(str::is_empty) {
+            problems.push(format!("W10 D4 registry transition {field} is missing"));
+        }
+    }
+    if string_array(value.get("changed_release_paths")).len() != 6
+        || string_array(value.get("validation")).len() < 5
+    {
+        problems.push("W10 D4 registry transition audit coverage is incomplete".to_owned());
     }
     problems
 }

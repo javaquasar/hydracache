@@ -2004,6 +2004,29 @@ candidate final: D4 must still review the analyzer correction and the `hydra-mok
 identity. The immediate operational consequence is nevertheless useful—there is no justification
 for renting the host merely to repeat the same six-hour observations in search of a green sample.
 
+That distribution review produced a useful counterexample to the tempting phrase “the code is the
+same.” The Git revision used by the campaign and `hydra-moka 0.12.15-hydra.1` have the same 52
+runtime source files. A canonical path-and-content manifest has the same SHA-256 on both sides, and
+the release `Cargo.toml` is byte-identical to the registry package's `Cargo.toml.orig`. The only
+release-commit changes outside those sources are CI version pins, package metadata, changelog, and
+README. HydraCache enables the `future` feature, while the only README include is guarded by the
+`sync` doctest configuration. Runtime sources do not read the Cargo package name or version.
+
+Those facts establish source equivalence, not build identity. Cargo now resolves a different
+package name, version, source, checksum, and lockfile entry. Those values participate in the build
+graph, and we did not establish byte-identical final HydraCache executables. More importantly, the
+rule was frozen before seeing either result: a dependency or source change after candidate freeze
+invalidates affected receipts. Relaxing that rule because inspection suggests the change is benign
+would make identity enforcement optional exactly when it becomes inconvenient.
+
+The old twelve-hour observation is therefore retained but not transferred to the registry-backed
+candidate. It proved the workload, exposed and then helped falsify the analyzer defect, and passed
+all guards under the corrected method for the old identity. It does not admit the new identity to
+confirmation. The cost-saving move is to finish versioning, release notes, generated/package
+assets, features, SBOM inputs, and lockfiles before renting the host again. Only then should the
+final candidate receive one six-hour qualification and, if green, one 24-hour confirmation. This
+avoids both dishonest evidence reuse and a second invalidation caused by late release packaging.
+
 This ordering keeps the meaning of green steps monotonic. A successful build says the intended
 bytes are executable; a successful canary says a known-invalid packet is rejected; a successful
 calibration says the host is admissible at that boundary. None of those statements predicts the
