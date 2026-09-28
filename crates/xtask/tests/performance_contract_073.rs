@@ -2133,6 +2133,36 @@ fn w10_failed_six_hour_qualification_keeps_confirmation_and_claims_closed() {
 }
 
 #[test]
+fn w10_analyzer_correction_cannot_change_raw_data_or_open_confirmation() {
+    let mut value = manifest("w10-long-run-analyzer-correction-36278780653.toml");
+    assert!(
+        xtask::performance_contract::check_w10_long_run_analyzer_correction(&value, "0.73")
+            .is_empty()
+    );
+    value["raw_observations_changed"] = TomlValue::Boolean(true);
+    value["thresholds_changed"] = TomlValue::Boolean(true);
+    value["rerun_performed"] = TomlValue::Boolean(true);
+    value["confirmation_allowed"] = TomlValue::Boolean(true);
+    value["bootstrap_method"] = TomlValue::String("randomized-levels".to_owned());
+    value["c73_rss_upper_95_bytes_per_second"] = TomlValue::Float(200.0);
+    let problems =
+        xtask::performance_contract::check_w10_long_run_analyzer_correction(&value, "0.73");
+    for required in [
+        "raw_observations_changed must be false",
+        "thresholds_changed must be false",
+        "rerun_performed must be false",
+        "confirmation_allowed must be false",
+        "method or boundary changed",
+        "slope comparison failed",
+    ] {
+        assert!(
+            problems.iter().any(|problem| problem.contains(required)),
+            "missing problem containing {required:?}: {problems:?}"
+        );
+    }
+}
+
+#[test]
 fn w5_connection_profile_cannot_promote_claim_server_bytes_or_skip_samples() {
     let mut value = manifest("w5-hc2-connection-profile-contract.toml");
     value["promotable"] = TomlValue::Boolean(true);

@@ -188,6 +188,8 @@ const W10_LONG_RUN_QUALIFICATION_CONTRACT: &str =
     "docs/testing/performance/0.73/w10-long-run-qualification-contract.toml";
 const W10_LONG_RUN_TOOLING_EVIDENCE: &str =
     "docs/testing/performance/0.73/w10-long-run-tooling-passed-c3769d3e.toml";
+const W10_LONG_RUN_ANALYZER_CORRECTION: &str =
+    "docs/testing/performance/0.73/w10-long-run-analyzer-correction-36278780653.toml";
 const RELEASE: &str = "0.73";
 const PROFILE: &str = "local-screening-073-v1";
 const ENVIRONMENT_CLASS: &str = "local_screening";
@@ -461,6 +463,9 @@ pub fn check_at_root(
     )?)?;
     let w10_long_run_tooling_evidence: TomlValue = toml::from_str(&fs::read_to_string(
         root.join(W10_LONG_RUN_TOOLING_EVIDENCE),
+    )?)?;
+    let w10_long_run_analyzer_correction: TomlValue = toml::from_str(&fs::read_to_string(
+        root.join(W10_LONG_RUN_ANALYZER_CORRECTION),
     )?)?;
     let mut problems = check_contract(&contract, release);
     if !root.join(MOKA_OBSERVER_UPSTREAM_DRAFT).is_file() {
@@ -800,6 +805,10 @@ pub fn check_at_root(
         &w10_long_run_tooling_evidence,
         release,
     ));
+    problems.extend(check_w10_long_run_analyzer_correction(
+        &w10_long_run_analyzer_correction,
+        release,
+    ));
     problems.extend(check_schema(
         &schema,
         &example,
@@ -1133,6 +1142,10 @@ pub fn check_contract(root: &TomlValue, release: &str) -> Vec<String> {
         (
             "w10_long_run_tooling_evidence",
             W10_LONG_RUN_TOOLING_EVIDENCE,
+        ),
+        (
+            "w10_long_run_analyzer_correction",
+            W10_LONG_RUN_ANALYZER_CORRECTION,
         ),
     ] {
         if text(root, field) != Some(expected) {
@@ -9359,6 +9372,110 @@ pub fn check_w10_long_run_tooling_evidence(value: &TomlValue, release: &str) -> 
         if text(value, field).is_none_or(str::is_empty) {
             problems.push(format!("W10 long-run tooling {field} is missing"));
         }
+    }
+    problems
+}
+
+pub fn check_w10_long_run_analyzer_correction(value: &TomlValue, release: &str) -> Vec<String> {
+    let mut problems = Vec::new();
+    if integer(value, "schema_version") != Some(1)
+        || text(value, "release") != Some(release)
+        || text(value, "evidence_id") != Some("w10-long-run-analyzer-correction-36278780653-v1")
+        || text(value, "state") != Some("offline-reanalysis-passed-awaiting-d4-review")
+        || text(value, "original_failure")
+            != Some("docs/testing/performance/0.73/w10-long-run-qualification-failed-8f8d4457.toml")
+        || text(value, "contract") != Some(W10_LONG_RUN_QUALIFICATION_CONTRACT)
+        || integer(value, "workflow_run") != Some(36_278_780_653)
+        || text(value, "original_tooling_commit")
+            != Some("8f8d44570eb984a37f38a6b8dafeaebbd54d3d11")
+        || text(value, "correction_commit") != Some("3e603b3a4d079b1e28d94bde11a7d374018ebd71")
+        || text(value, "baseline_source_commit") != Some("e757556d3a31d565f52a9561d6d4e555bb1cc373")
+        || text(value, "candidate_source_commit")
+            != Some("7e3070894aa51af96cdcb3e350eff923a309e1fa")
+    {
+        problems.push("W10 long-run analyzer correction identity changed".to_owned());
+    }
+    for field in [
+        "original_campaign_sha256",
+        "runner_sha256",
+        "reanalyzer_sha256",
+        "reanalysis_sha256",
+        "i73_receipt_sha256",
+        "i73_checkpoints_sha256",
+        "c73_receipt_sha256",
+        "c73_checkpoints_sha256",
+    ] {
+        if text(value, field).is_none_or(|digest| !sha256(digest)) {
+            problems.push(format!(
+                "W10 long-run analyzer correction {field} must be SHA-256"
+            ));
+        }
+    }
+    for field in [
+        "nested_sha256_verified",
+        "tooling_or_orchestration_fault_found",
+        "rss_slope_guard_passed",
+        "anonymous_pss_slope_guard_passed",
+        "goodput_guard_passed",
+        "cpu_guard_passed",
+        "p99_guard_passed",
+    ] {
+        if boolean(value, field) != Some(true) {
+            problems.push(format!(
+                "W10 long-run analyzer correction {field} must be true"
+            ));
+        }
+    }
+    for field in [
+        "raw_observations_changed",
+        "workload_changed",
+        "thresholds_changed",
+        "identities_changed",
+        "rerun_performed",
+        "automatic_retry_allowed",
+        "performance_claim_allowed",
+        "confirmation_allowed",
+        "candidate_is_final_c73",
+    ] {
+        if boolean(value, field) != Some(false) {
+            problems.push(format!(
+                "W10 long-run analyzer correction {field} must be false"
+            ));
+        }
+    }
+    if text(value, "bootstrap_method") != Some("moving-block-adjacent-slope-v1")
+        || integer(value, "block_samples") != Some(12)
+        || integer(value, "bootstrap_iterations") != Some(10_000)
+        || integer(value, "bootstrap_seed") != Some(730_073)
+        || float(value, "confidence") != Some(0.95)
+        || text(value, "result") != Some("passed")
+        || text(value, "decision")
+            != Some("retain-original-failure-and-review-analyzer-correction-at-d4")
+    {
+        problems.push("W10 long-run analyzer correction method or boundary changed".to_owned());
+    }
+    if float(value, "i73_rss_upper_95_bytes_per_second") != Some(117.08014425910481)
+        || float(value, "c73_rss_upper_95_bytes_per_second") != Some(62.73508326296912)
+        || float(value, "i73_anonymous_pss_upper_95_bytes_per_second") != Some(117.08014425910481)
+        || float(value, "c73_anonymous_pss_upper_95_bytes_per_second") != Some(62.73508326296912)
+    {
+        problems.push("W10 long-run analyzer correction slope comparison failed".to_owned());
+    }
+    for field in [
+        "defect",
+        "falsifier",
+        "correction",
+        "interpretation",
+        "next_evidence",
+    ] {
+        if text(value, field).is_none_or(str::is_empty) {
+            problems.push(format!(
+                "W10 long-run analyzer correction {field} is missing"
+            ));
+        }
+    }
+    if string_array(value.get("validation")).len() < 4 {
+        problems.push("W10 long-run analyzer correction validation is incomplete".to_owned());
     }
     problems
 }

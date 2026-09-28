@@ -190,6 +190,18 @@ acceptance.
 The hardened fork contains panic containment and an explicit nonblocking/non-reentrant callback
 contract; HydraCache still has to prove its own product-level reentrancy and shutdown behavior.
 
+`w10-long-run-analyzer-correction-36278780653.toml` retains a later tooling finding against the
+complete six-hour packet. The original analyzer randomized absolute RSS/PSS levels before assigning
+new time coordinates, which erased the trend and produced a purported upper bound below its own
+Theil-Sen point estimate in both roles. Commit `3e603b3a` replaces that operation with the existing
+time-preserving moving-block bootstrap of adjacent rates. Offline reanalysis independently matched
+the original campaign and all twelve nested hashes, changed no raw observation, workload,
+threshold, identity, block size, seed, or iteration count, and performed no retry. Corrected
+RSS/PSS upper bounds are 117.0801 B/s for I73 and 62.7351 B/s for C73, so all frozen six-hour guards
+pass. The original failed receipt remains append-only; the correction opens D4 review only and does
+not itself authorize confirmation, a performance claim, or finalization of the later registry
+distribution identity.
+
 `notification-observer-product-73fc38a1.toml` records that product admission. Implementation commit
 `73fc38a131d26e78b246fe93d5edd71d33796bbf` pins the fork, replaces the async eviction listener with
 a synchronous post-removal observer only when memory instrumentation is enabled, versions entries

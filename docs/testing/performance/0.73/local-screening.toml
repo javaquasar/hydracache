@@ -104,6 +104,7 @@ w10_published_072_compatibility_rolling_local_evidence = "docs/testing/performan
 w10_published_072_compatibility_linux_evidence = "docs/testing/performance/0.73/w10-published-072-compatibility-passed-9508330b.toml"
 w10_long_run_qualification_contract = "docs/testing/performance/0.73/w10-long-run-qualification-contract.toml"
 w10_long_run_tooling_evidence = "docs/testing/performance/0.73/w10-long-run-tooling-passed-c3769d3e.toml"
+w10_long_run_analyzer_correction = "docs/testing/performance/0.73/w10-long-run-analyzer-correction-36278780653.toml"
 promotable = false
 numerical_claims_allowed = false
 candidate_thresholds_allowed = false

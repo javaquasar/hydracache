@@ -1966,12 +1966,43 @@ bytes/s), but the contract explicitly makes the upper-bound comparison decisive;
 estimate cannot rescue it. This is why a job may perform twelve hours of healthy work and then exit
 red at sealing: successful execution is not the same thing as passing a preregistered decision.
 
-No tooling or orchestration fault was found. Changing the estimator after seeing these values,
-rounding away the 0.54 bytes/s gap, loosening the bound, or selecting a retry would convert a
-qualification into post-hoc threshold fitting. Run `36278780653` is therefore retained as a
-complete failed attempt, automatic retry remains forbidden, and the 24-hour confirmation is not
-opened. The result supports correctness and bounded-work observations for these exact processes;
-it does not authorize a C73 performance claim, final candidate identity, or release promotion.
+The initial audit found no tooling or orchestration fault. Changing the estimator after seeing
+these values, rounding away the 0.54 bytes/s gap, loosening the bound, or selecting a retry would
+have converted a qualification into post-hoc threshold fitting. Run `36278780653` was therefore
+retained as a complete failed attempt, automatic retry remained forbidden, and the 24-hour
+confirmation was not opened.
+
+A later consistency check found a different problem without changing the statistical question. In
+both roles the reported “upper 95% bound” was below its own Theil-Sen point estimate: 3.25 versus
+34.13 bytes/s for I73 and 3.79 versus 9.84 bytes/s for C73. That is not evidence that the candidate
+barely lost. It is evidence that the implementation and the label described different statistics.
+The analyzer sampled contiguous blocks of absolute memory *levels*, randomly concatenated those
+levels, and then assigned the selected blocks new increasing time coordinates. Randomizing levels
+this way erased the original trend before calculating each bootstrap slope. The resulting
+distribution was centered near zero regardless of the trend the point estimator had just measured.
+
+The repair was derived from the already-used `memory-statistics-071-v1` contract rather than from
+the desired verdict. It converts adjacent checkpoints into rates in their original time direction,
+resamples contiguous twelve-rate blocks with the same seed and 10,000 iterations, restores the
+original number of deltas, and takes the 95th percentile of the resampled mean rates. A new
+falsifier uses a perfectly linear 36-checkpoint series: both the known slope and its resampled upper
+bound must remain exactly 1/6 unit per second. The old code failed this property; the corrected code
+passes it deterministically.
+
+We then downloaded the original artifact again and reanalyzed it offline. The verifier matched the
+original campaign digest plus all role receipt, checkpoint, stdout, stderr, and calibration hashes.
+No product process was rerun, and no workload, source identity, threshold, block size, iteration
+count, or seed changed. The corrected I73 upper bound is 117.0801 bytes/s and the corrected C73
+bound is 62.7351 bytes/s for both combined RSS and anonymous PSS. C73 therefore passes the frozen
+candidate-at-or-below-baseline rule; goodput, CPU/op, p99, correctness, durability, and
+reconciliation were already green.
+
+This correction does not delete the first verdict. The original red campaign and analyzer output
+remain immutable evidence of a tooling defect, while the new receipt records an append-only offline
+reanalysis. It also does not automatically open confirmation or declare the later registry-packaged
+candidate final: D4 must still review the analyzer correction and the `hydra-moka` distribution
+identity. The immediate operational consequence is nevertheless useful—there is no justification
+for renting the host merely to repeat the same six-hour observations in search of a green sample.
 
 This ordering keeps the meaning of green steps monotonic. A successful build says the intended
 bytes are executable; a successful canary says a known-invalid packet is rejected; a successful
