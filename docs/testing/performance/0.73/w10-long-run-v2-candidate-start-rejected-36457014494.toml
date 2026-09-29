@@ -1,0 +1,66 @@
+schema_version = 1
+release = "0.73"
+evidence_id = "w10-long-run-v2-candidate-start-rejected-36457014494-v1"
+state = "rejected-after-complete-baseline-before-candidate-measurement"
+contract = "docs/testing/performance/0.73/w10-long-run-qualification-v2-contract.toml"
+workflow_run = 36457014494
+workflow_url = "https://github.com/javaquasar/hydracache/actions/runs/36457014494"
+artifact_id = 11003723467
+artifact_name = "performance-long-run-qualification-073-1f59399c613439e2718a0898b57d47515929c6b9-36457014494-1"
+artifact_zip_sha256 = "ddb805fbf6f076b2cb63172328ede644088cc39cc9cb9efa22392ad2f6eea426"
+
+tooling_sha = "1f59399c613439e2718a0898b57d47515929c6b9"
+baseline_source_commit = "e757556d3a31d565f52a9561d6d4e555bb1cc373"
+candidate_source_commit = "16d2e98b6cc9e22d9ccf95eb26fe28bbbcf80f2b"
+candidate_tree_oid = "92336607f21a68f563e65dc0fccccd8efaa14f7b"
+host_fingerprint = "sha256:702282650a14db1fd52ae9f326cadc8909aff5046a18827ffd82ed0ddbfc465d"
+lease_owner = "long-run-073@javaquasar"
+lease_end = "2026-09-29T11:16:45Z"
+
+canary_sha256 = "01c38cf1eb853e04482e878a65580738064cd84f3a61297a78bb4754836f4942"
+pre_i73_calibration_sha256 = "88e1eaf7a37228892529d95788c24fcc7446ad51689eb7a35e72cc42f8d1a53e"
+post_i73_calibration_sha256 = "bf1e39f2d34ed1673d7f51077b16d7811f3bc353f742326593069ce7d628f707"
+pre_c73_calibration_sha256 = "f780ccc06fafcdaaab8cc5e4182ed4eff58ae93d24cec5465749170419673654"
+post_c73_calibration_sha256 = "cffc97e78fb2dcf59be60d093b412b4b9d571019b366ac2facf53b4eedc34ce2"
+i73_attempt_sha256 = "03b1f419de8f7981975d16c45a5b26c6cb9ce4d6060dc2707a3a2e9e3efc3602"
+i73_receipt_sha256 = "7e2a75dffa9bcf0c7867aa6b6738a18cb2f9d64b2a5c4c5403c44c8ad0edbce0"
+i73_checkpoints_sha256 = "a5e4312237dcacce081eb20f82c68785bddadb06062baff4fdbd00d5208e694a"
+i73_baseline_bounds_sha256 = "2f03578dfc0bbe5e9d2510f90e49b3c82a2f48df73ad0e3b04e12fe696a1a795"
+i73_stdout_sha256 = "b3d2aa5e4ca34a1659c4c780dce9c9bc154af236938fc38b7b94b63a6817981c"
+i73_stderr_sha256 = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+c73_attempt_sha256 = "e49b1665940630f55b79cf42f32e4f3522b0c5b9043e4e3792b70d16d5ec9182"
+c73_stdout_sha256 = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+c73_stderr_sha256 = "8007ad01df92ec9d2bd846c1e3aaf9d3c19f6675bc474fb40d2aeac2d2d34ac3"
+
+nested_stream_sha256_verified = true
+all_four_calibrations_passed = true
+all_four_calibrations_same_host = true
+all_four_calibrations_same_lease = true
+i73_role_completed = true
+i73_operations = 259200000
+i73_completed = 259200000
+i73_errors = 0
+i73_timeouts = 0
+i73_rejections = 0
+i73_checkpoint_count = 362
+i73_final_checkpoint_present = true
+i73_reconciliation_exact = true
+i73_resources_available = true
+c73_role_started = false
+c73_measurement_observations_produced = false
+campaign_sealed = false
+automatic_retry_performed = false
+
+failure = "The runner supplied the frozen final candidate SHA 16d2e98b, but the standalone harness still admitted only the historical candidate SHA 7e307089. Its argument parser rejected C73 before starting the server or producing a receipt."
+canary_failure = "The canary also used the C73 harness and incorrectly treated its non-zero argument-validation exit with no receipt or checkpoints as successful detection of the injected missing-final-checkpoint defect."
+artifact_boundary = "The complete six-hour I73 role, its sealed baseline bounds and all calibrations are retained as diagnostics inside this incomplete attempt. Without a C73 role and final campaign seal they cannot be promoted, compared, transferred to another attempt or used for a release numerical claim."
+correction = "Bind the harness to the frozen 16d2e98b candidate and require the canary process to exit successfully, emit an otherwise valid C73 receipt, end with final-work, omit only post-idle-reconciled, and then be rejected by checkpoint validation. A startup failure, absent packet or unrelated rejection must fail the canary."
+local_corrected_canary = "target/long-run-073-canary-final-identity-v2/canary.json"
+local_corrected_canary_sha256 = "b6d79ee7cba59952cafbfe338deccf43957887dd791b6d17f42b0c6d66f5e406"
+local_corrected_canary_result = "passed"
+local_corrected_canary_harness_exit_code = 0
+local_corrected_canary_rejection = "checkpoint series has no reconciled final checkpoint"
+
+decision = "retain-incomplete-attempt-and-close-qualification"
+retry_boundary = "No repeated run is created by this correction. I73, C73, workload, duration, estimator, seed and thresholds remain frozen. Any future qualification requires an explicit new authorization and must start again with I73; the completed baseline cannot be spliced into another attempt."
+next_evidence = "Commit and push the tooling-only identity and fail-closed canary correction, retain this artifact, and keep the 24-hour confirmation closed."

@@ -2105,6 +2105,28 @@ fn w10_integrated_workflows_pin_role_specific_harness_locks_and_restore_overlay_
 }
 
 #[test]
+fn w10_final_candidate_harness_identity_and_canary_are_fail_closed() {
+    let harness = fs::read_to_string(root().join("tools/performance-integrated-073/src/main.rs"))
+        .expect("integrated harness source");
+    assert!(harness.contains("const C73_SHA: &str = \"16d2e98b6cc9e22d9ccf95eb26fe28bbbcf80f2b\";"));
+    assert!(
+        !harness.contains("const C73_SHA: &str = \"7e3070894aa51af96cdcb3e350eff923a309e1fa\";")
+    );
+
+    let runner = fs::read_to_string(root().join("scripts/perf/performance_long_run_073.py"))
+        .expect("long-run runner source");
+    for required in [
+        "canary process failed with exit code",
+        "receipt_value.get(\"final_checkpoint_present\") is not False",
+        "checkpoint_values[-1].get(\"kind\") != \"final-work\"",
+        "item.get(\"kind\") == \"post-idle-reconciled\"",
+        "missing-post-idle-reconciled-checkpoint",
+    ] {
+        assert!(runner.contains(required), "runner omitted {required}");
+    }
+}
+
+#[test]
 fn w10_long_run_tooling_cannot_promote_local_data_or_hide_failed_attempts() {
     let mut value = manifest("w10-long-run-tooling-passed-c3769d3e.toml");
     value["local_results_promotable"] = TomlValue::Boolean(true);

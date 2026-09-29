@@ -4,6 +4,7 @@ import pathlib
 import tempfile
 import unittest
 from argparse import Namespace
+from unittest import mock
 
 
 SCRIPT = pathlib.Path(__file__).with_name("performance_long_run_073.py")
@@ -32,6 +33,17 @@ class PerformanceLongRun073Tests(unittest.TestCase):
     def test_final_candidate_and_historical_reanalysis_identities_are_separate(self) -> None:
         self.assertEqual(
             MODULE.C73_SHA, "16d2e98b6cc9e22d9ccf95eb26fe28bbbcf80f2b"
+        )
+        harness = (
+            SCRIPT.parents[2] / "tools" / "performance-integrated-073" / "src" / "main.rs"
+        ).read_text(encoding="utf-8")
+        self.assertIn(
+            'const C73_SHA: &str = "16d2e98b6cc9e22d9ccf95eb26fe28bbbcf80f2b";',
+            harness,
+        )
+        self.assertNotIn(
+            'const C73_SHA: &str = "7e3070894aa51af96cdcb3e350eff923a309e1fa";',
+            harness,
         )
         reanalyzer = SCRIPT.with_name("reanalyze_performance_long_run_073.py").read_text(
             encoding="utf-8"
@@ -131,6 +143,29 @@ class PerformanceLongRun073Tests(unittest.TestCase):
         self.assertIn('for role in ["I73", "C73"]:', source)
         self.assertIn('"automatic_retry_allowed": False', source)
         self.assertNotIn("for retry in", source)
+
+    def test_canary_does_not_accept_harness_startup_failure_as_expected_red(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            output = pathlib.Path(temporary) / "canary"
+            options = Namespace(output=output, daemon_cpu_set="5-6", loadgen_cpu_set="7")
+            inputs = {
+                "paths": {
+                    "c73_harness": pathlib.Path("harness"),
+                    "c73_server": pathlib.Path("server"),
+                }
+            }
+            failed_attempt = {
+                "exit_code": 1,
+                "timed_out": False,
+                "stdout_sha256": "0" * 64,
+                "stderr_sha256": "1" * 64,
+            }
+            with mock.patch.object(MODULE, "run_role", return_value=failed_attempt):
+                self.assertEqual(MODULE.run_canary(options, inputs), 1)
+            result = json.loads((output / "canary.json").read_text(encoding="utf-8"))
+            self.assertEqual(result["result"], "failed")
+            self.assertFalse(result["marker_observed"])
+            self.assertEqual(result["failure"], "canary process failed with exit code 1")
 
 
 if __name__ == "__main__":

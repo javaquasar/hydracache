@@ -41,7 +41,7 @@ use tokio::sync::Mutex;
 const FOCUSED_PROFILE_ID: &str = "integrated-focused-host-073-v1";
 const LONG_PROFILE_ID: &str = "integrated-long-run-073-v1";
 const I73_SHA: &str = "e757556d3a31d565f52a9561d6d4e555bb1cc373";
-const C73_SHA: &str = "7e3070894aa51af96cdcb3e350eff923a309e1fa";
+const C73_SHA: &str = "16d2e98b6cc9e22d9ccf95eb26fe28bbbcf80f2b";
 const CANARY_MARKER: &str = "HC-CANARY-RED:W10-HOST";
 const PAYLOAD_BYTES: usize = 4_096;
 const KEY_CARDINALITY: u64 = 256;

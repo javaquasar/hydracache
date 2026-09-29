@@ -30,6 +30,7 @@ BLOCK_SAMPLES = 12
 BOOTSTRAP_ITERATIONS = 10_000
 BOOTSTRAP_SEED = 730_073
 CANARY_MARKER = "HC-CANARY-RED:W10-LONG"
+EXPECTED_CANARY_REJECTION = "missing-post-idle-reconciled-checkpoint"
 ROLE_ARTIFACT_LIMIT = 64 * 1024 * 1024
 PACKET_ARTIFACT_LIMIT = 256 * 1024 * 1024
 REGRESSION_BUDGETS = {"goodput": 0.02, "cpu_per_operation": 0.03, "p99": 0.03}
@@ -160,6 +161,8 @@ def validate_checkpoints(
         raise ValueError("checkpoint sequence is missing, duplicated, or reordered")
     if checkpoints[0].get("kind") != "pre-work":
         raise ValueError("checkpoint series does not start before work")
+    if checkpoints[-1].get("kind") == "final-work":
+        raise ValueError("checkpoint series has no reconciled final checkpoint")
     if checkpoints[-2].get("kind") != "final-work":
         raise ValueError("checkpoint series has no final-work checkpoint")
     if (
@@ -643,29 +646,54 @@ def run_canary(options: argparse.Namespace, inputs: dict) -> int:
     attempt = run_role(command, role_dir, timeout_seconds=120, env=env)
     rejected = False
     rejection = None
-    try:
-        if attempt["exit_code"] != 0 or not receipt.is_file() or not checkpoints.is_file():
-            raise ValueError("canary process did not produce its intentionally incomplete packet")
-        validate_receipt(json.loads(receipt.read_text(encoding="utf-8")), "C73", operations, host_mode=False)
-        validate_checkpoints(checkpoints, minimum_periodic=1, resources_required=False)
-    except (KeyError, TypeError, ValueError, json.JSONDecodeError) as error:
-        rejected = True
-        rejection = str(error)
+    failure = None
+    if attempt["exit_code"] != 0:
+        failure = f"canary process failed with exit code {attempt['exit_code']}"
+    elif not receipt.is_file() or not checkpoints.is_file():
+        failure = "canary process did not produce its intentionally incomplete packet"
+    else:
+        try:
+            receipt_value = json.loads(receipt.read_text(encoding="utf-8"))
+            if receipt_value.get("final_checkpoint_present") is not False:
+                raise ValueError("canary receipt did not declare the injected missing final checkpoint")
+            identity_receipt = dict(receipt_value)
+            identity_receipt["final_checkpoint_present"] = True
+            validate_receipt(identity_receipt, "C73", operations, host_mode=False)
+            checkpoint_values = read_checkpoints(checkpoints)
+            if (
+                not checkpoint_values
+                or checkpoint_values[-1].get("kind") != "final-work"
+                or any(item.get("kind") == "post-idle-reconciled" for item in checkpoint_values)
+            ):
+                raise ValueError("canary checkpoints do not contain only the injected final defect")
+            try:
+                validate_checkpoints(checkpoints, minimum_periodic=1, resources_required=False)
+            except ValueError as error:
+                rejection = str(error)
+                rejected = True
+            else:
+                failure = "canary defect was accepted"
+        except (KeyError, TypeError, ValueError, json.JSONDecodeError) as error:
+            failure = f"unexpected canary rejection: {error}"
+    receipt_absent = not (output / "long-run-campaign.json").exists()
+    passed = rejected and failure is None and receipt_absent
     result = {
         "schema_version": 1,
         "release": "0.73",
         "profile_id": PROFILE_ID,
-        "result": "passed" if rejected else "failed",
+        "result": "passed" if passed else "failed",
         "marker": CANARY_MARKER,
-        "marker_observed": rejected,
-        "receipt_absent": not (output / "long-run-campaign.json").exists(),
+        "marker_observed": passed,
+        "receipt_absent": receipt_absent,
+        "expected_rejection": EXPECTED_CANARY_REJECTION,
         "rejection": rejection,
+        "failure": failure,
         "attempt": attempt,
         "identity": {key: value for key, value in inputs.items() if key != "paths"},
     }
     output.mkdir(parents=True, exist_ok=True)
     (output / "canary.json").write_text(json.dumps(result, indent=2, sort_keys=True) + "\n")
-    return 0 if rejected else 1
+    return 0 if passed else 1
 
 
 def run_campaign(options: argparse.Namespace, inputs: dict, *, host_mode: bool) -> int:

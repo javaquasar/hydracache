@@ -2052,6 +2052,36 @@ means pinning each graph explicitly and proving that all non-product inputs retu
 before measurement. A locked failure during setup is cheaper and more trustworthy than allowing a
 package manager to resolve dependencies online during a rented-host campaign.
 
+The corrected build then reached the expensive part and exposed a second, subtler identity defect.
+I73 completed its full six-hour role—259.2 million successful operations, 362 checkpoints, exact
+reconciliation and no errors, timeouts or rejections. All surrounding calibrations remained on the
+same admitted host and lease. C73 nevertheless stopped in one second, before starting its server:
+the Python runner supplied the final frozen candidate SHA, while the Rust harness still contained
+the earlier source candidate in its own allow-list. The harness correctly rejected the mismatch;
+the orchestration had failed to update and cross-check two copies of the same identity.
+
+That failure revealed an even more important flaw in the negative canary. The canary was meant to
+prove that a packet missing its final reconciled checkpoint is rejected. Its implementation treated
+*any* exception as success, including a harness startup error with no receipt and no checkpoints.
+In other words, the guard was red, but for the wrong reason. A negative test is trustworthy only
+when it proves both halves of the claim: the producer successfully reaches the intended fault, and
+the consumer rejects that exact fault. “The command failed” is not sufficient evidence.
+
+The repaired canary is therefore narrow and fail-closed. It first requires a zero process exit and
+both output files. It validates the C73 identity and every ordinary receipt field after neutralizing
+only the declared final-checkpoint flag. It then proves that the checkpoint stream ends in
+`final-work`, contains no `post-idle-reconciled` record, and is rejected by the normal validator. A
+startup failure, absent packet, unrelated malformed field or unexpectedly accepted packet now makes
+the canary fail. Structural Rust and Python tests also bind the harness allow-list to the final C73
+SHA so that changing the runner alone cannot recreate this split identity.
+
+The six hours of valid I73 data remain useful diagnostics, but they are not half of a result that we
+may splice into another run. The preregistered experiment requires serial I73 and C73 roles plus a
+single final seal under one attempt. Because C73 never started and the campaign was not sealed, the
+attempt is retained as incomplete evidence, automatic retry remains off, and confirmation stays
+closed. This is painful on a rented machine, but it preserves the distinction between saved compute
+and valid comparative evidence.
+
 This ordering keeps the meaning of green steps monotonic. A successful build says the intended
 bytes are executable; a successful canary says a known-invalid packet is rejected; a successful
 calibration says the host is admissible at that boundary. None of those statements predicts the
