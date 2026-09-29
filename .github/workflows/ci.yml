@@ -759,6 +759,8 @@ jobs:
           cargo run -p xtask --locked -- canary-sweep --release 0.71 --tier fast
           cargo run -p xtask --locked -- canary-check --release 0.72
           cargo run -p xtask --locked -- canary-sweep --release 0.72 --tier fast
+          cargo run -p xtask --locked -- canary-check --release 0.73
+          cargo run -p xtask --locked -- canary-sweep --release 0.73 --tier fast
 
       - name: Management Center 0.72 admission contract
         run: |
@@ -766,10 +768,11 @@ jobs:
           cargo run -p xtask --locked -- management-center-check --release 0.72
           cargo run -p xtask --locked -- release-evidence --release 0.72
 
-      - name: Release 0.73 local performance screening contract
+      - name: Release 0.73 performance and evidence contracts
         run: |
           cargo test -p xtask --test performance_contract_073 --test performance_local_073 --locked
           cargo run -p xtask --locked -- performance-contract-check --release 0.73
+          cargo run -p xtask --locked -- release-evidence --release 0.73
 
       - name: Fuzz corpus regression
         run: cargo run -p xtask --locked -- evidence-run --release "$HYDRACACHE_CANDIDATE_RELEASE" --gate fast.fuzz-corpus-regression

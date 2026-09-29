@@ -36,6 +36,73 @@ fn manifest(name: &str) -> TomlValue {
     .expect("valid performance TOML")
 }
 
+fn release_canary_enabled() -> Option<String> {
+    std::env::var("HYDRACACHE_CANARY_DEFECT")
+        .ok()
+        .filter(|value| value.starts_with("PERF73-"))
+}
+
+#[test]
+fn release_073_governance_contract_is_fail_closed() {
+    for path in [
+        "docs/testing/canary-registry-0.73.json",
+        "docs/testing/release-evidence/0.73.toml",
+        "docs/testing/performance/0.73/release-coverage.toml",
+        "docs/testing/performance/0.73/w10-long-run-v2-qualification-passed-36532416869.toml",
+        "docs/testing/perf-artifacts/0.73/long-run-qualification-36532416869/manifest.json",
+    ] {
+        assert!(root().join(path).is_file(), "missing 0.73 release evidence {path}");
+    }
+    assert!(
+        xtask::performance_contract::check_at_root(&root(), "0.73", None)
+            .expect("check 0.73 performance closure")
+            .is_empty(),
+        "the checked-in 0.73 evidence chain must remain internally consistent"
+    );
+}
+
+#[test]
+fn canary_release_073_rejects_missing_work_item_evidence() {
+    let Some(defect) = release_canary_enabled() else {
+        return;
+    };
+    let work_item = defect
+        .strip_prefix("PERF73-")
+        .expect("release canary prefix");
+    assert!(
+        matches!(
+            work_item,
+            "W0" | "W1" | "W2" | "W3" | "W4" | "W5" | "W6" | "W7" | "W8" | "W9" | "W10" | "W11"
+        ),
+        "unknown 0.73 release canary {defect}"
+    );
+
+    let evidence: TomlValue = toml::from_str(
+        &fs::read_to_string(root().join("docs/testing/release-evidence/0.73.toml"))
+            .expect("0.73 release evidence manifest"),
+    )
+    .expect("valid 0.73 release evidence TOML");
+    let registered = evidence["work_item"]
+        .as_array()
+        .expect("release work items")
+        .iter()
+        .any(|item| {
+            item["id"].as_str() == Some(work_item)
+                && item["required_sources"]
+                    .as_array()
+                    .is_some_and(|values| !values.is_empty())
+                && item["required_tests"]
+                    .as_array()
+                    .is_some_and(|values| !values.is_empty())
+                && item["required_artifacts"]
+                    .as_array()
+                    .is_some_and(|values| !values.is_empty())
+                && item["ship_required"].as_bool() == Some(true)
+        });
+    assert!(registered, "{work_item} must have complete release evidence wiring");
+    panic!("HC-CANARY-RED:{defect}: removing {work_item} evidence must block Release 0.73");
+}
+
 #[test]
 fn checked_in_local_screening_contract_and_receipt_pass() {
     assert!(xtask::performance_contract::check_contract(&contract(), "0.73").is_empty());
