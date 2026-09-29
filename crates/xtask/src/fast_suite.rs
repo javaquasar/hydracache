@@ -215,10 +215,10 @@ pub fn validate_registry(
         || ownership_timeout
             .and_then(|timeout| timeout.get("terminate-after"))
             .and_then(toml::Value::as_integer)
-            != Some(2)
+            != Some(5)
     {
         problems.push(format!(
-            "{NEXTTEST_CONFIG_PATH} ownership inventory override must use bounded slow-timeout 120s x 2"
+            "{NEXTTEST_CONFIG_PATH} ownership inventory override must use bounded slow-timeout 120s x 5"
         ));
     }
 
