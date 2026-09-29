@@ -15,6 +15,14 @@ on:
         description: "Approved lease end in RFC3339 form"
         required: true
         type: string
+      long_run_phase:
+        description: "Explicit long-run phase; confirmation requires checked-in green qualification evidence"
+        required: true
+        default: qualification
+        type: choice
+        options:
+          - qualification
+          - confirmation
 permissions:
   contents: read
 
@@ -214,4 +222,5 @@ jobs:
       tooling_sha: ${{ inputs.source_sha }}
       lease_owner: ${{ inputs.lease_owner }}
       lease_end: ${{ inputs.lease_end }}
+      phase: ${{ inputs.long_run_phase }}
       entry_serializes_host: true

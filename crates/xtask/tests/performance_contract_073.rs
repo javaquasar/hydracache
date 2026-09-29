@@ -1977,12 +1977,15 @@ fn w10_long_run_qualification_workflow_is_serial_bounded_and_fail_closed() {
         "workflow_call:",
         "runs-on: [self-hosted, linux, x64, hydracache-release]",
         "environment: performance-reference-073",
-        "timeout-minutes: 900",
+        "timeout-minutes: ${{ inputs.phase == 'confirmation' && 3480 || 900 }}",
         "HYDRACACHE_PERFORMANCE_COLLECTOR_CPUSET:",
         "--mode canary --phase qualification",
-        "--mode role --role I73 --phase qualification",
-        "--mode role --role C73 --phase qualification",
-        "--mode seal --phase qualification",
+        "--mode role --role I73 --phase \"$LONG_RUN_PHASE\"",
+        "--mode role --role C73 --phase \"$LONG_RUN_PHASE\"",
+        "--mode seal --phase \"$LONG_RUN_PHASE\"",
+        "w10-long-run-v2-qualification-passed-36532416869.toml",
+        "test \"$lease_seconds\" -ge $((3480 * 60))",
+        "accept-six-hour-qualification-and-hold-before-explicit-confirmation",
         "if: always()",
         "actions/upload-artifact@v4",
         "retention-days: 30",
@@ -2005,10 +2008,17 @@ fn w10_long_run_qualification_workflow_is_serial_bounded_and_fail_closed() {
         !workflow.contains("schedule:"),
         "long-run workflow must not run on a schedule"
     );
-    assert!(
-        !workflow.contains("--phase confirmation"),
-        "qualification workflow must not run the 24-hour confirmation"
-    );
+    for forbidden in [
+        "--mode role --role I73 --phase qualification",
+        "--mode role --role C73 --phase qualification",
+        "--mode role --role I73 --phase confirmation",
+        "--mode role --role C73 --phase confirmation",
+    ] {
+        assert!(
+            !workflow.contains(forbidden),
+            "long-run workflow hard-coded a role phase: {forbidden}"
+        );
+    }
     assert_eq!(
         workflow.matches("--mode role --role I73").count(),
         1,
@@ -2036,7 +2046,7 @@ fn w10_long_run_qualification_workflow_is_serial_bounded_and_fail_closed() {
         .find("--mode role --role C73")
         .expect("C73 role command");
     let seal = workflow
-        .find("--mode seal --phase qualification")
+        .find("--mode seal --phase \"$LONG_RUN_PHASE\"")
         .expect("campaign seal command");
     assert!(
         baseline < sealed_bounds && sealed_bounds < candidate && candidate < seal,
@@ -2053,6 +2063,7 @@ fn w10_long_run_qualification_workflow_is_serial_bounded_and_fail_closed() {
         "tooling_sha: ${{ inputs.source_sha }}",
         "lease_owner: ${{ inputs.lease_owner }}",
         "lease_end: ${{ inputs.lease_end }}",
+        "phase: ${{ inputs.long_run_phase }}",
         "entry_serializes_host: true",
     ] {
         assert!(

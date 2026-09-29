@@ -9664,6 +9664,10 @@ pub fn check_w10_long_run_qualification_v2_evidence(
         || text(value, "candidate_tree_oid") != Some("92336607f21a68f563e65dc0fccccd8efaa14f7b")
         || text(value, "artifact_zip_sha256")
             != Some("aabf2c3c0f84036546d7289a245cea4d67055b5bc642505b6058f40a8e5dae10")
+        || text(value, "immutable_archive_path")
+            != Some("docs/testing/perf-artifacts/0.73/long-run-qualification-36532416869")
+        || text(value, "immutable_archive_manifest_sha256")
+            != Some("7b7a30b9baa3ad9ed24f4b3e22513e416bd3a7ada13017b12b579d52c6ca4ada")
         || text(value, "campaign_sha256")
             != Some("cc83db3beb7117fe9de9913093014ee38eda98ef20c62c41c3233bee4d9d8522")
         || text(value, "i73_receipt_sha256")
@@ -9717,6 +9721,7 @@ pub fn check_w10_long_run_qualification_v2_evidence(
     }
     for field in [
         "nested_sha256_verified",
+        "immutable_archive_complete",
         "independent_role_reanalysis_matched",
         "all_four_calibrations_passed",
         "all_four_calibrations_same_host",

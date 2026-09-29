@@ -8,6 +8,8 @@ workflow_url = "https://github.com/javaquasar/hydracache/actions/runs/3653241686
 artifact_id = 11055670780
 artifact_name = "performance-long-run-qualification-073-6135b9d4470234eebf00ecc07200da285e2aaa20-36532416869-1"
 artifact_zip_sha256 = "aabf2c3c0f84036546d7289a245cea4d67055b5bc642505b6058f40a8e5dae10"
+immutable_archive_path = "docs/testing/perf-artifacts/0.73/long-run-qualification-36532416869"
+immutable_archive_manifest_sha256 = "7b7a30b9baa3ad9ed24f4b3e22513e416bd3a7ada13017b12b579d52c6ca4ada"
 
 tooling_sha = "6135b9d4470234eebf00ecc07200da285e2aaa20"
 baseline_source_commit = "e757556d3a31d565f52a9561d6d4e555bb1cc373"
@@ -49,6 +51,7 @@ i73_server_sha256 = "5a2f6a81cefe80f0461ea19f7276f6e6212901651fa3b1dba3215ec0133
 c73_server_sha256 = "6e69f383661733281a3240ed6474490b0d211896613d0af0cfd6cb4c57d31c15"
 
 nested_sha256_verified = true
+immutable_archive_complete = true
 independent_role_reanalysis_matched = true
 all_four_calibrations_passed = true
 all_four_calibrations_same_host = true
