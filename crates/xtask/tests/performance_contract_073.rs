@@ -51,7 +51,10 @@ fn release_073_governance_contract_is_fail_closed() {
         "docs/testing/performance/0.73/w10-long-run-v2-qualification-passed-36532416869.toml",
         "docs/testing/perf-artifacts/0.73/long-run-qualification-36532416869/manifest.json",
     ] {
-        assert!(root().join(path).is_file(), "missing 0.73 release evidence {path}");
+        assert!(
+            root().join(path).is_file(),
+            "missing 0.73 release evidence {path}"
+        );
     }
     assert!(
         xtask::performance_contract::check_at_root(&root(), "0.73", None)
@@ -99,7 +102,10 @@ fn canary_release_073_rejects_missing_work_item_evidence() {
                     .is_some_and(|values| !values.is_empty())
                 && item["ship_required"].as_bool() == Some(true)
         });
-    assert!(registered, "{work_item} must have complete release evidence wiring");
+    assert!(
+        registered,
+        "{work_item} must have complete release evidence wiring"
+    );
     panic!("HC-CANARY-RED:{defect}: removing {work_item} evidence must block Release 0.73");
 }
 
@@ -2376,6 +2382,81 @@ fn w10_long_run_v2_qualification_cannot_open_final_release_or_hide_a_failed_guar
         "rss_slope_guard_passed must be true",
         "confirmation_started must be false",
         "final_c73_allowed must be false",
+        "regression budgets failed",
+        "c73_rss_upper_95_bytes_per_second exceeds sealed baseline",
+    ] {
+        assert!(
+            problems.iter().any(|problem| problem.contains(required)),
+            "missing problem containing {required:?}: {problems:?}"
+        );
+    }
+}
+
+fn synthetic_w10_long_run_v2_confirmation() -> TomlValue {
+    let mut value = manifest("w10-long-run-v2-qualification-passed-36532416869.toml");
+    value["evidence_id"] =
+        TomlValue::String("w10-long-run-v2-confirmation-passed-36622527013-v1".to_owned());
+    value["state"] =
+        TomlValue::String("twenty-four-hour-confirmation-passed-final-c73-admitted".to_owned());
+    value["workflow_run"] = TomlValue::Integer(36_622_527_013);
+    value["workflow_url"] = TomlValue::String(
+        "https://github.com/javaquasar/hydracache/actions/runs/36622527013".to_owned(),
+    );
+    value["artifact_id"] = TomlValue::Integer(1);
+    value["artifact_name"] = TomlValue::String(
+        "performance-long-run-confirmation-073-b9f621a5b4f50c5277600fff9a8278fbd2154e28-36622527013-1"
+            .to_owned(),
+    );
+    value["immutable_archive_path"] = TomlValue::String(
+        "docs/testing/perf-artifacts/0.73/long-run-confirmation-36622527013".to_owned(),
+    );
+    value["tooling_sha"] = TomlValue::String("b9f621a5b4f50c5277600fff9a8278fbd2154e28".to_owned());
+    value["phase"] = TomlValue::String("confirmation".to_owned());
+    value.as_table_mut().expect("confirmation table").insert(
+        "qualification_precondition_verified".to_owned(),
+        TomlValue::Boolean(true),
+    );
+    value["confirmation_allowed"] = TomlValue::Boolean(false);
+    value["confirmation_started"] = TomlValue::Boolean(true);
+    value["performance_claim_allowed"] = TomlValue::Boolean(false);
+    value["final_c73_allowed"] = TomlValue::Boolean(true);
+    value["operations_per_role"] = TomlValue::Integer(1_036_800_000);
+    value["completed_per_role"] = TomlValue::Integer(1_036_800_000);
+    value["checkpoint_count_per_role"] = TomlValue::Integer(1_442);
+    value["periodic_resource_samples_per_role"] = TomlValue::Integer(1_439);
+    value["decision"] =
+        TomlValue::String("accept-twenty-four-hour-confirmation-and-admit-final-c73".to_owned());
+    value
+}
+
+#[test]
+fn w10_long_run_v2_confirmation_accepts_only_complete_frozen_ship_evidence() {
+    let mut value = synthetic_w10_long_run_v2_confirmation();
+    assert!(
+        xtask::performance_contract::check_w10_long_run_confirmation_v2_evidence(&value, "0.73")
+            .is_empty()
+    );
+
+    value["candidate_source_commit"] = TomlValue::String("0".repeat(40));
+    value["nested_sha256_verified"] = TomlValue::Boolean(false);
+    value["qualification_precondition_verified"] = TomlValue::Boolean(false);
+    value["automatic_retry_performed"] = TomlValue::Boolean(true);
+    value["performance_claim_allowed"] = TomlValue::Boolean(true);
+    value["operations_per_role"] = TomlValue::Integer(1_036_799_999);
+    value["periodic_resource_samples_per_role"] = TomlValue::Integer(1_438);
+    value["bootstrap_seed"] = TomlValue::Integer(1);
+    value["cpu_relative_change"] = TomlValue::Float(0.04);
+    value["c73_rss_upper_95_bytes_per_second"] = TomlValue::Float(100.0);
+    let problems =
+        xtask::performance_contract::check_w10_long_run_confirmation_v2_evidence(&value, "0.73");
+    for required in [
+        "confirmation identity changed",
+        "nested_sha256_verified must be true",
+        "qualification_precondition_verified must be true",
+        "automatic_retry_performed must be false",
+        "performance_claim_allowed must be false",
+        "workload or outcomes changed",
+        "frozen method changed",
         "regression budgets failed",
         "c73_rss_upper_95_bytes_per_second exceeds sealed baseline",
     ] {
