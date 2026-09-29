@@ -2088,6 +2088,42 @@ calibration says the host is admissible at that boundary. None of those statemen
 next one, and none can be combined into an early claim about C73. Long-running evidence becomes
 valid only when the final sealer can point backward to every required boundary receipt.
 
+The corrected campaign finally demonstrated that property end to end. Run `36532416869` first
+proved its negative control for the intended reason: the producer exited successfully, emitted an
+otherwise valid C73 packet whose stream ended at `final-work`, and the ordinary validator rejected
+the missing `post-idle-reconciled` checkpoint. It then held one admitted host and lease across four
+calibrations and two serial six-hour roles. I73 and the final registry-backed C73 each completed
+259.2 million operations, emitted 362 checkpoints, drained the backlog and reconciled events and
+management ownership exactly, with no errors, timeouts or rejections.
+
+Downloading a green artifact was not the end of the audit. We hashed the ZIP independently and
+matched GitHub's recorded digest, recomputed every nested receipt, checkpoint, stdout/stderr and
+calibration SHA-256, then reran role validation and the frozen comparison logic against the raw
+packet. That matters because the previous campaigns had shown three different ways for a green or
+red surface signal to be misleading: a build could fail before measurement, an identity mismatch
+could stop only the candidate, and an overbroad negative canary could pass on an unrelated startup
+failure. The independent pass reproduced the sealed statistics and all five guards rather than
+trusting the workflow conclusion alone.
+
+The result is deliberately modest and precise. Goodput changed by -0.000004%, effectively zero.
+CPU seconds per completed operation increased by 0.316%, and p99 increased by 0.274%; both are far
+inside their frozen 3% budgets. C73's RSS and anonymous-PSS Theil-Sen slope was 21.0045 bytes/s
+against I73's 30.5605 bytes/s. More importantly, the preregistered moving-block 95% upper bound was
+61.7818 versus 86.3800 bytes/s, 28.48% lower, so the boundedness decision does not depend on a
+favorable point estimate alone. This is stronger than saying “no obvious leak”: the candidate
+survived equal-duration baseline comparison under the exact estimator that previously exposed and
+corrected our bootstrap mistake.
+
+It is also not permission to overstate the result. A single integrated six-hour pair does not prove
+portable capacity, universal latency improvement, or final release behavior. The small positive
+CPU and latency deltas are accepted regressions within budget, not improvements. The qualification
+opens a separately authorized 24-hour confirmation for the exact frozen candidate; it does not
+substitute for that confirmation. We therefore recorded `confirmation_allowed = true` alongside
+`confirmation_started = false`, kept `final_c73_allowed = false`, and did not launch another paid
+run automatically. The useful engineering lesson is that cost control and evidentiary rigor are the
+same workflow: cheap falsifiers eliminate broken orchestration early, while an expensive success is
+accepted only after its raw packet survives an independent audit.
+
 ## A profiling ladder that avoids expensive runs
 
 Not every development iteration needs a dedicated bare-metal campaign. A useful workflow has several

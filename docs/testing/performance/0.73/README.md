@@ -503,3 +503,28 @@ build, canary, or long-running role started. The always-path retained two blocke
 diagnostics from the stale self-hosted checkout; they are not measurement evidence. Receipt
 `w10-long-run-v2-dispatch-rejected-36404123541.toml` binds the artifact and both files by SHA-256
 and permits one corrected pre-product dispatch using the exact value returned by `git rev-parse`.
+
+Two later attempts remain part of the same append-only history. Run `36404461429` stopped while
+building the C73 standalone harness because one shared lockfile could not represent both frozen
+product graphs under `--locked`; no performance observation was produced. Run `36457014494` then
+completed the full I73 role but rejected C73 before server start because the harness still admitted
+the historical candidate SHA. That attempt also exposed a false-positive negative canary, which had
+treated any producer failure as proof that the intended incomplete packet was rejected. The
+role-specific lock selection, final-candidate harness identity and fail-closed canary were corrected
+without changing either product tree, workload, duration, estimator, seed or threshold. Both failed
+artifacts remain retained and cannot be spliced into the successful campaign.
+
+Run `36532416869` is the first complete qualification of the final registry candidate. The canary
+reached the intended missing-reconciled-checkpoint defect and was rejected for that defect; all four
+calibrations matched the admitted host and lease; and both serial roles completed 259.2 million
+operations with 362 checkpoints, zero errors, zero timeouts and zero rejections. The downloaded ZIP
+SHA-256 matched GitHub's artifact digest. Independent local reanalysis matched every embedded
+receipt, checkpoint, stdout/stderr and calibration digest and reproduced all five green guards.
+
+C73 goodput changed by -0.000004%, CPU seconds per operation increased by 0.316%, and p99 increased
+by 0.274%, all inside the frozen 2%/3%/3% budgets. Its RSS and anonymous-PSS Theil-Sen slope fell
+from 30.5605 to 21.0045 bytes/s; the decisive moving-block 95% upper bound fell from 86.3800 to
+61.7818 bytes/s, a 28.48% reduction. This is a passed six-hour qualification, not a completed
+release claim: it opens one separately authorized 24-hour confirmation for the exact same frozen
+identities and method. `w10-long-run-v2-qualification-passed-36532416869.toml` records that boundary;
+confirmation has not been started and `final_c73_allowed` remains false.

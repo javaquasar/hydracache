@@ -2279,6 +2279,36 @@ fn w10_long_run_v2_cannot_drift_from_the_final_registry_candidate() {
 }
 
 #[test]
+fn w10_long_run_v2_qualification_cannot_open_final_release_or_hide_a_failed_guard() {
+    let mut value = manifest("w10-long-run-v2-qualification-passed-36532416869.toml");
+    assert!(
+        xtask::performance_contract::check_w10_long_run_qualification_v2_evidence(&value, "0.73")
+            .is_empty()
+    );
+    value["nested_sha256_verified"] = TomlValue::Boolean(false);
+    value["rss_slope_guard_passed"] = TomlValue::Boolean(false);
+    value["confirmation_started"] = TomlValue::Boolean(true);
+    value["final_c73_allowed"] = TomlValue::Boolean(true);
+    value["c73_rss_upper_95_bytes_per_second"] = TomlValue::Float(100.0);
+    value["cpu_relative_change"] = TomlValue::Float(0.04);
+    let problems =
+        xtask::performance_contract::check_w10_long_run_qualification_v2_evidence(&value, "0.73");
+    for required in [
+        "nested_sha256_verified must be true",
+        "rss_slope_guard_passed must be true",
+        "confirmation_started must be false",
+        "final_c73_allowed must be false",
+        "regression budgets failed",
+        "c73_rss_upper_95_bytes_per_second exceeds sealed baseline",
+    ] {
+        assert!(
+            problems.iter().any(|problem| problem.contains(required)),
+            "missing problem containing {required:?}: {problems:?}"
+        );
+    }
+}
+
+#[test]
 fn w5_connection_profile_cannot_promote_claim_server_bytes_or_skip_samples() {
     let mut value = manifest("w5-hc2-connection-profile-contract.toml");
     value["promotable"] = TomlValue::Boolean(true);
