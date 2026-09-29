@@ -78,7 +78,7 @@ fn nextest_serializes_trybuild_harnesses_with_a_bounded_compile_timeout() {
     );
     assert_eq!(
         ownership_override["slow-timeout"]["terminate-after"].as_integer(),
-        Some(2)
+        Some(5)
     );
 }
 
