@@ -357,10 +357,13 @@ fn validate_timeout(
     }
     let exemption = contract.timeout_exemptions.get(job_id);
     let reusable = get(job, "uses").and_then(Value::as_str).is_some();
-    match (exemption, reusable) {
+    let bounded_expression = get(job, "timeout-minutes")
+        .and_then(Value::as_str)
+        .is_some_and(|value| value.starts_with("${{") && value.ends_with("}}"));
+    match (exemption, reusable || bounded_expression) {
         (Some(reason), true) if !reason.trim().is_empty() => {}
         (Some(_), false) => errors.push(format!(
-            "{}#{job_id} has a timeout exemption but is not a reusable-workflow job",
+            "{}#{job_id} has a timeout exemption but neither calls a reusable workflow nor declares a reviewed timeout expression",
             contract.path
         )),
         _ => errors.push(format!(
