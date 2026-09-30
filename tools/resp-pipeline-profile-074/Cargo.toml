@@ -14,11 +14,10 @@ hydracache-redis-compat = { path = "../../crates/hydracache-redis-compat" }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 sha2 = "0.10"
-tokio = { version = "1", features = ["io-util", "macros", "rt-multi-thread", "sync"] }
+tokio = { version = "1", features = ["io-util", "macros", "net", "rt-multi-thread", "sync"] }
 
 [target.'cfg(unix)'.dependencies]
 libc = "0.2"
 
 [target.'cfg(windows)'.dependencies]
 windows-sys = { version = "0.61", features = ["Win32_Foundation", "Win32_System_ProcessStatus", "Win32_System_Threading"] }
-

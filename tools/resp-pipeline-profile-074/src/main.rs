@@ -14,9 +14,40 @@ use hydracache_loadgen::allocation::{measure_allocations, AllocationMeasurement}
 use hydracache_redis_compat::{RedisListenerConfig, RedisPipelineMetrics, RedisRespServer};
 use serde::Serialize;
 use sha2::{Digest, Sha256};
-use tokio::io::{AsyncReadExt, AsyncWriteExt};
+use tokio::io::{AsyncRead, AsyncReadExt, AsyncWrite, AsyncWriteExt};
+use tokio::net::{TcpListener, TcpStream};
 
-const PROFILE_ID: &str = "w1-resp-pipeline-profile-074-v1";
+const PROFILE_ID: &str = "w1-w3-resp-pipeline-profile-074-v2";
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum Transport {
+    Duplex,
+    Tcp,
+}
+
+impl Transport {
+    fn parse(value: &str) -> Result<Self, Box<dyn Error>> {
+        match value {
+            "duplex" => Ok(Self::Duplex),
+            "tcp" => Ok(Self::Tcp),
+            _ => Err(format!("unsupported transport {value}").into()),
+        }
+    }
+
+    const fn name(self) -> &'static str {
+        match self {
+            Self::Duplex => "duplex",
+            Self::Tcp => "tcp",
+        }
+    }
+
+    const fn surface(self) -> &'static str {
+        match self {
+            Self::Duplex => "resp-api-in-process-duplex",
+            Self::Tcp => "resp-api-loopback-tcp",
+        }
+    }
+}
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 enum Operation {
@@ -70,6 +101,7 @@ struct Options {
     key_space: u64,
     seed: u64,
     instrumentation: bool,
+    transport: Transport,
     output: Option<PathBuf>,
 }
 
@@ -100,6 +132,7 @@ impl Options {
             key_space: take(&mut values, "--key-space", "4096").parse()?,
             seed: take(&mut values, "--seed", "74").parse()?,
             instrumentation: parse_bool(&take(&mut values, "--instrumentation", "true"))?,
+            transport: Transport::parse(&take(&mut values, "--transport", "duplex"))?,
             output: values.remove("--output").map(PathBuf::from),
         };
         if !values.is_empty() {
@@ -225,6 +258,7 @@ struct Receipt {
     key_space: u64,
     seed: u64,
     instrumentation_enabled: bool,
+    transport: &'static str,
     workload_sha256: String,
     exact_response_validation: bool,
     elapsed_seconds: f64,
@@ -351,7 +385,7 @@ fn build_receipt(options: &Options, observations: Observations) -> Receipt {
         build_profile: "release",
         tier: "local-quick",
         promotable: false,
-        surface: "resp-api-in-process-duplex",
+        surface: options.transport.surface(),
         operation: options.operation.name(),
         operations: options.operations,
         warmup_operations: options.warmup_operations,
@@ -362,6 +396,7 @@ fn build_receipt(options: &Options, observations: Observations) -> Receipt {
         key_space: options.key_space,
         seed: options.seed,
         instrumentation_enabled: options.instrumentation,
+        transport: options.transport.name(),
         workload_sha256: workload_digest(options),
         exact_response_validation: true,
         elapsed_seconds: workload.elapsed.as_secs_f64(),
@@ -481,12 +516,55 @@ async fn run_client(
     sequence_start: u64,
     operations: u64,
 ) -> Result<Histogram<u64>, String> {
-    let capacity = (options.pipeline as usize)
-        .saturating_mul(options.batch_size)
-        .saturating_mul(options.payload_bytes.saturating_add(256))
-        .clamp(64 * 1024, 8 * 1024 * 1024);
-    let (mut client, server_io) = tokio::io::duplex(capacity);
-    let serve = tokio::spawn(async move { server.serve_connection(server_io).await });
+    match options.transport {
+        Transport::Duplex => {
+            let capacity = (options.pipeline as usize)
+                .saturating_mul(options.batch_size)
+                .saturating_mul(options.payload_bytes.saturating_add(256))
+                .clamp(64 * 1024, 8 * 1024 * 1024);
+            let (client, server_io) = tokio::io::duplex(capacity);
+            let serve = tokio::spawn(async move { server.serve_connection(server_io).await });
+            let histogram = exchange_pipeline(client, options, sequence_start, operations).await?;
+            let result = serve.await.map_err(|error| error.to_string())?;
+            result.map_err(|error| error.to_string())?;
+            Ok(histogram)
+        }
+        Transport::Tcp => {
+            let listener = TcpListener::bind("127.0.0.1:0")
+                .await
+                .map_err(|error| error.to_string())?;
+            let address = listener.local_addr().map_err(|error| error.to_string())?;
+            let serve = tokio::spawn(async move {
+                let (server_io, _) = listener.accept().await?;
+                server_io.set_nodelay(true)?;
+                server
+                    .serve_connection(server_io)
+                    .await
+                    .map_err(std::io::Error::other)
+            });
+            let client = TcpStream::connect(address)
+                .await
+                .map_err(|error| error.to_string())?;
+            client
+                .set_nodelay(true)
+                .map_err(|error| error.to_string())?;
+            let histogram = exchange_pipeline(client, options, sequence_start, operations).await?;
+            let result = serve.await.map_err(|error| error.to_string())?;
+            result.map_err(|error| error.to_string())?;
+            Ok(histogram)
+        }
+    }
+}
+
+async fn exchange_pipeline<S>(
+    mut client: S,
+    options: &Options,
+    sequence_start: u64,
+    operations: u64,
+) -> Result<Histogram<u64>, String>
+where
+    S: AsyncRead + AsyncWrite + Unpin,
+{
     let mut histogram =
         Histogram::new_with_bounds(1, 60_000_000, 3).map_err(|error| error.to_string())?;
     let batches = operations / options.pipeline;
@@ -525,8 +603,6 @@ async fn run_client(
         }
     }
     client.shutdown().await.map_err(|error| error.to_string())?;
-    let result = serve.await.map_err(|error| error.to_string())?;
-    result.map_err(|error| error.to_string())?;
     Ok(histogram)
 }
 
@@ -768,6 +844,7 @@ mod tests {
             key_space: 32,
             seed: 74,
             instrumentation: true,
+            transport: Transport::Duplex,
             output: None,
         }
     }
@@ -807,17 +884,21 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn real_pipeline_reconciles_commands_and_responses() {
-        let options = options(Operation::Set);
-        let state = Arc::new(ClientSurfaceState::new(ClientSurfaceLimits::default()).unwrap());
-        let server = Arc::new(RedisRespServer::new(state, RedisListenerConfig::default()).unwrap());
-        server.set_pipeline_instrumentation_enabled(true);
-        let result = run_workload(Arc::clone(&server), &options, options.operations)
-            .await
-            .unwrap();
-        assert_eq!(result.histogram.len(), 4);
-        let metrics = server.pipeline_metrics();
-        assert_eq!(metrics.decoded_commands, options.operations);
-        assert_eq!(metrics.output_frames, options.operations);
+    async fn duplex_and_tcp_reconcile_the_same_commands_and_responses() {
+        for transport in [Transport::Duplex, Transport::Tcp] {
+            let mut options = options(Operation::Set);
+            options.transport = transport;
+            let state = Arc::new(ClientSurfaceState::new(ClientSurfaceLimits::default()).unwrap());
+            let server =
+                Arc::new(RedisRespServer::new(state, RedisListenerConfig::default()).unwrap());
+            server.set_pipeline_instrumentation_enabled(true);
+            let result = run_workload(Arc::clone(&server), &options, options.operations)
+                .await
+                .unwrap();
+            assert_eq!(result.histogram.len(), 4);
+            let metrics = server.pipeline_metrics();
+            assert_eq!(metrics.decoded_commands, options.operations);
+            assert_eq!(metrics.output_frames, options.operations);
+        }
     }
 }
