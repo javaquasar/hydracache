@@ -2198,3 +2198,14 @@ recorded as an ADR rather than hidden in a benchmark note. HydraCache 0.74 retai
 canonical identity and defers binary variants, interning and hash handles. A visually large local
 amplification is not enough to justify migration when its share of the product cost remains below
 the registered floor.
+
+The next native profile found a materially different shape. At one client, live GET waited about
+35 nanoseconds for the client-surface store mutex; at eight clients, aggregate wait rose to about
+14.8 microseconds per operation while the measured critical section was about 1.0 microsecond.
+Separate TTL fixtures classified every expired request as a direct cleanup rather than allowing a
+mostly-miss workload to masquerade as expiry work.
+
+This evidence authorizes a narrow read/read concurrency experiment, not immediate sharding. Live
+hits may be tested under shared ownership while expiry and every mutation retain the canonical
+exclusive path. Tenant admission, quota release and replacement races remain semantic constraints;
+the cheaper proposal has to fail before a more invasive shard table or expiry index is considered.

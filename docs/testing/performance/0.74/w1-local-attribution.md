@@ -179,13 +179,38 @@ rollback bridge in 0.74.
 This does not claim the expansion is free. It records a measured ceiling and preserves the
 compatibility debt for a workload where long or repeatedly reused keys become a material owner.
 
+## W6a live-read and expiry attribution
+
+The v2 native profiler adds an `expired-get` workload and opt-in counters that classify single-key
+GET as a live hit, a direct expired removal, or an ordinary miss. A focused test freezes the
+classification boundary with a deterministic TTL=1 fixture. Three independent local processes per
+cell produced these medians with instrumentation enabled:
+
+| Cell | Goodput op/s | p99 us | CPU ns/op | Allocation B/op | Store wait ns/op | Store hold ns/op |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| Live GET, c1 | 717,375 | 2 | 1,328 | 735.9 | 35 | 600 |
+| Live GET, c8 | 448,922 | 109 | 3,516 | 740.8 | 14,771 | 1,006 |
+| Expired GET, c1 | 941,429 | 2 | 1,562 | 235.5 | 33 | 435 |
+| Expired GET, c8 | 546,296 | 139 | 2,344 | 285.2 | 11,091 | 965 |
+
+Every live receipt classified all 200,000 requests as live hits. Every expired receipt classified
+all 20,000 requests as direct expired removals, retained zero store entries, and recorded neither a
+plain miss nor a claimed background sweep. This makes the expiry comparison exact rather than a
+mostly-miss workload.
+
+At c8, aggregate mutex wait is roughly 14.8 microseconds per live operation while the critical
+section itself is roughly 1.0 microsecond. The result authorizes only W6a: a read/read concurrency
+split for live hits with the current write-locked expiry cleanup retained as the fallback. It does
+not authorize sharding, a new expiry index, quota changes, or a representation change. Product
+performance must be measured with instrumentation off against a v2-tool baseline.
+
 ## Next step and open risks
 
-W6a live-read/expiry ownership profiling is next because the direct client-surface c8 control
-already reports lock wait while W5 is now closed without a representation change. W6b sharding
-remains unauthorized until W6a separates live-hit hold time from conditional expiry cleanup and a
-repeated concurrency profile clears the 20% floor. Native paths remain unchanged and must be rerun
-after any shared hot-path mutation.
+W6a is the next isolated product candidate. It must keep tenant admission and quota paths on their
+canonical locking order, release read ownership before any expiry mutation, and prove that delayed
+cleanup cannot remove a live replacement. W6b sharding remains unauthorized until the W6a result
+still shows material wait and a separate proposal clears the high-concurrency floor. Raw and typed
+embedded paths are mandatory unaffected controls.
 
 W0, syscall-level attribution, final instrumentation overhead, HC/1 and HC/2 process controls,
 Redis same-box comparison, persistence cells, and all expensive release qualification remain open.

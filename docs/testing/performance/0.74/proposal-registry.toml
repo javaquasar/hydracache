@@ -51,8 +51,10 @@ evidence = "ADR-0022, w1-local-attribution.md, and local-runs/w5-key-*.json"
 [[work_items]]
 id = "W6"
 title = "read split and store sharding"
-decision = "profiling-required"
+decision = "w6a-authorized-w6b-not-authorized"
 primary_metric = "store-lock-wait-nanoseconds"
+rollback = "remove only the live-read lock split; retain canonical expiry write path"
+evidence = "w1-local-attribution.md and local-runs/w6a-*.json"
 
 [[work_items]]
 id = "W7"
