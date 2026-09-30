@@ -5,9 +5,10 @@
 //! cannot accidentally inherit private cluster route semantics.
 
 use std::collections::BTreeMap;
-use std::sync::atomic::{AtomicU64, Ordering};
-use std::sync::{Arc, Mutex};
-use std::time::{Duration, SystemTime, UNIX_EPOCH};
+use std::ops::{Deref, DerefMut};
+use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
+use std::sync::{Arc, Mutex, MutexGuard};
+use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
 
 use axum::body::Bytes;
 use axum::extract::State;
@@ -441,6 +442,103 @@ struct StoredValue {
     expires_at_ms: Option<u64>,
 }
 
+/// Label-free counters for W1 direct client-surface attribution.
+///
+/// Collection is disabled by default and intended for isolated profiling
+/// processes. The counters never retain tenant, namespace, key, request, or
+/// value data.
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
+pub struct ClientSurfaceProfileMetrics {
+    /// Verified requests that reached canonical dispatch.
+    pub dispatches: u64,
+    /// Reads of the request/expiry clock.
+    pub clock_reads: u64,
+    /// Ordinary or forced expiry sweep checks.
+    pub expiry_sweep_checks: u64,
+    /// Sweep checks that acquired the expiry cursor and scanned the store.
+    pub expiry_sweeps_claimed: u64,
+    /// Store mutex acquisitions.
+    pub store_lock_acquisitions: u64,
+    /// Aggregate time waiting for the store mutex.
+    pub store_lock_wait_nanoseconds: u64,
+    /// Aggregate time holding the store mutex.
+    pub store_lock_hold_nanoseconds: u64,
+}
+
+#[derive(Debug, Default)]
+struct ClientSurfaceProfileInstrumentation {
+    enabled: AtomicBool,
+    dispatches: AtomicU64,
+    clock_reads: AtomicU64,
+    expiry_sweep_checks: AtomicU64,
+    expiry_sweeps_claimed: AtomicU64,
+    store_lock_acquisitions: AtomicU64,
+    store_lock_wait_nanoseconds: AtomicU64,
+    store_lock_hold_nanoseconds: AtomicU64,
+}
+
+impl ClientSurfaceProfileInstrumentation {
+    fn enabled(&self) -> bool {
+        self.enabled.load(Ordering::Relaxed)
+    }
+
+    fn reset(&self) {
+        for counter in [
+            &self.dispatches,
+            &self.clock_reads,
+            &self.expiry_sweep_checks,
+            &self.expiry_sweeps_claimed,
+            &self.store_lock_acquisitions,
+            &self.store_lock_wait_nanoseconds,
+            &self.store_lock_hold_nanoseconds,
+        ] {
+            counter.store(0, Ordering::Relaxed);
+        }
+    }
+
+    fn snapshot(&self) -> ClientSurfaceProfileMetrics {
+        ClientSurfaceProfileMetrics {
+            dispatches: self.dispatches.load(Ordering::Relaxed),
+            clock_reads: self.clock_reads.load(Ordering::Relaxed),
+            expiry_sweep_checks: self.expiry_sweep_checks.load(Ordering::Relaxed),
+            expiry_sweeps_claimed: self.expiry_sweeps_claimed.load(Ordering::Relaxed),
+            store_lock_acquisitions: self.store_lock_acquisitions.load(Ordering::Relaxed),
+            store_lock_wait_nanoseconds: self.store_lock_wait_nanoseconds.load(Ordering::Relaxed),
+            store_lock_hold_nanoseconds: self.store_lock_hold_nanoseconds.load(Ordering::Relaxed),
+        }
+    }
+}
+
+struct ProfiledStoreGuard<'a> {
+    guard: MutexGuard<'a, BTreeMap<StoreKey, StoredValue>>,
+    hold_started: Option<Instant>,
+    instrumentation: &'a ClientSurfaceProfileInstrumentation,
+}
+
+impl Deref for ProfiledStoreGuard<'_> {
+    type Target = BTreeMap<StoreKey, StoredValue>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.guard
+    }
+}
+
+impl DerefMut for ProfiledStoreGuard<'_> {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.guard
+    }
+}
+
+impl Drop for ProfiledStoreGuard<'_> {
+    fn drop(&mut self) {
+        if let Some(started) = self.hold_started {
+            self.instrumentation
+                .store_lock_hold_nanoseconds
+                .fetch_add(elapsed_nanoseconds(started), Ordering::Relaxed);
+        }
+    }
+}
+
 struct ConditionalPutArgs {
     request_id: String,
     ns: Namespace,
@@ -722,6 +820,7 @@ pub struct ClientSurfaceState {
     audit_sink: Arc<InMemoryAuditSink>,
     audit: Mutex<AuditRecorder<Arc<InMemoryAuditSink>>>,
     isolation: Option<Mutex<ConsumerIsolation>>,
+    profile_instrumentation: ClientSurfaceProfileInstrumentation,
 }
 
 impl ClientSurfaceState {
@@ -749,6 +848,7 @@ impl ClientSurfaceState {
             audit: Mutex::new(AuditRecorder::new(Arc::clone(&audit_sink))),
             audit_sink,
             isolation: None,
+            profile_instrumentation: ClientSurfaceProfileInstrumentation::default(),
         })
     }
 
@@ -779,6 +879,7 @@ impl ClientSurfaceState {
             audit: Mutex::new(AuditRecorder::new(Arc::clone(&audit_sink))),
             audit_sink,
             isolation: Some(Mutex::new(isolation)),
+            profile_instrumentation: ClientSurfaceProfileInstrumentation::default(),
         })
     }
 
@@ -810,6 +911,26 @@ impl ClientSurfaceState {
     /// Count of active subscription streams.
     pub fn active_subscriptions(&self) -> u64 {
         self.active_subscriptions.load(Ordering::SeqCst)
+    }
+
+    /// Enable or disable W1 direct client-surface attribution.
+    ///
+    /// Call this only at a quiescent profiling boundary. It does not alter
+    /// request semantics or expose unbounded metric labels.
+    pub fn set_profile_instrumentation_enabled(&self, enabled: bool) {
+        self.profile_instrumentation
+            .enabled
+            .store(enabled, Ordering::Release);
+    }
+
+    /// Reset W1 client-surface counters at a quiescent profiling boundary.
+    pub fn reset_profile_metrics(&self) {
+        self.profile_instrumentation.reset();
+    }
+
+    /// Snapshot W1 client-surface attribution counters.
+    pub fn profile_metrics(&self) -> ClientSurfaceProfileMetrics {
+        self.profile_instrumentation.snapshot()
     }
 
     /// Subscribe to metadata-only mutations for one verified tenant.
@@ -877,7 +998,7 @@ impl ClientSurfaceState {
     pub fn retained_state_for_diagnostics(&self) -> ClientSurfaceRetainedState {
         self.sweep_expired_entries(self.now_ms(), true);
         let idempotency = self.idempotency_keys.lock().expect("idempotency mutex");
-        let store = self.store.lock().expect("store mutex");
+        let store = self.lock_store();
         let lock_service = self.lock_service.lock().expect("lock service mutex");
         self.retained_state_locked(&idempotency, &store, &lock_service)
     }
@@ -903,7 +1024,7 @@ impl ClientSurfaceState {
             return Err(ClientSurfaceError::DiagnosticResetUnavailable);
         }
         let mut idempotency = self.idempotency_keys.lock().expect("idempotency mutex");
-        let mut store = self.store.lock().expect("store mutex");
+        let mut store = self.lock_store();
         let mut lock_service = self.lock_service.lock().expect("lock service mutex");
         let before = self.retained_state_locked(&idempotency, &store, &lock_service);
         idempotency.clear();
@@ -1046,9 +1167,19 @@ impl ClientSurfaceState {
 
     fn record_dispatch(&self) {
         self.dispatch_attempts.fetch_add(1, Ordering::SeqCst);
+        if self.profile_instrumentation.enabled() {
+            self.profile_instrumentation
+                .dispatches
+                .fetch_add(1, Ordering::Relaxed);
+        }
     }
 
     fn now_ms(&self) -> u64 {
+        if self.profile_instrumentation.enabled() {
+            self.profile_instrumentation
+                .clock_reads
+                .fetch_add(1, Ordering::Relaxed);
+        }
         let candidate = self
             .cache_now_ms_for_tests
             .lock()
@@ -1061,6 +1192,12 @@ impl ClientSurfaceState {
     }
 
     fn sweep_expired_entries(&self, now_ms: u64, force: bool) -> usize {
+        let profiling = self.profile_instrumentation.enabled();
+        if profiling {
+            self.profile_instrumentation
+                .expiry_sweep_checks
+                .fetch_add(1, Ordering::Relaxed);
+        }
         let next = self.next_expiry_sweep_ms.load(Ordering::SeqCst);
         if !force && now_ms < next {
             return 0;
@@ -1084,6 +1221,11 @@ impl ClientSurfaceState {
                 Ordering::SeqCst,
             );
         }
+        if profiling {
+            self.profile_instrumentation
+                .expiry_sweeps_claimed
+                .fetch_add(1, Ordering::Relaxed);
+        }
 
         let mut cursor = self
             .expiry_sweep_cursor
@@ -1091,7 +1233,7 @@ impl ClientSurfaceState {
             .expect("expiry cursor mutex");
         let removed = if let Some(isolation) = &self.isolation {
             let mut isolation = isolation.lock().expect("isolation mutex");
-            let mut store = self.store.lock().expect("store mutex");
+            let mut store = self.lock_store();
             let candidates = expiry_sweep_candidates(
                 &store,
                 now_ms,
@@ -1112,7 +1254,7 @@ impl ClientSurfaceState {
             *cursor = candidates.next_cursor;
             candidates.expired.len()
         } else {
-            let mut store = self.store.lock().expect("store mutex");
+            let mut store = self.lock_store();
             let candidates = expiry_sweep_candidates(
                 &store,
                 now_ms,
@@ -1135,6 +1277,25 @@ impl ClientSurfaceState {
                 .fetch_add(removed as u64, Ordering::SeqCst);
         }
         removed
+    }
+
+    fn lock_store(&self) -> ProfiledStoreGuard<'_> {
+        let profiling = self.profile_instrumentation.enabled();
+        let wait_started = profiling.then(Instant::now);
+        let guard = self.store.lock().expect("store mutex");
+        if let Some(started) = wait_started {
+            self.profile_instrumentation
+                .store_lock_acquisitions
+                .fetch_add(1, Ordering::Relaxed);
+            self.profile_instrumentation
+                .store_lock_wait_nanoseconds
+                .fetch_add(elapsed_nanoseconds(started), Ordering::Relaxed);
+        }
+        ProfiledStoreGuard {
+            guard,
+            hold_started: profiling.then(Instant::now),
+            instrumentation: &self.profile_instrumentation,
+        }
     }
 
     fn begin_subscription(&self) {
@@ -1369,7 +1530,7 @@ impl ClientSurfaceState {
                         .map(|entry| (entry.key.stable_key(), entry.value.len() as u64))
                         .collect::<Vec<_>>();
                     let commit = || {
-                        let mut store = self.store.lock().expect("store mutex");
+                        let mut store = self.lock_store();
                         for entry in &entries {
                             store.insert(
                                 store_key(identity, &ns, &entry.key),
@@ -1485,11 +1646,11 @@ impl ClientSurfaceState {
                         .evict_namespace(identity.client_id(), ns.as_str())
                         .map_err(admission_error)
                         .map(|_| {
-                            let mut store = self.store.lock().expect("store mutex");
+                            let mut store = self.lock_store();
                             evict_store(&mut store);
                         })
                 } else {
-                    let mut store = self.store.lock().expect("store mutex");
+                    let mut store = self.lock_store();
                     evict_store(&mut store);
                     Ok(())
                 };
@@ -1766,7 +1927,7 @@ impl ClientSurfaceState {
         let level = lock_consistency(level);
         let result = if let Some(isolation) = &self.isolation {
             let mut isolation = isolation.lock().expect("isolation mutex");
-            let mut store = self.store.lock().expect("store mutex");
+            let mut store = self.lock_store();
             let (live_value, expired) = live_value(&mut store, &map_key, now_ms);
             let condition_holds = match &expected {
                 CasExpectation::Exact(expected) => {
@@ -1839,7 +2000,7 @@ impl ClientSurfaceState {
                 }
             }
         } else {
-            let mut store = self.store.lock().expect("store mutex");
+            let mut store = self.lock_store();
             let (live_value, _) = live_value(&mut store, &map_key, now_ms);
             let value_for_store = new_value.clone();
             let result = apply_compare_and_set(
@@ -2013,7 +2174,7 @@ impl ClientSurfaceState {
         let map_key = store_key(identity, &ns, &key);
         let admitted = if let Some(isolation) = &self.isolation {
             let mut isolation = isolation.lock().expect("isolation mutex");
-            let mut store = self.store.lock().expect("store mutex");
+            let mut store = self.lock_store();
             isolation
                 .admit_put_if_committed(
                     identity.client_id(),
@@ -2028,10 +2189,7 @@ impl ClientSurfaceState {
                 )
                 .map_err(admission_error)
         } else {
-            self.store
-                .lock()
-                .expect("store mutex")
-                .insert(map_key, stored);
+            self.lock_store().insert(map_key, stored);
             Ok(true)
         };
         if let Err(error) = admitted {
@@ -2189,7 +2347,7 @@ impl ClientSurfaceState {
         let value_bytes = value.len() as u64;
         let stored = if let Some(isolation) = &self.isolation {
             let mut isolation = isolation.lock().expect("isolation mutex");
-            let mut store = self.store.lock().expect("store mutex");
+            let mut store = self.lock_store();
             let (entry, expired) = live_entry_mut(&mut store, &map_key, now_ms);
             let condition_holds = match &condition {
                 ConditionalPutCondition::IfAbsent => entry.is_none(),
@@ -2219,7 +2377,7 @@ impl ClientSurfaceState {
             }
             stored
         } else {
-            let mut store = self.store.lock().expect("store mutex");
+            let mut store = self.lock_store();
             let (entry, _) = live_entry_mut(&mut store, &map_key, now_ms);
             let condition_holds = match &condition {
                 ConditionalPutCondition::IfAbsent => entry.is_none(),
@@ -2374,10 +2532,10 @@ impl ClientSurfaceState {
             isolation
                 .admit_request(identity.client_id())
                 .map_err(admission_error)?;
-            let mut store = self.store.lock().expect("store mutex");
+            let mut store = self.lock_store();
             Ok(apply(&mut store, Some(&mut isolation)))
         } else {
-            let mut store = self.store.lock().expect("store mutex");
+            let mut store = self.lock_store();
             Ok(apply(&mut store, None))
         }
     }
@@ -2829,6 +2987,10 @@ fn system_time_millis() -> u64 {
         .unwrap_or_default()
         .as_millis()
         .min(u128::from(u64::MAX)) as u64
+}
+
+fn elapsed_nanoseconds(started: Instant) -> u64 {
+    started.elapsed().as_nanos().min(u128::from(u64::MAX)) as u64
 }
 
 fn store_key(identity: &ClientIdentity, ns: &Namespace, key: &StructuredKey) -> StoreKey {

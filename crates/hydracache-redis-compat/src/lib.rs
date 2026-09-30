@@ -5,7 +5,7 @@
 //! dispatch seam as the stable HydraCache client API.
 
 use std::collections::{BTreeMap, BTreeSet};
-use std::sync::atomic::{AtomicU64, Ordering};
+use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
 
@@ -409,6 +409,117 @@ pub struct RedisListenerMetrics {
     pub lagged_event_subscribers: u64,
 }
 
+/// Bounded, label-free RESP pipeline attribution counters.
+///
+/// These counters are disabled by default. Release profiling enables them only
+/// for an isolated process and compares that process with an instrumentation-off
+/// control before using the observations for owner classification.
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
+pub struct RedisPipelineMetrics {
+    /// Successful socket reads that returned at least one byte.
+    pub read_calls: u64,
+    /// Bytes received from the socket.
+    pub input_bytes: u64,
+    /// Largest populated input buffer observed after a read.
+    pub input_buffer_high_water_bytes: u64,
+    /// Complete RESP commands decoded.
+    pub decoded_commands: u64,
+    /// Bytes consumed by complete decoded commands.
+    pub parser_consumed_bytes: u64,
+    /// Input prefix compactions performed by the current implementation.
+    pub input_compactions: u64,
+    /// Unread suffix bytes moved by those compactions.
+    pub input_compaction_moved_bytes: u64,
+    /// Translation contexts constructed.
+    pub translation_contexts: u64,
+    /// Bytes materialized for generated request ids.
+    pub request_id_bytes: u64,
+    /// Script-cache entries cloned while constructing translation contexts.
+    pub script_cache_entries_cloned: u64,
+    /// RESP frames encoded for output.
+    pub output_frames: u64,
+    /// Bytes passed to the socket writer.
+    pub output_bytes: u64,
+    /// Largest single encoded response retained by the current implementation.
+    pub output_buffer_high_water_bytes: u64,
+    /// High-level `write_all` calls.
+    pub write_calls: u64,
+    /// High-level explicit flush calls.
+    pub flush_calls: u64,
+}
+
+#[derive(Debug, Default)]
+struct RedisPipelineInstrumentation {
+    enabled: AtomicBool,
+    read_calls: AtomicU64,
+    input_bytes: AtomicU64,
+    input_buffer_high_water_bytes: AtomicU64,
+    decoded_commands: AtomicU64,
+    parser_consumed_bytes: AtomicU64,
+    input_compactions: AtomicU64,
+    input_compaction_moved_bytes: AtomicU64,
+    translation_contexts: AtomicU64,
+    request_id_bytes: AtomicU64,
+    script_cache_entries_cloned: AtomicU64,
+    output_frames: AtomicU64,
+    output_bytes: AtomicU64,
+    output_buffer_high_water_bytes: AtomicU64,
+    write_calls: AtomicU64,
+    flush_calls: AtomicU64,
+}
+
+impl RedisPipelineInstrumentation {
+    fn enabled(&self) -> bool {
+        self.enabled.load(Ordering::Relaxed)
+    }
+
+    fn reset(&self) {
+        for counter in [
+            &self.read_calls,
+            &self.input_bytes,
+            &self.input_buffer_high_water_bytes,
+            &self.decoded_commands,
+            &self.parser_consumed_bytes,
+            &self.input_compactions,
+            &self.input_compaction_moved_bytes,
+            &self.translation_contexts,
+            &self.request_id_bytes,
+            &self.script_cache_entries_cloned,
+            &self.output_frames,
+            &self.output_bytes,
+            &self.output_buffer_high_water_bytes,
+            &self.write_calls,
+            &self.flush_calls,
+        ] {
+            counter.store(0, Ordering::Relaxed);
+        }
+    }
+
+    fn snapshot(&self) -> RedisPipelineMetrics {
+        RedisPipelineMetrics {
+            read_calls: self.read_calls.load(Ordering::Relaxed),
+            input_bytes: self.input_bytes.load(Ordering::Relaxed),
+            input_buffer_high_water_bytes: self
+                .input_buffer_high_water_bytes
+                .load(Ordering::Relaxed),
+            decoded_commands: self.decoded_commands.load(Ordering::Relaxed),
+            parser_consumed_bytes: self.parser_consumed_bytes.load(Ordering::Relaxed),
+            input_compactions: self.input_compactions.load(Ordering::Relaxed),
+            input_compaction_moved_bytes: self.input_compaction_moved_bytes.load(Ordering::Relaxed),
+            translation_contexts: self.translation_contexts.load(Ordering::Relaxed),
+            request_id_bytes: self.request_id_bytes.load(Ordering::Relaxed),
+            script_cache_entries_cloned: self.script_cache_entries_cloned.load(Ordering::Relaxed),
+            output_frames: self.output_frames.load(Ordering::Relaxed),
+            output_bytes: self.output_bytes.load(Ordering::Relaxed),
+            output_buffer_high_water_bytes: self
+                .output_buffer_high_water_bytes
+                .load(Ordering::Relaxed),
+            write_calls: self.write_calls.load(Ordering::Relaxed),
+            flush_calls: self.flush_calls.load(Ordering::Relaxed),
+        }
+    }
+}
+
 /// Parser-neutral Redis command subset.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum RedisCommand {
@@ -658,6 +769,7 @@ pub struct RedisRespServer {
     active_event_subscribers: AtomicU64,
     event_messages: AtomicU64,
     lagged_event_subscribers: AtomicU64,
+    pipeline_instrumentation: RedisPipelineInstrumentation,
 }
 
 #[derive(Debug, Clone)]
@@ -769,6 +881,7 @@ impl RedisRespServer {
             active_event_subscribers: AtomicU64::new(0),
             event_messages: AtomicU64::new(0),
             lagged_event_subscribers: AtomicU64::new(0),
+            pipeline_instrumentation: RedisPipelineInstrumentation::default(),
         })
     }
 
@@ -799,6 +912,26 @@ impl RedisRespServer {
             event_messages: self.event_messages.load(Ordering::SeqCst),
             lagged_event_subscribers: self.lagged_event_subscribers.load(Ordering::SeqCst),
         }
+    }
+
+    /// Enable or disable detailed RESP pipeline attribution.
+    ///
+    /// The switch is process-local and does not change protocol behavior. Call
+    /// this only at a quiescent profiling boundary.
+    pub fn set_pipeline_instrumentation_enabled(&self, enabled: bool) {
+        self.pipeline_instrumentation
+            .enabled
+            .store(enabled, Ordering::Release);
+    }
+
+    /// Reset detailed RESP pipeline counters at a quiescent profiling boundary.
+    pub fn reset_pipeline_metrics(&self) {
+        self.pipeline_instrumentation.reset();
+    }
+
+    /// Snapshot detailed RESP pipeline counters without exposing key or tenant labels.
+    pub fn pipeline_metrics(&self) -> RedisPipelineMetrics {
+        self.pipeline_instrumentation.snapshot()
     }
 
     /// Serve one RESP connection until EOF, QUIT, idle timeout, or malformed input.
@@ -867,6 +1000,17 @@ impl RedisRespServer {
                 return Ok(());
             }
             buffer.extend_from_slice(&read_chunk[..bytes_read]);
+            if self.pipeline_instrumentation.enabled() {
+                self.pipeline_instrumentation
+                    .read_calls
+                    .fetch_add(1, Ordering::Relaxed);
+                self.pipeline_instrumentation
+                    .input_bytes
+                    .fetch_add(bytes_read as u64, Ordering::Relaxed);
+                self.pipeline_instrumentation
+                    .input_buffer_high_water_bytes
+                    .fetch_max(buffer.len() as u64, Ordering::Relaxed);
+            }
 
             while !buffer.is_empty() {
                 let decoded = decode_resp_command_with_limits(
@@ -883,6 +1027,20 @@ impl RedisRespServer {
                         return Ok(());
                     }
                 };
+                if self.pipeline_instrumentation.enabled() {
+                    self.pipeline_instrumentation
+                        .decoded_commands
+                        .fetch_add(1, Ordering::Relaxed);
+                    self.pipeline_instrumentation
+                        .parser_consumed_bytes
+                        .fetch_add(consumed as u64, Ordering::Relaxed);
+                    self.pipeline_instrumentation
+                        .input_compactions
+                        .fetch_add(1, Ordering::Relaxed);
+                    self.pipeline_instrumentation
+                        .input_compaction_moved_bytes
+                        .fetch_add((buffer.len() - consumed) as u64, Ordering::Relaxed);
+                }
                 buffer.drain(..consumed);
 
                 let should_close = matches!(command, RedisCommand::Quit);
@@ -1528,16 +1686,27 @@ impl RedisRespServer {
 
     fn translation_context(&self) -> Result<RedisTranslationContext, RedisTranslationError> {
         let request_id = self.next_request_id.fetch_add(1, Ordering::SeqCst);
-        Ok(RedisTranslationContext::new(
-            self.config.namespace.clone(),
-            format!("redis-resp-{request_id}"),
-        )?
-        .with_loaded_scripts(
-            self.script_cache
-                .lock()
-                .expect("redis script cache mutex")
-                .clone(),
-        ))
+        let request_id = format!("redis-resp-{request_id}");
+        let loaded_scripts = self
+            .script_cache
+            .lock()
+            .expect("redis script cache mutex")
+            .clone();
+        if self.pipeline_instrumentation.enabled() {
+            self.pipeline_instrumentation
+                .translation_contexts
+                .fetch_add(1, Ordering::Relaxed);
+            self.pipeline_instrumentation
+                .request_id_bytes
+                .fetch_add(request_id.len() as u64, Ordering::Relaxed);
+            self.pipeline_instrumentation
+                .script_cache_entries_cloned
+                .fetch_add(loaded_scripts.len() as u64, Ordering::Relaxed);
+        }
+        Ok(
+            RedisTranslationContext::new(self.config.namespace.clone(), request_id)?
+                .with_loaded_scripts(loaded_scripts),
+        )
     }
 
     async fn write_response<S>(
@@ -1550,7 +1719,26 @@ impl RedisRespServer {
         S: AsyncWrite + Unpin,
     {
         let encoded = encode_resp_value(response, dialect)?;
+        if self.pipeline_instrumentation.enabled() {
+            self.pipeline_instrumentation
+                .output_frames
+                .fetch_add(1, Ordering::Relaxed);
+            self.pipeline_instrumentation
+                .output_bytes
+                .fetch_add(encoded.len() as u64, Ordering::Relaxed);
+            self.pipeline_instrumentation
+                .output_buffer_high_water_bytes
+                .fetch_max(encoded.len() as u64, Ordering::Relaxed);
+            self.pipeline_instrumentation
+                .write_calls
+                .fetch_add(1, Ordering::Relaxed);
+        }
         stream.write_all(&encoded).await?;
+        if self.pipeline_instrumentation.enabled() {
+            self.pipeline_instrumentation
+                .flush_calls
+                .fetch_add(1, Ordering::Relaxed);
+        }
         stream.flush().await?;
         Ok(())
     }
