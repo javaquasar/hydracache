@@ -82,6 +82,7 @@ impl Operation {
 
 #[derive(Debug, Clone)]
 struct Options {
+    source_commit: String,
     surface: ApiPath,
     operation: Operation,
     operations: u64,
@@ -109,6 +110,9 @@ impl Options {
             values.insert(name, value);
         }
         let options = Self {
+            source_commit: values
+                .remove("--source-commit")
+                .ok_or("--source-commit is required")?,
             surface: ApiPath::parse(&take(&mut values, "--surface", "raw-embedded"))?,
             operation: Operation::parse(&take(&mut values, "--operation", "get"))?,
             operations: take(&mut values, "--operations", "10000").parse()?,
@@ -135,6 +139,14 @@ impl Options {
             || self.key_space == 0
         {
             return Err("operations, concurrency, payload, and key-space must be non-zero".into());
+        }
+        if self.source_commit.len() != 40
+            || !self
+                .source_commit
+                .bytes()
+                .all(|byte| byte.is_ascii_hexdigit())
+        {
+            return Err("source-commit must be a full 40-character Git SHA".into());
         }
         if !self.operations.is_multiple_of(self.concurrency)
             || !self.warmup_operations.is_multiple_of(self.concurrency)
@@ -215,6 +227,9 @@ struct Receipt {
     schema_version: u32,
     release: &'static str,
     profile_id: &'static str,
+    source_commit: String,
+    binary_sha256: String,
+    build_profile: &'static str,
     tier: &'static str,
     promotable: bool,
     surface: &'static str,
@@ -380,6 +395,9 @@ fn build_receipt(options: &Options, observations: Observations) -> Receipt {
         schema_version: 1,
         release: "0.74",
         profile_id: PROFILE_ID,
+        source_commit: options.source_commit.clone(),
+        binary_sha256: binary_digest().expect("profile binary must remain readable"),
+        build_profile: "release",
         tier: "local-quick",
         promotable: false,
         surface: options.surface.name(),
@@ -746,6 +764,12 @@ fn workload_digest(options: &Options) -> String {
     format!("sha256:{:x}", digest.finalize())
 }
 
+fn binary_digest() -> Result<String, Box<dyn Error>> {
+    let executable = std::env::current_exe()?;
+    let bytes = fs::read(executable)?;
+    Ok(format!("sha256:{:x}", Sha256::digest(bytes)))
+}
+
 #[derive(Clone, Copy)]
 struct ResourceSnapshot {
     rss_bytes: u64,
@@ -836,6 +860,7 @@ mod tests {
 
     fn options(surface: ApiPath, operation: Operation) -> Options {
         Options {
+            source_commit: "0123456789abcdef0123456789abcdef01234567".to_owned(),
             surface,
             operation,
             operations: 8,
