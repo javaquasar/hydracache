@@ -25,6 +25,10 @@ The first non-promotable local attribution and the rejected W2/W3 results are do
 [`w1-local-attribution.md`](w1-local-attribution.md). Raw identity-bound receipts are retained under
 `local-runs/`.
 
+The standalone `tools/resp-stage-profile-074` tool isolates decode, translation-context,
+command/translation and response/encode allocation owners. Its control stages permit only local
+incremental attribution; they are not interchangeable with end-to-end product receipts.
+
 Numerical receipts must never be hand-edited into claims. Every receipt binds the trace, payload
 and key corpora, seed, warmup, duration, offered schedule, concurrency, pipeline depth, security,
 persistence and final-state digest. Errors, timeouts, rejections, late operations and incomplete

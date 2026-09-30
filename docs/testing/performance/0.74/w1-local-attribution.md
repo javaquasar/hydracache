@@ -132,13 +132,40 @@ screening evidence, not a portable performance claim; they do not authorize sele
 favorable SET cell. All 44 raw W3 receipts are retained. No sample was discarded or retried, no
 threshold changed, and the candidate is rejected for targeted rollback.
 
+## W4 stage attribution and no-candidate decision
+
+The committed `resp-stage-profile-074` tool runs deterministic allocation and timing passes for
+decode, translation-context creation, command construction plus translation, and response
+construction plus encoding. It validates the complete input command, the one-request execution-plan
+shape, and exact output bytes before measuring. Incremental translation and encoding allocations
+are differences from their deterministic construction controls and are explicitly not end-to-end
+claims.
+
+Against the median gross allocation of the five pre-W3 pipeline-1 control processes, the first
+stage receipts report:
+
+| Operation | End-to-end B/op | Decode B/op | Context B/op | Incremental translate B/op | Incremental encode B/op |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| GET | 3,957.30 | 306 (7.73%) | 23 (0.58%) | 399 (10.08%) | 264 (6.67%) |
+| SET | 4,139.30 | 818 (19.76%) | 23 (0.56%) | 399 (9.64%) | 8 (0.19%) |
+
+W4c's direct encoder is therefore not authorized: even perfect removal of its measured allocation
+owner cannot clear the preregistered 20% floor in either cell. The same is true for isolated context
+or translation work. W4a is absent from these GET/SET hot cells because the W1 counters record zero
+script-cache entries cloned. This is a profile-backed no-candidate decision, not evidence that the
+stages are free. Combining them into one candidate merely to cross the threshold would violate the
+one-hypothesis rule.
+
+The stage CPU fields include counting-allocator overhead and coarse Windows process-time
+resolution, so they are retained for owner ranking only. The allocation counts are exact gross
+allocator requests in a quiescent process. Both receipts are source/binary/workload-hash bound and
+non-promotable.
+
 ## Next step and open risks
 
-W4 must begin with a new profile-backed, isolated proposal rather than composing it with the
-rejected W3 batch. The direct-encoding seam is still a plausible allocation owner because W3 left
-gross allocation unchanged while continuing to create a temporary encoded vector per reply, but it
-is not authorized until an independent baseline isolates that cost. Native paths remain unchanged
-and must be rerun after any shared hot-path mutation.
+W5 key ownership profiling is next because key bytes cross decode, translation and store lookup;
+it must establish a single representation owner and migration/rollback contract before any product
+mutation. Native paths remain unchanged and must be rerun after any shared hot-path mutation.
 
 W0, syscall-level attribution, final instrumentation overhead, HC/1 and HC/2 process controls,
 Redis same-box comparison, persistence cells, and all expensive release qualification remain open.

@@ -1,0 +1,65 @@
+{
+  "schema_version": 1,
+  "release": "0.74",
+  "profile_id": "w4-resp-stage-profile-074-v1",
+  "source_commit": "6c011c606a5201ca27b853f9c724dbc4a5f19a5d",
+  "binary_sha256": "sha256:d04dec478a69670f9d5280f16c56a8aaa3e444c9c800be4014dc5e3c6ddc2fad",
+  "build_profile": "release",
+  "tier": "local-attribution",
+  "promotable": false,
+  "operation": "set",
+  "iterations": 1000000,
+  "payload_bytes": 256,
+  "seed": 74,
+  "workload_sha256": "sha256:7b12a08421d4623f430ca78f92fb340f81b031188bfb245daa74a6541bf6f9d7",
+  "exact_result_validation": true,
+  "decode": {
+    "gross_allocated_bytes": 818000000,
+    "gross_allocated_bytes_per_operation": 818.0,
+    "cpu_nanoseconds_per_operation": 437.5,
+    "wall_nanoseconds_per_operation": 429.2372,
+    "checksum": 312000000
+  },
+  "translation_context": {
+    "gross_allocated_bytes": 23000000,
+    "gross_allocated_bytes_per_operation": 23.0,
+    "cpu_nanoseconds_per_operation": 62.5,
+    "wall_nanoseconds_per_operation": 68.5789,
+    "checksum": 1000000
+  },
+  "command_construction": {
+    "gross_allocated_bytes": 284000000,
+    "gross_allocated_bytes_per_operation": 284.0,
+    "cpu_nanoseconds_per_operation": 46.875,
+    "wall_nanoseconds_per_operation": 51.7715,
+    "checksum": 1000000
+  },
+  "command_construction_and_translation": {
+    "gross_allocated_bytes": 683000000,
+    "gross_allocated_bytes_per_operation": 683.0,
+    "cpu_nanoseconds_per_operation": 500.0,
+    "wall_nanoseconds_per_operation": 501.3075,
+    "checksum": 1000000
+  },
+  "translation_incremental_allocated_bytes_per_operation": 399.0,
+  "response_construction": {
+    "gross_allocated_bytes": 0,
+    "gross_allocated_bytes_per_operation": 0.0,
+    "cpu_nanoseconds_per_operation": 0.0,
+    "wall_nanoseconds_per_operation": 1.7914,
+    "checksum": 1000000
+  },
+  "response_construction_and_encode": {
+    "gross_allocated_bytes": 8000000,
+    "gross_allocated_bytes_per_operation": 8.0,
+    "cpu_nanoseconds_per_operation": 62.5,
+    "wall_nanoseconds_per_operation": 58.5544,
+    "checksum": 5000000
+  },
+  "encode_incremental_allocated_bytes_per_operation": 8.0,
+  "limitations": [
+    "stage_cpu_includes_counting_allocator_overhead",
+    "incremental_allocation_is_subtraction_of_deterministic_stage_totals",
+    "does_not_include_dispatch_store_or_socket_io"
+  ]
+}

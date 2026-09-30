@@ -37,13 +37,14 @@ evidence = "w1-local-attribution.md and local-runs/w3-*.json"
 [[work_items]]
 id = "W4"
 title = "translation ownership"
-decision = "profiling-required-after-w3-rejection"
+decision = "measured-below-isolated-floor"
 primary_metric = "gross-allocated-bytes-per-operation"
+evidence = "w1-local-attribution.md and local-runs/w4-stage-*.json"
 
 [[work_items]]
 id = "W5"
 title = "key representation"
-decision = "not-authorized"
+decision = "profiling-required"
 primary_metric = "copied-and-retained-key-bytes"
 
 [[work_items]]

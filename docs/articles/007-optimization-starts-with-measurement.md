@@ -2173,3 +2173,16 @@ write reduction on the real TCP server. The correct decision was again to retain
 label the measurements non-promotable, and revert the isolated candidate. A later direct-encoding
 proposal must earn its own allocation result before any reconsideration of response batching; the
 two hypotheses cannot be credited as one benchmark candidate.
+
+The next attribution pass demonstrated the value of estimating an owner's ceiling before changing
+code. A dedicated stage tool measured gross allocator requests for decode, translation-context
+creation, command construction plus translation, and response construction plus encoding. The GET
+encoder owned 264 bytes per operation, only 6.67% of the matched end-to-end allocation; SET encoding
+owned 8 bytes, or 0.19%. Translation owned about 10% in both cells. None could reach the frozen 20%
+floor even if eliminated perfectly.
+
+So no direct-encoder or request-context candidate was written. Combining several independently
+named W4 hypotheses to manufacture a threshold-sized result would destroy attribution. The useful
+outcome was narrower: close those candidates as measured below the isolated floor and move the
+profiler to key ownership, which crosses parser, translation and store boundaries and therefore may
+have a large enough single owner to justify its migration risk.
