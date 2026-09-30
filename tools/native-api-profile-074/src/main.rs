@@ -8,7 +8,10 @@ use std::time::{Duration, Instant};
 
 use bytes::Bytes;
 use hdrhistogram::Histogram;
-use hydracache::{CacheOptions, HydraCache};
+use hydracache::{
+    CacheOptions, ConsumerIsolation, ConsumerIsolationConfig, HydraCache, NamespaceQuota, Tenant,
+    TenantRoster,
+};
 use hydracache_client_protocol::{
     ClientRequest, ClientRequestEnvelope, ClientResponse, Namespace, StructuredKey,
 };
@@ -20,7 +23,7 @@ use hydracache_loadgen::allocation::{measure_allocations, AllocationMeasurement}
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 
-const PROFILE_ID: &str = "w1-w8-native-api-profile-074-v4";
+const PROFILE_ID: &str = "w1-w8-native-api-profile-074-v5";
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 enum ApiPath {
@@ -96,6 +99,7 @@ struct Options {
     seed: u64,
     subscriber: bool,
     instrumentation: bool,
+    isolation: bool,
     output: Option<PathBuf>,
 }
 
@@ -126,6 +130,7 @@ impl Options {
             seed: take(&mut values, "--seed", "74").parse()?,
             subscriber: parse_bool(&take(&mut values, "--subscriber", "false"))?,
             instrumentation: parse_bool(&take(&mut values, "--instrumentation", "true"))?,
+            isolation: parse_bool(&take(&mut values, "--isolation", "false"))?,
             output: values.remove("--output").map(PathBuf::from),
         };
         if !values.is_empty() {
@@ -274,6 +279,7 @@ struct Receipt {
     seed: u64,
     subscriber_enabled: bool,
     instrumentation_enabled: bool,
+    isolation_enabled: bool,
     workload_sha256: String,
     exact_result_validation: bool,
     elapsed_seconds: f64,
@@ -308,7 +314,23 @@ async fn main() -> Result<(), Box<dyn Error>> {
         .saturating_mul(2)
         .max(1);
     let cache = HydraCache::local().max_capacity(capacity).build();
-    let state = Arc::new(ClientSurfaceState::new(ClientSurfaceLimits::default())?);
+    let state = if options.isolation {
+        let tenant = Tenant::new("profile-074")?
+            .allow_client("profile-074")
+            .namespace(
+                "profile-074",
+                NamespaceQuota::new(capacity, options.key_space.saturating_mul(2)),
+            );
+        Arc::new(ClientSurfaceState::with_isolation(
+            ClientSurfaceLimits::default(),
+            ConsumerIsolation::new(
+                TenantRoster::new(vec![tenant])?,
+                ConsumerIsolationConfig::default(),
+            ),
+        )?)
+    } else {
+        Arc::new(ClientSurfaceState::new(ClientSurfaceLimits::default())?)
+    };
     let context = Context {
         cache,
         state: Arc::clone(&state),
@@ -457,6 +479,7 @@ fn build_receipt(options: &Options, observations: Observations) -> Receipt {
         seed: options.seed,
         subscriber_enabled: options.subscriber,
         instrumentation_enabled: options.instrumentation,
+        isolation_enabled: options.isolation,
         workload_sha256: workload_digest(options),
         exact_result_validation: true,
         elapsed_seconds: observations.workload.elapsed.as_secs_f64(),
@@ -871,6 +894,7 @@ fn workload_digest(options: &Options) -> String {
         options.key_space,
         options.seed,
         options.subscriber as u64,
+        options.isolation as u64,
     ] {
         digest.update(value.to_le_bytes());
     }
@@ -992,6 +1016,7 @@ mod tests {
             seed: 74,
             subscriber: false,
             instrumentation: true,
+            isolation: false,
             output: None,
         }
     }
@@ -1003,6 +1028,9 @@ mod tests {
         let client = options(ApiPath::ClientSurface, Operation::Get);
         assert_ne!(workload_digest(&raw), workload_digest(&typed));
         assert_ne!(workload_digest(&typed), workload_digest(&client));
+        let mut isolated = client.clone();
+        isolated.isolation = true;
+        assert_ne!(workload_digest(&client), workload_digest(&isolated));
     }
 
     #[test]
