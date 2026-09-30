@@ -74,6 +74,9 @@ fn client_surface_profile_counters_are_opt_in_bounded_and_resettable() {
         metrics.store_lock_hold_nanoseconds > 0,
         "unexpected profile metrics: {metrics:?}"
     );
+    assert_eq!(metrics.live_get_hits, 1);
+    assert_eq!(metrics.expired_get_removals, 0);
+    assert_eq!(metrics.missing_gets, 0);
 
     state.set_profile_instrumentation_enabled(false);
     state.reset_profile_metrics();
@@ -81,4 +84,47 @@ fn client_surface_profile_counters_are_opt_in_bounded_and_resettable() {
         state.profile_metrics(),
         ClientSurfaceProfileMetrics::default()
     );
+}
+
+#[test]
+fn client_surface_profile_separates_direct_expiry_cleanup_from_miss() {
+    let state = ClientSurfaceState::new(ClientSurfaceLimits::default()).unwrap();
+    let identity = ClientIdentity::new("profile-client", "profile-tenant").unwrap();
+    state.set_cache_time_for_tests(Some(1_000));
+    let put = state.dispatch_verified_request(
+        &identity,
+        ClientRequestEnvelope::new(
+            "put-expiring-074",
+            ClientRequest::Put {
+                ns: namespace(),
+                key: key(),
+                value: vec![7; 256],
+                ttl_ms: Some(1),
+                dimensions: Vec::new(),
+            },
+        ),
+    );
+    assert!(matches!(put.result, Ok(ClientResponse::Stored)));
+    state.advance_cache_time_for_tests(1);
+    state.set_profile_instrumentation_enabled(true);
+    state.reset_profile_metrics();
+
+    let expired = state.dispatch_verified_request(
+        &identity,
+        ClientRequestEnvelope::new(
+            "get-expired-074",
+            ClientRequest::Get {
+                ns: namespace(),
+                key: key(),
+            },
+        ),
+    );
+    assert!(matches!(
+        expired.result,
+        Ok(ClientResponse::Value { value: None })
+    ));
+    let metrics = state.profile_metrics();
+    assert_eq!(metrics.live_get_hits, 0);
+    assert_eq!(metrics.expired_get_removals, 1);
+    assert_eq!(metrics.missing_gets, 0);
 }

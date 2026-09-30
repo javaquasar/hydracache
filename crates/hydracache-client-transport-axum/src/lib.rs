@@ -463,6 +463,12 @@ pub struct ClientSurfaceProfileMetrics {
     pub store_lock_wait_nanoseconds: u64,
     /// Aggregate time holding the store mutex.
     pub store_lock_hold_nanoseconds: u64,
+    /// Live values returned by single-key GET.
+    pub live_get_hits: u64,
+    /// Expired values removed by the single-key GET lookup itself.
+    pub expired_get_removals: u64,
+    /// Single-key GET misses that were not removed by that lookup.
+    pub missing_gets: u64,
 }
 
 #[derive(Debug, Default)]
@@ -475,6 +481,9 @@ struct ClientSurfaceProfileInstrumentation {
     store_lock_acquisitions: AtomicU64,
     store_lock_wait_nanoseconds: AtomicU64,
     store_lock_hold_nanoseconds: AtomicU64,
+    live_get_hits: AtomicU64,
+    expired_get_removals: AtomicU64,
+    missing_gets: AtomicU64,
 }
 
 impl ClientSurfaceProfileInstrumentation {
@@ -491,6 +500,9 @@ impl ClientSurfaceProfileInstrumentation {
             &self.store_lock_acquisitions,
             &self.store_lock_wait_nanoseconds,
             &self.store_lock_hold_nanoseconds,
+            &self.live_get_hits,
+            &self.expired_get_removals,
+            &self.missing_gets,
         ] {
             counter.store(0, Ordering::Relaxed);
         }
@@ -505,6 +517,9 @@ impl ClientSurfaceProfileInstrumentation {
             store_lock_acquisitions: self.store_lock_acquisitions.load(Ordering::Relaxed),
             store_lock_wait_nanoseconds: self.store_lock_wait_nanoseconds.load(Ordering::Relaxed),
             store_lock_hold_nanoseconds: self.store_lock_hold_nanoseconds.load(Ordering::Relaxed),
+            live_get_hits: self.live_get_hits.load(Ordering::Relaxed),
+            expired_get_removals: self.expired_get_removals.load(Ordering::Relaxed),
+            missing_gets: self.missing_gets.load(Ordering::Relaxed),
         }
     }
 }
@@ -1379,12 +1394,24 @@ impl ClientSurfaceState {
                             );
                         }
                     }
-                    value
+                    (value, expired)
                 }) {
-                    Ok(value) => ClientResponseEnvelope::ok(
-                        envelope.request_id,
-                        ClientResponse::Value { value },
-                    ),
+                    Ok((value, expired)) => {
+                        if self.profile_instrumentation.enabled() {
+                            let counter = if expired {
+                                &self.profile_instrumentation.expired_get_removals
+                            } else if value.is_some() {
+                                &self.profile_instrumentation.live_get_hits
+                            } else {
+                                &self.profile_instrumentation.missing_gets
+                            };
+                            counter.fetch_add(1, Ordering::Relaxed);
+                        }
+                        ClientResponseEnvelope::ok(
+                            envelope.request_id,
+                            ClientResponse::Value { value },
+                        )
+                    }
                     Err(error) => ClientResponseEnvelope::error(envelope.request_id, error),
                 }
             }
