@@ -99,5 +99,6 @@ npx --prefix console playwright install chromium
   - Cover: [006-measuring-cache-performance-on-bare-metal-cover.png](006-measuring-cache-performance-on-bare-metal-cover.png)
   - Prompt: [006-measuring-cache-performance-on-bare-metal-cover.prompt.md](006-measuring-cache-performance-on-bare-metal-cover.prompt.md)
 - [Draft - Optimization Starts With Measurement: Reading Allocations, RSS, and Runtime Together](007-optimization-starts-with-measurement.md)
+- [Draft - A Benchmark Got 49% Faster—and the Optimization Still Failed](008-a-benchmark-got-faster-and-the-optimization-still-failed.md)
 - [Draft - Raft Snapshot Bugs, AI Agents, and the Cost of Ignoring Contradictions](002-raft-snapshot-agent-bug.md)
   - Cover: [002-raft-snapshot-agent-bug-cover.jpg](002-raft-snapshot-agent-bug-cover.jpg)

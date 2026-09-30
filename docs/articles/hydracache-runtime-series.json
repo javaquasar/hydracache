@@ -53,6 +53,11 @@
       "title": "Optimization Starts With Measurement: Reading Allocations, RSS, and Runtime Together",
       "file": "007-optimization-starts-with-measurement.md",
       "status": "draft"
+    },
+    {
+      "title": "A Benchmark Got 49% Faster—and the Optimization Still Failed",
+      "file": "008-a-benchmark-got-faster-and-the-optimization-still-failed.md",
+      "status": "draft"
     }
   ]
 }
