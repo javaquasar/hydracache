@@ -5,6 +5,7 @@ use std::hint::black_box;
 use std::path::PathBuf;
 use std::time::Instant;
 
+use hydracache_client_protocol::{ClientRequest, StructuredKey};
 use hydracache_loadgen::allocation::measure_allocations;
 use hydracache_redis_compat::{
     decode_resp2_command, encode_resp2_value, translate_redis_command, RedisCommand,
@@ -13,7 +14,7 @@ use hydracache_redis_compat::{
 use serde::Serialize;
 use sha2::{Digest, Sha256};
 
-const PROFILE_ID: &str = "w4-resp-stage-profile-074-v1";
+const PROFILE_ID: &str = "w4-w5-resp-stage-profile-074-v2";
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 enum Operation {
@@ -118,6 +119,8 @@ struct Receipt {
     seed: u64,
     workload_sha256: String,
     exact_result_validation: bool,
+    original_key_bytes: usize,
+    canonical_stable_key_bytes: usize,
     decode: StageMeasurement,
     translation_context: StageMeasurement,
     command_construction: StageMeasurement,
@@ -126,6 +129,7 @@ struct Receipt {
     response_construction: StageMeasurement,
     response_construction_and_encode: StageMeasurement,
     encode_incremental_allocated_bytes_per_operation: f64,
+    stable_key_materialization: StageMeasurement,
     limitations: Vec<&'static str>,
 }
 
@@ -137,6 +141,9 @@ async fn main() -> Result<(), Box<dyn Error>> {
     let request = request(options.operation, &key, &payload);
     let context = RedisTranslationContext::new("default", "redis-resp-stage")?;
     validate_fixture(options.operation, &request, &key, &payload, &context)?;
+    let translated = translate_redis_command(command(options.operation, &key, &payload), &context)?;
+    let translated_key = translated_key(&translated)?;
+    let canonical_stable_key_bytes = translated_key.stable_key().len();
 
     let decode = measure_stage(options.iterations, || {
         let (command, consumed) =
@@ -175,6 +182,13 @@ async fn main() -> Result<(), Box<dyn Error>> {
         Ok(length)
     })
     .await?;
+    let stable_key_materialization = measure_stage(options.iterations, || {
+        let stable = translated_key.stable_key();
+        let length = stable.len() as u64;
+        black_box(stable);
+        Ok(length)
+    })
+    .await?;
 
     let receipt = Receipt {
         schema_version: 1,
@@ -191,6 +205,8 @@ async fn main() -> Result<(), Box<dyn Error>> {
         seed: options.seed,
         workload_sha256: workload_digest(&options),
         exact_result_validation: true,
+        original_key_bytes: key.len(),
+        canonical_stable_key_bytes,
         translation_incremental_allocated_bytes_per_operation: command_construction_and_translation
             .gross_allocated_bytes_per_operation
             - command_construction.gross_allocated_bytes_per_operation,
@@ -203,6 +219,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
         command_construction_and_translation,
         response_construction,
         response_construction_and_encode,
+        stable_key_materialization,
         limitations: vec![
             "stage_cpu_includes_counting_allocator_overhead",
             "incremental_allocation_is_subtraction_of_deterministic_stage_totals",
@@ -218,6 +235,21 @@ async fn main() -> Result<(), Box<dyn Error>> {
     }
     println!("{json}");
     Ok(())
+}
+
+fn translated_key(translated: &RedisTranslatedCommand) -> Result<&StructuredKey, Box<dyn Error>> {
+    let RedisTranslatedCommand::Execute(plan) = translated else {
+        return Err("stage command did not produce an execution plan".into());
+    };
+    let request = &plan
+        .initial_requests()
+        .first()
+        .ok_or("stage execution plan has no initial request")?
+        .request;
+    match request {
+        ClientRequest::Get { key, .. } | ClientRequest::Put { key, .. } => Ok(key),
+        _ => Err("stage execution plan has the wrong request shape".into()),
+    }
 }
 
 async fn measure_stage<F>(
