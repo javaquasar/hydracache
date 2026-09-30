@@ -451,6 +451,20 @@ struct StoredValue {
 pub struct ClientSurfaceProfileMetrics {
     /// Verified requests that reached canonical dispatch.
     pub dispatches: u64,
+    /// Tenant/identity validation attempts at the alternate transport seam.
+    pub identity_validations: u64,
+    /// Aggregate time spent validating tenant/identity bindings.
+    pub identity_validation_nanoseconds: u64,
+    /// Protocol and operation-version validation attempts.
+    pub protocol_validations: u64,
+    /// Aggregate time spent validating protocol and operation versions.
+    pub protocol_validation_nanoseconds: u64,
+    /// Request-id and namespace bytes cloned for conditional rejection audit.
+    pub audit_context_bytes_cloned: u64,
+    /// PUT payload bytes moved into client-surface storage without cloning.
+    pub put_value_bytes_moved: u64,
+    /// GET payload bytes cloned from client-surface storage into responses.
+    pub get_value_bytes_cloned: u64,
     /// Reads of the request/expiry clock.
     pub clock_reads: u64,
     /// Ordinary or forced expiry sweep checks.
@@ -475,6 +489,13 @@ pub struct ClientSurfaceProfileMetrics {
 struct ClientSurfaceProfileInstrumentation {
     enabled: AtomicBool,
     dispatches: AtomicU64,
+    identity_validations: AtomicU64,
+    identity_validation_nanoseconds: AtomicU64,
+    protocol_validations: AtomicU64,
+    protocol_validation_nanoseconds: AtomicU64,
+    audit_context_bytes_cloned: AtomicU64,
+    put_value_bytes_moved: AtomicU64,
+    get_value_bytes_cloned: AtomicU64,
     clock_reads: AtomicU64,
     expiry_sweep_checks: AtomicU64,
     expiry_sweeps_claimed: AtomicU64,
@@ -494,6 +515,13 @@ impl ClientSurfaceProfileInstrumentation {
     fn reset(&self) {
         for counter in [
             &self.dispatches,
+            &self.identity_validations,
+            &self.identity_validation_nanoseconds,
+            &self.protocol_validations,
+            &self.protocol_validation_nanoseconds,
+            &self.audit_context_bytes_cloned,
+            &self.put_value_bytes_moved,
+            &self.get_value_bytes_cloned,
             &self.clock_reads,
             &self.expiry_sweep_checks,
             &self.expiry_sweeps_claimed,
@@ -511,6 +539,17 @@ impl ClientSurfaceProfileInstrumentation {
     fn snapshot(&self) -> ClientSurfaceProfileMetrics {
         ClientSurfaceProfileMetrics {
             dispatches: self.dispatches.load(Ordering::Relaxed),
+            identity_validations: self.identity_validations.load(Ordering::Relaxed),
+            identity_validation_nanoseconds: self
+                .identity_validation_nanoseconds
+                .load(Ordering::Relaxed),
+            protocol_validations: self.protocol_validations.load(Ordering::Relaxed),
+            protocol_validation_nanoseconds: self
+                .protocol_validation_nanoseconds
+                .load(Ordering::Relaxed),
+            audit_context_bytes_cloned: self.audit_context_bytes_cloned.load(Ordering::Relaxed),
+            put_value_bytes_moved: self.put_value_bytes_moved.load(Ordering::Relaxed),
+            get_value_bytes_cloned: self.get_value_bytes_cloned.load(Ordering::Relaxed),
             clock_reads: self.clock_reads.load(Ordering::Relaxed),
             expiry_sweep_checks: self.expiry_sweep_checks.load(Ordering::Relaxed),
             expiry_sweeps_claimed: self.expiry_sweeps_claimed.load(Ordering::Relaxed),
@@ -673,7 +712,11 @@ fn expiry_sweep_candidates(
 /// adding counters or timers to the production request path.
 #[cfg(feature = "performance-profile")]
 pub mod performance_profile {
-    use super::{expiry_sweep_candidates, StoreKey, StoredValue};
+    use super::{
+        expiry_sweep_candidates, store_key, ClientIdentity, ClientRequest, ClientRequestEnvelope,
+        ClientResponse, ClientSurfaceLimits, ClientSurfaceState, Namespace, StoreKey, StoredValue,
+        StructuredKey,
+    };
     use std::collections::BTreeMap;
 
     const FIXTURE_ENTRIES: usize = 512;
@@ -740,6 +783,103 @@ pub mod performance_profile {
         scenario: ExpirySweepProfileScenario,
         store: BTreeMap<StoreKey, StoredValue>,
         cursor: Option<StoreKey>,
+    }
+
+    /// Pointer and lifetime observations for the direct client-surface value path.
+    #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+    pub struct ClientValueOwnershipObservation {
+        /// Payload bytes moved through the fixture.
+        pub payload_bytes: usize,
+        /// PUT moved the request allocation into the store without copying it.
+        pub request_to_store_pointer_preserved: bool,
+        /// GET returned the same allocation retained by the store.
+        pub store_to_response_pointer_shared: bool,
+        /// A returned response remained valid after the stored value was replaced.
+        pub response_survived_store_replacement: bool,
+    }
+
+    /// Exercise the real direct client-surface PUT/GET path and expose only pointer identity.
+    ///
+    /// This hook is compiled only for the local performance profiler. It does not expose stored
+    /// values, tenant identities, or mutable backing storage.
+    pub fn observe_client_value_ownership(
+        payload_bytes: usize,
+    ) -> Result<ClientValueOwnershipObservation, String> {
+        let state = ClientSurfaceState::new(ClientSurfaceLimits::default())
+            .map_err(|error| error.to_string())?;
+        let identity = ClientIdentity::new("ownership-profile", "ownership-profile")
+            .map_err(|error| error.to_string())?;
+        let namespace = Namespace::new("ownership-profile").map_err(|error| error.to_string())?;
+        let key =
+            StructuredKey::new(vec!["value".to_owned()]).map_err(|error| error.to_string())?;
+        let map_key = store_key(&identity, &namespace, &key);
+        let value = vec![0x5a; payload_bytes];
+        let expected = value.clone();
+        let request_pointer = value.as_ptr();
+
+        let put = state.dispatch_verified_request(
+            &identity,
+            ClientRequestEnvelope::new(
+                "ownership-put",
+                ClientRequest::Put {
+                    ns: namespace.clone(),
+                    key: key.clone(),
+                    value,
+                    ttl_ms: None,
+                    dimensions: Vec::new(),
+                },
+            ),
+        );
+        if put.result != Ok(ClientResponse::Stored) {
+            return Err("ownership PUT was not stored".to_owned());
+        }
+        let stored_pointer = state
+            .lock_store()
+            .get(&map_key)
+            .map(|stored| stored.value.as_ptr())
+            .ok_or_else(|| "ownership PUT did not retain a value".to_owned())?;
+
+        let get = state.dispatch_verified_request(
+            &identity,
+            ClientRequestEnvelope::new(
+                "ownership-get",
+                ClientRequest::Get {
+                    ns: namespace.clone(),
+                    key: key.clone(),
+                },
+            ),
+        );
+        let response_value = match get.result {
+            Ok(ClientResponse::Value { value: Some(value) }) => value,
+            _ => return Err("ownership GET did not return the stored value".to_owned()),
+        };
+        let response_pointer = response_value.as_ptr();
+
+        let replacement = state.dispatch_verified_request(
+            &identity,
+            ClientRequestEnvelope::new(
+                "ownership-replace",
+                ClientRequest::Put {
+                    ns: namespace,
+                    key,
+                    value: vec![0xa5; payload_bytes],
+                    ttl_ms: None,
+                    dimensions: Vec::new(),
+                },
+            ),
+        );
+        if replacement.result != Ok(ClientResponse::Stored) {
+            return Err("ownership replacement was not stored".to_owned());
+        }
+
+        Ok(ClientValueOwnershipObservation {
+            payload_bytes,
+            request_to_store_pointer_preserved: payload_bytes == 0
+                || request_pointer == stored_pointer,
+            store_to_response_pointer_shared: payload_bytes == 0
+                || stored_pointer == response_pointer,
+            response_survived_store_replacement: response_value == expected,
+        })
     }
 
     impl ExpirySweepProfileFixture {
@@ -1117,14 +1257,22 @@ impl ClientSurfaceState {
         identity: &ClientIdentity,
         envelope: ClientRequestEnvelope,
     ) -> ClientResponseEnvelope {
-        if self
-            .validate_tenant_identity(
-                identity,
-                CLIENT_DATA_PATH,
-                Some(envelope.request_id.as_str()),
-            )
-            .is_err()
-        {
+        let profiling = self.profile_instrumentation.enabled();
+        let validation_started = profiling.then(Instant::now);
+        let identity_validation = self.validate_tenant_identity(
+            identity,
+            CLIENT_DATA_PATH,
+            Some(envelope.request_id.as_str()),
+        );
+        if let Some(started) = validation_started {
+            self.profile_instrumentation
+                .identity_validations
+                .fetch_add(1, Ordering::Relaxed);
+            self.profile_instrumentation
+                .identity_validation_nanoseconds
+                .fetch_add(elapsed_nanoseconds(started), Ordering::Relaxed);
+        }
+        if identity_validation.is_err() {
             let response_protocol_version = if protocol_version_supported(envelope.protocol_version)
             {
                 envelope.protocol_version
@@ -1352,6 +1500,19 @@ impl ClientSurfaceState {
         identity: &ClientIdentity,
         envelope: ClientRequestEnvelope,
     ) -> ClientResponseEnvelope {
+        let profiling = self.profile_instrumentation.enabled();
+        if profiling {
+            self.profile_instrumentation
+                .audit_context_bytes_cloned
+                .fetch_add(
+                    envelope
+                        .request_id
+                        .len()
+                        .saturating_add(request_namespace(&envelope.request).as_str().len())
+                        as u64,
+                    Ordering::Relaxed,
+                );
+        }
         let audit_request_id = envelope.request_id.clone();
         let audit_namespace = request_namespace(&envelope.request).as_str().to_owned();
         let audit_auth_failure = !matches!(&envelope.request, ClientRequest::ForceUnlock { .. });
@@ -1361,7 +1522,17 @@ impl ClientSurfaceState {
         } else {
             PROTOCOL_VERSION
         };
-        if let Err(error) = envelope.validate_protocol() {
+        let validation_started = profiling.then(Instant::now);
+        let protocol_validation = envelope.validate_protocol();
+        if let Some(started) = validation_started {
+            self.profile_instrumentation
+                .protocol_validations
+                .fetch_add(1, Ordering::Relaxed);
+            self.profile_instrumentation
+                .protocol_validation_nanoseconds
+                .fetch_add(elapsed_nanoseconds(started), Ordering::Relaxed);
+        }
+        if let Err(error) = protocol_validation {
             return ClientResponseEnvelope::error(envelope.request_id, error)
                 .with_protocol_version(response_protocol_version);
         }
@@ -1397,7 +1568,7 @@ impl ClientSurfaceState {
                     (value, expired)
                 }) {
                     Ok((value, expired)) => {
-                        if self.profile_instrumentation.enabled() {
+                        if profiling {
                             let counter = if expired {
                                 &self.profile_instrumentation.expired_get_removals
                             } else if value.is_some() {
@@ -1406,6 +1577,12 @@ impl ClientSurfaceState {
                                 &self.profile_instrumentation.missing_gets
                             };
                             counter.fetch_add(1, Ordering::Relaxed);
+                            self.profile_instrumentation
+                                .get_value_bytes_cloned
+                                .fetch_add(
+                                    value.as_ref().map_or(0, Vec::len) as u64,
+                                    Ordering::Relaxed,
+                                );
                         }
                         ClientResponseEnvelope::ok(
                             envelope.request_id,
@@ -2194,6 +2371,11 @@ impl ClientSurfaceState {
             }
         }
         let value_bytes = value.len() as u64;
+        if self.profile_instrumentation.enabled() {
+            self.profile_instrumentation
+                .put_value_bytes_moved
+                .fetch_add(value_bytes, Ordering::Relaxed);
+        }
         let stored = match ttl_ms {
             Some(ttl_ms) => StoredValue::with_ttl(value, now_ms, ttl_ms),
             None => StoredValue::persistent(value),
@@ -3198,6 +3380,67 @@ impl IntoResponse for ClientSurfaceError {
 #[cfg(test)]
 mod retention_tests {
     use super::*;
+
+    #[cfg(feature = "performance-profile")]
+    #[test]
+    fn client_value_ownership_profile_covers_registered_payload_sizes() {
+        for payload_bytes in [0, 64, 4 * 1024, 1024 * 1024] {
+            let observation =
+                performance_profile::observe_client_value_ownership(payload_bytes).unwrap();
+            assert_eq!(observation.payload_bytes, payload_bytes);
+            assert!(observation.request_to_store_pointer_preserved);
+            assert_eq!(
+                observation.store_to_response_pointer_shared,
+                payload_bytes == 0
+            );
+            assert!(observation.response_survived_store_replacement);
+        }
+    }
+
+    #[test]
+    fn profile_metrics_attribute_identity_audit_and_value_ownership() {
+        let state = ClientSurfaceState::new(ClientSurfaceLimits::default()).unwrap();
+        let identity = ClientIdentity::new("profile-client", "profile-tenant").unwrap();
+        let namespace = Namespace::new("profile").unwrap();
+        let key = StructuredKey::new(vec!["key".to_owned()]).unwrap();
+        state.set_profile_instrumentation_enabled(true);
+        state.reset_profile_metrics();
+
+        let put = state.dispatch_verified_request(
+            &identity,
+            ClientRequestEnvelope::new(
+                "put",
+                ClientRequest::Put {
+                    ns: namespace.clone(),
+                    key: key.clone(),
+                    value: vec![0x5a; 64],
+                    ttl_ms: None,
+                    dimensions: Vec::new(),
+                },
+            ),
+        );
+        assert_eq!(put.result, Ok(ClientResponse::Stored));
+
+        let get = state.dispatch_verified_request(
+            &identity,
+            ClientRequestEnvelope::new("get", ClientRequest::Get { ns: namespace, key }),
+        );
+        assert_eq!(
+            get.result,
+            Ok(ClientResponse::Value {
+                value: Some(vec![0x5a; 64])
+            })
+        );
+
+        let metrics = state.profile_metrics();
+        assert_eq!(metrics.dispatches, 2);
+        assert_eq!(metrics.identity_validations, 2);
+        assert_eq!(metrics.protocol_validations, 2);
+        assert_eq!(metrics.audit_context_bytes_cloned, 20);
+        assert_eq!(metrics.put_value_bytes_moved, 64);
+        assert_eq!(metrics.get_value_bytes_cloned, 64);
+        assert_eq!(metrics.live_get_hits, 1);
+    }
 
     fn put(
         state: &ClientSurfaceState,

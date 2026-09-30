@@ -11,7 +11,7 @@ bytes = "1"
 hdrhistogram = "7"
 hydracache = { path = "../../crates/hydracache" }
 hydracache-client-protocol = { path = "../../crates/hydracache-client-protocol" }
-hydracache-client-transport-axum = { path = "../../crates/hydracache-client-transport-axum" }
+hydracache-client-transport-axum = { path = "../../crates/hydracache-client-transport-axum", features = ["performance-profile"] }
 hydracache-loadgen = { path = "../../crates/hydracache-loadgen" }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"

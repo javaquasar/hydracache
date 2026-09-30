@@ -143,6 +143,43 @@ async fn get_encoded_returns_stored_bytes_without_decoding() {
 }
 
 #[tokio::test]
+async fn encoded_values_share_immutable_storage_across_put_and_get() {
+    for payload_bytes in [0, 64, 4 * 1024, 1024 * 1024] {
+        let cache = HydraCache::local()
+            .max_capacity((payload_bytes as u64).saturating_mul(4).max(1024))
+            .build();
+        let key = format!("ownership:{payload_bytes}");
+        let value = bytes::Bytes::from(vec![0x5a; payload_bytes]);
+        let input_pointer = value.as_ptr();
+
+        cache
+            .put_encoded(&key, value, CacheOptions::new())
+            .await
+            .unwrap();
+        let returned = cache
+            .get_encoded(&key)
+            .await
+            .unwrap()
+            .expect("encoded value");
+
+        if payload_bytes != 0 {
+            assert_eq!(returned.as_ptr(), input_pointer);
+        }
+        assert_eq!(returned.as_ref(), vec![0x5a; payload_bytes]);
+
+        cache
+            .put_encoded(
+                &key,
+                bytes::Bytes::from(vec![0xa5; payload_bytes]),
+                CacheOptions::new(),
+            )
+            .await
+            .unwrap();
+        assert_eq!(returned.as_ref(), vec![0x5a; payload_bytes]);
+    }
+}
+
+#[tokio::test]
 async fn get_encoded_removes_expired_entry() {
     let cache = HydraCache::local().build();
 

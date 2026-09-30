@@ -13,14 +13,14 @@ use hydracache_client_protocol::{
     ClientRequest, ClientRequestEnvelope, ClientResponse, Namespace, StructuredKey,
 };
 use hydracache_client_transport_axum::{
-    ClientIdentity, ClientSurfaceLimits, ClientSurfaceProfileMetrics, ClientSurfaceRetainedState,
-    ClientSurfaceState,
+    performance_profile::observe_client_value_ownership, ClientIdentity, ClientSurfaceLimits,
+    ClientSurfaceProfileMetrics, ClientSurfaceRetainedState, ClientSurfaceState,
 };
 use hydracache_loadgen::allocation::{measure_allocations, AllocationMeasurement};
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 
-const PROFILE_ID: &str = "w1-w6-native-api-profile-074-v2";
+const PROFILE_ID: &str = "w1-w8-native-api-profile-074-v3";
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 enum ApiPath {
@@ -136,12 +136,8 @@ impl Options {
     }
 
     fn validate(&self) -> Result<(), Box<dyn Error>> {
-        if self.operations == 0
-            || self.concurrency == 0
-            || self.payload_bytes == 0
-            || self.key_space == 0
-        {
-            return Err("operations, concurrency, payload, and key-space must be non-zero".into());
+        if self.operations == 0 || self.concurrency == 0 || self.key_space == 0 {
+            return Err("operations, concurrency, and key-space must be non-zero".into());
         }
         if self.source_commit.len() != 40
             || !self
@@ -215,6 +211,18 @@ struct LatencyReceipt {
 #[derive(Debug, Serialize)]
 struct ClientMetricsReceipt {
     dispatches: u64,
+    identity_validations: u64,
+    identity_validation_nanoseconds: u64,
+    identity_validation_nanoseconds_per_operation: f64,
+    protocol_validations: u64,
+    protocol_validation_nanoseconds: u64,
+    protocol_validation_nanoseconds_per_operation: f64,
+    audit_context_bytes_cloned: u64,
+    audit_context_bytes_cloned_per_operation: f64,
+    put_value_bytes_moved: u64,
+    put_value_bytes_moved_per_operation: f64,
+    get_value_bytes_cloned: u64,
+    get_value_bytes_cloned_per_operation: f64,
     clock_reads: u64,
     expiry_sweep_checks: u64,
     expiry_sweeps_claimed: u64,
@@ -236,6 +244,14 @@ struct EmbeddedReceipt {
     loads: u64,
     single_flight_joins: u64,
     loader_executions_observed: u64,
+}
+
+#[derive(Debug, Serialize)]
+struct ClientValueOwnershipReceipt {
+    payload_bytes: usize,
+    request_to_store_pointer_preserved: bool,
+    store_to_response_pointer_shared: bool,
+    response_survived_store_replacement: bool,
 }
 
 #[derive(Debug, Serialize)]
@@ -273,6 +289,7 @@ struct Receipt {
     retained_rss_delta_bytes: i128,
     retained_client_state: ClientSurfaceRetainedState,
     client_surface: ClientMetricsReceipt,
+    client_value_ownership: Option<ClientValueOwnershipReceipt>,
     embedded: EmbeddedReceipt,
     unavailable_metrics: [&'static str; 3],
 }
@@ -411,6 +428,16 @@ struct Observations {
 fn build_receipt(options: &Options, observations: Observations) -> Receipt {
     let operations = options.operations as f64;
     let client = observations.client;
+    let client_value_ownership = (options.surface == ApiPath::ClientSurface).then(|| {
+        let observation = observe_client_value_ownership(options.payload_bytes)
+            .expect("client value ownership fixture must remain valid");
+        ClientValueOwnershipReceipt {
+            payload_bytes: observation.payload_bytes,
+            request_to_store_pointer_preserved: observation.request_to_store_pointer_preserved,
+            store_to_response_pointer_shared: observation.store_to_response_pointer_shared,
+            response_survived_store_replacement: observation.response_survived_store_replacement,
+        }
+    });
     Receipt {
         schema_version: 1,
         release: "0.74",
@@ -459,6 +486,23 @@ fn build_receipt(options: &Options, observations: Observations) -> Receipt {
         retained_client_state: observations.retained,
         client_surface: ClientMetricsReceipt {
             dispatches: client.dispatches,
+            identity_validations: client.identity_validations,
+            identity_validation_nanoseconds: client.identity_validation_nanoseconds,
+            identity_validation_nanoseconds_per_operation: client.identity_validation_nanoseconds
+                as f64
+                / operations,
+            protocol_validations: client.protocol_validations,
+            protocol_validation_nanoseconds: client.protocol_validation_nanoseconds,
+            protocol_validation_nanoseconds_per_operation: client.protocol_validation_nanoseconds
+                as f64
+                / operations,
+            audit_context_bytes_cloned: client.audit_context_bytes_cloned,
+            audit_context_bytes_cloned_per_operation: client.audit_context_bytes_cloned as f64
+                / operations,
+            put_value_bytes_moved: client.put_value_bytes_moved,
+            put_value_bytes_moved_per_operation: client.put_value_bytes_moved as f64 / operations,
+            get_value_bytes_cloned: client.get_value_bytes_cloned,
+            get_value_bytes_cloned_per_operation: client.get_value_bytes_cloned as f64 / operations,
             clock_reads: client.clock_reads,
             expiry_sweep_checks: client.expiry_sweep_checks,
             expiry_sweeps_claimed: client.expiry_sweeps_claimed,
@@ -473,6 +517,7 @@ fn build_receipt(options: &Options, observations: Observations) -> Receipt {
             expired_get_removals: client.expired_get_removals,
             missing_gets: client.missing_gets,
         },
+        client_value_ownership,
         embedded: observations.embedded,
         unavailable_metrics: [
             "per_stage_codec_and_moka_allocations_not_yet_instrumented",
