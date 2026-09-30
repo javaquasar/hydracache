@@ -6,7 +6,8 @@
 >   get/put/CAS/conditional-remove/listener subset into a production-ready map surface with
 >   explicit single-key atomic return-value operations, bounded bulk operations, unambiguous TTL
 >   directives, reconnect-safe entry listeners, HC/2 and SDK support, and executable compatibility
->   evidence.
+>   evidence, then run a preregistered same-semantics comparison against a pinned real Hazelcast
+>   release to identify where either product has a measurable advantage.
 > - **Why:** the current facade is useful for a narrow migration slice but still forces callers to
 >   build common map operations from multiple network round trips. Client-side read/compare/write
 >   composition is racy, bulk emulation amplifies protocol overhead, and ambiguous retry or expiry
@@ -54,6 +55,12 @@ Release 0.75 widens only the map family. Its product claim is:
 It does **not** claim Hazelcast wire compatibility, `com.hazelcast.*` binary compatibility, the
 complete `IMap` interface, a CP subsystem, global iteration, query/index support, or durable event
 streaming.
+
+Any performance comparison is a separate, scenario-scoped claim. Release 0.75 never compresses
+the results into “HydraCache is faster than Hazelcast.” A claim names the exact operation,
+topology, replication/persistence mode, payload, concurrency, offered load, SLO, product and
+tooling identities, host fingerprint, estimator, and uncertainty interval. Losing and
+not-comparable cells are published beside winning cells.
 
 ## Public operation matrix
 
@@ -148,6 +155,8 @@ frozen policy; it never blocks a mutation.
 - Making entry listeners an audit log, CDC system, exactly-once stream, or global total order.
 - Changing the existing fenced-lock reentrancy and recovery contract.
 - Sacrificing the accepted 0.74 native or RESP performance path to obtain source familiarity.
+- A composite benchmark score, universal “faster than Hazelcast” claim, or comparison that gives
+  one product weaker replication, persistence, TLS, listener, Near Cache, or correctness work.
 
 ## Work-item sequence
 
@@ -403,31 +412,248 @@ Mandatory layers:
 Create one canary for every release-blocking guard. The meta-gate proves each canary fails its
 target guard. Seeds and minimized failures enter the frozen regression corpus.
 
-## W11. Protect performance and resource bounds
+## W11. Protect 0.74 performance and run a real Hazelcast comparison
 
 Freeze the published 0.74 candidate as `B74` and the pre-optimization instrumented 0.75 tree as
-`I75`. Compare accepted candidates without changing workload or thresholds after results are seen.
+`I75`. The internal `B74/I75` qualification remains release-blocking even if HydraCache wins an
+external cell: a competitor result cannot excuse a regression against our own published product.
+The external comparison is divided into W11a-W11g so configuration, correctness, load generation,
+faults, resource accounting, and publication cannot be tuned after viewing the outcome.
 
-Required cells:
+### W11a. Freeze product identities, semantic cohorts, and the comparison contract
 
-- existing get/put/delete/CAS single-key paths;
-- each new return-value mutation with values at 0, 16, 256, and maximum accepted bytes;
-- bulk get/put/remove at 1, 8, 64, and 256 keys, distinct and duplicate inputs;
-- direct native, HC/1, HC/2 Rust, and HC/2 Java facade paths;
-- listeners off, metadata-only, value-including, slow, and gap-repair modes;
-- 1, 8, 32, and 128 concurrent clients where the accepted 0.74 harness supports them;
-- persistence off/on and expiry inactive/active as separate cohorts;
-- steady, overload, cancellation, reconnect, and post-idle cleanup checkpoints.
+Create `docs/testing/imap/0.75/hazelcast-comparison-contract.toml` and a generated human-readable
+mirror. Freeze before measurement:
 
-Record goodput, p50/p95/p99, CPU/op, gross allocations/op, copied bytes, request/response bytes,
-lock contention, write/flush counts, retained dedup bytes, active subscriptions, RSS, and logical
-owners. Existing 0.74 operations and embedded/direct-native controls are release-blocking
-non-regression lanes. A new operation is not accepted merely because it is faster than client-side
-emulation; it must also remain bounded and semantically stronger.
+- the exact open-source Hazelcast GA Maven coordinates, JAR checksums, container image digest,
+  source tag/commit, Java vendor/version/flags, and client artifact;
+- the exact HydraCache product candidate, HC/2 Java SDK/facade artifacts, server image/binary,
+  dependency lockfile, `hydra-moka` identity, and compatibility generation;
+- the common benchmark-harness commit and package digest;
+- server/load-generator host fingerprints, kernel, governor, NUMA/CPU affinity, memory, NIC,
+  filesystem, TLS implementation, and `iperf3` bandwidth/packet-rate fingerprint;
+- keys, values, codecs, key distribution, cardinality, seed, operation mix, concurrency, async
+  depth, warm-up, duration, cooldown, offered-load schedule, reset procedure, and SLO;
+- replication, persistence, TLS, authentication, listener, Near Cache, expiry, eviction, and
+  admission settings for both products;
+- estimator, confidence method, practical-effect thresholds, repeat count, alternating order,
+  exclusion rules, and artifact-retention policy.
 
-Long-run qualification proves fixed-cardinality owner bounds, expiry cleanup, dedup cleanup,
-listener release, reconnect stability, and no monotonic RSS/owner trend under the frozen estimator.
-No portable numerical superiority claim is made from shared hardware.
+The primary comparison uses raw binary keys/values and Hazelcast `BINARY` in-memory format so Java
+object serialization is not charged to only one side. Hazelcast documents `BINARY` as its default
+and the efficient form for get/put workloads:
+<https://docs.hazelcast.com/hazelcast/5.7/data-structures/setting-data-format>.
+
+Three cohorts are distinct and never pooled:
+
+1. **S1 API hot path:** one HydraCache daemon versus one Hazelcast member, replication and
+   persistence off, Near Cache off, listeners off except in listener cells, equivalent TLS/auth,
+   and a separate load-generator host. Hazelcast `backup-count=0` is explicit; this cohort makes
+   only a single-member map/API claim.
+2. **S2 production-equivalent cluster:** three equivalent server hosts and a separate load
+   generator, with the same acknowledged replica count, persistence, TLS, routing and failure
+   semantics. Hazelcast defaults to one synchronous backup, whose acknowledgement has real write
+   cost (<https://docs.hazelcast.com/hazelcast/5.6/fault-tolerance/backups>). If HydraCache cannot
+   prove an equivalent distributed HC/2 value plane after 0.75 implementation, S2 is recorded
+   `not-comparable` and no distributed-IMap performance claim is published.
+3. **S3 feature-cost deltas:** TTL inactive/active, listener off/metadata/value, Near Cache off/on
+   only where HydraCache has a genuinely equivalent cache, and persistence off/on only under a
+   matched acknowledgement contract. Each feature is measured as its own on-minus-off delta as
+   well as an absolute product result.
+
+Hazelcast Enterprise `NATIVE`/High-Density Memory is outside the primary open-source comparison.
+If a valid license and review authorize it, it is a separately labelled cohort and never replaces
+the open-source `BINARY` result. Hazelcast map defaults and named configuration are retained in the
+artifact because the defaults include one synchronous backup and binary storage:
+<https://docs.hazelcast.com/hazelcast/5.7/data-structures/map-config>.
+
+**Gate:** `cargo xtask imap-competitor-check --release 0.75 --contract
+docs/testing/imap/0.75/hazelcast-comparison-contract.toml` fails on a floating dependency/image,
+unmatched semantic toggle, shared client/server CPU, missing network fingerprint, changed
+post-result threshold, or a cluster claim whose equivalence guard is not green. A negative canary
+sets Hazelcast backup count to one only on one side and must make admission red.
+
+### W11b. Build one common Java load generator and prove semantic equivalence first
+
+Add an isolated `tests/java-imap-benchmark` package with one internal adapter contract and two
+implementations:
+
+```java
+interface MapBenchmarkAdapter extends AutoCloseable {
+  Result get(byte[] key);
+  Result put(byte[] key, byte[] value, TtlDirective ttl);
+  Result putIfAbsent(byte[] key, byte[] value, TtlDirective ttl);
+  Result replace(byte[] key, byte[] expected, byte[] replacement, TtlDirective ttl);
+  Result getAndPut(byte[] key, byte[] value, TtlDirective ttl);
+  Result getAndRemove(byte[] key);
+  BulkResult getAll(List<byte[]> keys);
+  BulkResult putAll(List<Entry> entries);
+  BulkResult removeAll(List<byte[]> keys);
+}
+```
+
+`HydraMapBenchmarkAdapter` uses the packaged 0.75 Java facade/HC2 client;
+`HazelcastIMapBenchmarkAdapter` uses the pinned official client. Both run in the same harness
+process model with the same executors, random schedule, key/value arrays, codec boundary,
+histogram, connection warm-up, operation chooser, correctness counters, and cancellation policy.
+The harness supports closed-loop saturation only as a separate mode; the primary latency mode is
+open-loop fixed-rate so coordinated omission cannot hide queued time.
+
+Before any timed run, a semantic differential executes the same seeded trace against fresh
+instances and checks:
+
+- return outcome and previous-value equivalence for every shared operation;
+- exactly-one winner for `putIfAbsent` and conditional mutation races;
+- final canonical key/value digest and live cardinality;
+- TTL state transitions at logical before/after checkpoints rather than wall-clock equality;
+- duplicate-key normalization/rejection and bulk item order;
+- listener event class, value-presence policy, and explicit gap divergence;
+- error class for size, deadline, authorization, unsupported, and partial outcomes.
+
+Documented API divergences are excluded from the direct cell or reported as separate behavior;
+they are never coerced into equality. A semantic red result prevents performance execution for
+that cell. Hazelcast Simulator is retained as an independent reproduction/fault tool, not the
+primary cross-product generator. Its official framework supports throughput, fixed-rate latency,
+stress, spike, soak and failure testing:
+<https://docs.hazelcast.com/hazelcast/5.6/test/testing-performance> and
+<https://github.com/hazelcast/hazelcast-simulator>.
+
+### W11c. Run the paired single-member API and saturation campaign
+
+S1 covers the common operation families:
+
+- `get`, `containsKey`, void `put`, delete and existing CAS;
+- `putIfAbsent`, replace-if-present, compare-and-replace, conditional remove;
+- `getAndPut` and `getAndRemove`;
+- `getAll`, `putAll`, and explicit-key `removeAll` at batch sizes 1, 8, 64, and 256;
+- listener off, metadata-only and value-including modes;
+- TTL inactive, stable-TTL reads, scheduled expiry and continuous expiry churn.
+
+Freeze at least these dimensions:
+
+| Dimension | Required values |
+| --- | --- |
+| Key bytes | 16, 64, 256 |
+| Value bytes | 0, 64, 256, 1 KiB, 16 KiB, negotiated maximum as a boundary-only cell |
+| Live cardinality | 10,000; 100,000; 1,000,000 where both products fit without swapping |
+| Client concurrency | 1, 8, 32, 128 |
+| Async in-flight depth | 1, 8, 32 |
+| Key distribution | uniform; frozen Zipfian; one-hot-key contention |
+| Operation mix | 100% read; 95/5; 50/50; 10/90 read/write; conditional-only; bulk-only |
+
+Two modes answer different questions:
+
+- **fixed-rate latency:** step through preregistered offered loads below, near and above the
+  previously located knee; report goodput, queueing and p50/p95/p99/p99.9 at each level;
+- **saturation:** increase offered load until the frozen error/p99/resource condition fails, then
+  report the last sustainable goodput rather than all submitted requests.
+
+The load generator runs on a separate machine for publishable evidence. A same-box or container
+comparison is useful only as a diagnostic and is labelled non-publishable. Server CPU affinity is
+identical and excludes load-generator CPUs. Each repeat starts from a verified empty store,
+preloads the same generated bytes, validates the digest/cardinality, completes fixed warm-up, and
+captures calibration before and after the measured phase.
+
+### W11d. Run a cluster/scaling campaign only under an equivalence guard
+
+If and only if S2 admission passes, compare one- and three-member layouts using identical server
+hardware and a separate load-generator host. Freeze:
+
+- acknowledged synchronous replica count and placement/failure domains;
+- smart/owner routing or proxy routing behavior visible to each client;
+- persistence and fsync/group-commit acknowledgement;
+- partition/member count and completed rebalance before measurement;
+- client count, connections per client and topology refresh behavior;
+- no Near Cache unless an equivalent, coherently invalidated HydraCache mode exists.
+
+Measure scale-out efficiency, per-node goodput, aggregate goodput, p99/p99.9, network bytes and
+packets, owner/proxy hop ratio, rebalance quietness, replica acknowledgement cost and skew across
+members. A one-to-three-node increase is not called scale-out if it also changes backup count,
+client placement or data cardinality per cluster.
+
+If HydraCache remains node-local at the HC/2 map value plane, W11d produces an explicit
+`not-comparable: distributed-value-plane-absent` receipt. It must not run Hazelcast with backups or
+partitioning disabled merely to manufacture a three-node comparison.
+
+### W11e. Compare failure, recovery, overload, and long-run behavior
+
+For each admitted topology inject one fault at a frozen logical checkpoint:
+
+- kill, pause and restart the authoritative server/member;
+- reset/refuse one client connection before dispatch and after apply-before-response;
+- partition one member from peers and separately from clients;
+- delay/drop duplicate responses and topology updates;
+- overflow a slow listener and reconnect it;
+- expire hot entries during owner failure/recovery;
+- fill admission/backpressure limits and then remove overload;
+- run a fixed-cardinality soak with periodic mutations and reconnects.
+
+Record recovery time from the injected signal, successful goodput, p99/p99.9 excursion, error and
+timeout counts, lost acknowledged writes, duplicate mutations, stale reads where allowed,
+incorrect conditional winners, listener gaps/duplicates, topology convergence, replica health,
+and post-recovery state digest. Products with different guarantees are described separately; a
+weaker availability result is not presented as a latency advantage.
+
+Long-run qualification also proves expiry cleanup, dedup cleanup, listener release, reconnect
+stability, fixed logical owners and no positive retained-memory trend under the frozen estimator.
+
+### W11f. Attribute CPU, memory, GC, network, and economic efficiency
+
+Collect the whole service footprint, not Rust heap versus Java heap:
+
+- process and cgroup RSS, PSS where available, virtual/resident mappings and post-idle delta;
+- Hazelcast JVM heap used/committed, metaspace, code cache, direct/native buffers, thread stacks,
+  allocation rate, GC count/pause/time and safepoints;
+- HydraCache allocator active/allocated/retained, mmap/page-cache attribution, task/thread stacks
+  and logical retained owners;
+- server and client CPU time, CPU/op, context switches, cycles/instructions/cache misses where the
+  host profiler permits;
+- network bytes/op, packets/op, retransmits and connections;
+- live entry bytes, backup entry bytes, dedup/subscription bytes and bytes per live logical entry;
+- startup-to-ready, preload time, post-expiry cleanup time and post-idle steady state;
+- actual hourly machine price and successful SLO-qualified operations per currency unit.
+
+Natural steady/post-idle results are primary. Forced GC or allocator purge may be used only as a
+separate diagnostic applied symmetrically and never substituted for the operational footprint.
+Memory is compared only at equal live cardinality, payload bytes, replication and feature state.
+Cost claims use identical purchasable machines and actual frozen prices, not theoretical CPU list
+prices.
+
+### W11g. Apply paired statistics and a fail-closed publication policy
+
+Run at least five independently started pairs per claim cell on the same dedicated hosts. Alternate
+product order by a preregistered balanced sequence, keep failed attempts, and never rerun only the
+losing side. Bind every pair to product/tooling/harness/config/host/workload hashes and nested
+SHA-256 manifests.
+
+Use a paired Hodges-Lehmann relative-effect estimate and preregistered bootstrap confidence
+interval. Report raw observations, medians, interval, calibration drift and practical threshold.
+The following default claim floors may be changed only by a reviewed contract commit before the
+first measurement:
+
+- **goodput advantage:** estimate at least +10%, interval excludes zero, zero correctness errors,
+  and p99 is no worse than +5% at the same offered load/SLO;
+- **tail-latency advantage:** p99 estimate at least 10% lower, interval excludes zero, and goodput
+  is no worse than -5%; p99.9 is reported and may veto on a preregistered instability guard;
+- **memory advantage:** equal-cardinality total steady/post-idle RSS or PSS estimate at least 15%
+  lower, interval excludes zero, with CPU/op and cleanup outcomes non-regressing;
+- **cost advantage:** at least 15% more successful SLO-qualified operations per actual currency
+  unit, with the underlying goodput/resource evidence independently valid;
+- **feature-overhead advantage:** compare the on-minus-off delta for TTL or listener mode; absolute
+  values are still shown so a low delta cannot conceal a slow baseline.
+
+No weighted score or winner count is produced. Every cell terminates as `hydra-advantage`,
+`hazelcast-advantage`, `equivalent-within-practical-bound`, `inconclusive`, `not-comparable`, or
+`invalid-infrastructure`, with reason and artifact links. Negative and inconclusive results remain
+in the release archive and article. Shared/cloud-noisy exploratory results may choose candidates
+but cannot support a public numerical superiority claim.
+
+**Internal 0.74 non-regression cells:** alongside W11a-W11g, retain existing get/put/delete/CAS,
+new return-value operations, batches 1/8/64/256, direct native, HC/1, HC/2 Rust/Java, listeners,
+expiry, persistence, concurrency, overload, cancellation, reconnect and post-idle checkpoints.
+Record goodput, p50/p95/p99/p99.9, CPU/op, gross allocations/op, copied bytes, request/response
+bytes, lock contention, write/flush counts, retained dedup bytes, active subscriptions, RSS and
+logical owners. A new method is not accepted merely because it beats client-side emulation.
 
 ## W12. Release evidence, documentation, and rollback
 
@@ -449,6 +675,9 @@ Publish:
 - listener delivery and repair contract;
 - TTL migration guide;
 - performance/resource evidence and rejected-candidate ledger;
+- the complete Hazelcast comparison contract, common-harness package, semantic differential,
+  single-member report, conditional cluster/fault report, raw paired observations, memory/GC/CPU/
+  network profiles, statistical decisions, and all Hazelcast-winning/inconclusive cells;
 - rollback instructions that preserve readable old bytes and old clients;
 - an article section explaining why a familiar method name is not sufficient evidence of
   distributed semantics.
@@ -472,6 +701,8 @@ Expected primary changes include:
 - `sdks/java/hydracache-client-hc2/src/main/java/io/hydracache/client/hc2/RecoveringHydraCacheClient.java`;
 - `sdks/java/hydracache-hazelcast-facade/src/main/java/io/hydracache/hazelcast/HydraMap.java`;
 - `sdks/java/hydracache-hazelcast-facade/src/main/resources/META-INF/hydracache/hazelcast-capabilities.properties`;
+- `tests/java-imap-benchmark` with the common adapter, semantic oracle and open-loop driver;
+- `docs/testing/imap/0.75` comparison contracts, identities, raw/derived manifests and reports;
 - focused Rust/Java protocol, facade, interop, property, process, fuzz, and performance tests;
 - `docs/COMPAT.md`, `docs/GATES.md`, integration docs, test evidence, release notes, and article.
 
@@ -486,8 +717,8 @@ tests, and deterministic canaries.
 
 Scheduled or exact-candidate gates include complete old/new compatibility, production-daemon Rust
 and Java interop, bounded fuzz, deterministic owner-change/fault schedules, real-process listener
-and reconnect tests, performance comparison, long-run resource qualification, package consumers,
-and rollback.
+and reconnect tests, pinned real-Hazelcast semantic differential, paired S1 performance, guarded
+S2 cluster/fault comparison, long-run resource qualification, package consumers, and rollback.
 
 The release does not ship from `cargo test` alone. Every exact-candidate receipt binds product SHA,
 tooling SHA, generated schema digest, SDK artifact digest, workload identity, host identity where
@@ -517,6 +748,9 @@ Release 0.75 is eligible only when:
 - retained old/new clients and daemons pass the complete compatibility matrix;
 - retries cannot duplicate a mutation or invent success after an ambiguous outcome;
 - the existing 0.74 native/RESP paths pass their frozen non-regression gates;
+- W11a-W11g retain the exact Hazelcast identity/configuration, common Java harness, semantic
+  equivalence receipts, all paired runs and losses, and no cluster claim where S2 equivalence is
+  unavailable;
 - all fast, scheduled, fuzz, fault, package, rollback, canary, and exact-candidate evidence is green;
 - unsupported Hazelcast methods still fail loudly and the public claim matches the capability
   manifest exactly.
