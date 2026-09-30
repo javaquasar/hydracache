@@ -275,6 +275,14 @@ Three mechanisms earned another iteration:
    paths and may own enough repeated work to matter. They should be measured separately before a
    verified-session or zero-copy candidate is authorized.
 
+That attribution later separated two owners. Raw embedded values already preserve the same
+immutable `Bytes` allocation across PUT and GET, so there is no raw zero-copy patch to invent.
+Typed access necessarily owns codec output. The direct client surface, however, moves its request
+`Vec` into storage on PUT and clones the complete payload on every GET. With tenant isolation
+enabled, repeated roster validation also became a contended c8 owner. These observations authorize
+two experiments—not one combined fast path: generation-fenced identity reuse and, separately, an
+immutable client-value representation.
+
 Four attractive directions did not earn more implementation work in this cycle:
 
 - unconditional cursor parsing, because copy removal barely moved end-to-end throughput;

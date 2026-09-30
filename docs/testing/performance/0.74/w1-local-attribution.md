@@ -304,11 +304,74 @@ guards the built candidate, not only source-level intent. W7 is therefore reject
 and unfavorable receipts are retained, thresholds are unchanged, and only the candidate seam and
 its API-specific tests are reverted.
 
+## W8 identity, session and value ownership attribution
+
+The v3 ownership screen is retained as falsified exploratory evidence. Its GET validator rebuilt the
+expected payload as a fresh `Vec` inside the allocation window, adding one artificial payload-sized
+allocation to every surface. No v3 allocation number is used below. The v4 tool validates the same
+deterministic bytes without allocating an expected value; 72 exact-response receipts cover raw
+embedded, typed embedded and direct client-surface GET/PUT at 0 B, 64 B, 4 KiB and 1 MiB, with three
+independent processes per cell. The 1 MiB cells use 500 operations and remain owner-ranking data,
+not timing claims.
+
+Median gross allocation per operation was:
+
+| Operation | Payload | Raw embedded B/op | Typed embedded B/op | Client surface B/op |
+| --- | ---: | ---: | ---: | ---: |
+| GET | 0 B | 104.24 | 104.24 | 227.40 |
+| GET | 64 B | 104.24 | 168.24 | 291.40 |
+| GET | 4 KiB | 104.24 | 4,200.24 | 4,323.40 |
+| GET | 1 MiB | 663.29 | 1,049,239.29 | 1,049,358.42 |
+| PUT | 0 B | 2,443.61 | 2,475.61 | 227.40 |
+| PUT | 64 B | 2,531.61 | 2,779.61 | 291.40 |
+| PUT | 4 KiB | 6,563.61 | 22,939.61 | 4,323.40 |
+| PUT | 1 MiB | 1,051,604.44 | 5,245,900.44 | 1,049,358.42 |
+
+Pointer fixtures at all four payload sizes establish the ownership boundary. Raw embedded
+`put_encoded` moves an immutable `Bytes` owner into the cache and `get_encoded` returns a cheap
+clone with the same backing allocation. Direct ClientSurface PUT also moves its request `Vec` into
+the store without copying. Direct ClientSurface GET clones the complete stored `Vec`; its exact
+`get_value_bytes_cloned` counter equals the payload in every measured operation, and the returned
+value remains valid after replacement. Typed embedded GET necessarily owns a decoded `Vec`, while
+typed PUT additionally pays codec serialization growth. W8b is therefore `measured-no-win` for raw
+embedded, expected codec ownership for typed embedded, and an authorized isolated owner for direct
+ClientSurface GET. Any candidate must preserve immutable response lifetime and cannot claim typed
+or network zero copy.
+
+The v5 identity screen enables real `ConsumerIsolation` with a bounded tenant roster and namespace
+quota. Three processes per cell cover GET/PUT, 64 B/4 KiB and c1/c8. The profile times the existing
+identity and protocol validation without bypassing admission:
+
+| Cell | Identity validation ns/op | Protocol validation ns/op | Audit context B/op |
+| --- | ---: | ---: | ---: |
+| GET 64 B, c1 | 88.49 | 34.27 | 26.78 |
+| GET 64 B, c8 | 12,820.68 | 53.65 | 26.78 |
+| GET 4 KiB, c1 | 89.14 | 33.91 | 26.78 |
+| GET 4 KiB, c8 | 15,933.37 | 54.36 | 26.78 |
+| PUT 64 B, c1 | 88.32 | 33.95 | 26.78 |
+| PUT 64 B, c8 | 19,131.84 | 52.77 | 26.78 |
+| PUT 4 KiB, c1 | 86.87 | 33.61 | 26.78 |
+| PUT 4 KiB, c8 | 21,514.22 | 52.69 | 26.78 |
+
+The c8 values are aggregate waiter time and include contention on the isolation mutex; they are not
+wall-clock latency. At c1, identity plus protocol validation is below the 20% CPU floor. At c8,
+repeated roster resolution is a material contended owner and authorizes only the W8a
+generation-fenced session experiment. Per-request quota, admission, audit, deadlines, request ids
+and mutation publication remain outside the session. W8a and the ClientSurface value-ownership
+candidate remain separate hypotheses and must be benchmarked independently.
+
+All v4 receipts bind profile `w1-w8-native-api-profile-074-v4` to source
+`49075afbaa057d36af0186890b81b95ec7d7fbb6`; all isolated v5 receipts bind
+`w1-w8-native-api-profile-074-v5` to source
+`b4ea64ce6f1ade0c21615866f714bef19d087828`. Every receipt is local, non-promotable and carries
+exact-result validation.
+
 ## Next step and open risks
 
-W7 has settled as a negative result. W8 remains unauthorized until D1 separately measures repeated
-identity/session work and value ownership; the rejected DEL result is not permission to combine
-those hypotheses or to weaken native guards. W6b also remains unauthorized.
+W7 has settled as a negative result. W8 attribution authorizes two independent experiments: W8a
+generation-fenced identity reuse for tenant-isolated concurrency, then a separate W8b
+ClientSurface immutable-value owner. The rejected DEL result is not permission to combine those
+hypotheses or to weaken native guards. W6b remains unauthorized.
 
 W0, syscall-level attribution, final instrumentation overhead, HC/1 and HC/2 process controls,
 Redis same-box comparison, persistence cells, and all expensive release qualification remain open.
