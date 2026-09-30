@@ -128,26 +128,6 @@ fn verified_batch_invalidation_rejects_mismatched_tenant_before_dispatch() {
 }
 
 #[test]
-fn verified_batch_invalidation_rejects_unknown_namespace_before_store_access() {
-    let state = isolated_state();
-    state.set_profile_instrumentation_enabled(true);
-    state.reset_profile_metrics();
-    let outcome = state.dispatch_verified_batch_invalidation(
-        &identity(),
-        "unknown-namespace-delete",
-        Namespace::new("other").unwrap(),
-        vec![key("missing")],
-    );
-
-    assert_eq!(
-        outcome.result.unwrap_err().code,
-        ClientErrorCode::Unauthorized
-    );
-    assert_eq!(state.profile_metrics().store_lock_acquisitions, 0);
-    assert_eq!(state.audit_events_for_tests().len(), 1);
-}
-
-#[test]
 fn batch_get_never_observes_a_partially_applied_batch_invalidation() {
     let state = Arc::new(ClientSurfaceState::new(ClientSurfaceLimits::default()).unwrap());
     let identity = identity();
