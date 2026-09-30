@@ -30,7 +30,7 @@ async fn deep_pipeline_reclaims_input_once_without_moving_suffixes() {
     let metrics = server.pipeline_metrics();
     assert_eq!(metrics.decoded_commands, 100);
     assert_eq!(metrics.parser_consumed_bytes, request.len() as u64);
-    assert_eq!(metrics.input_compactions, 1);
+    assert_eq!(metrics.input_compactions, 0);
     assert_eq!(metrics.input_compaction_moved_bytes, 0);
 }
 
@@ -59,7 +59,7 @@ async fn partial_pipeline_moves_only_the_incomplete_suffix_once() {
 
     let metrics = server.pipeline_metrics();
     assert_eq!(metrics.decoded_commands, 2);
-    assert_eq!(metrics.input_compactions, 2);
+    assert_eq!(metrics.input_compactions, 1);
     assert_eq!(metrics.input_compaction_moved_bytes, split as u64);
 }
 

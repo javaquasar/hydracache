@@ -812,7 +812,12 @@ impl RespReadBuffer {
             count <= self.unread_len(),
             "RESP decoder consumed beyond the unread input"
         );
-        self.start += count;
+        if count == self.unread_len() {
+            self.bytes.clear();
+            self.start = 0;
+        } else {
+            self.start += count;
+        }
     }
 
     /// Reclaim the consumed prefix once before the next socket read.
