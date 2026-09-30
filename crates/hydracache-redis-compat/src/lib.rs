@@ -1385,20 +1385,6 @@ impl RedisRespServer {
     }
 
     fn execute_plan(&self, plan: RedisExecutionPlan, identity: &ClientIdentity) -> RespValue {
-        if let Some(batch) = plan.batch_invalidation() {
-            let outcome = self.state.dispatch_verified_batch_invalidation(
-                identity,
-                batch.request_id(),
-                batch.namespace().clone(),
-                batch.keys().to_vec(),
-            );
-            return match outcome.result {
-                Ok(items) => {
-                    RespValue::Integer(items.iter().filter(|item| item.removed).count() as i64)
-                }
-                Err(error) => client_error_to_resp(&error),
-            };
-        }
         let mut responses = plan
             .initial_requests()
             .iter()
@@ -2585,34 +2571,8 @@ pub enum RedisExtensionRequest {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct RedisExecutionPlan {
     initial_requests: Vec<ClientRequestEnvelope>,
-    batch_invalidation: Option<RedisBatchInvalidation>,
     followup: RedisFollowup,
     reducer: RedisResponseReducer,
-}
-
-/// One decoded multi-key invalidation delegated to the native client surface.
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct RedisBatchInvalidation {
-    request_id: String,
-    namespace: Namespace,
-    keys: Vec<StructuredKey>,
-}
-
-impl RedisBatchInvalidation {
-    /// Stable request id assigned by the RESP facade.
-    pub fn request_id(&self) -> &str {
-        &self.request_id
-    }
-
-    /// Canonical namespace selected by the listener.
-    pub fn namespace(&self) -> &Namespace {
-        &self.namespace
-    }
-
-    /// Deduplicated canonical keys in first-occurrence order.
-    pub fn keys(&self) -> &[StructuredKey] {
-        &self.keys
-    }
 }
 
 impl RedisExecutionPlan {
@@ -2621,18 +2581,44 @@ impl RedisExecutionPlan {
         &self.initial_requests
     }
 
-    /// Return the native batch invalidation delegated by this plan, if any.
-    pub fn batch_invalidation(&self) -> Option<&RedisBatchInvalidation> {
-        self.batch_invalidation.as_ref()
-    }
-
     /// Build follow-up requests after initial responses have been dispatched.
     pub fn followup_requests(
         &self,
-        _responses: &[ClientResponseEnvelope],
+        responses: &[ClientResponseEnvelope],
     ) -> Result<Vec<ClientRequestEnvelope>, RedisTranslationError> {
         match &self.followup {
             RedisFollowup::None => Ok(Vec::new()),
+            RedisFollowup::InvalidateExisting {
+                namespace,
+                keys,
+                request_id,
+            } => {
+                let Some(initial_response) = responses.first() else {
+                    return Err(RedisTranslationError::UnexpectedClientResponse {
+                        detail: "missing initial DEL lookup response".to_owned(),
+                    });
+                };
+                if initial_response.result.is_err() {
+                    return Ok(Vec::new());
+                }
+                let values = batch_values(initial_response, keys.len())?;
+                Ok(values
+                    .into_iter()
+                    .zip(keys.iter())
+                    .enumerate()
+                    .filter_map(|(index, (value, key))| {
+                        value.map(|_| {
+                            ClientRequestEnvelope::new(
+                                format!("{request_id}-invalidate-{index}"),
+                                ClientRequest::Invalidate {
+                                    ns: namespace.clone(),
+                                    key: key.clone(),
+                                },
+                            )
+                        })
+                    })
+                    .collect())
+            }
         }
     }
 
@@ -2648,6 +2634,11 @@ impl RedisExecutionPlan {
 #[derive(Debug, Clone, PartialEq, Eq)]
 enum RedisFollowup {
     None,
+    InvalidateExisting {
+        namespace: Namespace,
+        keys: Vec<StructuredKey>,
+        request_id: String,
+    },
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -2814,13 +2805,18 @@ pub fn translate_redis_command(
             let structured_keys = dedupe_structured_keys(redis_keys_to_structured_keys(keys)?);
             let expected_items = structured_keys.len();
             RedisTranslatedCommand::Execute(RedisExecutionPlan {
-                initial_requests: Vec::new(),
-                batch_invalidation: Some(RedisBatchInvalidation {
-                    request_id: context.request_id_for("del"),
+                initial_requests: vec![ClientRequestEnvelope::new(
+                    context.request_id_for("del-lookup"),
+                    ClientRequest::BatchGet {
+                        ns: context.namespace.clone(),
+                        keys: structured_keys.clone(),
+                    },
+                )],
+                followup: RedisFollowup::InvalidateExisting {
                     namespace: context.namespace.clone(),
                     keys: structured_keys,
-                }),
-                followup: RedisFollowup::None,
+                    request_id: context.request_id_for("del"),
+                },
                 reducer: RedisResponseReducer::Del { expected_items },
             })
         }
@@ -2971,7 +2967,6 @@ fn single_request_plan(
             context.request_id_for(suffix),
             request,
         )],
-        batch_invalidation: None,
         followup: RedisFollowup::None,
         reducer,
     }
@@ -6912,20 +6907,6 @@ mod tests {
         match translated {
             RedisTranslatedCommand::Immediate(value) => value,
             RedisTranslatedCommand::Execute(plan) => {
-                if let Some(batch) = plan.batch_invalidation() {
-                    let outcome = state.dispatch_verified_batch_invalidation(
-                        identity,
-                        batch.request_id(),
-                        batch.namespace().clone(),
-                        batch.keys().to_vec(),
-                    );
-                    return match outcome.result {
-                        Ok(items) => RespValue::Integer(
-                            items.iter().filter(|item| item.removed).count() as i64,
-                        ),
-                        Err(error) => client_error_to_resp(&error),
-                    };
-                }
                 let mut responses = plan
                     .initial_requests()
                     .iter()
@@ -7010,6 +6991,7 @@ mod tests {
 #[cfg(test)]
 mod translation_contract {
     use super::*;
+    use hydracache_client_protocol::BatchItemStatus;
     use serde_json::Value;
     use std::collections::BTreeSet;
 
@@ -7308,7 +7290,6 @@ mod translation_contract {
                 format!("redis-resp-{suffix}"),
                 request,
             )],
-            batch_invalidation: None,
             followup: RedisFollowup::None,
             reducer,
         })
@@ -7752,7 +7733,7 @@ mod translation_contract {
     }
 
     #[test]
-    fn del_translation_freezes_native_batch_deduplication_and_reducer() {
+    fn del_translation_freezes_lookup_followups_deduplication_and_reducer() {
         let context = RedisTranslationContext::default();
         let RedisTranslatedCommand::Execute(plan) = translate_redis_command(
             RedisCommand::Del {
@@ -7766,19 +7747,46 @@ mod translation_contract {
         assert_eq!(
             plan,
             RedisExecutionPlan {
-                initial_requests: Vec::new(),
-                batch_invalidation: Some(RedisBatchInvalidation {
-                    request_id: "redis-resp-del".to_owned(),
+                initial_requests: vec![ClientRequestEnvelope::new(
+                    "redis-resp-del-lookup",
+                    ClientRequest::BatchGet {
+                        ns: namespace(),
+                        keys: vec![key("61"), key("62")],
+                    },
+                )],
+                followup: RedisFollowup::InvalidateExisting {
                     namespace: namespace(),
                     keys: vec![key("61"), key("62")],
-                }),
-                followup: RedisFollowup::None,
+                    request_id: "redis-resp-del".to_owned(),
+                },
                 reducer: RedisResponseReducer::Del { expected_items: 2 },
             }
         );
-        assert!(plan.initial_requests().is_empty());
-        assert_eq!(plan.batch_invalidation().unwrap().keys().len(), 2);
-        assert!(plan.followup_requests(&[]).unwrap().is_empty());
+
+        let lookup = ClientResponseEnvelope::ok(
+            "redis-resp-del-lookup",
+            ClientResponse::Batch {
+                items: vec![
+                    BatchItemStatus {
+                        index: 0,
+                        result: Ok(Some(b"1".to_vec())),
+                    },
+                    BatchItemStatus {
+                        index: 1,
+                        result: Ok(None),
+                    },
+                ],
+            },
+        );
+        let followups = plan.followup_requests(&[lookup]).unwrap();
+        assert_eq!(followups.len(), 1);
+        assert_eq!(
+            followups[0].request,
+            ClientRequest::Invalidate {
+                ns: namespace(),
+                key: key("61")
+            }
+        );
     }
 
     #[test]
@@ -8341,7 +8349,7 @@ mod core_invariants {
     }
 
     #[test]
-    fn del_routes_to_one_atomic_native_batch_without_lookup_followups() {
+    fn del_concurrent_write_atomicity_is_documented_debt_not_a_frozen_guarantee() {
         let context = RedisTranslationContext::default();
         let RedisTranslatedCommand::Execute(plan) = translate_redis_command(
             RedisCommand::Del {
@@ -8352,10 +8360,17 @@ mod core_invariants {
         .unwrap() else {
             panic!("DEL must execute through the client surface");
         };
-        assert!(plan.initial_requests().is_empty());
-        assert!(plan.followup_requests(&[]).unwrap().is_empty());
-        let batch = plan.batch_invalidation().unwrap();
-        assert_eq!(batch.keys(), &[redis_key_to_structured_key(b"k").unwrap()]);
+        assert!(matches!(
+            plan.initial_requests()[0].request,
+            ClientRequest::BatchGet { .. }
+        ));
+        assert!(matches!(
+            plan.followup,
+            RedisFollowup::InvalidateExisting { .. }
+        ));
+        // The lookup and invalidation are two dispatch phases. This is an
+        // executable characterization of the current race window, not an
+        // assertion that DEL is atomic with a concurrent writer.
     }
 
     #[test]
