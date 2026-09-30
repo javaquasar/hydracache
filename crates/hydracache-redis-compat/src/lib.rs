@@ -781,6 +781,60 @@ struct RedisConnectionState {
     patterns: BTreeSet<Vec<u8>>,
 }
 
+#[derive(Debug)]
+struct RespReadBuffer {
+    bytes: Vec<u8>,
+    start: usize,
+}
+
+impl RespReadBuffer {
+    fn with_capacity(capacity: usize) -> Self {
+        Self {
+            bytes: Vec::with_capacity(capacity),
+            start: 0,
+        }
+    }
+
+    fn unread(&self) -> &[u8] {
+        &self.bytes[self.start..]
+    }
+
+    fn unread_len(&self) -> usize {
+        self.bytes.len() - self.start
+    }
+
+    fn extend_from_slice(&mut self, input: &[u8]) {
+        self.bytes.extend_from_slice(input);
+    }
+
+    fn consume(&mut self, count: usize) {
+        assert!(
+            count <= self.unread_len(),
+            "RESP decoder consumed beyond the unread input"
+        );
+        self.start += count;
+    }
+
+    /// Reclaim the consumed prefix once before the next socket read.
+    ///
+    /// Returns the unread suffix bytes physically moved. A fully consumed
+    /// buffer is cleared without copying and reports zero.
+    fn compact_before_read(&mut self) -> Option<usize> {
+        if self.start == 0 {
+            return None;
+        }
+        let moved = self.unread_len();
+        if moved == 0 {
+            self.bytes.clear();
+        } else {
+            self.bytes.copy_within(self.start.., 0);
+            self.bytes.truncate(moved);
+        }
+        self.start = 0;
+        Some(moved)
+    }
+}
+
 impl RedisConnectionState {
     fn new(identity: &ClientIdentity, auth: &RedisAuthConfig) -> Self {
         Self {
@@ -944,9 +998,19 @@ impl RedisRespServer {
         let mut mutation_subscriber: Option<ClientSurfaceMutationSubscriber> = None;
         let mut native_mutation_subscriber: Option<CacheEventSubscriber> = None;
         let mut subscriber_count = EventSubscriberCountGuard::new(&self.active_event_subscribers);
-        let mut buffer = Vec::with_capacity(self.config.read_buffer_bytes);
+        let mut buffer = RespReadBuffer::with_capacity(self.config.read_buffer_bytes);
         let mut read_chunk = vec![0; self.config.read_buffer_bytes];
         loop {
+            if let Some(moved) = buffer.compact_before_read() {
+                if self.pipeline_instrumentation.enabled() {
+                    self.pipeline_instrumentation
+                        .input_compactions
+                        .fetch_add(1, Ordering::Relaxed);
+                    self.pipeline_instrumentation
+                        .input_compaction_moved_bytes
+                        .fetch_add(moved as u64, Ordering::Relaxed);
+                }
+            }
             let bytes_read = if connection.is_subscribed() {
                 let subscriber = mutation_subscriber
                     .as_mut()
@@ -1009,12 +1073,12 @@ impl RedisRespServer {
                     .fetch_add(bytes_read as u64, Ordering::Relaxed);
                 self.pipeline_instrumentation
                     .input_buffer_high_water_bytes
-                    .fetch_max(buffer.len() as u64, Ordering::Relaxed);
+                    .fetch_max(buffer.unread_len() as u64, Ordering::Relaxed);
             }
 
-            while !buffer.is_empty() {
+            while !buffer.unread().is_empty() {
                 let decoded = decode_resp_command_with_limits(
-                    &buffer,
+                    buffer.unread(),
                     connection.dialect,
                     self.config.decode_limits,
                 );
@@ -1034,14 +1098,8 @@ impl RedisRespServer {
                     self.pipeline_instrumentation
                         .parser_consumed_bytes
                         .fetch_add(consumed as u64, Ordering::Relaxed);
-                    self.pipeline_instrumentation
-                        .input_compactions
-                        .fetch_add(1, Ordering::Relaxed);
-                    self.pipeline_instrumentation
-                        .input_compaction_moved_bytes
-                        .fetch_add((buffer.len() - consumed) as u64, Ordering::Relaxed);
                 }
-                buffer.drain(..consumed);
+                buffer.consume(consumed);
 
                 let should_close = matches!(command, RedisCommand::Quit);
                 if self
