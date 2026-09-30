@@ -229,6 +229,29 @@ impl ConsumerIsolation {
         Ok(tenant_id)
     }
 
+    /// Admit one request and verify that its namespace belongs to the tenant.
+    ///
+    /// Batch operations use this once before acquiring their backing store so
+    /// an unknown namespace cannot become a successful empty/miss-only batch.
+    pub fn admit_request_for_namespace(
+        &mut self,
+        client_id: &str,
+        namespace: &str,
+    ) -> Result<TenantId, AdmissionRejection> {
+        let tenant_id = self.admit_request(client_id)?;
+        let tenant = self
+            .roster
+            .tenant(&tenant_id)
+            .expect("tenant id came from roster");
+        if tenant.quota(namespace).is_none() {
+            return Err(AdmissionRejection::UnknownNamespace {
+                tenant: tenant_id,
+                namespace: namespace.to_owned(),
+            });
+        }
+        Ok(tenant_id)
+    }
+
     /// Store one value if quota permits.
     pub fn admit_put(
         &mut self,
