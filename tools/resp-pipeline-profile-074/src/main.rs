@@ -137,9 +137,13 @@ impl Options {
             .into());
         }
         if self.operation == Operation::Del
-            && self.key_space < self.operations.max(self.warmup_operations)
+            && self.key_space
+                < self
+                    .operations
+                    .max(self.warmup_operations)
+                    .saturating_mul(self.batch_size as u64)
         {
-            return Err("DEL requires key-space >= max(operations, warmup-operations) for exact one-hit semantics".into());
+            return Err("DEL requires key-space >= max(operations, warmup-operations) * batch-size for exact one-hit semantics".into());
         }
         Ok(())
     }
@@ -426,12 +430,15 @@ async fn preload(
     operations: u64,
 ) -> Result<(), Box<dyn Error>> {
     let mut preload_options = options.clone();
-    preload_options.operation =
-        if options.batch_size > 1 && matches!(options.operation, Operation::Mget) {
-            Operation::Mset
-        } else {
-            Operation::Set
-        };
+    preload_options.operation = if options.batch_size > 1
+        && matches!(
+            options.operation,
+            Operation::Mget | Operation::Del | Operation::Exists
+        ) {
+        Operation::Mset
+    } else {
+        Operation::Set
+    };
     run_workload(Arc::clone(server), &preload_options, operations).await?;
     Ok(())
 }
@@ -524,7 +531,10 @@ async fn run_client(
 }
 
 fn exchange_bytes(options: &Options, sequence: u64) -> (Vec<u8>, Vec<u8>) {
-    let key_count = if matches!(options.operation, Operation::Mget | Operation::Mset) {
+    let key_count = if matches!(
+        options.operation,
+        Operation::Mget | Operation::Mset | Operation::Del | Operation::Exists
+    ) {
         options.batch_size
     } else {
         1
@@ -561,14 +571,22 @@ fn exchange_bytes(options: &Options, sequence: u64) -> (Vec<u8>, Vec<u8>) {
             }
             (command(&arguments), b"+OK\r\n".to_vec())
         }
-        Operation::Del => (
-            command(&[b"DEL".as_slice(), keys[0].as_slice()]),
-            b":1\r\n".to_vec(),
-        ),
-        Operation::Exists => (
-            command(&[b"EXISTS".as_slice(), keys[0].as_slice()]),
-            b":1\r\n".to_vec(),
-        ),
+        Operation::Del => {
+            let mut arguments = vec![b"DEL".as_slice()];
+            arguments.extend(keys.iter().map(Vec::as_slice));
+            (
+                command(&arguments),
+                format!(":{}\r\n", keys.len()).into_bytes(),
+            )
+        }
+        Operation::Exists => {
+            let mut arguments = vec![b"EXISTS".as_slice()];
+            arguments.extend(keys.iter().map(Vec::as_slice));
+            (
+                command(&arguments),
+                format!(":{}\r\n", keys.len()).into_bytes(),
+            )
+        }
     }
 }
 
@@ -586,7 +604,10 @@ fn value(options: &Options, sequence: u64, batch_index: usize) -> Vec<u8> {
 }
 
 fn logical_key(options: &Options, sequence: u64, batch_index: usize) -> u64 {
-    let width = if matches!(options.operation, Operation::Mget | Operation::Mset) {
+    let width = if matches!(
+        options.operation,
+        Operation::Mget | Operation::Mset | Operation::Del | Operation::Exists
+    ) {
         options.batch_size as u64
     } else {
         1
@@ -773,6 +794,16 @@ mod tests {
             assert!(request.ends_with(b"\r\n"));
             assert!(response.ends_with(b"\r\n"));
         }
+    }
+
+    #[test]
+    fn multi_key_del_requires_a_unique_preloaded_key_for_every_item() {
+        let mut del = options(Operation::Del);
+        del.batch_size = 4;
+        del.key_space = del.operations * del.batch_size as u64;
+        del.validate().unwrap();
+        del.key_space -= 1;
+        assert!(del.validate().is_err());
     }
 
     #[tokio::test]
