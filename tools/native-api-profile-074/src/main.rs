@@ -20,7 +20,7 @@ use hydracache_loadgen::allocation::{measure_allocations, AllocationMeasurement}
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 
-const PROFILE_ID: &str = "w1-native-api-profile-074-v1";
+const PROFILE_ID: &str = "w1-w6-native-api-profile-074-v2";
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 enum ApiPath {
@@ -54,6 +54,7 @@ impl ApiPath {
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 enum Operation {
     Get,
+    ExpiredGet,
     Put,
     Hit,
     SingleFlight,
@@ -63,6 +64,7 @@ impl Operation {
     fn parse(value: &str) -> Result<Self, Box<dyn Error>> {
         match value {
             "get" => Ok(Self::Get),
+            "expired-get" => Ok(Self::ExpiredGet),
             "put" => Ok(Self::Put),
             "hit" => Ok(Self::Hit),
             "single-flight" => Ok(Self::SingleFlight),
@@ -73,6 +75,7 @@ impl Operation {
     fn name(self) -> &'static str {
         match self {
             Self::Get => "get",
+            Self::ExpiredGet => "expired-get",
             Self::Put => "put",
             Self::Hit => "hit",
             Self::SingleFlight => "single-flight",
@@ -160,6 +163,16 @@ impl Options {
                 "get-or-insert requires hit/single-flight; other surfaces require get/put".into(),
             );
         }
+        if self.operation == Operation::ExpiredGet {
+            if self.surface != ApiPath::ClientSurface {
+                return Err("expired-get requires the client-surface".into());
+            }
+            if self.key_space < self.operations.max(self.warmup_operations) {
+                return Err(
+                    "expired-get requires key-space >= max(operations, warmup-operations)".into(),
+                );
+            }
+        }
         Ok(())
     }
 }
@@ -210,6 +223,9 @@ struct ClientMetricsReceipt {
     store_lock_hold_nanoseconds: u64,
     store_lock_wait_nanoseconds_per_operation: f64,
     store_lock_hold_nanoseconds_per_operation: f64,
+    live_get_hits: u64,
+    expired_get_removals: u64,
+    missing_gets: u64,
 }
 
 #[derive(Debug, Serialize)]
@@ -284,7 +300,9 @@ async fn main() -> Result<(), Box<dyn Error>> {
     };
     let loader_executions = Arc::new(AtomicU64::new(0));
 
-    if options.operation != Operation::SingleFlight {
+    if options.operation == Operation::ExpiredGet {
+        prepare_expired(&context, &options).await?;
+    } else if options.operation != Operation::SingleFlight {
         preload(&context, &options).await?;
     }
     if options.warmup_operations > 0 {
@@ -297,6 +315,8 @@ async fn main() -> Result<(), Box<dyn Error>> {
         .await?;
         if options.operation == Operation::SingleFlight {
             context.cache.flush().await?;
+        } else if options.operation == Operation::ExpiredGet {
+            prepare_expired(&context, &options).await?;
         }
         loader_executions.store(0, Ordering::Relaxed);
     }
@@ -449,6 +469,9 @@ fn build_receipt(options: &Options, observations: Observations) -> Receipt {
                 / operations,
             store_lock_hold_nanoseconds_per_operation: client.store_lock_hold_nanoseconds as f64
                 / operations,
+            live_get_hits: client.live_get_hits,
+            expired_get_removals: client.expired_get_removals,
+            missing_gets: client.missing_gets,
         },
         embedded: observations.embedded,
         unavailable_metrics: [
@@ -466,6 +489,27 @@ async fn preload(context: &Context, options: &Options) -> Result<(), Box<dyn Err
     for sequence in 0..options.key_space {
         put_one(context, options.surface, options, sequence).await?;
     }
+    Ok(())
+}
+
+async fn prepare_expired(context: &Context, options: &Options) -> Result<(), Box<dyn Error>> {
+    for sequence in 0..options.key_space {
+        let response = dispatch(
+            context,
+            sequence,
+            ClientRequest::Put {
+                ns: context.namespace.clone(),
+                key: structured_key(options, sequence),
+                value: payload(options, sequence),
+                ttl_ms: Some(1),
+                dimensions: Vec::new(),
+            },
+        );
+        if response != ClientResponse::Stored {
+            return Err("expired-get preload was not stored".into());
+        }
+    }
+    context.state.advance_cache_time_for_tests(1);
     Ok(())
 }
 
@@ -620,6 +664,20 @@ async fn execute_one(
                     Ok(())
                 }
                 _ => Err("client-surface value mismatch".to_owned()),
+            }
+        }
+        (ApiPath::ClientSurface, Operation::ExpiredGet) => {
+            let response = dispatch(
+                context,
+                sequence,
+                ClientRequest::Get {
+                    ns: context.namespace.clone(),
+                    key: structured_key(options, sequence),
+                },
+            );
+            match response {
+                ClientResponse::Value { value: None } => Ok(()),
+                _ => Err("client-surface expired GET was not a miss".to_owned()),
             }
         }
         (ApiPath::GetOrInsert, Operation::Hit) => {
@@ -885,11 +943,12 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn four_paths_validate_real_results() {
+    async fn five_paths_validate_real_results() {
         for (surface, operation) in [
             (ApiPath::RawEmbedded, Operation::Get),
             (ApiPath::TypedEmbedded, Operation::Put),
             (ApiPath::ClientSurface, Operation::Get),
+            (ApiPath::ClientSurface, Operation::ExpiredGet),
             (ApiPath::GetOrInsert, Operation::Hit),
         ] {
             let options = options(surface, operation);
@@ -899,7 +958,11 @@ mod tests {
                 identity: ClientIdentity::new("test", "test").unwrap(),
                 namespace: Namespace::new("test").unwrap(),
             };
-            preload(&context, &options).await.unwrap();
+            if operation == Operation::ExpiredGet {
+                prepare_expired(&context, &options).await.unwrap();
+            } else {
+                preload(&context, &options).await.unwrap();
+            }
             let result = run_workload(
                 context,
                 &options,
