@@ -137,6 +137,19 @@ fn multitenancy_tenant_resolved_from_identity() {
 }
 
 #[test]
+fn namespace_scoped_admission_rejects_unknown_namespace_once() {
+    let mut isolation = isolation();
+    let tenant = isolation
+        .admit_request_for_namespace("client-a", "users")
+        .expect("known namespace is admitted");
+    assert_eq!(tenant.as_str(), "tenant-a");
+    assert!(matches!(
+        isolation.admit_request_for_namespace("client-a", "unknown"),
+        Err(AdmissionRejection::UnknownNamespace { .. })
+    ));
+}
+
+#[test]
 fn multitenancy_oversized_payload_rejected_before_cache_mutation() {
     let mut isolation = ConsumerIsolation::new(
         roster(),
