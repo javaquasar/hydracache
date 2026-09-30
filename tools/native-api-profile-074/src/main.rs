@@ -523,7 +523,7 @@ async fn run_single_flight(
                 let actual = cache
                     .get_or_insert_with(&key, CacheOptions::new(), move || async move {
                         loaders.fetch_add(1, Ordering::Relaxed);
-                        tokio::task::yield_now().await;
+                        tokio::time::sleep(Duration::from_millis(1)).await;
                         value
                     })
                     .await
