@@ -21,8 +21,11 @@ fields, proposal isolation, required metrics, and the expected pending predecess
 fail if asked for ship admission while publication, Redis provenance, or release evidence is
 incomplete.
 
+The first non-promotable local attribution and the rejected W2 result are documented in
+[`w1-local-attribution.md`](w1-local-attribution.md). Raw identity-bound receipts are retained under
+`local-runs/`.
+
 Numerical receipts must never be hand-edited into claims. Every receipt binds the trace, payload
 and key corpora, seed, warmup, duration, offered schedule, concurrency, pipeline depth, security,
 persistence and final-state digest. Errors, timeouts, rejections, late operations and incomplete
 operations stay in the goodput denominator.
-

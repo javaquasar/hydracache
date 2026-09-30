@@ -2130,3 +2130,32 @@ did not tell us what threshold to publish or what optimization to ship. It told 
 investigate next.
 
 That is what a good profiler and a good benchmark should do.
+
+## Release 0.74: when eliminating copies was still not enough
+
+The first 0.74 investigation applied the same discipline to the RESP pipeline. Source inspection
+showed two persuasive costs: `Vec::drain` moved the unread suffix after every decoded command, and
+every reply performed its own write and flush. Neither observation was accepted as an optimization
+result until a dedicated local tool counted commands, consumed and moved bytes, response frames,
+writes, flushes, allocations, CPU, latency, lock time and retained state under an identical trace.
+
+The attribution was unambiguous. A pipeline-10 GET moved 265.5 suffix bytes per command; SET moved
+1453.5. Each command also produced one high-level write and one explicit flush. Pipeline-1 moved no
+suffix bytes, giving the input candidate a natural unaffected control. Separate native receipts
+also prevented a RESP improvement from being confused with raw embedded, typed-codec, or direct
+client-surface cost.
+
+The first cursor implementation eliminated repeated suffix copies, but it deferred clearing a fully
+consumed buffer until the next read. Counterbalanced processes exposed a small pipeline-1 penalty.
+An eager-clear revision removed that avoidable transition. It achieved the intended mechanical
+result—zero moved suffix bytes for complete pipeline-10 batches—but still failed the frozen local
+non-regression guards: the five-pair median showed -2.45% SET pipeline-1 goodput, just beyond the
+-2% limit, and +4.30% GET pipeline-1 CPU/op, beyond the +3% limit.
+
+Those figures are local rejection evidence, not portable performance claims. The important result
+is the decision. We retained every sample, did not widen the thresholds, documented the noisy pairs,
+and reverted only the input-buffer candidate. The next independent hypothesis—bounded output
+coalescing—remained eligible because its owner, tests and rollback boundary were distinct.
+
+This is a useful refinement of “optimization starts with measurement”: making the suspected cost
+disappear is necessary, but not sufficient. The candidate must also survive its unaffected controls.

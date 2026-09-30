@@ -1,0 +1,81 @@
+{
+  "schema_version": 1,
+  "release": "0.74",
+  "profile_id": "w1-native-api-profile-074-v1",
+  "source_commit": "c56a0da576e401e8d6b392d0788e3f4ee46235b5",
+  "binary_sha256": "sha256:39526297320ab2afd1954dea30d53b5f242bcc41aae847b600084a917fcca2e6",
+  "build_profile": "release",
+  "tier": "local-quick",
+  "promotable": false,
+  "surface": "client-surface",
+  "operation": "get",
+  "operations": 100000,
+  "warmup_operations": 8000,
+  "concurrency": 8,
+  "payload_bytes": 256,
+  "key_space": 4096,
+  "seed": 74,
+  "subscriber_enabled": false,
+  "instrumentation_enabled": true,
+  "workload_sha256": "sha256:eb88f80b5dd3daeb828af974fa901c3736a1a4151bf57fb8d8fe97b0049694a4",
+  "exact_result_validation": true,
+  "elapsed_seconds": 0.2668319,
+  "goodput_operations_per_second": 374767.78451152204,
+  "latency": {
+    "unit": "logical_operation",
+    "samples": 100000,
+    "p50_us": 3,
+    "p95_us": 67,
+    "p99_us": 115,
+    "max_us": 436
+  },
+  "cpu_seconds": 0.40625,
+  "cpu_nanoseconds_per_operation": 4062.5,
+  "gross_allocated_bytes": 74664115,
+  "gross_allocated_bytes_per_operation": 746.64115,
+  "rss_before_bytes": 8544256,
+  "rss_after_bytes": 8871936,
+  "peak_rss_bytes": 9842688,
+  "retained_rss_delta_bytes": 327680,
+  "retained_client_state": {
+    "store_entries": 4096,
+    "value_bytes": 1048576,
+    "store_identity_bytes": 270336,
+    "idempotency_outcomes": 0,
+    "idempotency_identity_bytes": 0,
+    "audit_events": 0,
+    "conditional": {
+      "records": 0,
+      "live_records": 0,
+      "tombstones": 0,
+      "locks": 0,
+      "session_heartbeats": 0,
+      "tombstone_gc_watermarks": 0,
+      "identity_bytes": 0
+    }
+  },
+  "client_surface": {
+    "dispatches": 100000,
+    "clock_reads": 200000,
+    "expiry_sweep_checks": 100000,
+    "expiry_sweeps_claimed": 0,
+    "store_lock_acquisitions": 100000,
+    "store_lock_wait_nanoseconds": 1767063500,
+    "store_lock_hold_nanoseconds": 118224100,
+    "store_lock_wait_nanoseconds_per_operation": 17670.635,
+    "store_lock_hold_nanoseconds_per_operation": 1182.241
+  },
+  "embedded": {
+    "estimated_entries": 0,
+    "hits": 0,
+    "misses": 0,
+    "loads": 0,
+    "single_flight_joins": 0,
+    "loader_executions_observed": 0
+  },
+  "unavailable_metrics": [
+    "per_stage_codec_and_moka_allocations_not_yet_instrumented",
+    "tokio_poll_time_requires_dedicated_profiler",
+    "allocator_retained_bytes_requires_supported_linux_allocator_profiler"
+  ]
+}

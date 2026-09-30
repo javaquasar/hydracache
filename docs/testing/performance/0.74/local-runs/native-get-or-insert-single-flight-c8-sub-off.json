@@ -1,0 +1,81 @@
+{
+  "schema_version": 1,
+  "release": "0.74",
+  "profile_id": "w1-native-api-profile-074-v1",
+  "source_commit": "c56a0da576e401e8d6b392d0788e3f4ee46235b5",
+  "binary_sha256": "sha256:39526297320ab2afd1954dea30d53b5f242bcc41aae847b600084a917fcca2e6",
+  "build_profile": "release",
+  "tier": "local-quick",
+  "promotable": false,
+  "surface": "get-or-insert",
+  "operation": "single-flight",
+  "operations": 8000,
+  "warmup_operations": 800,
+  "concurrency": 8,
+  "payload_bytes": 256,
+  "key_space": 4096,
+  "seed": 74,
+  "subscriber_enabled": false,
+  "instrumentation_enabled": true,
+  "workload_sha256": "sha256:f6db61d07c53b91a41a3535468bc4d8897b042d36a551a7b4814ba8f6ef7b1aa",
+  "exact_result_validation": true,
+  "elapsed_seconds": 15.5380554,
+  "goodput_operations_per_second": 514.8649424946702,
+  "latency": {
+    "unit": "logical_operation",
+    "samples": 8000,
+    "p50_us": 15463,
+    "p95_us": 16943,
+    "p99_us": 20655,
+    "max_us": 29727
+  },
+  "cpu_seconds": 0.265625,
+  "cpu_nanoseconds_per_operation": 33203.125,
+  "gross_allocated_bytes": 29061977,
+  "gross_allocated_bytes_per_operation": 3632.747125,
+  "rss_before_bytes": 6348800,
+  "rss_after_bytes": 7561216,
+  "peak_rss_bytes": 7561216,
+  "retained_rss_delta_bytes": 1212416,
+  "retained_client_state": {
+    "store_entries": 0,
+    "value_bytes": 0,
+    "store_identity_bytes": 0,
+    "idempotency_outcomes": 0,
+    "idempotency_identity_bytes": 0,
+    "audit_events": 0,
+    "conditional": {
+      "records": 0,
+      "live_records": 0,
+      "tombstones": 0,
+      "locks": 0,
+      "session_heartbeats": 0,
+      "tombstone_gc_watermarks": 0,
+      "identity_bytes": 0
+    }
+  },
+  "client_surface": {
+    "dispatches": 0,
+    "clock_reads": 0,
+    "expiry_sweep_checks": 0,
+    "expiry_sweeps_claimed": 0,
+    "store_lock_acquisitions": 0,
+    "store_lock_wait_nanoseconds": 0,
+    "store_lock_hold_nanoseconds": 0,
+    "store_lock_wait_nanoseconds_per_operation": 0.0,
+    "store_lock_hold_nanoseconds_per_operation": 0.0
+  },
+  "embedded": {
+    "estimated_entries": 1000,
+    "hits": 0,
+    "misses": 8800,
+    "loads": 1100,
+    "single_flight_joins": 7700,
+    "loader_executions_observed": 1000
+  },
+  "unavailable_metrics": [
+    "per_stage_codec_and_moka_allocations_not_yet_instrumented",
+    "tokio_poll_time_requires_dedicated_profiler",
+    "allocator_retained_bytes_requires_supported_linux_allocator_profiler"
+  ]
+}
