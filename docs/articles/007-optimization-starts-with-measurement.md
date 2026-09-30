@@ -2216,3 +2216,9 @@ eight clients lost 31.62%, as the fallback paid both read and write ownership. P
 controls also crossed local guards. The candidate was therefore rejected despite its attractive
 single-client result, and the failure was not reinterpreted as permission to jump directly to store
 sharding.
+
+Multi-key attribution then prevented work on code that was already vectorized. Batch-eight MGET,
+MSET and EXISTS each crossed the client surface with one dispatch and one store acquisition. DEL
+was different: one BatchGet plus eight individual invalidations produced nine dispatches and nine
+locks. Only that DEL follow-up earned a candidate. The distinction avoids claiming a generic
+"multi-key optimization" and gives the next patch a precise rollback boundary.

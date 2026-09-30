@@ -234,14 +234,36 @@ and write/native controls also crossed frozen guards. All 100 exact-response rec
 no sample or unfavorable control was removed. W6a is rejected and W6b remains unauthorized rather
 than treating the result as permission for a more invasive shard table.
 
+## W7 multi-key attribution
+
+The RESP profile tool now emits real batch-eight DEL and EXISTS commands. Its DEL guard requires
+`key_space >= max(operations, warmup) * batch_size`, and preload uses MSET, so every measured delete
+has exactly eight unique hits. Three instrumentation-on owner processes per cell report:
+
+| Cell | Goodput op/s | CPU ns/op | Allocation B/op | Dispatches/op | Store locks/op |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| MGET b8, p1 | 49,899 | 20,312 | 32,979 | 1 | 1 |
+| MGET b8, p10 | 46,160 | 24,219 | 39,947 | 1 | 1 |
+| MSET b8, p1 | 50,197 | 21,094 | 34,879 | 1 | 1 |
+| MSET b8, p10 | 46,357 | 22,656 | 44,189 | 1 | 1 |
+| DEL b8, p1 | 37,816 | 27,344 | 26,229 | 9 | 9 |
+| DEL b8, p10 | 35,485 | 27,344 | 28,748 | 9 | 9 |
+| EXISTS b8, p1 | 56,304 | 19,531 | 15,761 | 1 | 1 |
+| EXISTS b8, p10 | 52,594 | 20,312 | 18,299 | 1 | 1 |
+
+MGET, MSET and EXISTS already cross the client surface as one batch request and are closed as
+already vectorized for this proposal. DEL performs one BatchGet followed by one Invalidate request
+for every existing key. Reducing the eight-key fixture from nine dispatch/lock acquisitions to two
+has a 77.8% mechanical ceiling and is the only authorized W7 candidate. The numbers are owner
+attribution, not a throughput claim; candidate goodput still must clear the 20% multi-key floor.
+
 ## Next step and open risks
 
-W7 multi-key ownership profiling is next. MGET and MSET already show one dispatch and approximately
-one store acquisition per logical command at batch eight, while the existing DEL control shows two
-dispatches/locks at batch one. The next attribution must use real batch-eight DEL/EXISTS fixtures,
-freeze duplicate semantics, and distinguish already-vectorized operations from an actionable
-follow-up. W6b remains unauthorized. Raw and typed embedded paths remain mandatory controls for any
-later shared mutation.
+W7 DEL batching is next. The implementation choice must avoid adding an unnecessary public wire
+variant: an internal canonical batch-invalidation seam is preferred if it can preserve verified
+identity, namespace admission, quota release, audit, mutation events, request IDs, duplicate
+deduplication and per-item outcomes. A public protocol variant would require a separate compatibility
+decision. W6b remains unauthorized, and native controls remain mandatory for shared mutations.
 
 W0, syscall-level attribution, final instrumentation overhead, HC/1 and HC/2 process controls,
 Redis same-box comparison, persistence cells, and all expensive release qualification remain open.
