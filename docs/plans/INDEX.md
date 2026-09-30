@@ -277,6 +277,16 @@ v0 foundations
                           read-only management API and locally bundled multi-view console; add
                           honest partial/stale semantics, health checks, guarded history and
                           exact-candidate browser/server/fault evidence without a write control.)
+   0.72 ─┄ feeds ┄► 0.73 Evidence-Driven Performance Efficiency
+                          (qualify owner-attributed memory/allocation/copy proposals under frozen
+                          workloads, compatibility controls and exact-candidate evidence.)
+   0.73 ─┄ feeds ┄► 0.74 RESP and Native Throughput Efficiency
+                          (attribute and remove measured parser, flush, metadata, key/store,
+                          expiry, batch and native-path amplification without weakening semantics.)
+   0.74 ─┄ feeds ┄► 0.75 Extended IMap Surface
+                          (reuse the accepted native and batch baseline for server-atomic map
+                          operations, explicit bulk/TTL outcomes, reconnect-safe listeners and
+                          versioned Rust/Java HC/2 clients without a full-Hazelcast claim.)
 ```
 
 ## Roadmap status (what / why / after / unblocks)
@@ -302,6 +312,7 @@ v0 foundations
 <!-- release-work-items:0.72.0=W0,W1,W2,W3,W4,W5,W6,W7,W8,W9,W10,W11,W12,W13,W14 -->
 <!-- release-work-items:0.73.0=W0,W1,W2,W3,W4,W5,W6,W7,W8,W9,W10,W11 -->
 <!-- release-work-items:0.74.0=W0,W1,W2,W3,W4,W4a,W4b,W4c,W4d,W4e,W5,W6,W6a,W6b,W7,W8,W8a,W8b,W8c,W9,W9a,W9b,W9c,W9d,W9e,W10,W11,W12 -->
+<!-- release-work-items:0.75.0=W0,W1,W2,W3,W4,W5,W6,W7,W8,W9,W10,W11,W12 -->
 
 | Version | Status | What | Why | After | Unblocks |
 | --- | --- | --- | --- | --- | --- |
@@ -352,6 +363,7 @@ v0 foundations
 | [0.72.0](V0_72_MANAGEMENT_CENTER_2_OPERATIONAL_VISIBILITY_PLAN.md) | shipped | **Management Center 2.0 & Operational Visibility** — introduce a locally bundled TypeScript/component console and versioned read-only `/management/v1` API with dashboard, member/partition, HC/1-HC/2-RESP client, namespace/cache, health, persistence/operation/audit and bounded-history views. Server-side aggregation is authenticated and bounded; every observation is explicit about live/modeled/unavailable, freshness and completeness; optional Prometheus history accepts only fixed reviewed queries. | Turn HydraCache's existing operational signals into a rich Hazelcast-class management experience without copying unrelated entities or manufacturing cluster truth. Every new route, UI state, permission, bound and failure path is backed by unit/property/browser/security/real-process/fault/soak/upgrade tests, red canaries and exact-candidate evidence; the browser remains unable to mutate cluster state. | 0.71.0 | 1.0 |
 | [0.73.0](V0_73_EVIDENCE_DRIVEN_PERFORMANCE_EFFICIENCY_PLAN.md) | in-progress | **Evidence-Driven Performance Efficiency** — use the accepted 0.71 negative result and the published 0.72 exact-candidate artifact to freeze causal owner/stack baselines. Every W2-W9 surface receives mandatory D1 analysis and a terminal disposition; only product mutation is conditional on D2. Qualify shared-store/expiry, tag-index, RESP copy/key, HC/2 connection, optional-service/management, durable/page-cache, allocator and opt-in retained-byte-admission proposals under frozen load/goodput, integrated-workload, rollback, platform, evidence and publication contracts. | Improve per-owner/per-connection memory, allocation/copy cost and tail latency only where a preregistered proposal proves a practical gain without changing legacy semantics, correctness, security or supported targets. The 0.71 D4 run did not prove an RSS win, and 0.72 supplies bounded Management Center evidence rather than a portable numerical performance baseline. A no-win result remains publishable without a numerical claim, but no W2-W9 investigation may be skipped for scheduling reasons. | 0.72.0 | 1.0 |
 | [0.74.0](V0_74_RESP_THROUGHPUT_AND_PIPELINE_EFFICIENCY_PLAN.md) | planned | **RESP and Native Throughput and Pipeline Efficiency** — repeat the pinned same-host Redis comparison after 0.73 and separately attribute embedded/direct-native/HC1/HC2 paths. Conditionally implement cursor parsing, bounded response coalescing, lazy audit ownership, one request timestamp and cheap expiry gate, compact binary-safe keys, version-conditional expiry cleanup, measured store sharding, vectorized multi-key execution, a generation-fenced verified native session, proven `Bytes` ownership, an optional GET/SET fast path, and separately qualified atomic/runtime/buffer/durable/allocator improvements. | The retained comparison reached about 68% of Redis at pipeline 1 but only about 18% at pipeline 10. Similar matched native and RESP results would locate the ceiling in their shared dispatch/store path: unconditional metadata work, repeated key construction, expiry checks and one global store mutex. Improve only measured owners without changing RESP bytes/order, native performance, memory bounds, fairness, tenant/quota/audit semantics, TTL, atomicity, compatibility, or rollback; the matched direct-native path may not lose to its RESP wrapper. | 0.73.0 | 1.0 |
+| [0.75.0](V0_75_EXTENDED_IMAP_SURFACE_PLAN.md) | planned | **Extended IMap Surface** — extend the existing Hazelcast-shaped `HydraMap<K,V>` with one canonical server-atomic mutation model; contains, put-if-absent, replace-if-present, get-and-put, get-and-remove, bounded explicit-key bulk operations, typed TTL directives, filtered reconnect-safe listeners, versioned HC/1 and HC/2 contracts, and Rust/Java SDK support. | The current facade covers a useful but narrow get/put/CAS/conditional-remove/listener subset. Common map operations otherwise require racy multi-round-trip client composition, while bulk, expiry, retry, partial failure, and listener repair semantics are not broad enough for an honest extended-IMap migration claim. Preserve R-2 by rejecting arbitrary entry processors, predicates/SQL, unbounded scans, distributed transactions, durable event claims, and non-map Hazelcast structures. | 0.74.0 | future MultiMap/Set foundation |
 
 
 `0.43` debt closure:

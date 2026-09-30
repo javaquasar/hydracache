@@ -15,8 +15,9 @@
 > - **After (depends on):** published `0.73.0` and its final exact-candidate archive. The frozen
 >   0.73 candidate must not be modified to begin this work.
 > - **Unblocks:** a defensible node-local RESP throughput improvement, a new same-box Redis
->   comparison with identical semantics, and evidence for later distributed RESP work without
->   turning HydraCache into a Redis clone.
+>   comparison with identical semantics, the native/batch baseline required by the 0.75 extended
+>   IMap surface, and evidence for later distributed RESP work without turning HydraCache into a
+>   Redis clone.
 > - **Status:** planned. Historical measurements locate the opportunity; no 0.74 baseline,
 >   threshold activation, candidate, or numerical improvement is claimed yet.
 
