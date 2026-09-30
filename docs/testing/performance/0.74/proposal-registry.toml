@@ -2,7 +2,7 @@ schema_version = 1
 release = "0.74"
 registry_id = "proposal-registry-074-v1"
 state = "w0-w1-in-progress"
-product_mutation_allowed = false
+product_mutation_allowed = true
 
 [[work_items]]
 id = "W0"
@@ -14,23 +14,25 @@ blocker = "v0.73.0 publication and confirmation are not complete"
 [[work_items]]
 id = "W1"
 title = "stage attribution"
-decision = "in-progress"
+decision = "attributed-local-open-gates"
 primary_metric = "owner-reconciliation"
-blocker = "fresh local attribution receipts not yet attached"
+blocker = "instrumentation overhead, syscall attribution, and network-native controls remain open"
 
 [[work_items]]
 id = "W2"
 title = "cursor input parsing"
-decision = "not-authorized"
+decision = "rejected-local-non-regression"
 primary_metric = "compaction-bytes-per-command"
 rollback = "remove only the RespReadBuffer candidate"
+evidence = "w1-local-attribution.md and local-runs/w2-*.json"
 
 [[work_items]]
 id = "W3"
 title = "bounded output coalescing"
-decision = "not-authorized"
+decision = "authorized-local-candidate"
 primary_metric = "write-and-flush-calls-per-reply"
 rollback = "remove only the connection-local response batch"
+evidence = "pipeline-10 controls record one write and one flush per reply"
 
 [[work_items]]
 id = "W4"
@@ -79,7 +81,7 @@ decision = "unmeasured"
 [[native_investigations]]
 id = "N3"
 owner = "global-store-lock"
-decision = "unmeasured"
+decision = "preliminary-local-contention-observed"
 [[native_investigations]]
 id = "N4"
 owner = "structured-key-ownership"
@@ -107,5 +109,4 @@ decision = "unmeasured"
 [[native_investigations]]
 id = "N10"
 owner = "embedded-cache-stages"
-decision = "unmeasured"
-
+decision = "preliminary-local-separated"

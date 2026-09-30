@@ -281,7 +281,13 @@ pub fn check_statistics(value: &TomlValue) -> Vec<String> {
 
 pub fn check_registry(value: &TomlValue) -> Vec<String> {
     let mut problems = common(value, "proposal-registry");
-    expect_bool(value, "product_mutation_allowed", false, &mut problems);
+    let product_mutation_allowed = match boolean(value, "product_mutation_allowed") {
+        Some(value) => value,
+        None => {
+            problems.push("product_mutation_allowed must be a boolean".to_owned());
+            false
+        }
+    };
     let work = array_of_tables(value, "work_items", &mut problems);
     let ids = work
         .iter()
@@ -298,11 +304,30 @@ pub fn check_registry(value: &TomlValue) -> Vec<String> {
     {
         problems.push("proposal-registry must contain W0 through W9 exactly once".to_owned());
     }
+    let w1_attributed = work.iter().any(|item| {
+        string(item, "id") == Some("W1")
+            && matches!(
+                string(item, "decision"),
+                Some("attributed-local-open-gates" | "complete")
+            )
+    });
+    if product_mutation_allowed && !w1_attributed {
+        problems.push("product mutation requires locally attributed W1".to_owned());
+    }
     for item in &work {
-        if string(item, "id").is_some_and(|id| !matches!(id, "W0" | "W1"))
-            && string(item, "decision") != Some("not-authorized")
-        {
-            problems.push("W2-W9 must remain not-authorized before W1 closes".to_owned());
+        if string(item, "id").is_some_and(|id| !matches!(id, "W0" | "W1")) {
+            let decision = string(item, "decision").unwrap_or_default();
+            if decision != "not-authorized" && !w1_attributed {
+                problems.push("W2-W9 must remain not-authorized before W1 attribution".to_owned());
+            }
+            if decision.starts_with("authorized-") {
+                if !product_mutation_allowed {
+                    problems.push("authorized product work requires mutation admission".to_owned());
+                }
+                if string(item, "evidence").is_none() {
+                    problems.push("authorized product work requires evidence".to_owned());
+                }
+            }
         }
     }
     let native = array_of_tables(value, "native_investigations", &mut problems);

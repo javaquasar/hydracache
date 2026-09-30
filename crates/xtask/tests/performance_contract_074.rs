@@ -114,6 +114,30 @@ fn checked_in_w0_contract_is_valid_and_non_promotable() {
 }
 
 #[test]
+fn proposal_admission_requires_w1_attribution_and_evidence() {
+    let mut value = contract("proposal-registry.toml");
+    value["work_items"]
+        .as_array_mut()
+        .unwrap()
+        .iter_mut()
+        .find(|item| item["id"].as_str() == Some("W1"))
+        .unwrap()["decision"] = toml::Value::String("in-progress".to_owned());
+    let problems = xtask::performance_contract_074::check_registry(&value);
+    assert!(has(&problems, "requires locally attributed W1"));
+
+    let mut value = contract("proposal-registry.toml");
+    let w3 = value["work_items"]
+        .as_array_mut()
+        .unwrap()
+        .iter_mut()
+        .find(|item| item["id"].as_str() == Some("W3"))
+        .unwrap();
+    w3.as_table_mut().unwrap().remove("evidence");
+    let problems = xtask::performance_contract_074::check_registry(&value);
+    assert!(has(&problems, "requires evidence"));
+}
+
+#[test]
 fn matched_receipt_is_accepted() {
     assert!(xtask::performance_contract_074::check_receipt(&receipt()).is_empty());
 }
