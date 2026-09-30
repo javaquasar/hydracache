@@ -20,7 +20,7 @@ use hydracache_loadgen::allocation::{measure_allocations, AllocationMeasurement}
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 
-const PROFILE_ID: &str = "w1-w8-native-api-profile-074-v3";
+const PROFILE_ID: &str = "w1-w8-native-api-profile-074-v4";
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 enum ApiPath {
@@ -677,7 +677,10 @@ async fn execute_one(
                 .get_encoded(&cache_key(options, sequence))
                 .await
                 .map_err(|error| error.to_string())?;
-            if actual.as_deref() != Some(payload(options, sequence).as_slice()) {
+            if !actual
+                .as_deref()
+                .is_some_and(|value| payload_matches(options, sequence, value))
+            {
                 return Err("raw embedded value mismatch".to_owned());
             }
             Ok(())
@@ -688,7 +691,10 @@ async fn execute_one(
                 .get::<ProfileValue>(&cache_key(options, sequence))
                 .await
                 .map_err(|error| error.to_string())?;
-            if actual != Some(profile_value(options, sequence)) {
+            if !actual
+                .as_ref()
+                .is_some_and(|value| payload_matches(options, sequence, &value.bytes))
+            {
                 return Err("typed embedded value mismatch".to_owned());
             }
             Ok(())
@@ -704,7 +710,7 @@ async fn execute_one(
             );
             match response {
                 ClientResponse::Value { value: Some(value) }
-                    if value == payload(options, sequence) =>
+                    if payload_matches(options, sequence, &value) =>
                 {
                     Ok(())
                 }
@@ -832,6 +838,18 @@ fn payload(options: &Options, sequence: u64) -> Vec<u8> {
     (0..options.payload_bytes)
         .map(|index| marker[index % marker.len()])
         .collect()
+}
+
+fn payload_matches(options: &Options, sequence: u64, value: &[u8]) -> bool {
+    if value.len() != options.payload_bytes {
+        return false;
+    }
+    let logical = sequence % options.key_space;
+    let marker = options.seed.wrapping_add(logical).to_le_bytes();
+    value
+        .iter()
+        .enumerate()
+        .all(|(index, byte)| *byte == marker[index % marker.len()])
 }
 
 fn elapsed_us(started: Instant) -> u64 {
@@ -985,6 +1003,21 @@ mod tests {
         let client = options(ApiPath::ClientSurface, Operation::Get);
         assert_ne!(workload_digest(&raw), workload_digest(&typed));
         assert_ne!(workload_digest(&typed), workload_digest(&client));
+    }
+
+    #[test]
+    fn payload_validation_does_not_require_an_expected_value_allocation() {
+        for payload_bytes in [0, 64, 4 * 1024, 1024 * 1024] {
+            let mut options = options(ApiPath::RawEmbedded, Operation::Get);
+            options.payload_bytes = payload_bytes;
+            let expected = payload(&options, 3);
+            assert!(payload_matches(&options, 3, &expected));
+            if payload_bytes != 0 {
+                let mut different = expected;
+                different[payload_bytes - 1] ^= 0xff;
+                assert!(!payload_matches(&options, 3, &different));
+            }
+        }
     }
 
     #[tokio::test]
