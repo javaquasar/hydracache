@@ -204,13 +204,44 @@ split for live hits with the current write-locked expiry cleanup retained as the
 not authorize sharding, a new expiry index, quota changes, or a representation change. Product
 performance must be measured with instrumentation off against a v2-tool baseline.
 
+### W6a candidate and negative result
+
+The candidate at `79b0ceb3639d01d3eb043525c8d39afcf621de71` replaced the store mutex with
+an `RwLock`. Only unisolated single-key GET used shared ownership. Tenant-isolated requests and every
+mutation retained the canonical exclusive path. An expired read released its shared owner, acquired
+the write owner, and rechecked the current entry; a deterministic test proved that a live
+replacement installed after the stale observation survived and was returned.
+
+Five 500,000-operation counterbalanced pairs, plus smaller exact-expiry cells, rejected the
+candidate:
+
+| Cell | Median paired goodput delta | Median CPU/op delta | Median p99 delta | Allocation delta |
+| --- | ---: | ---: | ---: | ---: |
+| Client GET, c1 | +16.45% | -11.43% | 0.00% | 0.00% |
+| Client GET, c8 | -3.74% | +234.07% | -6.25% | 0.00% |
+| Client PUT, c1 | -0.63% | +3.23% | 0.00% | 0.00% |
+| Client PUT, c8 | -2.19% | +2.86% | +9.43% | 0.00% |
+| Expired GET, c1 | -6.61% | 0.00% | 0.00% | 0.00% |
+| Expired GET, c8 | -31.62% | +383.33% | -16.78% | 0.00% |
+| Raw embedded GET, c1 | -2.42% | -5.26% | 0.00% | 0.00% |
+| Raw embedded GET, c8 | -3.78% | +2.17% | +5.26% | +0.31% |
+| Typed embedded GET, c1 | +0.17% | 0.00% | 0.00% | 0.00% |
+| Typed embedded GET, c8 | +1.45% | +3.33% | +4.17% | +0.01% |
+
+The shared read path improved the single-client cell but missed the 20% high-concurrency floor and
+made c8 CPU substantially worse. The expiry fallback necessarily paid read plus write acquisition,
+and write/native controls also crossed frozen guards. All 100 exact-response receipts are retained;
+no sample or unfavorable control was removed. W6a is rejected and W6b remains unauthorized rather
+than treating the result as permission for a more invasive shard table.
+
 ## Next step and open risks
 
-W6a is the next isolated product candidate. It must keep tenant admission and quota paths on their
-canonical locking order, release read ownership before any expiry mutation, and prove that delayed
-cleanup cannot remove a live replacement. W6b sharding remains unauthorized until the W6a result
-still shows material wait and a separate proposal clears the high-concurrency floor. Raw and typed
-embedded paths are mandatory unaffected controls.
+W7 multi-key ownership profiling is next. MGET and MSET already show one dispatch and approximately
+one store acquisition per logical command at batch eight, while the existing DEL control shows two
+dispatches/locks at batch one. The next attribution must use real batch-eight DEL/EXISTS fixtures,
+freeze duplicate semantics, and distinguish already-vectorized operations from an actionable
+follow-up. W6b remains unauthorized. Raw and typed embedded paths remain mandatory controls for any
+later shared mutation.
 
 W0, syscall-level attribution, final instrumentation overhead, HC/1 and HC/2 process controls,
 Redis same-box comparison, persistence cells, and all expensive release qualification remain open.

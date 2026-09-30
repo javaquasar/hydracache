@@ -2209,3 +2209,10 @@ This evidence authorizes a narrow read/read concurrency experiment, not immediat
 hits may be tested under shared ownership while expiry and every mutation retain the canonical
 exclusive path. Tenant admission, quota release and replacement races remain semantic constraints;
 the cheaper proposal has to fail before a more invasive shard table or expiry index is considered.
+
+It did fail. A shared read lock improved the single-client GET cell by 16.45%, but eight-client GET
+lost 3.74% goodput and used more than three times the baseline CPU per operation. Expired GET at
+eight clients lost 31.62%, as the fallback paid both read and write ownership. PUT and raw embedded
+controls also crossed local guards. The candidate was therefore rejected despite its attractive
+single-client result, and the failure was not reinterpreted as permission to jump directly to store
+sharding.
