@@ -304,6 +304,28 @@ guards the built candidate, not only source-level intent. W7 is therefore reject
 and unfavorable receipts are retained, thresholds are unchanged, and only the candidate seam and
 its API-specific tests are reverted.
 
+### W7 same-binary A/A falsifier
+
+After the targeted revert, the v5 native profiler ran five counterbalanced `A/B` pairs where both
+labels invoked the same executable, source, workload and binary digest. Each process used 500,000
+operations, 20,000 warmup operations, payload 256, key space 4,096, seed 7,407, c8 and
+instrumentation off. This is a harness/host falsifier, not a candidate comparison.
+
+| Same-binary cell | Median B-vs-A goodput | Observed goodput range | Median CPU/op | Maximum p99 delta | Pairs crossing a frozen guard |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| Client GET c8 | -0.66% | -3.10% to +1.47% | +14.42% | +3.37% | 3/5 |
+| Client PUT c8 | -3.40% | -6.35% to +3.57% | +4.85% | +150.94% | 3/5 |
+| Raw embedded GET c8 | +1.74% | -7.53% to +37.47% | +4.76% | +42.86% | 4/5 |
+| Typed embedded GET c8 | +1.44% | -8.45% to +15.80% | +0.95% | +73.33% | 2/5 |
+
+Every A/B workload hash, binary hash and exact-result check matches. The same binary therefore
+crosses the 2% goodput or 3% CPU/allocation/p99 guards in 12 of 20 pairs on this Windows host. This
+does not retroactively accept the rejected W7 artifact: the frozen method correctly rejected the
+observed candidate comparison. It does show that this local host/tool posture cannot causally assign
+the independent native deltas to the batch seam. A second W7 candidate is blocked until the native
+guard is resolvable on a stable admitted host or by a preregistered lower-noise measurement method;
+the thresholds are not widened after observing this result.
+
 ## W8 identity, session and value ownership attribution
 
 The v3 ownership screen is retained as falsified exploratory evidence. Its GET validator rebuilt the

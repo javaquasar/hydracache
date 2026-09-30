@@ -59,7 +59,7 @@ evidence = "w1-local-attribution.md and local-runs/w6a-*.json"
 [[work_items]]
 id = "W7"
 title = "vectorized multi-key"
-decision = "del-candidate-rejected-native-guard"
+decision = "del-candidate-rejected-native-guard-local-aa-unresolved"
 primary_metric = "dispatches-and-locks-per-logical-operation"
 rollback = "remove only the DEL batch-invalidation seam"
 evidence = "w1-local-attribution.md and local-runs/w7-*.json"

@@ -258,6 +258,14 @@ scheduler and binary-layout effects remain possible. It is proof of something na
 operationally sufficient: this exact candidate was not stable enough to accept under the frozen
 method.
 
+A later same-binary A/A falsifier made that distinction concrete. Both labels used the same source,
+executable, workload hash and exact-result checks, yet 12 of 20 c8 pairs still crossed at least one
+frozen native guard. Client PUT showed a median 3.40% goodput difference between identical binaries;
+raw and typed GET pairs had even wider ranges. This did not turn the rejected patch into an accepted
+one. It showed that the local Windows posture could reject but could not reliably assign causality
+at those thresholds. The next batch candidate needs a stable admitted host or a preregistered
+lower-noise method—not a threshold widened after the result.
+
 ## Which ideas survived the investigation
 
 No product optimization from this sequence has been accepted yet. But the work did produce a much
