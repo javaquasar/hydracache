@@ -1,0 +1,32 @@
+schema_version = 1
+release = "0.74"
+profile_id = "local-windows-screen-074-v1"
+state = "local-unadmitted"
+claim_eligible = false
+operating_system = "Windows NT 10.0.26200.0"
+architecture = "x86_64"
+logical_cpu_count = 8
+cpu_identity_hash = "sha256:833541e4b245ab387ae8c10e3d280c088858e02fb67164fa8f5391301d5f6895"
+rustc = "1.94.0 (4a4ef493e 2026-03-02)"
+cargo = "1.94.0 (85eff7c80 2026-01-15)"
+target = "x86_64-pc-windows-msvc"
+profile = "release"
+allocator = "system"
+network_mode = "loopback"
+
+[unfrozen_local_controls]
+cpu_placement = true
+irq_policy = true
+power_state = true
+socket_settings = true
+background_load = true
+
+[release_qualification]
+explicit_authorization_required = true
+dedicated_host_required = true
+cpu_placement_required = true
+irq_policy_required = true
+power_state_required = true
+toolchain_match_required = true
+redis_identity_match_required = true
+

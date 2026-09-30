@@ -197,6 +197,9 @@ const PROFILE: &str = "local-screening-073-v1";
 const ENVIRONMENT_CLASS: &str = "local_screening";
 
 pub fn run(args: Vec<String>) -> Result<(), Box<dyn Error>> {
+    if args.windows(2).any(|pair| pair == ["--release", "0.74"]) {
+        return crate::performance_contract_074::run(args);
+    }
     let options = Options::parse(args)?;
     let mut problems = check_at_root(&options.root, &options.release, options.receipt.as_deref())?;
     if options.require_ship {
@@ -213,6 +216,9 @@ pub fn check_at_root(
     release: &str,
     receipt: Option<&Path>,
 ) -> Result<Vec<String>, Box<dyn Error>> {
+    if release == "0.74" {
+        return crate::performance_contract_074::check_at_root(root, receipt);
+    }
     let contract: TomlValue = toml::from_str(&fs::read_to_string(root.join(CONTRACT))?)?;
     let schema: JsonValue = serde_json::from_slice(&fs::read(root.join(RECEIPT_SCHEMA))?)?;
     let example: JsonValue = serde_json::from_slice(&fs::read(root.join(EXAMPLE_RECEIPT))?)?;

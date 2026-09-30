@@ -1,0 +1,126 @@
+schema_version = 1
+release = "0.74"
+matrix_id = "resp-native-throughput-074-v1"
+state = "frozen-before-candidate"
+seed = 740074
+counterbalanced_order = true
+independent_processes = true
+complete_outcome_accounting = true
+final_state_digest_required = true
+candidate_measurement_allowed = false
+
+[dimensions]
+resp_dialects = ["resp2", "resp3"]
+commands = ["get", "set", "mget", "mset", "del", "exists"]
+pipeline_depths = [1, 10, 50, 100]
+multi_key_batch_sizes = [1, 8, 32, 256]
+concurrency = [1, 8, 32, 128]
+value_bytes = [16, 256, 4096, 1048576]
+key_shapes = ["ascii", "empty-where-legal", "nul-high-bit", "bytes-16", "bytes-256", "maximum-accepted"]
+hit_ratio_percent = [0, 50, 95, 100]
+security = ["plaintext", "mtls"]
+persistence = ["off", "all-supported-separate"]
+semantic_cells = ["fragmented", "partial-write", "malformed", "truncated", "oversized", "disconnect", "slow-reader", "subscription", "graceful-drain", "expiration-race", "multi-key-atomicity"]
+
+[[surfaces]]
+id = "resp-api"
+transport = "resp-tcp"
+pooled = false
+required = true
+
+[[surfaces]]
+id = "native-api-hc1"
+transport = "hc1-supported-transport"
+pooled = false
+required = true
+
+[[surfaces]]
+id = "native-api-hc2"
+transport = "hc2-supported-transport"
+pooled = false
+required = true
+
+[[surfaces]]
+id = "client-surface-state"
+transport = "in-process-dispatch-verified-request"
+pooled = false
+required = true
+
+[[surfaces]]
+id = "embedded-hydracache-raw"
+transport = "in-process"
+pooled = false
+required = true
+
+[[surfaces]]
+id = "embedded-hydracache-typed"
+transport = "in-process-with-codec"
+pooled = false
+required = true
+
+[[tiers]]
+id = "local-quick"
+environment = "developer-workstation"
+warmup_seconds = 1
+measurement_seconds = 3
+repeats = 1
+concurrency = [1, 8]
+pipeline_depths = [1, 10]
+value_bytes = [16, 256]
+claim_eligible = false
+expensive = false
+
+[[tiers]]
+id = "local-attribution"
+environment = "quiet-local-host"
+warmup_seconds = 3
+measurement_seconds = 10
+repeats = 3
+concurrency = [1, 8, 32]
+pipeline_depths = [1, 10, 50]
+value_bytes = [16, 256, 4096]
+claim_eligible = false
+expensive = false
+
+[[tiers]]
+id = "release-qualification"
+environment = "admitted-dedicated-host"
+warmup_seconds = 30
+measurement_seconds = 3600
+repeats = 5
+concurrency = [1, 8, 32, 128]
+pipeline_depths = [1, 10, 50, 100]
+value_bytes = [16, 256, 4096, 1048576]
+claim_eligible = true
+expensive = true
+explicit_authorization_required = true
+
+[trace_guard]
+format = "length-framed-074-v1"
+fields_equal_between_roles = [
+  "trace_sha256",
+  "payload_corpus_sha256",
+  "key_corpus_sha256",
+  "seed",
+  "warmup_seconds",
+  "measurement_seconds",
+  "operation_count",
+  "offered_schedule_sha256",
+  "concurrency",
+  "pipeline_depth",
+  "hit_ratio_percent",
+  "security",
+  "persistence",
+  "semantic_contract",
+]
+final_fields_equal_between_roles = [
+  "completed",
+  "errors",
+  "timeouts",
+  "rejections",
+  "late",
+  "incomplete",
+  "final_cardinality",
+  "final_state_sha256",
+]
+
