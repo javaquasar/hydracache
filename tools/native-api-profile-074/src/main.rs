@@ -254,9 +254,12 @@ struct WorkloadResult {
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
     let options = Options::parse()?;
-    let cache = HydraCache::local()
-        .max_capacity(options.key_space.max(1))
-        .build();
+    let capacity = options
+        .key_space
+        .saturating_mul(options.payload_bytes.saturating_add(256) as u64)
+        .saturating_mul(2)
+        .max(1);
+    let cache = HydraCache::local().max_capacity(capacity).build();
     let state = Arc::new(ClientSurfaceState::new(ClientSurfaceLimits::default())?);
     let context = Context {
         cache,
