@@ -2159,3 +2159,17 @@ coalescing—remained eligible because its owner, tests and rollback boundary we
 
 This is a useful refinement of “optimization starts with measurement”: making the suspected cost
 disappear is necessary, but not sufficient. The candidate must also survive its unaffected controls.
+
+The response-side experiment repeated the lesson in a different form. Bounded connection-local
+coalescing reduced high-level writes and explicit flushes by exactly 90% for pipeline-10. SET
+throughput improved by a repeat-backed local median of 28.27%, but GET improved by only 3.06%
+against the frozen 20% floor. SET pipeline-1 also showed a 5.56% p99 regression against the 3%
+general guard. The mechanical counter was green while the product outcome was not.
+
+That distinction matters because a syscall-shaped hypothesis can be compelling even when the
+chosen local transport makes syscalls unavailable. The in-process duplex fixture proved ordering,
+batch boundaries, partial-write handling and high-level call reduction; it did not prove a kernel
+write reduction on the real TCP server. The correct decision was again to retain the raw receipts,
+label the measurements non-promotable, and revert the isolated candidate. A later direct-encoding
+proposal must earn its own allocation result before any reconsideration of response batching; the
+two hypotheses cannot be credited as one benchmark candidate.

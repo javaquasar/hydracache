@@ -101,14 +101,44 @@ able to fail, W2 is rejected locally and only its code is reverted. The raw nega
 this explanation are retained. A future W2 attempt needs a lower-overhead buffer state transition
 and a more stable admitted host; the threshold must not be changed.
 
+## W3 candidate and negative result
+
+The W3 candidate at `ad8e2a09982eb17dd93df4361f0ee8bcb4f048c3` added a connection-local
+response batch bounded by 256 replies or 1 MiB. It flushed before subscription transitions, on
+QUIT, before protocol errors, when no complete command remained, and at either size boundary. A
+response larger than the byte bound made one-item progress without being copied into a second
+retained batch. Focused scripted-I/O tests covered byte identity, partial writes, malformed input,
+slow readers, oversized legal replies and the reply quantum; the full redis-compat suite remained
+green.
+
+The owner counter moved exactly as intended. In matched pipeline-10 GET and SET controls, high-level
+write and flush calls fell from 1.0 to 0.1 per reply, a 90% reduction against the preregistered 80%
+floor. The output high-water bound was 2,640 bytes for ten 256-byte GET replies and 50 bytes for ten
+SET replies. Exact response validation and the workload hashes matched in every pair.
+
+Five one-million-operation counterbalanced pairs nevertheless failed the complete acceptance
+contract:
+
+| Cell | Median paired goodput delta | Observed goodput range | Median paired CPU/op delta | Median paired p99 delta | Median allocation delta |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| GET, pipeline 1 | +13.44% | -4.48% to +24.42% | -5.84% | -18.52% | 0.00% |
+| SET, pipeline 1 | -1.29% | -10.89% to +2.23% | +1.47% | +5.56% | 0.00% |
+| GET, pipeline 10 | +3.06% | -1.72% to +12.19% | -1.26% | -11.74% | -0.00% |
+| SET, pipeline 10 | +28.27% | +10.15% to +34.59% | -32.20% | -31.85% | -0.00% |
+
+SET pipeline-10 cleared the 20% goodput floor, but GET pipeline-10 did not. SET pipeline-1 also
+exceeded the general 3% p99 non-regression guard. The wide local ranges reinforce that this is
+screening evidence, not a portable performance claim; they do not authorize selecting only the
+favorable SET cell. All 44 raw W3 receipts are retained. No sample was discarded or retried, no
+threshold changed, and the candidate is rejected for targeted rollback.
+
 ## Next step and open risks
 
-W3 is next: bounded reply coalescing must target at least 80% fewer write/flush calls and at least
-20% pipeline-10 goodput improvement while keeping pipeline-1 regression within 2%. It must cover
-partial writes, Pending transitions, slow readers, disconnects, large responses, QUIT, errors,
-subscriptions, ordering and fairness. Native paths remain unchanged and must be rerun after any
-shared hot-path mutation.
+W4 must begin with a new profile-backed, isolated proposal rather than composing it with the
+rejected W3 batch. The direct-encoding seam is still a plausible allocation owner because W3 left
+gross allocation unchanged while continuing to create a temporary encoded vector per reply, but it
+is not authorized until an independent baseline isolates that cost. Native paths remain unchanged
+and must be rerun after any shared hot-path mutation.
 
 W0, syscall-level attribution, final instrumentation overhead, HC/1 and HC/2 process controls,
 Redis same-box comparison, persistence cells, and all expensive release qualification remain open.
-

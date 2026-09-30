@@ -21,7 +21,7 @@ fields, proposal isolation, required metrics, and the expected pending predecess
 fail if asked for ship admission while publication, Redis provenance, or release evidence is
 incomplete.
 
-The first non-promotable local attribution and the rejected W2 result are documented in
+The first non-promotable local attribution and the rejected W2/W3 results are documented in
 [`w1-local-attribution.md`](w1-local-attribution.md). Raw identity-bound receipts are retained under
 `local-runs/`.
 

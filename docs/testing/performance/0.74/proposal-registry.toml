@@ -29,15 +29,15 @@ evidence = "w1-local-attribution.md and local-runs/w2-*.json"
 [[work_items]]
 id = "W3"
 title = "bounded output coalescing"
-decision = "authorized-local-candidate"
+decision = "rejected-local-throughput-and-tail-guards"
 primary_metric = "write-and-flush-calls-per-reply"
 rollback = "remove only the connection-local response batch"
-evidence = "pipeline-10 controls record one write and one flush per reply"
+evidence = "w1-local-attribution.md and local-runs/w3-*.json"
 
 [[work_items]]
 id = "W4"
 title = "translation ownership"
-decision = "not-authorized"
+decision = "profiling-required-after-w3-rejection"
 primary_metric = "gross-allocated-bytes-per-operation"
 
 [[work_items]]
