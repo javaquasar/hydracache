@@ -257,13 +257,58 @@ for every existing key. Reducing the eight-key fixture from nine dispatch/lock a
 has a 77.8% mechanical ceiling and is the only authorized W7 candidate. The numbers are owner
 attribution, not a throughput claim; candidate goodput still must clear the 20% multi-key floor.
 
+### W7 DEL candidate result
+
+The candidate added a bounded in-process batch-invalidation seam without changing the HC wire
+protocol. RESP DEL delegated its deduplicated canonical keys to that seam, which admitted identity
+and namespace once, removed live/expired entries under one store lock, released tenant quota, and
+published ordered per-key events. Five counterbalanced baseline/candidate processes per cell used
+20,000 operations, 2,000 warmup operations, batch size 8, payload 256, key space 160,000, seed
+7,407, concurrency 1, instrumentation on, and exact response validation. Each baseline/candidate
+pair has one workload hash.
+
+| DEL b8 cell | Baseline median | Candidate median | Delta |
+| --- | ---: | ---: | ---: |
+| p1 goodput op/s | 38,188 | 56,350 | +47.56% |
+| p1 CPU ns/op | 26,562 | 18,750 | -29.41% |
+| p1 allocation B/op | 26,229 | 13,483 | -48.60% |
+| p1 p99 us | 63 | 43 | -31.75% |
+| p10 goodput op/s | 35,920 | 53,622 | +49.28% |
+| p10 CPU ns/op | 29,688 | 20,312 | -31.58% |
+| p10 allocation B/op | 28,748 | 16,002 | -44.34% |
+| p10 p99 us | 569 | 393 | -30.93% |
+
+The mechanical result was exact: logical dispatches and store acquisitions fell from 9/op to 1/op.
+This clears the W7 isolated 20% floor, but it is not sufficient for acceptance because W7 changes
+the client-surface crate and therefore owes the frozen native controls.
+
+The first 20,000-operation native screen is retained as `w7-native-control-*` but is explicitly
+non-decisional: Windows process CPU quantization was too coarse. The guard was rerun with 500,000
+operations, 20,000 warmup operations, instrumentation off, and five counterbalanced pairs per
+cell. Workload hashes and exact-result validation match in every pair. Median deltas were:
+
+| Native control | Goodput | CPU/op | Allocation/op | p99 |
+| --- | ---: | ---: | ---: | ---: |
+| Client GET c1 | +0.32% | +2.78% | 0.00% | 0.00% |
+| Client GET c8 | -0.54% | -5.07% | 0.00% | +4.04% |
+| Client PUT c1 | -1.27% | -6.45% | 0.00% | 0.00% |
+| Client PUT c8 | -3.95% | +3.00% | 0.00% | +159.81% |
+| Raw embedded GET c1 | +0.37% | 0.00% | 0.00% | 0.00% |
+| Raw embedded GET c8 | -1.04% | 0.00% | -0.18% | +21.05% |
+| Typed embedded GET c1 | +0.03% | 0.00% | 0.00% | 0.00% |
+| Typed embedded GET c8 | -7.10% | +2.10% | +0.15% | +92.31% |
+
+Client PUT c8 and typed embedded GET c8 cross the 98% goodput floor; several c8 p99 controls also
+cross the 3% bound. The affected operations do not invoke the new seam, but the release contract
+guards the built candidate, not only source-level intent. W7 is therefore rejected. All favorable
+and unfavorable receipts are retained, thresholds are unchanged, and only the candidate seam and
+its API-specific tests are reverted.
+
 ## Next step and open risks
 
-W7 DEL batching is next. The implementation choice must avoid adding an unnecessary public wire
-variant: an internal canonical batch-invalidation seam is preferred if it can preserve verified
-identity, namespace admission, quota release, audit, mutation events, request IDs, duplicate
-deduplication and per-item outcomes. A public protocol variant would require a separate compatibility
-decision. W6b remains unauthorized, and native controls remain mandatory for shared mutations.
+W7 has settled as a negative result. W8 remains unauthorized until D1 separately measures repeated
+identity/session work and value ownership; the rejected DEL result is not permission to combine
+those hypotheses or to weaken native guards. W6b also remains unauthorized.
 
 W0, syscall-level attribution, final instrumentation overhead, HC/1 and HC/2 process controls,
 Redis same-box comparison, persistence cells, and all expensive release qualification remain open.

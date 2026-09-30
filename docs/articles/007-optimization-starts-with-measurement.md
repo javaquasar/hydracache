@@ -2222,3 +2222,19 @@ MSET and EXISTS each crossed the client surface with one dispatch and one store 
 was different: one BatchGet plus eight individual invalidations produced nine dispatches and nine
 locks. Only that DEL follow-up earned a candidate. The distinction avoids claiming a generic
 "multi-key optimization" and gives the next patch a precise rollback boundary.
+
+The DEL experiment is a particularly sharp example of why an unaffected-surface guard must be a
+release condition rather than an explanatory footnote. A native batch-invalidation seam reduced
+the eight-key operation from nine dispatches and locks to one. Five local pairs showed roughly 48%
+more pipeline-1 goodput and 49% more pipeline-10 goodput, with materially lower CPU, allocation and
+p99 in both cells. By the primary metric, the hypothesis worked.
+
+The built candidate still failed. Longer native controls—used after a short screen exposed Windows
+CPU quantization—showed ClientSurface PUT at eight clients losing 3.95% goodput and typed embedded
+GET at eight clients losing 7.10%. Their p99 distributions also crossed the frozen guard. Those
+paths did not call the new batch seam, but that is not grounds to discard the measurements: users
+run binaries, not source-level arguments about which function should be unaffected.
+
+So the receipts were retained and the candidate was reverted. The lesson is stronger than “check
+for cost shifting.” A focused optimization can win its own benchmark by a wide margin and still be
+the wrong release composition when independent controls reject the exact built artifact.
