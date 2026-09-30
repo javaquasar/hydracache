@@ -1231,9 +1231,9 @@ impl ClientSurfaceState {
             };
         }
 
-        let apply = |store: &mut BTreeMap<StoreKey, StoredValue>,
-                     mut isolation: Option<&mut ConsumerIsolation>,
-                     now_ms: u64| {
+        self.sweep_expired_entries(self.now_ms(), false);
+        let now_ms = self.now_ms();
+        let result = self.with_admitted_store(identity, |store, mut isolation| {
             let mut items = Vec::with_capacity(prepared.len());
             for (index, (_, stable_key, store_key)) in prepared.iter().enumerate() {
                 let expired = store
@@ -1269,28 +1269,7 @@ impl ClientSurfaceState {
                 }
             }
             items
-        };
-        let result = if let Some(isolation) = &self.isolation {
-            let admission = isolation
-                .lock()
-                .expect("isolation mutex")
-                .admit_request_for_namespace(identity.client_id(), namespace.as_str())
-                .map_err(admission_error);
-            if let Err(error) = admission {
-                Err(error)
-            } else {
-                self.sweep_expired_entries(self.now_ms(), false);
-                let now_ms = self.now_ms();
-                let mut isolation = isolation.lock().expect("isolation mutex");
-                let mut store = self.lock_store();
-                Ok(apply(&mut store, Some(&mut isolation), now_ms))
-            }
-        } else {
-            self.sweep_expired_entries(self.now_ms(), false);
-            let now_ms = self.now_ms();
-            let mut store = self.lock_store();
-            Ok(apply(&mut store, None, now_ms))
-        };
+        });
 
         if let Err(error) = &result {
             let response = ClientResponseEnvelope::error(request_id.clone(), error.clone());
