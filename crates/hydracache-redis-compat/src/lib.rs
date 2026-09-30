@@ -57,9 +57,6 @@ pub const DEFAULT_REDIS_READ_BUFFER_BYTES: usize = 8 * 1024;
 /// Default idle timeout for one RESP connection.
 pub const DEFAULT_REDIS_IDLE_TIMEOUT: Duration = Duration::from_secs(60);
 
-const RESP_WRITE_BATCH_MAX_REPLIES: usize = 256;
-const RESP_WRITE_BATCH_MAX_BYTES: usize = 1024 * 1024;
-
 /// Default bound for exact plus pattern subscriptions on one RESP connection.
 pub const DEFAULT_REDIS_EVENT_SUBSCRIPTIONS_PER_CONNECTION: usize = 64;
 
@@ -469,39 +466,6 @@ struct RedisPipelineInstrumentation {
     output_buffer_high_water_bytes: AtomicU64,
     write_calls: AtomicU64,
     flush_calls: AtomicU64,
-}
-
-#[derive(Debug, Default)]
-struct RespWriteBatch {
-    bytes: BytesMut,
-    replies: usize,
-}
-
-impl RespWriteBatch {
-    fn is_empty(&self) -> bool {
-        self.replies == 0
-    }
-
-    fn should_flush_before(&self, next_bytes: usize) -> bool {
-        !self.is_empty()
-            && (self.replies >= RESP_WRITE_BATCH_MAX_REPLIES
-                || self.bytes.len().saturating_add(next_bytes) > RESP_WRITE_BATCH_MAX_BYTES)
-    }
-
-    fn append(&mut self, encoded: &[u8]) {
-        self.bytes.extend_from_slice(encoded);
-        self.replies += 1;
-    }
-
-    fn reached_boundary(&self) -> bool {
-        self.replies >= RESP_WRITE_BATCH_MAX_REPLIES
-            || self.bytes.len() >= RESP_WRITE_BATCH_MAX_BYTES
-    }
-
-    fn clear(&mut self) {
-        self.bytes.clear();
-        self.replies = 0;
-    }
 }
 
 impl RedisPipelineInstrumentation {
@@ -982,7 +946,6 @@ impl RedisRespServer {
         let mut subscriber_count = EventSubscriberCountGuard::new(&self.active_event_subscribers);
         let mut buffer = Vec::with_capacity(self.config.read_buffer_bytes);
         let mut read_chunk = vec![0; self.config.read_buffer_bytes];
-        let mut response_batch = RespWriteBatch::default();
         loop {
             let bytes_read = if connection.is_subscribed() {
                 let subscriber = mutation_subscriber
@@ -1057,14 +1020,8 @@ impl RedisRespServer {
                 );
                 let (command, consumed) = match decoded {
                     Ok(Some(decoded)) => decoded,
-                    Ok(None) => {
-                        self.flush_response_batch(&mut stream, &mut response_batch)
-                            .await?;
-                        break;
-                    }
+                    Ok(None) => break,
                     Err(error) => {
-                        self.flush_response_batch(&mut stream, &mut response_batch)
-                            .await?;
                         self.write_error(&mut stream, connection.dialect, format!("ERR {error}"))
                             .await?;
                         return Ok(());
@@ -1087,10 +1044,6 @@ impl RedisRespServer {
                 buffer.drain(..consumed);
 
                 let should_close = matches!(command, RedisCommand::Quit);
-                if is_subscription_command(&command) {
-                    self.flush_response_batch(&mut stream, &mut response_batch)
-                        .await?;
-                }
                 if self
                     .handle_subscription_command(
                         &mut stream,
@@ -1124,23 +1077,14 @@ impl RedisRespServer {
                     } else {
                         self.execute_connection_command(command, &mut connection)
                     };
-                    self.write_batched_response(
-                        &mut stream,
-                        &mut response_batch,
-                        connection.dialect,
-                        response,
-                    )
-                    .await?;
+                    self.write_response(&mut stream, connection.dialect, response)
+                        .await?;
                 }
                 self.commands.fetch_add(1, Ordering::SeqCst);
                 if should_close {
-                    self.flush_response_batch(&mut stream, &mut response_batch)
-                        .await?;
                     return Ok(());
                 }
             }
-            self.flush_response_batch(&mut stream, &mut response_batch)
-                .await?;
         }
     }
 
@@ -1799,84 +1743,6 @@ impl RedisRespServer {
         Ok(())
     }
 
-    async fn write_batched_response<S>(
-        &self,
-        stream: &mut S,
-        batch: &mut RespWriteBatch,
-        dialect: RespDialect,
-        response: RespValue,
-    ) -> Result<(), RedisServeError>
-    where
-        S: AsyncWrite + Unpin,
-    {
-        let encoded = encode_resp_value(response, dialect)?;
-        if batch.should_flush_before(encoded.len()) {
-            self.flush_response_batch(stream, batch).await?;
-        }
-        if self.pipeline_instrumentation.enabled() {
-            self.pipeline_instrumentation
-                .output_frames
-                .fetch_add(1, Ordering::Relaxed);
-            self.pipeline_instrumentation
-                .output_bytes
-                .fetch_add(encoded.len() as u64, Ordering::Relaxed);
-        }
-        if encoded.len() > RESP_WRITE_BATCH_MAX_BYTES {
-            if self.pipeline_instrumentation.enabled() {
-                self.pipeline_instrumentation
-                    .output_buffer_high_water_bytes
-                    .fetch_max(encoded.len() as u64, Ordering::Relaxed);
-                self.pipeline_instrumentation
-                    .write_calls
-                    .fetch_add(1, Ordering::Relaxed);
-            }
-            stream.write_all(&encoded).await?;
-            if self.pipeline_instrumentation.enabled() {
-                self.pipeline_instrumentation
-                    .flush_calls
-                    .fetch_add(1, Ordering::Relaxed);
-            }
-            stream.flush().await?;
-            return Ok(());
-        }
-        batch.append(&encoded);
-        if batch.reached_boundary() {
-            self.flush_response_batch(stream, batch).await?;
-            tokio::task::yield_now().await;
-        }
-        Ok(())
-    }
-
-    async fn flush_response_batch<S>(
-        &self,
-        stream: &mut S,
-        batch: &mut RespWriteBatch,
-    ) -> Result<(), RedisServeError>
-    where
-        S: AsyncWrite + Unpin,
-    {
-        if batch.is_empty() {
-            return Ok(());
-        }
-        if self.pipeline_instrumentation.enabled() {
-            self.pipeline_instrumentation
-                .output_buffer_high_water_bytes
-                .fetch_max(batch.bytes.len() as u64, Ordering::Relaxed);
-            self.pipeline_instrumentation
-                .write_calls
-                .fetch_add(1, Ordering::Relaxed);
-        }
-        stream.write_all(&batch.bytes).await?;
-        if self.pipeline_instrumentation.enabled() {
-            self.pipeline_instrumentation
-                .flush_calls
-                .fetch_add(1, Ordering::Relaxed);
-        }
-        stream.flush().await?;
-        batch.clear();
-        Ok(())
-    }
-
     async fn write_error<S>(
         &self,
         stream: &mut S,
@@ -1890,16 +1756,6 @@ impl RedisRespServer {
         self.write_response(stream, dialect, RespValue::Error(message))
             .await
     }
-}
-
-fn is_subscription_command(command: &RedisCommand) -> bool {
-    matches!(
-        command,
-        RedisCommand::Subscribe { .. }
-            | RedisCommand::Unsubscribe { .. }
-            | RedisCommand::Psubscribe { .. }
-            | RedisCommand::Punsubscribe { .. }
-    )
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]

@@ -22,7 +22,7 @@ async fn exchange(server: &Arc<RedisRespServer>, request: &[u8]) -> Vec<u8> {
 }
 
 #[tokio::test]
-async fn pipeline_counters_reconcile_compaction_and_coalesced_flush() {
+async fn pipeline_counters_reconcile_current_per_command_compaction_and_flush() {
     let server = listener();
     server.set_pipeline_instrumentation_enabled(true);
     let set = b"*3\r\n$3\r\nSET\r\n$1\r\nk\r\n$1\r\nv\r\n";
@@ -49,9 +49,9 @@ async fn pipeline_counters_reconcile_compaction_and_coalesced_flush() {
     assert_eq!(metrics.script_cache_entries_cloned, 0);
     assert_eq!(metrics.output_frames, 3);
     assert_eq!(metrics.output_bytes, output.len() as u64);
-    assert_eq!(metrics.output_buffer_high_water_bytes, output.len() as u64);
-    assert_eq!(metrics.write_calls, 1);
-    assert_eq!(metrics.flush_calls, 1);
+    assert_eq!(metrics.output_buffer_high_water_bytes, 7);
+    assert_eq!(metrics.write_calls, 3);
+    assert_eq!(metrics.flush_calls, 3);
 }
 
 #[tokio::test]
