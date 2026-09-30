@@ -44,13 +44,14 @@ evidence = "w1-local-attribution.md and local-runs/w4-stage-*.json"
 [[work_items]]
 id = "W5"
 title = "key representation"
-decision = "profiling-required"
+decision = "deferred-measured-below-floor"
 primary_metric = "copied-and-retained-key-bytes"
+evidence = "ADR-0022, w1-local-attribution.md, and local-runs/w5-key-*.json"
 
 [[work_items]]
 id = "W6"
 title = "read split and store sharding"
-decision = "not-authorized"
+decision = "profiling-required"
 primary_metric = "store-lock-wait-nanoseconds"
 
 [[work_items]]

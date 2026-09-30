@@ -2186,3 +2186,15 @@ named W4 hypotheses to manufacture a threshold-sized result would destroy attrib
 outcome was narrower: close those candidates as measured below the isolated floor and move the
 profiler to key ownership, which crosses parser, translation and store boundaries and therefore may
 have a large enough single owner to justify its migration risk.
+
+The key pass then supplied a second kind of negative result. A 28-byte binary-safe RESP key expands
+to a 72-byte canonical segment, and `stable_key()` allocates those 72 bytes again for lookup. That
+157% representation expansion looks dramatic in isolation, but the lookup materialization is only
+about 1.8% of end-to-end allocation. Even charging the entire 399-byte translation stage to the key
+would reach only about 10%.
+
+Because key representation affects compatibility, durable identity and rollback, the decision was
+recorded as an ADR rather than hidden in a benchmark note. HydraCache 0.74 retains the existing
+canonical identity and defers binary variants, interning and hash handles. A visually large local
+amplification is not enough to justify migration when its share of the product cost remains below
+the registered floor.

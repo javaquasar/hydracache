@@ -161,11 +161,31 @@ resolution, so they are retained for owner ranking only. The allocation counts a
 allocator requests in a quiescent process. Both receipts are source/binary/workload-hash bound and
 non-promotable.
 
+## W5 key ownership and compatibility decision
+
+The v2 stage tool adds exact source/binary-bound key measurements. The 28-byte deterministic RESP
+key becomes a 72-byte `redis-binary-v1-<hex>` canonical segment, a 157.14% representation
+expansion. Calling `StructuredKey::stable_key()` on the one-segment translated key allocates 72
+bytes per lookup. It used 46.875 ns/op in the GET receipt and 31.25 ns/op in the SET receipt, but
+Windows process-time granularity makes those CPU values owner-ranking observations only.
+
+The materialization is only 1.82% of the matched GET allocation and 1.74% of SET. Even the entire
+399 B/op incremental translation stage—an intentionally generous upper bound containing non-key
+work—is 10.08% and 9.64%. W5 therefore cannot clear the 20% floor in these affected cells without
+being merged with other hypotheses. ADR-0022 selects the plan's defer option: keep the exact
+canonical identity and avoid a binary variant, intern table, hash handle, durable migration or
+rollback bridge in 0.74.
+
+This does not claim the expansion is free. It records a measured ceiling and preserves the
+compatibility debt for a workload where long or repeatedly reused keys become a material owner.
+
 ## Next step and open risks
 
-W5 key ownership profiling is next because key bytes cross decode, translation and store lookup;
-it must establish a single representation owner and migration/rollback contract before any product
-mutation. Native paths remain unchanged and must be rerun after any shared hot-path mutation.
+W6a live-read/expiry ownership profiling is next because the direct client-surface c8 control
+already reports lock wait while W5 is now closed without a representation change. W6b sharding
+remains unauthorized until W6a separates live-hit hold time from conditional expiry cleanup and a
+repeated concurrency profile clears the 20% floor. Native paths remain unchanged and must be rerun
+after any shared hot-path mutation.
 
 W0, syscall-level attribution, final instrumentation overhead, HC/1 and HC/2 process controls,
 Redis same-box comparison, persistence cells, and all expensive release qualification remain open.
