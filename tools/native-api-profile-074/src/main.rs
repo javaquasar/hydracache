@@ -280,6 +280,9 @@ async fn main() -> Result<(), Box<dyn Error>> {
             Arc::clone(&loader_executions),
         )
         .await?;
+        if options.operation == Operation::SingleFlight {
+            context.cache.flush().await?;
+        }
         loader_executions.store(0, Ordering::Relaxed);
     }
 
