@@ -7,7 +7,7 @@
 use std::collections::BTreeMap;
 use std::ops::{Deref, DerefMut};
 use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
-use std::sync::{Arc, Mutex, MutexGuard};
+use std::sync::{Arc, Mutex, RwLock, RwLockReadGuard, RwLockWriteGuard};
 use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
 
 use axum::body::Bytes;
@@ -525,9 +525,33 @@ impl ClientSurfaceProfileInstrumentation {
 }
 
 struct ProfiledStoreGuard<'a> {
-    guard: MutexGuard<'a, BTreeMap<StoreKey, StoredValue>>,
+    guard: RwLockWriteGuard<'a, BTreeMap<StoreKey, StoredValue>>,
     hold_started: Option<Instant>,
     instrumentation: &'a ClientSurfaceProfileInstrumentation,
+}
+
+struct ProfiledReadStoreGuard<'a> {
+    guard: RwLockReadGuard<'a, BTreeMap<StoreKey, StoredValue>>,
+    hold_started: Option<Instant>,
+    instrumentation: &'a ClientSurfaceProfileInstrumentation,
+}
+
+impl Deref for ProfiledReadStoreGuard<'_> {
+    type Target = BTreeMap<StoreKey, StoredValue>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.guard
+    }
+}
+
+impl Drop for ProfiledReadStoreGuard<'_> {
+    fn drop(&mut self) {
+        if let Some(started) = self.hold_started {
+            self.instrumentation
+                .store_lock_hold_nanoseconds
+                .fetch_add(elapsed_nanoseconds(started), Ordering::Relaxed);
+        }
+    }
 }
 
 impl Deref for ProfiledStoreGuard<'_> {
@@ -825,7 +849,7 @@ pub struct ClientSurfaceState {
     active_subscriptions: AtomicU64,
     next_message_id: AtomicU64,
     mutation_events: broadcast::Sender<ClientSurfaceMutationEvent>,
-    store: Mutex<BTreeMap<StoreKey, StoredValue>>,
+    store: RwLock<BTreeMap<StoreKey, StoredValue>>,
     cache_now_ms_for_tests: Mutex<Option<u64>>,
     cache_time_floor_ms: AtomicU64,
     next_expiry_sweep_ms: AtomicU64,
@@ -853,7 +877,7 @@ impl ClientSurfaceState {
             active_subscriptions: AtomicU64::new(0),
             next_message_id: AtomicU64::new(1),
             mutation_events,
-            store: Mutex::new(BTreeMap::new()),
+            store: RwLock::new(BTreeMap::new()),
             cache_now_ms_for_tests: Mutex::new(None),
             cache_time_floor_ms: AtomicU64::new(0),
             next_expiry_sweep_ms: AtomicU64::new(0),
@@ -884,7 +908,7 @@ impl ClientSurfaceState {
             active_subscriptions: AtomicU64::new(0),
             next_message_id: AtomicU64::new(1),
             mutation_events,
-            store: Mutex::new(BTreeMap::new()),
+            store: RwLock::new(BTreeMap::new()),
             cache_now_ms_for_tests: Mutex::new(None),
             cache_time_floor_ms: AtomicU64::new(0),
             next_expiry_sweep_ms: AtomicU64::new(0),
@@ -1297,7 +1321,7 @@ impl ClientSurfaceState {
     fn lock_store(&self) -> ProfiledStoreGuard<'_> {
         let profiling = self.profile_instrumentation.enabled();
         let wait_started = profiling.then(Instant::now);
-        let guard = self.store.lock().expect("store mutex");
+        let guard = self.store.write().expect("store write lock");
         if let Some(started) = wait_started {
             self.profile_instrumentation
                 .store_lock_acquisitions
@@ -1311,6 +1335,46 @@ impl ClientSurfaceState {
             hold_started: profiling.then(Instant::now),
             instrumentation: &self.profile_instrumentation,
         }
+    }
+
+    fn read_store(&self) -> ProfiledReadStoreGuard<'_> {
+        let profiling = self.profile_instrumentation.enabled();
+        let wait_started = profiling.then(Instant::now);
+        let guard = self.store.read().expect("store read lock");
+        if let Some(started) = wait_started {
+            self.profile_instrumentation
+                .store_lock_acquisitions
+                .fetch_add(1, Ordering::Relaxed);
+            self.profile_instrumentation
+                .store_lock_wait_nanoseconds
+                .fetch_add(elapsed_nanoseconds(started), Ordering::Relaxed);
+        }
+        ProfiledReadStoreGuard {
+            guard,
+            hold_started: profiling.then(Instant::now),
+            instrumentation: &self.profile_instrumentation,
+        }
+    }
+
+    fn read_live_value_unisolated(&self, key: &StoreKey, now_ms: u64) -> (Option<Vec<u8>>, bool) {
+        {
+            let store = self.read_store();
+            match store.get(key) {
+                Some(entry) if entry.is_expired(now_ms) => {}
+                Some(entry) => return (Some(entry.value.clone()), false),
+                None => return (None, false),
+            }
+        }
+
+        // The read owner is released before taking the write owner. Recheck the
+        // current entry so a live replacement installed in between is returned,
+        // never removed as the stale expired observation.
+        self.cleanup_expired_after_read(key, now_ms)
+    }
+
+    fn cleanup_expired_after_read(&self, key: &StoreKey, now_ms: u64) -> (Option<Vec<u8>>, bool) {
+        let mut store = self.lock_store();
+        live_value(&mut store, key, now_ms)
     }
 
     fn begin_subscription(&self) {
@@ -1382,20 +1446,25 @@ impl ClientSurfaceState {
         let response = match envelope.request {
             ClientRequest::Get { ns, key } => {
                 let now_ms = self.now_ms();
-                match self.with_admitted_store(identity, |store, isolation| {
-                    let (value, expired) =
-                        live_value(store, &store_key(identity, &ns, &key), now_ms);
-                    if expired {
-                        if let Some(isolation) = isolation {
-                            let _ = isolation.remove_entry(
-                                identity.client_id(),
-                                ns.as_str(),
-                                &key.stable_key(),
-                            );
+                let lookup_key = store_key(identity, &ns, &key);
+                let result = if self.isolation.is_none() {
+                    Ok(self.read_live_value_unisolated(&lookup_key, now_ms))
+                } else {
+                    self.with_admitted_store(identity, |store, isolation| {
+                        let (value, expired) = live_value(store, &lookup_key, now_ms);
+                        if expired {
+                            if let Some(isolation) = isolation {
+                                let _ = isolation.remove_entry(
+                                    identity.client_id(),
+                                    ns.as_str(),
+                                    &key.stable_key(),
+                                );
+                            }
                         }
-                    }
-                    (value, expired)
-                }) {
+                        (value, expired)
+                    })
+                };
+                match result {
                     Ok((value, expired)) => {
                         if self.profile_instrumentation.enabled() {
                             let counter = if expired {
@@ -3199,6 +3268,42 @@ impl IntoResponse for ClientSurfaceError {
 mod retention_tests {
     use super::*;
 
+    #[test]
+    fn stale_expiry_observation_cannot_remove_a_live_replacement() {
+        let state = ClientSurfaceState::new(ClientSurfaceLimits::default()).unwrap();
+        let key = ("tenant".to_owned(), "ns".to_owned(), "key".to_owned());
+        state
+            .store
+            .write()
+            .expect("store write lock")
+            .insert(key.clone(), StoredValue::with_ttl(vec![1], 1_000, 1));
+        assert!(state
+            .store
+            .read()
+            .expect("store read lock")
+            .get(&key)
+            .is_some_and(|entry| entry.is_expired(1_001)));
+
+        state
+            .store
+            .write()
+            .expect("store write lock")
+            .insert(key.clone(), StoredValue::persistent(vec![2]));
+        assert_eq!(
+            state.cleanup_expired_after_read(&key, 1_001),
+            (Some(vec![2]), false)
+        );
+        assert_eq!(
+            state
+                .store
+                .read()
+                .expect("store read lock")
+                .get(&key)
+                .map(|entry| entry.value.as_slice()),
+            Some([2].as_slice())
+        );
+    }
+
     fn put(
         state: &ClientSurfaceState,
         identity: &ClientIdentity,
@@ -3295,11 +3400,11 @@ mod retention_tests {
             state.reap_expired_entries_for_maintenance(),
             CLIENT_SURFACE_EXPIRY_SWEEP_SCAN_LIMIT
         );
-        assert_eq!(state.store.lock().expect("store mutex").len(), 44);
+        assert_eq!(state.store.read().expect("store read lock").len(), 44);
 
         state.advance_cache_time_for_tests(CLIENT_SURFACE_EXPIRY_SWEEP_INTERVAL_MS);
         assert_eq!(state.reap_expired_entries_for_maintenance(), 44);
-        assert!(state.store.lock().expect("store mutex").is_empty());
+        assert!(state.store.read().expect("store read lock").is_empty());
 
         state.advance_cache_time_for_tests(CLIENT_SURFACE_EXPIRY_SWEEP_INTERVAL_MS);
         assert_eq!(state.reap_expired_entries_for_maintenance(), 0);
