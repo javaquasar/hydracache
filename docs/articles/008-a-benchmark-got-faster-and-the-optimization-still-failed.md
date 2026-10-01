@@ -318,6 +318,56 @@ Value ownership also produced a useful non-change. Raw embedded values already s
 the canonical request core, so the investigation recorded the boundary instead of inventing a
 zero-copy wrapper.
 
+## What the local campaign actually delivered
+
+The final local branch contains attribution tools, exact receipts, regression coverage and the
+decision record—not an optimization left enabled merely because one benchmark became faster. Both
+the response batch and verified session were committed as isolated candidates, measured, and then
+removed with targeted revert commits. The resulting product path is the clean baseline; the
+instrumentation and evidence remain reproducible.
+
+The semantic checks covered more than happy-path GET and SET:
+
+- fragmented RESP2 and RESP3 frames and partial pipelines;
+- scripted partial writes, `Pending` transitions and response ordering;
+- half-open connections, disconnects, churn and bounded recovery;
+- slow readers, subscription lag and backpressure;
+- oversized input and large legal responses;
+- expiration versus concurrent overwrite;
+- tenant quota release and isolation;
+- batch prevalidation, duplicate-key behavior and multi-key atomicity;
+- exact response bytes and result validation in every performance receipt.
+
+The complete client-surface run passed 70 active tests; two million-operation retention soaks
+remained deliberately scheduled rather than being smuggled into a quick local gate. The focused
+multitenancy suite passed 15 tests, RESP boundaries 11, connection chaos 4, and pipeline
+attribution 2. Both local profilers passed their unit and clippy gates after the product candidates
+were reverted.
+
+This work also established a strict measurement boundary. The TCP profiler observes Tokio
+`AsyncWrite` polls, ready/pending outcomes, short writes, bytes and explicit flush polls. It does
+not observe kernel `send` calls. Windows Performance Recorder refused the local network profile
+with error `0xc5585011`, so no trace existed to reinterpret. Expensive infrastructure, the rented
+server and the frozen 0.73 confirmation run were left untouched.
+
+For reproducibility, the main checkpoints were:
+
+| Checkpoint | Commit |
+| --- | --- |
+| Real TCP transport | `a7942461` |
+| Server socket-poll attribution | `34168994` |
+| W3 TCP evidence and rejection | `ddfabc79` |
+| Verified-session candidate and profiler | `4f0beed2`, `7204599c` |
+| Verified-session targeted rollback | `39d2d242`, `2471f84a` |
+| W8a evidence and final local decision | `81a63257` |
+
+No expensive qualification number should be inferred from those local medians. The next W3 or
+W8a attempt needs a stable admitted Linux or ETW-capable host. W8a additionally needs a real
+production policy-generation and revocation lifecycle; W8b needs an explicit decision about
+whether changing the stable `ClientResponse::Value` ownership contract is acceptable. Until those
+decisions are made, widening thresholds or combining the session, value and RESP hypotheses would
+reduce evidence quality rather than advance the release.
+
 Four attractive directions did not earn more implementation work in this cycle:
 
 - unconditional cursor parsing, because copy removal barely moved end-to-end throughput;
@@ -338,21 +388,22 @@ For every performance candidate, preserve four separate statements:
 3. **Product result:** the affected workload improved under matched conditions.
 4. **Release result:** independent surfaces, semantics, and long-run guards also passed.
 
-The cursor candidate reached statement two. Coalescing reached three for one important cell. Batch
-`DEL` reached three convincingly. None reached four.
+The cursor candidate reached statement two. Coalescing, batch `DEL`, and the verified session
+reached statement three in their target cells. None reached four.
 
 Collapsing those statements is how local observations become exaggerated release claims.
 
 ## Conclusion
 
-The most promising HydraCache 0.74 gain is no longer vague. It is repeated request-framework and
-store-ownership work in multi-key deletion, followed by write/flush amplification in deep `SET`
-pipelines. The measurements also tell us what is unlikely to pay off: key representation churn,
-direct encoding in isolation, and a generic shared read lock.
+The most promising HydraCache 0.74 gains are no longer vague. They are repeated request-framework
+and store-ownership work in multi-key deletion, write/flush amplification in deep pipelines, and
+repeated identity resolution under tenant-isolated concurrency. The measurements also tell us what
+is unlikely to pay off: key representation churn, direct encoding in isolation, a generic shared
+read lock, or a zero-copy wrapper that cannot preserve the stable protocol contract.
 
-The 49% result was not wasted because its code was reverted. It identified a real owner, validated
-the size of the opportunity, exercised the semantic test surface, and exposed the need for stronger
-isolation from native paths.
+The 49%, 83%, and 57% target-cell results were not wasted because their code was reverted. They
+identified real owners, bounded the opportunity, exercised the semantic surface, and exposed the
+specific shallow-request, tail-latency, host-stability, and policy-lifecycle work still required.
 
 An optimization campaign succeeds when it narrows uncertainty without moving the rules. Sometimes
 the most useful outcome is a faster benchmark and a rejected patch.
