@@ -5,7 +5,9 @@
 > - **What:** remove measured RESP pipeline bottlenecks and shared native-path costs in parsing,
 >   response batching, request metadata, time/expiry checks, key ownership, client-store
 >   concurrency, multi-key execution, value ownership, and optional durable writes while preserving
->   command order, bounded memory, compatibility, and failure semantics.
+>   command order, bounded memory, compatibility, and failure semantics. Harden the long-run test
+>   control plane so loss of the GitHub controller can reattach to the same still-running measured
+>   processes without restarting, splicing, or silently retrying an experiment.
 > - **Why:** the retained same-host 0.67.1 comparison reached 67.9%/67.6% of Redis for GET/SET at
 >   pipeline depth 1 but only 18.1%/18.0% at depth 10. Source inspection identifies a concrete
 >   amplification chain: per-command input-buffer compaction, per-response allocation,
@@ -78,7 +80,10 @@ proposal backed by W1 attribution.
 7. optional specialized GET/SET decode-to-store and store-to-encoder paths;
 8. evidence-driven atomic ordering, buffer reuse, runtime scheduling, and syscall tuning;
 9. an optional durability batching proposal that preserves the selected durability contract;
-10. same-host HydraCache/Redis and exact-candidate long-run qualification.
+10. same-host HydraCache/Redis and exact-candidate long-run qualification;
+11. a detached, lease-bound long-run supervisor, durable hash-chained checkpoints, progress-aware
+    hang detection, and fail-closed reattachment to the same live process after GitHub controller
+    loss.
 
 ## Non-goals
 
@@ -95,6 +100,12 @@ proposal backed by W1 attribution.
 - No allocator change, map replacement, sharding, relaxed atomic, or fsync change without its own
   measured owner and proposal.
 - No edit to the frozen 0.73 product candidate, workload, thresholds, evidence, or tag.
+- No restart-from-checkpoint claim for a process that exited, was killed, changed PID start time or
+  cgroup, or crossed a host reboot. Checkpoints may recover controller ownership and diagnostics;
+  they may not recreate allocator, RSS/PSS, CPU, file-descriptor, thread, socket, or daemon state.
+- No concatenation of samples from different process lifetimes and no segmented run presented as
+  one continuous long-run memory observation. Segmented throughput/latency experiments require a
+  separate preregistered estimator and cannot replace the continuous retention gate.
 
 ## Identity and decision model
 
@@ -764,12 +775,252 @@ traffic so batching cannot hide starvation. Include slow readers, reconnects, su
 multi-key commands, and persistence as separately visible sub-surfaces. One aggregate win cannot
 hide a harmed command, protocol, or native surface.
 
+### Controller resilience: separate controller loss from measurement loss
+
+The 0.74 long-run contract must classify three conditions separately:
+
+1. **Controller loss:** the GitHub job, network session, or monitoring process disappears while the
+   exact measured harness and daemon processes remain alive and continue producing valid
+   checkpoints. A later protected job may reattach to those same processes.
+2. **Progress loss:** the processes still exist but the phase-specific progress signal or checkpoint
+   stream stops. This is a hang, not a healthy run. The supervisor captures bounded diagnostics and
+   rejects the role no later than the frozen progress deadline.
+3. **Measurement loss:** the harness or daemon exits, is replaced, changes process start identity or
+   cgroup, or the host reboots. The role is failed and retained. Starting a replacement process is a
+   new attempt and cannot continue or complete the old role.
+
+Reattachment is therefore recovery of the control plane, not process restart or statistical
+continuation. The continuous RSS/PSS, allocator, CPU, thread, FD, socket, listener, expiry, and
+durability state remains valid only while the original measured process tree remains alive.
+
+W0 freezes a `long-run-controller-resilience-074-v1` contract before any I74/C74 long-run data is
+observed. It records the campaign identity schema, state directory, supervisor binary/script SHA,
+allowed commands, checkpoint format, checkpoint cadence, maximum progress gap, diagnostic grace
+period, lease-expiry behavior, host-local artifact limit, and supervisor overhead budget. Those
+values cannot be loosened after a failed or favorable candidate run.
+
+### Controller resilience: detached, lease-bound host supervisor
+
+Provision a narrow `hydracache-performance-supervisor` service on the admitted Linux runner outside
+the GitHub runner process tree. Prefer a pre-installed systemd service with a root-owned executable,
+a dedicated unprivileged account and group-writable Unix socket over invoking arbitrary
+`systemd-run` commands from a workflow. The service accepts only a typed campaign manifest and an
+allowlisted operation; it is not a general remote shell.
+
+The GitHub workflow performs `start`, `attach`, `status`, `seal`, or `abort` through a small client.
+The supervisor owns the measured process group and persists after loss or cancellation of the
+GitHub job. It must remove GitHub runner tracking variables before spawning the measured process,
+place the process in a dedicated systemd unit/cgroup, set the reviewed CPU affinity, and keep the
+supervisor itself on housekeeping CPUs. GitHub cancellation must not implicitly kill the measured
+unit; explicit abort, a failed progress guard, lease expiry, or the measured process's own terminal
+state may stop it.
+
+Use one stable campaign id across GitHub run attempts:
+
+```text
+campaign_id = sha256(
+  contract_sha256 || tooling_sha || i74_source_sha || c74_source_sha ||
+  scenario_sha256 || host_receipt_sha256 || lease_id || random_nonce
+)
+```
+
+The nonce is created once by the protected start operation and stored in the sealed start manifest.
+`github.run_id` and `github.run_attempt` are provenance fields, not campaign identity. Artifact
+names use the campaign id and role packet digest so a later attach job can address the existing
+campaign without pretending to be its creator.
+
+Persist each campaign under a configured host path such as
+`/var/lib/hydracache-performance/campaigns/<campaign_id>/`; W0 records the exact admitted path and
+mount identity. The directory contains:
+
+- immutable `campaign-start.json` with all source, binary, overlay, scenario, host, lease, cpuset,
+  workload, estimator, threshold, and artifact-budget digests;
+- atomic `state.json` with role, phase, PIDs, `/proc/<pid>/stat` start ticks, boot id, cgroup inode,
+  latest checkpoint sequence/hash, last progress time, exit state, and controller history;
+- append-only checkpoint and supervisor event journals;
+- bounded stdout/stderr and diagnostic bundles;
+- sealed I74 continuation and final I74/C74 packet manifests.
+
+The supervisor holds an exclusive host campaign lock. A duplicate `start` with the same or a
+different campaign id fails before spawning anything. Multiple read-only status observers are
+allowed, but at most one controller lease may issue `seal` or `abort`. The controller lease is
+renewable and losing it never starts a replacement process. The product lease remains authoritative:
+at expiry the supervisor records the terminal reason, captures diagnostics, terminates the measured
+unit, and seals an incomplete packet. No orphan process may outlive the reviewed lease.
+
+### Controller resilience: durable, hash-chained, progress-aware checkpoints
+
+Extend the 0.74 integrated harness checkpoint writer so every record is canonical JSON and contains
+`schema_version`, `campaign_id`, role, phase, sequence, monotonic elapsed time, wall-clock time,
+completed/failed/rejected/timeout counts, per-surface counters, resource counters, owner state,
+process identities, `previous_record_sha256`, and `record_sha256`. Append one complete line, call
+`flush` and `sync_data`, then atomically update `state.json` through write-temp, file sync, rename,
+and parent-directory sync. Recovery ignores at most one incomplete trailing line but rejects any
+earlier parse failure, sequence gap, duplicate, digest break, identity drift, or timestamp reversal.
+
+The watchdog must prove useful progress rather than merely print that a PID exists. Define the
+expected signal per phase:
+
+| Phase | Required progress signal |
+| --- | --- |
+| start/warmup | warmup operation count and startup milestone advance |
+| measured work | checkpoint sequence, completed operations, per-surface accounting and CPU time advance |
+| drain | outstanding/backlog count decreases until zero |
+| durable companion | durable phase milestone or durable receipt advances |
+| post-work idle | telemetry/checkpoint sequence advances while operation counts remain intentionally fixed |
+| reconciliation | owner/reconciliation milestone advances to the terminal exact state |
+| sealed | process is terminal and every required final checkpoint/digest exists |
+
+W0 freezes warning and rejection deadlines within the checkpoint-gap contract. A controller
+heartbeat without a new valid progress record never resets the deadline. Before rejecting a stalled
+role, collect only bounded, non-secret diagnostics: process/cgroup status, command digest, CPU and
+I/O counters, thread states where permitted, FD counts, socket summary, latest logs, disk space,
+PSI, and the last valid checkpoint. Diagnostics cannot extend the measured window or turn a failed
+role green.
+
+Checkpoint persistence is for reattachment and forensics. It does not authorize replaying already
+counted operations into a new process. Host-local state is the authoritative live journal while the
+process exists; periodic remote snapshots are diagnostic-only until the final packet is sealed and
+all nested hashes are independently verified.
+
+### Controller resilience: fail-closed reattachment admission
+
+`attach` is permitted only when all of the following remain exact:
+
+- campaign id and start-manifest digest;
+- I74/C74 product SHAs, tree/lock digests, tooling SHA, harness/server binary hashes, overlay and
+  scenario hashes;
+- workload, phase duration, seed, estimator, thresholds, checkpoint cadence and artifact limits;
+- admitted host receipt, machine id, boot id, kernel/governor/tuning identity, mount identity,
+  cpusets and active lease;
+- original harness and daemon PIDs, process start ticks, process group and cgroup identity;
+- command-line/environment digest after excluding named secrets, with secret presence represented
+  only by reviewed identifiers;
+- a continuous checkpoint hash chain whose latest record is inside the frozen progress deadline;
+- no already recorded failure, abort, lease expiry, reboot, PID reuse, duplicate executor, or
+  replacement process.
+
+The attach command is idempotent and must never spawn the workload. It first writes a signed/hashed
+controller event, then follows the existing state and resumes monitoring. If any predicate fails,
+it emits a structured rejection receipt and leaves the evidence untouched.
+
+A completed and sealed I74 role may be reused after controller loss only when C74 has not started,
+the same admitted host and boot remain inside the same lease, the I74 continuation packet passes
+external and nested digest verification, and a fresh pre-C74 calibration passes the frozen guard.
+Once a C74 measured process has started, its death or invalid checkpoint rejects the pair; a new C74
+process may not be silently paired with the earlier I74 packet. If C74 is still the original live
+process, attaching to it is allowed under the predicates above.
+
+### Controller resilience: split only at valid orchestration boundaries
+
+Implement the confirmation graph as explicit boundaries:
+
+```text
+authorize/admit/build/canary
+  -> start-or-attach I74 continuous process
+  -> validate + seal I74 continuation
+  -> start-or-attach C74 continuous process
+  -> validate + seal complete packet
+  -> independent digest/guard verification
+```
+
+Preparation, build, canary, each complete role, continuation sealing, final sealing, and independent
+verification may be separate jobs. The six-hour and 24-hour role processes remain uninterrupted.
+If GitHub disappears during a role, a later protected workflow uses `attach`; if GitHub disappears
+after a role is terminal but before upload, it uses `seal` and uploads the existing packet without
+rerunning work.
+
+Throughput/CPU/p99 investigations may additionally use independently started preregistered blocks
+and a paired block estimator. Those blocks are a separate evidence family. They cannot be
+concatenated into the continuous RSS/PSS/retention series or replace the one-process six-hour and
+24-hour gates.
+
+### Controller resilience: implementation surfaces
+
+Expected changes are:
+
+- add `scripts/perf/long_run_supervisor_074.py` (or a small dedicated Rust binary if D0 selects it)
+  with typed `start|attach|status|seal|abort` operations, exclusive campaign locking, phase-aware
+  progress validation, process identity checks, lease enforcement, bounded diagnostics and atomic
+  state writes;
+- add the matching provisioned systemd unit, tmpfiles/runtime-directory policy and host-admission
+  verification under `scripts/perf/` without granting arbitrary workflow command execution;
+- extend `scripts/ci/run-with-heartbeat.py` or add a 0.74 progress watchdog so heartbeat receipts
+  include checkpoint sequence, phase and progress age rather than only PID/elapsed time;
+- implement the 0.74 long-run runner in `scripts/perf/performance_long_run_074.py` with distinct
+  controller-loss, progress-loss, product-failure, lease-expired and host-loss classifications;
+- extend the integrated 0.74 harness under `tools/` with durable hash-chained checkpoints, explicit
+  phase milestones, original process identities and final reconciliation records;
+- add `crates/xtask/src/long_run_campaign.rs` (name finalized in W0) for manifest parsing, digest
+  verification, attach admission, packet sealing and release-evidence validation;
+- add `.github/workflows/performance-long-run-qualification-074.yml` and the 0.74 protected entry
+  workflow with `operation=start|attach|status|seal|abort`, `campaign_id`, stable artifact naming,
+  `cancel-in-progress: false`, no implicit retry, and an `always()` incomplete-packet path;
+- add `docs/testing/performance/0.74/long-run-controller-resilience-contract.toml`, supervisor
+  schema/host receipt, rejected-attempt ledger and independently verified campaign receipts.
+
+The exact language/binary split is chosen before implementation. What is mandatory is the semantic
+owner separation: GitHub controls authorization, the host supervisor owns process lifetime, the
+harness owns measurement/checkpoints, and xtask owns admission/evidence verification.
+
+### Controller resilience: fault, security, and recovery tests
+
+The following tests are release-blocking:
+
+- kill the GitHub-side monitor during warmup, measured work, drain, post-idle, reconciliation, and
+  after terminal role completion; reattach and prove the same PID start ticks, cgroup, checkpoint
+  chain, operation counts and final digest as the uninterrupted control;
+- disconnect network access and stop/restart the Actions runner service while the detached campaign
+  continues; prove no second harness/server process is launched;
+- issue concurrent and repeated `start`/`attach` requests; exactly one campaign executes and attach
+  remains idempotent/read-only with respect to workload lifetime;
+- freeze the harness, daemon, checkpoint writer and monitor separately; require phase-aware bounded
+  hang detection, an incomplete artifact and zero automatic restart;
+- kill the harness or daemon, reuse a PID, move a process to another cgroup, reboot the host, expire
+  the lease and change cpuset/governor/mount identity; every attach must fail closed;
+- truncate the last checkpoint, corrupt a middle record, duplicate/reorder a sequence, break the
+  previous-hash link, exceed the maximum gap, inject a stale campaign id and mix GitHub run attempts;
+  only a single incomplete final line is recoverable and none can create green evidence;
+- cancel after sealed I74 but before C74 starts; admit I74 reuse only under the fail-closed
+  reattachment rules and require fresh calibration. Cancel after C74 starts: attach only to the
+  same live C74 process, otherwise reject;
+- hold operation counters constant during the intentional post-work idle while telemetry/phase
+  checkpoints advance; prove the watchdog neither false-fails idle nor accepts a truly frozen idle
+  collector;
+- crash during atomic `state.json` replacement and after journal append but before sync; recover the
+  last fully durable state without accepting a torn or unhashed record;
+- attempt command/path traversal, symlink substitution, manifest replay, unauthorized abort,
+  secret inclusion, artifact overflow and arbitrary command execution against the supervisor;
+- trigger every controller-resilience canary: PID-only liveness accepted, restart-from-checkpoint
+  accepted, PID reuse accepted, broken hash chain accepted, mixed-attempt packet accepted, lease
+  expiry ignored and duplicate executor accepted. Each canary must be expected-red.
+
+Run short deterministic fixtures locally/CI, then one bounded same-host rehearsal with deliberate
+controller loss before the expensive six-hour/24-hour campaigns. Measure supervisor/checkpoint
+CPU, memory, I/O, scheduler and timing overhead on housekeeping CPUs for both roles. If overhead is
+not below the W0-frozen budget or is asymmetric between I74 and C74, the resilient controller is
+not admitted for release evidence.
+
+**Acceptance:** a controller may disappear and later reattach without losing valid work only when
+the original measured processes never stopped and every identity/progress guard remains exact. No
+fault test may produce more than one workload process, cross a lease boundary, omit an attempted
+operation, alter duration/seed/thresholds, or convert incomplete evidence into a pass. Process or
+host loss remains a failed retained attempt.
+
 ## W12. Release evidence, documentation, and rollback
 
 Add `docs/testing/release-evidence/0.74.toml`, release-scoped expected-red canaries, immutable raw
 artifact manifests, nested SHA-256 verification, package/SBOM/advisory/license receipts, and
 `docs/releases/0.74.0.md`. Update performance documentation with exact scope and retain all negative
 results.
+
+The release archive also retains the controller-resilience contract and schema, supervisor/tooling
+digests, host provisioning receipt, campaign start manifest, complete controller attach/detach
+history, checkpoint-chain head and tail, process/boot/cgroup identities, lease decisions, every
+attach admission or rejection receipt, fault-rehearsal packets, sealed I74 continuation, complete
+I74/C74 packet and independent outer/nested hash verification. Host-local live state alone is not
+ship evidence; the final immutable archive must be downloadable and verifiable without trusting the
+supervisor that produced it.
 
 Every accepted change documents:
 
@@ -779,6 +1030,11 @@ Every accepted change documents:
 - oldest compatible reader/writer and mixed-version behavior;
 - emergency disable or old-binary rollback procedure;
 - which evidence must be repeated after a dependency or source change.
+
+The operational documentation distinguishes `attach` from `retry`, gives the exact protected
+recovery command, lists every predicate checked before reattachment, explains how to inspect a
+campaign without mutating it, and describes explicit abort and lease-expiry cleanup. It states
+prominently that a dead measured process or rebooted host cannot resume a promotable long-run role.
 
 The release note may claim only metrics whose exact `C74` artifact passes D4. It must state that
 HydraCache and Redis have different product goals, distinguish node-local RESP from distributed
@@ -796,6 +1052,9 @@ capacity, and avoid portable or universal superiority language.
 | Key compatibility | structured-key/core/protocol definitions only if W5 is accepted | ADR, `docs/COMPAT.md`, cross-version fixtures |
 | Durability | `crates/hydracache/src/grid/durable_store.rs` only after W9d authorization | crash/ENOSPC/group-flush tests and receipts |
 | Profiling | existing loadgen/0.67 comparison framework | `tools/resp-pipeline-profile-074`, `docs/testing/performance/0.74/*` |
+| Long-run process lifetime | new provisioned `hydracache-performance-supervisor`, systemd unit/policy, `scripts/perf/long_run_supervisor_074.py` or selected Rust equivalent | controller-loss, duplicate-start, hang, lease-expiry, PID-reuse, reboot and attach fixtures |
+| Long-run harness/journal | `scripts/perf/performance_long_run_074.py`, 0.74 integrated harness under `tools/`, `scripts/ci/run-with-heartbeat.py` or a dedicated progress watchdog | hash-chained/fsynced checkpoint fixtures, phase progress tests, sealed I74 continuation and complete packet |
+| Long-run workflow/evidence | new protected 0.74 host-entry and reusable long-run workflows; `crates/xtask/src/long_run_campaign.rs` or W0-selected module | stable campaign-id manifests, attach admission/rejection receipts, controller history, independent digest verification |
 | Governance | `crates/xtask/src/performance_contract.rs`, release evidence code | `performance_contract_074.rs`, canary/evidence registry |
 
 This is an expected ledger, not blanket authorization. Each D2 proposal records the exact subset
@@ -815,7 +1074,11 @@ cargo clippy -p hydracache-redis-compat --all-targets --locked -- -D warnings
 cargo check -p hydracache-client-transport-axum --all-targets --locked
 cargo clippy -p hydracache-client-transport-axum --all-targets --locked -- -D warnings
 cargo test -p xtask --test performance_contract_074 --locked
+cargo test -p xtask --test long_run_campaign_074 --locked
+python -m unittest scripts/perf/test_long_run_supervisor_074.py
+python -m unittest scripts/perf/test_performance_long_run_074.py
 cargo xtask performance-contract-check --release 0.74
+cargo xtask long-run-campaign-check --release 0.74 --manifest <fixture>
 ```
 
 Milestone and pre-tag gate:
@@ -830,8 +1093,10 @@ cargo xtask release-evidence --release 0.74 --require-ship
 Scheduled/pre-release gates additionally run decoder fuzzing, Miri for accepted borrowed-buffer
 helpers, loom/deterministic lock-order tests if W6 is accepted, pinned real Redis oracle/client
 interop, real plaintext and mTLS processes, same-box Redis comparison, compatibility replay,
-six-hour qualification, and 24-hour confirmation. A missing required external capability is a red
-gate or an explicitly recorded blocker, never a silent pass.
+controller-loss and reattachment rehearsal on the admitted systemd host, every
+controller-resilience expected-red canary, six-hour qualification, and 24-hour confirmation. A
+missing required external capability is a red gate or an explicitly recorded blocker, never a
+silent pass.
 
 ## Final release decision
 
@@ -847,6 +1112,10 @@ gate or an explicitly recorded blocker, never a silent pass.
   tenant isolation, audit, events, restart, and rollback;
 - focused comparisons, integrated interaction cells, compatibility, six-hour qualification, and
   24-hour confirmation pass on the same frozen candidate;
+- the detached supervisor survives simulated GitHub controller/runner loss and reattaches only to
+  the same live process identities; progress hangs fail within the frozen deadline, all
+  restart/PID-reuse/reboot/hash-gap/lease canaries are expected-red, and no mixed-lifetime packet is
+  admitted;
 - release evidence, packages, SBOM, dependency policy, supported targets, documentation, and
   immutable artifact hashes are green.
 
