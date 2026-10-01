@@ -937,31 +937,42 @@ concatenated into the continuous RSS/PSS/retention series or replace the one-pro
 
 ### Controller resilience: implementation surfaces
 
+The implementation is fixed to a small Rust supervisor/client binary rather than a mutable
+host-side Python daemon. The executable, IPC protocol, systemd confinement, persistent state
+machine, canonical checkpoint chain, crash-recovery algorithm, CLI/exit-code contract, workflow
+graph, security boundary, rollout and requirement-to-test mapping are specified in
+`docs/testing/performance/0.74/long-run-controller-resilience-design.md`. Any implementation
+departure requires a preregistered contract amendment before candidate data is observed.
+
 Expected changes are:
 
-- add `scripts/perf/long_run_supervisor_074.py` (or a small dedicated Rust binary if D0 selects it)
-  with typed `start|attach|status|seal|abort` operations, exclusive campaign locking, phase-aware
-  progress validation, process identity checks, lease enforcement, bounded diagnostics and atomic
-  state writes;
-- add the matching provisioned systemd unit, tmpfiles/runtime-directory policy and host-admission
-  verification under `scripts/perf/` without granting arbitrary workflow command execution;
-- extend `scripts/ci/run-with-heartbeat.py` or add a 0.74 progress watchdog so heartbeat receipts
-  include checkpoint sequence, phase and progress age rather than only PID/elapsed time;
-- implement the 0.74 long-run runner in `scripts/perf/performance_long_run_074.py` with distinct
-  controller-loss, progress-loss, product-failure, lease-expired and host-loss classifications;
-- extend the integrated 0.74 harness under `tools/` with durable hash-chained checkpoints, explicit
-  phase milestones, original process identities and final reconciliation records;
-- add `crates/xtask/src/long_run_campaign.rs` (name finalized in W0) for manifest parsing, digest
-  verification, attach admission, packet sealing and release-evidence validation;
-- add `.github/workflows/performance-long-run-qualification-074.yml` and the 0.74 protected entry
-  workflow with `operation=start|attach|status|seal|abort`, `campaign_id`, stable artifact naming,
-  `cancel-in-progress: false`, no implicit retry, and an `always()` incomplete-packet path;
-- add `docs/testing/performance/0.74/long-run-controller-resilience-contract.toml`, supervisor
-  schema/host receipt, rejected-attempt ledger and independently verified campaign receipts.
+- add workspace package `tools/long-run-supervisor-074` producing
+  `hydracache-long-run-supervisor-074`; the same exact binary provides the root-owned `serve`
+  mode and the unprivileged typed `start|attach|status|seal|abort|verify` client operations;
+- add reviewed provisioning, systemd service, transient measured-unit policy, sysusers/tmpfiles
+  definitions and host-admission verification under `scripts/perf/long-run-supervisor-074/`;
+  workflows receive no shell, sudo, DBus or arbitrary command surface;
+- add `scripts/ci/monitor-long-run-campaign-074.py` as a replaceable GitHub-side observer whose
+  receipts include checkpoint sequence, phase, useful-progress age and immutable process identity;
+- implement `scripts/perf/performance_long_run_074.py` as the manifest builder and orchestration
+  adapter with distinct controller-loss, progress-loss, product-failure, lease-expired, host-loss
+  and evidence-corruption classifications;
+- extend the integrated 0.74 harness under `tools/performance-integrated-074` with durable
+  hash-chained checkpoints, explicit phase milestones, original process identities and final
+  reconciliation records;
+- add `crates/xtask/src/long_run_campaign.rs` for offline manifest/schema parsing, chain and packet
+  digest verification, attach-receipt validation and release-evidence admission. Xtask never asks
+  the live supervisor whether its own output is trustworthy;
+- add `.github/workflows/performance-long-run-qualification-074.yml` plus a protected host-entry
+  workflow with explicit `operation=start|attach|status|seal|abort`, caller-provided stable
+  `campaign_id`, stable artifact naming, `cancel-in-progress: false`, no implicit retry, and a
+  best-effort `always()` snapshot path that is never required for host-side survival;
+- add `docs/testing/performance/0.74/long-run-controller-resilience-contract.toml`, JSON schemas,
+  supervisor/host receipts, rejected-attempt ledger and independently verified campaign receipts.
 
-The exact language/binary split is chosen before implementation. What is mandatory is the semantic
-owner separation: GitHub controls authorization, the host supervisor owns process lifetime, the
-harness owns measurement/checkpoints, and xtask owns admission/evidence verification.
+The owner split is invariant: GitHub authorizes and observes, the host supervisor owns process
+lifetime, the harness owns measurement/checkpoints, and xtask independently verifies admission and
+release evidence.
 
 ### Controller resilience: fault, security, and recovery tests
 
@@ -1052,9 +1063,9 @@ capacity, and avoid portable or universal superiority language.
 | Key compatibility | structured-key/core/protocol definitions only if W5 is accepted | ADR, `docs/COMPAT.md`, cross-version fixtures |
 | Durability | `crates/hydracache/src/grid/durable_store.rs` only after W9d authorization | crash/ENOSPC/group-flush tests and receipts |
 | Profiling | existing loadgen/0.67 comparison framework | `tools/resp-pipeline-profile-074`, `docs/testing/performance/0.74/*` |
-| Long-run process lifetime | new provisioned `hydracache-performance-supervisor`, systemd unit/policy, `scripts/perf/long_run_supervisor_074.py` or selected Rust equivalent | controller-loss, duplicate-start, hang, lease-expiry, PID-reuse, reboot and attach fixtures |
-| Long-run harness/journal | `scripts/perf/performance_long_run_074.py`, 0.74 integrated harness under `tools/`, `scripts/ci/run-with-heartbeat.py` or a dedicated progress watchdog | hash-chained/fsynced checkpoint fixtures, phase progress tests, sealed I74 continuation and complete packet |
-| Long-run workflow/evidence | new protected 0.74 host-entry and reusable long-run workflows; `crates/xtask/src/long_run_campaign.rs` or W0-selected module | stable campaign-id manifests, attach admission/rejection receipts, controller history, independent digest verification |
+| Long-run process lifetime | new Rust package `tools/long-run-supervisor-074`, provisioned `hydracache-performance-supervisor-074` systemd service and fixed transient-unit policy | protocol/state/property tests plus real controller-loss, duplicate-start, supervisor-restart, hang, lease-expiry, PID-reuse, reboot and attach fixtures |
+| Long-run harness/journal | `scripts/perf/performance_long_run_074.py`, `tools/performance-integrated-074`, `scripts/ci/monitor-long-run-campaign-074.py` | hash-chained/fsynced checkpoint and crash-window fixtures, phase progress tests, sealed I74 continuation and complete packet |
+| Long-run workflow/evidence | protected 0.74 host-entry/reusable workflows and `crates/xtask/src/long_run_campaign.rs` | stable campaign manifests, attach admission/rejection receipts, controller history, deterministic packets and independent offline digest verification |
 | Governance | `crates/xtask/src/performance_contract.rs`, release evidence code | `performance_contract_074.rs`, canary/evidence registry |
 
 This is an expected ledger, not blanket authorization. Each D2 proposal records the exact subset
@@ -1075,7 +1086,11 @@ cargo check -p hydracache-client-transport-axum --all-targets --locked
 cargo clippy -p hydracache-client-transport-axum --all-targets --locked -- -D warnings
 cargo test -p xtask --test performance_contract_074 --locked
 cargo test -p xtask --test long_run_campaign_074 --locked
-python -m unittest scripts/perf/test_long_run_supervisor_074.py
+cargo test -p hydracache-long-run-supervisor-074 --locked
+cargo test -p hydracache-long-run-supervisor-074 --test protocol --locked
+cargo test -p hydracache-long-run-supervisor-074 --test state_machine --locked
+cargo test -p hydracache-long-run-supervisor-074 --test crash_recovery --locked
+cargo test -p hydracache-long-run-supervisor-074 --test security --locked
 python -m unittest scripts/perf/test_performance_long_run_074.py
 cargo xtask performance-contract-check --release 0.74
 cargo xtask long-run-campaign-check --release 0.74 --manifest <fixture>
