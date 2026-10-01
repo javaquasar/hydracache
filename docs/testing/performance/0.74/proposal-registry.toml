@@ -14,9 +14,9 @@ blocker = "v0.73.0 publication and confirmation are not complete"
 [[work_items]]
 id = "W1"
 title = "stage attribution"
-decision = "attributed-local-open-gates"
+decision = "attributed-through-tokio-socket-boundary-open-kernel-gate"
 primary_metric = "owner-reconciliation"
-blocker = "instrumentation overhead, syscall attribution, and network-native controls remain open"
+blocker = "kernel syscall tracing is denied by local Windows policy; network-native controls remain open"
 
 [[work_items]]
 id = "W2"
@@ -29,10 +29,10 @@ evidence = "w1-local-attribution.md and local-runs/w2-*.json"
 [[work_items]]
 id = "W3"
 title = "bounded output coalescing"
-decision = "rejected-local-throughput-and-tail-guards"
+decision = "rejected-local-shallow-tail-guards-after-real-tcp-retry"
 primary_metric = "write-and-flush-calls-per-reply"
 rollback = "remove only the connection-local response batch"
-evidence = "w1-local-attribution.md and local-runs/w3-*.json"
+evidence = "w1-local-attribution.md and local-runs/w3-*.json including v3 TCP A/B pairs"
 
 [[work_items]]
 id = "W4"
@@ -75,7 +75,7 @@ evidence = "w1-local-attribution.md and local-runs/w8-*.json"
 [[work_items]]
 id = "W9"
 title = "runtime syscall buffer and durability follow-ups"
-decision = "not-authorized"
+decision = "kernel-syscall-observation-blocked-by-local-policy"
 primary_metric = "proposal-specific"
 
 [[native_investigations]]

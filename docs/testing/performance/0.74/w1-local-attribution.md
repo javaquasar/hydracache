@@ -132,6 +132,55 @@ screening evidence, not a portable performance claim; they do not authorize sele
 favorable SET cell. All 44 raw W3 receipts are retained. No sample was discarded or retried, no
 threshold changed, and the candidate is rejected for targeted rollback.
 
+### W3 real-TCP attribution and bounded-batch retry
+
+The v2 profiler added a loopback `TcpListener`/`TcpStream` transport with `TCP_NODELAY`, while
+preserving the exact command generator, response validator and workload digest used by the
+in-process duplex transport. The v3 profiler then wrapped only the accepted server socket and
+counted `AsyncWrite::poll_write`/`poll_flush` attempts, ready/pending outcomes, requested/written
+bytes and short writes. These are socket-layer polls, not kernel syscall counts.
+
+Three baseline processes per cell used 200,000 operations, 10,000 warmup operations, payload 256,
+key space 4,096, seed 7,407 and c1. The loopback TCP medians were:
+
+| Cell | Goodput op/s | CPU ns/op | p99 us | RESP writes/op | Socket write polls/op |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| GET pipeline 1 | 39,417 | 25,078 | 65 | 1.0 | 1.0 |
+| GET pipeline 10 | 86,574 | 11,406 | 309 | 1.0 | 1.0 |
+| SET pipeline 1 | 38,600 | 25,000 | 72 | 1.0 | 1.0 |
+| SET pipeline 10 | 85,112 | 11,328 | 337 | 1.0 | 1.0 |
+
+Every TCP write poll completed ready, no short write was observed, and the server issued one
+explicit flush poll per reply. Pipeline 10 therefore batched client requests but did not batch
+server replies. This confirmed the W3 owner at the Tokio socket boundary. It did not establish how
+many kernel `send` calls occurred: Windows Performance Recorder refused the local Network profile
+with `0xc5585011` (`Failed to enable the policy to profile system performance`). No elevated or
+policy-bypassing retry was attempted, and no trace was produced.
+
+The previously isolated 256-reply/1-MiB response batch was replayed unchanged as a new candidate.
+All focused byte-identity, partial-write, malformed-frame, slow-reader, oversized-response,
+disconnect/churn and boundary tests passed. The first three-process screen reduced both RESP calls
+and server socket write polls from 1.0 to 0.1 per operation at pipeline 10. Against the v3 baseline,
+TCP pipeline-10 goodput increased 81.24% for GET and 88.72% for SET, with no allocation change.
+TCP GET pipeline 1, however, lost 5.09% goodput and increased p99 by 12.31%, crossing frozen guards.
+
+A longer counterbalanced check then ran five A/B pairs per TCP cell with 500,000 operations and
+20,000 warmup operations. The candidate and baseline executables were preserved separately; order
+alternated by pair, workload hashes matched and all results were exact:
+
+| TCP cell | Median paired goodput | Observed goodput range | Median CPU/op | Median p99 | Pairs crossing a frozen guard |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| GET pipeline 1 | -2.78% | -5.21% to -0.29% | +3.73% | +3.12% | 4/5 |
+| GET pipeline 10 | +80.90% | +69.81% to +85.76% | -45.03% | -49.57% | 0/5 |
+| SET pipeline 1 | -0.22% | -2.86% to +2.20% | +1.27% | +8.20% | 4/5 |
+| SET pipeline 10 | +83.01% | +80.64% to +90.97% | -44.44% | -48.13% | 0/5 |
+
+The deep-pipeline mechanism is real and materially larger over loopback TCP than in duplex, but
+the exact candidate still fails the shallow-request tail/CPU contract. The favorable deep cells
+are not selected in isolation. The batch and its candidate-only tests were reverted again; v2/v3
+baseline, candidate and paired receipts are retained. A future W3 design must avoid adding the
+batch state/decision cost to pipeline 1, rather than weakening its guard.
+
 ## W4 stage attribution and no-candidate decision
 
 The committed `resp-stage-profile-074` tool runs deterministic allocation and timing passes for
@@ -390,10 +439,11 @@ exact-result validation.
 
 ## Next step and open risks
 
-W7 has settled as a negative result. W8 attribution authorizes two independent experiments: W8a
+W3 and W7 have settled as negative product results despite confirmed owners. W8 attribution
+authorizes two independent experiments: W8a
 generation-fenced identity reuse for tenant-isolated concurrency, then a separate W8b
 ClientSurface immutable-value owner. The rejected DEL result is not permission to combine those
 hypotheses or to weaken native guards. W6b remains unauthorized.
 
-W0, syscall-level attribution, final instrumentation overhead, HC/1 and HC/2 process controls,
+W0, kernel-syscall attribution, final instrumentation overhead, HC/1 and HC/2 process controls,
 Redis same-box comparison, persistence cells, and all expensive release qualification remain open.

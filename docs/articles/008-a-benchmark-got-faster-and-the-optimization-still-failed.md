@@ -291,6 +291,20 @@ enabled, repeated roster validation also became a contended c8 owner. These obse
 two experiments—not one combined fast path: generation-fenced identity reuse and, separately, an
 immutable client-value representation.
 
+Real loopback TCP later made the output-coalescing lesson sharper. The baseline performed one
+server `poll_write` and one explicit `poll_flush` per reply even at pipeline 10. The bounded batch
+reduced those socket-layer calls by 90% and produced median paired TCP goodput gains of 80.90% for
+GET and 83.01% for SET, while roughly halving CPU/op and p99. Yet the same binary failed the
+pipeline-1 contract in four of five GET pairs and four of five SET pairs: GET lost 2.78% median
+goodput with 3.73% more CPU/op, and SET p99 rose 8.20%. The candidate was reverted again. The next
+W3 design has a precise requirement: retain the deep-pipeline batch without charging shallow
+requests for it.
+
+Those counters end at Tokio's socket boundary. An attempted Windows network trace failed before
+capture because local policy denied system-performance profiling. We recorded that limitation
+rather than relabeling socket polls as syscalls or escalating privileges. Kernel syscall claims
+remain open for an admitted Linux or ETW-capable host.
+
 Four attractive directions did not earn more implementation work in this cycle:
 
 - unconditional cursor parsing, because copy removal barely moved end-to-end throughput;
