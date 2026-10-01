@@ -273,8 +273,20 @@
         "core": [],
         "release-only": [],
         "scheduled-diagnostic": [],
-        "manual-protected": ["admit", "compatibility", "long-run-qualification"],
+        "manual-protected": [
+          "authorize-long-run",
+          "admit",
+          "compatibility",
+          "long-run-qualification",
+          "long-run-confirmation-i73",
+          "long-run-confirmation-c73"
+        ],
         "publish": []
+      },
+      "dependencies": {
+        "long-run-qualification": ["authorize-long-run"],
+        "long-run-confirmation-i73": ["authorize-long-run"],
+        "long-run-confirmation-c73": ["long-run-confirmation-i73"]
       },
       "artifact_budget": {
         "max_retention_days": 90,
@@ -282,7 +294,9 @@
         "max_bytes_per_artifact": 1073741824
       },
       "timeout_exemptions": {
-        "long-run-qualification": "Reusable-workflow callers cannot declare timeout-minutes; performance-long-run-qualification-073.yml#qualify owns the selected phase timeout"
+        "long-run-qualification": "Reusable-workflow callers cannot declare timeout-minutes; performance-long-run-qualification-073.yml#qualify owns the selected phase timeout",
+        "long-run-confirmation-i73": "Reusable-workflow callers cannot declare timeout-minutes; performance-long-run-qualification-073.yml#qualify owns the I73 confirmation timeout",
+        "long-run-confirmation-c73": "Reusable-workflow callers cannot declare timeout-minutes; performance-long-run-qualification-073.yml#qualify owns the C73 confirmation timeout"
       },
       "artifact_identity_exemptions": {
         "compatibility": {"reason": "artifact identity uses the validated source SHA input plus run id and attempt", "expires_after_release": "0.74"}
@@ -312,7 +326,7 @@
     {
       "path": ".github/workflows/performance-long-run-qualification-073.yml",
       "purpose": "Execute serialized six-hour qualification or explicit 24-hour-per-role confirmation for frozen I73 and C73",
-      "triggers": ["workflow_call", "workflow_dispatch"],
+      "triggers": ["workflow_call"],
       "concurrency_markers": ["performance-reference-073-host", "github.run_id"],
       "classes": {
         "core": [],
@@ -323,7 +337,7 @@
       },
       "artifact_budget": {
         "max_retention_days": 30,
-        "max_uploads_per_job": 1,
+        "max_uploads_per_job": 2,
         "max_bytes_per_artifact": 1073741824
       },
       "timeout_exemptions": {

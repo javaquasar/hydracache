@@ -2046,11 +2046,9 @@ fn w10_long_run_qualification_workflow_is_serial_bounded_and_fail_closed() {
     serde_yaml::from_str::<serde_yaml::Value>(&workflow).expect("valid workflow YAML");
 
     for required in [
-        "workflow_dispatch:",
         "workflow_call:",
         "runs-on: [self-hosted, linux, x64, hydracache-release]",
-        "environment: performance-reference-073",
-        "timeout-minutes: ${{ inputs.phase == 'confirmation' && 3480 || 900 }}",
+        "timeout-minutes: ${{ inputs.phase == 'confirmation' && 1740 || 900 }}",
         "HYDRACACHE_PERFORMANCE_COLLECTOR_CPUSET:",
         "--mode canary --phase qualification",
         "--mode role --role I73 --phase \"$LONG_RUN_PHASE\"",
@@ -2070,16 +2068,21 @@ fn w10_long_run_qualification_workflow_is_serial_bounded_and_fail_closed() {
         "cp \"$C73_OVERLAY/Cargo.lock.c73\" \"$C73_OVERLAY/Cargo.lock\"",
         "cp \"$I73_OVERLAY/Cargo.lock\" \"$C73_OVERLAY/Cargo.lock\"",
         "diff -qr --exclude=target \"$I73_OVERLAY\" \"$C73_OVERLAY\"",
+        "inputs.role == 'I73'",
+        "inputs.role == 'C73'",
+        "continuation-SHA256SUMS",
+        "sha256sum --check continuation-SHA256SUMS",
+        "performance-long-run-confirmation-i73-stage-073-",
+        "I73 continuation attempt is not valid",
+        "I73 continuation observation is incomplete",
     ] {
         assert!(workflow.contains(required), "workflow omitted {required}");
     }
     assert!(
-        !workflow.contains("push:"),
-        "long-run workflow must not run on push"
-    );
-    assert!(
-        !workflow.contains("schedule:"),
-        "long-run workflow must not run on a schedule"
+        !workflow.contains("workflow_dispatch:")
+            && !workflow.contains("push:")
+            && !workflow.contains("schedule:"),
+        "the reusable long-run worker must only be reachable through the approved entry workflow"
     );
     for forbidden in [
         "--mode role --role I73 --phase qualification",
@@ -2131,12 +2134,21 @@ fn w10_long_run_qualification_workflow_is_serial_bounded_and_fail_closed() {
             .expect("registered host admission entry");
     serde_yaml::from_str::<serde_yaml::Value>(&entry).expect("valid entry workflow YAML");
     for required in [
+        "authorize-long-run:",
         "startsWith(inputs.lease_owner, 'long-run-073@')",
+        "environment: performance-reference-073",
+        "long-run-confirmation-i73:",
+        "long-run-confirmation-c73:",
+        "needs: long-run-confirmation-i73",
+        "if: needs.long-run-confirmation-i73.result == 'success'",
         "uses: ./.github/workflows/performance-long-run-qualification-073.yml",
         "tooling_sha: ${{ inputs.source_sha }}",
         "lease_owner: ${{ inputs.lease_owner }}",
         "lease_end: ${{ inputs.lease_end }}",
         "phase: ${{ inputs.long_run_phase }}",
+        "role: pair",
+        "role: I73",
+        "role: C73",
         "entry_serializes_host: true",
     ] {
         assert!(
@@ -2148,6 +2160,18 @@ fn w10_long_run_qualification_workflow_is_serial_bounded_and_fail_closed() {
         entry.matches("performance-reference-073-host").count(),
         1,
         "the registered entry must remain the sole owner of the shared host concurrency group"
+    );
+    assert_eq!(
+        entry
+            .matches("uses: ./.github/workflows/performance-long-run-qualification-073.yml")
+            .count(),
+        3,
+        "qualification and the two serialized confirmation roles must share one worker definition"
+    );
+    assert_eq!(
+        entry.matches("environment: performance-reference-073").count(),
+        2,
+        "one approval gates the long-run chain while the independent fresh-admission job retains its gate"
     );
 }
 
@@ -2384,6 +2408,46 @@ fn w10_long_run_v2_qualification_cannot_open_final_release_or_hide_a_failed_guar
         "final_c73_allowed must be false",
         "regression budgets failed",
         "c73_rss_upper_95_bytes_per_second exceeds sealed baseline",
+    ] {
+        assert!(
+            problems.iter().any(|problem| problem.contains(required)),
+            "missing problem containing {required:?}: {problems:?}"
+        );
+    }
+}
+
+#[test]
+fn w10_interrupted_confirmation_cannot_admit_final_candidate_or_reuse_partial_roles() {
+    let mut value = manifest("w10-long-run-v2-confirmation-interrupted-36622527013.toml");
+    assert!(
+        xtask::performance_contract::check_w10_long_run_confirmation_interrupted_evidence(
+            &value, "0.73"
+        )
+        .is_empty()
+    );
+
+    value["automatic_retry_performed"] = TomlValue::Boolean(true);
+    value["confirmation_passed"] = TomlValue::Boolean(true);
+    value["final_c73_allowed"] = TomlValue::Boolean(true);
+    value["product_failure_observed"] = TomlValue::Boolean(true);
+    value["c73_role_completed"] = TomlValue::Boolean(true);
+    value["correction_changes_duration"] = TomlValue::Boolean(true);
+    value["c73_completed_at_last_checkpoint"] = TomlValue::Integer(1_036_800_000);
+    value["decision"] =
+        TomlValue::String("accept-twenty-four-hour-confirmation-and-admit-final-c73".to_owned());
+    let problems =
+        xtask::performance_contract::check_w10_long_run_confirmation_interrupted_evidence(
+            &value, "0.73",
+        );
+    for required in [
+        "automatic_retry_performed must be false",
+        "confirmation_passed must be false",
+        "final_c73_allowed must be false",
+        "product_failure_observed must be false",
+        "c73_role_completed must be false",
+        "correction_changes_duration must be false",
+        "partial C73 observation changed",
+        "disposition changed",
     ] {
         assert!(
             problems.iter().any(|problem| problem.contains(required)),

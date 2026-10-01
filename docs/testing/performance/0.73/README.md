@@ -527,4 +527,22 @@ from 30.5605 to 21.0045 bytes/s; the decisive moving-block 95% upper bound fell 
 61.7818 bytes/s, a 28.48% reduction. This is a passed six-hour qualification, not a completed
 release claim: it opens one separately authorized 24-hour confirmation for the exact same frozen
 identities and method. `w10-long-run-v2-qualification-passed-36532416869.toml` records that boundary;
-confirmation has not been started and `final_c73_allowed` remains false.
+the resulting confirmation run is evaluated separately and `final_c73_allowed` remains false until
+its complete artifact passes independent verification.
+
+Run `36622527013` began that confirmation with the frozen identities. I73 completed the full
+24-hour role with 1.0368 billion operations and 1,442 checkpoints. C73 then remained healthy for
+352 checkpoints and 252,728,137 operations before GitHub Actions delivered an external
+cancellation at 5 hours 51 minutes. The partial role had no errors, timeouts, rejections or major
+faults, stderr was empty, and the immediate post-C73 calibration passed on the same host and lease.
+The workflow retained a complete-or-incomplete artifact whose external and completed-role nested
+SHA-256 values were independently verified. Because C73 produced neither a final receipt nor a
+campaign seal, the attempt is append-only diagnostic evidence: it cannot be promoted, spliced or
+used for a comparison.
+
+`w10-long-run-v2-confirmation-interrupted-36622527013.toml` records the failed boundary. The
+tooling-only correction keeps the six-hour workflow unchanged but runs future confirmation roles
+as two sequential jobs under one approval and host lease. A checksummed I73 continuation packet is
+verified before C73 may start; only the C73 job can seal the complete pair. Each job stays below
+29 hours, while product identities, order, workload, 24-hour duration, estimator, seed and
+thresholds remain frozen. No replacement run is automatic or authorized by this correction.

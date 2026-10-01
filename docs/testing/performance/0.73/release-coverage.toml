@@ -1,18 +1,18 @@
 schema_version = 1
 release = "0.73"
-state = "qualification-passed-confirmation-running"
+state = "qualification-passed-confirmation-interrupted"
 product_candidate = "16d2e98b6cc9e22d9ccf95eb26fe28bbbcf80f2b"
 product_tree = "92336607f21a68f563e65dc0fccccd8efaa14f7b"
 instrumented_baseline = "e757556d3a31d565f52a9561d6d4e555bb1cc373"
 qualification_run = 36532416869
 confirmation_run = 36622527013
 confirmation_tooling_sha = "b9f621a5b4f50c5277600fff9a8278fbd2154e28"
-confirmation_status = "running"
+confirmation_status = "interrupted-orchestration-cancellation"
 ship_allowed = false
 
-# This matrix is the W11 ownership index. It deliberately records the running
-# confirmation as non-final; the final evidence file is added only after the
-# complete artifact has been downloaded and independently verified.
+# This matrix is the W11 ownership index. It retains the interrupted confirmation
+# as non-final; final evidence is added only after a newly authorized complete
+# artifact has been downloaded and independently verified.
 [[work_item]]
 id = "W0"
 disposition = "accepted"
@@ -75,9 +75,9 @@ tests = ["w9_evidence_cannot_invent_pressure_or_add_a_hidden_limit"]
 
 [[work_item]]
 id = "W10"
-disposition = "confirmation-running"
-sources = ["docs/testing/performance/0.73/w10-integrated-candidate-contract.toml", "docs/testing/performance/0.73/w10-long-run-v2-qualification-passed-36532416869.toml"]
-tests = ["w10_long_run_v2_qualification_cannot_open_final_release_or_hide_a_failed_guard", "w10_long_run_qualification_workflow_is_serial_bounded_and_fail_closed"]
+disposition = "confirmation-interrupted"
+sources = ["docs/testing/performance/0.73/w10-integrated-candidate-contract.toml", "docs/testing/performance/0.73/w10-long-run-v2-qualification-passed-36532416869.toml", "docs/testing/performance/0.73/w10-long-run-v2-confirmation-interrupted-36622527013.toml"]
+tests = ["w10_long_run_v2_qualification_cannot_open_final_release_or_hide_a_failed_guard", "w10_interrupted_confirmation_cannot_admit_final_candidate_or_reuse_partial_roles", "w10_long_run_qualification_workflow_is_serial_bounded_and_fail_closed"]
 
 [[work_item]]
 id = "W11"

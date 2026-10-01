@@ -197,6 +197,8 @@ const W10_LONG_RUN_QUALIFICATION_V2_CONTRACT: &str =
     "docs/testing/performance/0.73/w10-long-run-qualification-v2-contract.toml";
 const W10_LONG_RUN_QUALIFICATION_V2_EVIDENCE: &str =
     "docs/testing/performance/0.73/w10-long-run-v2-qualification-passed-36532416869.toml";
+const W10_LONG_RUN_CONFIRMATION_INTERRUPTED_EVIDENCE: &str =
+    "docs/testing/performance/0.73/w10-long-run-v2-confirmation-interrupted-36622527013.toml";
 const W10_LONG_RUN_CONFIRMATION_V2_EVIDENCE: &str =
     "docs/testing/performance/0.73/w10-long-run-v2-confirmation-passed-36622527013.toml";
 const RELEASE: &str = "0.73";
@@ -489,6 +491,9 @@ pub fn check_at_root(
     let w10_long_run_qualification_v2_evidence: TomlValue = toml::from_str(&fs::read_to_string(
         root.join(W10_LONG_RUN_QUALIFICATION_V2_EVIDENCE),
     )?)?;
+    let w10_long_run_confirmation_interrupted_evidence: TomlValue = toml::from_str(
+        &fs::read_to_string(root.join(W10_LONG_RUN_CONFIRMATION_INTERRUPTED_EVIDENCE))?,
+    )?;
     let mut problems = check_contract(&contract, release);
     if !root.join(MOKA_OBSERVER_UPSTREAM_DRAFT).is_file() {
         problems.push("notification observer dependency review draft is missing".to_owned());
@@ -843,6 +848,11 @@ pub fn check_at_root(
         &w10_long_run_qualification_v2_evidence,
         release,
     ));
+    problems.extend(check_w10_long_run_confirmation_interrupted_at_root(
+        root,
+        &w10_long_run_confirmation_interrupted_evidence,
+        release,
+    ));
     problems.extend(check_schema(
         &schema,
         &example,
@@ -1189,6 +1199,10 @@ pub fn check_contract(root: &TomlValue, release: &str) -> Vec<String> {
         (
             "w10_long_run_qualification_v2_evidence",
             W10_LONG_RUN_QUALIFICATION_V2_EVIDENCE,
+        ),
+        (
+            "w10_long_run_confirmation_interrupted_evidence",
+            W10_LONG_RUN_CONFIRMATION_INTERRUPTED_EVIDENCE,
         ),
     ] {
         if text(root, field) != Some(expected) {
@@ -9831,6 +9845,275 @@ pub fn check_w10_long_run_qualification_v2_evidence(
         if text(value, field).is_none_or(str::is_empty) {
             problems.push(format!("W10 long-run v2 qualification {field} is missing"));
         }
+    }
+    problems
+}
+
+pub fn check_w10_long_run_confirmation_interrupted_evidence(
+    value: &TomlValue,
+    release: &str,
+) -> Vec<String> {
+    let mut problems = Vec::new();
+    if integer(value, "schema_version") != Some(1)
+        || text(value, "release") != Some(release)
+        || text(value, "evidence_id")
+            != Some("w10-long-run-v2-confirmation-interrupted-36622527013-v1")
+        || text(value, "state")
+            != Some("confirmation-interrupted-after-complete-i73-during-c73")
+        || text(value, "contract") != Some(W10_LONG_RUN_QUALIFICATION_V2_CONTRACT)
+        || integer(value, "workflow_run") != Some(36_622_527_013)
+        || integer(value, "job_id") != Some(109_591_249_409)
+        || integer(value, "artifact_id") != Some(11_136_098_992)
+        || text(value, "workflow_url")
+            != Some("https://github.com/javaquasar/hydracache/actions/runs/36622527013")
+        || text(value, "artifact_name")
+            != Some(
+                "performance-long-run-confirmation-073-b9f621a5b4f50c5277600fff9a8278fbd2154e28-36622527013-1",
+            )
+        || text(value, "tooling_sha")
+            != Some("b9f621a5b4f50c5277600fff9a8278fbd2154e28")
+        || text(value, "baseline_source_commit")
+            != Some("e757556d3a31d565f52a9561d6d4e555bb1cc373")
+        || text(value, "candidate_source_commit")
+            != Some("16d2e98b6cc9e22d9ccf95eb26fe28bbbcf80f2b")
+        || text(value, "candidate_tree_oid")
+            != Some("92336607f21a68f563e65dc0fccccd8efaa14f7b")
+        || text(value, "immutable_archive_path")
+            != Some("docs/testing/perf-artifacts/0.73/long-run-confirmation-36622527013")
+        || text(value, "phase") != Some("confirmation")
+        || string_array(value.get("role_order")) != ["I73", "C73"]
+    {
+        problems.push("W10 interrupted confirmation identity changed".to_owned());
+    }
+    if text(value, "host_fingerprint")
+        .is_none_or(|fingerprint| !fingerprint.starts_with("sha256:") || !sha256(&fingerprint[7..]))
+        || text(value, "lease_owner") != Some("long-run-073@javaquasar")
+        || text(value, "lease_end") != Some("2026-10-02T19:54:11Z")
+    {
+        problems.push("W10 interrupted confirmation host lease identity changed".to_owned());
+    }
+    for field in [
+        "artifact_zip_sha256",
+        "immutable_archive_manifest_sha256",
+        "job_log_sha256",
+        "runner_sha256",
+        "scenario_sha256",
+        "overlay_sha256",
+        "i73_harness_sha256",
+        "c73_harness_sha256",
+        "i73_server_sha256",
+        "c73_server_sha256",
+        "canary_sha256",
+        "canary_receipt_sha256",
+        "canary_checkpoints_sha256",
+        "pre_i73_calibration_sha256",
+        "post_i73_calibration_sha256",
+        "pre_c73_calibration_sha256",
+        "post_c73_calibration_sha256",
+        "i73_attempt_sha256",
+        "i73_receipt_sha256",
+        "i73_checkpoints_sha256",
+        "i73_baseline_bounds_sha256",
+        "i73_stdout_sha256",
+        "i73_stderr_sha256",
+        "c73_checkpoints_sha256",
+        "c73_stdout_sha256",
+        "c73_stderr_sha256",
+    ] {
+        if text(value, field).is_none_or(|digest| !sha256(digest)) {
+            problems.push(format!(
+                "W10 interrupted confirmation {field} must be SHA-256"
+            ));
+        }
+    }
+    for field in [
+        "artifact_digest_verified",
+        "nested_completed_role_sha256_verified",
+        "canary_passed_for_intended_rejection",
+        "all_four_calibrations_passed",
+        "all_four_calibrations_same_host",
+        "all_four_calibrations_same_lease",
+        "i73_role_completed",
+        "i73_final_checkpoint_present",
+        "i73_reconciliation_exact",
+        "c73_role_started",
+        "tooling_or_orchestration_fault_found",
+    ] {
+        if boolean(value, field) != Some(true) {
+            problems.push(format!("W10 interrupted confirmation {field} must be true"));
+        }
+    }
+    for field in [
+        "c73_role_completed",
+        "c73_receipt_present",
+        "c73_attempt_present",
+        "campaign_sealed",
+        "automatic_retry_performed",
+        "confirmation_passed",
+        "final_c73_allowed",
+        "performance_claim_allowed",
+        "product_failure_observed",
+        "correction_changes_product_identity",
+        "correction_changes_workload",
+        "correction_changes_duration",
+        "correction_changes_estimator",
+        "correction_changes_seed",
+        "correction_changes_thresholds",
+    ] {
+        if boolean(value, field) != Some(false) {
+            problems.push(format!(
+                "W10 interrupted confirmation {field} must be false"
+            ));
+        }
+    }
+    if integer(value, "i73_operations") != Some(1_036_800_000)
+        || integer(value, "i73_completed") != Some(1_036_800_000)
+        || integer(value, "i73_errors") != Some(0)
+        || integer(value, "i73_timeouts") != Some(0)
+        || integer(value, "i73_rejections") != Some(0)
+        || integer(value, "i73_checkpoint_count") != Some(1_442)
+        || float(value, "i73_goodput_operations_per_second") != Some(12000.04304830693)
+        || float(value, "i73_cpu_seconds_per_operation") != Some(0.000025870351080246914)
+        || float(value, "i73_p99_microseconds") != Some(7_323.0)
+        || float(value, "i73_rss_upper_95_bytes_per_second") != Some(32.517701397755765)
+        || float(value, "i73_anonymous_pss_upper_95_bytes_per_second") != Some(32.517701397755765)
+    {
+        problems.push("W10 interrupted confirmation complete I73 observation changed".to_owned());
+    }
+    if integer(value, "c73_checkpoint_count") != Some(352)
+        || integer(value, "c73_last_sequence") != Some(351)
+        || float(value, "c73_elapsed_seconds") != Some(21060.596553653)
+        || integer(value, "c73_completed_at_last_checkpoint") != Some(252_728_137)
+        || float(value, "c73_completion_fraction") != Some(0.24375784818672838)
+        || integer(value, "c73_errors_at_last_checkpoint") != Some(0)
+        || integer(value, "c73_timeouts_at_last_checkpoint") != Some(0)
+        || integer(value, "c73_rejections_at_last_checkpoint") != Some(0)
+        || integer(value, "c73_major_faults_at_last_checkpoint") != Some(0)
+    {
+        problems.push("W10 interrupted confirmation partial C73 observation changed".to_owned());
+    }
+    if text(value, "failure_class") != Some("external-actions-cancellation-during-c73")
+        || text(value, "decision")
+            != Some("retain-interrupted-confirmation-and-close-final-admission")
+        || text(value, "failure").is_none_or(|failure| {
+            !failure.contains("The operation was canceled")
+                || !failure.contains("do not identify the external cancellation initiator")
+        })
+        || text(value, "correction").is_none_or(|correction| {
+            !correction.contains("two sequential role-isolated jobs")
+                || !correction.contains("1,740 minutes")
+                || !correction.contains("remain unchanged")
+        })
+    {
+        problems.push("W10 interrupted confirmation disposition changed".to_owned());
+    }
+    for field in ["artifact_boundary", "retry_boundary", "next_evidence"] {
+        if text(value, field).is_none_or(str::is_empty) {
+            problems.push(format!("W10 interrupted confirmation {field} is missing"));
+        }
+    }
+    problems
+}
+
+fn check_w10_long_run_confirmation_interrupted_at_root(
+    root: &Path,
+    evidence: &TomlValue,
+    release: &str,
+) -> Vec<String> {
+    let mut problems = check_w10_long_run_confirmation_interrupted_evidence(evidence, release);
+    let Some(archive_relative) = text(evidence, "immutable_archive_path") else {
+        return problems;
+    };
+    let archive = root.join(archive_relative);
+    let manifest_path = archive.join("manifest.json");
+    let manifest_bytes = match fs::read(&manifest_path) {
+        Ok(bytes) => bytes,
+        Err(error) => {
+            problems.push(format!(
+                "W10 interrupted confirmation manifest is missing or unreadable at {}: {error}",
+                manifest_path.display()
+            ));
+            return problems;
+        }
+    };
+    let manifest_sha256 = Sha256::digest(&manifest_bytes)
+        .iter()
+        .map(|byte| format!("{byte:02x}"))
+        .collect::<String>();
+    if text(evidence, "immutable_archive_manifest_sha256") != Some(&manifest_sha256) {
+        problems.push(
+            "W10 interrupted confirmation archive manifest SHA-256 does not match evidence"
+                .to_owned(),
+        );
+    }
+    let manifest: JsonValue = match serde_json::from_slice(&manifest_bytes) {
+        Ok(manifest) => manifest,
+        Err(error) => {
+            problems.push(format!(
+                "W10 interrupted confirmation archive manifest is invalid JSON: {error}"
+            ));
+            return problems;
+        }
+    };
+    if manifest.get("release").and_then(JsonValue::as_str) != Some(release)
+        || manifest.get("workflow_run").and_then(JsonValue::as_i64) != Some(36_622_527_013)
+        || manifest.get("job_id").and_then(JsonValue::as_i64) != Some(109_591_249_409)
+        || manifest.get("artifact_id").and_then(JsonValue::as_i64) != Some(11_136_098_992)
+        || manifest.get("result").and_then(JsonValue::as_str) != Some("interrupted")
+        || manifest.get("phase").and_then(JsonValue::as_str) != Some("confirmation")
+        || manifest
+            .pointer("/i73/completed")
+            .and_then(JsonValue::as_bool)
+            != Some(true)
+        || manifest
+            .pointer("/c73/completed")
+            .and_then(JsonValue::as_bool)
+            != Some(false)
+        || manifest
+            .get("automatic_retry_performed")
+            .and_then(JsonValue::as_bool)
+            != Some(false)
+        || manifest
+            .get("final_c73_allowed")
+            .and_then(JsonValue::as_bool)
+            != Some(false)
+    {
+        problems.push("W10 interrupted confirmation archive manifest identity changed".to_owned());
+    }
+    for (name, field) in [
+        ("github-artifact.zip", "artifact_zip_sha256"),
+        ("job-log.txt", "job_log_sha256"),
+    ] {
+        let path = archive.join(name);
+        let bytes = match fs::read(&path) {
+            Ok(bytes) => bytes,
+            Err(error) => {
+                problems.push(format!(
+                    "W10 interrupted confirmation archive file is missing at {}: {error}",
+                    path.display()
+                ));
+                continue;
+            }
+        };
+        let actual = Sha256::digest(&bytes)
+            .iter()
+            .map(|byte| format!("{byte:02x}"))
+            .collect::<String>();
+        if text(evidence, field) != Some(&actual) {
+            problems.push(format!(
+                "W10 interrupted confirmation {name} SHA-256 does not match evidence"
+            ));
+        }
+    }
+    let job_log = fs::read_to_string(archive.join("job-log.txt")).unwrap_or_default();
+    if !job_log.contains("##[error]The operation was canceled.")
+        || !job_log.contains("LONG073_RUNNER_HEARTBEAT")
+        || !job_log.contains("Artifact ID 11136098992")
+    {
+        problems.push(
+            "W10 interrupted confirmation job log does not prove cancellation, liveness, and artifact retention"
+                .to_owned(),
+        );
     }
     problems
 }

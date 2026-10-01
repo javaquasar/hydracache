@@ -2124,6 +2124,34 @@ run automatically. The useful engineering lesson is that cost control and eviden
 same workflow: cheap falsifiers eliminate broken orchestration early, while an expensive success is
 accepted only after its raw packet survives an independent audit.
 
+The separately authorized confirmation then exposed an orchestration lifetime risk rather than a
+product failure. Run `36622527013` completed the full 24-hour I73 role: 1.0368 billion successful
+operations, 1,442 checkpoints, exact reconciliation, no errors, timeouts or rejections, and a
+frozen RSS/anonymous-PSS upper slope bound of 32.5177 bytes/s. C73 started on the same admitted host
+and lease and remained healthy for 352 checkpoints. At 5 hours 51 minutes it had completed
+252,728,137 operations with no errors, timeouts, rejections or major faults. GitHub Actions then
+delivered `The operation was canceled`; the harness had emitted a heartbeat one second earlier,
+stderr was empty, and the immediate post-C73 host calibration passed. The retained Actions log does
+not name the cancellation initiator, so the narrow supported conclusion is an external orchestration
+cancellation—not a C73 regression and not a successful confirmation.
+
+The incomplete artifact was still valuable because the workflow's `always()` path preserved all
+four calibrations, the complete I73 receipt and bounds, the partial C73 series, process logs and the
+negative canary. We matched the downloaded ZIP to GitHub's SHA-256 and independently hashed every
+retained nested file. We did not estimate a final C73 slope from the prefix, splice the completed
+I73 role into a later run, or silently restart the candidate. Equal duration and a single final seal
+remain part of the experiment, so `final_c73_allowed` stays false.
+
+The tooling correction reduces the blast radius without changing the experiment. Qualification
+continues as one serial six-hour pair. Confirmation is split into two sequential, role-isolated
+jobs under one approved parent workflow and one host concurrency lease. The first job runs I73 and
+uploads a continuation packet whose files are all SHA-256 listed. The second job verifies those
+hashes and the complete I73 receipt before it can start C73, repeats binary and host identity checks,
+and alone may seal the pair. Each job stays below 29 hours, while product commits, role order,
+24-hour duration, offered load, estimator, seed and thresholds are unchanged. This is not checkpoint
+resume: a failed role still invalidates the attempt, and a replacement confirmation must start from
+I73 after explicit authorization.
+
 ## A profiling ladder that avoids expensive runs
 
 Not every development iteration needs a dedicated bare-metal campaign. A useful workflow has several

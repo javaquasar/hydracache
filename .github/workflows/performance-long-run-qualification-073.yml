@@ -1,28 +1,6 @@
 name: Performance Long-Run Qualification 0.73
 
 on:
-  workflow_dispatch:
-    inputs:
-      tooling_sha:
-        description: "Exact reviewed commit containing the preregistered long-run tooling"
-        required: true
-        type: string
-      lease_owner:
-        description: "Operator holding the serialized performance-host lease"
-        required: true
-        type: string
-      lease_end:
-        description: "Approved lease end in RFC3339 form covering the selected phase cap"
-        required: true
-        type: string
-      phase:
-        description: "Explicit qualification or confirmation phase"
-        required: true
-        default: qualification
-        type: choice
-        options:
-          - qualification
-          - confirmation
   workflow_call:
     inputs:
       tooling_sha:
@@ -38,6 +16,10 @@ on:
         required: false
         default: qualification
         type: string
+      role:
+        required: false
+        default: pair
+        type: string
       entry_serializes_host:
         required: false
         default: false
@@ -52,10 +34,9 @@ concurrency:
 
 jobs:
   qualify:
-    name: Exact I73/C73 selected long-run phase
+    name: Exact ${{ inputs.role }} selected long-run phase
     runs-on: [self-hosted, linux, x64, hydracache-release]
-    environment: performance-reference-073
-    timeout-minutes: ${{ inputs.phase == 'confirmation' && 3480 || 900 }}
+    timeout-minutes: ${{ inputs.phase == 'confirmation' && 1740 || 900 }}
     env:
       HYDRACACHE_PERFORMANCE_PROTECTED_ENV: performance-reference-073
       HYDRACACHE_PERFORMANCE_DEDICATED_BARE_METAL: "1"
@@ -82,16 +63,25 @@ jobs:
           INPUT_LEASE_OWNER: ${{ inputs.lease_owner }}
           INPUT_LEASE_END: ${{ inputs.lease_end }}
           INPUT_PHASE: ${{ inputs.phase }}
+          INPUT_ROLE: ${{ inputs.role }}
         run: |
           set -euo pipefail
           [[ "$INPUT_TOOLING_SHA" =~ ^[0-9a-f]{40}$ ]]
           [[ "$INPUT_PHASE" = "qualification" || "$INPUT_PHASE" = "confirmation" ]]
+          [[ "$INPUT_ROLE" = "pair" || "$INPUT_ROLE" = "I73" || "$INPUT_ROLE" = "C73" ]]
+          if [[ "$INPUT_PHASE" = "qualification" ]]; then
+            test "$INPUT_ROLE" = "pair"
+          else
+            [[ "$INPUT_ROLE" = "I73" || "$INPUT_ROLE" = "C73" ]]
+          fi
           test "$(git rev-parse HEAD)" = "$INPUT_TOOLING_SHA"
           test -n "$INPUT_LEASE_OWNER"
           date --date="$INPUT_LEASE_END" >/dev/null
           lease_seconds=$(( $(date --date="$INPUT_LEASE_END" +%s) - $(date +%s) ))
-          if [[ "$INPUT_PHASE" = "confirmation" ]]; then
+          if [[ "$INPUT_PHASE" = "confirmation" && "$INPUT_ROLE" = "I73" ]]; then
             test "$lease_seconds" -ge $((3480 * 60))
+          elif [[ "$INPUT_PHASE" = "confirmation" ]]; then
+            test "$lease_seconds" -ge $((1740 * 60))
           else
             test "$lease_seconds" -ge $((900 * 60))
           fi
@@ -135,6 +125,7 @@ jobs:
             echo "HYDRACACHE_PERFORMANCE_LEASE_OWNER=$INPUT_LEASE_OWNER"
             echo "HYDRACACHE_PERFORMANCE_LEASE_END=$INPUT_LEASE_END"
             echo "EXPECTED_TOOLING_SHA=$INPUT_TOOLING_SHA"
+            echo "LONG_RUN_ROLE=$INPUT_ROLE"
           } >> "$GITHUB_ENV"
 
       - name: Expose and verify required host tools
@@ -203,6 +194,7 @@ jobs:
           } >> "$GITHUB_ENV"
 
       - name: Falsify missing-final-checkpoint admission
+        if: inputs.role != 'C73'
         shell: bash
         run: |
           set -euo pipefail
@@ -217,6 +209,7 @@ jobs:
             --loadgen-cpu-set "$HYDRACACHE_PERFORMANCE_LOADGEN_CPUSET"
 
       - name: Capture I73 pre-role calibration
+        if: inputs.role != 'C73'
         shell: bash
         run: |
           set -euo pipefail
@@ -225,6 +218,7 @@ jobs:
             --output "$EVIDENCE_DIR/calibration/pre-i73.json"
 
       - name: Run exact selected-phase I73 role
+        if: inputs.role != 'C73'
         shell: bash
         run: |
           set -euo pipefail
@@ -239,7 +233,7 @@ jobs:
             --loadgen-cpu-set "$HYDRACACHE_PERFORMANCE_LOADGEN_CPUSET"
 
       - name: Capture I73 post-role calibration
-        if: always()
+        if: always() && inputs.role != 'C73'
         shell: bash
         run: |
           set -euo pipefail
@@ -247,7 +241,79 @@ jobs:
             --profile performance-reference-073-v1 \
             --output "$EVIDENCE_DIR/calibration/post-i73.json"
 
+      - name: Seal I73 continuation packet
+        if: inputs.phase == 'confirmation' && inputs.role == 'I73'
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -f "$EVIDENCE_DIR/canary/canary.json"
+          test -f "$EVIDENCE_DIR/i73/attempt.json"
+          test -f "$EVIDENCE_DIR/i73/receipt.json"
+          test -f "$EVIDENCE_DIR/i73/baseline-bounds.json"
+          test -f "$EVIDENCE_DIR/calibration/pre-i73.json"
+          test -f "$EVIDENCE_DIR/calibration/post-i73.json"
+          (
+            cd "$EVIDENCE_DIR"
+            find canary calibration i73 -type f -print0 \
+              | sort -z \
+              | xargs -0 sha256sum > continuation-SHA256SUMS
+          )
+
+      - name: Upload I73 continuation packet
+        if: always() && inputs.phase == 'confirmation' && inputs.role == 'I73'
+        uses: actions/upload-artifact@v4
+        with:
+          name: performance-long-run-confirmation-i73-stage-073-${{ inputs.tooling_sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ env.EVIDENCE_DIR }}
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Download and verify I73 continuation packet
+        if: inputs.phase == 'confirmation' && inputs.role == 'C73'
+        uses: actions/download-artifact@v4
+        with:
+          name: performance-long-run-confirmation-i73-stage-073-${{ inputs.tooling_sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ env.EVIDENCE_DIR }}
+
+      - name: Admit I73 continuation packet
+        if: inputs.phase == 'confirmation' && inputs.role == 'C73'
+        shell: bash
+        run: |
+          set -euo pipefail
+          (
+            cd "$EVIDENCE_DIR"
+            sha256sum --check continuation-SHA256SUMS
+          )
+          python3 - <<'PY'
+          import json
+          import os
+          import pathlib
+
+          root = pathlib.Path(os.environ["EVIDENCE_DIR"])
+          attempt = json.loads((root / "i73" / "attempt.json").read_text(encoding="utf-8"))
+          receipt = json.loads((root / "i73" / "receipt.json").read_text(encoding="utf-8"))
+          if attempt.get("valid") is not True or attempt.get("role") != "I73":
+              raise SystemExit("I73 continuation attempt is not valid")
+          if attempt.get("attempt", {}).get("exit_code") != 0 or attempt.get("attempt", {}).get("timed_out") is not False:
+              raise SystemExit("I73 continuation process did not complete cleanly")
+          expected = {
+              "role": "I73",
+              "source_sha": "e757556d3a31d565f52a9561d6d4e555bb1cc373",
+              "operations": 1036800000,
+              "checkpoint_count": 1442,
+              "final_checkpoint_present": True,
+              "reconciliation_exact": True,
+          }
+          for field, value in expected.items():
+              if receipt.get(field) != value:
+                  raise SystemExit(f"I73 continuation {field} mismatch")
+          observation = receipt.get("observation", {})
+          if observation.get("completed") != 1036800000 or observation.get("errors") != 0:
+              raise SystemExit("I73 continuation observation is incomplete")
+          PY
+
       - name: Capture C73 pre-role calibration
+        if: inputs.role != 'I73'
         shell: bash
         run: |
           set -euo pipefail
@@ -257,6 +323,7 @@ jobs:
             --output "$EVIDENCE_DIR/calibration/pre-c73.json"
 
       - name: Run exact selected-phase C73 role
+        if: inputs.role != 'I73'
         shell: bash
         run: |
           set -euo pipefail
@@ -271,7 +338,7 @@ jobs:
             --loadgen-cpu-set "$HYDRACACHE_PERFORMANCE_LOADGEN_CPUSET"
 
       - name: Capture C73 post-role calibration
-        if: always()
+        if: always() && inputs.role != 'I73'
         shell: bash
         run: |
           set -euo pipefail
@@ -280,6 +347,7 @@ jobs:
             --output "$EVIDENCE_DIR/calibration/post-c73.json"
 
       - name: Seal the complete selected-phase packet
+        if: inputs.role != 'I73'
         shell: bash
         run: |
           set -euo pipefail
@@ -294,7 +362,7 @@ jobs:
             --loadgen-cpu-set "$HYDRACACHE_PERFORMANCE_LOADGEN_CPUSET"
 
       - name: Upload complete or incomplete selected-phase packet
-        if: always()
+        if: always() && inputs.role != 'I73'
         uses: actions/upload-artifact@v4
         with:
           name: performance-long-run-${{ inputs.phase }}-073-${{ inputs.tooling_sha }}-${{ github.run_id }}-${{ github.run_attempt }}
