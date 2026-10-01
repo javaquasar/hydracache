@@ -18,18 +18,20 @@ use hydracache_client_protocol::{
 use hydracache_client_transport_axum::{
     performance_profile::observe_client_value_ownership, ClientIdentity, ClientSurfaceLimits,
     ClientSurfaceProfileMetrics, ClientSurfaceRetainedState, ClientSurfaceState,
+    VerifiedClientSession,
 };
 use hydracache_loadgen::allocation::{measure_allocations, AllocationMeasurement};
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 
-const PROFILE_ID: &str = "w1-w8-native-api-profile-074-v5";
+const PROFILE_ID: &str = "w1-w8-native-api-profile-074-v6";
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 enum ApiPath {
     RawEmbedded,
     TypedEmbedded,
     ClientSurface,
+    VerifiedSession,
     GetOrInsert,
 }
 
@@ -39,6 +41,7 @@ impl ApiPath {
             "raw-embedded" => Ok(Self::RawEmbedded),
             "typed-embedded" => Ok(Self::TypedEmbedded),
             "client-surface" => Ok(Self::ClientSurface),
+            "verified-session" => Ok(Self::VerifiedSession),
             "get-or-insert" => Ok(Self::GetOrInsert),
             _ => Err(format!("unsupported surface {value}").into()),
         }
@@ -49,6 +52,7 @@ impl ApiPath {
             Self::RawEmbedded => "raw-embedded",
             Self::TypedEmbedded => "typed-embedded",
             Self::ClientSurface => "client-surface",
+            Self::VerifiedSession => "verified-session",
             Self::GetOrInsert => "get-or-insert",
         }
     }
@@ -201,6 +205,7 @@ struct Context {
     state: Arc<ClientSurfaceState>,
     identity: ClientIdentity,
     namespace: Namespace,
+    session: Option<Arc<VerifiedClientSession>>,
 }
 
 #[derive(Debug, Serialize)]
@@ -331,11 +336,24 @@ async fn main() -> Result<(), Box<dyn Error>> {
     } else {
         Arc::new(ClientSurfaceState::new(ClientSurfaceLimits::default())?)
     };
+    let identity = ClientIdentity::new("profile-074", "profile-074")?;
+    let namespace = Namespace::new("profile-074")?;
+    let session = (options.surface == ApiPath::VerifiedSession)
+        .then(|| {
+            state.verified_session(
+                identity.clone(),
+                namespace.clone(),
+                hydracache_client_protocol::PROTOCOL_VERSION,
+            )
+        })
+        .transpose()?
+        .map(Arc::new);
     let context = Context {
         cache,
         state: Arc::clone(&state),
-        identity: ClientIdentity::new("profile-074", "profile-074")?,
-        namespace: Namespace::new("profile-074")?,
+        identity,
+        namespace,
+        session,
     };
     let loader_executions = Arc::new(AtomicU64::new(0));
 
@@ -423,7 +441,10 @@ fn start_subscriber(
     if !options.subscriber {
         return Ok(None);
     }
-    if options.surface == ApiPath::ClientSurface {
+    if matches!(
+        options.surface,
+        ApiPath::ClientSurface | ApiPath::VerifiedSession
+    ) {
         let mut subscriber = context.state.subscribe_mutations(&context.identity)?;
         Ok(Some(tokio::spawn(async move {
             while subscriber.recv().await.is_ok() {}
@@ -450,7 +471,11 @@ struct Observations {
 fn build_receipt(options: &Options, observations: Observations) -> Receipt {
     let operations = options.operations as f64;
     let client = observations.client;
-    let client_value_ownership = (options.surface == ApiPath::ClientSurface).then(|| {
+    let client_value_ownership = matches!(
+        options.surface,
+        ApiPath::ClientSurface | ApiPath::VerifiedSession
+    )
+    .then(|| {
         let observation = observe_client_value_ownership(options.payload_bytes)
             .expect("client value ownership fixture must remain valid");
         ClientValueOwnershipReceipt {
@@ -564,6 +589,7 @@ async fn prepare_expired(context: &Context, options: &Options) -> Result<(), Box
     for sequence in 0..options.key_space {
         let response = dispatch(
             context,
+            ApiPath::ClientSurface,
             sequence,
             ClientRequest::Put {
                 ns: context.namespace.clone(),
@@ -689,7 +715,10 @@ async fn execute_one(
 ) -> Result<(), String> {
     match (options.surface, options.operation) {
         (
-            ApiPath::RawEmbedded | ApiPath::TypedEmbedded | ApiPath::ClientSurface,
+            ApiPath::RawEmbedded
+            | ApiPath::TypedEmbedded
+            | ApiPath::ClientSurface
+            | ApiPath::VerifiedSession,
             Operation::Put,
         ) => put_one(context, options.surface, options, sequence)
             .await
@@ -722,9 +751,10 @@ async fn execute_one(
             }
             Ok(())
         }
-        (ApiPath::ClientSurface, Operation::Get) => {
+        (ApiPath::ClientSurface | ApiPath::VerifiedSession, Operation::Get) => {
             let response = dispatch(
                 context,
+                options.surface,
                 sequence,
                 ClientRequest::Get {
                     ns: context.namespace.clone(),
@@ -743,6 +773,7 @@ async fn execute_one(
         (ApiPath::ClientSurface, Operation::ExpiredGet) => {
             let response = dispatch(
                 context,
+                options.surface,
                 sequence,
                 ClientRequest::Get {
                     ns: context.namespace.clone(),
@@ -806,9 +837,10 @@ async fn put_one(
                 )
                 .await?;
         }
-        ApiPath::ClientSurface => {
+        ApiPath::ClientSurface | ApiPath::VerifiedSession => {
             let response = dispatch(
                 context,
+                surface,
                 sequence,
                 ClientRequest::Put {
                     ns: context.namespace.clone(),
@@ -826,15 +858,25 @@ async fn put_one(
     Ok(())
 }
 
-fn dispatch(context: &Context, sequence: u64, request: ClientRequest) -> ClientResponse {
-    context
-        .state
-        .dispatch_verified_request(
-            &context.identity,
-            ClientRequestEnvelope::new(format!("native-074-{sequence}"), request),
-        )
-        .result
-        .expect("profile requests are valid")
+fn dispatch(
+    context: &Context,
+    surface: ApiPath,
+    sequence: u64,
+    request: ClientRequest,
+) -> ClientResponse {
+    let envelope = ClientRequestEnvelope::new(format!("native-074-{sequence}"), request);
+    let response = if surface == ApiPath::VerifiedSession {
+        context
+            .session
+            .as_ref()
+            .expect("verified-session context has a session")
+            .dispatch(envelope)
+    } else {
+        context
+            .state
+            .dispatch_verified_request(&context.identity, envelope)
+    };
+    response.result.expect("profile requests are valid")
 }
 
 fn cache_key(options: &Options, sequence: u64) -> String {
@@ -1026,8 +1068,10 @@ mod tests {
         let raw = options(ApiPath::RawEmbedded, Operation::Get);
         let typed = options(ApiPath::TypedEmbedded, Operation::Get);
         let client = options(ApiPath::ClientSurface, Operation::Get);
+        let session = options(ApiPath::VerifiedSession, Operation::Get);
         assert_ne!(workload_digest(&raw), workload_digest(&typed));
         assert_ne!(workload_digest(&typed), workload_digest(&client));
+        assert_ne!(workload_digest(&client), workload_digest(&session));
         let mut isolated = client.clone();
         isolated.isolation = true;
         assert_ne!(workload_digest(&client), workload_digest(&isolated));
@@ -1063,6 +1107,7 @@ mod tests {
                 state: Arc::new(ClientSurfaceState::new(ClientSurfaceLimits::default()).unwrap()),
                 identity: ClientIdentity::new("test", "test").unwrap(),
                 namespace: Namespace::new("test").unwrap(),
+                session: None,
             };
             if operation == Operation::ExpiredGet {
                 prepare_expired(&context, &options).await.unwrap();
@@ -1079,5 +1124,53 @@ mod tests {
             .unwrap();
             assert_eq!(result.histogram.len(), options.operations);
         }
+    }
+
+    #[tokio::test]
+    async fn verified_session_path_validates_real_results() {
+        let mut options = options(ApiPath::VerifiedSession, Operation::Get);
+        options.isolation = true;
+        let tenant = Tenant::new("test")
+            .unwrap()
+            .allow_client("test")
+            .namespace("test", NamespaceQuota::new(1024 * 1024, 128));
+        let state = Arc::new(
+            ClientSurfaceState::with_isolation(
+                ClientSurfaceLimits::default(),
+                ConsumerIsolation::new(
+                    TenantRoster::new(vec![tenant]).unwrap(),
+                    ConsumerIsolationConfig::default(),
+                ),
+            )
+            .unwrap(),
+        );
+        let identity = ClientIdentity::new("test", "test").unwrap();
+        let namespace = Namespace::new("test").unwrap();
+        let session = Arc::new(
+            state
+                .verified_session(
+                    identity.clone(),
+                    namespace.clone(),
+                    hydracache_client_protocol::PROTOCOL_VERSION,
+                )
+                .unwrap(),
+        );
+        let context = Context {
+            cache: HydraCache::local().build(),
+            state,
+            identity,
+            namespace,
+            session: Some(session),
+        };
+        preload(&context, &options).await.unwrap();
+        let result = run_workload(
+            context,
+            &options,
+            options.operations,
+            Arc::new(AtomicU64::new(0)),
+        )
+        .await
+        .unwrap();
+        assert_eq!(result.histogram.len(), options.operations);
     }
 }
