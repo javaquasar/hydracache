@@ -2,7 +2,10 @@ use std::collections::BTreeMap;
 use std::error::Error;
 use std::fs;
 use std::path::PathBuf;
+use std::pin::Pin;
+use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::Arc;
+use std::task::{Context, Poll};
 use std::time::{Duration, Instant};
 
 use hdrhistogram::Histogram;
@@ -14,10 +17,10 @@ use hydracache_loadgen::allocation::{measure_allocations, AllocationMeasurement}
 use hydracache_redis_compat::{RedisListenerConfig, RedisPipelineMetrics, RedisRespServer};
 use serde::Serialize;
 use sha2::{Digest, Sha256};
-use tokio::io::{AsyncRead, AsyncReadExt, AsyncWrite, AsyncWriteExt};
+use tokio::io::{AsyncRead, AsyncReadExt, AsyncWrite, AsyncWriteExt, ReadBuf};
 use tokio::net::{TcpListener, TcpStream};
 
-const PROFILE_ID: &str = "w1-w3-resp-pipeline-profile-074-v2";
+const PROFILE_ID: &str = "w1-w3-resp-pipeline-profile-074-v3";
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 enum Transport {
@@ -238,6 +241,19 @@ struct ClientMetricsReceipt {
 }
 
 #[derive(Debug, Serialize)]
+struct SocketIoReceipt {
+    available: bool,
+    poll_write_attempts: u64,
+    poll_write_ready: u64,
+    poll_write_pending: u64,
+    requested_write_bytes: u64,
+    written_bytes: u64,
+    short_writes: u64,
+    poll_flush_attempts: u64,
+    poll_flush_pending: u64,
+}
+
+#[derive(Debug, Serialize)]
 struct Receipt {
     schema_version: u32,
     release: &'static str,
@@ -275,12 +291,157 @@ struct Receipt {
     retained_client_state: ClientSurfaceRetainedState,
     resp: RespMetricsReceipt,
     client_surface: ClientMetricsReceipt,
+    socket_io: SocketIoReceipt,
     unavailable_metrics: [&'static str; 4],
 }
 
 struct WorkloadResult {
     histogram: Histogram<u64>,
     elapsed: Duration,
+    socket_io: SocketIoMetrics,
+}
+
+#[derive(Debug, Clone, Copy, Default)]
+struct SocketIoMetrics {
+    available: bool,
+    poll_write_attempts: u64,
+    poll_write_ready: u64,
+    poll_write_pending: u64,
+    requested_write_bytes: u64,
+    written_bytes: u64,
+    short_writes: u64,
+    poll_flush_attempts: u64,
+    poll_flush_pending: u64,
+}
+
+impl SocketIoMetrics {
+    fn merge(&mut self, other: Self) {
+        self.available |= other.available;
+        self.poll_write_attempts = self
+            .poll_write_attempts
+            .saturating_add(other.poll_write_attempts);
+        self.poll_write_ready = self.poll_write_ready.saturating_add(other.poll_write_ready);
+        self.poll_write_pending = self
+            .poll_write_pending
+            .saturating_add(other.poll_write_pending);
+        self.requested_write_bytes = self
+            .requested_write_bytes
+            .saturating_add(other.requested_write_bytes);
+        self.written_bytes = self.written_bytes.saturating_add(other.written_bytes);
+        self.short_writes = self.short_writes.saturating_add(other.short_writes);
+        self.poll_flush_attempts = self
+            .poll_flush_attempts
+            .saturating_add(other.poll_flush_attempts);
+        self.poll_flush_pending = self
+            .poll_flush_pending
+            .saturating_add(other.poll_flush_pending);
+    }
+}
+
+#[derive(Debug, Default)]
+struct SocketIoCounters {
+    poll_write_attempts: AtomicU64,
+    poll_write_ready: AtomicU64,
+    poll_write_pending: AtomicU64,
+    requested_write_bytes: AtomicU64,
+    written_bytes: AtomicU64,
+    short_writes: AtomicU64,
+    poll_flush_attempts: AtomicU64,
+    poll_flush_pending: AtomicU64,
+}
+
+impl SocketIoCounters {
+    fn snapshot(&self) -> SocketIoMetrics {
+        SocketIoMetrics {
+            available: true,
+            poll_write_attempts: self.poll_write_attempts.load(Ordering::Relaxed),
+            poll_write_ready: self.poll_write_ready.load(Ordering::Relaxed),
+            poll_write_pending: self.poll_write_pending.load(Ordering::Relaxed),
+            requested_write_bytes: self.requested_write_bytes.load(Ordering::Relaxed),
+            written_bytes: self.written_bytes.load(Ordering::Relaxed),
+            short_writes: self.short_writes.load(Ordering::Relaxed),
+            poll_flush_attempts: self.poll_flush_attempts.load(Ordering::Relaxed),
+            poll_flush_pending: self.poll_flush_pending.load(Ordering::Relaxed),
+        }
+    }
+}
+
+struct ProfiledTcpStream {
+    inner: TcpStream,
+    counters: Arc<SocketIoCounters>,
+}
+
+impl ProfiledTcpStream {
+    fn new(inner: TcpStream, counters: Arc<SocketIoCounters>) -> Self {
+        Self { inner, counters }
+    }
+}
+
+impl AsyncRead for ProfiledTcpStream {
+    fn poll_read(
+        self: Pin<&mut Self>,
+        context: &mut Context<'_>,
+        buffer: &mut ReadBuf<'_>,
+    ) -> Poll<std::io::Result<()>> {
+        Pin::new(&mut self.get_mut().inner).poll_read(context, buffer)
+    }
+}
+
+impl AsyncWrite for ProfiledTcpStream {
+    fn poll_write(
+        self: Pin<&mut Self>,
+        context: &mut Context<'_>,
+        buffer: &[u8],
+    ) -> Poll<std::io::Result<usize>> {
+        let this = self.get_mut();
+        this.counters
+            .poll_write_attempts
+            .fetch_add(1, Ordering::Relaxed);
+        this.counters
+            .requested_write_bytes
+            .fetch_add(buffer.len() as u64, Ordering::Relaxed);
+        match Pin::new(&mut this.inner).poll_write(context, buffer) {
+            Poll::Ready(Ok(written)) => {
+                this.counters
+                    .poll_write_ready
+                    .fetch_add(1, Ordering::Relaxed);
+                this.counters
+                    .written_bytes
+                    .fetch_add(written as u64, Ordering::Relaxed);
+                if written < buffer.len() {
+                    this.counters.short_writes.fetch_add(1, Ordering::Relaxed);
+                }
+                Poll::Ready(Ok(written))
+            }
+            Poll::Ready(Err(error)) => Poll::Ready(Err(error)),
+            Poll::Pending => {
+                this.counters
+                    .poll_write_pending
+                    .fetch_add(1, Ordering::Relaxed);
+                Poll::Pending
+            }
+        }
+    }
+
+    fn poll_flush(self: Pin<&mut Self>, context: &mut Context<'_>) -> Poll<std::io::Result<()>> {
+        let this = self.get_mut();
+        this.counters
+            .poll_flush_attempts
+            .fetch_add(1, Ordering::Relaxed);
+        match Pin::new(&mut this.inner).poll_flush(context) {
+            Poll::Pending => {
+                this.counters
+                    .poll_flush_pending
+                    .fetch_add(1, Ordering::Relaxed);
+                Poll::Pending
+            }
+            result => result,
+        }
+    }
+
+    fn poll_shutdown(self: Pin<&mut Self>, context: &mut Context<'_>) -> Poll<std::io::Result<()>> {
+        Pin::new(&mut self.get_mut().inner).poll_shutdown(context)
+    }
 }
 
 #[tokio::main]
@@ -450,9 +611,20 @@ fn build_receipt(options: &Options, observations: Observations) -> Receipt {
             store_lock_hold_nanoseconds_per_operation: client.store_lock_hold_nanoseconds as f64
                 / operations,
         },
+        socket_io: SocketIoReceipt {
+            available: workload.socket_io.available,
+            poll_write_attempts: workload.socket_io.poll_write_attempts,
+            poll_write_ready: workload.socket_io.poll_write_ready,
+            poll_write_pending: workload.socket_io.poll_write_pending,
+            requested_write_bytes: workload.socket_io.requested_write_bytes,
+            written_bytes: workload.socket_io.written_bytes,
+            short_writes: workload.socket_io.short_writes,
+            poll_flush_attempts: workload.socket_io.poll_flush_attempts,
+            poll_flush_pending: workload.socket_io.poll_flush_pending,
+        },
         unavailable_metrics: [
-            "kernel_write_syscalls_requires_dedicated_linux_profiler",
-            "short_writes_requires_scripted_writer_or_os_trace",
+            "kernel_write_syscalls_unavailable_without_elevated_etw_or_linux_strace",
+            "kernel_flush_syscalls_unavailable_without_elevated_etw_or_linux_strace",
             "pending_write_duration_not_yet_instrumented",
             "per_stage_allocations_and_copies_not_yet_instrumented",
         ],
@@ -487,6 +659,7 @@ async fn run_workload(
         return Ok(WorkloadResult {
             histogram: Histogram::new_with_bounds(1, 60_000_000, 3)?,
             elapsed: Duration::ZERO,
+            socket_io: SocketIoMetrics::default(),
         });
     }
     let per_client = operations / options.concurrency;
@@ -500,13 +673,16 @@ async fn run_workload(
         }));
     }
     let mut merged = Histogram::new_with_bounds(1, 60_000_000, 3)?;
+    let mut socket_io = SocketIoMetrics::default();
     for task in tasks {
-        let histogram = task.await.map_err(|error| error.to_string())??;
+        let (histogram, client_socket_io) = task.await.map_err(|error| error.to_string())??;
         merged.add(&histogram)?;
+        socket_io.merge(client_socket_io);
     }
     Ok(WorkloadResult {
         histogram: merged,
         elapsed: started.elapsed(),
+        socket_io,
     })
 }
 
@@ -515,7 +691,7 @@ async fn run_client(
     options: &Options,
     sequence_start: u64,
     operations: u64,
-) -> Result<Histogram<u64>, String> {
+) -> Result<(Histogram<u64>, SocketIoMetrics), String> {
     match options.transport {
         Transport::Duplex => {
             let capacity = (options.pipeline as usize)
@@ -527,18 +703,20 @@ async fn run_client(
             let histogram = exchange_pipeline(client, options, sequence_start, operations).await?;
             let result = serve.await.map_err(|error| error.to_string())?;
             result.map_err(|error| error.to_string())?;
-            Ok(histogram)
+            Ok((histogram, SocketIoMetrics::default()))
         }
         Transport::Tcp => {
             let listener = TcpListener::bind("127.0.0.1:0")
                 .await
                 .map_err(|error| error.to_string())?;
             let address = listener.local_addr().map_err(|error| error.to_string())?;
+            let counters = Arc::new(SocketIoCounters::default());
+            let server_counters = Arc::clone(&counters);
             let serve = tokio::spawn(async move {
                 let (server_io, _) = listener.accept().await?;
                 server_io.set_nodelay(true)?;
                 server
-                    .serve_connection(server_io)
+                    .serve_connection(ProfiledTcpStream::new(server_io, server_counters))
                     .await
                     .map_err(std::io::Error::other)
             });
@@ -551,7 +729,7 @@ async fn run_client(
             let histogram = exchange_pipeline(client, options, sequence_start, operations).await?;
             let result = serve.await.map_err(|error| error.to_string())?;
             result.map_err(|error| error.to_string())?;
-            Ok(histogram)
+            Ok((histogram, counters.snapshot()))
         }
     }
 }
@@ -899,6 +1077,18 @@ mod tests {
             let metrics = server.pipeline_metrics();
             assert_eq!(metrics.decoded_commands, options.operations);
             assert_eq!(metrics.output_frames, options.operations);
+            match transport {
+                Transport::Duplex => assert!(!result.socket_io.available),
+                Transport::Tcp => {
+                    assert!(result.socket_io.available);
+                    assert!(result.socket_io.poll_write_attempts >= options.operations);
+                    assert!(result.socket_io.poll_write_ready >= options.operations);
+                    assert!(result.socket_io.written_bytes > 0);
+                    assert!(
+                        result.socket_io.requested_write_bytes >= result.socket_io.written_bytes
+                    );
+                }
+            }
         }
     }
 }
