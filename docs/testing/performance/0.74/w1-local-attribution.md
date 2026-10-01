@@ -437,13 +437,59 @@ All v4 receipts bind profile `w1-w8-native-api-profile-074-v4` to source
 `b4ea64ce6f1ade0c21615866f714bef19d087828`. Every receipt is local, non-promotable and carries
 exact-result validation.
 
+### W8a generation-fenced session candidate and rollback
+
+The isolated W8a candidate added a `VerifiedClientSession` bound to one identity, tenant,
+namespace and protocol version. Session creation validated that binding once. Matching requests
+compared an acquire-loaded policy generation and then entered the existing canonical request core;
+deadlines, idempotency, admission, quota, audit, protocol operation checks, request ids, store
+ownership and mutation publication remained per request. A generation change forced revalidation,
+while another namespace/version fell back to ordinary dispatch. Test-only policy replacement
+proved revocation and restoration at the next request boundary, and `Send + Sync`, audit/result
+parity, cancellation, quota, expiration and concurrency suites passed.
+
+An instrumented c8/64-B GET owner check reconciled the mechanism exactly: ordinary ClientSurface
+performed 100,000 identity validations, 100,000 protocol validations and 100,000 store
+acquisitions; the session performed 0, 100,000 and 100,000 respectively. Identity time fell from
+13,930.23 ns/op to zero in the steady-state window. This did not bypass request admission or the
+store lock.
+
+The v6 screen used one exact binary and compared ordinary ClientSurface with VerifiedSession under
+the same tenant roster, operation, payload, key space, seed and result validator. A longer run then
+used five counterbalanced pairs per cell, 500,000 operations, 20,000 warmup operations, c1/c8 and
+64-B/4-KiB payloads with instrumentation off:
+
+| Cell | Median paired goodput | Observed goodput range | Median CPU/op | Median p99 | Allocation |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| GET c1, 64 B | +3.36% | -8.57% to +4.60% | -4.65% | 0.00% | -3.21% |
+| GET c1, 4 KiB | -0.55% | -5.00% to -0.32% | +3.49% | 0.00% | -0.25% |
+| GET c8, 64 B | +46.35% | +12.74% to +62.02% | -70.00% | +8.84% | -3.19% |
+| GET c8, 4 KiB | +24.88% | +13.98% to +34.32% | -37.08% | -5.45% | -0.25% |
+| PUT c1, 64 B | +3.40% | +2.50% to +4.49% | -3.33% | 0.00% | -2.32% |
+| PUT c1, 4 KiB | +1.99% | -9.29% to +3.09% | +1.23% | 0.00% | -0.24% |
+| PUT c8, 64 B | +56.77% | +44.31% to +68.19% | -66.25% | -21.39% | -2.31% |
+| PUT c8, 4 KiB | +26.35% | -3.13% to +36.41% | -51.44% | -23.47% | -0.24% |
+
+W8a clears the 20% CPU/op floor in every c8 median and confirms that the second isolation lock is a
+real owner. The exact candidate still fails the complete local contract: c8 GET 64 B has +8.84%
+median p99, and c1 GET 4 KiB has +3.49% CPU/op. Local same-binary tail noise is already known, but
+the guard is not weakened after observation. The candidate and its profiler surface were reverted;
+all 130 exact v6 receipts remain as non-promotable evidence. A future session candidate needs a
+stable admitted host and a production policy-generation lifecycle before acceptance.
+
+W8b remains separate. Raw embedded storage is already immutable `Bytes` with shared backing, and
+typed/network responses necessarily own encoded bytes. Direct ClientSurface GET still clones its
+`Vec`, but eliminating that clone would change the stable `ClientResponse::Value<Option<Vec<u8>>>`
+protocol ownership contract or create a second operation core. Neither is authorized by the local
+owner data, so no W8b product mutation was manufactured.
+
 ## Next step and open risks
 
-W3 and W7 have settled as negative product results despite confirmed owners. W8 attribution
-authorizes two independent experiments: W8a
-generation-fenced identity reuse for tenant-isolated concurrency, then a separate W8b
-ClientSurface immutable-value owner. The rejected DEL result is not permission to combine those
-hypotheses or to weaken native guards. W6b remains unauthorized.
+W3, W7 and the first W8a candidate have settled as negative product results despite confirmed
+owners. W8a requires a stable admitted host plus a real policy-generation lifecycle before another
+candidate. W8b is closed as raw `measured-no-win` and direct-surface protocol-ownership debt, not
+permission to fork semantics. The rejected results are not permission to combine hypotheses or
+weaken native guards. W6b remains unauthorized.
 
 W0, kernel-syscall attribution, final instrumentation overhead, HC/1 and HC/2 process controls,
 Redis same-box comparison, persistence cells, and all expensive release qualification remain open.

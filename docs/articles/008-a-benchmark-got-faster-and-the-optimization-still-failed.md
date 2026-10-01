@@ -305,6 +305,19 @@ capture because local policy denied system-performance profiling. We recorded th
 rather than relabeling socket polls as syscalls or escalating privileges. Kernel syscall claims
 remain open for an admitted Linux or ETW-capable host.
 
+The verified-session experiment repeated the pattern at the native boundary. Under c8 tenant
+isolation it removed the second roster lock and every repeated identity validation while retaining
+protocol validation, admission, quota and store ownership. Median paired goodput rose 46.35% for a
+64-byte GET and 56.77% for a 64-byte PUT; CPU/op fell 70.00% and 66.25%. But the GET p99 median rose
+8.84%, and a c1 4-KiB GET crossed the CPU guard at +3.49%. The full semantic suite passed, yet the
+candidate was reverted because owner removal is not the same as release acceptance.
+
+Value ownership also produced a useful non-change. Raw embedded values already share immutable
+`Bytes` backing. Direct ClientSurface GET copies because the stable protocol response owns a
+`Vec<u8>`. Removing that copy locally would either change the protocol ownership contract or fork
+the canonical request core, so the investigation recorded the boundary instead of inventing a
+zero-copy wrapper.
+
 Four attractive directions did not earn more implementation work in this cycle:
 
 - unconditional cursor parsing, because copy removal barely moved end-to-end throughput;

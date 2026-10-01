@@ -67,10 +67,10 @@ evidence = "w1-local-attribution.md and local-runs/w7-*.json"
 [[work_items]]
 id = "W8"
 title = "verified session and value ownership"
-decision = "w8a-and-client-value-owner-authorized-separately"
+decision = "w8a-rejected-local-tail-guard-w8b-no-compatible-candidate"
 primary_metric = "native-cpu-and-copied-bytes-per-operation"
 rollback = "remove only the generation-fenced session or only the immutable client value owner"
-evidence = "w1-local-attribution.md and local-runs/w8-*.json"
+evidence = "w1-local-attribution.md and local-runs/w8-*.json including w8a-v6 pairs"
 
 [[work_items]]
 id = "W9"
@@ -97,11 +97,11 @@ decision = "unmeasured"
 [[native_investigations]]
 id = "N5"
 owner = "identity-validation"
-decision = "isolated-c8-contention-observed"
+decision = "session-removes-owner-but-candidate-fails-local-tail-guard"
 [[native_investigations]]
 id = "N6"
 owner = "value-ownership"
-decision = "raw-zero-copy-client-get-copy-typed-codec-owned"
+decision = "raw-zero-copy-client-get-copy-blocked-by-stable-protocol-owner"
 [[native_investigations]]
 id = "N7"
 owner = "multi-key-dispatch"

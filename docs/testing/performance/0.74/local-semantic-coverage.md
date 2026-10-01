@@ -17,6 +17,7 @@ host gates.
 | Multi-key atomicity | client-surface batch-put rejection, RESP oversized DEL rejection, duplicate-key/last-write-wins corpus | Passed; documented concurrent DEL writer debt is unchanged |
 | Exact response/order | every local profiler receipt plus RESP pipeline byte-identity fixtures | Passed |
 | Tenant isolation/quota | client-surface conformance, W7 candidate tests, W8 isolated profiler | Passed; no policy or quota relaxation |
+| Verified-session revocation | W8a policy-generation replacement, namespace fallback, result/metric parity and `Send + Sync` fixtures | Passed before targeted W8a revert |
 
 Focused commands used in this work include:
 
@@ -32,3 +33,6 @@ The W3 candidate-specific file was removed with the rejected product candidate, 
 execution and exact candidate receipts are retained in `w1-local-attribution.md`. Reintroducing a
 different W3 implementation requires equivalent scripted-I/O coverage; the old result cannot be
 silently inherited.
+
+The same rule applies to W8a: its candidate-only generation and parity tests passed before the
+targeted rollback, but a future policy/session design must carry equivalent revocation coverage.
