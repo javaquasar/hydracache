@@ -220,6 +220,28 @@ impl ConsumerIsolation {
             .ok_or(AdmissionRejection::UnknownTenant)
     }
 
+    /// Resolve a client and verify that its tenant owns one namespace.
+    ///
+    /// This read-only check does not consume rate, fair-share, or quota budget.
+    pub fn resolve_tenant_namespace(
+        &self,
+        client_id: &str,
+        namespace: &str,
+    ) -> Result<TenantId, AdmissionRejection> {
+        let tenant_id = self.resolve_tenant(client_id)?;
+        let tenant = self
+            .roster
+            .tenant(&tenant_id)
+            .expect("tenant id came from roster");
+        if tenant.quota(namespace).is_none() {
+            return Err(AdmissionRejection::UnknownNamespace {
+                tenant: tenant_id,
+                namespace: namespace.to_owned(),
+            });
+        }
+        Ok(tenant_id)
+    }
+
     /// Admit one hot-path request against tenant rate and fair-share limits.
     pub fn admit_request(&mut self, client_id: &str) -> Result<TenantId, AdmissionRejection> {
         let tenant_id = self.resolve_tenant(client_id)?;

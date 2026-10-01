@@ -975,7 +975,81 @@ pub struct ClientSurfaceState {
     audit_sink: Arc<InMemoryAuditSink>,
     audit: Mutex<AuditRecorder<Arc<InMemoryAuditSink>>>,
     isolation: Option<Mutex<ConsumerIsolation>>,
+    identity_policy_generation: AtomicU64,
     profile_instrumentation: ClientSurfaceProfileInstrumentation,
+}
+
+/// Identity and namespace binding verified for repeated in-process requests.
+///
+/// Mutable request properties such as deadlines, idempotency, admission, quota,
+/// audit, request ids, and mutation publication remain request-scoped. A
+/// generation change forces identity and namespace revalidation before the
+/// next matching request proceeds.
+#[derive(Debug)]
+pub struct VerifiedClientSession {
+    state: Arc<ClientSurfaceState>,
+    identity: ClientIdentity,
+    namespace: Namespace,
+    protocol_version: u16,
+    observed_generation: AtomicU64,
+}
+
+impl VerifiedClientSession {
+    /// Dispatch one request through the canonical operation core.
+    ///
+    /// Requests outside the verified namespace or protocol version fall back
+    /// to ordinary verified dispatch instead of forking error semantics.
+    pub fn dispatch(&self, envelope: ClientRequestEnvelope) -> ClientResponseEnvelope {
+        if request_namespace(&envelope.request) != &self.namespace
+            || envelope.protocol_version != self.protocol_version
+        {
+            return self
+                .state
+                .dispatch_verified_request(&self.identity, envelope);
+        }
+
+        let current_generation = self
+            .state
+            .identity_policy_generation
+            .load(Ordering::Acquire);
+        if self.observed_generation.load(Ordering::Acquire) != current_generation {
+            let profiling = self.state.profile_instrumentation.enabled();
+            let validation_started = profiling.then(Instant::now);
+            let validation = self.state.validate_session_binding(
+                &self.identity,
+                &self.namespace,
+                Some(envelope.request_id.as_str()),
+            );
+            if let Some(started) = validation_started {
+                self.state
+                    .profile_instrumentation
+                    .identity_validations
+                    .fetch_add(1, Ordering::Relaxed);
+                self.state
+                    .profile_instrumentation
+                    .identity_validation_nanoseconds
+                    .fetch_add(elapsed_nanoseconds(started), Ordering::Relaxed);
+            }
+            if validation.is_err() {
+                return unauthorized_response(envelope);
+            }
+            self.observed_generation
+                .store(current_generation, Ordering::Release);
+        }
+
+        self.state.record_dispatch();
+        self.state.handle_request(&self.identity, envelope)
+    }
+
+    /// Return the identity bound to this session.
+    pub fn identity(&self) -> &ClientIdentity {
+        &self.identity
+    }
+
+    /// Return the namespace bound to this session.
+    pub fn namespace(&self) -> &Namespace {
+        &self.namespace
+    }
 }
 
 impl ClientSurfaceState {
@@ -1003,6 +1077,7 @@ impl ClientSurfaceState {
             audit: Mutex::new(AuditRecorder::new(Arc::clone(&audit_sink))),
             audit_sink,
             isolation: None,
+            identity_policy_generation: AtomicU64::new(1),
             profile_instrumentation: ClientSurfaceProfileInstrumentation::default(),
         })
     }
@@ -1034,6 +1109,7 @@ impl ClientSurfaceState {
             audit: Mutex::new(AuditRecorder::new(Arc::clone(&audit_sink))),
             audit_sink,
             isolation: Some(Mutex::new(isolation)),
+            identity_policy_generation: AtomicU64::new(1),
             profile_instrumentation: ClientSurfaceProfileInstrumentation::default(),
         })
     }
@@ -1246,6 +1322,35 @@ impl ClientSurfaceState {
         ))
     }
 
+    /// Create a generation-fenced session for one identity, namespace, and
+    /// negotiated protocol version.
+    ///
+    /// The current isolation policy is immutable after state construction.
+    /// The generation fence is retained so any future policy replacement must
+    /// invalidate existing sessions at the same request boundary.
+    pub fn verified_session(
+        self: &Arc<Self>,
+        identity: ClientIdentity,
+        namespace: Namespace,
+        protocol_version: u16,
+    ) -> Result<VerifiedClientSession, ClientSurfaceError> {
+        if !protocol_version_supported(protocol_version) {
+            return Err(ClientSurfaceError::MalformedFrame(
+                "unsupported verified-session protocol version".to_owned(),
+            ));
+        }
+        self.validate_session_binding(&identity, &namespace, None)?;
+        Ok(VerifiedClientSession {
+            observed_generation: AtomicU64::new(
+                self.identity_policy_generation.load(Ordering::Acquire),
+            ),
+            state: Arc::clone(self),
+            identity,
+            namespace,
+            protocol_version,
+        })
+    }
+
     /// Dispatch one verified client request from an alternate edge transport.
     ///
     /// This is the supported in-process seam for compatibility facades such as
@@ -1273,24 +1378,38 @@ impl ClientSurfaceState {
                 .fetch_add(elapsed_nanoseconds(started), Ordering::Relaxed);
         }
         if identity_validation.is_err() {
-            let response_protocol_version = if protocol_version_supported(envelope.protocol_version)
-            {
-                envelope.protocol_version
-            } else {
-                PROTOCOL_VERSION
-            };
-            return ClientResponseEnvelope::error(
-                envelope.request_id,
-                ClientErrorEnvelope::new(
-                    ClientErrorCode::Unauthorized,
-                    false,
-                    "client identity is not authorized for this tenant",
-                ),
-            )
-            .with_protocol_version(response_protocol_version);
+            return unauthorized_response(envelope);
         }
         self.record_dispatch();
         self.handle_request(identity, envelope)
+    }
+
+    fn validate_session_binding(
+        &self,
+        identity: &ClientIdentity,
+        namespace: &Namespace,
+        request_id: Option<&str>,
+    ) -> Result<(), ClientSurfaceError> {
+        self.validate_tenant_identity(identity, CLIENT_DATA_PATH, request_id)?;
+        if let Some(isolation) = &self.isolation {
+            isolation
+                .lock()
+                .expect("isolation mutex")
+                .resolve_tenant_namespace(identity.client_id(), namespace.as_str())
+                .map_err(|_| ClientSurfaceError::Unauthorized)?;
+        }
+        Ok(())
+    }
+
+    #[cfg(test)]
+    fn replace_isolation_for_session_tests(&self, isolation: ConsumerIsolation) {
+        let configured = self
+            .isolation
+            .as_ref()
+            .expect("session policy replacement requires isolated state");
+        *configured.lock().expect("isolation mutex") = isolation;
+        self.identity_policy_generation
+            .fetch_add(1, Ordering::Release);
     }
 
     fn validate_tenant_identity(
@@ -3038,6 +3157,23 @@ fn request_namespace(request: &ClientRequest) -> &Namespace {
     }
 }
 
+fn unauthorized_response(envelope: ClientRequestEnvelope) -> ClientResponseEnvelope {
+    let response_protocol_version = if protocol_version_supported(envelope.protocol_version) {
+        envelope.protocol_version
+    } else {
+        PROTOCOL_VERSION
+    };
+    ClientResponseEnvelope::error(
+        envelope.request_id,
+        ClientErrorEnvelope::new(
+            ClientErrorCode::Unauthorized,
+            false,
+            "client identity is not authorized for this tenant",
+        ),
+    )
+    .with_protocol_version(response_protocol_version)
+}
+
 fn lock_response(
     request_id: String,
     result: Result<ClientResponse, ClientErrorEnvelope>,
@@ -3380,6 +3516,112 @@ impl IntoResponse for ClientSurfaceError {
 #[cfg(test)]
 mod retention_tests {
     use super::*;
+
+    fn session_isolation(tenant: &str, client: &str) -> ConsumerIsolation {
+        let tenant = hydracache::Tenant::new(tenant)
+            .unwrap()
+            .allow_client(client)
+            .namespace("session", hydracache::NamespaceQuota::new(1024 * 1024, 128));
+        ConsumerIsolation::new(
+            hydracache::TenantRoster::new(vec![tenant]).unwrap(),
+            hydracache::ConsumerIsolationConfig::default(),
+        )
+    }
+
+    fn session_get(request_id: &str) -> ClientRequestEnvelope {
+        ClientRequestEnvelope::new(
+            request_id,
+            ClientRequest::Get {
+                ns: Namespace::new("session").unwrap(),
+                key: StructuredKey::new(vec!["key".to_owned()]).unwrap(),
+            },
+        )
+    }
+
+    fn assert_send_sync<T: Send + Sync>() {}
+
+    #[test]
+    fn verified_session_is_send_sync_and_revalidates_after_policy_generation_change() {
+        assert_send_sync::<VerifiedClientSession>();
+        let state = Arc::new(
+            ClientSurfaceState::with_isolation(
+                ClientSurfaceLimits::default(),
+                session_isolation("tenant", "client"),
+            )
+            .unwrap(),
+        );
+        let identity = ClientIdentity::new("client", "tenant").unwrap();
+        let session = state
+            .verified_session(
+                identity,
+                Namespace::new("session").unwrap(),
+                PROTOCOL_VERSION,
+            )
+            .unwrap();
+
+        state.replace_isolation_for_session_tests(session_isolation("revoked", "client"));
+        let denied = session.dispatch(session_get("denied"));
+        assert!(matches!(
+            denied.result,
+            Err(ClientErrorEnvelope {
+                code: ClientErrorCode::Unauthorized,
+                ..
+            })
+        ));
+        assert_eq!(state.dispatch_attempts(), 0);
+
+        state.replace_isolation_for_session_tests(session_isolation("tenant", "client"));
+        let restored = session.dispatch(session_get("restored"));
+        assert_eq!(restored.result, Ok(ClientResponse::Value { value: None }));
+        assert_eq!(state.dispatch_attempts(), 1);
+    }
+
+    #[test]
+    fn verified_session_keeps_request_scoped_protocol_audit_and_admission_semantics() {
+        let state = Arc::new(
+            ClientSurfaceState::with_isolation(
+                ClientSurfaceLimits::default(),
+                session_isolation("tenant", "client"),
+            )
+            .unwrap(),
+        );
+        let identity = ClientIdentity::new("client", "tenant").unwrap();
+        let session = state
+            .verified_session(
+                identity.clone(),
+                Namespace::new("session").unwrap(),
+                PROTOCOL_VERSION,
+            )
+            .unwrap();
+        state.set_profile_instrumentation_enabled(true);
+        state.reset_profile_metrics();
+
+        let session_response = session.dispatch(session_get("session"));
+        let session_metrics = state.profile_metrics();
+        assert_eq!(session_metrics.identity_validations, 0);
+        assert_eq!(session_metrics.protocol_validations, 1);
+        assert_eq!(session_metrics.dispatches, 1);
+
+        state.reset_profile_metrics();
+        let canonical_response =
+            state.dispatch_verified_request(&identity, session_get("ordinary"));
+        let canonical_metrics = state.profile_metrics();
+        assert_eq!(canonical_metrics.identity_validations, 1);
+        assert_eq!(canonical_metrics.protocol_validations, 1);
+        assert_eq!(canonical_metrics.dispatches, 1);
+        assert_eq!(session_response.result, canonical_response.result);
+
+        let fallback_request = ClientRequestEnvelope::new(
+            "other-namespace",
+            ClientRequest::Get {
+                ns: Namespace::new("other").unwrap(),
+                key: StructuredKey::new(vec!["key".to_owned()]).unwrap(),
+            },
+        );
+        let fallback = session.dispatch(fallback_request.clone());
+        let canonical_fallback = state.dispatch_verified_request(&identity, fallback_request);
+        assert_eq!(fallback.result, canonical_fallback.result);
+    }
 
     #[cfg(feature = "performance-profile")]
     #[test]
