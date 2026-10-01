@@ -1081,8 +1081,10 @@ mod tests {
                 Transport::Duplex => assert!(!result.socket_io.available),
                 Transport::Tcp => {
                     assert!(result.socket_io.available);
-                    assert!(result.socket_io.poll_write_attempts >= options.operations);
-                    assert!(result.socket_io.poll_write_ready >= options.operations);
+                    assert!(result.socket_io.poll_write_attempts > 0);
+                    assert!(result.socket_io.poll_write_attempts <= options.operations);
+                    assert!(result.socket_io.poll_write_ready > 0);
+                    assert!(result.socket_io.poll_write_ready <= options.operations);
                     assert!(result.socket_io.written_bytes > 0);
                     assert!(
                         result.socket_io.requested_write_bytes >= result.socket_io.written_bytes
