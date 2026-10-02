@@ -125,6 +125,14 @@ class LocalPairing074Tests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "background CPU"):
             PAIRING.analyse_attempts(attempts, self.contract, "aa", 740074)
 
+    def test_invalidation_summary_is_non_promotable_and_retains_count(self) -> None:
+        summary = PAIRING.invalidation_summary(
+            "aa", 740074, self.attempts(), "background CPU ceiling"
+        )
+        self.assertEqual(summary["classification"], "invalidated")
+        self.assertEqual(summary["attempts_retained"], 10)
+        self.assertFalse(summary["numerical_claim_eligible"])
+
 
 if __name__ == "__main__":
     unittest.main()

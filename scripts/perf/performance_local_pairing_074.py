@@ -169,6 +169,23 @@ def analyse_attempts(
     }
 
 
+def invalidation_summary(mode: str, seed: int, attempts: list[dict[str, Any]], reason: str) -> dict[str, Any]:
+    return {
+        "schema_version": 1,
+        "release": "0.74",
+        "profile_id": PROFILE_ID,
+        "mode": mode,
+        "promotable": False,
+        "numerical_claim_eligible": False,
+        "classification": "invalidated",
+        "reason": reason,
+        "attempts_retained": len(attempts),
+        "order": [role for pair in abba_order(len(attempts) // 2, seed) for role in pair]
+        if attempts
+        else [],
+    }
+
+
 def cpu_times() -> tuple[int, int]:
     if sys.platform == "win32":
         import ctypes
@@ -327,7 +344,14 @@ def main() -> int:
         (options.output / "attempts.json").write_text(
             json.dumps(attempts, indent=2) + "\n", encoding="utf-8"
         )
-    summary = analyse_attempts(attempts, contract, str(mode), seed)
+    try:
+        summary = analyse_attempts(attempts, contract, str(mode), seed)
+    except ValueError as error:
+        summary = invalidation_summary(str(mode), seed, attempts, str(error))
+        (options.output / "summary.json").write_text(
+            json.dumps(summary, indent=2) + "\n", encoding="utf-8"
+        )
+        raise SystemExit(f"local pairing 0.74: invalidated: {error}") from error
     (options.output / "summary.json").write_text(
         json.dumps(summary, indent=2) + "\n", encoding="utf-8"
     )
