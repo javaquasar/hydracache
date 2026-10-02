@@ -1,5 +1,5 @@
 use hydracache_client_protocol::{
-    ClientRequest, ClientRequestEnvelope, ClientResponse, Namespace, StructuredKey,
+    BatchPutEntry, ClientRequest, ClientRequestEnvelope, ClientResponse, Namespace, StructuredKey,
 };
 use hydracache_client_transport_axum::{
     ClientIdentity, ClientSurfaceLimits, ClientSurfaceProfileMetrics, ClientSurfaceState,
@@ -61,6 +61,7 @@ fn client_surface_profile_counters_are_opt_in_bounded_and_resettable() {
     assert_eq!(metrics.dispatches, 2);
     assert_eq!(metrics.expiry_sweep_checks, 2);
     assert!(metrics.clock_reads >= 2);
+    assert!(metrics.clock_nanoseconds > 0);
     assert!(metrics.expiry_sweeps_claimed <= metrics.expiry_sweep_checks);
     assert!(
         metrics.store_lock_acquisitions >= 2,
@@ -77,6 +78,15 @@ fn client_surface_profile_counters_are_opt_in_bounded_and_resettable() {
     assert_eq!(metrics.live_get_hits, 1);
     assert_eq!(metrics.expired_get_removals, 0);
     assert_eq!(metrics.missing_gets, 0);
+    assert_eq!(metrics.structured_key_materializations, 2);
+    assert!(metrics.structured_key_bytes_copied > 0);
+    assert_eq!(metrics.batch_operations, 0);
+    assert_eq!(metrics.batch_items, 0);
+    assert_eq!(metrics.dispatch_counter_seqcst_operations, 2);
+    assert!(metrics.clock_floor_seqcst_operations >= 2);
+    assert!(metrics.expiry_gate_seqcst_operations >= 2);
+    assert_eq!(metrics.mutation_counter_seqcst_operations, 1);
+    assert_eq!(metrics.message_id_seqcst_operations, 0);
 
     state.set_profile_instrumentation_enabled(false);
     state.reset_profile_metrics();
@@ -84,6 +94,53 @@ fn client_surface_profile_counters_are_opt_in_bounded_and_resettable() {
         state.profile_metrics(),
         ClientSurfaceProfileMetrics::default()
     );
+}
+
+#[test]
+fn client_surface_profile_attributes_multi_key_shape_and_key_materialization() {
+    let state = ClientSurfaceState::new(ClientSurfaceLimits::default()).unwrap();
+    let identity = ClientIdentity::new("profile-client", "profile-tenant").unwrap();
+    state.set_profile_instrumentation_enabled(true);
+    state.reset_profile_metrics();
+
+    let entries = (0..4)
+        .map(|index| BatchPutEntry {
+            key: StructuredKey::new(vec![format!("key-{index}")]).unwrap(),
+            value: vec![index as u8; 32],
+        })
+        .collect::<Vec<_>>();
+    let put = state.dispatch_verified_request(
+        &identity,
+        ClientRequestEnvelope::new(
+            "batch-put-074",
+            ClientRequest::BatchPut {
+                ns: namespace(),
+                entries,
+            },
+        ),
+    );
+    assert!(matches!(put.result, Ok(ClientResponse::Batch { ref items }) if items.len() == 4));
+
+    let get = state.dispatch_verified_request(
+        &identity,
+        ClientRequestEnvelope::new(
+            "batch-get-074",
+            ClientRequest::BatchGet {
+                ns: namespace(),
+                keys: (0..4)
+                    .map(|index| StructuredKey::new(vec![format!("key-{index}")]).unwrap())
+                    .collect(),
+            },
+        ),
+    );
+    assert!(matches!(get.result, Ok(ClientResponse::Batch { ref items }) if items.len() == 4));
+
+    let metrics = state.profile_metrics();
+    assert_eq!(metrics.batch_operations, 2);
+    assert_eq!(metrics.batch_items, 8);
+    assert_eq!(metrics.structured_key_materializations, 8);
+    assert!(metrics.structured_key_bytes_copied >= 8 * "key-0".len() as u64);
+    assert_eq!(metrics.mutation_counter_seqcst_operations, 1);
 }
 
 #[test]

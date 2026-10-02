@@ -467,10 +467,34 @@ pub struct ClientSurfaceProfileMetrics {
     pub get_value_bytes_cloned: u64,
     /// Reads of the request/expiry clock.
     pub clock_reads: u64,
+    /// Aggregate time spent obtaining and monotonically fencing the request clock.
+    pub clock_nanoseconds: u64,
     /// Ordinary or forced expiry sweep checks.
     pub expiry_sweep_checks: u64,
     /// Sweep checks that acquired the expiry cursor and scanned the store.
     pub expiry_sweeps_claimed: u64,
+    /// Store entries examined by claimed expiry sweeps.
+    pub expiry_sweep_entries_examined: u64,
+    /// Expired store entries removed by claimed expiry sweeps.
+    pub expiry_sweep_entries_removed: u64,
+    /// Canonical `(tenant, namespace, key)` identities materialized for store access.
+    pub structured_key_materializations: u64,
+    /// Identity bytes copied into canonical store keys.
+    pub structured_key_bytes_copied: u64,
+    /// Native multi-key requests reaching canonical dispatch.
+    pub batch_operations: u64,
+    /// Native multi-key items presented to canonical dispatch.
+    pub batch_items: u64,
+    /// Sequentially consistent dispatch-counter operations on the request path.
+    pub dispatch_counter_seqcst_operations: u64,
+    /// Sequentially consistent monotonic-clock fence operations on the request path.
+    pub clock_floor_seqcst_operations: u64,
+    /// Sequentially consistent expiry-gate operations on the request path.
+    pub expiry_gate_seqcst_operations: u64,
+    /// Sequentially consistent mutation-counter operations on the request path.
+    pub mutation_counter_seqcst_operations: u64,
+    /// Sequentially consistent event message-id operations on the request path.
+    pub message_id_seqcst_operations: u64,
     /// Store mutex acquisitions.
     pub store_lock_acquisitions: u64,
     /// Aggregate time waiting for the store mutex.
@@ -497,8 +521,20 @@ struct ClientSurfaceProfileInstrumentation {
     put_value_bytes_moved: AtomicU64,
     get_value_bytes_cloned: AtomicU64,
     clock_reads: AtomicU64,
+    clock_nanoseconds: AtomicU64,
     expiry_sweep_checks: AtomicU64,
     expiry_sweeps_claimed: AtomicU64,
+    expiry_sweep_entries_examined: AtomicU64,
+    expiry_sweep_entries_removed: AtomicU64,
+    structured_key_materializations: AtomicU64,
+    structured_key_bytes_copied: AtomicU64,
+    batch_operations: AtomicU64,
+    batch_items: AtomicU64,
+    dispatch_counter_seqcst_operations: AtomicU64,
+    clock_floor_seqcst_operations: AtomicU64,
+    expiry_gate_seqcst_operations: AtomicU64,
+    mutation_counter_seqcst_operations: AtomicU64,
+    message_id_seqcst_operations: AtomicU64,
     store_lock_acquisitions: AtomicU64,
     store_lock_wait_nanoseconds: AtomicU64,
     store_lock_hold_nanoseconds: AtomicU64,
@@ -523,8 +559,20 @@ impl ClientSurfaceProfileInstrumentation {
             &self.put_value_bytes_moved,
             &self.get_value_bytes_cloned,
             &self.clock_reads,
+            &self.clock_nanoseconds,
             &self.expiry_sweep_checks,
             &self.expiry_sweeps_claimed,
+            &self.expiry_sweep_entries_examined,
+            &self.expiry_sweep_entries_removed,
+            &self.structured_key_materializations,
+            &self.structured_key_bytes_copied,
+            &self.batch_operations,
+            &self.batch_items,
+            &self.dispatch_counter_seqcst_operations,
+            &self.clock_floor_seqcst_operations,
+            &self.expiry_gate_seqcst_operations,
+            &self.mutation_counter_seqcst_operations,
+            &self.message_id_seqcst_operations,
             &self.store_lock_acquisitions,
             &self.store_lock_wait_nanoseconds,
             &self.store_lock_hold_nanoseconds,
@@ -551,8 +599,32 @@ impl ClientSurfaceProfileInstrumentation {
             put_value_bytes_moved: self.put_value_bytes_moved.load(Ordering::Relaxed),
             get_value_bytes_cloned: self.get_value_bytes_cloned.load(Ordering::Relaxed),
             clock_reads: self.clock_reads.load(Ordering::Relaxed),
+            clock_nanoseconds: self.clock_nanoseconds.load(Ordering::Relaxed),
             expiry_sweep_checks: self.expiry_sweep_checks.load(Ordering::Relaxed),
             expiry_sweeps_claimed: self.expiry_sweeps_claimed.load(Ordering::Relaxed),
+            expiry_sweep_entries_examined: self
+                .expiry_sweep_entries_examined
+                .load(Ordering::Relaxed),
+            expiry_sweep_entries_removed: self.expiry_sweep_entries_removed.load(Ordering::Relaxed),
+            structured_key_materializations: self
+                .structured_key_materializations
+                .load(Ordering::Relaxed),
+            structured_key_bytes_copied: self.structured_key_bytes_copied.load(Ordering::Relaxed),
+            batch_operations: self.batch_operations.load(Ordering::Relaxed),
+            batch_items: self.batch_items.load(Ordering::Relaxed),
+            dispatch_counter_seqcst_operations: self
+                .dispatch_counter_seqcst_operations
+                .load(Ordering::Relaxed),
+            clock_floor_seqcst_operations: self
+                .clock_floor_seqcst_operations
+                .load(Ordering::Relaxed),
+            expiry_gate_seqcst_operations: self
+                .expiry_gate_seqcst_operations
+                .load(Ordering::Relaxed),
+            mutation_counter_seqcst_operations: self
+                .mutation_counter_seqcst_operations
+                .load(Ordering::Relaxed),
+            message_id_seqcst_operations: self.message_id_seqcst_operations.load(Ordering::Relaxed),
             store_lock_acquisitions: self.store_lock_acquisitions.load(Ordering::Relaxed),
             store_lock_wait_nanoseconds: self.store_lock_wait_nanoseconds.load(Ordering::Relaxed),
             store_lock_hold_nanoseconds: self.store_lock_hold_nanoseconds.load(Ordering::Relaxed),
@@ -1329,6 +1401,11 @@ impl ClientSurfaceState {
     }
 
     fn record_dispatch(&self) {
+        if self.profile_instrumentation.enabled() {
+            self.profile_instrumentation
+                .dispatch_counter_seqcst_operations
+                .fetch_add(1, Ordering::Relaxed);
+        }
         self.dispatch_attempts.fetch_add(1, Ordering::SeqCst);
         if self.profile_instrumentation.enabled() {
             self.profile_instrumentation
@@ -1338,7 +1415,9 @@ impl ClientSurfaceState {
     }
 
     fn now_ms(&self) -> u64 {
-        if self.profile_instrumentation.enabled() {
+        let profiling = self.profile_instrumentation.enabled();
+        let started = profiling.then(Instant::now);
+        if profiling {
             self.profile_instrumentation
                 .clock_reads
                 .fetch_add(1, Ordering::Relaxed);
@@ -1348,10 +1427,70 @@ impl ClientSurfaceState {
             .lock()
             .expect("cache clock mutex")
             .unwrap_or_else(system_time_millis);
+        if profiling {
+            self.profile_instrumentation
+                .clock_floor_seqcst_operations
+                .fetch_add(1, Ordering::Relaxed);
+        }
         let previous = self
             .cache_time_floor_ms
             .fetch_max(candidate, Ordering::SeqCst);
-        candidate.max(previous)
+        let now_ms = candidate.max(previous);
+        if let Some(started) = started {
+            self.profile_instrumentation
+                .clock_nanoseconds
+                .fetch_add(elapsed_nanoseconds(started), Ordering::Relaxed);
+        }
+        now_ms
+    }
+
+    fn materialize_store_key(
+        &self,
+        identity: &ClientIdentity,
+        ns: &Namespace,
+        key: &StructuredKey,
+    ) -> StoreKey {
+        let stable_key = key.stable_key();
+        if self.profile_instrumentation.enabled() {
+            self.profile_instrumentation
+                .structured_key_materializations
+                .fetch_add(1, Ordering::Relaxed);
+            self.profile_instrumentation
+                .structured_key_bytes_copied
+                .fetch_add(
+                    identity
+                        .tenant()
+                        .len()
+                        .saturating_add(ns.as_str().len())
+                        .saturating_add(stable_key.len()) as u64,
+                    Ordering::Relaxed,
+                );
+        }
+        (
+            identity.tenant().to_owned(),
+            ns.as_str().to_owned(),
+            stable_key,
+        )
+    }
+
+    fn record_batch_shape(&self, items: usize) {
+        if self.profile_instrumentation.enabled() {
+            self.profile_instrumentation
+                .batch_operations
+                .fetch_add(1, Ordering::Relaxed);
+            self.profile_instrumentation
+                .batch_items
+                .fetch_add(items as u64, Ordering::Relaxed);
+        }
+    }
+
+    fn record_state_mutations(&self, mutations: u64) {
+        if self.profile_instrumentation.enabled() {
+            self.profile_instrumentation
+                .mutation_counter_seqcst_operations
+                .fetch_add(1, Ordering::Relaxed);
+        }
+        self.state_mutations.fetch_add(mutations, Ordering::SeqCst);
     }
 
     fn sweep_expired_entries(&self, now_ms: u64, force: bool) -> usize {
@@ -1361,9 +1500,19 @@ impl ClientSurfaceState {
                 .expiry_sweep_checks
                 .fetch_add(1, Ordering::Relaxed);
         }
+        if profiling {
+            self.profile_instrumentation
+                .expiry_gate_seqcst_operations
+                .fetch_add(1, Ordering::Relaxed);
+        }
         let next = self.next_expiry_sweep_ms.load(Ordering::SeqCst);
         if !force && now_ms < next {
             return 0;
+        }
+        if profiling && !force {
+            self.profile_instrumentation
+                .expiry_gate_seqcst_operations
+                .fetch_add(1, Ordering::Relaxed);
         }
         if !force
             && self
@@ -1379,6 +1528,11 @@ impl ClientSurfaceState {
             return 0;
         }
         if force {
+            if profiling {
+                self.profile_instrumentation
+                    .expiry_gate_seqcst_operations
+                    .fetch_add(1, Ordering::Relaxed);
+            }
             self.next_expiry_sweep_ms.store(
                 now_ms.saturating_add(CLIENT_SURFACE_EXPIRY_SWEEP_INTERVAL_MS),
                 Ordering::SeqCst,
@@ -1408,6 +1562,14 @@ impl ClientSurfaceState {
                 },
                 !force,
             );
+            if profiling {
+                self.profile_instrumentation
+                    .expiry_sweep_entries_examined
+                    .fetch_add(candidates.examined as u64, Ordering::Relaxed);
+                self.profile_instrumentation
+                    .expiry_sweep_entries_removed
+                    .fetch_add(candidates.expired.len() as u64, Ordering::Relaxed);
+            }
             for expired_key @ (tenant, namespace, key) in &candidates.expired {
                 let tenant_id =
                     TenantId::new(tenant).expect("stored tenant identity was validated");
@@ -1429,6 +1591,14 @@ impl ClientSurfaceState {
                 },
                 !force,
             );
+            if profiling {
+                self.profile_instrumentation
+                    .expiry_sweep_entries_examined
+                    .fetch_add(candidates.examined as u64, Ordering::Relaxed);
+                self.profile_instrumentation
+                    .expiry_sweep_entries_removed
+                    .fetch_add(candidates.expired.len() as u64, Ordering::Relaxed);
+            }
             for key in &candidates.expired {
                 store.remove(key);
             }
@@ -1436,8 +1606,7 @@ impl ClientSurfaceState {
             candidates.expired.len()
         };
         if removed != 0 {
-            self.state_mutations
-                .fetch_add(removed as u64, Ordering::SeqCst);
+            self.record_state_mutations(removed as u64);
         }
         removed
     }
@@ -1554,8 +1723,11 @@ impl ClientSurfaceState {
             ClientRequest::Get { ns, key } => {
                 let now_ms = self.now_ms();
                 match self.with_admitted_store(identity, |store, isolation| {
-                    let (value, expired) =
-                        live_value(store, &store_key(identity, &ns, &key), now_ms);
+                    let (value, expired) = live_value(
+                        store,
+                        &self.materialize_store_key(identity, &ns, &key),
+                        now_ms,
+                    );
                     if expired {
                         if let Some(isolation) = isolation {
                             let _ = isolation.remove_entry(
@@ -1611,7 +1783,9 @@ impl ClientSurfaceState {
             ),
             ClientRequest::Invalidate { ns, key } => {
                 match self.with_admitted_store(identity, |store, isolation| {
-                    let removed = store.remove(&store_key(identity, &ns, &key)).is_some();
+                    let removed = store
+                        .remove(&self.materialize_store_key(identity, &ns, &key))
+                        .is_some();
                     if removed {
                         if let Some(isolation) = isolation {
                             let _ = isolation.remove_entry(
@@ -1624,7 +1798,7 @@ impl ClientSurfaceState {
                 }) {
                     Err(error) => ClientResponseEnvelope::error(envelope.request_id, error),
                     Ok(()) => {
-                        self.state_mutations.fetch_add(1, Ordering::SeqCst);
+                        self.record_state_mutations(1);
                         self.record_invalidation(
                             identity,
                             ns,
@@ -1636,6 +1810,7 @@ impl ClientSurfaceState {
                 }
             }
             ClientRequest::BatchGet { ns, keys } => {
+                self.record_batch_shape(keys.len());
                 let batch_bytes = keys.iter().fold(0usize, |total, key| {
                     total.saturating_add(key.stable_key().len())
                 });
@@ -1663,8 +1838,11 @@ impl ClientSurfaceState {
                         let mut expired_keys = Vec::new();
                         let mut items = Vec::with_capacity(keys.len());
                         for (index, key) in keys.iter().enumerate() {
-                            let (value, expired) =
-                                live_value(store, &store_key(identity, &ns, key), now_ms);
+                            let (value, expired) = live_value(
+                                store,
+                                &self.materialize_store_key(identity, &ns, key),
+                                now_ms,
+                            );
                             if expired {
                                 expired_keys.push(key);
                             }
@@ -1693,6 +1871,7 @@ impl ClientSurfaceState {
                 }
             }
             ClientRequest::BatchPut { ns, entries } => {
+                self.record_batch_shape(entries.len());
                 let batch_bytes = entries.iter().fold(0usize, |total, entry| {
                     total
                         .saturating_add(entry.key.stable_key().len())
@@ -1737,7 +1916,7 @@ impl ClientSurfaceState {
                         let mut store = self.lock_store();
                         for entry in &entries {
                             store.insert(
-                                store_key(identity, &ns, &entry.key),
+                                self.materialize_store_key(identity, &ns, &entry.key),
                                 StoredValue::persistent(entry.value.clone()),
                             );
                         }
@@ -1760,8 +1939,7 @@ impl ClientSurfaceState {
                     match admitted {
                         Err(error) => ClientResponseEnvelope::error(envelope.request_id, error),
                         Ok(_) => {
-                            self.state_mutations
-                                .fetch_add(entries.len() as u64, Ordering::SeqCst);
+                            self.record_state_mutations(entries.len() as u64);
                             for entry in &entries {
                                 self.record_mutation(
                                     identity,
@@ -1861,7 +2039,7 @@ impl ClientSurfaceState {
                 if let Err(error) = admitted {
                     ClientResponseEnvelope::error(envelope.request_id, error)
                 } else {
-                    self.state_mutations.fetch_add(1, Ordering::SeqCst);
+                    self.record_state_mutations(1);
                     self.record_namespace_mutation(
                         identity,
                         ns,
@@ -2124,7 +2302,7 @@ impl ClientSurfaceState {
             );
         }
         let value_bytes = new_value.len() as u64;
-        let map_key = store_key(identity, &ns, &key);
+        let map_key = self.materialize_store_key(identity, &ns, &key);
         let cas_key = lock_key(identity, &ns, &key);
         let stable_key = key.stable_key();
         let now_ms = self.now_ms();
@@ -2223,7 +2401,7 @@ impl ClientSurfaceState {
 
         let applied = matches!(&result, Ok(ClientResponse::CasApplied { .. }));
         if applied {
-            self.state_mutations.fetch_add(1, Ordering::SeqCst);
+            self.record_state_mutations(1);
             self.record_invalidation(identity, ns, key, ClientSurfaceMutationKind::Stored);
         }
         lock_response(request_id, result)
@@ -2238,7 +2416,7 @@ impl ClientSurfaceState {
         expected: Vec<u8>,
         level: LockConsistency,
     ) -> ClientResponseEnvelope {
-        let map_key = store_key(identity, &ns, &key);
+        let map_key = self.materialize_store_key(identity, &ns, &key);
         let cas_key = lock_key(identity, &ns, &key);
         let level = lock_consistency(level);
         let now_ms = self.now_ms();
@@ -2274,7 +2452,7 @@ impl ClientSurfaceState {
 
         let applied = matches!(&result, Ok(ClientResponse::CasApplied { .. }));
         if applied {
-            self.state_mutations.fetch_add(1, Ordering::SeqCst);
+            self.record_state_mutations(1);
             self.record_invalidation(identity, ns, key, ClientSurfaceMutationKind::Removed);
         }
         lock_response(request_id, result)
@@ -2380,7 +2558,7 @@ impl ClientSurfaceState {
             Some(ttl_ms) => StoredValue::with_ttl(value, now_ms, ttl_ms),
             None => StoredValue::persistent(value),
         };
-        let map_key = store_key(identity, &ns, &key);
+        let map_key = self.materialize_store_key(identity, &ns, &key);
         let admitted = if let Some(isolation) = &self.isolation {
             let mut isolation = isolation.lock().expect("isolation mutex");
             let mut store = self.lock_store();
@@ -2415,7 +2593,7 @@ impl ClientSurfaceState {
             );
         }
         drop(idempotency_keys);
-        self.state_mutations.fetch_add(1, Ordering::SeqCst);
+        self.record_state_mutations(1);
         self.record_invalidation(identity, ns, key, ClientSurfaceMutationKind::Stored);
         ClientResponseEnvelope::ok(request_id, ClientResponse::Stored)
     }
@@ -2430,7 +2608,11 @@ impl ClientSurfaceState {
     ) -> ClientResponseEnvelope {
         let now_ms = self.now_ms();
         let applied = match self.with_admitted_store(identity, |store, isolation| {
-            let (entry, expired) = live_entry_mut(store, &store_key(identity, &ns, &key), now_ms);
+            let (entry, expired) = live_entry_mut(
+                store,
+                &self.materialize_store_key(identity, &ns, &key),
+                now_ms,
+            );
             let applied = entry
                 .map(|entry| {
                     entry.expires_at_ms = Some(now_ms.saturating_add(ttl_ms));
@@ -2452,7 +2634,7 @@ impl ClientSurfaceState {
             Err(error) => return ClientResponseEnvelope::error(request_id, error),
         };
         if applied {
-            self.state_mutations.fetch_add(1, Ordering::SeqCst);
+            self.record_state_mutations(1);
             self.record_invalidation(identity, ns, key, ClientSurfaceMutationKind::Expire);
         }
         ClientResponseEnvelope::ok(request_id, ClientResponse::Expiry { applied })
@@ -2467,7 +2649,11 @@ impl ClientSurfaceState {
     ) -> ClientResponseEnvelope {
         let now_ms = self.now_ms();
         let applied = match self.with_admitted_store(identity, |store, isolation| {
-            let (entry, expired) = live_entry_mut(store, &store_key(identity, &ns, &key), now_ms);
+            let (entry, expired) = live_entry_mut(
+                store,
+                &self.materialize_store_key(identity, &ns, &key),
+                now_ms,
+            );
             let applied = entry
                 .map(|entry| entry.expires_at_ms.take().is_some())
                 .unwrap_or(false);
@@ -2486,7 +2672,7 @@ impl ClientSurfaceState {
             Err(error) => return ClientResponseEnvelope::error(request_id, error),
         };
         if applied {
-            self.state_mutations.fetch_add(1, Ordering::SeqCst);
+            self.record_state_mutations(1);
             self.record_invalidation(identity, ns, key, ClientSurfaceMutationKind::Persist);
         }
         ClientResponseEnvelope::ok(request_id, ClientResponse::Expiry { applied })
@@ -2501,7 +2687,11 @@ impl ClientSurfaceState {
     ) -> ClientResponseEnvelope {
         let now_ms = self.now_ms();
         let state = match self.with_admitted_store(identity, |store, isolation| {
-            let (state, expired) = ttl_state(store, &store_key(identity, &ns, &key), now_ms);
+            let (state, expired) = ttl_state(
+                store,
+                &self.materialize_store_key(identity, &ns, &key),
+                now_ms,
+            );
             if expired {
                 if let Some(isolation) = isolation {
                     let _ = isolation.remove_entry(
@@ -2551,7 +2741,7 @@ impl ClientSurfaceState {
             }
         }
         let now_ms = self.now_ms();
-        let map_key = store_key(identity, &ns, &key);
+        let map_key = self.materialize_store_key(identity, &ns, &key);
         let stable_key = key.stable_key();
         let value_bytes = value.len() as u64;
         let stored = if let Some(isolation) = &self.isolation {
@@ -2600,7 +2790,7 @@ impl ClientSurfaceState {
             condition_holds
         };
         if stored {
-            self.state_mutations.fetch_add(1, Ordering::SeqCst);
+            self.record_state_mutations(1);
             self.record_invalidation(identity, ns, key, ClientSurfaceMutationKind::Stored);
         }
         ClientResponseEnvelope::ok(request_id, ClientResponse::ConditionalStored { stored })
@@ -2625,7 +2815,7 @@ impl ClientSurfaceState {
             );
         }
         let now_ms = self.now_ms();
-        let map_key = store_key(identity, &ns, &key);
+        let map_key = self.materialize_store_key(identity, &ns, &key);
         let applied = match self.with_admitted_store(identity, |store, isolation| {
             let (entry, expired) = live_entry_mut(store, &map_key, now_ms);
             let applied = entry.is_some_and(|entry| entry.value == expected_value);
@@ -2647,7 +2837,7 @@ impl ClientSurfaceState {
             Err(error) => return ClientResponseEnvelope::error(request_id, error),
         };
         if applied {
-            self.state_mutations.fetch_add(1, Ordering::SeqCst);
+            self.record_state_mutations(1);
             self.record_invalidation(identity, ns, key, ClientSurfaceMutationKind::Removed);
         }
         ClientResponseEnvelope::ok(request_id, ClientResponse::CompareValueApplied { applied })
@@ -2678,7 +2868,11 @@ impl ClientSurfaceState {
         }
         let now_ms = self.now_ms();
         let applied = match self.with_admitted_store(identity, |store, isolation| {
-            let (entry, expired) = live_entry_mut(store, &store_key(identity, &ns, &key), now_ms);
+            let (entry, expired) = live_entry_mut(
+                store,
+                &self.materialize_store_key(identity, &ns, &key),
+                now_ms,
+            );
             let applied = entry
                 .map(|entry| {
                     if entry.value == expected_value {
@@ -2725,7 +2919,7 @@ impl ClientSurfaceState {
             Err(error) => return ClientResponseEnvelope::error(request_id, error),
         };
         if applied {
-            self.state_mutations.fetch_add(1, Ordering::SeqCst);
+            self.record_state_mutations(1);
             self.record_invalidation(identity, ns, key, ClientSurfaceMutationKind::Expire);
         }
         ClientResponseEnvelope::ok(request_id, ClientResponse::CompareValueApplied { applied })
@@ -2783,6 +2977,11 @@ impl ClientSurfaceState {
     ) {
         if self.mutation_events.receiver_count() == 0 {
             return;
+        }
+        if self.profile_instrumentation.enabled() {
+            self.profile_instrumentation
+                .message_id_seqcst_operations
+                .fetch_add(1, Ordering::Relaxed);
         }
         let message_id = self.next_message_id.fetch_add(1, Ordering::SeqCst);
         self.publish_mutation(identity, namespace, key, kind, message_id);
@@ -3202,6 +3401,7 @@ fn elapsed_nanoseconds(started: Instant) -> u64 {
     started.elapsed().as_nanos().min(u128::from(u64::MAX)) as u64
 }
 
+#[cfg(feature = "performance-profile")]
 fn store_key(identity: &ClientIdentity, ns: &Namespace, key: &StructuredKey) -> StoreKey {
     (
         identity.tenant().to_owned(),
