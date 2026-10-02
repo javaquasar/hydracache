@@ -29,6 +29,7 @@ wire compatibility, or long-term product direction.
 | [ADR-0020](0020-deferred-qualification-and-source-only-client-distribution.md) | Accepted for 0.68 | Defer 0.67.1 bare-metal qualification, publish Rust libraries plus the Rust HC/2 client under hosted evidence, and keep Java/Python clients source-only. |
 | [ADR-0021](0021-management-center-frontend-toolchain.md) | Accepted for 0.72 | Use strict TypeScript, Preact, and Vite with deterministic content-hashed embedding. |
 | [ADR-0022](0022-retain-canonical-key-representation-for-074.md) | Accepted for 0.74 local candidate | Retain canonical key identity and defer representation migration because the measured isolated ceiling is below the frozen floor. |
+| [ADR-0023](0023-verified-session-and-native-value-ownership.md) | Proposed for post-0.73 decision | Require an authoritative policy generation for reusable verification and a versioned `Bytes` response for zero-copy native GET. |
 
 ## Naming
 
