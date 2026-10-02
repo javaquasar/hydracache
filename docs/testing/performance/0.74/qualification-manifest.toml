@@ -1,0 +1,75 @@
+schema_version = 1
+release = "0.74"
+manifest_id = "release-qualification-074-v1"
+state = "prepared-not-authorized"
+expensive_runs_enabled = false
+explicit_authorization_required = true
+predecessor_source_sha = "16d2e98b6cc9e22d9ccf95eb26fe28bbbcf80f2b"
+candidate_source_sha = "UNRESOLVED"
+seed = 740074
+artifact_name_format = "hc074-{source12}-{host_id}-{run_id}"
+artifact_root = "target/performance-evidence/0.74/release-qualification"
+same_box_redis_required = true
+redis_server_version = "7.2.5"
+redis_benchmark_version = "7.2.5"
+
+[[contract_inputs]]
+path = "docs/testing/performance/0.74/baseline-identities.toml"
+sha256 = "e0d61398b616a072bcfb2b89bf715345c21efe8663ab1280df727f2e170d9d60"
+
+[[contract_inputs]]
+path = "docs/testing/performance/0.74/scenario-matrix.toml"
+sha256 = "6e511f6e5ce22d4366e85cecaf8bad61f5f100bbfba0d748bc64facbdfd08961"
+
+[[contract_inputs]]
+path = "docs/testing/performance/0.74/statistics.toml"
+sha256 = "bd9decf15407e2d18d62052f8b26acfb18df96d0a4c9f161ff44e55e7159f227"
+
+[[contract_inputs]]
+path = "docs/plans/V0_74_RESP_THROUGHPUT_AND_PIPELINE_EFFICIENCY_PLAN.md"
+sha256 = "b89d68fcc3cde4b07f80af1b58402fa6df94e38a67a94410b2a98dc27b5234fd"
+
+[[phases]]
+id = "Q0-identity-and-contract"
+expensive = false
+command = "cargo xtask performance-contract-check --release 0.74 --require-ship"
+expected_before_authorization = "blocked"
+
+[[phases]]
+id = "Q1-build-and-semantic"
+expensive = false
+command = "cargo test --workspace --all-targets"
+expected_before_authorization = "dry-run-only"
+
+[[phases]]
+id = "Q2-same-box-redis"
+expensive = true
+command = "QUALIFICATION_RUNNER_UNRESOLVED --matrix resp-and-redis"
+expected_before_authorization = "not-run"
+
+[[phases]]
+id = "Q3-native-non-regression"
+expensive = true
+command = "QUALIFICATION_RUNNER_UNRESOLVED --matrix native-surfaces"
+expected_before_authorization = "not-run"
+
+[[phases]]
+id = "Q4-soak-and-retention"
+expensive = true
+command = "QUALIFICATION_RUNNER_UNRESOLVED --matrix soak-retention"
+expected_before_authorization = "not-run"
+
+[[phases]]
+id = "Q5-finalize-evidence"
+expensive = false
+command = "QUALIFICATION_FINALIZER_UNRESOLVED"
+expected_before_authorization = "not-run"
+
+[unresolved]
+predecessor_annotated_tag = true
+predecessor_confirmation = true
+candidate_source = true
+admitted_host = true
+redis_binary_digests = true
+qualification_runner = true
+authorization = true

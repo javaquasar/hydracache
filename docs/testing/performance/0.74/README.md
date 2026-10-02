@@ -33,6 +33,20 @@ The focused WSL2 portability result is recorded in
 [`local-linux-sanity.md`](local-linux-sanity.md). It is a non-promotable `local-quick` sub-tier and
 does not substitute for the admitted Linux release host.
 
+W11 is staged, but disabled, by `qualification-manifest.toml`. Its contract inputs are
+content-addressed and its expensive phases remain `not-run`. The only currently supported action
+is a no-execution validation:
+
+```text
+python scripts/perf/performance_qualification_dry_run_074.py --dry-run \
+  --manifest docs/testing/performance/0.74/qualification-manifest.toml \
+  --output target/performance-evidence/0.74/qualification-dry-run.json
+```
+
+The dry-run refuses digest drift, reordered phases, hidden blockers, or admission of an expensive
+phase. It deliberately has no execution mode before the 0.73 tag, candidate identity, admitted
+host, Redis binary identities and explicit authorization are available.
+
 Numerical receipts must never be hand-edited into claims. Every receipt binds the trace, payload
 and key corpora, seed, warmup, duration, offered schedule, concurrency, pipeline depth, security,
 persistence and final-state digest. Errors, timeouts, rejections, late operations and incomplete
