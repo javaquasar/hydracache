@@ -1,0 +1,61 @@
+schema_version = 1
+release = "0.73.0"
+state = "planned-awaiting-green-confirmation"
+source_confirmation_run = 36839197349
+
+# GitHub Actions artifacts are only the staging copy. This branch is the durable,
+# reviewable archive index and must exist before v0.73.0 is tagged.
+archive_branch = "evidence/0.73/w10-confirmation"
+archive_branch_url = "https://github.com/javaquasar/hydracache/tree/evidence/0.73/w10-confirmation"
+archive_root = "docs/testing/perf-artifacts/0.73/w10-confirmation-36839197349"
+actions_retention_days = 30
+archive_before_tag = true
+hosted_artifact_only_allowed = false
+force_push_allowed = false
+
+# Keep normal-sized original provider archives byte-for-byte in the evidence
+# branch. A blob above this limit goes to versioned immutable storage; the branch
+# still carries its immutable URI, object version/ETag, byte length and SHA-256.
+max_git_blob_bytes = 67108864
+oversize_storage_requires_immutable_object_version = true
+oversize_storage_requires_sha256 = true
+
+# Every long-run attempt remains append-only. A rejected or interrupted run is
+# evidence about orchestration and must not disappear when the final run passes.
+required_long_run_attempt_runs = [
+  36278780653,
+  36404123541,
+  36404461429,
+  36457014494,
+  36532416869,
+  36622527013,
+  36839197349,
+]
+
+required_archive_files = [
+  "README.md",
+  "SHA256SUMS",
+  "artifact-manifest.tsv",
+  "verification/verification-receipt.toml",
+]
+
+required_verification = [
+  "provider_download_sha256",
+  "nested_sha256",
+  "i73_c73_continuation_handoff",
+  "identity_guards",
+  "workload_guards",
+  "duration_guards",
+  "estimator_and_threshold_guards",
+  "secret_and_path_allowlist",
+]
+
+release_note_path = "docs/releases/0.73.0.md"
+release_note_branch_link_required = true
+release_note_commit_permalink_required_for_shipped = true
+release_note_manifest_link_required_for_shipped = true
+release_note_sha256sums_link_required_for_shipped = true
+
+creation_rule = "Create and push the archive branch only after run 36839197349 completes and all downloaded artifacts, nested hashes, continuation handoff and guards verify independently. A failed run remains archived but cannot materialize the final release archive or authorize a tag."
+immutability_rule = "Never force-push, rewrite or delete published archive commits. Corrections are append-only commits that identify the superseded receipt without removing it."
+publication_rule = "Before v0.73.0 is tagged, the release evidence must record the archive branch, its immutable full commit SHA, manifest SHA-256 and permanent commit-pinned URLs. The shipped release note must link both the browseable branch and the immutable commit, manifest and SHA256SUMS."

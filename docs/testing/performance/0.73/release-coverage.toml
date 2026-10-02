@@ -82,5 +82,5 @@ tests = ["w10_long_run_v2_qualification_cannot_open_final_release_or_hide_a_fail
 [[work_item]]
 id = "W11"
 disposition = "in-progress"
-sources = ["docs/testing/performance/0.73/release-coverage.toml", "docs/testing/release-evidence/0.73.toml", "docs/testing/canary-registry-0.73.json"]
-tests = ["release_073_governance_contract_is_fail_closed", "canary_release_073_rejects_missing_work_item_evidence"]
+sources = ["docs/testing/performance/0.73/release-coverage.toml", "docs/testing/performance/0.73/release-archive-contract.toml", "docs/testing/release-evidence/0.73.toml", "docs/testing/canary-registry-0.73.json"]
+tests = ["release_073_governance_contract_is_fail_closed", "w11_archive_policy_pins_durable_branch_and_release_links", "w11_archive_policy_rejects_mutable_or_expiring_only_evidence", "canary_release_073_rejects_missing_work_item_evidence"]

@@ -546,3 +546,20 @@ as two sequential jobs under one approval and host lease. A checksummed I73 cont
 verified before C73 may start; only the C73 job can seal the complete pair. Each job stays below
 29 hours, while product identities, order, workload, 24-hour duration, estimator, seed and
 thresholds remain frozen. No replacement run is automatic or authorized by this correction.
+
+## Durable W11 release archive
+
+GitHub Actions artifacts are a 30-day staging copy, not the permanent Release 0.73 record. The
+machine-readable policy is `release-archive-contract.toml`. If replacement confirmation run
+`36839197349` passes independent verification, W11 creates the append-only branch
+`evidence/0.73/w10-confirmation` and publishes the run-bound archive under
+`docs/testing/perf-artifacts/0.73/w10-confirmation-36839197349/`. The branch retains original
+normal-sized provider archives, all accepted/rejected/interrupted attempt records, `SHA256SUMS`, an
+artifact manifest, sanitized replay inputs and a verification receipt for the outer downloads,
+nested hashes, I73-to-C73 handoff and frozen guards. Oversize originals use versioned immutable
+object storage and remain bound from the branch by permanent object identity and SHA-256.
+
+The archive branch is created only after the final artifact verifies and is never force-pushed.
+Before tagging, release evidence records its full commit SHA and manifest digest. The shipped
+release note must retain both the browseable branch link and commit-pinned links to the archive,
+manifest and `SHA256SUMS`; a moving branch URL or expiring Actions URL alone is insufficient.

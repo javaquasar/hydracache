@@ -42,12 +42,147 @@ fn release_canary_enabled() -> Option<String> {
         .filter(|value| value.starts_with("PERF73-"))
 }
 
+fn release_archive_contract() -> TomlValue {
+    toml::from_str(
+        &fs::read_to_string(
+            root().join("docs/testing/performance/0.73/release-archive-contract.toml"),
+        )
+        .expect("0.73 release archive contract"),
+    )
+    .expect("valid 0.73 release archive contract TOML")
+}
+
+fn release_archive_policy_problems(contract: &TomlValue, release_note: &str) -> Vec<String> {
+    let mut problems = Vec::new();
+    let expect_text = |key: &str, expected: &str, problems: &mut Vec<String>| {
+        if contract[key].as_str() != Some(expected) {
+            problems.push(format!("{key} must be {expected}"));
+        }
+    };
+    let expect_bool = |key: &str, expected: bool, problems: &mut Vec<String>| {
+        if contract[key].as_bool() != Some(expected) {
+            problems.push(format!("{key} must be {expected}"));
+        }
+    };
+
+    if contract["schema_version"].as_integer() != Some(1) {
+        problems.push("schema_version must be 1".to_owned());
+    }
+    expect_text("release", "0.73.0", &mut problems);
+    expect_text(
+        "archive_branch",
+        "evidence/0.73/w10-confirmation",
+        &mut problems,
+    );
+    expect_text(
+        "archive_branch_url",
+        "https://github.com/javaquasar/hydracache/tree/evidence/0.73/w10-confirmation",
+        &mut problems,
+    );
+    expect_text(
+        "archive_root",
+        "docs/testing/perf-artifacts/0.73/w10-confirmation-36839197349",
+        &mut problems,
+    );
+    if contract["source_confirmation_run"].as_integer() != Some(36_839_197_349) {
+        problems.push("source_confirmation_run must bind the authorized replacement".to_owned());
+    }
+    if contract["actions_retention_days"].as_integer() != Some(30) {
+        problems.push("Actions staging retention must remain explicit".to_owned());
+    }
+    if contract["max_git_blob_bytes"].as_integer() != Some(67_108_864) {
+        problems.push("Git blob ceiling must remain bounded".to_owned());
+    }
+    expect_bool("archive_before_tag", true, &mut problems);
+    expect_bool("hosted_artifact_only_allowed", false, &mut problems);
+    expect_bool("force_push_allowed", false, &mut problems);
+    expect_bool(
+        "oversize_storage_requires_immutable_object_version",
+        true,
+        &mut problems,
+    );
+    expect_bool("oversize_storage_requires_sha256", true, &mut problems);
+    expect_bool("release_note_branch_link_required", true, &mut problems);
+    expect_bool(
+        "release_note_commit_permalink_required_for_shipped",
+        true,
+        &mut problems,
+    );
+    expect_bool(
+        "release_note_manifest_link_required_for_shipped",
+        true,
+        &mut problems,
+    );
+    expect_bool(
+        "release_note_sha256sums_link_required_for_shipped",
+        true,
+        &mut problems,
+    );
+
+    let attempts = contract["required_long_run_attempt_runs"]
+        .as_array()
+        .map(|values| {
+            values
+                .iter()
+                .filter_map(TomlValue::as_integer)
+                .collect::<Vec<_>>()
+        })
+        .unwrap_or_default();
+    let expected_attempts = vec![
+        36_278_780_653,
+        36_404_123_541,
+        36_404_461_429,
+        36_457_014_494,
+        36_532_416_869,
+        36_622_527_013,
+        36_839_197_349,
+    ];
+    if attempts != expected_attempts {
+        problems.push("all long-run attempts must remain append-only".to_owned());
+    }
+
+    let required_files = contract["required_archive_files"]
+        .as_array()
+        .map(|values| {
+            values
+                .iter()
+                .filter_map(TomlValue::as_str)
+                .collect::<Vec<_>>()
+        })
+        .unwrap_or_default();
+    for required in [
+        "README.md",
+        "SHA256SUMS",
+        "artifact-manifest.tsv",
+        "verification/verification-receipt.toml",
+    ] {
+        if !required_files.contains(&required) {
+            problems.push(format!("archive must require {required}"));
+        }
+    }
+
+    for marker in [
+        "## Evidence archive",
+        "https://github.com/javaquasar/hydracache/tree/evidence/0.73/w10-confirmation",
+        "commit-pinned links",
+        "artifact-manifest.tsv",
+        "SHA256SUMS",
+    ] {
+        if !release_note.contains(marker) {
+            problems.push(format!("release note must retain marker {marker}"));
+        }
+    }
+    problems
+}
+
 #[test]
 fn release_073_governance_contract_is_fail_closed() {
     for path in [
         "docs/testing/canary-registry-0.73.json",
         "docs/testing/release-evidence/0.73.toml",
         "docs/testing/performance/0.73/release-coverage.toml",
+        "docs/testing/performance/0.73/release-archive-contract.toml",
+        "docs/releases/0.73.0.md",
         "docs/testing/performance/0.73/w10-long-run-v2-qualification-passed-36532416869.toml",
         "docs/testing/perf-artifacts/0.73/long-run-qualification-36532416869/manifest.json",
     ] {
@@ -62,6 +197,38 @@ fn release_073_governance_contract_is_fail_closed() {
             .is_empty(),
         "the checked-in 0.73 evidence chain must remain internally consistent"
     );
+}
+
+#[test]
+fn w11_archive_policy_pins_durable_branch_and_release_links() {
+    let release_note =
+        fs::read_to_string(root().join("docs/releases/0.73.0.md")).expect("0.73 release note");
+    let problems = release_archive_policy_problems(&release_archive_contract(), &release_note);
+    assert!(
+        problems.is_empty(),
+        "invalid W11 archive policy: {problems:?}"
+    );
+}
+
+#[test]
+fn w11_archive_policy_rejects_mutable_or_expiring_only_evidence() {
+    let release_note =
+        fs::read_to_string(root().join("docs/releases/0.73.0.md")).expect("0.73 release note");
+    let contract = release_archive_contract();
+
+    let mut mutable_branch = contract.clone();
+    mutable_branch["force_push_allowed"] = TomlValue::Boolean(true);
+    assert!(!release_archive_policy_problems(&mutable_branch, &release_note).is_empty());
+
+    let mut hosted_only = contract.clone();
+    hosted_only["hosted_artifact_only_allowed"] = TomlValue::Boolean(true);
+    assert!(!release_archive_policy_problems(&hosted_only, &release_note).is_empty());
+
+    let mut no_commit_link = contract;
+    no_commit_link["release_note_commit_permalink_required_for_shipped"] =
+        TomlValue::Boolean(false);
+    assert!(!release_archive_policy_problems(&no_commit_link, &release_note).is_empty());
+    assert!(!release_archive_policy_problems(&no_commit_link, "").is_empty());
 }
 
 #[test]
