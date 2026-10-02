@@ -1,0 +1,39 @@
+{
+  "schema_version": 1,
+  "release": "0.74",
+  "tier": "local-quick-linux-sanity",
+  "promotable": false,
+  "numerical_claim_eligible": false,
+  "source_sha": "58fefe04b8ab4e295edfe83a5cd2f1810c7b8f7c",
+  "started_at_utc": "2026-10-02T08:29:00Z",
+  "environment": {
+    "runtime": "WSL2 Ubuntu",
+    "kernel": "6.6.87.2-microsoft-standard-WSL2",
+    "architecture": "x86_64",
+    "rustc": "1.98.0-nightly (f46ec5218 2026-06-30)",
+    "cargo": "1.98.0-nightly (a335d47ff 2026-06-26)",
+    "target_directory": "/tmp/hydracache-074-target",
+    "perf_available": false,
+    "strace_available": false
+  },
+  "commands": [
+    {
+      "command": "CARGO_TARGET_DIR=/tmp/hydracache-074-target cargo test -p hydracache-client-transport-axum --test native_hot_path_074",
+      "passed": 3,
+      "failed": 0,
+      "ignored": 0
+    },
+    {
+      "command": "CARGO_TARGET_DIR=/tmp/hydracache-074-target cargo test -p hydracache-redis-compat --test resp_transport_adversarial_074",
+      "passed": 4,
+      "failed": 0,
+      "ignored": 0
+    }
+  ],
+  "limitations": [
+    "WSL2 is not an admitted dedicated qualification host",
+    "the WSL toolchain is newer than the frozen release toolchain",
+    "perf and strace are unavailable in this Ubuntu installation",
+    "no throughput or syscall claim may be derived from this receipt"
+  ]
+}

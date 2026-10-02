@@ -29,6 +29,10 @@ The standalone `tools/resp-stage-profile-074` tool isolates decode, translation-
 command/translation and response/encode allocation owners. Its control stages permit only local
 incremental attribution; they are not interchangeable with end-to-end product receipts.
 
+The focused WSL2 portability result is recorded in
+[`local-linux-sanity.md`](local-linux-sanity.md). It is a non-promotable `local-quick` sub-tier and
+does not substitute for the admitted Linux release host.
+
 Numerical receipts must never be hand-edited into claims. Every receipt binds the trace, payload
 and key corpora, seed, warmup, duration, offered schedule, concurrency, pipeline depth, security,
 persistence and final-state digest. Errors, timeouts, rejections, late operations and incomplete
