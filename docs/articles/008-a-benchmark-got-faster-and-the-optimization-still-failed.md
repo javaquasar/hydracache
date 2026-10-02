@@ -379,6 +379,64 @@ Four attractive directions did not earn more implementation work in this cycle:
 This ranking is more valuable than a bag of speculative patches. It says where a future gain is
 likely to come from and which ideas should stay closed until the workload changes.
 
+## What we completed while waiting for 0.73
+
+Waiting for the predecessor confirmation did not justify another speculative product patch. It
+did leave seven useful local tasks, all of which could be completed without touching the frozen
+0.73 candidate or expensive infrastructure.
+
+First, the local measurement harness now enforces five independent ABBA pairs, mandatory warm-up,
+process affinity, process priority and a frozen background-CPU ceiling. Same-binary variation is
+used to derive a minimum detectable effect; an observed delta below that value is inconclusive.
+The first real run demonstrated the fail-loud behavior: all ten processes completed and placement
+was applied, but background CPU was 28.91-69.53% against a 20% ceiling. The series was invalidated,
+no A/A number was accepted, and the ceiling was not widened after seeing the result.
+
+Second, the native profiler now measures the previously open local owners. In the c8 GET receipt,
+audit context copied 26.89 bytes per operation, request/expiry clocks consumed 364.26 observed
+nanoseconds per operation, and canonical store-key construction copied 66 identity bytes. An
+eight-item Batch GET copied 528 canonical key bytes but still used one dispatch and one store lock
+for the whole batch. This last result matters: the native client surface already has a vectorized
+batch core, so building another one would not remove the measured owner.
+
+The profiler also counts the `SeqCst` operations by purpose. A GET performs one dispatch-counter
+operation, two monotonic clock fences and one expiry-gate operation. Batch PUT replaces the second
+clock fence with a mutation-counter operation. These counts establish frequency, not the cost of a
+different memory ordering; no atomic was relaxed without a happens-before proof.
+
+Third, adversarial transport coverage no longer depends on the reverted coalescing candidate. A
+retained baseline test stream fragments input to one byte, forces `Pending`, performs one-byte
+writes, blocks one connection behind a closed write gate, disconnects during a partial reply and
+returns a 64-KiB value through repeated short writes. The blocked connection applies backpressure
+after its first committed command while a second connection continues to make progress.
+
+Fourth, ADR-0023 records the two W8 architecture boundaries. Reusable verification requires an
+authoritative policy generation whose publication ordering is part of the isolation API;
+connection lifetime is not revocation. A zero-copy native GET must be additive or versioned around
+immutable `Bytes`; the existing `Vec<u8>` response cannot silently change ownership. The ADR is a
+proposal and does not resurrect W8a or authorize W8b.
+
+Fifth, the focused tests were repeated under local Ubuntu WSL2 with a separate target directory.
+The native attribution suite passed 3/3 and the adversarial transport suite passed 4/4. WSL2 had no
+`perf` or `strace`, and its nightly toolchain did not match the frozen release toolchain, so this is
+portability evidence only—not a Linux performance or syscall claim.
+
+Sixth, W11 now has a content-addressed qualification manifest and a dry-run validator. It checks
+phase order, workload-contract hashes, same-box Redis requirements and artifact naming while
+keeping every expensive phase `not-run`. The tool deliberately has no execution mode until the
+0.73 tag, exact 0.74 candidate, admitted host, Redis binary identities and explicit authorization
+are available.
+
+Finally, the semantic suite gained concurrent batch, expiry and authorization regressions. Batch
+readers observe either all old values or all new values, never a torn mix. Sixteen simultaneous
+readers remove a due batch exactly once and see only misses. Authorized and forged callers sharing
+the same client id cannot leak tenant authorization between requests; every forged call is denied
+and audited.
+
+These additions do not change the release conclusion. They improve the ability to reject a noisy
+series, locate a native owner, reproduce a transport edge case and start qualification safely. The
+product path still contains no accepted 0.74 optimization.
+
 ## The practical rule
 
 For every performance candidate, preserve four separate statements:
