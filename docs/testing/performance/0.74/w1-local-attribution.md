@@ -493,3 +493,51 @@ weaken native guards. W6b remains unauthorized.
 
 W0, kernel-syscall attribution, final instrumentation overhead, HC/1 and HC/2 process controls,
 Redis same-box comparison, persistence cells, and all expensive release qualification remain open.
+
+## Waiting-for-0.73 local owner pass
+
+The v6 native profiler added counters for the remaining local ledger owners without enabling a
+product optimization. Four exact-result, instrumentation-on c8 scenarios were run from source
+`f11cdc579242ae5b79778e5ed8512ccfd8d4b34e`. They are single local observations, not comparative
+claims:
+
+| Scenario | CPU ns/op | Gross alloc B/op | Audit clone B/op | Clock ns/op | Canonical key bytes/op | Store locks/op |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| GET | 10,781.25 | 545.64 | 26.89 | 364.26 | 66 | 1 |
+| Batch GET, 8 items | 20,312.50 | 4,476.28 | 26.78 | 294.39 | 528 | 1 |
+| Batch PUT, 8 items | 35,937.50 | 9,658.28 | 26.78 | 197.82 | 528 | 1.00002 |
+| Expired GET | 15,625.00 | 578.26 | 25.86 | 205.82 | 66 | 1 |
+
+N1 audit metadata is approximately 26-27 copied bytes per logical operation. N2 clock work is one
+read/fence for batch PUT and two for GET, consuming 198-364 observed nanoseconds per logical
+operation. Neither reaches the preregistered 20% isolated CPU/allocation floor in these cells.
+
+N4 now has exact copy counts: the canonical `(tenant, namespace, key)` owner materializes 66 bytes
+for a single key and 528 bytes for an eight-key request. Those byte counts are not interchangeable
+with allocator bytes, but even treating them as an optimistic allocation ceiling leaves the owner
+below 20% of the observed gross allocation in GET and Batch GET. ADR-0022 therefore remains
+unchanged.
+
+N7 found an important existing property: `ClientSurfaceState` Batch GET and Batch PUT already
+perform one dispatch, one identity/protocol validation and one store-lock acquisition per eight
+items. The v6 receipts reconcile 50,000 batch operations, 400,000 items and 50,000 store-lock
+acquisitions. A new native batch core would duplicate existing behavior; RESP translation and
+event costs remain separate owners.
+
+N8 counts, rather than estimates, the sequentially consistent operations on the common path. GET
+and Batch GET execute one dispatch counter, two clock-floor fences and one expiry-gate load per
+logical operation. Batch PUT executes one dispatch counter, one clock fence, roughly one expiry
+gate operation and one mutation counter. Their isolated time is still open; ordering is not relaxed
+without a happens-before proof.
+
+N9 is workload-specific. The expired-GET receipt removed 8,000 expired entries directly, one per
+operation, with no background sweep claim. It used 3,527.49 store-lock hold ns/op versus 1,490.07
+for live GET, confirming an expiration-specific cleanup owner but not authorizing a normal-hit fast
+path. The new concurrency regression separately proves that a due batch is swept once under 16
+simultaneous readers.
+
+The first five-pair same-binary run under the preregistered ABBA harness was invalidated before
+analysis. Affinity and above-normal priority were applied and all ten processes succeeded, but the
+500-ms pre-run samples observed 28.91-69.53% machine CPU against the frozen 20% ceiling. No MDE or
+A/A performance number was accepted, and the threshold was not changed. The compact receipt is
+`local-runs/aa-v1-invalidated-background-20261002.json`.

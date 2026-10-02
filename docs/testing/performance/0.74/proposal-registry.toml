@@ -81,11 +81,13 @@ primary_metric = "proposal-specific"
 [[native_investigations]]
 id = "N1"
 owner = "audit-metadata"
-decision = "unmeasured"
+decision = "measured-below-local-floor"
+evidence = "local-runs/native-owners-v6-*.json"
 [[native_investigations]]
 id = "N2"
 owner = "clock-and-expiry"
-decision = "unmeasured"
+decision = "measured-below-local-floor"
+evidence = "local-runs/native-owners-v6-*.json"
 [[native_investigations]]
 id = "N3"
 owner = "global-store-lock"
@@ -93,7 +95,8 @@ decision = "preliminary-local-contention-observed"
 [[native_investigations]]
 id = "N4"
 owner = "structured-key-ownership"
-decision = "unmeasured"
+decision = "measured-below-local-floor"
+evidence = "local-runs/native-owners-v6-*.json"
 [[native_investigations]]
 id = "N5"
 owner = "identity-validation"
@@ -105,15 +108,18 @@ decision = "raw-zero-copy-client-get-copy-blocked-by-stable-protocol-owner"
 [[native_investigations]]
 id = "N7"
 owner = "multi-key-dispatch"
-decision = "unmeasured"
+decision = "measured-existing-batch-core-one-lock-per-request"
+evidence = "local-runs/native-owners-v6-batch-*.json"
 [[native_investigations]]
 id = "N8"
 owner = "diagnostic-atomics"
-decision = "unmeasured"
+decision = "measured-frequency-cost-open"
+evidence = "local-runs/native-owners-v6-*.json"
 [[native_investigations]]
 id = "N9"
 owner = "expired-entry-cleanup"
-decision = "unmeasured"
+decision = "measured-expiry-specific-owner-normal-hit-unaffected"
+evidence = "local-runs/native-owners-v6-expired-get-c8.json"
 [[native_investigations]]
 id = "N10"
 owner = "embedded-cache-stages"

@@ -1,0 +1,36 @@
+{
+  "schema_version": 1,
+  "release": "0.74",
+  "profile_id": "local-pairing-074-v1",
+  "mode": "aa",
+  "promotable": false,
+  "numerical_claim_eligible": false,
+  "source_sha": "f11cdc579242ae5b79778e5ed8512ccfd8d4b34e",
+  "binary_sha256": "ee696acabecdfc877d5ccf0a5ffebd0e5b50581de638953e7fcc176febd62aec",
+  "pairs": 5,
+  "order": [
+    "baseline_candidate",
+    "candidate_baseline",
+    "baseline_candidate",
+    "candidate_baseline",
+    "baseline_candidate"
+  ],
+  "all_processes_succeeded": true,
+  "affinity_applied_to_all": true,
+  "priority_applied_to_all": true,
+  "background_cpu_ceiling_percent": 20.0,
+  "background_cpu_percent": [
+    69.53125,
+    67.578125,
+    33.59375,
+    28.90625,
+    29.6875,
+    40.625,
+    38.28125,
+    29.0196078431373,
+    30.9160305343511,
+    30.0395256916996
+  ],
+  "classification": "invalidated",
+  "reason": "Every preregistered A/A attempt started above the frozen background CPU ceiling; no A/A metric or minimum detectable effect is admissible."
+}
