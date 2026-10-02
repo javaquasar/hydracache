@@ -11,6 +11,7 @@ const MATRIX: &str = "scenario-matrix.toml";
 const STATISTICS: &str = "statistics.toml";
 const REGISTRY: &str = "proposal-registry.toml";
 const HOST: &str = "host-profile.toml";
+const LOCAL_HARNESS: &str = "local-harness.toml";
 const RELEASE: &str = "0.74";
 const FROZEN_C73: &str = "16d2e98b6cc9e22d9ccf95eb26fe28bbbcf80f2b";
 
@@ -45,12 +46,14 @@ pub fn check_at_root(root: &Path, receipt: Option<&Path>) -> Result<Vec<String>,
     let statistics = read_toml(&evidence.join(STATISTICS))?;
     let registry = read_toml(&evidence.join(REGISTRY))?;
     let host = read_toml(&evidence.join(HOST))?;
+    let local_harness = read_toml(&evidence.join(LOCAL_HARNESS))?;
     let mut problems = Vec::new();
     problems.extend(check_identities(&identities));
     problems.extend(check_matrix(&matrix));
     problems.extend(check_statistics(&statistics));
     problems.extend(check_registry(&registry));
     problems.extend(check_host(&host));
+    problems.extend(check_local_harness(&local_harness));
     if let Some(path) = receipt {
         let path = if path.is_absolute() {
             path.to_owned()
@@ -368,6 +371,73 @@ pub fn check_host(value: &TomlValue) -> Vec<String> {
         "redis_identity_match_required",
     ] {
         expect_bool(release, field, true, &mut problems);
+    }
+    problems
+}
+
+pub fn check_local_harness(value: &TomlValue) -> Vec<String> {
+    let mut problems = common(value, "local-harness");
+    expect_str(value, "contract_id", "local-pairing-074-v1", &mut problems);
+    expect_str(value, "state", "preregistered-local", &mut problems);
+    expect_bool(value, "promotable", false, &mut problems);
+    expect_i64(value, "pairs", 5, &mut problems);
+    expect_str(value, "order", "abba-counterbalanced-v1", &mut problems);
+    expect_i64(value, "same_binary_pairs", 5, &mut problems);
+    for field in [
+        "warmup_required",
+        "independent_processes",
+        "cpu_affinity_required",
+        "priority_required",
+    ] {
+        expect_bool(value, field, true, &mut problems);
+    }
+    expect_i64(value, "quiet_sample_milliseconds", 500, &mut problems);
+    expect_i64(value, "maximum_failed_attempts", 0, &mut problems);
+    expect_f64(value, "maximum_background_cpu_percent", 20.0, &mut problems);
+    let noise = table(value, "noise", &mut problems);
+    expect_f64(noise, "percentile", 0.95, &mut problems);
+    expect_f64(noise, "minimum_goodput_effect", 0.02, &mut problems);
+    expect_f64(
+        noise,
+        "minimum_cpu_per_operation_effect",
+        0.03,
+        &mut problems,
+    );
+    expect_f64(noise, "minimum_p99_effect", 0.03, &mut problems);
+    expect_f64(noise, "noise_multiplier", 2.0, &mut problems);
+    expect_str(
+        noise,
+        "classification",
+        "inconclusive-below-aa-derived-mde",
+        &mut problems,
+    );
+    let receipt = table(value, "receipt", &mut problems);
+    let identities = string_array(receipt, "required_identity_fields");
+    for field in [
+        "release",
+        "surface",
+        "operation",
+        "operations",
+        "warmup_operations",
+        "concurrency",
+        "payload_bytes",
+        "key_space",
+        "seed",
+        "workload_sha256",
+    ] {
+        if !identities.contains(field) {
+            problems.push(format!("local harness is missing identity field {field}"));
+        }
+    }
+    let metrics = string_array(receipt, "required_metrics");
+    for metric in [
+        "goodput_operations_per_second",
+        "cpu_nanoseconds_per_operation",
+        "latency.p99_us",
+    ] {
+        if !metrics.contains(metric) {
+            problems.push(format!("local harness is missing metric {metric}"));
+        }
     }
     problems
 }

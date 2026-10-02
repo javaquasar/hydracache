@@ -33,3 +33,14 @@ Numerical receipts must never be hand-edited into claims. Every receipt binds th
 and key corpora, seed, warmup, duration, offered schedule, concurrency, pipeline depth, security,
 persistence and final-state digest. Errors, timeouts, rejections, late operations and incomplete
 operations stay in the goodput denominator.
+
+Local paired work uses `local-harness.toml` and
+`scripts/perf/performance_local_pairing_074.py`. The runner fixes a five-pair ABBA order, requires
+warm-up, applies affinity and process priority, rejects attempts that start above the frozen
+background-CPU ceiling, and derives a minimum detectable effect from same-binary A/A deltas. Its
+output is always non-promotable; a result below that A/A-derived floor is `inconclusive`, not a
+product win. Unit-test the runner with:
+
+```text
+python -m unittest scripts/perf/test_performance_local_pairing_074.py
+```

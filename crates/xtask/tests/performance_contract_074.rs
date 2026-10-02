@@ -107,10 +107,26 @@ fn checked_in_w0_contract_is_valid_and_non_promotable() {
     );
     assert!(xtask::performance_contract_074::check_host(&contract("host-profile.toml")).is_empty());
     assert!(
+        xtask::performance_contract_074::check_local_harness(&contract("local-harness.toml"))
+            .is_empty()
+    );
+    assert!(
         xtask::performance_contract_074::check_at_root(Path::new(&root()), None)
             .unwrap()
             .is_empty()
     );
+}
+
+#[test]
+fn local_harness_freezes_placement_abba_and_noise_policy() {
+    let mut value = contract("local-harness.toml");
+    value["cpu_affinity_required"] = toml::Value::Boolean(false);
+    value["pairs"] = toml::Value::Integer(3);
+    value["noise"]["minimum_p99_effect"] = toml::Value::Float(0.0);
+    let problems = xtask::performance_contract_074::check_local_harness(&value);
+    assert!(has(&problems, "cpu_affinity_required"));
+    assert!(has(&problems, "pairs"));
+    assert!(has(&problems, "minimum_p99_effect"));
 }
 
 #[test]

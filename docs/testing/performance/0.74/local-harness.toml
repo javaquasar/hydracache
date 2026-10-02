@@ -1,0 +1,43 @@
+schema_version = 1
+release = "0.74"
+contract_id = "local-pairing-074-v1"
+state = "preregistered-local"
+promotable = false
+pairs = 5
+order = "abba-counterbalanced-v1"
+same_binary_pairs = 5
+warmup_required = true
+independent_processes = true
+cpu_affinity_required = true
+priority_required = true
+quiet_sample_milliseconds = 500
+maximum_background_cpu_percent = 20.0
+maximum_failed_attempts = 0
+
+[noise]
+percentile = 0.95
+minimum_goodput_effect = 0.02
+minimum_cpu_per_operation_effect = 0.03
+minimum_p99_effect = 0.03
+noise_multiplier = 2.0
+classification = "inconclusive-below-aa-derived-mde"
+
+[receipt]
+required_identity_fields = [
+  "release",
+  "surface",
+  "operation",
+  "operations",
+  "warmup_operations",
+  "concurrency",
+  "payload_bytes",
+  "key_space",
+  "seed",
+  "workload_sha256",
+]
+optional_identity_fields = ["pipeline", "batch_size", "transport"]
+required_metrics = [
+  "goodput_operations_per_second",
+  "cpu_nanoseconds_per_operation",
+  "latency.p99_us",
+]
