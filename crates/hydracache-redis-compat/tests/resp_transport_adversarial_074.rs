@@ -1,0 +1,300 @@
+use std::io;
+use std::pin::Pin;
+use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::{Arc, Mutex};
+use std::task::{Context, Poll, Waker};
+use std::time::Duration;
+
+use hydracache_client_transport_axum::{ClientSurfaceLimits, ClientSurfaceState};
+use hydracache_redis_compat::{RedisListenerConfig, RedisRespServer};
+use tokio::io::{AsyncRead, AsyncReadExt, AsyncWrite, AsyncWriteExt, ReadBuf};
+
+#[tokio::test]
+async fn fragmented_frames_short_writes_and_pending_flush_preserve_pipeline() {
+    let server = listener();
+    let input = b"*3\r\n$3\r\nSET\r\n$1\r\nk\r\n$1\r\nv\r\n\
+                  *2\r\n$3\r\nGET\r\n$1\r\nk\r\n\
+                  *1\r\n$4\r\nQUIT\r\n";
+    let output = Arc::new(Mutex::new(Vec::new()));
+    let io = AdversarialIo::new(input, Arc::clone(&output))
+        .read_chunk(1)
+        .write_chunk(2)
+        .pending_writes(7)
+        .pending_flushes(3);
+
+    tokio::time::timeout(Duration::from_secs(2), server.serve_connection(io))
+        .await
+        .expect("fragmented connection must not hang")
+        .expect("fragmented connection must complete");
+
+    assert_eq!(&*output.lock().unwrap(), b"+OK\r\n$1\r\nv\r\n+OK\r\n");
+    assert_eq!(server.metrics().commands, 3);
+}
+
+#[tokio::test]
+async fn closed_write_gate_backpressures_one_connection_without_starving_another() {
+    let server = Arc::new(listener());
+    let gate = Arc::new(WriteGate::closed());
+    let output = Arc::new(Mutex::new(Vec::new()));
+    let input = b"*3\r\n$3\r\nSET\r\n$1\r\na\r\n$1\r\n1\r\n\
+                  *3\r\n$3\r\nSET\r\n$1\r\nb\r\n$1\r\n2\r\n\
+                  *1\r\n$4\r\nQUIT\r\n";
+    let io = AdversarialIo::new(input, Arc::clone(&output)).gate(Arc::clone(&gate));
+    let blocked_server = Arc::clone(&server);
+    let blocked = tokio::spawn(async move { blocked_server.serve_connection(io).await });
+
+    tokio::time::timeout(Duration::from_secs(1), async {
+        while server.state().state_mutations() == 0 {
+            tokio::task::yield_now().await;
+        }
+    })
+    .await
+    .expect("first mutation should reach the blocked response boundary");
+    assert_eq!(server.state().state_mutations(), 1);
+    assert_eq!(server.metrics().commands, 0);
+
+    let other = exchange(&server, b"*1\r\n$4\r\nPING\r\n*1\r\n$4\r\nQUIT\r\n").await;
+    assert_eq!(other, b"+PONG\r\n+OK\r\n");
+
+    gate.open();
+    tokio::time::timeout(Duration::from_secs(2), blocked)
+        .await
+        .expect("released slow reader must finish")
+        .expect("blocked task must not panic")
+        .expect("released connection must complete");
+    assert_eq!(&*output.lock().unwrap(), b"+OK\r\n+OK\r\n+OK\r\n");
+    assert_eq!(server.state().state_mutations(), 2);
+}
+
+#[tokio::test]
+async fn disconnect_during_partial_reply_does_not_poison_committed_state_or_reconnect() {
+    let server = listener();
+    let output = Arc::new(Mutex::new(Vec::new()));
+    let input = b"*3\r\n$3\r\nSET\r\n$1\r\nk\r\n$1\r\nv\r\n";
+    let io = AdversarialIo::new(input, Arc::clone(&output))
+        .write_chunk(1)
+        .disconnect_after(2);
+
+    let result = tokio::time::timeout(Duration::from_secs(1), server.serve_connection(io))
+        .await
+        .expect("disconnect must be observed promptly");
+    assert!(result.is_err(), "partial reply disconnect must fail loudly");
+    assert_eq!(server.state().state_mutations(), 1);
+    assert_eq!(&*output.lock().unwrap(), b"+O");
+
+    let retry = exchange(
+        &server,
+        b"*2\r\n$3\r\nGET\r\n$1\r\nk\r\n*1\r\n$4\r\nQUIT\r\n",
+    )
+    .await;
+    assert_eq!(retry, b"$1\r\nv\r\n+OK\r\n");
+}
+
+#[tokio::test]
+async fn large_reply_survives_repeated_pending_and_one_byte_writes() {
+    let server = listener();
+    let payload = vec![b'x'; 64 * 1024];
+    let mut input = format!("*3\r\n$3\r\nSET\r\n$3\r\nbig\r\n${}\r\n", payload.len()).into_bytes();
+    input.extend_from_slice(&payload);
+    input.extend_from_slice(b"\r\n*2\r\n$3\r\nGET\r\n$3\r\nbig\r\n*1\r\n$4\r\nQUIT\r\n");
+    let output = Arc::new(Mutex::new(Vec::new()));
+    let io = AdversarialIo::new(&input, Arc::clone(&output))
+        .read_chunk(127)
+        .write_chunk(1)
+        .pending_writes(11)
+        .pending_flushes(5);
+
+    tokio::time::timeout(Duration::from_secs(5), server.serve_connection(io))
+        .await
+        .expect("large short-write response must not hang")
+        .expect("large short-write response must complete");
+    let output = output.lock().unwrap();
+    assert!(output.starts_with(b"+OK\r\n$65536\r\n"));
+    assert!(output.ends_with(b"\r\n+OK\r\n"));
+    assert_eq!(server.state().state_mutations(), 1);
+}
+
+fn listener() -> RedisRespServer {
+    RedisRespServer::new(
+        Arc::new(ClientSurfaceState::new(ClientSurfaceLimits::default()).unwrap()),
+        RedisListenerConfig::default(),
+    )
+    .unwrap()
+}
+
+async fn exchange(server: &RedisRespServer, input: &'static [u8]) -> Vec<u8> {
+    let (mut client, server_io) = tokio::io::duplex(4096);
+    let serve = async { server.serve_connection(server_io).await.unwrap() };
+    let client = async {
+        client.write_all(input).await.unwrap();
+        let mut output = Vec::new();
+        client.read_to_end(&mut output).await.unwrap();
+        output
+    };
+    let (_, output) = tokio::join!(serve, client);
+    output
+}
+
+struct WriteGate {
+    open: AtomicBool,
+    waker: Mutex<Option<Waker>>,
+}
+
+impl WriteGate {
+    fn closed() -> Self {
+        Self {
+            open: AtomicBool::new(false),
+            waker: Mutex::new(None),
+        }
+    }
+
+    fn open(&self) {
+        self.open.store(true, Ordering::Release);
+        if let Some(waker) = self.waker.lock().unwrap().take() {
+            waker.wake();
+        }
+    }
+
+    fn poll(&self, cx: &Context<'_>) -> bool {
+        if self.open.load(Ordering::Acquire) {
+            true
+        } else {
+            *self.waker.lock().unwrap() = Some(cx.waker().clone());
+            false
+        }
+    }
+}
+
+struct AdversarialIo {
+    input: Vec<u8>,
+    read_offset: usize,
+    read_chunk: usize,
+    output: Arc<Mutex<Vec<u8>>>,
+    write_chunk: usize,
+    pending_writes: usize,
+    pending_flushes: usize,
+    disconnect_after: Option<usize>,
+    gate: Option<Arc<WriteGate>>,
+}
+
+impl AdversarialIo {
+    fn new(input: &[u8], output: Arc<Mutex<Vec<u8>>>) -> Self {
+        Self {
+            input: input.to_vec(),
+            read_offset: 0,
+            read_chunk: usize::MAX,
+            output,
+            write_chunk: usize::MAX,
+            pending_writes: 0,
+            pending_flushes: 0,
+            disconnect_after: None,
+            gate: None,
+        }
+    }
+
+    fn read_chunk(mut self, bytes: usize) -> Self {
+        self.read_chunk = bytes;
+        self
+    }
+
+    fn write_chunk(mut self, bytes: usize) -> Self {
+        self.write_chunk = bytes;
+        self
+    }
+
+    fn pending_writes(mut self, polls: usize) -> Self {
+        self.pending_writes = polls;
+        self
+    }
+
+    fn pending_flushes(mut self, polls: usize) -> Self {
+        self.pending_flushes = polls;
+        self
+    }
+
+    fn disconnect_after(mut self, bytes: usize) -> Self {
+        self.disconnect_after = Some(bytes);
+        self
+    }
+
+    fn gate(mut self, gate: Arc<WriteGate>) -> Self {
+        self.gate = Some(gate);
+        self
+    }
+}
+
+impl AsyncRead for AdversarialIo {
+    fn poll_read(
+        mut self: Pin<&mut Self>,
+        _cx: &mut Context<'_>,
+        buffer: &mut ReadBuf<'_>,
+    ) -> Poll<io::Result<()>> {
+        if self.read_offset == self.input.len() {
+            return Poll::Ready(Ok(()));
+        }
+        let available = self.input.len() - self.read_offset;
+        let count = available.min(self.read_chunk).min(buffer.remaining());
+        let end = self.read_offset + count;
+        buffer.put_slice(&self.input[self.read_offset..end]);
+        self.read_offset = end;
+        Poll::Ready(Ok(()))
+    }
+}
+
+impl AsyncWrite for AdversarialIo {
+    fn poll_write(
+        mut self: Pin<&mut Self>,
+        cx: &mut Context<'_>,
+        bytes: &[u8],
+    ) -> Poll<io::Result<usize>> {
+        if self.gate.as_ref().is_some_and(|gate| !gate.poll(cx)) {
+            return Poll::Pending;
+        }
+        if self.pending_writes != 0 {
+            self.pending_writes -= 1;
+            cx.waker().wake_by_ref();
+            return Poll::Pending;
+        }
+        let written = self.output.lock().unwrap().len();
+        if self.disconnect_after.is_some_and(|limit| written >= limit) {
+            return Poll::Ready(Err(io::Error::new(
+                io::ErrorKind::BrokenPipe,
+                "scripted disconnect",
+            )));
+        }
+        let remaining_before_disconnect = self
+            .disconnect_after
+            .map_or(usize::MAX, |limit| limit.saturating_sub(written));
+        let count = bytes
+            .len()
+            .min(self.write_chunk)
+            .min(remaining_before_disconnect);
+        if count == 0 {
+            return Poll::Ready(Err(io::Error::new(
+                io::ErrorKind::WriteZero,
+                "scripted zero write",
+            )));
+        }
+        self.output
+            .lock()
+            .unwrap()
+            .extend_from_slice(&bytes[..count]);
+        Poll::Ready(Ok(count))
+    }
+
+    fn poll_flush(mut self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<io::Result<()>> {
+        if self.gate.as_ref().is_some_and(|gate| !gate.poll(cx)) {
+            return Poll::Pending;
+        }
+        if self.pending_flushes != 0 {
+            self.pending_flushes -= 1;
+            cx.waker().wake_by_ref();
+            return Poll::Pending;
+        }
+        Poll::Ready(Ok(()))
+    }
+
+    fn poll_shutdown(self: Pin<&mut Self>, _cx: &mut Context<'_>) -> Poll<io::Result<()>> {
+        Poll::Ready(Ok(()))
+    }
+}
