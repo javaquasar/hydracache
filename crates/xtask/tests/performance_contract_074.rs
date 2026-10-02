@@ -132,9 +132,19 @@ fn proposal_admission_requires_w1_attribution_and_evidence() {
         .iter_mut()
         .find(|item| item["id"].as_str() == Some("W3"))
         .unwrap();
+    w3["decision"] = toml::Value::String("authorized-local-candidate".to_owned());
     w3.as_table_mut().unwrap().remove("evidence");
     let problems = xtask::performance_contract_074::check_registry(&value);
     assert!(has(&problems, "requires evidence"));
+}
+
+#[test]
+fn socket_boundary_attribution_keeps_local_product_work_admitted() {
+    let value = contract("proposal-registry.toml");
+    assert!(
+        xtask::performance_contract_074::check_registry(&value).is_empty(),
+        "the checked-in open kernel gate is a terminal local W1 attribution state"
+    );
 }
 
 #[test]

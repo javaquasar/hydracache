@@ -308,7 +308,11 @@ pub fn check_registry(value: &TomlValue) -> Vec<String> {
         string(item, "id") == Some("W1")
             && matches!(
                 string(item, "decision"),
-                Some("attributed-local-open-gates" | "complete")
+                Some(
+                    "attributed-local-open-gates"
+                        | "attributed-through-tokio-socket-boundary-open-kernel-gate"
+                        | "complete"
+                )
             )
     });
     if product_mutation_allowed && !w1_attributed {
