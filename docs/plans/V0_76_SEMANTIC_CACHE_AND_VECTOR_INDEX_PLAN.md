@@ -9,7 +9,9 @@
 >   authoritative final read before a response can be reused. Rust, Java and Python HC/2 clients,
 >   active/shadow/previous embedding-profile migration, partition/member/global candidate budgets,
 >   resumable optimize/rebuild jobs, bounded batch ingestion, scalar/SIMD distance kernels, capacity
->   admission, graph-specific observability and exact-candidate evidence are included.
+>   admission, provenance-gated writes, ambiguity-aware reuse decisions, continuous post-promotion
+>   quality circuits, bounded admission/eviction, deletion receipts, integrity scrubbing,
+>   graph-specific observability and exact-candidate evidence are included.
 > - **Why:** exact-key caching misses paraphrases and near-duplicate tool requests, while a generic
 >   vector store does not by itself provide HydraCache's TTL, tags, single-flight, invalidation,
 >   bounded memory and explicit failure semantics. The useful product is a correctness-first
@@ -122,6 +124,9 @@ research but cannot support the distributed `HydraSemanticMap` claim.
   default auto-reuse policy fails closed when required shards are unavailable or rebuilding.
 - No automatic universal similarity threshold. Each auto-reuse profile is admitted by a frozen
   labelled corpus and remains namespace/model/policy specific.
+- No online threshold learning or silent quality-policy mutation from production feedback. Feedback
+  may demote a profile or require operator review; only a new immutable profile revision can change
+  threshold, margin or decision semantics and re-enable automatic reuse.
 - No raw prompt or response logging, vector labels containing customer data, unbounded `top_k`,
   unbounded dimensions, unbounded index count or unbounded fan-out.
 - No arbitrary per-query `ef`, graph-degree, partition/member limit or backend-specific string hint.
@@ -151,6 +156,12 @@ research but cannot support the distributed `HydraSemanticMap` claim.
 | Search-budget integrity | Partition, member and global candidate limits come from a versioned admitted profile and every response describes coverage/truncation. | A client raises raw ANN limits, or operationally incomplete fan-out is described as complete. |
 | Maintenance isolation | Optimize/rebuild creates and validates a new generation while the old generation remains queryable; cancellation/restart cannot damage authority. | In-place maintenance blocks correctness, loses accepted deltas or exposes a half-built generation. |
 | Capacity under failure | Admission includes authority replicas, active index, rebuild double-buffer, journals, scratch space and one-member loss. | Steady state fits, but `N-1 + rebuild + foreground load` exceeds declared memory/CPU/disk bounds. |
+| Provenance before reuse | An authenticated, admitted writer class and immutable generation-pipeline digest are stored by authority and validated before reuse. | Any holder of ordinary read credentials can poison a reusable response or forge producer identity. |
+| Ambiguity-aware decision | Auto-reuse applies a server-owned immutable minimum score, top-two margin, age and validation-depth policy; clients may only make it stricter. | A client lowers the threshold/margin or a near-tie is reused without the admitted ambiguity rule. |
+| Continuous safety | Active profiles retain bounded verification/feedback canaries and automatically demote on a frozen hard safety or quality circuit; promotion is never automatic. | Offline admission remains active indefinitely after measured drift or hard-boundary violation. |
+| Eviction coherence | Authority owns admission/eviction and emits the same versioned removal delta as explicit deletion; retained bytes include payload, all vector slots and derived charge. | Index-only state is presented as a live authority record, or eviction resurrects through rebuild. |
+| Deletion evidence | Logical non-reuse is immediate and physical reclamation across authority, live/old index generations, checkpoints and retained backups follows a declared SLO with receipts. | A deleted vector remains silently queryable/exported, or documentation promises instant physical erasure that backups cannot satisfy. |
+| Runtime integrity | Bounded scrubbing compares derived IDs/versions/vector digests with authority and degrades/rebuilds on mismatch. | A corrupt live graph continues to authorize hits until restart or manual discovery. |
 
 ## Canonical public model
 
@@ -206,6 +217,16 @@ pub enum SemanticSearchClass {
     Exact,
 }
 
+pub struct SemanticDecisionPolicy {
+    pub revision: u64,
+    pub minimum_score: SimilarityScore,
+    pub minimum_top_two_margin: SimilarityMargin,
+    pub max_candidate_age: Option<Duration>,
+    pub minimum_validation_candidates: NonZeroU16,
+    pub allow_single_candidate: bool,
+    pub require_operational_completeness: bool,
+}
+
 pub struct DistributedSearchBudget {
     pub partition_candidate_limit: NonZeroU16,
     pub member_candidate_limit: NonZeroU16,
@@ -236,12 +257,25 @@ pub struct ReuseScope {
     pub safety_policy: Digest,
     pub decoding_profile: Digest,
     pub application_scope: Option<Digest>,
+    pub producer_policy: Digest,
+}
+
+pub struct SemanticWriteProvenance {
+    pub generation_pipeline: Digest,
+    pub source_revision: Option<Digest>,
+    pub provenance_schema: u16,
+}
+
+pub struct ProducerProvenance {
+    pub authenticated_writer_class: WriterClassId,
+    pub submitted: SemanticWriteProvenance,
 }
 
 pub struct SemanticEntry<V> {
     pub id: EntryId,
     pub embeddings: EmbeddingSet,
     pub scope: ReuseScope,
+    pub provenance: SemanticWriteProvenance,
     pub value: V,
     pub tags: TagSet,
     pub ttl: TtlDirective,
@@ -252,7 +286,8 @@ pub struct SemanticQuery {
     pub embedding: EmbeddingVector,
     pub scope: ReuseScope,
     pub top_k: NonZeroU16,
-    pub minimum_score: SimilarityScore,
+    pub requested_minimum_score: Option<SimilarityScore>,
+    pub requested_minimum_margin: Option<SimilarityMargin>,
     pub search_class: SemanticSearchClass,
     pub availability: SemanticAvailability,
 }
@@ -266,12 +301,30 @@ pub enum SemanticLookup<V> {
 pub struct SemanticHit<V> {
     pub id: EntryId,
     pub value: V,
-    pub score: SimilarityScore,
+    pub score: ScoreDisclosure,
     pub version: EntryVersion,
     pub age: Duration,
     pub remaining_ttl: RemainingTtl,
     pub completeness: SearchCompleteness,
     pub proof: SemanticHitProof,
+}
+
+pub enum ScoreDisclosure {
+    Hidden,
+    Bucket(u8),
+    Exact(SimilarityScore),
+}
+
+pub enum SemanticFeedbackVerdict {
+    Accepted,
+    Rejected,
+    Corrected,
+}
+
+pub struct SemanticFeedback {
+    pub hit_proof: OpaqueHitProofId,
+    pub verdict: SemanticFeedbackVerdict,
+    pub application_evaluator: Digest,
 }
 
 pub struct SemanticBatchOptions {
@@ -306,6 +359,23 @@ reuse; a previous vector exists only for the rollback window. Adding or replacin
 requires an expected authoritative record version so backfill cannot attach a vector to the wrong
 payload. Profile roles and search classes are server configuration: a client cannot relabel a
 profile or select a cheaper class than the namespace's admitted auto-reuse policy.
+
+`ProducerProvenance.authenticated_writer_class` is derived from the authenticated principal and
+cannot be supplied by `SemanticEntry`. The application supplies only `SemanticWriteProvenance` with
+versioned pipeline/source digests; the server combines both after validating the allowlisted
+`producer_policy`. Changing that policy changes hard reuse scope. This prevents a low-trust bulk
+importer, compromised read-only client or test pipeline from placing entries into a production
+auto-reuse cohort.
+
+`SemanticDecisionPolicy` belongs to an immutable admitted profile revision. Client-requested score
+or margin can only raise the effective requirement; omission selects the server values. Automatic
+reuse validates at least two final candidates when available and rejects a top-two near-tie below
+the admitted margin. Fewer candidates than the validation minimum reject auto-reuse unless the
+immutable corpus-admitted policy explicitly enables `allow_single_candidate`; its default is false.
+`ScoreDisclosure` is permission-derived: normal cache helpers default to
+`Hidden` or a coarse bucket, while exact scores and diagnostic candidate lists require a separately
+rate-limited diagnostic permission. Feedback references an opaque, expiring hit proof and contains
+no prompt, response or free-form reason; it can trip a circuit but cannot tune or promote a policy.
 
 ### Vector canonicalization
 
@@ -411,24 +481,34 @@ headroom. The receipt states which component prevents admission and suggests onl
 ### Lookup and reuse sequence
 
 1. Authenticate and derive tenant/namespace generation.
-2. Validate the fixed embedding profile, vector, `top_k`, deadline and reuse scope.
-3. Resolve the admitted named search class, its immutable `DistributedSearchBudget`, one active
-   `SemanticIndexId` and its current query epoch. A query may request a stricter/more expensive class
-   only if authorized; it cannot weaken the auto-reuse profile.
+2. Validate the fixed embedding profile, vector, `top_k`, deadline and reuse scope, including the
+   producer-policy digest required for any reusable record.
+3. Resolve the admitted named search class, immutable `DistributedSearchBudget` and
+   `SemanticDecisionPolicy`, one active `SemanticIndexId` and its current query epoch. A query may
+   request a stricter score/margin or more expensive class only if authorized; it cannot weaken the
+   auto-reuse profile.
 4. Each owned partition shard returns at most `partition_candidate_limit` candidates to its local
    member aggregator. The aggregator records visited nodes and truncation, deterministically merges
    its shards and returns at most `member_candidate_limit` candidates.
 5. The coordinator receives at most `max_fanout_members` responses and
-   `max_candidate_bytes`, merges to `global_top_k_limit`, then keeps the requested `top_k`. Merge is
-   descending canonical score then stable `EntryId`; old/new migration copies are deduplicated by
-   `(entry_id, payload_version, vector_version)`.
+   `max_candidate_bytes`, merges to `global_top_k_limit`, then retains the bounded internal decision
+   set; only diagnostic output is later trimmed to requested `top_k`. Merge is descending canonical
+   score then stable `EntryId`; old/new migration copies are deduplicated by entry ID, payload
+   version and vector version.
 6. Apply the frozen availability rule and construct `SearchCompleteness`. `RequireComplete` is the
    default for auto-reuse and rejects
    missing/rebuilding/stale shards.
-7. Read candidates from authoritative owners in bounded order and validate version, TTL, namespace
-   generation, complete hard scope and payload admission.
-8. Return the first validated candidate at or above the threshold, otherwise an explicit miss.
-9. Record bounded reason counters without logging prompt, response, vector or tenant-controlled text.
+7. Internally retain `max(requested top_k, minimum_validation_candidates)` within the global budget,
+   even when the public helper requests one result. Read that bounded validation depth from
+   authoritative owners when available and
+   validate version, TTL, maximum candidate age, namespace generation, complete hard scope,
+   authenticated writer class, generation-pipeline provenance and payload admission.
+8. Canonically rescore and order validated candidates. Return the winner only when it satisfies the
+   effective minimum score, validation-depth/single-candidate rule and top-two margin; otherwise
+   return explicit `BelowThreshold`, `InsufficientDecisionEvidence` or `AmbiguousNeighbourhood`
+   miss. Apply permission-derived score disclosure to the response/proof.
+9. Record bounded decision/provenance/circuit reason counters without logging prompt, response,
+   vector or tenant-controlled text.
 
 An ANN false positive is filtered by the score/hard scope; a stale candidate is filtered by the
 authoritative read. An ANN false negative is a cache miss and may cost an LLM call, but cannot serve
@@ -439,6 +519,26 @@ budget, correct epoch and lag limit. It does not claim exhaustive nearest-neighb
 recall remains a separately measured statistical property. Budget exhaustion/truncation is exposed
 in proof and metrics even when it is permitted by the admitted profile. For `Exact`, truncation or
 deadline exhaustion is incomplete rather than approximate success.
+
+### Post-promotion verification and emergency demotion
+
+Offline corpus admission is necessary but not permanent proof. Each active profile retains an
+immutable verification policy containing a bounded sample rate, minimum evidence count/window,
+hard-boundary trip conditions, feedback authenticity/rate limits and soft quality/resource error
+budgets. The server never calls a model: the Rust/Java/Python `lookup_or_generate` helper may, when
+the application opts in, execute the normal loader for a sampled hit, return according to the
+application's declared verification mode and submit only a typed `SemanticFeedback` receipt. An
+application may also submit a verdict from its own evaluator using the opaque hit proof.
+
+Feedback is accepted only from an authenticated evaluator class bound to the namespace/profile and
+is deduplicated, expiring and quota-limited. It contains no free-form content and cannot modify a
+threshold. One verified cross-scope/provenance/hard-boundary violation, or a preregistered sustained
+false-reuse/resource/recall breach with sufficient evidence, atomically demotes `AutoReuse` to
+`ShadowOnly`, opens a quality circuit and emits an alert/audit receipt. Ambiguous/untrusted feedback
+marks evidence unavailable but cannot disable arbitrary tenants or promote a profile. Recovery
+requires operator acknowledgement, root-cause evidence and a new or re-admitted immutable profile;
+there is no automatic re-enable. The data plane also retains a fast authenticated namespace/profile
+kill switch whose propagation and fail-closed behavior are release-tested.
 
 ### Bounded batch ingestion contract
 
@@ -462,14 +562,15 @@ bounded calls and apply backpressure instead of materializing an unbounded colle
 0.75 authoritative partition
   SemanticIndexFamilyMetadata(family_id) {
     profile_set_generation, active_profile, shadow_profile?, previous_profile?,
-    admitted_search_profile_revisions, cutover_epoch
+    admitted_search_and_decision_profile_revisions, producer_policy,
+    verification_policy, quality_circuit_state, cutover_epoch
   }
   SemanticRecordKey(family_id, entry_id)
   SemanticRecord {
     embedding_slots[profile_id; maximum 3] {
       canonical_vector, vector_digest, vector_version
     },
-    reuse_scope,
+    reuse_scope, producer_provenance,
     encoded_value, tags, expires_at, entry_version,
     namespace_generation, created_at, policy_version
   }
@@ -533,8 +634,8 @@ Queued -> Reserving -> Snapshotting -> Building -> ReplayingDelta
              +----------> Cancelled
 ```
 
-An authenticated operator submits `OptimizeRequest { index_family, profile, mode, cpu_budget,
-extra_byte_budget, deadline }` and receives a stable `job_id`. `get_maintenance_status`,
+An authenticated operator submits an `OptimizeRequest` containing index family, profile, mode, CPU
+budget, extra-byte budget and deadline and receives a stable `job_id`. `get_maintenance_status`,
 `cancel_maintenance` and `resume_maintenance` are exposed through HC/2 administration and the
 read-only management view; ordinary semantic-data credentials cannot start work. Automatic
 tombstone/fragmentation triggers create the same auditable job type.
@@ -552,13 +653,82 @@ through all pre-cutover phases.
 Maintenance never determines logical deletion: authoritative TTL/version/tombstone validation
 already prevents stale reuse. Its purpose is to recover recall, latency and memory after churn.
 
+### Authority admission, weighting and eviction
+
+Semantic records participate in the existing authoritative cache admission/eviction mechanism, but
+their weight is not payload bytes alone:
+
+```text
+semantic_weight = encoded key/value/scope/provenance/TTL/tag metadata
+                + all retained canonical vector slots
+                + configured per-profile derived-index charge
+                + bounded journal/tombstone overhead
+```
+
+The derived charge comes from the admitted exact-candidate measurement and is reconciled with W10
+actuals. Client-supplied token price, claimed model cost or arbitrary priority never affects
+admission. Tenant/index quotas reserve a safety/control slice and the existing admitted frequency/
+recency policy chooses authority victims within the allowed scope. A mutation reserves its full
+normal-plus-backup weight before commit; adding shadow/previous vectors can be rejected without
+changing the active record.
+
+Authority eviction is a versioned owner mutation with backup acknowledgement and the same removal
+delta/tombstone/final-read behavior as explicit removal. It returns no reusable stale entry. A
+derived index may evict/rebuild a shard independently under pressure, but that state is reported as
+`DerivedOnlyEvicted/IndexNotReady` and cannot imply authority deletion or strict completeness. A
+future rebuild rehydrates only currently live authority records. Tests must cover scan/cache
+pollution, unique-vector floods, large-payload/small-vector and small-payload/large-vector mixes,
+hot/cold tenant competition, vector-slot migration pressure and crash/failover around victim ACK.
+
+### Deletion, retention and live integrity proof
+
+Vectors receive the same security classification as the source prompt/value because embeddings can
+leak information. Logical deletion is immediate at the authoritative tombstone/version boundary;
+all final reads reject older candidates. Physical reclamation is asynchronous and explicitly
+tracked across authority primary/backups, active and retired ANN generations, delta journals,
+checkpoints, local temporary files and configured backup archives:
+
+```rust
+pub struct SemanticDeletionReceipt {
+    pub family: SemanticIndexFamilyId,
+    pub entry_or_namespace_digest: Digest,
+    pub logical_delete_version: EntryVersion,
+    pub live_generation_state: PurgeState,
+    pub retired_generation_state: PurgeState,
+    pub checkpoint_state: PurgeState,
+    pub backup_retention_state: BackupRetentionState,
+    pub physical_reclamation_due_at: Timestamp,
+}
+```
+
+The product publishes distinct logical-non-reuse and physical-reclamation SLOs. A retained immutable
+backup is never labelled physically erased; its configured expiry or supported namespace-key
+crypto-erasure is reported honestly. Receipts contain digests and states, not customer data. Export,
+backup, evidence and diagnostic tools must apply the deletion/tombstone boundary and may not archive
+raw vectors in public release evidence.
+
+A separate bounded integrity scrub samples live index nodes and checkpoints, reads authority and
+compares family/profile epoch, entry/vector version and vector digest. It also verifies graph edge/
+node bounds and checkpoint manifests without logging coordinates. Any authority mismatch removes the
+candidate from reusable service immediately, marks the exact partition/profile degraded, queues a
+budgeted repair/rebuild and emits a content-free receipt. Scrub has per-tenant CPU/I/O quotas and a
+full offline mode for release/incident proof; it is detection and repair, never a second authority.
+Tests inject stale/wrong-version nodes, bit-flipped vectors/edges, deleted entries in old generations,
+checkpoint corruption, backup retention and crashes during purge/scrub, then prove no post-delete or
+post-corruption hit and eventual receipt completion within the declared SLO.
+
 ## Error and availability model
 
 | Outcome | Meaning | Retry/reuse rule |
 | --- | --- | --- |
 | `Miss::NoCandidate` | Complete admitted search found no valid score. | Application may generate. |
+| `Miss::BelowThreshold` | Canonically rescored winner is below the effective admitted score. | Generate; do not expose exact score without diagnostic permission. |
+| `Miss::InsufficientDecisionEvidence` | Fewer authoritative candidates than the admitted decision policy requires. | Generate; only an explicitly admitted single-candidate policy may relax this. |
+| `Miss::AmbiguousNeighbourhood` | Winner/runner-up margin is below the admitted ambiguity bound. | Generate or use explicit manual diagnostic flow; never auto-reuse. |
 | `Miss::CandidateInvalidated` | ANN candidate was expired/replaced/deleted before final read. | May retry once within the same deadline, then generate. |
 | `Miss::ShadowOnly` | Profile has no auto-reuse admission. | Generate; retain comparison receipt. |
+| `Unavailable::QualityCircuitOpen` | Active profile was demoted by a frozen safety/quality rule or kill switch. | Generate; no automatic re-enable. |
+| `Unavailable::IntegrityDegraded` | Scrub found authority/index mismatch for a required shard. | Never reuse until repair and readiness proof. |
 | `Unavailable::IndexNotReady` | Required shard is building/catching up. | Never reuse; caller may generate or wait. |
 | `Unavailable::Incomplete` | Required member/shard could not answer. | Never relabel as miss in strict mode. |
 | `Unavailable::LagExceeded` | Indexed watermark exceeds configured lag budget. | Never reuse until recovered. |
@@ -593,15 +763,16 @@ it. W13 performance work begins only after semantic/security equivalence is gree
 
 | Path | Planned responsibility |
 | --- | --- |
-| `crates/hydracache-core/src/semantic.rs` | Stable semantic IDs, embedding roles/sets, named search classes, budgets, completeness, batch/maintenance outcomes and codec-independent domain types. |
-| `crates/hydracache-core/src/semantic_config.rs` | Immutable ANN/search/capacity profile revisions, validation and compatibility rules; no third-party backend type. |
+| `crates/hydracache-core/src/semantic.rs` | Stable semantic IDs, embedding roles/sets, provenance, named search classes, decision/budget/completeness, feedback, deletion, batch/maintenance outcomes and codec-independent domain types. |
+| `crates/hydracache-core/src/semantic_config.rs` | Immutable ANN/search/decision/producer/verification/admission/capacity profile revisions, validation and compatibility rules; no third-party backend type. |
 | `crates/hydracache-semantic-index/src/{lib,flat,hnsw}.rs` | `SemanticIndex` trait, flat oracle and admitted HNSW implementation. No network or authoritative payload ownership. |
 | `crates/hydracache-semantic-index/src/{kernel,checkpoint,maintenance}.rs` | Scalar/SIMD normalized-DOT kernels, digest-protected generation checkpoints and resumable optimize/rebuild engine. |
 | `crates/hydracache/src/semantic.rs` | Embedded/local `HydraSemanticMap<V>` and `SemanticCache<V>` facade using the same domain rules. |
-| `crates/hydracache-client-hc2/proto/hc2_contract.proto` | Versioned semantic put/batch/backfill/query/remove/status/await-indexed/maintenance messages, fixed hard scope, candidate proof and explicit outcomes. |
+| `crates/hydracache-client-hc2/proto/hc2_contract.proto` | Versioned semantic put/batch/backfill/query/remove/status/feedback/deletion/await-indexed/maintenance messages, fixed hard scope, disclosure-safe proof and explicit outcomes. |
 | `crates/hydracache-client-hc2/src/{client,types}.rs` | Rust HC/2 API, deadlines, retry advice and exact-fingerprint helper. |
-| `crates/hydracache-server/src/{semantic,semantic_coordinator}.rs` | Authentication-derived scope, batch admission, three-stage candidate merge, authoritative validation and profile cutover. |
-| `crates/hydracache-server/src/semantic_maintenance.rs` | Authorized job submission/status/cancel/resume, capacity reservation and checkpoint orchestration. |
+| `crates/hydracache-server/src/{semantic,semantic_coordinator}.rs` | Authentication-derived scope/provenance, batch/admission/eviction, three-stage candidate merge, decision policy, authoritative validation and profile cutover. |
+| `crates/hydracache-server/src/semantic_quality.rs` | Feedback authentication/dedup, verification sampling, quality circuit/kill switch and demotion receipts; never threshold learning. |
+| `crates/hydracache-server/src/semantic_maintenance.rs` | Authorized job submission/status/cancel/resume, capacity reservation, deletion purge, integrity scrub and checkpoint orchestration. |
 | `crates/hydracache-cluster-transport-axum/src/lib.rs` | Authenticated bounded batch and member-local ANN frames, candidate-stage proofs, rebuild snapshot/delta and cutover fencing. |
 | `crates/hydracache-observability/src/management.rs` | Bounded semantic readiness/resource/quality and graph-efficiency counters; no content/vector labels. |
 | `crates/xtask/src/semantic_capacity.rs` | Exact-candidate capacity worksheet/receipt for replicas, profiles, rebuild double-buffer, N−1 redistribution and scratch. |
@@ -610,10 +781,12 @@ it. W13 performance work begins only after semantic/security equivalence is gree
 | `tests/semantic-reference/` | Independent exact cosine oracle, seeded corpora, hard negatives and cross-product differential driver. |
 | `tests/semantic-process/` | Multi-daemon routing, failover, rebuild, rolling-upgrade, fairness and security tests. |
 | `tests/semantic-migration/` | Dual-write/backfill, active-shadow-previous cutover/rollback and interrupted profile retirement tests. |
-| `tests/semantic-benchmark/` | Common HydraCache/Redis/no-cache adapters with precomputed embeddings and open-loop load. |
+| `tests/semantic-security/` | Producer-policy poisoning, score-oracle probing, feedback forgery, deletion/reclamation and corrupt-live-index tests. |
+| `tests/semantic-benchmark/` | Common HydraCache/Redis/Hazelcast VectorCollection/no-cache adapters with precomputed embeddings and open-loop load. |
 | `docs/architecture/SEMANTIC_CACHE_076.md` | Authority/index/query/rebuild/failure ADR-level architecture. |
 | `docs/testing/semantic/0.76/` | Frozen profiles, corpora, statistics, attempts, manifests and exact-candidate receipts. |
 | `docs/security/SEMANTIC_CACHE_076.md` | Threat model, privacy, deletion, tenant isolation, side-channel and operator guidance. |
+| `docs/operations/SEMANTIC_CACHE_076.md` | Admission/eviction, quality circuit, emergency disable, profile rollback, maintenance, deletion SLO, scrub and capacity runbooks. |
 
 W0 replaces expected paths with exact post-0.75 paths before implementation. A move cannot remove
 the semantic owner, tests or release gate.
@@ -623,20 +796,20 @@ the semantic owner, tests or release gate.
 | Work | Primary implementation locations | First executable proof |
 | --- | --- | --- |
 | W0 | `docs/architecture/SEMANTIC_CACHE_076.md`, `docs/security/SEMANTIC_CACHE_076.md`, `docs/testing/semantic/0.76/`, `docs/GATES.md` | Contract checker rejects every deliberately mutated profile/bound/identity. |
-| W1 | `hydracache-core::semantic{,_config}`, HC/2 proto/types, embedded facade skeleton | API/proto snapshots plus old-client decode and no-raw-hint compile tests. |
+| W1 | `hydracache-core::semantic{,_config}`, HC/2 proto/types, embedded facade skeleton | API/proto snapshots plus old-client decode, stricter-only decision and no-raw-hint compile tests. |
 | W2 | core canonical codec and `semantic-index::kernel` | Cross-language byte/digest goldens and scalar/SIMD differential. |
-| W3 | 0.75 value-plane record codecs/owner mutations, server batch/backfill handlers | Authority reference model, per-item retry/ambiguity and index-deletion rebuild proof. |
+| W3 | 0.75 value-plane record codecs/owner mutations, server batch/backfill/admission/eviction handlers | Authority/provenance/eviction reference model, per-item retry/ambiguity and index-deletion rebuild proof. |
 | W4 | `semantic-index::flat` and generation interface | Independent exact oracle, deterministic ordering and exact no-truncation proof. |
 | W5 | `semantic-index::hnsw`, kernel adapter and dependency manifest | Flat differential/recall/resource matrix for every named class and dedup mode. |
-| W6 | delta journal/checkpoint plus `server::semantic_maintenance` | Crash/cancel/resume at every phase with unchanged active generation until cutover. |
+| W6 | delta journal/checkpoint plus `server::semantic_maintenance` | Crash/cancel/resume at every phase, deletion receipt and corrupt-live-index scrub with unchanged authority. |
 | W7 | `server::semantic_coordinator` and cluster semantic frames | Three/five-member candidate-boundary, incompleteness and deterministic-merge suite. |
 | W8 | embedded/client semantic-cache facade and 0.75 lease integration | Exact-only loader-collapse model under holder death and profile cutover. |
-| W9 | authentication/authorization hooks, deletion path and threat-model tests | Cross-tenant/profile/backfill/maintenance hostile real-process suite and secret scan. |
-| W10 | semantic config/admission, observability and `xtask::semantic_capacity` | Boundary matrix plus predicted/observed normal, N−1, rebuild and combined receipt. |
+| W9 | authentication/authorization hooks, producer/diagnostic/feedback policies, deletion path and threat-model tests | Cross-tenant/profile/provenance/score-oracle/feedback/maintenance hostile suite, erasure proof and secret scan. |
+| W10 | semantic admission/eviction/config, observability and `xtask::semantic_capacity` | Pollution/eviction and boundary matrix plus predicted/observed normal, N−1, rebuild and combined receipt. |
 | W11 | Rust, Java and Python HC/2 clients/examples/packages | Live daemon cross-language batch/profile/job interop and clean consumers. |
-| W12 | `semantic-reference` and `semantic-migration` corpora/drivers | Untouched shadow receipt, promotion rejection canaries and rollback rehearsal. |
-| W13 | `semantic-benchmark` common harness/adapters | Same-semantics counterbalanced cells with stage/resource/quality attribution. |
-| W14 | Management/readiness, runbooks, upgrade/backup/release tooling | Full old/new matrix, restore/rebuild, evidence verification and final ship gate. |
+| W12 | `semantic-reference`, `semantic-migration` and `server::semantic_quality` | Untouched shadow receipt, score/margin calibration, active verification/demotion, promotion rejection canaries and rollback rehearsal. |
+| W13 | `semantic-benchmark` Hydra/Redis/Hazelcast/no-cache harness/adapters | Same-semantics lower-layer and end-to-end counterbalanced cells with stage/resource/quality attribution. |
+| W14 | Management/readiness, deletion/scrub/quality runbooks, upgrade/backup/release tooling | Full old/new matrix, emergency demotion, reclamation SLO, restore/rebuild, evidence verification and final ship gate. |
 
 ### Safe implementation and enablement order
 
@@ -660,10 +833,13 @@ the semantic owner, tests or release gate.
 
 **Changes.** Create the architecture decision, capability manifest, scenario matrix, quality
 contract, statistics plan, threat model and release-evidence registry before product mutation.
-Freeze the published 0.75 source/tag/artifacts and exact Redis comparison identity/configuration.
+Freeze the published 0.75 source/tag/artifacts and exact Redis, Hazelcast and no-cache comparison
+identities/configurations.
 Record Hazelcast 5.7 VectorCollection only as a cited design input: named spaces, staged candidate
 limits, ANN knobs, bulk ingestion, maintenance, backups/capacity and visited-node telemetry. There is
-no Hazelcast wire/API compatibility or performance claim.
+no Hazelcast wire/API compatibility claim. Freeze an optional but first-class Hazelcast comparison
+identity, Enterprise license provenance and legal artifact-retention boundary; if the pinned runtime
+is unavailable, the cells are `not-run/not-comparable` and no Hazelcast advantage claim is allowed.
 
 **Implementation.** Record supported cosine-only profiles, maximum dimensions/top-k/members,
 local versus member modes, storage profile, payload limit, default `ShadowOnly`, availability
@@ -674,14 +850,20 @@ Also freeze: maximum batch entries/bytes/partitions; maximum three vector slots;
 and rollback windows; exact `Latency/Balanced/Recall/Exact` revisions; partition/member/global
 candidate budgets; maintenance CPU/extra-byte/deadline limits; scalar/SIMD identity; tombstone and
 fragmentation triggers; capacity formula inputs; N−1 failure topology; every graph-specific metric
-name/unit/cardinality; and the distinction between operational completeness and ANN recall.
+name/unit/cardinality; writer/provenance policy; score/margin/age/validation-depth decision policy;
+score disclosure and diagnostic rate limit; authority admission/eviction weight; active verification
+and feedback circuit; emergency kill-switch propagation SLO; logical/physical deletion SLO and backup
+retention; scrub sampling/resource budget; and the distinction between operational completeness and
+ANN recall.
 
 **Tests and evidence.** Add `cargo xtask semantic-contract-check --release 0.76`, release-scoped
 dynamic canaries and a coverage manifest. Negative fixtures must reject a changed embedding model,
 dimension, metric, scope digest, corpus label, threshold, index/search/capacity profile, batch bound,
 maintenance budget, SIMD kernel identity or comparison cell. Mutation canaries loosen each bound,
 promote a shadow profile early, omit rebuild double-buffer, hide a missing partition and replace a
-failed attempt; every canary must turn an independent gate red.
+failed attempt; lower score/margin from the client, forge provenance/feedback, suppress quality
+demotion, underweight vectors, claim backup erasure or disable scrub; every canary must turn an
+independent gate red.
 
 **Exit.** No implementation starts until the contract distinguishes semantic response caching,
 RAG retrieval, provider prompt caching and generic vector storage, and until every later numerical
@@ -691,18 +873,23 @@ claim has a frozen estimator and practical threshold.
 
 **Changes.** Add `SemanticIndexFamilyId`, `SemanticIndexId`, `EmbeddingProfile`, `EmbeddingVector`,
 `ReuseScope`, `EmbeddingProfileRole/Set`, `SemanticSearchClass`, `DistributedSearchBudget`,
-`SearchCompleteness`, `SemanticEntry`, `SemanticQuery`, batch item/outcome, maintenance job,
-`SemanticLookup`, `SemanticHitProof`, availability and status types to core. Add local/embedded and
-HC/2 facades without exposing index-library types.
+`SemanticDecisionPolicy`, `SemanticWriteProvenance`, `ProducerProvenance`, `SearchCompleteness`,
+`ScoreDisclosure`, `SemanticFeedback`, `SemanticDeletionReceipt`, `SemanticEntry`, `SemanticQuery`,
+batch item/outcome,
+maintenance job, `SemanticLookup`, `SemanticHitProof`, availability and status types to core. Add
+local/embedded and HC/2 facades without exposing index-library types.
 
 **Implementation.** Use builders/validated constructors so invalid dimension, NaN/infinity,
 zero-norm, oversized top-k and inconsistent TTL never cross the API boundary. Keep `put`, `query`,
 `put_batch`, `backfill_profile_batch`, `remove`, `invalidate_tag`, `await_indexed`, `status`,
-`start_maintenance`, `get_maintenance_status`, `cancel_maintenance` and `resume_maintenance`
-distinct. Data-plane and maintenance authorization are distinct. Normal queries carry a named
-search class, not raw ANN knobs; the server returns the resolved immutable profile revision and
-completeness proof. No boolean result may conflate miss, incomplete search, truncation, overload,
-uncertain authority, partial batch, cancelled maintenance or invalid input.
+`submit_feedback`, `get_deletion_receipt`, `start_maintenance`, `get_maintenance_status`,
+`cancel_maintenance` and `resume_maintenance` distinct. Data write/read, exact diagnostic,
+feedback/evaluator and maintenance authorization are distinct. Normal queries carry a named search
+class, not raw ANN knobs; the server returns the resolved immutable search/decision revisions and
+completeness proof. Client score/margin requests are optional stricter lower bounds, never policy
+replacement. No boolean result may conflate below-score, ambiguous margin, quality circuit,
+integrity degradation, miss, incomplete search, truncation, overload, uncertain authority, partial
+batch, cancelled maintenance or invalid input.
 
 Define stable HC/2 messages in additive field ranges. Batch responses correlate by client item
 ordinal plus `EntryId`, never by unordered map iteration. Maintenance status is paged/bounded and
@@ -714,7 +901,8 @@ examples and compile-fail tests prevent accidental generic/index leakage. Retain
 must ignore the new capability and remain byte compatible. Proto golden tests cover old decoders,
 unknown enum values, reordered batch replies, maximum proof size and job-state transitions. An API
 negative test attempts to submit `efSearch`, `M` and raw partition limits and must find no stable
-field through which to do so.
+field through which to do so. Additional negative tests lower score/margin, request exact score with
+ordinary cache credentials, submit free-form feedback and treat a pending physical purge as erased.
 
 **Exit.** Rust signatures, Java/Python mappings, retry advice and unsupported operations are frozen
 before HC/2 field numbers or product storage are added.
@@ -727,8 +915,10 @@ change a safe answer; the semantic scope controls candidate eligibility.
 
 **Implementation.** Include tenant/namespace generation, generation model/revision, prompt-template
 digest, system-prompt digest, tool-schema digest, retrieval-snapshot digest, safety-policy digest,
-decoding profile and application scope. Do not infer these from prompt text. Encode with a stable
-length-framed codec and domain-separated digest. Tenant comes only from authentication.
+decoding profile, application scope and producer-policy digest. Do not infer these from prompt text.
+Encode with a stable length-framed codec and domain-separated digest. Tenant and authenticated
+writer class come only from authentication; application pipeline/source digests are separately
+validated provenance and cannot substitute for writer identity.
 
 Embedding identity separately includes model/revision, dimensions, canonicalization, public cosine
 metric and vector slot version. Normalize once in `f64`, persist canonical normalized `f32`, and use
@@ -745,6 +935,10 @@ dimension tails around SIMD widths, subnormal/signed-zero policy, unsupported CP
 x86_64/aarch64. Candidate rescoring/order must match scalar goldens even when ANN traversal differs;
 recall changes are charged to W12 rather than hidden as score equivalence.
 
+Decision-policy goldens prove effective client score/margin equals the stricter server/requested
+value, a lower request is rejected or ignored fail-closed, producer-policy changes split eligibility,
+and score disclosure never changes ranking or the decision itself.
+
 **Exit.** One canonical implementation feeds storage, routing, single-flight and receipts; SDKs do
 not construct language-specific hashes.
 
@@ -752,8 +946,9 @@ not construct language-specific hashes.
 
 **Changes.** Add versioned `SemanticRecord` encoding and keys to the 0.75 backend. The record owns
 the bounded active/shadow/previous vector slots, hard scope, payload, tags, TTL, namespace
-generation and policy version. Add partition-grouped semantic batch/backfill mutations using the
-0.75 authoritative bulk/idempotency primitives.
+generation, server-derived producer provenance and policy version. Add partition-grouped semantic
+batch/backfill mutations plus weighted admission/eviction using the 0.75 authoritative
+bulk/idempotency/cache-policy primitives.
 
 **Implementation.** Route mutations through one owner-authoritative operation and inherited backup
 acknowledgement. Emit an index delta only after the authoritative commit point. `put` returns record
@@ -766,16 +961,25 @@ and does not change payload/TTL. Profile roles live only in `SemanticIndexFamily
 atomically advances its generation/epoch under inherited authority and backup acknowledgement, so
 records are not mass-rewritten. Coordinators and deltas bind that metadata generation. Batch
 admission validates and reserves the whole encoded request, groups items by authority partition,
-then returns per-item `Stored/Rejected/
-Ambiguous`; it never claims cross-partition atomicity. Server and internal frames cap item count,
+then returns per-item `Stored`, `Rejected` or `Ambiguous`; it never claims cross-partition atomicity.
+Server and internal frames cap item count,
 encoded/vector bytes, distinct partitions and parallel owners.
+
+The authenticated writer class is captured by the server; application pipeline/source digests are
+admitted against family producer policy and included in hard scope. Weight reserves payload,
+metadata, every vector slot, configured derived charge and replicas before commit. Authority
+admission or eviction uses existing bounded policy hooks; an eviction emits the same removal delta
+as delete and is acknowledged before a stale payload can be returned. Claimed provider cost never
+influences victim selection.
 
 **Tests.** Reference-model sequences cover put/replace/remove/expire/tag invalidate/namespace reuse,
 add/replace/remove shadow slot, cutover/rollback/retire, duplicate requests and owner failure
 before/after ACK. Batch model tests compare every interleaving with individual operations, including
 one invalid item, partial owner loss, retry with identical/different idempotency key and concurrent
 payload replacement during backfill. Cross-surface tests ensure semantic records cannot be corrupted
-by ordinary map APIs or exposed through RESP as an undocumented encoding.
+by ordinary map APIs or exposed through RESP as an undocumented encoding. Add write-principal/
+pipeline-policy matrix, poisoned low-trust writer, weight under/overflow, scan pollution, hot/cold
+victim, shadow-slot admission rejection and crash/failover before/after eviction ACK.
 
 **Exit.** Deleting every derived index loses no authoritative data, and rebuilding records produces
 the same live record digest/cardinality.
@@ -836,7 +1040,8 @@ semantic/security divergence; otherwise flat mode ships alone and no scale claim
 
 **Changes.** Add a versioned bounded index-delta journal per authoritative partition and a
 watermark/lag model. Integrate every 0.75 removal cause and namespace reclamation. Implement the
-copy-on-write maintenance job state machine and operator API in `semantic_maintenance.rs`.
+copy-on-write maintenance job state machine, deletion receipt/purge tracker and bounded live
+integrity scrub in `semantic_maintenance.rs`.
 
 **Implementation.** Deltas contain index/profile ID, entry ID, authoritative version, operation,
 vector digest and required index data but no response payload. Apply is idempotent and ignores stale
@@ -852,6 +1057,12 @@ resumes only an identity-matching job, cancellation leaves the active generation
 repeated failure opens a circuit rather than rebuilding forever. Deletes remain semantically final
 through authority validation even while physical graph nodes await cleanup.
 
+Logical deletion creates a receipt rooted in authoritative delete version; purge workers advance
+live/retired generation, checkpoint and backup-retention states under bounded retry. The scrub
+samples graph nodes/checkpoints, compares profile epoch plus entry/vector version/digest with
+authority and immediately degrades the affected shard on mismatch. Repair uses the normal reserved
+maintenance path; scrub cannot rewrite authority or bypass admission.
+
 **Tests.** Delay/reorder/duplicate/drop deltas; expire during query; replace vector and scope;
 invalidate tag during rebuild; delete/recreate namespace; crash around checkpoint/journal compaction.
 Assert no old response is returned, lag is visible, journals/tombstones remain bounded and eventual
@@ -859,9 +1070,13 @@ rebuild digests equal a clean rebuild. Kill the process in every maintenance pha
 same/different owner, cancel before and during cutover, exhaust reserved disk/memory and mutate the
 source authority epoch. Assert the old generation stays usable before cutover, half-built state is
 never selected, reservations are released exactly once and maintenance status remains bounded.
+Inject wrong-version/digest nodes, edge corruption, deleted entries in active/old generations and
+purge/checkpoint crashes; verify immediate non-reuse, exact degraded scope, bounded repair and
+logical/physical/backup receipt transitions within their separate SLOs.
 
-**Exit.** Every authoritative lifecycle cause has a tested derived-index consequence and a stale
-index can cause only explicit unavailability/miss, never stale reuse.
+**Exit.** Every authoritative lifecycle cause has a tested derived-index consequence, deletion has
+honest logical/physical/backup evidence, runtime corruption is detected within the frozen scrub
+coverage/SLO, and stale/corrupt index state can cause only explicit unavailability/miss.
 
 ## W7. Implement distributed fan-out, deterministic merge and failover
 
@@ -913,9 +1128,18 @@ store application-supplied old/new vectors according to the dual-write policy bu
 shadow result. Batch warming never creates generation leases and therefore cannot accidentally
 coalesce unrelated application work.
 
+After promotion, the helper applies the immutable verification sampler. A sampled hit may run the
+loader under the exact lease to avoid duplicate verification work, then submit an opaque typed
+feedback receipt according to application policy. Verification output never overwrites the cached
+value implicitly and cannot change score/margin. If the server quality circuit or emergency kill
+switch opens between lookup and return/publication, the helper fails closed and follows the declared
+generate/fallback path.
+
 **Tests.** Hundreds of identical requests collapse as configured; paraphrases never share the
 in-flight result; leader/holder/client death, timeout, cancellation, lease expiry and ambiguous put
-preserve fencing. Loom/model tests cover acquire/recheck/publish/release interleavings.
+preserve fencing. Loom/model tests cover acquire/recheck/publish/release interleavings. Add sampled
+verification races, duplicate feedback, circuit opening during loader, evaluator cancellation and
+kill-switch propagation; no sampled path may create a semantic rather than exact single-flight key.
 
 **Exit.** No loader result can be published by a stale generation and no non-identical fingerprint
 is coalesced, even when its vector score is 1.0.
@@ -924,14 +1148,23 @@ is coalesced, even when its vector score is 1.0.
 
 **Changes.** Define physical logical index selection by authenticated tenant, namespace generation
 and embedding profile. Add a threat model for content leakage, timing/cardinality side channels,
-malicious vectors, filter forgery, batch amplification, migration-role forgery, maintenance abuse
-and deletion obligations.
+malicious vectors, cache poisoning, score-oracle probing, forged provenance/feedback, filter forgery,
+batch amplification, migration-role forgery, maintenance abuse and deletion obligations.
 
 **Implementation.** Never search a cross-tenant graph and filter afterward. Do not log prompt,
 response, vector coordinates or tenant-controlled scope fields. Raw prompt retention is off by
 default; optional retention is a separate encrypted payload field with explicit policy. Namespace
 delete fences new operations, removes authoritative records, drains indexes/checkpoints and proves
 reclamation before name reuse.
+
+Classify canonical vectors, vector digests where linkable, candidate IDs and hit proofs at least as
+sensitive as their source namespace. Read-only principals cannot write; write principals are mapped
+to bounded writer classes, and family producer policy decides which classes/pipeline revisions may
+be reused. High-level cache lookups hide exact score and other candidates by default. Exact scores,
+vectors and diagnostic candidate lists require separate rate-limited permission and audit receipt;
+threshold probing receives coarse stable outcomes and normal abuse controls. Feedback requires an
+evaluator class, opaque live hit proof, namespace/profile match, dedup and quota and cannot carry
+free-form content or affect another tenant.
 
 `backfill_profile_batch` is a separate permission scoped to tenant, namespace generation and target
 profile; it requires expected payload version and cannot update value/scope/TTL/tags. Profile
@@ -940,12 +1173,20 @@ permissions plus audit receipts. Candidate proofs expose aggregate counts and op
 authorized callers. Capacity/profile names are allowlisted configuration values, not attacker-
 controlled metric labels.
 
+Document immediate logical non-reuse separately from physical removal across primary/backups,
+retired generations, checkpoints and backup archives. Where per-namespace encryption exists,
+supported crypto-erasure may close retained-backup state; otherwise the receipt reports configured
+backup expiry and must not claim erasure. Name reuse waits for the required logical and physical
+scope defined by policy.
+
 **Tests.** Hostile HC/2/internal frames forge tenant/generation/profile, oversize vectors, NaN/
 infinity, decompression/codec bombs and replay epochs. Timing/cardinality tests verify bounded
 coarse diagnostics. Add hostile batches with mixed tenants, forged expected version, repeated item
 IDs, maximum partitions and cancellation; unauthorized profile cutover/maintenance; stale rollback;
-and delete during backfill/rebuild. Secret scanning covers logs, traces, checkpoints, maintenance
-receipts, crash artifacts and evidence packages.
+delete during backfill/rebuild; low-trust producer insertion near a popular query; exact-score
+enumeration; forged/duplicated feedback and cross-tenant circuit attempts. Scan primary/backup test
+images, active/retired generations, checkpoints, temporary files, logs, traces, maintenance/deletion
+receipts, crash artifacts and evidence packages according to retention state.
 
 **Exit.** Security review and real-process isolation gates prove no cross-tenant candidate access,
 not merely no cross-tenant response after application filtering.
@@ -955,14 +1196,22 @@ not merely no cross-tenant response after application filtering.
 **Changes.** Add `SemanticIndexConfig` and per-tenant/index accounting: dimensions, entries,
 authoritative bytes, index bytes, indexes, top-k, concurrent queries, queue bytes, build/rebuild
 work, delta lag, checkpoints, profile slots, batch bytes/partitions, candidate-stage bytes,
-maintenance reservations, SIMD scratch and generation leases. Add `xtask semantic-capacity-plan`
-and a machine-readable admission receipt.
+maintenance/scrub/purge reservations, feedback/diagnostic rates, SIMD scratch and generation leases.
+Add weighted semantic admission/eviction, `xtask semantic-capacity-plan` and a machine-readable
+admission receipt.
 
 **Implementation.** Admission reserves bytes before mutation. Foreground query, authoritative
 mutation, index delta, rebuild and transfer use separate bounded lanes; safety/control traffic
 cannot be starved. Eviction remains an authoritative cache decision; index-only eviction may cause
 a miss but never pretend the entry was deleted. Tombstone ratio and fragmentation trigger a
 budgeted rebuild with hysteresis/circuit breaker.
+
+Compute record weight from actual encoded authority bytes, all vector slots, replica multiplier and
+the measured configured derived charge. Reserve before commit and reconcile after index mutation;
+large discrepancy stops further admission for that family. Reuse existing bounded cache policy for
+victim selection, excluding client-claimed provider/token cost. Eviction, purge, scrub, verification
+feedback and exact diagnostics have separate queues/quotas; none may starve safety/control or cold
+tenants. A quality or integrity circuit sheds auto-reuse immediately without deleting authority.
 
 Account authority primary/backups, every active/shadow/previous ANN generation, journals/tombstones,
 checkpoint/disk bytes, query/build scratch, target rebuild generation and redistribution after one
@@ -979,7 +1228,9 @@ returns queues/owners to steady bounds. Run normal, rebuild, one-member-loss and
 `N-1 + rebuild + foreground load` scenarios, including active+shadow+previous profile maximum and
 largest legal batch. Mutation tests omit each capacity component and must cause the planner/gate to
 underestimate then fail. Compare reserved, component-measured and process-level high-water values
-within a frozen reconciliation tolerance.
+within a frozen reconciliation tolerance. Add unique-vector pollution, adversarial weights, hot
+producer versus cold tenant, eviction during query/rebuild/cutover, feedback flood, diagnostic score
+scan and scrub/purge storms; prove bounded work, coherent tombstones and cold/safety progress.
 
 **Exit.** No client-controlled input creates unbounded work or retained state, and overload has a
 typed retryable/non-retryable result rather than timeout-only behavior.
@@ -989,7 +1240,8 @@ typed retryable/non-retryable result rather than timeout-only behavior.
 **Changes.** Extend Rust HC/2, Java HC/2 and Python HC/2 with the same semantic types and methods.
 Add high-level response/tool-result helpers that accept application embedding/loader callbacks but
 no provider SDK dependency. Add bounded batch streaming/backpressure, profile migration inspection
-and authorized maintenance clients without exposing HNSW-specific types.
+typed verification/feedback, deletion receipt inspection and authorized maintenance clients without
+exposing HNSW-specific types.
 
 **Implementation.** Generated HC/2 messages remain internal; hand-written SDK models expose stable
 types. All SDKs default to `ShadowOnly` until an admitted reuse profile is supplied. Examples show
@@ -1004,13 +1256,22 @@ visible; they do not synthesize one embedding from another. Administrative APIs 
 bounded progress by default; destructive cutover/retire calls remain explicit and are not hidden in
 convenience helpers.
 
+Cache helpers expose the effective decision-policy revision and typed miss reason but hide exact
+score by default. Exact-score/vector/candidate diagnostics require an explicit diagnostic client and
+permission. Verification callbacks are application-owned, use the existing exact lease and submit
+only typed feedback bound to an opaque proof; provider calls/cost remain visible to the application.
+SDKs expose quality-circuit/kill-switch outcomes and logical-versus-physical deletion status without
+silently retrying into weaker semantics.
+
 **Tests.** Cross-language request/response goldens, live daemon interop, cancellation/deadline,
 unknown-field compatibility, wheel/JAR/crate clean-consumer tests and retained 0.75 client matrix.
 Python covers async cancellation and binary vector buffers; Java covers little-endian `FloatBuffer`
 and lifecycle; Rust covers typed payload codecs. Cross-language batch tests vary chunk boundaries,
 partial/ambiguous responses and retry; migration tests dual-write, backfill and observe cutover;
-maintenance tests enforce authorization and job-state mapping. No SDK may expose raw `ef`, degree,
-partition/member candidate limits or backend string hints.
+maintenance tests enforce authorization and job-state mapping. Add stricter-only score/margin,
+score-disclosure permission, verification sampling, feedback dedup/expiry, circuit demotion and
+deletion receipt goldens. No ordinary SDK method may expose raw `ef`, degree, partition/member
+candidate limits, backend string hints or an exact score oracle.
 
 **Exit.** The same seeded query yields identical identity, scope, ordering, outcome and proof in all
 three SDKs, and old clients continue to operate without semantic capability.
@@ -1020,12 +1281,16 @@ three SDKs, and old clients continue to operate without semantic capability.
 **Changes.** Add `ShadowOnly`, `ManualReuse` and `AutoReuse` profile states. Create versioned labelled
 corpora of exact duplicates, paraphrases, acceptable variants, hard negatives, negation, temporal
 changes, locale boundaries, tool-schema changes, retrieval updates and safety-policy changes. Add a
-paired active-versus-shadow migration corpus and duplicate-heavy ANN corpus.
+paired active-versus-shadow migration corpus, duplicate-heavy ANN corpus, poisoning/provenance cases,
+near-tie ambiguity cases and a post-promotion drift/feedback campaign.
 
 **Implementation.** Shadow mode performs lookup but always calls the loader, recording only
 privacy-safe candidate ID/score, expected class and comparison outcome. W0 freezes train/tune/test
-separation, thresholds and estimator before active candidate results. A profile promotes only from
-an untouched evaluation split and binds corpus, embedding model and reuse scope digests.
+separation, minimum score, top-two margin, maximum age, validation depth, thresholds and estimator
+before active candidate results. A profile promotes only from an untouched evaluation split and
+binds corpus, embedding model, producer policy, decision policy and reuse scope digests. Auto-reuse
+validates enough final candidates to evaluate ambiguity; a high winner score is insufficient when
+the admitted top-two margin fails.
 
 For migration, shadow queries run beside active under identical request/scope and frozen search
 class. Receipts report authoritative coverage, eligible query coverage, recall@k, score/decision
@@ -1036,22 +1301,34 @@ profile retirement requires a post-cutover observation window and successful rol
 ANN dedup, SIMD and search-class revisions each get a separate paired cell so combined changes do
 not hide which mechanism changed recall or ordering.
 
+After promotion, run a frozen bounded verification sample and accept authenticated typed application
+feedback. Report evaluator coverage, accepted/rejected/corrected counts, dedup/replay rejection and
+confidence separately from offline corpus evidence. Feedback never retrains/tunes. A verified hard
+boundary/provenance failure or preregistered sustained quality/resource breach opens the profile
+circuit and demotes it to `ShadowOnly`; reopening requires operator/root-cause evidence and a fresh
+admission receipt. Test the emergency kill switch independently of statistical feedback and measure
+its cluster propagation/fail-closed SLO.
+
 **Tests.** Require zero security/scope boundary reuse, publish confusion matrix and score
 distribution, and calculate false-reuse confidence bounds. ANN recall is compared with flat exact
 search separately from semantic answer quality. Threshold mutations and label leakage canaries must
 turn the gate red. Add canaries that count ANN nodes instead of authoritative coverage, promote a
 shadow with missing partitions, omit duplicate-vector aliases, lower candidate budgets after seeing
-results or retire previous before rollback rehearsal; all must fail.
+results, lower score/margin from a client, admit a poisoned producer, count forged feedback, suppress
+demotion or retire previous before rollback rehearsal; all must fail.
 
 **Exit.** Auto-reuse remains disabled for any profile without a reproducible receipt. Hit rate alone
-cannot promote a profile; false reuse and incomplete-search behavior are primary release gates.
+cannot promote a profile; false reuse, ambiguity, provenance and incomplete-search behavior are
+primary release gates. Every promoted profile demonstrates feedback/circuit/kill-switch demotion and
+cannot automatically re-enable itself.
 
 ## W13. Measure latency, avoided calls, quality and cost honestly
 
 **Changes.** Build a common benchmark with HydraCache flat/HNSW, exact-key HydraCache, pinned Redis
-semantic cache and no semantic cache adapters. Precompute identical embeddings and separate index
-latency from optional end-to-end embedding latency. Add scalar/SIMD, named search class,
-single/batch ingestion, active-only/migration, maintenance and failure-capacity cohorts.
+semantic cache, pinned Hazelcast Enterprise VectorCollection and no semantic cache adapters.
+Precompute identical embeddings and separate index latency from optional end-to-end embedding
+latency. Add scalar/SIMD, named search class, single/batch ingestion, active-only/migration,
+maintenance and failure-capacity cohorts.
 
 **Implementation.** Run same-host counterbalanced pairs over fixed cardinality, dimensions, scope
 selectivity, hit/miss/near-threshold mix, payload sizes, top-k, clients and cluster topology. Use
@@ -1059,6 +1336,17 @@ open-loop offered load and retain all errors, rejections, timeouts and incomplet
 goodput, p50/p95/p99/p99.9, CPU/query, bytes/vector, rebuild time, recall@k, semantic precision,
 avoided loader calls and avoided input/output tokens. Currency cost is timestamped illustrative
 metadata, never the stable gate.
+
+Keep two Hazelcast cohorts. The lower-layer ANN cohort uses the same normalized vectors, dimensions,
+DOT metric, corpus, top-k, one/three-member topology, backup count and as-close-as-documented graph/
+candidate budgets; pin Hazelcast/JDK/container/license identity, partition count, Vector API flag,
+max-degree, `ef-construction`, `efSearch`, partition/member limits and all defaults. It compares
+vector ingestion/search only and makes no semantic-cache claim. The end-to-end cohort uses a common
+application adapter that adds the same hard scope, TTL, producer policy, decision score/margin and
+authoritative final validation around VectorCollection, accounts for any companion metadata store
+and rejects a cell as not comparable when equivalent semantics cannot be expressed. Do not weaken
+HydraCache or Hazelcast backups/durability, hide Enterprise licensing, or infer universal superiority
+from one cardinality/topology.
 
 Report per-stage query work: partitions/members contacted, visited graph nodes, candidates emitted
 at partition/member/coordinator, truncations, candidate bytes, authoritative rechecks and invalidated
@@ -1068,6 +1356,9 @@ validation/cutover/cleanup time, foreground latency/goodput impact and retained 
 Capacity cells compare predicted versus observed component/process peaks in steady, rebuild, N−1 and
 combined N−1+rebuild states. SIMD claims require identical semantic gates and publish CPU feature/
 kernel identity; profile migration reports dual-write/backfill cost rather than hiding it.
+Admission/eviction cells publish accepted/rejected/evicted records, pollution resistance and bytes
+per live reusable entry. Quality-circuit cells report verification overhead and demotion latency;
+deletion cells report logical non-reuse and physical-reclamation latency separately.
 
 **Tests/evidence.** Semantic equivalence and corpus admission run before timing. Include one/three
 members, replication, failover, rebuild and noisy-tenant cells. Publish wins, losses, equivalent,
@@ -1075,7 +1366,9 @@ inconclusive and not-comparable cells; no composite score. Long-run exact-candid
 resource/lag stability. Counterbalance maintenance/no-maintenance and scalar/SIMD order; freeze batch
 size and search budgets before timing. A benchmark adapter that uses a raw backend hint, different
 candidate budget, incomplete fan-out, weaker backup policy or asynchronous durability is rejected as
-not comparable.
+not comparable. Hazelcast tests first run semantic/data parity, document every unavoidable mismatch
+and retain only artifacts permitted by the pinned license; unavailable licensed runtime yields an
+honest not-run receipt rather than substituting a mock.
 
 **Exit.** Any published advantage names exact profile, topology, corpus, workload, product/tooling
 SHA, host, estimator and uncertainty. A faster result with worse false reuse, recall, errors,
@@ -1098,8 +1391,11 @@ checkpoints are optional accelerators and are digest-validated/rebuildable.
 Add fixed-cardinality metrics for `visited_nodes`, partition/member/coordinator candidates,
 stage truncations, scalar/SIMD/flat fallback, authoritative recheck rejects, duplicate-vector ratio,
 tombstone/fragmentation ratio, maintenance phase/progress/reservation, profile role/coverage/lag and
-capacity predicted/observed bytes. Histograms have frozen buckets; tenant/index identifiers are
-hashed/bounded or available only through authorized paged views, never labels.
+capacity predicted/observed bytes. Add provenance rejects, below-score/ambiguous-margin decisions,
+score-disclosure denials, verification samples/feedback rejects, quality-circuit/kill-switch state,
+authority admission/eviction weight, purge receipt age/backlog and scrub coverage/mismatch/repair.
+Histograms have frozen buckets; tenant/index identifiers are hashed/bounded or available only through
+authorized paged views, never labels.
 
 The upgrade order is: deploy readers that understand new record fields → enable semantic capability
 without active profiles → build/shadow index generations → admit profile → enable auto-reuse.
@@ -1109,12 +1405,21 @@ rollback transform, and discards rebuildable index generations. Backup manifests
 profile/cutover metadata plus capacity/config digests; restored ANN checkpoints are accepted only
 after epoch/schema/digest validation, otherwise a reserved rebuild runs.
 
+Runbooks cover: poisoning response and writer revocation; exact-score diagnostic abuse; manual and
+automatic quality demotion; emergency namespace/profile disable; admission/eviction pressure;
+logical deletion versus backup-aware physical purge; scrub mismatch and rebuild; feedback outage;
+profile rollback; maintenance cancellation; and restoration without a trusted ANN checkpoint. Each
+action names required permission, observable receipt, safe retry/rollback and condition for returning
+to active reuse.
+
 **Tests.** Old/new daemon and SDK matrix, interrupted rebuild across restart, checkpoint downgrade,
 backup/restore followed by full rebuild, full-cluster restart, cert rotation, clean workspace,
 package consumers, docs examples, dynamic canaries and evidence archive verification. Add rolling
 upgrade during dual-write/backfill and maintenance, active cutover with old coordinator present,
 rollback after one-member loss, restore with/without optional ANN checkpoint, metric-cardinality and
-no-secret assertions, and capacity receipt reproduction on the admitted host.
+no-secret assertions, capacity receipt reproduction on the admitted host, producer revocation,
+score-oracle rate limiting, quality demotion during rolling upgrade, kill-switch propagation, purge
+across retained backup expiry and live scrub corruption/repair.
 
 **Exit.** Exact-candidate release evidence binds product/tooling/SDK/proto/index/corpus/profile/
 comparison identities and every nested artifact hash. Release notes state admitted profiles and
@@ -1125,33 +1430,36 @@ the gate.
 
 | Tier | Mandatory proof |
 | --- | --- |
-| Unit/model | Vector validation/canonicalization, normalized-DOT/cosine equivalence, scalar/SIMD differential, ordering, scope identity, named-profile resolution, staged budgets/completeness, batch outcomes, profile transitions, maintenance state machine, version/TTL/tag transitions and exact lease fencing. |
-| Property/fuzz | Wire/record/checkpoint/job decoders, arbitrary finite vectors and SIMD tails, operation/batch/profile sequences, delta ordering, per-stage bounds and corrupt/truncated inputs. |
-| Concurrency | Query vs replace/delete/expire/backfill/cutover, lease holder death, rebuild delta cutover, maintenance cancel/resume, batch retry, cancellation and shutdown; loom where state is bounded. |
-| Cross-language | Rust/Java/Python canonical vectors, scope/fingerprint/config digests, named classes, completeness and batch/job HC/2 messages, error/retry mapping and live daemon interop. |
-| Real process | One/three/five members, non-owner ingress, per-stage candidate cutoffs, failover, partition, rebalance, rolling upgrade, restart, profile cutover/rollback, maintenance resume and namespace reuse. |
-| Security | Tenant/backfill/profile-role forgery, maintenance authorization, internal-route auth/replay, batch amplification, malicious vectors, content-free telemetry, deletion/reclamation and evidence secret scan. |
-| Quality | Labelled untouched corpus, hard boundaries/negatives, flat-vs-ANN recall, active-vs-shadow migration, duplicate vectors, scalar-vs-SIMD, named search classes, confidence and threshold canaries. |
-| Resource | Entry/index/vector-slot/payload/top-k/partition/member/concurrency/queue/batch/maintenance limits, active+shadow+previous, noisy tenant, steady cleanup and predicted-vs-observed normal/N−1/rebuild/N−1+rebuild envelopes. |
-| Performance | Same-semantics open-loop exact/flat/HNSW/Redis/no-cache controls, fixed embeddings, scalar/SIMD, single/batch ingest, named search classes, foreground-under-maintenance and long-run lag/resource stability. |
-| Release | Compatibility, profile migration/rollback, resumable maintenance, capacity receipt, metrics cardinality, SBOM/license/advisory/MSRV, clean crates/JAR/wheel consumers, backup/restore, downgrade and immutable evidence. |
+| Unit/model | Vector validation/canonicalization, normalized-DOT/cosine equivalence, scalar/SIMD differential, ordering, scope/provenance identity, stricter-only score/margin/age decision, disclosure policy, named-profile resolution, staged budgets/completeness, admission/eviction, batch outcomes, profile/quality/deletion/maintenance transitions, TTL/tag and exact lease fencing. |
+| Property/fuzz | Wire/record/checkpoint/job/feedback/deletion decoders, arbitrary finite vectors and SIMD tails, operation/batch/profile/eviction/circuit/purge sequences, delta ordering, per-stage bounds and corrupt/truncated inputs. |
+| Concurrency | Query vs replace/delete/evict/expire/backfill/cutover, lease holder death, circuit/kill-switch, rebuild delta cutover, scrub/purge/maintenance cancel-resume, batch retry, cancellation and shutdown; loom where state is bounded. |
+| Cross-language | Rust/Java/Python canonical vectors, scope/provenance/fingerprint/config digests, decision/disclosure, named classes, completeness, feedback/deletion and batch/job HC/2 messages, error/retry mapping and live daemon interop. |
+| Real process | One/three/five members, non-owner ingress, per-stage candidate cutoffs, failover, partition, rebalance, rolling upgrade, restart, profile cutover/rollback, quality demotion, maintenance/scrub/purge resume and namespace reuse. |
+| Security | Tenant/backfill/profile-role/provenance/feedback forgery, poisoning and score-oracle abuse, diagnostic/maintenance authorization, internal-route auth/replay, batch amplification, malicious vectors, content-free telemetry, deletion/reclamation and evidence secret scan. |
+| Quality | Labelled untouched corpus, hard boundaries/negatives, score/margin ambiguity, producer trust, flat-vs-ANN recall, active-vs-shadow migration, duplicate vectors, scalar-vs-SIMD, named search classes, post-promotion verification/demotion, confidence and mutation canaries. |
+| Resource | Entry/index/vector-slot/payload/top-k/partition/member/concurrency/queue/batch/maintenance/scrub/purge/feedback/diagnostic limits, weighted eviction, active+shadow+previous, noisy tenant, cleanup and predicted-vs-observed normal/N−1/rebuild/N−1+rebuild envelopes. |
+| Performance | Same-semantics open-loop exact/flat/HNSW/Redis/Hazelcast/no-cache controls, fixed embeddings, scalar/SIMD, single/batch ingest, named search classes, admission pollution, verification, deletion and foreground-under-maintenance long-run stability. |
+| Release | Compatibility, producer revocation, profile migration/rollback, quality/kill-switch demotion, resumable maintenance/scrub/purge, deletion SLO, capacity receipt, metrics cardinality, SBOM/license/advisory/MSRV, clean packages, backup/restore, downgrade and immutable evidence. |
 
 ## Fast, scheduled and protected gates
 
 **Fast PR gates:** formatting, clippy, doc-check, semantic contract validation, flat oracle,
 canonical/golden vectors, scalar/SIMD differential, model/property tests, batch/profile/maintenance
-state models, capacity-plan fixture, protocol compatibility, Rust/Java/Python unit tests, bounded
-small-scope authority/index model, hostile input tests and dynamic canaries.
+state models, decision/provenance/feedback/deletion/eviction models, capacity-plan fixture, protocol
+compatibility, Rust/Java/Python unit tests, bounded small-scope authority/index model, hostile input
+tests and dynamic canaries.
 
 **Scheduled gates:** fuzz corpora, Miri/loom, full cross-language daemon interop, three/five-member
 fault/rebalance/rebuild suites, candidate-budget boundaries, active/shadow cutover/rollback,
 maintenance crash/resume/cancel, rolling upgrade, namespace deletion, batch retry, noisy-tenant and
-N−1+rebuild resource matrix, quality corpus and dependency/SBOM audit.
+N−1+rebuild resource matrix, poisoning/score-oracle, scrub/purge, active verification/circuit,
+quality corpus and dependency/SBOM audit.
 
-**Protected exact-candidate gates:** admitted host, pinned corpus/profile/index/Redis identities,
-same-host comparison, long-run resource/lag proof, full compatibility/package/backup/restore,
-independent artifact verification and immutable release archive. Retries are append-only and cannot
-replace failed quality or security evidence.
+**Protected exact-candidate gates:** admitted host, pinned corpus/profile/index/Redis/Hazelcast
+identities and license receipt, same-host comparison, long-run quality-circuit/resource/lag/scrub/
+deletion proof, full compatibility/package/backup/restore, independent artifact verification and
+immutable release archive. Retries are append-only and cannot replace failed quality/security/
+deletion evidence; unavailable licensed comparison is retained as `not-run`, never fabricated.
 
 Representative commands are frozen in W0 and added to `docs/GATES.md`; at minimum they include:
 
@@ -1163,6 +1471,8 @@ cargo nextest run -p hydracache --test semantic_cache
 cargo nextest run -p hydracache-server --test semantic_process
 cargo nextest run -p hydracache-server --test semantic_profile_migration
 cargo nextest run -p hydracache-server --test semantic_maintenance
+cargo nextest run -p hydracache-server --test semantic_security
+cargo nextest run -p hydracache-server --test semantic_quality_circuit
 cargo test -p hydracache-client-hc2 --test semantic_interop
 mvn -pl sdks/java/hydracache-client-hc2 test
 python -m pytest sdks/python/hydracache-client-hc2/tests
@@ -1173,7 +1483,7 @@ cargo xtask release-evidence --release 0.76 --require-ship
 
 | Risk | Required mitigation |
 | --- | --- |
-| Similarity serves a plausible but wrong answer | Default shadow mode, hard scope, labelled hard negatives, profile-specific threshold and false-reuse gate. |
+| Similarity serves a plausible but wrong or ambiguous answer | Default shadow mode, hard scope, labelled hard negatives, immutable score plus top-two-margin policy and false-reuse gate. |
 | Tenant data reaches another tenant's ANN graph | Physically/logically select index by authenticated tenant+namespace generation before search; hostile proof. |
 | Index lag resurrects expired/deleted content | Versioned deltas plus mandatory authoritative final read; stale candidate becomes miss. |
 | Rebuild marks ready too early | Snapshot+delta watermark parity, committed query epoch and falsifying early-ready canary. |
@@ -1189,6 +1499,13 @@ cargo xtask release-evidence --release 0.76 --require-ship
 | SIMD changes score/order across hosts | Scalar reference and final candidate rescore, runtime fallback, architecture goldens and separate recall accounting. |
 | Bulk ingestion amplifies memory or claims false atomicity | Pre-allocation bounds, partition grouping, per-item idempotency/outcomes, backpressure and explicit partial/ambiguous results. |
 | Rebuild plus failover exhausts the cluster | Capacity receipt includes replicas, all profile generations, double-buffer, scratch and N−1 redistribution; combined failure gate. |
+| Low-trust writer poisons a popular semantic neighbourhood | Server-derived writer class, admitted producer/pipeline policy in hard scope, separate write permission, quotas and poisoning corpus. |
+| Exact scores become a membership/enumeration oracle | Hidden/coarse default disclosure, separate rate-limited diagnostic permission, audit receipt and abuse tests. |
+| Offline-admitted quality drifts after deployment | Bounded authenticated verification/feedback, preregistered circuit, fast kill switch, automatic demotion only and operator-controlled re-admission. |
+| Unique-vector floods defeat memory bounds | Full semantic weight, pre-commit reservation, bounded authority admission/eviction, pollution workload and coherent removal deltas. |
+| Deletion is logically safe but sensitive vectors remain untracked | Separate logical/physical/backup SLOs, purge receipts, retention-aware wording and disk/backup/checkpoint scans. |
+| Live index corruption survives until restart | Bounded digest/version scrub, immediate shard degradation and normal reserved rebuild with fault injection. |
+| Hazelcast comparison weakens one side or violates licensing | Two scoped cohorts, pinned legal/runtime/config identities, semantic parity precheck and honest not-comparable/not-run cells. |
 | Vector dependency expands supply-chain risk | Trait isolation, pinned source/checksum, SBOM/license/MSRV/advisory review and clean rebuild. |
 | Product drifts into vector database/RAG scope | Capability manifest and release note non-goals; no document/query-language/reranker surface. |
 
@@ -1206,6 +1523,8 @@ cargo xtask release-evidence --release 0.76 --require-ship
   independent semantics and should receive their own release plan.
 - Cross-region semantic indexes and active-active ANN convergence are not inferred from existing
   multiregion metadata features.
+- Online learning, automatic threshold/margin tuning and automatic quality-circuit re-enablement are
+  deferred; 0.76 can only demote automatically and requires a new immutable admission to promote.
 
 ## Final release decision
 
@@ -1215,7 +1534,11 @@ Release 0.76 is eligible only when:
 - public/wire/SDK types expose every miss, unavailable, overload and ambiguous outcome explicitly;
 - Rust, Java and Python agree on vector bytes, identity, scope, ordering and outcomes;
 - hard tenant/namespace/profile selection happens before similarity search;
-- every returned hit passes authoritative version, TTL, generation and hard-scope validation;
+- every returned hit passes authoritative version, TTL, age, generation, hard-scope and admitted
+  producer/writer/pipeline provenance validation;
+- automatic reuse applies an immutable server-owned minimum score, top-two margin and validation
+  depth; client requests can only make the decision stricter and normal helpers do not expose an
+  exact score oracle;
 - stale/corrupt/missing/rebuilding index state can cause only explicit unavailability or miss;
 - flat exact search remains a permanent oracle and all ANN recall/resource thresholds pass;
 - cosine is represented by canonical normalized vectors, every admitted SIMD kernel passes scalar
@@ -1235,20 +1558,30 @@ Release 0.76 is eligible only when:
   epoch-fenced cutover and rollback before the previous profile is retired;
 - optimize/rebuild jobs reserve a double-buffer, checkpoint/resume/cancel safely, validate before
   cutover and never make deletion correctness depend on graph cleanup;
+- authority admission/eviction accounts payload, metadata, every vector slot, replicas and measured
+  derived charge, survives pollution/churn and emits coherent acknowledged removal deltas;
+- logical deletion is immediately non-reusable, while authority/index/checkpoint/backup physical
+  reclamation follows separately declared SLOs and produces bounded retention-aware receipts;
+- bounded live integrity scrub detects version/digest/graph/checkpoint corruption, degrades only the
+  affected scope and repairs through the normal reserved rebuild path;
 - all per-entry/index/tenant/process memory, CPU, queue, task, fan-out and rebuild limits pass at
   boundary−1/boundary/boundary+1 and under noisy tenants;
 - the exact-candidate capacity receipt reconciles predicted and observed component/process peaks and
   passes normal, N−1, rebuild and combined `N−1 + rebuild + foreground load` gates;
 - automatic reuse is enabled only for exact admitted corpus/model/policy profiles, with zero hard
   boundary violations and frozen false-reuse confidence gates;
+- active profiles retain authenticated bounded verification/feedback and a tested emergency kill
+  switch; frozen breaches demote to `ShadowOnly`, and no profile can automatically promote/re-enable;
 - shadow and active evidence publishes precision, false reuse, recall, misses, incompleteness,
   errors and resource trade-offs beside hit rate and latency;
-- Redis/no-cache comparisons use pinned same-semantics identities and publish losses and
+- Redis/Hazelcast/no-cache comparisons use pinned same-semantics/runtime/config/license identities,
+  separate lower-layer ANN from end-to-end semantic reuse and publish losses, not-run and
   not-comparable cells without a composite score;
 - logs, metrics, traces, profiles, crash reports and public artifacts contain no prompt, response,
   vector coordinates, credentials or tenant-controlled identifiers;
-- graph/search/profile/maintenance/capacity metrics have frozen units and bounded cardinality and
-  explain visited nodes, stage candidates/truncation, fallbacks, fragmentation and rebuild progress;
+- graph/search/decision/provenance/quality/eviction/deletion/scrub/profile/maintenance/capacity
+  metrics have frozen units and bounded cardinality and explain visited nodes, stage candidates/
+  truncation, fallbacks, fragmentation, demotion, purge and rebuild progress;
 - old clients/daemons, backup/restore, full restart, downgrade/rebuild and rollback gates pass;
 - exact product/tooling/proto/SDK/index/dependency/corpus/profile/workload/host identities and nested
   artifact checksums are archived immutably;
