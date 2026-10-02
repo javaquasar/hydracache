@@ -13,7 +13,7 @@ use hydracache::{
     TenantRoster,
 };
 use hydracache_client_protocol::{
-    ClientRequest, ClientRequestEnvelope, ClientResponse, Namespace, StructuredKey,
+    BatchPutEntry, ClientRequest, ClientRequestEnvelope, ClientResponse, Namespace, StructuredKey,
 };
 use hydracache_client_transport_axum::{
     performance_profile::observe_client_value_ownership, ClientIdentity, ClientSurfaceLimits,
@@ -23,7 +23,7 @@ use hydracache_loadgen::allocation::{measure_allocations, AllocationMeasurement}
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 
-const PROFILE_ID: &str = "w1-w8-native-api-profile-074-v5";
+const PROFILE_ID: &str = "w1-w9-native-api-profile-074-v6";
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 enum ApiPath {
@@ -59,6 +59,8 @@ enum Operation {
     Get,
     ExpiredGet,
     Put,
+    BatchGet,
+    BatchPut,
     Hit,
     SingleFlight,
 }
@@ -69,6 +71,8 @@ impl Operation {
             "get" => Ok(Self::Get),
             "expired-get" => Ok(Self::ExpiredGet),
             "put" => Ok(Self::Put),
+            "batch-get" => Ok(Self::BatchGet),
+            "batch-put" => Ok(Self::BatchPut),
             "hit" => Ok(Self::Hit),
             "single-flight" => Ok(Self::SingleFlight),
             _ => Err(format!("unsupported operation {value}").into()),
@@ -80,6 +84,8 @@ impl Operation {
             Self::Get => "get",
             Self::ExpiredGet => "expired-get",
             Self::Put => "put",
+            Self::BatchGet => "batch-get",
+            Self::BatchPut => "batch-put",
             Self::Hit => "hit",
             Self::SingleFlight => "single-flight",
         }
@@ -95,6 +101,7 @@ struct Options {
     warmup_operations: u64,
     concurrency: u64,
     payload_bytes: usize,
+    batch_size: usize,
     key_space: u64,
     seed: u64,
     subscriber: bool,
@@ -126,6 +133,7 @@ impl Options {
             warmup_operations: take(&mut values, "--warmup-operations", "1000").parse()?,
             concurrency: take(&mut values, "--concurrency", "1").parse()?,
             payload_bytes: take(&mut values, "--payload-bytes", "256").parse()?,
+            batch_size: take(&mut values, "--batch-size", "8").parse()?,
             key_space: take(&mut values, "--key-space", "4096").parse()?,
             seed: take(&mut values, "--seed", "74").parse()?,
             subscriber: parse_bool(&take(&mut values, "--subscriber", "false"))?,
@@ -141,8 +149,14 @@ impl Options {
     }
 
     fn validate(&self) -> Result<(), Box<dyn Error>> {
-        if self.operations == 0 || self.concurrency == 0 || self.key_space == 0 {
-            return Err("operations, concurrency, and key-space must be non-zero".into());
+        if self.operations == 0
+            || self.concurrency == 0
+            || self.key_space == 0
+            || self.batch_size == 0
+        {
+            return Err(
+                "operations, concurrency, key-space, and batch-size must be non-zero".into(),
+            );
         }
         if self.source_commit.len() != 40
             || !self
@@ -172,6 +186,14 @@ impl Options {
                 return Err(
                     "expired-get requires key-space >= max(operations, warmup-operations)".into(),
                 );
+            }
+        }
+        if matches!(self.operation, Operation::BatchGet | Operation::BatchPut) {
+            if self.surface != ApiPath::ClientSurface {
+                return Err("batch-get and batch-put require the client-surface".into());
+            }
+            if self.key_space < self.batch_size as u64 {
+                return Err("batch operations require key-space >= batch-size".into());
             }
         }
         Ok(())
@@ -229,8 +251,22 @@ struct ClientMetricsReceipt {
     get_value_bytes_cloned: u64,
     get_value_bytes_cloned_per_operation: f64,
     clock_reads: u64,
+    clock_nanoseconds: u64,
+    clock_nanoseconds_per_operation: f64,
     expiry_sweep_checks: u64,
     expiry_sweeps_claimed: u64,
+    expiry_sweep_entries_examined: u64,
+    expiry_sweep_entries_removed: u64,
+    structured_key_materializations: u64,
+    structured_key_bytes_copied: u64,
+    structured_key_bytes_copied_per_operation: f64,
+    batch_operations: u64,
+    batch_items: u64,
+    dispatch_counter_seqcst_operations: u64,
+    clock_floor_seqcst_operations: u64,
+    expiry_gate_seqcst_operations: u64,
+    mutation_counter_seqcst_operations: u64,
+    message_id_seqcst_operations: u64,
     store_lock_acquisitions: u64,
     store_lock_wait_nanoseconds: u64,
     store_lock_hold_nanoseconds: u64,
@@ -275,6 +311,7 @@ struct Receipt {
     warmup_operations: u64,
     concurrency: u64,
     payload_bytes: usize,
+    batch_size: usize,
     key_space: u64,
     seed: u64,
     subscriber_enabled: bool,
@@ -475,6 +512,7 @@ fn build_receipt(options: &Options, observations: Observations) -> Receipt {
         warmup_operations: options.warmup_operations,
         concurrency: options.concurrency,
         payload_bytes: options.payload_bytes,
+        batch_size: options.batch_size,
         key_space: options.key_space,
         seed: options.seed,
         subscriber_enabled: options.subscriber,
@@ -527,8 +565,23 @@ fn build_receipt(options: &Options, observations: Observations) -> Receipt {
             get_value_bytes_cloned: client.get_value_bytes_cloned,
             get_value_bytes_cloned_per_operation: client.get_value_bytes_cloned as f64 / operations,
             clock_reads: client.clock_reads,
+            clock_nanoseconds: client.clock_nanoseconds,
+            clock_nanoseconds_per_operation: client.clock_nanoseconds as f64 / operations,
             expiry_sweep_checks: client.expiry_sweep_checks,
             expiry_sweeps_claimed: client.expiry_sweeps_claimed,
+            expiry_sweep_entries_examined: client.expiry_sweep_entries_examined,
+            expiry_sweep_entries_removed: client.expiry_sweep_entries_removed,
+            structured_key_materializations: client.structured_key_materializations,
+            structured_key_bytes_copied: client.structured_key_bytes_copied,
+            structured_key_bytes_copied_per_operation: client.structured_key_bytes_copied as f64
+                / operations,
+            batch_operations: client.batch_operations,
+            batch_items: client.batch_items,
+            dispatch_counter_seqcst_operations: client.dispatch_counter_seqcst_operations,
+            clock_floor_seqcst_operations: client.clock_floor_seqcst_operations,
+            expiry_gate_seqcst_operations: client.expiry_gate_seqcst_operations,
+            mutation_counter_seqcst_operations: client.mutation_counter_seqcst_operations,
+            message_id_seqcst_operations: client.message_id_seqcst_operations,
             store_lock_acquisitions: client.store_lock_acquisitions,
             store_lock_wait_nanoseconds: client.store_lock_wait_nanoseconds,
             store_lock_hold_nanoseconds: client.store_lock_hold_nanoseconds,
@@ -551,7 +604,10 @@ fn build_receipt(options: &Options, observations: Observations) -> Receipt {
 }
 
 async fn preload(context: &Context, options: &Options) -> Result<(), Box<dyn Error>> {
-    if !matches!(options.operation, Operation::Get | Operation::Hit) {
+    if !matches!(
+        options.operation,
+        Operation::Get | Operation::BatchGet | Operation::Hit
+    ) {
         return Ok(());
     }
     for sequence in 0..options.key_space {
@@ -754,6 +810,70 @@ async fn execute_one(
                 _ => Err("client-surface expired GET was not a miss".to_owned()),
             }
         }
+        (ApiPath::ClientSurface, Operation::BatchGet) => {
+            let keys = (0..options.batch_size)
+                .map(|index| structured_key(options, batch_key_sequence(options, sequence, index)))
+                .collect();
+            let response = dispatch(
+                context,
+                sequence,
+                ClientRequest::BatchGet {
+                    ns: context.namespace.clone(),
+                    keys,
+                },
+            );
+            let ClientResponse::Batch { items } = response else {
+                return Err("client-surface batch GET did not return a batch".to_owned());
+            };
+            if items.len() != options.batch_size {
+                return Err("client-surface batch GET returned the wrong item count".to_owned());
+            }
+            for (index, item) in items.iter().enumerate() {
+                let item_sequence = batch_key_sequence(options, sequence, index);
+                if item.index != index
+                    || !item
+                        .result
+                        .as_ref()
+                        .ok()
+                        .and_then(Option::as_deref)
+                        .is_some_and(|value| payload_matches(options, item_sequence, value))
+                {
+                    return Err("client-surface batch GET value mismatch".to_owned());
+                }
+            }
+            Ok(())
+        }
+        (ApiPath::ClientSurface, Operation::BatchPut) => {
+            let entries = (0..options.batch_size)
+                .map(|index| {
+                    let item_sequence = batch_key_sequence(options, sequence, index);
+                    BatchPutEntry {
+                        key: structured_key(options, item_sequence),
+                        value: payload(options, item_sequence),
+                    }
+                })
+                .collect();
+            let response = dispatch(
+                context,
+                sequence,
+                ClientRequest::BatchPut {
+                    ns: context.namespace.clone(),
+                    entries,
+                },
+            );
+            let ClientResponse::Batch { items } = response else {
+                return Err("client-surface batch PUT did not return a batch".to_owned());
+            };
+            if items.len() != options.batch_size
+                || items
+                    .iter()
+                    .enumerate()
+                    .any(|(index, item)| item.index != index || !matches!(&item.result, Ok(None)))
+            {
+                return Err("client-surface batch PUT result mismatch".to_owned());
+            }
+            Ok(())
+        }
         (ApiPath::GetOrInsert, Operation::Hit) => {
             let expected = profile_value(options, sequence);
             let fallback = expected.clone();
@@ -849,6 +969,13 @@ fn structured_key(options: &Options, sequence: u64) -> StructuredKey {
     StructuredKey::new(vec![cache_key(options, sequence)]).expect("generated key is valid")
 }
 
+fn batch_key_sequence(options: &Options, sequence: u64, item: usize) -> u64 {
+    sequence
+        .saturating_mul(options.batch_size as u64)
+        .saturating_add(item as u64)
+        % options.key_space
+}
+
 fn profile_value(options: &Options, sequence: u64) -> ProfileValue {
     ProfileValue {
         bytes: payload(options, sequence),
@@ -891,6 +1018,7 @@ fn workload_digest(options: &Options) -> String {
         options.warmup_operations,
         options.concurrency,
         options.payload_bytes as u64,
+        options.batch_size as u64,
         options.key_space,
         options.seed,
         options.subscriber as u64,
@@ -899,12 +1027,24 @@ fn workload_digest(options: &Options) -> String {
         digest.update(value.to_le_bytes());
     }
     for sequence in 0..options.operations {
-        let key = cache_key(options, sequence);
-        let value = payload(options, sequence);
-        digest.update((key.len() as u64).to_le_bytes());
-        digest.update(key.as_bytes());
-        digest.update((value.len() as u64).to_le_bytes());
-        digest.update(value);
+        let items = if matches!(options.operation, Operation::BatchGet | Operation::BatchPut) {
+            options.batch_size
+        } else {
+            1
+        };
+        for item in 0..items {
+            let item_sequence = if items == 1 {
+                sequence
+            } else {
+                batch_key_sequence(options, sequence, item)
+            };
+            let key = cache_key(options, item_sequence);
+            let value = payload(options, item_sequence);
+            digest.update((key.len() as u64).to_le_bytes());
+            digest.update(key.as_bytes());
+            digest.update((value.len() as u64).to_le_bytes());
+            digest.update(value);
+        }
     }
     format!("sha256:{:x}", digest.finalize())
 }
@@ -1012,6 +1152,7 @@ mod tests {
             warmup_operations: 0,
             concurrency: 2,
             payload_bytes: 32,
+            batch_size: 4,
             key_space: 8,
             seed: 74,
             subscriber: false,
@@ -1055,6 +1196,8 @@ mod tests {
             (ApiPath::TypedEmbedded, Operation::Put),
             (ApiPath::ClientSurface, Operation::Get),
             (ApiPath::ClientSurface, Operation::ExpiredGet),
+            (ApiPath::ClientSurface, Operation::BatchGet),
+            (ApiPath::ClientSurface, Operation::BatchPut),
             (ApiPath::GetOrInsert, Operation::Hit),
         ] {
             let options = options(surface, operation);
@@ -1079,5 +1222,17 @@ mod tests {
             .unwrap();
             assert_eq!(result.histogram.len(), options.operations);
         }
+    }
+
+    #[test]
+    fn batch_workload_identity_binds_batch_size_and_surface() {
+        let batch = options(ApiPath::ClientSurface, Operation::BatchGet);
+        batch.validate().unwrap();
+        let mut larger = batch.clone();
+        larger.batch_size += 1;
+        assert_ne!(workload_digest(&batch), workload_digest(&larger));
+
+        let invalid = options(ApiPath::RawEmbedded, Operation::BatchGet);
+        assert!(invalid.validate().is_err());
     }
 }
