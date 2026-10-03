@@ -45,6 +45,11 @@ claim; those boundaries remain unchanged.
 - `artifact-manifest.tsv` binds provider identities to exact archive bytes.
 - `SHA256SUMS` binds every archived file except `SHA256SUMS` itself.
 
+The local `.gitattributes` disables text conversion for the whole archive so a
+fresh Windows checkout retains the provider bytes and verifies the same
+checksums. The follow-up verifier correction reads runner and scenario identity
+from the frozen Git commit rather than from platform-converted worktree bytes.
+
 The branch `evidence/0.73/w10-confirmation` must never be force-pushed or
 rewritten. Any correction is a new append-only commit identifying what it
 supersedes.

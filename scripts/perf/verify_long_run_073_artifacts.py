@@ -8,6 +8,7 @@ import hashlib
 import json
 import pathlib
 import re
+import subprocess
 import tempfile
 import zipfile
 from datetime import datetime, timezone
@@ -47,6 +48,16 @@ def sha256_file(path: pathlib.Path) -> str:
         for chunk in iter(lambda: source.read(1024 * 1024), b""):
             digest.update(chunk)
     return digest.hexdigest()
+
+
+def git_blob_sha256(repository: pathlib.Path, revision: str, relative: str) -> str:
+    result = subprocess.run(
+        ["git", "show", f"{revision}:{relative}"],
+        cwd=repository,
+        check=True,
+        capture_output=True,
+    )
+    return hashlib.sha256(result.stdout).hexdigest()
 
 
 def safe_extract(archive_path: pathlib.Path, destination: pathlib.Path) -> set[str]:
@@ -235,10 +246,18 @@ def main() -> int:
                 raise ValueError(f"campaign {field} mismatch")
         if campaign.get("regression_budgets") != long_run.REGRESSION_BUDGETS:
             raise ValueError("campaign regression budgets mismatch")
-        if campaign.get("identity", {}).get("runner_sha256") != sha256_file(pathlib.Path(long_run.__file__)):
+        repository = pathlib.Path(__file__).resolve().parents[2]
+        runner_digest = git_blob_sha256(
+            repository, TOOLING_SHA, "scripts/perf/performance_long_run_073.py"
+        )
+        if campaign.get("identity", {}).get("runner_sha256") != runner_digest:
             raise ValueError("runner identity mismatch")
-        scenario = pathlib.Path(__file__).resolve().parents[2] / "docs/testing/performance/0.73/w10-long-run-qualification-v2-contract.toml"
-        if campaign.get("identity", {}).get("scenario_sha256") != sha256_file(scenario):
+        scenario_digest = git_blob_sha256(
+            repository,
+            TOOLING_SHA,
+            "docs/testing/performance/0.73/w10-long-run-qualification-v2-contract.toml",
+        )
+        if campaign.get("identity", {}).get("scenario_sha256") != scenario_digest:
             raise ValueError("scenario identity mismatch")
 
         canary = json.loads((final_root / "canary/canary.json").read_text(encoding="utf-8"))
