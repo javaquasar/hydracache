@@ -1,0 +1,76 @@
+{
+  "analysis": {
+    "artifact_bytes": 1640187,
+    "checkpoint_count": 1442,
+    "checkpoints_sha256": "8f73147db53c1d2417831d6ee364deaa9077e2fd10cab2e1df54b49cc9832d2c",
+    "cpu_per_operation": 2.5959230324074073e-05,
+    "goodput": 12000.043024603427,
+    "p99": 7311.0,
+    "receipt_sha256": "5718cb934d5bfcb61f45adb4e4f624e76b999c1da104d3e69cb216e4bbd492ab",
+    "resource_bounds": {
+      "anonymous_pss": {
+        "block_samples": 12,
+        "bootstrap_iterations": 10000,
+        "bootstrap_method": "moving-block-adjacent-slope-v1",
+        "bootstrap_seed": 730073,
+        "samples": 1439,
+        "theil_sen_bytes_per_second": 0.8401837961235574,
+        "upper_95_bytes_per_second": 30.14475080949964
+      },
+      "rss": {
+        "block_samples": 12,
+        "bootstrap_iterations": 10000,
+        "bootstrap_method": "moving-block-adjacent-slope-v1",
+        "bootstrap_seed": 730073,
+        "samples": 1439,
+        "theil_sen_bytes_per_second": 0.8401837961235574,
+        "upper_95_bytes_per_second": 30.14475080949964
+      }
+    }
+  },
+  "attempt": {
+    "command": [
+      "taskset",
+      "--cpu-list",
+      "7",
+      "/opt/actions-runner/_work/_temp/long-i73-stage-36839197349-1/tools/performance-integrated-073/target/release/performance-integrated-073",
+      "--profile-id",
+      "integrated-long-run-073-v1",
+      "--role",
+      "I73",
+      "--source-sha",
+      "e757556d3a31d565f52a9561d6d4e555bb1cc373",
+      "--rate",
+      "12000",
+      "--operations",
+      "1036800000",
+      "--warmup-operations",
+      "5000",
+      "--daemon-cpu-set",
+      "5-6",
+      "--loadgen-cpu-set",
+      "7",
+      "--server-binary",
+      "/opt/actions-runner/_work/_temp/hydracache-long-i73-36839197349-1/target/release/hydracache-server",
+      "--output",
+      "/opt/actions-runner/_work/hydracache/hydracache/target/performance-evidence/0.73/long-run-confirmation-36839197349-1/i73/receipt.json",
+      "--checkpoint-output",
+      "/opt/actions-runner/_work/hydracache/hydracache/target/performance-evidence/0.73/long-run-confirmation-36839197349-1/i73/checkpoints.jsonl",
+      "--checkpoint-interval-seconds",
+      "60",
+      "--post-work-idle-seconds",
+      "300",
+      "--allow-unavailable-resources",
+      "false"
+    ],
+    "completed_at": "2026-10-02T09:06:59.354253Z",
+    "duration_seconds": 86701.85706098704,
+    "exit_code": 0,
+    "started_at": "2026-10-01T09:01:57.497199Z",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "stdout_sha256": "c0dcf2b964f04f647547fc8243eef949586f00f3bbe67decc2927138d3978dc0",
+    "timed_out": false
+  },
+  "role": "I73",
+  "valid": true
+}

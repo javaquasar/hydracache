@@ -1,0 +1,208 @@
+{
+  "automatic_retry_allowed": false,
+  "baseline_source_sha": "e757556d3a31d565f52a9561d6d4e555bb1cc373",
+  "calibration": {
+    "host_fingerprint": "sha256:702282650a14db1fd52ae9f326cadc8909aff5046a18827ffd82ed0ddbfc465d",
+    "lease": {
+      "end": "2026-10-04T06:53:32Z",
+      "owner": "long-run-073@javaquasar"
+    },
+    "sha256": {
+      "post-c73": "fcdbf87fb32a8ec1b7260a527a50498752f2ac65a10245f7bbc1ac6593b4746a",
+      "post-i73": "e4cb11d973febe6f6960a072e08317196af6f519c87252c45844c6648225362d",
+      "pre-c73": "eebf796a149cb3aa8a4679207c6f08eb3573956ddb0912e336ccf9a57196cb90",
+      "pre-i73": "f4f2d5983fb9d91770b736f9f38b7057063b8e6dd0e78ac5b88d53f77d5fb436"
+    }
+  },
+  "candidate_source_sha": "16d2e98b6cc9e22d9ccf95eb26fe28bbbcf80f2b",
+  "confirmation_allowed": false,
+  "final_c73_allowed": true,
+  "guards": {
+    "anonymous_pss_slope": true,
+    "cpu_per_operation": true,
+    "goodput": true,
+    "p99": true,
+    "rss_slope": true
+  },
+  "identity": {
+    "c73_harness_sha256": "51e76e8473184ac5acddecced1f40d60d9d79305770e3ad7daa8d3fb0ac0b3cf",
+    "c73_server_sha256": "5f9cd31e7afef65e66cf11fafebba9eb3abaf33d8f083ad93b7f306aa48fa133",
+    "i73_harness_sha256": "9c36453168c27e935975926ae826c22f66564f0b00b02e14db5384aa56cae185",
+    "i73_server_sha256": "50449bca02a5d3bce24a8f02b37d85866834225862b6fe2def21618f2e53d433",
+    "overlay_sha256": "72600b82927129a81cd6ef1fc5119e91180394723a6ae0005e521dd7fbe2ced3",
+    "runner_sha256": "c1be57424dfe61d6dbd758adcac57766c56add39cdc8705dca162c3323870144",
+    "scenario_sha256": "3e15d9374063163b9fb26e8f0cffd7fdf4800ce82ad30205f05eec1d84b6206c"
+  },
+  "mode": "host",
+  "packet_bytes": 3370415,
+  "performance_claim_allowed": false,
+  "phase": "confirmation",
+  "profile_id": "integrated-long-run-073-v1",
+  "regression_budgets": {
+    "cpu_per_operation": 0.03,
+    "goodput": 0.02,
+    "p99": 0.03
+  },
+  "release": "0.73",
+  "result": "passed",
+  "role_order": [
+    "I73",
+    "C73"
+  ],
+  "roles": {
+    "C73": {
+      "analysis": {
+        "artifact_bytes": 1640239,
+        "checkpoint_count": 1442,
+        "checkpoints_sha256": "3d316c5768645ef424efab75245aa0c8429b4ace101b62ce71f76854900fcb15",
+        "cpu_per_operation": 2.6026668595679015e-05,
+        "goodput": 12000.043023226612,
+        "p99": 7287.0,
+        "receipt_sha256": "53f808c5bf5b04316d1343b8052600e9539dd61ebd2cfe2a3be2c622191913c1",
+        "resource_bounds": {
+          "anonymous_pss": {
+            "block_samples": 12,
+            "bootstrap_iterations": 10000,
+            "bootstrap_method": "moving-block-adjacent-slope-v1",
+            "bootstrap_seed": 730073,
+            "samples": 1439,
+            "theil_sen_bytes_per_second": 3.7924855180777755,
+            "upper_95_bytes_per_second": 20.318058662032772
+          },
+          "rss": {
+            "block_samples": 12,
+            "bootstrap_iterations": 10000,
+            "bootstrap_method": "moving-block-adjacent-slope-v1",
+            "bootstrap_seed": 730073,
+            "samples": 1439,
+            "theil_sen_bytes_per_second": 3.7924855180777755,
+            "upper_95_bytes_per_second": 20.318058662032772
+          }
+        }
+      },
+      "attempt": {
+        "command": [
+          "taskset",
+          "--cpu-list",
+          "7",
+          "/opt/actions-runner/_work/_temp/long-c73-stage-36839197349-1/tools/performance-integrated-073/target/release/performance-integrated-073",
+          "--profile-id",
+          "integrated-long-run-073-v1",
+          "--role",
+          "C73",
+          "--source-sha",
+          "16d2e98b6cc9e22d9ccf95eb26fe28bbbcf80f2b",
+          "--rate",
+          "12000",
+          "--operations",
+          "1036800000",
+          "--warmup-operations",
+          "5000",
+          "--daemon-cpu-set",
+          "5-6",
+          "--loadgen-cpu-set",
+          "7",
+          "--server-binary",
+          "/opt/actions-runner/_work/_temp/hydracache-long-c73-36839197349-1/target/release/hydracache-server",
+          "--output",
+          "/opt/actions-runner/_work/hydracache/hydracache/target/performance-evidence/0.73/long-run-confirmation-36839197349-1/c73/receipt.json",
+          "--checkpoint-output",
+          "/opt/actions-runner/_work/hydracache/hydracache/target/performance-evidence/0.73/long-run-confirmation-36839197349-1/c73/checkpoints.jsonl",
+          "--checkpoint-interval-seconds",
+          "60",
+          "--post-work-idle-seconds",
+          "300",
+          "--allow-unavailable-resources",
+          "false"
+        ],
+        "completed_at": "2026-10-03T09:20:03.374518Z",
+        "duration_seconds": 86700.84819720988,
+        "exit_code": 0,
+        "started_at": "2026-10-02T09:15:02.526320Z",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_sha256": "5329b131725abdfcc3a70b886392d2e3067aba80bd64deebebfc38163f58a6e3",
+        "timed_out": false
+      },
+      "role": "C73",
+      "valid": true
+    },
+    "I73": {
+      "analysis": {
+        "artifact_bytes": 1640187,
+        "checkpoint_count": 1442,
+        "checkpoints_sha256": "8f73147db53c1d2417831d6ee364deaa9077e2fd10cab2e1df54b49cc9832d2c",
+        "cpu_per_operation": 2.5959230324074073e-05,
+        "goodput": 12000.043024603427,
+        "p99": 7311.0,
+        "receipt_sha256": "5718cb934d5bfcb61f45adb4e4f624e76b999c1da104d3e69cb216e4bbd492ab",
+        "resource_bounds": {
+          "anonymous_pss": {
+            "block_samples": 12,
+            "bootstrap_iterations": 10000,
+            "bootstrap_method": "moving-block-adjacent-slope-v1",
+            "bootstrap_seed": 730073,
+            "samples": 1439,
+            "theil_sen_bytes_per_second": 0.8401837961235574,
+            "upper_95_bytes_per_second": 30.14475080949964
+          },
+          "rss": {
+            "block_samples": 12,
+            "bootstrap_iterations": 10000,
+            "bootstrap_method": "moving-block-adjacent-slope-v1",
+            "bootstrap_seed": 730073,
+            "samples": 1439,
+            "theil_sen_bytes_per_second": 0.8401837961235574,
+            "upper_95_bytes_per_second": 30.14475080949964
+          }
+        }
+      },
+      "attempt": {
+        "command": [
+          "taskset",
+          "--cpu-list",
+          "7",
+          "/opt/actions-runner/_work/_temp/long-i73-stage-36839197349-1/tools/performance-integrated-073/target/release/performance-integrated-073",
+          "--profile-id",
+          "integrated-long-run-073-v1",
+          "--role",
+          "I73",
+          "--source-sha",
+          "e757556d3a31d565f52a9561d6d4e555bb1cc373",
+          "--rate",
+          "12000",
+          "--operations",
+          "1036800000",
+          "--warmup-operations",
+          "5000",
+          "--daemon-cpu-set",
+          "5-6",
+          "--loadgen-cpu-set",
+          "7",
+          "--server-binary",
+          "/opt/actions-runner/_work/_temp/hydracache-long-i73-36839197349-1/target/release/hydracache-server",
+          "--output",
+          "/opt/actions-runner/_work/hydracache/hydracache/target/performance-evidence/0.73/long-run-confirmation-36839197349-1/i73/receipt.json",
+          "--checkpoint-output",
+          "/opt/actions-runner/_work/hydracache/hydracache/target/performance-evidence/0.73/long-run-confirmation-36839197349-1/i73/checkpoints.jsonl",
+          "--checkpoint-interval-seconds",
+          "60",
+          "--post-work-idle-seconds",
+          "300",
+          "--allow-unavailable-resources",
+          "false"
+        ],
+        "completed_at": "2026-10-02T09:06:59.354253Z",
+        "duration_seconds": 86701.85706098704,
+        "exit_code": 0,
+        "started_at": "2026-10-01T09:01:57.497199Z",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_sha256": "c0dcf2b964f04f647547fc8243eef949586f00f3bbe67decc2927138d3978dc0",
+        "timed_out": false
+      },
+      "role": "I73",
+      "valid": true
+    }
+  },
+  "schema_version": 1,
+  "tooling_sha": "aa853c6abc37b51974a0d45a56b13d9d8c1fcb5f"
+}

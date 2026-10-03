@@ -1,0 +1,28 @@
+{
+  "phase": "confirmation",
+  "profile_id": "integrated-long-run-073-v1",
+  "release": "0.73",
+  "resource_bounds": {
+    "anonymous_pss": {
+      "block_samples": 12,
+      "bootstrap_iterations": 10000,
+      "bootstrap_method": "moving-block-adjacent-slope-v1",
+      "bootstrap_seed": 730073,
+      "samples": 1439,
+      "theil_sen_bytes_per_second": 0.8401837961235574,
+      "upper_95_bytes_per_second": 30.14475080949964
+    },
+    "rss": {
+      "block_samples": 12,
+      "bootstrap_iterations": 10000,
+      "bootstrap_method": "moving-block-adjacent-slope-v1",
+      "bootstrap_seed": 730073,
+      "samples": 1439,
+      "theil_sen_bytes_per_second": 0.8401837961235574,
+      "upper_95_bytes_per_second": 30.14475080949964
+    }
+  },
+  "schema_version": 1,
+  "sealed_before_candidate": true,
+  "source_sha": "e757556d3a31d565f52a9561d6d4e555bb1cc373"
+}

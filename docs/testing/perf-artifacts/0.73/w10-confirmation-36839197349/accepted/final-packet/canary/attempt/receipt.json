@@ -1,0 +1,124 @@
+{
+  "schema_version": 1,
+  "release": "0.73",
+  "profile_id": "integrated-long-run-073-v1",
+  "role": "C73",
+  "source_sha": "16d2e98b6cc9e22d9ccf95eb26fe28bbbcf80f2b",
+  "offered_rate_per_second": 1000,
+  "operations": 2000,
+  "warmup_operations": 100,
+  "weights_percent": [
+    35,
+    30,
+    15,
+    10,
+    5,
+    5
+  ],
+  "daemon_cpu_set": "5-6",
+  "loadgen_cpu_set": "7",
+  "observation": {
+    "offered": 2000,
+    "started": 2000,
+    "completed": 2000,
+    "successes": 2000,
+    "errors": 0,
+    "timeouts": 0,
+    "rejections": 0,
+    "backlog_high_water": 3,
+    "backlog_drained": true,
+    "drain_ms": 0,
+    "elapsed_ms": 1999,
+    "offered_rate_per_second": 1000.0,
+    "achieved_rate_per_second": 1000.0816911729027,
+    "latency": {
+      "samples": 2000,
+      "p50_us": 861,
+      "p90_us": 1650,
+      "p99_us": 2223,
+      "p999_us": null,
+      "p999_min_samples": 5000,
+      "p999_reportable": false,
+      "max_us": 42111,
+      "overflow_count": 0
+    }
+  },
+  "surfaces": {
+    "direct": {
+      "attempted": 200,
+      "success": 200,
+      "rejected": 0,
+      "timeout": 0,
+      "late": 0,
+      "incomplete": 0
+    },
+    "hc1": {
+      "attempted": 300,
+      "success": 300,
+      "rejected": 0,
+      "timeout": 0,
+      "late": 0,
+      "incomplete": 0
+    },
+    "hc2": {
+      "attempted": 700,
+      "success": 700,
+      "rejected": 0,
+      "timeout": 0,
+      "late": 0,
+      "incomplete": 0
+    },
+    "resp": {
+      "attempted": 600,
+      "success": 600,
+      "rejected": 0,
+      "timeout": 0,
+      "late": 0,
+      "incomplete": 0
+    },
+    "tag_invalidation": {
+      "attempted": 100,
+      "success": 100,
+      "rejected": 0,
+      "timeout": 0,
+      "late": 0,
+      "incomplete": 0
+    },
+    "ttl_expire_refill": {
+      "attempted": 100,
+      "success": 100,
+      "rejected": 0,
+      "timeout": 0,
+      "late": 0,
+      "incomplete": 0
+    }
+  },
+  "resources": {
+    "available": true,
+    "cpu_seconds": 0.14,
+    "cpu_seconds_per_completed_operation": 0.00007000000000000001,
+    "rss_before_bytes": 24633344,
+    "rss_after_bytes": 29044736,
+    "peak_rss_after_bytes": 29044736,
+    "anonymous_pss_before_bytes": 3723264,
+    "anonymous_pss_after_bytes": 7806976,
+    "file_pss_before_bytes": 16269312,
+    "file_pss_after_bytes": 16477184
+  },
+  "events_received": 700,
+  "reconciliation_exact": true,
+  "management_truth_zero": true,
+  "durable": {
+    "attempted": 1000,
+    "success": 1000,
+    "budget_rejections": 0,
+    "reclaimed_bytes": 100,
+    "reopen_verified": true,
+    "corruption_rejected": true
+  },
+  "checkpoint_interval_seconds": 1,
+  "post_work_idle_seconds": 1,
+  "checkpoint_count": 3,
+  "final_checkpoint_present": false,
+  "promotable": false
+}

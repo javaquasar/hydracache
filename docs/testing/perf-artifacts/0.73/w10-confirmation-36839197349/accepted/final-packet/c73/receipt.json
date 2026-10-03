@@ -1,0 +1,124 @@
+{
+  "schema_version": 1,
+  "release": "0.73",
+  "profile_id": "integrated-long-run-073-v1",
+  "role": "C73",
+  "source_sha": "16d2e98b6cc9e22d9ccf95eb26fe28bbbcf80f2b",
+  "offered_rate_per_second": 12000,
+  "operations": 1036800000,
+  "warmup_operations": 5000,
+  "weights_percent": [
+    35,
+    30,
+    15,
+    10,
+    5,
+    5
+  ],
+  "daemon_cpu_set": "5-6",
+  "loadgen_cpu_set": "7",
+  "observation": {
+    "offered": 1036800000,
+    "started": 1036800000,
+    "completed": 1036800000,
+    "successes": 1036800000,
+    "errors": 0,
+    "timeouts": 0,
+    "rejections": 0,
+    "backlog_high_water": 59,
+    "backlog_drained": true,
+    "drain_ms": 35,
+    "elapsed_ms": 86399690,
+    "offered_rate_per_second": 12000.0,
+    "achieved_rate_per_second": 12000.043023226612,
+    "latency": {
+      "samples": 1036800000,
+      "p50_us": 1352,
+      "p90_us": 2169,
+      "p99_us": 7287,
+      "p999_us": 7775,
+      "p999_min_samples": 5000,
+      "p999_reportable": true,
+      "max_us": 42079,
+      "overflow_count": 0
+    }
+  },
+  "surfaces": {
+    "direct": {
+      "attempted": 103680000,
+      "success": 103680000,
+      "rejected": 0,
+      "timeout": 0,
+      "late": 0,
+      "incomplete": 0
+    },
+    "hc1": {
+      "attempted": 155520000,
+      "success": 155520000,
+      "rejected": 0,
+      "timeout": 0,
+      "late": 0,
+      "incomplete": 0
+    },
+    "hc2": {
+      "attempted": 362880000,
+      "success": 362880000,
+      "rejected": 0,
+      "timeout": 0,
+      "late": 0,
+      "incomplete": 0
+    },
+    "resp": {
+      "attempted": 311040000,
+      "success": 311040000,
+      "rejected": 0,
+      "timeout": 0,
+      "late": 0,
+      "incomplete": 0
+    },
+    "tag_invalidation": {
+      "attempted": 51840000,
+      "success": 51840000,
+      "rejected": 0,
+      "timeout": 0,
+      "late": 0,
+      "incomplete": 0
+    },
+    "ttl_expire_refill": {
+      "attempted": 51840000,
+      "success": 51840000,
+      "rejected": 0,
+      "timeout": 0,
+      "late": 0,
+      "incomplete": 0
+    }
+  },
+  "resources": {
+    "available": true,
+    "cpu_seconds": 26984.450000000004,
+    "cpu_seconds_per_completed_operation": 0.000026026668595679015,
+    "rss_before_bytes": 27705344,
+    "rss_after_bytes": 32600064,
+    "peak_rss_after_bytes": 32870400,
+    "anonymous_pss_before_bytes": 7000064,
+    "anonymous_pss_after_bytes": 11698176,
+    "file_pss_before_bytes": 16004096,
+    "file_pss_after_bytes": 16080896
+  },
+  "events_received": 362880000,
+  "reconciliation_exact": true,
+  "management_truth_zero": true,
+  "durable": {
+    "attempted": 1000,
+    "success": 1000,
+    "budget_rejections": 0,
+    "reclaimed_bytes": 100,
+    "reopen_verified": true,
+    "corruption_rejected": true
+  },
+  "checkpoint_interval_seconds": 60,
+  "post_work_idle_seconds": 300,
+  "checkpoint_count": 1442,
+  "final_checkpoint_present": true,
+  "promotable": false
+}
