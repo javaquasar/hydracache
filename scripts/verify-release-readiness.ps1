@@ -144,6 +144,47 @@ function Invoke-WorkspaceFormatCheck {
     }
 }
 
+function Invoke-WorkspaceClippyCheck {
+    $isWindowsPlatform = [System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform(
+        [System.Runtime.InteropServices.OSPlatform]::Windows
+    )
+    if (-not $isWindowsPlatform) {
+        Invoke-CheckedCommand -Executable "cargo" -Arguments @(
+            "clippy", "--workspace", "--all-targets", "--all-features", "--locked", "--", "-D", "warnings"
+        )
+        return
+    }
+
+    # jemalloc is neither supported nor built by the Windows release. Keep the
+    # platform gate aligned with `cargo xtask verify`: lint every other crate
+    # with all features, then lint HydraCache's common, system-allocator and
+    # mimalloc configurations explicitly. This is stricter than silently
+    # dropping `--all-features` and avoids asking tikv-jemalloc-sys to execute
+    # its Unix `sh` configure script on Windows.
+    Write-Host "Windows clippy check: validating the supported allocator and feature matrix."
+    Invoke-CheckedCommand -Executable "cargo" -Arguments @(
+        "clippy", "--workspace", "--all-targets", "--all-features", "--exclude", "hydracache", "--locked", "--", "-D", "warnings"
+    )
+    Invoke-CheckedCommand -Executable "cargo" -Arguments @(
+        "clippy", "--workspace", "--all-targets", "--locked", "--", "-D", "warnings"
+    )
+    Invoke-CheckedCommand -Executable "cargo" -Arguments @(
+        "clippy", "-p", "hydracache", "--all-targets", "--no-default-features", "--features",
+        "durable-value-store,durable-values,tiered-values,testing", "--locked", "--", "-D", "warnings"
+    )
+    Invoke-CheckedCommand -Executable "cargo" -Arguments @(
+        "clippy", "-p", "hydracache", "--all-targets", "--no-default-features", "--features",
+        "durable-value-store,durable-values,tiered-values,testing,allocator-system", "--locked", "--", "-D", "warnings"
+    )
+    Invoke-CheckedCommand -Executable "cargo" -Arguments @(
+        "clippy", "-p", "hydracache", "--lib", "--no-default-features", "--features",
+        "durable-value-store,durable-values,tiered-values,testing,allocator-mimalloc", "--locked", "--", "-D", "warnings"
+    )
+    Invoke-CheckedCommand -Executable "cargo" -Arguments @(
+        "clippy", "-p", "hydracache", "--lib", "--features", "allocator-mimalloc", "--locked", "--", "-D", "warnings"
+    )
+}
+
 Push-Location $repoRoot
 try {
     $workspaceVersion = Get-WorkspaceVersion -ManifestPath "Cargo.toml"
@@ -211,7 +252,12 @@ try {
         Write-Host ""
         Write-Host "Running release gate..."
         Invoke-WorkspaceFormatCheck
-        foreach ($command in $gateCommands | Select-Object -Skip 1) {
+        for ($gateIndex = 1; $gateIndex -lt $gateCommands.Count; $gateIndex++) {
+            if ($gateIndex -eq 4) {
+                Invoke-WorkspaceClippyCheck
+                continue
+            }
+            $command = $gateCommands[$gateIndex]
             Invoke-CheckedCommand -Executable $command[0] -Arguments $command[1]
         }
     }

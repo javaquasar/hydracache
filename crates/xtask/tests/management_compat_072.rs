@@ -126,6 +126,19 @@ fn compatibility_guards_are_wired_to_product_and_package_tests() {
             "release readiness omits Windows-safe format guard {marker}"
         );
     }
+    for marker in [
+        "Invoke-WorkspaceClippyCheck",
+        "Windows clippy check: validating the supported allocator and feature matrix.",
+        r#""--all-features", "--exclude", "hydracache""#,
+        "durable-value-store,durable-values,tiered-values,testing,allocator-system",
+        "durable-value-store,durable-values,tiered-values,testing,allocator-mimalloc",
+        r#""--features", "allocator-mimalloc""#,
+    ] {
+        assert!(
+            readiness.contains(marker),
+            "release readiness omits Windows-safe clippy guard {marker}"
+        );
+    }
     assert!(packager.contains("[switch]$NoVerify"));
     assert!(packager.contains("$args += \"--no-verify\""));
     let packages = [
