@@ -72,8 +72,6 @@ def check_manifest(root: pathlib.Path, manifest: dict[str, Any]) -> list[str]:
 
     unresolved = manifest.get("unresolved", {})
     required_unresolved = {
-        "predecessor_annotated_tag",
-        "predecessor_confirmation",
         "candidate_source",
         "admitted_host",
         "redis_binary_digests",
@@ -101,7 +99,7 @@ def dry_run_receipt(manifest_path: pathlib.Path, manifest: dict[str, Any]) -> di
         ],
         "unresolved": sorted(key for key, value in manifest["unresolved"].items() if value),
         "ready_to_execute": False,
-        "reason": "0.73 publication, admitted host, exact candidate, runner identities and explicit authorization are unresolved",
+        "reason": "0.74 admitted host, exact candidate, runner identities and explicit authorization are unresolved",
     }
 
 

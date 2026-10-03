@@ -13,12 +13,12 @@ from this file.
 - All receipts are under `local-runs/`, report `promotable = false`, bind the full source SHA and
   executable SHA-256, bind the deterministic workload SHA-256, and validate every response or
   native result exactly.
-- No rented host, GitHub Actions qualification job, Redis oracle, or 0.73 confirmation process was
-  used or changed.
+- No rented host, GitHub Actions qualification job, or Redis oracle was used. The later 0.73
+  publication evidence was read only; no 0.73 process or artifact was changed.
 
-W0 remains open because an annotated, published `v0.73.0` identity and its final confirmation
-receipts do not exist yet. These runs compare only local I74 stages and W2 candidates. They are not
-a B73/I74 release comparison.
+W0 closed after `v0.73.0` was published and its confirmation/archive receipts were verified. The
+historical runs below still compare only local I74 stages and isolated candidates; reclassifying
+the predecessor does not turn them into a B73/I74 release comparison.
 
 ## W1: what was measured
 

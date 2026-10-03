@@ -14,13 +14,18 @@ const HOST: &str = "host-profile.toml";
 const LOCAL_HARNESS: &str = "local-harness.toml";
 const RELEASE: &str = "0.74";
 const FROZEN_C73: &str = "16d2e98b6cc9e22d9ccf95eb26fe28bbbcf80f2b";
+const C73_TREE: &str = "92336607f21a68f563e65dc0fccccd8efaa14f7b";
+const TAG_OBJECT_073: &str = "38b99244ac11371a6a4149c4d95ece0cdf99520f";
+const TAG_COMMIT_073: &str = "d1db9937e61295341ac95f289bace275641b1650";
+const TAG_TREE_073: &str = "5bea41dd43278a9405648939666de5024d2164cc";
+const ARCHIVE_COMMIT_073: &str = "570a5bcb6959ecc7f01f8c80d0fc32b719832ad9";
 
 pub fn run(args: Vec<String>) -> Result<(), Box<dyn Error>> {
     let options = Options::parse(args)?;
     let mut problems = check_at_root(&options.root, options.receipt.as_deref())?;
     if options.require_ship {
         problems.push(
-            "0.74 ship admission is closed while B73 publication and release qualification are incomplete"
+            "0.74 ship admission is closed while candidate identity and release qualification are incomplete"
                 .to_owned(),
         );
     }
@@ -74,26 +79,69 @@ pub fn check_identities(value: &TomlValue) -> Vec<String> {
         "baseline-identities-074-v1",
         &mut problems,
     );
-    expect_str(value, "state", "local-provisional", &mut problems);
+    expect_str(value, "state", "predecessor-published-local", &mut problems);
     expect_bool(value, "claim_eligible", false, &mut problems);
     let predecessor = table(value, "predecessor_candidate", &mut problems);
-    expect_str(predecessor, "id", "B73-candidate", &mut problems);
+    expect_str(predecessor, "id", "B73", &mut problems);
     expect_str(predecessor, "source_sha", FROZEN_C73, &mut problems);
+    expect_str(predecessor, "tree_oid", C73_TREE, &mut problems);
     expect_bool(predecessor, "product_identity_frozen", true, &mut problems);
+    expect_str(predecessor, "publication_state", "published", &mut problems);
     expect_str(
         predecessor,
-        "publication_state",
-        "confirmation-running",
+        "annotated_tag_object_sha",
+        TAG_OBJECT_073,
         &mut problems,
     );
-    expect_bool(predecessor, "annotated_tag_present", false, &mut problems);
+    expect_str(
+        predecessor,
+        "annotated_tag_commit_sha",
+        TAG_COMMIT_073,
+        &mut problems,
+    );
+    expect_str(
+        predecessor,
+        "annotated_tag_tree_oid",
+        TAG_TREE_073,
+        &mut problems,
+    );
+    expect_bool(predecessor, "annotated_tag_present", true, &mut problems);
     expect_bool(
         predecessor,
-        "release_archive_verified",
-        false,
+        "product_runtime_equivalent_to_tag",
+        true,
         &mut problems,
     );
-    expect_bool(predecessor, "binaries_verified", false, &mut problems);
+    expect_i64(
+        predecessor,
+        "confirmation_run",
+        36_839_197_349,
+        &mut problems,
+    );
+    expect_bool(predecessor, "confirmation_passed", true, &mut problems);
+    expect_str(
+        predecessor,
+        "release_archive_commit",
+        ARCHIVE_COMMIT_073,
+        &mut problems,
+    );
+    expect_bool(predecessor, "release_archive_verified", true, &mut problems);
+    expect_bool(predecessor, "binaries_verified", true, &mut problems);
+    expect_bool(
+        predecessor,
+        "supported_target_receipts_verified",
+        true,
+        &mut problems,
+    );
+    let closure = table(value, "predecessor_closure", &mut problems);
+    for field in [
+        "tag_and_product_relationship_verified",
+        "release_archive_and_hashes_verified",
+        "toolchain_feature_allocator_tls_and_target_receipts_verified",
+        "independent_confirmation_passed",
+    ] {
+        expect_bool(closure, field, true, &mut problems);
+    }
     let instrumented = table(value, "instrumented_baseline", &mut problems);
     expect_str(instrumented, "id", "I74", &mut problems);
     expect_str(instrumented, "root_sha", FROZEN_C73, &mut problems);

@@ -1,22 +1,31 @@
 schema_version = 1
 release = "0.74"
 contract_id = "baseline-identities-074-v1"
-state = "local-provisional"
+state = "predecessor-published-local"
 claim_eligible = false
 
 [predecessor_candidate]
-id = "B73-candidate"
+id = "B73"
 source_sha = "16d2e98b6cc9e22d9ccf95eb26fe28bbbcf80f2b"
 tree_oid = "92336607f21a68f563e65dc0fccccd8efaa14f7b"
 cargo_lock_sha256 = "1699d91358946ebd11d2aa3eae2214e9837b7ef762e2b33ce84ea27de2eed8ad"
 product_identity_frozen = true
-publication_state = "confirmation-running"
+publication_state = "published"
 annotated_tag = "v0.73.0"
-annotated_tag_present = false
-release_archive_verified = false
-binaries_verified = false
-supported_target_receipts_verified = false
-purpose = "provisional local compatibility and performance control only; becomes B73 only after publication evidence closes"
+annotated_tag_object_sha = "38b99244ac11371a6a4149c4d95ece0cdf99520f"
+annotated_tag_commit_sha = "d1db9937e61295341ac95f289bace275641b1650"
+annotated_tag_tree_oid = "5bea41dd43278a9405648939666de5024d2164cc"
+annotated_tag_present = true
+product_runtime_equivalent_to_tag = true
+confirmation_run = 36839197349
+confirmation_passed = true
+release_archive_branch = "evidence/0.73/w10-confirmation"
+release_archive_commit = "570a5bcb6959ecc7f01f8c80d0fc32b719832ad9"
+release_archive_verified = true
+binaries_verified = true
+supported_target_receipts_verified = true
+release_admission_evidence = "docs/testing/performance/0.73/w11-exact-sha-ci-passed-37140860241.toml"
+purpose = "published product baseline; performance identity remains the measured runtime SHA while tag and archive identities are pinned separately"
 
 [instrumented_baseline]
 id = "I74"
@@ -40,11 +49,8 @@ source_identity = "https://github.com/redis/redis/tree/7.2.5"
 same_box_required = true
 claim_gate = false
 
-[blocked_until_predecessor_closes]
-conditions = [
-  "annotated v0.73.0 tag exists and peels to the reviewed product candidate",
-  "release archive and binary hashes are verified",
-  "Cargo.lock, feature, allocator, TLS, and supported-target receipts are verified",
-  "the independent 0.73 confirmation completes without changing its frozen contract",
-]
-
+[predecessor_closure]
+tag_and_product_relationship_verified = true
+release_archive_and_hashes_verified = true
+toolchain_feature_allocator_tls_and_target_receipts_verified = true
+independent_confirmation_passed = true

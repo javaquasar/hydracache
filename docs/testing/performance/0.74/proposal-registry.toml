@@ -1,15 +1,15 @@
 schema_version = 1
 release = "0.74"
 registry_id = "proposal-registry-074-v1"
-state = "w0-w1-in-progress"
+state = "w0-closed-w1-local-attributed"
 product_mutation_allowed = true
 
 [[work_items]]
 id = "W0"
 title = "comparative baseline"
-decision = "in-progress"
+decision = "complete-published-b73-pinned"
 primary_metric = "baseline-readiness"
-blocker = "v0.73.0 publication and confirmation are not complete"
+evidence = "baseline-identities.toml plus 0.73 W10/W11 release evidence"
 
 [[work_items]]
 id = "W1"

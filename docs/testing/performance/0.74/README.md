@@ -1,9 +1,11 @@
 # HydraCache 0.74 RESP/native performance evidence
 
-This directory begins W0/W1 from the exact frozen 0.73 product candidate
-`16d2e98b6cc9e22d9ccf95eb26fe28bbbcf80f2b`. The predecessor has not yet been
-published as an annotated `v0.73.0` tag, so the checked-in identity is deliberately named
-`B73-candidate`, D0 remains open, and no numerical release claim is permitted.
+This directory began W0/W1 from the exact frozen 0.73 product candidate
+`16d2e98b6cc9e22d9ccf95eb26fe28bbbcf80f2b`. Release 0.73 is now published: annotated tag
+`v0.73.0` points to `d1db9937e61295341ac95f289bace275641b1650`, whose product runtime is
+verified unchanged from the measured candidate. `B73` deliberately pins both identities plus the
+immutable confirmation archive commit `570a5bcb6959ecc7f01f8c80d0fc32b719832ad9`; W0 is closed,
+but local 0.74 numbers remain non-promotable.
 
 The scenario matrix keeps RESP, HC/1, HC/2, direct `ClientSurfaceState`, raw embedded
 `HydraCache`, and typed embedded `HydraCache` results separate. The three execution tiers are
@@ -17,9 +19,9 @@ cargo xtask performance-contract-check --release 0.74
 ```
 
 The gate validates the frozen dimensions, native non-regression rules, workload-equivalence
-fields, proposal isolation, required metrics, and the expected pending predecessor state. It must
-fail if asked for ship admission while publication, Redis provenance, or release evidence is
-incomplete.
+fields, proposal isolation, required metrics, and the published predecessor identities. It must
+still fail if asked for ship admission while the 0.74 candidate, Redis provenance, dedicated-host
+qualification, or release evidence is incomplete.
 
 The first non-promotable local attribution and the rejected W2/W3 results are documented in
 [`w1-local-attribution.md`](w1-local-attribution.md). Raw identity-bound receipts are retained under
@@ -44,8 +46,9 @@ python scripts/perf/performance_qualification_dry_run_074.py --dry-run \
 ```
 
 The dry-run refuses digest drift, reordered phases, hidden blockers, or admission of an expensive
-phase. It deliberately has no execution mode before the 0.73 tag, candidate identity, admitted
-host, Redis binary identities and explicit authorization are available.
+phase. It deliberately has no execution mode before the 0.74 candidate identity, admitted host,
+Redis binary identities, qualification runner and explicit authorization are available. The
+predecessor tag and confirmation are no longer blockers.
 
 Numerical receipts must never be hand-edited into claims. Every receipt binds the trace, payload
 and key corpora, seed, warmup, duration, offered schedule, concurrency, pipeline depth, security,

@@ -24,6 +24,8 @@ class QualificationDryRun074Tests(unittest.TestCase):
         self.assertFalse(receipt["ready_to_execute"])
         self.assertEqual(receipt["executed_commands"], [])
         self.assertIn("authorization", receipt["unresolved"])
+        self.assertNotIn("predecessor_annotated_tag", receipt["unresolved"])
+        self.assertNotIn("predecessor_confirmation", receipt["unresolved"])
 
     def test_digest_drift_and_expensive_admission_are_rejected(self) -> None:
         changed = copy.deepcopy(self.manifest)

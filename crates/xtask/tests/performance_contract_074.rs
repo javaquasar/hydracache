@@ -118,6 +118,21 @@ fn checked_in_w0_contract_is_valid_and_non_promotable() {
 }
 
 #[test]
+fn published_b73_requires_exact_tag_archive_and_runtime_relationship() {
+    let mut value = contract("baseline-identities.toml");
+    value["predecessor_candidate"]["annotated_tag_commit_sha"] =
+        toml::Value::String("0".repeat(40));
+    value["predecessor_candidate"]["release_archive_verified"] = toml::Value::Boolean(false);
+    value["predecessor_closure"]["tag_and_product_relationship_verified"] =
+        toml::Value::Boolean(false);
+
+    let problems = xtask::performance_contract_074::check_identities(&value);
+    assert!(has(&problems, "annotated_tag_commit_sha"));
+    assert!(has(&problems, "release_archive_verified"));
+    assert!(has(&problems, "tag_and_product_relationship_verified"));
+}
+
+#[test]
 fn local_harness_freezes_placement_abba_and_noise_policy() {
     let mut value = contract("local-harness.toml");
     value["cpu_affinity_required"] = toml::Value::Boolean(false);

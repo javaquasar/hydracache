@@ -15,7 +15,7 @@ redis_benchmark_version = "7.2.5"
 
 [[contract_inputs]]
 path = "docs/testing/performance/0.74/baseline-identities.toml"
-sha256 = "e0d61398b616a072bcfb2b89bf715345c21efe8663ab1280df727f2e170d9d60"
+sha256 = "d56a2bcd647bc8856d9fe5bddecc23fecd061282119ac2a64c2dd973851bc630"
 
 [[contract_inputs]]
 path = "docs/testing/performance/0.74/scenario-matrix.toml"
@@ -27,7 +27,7 @@ sha256 = "bd9decf15407e2d18d62052f8b26acfb18df96d0a4c9f161ff44e55e7159f227"
 
 [[contract_inputs]]
 path = "docs/plans/V0_74_RESP_THROUGHPUT_AND_PIPELINE_EFFICIENCY_PLAN.md"
-sha256 = "b89d68fcc3cde4b07f80af1b58402fa6df94e38a67a94410b2a98dc27b5234fd"
+sha256 = "6b443b0c766de5dcd131bdf7dcf46e6e8d256063f1fab1685034ae86427aa44d"
 
 [[phases]]
 id = "Q0-identity-and-contract"
@@ -66,8 +66,6 @@ command = "QUALIFICATION_FINALIZER_UNRESOLVED"
 expected_before_authorization = "not-run"
 
 [unresolved]
-predecessor_annotated_tag = true
-predecessor_confirmation = true
 candidate_source = true
 admitted_host = true
 redis_binary_digests = true
