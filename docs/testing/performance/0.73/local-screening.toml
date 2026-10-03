@@ -110,6 +110,7 @@ w10_long_run_qualification_v2_contract = "docs/testing/performance/0.73/w10-long
 w10_long_run_v2_rejected_dispatch = "docs/testing/performance/0.73/w10-long-run-v2-dispatch-rejected-36404123541.toml"
 w10_long_run_qualification_v2_evidence = "docs/testing/performance/0.73/w10-long-run-v2-qualification-passed-36532416869.toml"
 w10_long_run_confirmation_interrupted_evidence = "docs/testing/performance/0.73/w10-long-run-v2-confirmation-interrupted-36622527013.toml"
+w10_long_run_confirmation_passed_evidence = "docs/testing/performance/0.73/w10-long-run-v2-confirmation-passed-36839197349.toml"
 promotable = false
 numerical_claims_allowed = false
 candidate_thresholds_allowed = false

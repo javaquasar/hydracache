@@ -563,3 +563,19 @@ The archive branch is created only after the final artifact verifies and is neve
 Before tagging, release evidence records its full commit SHA and manifest digest. The shipped
 release note must retain both the browseable branch link and commit-pinned links to the archive,
 manifest and `SHA256SUMS`; a moving branch URL or expiring Actions URL alone is insufficient.
+
+Replacement run `36839197349` completed both isolated 24-hour roles successfully. The I73 stage
+artifact and final artifact matched GitHub's external SHA-256 digests; all 13 continuation entries
+were byte-identical across the handoff; and independent local reanalysis reproduced both role
+receipts, 1,442 checkpoints per role, all four calibrations, the canary's intended rejection and all
+five comparison guards. Each role completed 1.0368 billion operations with zero errors, timeouts or
+rejections. Goodput changed by effectively zero (-0.0000000115%), CPU/operation increased 0.260%,
+and p99 improved 0.328%. The decisive RSS and anonymous-PSS 95% upper slope bound fell from
+30.1448 to 20.3181 bytes/s, 32.60% lower, while remaining a boundedness guard rather than a portable
+memory-improvement claim.
+
+The durable W11 archive is published at immutable commit
+[`570a5bcb6959ecc7f01f8c80d0fc32b719832ad9`](https://github.com/javaquasar/hydracache/tree/570a5bcb6959ecc7f01f8c80d0fc32b719832ad9/docs/testing/perf-artifacts/0.73/w10-confirmation-36839197349).
+It retains all eight provider ZIPs, including every failed, rejected and interrupted attempt, plus
+the final extracted packet, verification receipt, artifact manifest and complete `SHA256SUMS`.
+W10 is closed; release tagging still waits for the remaining W11 and final ship gates.

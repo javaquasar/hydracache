@@ -2152,6 +2152,35 @@ and alone may seal the pair. Each job stays below 29 hours, while product commit
 resume: a failed role still invalidates the attempt, and a replacement confirmation must start from
 I73 after explicit authorization.
 
+The replacement showed why a savepoint must be a cryptographic boundary, not merely “some files we
+can reuse.” Run `36839197349` completed I73 in its own job, sealed 13 files in
+`continuation-SHA256SUMS`, and uploaded the packet. The C73 job downloaded it independently,
+verified every hash, required the complete 1.0368-billion-operation I73 receipt and exact final
+reconciliation, then repeated the build, host, lease and calibration guards before starting C73.
+Only that second job was allowed to seal the combined campaign. Losing the GitHub job boundary no
+longer meant losing a valid completed role, but changing a role, reusing a partial role or combining
+different attempts still failed closed.
+
+Both 24-hour roles then completed: 1.0368 billion operations and 1,442 checkpoints each, zero
+errors, timeouts and rejections, exact surface/event/durable accounting, and the same admitted host
+and lease. Independent analysis matched the two provider ZIP digests, every nested continuation
+hash, both stdout/stderr hashes, four calibrations, raw checkpoint-derived statistics and all five
+guards. Goodput changed by -0.0000000115%, effectively zero. CPU per operation increased by 0.260%
+and p99 decreased by 0.328%, both comfortably inside the frozen budgets. The RSS and anonymous-PSS
+95% upper slope bound fell from 30.1448 to 20.3181 bytes/s, a 32.60% reduction. The candidate
+therefore passed the preregistered boundedness decision; the long pair still does not become a
+portable claim about capacity, allocations or another product.
+
+Archiving was treated as another correctness boundary. Actions artifacts expire, so all eight ZIPs
+from the campaign history—including rejected and interrupted attempts—were copied byte-for-byte to
+the append-only `evidence/0.73/w10-confirmation` branch. A commit-pinned manifest, full-file
+`SHA256SUMS`, extracted accepted packet and verification receipt make the release decision
+replayable after provider retention ends. We also disabled Git text conversion inside the archive:
+without that small detail, a Windows checkout could change line endings and make truthful hashes
+appear corrupt. Finally, the verifier hashes runner and scenario bytes from the frozen Git commit,
+not the platform-transformed worktree. Reproducible evidence depends on preserving byte identity at
+both boundaries.
+
 ## A profiling ladder that avoids expensive runs
 
 Not every development iteration needs a dedicated bare-metal campaign. A useful workflow has several

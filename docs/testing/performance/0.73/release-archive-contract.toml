@@ -1,6 +1,6 @@
 schema_version = 1
 release = "0.73.0"
-state = "planned-awaiting-green-confirmation"
+state = "published-and-commit-pinned"
 source_confirmation_run = 36839197349
 
 # GitHub Actions artifacts are only the staging copy. This branch is the durable,
@@ -8,6 +8,9 @@ source_confirmation_run = 36839197349
 archive_branch = "evidence/0.73/w10-confirmation"
 archive_branch_url = "https://github.com/javaquasar/hydracache/tree/evidence/0.73/w10-confirmation"
 archive_root = "docs/testing/perf-artifacts/0.73/w10-confirmation-36839197349"
+archive_commit = "570a5bcb6959ecc7f01f8c80d0fc32b719832ad9"
+artifact_manifest_sha256 = "03b9082c8c1bdec8ab17c8eb621bc59930ce49c01119a2e35accf784f2fc09e2"
+sha256sums_sha256 = "74f066db4acb6bb7612ed50b38cbba80425d7e7621028ad0c63b8f8256654d90"
 actions_retention_days = 30
 archive_before_tag = true
 hosted_artifact_only_allowed = false

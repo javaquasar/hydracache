@@ -200,7 +200,9 @@ const W10_LONG_RUN_QUALIFICATION_V2_EVIDENCE: &str =
 const W10_LONG_RUN_CONFIRMATION_INTERRUPTED_EVIDENCE: &str =
     "docs/testing/performance/0.73/w10-long-run-v2-confirmation-interrupted-36622527013.toml";
 const W10_LONG_RUN_CONFIRMATION_V2_EVIDENCE: &str =
-    "docs/testing/performance/0.73/w10-long-run-v2-confirmation-passed-36622527013.toml";
+    "docs/testing/performance/0.73/w10-long-run-v2-confirmation-passed-36839197349.toml";
+const W10_LONG_RUN_CONFIRMATION_V2_ARCHIVE_MANIFEST: &str =
+    "docs/testing/performance/0.73/w10-confirmation-36839197349-archive-manifest.json";
 const RELEASE: &str = "0.73";
 const PROFILE: &str = "local-screening-073-v1";
 const ENVIRONMENT_CLASS: &str = "local_screening";
@@ -10140,10 +10142,10 @@ fn check_w10_long_run_confirmation_v2_at_root(root: &Path, release: &str) -> Vec
     };
     let mut problems = check_w10_long_run_confirmation_v2_evidence(&evidence, release);
 
-    let Some(archive_relative) = text(&evidence, "immutable_archive_path") else {
+    let Some(manifest_relative) = text(&evidence, "immutable_archive_manifest_path") else {
         return problems;
     };
-    let manifest_path = root.join(archive_relative).join("manifest.json");
+    let manifest_path = root.join(manifest_relative);
     let manifest_bytes = match fs::read(&manifest_path) {
         Ok(bytes) => bytes,
         Err(error) => {
@@ -10174,9 +10176,9 @@ fn check_w10_long_run_confirmation_v2_at_root(root: &Path, release: &str) -> Vec
     };
     let expected_roles = serde_json::json!(["I73", "C73"]);
     if manifest.get("release").and_then(JsonValue::as_str) != Some(release)
-        || manifest.get("workflow_run").and_then(JsonValue::as_i64) != Some(36_622_527_013)
+        || manifest.get("workflow_run").and_then(JsonValue::as_i64) != Some(36_839_197_349)
         || manifest.get("tooling_sha").and_then(JsonValue::as_str)
-            != Some("b9f621a5b4f50c5277600fff9a8278fbd2154e28")
+            != Some("aa853c6abc37b51974a0d45a56b13d9d8c1fcb5f")
         || manifest
             .get("baseline_source_sha")
             .and_then(JsonValue::as_str)
@@ -10206,6 +10208,10 @@ fn check_w10_long_run_confirmation_v2_at_root(root: &Path, release: &str) -> Vec
             != Some(true)
         || manifest.get("artifact_sha256").and_then(JsonValue::as_str)
             != text(&evidence, "artifact_zip_sha256")
+        || manifest.get("archive_branch").and_then(JsonValue::as_str)
+            != Some("evidence/0.73/w10-confirmation")
+        || manifest.get("archive_root").and_then(JsonValue::as_str)
+            != text(&evidence, "immutable_archive_path")
     {
         problems.push("W10 confirmation immutable archive manifest identity changed".to_owned());
     }
@@ -10220,16 +10226,16 @@ pub fn check_w10_long_run_confirmation_v2_evidence(
     if integer(value, "schema_version") != Some(1)
         || text(value, "release") != Some(release)
         || text(value, "evidence_id")
-            != Some("w10-long-run-v2-confirmation-passed-36622527013-v1")
+            != Some("w10-long-run-v2-confirmation-passed-36839197349-v1")
         || text(value, "state") != Some("twenty-four-hour-confirmation-passed-final-c73-admitted")
         || text(value, "contract") != Some(W10_LONG_RUN_QUALIFICATION_V2_CONTRACT)
-        || integer(value, "workflow_run") != Some(36_622_527_013)
-        || integer(value, "artifact_id").is_none_or(|id| id <= 0)
+        || integer(value, "workflow_run") != Some(36_839_197_349)
+        || integer(value, "artifact_id") != Some(11_270_390_517)
         || text(value, "workflow_url")
-            != Some("https://github.com/javaquasar/hydracache/actions/runs/36622527013")
+            != Some("https://github.com/javaquasar/hydracache/actions/runs/36839197349")
         || text(value, "artifact_name")
-            != Some("performance-long-run-confirmation-073-b9f621a5b4f50c5277600fff9a8278fbd2154e28-36622527013-1")
-        || text(value, "tooling_sha") != Some("b9f621a5b4f50c5277600fff9a8278fbd2154e28")
+            != Some("performance-long-run-confirmation-073-aa853c6abc37b51974a0d45a56b13d9d8c1fcb5f-36839197349-1")
+        || text(value, "tooling_sha") != Some("aa853c6abc37b51974a0d45a56b13d9d8c1fcb5f")
         || text(value, "baseline_source_commit")
             != Some("e757556d3a31d565f52a9561d6d4e555bb1cc373")
         || text(value, "candidate_source_commit")
@@ -10237,7 +10243,15 @@ pub fn check_w10_long_run_confirmation_v2_evidence(
         || text(value, "candidate_tree_oid")
             != Some("92336607f21a68f563e65dc0fccccd8efaa14f7b")
         || text(value, "immutable_archive_path")
-            != Some("docs/testing/perf-artifacts/0.73/long-run-confirmation-36622527013")
+            != Some("docs/testing/perf-artifacts/0.73/w10-confirmation-36839197349")
+        || text(value, "immutable_archive_manifest_path")
+            != Some(W10_LONG_RUN_CONFIRMATION_V2_ARCHIVE_MANIFEST)
+        || text(value, "archive_branch") != Some("evidence/0.73/w10-confirmation")
+        || text(value, "archive_commit")
+            != Some("570a5bcb6959ecc7f01f8c80d0fc32b719832ad9")
+        || text(value, "archive_url").is_none_or(|url| !url.contains("/tree/570a5bcb6959ecc7f01f8c80d0fc32b719832ad9/"))
+        || text(value, "archive_artifact_manifest_url").is_none_or(|url| !url.contains("/blob/570a5bcb6959ecc7f01f8c80d0fc32b719832ad9/"))
+        || text(value, "archive_sha256sums_url").is_none_or(|url| !url.contains("/blob/570a5bcb6959ecc7f01f8c80d0fc32b719832ad9/"))
         || text(value, "runner_sha256")
             != Some("c1be57424dfe61d6dbd758adcac57766c56add39cdc8705dca162c3323870144")
         || text(value, "scenario_sha256")
@@ -10259,8 +10273,12 @@ pub fn check_w10_long_run_confirmation_v2_evidence(
     }
     for field in [
         "artifact_zip_sha256",
+        "i73_stage_artifact_zip_sha256",
         "immutable_archive_manifest_sha256",
+        "archive_artifact_manifest_sha256",
+        "archive_sha256sums_sha256",
         "campaign_sha256",
+        "continuation_manifest_sha256",
         "canary_sha256",
         "canary_receipt_sha256",
         "canary_checkpoints_sha256",
@@ -10294,7 +10312,9 @@ pub fn check_w10_long_run_confirmation_v2_evidence(
         }
     }
     for field in [
+        "provider_digest_verified",
         "nested_sha256_verified",
+        "continuation_handoff_verified",
         "immutable_archive_complete",
         "independent_role_reanalysis_matched",
         "all_four_calibrations_passed",

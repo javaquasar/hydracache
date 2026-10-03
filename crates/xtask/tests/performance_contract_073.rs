@@ -69,6 +69,7 @@ fn release_archive_policy_problems(contract: &TomlValue, release_note: &str) -> 
         problems.push("schema_version must be 1".to_owned());
     }
     expect_text("release", "0.73.0", &mut problems);
+    expect_text("state", "published-and-commit-pinned", &mut problems);
     expect_text(
         "archive_branch",
         "evidence/0.73/w10-confirmation",
@@ -82,6 +83,21 @@ fn release_archive_policy_problems(contract: &TomlValue, release_note: &str) -> 
     expect_text(
         "archive_root",
         "docs/testing/perf-artifacts/0.73/w10-confirmation-36839197349",
+        &mut problems,
+    );
+    expect_text(
+        "archive_commit",
+        "570a5bcb6959ecc7f01f8c80d0fc32b719832ad9",
+        &mut problems,
+    );
+    expect_text(
+        "artifact_manifest_sha256",
+        "03b9082c8c1bdec8ab17c8eb621bc59930ce49c01119a2e35accf784f2fc09e2",
+        &mut problems,
+    );
+    expect_text(
+        "sha256sums_sha256",
+        "74f066db4acb6bb7612ed50b38cbba80425d7e7621028ad0c63b8f8256654d90",
         &mut problems,
     );
     if contract["source_confirmation_run"].as_integer() != Some(36_839_197_349) {
@@ -164,6 +180,7 @@ fn release_archive_policy_problems(contract: &TomlValue, release_note: &str) -> 
     for marker in [
         "## Evidence archive",
         "https://github.com/javaquasar/hydracache/tree/evidence/0.73/w10-confirmation",
+        "570a5bcb6959ecc7f01f8c80d0fc32b719832ad9",
         "commit-pinned links",
         "artifact-manifest.tsv",
         "SHA256SUMS",
@@ -184,6 +201,8 @@ fn release_073_governance_contract_is_fail_closed() {
         "docs/testing/performance/0.73/release-archive-contract.toml",
         "docs/releases/0.73.0.md",
         "docs/testing/performance/0.73/w10-long-run-v2-qualification-passed-36532416869.toml",
+        "docs/testing/performance/0.73/w10-long-run-v2-confirmation-passed-36839197349.toml",
+        "docs/testing/performance/0.73/w10-confirmation-36839197349-archive-manifest.json",
         "docs/testing/perf-artifacts/0.73/long-run-qualification-36532416869/manifest.json",
     ] {
         assert!(
@@ -2624,40 +2643,7 @@ fn w10_interrupted_confirmation_cannot_admit_final_candidate_or_reuse_partial_ro
 }
 
 fn synthetic_w10_long_run_v2_confirmation() -> TomlValue {
-    let mut value = manifest("w10-long-run-v2-qualification-passed-36532416869.toml");
-    value["evidence_id"] =
-        TomlValue::String("w10-long-run-v2-confirmation-passed-36622527013-v1".to_owned());
-    value["state"] =
-        TomlValue::String("twenty-four-hour-confirmation-passed-final-c73-admitted".to_owned());
-    value["workflow_run"] = TomlValue::Integer(36_622_527_013);
-    value["workflow_url"] = TomlValue::String(
-        "https://github.com/javaquasar/hydracache/actions/runs/36622527013".to_owned(),
-    );
-    value["artifact_id"] = TomlValue::Integer(1);
-    value["artifact_name"] = TomlValue::String(
-        "performance-long-run-confirmation-073-b9f621a5b4f50c5277600fff9a8278fbd2154e28-36622527013-1"
-            .to_owned(),
-    );
-    value["immutable_archive_path"] = TomlValue::String(
-        "docs/testing/perf-artifacts/0.73/long-run-confirmation-36622527013".to_owned(),
-    );
-    value["tooling_sha"] = TomlValue::String("b9f621a5b4f50c5277600fff9a8278fbd2154e28".to_owned());
-    value["phase"] = TomlValue::String("confirmation".to_owned());
-    value.as_table_mut().expect("confirmation table").insert(
-        "qualification_precondition_verified".to_owned(),
-        TomlValue::Boolean(true),
-    );
-    value["confirmation_allowed"] = TomlValue::Boolean(false);
-    value["confirmation_started"] = TomlValue::Boolean(true);
-    value["performance_claim_allowed"] = TomlValue::Boolean(false);
-    value["final_c73_allowed"] = TomlValue::Boolean(true);
-    value["operations_per_role"] = TomlValue::Integer(1_036_800_000);
-    value["completed_per_role"] = TomlValue::Integer(1_036_800_000);
-    value["checkpoint_count_per_role"] = TomlValue::Integer(1_442);
-    value["periodic_resource_samples_per_role"] = TomlValue::Integer(1_439);
-    value["decision"] =
-        TomlValue::String("accept-twenty-four-hour-confirmation-and-admit-final-c73".to_owned());
-    value
+    manifest("w10-long-run-v2-confirmation-passed-36839197349.toml")
 }
 
 #[test]
@@ -2669,7 +2655,10 @@ fn w10_long_run_v2_confirmation_accepts_only_complete_frozen_ship_evidence() {
     );
 
     value["candidate_source_commit"] = TomlValue::String("0".repeat(40));
+    value["archive_commit"] = TomlValue::String("0".repeat(40));
+    value["provider_digest_verified"] = TomlValue::Boolean(false);
     value["nested_sha256_verified"] = TomlValue::Boolean(false);
+    value["continuation_handoff_verified"] = TomlValue::Boolean(false);
     value["qualification_precondition_verified"] = TomlValue::Boolean(false);
     value["automatic_retry_performed"] = TomlValue::Boolean(true);
     value["performance_claim_allowed"] = TomlValue::Boolean(true);
@@ -2682,7 +2671,9 @@ fn w10_long_run_v2_confirmation_accepts_only_complete_frozen_ship_evidence() {
         xtask::performance_contract::check_w10_long_run_confirmation_v2_evidence(&value, "0.73");
     for required in [
         "confirmation identity changed",
+        "provider_digest_verified must be true",
         "nested_sha256_verified must be true",
+        "continuation_handoff_verified must be true",
         "qualification_precondition_verified must be true",
         "automatic_retry_performed must be false",
         "performance_claim_allowed must be false",
