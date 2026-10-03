@@ -12,6 +12,7 @@ const STATISTICS: &str = "statistics.toml";
 const REGISTRY: &str = "proposal-registry.toml";
 const HOST: &str = "host-profile.toml";
 const LOCAL_HARNESS: &str = "local-harness.toml";
+const COMPOSITION: &str = "composition-ledger.toml";
 const RELEASE: &str = "0.74";
 const FROZEN_C73: &str = "16d2e98b6cc9e22d9ccf95eb26fe28bbbcf80f2b";
 const C73_TREE: &str = "92336607f21a68f563e65dc0fccccd8efaa14f7b";
@@ -52,6 +53,7 @@ pub fn check_at_root(root: &Path, receipt: Option<&Path>) -> Result<Vec<String>,
     let registry = read_toml(&evidence.join(REGISTRY))?;
     let host = read_toml(&evidence.join(HOST))?;
     let local_harness = read_toml(&evidence.join(LOCAL_HARNESS))?;
+    let composition = read_toml(&evidence.join(COMPOSITION))?;
     let mut problems = Vec::new();
     problems.extend(check_identities(&identities));
     problems.extend(check_matrix(&matrix));
@@ -59,6 +61,7 @@ pub fn check_at_root(root: &Path, receipt: Option<&Path>) -> Result<Vec<String>,
     problems.extend(check_registry(&registry));
     problems.extend(check_host(&host));
     problems.extend(check_local_harness(&local_harness));
+    problems.extend(check_composition(&composition));
     if let Some(path) = receipt {
         let path = if path.is_absolute() {
             path.to_owned()
@@ -486,6 +489,49 @@ pub fn check_local_harness(value: &TomlValue) -> Vec<String> {
         if !metrics.contains(metric) {
             problems.push(format!("local harness is missing metric {metric}"));
         }
+    }
+    problems
+}
+
+pub fn check_composition(value: &TomlValue) -> Vec<String> {
+    let mut problems = common(value, "composition-ledger");
+    expect_str(
+        value,
+        "ledger_id",
+        "composition-ledger-074-v1",
+        &mut problems,
+    );
+    expect_str(
+        value,
+        "state",
+        "no-accepted-product-candidates",
+        &mut problems,
+    );
+    expect_str(value, "candidate_source_sha", "UNRESOLVED", &mut problems);
+    expect_i64(value, "accepted_candidate_count", 0, &mut problems);
+    expect_bool(value, "composition_attempted", false, &mut problems);
+    expect_bool(value, "freeze_c74_allowed", false, &mut problems);
+    let proposals = array_of_tables(value, "proposal", &mut problems);
+    let actual = proposals
+        .iter()
+        .filter_map(|proposal| string(proposal, "id"))
+        .collect::<BTreeSet<_>>();
+    let expected = [
+        "W2", "W3", "W4", "W5", "W6", "W7", "W8", "W9a", "W9b", "W9c", "W9d", "W9e",
+    ]
+    .into_iter()
+    .collect::<BTreeSet<_>>();
+    if actual != expected {
+        problems.push("composition-ledger must classify W2-W8 and W9a-W9e exactly once".to_owned());
+    }
+    if proposals.iter().any(|proposal| {
+        string(proposal, "disposition").is_none_or(|decision| {
+            decision.starts_with("accepted") || decision.starts_with("authorized")
+        })
+    }) {
+        problems.push(
+            "zero-candidate composition ledger cannot contain an accepted proposal".to_owned(),
+        );
     }
     problems
 }

@@ -1,0 +1,94 @@
+schema_version = 1
+release = "0.74"
+ledger_id = "composition-ledger-074-v1"
+state = "no-accepted-product-candidates"
+baseline_product_sha = "16d2e98b6cc9e22d9ccf95eb26fe28bbbcf80f2b"
+candidate_source_sha = "UNRESOLVED"
+accepted_candidate_count = 0
+composition_attempted = false
+freeze_c74_allowed = false
+decision = "W10 has nothing to compose; retain isolated negative evidence and keep C74 unresolved"
+
+[[proposal]]
+id = "W2"
+owner = "RESP input compaction"
+disposition = "rejected-local-non-regression"
+compatibility_class = "wire-internal"
+rollback = "candidate removed"
+
+[[proposal]]
+id = "W3"
+owner = "RESP output write and flush amplification"
+disposition = "rejected-local-shallow-tail-guards"
+compatibility_class = "wire-byte-preserving"
+rollback = "candidate removed"
+
+[[proposal]]
+id = "W4"
+owner = "translation and request metadata"
+disposition = "measured-below-isolated-floor"
+compatibility_class = "internal"
+rollback = "no product candidate"
+
+[[proposal]]
+id = "W5"
+owner = "canonical structured-key materialization"
+disposition = "deferred-measured-below-floor"
+compatibility_class = "representation-and-rollback-sensitive"
+rollback = "no product candidate"
+
+[[proposal]]
+id = "W6"
+owner = "client store read and contention"
+disposition = "w6a-rejected-w6b-not-authorized"
+compatibility_class = "concurrency-sensitive"
+rollback = "W6a candidate removed"
+
+[[proposal]]
+id = "W7"
+owner = "multi-key dispatch and store locking"
+disposition = "del-candidate-rejected-native-guard"
+compatibility_class = "multi-key-atomicity-sensitive"
+rollback = "candidate removed"
+
+[[proposal]]
+id = "W8"
+owner = "identity validation and value ownership"
+disposition = "w8a-rejected-tail-guard-w8b-no-compatible-candidate"
+compatibility_class = "authorization-and-public-api-sensitive"
+rollback = "W8a candidate removed; ADR retained"
+
+[[proposal]]
+id = "W9a"
+owner = "diagnostic atomic ordering"
+disposition = "rejected-no-isolated-cpu-win"
+compatibility_class = "memory-ordering-sensitive"
+rollback = "no product candidate"
+
+[[proposal]]
+id = "W9b"
+owner = "connection-local buffer reuse"
+disposition = "not-authorized-without-measured-owner"
+compatibility_class = "retention-and-redaction-sensitive"
+rollback = "no product candidate"
+
+[[proposal]]
+id = "W9c"
+owner = "scheduler and socket behavior"
+disposition = "blocked-local-kernel-attribution"
+compatibility_class = "platform-sensitive"
+rollback = "platform defaults unchanged"
+
+[[proposal]]
+id = "W9d"
+owner = "durable group commit"
+disposition = "not-authorized"
+compatibility_class = "durability-acknowledgement-sensitive"
+rollback = "durability unchanged"
+
+[[proposal]]
+id = "W9e"
+owner = "Linux allocator"
+disposition = "deferred-missing-supported-linux-owner-telemetry"
+compatibility_class = "supported-target-sensitive"
+rollback = "system allocator remains default"

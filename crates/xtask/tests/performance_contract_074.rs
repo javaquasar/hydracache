@@ -111,10 +111,30 @@ fn checked_in_w0_contract_is_valid_and_non_promotable() {
             .is_empty()
     );
     assert!(
+        xtask::performance_contract_074::check_composition(&contract("composition-ledger.toml"))
+            .is_empty()
+    );
+    assert!(
         xtask::performance_contract_074::check_at_root(Path::new(&root()), None)
             .unwrap()
             .is_empty()
     );
+}
+
+#[test]
+fn w10_cannot_freeze_a_candidate_or_hide_an_accepted_proposal() {
+    let mut value = contract("composition-ledger.toml");
+    value["freeze_c74_allowed"] = toml::Value::Boolean(true);
+    value["accepted_candidate_count"] = toml::Value::Integer(1);
+    value["proposal"]
+        .as_array_mut()
+        .unwrap()
+        .first_mut()
+        .unwrap()["disposition"] = toml::Value::String("accepted".to_owned());
+    let problems = xtask::performance_contract_074::check_composition(&value);
+    assert!(has(&problems, "freeze_c74_allowed"));
+    assert!(has(&problems, "accepted_candidate_count"));
+    assert!(has(&problems, "cannot contain an accepted proposal"));
 }
 
 #[test]

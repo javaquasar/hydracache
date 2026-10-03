@@ -90,3 +90,8 @@ product win. Unit-test the runner with:
 ```text
 python -m unittest scripts/perf/test_performance_local_pairing_074.py
 ```
+
+W10's checked-in `composition-ledger.toml` currently records zero accepted product candidates.
+It therefore forbids a synthetic C74 freeze or addition of isolated percentage gains. Tooling and
+evidence work can continue, but composition remains a no-op until an isolated proposal actually
+passes its native, semantic and local performance gates.
