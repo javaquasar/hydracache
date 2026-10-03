@@ -1,0 +1,66 @@
+schema_version = 1
+release = "0.73.0"
+work_item = "W11"
+kind = "exact-sha-post-tag-proof-repair"
+status = "accepted"
+ship_allowed = true
+tag_created = true
+recorded_at = "2026-10-03T20:39:15Z"
+
+[identity]
+tag = "v0.73.0"
+tag_commit = "d1db9937e61295341ac95f289bace275641b1650"
+tag_tree = "5bea41dd43278a9405648939666de5024d2164cc"
+workflow_head_sha = "a60fd380c90bf2c1c0445f0baedcbf46eebbdc8f"
+checked_out_candidate_sha = "d1db9937e61295341ac95f289bace275641b1650"
+exact_candidate_check = "passed"
+dirty_worktree_check = "passed"
+measured_product_candidate_sha = "16d2e98b6cc9e22d9ccf95eb26fe28bbbcf80f2b"
+product_runtime_diff_from_measured_candidate = "empty"
+
+[run]
+id = 37150976176
+url = "https://github.com/javaquasar/hydracache/actions/runs/37150976176"
+event = "workflow_dispatch"
+source_ref = "docs/0.73-evidence-driven-performance-plan"
+workflow_started_at = "2026-10-03T20:16:56Z"
+workflow_completed_at = "2026-10-03T20:57:04Z"
+workflow_conclusion = "success"
+total_jobs = 41
+successful_jobs = 14
+skipped_jobs = 27
+failed_jobs = 0
+cancelled_jobs = 0
+proof_job = "Redis Compatibility Release Proof"
+proof_job_id = 111284634793
+proof_job_url = "https://github.com/javaquasar/hydracache/actions/runs/37150976176/job/111284634793"
+proof_job_started_at = "2026-10-03T20:17:01Z"
+proof_job_completed_at = "2026-10-03T20:22:29Z"
+proof_job_conclusion = "success"
+
+[tooling]
+toolchain = "rustc 1.94.0 (4a4ef493e 2026-03-02)"
+floating_stable_refs_before = 21
+floating_stable_refs_after = 0
+warning_policy = "-D warnings unchanged"
+candidate_checkout_guard = "full 40-character SHA required and git rev-parse HEAD must match"
+governance_test = "release_ci_pins_the_reviewed_toolchain_and_scopes_redis_repairs_to_an_exact_sha"
+
+[proof]
+fast_checks = "passed"
+format = "passed"
+redis_doc_contracts = "passed"
+redis_compat_tests = "passed"
+server_redis_lifecycle_tests = "passed"
+clippy = "passed with -D warnings"
+docker_client_oracle_matrix = "21 passed; 0 failed; 2 filtered"
+resource_smoke = "2 passed; 0 failed; 5 filtered"
+
+[decision]
+replaces_rejected_attempt = false
+preserves_rejected_attempt = 37149833980
+tag_moved = false
+long_run_repeated = false
+candidate_identity_changed = false
+reason = "the only failed tag proof passed on the exact immutable tag commit after replacing temporal toolchain selection with the reviewed toolchain; the repair changes CI orchestration and governance tests only"
+claim_boundary = "this is Redis compatibility and resource-proof closure, not a Redis throughput comparison, maximum-capacity result, or new performance claim"

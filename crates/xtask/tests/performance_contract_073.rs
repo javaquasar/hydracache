@@ -203,6 +203,8 @@ fn release_073_governance_contract_is_fail_closed() {
         "docs/testing/performance/0.73/w10-long-run-v2-qualification-passed-36532416869.toml",
         "docs/testing/performance/0.73/w10-long-run-v2-confirmation-passed-36839197349.toml",
         "docs/testing/performance/0.73/w10-confirmation-36839197349-archive-manifest.json",
+        "docs/testing/performance/0.73/w11-tag-ci-rejected-37149833980.toml",
+        "docs/testing/performance/0.73/w11-redis-proof-repair-passed-37150976176.toml",
         "docs/testing/perf-artifacts/0.73/long-run-qualification-36532416869/manifest.json",
     ] {
         assert!(
@@ -215,6 +217,58 @@ fn release_073_governance_contract_is_fail_closed() {
             .expect("check 0.73 performance closure")
             .is_empty(),
         "the checked-in 0.73 evidence chain must remain internally consistent"
+    );
+}
+
+#[test]
+fn w11_tag_toolchain_failure_and_exact_sha_repair_remain_distinct() {
+    let rejected = manifest("w11-tag-ci-rejected-37149833980.toml");
+    let repaired = manifest("w11-redis-proof-repair-passed-37150976176.toml");
+
+    assert_eq!(
+        rejected["status"].as_str(),
+        Some("rejected-tooling-attempt")
+    );
+    assert_eq!(rejected["ship_allowed"].as_bool(), Some(false));
+    assert_eq!(rejected["run"]["failed_jobs"].as_integer(), Some(1));
+    assert_eq!(
+        rejected["root_failure"][0]["classification"].as_str(),
+        Some("ci-toolchain-temporal-drift")
+    );
+    assert_eq!(
+        rejected["decision"]["attempt_remains_rejected"].as_bool(),
+        Some(true)
+    );
+
+    assert_eq!(repaired["status"].as_str(), Some("accepted"));
+    assert_eq!(
+        repaired["run"]["workflow_conclusion"].as_str(),
+        Some("success")
+    );
+    assert_eq!(repaired["run"]["successful_jobs"].as_integer(), Some(14));
+    assert_eq!(repaired["run"]["skipped_jobs"].as_integer(), Some(27));
+    assert_eq!(repaired["run"]["failed_jobs"].as_integer(), Some(0));
+    assert_eq!(repaired["run"]["cancelled_jobs"].as_integer(), Some(0));
+    assert_eq!(
+        repaired["identity"]["tag_commit"].as_str(),
+        rejected["identity"]["tag_commit"].as_str()
+    );
+    assert_eq!(
+        repaired["identity"]["checked_out_candidate_sha"].as_str(),
+        Some("d1db9937e61295341ac95f289bace275641b1650")
+    );
+    assert_eq!(
+        repaired["tooling"]["toolchain"].as_str(),
+        Some("rustc 1.94.0 (4a4ef493e 2026-03-02)")
+    );
+    assert_eq!(
+        repaired["decision"]["replaces_rejected_attempt"].as_bool(),
+        Some(false)
+    );
+    assert_eq!(repaired["decision"]["tag_moved"].as_bool(), Some(false));
+    assert_eq!(
+        repaired["decision"]["candidate_identity_changed"].as_bool(),
+        Some(false)
     );
 }
 

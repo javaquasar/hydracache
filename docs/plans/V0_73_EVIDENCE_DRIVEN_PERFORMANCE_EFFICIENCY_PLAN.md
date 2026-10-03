@@ -247,6 +247,21 @@ the final performance contract, and all 12 release-evidence rows passed. Provide
 are recorded in that file, as are the local disk-full/linker and cold-cache timeout attempts that
 preceded the unchanged passing command. Annotated tag `v0.73.0` resolves to this exact candidate.
 
+The tag-triggered CI run `37149833980` is retained in
+`docs/testing/performance/0.73/w11-tag-ci-rejected-37149833980.toml`. It ran 50 jobs and had one
+root failure: the tag-only Redis release proof still used the floating stable channel, resolved to
+Rust/Clippy 1.99.0, and stopped under the unchanged `-D warnings` policy before its Docker/client
+and resource rows. The other 35 jobs passed and 14 were skipped by their declared conditions.
+Tooling commit `a60fd380c90bf2c1c0445f0baedcbf46eebbdc8f` pins every remaining floating Rust action
+reference to reviewed Rust 1.94.0 and adds an exact-SHA guard plus a governance regression test.
+Focused repair run `37150976176`, retained in
+`docs/testing/performance/0.73/w11-redis-proof-repair-passed-37150976176.toml`, checked out the
+unchanged `v0.73.0` commit and passed fast checks, Clippy, the 21-test Docker/client/oracle matrix and
+the two-test resource smoke; the complete repair workflow finished with 14 successful jobs, 27
+condition-skipped jobs and zero failures or cancellations. The rejected attempt remains rejected,
+the tag is not moved, no runtime or measurement input changes, and the repair creates no Redis
+performance claim.
+
 ## Test principles and evidence acceptance
 
 1. **Independent oracle:** every optimized path is compared with a reference model or published 0.72 behavior; performance tests never replace semantic assertions. Test all newly introduced branches, error/cancel paths, overflow and cleanup in the module that owns them, then cross-crate and real-process behavior.

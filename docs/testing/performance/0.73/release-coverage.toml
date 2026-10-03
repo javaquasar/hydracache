@@ -14,6 +14,10 @@ final_candidate = "d1db9937e61295341ac95f289bace275641b1650"
 final_candidate_tree = "5bea41dd43278a9405648939666de5024d2164cc"
 tag = "v0.73.0"
 tag_commit = "d1db9937e61295341ac95f289bace275641b1650"
+post_tag_run = 37149833980
+post_tag_status = "rejected-single-toolchain-drift"
+post_tag_repair_run = 37150976176
+post_tag_repair_status = "exact-sha-redis-proof-passed"
 ship_allowed = true
 
 # This matrix is the W11 ownership index. It retains interrupted and rejected
@@ -87,6 +91,6 @@ tests = ["w10_long_run_v2_qualification_cannot_open_final_release_or_hide_a_fail
 
 [[work_item]]
 id = "W11"
-disposition = "shipped"
-sources = ["docs/testing/performance/0.73/release-coverage.toml", "docs/testing/performance/0.73/release-archive-contract.toml", "docs/testing/release-evidence/0.73.toml", "docs/testing/canary-registry-0.73.json", "docs/testing/performance/0.73/w11-exact-sha-ci-rejected-37126998956.toml", "docs/testing/performance/0.73/w11-exact-sha-ci-rejected-37138395653.toml", "docs/testing/performance/0.73/w11-exact-sha-ci-passed-37140860241.toml"]
-tests = ["release_073_governance_contract_is_fail_closed", "w11_archive_policy_pins_durable_branch_and_release_links", "w11_archive_policy_rejects_mutable_or_expiring_only_evidence", "canary_release_073_rejects_missing_work_item_evidence"]
+disposition = "shipped-after-exact-sha-tag-proof-repair"
+sources = ["docs/testing/performance/0.73/release-coverage.toml", "docs/testing/performance/0.73/release-archive-contract.toml", "docs/testing/release-evidence/0.73.toml", "docs/testing/canary-registry-0.73.json", "docs/testing/performance/0.73/w11-exact-sha-ci-rejected-37126998956.toml", "docs/testing/performance/0.73/w11-exact-sha-ci-rejected-37138395653.toml", "docs/testing/performance/0.73/w11-exact-sha-ci-passed-37140860241.toml", "docs/testing/performance/0.73/w11-tag-ci-rejected-37149833980.toml", "docs/testing/performance/0.73/w11-redis-proof-repair-passed-37150976176.toml"]
+tests = ["release_073_governance_contract_is_fail_closed", "w11_archive_policy_pins_durable_branch_and_release_links", "w11_archive_policy_rejects_mutable_or_expiring_only_evidence", "w11_tag_toolchain_failure_and_exact_sha_repair_remain_distinct", "canary_release_073_rejects_missing_work_item_evidence"]

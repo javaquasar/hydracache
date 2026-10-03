@@ -578,4 +578,14 @@ The durable W11 archive is published at immutable commit
 [`570a5bcb6959ecc7f01f8c80d0fc32b719832ad9`](https://github.com/javaquasar/hydracache/tree/570a5bcb6959ecc7f01f8c80d0fc32b719832ad9/docs/testing/perf-artifacts/0.73/w10-confirmation-36839197349).
 It retains all eight provider ZIPs, including every failed, rejected and interrupted attempt, plus
 the final extracted packet, verification receipt, artifact manifest and complete `SHA256SUMS`.
-W10 is closed; release tagging still waits for the remaining W11 and final ship gates.
+W10 is closed and `v0.73.0` points to exact candidate
+`d1db9937e61295341ac95f289bace275641b1650`.
+
+The first tag-triggered CI attempt is retained separately as
+`w11-tag-ci-rejected-37149833980.toml`: all executed jobs except the Redis release proof passed, but
+that job drifted to Rust/Clippy 1.99.0 and stopped before its Docker and resource checks. The
+tooling-only exact-SHA repair is retained as `w11-redis-proof-repair-passed-37150976176.toml`; it
+checked out the unchanged tag SHA, used reviewed Rust 1.94.0, and passed the previously skipped
+proof. Its complete workflow closed with 14 successful jobs, 27 conditionally skipped jobs and no
+failures or cancellations. These W11 records do not modify the immutable W10 measurement archive
+or promote the proof to a Redis performance comparison.
