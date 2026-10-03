@@ -5,15 +5,16 @@
 > - **Why:** 0.71 shipped correct accounting and active TTL reclamation, but its accepted D4 evidence did not demonstrate a numerical RSS win. The deferred W2b/W5-W11 ideas need new owner/stack attribution and same-host comparisons before product changes are justified.
 > - **After (depends on):** published `0.72.0`. The external baseline and compatibility binary are bound to annotated tag `v0.72.0` (peeled runtime candidate `24927c28c279c6c34ad90111ee6470b4065e0815`); the 0.73 instrumentation baseline and release candidate remain separate exact commits. The 0.71 AX42 campaign is historical hypothesis evidence, not a substitute baseline.
 > - **Unblocks:** defensible per-profile sizing and efficiency claims, or an explicit measured no-win result without weakening correctness, durability, security, or release gates.
-> - **Status:** in-progress, blocked before tag — six-hour qualification `36532416869` and the
+> - **Status:** corrected candidate in final admission — six-hour qualification `36532416869` and the
 >   split 24-hour replacement confirmation `36839197349` passed every frozen guard for candidate
 >   `16d2e98b6cc9e22d9ccf95eb26fe28bbbcf80f2b`, and the confirmation archive is immutable at
 >   `570a5bcb6959ecc7f01f8c80d0fc32b719832ad9`. Final exact-tree admission PR #214 then failed CI
 >   runs `37126998956` and `37126998896`: the frozen tree contains a 0.72 docs-example lockfile and
 >   predates required topology, ownership, gated-test and retained-version-test tooling closure;
->   its instruction tripwire also produced no summaries. HC/2 run `37126998936` passed. No tag or
->   retry is authorized until a reviewed decision either freezes a corrected candidate and repeats
->   identity-affected evidence or changes the release contract without silently waiving a red gate.
+>   its instruction tripwire also produced no summaries. HC/2 run `37126998936` passed. A corrected
+>   candidate is now authorized to change only publication inputs, governance and CI orchestration;
+>   runtime product paths, frozen workloads, estimator, seed and thresholds remain unchanged. The
+>   affected exact-SHA gates must pass before the tag is created.
 
 Roadmap: [`INDEX.md`](INDEX.md) · rules: [`../RULES.md`](../RULES.md) · gates: [`../GATES.md`](../GATES.md) · 0.71 decision: [`../testing/memory/0.71/D4_RELEASE_DECISION.md`](../testing/memory/0.71/D4_RELEASE_DECISION.md) · 0.72 dependency: [`V0_72_MANAGEMENT_CENTER_2_OPERATIONAL_VISIBILITY_PLAN.md`](V0_72_MANAGEMENT_CENTER_2_OPERATIONAL_VISIBILITY_PLAN.md).
 
@@ -220,7 +221,10 @@ Final exact-tree admission attempt `37126998956` is retained in
 `docs/testing/performance/0.73/w11-exact-sha-ci-rejected-37126998956.toml`. It proves that the
 publication-closure rule above is active: successful W10 duration evidence does not compensate for
 a stale lockfile or incomplete governance registries. The failed attempt is not eligible for a
-rerun against altered files under the same candidate name.
+rerun against altered files under the same candidate name. The authorized corrected candidate must
+use a new exact SHA. Because its diff from measured C73 is restricted to docs lockfiles, release
+documentation, test/governance registries and CI tooling, the product-duration packets remain valid;
+all build, docs, compatibility, instruction and release gates touched by those files are repeated.
 
 ## Test principles and evidence acceptance
 

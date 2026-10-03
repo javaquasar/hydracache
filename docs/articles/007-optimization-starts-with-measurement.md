@@ -2206,6 +2206,14 @@ candidate and repeat the evidence whose identity changes, or explicitly revise t
 without converting a red gate into a waiver. Until then the failed CI attempt remains evidence,
 `v0.73.0` remains absent, and the successful long run remains necessary but insufficient.
 
+The project chose the corrected-candidate path. The correction is deliberately narrower than the
+measured product: runtime sources, workload, duration, estimator, seed and thresholds are frozen;
+only publication inputs, governance registries, compatibility assertions and CI lock preparation
+may change. The 0.72 docs lock is regenerated for 0.73, and the instruction tripwire now rebuilds
+an independent harness lock for each side before reconciling an intentional dependency transition.
+The rejected run remains append-only. All affected exact-SHA gates must run again, while the
+six-hour and 24-hour product packets remain attributable because no measured runtime path changed.
+
 ## A profiling ladder that avoids expensive runs
 
 Not every development iteration needs a dedicated bare-metal campaign. A useful workflow has several
