@@ -1,0 +1,134 @@
+{
+  "schema_version": 1,
+  "release": "0.74",
+  "profile_id": "w9a-atomic-ordering-screen-074-v1",
+  "promotable": false,
+  "source_commit": "ce7c5df1b7275b5a2d0183dca71afde9e023f2ba",
+  "operations_per_sample": 20000000,
+  "concurrency": 1,
+  "pairs": 7,
+  "order": "counterbalanced-by-pair",
+  "samples": [
+    {
+      "pair": 1,
+      "order_in_pair": 1,
+      "ordering": "SeqCst",
+      "elapsed_nanoseconds_per_operation": 7.14848,
+      "cpu_nanoseconds_per_operation": 7.03125,
+      "final_value": 20000000
+    },
+    {
+      "pair": 1,
+      "order_in_pair": 2,
+      "ordering": "Relaxed",
+      "elapsed_nanoseconds_per_operation": 7.1824,
+      "cpu_nanoseconds_per_operation": 7.03125,
+      "final_value": 20000000
+    },
+    {
+      "pair": 2,
+      "order_in_pair": 1,
+      "ordering": "Relaxed",
+      "elapsed_nanoseconds_per_operation": 7.319115,
+      "cpu_nanoseconds_per_operation": 7.8125,
+      "final_value": 20000000
+    },
+    {
+      "pair": 2,
+      "order_in_pair": 2,
+      "ordering": "SeqCst",
+      "elapsed_nanoseconds_per_operation": 7.13528,
+      "cpu_nanoseconds_per_operation": 7.03125,
+      "final_value": 20000000
+    },
+    {
+      "pair": 3,
+      "order_in_pair": 1,
+      "ordering": "SeqCst",
+      "elapsed_nanoseconds_per_operation": 7.11537,
+      "cpu_nanoseconds_per_operation": 7.03125,
+      "final_value": 20000000
+    },
+    {
+      "pair": 3,
+      "order_in_pair": 2,
+      "ordering": "Relaxed",
+      "elapsed_nanoseconds_per_operation": 7.02061,
+      "cpu_nanoseconds_per_operation": 7.03125,
+      "final_value": 20000000
+    },
+    {
+      "pair": 4,
+      "order_in_pair": 1,
+      "ordering": "Relaxed",
+      "elapsed_nanoseconds_per_operation": 7.29105,
+      "cpu_nanoseconds_per_operation": 7.03125,
+      "final_value": 20000000
+    },
+    {
+      "pair": 4,
+      "order_in_pair": 2,
+      "ordering": "SeqCst",
+      "elapsed_nanoseconds_per_operation": 7.075335,
+      "cpu_nanoseconds_per_operation": 7.03125,
+      "final_value": 20000000
+    },
+    {
+      "pair": 5,
+      "order_in_pair": 1,
+      "ordering": "SeqCst",
+      "elapsed_nanoseconds_per_operation": 7.09288,
+      "cpu_nanoseconds_per_operation": 7.03125,
+      "final_value": 20000000
+    },
+    {
+      "pair": 5,
+      "order_in_pair": 2,
+      "ordering": "Relaxed",
+      "elapsed_nanoseconds_per_operation": 7.088845,
+      "cpu_nanoseconds_per_operation": 7.03125,
+      "final_value": 20000000
+    },
+    {
+      "pair": 6,
+      "order_in_pair": 1,
+      "ordering": "Relaxed",
+      "elapsed_nanoseconds_per_operation": 7.14616,
+      "cpu_nanoseconds_per_operation": 7.03125,
+      "final_value": 20000000
+    },
+    {
+      "pair": 6,
+      "order_in_pair": 2,
+      "ordering": "SeqCst",
+      "elapsed_nanoseconds_per_operation": 7.06523,
+      "cpu_nanoseconds_per_operation": 7.03125,
+      "final_value": 20000000
+    },
+    {
+      "pair": 7,
+      "order_in_pair": 1,
+      "ordering": "SeqCst",
+      "elapsed_nanoseconds_per_operation": 7.15548,
+      "cpu_nanoseconds_per_operation": 7.03125,
+      "final_value": 20000000
+    },
+    {
+      "pair": 7,
+      "order_in_pair": 2,
+      "ordering": "Relaxed",
+      "elapsed_nanoseconds_per_operation": 7.33733,
+      "cpu_nanoseconds_per_operation": 7.03125,
+      "final_value": 20000000
+    }
+  ],
+  "summary": {
+    "median_seq_cst_cpu_nanoseconds_per_operation": 7.03125,
+    "median_relaxed_cpu_nanoseconds_per_operation": 7.03125,
+    "median_cpu_improvement_percent": 0.0,
+    "relaxed_faster_pairs": 0,
+    "minimum_cpu_improvement_percent": 2.0,
+    "screen_passed": false
+  },
+  "claim_boundary": "isolated atomic screening only; cannot authorize a product change or throughput claim"
+}

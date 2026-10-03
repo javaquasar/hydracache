@@ -1,7 +1,7 @@
 schema_version = 1
 release = "0.74"
 registry_id = "w9a-atomic-ordering-074-v1"
-state = "audit-complete-screen-pending"
+state = "screen-rejected-no-cpu-win"
 source_scope = [
   "crates/hydracache-redis-compat/src/lib.rs",
   "crates/hydracache-client-transport-axum/src/lib.rs",
@@ -10,6 +10,11 @@ screen_pairs = 7
 minimum_cpu_improvement_percent = 2.0
 product_change_requires_end_to_end_native_and_resp_non_regression = true
 broad_mechanical_replacement_forbidden = true
+screen_evidence = [
+  "local-runs/w9a-atomic-ordering-c1.json",
+  "local-runs/w9a-atomic-ordering-c8.json",
+]
+decision = "reject-relaxed-diagnostic-counter-candidate"
 
 [[atomic]]
 id = "resp.next_request_id"
@@ -22,21 +27,21 @@ id = "resp.accepted_connections"
 classification = "diagnostic-counter"
 current_ordering = "SeqCst"
 candidate_ordering = "Relaxed"
-decision = "screen-only"
+decision = "rejected-no-isolated-cpu-win"
 
 [[atomic]]
 id = "resp.commands"
 classification = "diagnostic-counter"
 current_ordering = "SeqCst"
 candidate_ordering = "Relaxed"
-decision = "screen-only"
+decision = "rejected-no-isolated-cpu-win"
 
 [[atomic]]
 id = "resp.errors"
 classification = "diagnostic-counter"
 current_ordering = "SeqCst"
 candidate_ordering = "Relaxed"
-decision = "screen-only"
+decision = "rejected-no-isolated-cpu-win"
 
 [[atomic]]
 id = "resp.active_event_subscribers"
@@ -49,42 +54,42 @@ id = "resp.event_messages"
 classification = "diagnostic-counter"
 current_ordering = "SeqCst"
 candidate_ordering = "Relaxed"
-decision = "screen-only"
+decision = "rejected-no-isolated-cpu-win"
 
 [[atomic]]
 id = "resp.lagged_event_subscribers"
 classification = "diagnostic-counter"
 current_ordering = "SeqCst"
 candidate_ordering = "Relaxed"
-decision = "screen-only"
+decision = "rejected-no-isolated-cpu-win"
 
 [[atomic]]
 id = "client.dispatch_attempts"
 classification = "diagnostic-counter"
 current_ordering = "SeqCst"
 candidate_ordering = "Relaxed"
-decision = "screen-only"
+decision = "rejected-no-isolated-cpu-win"
 
 [[atomic]]
 id = "client.state_mutations"
 classification = "diagnostic-counter"
 current_ordering = "SeqCst"
 candidate_ordering = "Relaxed"
-decision = "screen-only"
+decision = "rejected-no-isolated-cpu-win"
 
 [[atomic]]
 id = "client.rejected_anonymous"
 classification = "diagnostic-counter"
 current_ordering = "SeqCst"
 candidate_ordering = "Relaxed"
-decision = "screen-only"
+decision = "rejected-no-isolated-cpu-win"
 
 [[atomic]]
 id = "client.rejected_oversized"
 classification = "diagnostic-counter"
 current_ordering = "SeqCst"
 candidate_ordering = "Relaxed"
-decision = "screen-only"
+decision = "rejected-no-isolated-cpu-win"
 
 [[atomic]]
 id = "client.active_subscriptions"
