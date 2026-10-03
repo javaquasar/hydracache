@@ -1,0 +1,30 @@
+{
+  "schema_version": 1,
+  "release": "0.73",
+  "campaign": "long-run-qualification-36532416869",
+  "workflow_run": 36532416869,
+  "workflow_url": "https://github.com/javaquasar/hydracache/actions/runs/36532416869",
+  "artifact_id": 11055670780,
+  "artifact_name": "performance-long-run-qualification-073-6135b9d4470234eebf00ecc07200da285e2aaa20-36532416869-1",
+  "artifact_sha256": "aabf2c3c0f84036546d7289a245cea4d67055b5bc642505b6058f40a8e5dae10",
+  "tooling_sha": "6135b9d4470234eebf00ecc07200da285e2aaa20",
+  "baseline_source_sha": "e757556d3a31d565f52a9561d6d4e555bb1cc373",
+  "candidate_source_sha": "16d2e98b6cc9e22d9ccf95eb26fe28bbbcf80f2b",
+  "candidate_tree_oid": "92336607f21a68f563e65dc0fccccd8efaa14f7b",
+  "host_fingerprint": "sha256:702282650a14db1fd52ae9f326cadc8909aff5046a18827ffd82ed0ddbfc465d",
+  "result": "passed",
+  "phase": "qualification",
+  "role_order": ["I73", "C73"],
+  "operations_per_role": 259200000,
+  "checkpoint_count_per_role": 362,
+  "nested_sha256_verified": true,
+  "independent_reanalysis_matched": true,
+  "redaction_review": {
+    "payloads_present": false,
+    "credentials_present": false,
+    "customer_identifiers_present": false,
+    "infrastructure_paths_retained": true,
+    "host_identity_is_pseudonymous_digest": true
+  },
+  "claim_boundary": "Six-hour qualification only; 24-hour confirmation and final C73 admission remain pending."
+}

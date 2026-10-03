@@ -15,6 +15,14 @@ on:
         description: "Approved lease end in RFC3339 form"
         required: true
         type: string
+      long_run_phase:
+        description: "Explicit long-run phase; confirmation requires checked-in green qualification evidence"
+        required: true
+        default: qualification
+        type: choice
+        options:
+          - qualification
+          - confirmation
 permissions:
   contents: read
 
@@ -23,6 +31,27 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  authorize-long-run:
+    if: startsWith(inputs.lease_owner, 'long-run-073@')
+    name: Approve serialized 0.73 long-run phase
+    runs-on: ubuntu-latest
+    environment: performance-reference-073
+    timeout-minutes: 10
+    steps:
+      - name: Bind approved dispatch inputs
+        shell: bash
+        env:
+          INPUT_SOURCE_SHA: ${{ inputs.source_sha }}
+          INPUT_LEASE_OWNER: ${{ inputs.lease_owner }}
+          INPUT_LEASE_END: ${{ inputs.lease_end }}
+          INPUT_PHASE: ${{ inputs.long_run_phase }}
+        run: |
+          set -euo pipefail
+          [[ "$INPUT_SOURCE_SHA" =~ ^[0-9a-f]{40}$ ]]
+          [[ "$INPUT_LEASE_OWNER" = long-run-073@* ]]
+          [[ "$INPUT_PHASE" = "qualification" || "$INPUT_PHASE" = "confirmation" ]]
+          date --date="$INPUT_LEASE_END" >/dev/null
+
   admit:
     if: inputs.lease_owner != 'compatibility-073' && !startsWith(inputs.lease_owner, 'long-run-073@')
     name: Fresh 0.73 host admission
@@ -207,11 +236,40 @@ jobs:
           retention-days: 30
 
   long-run-qualification:
-    if: startsWith(inputs.lease_owner, 'long-run-073@')
+    needs: authorize-long-run
+    if: startsWith(inputs.lease_owner, 'long-run-073@') && inputs.long_run_phase == 'qualification'
     name: Integrated I73/C73 long-run qualification bootstrap
     uses: ./.github/workflows/performance-long-run-qualification-073.yml
     with:
       tooling_sha: ${{ inputs.source_sha }}
       lease_owner: ${{ inputs.lease_owner }}
       lease_end: ${{ inputs.lease_end }}
+      phase: ${{ inputs.long_run_phase }}
+      role: pair
+      entry_serializes_host: true
+
+  long-run-confirmation-i73:
+    needs: authorize-long-run
+    if: startsWith(inputs.lease_owner, 'long-run-073@') && inputs.long_run_phase == 'confirmation'
+    name: Integrated I73 confirmation role
+    uses: ./.github/workflows/performance-long-run-qualification-073.yml
+    with:
+      tooling_sha: ${{ inputs.source_sha }}
+      lease_owner: ${{ inputs.lease_owner }}
+      lease_end: ${{ inputs.lease_end }}
+      phase: confirmation
+      role: I73
+      entry_serializes_host: true
+
+  long-run-confirmation-c73:
+    needs: long-run-confirmation-i73
+    if: needs.long-run-confirmation-i73.result == 'success'
+    name: Integrated C73 confirmation role and seal
+    uses: ./.github/workflows/performance-long-run-qualification-073.yml
+    with:
+      tooling_sha: ${{ inputs.source_sha }}
+      lease_owner: ${{ inputs.lease_owner }}
+      lease_end: ${{ inputs.lease_end }}
+      phase: confirmation
+      role: C73
       entry_serializes_host: true

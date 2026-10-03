@@ -69,6 +69,9 @@ fn workflow_runs_real_callgrind_work_without_touching_reference_lanes() {
         "sync_subject_lock base",
         "sync_subject_lock head",
         "sync-ci-instruction-lock.py",
+        "cp \"$repo_root/scripts/perf/ci-instruction-harness/Cargo.lock\" Cargo.lock",
+        "cargo update -p hydracache",
+        "cargo metadata --locked --no-deps --format-version 1",
         "report.json",
         "contract-sha256.txt",
     ] {

@@ -320,9 +320,9 @@ dependencies = [
 
 [[package]]
 name = "crossbeam-queue"
-version = "0.3.13"
+version = "0.3.12"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "803d13fb3b09d88be9f4dbc29062c66b19bf7170867ceb746d2a8689bf6c7a26"
+checksum = "0f58bbc28f91df819d0aa2a2c00cd19754769c2fad90579b3592b1c9ba7a3115"
 dependencies = [
  "crossbeam-utils",
 ]
@@ -860,15 +860,36 @@ dependencies = [
 ]
 
 [[package]]
+name = "hydra-moka"
+version = "0.12.15-hydra.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7ad8a0701236306b753373994b7077769ad5c2d6dbc60ae31c6258937ab6165a"
+dependencies = [
+ "async-lock",
+ "crossbeam-channel",
+ "crossbeam-epoch",
+ "crossbeam-utils",
+ "equivalent",
+ "event-listener",
+ "futures-util",
+ "parking_lot",
+ "portable-atomic",
+ "smallvec",
+ "tagptr",
+ "uuid",
+]
+
+[[package]]
 name = "hydracache"
-version = "0.72.0"
+version = "0.73.0"
 dependencies = [
  "async-trait",
  "bytes",
+ "crossbeam-queue",
  "futures-util",
+ "hydra-moka",
  "hydracache-core",
  "hydracache-macros",
- "moka",
  "serde",
  "thiserror",
  "tokio",
@@ -876,7 +897,7 @@ dependencies = [
 
 [[package]]
 name = "hydracache-client-protocol"
-version = "0.72.0"
+version = "0.73.0"
 dependencies = [
  "bytes",
  "postcard",
@@ -886,7 +907,7 @@ dependencies = [
 
 [[package]]
 name = "hydracache-client-transport-axum"
-version = "0.72.0"
+version = "0.73.0"
 dependencies = [
  "axum",
  "bytes",
@@ -900,7 +921,7 @@ dependencies = [
 
 [[package]]
 name = "hydracache-core"
-version = "0.72.0"
+version = "0.73.0"
 dependencies = [
  "async-trait",
  "bytes",
@@ -911,7 +932,7 @@ dependencies = [
 
 [[package]]
 name = "hydracache-db"
-version = "0.72.0"
+version = "0.73.0"
 dependencies = [
  "async-trait",
  "hydracache",
@@ -926,7 +947,7 @@ dependencies = [
 
 [[package]]
 name = "hydracache-diesel"
-version = "0.72.0"
+version = "0.73.0"
 dependencies = [
  "async-trait",
  "diesel",
@@ -958,7 +979,7 @@ dependencies = [
 
 [[package]]
 name = "hydracache-macros"
-version = "0.72.0"
+version = "0.73.0"
 dependencies = [
  "proc-macro-crate",
  "proc-macro2",
@@ -968,7 +989,7 @@ dependencies = [
 
 [[package]]
 name = "hydracache-observability"
-version = "0.72.0"
+version = "0.73.0"
 dependencies = [
  "async-trait",
  "hydracache",
@@ -978,7 +999,7 @@ dependencies = [
 
 [[package]]
 name = "hydracache-redis-compat"
-version = "0.72.0"
+version = "0.73.0"
 dependencies = [
  "bytes",
  "hydracache",
@@ -992,7 +1013,7 @@ dependencies = [
 
 [[package]]
 name = "hydracache-seaorm"
-version = "0.72.0"
+version = "0.73.0"
 dependencies = [
  "async-trait",
  "hydracache",
@@ -1005,7 +1026,7 @@ dependencies = [
 
 [[package]]
 name = "hydracache-sqlx"
-version = "0.72.0"
+version = "0.73.0"
 dependencies = [
  "async-trait",
  "hydracache",
@@ -1291,26 +1312,6 @@ dependencies = [
  "libc",
  "wasi",
  "windows-sys 0.61.2",
-]
-
-[[package]]
-name = "moka"
-version = "0.12.16"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4293f18e7567a1caf3c584855554377025c65e0aa445344d04171f5ad63d19b9"
-dependencies = [
- "async-lock",
- "crossbeam-channel",
- "crossbeam-epoch",
- "crossbeam-utils",
- "equivalent",
- "event-listener",
- "futures-util",
- "parking_lot",
- "portable-atomic",
- "smallvec",
- "tagptr",
- "uuid",
 ]
 
 [[package]]

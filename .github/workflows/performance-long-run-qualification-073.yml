@@ -1,20 +1,6 @@
 name: Performance Long-Run Qualification 0.73
 
 on:
-  workflow_dispatch:
-    inputs:
-      tooling_sha:
-        description: "Exact reviewed commit containing the preregistered long-run tooling"
-        required: true
-        type: string
-      lease_owner:
-        description: "Operator holding the serialized performance-host lease"
-        required: true
-        type: string
-      lease_end:
-        description: "Approved lease end in RFC3339 form covering the full 15-hour cap"
-        required: true
-        type: string
   workflow_call:
     inputs:
       tooling_sha:
@@ -25,6 +11,14 @@ on:
         type: string
       lease_end:
         required: true
+        type: string
+      phase:
+        required: false
+        default: qualification
+        type: string
+      role:
+        required: false
+        default: pair
         type: string
       entry_serializes_host:
         required: false
@@ -40,10 +34,9 @@ concurrency:
 
 jobs:
   qualify:
-    name: Exact I73/C73 six-hour-per-role qualification
+    name: Exact ${{ inputs.role }} selected long-run phase
     runs-on: [self-hosted, linux, x64, hydracache-release]
-    environment: performance-reference-073
-    timeout-minutes: 900
+    timeout-minutes: ${{ inputs.phase == 'confirmation' && 1740 || 900 }}
     env:
       HYDRACACHE_PERFORMANCE_PROTECTED_ENV: performance-reference-073
       HYDRACACHE_PERFORMANCE_DEDICATED_BARE_METAL: "1"
@@ -51,9 +44,10 @@ jobs:
       HYDRACACHE_PERFORMANCE_LOADGEN_CPUSET: ${{ vars.HYDRACACHE_MEMORY_LOADGEN_CPUSET || '7' }}
       HYDRACACHE_PERFORMANCE_COLLECTOR_CPUSET: ${{ vars.HYDRACACHE_MEMORY_COLLECTOR_CPUSET || '0' }}
       I73_SHA: e757556d3a31d565f52a9561d6d4e555bb1cc373
-      C73_SHA: 7e3070894aa51af96cdcb3e350eff923a309e1fa
-      C73_TREE_OID: e2c438b9a248586a4f72d3eca3d1c5369fff440b
-      EVIDENCE_DIR: ${{ github.workspace }}/target/performance-evidence/0.73/long-run-qualification-${{ github.run_id }}-${{ github.run_attempt }}
+      C73_SHA: 16d2e98b6cc9e22d9ccf95eb26fe28bbbcf80f2b
+      C73_TREE_OID: 92336607f21a68f563e65dc0fccccd8efaa14f7b
+      LONG_RUN_PHASE: ${{ inputs.phase }}
+      EVIDENCE_DIR: ${{ github.workspace }}/target/performance-evidence/0.73/long-run-${{ inputs.phase }}-${{ github.run_id }}-${{ github.run_attempt }}
 
     steps:
       - name: Check out reviewed tooling revision
@@ -68,19 +62,70 @@ jobs:
           INPUT_TOOLING_SHA: ${{ inputs.tooling_sha }}
           INPUT_LEASE_OWNER: ${{ inputs.lease_owner }}
           INPUT_LEASE_END: ${{ inputs.lease_end }}
+          INPUT_PHASE: ${{ inputs.phase }}
+          INPUT_ROLE: ${{ inputs.role }}
         run: |
           set -euo pipefail
           [[ "$INPUT_TOOLING_SHA" =~ ^[0-9a-f]{40}$ ]]
+          [[ "$INPUT_PHASE" = "qualification" || "$INPUT_PHASE" = "confirmation" ]]
+          [[ "$INPUT_ROLE" = "pair" || "$INPUT_ROLE" = "I73" || "$INPUT_ROLE" = "C73" ]]
+          if [[ "$INPUT_PHASE" = "qualification" ]]; then
+            test "$INPUT_ROLE" = "pair"
+          else
+            [[ "$INPUT_ROLE" = "I73" || "$INPUT_ROLE" = "C73" ]]
+          fi
           test "$(git rev-parse HEAD)" = "$INPUT_TOOLING_SHA"
           test -n "$INPUT_LEASE_OWNER"
           date --date="$INPUT_LEASE_END" >/dev/null
-          test "$(date --date="$INPUT_LEASE_END" +%s)" -gt "$(date +%s)"
+          lease_seconds=$(( $(date --date="$INPUT_LEASE_END" +%s) - $(date +%s) ))
+          if [[ "$INPUT_PHASE" = "confirmation" && "$INPUT_ROLE" = "I73" ]]; then
+            test "$lease_seconds" -ge $((3480 * 60))
+          elif [[ "$INPUT_PHASE" = "confirmation" ]]; then
+            test "$lease_seconds" -ge $((1740 * 60))
+          else
+            test "$lease_seconds" -ge $((900 * 60))
+          fi
           test -z "$(git status --porcelain=v1 --untracked-files=normal)"
           mkdir -p "$EVIDENCE_DIR/calibration"
+          if [[ "$INPUT_PHASE" = "confirmation" ]]; then
+            cargo run -p xtask --locked -- performance-contract-check --release 0.73
+            python3 - <<'PY'
+          import pathlib
+          import tomllib
+
+          path = pathlib.Path("docs/testing/performance/0.73/w10-long-run-v2-qualification-passed-36532416869.toml")
+          evidence = tomllib.loads(path.read_text(encoding="utf-8"))
+          required = {
+              "state": "six-hour-qualification-passed-confirmation-not-started",
+              "result": "passed",
+              "baseline_source_commit": "e757556d3a31d565f52a9561d6d4e555bb1cc373",
+              "candidate_source_commit": "16d2e98b6cc9e22d9ccf95eb26fe28bbbcf80f2b",
+              "decision": "accept-six-hour-qualification-and-hold-before-explicit-confirmation",
+          }
+          for field, expected in required.items():
+              if evidence.get(field) != expected:
+                  raise SystemExit(f"qualification evidence {field} mismatch")
+          for field in (
+              "nested_sha256_verified",
+              "independent_role_reanalysis_matched",
+              "goodput_guard_passed",
+              "cpu_guard_passed",
+              "p99_guard_passed",
+              "rss_slope_guard_passed",
+              "anonymous_pss_slope_guard_passed",
+              "confirmation_allowed",
+          ):
+              if evidence.get(field) is not True:
+                  raise SystemExit(f"qualification evidence {field} is not true")
+          if evidence.get("confirmation_started") is not False or evidence.get("final_c73_allowed") is not False:
+              raise SystemExit("qualification evidence already crossed its promotion boundary")
+          PY
+          fi
           {
             echo "HYDRACACHE_PERFORMANCE_LEASE_OWNER=$INPUT_LEASE_OWNER"
             echo "HYDRACACHE_PERFORMANCE_LEASE_END=$INPUT_LEASE_END"
             echo "EXPECTED_TOOLING_SHA=$INPUT_TOOLING_SHA"
+            echo "LONG_RUN_ROLE=$INPUT_ROLE"
           } >> "$GITHUB_ENV"
 
       - name: Expose and verify required host tools
@@ -132,8 +177,13 @@ jobs:
           set -euo pipefail
           cargo build --manifest-path "$I73_ROOT/Cargo.toml" --release --locked -p hydracache-server
           cargo build --manifest-path "$C73_ROOT/Cargo.toml" --release --locked -p hydracache-server
+          test "$(sha256sum "$I73_OVERLAY/Cargo.lock" | cut -d' ' -f1)" = "3c2e8a20a26c6105fec6f449ce6cad43ba4a9a65f78516f5c0110ff0a9ca4953"
+          test "$(sha256sum "$C73_OVERLAY/Cargo.lock.c73" | cut -d' ' -f1)" = "35b7ab4f62cee2ce41aa0547cc632a11d90e0d89861b87158bbcf7b184767630"
           cargo build --manifest-path "$I73_OVERLAY/Cargo.toml" --release --locked
+          cp "$C73_OVERLAY/Cargo.lock.c73" "$C73_OVERLAY/Cargo.lock"
           cargo build --manifest-path "$C73_OVERLAY/Cargo.toml" --release --locked
+          cp "$I73_OVERLAY/Cargo.lock" "$C73_OVERLAY/Cargo.lock"
+          diff -qr --exclude=target "$I73_OVERLAY" "$C73_OVERLAY"
           test -z "$(git -C "$I73_ROOT" status --porcelain=v1 --untracked-files=normal)"
           test -z "$(git -C "$C73_ROOT" status --porcelain=v1 --untracked-files=normal)"
           {
@@ -144,6 +194,7 @@ jobs:
           } >> "$GITHUB_ENV"
 
       - name: Falsify missing-final-checkpoint admission
+        if: inputs.role != 'C73'
         shell: bash
         run: |
           set -euo pipefail
@@ -152,12 +203,13 @@ jobs:
             --i73-harness "$I73_HARNESS" --c73-harness "$C73_HARNESS" \
             --i73-server "$I73_SERVER" --c73-server "$C73_SERVER" \
             --i73-overlay "$I73_OVERLAY" --c73-overlay "$C73_OVERLAY" \
-            --scenario docs/testing/performance/0.73/w10-long-run-qualification-contract.toml \
+            --scenario docs/testing/performance/0.73/w10-long-run-qualification-v2-contract.toml \
             --output "$EVIDENCE_DIR/canary" \
             --daemon-cpu-set "$HYDRACACHE_PERFORMANCE_DAEMON_CPUSET" \
             --loadgen-cpu-set "$HYDRACACHE_PERFORMANCE_LOADGEN_CPUSET"
 
       - name: Capture I73 pre-role calibration
+        if: inputs.role != 'C73'
         shell: bash
         run: |
           set -euo pipefail
@@ -165,22 +217,23 @@ jobs:
             --profile performance-reference-073-v1 \
             --output "$EVIDENCE_DIR/calibration/pre-i73.json"
 
-      - name: Run exact six-hour I73 role
+      - name: Run exact selected-phase I73 role
+        if: inputs.role != 'C73'
         shell: bash
         run: |
           set -euo pipefail
           python3 scripts/perf/performance_long_run_073.py \
-            --mode role --role I73 --phase qualification \
+            --mode role --role I73 --phase "$LONG_RUN_PHASE" \
             --i73-harness "$I73_HARNESS" --c73-harness "$C73_HARNESS" \
             --i73-server "$I73_SERVER" --c73-server "$C73_SERVER" \
             --i73-overlay "$I73_OVERLAY" --c73-overlay "$C73_OVERLAY" \
-            --scenario docs/testing/performance/0.73/w10-long-run-qualification-contract.toml \
+            --scenario docs/testing/performance/0.73/w10-long-run-qualification-v2-contract.toml \
             --output "$EVIDENCE_DIR/i73" \
             --daemon-cpu-set "$HYDRACACHE_PERFORMANCE_DAEMON_CPUSET" \
             --loadgen-cpu-set "$HYDRACACHE_PERFORMANCE_LOADGEN_CPUSET"
 
       - name: Capture I73 post-role calibration
-        if: always()
+        if: always() && inputs.role != 'C73'
         shell: bash
         run: |
           set -euo pipefail
@@ -188,7 +241,79 @@ jobs:
             --profile performance-reference-073-v1 \
             --output "$EVIDENCE_DIR/calibration/post-i73.json"
 
+      - name: Seal I73 continuation packet
+        if: inputs.phase == 'confirmation' && inputs.role == 'I73'
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -f "$EVIDENCE_DIR/canary/canary.json"
+          test -f "$EVIDENCE_DIR/i73/attempt.json"
+          test -f "$EVIDENCE_DIR/i73/receipt.json"
+          test -f "$EVIDENCE_DIR/i73/baseline-bounds.json"
+          test -f "$EVIDENCE_DIR/calibration/pre-i73.json"
+          test -f "$EVIDENCE_DIR/calibration/post-i73.json"
+          (
+            cd "$EVIDENCE_DIR"
+            find canary calibration i73 -type f -print0 \
+              | sort -z \
+              | xargs -0 sha256sum > continuation-SHA256SUMS
+          )
+
+      - name: Upload I73 continuation packet
+        if: always() && inputs.phase == 'confirmation' && inputs.role == 'I73'
+        uses: actions/upload-artifact@v4
+        with:
+          name: performance-long-run-confirmation-i73-stage-073-${{ inputs.tooling_sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ env.EVIDENCE_DIR }}
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Download and verify I73 continuation packet
+        if: inputs.phase == 'confirmation' && inputs.role == 'C73'
+        uses: actions/download-artifact@v4
+        with:
+          name: performance-long-run-confirmation-i73-stage-073-${{ inputs.tooling_sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ env.EVIDENCE_DIR }}
+
+      - name: Admit I73 continuation packet
+        if: inputs.phase == 'confirmation' && inputs.role == 'C73'
+        shell: bash
+        run: |
+          set -euo pipefail
+          (
+            cd "$EVIDENCE_DIR"
+            sha256sum --check continuation-SHA256SUMS
+          )
+          python3 - <<'PY'
+          import json
+          import os
+          import pathlib
+
+          root = pathlib.Path(os.environ["EVIDENCE_DIR"])
+          attempt = json.loads((root / "i73" / "attempt.json").read_text(encoding="utf-8"))
+          receipt = json.loads((root / "i73" / "receipt.json").read_text(encoding="utf-8"))
+          if attempt.get("valid") is not True or attempt.get("role") != "I73":
+              raise SystemExit("I73 continuation attempt is not valid")
+          if attempt.get("attempt", {}).get("exit_code") != 0 or attempt.get("attempt", {}).get("timed_out") is not False:
+              raise SystemExit("I73 continuation process did not complete cleanly")
+          expected = {
+              "role": "I73",
+              "source_sha": "e757556d3a31d565f52a9561d6d4e555bb1cc373",
+              "operations": 1036800000,
+              "checkpoint_count": 1442,
+              "final_checkpoint_present": True,
+              "reconciliation_exact": True,
+          }
+          for field, value in expected.items():
+              if receipt.get(field) != value:
+                  raise SystemExit(f"I73 continuation {field} mismatch")
+          observation = receipt.get("observation", {})
+          if observation.get("completed") != 1036800000 or observation.get("errors") != 0:
+              raise SystemExit("I73 continuation observation is incomplete")
+          PY
+
       - name: Capture C73 pre-role calibration
+        if: inputs.role != 'I73'
         shell: bash
         run: |
           set -euo pipefail
@@ -197,22 +322,23 @@ jobs:
             --profile performance-reference-073-v1 \
             --output "$EVIDENCE_DIR/calibration/pre-c73.json"
 
-      - name: Run exact six-hour C73 role
+      - name: Run exact selected-phase C73 role
+        if: inputs.role != 'I73'
         shell: bash
         run: |
           set -euo pipefail
           python3 scripts/perf/performance_long_run_073.py \
-            --mode role --role C73 --phase qualification \
+            --mode role --role C73 --phase "$LONG_RUN_PHASE" \
             --i73-harness "$I73_HARNESS" --c73-harness "$C73_HARNESS" \
             --i73-server "$I73_SERVER" --c73-server "$C73_SERVER" \
             --i73-overlay "$I73_OVERLAY" --c73-overlay "$C73_OVERLAY" \
-            --scenario docs/testing/performance/0.73/w10-long-run-qualification-contract.toml \
+            --scenario docs/testing/performance/0.73/w10-long-run-qualification-v2-contract.toml \
             --output "$EVIDENCE_DIR/c73" \
             --daemon-cpu-set "$HYDRACACHE_PERFORMANCE_DAEMON_CPUSET" \
             --loadgen-cpu-set "$HYDRACACHE_PERFORMANCE_LOADGEN_CPUSET"
 
       - name: Capture C73 post-role calibration
-        if: always()
+        if: always() && inputs.role != 'I73'
         shell: bash
         run: |
           set -euo pipefail
@@ -220,25 +346,26 @@ jobs:
             --profile performance-reference-073-v1 \
             --output "$EVIDENCE_DIR/calibration/post-c73.json"
 
-      - name: Seal the complete qualification packet
+      - name: Seal the complete selected-phase packet
+        if: inputs.role != 'I73'
         shell: bash
         run: |
           set -euo pipefail
           python3 scripts/perf/performance_long_run_073.py \
-            --mode seal --phase qualification --tooling-sha "$EXPECTED_TOOLING_SHA" \
+            --mode seal --phase "$LONG_RUN_PHASE" --tooling-sha "$EXPECTED_TOOLING_SHA" \
             --i73-harness "$I73_HARNESS" --c73-harness "$C73_HARNESS" \
             --i73-server "$I73_SERVER" --c73-server "$C73_SERVER" \
             --i73-overlay "$I73_OVERLAY" --c73-overlay "$C73_OVERLAY" \
-            --scenario docs/testing/performance/0.73/w10-long-run-qualification-contract.toml \
+            --scenario docs/testing/performance/0.73/w10-long-run-qualification-v2-contract.toml \
             --output "$EVIDENCE_DIR" \
             --daemon-cpu-set "$HYDRACACHE_PERFORMANCE_DAEMON_CPUSET" \
             --loadgen-cpu-set "$HYDRACACHE_PERFORMANCE_LOADGEN_CPUSET"
 
-      - name: Upload complete or incomplete qualification packet
-        if: always()
+      - name: Upload complete or incomplete selected-phase packet
+        if: always() && inputs.role != 'I73'
         uses: actions/upload-artifact@v4
         with:
-          name: performance-long-run-qualification-073-${{ inputs.tooling_sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          name: performance-long-run-${{ inputs.phase }}-073-${{ inputs.tooling_sha }}-${{ github.run_id }}-${{ github.run_attempt }}
           path: ${{ env.EVIDENCE_DIR }}
           if-no-files-found: error
           retention-days: 30

@@ -36,6 +36,319 @@ fn manifest(name: &str) -> TomlValue {
     .expect("valid performance TOML")
 }
 
+fn release_canary_enabled() -> Option<String> {
+    std::env::var("HYDRACACHE_CANARY_DEFECT")
+        .ok()
+        .filter(|value| value.starts_with("PERF73-"))
+}
+
+fn release_archive_contract() -> TomlValue {
+    toml::from_str(
+        &fs::read_to_string(
+            root().join("docs/testing/performance/0.73/release-archive-contract.toml"),
+        )
+        .expect("0.73 release archive contract"),
+    )
+    .expect("valid 0.73 release archive contract TOML")
+}
+
+fn release_archive_policy_problems(contract: &TomlValue, release_note: &str) -> Vec<String> {
+    let mut problems = Vec::new();
+    let expect_text = |key: &str, expected: &str, problems: &mut Vec<String>| {
+        if contract[key].as_str() != Some(expected) {
+            problems.push(format!("{key} must be {expected}"));
+        }
+    };
+    let expect_bool = |key: &str, expected: bool, problems: &mut Vec<String>| {
+        if contract[key].as_bool() != Some(expected) {
+            problems.push(format!("{key} must be {expected}"));
+        }
+    };
+
+    if contract["schema_version"].as_integer() != Some(1) {
+        problems.push("schema_version must be 1".to_owned());
+    }
+    expect_text("release", "0.73.0", &mut problems);
+    expect_text("state", "published-and-commit-pinned", &mut problems);
+    expect_text(
+        "archive_branch",
+        "evidence/0.73/w10-confirmation",
+        &mut problems,
+    );
+    expect_text(
+        "archive_branch_url",
+        "https://github.com/javaquasar/hydracache/tree/evidence/0.73/w10-confirmation",
+        &mut problems,
+    );
+    expect_text(
+        "archive_root",
+        "docs/testing/perf-artifacts/0.73/w10-confirmation-36839197349",
+        &mut problems,
+    );
+    expect_text(
+        "archive_commit",
+        "570a5bcb6959ecc7f01f8c80d0fc32b719832ad9",
+        &mut problems,
+    );
+    expect_text(
+        "artifact_manifest_sha256",
+        "03b9082c8c1bdec8ab17c8eb621bc59930ce49c01119a2e35accf784f2fc09e2",
+        &mut problems,
+    );
+    expect_text(
+        "sha256sums_sha256",
+        "74f066db4acb6bb7612ed50b38cbba80425d7e7621028ad0c63b8f8256654d90",
+        &mut problems,
+    );
+    if contract["source_confirmation_run"].as_integer() != Some(36_839_197_349) {
+        problems.push("source_confirmation_run must bind the authorized replacement".to_owned());
+    }
+    if contract["actions_retention_days"].as_integer() != Some(30) {
+        problems.push("Actions staging retention must remain explicit".to_owned());
+    }
+    if contract["max_git_blob_bytes"].as_integer() != Some(67_108_864) {
+        problems.push("Git blob ceiling must remain bounded".to_owned());
+    }
+    expect_bool("archive_before_tag", true, &mut problems);
+    expect_bool("hosted_artifact_only_allowed", false, &mut problems);
+    expect_bool("force_push_allowed", false, &mut problems);
+    expect_bool(
+        "oversize_storage_requires_immutable_object_version",
+        true,
+        &mut problems,
+    );
+    expect_bool("oversize_storage_requires_sha256", true, &mut problems);
+    expect_bool("release_note_branch_link_required", true, &mut problems);
+    expect_bool(
+        "release_note_commit_permalink_required_for_shipped",
+        true,
+        &mut problems,
+    );
+    expect_bool(
+        "release_note_manifest_link_required_for_shipped",
+        true,
+        &mut problems,
+    );
+    expect_bool(
+        "release_note_sha256sums_link_required_for_shipped",
+        true,
+        &mut problems,
+    );
+
+    let attempts = contract["required_long_run_attempt_runs"]
+        .as_array()
+        .map(|values| {
+            values
+                .iter()
+                .filter_map(TomlValue::as_integer)
+                .collect::<Vec<_>>()
+        })
+        .unwrap_or_default();
+    let expected_attempts = vec![
+        36_278_780_653,
+        36_404_123_541,
+        36_404_461_429,
+        36_457_014_494,
+        36_532_416_869,
+        36_622_527_013,
+        36_839_197_349,
+    ];
+    if attempts != expected_attempts {
+        problems.push("all long-run attempts must remain append-only".to_owned());
+    }
+
+    let required_files = contract["required_archive_files"]
+        .as_array()
+        .map(|values| {
+            values
+                .iter()
+                .filter_map(TomlValue::as_str)
+                .collect::<Vec<_>>()
+        })
+        .unwrap_or_default();
+    for required in [
+        "README.md",
+        "SHA256SUMS",
+        "artifact-manifest.tsv",
+        "verification/verification-receipt.toml",
+    ] {
+        if !required_files.contains(&required) {
+            problems.push(format!("archive must require {required}"));
+        }
+    }
+
+    for marker in [
+        "## Evidence archive",
+        "https://github.com/javaquasar/hydracache/tree/evidence/0.73/w10-confirmation",
+        "570a5bcb6959ecc7f01f8c80d0fc32b719832ad9",
+        "commit-pinned links",
+        "artifact-manifest.tsv",
+        "SHA256SUMS",
+    ] {
+        if !release_note.contains(marker) {
+            problems.push(format!("release note must retain marker {marker}"));
+        }
+    }
+    problems
+}
+
+#[test]
+fn release_073_governance_contract_is_fail_closed() {
+    for path in [
+        "docs/testing/canary-registry-0.73.json",
+        "docs/testing/release-evidence/0.73.toml",
+        "docs/testing/performance/0.73/release-coverage.toml",
+        "docs/testing/performance/0.73/release-archive-contract.toml",
+        "docs/releases/0.73.0.md",
+        "docs/testing/performance/0.73/w10-long-run-v2-qualification-passed-36532416869.toml",
+        "docs/testing/performance/0.73/w10-long-run-v2-confirmation-passed-36839197349.toml",
+        "docs/testing/performance/0.73/w10-confirmation-36839197349-archive-manifest.json",
+        "docs/testing/performance/0.73/w11-tag-ci-rejected-37149833980.toml",
+        "docs/testing/performance/0.73/w11-redis-proof-repair-passed-37150976176.toml",
+        "docs/testing/perf-artifacts/0.73/long-run-qualification-36532416869/manifest.json",
+    ] {
+        assert!(
+            root().join(path).is_file(),
+            "missing 0.73 release evidence {path}"
+        );
+    }
+    assert!(
+        xtask::performance_contract::check_at_root(&root(), "0.73", None)
+            .expect("check 0.73 performance closure")
+            .is_empty(),
+        "the checked-in 0.73 evidence chain must remain internally consistent"
+    );
+}
+
+#[test]
+fn w11_tag_toolchain_failure_and_exact_sha_repair_remain_distinct() {
+    let rejected = manifest("w11-tag-ci-rejected-37149833980.toml");
+    let repaired = manifest("w11-redis-proof-repair-passed-37150976176.toml");
+
+    assert_eq!(
+        rejected["status"].as_str(),
+        Some("rejected-tooling-attempt")
+    );
+    assert_eq!(rejected["ship_allowed"].as_bool(), Some(false));
+    assert_eq!(rejected["run"]["failed_jobs"].as_integer(), Some(1));
+    assert_eq!(
+        rejected["root_failure"][0]["classification"].as_str(),
+        Some("ci-toolchain-temporal-drift")
+    );
+    assert_eq!(
+        rejected["decision"]["attempt_remains_rejected"].as_bool(),
+        Some(true)
+    );
+
+    assert_eq!(repaired["status"].as_str(), Some("accepted"));
+    assert_eq!(
+        repaired["run"]["workflow_conclusion"].as_str(),
+        Some("success")
+    );
+    assert_eq!(repaired["run"]["successful_jobs"].as_integer(), Some(14));
+    assert_eq!(repaired["run"]["skipped_jobs"].as_integer(), Some(27));
+    assert_eq!(repaired["run"]["failed_jobs"].as_integer(), Some(0));
+    assert_eq!(repaired["run"]["cancelled_jobs"].as_integer(), Some(0));
+    assert_eq!(
+        repaired["identity"]["tag_commit"].as_str(),
+        rejected["identity"]["tag_commit"].as_str()
+    );
+    assert_eq!(
+        repaired["identity"]["checked_out_candidate_sha"].as_str(),
+        Some("d1db9937e61295341ac95f289bace275641b1650")
+    );
+    assert_eq!(
+        repaired["tooling"]["toolchain"].as_str(),
+        Some("rustc 1.94.0 (4a4ef493e 2026-03-02)")
+    );
+    assert_eq!(
+        repaired["decision"]["replaces_rejected_attempt"].as_bool(),
+        Some(false)
+    );
+    assert_eq!(repaired["decision"]["tag_moved"].as_bool(), Some(false));
+    assert_eq!(
+        repaired["decision"]["candidate_identity_changed"].as_bool(),
+        Some(false)
+    );
+}
+
+#[test]
+fn w11_archive_policy_pins_durable_branch_and_release_links() {
+    let release_note =
+        fs::read_to_string(root().join("docs/releases/0.73.0.md")).expect("0.73 release note");
+    let problems = release_archive_policy_problems(&release_archive_contract(), &release_note);
+    assert!(
+        problems.is_empty(),
+        "invalid W11 archive policy: {problems:?}"
+    );
+}
+
+#[test]
+fn w11_archive_policy_rejects_mutable_or_expiring_only_evidence() {
+    let release_note =
+        fs::read_to_string(root().join("docs/releases/0.73.0.md")).expect("0.73 release note");
+    let contract = release_archive_contract();
+
+    let mut mutable_branch = contract.clone();
+    mutable_branch["force_push_allowed"] = TomlValue::Boolean(true);
+    assert!(!release_archive_policy_problems(&mutable_branch, &release_note).is_empty());
+
+    let mut hosted_only = contract.clone();
+    hosted_only["hosted_artifact_only_allowed"] = TomlValue::Boolean(true);
+    assert!(!release_archive_policy_problems(&hosted_only, &release_note).is_empty());
+
+    let mut no_commit_link = contract;
+    no_commit_link["release_note_commit_permalink_required_for_shipped"] =
+        TomlValue::Boolean(false);
+    assert!(!release_archive_policy_problems(&no_commit_link, &release_note).is_empty());
+    assert!(!release_archive_policy_problems(&no_commit_link, "").is_empty());
+}
+
+#[test]
+fn canary_release_073_rejects_missing_work_item_evidence() {
+    let Some(defect) = release_canary_enabled() else {
+        return;
+    };
+    let work_item = defect
+        .strip_prefix("PERF73-")
+        .expect("release canary prefix");
+    assert!(
+        matches!(
+            work_item,
+            "W0" | "W1" | "W2" | "W3" | "W4" | "W5" | "W6" | "W7" | "W8" | "W9" | "W10" | "W11"
+        ),
+        "unknown 0.73 release canary {defect}"
+    );
+
+    let evidence: TomlValue = toml::from_str(
+        &fs::read_to_string(root().join("docs/testing/release-evidence/0.73.toml"))
+            .expect("0.73 release evidence manifest"),
+    )
+    .expect("valid 0.73 release evidence TOML");
+    let registered = evidence["work_item"]
+        .as_array()
+        .expect("release work items")
+        .iter()
+        .any(|item| {
+            item["id"].as_str() == Some(work_item)
+                && item["required_sources"]
+                    .as_array()
+                    .is_some_and(|values| !values.is_empty())
+                && item["required_tests"]
+                    .as_array()
+                    .is_some_and(|values| !values.is_empty())
+                && item["required_artifacts"]
+                    .as_array()
+                    .is_some_and(|values| !values.is_empty())
+                && item["ship_required"].as_bool() == Some(true)
+        });
+    assert!(
+        registered,
+        "{work_item} must have complete release evidence wiring"
+    );
+    panic!("HC-CANARY-RED:{defect}: removing {work_item} evidence must block Release 0.73");
+}
+
 #[test]
 fn checked_in_local_screening_contract_and_receipt_pass() {
     assert!(xtask::performance_contract::check_contract(&contract(), "0.73").is_empty());
@@ -1973,34 +2286,55 @@ fn w10_long_run_qualification_workflow_is_serial_bounded_and_fail_closed() {
     serde_yaml::from_str::<serde_yaml::Value>(&workflow).expect("valid workflow YAML");
 
     for required in [
-        "workflow_dispatch:",
         "workflow_call:",
         "runs-on: [self-hosted, linux, x64, hydracache-release]",
-        "environment: performance-reference-073",
-        "timeout-minutes: 900",
+        "timeout-minutes: ${{ inputs.phase == 'confirmation' && 1740 || 900 }}",
         "HYDRACACHE_PERFORMANCE_COLLECTOR_CPUSET:",
         "--mode canary --phase qualification",
-        "--mode role --role I73 --phase qualification",
-        "--mode role --role C73 --phase qualification",
-        "--mode seal --phase qualification",
+        "--mode role --role I73 --phase \"$LONG_RUN_PHASE\"",
+        "--mode role --role C73 --phase \"$LONG_RUN_PHASE\"",
+        "--mode seal --phase \"$LONG_RUN_PHASE\"",
+        "w10-long-run-v2-qualification-passed-36532416869.toml",
+        "test \"$lease_seconds\" -ge $((3480 * 60))",
+        "accept-six-hour-qualification-and-hold-before-explicit-confirmation",
         "if: always()",
         "actions/upload-artifact@v4",
         "retention-days: 30",
+        "C73_SHA: 16d2e98b6cc9e22d9ccf95eb26fe28bbbcf80f2b",
+        "C73_TREE_OID: 92336607f21a68f563e65dc0fccccd8efaa14f7b",
+        "w10-long-run-qualification-v2-contract.toml",
+        "Cargo.lock.c73",
+        "35b7ab4f62cee2ce41aa0547cc632a11d90e0d89861b87158bbcf7b184767630",
+        "cp \"$C73_OVERLAY/Cargo.lock.c73\" \"$C73_OVERLAY/Cargo.lock\"",
+        "cp \"$I73_OVERLAY/Cargo.lock\" \"$C73_OVERLAY/Cargo.lock\"",
+        "diff -qr --exclude=target \"$I73_OVERLAY\" \"$C73_OVERLAY\"",
+        "inputs.role == 'I73'",
+        "inputs.role == 'C73'",
+        "continuation-SHA256SUMS",
+        "sha256sum --check continuation-SHA256SUMS",
+        "performance-long-run-confirmation-i73-stage-073-",
+        "I73 continuation attempt is not valid",
+        "I73 continuation observation is incomplete",
     ] {
         assert!(workflow.contains(required), "workflow omitted {required}");
     }
     assert!(
-        !workflow.contains("push:"),
-        "long-run workflow must not run on push"
+        !workflow.contains("workflow_dispatch:")
+            && !workflow.contains("push:")
+            && !workflow.contains("schedule:"),
+        "the reusable long-run worker must only be reachable through the approved entry workflow"
     );
-    assert!(
-        !workflow.contains("schedule:"),
-        "long-run workflow must not run on a schedule"
-    );
-    assert!(
-        !workflow.contains("--phase confirmation"),
-        "qualification workflow must not run the 24-hour confirmation"
-    );
+    for forbidden in [
+        "--mode role --role I73 --phase qualification",
+        "--mode role --role C73 --phase qualification",
+        "--mode role --role I73 --phase confirmation",
+        "--mode role --role C73 --phase confirmation",
+    ] {
+        assert!(
+            !workflow.contains(forbidden),
+            "long-run workflow hard-coded a role phase: {forbidden}"
+        );
+    }
     assert_eq!(
         workflow.matches("--mode role --role I73").count(),
         1,
@@ -2028,7 +2362,7 @@ fn w10_long_run_qualification_workflow_is_serial_bounded_and_fail_closed() {
         .find("--mode role --role C73")
         .expect("C73 role command");
     let seal = workflow
-        .find("--mode seal --phase qualification")
+        .find("--mode seal --phase \"$LONG_RUN_PHASE\"")
         .expect("campaign seal command");
     assert!(
         baseline < sealed_bounds && sealed_bounds < candidate && candidate < seal,
@@ -2040,11 +2374,21 @@ fn w10_long_run_qualification_workflow_is_serial_bounded_and_fail_closed() {
             .expect("registered host admission entry");
     serde_yaml::from_str::<serde_yaml::Value>(&entry).expect("valid entry workflow YAML");
     for required in [
+        "authorize-long-run:",
         "startsWith(inputs.lease_owner, 'long-run-073@')",
+        "environment: performance-reference-073",
+        "long-run-confirmation-i73:",
+        "long-run-confirmation-c73:",
+        "needs: long-run-confirmation-i73",
+        "if: needs.long-run-confirmation-i73.result == 'success'",
         "uses: ./.github/workflows/performance-long-run-qualification-073.yml",
         "tooling_sha: ${{ inputs.source_sha }}",
         "lease_owner: ${{ inputs.lease_owner }}",
         "lease_end: ${{ inputs.lease_end }}",
+        "phase: ${{ inputs.long_run_phase }}",
+        "role: pair",
+        "role: I73",
+        "role: C73",
         "entry_serializes_host: true",
     ] {
         assert!(
@@ -2057,6 +2401,77 @@ fn w10_long_run_qualification_workflow_is_serial_bounded_and_fail_closed() {
         1,
         "the registered entry must remain the sole owner of the shared host concurrency group"
     );
+    assert_eq!(
+        entry
+            .matches("uses: ./.github/workflows/performance-long-run-qualification-073.yml")
+            .count(),
+        3,
+        "qualification and the two serialized confirmation roles must share one worker definition"
+    );
+    assert_eq!(
+        entry.matches("environment: performance-reference-073").count(),
+        2,
+        "one approval gates the long-run chain while the independent fresh-admission job retains its gate"
+    );
+}
+
+#[test]
+fn w10_integrated_workflows_pin_role_specific_harness_locks_and_restore_overlay_identity() {
+    for relative in [
+        ".github/workflows/performance-integrated-host-073.yml",
+        ".github/workflows/performance-long-run-qualification-073.yml",
+    ] {
+        let workflow = fs::read_to_string(root().join(relative)).expect("integrated workflow");
+        serde_yaml::from_str::<serde_yaml::Value>(&workflow).expect("valid workflow YAML");
+        for required in [
+            "3c2e8a20a26c6105fec6f449ce6cad43ba4a9a65f78516f5c0110ff0a9ca4953",
+            "35b7ab4f62cee2ce41aa0547cc632a11d90e0d89861b87158bbcf7b184767630",
+            "cp \"$C73_OVERLAY/Cargo.lock.c73\" \"$C73_OVERLAY/Cargo.lock\"",
+            "cargo build --manifest-path \"$C73_OVERLAY/Cargo.toml\" --release --locked",
+            "cp \"$I73_OVERLAY/Cargo.lock\" \"$C73_OVERLAY/Cargo.lock\"",
+            "diff -qr --exclude=target \"$I73_OVERLAY\" \"$C73_OVERLAY\"",
+        ] {
+            assert!(workflow.contains(required), "{relative} omitted {required}");
+        }
+        let select = workflow
+            .find("cp \"$C73_OVERLAY/Cargo.lock.c73\"")
+            .expect("C73 lock selection");
+        let build = workflow
+            .find("cargo build --manifest-path \"$C73_OVERLAY/Cargo.toml\"")
+            .expect("C73 harness build");
+        let restore = workflow
+            .find("cp \"$I73_OVERLAY/Cargo.lock\" \"$C73_OVERLAY/Cargo.lock\"")
+            .expect("canonical overlay restoration");
+        let compare = workflow
+            .find("diff -qr --exclude=target \"$I73_OVERLAY\" \"$C73_OVERLAY\"")
+            .expect("overlay identity guard");
+        assert!(
+            select < build && build < restore && restore < compare,
+            "{relative} must select, build, restore, then compare overlays"
+        );
+    }
+}
+
+#[test]
+fn w10_final_candidate_harness_identity_and_canary_are_fail_closed() {
+    let harness = fs::read_to_string(root().join("tools/performance-integrated-073/src/main.rs"))
+        .expect("integrated harness source");
+    assert!(harness.contains("const C73_SHA: &str = \"16d2e98b6cc9e22d9ccf95eb26fe28bbbcf80f2b\";"));
+    assert!(
+        !harness.contains("const C73_SHA: &str = \"7e3070894aa51af96cdcb3e350eff923a309e1fa\";")
+    );
+
+    let runner = fs::read_to_string(root().join("scripts/perf/performance_long_run_073.py"))
+        .expect("long-run runner source");
+    for required in [
+        "canary process failed with exit code",
+        "receipt_value.get(\"final_checkpoint_present\") is not False",
+        "checkpoint_values[-1].get(\"kind\") != \"final-work\"",
+        "item.get(\"kind\") == \"post-idle-reconciled\"",
+        "missing-post-idle-reconciled-checkpoint",
+    ] {
+        assert!(runner.contains(required), "runner omitted {required}");
+    }
 }
 
 #[test]
@@ -2182,6 +2597,144 @@ fn w10_registry_transition_cannot_transfer_old_evidence_or_skip_new_long_runs() 
         "new_six_hour_qualification_required must be true",
         "new_twenty_four_hour_confirmation_required must be true",
         "server_dispatch_allowed_before_final_candidate_freeze must be false",
+    ] {
+        assert!(
+            problems.iter().any(|problem| problem.contains(required)),
+            "missing problem containing {required:?}: {problems:?}"
+        );
+    }
+}
+
+#[test]
+fn w10_long_run_v2_cannot_drift_from_the_final_registry_candidate() {
+    let mut value = manifest("w10-long-run-qualification-v2-contract.toml");
+    assert!(
+        xtask::performance_contract::check_w10_long_run_qualification_v2_contract(&value, "0.73")
+            .is_empty()
+    );
+    value["candidate_source_commit"] = TomlValue::String("0".repeat(40));
+    value["candidate_root_lock_sha256"] = TomlValue::String("1".repeat(64));
+    value["hydra_moka_registry_checksum"] = TomlValue::String("2".repeat(64));
+    value["qualification_duration_seconds_per_role"] = TomlValue::Integer(3_600);
+    let problems =
+        xtask::performance_contract::check_w10_long_run_qualification_v2_contract(&value, "0.73");
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("final registry identity changed")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("duration or artifact budget changed")));
+}
+
+#[test]
+fn w10_long_run_v2_qualification_cannot_open_final_release_or_hide_a_failed_guard() {
+    let mut value = manifest("w10-long-run-v2-qualification-passed-36532416869.toml");
+    assert!(
+        xtask::performance_contract::check_w10_long_run_qualification_v2_evidence(&value, "0.73")
+            .is_empty()
+    );
+    value["nested_sha256_verified"] = TomlValue::Boolean(false);
+    value["rss_slope_guard_passed"] = TomlValue::Boolean(false);
+    value["confirmation_started"] = TomlValue::Boolean(true);
+    value["final_c73_allowed"] = TomlValue::Boolean(true);
+    value["c73_rss_upper_95_bytes_per_second"] = TomlValue::Float(100.0);
+    value["cpu_relative_change"] = TomlValue::Float(0.04);
+    let problems =
+        xtask::performance_contract::check_w10_long_run_qualification_v2_evidence(&value, "0.73");
+    for required in [
+        "nested_sha256_verified must be true",
+        "rss_slope_guard_passed must be true",
+        "confirmation_started must be false",
+        "final_c73_allowed must be false",
+        "regression budgets failed",
+        "c73_rss_upper_95_bytes_per_second exceeds sealed baseline",
+    ] {
+        assert!(
+            problems.iter().any(|problem| problem.contains(required)),
+            "missing problem containing {required:?}: {problems:?}"
+        );
+    }
+}
+
+#[test]
+fn w10_interrupted_confirmation_cannot_admit_final_candidate_or_reuse_partial_roles() {
+    let mut value = manifest("w10-long-run-v2-confirmation-interrupted-36622527013.toml");
+    assert!(
+        xtask::performance_contract::check_w10_long_run_confirmation_interrupted_evidence(
+            &value, "0.73"
+        )
+        .is_empty()
+    );
+
+    value["automatic_retry_performed"] = TomlValue::Boolean(true);
+    value["confirmation_passed"] = TomlValue::Boolean(true);
+    value["final_c73_allowed"] = TomlValue::Boolean(true);
+    value["product_failure_observed"] = TomlValue::Boolean(true);
+    value["c73_role_completed"] = TomlValue::Boolean(true);
+    value["correction_changes_duration"] = TomlValue::Boolean(true);
+    value["c73_completed_at_last_checkpoint"] = TomlValue::Integer(1_036_800_000);
+    value["decision"] =
+        TomlValue::String("accept-twenty-four-hour-confirmation-and-admit-final-c73".to_owned());
+    let problems =
+        xtask::performance_contract::check_w10_long_run_confirmation_interrupted_evidence(
+            &value, "0.73",
+        );
+    for required in [
+        "automatic_retry_performed must be false",
+        "confirmation_passed must be false",
+        "final_c73_allowed must be false",
+        "product_failure_observed must be false",
+        "c73_role_completed must be false",
+        "correction_changes_duration must be false",
+        "partial C73 observation changed",
+        "disposition changed",
+    ] {
+        assert!(
+            problems.iter().any(|problem| problem.contains(required)),
+            "missing problem containing {required:?}: {problems:?}"
+        );
+    }
+}
+
+fn synthetic_w10_long_run_v2_confirmation() -> TomlValue {
+    manifest("w10-long-run-v2-confirmation-passed-36839197349.toml")
+}
+
+#[test]
+fn w10_long_run_v2_confirmation_accepts_only_complete_frozen_ship_evidence() {
+    let mut value = synthetic_w10_long_run_v2_confirmation();
+    assert!(
+        xtask::performance_contract::check_w10_long_run_confirmation_v2_evidence(&value, "0.73")
+            .is_empty()
+    );
+
+    value["candidate_source_commit"] = TomlValue::String("0".repeat(40));
+    value["archive_commit"] = TomlValue::String("0".repeat(40));
+    value["provider_digest_verified"] = TomlValue::Boolean(false);
+    value["nested_sha256_verified"] = TomlValue::Boolean(false);
+    value["continuation_handoff_verified"] = TomlValue::Boolean(false);
+    value["qualification_precondition_verified"] = TomlValue::Boolean(false);
+    value["automatic_retry_performed"] = TomlValue::Boolean(true);
+    value["performance_claim_allowed"] = TomlValue::Boolean(true);
+    value["operations_per_role"] = TomlValue::Integer(1_036_799_999);
+    value["periodic_resource_samples_per_role"] = TomlValue::Integer(1_438);
+    value["bootstrap_seed"] = TomlValue::Integer(1);
+    value["cpu_relative_change"] = TomlValue::Float(0.04);
+    value["c73_rss_upper_95_bytes_per_second"] = TomlValue::Float(100.0);
+    let problems =
+        xtask::performance_contract::check_w10_long_run_confirmation_v2_evidence(&value, "0.73");
+    for required in [
+        "confirmation identity changed",
+        "provider_digest_verified must be true",
+        "nested_sha256_verified must be true",
+        "continuation_handoff_verified must be true",
+        "qualification_precondition_verified must be true",
+        "automatic_retry_performed must be false",
+        "performance_claim_allowed must be false",
+        "workload or outcomes changed",
+        "frozen method changed",
+        "regression budgets failed",
+        "c73_rss_upper_95_bytes_per_second exceeds sealed baseline",
     ] {
         assert!(
             problems.iter().any(|problem| problem.contains(required)),

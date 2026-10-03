@@ -5,6 +5,38 @@ fn read_ci_workflow(root: &std::path::Path) -> String {
 }
 
 #[test]
+fn release_ci_pins_the_reviewed_toolchain_and_scopes_redis_repairs_to_an_exact_sha() {
+    let root = xtask::doc_check::find_repo_root().unwrap();
+    let workflow = read_ci_workflow(&root);
+
+    assert!(
+        !workflow.contains("dtolnay/rust-toolchain@stable"),
+        "release-capable CI must not drift with the stable Rust channel"
+    );
+    assert!(workflow.contains("uses: dtolnay/rust-toolchain@1.94.0"));
+
+    let redis_job = workflow
+        .split("\n  redis-compat-release-proof:\n")
+        .nth(1)
+        .expect("Redis compatibility release-proof job")
+        .split("\n  dst-nightly-soak:\n")
+        .next()
+        .expect("Redis compatibility release-proof job body");
+    for marker in [
+        "inputs.run_redis_compat_release_proof",
+        "inputs.release_proof_candidate_sha",
+        "name: Verify focused release-proof candidate",
+        "test \"${#candidate}\" -eq 40",
+        "test \"$(git rev-parse HEAD)\" = \"$candidate\"",
+        "name: Install pinned Rust 1.94.0",
+        "uses: dtolnay/rust-toolchain@1.94.0",
+        "components: rustfmt, clippy",
+    ] {
+        assert!(redis_job.contains(marker), "Redis proof omits {marker}");
+    }
+}
+
+#[test]
 fn release_governance_check_accepts_current_structural_meta_gates() {
     let root = xtask::doc_check::find_repo_root().unwrap();
     let report = xtask::release_governance::check(&root, "0.64").unwrap();

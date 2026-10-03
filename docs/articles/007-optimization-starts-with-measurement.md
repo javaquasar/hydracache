@@ -2027,11 +2027,192 @@ assets, features, SBOM inputs, and lockfiles before renting the host again. Only
 final candidate receive one six-hour qualification and, if green, one 24-hour confirmation. This
 avoids both dishonest evidence reuse and a second invalidation caused by late release packaging.
 
+The first dispatch of that final registry candidate exposed one more orchestration boundary before
+any performance sample was taken. The standalone harness overlay was byte-identical for I73 and
+C73, but its single `Cargo.lock` encoded I73's local packages as 0.72.0 and Moka as the frozen Git
+revision. I73 compiled; C73 presented the same path packages as 0.73.0 and `hydra-moka` as a registry
+package, so Cargo refused to rewrite the lock under `--locked`. That red build is useful evidence:
+both product servers and the baseline harness were buildable, while the candidate harness was never
+created, the canary never started, and no timing or memory observation exists. Treating it as a
+performance loss—or silently rerunning it—would be a category error.
+
+The correction keeps the comparison symmetric without pretending that different product identities
+have the same dependency graph. The overlay now carries two reviewed lockfiles: the original I73
+lock and a C73 lock derived for the frozen registry candidate. The workflow verifies both SHA-256
+values, builds each harness with its matching lock under `--locked`, restores the canonical overlay
+tree, and performs a recursive equality check before the canary or either role can run. Thus the
+harness source and workload remain byte-identical, dependency resolution remains reproducible, and
+the temporary role-specific build input cannot leak into the measured overlay identity. The failed
+artifact and its two post-calibration files remain append-only evidence; the frozen product commits,
+workload, durations, estimator and thresholds were not changed.
+
+This incident generalizes beyond Rust. “Use the same harness” and “use one lockfile” are not the
+same requirement when the harness deliberately links two released product graphs. Reproducibility
+means pinning each graph explicitly and proving that all non-product inputs return to the same state
+before measurement. A locked failure during setup is cheaper and more trustworthy than allowing a
+package manager to resolve dependencies online during a rented-host campaign.
+
+The corrected build then reached the expensive part and exposed a second, subtler identity defect.
+I73 completed its full six-hour role—259.2 million successful operations, 362 checkpoints, exact
+reconciliation and no errors, timeouts or rejections. All surrounding calibrations remained on the
+same admitted host and lease. C73 nevertheless stopped in one second, before starting its server:
+the Python runner supplied the final frozen candidate SHA, while the Rust harness still contained
+the earlier source candidate in its own allow-list. The harness correctly rejected the mismatch;
+the orchestration had failed to update and cross-check two copies of the same identity.
+
+That failure revealed an even more important flaw in the negative canary. The canary was meant to
+prove that a packet missing its final reconciled checkpoint is rejected. Its implementation treated
+*any* exception as success, including a harness startup error with no receipt and no checkpoints.
+In other words, the guard was red, but for the wrong reason. A negative test is trustworthy only
+when it proves both halves of the claim: the producer successfully reaches the intended fault, and
+the consumer rejects that exact fault. “The command failed” is not sufficient evidence.
+
+The repaired canary is therefore narrow and fail-closed. It first requires a zero process exit and
+both output files. It validates the C73 identity and every ordinary receipt field after neutralizing
+only the declared final-checkpoint flag. It then proves that the checkpoint stream ends in
+`final-work`, contains no `post-idle-reconciled` record, and is rejected by the normal validator. A
+startup failure, absent packet, unrelated malformed field or unexpectedly accepted packet now makes
+the canary fail. Structural Rust and Python tests also bind the harness allow-list to the final C73
+SHA so that changing the runner alone cannot recreate this split identity.
+
+The six hours of valid I73 data remain useful diagnostics, but they are not half of a result that we
+may splice into another run. The preregistered experiment requires serial I73 and C73 roles plus a
+single final seal under one attempt. Because C73 never started and the campaign was not sealed, the
+attempt is retained as incomplete evidence, automatic retry remains off, and confirmation stays
+closed. This is painful on a rented machine, but it preserves the distinction between saved compute
+and valid comparative evidence.
+
 This ordering keeps the meaning of green steps monotonic. A successful build says the intended
 bytes are executable; a successful canary says a known-invalid packet is rejected; a successful
 calibration says the host is admissible at that boundary. None of those statements predicts the
 next one, and none can be combined into an early claim about C73. Long-running evidence becomes
 valid only when the final sealer can point backward to every required boundary receipt.
+
+The corrected campaign finally demonstrated that property end to end. Run `36532416869` first
+proved its negative control for the intended reason: the producer exited successfully, emitted an
+otherwise valid C73 packet whose stream ended at `final-work`, and the ordinary validator rejected
+the missing `post-idle-reconciled` checkpoint. It then held one admitted host and lease across four
+calibrations and two serial six-hour roles. I73 and the final registry-backed C73 each completed
+259.2 million operations, emitted 362 checkpoints, drained the backlog and reconciled events and
+management ownership exactly, with no errors, timeouts or rejections.
+
+Downloading a green artifact was not the end of the audit. We hashed the ZIP independently and
+matched GitHub's recorded digest, recomputed every nested receipt, checkpoint, stdout/stderr and
+calibration SHA-256, then reran role validation and the frozen comparison logic against the raw
+packet. That matters because the previous campaigns had shown three different ways for a green or
+red surface signal to be misleading: a build could fail before measurement, an identity mismatch
+could stop only the candidate, and an overbroad negative canary could pass on an unrelated startup
+failure. The independent pass reproduced the sealed statistics and all five guards rather than
+trusting the workflow conclusion alone.
+
+The result is deliberately modest and precise. Goodput changed by -0.000004%, effectively zero.
+CPU seconds per completed operation increased by 0.316%, and p99 increased by 0.274%; both are far
+inside their frozen 3% budgets. C73's RSS and anonymous-PSS Theil-Sen slope was 21.0045 bytes/s
+against I73's 30.5605 bytes/s. More importantly, the preregistered moving-block 95% upper bound was
+61.7818 versus 86.3800 bytes/s, 28.48% lower, so the boundedness decision does not depend on a
+favorable point estimate alone. This is stronger than saying “no obvious leak”: the candidate
+survived equal-duration baseline comparison under the exact estimator that previously exposed and
+corrected our bootstrap mistake.
+
+It is also not permission to overstate the result. A single integrated six-hour pair does not prove
+portable capacity, universal latency improvement, or final release behavior. The small positive
+CPU and latency deltas are accepted regressions within budget, not improvements. The qualification
+opens a separately authorized 24-hour confirmation for the exact frozen candidate; it does not
+substitute for that confirmation. We therefore recorded `confirmation_allowed = true` alongside
+`confirmation_started = false`, kept `final_c73_allowed = false`, and did not launch another paid
+run automatically. The useful engineering lesson is that cost control and evidentiary rigor are the
+same workflow: cheap falsifiers eliminate broken orchestration early, while an expensive success is
+accepted only after its raw packet survives an independent audit.
+
+The separately authorized confirmation then exposed an orchestration lifetime risk rather than a
+product failure. Run `36622527013` completed the full 24-hour I73 role: 1.0368 billion successful
+operations, 1,442 checkpoints, exact reconciliation, no errors, timeouts or rejections, and a
+frozen RSS/anonymous-PSS upper slope bound of 32.5177 bytes/s. C73 started on the same admitted host
+and lease and remained healthy for 352 checkpoints. At 5 hours 51 minutes it had completed
+252,728,137 operations with no errors, timeouts, rejections or major faults. GitHub Actions then
+delivered `The operation was canceled`; the harness had emitted a heartbeat one second earlier,
+stderr was empty, and the immediate post-C73 host calibration passed. The retained Actions log does
+not name the cancellation initiator, so the narrow supported conclusion is an external orchestration
+cancellation—not a C73 regression and not a successful confirmation.
+
+The incomplete artifact was still valuable because the workflow's `always()` path preserved all
+four calibrations, the complete I73 receipt and bounds, the partial C73 series, process logs and the
+negative canary. We matched the downloaded ZIP to GitHub's SHA-256 and independently hashed every
+retained nested file. We did not estimate a final C73 slope from the prefix, splice the completed
+I73 role into a later run, or silently restart the candidate. Equal duration and a single final seal
+remain part of the experiment, so `final_c73_allowed` stays false.
+
+The tooling correction reduces the blast radius without changing the experiment. Qualification
+continues as one serial six-hour pair. Confirmation is split into two sequential, role-isolated
+jobs under one approved parent workflow and one host concurrency lease. The first job runs I73 and
+uploads a continuation packet whose files are all SHA-256 listed. The second job verifies those
+hashes and the complete I73 receipt before it can start C73, repeats binary and host identity checks,
+and alone may seal the pair. Each job stays below 29 hours, while product commits, role order,
+24-hour duration, offered load, estimator, seed and thresholds are unchanged. This is not checkpoint
+resume: a failed role still invalidates the attempt, and a replacement confirmation must start from
+I73 after explicit authorization.
+
+The replacement showed why a savepoint must be a cryptographic boundary, not merely “some files we
+can reuse.” Run `36839197349` completed I73 in its own job, sealed 13 files in
+`continuation-SHA256SUMS`, and uploaded the packet. The C73 job downloaded it independently,
+verified every hash, required the complete 1.0368-billion-operation I73 receipt and exact final
+reconciliation, then repeated the build, host, lease and calibration guards before starting C73.
+Only that second job was allowed to seal the combined campaign. Losing the GitHub job boundary no
+longer meant losing a valid completed role, but changing a role, reusing a partial role or combining
+different attempts still failed closed.
+
+Both 24-hour roles then completed: 1.0368 billion operations and 1,442 checkpoints each, zero
+errors, timeouts and rejections, exact surface/event/durable accounting, and the same admitted host
+and lease. Independent analysis matched the two provider ZIP digests, every nested continuation
+hash, both stdout/stderr hashes, four calibrations, raw checkpoint-derived statistics and all five
+guards. Goodput changed by -0.0000000115%, effectively zero. CPU per operation increased by 0.260%
+and p99 decreased by 0.328%, both comfortably inside the frozen budgets. The RSS and anonymous-PSS
+95% upper slope bound fell from 30.1448 to 20.3181 bytes/s, a 32.60% reduction. The candidate
+therefore passed the preregistered boundedness decision; the long pair still does not become a
+portable claim about capacity, allocations or another product.
+
+Archiving was treated as another correctness boundary. Actions artifacts expire, so all eight ZIPs
+from the campaign history—including rejected and interrupted attempts—were copied byte-for-byte to
+the append-only `evidence/0.73/w10-confirmation` branch. A commit-pinned manifest, full-file
+`SHA256SUMS`, extracted accepted packet and verification receipt make the release decision
+replayable after provider retention ends. We also disabled Git text conversion inside the archive:
+without that small detail, a Windows checkout could change line endings and make truthful hashes
+appear corrupt. Finally, the verifier hashes runner and scenario bytes from the frozen Git commit,
+not the platform-transformed worktree. Reproducible evidence depends on preserving byte identity at
+both boundaries.
+
+## A green long run can still fail release admission
+
+The final exact-tree CI check provided one last useful falsification. PR #214 pointed at the measured
+candidate `16d2e98b6cc9e22d9ccf95eb26fe28bbbcf80f2b`. GitHub tested a synthetic merge commit, but its
+tree hash exactly matched the candidate tree, so the result cannot be dismissed as merge drift. The
+HC/2 workflow passed its Linux, Java 17, Java 21 and Docker jobs. The main CI and documentation
+workflows did not pass.
+
+The failures were mundane but release-relevant. The docs examples lockfile still named the local
+HydraCache crates as 0.72.0 after the workspace moved to 0.73.0, so a locked documentation build
+correctly refused to rewrite it. The frozen topology inventory did not list the newly added 0.73
+workflows. The memory ownership registry did not yet include the removal observer and HC/2 outbound
+queue. The gated-test registry omitted the rolling-compatibility environment gate, a retained 0.72
+test required the whole workspace to remain exactly version 0.72.0, and the instruction tripwire
+ended without benchmark summaries. Several admission jobs then failed by design because they
+aggregate those upstream results.
+
+None of those outcomes invalidates the 24-hour boundedness measurement, and none can be repaired by
+reinterpreting its statistics. They invalidate publication of that exact Git identity under the
+current release contract. A lockfile or registry can be easy to edit, but a frozen candidate cannot
+be edited in place. The honest next step is therefore a reviewed choice: freeze a corrected
+candidate and repeat the evidence whose identity changes, or explicitly revise the release contract
+without converting a red gate into a waiver. Until then the failed CI attempt remains evidence,
+`v0.73.0` remains absent, and the successful long run remains necessary but insufficient.
+
+The project chose the corrected-candidate path. The correction is deliberately narrower than the
+measured product: runtime sources, workload, duration, estimator, seed and thresholds are frozen;
+only publication inputs, governance registries, compatibility assertions and CI lock preparation
+may change. The 0.72 docs lock is regenerated for 0.73, and the instruction tripwire now rebuilds
+an independent harness lock for each side before reconciling an intentional dependency transition.
+The rejected run remains append-only. All affected exact-SHA gates must run again, while the
+six-hour and 24-hour product packets remain attributable because no measured runtime path changed.
 
 ## A profiling ladder that avoids expensive runs
 

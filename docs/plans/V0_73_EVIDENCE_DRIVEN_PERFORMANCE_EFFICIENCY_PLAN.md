@@ -5,13 +5,15 @@
 > - **Why:** 0.71 shipped correct accounting and active TTL reclamation, but its accepted D4 evidence did not demonstrate a numerical RSS win. The deferred W2b/W5-W11 ideas need new owner/stack attribution and same-host comparisons before product changes are justified.
 > - **After (depends on):** published `0.72.0`. The external baseline and compatibility binary are bound to annotated tag `v0.72.0` (peeled runtime candidate `24927c28c279c6c34ad90111ee6470b4065e0815`); the 0.73 instrumentation baseline and release candidate remain separate exact commits. The 0.71 AX42 campaign is historical hypothesis evidence, not a substitute baseline.
 > - **Unblocks:** defensible per-profile sizing and efficiency claims, or an explicit measured no-win result without weakening correctness, durability, security, or release gates.
-> - **Status:** in-progress — W10 six-hour run `36278780653` completed both roles. Its original analyzer failed,
->   but append-only offline reanalysis corrected a trend-destroying bootstrap defect and passes every
->   frozen guard for the old Git-backed candidate. The later move to registry package
->   `hydra-moka 0.12.15-hydra.1` has byte-equivalent runtime sources but a different Cargo/build
->   identity, so that qualification is not transferred. Publication inputs must be frozen before one
->   new six-hour qualification and, if green, the required 24-hour confirmation. No 0.73 numerical
->   benefit, final candidate, or release promotion is claimed.
+> - **Status:** shipped 2026-10-03 from exact candidate
+>   `d1db9937e61295341ac95f289bace275641b1650`, tagged `v0.73.0`. Six-hour qualification
+>   `36532416869` and split 24-hour confirmation `36839197349` passed every frozen guard for measured
+>   product candidate `16d2e98b6cc9e22d9ccf95eb26fe28bbbcf80f2b`; the product-runtime diff to the
+>   tagged candidate is empty. Confirmation evidence is immutable at
+>   `evidence/0.73/w10-confirmation` commit `570a5bcb6959ecc7f01f8c80d0fc32b719832ad9`.
+>   Final exact-SHA runs `37140860241` (CI), `37140860224` (documentation), and `37140860295`
+>   (HC/2) all passed; local admission completed 3,472/3,472 tests and all 12 release-evidence work
+>   items reached ship-ready. Earlier exact-tree failures remain immutable evidence.
 
 Roadmap: [`INDEX.md`](INDEX.md) · rules: [`../RULES.md`](../RULES.md) · gates: [`../GATES.md`](../GATES.md) · 0.71 decision: [`../testing/memory/0.71/D4_RELEASE_DECISION.md`](../testing/memory/0.71/D4_RELEASE_DECISION.md) · 0.72 dependency: [`V0_72_MANAGEMENT_CENTER_2_OPERATIONAL_VISIBILITY_PLAN.md`](V0_72_MANAGEMENT_CENTER_2_OPERATIONAL_VISIBILITY_PLAN.md).
 
@@ -183,7 +185,7 @@ A candidate cannot be accepted by deleting a supported target, changing defaults
 | Nightly/specialized | Real daemons, cancellation/fault injection, fuzz corpus, Miri/loom/sanitizer where applicable, platform jobs, 60-minute fixed-cardinality churn, integrated-mix smoke. | May promote test power and boundedness, never dedicated-host numerical claims. Infra invalidation uses a preregistered reason and retained diagnostics. |
 | Dedicated D0-D3 | Host admission, pre/post calibration, serialized lease, `I73` screening, isolated proposal pairs, exact binary/scenario hashes and all raw series. | Five counterbalanced independent pairs are minimum for a claim; every scheduled attempt is present in the ledger. |
 | D4 release candidate | Complete integrated `C73`, combined workload, equal-duration comparator where claimed, six-hour/24-hour confirmation, compatibility/rollback and resource ceilings. | Any candidate/input drift invalidates downstream receipts and starts a new campaign identity. |
-| Release archive | Normalized receipts, raw sanitized series, failed/inconclusive attempts, logs needed to reproduce decisions, Actions run/job/artifact IDs, download hashes, manifests and `SHA256SUMS`. | Must be materialized on an immutable evidence branch before provider retention can expire and before tagging; secrets and raw customer identifiers are rejected rather than redacted after publication. |
+| Release archive | Normalized receipts, raw sanitized series, failed/inconclusive attempts, logs needed to reproduce decisions, Actions run/job/artifact IDs, download hashes, manifests and `SHA256SUMS`. | Must be materialized on append-only branch `evidence/0.73/w10-confirmation` under the run-bound root frozen by `release-archive-contract.toml` before provider retention can expire and before tagging; secrets and raw customer identifiers are rejected rather than redacted after publication. |
 
 Artifact validators must detect a replaced ZIP, missing job, duplicate attempt id, altered extraction, truncated series, clock/calibration gap, stale workflow, and a receipt referring to a different source or binary. Hosted artifact expiry cannot be the only copy of ship evidence. Public archives contain only allowlisted host fields and sanitized profiles; restricted credentials, tokens, paths, peer identities, keys and payloads never enter logs, profiler labels, manifests or attachments.
 
@@ -202,6 +204,10 @@ For a single-maintainer project, one person may hold these roles only through a 
 
 Register `0.73.0` work-item evidence in `docs/testing/release-evidence/0.73.toml`, canaries in `docs/testing/canaries/`, source/test ownership in a 0.73 coverage matrix, and fast/gated commands in `docs/GATES.md` and CI. `cargo xtask release-evidence --release 0.73 --require-ship` must consume validated exact-SHA receipts for D0-D4, the post-tag delta classification, instrumentation overhead, isolated proposal dispositions, the integrated-candidate ledger, interaction checks, negative results, compatibility, host comparisons, red canaries, coverage and long runs. A prose note or stale 0.71/0.72 receipt cannot satisfy it. Update `docs/performance/memory-sizing.md` only for accepted, profile-scoped numbers; publish uncertainty, sample count, source/host identity, trade-offs and rejected candidates. No Redis/Hazelcast/universal memory claim follows from an isolated HydraCache run.
 
+`docs/testing/performance/0.73/release-archive-contract.toml` is the W11 archive contract. After a green and independently verified confirmation, create and push `evidence/0.73/w10-confirmation`; never force-push it. Store normal-sized original provider archives byte-for-byte plus `README.md`, `SHA256SUMS`, `artifact-manifest.tsv`, the extracted sanitized receipts/checkpoints needed to replay the decision, and a verification receipt covering the provider download digest, every nested SHA-256, the I73-to-C73 continuation handoff, frozen identities and every guard. Preserve rejected and interrupted attempts beside the accepted attempt. If an individual original archive exceeds the contract's Git blob limit, put that object in versioned immutable storage and retain its permanent URI, object version/ETag, byte length and SHA-256 in the branch; Actions retention alone never satisfies W11.
+
+Before `v0.73.0` is tagged, record the archive branch's full immutable commit SHA and manifest digest in release evidence. The shipped `docs/releases/0.73.0.md` must keep a browseable link to the branch and commit-pinned links to the archive commit, `artifact-manifest.tsv`, and `SHA256SUMS`. This keeps the evidence discoverable after Actions retention expires and prevents a moving branch name from being the sole provenance reference.
+
 The release may ship with no numerical improvement claim if all mandatory correctness, compatibility and existing SLO/resource gates are green and every optional proposal is recorded as qualified, deferred, not applicable or measured-no-win. It may **not** ship a changed allocator, key format, default profile or admission policy with an unqualified comparison merely because the full release contains other green work.
 
 **Publication closure:** before the final D4 freeze, land every build- or package-affecting file that the measured tag must contain: workspace/package version `0.73.0`, Rust and console lockfiles, compatibility registry changes, generated/package assets, feature metadata and SBOM inputs. Prepare the release-note, plan-status, verification-page, sizing and release-evidence finalization as a reviewed patch, but do not mark the release shipped before D4 succeeds. Any post-measurement edit that can affect build input, packaging, generated assets, features or binary bytes creates a new `C73` and requires repeated affected evidence.
@@ -209,6 +215,52 @@ The release may ship with no numerical improvement claim if all mandatory correc
 The exact `C73` candidate passes `cargo xtask performance-contract-check --release 0.73 --require-ship`, `cargo xtask release-evidence --release 0.73 --require-ship`, `cargo xtask verify`, the feature matrix, SemVer/MSRV/advisory/license/SBOM gates, staged publishable-package checks, and `scripts/verify-release-readiness.ps1 -Version 0.73.0 -DryRun`; full same-SHA CI must be green before annotated tag `v0.73.0` is created on that exact measured commit. After tagging, a documentation/governance-only descendant on `main` sets the plan and manifest to `shipped`, adds `docs/releases/0.73.0.md`, docs-site release/verification pages, accepted profile-scoped sizing and immutable evidence/archive references. The finalization diff is mechanically checked to contain no runtime, manifest, lockfile, build-script, generated package asset or feature change.
 
 The existing publish workflow must then prove that the measured tag is an ancestor of finalization `main`, read shipped status and release notes from that finalization commit, and still build/publish runtime packages from the measured tag. It resolves tag, versions, package order and CI source, runs locked per-package dry-runs, publishes in dependency order, and retains publication receipts. After registry propagation, the existing post-publish workflow and a clean external consumer compile/test/docs-check all published crates. A post-publication defect uses a new patch release; never move an already published tag or overwrite a crate version.
+
+Final exact-tree admission attempt `37126998956` is retained in
+`docs/testing/performance/0.73/w11-exact-sha-ci-rejected-37126998956.toml`. It proves that the
+publication-closure rule above is active: successful W10 duration evidence does not compensate for
+a stale lockfile or incomplete governance registries. The failed attempt is not eligible for a
+rerun against altered files under the same candidate name. The authorized corrected candidate must
+use a new exact SHA. Because its diff from measured C73 is restricted to docs lockfiles, release
+documentation, test/governance registries and CI tooling, the product-duration packets remain valid;
+all build, docs, compatibility, instruction and release gates touched by those files are repeated.
+
+Corrected exact-tree attempt `37138395653` is retained separately in
+`docs/testing/performance/0.73/w11-exact-sha-ci-rejected-37138395653.toml`. It proved the product
+runtime diff from measured C73 was empty and cleared the dedicated HC/2 and documentation
+workflows, but CI still rejected publication for two temporal-tooling defects. The memory contract
+paired `cargo-semver-checks 0.49.0` with a stable compiler that emitted unsupported rustdoc JSON
+v61, and the primary Rust job let `stable` drift to Rust/Clippy 1.99.0 instead of the reviewed
+1.94.0 release toolchain. The latter introduced new deprecation and generated-code lints under the
+unchanged `-D warnings` policy. Remediation pins both release-critical jobs to Rust 1.94.0 and pins
+`cargo-semver-checks 0.50.0`, which supports rustdoc JSON v61; it does not weaken Clippy, alter the
+feature/allocator matrix, or edit product runtime merely to follow a later compiler. A new exact
+tooling SHA must repeat normal PR admission. The failed run itself is never rerun or reclassified.
+
+Final exact-tree attempt `37140860241` is retained in
+`docs/testing/performance/0.73/w11-exact-sha-ci-passed-37140860241.toml`. Candidate
+`d1db9937e61295341ac95f289bace275641b1650` and PR merge
+`3072672d10571acee20ceadd6073173cb1d28e9f` resolve to the same tree
+`5bea41dd43278a9405648939666de5024d2164cc`; the product-runtime diff from measured C73 is empty.
+CI, documentation, dedicated HC/2, 44-row public API compatibility, the 3,472-test workspace gate,
+the final performance contract, and all 12 release-evidence rows passed. Provider and nested hashes
+are recorded in that file, as are the local disk-full/linker and cold-cache timeout attempts that
+preceded the unchanged passing command. Annotated tag `v0.73.0` resolves to this exact candidate.
+
+The tag-triggered CI run `37149833980` is retained in
+`docs/testing/performance/0.73/w11-tag-ci-rejected-37149833980.toml`. It ran 50 jobs and had one
+root failure: the tag-only Redis release proof still used the floating stable channel, resolved to
+Rust/Clippy 1.99.0, and stopped under the unchanged `-D warnings` policy before its Docker/client
+and resource rows. The other 35 jobs passed and 14 were skipped by their declared conditions.
+Tooling commit `a60fd380c90bf2c1c0445f0baedcbf46eebbdc8f` pins every remaining floating Rust action
+reference to reviewed Rust 1.94.0 and adds an exact-SHA guard plus a governance regression test.
+Focused repair run `37150976176`, retained in
+`docs/testing/performance/0.73/w11-redis-proof-repair-passed-37150976176.toml`, checked out the
+unchanged `v0.73.0` commit and passed fast checks, Clippy, the 21-test Docker/client/oracle matrix and
+the two-test resource smoke; the complete repair workflow finished with 14 successful jobs, 27
+condition-skipped jobs and zero failures or cancellations. The rejected attempt remains rejected,
+the tag is not moved, no runtime or measurement input changes, and the repair creates no Redis
+performance claim.
 
 ## Test principles and evidence acceptance
 

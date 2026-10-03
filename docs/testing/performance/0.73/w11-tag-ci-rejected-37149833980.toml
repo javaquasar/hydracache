@@ -1,0 +1,59 @@
+schema_version = 1
+release = "0.73.0"
+work_item = "W11"
+kind = "post-tag-release-proof"
+status = "rejected-tooling-attempt"
+ship_allowed = false
+tag_created = true
+recorded_at = "2026-10-03T20:39:15Z"
+
+[identity]
+tag = "v0.73.0"
+tag_commit = "d1db9937e61295341ac95f289bace275641b1650"
+tag_tree = "5bea41dd43278a9405648939666de5024d2164cc"
+measured_product_candidate_sha = "16d2e98b6cc9e22d9ccf95eb26fe28bbbcf80f2b"
+product_runtime_diff_from_measured_candidate = "empty"
+
+[run]
+id = 37149833980
+url = "https://github.com/javaquasar/hydracache/actions/runs/37149833980"
+event = "push"
+head_ref = "v0.73.0"
+head_sha = "d1db9937e61295341ac95f289bace275641b1650"
+created_at = "2026-10-03T19:58:30Z"
+completed_at = "2026-10-03T20:39:15Z"
+conclusion = "failure"
+total_jobs = 50
+successful_jobs = 35
+skipped_jobs = 14
+failed_jobs = 1
+cancelled_jobs = 0
+
+[[root_failure]]
+id = "redis-proof-floating-stable-toolchain"
+job = "Redis Compatibility Release Proof"
+job_id = 111281133888
+job_url = "https://github.com/javaquasar/hydracache/actions/runs/37149833980/job/111281133888"
+step = "Redis fast checks"
+started_at = "2026-10-03T19:58:33Z"
+completed_at = "2026-10-03T20:01:41Z"
+observed_toolchain = "rustc 1.99.0 (b940084d7 2026-09-28)"
+reviewed_release_toolchain = "rustc 1.94.0 (4a4ef493e 2026-03-02)"
+observed = "the job alone still used dtolnay/rust-toolchain@stable; Clippy 1.99 promoted newly introduced fetch_update deprecations and async_trait-generated double_must_use findings to errors under the unchanged -D warnings policy"
+classification = "ci-toolchain-temporal-drift"
+product_regression = false
+
+[unreached_checks]
+reason = "the shell step stopped after Clippy failed, so later job steps were skipped"
+steps = ["Redis Docker/client/oracle matrix", "Redis resource smoke"]
+
+[decision]
+attempt_remains_rejected = true
+tag_moved = false
+long_run_repeated = false
+candidate_identity_changed = false
+reason = "the release-triggered workflow was not completely green, so this run cannot be reclassified even though every other executed tag job passed"
+remediation = "pin every floating Rust action in release-capable CI to the reviewed 1.94.0 toolchain, retain -D warnings, and repeat only the skipped Redis proof against an explicit immutable candidate SHA"
+repair_tooling_sha = "a60fd380c90bf2c1c0445f0baedcbf46eebbdc8f"
+repair_run = 37150976176
+

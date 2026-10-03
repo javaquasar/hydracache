@@ -1,4 +1,5 @@
 use serde_json::Value as JsonValue;
+use sha2::{Digest, Sha256};
 use std::collections::{BTreeMap, BTreeSet};
 use std::error::Error;
 use std::fs;
@@ -192,6 +193,16 @@ const W10_LONG_RUN_ANALYZER_CORRECTION: &str =
     "docs/testing/performance/0.73/w10-long-run-analyzer-correction-36278780653.toml";
 const W10_D4_REGISTRY_TRANSITION: &str =
     "docs/testing/performance/0.73/w10-d4-registry-transition-9f13ee15.toml";
+const W10_LONG_RUN_QUALIFICATION_V2_CONTRACT: &str =
+    "docs/testing/performance/0.73/w10-long-run-qualification-v2-contract.toml";
+const W10_LONG_RUN_QUALIFICATION_V2_EVIDENCE: &str =
+    "docs/testing/performance/0.73/w10-long-run-v2-qualification-passed-36532416869.toml";
+const W10_LONG_RUN_CONFIRMATION_INTERRUPTED_EVIDENCE: &str =
+    "docs/testing/performance/0.73/w10-long-run-v2-confirmation-interrupted-36622527013.toml";
+const W10_LONG_RUN_CONFIRMATION_V2_EVIDENCE: &str =
+    "docs/testing/performance/0.73/w10-long-run-v2-confirmation-passed-36839197349.toml";
+const W10_LONG_RUN_CONFIRMATION_V2_ARCHIVE_MANIFEST: &str =
+    "docs/testing/performance/0.73/w10-confirmation-36839197349-archive-manifest.json";
 const RELEASE: &str = "0.73";
 const PROFILE: &str = "local-screening-073-v1";
 const ENVIRONMENT_CLASS: &str = "local_screening";
@@ -203,12 +214,17 @@ pub fn run(args: Vec<String>) -> Result<(), Box<dyn Error>> {
     let options = Options::parse(args)?;
     let mut problems = check_at_root(&options.root, &options.release, options.receipt.as_deref())?;
     if options.require_ship {
-        problems.push(
-            "local screening is intentionally non-promotable and cannot satisfy --require-ship"
-                .to_owned(),
-        );
+        problems.extend(check_w10_long_run_confirmation_v2_at_root(
+            &options.root,
+            &options.release,
+        ));
     }
-    finish("performance-contract-check", &options.release, problems)
+    finish(
+        "performance-contract-check",
+        &options.release,
+        options.require_ship,
+        problems,
+    )
 }
 
 pub fn check_at_root(
@@ -477,6 +493,15 @@ pub fn check_at_root(
     )?)?;
     let w10_d4_registry_transition: TomlValue =
         toml::from_str(&fs::read_to_string(root.join(W10_D4_REGISTRY_TRANSITION))?)?;
+    let w10_long_run_qualification_v2_contract: TomlValue = toml::from_str(&fs::read_to_string(
+        root.join(W10_LONG_RUN_QUALIFICATION_V2_CONTRACT),
+    )?)?;
+    let w10_long_run_qualification_v2_evidence: TomlValue = toml::from_str(&fs::read_to_string(
+        root.join(W10_LONG_RUN_QUALIFICATION_V2_EVIDENCE),
+    )?)?;
+    let w10_long_run_confirmation_interrupted_evidence: TomlValue = toml::from_str(
+        &fs::read_to_string(root.join(W10_LONG_RUN_CONFIRMATION_INTERRUPTED_EVIDENCE))?,
+    )?;
     let mut problems = check_contract(&contract, release);
     if !root.join(MOKA_OBSERVER_UPSTREAM_DRAFT).is_file() {
         problems.push("notification observer dependency review draft is missing".to_owned());
@@ -823,6 +848,19 @@ pub fn check_at_root(
         &w10_d4_registry_transition,
         release,
     ));
+    problems.extend(check_w10_long_run_qualification_v2_contract(
+        &w10_long_run_qualification_v2_contract,
+        release,
+    ));
+    problems.extend(check_w10_long_run_qualification_v2_evidence(
+        &w10_long_run_qualification_v2_evidence,
+        release,
+    ));
+    problems.extend(check_w10_long_run_confirmation_interrupted_at_root(
+        root,
+        &w10_long_run_confirmation_interrupted_evidence,
+        release,
+    ));
     problems.extend(check_schema(
         &schema,
         &example,
@@ -1160,6 +1198,19 @@ pub fn check_contract(root: &TomlValue, release: &str) -> Vec<String> {
         (
             "w10_long_run_analyzer_correction",
             W10_LONG_RUN_ANALYZER_CORRECTION,
+        ),
+        ("w10_d4_registry_transition", W10_D4_REGISTRY_TRANSITION),
+        (
+            "w10_long_run_qualification_v2_contract",
+            W10_LONG_RUN_QUALIFICATION_V2_CONTRACT,
+        ),
+        (
+            "w10_long_run_qualification_v2_evidence",
+            W10_LONG_RUN_QUALIFICATION_V2_EVIDENCE,
+        ),
+        (
+            "w10_long_run_confirmation_interrupted_evidence",
+            W10_LONG_RUN_CONFIRMATION_INTERRUPTED_EVIDENCE,
         ),
     ] {
         if text(root, field) != Some(expected) {
@@ -9591,6 +9642,801 @@ pub fn check_w10_d4_registry_transition(value: &TomlValue, release: &str) -> Vec
     problems
 }
 
+pub fn check_w10_long_run_qualification_v2_contract(
+    value: &TomlValue,
+    release: &str,
+) -> Vec<String> {
+    let mut normalized = value.clone();
+    normalized["contract_id"] = TomlValue::String("w10-long-run-qualification-073-v1".to_owned());
+    normalized["state"] =
+        TomlValue::String("preregistered-after-compatibility-before-long-run-tooling".to_owned());
+    normalized["candidate_identity"] = TomlValue::String("C73-provisional-1".to_owned());
+    normalized["candidate_source_commit"] =
+        TomlValue::String("7e3070894aa51af96cdcb3e350eff923a309e1fa".to_owned());
+    normalized["candidate_tree_oid"] =
+        TomlValue::String("e2c438b9a248586a4f72d3eca3d1c5369fff440b".to_owned());
+    let mut problems = check_w10_long_run_qualification_contract(&normalized, release);
+    if text(value, "contract_id") != Some("w10-long-run-qualification-073-v2")
+        || text(value, "state") != Some("preregistered-final-registry-candidate-before-dispatch")
+        || text(value, "supersedes_for_new_dispatch") != Some(W10_LONG_RUN_QUALIFICATION_CONTRACT)
+        || text(value, "registry_transition_review") != Some(W10_D4_REGISTRY_TRANSITION)
+        || text(value, "candidate_identity") != Some("C73-final-registry-1")
+        || text(value, "candidate_source_commit")
+            != Some("16d2e98b6cc9e22d9ccf95eb26fe28bbbcf80f2b")
+        || text(value, "candidate_tree_oid") != Some("92336607f21a68f563e65dc0fccccd8efaa14f7b")
+        || text(value, "candidate_root_lock_sha256")
+            != Some("91e142067f52ab4f86bf2b0e94110371d5d053b3c2cfc41f585e74befe480f63")
+        || text(value, "hydra_moka_version") != Some("0.12.15-hydra.1")
+        || text(value, "hydra_moka_registry_checksum")
+            != Some("7ad8a0701236306b753373994b7077769ad5c2d6dbc60ae31c6258937ab6165a")
+    {
+        problems.push("W10 long-run v2 final registry identity changed".to_owned());
+    }
+    problems
+}
+
+pub fn check_w10_long_run_qualification_v2_evidence(
+    value: &TomlValue,
+    release: &str,
+) -> Vec<String> {
+    let mut problems = Vec::new();
+    if integer(value, "schema_version") != Some(1)
+        || text(value, "release") != Some(release)
+        || text(value, "evidence_id") != Some("w10-long-run-v2-qualification-passed-36532416869-v1")
+        || text(value, "state") != Some("six-hour-qualification-passed-confirmation-not-started")
+        || text(value, "contract") != Some(W10_LONG_RUN_QUALIFICATION_V2_CONTRACT)
+        || integer(value, "workflow_run") != Some(36_532_416_869)
+        || integer(value, "artifact_id") != Some(11_055_670_780)
+        || text(value, "tooling_sha") != Some("6135b9d4470234eebf00ecc07200da285e2aaa20")
+        || text(value, "baseline_source_commit") != Some("e757556d3a31d565f52a9561d6d4e555bb1cc373")
+        || text(value, "candidate_source_commit")
+            != Some("16d2e98b6cc9e22d9ccf95eb26fe28bbbcf80f2b")
+        || text(value, "candidate_tree_oid") != Some("92336607f21a68f563e65dc0fccccd8efaa14f7b")
+        || text(value, "artifact_zip_sha256")
+            != Some("aabf2c3c0f84036546d7289a245cea4d67055b5bc642505b6058f40a8e5dae10")
+        || text(value, "immutable_archive_path")
+            != Some("docs/testing/perf-artifacts/0.73/long-run-qualification-36532416869")
+        || text(value, "immutable_archive_manifest_sha256")
+            != Some("7b7a30b9baa3ad9ed24f4b3e22513e416bd3a7ada13017b12b579d52c6ca4ada")
+        || text(value, "campaign_sha256")
+            != Some("cc83db3beb7117fe9de9913093014ee38eda98ef20c62c41c3233bee4d9d8522")
+        || text(value, "i73_receipt_sha256")
+            != Some("75d6776e5cdbbb6c6cccf31764ed45c5f092974fb0815c23a54c1027149c3ddf")
+        || text(value, "i73_checkpoints_sha256")
+            != Some("0b4c5682110d8d5cb225fd262d0d85349cb228381093511a710eab9193d49d1c")
+        || text(value, "c73_receipt_sha256")
+            != Some("39110b7696b3233907548898fcc6c106ecccc4a4516c645d5a90466ddcd0f4dc")
+        || text(value, "c73_checkpoints_sha256")
+            != Some("c0d8f07a3cadf87da094a1c0ee35a378c91fb993f09abdf9367d287be4a73375")
+        || text(value, "phase") != Some("qualification")
+        || text(value, "result") != Some("passed")
+        || string_array(value.get("role_order")) != ["I73", "C73"]
+    {
+        problems.push("W10 long-run v2 qualification identity changed".to_owned());
+    }
+    for field in [
+        "artifact_zip_sha256",
+        "campaign_sha256",
+        "canary_sha256",
+        "canary_receipt_sha256",
+        "canary_checkpoints_sha256",
+        "pre_i73_calibration_sha256",
+        "post_i73_calibration_sha256",
+        "pre_c73_calibration_sha256",
+        "post_c73_calibration_sha256",
+        "i73_attempt_sha256",
+        "i73_receipt_sha256",
+        "i73_checkpoints_sha256",
+        "i73_baseline_bounds_sha256",
+        "i73_stdout_sha256",
+        "i73_stderr_sha256",
+        "c73_attempt_sha256",
+        "c73_receipt_sha256",
+        "c73_checkpoints_sha256",
+        "c73_stdout_sha256",
+        "c73_stderr_sha256",
+        "runner_sha256",
+        "scenario_sha256",
+        "overlay_sha256",
+        "i73_harness_sha256",
+        "c73_harness_sha256",
+        "i73_server_sha256",
+        "c73_server_sha256",
+    ] {
+        if text(value, field).is_none_or(|digest| !sha256(digest)) {
+            problems.push(format!(
+                "W10 long-run v2 qualification {field} must be SHA-256"
+            ));
+        }
+    }
+    for field in [
+        "nested_sha256_verified",
+        "immutable_archive_complete",
+        "independent_role_reanalysis_matched",
+        "all_four_calibrations_passed",
+        "all_four_calibrations_same_host",
+        "all_four_calibrations_same_lease",
+        "canary_passed_for_intended_rejection",
+        "backlog_drained",
+        "reconciliation_exact",
+        "management_truth_zero",
+        "durable_reopen_verified",
+        "durable_corruption_rejected",
+        "goodput_guard_passed",
+        "cpu_guard_passed",
+        "p99_guard_passed",
+        "rss_slope_guard_passed",
+        "anonymous_pss_slope_guard_passed",
+        "confirmation_allowed",
+    ] {
+        if boolean(value, field) != Some(true) {
+            problems.push(format!(
+                "W10 long-run v2 qualification {field} must be true"
+            ));
+        }
+    }
+    for field in [
+        "automatic_retry_performed",
+        "performance_claim_allowed",
+        "confirmation_started",
+        "final_c73_allowed",
+    ] {
+        if boolean(value, field) != Some(false) {
+            problems.push(format!(
+                "W10 long-run v2 qualification {field} must be false"
+            ));
+        }
+    }
+    if integer(value, "operations_per_role") != Some(259_200_000)
+        || integer(value, "completed_per_role") != Some(259_200_000)
+        || integer(value, "errors_per_role") != Some(0)
+        || integer(value, "timeouts_per_role") != Some(0)
+        || integer(value, "rejections_per_role") != Some(0)
+        || integer(value, "checkpoint_count_per_role") != Some(362)
+        || integer(value, "periodic_resource_samples_per_role") != Some(359)
+    {
+        problems.push("W10 long-run v2 qualification workload or outcomes changed".to_owned());
+    }
+    if float(value, "maximum_goodput_regression") != Some(0.02)
+        || float(value, "maximum_cpu_regression") != Some(0.03)
+        || float(value, "maximum_p99_regression") != Some(0.03)
+        || text(value, "bootstrap_method") != Some("moving-block-adjacent-slope-v1")
+        || integer(value, "block_samples") != Some(12)
+        || integer(value, "bootstrap_iterations") != Some(10_000)
+        || integer(value, "bootstrap_seed") != Some(730_073)
+    {
+        problems.push("W10 long-run v2 qualification frozen method changed".to_owned());
+    }
+    if float(value, "i73_goodput_operations_per_second") != Some(12000.028187387323)
+        || float(value, "c73_goodput_operations_per_second") != Some(12000.027702543952)
+        || float(value, "i73_cpu_seconds_per_operation") != Some(0.000026011226851851854)
+        || float(value, "c73_cpu_seconds_per_operation") != Some(0.00002609332561728395)
+        || float(value, "i73_p99_microseconds") != Some(7287.0)
+        || float(value, "c73_p99_microseconds") != Some(7307.0)
+        || float(value, "i73_rss_upper_95_bytes_per_second") != Some(86.38002444580071)
+        || float(value, "c73_rss_upper_95_bytes_per_second") != Some(61.78180607416233)
+        || float(value, "i73_anonymous_pss_upper_95_bytes_per_second") != Some(86.38002444580071)
+        || float(value, "c73_anonymous_pss_upper_95_bytes_per_second") != Some(61.78180607416233)
+    {
+        problems.push("W10 long-run v2 qualification observations changed".to_owned());
+    }
+    let goodput_change = float(value, "goodput_relative_change").unwrap_or(f64::INFINITY);
+    let cpu_change = float(value, "cpu_relative_change").unwrap_or(f64::INFINITY);
+    let p99_change = float(value, "p99_relative_change").unwrap_or(f64::INFINITY);
+    if -goodput_change > 0.02 || cpu_change > 0.03 || p99_change > 0.03 {
+        problems.push("W10 long-run v2 qualification regression budgets failed".to_owned());
+    }
+    for (baseline_field, candidate_field) in [
+        (
+            "i73_rss_upper_95_bytes_per_second",
+            "c73_rss_upper_95_bytes_per_second",
+        ),
+        (
+            "i73_anonymous_pss_upper_95_bytes_per_second",
+            "c73_anonymous_pss_upper_95_bytes_per_second",
+        ),
+    ] {
+        let baseline = float(value, baseline_field).unwrap_or(f64::NEG_INFINITY);
+        let candidate = float(value, candidate_field).unwrap_or(f64::INFINITY);
+        if candidate > baseline.max(0.0) {
+            problems.push(format!(
+                "W10 long-run v2 qualification {candidate_field} exceeds sealed baseline"
+            ));
+        }
+    }
+    if text(value, "decision")
+        != Some("accept-six-hour-qualification-and-hold-before-explicit-confirmation")
+    {
+        problems.push("W10 long-run v2 qualification decision changed".to_owned());
+    }
+    for field in ["interpretation", "claim_boundary", "next_evidence"] {
+        if text(value, field).is_none_or(str::is_empty) {
+            problems.push(format!("W10 long-run v2 qualification {field} is missing"));
+        }
+    }
+    problems
+}
+
+pub fn check_w10_long_run_confirmation_interrupted_evidence(
+    value: &TomlValue,
+    release: &str,
+) -> Vec<String> {
+    let mut problems = Vec::new();
+    if integer(value, "schema_version") != Some(1)
+        || text(value, "release") != Some(release)
+        || text(value, "evidence_id")
+            != Some("w10-long-run-v2-confirmation-interrupted-36622527013-v1")
+        || text(value, "state")
+            != Some("confirmation-interrupted-after-complete-i73-during-c73")
+        || text(value, "contract") != Some(W10_LONG_RUN_QUALIFICATION_V2_CONTRACT)
+        || integer(value, "workflow_run") != Some(36_622_527_013)
+        || integer(value, "job_id") != Some(109_591_249_409)
+        || integer(value, "artifact_id") != Some(11_136_098_992)
+        || text(value, "workflow_url")
+            != Some("https://github.com/javaquasar/hydracache/actions/runs/36622527013")
+        || text(value, "artifact_name")
+            != Some(
+                "performance-long-run-confirmation-073-b9f621a5b4f50c5277600fff9a8278fbd2154e28-36622527013-1",
+            )
+        || text(value, "tooling_sha")
+            != Some("b9f621a5b4f50c5277600fff9a8278fbd2154e28")
+        || text(value, "baseline_source_commit")
+            != Some("e757556d3a31d565f52a9561d6d4e555bb1cc373")
+        || text(value, "candidate_source_commit")
+            != Some("16d2e98b6cc9e22d9ccf95eb26fe28bbbcf80f2b")
+        || text(value, "candidate_tree_oid")
+            != Some("92336607f21a68f563e65dc0fccccd8efaa14f7b")
+        || text(value, "immutable_archive_path")
+            != Some("docs/testing/perf-artifacts/0.73/long-run-confirmation-36622527013")
+        || text(value, "phase") != Some("confirmation")
+        || string_array(value.get("role_order")) != ["I73", "C73"]
+    {
+        problems.push("W10 interrupted confirmation identity changed".to_owned());
+    }
+    if text(value, "host_fingerprint")
+        .is_none_or(|fingerprint| !fingerprint.starts_with("sha256:") || !sha256(&fingerprint[7..]))
+        || text(value, "lease_owner") != Some("long-run-073@javaquasar")
+        || text(value, "lease_end") != Some("2026-10-02T19:54:11Z")
+    {
+        problems.push("W10 interrupted confirmation host lease identity changed".to_owned());
+    }
+    for field in [
+        "artifact_zip_sha256",
+        "immutable_archive_manifest_sha256",
+        "job_log_sha256",
+        "runner_sha256",
+        "scenario_sha256",
+        "overlay_sha256",
+        "i73_harness_sha256",
+        "c73_harness_sha256",
+        "i73_server_sha256",
+        "c73_server_sha256",
+        "canary_sha256",
+        "canary_receipt_sha256",
+        "canary_checkpoints_sha256",
+        "pre_i73_calibration_sha256",
+        "post_i73_calibration_sha256",
+        "pre_c73_calibration_sha256",
+        "post_c73_calibration_sha256",
+        "i73_attempt_sha256",
+        "i73_receipt_sha256",
+        "i73_checkpoints_sha256",
+        "i73_baseline_bounds_sha256",
+        "i73_stdout_sha256",
+        "i73_stderr_sha256",
+        "c73_checkpoints_sha256",
+        "c73_stdout_sha256",
+        "c73_stderr_sha256",
+    ] {
+        if text(value, field).is_none_or(|digest| !sha256(digest)) {
+            problems.push(format!(
+                "W10 interrupted confirmation {field} must be SHA-256"
+            ));
+        }
+    }
+    for field in [
+        "artifact_digest_verified",
+        "nested_completed_role_sha256_verified",
+        "canary_passed_for_intended_rejection",
+        "all_four_calibrations_passed",
+        "all_four_calibrations_same_host",
+        "all_four_calibrations_same_lease",
+        "i73_role_completed",
+        "i73_final_checkpoint_present",
+        "i73_reconciliation_exact",
+        "c73_role_started",
+        "tooling_or_orchestration_fault_found",
+    ] {
+        if boolean(value, field) != Some(true) {
+            problems.push(format!("W10 interrupted confirmation {field} must be true"));
+        }
+    }
+    for field in [
+        "c73_role_completed",
+        "c73_receipt_present",
+        "c73_attempt_present",
+        "campaign_sealed",
+        "automatic_retry_performed",
+        "confirmation_passed",
+        "final_c73_allowed",
+        "performance_claim_allowed",
+        "product_failure_observed",
+        "correction_changes_product_identity",
+        "correction_changes_workload",
+        "correction_changes_duration",
+        "correction_changes_estimator",
+        "correction_changes_seed",
+        "correction_changes_thresholds",
+    ] {
+        if boolean(value, field) != Some(false) {
+            problems.push(format!(
+                "W10 interrupted confirmation {field} must be false"
+            ));
+        }
+    }
+    if integer(value, "i73_operations") != Some(1_036_800_000)
+        || integer(value, "i73_completed") != Some(1_036_800_000)
+        || integer(value, "i73_errors") != Some(0)
+        || integer(value, "i73_timeouts") != Some(0)
+        || integer(value, "i73_rejections") != Some(0)
+        || integer(value, "i73_checkpoint_count") != Some(1_442)
+        || float(value, "i73_goodput_operations_per_second") != Some(12000.04304830693)
+        || float(value, "i73_cpu_seconds_per_operation") != Some(0.000025870351080246914)
+        || float(value, "i73_p99_microseconds") != Some(7_323.0)
+        || float(value, "i73_rss_upper_95_bytes_per_second") != Some(32.517701397755765)
+        || float(value, "i73_anonymous_pss_upper_95_bytes_per_second") != Some(32.517701397755765)
+    {
+        problems.push("W10 interrupted confirmation complete I73 observation changed".to_owned());
+    }
+    if integer(value, "c73_checkpoint_count") != Some(352)
+        || integer(value, "c73_last_sequence") != Some(351)
+        || float(value, "c73_elapsed_seconds") != Some(21060.596553653)
+        || integer(value, "c73_completed_at_last_checkpoint") != Some(252_728_137)
+        || float(value, "c73_completion_fraction") != Some(0.24375784818672838)
+        || integer(value, "c73_errors_at_last_checkpoint") != Some(0)
+        || integer(value, "c73_timeouts_at_last_checkpoint") != Some(0)
+        || integer(value, "c73_rejections_at_last_checkpoint") != Some(0)
+        || integer(value, "c73_major_faults_at_last_checkpoint") != Some(0)
+    {
+        problems.push("W10 interrupted confirmation partial C73 observation changed".to_owned());
+    }
+    if text(value, "failure_class") != Some("external-actions-cancellation-during-c73")
+        || text(value, "decision")
+            != Some("retain-interrupted-confirmation-and-close-final-admission")
+        || text(value, "failure").is_none_or(|failure| {
+            !failure.contains("The operation was canceled")
+                || !failure.contains("do not identify the external cancellation initiator")
+        })
+        || text(value, "correction").is_none_or(|correction| {
+            !correction.contains("two sequential role-isolated jobs")
+                || !correction.contains("1,740 minutes")
+                || !correction.contains("remain unchanged")
+        })
+    {
+        problems.push("W10 interrupted confirmation disposition changed".to_owned());
+    }
+    for field in ["artifact_boundary", "retry_boundary", "next_evidence"] {
+        if text(value, field).is_none_or(str::is_empty) {
+            problems.push(format!("W10 interrupted confirmation {field} is missing"));
+        }
+    }
+    problems
+}
+
+fn check_w10_long_run_confirmation_interrupted_at_root(
+    root: &Path,
+    evidence: &TomlValue,
+    release: &str,
+) -> Vec<String> {
+    let mut problems = check_w10_long_run_confirmation_interrupted_evidence(evidence, release);
+    let Some(archive_relative) = text(evidence, "immutable_archive_path") else {
+        return problems;
+    };
+    let archive = root.join(archive_relative);
+    let manifest_path = archive.join("manifest.json");
+    let manifest_bytes = match fs::read(&manifest_path) {
+        Ok(bytes) => bytes,
+        Err(error) => {
+            problems.push(format!(
+                "W10 interrupted confirmation manifest is missing or unreadable at {}: {error}",
+                manifest_path.display()
+            ));
+            return problems;
+        }
+    };
+    let manifest_sha256 = Sha256::digest(&manifest_bytes)
+        .iter()
+        .map(|byte| format!("{byte:02x}"))
+        .collect::<String>();
+    if text(evidence, "immutable_archive_manifest_sha256") != Some(&manifest_sha256) {
+        problems.push(
+            "W10 interrupted confirmation archive manifest SHA-256 does not match evidence"
+                .to_owned(),
+        );
+    }
+    let manifest: JsonValue = match serde_json::from_slice(&manifest_bytes) {
+        Ok(manifest) => manifest,
+        Err(error) => {
+            problems.push(format!(
+                "W10 interrupted confirmation archive manifest is invalid JSON: {error}"
+            ));
+            return problems;
+        }
+    };
+    if manifest.get("release").and_then(JsonValue::as_str) != Some(release)
+        || manifest.get("workflow_run").and_then(JsonValue::as_i64) != Some(36_622_527_013)
+        || manifest.get("job_id").and_then(JsonValue::as_i64) != Some(109_591_249_409)
+        || manifest.get("artifact_id").and_then(JsonValue::as_i64) != Some(11_136_098_992)
+        || manifest.get("result").and_then(JsonValue::as_str) != Some("interrupted")
+        || manifest.get("phase").and_then(JsonValue::as_str) != Some("confirmation")
+        || manifest
+            .pointer("/i73/completed")
+            .and_then(JsonValue::as_bool)
+            != Some(true)
+        || manifest
+            .pointer("/c73/completed")
+            .and_then(JsonValue::as_bool)
+            != Some(false)
+        || manifest
+            .get("automatic_retry_performed")
+            .and_then(JsonValue::as_bool)
+            != Some(false)
+        || manifest
+            .get("final_c73_allowed")
+            .and_then(JsonValue::as_bool)
+            != Some(false)
+    {
+        problems.push("W10 interrupted confirmation archive manifest identity changed".to_owned());
+    }
+    for (name, field) in [
+        ("github-artifact.zip", "artifact_zip_sha256"),
+        ("job-log.txt", "job_log_sha256"),
+    ] {
+        let path = archive.join(name);
+        let bytes = match fs::read(&path) {
+            Ok(bytes) => bytes,
+            Err(error) => {
+                problems.push(format!(
+                    "W10 interrupted confirmation archive file is missing at {}: {error}",
+                    path.display()
+                ));
+                continue;
+            }
+        };
+        let actual = Sha256::digest(&bytes)
+            .iter()
+            .map(|byte| format!("{byte:02x}"))
+            .collect::<String>();
+        if text(evidence, field) != Some(&actual) {
+            problems.push(format!(
+                "W10 interrupted confirmation {name} SHA-256 does not match evidence"
+            ));
+        }
+    }
+    let job_log = fs::read_to_string(archive.join("job-log.txt")).unwrap_or_default();
+    if !job_log.contains("##[error]The operation was canceled.")
+        || !job_log.contains("LONG073_RUNNER_HEARTBEAT")
+        || !job_log.contains("Artifact ID 11136098992")
+    {
+        problems.push(
+            "W10 interrupted confirmation job log does not prove cancellation, liveness, and artifact retention"
+                .to_owned(),
+        );
+    }
+    problems
+}
+
+fn check_w10_long_run_confirmation_v2_at_root(root: &Path, release: &str) -> Vec<String> {
+    let evidence_path = root.join(W10_LONG_RUN_CONFIRMATION_V2_EVIDENCE);
+    let source = match fs::read_to_string(&evidence_path) {
+        Ok(source) => source,
+        Err(error) => {
+            return vec![format!(
+                "W10 final ship evidence is missing or unreadable at {}: {error}",
+                evidence_path.display()
+            )]
+        }
+    };
+    let evidence: TomlValue = match toml::from_str(&source) {
+        Ok(evidence) => evidence,
+        Err(error) => {
+            return vec![format!(
+                "W10 final ship evidence is invalid TOML at {}: {error}",
+                evidence_path.display()
+            )]
+        }
+    };
+    let mut problems = check_w10_long_run_confirmation_v2_evidence(&evidence, release);
+
+    let Some(manifest_relative) = text(&evidence, "immutable_archive_manifest_path") else {
+        return problems;
+    };
+    let manifest_path = root.join(manifest_relative);
+    let manifest_bytes = match fs::read(&manifest_path) {
+        Ok(bytes) => bytes,
+        Err(error) => {
+            problems.push(format!(
+                "W10 confirmation archive manifest is missing or unreadable at {}: {error}",
+                manifest_path.display()
+            ));
+            return problems;
+        }
+    };
+    let actual_manifest_sha256 = Sha256::digest(&manifest_bytes)
+        .iter()
+        .map(|byte| format!("{byte:02x}"))
+        .collect::<String>();
+    if text(&evidence, "immutable_archive_manifest_sha256") != Some(actual_manifest_sha256.as_str())
+    {
+        problems
+            .push("W10 confirmation archive manifest SHA-256 does not match evidence".to_owned());
+    }
+    let manifest: JsonValue = match serde_json::from_slice(&manifest_bytes) {
+        Ok(manifest) => manifest,
+        Err(error) => {
+            problems.push(format!(
+                "W10 confirmation archive manifest is invalid JSON: {error}"
+            ));
+            return problems;
+        }
+    };
+    let expected_roles = serde_json::json!(["I73", "C73"]);
+    if manifest.get("release").and_then(JsonValue::as_str) != Some(release)
+        || manifest.get("workflow_run").and_then(JsonValue::as_i64) != Some(36_839_197_349)
+        || manifest.get("tooling_sha").and_then(JsonValue::as_str)
+            != Some("aa853c6abc37b51974a0d45a56b13d9d8c1fcb5f")
+        || manifest
+            .get("baseline_source_sha")
+            .and_then(JsonValue::as_str)
+            != Some("e757556d3a31d565f52a9561d6d4e555bb1cc373")
+        || manifest
+            .get("candidate_source_sha")
+            .and_then(JsonValue::as_str)
+            != Some("16d2e98b6cc9e22d9ccf95eb26fe28bbbcf80f2b")
+        || manifest
+            .get("candidate_tree_oid")
+            .and_then(JsonValue::as_str)
+            != Some("92336607f21a68f563e65dc0fccccd8efaa14f7b")
+        || manifest.get("result").and_then(JsonValue::as_str) != Some("passed")
+        || manifest.get("phase").and_then(JsonValue::as_str) != Some("confirmation")
+        || manifest.get("role_order") != Some(&expected_roles)
+        || manifest
+            .get("operations_per_role")
+            .and_then(JsonValue::as_i64)
+            != Some(1_036_800_000)
+        || manifest
+            .get("nested_sha256_verified")
+            .and_then(JsonValue::as_bool)
+            != Some(true)
+        || manifest
+            .get("independent_reanalysis_matched")
+            .and_then(JsonValue::as_bool)
+            != Some(true)
+        || manifest.get("artifact_sha256").and_then(JsonValue::as_str)
+            != text(&evidence, "artifact_zip_sha256")
+        || manifest.get("archive_branch").and_then(JsonValue::as_str)
+            != Some("evidence/0.73/w10-confirmation")
+        || manifest.get("archive_root").and_then(JsonValue::as_str)
+            != text(&evidence, "immutable_archive_path")
+    {
+        problems.push("W10 confirmation immutable archive manifest identity changed".to_owned());
+    }
+    problems
+}
+
+pub fn check_w10_long_run_confirmation_v2_evidence(
+    value: &TomlValue,
+    release: &str,
+) -> Vec<String> {
+    let mut problems = Vec::new();
+    if integer(value, "schema_version") != Some(1)
+        || text(value, "release") != Some(release)
+        || text(value, "evidence_id")
+            != Some("w10-long-run-v2-confirmation-passed-36839197349-v1")
+        || text(value, "state") != Some("twenty-four-hour-confirmation-passed-final-c73-admitted")
+        || text(value, "contract") != Some(W10_LONG_RUN_QUALIFICATION_V2_CONTRACT)
+        || integer(value, "workflow_run") != Some(36_839_197_349)
+        || integer(value, "artifact_id") != Some(11_270_390_517)
+        || text(value, "workflow_url")
+            != Some("https://github.com/javaquasar/hydracache/actions/runs/36839197349")
+        || text(value, "artifact_name")
+            != Some("performance-long-run-confirmation-073-aa853c6abc37b51974a0d45a56b13d9d8c1fcb5f-36839197349-1")
+        || text(value, "tooling_sha") != Some("aa853c6abc37b51974a0d45a56b13d9d8c1fcb5f")
+        || text(value, "baseline_source_commit")
+            != Some("e757556d3a31d565f52a9561d6d4e555bb1cc373")
+        || text(value, "candidate_source_commit")
+            != Some("16d2e98b6cc9e22d9ccf95eb26fe28bbbcf80f2b")
+        || text(value, "candidate_tree_oid")
+            != Some("92336607f21a68f563e65dc0fccccd8efaa14f7b")
+        || text(value, "immutable_archive_path")
+            != Some("docs/testing/perf-artifacts/0.73/w10-confirmation-36839197349")
+        || text(value, "immutable_archive_manifest_path")
+            != Some(W10_LONG_RUN_CONFIRMATION_V2_ARCHIVE_MANIFEST)
+        || text(value, "archive_branch") != Some("evidence/0.73/w10-confirmation")
+        || text(value, "archive_commit")
+            != Some("570a5bcb6959ecc7f01f8c80d0fc32b719832ad9")
+        || text(value, "archive_url").is_none_or(|url| !url.contains("/tree/570a5bcb6959ecc7f01f8c80d0fc32b719832ad9/"))
+        || text(value, "archive_artifact_manifest_url").is_none_or(|url| !url.contains("/blob/570a5bcb6959ecc7f01f8c80d0fc32b719832ad9/"))
+        || text(value, "archive_sha256sums_url").is_none_or(|url| !url.contains("/blob/570a5bcb6959ecc7f01f8c80d0fc32b719832ad9/"))
+        || text(value, "runner_sha256")
+            != Some("c1be57424dfe61d6dbd758adcac57766c56add39cdc8705dca162c3323870144")
+        || text(value, "scenario_sha256")
+            != Some("3e15d9374063163b9fb26e8f0cffd7fdf4800ce82ad30205f05eec1d84b6206c")
+        || text(value, "overlay_sha256")
+            != Some("72600b82927129a81cd6ef1fc5119e91180394723a6ae0005e521dd7fbe2ced3")
+        || text(value, "phase") != Some("confirmation")
+        || text(value, "result") != Some("passed")
+        || string_array(value.get("role_order")) != ["I73", "C73"]
+    {
+        problems.push("W10 long-run v2 confirmation identity changed".to_owned());
+    }
+    if text(value, "host_fingerprint")
+        .is_none_or(|fingerprint| !fingerprint.starts_with("sha256:") || !sha256(&fingerprint[7..]))
+        || text(value, "lease_owner").is_none_or(str::is_empty)
+        || text(value, "lease_end").is_none_or(str::is_empty)
+    {
+        problems.push("W10 long-run v2 confirmation host lease identity is incomplete".to_owned());
+    }
+    for field in [
+        "artifact_zip_sha256",
+        "i73_stage_artifact_zip_sha256",
+        "immutable_archive_manifest_sha256",
+        "archive_artifact_manifest_sha256",
+        "archive_sha256sums_sha256",
+        "campaign_sha256",
+        "continuation_manifest_sha256",
+        "canary_sha256",
+        "canary_receipt_sha256",
+        "canary_checkpoints_sha256",
+        "pre_i73_calibration_sha256",
+        "post_i73_calibration_sha256",
+        "pre_c73_calibration_sha256",
+        "post_c73_calibration_sha256",
+        "i73_attempt_sha256",
+        "i73_receipt_sha256",
+        "i73_checkpoints_sha256",
+        "i73_baseline_bounds_sha256",
+        "i73_stdout_sha256",
+        "i73_stderr_sha256",
+        "c73_attempt_sha256",
+        "c73_receipt_sha256",
+        "c73_checkpoints_sha256",
+        "c73_stdout_sha256",
+        "c73_stderr_sha256",
+        "runner_sha256",
+        "scenario_sha256",
+        "overlay_sha256",
+        "i73_harness_sha256",
+        "c73_harness_sha256",
+        "i73_server_sha256",
+        "c73_server_sha256",
+    ] {
+        if text(value, field).is_none_or(|digest| !sha256(digest)) {
+            problems.push(format!(
+                "W10 long-run v2 confirmation {field} must be SHA-256"
+            ));
+        }
+    }
+    for field in [
+        "provider_digest_verified",
+        "nested_sha256_verified",
+        "continuation_handoff_verified",
+        "immutable_archive_complete",
+        "independent_role_reanalysis_matched",
+        "all_four_calibrations_passed",
+        "all_four_calibrations_same_host",
+        "all_four_calibrations_same_lease",
+        "qualification_precondition_verified",
+        "canary_passed_for_intended_rejection",
+        "backlog_drained",
+        "reconciliation_exact",
+        "management_truth_zero",
+        "durable_reopen_verified",
+        "durable_corruption_rejected",
+        "goodput_guard_passed",
+        "cpu_guard_passed",
+        "p99_guard_passed",
+        "rss_slope_guard_passed",
+        "anonymous_pss_slope_guard_passed",
+        "confirmation_started",
+        "final_c73_allowed",
+    ] {
+        if boolean(value, field) != Some(true) {
+            problems.push(format!("W10 long-run v2 confirmation {field} must be true"));
+        }
+    }
+    for field in [
+        "automatic_retry_performed",
+        "confirmation_allowed",
+        "performance_claim_allowed",
+    ] {
+        if boolean(value, field) != Some(false) {
+            problems.push(format!(
+                "W10 long-run v2 confirmation {field} must be false"
+            ));
+        }
+    }
+    if integer(value, "operations_per_role") != Some(1_036_800_000)
+        || integer(value, "completed_per_role") != Some(1_036_800_000)
+        || integer(value, "errors_per_role") != Some(0)
+        || integer(value, "timeouts_per_role") != Some(0)
+        || integer(value, "rejections_per_role") != Some(0)
+        || integer(value, "checkpoint_count_per_role").is_none_or(|count| count < 1_442)
+        || integer(value, "periodic_resource_samples_per_role").is_none_or(|count| count < 1_439)
+    {
+        problems.push("W10 long-run v2 confirmation workload or outcomes changed".to_owned());
+    }
+    if float(value, "maximum_goodput_regression") != Some(0.02)
+        || float(value, "maximum_cpu_regression") != Some(0.03)
+        || float(value, "maximum_p99_regression") != Some(0.03)
+        || text(value, "bootstrap_method") != Some("moving-block-adjacent-slope-v1")
+        || integer(value, "block_samples") != Some(12)
+        || integer(value, "bootstrap_iterations") != Some(10_000)
+        || integer(value, "bootstrap_seed") != Some(730_073)
+    {
+        problems.push("W10 long-run v2 confirmation frozen method changed".to_owned());
+    }
+    for field in [
+        "i73_goodput_operations_per_second",
+        "c73_goodput_operations_per_second",
+        "i73_cpu_seconds_per_operation",
+        "c73_cpu_seconds_per_operation",
+        "i73_p99_microseconds",
+        "c73_p99_microseconds",
+        "i73_rss_upper_95_bytes_per_second",
+        "c73_rss_upper_95_bytes_per_second",
+        "i73_anonymous_pss_upper_95_bytes_per_second",
+        "c73_anonymous_pss_upper_95_bytes_per_second",
+    ] {
+        if float(value, field)
+            .is_none_or(|observation| !observation.is_finite() || observation < 0.0)
+        {
+            problems.push(format!(
+                "W10 long-run v2 confirmation {field} must be a finite non-negative observation"
+            ));
+        }
+    }
+    let goodput_change = float(value, "goodput_relative_change").unwrap_or(f64::INFINITY);
+    let cpu_change = float(value, "cpu_relative_change").unwrap_or(f64::INFINITY);
+    let p99_change = float(value, "p99_relative_change").unwrap_or(f64::INFINITY);
+    if !goodput_change.is_finite()
+        || !cpu_change.is_finite()
+        || !p99_change.is_finite()
+        || -goodput_change > 0.02
+        || cpu_change > 0.03
+        || p99_change > 0.03
+    {
+        problems.push("W10 long-run v2 confirmation regression budgets failed".to_owned());
+    }
+    for (baseline_field, candidate_field) in [
+        (
+            "i73_rss_upper_95_bytes_per_second",
+            "c73_rss_upper_95_bytes_per_second",
+        ),
+        (
+            "i73_anonymous_pss_upper_95_bytes_per_second",
+            "c73_anonymous_pss_upper_95_bytes_per_second",
+        ),
+    ] {
+        let baseline = float(value, baseline_field).unwrap_or(f64::NEG_INFINITY);
+        let candidate = float(value, candidate_field).unwrap_or(f64::INFINITY);
+        if candidate > baseline.max(0.0) {
+            problems.push(format!(
+                "W10 long-run v2 confirmation {candidate_field} exceeds sealed baseline"
+            ));
+        }
+    }
+    if text(value, "decision") != Some("accept-twenty-four-hour-confirmation-and-admit-final-c73") {
+        problems.push("W10 long-run v2 confirmation decision changed".to_owned());
+    }
+    for field in ["interpretation", "claim_boundary", "next_evidence"] {
+        if text(value, field).is_none_or(str::is_empty) {
+            problems.push(format!("W10 long-run v2 confirmation {field} is missing"));
+        }
+    }
+    problems
+}
+
 pub fn check_instrumentation_overhead(value: &TomlValue, release: &str) -> Vec<String> {
     let mut problems = Vec::new();
     if integer(value, "schema_version") != Some(1) || text(value, "release") != Some(release) {
@@ -10177,9 +11023,19 @@ fn float_array(value: Option<&TomlValue>) -> Vec<f64> {
         .collect()
 }
 
-fn finish(label: &str, release: &str, problems: Vec<String>) -> Result<(), Box<dyn Error>> {
+fn finish(
+    label: &str,
+    release: &str,
+    require_ship: bool,
+    problems: Vec<String>,
+) -> Result<(), Box<dyn Error>> {
     if problems.is_empty() {
-        println!("{label}: OK (release {release}, local screening only)");
+        let scope = if require_ship {
+            "final exact-candidate ship evidence"
+        } else {
+            "structural and pre-ship evidence"
+        };
+        println!("{label}: OK (release {release}, {scope})");
         Ok(())
     } else {
         Err(format!("{label} failed:\n- {}", problems.join("\n- ")).into())

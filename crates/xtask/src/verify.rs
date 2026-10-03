@@ -23,6 +23,7 @@ struct Gate {
 
 const CONSOLE_GATE_LABEL: &str = "management console";
 const XTASK_TEST_GATE_LABEL: &str = "tests (xtask lib/integration)";
+const PERFORMANCE_BUDGET_GATE_LABEL: &str = "performance budget contract";
 
 fn gate(
     label: &'static str,
@@ -261,7 +262,7 @@ fn gates_for_platform(is_windows: bool) -> Vec<Gate> {
             Some(("RUSTDOCFLAGS", "-D warnings")),
         ),
         gate(
-            "performance budget contract",
+            PERFORMANCE_BUDGET_GATE_LABEL,
             ["test", "-p", "xtask", "--test", "bench_budget", "--locked"],
             None,
         ),
@@ -284,9 +285,13 @@ fn target_dir_for_gate<'a>(
     gate_label: &str,
     windows_target_dir: Option<&'a Path>,
 ) -> Option<&'a Path> {
-    (is_windows && gate_label == XTASK_TEST_GATE_LABEL)
-        .then_some(windows_target_dir)
-        .flatten()
+    (is_windows
+        && matches!(
+            gate_label,
+            XTASK_TEST_GATE_LABEL | PERFORMANCE_BUDGET_GATE_LABEL
+        ))
+    .then_some(windows_target_dir)
+    .flatten()
 }
 
 pub fn run(_args: Vec<String>) -> Result<(), Box<dyn Error>> {
@@ -353,10 +358,10 @@ pub fn run(_args: Vec<String>) -> Result<(), Box<dyn Error>> {
         println!("== {label} ==");
         let mut cmd = Command::new("cargo");
         cmd.args(args).current_dir(&root);
-        // Only the xtask test gate can try to replace the currently running
-        // target/debug/xtask.exe on Windows. Keeping every other gate on the
-        // shared target avoids rebuilding the whole workspace into a
-        // per-process directory and exhausting disk space.
+        // Any xtask test gate can try to replace the currently running
+        // target/debug/xtask.exe on Windows. Keep those gates in one isolated
+        // per-process target directory; every other gate stays on the shared
+        // target to avoid rebuilding the whole workspace and exhausting disk.
         if let Some(target_dir) =
             target_dir_for_gate(is_windows, label, windows_target_dir.as_deref())
         {
@@ -467,7 +472,8 @@ mod tests {
 
     use super::{
         console_npm_steps, gates_for_platform, target_dir_for_gate,
-        windows_verify_target_dir_for_process, Gate, CONSOLE_GATE_LABEL, XTASK_TEST_GATE_LABEL,
+        windows_verify_target_dir_for_process, Gate, CONSOLE_GATE_LABEL,
+        PERFORMANCE_BUDGET_GATE_LABEL, XTASK_TEST_GATE_LABEL,
     };
 
     fn args_for<'a>(gates: &'a [Gate], label: &str) -> &'a [&'static str] {
@@ -548,7 +554,7 @@ mod tests {
     }
 
     #[test]
-    fn windows_isolates_only_the_xtask_test_gate() {
+    fn windows_isolates_all_xtask_test_gates() {
         let root = Path::new("C:/repo");
         let isolated = windows_verify_target_dir_for_process(root, 42);
 
@@ -562,6 +568,14 @@ mod tests {
         );
         assert_eq!(
             target_dir_for_gate(false, XTASK_TEST_GATE_LABEL, Some(&isolated)),
+            None
+        );
+        assert_eq!(
+            target_dir_for_gate(true, PERFORMANCE_BUDGET_GATE_LABEL, Some(&isolated)),
+            Some(isolated.as_path())
+        );
+        assert_eq!(
+            target_dir_for_gate(false, PERFORMANCE_BUDGET_GATE_LABEL, Some(&isolated)),
             None
         );
     }

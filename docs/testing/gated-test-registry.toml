@@ -45,6 +45,39 @@ platform = "any"
 [gate.command.env]
 
 [[gate]]
+id = "env.hydracache-run-compatibility-073-rolling"
+kind = "env_gate"
+source = "crates/hydracache-server/tests/performance_compatibility_073.rs"
+package = "hydracache-server"
+target = "performance_compatibility_073"
+test = "real_published_072_candidate_upgrade_restart_and_same_disk_rollback"
+cfg = ""
+env = "HYDRACACHE_RUN_COMPATIBILITY_073_ROLLING"
+reason = "The exact published 0.72 to frozen 0.73 rolling upgrade, restart and same-disk rollback matrix requires separately built release binaries"
+tier = "external"
+required_features = []
+required_env = ["HYDRACACHE_RUN_COMPATIBILITY_073_ROLLING", "HYDRACACHE_072_DAEMON_BINARY", "HYDRACACHE_072_DAEMON_SOURCE_COMMIT", "HYDRACACHE_C73_DAEMON_BINARY", "HYDRACACHE_C73_SOURCE_COMMIT", "HYDRACACHE_COMPATIBILITY_073_ROLLING_OUTPUT"]
+required_tools = ["cargo", "git"]
+timeout_seconds = 7200
+owner_release = "0.73.0"
+ship_mandatory = true
+artifacts = ["target/test-evidence/0.73/compatibility-rolling-072-073.json"]
+
+[gate.ci]
+workflow = ".github/workflows/compatibility-073.yml"
+job = "compatibility"
+step = "Run six real rolling scenarios"
+
+[gate.command]
+program = "cargo"
+args = ["test", "-p", "hydracache-server", "--test", "performance_compatibility_073", "--locked", "real_published_072_candidate_upgrade_restart_and_same_disk_rollback", "--", "--exact", "--nocapture", "--test-threads=1"]
+cwd = "."
+platform = "linux"
+
+[gate.command.env]
+HYDRACACHE_RUN_COMPATIBILITY_073_ROLLING = "1"
+
+[[gate]]
 id = "tool.coverage-ratchet"
 kind = "external_tool"
 source = "crates/xtask/src/coverage_ratchet.rs"

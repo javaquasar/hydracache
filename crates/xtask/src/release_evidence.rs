@@ -50,6 +50,8 @@ pub struct EvidenceWorkItem {
     pub required_sources: Vec<String>,
     pub required_tests: Vec<RequiredTest>,
     pub required_artifacts: Vec<String>,
+    #[serde(default)]
+    pub active_ship_blocker_artifacts: Vec<String>,
     pub fast_gate_ids: Vec<String>,
     pub gated_gate_ids: Vec<String>,
     pub ship_required: bool,
@@ -382,6 +384,9 @@ pub fn build_report(
     for item in &manifest.work_item {
         let mut reasons = Vec::new();
         let implemented = implementation_resolves(root, item, &mut reasons);
+        let ship_blocker_reasons = active_ship_blocker_problems(root, item);
+        let active_ship_blocker = !ship_blocker_reasons.is_empty();
+        reasons.extend(ship_blocker_reasons);
         let mut stage = if implemented {
             EvidenceStage::Implemented
         } else {
@@ -503,6 +508,7 @@ pub fn build_report(
                     if quarantined.is_empty()
                         && !current_worktree_dirty
                         && compatibility_baseline_available
+                        && !active_ship_blocker
                     {
                         stage = EvidenceStage::ShipReady;
                     }
@@ -1212,6 +1218,22 @@ fn implementation_resolves(
     resolves
 }
 
+pub fn active_ship_blocker_problems(root: &Path, item: &EvidenceWorkItem) -> Vec<String> {
+    let mut problems = Vec::new();
+    for artifact in &item.active_ship_blocker_artifacts {
+        match safe_repo_path(root, artifact) {
+            Ok(path) if path.exists() => {
+                problems.push(format!("active ship blocker artifact {artifact}"));
+            }
+            Ok(_) => {}
+            Err(error) => {
+                problems.push(error.to_string());
+            }
+        }
+    }
+    problems
+}
+
 fn validate_manifest(
     root: &Path,
     definition: &ReleaseDefinition,
@@ -1494,6 +1516,9 @@ fn template_manifest(
                     }),
                 required_artifacts: current
                     .map(|item| item.required_artifacts.clone())
+                    .unwrap_or_default(),
+                active_ship_blocker_artifacts: current
+                    .map(|item| item.active_ship_blocker_artifacts.clone())
                     .unwrap_or_default(),
                 fast_gate_ids: current
                     .map(|item| item.fast_gate_ids.clone())

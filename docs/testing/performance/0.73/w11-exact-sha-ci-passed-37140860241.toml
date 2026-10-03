@@ -1,0 +1,118 @@
+schema_version = 1
+release = "0.73.0"
+work_item = "W11"
+kind = "exact-sha-release-admission"
+status = "accepted-and-tagged"
+ship_allowed = true
+tag_created = true
+recorded_at = "2026-10-03T20:01:09Z"
+
+[identity]
+pull_request = 214
+base_ref = "main"
+base_sha = "1f63494889d50a4e41018159710e5286a887ebf7"
+candidate_ref = "release/0.73-candidate"
+candidate_sha = "d1db9937e61295341ac95f289bace275641b1650"
+candidate_tree = "5bea41dd43278a9405648939666de5024d2164cc"
+pull_request_merge_sha = "3072672d10571acee20ceadd6073173cb1d28e9f"
+pull_request_merge_tree = "5bea41dd43278a9405648939666de5024d2164cc"
+tree_identity_verified = true
+measured_product_candidate_sha = "16d2e98b6cc9e22d9ccf95eb26fe28bbbcf80f2b"
+product_runtime_diff_from_measured_candidate = "empty"
+tag = "v0.73.0"
+tag_commit = "d1db9937e61295341ac95f289bace275641b1650"
+
+[runs]
+ci = 37140860241
+ci_url = "https://github.com/javaquasar/hydracache/actions/runs/37140860241"
+ci_conclusion = "success"
+documentation = 37140860224
+documentation_url = "https://github.com/javaquasar/hydracache/actions/runs/37140860224"
+documentation_conclusion = "success"
+hc2 = 37140860295
+hc2_url = "https://github.com/javaquasar/hydracache/actions/runs/37140860295"
+hc2_conclusion = "success"
+
+[ci_admission]
+required_root_jobs = ["Rust", "0.71 Memory Contracts", "MSRV 1.88.0", "Docs", "0.71 CI topology safety gate", "CI Instruction Work Tripwire", "Migration Conformance 0.69", "Migration Conformance Fast Evidence 0.69", "Migration Conformance PostgreSQL 0.69 (16)", "Migration Conformance PostgreSQL 0.69 (18)", "Migration Conformance Admission 0.69", "Memory Regression Fast", "0.67 Shared Performance Tripwire", "HC/2 Linux Required", "HC/2 Docker Interop"]
+required_root_jobs_conclusion = "success"
+scheduled_or_non-pr_jobs = "skipped-as-designed"
+public_api_compat_rows = 44
+public_api_compat_result = "all-compatible"
+public_api_compat_tool = "cargo-semver-checks 0.50.0"
+public_api_compat_toolchain = "rustc-1.94.0"
+
+[[verified_artifact]]
+provider_artifact_id = 11281056547
+provider_name = "memory-ownership-071-3072672d10571acee20ceadd6073173cb1d28e9f-37140860241-1"
+provider_digest = "sha256:1029dbd58e787fbc95031b2b405cce7d87e3b399b5690719ac2cfd783a30e5aa"
+nested_path = "public-api-compat-071/receipt.json"
+nested_sha256 = "aeb373c6f2932e2f2699e4651dcd3d8663d83304808cc5bf0f8eada302464405"
+
+[[verified_artifact]]
+provider_artifact_id = 11280496530
+provider_name = "ci-topology-071-3072672d10571acee20ceadd6073173cb1d28e9f-37140860241-1"
+provider_digest = "sha256:ed398b6b8d0473a5d6643f5b20d3b91eb4c8438d2929411000a7c691cd3ed1c0"
+nested_path = "watchdog-status.json"
+nested_sha256 = "e5478e8cf98c11bb7ff32a3db0cb15073149cf607b3f42acd162ce873ed2e566"
+
+[[verified_artifact]]
+provider_artifact_id = 11280317042
+provider_name = "ci-instruction-v1-d1db9937e61295341ac95f289bace275641b1650"
+provider_digest = "sha256:77bf03564a689d0db974ed4dc798c080714ebdce7364026967c7eb9186b5d2c4"
+nested_path = "report.json"
+nested_sha256 = "7beac5931b7926e6139fef24c86e86c502151dc7d7c456c754501cadd797d3cb"
+
+[[verified_artifact]]
+provider_artifact_id = 11280791445
+provider_name = "hc2-docker-3072672d10571acee20ceadd6073173cb1d28e9f-37140860295-1"
+provider_digest = "sha256:4706f0f65cdb61b3b044973361212bce664dfb40cb522db5d6c502252268d8a2"
+nested_path = "hc2-ci/docker-interop.receipt.json"
+nested_sha256 = "5e331bca772319ef3ca4a6600ca9a616c2afd730fbdb03271f2fbcc78bf8a6ab"
+
+[[verified_artifact]]
+provider_artifact_id = 11280767285
+provider_name = "hc2-linux-3072672d10571acee20ceadd6073173cb1d28e9f-37140860295-1"
+provider_digest = "sha256:fb1cf5484a5ec01769ee74d76d4dd67ab6df7aa33d6e60e3dfd113d359c71dd6"
+nested_path = "linux-required.receipt.json"
+nested_sha256 = "92871fb5bdf9c07f91bdf6a120bb407028c1b926ecbace4b468a14a3003e58ab"
+
+[local_ship_gate]
+gate_id = "fast.workspace-nextest"
+source_commit = "d1db9937e61295341ac95f289bace275641b1650"
+dirty_worktree = false
+toolchain = "rustc 1.94.0 (4a4ef493e 2026-03-02)"
+outcome = "pass"
+tests_passed = 3472
+tests_skipped = 82
+test_duration_seconds = 476.193
+receipt_sha256 = "0e647c1870284cfa9468f061388fc2c2fb3f1fe46c811fd56730c259a31bd9c1"
+junit_sha256 = "fa678155ff0417e7fbe6648f618a2c9181a13ca3de84b33aa93ee966dec583a7"
+performance_contract_require_ship = "passed"
+release_evidence_require_ship = "ship-ready-12-of-12"
+readiness_dry_run = "passed"
+
+[[local_attempt]]
+outcome = "fail"
+receipt_sha256 = "62e2ae6123bf65864207d13c51c0f73ec11e4efd21b51dc2397756cf1f832d8e"
+classification = "local-infrastructure-disk-full-during-cold-build"
+
+[[local_attempt]]
+outcome = "fail"
+receipt_sha256 = "4f81970871825a052b2dbe014081949fe568de16375dbdcc932ccfc47a5c7b9c"
+classification = "local-infrastructure-lnk1318-after-disk-exhaustion"
+
+[[local_attempt]]
+outcome = "timeout"
+receipt_sha256 = "c6822dae26939e164d1c5401f3b56eff94c8764cf4e3a28718ffeec42b406f85"
+classification = "cold-trybuild-cache-exceeded-unchanged-360-second-per-test-limit"
+
+[archive]
+branch = "evidence/0.73/w10-confirmation"
+commit = "570a5bcb6959ecc7f01f8c80d0fc32b719832ad9"
+contents = "byte-exact six-hour and 24-hour measurement archives plus accepted, rejected and interrupted attempts"
+
+[decision]
+reason = "the exact candidate tree passed all mandatory CI, documentation, HC/2, compatibility, local workspace, performance-contract and release-evidence gates; its product runtime is unchanged from the independently confirmed measured candidate"
+claim_boundary = "the fixed-load dedicated-host results admit this release but do not establish portable maximum throughput, universal memory savings, or Redis/Hazelcast superiority"
+

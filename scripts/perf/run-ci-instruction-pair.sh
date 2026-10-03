@@ -48,10 +48,19 @@ sync_subject_lock() {
   local side="$1"
   local sync_log="$output/${side}-lock-sync.log"
 
-  python3 "$repo_root/scripts/perf/sync-ci-instruction-lock.py" \
-    --lock Cargo.lock \
-    --subject-manifest "$scratch/subject/Cargo.toml" \
-    >"$sync_log" 2>&1
+  # Start both halves from the same reviewed harness lock.  Reusing the lock
+  # mutated by the base half makes a base-only dependency source leak into the
+  # head half.  The local-version synchronizer intentionally cannot rewrite a
+  # registry package; let Cargo reconcile an intentional dependency-graph
+  # transition (for example moka -> hydra-moka) before the locked benchmark.
+  cp "$repo_root/scripts/perf/ci-instruction-harness/Cargo.lock" Cargo.lock
+  {
+    python3 "$repo_root/scripts/perf/sync-ci-instruction-lock.py" \
+      --lock Cargo.lock \
+      --subject-manifest "$scratch/subject/Cargo.toml"
+    cargo update -p hydracache
+    cargo metadata --locked --no-deps --format-version 1 >/dev/null
+  } >"$sync_log" 2>&1
   cp Cargo.lock "$output/${side}-harness.lock"
 }
 

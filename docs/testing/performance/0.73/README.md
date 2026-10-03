@@ -489,3 +489,103 @@ therefore preserves the corrected old qualification without transferring it, kee
 archive claims closed, and requires a new six-hour plus 24-hour campaign only after every remaining
 publication input has been frozen. Protected-host dispatch before that final freeze is rejected as
 avoidable spend.
+
+`w10-long-run-qualification-v2-contract.toml` binds the replacement campaign to publication-freeze
+commit `16d2e98b`, its tree and root-lock digest, plus the exact registry checksum for
+`hydra-moka 0.12.15-hydra.1`. It inherits the complete v1 workload, duration, estimator, seed,
+threshold and failure policy through a machine-checked normalization; only the candidate identity
+changes. The runner now targets this final registry candidate, while the offline reanalyzer retains
+an explicit old-C73 constant so run `36278780653` remains independently reproducible.
+
+The first v2 dispatch, run `36404123541`, was rejected before product checkout because the manually
+submitted tooling SHA had been incorrectly reconstructed from a short prefix. No product worktree,
+build, canary, or long-running role started. The always-path retained two blocked-host calibration
+diagnostics from the stale self-hosted checkout; they are not measurement evidence. Receipt
+`w10-long-run-v2-dispatch-rejected-36404123541.toml` binds the artifact and both files by SHA-256
+and permits one corrected pre-product dispatch using the exact value returned by `git rev-parse`.
+
+Two later attempts remain part of the same append-only history. Run `36404461429` stopped while
+building the C73 standalone harness because one shared lockfile could not represent both frozen
+product graphs under `--locked`; no performance observation was produced. Run `36457014494` then
+completed the full I73 role but rejected C73 before server start because the harness still admitted
+the historical candidate SHA. That attempt also exposed a false-positive negative canary, which had
+treated any producer failure as proof that the intended incomplete packet was rejected. The
+role-specific lock selection, final-candidate harness identity and fail-closed canary were corrected
+without changing either product tree, workload, duration, estimator, seed or threshold. Both failed
+artifacts remain retained and cannot be spliced into the successful campaign.
+
+Run `36532416869` is the first complete qualification of the final registry candidate. The canary
+reached the intended missing-reconciled-checkpoint defect and was rejected for that defect; all four
+calibrations matched the admitted host and lease; and both serial roles completed 259.2 million
+operations with 362 checkpoints, zero errors, zero timeouts and zero rejections. The downloaded ZIP
+SHA-256 matched GitHub's artifact digest. Independent local reanalysis matched every embedded
+receipt, checkpoint, stdout/stderr and calibration digest and reproduced all five green guards.
+
+C73 goodput changed by -0.000004%, CPU seconds per operation increased by 0.316%, and p99 increased
+by 0.274%, all inside the frozen 2%/3%/3% budgets. Its RSS and anonymous-PSS Theil-Sen slope fell
+from 30.5605 to 21.0045 bytes/s; the decisive moving-block 95% upper bound fell from 86.3800 to
+61.7818 bytes/s, a 28.48% reduction. This is a passed six-hour qualification, not a completed
+release claim: it opens one separately authorized 24-hour confirmation for the exact same frozen
+identities and method. `w10-long-run-v2-qualification-passed-36532416869.toml` records that boundary;
+the resulting confirmation run is evaluated separately and `final_c73_allowed` remains false until
+its complete artifact passes independent verification.
+
+Run `36622527013` began that confirmation with the frozen identities. I73 completed the full
+24-hour role with 1.0368 billion operations and 1,442 checkpoints. C73 then remained healthy for
+352 checkpoints and 252,728,137 operations before GitHub Actions delivered an external
+cancellation at 5 hours 51 minutes. The partial role had no errors, timeouts, rejections or major
+faults, stderr was empty, and the immediate post-C73 calibration passed on the same host and lease.
+The workflow retained a complete-or-incomplete artifact whose external and completed-role nested
+SHA-256 values were independently verified. Because C73 produced neither a final receipt nor a
+campaign seal, the attempt is append-only diagnostic evidence: it cannot be promoted, spliced or
+used for a comparison.
+
+`w10-long-run-v2-confirmation-interrupted-36622527013.toml` records the failed boundary. The
+tooling-only correction keeps the six-hour workflow unchanged but runs future confirmation roles
+as two sequential jobs under one approval and host lease. A checksummed I73 continuation packet is
+verified before C73 may start; only the C73 job can seal the complete pair. Each job stays below
+29 hours, while product identities, order, workload, 24-hour duration, estimator, seed and
+thresholds remain frozen. No replacement run is automatic or authorized by this correction.
+
+## Durable W11 release archive
+
+GitHub Actions artifacts are a 30-day staging copy, not the permanent Release 0.73 record. The
+machine-readable policy is `release-archive-contract.toml`. If replacement confirmation run
+`36839197349` passes independent verification, W11 creates the append-only branch
+`evidence/0.73/w10-confirmation` and publishes the run-bound archive under
+`docs/testing/perf-artifacts/0.73/w10-confirmation-36839197349/`. The branch retains original
+normal-sized provider archives, all accepted/rejected/interrupted attempt records, `SHA256SUMS`, an
+artifact manifest, sanitized replay inputs and a verification receipt for the outer downloads,
+nested hashes, I73-to-C73 handoff and frozen guards. Oversize originals use versioned immutable
+object storage and remain bound from the branch by permanent object identity and SHA-256.
+
+The archive branch is created only after the final artifact verifies and is never force-pushed.
+Before tagging, release evidence records its full commit SHA and manifest digest. The shipped
+release note must retain both the browseable branch link and commit-pinned links to the archive,
+manifest and `SHA256SUMS`; a moving branch URL or expiring Actions URL alone is insufficient.
+
+Replacement run `36839197349` completed both isolated 24-hour roles successfully. The I73 stage
+artifact and final artifact matched GitHub's external SHA-256 digests; all 13 continuation entries
+were byte-identical across the handoff; and independent local reanalysis reproduced both role
+receipts, 1,442 checkpoints per role, all four calibrations, the canary's intended rejection and all
+five comparison guards. Each role completed 1.0368 billion operations with zero errors, timeouts or
+rejections. Goodput changed by effectively zero (-0.0000000115%), CPU/operation increased 0.260%,
+and p99 improved 0.328%. The decisive RSS and anonymous-PSS 95% upper slope bound fell from
+30.1448 to 20.3181 bytes/s, 32.60% lower, while remaining a boundedness guard rather than a portable
+memory-improvement claim.
+
+The durable W11 archive is published at immutable commit
+[`570a5bcb6959ecc7f01f8c80d0fc32b719832ad9`](https://github.com/javaquasar/hydracache/tree/570a5bcb6959ecc7f01f8c80d0fc32b719832ad9/docs/testing/perf-artifacts/0.73/w10-confirmation-36839197349).
+It retains all eight provider ZIPs, including every failed, rejected and interrupted attempt, plus
+the final extracted packet, verification receipt, artifact manifest and complete `SHA256SUMS`.
+W10 is closed and `v0.73.0` points to exact candidate
+`d1db9937e61295341ac95f289bace275641b1650`.
+
+The first tag-triggered CI attempt is retained separately as
+`w11-tag-ci-rejected-37149833980.toml`: all executed jobs except the Redis release proof passed, but
+that job drifted to Rust/Clippy 1.99.0 and stopped before its Docker and resource checks. The
+tooling-only exact-SHA repair is retained as `w11-redis-proof-repair-passed-37150976176.toml`; it
+checked out the unchanged tag SHA, used reviewed Rust 1.94.0, and passed the previously skipped
+proof. Its complete workflow closed with 14 successful jobs, 27 conditionally skipped jobs and no
+failures or cancellations. These W11 records do not modify the immutable W10 measurement archive
+or promote the proof to a Redis performance comparison.

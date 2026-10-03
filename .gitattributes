@@ -20,3 +20,8 @@ docs/testing/perf-artifacts/0.71/**/manifest.json text eol=lf
 docs/testing/perf-artifacts/0.71/**/SHA256SUMS text eol=lf
 docs/testing/perf-artifacts/0.71/**/verify.ps1 text eol=lf
 docs/testing/perf-artifacts/0.71/**/redaction-receipt.json text eol=lf
+docs/testing/perf-artifacts/0.73/**/*.zip -text
+docs/testing/perf-artifacts/0.73/**/README.md text eol=lf
+docs/testing/perf-artifacts/0.73/**/manifest.json text eol=lf
+docs/testing/perf-artifacts/0.73/**/SHA256SUMS text eol=lf
+docs/testing/perf-artifacts/0.73/**/verify.ps1 text eol=lf
