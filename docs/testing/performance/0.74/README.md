@@ -50,6 +50,11 @@ supervisor library):
 cargo xtask long-run-campaign-check --release 0.74 --manifest <packet-manifest.json>
 ```
 
+The same local crate now contains the pure campaign state machine, request replay map and attach
+predicate evaluator. Deterministic tests prove that attach changes only controller lease/revision,
+cannot spawn or restart a role, and rejects host/boot, PID start, cgroup, checkpoint, lease,
+revision, duplicate-executor, recorded-failure and durable-history drift.
+
 W11 is staged, but disabled, by `qualification-manifest.toml`. Its contract inputs are
 content-addressed and its expensive phases remain `not-run`. The only currently supported action
 is a no-execution validation:

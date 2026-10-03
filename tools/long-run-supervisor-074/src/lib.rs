@@ -6,6 +6,8 @@ use std::io::{Read, Write};
 use std::path::{Path, PathBuf};
 use thiserror::Error;
 
+pub mod state;
+
 pub const DOMAIN: &[u8] = b"hydracache-long-run-record-v1";
 pub const GENESIS_HASH: &str = "0000000000000000000000000000000000000000000000000000000000000000";
 
