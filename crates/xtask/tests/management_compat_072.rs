@@ -114,6 +114,18 @@ fn compatibility_guards_are_wired_to_product_and_package_tests() {
 
     let readiness = fs::read_to_string(root.join("scripts/verify-release-readiness.ps1")).unwrap();
     let packager = fs::read_to_string(root.join("scripts/package-publishable.ps1")).unwrap();
+    for marker in [
+        "Invoke-WorkspaceFormatCheck",
+        "cargo metadata --locked --no-deps --format-version 1",
+        "cargo fmt --all",
+        "@($metadata.workspace_members)",
+        r#"@("fmt", "-p", $packageName, "--", "--check")"#,
+    ] {
+        assert!(
+            readiness.contains(marker),
+            "release readiness omits Windows-safe format guard {marker}"
+        );
+    }
     assert!(packager.contains("[switch]$NoVerify"));
     assert!(packager.contains("$args += \"--no-verify\""));
     let packages = [

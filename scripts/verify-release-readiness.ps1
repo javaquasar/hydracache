@@ -109,6 +109,41 @@ function Invoke-CheckedCommand {
     }
 }
 
+function Invoke-WorkspaceFormatCheck {
+    $isWindowsPlatform = [System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform(
+        [System.Runtime.InteropServices.OSPlatform]::Windows
+    )
+    if (-not $isWindowsPlatform) {
+        Invoke-CheckedCommand -Executable "cargo" -Arguments @("fmt", "--all", "--", "--check")
+        return
+    }
+
+    # `cargo fmt --all` expands every workspace target into one rustfmt command.
+    # Large workspaces can exceed Windows' process command-line limit (os error
+    # 206), so preserve the same check while invoking rustfmt one package at a
+    # time. Package discovery is locked to the current workspace metadata.
+    $metadataJson = & cargo metadata --locked --no-deps --format-version 1
+    if ($LASTEXITCODE -ne 0) {
+        throw "cargo metadata failed while preparing the Windows format check."
+    }
+    $metadata = $metadataJson | ConvertFrom-Json
+    $workspaceMembers = @($metadata.workspace_members)
+    $packageNames = @(
+        $metadata.packages |
+            Where-Object { $workspaceMembers -contains $_.id } |
+            Sort-Object name |
+            Select-Object -ExpandProperty name
+    )
+    if ($packageNames.Count -eq 0) {
+        throw "cargo metadata returned no workspace packages for the Windows format check."
+    }
+
+    Write-Host "Windows format check: validating $($packageNames.Count) workspace packages individually."
+    foreach ($packageName in $packageNames) {
+        Invoke-CheckedCommand -Executable "cargo" -Arguments @("fmt", "-p", $packageName, "--", "--check")
+    }
+}
+
 Push-Location $repoRoot
 try {
     $workspaceVersion = Get-WorkspaceVersion -ManifestPath "Cargo.toml"
@@ -175,7 +210,8 @@ try {
     if ($RunGate) {
         Write-Host ""
         Write-Host "Running release gate..."
-        foreach ($command in $gateCommands) {
+        Invoke-WorkspaceFormatCheck
+        foreach ($command in $gateCommands | Select-Object -Skip 1) {
             Invoke-CheckedCommand -Executable $command[0] -Arguments $command[1]
         }
     }
